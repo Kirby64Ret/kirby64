@@ -17,6 +17,7 @@ tools/armips_bin/*
 assets/*.bin
 assets/**/*.png
 assets/tools/__pycache__/*
+tools/splat_ext/__pycache__/*
 f3dex2/F3DEX2_2.04H/*
 *.z64
 textures/*
