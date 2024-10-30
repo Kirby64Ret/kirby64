@@ -49,4 +49,4 @@ jobs:
     - name: Prepare Kirby 64 for building
       run: make setup
     - name: Build Kirby 64
-      run: make
+      run: ./rebuild.sh
