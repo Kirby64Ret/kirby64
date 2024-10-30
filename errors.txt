@@ -1,8 +1,0 @@
-func_80198880
-func_80199568
-func_8019B7D8
-func_8019BBEC
-func_801BBFE4
-func_801BC27C
-func_801DB1E0
-tamper_check_ovl20

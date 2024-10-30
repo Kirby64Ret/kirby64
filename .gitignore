@@ -13,6 +13,7 @@ tools/GeoFromBin*
 tools/level_settings/convert
 tools/img_getprop
 tools/rgb2c
+tools/armips_bin/*
 assets/*.bin
 assets/**/*.png
 assets/tools/__pycache__/*
