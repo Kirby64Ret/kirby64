@@ -8,7 +8,7 @@ VERSION = us
 BUILD_DIR = $(BUILD_DIR_BASE)
 
 GRUCODE := F3DEX2_2.04H
-LOCAL_ARMIPS=tools/armips/build/armips
+LOCAL_ARMIPS=tools/armips_bin/armips
 
 VERBOSE := 1
 
