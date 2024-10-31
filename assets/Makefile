@@ -12,7 +12,7 @@ FILETABLES := filetable_models.mk \
 
 -include $(FILETABLES)
 
-# V := @
+V := @
 
 BANK_LINKSCRIPTS := $(BUILD_DIR)/bank0.ld \
 					$(BUILD_DIR)/bank1.ld \
@@ -91,23 +91,28 @@ endif
 	$(V)$(CROSS)ld -r -b binary -o $@ $(@:.o=.bin)
 
 $(BUILD_DIR)/%.o: %.png
+	@printf "    [Asset:PNG] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)../tools/rgb2c -G $(lastword $(subst ., ,$*)) -o RAW $< > $(@:.o=.bin)
 	$(V)$(CROSS)ld -r -b binary -o $@ $(@:.o=.bin)
 
 $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.bin
+	@printf "    [Asset:BIN] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)$(CROSS)ld -r -b binary -o $@ $<
 
 $(BUILD_DIR)/%.o: %.c
+	@printf "    [Asset:CC] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)$(CROSS)gcc -c $(GCC_CFLAGS) -D__sgi -o $@ $<
 
 $(BUILD_DIR)/%.o: %.s
+	@printf "    [Asset:ASM] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)$(CROSS)as $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR)/%.o: %.bin
+	@printf "    [Asset:BIN] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)$(CROSS)ld -r -b binary -o $@ $<
 

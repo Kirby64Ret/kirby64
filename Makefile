@@ -77,7 +77,7 @@ ASSET_DIRS := $(wildcard assets/geo/bank_0/**) \
               $(wildcard assets/geo/bank_7/**) \
               $(wildcard assets/geo/bank_3/**)
 
-ASM_DIRS := asm asm/data $(wildcard asm/data/ovl*)
+ASM_DIRS := asm asm/data asm/data/main $(wildcard asm/data/ovl*) asm/main $(wildcard asm/*)
             
 SRC_DIRS := src src/main src/os $(wildcard src/ovl*)
 
@@ -177,12 +177,6 @@ LD_SCRIPT = kirby.ld
 
 $(BUILD_DIR)/data/kirby.066630.o: $(GAME_ASSETS)
 
-libreultra/build/2.0I/libultra_rom.a:
-	$(MAKE) -C libreultra -j4
-
-libreultra/build/2.0I/libn_audio.a:
-	$(MAKE) -C libreultra naudio -j4
-
 all: $(BUILD_DIR)/$(TARGET).z64
 	@sha1sum -c $(TARGET).sha1
 
@@ -210,27 +204,30 @@ $(BUILD_DIR)/src/ovl7/yakulib.o: OPT_FLAGS = -O2 -Olimit 1000
 $(BUILD_DIR)/src/ovl1/ovl1_5.o: OPT_FLAGS = -O2
 $(BUILD_DIR)/src/ovl3/ovl3_1.o: OPT_FLAGS = -O2 -Wo,-loopunroll
 
-$(BUILD_DIR)/libultra.a: libreultra/build/2.0I/libultra_rom.a
-	cp $< $@
+$(BUILD_DIR)/libultra_rom.a:
+	$(MAKE) -C libreultra BUILD_DIR=../$(BUILD_DIR) VERSION=
 	$(TOOLS_DIR)/patch_libultra_math $@
 
-$(BUILD_DIR)/libn_audio.a: libreultra/build/2.0I/libn_audio.a
-	cp $< $@
+$(BUILD_DIR)/libn_audio.a:
+	$(MAKE) -C libreultra naudio BUILD_DIR=../$(BUILD_DIR) VERSION=
 	$(TOOLS_DIR)/patch_libultra_math $@
 
 $(BUILD_DIR)/$(UCODE_BASE_DIR)/$(GRUCODE)/$(GRUCODE).%.o: $(BUILD_DIR)/$(GRUCODE)/$(GRUCODE).%
 	$(OBJCOPY) -I binary -O elf32-big $< $@
 
 $(BUILD_DIR)/%.o: %.bin
-	$(LD) -r -b binary -o $@ $<
+	@printf "    [BIN] $<\n"
+	$(V)$(LD) -r -b binary -o $@ $<
 
 $(BUILD_DIR)/%.o: %.s
-	$(CPP) $(GCC_CFLAGS) -o $(@:.o=.i) $<
-	$(AS) $(ASFLAGS) -o $@ $(@:.o=.i)
+	@printf "    [ASM] $<\n"
+	$(V)$(CPP) $(GCC_CFLAGS) -o $(@:.o=.i) $<
+	$(V)$(AS) $(ASFLAGS) -o $@ $(@:.o=.i)
 
 $(BUILD_DIR)/%.o: %.c
+	@printf "    [CC] $<\n"
 	@$(CC_CHECK) -Wno-unknown-pragmas -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(V)$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR)/data/%.o: data/%.c
 	$(GCC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
@@ -252,7 +249,7 @@ $(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(UCODE_LD) rcp_syms.txt undefined_syms.
 	$(CPP) $(VERSION_CFLAGS) $(INCLUDE_CFLAGS) -MMD -MP -MT $@ -MF $@.d -o $@ $< \
 	-DBUILD_DIR=$(BUILD_DIR) -Umips
 
-$(BUILD_DIR)/$(TARGET).elf: $(GAME_ASSETS) $(O_FILES) $(BUILD_DIR)/$(LD_SCRIPT) $(BUILD_DIR)/libultra.a $(BUILD_DIR)/libn_audio.a $(UCODE_TEXT_O_FILES) $(UCODE_DATA_O_FILES)
+$(BUILD_DIR)/$(TARGET).elf: $(GAME_ASSETS) $(O_FILES) $(BUILD_DIR)/$(LD_SCRIPT) $(BUILD_DIR)/libultra_rom.a $(BUILD_DIR)/libn_audio.a $(UCODE_TEXT_O_FILES) $(UCODE_DATA_O_FILES)
 	$(V)$(LD) -L $(BUILD_DIR) $(LDFLAGS) -o $@ $(LIBS) -ln_audio
 
 # final z64 updates checksum
@@ -267,9 +264,9 @@ $(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).elf
 $(GLOBAL_ASM_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py $(CC) -- $(AS) $(ASFLAGS) --
 
 setup:
-	$(MAKE) -C libreultra -j4
-	$(MAKE) -C libreultra naudio -j4
-	$(MAKE) -C tools -j4
+	$(MAKE) -C libreultra BUILD_DIR=../$(BUILD_DIR) VERSION=
+	$(MAKE) -C libreultra naudio BUILD_DIR=../$(BUILD_DIR) VERSION=
+	$(MAKE) -C tools
 	tools/extract_assets baserom.$(VERSION).z64
 	./splat/split.py kirby64.yaml
 
