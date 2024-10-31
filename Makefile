@@ -271,6 +271,8 @@ $(BUILD_DIR)/data/%.o: data/%.c
 $(GAME_ASSETS): assets/assets.ld
 	$(MAKE) -C assets
 
+# TODO: make this a real dependency
+DUMMY != $(MAKE) -C f3dex2 $(GRUCODE) PARENT_OUTPUT_DIR=../$(BUILD_DIR)/ ARMIPS=../$(LOCAL_ARMIPS)
 # $(BUILD_DIR)/assets/misc/%.o: assets/misc/%.s
 # 	$(AS) $(ASFLAGS) -o $@ $<
 
@@ -303,7 +305,6 @@ setup:
 	$(MAKE) -C libreultra -j4
 	$(MAKE) -C libreultra naudio -j4
 	$(MAKE) -C tools -j4
-	$(MAKE) -C f3dex2 $(GRUCODE) PARENT_OUTPUT_DIR=../$(BUILD_DIR)/ ARMIPS=../$(LOCAL_ARMIPS)
 	tools/extract_assets baserom.$(VERSION).z64
 	./splat/split.py kirby64.yaml
 
