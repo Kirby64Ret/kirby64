@@ -27,9 +27,7 @@ ifeq (VERBOSE, 1)
 endif
 
 ##################### Compiler Options #######################
-# IRIX_ROOT := tools/ido5.3_compiler
 IRIX_ROOT := tools/ido7.1
-# CC        := $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
 CC := tools/ido-7.1recomp/cc
 
 
@@ -46,7 +44,6 @@ endif
 GCC := $(CROSS)gcc
 
 AS = $(CROSS)as
-# CC = $(CROSS)gcc
 CPP     := $(CROSS)cpp -P -Wno-trigraphs
 LD = $(CROSS)ld
 OBJDUMP = $(CROSS)objdump
@@ -55,11 +52,8 @@ PYTHON := python3
 
 TEXTURES_DIR := textures
 
-# UNNAMED_SYMS := -T unnamed_syms.txt
-
 INCLUDE_FLAGS := -I$(BUILD_DIR) -Iinclude
 ASFLAGS = -mtune=vr4300 -march=vr4300 --no-pad-sections -mabi=32 -mips3 $(INCLUDE_FLAGS)
-# CFLAGS  = -Wall -O2 -mtune=vr4300 -march=vr4300 -G 0 -c -Wab,-r4300_mul
 LDFLAGS = --no-check-sections -mips3 --accept-unknown-input-arch \
 					-T libultra_unused.txt $(UNNAMED_SYMS) -T rcp_syms.txt \
 					-Map $(BUILD_DIR)/$(TARGET).map \
@@ -67,9 +61,6 @@ LDFLAGS = --no-check-sections -mips3 --accept-unknown-input-arch \
 					-T datatodo.txt \
 					-T ramvals.txt \
 					-T $(BUILD_DIR)/$(LD_SCRIPT)
-# 					-T undefined_syms.txt \
-# 					-T undefined_funcs_auto.txt \
-# 					-T undefined_syms_auto.txt
 PRELIM_OBJCOPY_FLAGS = --pad-to=0x101000 --gap-fill=0x00
 OBJCOPY_FLAGS = --pad-to=0x2000000 --gap-fill=0xFF
 
@@ -183,8 +174,6 @@ default: all
 
 TARGET = kirby.us
 LD_SCRIPT = kirby.ld
-# TEXTURE_DIR = textures
-# RAW_TEXTURE_FILES := $(addprefix $(BUILD_DIR)/,$(patsubst %.png,%,$(wildcard $(TEXTURES_DIR)/raw/*.png)))
 
 $(BUILD_DIR)/data/kirby.066630.o: $(GAME_ASSETS)
 
@@ -217,21 +206,9 @@ softclean:
 	rm -rf build/us/src/
 	rm -rf build/us/asm/
 
-# $(BUILD_DIR)/src/ovl0/ovl0_8.o: OPT_FLAGS += -framepointer
 $(BUILD_DIR)/src/ovl7/yakulib.o: OPT_FLAGS = -O2 -Olimit 1000
 $(BUILD_DIR)/src/ovl1/ovl1_5.o: OPT_FLAGS = -O2
 $(BUILD_DIR)/src/ovl3/ovl3_1.o: OPT_FLAGS = -O2 -Wo,-loopunroll
-# $(BUILD_DIR)/src/ovl7/yakulib.o: CC = $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
-
-# $(BUILD_DIR)/src/ovl1/save_file.o: OPT_FLAGS += -Wo,-loopunroll,0
-
-
-# $(BUILD_DIR):
-# 	@echo "Creating Build Folder Structure..."
-# 	mkdir -p $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(SRC_DIRS) $(ASM_DIRS)) $(BUILD_DIR)/assets/sound
-
-# assets/misc/%.s: assets/misc/%.bin
-# 	python3 tools/level_settings/helper.py $<
 
 $(BUILD_DIR)/libultra.a: libreultra/build/2.0I/libultra_rom.a
 	cp $< $@
@@ -256,25 +233,13 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR)/data/%.o: data/%.c
-# 	$(CC_TEST) -c $(INCLUDE_CFLAGS) -o $@ $<
 	$(GCC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
-
-# assets/geo/%.c: assets/geo/%.bin
-# 	python3 tools/decompile_geos.py $<
-
-# $(BUILD_DIR)/assets/geo/%.o: assets/geo/%.c
-# 	$(GCC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
-
-# $(BUILD_DIR)/assets/geo/%.o: assets/geo/%.s
-# 	$(AS) -c $(ASFLAGS) -o $@ $<
 
 $(GAME_ASSETS): assets/assets.ld
 	$(MAKE) -C assets
 
 # TODO: make this a real dependency
 DUMMY != $(MAKE) -C f3dex2 $(GRUCODE) PARENT_OUTPUT_DIR=../$(BUILD_DIR)/ ARMIPS=../$(LOCAL_ARMIPS)
-# $(BUILD_DIR)/assets/misc/%.o: assets/misc/%.s
-# 	$(AS) $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
 	@$(CC_CHECK) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<

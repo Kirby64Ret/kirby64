@@ -33,6 +33,7 @@ INCLUDE_CFLAGS := -I $(FIXDIR)/include -I $(FIXDIR)/include/libc -I $(FIXDIR)/sr
 TARGET_CFLAGS := -nostdinc -I include/libc -DTARGET_N64 -DF3DEX_GBI_2
 GCC_CFLAGS = -Wall $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -fno-PIC -mno-abicalls -fno-zero-initialized-in-bss -fno-toplevel-reorder -Wno-missing-braces
 ASFLAGS = -mtune=vr4300 -march=vr4300 --no-pad-sections -mabi=32 -mips3 $(INCLUDE_FLAGS)
+MATCH_ASSETS := --pad-to=0x019e1260 --gap-fill=0x00
 
 ifeq ($(shell type mips-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
 	CROSS := mips-linux-gnu-
@@ -124,7 +125,7 @@ $(BUILD_DIR)/assets.ld: assets.ld $(BANK_LINKSCRIPTS) bank_header.ld.in
 
 $(TARGET): $(BUILD_DIR)/assets.ld $(BANK_HEADERS)
 	$(V)$(CROSS)ld -L $(K64_BUILD_DIR) -T $< -o $(BUILD_DIR)/$(@F).elf
-	$(CROSS)objcopy --pad-to=0x019e1260 --gap-fill=0x00 $(BUILD_DIR)/$(@F).elf $(BUILD_DIR)/$(@F).bin -O binary
+	$(CROSS)objcopy $(MATCH_ASSETS) $(BUILD_DIR)/$(@F).elf $(BUILD_DIR)/$(@F).bin -O binary
 	$(CROSS)ld -r -b binary -o $@ $(BUILD_DIR)/$(@F).bin
 
 .PHONY: all clean default diff test distclean
