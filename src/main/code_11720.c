@@ -1,0 +1,156 @@
+#include "common.h"
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80010B20.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80010B44.s")
+
+void func_80010B50(void) {
+}
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80010B58.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80010D28.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80010EF8.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001103C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80011180.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80013300.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800140FC.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800141D4.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800141F8.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001421C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014240.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014264.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800143A4.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800143D4.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014768.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001479C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800147C8.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014AD4.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014B04.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014B4C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014C78.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014DF0.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80014FA4.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001503C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80015368.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800156C4.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001585C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001588C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80015BCC.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80015BFC.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80015DC4.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80015F78.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800162D8.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80016634.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001663C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80016940.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80016DE8.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800171E0.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80017B34.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80017B40.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80017B6C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80017C7C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80017DB0.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80017E84.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80017F78.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80017FEC.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001806C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80018094.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800180BC.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800180E4.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_8001810C.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80018170.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_800183BC.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/tanf.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/atanf.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/atan2f.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/asinf.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/acosf.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/cscf.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/secf.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/cotf.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/set_soft_rng_seed.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/get_soft_rng_seed.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_soft_u16.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_soft_f32.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_soft_s32_range.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/set_hard_rng_seed.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/get_rng_seed.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_u16.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_f32.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_s32_range.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_u8.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_f32_2.s")
+
+#pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/random_u16_range.s")
