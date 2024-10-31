@@ -555,6 +555,7 @@ segments:
     vram: 0x80300000
     exclusive_ram_id: ovl20
     bss_size: 0xd0
+    extract: false
     subsegments:
     - [0x2501C0, c, ovl20/tamper_check]
     - [0x2502A0, .data, ovl20/tamper_check]
