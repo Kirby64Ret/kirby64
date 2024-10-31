@@ -553,6 +553,6 @@ segments:
   - [0x49F590, bin, sound/sound_49F590]
   - [0x4A0340, bin, sound/sound_4A0340]
   - [0x4A3B60, bin, sound/sound_4A3B60]
-  - [0x4aa8f0, skip, game_assets] # using a custom build system for this, no questions asked
+  - { start: 0x4aa8f0, type: bin, name: game_assets, extract: False}
   - [0x1e8bb50, bin, pad]
   - [0x2000000]

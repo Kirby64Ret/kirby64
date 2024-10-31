@@ -1,8 +1,9 @@
 MATCHING ?= 1
 
-BUILD_DIR := ../build/assets
+K64_BUILD_DIR := ../build
+BUILD_DIR := $(K64_BUILD_DIR)/assets
 DUMMY != mkdir -p $(BUILD_DIR)
-TARGET = $(BUILD_DIR)/assets.marker
+TARGET = $(BUILD_DIR)/game_assets.o
 
 FILETABLES := filetable_models.mk \
 			  filetable_image.mk \
@@ -117,9 +118,14 @@ $(BUILD_DIR)/%.filetable.c: $(BUILD_DIR)/%.ld
 $(BUILD_DIR)/%.h: $(BUILD_DIR)/%.filetable.c
 	$(V)python3 tools/make_bank_header.py $(BUILD_DIR)/ $@
 
-$(TARGET): $(BANK_HEADERS) bank_header.ld.in
+$(BUILD_DIR)/assets.ld: assets.ld $(BANK_LINKSCRIPTS) bank_header.ld.in
 	$(V)cp bank_header.ld.in $(BUILD_DIR)
-	$(V)touch $@
+	$(CROSS)cpp -P -I$(K64_BUILD_DIR) -MMD -MP -MT $@ -MF $@.d -o $@ $< -DBUILD_DIR=$(K64_BUILD_DIR) -Umips
+
+$(TARGET): $(BUILD_DIR)/assets.ld $(BANK_HEADERS)
+	$(V)$(CROSS)ld -L $(K64_BUILD_DIR) -T $< -o $(BUILD_DIR)/$(@F).elf
+	$(CROSS)objcopy --pad-to=0x019e1260 --gap-fill=0x00 $(BUILD_DIR)/$(@F).elf $(BUILD_DIR)/$(@F).bin -O binary
+	$(CROSS)ld -r -b binary -o $@ $(BUILD_DIR)/$(@F).bin
 
 .PHONY: all clean default diff test distclean
 .SECONDARY:

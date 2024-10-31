@@ -3,14 +3,15 @@
 ################ Target Executable and Sources ###############
 
 # BUILD_DIR is location where all build artifacts are placed
-BUILD_DIR_BASE = build
+BUILD_DIR = build
 VERSION = us
-BUILD_DIR = $(BUILD_DIR_BASE)
 
 GRUCODE := F3DEX2_2.04H
 LOCAL_ARMIPS=tools/armips_bin/armips
 
 VERBOSE := 1
+
+GAME_ASSETS := $(BUILD_DIR)/assets/game_assets.o
 
 # check that either QEMU_IRIX is set or qemu-irix package installed
 ifndef QEMU_IRIX
@@ -78,9 +79,6 @@ OBJCOPY_FLAGS = --pad-to=0x2000000 --gap-fill=0xFF
 TOOLS_DIR = tools
 N64CRC = tools/n64crc
 N64GRAPHICS = $(TOOLS_DIR)/n64graphics
-LOADER = loader64
-LOADER_FLAGS = -vwf
-FixPath = $(subst /,/,$1)
 
 ASSET_DIRS := $(wildcard assets/geo/bank_0/**) \
               $(wildcard assets/geo/bank_1/**) \
@@ -188,7 +186,7 @@ LD_SCRIPT = kirby.ld
 # TEXTURE_DIR = textures
 # RAW_TEXTURE_FILES := $(addprefix $(BUILD_DIR)/,$(patsubst %.png,%,$(wildcard $(TEXTURES_DIR)/raw/*.png)))
 
-$(BUILD_DIR)/data/kirby.066630.o: $(BUILD_DIR)/assets/assets.marker
+$(BUILD_DIR)/data/kirby.066630.o: $(GAME_ASSETS)
 
 libreultra/build/2.0I/libultra_rom.a:
 	$(MAKE) -C libreultra -j4
@@ -270,7 +268,7 @@ $(BUILD_DIR)/data/%.o: data/%.c
 # $(BUILD_DIR)/assets/geo/%.o: assets/geo/%.s
 # 	$(AS) -c $(ASFLAGS) -o $@ $<
 
-$(BUILD_DIR)/assets/assets.marker:
+$(GAME_ASSETS): assets/assets.ld
 	$(MAKE) -C assets
 
 # $(BUILD_DIR)/assets/misc/%.o: assets/misc/%.s
@@ -283,11 +281,11 @@ $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
 $(BUILD_DIR)/$(UCODE_BASE_DIR)/%.o : $(UCODE_BASE_DIR)/%
 	$(OBJCOPY) -I binary -O elf32-big $< $@
 
-$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(UCODE_LD) rcp_syms.txt undefined_syms.txt unnamed_syms.txt $(BUILD_DIR)/assets/assets.marker
+$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(UCODE_LD) rcp_syms.txt undefined_syms.txt unnamed_syms.txt $(GAME_ASSETS)
 	$(CPP) $(VERSION_CFLAGS) $(INCLUDE_CFLAGS) -MMD -MP -MT $@ -MF $@.d -o $@ $< \
 	-DBUILD_DIR=$(BUILD_DIR) -Umips
 
-$(BUILD_DIR)/$(TARGET).elf: $(BUILD_DIR)/assets/assets.marker $(O_FILES) $(BUILD_DIR)/$(LD_SCRIPT) $(BUILD_DIR)/libultra.a $(BUILD_DIR)/libn_audio.a $(UCODE_TEXT_O_FILES) $(UCODE_DATA_O_FILES)
+$(BUILD_DIR)/$(TARGET).elf: $(GAME_ASSETS) $(O_FILES) $(BUILD_DIR)/$(LD_SCRIPT) $(BUILD_DIR)/libultra.a $(BUILD_DIR)/libn_audio.a $(UCODE_TEXT_O_FILES) $(UCODE_DATA_O_FILES)
 	$(V)$(LD) -L $(BUILD_DIR) $(LDFLAGS) -o $@ $(LIBS) -ln_audio
 
 # final z64 updates checksum
