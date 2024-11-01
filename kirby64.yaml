@@ -542,6 +542,7 @@ segments:
     - [0x23E630, c, ovl19/helplib]
     - [0x23F130, c, ovl19/helpeff] # either 23F130 or 23F150
     - [0x23F610, c, ovl19/helper]
+    - [0x243910, c, ovl19/ovl19_2]
     - [0x249810, c, ovl19/ovl19_3]
     - [0x24ED40, c, ovl19/ovl19_4]
     - [0x24F750, data, ovl19/helplib]
