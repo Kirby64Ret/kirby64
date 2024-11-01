@@ -1,4 +1,5 @@
-#include "common.h"
+#include <ultra64.h>
+#include "macros.h"
 
 extern u32 gGameTampered;
 u32 D_803000E0[] = {
@@ -24,11 +25,11 @@ extern u32 func_80300170(void);
 // potentially as a piracy/tamper check
 void tamper_check_ovl20(void) {
     u32 i;
-    for (i = 0; i < ARRAY_COUNT(D_80300170); i++) {
-        D_80300170[i] = D_803000E0[i] ^ ASM_DEOBFUSCATOR;
-    }
+	for (i = 0; i < ARRAY_COUNT(D_80300170); i++) {
+	    D_80300170[i] = D_803000E0[i] ^ ASM_DEOBFUSCATOR;
+	}
 
-    // sets a jal address at runtime...?
+	// sets a jal address at runtime...?
     D_80300170[0x4] = FUNC_ADDR_TO_JAL(dma_read);
 
     osWritebackDCache(&D_80300170, 0xC0);
