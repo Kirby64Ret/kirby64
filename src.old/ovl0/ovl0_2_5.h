@@ -434,5 +434,6 @@ struct UnkStructFunc80007380 {
     u32 unk88;
 };
 
+void finish_current_thread(s32);
 
 #endif

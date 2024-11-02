@@ -3,3 +3,5 @@ func_801DB1E0 = 0x801DB1E0;
 tamper_check_ovl20 = 0x80300000;
 func_80300170 = 0x80300170;
 D_A4080000 = 0xA4080000;
+omSleep = finish_current_thread;
+

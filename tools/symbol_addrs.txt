@@ -343,7 +343,7 @@ draw_lives_digit=0x800bcfd8; // type:func
 draw_pause_bg=0x800bc9a4; // type:func
 draw_star_segments=0x800bd374; // type:func
 fatal_printf=0x8002309c; // type:func
-finish_current_thread=0x8000b6bc; // type:func
+omSleep=0x8000b6bc; // type:func
 gCollisionState=0x8012bcf8;
 gCrashScreen=0x800966d8;
 gDisplayListHeads=0x8004a3d0;
@@ -618,3 +618,8 @@ osPfsAllocateFile=0x80030DF0; // type:func
 __osLeoResume=0x8002EF84; // type:func
 __osLeoAbnormalResume=0x8002EED0; // type:func
 __osPfsGetNextPage=0x800306C0; // type:func
+
+
+// ovl19/helper.c
+D_800E8060 = 0x800E8060;
+D_8012E7FC = 0x8012E7FC;

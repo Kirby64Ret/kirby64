@@ -3,11 +3,17 @@
 #include "ovl1/ovl1_6.h"
 #include "D_8004A7C4.h"
 #include "unk_structs/D_800D6C68.h"
+#include "unk_structs/D_800DE350.h"
 
 extern void (*D_8022F040_ovl19[])(struct GObj *);
 
 void func_800AECC0(f32);
 void func_800AED20(f32);
+extern void func_800B1900(u16);
+void func_8021E4B0_ovl19(struct GObj *);
+void func_800F88C8(s32, s32, f32);//, f32);
+void func_8021E7DC_ovl19(struct GObj *);
+s32 func_800B3158(void);
 
 void func_8021DF20_ovl19(struct GObj *arg0) {
     D_800E0650[D_8004A7C4->objId] = 0;
@@ -17,10 +23,6 @@ void func_8021DF20_ovl19(struct GObj *arg0) {
     D_800E83E0[D_8004A7C4->objId] = D_800E8760[D_8004A7C4->objId];
     call_virtual_function(gEntityVtableIndexArray[D_8004A7C4->objId], 0xA, &D_8022F040_ovl19[0]);
 }
-
-void func_8021E4B0_ovl19(struct GObj *);
-#include "unk_structs/D_800DE350.h"
-void func_800F88C8(s32, s32, f32);//, f32);
 
 void func_8021DFD0_ovl19(void) {
     f32 tmpY; // supposedly the function call changes this value
@@ -47,8 +49,6 @@ void func_8021DFD0_ovl19(void) {
     D_800E6D90[D_8004A7C4->objId] = 666.66f;
 }
 
-void func_8021E7DC_ovl19(struct GObj *);
-
 void func_8021E184_ovl19(void) {
     u32 temp_a0;
 
@@ -68,7 +68,6 @@ void func_8021E184_ovl19(void) {
     D_800E6D90[D_8004A7C4->objId] = 666.66f;
 }
 
-extern const char *D_8022F6A0;
 s32 func_8021E2D0_ovl19(u8 arg0, u8 arg1) {
     s32 idx;
     f32 temp_f0;
@@ -77,7 +76,7 @@ s32 func_8021E2D0_ovl19(u8 arg0, u8 arg1) {
     idx = request_track_general(0x20, 0x1E, 0x3C);
     if ((idx >= 0x3C) || (idx == -1)) {
         if (idx != -1) {
-            func_800B1900(idx & 0xFFFF);
+            func_800B1900(idx);
             idx = -1;
         }
         print_error_stub("reqHelpChildTrk  Request Error!![helplib.cc]\n");
@@ -101,7 +100,6 @@ s32 func_8021E2D0_ovl19(u8 arg0, u8 arg1) {
     }
     return idx;
 }
-s32 func_800B3158(void);
 
 // how
 #ifdef NON_MATCHING
@@ -155,7 +153,7 @@ void func_8021E5DC_ovl19(s32 arg0) {
             func_800B1900((u16) D_800EBF60[D_8004A7C4->objId]);
         }
         if (D_800EC120[D_8004A7C4->objId] != -1 && D_800DE350[D_800EC120[D_8004A7C4->objId]] != 0) {
-            func_8019D958_ovl19((u16) D_800EC120[D_8004A7C4->objId]);
+            func_8019D958_ovl7((u16) D_800EC120[D_8004A7C4->objId]);
         }
         if (D_800E76C0[D_8004A7C4->objId] < 0x40) {
             D_800D6C68.unk28[D_8004A7C4->objId] &= 0x80;
@@ -178,7 +176,7 @@ void func_8021E7DC_ovl19(struct GObj *arg0) {
         if (D_800E76C0[D_8004A7C4->objId] < 0x40) {
             D_800D6C68.unk28[D_800E76C0[D_8004A7C4->objId]] &= 0x80;
         }
-        func_800B1900(D_8004A7C4->objId & 0xFFFF);
+        func_800B1900(D_8004A7C4->objId);
     }
 }
 #else
@@ -195,23 +193,23 @@ void func_8021E894_ovl19(struct GObj *arg0) {
     }
     if (func_800B3158() == 0) {
         if (D_800EBBE0[D_8004A7C4->objId] != -1) {
-            func_800B1900(D_800EBBE0[D_8004A7C4->objId] & 0xFFFF);
+            func_800B1900(D_800EBBE0[D_8004A7C4->objId]);
         }
         if (D_800EBDA0[D_8004A7C4->objId] != -1) {
-            func_800B1900(D_800EBDA0[D_8004A7C4->objId] & 0xFFFF);
+            func_800B1900(D_800EBDA0[D_8004A7C4->objId]);
         }
         if (D_800EBF60[D_8004A7C4->objId] != -1) {
-            func_800B1900(D_800EBF60[D_8004A7C4->objId] & 0xFFFF);
+            func_800B1900(D_800EBF60[D_8004A7C4->objId]);
         }
         if (D_800EC120[D_8004A7C4->objId] != -1) {
             if (D_800DE350[D_800EC120[D_8004A7C4->objId]] != 0) {
-                func_8019D958_ovl19(D_800EC120[D_8004A7C4->objId] & 0xFFFF);
+                func_8019D958_ovl7(D_800EC120[D_8004A7C4->objId]);
             }
         }
         if (D_800E76C0[D_8004A7C4->objId] < 0x40) {
             D_800D6C68.unk28[D_8004A7C4->objId] &= 0x80;
         }
-        func_800B1900(D_8004A7C4->objId & 0xFFFF);
+        func_800B1900(D_8004A7C4->objId);
     }
 }
 #else

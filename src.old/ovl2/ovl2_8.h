@@ -130,6 +130,7 @@ extern u8 D_8012E9B8;
 void func_8012310C(s32 currentInhale);
 void set_kirby_action_1(s32 actionChange, s32 action);
 void set_kirby_action_2(s32 actionChange, u32 action);
+void func_801230E8(s32 arg0, s32 arg1, s32 arg2);
 
 extern struct {
     s16 unk0;
@@ -141,5 +142,6 @@ extern struct {
     u32 unkC;
     u32 unk10;
 } D_80198830;
+
 
 #endif
