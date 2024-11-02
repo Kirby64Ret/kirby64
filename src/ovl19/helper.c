@@ -35,6 +35,7 @@ void func_8021EA20_ovl19(s32, s32, f32);
 void func_80220138_ovl19(GObj*);
 void func_80222CE0_ovl19(GObj*);
 void func_802222F0_ovl19(GObj *arg0);
+void func_80221654_ovl19(struct GObj *arg0);
 
 // migrate into respective funcs
 extern VTABLE D_8022F080_ovl19;
@@ -44,6 +45,9 @@ extern VTABLE D_8022F0A4_ovl19;
 extern void (*D_8022F158_ovl19)(GObj *);
 extern VTABLE D_8022F14C_ovl19;
 extern VTABLE D_8022F144_ovl19;
+extern VTABLE D_8022F0D8_ovl19;
+extern VTABLE D_8022F0E8_ovl19;
+extern VTABLE D_8022F13C_ovl19;
 
 // rodata
 extern f32 D_8022F7AC, D_8022F7B0, D_8022F7B4;
@@ -385,23 +389,34 @@ void func_8022023C_ovl19(GObj *arg0) {
     call_virtual_function(D_800E7880[D_8004A7C4->objId], 3, D_8022F0A4_ovl19);
 }
 
-// "struct offset vs absolute access" rabbit hole
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220280_ovl19.s")
 
-// having to define a struct thats only ever accessed here and the above function
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022045C_ovl19.s")
+// Pit of Doom
+// {
+    // "struct offset vs absolute access" rabbit hole
+    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220280_ovl19.s")
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022054C_ovl19.s")
+    // having to define a struct thats only ever accessed here and the above function
+    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022045C_ovl19.s")
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220814_ovl19.s")
+    // another struct def
+    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022054C_ovl19.s")
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209A0_ovl19.s")
+    // the same rabbit hole as func_80220280_ovl19, plus a triple nested loop
+    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220814_ovl19.s")
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209E4_ovl19.s")
+void func_802209A0_ovl19(GObj *arg0) {
+    call_virtual_function(D_800E7880[D_8004A7C4->objId], 4, D_8022F0D8_ovl19);
+}
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
+    // the same rabbit hole as func_80220280_ovl19
+    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209E4_ovl19.s")
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220D54_ovl19.s")
+    // the same rabbit hole as func_80220280_ovl19
+    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
+
+    // currently flying blind filling out LayoutNode->unk80 so I won't bother
+    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220D54_ovl19.s")
+// }
 
 void func_80220E14_ovl19(struct GObj *arg0) {
     D_800DEF90[D_8004A7C4->objId] = NULL;
@@ -415,19 +430,32 @@ void func_80220E14_ovl19(struct GObj *arg0) {
     func_800AFA14();
 }
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220F48_ovl19.s")
+void func_80220F48_ovl19(GObj *arg0) {
+    call_virtual_function(D_800E7880[D_8004A7C4->objId], 4, D_8022F0E8_ovl19);
+}
 
+// the same rabbit hole as func_80220280_ovl19
 GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220F8C_ovl19.s")
 
-
 extern u32 D_800D71F8;
+// the same rabbit hole as func_80220280_ovl19
 GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221108_ovl19.s")
 
+// the same rabbit hole as func_80220280_ovl19
 GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")
 
+// the same rabbit hole as func_80220280_ovl19
 GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221480_ovl19.s")
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022159C_ovl19.s")
+void func_8022159C_ovl19(s32 arg0) {
+    D_800DEF90[D_8004A7C4->objId] = NULL;
+    D_800DF150[D_8004A7C4->objId] = func_80221654_ovl19;
+    gEntitiesScaleXArray[D_8004A7C4->objId] = 0.2f;
+    gEntitiesScaleYArray[D_8004A7C4->objId] = 0.2f;
+    gEntitiesScaleZArray[D_8004A7C4->objId] = 0.2f;
+    func_800A9864(0x20071, 0x1869F, 0x10);
+    func_800AFA14();
+}
 
 void func_80221654_ovl19(struct GObj *arg0) {
     Vector sp1C;
@@ -438,7 +466,9 @@ void func_80221654_ovl19(struct GObj *arg0) {
     gEntitiesNextPosZArray[D_8004A7C4->objId] = sp1C.z;
 }
 
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022170C_ovl19.s")
+void func_8022170C_ovl19(GObj *arg0) {
+    call_virtual_function(D_800E7880[D_8004A7C4->objId], 2, D_8022F13C_ovl19);
+}
 
 void func_80221750_ovl19(struct GObj *arg0) {
     f32 temp_f0;
