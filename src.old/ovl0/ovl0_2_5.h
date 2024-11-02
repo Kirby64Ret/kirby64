@@ -53,6 +53,7 @@ struct GObjThread
     struct ObjStack *objStack;
     s32 objStackSize;
 };
+typedef struct GObjThread GObjThread;
 
 struct GObjThreadStack {
     struct GObjThreadStack *unk0;
