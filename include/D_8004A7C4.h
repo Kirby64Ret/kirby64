@@ -62,6 +62,7 @@ struct UnkStruct8004A7C4_3C_10 {
 };
 
 // SOME chunk of the beginning of the struct is a union
+// SAME AS A LayoutNode??????
 struct UnkStruct8004A7C4_3C {
 	// u32 unk0;
 	// u32 unk4;

@@ -7,9 +7,8 @@ struct EntityThing800E9AA0 {
 	u8 unk2;
 	u8 unk3;
 	u32 unk4;
-	u32 unk8;
-	f32 unkC;
-	u32 unk10;
+// Vec
+	f32 unk8; f32 unkC; f32 unk10;
 	u32 unk14;
 	u32 unk18;
 	u32 unk1C;
@@ -17,6 +16,6 @@ struct EntityThing800E9AA0 {
 	f32 unk24;
 };
 
-
+extern struct EntityThing800E9AA0 *D_800E9AA0[];
 
 #endif

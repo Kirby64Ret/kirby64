@@ -18,5 +18,6 @@ struct UnkStruct8022FAB0 {
 };
 
 extern struct UnkStruct8022FAB0 *D_8022FAB0;
+extern struct UnkStruct8022FAB0 *D_8022FAB0_ovl19;
 
 #endif

@@ -815,8 +815,79 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B21FC.s")
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B2288.s")
 
 // all of these functions are easy i think if you start incorporating MtxF's
+void func_800B2340(Vector *vec, struct UnkStruct8004A7C4_3C *arg1, u32 track) {
+    f32 temp_f0;
+    f32 temp_f0_2;
+    f32 temp_f0_3;
+    f32 temp_f0_4;
+    f32 temp_f0_5;
+    f32 temp_f0_6;
+    f32 temp_f12;
+    f32 temp_f12_2;
+    f32 temp_f12_3;
+    f32 temp_f2;
+    f32 temp_f2_2;
+    f32 temp_f2_3;
+    struct UnkStruct8004A7C4_3C *var_s0;
+    u32 var_a2;
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B2340.s")
+    var_a2 = track;
+    var_s0 = arg1;
+    if (var_a2 == 0x0000FFFF) {
+        var_a2 = D_8004A7C4->objId;
+    }
+    if (var_s0 == NULL) {
+        var_s0 = D_8004A7C4->unk3C;
+    }
+    track = var_a2;
+    guMtxIdentF(&spB8[0]);
+    do {
+        if (var_s0->unk14 != 1) {
+            temp_f0 = var_s0->scaleVec.x;
+            if ((temp_f0 != 1.0f) || (var_s0->scaleVec.y != 1.0f) || (var_s0->scaleVec.z != 1.0f)) {
+                HS64_MkScaleMtxF(&sp78[0], temp_f0, var_s0->scaleVec.y, var_s0->scaleVec.z);
+                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            }
+            temp_f0_2 = var_s0->angleVec.x;
+            if ((temp_f0_2 != 0.0f) || (var_s0->angleVec.y != 0.0f) || (var_s0->angleVec.z != 0.0f)) {
+                HS64_MkRotationMtxF(&sp78[0], temp_f0_2, var_s0->angleVec.y, var_s0->angleVec.z);
+                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            }
+            temp_f0_3 = var_s0->posVec.x;
+            if ((temp_f0_3 != 0.0f) || (var_s0->posVec.y != 0.0f) || (var_s0->posVec.z != 0.0f)) {
+                HS64_MkTranslateMtxF(&sp78[0], temp_f0_3, var_s0->posVec.y, var_s0->posVec.z);
+                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            }
+        } else {
+            temp_f0_4 = gEntitiesScaleXArray[track];
+            temp_f2 = gEntitiesScaleYArray[track];
+            temp_f12 = gEntitiesScaleZArray[track];
+            if ((temp_f0_4 != 1.0f) || (temp_f2 != 1.0f) || (temp_f12 != 1.0f)) {
+                HS64_MkScaleMtxF(&sp78[0], temp_f0_4, temp_f2, temp_f12);
+                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            }
+            temp_f0_5 = gEntitiesAngleXArray[track];
+            temp_f2_2 = gEntitiesAngleYArray[track];
+            temp_f12_2 = gEntitiesAngleZArray[track];
+            if ((temp_f0_5 != 0.0f) || (temp_f2_2 != 0.0f) || (temp_f12_2 != 0.0f)) {
+                HS64_MkRotationMtxF(&sp78[0], temp_f0_5, temp_f2_2, temp_f12_2);
+                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            }
+            temp_f0_6 = gEntitiesNextPosXArray[track];
+            temp_f2_3 = gEntitiesNextPosYArray[track];
+            temp_f12_3 = gEntitiesNextPosZArray[track];
+            if ((temp_f0_6 != 0.0f) || (temp_f2_3 != 0.0f) || (temp_f12_3 != 0.0f)) {
+                HS64_MkTranslateMtxF(&sp78[0], temp_f0_6, temp_f2_3, temp_f12_3);
+                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            }
+        }
+        var_s0 = var_s0->unk14;
+    } while (var_s0 != 1);
+    vec->x = spE8;
+    vec->y = spEC;
+    vec->z = spF0;
+}
+// GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B2340.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B26D8.s")
 
