@@ -5,7 +5,7 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_1.h"
 #include "ovl2/ovl2_8.h"
-#include "ovl19/ovl19_2.h"
+#include "unk_structs/D_8022FAB0.h"
 #include "D_8004A7C4.h"
 #include "ovl0/object_manager.h"
 #include "ovl0/lbvector.h"

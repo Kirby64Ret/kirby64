@@ -11,12 +11,19 @@ extern VTABLE D_8022F070_ovl19;
 extern void func_800B5094(s32, s32, f32);
 void func_8021EC64_ovl19(GObj *arg0);
 void func_8021ED80_ovl19(GObj *arg0);
+void func_8021EB6C_ovl19(GObj *arg0);
+void func_8021ECC4_ovl19(GObj *arg0);
 
 void func_8021EA20_ovl19() {
     func_800B63C0();
 }
 
 void func_8021EA40_ovl19(s32 arg0) {
+    static VTABLE D_8022F070_ovl19 = {
+        func_8021EB6C_ovl19,
+        func_8021ECC4_ovl19,
+    };
+
     D_800E10D0[D_8004A7C4->objId] = D_800E10D0[D_800E0D50[D_8004A7C4->objId]];
     D_800E1290[D_8004A7C4->objId] = D_800E1290[D_800E0D50[D_8004A7C4->objId]];
     D_800E1450[D_8004A7C4->objId] = D_800E1450[D_800E0D50[D_8004A7C4->objId]];
@@ -25,7 +32,7 @@ void func_8021EA40_ovl19(s32 arg0) {
     call_virtual_function(gEntityVtableIndexArray[D_8004A7C4->objId], 2, &D_8022F070_ovl19);
 }
 
-void func_8021EB6C_ovl19(s32 arg0) {
+void func_8021EB6C_ovl19(GObj *arg0) {
     D_800DEF90[D_8004A7C4->objId] = func_800B5094;
     D_800DF150[D_8004A7C4->objId] = func_8021EC64_ovl19;
     gEntitiesScaleXArray[D_8004A7C4->objId] = 0.2f;
@@ -44,7 +51,7 @@ void func_8021EC64_ovl19(GObj *arg0) {
     }
 }
 
-void func_8021ECC4_ovl19(s32 arg0) {
+void func_8021ECC4_ovl19(GObj *arg0) {
     D_800DF150[D_8004A7C4->objId] = func_8021ED80_ovl19;
     gEntitiesScaleXArray[D_8004A7C4->objId] = 0.2f;
     gEntitiesScaleYArray[D_8004A7C4->objId] = 0.2f;
@@ -79,11 +86,3 @@ s32 func_8021EE88_ovl19(GObj *arg0) {
     }
     return temp_v0;
 }
-
-#ifndef NON_MATCHING
-#pragma GLOBAL_ASM(
-.text
-glabel empty_file
-.word 0, 0, 0, 0
-)
-#endif

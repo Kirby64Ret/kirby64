@@ -22,6 +22,8 @@ struct UnkStruct800B1EC8 {
 
 void func_800B1900(u16 track);
 void func_800AFBB4(s32, struct GObj*);
+void func_800AED80(f32 arg0, s32 arg1);
+void func_800B1434(s32 arg0);
 // 80293D50
 // 80293CE4
 // 80293DE0

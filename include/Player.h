@@ -63,7 +63,7 @@ struct Player {
     f32 unk38;
     s32 unk3C;
     f32 unk40;
-    u32 unk44;
+    s32 unk44;
     u32 unk48;
     // struct pointer
     u32 unk4C;

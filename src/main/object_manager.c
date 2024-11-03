@@ -200,7 +200,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B6B4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/finish_current_thread.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omSleep.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B758.s")
 
