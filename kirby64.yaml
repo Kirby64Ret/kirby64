@@ -12,6 +12,7 @@ options:
   asset_path: assets
   base_path: .
   build_path: build
+  lib_path: build
   o_as_suffix: True
   do_c_func_detection: True
   symbol_addrs_path: tools/symbol_addrs.txt
@@ -308,18 +309,30 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0xe40
     subsegments:
-    - [0x103BB0, c, ovl5/code_103BB0]
-    - [0x104170, c, ovl5/code_104170]
-    - [0x10C8B0, c, ovl5/code_10C8B0]
-    - [0x116FF0, c, ovl5/code_116FF0]
-    - [0x11EF70, c, ovl5/code_11EF70]
-    - [0x121270, c, ovl5/code_121270]
-    - [0x1261D0, c, ovl5/code_1261D0]
-    - [0x126AD0, c, ovl5/code_126AD0]
-    - [0x1277D0, c, ovl5/code_1277D0]
-    - [0x1297D0, c, ovl5/code_1297D0]
-    - [0x12A510, c, ovl5/code_12A510]
+    - [0x103BB0, c, ovl5/ovl5_1]
+    - [0x104170, c, ovl5/ovl5_2]
+    - [0x10C8B0, c, ovl5/ovl5_3]
+    - [0x10DD50, c, ovl5/ovl5_4]
+    - [0x116FF0, c, ovl5/ovl5_5]
+    - [0x11EF70, c, ovl5/ovl5_6]
+    - [0x121270, c, ovl5/ovl5_7]
+    - [0x1255F0, c, ovl5/ovl5_8]
+    - [0x1261D0, c, ovl5/ovl5_9]
+    - [0x126AD0, c, ovl5/ovl5_10]
+    - [0x1277D0, c, ovl5/ovl5_11]
+    - [0x1297D0, c, ovl5/ovl5_12]
+    - [0x12A510, c, ovl5/ovl5_13]
     - [0x12D410, data, ovl5/ovl5]
+    - [0x1348C0, .rodata, ovl5/ovl5_1]
+    - [0x1348F0, .rodata, ovl5/ovl5_2]
+    - [0x134A60, .rodata, ovl5/ovl5_3]
+    - [0x134B30, .rodata, ovl5/ovl5_4]
+    - [0x134BF0, .rodata, ovl5/ovl5_5]
+    - [0x135120, .rodata, ovl5/ovl5_6]
+    - [0x135160, .rodata, ovl5/ovl5_7]
+    - [0x135200, .rodata, ovl5/ovl5_8]
+    - [0x135220, .rodata, ovl5/ovl5_12]
+    - [0x135270, .rodata, ovl5/ovl5_13]
     - [0x135490]
     - {type: bss, vram: 0x8018e020, name: ovl5/ovl5}
     
