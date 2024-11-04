@@ -416,6 +416,10 @@ segments:
     - [0x176670, c, ovl8/ovl8_3]
     - [0x178090, c, ovl8/ovl8_4]
     - [0x17B360, data, ovl8/ovl8]
+    - [0x17EB40, .rodata, ovl8/ovl8]
+    - [0x17EB60, .rodata, ovl8/eneeff]
+    - [0x17EC20, .rodata, ovl8/ovl8_3]
+    - [0x17EC60, .rodata, ovl8/ovl8_4]
     - [0x17ECB0]
     - {type: bss, vram: 0x801DB1D0, name: ovl8/ovl8}
 
