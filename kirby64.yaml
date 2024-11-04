@@ -257,20 +257,20 @@ segments:
     exclusive_ram_id: players
     bss_size: 0xc80
     subsegments:
-    - [0xB1B40, c, ovl3/ovl3]
-    - [0xB2AB0, c, ovl3/ovl3_1]
-    - [0xB6A90, c, ovl3/plydemo]
-    - [0xBB6D0, c, ovl3/plyshot]
-    - [0xC9E70, c, ovl3/ovl3_4]
-    - [0xCC9A0, c, ovl3/kirby]
-    - [0xDD9A0, c, ovl3/ovl3_6] # TODO: reassess split
+    - [0xB1B40, asm, ovl3/ovl3]
+    - [0xB2AB0, asm, ovl3/ovl3_1]
+    - [0xB6A90, asm, ovl3/plydemo]
+    - [0xBB6D0, asm, ovl3/plyshot]
+    - [0xC9E70, asm, ovl3/ovl3_4]
+    - [0xCC9A0, asm, ovl3/kirby]
+    - [0xDD9A0, asm, ovl3/ovl3_6] # TODO: reassess split
     - [0xF0D50, data, ovl3/ovl3]
-    - [0xF7810, .rodata, ovl3/ovl3]
-    - [0xF7850, .rodata, ovl3/ovl3_1]
-    - [0xF7920, .rodata, ovl3/plydemo]
+    - [0xF7810, rodata, ovl3/ovl3]
+    - [0xF7850, rodata, ovl3/ovl3_1]
+    - [0xF7920, rodata, ovl3/plydemo]
     - [0xF7A30, rodata]
     - [0xF7B60, rodata]
-    - [0xF7C30, .rodata, ovl3/ovl3_4]
+    - [0xF7C30, rodata, ovl3/ovl3_4]
     - [0xF7D10, rodata]
     - [0xF7FB0, rodata]
     - [0xF8630]
@@ -286,17 +286,17 @@ segments:
     exclusive_ram_id: players
     bss_size: 0xb0
     subsegments:
-    - [0xF8630, c, ovl4/ovl4_1]
-    - [0xF9310, c, ovl4/ovl4_2]
-    - [0xFC8F0, c, ovl4/ovl4_3]
-    - [0xFF650, c, ovl4/ovl4_4]
-    - [0x101030, c, ovl4/ovl4_5]
+    - [0xF8630, asm, ovl4/ovl4_1]
+    - [0xF9310, asm, ovl4/ovl4_2]
+    - [0xFC8F0, asm, ovl4/ovl4_3]
+    - [0xFF650, asm, ovl4/ovl4_4]
+    - [0x101030, asm, ovl4/ovl4_5]
     - [0x1014F0, data, ovl4/ovl4]
-    - [0x1039F0, .rodata, ovl4/ovl4_1]
-    - [0x103A40, .rodata, ovl4/ovl4_2]
-    - [0x103AA0, .rodata, ovl4/ovl4_3]
-    - [0x103B50, .rodata, ovl4/ovl4_4]
-    - [0x103BA0, .rodata, ovl4/ovl4_5]
+    - [0x1039F0, rodata, ovl4/ovl4_1]
+    - [0x103A40, rodata, ovl4/ovl4_2]
+    - [0x103AA0, rodata, ovl4/ovl4_3]
+    - [0x103B50, rodata, ovl4/ovl4_4]
+    - [0x103BA0, rodata, ovl4/ovl4_5]
     - [0x103BB0]
     - {type: bss, vram: 0x8015c680, name: ovl4/ovl4}
     
@@ -309,30 +309,30 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0xe40
     subsegments:
-    - [0x103BB0, c, ovl5/ovl5_1]
-    - [0x104170, c, ovl5/ovl5_2]
-    - [0x10C8B0, c, ovl5/ovl5_3]
-    - [0x10DD50, c, ovl5/ovl5_4]
-    - [0x116FF0, c, ovl5/ovl5_5]
-    - [0x11EF70, c, ovl5/ovl5_6]
-    - [0x121270, c, ovl5/ovl5_7]
-    - [0x1255F0, c, ovl5/ovl5_8]
-    - [0x1261D0, c, ovl5/ovl5_9]
-    - [0x126AD0, c, ovl5/ovl5_10]
-    - [0x1277D0, c, ovl5/ovl5_11]
-    - [0x1297D0, c, ovl5/ovl5_12]
-    - [0x12A510, c, ovl5/ovl5_13]
+    - [0x103BB0, asm, ovl5/ovl5_1]
+    - [0x104170, asm, ovl5/ovl5_2]
+    - [0x10C8B0, asm, ovl5/ovl5_3]
+    - [0x10DD50, asm, ovl5/ovl5_4]
+    - [0x116FF0, asm, ovl5/ovl5_5]
+    - [0x11EF70, asm, ovl5/ovl5_6]
+    - [0x121270, asm, ovl5/ovl5_7]
+    - [0x1255F0, asm, ovl5/ovl5_8]
+    - [0x1261D0, asm, ovl5/ovl5_9]
+    - [0x126AD0, asm, ovl5/ovl5_10]
+    - [0x1277D0, asm, ovl5/ovl5_11]
+    - [0x1297D0, asm, ovl5/ovl5_12]
+    - [0x12A510, asm, ovl5/ovl5_13]
     - [0x12D410, data, ovl5/ovl5]
-    - [0x1348C0, .rodata, ovl5/ovl5_1]
-    - [0x1348F0, .rodata, ovl5/ovl5_2]
-    - [0x134A60, .rodata, ovl5/ovl5_3]
-    - [0x134B30, .rodata, ovl5/ovl5_4]
-    - [0x134BF0, .rodata, ovl5/ovl5_5]
-    - [0x135120, .rodata, ovl5/ovl5_6]
-    - [0x135160, .rodata, ovl5/ovl5_7]
-    - [0x135200, .rodata, ovl5/ovl5_8]
-    - [0x135220, .rodata, ovl5/ovl5_12]
-    - [0x135270, .rodata, ovl5/ovl5_13]
+    - [0x1348C0, rodata, ovl5/ovl5_1]
+    - [0x1348F0, rodata, ovl5/ovl5_2]
+    - [0x134A60, rodata, ovl5/ovl5_3]
+    - [0x134B30, rodata, ovl5/ovl5_4]
+    - [0x134BF0, rodata, ovl5/ovl5_5]
+    - [0x135120, rodata, ovl5/ovl5_6]
+    - [0x135160, rodata, ovl5/ovl5_7]
+    - [0x135200, rodata, ovl5/ovl5_8]
+    - [0x135220, rodata, ovl5/ovl5_12]
+    - [0x135270, rodata, ovl5/ovl5_13]
     - [0x135490]
     - {type: bss, vram: 0x8018e020, name: ovl5/ovl5}
     
@@ -361,43 +361,43 @@ segments:
     bss_size: 0x2590
     subalign: 4
     subsegments:
-    - [0x13E8F0, c, ovl7/ovl7_1]
-    - [0x145420, c, ovl7/ovl7_2]
-    - [0x146DC0, c, ovl7/ovl7_3]
-    - [0x149EF0, c, ovl7/ovl7_4]
-    - [0x14D070, c, ovl7/ovl7_5]
-    - [0x152A40, c, ovl7/ovl7_5_2]
-    - [0x153040, c, ovl7/ovl7_6]
-    - [0x154A90, c, ovl7/ovl7_7]
-    - [0x1565C0, c, ovl7/ovl7_8]
-    - [0x157ED0, c, ovl7/ovl7_9]
-    - [0x1596E0, c, ovl7/ovl7_10]
-    - [0x15ADC0, c, ovl7/ovl7_11]
-    - [0x15DA20, c, ovl7/ovl7_12]
-    - [0x15EF90, c, ovl7/ovl7_13]
-    - [0x161A40, c, ovl7/ovl7_14]
-    - [0x161EC0, c, ovl7/yakulib]
-    - [0x163580, c, ovl7/ovl7_16]
-    - [0x165290, c, ovl7/ovl7_17]
+    - [0x13E8F0, asm, ovl7/ovl7_1]
+    - [0x145420, asm, ovl7/ovl7_2]
+    - [0x146DC0, asm, ovl7/ovl7_3]
+    - [0x149EF0, asm, ovl7/ovl7_4]
+    - [0x14D070, asm, ovl7/ovl7_5]
+    - [0x152A40, asm, ovl7/ovl7_5_2]
+    - [0x153040, asm, ovl7/ovl7_6]
+    - [0x154A90, asm, ovl7/ovl7_7]
+    - [0x1565C0, asm, ovl7/ovl7_8]
+    - [0x157ED0, asm, ovl7/ovl7_9]
+    - [0x1596E0, asm, ovl7/ovl7_10]
+    - [0x15ADC0, asm, ovl7/ovl7_11]
+    - [0x15DA20, asm, ovl7/ovl7_12]
+    - [0x15EF90, asm, ovl7/ovl7_13]
+    - [0x161A40, asm, ovl7/ovl7_14]
+    - [0x161EC0, asm, ovl7/yakulib]
+    - [0x163580, asm, ovl7/ovl7_16]
+    - [0x165290, asm, ovl7/ovl7_17]
     - [0x168840, data, ovl7/ovl7]
-    - [0x173AE0, .rodata, ovl7/ovl7_1]
-    - [0x173F10, .rodata, ovl7/ovl7_2]
-    - [0x173FD0, .rodata, ovl7/ovl7_3]
-    - [0x174020, .rodata, ovl7/ovl7_4]
-    - [0x174090, .rodata, ovl7/ovl7_5]
-    - [0x1741D0, .rodata, ovl7/ovl7_5_2]
-    - [0x174210, .rodata, ovl7/ovl7_6]
-    - [0x174290, .rodata, ovl7/ovl7_7]
-    - [0x1742F0, .rodata, ovl7/ovl7_8]
-    - [0x174330, .rodata, ovl7/ovl7_9]
+    - [0x173AE0, rodata, ovl7/ovl7_1]
+    - [0x173F10, rodata, ovl7/ovl7_2]
+    - [0x173FD0, rodata, ovl7/ovl7_3]
+    - [0x174020, rodata, ovl7/ovl7_4]
+    - [0x174090, rodata, ovl7/ovl7_5]
+    - [0x1741D0, rodata, ovl7/ovl7_5_2]
+    - [0x174210, rodata, ovl7/ovl7_6]
+    - [0x174290, rodata, ovl7/ovl7_7]
+    - [0x1742F0, rodata, ovl7/ovl7_8]
+    - [0x174330, rodata, ovl7/ovl7_9]
     - [0x174380, rodata, ovl7/filesplit]
-    - [0x1743B0, .rodata, ovl7/ovl7_11]
-    - [0x1743D0, .rodata, ovl7/ovl7_12]
-    - [0x1743F0, .rodata, ovl7/ovl7_13]
-    - [0x174500, .rodata, ovl7/ovl7_14]
-    - [0x174510, .rodata, ovl7/yakulib]
-    - [0x174620, .rodata, ovl7/ovl7_16]
-    - [0x174650, .rodata, ovl7/ovl7_17]
+    - [0x1743B0, rodata, ovl7/ovl7_11]
+    - [0x1743D0, rodata, ovl7/ovl7_12]
+    - [0x1743F0, rodata, ovl7/ovl7_13]
+    - [0x174500, rodata, ovl7/ovl7_14]
+    - [0x174510, rodata, ovl7/yakulib]
+    - [0x174620, rodata, ovl7/ovl7_16]
+    - [0x174650, rodata, ovl7/ovl7_17]
     - [0x174740]
     - {type: bss, vram: 0x801CE6D0, name: ovl7/ovl7}
 
@@ -411,15 +411,15 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x174740, c, ovl8/ovl8]
-    - [0x175B20, c, ovl8/eneeff]
-    - [0x176670, c, ovl8/ovl8_3]
-    - [0x178090, c, ovl8/ovl8_4]
+    - [0x174740, asm, ovl8/ovl8]
+    - [0x175B20, asm, ovl8/eneeff]
+    - [0x176670, asm, ovl8/ovl8_3]
+    - [0x178090, asm, ovl8/ovl8_4]
     - [0x17B360, data, ovl8/ovl8]
-    - [0x17EB40, .rodata, ovl8/ovl8]
-    - [0x17EB60, .rodata, ovl8/eneeff]
-    - [0x17EC20, .rodata, ovl8/ovl8_3]
-    - [0x17EC60, .rodata, ovl8/ovl8_4]
+    - [0x17EB40, rodata, ovl8/ovl8]
+    - [0x17EB60, rodata, ovl8/eneeff]
+    - [0x17EC20, rodata, ovl8/ovl8_3]
+    - [0x17EC60, rodata, ovl8/ovl8_4]
     - [0x17ECB0]
     - {type: bss, vram: 0x801DB1D0, name: ovl8/ovl8}
 
@@ -432,25 +432,46 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x17ECB0, c, ovl9/code_17ECB0]
-    - [0x186E10, c, ovl9/code_186E10]
-    - [0x18A910, c, ovl9/code_18A910]
-    - [0x18EAF0, c, ovl9/code_18EAF0]
-    - [0x193770, c, ovl9/code_193770]
-    - [0x198C10, c, ovl9/code_198C10]
-    - [0x19E0B0, c, ovl9/code_19E0B0]
-    - [0x1A6780, c, ovl9/code_1A6780]
-    - [0x1A9AF0, c, ovl9/code_1A9AF0]
-    - [0x1AFE30, c, ovl9/code_1AFE30]
-    - [0x1B5310, c, ovl9/code_1B5310]
-    - [0x1B7080, c, ovl9/code_1B7080]
-    - [0x1B7770, c, ovl9/code_1B7770]
-    - [0x1BDFD0, c, ovl9/code_1BDFD0]
-    - [0x1C2F10, c, ovl9/code_1C2F10]
-    - [0x1C6810, c, ovl9/code_1C6810]
-    - [0x1C7A30, c, ovl9/code_1C7A30]
-    - [0x1C81F0, c, ovl9/code_1C81F0]
+    - [0x17ECB0, asm, ovl9/ovl9_1]
+    - [0x186E10, asm, ovl9/ovl9_2]
+    - [0x18A910, asm, ovl9/ovl9_3]
+    - [0x18EAF0, asm, ovl9/ovl9_4]
+    - [0x193770, asm, ovl9/ovl9_5]
+    - [0x198C10, asm, ovl9/ovl9_6]
+    - [0x19E0B0, asm, ovl9/ovl9_7]
+    - [0x1A0A20, asm, ovl9/ovl9_7_2]
+    - [0x1A6780, asm, ovl9/ovl9_8]
+    - [0x1A9AF0, asm, ovl9/ovl9_9]
+    - [0x1AFE30, asm, ovl9/ovl9_10]
+    - [0x1B5310, asm, ovl9/ovl9_11]
+    - [0x1B7080, asm, ovl9/ovl9_12]
+    - [0x1B7770, asm, ovl9/ovl9_13]
+    - [0x1BDFD0, asm, ovl9/ovl9_14]
+    - [0x1C2A50, asm, ovl9/ovl9_14_2]
+    - [0x1C2F10, asm, ovl9/ovl9_15]
+    - [0x1C6810, asm, ovl9/ovl9_16]
+    - [0x1C7A30, asm, ovl9/ovl9_17]
+    - [0x1C81F0, asm, ovl9/ovl9_18]
     - [0x1C9B00, data, ovl9/ovl9]
+    - [0x1CAEB0, rodata, ovl9/ovl9_1]
+    - [0x1CAF80, rodata, ovl9/ovl9_2]
+    - [0x1CAFB0, rodata, ovl9/ovl9_3]
+    - [0x1CAFF0, rodata, ovl9/ovl9_4]
+    - [0x1CB080, rodata, ovl9/ovl9_5]
+    - [0x1CB210, rodata, ovl9/ovl9_6]
+    - [0x1CB900, rodata, ovl9/ovl9_7]
+    - [0x1CB940, rodata, ovl9/ovl9_7_2]
+    - [0x1CB990, rodata, ovl9/ovl9_8]
+    - [0x1CB9E0, rodata, ovl9/ovl9_9]
+    - [0x1CBA70, rodata, ovl9/ovl9_10]
+    - [0x1CBB10, rodata, ovl9/ovl9_11]
+    - [0x1CBB40, rodata, ovl9/ovl9_13]
+    - [0x1CBD00, rodata, ovl9/ovl9_14]
+    - [0x1CBE20, rodata, ovl9/ovl9_14_2]
+    - [0x1CBE40, rodata, ovl9/ovl9_15]
+    - [0x1CBED0, rodata, ovl9/ovl9_16]
+    - [0x1CBF00, rodata, ovl9/ovl9_17]
+    - [0x1CBF30, rodata, ovl9/ovl9_18]
     - [0x1CBF50]
     - {type: bss, vram: 0x8021DF00, name: ovl9/ovl9}
 
@@ -464,10 +485,10 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x80
     subsegments:
-    - [0x1CBF50, c, ovl10/code_1CBF50]
-    - [0x1CC970, c, ovl10/code_1CC970]
-    - [0x1E0160, c, ovl10/code_1E0160]
-    - [0x1E0500, c, ovl10/code_1E0500]
+    - [0x1CBF50, asm, ovl10/code_1CBF50]
+    - [0x1CC970, asm, ovl10/code_1CC970]
+    - [0x1E0160, asm, ovl10/code_1E0160]
+    - [0x1E0500, asm, ovl10/code_1E0500]
     - [0x1E4160, data, ovl10/ovl10]
     - [0x1E5AA0]
     - {type: bss, vram: 0x801f4d30, name: ovl10/ovl10}
@@ -481,7 +502,7 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x30
     subsegments:
-    - [0x1E5AA0, c, ovl11/ovl11]
+    - [0x1E5AA0, asm, ovl11/ovl11]
     - [0x1EB3C0, data, ovl11/ovl11]
     - [0x1EB520]
     - {type: bss, vram: 0x801E0C60, name: ovl11/ovl11}
@@ -495,8 +516,8 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x1EB520, c, ovl12/code_1EB520]
-    - [0x1F18D0, c, ovl12/code_1F18D0]
+    - [0x1EB520, asm, ovl12/code_1EB520]
+    - [0x1F18D0, asm, ovl12/code_1F18D0]
     - [0x1F2DE0, data, ovl12/ovl12]
     - [0x1F3160]
     - {type: bss, vram: 0x801e2e20, name: ovl12/ovl12}
@@ -510,9 +531,9 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x1F3160, c, ovl13/code_1F3160]
-    - [0x1FBD40, c, ovl13/code_1FBD40]
-    - [0x1FC420, c, ovl13/code_1FC420]
+    - [0x1F3160, asm, ovl13/code_1F3160]
+    - [0x1FBD40, asm, ovl13/code_1FBD40]
+    - [0x1FC420, asm, ovl13/code_1FC420]
     - [0x1FDA00, data, ovl13/ovl13]
     - [0x1FDDD0]
     - {type: bss, vram: 0x801e5e50, name: ovl13/ovl13}
@@ -526,8 +547,8 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x1FDDD0, c, ovl14/ovl14]
-    - [0x202980, c, ovl14/ovl14_2]
+    - [0x1FDDD0, asm, ovl14/ovl14]
+    - [0x202980, asm, ovl14/ovl14_2]
     - [0x205A90, data, ovl14/ovl14]
     - [0x205d40]
     - {type: bss, vram: 0x801e3150, name: ovl14/ovl14}
@@ -541,8 +562,8 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x205D40, c, ovl15/ovl15]
-    - [0x210970, c, ovl15/ovl15_2]
+    - [0x205D40, asm, ovl15/ovl15]
+    - [0x210970, asm, ovl15/ovl15_2]
     - [0x210FB0, data, ovl15/ovl15]
     - [0x211490]
     - {type: bss, vram: 0x801E6930, name: ovl15/ovl15}
@@ -556,7 +577,7 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x110
     subsegments:
-    - [0x211490, c, ovl16/ovl16]
+    - [0x211490, asm, ovl16/ovl16]
     - [0x225770, data, ovl16/ovl16]
     - [0x2263D0]
     - {type: bss, vram: 0x801F0120, name: ovl16/ovl16}
@@ -570,9 +591,9 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x70
     subsegments:
-    - [0x2263D0, c, ovl17/ovl17]
-    - [0x228AE0, c, ovl17/ovl17_2]
-    - [0x22BEF0, c, ovl17/ovl17_3]
+    - [0x2263D0, asm, ovl17/ovl17]
+    - [0x228AE0, asm, ovl17/ovl17_2]
+    - [0x22BEF0, asm, ovl17/ovl17_3]
     - [0x230050, data, ovl17/ovl17]
     - [0x2308C0]
     - {type: bss, vram: 0x801e56d0, name: ovl17/ovl17}
@@ -587,14 +608,14 @@ segments:
     exclusive_ram_id: ovl_18_19
     bss_size: 0xB0
     subsegments:
-    - [0x2308C0, c, ovl18/code_2308C0]
-    - [0x232B60, c, ovl18/code_232B60]
-    - [0x234830, c, ovl18/code_234830]
-    - [0x234BC0, c, ovl18/code_234BC0]
-    - [0x236CC0, c, ovl18/code_236CC0]
-    - [0x236F20, c, ovl18/code_236F20]
-    - [0x2385A0, c, ovl18/code_2385A0]
-    - [0x239080, c, ovl18/code_239080]
+    - [0x2308C0, asm, ovl18/code_2308C0]
+    - [0x232B60, asm, ovl18/code_232B60]
+    - [0x234830, asm, ovl18/code_234830]
+    - [0x234BC0, asm, ovl18/code_234BC0]
+    - [0x236CC0, asm, ovl18/code_236CC0]
+    - [0x236F20, asm, ovl18/code_236F20]
+    - [0x2385A0, asm, ovl18/code_2385A0]
+    - [0x239080, asm, ovl18/code_239080]
     - [0x239D80, data, ovl18/ovl18]
     - [0x23E630]
     - {type: bss, vram: 0x8022bc90, name: ovl18/ovl18}
