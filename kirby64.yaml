@@ -347,6 +347,7 @@ segments:
     subsegments:
     - [0x135490, c, ovl6/ovl6]
     - [0x139150, data, ovl6/ovl6]
+    - [0x13E7A0, .rodata, ovl6/ovl6]
     - [0x13E8F0]
     - {type: bss, vram: 0x8015A560, name: ovl6/ovl6}
     
