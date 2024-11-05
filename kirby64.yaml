@@ -77,7 +77,9 @@ segments:
     - [0x2DEF0, lib, libultra_rom, sendmesg]
     - [0x2E040, lib, libultra_rom, stopthread]
     - [0x2E100, lib, libultra_rom, recvmesg]
-    - [0x2E240, asm, main/code_2E240]
+    - [0x2E240, lib, libultra_rom, setintmask]
+    - [0x2E2E0, lib, libultra_rom, sinf]
+    - [0x2E4A0, lib, libultra_rom, sptask]
     - [0x2E790, lib, libultra_rom, destroythread]
     - [0x2E8A0, lib, libultra_rom, ll]
     - [0x2EB60, lib, libultra_rom, exceptasm]
@@ -141,7 +143,7 @@ segments:
     - [0x35FA0, asm, main/code_35FA0]
     - [0x360E0, asm, main/code_360E0]
     - [0x363E0, asm, main/code_363E0]
-    - [0x36410, asm, main/code_36410]
+    - [0x36410, lib, libultra_rom, cosf]
     - [0x36580, asm, main/code_36580]
     - [0x365B0, asm, main/code_365B0]
     - [0x36620, asm, main/code_36620]
@@ -184,16 +186,22 @@ segments:
     - [0x40850, data, mainseg.4]
     - [0x40A20, rodata, mainseg]
     - [0x423F0, rodata, mainseg.2]
+    - [0x42630, lib, libultra_rom, setintmask, .rodata]
+    - [0x426B0, lib, libultra_rom, sinf, .rodata]
+    - [0x42700, rodata, main/interruptVecs]
     - [0x42770, lib, libultra_rom, xprintf, .rodata]
-    - [0x42870, rodata, mainseg.3]
+    - [0x42870, lib, libultra_rom, cosf, .rodata]
+    - [0x428C0, rodata, mainseg.3]
     - [0x42940, rodata, main/n_aspMain]
     - [0x42BF0, rodata, main/gspF3DEX2_fifo]
     - [0x43010, rodata, main/gspL3DEX2_fifo]
     - [0x43400, rodata, main/gspS2DEX2_fifo]
     - [0x43790]
     - {type: bss, vram: 0x80042B90, name: mainseg}
+    - {type: lib, vram: 0x80097950, name: libultra_rom, object: sptask, section: .bss}
+    - {type: bss, vram: 0x80097990, name: mainseg.2}
     - {type: lib, vram: 0x80098d00, name: libultra_rom, object: contpfs, section: .bss}
-    - {type: bss, vram: 0x80098e00, name: mainseg.2}
+    - {type: bss, vram: 0x80098e00, name: mainseg.3}
 
   - name: ovl1
     type: code
