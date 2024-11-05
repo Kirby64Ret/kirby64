@@ -85,7 +85,8 @@ segments:
     - [0x2EB60, lib, libultra_rom, exceptasm]
     - [0x2F470, lib, libultra_rom, thread]
     - [0x2F4B0, lib, libultra_rom, bzero]
-    - [0x2F550, asm, main/code_2F550]
+    - [0x2F550, lib, libultra_rom, leointerrupt]
+    - [0x2FC40, lib, libultra_rom, motor]
     - [0x30010, lib, libultra_rom, siacs]
     - [0x30240, lib, libultra_rom, controller]
     - [0x30410, lib, libultra_rom, conteepwrite]
@@ -214,7 +215,9 @@ segments:
     - [0x43790]
     - {type: bss, vram: 0x80042B90, name: mainseg}
     - {type: lib, vram: 0x80097950, name: libultra_rom, object: sptask, section: .bss}
-    - {type: bss, vram: 0x80097990, name: mainseg.2}
+    - {type: lib, vram: 0x80097990, name: libultra_rom, object: leointerrupt, section: .bss}
+    - {type: lib, vram: 0x80098990, name: libultra_rom, object: motor, section: .bss}
+    - {type: bss, vram: 0x80098A90, name: mainseg.2.2}
     - {type: lib, vram: 0x80098d00, name: libultra_rom, object: contpfs, section: .bss}
     - {type: bss, vram: 0x80098e00, name: mainseg.3}
     - {type: lib, vram: 0x8009A2E0, name: libultra_rom, object: vimgr, section: .bss}

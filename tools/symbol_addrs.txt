@@ -627,3 +627,5 @@ __osPfsLastChannel=0x8003FE10;
 // ovl19/helper.c
 D_800E8060 = 0x800E8060;
 D_8012E7FC = 0x8012E7FC;
+
+__MotorDataBuf=0x80098990;
