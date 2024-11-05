@@ -118,6 +118,7 @@ segments:
     - [0x32C60, asm, main/code_32C60]
     - [0x32E80, asm, main/code_32E80]
     - [0x33140, asm, main/code_33140]
+    - [0x336B0, lib, libultra_rom, seteventmesg]
     - [0x33720, asm, main/code_33720]
     - [0x33730, asm, main/code_33730]
     - [0x33800, lib, libultra_rom, xprintf]
@@ -146,7 +147,7 @@ segments:
     - [0x35F60, asm, main/code_35F60]
     - [0x35FA0, asm, main/code_35FA0]
     - [0x360E0, lib, libultra_rom, viswapcontext]
-    - [0x363E0, asm, main/code_363E0]
+    - [0x363E0, lib, libultra_rom, pigetcmdq]
     - [0x36410, lib, libultra_rom, cosf]
     - [0x36580, asm, main/code_36580]
     - [0x365B0, asm, main/code_365B0]
@@ -161,10 +162,11 @@ segments:
     - [0x37CD0, lib, libultra_rom, contramwrite]
     - [0x37F20, lib, libultra_rom, contramread]
     - [0x38150, lib, libultra_rom, crc]
-    - [0x382C0, asm, main/code_382C0]
+    - [0x382C0, lib, libultra_rom, epirawwrite]
+    - [0x38450, lib, libultra_rom, settimer]
     - [0x38530, lib, libultra_rom, xldtob]
     - [0x38FF0, pad]
-    - [0x39000, asm, main/code_39000]
+    - [0x39000, lib, libultra_rom, ldiv]
     - [0x39190, lib, libultra_rom, xlitob]
     - [0x39430, lib, libultra_rom, sirawwrite]
     - [0x39480, lib, libultra_rom, dpsetnextbuf]
@@ -205,9 +207,6 @@ segments:
     - [0x428C0, lib, libultra_rom, libm_vals, .rodata]
     - [0x428D0, lib, libultra_rom, cents2ratio, .rodata]
     - [0x428E0, lib, libultra_rom, xldtob, .rodata]
-    # - [0x428E0, rodata, mainseg.3]
-    # - [0x428D0, lib, libultra_rom, cents2ratio, .rodata]
-    # - [0x42930, rodata, mainseg.4]
     - [0x42940, rodata, main/n_aspMain]
     - [0x42BF0, rodata, main/gspF3DEX2_fifo]
     - [0x43010, rodata, main/gspL3DEX2_fifo]
@@ -220,6 +219,8 @@ segments:
     - {type: bss, vram: 0x80098A90, name: mainseg.2.2}
     - {type: lib, vram: 0x80098d00, name: libultra_rom, object: contpfs, section: .bss}
     - {type: bss, vram: 0x80098e00, name: mainseg.3}
+    - {type: lib, vram: 0x8009A0E0, name: libultra_rom, object: seteventmesg, section: .bss}
+    - {type: bss, vram: 0x8009A160, name: mainseg.3.2}
     - {type: lib, vram: 0x8009A2E0, name: libultra_rom, object: vimgr, section: .bss}
     - {type: bss, vram: 0x8009B500, name: mainseg.4}
 
