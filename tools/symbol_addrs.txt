@@ -620,7 +620,9 @@ osPfsAllocateFile=0x80030DF0; // type:func
 __osLeoResume=0x8002EF84; // type:func
 __osLeoAbnormalResume=0x8002EED0; // type:func
 __osPfsGetNextPage=0x800306C0; // type:func
-
+__osContAddressCrc=0x80037550; // type:func
+__osContDataCrc=0x80037620; // type:func
+__osPfsLastChannel=0x8003FE10;
 
 // ovl19/helper.c
 D_800E8060 = 0x800E8060;
