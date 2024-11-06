@@ -627,5 +627,36 @@ __osPfsLastChannel=0x8003FE10;
 // ovl19/helper.c
 D_800E8060 = 0x800E8060;
 D_8012E7FC = 0x8012E7FC;
+n_alClose = 0x8002A138; // type:func
+n_alSynDelete = 0x8002D070; // type:func
+n_alSynNew = 0x80029E38; // type:func
+n_alInit = 0x8002A178; // type:func
+alHeapDBAlloc = 0x8001E3D4;
+alCSeqNextEvent = 0x8002587C;
+alCSeqNew = 0x80025B74;
+n_alEnvmixerPull = 0x80027670;
+alSeqNextEvent = 0x8002CA48;
+alSynRemovePlayer = 0x800BB3C0;
+n_alSynRemovePlayer = 0x800BDAA8;
+n_alSynFreeFX = 0x8000B6B4;
+alSeqFileNew = 0x8001E450;
+alSynFreeFX = 0x80020E00;
+alCSeqNewMarker = 0x80025C7C;
+__alCSeqNextDelta = 0x80025DE8;
+n_alLoadParam = 0x80027360;
+n_alAuxBusPull = 0x80027CB4;
+n_alMainBusPull = 0x80029938;
+n_alSavePull = 0x800299AC;
+alN_PVoiceNew = 0x80029D10;
+alSeqSetLoc = 0x8002C9D0;
+alSeqGetTicks = 0x8002C9EC;
+alSeqNewMarker = 0x8002CBCC;
+__alSeqNextDelta = 0x8002CCEC;
+n_alSynSetPitch = 0x8002CDA0;
+alSndpDelete = 0x80062B0C;
+n_alSeqpDelete = 0x800653B8;
+__CallBackDmaNew = 0x80084D38;
+alGlobals = 0x800ED4C4;
+
 
 __MotorDataBuf=0x80098990;

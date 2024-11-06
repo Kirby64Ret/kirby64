@@ -198,7 +198,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B688.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B6B4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/n_alSynFreeFX.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omSleep.s")
 
