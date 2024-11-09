@@ -32,6 +32,7 @@ gCollisionState = 0x8012BCF8;
 gFrameBuffers = 0x8015A678;
 
 /* why is this list getting bigger aaaaaaaaaaaaaa */
+D_80300170 = 0x80300170;
 gCrashScreen = 0x800966D8;
 __osPiTable = 0x8003FBDC;
 __osCurrentHandle = 0x8003FBE0;
@@ -41,3 +42,19 @@ send_mesg = 0x8002E4A4;
 gDisplayListHead = gDisplayListHeads;
 func_80300170 = D_80300170;
 __D_800E9AA0 = D_800E9AA0;
+
+/* splat memes */
+.L801D9FC0_ovl14 = 0x801D9FC0;
+.L801DAADC_ovl13 = 0x801DAADC;
+.L801DAB04_ovl13 = 0x801DAB04;
+.L801DAF60_ovl13 = 0x801DAF60;
+.L801F4D48_ovl9 = 0x801F4D48;
+.L801F4D6C_ovl9 = 0x801F4D6C;
+.L801F4D70_ovl9 = 0x801F4D70;
+D_801CE6D0 = 0x801CE6D0;
+D_801D8DC0 = 0x801D8DC0;
+D_801D9558 = 0x801D9558;
+D_803000E0 = 0x803000E0;
+D_803001A0 = 0x803001A0;
+func_80198880 = 0x80198880;
+

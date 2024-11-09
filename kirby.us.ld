@@ -39,7 +39,8 @@ OUTPUT_ARCH (mips)
      .name.noload (NOLOAD) :
 
 #define END_NOLOAD(name) \
-     _##name##SegNoloadEnd = ADDR(.name.noload) + SIZEOF(.name.noload);
+     _##name##SegNoloadEnd = ADDR(.name.noload) + SIZEOF(.name.noload); \
+     _##name##SegNoloadSize = _##name##SegNoloadEnd - _##name##SegNoloadStart;
 
 
 SECTIONS
@@ -332,10 +333,11 @@ SECTIONS
         BUILD_DIR/libultra.a:pfsisplug.o(.bss);
         BUILD_DIR/libultra.a:vimgr.o(.bss);
         BUILD_DIR/libultra.a:conteepread.o(.bss);
+        . += 0x40;
     }
     END_NOLOAD(ovl0)
     /* edit this line when modifying bss */
-    _mainSegmentNoloadSize = SIZEOF(.ovl0.noload) + 0x40;
+    _mainSegmentNoloadSize = SIZEOF(.ovl0.noload);
     
     _mainSegmentNoloadSizeHi = _mainSegmentNoloadSize >> 16;
     _mainSegmentNoloadSizeLo = _mainSegmentNoloadSize & 0xFFFF;

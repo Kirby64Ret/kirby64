@@ -12,7 +12,7 @@ You will need an original copy of the ROM to proceed.
 ## Installation
  - First, get Linux, or [Windows Subsystem for Linux](https://aka.ms/wslinstall) if you use Windows
  - Next, clone the repo by running `sudo apt update && sudo apt install git gcc-mips-linux-gnu && git clone https://github.com/farisawan-2000/kirby64 --recursive`
- - Get the GitPython submodule by doing `pip3 install gitpython`
+ - Install the relevant Python packages by running `pip3 install gitpython splat64[mips]`
  - Grab the qemu-irix deb from [here](https://github.com/n64decomp/qemu-irix/releases) and install it with `sudo dpkg -i path/to/qemu(press tab here to autocomplete the name)` (Use `alien` on Fedora or `debtap` on Arch to convert)
  - Now just follow the instructions for SM64 decomp [here](https://github.com/n64decomp/sm64/tree/master/README.md), but before you go, keep reading.
  - Once dependencies are installed, run `make setup` to get assets extracted, then `make` to build!

@@ -66,7 +66,7 @@ def GetNonMatchingSize(path):
     return size
 
 
-mapFile = ReadAllLines("build/us/kirby.us.map")
+mapFile = ReadAllLines("build/kirby.us.map")
 src = 0
 code = 0
 boot = 0
@@ -82,16 +82,16 @@ for line in mapFile:
         objFile = lineSplit[3]
 
         if (section == ".text"):
-            if (objFile.startswith("build/us/src")):
+            if (objFile.startswith("build/src")):
                 src += size
-            if (objFile.startswith("build/us/libultra.a")):
+            if (objFile.startswith("build/libultra.a")):
                 src += size
-            if (objFile.startswith("build/us/libn_audio.a")):
+            if (objFile.startswith("build/libn_audio.a")):
                 src += size
-            elif (objFile.startswith("build/us/asm")):
+            elif (objFile.startswith("build/asm")):
                 asm += size
 
-nonMatchingASM = GetNonMatchingSize("asm/non_matchings")
+nonMatchingASM = GetNonMatchingSize("asm/nonmatchings")
 
 src -= nonMatchingASM
 asm += nonMatchingASM

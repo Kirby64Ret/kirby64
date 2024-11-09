@@ -1,7 +1,7 @@
 def apply(config, args):
     config["baseimg"] = "baserom.us.z64"
-    config["myimg"] = "build/us/kirby.us.z64"
-    config["mapfile"] = "build/us/kirby.us.map"
+    config["myimg"] = "build/kirby.us.z64"
+    config["mapfile"] = "build/kirby.us.map"
     config["source_directories"] = ["."]
     #config["arch"] = "mips"
     #config["map_format"] = "gnu" # gnu or mw
