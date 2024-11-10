@@ -1,6 +1,61 @@
 #include "common.h"
+#include "crash_screen.h"
+#include "object_manager.h"
+#include "code_11720.h"
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_GObjThreadPop.s")
+// bss
+struct GObjThread *gGObjThreadHead; // 0x8004A540
+u32 gGObjThreadCount;
+u32 D_8004A548;
+u32 gNewEntityStackSize; // 0x8004A54C
+void (*D_8004A550)(struct ObjStack *);
+struct GObjThreadStack* gGObjThreadStackHead; // 0x8004A554
+s32 D_8004A558;
+struct GObjProcess *gGObjProcessHead; // 0x8004A55C
+struct GObjProcess *D_8004A560[4]; // probably length 4
+u32 gGObjProcessCount;
+// 0x8004A574?
+struct GObj *D_8004A578[32]; // probably length 32 based on loop asm
+void* D_8004A5F8[32]; // also length 32? lines up with next symbol
+struct GObj *gGObjHead;
+// 0x8004A67C? file boundary?
+struct GObj* gHighestPrioDLLinkProcs[33]; // length 33?
+struct GObj* gDLLinkProcs[33]; // length 33?
+u32 gGObjCount;
+struct OMMtx *gOMMtxHead;
+u32 gOMMtxCount;
+void (*D_8004A798)();
+struct AObj *gAObjHead;
+u32 gAObjCount;
+struct MObj* gMObjHead;
+u32 gMObjCount;
+struct DObj* gDObjHead;
+u32 gDObjCount;
+u32 D_8004A7B4;
+u32 D_8004A7B8;
+struct Camera* gCameraHead;
+u32 gCameraCount;
+struct GObj *D_8004A7C4, *D_8004A7C8, *D_8004A7CC;
+struct GObjProcess *D_8004A7D0;
+s32 D_8004A7D4;
+OSMesg D_8004A7D8;
+// 0x8004A7DC?
+OSMesgQueue HS64_GObjProcMesgQ;
+struct UnkStruct8004A7F8 D_8004A7F8[32]; // length 32 based on loop asm in func_8000AAE0 (unrolled)
+u8 D_8004AA78[0x18];
+
+struct GObjThread *HS64_GObjThreadPop(void) {
+    struct GObjThread *ret;
+    if (gGObjThreadHead == NULL) {
+        fatal_printf("om : couldn't get GObjThread\n");
+        while (TRUE);
+    }
+    ret = gGObjThreadHead;
+    gGObjThreadHead = gGObjThreadHead->unk0;
+    gGObjThreadCount++;
+    return ret;
+}
+// #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_GObjThreadPop.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_GObjThreadPush.s")
 
@@ -183,67 +238,3 @@
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000AD88.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_omInit.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B3E0.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B448.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B4D4.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B57C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B63C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B65C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B688.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B6B4.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omSleep.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B758.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B78C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B7C0.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B7D8.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B7F0.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B830.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B870.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B8C0.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B908.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B950.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B988.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B9CC.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000B9FC.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BA2C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BA5C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BA8C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BABC.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BAEC.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BBE0.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BC34.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BCA4.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BD3C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_8000BDF0.s")

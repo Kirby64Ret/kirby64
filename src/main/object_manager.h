@@ -1,5 +1,5 @@
-#ifndef __OVL0_2_5_H__
-#define __OVL0_2_5_H__
+#ifndef __OM_H__
+#define __OM_H__
 
 #include <ultra64.h>
 #include <types.h>

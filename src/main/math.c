@@ -1,4 +1,5 @@
 #include "common.h"
+#include "math.h"
 
 u8 mathDetRNGVals[0x400] = {
     0x2B, 0xE6, 0xDB, 0xB9, 0xB1, 0xF3, 0x53, 0x81, 0x37, 0x01, 0x7F, 0x44, 0x23, 0x3C, 0x11, 0xD0,
@@ -73,7 +74,6 @@ s32 mathRNGSeed = 0x00000001;
 extern f32 sinf(f32 a);
 extern f32 cosf(f32 a);
 extern f32 sqrtf(f32 a);
-f32 atanf(f32);
 
 f32 tanf(f32 x) {
     return sinf(x) / cosf(x);

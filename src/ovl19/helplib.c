@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "ovl1/ovl1_6.h"
-#include "D_8004A7C4.h"
+#include "GObj.h"
 #include "unk_structs/D_800D6C68.h"
 #include "unk_structs/D_800DE350.h"
 

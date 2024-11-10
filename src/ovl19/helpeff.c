@@ -1,8 +1,8 @@
 #include <ultra64.h>
 #include <macros.h>
 
-#include "ovl0/object_manager.h"
-#include "D_8004A7C4.h"
+#include "main/object_manager.h"
+#include "GObj.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 

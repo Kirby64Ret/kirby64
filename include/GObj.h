@@ -1,7 +1,7 @@
 #ifndef GOBJ_H
 #define GOBJ_H
 #include "types.h"
-#include "ovl0/ovl0_2_5.h"
+#include "main/object_manager.h"
 
 // same as D_800E1B50?
 struct UnkStruct8004A7C4_3C_80 {

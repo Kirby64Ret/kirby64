@@ -1,8 +1,8 @@
 #ifndef _OVL1_7_H_
 #define _OVL1_7_H_
 
-#include "D_8004A7C4.h"
-#include "ovl0/ovl0_2_5.h"
+#include "GObj.h"
+#include "main/object_manager.h"
 
 
 // GObjThreadStack?

@@ -98,7 +98,6 @@ gGObjThreadStackHead=0x8004A554;
 gGObjProcessHead=0x8004A55C;
 gGObjProcessCount=0x8004A570;
 gGObjHead=0x8004A678;
-gHighestPrioDLLinkProcs=0x8004A680;
 gDLLinkProcs=0x8004A708;
 gGObjCount=0x8004A78C;
 gOMMtxHead=0x8004A790;
@@ -740,4 +739,7 @@ mathDetRNGVals = 0x8003DF20;
 mathDetRNGSeed = 0x8003E320;
 mathRNGSeed = 0x8003E324;
 
+// om
+D_8004A560 = 0x8004A560; // size:0x10
+gHighestPrioDLLinkProcs = 0x8004a680; // size:132
 

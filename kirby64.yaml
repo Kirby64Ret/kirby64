@@ -47,6 +47,7 @@ segments:
     - [0x84F0, c, main/code_84F0]
     - [0x8800, c, main/rdp_reset]
     - [0x8B60, c, main/object_manager]
+    - [0xBFE0, c, main/object_helpers]
     - [0xCA90, c, main/code_CA90]
     - [0x11720, c, main/code_11720]
     - [0x191B0, c, main/math]
@@ -213,7 +214,9 @@ segments:
     - [0x40A80, .rodata, main/main]
     - [0x40AA0, rodata, mainseg]
     - [0x40E10, .rodata, main/memory_layer]
-    - [0x40E30, rodata]
+    - [0x40E30, .rodata, main/object_manager]
+    - [0x41270, .rodata, main/object_helpers]
+    - [0x412A0, rodata, mainseg.0]
     - [0x41820, .rodata, main/math]
     - [0x41870, rodata, mainseg.0.1]
     - [0x418E0, .rodata, main/audio]
@@ -235,6 +238,8 @@ segments:
     - [0x43790]
     - {type: .bss, vram: 0x80042B90, name: main/main}
     - {type: bss, vram: 0x80048B80, name: mainseg}
+    - {type: .bss, vram: 0x8004A540, name: main/object_manager}
+    - {type: bss, vram: 0x8004AA90, name: mainseg.2}
     - {type: lib, vram: 0x80097950, name: libultra_rom, object: sptask, section: .bss}
     - {type: lib, vram: 0x80097990, name: libultra_rom, object: leointerrupt, section: .bss}
     - {type: lib, vram: 0x80098990, name: libultra_rom, object: motor, section: .bss}
