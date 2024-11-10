@@ -24,26 +24,43 @@
 #define OSC_STATE_COUNT 44
 
 typedef struct {
-    u8* heapBase;
-    s32 heapSize;
-    u16 outputRate;
-    u8 maxPVoices;
-    u8 maxVVoices;
-    u8 maxUpdates;
-    u8 maxEvents;
-    u8 numSounds;
-    u8 maxVoices[2];
-    s8 unk_11;
-    s8 unk_12;
-    u8 unk_13;
-    s32 bank1Start;
-    s32 bank1End;
-    u8* table1Start;
-    s32 bank2Start;
-    s32 bank2End;
-    u8* table2Start;
-    s32 romSbkStart;
-    u8 fxType;
+    /* 0x00 */ u8* heapBase;
+    /* 0x04 */ s32 heapSize;
+    /* 0x08 */ u16 outputRate;
+    /* 0x0A */ u8 maxPVoices;
+    /* 0x0B */ u8 maxVVoices;
+    /* 0x0C */ u8 maxUpdates;
+    /* 0x0D */ u8 maxEvents;
+    /* 0x0E */ u8 numSounds;
+    /* 0x0F */ u8 maxVoices[2];
+    /* 0x11 */ s8 unk_11;
+    /* 0x12 */ s8 unk_12;
+    /* 0x13 */ u8 unk_13;
+    /* 0x14 */ s32 bank1Start;
+    /* 0x18 */ s32 bank1End;
+    /* 0x1C */ u8* table1Start;
+    /* 0x20 */ s32 bank2Start;
+    /* 0x24 */ s32 bank2End;
+    /* 0x28 */ u8* table2Start;
+    /* 0x2C */ s32 romSbkStart;
+    /* 0x30 */ u8 fxType; u8 pad31[3];
+    u32 unk34;
+    u32 unk38;
+    u32 *unk3C;
+    u32 *unk40;
+    u32 unk44;
+    u16 unk48;
+    u16 unk4A;
+    u32 unk4C;
+// 0x50/0xx54
+    u32 bank3Start;
+    u32 bank3End;
+// 0x58/0x5C
+    u32 bank4Start;
+    u32 bank4End;
+// 0x60/0x64
+    u32 bank5Start;
+    u32 bank5End;
 } AuSettings;
 
 typedef struct {

@@ -435,78 +435,12 @@ void auInit(void) {
     osSendMesg(&auSPTaskMQ, (OSMesg) NULL, OS_MESG_BLOCK);
 }
 
-#if 0
-void auLoadAssets(void) {
-    s32 tmp;
-    ALBankFile* bankFile;
-    s32 i;
-    s32 len;
-
-    bzero(auCurrentSettings.heapBase, auCurrentSettings.heapSize);
-    alHeapInit(&auHeap, auCurrentSettings.heapBase, auCurrentSettings.heapSize);
-
-    // load sfx bank
-    if ((u32) auCurrentSettings.bank2Start >= 0x80000000) {
-        auSeqBank = (ALBank*) auCurrentSettings.bank2Start;
-    } else {
-        len = auCurrentSettings.bank2End - auCurrentSettings.bank2Start;
-        bankFile = alHeapAlloc(&auHeap, 1, len);
-        auRomRead((u32) auCurrentSettings.bank2Start, bankFile, len);
-        alBnkfNew(bankFile, auCurrentSettings.table2Start);
-        auSeqBank = bankFile->bankArray[0];
-    }
-
-    if ((u32) auCurrentSettings.bank1Start >= 0x80000000) {
-        D_80096468 = (ALBank*) auCurrentSettings.bank1Start;
-    } else {
-        len = auCurrentSettings.bank1End - auCurrentSettings.bank1Start;
-        bankFile = alHeapAlloc(&auHeap, 1, len);
-        auRomRead((u32) auCurrentSettings.bank1Start, bankFile, len);
-        alBnkfNew(bankFile, auCurrentSettings.table1Start);
-        D_80096468 = bankFile->bankArray[0];
-    }
-
-    // load sequnces
-    if ((u32) auCurrentSettings.romSbkStart >= 0x80000000) {
-        auSeqFile = (ALSeqFile*) auCurrentSettings.romSbkStart;
-    } else {
-        auSeqFile = alHeapAlloc(&auHeap, 1, 4);
-        auRomRead((u32) auCurrentSettings.romSbkStart, auSeqFile, 4);
-        tmp = auSeqFile->seqCount * sizeof(ALSeqData) + 4;
-        len = tmp;
-        auSeqFile = alHeapAlloc(&auHeap, 1, len);
-        auRomRead(tmp = (u32) auCurrentSettings.romSbkStart, auSeqFile, len);
-        alSeqFileNew(auSeqFile, (u8*) auCurrentSettings.romSbkStart);
-    }
-
-    // get maximal seq length
-    // for (i = 0, len = 0; i < auSeqFile->seqCount; i++) {
-    //     auSeqFile->seqArray[i].len += auSeqFile->seqArray[i].len & 1;
-    //     if (len < auSeqFile->seqArray[i].len) {
-    //         len = auSeqFile->seqArray[i].len;
-    //     }
-    // }
-
-    // for (i = 0; i < 2; i++) {
-    //     auBGMSeqData[i] = alHeapAlloc(&auHeap, 1, len);
-    // }
-
-    // auCmdListBuffers[0] = alHeapAlloc(&auHeap, 1, 0x8000);
-    // auCmdListBuffers[1] = alHeapAlloc(&auHeap, 1, 0x8000);
-
-    // auScTasks[0] = alHeapAlloc(&auHeap, 1, sizeof(SCTaskAudio));
-    // auScTasks[1] = alHeapAlloc(&auHeap, 1, sizeof(SCTaskAudio));
-
-    // auDataBuffers[0] = alHeapAlloc(&auHeap, 1, 0xE60);
-    // auDataBuffers[1] = alHeapAlloc(&auHeap, 1, 0xE60);
-    // auDataBuffers[2] = alHeapAlloc(&auHeap, 1, 0xE60);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auLoadAssets.s")
-#endif
+// https://decomp.me/scratch/CvKIB
+GLOBAL_ASM("asm/nonmatchings/main/audio/auLoadAssets.s")
 
 GLOBAL_ASM("asm/nonmatchings/main/audio/auCreatePlayers.s")
 
+// https://decomp.me/scratch/HNhjJ
 GLOBAL_ASM("asm/nonmatchings/main/audio/auThreadMain.s")
 
 void auSetHighSoundQuality(void) {
@@ -741,13 +675,9 @@ void func_80020DAC(s32 arg0, s32 arg1) {
 GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020DAC.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_80020E00(s32 arg0, ? arg1) {
+void func_80020E00(s32 arg0, s32 arg1) {
 
 }
-#else
-GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020E00.s")
-#endif
 
 #ifdef MIPS_TO_C
 

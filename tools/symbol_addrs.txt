@@ -727,10 +727,12 @@ auSPTaskMessages = 0x80095E4C;
 auSeqBank = 0x80096470;
 auSeqFile = 0x80096474;
 auCurrentFxType = 0x8003F33C;
-auBGMPlayerStatus = 0x80096488;
 auBGMSongId = 0x8009648C;
 auBGMVolume = 0x80096494;
 auBGMVolumeTimer = 0x80096490;
 auBGMPlayers = 0x80096478;
 auSongVolumeRate = 0x80096498;
 auGlobalSongPriority = 0x80096480;
+auBGMSeqData = 0x80096484;
+auBGMPlayerStatus = 0x80096488;
+
