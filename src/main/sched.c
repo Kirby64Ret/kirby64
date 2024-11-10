@@ -49,7 +49,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_8000256C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/thread3_main.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scThreadMain.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80002AF8.s")
 

@@ -98,7 +98,7 @@ extern void osCreateViManager(OSPri x);
 extern void func_80002EBC(void); // Initializes a PI Handle
 extern void init_dma_message_queue(void);
 extern void dma_read(u32 x, void *y, u32 z);
-extern void thread3_main(void *);
+extern void scThreadMain(void *);
 extern void auThreadMain(void *);
 extern void func_800051E0(void *);
 void dma_overlay_load(struct Overlay *);
@@ -119,7 +119,7 @@ void thread5_game(UNUSED void *arg) {
     check_sp_dmem();
     osCreateMesgQueue(&gThreadInitializedMQ, &D_80048A04, 1);
 
-    osCreateThread(&gMainThread, 3, thread3_main, NULL, &gMainThreadStack[0x80], 120);
+    osCreateThread(&gMainThread, 3, scThreadMain, NULL, &gMainThreadStack[0x80], 120);
     SETUP_STACK_AND_START_THREAD(gMainThread, gMainThreadStack);
     osRecvMesg(&gThreadInitializedMQ, NULL, OS_MESG_BLOCK);
 

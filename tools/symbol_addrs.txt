@@ -549,7 +549,7 @@ strlen=0x80033a6c; // type:func
 tamper_check_ovl20=0x80300000; // type:func
 tanf=0x800185b0; // type:func
 thread1_idle=0x800007c8; // type:func
-thread3_main=0x80002598; // type:func
+scThreadMain=0x80002598; // type:func
 thread5_game=0x800005d8; // type:func
 thread_crash_stack_overflow=0x800004e0; // type:func
 unlink_gobj_process=0x800081c4; // type:func
@@ -735,4 +735,10 @@ auSongVolumeRate = 0x80096498;
 auGlobalSongPriority = 0x80096480;
 auBGMSeqData = 0x80096484;
 auBGMPlayerStatus = 0x80096488;
+
+// math.c
+mathDetRNGVals = 0x8003DF20;
+mathDetRNGSeed = 0x8003E320;
+mathRNGSeed = 0x8003E324;
+
 

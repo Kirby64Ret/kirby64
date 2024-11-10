@@ -10,7 +10,7 @@
     extern u8 _ ## nm ## DataSegmentEnd[];\
     extern u8 _ ## nm ## DataSegmentRomEnd[];\
     extern u8 _ ## nm ## SegNoloadStart[];\
-    extern u8 _ ## nm ## SegNoloadEnd[];\
+    extern u8 _ ## nm ## SegNoloadEnd[]
 
 EXTERN_OVERLAY(ovl1);
 EXTERN_OVERLAY(ovl2);
@@ -43,7 +43,7 @@ EXTERN_OVERLAY(ovl20);
     extern u8 nm ## _DATA_START[];\
     extern u8 nm ## _RODATA_END[];\
     extern u8 nm ## _BSS_START[];\
-    extern u8 nm ## _BSS_END[];
+    extern u8 nm ## _BSS_END[]
 
 EXTERN_OVERLAY_SPLAT(ovl1);
 EXTERN_OVERLAY_SPLAT(ovl2);
