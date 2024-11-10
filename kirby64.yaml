@@ -188,7 +188,8 @@ segments:
     - [0x3AA90, data, main/gspF3DEX2_fifo]
     - [0x3BE20, data, main/gspL3DEX2_fifo]
     - [0x3C3B0, data, main/gspS2DEX2_fifo]
-    - [0x3E870, data, mainseg.2]
+    - [0x3E870, .data, main/main]
+    - [0x3E8A0, data, mainseg.2]
     - [0x40750, lib, libultra_rom, thread, .data]
     - [0x40750, lib, libultra_rom, siacs, .data]
     - [0x40750, lib, libultra_rom, controller, .data]
@@ -206,7 +207,8 @@ segments:
     - [0x40A20, lib, libultra_rom, xlitob, .data]
     - [0x40A50, lib, libultra_rom, vimgr, .data]
     - [0x40A70, lib, libultra_rom, aisetnextbuf, .data]
-    - [0x40A80, rodata, mainseg]
+    - [0x40A80, .rodata, main/main]
+    - [0x40AA0, rodata, mainseg]
     - [0x418E0, .rodata, main/audio]
     - [0x41910, rodata, mainseg.1]
     - [0x423F0, rodata, mainseg.2]
@@ -224,7 +226,8 @@ segments:
     - [0x43010, rodata, main/gspL3DEX2_fifo]
     - [0x43400, rodata, main/gspS2DEX2_fifo]
     - [0x43790]
-    - {type: bss, vram: 0x80042B90, name: mainseg}
+    - {type: .bss, vram: 0x80042B90, name: main/main}
+    - {type: bss, vram: 0x80048B80, name: mainseg}
     - {type: lib, vram: 0x80097950, name: libultra_rom, object: sptask, section: .bss}
     - {type: lib, vram: 0x80097990, name: libultra_rom, object: leointerrupt, section: .bss}
     - {type: lib, vram: 0x80098990, name: libultra_rom, object: motor, section: .bss}
