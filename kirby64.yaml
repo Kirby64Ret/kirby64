@@ -192,6 +192,8 @@ segments:
     - [0x3C3B0, data, main/gspS2DEX2_fifo]
     - [0x3E870, .data, main/main]
     - [0x3E8A0, data, mainseg.2]
+    - [0x3EA50, .data, main/object_manager]
+    - [0x3EB10, data, mainseg.2.0]
     - [0x3EB20, .data, main/math]
     - [0x3EF30, data, mainseg.2.1]
     - [0x40750, lib, libultra_rom, thread, .data]

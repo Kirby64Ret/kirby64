@@ -133,28 +133,38 @@ struct UnkStruct8004A7C4_3C_duplicate {
     u32 unk84;
 };
 
+enum GObjKinds {
+    GOBJ_KIND_NONE = 0,
+    // GOBJ_KIND_DOBJ,
+    // GOBJ_KIND_SOBJ,
+    // GOBJ_KIND_CAMERA,
+};
+
+typedef void (*onDrawFunc)(struct GObj *);
+typedef void (*onUpdateFunc)(void);
+
 // GObj?
 typedef struct GObj {
     /* 0x00 */ u32 objId;
-    /* 0x04 */ struct GObj* unk4;
-    /* 0x08 */ struct GObj* unk8;
+    /* 0x04 */ struct GObj* next;
+    /* 0x08 */ struct GObj* prev;
     /* 0x0C */ u8 link;
     // todo: find the array this indexes
     /* 0x0D */ u8 dl_link;
     // seems to be similar to other GObj's in proximity
     u8 unkE;
-    u8 unkF;
-    u32 unk10;
-    // location of render callback according to HSD
-    void (*unk14)(void);
-    struct GObjProcess *proc;
-    u32 unk1C;
+    u8 kind;
+    /* 0x10 */
+    u32 pri;
+    onUpdateFunc onUpdate;
+    struct GObjProcess *procListHead;
+    struct GObjProcess *procListTail;
+    /* 0x20 */
     struct GObj* nextDL;
     struct GObj* prevDL;
     u32 renderPriority;
-    // location of user data removal function according to HSD
-    // based on usage this might actually be the render callback
-    void (*unk2C)(struct GObj *);
+    onDrawFunc onDraw;
+    /* 0x30 */
     u32 unk30;
     u32 unk34;
     u32 unk38;
@@ -162,13 +172,13 @@ typedef struct GObj {
     struct UnkStruct8004A7C4_3C *unk3C;
     // goes up by 2.0f per frame until it hits 40.0f, then resets to 0.0f
     f32 unk40;
-    u32 unk44;
+    u32 flags;
     // grab arguments
     void (*unk48)(void);
     u32 unk4C;
 } GObj;
 // size: 0x50
-extern struct GObj *D_8004A7C4, *D_8004A7C8, *D_8004A7CC;
+extern struct GObj *omCurrentObj, *D_8004A7C8, *D_8004A7CC;
 extern struct GObj *D_800DE44C;
 
 typedef void (*VTABLE[])(struct GObj *);

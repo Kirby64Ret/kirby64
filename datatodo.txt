@@ -499,6 +499,6 @@ D_8022FAB0 = D_8022FAB0_ovl19;
 D_8004A700 = gHighestPrioDLLinkProcs + 0x80;
 D_8004A704 = gHighestPrioDLLinkProcs + 0x84;
 D_8004A70C = gDLLinkProcs + 4;
-D_8004A56C = D_8004A560 + 0xC;
+D_8004A56C = omGObjProcList + 0xC;
 D_8004A684 = gHighestPrioDLLinkProcs + 4;
 

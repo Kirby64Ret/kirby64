@@ -1,3 +1,6 @@
+#ifndef OVL0_3_H
+#define OVL0_3_H
+
 struct AnimationUnk6C {
   struct AnimationUnk6C *next; // it's a list but is it really the next one?
   u8 unk4;
@@ -10,21 +13,7 @@ struct AnimationUnk6C {
   f32 unk14;
 };
 
-// AObj
-struct AObj { // TODO: Same as Unk6C?
-  struct AObj *next; // it's a list but is it really the next one?
-  u8 unk4; // index
-  u8 unk5;
-  u8 unk6;
-  u8 unk7;
-  f32 unk8;
-  f32 unkC;
-  f32 unk10;
-  f32 unk14;
-  f32 unk18;
-  f32 unk1C;
-  s32 unk20;
-};
+
 
 struct Animation {
   u32 unk0;
@@ -87,3 +76,5 @@ struct unk8000BE90Func {
     u32 unk7C;
     struct unk8000BF3CFunc* unk80;
 };
+
+#endif

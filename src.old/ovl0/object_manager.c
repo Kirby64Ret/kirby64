@@ -86,8 +86,8 @@ struct GObjProcess *gGObjProcessHead; // 0x8004A55C
 struct GObjProcess *D_8004A560[4]; // probably length 4
 u32 gGObjProcessCount;
 // 0x8004A574?
-struct GObj *D_8004A578[32]; // probably length 32 based on loop asm
-void* D_8004A5F8[32]; // also length 32? lines up with next symbol
+struct GObj *omGObjListHead[32]; // probably length 32 based on loop asm
+void* omGObjListTail[32]; // also length 32? lines up with next symbol
 struct GObj *gGObjHead;
 // 0x8004A67C? file boundary?
 struct GObj* gHighestPrioDLLinkProcs[33]; // length 33?
@@ -279,20 +279,20 @@ void func_800083CC(struct GObj *arg0, struct GObj *arg1) {
         arg0->unk4 = arg1->unk4;
         arg1->unk4 = arg0;
     } else {
-        arg0->unk4 = D_8004A578[arg0->link];
-        D_8004A578[arg0->link] = arg0;
+        arg0->unk4 = omGObjListHead[arg0->link];
+        omGObjListHead[arg0->link] = arg0;
     }
     if (arg0->unk4 != 0) {
         arg0->unk4->unk8 = arg0;
     } else {
-        D_8004A5F8[arg0->link] = arg0;
+        omGObjListTail[arg0->link] = arg0;
     }
 }
 
 void func_80008434(struct GObj *arg0) {
     struct GObj *phi_a1;
 
-    phi_a1 = D_8004A5F8[arg0->link];
+    phi_a1 = omGObjListTail[arg0->link];
     while (phi_a1 != 0 && phi_a1->unk10 < arg0->unk10) {
         phi_a1 = phi_a1->unk8;
     }
@@ -303,14 +303,14 @@ void func_800084A0(struct GObj *arg0) {
     struct GObj *phi_v0;
     struct GObj *phi_a1;
 
-    phi_v0 = D_8004A578[arg0->link];
+    phi_v0 = omGObjListHead[arg0->link];
     while (phi_v0 != 0 && arg0->unk10 < phi_v0->unk10) {
         phi_v0 = phi_v0->unk4;
     }
     if (phi_v0 != 0) {
         phi_a1 = phi_v0->unk8;
     } else {
-        phi_a1 = D_8004A5F8[arg0->link];
+        phi_a1 = omGObjListTail[arg0->link];
     }
     func_800083CC(arg0, phi_a1);
 }
@@ -319,13 +319,13 @@ void func_80008528(struct GObj *arg0) {
     if (arg0->unk8 != 0) {
         arg0->unk8->unk4 = arg0->unk4;
     } else {
-        D_8004A578[arg0->link] = arg0->unk4;
+        omGObjListHead[arg0->link] = arg0->unk4;
     }
     if (arg0->unk4 != 0) {
         arg0->unk4->unk8 = arg0->unk8;
         return;
     }
-    D_8004A5F8[arg0->link] = arg0->unk8;
+    omGObjListTail[arg0->link] = arg0->unk8;
 }
 
 void omGInsertDLLink(struct GObj *o, struct GObj *highprio_o) {
@@ -1267,7 +1267,7 @@ void func_8000AD88(void) {
     D_8004A7C4 = NULL;
     D_8004A7D0 = NULL;
     for (i = 0; i < 32; i++) {
-        struct GObj *tmp = D_8004A578[i];
+        struct GObj *tmp = omGObjListHead[i];
 
         while (tmp != NULL) {
             if (((tmp->unk44 & 0x40) == 0) && (tmp->unk14 != NULL)) {
@@ -1474,7 +1474,7 @@ void func_8000BC34(void) {
     int i;
 
     for (i = 0; i < 32; i++) {
-        phi_s0 = D_8004A578[i];
+        phi_s0 = omGObjListHead[i];
         while (phi_s0 != NULL) {
             func_8000A29C(phi_s0);
             phi_s0 = phi_s0->unk4;

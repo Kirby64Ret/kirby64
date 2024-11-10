@@ -1,4 +1,6 @@
 #include "common.h"
+#include "object_manager.h"
+#include "crash_screen.h"
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B3E0.s")
 
@@ -16,7 +18,17 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B6B4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/omSleep.s")
+void ohSleep(s32 frames) {
+    if (omCurrentProc->payload.thread->objStack->stack[7] != STACK_TOP_MAGIC) {
+        fatal_printf("gobjthread stack over  gobjid = %d\n", omCurrentProc->gobj->objId);
+    }
+
+    while (frames != 0) {
+        osSendMesg(&HS64_GObjProcMesgQ, (OSMesg)1, OS_MESG_NOBLOCK);
+        osStopThread(NULL);
+        frames--;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B758.s")
 

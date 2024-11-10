@@ -48,7 +48,7 @@ extern struct DynamicBuffer gDynamicBuffer1, gDynamicBuffer2;
 
 struct GObjThread
 {
-    struct GObjThread *unk0; // function?
+    struct GObjThread *next; // function?
     OSThread thread;
     struct ObjStack *objStack;
     s32 objStackSize;
@@ -56,16 +56,16 @@ struct GObjThread
 typedef struct GObjThread GObjThread;
 
 struct GObjThreadStack {
-    struct GObjThreadStack *unk0;
-    struct GObjThreadStack *unk4;
+    struct GObjThreadStack *next;
+    struct GObjThreadStack *prev;
     u64 stack[8];
 };
 
 typedef struct GObjProcess {
-    struct GObjProcess *unk0;
-    struct GObjProcess *unk4;
-    struct GObjProcess *unk8;
-    struct GObjProcess *unkC;
+    struct GObjProcess *next;
+    struct GObjProcess *prev;
+    struct GObjProcess *nextPriProc;
+    struct GObjProcess *prevPriProc;
     /* 0x10 */ u32 pri;
     /* 0x14 */ u8 kind;
     u8 unk15;
@@ -375,7 +375,8 @@ struct InterruptMessageTypeB {
 
 extern OSMesgQueue gInterruptMesgQueue;
 
-#include "D_8004A7C4.h"
+#include "GObj.h"
+#include "AObj.h"
 
 struct Camera *func_80009F7C(struct GObj*);
 
@@ -435,6 +436,9 @@ struct UnkStructFunc80007380 {
     u32 unk88;
 };
 
-void omSleep(s32);
+void ohSleep(s32);
+// BSS
+extern struct GObjProcess *omCurrentProc;
+extern OSMesgQueue HS64_GObjProcMesgQ;
 
 #endif
