@@ -212,6 +212,8 @@ segments:
     - [0x40A70, lib, libultra_rom, aisetnextbuf, .data]
     - [0x40A80, .rodata, main/main]
     - [0x40AA0, rodata, mainseg]
+    - [0x40E10, .rodata, main/memory_layer]
+    - [0x40E30, rodata]
     - [0x41820, .rodata, main/math]
     - [0x41870, rodata, mainseg.0.1]
     - [0x418E0, .rodata, main/audio]
