@@ -15,7 +15,7 @@ struct UnkStruct800AC954_68 {
 };
 
 // spobj? according to debug string
-struct UnkStruct800AC954 {
+typedef struct UnkStruct800AC954 {
     struct UnkStruct800AC954 *unk0;
     u32 unk4;
     u32 unk8;
@@ -45,26 +45,33 @@ struct UnkStruct800AC954 {
     f32 unk34;
     f32 unk38;
     u32 unk3C;
-    struct UnkStruct800AC954_40 *unk40;
+    void *unk40;
     u32 unk44;
     u32 unk48;
     u32 unk4C;
     u32 unk50;
     u32 unk54;
-    struct UnkStruct800AC954_58 *unk58;
+    u16 unk58;
+    u16 unk5A; // flag1
     u32 unk5C;
     u32 unk60;
     u32 unk64;
     struct UnkStruct800AC954_68 *unk68;
     u32 unk6C;
-    struct UnkStruct800AC954_68 *unk70;
+    void *unk70;
     u32 unk74;
     u32 unk78;
     u32 unk7C;
     u32 unk80;
     u32 unk84;
     uObjMtx *unk88;
-};
+    u32 unk8C;
+    u32 unk90[4];
+    u32 unkA0[4];
+    u32 unkB0[2];
+    u16 unkB8;
+    u16 unkBA; // flag2
+} UnkStruct800AC954;
 
 void func_800AD1A0(void *);
 

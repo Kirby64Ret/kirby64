@@ -41,5 +41,6 @@ extern u32 D_800D7BB8;
 extern u32 D_800D7C10;
 void func_800AA018(s32 arg0);
 void func_800AA864(s32, u32);
+void func_800AAF34(s32, s32, f32);
 
 #endif // OVL1_3_H

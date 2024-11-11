@@ -140,8 +140,10 @@ enum GObjKinds {
     // GOBJ_KIND_CAMERA,
 };
 
-typedef void (*onDrawFunc)(struct GObj *);
-typedef void (*onUpdateFunc)(void);
+typedef void (*GObjFunc)(struct GObj *);
+
+// Flags
+#define GOBJ_FLAGS_HIDDEN 1
 
 // GObj?
 typedef struct GObj {
@@ -156,14 +158,14 @@ typedef struct GObj {
     u8 kind;
     /* 0x10 */
     u32 pri;
-    onUpdateFunc onUpdate;
+    GObjFunc onUpdate;
     struct GObjProcess *procListHead;
     struct GObjProcess *procListTail;
     /* 0x20 */
     struct GObj* nextDL;
     struct GObj* prevDL;
     u32 renderPriority;
-    onDrawFunc onDraw;
+    GObjFunc onDraw;
     /* 0x30 */
     u32 unk30;
     u32 unk34;

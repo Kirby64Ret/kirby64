@@ -441,4 +441,8 @@ void ohSleep(s32);
 extern struct GObjProcess *omCurrentProc;
 extern OSMesgQueue HS64_GObjProcMesgQ;
 
+// extern funcs
+void func_8000A5FC(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);
+struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
+
 #endif

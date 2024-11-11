@@ -52,12 +52,12 @@ struct GObjProcess *gGObjProcessHead; // 0x8004A55C
 struct GObjProcess *omGObjProcList[4]; // 0x8004A560, probably length 4
 u32 gGObjProcessCount;
 // 0x8004A574?
-struct GObj *omGObjListHead[32]; // probably length 32 based on loop asm
+GObj *omGObjListHead[32]; // probably length 32 based on loop asm
 void* omGObjListTail[32]; // also length 32? lines up with next symbol
-struct GObj *gGObjHead;
+GObj *gGObjHead;
 // 0x8004A67C? file boundary?
-struct GObj* gHighestPrioDLLinkProcs[33]; // length 33?
-struct GObj* gDLLinkProcs[33]; // length 33?
+struct GObj* omGObjListDlHead[33]; // length 33?
+struct GObj* omGObjListDlTail[33]; // length 33?
 u32 gGObjCount;
 struct OMMtx *gOMMtxHead;
 u32 gOMMtxCount;
@@ -72,7 +72,7 @@ u32 D_8004A7B4;
 u32 D_8004A7B8;
 struct Camera* gCameraHead;
 u32 gCameraCount;
-struct GObj *omCurrentObj, *D_8004A7C8, *D_8004A7CC;
+GObj *omCurrentObj, *D_8004A7C8, *D_8004A7CC;
 struct GObjProcess *omCurrentProc;
 s32 D_8004A7D4;
 OSMesg D_8004A7D8;
@@ -80,6 +80,11 @@ OSMesg D_8004A7D8;
 OSMesgQueue HS64_GObjProcMesgQ;
 struct UnkStruct8004A7F8 D_8004A7F8[32]; // length 32 based on loop asm in func_8000AAE0 (unrolled)
 u8 D_8004AA78[0x18];
+
+// externs for their own headers
+extern u32 D_8003DCA8;
+extern void HS64_AObjLinkToAnimation(struct Animation *anim, struct AObj *stack);
+
 
 struct GObjThread *HS64_GObjThreadPop(void) {
     struct GObjThread *ret;
@@ -93,7 +98,7 @@ struct GObjThread *HS64_GObjThreadPop(void) {
     return ret;
 }
 
-void HS64_GObjThreadPush(struct GObjThread *th) {
+void HS64_GObjThreadRelease(struct GObjThread *th) {
     th->next = gGObjThreadHead;
     gGObjThreadHead = th;
     gGObjThreadCount--;
@@ -151,7 +156,7 @@ void HS64_GObjProcessReleasePri(struct GObjProcess *proc) {
 }
 
 void func_80008210(struct GObjProcess *proc) {
-    struct GObj *o;
+    GObj *o;
 
     o = proc->gobj;
     HS64_GObjProcessReleasePri(proc);
@@ -171,7 +176,7 @@ struct GObjProcess *HS64_GetCurrentProc(void) {
     return omCurrentProc;
 }
 
-// Unused?
+// Unused
 struct ObjStack *HS64_GetGObjProcessStack(struct GObjProcess *proc) {
     if (proc == NULL) {
         proc = omCurrentProc;
@@ -182,7 +187,7 @@ struct ObjStack *HS64_GetGObjProcessStack(struct GObjProcess *proc) {
     return NULL;
 }
 
-// Unused?
+// Unused
 s32 HS64_GetGObjProcessStackSize(struct GObjProcess *proc) {
     if (proc == NULL) {
         proc = omCurrentProc;
@@ -195,14 +200,14 @@ s32 HS64_GetGObjProcessStackSize(struct GObjProcess *proc) {
     return 0;
 }
 
-// Unused?
+// Unused
 void HS64_SetProcEndCallback(void (*cb)(struct GObjProcess *)) {
     omProcEndCallback = cb;
 }
 
-// Unused?
-s32 func_80008328(void) {
-    struct GObj *gobj;
+// Unused
+s32 HS64_CountGObjs(void) {
+    GObj *gobj;
     s32 listCount;
 
     gobj = gGObjHead;
@@ -214,8 +219,8 @@ s32 func_80008328(void) {
     return listCount + gGObjCount;
 }
 
-struct GObj *HS64_GObjPop(void) {
-    struct GObj *head;
+GObj *HS64_GObjPop(void) {
+    GObj *head;
 
     if (gGObjHead == NULL) {
         return NULL;
@@ -226,13 +231,13 @@ struct GObj *HS64_GObjPop(void) {
     return head;
 }
 
-void HS64_GObjPush(struct GObj *o) {
+void HS64_GObjRelease(GObj *o) {
     o->next = gGObjHead;
     gGObjHead = o;
     gGObjCount--;
 }
 
-void func_800083CC(struct GObj *o, struct GObj *prevObj) {
+void func_800083CC(GObj *o, GObj *prevObj) {
     o->prev = prevObj;
     if (prevObj) {
         o->next = prevObj->next;
@@ -248,8 +253,8 @@ void func_800083CC(struct GObj *o, struct GObj *prevObj) {
     }
 }
 
-void func_80008434(struct GObj *o) {
-    struct GObj *tail;
+void func_80008434(GObj *o) {
+    GObj *tail;
 
     tail = omGObjListTail[o->link];
     while (tail != 0 && tail->pri < o->pri) {
@@ -258,9 +263,9 @@ void func_80008434(struct GObj *o) {
     func_800083CC(o, tail);
 }
 
-void func_800084A0(struct GObj *o) {
-    struct GObj *head;
-    struct GObj *tail;
+void func_800084A0(GObj *o) {
+    GObj *head;
+    GObj *tail;
 
     head = omGObjListHead[o->link];
     while (head != 0 && o->pri < head->pri) {
@@ -274,7 +279,7 @@ void func_800084A0(struct GObj *o) {
     func_800083CC(o, tail);
 }
 
-void func_80008528(struct GObj *arg0) {
+void func_80008528(GObj *arg0) {
     if (arg0->prev != 0) {
         arg0->prev->next = arg0->next;
     } else {
@@ -287,26 +292,26 @@ void func_80008528(struct GObj *arg0) {
     omGObjListTail[arg0->link] = arg0->prev;
 }
 
-void omGInsertDLLink(struct GObj *o, struct GObj *highprio_o) {
+void omGInsertDLLink(GObj *o, GObj *highprio_o) {
     o->prevDL = highprio_o;
     if (highprio_o != NULL) {
         o->nextDL = highprio_o->nextDL;
         highprio_o->nextDL = o;
     } else {
-        o->nextDL = gHighestPrioDLLinkProcs[o->dl_link];
-        gHighestPrioDLLinkProcs[o->dl_link] = o;
+        o->nextDL = omGObjListDlHead[o->dl_link];
+        omGObjListDlHead[o->dl_link] = o;
     }
     if (o->nextDL != NULL) {
         o->nextDL->prevDL = o;
         return;
     }
-    gDLLinkProcs[o->dl_link] = o;
+    omGObjListDlTail[o->dl_link] = o;
 }
 
-void omGSetupCameraDLLink(struct GObj *arg0) {
-    struct GObj *i = NULL;
+void omGSetupCameraDLLink(GObj *arg0) {
+    GObj *i = NULL;
     
-    for (i = gDLLinkProcs[arg0->dl_link];
+    for (i = omGObjListDlTail[arg0->dl_link];
          i != 0 && i->renderPriority < arg0->renderPriority;
          i = i->prevDL
     );
@@ -314,32 +319,32 @@ void omGSetupCameraDLLink(struct GObj *arg0) {
     omGInsertDLLink(arg0, i);
 }
 
-void omGSetupDLLink_HighestPrioMax(struct GObj *arg0) {
-    struct GObj *phi_v0;
-    struct GObj *phi_a1;
+void omGSetupDLLink_HighestPrioMax(GObj *arg0) {
+    GObj *phi_v0;
+    GObj *phi_a1;
 
-    phi_v0 = gHighestPrioDLLinkProcs[arg0->dl_link];
+    phi_v0 = omGObjListDlHead[arg0->dl_link];
     while (phi_v0 != 0 && arg0->renderPriority < phi_v0->renderPriority) {
         phi_v0 = phi_v0->nextDL;
     }
     if (phi_v0 != 0) {
         phi_a1 = phi_v0->prevDL;
     } else {
-        phi_a1 = gDLLinkProcs[arg0->dl_link];
+        phi_a1 = omGObjListDlTail[arg0->dl_link];
     }
     omGInsertDLLink(arg0, phi_a1);
 }
 
-void omGDLLinkDestructor(struct GObj *arg0) {
+void omGDLLinkDestructor(GObj *arg0) {
     if (arg0->prevDL != 0) {
         arg0->prevDL->nextDL = arg0->nextDL;
     } else {
-        gHighestPrioDLLinkProcs[arg0->dl_link] = arg0->nextDL;
+        omGObjListDlHead[arg0->dl_link] = arg0->nextDL;
     }
     if (arg0->nextDL != 0) {
         arg0->nextDL->prevDL = arg0->prevDL;
     } else {
-        gDLLinkProcs[arg0->dl_link] = arg0->prevDL;
+        omGObjListDlTail[arg0->dl_link] = arg0->prevDL;
     }
 }
 
@@ -356,7 +361,7 @@ struct OMMtx *HS64_OMMtxPop(void) {
     return tmp;
 }
 
-void HS64_OMMtxPush(struct OMMtx *arg0) {
+void HS64_OMMtxRelease(struct OMMtx *arg0) {
     arg0->next = gOMMtxHead;
     gOMMtxHead = arg0;
     gOMMtxCount--;
@@ -392,7 +397,7 @@ void func_80008850(struct Animation *anim, struct AObj *aobj) {
     anim->aobj = aobj;
 }
 
-void HS64_AObjPush(struct AObj *arg0) {
+void HS64_AObjRelease(struct AObj *arg0) {
     arg0->next = gAObjHead;
     gAObjCount--;
     gAObjHead = arg0;
@@ -458,7 +463,7 @@ void HS64_CameraPush(struct Camera *arg0) {
 struct GObjThread *HS64_GObjThreadPop();
 void func_800080C0(struct GObjProcess *);
 
-struct GObjProcess *func_80008A18(struct GObj *arg0, void (*arg1)(void), u8 kind, u32 pri) {
+struct GObjProcess *func_80008A18(GObj *arg0, void (*arg1)(void), u8 kind, u32 pri) {
     struct GObjProcess *sp24;
     struct GObjThread *oThread;
     struct GObjProcess *oProcess;
@@ -501,7 +506,7 @@ struct GObjProcess *func_80008A18(struct GObj *arg0, void (*arg1)(void), u8 kind
 }
 
 // a somewhat more granular version of func_80008A18
-struct GObjProcess *func_80008B94(struct GObj *arg0, struct GObjThread *entry, u32 pri, s32 arg3, struct ObjStack *arg4, u32 stackSize) {
+struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri, s32 arg3, struct ObjStack *arg4, u32 stackSize) {
     struct GObjProcess *oProcess;
     struct GObjThread *oThread;
     s32 phi_a1;
@@ -566,7 +571,7 @@ void func_80008DA8(struct GObjProcess *proc) {
             case 0:
                 osDestroyThread(&proc->payload.thread->thread);
                 HS64_ReleaseGObjThreadStack(&proc->payload.thread->objStack->stack[0] - 1); // why???
-                HS64_GObjThreadPush(proc->payload.thread);
+                HS64_GObjThreadRelease(proc->payload.thread);
                 break;
             case 1:
                 break;
@@ -576,7 +581,7 @@ void func_80008DA8(struct GObjProcess *proc) {
                 if (temp_v0_3 != 0) {
                     temp_v0_3(proc->payload.thread->objStack);
                 }
-                HS64_GObjThreadPush(proc->payload.thread);
+                HS64_GObjThreadRelease(proc->payload.thread);
         }
         func_80008210(proc);
         HS64_GObjProcessRelease(proc);
@@ -592,8 +597,6 @@ void func_80009628(struct DObj *arg0, u8 arg1, u8 arg2) {
 }
 
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009658.s")
-
-extern void HS64_AObjLinkToAnimation(struct Animation *anim, struct AObj *stack);
 
 // Initializes a new AObj with an index
 struct AObj *HS64_AObjNew(struct Animation *anim, u8 index) {
@@ -620,7 +623,7 @@ void func_8000984C(struct unk8000BE90Func *arg0) {
     phi_s0 = arg0->unk6C;
     while (phi_s0 != 0) {
         temp_s1 = phi_s0->next;
-        HS64_AObjPush(phi_s0);
+        HS64_AObjRelease(phi_s0);
         phi_s0 = temp_s1;
     }
     arg0->unk6C = 0;
@@ -651,7 +654,7 @@ void func_80009918(struct unk80008840 *arg0) {
     phi_s0 = arg0->unk90;
     while (phi_s0 != 0) {
         temp_s1 = phi_s0->next;
-        HS64_AObjPush(phi_s0);
+        HS64_AObjRelease(phi_s0);
         phi_s0 = temp_s1;
     }
     arg0->unk90 = 0;
@@ -677,14 +680,14 @@ struct AObj *func_80009978(struct Animation* arg0, u8 arg1) {
 
 // Unused?
 void func_800099E4(struct Animation *anim) {
-    struct AObj *temp_s1;
-    struct AObj *phi_s0;
+    struct AObj *tmpnext;
+    struct AObj *aobj;
 
-    phi_s0 = anim->aobj;
-    while (phi_s0 != 0) {
-        temp_s1 = phi_s0->next;
-        HS64_AObjPush(phi_s0);
-        phi_s0 = temp_s1;
+    aobj = anim->aobj;
+    while (aobj != 0) {
+        tmpnext = aobj->next;
+        HS64_AObjRelease(aobj);
+        aobj = tmpnext;
     }
     anim->aobj = 0;
     anim->scale = -FLT_MAX;
@@ -697,7 +700,7 @@ GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009B5C.s")
 // Not really sure what's going on here
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009BD4.s")
 
-struct DObj *func_80009C38(struct GObj *gobj, u8 *arg1) {
+struct DObj *func_80009C38(GObj *gobj, u8 *arg1) {
     struct DObj *dobj;
     struct DObj *temp_v1;
 
@@ -735,7 +738,7 @@ GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009D5C.s")
 
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009DF4.s")
 
-struct Camera *func_80009F7C(struct GObj *gobj) {
+struct Camera *func_80009F7C(GObj *gobj) {
     int i;
     struct Camera *cam;
 
@@ -774,7 +777,7 @@ struct Camera *func_80009F7C(struct GObj *gobj) {
 
 void func_8000A02C(struct Camera *cam) {
     struct AObj *aobj;
-    struct GObj *gobj;
+    GObj *gobj;
     struct OMMtx *mtx;
     int i;
 
@@ -786,7 +789,7 @@ void func_8000A02C(struct Camera *cam) {
         mtx = cam->unk64[i];
 
         if (mtx != NULL) {
-            HS64_OMMtxPush(mtx);
+            HS64_OMMtxRelease(mtx);
         }
     }
 
@@ -795,15 +798,15 @@ void func_8000A02C(struct Camera *cam) {
     while (aobj != NULL) {
         struct AObj *anext = aobj->next;
 
-        HS64_AObjPush(aobj);
+        HS64_AObjRelease(aobj);
         aobj = anext;
     }
 
     HS64_CameraPush(cam);
 }
 
-struct GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri) {
-    struct GObj *toReturn;
+GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri) {
+    GObj *toReturn;
 
     if (link >= 32) {
         fatal_printf("omGAddCommon() : link num over : link = %d : id = %d\n", link, id);
@@ -829,31 +832,32 @@ struct GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri
     return toReturn;
 }
 
-struct GObj *func_8000A180(s32 id, void (*func)(void), u8 link, u32 arg3) {
-    struct GObj *temp_v0;
+GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri) {
+    GObj *o;
 
-    temp_v0 = omGAddCommon(id, func, link, arg3);
-    if (temp_v0 == NULL) {
+    o = omGAddCommon(id, func, link, pri);
+    if (o == NULL) {
         return NULL;
     } else {
-        func_80008434(temp_v0);
-        return temp_v0;
+        func_80008434(o);
+        return o;
     }
 }
 
-struct GObj *func_8000A1C0(s32 arg0, s32 arg1, u8 arg2, s32 arg3) {
-    struct GObj *temp_v0;
+GObj *func_8000A1C0(s32 arg0, s32 arg1, u8 arg2, s32 pri) {
+    GObj *o;
 
-    temp_v0 = omGAddCommon(arg0, arg1, arg2, arg3);
-    if (temp_v0 == 0) {
+    o = omGAddCommon(arg0, arg1, arg2, pri);
+    if (o == 0) {
         return NULL;
+    } else {
+        func_800084A0(o);
+        return o;
     }
-    func_800084A0(temp_v0);
-    return temp_v0;
 }
 
-struct GObj *func_8000A200(s32 id, s32 arg1, struct GObj *arg2) {
-    struct GObj *temp_v0;
+GObj *func_8000A200(s32 id, s32 arg1, GObj *arg2) {
+    GObj *temp_v0;
 
     temp_v0 = omGAddCommon(id, arg1, arg2->link, arg2->pri);
     if (temp_v0 == 0) {
@@ -863,8 +867,8 @@ struct GObj *func_8000A200(s32 id, s32 arg1, struct GObj *arg2) {
     return temp_v0;
 }
 
-struct GObj *func_8000A24C(s32 id, s32 arg1, struct GObj *arg2) {
-    struct GObj *temp_v0;
+GObj *func_8000A24C(s32 id, s32 arg1, GObj *arg2) {
+    GObj *temp_v0;
 
     temp_v0 = omGAddCommon(id, arg1, arg2->link, arg2->pri);
     if (temp_v0 == 0) {
@@ -874,10 +878,10 @@ struct GObj *func_8000A24C(s32 id, s32 arg1, struct GObj *arg2) {
     return temp_v0;
 }
 
-void func_8000BBE0(struct GObj *);
-void func_8000B870(struct GObj *);
+void func_8000BBE0(GObj *);
+void func_8000B870(GObj *);
 
-void func_8000A29C(struct GObj *arg0) {
+void func_8000A29C(GObj *arg0) {
     if (arg0 == 0 || arg0 == omCurrentObj) {
         D_8004A7D4 = 2;
         return;
@@ -895,12 +899,12 @@ void func_8000A29C(struct GObj *arg0) {
         omGDLLinkDestructor(arg0);
     }
     func_80008528(arg0);
-    HS64_GObjPush(arg0);
+    HS64_GObjRelease(arg0);
 }
 
 // i genuinely don't know what's going on here
 #ifdef NON_MATCHING
-void omGMoveCommon(s32 arg0, struct GObj *gobj, u8 link, u32 pri, struct GObj *arg4) {
+void omGMoveCommon(s32 arg0, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
     GObjProcess *proc;
 
     if (link >= 0x20) {
@@ -945,25 +949,23 @@ void omGMoveCommon(s32 arg0, struct GObj *gobj, u8 link, u32 pri, struct GObj *a
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGMoveCommon.s")
 #endif
 
-void func_8000A498(struct GObj *arg0, u8 arg1, s32 arg2) {
+void func_8000A498(GObj *arg0, u8 arg1, s32 arg2) {
     omGMoveCommon(0, arg0, arg1, arg2, NULL);
 }
 
-void func_8000A4D0(struct GObj *arg0, u8 arg1, s32 arg2) {
+void func_8000A4D0(GObj *arg0, u8 arg1, s32 arg2) {
     omGMoveCommon(1, arg0, arg1, arg2, NULL);
 }
 
-void func_8000A508(struct GObj *arg0, struct GObj *arg1) {
+void func_8000A508(GObj *arg0, GObj *arg1) {
     omGMoveCommon(2, arg0, arg1->link, arg1->pri, arg1);
 }
 
-void func_8000A544(struct GObj *arg0, struct GObj *arg1) {
+void func_8000A544(GObj *arg0, GObj *arg1) {
     omGMoveCommon(3, arg0, arg1->link, arg1->pri, arg1);
 }
 
-extern u32 D_8003DCA8;
-
-void omGLinkObjDLCommon(struct GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4) {
+void omGLinkObjDLCommon(GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4) {
     if (link >= 0x20) {
         fatal_printf("omGLinkObjDLCommon() : dl_link num over : dl_link = %d : id = %d\n", link, arg0->objId);
         while (1);
@@ -975,7 +977,7 @@ void omGLinkObjDLCommon(struct GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4
     arg0->unkE = D_8003DCA8 - 1;
 }
 
-void func_8000A5FC(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4) {
+void func_8000A5FC(GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4) {
     if (gobj == NULL) {
         gobj = omCurrentObj;
     }
@@ -983,7 +985,7 @@ void func_8000A5FC(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4) {
     omGSetupCameraDLLink(gobj);
 }
 
-void func_8000A640(struct GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4) {
+void func_8000A640(GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4) {
     if (arg0 == 0) {
         arg0 = omCurrentObj;
     }
@@ -991,7 +993,7 @@ void func_8000A640(struct GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4) {
     omGSetupDLLink_HighestPrioMax(arg0);
 }
 
-void func_8000A684(struct GObj *arg0, s32 arg1, s32 arg2, struct GObj *arg3) {
+void func_8000A684(GObj *arg0, s32 arg1, s32 arg2, GObj *arg3) {
     if (arg0 == 0) {
         arg0 = omCurrentObj;
     }
@@ -999,7 +1001,7 @@ void func_8000A684(struct GObj *arg0, s32 arg1, s32 arg2, struct GObj *arg3) {
     omGInsertDLLink(arg0, arg3);
 }
 
-void func_8000A6D8(struct GObj *o, s32 arg1, s32 arg2, struct GObj *arg3) {
+void func_8000A6D8(GObj *o, s32 arg1, s32 arg2, GObj *arg3) {
     if (o == 0) {
         o = omCurrentObj;
     }
@@ -1007,7 +1009,7 @@ void func_8000A6D8(struct GObj *o, s32 arg1, s32 arg2, struct GObj *arg3) {
     omGInsertDLLink(o, arg3->prev);
 }
 
-void func_8000A730(struct GObj *o, onDrawFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {
+void func_8000A730(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {
     o->dl_link = 0x20;
     o->renderPriority = pri;
     o->onDraw = drawCallback;
@@ -1017,7 +1019,7 @@ void func_8000A730(struct GObj *o, onDrawFunc drawCallback, s32 pri, s32 arg3, s
     o->unkE = D_8003DCA8 - 1;
 }
 
-void func_8000A764(struct GObj *o, onDrawFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {
+void func_8000A764(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {
     if (o == 0) {
         o = omCurrentObj;
     }
@@ -1025,7 +1027,7 @@ void func_8000A764(struct GObj *o, onDrawFunc drawCallback, s32 pri, s32 arg3, s
     omGSetupCameraDLLink(o);
 }
 
-void func_8000A7A0(struct GObj *o, s32 arg1, s32 prio, s32 arg3, s32 arg4) {
+void func_8000A7A0(GObj *o, s32 arg1, s32 prio, s32 arg3, s32 arg4) {
     if (o == 0) {
         o = omCurrentObj;
     }
@@ -1033,7 +1035,7 @@ void func_8000A7A0(struct GObj *o, s32 arg1, s32 prio, s32 arg3, s32 arg4) {
     omGSetupDLLink_HighestPrioMax(o);
 }
 
-void func_8000A7DC(struct GObj *o, s32 arg1, s32 arg2, s32 arg3, struct GObj *arg4) {
+void func_8000A7DC(GObj *o, s32 arg1, s32 arg2, s32 arg3, GObj *arg4) {
     if (o == NULL) {
         o = omCurrentObj;
     }
@@ -1042,7 +1044,7 @@ void func_8000A7DC(struct GObj *o, s32 arg1, s32 arg2, s32 arg3, struct GObj *ar
     omGInsertDLLink(o, arg4);
 }
 
-void func_8000A830(struct GObj *o, s32 arg1, s32 arg2, s32 arg3, struct GObj *arg4) {
+void func_8000A830(GObj *o, s32 arg1, s32 arg2, s32 arg3, GObj *arg4) {
     if (o == NULL) {
         o = omCurrentObj;
     }
@@ -1051,7 +1053,7 @@ void func_8000A830(struct GObj *o, s32 arg1, s32 arg2, s32 arg3, struct GObj *ar
     omGInsertDLLink(o, arg4->prev);
 }
 
-void omGMoveObjDL(struct GObj *o, u8 link, s32 renderPri) {
+void omGMoveObjDL(GObj *o, u8 link, s32 renderPri) {
     if (link >= 0x20) {
         fatal_printf("omGMoveObjDL() : dl_link num over : dl_link = %d : id = %d\n", link, o->objId);
         while (1);
@@ -1062,7 +1064,7 @@ void omGMoveObjDL(struct GObj *o, u8 link, s32 renderPri) {
     omGSetupCameraDLLink(o);
 }
 
-void omGMoveObjDLHead(struct GObj *o, u8 link, s32 renderPri) {
+void omGMoveObjDLHead(GObj *o, u8 link, s32 renderPri) {
     if (link >= 0x20) {
         fatal_printf("omGMoveObjDLHead() : dl_link num over : dl_link = %d : id = %d\n", link, o->objId);
         while (1);
@@ -1073,49 +1075,47 @@ void omGMoveObjDLHead(struct GObj *o, u8 link, s32 renderPri) {
     omGSetupDLLink_HighestPrioMax(o);
 }
 
-void func_8000A980(struct GObj *o, struct GObj *arg1) {
+void func_8000A980(GObj *o, GObj *arg1) {
     omGDLLinkDestructor(o);
     o->dl_link = arg1->dl_link;
     o->renderPriority = arg1->renderPriority;
     omGInsertDLLink(o, arg1);
 }
 
-void func_8000A9C0(struct GObj *arg0, struct GObj *arg1) {
+void func_8000A9C0(GObj *arg0, GObj *arg1) {
     omGDLLinkDestructor(arg0);
     arg0->dl_link = arg1->dl_link;
     arg0->renderPriority = arg1->renderPriority;
     omGInsertDLLink(arg0, arg1->prevDL);
 }
 
-void func_8000AA04(struct GObj *arg0, s32 arg1) {
+void func_8000AA04(GObj *arg0, s32 arg1) {
     omGDLLinkDestructor(arg0);
     arg0->renderPriority = arg1;
     omGSetupCameraDLLink(arg0);
 }
 
-void func_8000AA38(struct GObj *arg0, s32 arg1) {
-    omGDLLinkDestructor(arg0);
-    arg0->renderPriority = arg1;
-    omGSetupDLLink_HighestPrioMax(arg0);
+void func_8000AA38(GObj *o, s32 renderPri) {
+    omGDLLinkDestructor(o);
+    o->renderPriority = renderPri;
+    omGSetupDLLink_HighestPrioMax(o);
 }
 
-void func_8000AA6C(struct GObj *arg0, struct GObj *arg1) {
-    omGDLLinkDestructor(arg0);
-    arg0->renderPriority = arg1->renderPriority;
-    omGInsertDLLink(arg0, arg1);
+void func_8000AA6C(GObj *o, GObj *arg1) {
+    omGDLLinkDestructor(o);
+    o->renderPriority = arg1->renderPriority;
+    omGInsertDLLink(o, arg1);
 }
 
-void func_8000AAA4(struct GObj *arg0, struct GObj *arg1) {
+void func_8000AAA4(GObj *arg0, GObj *arg1) {
     omGDLLinkDestructor(arg0);
     arg0->renderPriority = arg1->renderPriority;
     omGInsertDLLink(arg0, arg1->prev);
 }
 
-extern struct GObj *D_8004A700;
-
 void func_8000AAE0(void) {
     int i;
-    struct GObj *obj;
+    GObj *obj;
 
     D_8004A7C8 = NULL;
     D_8004A7CC = NULL;
@@ -1124,9 +1124,9 @@ void func_8000AAE0(void) {
         D_8004A7F8[i].unk0 = D_8003DCA8 - 1;
     }
 
-    obj = D_8004A700;
+    obj = omGObjListDlHead[32];
     while (obj) {
-        if ((obj->flags & 1) == 0) {
+        if (!(obj->flags & GOBJ_FLAGS_HIDDEN)) {
             D_8003DE54 = 3;
             D_8004A7C8 = obj;
             obj->onDraw(obj);
@@ -1136,13 +1136,12 @@ void func_8000AAE0(void) {
     }
 }
 
-extern s32 D_8004A7D4;
-u32 func_8000ABAC(struct GObj *gobj) {
+u32 func_8000ABAC(GObj *gobj) {
     u32 temp_a1;
 
     D_8003DE54 = 1;
     omCurrentObj = gobj;
-    gobj->onUpdate();
+    gobj->onUpdate(gobj);
     temp_a1 = gobj->next;
     omCurrentObj = NULL;
     D_8003DE54 = 0;
@@ -1158,10 +1157,10 @@ u32 func_8000ABAC(struct GObj *gobj) {
 }
 
 // Matches on decomp.me but not locally??????
-#ifdef NON_MATCHING_
+#ifdef NON_MATCHING
 struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
     struct GObjProcess *ret;
-    void (*entry)(struct GObj *);
+    void (*entry)(GObj *);
 
     D_8003DE54 = 2;
     omCurrentObj = proc->gobj;
@@ -1178,7 +1177,7 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
         // case 2: default: break;
     }
 
-    ret = proc->unk8;
+    ret = proc->prev;
 
     omCurrentObj = NULL;
     omCurrentProc = NULL;
@@ -1188,7 +1187,7 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
         case 2:
             D_8004A7D4 = 0;
             while (ret != NULL && ret->gobj == proc->gobj) {
-                ret = ret->unk8;
+                ret = ret->prev;
             }
 
             func_8000A29C(proc->gobj);
@@ -1214,7 +1213,7 @@ void func_8000AD88(void) {
     omCurrentObj = NULL;
     omCurrentProc = NULL;
     for (i = 0; i < 32; i++) {
-        struct GObj *tmp = omGObjListHead[i];
+        GObj *tmp = omGObjListHead[i];
 
         while (tmp != NULL) {
             if (((tmp->flags & 0x40) == 0) && (tmp->onUpdate != NULL)) {
