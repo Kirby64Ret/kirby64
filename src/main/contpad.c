@@ -2,66 +2,7 @@
 #include <PR/os_message.h>
 #include <PR/os_pfs.h>
 #include "common.h"
-
-struct Controller {
-    /* 0x00 */ u16 buttonHeld;
-    /* 0x02 */ u16 buttonPressed;
-    /* 0x04 */ u16 bufferedButtonPressed;
-    /* 0x06 */ u16 buttonHeldLong;
-    /* 0x08 */ u16 bufferedButtonHeldLong;
-    /* 0x0A */ u16 buttonReleased;
-    /* 0x0C */ u16 bufferedButtonReleased;
-    /* 0x0E */ s8 stick_x;
-    /* 0x0F */ s8 stick_y;
-    /* 0x10 */ s32 unk10;
-    /* 0x14 */ s32 unk14;
-    /* 0x18 */ s32 unk18;
-    /* 0x1C */ u8 errno;
-    /* 0x1D */ u8 status;
-}; // size: 0x20
-
-struct UnkStruct80048F60 {
-    u32 unk0;
-    u32 unk4;
-    u32 unk8;
-    u32 unkC;
-    u32 unk10;
-    u32 unk14;
-};
-
-struct UnkStruct80048FC0 {
-    u32 unk0;
-    u32 unk4;
-    u32 unk8;
-    u32 unkC;
-    u32 unk10;
-    u32 unk14;
-    u32 unk18;
-    u32 unk1C;
-    u32 unk20;
-    u32 unk24;
-    u32 unk28;
-    u32 unk2C;
-    u32 unk30;
-    u32 unk34;
-    u32 unk38;
-    u32 unk3C;
-    u32 unk40;
-};
-
-struct UnkStruct800490D0 {
-    u32 unk0;
-    u32 unk4;
-    u32 unk8;
-    u32 unkC;
-    s8 unk10;
-    s8 unk11;
-    s8 unk12;
-    s8 unk13;
-    u32 unk14;
-    u32 unk18;
-    u32 unk1C;
-};
+#include "contpad.h"
 
 // bss
 
@@ -86,7 +27,7 @@ s8 D_80048E9C[MAXCONTROLLERS]; // 0x80048E9C
 struct Controller gControllers[MAXCONTROLLERS]; // 0x80048EA0
 Controller_800D6FE8 gPlayerControllers[MAXCONTROLLERS]; // 0x80048F20
 s32 D_80048F48; // 0x80048F48
-s32 *D_80048F4C; // 0x80048F4C
+ContEvent *D_80048F4C; // 0x80048F4C
 s32 D_80048F50; // 0x80048F50
 s32 D_80048F54; // 0x80048F54
 s32 D_80048F58; // 0x80048F58
@@ -103,50 +44,6 @@ u16 D_8004929C;
 u16 D_8004929E;
 u8 D_800492A0;
 u8 D_800492A1;
-
-
-// Sent as an OSMesg based on code path
-struct Unk_Func8004DC8 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    u8 goal;
-    u8 addr;
-    u8 unkE;
-    u8 unkF;
-    u8 *buffer;
-    s32 nbytes;
-    s32 result;
-};
-
-enum EEPROMGoals {
-    EEP_PROBE = 0,
-    EEP_READ,
-    EEP_WRITE,
-    EEP_LONGREAD,
-    EEP_LONGWRITE,
-};
-
-struct Unk_Func8004810 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 channel;
-    s32 goal;
-    u16 company_code;
-    u16 unk16;
-    s32 game_code;
-    char *game_name;
-    char *extension;
-    s32 file_allocation_size;
-    s32 file_no_result;
-    s32 file_no;
-    s32 file_offset;
-    s32 file_size;
-    u8 *databuf;
-    s32 error;
-};
-
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80003DC0.s")
 
@@ -209,9 +106,9 @@ s32 *func_80004250(void) {
         gControllers[i].buttonHeldLong = 0;
         gControllers[i].buttonPressed = 0;
         gControllers[i].buttonHeld = 0;
-        gControllers[i].unk18 = 30;
-        gControllers[i].unk10 = 30;
-        gControllers[i].unk14 = 5;
+        gControllers[i].counter = 30;
+        gControllers[i].holdDelay = 30;
+        gControllers[i].holdInterval = 5;
         gPlayerControllers[i].buttonHeldLong = 0;
         gPlayerControllers[i].buttonPressed = 0;
         gPlayerControllers[i].buttonHeld = 0;
@@ -285,7 +182,7 @@ void func_800047F0(s32 arg0) {
     func_800046FC(arg0, 0);
 }
 
-void func_80004810(struct Unk_Func8004810 *arg0) {
+void func_80004810(ContEventPfs *arg0) {
     arg0->error = osPfsInitPak(
         &sSIMesgQueue,
         &sPakDevices[arg0->channel],
@@ -370,7 +267,7 @@ void func_80004810(struct Unk_Func8004810 *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004D98.s")
 
-void func_80004DC8(struct Unk_Func8004DC8 *arg0) {
+void func_80004DC8(struct ContEventEep *arg0) {
     switch (arg0->goal)
     {
         case EEP_PROBE:
@@ -391,6 +288,106 @@ void func_80004DC8(struct Unk_Func8004DC8 *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004E98.s")
+// https://decomp.me/scratch/2fe7d
+void func_80004E98(ContEvent *evt) {
+    switch (evt->type) {
+        case 1: {
+            read_controller_input();
+            func_800041A0();
+            if (evt->mq != NULL) {
+                osSendMesg(evt->mq, evt->msg, 0);
+            }
+            break;
+        }
+        default:
+            break;
+        case 2: {
+            if (D_80048F48 != 0) {
+                func_800041A0();
+                if (evt->mq != NULL) {
+                    osSendMesg(evt->mq, evt->msg, 0);
+                }
+            } else {
+                D_80048F4C = evt;
+            }
+            break;
+        }
+        case 3: {
+            int i;
+            for (i = 0; i < 4; i++) {
+                gControllers[i].holdDelay = ((ContEventHeldButtons *) evt)->holdDelay;
+                gControllers[i].holdInterval = ((ContEventHeldButtons *) evt)->holdInterval;
+            }
+
+            if (((ContEventHeldButtons *) evt)->evt.mq != NULL) {
+                osSendMesg(((ContEventHeldButtons *) evt)->evt.mq, ((ContEventHeldButtons *) evt)->evt.msg, 0);
+                return;
+            }
+            break;
+        }
+        case 4: {
+            D_80048F50 = ((ContEventChannel *)evt)->channel;
+            if (evt->mq != NULL) {
+                osSendMesg(evt->mq, evt->msg, 0);
+                return;
+            }
+            break;
+        }
+        case 6: {
+            D_80048F54 = ((ContEventChannel *)evt)->channel;
+            if (((ContEventChannel *)evt)->evt.mq != NULL) {
+                osSendMesg(((ContEventChannel *)evt)->evt.mq, ((ContEventChannel *)evt)->evt.msg, 0);
+                return;
+            }
+            break;
+        }
+        case 5: {
+            u32 channel;
+
+            if ((gControllers[((ContEventChannel *)evt)->channel].errno == 0) && (gControllers[((ContEventChannel *)evt)->channel].status & 1)) {
+                channel = ((ContEventChannel *)evt)->channel;
+                switch (((ContEventChannel *)evt)->unk10) {
+                    case 0:
+                        osMotorInit(&sSIMesgQueue, &sPakDevices[channel], channel);
+                        break;
+                    case 1:
+                        if (!D_80048CDC) {
+                            osMotorStart(&sPakDevices[channel]);
+                        }
+                        break;
+                    case 2: 
+                        osMotorStop(&sPakDevices[channel]);
+                        osMotorStop(&sPakDevices[channel]);
+                        osMotorStop(&sPakDevices[channel]);
+                        break;
+                    
+                }
+            }
+            if (evt->mq != NULL) {
+                osSendMesg(evt->mq, evt->msg, 0);
+            }
+            break;
+        }
+        case 10: {
+            //asPfs = ((struct Unk_Func8004810*)evt);
+
+            if ((gControllers[((ContEventPfs *)evt)->channel].errno == 0) && (gControllers[((ContEventPfs *)evt)->channel].status & 1)) {
+                func_80004810(((ContEventPfs *)evt));
+            }
+            if (((ContEventPfs *)evt)->evt.mq != NULL) {
+                osSendMesg(((ContEventPfs *)evt)->evt.mq, ((ContEventPfs *)evt)->evt.msg, 0);
+            }
+            break;
+        }
+        case 11: {
+            func_80004DC8((ContEventEep *)evt);
+            if (((ContEventEep *)evt)->evt.mq != NULL) {
+                osSendMesg(((ContEventEep *)evt)->evt.mq, ((ContEventEep *)evt)->evt.msg, 0);
+            }
+            break;
+        }
+    }
+}
+
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800051E0.s")
