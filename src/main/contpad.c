@@ -182,7 +182,7 @@ void func_800047F0(s32 arg0) {
     func_800046FC(arg0, 0);
 }
 
-void func_80004810(ContEventPfs *arg0) {
+void contHandlePfsEvent(ContEventPfs *arg0) {
     arg0->error = osPfsInitPak(
         &sSIMesgQueue,
         &sPakDevices[arg0->channel],
@@ -267,7 +267,7 @@ void func_80004810(ContEventPfs *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004D98.s")
 
-void func_80004DC8(struct ContEventEep *arg0) {
+void contHandleEepEvent(struct ContEventEep *arg0) {
     switch (arg0->goal)
     {
         case EEP_PROBE:
@@ -369,10 +369,8 @@ void func_80004E98(ContEvent *evt) {
             break;
         }
         case 10: {
-            //asPfs = ((struct Unk_Func8004810*)evt);
-
             if ((gControllers[((ContEventPfs *)evt)->channel].errno == 0) && (gControllers[((ContEventPfs *)evt)->channel].status & 1)) {
-                func_80004810(((ContEventPfs *)evt));
+                contHandlePfsEvent(((ContEventPfs *)evt));
             }
             if (((ContEventPfs *)evt)->evt.mq != NULL) {
                 osSendMesg(((ContEventPfs *)evt)->evt.mq, ((ContEventPfs *)evt)->evt.msg, 0);
@@ -380,7 +378,7 @@ void func_80004E98(ContEvent *evt) {
             break;
         }
         case 11: {
-            func_80004DC8((ContEventEep *)evt);
+            contHandleEepEvent((ContEventEep *)evt);
             if (((ContEventEep *)evt)->evt.mq != NULL) {
                 osSendMesg(((ContEventEep *)evt)->evt.mq, ((ContEventEep *)evt)->evt.msg, 0);
             }

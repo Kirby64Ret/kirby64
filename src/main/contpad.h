@@ -1,6 +1,8 @@
 #ifndef CONTPAD_H
 #define CONTPAD_H
 
+#include <PR/os_motor.h>
+
 struct Controller {
     /* 0x00 */ u16 buttonHeld;
     /* 0x02 */ u16 buttonPressed;
@@ -119,10 +121,4 @@ typedef struct ContEventPfs {
 } ContEventPfs;
 
 extern s32 D_80048CDC;
-#define MOTOR_START 1
-#define MOTOR_STOP 0
-void __osMotorAccess(OSPfs *pfs, u32);
-#define osMotorStart(x) __osMotorAccess((x), MOTOR_START)
-#define osMotorStop(x) __osMotorAccess((x), MOTOR_STOP)
-
 #endif // CONTPAD_H
