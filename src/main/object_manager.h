@@ -435,8 +435,11 @@ struct UnkStructFunc80007380 {
     u32 unk84;
     u32 unk88;
 };
-
 void ohSleep(s32);
+
+// data
+extern u32 D_8003DE54;
+
 // BSS
 extern struct GObjProcess *omCurrentProc;
 extern OSMesgQueue HS64_GObjProcMesgQ;

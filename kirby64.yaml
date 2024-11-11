@@ -41,7 +41,7 @@ segments:
     - [0x1060, c, main/main]
     - [0x1500, c, main/sched]
     - [0x37A0, c, main/main_1]
-    - [0x49C0, c, main/main_2]
+    - [0x49C0, c, main/contpad]
     - [0x5F50, c, main/code_5F50]
     - [0x8430, c, main/memory_layer]
     - [0x84F0, c, main/code_84F0]
@@ -215,6 +215,8 @@ segments:
     - [0x40A70, lib, libultra_rom, aisetnextbuf, .data]
     - [0x40A80, .rodata, main/main]
     - [0x40AA0, rodata, mainseg]
+    - [0x40B30, .rodata, main/contpad]
+    - [0x40B90, rodata, mainseg.00]
     - [0x40E10, .rodata, main/memory_layer]
     - [0x40E30, .rodata, main/object_manager]
     - [0x41270, .rodata, main/object_helpers]
@@ -240,6 +242,8 @@ segments:
     - [0x43790]
     - {type: .bss, vram: 0x80042B90, name: main/main}
     - {type: bss, vram: 0x80048B80, name: mainseg}
+    - {type: .bss, vram: 0x80048DA0, name: main/contpad}
+    - {type: bss, vram: 0x800492B0, name: mainseg.1}
     - {type: .bss, vram: 0x8004A540, name: main/object_manager}
     - {type: bss, vram: 0x8004AA90, name: mainseg.2}
     - {type: lib, vram: 0x80097950, name: libultra_rom, object: sptask, section: .bss}
