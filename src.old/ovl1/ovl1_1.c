@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <PR/gu.h>
 #include <macros.h>
-#include "D_8004A7C4.h"
+#include "omCurrentProc.h"
 #include "types.h"
 #include "ovl0/ovl0_4.h"
 #include "ovl0/ovl0_2.h"
@@ -77,15 +77,15 @@ OSThread *crash_screen_print_page_3(void) {
         case 1:
             // B* function
             crash_screen_printf("BF\n");
-            if (D_8004A7C4 != NULL) {
-                crash_screen_printf("addr:%x\n", D_8004A7C4->unk14);
-                crash_screen_print_gobj_info(D_8004A7C4);
+            if (omCurrentProc != NULL) {
+                crash_screen_printf("addr:%x\n", omCurrentProc->unk14);
+                crash_screen_print_gobj_info(omCurrentProc);
             }
             break;
         case 2:
             crash_screen_printf("GP\n");
-            if (D_8004A7C4 != NULL) {
-                crash_screen_printf("gobj:%x\n", (u32) D_8004A7C4);
+            if (omCurrentProc != NULL) {
+                crash_screen_printf("gobj:%x\n", (u32) omCurrentProc);
                 if (D_8004A7D0 != NULL) {
                     crash_screen_printf("gp:%x\n", (u32) D_8004A7D0);
                     switch (D_8004A7D0->kind) {
@@ -102,7 +102,7 @@ OSThread *crash_screen_print_page_3(void) {
                             break;
                     }
                 }
-                crash_screen_print_gobj_info(D_8004A7C4);
+                crash_screen_print_gobj_info(omCurrentProc);
             }
             break;
         case 3:
@@ -637,8 +637,8 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A4414.s")
 
 // executes the virtual function at index arg0
 void call_virtual_function(u32 arg0, u32 arg1, VTABLE callback) {
-    // __thiscall? But rarely any of these functions use D_8004A7C4...
-    if (arg0 < arg1) callback[arg0](D_8004A7C4);
+    // __thiscall? But rarely any of these functions use omCurrentProc...
+    if (arg0 < arg1) callback[arg0](omCurrentProc);
 }
 
 extern f32 D_800D5C30;
@@ -678,7 +678,7 @@ void func_800A4794(Vector *arg0, struct UnkStruct8004A7C4_3C *arg1) {
     Mat4 intermediateMtx;
 
     if (arg1 == 0) {
-        arg1 = D_8004A7C4->unk3C;
+        arg1 = omCurrentProc->unk3C;
     }
     guMtxIdentF(&finalMtx);
     do {
@@ -706,7 +706,7 @@ void func_800A4958(Vector *dst, struct UnkStruct8004A7C4_3C *arg1, Vector *src) 
     Mat4 sp50;
 
     if (arg1 == 0) {
-        arg1 = D_8004A7C4->unk3C;
+        arg1 = omCurrentProc->unk3C;
     }
     guMtxIdentF(&sp90);
     do {
@@ -741,7 +741,7 @@ void func_800A4B34(Vector *dst, struct UnkStruct8004A7C4_3C *arg1) {
     Mat4 sp3C;
 
     if (arg1 == 0) {
-        arg1 = D_8004A7C4->unk3C;
+        arg1 = omCurrentProc->unk3C;
     }
     guMtxIdentF(&sp7C);
     do {
@@ -782,7 +782,7 @@ void func_800A4DB8(Vector *arg0, struct UnkStruct8004A7C4_3C *arg1) {
     Mat4 sp40;
 
     if (arg1 == 0) {
-        arg1 = D_8004A7C4->unk3C;
+        arg1 = omCurrentProc->unk3C;
     }
     guMtxIdentF(&sp80);
     do {
@@ -795,8 +795,8 @@ void func_800A4DB8(Vector *arg0, struct UnkStruct8004A7C4_3C *arg1) {
 
     arg0->y = asinf(-sp80[0][2]);
 
-    if ((arg0->y == D_800D5C3C) || (arg0->y == D_800D5C40)) {
-        arg0->x = (arg0->y == D_800D5C3C) ? atan2f(sp80[1][0], sp80[1][1]) : atan2f(-sp80[1][0], sp80[1][1]);
+    if ((arg0->y == (M_PIF/2)) || (arg0->y == D_800D5C40)) {
+        arg0->x = (arg0->y == (M_PIF/2)) ? atan2f(sp80[1][0], sp80[1][1]) : atan2f(-sp80[1][0], sp80[1][1]);
         arg0->z = 0.0f;
     } else {
         arg0->x = atan2f(sp80[1][2], sp80[2][2]);
@@ -912,7 +912,7 @@ extern s16 D_800D6B30;
 extern s16 D_800D6B2C, D_800D6B2E;
 extern u8 D_800D6B2B;
 void func_800A57C8(s32 arg0) {
-    finish_current_thread(1);
+    ohSleep(1);
     while (1) {
         D_800D6B2E += D_800D6B2C;
         if (D_800D6B2E <= 0) {
@@ -922,24 +922,24 @@ void func_800A57C8(s32 arg0) {
             D_800D6B2E = 0xFF;
             break;
         } else {
-            finish_current_thread(1);
+            ohSleep(1);
         }
     }
     D_800D6B30 += 1;
     switch (D_800D6B2B) {
         case 0:
             D_800D6B24 = 0;
-            finish_current_thread(1);
-            func_8000A29C_ovl1(D_8004A7C4);
-            finish_current_thread(1);
+            ohSleep(1);
+            func_8000A29C_ovl1(omCurrentProc);
+            ohSleep(1);
             break;
         case 1:
-            finish_current_thread(1);
+            ohSleep(1);
             break;
         case 2:
-            finish_current_thread(1);
+            ohSleep(1);
             func_800067B8_ovl1();
-            finish_current_thread(1);
+            ohSleep(1);
             D_800D6B24 = 0;
             break;
         default:

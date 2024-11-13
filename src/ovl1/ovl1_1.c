@@ -1,6 +1,6 @@
 #include "common.h"
 #include "GObj.h"
-#include "main/main_1.h"
+#include "main/dma.h"
 #include "main/object_manager.h"
 #include "main/crash_screen.h"
 
@@ -64,9 +64,9 @@ OSThread *crash_screen_print_page_3(void) {
             }
             break;
     }
-    crash_screen_printf("s: %x\n", D_80048D88);
-    crash_screen_printf("t: %x\n", D_80048D8C);
-    crash_screen_printf("l: %x\n", D_80048D90);
+    crash_screen_printf("s: %x\n", dmaVPKDevAddr);
+    crash_screen_printf("t: %x\n", dmaVPKVramAddr);
+    crash_screen_printf("l: %x\n", dmaVPKLen);
     return retThread;
 }
 

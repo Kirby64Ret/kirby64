@@ -43,11 +43,16 @@ typedef f32 Vec3f[3];
 // TODO: where do i put this???
 typedef f32 Mat4[4][4];
 
-typedef struct  {
+typedef struct Vector3 {
     f32 x;
     f32 y;
     f32 z;
 } Vector;
+
+typedef struct {
+    f32 x;
+    f32 y;
+} Vector2;
 
 struct Overlay {
     /* 0x00 */ void *startAddr;

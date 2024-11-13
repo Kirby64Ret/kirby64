@@ -4,6 +4,7 @@
 #include "types.h"
 #include "main.h"
 #include "segments.h"
+#include "contpad.h"
 
 struct Overlay ovl1Def = OVERLAY(ovl1);
 
@@ -100,7 +101,6 @@ extern void init_dma_message_queue(void);
 extern void dma_read(u32 x, void *y, u32 z);
 extern void scThreadMain(void *);
 extern void auThreadMain(void *);
-extern void func_800051E0(void *);
 void dma_overlay_load(struct Overlay *);
 void func_800076D0();
 void game_tick(s32);
@@ -127,7 +127,7 @@ void thread5_game(UNUSED void *arg) {
     SETUP_STACK_AND_START_THREAD(gAudioThread, gAudioThreadStack);
     osRecvMesg(&gThreadInitializedMQ, NULL, OS_MESG_BLOCK);
 
-    osCreateThread(&gControllerThread, 6, func_800051E0, NULL, &gThread6Stack[0x100], 115);
+    osCreateThread(&gControllerThread, 6, contMain, NULL, &gThread6Stack[0x100], 115);
     SETUP_STACK_AND_START_THREAD(gControllerThread, gThread6Stack);
     osRecvMesg(&gThreadInitializedMQ, NULL, OS_MESG_BLOCK);
     

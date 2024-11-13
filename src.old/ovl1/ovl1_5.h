@@ -24,19 +24,20 @@ typedef struct UnkStruct800AC954 {
     u8 unk11;
     u8 unk12;
     u8 renderFlags;
-
+// 0x14
     u8 primColorRed;
     u8 primColorGreen;
     u8 primColorBlue;
     u8 primColorAlpha;
-
+// 0x18
     u8 envColorRed;
     u8 envColorGreen;
     u8 envColorBlue;
     u8 envColorAlpha;
-
+// 0x1C
     u16 width;
     u16 height;
+// 0x20
     f32 xOffset;
     f32 yOffset;
     f32 unk28;
@@ -71,7 +72,7 @@ typedef struct UnkStruct800AC954 {
     u32 unkB0[2];
     u16 unkB8;
     u16 unkBA; // flag2
-} UnkStruct800AC954;
+} SPObj;
 
 void func_800AD1A0(void *);
 

@@ -15,7 +15,7 @@ struct Controller {
     /* 0x0F */ s8 stick_y;
     /* 0x10 */ s32 holdDelay;
     /* 0x14 */ u32 holdInterval;
-    /* 0x18 */ s32 counter;
+    /* 0x18 */ s32 holdTimer;
     /* 0x1C */ u8 errno;
     /* 0x1D */ u8 status;
 }; // size: 0x20
@@ -120,5 +120,11 @@ typedef struct ContEventPfs {
     s32 error;
 } ContEventPfs;
 
+// data
 extern s32 D_80048CDC;
+extern Controller_800D6FE8 gPlayerControllers[MAXCONTROLLERS];
+
+// funcs
+void contMain(void *arg);
+
 #endif // CONTPAD_H

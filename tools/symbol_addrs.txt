@@ -752,3 +752,23 @@ omGObjListTail = 0x8004A5F8;
 HS64_omInit=0x8000ae84; // type:func
 omGObjListDlTail=0x8004A708;
 HS64_omMakeGObj=0x8000A180; // type:func
+
+// cont
+contSendEvent = 0x800045C0; // type:func
+contHandleEvent = 0x80004E98; // type:func
+contMain = 0x800051E0; // type:func
+contClient = 0x80048DC0;
+contEventMQ = 0x80048DE8;
+contEventMesgArray = 0x80048E00;
+contPollTimer = 0x80048F58;
+
+// dma
+dmaVPKDevAddr = 0x80048D88;
+dmaVPKVramAddr = 0x80048D8C;
+dmaVPKLen = 0x80048D90;
+
+// ovl1_1_2
+correct_stick_x = 0x800A5560; // type:func
+correct_stick_y = 0x800A55E0; // type:func
+gOverlayTable = 0x800BE8A0;
+

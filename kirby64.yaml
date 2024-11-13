@@ -40,7 +40,7 @@ segments:
     - [0x1000, hasm, entry]
     - [0x1060, c, main/main]
     - [0x1500, c, main/sched]
-    - [0x37A0, c, main/main_1]
+    - [0x37A0, c, main/dma]
     - [0x49C0, c, main/contpad]
     - [0x5F50, c, main/code_5F50]
     - [0x8430, c, main/memory_layer]

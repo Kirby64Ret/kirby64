@@ -3,6 +3,9 @@
 // #include "main/object_manager.h"
 #include "GObj.h"
 #include "ovl0/ovl0_2.h"
+#include "main/contpad.h"
+
+extern struct Overlay *gOverlayTable[];
 
 void print_error_stub(char* arg0, ...) {
 
@@ -61,12 +64,12 @@ f32 vec3_dist_square(Vector *v1, Vector *v2) {
 
 void copy_controller_inputs_to_kirby_controller(void) {
     if (!kirby_in_inactionable_state()) {
-        gKirbyController.buttonHeld = gPlayerControllers->buttonHeld;
-        gKirbyController.buttonPressed = gPlayerControllers->buttonPressed;
-        gKirbyController.buttonHeldLong = gPlayerControllers->buttonHeldLong;
-        gKirbyController.buttonReleased = gPlayerControllers->buttonReleased;
-        gKirbyController.stickX = gPlayerControllers->stickX;
-        gKirbyController.stickY = gPlayerControllers->stickY;
+        gKirbyController.buttonHeld = gPlayerControllers[0].buttonHeld;
+        gKirbyController.buttonPressed = gPlayerControllers[0].buttonPressed;
+        gKirbyController.buttonHeldLong = gPlayerControllers[0].buttonHeldLong;
+        gKirbyController.buttonReleased = gPlayerControllers[0].buttonReleased;
+        gKirbyController.stickX = gPlayerControllers[0].stickX;
+        gKirbyController.stickY = gPlayerControllers[0].stickY;
     } else {
         gKirbyController.buttonHeld = 0;
         gKirbyController.buttonPressed = 0;
@@ -85,9 +88,44 @@ void copy_controller_inputs_to_kirby_controller(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A54FC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5560.s")
+s32 correct_stick_x(u32 channel) {
+    s32 x;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A55E0.s")
+    if (channel >= 4) channel = 3;
+
+    x = gPlayerControllers[channel].stickX;
+
+    if (x > 0) {
+        if (x < 8) x = 8;
+        if (x >= 0x49) x = 0x48;
+        x -= 8;
+    }
+    else if (x < 0) {
+        if (x >= -7) x = -8;
+        if (x < -0x48) x = -0x48;
+        x += 8;
+    }
+    return x;
+}
+
+s32 correct_stick_y(u32 cont) {
+    s32 y;
+
+    if (cont >= 4) cont = 3;
+
+    y = gPlayerControllers[cont].stickY;
+    if (y > 0) {
+        if (y < 8) y = 8;
+        if (y >= 0x49) y = 0x48;
+        y -= 8;
+    }
+    else if (y < 0) {
+        if (y >= -7) y = -8;
+        if (y < -0x48) y = -0x48;
+        y = y + 8;
+    }
+    return y;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5660.s")
 
@@ -136,6 +174,22 @@ void copy_controller_inputs_to_kirby_controller(void) {
 void func_800A6B18(void) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/load_overlay.s")
+void load_overlay(u32 arg0) {
+    while (arg0 >= 0x14) {
+        // ...were they going to do anything to remedy this issue?
+    }
+    dma_overlay_load(gOverlayTable[arg0]);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/ovl1_TamperCheck.s")
+// some sort of integrity check
+u8 ovl1_TamperCheck(void) {
+    s32 buf[4];
+
+    dma_read(0x00000F10, &buf, 0x10);
+    if (buf[0] != 0x04080040) {
+        return 0;
+    } else if (buf[1] != 0x02081040) {
+        return 0;
+    }
+    else return 1;
+}

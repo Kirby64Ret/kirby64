@@ -317,30 +317,30 @@ s32 *func_80004250(void) {
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2/func_80004250.s")
 #endif
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2/func_800045C0.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2/contSendEvent.s")
 
 void func_80004624(void) {
-    struct Ovl0_2_MessageType1 msg;
+    ContEvent msg;
 
-    msg.unk0 = 1;
-    func_800045C0(&msg);
+    msg.type = 1;
+    contSendEvent(&msg);
 }
 
 void func_8000464C(void) {
-    struct Ovl0_2_MessageType2 msg;
+    ContEvent evt;
 
-    msg.unk0 = 2;
-    func_800045C0(&msg);
+    evt.type = 2;
+    contSendEvent(&evt);
 }
 
 void func_80004674(s32 arg0, s32 arg1) {
-    struct Ovl0_2_MessageType3 msg;
+    ContEvent evt;
 
-    msg.unk0 = 3;
-    msg.unkC = arg0;
-    msg.unk10 = arg1;
+    evt.type = 3;
+    evt.unkC = arg0;
+    evt.unk10 = arg1;
 
-    func_800045C0(&msg);
+    contSendEvent(&evt);
 }
 
 void func_800046A4(s32 arg0) {
@@ -349,7 +349,7 @@ void func_800046A4(s32 arg0) {
     msg.unk0 = 4;
     msg.unkC = arg0;
 
-    func_800045C0(&msg);
+    contSendEvent(&msg);
 }
 
 void func_800046D0(s32 arg0) {
@@ -358,7 +358,7 @@ void func_800046D0(s32 arg0) {
     msg.unk0 = 6;
     msg.unkC = arg0;
 
-    func_800045C0(&msg);
+    contSendEvent(&msg);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2/func_800046FC.s")

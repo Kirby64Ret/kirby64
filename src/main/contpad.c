@@ -3,17 +3,19 @@
 #include <PR/os_pfs.h>
 #include "common.h"
 #include "contpad.h"
+#include "localsched.h"
+#include "main.h"
 
 // bss
 
 OSMesgQueue sSIMesgQueue; // 0x80048DA0
 OSMesg D_80048DB8; // 0x80048DB8
 // 0x80048DBC? bss file boundary? lines up with function alignment
-u8 D_80048DC0[8];
+SCClient contClient;
 OSMesg D_80048DC8[7];
 // 0x80048DE4?
-OSMesgQueue D_80048DE8;
-OSMesg D_80048E00[4];
+OSMesgQueue contEventMQ;
+OSMesg contEventMesgArray[4];
 OSMesgQueue D_80048E10;
 OSMesg D_80048E28[4];
 OSMesgQueue D_80048E38;
@@ -30,7 +32,7 @@ s32 D_80048F48; // 0x80048F48
 ContEvent *D_80048F4C; // 0x80048F4C
 s32 D_80048F50; // 0x80048F50
 s32 D_80048F54; // 0x80048F54
-s32 D_80048F58; // 0x80048F58
+s32 contPollTimer; // 0x80048F58
 // 0x80048F5C? bss file boundary? lines up with function alignment
 struct UnkStruct80048F60 D_80048F60[4]; // 4 * 0x18
 struct UnkStruct80048FC0 D_80048FC0[4]; // 4 * 0x44
@@ -45,56 +47,158 @@ u16 D_8004929E;
 u8 D_800492A0;
 u8 D_800492A1;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80003DC0.s")
+void func_80003DC0(void) {
+    s32 port;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/query_controllers.s")
+    for (port = 0; port < gValidControllerCount; port++)
+    {
+        if (gControllers[D_80048E9C[port]].errno == 0) {
+            gPlayerControllers[port] = gPlayerControllers[D_80048E9C[port]];
+        } else {
+            gPlayerControllers[port].stickY = 0;
+            gPlayerControllers[port].buttonHeldLong = 0;
+            gPlayerControllers[port].buttonReleased = 0;
+            gPlayerControllers[port].buttonPressed = 0;
+            gPlayerControllers[port].buttonHeld = 0;
+            gPlayerControllers[port].stickX = gPlayerControllers[port].stickY;
+        }
+    }
+    for (; port < MAXCONTROLLERS; port++)
+    {
+        gPlayerControllers[port].buttonHeldLong = 0;
+        gPlayerControllers[port].buttonReleased = 0;
+        gPlayerControllers[port].buttonPressed = 0;
+        gPlayerControllers[port].buttonHeld = 0;
+        gPlayerControllers[port].stickX = gPlayerControllers[port].stickY = 0;
+    }
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/read_controller_input.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800041A0.s")
+void query_controllers(void) {
+    s32 port;
+
+    osContStartQuery(&sSIMesgQueue);
+    osRecvMesg(&sSIMesgQueue, NULL, 1);
+    osContGetQuery(sControllerStatuses);
+    for (port = 0; port < MAXCONTROLLERS; port++)
+    {
+        if ((sControllerStatuses[port].errno == 0) && ((sControllerStatuses[port].status & 1) != 0)) {
+            if (((gControllers[port].status & 1) == 0) || (gControllers[port].errno != 0)) {
+                osMotorInit(&sSIMesgQueue, &sPakDevices[port], port);
+            }
+        }
+        gControllers[port].errno = sControllerStatuses[port].errno;
+        gControllers[port].status = sControllerStatuses[port].status;
+    }
+}
+
+void read_controller_input(void) {
+    s32 i;
+
+    osContStartReadData(&sSIMesgQueue);
+    osRecvMesg(&sSIMesgQueue, NULL, OS_MESG_BLOCK);
+    osContGetReadData(sContPads);
+    for (i = 0; i < MAXCONTROLLERS; i++)
+    {
+        if (!sContPads[i].errno && (sControllerStatuses[i].status & 1) && gControllers[i].errno) {
+            osMotorInit(&sSIMesgQueue, &sPakDevices[i], i);
+        }
+        gControllers[i].errno = sContPads[i].errno;
+        if (gControllers[i].errno == 0) {
+            gControllers[i].buttonPressed = (sContPads[i].button ^ gControllers[i].buttonHeld) & sContPads[i].button;
+            gControllers[i].buttonReleased = (sContPads[i].button ^ gControllers[i].buttonHeld) & gControllers[i].buttonHeld;
+            if (sContPads[i].button ^ gControllers[i].buttonHeld) {
+                gControllers[i].buttonHeldLong = gControllers[i].buttonPressed;
+                gControllers[i].holdTimer = gControllers[i].holdDelay;
+            } else {
+                gControllers[i].holdTimer--;
+                if (gControllers[i].holdTimer > 0) {
+                    gControllers[i].buttonHeldLong = 0;
+                } else {
+                    gControllers[i].buttonHeldLong = sContPads[i].button;
+                    gControllers[i].holdTimer = gControllers[i].holdInterval;
+                }
+            }
+            gControllers[i].buttonHeld = sContPads[i].button;
+            gControllers[i].stick_x = sContPads[i].stick_x;
+            gControllers[i].stick_y = sContPads[i].stick_y;
+            gControllers[i].bufferedButtonPressed |= gControllers[i].buttonPressed;
+            gControllers[i].bufferedButtonReleased |= gControllers[i].buttonReleased;
+            gControllers[i].bufferedButtonHeldLong |= gControllers[i].buttonHeldLong;
+        }
+    }
+    D_80048F48 = 1;
+}
+
+void func_800041A0() {
+    s32 i = 0;
+
+    for (i = 0; i != MAXCONTROLLERS; i++)
+    {
+        if (gControllers[i].errno == 0) {
+            gPlayerControllers[i].buttonHeld = gControllers[i].buttonHeld;
+            gPlayerControllers[i].buttonPressed = gControllers[i].bufferedButtonPressed;
+            gPlayerControllers[i].buttonReleased = gControllers[i].bufferedButtonReleased;
+            gPlayerControllers[i].buttonHeldLong = gControllers[i].bufferedButtonHeldLong;
+            gPlayerControllers[i].stickX = gControllers[i].stick_x;            
+            gPlayerControllers[i].stickY = gControllers[i].stick_y;
+        } else {
+            gPlayerControllers[i].buttonHeldLong = 0;
+            gPlayerControllers[i].buttonReleased = 0;
+            gPlayerControllers[i].buttonPressed = 0;
+            gPlayerControllers[i].buttonHeld = 0;
+            gPlayerControllers[i].stickX = gPlayerControllers[i].stickY = 0;
+        }
+        gControllers[i].bufferedButtonHeldLong = 0;
+        gControllers[i].bufferedButtonReleased = 0;
+        gControllers[i].bufferedButtonPressed = 0;
+        if (i == 0) // Needed to match, may have been commented out code?
+        {
+        }
+    }
+    func_80003DC0();
+    D_80048F48 = 0;
+}
 
 #ifdef NON_MATCHING
 s32 *func_80004250(void) {
     u8 sp43;
-    s32 phi_s0;
-    s32 phi_s0_2;
-    s32 phi_s0_3;
     s32 i,j;
 
     osCreateMesgQueue(&sSIMesgQueue, &D_80048DB8, 1);
     osSetEventMesg(5, &sSIMesgQueue, 1);
     osContInit(&sSIMesgQueue, &sp43, sControllerStatuses);
-    for (phi_s0 = 0; phi_s0 < MAXCONTROLLERS; phi_s0++)
+    for (i = 0; i < MAXCONTROLLERS; i++)
     {
-        if ((sControllerStatuses[phi_s0].status & 1) != 0) {
-            osMotorInit(&sSIMesgQueue, &sPakDevices[phi_s0], phi_s0);
+        if ((sControllerStatuses[i].status & 1) != 0) {
+            osMotorInit(&sSIMesgQueue, &sPakDevices[i], i);
         }
     }
 
-    osCreateMesgQueue(&D_80048E10, &D_80048E00, 4);
-    for (phi_s0_2 = 0; phi_s0_2 < MAXCONTROLLERS; phi_s0_2++)
+    osCreateMesgQueue(&D_80048E10, &contEventMesgArray, 4);
+    for (i = 0; i < MAXCONTROLLERS; i++)
     {
-        D_80048F60[phi_s0_2].unk8 = phi_s0_2;
-        D_80048F60[phi_s0_2].unk0 = 0;
-        D_80048F60[phi_s0_2].unk4 = 5;
-        D_80048F60[phi_s0_2].unkC = &D_80048E10;
+        D_80048F60[i].unk8 = i;
+        D_80048F60[i].unk0 = 0;
+        D_80048F60[i].unk4 = 5;
+        D_80048F60[i].unkC = &D_80048E10;
         // needs members to result in 0x18 in struct size
     }
 
     osCreateMesgQueue(&D_80048E38, &D_80048E28, 4);
-    for (phi_s0_3 = 0; phi_s0_3 < MAXCONTROLLERS; phi_s0_3++)
+    for (i = 0; i < MAXCONTROLLERS; i++)
     {
-        D_80048FC0[phi_s0_3].unk8 = phi_s0_3;
-        D_80048FC0[phi_s0_3].unk0 = 0;
-        D_80048FC0[phi_s0_3].unk4 = 0xA;
-        D_80048FC0[phi_s0_3].unkC = &D_80048E38;
+        D_80048FC0[i].unk8 = i;
+        D_80048FC0[i].unk0 = 0;
+        D_80048FC0[i].unk4 = 0xA;
+        D_80048FC0[i].unkC = &D_80048E38;
         // needs members to result in 0x44 in struct size
     }
 
     osCreateMesgQueue(&D_80048E58, &D_80048E50, 1);
     D_800490D0.unk0 = 0;
     D_800490D0.unk4 = 0xB;
-    D_800490D0.unk8 = phi_s0_3;
+    D_800490D0.unk8 = i;
     D_800490D0.unkC = &D_80048E58;
     // seems to be 0x20 in size
 
@@ -106,7 +210,7 @@ s32 *func_80004250(void) {
         gControllers[i].buttonHeldLong = 0;
         gControllers[i].buttonPressed = 0;
         gControllers[i].buttonHeld = 0;
-        gControllers[i].counter = 30;
+        gControllers[i].holdTimer = 30;
         gControllers[i].holdDelay = 30;
         gControllers[i].holdInterval = 5;
         gPlayerControllers[i].buttonHeldLong = 0;
@@ -143,7 +247,7 @@ s32 *func_80004250(void) {
     D_80048F4C = NULL;
     D_80048F50 = 1;
     D_80048F54 = 1;
-    D_80048F58 = 1;
+    contPollTimer = 1;
     D_8004929A = 0;
     D_80049298 = 0;
     D_8004929C = 0;
@@ -156,7 +260,7 @@ s32 *func_80004250(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004250.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800045C0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/contSendEvent.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004624.s")
 
@@ -289,7 +393,7 @@ void contHandleEepEvent(struct ContEventEep *arg0) {
 }
 
 // https://decomp.me/scratch/2fe7d
-void func_80004E98(ContEvent *evt) {
+void contHandleEvent(ContEvent *evt) {
     switch (evt->type) {
         case 1: {
             read_controller_input();
@@ -314,7 +418,7 @@ void func_80004E98(ContEvent *evt) {
         }
         case 3: {
             int i;
-            for (i = 0; i < 4; i++) {
+            for (i = 0; i < MAXCONTROLLERS; i++) {
                 gControllers[i].holdDelay = ((ContEventHeldButtons *) evt)->holdDelay;
                 gControllers[i].holdInterval = ((ContEventHeldButtons *) evt)->holdInterval;
             }
@@ -387,5 +491,34 @@ void func_80004E98(ContEvent *evt) {
     }
 }
 
+void contMain(void *arg) {
+    OSMesg mesg;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800051E0.s")
+    func_80004250();
+    scAddClient(&contClient, &contEventMQ, &D_80048DC8, ARRAY_COUNT(D_80048DC8));
+    osSendMesg(&gThreadInitializedMQ, 1, 0);
+    while (1) {
+        osRecvMesg(&contEventMQ, &mesg, 1);
+        if ((s32)mesg == 1) {
+            if (contPollTimer != 0) {
+                contPollTimer--;
+            }
+            if (contPollTimer == 0) {
+                query_controllers();
+                contPollTimer = D_80048F54;
+            }
+            if (D_80048F50 != 0) {
+                read_controller_input();
+                if (D_80048F4C != NULL) {
+                    func_800041A0();
+                    if (D_80048F4C->mq != NULL) {
+                        osSendMesg(D_80048F4C->mq, D_80048F4C->msg, 0);
+                    }
+                    D_80048F4C = NULL;
+                }
+            }
+        } else {
+            contHandleEvent((ContEvent*)mesg);
+        }
+    }
+}

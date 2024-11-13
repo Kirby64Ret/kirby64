@@ -16,6 +16,6 @@ struct EntityThing800E9AA0 {
 	f32 unk24;
 };
 
-extern struct EntityThing800E9AA0 *D_800E9AA0[];
+extern struct EntityThing800E9AA0 *_D_800E9AA0[];
 
 #endif
