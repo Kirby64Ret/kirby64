@@ -13,14 +13,6 @@ VERBOSE := 1
 
 GAME_ASSETS := $(BUILD_DIR)/assets/game_assets.o
 
-# check that either QEMU_IRIX is set or qemu-irix package installed
-ifndef QEMU_IRIX
-  QEMU_IRIX := $(shell which qemu-irix)
-  ifeq (, $(QEMU_IRIX))
-    $(error Please install qemu-irix package or set QEMU_IRIX env var to the full qemu-irix binary path)
-  endif
-endif
-
 V := @
 ifeq (VERBOSE, 1)
 	V=
@@ -31,14 +23,14 @@ IRIX_ROOT := tools/ido7.1
 CC := tools/ido-7.1recomp/cc
 
 
-ifeq ($(shell type mips-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips-linux-gnu-
-else ifeq ($(shell type mips64-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips64-linux-gnu-
-else ifeq ($(shell type mips-n64-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips-n64-
+ifeq ($(shell type mips-linux-gnu-cpp >/dev/null 2>/dev/null; echo $$?), 0)
+	CROSS := mips-linux-gnu-
+else ifeq ($(shell type mips64-linux-gnu-cpp >/dev/null 2>/dev/null; echo $$?), 0)
+	CROSS := mips64-linux-gnu-
+else ifeq ($(shell type mips-n64-cpp >/dev/null 2>/dev/null; echo $$?), 0)
+	CROSS := mips-n64-
 else
-  CROSS := mips64-elf-
+	CROSS := mips64-elf-
 endif
 
 GCC := $(CROSS)gcc
@@ -169,7 +161,7 @@ endif
 
 
 # hardcoded compiler for ml.c until i figure out why it's breaking recomp
-$(BUILD_DIR)/src/ovl0/memory_layer.o: CC = $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
+# $(BUILD_DIR)/src/ovl0/memory_layer.o: CC = $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
 
 default: all
 

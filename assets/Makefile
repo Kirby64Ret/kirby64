@@ -36,7 +36,7 @@ ASFLAGS = -mtune=vr4300 -march=vr4300 --no-pad-sections -mabi=32 -mips3 $(INCLUD
 # I can't find a cleaner cross-platform option to fill these 11 bytes
 MATCH_ASSETS := --pad-to=0x019e1260 --gap-fill=0x00
 
-ifeq ($(shell type mips-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
+ifeq ($(shell type mips-linux-gnu-cpp >/dev/null 2>/dev/null; echo $$?), 0)
 	CROSS := mips-linux-gnu-
 else
 	CROSS := mips64-elf-
