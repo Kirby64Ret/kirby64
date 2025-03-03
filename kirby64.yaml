@@ -572,7 +572,8 @@ segments:
     bss_size: 0x80
     subsegments:
     - [0x1CBF50, c, ovl10/ovl10]
-    - [0x1CC970, asm, ovl10/ovl10_2]
+    - [0x1CC970, asm, ovl10/ovl10_1]
+    - [0x1D3AB0, asm, ovl10/ovl10_2]
     - [0x1E0160, asm, ovl10/ovl10_3]
     - [0x1E0500, asm, ovl10/ovl10_4]
     - [0x1E4160, data, ovl10/ovl10]
