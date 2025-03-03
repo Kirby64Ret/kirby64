@@ -136,6 +136,7 @@ struct GObjProcess *HS64_GObjProcessPop(void) {
     return ret;
 }
 
+void func_800080C0(struct GObjProcess *);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_800080C0.s")
 
 void HS64_GObjProcessRelease(struct GObjProcess *proc) {
@@ -459,9 +460,6 @@ void HS64_CameraPush(struct Camera *arg0) {
     gCameraHead = arg0;
     gCameraCount--;
 }
-
-struct GObjThread *HS64_GObjThreadPop();
-void func_800080C0(struct GObjProcess *);
 
 struct GObjProcess *func_80008A18(GObj *arg0, void (*arg1)(void), u8 kind, u32 pri) {
     struct GObjProcess *sp24;
@@ -919,7 +917,7 @@ void omGMoveCommon(s32 arg0, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
     gobj->procListTail = 0;
 
     while (proc != NULL) {
-        unlink_gobj_process(proc);
+        HS64_GObjProcessReleasePri(proc);
         proc = proc->next;
     }
 

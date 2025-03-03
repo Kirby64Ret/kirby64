@@ -20,3 +20,6 @@
 [submodule "tools/asm-processor"]
 	path = tools/asm-processor
 	url = https://github.com/simonlindholm/asm-processor
+[submodule "asm-differ"]
+	path = asm-differ
+	url = https://github.com/simonlindholm/asm-differ
