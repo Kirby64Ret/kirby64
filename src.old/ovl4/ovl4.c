@@ -89,7 +89,7 @@ void func_80151274_ovl4(void) {
     tmp = random_soft_u16();
     temp_f0 = 0.2f;
     gEntitiesAngleYArray[D_8004A7C4->objId] =
-        (D_80159FF4_ovl4[tmp & 7] * M_PI_F) / 180.0f;
+        (D_80159FF4_ovl4[tmp & 7] * M_PIF) / 180.0f;
     gEntitiesScaleXArray[D_8004A7C4->objId] = temp_f0;
     gEntitiesScaleYArray[D_8004A7C4->objId] = temp_f0;
     gEntitiesScaleZArray[D_8004A7C4->objId] = temp_f0;
@@ -279,25 +279,4 @@ void func_80151CC8_ovl4(Gfx **arg0) {
 
 
 extern u8 D_8018EE60[]; // ovl5 bss end
-void func_800A41B0(f32);
-
-struct DoubleBuf {
-    u16 _0000[8064];
-    u16 _3F00[8064];
-};
-extern struct DoubleBuf *D_803D6900;
-extern u16 *gFrameBuffers[3];
-// extern struct DoubleBuf *gFrameBuffer;;
-extern u16 gFrameBuffer[320 * 240];
-extern s32 D_800D6B5C;
-extern s32 D_800D6B74;
-
-#define UNK_TYPE u32
-extern UNK_TYPE D_8012EB00;
-extern UNK_TYPE D_8015A048[];
-extern UNK_TYPE D_8015A064[];
-// extern UNK_TYPE D_8018EE60;
-extern UNK_TYPE D_803FC100;
-
-// the LOOP
 GLOBAL_ASM("asm/non_matchings/ovl4/ovl4/func_80151CEC_ovl4.s")
