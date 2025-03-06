@@ -48,19 +48,19 @@ OSThread *crash_screen_print_page_3(void) {
             break;
         case 3:
             crash_screen_printf("DFC\n");
-            if (D_8004A7C8 != NULL) {
-                crash_screen_printf("addr:%x\n", D_8004A7C8->onDraw);
-                crash_screen_print_gobj_info(D_8004A7C8);
+            if (omCurrentCamera != NULL) {
+                crash_screen_printf("addr:%x\n", omCurrentCamera->onDraw);
+                crash_screen_print_gobj_info(omCurrentCamera);
             }
             break;
         case 4:
             crash_screen_printf("DFO\n");
-            if (D_8004A7C8 != NULL) {
-                crash_screen_printf("cam addr:%x\n", D_8004A7C8->onDraw);
+            if (omCurrentCamera != NULL) {
+                crash_screen_printf("cam addr:%x\n", omCurrentCamera->onDraw);
             }
-            if (D_8004A7CC != NULL) {
-                crash_screen_printf("disp addr:%x\n", D_8004A7CC->onDraw);
-                crash_screen_print_gobj_info(D_8004A7CC);
+            if (omCurrentDrawObj != NULL) {
+                crash_screen_printf("disp addr:%x\n", omCurrentDrawObj->onDraw);
+                crash_screen_print_gobj_info(omCurrentDrawObj);
             }
             break;
     }

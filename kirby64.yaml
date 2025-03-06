@@ -582,6 +582,7 @@ segments:
     - [0x1E57B0, rodata, ovl10/ovl10_2]
     - [0x1E58F0, rodata, ovl10/ovl10_3]
     - [0x1E5900, rodata, ovl10/ovl10_4]
+    - [0x1E59B0, rodata, ovl10/ovl10_5]
     - [0x1E5AA0]
     - {type: bss, vram: 0x801f4d30, name: ovl10/ovl10}
 

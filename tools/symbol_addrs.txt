@@ -752,6 +752,7 @@ omGObjListTail = 0x8004A5F8;
 HS64_omInit=0x8000ae84; // type:func
 omGObjListDlTail=0x8004A708;
 HS64_omMakeGObj=0x8000A180; // type:func
+omDrawAll = 0x8000AAE0; // type:func
 
 // cont
 contSendEvent = 0x800045C0; // type:func

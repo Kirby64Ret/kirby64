@@ -180,7 +180,7 @@ typedef struct GObj {
     u32 unk4C;
 } GObj;
 // size: 0x50
-extern struct GObj *omCurrentObj, *D_8004A7C8, *D_8004A7CC;
+extern struct GObj *omCurrentObj, *omCurrentCamera, *omCurrentDrawObj;
 extern struct GObj *D_800DE44C;
 
 typedef void (*VTABLE[])(struct GObj *);

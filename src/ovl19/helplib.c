@@ -1,13 +1,12 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "ovl1/ovl1_6.h"
+#include "ovl1/ovl1_7.h"
 #include "GObj.h"
 #include "unk_structs/D_800D6C68.h"
 #include "unk_structs/D_800DE350.h"
 
 extern void (*D_8022F040_ovl19[])(struct GObj *);
-
-void func_800AECC0(f32);
 void func_800AED20(f32);
 extern void func_800B1900(u16);
 void func_8021E4B0_ovl19(struct GObj *);

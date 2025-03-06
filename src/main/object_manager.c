@@ -72,13 +72,13 @@ u32 D_8004A7B4;
 u32 D_8004A7B8;
 struct Camera* gCameraHead;
 u32 gCameraCount;
-GObj *omCurrentObj, *D_8004A7C8, *D_8004A7CC;
+GObj *omCurrentObj, *omCurrentCamera, *omCurrentDrawObj;
 struct GObjProcess *omCurrentProc;
 s32 D_8004A7D4;
 OSMesg D_8004A7D8;
 // 0x8004A7DC?
 OSMesgQueue HS64_GObjProcMesgQ;
-struct UnkStruct8004A7F8 D_8004A7F8[32]; // length 32 based on loop asm in func_8000AAE0 (unrolled)
+struct UnkStruct8004A7F8 D_8004A7F8[32]; // length 32 based on loop asm in omDrawAll (unrolled)
 u8 D_8004AA78[0x18];
 
 // externs for their own headers
@@ -1111,12 +1111,12 @@ void func_8000AAA4(GObj *arg0, GObj *arg1) {
     omGInsertDLLink(arg0, arg1->prev);
 }
 
-void func_8000AAE0(void) {
+void omDrawAll(void) {
     int i;
     GObj *obj;
 
-    D_8004A7C8 = NULL;
-    D_8004A7CC = NULL;
+    omCurrentCamera = NULL;
+    omCurrentDrawObj = NULL;
 
     for (i = 0; i < 32; i++) {
         D_8004A7F8[i].unk0 = D_8003DCA8 - 1;
@@ -1126,7 +1126,7 @@ void func_8000AAE0(void) {
     while (obj) {
         if (!(obj->flags & GOBJ_FLAGS_HIDDEN)) {
             D_8003DE54 = 3;
-            D_8004A7C8 = obj;
+            omCurrentCamera = obj;
             obj->onDraw(obj);
             D_8003DE54 = 0;
         }
@@ -1134,13 +1134,13 @@ void func_8000AAE0(void) {
     }
 }
 
-u32 func_8000ABAC(GObj *gobj) {
-    u32 temp_a1;
+GObj *omGUpdateObj(GObj *gobj) {
+    GObj *g;
 
     D_8003DE54 = 1;
     omCurrentObj = gobj;
     gobj->onUpdate(gobj);
-    temp_a1 = gobj->next;
+    g = gobj->next;
     omCurrentObj = NULL;
     D_8003DE54 = 0;
     if (D_8004A7D4 != 0) {
@@ -1151,7 +1151,7 @@ u32 func_8000ABAC(GObj *gobj) {
             func_8000A29C(gobj);
         }
     }
-    return temp_a1;
+    return g;
 }
 
 // Matches on decomp.me but not locally??????
@@ -1215,7 +1215,7 @@ void func_8000AD88(void) {
 
         while (tmp != NULL) {
             if (((tmp->flags & 0x40) == 0) && (tmp->onUpdate != NULL)) {
-                tmp = func_8000ABAC(tmp);
+                tmp = omGUpdateObj(tmp);
             } else {
                 tmp = tmp->next;
             }

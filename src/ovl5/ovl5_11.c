@@ -147,7 +147,6 @@ void func_80180FF8_ovl5(GObj *o) {
 }
 
 #ifdef MIPS_TO_C
-
 void func_8018124C_ovl5(s32 arg0) {
     struct EntityThing800E9AA0 *temp_v0;
 

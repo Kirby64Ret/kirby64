@@ -26,7 +26,7 @@ struct unkAddr8004A7C8 {
     struct unkAddr8004A7C8_2* unk3C;
 };
 
-// extern struct unkAddr8004A7C8* D_8004A7C8;
+// extern struct unkAddr8004A7C8* omCurrentCamera;
 struct UnkStruct80014264 {
     struct UnkStruct80014264 *unk0;
     struct UnkStruct80014264 *unk4;
