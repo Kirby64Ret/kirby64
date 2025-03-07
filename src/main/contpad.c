@@ -25,7 +25,7 @@ OSMesgQueue D_80048E58;
 OSContStatus sControllerStatuses[MAXCONTROLLERS]; // 0x80048E70
 OSContPad sContPads[MAXCONTROLLERS]; // 0x80048E80
 s32 gValidControllerCount; // num controllers? // 0x80048E98
-s8 D_80048E9C[MAXCONTROLLERS]; // 0x80048E9C
+s8 contChannelMap[MAXCONTROLLERS]; // 0x80048E9C
 struct Controller gControllers[MAXCONTROLLERS]; // 0x80048EA0
 Controller_800D6FE8 gPlayerControllers[MAXCONTROLLERS]; // 0x80048F20
 s32 D_80048F48; // 0x80048F48
@@ -52,8 +52,8 @@ void func_80003DC0(void) {
 
     for (port = 0; port < gValidControllerCount; port++)
     {
-        if (gControllers[D_80048E9C[port]].errno == 0) {
-            gPlayerControllers[port] = gPlayerControllers[D_80048E9C[port]];
+        if (gControllers[contChannelMap[port]].errno == 0) {
+            gPlayerControllers[port] = gPlayerControllers[contChannelMap[port]];
         } else {
             gPlayerControllers[port].stickY = 0;
             gPlayerControllers[port].buttonHeldLong = 0;
@@ -130,7 +130,7 @@ void read_controller_input(void) {
     D_80048F48 = 1;
 }
 
-void func_800041A0() {
+void contSetPlayerPads() {
     s32 i = 0;
 
     for (i = 0; i != MAXCONTROLLERS; i++)
@@ -223,24 +223,24 @@ s32 *func_80004250(void) {
     }
 
     gValidControllerCount = 0;
-    D_80048E9C[0] = -1;
+    contChannelMap[0] = -1;
     if (gControllers[0].errno == 0) {
-        D_80048E9C[gValidControllerCount] = 0;
+        contChannelMap[gValidControllerCount] = 0;
         gValidControllerCount++;
     }
-    D_80048E9C[1] = -1;
+    contChannelMap[1] = -1;
     if (gControllers[1].errno == 0) {
-        D_80048E9C[gValidControllerCount] = 1;
+        contChannelMap[gValidControllerCount] = 1;
         gValidControllerCount++;
     }
-    D_80048E9C[2] = -1;
+    contChannelMap[2] = -1;
     if (gControllers[2].errno == 0) {
-        D_80048E9C[gValidControllerCount] = 2;
+        contChannelMap[gValidControllerCount] = 2;
         gValidControllerCount++;
     }
-    D_80048E9C[3] = -1;
+    contChannelMap[3] = -1;
     if (gControllers[3].errno == 0) {
-        D_80048E9C[gValidControllerCount] = 3;
+        contChannelMap[gValidControllerCount] = 3;
         gValidControllerCount++;
     }
     D_80048F48 = 0;
@@ -397,7 +397,7 @@ void contHandleEvent(ContEvent *evt) {
     switch (evt->type) {
         case 1: {
             read_controller_input();
-            func_800041A0();
+            contSetPlayerPads();
             if (evt->mq != NULL) {
                 osSendMesg(evt->mq, evt->msg, 0);
             }
@@ -407,7 +407,7 @@ void contHandleEvent(ContEvent *evt) {
             break;
         case 2: {
             if (D_80048F48 != 0) {
-                func_800041A0();
+                contSetPlayerPads();
                 if (evt->mq != NULL) {
                     osSendMesg(evt->mq, evt->msg, 0);
                 }
@@ -510,7 +510,7 @@ void contMain(void *arg) {
             if (D_80048F50 != 0) {
                 read_controller_input();
                 if (D_80048F4C != NULL) {
-                    func_800041A0();
+                    contSetPlayerPads();
                     if (D_80048F4C->mq != NULL) {
                         osSendMesg(D_80048F4C->mq, D_80048F4C->msg, 0);
                     }

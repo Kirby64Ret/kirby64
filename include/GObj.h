@@ -144,6 +144,7 @@ typedef void (*GObjFunc)(struct GObj *);
 
 // Flags
 #define GOBJ_FLAGS_HIDDEN 1
+#define GOBJ_FLAGS_SKIPUPDATE 0x40
 
 // GObj?
 typedef struct GObj {

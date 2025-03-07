@@ -738,6 +738,8 @@ mathRNGSeed = 0x8003E324;
 omGObjListDlHead = 0x8004a680; // size:132
 omCurrentProc = 0x8004A7D0;
 omCurrentObj = 0x8004A7C4;
+omCurrentCamera = 0x8004A7C8;
+omCurrentDrawObj = 0x8004A7CC;
 HS64_GetGObjThreadStack=0x80007fe4; // type:func
 HS64_ReleaseGObjThreadStack=0x8000803c; // type:func
 omActiveThreadStacks = 0x8004A548;
@@ -762,6 +764,7 @@ contClient = 0x80048DC0;
 contEventMQ = 0x80048DE8;
 contEventMesgArray = 0x80048E00;
 contPollTimer = 0x80048F58;
+contChannelMap = 0x80048E9C;
 
 // dma
 dmaVPKDevAddr = 0x80048D88;

@@ -68,9 +68,7 @@ typedef struct GObjProcess {
     struct GObjProcess *prevPriProc;
     /* 0x10 */ u32 pri;
     /* 0x14 */ u8 kind;
-    u8 unk15;
-    u8 unk16;
-    u8 unk17;
+    /* 0x15 */ u8 paused;
     /* 0x18 */ struct GObj *gobj;
     union {
         struct GObjThread *thread;

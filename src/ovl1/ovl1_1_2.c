@@ -4,6 +4,7 @@
 #include "GObj.h"
 #include "ovl0/ovl0_2.h"
 #include "main/contpad.h"
+#include "main/lbmatrix.h"
 
 extern struct Overlay *gOverlayTable[];
 
@@ -54,7 +55,42 @@ f32 vec3_dist_square(Vector *v1, Vector *v2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A4958.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A4B34.s")
+void func_800A4B34(Vector *dst, struct UnkStruct8004A7C4_3C *arg1) {
+    Vector tmp;
+    Mat4 sp7C;
+    Mat4 sp3C;
+
+    if (arg1 == 0) {
+        arg1 = omCurrentObj->unk3C;
+    }
+    guMtxIdentF(&sp7C);
+    do {
+        if ((arg1->scaleVec.x != 1.0f) || (arg1->scaleVec.y != 1.0f) || (arg1->scaleVec.z != 1.0f)) {
+            HS64_MkScaleMtxF(&sp3C, 1.0f / arg1->scaleVec.x, 1.0f / arg1->scaleVec.y, 1.0f / arg1->scaleVec.z);
+            guMtxCatF(&sp3C, &sp7C, &sp7C);
+        }
+        if ((arg1->angleVec.x != 0.0f) || (arg1->angleVec.y != 0.0f) || (arg1->angleVec.z != 0.0f)) {
+            func_800A465C(&sp3C, -arg1->angleVec.x, -arg1->angleVec.y, -arg1->angleVec.z);
+            guMtxCatF(&sp3C, &sp7C, &sp7C);
+        }
+        if ((arg1->posVec.x != 0.0f) || (arg1->posVec.y != 0.0f) || (arg1->posVec.z != 0.0f)) {
+            HS64_MkTranslateMtxF(&sp3C, -arg1->posVec.x, -arg1->posVec.y, -arg1->posVec.z);
+            guMtxCatF(&sp3C, &sp7C, &sp7C);
+        }
+        arg1 = arg1->unk14;
+    } while ((u32) arg1 != 1);
+
+    tmp.x = dst->x;
+    tmp.y = dst->y;
+    tmp.z = dst->z;
+
+    dst->x = ((sp7C[0][0] * tmp.x) + (sp7C[1][0] * tmp.y) + (sp7C[2][0] * tmp.z))
+             + sp7C[3][0];
+    dst->y = ((sp7C[0][1] * tmp.x) + (sp7C[1][1] * tmp.y) + (sp7C[2][1] * tmp.z))
+             + sp7C[3][1];
+    dst->z = ((sp7C[0][2] * tmp.x) + (sp7C[1][2] * tmp.y) + (sp7C[2][2] * tmp.z))
+             + sp7C[3][2];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A4DB8.s")
 

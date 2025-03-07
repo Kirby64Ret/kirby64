@@ -3,6 +3,7 @@
 #include "main/dma.h"
 #include "main/object_manager.h"
 #include "main/crash_screen.h"
+#include "main/contpad.h"
 
 void crash_screen_print_gobj_info(GObj *o) {
     crash_screen_printf("gobj id:%d\n", o->objId);
@@ -258,57 +259,41 @@ void func_800A2E98(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A2E98.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800A3058(void) {
-    s8 *var_v0;
-    s8 temp_t6;
+    u32 i;
 
-    if ((osTvType != 1) && (osTvType != 2)) {
-        load_overlay(2);
-        func_80151CEC_ovl4(5);
-    }
-    func_80004624();
-    func_80004624();
-    var_v0 = &D_80048E9C;
-loop_4:
-    temp_t6 = *var_v0;
-    var_v0 += 1;
-    if (temp_t6 == -1) {
-        if (var_v0 == &gControllers) {
+    switch (osTvType) {
+        default:
             load_overlay(2);
-            func_80151CEC_ovl4(4);
-        } else {
-            goto loop_4;
+            func_80151CEC_ovl4(5);
+        case 2:
+        case 1:
+            func_80004624();
+    }
+
+    func_80004624();
+
+    for (i = 0; i < 4; i++) {
+        if (contChannelMap[i] != -1) {
+            return;
         }
     }
+    load_overlay(2);
+    func_80151CEC_ovl4(4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A3058.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800A30E8(void) {
-    load_overlay(0x13);
+    load_overlay(19);
     tamper_check_ovl20();
     load_overlay(5);
     load_overlay(6);
-    load_overlay(0x11);
+    load_overlay(17);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A30E8.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void load_menu_overlays(void) {
     load_overlay(2);
     load_overlay(3);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/load_menu_overlays.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -321,7 +306,7 @@ void func_800A3150(s32 arg0) {
     func_800A2CE4();
     func_800A2D5C();
     func_800A2D68();
-    load_overlay(0x12);
+    load_overlay(18);
     func_800BBBA0();
     while (1) {
         func_800A30E8();

@@ -476,7 +476,7 @@ struct GObjProcess *func_80008A18(GObj *arg0, void (*arg1)(void), u8 kind, u32 p
     }
     oProcess->pri = pri;
     oProcess->kind = kind;
-    oProcess->unk15 = 0;
+    oProcess->paused = 0;
     oProcess->gobj = arg0;
     oProcess->entryPoint = arg1;
     switch (kind) {
@@ -518,7 +518,7 @@ struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri,
         while (1);
     }
     oProcess->pri = pri;
-    oProcess->unk15 = 0;
+    oProcess->paused = 0;
     oProcess->gobj = arg0;
     oProcess->entryPoint = entry;
     oThread = HS64_GObjThreadPop(); oProcess->payload.thread = oThread;
@@ -842,10 +842,10 @@ GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri) {
     }
 }
 
-GObj *func_8000A1C0(s32 arg0, s32 arg1, u8 arg2, s32 pri) {
+GObj *func_8000A1C0(s32 arg0, s32 func, u8 arg2, s32 pri) {
     GObj *o;
 
-    o = omGAddCommon(arg0, arg1, arg2, pri);
+    o = omGAddCommon(arg0, func, arg2, pri);
     if (o == 0) {
         return NULL;
     } else {
@@ -854,10 +854,10 @@ GObj *func_8000A1C0(s32 arg0, s32 arg1, u8 arg2, s32 pri) {
     }
 }
 
-GObj *func_8000A200(s32 id, s32 arg1, GObj *arg2) {
+GObj *func_8000A200(s32 id, s32 func, GObj *arg2) {
     GObj *temp_v0;
 
-    temp_v0 = omGAddCommon(id, arg1, arg2->link, arg2->pri);
+    temp_v0 = omGAddCommon(id, func, arg2->link, arg2->pri);
     if (temp_v0 == 0) {
         return NULL;
     }
@@ -865,10 +865,10 @@ GObj *func_8000A200(s32 id, s32 arg1, GObj *arg2) {
     return temp_v0;
 }
 
-GObj *func_8000A24C(s32 id, s32 arg1, GObj *arg2) {
+GObj *func_8000A24C(s32 id, s32 updateCB, GObj *arg2) {
     GObj *temp_v0;
 
-    temp_v0 = omGAddCommon(id, arg1, arg2->link, arg2->pri);
+    temp_v0 = omGAddCommon(id, updateCB, arg2->link, arg2->pri);
     if (temp_v0 == 0) {
         return NULL;
     }
@@ -963,47 +963,47 @@ void func_8000A544(GObj *arg0, GObj *arg1) {
     omGMoveCommon(3, arg0, arg1->link, arg1->pri, arg1);
 }
 
-void omGLinkObjDLCommon(GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4) {
+void omGLinkObjDLCommon(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 arg4) {
     if (link >= 0x20) {
         fatal_printf("omGLinkObjDLCommon() : dl_link num over : dl_link = %d : id = %d\n", link, arg0->objId);
         while (1);
     }
     arg0->dl_link = link;
     arg0->renderPriority = prio;
-    arg0->onDraw = arg1;
+    arg0->onDraw = drawCB;
     arg0->unk34 = arg4;
     arg0->unkE = D_8003DCA8 - 1;
 }
 
-void func_8000A5FC(GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4) {
+void func_8000A5FC(GObj *gobj, s32 drawCB, u8 link, s32 prio, s32 arg4) {
     if (gobj == NULL) {
         gobj = omCurrentObj;
     }
-    omGLinkObjDLCommon(gobj, arg1, link, prio, arg4);
+    omGLinkObjDLCommon(gobj, drawCB, link, prio, arg4);
     omGSetupCameraDLLink(gobj);
 }
 
-void func_8000A640(GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4) {
+void func_8000A640(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 arg4) {
     if (arg0 == 0) {
         arg0 = omCurrentObj;
     }
-    omGLinkObjDLCommon(arg0, arg1, link, prio, arg4);
+    omGLinkObjDLCommon(arg0, drawCB, link, prio, arg4);
     omGSetupDLLink_HighestPrioMax(arg0);
 }
 
-void func_8000A684(GObj *arg0, s32 arg1, s32 arg2, GObj *arg3) {
+void func_8000A684(GObj *arg0, s32 drawCB, s32 arg2, GObj *arg3) {
     if (arg0 == 0) {
         arg0 = omCurrentObj;
     }
-    omGLinkObjDLCommon(arg0, arg1, arg3->dl_link, arg3->renderPriority, arg2);
+    omGLinkObjDLCommon(arg0, drawCB, arg3->dl_link, arg3->renderPriority, arg2);
     omGInsertDLLink(arg0, arg3);
 }
 
-void func_8000A6D8(GObj *o, s32 arg1, s32 arg2, GObj *arg3) {
+void func_8000A6D8(GObj *o, s32 drawCB, s32 arg2, GObj *arg3) {
     if (o == 0) {
         o = omCurrentObj;
     }
-    omGLinkObjDLCommon(o, arg1, arg3->dl_link, arg3->renderPriority, arg2);
+    omGLinkObjDLCommon(o, drawCB, arg3->dl_link, arg3->renderPriority, arg2);
     omGInsertDLLink(o, arg3->prev);
 }
 
@@ -1214,7 +1214,7 @@ void func_8000AD88(void) {
         GObj *tmp = omGObjListHead[i];
 
         while (tmp != NULL) {
-            if (((tmp->flags & 0x40) == 0) && (tmp->onUpdate != NULL)) {
+            if (((tmp->flags & GOBJ_FLAGS_SKIPUPDATE) == 0) && (tmp->onUpdate != NULL)) {
                 tmp = omGUpdateObj(tmp);
             } else {
                 tmp = tmp->next;
@@ -1226,7 +1226,7 @@ void func_8000AD88(void) {
         struct GObjProcess *tmp = omGObjProcList[i];
 
         while (tmp != NULL) {
-            if (tmp->unk15 == 0) {
+            if (tmp->paused == 0) {
                 tmp = omGDispatchProc(tmp);
             } else {
                 tmp = tmp->nextPriProc;

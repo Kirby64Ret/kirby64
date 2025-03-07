@@ -123,6 +123,7 @@ typedef struct ContEventPfs {
 // data
 extern s32 D_80048CDC;
 extern Controller_800D6FE8 gPlayerControllers[MAXCONTROLLERS];
+extern s8 contChannelMap[MAXCONTROLLERS];
 
 // funcs
 void contMain(void *arg);
