@@ -2,7 +2,7 @@
 #include "GObj.h"
 #include "main/dma.h"
 #include "main/object_manager.h"
-#include "main/crash_screen.h"
+#include "main/fault.h"
 #include "main/contpad.h"
 
 void crash_screen_print_gobj_info(GObj *o) {

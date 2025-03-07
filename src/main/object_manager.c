@@ -1,5 +1,5 @@
 #include "common.h"
-#include "crash_screen.h"
+#include "fault.h"
 #include "object_manager.h"
 #include "code_11720.h"
 

@@ -1,6 +1,6 @@
 #include "common.h"
 #include "object_manager.h"
-#include "crash_screen.h"
+#include "fault.h"
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B3E0.s")
 
