@@ -215,6 +215,7 @@ segments:
     - [0x40A70, lib, libultra_rom, aisetnextbuf, .data]
     - [0x40A80, .rodata, main/main]
     - [0x40AA0, rodata, mainseg]
+    - [0x40B00, .rodata, main/dma]
     - [0x40B30, .rodata, main/contpad]
     - [0x40B90, rodata, mainseg.00]
     - [0x40E10, .rodata, main/memory_layer]
@@ -242,6 +243,7 @@ segments:
     - [0x43790]
     - {type: .bss, vram: 0x80042B90, name: main/main}
     - {type: bss, vram: 0x80048B80, name: mainseg}
+    - {type: .bss, vram: 0x80048CF0, name: main/dma}
     - {type: .bss, vram: 0x80048DA0, name: main/contpad}
     - {type: bss, vram: 0x800492B0, name: mainseg.1}
     - {type: .bss, vram: 0x8004A540, name: main/object_manager}

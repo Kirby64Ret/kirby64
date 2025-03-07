@@ -65,9 +65,9 @@ OSThread *crash_screen_print_page_3(void) {
             }
             break;
     }
-    crash_screen_printf("s: %x\n", dmaVPKDevAddr);
-    crash_screen_printf("t: %x\n", dmaVPKVramAddr);
-    crash_screen_printf("l: %x\n", dmaVPKLen);
+    crash_screen_printf("s: %x\n", dmaDevAddr);
+    crash_screen_printf("t: %x\n", dmaVramAddr);
+    crash_screen_printf("l: %x\n", dmaLen);
     return retThread;
 }
 

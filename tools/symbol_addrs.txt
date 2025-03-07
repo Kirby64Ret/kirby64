@@ -767,9 +767,9 @@ contPollTimer = 0x80048F58;
 contChannelMap = 0x80048E9C;
 
 // dma
-dmaVPKDevAddr = 0x80048D88;
-dmaVPKVramAddr = 0x80048D8C;
-dmaVPKLen = 0x80048D90;
+dmaDevAddr = 0x80048D88;
+dmaVramAddr = 0x80048D8C;
+dmaLen = 0x80048D90;
 
 // ovl1_1_2
 correct_stick_x = 0x800A5560; // type:func
