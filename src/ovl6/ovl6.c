@@ -174,7 +174,11 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154BA0_ovl6.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154C08_ovl6.s")
+void func_80154C08_ovl6(void) {
+    omDrawAll();
+    func_80153064_ovl6();
+    func_800AC610();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154C38_ovl6.s")
 
