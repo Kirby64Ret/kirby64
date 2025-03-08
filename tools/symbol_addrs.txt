@@ -736,6 +736,7 @@ mathRNGSeed = 0x8003E324;
 
 // lbmatrix
 HS64_MtxF2L = 0x80019A30; // type:func
+HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
 omGObjListDlHead = 0x8004a680; // size:132

@@ -47,6 +47,25 @@
 s32 lbreflect_Int16Sin(f32 arg0);
 s32 lbreflect_Int16Cos(f32 arg0);
 
+extern u16 lbreflect_Int16SinTable[0x800];
+#define INT16_SIN(x) lbreflect_Int16SinTable[(x) & 0x7FF]
+#define INT16_COS(x) lbreflect_Int16SinTable[((x) + 0x400) & 0x7FF]
+
+#define INLINE_SINCOS_INIT() f32 sinX, cosX;
+
+#define INLINE_SINCOS(sinAngle) \
+    do { \
+        sinX = (f32) INT16_SIN(sinAngle); \
+        if (sinAngle & 0x800) { \
+            sinX = -sinX; \
+        } \
+        sinAngle += 0x400; \
+        cosX = (f32) INT16_SIN(sinAngle); \
+        if (sinAngle & 0x800) { \
+            cosX = -cosX; \
+        } \
+    } while (0);
+
 void HS64_MkScaleMtxF(Mat4 mf, f32 x, f32 y, f32 z);
 void HS64_MkRotationMtxF(Mat4 mf, f32 x, f32 y, f32 z);
 void create_y_rotation_matrix(Mat4 arg0, f32 angle);

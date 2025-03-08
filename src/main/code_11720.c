@@ -7,6 +7,7 @@
 void func_80010B50(void) {
 }
 
+
 #pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80010B58.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/code_11720/func_80010D28.s")

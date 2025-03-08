@@ -1,11 +1,13 @@
 #include "common.h"
 #include "lbmatrix.h"
 
-extern s16 lbreflect_Int16SinTable[0x800];
-//  = {
+// This file is a combination of early Kirby64/HAL decomp work (see pull request #33).
+//  naming from melee (which should be changed to lbreflect -> lbmatrix),
+//  and so much of pokemon snap's src/sys/matrix.c.
+
+// s16 lbreflect_Int16SinTable[0x800] = {
 // #include "s16_sintable.h"
 // };
-#define INT16_SIN(x) lbreflect_Int16SinTable[(x) & 0x7FF]
 
 // Seems to be a version of MtxF2L that uses unsigned values only
 void HS64_MtxF2L(float mf[4][4], Mtx *m) {
@@ -67,7 +69,7 @@ void HS64_MtxF2L(float mf[4][4], Mtx *m) {
 }
 
 // Same as above, but assumes column 3 is (0, 0, 0, 1)
-void func_80019C60(float mf[4][4], Mtx *m) {
+void HS64_MtxF2L43(float mf[4][4], Mtx *m) {
     u32 e1,e2;
     
     e1=FTOFIX32(mf[0][0]);
@@ -104,9 +106,29 @@ void func_80019C60(float mf[4][4], Mtx *m) {
     m->m[3][3] = COMBINE_FRACTIONAL(e1, e2);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/lbreflect_Int16Sin.s")
+s32 lbreflect_Int16Sin(f32 arg0) {
+    s32 idx = arg0 * 651.8986f;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/lbreflect_Int16Cos.s")
+    u16 ret = INT16_SIN(idx);
+
+    if (idx & 0x800) {
+        return -ret;
+    } else {
+        return ret;
+    }
+}
+
+s32 lbreflect_Int16Cos(f32 arg0) {
+    s32 idx = (arg0 + 1.5707964f) * 651.8986f;
+
+    u16 ret = INT16_SIN(idx);
+
+    if (idx & 0x800) {
+        return -ret;
+    } else {
+        return ret;
+    }
+}
 
 // This should be part of libultra, but it's slightly modified (1.0f instead of 1.0)
 // This applies to most of the following functions
@@ -344,6 +366,7 @@ void guLookAtReflect (Mtx *m, LookAt *l, float xEye, float yEye, float zEye,
     HS64_MtxF2L(mf, m);
 }
 
+
 // Lookat counterpart for guLookAtF_2
 f32 guLookAtReflectF_2(float mf[4][4], LookAt *l, float xEye, float yEye, float zEye, float xAt,  float yAt,  float zAt, Vector* arg8, float xUp,  float yUp,  float zUp) {
     float   len;
@@ -475,87 +498,62 @@ void guOrtho(Mtx *m, float l, float r, float b, float t, float n, float f, float
     HS64_MtxF2L(mf, m);
 }
 
-#ifdef MIPS_TO_C
+// hal_perspective_fast_f
+void func_8001B008(Mat4 mf, u16* perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale) {
+    f32 cot;
+    u16 sinAngle;
+    f32 sinX, cosX;
+    s32 unused[4];
 
-void func_8001B008(void *arg0, s16 *arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
-    f32 sp0;
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 var_f12;
-    f32 var_f2;
-    s32 temp_a2;
-    s32 temp_v1;
-    u16 temp_t0;
-    u16 temp_t5;
-    u32 temp_t9;
+    fovy *= 0.008726646f;
 
-    temp_a2 = (arg2 * D_80040C7C * D_80040C80) & 0xFFF & 0xFFFF;
-    temp_t0 = *(&lbreflect_Int16SinTable + ((temp_a2 & 0x7FF) * 2));
-    temp_v1 = (temp_a2 + 0x400) & 0xFFFF;
-    var_f2 = temp_t0;
-    if (temp_t0 < 0) {
-        var_f2 += 4294967296.0f;
-    }
-    if (temp_a2 & 0x800) {
-        var_f2 = -var_f2;
-    }
-    temp_t5 = *(&lbreflect_Int16SinTable + ((temp_v1 & 0x7FF) * 2));
-    var_f12 = temp_t5;
-    if (temp_t5 < 0) {
-        var_f12 += 4294967296.0f;
-    }
-    if (temp_v1 & 0x800) {
-        var_f12 = -var_f12;
-    }
-    temp_f14 = var_f12 / var_f2;
-    arg0->unk0 = (temp_f14 / arg3) * arg6;
-    arg0->unk14 = temp_f14 * arg6;
-    temp_f0 = arg4 + arg5;
-    sp0 = arg4 - arg5;
-    arg0->unk2C = -arg6;
-    arg0->unk28 = (temp_f0 * arg6) / sp0;
-    arg0->unk4 = 0.0f;
-    arg0->unk8 = 0.0f;
-    arg0->unkC = 0.0f;
-    arg0->unk10 = 0.0f;
-    arg0->unk18 = 0.0f;
-    arg0->unk1C = 0.0f;
-    arg0->unk20 = 0.0f;
-    arg0->unk24 = 0.0f;
-    arg0->unk30 = 0.0f;
-    arg0->unk34 = 0.0f;
-    arg0->unk3C = 0.0f;
-    arg0->unk38 = (2.0f * arg4 * arg5 * arg6) / sp0;
-    if (arg1 != NULL) {
-        if (temp_f0 <= 2.0f) {
-            *arg1 = 0xFFFF;
-            return;
-        }
-        temp_t9 = 131072.0f / temp_f0;
-        *arg1 = temp_t9;
-        if ((temp_t9 & 0xFFFF) <= 0) {
-            *arg1 = 1;
+    sinAngle = (s32) (fovy * 651.8986f) & 0xFFF;
+    INLINE_SINCOS(sinAngle);
+    cot = cosX / sinX;
+
+    mf[0][0] = (cot / aspect) * scale;
+    mf[1][1] = cot * scale;
+    mf[2][2] = ((near + far) * scale) / (near - far);
+    mf[2][3] = -scale;
+    mf[3][2] = (2.0f * near * far * scale) / (near - far);
+    mf[3][3] = 0.0f;
+
+    mf[0][1] = 0;
+    mf[0][2] = 0;
+    mf[0][3] = 0;
+
+    mf[1][0] = 0;
+    mf[1][2] = 0;
+    mf[1][3] = 0;
+
+    mf[2][0] = 0;
+    mf[2][1] = 0;
+
+    mf[3][0] = 0;
+    mf[3][1] = 0;
+
+    if (perspNorm != NULL) {
+        if (near + far <= 2.0f) {
+            *perspNorm = (u16) 0xFFFF;
+        } else {
+            *perspNorm = (u16) ((2.0f * 65536.0f) / (near + far));
+            if (*perspNorm <= 0) {
+                *perspNorm = (u16) 0x0001;
+            }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001B008.s")
-#endif
 
-#ifdef MIPS_TO_C
+// hal_perspective_fast
+void func_8001B234(Mtx* m, u16* perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale) {
+    Mat4 mf;
 
-void func_8001B234(s32 arg0, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
-    ? sp28;
+    func_8001B008(mf, perspNorm, fovy, aspect, near, far, scale);
 
-    func_8001B008(arg2, arg3, &sp28, arg2, arg3, arg4, arg5, arg6);
-    HS64_MtxF2L(&sp28, arg0);
+    HS64_MtxF2L(mf, m);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001B234.s")
-#endif
 
 #ifdef MIPS_TO_C
-
 void func_8001B28C(void *arg0, s16 *arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
     f32 sp20;
     f32 sp18;
@@ -564,7 +562,7 @@ void func_8001B28C(void *arg0, s16 *arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5
     f32 temp_f16;
     u32 temp_t8;
 
-    temp_f12 = (arg2 * D_80040C84) / 2.0f;
+    temp_f12 = (arg2 * 0.017453292f) / 2.0f;
     sp18 = temp_f12;
     sp20 = cosf(temp_f12);
     temp_f12_2 = sp20 / sinf(temp_f12);
@@ -803,7 +801,7 @@ void func_8001B9B8(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4) {
     ? sp20;
 
     func_8001B838(arg1, arg2, &sp20, arg1, arg2, arg4);
-    func_80019C60(&sp20, arg0);
+    HS64_MtxF2L43(&sp20, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001B9B8.s")
@@ -827,7 +825,7 @@ void func_8001BA60(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg
     ? sp28;
 
     func_8001BA04(arg1, arg2, &sp28, arg1, arg2, arg4, arg5, arg6, arg7);
-    func_80019C60(&sp28, arg0);
+    HS64_MtxF2L43(&sp28, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001BA60.s")
@@ -852,7 +850,7 @@ void func_8001BB30(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg
     ? sp38;
 
     func_8001BAC4(arg1, arg2, &sp38, arg1, arg2, arg4, arg5, arg6, arg7, arg8, arg9, argA);
-    func_80019C60(&sp38, arg0);
+    HS64_MtxF2L43(&sp38, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001BB30.s")
@@ -897,6 +895,7 @@ void HS64_MkRotationMtxF(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     arg0->unk3C = 1.0f;
 }
 #else
+void HS64_MkRotationMtxF(Mat4 mf, f32 arg1, f32 arg2, f32 arg3);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MkRotationMtxF.s")
 #endif
 
@@ -928,7 +927,7 @@ void func_8001BCE0(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     u32 temp_t2_3;
     u32 temp_t9;
 
-    temp_a2 = (arg1 * D_80040C88) & 0xFFF & 0xFFFF;
+    temp_a2 = (arg1 * 651.8986f) & 0xFFF & 0xFFFF;
     var_a3 = *(&lbreflect_Int16SinTable + ((temp_a2 & 0x7FF) * 2));
     if (temp_a2 & 0x800) {
         var_a3 = -var_a3;
@@ -938,7 +937,7 @@ void func_8001BCE0(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     if (temp_v0 & 0x800) {
         var_a1 = -var_a1;
     }
-    temp_t0 = (arg2 * D_80040C88) & 0xFFF & 0xFFFF;
+    temp_t0 = (arg2 * 651.8986f) & 0xFFF & 0xFFFF;
     var_a2 = *(&lbreflect_Int16SinTable + ((temp_t0 & 0x7FF) * 2));
     if (temp_t0 & 0x800) {
         var_a2 = -var_a2;
@@ -948,7 +947,7 @@ void func_8001BCE0(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     if (temp_v0_2 & 0x800) {
         var_v1 = -var_v1;
     }
-    temp_t2 = (arg3 * D_80040C88) & 0xFFF & 0xFFFF;
+    temp_t2 = (arg3 * 651.8986f) & 0xFFF & 0xFFFF;
     var_v0 = *(&lbreflect_Int16SinTable + ((temp_t2 & 0x7FF) * 2));
     if (temp_t2 & 0x800) {
         var_v0 = -var_v0;
@@ -1034,7 +1033,7 @@ void func_8001BFDC(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5,
     u32 temp_t2_3;
     u32 temp_t9;
 
-    temp_a2 = (arg4 * D_80040C8C) & 0xFFF & 0xFFFF;
+    temp_a2 = (arg4 * 651.8986f) & 0xFFF & 0xFFFF;
     var_a3 = *(&lbreflect_Int16SinTable + ((temp_a2 & 0x7FF) * 2));
     if (temp_a2 & 0x800) {
         var_a3 = -var_a3;
@@ -1044,7 +1043,7 @@ void func_8001BFDC(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5,
     if (temp_v0 & 0x800) {
         var_a1 = -var_a1;
     }
-    temp_t0 = (arg5 * D_80040C8C) & 0xFFF & 0xFFFF;
+    temp_t0 = (arg5 * 651.8986f) & 0xFFF & 0xFFFF;
     var_a2 = *(&lbreflect_Int16SinTable + ((temp_t0 & 0x7FF) * 2));
     if (temp_t0 & 0x800) {
         var_a2 = -var_a2;
@@ -1054,7 +1053,7 @@ void func_8001BFDC(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5,
     if (temp_v0_2 & 0x800) {
         var_v1 = -var_v1;
     }
-    temp_t2 = (arg6 * D_80040C8C) & 0xFFF & 0xFFFF;
+    temp_t2 = (arg6 * 651.8986f) & 0xFFF & 0xFFFF;
     var_v0 = *(&lbreflect_Int16SinTable + ((temp_t2 & 0x7FF) * 2));
     if (temp_t2 & 0x800) {
         var_v0 = -var_v0;
@@ -1109,13 +1108,12 @@ void func_8001C2E4(Mat4 arg0, Vector arg1, Vector arg4, Vector arg7) {
 }
 
 #ifdef MIPS_TO_C
-
-void func_8001C348(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9) {
+void func_8001C348(Mat4 mf, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9) {
     s32 sp10;
     s32 spC;
     s32 sp8;
     s32 sp4;
-    s32 temp_a1;
+    u16 temp_a1;
     s32 temp_a1_2;
     s32 temp_a3;
     s32 temp_f10;
@@ -1145,33 +1143,33 @@ void func_8001C348(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5,
     u16 var_t2;
     u16 var_v0;
 
-    temp_a1 = (arg4 * D_80040C90) & 0xFFF & 0xFFFF;
-    var_t2 = *(&lbreflect_Int16SinTable + ((temp_a1 & 0x7FF) * 2));
+    temp_a1 = (arg4 * 651.8986f) & 0xFFF;
+    var_t2 = INT16_SIN(temp_a1);
     if (temp_a1 & 0x800) {
         var_t2 = -var_t2;
     }
     temp_v0 = temp_a1 + 0x400;
-    var_t0 = *(&lbreflect_Int16SinTable + ((temp_v0 & 0x7FF) * 2));
+    var_t0 = INT16_SIN(temp_v0);
     if (temp_v0 & 0x800) {
         var_t0 = -var_t0;
     }
-    temp_a1_2 = (arg5 * D_80040C90) & 0xFFF & 0xFFFF;
-    var_t1 = *(&lbreflect_Int16SinTable + ((temp_a1_2 & 0x7FF) * 2));
+    temp_a1_2 = (arg5 * 651.8986f) & 0xFFF & 0xFFFF;
+    var_t1 = INT16_SIN(temp_a1_2);
     if (temp_a1_2 & 0x800) {
         var_t1 = -var_t1;
     }
     temp_v0_2 = temp_a1_2 + 0x400;
-    var_a2 = *(&lbreflect_Int16SinTable + ((temp_v0_2 & 0x7FF) * 2));
+    var_a2 = INT16_SIN(temp_v0_2);
     if (temp_v0_2 & 0x800) {
         var_a2 = -var_a2;
     }
-    temp_a3 = (arg6 * D_80040C90) & 0xFFF & 0xFFFF;
-    var_a1 = *(&lbreflect_Int16SinTable + ((temp_a3 & 0x7FF) * 2));
+    temp_a3 = (arg6 * 651.8986f) & 0xFFF & 0xFFFF;
+    var_a1 = INT16_SIN(temp_a3);
     if (temp_a3 & 0x800) {
         var_a1 = -var_a1;
     }
     temp_v1 = temp_a3 + 0x400;
-    var_v0 = *(&lbreflect_Int16SinTable + ((temp_v1 & 0x7FF) * 2));
+    var_v0 = INT16_SIN(temp_v1);
     if (temp_v1 & 0x800) {
         var_v0 = -var_v0;
     }
@@ -1184,40 +1182,35 @@ void func_8001C348(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5,
     sp8 = temp_t7;
     temp_t8 = (((var_a2 * var_a1) >> 0xE) * temp_f18_2) >> 8;
     sp4 = temp_t8;
-    arg0->unk0 = (temp_t7 & 0xFFFF0000) | (temp_t8 >> 0x10);
-    arg0->unk20 = (sp8 << 0x10) | (sp4 & 0xFFFF);
+    mf[0][0] = (temp_t7 & 0xFFFF0000) | (temp_t8 >> 0x10);
+    mf[2][0] = (sp8 << 0x10) | (sp4 & 0xFFFF);
     temp_t7_2 = (-var_t1 * temp_f18_2) >> 7;
     spC = temp_t7_2;
-    arg0->unk4 = temp_t7_2 & 0xFFFF0000;
-    arg0->unk24 = spC << 0x10;
+    mf[0][1] = temp_t7_2 & 0xFFFF0000;
+    mf[2][1] = spC << 0x10;
     temp_t3 = (var_t2 * var_t1) >> 0xF;
     temp_t8_2 = ((((temp_t3 * var_v0) >> 0xE) - ((var_t0 * var_a1) >> 0xE)) * temp_f18) >> 8;
     sp8 = temp_t8_2;
     temp_t9 = ((((temp_t3 * var_a1) >> 0xE) + ((var_t0 * var_v0) >> 0xE)) * temp_f18) >> 8;
     spC = temp_t9;
-    arg0->unk8 = (temp_t8_2 & 0xFFFF0000) | (temp_t9 >> 0x10);
-    arg0->unk28 = (sp8 << 0x10) | (spC & 0xFFFF);
+    mf[0][2] = (temp_t8_2 & 0xFFFF0000) | (temp_t9 >> 0x10);
+    mf[2][2] = (sp8 << 0x10) | (spC & 0xFFFF);
     temp_t9_2 = (((var_t2 * var_a2) >> 0xE) * temp_f18) >> 8;
     spC = temp_t9_2;
-    arg0->unkC = temp_t9_2 & 0xFFFF0000;
-    arg0->unk2C = spC << 0x10;
+    mf[0][3] = temp_t9_2 & 0xFFFF0000;
+    mf[2][3] = spC << 0x10;
     temp_t3_2 = (var_t0 * var_t1) >> 0xF;
     temp_t4 = ((((temp_t3_2 * var_v0) >> 0xE) + ((var_t2 * var_a1) >> 0xE)) * temp_f8) >> 8;
     temp_t5 = ((((temp_t3_2 * var_a1) >> 0xE) - ((var_t2 * var_v0) >> 0xE)) * temp_f8) >> 8;
-    arg0->unk10 = (temp_t4 & 0xFFFF0000) | (temp_t5 >> 0x10);
-    arg0->unk30 = (temp_t4 << 0x10) | (temp_t5 & 0xFFFF);
+    mf[1][0] = COMBINE_INTEGRAL(temp_t4, temp_t5);
+    mf[3][0] = COMBINE_FRACTIONAL(temp_t4, temp_t5);
     temp_t7_3 = (((var_t0 * var_a2) >> 0xE) * temp_f8) >> 8;
-    sp10 = temp_t7_3;
-    arg0->unk14 = temp_t7_3 & 0xFFFF0000;
-    arg0->unk34 = sp10 << 0x10;
-    sp10 = temp_f6;
-    spC = temp_f10;
-    arg0->unk18 = (temp_f6 & 0xFFFF0000) | (temp_f10 >> 0x10);
-    arg0->unk38 = (sp10 << 0x10) | (spC & 0xFFFF);
-    temp_f4 = arg3 * 65536.0f;
-    sp10 = temp_f4;
-    arg0->unk1C = (temp_f4 & 0xFFFF0000) | 1;
-    arg0->unk3C = sp10 << 0x10;
+    mf[1][1] = COMBINE_INTEGRAL(temp_t7_3, 0);
+    mf[3][1] = COMBINE_FRACTIONAL(temp_t7_3, 0);
+    mf[1][2] = COMBINE_INTEGRAL(temp_f6, temp_f10);
+    mf[3][2] = COMBINE_FRACTIONAL(temp_f6, temp_f10);
+    mf[1][3] = COMBINE_INTEGRAL(arg3 * 65536.0f, 1);
+    mf[3][3] = COMBINE_FRACTIONAL(arg3 * 65536.0f, 0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001C348.s")
@@ -1271,7 +1264,7 @@ void func_8001C874(s32 arg0, ? arg1, ? arg2, ? arg3) {
     ? sp18;
 
     func_8001C73C(arg1, arg2, &sp18, arg1, arg2);
-    func_80019C60(&sp18, arg0);
+    HS64_MtxF2L43(&sp18, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001C874.s")
@@ -1295,7 +1288,7 @@ void func_8001C90C(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg
     ? sp28;
 
     func_8001C8B8(arg1, arg2, &sp28, arg1, arg2, arg4, arg5, arg6);
-    func_80019C60(&sp28, arg0);
+    HS64_MtxF2L43(&sp28, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001C90C.s")
@@ -1320,7 +1313,7 @@ void func_8001C9CC(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg
     ? sp30;
 
     func_8001C968(arg1, arg2, &sp30, arg1, arg2, arg4, arg5, arg6, arg7, arg8, arg9);
-    func_80019C60(&sp30, arg0);
+    HS64_MtxF2L43(&sp30, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001C9CC.s")
@@ -1366,7 +1359,7 @@ void func_8001CB0C(s32 arg0, ? arg1, ? arg2) {
     ? sp18;
 
     create_yz_rotation_matrix(arg1, arg2, &sp18, arg1, arg2);
-    func_80019C60(&sp18, arg0);
+    HS64_MtxF2L43(&sp18, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001CB0C.s")
@@ -1390,7 +1383,7 @@ void func_8001CB9C(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5) {
     ? sp20;
 
     func_8001CB4C(arg1, arg2, &sp20, arg1, arg2, arg4, arg5);
-    func_80019C60(&sp20, arg0);
+    HS64_MtxF2L43(&sp20, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001CB9C.s")
@@ -1436,7 +1429,7 @@ void func_8001CCBC(s32 arg0, ? arg1, ? arg2) {
     ? sp18;
 
     create_xy_rotation_matrix(arg1, arg2, &sp18, arg1, arg2);
-    func_80019C60(&sp18, arg0);
+    HS64_MtxF2L43(&sp18, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001CCBC.s")
@@ -1460,7 +1453,7 @@ void func_8001CD4C(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5) {
     ? sp20;
 
     func_8001CCFC(arg1, arg2, &sp20, arg1, arg2, arg4, arg5);
-    func_80019C60(&sp20, arg0);
+    HS64_MtxF2L43(&sp20, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001CD4C.s")
@@ -1491,6 +1484,7 @@ void create_z_rotation_matrix(void *arg0, f32 arg1) {
     arg0->unk28 = arg0->unk3C;
 }
 #else
+void create_z_rotation_matrix(Mat4 mf, f32 z);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/create_z_rotation_matrix.s")
 #endif
 
@@ -1500,23 +1494,18 @@ void func_8001CE30(s32 arg0, ? arg1) {
     ? sp18;
 
     create_z_rotation_matrix(arg1, &sp18, arg1);
-    func_80019C60(&sp18, arg0);
+    HS64_MtxF2L43(&sp18, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001CE30.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_8001CE68(void *arg0, f32 arg1, f32 arg2, f32 arg3, s32 arg4) {
-    create_z_rotation_matrix(arg4);
-    arg0->unk30 = arg1;
-    arg0->unk34 = arg2;
-    arg0->unk38 = arg3;
+void func_8001CE68(Mat4 mf, f32 x, f32 y, f32 z, f32 zrot) {
+    create_z_rotation_matrix(mf, zrot);
+    mf[3][0] = x;
+    mf[3][1] = y;
+    mf[3][2] = z;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001CE68.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1524,47 +1513,52 @@ void func_8001CEB4(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4) {
     ? sp20;
 
     func_8001CE68(arg1, arg2, &sp20, arg1, arg2, arg4);
-    func_80019C60(&sp20, arg0);
+    HS64_MtxF2L43(&sp20, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001CEB4.s")
 #endif
 
-#ifdef MIPS_TO_C
-void create_y_rotation_matrix(void *arg0, f32 arg1) {
-    f32 sp1C;
-    f32 temp_f0;
+#ifdef NON_MATCHING
+void create_y_rotation_matrix(Mat4 mf, f32 yaw) {
+    f32 sinY;
+    f32 cosY;
 
-    sp1C = sinf(arg1);
-    temp_f0 = cosf(arg1);
-    arg0->unk0 = temp_f0;
-    arg0->unk3C = 1.0f;
-    arg0->unk8 = -sp1C;
-    arg0->unk28 = temp_f0;
-    arg0->unk20 = sp1C;
-    arg0->unk24 = 0.0f;
-    arg0->unk10 = 0.0f;
-    arg0->unk18 = 0.0f;
-    arg0->unk4 = 0.0f;
-    arg0->unk38 = 0.0f;
-    arg0->unk34 = 0.0f;
-    arg0->unk30 = 0.0f;
-    arg0->unk2C = 0.0f;
-    arg0->unk1C = 0.0f;
-    arg0->unkC = 0.0f;
-    arg0->unk14 = arg0->unk3C;
+    sinY = sinf(yaw);
+    cosY = cosf(yaw);
+
+    mf[0][0] = mf[1][1] = cosY;
+    mf[0][1] = sinY;
+
+    mf[1][0] = -sinY;
+    mf[1][1] = cosY; // necessary for matching
+
+    mf[2][1] = 0;
+    mf[2][0] = 0;
+
+    mf[1][2] = 0;
+    mf[0][2] = 0;
+
+    mf[3][2] = 0;
+    mf[3][1] = 0;
+    mf[3][0] = 0;
+
+    mf[2][3] = 0;
+    mf[1][3] = 0;
+    mf[0][3] = 0;
+
+    mf[2][2] = mf[3][3] = 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/create_y_rotation_matrix.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_8001CF90(s32 arg0, ? arg1) {
     ? sp18;
 
     create_y_rotation_matrix(arg1, &sp18, arg1);
-    func_80019C60(&sp18, arg0);
+    HS64_MtxF2L43(&sp18, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001CF90.s")
@@ -1583,7 +1577,7 @@ void func_8001D014(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4) {
     ? sp20;
 
     func_8001CFC8(arg1, arg2, &sp20, arg1, arg2, arg4);
-    func_80019C60(&sp20, arg0);
+    HS64_MtxF2L43(&sp20, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D014.s")
@@ -1592,7 +1586,7 @@ void func_8001D014(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4) {
 #ifdef MIPS_TO_C
 
 void func_8001D060(f32 arg1, ? arg2, ? arg3, f32 arg4) {
-    func_8001B838(arg1, arg2, (arg1 * D_80040C94) / 180.0f, arg2, arg4);
+    func_8001B838(arg1, arg2, (arg1 * 3.1415927f) / 180.0f, arg2, arg4);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D060.s")
@@ -1603,8 +1597,8 @@ void func_8001D060(f32 arg1, ? arg2, ? arg3, f32 arg4) {
 void func_8001D0B4(s32 arg0, f32 arg1, ? arg2, ? arg3, f32 arg4) {
     ? sp20;
 
-    func_8001B838(arg1, arg2, &sp20, (arg1 * D_80040C98) / 180.0f, arg2, arg4);
-    func_80019C60(&sp20, arg0);
+    func_8001B838(arg1, arg2, &sp20, (arg1 * 3.1415927f) / 180.0f, arg2, arg4);
+    HS64_MtxF2L43(&sp20, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D0B4.s")
@@ -1613,7 +1607,7 @@ void func_8001D0B4(s32 arg0, f32 arg1, ? arg2, ? arg3, f32 arg4) {
 #ifdef MIPS_TO_C
 
 void func_8001D11C(? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7) {
-    func_8001BA04(arg1, arg2, arg1, arg2, (arg4 * D_80040C9C) / 180.0f, arg5, arg6, arg7);
+    func_8001BA04(arg1, arg2, arg1, arg2, (arg4 * 3.1415927f) / 180.0f, arg5, arg6, arg7);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D11C.s")
@@ -1624,8 +1618,8 @@ void func_8001D11C(? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg
 void func_8001D184(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7) {
     ? sp28;
 
-    func_8001BA04(arg1, arg2, &sp28, arg1, arg2, (arg4 * D_80040CA0) / 180.0f, arg5, arg6, arg7);
-    func_80019C60(&sp28, arg0);
+    func_8001BA04(arg1, arg2, &sp28, arg1, arg2, (arg4 * 3.1415927f) / 180.0f, arg5, arg6, arg7);
+    HS64_MtxF2L43(&sp28, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D184.s")
@@ -1634,19 +1628,18 @@ void func_8001D184(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg
 #ifdef MIPS_TO_C
 
 void func_8001D200(f32 arg1, f32 arg2, f32 arg3) {
-    HS64_MkRotationMtxF(arg1, arg2, (arg1 * D_80040CA4) / 180.0f, (arg2 * D_80040CA4) / 180.0f, (arg3 * D_80040CA4) / 180.0f);
+    HS64_MkRotationMtxF(arg1, arg2, (arg1 * 3.1415927f) / 180.0f, (arg2 * 3.1415927f) / 180.0f, (arg3 * 3.1415927f) / 180.0f);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D200.s")
 #endif
 
 #ifdef MIPS_TO_C
+void func_8001D264(Mat4 mf, f32 x, f32 y, f32 z) {
+    Mat4 tmp;
 
-void func_8001D264(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
-    ? sp18;
-
-    HS64_MkRotationMtxF(arg1, arg2, &sp18, (arg1 * D_80040CA8) / 180.0f, (arg2 * D_80040CA8) / 180.0f, (arg3 * D_80040CA8) / 180.0f);
-    func_80019C60(&sp18, arg0);
+    HS64_MkRotationMtxF(tmp, (x * M_DTOR), (y * M_DTOR), (z * M_DTOR));
+    HS64_MtxF2L43(tmp, mf);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D264.s")
@@ -1655,7 +1648,7 @@ void func_8001D264(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
 #ifdef MIPS_TO_C
 
 void func_8001D2DC(? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
-    func_8001BF88(arg1, arg2, arg1, arg2, (arg4 * D_80040CAC) / 180.0f, (arg5 * D_80040CAC) / 180.0f, (arg6 * D_80040CAC) / 180.0f);
+    func_8001BF88(arg1, arg2, arg1, arg2, (arg4 * 3.1415927f) / 180.0f, (arg5 * 3.1415927f) / 180.0f, (arg6 * 3.1415927f) / 180.0f);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D2DC.s")
@@ -1666,8 +1659,8 @@ void func_8001D2DC(? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
 void func_8001D34C(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
     ? sp28;
 
-    func_8001BF88(arg1, arg2, &sp28, arg1, arg2, (arg4 * D_80040CB0) / 180.0f, (arg5 * D_80040CB0) / 180.0f, (arg6 * D_80040CB0) / 180.0f);
-    func_80019C60(&sp28, arg0);
+    func_8001BF88(arg1, arg2, &sp28, arg1, arg2, (arg4 * 3.1415927f) / 180.0f, (arg5 * 3.1415927f) / 180.0f, (arg6 * 3.1415927f) / 180.0f);
+    HS64_MtxF2L43(&sp28, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D34C.s")
