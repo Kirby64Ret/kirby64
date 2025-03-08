@@ -734,6 +734,9 @@ mathDetRNGVals = 0x8003DF20;
 mathDetRNGSeed = 0x8003E320;
 mathRNGSeed = 0x8003E324;
 
+// lbmatrix
+HS64_MtxF2L = 0x80019A30; // type:func
+
 // om
 omGObjListDlHead = 0x8004a680; // size:132
 omCurrentProc = 0x8004A7D0;

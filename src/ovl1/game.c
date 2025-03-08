@@ -106,7 +106,7 @@ void func_800A2B9C(void) {
     func_800B8700();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A2B9C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2B9C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -122,7 +122,7 @@ void func_800A2C80(void) {
     func_800BB418();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A2C80.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2C80.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -141,7 +141,7 @@ void func_800A2CE4(void) {
     D_800D6F50 = 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A2CE4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2CE4.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -150,7 +150,7 @@ void func_800A2D5C(void) {
     D_800D6B9C = 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A2D5C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2D5C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -198,7 +198,7 @@ void func_800A2D68(void) {
     D_800BE504 = D_800D6B9C;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A2D68.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2D68.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -256,7 +256,7 @@ void func_800A2E98(void) {
     D_800D6E74 = 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A2E98.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2E98.s")
 #endif
 
 void func_800A3058(void) {
@@ -322,7 +322,7 @@ void func_800A3150(s32 arg0) {
     D_800D6B88 = D_800D6B8C;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A3150.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A3150.s")
 #endif
 
 void func_800A3228(void) {
@@ -350,7 +350,7 @@ void func_800A3230(void) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A3230.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A3230.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -364,7 +364,7 @@ void func_800A336C(void) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A336C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A336C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -386,7 +386,7 @@ void func_800A3408(void) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A3408.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A3408.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -443,7 +443,7 @@ loop_2:
     gGameState = 0x1A;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A34C8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A34C8.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -473,7 +473,7 @@ loop_1:
     gGameState = 0x17;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A36C0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A36C0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -858,7 +858,7 @@ void game_tick(s32 arg0) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/game_tick.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/game_tick.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -869,5 +869,5 @@ void func_800A41B0(f32 arg0) {
     func_800075DC(arg0 & 0xFFFF, 1);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1/func_800A41B0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A41B0.s")
 #endif

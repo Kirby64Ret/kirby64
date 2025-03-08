@@ -41,11 +41,3 @@
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_5/func_800FF200.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_5/func_800FF2C8.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_5/D_801288E0.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_5/D_8012890C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_5/D_8012893C.s")
-
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_5/D_8012896C.s")

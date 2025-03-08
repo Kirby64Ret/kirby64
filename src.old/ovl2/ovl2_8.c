@@ -628,8 +628,8 @@ void func_801212A4(void) {
             if ((gKirbyState.ceilingCollisionNext != 0) && (gKirbyState.floorCollisionNext != 0) && (gKirbyState.action != 0x1D)
                 &&(gKirbyState.ceilingType != 4) && (gKirbyState.ceilingType != 5)
             ) {
-                    change_kirby_hp(-6.0f);
-                    set_kirby_action_1(0x16, 0x17);
+                change_kirby_hp(-6.0f);
+                set_kirby_action_1(0x16, 0x17);
             }
             else if ((gKirbyState.rightCollisionNext != 0) && (gKirbyState.leftCollisionNext != 0) && (gKirbyState.unk104 != 2) && (gKirbyState.unk106 != 2)) {
                 change_kirby_hp(-6.0f);
@@ -723,7 +723,7 @@ void func_80122A10(s32 arg0) {
         return;
     }
     // "plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n"
-    print_error_stub(&D_80128DC0, 5, D_8012E894);
+    print_error_stub("plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n", 5, D_8012E894);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122A80.s")
