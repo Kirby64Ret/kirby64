@@ -780,3 +780,6 @@ correct_stick_x = 0x800A5560; // type:func
 correct_stick_y = 0x800A55E0; // type:func
 gOverlayTable = 0x800BE8A0;
 
+
+// ovl2_3
+setUpDispose = 0x800FCA84; // type:func

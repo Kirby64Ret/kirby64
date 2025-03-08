@@ -2117,12 +2117,7 @@ void func_800FC62C(void) {
     void *temp_v1_2;
 
     temp_v0 = D_800D799C->unk3C;
-    D_800D7B38.unk0 = D_800D7B20.unk0;
-    D_800D7B38.unk4 = D_800D7B20.unk4;
-    D_800D7B38.unk8 = D_800D7B20.unk8;
-    D_800D7B38.unkC = D_800D7B20.unkC;
-    D_800D7B38.unk10 = D_800D7B20.unk10;
-    D_800D7B38.unk14 = D_800D7B20.unk14;
+    D_800D7B38 = D_800D7B20;
     if (D_800D6B54 == 0) {
         sp1C = temp_v0;
         func_80010988(&D_800D7B20);
@@ -2245,8 +2240,10 @@ void spawn_entity(void *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/spawn_entity.s")
 #endif
 
-#ifdef __MIPS_TO_C
-s32 func_800FCA84(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, s16 arg6, Vector *v7, Vector *v8, f32 *scale) {
+// The string literal in here is in late_rodata,
+//  but we need to decomp the rest of the file for that to automatically fall into place
+#ifdef RODATA
+s32 setUpDispose(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, s16 arg6, Vector *v7, Vector *v8, f32 *scale) {
     s32 id;
     s32 track;
     s32 temp;
@@ -2324,7 +2321,7 @@ s32 func_800FCA84(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, 
     gEntitiesScaleXArray[track] = tmpscale;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FCA84.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/setUpDispose.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -2332,7 +2329,7 @@ s32 func_800FCA84(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, 
 s32 func_800FCD14(u8 arg1, f32 arg2, u8 arg3, u8 arg4, u8 arg5, u8 arg6, u8 arg7, s16 arg8, s32 arg9, s32 argA, s32 argB) {
     s32 temp_v0;
 
-    temp_v0 = func_800FCA84(arg3, arg4, arg5, arg6, arg7, arg8, arg9, argA, argB);
+    temp_v0 = setUpDispose(arg3, arg4, arg5, arg6, arg7, arg8, arg9, argA, argB);
     if (temp_v0 == -1) {
         return -1;
     }
@@ -2350,7 +2347,7 @@ s32 func_800FCD14(u8 arg1, f32 arg2, u8 arg3, u8 arg4, u8 arg5, u8 arg6, u8 arg7
 s32 func_800FCDC0(s32 arg1, s32 arg2, s32 arg3, u8 arg4, u8 arg5, s16 arg6, s32 arg7, s32 arg8, s32 arg9) {
     s32 temp_v0;
 
-    temp_v0 = func_800FCA84(arg1 & 0xFF, arg2 & 0xFF, arg3 & 0xFF, arg4, arg5, arg6, arg7, arg8, arg9);
+    temp_v0 = setUpDispose(arg1 & 0xFF, arg2 & 0xFF, arg3 & 0xFF, arg4, arg5, arg6, arg7, arg8, arg9);
     if (temp_v0 == -1) {
         return -1;
     }
