@@ -217,4 +217,7 @@ struct Player {
 
 extern struct Player gKirbyState;
 
+// for referencing track arrays
+#define PLAYERTRACK 0
+
 #endif // PLAYER_H

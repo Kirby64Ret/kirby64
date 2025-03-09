@@ -403,7 +403,7 @@ void func_8011E234(void) {
 }
 
 u8 func_8011E244(void) {
-    if (D_800E8920[0] == 1) {
+    if (D_800E8920[PLAYERTRACK] == 1) {
         return D_8012E9B8;
     } else {
 		return 0x14;
@@ -431,7 +431,7 @@ f32 func_8011E2A0(void) {
 }
 
 void func_8011E31C(Vector *arg0) {
-    arg0->x = gPositionState.kirbyHeadPos[0];
+    arg0->x = gPositionState.kirbyHeadPos[PLAYERTRACK];
     arg0->y = gPositionState.kirbyHeight[1];
     arg0->z = gPositionState.kirbyHeadPos[2];
 }
@@ -455,13 +455,13 @@ void func_8011E438(void) {
     gKirbyState.unk17 = 1;
     gKirbyState.abilityInUse = 0;
     set_kirby_action_2(0x48, 0x1C);
-    D_800E6850[0] = 0.0f;
-    D_800E64D0[0] = D_800E6690[0] = D_800E6850[0];
-    D_800E3210[0] = 0.0f;
-    D_800E3750[0] = D_80128F20;
-    D_800E3C90[0] = 16.0f;
-    gEntitiesScaleZArray[0] = D_80128F24;
-    gEntitiesScaleXArray[0] = gEntitiesScaleYArray[0] = gEntitiesScaleZArray[0];
+    D_800E6850[PLAYERTRACK] = 0.0f;
+    D_800E64D0[PLAYERTRACK] = D_800E6690[PLAYERTRACK] = D_800E6850[PLAYERTRACK];
+    D_800E3210[PLAYERTRACK] = 0.0f;
+    D_800E3750[PLAYERTRACK] = D_80128F20;
+    D_800E3C90[PLAYERTRACK] = 16.0f;
+    gEntitiesScaleZArray[PLAYERTRACK] = D_80128F24;
+    gEntitiesScaleXArray[PLAYERTRACK] = gEntitiesScaleYArray[PLAYERTRACK] = gEntitiesScaleZArray[PLAYERTRACK];
 }
 
 void func_8011E4E4(u32 arg0) {
@@ -602,7 +602,7 @@ u8 kirby_in_inactionable_state(void) {
 
 GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121284.s")
 
-extern const f32 D_80129074;
+extern const f32 65535.0;
 extern s32 D_800E85A0[];
 void func_801212A4(void) {
     Vector currPos;
@@ -621,7 +621,7 @@ void func_801212A4(void) {
                 if (D_800E3210[D_8004A7C4->objId] > 0.0f) {
                     D_800E3750[D_8004A7C4->objId] = 0.0f;
                     D_800E3210[D_8004A7C4->objId] = D_800E3750[D_8004A7C4->objId];
-                    D_800E3C90[D_8004A7C4->objId] = D_80129074;
+                    D_800E3C90[D_8004A7C4->objId] = 65535.0f;
                 }
             }
         } else {
@@ -749,7 +749,7 @@ void func_80122B40(void) {
         if (gKirbyState.vel[2] < -12.5f)
             phi_a2 = D_8012844C[gKirbyState.unk10A * 7][1];
         else
-            phi_a2 = D_8012844C[gKirbyState.unk10A * 7][0];
+            phi_a2 = D_8012844C[gKirbyState.unk10A * 7][PLAYERTRACK];
     }
     func_800A7F74(5, 1, phi_a2, gEntitiesNextPosXArray[D_8004A7C4->objId], gEntitiesNextPosYArray[D_8004A7C4->objId], gEntitiesNextPosZArray[D_8004A7C4->objId]);
 }
