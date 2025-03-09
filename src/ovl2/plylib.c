@@ -21,6 +21,9 @@ extern s32 D_800E85A0[];
 extern s32 D_800D6B54;
 extern u32 D_800D7010;
 
+// ovl2 data
+extern u8 D_80126E20[];
+
 // ovl2 bss
 extern u8 D_8012E7D7;
 extern u32 D_801290D0;
@@ -201,28 +204,18 @@ struct LayoutNode *func_8011BD30(void *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011BD30.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-s32 func_8011BED0(s32 arg0, s32 arg1, s32 arg2) {
-    s32 temp_a1;
-    s32 temp_a2;
-
-    temp_a2 = arg2 & 0xFFFF;
-    temp_a1 = arg1 & 0xFFFF;
-    if ((arg0 & 0xFFFF) == 9) {
-        if (temp_a1 == 0) {
+u32 func_8011BED0(u16 arg0, u16 arg1, u16 arg2) {
+    if ((arg0) == 9) {
+        if (arg1 == 0) {
             return 1;
         }
-        if ((temp_a2 == temp_a1) || ((temp_a1 < 8) && (*(&D_80126E20 + temp_a2) & *(&D_80126E20 + temp_a1)))) {
+        if (arg1 == arg2 || ((arg1 < 8) && (D_80126E20[arg1] & D_80126E20[arg2]))) {
             return 1;
         }
         return 0;
     }
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011BED0.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -445,10 +438,7 @@ void func_8011C4E8(s32 arg0, void *arg1) {
 
     temp_a3 = arg1->unk1C;
     if (temp_a3 != NULL) {
-        temp_v0 = gDisplayListHeads.unk8;
-        gDisplayListHeads.unk8 = temp_v0 + 8;
-        temp_v0->unk0 = 0xDE000000;
-        temp_v0->unk4 = &D_80126E68;
+        gSPDisplayList(gDisplayListHeads[2]++, &D_80126E68);
         sp9C = temp_a3;
         temp_f22 = cosf(arg1->unk18);
         var_a3 = temp_a3;
@@ -463,37 +453,28 @@ void func_8011C4E8(s32 arg0, void *arg1) {
             sp80.unk4 = arg1->unk4;
             sp80.unk8 = arg1->unk8;
         }
-        var_s4 = 0;
-        if (var_a3->unk0 != 0) {
-            do {
-                temp_s1 = gDynamicBuffer1.top;
-                sp6C = (var_s0->unk4 * temp_f20) + sp80;
-                sp70 = var_s0->unk0 + sp84;
-                sp74 = (var_s0->unk4 * temp_f22) + sp88;
-                sp60 = (var_s0->unkC * temp_f20) + arg1->unk0;
-                sp64 = var_s0->unk8 + arg1->unk4;
-                sp9C = var_a3;
-                sp68 = (var_s0->unkC * temp_f22) + arg1->unk8;
-                var_a3 = sp9C;
-                if (func_8011C344(temp_s1, &sp6C, &sp60, var_a3) != 0) {
-                    temp_v0_2 = gDisplayListHeads.unk8;
-                    gDisplayListHeads.unk8 = temp_v0_2 + 8;
-                    temp_v0_2->unk4 = temp_s1;
-                    temp_v0_2->unk0 = 0xDA380000;
-                    temp_v0_3 = gDisplayListHeads.unk8;
-                    gDisplayListHeads.unk8 = temp_v0_3 + 8;
-                    temp_v0_3->unk4 = &D_80126E90;
-                    temp_v0_3->unk0 = 0xDE000000;
-                    gDynamicBuffer1.top += 0x40;
-                }
-                var_s4 += 1;
-                var_s0 += 0x10;
-            } while (var_s4 < *var_a3);
+        
+        for (var_s4 = 0; var_s4 < var_a3->unk0; var_s4 += 1) {
+            temp_s1 = gDynamicBuffer1.top;
+            sp6C = (var_s0->unk4 * temp_f20) + sp80;
+            sp70 = var_s0->unk0 + sp84;
+            sp74 = (var_s0->unk4 * temp_f22) + sp88;
+            sp60 = (var_s0->unkC * temp_f20) + arg1->unk0;
+            sp64 = var_s0->unk8 + arg1->unk4;
+            sp9C = var_a3;
+            sp68 = (var_s0->unkC * temp_f22) + arg1->unk8;
+            var_a3 = sp9C;
+            if (func_8011C344(temp_s1, &sp6C, &sp60, var_a3) != 0) {
+                temp_v0_2 = gDisplayListHeads[2];
+                gDisplayListHeads[2] = temp_v0_2 + 8;
+                temp_v0_2->unk4 = temp_s1;
+                temp_v0_2->unk0 = 0xDA380000;
+                gSPDisplayList(gDisplayListHeads[2]++, &D_80126E90);
+                gDynamicBuffer1.top += sizeof(Mtx);
+            }
+            var_s0 += 0x10;
         }
-        temp_v0_4 = gDisplayListHeads.unk8;
-        gDisplayListHeads.unk8 = temp_v0_4 + 8;
-        temp_v0_4->unk0 = 0xDE000000;
-        temp_v0_4->unk4 = &D_80126EB0;
+        gSPDisplayList(gDisplayListHeads[2]++, &D_80126EB0);
     }
 }
 #else
