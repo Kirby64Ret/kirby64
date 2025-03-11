@@ -89,3 +89,4 @@
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A24C4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2550.s")
+

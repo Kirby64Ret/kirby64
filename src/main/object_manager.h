@@ -143,7 +143,7 @@ struct MObj {
 }; // size = 0xA8;
 
 
-struct DObj {
+typedef struct DObj {
     struct DObj *unk0;
     struct GObj *gobj;
     struct DObj *unk8;
@@ -170,7 +170,7 @@ struct DObj {
     f32 unk7C;
     struct MObj *unk80;
     u32 unk84;
-};
+} DObj;
 
 struct Camera {
     struct Camera *unk0;
@@ -441,6 +441,7 @@ extern u32 D_8003DE54;
 // BSS
 extern struct GObjProcess *omCurrentProc;
 extern OSMesgQueue HS64_GObjProcMesgQ;
+extern struct GObj *omGObjListHead[32];
 
 // extern funcs
 void func_8000A5FC(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);

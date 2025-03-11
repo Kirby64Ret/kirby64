@@ -23,3 +23,4 @@
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2/func_800A7394.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2/func_800A73B0.s")
+

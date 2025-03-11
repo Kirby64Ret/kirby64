@@ -342,7 +342,16 @@ draw_lives_digit=0x800bcfd8; // type:func
 draw_pause_bg=0x800bc9a4; // type:func
 draw_star_segments=0x800bd374; // type:func
 fatal_printf=0x8002309c; // type:func
+
+// oh
 ohSleep=0x8000b6bc; // type:func
+ohPause = 0x8000B7C0; // type:func
+ohResume = 0x8000B7D8; // type:func
+ohGObjPause = 0x8000B758; // type:func
+ohGObjResume = 0x8000B78C; // type:func
+ohFindById = 0x8000B688; // type:func
+
+
 gCollisionState=0x8012bcf8;
 gCrashScreen=0x800966d8;
 gDisplayListHeads=0x8004a3d0;

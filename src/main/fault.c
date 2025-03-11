@@ -7,8 +7,6 @@
 
 // There is also some rmon functionality in this file
 
-#define ALIGN8(val) (((u32)(val) + 3) & ~0x3)
-
 u32 D_8003F3C0 = 0x00000000;
 u32 D_8003F3C4 = 0x00000000;
 u32 D_8003F3C8 = 0x00000003;
@@ -316,10 +314,10 @@ void func_80021764(GObj *g) {
     gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
 }
 
-#ifdef MIPS_TO_C
 
+#ifdef MIPS_TO_C
 s32 func_80021CB4(s32 arg0, s32 arg1, s32 arg2) {
-    if (func_8000B688(-2) != 0) {
+    if (ohFindById(-2) != 0) {
         return 0;
     }
     return func_8000BD3C(-2, &func_8000B6B4, arg0, arg1, &func_80021764, arg2, 0, 0, 0, 0, 0, 0, 0);
@@ -397,7 +395,7 @@ void crash_screen_print(s32 x, s32 y, const char *fmt, ...) {
 
     
 
-    size = _Printf(write_to_buf, buf, fmt, (va_list)ALIGN8(args));
+    size = _Printf(write_to_buf, buf, fmt, (va_list)ALIGN4((u32)args));
 
     if (size > 0) {
         ptr = buf;
@@ -679,7 +677,7 @@ void crash_screen_printf(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    crash_screen_vprint(fmt, (va_list)ALIGN8(args));
+    crash_screen_vprint(fmt, (va_list)ALIGN4((u32)args));
 
     va_end(args);
 }

@@ -6,6 +6,14 @@
 #include "main/contpad.h"
 #include "game.h"
 
+// probably BSS for this file
+extern u32 D_800BE4F4;
+extern u32 gGameState;
+extern u32 gCurrentLevel, gCurrentWorld;
+
+// other ovl1 bss
+extern u32 D_800D6B88;
+
 void crash_screen_print_gobj_info(GObj *o) {
     crash_screen_printf("gobj id:%d\n", o->objId);
     crash_screen_printf("df:%x\n", o->onDraw);
@@ -369,7 +377,6 @@ void func_800A336C(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800A3408(void) {
     if ((gCurrentWorld == 1) && (gCurrentLevel == 1)) {
         load_overlay(0x12);
@@ -448,7 +455,6 @@ loop_2:
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800A36C0(void) {
     ? sp70;
     s32 sp2C;
