@@ -3,6 +3,9 @@
 #include "fault.h"
 #include "GObj.h"
 
+// ovl0_4 (gtl??)
+void func_8001806C(struct GObj *arg0);
+
 void func_8000B3E0(s32 link, void (*cb)(GObj*, void*), void* param) {
     GObj* curr;
     GObj* next;
@@ -494,21 +497,20 @@ GObj *func_8000BD3C(s32 arg0, void (*arg1)(), s32 arg2, u32 arg3, s32 arg4, s32 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BD3C.s")
 #endif
 
-#ifdef MIPS_TO_C
+// #ifdef MIPS_TO_C
+void *func_8000BDF0(s32 link, s32 pri, s32 dlPriority, s32 flags, s32 bgColor) {
+    GObj *g;
+    Camera *cam;
 
-void *func_8000BDF0(s32 arg0, ? arg1, s32 arg2, s32 arg3, s32 arg4) {
-    void *temp_v0;
-    void *temp_v1;
-
-    temp_v0 = func_8000BD3C(-1, &func_8000B6B4, arg0, arg1, &func_8001806C, arg2, 0, 0, 0, 0, 0, 0, 0);
-    if (temp_v0 == NULL) {
+    g = func_8000BD3C(-1, &func_8000B6B4, link, pri, &func_8001806C, dlPriority, 0, 0, 0, 0, 0, 0, 0);
+    if (g == NULL) {
         return NULL;
     }
-    temp_v1 = temp_v0->data;
-    temp_v1->unk80 = arg3;
-    temp_v1->unk84 = arg4;
-    return temp_v0;
+    cam = g->data;
+    cam->flags = flags;
+    cam->bgcolor = bgColor;
+    return g;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BDF0.s")
-#endif
+// #else
+// #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BDF0.s")
+// #endif

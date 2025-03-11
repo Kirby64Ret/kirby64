@@ -755,7 +755,7 @@ void func_80022E04(s32 arg0) {
             continue;
         }
         if (var_s4 == D_8003DCA4) {
-            var_s0 += 1;
+            var_s0 ++;
         } else {
             var_s0 = 0;
         }

@@ -761,8 +761,8 @@ struct Camera *func_80009F7C(GObj *gobj) {
         cam->unk64[i] = 0;
     }
 
-    cam->unk80 = 0;
-    cam->unk84 = 0;
+    cam->flags = 0;
+    cam->bgcolor = 0x00000000;
     cam->unk88 = 0;
     cam->unk8C = 0;
     cam->aobj = NULL;

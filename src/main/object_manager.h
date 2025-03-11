@@ -172,7 +172,7 @@ typedef struct DObj {
     u32 unk84;
 } DObj;
 
-struct Camera {
+typedef struct Camera {
     struct Camera *unk0;
     struct GObj *gobj;
     /* 0x08 */ Vp viewport;
@@ -209,11 +209,11 @@ struct Camera {
     f32 unk78;
     f32 unk7C;
 
-    u32 unk80;
-    u32 unk84;
+    u32 flags;
+    u32 bgcolor;
     u32 unk88;
     u32 unk8C;
-};
+} Camera;
 
 struct Unk80005A98_2 {
     u32 unk0;
