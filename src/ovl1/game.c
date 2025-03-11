@@ -4,6 +4,7 @@
 #include "main/object_manager.h"
 #include "main/fault.h"
 #include "main/contpad.h"
+#include "game.h"
 
 void crash_screen_print_gobj_info(GObj *o) {
     crash_screen_printf("gobj id:%d\n", o->objId);
@@ -90,7 +91,7 @@ void func_800A2B9C(void) {
         var_v0 += 1;
         var_v0->unk-1 = temp_a0;
     } while (var_v0 != &D_800D6B10);
-    set_hard_rng_seed(0x3039, &D_800D6B18, &D_800D6B10);
+    set_hard_rng_seed(0x3039);
     func_80002B88();
     gGameState = 1;
     D_800BE4F8 = 0;
@@ -101,7 +102,7 @@ void func_800A2B9C(void) {
     func_800BB24C();
     auSetReverbType(2);
     func_800A74B0();
-    func_80022A38(&crash_screen_print_page_3);
+    faultSetUserCallback(&crash_screen_print_page_3);
     func_800046D0(0x3C);
     func_800B8700();
 }
@@ -477,7 +478,6 @@ loop_1:
 #endif
 
 #ifdef MIPS_TO_C
-
 void game_tick(s32 arg0) {
     s32 temp_t0;
     s32 temp_t0_2;

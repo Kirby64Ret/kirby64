@@ -692,7 +692,11 @@ auSetBGMPriority = 0x80020B34; // type:func
 alCSPSetChlFXMix = 0x80023300; // type:func
 scAddClient = 0x800009E8; // type:func
 
+// fault
+faultSetUserCallback = 0x80022A38; // type:func
+faultWaitButton = 0x80022248; // type:func
 
+// audio
 auGlobals = 0x800963D0;
 auSPTaskMQ = 0x80095E00;
 auTask = 0x80096458;
@@ -773,9 +777,13 @@ contPollTimer = 0x80048F58;
 contChannelMap = 0x80048E9C;
 
 // dma
+gSRAMHandle = 0x80048CF8;
 dmaDevAddr = 0x80048D88;
 dmaVramAddr = 0x80048D8C;
 dmaLen = 0x80048D90;
+sram_read = 0x80002F4C; // type:func
+sram_write = 0x80002F88; // type:func
+sram_init = 0x80002EBC; // type:func
 
 // ovl1_1_2
 correct_stick_x = 0x800A5560; // type:func

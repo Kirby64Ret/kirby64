@@ -1,6 +1,7 @@
 #ifndef _AUDIO_H_
 #define _AUDIO_H_
 
+#include <PR/libaudio.h>
 #include "localsched.h"
 
 #define NUM_DMA_BUFFERS 4
@@ -191,6 +192,6 @@ extern oscData* freeOscStateList;
 
 void auStopSong(s32 playerId);
 extern int func_80023360(u32, u32);
-
+void auThreadMain(void *);
 
 #endif

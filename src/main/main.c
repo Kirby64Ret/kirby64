@@ -1,10 +1,15 @@
 #include <ultra64.h>
 #include <macros.h>
+#include <PR/rcp.h>
 
 #include "types.h"
 #include "main.h"
 #include "segments.h"
 #include "contpad.h"
+#include "dma.h"
+#include "fault.h"
+#include "audio.h"
+#include "ovl1/game.h"
 
 struct Overlay ovl1Def = OVERLAY(ovl1);
 
@@ -21,8 +26,8 @@ u64 gEntryStack[ENTRY_STACK_LEN_U64]; // Stack pointer set to this by EntryPoint
 OSThread gIdleThread;
  u64 idleThreadStack[IDLE_THREAD_STACK_LEN_U64];
 
-OSThread gMainThread;
- u64 gMainThreadStack[0x80]; // Stack for gMainThread
+OSThread gSchedThread;
+ u64 gSchedThreadStack[0x80]; // Stack for gSchedThread
 
 OSThread gAudioThread;
  u64 gAudioThreadStack[0xC0]; // Stack for gAudioThread
@@ -43,11 +48,9 @@ OSMesgQueue gThreadInitializedMQ;
 OSMesg piMesgBuffer[NUM_PI_MESSAGES];
 OSMesgQueue piMesgQueue;
 
-void *D_80048B00;
-u32 pad13[0x1C]; // ?
+void *gArgv[30];
 
 extern OSPiHandle *gRomHandle;
-
 
 OSThread *unused_get_main_thread(void) {
     return &gGameThread;
@@ -61,16 +64,12 @@ u16 unused_get_main_thread_stack_length(void) {
     return MAIN_THREAD_STACK_LEN;
 }
 
-#define SP_IMEM 0xA4001000
-
 void check_sp_imem(void) {
-    gSPImemOkay = (HW_REG(SP_IMEM, u32) == 0x17D7) ? 1 : 0;
+    gSPImemOkay = (HW_REG(SP_IMEM_START, u32) == 0x17D7) ? 1 : 0;
 }
 
-#define SP_DMEM 0xA4000000
-
 void check_sp_dmem(void) {
-    gSPDmemOkay = (HW_REG(SP_DMEM, s32) == -1) ? 1 : 0;
+    gSPDmemOkay = (HW_REG(SP_DMEM_START, s32) == -1) ? 1 : 0;
 }
 
 extern void fatal_printf(const char *fmt, ...);
@@ -87,7 +86,7 @@ void func_80000510(void) {
     if (idleThreadStack[7] != STACK_TOP_MAGIC) {
         thread_crash_stack_overflow(1);
     }
-    if (gMainThreadStack[7] != STACK_TOP_MAGIC) {
+    if (gSchedThreadStack[7] != STACK_TOP_MAGIC) {
         thread_crash_stack_overflow(3);
     }
     if (gGameThreadStack[7] != STACK_TOP_MAGIC) {
@@ -95,32 +94,24 @@ void func_80000510(void) {
     }
 }
 
-extern void osCreateViManager(OSPri x);
-extern void func_80002EBC(void); // Initializes a PI Handle
-extern void init_dma_message_queue(void);
-extern void dma_read(u32 x, void *y, u32 z);
 extern void scThreadMain(void *);
-extern void auThreadMain(void *);
-void dma_overlay_load(struct Overlay *);
 void func_800076D0();
-void game_tick(s32);
-void crash_screen_start_thread();
 
 extern OSPiHandle *osCartRomInit(void);
 
 void thread5_game(UNUSED void *arg) {
-    osCreateViManager(0xFE);
+    osCreateViManager(OS_PRIORITY_VIMGR);
     gRomHandle = osCartRomInit();
-    func_80002EBC();
+    sram_init();
     osCreatePiManager(OS_PRIORITY_PIMGR, &piMesgQueue, &piMesgBuffer[0], NUM_PI_MESSAGES);
-    init_dma_message_queue();
+    dmaInit();
     dma_read(0xB0000B70, gRSPBootUcode, sizeof(gRSPBootUcode));
     check_sp_imem();
     check_sp_dmem();
     osCreateMesgQueue(&gThreadInitializedMQ, &D_80048A04, 1);
 
-    osCreateThread(&gMainThread, 3, scThreadMain, NULL, &gMainThreadStack[0x80], 120);
-    SETUP_STACK_AND_START_THREAD(gMainThread, gMainThreadStack);
+    osCreateThread(&gSchedThread, 3, scThreadMain, NULL, &gSchedThreadStack[0x80], 120);
+    SETUP_STACK_AND_START_THREAD(gSchedThread, gSchedThreadStack);
     osRecvMesg(&gThreadInitializedMQ, NULL, OS_MESG_BLOCK);
 
     osCreateThread(&gAudioThread, 4, auThreadMain, NULL, &gAudioThreadStack[0xC0], 110);
@@ -150,6 +141,6 @@ void thread1_idle(void *arg) {
 void cboot(void) {
     gEntryStack[7] = STACK_TOP_MAGIC;
     osInitialize();
-    osCreateThread(&gIdleThread, 1, thread1_idle, &D_80048B00, &idleThreadStack[IDLE_THREAD_STACK_LEN_U64], OS_PRIORITY_APPMAX);
+    osCreateThread(&gIdleThread, 1, thread1_idle, &gArgv, &idleThreadStack[IDLE_THREAD_STACK_LEN_U64], OS_PRIORITY_APPMAX);
     SETUP_STACK_AND_START_THREAD(gIdleThread, idleThreadStack);
 }

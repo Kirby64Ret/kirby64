@@ -1,7 +1,10 @@
 #include <ultra64.h>
 #include <macros.h>
-#include "PR/os_pi.h"
+#include <PR/R4300.h>
+#include <PR/rcp.h>
+#include <PR/os_pi.h>
 #include "main.h"
+#include "dma.h"
 
 void fatal_printf(const char *arg0, ...);
 
@@ -12,10 +15,10 @@ extern u32 *D_80048CDC;
 
 OSPiHandle *gRomHandle; // 0x80048CF0
 // 0x80048CF4?
-OSPiHandle D_80048CF8; // 0x74 bytes
-OSMesg D_80048D6C;
-OSMesgQueue gDmaMessageQueue;
-u32 dmaDevAddr;
+OSPiHandle gSRAMHandle; // 0x74 bytes
+OSMesg dmaMesg;
+OSMesgQueue dmaMessageQ;
+void *dmaDevAddr;
 void *dmaVramAddr;
 u32 dmaLen;
 u8* D_80048D94;
@@ -24,13 +27,13 @@ u32 D_80048D9C;
 
 // end bss, followed by ovl0_2.c
 
-void init_dma_message_queue(void) {
-    osCreateMesgQueue(&gDmaMessageQueue, &D_80048D6C, 1);
+void dmaInit(void) {
+    osCreateMesgQueue(&dmaMessageQ, &dmaMesg, 1);
 }
 
 // an actual DMA copy
 void dma_copy(OSPiHandle *handle, u32 physAddr, u32 vAddr, u32 size, u8 direction) {
-    OSIoMesg sp48;
+    OSIoMesg dmaIOMesg;
 
     dmaDevAddr = physAddr;
     dmaVramAddr = (void*)vAddr;
@@ -40,30 +43,30 @@ void dma_copy(OSPiHandle *handle, u32 physAddr, u32 vAddr, u32 size, u8 directio
     } else {
         osInvalDCache((void*)vAddr, size);
     }
-    sp48.hdr.pri = 0;
-    sp48.hdr.retQueue = &gDmaMessageQueue;
-    sp48.size = 0x10000;
+    dmaIOMesg.hdr.pri = 0;
+    dmaIOMesg.hdr.retQueue = &dmaMessageQ;
+    dmaIOMesg.size = 0x10000;
     while (size >= 0x10001) {
-        sp48.dramAddr = (void*)vAddr;
-        sp48.devAddr = physAddr;
-        if ((D_80048CDC == 0) && (osEPiStartDma(handle, &sp48, direction) == -1)) {
+        dmaIOMesg.dramAddr = (void*)vAddr;
+        dmaIOMesg.devAddr = physAddr;
+        if ((D_80048CDC == 0) && (osEPiStartDma(handle, &dmaIOMesg, direction) == -1)) {
             fatal_printf("dma pi full %x %x %x\n", physAddr, vAddr, size);
             while (1);
         }
-        osRecvMesg(&gDmaMessageQueue, NULL, OS_MESG_BLOCK);
+        osRecvMesg(&dmaMessageQ, NULL, OS_MESG_BLOCK);
         size -= 0x10000;
         physAddr += 0x10000;
         vAddr += 0x10000;
     }
     if (size != 0) {
-        sp48.dramAddr = (void*)vAddr;
-        sp48.devAddr = physAddr;
-        sp48.size = size;
-        if ((D_80048CDC == 0) && (osEPiStartDma(handle, &sp48, direction) == -1)) {
+        dmaIOMesg.dramAddr = (void*)vAddr;
+        dmaIOMesg.devAddr = physAddr;
+        dmaIOMesg.size = size;
+        if ((D_80048CDC == 0) && (osEPiStartDma(handle, &dmaIOMesg, direction) == -1)) {
             fatal_printf("dma pi full %x %x %x\n", physAddr, vAddr, size);
             while (1);
         }
-        osRecvMesg(&gDmaMessageQueue, NULL, OS_MESG_BLOCK);
+        osRecvMesg(&dmaMessageQ, NULL, OS_MESG_BLOCK);
     }
 }
 
@@ -92,29 +95,29 @@ void dma_write(void *vAddr, u32 physAddr, u32 size) {
     dma_copy(gRomHandle, physAddr, (u32)vAddr, size, OS_WRITE);
 }
 
-OSPiHandle *func_80002EBC(void) {
-    if (D_80048CF8.baseAddress == 0xA8000000) {
-        return &D_80048CF8;
+OSPiHandle *sram_init(void) {
+    if (gSRAMHandle.baseAddress == PHYS_TO_K1(PI_DOM2_ADDR2)) {
+        return &gSRAMHandle;
     }
-    D_80048CF8.type = (u8)3;
-    D_80048CF8.baseAddress = 0xA8000000;
-    D_80048CF8.latency = (u8)5;
-    D_80048CF8.pulse = (u8)0xC;
-    D_80048CF8.pageSize = (u8)0xD;
-    D_80048CF8.relDuration = (u8)2;
-    D_80048CF8.domain = (u8)1;
-    D_80048CF8.speed = 0;
-    bzero(&D_80048CF8.transferInfo, sizeof(__OSTranxInfo));
-    osEPiLinkHandle(&D_80048CF8);
-    return &D_80048CF8;
+    gSRAMHandle.type = (u8)DEVICE_TYPE_SRAM;
+    gSRAMHandle.baseAddress = PHYS_TO_K1(PI_DOM2_ADDR2);
+    gSRAMHandle.latency = (u8)5;
+    gSRAMHandle.pulse = (u8)0xC;
+    gSRAMHandle.pageSize = (u8)0xD;
+    gSRAMHandle.relDuration = (u8)2;
+    gSRAMHandle.domain = (u8)1;
+    gSRAMHandle.speed = 0;
+    bzero(&gSRAMHandle.transferInfo, sizeof(__OSTranxInfo));
+    osEPiLinkHandle(&gSRAMHandle);
+    return &gSRAMHandle;
 }
 
-void func_80002F4C(s32 arg0, s32 arg1, s32 arg2) {
-    dma_copy(&D_80048CF8, arg0, arg1, arg2, 0);
+void sram_read(s32 arg0, s32 arg1, s32 arg2) {
+    dma_copy(&gSRAMHandle, arg0, arg1, arg2, OS_READ);
 }
 
-void func_80002F88(s32 arg0, s32 arg1, s32 arg2) {
-    dma_copy(&D_80048CF8, arg1, arg0, arg2, 1);
+void sram_write(s32 arg0, s32 arg1, s32 arg2) {
+    dma_copy(&gSRAMHandle, arg1, arg0, arg2, OS_WRITE);
 }
 
 void func_80002FC0(u8 *arg0, s32 arg1, void (*arg2)(void), u32 arg3);
