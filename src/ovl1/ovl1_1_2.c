@@ -61,7 +61,7 @@ void func_800A4B34(Vector *dst, struct UnkStruct8004A7C4_3C *arg1) {
     Mat4 sp3C;
 
     if (arg1 == 0) {
-        arg1 = omCurrentObj->unk3C;
+        arg1 = omCurrentObj->data;
     }
     guMtxIdentF(&sp7C);
     do {

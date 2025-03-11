@@ -581,7 +581,7 @@ void func_8001B28C(void *arg0, s16 *arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5
     arg0->unk24 = 0.0f;
     arg0->unk30 = 0.0f;
     arg0->unk34 = 0.0f;
-    arg0->unk3C = 0.0f;
+    arg0->data = 0.0f;
     arg0->unk28 = (sp18 * arg6) / temp_f16;
     arg0->unk38 = (2.0f * arg4 * arg5 * arg6) / temp_f16;
     if (arg1 != NULL) {
@@ -788,7 +788,7 @@ void func_8001B838(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4) {
     arg0->unk30 = 0.0f;
     arg0->unk34 = 0.0f;
     arg0->unk38 = 0.0f;
-    arg0->unk3C = 1.0f;
+    arg0->data = 1.0f;
     arg0->unk4 = (arg4 * sp2C) + temp_f18;
 }
 #else
@@ -892,7 +892,7 @@ void HS64_MkRotationMtxF(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     arg0->unk20 = (temp_f12_2 * temp_f0) + (temp_f20 * sp3C);
     arg0->unk28 = temp_f22 * sp34;
     arg0->unk24 = (temp_f12_2 * sp3C) - (temp_f20 * temp_f0);
-    arg0->unk3C = 1.0f;
+    arg0->data = 1.0f;
 }
 #else
 void HS64_MkRotationMtxF(Mat4 mf, f32 arg1, f32 arg2, f32 arg3);
@@ -975,7 +975,7 @@ void func_8001BCE0(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     arg0->unk28 = (temp_t5 << 0x10) | (sp8 & 0xFFFF);
     arg0->unk2C = temp_t0_4 << 0x10;
     arg0->unk38 = 0;
-    arg0->unk3C = 0;
+    arg0->data = 0;
     temp_t1_2 = (var_a1 * var_a2) >> 0xF;
     temp_t4_2 = ((temp_t1_2 * var_t3) >> 0xE) + ((var_a3 * var_v0) >> 0xE);
     temp_t2_3 = ((temp_t1_2 * var_v0) >> 0xE) - ((var_a3 * var_t3) >> 0xE);
@@ -1093,7 +1093,7 @@ void func_8001BFDC(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5,
     arg0->unk38 = (temp_f16 << 0x10) | (temp_f4 & 0xFFFF);
     temp_f10 = arg3 * 65536.0f;
     arg0->unk1C = (temp_f10 & 0xFFFF0000) | 1;
-    arg0->unk3C = temp_f10 << 0x10;
+    arg0->data = temp_f10 << 0x10;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001BFDC.s")
@@ -1251,7 +1251,7 @@ void func_8001C73C(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     arg0->unk30 = 0.0f;
     arg0->unk34 = 0.0f;
     arg0->unk38 = 0.0f;
-    arg0->unk3C = 1.0f;
+    arg0->data = 1.0f;
     arg0->unk28 = (temp_f4 * sp58) + (temp_f22 * sp4C);
 }
 #else
@@ -1347,7 +1347,7 @@ void create_yz_rotation_matrix(void *arg0, f32 arg1, f32 arg2) {
     arg0->unk2C = temp_f0_2;
     arg0->unk1C = temp_f0_2;
     arg0->unkC = temp_f0_2;
-    arg0->unk3C = 1.0f;
+    arg0->data = 1.0f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/create_yz_rotation_matrix.s")
@@ -1417,7 +1417,7 @@ void create_xy_rotation_matrix(void *arg0, f32 arg1, f32 arg2) {
     arg0->unk2C = temp_f0_2;
     arg0->unk1C = temp_f0_2;
     arg0->unkC = temp_f0_2;
-    arg0->unk3C = 1.0f;
+    arg0->data = 1.0f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/create_xy_rotation_matrix.s")
@@ -1467,7 +1467,7 @@ void create_z_rotation_matrix(void *arg0, f32 arg1) {
     sp1C = sinf(arg1);
     temp_f0 = cosf(arg1);
     arg0->unk0 = temp_f0;
-    arg0->unk3C = 1.0f;
+    arg0->data = 1.0f;
     arg0->unk10 = -sp1C;
     arg0->unk14 = temp_f0;
     arg0->unk4 = sp1C;
@@ -1481,7 +1481,7 @@ void create_z_rotation_matrix(void *arg0, f32 arg1) {
     arg0->unk2C = 0.0f;
     arg0->unk1C = 0.0f;
     arg0->unkC = 0.0f;
-    arg0->unk28 = arg0->unk3C;
+    arg0->unk28 = arg0->data;
 }
 #else
 void create_z_rotation_matrix(Mat4 mf, f32 z);

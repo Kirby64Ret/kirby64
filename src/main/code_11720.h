@@ -23,7 +23,7 @@ struct unkAddr8004A7C8 {
     u32 unk30;
     u32 unk34;
     u32 unk38;
-    struct unkAddr8004A7C8_2* unk3C;
+    struct unkAddr8004A7C8_2* data;
 };
 
 // extern struct unkAddr8004A7C8* omCurrentCamera;

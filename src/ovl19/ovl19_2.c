@@ -79,7 +79,7 @@ void func_80223200_ovl19(GObj *arg0) {
                 func_8011DC04(0x21D);
             }
             temp_v0 = &D_8022F260_ovl19[0];
-            gKirbyState.unk3C = 0;
+            gKirbyState.data = 0;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -104,7 +104,7 @@ void func_80223200_ovl19(GObj *arg0) {
     loop_9:
                 if (D_800E6850[omCurrentObj->objId] > 4.0f) {
                     s32 rand = random_soft_s32_range(2);
-                    gKirbyState.unk3C = rand;
+                    gKirbyState.data = rand;
                     if (rand != D_800E9AA0[omCurrentObj->objId]) {
                         D_800E9AA0[omCurrentObj->objId] = rand;
                         break;
@@ -112,7 +112,7 @@ void func_80223200_ovl19(GObj *arg0) {
                         goto loop_9;
                     }
                 } else {
-                    gKirbyState.unk3C = 0;
+                    gKirbyState.data = 0;
                     rand = 0;
                 }
                 temp_v0 = &D_8022F170_ovl19[rand];
@@ -132,7 +132,7 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800E3750[omCurrentObj->objId] = -0.980665f;
             D_800E3C90[omCurrentObj->objId] = 15.0f;
             temp_v0 = &D_8022F1B8_ovl19[0];
-            gKirbyState.unk3C = 0;
+            gKirbyState.data = 0;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -143,7 +143,7 @@ void func_80223200_ovl19(GObj *arg0) {
             }
             temp_v0 = &D_8022F1B8_ovl19[1];
             gKirbyState.isFullJump += 1;
-            gKirbyState.unk3C = 1;
+            gKirbyState.data = 1;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -168,9 +168,9 @@ void func_80223200_ovl19(GObj *arg0) {
             break;
         case 3:
             gKirbyState.unk30 = 0;
-            gKirbyState.unk3C = 0;
+            gKirbyState.data = 0;
             play_sound(0x145);
-            temp_v0 = &D_8022F200_ovl19[gKirbyState.unk3C];
+            temp_v0 = &D_8022F200_ovl19[gKirbyState.data];
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -187,12 +187,12 @@ void func_80223200_ovl19(GObj *arg0) {
             gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
             func_800BB468(2, 0);
             play_sound(0x144);
-            gKirbyState.unk3C = 1;
+            gKirbyState.data = 1;
             D_800E8920[omCurrentObj->objId] = 0;
             D_800E3210[omCurrentObj->objId] = 18.0f;
             D_800E3750[omCurrentObj->objId] = -0.980665f;
             D_800E3C90[omCurrentObj->objId] = 18.0f;
-            temp_v0 = &D_8022F218_ovl19[gKirbyState.unk3C];
+            temp_v0 = &D_8022F218_ovl19[gKirbyState.data];
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -224,7 +224,7 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800D6B54 = 1;
             D_800BE4F8 = 6;
             temp_v0 = &D_8022F248_ovl19[0];
-            gKirbyState.unk3C = 0;
+            gKirbyState.data = 0;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -244,10 +244,10 @@ void func_80223200_ovl19(GObj *arg0) {
             break;
         case 7:
             gKirbyState.unk30 = 0;
-            gKirbyState.unk3C = 0;
+            gKirbyState.data = 0;
             D_800E6690[omCurrentObj->objId] = 0.25f;
             D_800E6850[omCurrentObj->objId] = 18.0f;
-            temp_v0 = &D_8022F278_ovl19[gKirbyState.unk3C];
+            temp_v0 = &D_8022F278_ovl19[gKirbyState.data];
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -270,10 +270,10 @@ void func_80223200_ovl19(GObj *arg0) {
             func_800AEDD0(1.5f, 1);
             func_800AED80(1.5f, 2);
             func_800AEDD0(1.5f, 2);
-            gKirbyState.unk3C = 1;
+            gKirbyState.data = 1;
             D_800E98E0[omCurrentObj->objId] = 1;
             play_sound(0x144);
-            temp_v0 = &D_8022F278_ovl19[gKirbyState.unk3C];
+            temp_v0 = &D_8022F278_ovl19[gKirbyState.data];
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;

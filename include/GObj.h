@@ -172,7 +172,7 @@ typedef struct GObj {
     u32 unk34;
     u32 unk38;
     // user_data???
-    struct UnkStruct8004A7C4_3C *unk3C;
+    struct UnkStruct8004A7C4_3C *data;
     // goes up by 2.0f per frame until it hits 40.0f, then resets to 0.0f
     f32 unk40;
     u32 flags;

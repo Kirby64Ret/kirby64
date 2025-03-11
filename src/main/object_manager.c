@@ -707,8 +707,8 @@ struct DObj *func_80009C38(GObj *gobj, u8 *arg1) {
     }
     dobj = HS64_DObjPop();
     
-    if (gobj->unk3C != NULL) {
-        temp_v1 = gobj->unk3C;
+    if (gobj->data != NULL) {
+        temp_v1 = gobj->data;
         
         while (temp_v1->unk8 != 0) {
             temp_v1 = temp_v1->unk8;
@@ -718,7 +718,7 @@ struct DObj *func_80009C38(GObj *gobj, u8 *arg1) {
         dobj->unkC = temp_v1;
     } else {
         gobj->kind = 1;
-        gobj->unk3C = dobj;
+        gobj->data = dobj;
         dobj->unkC = 0;
     }
     dobj->gobj = gobj;
@@ -746,7 +746,7 @@ struct Camera *func_80009F7C(GObj *gobj) {
     gobj->kind = 3;
     cam = HS64_CameraPop();
 
-    gobj->unk3C = cam;
+    gobj->data = cam;
 
     cam->gobj = gobj;
 
@@ -781,7 +781,7 @@ void func_8000A02C(struct Camera *cam) {
 
     gobj = cam->gobj;
     gobj->kind = 0;
-    gobj->unk3C = NULL;
+    gobj->data = NULL;
 
     for (i = 0; i < 2; i++) {
         mtx = cam->unk64[i];
@@ -822,7 +822,7 @@ GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri) {
     toReturn->procListTail = NULL;
     toReturn->flags = 0;
     toReturn->kind = 0;
-    toReturn->unk3C = NULL;
+    toReturn->data = NULL;
     toReturn->dl_link = 0x21;
     toReturn->unk40 = 0.0f;
     toReturn->unk48 = 0;
@@ -891,7 +891,7 @@ void func_8000A29C(GObj *arg0) {
         case 2:
             break;
         case 3:
-            func_8000A02C((struct Camera *)arg0->unk3C);
+            func_8000A02C((struct Camera *)arg0->data);
     }
     if (arg0->dl_link != 0x21) {
         omGDLLinkDestructor(arg0);

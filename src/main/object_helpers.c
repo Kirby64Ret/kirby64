@@ -257,7 +257,7 @@ void func_8000B950(DObj *d) {
 }
 
 void func_8000B988(GObj *g) {
-    DObj *d = (DObj *)g->unk3C;
+    DObj *d = (DObj *)g->data;
 
     while (d != NULL) {
         func_80009B5C(d);
@@ -415,10 +415,10 @@ void func_8000BBE0(GObj *arg0) {
     if (arg0 == NULL) {
         var_s1 = omCurrentObj;
     }
-    if (var_s1->unk3C != NULL) {
+    if (var_s1->data != NULL) {
         do {
-            func_80009DF4(var_s1->unk3C);
-        } while (var_s1->unk3C != NULL);
+            func_80009DF4(var_s1->data);
+        } while (var_s1->data != NULL);
     }
 }
 #else
@@ -504,7 +504,7 @@ void *func_8000BDF0(s32 arg0, ? arg1, s32 arg2, s32 arg3, s32 arg4) {
     if (temp_v0 == NULL) {
         return NULL;
     }
-    temp_v1 = temp_v0->unk3C;
+    temp_v1 = temp_v0->data;
     temp_v1->unk80 = arg3;
     temp_v1->unk84 = arg4;
     return temp_v0;

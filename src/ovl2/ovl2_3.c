@@ -1042,7 +1042,7 @@ void func_800FA2D4(void *arg0, void *arg1) {
     f32 temp_f2;
     void *temp_v0;
 
-    temp_v0 = D_800D799C->unk3C;
+    temp_v0 = D_800D799C->data;
     D_800D7B38.unk0 = D_800D7B20.unk0;
     D_800D7B38.unk4 = D_800D7B20.unk4;
     D_800D7B38.unk8 = D_800D7B20.unk8;
@@ -1051,7 +1051,7 @@ void func_800FA2D4(void *arg0, void *arg1) {
     D_800D7B38.unk10 = D_800D7B20.unk10;
     temp_f2 = D_80129408 * 0.01f;
     D_800D7B38.unk14 = D_800D7B20.unk14;
-    temp_v0->unk3C = arg1->unk24 + (D_80129400 * temp_f0);
+    temp_v0->data = arg1->unk24 + (D_80129400 * temp_f0);
     temp_v0->unk40 = arg1->unk28 + (D_80129404 * temp_f0);
     temp_v0->unk44 = arg1->unk2C;
     temp_v0->unk48 = arg1->unk18 + (D_80129400 * temp_f2);
@@ -1060,7 +1060,7 @@ void func_800FA2D4(void *arg0, void *arg1) {
     D_800D7B20.unk0 = temp_v0->unk48;
     D_800D7B20.unk4 = temp_v0->unk4C;
     D_800D7B20.unk8 = temp_v0->unk50;
-    D_800D7B2C.unk0 = temp_v0->unk3C;
+    D_800D7B2C.unk0 = temp_v0->data;
     D_800D7B2C.unk4 = temp_v0->unk40;
     D_800D7B2C.unk8 = temp_v0->unk44;
     temp_v0->unk20 = arg0->unk10;
@@ -1106,7 +1106,7 @@ void func_800FA438(s32 arg0, void *arg1) {
     temp_f14 = temp_v1_2->unk30;
     arg1->unkC = ((temp_v1_2->unk34 - temp_f14) * temp_f0) + temp_f14;
     temp_f2_2 = temp_v1_2->unk38;
-    arg1->unk10 = ((temp_v1_2->unk3C - temp_f2_2) * temp_f0) + temp_f2_2;
+    arg1->unk10 = ((temp_v1_2->data - temp_f2_2) * temp_f0) + temp_f2_2;
     temp_f12_2 = temp_v1_2->unk40;
     arg1->unk14 = ((temp_v1_2->unk44 - temp_f12_2) * temp_f0) + temp_f12_2;
     arg1->unk18 = temp_v1_2->unk2;
@@ -1123,7 +1123,7 @@ void func_800FA438(s32 arg0, void *arg1) {
     arg1->unk30 = temp_v1_2->unk58;
     arg1->unk34 = temp_v1_2->unk5C;
     arg1->unk38 = temp_v1_2->unk60;
-    arg1->unk3C = temp_v1_2->unk64;
+    arg1->data = temp_v1_2->unk64;
     arg1->unk40 = temp_v1_2->unk68;
     arg1->unk44 = temp_v1_2->unk6C;
     arg1->unk48 = temp_v1_2->unkC;
@@ -1159,7 +1159,7 @@ void func_800FA608(s32 arg0, void *arg1, void *arg2) {
     f32 sp2C;
     s16 temp_v0;
 
-    sp54 = D_800D799C->unk3C;
+    sp54 = D_800D799C->data;
     temp_v0 = arg1->unk0;
     switch (temp_v0) {                              /* irregular */
         case 0:
@@ -1270,7 +1270,7 @@ void func_800FA92C(s32 arg0, void *arg1, void *arg2) {
     void *temp_a2;
 
     sp64 = 0;
-    sp6C = D_800D799C->unk3C;
+    sp6C = D_800D799C->data;
     arg2->unk18 = arg2->unk0;
     arg2->unk1C = arg2->unk4;
     arg2->unk20 = arg2->unk8;
@@ -1328,7 +1328,7 @@ void func_800FA92C(s32 arg0, void *arg1, void *arg2) {
             var_f12 = temp_f14;
             sp64 = 1;
         }
-        temp_f0_6 = arg1->unk3C;
+        temp_f0_6 = arg1->data;
         if (temp_f0_6 < var_f12) {
             var_f12 = temp_f0_6;
             sp64 |= 2;
@@ -1365,7 +1365,7 @@ void func_800FAC74(void *arg0, void *arg1, void *arg2) {
     f32 var_f2_3;
     s32 var_v0;
 
-    sp5C = D_800D799C->unk3C;
+    sp5C = D_800D799C->data;
     if (D_801292E0 == 9999.0f) {
         M2C_MEMCPY_ALIGNED(arg0, arg2, 0x3C);
     }
@@ -1502,7 +1502,7 @@ void func_800FB164(void *arg0, void *arg1, void *arg2) {
     s32 var_a0;
     s32 var_v1;
 
-    sp4C = D_800D799C->unk3C;
+    sp4C = D_800D799C->data;
     if (D_801292E0 == 9999.0f) {
         M2C_MEMCPY_ALIGNED(arg0, arg2, 0x3C);
     }
@@ -1827,7 +1827,7 @@ void func_800FBBB8(void) {
     ? sp34;
     f32 sp28;
 
-    sp4C = D_800D799C->unk3C;
+    sp4C = D_800D799C->data;
     M2C_MEMCPY_ALIGNED(&D_80129150, &D_80129210, 0x60);
     M2C_MEMCPY_ALIGNED(&D_80129270, &D_801292B0, 0x3C);
     D_80129330.unk0 = D_801292B0.unk0;
@@ -1872,7 +1872,7 @@ void func_800FBDE8(void) {
 void func_800FBE1C(void) {
     void *temp_v0;
 
-    temp_v0 = D_800D799C->unk3C;
+    temp_v0 = D_800D799C->data;
     D_801293F0 = 0.0f;
     D_801293EC = D_801293F0;
     D_801293E8 = D_801293EC;
@@ -1882,7 +1882,7 @@ void func_800FBE1C(void) {
     D_80129370.unk0 = temp_v0->unk48;
     D_80129370.unk4 = temp_v0->unk4C;
     D_80129370.unk8 = temp_v0->unk50;
-    D_8012937C.unk0 = temp_v0->unk3C;
+    D_8012937C.unk0 = temp_v0->data;
     D_8012937C.unk4 = temp_v0->unk40;
     D_8012937C.unk8 = temp_v0->unk44;
     D_801293F4 = 1.0f;
@@ -1926,7 +1926,7 @@ void func_800FBF18(s32 arg0) {
     D_80129210.unk30 = temp_v0_2->unk58;
     D_80129210.unk34 = temp_v0_2->unk5C;
     D_80129210.unk38 = temp_v0_2->unk60;
-    D_80129210.unk3C = temp_v0_2->unk64;
+    D_80129210.data = temp_v0_2->unk64;
     D_80129210.unk40 = temp_v0_2->unk68;
     D_80129210.unk44 = temp_v0_2->unk6C;
     D_80129210.unk48 = temp_v0_2->unkC;
@@ -1997,7 +1997,7 @@ s32 func_800FC164(void *arg0) {
     s32 var_v0;
     void *temp_s1;
 
-    temp_s1 = D_800D799C->unk3C;
+    temp_s1 = D_800D799C->data;
     var_s0 = 0;
     sp30 = D_8012940C * 0.01f;
     sp2C = D_80129408 * 0.01f;
@@ -2028,14 +2028,14 @@ s32 func_800FC164(void *arg0) {
     temp_s1->unk48 = (D_80129400 * sp2C) + D_80129370.unk0;
     temp_s1->unk4C = (D_80129404 * sp2C) + D_80129370.unk4;
     temp_s1->unk50 = D_80129370.unk8;
-    temp_s1->unk3C = (D_80129400 * sp30) + D_80129370.unkC;
+    temp_s1->data = (D_80129400 * sp30) + D_80129370.unkC;
     temp_s1->unk40 = (D_80129404 * sp30) + D_80129370.unk10;
     temp_s1->unk44 = D_80129370.unk14;
     D_800D7B20.unk0 = temp_s1->unk48;
     D_800D7B20.unk4 = temp_s1->unk4C;
     D_800D7B20.unk8 = temp_s1->unk50;
     var_v0 = 0;
-    D_800D7B2C.unk0 = temp_s1->unk3C;
+    D_800D7B2C.unk0 = temp_s1->data;
     D_800D7B2C.unk4 = temp_s1->unk40;
     D_800D7B2C.unk8 = temp_s1->unk44;
     temp_s1->unk20 = arg0->unk10;
@@ -2089,14 +2089,14 @@ void func_800FC53C(void) {
     f32 temp_f2;
     void *temp_v0;
 
-    temp_v0 = D_800D799C->unk3C;
+    temp_v0 = D_800D799C->data;
     sp1C = temp_v0;
     func_800FA438(D_80129138, &D_801291B0);
     temp_f0 = D_8012940C * 0.01f;
     temp_f2 = D_80129408 * 0.01f;
     temp_v0->unk48 = temp_v0->unk48 + (D_80129400 * temp_f2);
     temp_v0->unk4C = temp_v0->unk4C + (D_80129404 * temp_f2);
-    temp_v0->unk3C = temp_v0->unk3C + (D_80129400 * temp_f0);
+    temp_v0->data = temp_v0->data + (D_80129400 * temp_f0);
     temp_v0->unk40 = temp_v0->unk40 + (D_80129404 * temp_f0);
     temp_v0->unk20 = D_801291B0.unk10;
     temp_v0->unk28 = D_801291B0.unk54;
@@ -2116,7 +2116,7 @@ void func_800FC62C(void) {
     void *temp_v1;
     void *temp_v1_2;
 
-    temp_v0 = D_800D799C->unk3C;
+    temp_v0 = D_800D799C->data;
     D_800D7B38 = D_800D7B20;
     if (D_800D6B54 == 0) {
         sp1C = temp_v0;
@@ -2126,7 +2126,7 @@ void func_800FC62C(void) {
             temp_v0->unk48 = temp_v1->unk0;
             temp_v0->unk4C = temp_v1->unk4;
             temp_v0->unk50 = temp_v1->unk8;
-            temp_v0->unk3C = temp_v1->unkC;
+            temp_v0->data = temp_v1->unkC;
             temp_v0->unk40 = temp_v1->unk10;
             temp_v0->unk44 = temp_v1->unk14;
         } else {
@@ -2134,7 +2134,7 @@ void func_800FC62C(void) {
             temp_v1_2->unk0 = temp_v0->unk48;
             temp_v1_2->unk4 = temp_v0->unk4C;
             temp_v1_2->unk8 = temp_v0->unk50;
-            temp_v1_2->unkC = temp_v0->unk3C;
+            temp_v1_2->unkC = temp_v0->data;
             temp_v1_2->unk10 = temp_v0->unk40;
             temp_v1_2->unk14 = temp_v0->unk44;
         }
@@ -2145,8 +2145,8 @@ void func_800FC62C(void) {
         temp_v0->unk4C = temp_v0->unk4C + (D_80129404 * temp_f2);
         D_800D7B20.unk4 = temp_v0->unk4C;
         D_800D7B20.unk8 = temp_v0->unk50;
-        temp_v0->unk3C = temp_v0->unk3C + (D_80129400 * temp_f0);
-        D_800D7B20.unkC = temp_v0->unk3C;
+        temp_v0->data = temp_v0->data + (D_80129400 * temp_f0);
+        D_800D7B20.unkC = temp_v0->data;
         temp_v0->unk40 = temp_v0->unk40 + (D_80129404 * temp_f0);
         D_800D7B20.unk10 = temp_v0->unk40;
         D_800D7B20.unk14 = temp_v0->unk44;
@@ -2198,7 +2198,7 @@ block_9:
             temp_t1 = *temp_v0 - var_t0;
             *temp_v0 = temp_t1;
             if (temp_t1 >= 0) {
-                temp_v0_2 = D_800D799C->unk3C;
+                temp_v0_2 = D_800D799C->data;
                 temp_v0_2->unk4C = temp_v0_2->unk4C + *D_800E3210;
             }
             D_800D7B38.unk0 = D_800D7B20.unk0;

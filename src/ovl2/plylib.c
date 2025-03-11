@@ -2350,12 +2350,12 @@ block_64:
             D_800E3C90[omCurrentObj->objId] = arg16;
         }
     }
-    if (gKirbyState.unk3C == 0) {
+    if (gKirbyState.data == 0) {
         temp_v1_2 = omCurrentObj->objId;
         if ((D_800E98E0[temp_v1_2] == D_800E9AA0[temp_v1_2].as_u32) && (func_801210FC() != 0)) {
             D_800EA360[omCurrentObj->objId] = gKirbyState.unk15C;
             gKirbyState.unk15C = 0;
-            gKirbyState.unk3C += 1;
+            gKirbyState.data += 1;
         }
         temp_v1_3 = omCurrentObj->objId;
         var_a3 = &D_800E98E0[temp_v1_3];
@@ -2372,10 +2372,10 @@ block_64:
         } else {
             var_v0_2 = 8;
         }
-        if (gKirbyState.unk3C < var_v0_2) {
-            temp_v0_3 = omCurrentObj->unk3C->unk10;
+        if (gKirbyState.data < var_v0_2) {
+            temp_v0_3 = omCurrentObj->data->unk10;
             temp_v0_3->unk30.y -= var_f0_3;
-            gKirbyState.unk3C += 1;
+            gKirbyState.data += 1;
             temp_v1_4 = omCurrentObj->objId;
             var_a3 = &D_800E98E0[temp_v1_4];
             var_a0 = D_800E9AA0[temp_v1_4].as_u32;
@@ -2384,7 +2384,7 @@ block_64:
                 func_800FBE1C();
                 func_800FA414(3);
             }
-            omCurrentObj->unk3C->unk10->unk30.y = 0.0f;
+            omCurrentObj->data->unk10->unk30.y = 0.0f;
             temp_v0_4 = &D_800E6A10[omCurrentObj->objId];
             *temp_v0_4 = -*temp_v0_4;
             temp_a0 = &D_800E17D0[omCurrentObj->objId];
@@ -2416,7 +2416,7 @@ block_64:
             func_8001E300(&argF, (D_80129114->unk4 + (D_800E5F90[temp_v1_8] * 0x10))->unk4, D_800E6BD0[temp_v1_8]);
             gEntitiesNextPosXArray[omCurrentObj->objId] = argF;
             gEntitiesNextPosZArray[omCurrentObj->objId] = arg11;
-            gKirbyState.unk3C = 0;
+            gKirbyState.data = 0;
             gKirbyState.unk15C = D_800EA360[omCurrentObj->objId];
             temp_v1_9 = omCurrentObj->objId;
             var_a3 = &D_800E98E0[temp_v1_9];

@@ -45,7 +45,7 @@ struct UnkStruct80048FC0 {
     u32 unk30;
     u32 unk34;
     u32 unk38;
-    u32 unk3C;
+    u32 data;
     u32 unk40;
 };
 

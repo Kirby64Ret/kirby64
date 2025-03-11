@@ -442,7 +442,7 @@ loop_8:
         goto loop_8;
     }
     arg0->unk38 = temp_v1;
-    arg0->unk3C = 0x1000;
+    arg0->data = 0x1000;
     arg0->unk44 = 0x800;
     arg0->unk48 = ((&D_80049358 + 0xF) >> 4) * 0x10;
     arg0->unk4C = 0x400;
@@ -1313,7 +1313,7 @@ void func_8000708C(void *arg0, ? (*arg1)()) {
     }
     func_80005734(arg0->unk30, alloc_with_alignment(var_v0, 0x10), arg0->unk34);
     set_scissor_callback(arg0->unk38);
-    temp_t7 = arg0->unk3C;
+    temp_t7 = arg0->data;
     D_8004A488 = temp_t7;
     if (temp_t7 != &func_80004624) {
         var_a0 = 1;
@@ -1371,7 +1371,7 @@ void func_80007380(void *arg0) {
     func_80010B44(arg0->unk60);
     D_8004A490.unk34 = arg0->unk64;
     D_8004A490.unk38 = alloc_with_alignment(arg0->unk68 * 0x24, 4);
-    D_8004A490.unk3C = arg0->unk68;
+    D_8004A490.data = arg0->unk68;
     D_8004A490.unk40 = alloc_with_alignment(arg0->unk6C * 0xA8, 4);
     D_8004A490.unk44 = arg0->unk6C;
     D_8004A490.unk48 = alloc_with_alignment(arg0->unk74 * arg0->unk70, 8);
