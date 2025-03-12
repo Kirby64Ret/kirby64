@@ -28,62 +28,62 @@ IMAGE_BANK_0_FILES := \
     image/bank_0/27_background.i4.png \
 
 IMAGE_BANK_1_FILES := \
-    image/bank_1/1/image.ia4.png \
-    image/bank_1/2/image.ia4.png \
-    image/bank_1/3/image.ia4.png \
+    image/bank_1/1.ia4.png \
+    image/bank_1/2.ia4.png \
+    image/bank_1/3.ia4.png \
     image/bank_1/4/block.bin \
     image/bank_1/5/block.bin \
     image/bank_1/6/block.bin \
     image/bank_1/7/block.bin \
     image/bank_1/8/block.bin \
-    image/bank_1/9/image.ia4.png \
-    image/bank_1/10/image.i4.png \
-    image/bank_1/11/image.ia8.png \
+    image/bank_1/9.ia4.png \
+    image/bank_1/10.i4.png \
+    image/bank_1/11.ia8.png \
     image/bank_1/12/block.bin \
     image/bank_1/13/block.bin \
     image/bank_1/14/block.bin \
     image/bank_1/15/block.bin \
     image/bank_1/16/block.bin \
-    image/bank_1/17/image.i4.png \
-    image/bank_1/18/image.i4.png \
+    image/bank_1/17.i4.png \
+    image/bank_1/18.i4.png \
     image/bank_1/19/block.bin \
     image/bank_1/20/block.bin \
     image/bank_1/21/block.bin \
     image/bank_1/22/block.bin \
-    image/bank_1/23/image.i4.png \
-    image/bank_1/24/image.ia4.png \
-    image/bank_1/25/image.ia4.png \
+    image/bank_1/23.i4.png \
+    image/bank_1/24.ia4.png \
+    image/bank_1/25.ia4.png \
     image/bank_1/26/block.bin \
     image/bank_1/27/block.bin \
     image/bank_1/28/block.bin \
-    image/bank_1/29/image.i4.png \
-    image/bank_1/30/image.i4.png \
-    image/bank_1/31/image.i4.png \
-    image/bank_1/32/image.ia4.png \
-    image/bank_1/33/image.i4.png \
-    image/bank_1/34/image.ia4.png \
-    image/bank_1/35/image.i4.png \
-    image/bank_1/36/image.ia4.png \
-    image/bank_1/37/image.ia4.png \
-    image/bank_1/38/image.i4.png \
-    image/bank_1/39/image.i4.png \
-    image/bank_1/40/image.i4.png \
-    image/bank_1/41/image.ia4.png \
-    image/bank_1/42/image.i4.png \
-    image/bank_1/43/image.ia4.png \
-    image/bank_1/44/image.ia4.png \
-    image/bank_1/45/image.ia4.png \
-    image/bank_1/46/image.i4.png \
-    image/bank_1/47/image.i4.png \
-    image/bank_1/48/image.i4.png \
-    image/bank_1/49/image.ia4.png \
-    image/bank_1/50/image.i4.png \
+    image/bank_1/29.i4.png \
+    image/bank_1/30.i4.png \
+    image/bank_1/31.i4.png \
+    image/bank_1/32.ia4.png \
+    image/bank_1/33.i4.png \
+    image/bank_1/34.ia4.png \
+    image/bank_1/35.i4.png \
+    image/bank_1/36.ia4.png \
+    image/bank_1/37.ia4.png \
+    image/bank_1/38.i4.png \
+    image/bank_1/39.i4.png \
+    image/bank_1/40.i4.png \
+    image/bank_1/41.ia4.png \
+    image/bank_1/42.i4.png \
+    image/bank_1/43.ia4.png \
+    image/bank_1/44.ia4.png \
+    image/bank_1/45.ia4.png \
+    image/bank_1/46.i4.png \
+    image/bank_1/47.i4.png \
+    image/bank_1/48.i4.png \
+    image/bank_1/49.ia4.png \
+    image/bank_1/50.i4.png \
     image/bank_1/51/block.bin \
     image/bank_1/52/block.bin \
     image/bank_1/53/block.bin \
-    image/bank_1/54/image.i4.png \
+    image/bank_1/54.i4.png \
     image/bank_1/55/block.bin \
-    image/bank_1/56/image.i4.png \
+    image/bank_1/56.i4.png \
     image/bank_1/57/block.bin \
     image/bank_1/58/block.bin \
     image/bank_1/59/block.bin \
@@ -107,57 +107,57 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/77/block.bin \
     image/bank_1/78/block.bin \
     image/bank_1/79/block.bin \
-    image/bank_1/80/image.i4.png \
+    image/bank_1/80.i4.png \
     image/bank_1/81/block.bin \
-    image/bank_1/82/image.i4.png \
-    image/bank_1/83/image.i4.png \
+    image/bank_1/82.i4.png \
+    image/bank_1/83.i4.png \
     image/bank_1/84/block.bin \
     image/bank_1/85/block.bin \
-    image/bank_1/86/image.ia4.png \
-    image/bank_1/87/image.ia4.png \
-    image/bank_1/88/image.ia4.png \
-    image/bank_1/89/image.ia4.png \
-    image/bank_1/90/image.i4.png \
-    image/bank_1/91/image.i4.png \
-    image/bank_1/92/image.i4.png \
-    image/bank_1/93/image.i4.png \
-    image/bank_1/94/image.ia4.png \
-    image/bank_1/95/image.i4.png \
-    image/bank_1/96/image.i4.png \
-    image/bank_1/97/image.i4.png \
-    image/bank_1/98/image.i4.png \
-    image/bank_1/99/image.ia8.png \
+    image/bank_1/86.ia4.png \
+    image/bank_1/87.ia4.png \
+    image/bank_1/88.ia4.png \
+    image/bank_1/89.ia4.png \
+    image/bank_1/90.i4.png \
+    image/bank_1/91.i4.png \
+    image/bank_1/92.i4.png \
+    image/bank_1/93.i4.png \
+    image/bank_1/94.ia4.png \
+    image/bank_1/95.i4.png \
+    image/bank_1/96.i4.png \
+    image/bank_1/97.i4.png \
+    image/bank_1/98.i4.png \
+    image/bank_1/99.ia8.png \
     image/bank_1/100/block.bin \
     image/bank_1/101/block.bin \
-    image/bank_1/102/image.ia4.png \
-    image/bank_1/103/image.ia4.png \
-    image/bank_1/104/image.i4.png \
-    image/bank_1/105/image.i4.png \
-    image/bank_1/106/image.ia4.png \
-    image/bank_1/107/image.i4.png \
+    image/bank_1/102.ia4.png \
+    image/bank_1/103.ia4.png \
+    image/bank_1/104.i4.png \
+    image/bank_1/105.i4.png \
+    image/bank_1/106.ia4.png \
+    image/bank_1/107.i4.png \
     image/bank_1/108/block.bin \
-    image/bank_1/109/image.ia4.png \
-    image/bank_1/110/image.i4.png \
-    image/bank_1/111/image.i4.png \
-    image/bank_1/112/image.i4.png \
-    image/bank_1/113/image.i4.png \
-    image/bank_1/114/image.i4.png \
-    image/bank_1/115/image.i4.png \
-    image/bank_1/116/image.i4.png \
-    image/bank_1/117/image.i4.png \
+    image/bank_1/109.ia4.png \
+    image/bank_1/110.i4.png \
+    image/bank_1/111.i4.png \
+    image/bank_1/112.i4.png \
+    image/bank_1/113.i4.png \
+    image/bank_1/114.i4.png \
+    image/bank_1/115.i4.png \
+    image/bank_1/116.i4.png \
+    image/bank_1/117.i4.png \
     image/bank_1/118/block.bin \
     image/bank_1/119/block.bin \
-    image/bank_1/120/image.i4.png \
+    image/bank_1/120.i4.png \
     image/bank_1/121/block.bin \
     image/bank_1/122/block.bin \
-    image/bank_1/123/image.i4.png \
-    image/bank_1/124/image.i4.png \
-    image/bank_1/125/image.i4.png \
-    image/bank_1/126/image.ia4.png \
-    image/bank_1/127/image.i4.png \
+    image/bank_1/123.i4.png \
+    image/bank_1/124.i4.png \
+    image/bank_1/125.i4.png \
+    image/bank_1/126.ia4.png \
+    image/bank_1/127.i4.png \
     image/bank_1/128/block.bin \
     image/bank_1/129/block.bin \
-    image/bank_1/130/image.i4.png \
+    image/bank_1/130.i4.png \
     image/bank_1/131/block.bin \
     image/bank_1/132/block.bin \
     image/bank_1/133/block.bin \
@@ -166,14 +166,14 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/136/block.bin \
     image/bank_1/137/block.bin \
     image/bank_1/138/block.bin \
-    image/bank_1/139/image.i4.png \
-    image/bank_1/140/image.i4.png \
-    image/bank_1/141/image.i4.png \
-    image/bank_1/142/image.i4.png \
-    image/bank_1/143/image.i4.png \
-    image/bank_1/144/image.i4.png \
-    image/bank_1/145/image.i4.png \
-    image/bank_1/146/image.i4.png \
+    image/bank_1/139.i4.png \
+    image/bank_1/140.i4.png \
+    image/bank_1/141.i4.png \
+    image/bank_1/142.i4.png \
+    image/bank_1/143.i4.png \
+    image/bank_1/144.i4.png \
+    image/bank_1/145.i4.png \
+    image/bank_1/146.i4.png \
     image/bank_1/147/block.bin \
     image/bank_1/148/block.bin \
     image/bank_1/149/block.bin \
@@ -190,109 +190,109 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/160/block.bin \
     image/bank_1/161/block.bin \
     image/bank_1/162/block.bin \
-    image/bank_1/163/image.i4.png \
-    image/bank_1/164/image.i4.png \
-    image/bank_1/165/image.i4.png \
-    image/bank_1/166/image.i4.png \
-    image/bank_1/167/image.i4.png \
+    image/bank_1/163.i4.png \
+    image/bank_1/164.i4.png \
+    image/bank_1/165.i4.png \
+    image/bank_1/166.i4.png \
+    image/bank_1/167.i4.png \
     image/bank_1/168/block.bin \
     image/bank_1/169/block.bin \
     image/bank_1/170/block.bin \
-    image/bank_1/171/image.i4.png \
-    image/bank_1/172/image.i4.png \
-    image/bank_1/173/image.i4.png \
-    image/bank_1/174/image.i4.png \
-    image/bank_1/175/image.ia4.png \
+    image/bank_1/171.i4.png \
+    image/bank_1/172.i4.png \
+    image/bank_1/173.i4.png \
+    image/bank_1/174.i4.png \
+    image/bank_1/175.ia4.png \
     image/bank_1/176/block.bin \
     image/bank_1/177/block.bin \
     image/bank_1/178/block.bin \
     image/bank_1/179/block.bin \
     image/bank_1/180/block.bin \
-    image/bank_1/181/image.i4.png \
-    image/bank_1/182/image.ia4.png \
-    image/bank_1/183/image.i4.png \
-    image/bank_1/184/image.i4.png \
-    image/bank_1/185/image.ia8.png \
-    image/bank_1/186/image.ia8.png \
-    image/bank_1/187/image.ia8.png \
-    image/bank_1/188/image.ia8.png \
-    image/bank_1/189/image.ia8.png \
-    image/bank_1/190/image.ia8.png \
-    image/bank_1/191/image.ia8.png \
-    image/bank_1/192/image.ia8.png \
-    image/bank_1/193/image.ia8.png \
-    image/bank_1/194/image.ia8.png \
-    image/bank_1/195/image.ia8.png \
-    image/bank_1/196/image.i4.png \
+    image/bank_1/181.i4.png \
+    image/bank_1/182.ia4.png \
+    image/bank_1/183.i4.png \
+    image/bank_1/184.i4.png \
+    image/bank_1/185.ia8.png \
+    image/bank_1/186.ia8.png \
+    image/bank_1/187.ia8.png \
+    image/bank_1/188.ia8.png \
+    image/bank_1/189.ia8.png \
+    image/bank_1/190.ia8.png \
+    image/bank_1/191.ia8.png \
+    image/bank_1/192.ia8.png \
+    image/bank_1/193.ia8.png \
+    image/bank_1/194.ia8.png \
+    image/bank_1/195.ia8.png \
+    image/bank_1/196.i4.png \
     image/bank_1/197/block.bin \
     image/bank_1/198/block.bin \
     image/bank_1/199/block.bin \
     image/bank_1/200/block.bin \
     image/bank_1/201/block.bin \
-    image/bank_1/202/image.i4.png \
+    image/bank_1/202.i4.png \
     image/bank_1/203/block.bin \
     image/bank_1/204/block.bin \
     image/bank_1/205/block.bin \
     image/bank_1/206/block.bin \
-    image/bank_1/207/image.i4.png \
+    image/bank_1/207.i4.png \
     image/bank_1/208/block.bin \
-    image/bank_1/209/image.i4.png \
-    image/bank_1/210/image.ia4.png \
+    image/bank_1/209.i4.png \
+    image/bank_1/210.ia4.png \
     image/bank_1/211/block.bin \
     image/bank_1/212/block.bin \
-    image/bank_1/213/image.ia4.png \
-    image/bank_1/214/image.i4.png \
-    image/bank_1/215/image.i4.png \
+    image/bank_1/213.ia4.png \
+    image/bank_1/214.i4.png \
+    image/bank_1/215.i4.png \
     image/bank_1/216/block.bin \
-    image/bank_1/217/image.i4.png \
-    image/bank_1/218/image.i4.png \
+    image/bank_1/217.i4.png \
+    image/bank_1/218.i4.png \
     image/bank_1/219/block.bin \
-    image/bank_1/220/image.i4.png \
-    image/bank_1/221/image.i4.png \
-    image/bank_1/222/image.i4.png \
+    image/bank_1/220.i4.png \
+    image/bank_1/221.i4.png \
+    image/bank_1/222.i4.png \
     image/bank_1/223/block.bin \
-    image/bank_1/224/image.i4.png \
-    image/bank_1/225/image.i4.png \
+    image/bank_1/224.i4.png \
+    image/bank_1/225.i4.png \
     image/bank_1/226/block.bin \
     image/bank_1/227/block.bin \
     image/bank_1/228/block.bin \
     image/bank_1/229/block.bin \
-    image/bank_1/230/image.ia4.png \
+    image/bank_1/230.ia4.png \
     image/bank_1/231/block.bin \
     image/bank_1/232/block.bin \
-    image/bank_1/233/image.ia4.png \
-    image/bank_1/234/image.i4.png \
+    image/bank_1/233.ia4.png \
+    image/bank_1/234.i4.png \
     image/bank_1/235/block.bin \
-    image/bank_1/236/image.i4.png \
-    image/bank_1/237/image.ia4.png \
-    image/bank_1/238/image.i4.png \
-    image/bank_1/239/image.i4.png \
-    image/bank_1/240/image.i4.png \
-    image/bank_1/241/image.ia4.png \
-    image/bank_1/242/image.i4.png \
-    image/bank_1/243/image.i4.png \
-    image/bank_1/244/image.i4.png \
-    image/bank_1/245/image.ia4.png \
-    image/bank_1/246/image.ia4.png \
-    image/bank_1/247/image.i4.png \
-    image/bank_1/248/image.i4.png \
-    image/bank_1/249/image.i4.png \
-    image/bank_1/250/image.ia4.png \
-    image/bank_1/251/image.i4.png \
-    image/bank_1/252/image.i4.png \
-    image/bank_1/253/image.ia4.png \
-    image/bank_1/254/image.i4.png \
-    image/bank_1/255/image.i4.png \
-    image/bank_1/256/image.i4.png \
-    image/bank_1/257/image.i4.png \
-    image/bank_1/258/image.i4.png \
-    image/bank_1/259/image.i4.png \
-    image/bank_1/260/image.i4.png \
+    image/bank_1/236.i4.png \
+    image/bank_1/237.ia4.png \
+    image/bank_1/238.i4.png \
+    image/bank_1/239.i4.png \
+    image/bank_1/240.i4.png \
+    image/bank_1/241.ia4.png \
+    image/bank_1/242.i4.png \
+    image/bank_1/243.i4.png \
+    image/bank_1/244.i4.png \
+    image/bank_1/245.ia4.png \
+    image/bank_1/246.ia4.png \
+    image/bank_1/247.i4.png \
+    image/bank_1/248.i4.png \
+    image/bank_1/249.i4.png \
+    image/bank_1/250.ia4.png \
+    image/bank_1/251.i4.png \
+    image/bank_1/252.i4.png \
+    image/bank_1/253.ia4.png \
+    image/bank_1/254.i4.png \
+    image/bank_1/255.i4.png \
+    image/bank_1/256.i4.png \
+    image/bank_1/257.i4.png \
+    image/bank_1/258.i4.png \
+    image/bank_1/259.i4.png \
+    image/bank_1/260.i4.png \
     image/bank_1/261/block.bin \
     image/bank_1/262/block.bin \
-    image/bank_1/263/image.ia4.png \
-    image/bank_1/264/image.i4.png \
-    image/bank_1/265/image.ia4.png \
+    image/bank_1/263.ia4.png \
+    image/bank_1/264.i4.png \
+    image/bank_1/265.ia4.png \
     image/bank_1/266/block.bin \
     image/bank_1/267/block.bin \
     image/bank_1/268/block.bin \
@@ -318,7 +318,7 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/288/block.bin \
     image/bank_1/289/block.bin \
     image/bank_1/290/block.bin \
-    image/bank_1/291/image.ia4.png \
+    image/bank_1/291.ia4.png \
     image/bank_1/292/block.bin \
     image/bank_1/293/block.bin \
     image/bank_1/294/block.bin \
@@ -331,23 +331,23 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/301/block.bin \
     image/bank_1/302/block.bin \
     image/bank_1/303/block.bin \
-    image/bank_1/304/image.ia8.png \
+    image/bank_1/304.ia8.png \
     image/bank_1/305/block.bin \
     image/bank_1/306/block.bin \
     image/bank_1/307/block.bin \
     image/bank_1/308/block.bin \
-    image/bank_1/309/image.ia4.png \
+    image/bank_1/309.ia4.png \
     image/bank_1/310/block.bin \
-    image/bank_1/311/image.ia4.png \
+    image/bank_1/311.ia4.png \
     image/bank_1/312/block.bin \
     image/bank_1/313/block.bin \
-    image/bank_1/314/image.ia4.png \
-    image/bank_1/315/image.i4.png \
-    image/bank_1/316/image.ia4.png \
-    image/bank_1/317/image.i4.png \
-    image/bank_1/318/image.i4.png \
-    image/bank_1/319/image.i4.png \
-    image/bank_1/320/image.ia4.png \
+    image/bank_1/314.ia4.png \
+    image/bank_1/315.i4.png \
+    image/bank_1/316.ia4.png \
+    image/bank_1/317.i4.png \
+    image/bank_1/318.i4.png \
+    image/bank_1/319.i4.png \
+    image/bank_1/320.ia4.png \
     image/bank_1/321/block.bin \
     image/bank_1/322/block.bin \
     image/bank_1/323/block.bin \
@@ -368,17 +368,17 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/338/block.bin \
     image/bank_1/339/block.bin \
     image/bank_1/340/block.bin \
-    image/bank_1/341/image.i4.png \
+    image/bank_1/341.i4.png \
     image/bank_1/342/block.bin \
     image/bank_1/343/block.bin \
     image/bank_1/344/block.bin \
     image/bank_1/345/block.bin \
-    image/bank_1/346/image.i4.png \
+    image/bank_1/346.i4.png \
     image/bank_1/347/block.bin \
-    image/bank_1/348/image.i4.png \
-    image/bank_1/349/image.i4.png \
-    image/bank_1/350/image.i4.png \
-    image/bank_1/351/image.i4.png \
+    image/bank_1/348.i4.png \
+    image/bank_1/349.i4.png \
+    image/bank_1/350.i4.png \
+    image/bank_1/351.i4.png \
     image/bank_1/352/block.bin \
     image/bank_1/353/block.bin \
     image/bank_1/354/block.bin \
@@ -388,31 +388,31 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/358/block.bin \
     image/bank_1/359/block.bin \
     image/bank_1/360/block.bin \
-    image/bank_1/361/image.i4.png \
-    image/bank_1/362/image.ia4.png \
-    image/bank_1/363/image.i4.png \
+    image/bank_1/361.i4.png \
+    image/bank_1/362.ia4.png \
+    image/bank_1/363.i4.png \
     image/bank_1/364/block.bin \
-    image/bank_1/365/image.i4.png \
-    image/bank_1/366/image.i4.png \
-    image/bank_1/367/image.ia4.png \
+    image/bank_1/365.i4.png \
+    image/bank_1/366.i4.png \
+    image/bank_1/367.ia4.png \
     image/bank_1/368/block.bin \
     image/bank_1/369/block.bin \
-    image/bank_1/370/image.i4.png \
+    image/bank_1/370.i4.png \
     image/bank_1/371/block.bin \
     image/bank_1/372/block.bin \
-    image/bank_1/373/image.ia4.png \
-    image/bank_1/374/image.ia4.png \
-    image/bank_1/375/image.i4.png \
+    image/bank_1/373.ia4.png \
+    image/bank_1/374.ia4.png \
+    image/bank_1/375.i4.png \
     image/bank_1/376/block.bin \
-    image/bank_1/377/image.i4.png \
-    image/bank_1/378/image.i4.png \
-    image/bank_1/379/image.i4.png \
-    image/bank_1/380/image.i4.png \
+    image/bank_1/377.i4.png \
+    image/bank_1/378.i4.png \
+    image/bank_1/379.i4.png \
+    image/bank_1/380.i4.png \
     image/bank_1/381/block.bin \
-    image/bank_1/382/image.i4.png \
-    image/bank_1/383/image.i4.png \
-    image/bank_1/384/image.i4.png \
-    image/bank_1/385/image.i4.png \
+    image/bank_1/382.i4.png \
+    image/bank_1/383.i4.png \
+    image/bank_1/384.i4.png \
+    image/bank_1/385.i4.png \
     image/bank_1/386/block.bin \
     image/bank_1/387/block.bin \
     image/bank_1/388/block.bin \
@@ -424,54 +424,54 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/394/block.bin \
     image/bank_1/395/block.bin \
     image/bank_1/396/block.bin \
-    image/bank_1/397/image.i4.png \
-    image/bank_1/398/image.i4.png \
-    image/bank_1/399/image.i4.png \
-    image/bank_1/400/image.ia8.png \
-    image/bank_1/401/image.i4.png \
-    image/bank_1/402/image.i4.png \
-    image/bank_1/403/image.i4.png \
-    image/bank_1/404/image.ia8.png \
-    image/bank_1/405/image.ia8.png \
+    image/bank_1/397.i4.png \
+    image/bank_1/398.i4.png \
+    image/bank_1/399.i4.png \
+    image/bank_1/400.ia8.png \
+    image/bank_1/401.i4.png \
+    image/bank_1/402.i4.png \
+    image/bank_1/403.i4.png \
+    image/bank_1/404.ia8.png \
+    image/bank_1/405.ia8.png \
     image/bank_1/406/block.bin \
-    image/bank_1/407/image.i4.png \
+    image/bank_1/407.i4.png \
     image/bank_1/408/block.bin \
-    image/bank_1/409/image.i4.png \
-    image/bank_1/410/image.i4.png \
+    image/bank_1/409.i4.png \
+    image/bank_1/410.i4.png \
     image/bank_1/411/block.bin \
-    image/bank_1/412/image.i4.png \
+    image/bank_1/412.i4.png \
     image/bank_1/413/block.bin \
     image/bank_1/414/block.bin \
-    image/bank_1/415/image.ia4.png \
-    image/bank_1/416/image.i4.png \
+    image/bank_1/415.ia4.png \
+    image/bank_1/416.i4.png \
     image/bank_1/417/block.bin \
     image/bank_1/418/block.bin \
     image/bank_1/419/block.bin \
     image/bank_1/420/block.bin \
     image/bank_1/421/block.bin \
     image/bank_1/422/block.bin \
-    image/bank_1/423/image.i4.png \
+    image/bank_1/423.i4.png \
     image/bank_1/424/block.bin \
-    image/bank_1/425/image.i4.png \
-    image/bank_1/426/image.i4.png \
-    image/bank_1/427/image.i4.png \
-    image/bank_1/428/image.i4.png \
-    image/bank_1/429/image.i4.png \
-    image/bank_1/430/image.i4.png \
+    image/bank_1/425.i4.png \
+    image/bank_1/426.i4.png \
+    image/bank_1/427.i4.png \
+    image/bank_1/428.i4.png \
+    image/bank_1/429.i4.png \
+    image/bank_1/430.i4.png \
     image/bank_1/431/block.bin \
-    image/bank_1/432/image.i4.png \
-    image/bank_1/433/image.i4.png \
-    image/bank_1/434/image.i4.png \
-    image/bank_1/435/image.i4.png \
-    image/bank_1/436/image.i4.png \
-    image/bank_1/437/image.i4.png \
-    image/bank_1/438/image.i4.png \
+    image/bank_1/432.i4.png \
+    image/bank_1/433.i4.png \
+    image/bank_1/434.i4.png \
+    image/bank_1/435.i4.png \
+    image/bank_1/436.i4.png \
+    image/bank_1/437.i4.png \
+    image/bank_1/438.i4.png \
     image/bank_1/439/block.bin \
-    image/bank_1/440/image.i4.png \
-    image/bank_1/441/image.i4.png \
-    image/bank_1/442/image.i4.png \
-    image/bank_1/443/image.i4.png \
-    image/bank_1/444/image.i4.png \
+    image/bank_1/440.i4.png \
+    image/bank_1/441.i4.png \
+    image/bank_1/442.i4.png \
+    image/bank_1/443.i4.png \
+    image/bank_1/444.i4.png \
     image/bank_1/445/block.bin \
     image/bank_1/446/block.bin \
     image/bank_1/447/block.bin \
@@ -484,39 +484,39 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/454/block.bin \
     image/bank_1/455/block.bin \
     image/bank_1/456/block.bin \
-    image/bank_1/457/image.ia4.png \
+    image/bank_1/457.ia4.png \
     image/bank_1/458/block.bin \
     image/bank_1/459/block.bin \
     image/bank_1/460/block.bin \
-    image/bank_1/461/image.i4.png \
-    image/bank_1/462/image.i4.png \
-    image/bank_1/463/image.i4.png \
-    image/bank_1/464/image.i4.png \
-    image/bank_1/465/image.i4.png \
-    image/bank_1/466/image.i4.png \
-    image/bank_1/467/image.i4.png \
-    image/bank_1/468/image.i4.png \
-    image/bank_1/469/image.i4.png \
-    image/bank_1/470/image.i4.png \
-    image/bank_1/471/image.i4.png \
-    image/bank_1/472/image.i4.png \
-    image/bank_1/473/image.i4.png \
-    image/bank_1/474/image.i4.png \
-    image/bank_1/475/image.i4.png \
-    image/bank_1/476/image.i4.png \
-    image/bank_1/477/image.i4.png \
-    image/bank_1/478/image.i4.png \
-    image/bank_1/479/image.i4.png \
-    image/bank_1/480/image.i4.png \
-    image/bank_1/481/image.i4.png \
-    image/bank_1/482/image.i4.png \
-    image/bank_1/483/image.i4.png \
-    image/bank_1/484/image.i4.png \
-    image/bank_1/485/image.i4.png \
-    image/bank_1/486/image.i4.png \
-    image/bank_1/487/image.i4.png \
-    image/bank_1/488/image.i4.png \
-    image/bank_1/489/image.i4.png \
+    image/bank_1/461.i4.png \
+    image/bank_1/462.i4.png \
+    image/bank_1/463.i4.png \
+    image/bank_1/464.i4.png \
+    image/bank_1/465.i4.png \
+    image/bank_1/466.i4.png \
+    image/bank_1/467.i4.png \
+    image/bank_1/468.i4.png \
+    image/bank_1/469.i4.png \
+    image/bank_1/470.i4.png \
+    image/bank_1/471.i4.png \
+    image/bank_1/472.i4.png \
+    image/bank_1/473.i4.png \
+    image/bank_1/474.i4.png \
+    image/bank_1/475.i4.png \
+    image/bank_1/476.i4.png \
+    image/bank_1/477.i4.png \
+    image/bank_1/478.i4.png \
+    image/bank_1/479.i4.png \
+    image/bank_1/480.i4.png \
+    image/bank_1/481.i4.png \
+    image/bank_1/482.i4.png \
+    image/bank_1/483.i4.png \
+    image/bank_1/484.i4.png \
+    image/bank_1/485.i4.png \
+    image/bank_1/486.i4.png \
+    image/bank_1/487.i4.png \
+    image/bank_1/488.i4.png \
+    image/bank_1/489.i4.png \
     image/bank_1/490/block.bin \
     image/bank_1/491/block.bin \
     image/bank_1/492/block.bin \
@@ -585,8 +585,8 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/555/block.bin \
     image/bank_1/556/block.bin \
     image/bank_1/557/block.bin \
-    image/bank_1/558/image.i4.png \
-    image/bank_1/559/image.i4.png \
+    image/bank_1/558.i4.png \
+    image/bank_1/559.i4.png \
     image/bank_1/560/block.bin \
     image/bank_1/561/block.bin \
     image/bank_1/562/block.bin \
@@ -598,15 +598,15 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/568/block.bin \
     image/bank_1/569/block.bin \
     image/bank_1/570/block.bin \
-    image/bank_1/571/image.i4.png \
+    image/bank_1/571.i4.png \
     image/bank_1/572/block.bin \
-    image/bank_1/573/image.i4.png \
+    image/bank_1/573.i4.png \
     image/bank_1/574/block.bin \
     image/bank_1/575/block.bin \
     image/bank_1/576/block.bin \
     image/bank_1/577/block.bin \
-    image/bank_1/578/image.i4.png \
-    image/bank_1/579/image.ia4.png \
+    image/bank_1/578.i4.png \
+    image/bank_1/579.ia4.png \
     image/bank_1/580/block.bin \
     image/bank_1/581/block.bin \
     image/bank_1/582/block.bin \
@@ -627,17 +627,17 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/597/block.bin \
     image/bank_1/598/block.bin \
     image/bank_1/599/block.bin \
-    image/bank_1/600/image.i4.png \
-    image/bank_1/601/image.i4.png \
-    image/bank_1/602/image.i4.png \
-    image/bank_1/603/image.i4.png \
-    image/bank_1/604/image.i4.png \
-    image/bank_1/605/image.i4.png \
-    image/bank_1/606/image.i4.png \
+    image/bank_1/600.i4.png \
+    image/bank_1/601.i4.png \
+    image/bank_1/602.i4.png \
+    image/bank_1/603.i4.png \
+    image/bank_1/604.i4.png \
+    image/bank_1/605.i4.png \
+    image/bank_1/606.i4.png \
     image/bank_1/607/block.bin \
     image/bank_1/608/block.bin \
     image/bank_1/609/block.bin \
-    image/bank_1/610/image.ia8.png \
+    image/bank_1/610.ia8.png \
     image/bank_1/611/block.bin \
     image/bank_1/612/block.bin \
     image/bank_1/613/block.bin \
@@ -651,104 +651,104 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/621/block.bin \
     image/bank_1/622/block.bin \
     image/bank_1/623/block.bin \
-    image/bank_1/624/image.i4.png \
-    image/bank_1/625/image.i4.png \
-    image/bank_1/626/image.i4.png \
-    image/bank_1/627/image.i4.png \
-    image/bank_1/628/image.ia8.png \
-    image/bank_1/629/image.ia8.png \
-    image/bank_1/630/image.ia8.png \
-    image/bank_1/631/image.ia8.png \
-    image/bank_1/632/image.ia8.png \
-    image/bank_1/633/image.i4.png \
-    image/bank_1/634/image.i4.png \
-    image/bank_1/635/image.i4.png \
-    image/bank_1/636/image.i4.png \
-    image/bank_1/637/image.i4.png \
-    image/bank_1/638/image.i4.png \
-    image/bank_1/639/image.i4.png \
-    image/bank_1/640/image.i4.png \
-    image/bank_1/641/image.i4.png \
-    image/bank_1/642/image.i4.png \
-    image/bank_1/643/image.ia4.png \
-    image/bank_1/644/image.ia4.png \
-    image/bank_1/645/image.ia4.png \
-    image/bank_1/646/image.ia4.png \
-    image/bank_1/647/image.ia4.png \
-    image/bank_1/648/image.ia4.png \
-    image/bank_1/649/image.ia4.png \
-    image/bank_1/650/image.ia4.png \
+    image/bank_1/624.i4.png \
+    image/bank_1/625.i4.png \
+    image/bank_1/626.i4.png \
+    image/bank_1/627.i4.png \
+    image/bank_1/628.ia8.png \
+    image/bank_1/629.ia8.png \
+    image/bank_1/630.ia8.png \
+    image/bank_1/631.ia8.png \
+    image/bank_1/632.ia8.png \
+    image/bank_1/633.i4.png \
+    image/bank_1/634.i4.png \
+    image/bank_1/635.i4.png \
+    image/bank_1/636.i4.png \
+    image/bank_1/637.i4.png \
+    image/bank_1/638.i4.png \
+    image/bank_1/639.i4.png \
+    image/bank_1/640.i4.png \
+    image/bank_1/641.i4.png \
+    image/bank_1/642.i4.png \
+    image/bank_1/643.ia4.png \
+    image/bank_1/644.ia4.png \
+    image/bank_1/645.ia4.png \
+    image/bank_1/646.ia4.png \
+    image/bank_1/647.ia4.png \
+    image/bank_1/648.ia4.png \
+    image/bank_1/649.ia4.png \
+    image/bank_1/650.ia4.png \
     image/bank_1/651/block.bin \
     image/bank_1/652/block.bin \
     image/bank_1/653/block.bin \
     image/bank_1/654/block.bin \
-    image/bank_1/655/image.i4.png \
-    image/bank_1/656/image.i4.png \
-    image/bank_1/657/image.i4.png \
-    image/bank_1/658/image.i4.png \
-    image/bank_1/659/image.i4.png \
-    image/bank_1/660/image.i4.png \
-    image/bank_1/661/image.i4.png \
-    image/bank_1/662/image.i4.png \
-    image/bank_1/663/image.i4.png \
-    image/bank_1/664/image.i4.png \
-    image/bank_1/665/image.i4.png \
-    image/bank_1/666/image.i4.png \
-    image/bank_1/667/image.i4.png \
-    image/bank_1/668/image.i4.png \
-    image/bank_1/669/image.i4.png \
-    image/bank_1/670/image.i4.png \
-    image/bank_1/671/image.ia4.png \
-    image/bank_1/672/image.ia4.png \
-    image/bank_1/673/image.ia4.png \
-    image/bank_1/674/image.ia4.png \
-    image/bank_1/675/image.ia4.png \
-    image/bank_1/676/image.ia4.png \
-    image/bank_1/677/image.ia4.png \
+    image/bank_1/655.i4.png \
+    image/bank_1/656.i4.png \
+    image/bank_1/657.i4.png \
+    image/bank_1/658.i4.png \
+    image/bank_1/659.i4.png \
+    image/bank_1/660.i4.png \
+    image/bank_1/661.i4.png \
+    image/bank_1/662.i4.png \
+    image/bank_1/663.i4.png \
+    image/bank_1/664.i4.png \
+    image/bank_1/665.i4.png \
+    image/bank_1/666.i4.png \
+    image/bank_1/667.i4.png \
+    image/bank_1/668.i4.png \
+    image/bank_1/669.i4.png \
+    image/bank_1/670.i4.png \
+    image/bank_1/671.ia4.png \
+    image/bank_1/672.ia4.png \
+    image/bank_1/673.ia4.png \
+    image/bank_1/674.ia4.png \
+    image/bank_1/675.ia4.png \
+    image/bank_1/676.ia4.png \
+    image/bank_1/677.ia4.png \
     image/bank_1/678/block.bin \
     image/bank_1/679/block.bin \
-    image/bank_1/680/image.i4.png \
-    image/bank_1/681/image.i4.png \
-    image/bank_1/682/image.i4.png \
-    image/bank_1/683/image.i4.png \
-    image/bank_1/684/image.i4.png \
+    image/bank_1/680.i4.png \
+    image/bank_1/681.i4.png \
+    image/bank_1/682.i4.png \
+    image/bank_1/683.i4.png \
+    image/bank_1/684.i4.png \
     image/bank_1/685/block.bin \
     image/bank_1/686/block.bin \
-    image/bank_1/687/image.ia8.png \
-    image/bank_1/688/image.ia8.png \
-    image/bank_1/689/image.ia8.png \
-    image/bank_1/690/image.ia8.png \
-    image/bank_1/691/image.ia8.png \
-    image/bank_1/692/image.ia8.png \
-    image/bank_1/693/image.ia8.png \
-    image/bank_1/694/image.ia8.png \
-    image/bank_1/695/image.ia8.png \
-    image/bank_1/696/image.ia8.png \
-    image/bank_1/697/image.ia8.png \
-    image/bank_1/698/image.ia8.png \
-    image/bank_1/699/image.i4.png \
-    image/bank_1/700/image.i4.png \
-    image/bank_1/701/image.i4.png \
-    image/bank_1/702/image.i4.png \
-    image/bank_1/703/image.i4.png \
-    image/bank_1/704/image.i4.png \
-    image/bank_1/705/image.i4.png \
-    image/bank_1/706/image.i4.png \
-    image/bank_1/707/image.i4.png \
-    image/bank_1/708/image.i4.png \
-    image/bank_1/709/image.i4.png \
-    image/bank_1/710/image.ia8.png \
-    image/bank_1/711/image.ia8.png \
+    image/bank_1/687.ia8.png \
+    image/bank_1/688.ia8.png \
+    image/bank_1/689.ia8.png \
+    image/bank_1/690.ia8.png \
+    image/bank_1/691.ia8.png \
+    image/bank_1/692.ia8.png \
+    image/bank_1/693.ia8.png \
+    image/bank_1/694.ia8.png \
+    image/bank_1/695.ia8.png \
+    image/bank_1/696.ia8.png \
+    image/bank_1/697.ia8.png \
+    image/bank_1/698.ia8.png \
+    image/bank_1/699.i4.png \
+    image/bank_1/700.i4.png \
+    image/bank_1/701.i4.png \
+    image/bank_1/702.i4.png \
+    image/bank_1/703.i4.png \
+    image/bank_1/704.i4.png \
+    image/bank_1/705.i4.png \
+    image/bank_1/706.i4.png \
+    image/bank_1/707.i4.png \
+    image/bank_1/708.i4.png \
+    image/bank_1/709.i4.png \
+    image/bank_1/710.ia8.png \
+    image/bank_1/711.ia8.png \
     image/bank_1/712/block.bin \
     image/bank_1/713/block.bin \
-    image/bank_1/714/image.ia8.png \
-    image/bank_1/715/image.i4.png \
-    image/bank_1/716/image.i4.png \
-    image/bank_1/717/image.i4.png \
-    image/bank_1/718/image.i4.png \
-    image/bank_1/719/image.i4.png \
-    image/bank_1/720/image.ia8.png \
-    image/bank_1/721/image.ia4.png \
+    image/bank_1/714.ia8.png \
+    image/bank_1/715.i4.png \
+    image/bank_1/716.i4.png \
+    image/bank_1/717.i4.png \
+    image/bank_1/718.i4.png \
+    image/bank_1/719.i4.png \
+    image/bank_1/720.ia8.png \
+    image/bank_1/721.ia4.png \
     image/bank_1/722/block.bin \
     image/bank_1/723/block.bin \
     image/bank_1/724/block.bin \
@@ -756,57 +756,57 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/726/block.bin \
     image/bank_1/727/block.bin \
     image/bank_1/728/block.bin \
-    image/bank_1/729/image.i4.png \
-    image/bank_1/730/image.i4.png \
-    image/bank_1/731/image.ia4.png \
-    image/bank_1/732/image.ia4.png \
-    image/bank_1/733/image.i4.png \
-    image/bank_1/734/image.ia4.png \
-    image/bank_1/735/image.i4.png \
+    image/bank_1/729.i4.png \
+    image/bank_1/730.i4.png \
+    image/bank_1/731.ia4.png \
+    image/bank_1/732.ia4.png \
+    image/bank_1/733.i4.png \
+    image/bank_1/734.ia4.png \
+    image/bank_1/735.i4.png \
     image/bank_1/736/block.bin \
     image/bank_1/737/block.bin \
     image/bank_1/738/block.bin \
     image/bank_1/739/block.bin \
-    image/bank_1/740/image.i4.png \
-    image/bank_1/741/image.i4.png \
-    image/bank_1/742/image.i4.png \
-    image/bank_1/743/image.ia4.png \
+    image/bank_1/740.i4.png \
+    image/bank_1/741.i4.png \
+    image/bank_1/742.i4.png \
+    image/bank_1/743.ia4.png \
     image/bank_1/744/block.bin \
     image/bank_1/745/block.bin \
     image/bank_1/746/block.bin \
     image/bank_1/747/block.bin \
     image/bank_1/748/block.bin \
-    image/bank_1/749/image.i4.png \
-    image/bank_1/750/image.i4.png \
-    image/bank_1/751/image.i4.png \
-    image/bank_1/752/image.i4.png \
-    image/bank_1/753/image.i4.png \
-    image/bank_1/754/image.i4.png \
+    image/bank_1/749.i4.png \
+    image/bank_1/750.i4.png \
+    image/bank_1/751.i4.png \
+    image/bank_1/752.i4.png \
+    image/bank_1/753.i4.png \
+    image/bank_1/754.i4.png \
     image/bank_1/755/block.bin \
-    image/bank_1/756/image.i4.png \
+    image/bank_1/756.i4.png \
     image/bank_1/757/block.bin \
     image/bank_1/758/block.bin \
-    image/bank_1/759/image.i4.png \
-    image/bank_1/760/image.ia4.png \
-    image/bank_1/761/image.i4.png \
-    image/bank_1/762/image.ia4.png \
-    image/bank_1/763/image.i4.png \
-    image/bank_1/764/image.i4.png \
-    image/bank_1/765/image.ia4.png \
-    image/bank_1/766/image.i4.png \
+    image/bank_1/759.i4.png \
+    image/bank_1/760.ia4.png \
+    image/bank_1/761.i4.png \
+    image/bank_1/762.ia4.png \
+    image/bank_1/763.i4.png \
+    image/bank_1/764.i4.png \
+    image/bank_1/765.ia4.png \
+    image/bank_1/766.i4.png \
     image/bank_1/767/block.bin \
     image/bank_1/768/block.bin \
     image/bank_1/769/block.bin \
     image/bank_1/770/block.bin \
-    image/bank_1/771/image.i4.png \
-    image/bank_1/772/image.i4.png \
-    image/bank_1/773/image.i4.png \
+    image/bank_1/771.i4.png \
+    image/bank_1/772.i4.png \
+    image/bank_1/773.i4.png \
     image/bank_1/774/block.bin \
-    image/bank_1/775/image.i4.png \
+    image/bank_1/775.i4.png \
     image/bank_1/776/block.bin \
-    image/bank_1/777/image.i4.png \
-    image/bank_1/778/image.i4.png \
-    image/bank_1/779/image.i4.png \
+    image/bank_1/777.i4.png \
+    image/bank_1/778.i4.png \
+    image/bank_1/779.i4.png \
     image/bank_1/780/block.bin \
     image/bank_1/781/block.bin \
     image/bank_1/782/block.bin \
@@ -818,177 +818,177 @@ IMAGE_BANK_1_FILES := \
     image/bank_1/788/block.bin \
     image/bank_1/789/block.bin \
     image/bank_1/790/block.bin \
-    image/bank_1/791/image.ia4.png \
+    image/bank_1/791.ia4.png \
     image/bank_1/792/block.bin \
     image/bank_1/793/block.bin \
     image/bank_1/794/block.bin \
-    image/bank_1/795/image.i4.png \
-    image/bank_1/796/image.i4.png \
+    image/bank_1/795.i4.png \
+    image/bank_1/796.i4.png \
     image/bank_1/797/block.bin \
     image/bank_1/798/block.bin \
     image/bank_1/799/block.bin \
     image/bank_1/800/block.bin \
-    image/bank_1/801/image.ia4.png \
-    image/bank_1/802/image.i4.png \
-    image/bank_1/803/image.i4.png \
-    image/bank_1/804/image.ia4.png \
-    image/bank_1/805/image.i4.png \
-    image/bank_1/806/image.i4.png \
-    image/bank_1/807/image.ia4.png \
-    image/bank_1/808/image.i4.png \
-    image/bank_1/809/image.i4.png \
-    image/bank_1/810/image.i4.png \
-    image/bank_1/811/image.i4.png \
+    image/bank_1/801.ia4.png \
+    image/bank_1/802.i4.png \
+    image/bank_1/803.i4.png \
+    image/bank_1/804.ia4.png \
+    image/bank_1/805.i4.png \
+    image/bank_1/806.i4.png \
+    image/bank_1/807.ia4.png \
+    image/bank_1/808.i4.png \
+    image/bank_1/809.i4.png \
+    image/bank_1/810.i4.png \
+    image/bank_1/811.i4.png \
     image/bank_1/812/block.bin \
-    image/bank_1/813/image.ia4.png \
-    image/bank_1/814/image.i4.png \
-    image/bank_1/815/image.ia4.png \
-    image/bank_1/816/image.i4.png \
+    image/bank_1/813.ia4.png \
+    image/bank_1/814.i4.png \
+    image/bank_1/815.ia4.png \
+    image/bank_1/816.i4.png \
     image/bank_1/817/block.bin \
-    image/bank_1/818/image.i4.png \
-    image/bank_1/819/image.i4.png \
-    image/bank_1/820/image.i4.png \
+    image/bank_1/818.i4.png \
+    image/bank_1/819.i4.png \
+    image/bank_1/820.i4.png \
     image/bank_1/821/block.bin \
-    image/bank_1/822/image.i4.png \
-    image/bank_1/823/image.i4.png \
+    image/bank_1/822.i4.png \
+    image/bank_1/823.i4.png \
     image/bank_1/824/block.bin \
     image/bank_1/825/block.bin \
-    image/bank_1/826/image.i4.png \
+    image/bank_1/826.i4.png \
     image/bank_1/827/block.bin \
-    image/bank_1/828/image.i4.png \
-    image/bank_1/829/image.i4.png \
-    image/bank_1/830/image.i4.png \
+    image/bank_1/828.i4.png \
+    image/bank_1/829.i4.png \
+    image/bank_1/830.i4.png \
     image/bank_1/831/block.bin \
-    image/bank_1/832/image.i4.png \
-    image/bank_1/833/image.i4.png \
+    image/bank_1/832.i4.png \
+    image/bank_1/833.i4.png \
     image/bank_1/834/block.bin \
-    image/bank_1/835/image.i4.png \
+    image/bank_1/835.i4.png \
     image/bank_1/836/block.bin \
-    image/bank_1/837/image.i4.png \
-    image/bank_1/838/image.i4.png \
-    image/bank_1/839/image.ia4.png \
-    image/bank_1/840/image.i4.png \
-    image/bank_1/841/image.ia4.png \
-    image/bank_1/842/image.i4.png \
-    image/bank_1/843/image.i4.png \
-    image/bank_1/844/image.i4.png \
-    image/bank_1/845/image.i4.png \
-    image/bank_1/846/image.i4.png \
-    image/bank_1/847/image.i4.png \
-    image/bank_1/848/image.i4.png \
-    image/bank_1/849/image.i4.png \
-    image/bank_1/850/image.i4.png \
-    image/bank_1/851/image.i4.png \
-    image/bank_1/852/image.i4.png \
+    image/bank_1/837.i4.png \
+    image/bank_1/838.i4.png \
+    image/bank_1/839.ia4.png \
+    image/bank_1/840.i4.png \
+    image/bank_1/841.ia4.png \
+    image/bank_1/842.i4.png \
+    image/bank_1/843.i4.png \
+    image/bank_1/844.i4.png \
+    image/bank_1/845.i4.png \
+    image/bank_1/846.i4.png \
+    image/bank_1/847.i4.png \
+    image/bank_1/848.i4.png \
+    image/bank_1/849.i4.png \
+    image/bank_1/850.i4.png \
+    image/bank_1/851.i4.png \
+    image/bank_1/852.i4.png \
     image/bank_1/853/block.bin \
-    image/bank_1/854/image.ia4.png \
+    image/bank_1/854.ia4.png \
     image/bank_1/855/block.bin \
-    image/bank_1/856/image.ia8.png \
-    image/bank_1/857/image.i4.png \
-    image/bank_1/858/image.ia4.png \
-    image/bank_1/859/image.i4.png \
-    image/bank_1/860/image.i4.png \
-    image/bank_1/861/image.i4.png \
-    image/bank_1/862/image.i4.png \
+    image/bank_1/856.ia8.png \
+    image/bank_1/857.i4.png \
+    image/bank_1/858.ia4.png \
+    image/bank_1/859.i4.png \
+    image/bank_1/860.i4.png \
+    image/bank_1/861.i4.png \
+    image/bank_1/862.i4.png \
     image/bank_1/863/block.bin \
     image/bank_1/864/block.bin \
-    image/bank_1/865/image.i4.png \
-    image/bank_1/866/image.i4.png \
-    image/bank_1/867/image.i4.png \
-    image/bank_1/868/image.i4.png \
-    image/bank_1/869/image.i4.png \
-    image/bank_1/870/image.i4.png \
-    image/bank_1/871/image.ia8.png \
-    image/bank_1/872/image.ia8.png \
-    image/bank_1/873/image.ia8.png \
-    image/bank_1/874/image.ia8.png \
-    image/bank_1/875/image.i4.png \
-    image/bank_1/876/image.i4.png \
-    image/bank_1/877/image.i4.png \
-    image/bank_1/878/image.i4.png \
-    image/bank_1/879/image.i4.png \
-    image/bank_1/880/image.i4.png \
-    image/bank_1/881/image.i4.png \
-    image/bank_1/882/image.i4.png \
-    image/bank_1/883/image.i4.png \
-    image/bank_1/884/image.i4.png \
-    image/bank_1/885/image.i4.png \
-    image/bank_1/886/image.i4.png \
-    image/bank_1/887/image.i4.png \
-    image/bank_1/888/image.i4.png \
-    image/bank_1/889/image.i4.png \
+    image/bank_1/865.i4.png \
+    image/bank_1/866.i4.png \
+    image/bank_1/867.i4.png \
+    image/bank_1/868.i4.png \
+    image/bank_1/869.i4.png \
+    image/bank_1/870.i4.png \
+    image/bank_1/871.ia8.png \
+    image/bank_1/872.ia8.png \
+    image/bank_1/873.ia8.png \
+    image/bank_1/874.ia8.png \
+    image/bank_1/875.i4.png \
+    image/bank_1/876.i4.png \
+    image/bank_1/877.i4.png \
+    image/bank_1/878.i4.png \
+    image/bank_1/879.i4.png \
+    image/bank_1/880.i4.png \
+    image/bank_1/881.i4.png \
+    image/bank_1/882.i4.png \
+    image/bank_1/883.i4.png \
+    image/bank_1/884.i4.png \
+    image/bank_1/885.i4.png \
+    image/bank_1/886.i4.png \
+    image/bank_1/887.i4.png \
+    image/bank_1/888.i4.png \
+    image/bank_1/889.i4.png \
     image/bank_1/890/block.bin \
     image/bank_1/891/block.bin \
-    image/bank_1/892/image.i4.png \
-    image/bank_1/893/image.i4.png \
-    image/bank_1/894/image.i4.png \
-    image/bank_1/895/image.i4.png \
+    image/bank_1/892.i4.png \
+    image/bank_1/893.i4.png \
+    image/bank_1/894.i4.png \
+    image/bank_1/895.i4.png \
     image/bank_1/896/block.bin \
-    image/bank_1/897/image.i4.png \
-    image/bank_1/898/image.i4.png \
-    image/bank_1/899/image.i4.png \
-    image/bank_1/900/image.i4.png \
-    image/bank_1/901/image.i4.png \
-    image/bank_1/902/image.i4.png \
-    image/bank_1/903/image.i4.png \
-    image/bank_1/904/image.i4.png \
-    image/bank_1/905/image.ia4.png \
-    image/bank_1/906/image.i4.png \
+    image/bank_1/897.i4.png \
+    image/bank_1/898.i4.png \
+    image/bank_1/899.i4.png \
+    image/bank_1/900.i4.png \
+    image/bank_1/901.i4.png \
+    image/bank_1/902.i4.png \
+    image/bank_1/903.i4.png \
+    image/bank_1/904.i4.png \
+    image/bank_1/905.ia4.png \
+    image/bank_1/906.i4.png \
 
 IMAGE_BANK_2_FILES := \
     image/bank_2/1/block.bin \
     image/bank_2/2/block.bin \
     image/bank_2/3/block.bin \
     image/bank_2/4/block.bin \
-    image/bank_2/5/image.i4.png \
-    image/bank_2/6/image.i4.png \
-    image/bank_2/7/image.i4.png \
-    image/bank_2/8/image.ci4.png \
-    image/bank_2/9/palette.rgba16.png \
-    image/bank_2/10/image.ci4.png \
-    image/bank_2/11/image.ci4.png \
-    image/bank_2/12/image.ci4.png \
-    image/bank_2/13/image.ci4.png \
-    image/bank_2/14/image.ci4.png \
-    image/bank_2/15/image.ci4.png \
-    image/bank_2/16/image.ci4.png \
-    image/bank_2/17/image.ci4.png \
-    image/bank_2/18/image.ci4.png \
-    image/bank_2/19/image.ci4.png \
-    image/bank_2/20/image.ci4.png \
-    image/bank_2/21/image.ci4.png \
-    image/bank_2/22/image.ci4.png \
-    image/bank_2/23/image.ci4.png \
-    image/bank_2/24/image.ci4.png \
-    image/bank_2/25/image.ci4.png \
-    image/bank_2/26/image.ci4.png \
-    image/bank_2/27/image.ci4.png \
-    image/bank_2/28/image.ci4.png \
-    image/bank_2/29/image.ci4.png \
-    image/bank_2/30/image.ci4.png \
-    image/bank_2/31/image.ci4.png \
-    image/bank_2/32/image.i4.png \
+    image/bank_2/5.i4.png \
+    image/bank_2/6.i4.png \
+    image/bank_2/7.i4.png \
+    image/bank_2/8.ci4.png \
+    image/bank_2/9_palette.rgba16.png \
+    image/bank_2/10.ci4.png \
+    image/bank_2/11.ci4.png \
+    image/bank_2/12.ci4.png \
+    image/bank_2/13.ci4.png \
+    image/bank_2/14.ci4.png \
+    image/bank_2/15.ci4.png \
+    image/bank_2/16.ci4.png \
+    image/bank_2/17.ci4.png \
+    image/bank_2/18.ci4.png \
+    image/bank_2/19.ci4.png \
+    image/bank_2/20.ci4.png \
+    image/bank_2/21.ci4.png \
+    image/bank_2/22.ci4.png \
+    image/bank_2/23.ci4.png \
+    image/bank_2/24.ci4.png \
+    image/bank_2/25.ci4.png \
+    image/bank_2/26.ci4.png \
+    image/bank_2/27.ci4.png \
+    image/bank_2/28.ci4.png \
+    image/bank_2/29.ci4.png \
+    image/bank_2/30.ci4.png \
+    image/bank_2/31.ci4.png \
+    image/bank_2/32.i4.png \
     image/bank_2/33/block.bin \
     image/bank_2/34/block.bin \
     image/bank_2/35/block.bin \
-    image/bank_2/36/image.i4.png \
+    image/bank_2/36.i4.png \
     image/bank_2/37/block.bin \
     image/bank_2/38/block.bin \
     image/bank_2/39/block.bin \
     image/bank_2/40/block.bin \
     image/bank_2/41/block.bin \
     image/bank_2/42/block.bin \
-    image/bank_2/43/image.i4.png \
-    image/bank_2/44/image.i4.png \
-    image/bank_2/45/image.i4.png \
+    image/bank_2/43.i4.png \
+    image/bank_2/44.i4.png \
+    image/bank_2/45.i4.png \
     image/bank_2/46/block.bin \
     image/bank_2/47/block.bin \
-    image/bank_2/48/image.i4.png \
+    image/bank_2/48.i4.png \
     image/bank_2/49/block.bin \
     image/bank_2/50/block.bin \
     image/bank_2/51/block.bin \
     image/bank_2/52/block.bin \
-    image/bank_2/53/image.i4.png \
+    image/bank_2/53.i4.png \
     image/bank_2/54/block.bin \
     image/bank_2/55/block.bin \
     image/bank_2/56/block.bin \
@@ -999,14 +999,14 @@ IMAGE_BANK_2_FILES := \
     image/bank_2/61/block.bin \
     image/bank_2/62/block.bin \
     image/bank_2/63/block.bin \
-    image/bank_2/64/image.i4.png \
-    image/bank_2/65/image.i4.png \
-    image/bank_2/66/image.i4.png \
+    image/bank_2/64.i4.png \
+    image/bank_2/65.i4.png \
+    image/bank_2/66.i4.png \
     image/bank_2/67/block.bin \
     image/bank_2/68/block.bin \
     image/bank_2/69/block.bin \
-    image/bank_2/70/image.ia4.png \
-    image/bank_2/71/image.ia8.png \
+    image/bank_2/70.ia4.png \
+    image/bank_2/71.ia8.png \
     image/bank_2/72/block.bin \
     image/bank_2/73/block.bin \
     image/bank_2/74/block.bin \
@@ -1014,7 +1014,7 @@ IMAGE_BANK_2_FILES := \
     image/bank_2/76/block.bin \
     image/bank_2/77/block.bin \
     image/bank_2/78/block.bin \
-    image/bank_2/79/image.ia8.png \
+    image/bank_2/79.ia8.png \
     image/bank_2/80/block.bin \
     image/bank_2/81/block.bin \
     image/bank_2/82/block.bin \
@@ -1024,64 +1024,64 @@ IMAGE_BANK_2_FILES := \
     image/bank_2/86/block.bin \
     image/bank_2/87/block.bin \
     image/bank_2/88/block.bin \
-    image/bank_2/89/image.i4.png \
-    image/bank_2/90/image.i4.png \
-    image/bank_2/91/image.ia4.png \
+    image/bank_2/89.i4.png \
+    image/bank_2/90.i4.png \
+    image/bank_2/91.ia4.png \
     image/bank_2/92/block.bin \
-    image/bank_2/93/image.ia4.png \
-    image/bank_2/94/image.i4.png \
-    image/bank_2/95/image.i4.png \
-    image/bank_2/96/image.ia4.png \
+    image/bank_2/93.ia4.png \
+    image/bank_2/94.i4.png \
+    image/bank_2/95.i4.png \
+    image/bank_2/96.ia4.png \
     image/bank_2/97/block.bin \
-    image/bank_2/98/image.ia4.png \
-    image/bank_2/99/image.ia4.png \
+    image/bank_2/98.ia4.png \
+    image/bank_2/99.ia4.png \
     image/bank_2/100/block.bin \
-    image/bank_2/101/image.ia4.png \
-    image/bank_2/102/image.ia4.png \
-    image/bank_2/103/image.i4.png \
-    image/bank_2/104/image.i4.png \
-    image/bank_2/105/image.i4.png \
-    image/bank_2/106/image.i4.png \
-    image/bank_2/107/image.i4.png \
-    image/bank_2/108/image.i4.png \
-    image/bank_2/109/image.i4.png \
-    image/bank_2/110/image.i4.png \
-    image/bank_2/111/image.ia4.png \
-    image/bank_2/112/image.ia4.png \
-    image/bank_2/113/image.i4.png \
-    image/bank_2/114/image.i4.png \
-    image/bank_2/115/image.i4.png \
-    image/bank_2/116/image.i4.png \
-    image/bank_2/117/image.i4.png \
-    image/bank_2/118/image.ia4.png \
-    image/bank_2/119/image.i4.png \
-    image/bank_2/120/image.ia4.png \
-    image/bank_2/121/image.ia4.png \
-    image/bank_2/122/image.i4.png \
-    image/bank_2/123/image.i4.png \
-    image/bank_2/124/image.i4.png \
-    image/bank_2/125/image.ia4.png \
-    image/bank_2/126/image.ia4.png \
-    image/bank_2/127/image.ia4.png \
-    image/bank_2/128/image.ia4.png \
-    image/bank_2/129/image.ia4.png \
-    image/bank_2/130/image.ia4.png \
-    image/bank_2/131/image.i4.png \
-    image/bank_2/132/image.ia8.png \
-    image/bank_2/133/image.i4.png \
+    image/bank_2/101.ia4.png \
+    image/bank_2/102.ia4.png \
+    image/bank_2/103.i4.png \
+    image/bank_2/104.i4.png \
+    image/bank_2/105.i4.png \
+    image/bank_2/106.i4.png \
+    image/bank_2/107.i4.png \
+    image/bank_2/108.i4.png \
+    image/bank_2/109.i4.png \
+    image/bank_2/110.i4.png \
+    image/bank_2/111.ia4.png \
+    image/bank_2/112.ia4.png \
+    image/bank_2/113.i4.png \
+    image/bank_2/114.i4.png \
+    image/bank_2/115.i4.png \
+    image/bank_2/116.i4.png \
+    image/bank_2/117.i4.png \
+    image/bank_2/118.ia4.png \
+    image/bank_2/119.i4.png \
+    image/bank_2/120.ia4.png \
+    image/bank_2/121.ia4.png \
+    image/bank_2/122.i4.png \
+    image/bank_2/123.i4.png \
+    image/bank_2/124.i4.png \
+    image/bank_2/125.ia4.png \
+    image/bank_2/126.ia4.png \
+    image/bank_2/127.ia4.png \
+    image/bank_2/128.ia4.png \
+    image/bank_2/129.ia4.png \
+    image/bank_2/130.ia4.png \
+    image/bank_2/131.i4.png \
+    image/bank_2/132.ia8.png \
+    image/bank_2/133.i4.png \
     image/bank_2/134/block.bin \
     image/bank_2/135/block.bin \
     image/bank_2/136/block.bin \
     image/bank_2/137/block.bin \
     image/bank_2/138/block.bin \
-    image/bank_2/139/image.ia4.png \
-    image/bank_2/140/image.i4.png \
-    image/bank_2/141/image.ia4.png \
-    image/bank_2/142/image.i4.png \
-    image/bank_2/143/image.i4.png \
-    image/bank_2/144/image.i4.png \
-    image/bank_2/145/image.i4.png \
-    image/bank_2/146/image.i4.png \
+    image/bank_2/139.ia4.png \
+    image/bank_2/140.i4.png \
+    image/bank_2/141.ia4.png \
+    image/bank_2/142.i4.png \
+    image/bank_2/143.i4.png \
+    image/bank_2/144.i4.png \
+    image/bank_2/145.i4.png \
+    image/bank_2/146.i4.png \
     image/bank_2/147/block.bin \
     image/bank_2/148/block.bin \
     image/bank_2/149/block.bin \
@@ -1097,9 +1097,9 @@ IMAGE_BANK_2_FILES := \
     image/bank_2/159/block.bin \
     image/bank_2/160/block.bin \
     image/bank_2/161/block.bin \
-    image/bank_2/162/image.i4.png \
-    image/bank_2/163/image.i4.png \
-    image/bank_2/164/image.i4.png \
+    image/bank_2/162.i4.png \
+    image/bank_2/163.i4.png \
+    image/bank_2/164.i4.png \
     image/bank_2/165/block.bin \
     image/bank_2/166/block.bin \
     image/bank_2/167/block.bin \
@@ -1126,19 +1126,19 @@ IMAGE_BANK_2_FILES := \
     image/bank_2/188/block.bin \
     image/bank_2/189/block.bin \
     image/bank_2/190/block.bin \
-    image/bank_2/191/image.i4.png \
-    image/bank_2/192/image.ia4.png \
+    image/bank_2/191.i4.png \
+    image/bank_2/192.ia4.png \
     image/bank_2/193/block.bin \
     image/bank_2/194/block.bin \
     image/bank_2/195/block.bin \
     image/bank_2/196/block.bin \
     image/bank_2/197/block.bin \
-    image/bank_2/198/image.i4.png \
-    image/bank_2/199/image.i4.png \
-    image/bank_2/200/image.i4.png \
-    image/bank_2/201/image.i4.png \
-    image/bank_2/202/image.i4.png \
-    image/bank_2/203/image.i4.png \
+    image/bank_2/198.i4.png \
+    image/bank_2/199.i4.png \
+    image/bank_2/200.i4.png \
+    image/bank_2/201.i4.png \
+    image/bank_2/202.i4.png \
+    image/bank_2/203.i4.png \
     image/bank_2/204/block.bin \
     image/bank_2/205/block.bin \
     image/bank_2/206/block.bin \
@@ -1151,55 +1151,55 @@ IMAGE_BANK_2_FILES := \
     image/bank_2/213/block.bin \
     image/bank_2/214/block.bin \
     image/bank_2/215/block.bin \
-    image/bank_2/216/image.i4.png \
-    image/bank_2/217/image.i4.png \
-    image/bank_2/218/image.i4.png \
-    image/bank_2/219/image.i4.png \
-    image/bank_2/220/image.i4.png \
-    image/bank_2/221/image.i4.png \
-    image/bank_2/222/image.i4.png \
-    image/bank_2/223/image.i4.png \
-    image/bank_2/224/image.i4.png \
-    image/bank_2/225/image.i4.png \
-    image/bank_2/226/image.i4.png \
-    image/bank_2/227/image.i4.png \
-    image/bank_2/228/image.i4.png \
-    image/bank_2/229/image.i4.png \
-    image/bank_2/230/image.i4.png \
-    image/bank_2/231/image.i4.png \
-    image/bank_2/232/image.i4.png \
-    image/bank_2/233/image.i4.png \
-    image/bank_2/234/image.i4.png \
-    image/bank_2/235/image.i4.png \
-    image/bank_2/236/image.i4.png \
-    image/bank_2/237/image.i4.png \
-    image/bank_2/238/image.i4.png \
-    image/bank_2/239/image.i4.png \
-    image/bank_2/240/image.i4.png \
-    image/bank_2/241/image.i4.png \
-    image/bank_2/242/image.i4.png \
-    image/bank_2/243/image.i4.png \
-    image/bank_2/244/image.i4.png \
-    image/bank_2/245/image.i4.png \
-    image/bank_2/246/image.i4.png \
-    image/bank_2/247/image.i4.png \
-    image/bank_2/248/image.i4.png \
-    image/bank_2/249/image.i4.png \
-    image/bank_2/250/image.i4.png \
-    image/bank_2/251/image.i4.png \
-    image/bank_2/252/image.i4.png \
-    image/bank_2/253/image.i4.png \
-    image/bank_2/254/image.i4.png \
-    image/bank_2/255/image.i4.png \
-    image/bank_2/256/image.i4.png \
-    image/bank_2/257/image.i4.png \
-    image/bank_2/258/image.i4.png \
-    image/bank_2/259/image.i4.png \
-    image/bank_2/260/image.i4.png \
-    image/bank_2/261/image.i4.png \
-    image/bank_2/262/image.i4.png \
-    image/bank_2/263/image.i4.png \
-    image/bank_2/264/image.i4.png \
+    image/bank_2/216.i4.png \
+    image/bank_2/217.i4.png \
+    image/bank_2/218.i4.png \
+    image/bank_2/219.i4.png \
+    image/bank_2/220.i4.png \
+    image/bank_2/221.i4.png \
+    image/bank_2/222.i4.png \
+    image/bank_2/223.i4.png \
+    image/bank_2/224.i4.png \
+    image/bank_2/225.i4.png \
+    image/bank_2/226.i4.png \
+    image/bank_2/227.i4.png \
+    image/bank_2/228.i4.png \
+    image/bank_2/229.i4.png \
+    image/bank_2/230.i4.png \
+    image/bank_2/231.i4.png \
+    image/bank_2/232.i4.png \
+    image/bank_2/233.i4.png \
+    image/bank_2/234.i4.png \
+    image/bank_2/235.i4.png \
+    image/bank_2/236.i4.png \
+    image/bank_2/237.i4.png \
+    image/bank_2/238.i4.png \
+    image/bank_2/239.i4.png \
+    image/bank_2/240.i4.png \
+    image/bank_2/241.i4.png \
+    image/bank_2/242.i4.png \
+    image/bank_2/243.i4.png \
+    image/bank_2/244.i4.png \
+    image/bank_2/245.i4.png \
+    image/bank_2/246.i4.png \
+    image/bank_2/247.i4.png \
+    image/bank_2/248.i4.png \
+    image/bank_2/249.i4.png \
+    image/bank_2/250.i4.png \
+    image/bank_2/251.i4.png \
+    image/bank_2/252.i4.png \
+    image/bank_2/253.i4.png \
+    image/bank_2/254.i4.png \
+    image/bank_2/255.i4.png \
+    image/bank_2/256.i4.png \
+    image/bank_2/257.i4.png \
+    image/bank_2/258.i4.png \
+    image/bank_2/259.i4.png \
+    image/bank_2/260.i4.png \
+    image/bank_2/261.i4.png \
+    image/bank_2/262.i4.png \
+    image/bank_2/263.i4.png \
+    image/bank_2/264.i4.png \
 
 IMAGE_BANK_3_FILES := \
     image/bank_3/1/block.bin \

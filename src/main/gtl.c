@@ -1198,7 +1198,7 @@ void func_80006E94(void *arg0) {
     D_8004A488();
     arg0->unk4();
     if (func_800067E0() != 0) {
-        func_8000BC34();
+        ohDeleteAllObjects();
     }
 }
 #else
@@ -1215,7 +1215,7 @@ void func_80006EE4(void *arg0) {
     func_80007ADC(*(&D_8004A388 + (D_8004A450 * 4)));
     func_8000597C();
     if (func_800067E0() != 0) {
-        func_8000BC34();
+        ohDeleteAllObjects();
     }
 }
 #else

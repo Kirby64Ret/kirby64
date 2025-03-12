@@ -347,8 +347,10 @@ fatal_printf=0x8002309c; // type:func
 omGLinkObjDLCamera = 0x8000A764; // type:func
 ohCreateDefaultCameraMatrices = 0x8000B950; // type:func
 omCreateProcess = 0x80008A18; // type:func
+omGDeleteObj = 0x8000A29C; // type:func
 
 // oh
+ohDeleteAllObjects = 0x8000BC34; // type:func
 omLinkGObjDL = 0x8000A5FC; // type:func
 omGObjAddDObj = 0x80009C38; // type:func
 ohCreateDefaultMatricesDeg = 0x8000B8C0; // type:func

@@ -879,7 +879,7 @@ GObj *func_8000A24C(s32 id, s32 updateCB, GObj *arg2) {
 void func_8000BBE0(GObj *);
 void func_8000B870(GObj *);
 
-void func_8000A29C(GObj *arg0) {
+void omGDeleteObj(GObj *arg0) {
     if (arg0 == 0 || arg0 == omCurrentObj) {
         D_8004A7D4 = 2;
         return;
@@ -1148,7 +1148,7 @@ GObj *omGUpdateObj(GObj *gobj) {
             D_8004A7D4 = 0;
         } else {
             D_8004A7D4 = 0;
-            func_8000A29C(gobj);
+            omGDeleteObj(gobj);
         }
     }
     return g;
@@ -1188,7 +1188,7 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
                 ret = ret->prev;
             }
 
-            func_8000A29C(proc->gobj);
+            omGDeleteObj(proc->gobj);
             break;
         case 1:
             D_8004A7D4 = 0;

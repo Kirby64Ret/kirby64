@@ -428,7 +428,7 @@ void func_8000BBE0(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BBE0.s")
 #endif
 
-void func_8000BC34(void) {
+void ohDeleteAllObjects(void) {
     GObj* curr;
     GObj* next;
     s32 i;
@@ -437,13 +437,12 @@ void func_8000BC34(void) {
         curr = omGObjListHead[i];
         while (curr != NULL) {
             next = curr->next;
-            func_8000A29C(curr);
+            omGDeleteObj(curr);
             curr = next;
         }
     }
 }
 
-// #ifdef NON_MATCHING
 GObj *ohCreateModel(s32 objId, void (*updateCB)(GObj*), s32 objLink, s32 objPriority,
                     void (*renderCB)(GObj*), u8 dlLink, s32 dlPriority, s32 cameraTag, void* dobjBP, s32 setMatrices,
                     u8 procKind, void (*procFunc)(GObj*), s32 procPriority) {
@@ -466,9 +465,6 @@ GObj *ohCreateModel(s32 objId, void (*updateCB)(GObj*), s32 objLink, s32 objPrio
     }
     return gobj;
 }
-// #else
-// #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BCA4.s")
-// #endif
 
 GObj* ohCreateCamera(s32 objId, void (*updateCB)(GObj*), s32 objLink, s32 objPriority,
                      void (*renderCB)(GObj*), s32 dlPriority, s32 dlLinkBitMask, s32 cameraTag, s32 defaultMatrices,

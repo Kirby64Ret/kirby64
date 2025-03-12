@@ -315,17 +315,12 @@ void func_80021764(GObj *g) {
     gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
 }
 
-
-// #ifdef MIPS_TO_C
 s32 func_80021CB4(s32 arg0, s32 arg1, s32 arg2) {
     if (ohFindById(-2) != 0) {
         return 0;
     }
     return ohCreateCamera(-2, ohUpdateStub, arg0, arg1, &func_80021764, arg2, 0, 0, 0, 0, 0, 0, 0);
 }
-// #else
-// #pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80021CB4.s")
-// #endif
 
 // hidden file boundary?
 
