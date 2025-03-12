@@ -641,6 +641,7 @@ __osPfsGetNextPage=0x800306C0; // type:func
 __osContAddressCrc=0x80037550; // type:func
 __osContDataCrc=0x80037620; // type:func
 __osPfsLastChannel=0x8003FE10;
+D_8012E944 = 0x8012E944;
 
 // ovl19/helper.c
 D_800E8060 = 0x800E8060;

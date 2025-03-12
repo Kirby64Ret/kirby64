@@ -76,13 +76,13 @@ void func_8021ED80_ovl19(GObj *arg0) {
 
 
 s32 func_8021EE88_ovl19(GObj *arg0) {
-    s32 temp_v0;
+    s32 track;
 
-    temp_v0 = request_track_general(0x16, 0x3C, 0x4A);
-    if (temp_v0 != -1) {
-        gEntityVtableIndexArray[temp_v0] = arg0;
+    track = request_track_general(0x16, 0x3C, 0x4A);
+    if (track != -1) {
+        gEntityVtableIndexArray[track] = arg0;
     } else {
         print_error_stub("Helper Effect Request Error![helpeff.cc]\n");
     }
-    return temp_v0;
+    return track;
 }

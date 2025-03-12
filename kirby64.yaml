@@ -745,7 +745,7 @@ segments:
     - [0x24F780, .data, ovl19/helpeff]
     - [0x24F790, data, ovl19/helper]
     - [0x24F880, data, ovl19/ovl19_2]
-    - [0x24FCC0, data, ovl19/ovl19_3]
+    - [0x24FCC0, .data, ovl19/ovl19_3]
     - [0x24FDB0, .rodata, ovl19/helplib]
     - [0x24FDF0, .rodata, ovl19/helpeff]
     - [0x24FE30, .rodata, ovl19/helper]
