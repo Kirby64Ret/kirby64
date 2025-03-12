@@ -343,14 +343,26 @@ draw_pause_bg=0x800bc9a4; // type:func
 draw_star_segments=0x800bd374; // type:func
 fatal_printf=0x8002309c; // type:func
 
+// om
+omGLinkObjDLCamera = 0x8000A764; // type:func
+ohCreateDefaultCameraMatrices = 0x8000B950; // type:func
+omCreateProcess = 0x80008A18; // type:func
+
 // oh
+omLinkGObjDL = 0x8000A5FC; // type:func
+omGObjAddDObj = 0x80009C38; // type:func
+ohCreateDefaultMatricesDeg = 0x8000B8C0; // type:func
+omGObjSetCamera = 0x80009F7C; // type:func
+ohCreateModel = 0x8000BCA4; // type:func
 ohSleep=0x8000b6bc; // type:func
 ohPause = 0x8000B7C0; // type:func
 ohResume = 0x8000B7D8; // type:func
 ohGObjPause = 0x8000B758; // type:func
 ohGObjResume = 0x8000B78C; // type:func
 ohFindById = 0x8000B688; // type:func
-
+ohUpdateStub = 0x8000B6B4; // type:func
+ohCreateCameraWrapper = 0x8000BDF0; // type:func
+ohCreateCamera = 0x8000BD3C; // type:func
 
 gCollisionState=0x8012bcf8;
 gCrashScreen=0x800966d8;

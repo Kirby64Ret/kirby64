@@ -4,6 +4,7 @@
 #include "libc/stdarg.h"
 #include "GObj.h"
 #include "contpad.h"
+#include "object_helpers.h"
 
 // There is also some rmon functionality in this file
 
@@ -315,16 +316,16 @@ void func_80021764(GObj *g) {
 }
 
 
-#ifdef MIPS_TO_C
+// #ifdef MIPS_TO_C
 s32 func_80021CB4(s32 arg0, s32 arg1, s32 arg2) {
     if (ohFindById(-2) != 0) {
         return 0;
     }
-    return func_8000BD3C(-2, &func_8000B6B4, arg0, arg1, &func_80021764, arg2, 0, 0, 0, 0, 0, 0, 0);
+    return ohCreateCamera(-2, ohUpdateStub, arg0, arg1, &func_80021764, arg2, 0, 0, 0, 0, 0, 0, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80021CB4.s")
-#endif
+// #else
+// #pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80021CB4.s")
+// #endif
 
 // hidden file boundary?
 

@@ -113,7 +113,7 @@ void ohFindById(u32 id) {
     func_8000B57C(ohCheckId, id, 1);
 }
 
-void func_8000B6B4(GObj *g) {
+void ohUpdateStub(GObj *g) {
     // stubbed out; the intended code is presented below.
     // cmdProcessCommands(NULL);
 }
@@ -242,7 +242,7 @@ void func_8000B870(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B870.s")
 #endif
 
-void func_8000B8C0(DObj *d) {
+void ohCreateDefaultMatricesDeg(DObj *d) {
     func_80009628(d, 0x12, 0);
     func_80009628(d, 0x15, 0);
     func_80009628(d, 0x20, 0);
@@ -254,9 +254,9 @@ void func_8000B908(DObj *d) {
     func_80009628(d, 0x20, 0);
 }
 
-void func_8000B950(DObj *d) {
-    func_80009658(d, 3, 0);
-    func_80009658(d, 6, 0);
+void ohCreateDefaultCameraMatrices(Camera *cam) {
+    func_80009658(cam, 3, 0);
+    func_80009658(cam, 6, 0);
 }
 
 void func_8000B988(GObj *g) {
@@ -274,9 +274,9 @@ s32 func_8000B9CC(void) {
     s32 sp1C;
     s32 temp_v0;
 
-    temp_v0 = func_80009C38();
+    temp_v0 = omGObjAddDObj();
     sp1C = temp_v0;
-    func_8000B8C0(temp_v0);
+    ohCreateDefaultMatricesDeg(temp_v0);
     return temp_v0;
 }
 #else
@@ -291,7 +291,7 @@ s32 func_8000B9FC(void) {
 
     temp_v0 = func_80009CE8();
     sp1C = temp_v0;
-    func_8000B8C0(temp_v0);
+    ohCreateDefaultMatricesDeg(temp_v0);
     return temp_v0;
 }
 #else
@@ -306,7 +306,7 @@ s32 func_8000BA2C(void) {
 
     temp_v0 = func_80009D5C();
     sp1C = temp_v0;
-    func_8000B8C0(temp_v0);
+    ohCreateDefaultMatricesDeg(temp_v0);
     return temp_v0;
 }
 #else
@@ -319,7 +319,7 @@ s32 func_8000BA5C(void) {
     s32 sp1C;
     s32 temp_v0;
 
-    temp_v0 = func_80009C38();
+    temp_v0 = omGObjAddDObj();
     sp1C = temp_v0;
     func_8000B908(temp_v0);
     return temp_v0;
@@ -443,66 +443,63 @@ void func_8000BC34(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+// #ifdef NON_MATCHING
+GObj *ohCreateModel(s32 objId, void (*updateCB)(GObj*), s32 objLink, s32 objPriority,
+                    void (*renderCB)(GObj*), u8 dlLink, s32 dlPriority, s32 cameraTag, void* dobjBP, s32 setMatrices,
+                    u8 procKind, void (*procFunc)(GObj*), s32 procPriority) {
+    GObj* gobj;
+    DObj* dobj;
 
-GObj *func_8000BCA4(s32 arg0, void (*arg1)(), s32 arg2, u32 arg3, s32 arg4, u8 arg5, s32 arg6, s32 arg7, s32 arg8, s32 arg9, u8 argA, s32 argB, s32 argC) {
-    GObj *temp_v0;
-    s32 temp_a0;
-
-    temp_v0 = HS64_omMakeGObj(arg0, arg1, arg2 & 0xFF, arg3);
-    if (temp_v0 == NULL) {
+    gobj = HS64_omMakeGObj(objId, updateCB, objLink, objPriority);
+    if (gobj == NULL) {
         return NULL;
     }
-    func_8000A5FC(temp_v0, arg4, arg5, arg6, arg7);
-    temp_a0 = func_80009C38(temp_v0, arg8);
-    if (arg9 != 0) {
-        func_8000B8C0(temp_a0);
+
+    omLinkGObjDL(gobj, renderCB, dlLink, dlPriority, cameraTag);
+
+    dobj = omGObjAddDObj(gobj, dobjBP);
+    if (setMatrices) {
+        ohCreateDefaultMatricesDeg(dobj);
     }
-    if (argB != 0) {
-        func_80008A18(temp_v0, argB, argA, argC);
+    if (procFunc != NULL) {
+        omCreateProcess(gobj, procFunc, procKind, procPriority);
     }
-    return temp_v0;
+    return gobj;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BCA4.s")
-#endif
+// #else
+// #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BCA4.s")
+// #endif
 
-#ifdef MIPS_TO_C
-
-GObj *func_8000BD3C(s32 arg0, void (*arg1)(), s32 arg2, u32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8, u8 arg9, s32 argA, s32 argB, s32 argC) {
-    struct Camera *sp28;
-    GObj *temp_v0;
-    struct Camera *temp_v0_2;
-
-    temp_v0 = HS64_omMakeGObj(arg0, arg1, arg2 & 0xFF, arg3);
-    if (temp_v0 == NULL) {
-        return NULL;
-    }
-    func_8000A764(temp_v0, arg4, arg5, arg6, arg7);
-    temp_v0_2 = func_80009F7C(temp_v0);
-    sp28 = temp_v0_2;
-    if (arg8 != 0) {
-        func_8000B950(temp_v0_2);
-    }
-    if (argA != 0) {
-        func_80008A18(temp_v0, argA, arg9, argB);
-    }
-    if (argC != 0) {
-        sp28->unk80 = 7;
-        sp28->unk84 = 0xFF;
-    }
-    return temp_v0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BD3C.s")
-#endif
-
-// #ifdef MIPS_TO_C
-void *func_8000BDF0(s32 link, s32 pri, s32 dlPriority, s32 flags, s32 bgColor) {
+GObj* ohCreateCamera(s32 objId, void (*updateCB)(GObj*), s32 objLink, s32 objPriority,
+                     void (*renderCB)(GObj*), s32 dlPriority, s32 dlLinkBitMask, s32 cameraTag, s32 defaultMatrices,
+                     u8 procKind, void (*procFunc)(GObj*), s32 procPriority, s32 defaultFlags) {
     GObj *g;
     Camera *cam;
 
-    g = func_8000BD3C(-1, &func_8000B6B4, link, pri, &func_8001806C, dlPriority, 0, 0, 0, 0, 0, 0, 0);
+    g = HS64_omMakeGObj(objId, updateCB, objLink, objPriority);
+    if (g == NULL) {
+        return NULL;
+    }
+    omGLinkObjDLCamera(g, renderCB, dlPriority, dlLinkBitMask, cameraTag);
+    cam = omGObjSetCamera(g);
+    if (defaultMatrices) {
+        ohCreateDefaultCameraMatrices(cam);
+    }
+    if (procFunc != NULL) {
+        omCreateProcess(g, procFunc, procKind, procPriority);
+    }
+    if (defaultFlags) {
+        cam->flags = CAMERA_FLAG_1 | CAMERA_FLAG_2 | CAMERA_FLAG_4;
+        cam->bgcolor = 0x000000FF;
+    }
+    return g;
+}
+
+void *ohCreateCameraWrapper(s32 link, s32 pri, s32 dlPriority, s32 flags, s32 bgColor) {
+    GObj *g;
+    Camera *cam;
+
+    g = ohCreateCamera(-1, ohUpdateStub, link, pri, &func_8001806C, dlPriority, 0, 0, 0, 0, 0, 0, 0);
     if (g == NULL) {
         return NULL;
     }
@@ -511,6 +508,3 @@ void *func_8000BDF0(s32 link, s32 pri, s32 dlPriority, s32 flags, s32 bgColor) {
     cam->bgcolor = bgColor;
     return g;
 }
-// #else
-// #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BDF0.s")
-// #endif

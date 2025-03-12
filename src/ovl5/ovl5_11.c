@@ -104,7 +104,7 @@ void func_80180AE0_ovl5(s32 arg0) {
 
     D_800DEF90[omCurrentObj->objId] = NULL;
     func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
-    func_8000A5FC(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
     func_8015C740_ovl5(arg0, &D_80189DE8_ovl5);
     spobj = func_8015C740_ovl5(arg0, &D_80189DE8_ovl5);
     spobj->xOffset = 160.0f;
@@ -278,7 +278,7 @@ void func_80181AEC_ovl5(GObj *o) {
 
     D_800DEF90[omCurrentObj->objId] = NULL;
     func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
-    func_8000A5FC(o, &func_800AD1A0, 0xA, 0x80000000, 0xA);
+    omLinkGObjDL(o, &func_800AD1A0, 0xA, 0x80000000, 0xA);
     j = D_8018EDE1_ovl5;
     i = D_8018EDE4_ovl5; i++;
     while (1) {
@@ -298,7 +298,7 @@ void func_80181C00_ovl5(GObj *o) {
 
     D_800DEF90[omCurrentObj->objId] = NULL;
     func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
-    func_8000A5FC(o, &func_800AD1A0, 10, 0x80000000, 10);
+    omLinkGObjDL(o, &func_800AD1A0, 10, 0x80000000, 10);
     j = D_8018EDE1_ovl5;
     i = D_8018EDE8_ovl5; i++;
     while (1) {
@@ -320,7 +320,7 @@ void func_80181D00_ovl5(GObj *arg0) {
 
     D_800DEF90[omCurrentObj->objId] = NULL;
     func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
-    func_8000A5FC(arg0, &func_800AD1A0, 10, 0x80000000, 10);
+    omLinkGObjDL(arg0, &func_800AD1A0, 10, 0x80000000, 10);
     spobj = func_8015C740_ovl5(arg0, &D_8018A0C0_ovl5);
     i = D_8018EDE1_ovl5; i++;
     while (1) {
@@ -382,7 +382,7 @@ void func_8018205C_ovl5(s32 arg0) {
 
 void func_8018209C_ovl5(void) {
     func_800A41B0(2.0f);
-    func_8000BDF0(0x19, 0x80000000, 0x63, 1, 0);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
     func_800AE048(0x80);
     func_800AE0F0();
     func_800A6E64();

@@ -172,6 +172,17 @@ typedef struct DObj {
     u32 unk84;
 } DObj;
 
+enum CameraFlags {
+    CAMERA_FLAG_1 = 0x01,
+    CAMERA_FLAG_2 = 0x02,
+    CAMERA_FLAG_4 = 0x04,
+    CAMERA_FLAG_8 = 0x08,
+    CAMERA_FLAG_10 = 0x10,
+    CAMERA_FLAG_20 = 0x20,
+    CAMERA_FLAG_40 = 0x40,
+    CAMERA_FLAG_80 = 0x80
+};
+
 typedef struct Camera {
     struct Camera *unk0;
     struct GObj *gobj;
@@ -444,7 +455,7 @@ extern OSMesgQueue HS64_GObjProcMesgQ;
 extern struct GObj *omGObjListHead[32];
 
 // extern funcs
-void func_8000A5FC(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);
+void omLinkGObjDL(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);
 struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
 
 #endif

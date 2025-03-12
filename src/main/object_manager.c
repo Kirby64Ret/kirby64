@@ -461,7 +461,7 @@ void HS64_CameraPush(struct Camera *arg0) {
     gCameraCount--;
 }
 
-struct GObjProcess *func_80008A18(GObj *arg0, void (*arg1)(void), u8 kind, u32 pri) {
+struct GObjProcess *omCreateProcess(GObj *arg0, void (*arg1)(void), u8 kind, u32 pri) {
     struct GObjProcess *sp24;
     struct GObjThread *oThread;
     struct GObjProcess *oProcess;
@@ -503,7 +503,7 @@ struct GObjProcess *func_80008A18(GObj *arg0, void (*arg1)(void), u8 kind, u32 p
     return oProcess;
 }
 
-// a somewhat more granular version of func_80008A18
+// a somewhat more granular version of omCreateProcess
 struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri, s32 arg3, struct ObjStack *arg4, u32 stackSize) {
     struct GObjProcess *oProcess;
     struct GObjThread *oThread;
@@ -698,7 +698,7 @@ GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009B5C.s")
 // Not really sure what's going on here
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009BD4.s")
 
-struct DObj *func_80009C38(GObj *gobj, u8 *arg1) {
+struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
     struct DObj *dobj;
     struct DObj *temp_v1;
 
@@ -736,7 +736,7 @@ GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009D5C.s")
 
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009DF4.s")
 
-struct Camera *func_80009F7C(GObj *gobj) {
+struct Camera *omGObjSetCamera(GObj *gobj) {
     int i;
     struct Camera *cam;
 
@@ -975,7 +975,7 @@ void omGLinkObjDLCommon(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 arg4) {
     arg0->unkE = D_8003DCA8 - 1;
 }
 
-void func_8000A5FC(GObj *gobj, s32 drawCB, u8 link, s32 prio, s32 arg4) {
+void omLinkGObjDL(GObj *gobj, s32 drawCB, u8 link, s32 prio, s32 arg4) {
     if (gobj == NULL) {
         gobj = omCurrentObj;
     }
@@ -1017,7 +1017,7 @@ void func_8000A730(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) 
     o->unkE = D_8003DCA8 - 1;
 }
 
-void func_8000A764(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {
+void omGLinkObjDLCamera(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {
     if (o == 0) {
         o = omCurrentObj;
     }
