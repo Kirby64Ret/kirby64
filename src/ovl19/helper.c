@@ -285,7 +285,8 @@ void func_8021FC7C_ovl19(GObj *arg0) {
     call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F09C_ovl19);
 }
 
-void func_8021FCC0_ovl19(struct GObj *arg0) {
+#ifdef NON_MATCHING
+u32 func_8021FCC0_ovl19(struct GObj *arg0) {
     f32 tmp;
 
     func_8021DFD0_ovl19();
@@ -307,6 +308,9 @@ void func_8021FCC0_ovl19(struct GObj *arg0) {
     func_800AA154(0x2035E);
     func_800AFA14();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8021FCC0_ovl19.s")
+#endif
 
 void func_8021FE5C_ovl19(struct GObj *arg0) {
     Vector sp2C, sp20;
@@ -487,14 +491,14 @@ void func_80221750_ovl19(struct GObj *arg0) {
         func_800AA018(0x202E2);
 
         // loads from s1 instead of through an immediate
-        func_800AA864(0x202E1, 1U);
+        func_800AA864(0x202E1, (u32)1.);
         D_800E9E20[omCurrentObj->objId] = 1;
         func_80221BC8_ovl19();
         while (D_800E9E20[omCurrentObj->objId] == 1) {
             ohSleep(1);
         }
         func_800AA018(0x202E4);
-        func_800AA864(0x202E3, 1);
+        func_800AA864(0x202E3, 1U);
     }
 }
 

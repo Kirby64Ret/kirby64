@@ -155,6 +155,7 @@ sTextureImageCommand=0x800dd6f4;
 sSetTileCommand=0x800dd6f8;
 D_800E85A0 = 0x800E85A0;
 D_800D7010 = 0x800D7010;
+D_800D6FB2 = 0x800D6FB2;
 gEntityVtableIndexArray=0x800ddc50;
 gEntityGObjProcessArray=0x800DE510;
 gEntityGObjProcessArray2=0x800DE6D0;

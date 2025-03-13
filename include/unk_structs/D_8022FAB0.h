@@ -3,9 +3,9 @@
 
 struct UnkStruct8022FAB0 {
 	f32 unk0;
-	f32 unk4;
-	f32 unk8;
-	f32 unkC;
+	// does not match as a Vector
+	f32 unk4, unk8, unkC;
+
 	f32 unk10;
 	f32 unk14;
 	f32 unk18;

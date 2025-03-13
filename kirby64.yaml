@@ -286,6 +286,7 @@ segments:
     - [0x538D0, c, ovl1/ovl1_5]
     - [0x56340, c, ovl1/ovl1_6]
     - [0x56F10, c, ovl1/ovl1_7]
+    - [0x5B820, pad]
     - [0x5B840, c, ovl1/ovl1_8]
     - [0x60950, c, ovl1/save_file]
     - [0x629F0, c, ovl1/ovl1_10]
