@@ -285,7 +285,6 @@ void func_8021FC7C_ovl19(GObj *arg0) {
     call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F09C_ovl19);
 }
 
-#ifdef NON_MATCHING
 u32 func_8021FCC0_ovl19(struct GObj *arg0) {
     f32 tmp;
 
@@ -308,9 +307,6 @@ u32 func_8021FCC0_ovl19(struct GObj *arg0) {
     func_800AA154(0x2035E);
     func_800AFA14();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8021FCC0_ovl19.s")
-#endif
 
 void func_8021FE5C_ovl19(struct GObj *arg0) {
     Vector sp2C, sp20;
