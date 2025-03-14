@@ -518,7 +518,7 @@ void auSetBGMReverb(s32 playerID, u32 reverb) {
     }
 
     for (i = 0; i < 16; i++) {
-        alCSPSetChlFXMix(auBGMPlayers[playerID], i, reverb);
+        n_alCSPSetChlFXMix(auBGMPlayers[playerID], i, reverb);
     }
 }
 
@@ -531,7 +531,7 @@ void auSetBGMPriority(s32 playerID, u8 priority) {
     auGlobalSongPriority = priority;
 
     for (i = 0; i < 16; i++) {
-        alCSPSetChlPriority(auBGMPlayers[playerID], i, priority);
+        n_alCSPSetChlPriority(auBGMPlayers[playerID], i, priority);
     }
 }
 

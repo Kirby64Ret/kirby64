@@ -124,5 +124,7 @@ typedef struct Controller_800D6FE8 {
 } Controller_800D6FE8;
 extern Controller_800D6FE8 gKirbyController;
 
+#define FOURNINE 9999.0f
+
 #endif /* TYPES_H */
 

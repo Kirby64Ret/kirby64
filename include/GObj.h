@@ -63,7 +63,7 @@ struct UnkStruct8004A7C4_3C_10 {
 
 // SOME chunk of the beginning of the struct is a union
 // SAME AS A LayoutNode??????
-struct UnkStruct8004A7C4_3C {
+typedef struct UnkStruct8004A7C4_3C {
     // u32 unk0;
     // u32 unk4;
     // u32 unk8;
@@ -100,7 +100,7 @@ struct UnkStruct8004A7C4_3C {
     s32 unk7C;
     struct UnkStruct8004A7C4_3C_80 *unk80;
     u32 unk84;
-};
+} GObj_3C;
 
 // only difference is that unk3C is a vector now
 struct UnkStruct8004A7C4_3C_duplicate {

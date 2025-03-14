@@ -687,10 +687,6 @@ n_alInit = 0x8002A178; // type:func
 alAudioFrame=0x800299F8; // type:func
 auStopBGM=0x800208D4; // type:func
 auStopAllSounds=0x80020C88; // type:func
-alCSPSetVol = 0x8002CF00; // type:func
-alCSPSetSeq = 0x8002CD60; // type:func
-alCSPPlay = 0x8002D0A0; // type:func
-alCSPSetChlPriority = 0x800232B0; // type:func
 alHeapInit = 0x8001E3A0; // type:func
 alBnkfNew = 0x8001E490; // type:func
 _bnkfPatchBank = 0x8001E510; // type:func
@@ -715,8 +711,17 @@ auSetBGMVolume = 0x80020998; // type:func
 auSetBGMVolumeSmooth = 0x80020A20; // type:func
 auSetBGMReverb = 0x80020ABC; // type:func
 auSetBGMPriority = 0x80020B34; // type:func
-alCSPSetChlFXMix = 0x80023300; // type:func
 scAddClient = 0x800009E8; // type:func
+
+// n_al
+n_alCSPSetChlFXMix = 0x80023300; // type:func
+n_alEvtqPostEvent = 0x80026060; // type:func
+n_alCSPSetChlPriority = 0x800232B0; // type:func
+
+// al
+alCSPSetVol = 0x8002CF00; // type:func
+alCSPSetSeq = 0x8002CD60; // type:func
+alCSPPlay = 0x8002D0A0; // type:func
 
 // fault
 faultSetUserCallback = 0x80022A38; // type:func

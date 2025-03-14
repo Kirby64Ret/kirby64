@@ -123,6 +123,12 @@ void sram_write(s32 arg0, s32 arg1, s32 arg2) {
 void func_80002FC0(u8 *arg0, s32 arg1, void (*arg2)(void), u32 arg3);
 GLOBAL_ASM("asm/nonmatchings/main/dma/func_80002FC0.s")
 
+
+/*********************
+     VPK0 handlers
+        (Unused because the game is fully uncompressed...)
+*********************/
+
 void func_80003788(u32 arg0, u8* arg1, u32 arg2) {
     D_80048D9C = arg0;
     D_80048D94 = arg1;

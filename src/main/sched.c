@@ -35,22 +35,16 @@ void scExecuteBlocking(SCTaskInfo *task) {
     osRecvMesg(&mq, NULL, 1);
 }
 
-#ifdef MIPS_TO_C
-void scAddClient(SCClient *client, OSMesgQueue *mq, void **msg, u32 count) {
-    SCClient *sp3C;
-    s32 sp1C;
-    s32 sp18;
+void scAddClient(SCClient *client, OSMesgQueue *mq, OSMesg *msg, u32 count) {
+    SCTaskAddClient t;
 
     osCreateMesgQueue(mq, msg, count);
     client->mq = mq;
-    sp18 = 3;
-    sp1C = 0x64;
-    sp3C = client;
-    scExecuteBlocking(&sp18);
+    t.info.type = SC_TASK_TYPE_ADD_CLIENT;
+    t.info.priority = 100;
+    t.client = client;
+    scExecuteBlocking(&t.info);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scAddClient.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -377,29 +371,19 @@ block_12:
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80001774.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_8000189C(SCTaskGfx *arg0) {
-    OSTask *sp1C;
-    OSTask *temp_a0;
-
+void func_8000189C(SCTaskGfx *task) {
     if (scCurrentGfxTask != NULL) {
         osSpTaskYield();
         scCurrentGfxTask->info.state = 4;
         scPausedQueueAdd(scCurrentGfxTask);
-        arg0->info.state = 3;
+        task->info.state = SC_TASK_STATE_PRIORITY_PENDING;
     } else {
-        temp_a0 = arg0 + 0x28;
-        sp1C = temp_a0;
-        osSpTaskLoad(temp_a0);
-        osSpTaskStartGo(temp_a0);
-        arg0->info.state = 2;
+        osSpTaskLoad(&task->task);
+        osSpTaskStartGo(&task->task);
+        task->info.state = SC_TASK_STATE_RUNNUNG;
     }
-    scCurrentGfxTask = arg0;
+    scCurrentGfxTask = task;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_8000189C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -873,7 +857,7 @@ void scHandleDPTaskDone(void) {
 #endif
 
 void scAddTask(SCTaskInfo *task) {
-    task->state = 1;
+    task->state = SC_TASK_STATE_QUEUED;
     scMainQueueAdd(task);
     func_80001E20();
 }
