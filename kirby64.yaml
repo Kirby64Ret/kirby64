@@ -151,7 +151,7 @@ segments:
     - [0x36580, lib, libultra_rom, settime]
     - [0x365B0, lib, libultra_rom, visetevent]
     - [0x36620, lib, libultra_rom, cartrominit]
-    - [0x36720, asm, main/code_36720]
+    - [0x36720, lib, libultra_rom, us2dex]
     - [0x368A0, lib, libultra_rom, pfsselectbank]
     - [0x36920, lib, libultra_rom, setfpccsr]
     - [0x36930, lib, libultra_rom, pfsinitpak]

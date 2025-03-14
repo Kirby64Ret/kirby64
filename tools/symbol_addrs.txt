@@ -645,6 +645,8 @@ __osContDataCrc=0x80037620; // type:func
 __osPfsLastChannel=0x8003FE10;
 D_8012E944 = 0x8012E944;
 
+guS2DInitBg = 0x80035B20; // type:func
+
 // ovl19/helper.c
 D_800E8060 = 0x800E8060;
 D_8012E7FC = 0x8012E7FC;
@@ -655,8 +657,6 @@ alCSeqNextEvent = 0x8002587C;
 alCSeqNew = 0x80025B74;
 n_alEnvmixerPull = 0x80027670;
 alSeqNextEvent = 0x8002CA48;
-alSynRemovePlayer = 0x800BB3C0;
-n_alSynRemovePlayer = 0x800BDAA8;
 alSeqFileNew = 0x8001E450;
 alCSeqNewMarker = 0x80025C7C;
 __alCSeqNextDelta = 0x80025DE8;

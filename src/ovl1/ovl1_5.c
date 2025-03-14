@@ -47,3 +47,4 @@
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_5/func_800ADD14.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_5/func_800AE048.s")
+
