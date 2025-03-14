@@ -248,7 +248,7 @@ void ohCreateDefaultMatricesDeg(DObj *d) {
     func_80009628(d, 0x20, 0);
 }
 
-void func_8000B908(DObj *d) {
+void ohCreateDefaultMatricesRad(DObj *d) {
     func_80009628(d, 0x12, 0);
     func_80009628(d, 0x1A, 0);
     func_80009628(d, 0x20, 0);
@@ -259,7 +259,7 @@ void ohCreateDefaultCameraMatrices(Camera *cam) {
     func_80009658(cam, 6, 0);
 }
 
-void func_8000B988(GObj *g) {
+void ohDobjTreeRemoveAllMObjs(GObj *g) {
     DObj *d = (DObj *)g->data;
 
     while (d != NULL) {
@@ -270,7 +270,7 @@ void func_8000B988(GObj *g) {
 
 #ifdef MIPS_TO_C
 
-s32 func_8000B9CC(void) {
+s32 ohAddDObj(void) {
     s32 sp1C;
     s32 temp_v0;
 
@@ -280,67 +280,67 @@ s32 func_8000B9CC(void) {
     return temp_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B9CC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObj.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-s32 func_8000B9FC(void) {
+s32 ohAddDObjSibling(void) {
     s32 sp1C;
     s32 temp_v0;
 
-    temp_v0 = func_80009CE8();
+    temp_v0 = omDObjAddSibling();
     sp1C = temp_v0;
     ohCreateDefaultMatricesDeg(temp_v0);
     return temp_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B9FC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjSibling.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-s32 func_8000BA2C(void) {
+s32 ohAddDObjChild(void) {
     s32 sp1C;
     s32 temp_v0;
 
-    temp_v0 = func_80009D5C();
+    temp_v0 = omDObjAddChild();
     sp1C = temp_v0;
     ohCreateDefaultMatricesDeg(temp_v0);
     return temp_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BA2C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjChild.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-s32 func_8000BA5C(void) {
+s32 ohAddDObjRad(void) {
     s32 sp1C;
     s32 temp_v0;
 
     temp_v0 = omGObjAddDObj();
     sp1C = temp_v0;
-    func_8000B908(temp_v0);
+    ohCreateDefaultMatricesRad(temp_v0);
     return temp_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BA5C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjRad.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-s32 func_8000BA8C(void) {
+s32 ohAddDObjSiblingRad(void) {
     s32 sp1C;
     s32 temp_v0;
 
-    temp_v0 = func_80009CE8();
+    temp_v0 = omDObjAddSibling();
     sp1C = temp_v0;
-    func_8000B908(temp_v0);
+    ohCreateDefaultMatricesRad(temp_v0);
     return temp_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BA8C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjSiblingRad.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -349,9 +349,9 @@ s32 func_8000BABC(void) {
     s32 sp1C;
     s32 temp_v0;
 
-    temp_v0 = func_80009D5C();
+    temp_v0 = omDObjAddChild();
     sp1C = temp_v0;
-    func_8000B908(temp_v0);
+    ohCreateDefaultMatricesRad(temp_v0);
     return temp_v0;
 }
 #else
@@ -387,10 +387,10 @@ void func_8000BAEC(s32 arg0, s32 *arg1, void **arg2) {
     if (var_v0_2 != 0x12) {
         do {
             if (var_v0_2 != 0) {
-                var_v0_3 = func_8000BA2C((&sp38)[var_v0_2].unk-4, var_s0->unk4);
+                var_v0_3 = ohAddDObjChild((&sp38)[var_v0_2].unk-4, var_s0->unk4);
                 (&sp38)[var_s0->unk0] = var_v0_3;
             } else {
-                var_v0_3 = func_8000B9CC(arg0, var_s0->unk4);
+                var_v0_3 = ohAddDObj(arg0, var_s0->unk4);
                 sp38 = var_v0_3;
             }
             var_v0_3->unk1C = var_s0->unk8;

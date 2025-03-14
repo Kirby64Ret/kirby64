@@ -344,13 +344,14 @@ draw_pause_bg=0x800bc9a4; // type:func
 draw_star_segments=0x800bd374; // type:func
 fatal_printf=0x8002309c; // type:func
 
-// om
-omGLinkObjDLCamera = 0x8000A764; // type:func
-ohCreateDefaultCameraMatrices = 0x8000B950; // type:func
-omCreateProcess = 0x80008A18; // type:func
-omGDeleteObj = 0x8000A29C; // type:func
-
 // oh
+ohAddDObjSiblingRad = 0x8000BA8C; // type:func
+ohAddDObjRad = 0x8000BA5C; // type:func
+ohAddDObjChild = 0x8000BA2C; // type:func
+ohAddDObjSibling = 0x8000B9FC; // type:func
+ohAddDObj = 0x8000B9CC; // type:func
+ohDobjTreeRemoveAllMObjs = 0x8000B988; // type:func
+ohCreateDefaultMatricesRad = 0x8000B908; // type:func
 ohDeleteAllObjects = 0x8000BC34; // type:func
 omLinkGObjDL = 0x8000A5FC; // type:func
 omGObjAddDObj = 0x80009C38; // type:func
@@ -770,6 +771,12 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+omDObjAddChild = 0x80009D5C; // type:func
+omDObjAddSibling = 0x80009CE8; // type:func
+omGLinkObjDLCamera = 0x8000A764; // type:func
+ohCreateDefaultCameraMatrices = 0x8000B950; // type:func
+omCreateProcess = 0x80008A18; // type:func
+omGDeleteObj = 0x8000A29C; // type:func
 omGObjListDlHead = 0x8004a680; // size:132
 omCurrentProc = 0x8004A7D0;
 omCurrentObj = 0x8004A7C4;

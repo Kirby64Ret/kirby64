@@ -730,9 +730,9 @@ struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
     return dobj;
 }
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009CE8.s")
+GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddSibling.s")
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009D5C.s")
+GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddChild.s")
 
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009DF4.s")
 
