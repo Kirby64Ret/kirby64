@@ -278,11 +278,11 @@ void func_800047B0(s32 arg0) {
     func_800046FC(arg0, 1);
 }
 
-void func_800047D0(s32 arg0) {
+void contRumbleStop(s32 arg0) {
     func_800046FC(arg0, 2);
 }
 
-void func_800047F0(s32 arg0) {
+void contRumbleInit(s32 arg0) {
     func_800046FC(arg0, 0);
 }
 

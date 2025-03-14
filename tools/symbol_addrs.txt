@@ -808,6 +808,8 @@ HS64_omMakeGObj=0x8000A180; // type:func
 omDrawAll = 0x8000AAE0; // type:func
 
 // cont
+contRumbleStop = 0x800047D0; // type:func
+contRumbleInit = 0x800047F0; // type:func
 contSendEvent = 0x800045C0; // type:func
 contHandleEvent = 0x80004E98; // type:func
 contMain = 0x800051E0; // type:func
@@ -836,6 +838,18 @@ gOverlayTable = 0x800BE8A0;
 setUpDispose = 0x800FCA84; // type:func
 
 // sc
+scCurrentGfxTask = 0x80048B8C; 
+scPreNMIState = 0x80048CE0; 
+scAddTask = 0x8000256C; // type:func
+scHandleDPTaskDone = 0x800022DC; // type:func
+scHandleSPTaskDone = 0x8000206C; // type:func
+scExecuteTask = 0x800019BC; // type:func
+scClientList = 0x80048B80; 
+scHandleVRetrace = 0x80002014; // type:func
+scDPTaskHead = 0x80048B9C; 
+scCurrentDPTask = 0x80048BA4; 
+scDPQueueRemove = 0x80000E4C; // type:func
+scDPOutputBuffSize = 0x80048C80; 
 scMainQueueTail = 0x80048B88; 
 scMainQueueHead = 0x80048B84; 
 scPausedQueueTail = 0x80048B98; 

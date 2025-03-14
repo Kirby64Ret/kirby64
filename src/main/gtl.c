@@ -236,8 +236,8 @@ void func_800056DC(s32 arg0, s32 arg1) {
     sp20 = 0x32;
     sp44 = arg1;
     scExecuteBlocking(&sp1C);
-    if (&D_80048C80 & 7) {
-        fatal_printf("bad addr sc_rdp_output_len = %x\n", &D_80048C80);
+    if (&scDPOutputBuffSize & 7) {
+        fatal_printf("bad addr sc_rdp_output_len = %x\n", &scDPOutputBuffSize);
 loop_2:
         goto loop_2;
     }
