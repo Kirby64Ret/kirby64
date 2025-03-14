@@ -86,7 +86,7 @@ typedef struct {
 
 typedef struct {
     /* 0x00 */ SCTaskInfo info;
-    /* 0x24 */ void* unk24[3]; // frame buffer pointers
+    /* 0x24 */ void* cfb[3];
 } SCTaskFb;                    // size == 0x30
 
 typedef struct {
@@ -108,7 +108,7 @@ typedef struct {
 
 extern s32 scBeforeReset;
 extern u64 scUnknownU64;
-extern OSMesgQueue scTaskQueue;
+extern OSMesgQueue scTaskMQ;
 extern u32 scUnknownInt;
 extern u32 scTimeSpentAudio;
 extern u32 scTimeSpentGfx;

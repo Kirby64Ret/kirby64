@@ -877,3 +877,23 @@ scSetPreNMIProc = 0x80002B70; // type:func
 scSetPostProcessFunc = 0x80002B7C; // type:func
 scRemovePostProcessFunc = 0x80002B88; // type:func
 scThreadMain=0x80002598; // type:func
+
+// vi
+viCFBList = 0x8004A518; 
+viApplyScreenSettings = 0x80007BA4; // type:func
+viSetScreenParams = 0x80007B38; // type:func
+viScheduleApplySettings = 0x80007ADC; // type:func
+viInitVideoTask = 0x80007A74; // type:func
+viFlags = 0x8004A510; 
+viEdgeOffsetBottom = 0x8004A52A; 
+viEdgeOffsetTop = 0x8004A528; 
+viEdgeOffsetRight = 0x8004A526; 
+viEdgeOffsetLeft = 0x8004A524; 
+viSetScreenOffsets = 0x80007A14; // type:func
+viSetScreenHeight = 0x800079FC; // type:func
+viSettingsChanged = 0x8004A514; 
+viSetScreenWidth = 0x800079E4; // type:func
+viSetFlags = 0x80007998; // type:func
+viSetCFB = 0x80007944; // type:func
+viCFBFmt = 0x8004A504; 
+viPackRGBA = 0x800078F0; // type:func

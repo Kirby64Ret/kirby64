@@ -1185,7 +1185,7 @@ void func_80006E30(void *arg0) {
     func_80005530();
     arg0->unkC();
     func_80005F10();
-    func_80007ADC(*(&D_8004A388 + (D_8004A450 * 4)));
+    viScheduleApplySettings(*(&D_8004A388 + (D_8004A450 * 4)));
     func_8000597C();
 }
 #else
@@ -1212,7 +1212,7 @@ void func_80006EE4(void *arg0) {
     func_80005530();
     arg0->unkC();
     func_80005F10();
-    func_80007ADC(*(&D_8004A388 + (D_8004A450 * 4)));
+    viScheduleApplySettings(*(&D_8004A388 + (D_8004A450 * 4)));
     func_8000597C();
     if (func_800067E0() != 0) {
         ohDeleteAllObjects();

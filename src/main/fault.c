@@ -281,7 +281,7 @@ void func_80021764(GObj *g) {
     gDPPipeSync(gDisplayListHeads[0]++);
     gDPSetCycleType(gDisplayListHeads[0]++, G_CYC_FILL);
     gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_NOOP, G_RM_NOOP2);
-    gDPSetFillColor(gDisplayListHeads[0]++, func_800078F0(0xFF0000FF));
+    gDPSetFillColor(gDisplayListHeads[0]++, viPackRGBA(0xFF0000FF));
     func_80021618(offsetX, 0x15, D_8004A430 * 0.00390625f, 3, 2, 1);
     offsetX += 35;
     func_80021618(offsetX, 0x15, D_8004A434 * 0.00390625f, 3, 2, 1);
@@ -299,14 +299,14 @@ void func_80021764(GObj *g) {
     func_80021668(gDisplayListHeads[0]++, 0x3E, offsetY, CLAMP256(D_8004A430 / 4) + 0x3E, offsetY + 1);
     offsetY += 2;
     gDPPipeSync(gDisplayListHeads[0]++);
-    gDPSetFillColor(gDisplayListHeads[0]++, func_800078F0(0xFF00FFFF));
+    gDPSetFillColor(gDisplayListHeads[0]++, viPackRGBA(0xFF00FFFF));
     func_80021668(gDisplayListHeads[0]++, 0x3E, offsetY, CLAMP256(D_8004A434 / 4) + 0x3E, offsetY + 1);
     offsetY += 2;
     gDPPipeSync(gDisplayListHeads[0]++);
-    gDPSetFillColor(gDisplayListHeads[0]++, func_800078F0(0xFF00FF));
+    gDPSetFillColor(gDisplayListHeads[0]++, viPackRGBA(0xFF00FF));
     func_80021668(gDisplayListHeads[0]++, 0x3E, offsetY, CLAMP256(D_80048C74 / 4) + 0x3E, offsetY + 1);
     gDPPipeSync(gDisplayListHeads[0]++);
-    gDPSetFillColor(gDisplayListHeads[0]++, func_800078F0(0x101010FF));
+    gDPSetFillColor(gDisplayListHeads[0]++, viPackRGBA(0x101010FF));
     for (i = 62; i < (62 + 250); i += 64) {
         func_80021668(gDisplayListHeads[0]++, i, 0x1F, i, 0x24);
     }
