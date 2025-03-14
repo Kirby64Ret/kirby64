@@ -328,35 +328,21 @@ s32 ohAddDObjRad(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjRad.s")
 #endif
 
-#ifdef MIPS_TO_C
+DObj *ohAddDObjSiblingRad(void) {
+    DObj *d;
 
-s32 ohAddDObjSiblingRad(void) {
-    s32 sp1C;
-    s32 temp_v0;
-
-    temp_v0 = omDObjAddSibling();
-    sp1C = temp_v0;
-    ohCreateDefaultMatricesRad(temp_v0);
-    return temp_v0;
+    d = omDObjAddSibling();
+    ohCreateDefaultMatricesRad(d);
+    return d;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjSiblingRad.s")
-#endif
 
-#ifdef MIPS_TO_C
+DObj *ohAddDObjChildRad(void) {
+    DObj *d;
 
-s32 func_8000BABC(void) {
-    s32 sp1C;
-    s32 temp_v0;
-
-    temp_v0 = omDObjAddChild();
-    sp1C = temp_v0;
-    ohCreateDefaultMatricesRad(temp_v0);
-    return temp_v0;
+    d = omDObjAddChild();
+    ohCreateDefaultMatricesRad(d);
+    return d;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BABC.s")
-#endif
 
 #ifdef MIPS_TO_C
 

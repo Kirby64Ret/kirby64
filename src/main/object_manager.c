@@ -136,8 +136,8 @@ struct GObjProcess *HS64_GObjProcessPop(void) {
     return ret;
 }
 
-void func_800080C0(struct GObjProcess *);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_800080C0.s")
+void HS64_GObjProcessLink(struct GObjProcess *);
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_GObjProcessLink.s")
 
 void HS64_GObjProcessRelease(struct GObjProcess *proc) {
     proc->next = gGObjProcessHead;
@@ -156,7 +156,7 @@ void HS64_GObjProcessReleasePri(struct GObjProcess *proc) {
     }
 }
 
-void func_80008210(struct GObjProcess *proc) {
+void HS64_GObjProcessUnlink(struct GObjProcess *proc) {
     GObj *o;
 
     o = proc->gobj;
@@ -499,7 +499,7 @@ struct GObjProcess *omCreateProcess(GObj *arg0, void (*arg1)(void), u8 kind, u32
             while (1);
 
     }
-    func_800080C0(oProcess);
+    HS64_GObjProcessLink(oProcess);
     return oProcess;
 }
 
@@ -544,7 +544,7 @@ struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri,
         if (D_8003DE50 >= 20000000)
             D_8003DE50 = 10000000;
     }
-    func_800080C0(oProcess);
+    HS64_GObjProcessLink(oProcess);
     return oProcess;
 }
 
@@ -581,7 +581,7 @@ void func_80008DA8(struct GObjProcess *proc) {
                 }
                 HS64_GObjThreadRelease(proc->payload.thread);
         }
-        func_80008210(proc);
+        HS64_GObjProcessUnlink(proc);
         HS64_GObjProcessRelease(proc);
     }
 }
@@ -597,21 +597,21 @@ void func_80009628(struct DObj *arg0, u8 arg1, u8 arg2) {
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009658.s")
 
 // Initializes a new AObj with an index
-struct AObj *HS64_AObjNew(struct Animation *anim, u8 index) {
-    struct AObj *toReturn;
+struct AObj *HS64_AObjNew(struct Animation *anim, u8 paramID) {
+    struct AObj *aobj;
 
-    toReturn = HS64_AObjPop();
-    toReturn->unk4 = index;
-    toReturn->unk5 = 0;
-    toReturn->unk20 = 0;
-    toReturn->unk1C = 0.0f;
-    toReturn->unk18 = 0.0f;
-    toReturn->unk14 = 0.0f;
-    toReturn->unk10 = 0.0f;
-    toReturn->unkC = 0.0f;
-    toReturn->unk8 = 1.0f;
-    HS64_AObjLinkToAnimation(anim, toReturn);
-    return toReturn;
+    aobj = HS64_AObjPop();
+    aobj->paramID = paramID;
+    aobj->kind = 0;
+    aobj->unk20 = NULL;
+    aobj->goalSpeed = 0.0f;
+    aobj->speed = 0.0f;
+    aobj->goalVal = 0.0f;
+    aobj->startVal = 0.0f;
+    aobj->timer = 0.0f;
+    aobj->Rduration = 1.0f;
+    HS64_AObjLinkToAnimation(anim, aobj);
+    return aobj;
 }
 
 void func_8000984C(struct unk8000BE90Func *arg0) {
@@ -632,48 +632,48 @@ struct AObj *func_800098AC(s32 arg0, u8 index) {
     struct AObj *toReturn;
 
     toReturn = HS64_AObjPop();
-    toReturn->unk4 = index;
-    toReturn->unk5 = 0;
-    toReturn->unk20 = 0;
-    toReturn->unk1C = 0.0f;
-    toReturn->unk18 = 0.0f;
-    toReturn->unk14 = 0.0f;
-    toReturn->unk10 = 0.0f;
-    toReturn->unkC = 0.0f;
-    toReturn->unk8 = 1.0f;
+    toReturn->paramID = index;
+    toReturn->kind = 0;
+    toReturn->unk20 = NULL;
+    toReturn->goalSpeed = 0.0f;
+    toReturn->speed = 0.0f;
+    toReturn->goalVal = 0.0f;
+    toReturn->startVal = 0.0f;
+    toReturn->timer = 0.0f;
+    toReturn->Rduration = 1.0f;
     func_80008840(arg0, toReturn);
     return toReturn;
 }
 
 void func_80009918(struct unk80008840 *arg0) {
-    struct AObj *temp_s1;
-    struct AObj *phi_s0;
+    struct AObj *next;
+    struct AObj *aobj;
 
-    phi_s0 = arg0->unk90;
-    while (phi_s0 != 0) {
-        temp_s1 = phi_s0->next;
-        HS64_AObjRelease(phi_s0);
-        phi_s0 = temp_s1;
+    aobj = arg0->unk90;
+    while (aobj != 0) {
+        next = aobj->next;
+        HS64_AObjRelease(aobj);
+        aobj = next;
     }
     arg0->unk90 = 0;
     arg0->unk98 = -FLT_MAX;
 }
 
 struct AObj *func_80009978(struct Animation* arg0, u8 arg1) {
-    struct AObj *temp_v0;
+    struct AObj *aobj;
 
-    temp_v0 = HS64_AObjPop();
-    temp_v0->unk4 = arg1;
-    temp_v0->unk5 = (u8)0;
-    temp_v0->unk20 = 0;
-    temp_v0->unk1C = 0.0f;
-    temp_v0->unk18 = 0.0f;
-    temp_v0->unk14 = 0.0f;
-    temp_v0->unk10 = 0.0f;
-    temp_v0->unkC = 0.0f;
-    temp_v0->unk8 = 1.0f;
-    func_80008850(arg0, temp_v0);
-    return temp_v0;
+    aobj = HS64_AObjPop();
+    aobj->paramID = arg1;
+    aobj->kind = (u8)0;
+    aobj->unk20 = NULL;
+    aobj->goalSpeed = 0.0f;
+    aobj->speed = 0.0f;
+    aobj->goalVal = 0.0f;
+    aobj->startVal = 0.0f;
+    aobj->timer = 0.0f;
+    aobj->Rduration = 1.0f;
+    func_80008850(arg0, aobj);
+    return aobj;
 }
 
 // Unused?
@@ -939,7 +939,7 @@ void omGMoveCommon(s32 arg0, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
             break;
     }
     while (proc != NULL) {
-        func_800080C0(proc);
+        HS64_GObjProcessLink(proc);
         proc = proc->next;
     }
 }

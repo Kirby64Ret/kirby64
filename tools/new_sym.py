@@ -7,6 +7,8 @@ import sys, os
 newsym = sys.argv[1]
 addr = "0x" + sys.argv[2].split("_")[1]
 location = newsym[0:2]
+if newsym[0:4] == "HS64":
+    location = "om"
 
 annotation = "// type:func"
 if "D_" in addr:

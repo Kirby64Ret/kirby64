@@ -345,6 +345,7 @@ draw_star_segments=0x800bd374; // type:func
 fatal_printf=0x8002309c; // type:func
 
 // oh
+ohAddDObjChildRad = 0x8000BABC; // type:func
 ohAddDObjSiblingRad = 0x8000BA8C; // type:func
 ohAddDObjRad = 0x8000BA5C; // type:func
 ohAddDObjChild = 0x8000BA2C; // type:func
@@ -771,6 +772,8 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+HS64_GObjProcessLink = 0x800080C0; // type:func
+HS64_GObjProcessUnlink = 0x80008210; // type:func
 omDObjAddChild = 0x80009D5C; // type:func
 omDObjAddSibling = 0x80009CE8; // type:func
 omGLinkObjDLCamera = 0x8000A764; // type:func
