@@ -238,7 +238,7 @@ void HS64_GObjRelease(GObj *o) {
     gGObjCount--;
 }
 
-void func_800083CC(GObj *o, GObj *prevObj) {
+void omLinkGObjAfter(GObj *o, GObj *prevObj) {
     o->prev = prevObj;
     if (prevObj) {
         o->next = prevObj->next;
@@ -254,17 +254,17 @@ void func_800083CC(GObj *o, GObj *prevObj) {
     }
 }
 
-void func_80008434(GObj *o) {
+void omLinkGObjAfterSamePriority(GObj *o) {
     GObj *tail;
 
     tail = omGObjListTail[o->link];
     while (tail != 0 && tail->pri < o->pri) {
         tail = tail->prev;
     }
-    func_800083CC(o, tail);
+    omLinkGObjAfter(o, tail);
 }
 
-void func_800084A0(GObj *o) {
+void omLinkGObjBeforeSamePriority(GObj *o) {
     GObj *head;
     GObj *tail;
 
@@ -277,7 +277,7 @@ void func_800084A0(GObj *o) {
     } else {
         tail = omGObjListTail[o->link];
     }
-    func_800083CC(o, tail);
+    omLinkGObjAfter(o, tail);
 }
 
 void func_80008528(GObj *arg0) {
@@ -837,42 +837,42 @@ GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri) {
     if (o == NULL) {
         return NULL;
     } else {
-        func_80008434(o);
+        omLinkGObjAfterSamePriority(o);
         return o;
     }
 }
 
-GObj *func_8000A1C0(s32 arg0, s32 func, u8 arg2, s32 pri) {
+GObj *omAddGObjBeforeSamePriority(s32 arg0, s32 func, u8 arg2, s32 pri) {
     GObj *o;
 
     o = omGAddCommon(arg0, func, arg2, pri);
     if (o == 0) {
         return NULL;
     } else {
-        func_800084A0(o);
+        omLinkGObjBeforeSamePriority(o);
         return o;
     }
 }
 
-GObj *func_8000A200(s32 id, s32 func, GObj *arg2) {
+GObj *omAddGObjAfter(s32 id, s32 func, GObj *arg2) {
     GObj *temp_v0;
 
     temp_v0 = omGAddCommon(id, func, arg2->link, arg2->pri);
     if (temp_v0 == 0) {
         return NULL;
     }
-    func_800083CC(temp_v0, arg2);
+    omLinkGObjAfter(temp_v0, arg2);
     return temp_v0;
 }
 
-GObj *func_8000A24C(s32 id, s32 updateCB, GObj *arg2) {
+GObj *omAddGObjBefore(s32 id, s32 updateCB, GObj *arg2) {
     GObj *temp_v0;
 
     temp_v0 = omGAddCommon(id, updateCB, arg2->link, arg2->pri);
     if (temp_v0 == 0) {
         return NULL;
     }
-    func_800083CC(temp_v0, arg2->prev);
+    omLinkGObjAfter(temp_v0, arg2->prev);
     return temp_v0;
 }
 
@@ -888,7 +888,7 @@ void omGDeleteObj(GObj *arg0) {
     switch (arg0->kind) {
         case 1:
             func_8000BBE0(arg0);
-        case 2:
+        case 2: // stubbed out sprite functionality
             break;
         case 3:
             func_8000A02C((struct Camera *)arg0->data);
@@ -902,7 +902,7 @@ void omGDeleteObj(GObj *arg0) {
 
 // i genuinely don't know what's going on here
 #ifdef NON_MATCHING
-void omGMoveCommon(s32 arg0, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
+void omGMoveCommon(s32 addWhere, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
     GObjProcess *proc;
 
     if (link >= 0x20) {
@@ -924,18 +924,18 @@ void omGMoveCommon(s32 arg0, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
     func_80008528(gobj);
     gobj->link = link;
     gobj->pri = pri;
-    switch (arg0) { /* irregular */
+    switch (addWhere) { /* irregular */
         case 0:
-            func_80008434(gobj);
+            omLinkGObjAfterSamePriority(gobj);
             break;
         case 1:
-            func_800084A0(gobj);
+            omLinkGObjBeforeSamePriority(gobj);
             break;
         case 2:
-            func_800083CC(gobj, arg4);
+            omLinkGObjAfter(gobj, arg4);
             break;
         case 3:
-            func_800083CC(gobj, arg4->prev);
+            omLinkGObjAfter(gobj, arg4->prev);
             break;
     }
     while (proc != NULL) {
@@ -1204,7 +1204,7 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
 GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGDispatchProc.s")
 #endif
 
-void func_8000AD88(void) {
+void omUpdateAll(void) {
     s32 i;
 
     D_8004A7D4 = 0;

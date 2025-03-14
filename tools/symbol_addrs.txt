@@ -572,7 +572,6 @@ strlen=0x80033a6c; // type:func
 tamper_check_ovl20=0x80300000; // type:func
 tanf=0x800185b0; // type:func
 thread1_idle=0x800007c8; // type:func
-scThreadMain=0x80002598; // type:func
 thread5_game=0x800005d8; // type:func
 thread_crash_stack_overflow=0x800004e0; // type:func
 unused_get_main_thread=0x80000460; // type:func
@@ -772,6 +771,13 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+omUpdateAll = 0x8000AD88; // type:func
+omAddGObjBeforeSamePriority = 0x8000A1C0; // type:func
+omAddGObjBefore = 0x8000A24C; // type:func
+omAddGObjAfter = 0x8000A200; // type:func
+omLinkGObjAfter = 0x800083CC; // type:func
+omLinkGObjBeforeSamePriority = 0x800084A0; // type:func
+omLinkGObjAfterSamePriority = 0x80008434; // type:func
 HS64_GObjProcessLink = 0x800080C0; // type:func
 HS64_GObjProcessUnlink = 0x80008210; // type:func
 omDObjAddChild = 0x80009D5C; // type:func
@@ -828,3 +834,9 @@ gOverlayTable = 0x800BE8A0;
 
 // ovl2_3
 setUpDispose = 0x800FCA84; // type:func
+
+// sc
+scSetPreNMIProc = 0x80002B70; // type:func
+scSetPostProcessFunc = 0x80002B7C; // type:func
+scRemovePostProcessFunc = 0x80002B88; // type:func
+scThreadMain=0x80002598; // type:func

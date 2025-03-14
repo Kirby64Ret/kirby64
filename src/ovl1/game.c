@@ -100,7 +100,7 @@ void func_800A2B9C(void) {
         var_v0->unk-1 = temp_a0;
     } while (var_v0 != &D_800D6B10);
     set_hard_rng_seed(0x3039);
-    func_80002B88();
+    scRemovePostProcessFunc();
     gGameState = 1;
     D_800BE4F8 = 0;
     D_800D6F3C = 0;
@@ -122,7 +122,7 @@ void func_800A2B9C(void) {
 
 void func_800A2C80(void) {
     func_800BB3F0();
-    func_80002B88();
+    scRemovePostProcessFunc();
     auSetBGMVolume(0, 0x7800);
     func_80020CC4(0x7800);
     func_800A41B0(1.0f);
