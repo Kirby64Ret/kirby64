@@ -836,6 +836,24 @@ gOverlayTable = 0x800BE8A0;
 setUpDispose = 0x800FCA84; // type:func
 
 // sc
+scMainQueueTail = 0x80048B88; 
+scMainQueueHead = 0x80048B84; 
+scPausedQueueTail = 0x80048B98; 
+scPausedQueueHead = 0x80048B94; 
+scPausedQueueRemove = 0x80000DC4; // type:func
+scPausedQueueAdd = 0x80000D34; // type:func
+scMainQueueRemove = 0x80000CE4; // type:func
+scMainQueueAdd = 0x80000C54; // type:func
+scFrameBuffers = 0x80048C50; 
+scNextFrameBuffer = 0x80048C5C; 
+scRDPOutputBufferUsed = 0x80048C88; 
+scTimestampSetFb = 0x80048C6C; 
+scCheckGfxTaskDefault = 0x80000A44; // type:func
+scExecuteBlocking = 0x80000980; // type:func
+scBeforeReset = 0x80048CDC; 
+scPreNMIDefault = 0x80002AF8; // type:func
+scPreNMIProc = 0x80048CD8; 
+scPostProcessFunc = 0x80048CE4;
 scSetPreNMIProc = 0x80002B70; // type:func
 scSetPostProcessFunc = 0x80002B7C; // type:func
 scRemovePostProcessFunc = 0x80002B88; // type:func

@@ -9,7 +9,7 @@
 void fatal_printf(const char *arg0, ...);
 
 // actual externs
-extern u32 *D_80048CDC;
+extern u32 *scBeforeReset;
 
 // bss
 
@@ -49,7 +49,7 @@ void dma_copy(OSPiHandle *handle, u32 physAddr, u32 vAddr, u32 size, u8 directio
     while (size >= 0x10001) {
         dmaIOMesg.dramAddr = (void*)vAddr;
         dmaIOMesg.devAddr = physAddr;
-        if ((D_80048CDC == 0) && (osEPiStartDma(handle, &dmaIOMesg, direction) == -1)) {
+        if ((scBeforeReset == 0) && (osEPiStartDma(handle, &dmaIOMesg, direction) == -1)) {
             fatal_printf("dma pi full %x %x %x\n", physAddr, vAddr, size);
             while (1);
         }
@@ -62,7 +62,7 @@ void dma_copy(OSPiHandle *handle, u32 physAddr, u32 vAddr, u32 size, u8 directio
         dmaIOMesg.dramAddr = (void*)vAddr;
         dmaIOMesg.devAddr = physAddr;
         dmaIOMesg.size = size;
-        if ((D_80048CDC == 0) && (osEPiStartDma(handle, &dmaIOMesg, direction) == -1)) {
+        if ((scBeforeReset == 0) && (osEPiStartDma(handle, &dmaIOMesg, direction) == -1)) {
             fatal_printf("dma pi full %x %x %x\n", physAddr, vAddr, size);
             while (1);
         }

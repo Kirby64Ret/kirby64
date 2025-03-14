@@ -121,7 +121,7 @@ typedef struct ContEventPfs {
 } ContEventPfs;
 
 // data
-extern s32 D_80048CDC;
+extern s32 scBeforeReset;
 extern Controller_800D6FE8 gPlayerControllers[MAXCONTROLLERS];
 extern s8 contChannelMap[MAXCONTROLLERS];
 

@@ -11,7 +11,7 @@ if newsym[0:4] == "HS64":
     location = "om"
 
 annotation = "// type:func"
-if "D_" in addr:
+if "D_" in sys.argv[2]:
     annotation = ""
 
 

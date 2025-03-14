@@ -7,7 +7,7 @@ void func_80005350(? *arg0) {
         D_8004A48C = arg0;
         return;
     }
-    D_8004A48C = &func_80000A44;
+    D_8004A48C = &scCheckGfxTaskDefault;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005350.s")
@@ -235,7 +235,7 @@ void func_800056DC(s32 arg0, s32 arg1) {
     sp1C = 8;
     sp20 = 0x32;
     sp44 = arg1;
-    func_80000980(&sp1C);
+    scExecuteBlocking(&sp1C);
     if (&D_80048C80 & 7) {
         fatal_printf("bad addr sc_rdp_output_len = %x\n", &D_80048C80);
 loop_2:
@@ -1034,7 +1034,7 @@ s32 func_800067E0(void) {
             if (D_80048C64 != 0) {
                 sp1C = 0xB;
                 sp20 = 0x64;
-                func_80000980(&sp1C);
+                scExecuteBlocking(&sp1C);
                 return 1;
             }
             return 0;

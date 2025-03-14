@@ -216,7 +216,7 @@ segments:
     - [0x40A50, lib, libultra_rom, vimgr, .data]
     - [0x40A70, lib, libultra_rom, aisetnextbuf, .data]
     - [0x40A80, .rodata, main/main]
-    - [0x40AA0, rodata, mainseg]
+    - [0x40AA0, .rodata, main/sched]
     - [0x40B00, .rodata, main/dma]
     - [0x40B30, .rodata, main/contpad]
     - [0x40B90, .rodata, main/gtl]

@@ -25,23 +25,25 @@ block_4:
 
 #ifdef MIPS_TO_C
 
-void func_80000980(void *arg0) {
-    void *sp34;
-    OSMesgQueue sp1C;
-
-    osCreateMesgQueue(&sp1C, &sp34, 1);
-    arg0->unk14 = 0;
-    arg0->unk1C = 1;
-    arg0->unk20 = &sp1C;
-    osSendMesg(&scTaskMQ, arg0, 0);
-    osRecvMesg(&sp1C, NULL, 1);
+void func_80000908(void) {
+loop_1:
+    if (D_80048B8C != 0) {
+block_4:
+        func_80000900();
+        goto loop_1;
+    }
+    if (D_80048BA4 != 0) {
+        goto block_4;
+    }
+    if (D_80048B9C != 0) {
+        goto block_4;
+    }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000980.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scExecuteBlocking.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void scAddClient(SCClient *client, OSMesgQueue *mq, void **msg, u32 count) {
     SCClient *sp3C;
     s32 sp1C;
@@ -52,7 +54,7 @@ void scAddClient(SCClient *client, OSMesgQueue *mq, void **msg, u32 count) {
     sp18 = 3;
     sp1C = 0x64;
     sp3C = client;
-    func_80000980(&sp18);
+    scExecuteBlocking(&sp18);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scAddClient.s")
@@ -60,7 +62,7 @@ void scAddClient(SCClient *client, OSMesgQueue *mq, void **msg, u32 count) {
 
 #ifdef MIPS_TO_C
 
-s32 func_80000A44(void *arg0) {
+s32 scCheckGfxTaskDefault(void *arg0) {
     void *sp1C;
     s32 *var_v1;
     s32 temp_a0;
@@ -68,7 +70,7 @@ s32 func_80000A44(void *arg0) {
     s32 temp_v1;
     void *temp_v0;
 
-    if (D_80048C5C != 0) {
+    if (scNextFrameBuffer != 0) {
         return 1;
     }
     if (D_80048C60 != 0) {
@@ -78,33 +80,33 @@ s32 func_80000A44(void *arg0) {
     temp_v0 = osViGetCurrentFramebuffer();
     temp_v1 = arg0->unk70;
     if (temp_v1 != -1) {
-        temp_a0 = (&D_80048C50)[temp_v1];
+        temp_a0 = (&scFrameBuffers)[temp_v1];
         if ((temp_a0 != 0) && (temp_v0 != temp_a0) && (sp1C != temp_a0)) {
-            D_80048C5C = temp_a0;
+            scNextFrameBuffer = temp_a0;
             D_80048C60 = temp_a0;
-            D_80048C88 = 0;
-            D_80048C6C = osGetCount();
+            scRDPOutputBufferUsed = 0;
+            scTimestampSetFb = osGetCount();
             return 1;
         }
     }
-    var_v1 = &D_80048C50;
+    var_v1 = &scFrameBuffers;
 loop_10:
     temp_a0_2 = *var_v1;
     var_v1 += 4;
     if ((temp_a0_2 != 0) && (temp_v0 != temp_a0_2) && (sp1C != temp_a0_2)) {
-        D_80048C5C = temp_a0_2;
-        D_80048C88 = 0;
-        D_80048C6C = osGetCount();
+        scNextFrameBuffer = temp_a0_2;
+        scRDPOutputBufferUsed = 0;
+        scTimestampSetFb = osGetCount();
         return 1;
     }
-    if (var_v1 == &D_80048C5C) {
+    if (var_v1 == &scNextFrameBuffer) {
 block_15:
         return 0;
     }
     goto loop_10;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000A44.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scCheckGfxTaskDefault.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -117,7 +119,7 @@ s32 func_80000B64(s32 arg0) {
     if ((D_80048B8C != NULL) && (*D_80048B8C == 1)) {
         return 0;
     }
-    var_v0 = D_80048B94;
+    var_v0 = scPausedQueueHead;
     if (var_v0 != NULL) {
 loop_4:
         if (var_v0->unk0 == 1) {
@@ -130,7 +132,7 @@ loop_4:
         goto loop_4;
     }
 block_7:
-    var_v0_2 = D_80048B84;
+    var_v0_2 = scMainQueueHead;
     if (var_v0_2 != NULL) {
 loop_8:
         if (var_v0_2->unk0 == 1) {
@@ -167,12 +169,12 @@ loop_15:
 
 #ifdef MIPS_TO_C
 
-void func_80000C54(void *arg0) {
+void scMainQueueAdd(void *arg0) {
     s32 temp_v1;
     void *temp_v0;
     void *var_v0;
 
-    var_v0 = D_80048B88;
+    var_v0 = scMainQueueTail;
     if (var_v0 != NULL) {
         temp_v1 = arg0->unk4;
         if (var_v0->unk4 < temp_v1) {
@@ -190,23 +192,23 @@ loop_2:
         arg0->unkC = var_v0->unkC;
         var_v0->unkC = arg0;
     } else {
-        arg0->unkC = D_80048B84;
-        D_80048B84 = arg0;
+        arg0->unkC = scMainQueueHead;
+        scMainQueueHead = arg0;
     }
     temp_v0 = arg0->unkC;
     if (temp_v0 != NULL) {
         temp_v0->unk10 = arg0;
         return;
     }
-    D_80048B88 = arg0;
+    scMainQueueTail = arg0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000C54.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scMainQueueAdd.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-void func_80000CE4(void *arg0) {
+void scMainQueueRemove(void *arg0) {
     void *temp_v0;
     void *temp_v0_2;
 
@@ -214,27 +216,27 @@ void func_80000CE4(void *arg0) {
     if (temp_v0 != NULL) {
         temp_v0->unkC = arg0->unkC;
     } else {
-        D_80048B84 = arg0->unkC;
+        scMainQueueHead = arg0->unkC;
     }
     temp_v0_2 = arg0->unkC;
     if (temp_v0_2 != NULL) {
         temp_v0_2->unk10 = arg0->unk10;
         return;
     }
-    D_80048B88 = arg0->unk10;
+    scMainQueueTail = arg0->unk10;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000CE4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scMainQueueRemove.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-void func_80000D34(void *arg0) {
+void scPausedQueueAdd(void *arg0) {
     s32 temp_v1;
     void *temp_v0;
     void *var_v0;
 
-    var_v0 = D_80048B98;
+    var_v0 = scPausedQueueTail;
     if (var_v0 != NULL) {
         temp_v1 = arg0->unk4;
         if (var_v0->unk4 < temp_v1) {
@@ -252,23 +254,23 @@ loop_2:
         arg0->unkC = var_v0->unkC;
         var_v0->unkC = arg0;
     } else {
-        arg0->unkC = D_80048B94;
-        D_80048B94 = arg0;
+        arg0->unkC = scPausedQueueHead;
+        scPausedQueueHead = arg0;
     }
     temp_v0 = arg0->unkC;
     if (temp_v0 != NULL) {
         temp_v0->unk10 = arg0;
         return;
     }
-    D_80048B98 = arg0;
+    scPausedQueueTail = arg0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000D34.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scPausedQueueAdd.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-void func_80000DC4(void *arg0) {
+void scPausedQueueRemove(void *arg0) {
     void *temp_v0;
     void *temp_v0_2;
 
@@ -276,17 +278,17 @@ void func_80000DC4(void *arg0) {
     if (temp_v0 != NULL) {
         temp_v0->unkC = arg0->unkC;
     } else {
-        D_80048B94 = arg0->unkC;
+        scPausedQueueHead = arg0->unkC;
     }
     temp_v0_2 = arg0->unkC;
     if (temp_v0_2 != NULL) {
         temp_v0_2->unk10 = arg0->unk10;
         return;
     }
-    D_80048B98 = arg0->unk10;
+    scPausedQueueTail = arg0->unk10;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000DC4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scPausedQueueRemove.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -651,30 +653,30 @@ block_47:
 #ifdef MIPS_TO_C
 
 void func_80001774(void *arg0) {
-    if ((D_80048C48 != 0) && (D_80048CDC == 0)) {
+    if ((D_80048C48 != 0) && (scBeforeReset == 0)) {
         func_80000E9C(arg0);
     }
     if (D_80048CD0 != 0) {
         osSendMesg(D_80048CD4, 1, 0);
         if (arg0 == -1) {
-            gCurrFrameBuffer = D_80048C5C;
-            D_80048C5C = NULL;
+            gCurrFrameBuffer = scNextFrameBuffer;
+            scNextFrameBuffer = NULL;
         } else {
             goto block_12;
         }
     } else if (arg0 == -1) {
-        osViSwapBuffer(D_80048C5C);
-        if (D_80048C5C == D_80048C60) {
+        osViSwapBuffer(scNextFrameBuffer);
+        if (scNextFrameBuffer == D_80048C60) {
             D_80048C64 = 1;
         }
-        gCurrFrameBuffer = D_80048C5C;
-        D_80048C5C = NULL;
+        gCurrFrameBuffer = scNextFrameBuffer;
+        scNextFrameBuffer = NULL;
     } else {
         osViSwapBuffer(arg0);
 block_12:
         gCurrFrameBuffer = arg0;
     }
-    D_80048C74 = (osGetCount() - D_80048C6C) / 2971;
+    D_80048C74 = (osGetCount() - scTimestampSetFb) / 2971;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80001774.s")
@@ -689,7 +691,7 @@ void func_8000189C(void *arg0) {
     if (D_80048B8C != NULL) {
         osSpTaskYield();
         D_80048B8C->unk8 = 4;
-        func_80000D34(D_80048B8C);
+        scPausedQueueAdd(D_80048B8C);
         arg0->unk8 = 3;
     } else {
         temp_a0 = arg0 + 0x28;
@@ -766,10 +768,10 @@ void func_80001E20(void) {
         var_s7 = D_80048B90->unk4;
     }
     var_s4 = -1;
-    if (D_80048B94 != NULL) {
-        var_s4 = D_80048B94->unk4;
+    if (scPausedQueueHead != NULL) {
+        var_s4 = scPausedQueueHead->unk4;
     }
-    var_s0 = D_80048B84;
+    var_s0 = scMainQueueHead;
     do {
         var_v0 = -1;
         if (var_s0 != NULL) {
@@ -788,18 +790,18 @@ void func_80001E20(void) {
             switch (var_v1) {                       /* irregular */
                 case 0:
                     var_s2 = 1;
-                    osSpTaskLoad(D_80048B94 + 0x28);
-                    osSpTaskStartGo(D_80048B94 + 0x28);
-                    D_80048B94->unk8 = 2;
-                    D_80048B8C = D_80048B94;
-                    func_80000DC4(D_80048B94);
+                    osSpTaskLoad(scPausedQueueHead + 0x28);
+                    osSpTaskStartGo(scPausedQueueHead + 0x28);
+                    scPausedQueueHead->unk8 = 2;
+                    D_80048B8C = scPausedQueueHead;
+                    scPausedQueueRemove(scPausedQueueHead);
                     break;
                 case 1:
                     temp_v0 = var_s0->unk14;
                     if ((temp_v0 == NULL) || (var_s2 = 1, (temp_v0(var_s0) != 0))) {
                         var_s2 = func_800019BC(var_s0);
                         temp_s1 = var_s0->unkC;
-                        func_80000CE4(var_s0);
+                        scMainQueueRemove(var_s0);
                         var_s0 = temp_s1;
                     }
                     break;
@@ -868,7 +870,7 @@ void func_8000206C(void) {
     if ((temp_v0 != NULL) && (temp_v0->unk8 == 4)) {
         if (osSpTaskYielded(temp_v0 + 0x28) == 1) {
             D_80048B8C->unk8 = 5;
-            func_80000D34(D_80048B8C);
+            scPausedQueueAdd(D_80048B8C);
             D_80048B8C = NULL;
         } else {
             D_80048B8C->unk8 = 6;
@@ -881,12 +883,12 @@ void func_8000206C(void) {
         if ((temp_v0->unk0 == 1) && (temp_v0->unk74 == 1)) {
             osInvalDCache(&D_80048C80, 8);
             D_80048B8C->unk78 = D_80048C80.unk4;
-            temp_t2 = D_80048C88 + D_80048C80.unk4;
+            temp_t2 = scRDPOutputBufferUsed + D_80048C80.unk4;
             sp18 = D_80048C80.unk0;
             temp_t6 = ((temp_t2 + 0xF) >> 4) * 0x10;
             temp_t8 = temp_t6 >> 0x1F;
-            D_80048C88 = temp_t2;
-            D_80048C88 = temp_t6;
+            scRDPOutputBufferUsed = temp_t2;
+            scRDPOutputBufferUsed = temp_t6;
             sp1C = D_80048C80.unk4;
             if ((sp18 >= temp_t8) && ((temp_t8 < sp18) || (temp_t6 < D_80048C80.unk4))) {
                 fatal_printf(&D_8003FEA0, temp_t6, 1, &D_80048B8C);
@@ -933,12 +935,12 @@ void func_800022DC(void) {
         if (temp_v0->unk0 == 1) {
             var_a0 = temp_v0->unk6C;
             if (var_a0 != 0) {
-                if (D_80048CE4 != NULL) {
+                if (scPostProcessFunc != NULL) {
                     if (var_a0 == -1) {
-                        D_80048CE4(D_80048C5C);
+                        scPostProcessFunc(scNextFrameBuffer);
                         var_a0 = D_80048B8C->unk6C;
                     } else {
-                        D_80048CE4(var_a0);
+                        scPostProcessFunc(var_a0);
                         var_a0 = D_80048B8C->unk6C;
                     }
                 }
@@ -962,12 +964,12 @@ void func_800022DC(void) {
     if (temp_v0_2 != NULL) {
         var_a0_2 = temp_v0_2->unk6C;
         if (var_a0_2 != 0) {
-            if (D_80048CE4 != NULL) {
+            if (scPostProcessFunc != NULL) {
                 if (var_a0_2 == -1) {
-                    D_80048CE4(D_80048C5C, &D_80048B94);
+                    scPostProcessFunc(scNextFrameBuffer, &scPausedQueueHead);
                     var_a0_2 = D_80048BA4->unk6C;
                 } else {
-                    D_80048CE4(var_a0_2, &D_80048B94);
+                    scPostProcessFunc(var_a0_2, &scPausedQueueHead);
                     var_a0_2 = D_80048BA4->unk6C;
                 }
             }
@@ -981,18 +983,18 @@ void func_800022DC(void) {
         func_80001FAC();
         return;
     }
-    temp_a3 = D_80048B94;
+    temp_a3 = scPausedQueueHead;
     if ((temp_a3 != NULL) && (temp_a3->unk18 == 2)) {
         if (temp_a3->unk0 == 1) {
             var_a0_3 = temp_a3->unk6C;
             if (var_a0_3 != 0) {
-                if (D_80048CE4 != NULL) {
+                if (scPostProcessFunc != NULL) {
                     if (var_a0_3 == -1) {
-                        D_80048CE4(D_80048C5C, temp_a3);
-                        var_a0_3 = D_80048B94->unk6C;
+                        scPostProcessFunc(scNextFrameBuffer, temp_a3);
+                        var_a0_3 = scPausedQueueHead->unk6C;
                     } else {
-                        D_80048CE4(var_a0_3, temp_a3);
-                        var_a0_3 = D_80048B94->unk6C;
+                        scPostProcessFunc(var_a0_3, temp_a3);
+                        var_a0_3 = scPausedQueueHead->unk6C;
                     }
                 }
                 func_80001774(var_a0_3);
@@ -1001,7 +1003,7 @@ void func_800022DC(void) {
             if (temp_a0_3 != NULL) {
                 osSendMesg(temp_a0_3, temp_a3->unk1C, 0);
             }
-            func_80000DC4(temp_a3);
+            scPausedQueueRemove(temp_a3);
         }
         func_80001E20();
     }
@@ -1014,7 +1016,7 @@ void func_800022DC(void) {
 
 void func_8000256C(void *arg0) {
     arg0->unk8 = 1;
-    func_80000C54();
+    scMainQueueAdd();
     func_80001E20();
 }
 #else
@@ -1048,22 +1050,22 @@ void scThreadMain(void *arg) {
     void *temp_t9_2;
 
     D_80048B80 = 0;
-    D_80048B94 = 0;
-    D_80048B98 = 0;
+    scPausedQueueHead = 0;
+    scPausedQueueTail = 0;
     D_80048B90 = 0;
     D_80048B8C = 0;
-    D_80048B88 = 0;
-    D_80048B84 = 0;
+    scMainQueueTail = 0;
+    scMainQueueHead = 0;
     D_80048BA0 = 0;
     D_80048B9C = 0;
     D_80048BA4 = 0;
     D_80048C48 = 0;
     D_80048C60 = 0;
-    D_80048C5C = 0;
+    scNextFrameBuffer = 0;
     gCurrFrameBuffer = 0;
     D_80048CD0 = 0;
-    D_80048CD8 = func_80002AF8;
-    D_80048CDC = 0;
+    scPreNMIProc = scPreNMIDefault;
+    scBeforeReset = 0;
     D_80048CE0 = -1;
     switch (osTvType) {                             /* irregular */
         case 1:
@@ -1147,7 +1149,7 @@ loop_8:
     }
     if (sp84 == 2) {
         func_8000206C(sp84);
-        if ((D_80048CDC == 1) && (D_80048CE0 == -1)) {
+        if ((scBeforeReset == 1) && (D_80048CE0 == -1)) {
             D_80048CE0 = osAfterPreNMI();
         }
         goto loop_8;
@@ -1157,12 +1159,12 @@ loop_8:
         goto loop_8;
     }
     if (sp84 == 0x63) {
-        if (D_80048CD8 != NULL) {
-            D_80048CD8(sp84);
+        if (scPreNMIProc != NULL) {
+            scPreNMIProc(sp84);
         }
         goto loop_8;
     }
-    if (D_80048CDC != 0) {
+    if (scBeforeReset != 0) {
         goto loop_8;
     }
     func_8000256C(sp84);
@@ -1174,28 +1176,301 @@ loop_8:
 
 #ifdef MIPS_TO_C
 
-void func_80002AF8(void) {
-    s32 var_s0;
+void scThreadMain(void *arg) {
+    void *sp84;
+    ? sp30;
+    u8 temp_t4;
+    u8 temp_t4_2;
+    u8 temp_t5_2;
+    u8 temp_t6_2;
+    u8 temp_t7_5;
+    u8 temp_t7_6;
+    u8 temp_t9_3;
+    void *temp_t5;
+    void *temp_t6;
+    void *temp_t7;
+    void *temp_t7_2;
+    void *temp_t7_3;
+    void *temp_t7_4;
+    void *temp_t8;
+    void *temp_t8_2;
+    void *temp_t8_3;
+    void *temp_t8_4;
+    void *temp_t8_5;
+    void *temp_t9;
+    void *temp_t9_2;
 
-    D_80048CDC = 1;
-    osViSetYScale(1.0f);
+    D_80048B80 = 0;
+    scPausedQueueHead = 0;
+    scPausedQueueTail = 0;
+    D_80048B90 = 0;
+    D_80048B8C = 0;
+    scMainQueueTail = 0;
+    scMainQueueHead = 0;
+    D_80048BA0 = 0;
+    D_80048B9C = 0;
+    D_80048BA4 = 0;
+    D_80048C48 = 0;
+    D_80048C60 = 0;
+    scNextFrameBuffer = 0;
+    gCurrFrameBuffer = 0;
+    D_80048CD0 = 0;
+    scPreNMIProc = scPreNMIDefault;
+    scBeforeReset = 0;
+    D_80048CE0 = -1;
+    switch (osTvType) {                             /* irregular */
+        case 1:
+            M2C_MEMCPY_ALIGNED(&sp30, &osViModeNtscLan1, 0x48);
+            temp_t8 = &sp30 + 0x48;
+            temp_t8->unk0 = osViModeNtscLan1.fldRegs[1].vBurst.unk0;
+            temp_t8->unk4 = osViModeNtscLan1.fldRegs[1].vBurst.unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t5 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t5->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t5->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t7 = &gCurrentViMode + 0x48;
+            temp_t8_2 = &sp30 + 0x48;
+            temp_t7->unk0 = temp_t8_2->unk0;
+            temp_t7->unk4 = temp_t8_2->unk4;
+            break;
+        case 0:
+            M2C_MEMCPY_ALIGNED(&sp30, &D_8003FDC0, 0x48);
+            temp_t7_2 = &sp30 + 0x48;
+            temp_t9 = &D_8003FDC0 + 0x48;
+            temp_t7_2->unk0 = temp_t9->unk0;
+            temp_t7_2->unk4 = temp_t9->unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t9_2 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t9_2->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t9_2->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t8_3 = &gCurrentViMode + 0x48;
+            temp_t7_3 = &sp30 + 0x48;
+            temp_t8_3->unk0 = temp_t7_3->unk0;
+            temp_t8_3->unk4 = temp_t7_3->unk4;
+            break;
+        case 2:
+            M2C_MEMCPY_ALIGNED(&sp30, &osViModeMpalLan1, 0x48);
+            temp_t8_4 = &sp30 + 0x48;
+            temp_t8_4->unk0 = osViModeMpalLan1.fldRegs[1].vBurst.unk0;
+            temp_t8_4->unk4 = osViModeMpalLan1.fldRegs[1].vBurst.unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t6 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t6->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t6->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t7_4 = &gCurrentViMode + 0x48;
+            temp_t8_5 = &sp30 + 0x48;
+            temp_t7_4->unk0 = temp_t8_5->unk0;
+            temp_t7_4->unk4 = temp_t8_5->unk4;
+            break;
+    }
+    D_80048BA8.comRegs.ctrl = 0x10016;
+    D_80048BFC = 0x10016;
+    osViSetMode(&D_80048BA8);
     osViBlack(1);
-    var_s0 = 0;
-    do {
-        func_800047F0(var_s0);
-        func_800047D0(var_s0);
-        var_s0 += 1;
-    } while (var_s0 != 4);
-    D_80048CE0 = osAfterPreNMI();
+    temp_t7_5 = D_80048C7C.unk0 | 0x80;
+    temp_t6_2 = temp_t7_5 & 0xBF;
+    D_80048C7C.unk0 = temp_t7_5;
+    temp_t9_3 = temp_t6_2 & 0xDF;
+    D_80048C7C.unk0 = temp_t6_2;
+    temp_t5_2 = temp_t9_3 & 0xEF;
+    D_80048C7C.unk0 = temp_t9_3;
+    temp_t4 = temp_t5_2 | 8;
+    D_80048C7C.unk0 = temp_t5_2;
+    D_80048C7C.unk0 = temp_t4;
+    temp_t7_6 = temp_t4 & 0xFB;
+    D_80048C7C.unk0 = temp_t7_6;
+    temp_t4_2 = temp_t7_6 | 2;
+    D_80048C7C.unk0 = temp_t4_2;
+    D_80048C7C.unk0 = temp_t4_2 | 1;
+    D_80048C7C.unk1 = D_80048C7C.unk1 | 0x80;
+    osCreateMesgQueue(&scTaskMQ, &D_80048C98, 8);
+    osViSetEvent(&scTaskMQ, 1, 1);
+    osSetEventMesg(4, &scTaskMQ, 2);
+    osSetEventMesg(9, &scTaskMQ, 3);
+    osSetEventMesg(0xE, &scTaskMQ, 0x63);
+    osSendMesg(&gThreadInitializedMQ, 1, 0);
+loop_8:
+    osRecvMesg(&scTaskMQ, &sp84, 1);
+    if (sp84 == 1) {
+        func_80002014(sp84);
+        goto loop_8;
+    }
+    if (sp84 == 2) {
+        func_8000206C(sp84);
+        if ((scBeforeReset == 1) && (D_80048CE0 == -1)) {
+            D_80048CE0 = osAfterPreNMI();
+        }
+        goto loop_8;
+    }
+    if (sp84 == 3) {
+        func_800022DC(sp84);
+        goto loop_8;
+    }
+    if (sp84 == 0x63) {
+        if (scPreNMIProc != NULL) {
+            scPreNMIProc(sp84);
+        }
+        goto loop_8;
+    }
+    if (scBeforeReset != 0) {
+        goto loop_8;
+    }
+    func_8000256C(sp84);
+    goto loop_8;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80002AF8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scPreNMIDefault.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-void scSetPreNMIProc(s32 arg0) {
-    D_80048CD8 = arg0;
+void scThreadMain(void *arg) {
+    void *sp84;
+    ? sp30;
+    u8 temp_t4;
+    u8 temp_t4_2;
+    u8 temp_t5_2;
+    u8 temp_t6_2;
+    u8 temp_t7_5;
+    u8 temp_t7_6;
+    u8 temp_t9_3;
+    void *temp_t5;
+    void *temp_t6;
+    void *temp_t7;
+    void *temp_t7_2;
+    void *temp_t7_3;
+    void *temp_t7_4;
+    void *temp_t8;
+    void *temp_t8_2;
+    void *temp_t8_3;
+    void *temp_t8_4;
+    void *temp_t8_5;
+    void *temp_t9;
+    void *temp_t9_2;
+
+    D_80048B80 = 0;
+    scPausedQueueHead = 0;
+    scPausedQueueTail = 0;
+    D_80048B90 = 0;
+    D_80048B8C = 0;
+    scMainQueueTail = 0;
+    scMainQueueHead = 0;
+    D_80048BA0 = 0;
+    D_80048B9C = 0;
+    D_80048BA4 = 0;
+    D_80048C48 = 0;
+    D_80048C60 = 0;
+    scNextFrameBuffer = 0;
+    gCurrFrameBuffer = 0;
+    D_80048CD0 = 0;
+    scPreNMIProc = scPreNMIDefault;
+    scBeforeReset = 0;
+    D_80048CE0 = -1;
+    switch (osTvType) {                             /* irregular */
+        case 1:
+            M2C_MEMCPY_ALIGNED(&sp30, &osViModeNtscLan1, 0x48);
+            temp_t8 = &sp30 + 0x48;
+            temp_t8->unk0 = osViModeNtscLan1.fldRegs[1].vBurst.unk0;
+            temp_t8->unk4 = osViModeNtscLan1.fldRegs[1].vBurst.unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t5 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t5->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t5->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t7 = &gCurrentViMode + 0x48;
+            temp_t8_2 = &sp30 + 0x48;
+            temp_t7->unk0 = temp_t8_2->unk0;
+            temp_t7->unk4 = temp_t8_2->unk4;
+            break;
+        case 0:
+            M2C_MEMCPY_ALIGNED(&sp30, &D_8003FDC0, 0x48);
+            temp_t7_2 = &sp30 + 0x48;
+            temp_t9 = &D_8003FDC0 + 0x48;
+            temp_t7_2->unk0 = temp_t9->unk0;
+            temp_t7_2->unk4 = temp_t9->unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t9_2 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t9_2->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t9_2->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t8_3 = &gCurrentViMode + 0x48;
+            temp_t7_3 = &sp30 + 0x48;
+            temp_t8_3->unk0 = temp_t7_3->unk0;
+            temp_t8_3->unk4 = temp_t7_3->unk4;
+            break;
+        case 2:
+            M2C_MEMCPY_ALIGNED(&sp30, &osViModeMpalLan1, 0x48);
+            temp_t8_4 = &sp30 + 0x48;
+            temp_t8_4->unk0 = osViModeMpalLan1.fldRegs[1].vBurst.unk0;
+            temp_t8_4->unk4 = osViModeMpalLan1.fldRegs[1].vBurst.unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t6 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t6->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t6->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t7_4 = &gCurrentViMode + 0x48;
+            temp_t8_5 = &sp30 + 0x48;
+            temp_t7_4->unk0 = temp_t8_5->unk0;
+            temp_t7_4->unk4 = temp_t8_5->unk4;
+            break;
+    }
+    D_80048BA8.comRegs.ctrl = 0x10016;
+    D_80048BFC = 0x10016;
+    osViSetMode(&D_80048BA8);
+    osViBlack(1);
+    temp_t7_5 = D_80048C7C.unk0 | 0x80;
+    temp_t6_2 = temp_t7_5 & 0xBF;
+    D_80048C7C.unk0 = temp_t7_5;
+    temp_t9_3 = temp_t6_2 & 0xDF;
+    D_80048C7C.unk0 = temp_t6_2;
+    temp_t5_2 = temp_t9_3 & 0xEF;
+    D_80048C7C.unk0 = temp_t9_3;
+    temp_t4 = temp_t5_2 | 8;
+    D_80048C7C.unk0 = temp_t5_2;
+    D_80048C7C.unk0 = temp_t4;
+    temp_t7_6 = temp_t4 & 0xFB;
+    D_80048C7C.unk0 = temp_t7_6;
+    temp_t4_2 = temp_t7_6 | 2;
+    D_80048C7C.unk0 = temp_t4_2;
+    D_80048C7C.unk0 = temp_t4_2 | 1;
+    D_80048C7C.unk1 = D_80048C7C.unk1 | 0x80;
+    osCreateMesgQueue(&scTaskMQ, &D_80048C98, 8);
+    osViSetEvent(&scTaskMQ, 1, 1);
+    osSetEventMesg(4, &scTaskMQ, 2);
+    osSetEventMesg(9, &scTaskMQ, 3);
+    osSetEventMesg(0xE, &scTaskMQ, 0x63);
+    osSendMesg(&gThreadInitializedMQ, 1, 0);
+loop_8:
+    osRecvMesg(&scTaskMQ, &sp84, 1);
+    if (sp84 == 1) {
+        func_80002014(sp84);
+        goto loop_8;
+    }
+    if (sp84 == 2) {
+        func_8000206C(sp84);
+        if ((scBeforeReset == 1) && (D_80048CE0 == -1)) {
+            D_80048CE0 = osAfterPreNMI();
+        }
+        goto loop_8;
+    }
+    if (sp84 == 3) {
+        func_800022DC(sp84);
+        goto loop_8;
+    }
+    if (sp84 == 0x63) {
+        if (scPreNMIProc != NULL) {
+            scPreNMIProc(sp84);
+        }
+        goto loop_8;
+    }
+    if (scBeforeReset != 0) {
+        goto loop_8;
+    }
+    func_8000256C(sp84);
+    goto loop_8;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scSetPreNMIProc.s")
@@ -1203,8 +1478,150 @@ void scSetPreNMIProc(s32 arg0) {
 
 #ifdef MIPS_TO_C
 
-void scSetPostProcessFunc(s32 arg0) {
-    D_80048CE4 = arg0;
+void scThreadMain(void *arg) {
+    void *sp84;
+    ? sp30;
+    u8 temp_t4;
+    u8 temp_t4_2;
+    u8 temp_t5_2;
+    u8 temp_t6_2;
+    u8 temp_t7_5;
+    u8 temp_t7_6;
+    u8 temp_t9_3;
+    void *temp_t5;
+    void *temp_t6;
+    void *temp_t7;
+    void *temp_t7_2;
+    void *temp_t7_3;
+    void *temp_t7_4;
+    void *temp_t8;
+    void *temp_t8_2;
+    void *temp_t8_3;
+    void *temp_t8_4;
+    void *temp_t8_5;
+    void *temp_t9;
+    void *temp_t9_2;
+
+    D_80048B80 = 0;
+    scPausedQueueHead = 0;
+    scPausedQueueTail = 0;
+    D_80048B90 = 0;
+    D_80048B8C = 0;
+    scMainQueueTail = 0;
+    scMainQueueHead = 0;
+    D_80048BA0 = 0;
+    D_80048B9C = 0;
+    D_80048BA4 = 0;
+    D_80048C48 = 0;
+    D_80048C60 = 0;
+    scNextFrameBuffer = 0;
+    gCurrFrameBuffer = 0;
+    D_80048CD0 = 0;
+    scPreNMIProc = scPreNMIDefault;
+    scBeforeReset = 0;
+    D_80048CE0 = -1;
+    switch (osTvType) {                             /* irregular */
+        case 1:
+            M2C_MEMCPY_ALIGNED(&sp30, &osViModeNtscLan1, 0x48);
+            temp_t8 = &sp30 + 0x48;
+            temp_t8->unk0 = osViModeNtscLan1.fldRegs[1].vBurst.unk0;
+            temp_t8->unk4 = osViModeNtscLan1.fldRegs[1].vBurst.unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t5 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t5->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t5->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t7 = &gCurrentViMode + 0x48;
+            temp_t8_2 = &sp30 + 0x48;
+            temp_t7->unk0 = temp_t8_2->unk0;
+            temp_t7->unk4 = temp_t8_2->unk4;
+            break;
+        case 0:
+            M2C_MEMCPY_ALIGNED(&sp30, &D_8003FDC0, 0x48);
+            temp_t7_2 = &sp30 + 0x48;
+            temp_t9 = &D_8003FDC0 + 0x48;
+            temp_t7_2->unk0 = temp_t9->unk0;
+            temp_t7_2->unk4 = temp_t9->unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t9_2 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t9_2->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t9_2->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t8_3 = &gCurrentViMode + 0x48;
+            temp_t7_3 = &sp30 + 0x48;
+            temp_t8_3->unk0 = temp_t7_3->unk0;
+            temp_t8_3->unk4 = temp_t7_3->unk4;
+            break;
+        case 2:
+            M2C_MEMCPY_ALIGNED(&sp30, &osViModeMpalLan1, 0x48);
+            temp_t8_4 = &sp30 + 0x48;
+            temp_t8_4->unk0 = osViModeMpalLan1.fldRegs[1].vBurst.unk0;
+            temp_t8_4->unk4 = osViModeMpalLan1.fldRegs[1].vBurst.unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t6 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t6->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t6->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t7_4 = &gCurrentViMode + 0x48;
+            temp_t8_5 = &sp30 + 0x48;
+            temp_t7_4->unk0 = temp_t8_5->unk0;
+            temp_t7_4->unk4 = temp_t8_5->unk4;
+            break;
+    }
+    D_80048BA8.comRegs.ctrl = 0x10016;
+    D_80048BFC = 0x10016;
+    osViSetMode(&D_80048BA8);
+    osViBlack(1);
+    temp_t7_5 = D_80048C7C.unk0 | 0x80;
+    temp_t6_2 = temp_t7_5 & 0xBF;
+    D_80048C7C.unk0 = temp_t7_5;
+    temp_t9_3 = temp_t6_2 & 0xDF;
+    D_80048C7C.unk0 = temp_t6_2;
+    temp_t5_2 = temp_t9_3 & 0xEF;
+    D_80048C7C.unk0 = temp_t9_3;
+    temp_t4 = temp_t5_2 | 8;
+    D_80048C7C.unk0 = temp_t5_2;
+    D_80048C7C.unk0 = temp_t4;
+    temp_t7_6 = temp_t4 & 0xFB;
+    D_80048C7C.unk0 = temp_t7_6;
+    temp_t4_2 = temp_t7_6 | 2;
+    D_80048C7C.unk0 = temp_t4_2;
+    D_80048C7C.unk0 = temp_t4_2 | 1;
+    D_80048C7C.unk1 = D_80048C7C.unk1 | 0x80;
+    osCreateMesgQueue(&scTaskMQ, &D_80048C98, 8);
+    osViSetEvent(&scTaskMQ, 1, 1);
+    osSetEventMesg(4, &scTaskMQ, 2);
+    osSetEventMesg(9, &scTaskMQ, 3);
+    osSetEventMesg(0xE, &scTaskMQ, 0x63);
+    osSendMesg(&gThreadInitializedMQ, 1, 0);
+loop_8:
+    osRecvMesg(&scTaskMQ, &sp84, 1);
+    if (sp84 == 1) {
+        func_80002014(sp84);
+        goto loop_8;
+    }
+    if (sp84 == 2) {
+        func_8000206C(sp84);
+        if ((scBeforeReset == 1) && (D_80048CE0 == -1)) {
+            D_80048CE0 = osAfterPreNMI();
+        }
+        goto loop_8;
+    }
+    if (sp84 == 3) {
+        func_800022DC(sp84);
+        goto loop_8;
+    }
+    if (sp84 == 0x63) {
+        if (scPreNMIProc != NULL) {
+            scPreNMIProc(sp84);
+        }
+        goto loop_8;
+    }
+    if (scBeforeReset != 0) {
+        goto loop_8;
+    }
+    func_8000256C(sp84);
+    goto loop_8;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scSetPostProcessFunc.s")
@@ -1212,8 +1629,150 @@ void scSetPostProcessFunc(s32 arg0) {
 
 #ifdef MIPS_TO_C
 
-void scRemovePostProcessFunc(void) {
-    D_80048CE4 = 0;
+void scThreadMain(void *arg) {
+    void *sp84;
+    ? sp30;
+    u8 temp_t4;
+    u8 temp_t4_2;
+    u8 temp_t5_2;
+    u8 temp_t6_2;
+    u8 temp_t7_5;
+    u8 temp_t7_6;
+    u8 temp_t9_3;
+    void *temp_t5;
+    void *temp_t6;
+    void *temp_t7;
+    void *temp_t7_2;
+    void *temp_t7_3;
+    void *temp_t7_4;
+    void *temp_t8;
+    void *temp_t8_2;
+    void *temp_t8_3;
+    void *temp_t8_4;
+    void *temp_t8_5;
+    void *temp_t9;
+    void *temp_t9_2;
+
+    D_80048B80 = 0;
+    scPausedQueueHead = 0;
+    scPausedQueueTail = 0;
+    D_80048B90 = 0;
+    D_80048B8C = 0;
+    scMainQueueTail = 0;
+    scMainQueueHead = 0;
+    D_80048BA0 = 0;
+    D_80048B9C = 0;
+    D_80048BA4 = 0;
+    D_80048C48 = 0;
+    D_80048C60 = 0;
+    scNextFrameBuffer = 0;
+    gCurrFrameBuffer = 0;
+    D_80048CD0 = 0;
+    scPreNMIProc = scPreNMIDefault;
+    scBeforeReset = 0;
+    D_80048CE0 = -1;
+    switch (osTvType) {                             /* irregular */
+        case 1:
+            M2C_MEMCPY_ALIGNED(&sp30, &osViModeNtscLan1, 0x48);
+            temp_t8 = &sp30 + 0x48;
+            temp_t8->unk0 = osViModeNtscLan1.fldRegs[1].vBurst.unk0;
+            temp_t8->unk4 = osViModeNtscLan1.fldRegs[1].vBurst.unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t5 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t5->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t5->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t7 = &gCurrentViMode + 0x48;
+            temp_t8_2 = &sp30 + 0x48;
+            temp_t7->unk0 = temp_t8_2->unk0;
+            temp_t7->unk4 = temp_t8_2->unk4;
+            break;
+        case 0:
+            M2C_MEMCPY_ALIGNED(&sp30, &D_8003FDC0, 0x48);
+            temp_t7_2 = &sp30 + 0x48;
+            temp_t9 = &D_8003FDC0 + 0x48;
+            temp_t7_2->unk0 = temp_t9->unk0;
+            temp_t7_2->unk4 = temp_t9->unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t9_2 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t9_2->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t9_2->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t8_3 = &gCurrentViMode + 0x48;
+            temp_t7_3 = &sp30 + 0x48;
+            temp_t8_3->unk0 = temp_t7_3->unk0;
+            temp_t8_3->unk4 = temp_t7_3->unk4;
+            break;
+        case 2:
+            M2C_MEMCPY_ALIGNED(&sp30, &osViModeMpalLan1, 0x48);
+            temp_t8_4 = &sp30 + 0x48;
+            temp_t8_4->unk0 = osViModeMpalLan1.fldRegs[1].vBurst.unk0;
+            temp_t8_4->unk4 = osViModeMpalLan1.fldRegs[1].vBurst.unk4;
+            M2C_MEMCPY_ALIGNED(&D_80048BA8, &sp30, 0x48);
+            temp_t6 = &sp30 + 0x48;
+            D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t6->unk0;
+            D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t6->unk4;
+            M2C_MEMCPY_ALIGNED(&gCurrentViMode, &sp30, 0x48);
+            temp_t7_4 = &gCurrentViMode + 0x48;
+            temp_t8_5 = &sp30 + 0x48;
+            temp_t7_4->unk0 = temp_t8_5->unk0;
+            temp_t7_4->unk4 = temp_t8_5->unk4;
+            break;
+    }
+    D_80048BA8.comRegs.ctrl = 0x10016;
+    D_80048BFC = 0x10016;
+    osViSetMode(&D_80048BA8);
+    osViBlack(1);
+    temp_t7_5 = D_80048C7C.unk0 | 0x80;
+    temp_t6_2 = temp_t7_5 & 0xBF;
+    D_80048C7C.unk0 = temp_t7_5;
+    temp_t9_3 = temp_t6_2 & 0xDF;
+    D_80048C7C.unk0 = temp_t6_2;
+    temp_t5_2 = temp_t9_3 & 0xEF;
+    D_80048C7C.unk0 = temp_t9_3;
+    temp_t4 = temp_t5_2 | 8;
+    D_80048C7C.unk0 = temp_t5_2;
+    D_80048C7C.unk0 = temp_t4;
+    temp_t7_6 = temp_t4 & 0xFB;
+    D_80048C7C.unk0 = temp_t7_6;
+    temp_t4_2 = temp_t7_6 | 2;
+    D_80048C7C.unk0 = temp_t4_2;
+    D_80048C7C.unk0 = temp_t4_2 | 1;
+    D_80048C7C.unk1 = D_80048C7C.unk1 | 0x80;
+    osCreateMesgQueue(&scTaskMQ, &D_80048C98, 8);
+    osViSetEvent(&scTaskMQ, 1, 1);
+    osSetEventMesg(4, &scTaskMQ, 2);
+    osSetEventMesg(9, &scTaskMQ, 3);
+    osSetEventMesg(0xE, &scTaskMQ, 0x63);
+    osSendMesg(&gThreadInitializedMQ, 1, 0);
+loop_8:
+    osRecvMesg(&scTaskMQ, &sp84, 1);
+    if (sp84 == 1) {
+        func_80002014(sp84);
+        goto loop_8;
+    }
+    if (sp84 == 2) {
+        func_8000206C(sp84);
+        if ((scBeforeReset == 1) && (D_80048CE0 == -1)) {
+            D_80048CE0 = osAfterPreNMI();
+        }
+        goto loop_8;
+    }
+    if (sp84 == 3) {
+        func_800022DC(sp84);
+        goto loop_8;
+    }
+    if (sp84 == 0x63) {
+        if (scPreNMIProc != NULL) {
+            scPreNMIProc(sp84);
+        }
+        goto loop_8;
+    }
+    if (scBeforeReset != 0) {
+        goto loop_8;
+    }
+    func_8000256C(sp84);
+    goto loop_8;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scRemovePostProcessFunc.s")

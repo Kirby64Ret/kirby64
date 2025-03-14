@@ -115,7 +115,7 @@ extern u32 scTimeSpentGfx;
 
 void scAddClient(SCClient* client, OSMesgQueue* mq, OSMesg* msg, u32 count);
 void scExecuteBlocking(SCTaskInfo* task);
-s32 func_80000B84(SCTaskInfo* t);
+s32 func_80000B64(SCTaskInfo* t);
 void scRemovePostProcessFunc(void);
 s32 scCheckGfxTaskDefault(SCTaskGfx*);
 void scMain(void* arg);

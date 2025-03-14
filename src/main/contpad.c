@@ -455,7 +455,7 @@ void contHandleEvent(ContEvent *evt) {
                         osMotorInit(&sSIMesgQueue, &sPakDevices[channel], channel);
                         break;
                     case 1:
-                        if (!D_80048CDC) {
+                        if (!scBeforeReset) {
                             osMotorStart(&sPakDevices[channel]);
                         }
                         break;

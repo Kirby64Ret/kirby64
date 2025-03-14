@@ -118,7 +118,7 @@ u32 D_8003F870 = 0x00000019;
 
 
 // vi bss
-extern u32 D_80048C6C; // 0x80048C6C
+extern u32 scTimestampSetFb; // 0x80048C6C
 extern u32 D_80048C70; // 0x80048C70
 extern u32 D_80048C74; // 0x80048C74
 extern u32 D_80048C78; // 0x80048C78
