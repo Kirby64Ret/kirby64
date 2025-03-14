@@ -283,7 +283,7 @@ segments:
     - [0x4F700, c, ovl1/ovl1_2_2] # TODO: reassess split location
     - [0x50510, c, ovl1/ovl1_3]
     - [0x536E0, c, ovl1/ovl1_4]
-    - [0x538D0, c, ovl1/ovl1_5]
+    - [0x538D0, c, ovl1/sprite]
     - [0x56340, c, ovl1/ovl1_6]
     - [0x56F10, c, ovl1/ovl1_7]
     - [0x5B820, pad]
@@ -301,7 +301,7 @@ segments:
     - [0x7DF10, .rodata, ovl1/ovl1_2_2]
     - [0x7DFB0, .rodata, ovl1/ovl1_3]
     - [0x7E050, rodata, ovl1/level_names]
-    - [0x7E8D0, .rodata, ovl1/ovl1_5]
+    - [0x7E8D0, .rodata, ovl1/sprite]
     - [0x7E910, .rodata, ovl1/ovl1_6]
     - [0x7E950, .rodata, ovl1/ovl1_7]
     - [0x7EA50, .rodata, ovl1/ovl1_8]
