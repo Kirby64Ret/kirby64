@@ -1,4 +1,15 @@
 #include "common.h"
+#include "ovl1/save_file.h"
+
+#define SAVE_CHECKSUM_MAGIC 0x97538642
+#define SAVE_INIT_MAGIC 0x99999999
+
+void calc_header_checksum(void);
+u32 calc_save_header_checksum(void);
+extern u16 D_800ECB00[];
+extern u8 D_800D6BC8[];
+extern u8 D_800D6BC5;
+extern u32 gCutscenesWatched;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8700.s")
 
@@ -24,15 +35,28 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8E00.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/calc_save_file_checksum.s")
+s32 calc_save_file_checksum(u32 fileNum) {
+    u32 *i = &gSaveBuffer1.files[fileNum];
+    u32 *saveEnd = &gSaveBuffer1.files[fileNum].checksum;
+    u32 resultBuffer = SAVE_CHECKSUM_MAGIC;
+    while (i != saveEnd) {
+        resultBuffer += *i;
+        i++;
+    }
+    return resultBuffer;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/calc_file_checksum.s")
+void calc_file_checksum(u32 file) {
+    gSaveBuffer1.files[file].checksum = calc_save_file_checksum(file);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9008.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/calc_save_header_checksum.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/calc_header_checksum.s")
+void calc_header_checksum(void) {
+    gSaveBuffer1.header.checksum = calc_save_header_checksum();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9104.s")
 
@@ -58,13 +82,46 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9DF8.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9E4C.s")
+s32 func_800B9E4C(void) {
+    s32 v0;
+    s32 a0;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/check_cutscene_watched.s")
+    v0 = 0;
+
+    for (a0 = 0; a0 < 24; a0++) {
+        if (D_800D6BC8[a0] & 1) {
+            v0++;
+        }
+        if (D_800D6BC8[a0] & 2) {
+            v0++;
+        }
+        if (D_800D6BC8[a0] & 4) {
+            v0++;
+        }
+    }
+    if (v0 < 0x42) {
+        return 0;
+    }
+    if (D_800D6BC5 != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+s32 check_cutscene_watched(s32 scene) {
+    return (gCutscenesWatched >> scene) & 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9F64.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/set_cutscene_watched.s")
+s32 set_cutscene_watched(s32 scene, s32 fileNum) {
+    gCutscenesWatched |= (1 << scene);
+    
+    if (fileNum >= 0 && fileNum < 3) {
+        gSaveBuffer1.files[fileNum].cutscenesWatched = gCutscenesWatched;
+    }
+    return gCutscenesWatched;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9FE0.s")
 

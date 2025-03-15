@@ -285,6 +285,7 @@ segments:
     - [0x536E0, c, ovl1/ovl1_4]
     - [0x538D0, c, ovl1/sprite]
     - [0x56340, c, ovl1/ovl1_6]
+    - [0x56f00, pad]
     - [0x56F10, c, ovl1/ovl1_7]
     - [0x5B820, pad]
     - [0x5B840, c, ovl1/ovl1_8]
@@ -402,7 +403,7 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0xe40
     subsegments:
-    - [0x103BB0, asm, ovl5/ovl5_1]
+    - [0x103BB0, c, ovl5/ovl5_1]
     - [0x104170, asm, ovl5/ovl5_2]
     - [0x10C8B0, asm, ovl5/ovl5_3]
     - [0x10DD50, asm, ovl5/ovl5_4]
@@ -416,7 +417,7 @@ segments:
     - [0x1297D0, asm, ovl5/ovl5_12]
     - [0x12A510, asm, ovl5/ovl5_13]
     - [0x12D410, data, ovl5/ovl5]
-    - [0x1348C0, rodata, ovl5/ovl5_1]
+    - [0x1348C0, .rodata, ovl5/ovl5_1]
     - [0x1348F0, rodata, ovl5/ovl5_2]
     - [0x134A60, rodata, ovl5/ovl5_3]
     - [0x134B30, rodata, ovl5/ovl5_4]

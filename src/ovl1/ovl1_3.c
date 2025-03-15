@@ -1179,7 +1179,7 @@ s32 func_800A9AA8(u32 arg0, s32 arg1) {
     void *sp1C;
     s32 sp18;
     s32 temp_a2;
-    s32 temp_a3;
+    s32 size;
     s32 temp_v0;
     void *temp_v0_2;
     void *temp_v1;
@@ -1188,12 +1188,12 @@ s32 func_800A9AA8(u32 arg0, s32 arg1) {
     temp_a2 = arg0 & 0xFFFF;
     temp_v1 = temp_v0_2->unk18 + (temp_a2 * 4);
     sp18 = temp_v0_2->unk1C;
-    temp_a3 = ((temp_v1->unk4 - temp_v1->unk0) + 3) & 0xFFFFFC;
-    sp24 = temp_a3;
+    size = ((temp_v1->unk4 - temp_v1->unk0) + 3) & 0xFFFFFC;
+    sp24 = size;
     sp1C = temp_v1;
-    temp_v0 = func_800A8358(temp_a3 | arg1, temp_a2, temp_a3);
+    temp_v0 = func_800A8358(size | arg1, temp_a2, size);
     sp20 = temp_v0;
-    dma_read(temp_v1->unk0 + sp18, temp_v0, temp_a3 & 0xFFFFFC, temp_a3);
+    dma_read(temp_v1->unk0 + sp18, temp_v0, size & 0xFFFFFC);
     return temp_v0;
 }
 #else

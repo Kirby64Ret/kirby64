@@ -253,7 +253,6 @@ s32 func_800B9E4C(void) {
     return 0;
 }
 
-extern u32 gCutscenesWatched;
 s32 check_cutscene_watched(s32 arg0) {
     return (gCutscenesWatched >> arg0) & 1;
 }

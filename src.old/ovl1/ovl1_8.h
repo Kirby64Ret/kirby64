@@ -4,5 +4,6 @@
 void func_800B5064(s32 arg0);
 void func_800B4924(s32 arg0);
 void func_800B4954(s32 arg0);
+void func_800B4AB8(s32 arg0);
 
 #endif

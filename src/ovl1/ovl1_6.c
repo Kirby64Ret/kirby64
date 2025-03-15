@@ -1,4 +1,9 @@
 #include "common.h"
+#include "GObj.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1_7.h"
+#include "ovl1/ovl1_8.h"
+#include "unk_structs/D_800DE350.h"
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AE0F0.s")
 
@@ -8,10 +13,41 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AEA64.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/request_track.s")
+s32 request_track(u8 goal, s32 id, s32 minIndex, s32 maxIndex) {
+    s32 idx;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/request_track_general.s")
+    switch (goal) {
+        case 0:
+            idx = request_job(id, minIndex, maxIndex, &func_800B4924, &func_800B143C);
+            if (idx == -1) {
+                return -1;
+            }
+            break;
+        case 1:
+            return -1;
+        case 2:
+            idx = request_job(id, minIndex, maxIndex, &func_800B4AB8, &func_800B158C);
+            if (idx == -1) {
+                return -1;
+            }
+            D_800DE350[idx]->unk4C = 0;
+            gEntitiesAngleYArray[idx] = 0.0f;
+            gEntitiesAngleXArray[idx] = 0.0f;
+            break;
+    }
+    D_800E0D50[idx] = (omCurrentObj != NULL) ? omCurrentObj->objId : -1;
+    return idx;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AEC3C.s")
+// alloc object with id and index range?
+s32 request_track_general(s32 id, s32 minIndex, s32 maxIndex) {
+    return request_track(0, id, minIndex, maxIndex);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AEC70.s")
+s32 func_800AEC3C(s32 id, s32 minIndex, s32 maxIndex) {
+    return request_track(1, id, minIndex, maxIndex);
+}
+
+s32 func_800AEC70(s32 id, s32 minIndex, s32 maxIndex) {
+    return request_track(2, id, minIndex, maxIndex);
+}
