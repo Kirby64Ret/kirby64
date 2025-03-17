@@ -1,6 +1,7 @@
 #include <ultra64.h>
 #include <PR/rcp.h>
 #include "common.h"
+#include "types.h"
 #include "GObj.h"
 #include "ovl1/ovl1_6.h"
 #include "main/lbvector.h"
@@ -10,6 +11,14 @@
 extern s32 D_800D6E10;
 extern u32 D_801D02AC[][8];
 extern s32 D_80129118;
+
+s32 func_800FCD14(u32 arg0, u8 node, f32 yScale, u8 bankID, u8 entID,
+    u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
+    Vec3f *pos, Vec3f *angle, Vec3f *scale);
+
+s32 func_800FCDC0(u32 arg0, u8 bankID, u8 entID,
+    u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
+    Vec3f *pos, Vec3f *angle, Vec3f *scale);
 
 // another self-verification check
 s32 func_800F88A0(void) {
@@ -2224,21 +2233,19 @@ block_9:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC804.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void spawn_entity(void *arg1) {
-    u8 temp_v0;
-
-    temp_v0 = arg1->unk4;
-    if (!(temp_v0 & 1)) {
-        func_800FCD14(arg1->unk0, arg1->unk24, arg1->unk1, arg1->unk2, arg1->unk3, temp_v0, arg1->unk5, arg1->unk6, arg1 + 8, arg1 + 0x14, arg1 + 0x20);
-        return;
+u32 spawn_entity(u32 arg0, struct Entity *arg1) {
+    if (!(arg1->respawnFlag & 1)) {
+        return func_800FCD14(arg0, arg1->nodeNum, arg1->scale[1], arg1->bankID,
+            arg1->entityID, arg1->action, arg1->respawnFlag,
+            arg1->unk5, arg1->saveToEeprom,
+            &arg1->pos, &arg1->angle, &arg1->scale);
     }
-    func_800FCDC0(arg1->unk1, arg1->unk2, arg1->unk3, temp_v0, arg1->unk5, arg1->unk6, arg1 + 8, arg1 + 0x14, arg1 + 0x20);
+    else {
+        return func_800FCDC0(arg0, arg1->bankID, arg1->entityID, arg1->action,
+            arg1->respawnFlag, arg1->unk5, arg1->saveToEeprom,
+            &arg1->pos, &arg1->angle, &arg1->scale);
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/spawn_entity.s")
-#endif
 
 // The string literal in here is in late_rodata,
 //  but we need to decomp the rest of the file for that to automatically fall into place
@@ -2319,44 +2326,44 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, s
     gEntitiesScaleZArray[track] = tmpscale;
     gEntitiesScaleYArray[track] = tmpscale;
     gEntitiesScaleXArray[track] = tmpscale;
+
+    return track;
 }
 #else
+s32 setUpDispose(s32 arg0, u8 bankID, u8 entID,
+    u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
+    Vec3f *pos, Vec3f *angle, Vec3f *scale);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/setUpDispose.s")
 #endif
 
-#ifdef MIPS_TO_C
+s32 func_800FCD14(u32 arg0, u8 node, f32 yScale, u8 bankID, u8 entID,
+    u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
+    Vec3f *pos, Vec3f *angle, Vec3f *scale) {
+    s32 track;
 
-s32 func_800FCD14(u8 arg1, f32 arg2, u8 arg3, u8 arg4, u8 arg5, u8 arg6, u8 arg7, s16 arg8, s32 arg9, s32 argA, s32 argB) {
-    s32 temp_v0;
-
-    temp_v0 = setUpDispose(arg3, arg4, arg5, arg6, arg7, arg8, arg9, argA, argB);
-    if (temp_v0 == -1) {
+    track = setUpDispose(arg0, bankID, entID, action, respawnFlag, unk5, saveToEeprom, pos, angle, scale);
+    if (track == -1) {
         return -1;
     }
-    D_800E5F90[temp_v0] = arg1;
-    D_800E6BD0[temp_v0] = arg2;
-    D_800E8E60[temp_v0] = 0;
-    return temp_v0;
+    
+    D_800E5F90[track] = node;
+    D_800E6BD0[track] = yScale;
+    D_800E8E60[track] = 0;
+    return track;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FCD14.s")
-#endif
 
-#ifdef MIPS_TO_C
+s32 func_800FCDC0(u32 arg0, u8 bankID, u8 entID,
+    u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
+    Vec3f *pos, Vec3f *angle, Vec3f *scale) {
+    s32 track;
 
-s32 func_800FCDC0(s32 arg1, s32 arg2, s32 arg3, u8 arg4, u8 arg5, s16 arg6, s32 arg7, s32 arg8, s32 arg9) {
-    s32 temp_v0;
-
-    temp_v0 = setUpDispose(arg1 & 0xFF, arg2 & 0xFF, arg3 & 0xFF, arg4, arg5, arg6, arg7, arg8, arg9);
-    if (temp_v0 == -1) {
+    track = setUpDispose(arg0, bankID, entID, action, respawnFlag, unk5, saveToEeprom, pos, angle, scale);
+    if (track == -1) {
         return -1;
     }
-    D_800E8E60[temp_v0] = 1;
-    return temp_v0;
+    D_800E8E60[track] = 1;
+    return track;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FCDC0.s")
-#endif
 
 #ifdef MIPS_TO_C
 

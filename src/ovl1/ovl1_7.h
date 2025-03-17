@@ -11,7 +11,7 @@ void func_800AED20(f32);
 void func_800B2340(Vector *vec, struct LayoutNode *node, u32 track);
 void func_800B26D8(Vector *vec, struct LayoutNode *node, u32 track);
 void func_800B2928(Vector *vec, struct LayoutNode *node, u32 track);
-void func_800B1F68(struct GObjProcess *proc, void *(ptr)());
+void setProcessMain(struct GObjProcess *proc, void *(ptr)());
 
 void func_800B143C(struct GObj *g);
 void func_800B158C(struct GObj *);

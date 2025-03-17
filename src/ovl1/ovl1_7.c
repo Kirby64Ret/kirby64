@@ -1,51 +1,43 @@
 #include "common.h"
+#include "ovl1_3.h"
 #include "ovl1/ovl1_6.h"
 #include "GObj.h"
 #include "unk_structs/D_800DE350.h"
 #include "main/lbvector.h"
-// #include "ovl1_5.h"
 #include "main/lbmatrix.h"
-// #include "ovl0/ovl0_4.h"
+#include "buffers.h"
 
-#ifdef MIPS_TO_C
+// wherever ovl0_3 or code_CA90 is
+extern void func_8000BEF4(GObj *, f32);
+extern void func_8000BFA0(GObj *, f32);
+extern void func_8000C17C(GObj *, GObj *, f32);
+extern void func_8000C218(GObj *, GObj *, f32);
+
+extern u32 gNewEntityStackSize;
+
+// in this file
+s32 func_800B3234(f32 arg0, f32 arg1, f32 arg2);
+s32 func_800B1E08(u32 bit, GObj *gobj, s32 track);
 
 void func_800AECC0(f32 arg0) {
-    f32 *temp_v0;
-
-    temp_v0 = &D_800E09D0[omCurrentObj->objId];
-    if (arg0 != *temp_v0) {
-        *temp_v0 = arg0;
+    if (arg0 != D_800E09D0[omCurrentObj->objId]) {
+        D_800E09D0[omCurrentObj->objId] = arg0;
         func_8000BEF4(omCurrentObj, D_800E09D0[omCurrentObj->objId]);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AECC0.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800AED20(f32 arg0) {
-    f32 *temp_v0;
-
-    temp_v0 = &D_800E0B90[omCurrentObj->objId];
-    if (arg0 != *temp_v0) {
-        *temp_v0 = arg0;
+    if (arg0 != D_800E0B90[omCurrentObj->objId]) {
+        D_800E0B90[omCurrentObj->objId] = arg0;
         func_8000BFA0(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AED20.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800AED80(f32 arg0, s32 arg1) {
-    f32 *temp_v1;
-
-    temp_v1 = &D_800E09D0[arg1];
-    if (arg0 != *temp_v1) {
-        *temp_v1 = arg0;
-        func_8000BEF4(*(&D_800DE350 + (arg1 * 4)), arg0);
+#ifdef NON_MATCHING
+void func_800AED80(f32 arg0, s32 track) {
+    if (D_800E09D0[track] != arg0) {
+        D_800E09D0[track] = arg0;
+        func_8000BEF4(D_800DE350[track], arg0);
     }
 }
 #else
@@ -67,75 +59,49 @@ void func_800AEDD0(f32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AEDD0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800AEE20(s32 arg0, f32 arg1) {
-    s32 *temp_v0;
-
+void func_800AEE20(GObj *arg0, f32 arg1) {
     D_800DF310[omCurrentObj->objId] = NULL;
-    temp_v0 = &D_800DD8D0[omCurrentObj->objId];
-    *temp_v0 &= 0x3FFFFFFF;
+    D_800DD8D0[omCurrentObj->objId] &= 0x3FFFFFFF;
     func_8000C17C(omCurrentObj, arg0, arg1);
     if (arg1 != 0.0f) {
         func_8000E324(omCurrentObj);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AEE20.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800AEEB4(s32 arg0, f32 arg1) {
+void func_800AEEB4(GObj *arg0, f32 arg1) {
     func_8000C218(omCurrentObj, arg0, arg1);
     if (arg1 != 0.0f) {
         func_8000E324(omCurrentObj);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AEEB4.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800AEF0C(s32 arg0, f32 arg1, s32 *arg2) {
-    s32 *temp_v0;
-
-    D_800DF310[*arg2] = NULL;
-    temp_v0 = &D_800DD8D0[*arg2];
-    *temp_v0 &= 0x3FFFFFFF;
-    func_8000C17C(arg2, arg0, arg1, arg2);
+void func_800AEF0C(GObj *arg0, f32 arg1, GObj *arg2) {
+    D_800DF310[arg2->objId] = NULL;
+    D_800DD8D0[arg2->objId] &= 0x3FFFFFFF;
+    func_8000C17C(arg2, arg0, arg1);
     if (arg1 != 0.0f) {
         func_8000E324(arg2);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AEF0C.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800AEFA4(s32 arg0, f32 arg1, s32 arg2) {
+void func_800AEFA4(GObj *arg0, f32 arg1, GObj *arg2) {
     func_8000C218(arg2, arg0, arg1);
     if (arg1 != 0.0f) {
         func_8000E324(arg2);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AEFA4.s")
-#endif
 
 #ifdef MIPS_TO_C
-void func_800AEFFC(s32 arg0) {
+void func_800AEFFC(u16 arg0) {
     s32 *temp_v0;
     s32 temp_v1;
     s32 var_s0;
 
     var_s0 = arg0 & 0xFFFF;
 loop_1:
-    temp_v0 = &D_800DD8D0[omCurrentObj->objId];
+    temp_v0 = &;
     temp_v1 = *temp_v0;
-    if (!(temp_v1 & 0xC0000000)) {
+    while (!(D_800DD8D0[omCurrentObj->objId] & 0xC0000000)) {
 block_3:
         ohSleep(1);
         goto loop_1;
@@ -150,26 +116,15 @@ block_3:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AEFFC.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800AF09C(s32 arg0) {
-    s32 var_s0;
-
-    var_s0 = arg0 & 0xFFFF;
-loop_1:
-    if (func_800AF0F4() != 0) {
-block_3:
-        ohSleep(1);
-        goto loop_1;
-    }
-    var_s0 = (var_s0 - 1) & 0xFFFF;
-    if (var_s0 != 0) {
-        goto block_3;
+void func_800AF09C(u16 arg0) {
+    while (1) {
+        if (func_800AF0F4() != 0 || --arg0 != 0) {
+            ohSleep(1);
+            continue;
+        }
+        break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AF09C.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_800AF0F4(void) {
@@ -223,22 +178,13 @@ block_13:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AF0F4.s")
 #endif
 
-#ifdef MIPS_TO_C
-s32 func_800AF230(void) {
-    s32 *temp_v1;
-    s32 temp_a0;
-
-    temp_v1 = &D_800DD8D0[omCurrentObj->objId];
-    temp_a0 = *temp_v1;
-    if ((temp_a0 >> 0x1E) != 0) {
-        *temp_v1 = temp_a0 & 0x3FFFFFFF;
+u32 func_800AF230(void) {
+    if ((((u32)D_800DD8D0[omCurrentObj->objId]) >> 0x1E) != 0) {
+        D_800DD8D0[omCurrentObj->objId] &= 0x3FFFFFFF;
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AF230.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_800AF27C(void) {
@@ -260,30 +206,16 @@ void func_800AF27C(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AF27C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800AF314(void) {
-    GObj *temp_v1;
-    s32 *temp_v0_2;
-    struct UnkStruct8004A7C4_3C *temp_v0;
-    struct UnkStruct8004A7C4_3C *var_s0;
+    struct UnkStruct8004A7C4_3C *tmp = omCurrentObj->data;
 
-    temp_v1 = omCurrentObj;
-    var_s0 = temp_v1->unk3C;
-    if (var_s0 != NULL) {
-        do {
-            func_8000984C(var_s0);
-            temp_v0 = func_8000BE90(var_s0);
-            var_s0 = temp_v0;
-        } while (temp_v0 != NULL);
+    while (tmp != 0) {
+        func_8000984C(tmp);
+        tmp = func_8000BE90(tmp);
     }
-    D_800DF310[temp_v1->objId] = NULL;
-    temp_v0_2 = &D_800DD8D0[temp_v1->objId];
-    *temp_v0_2 &= 0x3FFFFFFF;
+    D_800DF310[omCurrentObj->objId] = 0;
+    D_800DD8D0[omCurrentObj->objId] = D_800DD8D0[omCurrentObj->objId] & 0x3FFFFFFF;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AF314.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -346,7 +278,7 @@ void func_800AF408(void) {
 
 #ifdef MIPS_TO_C
 
-void func_800AF4BC(s32 arg0, s32 arg1, s32 arg2) {
+void func_800AF4BC(GObj *arg0, s32 arg1, s32 arg2) {
     s32 sp30;
     GObj *temp_s0;
     f32 temp_f0;
@@ -382,7 +314,7 @@ void func_800AF4BC(s32 arg0, s32 arg1, s32 arg2) {
 
 #ifdef MIPS_TO_C
 
-void func_800AF618(s32 arg0, s32 **arg1, s32 *arg2) {
+void func_800AF618(GObj *arg0, s32 **arg1, s32 *arg2) {
     s32 sp30;
     s32 sp2C;
     GObj *temp_s0;
@@ -449,15 +381,11 @@ void func_800AF618(s32 arg0, s32 **arg1, s32 *arg2) {
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_800AF7A0(s32 arg0) {
-    s32 var_a0;
-
-    var_a0 = arg0;
-    if (var_a0 == 0x1869F) {
-        var_a0 = gSegment4StartArray[omCurrentObj->objId]->unk8;
+void func_800AF7A0(u32 arg0) {
+    if (arg0 == 0x1869F) {
+        arg0 = gSegment4StartArray[omCurrentObj->objId]->unk8;
     }
-    omCurrentObj->onDraw = *(&D_800D4F10 + (var_a0 * 4));
+    omCurrentObj->onDraw = D_800D4F10[arg0];
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AF7A0.s")
@@ -465,7 +393,7 @@ void func_800AF7A0(s32 arg0) {
 
 #ifdef MIPS_TO_C
 
-s32 func_800AF7EC(s32 arg0, u8 arg1, u8 arg2, u8 arg3) {
+s32 func_800AF7EC(GObj *arg0, u8 arg1, u8 arg2, u8 arg3) {
     void *temp_v0;
 
     temp_v0 = func_800AC954(omCurrentObj, arg3, func_800A8C40());
@@ -509,7 +437,7 @@ void func_800AF8F0(s32 arg1, s32 arg2) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_800AF920(s32 arg0) {
+void func_800AF920(GObj *arg0) {
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->unk4C;
@@ -536,7 +464,7 @@ void func_800AF96C(s8 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_800AF980(s32 arg0) {
+void func_800AF980(GObj *arg0) {
     D_800E0810[omCurrentObj->objId] = arg0;
     omCurrentObj->renderPriority = D_800E0810[omCurrentObj->objId];
 }
@@ -546,11 +474,8 @@ void func_800AF980(s32 arg0) {
 
 #ifdef MIPS_TO_C
 
-void func_800AF9B8(u16 arg0, s32 arg1) {
-    s32 temp_a2;
-
-    temp_a2 = arg1 & 0xFF;
-    omLinkGObjDL(omCurrentObj, *(&D_800D4F10 + (arg0 * 4)), temp_a2, D_800E0810[omCurrentObj->objId], temp_a2);
+void func_800AF9B8(u16 track, u8 link) {
+    omLinkGObjDL(omCurrentObj, D_800D4F10[track], link, D_800E0810[omCurrentObj->objId], link);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AF9B8.s")
@@ -568,7 +493,7 @@ loop_1:
 
 #ifdef MIPS_TO_C
 
-void func_800AFA54(s32 arg0) {
+void func_800AFA54(GObj *arg0) {
     func_8000FD78(omCurrentObj, arg0);
     func_800AFA88(omCurrentObj);
 }
@@ -585,7 +510,7 @@ void func_800AFA88(void *arg0) {
     arg0->unk3C->unk34 = gEntitiesAngleYArray[omCurrentObj->objId];
     arg0->unk3C->unk38 = gEntitiesAngleZArray[omCurrentObj->objId];
     arg0->unk3C->unk40 = gEntitiesScaleXArray[omCurrentObj->objId];
-    arg0->unk3C->unk44 = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->unk3C->flags = gEntitiesScaleYArray[omCurrentObj->objId];
     arg0->unk3C->unk48 = gEntitiesScaleZArray[omCurrentObj->objId];
 }
 #else
@@ -594,7 +519,7 @@ void func_800AFA88(void *arg0) {
 
 #ifdef MIPS_TO_C
 
-void func_800AFBB4(s32 arg0, GObj *arg1) {
+void func_800AFBB4(GObj *arg0, GObj *arg1) {
     if (arg0 == 0) {
         arg1->flags |= 1;
     } else {
@@ -642,188 +567,95 @@ void func_800AFC54(s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFC54.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800AFC88(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
-    if (arg0 != 65535.0f) {
-        D_800E2090[omCurrentObj->objId] = arg0;
-        temp_v1 = omCurrentObj->objId;
-        gEntitiesNextPosXArray[temp_v1] = D_800E2090[temp_v1];
+void func_800AFC88(f32 x, f32 y, f32 z, s32 sleep) {
+    if (x != 65535.0f) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_800E2090[omCurrentObj->objId] = x;
     }
-    if (arg1 != 65535.0f) {
-        D_800E2250[omCurrentObj->objId] = arg1;
-        temp_v1_2 = omCurrentObj->objId;
-        gEntitiesNextPosYArray[temp_v1_2] = D_800E2250[temp_v1_2];
+    if (y != 65535.0f) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = D_800E2250[omCurrentObj->objId] = y;
     }
-    if (arg2 != 65535.0f) {
-        D_800E2410[omCurrentObj->objId] = arg2;
-        temp_v1_3 = omCurrentObj->objId;
-        gEntitiesNextPosZArray[temp_v1_3] = D_800E2410[temp_v1_3];
+    if (z != 65535.0f) {
+        gEntitiesNextPosZArray[omCurrentObj->objId] = D_800E2410[omCurrentObj->objId] = z;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFC88.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800AFDA0(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
-    if (arg0 != 65535.0f) {
-        D_800E4A90[omCurrentObj->objId] = arg0;
-        temp_v1 = omCurrentObj->objId;
-        gEntitiesAngleXArray[temp_v1] = D_800E4A90[temp_v1];
+void func_800AFDA0(f32 x, f32 y, f32 z, s32 sleep) {
+    if (x != 65535.0f) {
+        gEntitiesAngleXArray[omCurrentObj->objId] = D_800E4A90[omCurrentObj->objId] = x;
     }
-    if (arg1 != 65535.0f) {
-        D_800E4C50[omCurrentObj->objId] = arg1;
-        temp_v1_2 = omCurrentObj->objId;
-        gEntitiesAngleYArray[temp_v1_2] = D_800E4C50[temp_v1_2];
+    if (y != 65535.0f) {
+        gEntitiesAngleYArray[omCurrentObj->objId] = D_800E4C50[omCurrentObj->objId] = y;
     }
-    if (arg2 != 65535.0f) {
-        D_800E4E10[omCurrentObj->objId] = arg2;
-        temp_v1_3 = omCurrentObj->objId;
-        gEntitiesAngleZArray[temp_v1_3] = D_800E4E10[temp_v1_3];
+    if (z != 65535.0f) {
+        gEntitiesAngleZArray[omCurrentObj->objId] = D_800E4E10[omCurrentObj->objId] = z;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFDA0.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800AFEB8(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
-    if (arg0 != 65535.0f) {
-        D_800E4FD0[omCurrentObj->objId] = arg0;
-        temp_v1 = omCurrentObj->objId;
-        gEntitiesScaleXArray[temp_v1] = D_800E4FD0[temp_v1];
+void func_800AFEB8(f32 x, f32 y, f32 z, s32 sleep) {
+    if (x != 65535.0f) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = D_800E4FD0[omCurrentObj->objId] = x;
     }
-    if (arg1 != 65535.0f) {
-        D_800E5190[omCurrentObj->objId] = arg1;
-        temp_v1_2 = omCurrentObj->objId;
-        gEntitiesScaleYArray[temp_v1_2] = D_800E5190[temp_v1_2];
+    if (y != 65535.0f) {
+        gEntitiesScaleYArray[omCurrentObj->objId] = D_800E5190[omCurrentObj->objId] = y;
     }
-    if (arg2 != 65535.0f) {
-        D_800E5350[omCurrentObj->objId] = arg2;
-        temp_v1_3 = omCurrentObj->objId;
-        gEntitiesScaleZArray[temp_v1_3] = D_800E5350[temp_v1_3];
+    if (z != 65535.0f) {
+        gEntitiesScaleZArray[omCurrentObj->objId] = D_800E5350[omCurrentObj->objId] = z;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFEB8.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800AFFD0(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
-    f32 *temp_a0;
-    f32 *temp_a0_2;
-    f32 *temp_a0_3;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
-    if (arg0 != 65535.0f) {
-        temp_a0 = &D_800E2090[omCurrentObj->objId];
-        *temp_a0 += arg0;
-        temp_v1 = omCurrentObj->objId;
-        gEntitiesNextPosXArray[temp_v1] = D_800E2090[temp_v1];
+void func_800AFFD0(f32 x, f32 y, f32 z, s32 sleep) {
+    if (x != 65535.0f) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_800E2090[omCurrentObj->objId] += x;
     }
-    if (arg1 != 65535.0f) {
-        temp_a0_2 = &D_800E2250[omCurrentObj->objId];
-        *temp_a0_2 += arg1;
-        temp_v1_2 = omCurrentObj->objId;
-        gEntitiesNextPosYArray[temp_v1_2] = D_800E2250[temp_v1_2];
+    if (y != 65535.0f) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = D_800E2250[omCurrentObj->objId] += y;
     }
-    if (arg2 != 65535.0f) {
-        temp_a0_3 = &D_800E2410[omCurrentObj->objId];
-        *temp_a0_3 += arg2;
-        temp_v1_3 = omCurrentObj->objId;
-        gEntitiesNextPosZArray[temp_v1_3] = D_800E2410[temp_v1_3];
+    if (z != 65535.0f) {
+        gEntitiesNextPosZArray[omCurrentObj->objId] = D_800E2410[omCurrentObj->objId] += z;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFFD0.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800B0100(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
-    f32 *temp_v0;
-    f32 *temp_v0_2;
-    f32 *temp_v0_3;
-
-    if (arg0 != 65535.0f) {
-        temp_v0 = &gEntitiesAngleXArray[omCurrentObj->objId];
-        *temp_v0 += arg0;
+void func_800B0100(f32 x, f32 y, f32 z, s32 sleep) {
+    if (x != 65535.0f) {
+        gEntitiesAngleXArray[omCurrentObj->objId] += x;
     }
-    if (arg1 != 65535.0f) {
-        temp_v0_2 = &gEntitiesAngleYArray[omCurrentObj->objId];
-        *temp_v0_2 += arg1;
+    if (y != 65535.0f) {
+        gEntitiesAngleYArray[omCurrentObj->objId] += y;
     }
-    if (arg2 != 65535.0f) {
-        temp_v0_3 = &gEntitiesAngleZArray[omCurrentObj->objId];
-        *temp_v0_3 += arg2;
+    if (z != 65535.0f) {
+        gEntitiesAngleZArray[omCurrentObj->objId] += z;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B0100.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800B01DC(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
-    f32 *temp_a0;
-    f32 *temp_a0_2;
-    f32 *temp_a0_3;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
-    if (arg0 != 65535.0f) {
-        temp_a0 = &D_800E4FD0[omCurrentObj->objId];
-        *temp_a0 += arg0;
-        temp_v1 = omCurrentObj->objId;
-        gEntitiesScaleXArray[temp_v1] = D_800E4FD0[temp_v1];
+void func_800B01DC(f32 x, f32 y, f32 z, s32 sleep) {
+    if (x != 65535.0f) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = D_800E4FD0[omCurrentObj->objId] += x;
     }
-    if (arg1 != 65535.0f) {
-        temp_a0_2 = &D_800E5190[omCurrentObj->objId];
-        *temp_a0_2 += arg1;
-        temp_v1_2 = omCurrentObj->objId;
-        gEntitiesScaleYArray[temp_v1_2] = D_800E5190[temp_v1_2];
+    if (y != 65535.0f) {
+        gEntitiesScaleYArray[omCurrentObj->objId] = D_800E5190[omCurrentObj->objId] += y;
     }
-    if (arg2 != 65535.0f) {
-        temp_a0_3 = &D_800E5350[omCurrentObj->objId];
-        *temp_a0_3 += arg2;
-        temp_v1_3 = omCurrentObj->objId;
-        gEntitiesScaleZArray[temp_v1_3] = D_800E5350[temp_v1_3];
+    if (z != 65535.0f) {
+        gEntitiesScaleZArray[omCurrentObj->objId] = D_800E5350[omCurrentObj->objId] += z;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B01DC.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_800B030C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, s32 arg9) {
@@ -918,7 +750,7 @@ void func_800B04D4(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f
 #endif
 
 #ifdef MIPS_TO_C
-void func_800B07B4(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_800B07B4(GObj *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_a1;
     s32 temp_a2;
     s32 temp_v0;
@@ -1203,8 +1035,8 @@ void func_800B0F28(struct LayoutNode *arg0, s32 arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B0F28.s")
 #endif
 
+// dispatch D_800DF310
 #ifdef MIPS_TO_C
-
 void func_800B113C(s32 arg0, s32 arg1, f32 arg2) {
     f32 sp24;
     f32 sp18;
@@ -1267,7 +1099,7 @@ void func_800B113C(s32 arg0, s32 arg1, f32 arg2) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_800B1378(s32 arg0, s32 arg1, f32 arg2) {
+void func_800B1378(GObj *arg0, s32 arg1, f32 arg2) {
     s32 *temp_v0;
     s32 *temp_v0_3;
     void (*temp_v0_2)(s32, s32, f32);
@@ -1292,7 +1124,7 @@ void func_800B1378(s32 arg0, s32 arg1, f32 arg2) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_800B1434(s32 arg0) {
+void func_800B1434(GObj *arg0) {
 
 }
 #else
@@ -1416,25 +1248,21 @@ void func_800B1814(void *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_800B1870(s32 arg0) {
+void func_800B1870(GObj *arg0) {
 
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1870.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800B1878(s32 arg0) {
-loop_1:
-    ohSleep(0x7FFFFFFF);
-    goto loop_1;
+void sleep_forever(GObj *arg0) {
+    while (1) {
+        ohSleep(0x7FFFFFFF);
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1878.s")
-#endif
 
 #ifdef MIPS_TO_C
-void func_800B18B4(s32 arg0) {
+void func_800B18B4(GObj *arg0) {
     u32 *temp_v1;
     u32 temp_a0;
 
@@ -1451,37 +1279,29 @@ void func_800B18B4(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B18B4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800B1900(u16 track) {
-    GObj *sp1C;
-    u16 temp_a0;
+    GObj *gobj;
 
-    temp_a0 = track & 0xFFFF;
-    track = temp_a0;
-    sp1C = *(&D_800DE350 + (temp_a0 * 4));
-    func_800A9D64(temp_a0);
+    gobj = D_800DE350[track];
+    func_800A9D64(track);
     func_800A99E4(track);
-    if (sp1C == omCurrentObj) {
-        func_800AE138(omCurrentObj->objId, sp1C);
+    if (gobj == omCurrentObj) {
+        initTrack(omCurrentObj->objId);
         if (omCurrentProc->kind == 0) {
             omGDeleteObj(omCurrentObj);
             ohSleep(1);
-            return;
+        } else {
+            omGDeleteObj(omCurrentObj);
         }
-        omGDeleteObj(omCurrentObj);
-        return;
+    } else {
+        initTrack(gobj->objId);
+        omGDeleteObj(gobj);
     }
-    func_800AE138(sp1C->objId, sp1C);
-    omGDeleteObj(sp1C);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1900.s")
-#endif
 
 #ifdef MIPS_TO_C
 
-void func_800B19B8(s32 arg0, s32 arg1) {
+void func_800B19B8(GObj *arg0, s32 arg1) {
     s32 *sp18;
     s32 *temp_v0;
     s32 temp_a2;
@@ -1500,7 +1320,7 @@ void func_800B19B8(s32 arg0, s32 arg1) {
 
 #ifdef MIPS_TO_C
 
-void func_800B19F4(s32 arg0, s32 arg1) {
+void func_800B19F4(GObj *arg0, s32 arg1) {
     s32 *temp_v1;
     s32 temp_a2;
 
@@ -1517,7 +1337,7 @@ void func_800B19F4(s32 arg0, s32 arg1) {
 
 #ifdef MIPS_TO_C
 
-void func_800B1A4C(s32 arg0, s32 arg1) {
+void func_800B1A4C(GObj *arg0, s32 arg1) {
     s32 *temp_v0;
     s32 *var_s2;
     s32 temp_v1;
@@ -1549,7 +1369,7 @@ void func_800B1A4C(s32 arg0, s32 arg1) {
 
 #ifdef MIPS_TO_C
 
-void func_800B1B28(s32 arg0) {
+void func_800B1B28(GObj *arg0) {
     s32 *temp_v0;
     s32 *var_s1;
     s32 temp_v1;
@@ -1576,7 +1396,7 @@ void func_800B1B28(s32 arg0) {
 
 #ifdef MIPS_TO_C
 
-void func_800B1BF0(s32 arg0, s32 arg1) {
+void func_800B1BF0(GObj *arg0, s32 arg1) {
     s32 *temp_v1;
     s32 *temp_v1_2;
 
@@ -1594,48 +1414,32 @@ void func_800B1BF0(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1BF0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800B1C7C(void *arg0) {
-    s32 *sp2C;
-    s32 *temp_v0;
-    s32 temp_a1;
-    s32 temp_s0;
-    s32 temp_v0_2;
-    s32 temp_v1;
-
-    temp_s0 = arg0->unk0;
-    temp_v0 = &D_800DD8D0[temp_s0];
-    temp_v1 = *temp_v0;
-    temp_a1 = temp_v1 & 0x80;
-    if ((temp_a1 != 0) && !(temp_v1 & 0x8000)) {
-        sp2C = temp_v0;
-        ohGObjPause(temp_a1);
-        arg0->unk44 = arg0->unk44 | 1;
-        *temp_v0 |= 0x8000;
-        return;
-    }
-    if ((temp_a1 == 0) && (temp_v1 & 0x8000)) {
-        sp2C = temp_v0;
-        ohGObjResume(arg0, temp_a1);
-        arg0->unk44 = arg0->unk44 & ~1;
-        *temp_v0 ^= 0x8000;
-        return;
-    }
-    func_800B1E08(1, NULL, temp_s0);
-    func_800B1E08(2, gEntityGObjProcessArray[temp_s0], temp_s0);
-    func_800B1E08(4, NULL, temp_s0);
-    func_800B1E08(8, NULL, temp_s0);
-    func_800B1E08(0x10, gEntityGObjProcessArray3[temp_s0], temp_s0);
-    func_800B1E08(0x20, gEntityGObjProcessArray4[temp_s0], temp_s0);
-    temp_v0_2 = func_800B1E08(0x40, gEntityGObjProcessArray5[temp_s0], temp_s0);
-    switch (temp_v0_2) {                            /* irregular */
-        case 1:
-            arg0->unk44 = arg0->unk44 | 1;
-            return;
-        case 2:
-            arg0->unk44 = arg0->unk44 & ~1;
-            return;
+#ifdef NON_MATCHING
+void func_800B1C7C(GObj *gobj) {
+    u32 flag = D_800DD8D0[gobj->objId];
+    if ((flag & 0x80) && !(flag & 0x8000)) {
+        ohGObjPause(gobj);
+        gobj->flags |= 1;
+        D_800DD8D0[gobj->objId] |= 0x8000;
+    } else if (!(flag & 0x80) && (flag & 0x8000)) {
+        ohGObjResume(gobj);
+        gobj->flags &= ~1;
+        D_800DD8D0[gobj->objId] ^= 0x8000;
+    } else {
+        func_800B1E08(0x01,                                  NULL, gobj->objId);
+        func_800B1E08(0x02,  gEntityGObjProcessArray[gobj->objId], gobj->objId);
+        func_800B1E08(0x04,                                  NULL, gobj->objId);
+        func_800B1E08(0x08,                                  NULL, gobj->objId);
+        func_800B1E08(0x10, gEntityGObjProcessArray3[gobj->objId], gobj->objId);
+        func_800B1E08(0x20, gEntityGObjProcessArray4[gobj->objId], gobj->objId);
+        switch (func_800B1E08(0x40, gEntityGObjProcessArray5[gobj->objId], gobj->objId)) {
+            case 1:
+                gobj->flags |= 1;
+                break;
+            case 2:
+                gobj->flags &= ~1;
+                break;
+        }
     }
 }
 #else
@@ -1643,8 +1447,7 @@ void func_800B1C7C(void *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 func_800B1E08(s32 arg0, s32 arg1, s32 arg2) {
+s32 func_800B1E08(s32 bit, GObj *gobj, s32 track) {
     s32 *sp28;
     s32 sp1C;
     s32 *temp_v1;
@@ -1654,26 +1457,26 @@ s32 func_800B1E08(s32 arg0, s32 arg1, s32 arg2) {
     s32 var_t0;
     s32 var_v0;
 
-    temp_v1 = &D_800DD8D0[arg2];
+    temp_v1 = &D_800DD8D0[track];
     var_v0 = *temp_v1;
-    temp_a3 = var_v0 & arg0;
+    temp_a3 = var_v0 & bit;
     var_t0 = 0;
-    if ((temp_a3 != 0) && (temp_a1 = arg0 << 8, ((var_v0 & temp_a1) == 0))) {
-        if (arg1 != 0) {
+    if ((temp_a3 != 0) && (temp_a1 = bit << 8, ((var_v0 & temp_a1) == 0))) {
+        if (gobj != 0) {
             sp28 = temp_v1;
             sp1C = temp_a1;
-            ohPause(arg1, temp_a1, temp_a3);
+            ohPause(gobj, temp_a1, temp_a3);
             var_v0 = *temp_v1;
         }
         *temp_v1 = var_v0 | temp_a1;
         var_t0 = 1;
     } else {
-        temp_a1_2 = arg0 << 8;
+        temp_a1_2 = bit << 8;
         if ((temp_a3 == 0) && (var_v0 & temp_a1_2)) {
-            if (arg1 != 0) {
+            if (gobj != 0) {
                 sp28 = temp_v1;
                 sp1C = temp_a1_2;
-                ohResume(arg1, temp_a1_2, temp_a3);
+                ohResume(gobj, temp_a1_2, temp_a3);
                 var_v0 = *temp_v1;
             }
             *temp_v1 = var_v0 ^ temp_a1_2;
@@ -1686,39 +1489,26 @@ s32 func_800B1E08(s32 arg0, s32 arg1, s32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1E08.s")
 #endif
 
-#ifdef MIPS_TO_C
+void assign_new_process_entry(struct GObjProcess *ts, void (*func)(struct GObj *)) {
+    struct GObjThread *gthread;
+    s32 id;
 
-void assign_new_process_entry(void *arg0, void (*arg1)(void *)) {
-    void *sp2C;
-    s32 sp28;
-    OSThread *sp24;
-    OSThread *temp_a0;
-    void *temp_t5;
-    void *temp_v0;
-
-    temp_v0 = arg0->unk1C;
-    sp28 = temp_v0->unk1C;
-    arg0->unk20 = arg1;
-    temp_a0 = temp_v0 + 8;
-    sp24 = temp_a0;
-    sp2C = temp_v0;
-    osDestroyThread(temp_a0);
-    osCreateThread(temp_a0, sp28, arg1, arg0->unk18, temp_v0->unk1B8 + ((gNewEntityStackSize >> 3) * 8), 0x33);
-    temp_t5 = temp_v0->unk1B8;
-    temp_t5->unk38 = 0;
-    temp_t5->unk3C = 0xFEDCBA98;
+    gthread = ts->payload.thread;
+    id = gthread->thread.id;
+    ts->entryPoint = func;
+    osDestroyThread(&gthread->thread);
+    osCreateThread(&gthread->thread,
+                   id,
+                   func,
+                   ts->gobj,
+                   &gthread->objStack->stack[gNewEntityStackSize / 8],
+                   0x33);
+    gthread->objStack->stack[7] = STACK_TOP_MAGIC;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/assign_new_process_entry.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800B1F68(GObjProcess *proc, ? ptr) {
-    proc->payload.thread = ptr;
+void setProcessMain(GObjProcess *proc, void (*cb)(GObj *)) {
+    proc->payload.callback = cb;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1F68.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_800B1F70(void *arg0, s32 arg1) {
@@ -1755,7 +1545,7 @@ loop_4:
 
 #ifdef MIPS_TO_C
 
-void func_800B1FD0(s32 arg0, s32 arg1, ? arg2, s32 arg3, f32 arg4) {
+void func_800B1FD0(GObj *arg0, s32 arg1, ? arg2, s32 arg3, f32 arg4) {
     s32 var_s1;
     s32 var_s2;
     s32 var_s3;
@@ -2179,7 +1969,7 @@ void func_800B2AD4(void *arg0, struct UnkStruct8004A7C4_3C *arg1, u32 arg2) {
 
 #ifdef MIPS_TO_C
 
-void func_800B2F54(s32 arg0, ? arg2) {
+void func_800B2F54(GObj *arg0, ? arg2) {
     func_8000FE2C(arg2, *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)), arg2);
 }
 #else
@@ -2188,7 +1978,7 @@ void func_800B2F54(s32 arg0, ? arg2) {
 
 #ifdef MIPS_TO_C
 
-void func_800B2F90(s32 arg0, ? arg2) {
+void func_800B2F90(GObj *arg0, ? arg2) {
     void *temp_s0;
 
     temp_s0 = *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4));
@@ -2205,7 +1995,7 @@ loop_1:
 
 #ifdef MIPS_TO_C
 
-void func_800B3008(s32 arg0) {
+void func_800B3008(GObj *arg0) {
     void *temp_s0;
 
     temp_s0 = *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4));
@@ -2221,7 +2011,7 @@ loop_1:
 
 #ifdef MIPS_TO_C
 
-void func_800B3070(s32 arg0, f32 arg1) {
+void func_800B3070(GObj *arg0, f32 arg1) {
     (*(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)))->unk78 = arg1;
 }
 #else
@@ -2230,7 +2020,7 @@ void func_800B3070(s32 arg0, f32 arg1) {
 
 #ifdef MIPS_TO_C
 
-void func_800B3094(s32 arg0) {
+void func_800B3094(GObj *arg0) {
     (*(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)))->unk74 = -3.4028235e38f;
 }
 #else
@@ -2275,39 +2065,23 @@ s32 func_800B30BC(f32 arg0, f32 arg1, ? arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B30BC.s")
 #endif
 
-#ifdef MIPS_TO_C
 s32 func_800B3158(void) {
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    if (func_800B3234(gEntitiesNextPosXArray[temp_v0], gEntitiesNextPosYArray[temp_v0], gEntitiesNextPosZArray[temp_v0]) != 0) {
+    if (func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]) != 0) {
         return 0;
     }
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B3158.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800B31B4(void) {
-    void *sp18;
-    u32 temp_v0;
-    void *temp_a0;
+    s32 pad;
+    struct GObj *gobj = D_800DE350[omCurrentObj->objId];
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a0 = *(&D_800DE350 + (temp_v0 * 4));
-    sp18 = temp_a0;
-    if (func_800B3234(gEntitiesNextPosXArray[temp_v0], gEntitiesNextPosYArray[temp_v0], gEntitiesNextPosZArray[temp_v0]) != 0) {
-        temp_a0->unk48 = 0;
-        func_8019B7D8_ovl7(temp_a0);
-        func_8019D8A0(omCurrentObj->unk2);
+    if (func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]) != 0) {
+        gobj->unk48 = NULL;
+        func_8019B7D8_ovl7(gobj);
+        func_8019D8A0((u16) omCurrentObj->objId);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B31B4.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2351,39 +2125,26 @@ s32 func_800B3234(f32 arg0, f32 arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B3234.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_800B33F4(void) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
     D_800E64D0[omCurrentObj->objId] = 0.0f;
-    temp_v1 = omCurrentObj->objId;
-    temp_f0 = D_800E64D0[temp_v1];
-    D_800E33D0[temp_v1] = temp_f0;
-    D_800E3210[omCurrentObj->objId] = temp_f0;
-    D_800E3050[omCurrentObj->objId] = temp_f0;
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    temp_v1_2 = omCurrentObj->objId;
-    temp_f0_2 = D_800E6690[temp_v1_2];
-    D_800E3910[temp_v1_2] = temp_f0_2;
-    D_800E3750[omCurrentObj->objId] = temp_f0_2;
-    D_800E3590[omCurrentObj->objId] = temp_f0_2;
-    D_800E6850[omCurrentObj->objId] = 65535.0f;
-    temp_v1_3 = omCurrentObj->objId;
-    temp_f0_3 = D_800E6850[temp_v1_3];
-    D_800E3E50[temp_v1_3] = temp_f0_3;
-    D_800E3C90[omCurrentObj->objId] = temp_f0_3;
-    D_800E3AD0[omCurrentObj->objId] = temp_f0_3;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B33F4.s")
-#endif
 
-// #ifdef MIPS_TO_C
+    D_800E3050[omCurrentObj->objId] =
+    D_800E3210[omCurrentObj->objId] =
+    D_800E33D0[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId];
+
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+
+    D_800E3590[omCurrentObj->objId] =
+    D_800E3750[omCurrentObj->objId] =
+    D_800E3910[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+
+    D_800E3AD0[omCurrentObj->objId] =
+    D_800E3C90[omCurrentObj->objId] =
+    D_800E3E50[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId];
+}
+
 void func_800B3520(void) {
     f32 temp_f0;
 
@@ -2395,6 +2156,3 @@ void func_800B3520(void) {
     D_800E6850[omCurrentObj->objId] =  65535.0f;
     D_800E3C90[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId];
 }
-// #else
-// #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B3520.s")
-// #endif

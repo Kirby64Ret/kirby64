@@ -900,3 +900,8 @@ viSetFlags = 0x80007998; // type:func
 viSetCFB = 0x80007944; // type:func
 viCFBFmt = 0x8004A504; 
 viPackRGBA = 0x800078F0; // type:func
+
+
+setProcessMain = 0x800B1F68; // type:func
+initTrack = 0x800AE138; // type:func
+sleep_forever = 0x800B1878; // type:func

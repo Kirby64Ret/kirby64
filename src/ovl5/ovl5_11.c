@@ -103,7 +103,7 @@ void func_80180AE0_ovl5(s32 arg0) {
     SPObj *spobj;
 
     D_800DEF90[omCurrentObj->objId] = NULL;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
     omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
     func_8015C740_ovl5(arg0, &D_80189DE8_ovl5);
     spobj = func_8015C740_ovl5(arg0, &D_80189DE8_ovl5);
@@ -277,7 +277,7 @@ void func_80181AEC_ovl5(GObj *o) {
     u8 j;
 
     D_800DEF90[omCurrentObj->objId] = NULL;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
     omLinkGObjDL(o, &func_800AD1A0, 0xA, 0x80000000, 0xA);
     j = D_8018EDE1_ovl5;
     i = D_8018EDE4_ovl5; i++;
@@ -297,7 +297,7 @@ void func_80181C00_ovl5(GObj *o) {
     u8 j;
 
     D_800DEF90[omCurrentObj->objId] = NULL;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
     omLinkGObjDL(o, &func_800AD1A0, 10, 0x80000000, 10);
     j = D_8018EDE1_ovl5;
     i = D_8018EDE8_ovl5; i++;
@@ -319,7 +319,7 @@ void func_80181D00_ovl5(GObj *arg0) {
     f32 *pos2D;
 
     D_800DEF90[omCurrentObj->objId] = NULL;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
     omLinkGObjDL(arg0, &func_800AD1A0, 10, 0x80000000, 10);
     spobj = func_8015C740_ovl5(arg0, &D_8018A0C0_ovl5);
     i = D_8018EDE1_ovl5; i++;

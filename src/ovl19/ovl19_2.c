@@ -360,7 +360,7 @@ void func_80223200_ovl19(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_80228C44_ovl19.s")
 
 void func_80228EF4_ovl19(GObj *arg0) {
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &func_800B1434);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], &func_800B1434);
     D_800DEF90[omCurrentObj->objId] = func_800B4954;
     D_800E5F90[omCurrentObj->objId] = D_800E5F90[D_800E0D50[omCurrentObj->objId]];
     D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[D_800E0D50[omCurrentObj->objId]];

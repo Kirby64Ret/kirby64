@@ -7,7 +7,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AE0F0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AE138.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/initTrack.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/request_job.s")
 

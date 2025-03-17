@@ -67,7 +67,7 @@ void func_801DB678_ovl10(GObj *obj) {
 void func_801DB770_ovl10(GObj *obj) {
     func_800A9864(0x100E2, 0x1869F, 0x10);
     if (D_800EC2E0[omCurrentObj->objId].as_u32 == 0) {
-        func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+        setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
         obj->data->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
         obj->data->posVec.y = gEntitiesNextPosYArray[omCurrentObj->objId];
         obj->data->posVec.z = gEntitiesNextPosZArray[omCurrentObj->objId];
@@ -95,7 +95,7 @@ void func_801DB770_ovl10(GObj *obj) {
 
 void func_801DB9DC_ovl10(GObj *obj) {
     func_800A9864(0x100E3, 0x1869F, 0x10);
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
     obj->data->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
     obj->data->posVec.y = gEntitiesNextPosYArray[omCurrentObj->objId];
     obj->data->posVec.z = gEntitiesNextPosZArray[omCurrentObj->objId];
