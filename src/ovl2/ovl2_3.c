@@ -2476,6 +2476,7 @@ void func_800FD088(void) {
         } while (var_s2 < D_80129124);
     }
 }
+
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FD088.s")
 #endif

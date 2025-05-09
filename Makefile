@@ -18,6 +18,11 @@ ifeq (VERBOSE, 1)
 	V=
 endif
 
+PROGRESS := 0
+ifeq ($(PROGRESS), 1)
+	DEFS += -DGET_PROGRESS
+endif
+
 ##################### Compiler Options #######################
 IRIX_ROOT := tools/ido7.1
 CC := tools/ido-7.1recomp/cc
@@ -129,7 +134,7 @@ ACTOR_FILES := $(foreach file,$(DATA_FILES),$(BUILD_DIR)/$(file:.c=.o))
 
 # FLAGS
 OPT_FLAGS := -O2
-DEFS := -D_LANGUAGE_C -D_FINALROM
+DEFS += -D_LANGUAGE_C -D_FINALROM
 INCLUDE_CFLAGS := -I include -Ilibreultra/include/2.0I -I $(BUILD_DIR) -I $(BUILD_DIR)/include -I $(BUILD_DIR)/assets -I src -Isrc.old -I .
 TARGET_CFLAGS := -nostdinc -I include/libc -DTARGET_N64 -DF3DEX_GBI_2
 CFLAGS = -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed $(DEFS) $(OPT_FLAGS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) $(MIPSISET)
@@ -254,7 +259,9 @@ $(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).elf
 	@python3 tools/progress2.py -m
 
 
+ifeq ($(PROGRESS), 0)
 $(GLOBAL_ASM_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py $(CC) -- $(AS) $(ASFLAGS) --
+endif
 
 setup:
 	$(MAKE) -C libreultra BUILD_DIR=../$(BUILD_DIR) VERSION=

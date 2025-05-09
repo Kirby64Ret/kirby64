@@ -44,5 +44,5 @@ ctx.c
 # Use these for scratch work
 *.x
 strings/*
-# asm-differ .o file diffs
+# asm-differ and objdiff .o file diffs
 expected/*

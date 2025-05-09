@@ -121,7 +121,7 @@ void sram_write(s32 arg0, s32 arg1, s32 arg2) {
 }
 
 void func_80002FC0(u8 *arg0, s32 arg1, void (*arg2)(void), u32 arg3);
-GLOBAL_ASM("asm/nonmatchings/main/dma/func_80002FC0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/dma/func_80002FC0.s")
 
 
 /*********************
@@ -152,4 +152,4 @@ void func_80003838(u32 arg0, u32 arg1) {
     func_800037F0(arg0, arg1, sp18, ARRAY_COUNT(sp18));
 }
 
-GLOBAL_ASM("asm/nonmatchings/main/dma/func_8000385C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/dma/func_8000385C.s")

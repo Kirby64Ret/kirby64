@@ -123,7 +123,7 @@ void func_8021E4B0_ovl19(struct GObj *arg0) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E4B0_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E4B0_ovl19.s")
 #endif
 
 // regalloc
@@ -161,7 +161,7 @@ void func_8021E5DC_ovl19(s32 arg0) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E5DC_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E5DC_ovl19.s")
 #endif
 
 #ifdef NON_MATCHING
@@ -179,7 +179,7 @@ void func_8021E7DC_ovl19(struct GObj *arg0) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E7DC_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E7DC_ovl19.s")
 #endif
 
 // regalloc
@@ -212,5 +212,5 @@ void func_8021E894_ovl19(struct GObj *arg0) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E894_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E894_ovl19.s")
 #endif

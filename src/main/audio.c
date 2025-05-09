@@ -436,12 +436,12 @@ void auInit(void) {
 }
 
 // https://decomp.me/scratch/CvKIB
-GLOBAL_ASM("asm/nonmatchings/main/audio/auLoadAssets.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auLoadAssets.s")
 
-GLOBAL_ASM("asm/nonmatchings/main/audio/auCreatePlayers.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auCreatePlayers.s")
 
 // https://decomp.me/scratch/HNhjJ
-GLOBAL_ASM("asm/nonmatchings/main/audio/auThreadMain.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auThreadMain.s")
 
 void auSetHighSoundQuality(void) {
     auSoundQuality = 1;
@@ -576,7 +576,7 @@ block_5:
     return -1;
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020BE8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020BE8.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -584,7 +584,7 @@ s32 func_80020C70(s32 arg0, ? arg1, ? arg2, ? arg3) {
     return -1;
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020C70.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020C70.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -603,7 +603,7 @@ s32 auStopAllSounds(void) {
     return 1;
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/audio/auStopAllSounds.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auStopAllSounds.s")
 #endif
 
 // TODO: returns int?
@@ -634,7 +634,7 @@ void func_80020D00(s32 arg0, u32 arg1) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020D00.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020D00.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -653,7 +653,7 @@ void func_80020D58(s32 arg0, s32 arg1) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020D58.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020D58.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -672,7 +672,7 @@ void func_80020DAC(s32 arg0, s32 arg1) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020DAC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020DAC.s")
 #endif
 
 void func_80020E00(s32 arg0, s32 arg1) {
@@ -695,7 +695,7 @@ void func_80020E0C(s32 arg0) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020E0C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020E0C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -709,7 +709,7 @@ void func_80020E5C(s32 arg0, s32 arg1) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020E5C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020E5C.s")
 #endif
 
 void func_80020E8C(void) {

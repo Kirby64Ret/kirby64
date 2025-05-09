@@ -6,12 +6,6 @@
 #define GLOBAL_ASM(...)
 #endif
 
-#if !defined(__sgi) && (!defined(NON_MATCHING) || !defined(AVOID_UB))
-// asm-process isn't supported outside of IDO, and undefined behavior causes
-// crashes.
-#warning Matching build is only possible on IDO; please build with NON_MATCHING=1.
-#endif
-
 #define ARRAY_COUNT(arr) (s32)(sizeof(arr) / sizeof(arr[0]))
 #define ARRAYLEN(arr) (s32)(sizeof(arr) / sizeof(arr[0]))
 

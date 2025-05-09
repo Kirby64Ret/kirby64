@@ -17,7 +17,7 @@ options:
   do_c_func_detection: True
   symbol_addrs_path: tools/symbol_addrs.txt
   extensions_path: tools/splat_ext
-  # make_full_disasm_for_code: True
+  make_full_disasm_for_code: True
   # reloc_addrs_path: reloc_addrs.txt
   ld_script_path: kirby.ld
   asm_inc_header: ""
@@ -365,9 +365,9 @@ segments:
     - [0xF7810, rodata, ovl3/ovl3]
     - [0xF7850, rodata, ovl3/ovl3_1]
     - [0xF7920, rodata, ovl3/plydemo]
-    - [0xF7A30, rodata]
+    - [0xF7A30, rodata, ovl3/F7A30]
     - [0xF7C30, rodata, ovl3/ovl3_4]
-    - [0xF7D10, rodata]
+    - [0xF7D10, rodata, ovl3/F7D10]
     - [0xF8630]
     - {type: bss, vram: 0x80197bf0, name: ovl3/ovl3}
 
@@ -594,7 +594,7 @@ segments:
     - [0x1E5710, rodata, ovl10/ovl10_1]
     - [0x1E57B0, rodata, ovl10/ovl10_2]
     - [0x1E57F0, rodata, ovl10/ovl10_3]
-    - [0x1E58F0, rodata]
+    - [0x1E58F0, rodata, ovl10/1E58F0]
     - [0x1E5900, rodata, ovl10/ovl10_4]
     - [0x1E59B0, rodata, ovl10/ovl10_5]
     - [0x1E5AA0]

@@ -585,7 +585,7 @@ void func_80008DA8(struct GObjProcess *proc) {
     }
 }
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80008EC4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80008EC4.s")
 
 void func_80008EC4(struct DObj *, u8, u8, u32);
 
@@ -736,12 +736,12 @@ void func_800099E4(struct Animation *anim) {
     anim->scale = -FLT_MAX;
 }
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009A44.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009A44.s")
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009B5C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009B5C.s")
 
 // Not really sure what's going on here
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009BD4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009BD4.s")
 
 struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
     struct DObj *dobj;
@@ -775,11 +775,11 @@ struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
     return dobj;
 }
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddSibling.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddSibling.s")
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddChild.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddChild.s")
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009DF4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009DF4.s")
 
 struct Camera *omGObjSetCamera(GObj *gobj) {
     int i;
@@ -989,7 +989,7 @@ void omGMoveCommon(s32 addWhere, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGMoveCommon.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGMoveCommon.s")
 #endif
 
 void func_8000A498(GObj *arg0, u8 arg1, s32 arg2) {
@@ -1246,7 +1246,7 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
     return ret;
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGDispatchProc.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGDispatchProc.s")
 #endif
 
 void omUpdateAll(void) {
@@ -1280,4 +1280,4 @@ void omUpdateAll(void) {
     }
 }
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_omInit.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_omInit.s")

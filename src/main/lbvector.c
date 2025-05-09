@@ -140,7 +140,7 @@ Vector *vec3_negate(Vector *arg0) {
     return arg0;
 }
 
-GLOBAL_ASM("asm/nonmatchings/main/lbvector/func_800191F8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbvector/func_800191F8.s")
 
 // granularly negates components of a vector
 Vector *lbvector_Negate(Vector *arg0, s32 flag) {

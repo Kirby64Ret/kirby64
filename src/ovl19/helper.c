@@ -137,7 +137,7 @@ loop:
 }
 #else
 void func_8021F174_ovl19(GObj *arg0);
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8021F174_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8021F174_ovl19.s")
 #endif
 
 void func_8021F3B4_ovl19(GObj *arg0) {
@@ -278,7 +278,7 @@ void func_8021FA2C_ovl19(void) {
     D_800EC120[omCurrentObj->objId] = temp_v0;
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8021FA2C_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8021FA2C_ovl19.s")
 #endif
 
 void func_8021FC7C_ovl19(GObj *arg0) {
@@ -382,7 +382,7 @@ void func_80220138_ovl19(s32 arg0) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220138_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220138_ovl19.s")
 #endif
 
 void func_8022023C_ovl19(GObj *arg0) {
@@ -393,29 +393,29 @@ void func_8022023C_ovl19(GObj *arg0) {
 // Pit of Doom
 // {
     // "struct offset vs absolute access" rabbit hole
-    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220280_ovl19.s")
+    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220280_ovl19.s")
 
     // having to define a struct thats only ever accessed here and the above function
-    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022045C_ovl19.s")
+    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022045C_ovl19.s")
 
     // another struct def
-    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022054C_ovl19.s")
+    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022054C_ovl19.s")
 
     // the same rabbit hole as func_80220280_ovl19, plus a triple nested loop
-    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220814_ovl19.s")
+    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220814_ovl19.s")
 
 void func_802209A0_ovl19(GObj *arg0) {
     call_virtual_function(D_800E7880[omCurrentObj->objId], 4, D_8022F0D8_ovl19);
 }
 
     // the same rabbit hole as func_80220280_ovl19
-    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209E4_ovl19.s")
+    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209E4_ovl19.s")
 
     // the same rabbit hole as func_80220280_ovl19
-    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
+    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
 
     // currently flying blind filling out LayoutNode->unk80 so I won't bother
-    GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220D54_ovl19.s")
+    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220D54_ovl19.s")
 // }
 
 void func_80220E14_ovl19(struct GObj *arg0) {
@@ -435,17 +435,17 @@ void func_80220F48_ovl19(GObj *arg0) {
 }
 
 // the same rabbit hole as func_80220280_ovl19
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220F8C_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220F8C_ovl19.s")
 
 extern u32 D_800D71F8;
 // the same rabbit hole as func_80220280_ovl19
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221108_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221108_ovl19.s")
 
 // the same rabbit hole as func_80220280_ovl19
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")
 
 // the same rabbit hole as func_80220280_ovl19
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221480_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221480_ovl19.s")
 
 void func_8022159C_ovl19(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = NULL;
@@ -539,7 +539,7 @@ void func_80221A74_ovl19(void) {
     }
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221A74_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221A74_ovl19.s")
 #endif
 
 void func_80221BC8_ovl19(void) {
@@ -690,7 +690,7 @@ void func_802222F0_ovl19(GObj *arg0) {
     D_8022FAB0_ovl19->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
 }
 #else
-GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802222F0_ovl19.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802222F0_ovl19.s")
 #endif
 
 void func_802224BC_ovl19(GObj *arg0) {
