@@ -17,6 +17,7 @@ options:
   do_c_func_detection: True
   symbol_addrs_path: tools/symbol_addrs.txt
   extensions_path: tools/splat_ext
+  # make_full_disasm_for_code: True
   # reloc_addrs_path: reloc_addrs.txt
   ld_script_path: kirby.ld
   asm_inc_header: ""
@@ -186,7 +187,7 @@ segments:
     - [0x39B60, lib, libultra_rom, conteepread]
     - [0x39DB0, lib, libultra_rom, vigetcurrframebuf]
     - [0x39DF0, lib, libultra_rom, spsetpc]
-    - [0x39E30, asm, main/n_aspMain]
+    - [0x39E30, textbin, main/n_aspMain]
     - [0x3AA90, data, main/gspF3DEX2_fifo]
     - [0x3BE20, data, main/gspL3DEX2_fifo]
     - [0x3C3B0, data, main/gspS2DEX2_fifo]

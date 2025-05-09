@@ -906,3 +906,10 @@ viPackRGBA = 0x800078F0; // type:func
 setProcessMain = 0x800B1F68; // type:func
 initTrack = 0x800AE138; // type:func
 sleep_forever = 0x800B1878; // type:func
+
+// splat meme
+D_8018E3A0_ovl5 = 0x8018E3A0; // segment:ovl5
+D_8018E99C_ovl5 = 0x8018E99C; // segment:ovl5
+D_8018ED44_ovl5 = 0x8018ED44; // segment:ovl5
+D_8018EDA0_ovl5 = 0x8018EDA0; // segment:ovl5
+D_8018EDC0_ovl5 = 0x8018EDC0; // segment:ovl5
