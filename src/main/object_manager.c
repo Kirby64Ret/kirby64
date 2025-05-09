@@ -593,7 +593,7 @@ void func_80009628(struct DObj *arg0, u8 arg1, u8 arg2) {
     func_80008EC4(arg0, arg1, arg2, arg0->unk56);
 }
 
-OMMtx* func_80009658(Camera* cam, u8 kind, u8 arg2) {
+OMMtx* omCameraAddMtx(Camera* cam, u8 kind, u8 arg2) {
     OMMtx* mtx;
 
     if (cam->mtxCount == ARRAY_COUNT(cam->matrices)) {
@@ -640,7 +640,7 @@ OMMtx* func_80009658(Camera* cam, u8 kind, u8 arg2) {
     mtx->unk05 = arg2;
     return mtx;
 }
-// GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009658.s")
+// GLOBAL_ASM("asm/nonmatchings/main/object_manager/omCameraAddMtx.s")
 
 // Initializes a new AObj with an index
 struct AObj *HS64_AObjNew(struct Animation *anim, u8 paramID) {

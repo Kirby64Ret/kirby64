@@ -779,6 +779,7 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+omCameraAddMtx = 0x80009658; // type:func
 omUpdateAll = 0x8000AD88; // type:func
 omAddGObjBeforeSamePriority = 0x8000A1C0; // type:func
 omAddGObjBefore = 0x8000A24C; // type:func

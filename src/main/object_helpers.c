@@ -255,8 +255,8 @@ void ohCreateDefaultMatricesRad(DObj *d) {
 }
 
 void ohCreateDefaultCameraMatrices(Camera *cam) {
-    func_80009658(cam, 3, 0);
-    func_80009658(cam, 6, 0);
+    omCameraAddMtx(cam, 3, 0);
+    omCameraAddMtx(cam, 6, 0);
 }
 
 void ohDobjTreeRemoveAllMObjs(GObj *g) {
