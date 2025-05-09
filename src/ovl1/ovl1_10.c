@@ -34,7 +34,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB394.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/alSynRemovePlayer.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB3C0.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB3F0.s")
 

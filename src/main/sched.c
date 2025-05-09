@@ -336,7 +336,7 @@ block_4:
 #endif
 
 // weird long function
-void func_80000F40(u32 width, u32 height, s32 flags, s16 edgeOffsetLeft, s16 edgeOffsetRight, s16 edgeOffsetTop, s16 edgeOffsetBottom);
+void func_80000F78(u32 width, u32 height, s32 flags, s16 edgeOffsetLeft, s16 edgeOffsetRight, s16 edgeOffsetTop, s16 edgeOffsetBottom);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000F78.s")
 
 #ifdef MIPS_TO_C

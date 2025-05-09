@@ -78,9 +78,109 @@ typedef struct GObjProcess {
     u32 *ptr;
 } GObjProcess;
 
-struct OMMtx {
-    struct OMMtx *next;
+enum MatrixType {
+    MTX_TYPE_1 = 1,
+    MTX_TYPE_2 = 2,
+    MTX_TYPE_PERSP_FAST = 3,
+    MTX_TYPE_PERSP = 4,
+    MTX_TYPE_ORTHO = 5,
+    MTX_TYPE_LOOKAT = 6,
+    MTX_TYPE_LOOKAT_MVIEW = 7,
+    MTX_TYPE_LOOKAT_ROLL = 8,
+    MTX_TYPE_LOOKAT_ROLL_MVIEW = 9,
+    MTX_TYPE_LOOKAT_ROLL_Z = 10,
+    MTX_TYPE_LOOKAT_ROLL_Z_MVIEW = 11,
+    MTX_TYPE_LOOKAT_REFLECT = 12,
+    MTX_TYPE_LOOKAT_REFLECT_MVIEW = 13,
+    MTX_TYPE_LOOKAT_REFLECT_ROLL = 14,
+    MTX_TYPE_LOOKAT_REFLECT_ROLL_MVIEW = 15,
+    MTX_TYPE_LOOKAT_REFLECT_ROLL_Z = 16,
+    MTX_TYPE_LOOKAT_REFLECT_ROLL_Z_MVIEW = 17,
+    MTX_TYPE_TRANSLATE = 18,
+    MTX_TYPE_ROTATE_DEG = 19,
+    MTX_TYPE_ROTATE_DEG_TRANSLATE = 20,
+    MTX_TYPE_ROTATE_RPY_DEG = 21,
+    MTX_TYPE_ROTATE_RPY_TRANSLATE_DEG = 22,
+    MTX_TYPE_ROTATE = 23,
+    MTX_TYPE_ROTATE_TRANSLATE = 24,
+    MTX_TYPE_ROTATE_TRANSLATE_SCALE = 25,
+    MTX_TYPE_ROTATE_RPY = 26,
+    MTX_TYPE_ROTATE_RPY_TRANSLATE = 27,
+    MTX_TYPE_ROTATE_RPY_TRANSLATE_SCALE = 28,
+    MTX_TYPE_ROTATE_PYR = 29,
+    MTX_TYPE_ROTATE_PYR_TRANSLATE = 30,
+    MTX_TYPE_ROTATE_PYR_TRANSLATE_SCALE = 31,
+    MTX_TYPE_SCALE = 32,
+    MTX_TYPE_33 = 33,
+    MTX_TYPE_34 = 34,
+    MTX_TYPE_35 = 35,
+    MTX_TYPE_36 = 36,
+    MTX_TYPE_37 = 37,
+    MTX_TYPE_38 = 38,
+    MTX_TYPE_39 = 39,
+    MTX_TYPE_40 = 40,
+    MTX_TYPE_41 = 41,
+    MTX_TYPE_42 = 42,
+    MTX_TYPE_43 = 43,
+    MTX_TYPE_44 = 44,
+    MTX_TYPE_45 = 45,
+    MTX_TYPE_46 = 46,
+    MTX_TYPE_47 = 47,
+    MTX_TYPE_48 = 48,
+    MTX_TYPE_49 = 49,
+    MTX_TYPE_50 = 50,
+    MTX_TYPE_51 = 51,
+    MTX_TYPE_52 = 52,
+    MTX_TYPE_53 = 53,
+    MTX_TYPE_54 = 54,
+    MTX_TYPE_55 = 55,
+    MTX_TYPE_56 = 56,
+    MTX_TYPE_57 = 57,
+    MTX_TYPE_58 = 58,
+    MTX_TYPE_59 = 59,
+    MTX_TYPE_60 = 60,
+    MTX_TYPE_61 = 61,
+    MTX_TYPE_62 = 62,
+    MTX_TYPE_63 = 63,
+    MTX_TYPE_64 = 64,
+    MTX_TYPE_65 = 65,
+    MTX_TYPE_66 = 66
 };
+
+typedef struct OMMtx {
+    struct OMMtx *next;
+    /* 0x04 */ u8 kind;
+    /* 0x05 */ u8 unk05;
+    /* 0x08 */ Mtx unk08;
+} OMMtx;
+
+typedef struct OMPersp {
+    /* 0x00 */ struct OMMtx *mtx;
+    /* 0x04 */ u16 perspNorm;
+    /* 0x08 */ f32 fovy;
+    /* 0x0C */ f32 aspect;
+    /* 0x10 */ f32 near;
+    /* 0x14 */ f32 far;
+    /* 0x18 */ f32 scale;
+} OMPersp; // size == 0x1C
+
+typedef struct OMOrtho {
+    /* 0x00 */ struct OMMtx *mtx;
+    /* 0x04 */ f32 l;
+    /* 0x08 */ f32 r;
+    /* 0x0C */ f32 b;
+    /* 0x10 */ f32 t;
+    /* 0x14 */ f32 n;
+    /* 0x18 */ f32 f;
+    /* 0x1C */ f32 scale;
+} OMOrtho; // size == 0x20
+
+typedef struct OMLookAt {
+    /* 0x00 */ struct OMMtx *mtx;
+    /* 0x04 */ Vec3f eye;
+    /* 0x10 */ Vec3f at;
+    /* 0x1C */ Vec3f up;
+} OMLookAt; // size == 0x28;
 
 // TODO: is this an existing struct instead of a brand new one?
 struct unk80008840 {
@@ -187,31 +287,17 @@ typedef struct Camera {
     struct Camera *unk0;
     struct GObj *gobj;
     /* 0x08 */ Vp viewport;
-    u32 unk18;
-    u32 unk1C;
+    /* 0x18 */ union {
+        struct OMPersp persp;
+        struct OMOrtho ortho;
+    } perspMtx;
+    /* 0x38 */ union {
+        struct OMLookAt lookAt;
+        // struct OMLookAtRoll lookAtRoll;
+    } viewMtx;
 
-    u32 unk20;
-    u32 unk24;
-    u32 unk28;
-    u32 unk2C;
-
-    u32 unk30;
-    u32 unk34;
-    u32 unk38;
-    u32 unk3C;
-
-    u32 unk40;
-    u32 unk44;
-    u32 unk48;
-    u32 unk4C;
-
-    u32 unk50;
-    u32 unk54;
-    u32 unk58;
-    u32 unk5C;
-
-    u32 unk60;
-    struct OMMtx *unk64[2];
+    u32 mtxCount;
+    struct OMMtx *matrices[2];
     struct AObj *aobj;
     u32 unk70;
 

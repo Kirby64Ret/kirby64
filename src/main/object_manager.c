@@ -8,21 +8,20 @@ s32 D_8003DE50 = 10000000;
 
 u32 D_8003DE54 = 0x00000000;
 
-f32 D_8003DE58[7] = {
-    0.0f, 0.0f, 30.0f, 4.0f / 3.0f, 100.0f, 12800.0f, 1.0f
+OMPersp D_8003DE58 = {
+    NULL, 0.0f, 30.0f, 4.0f / 3.0f, 100.0f, 12800.0f, 1.0f
 };
 
-f32 D_8003DE74[8] = {
-    0.0f, -160.0f, 160.0f, -120.0f, 120.0f, 100.0f, 12800.0f, 1.0f
+OMOrtho D_8003DE74 = {
+    NULL, -160.0f, 160.0f, -120.0f, 120.0f, 100.0f, 12800.0f, 1.0f
 };
 
-f32 D_8003DE94[3][3] = {
+OMLookAt D_8003DE94 = {
+    NULL,
+    { 0.0f, 0.0f, 1500.0f },
     { 0.0f, 0.0f, 0.0f },
-    { 1500.0f, 0.0f, 0.0f },
-    { 0.0f, 0.0f, 1.0f }
+    { 0.0f, 1.0f, 0.0f }
 };
-
-u32 D_8003DEB8 = 0x00000000;
 
 f32 D_8003DEBC[4] = {
     0.0f, 0.0f, 0.0f, 0.0f
@@ -594,7 +593,54 @@ void func_80009628(struct DObj *arg0, u8 arg1, u8 arg2) {
     func_80008EC4(arg0, arg1, arg2, arg0->unk56);
 }
 
-GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009658.s")
+OMMtx* func_80009658(Camera* cam, u8 kind, u8 arg2) {
+    OMMtx* mtx;
+
+    if (cam->mtxCount == ARRAY_COUNT(cam->matrices)) {
+        fatal_printf("om : couldn't add OMMtx for Camera\n");
+        while (1) {};
+    }
+
+    mtx = HS64_OMMtxPop();
+
+    cam->matrices[cam->mtxCount] = mtx;
+    cam->mtxCount++;
+    mtx->kind = kind;
+
+    switch (kind) {
+        case MTX_TYPE_PERSP_FAST:
+        case MTX_TYPE_PERSP:
+            cam->perspMtx.persp = D_8003DE58;
+            cam->perspMtx.persp.mtx = mtx;
+            break;
+        case MTX_TYPE_ORTHO:
+            cam->perspMtx.ortho = D_8003DE74;
+            cam->perspMtx.ortho.mtx = mtx;
+            break;
+        case MTX_TYPE_LOOKAT:
+        case MTX_TYPE_LOOKAT_MVIEW:
+        case MTX_TYPE_LOOKAT_ROLL:
+        case MTX_TYPE_LOOKAT_ROLL_MVIEW:
+        case MTX_TYPE_LOOKAT_ROLL_Z:
+        case MTX_TYPE_LOOKAT_ROLL_Z_MVIEW:
+        case MTX_TYPE_LOOKAT_REFLECT:
+        case MTX_TYPE_LOOKAT_REFLECT_MVIEW:
+        case MTX_TYPE_LOOKAT_REFLECT_ROLL:
+        case MTX_TYPE_LOOKAT_REFLECT_ROLL_MVIEW:
+        case MTX_TYPE_LOOKAT_REFLECT_ROLL_Z:
+        case MTX_TYPE_LOOKAT_REFLECT_ROLL_Z_MVIEW:
+            cam->viewMtx.lookAt = D_8003DE94;
+            cam->viewMtx.lookAt.mtx = mtx;
+            break;
+        case MTX_TYPE_1:
+        case MTX_TYPE_2:
+            break;
+    }
+
+    mtx->unk05 = arg2;
+    return mtx;
+}
+// GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009658.s")
 
 // Initializes a new AObj with an index
 struct AObj *HS64_AObjNew(struct Animation *anim, u8 paramID) {
@@ -755,10 +801,10 @@ struct Camera *omGObjSetCamera(GObj *gobj) {
         // stub
     }
 
-    cam->unk60 = 0;
+    cam->mtxCount = 0;
 
-    for (i = 0; i < 2; i++) {
-        cam->unk64[i] = 0;
+    for (i = 0; i < ARRAY_COUNT(cam->matrices); i++) {
+        cam->matrices[i] = 0;
     }
 
     cam->flags = 0;
@@ -784,7 +830,7 @@ void func_8000A02C(struct Camera *cam) {
     gobj->data = NULL;
 
     for (i = 0; i < 2; i++) {
-        mtx = cam->unk64[i];
+        mtx = cam->matrices[i];
 
         if (mtx != NULL) {
             HS64_OMMtxRelease(mtx);
