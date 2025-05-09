@@ -36,6 +36,34 @@ void func_80220138_ovl19(GObj*);
 void func_80222CE0_ovl19(GObj*);
 void func_802222F0_ovl19(GObj *arg0);
 void func_80221654_ovl19(struct GObj *arg0);
+void func_8021EF44_ovl19(GObj *);
+void func_8021F174_ovl19(GObj *);
+void func_8021F3F8_ovl19(GObj *);
+void func_8021F6D8_ovl19(GObj *);
+void func_8021F8A4_ovl19(GObj *);
+u32 func_8021FCC0_ovl19(GObj *);
+void func_8021FF90_ovl19(GObj *);
+void func_80220280_ovl19(GObj *);
+void func_8022054C_ovl19(GObj *);
+void func_80220814_ovl19(GObj *);
+void func_802209E4_ovl19(GObj *);
+void func_80220B40_ovl19(GObj *);
+void func_80220D54_ovl19(GObj *);
+void func_80220E14_ovl19(GObj *);
+void func_80220F8C_ovl19(GObj *);
+void func_802211A0_ovl19(GObj *);
+void func_80221480_ovl19(GObj *);
+void func_8022159C_ovl19(GObj *);
+void func_80221750_ovl19(GObj *);
+void func_80221CA8_ovl19(GObj *);
+void func_80221E20_ovl19(GObj *);
+void func_80222108_ovl19(GObj *);
+void func_802225A4_ovl19(GObj *);
+void func_802227F0_ovl19(GObj *);
+void func_80222918_ovl19(GObj *);
+void func_80222A98_ovl19(GObj *);
+void func_80222E3C_ovl19(GObj *);
+void func_80223020_ovl19(GObj *);
 
 // migrate into respective funcs
 extern VTABLE D_8022F080_ovl19;
@@ -55,10 +83,10 @@ extern f32 D_8022F7AC, D_8022F7B0, D_8022F7B4;
 void func_8021EF00_ovl19(GObj *arg0) {
     // extern void func_8021EF44_ovl19(GObj*);
     // extern void func_8021F174_ovl19(GObj*);
-    // VTABLE D_8022F080_ovl19 = {
-    //     func_8021EF44_ovl19,
-    //     func_8021F174_ovl19,
-    // };
+    static VTABLE D_8022F080_ovl19 = {
+        func_8021EF44_ovl19,
+        func_8021F174_ovl19,
+    };
 
     call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F080_ovl19);
 }
@@ -141,6 +169,14 @@ void func_8021F174_ovl19(GObj *arg0);
 #endif
 
 void func_8021F3B4_ovl19(GObj *arg0) {
+    static VTABLE D_8022F088_ovl19 = {
+        func_8021F3F8_ovl19,
+        func_8021F3F8_ovl19,
+        func_8021F3F8_ovl19,
+        func_8021F6D8_ovl19,
+        func_8021F8A4_ovl19,
+    };
+
     call_virtual_function(D_800E7880[omCurrentObj->objId], 5, D_8022F088_ovl19);
 }
 
@@ -282,6 +318,10 @@ void func_8021FA2C_ovl19(void) {
 #endif
 
 void func_8021FC7C_ovl19(GObj *arg0) {
+    static VTABLE D_8022F09C_ovl19 = {
+        func_8021FCC0_ovl19,
+        func_8021FF90_ovl19,
+    };
     call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F09C_ovl19);
 }
 
@@ -331,7 +371,7 @@ void func_8021FE5C_ovl19(struct GObj *arg0) {
     }
 }
 
-void func_8021FF90_ovl19(s32 arg0) {
+void func_8021FF90_ovl19(GObj *g) {
     D_800E9AA0[omCurrentObj->objId] = NULL;
     func_8021DFD0_ovl19();
     D_800DF150[omCurrentObj->objId] = func_80220138_ovl19;
@@ -386,6 +426,12 @@ void func_80220138_ovl19(s32 arg0) {
 #endif
 
 void func_8022023C_ovl19(GObj *arg0) {
+    static VTABLE D_8022F0A4_ovl19 = {
+        func_80220280_ovl19,
+        func_8022054C_ovl19,
+        func_80220814_ovl19,
+    };
+
     call_virtual_function(D_800E7880[omCurrentObj->objId], 3, D_8022F0A4_ovl19);
 }
 
@@ -401,10 +447,27 @@ void func_8022023C_ovl19(GObj *arg0) {
     // another struct def
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022054C_ovl19.s")
 
+f32 D_8022F0B0_ovl19[] = {-112, 0, 110};
+u32 D_8022F0BC_ovl19[] = {
+    0x00020073,
+    0x00020074,
+    0x00020077,
+    0x00020076,
+    0x00020075,
+    0x00020072,
+    0x00020078,
+};
     // the same rabbit hole as func_80220280_ovl19, plus a triple nested loop
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220814_ovl19.s")
 
 void func_802209A0_ovl19(GObj *arg0) {
+    static VTABLE D_8022F0D8_ovl19 = {
+        func_802209E4_ovl19,
+        func_80220B40_ovl19,
+        func_80220D54_ovl19,
+        func_80220E14_ovl19,
+    };
+
     call_virtual_function(D_800E7880[omCurrentObj->objId], 4, D_8022F0D8_ovl19);
 }
 
@@ -431,6 +494,13 @@ void func_80220E14_ovl19(struct GObj *arg0) {
 }
 
 void func_80220F48_ovl19(GObj *arg0) {
+    static VTABLE D_8022F0E8_ovl19 = {
+        func_80220F8C_ovl19,
+        func_802211A0_ovl19,
+        func_80221480_ovl19,
+        func_8022159C_ovl19,
+    };
+
     call_virtual_function(D_800E7880[omCurrentObj->objId], 4, D_8022F0E8_ovl19);
 }
 
@@ -444,10 +514,27 @@ extern u32 D_800D71F8;
 // the same rabbit hole as func_80220280_ovl19
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")
 
+Vector D_8022F0F8_ovl19 = {-100, 0, 100};
+u32 D_8022F104_ovl19 = 0x0002007A;
+u32 D_8022F108_ovl19[] = {
+    0x000203F5,
+    0x0002007D,
+    0x000203FB,
+    0x0002007B,
+    0x000203F7,
+    0x00020080,
+    0x00020401,
+    0x0002007F,
+    0x000203FF,
+    0x0002007C,
+    0x000203F9,
+    0x0002007E,
+    0x000203FD,
+};
 // the same rabbit hole as func_80220280_ovl19
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221480_ovl19.s")
 
-void func_8022159C_ovl19(s32 arg0) {
+void func_8022159C_ovl19(GObj *g) {
     D_800DEF90[omCurrentObj->objId] = NULL;
     D_800DF150[omCurrentObj->objId] = func_80221654_ovl19;
     gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
@@ -467,6 +554,10 @@ void func_80221654_ovl19(struct GObj *arg0) {
 }
 
 void func_8022170C_ovl19(GObj *arg0) {
+    static VTABLE D_8022F13C_ovl19 = {
+        func_80221750_ovl19,
+        func_80221CA8_ovl19,
+    };
     call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F13C_ovl19);
 }
 
@@ -570,6 +661,10 @@ void func_80221CA8_ovl19(struct GObj *arg0) {
 }
 
 void func_80221DDC_ovl19(GObj *arg0) {
+    static VTABLE D_8022F144_ovl19 = {
+        func_80221E20_ovl19,
+        func_80222108_ovl19,
+    };
     call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F144_ovl19);
 }
 
@@ -630,7 +725,7 @@ void func_80222038_ovl19(GObj *arg0) {
     }
 }
 
-void func_80222108_ovl19(s32 arg0) {
+void func_80222108_ovl19(GObj *g) {
     struct UnkStruct8022FAB0 *tmp;
 
     func_8021E184_ovl19();
@@ -694,6 +789,11 @@ void func_802222F0_ovl19(GObj *arg0) {
 #endif
 
 void func_802224BC_ovl19(GObj *arg0) {
+    static VTABLE D_8022F14C_ovl19 = {
+        func_802225A4_ovl19,
+        func_802227F0_ovl19,
+        func_80222918_ovl19,
+    };
     call_virtual_function(D_800E7880[omCurrentObj->objId], 3, D_8022F14C_ovl19);
 }
 
@@ -793,6 +893,11 @@ void func_80222918_ovl19(struct GObj *arg0) {
 }
 
 void func_80222A54_ovl19(s32 arg0) {
+    static VTABLE D_8022F158_ovl19 = {
+        func_80222A98_ovl19,
+        func_80222E3C_ovl19,
+        func_80223020_ovl19,
+    };
     call_virtual_function(D_800E7880[omCurrentObj->objId], 3, &D_8022F158_ovl19);
 }
 
