@@ -640,7 +640,6 @@ OMMtx* omCameraAddMtx(Camera* cam, u8 kind, u8 arg2) {
     mtx->unk05 = arg2;
     return mtx;
 }
-// GLOBAL_ASM("asm/nonmatchings/main/object_manager/omCameraAddMtx.s")
 
 // Initializes a new AObj with an index
 struct AObj *HS64_AObjNew(struct Animation *anim, u8 paramID) {
