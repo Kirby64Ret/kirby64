@@ -19,6 +19,7 @@
 extern u32 D_800D6E64;
 extern s32 D_8012E7FC;
 
+// forward declarations
 void func_80221BC8_ovl19(void);
 void func_8021E5DC_ovl19(void);
 void func_8021F0A4_ovl19(GObj *arg0);
@@ -55,6 +56,7 @@ void func_802211A0_ovl19(GObj *);
 void func_80221480_ovl19(GObj *);
 void func_8022159C_ovl19(GObj *);
 void func_80221750_ovl19(GObj *);
+void func_80221A74_ovl19();
 void func_80221CA8_ovl19(GObj *);
 void func_80221E20_ovl19(GObj *);
 void func_80222108_ovl19(GObj *);
@@ -65,24 +67,10 @@ void func_80222A98_ovl19(GObj *);
 void func_80222E3C_ovl19(GObj *);
 void func_80223020_ovl19(GObj *);
 
-// migrate into respective funcs
-extern VTABLE D_8022F080_ovl19;
-extern VTABLE D_8022F088_ovl19;
-extern VTABLE D_8022F09C_ovl19;
-extern VTABLE D_8022F0A4_ovl19;
-extern void (*D_8022F158_ovl19)(GObj *);
-extern VTABLE D_8022F14C_ovl19;
-extern VTABLE D_8022F144_ovl19;
-extern VTABLE D_8022F0D8_ovl19;
-extern VTABLE D_8022F0E8_ovl19;
-extern VTABLE D_8022F13C_ovl19;
-
 // rodata
 extern f32 D_8022F7AC, D_8022F7B0, D_8022F7B4;
 
 void func_8021EF00_ovl19(GObj *arg0) {
-    // extern void func_8021EF44_ovl19(GObj*);
-    // extern void func_8021F174_ovl19(GObj*);
     static VTABLE D_8022F080_ovl19 = {
         func_8021EF44_ovl19,
         func_8021F174_ovl19,
@@ -515,21 +503,17 @@ extern u32 D_800D71F8;
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")
 
 Vector D_8022F0F8_ovl19 = {-100, 0, 100};
+
+// likely the same array and uses [i] and [i + 1]
 u32 D_8022F104_ovl19 = 0x0002007A;
 u32 D_8022F108_ovl19[] = {
-    0x000203F5,
-    0x0002007D,
-    0x000203FB,
-    0x0002007B,
-    0x000203F7,
-    0x00020080,
-    0x00020401,
-    0x0002007F,
-    0x000203FF,
-    0x0002007C,
-    0x000203F9,
-    0x0002007E,
-    0x000203FD,
+                0x000203F5,
+    0x0002007D, 0x000203FB,
+    0x0002007B, 0x000203F7,
+    0x00020080, 0x00020401,
+    0x0002007F, 0x000203FF,
+    0x0002007C, 0x000203F9,
+    0x0002007E, 0x000203FD,
 };
 // the same rabbit hole as func_80220280_ovl19
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221480_ovl19.s")
@@ -562,14 +546,11 @@ void func_8022170C_ovl19(GObj *arg0) {
 }
 
 void func_80221750_ovl19(struct GObj *arg0) {
-    f32 temp_f0;
-
     func_8021E184_ovl19();
-    temp_f0 = 0.2f;
     D_800DEF90[omCurrentObj->objId] = func_8021EA20_ovl19;
-    gEntitiesScaleXArray[omCurrentObj->objId] = temp_f0;
-    gEntitiesScaleYArray[omCurrentObj->objId] = temp_f0;
-    gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x20060, 0x1869F, 0x10);
     func_8021E2D0_ovl19(6, 1);
     D_800DF150[omCurrentObj->objId] = func_80221928_ovl19;
@@ -610,23 +591,21 @@ void func_80221928_ovl19(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-void func_80221A74_ovl19(void) {
+void func_80221A74_ovl19() {
     Vector sp34;
     Vector sp28;
-    f32 temp_f0;
+    f32 angleDiff;
 
-    sp34.y = 0.0f;
-    sp34.x = 0.0f;
-    sp34.z = 2.0f;
+    sp34.y = 0.0f; sp34.x = 0.0f; sp34.z = 2.0f;
     lbvector_Rotate(&sp34, AXIS_Y, gEntitiesAngleYArray[omCurrentObj->objId]);
-    sp28.z = 0.0f;
     sp28.x = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
     sp28.y = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
-    temp_f0 = vec3_abs_angle_diff(&sp34, &sp28);
-    if (ABSF(temp_f0) <= 0.06981317f) {
+    sp28.z = 0.0f;
+    angleDiff = vec3_abs_angle_diff(&sp34, &sp28);
+    if (ABSF(angleDiff) <= 0.06981317f) {
         D_800E4C50[omCurrentObj->objId] = 0.0f;
     } else {
-        D_800E4C50[omCurrentObj->objId] = ((temp_f0 < 0.0f) ? -1 : 1) * 0.06981317f;
+        D_800E4C50[omCurrentObj->objId] = ((angleDiff < 0.0f) ? -1 : 1) * 0.06981317f;
     }
 }
 #else

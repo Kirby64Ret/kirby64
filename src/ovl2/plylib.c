@@ -12,6 +12,7 @@
 #include "ovl1/ovl1_13.h"
 #include "plylib.h"
 #include "sounds.h"
+#include "unk_structs/D_800DE350.h"
 
 // ovl7_5.h
 void func_801AC4EC_ovl7(GObj *);
@@ -27,6 +28,8 @@ extern u8 D_80126E20[];
 // ovl2 bss
 extern u8 D_8012E7D7;
 extern u32 D_801290D0;
+
+void func_8011D0FC(struct LayoutNode *ln, s32 arg1, u32 arg2);
 
 void *func_8011BA10(struct CollisionTriangle *tri, u32 arg1) {
     u32 i;
@@ -530,14 +533,12 @@ void func_8011C720(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C720.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_8011C838(void) {
-    D_800DE350[request_track_general(0x12, 0, 1)]->unk48 = func_8011D0FC;
+    u32 track = request_track_general(0x12, 0, 1);
+    GObj *g = D_800DE350[track];
+
+    g->unk48 = func_8011D0FC;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C838.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -816,8 +817,7 @@ void func_8011CFF4(s32 arg0) {
 
 // plyWalk
 #ifdef MIPS_TO_C
-
-void func_8011D0FC(struct LayoutNode *arg0, s32 arg1, f32 arg2) {
+void func_8011D0FC(struct LayoutNode *arg0, s32 kind, int arg2) {
     f32 sp44;
     void *sp3C;
     f32 sp38;
@@ -2472,27 +2472,26 @@ void func_80120AF8(Vector *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-
+// control flow
+#ifdef NON_MATCHING
+extern f32 gKirbyHp;
+extern u32 D_80128348[];
 s32 func_80120BCC(void) {
-    s32 var_v1;
-
-    var_v1 = 0;
     if ((gKirbyState.ability != 0) && (gKirbyState.abilityInUse == 0)) {
         gKirbyState.hpAfterDamage = gKirbyHp;
         if (gKirbyState.abilityDropTimer == 0) {
-            gKirbyState.abilityDropTimer = *(&D_80128348 + (gKirbyState.hpAfterDamage * 4)) + 0x2D;
+            gKirbyState.abilityDropTimer = D_80128348[gKirbyState.hpAfterDamage] + 0x2D;
             return 0;
+        } else {
+            gKirbyState.droppedAbility = gKirbyState.ability;
+            gKirbyState.abilityDropTimer = 0;
+            gKirbyState.isTakingDamage = 1;
+            gKirbyState.ability = 0;
+            return 1;
         }
-        gKirbyState.droppedAbility = gKirbyState.ability;
-        gKirbyState.abilityDropTimer = 0;
-        gKirbyState.isTakingDamage = 1;
-        gKirbyState.ability = 0;
-        var_v1 = 1;
-        /* Duplicate return node #5. Try simplifying control flow for better match */
-        return var_v1;
+    } else {
+        return 0;
     }
-    return var_v1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80120BCC.s")
@@ -3291,14 +3290,15 @@ void func_801229D0(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801229D0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80122A10(s32 arg0) {
+#ifdef NON_MATCHING
+extern s32 D_80128420[];
+extern s16 D_8012E894;
+void func_80122A10(GObj *g) {
     if ((D_8012E894 > 0) && (D_8012E894 < 5)) {
-        func_800A8100(0, 1, *(&D_80128420 + (D_8012E894 * 4)), arg0);
-        return;
+        func_800A8100(0, 1, D_80128420[D_8012E894]);
+    } else {
+        print_error_stub("plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n", 5, D_8012E894);
     }
-    print_error_stub("plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n", 5, D_8012E894, arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80122A10.s")

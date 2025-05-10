@@ -117,12 +117,15 @@ $(BUILD_DIR)/%.o: %.bin
 	$(V)$(CROSS)ld -r -b binary -o $@ $<
 
 $(BUILD_DIR)/%.ld: $(FILETABLES) $(O_FILES)
+	@printf "    [Asset:LINKSCRIPT] $<\n"
 	$(V)python3 tools/make_file_ldscript.py $@
 
 $(BUILD_DIR)/%.filetable.c: $(BUILD_DIR)/%.ld
+	@printf "    [Asset:FILETABLE] $<\n"
 	$(V)python3 tools/make_bank_filetable.py $(CROSS) $(BUILD_DIR)/ $@
 
 $(BUILD_DIR)/%.h: $(BUILD_DIR)/%.filetable.c
+	@printf "    [Asset:HEADER] $<\n"
 	$(V)python3 tools/make_bank_header.py $(BUILD_DIR)/ $@
 
 $(BUILD_DIR)/assets.ld: assets.ld $(BANK_LINKSCRIPTS) bank_header.ld.in
@@ -130,6 +133,7 @@ $(BUILD_DIR)/assets.ld: assets.ld $(BANK_LINKSCRIPTS) bank_header.ld.in
 	$(CROSS)cpp -P -I$(K64_BUILD_DIR) -MMD -MP -MT $@ -MF $@.d -o $@ $< -DBUILD_DIR=$(K64_BUILD_DIR) -Umips
 
 $(TARGET): $(BUILD_DIR)/assets.ld $(BANK_HEADERS)
+	@printf "    [Asset:LINK] $<\n"
 	$(V)$(CROSS)ld -L $(K64_BUILD_DIR) -T $< -o $(BUILD_DIR)/$(@F).elf
 	$(CROSS)objcopy $(MATCH_ASSETS) $(BUILD_DIR)/$(@F).elf $(BUILD_DIR)/$(@F).bin -O binary
 	$(CROSS)ld -r -b binary -o $@ $(BUILD_DIR)/$(@F).bin
