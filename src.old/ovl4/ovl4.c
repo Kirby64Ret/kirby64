@@ -29,7 +29,7 @@ extern Gfx D_8015A018_ovl4;
 
 extern s32 D_800D6B5C;
 extern s16 D_800D6B30;
-extern struct GObj *func_8000BDF0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
+extern struct GObj *ohCreateCameraWrapper(s32 link, s32 pri, s32 dlPriority, s32 flags, s32 bgColor);
 
 extern void func_80007C00(f32 *, f32, f32, f32, f32);
 
@@ -241,7 +241,7 @@ void func_80151B08_ovl4(void) {
     s32 temp_v1;
     s32 i;
 
-    func_80007C00(&func_8000BDF0(0x19, 0x80000000, 0x63, 3, 0xFF)->unk3C->unk0.z,
+    func_80007C00(&ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF)->viewMtx.lookAt.mtx->unk08,
                   10.0f,
                   10.0f,
                   310.0f,

@@ -93,24 +93,24 @@ void func_800B9C50(s32 fileNum) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9DF8.s")
 
-s32 func_800B9E4C(void) {
-    s32 v0;
-    s32 a0;
+s32 saveCollectedAllShards(void) {
+    s32 shards;
+    s32 i;
 
-    v0 = 0;
+    shards = 0;
 
-    for (a0 = 0; a0 < 24; a0++) {
-        if (D_800D6BC8[a0] & 1) {
-            v0++;
+    for (i = 0; i < 24; i++) {
+        if (D_800D6BC8[i] & 1) {
+            shards++;
         }
-        if (D_800D6BC8[a0] & 2) {
-            v0++;
+        if (D_800D6BC8[i] & 2) {
+            shards++;
         }
-        if (D_800D6BC8[a0] & 4) {
-            v0++;
+        if (D_800D6BC8[i] & 4) {
+            shards++;
         }
     }
-    if (v0 < 0x42) {
+    if (shards < 66) {
         return 0;
     }
     if (D_800D6BC5 != 0) {

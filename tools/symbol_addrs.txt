@@ -846,6 +846,11 @@ saveCutscenesWatched = 0x800D6BA0;
 savePercentComplete = 0x800D6BA8;
 saveSoundMode = 0x800D6BAC;
 saveHUDTheme = 0x800D6BB0;
+saveCollectedAllShards = 0x800B9E4C; // type:func
+
+
+// ovl4_1
+check_save_file_completion_cheat_code = 0x80151100; // segment:ovl4
 
 // ovl2_3
 setUpDispose = 0x800FCA84; // type:func

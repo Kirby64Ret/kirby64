@@ -543,5 +543,7 @@ extern struct GObj *omGObjListHead[32];
 // extern funcs
 void omLinkGObjDL(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);
 struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
+void omUpdateAll();
+
 
 #endif

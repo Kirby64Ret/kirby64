@@ -127,5 +127,6 @@ extern s8 contChannelMap[MAXCONTROLLERS];
 
 // funcs
 void contMain(void *arg);
+void func_8000464C(void);
 
 #endif // CONTPAD_H

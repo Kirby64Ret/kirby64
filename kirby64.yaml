@@ -381,13 +381,14 @@ segments:
     exclusive_ram_id: players
     bss_size: 0xb0
     subsegments:
-    - [0xF8630, asm, ovl4/ovl4_1]
+    - [0xF8630, c, ovl4/ovl4_1]
     - [0xF9310, asm, ovl4/ovl4_2]
     - [0xFC8F0, asm, ovl4/ovl4_3]
     - [0xFF650, asm, ovl4/ovl4_4]
     - [0x101030, asm, ovl4/ovl4_5]
-    - [0x1014F0, data, ovl4/ovl4]
-    - [0x1039F0, rodata, ovl4/ovl4_1]
+    - [0x1014F0, .data, ovl4/ovl4_1]
+    - [0x101620, data, ovl4/ovl4]
+    - [0x1039F0, .rodata, ovl4/ovl4_1]
     - [0x103A40, rodata, ovl4/ovl4_2]
     - [0x103AA0, rodata, ovl4/ovl4_3]
     - [0x103B50, rodata, ovl4/ovl4_4]

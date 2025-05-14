@@ -439,7 +439,7 @@ GObj* ohCreateCamera(s32 objId, void (*updateCB)(GObj*), s32 objLink, s32 objPri
     return g;
 }
 
-void *ohCreateCameraWrapper(s32 link, s32 pri, s32 dlPriority, s32 flags, s32 bgColor) {
+Camera *ohCreateCameraWrapper(s32 link, s32 pri, s32 dlPriority, s32 flags, s32 bgColor) {
     GObj *g;
     Camera *cam;
 

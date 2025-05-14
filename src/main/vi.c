@@ -96,7 +96,7 @@ void viSetScreenParams(s32 width, s32 height, u32 flags) {
 }
 
 void viApplyScreenSettings(ScreenSettings* settings) {
-    viSetCFB(settings->fb1, settings->fb2, settings->fb3);
+    viSetCFB(settings->cfb1, settings->cfb2, settings->cfb3);
     gZBuffer = settings->zBuffer;
     viSetScreenParams(settings->screenWidth, settings->screenHeight, settings->flags);
 }

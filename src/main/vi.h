@@ -5,9 +5,9 @@
 #include "localsched.h"
 
 typedef struct {
-    /* 0x00 */ void* fb1;
-    /* 0x04 */ void* fb2;
-    /* 0x08 */ void* fb3;
+    /* 0x00 */ void* cfb1;
+    /* 0x04 */ void* cfb2;
+    /* 0x08 */ void* cfb3;
     /* 0x0C */ u16* zBuffer;
     /* 0x10 */ u32 screenWidth;
     /* 0x14 */ u32 screenHeight;
