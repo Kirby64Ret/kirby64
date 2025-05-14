@@ -142,10 +142,6 @@ sMusicNames=0x800C0534;
 sSoundNames=0x800C0B1C;
 sMusicCount=0x800d6b4c;
 sSoundCount=0x800d6b50;
-gCurrentWorld=0x800d6b90;
-gCurrentLevel=0x800d6b94;
-gCutscenesWatched=0x800d6ba0;
-gHudDisplayMode=0x800d6bb0;
 gKirbyLives=0x800d6e4c;
 gKirbyHp=0x800d6e50;
 gKirbyStars=0x800d6e60;
@@ -842,6 +838,14 @@ correct_stick_x = 0x800A5560; // type:func
 correct_stick_y = 0x800A55E0; // type:func
 gOverlayTable = 0x800BE8A0;
 
+// save
+saveCurrentFileNum = 0x800D6B88;
+saveCurrentWorld = 0x800D6B90;
+saveCurrentLevel = 0x800D6B94;
+saveCutscenesWatched = 0x800D6BA0;
+savePercentComplete = 0x800D6BA8;
+saveSoundMode = 0x800D6BAC;
+saveHUDTheme = 0x800D6BB0;
 
 // ovl2_3
 setUpDispose = 0x800FCA84; // type:func

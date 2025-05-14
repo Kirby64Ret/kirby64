@@ -9,7 +9,7 @@
 // probably BSS for this file
 extern u32 D_800BE4F4;
 extern u32 gGameState;
-extern u32 gCurrentLevel, gCurrentWorld;
+extern u32 saveCurrentLevel, saveCurrentWorld;
 extern s32 gKirbyLives;
 extern f32 gKirbyHp;
 extern s32 D_800D6E54;
@@ -18,7 +18,7 @@ extern f32 D_800D6E5C;
 extern s32 gKirbyStars;
 extern s32 D_800D6B7C;
 extern s32 D_800D6B80;
-extern u32 gCurrentFileNum;
+extern s32 saveCurrentFileNum;
 extern u32 D_800D6B8C;
 extern s32 D_800D6B44;
 extern s32 D_800D6F50;
@@ -28,8 +28,8 @@ extern u32 D_800BE4F8;
 extern u32 D_800D6B48;
 
 extern s32 D_800D7288;
-extern u32 gCurrentLevel;
-extern u32 gCurrentWorld;
+extern u32 saveCurrentLevel;
+extern u32 saveCurrentWorld;
 extern s32 D_800D6B74;
 extern s32 D_800D6B60;
 extern u32 D_800D6B68;
@@ -49,7 +49,7 @@ extern u32 D_800BE538;
 extern u32 D_800BE53C;
 extern f32 D_800BE524;
 extern f32 D_800BE510;
-extern s32 D_800D6BA8;
+extern s32 savePercentComplete;
 extern u32 D_800D71E8;
 
 extern u32 D_800D6F4C;
@@ -192,7 +192,7 @@ void func_800A2C80(void) {
 #endif
 
 void func_800A2CE4(void) {
-    gCurrentFileNum = D_800EC9FC;
+    saveCurrentFileNum = D_800EC9FC;
     gKirbyLives = 3;
     gKirbyHp = 6.0f;
     D_800D6E54 = 0;
@@ -328,8 +328,8 @@ void load_menu_overlays(void) {
 void func_800A3150(s32 arg0) {
     D_800D6F38 = 0;
     D_800D6F3C = arg0;
-    D_800D6B8C = gCurrentFileNum;
-    gCurrentFileNum = -1;
+    D_800D6B8C = saveCurrentFileNum;
+    saveCurrentFileNum = -1;
     func_800A2C80();
     func_800A2CE4();
     func_800A2D5C();
@@ -346,7 +346,7 @@ void func_800A3150(s32 arg0) {
             break;
         }
     }
-    gCurrentFileNum = D_800D6B8C;
+    saveCurrentFileNum = D_800D6B8C;
 }
 
 void func_800A3228(void) {
@@ -364,8 +364,8 @@ void func_800A3230(void) {
             temp_v0 = &D_800BE400 + (D_800BE504 * 6) + var_s0;
             if ((D_800BE508 == temp_v0->unk0) && (D_800BE534 == temp_v0->unk1) && (check_cutscene_watched(temp_v0->unk2) == 0)) {
                 func_800A74D8();
-                set_cutscene_watched((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, gCurrentFileNum);
-                func_800B9C50(gCurrentFileNum);
+                set_cutscene_watched((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, saveCurrentFileNum);
+                func_800B9C50(saveCurrentFileNum);
                 load_overlay(4);
                 func_80154D60_ovl6((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, 2);
             }
@@ -381,8 +381,8 @@ void func_800A3230(void) {
 
 void func_800A336C(void) {
     if ((D_800BE500 >= 0) && (D_800BE500 < 5) && (check_cutscene_watched(D_800BE414[D_800BE500]) == 0)) {
-        set_cutscene_watched(D_800BE414[D_800BE500], gCurrentFileNum);
-        func_800B9C50(gCurrentFileNum);
+        set_cutscene_watched(D_800BE414[D_800BE500], saveCurrentFileNum);
+        func_800B9C50(saveCurrentFileNum);
         load_overlay(4);
         func_80154D60_ovl6(D_800BE414[D_800BE500], 2);
     }
@@ -393,7 +393,7 @@ void func_800A336C(void) {
 
 #ifdef MIPS_TO_C
 void func_800A3408(void) {
-    if ((gCurrentWorld == 1) && (gCurrentLevel == 1)) {
+    if ((saveCurrentWorld == 1) && (saveCurrentLevel == 1)) {
         load_overlay(0x12);
         if (func_80227308_ovl18(0) != 0) {
             D_800BE4F4 = gGameState;
@@ -403,7 +403,7 @@ void func_800A3408(void) {
                 load_overlay(0x12);
             } while (func_80227308_ovl18(1) == 1);
             func_800A2CE4();
-            func_800B96A0(gCurrentFileNum, 0);
+            func_800B96A0(saveCurrentFileNum, 0);
             gGameState = D_800BE4F4;
         }
     }
@@ -603,7 +603,7 @@ void game_tick(s32 arg0) {
                 func_800A2CE4();
                 func_800B87E0();
                 func_80158048_ovl4();
-                func_800B8AD4(gCurrentFileNum);
+                func_800B8AD4(saveCurrentFileNum);
                 if (gGameState == 0xB) {
                     func_800A3408();
                 }
@@ -611,8 +611,8 @@ void game_tick(s32 arg0) {
             case 11:                                    /* switch 1 */
                 if (check_cutscene_watched(1) == 0) {
                     load_overlay(4);
-                    set_cutscene_watched(1, gCurrentFileNum);
-                    func_800B9C50(gCurrentFileNum);
+                    set_cutscene_watched(1, saveCurrentFileNum);
+                    func_800B9C50(saveCurrentFileNum);
                     func_80154D60_ovl6(1, 2);
                 }
                 load_menu_overlays();
@@ -693,10 +693,10 @@ void game_tick(s32 arg0) {
                         break;
                     case 3:                             /* switch 2 */
                         temp_v1 = D_800D6B9C + 1;
-                        if ((gCurrentLevel == temp_v1) && (gCurrentWorld == (D_800D6B98 + 1))) {
+                        if ((saveCurrentLevel == temp_v1) && (saveCurrentWorld == (D_800D6B98 + 1))) {
                             D_800D6B9C = temp_v1;
-                            gCurrentLevel += 1;
-                            func_800B9C50(gCurrentFileNum);
+                            saveCurrentLevel += 1;
+                            func_800B9C50(saveCurrentFileNum);
                             D_800D6B80 = 1;
                         }
                         func_800A74D8();
@@ -715,11 +715,11 @@ void game_tick(s32 arg0) {
                             case 2:                     /* switch 3 */
                             case 3:                     /* switch 3 */
                             case 4:                     /* switch 3 */
-                                if ((gCurrentWorld == (D_800D6B98 + 1)) && (gCurrentWorld < 7)) {
-                                    gCurrentWorld += 1;
-                                    gCurrentLevel = 1;
+                                if ((saveCurrentWorld == (D_800D6B98 + 1)) && (saveCurrentWorld < 7)) {
+                                    saveCurrentWorld += 1;
+                                    saveCurrentLevel = 1;
                                     D_800D6B7C = 1;
-                                    func_800B9C50(gCurrentFileNum);
+                                    func_800B9C50(saveCurrentFileNum);
                                 }
                                 func_800A74D8();
                                 func_800A336C();
@@ -734,14 +734,14 @@ void game_tick(s32 arg0) {
                                 if (ovl1_TamperCheck() == 0) {
                                     gGameState = 0xB;
                                 } else {
-                                    if ((gCurrentWorld == (D_800D6B98 + 1)) && (gCurrentWorld < 7)) {
-                                        gCurrentWorld += 1;
-                                        gCurrentLevel = 1;
-                                        func_800B9D60(gCurrentFileNum, 5);
+                                    if ((saveCurrentWorld == (D_800D6B98 + 1)) && (saveCurrentWorld < 7)) {
+                                        saveCurrentWorld += 1;
+                                        saveCurrentLevel = 1;
+                                        func_800B9D60(saveCurrentFileNum, 5);
                                     }
-                                    func_800B9C50(gCurrentFileNum);
+                                    func_800B9C50(saveCurrentFileNum);
                                     gGameState = 0x12;
-                                    if (D_800D6BA8 == 0x64) {
+                                    if (savePercentComplete == 0x64) {
                                         gGameState = 0xC;
                                         if (check_cutscene_watched(0xD) == 0) {
                                             D_800BE500 = 6;
@@ -750,8 +750,8 @@ void game_tick(s32 arg0) {
                                             D_800BE504 = 0;
                                             D_800D6B9C = 0;
                                             load_overlay(4);
-                                            set_cutscene_watched(0xD, gCurrentFileNum);
-                                            func_800B9C50(gCurrentFileNum);
+                                            set_cutscene_watched(0xD, saveCurrentFileNum);
+                                            func_800B9C50(saveCurrentFileNum);
                                             func_80154D60_ovl6(0xD, 2);
                                             func_800A2D68();
                                             func_800A2E98();
@@ -763,10 +763,10 @@ void game_tick(s32 arg0) {
                         }
                         break;
                     case 7:                             /* switch 2 */
-                        if ((gCurrentWorld == (D_800D6B98 + 1)) && (gCurrentWorld < 8)) {
-                            gCurrentWorld = 8;
-                            gCurrentLevel = 1;
-                            func_800B9D60(gCurrentFileNum, 6);
+                        if ((saveCurrentWorld == (D_800D6B98 + 1)) && (saveCurrentWorld < 8)) {
+                            saveCurrentWorld = 8;
+                            saveCurrentLevel = 1;
+                            func_800B9D60(saveCurrentFileNum, 6);
                         }
                         func_800A74D8();
                         gGameState = 0x13;
@@ -784,7 +784,7 @@ void game_tick(s32 arg0) {
                         gGameState = 1;
                         break;
                 }
-                func_800B9C50(gCurrentFileNum);
+                func_800B9C50(saveCurrentFileNum);
                 continue;
             case 16:                                    /* switch 1 */
             case 17:                                    /* switch 1 */
@@ -804,20 +804,20 @@ void game_tick(s32 arg0) {
                 continue;
             case 18:                                    /* switch 1 */
                 load_overlay(4);
-                set_cutscene_watched(0x11, gCurrentFileNum);
-                set_cutscene_watched(0x13, gCurrentFileNum);
-                func_800B9C50(gCurrentFileNum);
+                set_cutscene_watched(0x11, saveCurrentFileNum);
+                set_cutscene_watched(0x13, saveCurrentFileNum);
+                func_800B9C50(saveCurrentFileNum);
                 func_80154D60_ovl6(0xE, 2);
                 gGameState = 1;
                 continue;
             case 19:                                    /* switch 1 */
                 load_overlay(4);
-                set_cutscene_watched(0xD, gCurrentFileNum);
-                set_cutscene_watched(0x11, gCurrentFileNum);
-                set_cutscene_watched(0x12, gCurrentFileNum);
-                set_cutscene_watched(0x13, gCurrentFileNum);
-                set_cutscene_watched(0x10, gCurrentFileNum);
-                func_800B9C50(gCurrentFileNum);
+                set_cutscene_watched(0xD, saveCurrentFileNum);
+                set_cutscene_watched(0x11, saveCurrentFileNum);
+                set_cutscene_watched(0x12, saveCurrentFileNum);
+                set_cutscene_watched(0x13, saveCurrentFileNum);
+                set_cutscene_watched(0x10, saveCurrentFileNum);
+                func_800B9C50(saveCurrentFileNum);
                 func_80154D60_ovl6(0xF, 0xA);
                 gGameState = 1;
                 continue;

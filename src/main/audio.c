@@ -638,18 +638,12 @@ void func_80020D00(s32 arg0, u32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_80020D58(s32 arg0, s32 arg1) {
-    s32 temp_a0;
-    s32 var_a2;
-
-    var_a2 = arg1 & 0xFF;
-    if ((arg1 & 0xFF) >= 0x80) {
-        var_a2 = 0x7F;
+void func_80020D58(s32 arg0, u8 arg1) {
+    if (arg1 >= 0x80) {
+        arg1 = 0x7F;
     }
-    temp_a0 = *(D_8009646C + (arg0 * 4));
-    if (temp_a0 != 0) {
-        func_800233F4(temp_a0, var_a2 & 0xFF, var_a2, arg0);
+    if (D_8009646C[arg0] != 0) {
+        func_800233F4(D_8009646C[arg0]);
     }
 }
 #else
