@@ -1,4 +1,15 @@
 #include "common.h"
+#include "main/gtl.h"
+
+// this file
+extern s8 D_800BE3E0, D_800BE3E4;
+extern u16 D_800D6AE2;
+extern s32 D_800D6AE4;
+extern u16 D_800D6AE8;
+extern s16 D_800D6AEA;
+extern s32 D_800D6AEC;
+extern u16 D_800BE3E8;
+extern u32 D_800D6A14[];
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009B550.s")
 
@@ -48,15 +59,29 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009E834.s")
 
+// crazy large gfx function lol
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009E8F4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A043C.s")
+void func_800A043C(void *arg0, u32 flag) {
+    func_8009E8F4(arg0, flag, &gDisplayListHeads[0]);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A0460.s")
+void func_800A0460(void *arg0) {
+    func_800A043C(arg0, 0x00000003);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A0480.s")
+void func_800A0480(s32 arg0, u32 arg1) {
+    if (arg0 > 0) {
+        if (arg0 < 9) {
+            D_800D6A14[arg0] = arg1;
+        }
+    }
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A04A4.s")
+void func_800A04A4(u32 arg0, u32 arg1) {
+    D_800BE3E0 = arg0;
+    D_800BE3E4 = arg1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A04B8.s")
 

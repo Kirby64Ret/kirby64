@@ -268,65 +268,37 @@ void ohDobjTreeRemoveAllMObjs(GObj *g) {
     }
 }
 
-#ifdef MIPS_TO_C
+DObj *ohAddDObj(void) {
+    DObj *dobj;
 
-s32 ohAddDObj(void) {
-    s32 sp1C;
-    s32 temp_v0;
-
-    temp_v0 = omGObjAddDObj();
-    sp1C = temp_v0;
-    ohCreateDefaultMatricesDeg(temp_v0);
-    return temp_v0;
+    dobj = omGObjAddDObj();
+    ohCreateDefaultMatricesDeg(dobj);
+    return dobj;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObj.s")
-#endif
 
-#ifdef MIPS_TO_C
+DObj *ohAddDObjSibling(void) {
+    DObj *dobj;
 
-s32 ohAddDObjSibling(void) {
-    s32 sp1C;
-    s32 temp_v0;
-
-    temp_v0 = omDObjAddSibling();
-    sp1C = temp_v0;
-    ohCreateDefaultMatricesDeg(temp_v0);
-    return temp_v0;
+    dobj = omDObjAddSibling();
+    ohCreateDefaultMatricesDeg(dobj);
+    return dobj;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjSibling.s")
-#endif
 
-#ifdef MIPS_TO_C
+DObj *ohAddDObjChild(void) {
+    DObj *dobj;
 
-s32 ohAddDObjChild(void) {
-    s32 sp1C;
-    s32 temp_v0;
-
-    temp_v0 = omDObjAddChild();
-    sp1C = temp_v0;
-    ohCreateDefaultMatricesDeg(temp_v0);
-    return temp_v0;
+    dobj = omDObjAddChild();
+    ohCreateDefaultMatricesDeg(dobj);
+    return dobj;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjChild.s")
-#endif
 
-#ifdef MIPS_TO_C
+DObj *ohAddDObjRad(void) {
+    DObj *dobj;
 
-s32 ohAddDObjRad(void) {
-    s32 sp1C;
-    s32 temp_v0;
-
-    temp_v0 = omGObjAddDObj();
-    sp1C = temp_v0;
-    ohCreateDefaultMatricesRad(temp_v0);
-    return temp_v0;
+    dobj = omGObjAddDObj();
+    ohCreateDefaultMatricesRad(dobj);
+    return dobj;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/ohAddDObjRad.s")
-#endif
 
 DObj *ohAddDObjSiblingRad(void) {
     DObj *d;
@@ -395,24 +367,14 @@ void func_8000BAEC(s32 arg0, s32 *arg1, void **arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BAEC.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_8000BBE0(GObj *arg0) {
-    GObj *var_s1;
-
-    var_s1 = arg0;
-    if (arg0 == NULL) {
-        var_s1 = omCurrentObj;
+void func_8000BBE0(GObj *g) {
+    if (g == NULL) {
+        g = omCurrentObj;
     }
-    if (var_s1->data != NULL) {
-        do {
-            func_80009DF4(var_s1->data);
-        } while (var_s1->data != NULL);
+    while (g->data != NULL) {
+        func_80009DF4(g->data);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BBE0.s")
-#endif
 
 void ohDeleteAllObjects(void) {
     GObj* curr;

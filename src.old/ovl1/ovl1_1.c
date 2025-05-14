@@ -40,6 +40,10 @@ extern u32 D_800BE510;
 extern s32 D_800D6BA8;
 extern u32 D_800D71E8;
 
+extern u32 D_800D6F4C;
+extern u32 D_800D6E64;
+extern u32 D_800BE52C;
+
 extern s32 D_800D6B88;
 extern s32 gKirbyLives;
 extern f32 gKirbyHp;

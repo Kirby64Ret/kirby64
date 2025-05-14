@@ -10,9 +10,67 @@
 extern u32 D_800BE4F4;
 extern u32 gGameState;
 extern u32 gCurrentLevel, gCurrentWorld;
+extern s32 gKirbyLives;
+extern f32 gKirbyHp;
+extern s32 D_800D6E54;
+extern f32 D_800D6E58;
+extern f32 D_800D6E5C;
+extern s32 gKirbyStars;
+extern s32 D_800D6B7C;
+extern s32 D_800D6B80;
+extern u32 gCurrentFileNum;
+extern u32 D_800D6B8C;
+extern s32 D_800D6B44;
+extern s32 D_800D6F50;
+extern s32 D_800EC9FC;
+extern s32 D_800BE504, D_800D6B9C;
+extern u32 D_800BE4F8;
+extern u32 D_800D6B48;
 
-// other ovl1 bss
-extern u32 D_800D6B88;
+extern s32 D_800D7288;
+extern u32 gCurrentLevel;
+extern u32 gCurrentWorld;
+extern s32 D_800D6B74;
+extern s32 D_800D6B60;
+extern u32 D_800D6B68;
+extern u32 D_800D6B78;
+extern u32 D_800BE500;
+extern u32 D_800D6B98;
+extern s32 D_800BE504, D_800D6B9C;
+extern u8 D_800D6B84;
+extern u32 D_800BE530;
+extern s32 D_800D6F38, D_800D6F3C;
+extern u32 D_800BE51C;
+extern u32 D_800BE4FC, D_800BE518;
+extern u32 D_800BE534;
+extern u32 D_800BE520;
+extern u32 D_800BE508, D_800BE50C;
+extern u32 D_800BE538;
+extern u32 D_800BE53C;
+extern f32 D_800BE524;
+extern f32 D_800BE510;
+extern s32 D_800D6BA8;
+extern u32 D_800D71E8;
+
+extern u32 D_800D6F4C;
+extern u32 D_800D6E64;
+extern u32 D_800BE52C;
+extern u32 D_800D6E48;
+
+
+extern u32 D_800D6D10[0x40];
+
+extern u8 D_800D6E20[16];
+extern u8 D_800D6E30[16];
+
+extern s32 D_800D6F38;
+extern s32 D_800D6F3C;
+extern u32 D_800D6F54;
+
+extern void *D_800A2904; // struct
+
+extern u32 D_800D6B18;
+extern u8 D_800D6B00[], D_800BE3F0[];
 
 void crash_screen_print_gobj_info(GObj *o) {
     crash_screen_printf("gobj id:%d\n", o->objId);
@@ -119,7 +177,6 @@ void func_800A2B9C(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800A2C80(void) {
     func_800BB3F0();
     scRemovePostProcessFunc();
@@ -134,10 +191,8 @@ void func_800A2C80(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2C80.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800A2CE4(void) {
-    D_800D6B88 = D_800EC9FC;
+    gCurrentFileNum = D_800EC9FC;
     gKirbyLives = 3;
     gKirbyHp = 6.0f;
     D_800D6E54 = 0;
@@ -149,66 +204,32 @@ void func_800A2CE4(void) {
     D_800D6B44 = -1;
     D_800D6F50 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2CE4.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800A2D5C(void) {
     D_800D6B9C = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2D5C.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800A2D68(void) {
-    ? *var_v0;
-    ? *var_v0_2;
-    ? *var_v1;
+    int i;
 
-    D_800BE518 = 0;
-    D_800BE4FC = 0;
-    D_800BE51C = 0;
-    D_800BE508 = 0;
-    D_800BE520 = 0;
-    D_800BE50C = 0;
-    D_800BE524 = 0.0f;
-    D_800BE510 = D_800BE524;
+    D_800BE4FC = D_800BE518 = 0;
+    D_800BE508 = D_800BE51C = 0;
+    D_800BE50C = D_800BE520 = 0;
+    D_800BE510 = D_800BE524 = 0.0f;
     D_800D6F4C = 0;
     D_800D6E64 = 0;
     D_800D6E48 = 0;
-    var_v0 = &D_800D6D10;
-    do {
-        var_v0 += 4;
-        var_v0->unk-4 = 0;
-    } while (var_v0 < &D_800D6E10);
-    var_v1 = &D_800D6E30;
-    var_v0_2 = &D_800D6E20;
-    do {
-        var_v1 += 4;
-        var_v0_2->unk1 = 0;
-        var_v1->unk-3 = 0;
-        var_v0_2->unk2 = 0;
-        var_v1->unk-2 = 0;
-        var_v0_2->unk3 = 0;
-        var_v1->unk-1 = 0;
-        var_v0_2 += 4;
-        var_v0_2->unk-4 = 0;
-        var_v1->unk-4 = 0;
-    } while (var_v1 != &D_800D6E40);
+    for (i = 0; i < 0x40; i++) {
+        D_800D6D10[i] = 0;
+    }
+    for (i = 0; i < 16; i++) {
+        D_800D6E30[i] = D_800D6E20[i] = 0;
+    }
     D_800D6B48 = 0x22;
-    func_8011C87C(&D_800D6E40, &D_800BE51C, &D_800BE520, &D_800BE524);
-    D_800BE52C = D_800D6B98;
-    D_800BE500 = D_800D6B98;
-    D_800BE530 = D_800D6B9C;
-    D_800BE504 = D_800D6B9C;
+    func_8011C87C();
+    D_800BE500 = D_800BE52C = D_800D6B98;
+    D_800BE504 = D_800BE530 = D_800D6B9C;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2D68.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -304,13 +325,11 @@ void load_menu_overlays(void) {
     load_overlay(3);
 }
 
-#ifdef MIPS_TO_C
-
 void func_800A3150(s32 arg0) {
     D_800D6F38 = 0;
     D_800D6F3C = arg0;
-    D_800D6B8C = D_800D6B88;
-    D_800D6B88 = -1;
+    D_800D6B8C = gCurrentFileNum;
+    gCurrentFileNum = -1;
     func_800A2C80();
     func_800A2CE4();
     func_800A2D5C();
@@ -323,16 +342,12 @@ void func_800A3150(s32 arg0) {
         func_800F6AD4(1);
         if ((D_800D6F38 != 0) && (D_800BE4F8 != 0)) {
             auStopAllSounds();
-            
         } else {
             break;
         }
     }
-    D_800D6B88 = D_800D6B8C;
+    gCurrentFileNum = D_800D6B8C;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A3150.s")
-#endif
 
 void func_800A3228(void) {
 }
@@ -349,8 +364,8 @@ void func_800A3230(void) {
             temp_v0 = &D_800BE400 + (D_800BE504 * 6) + var_s0;
             if ((D_800BE508 == temp_v0->unk0) && (D_800BE534 == temp_v0->unk1) && (check_cutscene_watched(temp_v0->unk2) == 0)) {
                 func_800A74D8();
-                set_cutscene_watched((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, D_800D6B88);
-                func_800B9C50(D_800D6B88);
+                set_cutscene_watched((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, gCurrentFileNum);
+                func_800B9C50(gCurrentFileNum);
                 load_overlay(4);
                 func_80154D60_ovl6((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, 2);
             }
@@ -365,11 +380,11 @@ void func_800A3230(void) {
 #ifdef MIPS_TO_C
 
 void func_800A336C(void) {
-    if ((D_800BE500 >= 0) && (D_800BE500 < 5) && (check_cutscene_watched(*(&D_800BE414 + (D_800BE500 * 4))) == 0)) {
-        set_cutscene_watched(*(&D_800BE414 + (D_800BE500 * 4)), D_800D6B88);
-        func_800B9C50(D_800D6B88);
+    if ((D_800BE500 >= 0) && (D_800BE500 < 5) && (check_cutscene_watched(D_800BE414[D_800BE500]) == 0)) {
+        set_cutscene_watched(D_800BE414[D_800BE500], gCurrentFileNum);
+        func_800B9C50(gCurrentFileNum);
         load_overlay(4);
-        func_80154D60_ovl6(*(&D_800BE414 + (D_800BE500 * 4)), 2);
+        func_80154D60_ovl6(D_800BE414[D_800BE500], 2);
     }
 }
 #else
@@ -388,7 +403,7 @@ void func_800A3408(void) {
                 load_overlay(0x12);
             } while (func_80227308_ovl18(1) == 1);
             func_800A2CE4();
-            func_800B96A0(D_800D6B88, 0);
+            func_800B96A0(gCurrentFileNum, 0);
             gGameState = D_800BE4F4;
         }
     }
@@ -588,7 +603,7 @@ void game_tick(s32 arg0) {
                 func_800A2CE4();
                 func_800B87E0();
                 func_80158048_ovl4();
-                func_800B8AD4(D_800D6B88);
+                func_800B8AD4(gCurrentFileNum);
                 if (gGameState == 0xB) {
                     func_800A3408();
                 }
@@ -596,8 +611,8 @@ void game_tick(s32 arg0) {
             case 11:                                    /* switch 1 */
                 if (check_cutscene_watched(1) == 0) {
                     load_overlay(4);
-                    set_cutscene_watched(1, D_800D6B88);
-                    func_800B9C50(D_800D6B88);
+                    set_cutscene_watched(1, gCurrentFileNum);
+                    func_800B9C50(gCurrentFileNum);
                     func_80154D60_ovl6(1, 2);
                 }
                 load_menu_overlays();
@@ -681,7 +696,7 @@ void game_tick(s32 arg0) {
                         if ((gCurrentLevel == temp_v1) && (gCurrentWorld == (D_800D6B98 + 1))) {
                             D_800D6B9C = temp_v1;
                             gCurrentLevel += 1;
-                            func_800B9C50(D_800D6B88);
+                            func_800B9C50(gCurrentFileNum);
                             D_800D6B80 = 1;
                         }
                         func_800A74D8();
@@ -704,7 +719,7 @@ void game_tick(s32 arg0) {
                                     gCurrentWorld += 1;
                                     gCurrentLevel = 1;
                                     D_800D6B7C = 1;
-                                    func_800B9C50(D_800D6B88);
+                                    func_800B9C50(gCurrentFileNum);
                                 }
                                 func_800A74D8();
                                 func_800A336C();
@@ -722,9 +737,9 @@ void game_tick(s32 arg0) {
                                     if ((gCurrentWorld == (D_800D6B98 + 1)) && (gCurrentWorld < 7)) {
                                         gCurrentWorld += 1;
                                         gCurrentLevel = 1;
-                                        func_800B9D60(D_800D6B88, 5);
+                                        func_800B9D60(gCurrentFileNum, 5);
                                     }
-                                    func_800B9C50(D_800D6B88);
+                                    func_800B9C50(gCurrentFileNum);
                                     gGameState = 0x12;
                                     if (D_800D6BA8 == 0x64) {
                                         gGameState = 0xC;
@@ -735,8 +750,8 @@ void game_tick(s32 arg0) {
                                             D_800BE504 = 0;
                                             D_800D6B9C = 0;
                                             load_overlay(4);
-                                            set_cutscene_watched(0xD, D_800D6B88);
-                                            func_800B9C50(D_800D6B88);
+                                            set_cutscene_watched(0xD, gCurrentFileNum);
+                                            func_800B9C50(gCurrentFileNum);
                                             func_80154D60_ovl6(0xD, 2);
                                             func_800A2D68();
                                             func_800A2E98();
@@ -751,7 +766,7 @@ void game_tick(s32 arg0) {
                         if ((gCurrentWorld == (D_800D6B98 + 1)) && (gCurrentWorld < 8)) {
                             gCurrentWorld = 8;
                             gCurrentLevel = 1;
-                            func_800B9D60(D_800D6B88, 6);
+                            func_800B9D60(gCurrentFileNum, 6);
                         }
                         func_800A74D8();
                         gGameState = 0x13;
@@ -769,7 +784,7 @@ void game_tick(s32 arg0) {
                         gGameState = 1;
                         break;
                 }
-                func_800B9C50(D_800D6B88);
+                func_800B9C50(gCurrentFileNum);
                 continue;
             case 16:                                    /* switch 1 */
             case 17:                                    /* switch 1 */
@@ -789,20 +804,20 @@ void game_tick(s32 arg0) {
                 continue;
             case 18:                                    /* switch 1 */
                 load_overlay(4);
-                set_cutscene_watched(0x11, D_800D6B88);
-                set_cutscene_watched(0x13, D_800D6B88);
-                func_800B9C50(D_800D6B88);
+                set_cutscene_watched(0x11, gCurrentFileNum);
+                set_cutscene_watched(0x13, gCurrentFileNum);
+                func_800B9C50(gCurrentFileNum);
                 func_80154D60_ovl6(0xE, 2);
                 gGameState = 1;
                 continue;
             case 19:                                    /* switch 1 */
                 load_overlay(4);
-                set_cutscene_watched(0xD, D_800D6B88);
-                set_cutscene_watched(0x11, D_800D6B88);
-                set_cutscene_watched(0x12, D_800D6B88);
-                set_cutscene_watched(0x13, D_800D6B88);
-                set_cutscene_watched(0x10, D_800D6B88);
-                func_800B9C50(D_800D6B88);
+                set_cutscene_watched(0xD, gCurrentFileNum);
+                set_cutscene_watched(0x11, gCurrentFileNum);
+                set_cutscene_watched(0x12, gCurrentFileNum);
+                set_cutscene_watched(0x13, gCurrentFileNum);
+                set_cutscene_watched(0x10, gCurrentFileNum);
+                func_800B9C50(gCurrentFileNum);
                 func_80154D60_ovl6(0xF, 0xA);
                 gGameState = 1;
                 continue;

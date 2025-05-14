@@ -3,9 +3,6 @@
 
 #include "unk_structs/D_800D6A08.h"
 
-extern s32 D_800D6AE4;
-extern s16 D_800D6AEA;
-extern s32 D_800D6AEC;
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1/func_8009B550_ovl1.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1/func_8009B5E8.s")
@@ -65,8 +62,6 @@ void func_800A043C(u32 arg0, u32 arg1) {
 void func_800A0460(u32 arg0) {
     func_800A043C(arg0, 3);
 }
-
-extern u32 D_800D6A14[];
 
 void func_800A0480(s32 arg0, u32 arg1) {
     if (arg0 > 0) {
