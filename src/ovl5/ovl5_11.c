@@ -116,7 +116,7 @@ void func_80180AE0_ovl5(s32 arg0) {
     func_8015C740_ovl5(arg0, &D_80189E48_ovl5);
     func_8015C740_ovl5(arg0, &D_80189E68_ovl5);
     func_8015C740_ovl5(arg0, &D_80189E88_ovl5);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 // https://decomp.me/scratch/kIAAf
@@ -337,7 +337,7 @@ void func_80181D00_ovl5(GObj *arg0) {
 void func_80181DF8_ovl5(s32 arg0) {
     D_800DF150[omCurrentObj->objId] = func_80181E58_ovl5;
     func_800A9864(sKirbyHeadphoneModel, 0x1869F, 0x10);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_80181E58_ovl5(s32 arg0) {

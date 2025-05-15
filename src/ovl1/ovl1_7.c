@@ -6,6 +6,7 @@
 #include "main/lbvector.h"
 #include "main/lbmatrix.h"
 #include "buffers.h"
+#include "ovl2/ovl2_8.h"
 
 // wherever ovl0_3 or code_CA90 is
 extern void func_8000BEF4(GObj *, f32);
@@ -481,15 +482,11 @@ void func_800AF9B8(u16 track, u8 link) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AF9B8.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800AFA14(void) {
-loop_1:
-    ohSleep(0x7FFFFFFF);
-    goto loop_1;
+void curObjSleepForever(void) {
+    while (1) {
+        ohSleep(0x7FFFFFFF);
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFA14.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -519,53 +516,38 @@ void func_800AFA88(void *arg0) {
 
 #ifdef MIPS_TO_C
 
-void func_800AFBB4(GObj *arg0, GObj *arg1) {
-    if (arg0 == 0) {
-        arg1->flags |= 1;
+void func_800AFBB4(GObj *gobj, GObj *gobj2) {
+    if (gobj == 0) {
+        gobj2->flags |= 1;
     } else {
-        arg1->flags &= ~1;
+        gobj2->flags &= ~1;
     }
-    arg1->unkE = D_8003DCA8 - 1;
+    gobj2->unkE = D_8003DCA8 - 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFBB4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800AFBEC(s32 arg2) {
-    play_music();
-    if (arg2 != 0) {
-        ohSleep(arg2);
+void func_800AFBEC(u32 player, u32 music, s32 sleep) {
+    play_music(player, music);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFBEC.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800AFC20(s32 arg1) {
-    play_sound();
-    if (arg1 != 0) {
-        ohSleep(arg1);
+void func_800AFC20(u32 sound, s32 sleep) {
+    play_sound(sound);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFC20.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800AFC54(s32 arg1) {
-    func_800FB914();
-    if (arg1 != 0) {
-        ohSleep(arg1);
+void func_800AFC54(s32 arg0, s32 sleep) {
+    func_800FB914(arg0);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFC54.s")
-#endif
 
 void func_800AFC88(f32 x, f32 y, f32 z, s32 sleep) {
     if (x != 65535.0f) {
@@ -839,8 +821,7 @@ void func_800B0974(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B0974.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800B0AD4(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
+void func_800B0AD4(f32 arg0, f32 arg1, f32 arg2, s32 sleep) {
     if (arg0 != 65535.0f) {
         D_800E64D0[omCurrentObj->objId] = arg0;
     }
@@ -852,33 +833,24 @@ void func_800B0AD4(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
     } else if (arg2 != 65535.0f) {
         D_800E6850[omCurrentObj->objId] = arg2;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B0AD4.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800B0BC4(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
-    u32 temp_v0;
-    u32 temp_v0_2;
-
+void func_800B0BC4(f32 arg0, f32 arg1, f32 arg2, s32 sleep) {
     if (arg0 != 65535.0f) {
-        temp_v0 = omCurrentObj->objId;
-        if (D_800E6A10[temp_v0] == 1.0f) {
-            D_800E64D0[temp_v0] = arg0;
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+            D_800E64D0[omCurrentObj->objId] = arg0;
         } else {
-            D_800E64D0[temp_v0] = -arg0;
+            D_800E64D0[omCurrentObj->objId] = -arg0;
         }
     }
     if (arg1 != 65535.0f) {
-        temp_v0_2 = omCurrentObj->objId;
-        if (D_800E6A10[temp_v0_2] == 1.0f) {
-            D_800E6690[temp_v0_2] = arg1;
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+            D_800E6690[omCurrentObj->objId] = arg1;
         } else {
-            D_800E6690[temp_v0_2] = -arg1;
+            D_800E6690[omCurrentObj->objId] = -arg1;
         }
     }
     if (arg2 == 65536.0f) {
@@ -886,34 +858,19 @@ void func_800B0BC4(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
     } else if (arg2 != 65535.0f) {
         D_800E6850[omCurrentObj->objId] = arg2;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B0BC4.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800B0D24(GObj *arg0) {
-    s32 temp_a0;
-    u32 temp_v0;
-    void (*temp_v1)(GObj *);
-
-    func_800B1C7C();
-    temp_v0 = omCurrentObj->objId;
-    temp_v1 = D_800DEDD0[temp_v0];
-    if (temp_v1 != NULL) {
-        temp_a0 = D_800DD8D0[temp_v0];
-        if (!(temp_a0 & 1) && !(temp_a0 & 0x80)) {
-            temp_v1(arg0);
+void func_800B0D24(GObj *gobj) {
+    func_800B1C7C(gobj);
+    if (D_800DEDD0[omCurrentObj->objId] != NULL) {
+        if (!(D_800DD8D0[omCurrentObj->objId] & 1) && !(D_800DD8D0[omCurrentObj->objId] & 0x80)) {
+            D_800DEDD0[omCurrentObj->objId](gobj);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B0D24.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1255,7 +1212,7 @@ void func_800B1870(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1870.s")
 #endif
 
-void sleep_forever(GObj *arg0) {
+void objSleepForever(GObj *arg0) {
     while (1) {
         ohSleep(0x7FFFFFFF);
     }
@@ -1706,82 +1663,51 @@ void func_800B2288(s32 **arg0, ? arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2288.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_800B2340(Vector *vec, struct LayoutNode *node, u32 track) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f0_5;
-    f32 temp_f0_6;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f12_3;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-    struct LayoutNode *var_s0;
-    u32 var_a2;
+    float finalMtx[4][4];
+    float tmpMtx[4][4];
 
-    var_a2 = track;
-    var_s0 = node;
-    if (var_a2 == 0xFFFF) {
-        var_a2 = omCurrentObj->objId;
+    if (track == 0xFFFF) {
+        track = omCurrentObj->objId;
     }
-    if (var_s0 == NULL) {
-        var_s0 = omCurrentObj->unk3C;
+    if (node == NULL) {
+        node = (struct LayoutNode *)omCurrentObj->data;
     }
-    track = var_a2;
-    guMtxIdentF(&spB8[0]);
+    guMtxIdentF(&finalMtx);
     do {
-        if (var_s0->child != 1) {
-            temp_f0 = var_s0->scale.x;
-            if ((temp_f0 != 1.0f) || (var_s0->scale.y != 1.0f) || (var_s0->scale.z != 1.0f)) {
-                HS64_MkScaleMtxF(&sp78[0], temp_f0, var_s0->scale.y, var_s0->scale.z);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+        if ((u32)node->child != 1) {
+            if ((node->scale.x != 1.0f) || (node->scale.y != 1.0f) || (node->scale.z != 1.0f)) {
+                HS64_MkScaleMtxF(tmpMtx, node->scale.x, node->scale.y, node->scale.z);
+                guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
-            temp_f0_2 = var_s0->angle.x;
-            if ((temp_f0_2 != 0.0f) || (var_s0->angle.y != 0.0f) || (var_s0->angle.z != 0.0f)) {
-                HS64_MkRotationMtxF(&sp78[0], temp_f0_2, var_s0->angle.y, var_s0->angle.z);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            if ((node->angle.x != 0.0f) || (node->angle.y != 0.0f) || (node->angle.z != 0.0f)) {
+                HS64_MkRotationMtxF(tmpMtx, node->angle.x, node->angle.y, node->angle.z);
+                guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
-            temp_f0_3 = var_s0->pos.x;
-            if ((temp_f0_3 != 0.0f) || (var_s0->pos.y != 0.0f) || (var_s0->pos.z != 0.0f)) {
-                HS64_MkTranslateMtxF(&sp78[0], temp_f0_3, var_s0->pos.y, var_s0->pos.z);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            if ((node->pos.x != 0.0f) || (node->pos.y != 0.0f) || (node->pos.z != 0.0f)) {
+                HS64_MkTranslateMtxF(tmpMtx, node->pos.x, node->pos.y, node->pos.z);
+                guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
         } else {
-            temp_f0_4 = gEntitiesScaleXArray[track];
-            temp_f2 = gEntitiesScaleYArray[track];
-            temp_f12 = gEntitiesScaleZArray[track];
-            if ((temp_f0_4 != 1.0f) || (temp_f2 != 1.0f) || (temp_f12 != 1.0f)) {
-                HS64_MkScaleMtxF(&sp78[0], temp_f0_4, temp_f2, temp_f12);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            if ((gEntitiesScaleXArray[track] != 1.0f) || (gEntitiesScaleYArray[track] != 1.0f) || (gEntitiesScaleZArray[track] != 1.0f)) {
+                HS64_MkScaleMtxF(tmpMtx, gEntitiesScaleXArray[track], gEntitiesScaleYArray[track], gEntitiesScaleZArray[track]);
+                guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
-            temp_f0_5 = gEntitiesAngleXArray[track];
-            temp_f2_2 = gEntitiesAngleYArray[track];
-            temp_f12_2 = gEntitiesAngleZArray[track];
-            if ((temp_f0_5 != 0.0f) || (temp_f2_2 != 0.0f) || (temp_f12_2 != 0.0f)) {
-                HS64_MkRotationMtxF(&sp78[0], temp_f0_5, temp_f2_2, temp_f12_2);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            if ((gEntitiesAngleXArray[track] != 0.0f) || (gEntitiesAngleYArray[track] != 0.0f) || (gEntitiesAngleZArray[track] != 0.0f)) {
+                HS64_MkRotationMtxF(tmpMtx, gEntitiesAngleXArray[track], gEntitiesAngleYArray[track], gEntitiesAngleZArray[track]);
+                guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
-            temp_f0_6 = gEntitiesNextPosXArray[track];
-            temp_f2_3 = gEntitiesNextPosYArray[track];
-            temp_f12_3 = gEntitiesNextPosZArray[track];
-            if ((temp_f0_6 != 0.0f) || (temp_f2_3 != 0.0f) || (temp_f12_3 != 0.0f)) {
-                HS64_MkTranslateMtxF(&sp78[0], temp_f0_6, temp_f2_3, temp_f12_3);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            if ((gEntitiesNextPosXArray[track] != 0.0f) || (gEntitiesNextPosYArray[track] != 0.0f) || (gEntitiesNextPosZArray[track] != 0.0f)) {
+                HS64_MkTranslateMtxF(tmpMtx, gEntitiesNextPosXArray[track], gEntitiesNextPosYArray[track], gEntitiesNextPosZArray[track]);
+                guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
         }
-        var_s0 = var_s0->child;
-    } while (var_s0 != 1);
-    vec->x = spE8;
-    vec->y = spEC;
-    vec->z = spF0;
+        node = node->child;
+    } while ((u32)node != 1);
+    vec->x = finalMtx[3][0];
+    vec->y = finalMtx[3][1];
+    vec->z = finalMtx[3][2];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2340.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1984,7 +1910,7 @@ void func_800B2F90(GObj *arg0, ? arg2) {
     temp_s0 = *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4));
     func_8000FE2C(arg2, temp_s0, arg2);
 loop_1:
-    if (temp_s0->unk74 != -3.4028235e38f) {
+    while (temp_s0->unk74 != -3.4028235e38f) {
         ohSleep(1);
         goto loop_1;
     }

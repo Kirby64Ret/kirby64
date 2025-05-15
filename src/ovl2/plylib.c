@@ -527,7 +527,7 @@ void func_8011C720(s32 arg0) {
             func_8016BF60_ovl3(arg0, arg0);
             break;
     }
-    func_800AFA14();
+    curObjSleepForever();
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C720.s")

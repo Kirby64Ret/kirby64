@@ -86,18 +86,18 @@ void func_80158224_ovl4(s32 arg0) {
     if (D_800D6B7C != 0) {
         play_sound(SOUND_SELECTJET1);
         D_800E9E20[D_8004A7C4->objId] = D_800D6B98 + 1;
-        finish_current_thread(5);
+        ohSleep(5);
         D_800D6B7C = 0;
         D_800E9C60[D_8004A7C4->objId] = 2;
         D_800D6B9C = 0;
         while (D_800E9C60[D_8004A7C4->objId] != 0) {
-            finish_current_thread(1);
+            ohSleep(1);
         }
-        finish_current_thread(5);
+        ohSleep(5);
     }
     D_800DF150[D_8004A7C4->objId] = func_80158428_ovl4;
     while (D_8015C710 == 0) {
-        finish_current_thread(1);
+        ohSleep(1);
     }
     D_800DF150[D_8004A7C4->objId] = NULL;
     D_8015C710 = 2;
@@ -279,7 +279,7 @@ void func_801588F4_ovl4(struct GObj *arg0, s32 arg1) {
                 D_800E9AA0[D_8004A7C4->objId] = 0;
             }
         }
-        finish_current_thread(1);
+        ohSleep(1);
     }
 }
 #else
@@ -320,7 +320,7 @@ void func_80159160_ovl4(s32 arg0) {
         if (D_800E9C60[D_8015C718] != 0) {
             func_80158E98_ovl4(D_800D6B98, D_800E9E20[D_8015C718], D_800E9C60[D_8015C718]);
         }
-        finish_current_thread(1);
+        ohSleep(1);
     }
     func_800AFA14();
 }
@@ -345,7 +345,7 @@ void func_801598C4_ovl4(void) {
     s32 phi_s0;
 
     func_800A41B0(2.0f);
-    func_8000BDF0(0x19, 0x80000000, 0x63, 3, 0xA0A32FF);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xA0A32FF);
     func_800AE048(0x80);
     func_800AE0F0();
     func_800A6E64();
@@ -361,7 +361,7 @@ void func_801598C4_ovl4(void) {
         D_800E98E0[request_track_general(2, 0, 0x70)] = phi_s0;
     }
     D_800E98E0[func_800AEC70(2, 0, 0x70)] = 9;
-    func_8000A180(0, func_8015986C_ovl4, 0x1A, 0x80000000);
+    HS64_omMakeGObj(0, func_8015986C_ovl4, 0x1A, 0x80000000);
     func_800A5744(0, 0, 0);
     func_800A5A14(0xFF, -0x10, 0);
 }
@@ -402,7 +402,7 @@ void func_80159B68_ovl4(s32 arg0) {
     D_800EA6E0[D_8004A7C4->objId] = D_8015C670;
     func_800A9864(0x300B7, 0x1869F, 0x10);
     D_8015C720 = 2;
-    finish_current_thread(0x1E);
+    ohSleep(1 second);
     play_music(0, 0x17);
     func_800AFA14();
 }
@@ -450,7 +450,7 @@ void func_80159D78_ovl4(s32 arg0) {
 
 extern s32 D_800D71F8, D_800D71FC;
 void func_80159DE8_ovl4(void) {
-    func_8000BDF0(0x19, 0x80000000, 0x63, 3, 0xFF);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF);
     func_800AE0F0();
     func_800A6E64();
     func_800A8724(0);
@@ -460,7 +460,7 @@ void func_80159DE8_ovl4(void) {
     gEntityVtableIndexArray[D_800D71F8] = 0;
     D_800D71FC = request_track_general(5, 0, 0x70);
     gEntityVtableIndexArray[D_800D71FC] = 1;
-    func_8000A180(0, func_80159D78_ovl4, 0x1A, 0x80000000);
+    HS64_omMakeGObj(0, func_80159D78_ovl4, 0x1A, 0x80000000);
     func_800A5744(0, 0, 0);
     func_800A5A14(0xFF, -0x10, 0);
 }

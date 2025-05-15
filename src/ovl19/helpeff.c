@@ -59,7 +59,7 @@ void func_8021ECC4_ovl19(GObj *arg0) {
     func_800A9864(0x20063, 0x1869F, 0x10);
     func_800AA018(0x20327);
     func_800AA018(0x20326);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_8021ED80_ovl19(GObj *arg0) {

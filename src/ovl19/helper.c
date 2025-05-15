@@ -100,7 +100,7 @@ loop_1:
     func_800AA018(0x203A4);
     ohSleep(0x16);
     D_8012E7FC = 1;
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_8021F0A4_ovl19(GObj *arg0) {
@@ -149,7 +149,7 @@ loop:
     }
     D_800DFBD0[omCurrentObj->objId][12]->unk54 = 1;
     func_801230E8(0x203A6, 0x203A7, 0);
-    func_800AFA14();
+    curObjSleepForever();
 }
 #else
 void func_8021F174_ovl19(GObj *arg0);
@@ -193,7 +193,7 @@ void func_8021F3F8_ovl19(struct GObj *arg0) {
         func_801230E8(0x203CB, 0x203CC, 1);
     }
     func_801230E8(0x203CF, 0x203D0, 0);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_8021F600_ovl19(GObj *arg0) {
@@ -236,7 +236,7 @@ void func_8021F6D8_ovl19(struct GObj *arg0) {
     } else {
         D_800DFBD0[omCurrentObj->objId][3]->unk54 = 2;
     }
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_8021F8A4_ovl19(struct GObj *arg0) {
@@ -333,7 +333,7 @@ u32 func_8021FCC0_ovl19(struct GObj *arg0) {
     }
     D_800E98E0[D_800EBBE0[omCurrentObj->objId]] = 1;
     func_800AA154(0x2035E);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_8021FE5C_ovl19(struct GObj *arg0) {
@@ -378,7 +378,7 @@ void func_8021FF90_ovl19(GObj *g) {
     gKirbyState.unk17 = 0;
     gKirbyState.unk68 = 0;
     D_800E8760[omCurrentObj->objId] = 0;
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 // Struct definition rabbit hole
@@ -478,7 +478,7 @@ void func_80220E14_ovl19(struct GObj *arg0) {
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.25f;
     gEntitiesScaleZArray[omCurrentObj->objId] = 0.25f;
     func_800A9864(0x20071, 0x1869F, 0x10, D_800E0D50);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_80220F48_ovl19(GObj *arg0) {
@@ -525,7 +525,7 @@ void func_8022159C_ovl19(GObj *g) {
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x20071, 0x1869F, 0x10);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_80221654_ovl19(struct GObj *arg0) {
@@ -636,7 +636,7 @@ void func_80221CA8_ovl19(struct GObj *arg0) {
     gEntitiesScaleYArray[omCurrentObj->objId] = temp_f0;
     gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
     func_800A9864(0x20071, 0x1869F, 0x10, D_800E0D50);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_80221DDC_ovl19(GObj *arg0) {
@@ -729,7 +729,7 @@ void func_80222108_ovl19(GObj *g) {
     D_800E98E0[omCurrentObj->objId] = 1;
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800DFBD0[omCurrentObj->objId][8]->angle.z = 0.0f;
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 // i suspect its that if/else block
@@ -812,7 +812,7 @@ void func_802225A4_ovl19(struct GObj *arg0) {
     }
     play_sound(0x258);
     func_800AA018(0x20360);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_802226FC_ovl19(struct GObj *arg0) {
@@ -848,7 +848,7 @@ void func_802227F0_ovl19(struct GObj *arg0) {
     func_800AA864(0x202DD, 1);
     func_800AA018(0x202E0);
     func_800AA018(0x202DF);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_802228F8_ovl19(struct GObj *arg0) {
@@ -868,7 +868,7 @@ void func_80222918_ovl19(struct GObj *arg0) {
     gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
     func_800AF980(0x18, D_800E0D50, gEntitiesNextPosXArray, gEntitiesNextPosYArray);
     func_800A9864(0x20071, 0x1869F, 0x10);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_80222A54_ovl19(s32 arg0) {
@@ -907,7 +907,7 @@ void func_80222A98_ovl19(GObj* arg0) {
     while (D_800E8060[omCurrentObj->objId] == 0) ohSleep(1);
     while (D_800E8060[omCurrentObj->objId] == 1) ohSleep(1);
     func_801230E8(0x203B6, 0x203B7, 0);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_80222CE0_ovl19(GObj *arg0) {
@@ -953,7 +953,7 @@ void func_80222E3C_ovl19(struct GObj *arg0) {
         ohSleep(1);
     }
     func_800AA018(0x203C3);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 void func_80223020_ovl19(struct GObj *arg0) {
@@ -974,5 +974,5 @@ void func_80223020_ovl19(struct GObj *arg0) {
         ohSleep(1);
     }
     func_800AA018(0x203C5);
-    func_800AFA14();
+    curObjSleepForever();
 }

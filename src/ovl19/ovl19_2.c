@@ -95,7 +95,7 @@ void func_80223200_ovl19(GObj *arg0) {
             gKirbyState.unk17 = 0;
             gKirbyState.unk44 = 0;
         default:
-            func_800AFA14();
+            curObjSleepForever();
             break;
         case 0:
             D_800E9AA0[omCurrentObj->objId] = -1;
@@ -164,7 +164,7 @@ void func_80223200_ovl19(GObj *arg0) {
                 func_800AA018(temp_v0->unk0);
             }
             /* Duplicate return node #30. Try simplifying control flow for better match */
-            func_800AFA14();
+            curObjSleepForever();
             break;
         case 3:
             gKirbyState.unk30 = 0;
@@ -178,7 +178,7 @@ void func_80223200_ovl19(GObj *arg0) {
             func_800AA154(temp_v0->unk0);
             gKirbyState.unk30 += 1;
             /* Duplicate return node #30. Try simplifying control flow for better match */
-            func_800AFA14();
+            curObjSleepForever();
             break;
         case 4:
             gKirbyState.unk30 = 0;
@@ -201,7 +201,7 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800E8060[omCurrentObj->objId] = 0;
             gKirbyState.unk30 += 1;
             /* Duplicate return node #30. Try simplifying control flow for better match */
-            func_800AFA14();
+            curObjSleepForever();
             break;
         case 5:
             func_80020C88();
@@ -240,7 +240,7 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
             D_800E3C90[omCurrentObj->objId] = 65535.0f;
             /* Duplicate return node #30. Try simplifying control flow for better match */
-            func_800AFA14();
+            curObjSleepForever();
             break;
         case 7:
             gKirbyState.unk30 = 0;
@@ -282,7 +282,7 @@ void func_80223200_ovl19(GObj *arg0) {
             ohSleep(0x2D);
             gKirbyState.unk30 += 1;
             /* Duplicate return node #30. Try simplifying control flow for better match */
-            func_800AFA14();
+            curObjSleepForever();
             break;
     }
 }
@@ -374,5 +374,5 @@ void func_80228EF4_ovl19(GObj *arg0) {
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = 0;
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    func_800AFA14();
+    curObjSleepForever();
 }
