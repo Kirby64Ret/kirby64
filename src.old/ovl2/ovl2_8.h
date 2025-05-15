@@ -38,7 +38,7 @@ struct LayoutNode {
 	struct ModelNode *unk3C;
 	Vector scale; /* 0x40 0x44 0x48 */
 	u32 *unk4C;
-	u32 *Bank4_ptr; //probably only used upon load_
+	u32 *model; //ptr to Bank4 model, probably only used upon load_
 	u8 unk54;
 	u8 unk55;
 	u8 unk56;

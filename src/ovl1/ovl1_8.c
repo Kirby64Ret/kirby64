@@ -376,17 +376,17 @@ void func_800B4864(void) {
     }
 }
 
-void func_800B491C(GObj *arg0) {
+void func_800B491C(GObj *gobj) {
 
 }
 
-void func_800B4924(GObj *arg0) {
+void func_800B4924(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
     func_800B369C();
 }
 
-void func_800B4954(GObj *arg0) {
+void func_800B4954(GObj *gobj) {
     f32 temp;
 
     func_800B35F0();
@@ -394,20 +394,20 @@ void func_800B4954(GObj *arg0) {
     temp = D_800E64D0[omCurrentObj->objId];
 
     D_800E64D0[omCurrentObj->objId] += (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]);
-    func_800F8E6C(arg0);
+    func_800F8E6C(gobj);
     D_800E64D0[omCurrentObj->objId] = temp;
     func_800B4640();
     func_800B369C();
 }
 
-void func_800B49F8(GObj *arg0) {
+void func_800B49F8(GObj *gobj) {
     f32 tmp;
 
     func_800B35F0();
     func_800B4864();
     tmp = D_800E64D0[omCurrentObj->objId];
     D_800E64D0[omCurrentObj->objId] += (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]);
-    func_800F8E6C(arg0);
+    func_800F8E6C(gobj);
     D_800E64D0[omCurrentObj->objId] = tmp;
     func_800B4640();
     func_800B369C();
@@ -416,7 +416,7 @@ void func_800B49F8(GObj *arg0) {
     }
 }
 
-void func_800B4AB8(GObj *arg0) {
+void func_800B4AB8(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
     gEntitiesNextPosXArray[omCurrentObj->objId] += D_800E3050[omCurrentObj->objId];
@@ -429,7 +429,7 @@ void func_800B4AB8(GObj *arg0) {
     }
 }
 
-void func_800B4B9C(GObj *arg0) {
+void func_800B4B9C(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
     gEntitiesAngleXArray[omCurrentObj->objId] = D_800E4A90[omCurrentObj->objId] + gEntitiesAngleXArray[D_800E0D50[omCurrentObj->objId]];
@@ -441,13 +441,13 @@ void func_800B4B9C(GObj *arg0) {
     func_800B3838();
 }
 
-void func_800B4D40(GObj *arg0) {
+void func_800B4D40(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
     func_800B3838();
 }
 
-void func_800B4D70(GObj *arg0) {
+void func_800B4D70(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
 
@@ -461,7 +461,7 @@ void func_800B4D70(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B4EBC(GObj *arg0) {
+void func_800B4EBC(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
     func_800B3838();
@@ -471,7 +471,7 @@ void func_800B4EBC(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B4F48(GObj *arg0) {
+void func_800B4F48(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
 
@@ -487,13 +487,13 @@ void func_800B4F48(GObj *arg0) {
     }
 }
 
-void func_800B5064(GObj *arg0) {
+void func_800B5064(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
     func_800B3A6C();
 }
 
-void func_800B5094(GObj *arg0) {
+void func_800B5094(GObj *gobj) {
     func_800B35F0();
     func_800B4024();
     func_800B3CEC();
@@ -502,7 +502,7 @@ void func_800B5094(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_8/func_800B50C4.s")
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_8/func_800B531C.s")
 
-void func_800B5A7C(GObj *arg0) {
+void func_800B5A7C(GObj *gobj) {
     gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
     gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     gEntitiesPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
@@ -526,7 +526,7 @@ void func_800B5A7C(GObj *arg0) {
     }
 }
 
-void func_800B5C28(GObj *arg0) {
+void func_800B5C28(GObj *gobj) {
     gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
     gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     gEntitiesPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
@@ -553,7 +553,7 @@ void func_800B5C28(GObj *arg0) {
     }
 }
 
-void func_800B5E14(GObj *arg0) {
+void func_800B5E14(GObj *gobj) {
     while (gEntitiesAngleXArray[omCurrentObj->objId] >= M_TAU) {
         gEntitiesAngleXArray[omCurrentObj->objId] -= M_TAU;
     }
@@ -574,42 +574,42 @@ void func_800B5E14(GObj *arg0) {
     }
 }
 
-void func_800B5FBC(GObj *arg0) {
+void func_800B5FBC(GObj *gobj) {
     gEntitiesAngleXArray[omCurrentObj->objId] += D_800E4A90[omCurrentObj->objId];
     gEntitiesAngleYArray[omCurrentObj->objId] += D_800E4C50[omCurrentObj->objId];
     gEntitiesAngleZArray[omCurrentObj->objId] += D_800E4E10[omCurrentObj->objId];
-    func_800B5E14(arg0);
+    func_800B5E14(gobj);
 }
 
-void func_800B6064(GObj *arg0) {
+void func_800B6064(GObj *gobj) {
     gEntitiesAngleXArray[omCurrentObj->objId] = gEntitiesAngleXArray[D_800E0D50[omCurrentObj->objId]] + D_800E4A90[omCurrentObj->objId];
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_800E0D50[omCurrentObj->objId]] + D_800E4C50[omCurrentObj->objId];
     gEntitiesAngleZArray[omCurrentObj->objId] = gEntitiesAngleZArray[D_800E0D50[omCurrentObj->objId]] + D_800E4E10[omCurrentObj->objId];
-    func_800B5E14(arg0);
+    func_800B5E14(gobj);
 }
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_8/func_800B6144.s")
 
-void func_800B62AC(GObj *arg0) {
-    func_800B5A7C(arg0);
+void func_800B62AC(GObj *gobj) {
+    func_800B5A7C(gobj);
     D_800E64D0[omCurrentObj->objId] += (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]);
     func_800F8E6C(D_800DE350[omCurrentObj->objId]);
     D_800E64D0[omCurrentObj->objId] -= (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]);
     gEntitiesNextPosYArray[omCurrentObj->objId] += (D_800E3210[omCurrentObj->objId] + D_800E5C10[omCurrentObj->objId] + D_800E5890[omCurrentObj->objId]);
-    func_800B5FBC(arg0);
+    func_800B5FBC(gobj);
 }
 
-void func_800B63C0(GObj *arg0) {
-    func_800B5C28(arg0);
+void func_800B63C0(GObj *gobj) {
+    func_800B5C28(gobj);
     gEntitiesNextPosXArray[omCurrentObj->objId] += D_800E3050[omCurrentObj->objId];
     gEntitiesNextPosYArray[omCurrentObj->objId] += D_800E3210[omCurrentObj->objId];
     gEntitiesNextPosZArray[omCurrentObj->objId] += D_800E33D0[omCurrentObj->objId];
-    func_800B5FBC(arg0);
+    func_800B5FBC(gobj);
 }
 
-void func_800B6474(GObj *arg0) {
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+void func_800B6474(GObj *gobj) {
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
     while (gEntitiesAngleYArray[omCurrentObj->objId] >= M_TAU) {
         gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;
@@ -620,9 +620,9 @@ void func_800B6474(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B658C(GObj *arg0) {
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+void func_800B658C(GObj *gobj) {
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
 
@@ -635,9 +635,9 @@ void func_800B658C(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B6684(GObj *arg0) {
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+void func_800B6684(GObj *gobj) {
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
     gEntitiesAngleYArray[omCurrentObj->objId] =
         (D_800E17D0[omCurrentObj->objId])
       + (D_800E6A10[omCurrentObj->objId] * (-M_PIF / 2));
@@ -651,9 +651,9 @@ void func_800B6684(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B67A8(GObj *arg0) {
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+void func_800B67A8(GObj *gobj) {
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = 
            D_800E17D0[omCurrentObj->objId]
@@ -668,13 +668,13 @@ void func_800B67A8(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B68AC(GObj *arg0) {
+void func_800B68AC(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
 
@@ -687,12 +687,12 @@ void func_800B68AC(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B6A2C(GObj *arg0) {
+void func_800B6A2C(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
 
@@ -705,13 +705,13 @@ void func_800B6A2C(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B6B8C(GObj *arg0) {
+void func_800B6B8C(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = 
         D_800E17D0[omCurrentObj->objId]
@@ -726,13 +726,13 @@ void func_800B6B8C(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B6CF8(GObj *arg0) {
+void func_800B6CF8(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] =
         D_800E17D0[omCurrentObj->objId]
@@ -748,12 +748,12 @@ void func_800B6CF8(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B6E84(GObj *arg0) {
+void func_800B6E84(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
+    func_800B62AC(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
 
@@ -768,12 +768,12 @@ void func_800B6E84(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B6FD8(GObj *arg0) {
+void func_800B6FD8(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
+    func_800B62AC(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] =
         D_800E17D0[ omCurrentObj->objId]
@@ -789,12 +789,12 @@ void func_800B6FD8(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B7138(GObj *arg0) {
+void func_800B7138(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
+    func_800B62AC(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
 
@@ -808,12 +808,12 @@ void func_800B7138(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B72AC(GObj *arg0) {
+void func_800B72AC(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
+    func_800B62AC(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] =
         D_800E17D0[omCurrentObj->objId]
@@ -829,35 +829,35 @@ void func_800B72AC(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B742C(GObj *arg0) {
+void func_800B742C(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
+    func_800B62AC(gobj);
     func_800B31B4();
 }
 
-void func_800B74B8(GObj *arg0) {
+void func_800B74B8(GObj *gobj) {
     func_800B31B4();
 }
 
-void func_800B74D8(GObj *arg0) {
-    func_800B63C0(arg0);
+void func_800B74D8(GObj *gobj) {
+    func_800B63C0(gobj);
     if (func_800B3158() == 0) {
         func_800B1900((u16) omCurrentObj->objId);
     }
 }
 
-void func_800B7514(GObj *arg0) {
-    func_800B63C0(arg0);
+void func_800B7514(GObj *gobj) {
+    func_800B63C0(gobj);
     func_800B31B4();
     D_800E17D0[omCurrentObj->objId] = gEntitiesAngleYArray[omCurrentObj->objId];
 }
 
-void func_800B7560(GObj *arg0) {
+void func_800B7560(GObj *gobj) {
 
-    func_800B63C0(arg0);
+    func_800B63C0(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = 
         D_800E17D0[omCurrentObj->objId]
@@ -871,8 +871,8 @@ void func_800B7560(GObj *arg0) {
     }
 }
 
-void func_800B7674(GObj *arg0) {
-    func_800B63C0(arg0);
+void func_800B7674(GObj *gobj) {
+    func_800B63C0(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = 
         D_800E17D0[omCurrentObj->objId]
@@ -887,8 +887,8 @@ void func_800B7674(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B7790(GObj *arg0) {
-    func_800B63C0(arg0);
+void func_800B7790(GObj *gobj) {
+    func_800B63C0(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] += D_800E9020[omCurrentObj->objId];
 
@@ -904,8 +904,8 @@ void func_800B7790(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B78AC(GObj *arg0) {
-    func_800B63C0(arg0);
+void func_800B78AC(GObj *gobj) {
+    func_800B63C0(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] += D_800E9020[omCurrentObj->objId];
 
@@ -921,18 +921,18 @@ void func_800B78AC(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B799C(GObj *arg0) {
-    func_800B5064(arg0);
+void func_800B799C(GObj *gobj) {
+    func_800B5064(gobj);
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B79F4(GObj *arg0) {
+void func_800B79F4(GObj *gobj) {
     D_800E5510[omCurrentObj->objId] =
     D_800E56D0[omCurrentObj->objId] =
     D_800E5C10[omCurrentObj->objId] = D_800E5890[omCurrentObj->objId] = 0.0f;
 
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] =
        (D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId])
@@ -947,9 +947,9 @@ void func_800B79F4(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B7B64(GObj *arg0) {
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+void func_800B7B64(GObj *gobj) {
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
 
@@ -967,8 +967,8 @@ void func_800B7B64(GObj *arg0) {
     func_800B31B4();
 }
 
-void func_800B7CA0(GObj *arg0) {
-    func_800B62AC(arg0);
+void func_800B7CA0(GObj *gobj) {
+    func_800B62AC(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
 
@@ -980,8 +980,8 @@ void func_800B7CA0(GObj *arg0) {
     }
 }
 
-void func_800B7D88(GObj *arg0) {
-    func_800B63C0(arg0);
+void func_800B7D88(GObj *gobj) {
+    func_800B63C0(gobj);
 
     while (gEntitiesAngleYArray[omCurrentObj->objId] >= M_TAU) {
         gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;
@@ -993,8 +993,8 @@ void func_800B7D88(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_8/func_800B7E44.s")
 
-void func_800B7ED4(GObj *arg0) {
-    func_800B5A7C(arg0);
+void func_800B7ED4(GObj *gobj) {
+    func_800B5A7C(gobj);
 
     D_800E64D0[omCurrentObj->objId] += (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]);
 
@@ -1009,8 +1009,8 @@ void func_800B7ED4(GObj *arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] += D_800E2410[omCurrentObj->objId];
 }
 
-void func_800B8020(GObj *arg0) {
-    func_800B7ED4(arg0);
+void func_800B8020(GObj *gobj) {
+    func_800B7ED4(gobj);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
     
@@ -1024,16 +1024,16 @@ void func_800B8020(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B8130(GObj *arg0) {
-    func_800B5C28(arg0);
+void func_800B8130(GObj *gobj) {
+    func_800B5C28(gobj);
 
     gEntitiesNextPosXArray[omCurrentObj->objId] += (D_800E2090[omCurrentObj->objId] + D_800E3050[omCurrentObj->objId]);
     gEntitiesNextPosYArray[omCurrentObj->objId] += (D_800E2250[omCurrentObj->objId] + D_800E3210[omCurrentObj->objId]);
     gEntitiesNextPosZArray[omCurrentObj->objId] += (D_800E2410[omCurrentObj->objId] + D_800E33D0[omCurrentObj->objId]);
 }
 
-void func_800B8208(GObj *arg0) {
-    func_800B8130(arg0);
+void func_800B8208(GObj *gobj) {
+    func_800B8130(gobj);
 
     while (gEntitiesAngleYArray[omCurrentObj->objId] >= M_TAU) {
         gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;
@@ -1046,7 +1046,7 @@ void func_800B8208(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B8300(GObj *arg0) {
+void func_800B8300(GObj *gobj) {
     gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
     gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
     gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
@@ -1055,8 +1055,8 @@ void func_800B8300(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_8/func_800B83C8.s")
 
-void func_800B8550(GObj *arg0) {
-    func_800B62AC(arg0);
+void func_800B8550(GObj *gobj) {
+    func_800B62AC(gobj);
 
     while (gEntitiesAngleYArray[omCurrentObj->objId] >= M_TAU) {
         gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;
@@ -1068,9 +1068,9 @@ void func_800B8550(GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_800B8630(GObj *arg0) {
-    func_800B62AC(arg0);
-    func_800B6144(arg0);
+void func_800B8630(GObj *gobj) {
+    func_800B62AC(gobj);
+    func_800B6144(gobj);
 
     while (gEntitiesAngleYArray[omCurrentObj->objId] >= M_TAU) {
         gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;

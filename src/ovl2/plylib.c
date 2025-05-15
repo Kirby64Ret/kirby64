@@ -347,7 +347,7 @@ block_18:
 #ifdef MIPS_TO_C
 
 void func_8011C2A0(void *arg0) {
-    play_sound(0xB);
+    play_sound(SOUND_BGBRAKE2);
     func_8011BA10(arg0->unk84, 0x14);
 }
 #else
@@ -506,7 +506,7 @@ void func_8011C720(s32 arg0) {
             func_801F0050_ovl10(arg0, arg0);
             break;
         case 4:
-            play_sound(0x136);
+            play_sound(SOUND_TAKI1);
             *(&D_800D6F58 + 0x58) = 0x102;
             func_8016BF60_ovl3(arg0);
             break;
@@ -705,7 +705,7 @@ s32 func_8011CCB8(void) {
                         gKirbyState.unk4 = 0;
                         return 0;
                     default:                                /* switch 2 */
-                        track = request_track_general(0x17, 0xE, 0x1E, &gKirbyState);
+                        track = request_track_general(0x17, 0xE, 0x1E);
                         bool_t2 = 0;
                         break;
                 }
@@ -783,32 +783,24 @@ void func_8011CFE0(void) {
 }
 
 #ifdef MIPS_TO_C
-
-void func_8011CFF4(s32 arg0) {
-    u32 *temp_a1;
-    u32 temp_v1;
-    u32 temp_v1_2;
-
-    temp_a1 = &D_800E7CE0[omCurrentObj->objId];
-    temp_v1 = *temp_a1;
-    if (temp_v1 != 0) {
-        *temp_a1 = temp_v1 - 1;
-        if (temp_v1 <= 0) {
+void func_8011CFF4(GObj *gobj) {
+    if (D_800E7CE0[omCurrentObj->objId] != 0) {
+        D_800E7CE0[omCurrentObj->objId]--;
+        if (D_800E7CE0[omCurrentObj->objId] <= 0) {
             D_800E7CE0[omCurrentObj->objId] = 0;
         }
     }
-    temp_v1_2 = omCurrentObj->objId;
-    if (temp_v1_2 == 0) {
-        func_80111534(temp_v1_2, temp_a1, D_800E7CE0);
+    if (omCurrentObj->objId == PLAYERTRACK) {
+        func_80111534(omCurrentObj->objId, temp_a1, D_800E7CE0);
     }
     if (gKirbyState.actionChange != -1) {
         gEntityVtableIndexArray[omCurrentObj->objId] = gKirbyState.actionChange;
         gKirbyState.actionChange = -1;
         if (*(&D_800D6F58 + 0x5A) == 2) {
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &D_8022947C);
-            return;
+        } else {
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &D_8016C510);
         }
-        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &D_8016C510);
     }
 }
 #else
@@ -1438,15 +1430,11 @@ f32 func_8011E2A0(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E2A0.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_8011E31C(void *arg0) {
-    arg0->unk0 = gPositionState.kirbyHeadPos[0];
-    arg0->unk4 = gPositionState.kirbyHeight[1];
-    arg0->unk8 = gPositionState.kirbyHeadPos[2];
+void func_8011E31C(Vector *v) {
+    v->x = gPositionState.kirbyHeadPos[0];
+    v->y = gPositionState.kirbyHeight[1];
+    v->z = gPositionState.kirbyHeadPos[2];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E31C.s")
-#endif
 
 #ifdef MIPS_TO_C
 struct KirbyState_114 *func_8011E340(void) {

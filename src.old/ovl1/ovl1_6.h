@@ -48,12 +48,14 @@ extern f32 gEntitiesPosXArray[];
 extern f32 gEntitiesNextPosZArray[];
 extern f32 gEntitiesNextPosYArray[];
 extern f32 gEntitiesNextPosXArray[];
-extern f32 D_800E3910[];
-extern f32 D_800E3750[];
 extern f32 D_800E3590[];
-extern f32 D_800E33D0[];
-extern f32 D_800E3210[];
-extern f32 D_800E3050[];
+extern f32 D_800E3750[];
+extern f32 D_800E3910[];
+
+extern f32 D_800E3050[]; // _not_ x speed?
+extern f32 D_800E3210[]; // y speed
+extern f32 D_800E33D0[]; // _not_ z speed?
+
 extern f32 D_800E3E50[];
 extern f32 D_800E3C90[];
 extern f32 D_800E3AD0[];

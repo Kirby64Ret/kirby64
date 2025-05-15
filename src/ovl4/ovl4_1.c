@@ -180,7 +180,7 @@ void func_80151338_ovl4(s32 arg0) {
     gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
     gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
     switch (D_800E98E0[omCurrentObj->objId]) {
-        case 0:
+        case 0: // N64 logo?
             func_800AF8C0(0x17, 0xE, 4);
             func_800A57A0(0, 0, 0);
             func_800A5A14(0xFF, -8, 0);
@@ -196,7 +196,7 @@ void func_80151338_ovl4(s32 arg0) {
                 func_800B1900((u16) omCurrentObj->objId);
             }
             else break;
-        case 1:
+        case 1: // HAL logo? (just running this code shows the N64 logo)
             D_800E9C60[omCurrentObj->objId] = 0;
             func_800AF8C0(0x18, 0xE, 4);
             func_800A57A0(0xFF, 0xFF, 0xFF);
@@ -206,7 +206,7 @@ void func_80151338_ovl4(s32 arg0) {
             func_800A57A0(0, 0, 0);
             func_800A5A14(0, 8, 2);
             break;
-        case 2:
+        case 2: // Kirby 64 title bg
             gEntitiesNextPosXArray[omCurrentObj->objId] = 10.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = 10.0f;
             func_800AF8C0(0x19, 0x12, 4);
@@ -220,7 +220,8 @@ void func_80151338_ovl4(s32 arg0) {
             D_8015C680_ovl4 = 600.0f * D_800D6B14;
             HS64_omMakeGObj(0, func_80151A0C_ovl4, 0x1A, 0x80000000);
             break;
-        case 5:
+// the characters for case 2
+        case 5: // ominous Waddle Dee floating
             func_800A9864(0x20060, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = -150.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -90.0f;
@@ -228,7 +229,7 @@ void func_80151338_ovl4(s32 arg0) {
             func_800AA018(0x202DB);
             func_800AA018(0x202DC);
             break;
-        case 7:
+        case 7: // ominous Adeleine floating
             func_800A9864(0x2006F, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = -75.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -90.0f;
@@ -237,7 +238,7 @@ void func_80151338_ovl4(s32 arg0) {
             func_800AA018(0x203D8);
             break;
         case 3: break;
-        case 4:
+        case 4: // ominous Kirby floating
             func_800A9864(0x20007, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -90.0f;
@@ -245,7 +246,7 @@ void func_80151338_ovl4(s32 arg0) {
             func_800AA018(0x2009B);
             func_800AA018(0x2009C);
             break;
-        case 6:
+        case 6: // ominous Dedede floating
             func_800A9864(0x2006B, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = 75.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -90.0f;
@@ -253,14 +254,16 @@ void func_80151338_ovl4(s32 arg0) {
             func_800AA018(0x203B2);
             func_800AA018(0x203B3);
             break;
-        case 8:
+        case 8: // ominous Ribbon floating
             func_800A9864(0x300C4, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = 150.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -60.0f;
             func_80151274_ovl4();
             func_800AA018(0x301D9);
             break;
-        case 9:
+
+// special cases
+        case 9: // no controllers connected
             gEntitiesNextPosXArray[omCurrentObj->objId] = 32.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = 88.0f;
             func_800AF8C0(0x1A, 0xE, 6);
@@ -268,7 +271,7 @@ void func_80151338_ovl4(s32 arg0) {
             func_800A57A0(0, 0, 0);
             func_800A5A14(0xFF, -8, 0);
             break;
-        case 10:
+        case 10: // wrong region
             gEntitiesNextPosXArray[omCurrentObj->objId] = 48.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = 101.0f;
             func_800AF8C0(0x1B, 0xE, 6);
@@ -283,7 +286,7 @@ void func_80151990_ovl4(s32 arg0) {
     random_u16();
     random_soft_u16();
     if ((D_800D6B24 == 0) && (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON))) {
-        play_sound(0xED);
+        play_sound(SOUND_KETTEI);
         func_800A57A0(0, 0, 0);
         func_800A5A14(0, 0x10, 2);
         D_800D6B74 = 0;

@@ -30,7 +30,7 @@ s32 change_kirby_hp(f32 arg0) {
         gKirbyHp = 6.0f;
     }
     D_800D6E8C = gKirbyHp;
-    D_800E7B20[0] = gKirbyHp;
+    D_800E7B20[PLAYERTRACK] = gKirbyHp;
     return D_800D6E8C;
 }
 #else
@@ -209,27 +209,27 @@ void draw_lives_digit(s32 arg0, s32 arg1) {
     phi_a0 = (u16*)D_800ED510 + arg0 + 0xa00;
     phi_v1 = 0x10 + func_800A8BAC(D_800D5460[gHudDisplayMode * 10 + arg1]);
 
-    for (i = 0; i  < 30; i ++) {
-        phi_a0[i * 0xa0 + 0] = phi_v1[i * 0xa + 0];
-        phi_a0[i * 0xa0 + 1] = phi_v1[i * 0xa + 1];
-        phi_a0[i * 0xa0 + 2] = phi_v1[i * 0xa + 2];
-        phi_a0[i * 0xa0 + 3] = phi_v1[i * 0xa + 3];
-        phi_a0[i * 0xa0 + 4] = phi_v1[i * 0xa + 4];
-        phi_a0[i * 0xa0 + 5] = phi_v1[i * 0xa + 5];
-        phi_a0[i * 0xa0 + 6] = phi_v1[i * 0xa + 6];
-        phi_a0[i * 0xa0 + 7] = phi_v1[i * 0xa + 7];
-        phi_a0[i * 0xa0 + 8] = phi_v1[i * 0xa + 8];
+    for (i = 0; i < 30; i ++) {
+        phi_a0[i * (10 << 8) + 0] = phi_v1[i * 10 + 0];
+        phi_a0[i * (10 << 8) + 1] = phi_v1[i * 10 + 1];
+        phi_a0[i * (10 << 8) + 2] = phi_v1[i * 10 + 2];
+        phi_a0[i * (10 << 8) + 3] = phi_v1[i * 10 + 3];
+        phi_a0[i * (10 << 8) + 4] = phi_v1[i * 10 + 4];
+        phi_a0[i * (10 << 8) + 5] = phi_v1[i * 10 + 5];
+        phi_a0[i * (10 << 8) + 6] = phi_v1[i * 10 + 6];
+        phi_a0[i * (10 << 8) + 7] = phi_v1[i * 10 + 7];
+        phi_a0[i * (10 << 8) + 8] = phi_v1[i * 10 + 8];
 
 
-        phi_a0[(i + 1) * 0xa0 + 0] = phi_v1[(i + 1) * 0xa + 0];
-        phi_a0[(i + 1) * 0xa0 + 1] = phi_v1[(i + 1) * 0xa + 1];
-        phi_a0[(i + 1) * 0xa0 + 2] = phi_v1[(i + 1) * 0xa + 2];
-        phi_a0[(i + 1) * 0xa0 + 3] = phi_v1[(i + 1) * 0xa + 3];
-        phi_a0[(i + 1) * 0xa0 + 4] = phi_v1[(i + 1) * 0xa + 4];
-        phi_a0[(i + 1) * 0xa0 + 5] = phi_v1[(i + 1) * 0xa + 5];
-        phi_a0[(i + 1) * 0xa0 + 6] = phi_v1[(i + 1) * 0xa + 6];
-        phi_a0[(i + 1) * 0xa0 + 7] = phi_v1[(i + 1) * 0xa + 7];
-        phi_a0[(i + 1) * 0xa0 + 8] = phi_v1[(i + 1) * 0xa + 8];
+        phi_a0[(i + 1) * (10 << 8) + 0] = phi_v1[(i + 1) * 10 + 0];
+        phi_a0[(i + 1) * (10 << 8) + 1] = phi_v1[(i + 1) * 10 + 1];
+        phi_a0[(i + 1) * (10 << 8) + 2] = phi_v1[(i + 1) * 10 + 2];
+        phi_a0[(i + 1) * (10 << 8) + 3] = phi_v1[(i + 1) * 10 + 3];
+        phi_a0[(i + 1) * (10 << 8) + 4] = phi_v1[(i + 1) * 10 + 4];
+        phi_a0[(i + 1) * (10 << 8) + 5] = phi_v1[(i + 1) * 10 + 5];
+        phi_a0[(i + 1) * (10 << 8) + 6] = phi_v1[(i + 1) * 10 + 6];
+        phi_a0[(i + 1) * (10 << 8) + 7] = phi_v1[(i + 1) * 10 + 7];
+        phi_a0[(i + 1) * (10 << 8) + 8] = phi_v1[(i + 1) * 10 + 8];
     }
 }
 #else

@@ -7,6 +7,7 @@
 #include "main/lbmatrix.h"
 #include "buffers.h"
 #include "ovl2/ovl2_8.h"
+#include "unk_structs/D_800D79D8.h"
 
 // wherever ovl0_3 or code_CA90 is
 extern void func_8000BEF4(GObj *, f32);
@@ -787,25 +788,19 @@ void func_800B07B4(GObj *arg0, s32 arg1, s32 arg2, s32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B07B4.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800B0974(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
-    u32 temp_v0;
-    u32 temp_v0_2;
-
+void func_800B0974(f32 arg0, f32 arg1, f32 arg2, s32 sleep) {
     if (arg0 != 65535.0f) {
-        temp_v0 = omCurrentObj->objId;
-        if (D_800E10D0[temp_v0] == 1.0f) {
-            D_800E3050[temp_v0] = arg0;
+        if (D_800E10D0[omCurrentObj->objId] == 1.0f) {
+            D_800E3050[omCurrentObj->objId] = arg0;
         } else {
-            D_800E3050[temp_v0] = -arg0;
+            D_800E3050[omCurrentObj->objId] = -arg0;
         }
     }
     if (arg1 != 65535.0f) {
-        temp_v0_2 = omCurrentObj->objId;
-        if (D_800E10D0[temp_v0_2] == 1.0f) {
-            D_800E3590[temp_v0_2] = arg1;
+        if (D_800E10D0[omCurrentObj->objId] == 1.0f) {
+            D_800E3590[omCurrentObj->objId] = arg1;
         } else {
-            D_800E3590[temp_v0_2] = -arg1;
+            D_800E3590[omCurrentObj->objId] = -arg1;
         }
     }
     if (arg2 == 65536.0f) {
@@ -813,13 +808,10 @@ void func_800B0974(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
     } else if (arg2 != 65535.0f) {
         D_800E3AD0[omCurrentObj->objId] = arg2;
     }
-    if (arg3 != 0) {
-        ohSleep(arg3);
+    if (sleep != 0) {
+        ohSleep(sleep);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B0974.s")
-#endif
 
 void func_800B0AD4(f32 arg0, f32 arg1, f32 arg2, s32 sleep) {
     if (arg0 != 65535.0f) {
@@ -1088,30 +1080,21 @@ void func_800B1434(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1434.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800B143C(void *arg0) {
-    u32 temp_v0;
-    void *temp_v1;
-
-    temp_v0 = omCurrentObj->objId;
-    if (!(D_800DD8D0[temp_v0] & 0x40)) {
-        temp_v1 = arg0->unk3C;
-        if (temp_v1 != NULL) {
-            temp_v1->unk1C = gEntitiesNextPosXArray[temp_v0];
-            arg0->unk3C->unk20 = gEntitiesNextPosYArray[omCurrentObj->objId];
-            arg0->unk3C->unk24 = gEntitiesNextPosZArray[omCurrentObj->objId];
-            arg0->unk3C->unk30 = gEntitiesAngleXArray[omCurrentObj->objId];
-            arg0->unk3C->unk34 = gEntitiesAngleYArray[omCurrentObj->objId];
-            arg0->unk3C->unk38 = gEntitiesAngleZArray[omCurrentObj->objId];
-            arg0->unk3C->unk40 = gEntitiesScaleXArray[omCurrentObj->objId];
-            arg0->unk3C->unk44 = gEntitiesScaleYArray[omCurrentObj->objId];
-            arg0->unk3C->unk48 = gEntitiesScaleZArray[omCurrentObj->objId];
+void func_800B143C(GObj *gobj) {
+    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40)) {
+        if (gobj->data != NULL) {
+            ((struct LayoutNode *)gobj->data)->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+            ((struct LayoutNode *)gobj->data)->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            ((struct LayoutNode *)gobj->data)->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+            ((struct LayoutNode *)gobj->data)->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
+            ((struct LayoutNode *)gobj->data)->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
+            ((struct LayoutNode *)gobj->data)->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
+            ((struct LayoutNode *)gobj->data)->scale.x = gEntitiesScaleXArray[omCurrentObj->objId];
+            ((struct LayoutNode *)gobj->data)->scale.y = gEntitiesScaleYArray[omCurrentObj->objId];
+            ((struct LayoutNode *)gobj->data)->scale.z = gEntitiesScaleZArray[omCurrentObj->objId];
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B143C.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_800B158C(void *arg0) {
@@ -1126,12 +1109,11 @@ void func_800B158C(void *arg0) {
     if (temp_v0 != NULL) {
         var_a0 = 0;
         temp_v0->unk20 = gEntitiesNextPosXArray[omCurrentObj->objId];
-        temp_t1 = temp_v0->unk10;
         temp_v0->unk24 = gEntitiesNextPosYArray[omCurrentObj->objId];
         temp_v0->unk28 = gEntitiesScaleXArray[omCurrentObj->objId];
         temp_v0->unk2C = gEntitiesScaleYArray[omCurrentObj->objId];
         temp_v0->unk30 = gEntitiesAngleZArray[omCurrentObj->objId];
-        switch (temp_t1) {
+        switch (temp_v0->unk10) {
             case 0:
             case 1:
             case 2:
@@ -1180,37 +1162,23 @@ void func_800B175C(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B175C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800B17B8(void *arg0) {
-    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (arg0->unk3C != 0)) {
-        func_800B143C();
+void func_800B17B8(GObj *gobj) {
+    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data != NULL)) {
+        func_800B143C(gobj);
         func_801D1CAC_ovl8();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B17B8.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800B1814(void *arg0) {
-    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (arg0->unk3C != 0)) {
-        func_800B143C();
+void func_800B1814(GObj *gobj) {
+    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data != NULL)) {
+        func_800B143C(gobj);
         func_801D1E98_ovl8();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1814.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_800B1870(GObj *arg0) {
 
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1870.s")
-#endif
 
 void objSleepForever(GObj *arg0) {
     while (1) {
@@ -1920,15 +1888,13 @@ loop_1:
 #endif
 
 #ifdef MIPS_TO_C
+void func_800B3008(int arg0) {
+    struct UnkStruct800D79D8 *tmp = D_800D79D8[(arg0 - 10) / 2];
 
-void func_800B3008(GObj *arg0) {
-    void *temp_s0;
-
-    temp_s0 = *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4));
-loop_1:
-    if (temp_s0->unk74 != -3.4028235e38f) {
+loop:
+    if (tmp->unk74 != -3.4028235e38f) {
         ohSleep(1);
-        goto loop_1;
+        goto loop;
     }
 }
 #else

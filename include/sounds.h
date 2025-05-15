@@ -247,7 +247,7 @@ enum KirbySounds {
     /* 234 */ SOUND_KBYUNSYO1,
     /* 235 */ SOUND_KBYUWATTO1, // Kirby star wobbling on edge of platform
     /* 236 */ SOUND_KEIKOKU1,
-    /* 237 */ SOUND_KETTEI, // Select menu item
+    /* 237 */ SOUND_KETTEI, // Select menu item (決定 -> Decision)
     /* 238 */ SOUND_KETTEI2, // Select character in minigame
     /* 239 */ SOUND_KETTEILW,
     /* 240 */ SOUND_KETTEIWL, // World map - enter world
