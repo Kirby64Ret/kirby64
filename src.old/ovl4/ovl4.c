@@ -210,7 +210,7 @@ void func_80151990_ovl4(s32 arg0) {
     }
 }
 
-#define SHOULDER_BTN_COMBO (Z_TRIG | L_TRIG | R_TRIG)
+// #define (Z_TRIG | L_TRIG | R_TRIG) (Z_TRIG | L_TRIG | R_TRIG)
 extern s32 D_800BE4EC;
 
 void func_80151A0C_ovl4(s32 arg0) {
@@ -225,7 +225,7 @@ void func_80151A0C_ovl4(s32 arg0) {
             func_800A5A14(0, 0x10, 2);
         }
         else if (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON)) {
-            if ((gPlayerControllers[0].buttonHeld & SHOULDER_BTN_COMBO) == SHOULDER_BTN_COMBO) {
+            if ((gPlayerControllers[0].buttonHeld & (Z_TRIG | L_TRIG | R_TRIG)) == (Z_TRIG | L_TRIG | R_TRIG)) {
                 play_sound(SOUND_KBYHI1);
             } else {
                 play_sound(SOUND_KETTEI);

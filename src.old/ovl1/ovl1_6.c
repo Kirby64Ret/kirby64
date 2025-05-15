@@ -301,7 +301,7 @@ s32 func_800AEC3C(s32 id, s32 minIndex, s32 maxIndex) {
     return request_track(1, id, minIndex, maxIndex);
 }
 
-s32 func_800AEC70(s32 id, s32 minIndex, s32 maxIndex) {
+u32 func_800AEC70(s32 id, s32 minIndex, s32 maxIndex) {
     return request_track(2, id, minIndex, maxIndex);
 }
 

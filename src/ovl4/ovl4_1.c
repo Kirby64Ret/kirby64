@@ -1,8 +1,11 @@
 #include "common.h"
+#include "GObj.h"
 #include "main/contpad.h"
 #include "main/gtl.h"
 #include "main/math.h"
+#include "main/object_helpers.h"
 #include "main/object_manager.h"
+#include "main/rdp_reset.h"
 #include "main/vi.h"
 #include "ovl1/save_file.h"
 #include "ovl1/ovl1_6.h"
@@ -63,12 +66,14 @@ SceneSetup D_8015A064_ovl4 = {
     {
         0,
         omUpdateAll, func_800A73B0,
-        &D_8018EE60,
-        0, 1, 2,
+        &D_8018EE60, 0,
+        1,
+        2,
         0x00004000,
         0x00005800,
         0x00000800,
         0x00000000,
+
         0x00004800,
         0x00000000,
         0x00004000,
@@ -106,6 +111,14 @@ void func_800A6F68(
 // forward decl
 void func_80151990_ovl4(s32 arg0);
 void func_80151A0C_ovl4(s32 arg0);
+
+// send to ovl1 bss
+extern u32 D_800D6B74;
+extern s32 D_800D6B54[];
+extern s16 D_800D6B30;
+
+// send to ovl1 data
+extern s32 D_800BE4EC;
 
 void check_save_file_completion_cheat_code(s32 arg0) {
     if (gPlayerControllers[1].buttonHeld & L_TRIG) {
@@ -266,91 +279,76 @@ void func_80151338_ovl4(s32 arg0) {
     func_800AFA14();
 }
 
-#ifdef MIPS_TO_C
-
 void func_80151990_ovl4(s32 arg0) {
     random_u16();
     random_soft_u16();
-    if ((D_800D6B24 == 0) && (*(&gPlayerControllers + 2) & 0x9000)) {
+    if ((D_800D6B24 == 0) && (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON))) {
         play_sound(0xED);
         func_800A57A0(0, 0, 0);
         func_800A5A14(0, 0x10, 2);
         D_800D6B74 = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_1/func_80151990_ovl4.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80151A0C_ovl4(s32 arg0) {
-    s32 temp_t0;
 
     random_u16();
     random_soft_u16();
-    D_800BE4EC += 1;
+    D_800BE4EC++;
     if (D_800D6B24 == 0) {
-        temp_t0 = D_8015C680_ovl4 - 1;
-        D_8015C680_ovl4 = temp_t0;
-        if (temp_t0 < 0) {
+        if (--D_8015C680_ovl4 < 0) {
             D_800D6B74 = 2;
             func_800A57A0(0, 0, 0);
             func_800A5A14(0, 0x10, 2);
-            return;
         }
-        if (gPlayerControllers.unk2 & 0x9000) {
-            if ((gPlayerControllers.unk0 & 0x2030) == 0x2030) {
-                play_sound(0xE2);
+        else if (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON)) {
+            if ((gPlayerControllers[0].buttonHeld & (Z_TRIG | L_TRIG | R_TRIG)) == (Z_TRIG | L_TRIG | R_TRIG)) {
+                play_sound(SOUND_KBYHI1);
             } else {
-                play_sound(0xED);
+                play_sound(SOUND_KETTEI);
             }
             func_800A57A0(0, 0, 0);
             func_800A5A14(0, 0x10, 2);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_1/func_80151A0C_ovl4.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_80151B08_ovl4(void) {
+    s32 temp_s0;
     s32 temp_v1;
-    s32 var_s0;
+    s32 i;
 
-    func_80007C00(ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF)->unk3C + 8, 0x41200000, 0x41200000, 0x439B0000, 230.0f);
+    func_80007C00(&((Camera*)(ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF)->data))->viewport,
+        10.0f,
+        10.0f,
+        310.0f,
+        230.0f
+    );
     func_800AE048(0x40);
     func_800AE0F0();
     func_800A6E64();
     func_800A8724(0);
     func_800A6BC0(0);
-    temp_v1 = *(&D_800D6B54 + 8);
-    switch (temp_v1) {                              /* irregular */
+    switch (D_800D6B54[2]) {
         case 0:
             D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 0;
             break;
         case 1:
             D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 2;
-            var_s0 = 4;
-            do {
-                D_800E98E0[request_track_general(0, 0x3C, 0x70)] = var_s0;
-                var_s0 += 1;
-            } while (var_s0 != 9);
+            for (i = 4; i < 9; i++) {
+                D_800E98E0[request_track_general(0, 0x3C, 0x70)] = i;
+            }
             break;
         case 4:
             D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 9;
             break;
         case 5:
-            D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 0xA;
+            D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 10;
             break;
     }
     D_800D6B30 = 0;
     func_800A5744(0, 0, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_1/func_80151B08_ovl4.s")
-#endif
 
 void func_80151CC8_ovl4(Gfx **gp) {
     gSPDisplayList((*gp)++, &D_8015A018_ovl4);

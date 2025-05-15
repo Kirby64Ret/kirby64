@@ -108,7 +108,7 @@ extern s32 D_800E9C60[];
 
 // this is also a union or void*
 extern struct EntityThing800E9AA0 *D_800E9AA0[];
-extern u32 D_800E98E0[];
+extern s32 D_800E98E0[];
 extern f32 D_800EB320[];
 extern f32 D_800EB160[];
 extern f32 D_800EAFA0[];
@@ -160,5 +160,7 @@ extern f32 D_800D66FC, D_800D66F8;
 extern u32 D_800E8060[];
 extern s32 D_800E8920[];
 extern s32 D_800E7EA0[];
+
+s32 func_800AEC70(s32 id, s32 minIndex, s32 maxIndex);
 
 #endif
