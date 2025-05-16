@@ -119,7 +119,7 @@ void ohUpdateStub(GObj *g) {
 }
 
 void ohSleep(s32 frames) {
-    if (omCurrentProc->payload.thread->objStack->stack[7] != STACK_TOP_MAGIC) {
+    if (omCurrentProc->payload.thread->objStack->stack[7] != STACK_CANARY) {
         fatal_printf("gobjthread stack over  gobjid = %d\n", omCurrentProc->gobj->objId);
     }
 
@@ -233,7 +233,7 @@ void func_8000B870(GObj *arg0) {
     if (var_s0 != NULL) {
         do {
             temp_s1 = var_s0->next;
-            func_80008DA8(var_s0);
+            omEndProcess(var_s0);
             var_s0 = temp_s1;
         } while (temp_s1 != NULL);
     }

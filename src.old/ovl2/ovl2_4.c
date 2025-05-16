@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <macros.h>
 
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "ovl1/ovl1_6.h"
 
 extern void *D_801245C0;
@@ -9,12 +9,12 @@ extern void *D_801245C0;
 extern u32 D_801245C4[][3];
 
 void func_800FD330(s32 arg0) {
-    if (D_800DD710[D_800E0D50[D_8004A7C4->objId]] != -1) {
-        D_800E10D0[D_8004A7C4->objId] = D_800E10D0[D_800E0D50[D_8004A7C4->objId]];
-        D_800E1290[D_8004A7C4->objId] = D_800E1290[D_800E0D50[D_8004A7C4->objId]];
-        D_800E1450[D_8004A7C4->objId] = D_800E1450[D_800E0D50[D_8004A7C4->objId]];
+    if (D_800DD710[D_800E0D50[omCurrentObj->objId]] != -1) {
+        D_800E10D0[omCurrentObj->objId] = D_800E10D0[D_800E0D50[omCurrentObj->objId]];
+        D_800E1290[omCurrentObj->objId] = D_800E1290[D_800E0D50[omCurrentObj->objId]];
+        D_800E1450[omCurrentObj->objId] = D_800E1450[D_800E0D50[omCurrentObj->objId]];
     }
-    call_virtual_function(gEntityVtableIndexArray[D_8004A7C4->objId], 1, &D_801245C0);
+    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 1, &D_801245C0);
 }
 
 extern u32 D_80124624;
@@ -24,24 +24,24 @@ extern s32 D_800B4D40;
 // but the operands to that instructions are in the wrong order
 #ifdef NON_MATCHING
 void func_800FD418(struct GObj *arg0) {
-    s32 temp_v0 = D_800EC2E0[D_8004A7C4->objId].as_s32;
+    s32 temp_v0 = D_800EC2E0[omCurrentObj->objId].as_s32;
     u32 tmp;
 
-    // temp_v0 = D_800EC2E0[D_8004A7C4->objId];
+    // temp_v0 = D_800EC2E0[omCurrentObj->objId];
     if (!(temp_v0 < 0xA) || D_801245C4[temp_v0][0] == 0) {
-        func_800B1900(D_8004A7C4->objId & 0xFFFF);
+        func_800B1900(omCurrentObj->objId & 0xFFFF);
     }
     if (D_801245C4[temp_v0] == D_801245C4[8]) {
-        D_800DEF90[D_8004A7C4->objId] = &D_800B4D40;
+        D_800DEF90[omCurrentObj->objId] = &D_800B4D40;
     }
     func_800A9864(tmp = D_801245C4[temp_v0][0], 0x0001869F, 0x10);
     func_800AA018(D_801245C4[temp_v0][1]);
     func_800AA018(D_801245C4[temp_v0][2]);
-    arg0->unk3C->posVec.x = gEntitiesNextPosXArray[D_8004A7C4->objId];
-    arg0->unk3C->posVec.y = gEntitiesNextPosYArray[D_8004A7C4->objId];
-    arg0->unk3C->posVec.z = gEntitiesNextPosZArray[D_8004A7C4->objId];
+    arg0->unk3C->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->unk3C->posVec.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->unk3C->posVec.z = gEntitiesNextPosZArray[omCurrentObj->objId];
     func_800AF27C();
-    func_800B1900((u16) D_8004A7C4->objId);
+    func_800B1900((u16) omCurrentObj->objId);
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl2_4/func_800FD418.s")
@@ -60,9 +60,9 @@ u32 func_800FD570(s32 arg0, u32 arg1, f32 arg2, f32 arg3, f32 arg4) {
     if (arg0 != 0) {
         func_800A4794(&sp28, arg0, arg0);
     } else {
-        sp28.x = gEntitiesNextPosXArray[D_8004A7C4->objId];
-        sp28.y = gEntitiesNextPosYArray[D_8004A7C4->objId];
-        sp28.z = gEntitiesNextPosZArray[D_8004A7C4->objId];
+        sp28.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        sp28.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        sp28.z = gEntitiesNextPosZArray[omCurrentObj->objId];
     }
     if (D_801245C4[arg1][0] != 0) {
         u32 temp_v0_3 = func_800FD9D4(0);

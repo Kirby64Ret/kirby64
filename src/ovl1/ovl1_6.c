@@ -5,13 +5,32 @@
 #include "ovl1/ovl1_8.h"
 #include "unk_structs/D_800DE350.h"
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AE0F0.s")
+void initTrack(s32);
+extern s32 D_800EC9E0;
+
+void func_800AE0F0(void) {
+    s32 i;
+
+    for (i = 0; i < 0x70; i++) {
+        initTrack(i);
+    }
+    D_800EC9E0 = 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/initTrack.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/request_job.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AEA64.s")
+// #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AEA64.s")
+s32 func_800AEA64(s32 id, s32 minIndex, s32 max_index) {
+    s32 idx = request_job(id, minIndex, max_index, NULL, &func_800B1434);
+
+    if (idx == -1) {
+        return -1;
+    }
+    D_800E0D50[idx] = (omCurrentObj != NULL) ? omCurrentObj->objId : -1;
+    return idx;
+}
 
 s32 request_track(u8 goal, s32 id, s32 minIndex, s32 maxIndex) {
     s32 idx;
@@ -44,10 +63,10 @@ s32 request_track_general(s32 id, s32 minIndex, s32 maxIndex) {
     return request_track(0, id, minIndex, maxIndex);
 }
 
-s32 func_800AEC3C(s32 id, s32 minIndex, s32 maxIndex) {
+s32 request_track_2(s32 id, s32 minIndex, s32 maxIndex) {
     return request_track(1, id, minIndex, maxIndex);
 }
 
-s32 func_800AEC70(s32 id, s32 minIndex, s32 maxIndex) {
+s32 request_track_3(s32 id, s32 minIndex, s32 maxIndex) {
     return request_track(2, id, minIndex, maxIndex);
 }

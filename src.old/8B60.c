@@ -78,7 +78,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80008B94.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80008DA8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/8B60/omEndProcess.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80008EC4.s")
 

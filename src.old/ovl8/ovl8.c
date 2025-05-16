@@ -1,30 +1,30 @@
 #include <ultra64.h>
 #include <macros.h>
 
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "ovl1/ovl1_6.h"
 
 extern void func_800B3234(f32, f32, f32);
 
 void func_801D0C60_ovl8(struct GObj *arg0) {
     func_800B5C28();
-    gEntitiesNextPosXArray[D_8004A7C4->objId] += (D_800E2090[D_8004A7C4->objId] + D_800E3050[D_8004A7C4->objId]);
-    gEntitiesNextPosYArray[D_8004A7C4->objId] += (D_800E2250[D_8004A7C4->objId] + D_800E3210[D_8004A7C4->objId]);
-    gEntitiesNextPosZArray[D_8004A7C4->objId] += (D_800E2410[D_8004A7C4->objId] + D_800E33D0[D_8004A7C4->objId]);
+    gEntitiesNextPosXArray[omCurrentObj->objId] += (D_800E2090[omCurrentObj->objId] + D_800E3050[omCurrentObj->objId]);
+    gEntitiesNextPosYArray[omCurrentObj->objId] += (D_800E2250[omCurrentObj->objId] + D_800E3210[omCurrentObj->objId]);
+    gEntitiesNextPosZArray[omCurrentObj->objId] += (D_800E2410[omCurrentObj->objId] + D_800E33D0[omCurrentObj->objId]);
     func_800B5FBC(arg0);
 }
 
 extern const f32 D_801DB060_ovl8;
 void func_801D0D44_ovl8(struct GObj *arg0) {
     func_801D0C60_ovl8(arg0);
-    while (D_801DB060_ovl8 <= gEntitiesAngleYArray[D_8004A7C4->objId]) {
-        gEntitiesAngleYArray[D_8004A7C4->objId] -= D_801DB060_ovl8;
+    while (D_801DB060_ovl8 <= gEntitiesAngleYArray[omCurrentObj->objId]) {
+        gEntitiesAngleYArray[omCurrentObj->objId] -= D_801DB060_ovl8;
     }
-    while (gEntitiesAngleYArray[D_8004A7C4->objId] < 0.0f) {
-        gEntitiesAngleYArray[D_8004A7C4->objId] += D_801DB060_ovl8;
+    while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f) {
+        gEntitiesAngleYArray[omCurrentObj->objId] += D_801DB060_ovl8;
     }
-    D_800E17D0[D_8004A7C4->objId] = gEntitiesAngleYArray[D_8004A7C4->objId];
-    func_800B3234(gEntitiesNextPosXArray[D_8004A7C4->objId], gEntitiesNextPosYArray[D_8004A7C4->objId], gEntitiesNextPosZArray[D_8004A7C4->objId]);
+    D_800E17D0[omCurrentObj->objId] = gEntitiesAngleYArray[omCurrentObj->objId];
+    func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
 #ifdef NON_MATCHING
@@ -33,21 +33,21 @@ extern void func_800B62AC(f32);
 void func_801D0E3C_ovl8(struct GObj *arg0) {
     f32 temp_f0;
 
-    D_800E5890[D_8004A7C4->objId] = 0.0f;
-    temp_f0 = D_800E5890[D_8004A7C4->objId];
-    D_800E5C10[D_8004A7C4->objId] = temp_f0;
-    D_800E56D0[D_8004A7C4->objId] = temp_f0;
-    D_800E5510[D_8004A7C4->objId] = temp_f0;
+    D_800E5890[omCurrentObj->objId] = 0.0f;
+    temp_f0 = D_800E5890[omCurrentObj->objId];
+    D_800E5C10[omCurrentObj->objId] = temp_f0;
+    D_800E56D0[omCurrentObj->objId] = temp_f0;
+    D_800E5510[omCurrentObj->objId] = temp_f0;
     func_800B62AC(0.0f);
-    gEntitiesAngleYArray[D_8004A7C4->objId] = D_800E17D0[D_8004A7C4->objId] + D_800E9020[D_8004A7C4->objId];
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId] + D_800E9020[omCurrentObj->objId];
 
-    while (D_801DB064_ovl8 <= gEntitiesAngleYArray[D_8004A7C4->objId]) {
-        gEntitiesAngleYArray[D_8004A7C4->objId] -= D_801DB064_ovl8;
+    while (D_801DB064_ovl8 <= gEntitiesAngleYArray[omCurrentObj->objId]) {
+        gEntitiesAngleYArray[omCurrentObj->objId] -= D_801DB064_ovl8;
     }
-    while (gEntitiesAngleYArray[D_8004A7C4->objId] < 0.0f) {
-        gEntitiesAngleYArray[D_8004A7C4->objId] += D_801DB064_ovl8;
+    while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f) {
+        gEntitiesAngleYArray[omCurrentObj->objId] += D_801DB064_ovl8;
     }
-    func_800B3234(gEntitiesNextPosXArray[D_8004A7C4->objId], gEntitiesNextPosYArray[D_8004A7C4->objId], gEntitiesNextPosZArray[D_8004A7C4->objId]);
+    func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl8/ovl8/func_801D0E3C_ovl8.s")

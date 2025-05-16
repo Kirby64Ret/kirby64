@@ -774,6 +774,7 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+omEndProcess = 0x80008DA8; // type:func
 omCameraAddMtx = 0x80009658; // type:func
 omUpdateAll = 0x8000AD88; // type:func
 omAddGObjBeforeSamePriority = 0x8000A1C0; // type:func
@@ -916,6 +917,13 @@ initTrack = 0x800AE138; // type:func
 objSleepForever = 0x800B1878; // type:func
 curObjSleepForever = 0x800AFA14; // type:func
 
+// ovl1_6 (req)
+request_track_2 = 0x800AEC3C; // type:func
+request_track_3 = 0x800AEC70; // type:func
+
+// ovl1_7
+procNone = 0x800B1434; // type:func
+// spawn_child_track = 0x800B1900; // type:func
 
 // splat meme
 D_8018E3A0_ovl5 = 0x8018E3A0; // segment:ovl5

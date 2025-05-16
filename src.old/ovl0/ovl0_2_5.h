@@ -346,7 +346,7 @@ struct InterruptMessageTypeB {
 
 extern OSMesgQueue gInterruptMesgQueue;
 
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 
 struct Camera *func_80009F7C(struct GObj*);
 

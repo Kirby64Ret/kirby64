@@ -2,12 +2,14 @@
 #include "ovl1_3.h"
 #include "ovl1/ovl1_6.h"
 #include "GObj.h"
+#include "ovl1_7.h"
 #include "unk_structs/D_800DE350.h"
 #include "main/lbvector.h"
 #include "main/lbmatrix.h"
 #include "buffers.h"
 #include "ovl2/ovl2_8.h"
 #include "unk_structs/D_800D79D8.h"
+#include "Player.h"
 
 // wherever ovl0_3 or code_CA90 is
 extern void func_8000BEF4(GObj *, f32);
@@ -16,6 +18,8 @@ extern void func_8000C17C(GObj *, GObj *, f32);
 extern void func_8000C218(GObj *, GObj *, f32);
 
 extern u32 gNewEntityStackSize;
+
+extern GObj *D_800D799C;
 
 // in this file
 s32 func_800B3234(f32 arg0, f32 arg1, f32 arg2);
@@ -921,7 +925,7 @@ void func_800B0D90(void *arg0) {
 
 #ifdef MIPS_TO_C
 
-void func_800B0F28(struct LayoutNode *arg0, s32 arg1, f32 arg2) {
+void func_800B0F28(struct LayoutNode *arg0, s32 arg1, s32 arg2) {
     f32 sp44;
     void *sp3C;
     f32 sp38;
@@ -940,7 +944,7 @@ void func_800B0F28(struct LayoutNode *arg0, s32 arg1, f32 arg2) {
         case 12:
             sp44 = arg2;
             if ((bitwise s32) sp44 >= 0) {
-                play_sound(arg2, sp44, arg0);
+                play_sound(arg2);
                 return;
             }
             return;
@@ -1072,13 +1076,9 @@ void func_800B1378(GObj *arg0, s32 arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1378.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_800B1434(GObj *arg0) {
 
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1434.s")
-#endif
 
 void func_800B143C(GObj *gobj) {
     if (!(D_800DD8D0[omCurrentObj->objId] & 0x40)) {
@@ -1176,10 +1176,12 @@ void func_800B1814(GObj *gobj) {
     }
 }
 
+// Null proc main, used by gEntityGObjProcessArray4
 void func_800B1870(GObj *arg0) {
 
 }
 
+// used by gEntityGObjProcessArray3
 void objSleepForever(GObj *arg0) {
     while (1) {
         ohSleep(0x7FFFFFFF);
@@ -1224,24 +1226,15 @@ void func_800B1900(u16 track) {
     }
 }
 
-#ifdef MIPS_TO_C
+void func_800B19B8(GObjProcess **proclist, s32 idx) {
+    GObjProcess *proc;
 
-void func_800B19B8(GObj *arg0, s32 arg1) {
-    s32 *sp18;
-    s32 *temp_v0;
-    s32 temp_a2;
-
-    temp_v0 = arg0 + (arg1 * 4);
-    temp_a2 = *temp_v0;
-    if (temp_a2 != 0) {
-        sp18 = temp_v0;
-        func_80008DA8(temp_a2, temp_a2);
-        *temp_v0 = 0;
+    proc = proclist[idx];
+    if (proc != 0) {
+        omEndProcess(proc);
+        proclist[idx] = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B19B8.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1428,7 +1421,7 @@ void assign_new_process_entry(struct GObjProcess *ts, void (*func)(struct GObj *
                    ts->gobj,
                    &gthread->objStack->stack[gNewEntityStackSize / 8],
                    0x33);
-    gthread->objStack->stack[7] = STACK_TOP_MAGIC;
+    gthread->objStack->stack[7] = STACK_CANARY;
 }
 
 void setProcessMain(GObjProcess *proc, void (*cb)(GObj *)) {
@@ -1778,84 +1771,52 @@ void func_800B2928(Vector *vec, struct LayoutNode *node, u32 track) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2928.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800B2AD4(void *arg0, struct UnkStruct8004A7C4_3C *arg1, u32 arg2) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f0_5;
-    f32 temp_f0_6;
-    f32 temp_f0_7;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f12_3;
-    f32 temp_f12_4;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-    f32 temp_f2_4;
-    struct UnkStruct8004A7C4_3C *var_s0;
-    u32 var_a2;
+#ifdef NON_MATCHING
+void func_800B2AD4(Vector *vec, struct LayoutNode *node, u32 track) {
+    Mat4 tmpMtx; // sp7C
+    Mat4 finalMtx; // finalMtx
 
-    var_a2 = arg2;
-    var_s0 = arg1;
-    if (var_a2 == 0xFFFF) {
-        var_a2 = omCurrentObj->objId;
+    if (track == 0xFFFF) {
+        track = omCurrentObj->objId;
     }
-    if (var_s0 == NULL) {
-        var_s0 = omCurrentObj->unk3C;
+    if (node == NULL) {
+        node = (struct LayoutNode *)omCurrentObj->data;
     }
-    arg2 = var_a2;
-    guMtxIdentF(&spBC[0]);
+    guMtxIdentF(finalMtx);
     do {
-        if (var_s0->unk14 != 1) {
-            temp_f0 = var_s0->scaleVec.x;
-            if ((temp_f0 != 1.0f) || (var_s0->scaleVec.y != 1.0f) || (var_s0->scaleVec.z != 1.0f)) {
-                HS64_MkScaleMtxF(&sp7C[0], 1.0f / temp_f0, 1.0f / var_s0->scaleVec.y, 1.0f / var_s0->scaleVec.z);
-                guMtxCatF(&sp7C[0], &spBC[0], &spBC[0]);
+        if ((u32)node->child != 1) {
+            if ((node->scale.x != 1.0f) || (node->scale.y != 1.0f) || (node->scale.z != 1.0f)) {
+                HS64_MkScaleMtxF(tmpMtx, 1.0f / node->scale.x, 1.0f / node->scale.y, 1.0f / node->scale.z);
+                guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
-            temp_f0_2 = var_s0->angleVec.x;
-            if ((temp_f0_2 != 0.0f) || (var_s0->angleVec.y != 0.0f) || (var_s0->angleVec.z != 0.0f)) {
-                func_800A465C(&sp7C[0], -temp_f0_2, -var_s0->angleVec.y, -var_s0->angleVec.z);
-                guMtxCatF(&sp7C[0], &spBC[0], &spBC[0]);
+            if ((node->angle.x != 0.0f) || (node->angle.y != 0.0f) || (node->angle.z != 0.0f)) {
+                func_800A465C(tmpMtx, -node->angle.x, -node->angle.y, -node->angle.z);
+                guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
-            temp_f0_3 = var_s0->posVec.x;
-            if ((temp_f0_3 != 0.0f) || (var_s0->posVec.y != 0.0f) || (var_s0->posVec.z != 0.0f)) {
-                HS64_MkTranslateMtxF(&sp7C[0], -temp_f0_3, -var_s0->posVec.y, -var_s0->posVec.z);
-                guMtxCatF(&sp7C[0], &spBC[0], &spBC[0]);
+            if ((node->pos.x != 0.0f) || (node->pos.y != 0.0f) || (node->pos.z != 0.0f)) {
+                HS64_MkTranslateMtxF(tmpMtx, -node->pos.x, -node->pos.y, -node->pos.z);
+                guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
         } else {
-            temp_f0_4 = gEntitiesScaleXArray[arg2];
-            temp_f2 = gEntitiesScaleYArray[arg2];
-            temp_f12 = gEntitiesScaleZArray[arg2];
-            if ((temp_f0_4 != 1.0f) || (temp_f2 != 1.0f) || (temp_f12 != 1.0f)) {
-                HS64_MkScaleMtxF(&sp7C[0], 1.0f / temp_f0_4, 1.0f / temp_f2, 1.0f / temp_f12);
-                guMtxCatF(&sp7C[0], &spBC[0], &spBC[0]);
+            if ((gEntitiesScaleXArray[track] != 1.0f) || (gEntitiesScaleYArray[track] != 1.0f) || (gEntitiesScaleZArray[track] != 1.0f)) {
+                HS64_MkScaleMtxF(tmpMtx, 1.0f / gEntitiesScaleXArray[track], 1.0f / gEntitiesScaleYArray[track], 1.0f / gEntitiesScaleZArray[track]);
+                guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
-            temp_f0_5 = gEntitiesAngleXArray[arg2];
-            temp_f2_2 = gEntitiesAngleYArray[arg2];
-            temp_f12_2 = gEntitiesAngleZArray[arg2];
-            if ((temp_f0_5 != 0.0f) || (temp_f2_2 != 0.0f) || (temp_f12_2 != 0.0f)) {
-                func_800A465C(&sp7C[0], -temp_f0_5, -temp_f2_2, -temp_f12_2);
-                guMtxCatF(&sp7C[0], &spBC[0], &spBC[0]);
+            if ((gEntitiesAngleXArray[track] != 0.0f) || (gEntitiesAngleYArray[track] != 0.0f) || (gEntitiesAngleZArray[track] != 0.0f)) {
+                func_800A465C(tmpMtx, -gEntitiesAngleXArray[track], -gEntitiesAngleYArray[track], -gEntitiesAngleZArray[track]);
+                guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
-            temp_f0_6 = gEntitiesNextPosXArray[arg2];
-            temp_f2_3 = gEntitiesNextPosYArray[arg2];
-            temp_f12_3 = gEntitiesNextPosZArray[arg2];
-            if ((temp_f0_6 != 0.0f) || (temp_f2_3 != 0.0f) || (temp_f12_3 != 0.0f)) {
-                HS64_MkTranslateMtxF(&sp7C[0], -temp_f0_6, -temp_f2_3, -temp_f12_3);
-                guMtxCatF(&sp7C[0], &spBC[0], &spBC[0]);
+            if ((gEntitiesNextPosXArray[track] != 0.0f) || (gEntitiesNextPosYArray[track] != 0.0f) || (gEntitiesNextPosZArray[track] != 0.0f)) {
+                HS64_MkTranslateMtxF(tmpMtx, -gEntitiesNextPosXArray[track], -gEntitiesNextPosYArray[track], -gEntitiesNextPosZArray[track]);
+                guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
         }
-        var_s0 = var_s0->unk14;
-    } while (var_s0 != 1);
-    temp_f0_7 = arg0->unk0;
-    temp_f2_4 = arg0->unk4;
-    temp_f12_4 = arg0->unk8;
-    arg0->unk0 = spEC + ((spBC[0] * temp_f0_7) + (spCC * temp_f2_4) + (spDC * temp_f12_4));
-    arg0->unk4 = spF0 + ((spBC[1] * temp_f0_7) + (spD0 * temp_f2_4) + (spE0 * temp_f12_4));
-    arg0->unk8 = spF4 + ((spBC[2] * temp_f0_7) + (spD4 * temp_f2_4) + (spE4 * temp_f12_4));
+        node = node->child;
+    } while ((u32)node != 1);
+
+    vec->x = ((finalMtx[0][0] * vec->x) + (finalMtx[1][0] * vec->y) + (finalMtx[2][0] * vec->z)) + finalMtx[3][0];
+    vec->y = ((finalMtx[0][1] * vec->y) + (finalMtx[1][1] * vec->y) + (finalMtx[2][1] * vec->z)) + finalMtx[3][1];
+    vec->z = ((finalMtx[0][2] * vec->z) + (finalMtx[1][2] * vec->y) + (finalMtx[2][2] * vec->z)) + finalMtx[3][2];
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2AD4.s")
@@ -1975,47 +1936,37 @@ void func_800B31B4(void) {
     }
 }
 
-#ifdef MIPS_TO_C
-
-s32 func_800B3234(f32 arg0, f32 arg1, f32 arg2) {
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    s32 sp2C;
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 temp_f2;
-    struct Normal *temp_a0_2;
-    u32 temp_a0;
+// updates distance to player, and uses the input vector to set D_800E6F50 x and y
+s32 func_800B3234(f32 x, f32 y, f32 z) {
+    s32 pad;
+    Vector inVec;
+    s32 result;
+    Vector fromPlayer;
 
     D_800E6F50[omCurrentObj->objId].z = 0.0f;
-    temp_a0 = omCurrentObj->objId;
-    if (gEntitiesNextPosYArray[temp_a0] < -10000.0f) {
-        D_800E6F50[temp_a0].z = 1.0f;
+    if (gEntitiesNextPosYArray[omCurrentObj->objId] < -10000.0f) {
+        D_800E6F50[omCurrentObj->objId].z = 1.0f;
         return 1;
-    }
-    sp30 = arg0;
-    sp34 = arg1;
-    sp38 = arg2;
-    sp2C = func_800A4F48(D_800D799C->unk3C, &sp30, 0x3FD9999A, 0x4019999A);
-    D_800E6F50[omCurrentObj->objId].x = sp30;
-    D_800E6F50[omCurrentObj->objId].y = sp34;
-    temp_f0 = arg0 - *gEntitiesNextPosXArray;
-    temp_f2 = arg1 - (*gEntitiesNextPosYArray + 20.0f);
-    temp_f14 = arg2 - *gEntitiesNextPosZArray;
-    D_800E6F50[omCurrentObj->objId].originOffset = sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2) + (temp_f14 * temp_f14));
-    if (sp2C == 0) {
-        temp_a0_2 = &D_800E6F50[omCurrentObj->objId];
-        if (temp_a0_2->originOffset > 500.0f) {
-            temp_a0_2->z = 1.0f;
-            return 1;
+    } else {
+        inVec.x = x;
+        inVec.y = y;
+        inVec.z = z;
+        result = func_800A4F48(D_800D799C->data, &inVec, 1.7f, 2.4f);
+        D_800E6F50[omCurrentObj->objId].x = inVec.x;
+        D_800E6F50[omCurrentObj->objId].y = inVec.y;
+        fromPlayer.x = x - gEntitiesNextPosXArray[PLAYERTRACK];
+        fromPlayer.y = y - (gEntitiesNextPosYArray[PLAYERTRACK] + 20.0f);
+        fromPlayer.z = z - gEntitiesNextPosZArray[PLAYERTRACK];
+        D_800E6F50[omCurrentObj->objId].originOffset = sqrtf((fromPlayer.x * fromPlayer.x) + (fromPlayer.y * fromPlayer.y) + (fromPlayer.z * fromPlayer.z));
+        if (result == 0) {
+            if (D_800E6F50[omCurrentObj->objId].originOffset > 500.0f) {
+                D_800E6F50[omCurrentObj->objId].z = 1.0f;
+                return 1;
+            }
         }
+        return 0;
     }
-    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B3234.s")
-#endif
 
 void func_800B33F4(void) {
     D_800E64D0[omCurrentObj->objId] = 0.0f;

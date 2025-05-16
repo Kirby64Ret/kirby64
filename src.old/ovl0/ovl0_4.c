@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "ovl0_4.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 
 extern s32 D_8004AB9C;
 extern Gfx *gDisplayListHeads[4];

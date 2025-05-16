@@ -369,7 +369,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80008B94.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80008DA8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/omEndProcess.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80008EC4.s")
 

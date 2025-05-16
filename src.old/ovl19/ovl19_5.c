@@ -3,12 +3,12 @@
 #include "types.h"
 #include "src/ovl2/ovl2_6.h"
 #include "ovl19_5.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "unk_structs/D_800E1B50.h"
 
 extern void func_800AECC0(f32 arg0);
 extern void func_800AED20(f32 arg0);
-extern void finish_current_thread(u32 arg0);
+extern void ohSleep(u32 arg0);
 extern void play_sound(u32 arg0);
 extern void func_8019F000_ovl19(struct EntityThing800E9AA0 *arg0, f32 *arg1, u32 arg2, f32 arg3);
 
@@ -32,18 +32,18 @@ void func_8022E630_ovl19(s32 arg0) {
     Vector sp1C;
     func_800AECC0(D_800D6B10);
     func_800AED20(D_800D6B10);
-    D_800DEF90[D_8004A7C4->objId] = &D_800B4924;
-    D_800E6A10[D_8004A7C4->objId] = 1.0f;
-    finish_current_thread(0x60);
+    D_800DEF90[omCurrentObj->objId] = &D_800B4924;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    ohSleep(0x60);
     sp1C.z = 0.0f;
     sp1C.y = 50.0f;
     sp1C.x = 0.0f;
     play_sound(502);
-    func_8019F000_ovl19(D_800E9AA0[D_800E0D50[D_8004A7C4->objId]], &sp1C, 0x28, -0.85f);
-    D_800E6D90[D_8004A7C4->objId] = D_8022FA90;
-    D_800E17D0[D_8004A7C4->objId] = 0.0f;
-    gEntitiesAngleYArray[D_8004A7C4->objId] = D_800E17D0[D_8004A7C4->objId];
-    D_800DF150[D_8004A7C4->objId] = &func_8022E798_ovl19;
+    func_8019F000_ovl19(D_800E9AA0[D_800E0D50[omCurrentObj->objId]], &sp1C, 0x28, -0.85f);
+    D_800E6D90[omCurrentObj->objId] = D_8022FA90;
+    D_800E17D0[omCurrentObj->objId] = 0.0f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+    D_800DF150[omCurrentObj->objId] = &func_8022E798_ovl19;
     func_800AA018(0x105EF);
     func_800AFA14();
 }
@@ -77,28 +77,28 @@ void func_8022E954_ovl19(struct CollisionState *arg0) {
     Vector sp24;
     struct UnkStruct800E1B50 *sp20;
 
-    sp20 = D_800E1B50[D_8004A7C4->objId];
+    sp20 = D_800E1B50[omCurrentObj->objId];
     func_800AECC0(D_800D6B10);
     func_800AED20(D_800D6B10);
-    D_800DEF90[D_8004A7C4->objId] = &D_800B4924;
-    D_800E6A10[D_8004A7C4->objId] = 1.0f;
+    D_800DEF90[omCurrentObj->objId] = &D_800B4924;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
     func_800AA018(0x105F0);
     func_800AA018(0x105F1);
-    finish_current_thread(1);
+    ohSleep(1);
     func_800AECC0(0);
     func_800AED20(0);
-    finish_current_thread(0x5F);
+    ohSleep(0x5F);
     func_800AECC0(D_800D6B10);
     func_800AED20(D_800D6B10);
     sp24.z = 0.0f;
     sp24.y = 30.0f;
     sp24.x = 0.0f;
     play_sound(502);
-    func_8019F000_ovl19(D_800E9AA0[D_800E0D50[D_8004A7C4->objId]], &sp24, 0x14, -0.45f);
-    D_800E6D90[D_8004A7C4->objId] = (f32) D_8022FA98;
-    D_800E17D0[D_8004A7C4->objId] = 0.0f;
-    gEntitiesAngleYArray[D_8004A7C4->objId] = (f32) D_800E17D0[D_8004A7C4->objId];
-    D_800DF150[D_8004A7C4->objId] = &func_8022EB54_ovl19;
+    func_8019F000_ovl19(D_800E9AA0[D_800E0D50[omCurrentObj->objId]], &sp24, 0x14, -0.45f);
+    D_800E6D90[omCurrentObj->objId] = (f32) D_8022FA98;
+    D_800E17D0[omCurrentObj->objId] = 0.0f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = (f32) D_800E17D0[omCurrentObj->objId];
+    D_800DF150[omCurrentObj->objId] = &func_8022EB54_ovl19;
     func_800AA018(0x105F0);
     func_800AA018(0x105F1);
     sp20->unk34 = func_800A8100(0, 2, 0x34, arg0->unk3C);
@@ -115,18 +115,18 @@ void func_8022ED10_ovl19(s32 arg0) {
     Vector sp1C;
     func_800AECC0(D_800D6B10);
     func_800AED20(D_800D6B10);
-    D_800DEF90[D_8004A7C4->objId] = &D_800B4924;
-    D_800E6A10[D_8004A7C4->objId] = 1.0f;
-    finish_current_thread(0x60);
+    D_800DEF90[omCurrentObj->objId] = &D_800B4924;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    ohSleep(0x60);
     sp1C.z = 0.0f;
     sp1C.y = 50.0f;
     sp1C.x = 0.0f;
     play_sound(502);
-    func_8019F000_ovl19(D_800E9AA0[D_800E0D50[D_8004A7C4->objId]], &sp1C, 0x28, -0.85f);
-    D_800E6D90[D_8004A7C4->objId] = D_8022FAA0;
-    D_800E17D0[D_8004A7C4->objId] = 0.0f;
-    gEntitiesAngleYArray[D_8004A7C4->objId] = D_800E17D0[D_8004A7C4->objId];
-    D_800DF150[D_8004A7C4->objId] = &func_8022EE78_ovl19;
+    func_8019F000_ovl19(D_800E9AA0[D_800E0D50[omCurrentObj->objId]], &sp1C, 0x28, -0.85f);
+    D_800E6D90[omCurrentObj->objId] = D_8022FAA0;
+    D_800E17D0[omCurrentObj->objId] = 0.0f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+    D_800DF150[omCurrentObj->objId] = &func_8022EE78_ovl19;
     func_800AA018(0x10601);
     func_800AFA14();
 }

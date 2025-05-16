@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "unk_structs/D_800E1B50.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "sounds.h"
 
 extern f32 D_800E6A10[];
@@ -51,38 +51,38 @@ void func_801BB9D0(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 void func_801BBA54_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[D_8004A7C4->objId];
+    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
 
-    D_800EC660[D_8004A7C4->objId] = 40.0f;
-    D_800EC820[D_8004A7C4->objId] = 0.0f;
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
     func_801ABBA0_ovl7();
-    D_800DF150[D_8004A7C4->objId] = &func_801AC840_ovl7;
+    D_800DF150[omCurrentObj->objId] = &func_801AC840_ovl7;
     sp1C->unk98 = &D_801CB4DC;
-    D_800E8920[D_8004A7C4->objId] = 0;
-    D_800E9020[D_8004A7C4->objId] = 0.0f;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E9020[omCurrentObj->objId] = 0.0f;
     func_800AA018(0x100A2);
-    D_800E64D0[D_8004A7C4->objId] = D_800E6A10[D_8004A7C4->objId] * 14.0f;
-    D_800E6690[D_8004A7C4->objId] = 0.0f;
-    D_800E6850[D_8004A7C4->objId] = 14.0f;
-    D_800E3750[D_8004A7C4->objId] = 0.0f;
-    D_800E3210[D_8004A7C4->objId] = D_800E3750[D_8004A7C4->objId];
-    D_800E3C90[D_8004A7C4->objId] = 65535.0f;
-    finish_current_thread(0x3C);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    ohSleep(0x3C);
     func_801AC11C_ovl7(arg0);
 }
 
 void func_801BBBF4_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *temp_a1 = D_800E1B50[D_8004A7C4->objId];
+    struct UnkStruct800E1B50 *temp_a1 = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *temp_a2 = temp_a1->unk88->unkC;
     struct SubSub800E1B50_Unk88_UnkC_Unk4 *sp1C = temp_a2->unk4;
 
-    D_800EC660[D_8004A7C4->objId] = 40.0f;
-    D_800EC820[D_8004A7C4->objId] = 0.0f;
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
     func_801ABBA0_ovl7();
-    D_800DF150[D_8004A7C4->objId] = &func_801BBE1C_ovl7;
+    D_800DF150[omCurrentObj->objId] = &func_801BBE1C_ovl7;
     temp_a1->unk48 = &func_8010C274;
     temp_a1->unk98 = &D_801CB56C;
-    D_800E8920[D_8004A7C4->objId] = 0;
+    D_800E8920[omCurrentObj->objId] = 0;
     func_800AECC0(D_800D6B10, temp_a1);
     func_800AED20(D_800D6B10);
     if (sp1C->unk4 != -1) {
@@ -91,14 +91,14 @@ void func_801BBBF4_ovl7(s32 arg0) {
     if (sp1C->unk8 != -1) {
         func_800AA018(sp1C->unk8);
     }
-    D_800E64D0[D_8004A7C4->objId] = D_800E6A10[D_8004A7C4->objId] * (ABSF(D_800E64D0[D_800E0D50[D_8004A7C4->objId]]) + 14.0f);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (ABSF(D_800E64D0[D_800E0D50[omCurrentObj->objId]]) + 14.0f);
     
-    D_800E6690[D_8004A7C4->objId] = 0;
-    D_800E6850[D_8004A7C4->objId] = 14.0f;
-    D_800E3750[D_8004A7C4->objId] = 0;
-    D_800E3210[D_8004A7C4->objId] = D_800E3750[D_8004A7C4->objId];
-    D_800E3C90[D_8004A7C4->objId] = 65535.0f;
-    finish_current_thread(0x3C);
+    D_800E6690[omCurrentObj->objId] = 0;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3750[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    ohSleep(0x3C);
     func_801AC364_ovl7(arg0);
 }
 

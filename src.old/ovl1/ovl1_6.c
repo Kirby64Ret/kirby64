@@ -3,7 +3,7 @@
 #include "buffers.h"
 
 #include "ovl1_6.h"
-#include "D_8004A7C4.h"
+#include "GObj.h"
 #include "unk_structs/D_800DE350.h"
 #include "unk_structs/D_800E1B50.h"
 
@@ -160,7 +160,7 @@ void func_800AE138(s32 arg0) {
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_6/func_800AE138.s")
 #endif
 
-struct GObjProcess *func_80008A18(s32 arg0, s32 arg1, u8 arg2, u32 arg3);
+struct GObjProcess *omCreateProcess(s32 arg0, s32 arg1, u8 arg2, u32 arg3);
 struct GObj *func_8000A180(s32 arg0, s32 arg1, u8 arg2, u32 arg3);
 void func_800B0F28(void);
 extern u32 D_800DDA90[];
@@ -180,7 +180,7 @@ extern struct UnkStruct800D4FD0 D_800D4FD0[];
 
 // https://decomp.me/scratch/zbl2m
 #ifdef NON_MATCHING
-s32 request_job(s32 id, s32 minIndex, u32 max_index, s32 *arg3, void (*arg4)()) {
+s32 request_job(s32 id, s32 minIndex, u32 max_index, void (*arg3)(), void (*userMain)()) {
     struct GObj *gobj;
     s32 v0;
 
@@ -202,14 +202,14 @@ s32 request_job(s32 id, s32 minIndex, u32 max_index, s32 *arg3, void (*arg4)()) 
         print_error_stub("Can't request job !!!\n");
         return -1;
     }
-    if ((D_8004A7C4 == NULL) || (D_8004A7C4->link == 0x1A) || (D_8004A7C4->link == 0x19)) {
+    if ((omCurrentObj == NULL) || (omCurrentObj->link == 0x1A) || (omCurrentObj->link == 0x19)) {
         v0 = 0;
     }
-    else if ((D_8004A7C4->link & 0x18) == 0) {
+    else if ((omCurrentObj->link & 0x18) == 0) {
         v0 = 8;
     }
     else {
-        v0 = (D_8004A7C4->link & 0x18);
+        v0 = (omCurrentObj->link & 0x18);
         if (v0 + 8 >= 32) {
             print_error_stub("Job Request Deep OverFlow!!\n");
             return -1;
@@ -218,21 +218,16 @@ s32 request_job(s32 id, s32 minIndex, u32 max_index, s32 *arg3, void (*arg4)()) 
 
     D_800DD710[minIndex] = id;
     D_800DE350[minIndex] =
-    gobj = func_8000A180(minIndex, func_800B0D24, D_800D4FD0[id].unk0[0] + v0, 0);
+    gobj = HS64_omMakeGObj(minIndex, func_800B0D24, D_800D4FD0[id].unk0[0] + v0, 0);
     // D_800DE350[minIndex] = gobj;
-    gEntityGObjProcessArray[minIndex]= func_80008A18(gobj, D_800D4FD0[id].unk4, 0, 3);
-    gEntityGObjProcessArray2[minIndex]= func_80008A18(gobj, func_800B0D90, 1, 3);
-
-    if (D_800D4FD0[id].unk0[1] & 1) {
-        gEntityGObjProcessArray3[minIndex]= func_80008A18(gobj, func_800B1878, 0, 2);
-    }
-    if (D_800D4FD0[id].unk0[1] & 2) {
-        gEntityGObjProcessArray4[minIndex] = func_80008A18(gobj, func_800B1870, 1, 1);
-    }
-    gEntityGObjProcessArray5[minIndex] = func_80008A18(gobj, arg4, 1, 0);
+                                    gEntityGObjProcessArray[minIndex]= omCreateProcess(gobj, D_800D4FD0[id].unk4, 0, 3);
+                                    gEntityGObjProcessArray2[minIndex]= omCreateProcess(gobj, func_800B0D90, 1, 3);
+    if (D_800D4FD0[id].unk0[1] & 1) gEntityGObjProcessArray3[minIndex]= omCreateProcess(gobj, objSleepForever, 0, 2);
+    if (D_800D4FD0[id].unk0[1] & 2) gEntityGObjProcessArray4[minIndex] = omCreateProcess(gobj, func_800B1870, 1, 1);
+                                    gEntityGObjProcessArray5[minIndex] = omCreateProcess(gobj, userMain, 1, 0);
     D_800DD8D0[minIndex] = 0;
     D_800DDA90[minIndex] = gobj->link;
-    D_800DF150[minIndex] = 0;
+    D_800DF150[minIndex] = NULL;
     if (arg3 != 0) {
         D_800DEF90[minIndex] = arg3;
     } else {
@@ -254,7 +249,7 @@ s32 func_800AEA64(s32 id, s32 minIndex, s32 max_index) {
     if (idx == -1) {
         return -1;
     }
-    D_800E0D50[idx] = (D_8004A7C4 != NULL) ? D_8004A7C4->objId : -1;
+    D_800E0D50[idx] = (omCurrentObj != NULL) ? omCurrentObj->objId : -1;
     return idx;
 }
 
@@ -288,7 +283,7 @@ s32 request_track(u8 arg0, s32 id, s32 minIndex, s32 maxIndex) {
             gEntitiesAngleXArray[idx] = 0.0f;
             break;
     }
-    D_800E0D50[idx] = (D_8004A7C4 != NULL) ? D_8004A7C4->objId : -1;
+    D_800E0D50[idx] = (omCurrentObj != NULL) ? omCurrentObj->objId : -1;
     return idx;
 }
 

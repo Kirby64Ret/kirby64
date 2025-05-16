@@ -94,7 +94,23 @@ void func_800A4B34(Vector *dst, struct UnkStruct8004A7C4_3C *arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A4DB8.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A4F48.s")
+// camera mtx
+extern f32 D_800D6ED0[4][4];
+s32 func_800A4F48(void* arg0, Vector* vec, f32 arg2, f32 arg3) {
+    f32 tmpX, tmpY, tmpInv;
+
+    tmpInv = 1.0f / (((D_800D6ED0[0][3] * vec->x) + (D_800D6ED0[1][3] * vec->y) + (D_800D6ED0[2][3] * vec->z)) + D_800D6ED0[3][3]);
+    tmpX = ((D_800D6ED0[0][0] * vec->x) + (D_800D6ED0[1][0] * vec->y) + (D_800D6ED0[2][0] * vec->z)) + D_800D6ED0[3][0];
+    tmpY = ((D_800D6ED0[0][1] * vec->x) + (D_800D6ED0[1][1] * vec->y) + (D_800D6ED0[2][1] * vec->z)) + D_800D6ED0[3][1];
+
+
+    vec->x = tmpX * tmpInv;
+    vec->y = tmpY * tmpInv;
+    if ((ABS(vec->x) < arg2) && (ABS(vec->y) < arg3)) {
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A509C.s")
 

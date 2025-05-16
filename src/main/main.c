@@ -16,7 +16,7 @@ struct Overlay ovl1Def = OVERLAY(ovl1);
 u32 D_8003DC94 = 0;
 
 #define SETUP_STACK_AND_START_THREAD(thread, stack) {\
-    stack[7] = STACK_TOP_MAGIC;\
+    stack[7] = STACK_CANARY;\
     osStartThread(&thread);\
 }
 
@@ -80,16 +80,16 @@ void thread_crash_stack_overflow(s32 threadNum) {
 }
 
 void func_80000510(void) {
-    if (gEntryStack[7] != STACK_TOP_MAGIC) {
+    if (gEntryStack[7] != STACK_CANARY) {
         thread_crash_stack_overflow(0);
     }
-    if (idleThreadStack[7] != STACK_TOP_MAGIC) {
+    if (idleThreadStack[7] != STACK_CANARY) {
         thread_crash_stack_overflow(1);
     }
-    if (gSchedThreadStack[7] != STACK_TOP_MAGIC) {
+    if (gSchedThreadStack[7] != STACK_CANARY) {
         thread_crash_stack_overflow(3);
     }
-    if (gGameThreadStack[7] != STACK_TOP_MAGIC) {
+    if (gGameThreadStack[7] != STACK_CANARY) {
         thread_crash_stack_overflow(5);
     }
 }
@@ -130,7 +130,7 @@ void thread5_game(UNUSED void *arg) {
 void thread1_idle(void *arg) {
     crash_screen_start_thread();
     osCreateThread(&gGameThread, 5, thread5_game, arg, &gGameThreadStack[MAIN_THREAD_STACK_LEN_U64], 50);
-    gGameThreadStack[7] = STACK_TOP_MAGIC;
+    gGameThreadStack[7] = STACK_CANARY;
     if (D_8003DC94 == 0) {
         osStartThread(&gGameThread);
     }
@@ -139,7 +139,7 @@ void thread1_idle(void *arg) {
 }
 
 void cboot(void) {
-    gEntryStack[7] = STACK_TOP_MAGIC;
+    gEntryStack[7] = STACK_CANARY;
     osInitialize();
     osCreateThread(&gIdleThread, 1, thread1_idle, &gArgv, &idleThreadStack[IDLE_THREAD_STACK_LEN_U64], OS_PRIORITY_APPMAX);
     SETUP_STACK_AND_START_THREAD(gIdleThread, idleThreadStack);

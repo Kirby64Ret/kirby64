@@ -89,7 +89,7 @@ void func_800AEFFC(u16 arg0) {
     while (1) {
         if (D_800DD8D0[omCurrentObj->objId] & 0xC0000000 || --arg0 != 0) {
             D_800DD8D0[omCurrentObj->objId] &= 0x3FFFFFFF;
-            finish_current_thread(1);
+            ohSleep(1);
         }
         else break;
     }
@@ -104,7 +104,7 @@ u32 func_800AF0F4(void);
 void func_800AF09C(u16 arg0) {
     while (1) {
         if (func_800AF0F4() != 0 || --arg0 != 0) {
-            finish_current_thread(1);
+            ohSleep(1);
             continue;
         }
         break;
@@ -284,14 +284,14 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800AFBEC.s")
 void func_800AFC20(s32 sound, s32 tcount) {
     play_sound(sound);
     if (tcount != 0) {
-        finish_current_thread(tcount);
+        ohSleep(tcount);
     }
 }
 
 void func_800AFC54(s32 arg0, s32 tcount) {
     func_800FB914(arg0);
     if (tcount != 0) {
-        finish_current_thread(tcount);
+        ohSleep(tcount);
     }
 }
 
@@ -309,7 +309,7 @@ void func_800AFC88(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
         gEntitiesNextPosZArray[omCurrentObj->objId] = D_800E2410[omCurrentObj->objId];
     }
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -327,7 +327,7 @@ void func_800AFDA0(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
         gEntitiesAngleZArray[omCurrentObj->objId] = D_800E4E10[omCurrentObj->objId];
     }
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -345,7 +345,7 @@ void func_800AFEB8(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
         gEntitiesScaleZArray[omCurrentObj->objId] = D_800E5350[omCurrentObj->objId];
     }
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -363,7 +363,7 @@ void func_800AFFD0(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
         gEntitiesNextPosZArray[omCurrentObj->objId] = D_800E2410[omCurrentObj->objId];
     }
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -378,7 +378,7 @@ void func_800B0100(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
         gEntitiesAngleZArray[omCurrentObj->objId] += arg2;
     }
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -396,7 +396,7 @@ void func_800B01DC(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
         gEntitiesScaleZArray[omCurrentObj->objId] = D_800E5350[omCurrentObj->objId];
     }
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -429,7 +429,7 @@ void func_800B030C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f
         D_800E5350[omCurrentObj->objId] = arg8;
     }
     if (arg9 != 0) {
-        finish_current_thread(arg9);
+        ohSleep(arg9);
     }
 }
 
@@ -468,7 +468,7 @@ void func_800B04D4(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f
         D_800E3E50[omCurrentObj->objId] = ABSF(arg8);
     }
     if (arg9 != 0) {
-        finish_current_thread(arg9);
+        ohSleep(arg9);
     }
 }
 
@@ -509,7 +509,7 @@ void func_800B07B4(u8 arg0, u8 arg1, u8 arg2, s32 arg3) {
         }
     }
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 #else
@@ -542,7 +542,7 @@ void func_800B0974(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
     }
 
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -560,7 +560,7 @@ void func_800B0AD4(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
     }
 
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -586,7 +586,7 @@ void func_800B0BC4(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
     }
 
     if (arg3 != 0) {
-        finish_current_thread(arg3);
+        ohSleep(arg3);
     }
 }
 
@@ -705,7 +705,7 @@ void func_800B1870(s32 arg0) {
 
 void func_800B1878(s32 arg0) {
     while (1) {
-        finish_current_thread(0x7FFFFFFF);
+        ohSleep(0x7FFFFFFF);
     }
 }
 
@@ -725,7 +725,7 @@ void func_800B1900(u16 arg0) {
         func_800AE138(omCurrentObj->objId);
         if (D_8004A7D0->kind == 0) {
             func_8000A29C_ovl1(omCurrentObj);
-            finish_current_thread(1);
+            ohSleep(1);
             return;
         }
         func_8000A29C(omCurrentObj);
@@ -735,7 +735,7 @@ void func_800B1900(u16 arg0) {
     func_8000A29C_ovl1(temp_t7);
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B19B8.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/drop_process_from_list.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B19F4.s")
 

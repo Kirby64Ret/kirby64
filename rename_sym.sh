@@ -12,4 +12,4 @@ fi
 
 #echo "Replace $1 with $2?"
 #read
-grep -rl "$1" unnamed_syms.txt src/ data/ asm/ include/ | xargs sed -i "s/\b$1\b/$2/g"
+grep -rl "$1" unnamed_syms.txt src/ src.old/ data/ asm/ include/ | xargs sed -i "s/\b$1\b/$2/g"

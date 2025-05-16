@@ -1,5 +1,5 @@
 #include <PR/ultratypes.h>
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 
 extern void (*D_801F4220_ovl10[])(struct GObj *a0);
 

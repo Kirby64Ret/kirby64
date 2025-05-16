@@ -122,7 +122,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800B1900.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800B19B8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/56F10/drop_process_from_list.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800B19F4.s")
 

@@ -3,7 +3,7 @@
 #include <PR/gbi.h>
 #include "ovl1/ovl1_6.h"
 #include "ovl0/ovl0_2_5.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "unk_structs/D_800D7098.h"
 #include "unk_structs/D_800E1B50.h"
 
@@ -94,7 +94,7 @@ u8 ovl18_TamperCheck(void) {
 GLOBAL_ASM("asm/non_matchings/ovl18/ovl18/func_8021F35C_ovl18.s")
 
 void func_8021F400_ovl18(void) {
-    switch (D_800E7880[D_8004A7C4->objId]) {
+    switch (D_800E7880[omCurrentObj->objId]) {
         case 0:
             func_8021ED3C_ovl18();
             break;
@@ -104,13 +104,13 @@ void func_8021F400_ovl18(void) {
         case 2:
             func_8021ED10_ovl18();
     }
-    func_800B1900(D_8004A7C4->objId & 0xFFFF);
+    func_800B1900(omCurrentObj->objId & 0xFFFF);
 }
 
 extern f32 D_800D6E58;
 void func_8021F4A0_ovl18(void) {
-    D_800E7B20[D_8004A7C4->objId] = D_800D6E58;
-    D_800E7CE0[D_8004A7C4->objId] = 0x1E;
+    D_800E7B20[omCurrentObj->objId] = D_800D6E58;
+    D_800E7CE0[omCurrentObj->objId] = 0x1E;
     D_800D7098.unk0 = 0;
 }
 
@@ -128,22 +128,22 @@ GLOBAL_ASM("asm/non_matchings/ovl18/ovl18/func_8021F70C_ovl18.s")
 extern u32 D_802297E4[];
 #ifdef NON_MATCHING
 void func_8021F970_ovl18(void) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[D_8004A7C4->objId];
+    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
     s32 sp18;
 
-    sp18 = D_800E77A0[D_8004A7C4->objId] - 0x4E;
+    sp18 = D_800E77A0[omCurrentObj->objId] - 0x4E;
     play_sound(0x28);
     sp1C->unk3D = D_802297E4[sp18];
-    D_800E7CE0[D_8004A7C4->objId] = D_802297E4[sp18];
-    D_800D70D8.unk0 = gEntitiesNextPosXArray[D_8004A7C4->objId];
-    D_800D70D8.unk4 = gEntitiesNextPosYArray[D_8004A7C4->objId];
-    D_800D70D8.unk8 = gEntitiesNextPosZArray[D_8004A7C4->objId];
-    D_800D70D8.unkC = gEntitiesAngleXArray[D_8004A7C4->objId];
-    D_800D70D8.unk10 = gEntitiesAngleYArray[D_8004A7C4->objId];
-    D_800D70D8.unk14 = gEntitiesAngleZArray[D_8004A7C4->objId];
-    D_800D70D8.unk18 = gEntitiesScaleXArray[D_8004A7C4->objId];
-    D_800D70D8.unk1C = gEntitiesScaleYArray[D_8004A7C4->objId];
-    D_800D70D8.unk20 = gEntitiesScaleZArray[D_8004A7C4->objId];
+    D_800E7CE0[omCurrentObj->objId] = D_802297E4[sp18];
+    D_800D70D8.unk0 = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_800D70D8.unk4 = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_800D70D8.unk8 = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800D70D8.unkC = gEntitiesAngleXArray[omCurrentObj->objId];
+    D_800D70D8.unk10 = gEntitiesAngleYArray[omCurrentObj->objId];
+    D_800D70D8.unk14 = gEntitiesAngleZArray[omCurrentObj->objId];
+    D_800D70D8.unk18 = gEntitiesScaleXArray[omCurrentObj->objId];
+    D_800D70D8.unk1C = gEntitiesScaleYArray[omCurrentObj->objId];
+    D_800D70D8.unk20 = gEntitiesScaleZArray[omCurrentObj->objId];
     D_800D7098.unk0 = 1;
     D_800D7098.unk4 = 0;
     D_800D7098.unk8 = 0;
@@ -151,25 +151,25 @@ void func_8021F970_ovl18(void) {
     D_800D7098.unk10 = 0;
     D_800D7098.unk14 = 0;
     D_800D7098.unk18 = 0;
-    func_800B19F4(6, D_8004A7C4->objId, &D_800D70D8);
+    func_800B19F4(6, omCurrentObj->objId, &D_800D70D8);
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl18/ovl18/func_8021F970_ovl18.s")
 #endif
 
 void func_8021FB18_ovl18(void) {
-    D_800E7CE0[D_8004A7C4->objId] = 0;
-    gEntitiesNextPosXArray[D_8004A7C4->objId] = D_800D70D8.unk0;
-    gEntitiesNextPosYArray[D_8004A7C4->objId] = D_800D70D8.unk4;
-    gEntitiesNextPosZArray[D_8004A7C4->objId] = D_800D70D8.unk8;
-    gEntitiesAngleXArray[D_8004A7C4->objId] = D_800D70D8.unkC;
-    gEntitiesAngleYArray[D_8004A7C4->objId] = D_800D70D8.unk10;
-    gEntitiesAngleZArray[D_8004A7C4->objId] = D_800D70D8.unk14;
-    gEntitiesScaleXArray[D_8004A7C4->objId] = D_800D70D8.unk18;
-    gEntitiesScaleYArray[D_8004A7C4->objId] = D_800D70D8.unk1C;
-    gEntitiesScaleZArray[D_8004A7C4->objId] = D_800D70D8.unk20;
+    D_800E7CE0[omCurrentObj->objId] = 0;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_800D70D8.unk0;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800D70D8.unk4;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_800D70D8.unk8;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_800D70D8.unkC;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800D70D8.unk10;
+    gEntitiesAngleZArray[omCurrentObj->objId] = D_800D70D8.unk14;
+    gEntitiesScaleXArray[omCurrentObj->objId] = D_800D70D8.unk18;
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_800D70D8.unk1C;
+    gEntitiesScaleZArray[omCurrentObj->objId] = D_800D70D8.unk20;
     D_800D7098.unk0 = 0;
-    func_800B1BF0(0, D_8004A7C4->objId);
+    func_800B1BF0(0, omCurrentObj->objId);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl18/ovl18/func_8021FC40_ovl18.s")

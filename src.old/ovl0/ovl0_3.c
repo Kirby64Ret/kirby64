@@ -4,7 +4,7 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "ovl0_3.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 
 UserData8000BE90 *func_8000BE90(UserData8000BE90* data) {
     UserData8000BE90 *ret;

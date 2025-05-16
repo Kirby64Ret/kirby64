@@ -6,7 +6,7 @@
 #include "ovl2_8.h"
 #include "ovl2_6.h"
 #include "sounds.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "unk_structs/D_800DE350.h"
 #include "ovl1/ovl1_6.h"
 extern Controller_800D6FE8 gKirbyController;
@@ -231,7 +231,7 @@ extern s32 D_800E8AE0[];
 
 
 void func_8011CF58(void) {
-    if (D_800E8AE0[D_8004A7C4->objId] & 6) {
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
         func_800AECC0(1.0f);
         func_800AED20(1.0f);
     } else {
@@ -282,7 +282,7 @@ void func_8011D614(void) {
     func_8011CF58();
     func_800A9760(0x20007);
     
-    D_800E0490[D_8004A7C4->objId] = &D_801926E8;
+    D_800E0490[omCurrentObj->objId] = &D_801926E8;
 
     gKirbyState.unk15C = &D_80190358;
     gKirbyState.unk154 = 2;
@@ -502,13 +502,13 @@ extern f32 D_80129068;
 void func_80120AF8(Vector *arg0);
 void func_80120A28(void) {
     Vector sp24;
-    if ((D_800E8AE0[D_8004A7C4->objId] & 6) != 0) {
-        D_800E6690[D_8004A7C4->objId] = D_800E6A10[D_8004A7C4->objId] * D_80129068;
-        D_800E6850[D_8004A7C4->objId] = 0.0f;
+    if ((D_800E8AE0[omCurrentObj->objId] & 6) != 0) {
+        D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_80129068;
+        D_800E6850[omCurrentObj->objId] = 0.0f;
     } else {
         func_80120AF8(&sp24);
-        D_800E6690[D_8004A7C4->objId] = D_800E6A10[D_8004A7C4->objId] * sp24.z;
-        D_800E6850[D_8004A7C4->objId] = 0.0f;
+        D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * sp24.z;
+        D_800E6850[omCurrentObj->objId] = 0.0f;
     }
 }
 
@@ -521,8 +521,8 @@ struct UnkStruct80128434 {
 
 extern struct UnkStruct80128434 D_80128434[];
 void func_80120AF8(Vector *arg0) {
-    if (D_800E8920[D_8004A7C4->objId] == 0) {
-        if ((D_800E8AE0[D_8004A7C4->objId] & 6) != 0) {
+    if (D_800E8920[omCurrentObj->objId] == 0) {
+        if ((D_800E8AE0[omCurrentObj->objId] & 6) != 0) {
             arg0->z = D_8012906C;
         } else {
             arg0->z = D_80129070;
@@ -579,8 +579,8 @@ GLOBAL_ASM("asm/non_matchings/ovl2_8/func_801210FC.s")
 
 u32 func_80121194(void) {
     if (D_8012E7D7 == 0
-        && ((D_800E6A10[D_8004A7C4->objId] == 1.0f && gKirbyController.buttonHeld & L_JPAD)
-        ||  (D_800E6A10[D_8004A7C4->objId] == -1.0f && gKirbyController.buttonHeld & R_JPAD))
+        && ((D_800E6A10[omCurrentObj->objId] == 1.0f && gKirbyController.buttonHeld & L_JPAD)
+        ||  (D_800E6A10[omCurrentObj->objId] == -1.0f && gKirbyController.buttonHeld & R_JPAD))
         ) {
         return 1;
     }
@@ -609,19 +609,19 @@ void func_801212A4(void) {
     Vector nextPos;
 
     if (D_800D6B54 == 0) {
-        currPos.x = gEntitiesPosXArray[D_8004A7C4->objId];
-        currPos.y = gEntitiesPosYArray[D_8004A7C4->objId];
-        currPos.z = gEntitiesPosZArray[D_8004A7C4->objId];
-        nextPos.x = gEntitiesNextPosXArray[D_8004A7C4->objId];
-        nextPos.y = gEntitiesNextPosYArray[D_8004A7C4->objId];
-        nextPos.z = gEntitiesNextPosZArray[D_8004A7C4->objId];
+        currPos.x = gEntitiesPosXArray[omCurrentObj->objId];
+        currPos.y = gEntitiesPosYArray[omCurrentObj->objId];
+        currPos.z = gEntitiesPosZArray[omCurrentObj->objId];
+        nextPos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        nextPos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        nextPos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
         if (func_8010474C(&currPos, &nextPos) != 0) {
             if (D_800D6B54 == 0) {
                 func_8011D40C();
-                if (D_800E3210[D_8004A7C4->objId] > 0.0f) {
-                    D_800E3750[D_8004A7C4->objId] = 0.0f;
-                    D_800E3210[D_8004A7C4->objId] = D_800E3750[D_8004A7C4->objId];
-                    D_800E3C90[D_8004A7C4->objId] = 65535.0f;
+                if (D_800E3210[omCurrentObj->objId] > 0.0f) {
+                    D_800E3750[omCurrentObj->objId] = 0.0f;
+                    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+                    D_800E3C90[omCurrentObj->objId] = 65535.0f;
                 }
             }
         } else {
@@ -636,7 +636,7 @@ void func_801212A4(void) {
                 set_kirby_action_1(0x16, 0x17);
             }
             else if ((gKirbyState.unk140 != 0)
-                && (D_800E7B20[D_8004A7C4->objId] != 0) && (D_800E7CE0[D_8004A7C4->objId] == 0)
+                && (D_800E7B20[omCurrentObj->objId] != 0) && (D_800E7CE0[omCurrentObj->objId] == 0)
                     && (gKirbyState.action != 0x1D) && (gKirbyState.unk68 == 0) && (gKirbyState.action != 0x16)
             ) {
                 if (change_kirby_hp(-1.0f) == 0) {
@@ -644,9 +644,9 @@ void func_801212A4(void) {
                 } else {
                     func_80120BCC();
                     if (gKirbyState.unk140 & 0x40000) {
-                        D_800E85A0[D_8004A7C4->objId] = 1;
+                        D_800E85A0[omCurrentObj->objId] = 1;
                     } else if (gKirbyState.unk140 & 0x80000) {
-                        D_800E85A0[D_8004A7C4->objId] = -1;
+                        D_800E85A0[omCurrentObj->objId] = -1;
                     }
                     gKirbyState.unk24 = 1;
                     set_kirby_action_1(0x14, 0x16);
@@ -685,14 +685,14 @@ GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121F50.s")
 GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8012209C.s")
 
 u32 func_80122460(void) {
-    if ((gKirbyState.ceilingCollisionNext != 0) && (D_800E3210[D_8004A7C4->objId] > 0.0f)) {
+    if ((gKirbyState.ceilingCollisionNext != 0) && (D_800E3210[omCurrentObj->objId] > 0.0f)) {
         if ((gKirbyState.ceilingType == 4) || (gKirbyState.ceilingType == 5)) {
             if (func_8010D8A4(&gPositionState) != 0) {
                 return 1;
             }
         }
     } else if ((gKirbyState.floorCollisionNext != 0)
-        && (D_800E3210[D_8004A7C4->objId] <= 0.0f)
+        && (D_800E3210[omCurrentObj->objId] <= 0.0f)
         && (gKirbyState.floorType == 4)
         && (func_8010D8A4(&gPositionState) != 0)) {
         
@@ -739,8 +739,8 @@ extern void func_800A7F74(u32 a, u32 b, u16 c, f32 d, f32 e, f32 f);
 void func_80122B40(void) {
     u16 phi_a2;
 
-    if (D_800E8AE0[D_8004A7C4->objId] & 7) {
-        if (D_800E8AE0[D_8004A7C4->objId] & 6)
+    if (D_800E8AE0[omCurrentObj->objId] & 7) {
+        if (D_800E8AE0[omCurrentObj->objId] & 6)
             phi_a2 = 19;
         else
             phi_a2 = 14;
@@ -751,7 +751,7 @@ void func_80122B40(void) {
         else
             phi_a2 = D_8012844C[gKirbyState.unk10A * 7][PLAYERTRACK];
     }
-    func_800A7F74(5, 1, phi_a2, gEntitiesNextPosXArray[D_8004A7C4->objId], gEntitiesNextPosYArray[D_8004A7C4->objId], gEntitiesNextPosZArray[D_8004A7C4->objId]);
+    func_800A7F74(5, 1, phi_a2, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122B40.s")
@@ -769,7 +769,7 @@ void func_80122F08(u32 arg0) {
     } else {
         func_800A8EC0(arg0);
     }
-    func_800AFA88(D_8004A7C4);
+    func_800AFA88(omCurrentObj);
 }
 
 // set_kirby_action? Two of them?

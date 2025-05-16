@@ -272,6 +272,9 @@ setup:
 
 .PHONY: all clean default diff test distclean
 
+test: $(BUILD_DIR)/$(TARGET).z64
+	parallel-launcher $<
+
 # Remove built-in rules, to improve performance
 MAKEFLAGS += --no-builtin-rules
 

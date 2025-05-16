@@ -2,6 +2,7 @@
 #define GOBJ_H
 #include "types.h"
 #include "main/object_manager.h"
+#include "ovl2/ovl2_8.h"
 
 // same as D_800E1B50?
 struct UnkStruct8004A7C4_3C_80 {
@@ -171,8 +172,7 @@ typedef struct GObj {
     u32 unk30;
     u32 unk34;
     u32 unk38;
-    // user_data???
-    struct UnkStruct8004A7C4_3C *data;
+    struct LayoutNode *data;
     // goes up by 2.0f per frame until it hits 40.0f, then resets to 0.0f
     f32 unk40;
     u32 flags;

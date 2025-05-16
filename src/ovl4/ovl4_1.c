@@ -192,7 +192,7 @@ void func_80151338_ovl4(s32 arg0) {
                 while (D_800D6B24 != 0) {
                     ohSleep(1);
                 }
-                D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 1;
+                D_800E98E0[request_track_3(0, 0x3C, 0x70)] = 1;
                 func_800B1900((u16) omCurrentObj->objId);
             }
             else break;
@@ -294,7 +294,6 @@ void func_80151990_ovl4(s32 arg0) {
 }
 
 void func_80151A0C_ovl4(s32 arg0) {
-
     random_u16();
     random_soft_u16();
     D_800BE4EC++;
@@ -334,19 +333,19 @@ void func_80151B08_ovl4(void) {
     func_800A6BC0(0);
     switch (D_800D6B54[2]) {
         case 0:
-            D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 0;
+            D_800E98E0[request_track_3(0, 0x3C, 0x70)] = 0;
             break;
         case 1:
-            D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 2;
+            D_800E98E0[request_track_3(0, 0x3C, 0x70)] = 2;
             for (i = 4; i < 9; i++) {
                 D_800E98E0[request_track_general(0, 0x3C, 0x70)] = i;
             }
             break;
         case 4:
-            D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 9;
+            D_800E98E0[request_track_3(0, 0x3C, 0x70)] = 9;
             break;
         case 5:
-            D_800E98E0[func_800AEC70(0, 0x3C, 0x70)] = 10;
+            D_800E98E0[request_track_3(0, 0x3C, 0x70)] = 10;
             break;
     }
     D_800D6B30 = 0;

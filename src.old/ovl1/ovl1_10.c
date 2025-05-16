@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "ovl1/ovl1_6.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "ovl0/ovl0_2.h" // D_80048E9C
 
 extern OSMesgQueue D_800ED4C8;

@@ -5,7 +5,7 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "ovl1_5.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_5/func_800AB680.s")
 
@@ -70,7 +70,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_5/func_800ACB7C.s")
 
 void func_800ACBDC(struct GObj *arg0) {
     if (arg0 == 0) {
-        arg0 = D_8004A7C4;
+        arg0 = omCurrentObj;
     }
     while (arg0->unk4C != 0) {
         func_800ACB7C(arg0->unk4C);

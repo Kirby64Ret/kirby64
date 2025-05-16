@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include <macros.h>
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "ovl0/ovl0_2_5.h"
 #include "ovl1/ovl1_6.h"
 #include "unk_structs/D_800D79D8.h"
@@ -231,17 +231,17 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800AA0C4.s")
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800AA154.s")
 
 void func_800AA174(void) {
-    D_8004A7C4->unk3C->posVec.x = gEntitiesNextPosXArray[D_8004A7C4->objId];
-    D_8004A7C4->unk3C->posVec.y = gEntitiesNextPosYArray[D_8004A7C4->objId];
-    D_8004A7C4->unk3C->posVec.z = gEntitiesNextPosZArray[D_8004A7C4->objId];
+    omCurrentObj->unk3C->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    omCurrentObj->unk3C->posVec.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    omCurrentObj->unk3C->posVec.z = gEntitiesNextPosZArray[omCurrentObj->objId];
 
-    D_8004A7C4->unk3C->angleVec.x = gEntitiesAngleXArray[D_8004A7C4->objId];
-    D_8004A7C4->unk3C->angleVec.y = gEntitiesAngleYArray[D_8004A7C4->objId];
-    D_8004A7C4->unk3C->angleVec.z = gEntitiesAngleZArray[D_8004A7C4->objId];
+    omCurrentObj->unk3C->angleVec.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    omCurrentObj->unk3C->angleVec.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    omCurrentObj->unk3C->angleVec.z = gEntitiesAngleZArray[omCurrentObj->objId];
 
-    D_8004A7C4->unk3C->scaleVec.x = gEntitiesScaleXArray[D_8004A7C4->objId];
-    D_8004A7C4->unk3C->scaleVec.y = gEntitiesScaleYArray[D_8004A7C4->objId];
-    D_8004A7C4->unk3C->scaleVec.z = gEntitiesScaleZArray[D_8004A7C4->objId];
+    omCurrentObj->unk3C->scaleVec.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    omCurrentObj->unk3C->scaleVec.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    omCurrentObj->unk3C->scaleVec.z = gEntitiesScaleZArray[omCurrentObj->objId];
 }
 
 void func_800AA2A0(void) {

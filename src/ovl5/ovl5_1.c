@@ -159,26 +159,24 @@ void func_8015CB7C_ovl5(void) {
     void *var_v1;
 
     if ((D_800D6B24 == 0) && ((&D_800D7158 + 0x20)->unk74 == 0)) {
-        if (*(&gPlayerControllers + 2) & 0x1000) {
-            play_sound(0x24C);
+        if (gPlayerControllers + 2 & START_BUTTON) {
+            play_sound(SOUND_MINIPAUSE1);
             func_800A699C();
             temp_v1 = &D_800D7158 + 0x20;
             temp_v0 = temp_v1->unk44;
             temp_v1->unk74 = 1;
             switch (temp_v0) {                      /* irregular */
                 case 29:
-                    var_v0 = func_800AEC70(8, 0, 0x70);
-block_10:
-                    sp1C = var_v0;
+                    var_v0 = request_track_3(8, 0, 0x70);
                     break;
                 case 31:
-                    var_v0 = func_800AEC70(6, 0, 0x70);
-                    goto block_10;
+                    var_v0 = request_track_3(6, 0, 0x70);
+                    break;
                 case 30:
-                    var_v0 = func_800AEC70(7, 0, 0x70);
-                    goto block_10;
+                    var_v0 = request_track_3(7, 0, 0x70);
+                    break;
             }
-            D_800E98E0[sp1C] = 0;
+            D_800E98E0[var_v0] = 0;
         }
     } else {
         var_v1 = &D_800D7158 + 0x20;

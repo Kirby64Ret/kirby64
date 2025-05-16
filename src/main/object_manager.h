@@ -6,7 +6,7 @@
 
 #include "geo_block_header.h"
 
-#define STACK_TOP_MAGIC 0x00000000FEDCBA98
+#define STACK_CANARY 0x00000000FEDCBA98
 
 // todo: keep naming scheme but rename regardless
 // uses GObjThreadStack
@@ -17,7 +17,7 @@
 #define HS64_GOBJPROC_KIND_OSTHREAD 2
 
 struct ObjStack {
-    // what looks like an mini thread stack, based on the last value in here being set to STACK_TOP_MAGIC
+    // what looks like an mini thread stack, based on the last value in here being set to STACK_CANARY
     u64 stack[0x20];
 };
 
@@ -166,12 +166,12 @@ typedef struct OMPersp {
 
 typedef struct OMOrtho {
     /* 0x00 */ struct OMMtx *mtx;
-    /* 0x04 */ f32 l;
-    /* 0x08 */ f32 r;
-    /* 0x0C */ f32 b;
-    /* 0x10 */ f32 t;
-    /* 0x14 */ f32 n;
-    /* 0x18 */ f32 f;
+    /* 0x04 */ f32 left;
+    /* 0x08 */ f32 right;
+    /* 0x0C */ f32 bottom;
+    /* 0x10 */ f32 top;
+    /* 0x14 */ f32 near;
+    /* 0x18 */ f32 far;
     /* 0x1C */ f32 scale;
 } OMOrtho; // size == 0x20
 

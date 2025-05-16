@@ -312,7 +312,6 @@ void func_80181C00_ovl5(GObj *o) {
     }
 }
 
-// https://decomp.me/scratch/sOUSa
 void func_80181D00_ovl5(GObj *arg0) {
     u32 i;
     SPObj *spobj;
@@ -391,15 +390,15 @@ void func_8018209C_ovl5(void) {
     func_800AAF34(0x10, D_8018A0F0_ovl5, 0);
     func_800A71A0(0x10);
     func_80181FD8_ovl5();
-    D_800E98E0[func_800AEC70(0xB, 0, 0x70)] = 0;
-    D_800E98E0[func_800AEC70(0xB, 0, 0x70)] = 1;
+    D_800E98E0[request_track_3(0xB, 0, 0x70)] = 0;
+    D_800E98E0[request_track_3(0xB, 0, 0x70)] = 1;
     D_800E98E0[request_track_general(0xB, 0, 0x70)] = 2;
     D_800E98E0[request_track_general(0xB, 0, 0x70)] = 8;
     D_800E98E0[request_track_general(0xB, 0, 0x70)] = 3;
     D_800E98E0[request_track_general(0xB, 0, 0x70)] = 4;
-    D_800E98E0[func_800AEC70(0xB, 0, 0x70)] = 5;
-    D_800E98E0[func_800AEC70(0xB, 0, 0x70)] = 6;
-    D_800E98E0[func_800AEC70(0xB, 0, 0x70)] = 7;
+    D_800E98E0[request_track_3(0xB, 0, 0x70)] = 5;
+    D_800E98E0[request_track_3(0xB, 0, 0x70)] = 6;
+    D_800E98E0[request_track_3(0xB, 0, 0x70)] = 7;
     HS64_omMakeGObj(0, &func_8018205C_ovl5, 0x1A, 0x80000000);
     func_800A5744(0, 0, 0);
     func_800A5A14(0xFF, -0x10, 0);

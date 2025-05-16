@@ -156,7 +156,11 @@ extern s32 D_800E93A0[];
 
 extern f32 D_800D6B10;
 
+// only x/y seem to be updated, and originOffset actually tracks distance
 extern struct Normal D_800E6F50[];
+
+
+
 extern f32 D_800D66FC, D_800D66F8;
 
 extern u32 D_800E8060[];

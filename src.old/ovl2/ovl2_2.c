@@ -2,7 +2,7 @@
 #include <macros.h>
 
 #include "ovl1/ovl1_6.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "buffers.h"
 
 extern Gfx *gDisplayListHeads[4];
@@ -33,16 +33,16 @@ extern f32 D_800D6B14;
 void func_800B1434(void);
 
 void func_800F6C98(s32 arg0) {
-    D_800DEF90[D_8004A7C4->objId] = NULL;
-    func_800B1F68(gEntityGObjProcessArray5[D_8004A7C4->objId], func_800B1434);
-    finish_current_thread((u32) (120.0f * D_800D6B14));
-    if (D_800E98E0[D_8004A7C4->objId] == 3) {
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    ohSleep((u32) (120.0f * D_800D6B14));
+    if (D_800E98E0[omCurrentObj->objId] == 3) {
         func_800F6C68();
     }
-    if (D_800E98E0[D_8004A7C4->objId] == 4) {
+    if (D_800E98E0[omCurrentObj->objId] == 4) {
         func_800F6C78();
     }
-    func_800B1900(D_8004A7C4->objId & 0xFFFF);
+    func_800B1900(omCurrentObj->objId & 0xFFFF);
 }
 
 void func_800F6E04(UNUSED s32 arg0) {

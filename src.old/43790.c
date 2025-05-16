@@ -654,7 +654,7 @@ void func_800A6B18(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800B1900.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800B19B8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/43790/drop_process_from_list.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800B19F4.s")
 

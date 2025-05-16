@@ -14,7 +14,7 @@
 
 #define NUM_PI_MESSAGES 50
 
-#define STACK_TOP_MAGIC 0x00000000FEDCBA98
+#define STACK_CANARY 0x00000000FEDCBA98
 
 extern OSMesgQueue gThreadInitializedMQ;
 

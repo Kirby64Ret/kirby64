@@ -485,7 +485,7 @@ struct GObjProcess *omCreateProcess(GObj *arg0, void (*arg1)(void), u8 kind, u32
             oThread->objStack = &HS64_GetGObjThreadStack()->stack;
             oThread->objStackSize = gNewEntityStackSize;
             osCreateThread(&oThread->thread, D_8003DE50++, arg1, arg0, &(oThread->objStack->stack[gNewEntityStackSize / 8]), 0x33);
-            oThread->objStack->stack[7] = STACK_TOP_MAGIC;
+            oThread->objStack->stack[7] = STACK_CANARY;
             if (D_8003DE50 >= 20000000) {
                 D_8003DE50 = 10000000;
             }
@@ -527,7 +527,7 @@ struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri,
         oThread->objStackSize = gNewEntityStackSize;
         phi_a1 = (arg3 != -1) ? arg3 : D_8003DE50++;
         osCreateThread(&oThread->thread, phi_a1, entry, arg0, &(oThread->objStack->stack[gNewEntityStackSize / 8]), 0x33);
-        oThread->objStack->stack[7] = STACK_TOP_MAGIC;
+        oThread->objStack->stack[7] = STACK_CANARY;
         if (D_8003DE50 >= 20000000) {
             D_8003DE50 = 10000000;
         }
@@ -539,7 +539,7 @@ struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri,
         osCreateThread(&oThread->thread, phi_a1, entry, arg0,
             ((stackSize / 8) + (u64 *)&arg4->stack),
             0x33);
-        arg4->stack[7] = STACK_TOP_MAGIC;
+        arg4->stack[7] = STACK_CANARY;
         if (D_8003DE50 >= 20000000)
             D_8003DE50 = 10000000;
     }
@@ -547,7 +547,7 @@ struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri,
     return oProcess;
 }
 
-void func_80008DA8(struct GObjProcess *proc) {
+void omEndProcess(struct GObjProcess *proc) {
     void (*temp_v0)(struct GObjProcess *);
     u8 temp_v0_4;
     void (*temp_v0_3)(struct ObjStack *);
@@ -1237,7 +1237,7 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
             break;
         case 1:
             D_8004A7D4 = 0;
-            func_80008DA8(proc);
+            omEndProcess(proc);
             break;
         case 0: break;
         default: D_8004A7D4 = 0; break;

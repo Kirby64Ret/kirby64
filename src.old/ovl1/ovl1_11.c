@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include <macros.h>
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "ovl1_6.h"
 #include "ovl0/ovl0_2_5.h"
 

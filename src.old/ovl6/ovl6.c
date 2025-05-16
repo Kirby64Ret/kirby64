@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "buffers.h"
-#include "D_8004A7C4.h"
+#include "omCurrentObj.h"
 #include "ovl6.h"
 
 extern void func_800067B8(void);
@@ -160,15 +160,15 @@ void func_80153868(void) {
     struct GObj *sp1C;
 
     if ((D_8015A690 == 0) && (D_800DE44C == 0)) {
-        sp1C = D_8004A7C4;
+        sp1C = omCurrentObj;
         request_track_general(0x11, 0x3F, 0x40);
-        D_8004A7C4 = D_800DE44C;
-        func_80008DA8(gEntityGObjProcessArray[0x3F]);
-        func_80008DA8(gEntityGObjProcessArray2[0x3F]);
-        func_80008DA8(gEntityGObjProcessArray5[0x3F]);
-        func_80008A18(D_8004A7C4, &func_8000E324, 1, 3);
+        omCurrentObj = D_800DE44C;
+        omEndProcess(gEntityGObjProcessArray[0x3F]);
+        omEndProcess(gEntityGObjProcessArray2[0x3F]);
+        omEndProcess(gEntityGObjProcessArray5[0x3F]);
+        func_80008A18(omCurrentObj, &func_8000E324, 1, 3);
         func_800A9864(D_8015A560->listIndex, 0x1869F, 0xC);
-        D_8004A7C4 = sp1C;
+        omCurrentObj = sp1C;
     }
 }
 

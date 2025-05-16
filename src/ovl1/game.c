@@ -253,21 +253,15 @@ void func_800A2E98(void) {
     func_8011C8D0(-1, &D_800D6E9C);
     D_800BE4F8 = 1;
     D_800BE544 = -0x1E;
-    var_v0 = &D_800D7098;
-    do {
-        var_v0 += 4;
-        var_v0->unk-4 = 0;
-    } while (var_v0 < &D_800D70D8);
-    var_v0_2 = &D_800D70D8;
-    do {
-        var_v0_2 += 4;
-        var_v0_2->unk-4 = 0.0f;
-    } while (var_v0_2 < &D_800D7118);
-    var_v0_3 = &D_800D7118;
-    do {
-        var_v0_3 += 4;
-        var_v0_3->unk-4 = -1;
-    } while (var_v0_3 < &D_800D7158);
+    for (i = 0; i < 64; i++) {
+        D_800D7098[i] = 0;
+    }
+    for (i = 0; i < 64; i++) {
+        D_800D70D8[i] = 0;
+    }
+    for (i = 0; i < 64; i++) {
+        D_800D7118[i] = 0;
+    }
     D_800D6E10 = 0;
     D_800D7088 = 0;
     D_800EC9E4 = 0.0f;
