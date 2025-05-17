@@ -332,7 +332,7 @@ struct CollisionState {
 
     struct Normal *unk34;
     struct Normal *unk38;
-    u32 (*unk3C)(void);
+    u32 (*data)(void);
     u8 (*unk40)(struct CollisionTriangle *a0, struct Normal *a1, struct Normal *a2, struct Normal *a3);
     u8 (*unk44)(struct Normal *a0, s32 arg1);
     u16 unk48;

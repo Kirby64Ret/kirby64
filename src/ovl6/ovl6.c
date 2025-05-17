@@ -1,266 +1,199 @@
-#include <ultra64.h>
-#include <macros.h>
-#include "buffers.h"
-#include "D_8004A7C4.h"
-#include "ovl6.h"
+#include <PR/gbi.h>
 
-extern void func_800067B8(void);
-extern void func_8000AD88(void);
-extern u32 D_8015A694;
+#include "common.h"
+#include "GObj.h"
+#include "main/gtl.h"
 
-extern void func_8000E324(void);
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151100_ovl6.s")
 
-extern struct UnkStruct8015A560 *D_8015A560;
-extern u32 D_8015A690;
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151138_ovl6.s")
 
-void func_80151100(void) {
-    if (D_8015A694 != 0) {
-        func_800067B8();
-    }
-    func_8000AD88();
-}
-
-extern u16 *gCurrFrameBuffer;
-extern u16 *gFrameBuffers[3];
-extern u16 *D_80048C5C;
-extern u32 D_80048C6C;
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80151138.s")
-
-extern Gfx *gDisplayListHeads[4];
-extern void func_8009E8F4(s32 hidden, u32 a, Gfx **b);
-
-void func_80151204(s32 arg0) {
+void func_80151204_ovl6(GObj *gobj) {
     gDPPipeSync(gDisplayListHeads[1]++);
     gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_ZB_CLD_SURF, G_RM_ZB_CLD_SURF2);
-    func_8009E8F4(arg0, 2, &gDisplayListHeads[1]);
+    func_8009E8F4(gobj, 2, &gDisplayListHeads[1]);
     gDPPipeSync(gDisplayListHeads[1]++);
     gDPSetColorDither(gDisplayListHeads[1]++, G_CD_MAGICSQ);
     gDPSetAlphaDither(gDisplayListHeads[1]++, G_AD_DISABLE);
     gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801512F0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801512F0_ovl6.s")
 
-void func_801513C8(void) {
-    func_800A7A70(0, 0x40001, 0x40002);
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801513C8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801513F8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801513F8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801514A0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801514A0_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015150C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015150C_ovl6.s")
 
-extern u32 D_8015A670[]; // Lights?
-extern u32 *D_8015A56C; // lights?
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015166C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015166C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015170C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015170C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015198C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015198C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80151CD0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151CD0_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80151DDC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151DDC_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80151E10.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151E10_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80151E60.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151E60_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80152138.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152138_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801524C8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801524C8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80152B28.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152B28_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80152B9C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152B9C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80152C10.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152C10_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80152C84.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152C84_ovl6.s")
 
-void func_80152CF8(s32 arg0) {
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152CF8_ovl6.s")
 
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152D00_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80152D00.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152DB8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80152DB8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152EA8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80152EA8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153040_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153040.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153064_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153064.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015314C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015314C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801531FC_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801531FC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153228_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153228.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801532CC_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801532CC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801532F4_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801532F4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801533C0_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801533C0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153424_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153424.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015347C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015347C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801534A8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801534A8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801534D4_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801534D4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153530_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153530.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015358C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015358C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801535E8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801535E8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153644_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153644.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153670_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153670.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801536A0_ovl6.s")
 
-void func_801536A0(s32 arg0) {
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801536A8_ovl6.s")
 
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801536E0_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801536A8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015370C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801536E0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015372C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015370C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015374C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015372C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153868_ovl6.s")
 
-// regalloc
-#ifdef NON_MATCHING
-void func_8015374C(struct GObj *this) {
-    struct UnkStruct8004A7C4_3C_80 *temp_v0;
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015392C_ovl6.s")
 
-    temp_v0 = &this->unk3C->unk80->unk8;
-    if (this->unk3C->unk80->unk5B != 0) {
-        gDPPipeSync(gDisplayListHeads[1]++);
-        gDPSetCombineMode(gDisplayListHeads[1]++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-        gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
-        gDPSetPrimColor(gDisplayListHeads[1]++, 0, 0, temp_v0->unk50, temp_v0->unk51, temp_v0->unk52, temp_v0->unk53);
-        gDPFillRectangle(gDisplayListHeads[1]++, 48, 38, 272, 202);
-        gDPPipeSync(gDisplayListHeads[1]++);
-        gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
-    }
-}
-#else
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015374C.s")
-#endif
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153A48_ovl6.s")
 
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153AA8_ovl6.s")
 
-void func_80153868(void) {
-    struct GObj *sp1C;
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153AF8_ovl6.s")
 
-    if ((D_8015A690 == 0) && (D_800DE44C == 0)) {
-        sp1C = D_8004A7C4;
-        request_track_general(0x11, 0x3F, 0x40);
-        D_8004A7C4 = D_800DE44C;
-        func_80008DA8(gEntityGObjProcessArray[0x3F]);
-        func_80008DA8(gEntityGObjProcessArray2[0x3F]);
-        func_80008DA8(gEntityGObjProcessArray5[0x3F]);
-        func_80008A18(D_8004A7C4, &func_8000E324, 1, 3);
-        func_800A9864(D_8015A560->listIndex, 0x1869F, 0xC);
-        D_8004A7C4 = sp1C;
-    }
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153B34_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015392C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153B80_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153A48.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153C28_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153AA8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153CBC_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153AF8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153D10_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153B34.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153D6C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153B80.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153DC8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153C28.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153E1C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153CBC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153F00_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153D10.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153F2C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153D6C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015403C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153DC8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015405C_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153E1C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154088_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153F00.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154100_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80153F2C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154158_ovl6.s")
 
-void func_8015403C(void) {
-    func_80153F2C_ovl6();
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154180_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_8015405C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801541EC_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154088.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154214_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154100.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154258_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154158.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154284_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154180.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154464_ovl6.s")
 
-void func_801541EC(void) {
-    func_8009C0E4();
-    func_800A2024();
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801544E8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154214.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154628_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154258.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154690_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154284.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801546D8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154464.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154748_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801544E8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154810_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154628.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154858_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154690.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801548A4_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801546D8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801548F8_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154748.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154938_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154810.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154A40_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154858.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154B14_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801548A4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154BA0_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_801548F8.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154938.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154A40.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154B14.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154BA0.s")
-
-void func_80154C08(void) {
-    func_8000AAE0();
+void func_80154C08_ovl6(void) {
+    omDrawAll();
     func_80153064_ovl6();
     func_800AC610();
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154C38.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154C38_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154C64.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154C64_ovl6.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl6/func_80154D60.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154D60_ovl6.s")
