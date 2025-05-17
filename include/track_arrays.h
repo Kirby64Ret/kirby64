@@ -14,7 +14,7 @@ extern s32 D_800DDFD0[];
 extern s32 D_800DDE10[];
 extern s32 gEntityVtableIndexArray[];
 extern s32 D_800DD8D0[];
-extern s32 D_800E0810[];
+extern s32 gEntityRenderPriorityArray[];
 
 
 extern f32 D_800E0B90[];

@@ -7,6 +7,7 @@
 #include "ovl1/ovl1_7.h"
 #include "main/object_manager.h"
 #include "ovl1/ovl1_8.h"
+#include "ovl3/ovl3_1.h"
 #include "buffers.h"
 
 void func_80227A38_ovl19(GObj*);
@@ -41,8 +42,7 @@ void func_80223200_ovl19(GObj *arg0) {
     s32 var_a0;
     struct Ovl19_2Struct *temp_v0;
 
-    var_a0 = gKirbyState.unk44;
-    if (var_a0 == -1) {
+    if (gKirbyState.unk44 == -1) {
         D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
         D_800DDE10[omCurrentObj->objId] = 0;
         assign_new_process_entry(gEntityGObjProcessArray3[omCurrentObj->objId], func_80227A38_ovl19);
@@ -51,7 +51,7 @@ void func_80223200_ovl19(GObj *arg0) {
         gKirbyState.unk15C = &D_8019257C;
         gKirbyState.unk154 = 7;
         D_800E0490[omCurrentObj->objId] = &D_80192FF4;
-        func_80152348_ovl3(0x41A00000);
+        func_80152348_ovl3(20.0f);
         func_800A9760(0x20064);
         gKirbyState.unk154 = 1;
         request_track_general(0x13, 1, 2);
@@ -73,7 +73,7 @@ void func_80223200_ovl19(GObj *arg0) {
         D_800E98E0[omCurrentObj->objId] = 6;
         D_800E8060[omCurrentObj->objId] = 0;
     }
-    switch (var_a0) {
+    switch (gKirbyState.unk44) {
         case 6:
             if (gKirbyState.unk58 == 0) {
                 func_8011DC04(0x21D);
@@ -360,7 +360,7 @@ void func_80223200_ovl19(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_80228C44_ovl19.s")
 
 void func_80228EF4_ovl19(GObj *arg0) {
-    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], &func_800B1434);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], &procMainStub);
     D_800DEF90[omCurrentObj->objId] = func_800B4954;
     D_800E5F90[omCurrentObj->objId] = D_800E5F90[D_800E0D50[omCurrentObj->objId]];
     D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[D_800E0D50[omCurrentObj->objId]];

@@ -246,6 +246,6 @@ GLOBAL_ASM("asm/non_matchings/ovl19/ovl19_3/func_8022889C_ovl19.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl19/ovl19_3/func_80228C44_ovl19.s")
 
-extern void func_800B1434(s32);
+extern void procMainStub(s32);
 extern void func_800B4954(void);
 GLOBAL_ASM("asm/non_matchings/ovl19/ovl19_3/func_80228EF4_ovl19.s")

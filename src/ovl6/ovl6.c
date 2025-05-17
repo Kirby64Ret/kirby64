@@ -1,10 +1,22 @@
+#include <PR/gbi.h>
+
 #include "common.h"
+#include "GObj.h"
+#include "main/gtl.h"
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151100_ovl6.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151138_ovl6.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151204_ovl6.s")
+void func_80151204_ovl6(GObj *gobj) {
+    gDPPipeSync(gDisplayListHeads[1]++);
+    gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_ZB_CLD_SURF, G_RM_ZB_CLD_SURF2);
+    func_8009E8F4(gobj, 2, &gDisplayListHeads[1]);
+    gDPPipeSync(gDisplayListHeads[1]++);
+    gDPSetColorDither(gDisplayListHeads[1]++, G_CD_MAGICSQ);
+    gDPSetAlphaDither(gDisplayListHeads[1]++, G_AD_DISABLE);
+    gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801512F0_ovl6.s")
 

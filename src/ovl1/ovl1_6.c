@@ -21,9 +21,8 @@ void func_800AE0F0(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/request_job.s")
 
-// #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/func_800AEA64.s")
 s32 func_800AEA64(s32 id, s32 minIndex, s32 max_index) {
-    s32 idx = request_job(id, minIndex, max_index, NULL, &func_800B1434);
+    s32 idx = request_job(id, minIndex, max_index, NULL, &procMainStub);
 
     if (idx == -1) {
         return -1;
@@ -37,7 +36,7 @@ s32 request_track(u8 goal, s32 id, s32 minIndex, s32 maxIndex) {
 
     switch (goal) {
         case 0:
-            idx = request_job(id, minIndex, maxIndex, &func_800B4924, &func_800B143C);
+            idx = request_job(id, minIndex, maxIndex, &func_800B4924, &procMainMove);
             if (idx == -1) {
                 return -1;
             }

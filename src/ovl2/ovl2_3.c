@@ -4,6 +4,7 @@
 #include "types.h"
 #include "GObj.h"
 #include "ovl1/ovl1_6.h"
+#include "ovl1/ovl1_7.h"
 #include "main/lbvector.h"
 #include "main/lbmatrix.h"
 #include "unk_structs/D_80129114.h"
@@ -2250,7 +2251,7 @@ u32 spawn_entity(u32 arg0, struct Entity *arg1) {
 // The string literal in here is in late_rodata,
 //  but we need to decomp the rest of the file for that to automatically fall into place
 #ifdef RODATA
-s32 setUpDispose(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, s16 arg6, Vector *v7, Vector *v8, f32 *scale) {
+s32 setUpDispose(s32 arg0, u8 disType, u8 entID, u8 arg3, u8 arg4, u8 arg5, s16 save, Vector *pos, Vector *angle, f32 *scale) {
     s32 id;
     s32 track;
     s32 temp;
@@ -2258,25 +2259,25 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, s
 
     switch (disType) {
         case 0:
-            if (disParam >= 0x6B) {
+            if (entID >= 0x6B) {
                 return -1;
             }
             id = 0x17;
             break;
         case 1:
-            if (disParam >= 3) {
+            if (entID >= 3) {
                 return -1;
             }
             id = 0x18;
             break;
         case 2:
-            if (disParam >= 7) {
+            if (entID >= 7) {
                 return -1;
             }
             id = 0x19;
             break;
         case 3:
-            if (disParam >= 0xE) {
+            if (entID >= 0xE) {
                 return -1;
             }
             id = 0x1C;
@@ -2284,7 +2285,7 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, s
         case 5:
             return -1;
         case 7:
-            if (disParam >= 0xB) {
+            if (entID >= 0xB) {
                 return -1;
             }
             id = 0x20;
@@ -2307,7 +2308,7 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, s
     D_800E7650[track] = D_800D6E10;
     D_800E76C0[track] = arg0;
     D_800E7730[track] = disType;
-    D_800E77A0[track] = disParam;
+    D_800E77A0[track] = entID;
     D_800E7880[track] = arg3;
     D_800E78F0[track] = arg5;
     if (arg4 & 2) {
@@ -2315,13 +2316,13 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 disParam, u8 arg3, u8 arg4, u8 arg5, s
     } else {
         D_800E8AE0[track] = 0;
     }
-    gEntitiesNextPosXArray[track] = v7->x;
-    gEntitiesNextPosYArray[track] = v7->y;
-    gEntitiesNextPosZArray[track] = v7->z;
-    gEntitiesAngleXArray[track] = v8->x;
-    gEntitiesAngleYArray[track] = v8->y;
-    gEntitiesAngleZArray[track] = v8->z;
-    ((s32*)D_800E9020)[112 + track] = arg6;
+    gEntitiesNextPosXArray[track] = pos->x;
+    gEntitiesNextPosYArray[track] = pos->y;
+    gEntitiesNextPosZArray[track] = pos->z;
+    gEntitiesAngleXArray[track] = angle->x;
+    gEntitiesAngleYArray[track] = angle->y;
+    gEntitiesAngleZArray[track] = angle->z;
+    ((s32*)D_800E9020)[112 + track] = save;
     tmpscale = *scale;
     gEntitiesScaleZArray[track] = tmpscale;
     gEntitiesScaleYArray[track] = tmpscale;
@@ -2383,21 +2384,13 @@ s32 func_800FCDC0(u32 arg0, u8 bankID, u8 entID,
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FCE50.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800FCED8(s32 arg0) {
-    func_800B1900(omCurrentObj->unk2);
+void func_800FCED8(GObj *gobj) {
+    func_800B1900(omCurrentObj->objId);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FCED8.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800FCF04(s32 arg0) {
+void func_800FCF04(GObj *gobj) {
 
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FCF04.s")
-#endif
 
 #ifdef MIPS_TO_C
 

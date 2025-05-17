@@ -209,7 +209,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800AF4BC.s")
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800AF618.s")
 
 
-extern void (*D_800D4F10[])(struct GObj *);
+extern void (*gDrawFuncList[])(struct GObj *);
 
 void func_800AF7A0(s32 arg0) {
     u32 *tmp;
@@ -218,7 +218,7 @@ void func_800AF7A0(s32 arg0) {
         tmp = gSegment4StartArray[omCurrentObj->objId];
         arg0 = tmp[2];
     }
-    omCurrentObj->unk2C = D_800D4F10[arg0];
+    omCurrentObj->unk2C = gDrawFuncList[arg0];
 }
 
 #ifdef NON_MATCHING
@@ -255,8 +255,8 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800AF920.s")
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800AF96C.s")
 
 struct GObj *func_800AF980(s32 arg0) {
-    D_800E0810[omCurrentObj->objId] = arg0;
-    omCurrentObj->renderPriority = D_800E0810[omCurrentObj->objId];
+    gEntityRenderPriorityArray[omCurrentObj->objId] = arg0;
+    omCurrentObj->renderPriority = gEntityRenderPriorityArray[omCurrentObj->objId];
 }
  
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800AF9B8.s")
@@ -281,7 +281,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800AFBB4.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800AFBEC.s")
 
-void func_800AFC20(s32 sound, s32 tcount) {
+void play_sound_and_wait(s32 sound, s32 tcount) {
     play_sound(sound);
     if (tcount != 0) {
         ohSleep(tcount);
@@ -656,11 +656,11 @@ void func_800B1378(s32 arg1, s32 arg2, f32 arg3) {
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B1378.s")
 #endif
 
-void func_800B1434(s32 arg0) {
+void procMainStub(s32 arg0) {
 
 }
 
-void func_800B143C(struct GObj *this) {
+void procMainMove(struct GObj *this) {
     if ((D_800DD8D0[omCurrentObj->objId] & 0x40) == 0) {
         if (this->unk3C != NULL) {
             this->unk3C->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
@@ -681,20 +681,20 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B158C.s")
 void func_800B175C(struct GObj *this) {
     if (((D_800DD8D0[omCurrentObj->objId] & 0x40) == 0) && (this->unk3C != 0)) {
         func_8019BBEC_ovl7();
-        func_800B143C(this);
+        procMainMove(this);
     }
 }
 
 void func_800B17B8(struct GObj *this) {
     if (((D_800DD8D0[omCurrentObj->objId] & 0x40) == 0) && (this->unk3C != 0)) {
-        func_800B143C(this);
+        procMainMove(this);
         func_801D1CAC_ovl8();
     }
 }
 
 void func_800B1814(struct GObj *this) {
     if (((D_800DD8D0[omCurrentObj->objId] & 0x40) == 0) && (this->unk3C != 0)) {
-        func_800B143C(this);
+        procMainMove(this);
         func_801D1E98_ovl1();
     } 
 }

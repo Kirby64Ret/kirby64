@@ -7,7 +7,7 @@ extern void (*D_801F4240_ovl10[])(struct GObj *a0);
 
 extern s32 gEntityGObjProcessArray5[];
 
-extern void func_800B1434(void);
+extern void procMainStub(void);
 
 extern s32 D_800EBDA0[];
 extern s32 D_800EBF60[];

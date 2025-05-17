@@ -920,10 +920,16 @@ curObjSleepForever = 0x800AFA14; // type:func
 // ovl1_6 (req)
 request_track_2 = 0x800AEC3C; // type:func
 request_track_3 = 0x800AEC70; // type:func
+gEntityRenderPriorityArray = 0x800E0810;
 
 // ovl1_7
-procNone = 0x800B1434; // type:func
-// spawn_child_track = 0x800B1900; // type:func
+procMainStub = 0x800B1434; // type:func
+procMainMove = 0x800B143C; // type:func
+drop_process_from_list = 0x800B19B8; // type:func
+play_sound_and_wait = 0x800AFC20; // type:func
+
+// ovl1_data
+gDrawFuncList = 0x800D4F10;
 
 // splat meme
 D_8018E3A0_ovl5 = 0x8018E3A0; // segment:ovl5

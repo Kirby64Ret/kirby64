@@ -25,8 +25,8 @@ void func_801DB1E0_ovl11(struct GObj *this) {
     this->unk48 = func_800B113C;
     D_800DEF90[omCurrentObj->objId] = func_801D0D44_ovl8;
     func_800FF0A8(tmp->unk80);
-    D_800E0810[omCurrentObj->objId] = 0x18;
-    func_8000A888_ovl11(this, this->dl_link, D_800E0810[omCurrentObj->objId]);
+    gEntityRenderPriorityArray[omCurrentObj->objId] = 0x18;
+    func_8000A888_ovl11(this, this->dl_link, gEntityRenderPriorityArray[omCurrentObj->objId]);
     call_virtual_function(D_800E7880[omCurrentObj->objId], 4, &D_801E0B00);
 }
 

@@ -167,7 +167,7 @@ void func_80153868(void) {
         omEndProcess(gEntityGObjProcessArray2[0x3F]);
         omEndProcess(gEntityGObjProcessArray5[0x3F]);
         func_80008A18(omCurrentObj, &func_8000E324, 1, 3);
-        func_800A9864(D_8015A560->listIndex, 0x1869F, 0xC);
+        func_800A9864(D_8015A560->listIndex, 99999, 0xC);
         omCurrentObj = sp1C;
     }
 }

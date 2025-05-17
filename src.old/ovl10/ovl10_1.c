@@ -44,7 +44,7 @@ void func_801DBE00_ovl10(s32 arg0) {
     func_800B19F4(0x7D, omCurrentObj->objId);
     func_800AFBB4(0, omCurrentObj);
     D_800DEF90[omCurrentObj->objId] = NULL;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &func_800B1434);
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &procMainStub);
     D_800DF150[omCurrentObj->objId] = NULL;
     D_800E98E0[omCurrentObj->objId] = func_801DBF70_ovl10(3, 0.0f);
     D_800E9AA0[omCurrentObj->objId] = func_801DBF70_ovl10(4, 0.0f);
@@ -86,7 +86,7 @@ void func_801DC0EC_ovl10(s32 arg0) {
     func_800AFBB4(0, omCurrentObj);
     D_800DEF90[omCurrentObj->objId] = &func_800B4954;
     D_800DDFD0[omCurrentObj->objId] = 0;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &func_800B1434);
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &procMainStub);
     D_800E6A10[omCurrentObj->objId] = (D_800E7880[omCurrentObj->objId] == 2) ? 1.0f : -1.0f;
     func_801A0D50(&func_801DBD38_ovl10);
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
@@ -113,7 +113,7 @@ void func_801DC2F4_ovl10(s32 arg0) {
     func_800AFBB4(0, omCurrentObj);
     D_800DEF90[omCurrentObj->objId] = &func_800B4954;
     D_800DDFD0[omCurrentObj->objId] = 0;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &func_800B1434);
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &procMainStub);
     D_800E6A10[omCurrentObj->objId] = (D_800E7880[omCurrentObj->objId] == 4) ? 1.0f : -1.0f;
     D_800E8920[omCurrentObj->objId] = 0;
     gEntitiesPosYArray[omCurrentObj->objId] = 140.0f;

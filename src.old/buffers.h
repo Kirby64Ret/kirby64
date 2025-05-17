@@ -14,7 +14,7 @@ extern struct GObjProcess *gEntityGObjProcessArray3[0x70];
 extern struct GObjProcess *gEntityGObjProcessArray4[0x70];
 
 // defaults to a user function.
-// either func_800B1434 (stub), func_800B143C (move) or func_800B158C (no clue)
+// either procMainStub, procMainMove or func_800B158C (no clue)
 extern struct GObjProcess *gEntityGObjProcessArray5[0x70];
 
 #endif

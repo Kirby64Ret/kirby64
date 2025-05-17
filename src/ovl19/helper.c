@@ -76,7 +76,7 @@ void func_8021EF00_ovl19(GObj *arg0) {
         func_8021F174_ovl19,
     };
 
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F080_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F080_ovl19), D_8022F080_ovl19);
 }
 
 void func_8021EF44_ovl19(struct GObj *arg0) {
@@ -165,7 +165,7 @@ void func_8021F3B4_ovl19(GObj *arg0) {
         func_8021F8A4_ovl19,
     };
 
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 5, D_8022F088_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F088_ovl19), D_8022F088_ovl19);
 }
 
 void func_8021F3F8_ovl19(struct GObj *arg0) {
@@ -310,7 +310,7 @@ void func_8021FC7C_ovl19(GObj *arg0) {
         func_8021FCC0_ovl19,
         func_8021FF90_ovl19,
     };
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F09C_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F09C_ovl19), D_8022F09C_ovl19);
 }
 
 u32 func_8021FCC0_ovl19(struct GObj *arg0) {
@@ -420,7 +420,7 @@ void func_8022023C_ovl19(GObj *arg0) {
         func_80220814_ovl19,
     };
 
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 3, D_8022F0A4_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F0A4_ovl19), D_8022F0A4_ovl19);
 }
 
 
@@ -456,7 +456,7 @@ void func_802209A0_ovl19(GObj *arg0) {
         func_80220E14_ovl19,
     };
 
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 4, D_8022F0D8_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F0D8_ovl19), D_8022F0D8_ovl19);
 }
 
     // the same rabbit hole as func_80220280_ovl19
@@ -489,7 +489,7 @@ void func_80220F48_ovl19(GObj *arg0) {
         func_8022159C_ovl19,
     };
 
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 4, D_8022F0E8_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F0E8_ovl19), D_8022F0E8_ovl19);
 }
 
 // the same rabbit hole as func_80220280_ovl19
@@ -542,7 +542,7 @@ void func_8022170C_ovl19(GObj *arg0) {
         func_80221750_ovl19,
         func_80221CA8_ovl19,
     };
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F13C_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F13C_ovl19), D_8022F13C_ovl19);
 }
 
 void func_80221750_ovl19(struct GObj *arg0) {
@@ -644,7 +644,7 @@ void func_80221DDC_ovl19(GObj *arg0) {
         func_80221E20_ovl19,
         func_80222108_ovl19,
     };
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 2, D_8022F144_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F144_ovl19), D_8022F144_ovl19);
 }
 
 void func_80221E20_ovl19(UNUSED struct GObj *arg0) {
@@ -699,7 +699,7 @@ void func_80222038_ovl19(GObj *arg0) {
         } else {
             gKirbyState.isTurning &= ~1;
         }
-        play_sound(400);
+        play_sound(SOUND__B4_START);
         D_800DF150[omCurrentObj->objId] = NULL;
     }
 }
@@ -773,7 +773,7 @@ void func_802224BC_ovl19(GObj *arg0) {
         func_802227F0_ovl19,
         func_80222918_ovl19,
     };
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 3, D_8022F14C_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F14C_ovl19), D_8022F14C_ovl19);
 }
 
 void func_80222500_ovl19(void) {
@@ -877,7 +877,7 @@ void func_80222A54_ovl19(s32 arg0) {
         func_80222E3C_ovl19,
         func_80223020_ovl19,
     };
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 3, &D_8022F158_ovl19);
+    call_virtual_function(D_800E7880[omCurrentObj->objId], ARRAY_COUNT(D_8022F158_ovl19), &D_8022F158_ovl19);
 }
 
 void func_80222A98_ovl19(GObj* arg0) {

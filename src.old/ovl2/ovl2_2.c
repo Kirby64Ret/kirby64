@@ -30,11 +30,11 @@ void func_800F6C88(void) {
 }
 
 extern f32 D_800D6B14;
-void func_800B1434(void);
+void procMainStub(void);
 
 void func_800F6C98(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = NULL;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     ohSleep((u32) (120.0f * D_800D6B14));
     if (D_800E98E0[omCurrentObj->objId] == 3) {
         func_800F6C68();
@@ -58,7 +58,7 @@ void func_800F6E0C(void *arg0, UNUSED void *arg1, UNUSED void *arg2) {
 GLOBAL_ASM("asm/non_matchings/ovl2_2/func_800F6E30.s")
 
 extern s32 D_800BE500, D_800BE504;
-extern void (*D_800D4F10[])(struct GObj *);
+extern void (*gDrawFuncList[])(struct GObj *);
 
 void func_800F716C(struct GObj *arg0) {
     if ((D_800BE500 == 1) && (D_800BE504 == 2)) {
@@ -68,7 +68,7 @@ void func_800F716C(struct GObj *arg0) {
         gSPFogPosition(gDisplayListHeads[0]++, 920, 1000);
         gSPFogPosition(gDisplayListHeads[1]++, 920, 1000);
     }
-    D_800D4F10[gSegment4StartArray[arg0->objId][2]](arg0);
+    gDrawFuncList[gSegment4StartArray[arg0->objId][2]](arg0);
 }
 
 extern u32 D_800D7010;

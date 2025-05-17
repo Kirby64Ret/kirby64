@@ -7,7 +7,7 @@
 #include "unk_structs/D_800DE350.h"
 #include "buffers.h"
 
-extern void func_800B1434();
+extern void procMainStub();
 extern void func_800B4B9C();
 
 void func_801DB1E0_ovl10(void) {
@@ -68,7 +68,7 @@ void func_801DB678_ovl10(GObj *obj) {
 void func_801DB770_ovl10(GObj *obj) {
     func_800A9864(0x100E2, 0x1869F, 0x10);
     if (D_800EC2E0[omCurrentObj->objId].as_u32 == 0) {
-        setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+        setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
         (obj->data)->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
         (obj->data)->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
         (obj->data)->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
@@ -96,7 +96,7 @@ void func_801DB770_ovl10(GObj *obj) {
 
 void func_801DB9DC_ovl10(GObj *obj) {
     func_800A9864(0x100E3, 0x1869F, 0x10);
-    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     (obj->data)->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
     (obj->data)->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
     (obj->data)->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];

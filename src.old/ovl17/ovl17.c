@@ -5,14 +5,14 @@
 #include "omCurrentObj.h"
 #include "buffers.h"
 
-extern s32 func_800B1434;
+extern s32 procMainStub;
 
 void func_800AECC0(f32);
 void func_800AED20(f32);
 
 void func_801DD440_ovl17(struct GObj *arg0) {
     func_800A9864(0x100EC, 0x23, 0x10);
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &func_800B1434);
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &procMainStub);
     func_800AA018(0x1067C);
     func_800AA018(0x1067D);
     arg0->unk3C->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];

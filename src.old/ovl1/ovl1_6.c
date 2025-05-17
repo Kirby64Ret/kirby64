@@ -35,7 +35,7 @@ void func_800AE138(s32 arg0) {
     D_800DDE10[arg0] = D_800DDFD0[arg0] = D_800DE190[arg0] = 0;
     gEntityVtableIndexArray[arg0] = 0;
     D_800DD8D0[arg0] = 0;
-    D_800E0810[arg0] = 0x10;
+    gEntityRenderPriorityArray[arg0] = 0x10;
     
     D_800E09D0[arg0] = D_800E0B90[arg0] = D_800D6B10;
     
@@ -242,9 +242,9 @@ s32 request_job(s32 id, s32 minIndex, u32 max_index, void (*arg3)(), void (*user
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_6/func_800AE7A8.s")
 #endif
 
-extern void func_800B1434(void);
+extern void procMainStub(void);
 s32 func_800AEA64(s32 id, s32 minIndex, s32 max_index) {
-    s32 idx = request_job(id, minIndex, max_index, NULL, &func_800B1434);
+    s32 idx = request_job(id, minIndex, max_index, NULL, &procMainStub);
 
     if (idx == -1) {
         return -1;
@@ -254,7 +254,7 @@ s32 func_800AEA64(s32 id, s32 minIndex, s32 max_index) {
 }
 
 extern void func_800B4924(void);
-extern void func_800B143C(void);
+extern void procMainMove(void);
 extern void func_800B4AB8(void);
 extern void func_800B158C(void);
 
@@ -266,7 +266,7 @@ s32 request_track(u8 arg0, s32 id, s32 minIndex, s32 maxIndex) {
 
     switch (arg0) {
         case 0:
-            idx = request_job(id, minIndex, maxIndex, &func_800B4924, &func_800B143C);
+            idx = request_job(id, minIndex, maxIndex, &func_800B4924, &procMainMove);
             if (idx == FAIL) {
                 return FAIL;
             }

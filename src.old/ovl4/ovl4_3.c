@@ -11,7 +11,7 @@
 #include "ovl0/ovl0_2.h"
 
 extern void func_800B4924(void);
-extern void func_800B143C(void);
+extern void procMainMove(void);
 extern s32 D_800D6B98;
 extern f32 D_8015C668;
 extern s32 D_8015C710, D_8015C714, D_8015C718, D_8015C71C;
@@ -297,7 +297,7 @@ extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 
 void func_80159160_ovl4(s32 arg0) {
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B143C);
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], procMainMove);
     D_800DEF90[omCurrentObj->objId] = &func_800B4924;
     D_800DF150[omCurrentObj->objId] = NULL;
     D_800E3750[omCurrentObj->objId] = 0.0f;

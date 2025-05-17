@@ -45,7 +45,7 @@ void func_801DB3A0_ovl13(GObj *arg0) {
     func_800B19F4(0x79, omCurrentObj->objId);
     func_800AFBB4(0, omCurrentObj);
     D_800DEF90[omCurrentObj->objId] = func_800B7138;
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &func_800B1434);
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], &procMainStub);
     D_800DF150[omCurrentObj->objId] = NULL;
     func_800B33F4();
     D_800E98E0[omCurrentObj->objId] = 0;
@@ -553,7 +553,7 @@ void func_801DCDA8_ovl13(GObj *arg0) {
 #ifdef NON_MATCHING
 void func_801DCE9C_ovl13(GObj *arg0) {
     func_8019BB58_ovl7();
-    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B1434);
+    func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     func_800B19F4(0x71, omCurrentObj->objId);
     func_800AFBB4(0, omCurrentObj);
     D_800E98E0[omCurrentObj->objId] = 1;

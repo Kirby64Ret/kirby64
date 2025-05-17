@@ -64,7 +64,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800AFBEC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800AFC20.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/56F10/play_sound_and_wait.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800AFC54.s")
 
@@ -102,9 +102,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800B1378.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800B1434.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/56F10/procMainStub.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800B143C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/56F10/procMainMove.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/56F10/func_800B158C.s")
 
