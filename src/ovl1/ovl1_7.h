@@ -92,6 +92,7 @@ s32 func_800A4F48(s32 arg0, Vector *arg1, f32 arg2, f32 arg3);
 void procMainStub(GObj *g);
 void procMainMove(GObj *g);
 void func_800B158C(GObj *);
+void func_800B175C(GObj *gobj);
 void func_800B1C7C(GObj *gobj);
 
 #endif // OVL1_7_H

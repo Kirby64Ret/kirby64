@@ -57,7 +57,9 @@
 #define VIRTUAL_TO_PHYSICAL2(addr)  ((u8 *)(addr) - 0x80000000U)
 
 #define ABSF(x) ((x) < 0.0f ? -(x) : (x))
+#define ABSFR(x) (-(x) < 0.0f ? (x) : -(x))
 #define ABS(x) ((x) < 0 ? -(x) : (x))
+#define ABSR(x) (-(x) < 0 ? (x) : -(x))
 
 #define HW_REG(reg, type) *(volatile type *)(uintptr_t)(reg | 0xa0000000)
 

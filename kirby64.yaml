@@ -457,9 +457,9 @@ segments:
     bss_size: 0x2590
     subalign: 4
     subsegments:
-    - [0x13E8F0, asm, ovl7/ovl7_1]
+    - [0x13E8F0, c, ovl7/enelib]
     - [0x145420, asm, ovl7/ovl7_2]
-    - [0x146DC0, asm, ovl7/ovl7_3]
+    - [0x146DC0, c, ovl7/ovl7_3]
     - [0x149EF0, asm, ovl7/ovl7_4]
     - [0x14D070, asm, ovl7/ovl7_5]
     - [0x152A40, asm, ovl7/ovl7_5_2]
@@ -476,9 +476,9 @@ segments:
     - [0x163580, asm, ovl7/ovl7_16]
     - [0x165290, asm, ovl7/ovl7_17]
     - [0x168840, data, ovl7/ovl7]
-    - [0x173AE0, rodata, ovl7/ovl7_1]
+    - [0x173AE0, .rodata, ovl7/enelib]
     - [0x173F10, rodata, ovl7/ovl7_2]
-    - [0x173FD0, rodata, ovl7/ovl7_3]
+    - [0x173FD0, .rodata, ovl7/ovl7_3]
     - [0x174020, rodata, ovl7/ovl7_4]
     - [0x174090, rodata, ovl7/ovl7_5]
     - [0x1741D0, rodata, ovl7/ovl7_5_2]

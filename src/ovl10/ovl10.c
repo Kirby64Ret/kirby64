@@ -7,7 +7,6 @@
 #include "unk_structs/D_800DE350.h"
 #include "buffers.h"
 
-extern void procMainStub();
 extern void func_800B4B9C();
 
 void func_801DB1E0_ovl10(void) {

@@ -45,7 +45,7 @@ void func_8022E630_ovl19(s32 arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = &func_8022E798_ovl19;
     func_800AA018(0x105EF);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 extern f32 D_800E3750[];
@@ -102,7 +102,7 @@ void func_8022E954_ovl19(struct CollisionState *arg0) {
     func_800AA018(0x105F0);
     func_800AA018(0x105F1);
     sp20->unk34 = func_800A8100(0, 2, 0x34, arg0->unk3C);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl19_5/func_8022EB54_ovl19.s")
@@ -128,7 +128,7 @@ void func_8022ED10_ovl19(s32 arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = &func_8022EE78_ovl19;
     func_800AA018(0x10601);
-    func_800AFA14();
+    curObjSleepForever();
 }
 
 

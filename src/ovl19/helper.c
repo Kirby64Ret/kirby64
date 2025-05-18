@@ -15,6 +15,7 @@
 #include "ovl1/ovl1_8.h"
 #include "Player.h"
 #include "helplib.h"
+#include "sounds.h"
 
 extern u32 D_800D6E64;
 extern s32 D_8012E7FC;

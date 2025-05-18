@@ -2,7 +2,7 @@
 #include "GObj.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1_7.h"
-#include "ovl1/ovl1_8.h"
+#include "ovl1_8.h"
 #include "unk_structs/D_800DE350.h"
 
 void initTrack(s32);

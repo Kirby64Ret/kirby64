@@ -184,6 +184,7 @@ typedef struct GObj {
 // size: 0x50
 extern struct GObj *omCurrentObj, *omCurrentCamera, *omCurrentDrawObj;
 extern struct GObj *D_800DE44C;
+extern GObj *D_800DE350[];
 
 typedef void (*VTABLE[])(struct GObj *);
 
