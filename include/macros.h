@@ -6,12 +6,6 @@
 #define GLOBAL_ASM(...)
 #endif
 
-#if !defined(__sgi) && (!defined(NON_MATCHING) || !defined(AVOID_UB))
-// asm-process isn't supported outside of IDO, and undefined behavior causes
-// crashes.
-#error Matching build is only possible on IDO; please build with NON_MATCHING=1.
-#endif
-
 #define ARRAY_COUNT(arr) (s32)(sizeof(arr) / sizeof(arr[0]))
 #define ARRAYLEN(arr) (s32)(sizeof(arr) / sizeof(arr[0]))
 
@@ -21,8 +15,10 @@
 // Avoid compiler warnings for unused variables
 #ifdef __GNUC__
 #define UNUSED __attribute__((unused))
+#define Unused __attribute__((unused))
 #else
 #define UNUSED
+#define Unused
 #endif
 
 // Avoid undefined behaviour for non-returning functions
@@ -63,7 +59,9 @@
 #define VIRTUAL_TO_PHYSICAL2(addr)  ((u8 *)(addr) - 0x80000000U)
 
 #define ABSF(x) ((x) < 0.0f ? -(x) : (x))
+#define ABSFR(x) (-(x) < 0.0f ? (x) : -(x))
 #define ABS(x) ((x) < 0 ? -(x) : (x))
+#define ABSR(x) (-(x) < 0 ? (x) : -(x))
 
 #define HW_REG(reg, type) *(volatile type *)(uintptr_t)(reg | 0xa0000000)
 

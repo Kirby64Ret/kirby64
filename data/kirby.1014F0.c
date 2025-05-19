@@ -69,7 +69,7 @@ u32 D_8015A060_ovl4 = 0x00000299;
 
 u32 D_8015A064_ovl4 = 0x00000000;
 
-void* D_8015A068_ovl4 = func_8000AD88;
+void* D_8015A068_ovl4 = omUpdateAll;
 
 void* D_8015A06C_ovl4 = func_800A73B0;
 
@@ -1009,7 +1009,7 @@ u32 D_8015A7D8 = 0x00000299;
 
 u32 D_8015A7DC = 0x00000000;
 
-void* D_8015A7E0 = func_8000AD88;
+void* D_8015A7E0 = omUpdateAll;
 
 void* D_8015A7E4 = func_800A73B0;
 
@@ -1361,7 +1361,7 @@ u32 D_8015AAC0 = 0x00000299;
 
 u32 D_8015AAC4 = 0x00000000;
 
-void* D_8015AAC8 = func_8000AD88;
+void* D_8015AAC8 = omUpdateAll;
 
 void* D_8015AACC = &D_80158020;
 
@@ -4079,7 +4079,7 @@ u32 D_8015C070 = 0x00000299;
 
 u32 D_8015C074 = 0x00000000;
 
-void* D_8015C078 = func_8000AD88;
+void* D_8015C078 = omUpdateAll;
 
 void* D_8015C07C = func_800A73B0;
 
@@ -4538,7 +4538,7 @@ u32 D_8015C428 = 0x00000299;
 
 u32 D_8015C42C = 0x00000000;
 
-void* D_8015C430 = func_8000AD88;
+void* D_8015C430 = omUpdateAll;
 
 void* D_8015C434 = func_800A73B0;
 

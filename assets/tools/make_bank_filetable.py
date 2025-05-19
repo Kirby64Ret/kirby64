@@ -1,6 +1,8 @@
 import sys, subprocess
 from subprocess import PIPE
 from khelpers import filename_d
+from elftools.elf.elffile import ELFFile
+import elftools
 
 CROSS = sys.argv[1]
 BUILD_DIR = sys.argv[2]
@@ -37,24 +39,21 @@ struct BankHeader %s = {
 
 totSize = 0
 """
-   text    data     bss     dec     hex filename
-    248     128     192     568     238 build/us/%.o
+	text    data     bss     dec     hex filename
+	 248     128     192     568     238 build/us/%.o
 """
 def get_data_size(filname):
 	ofile = BUILD_DIR+filname.replace(".ci",".XX").replace(".c",".o").replace(".bin",".o").replace(".s",".o").replace(".png", ".o")
 	# print(ofile)
 	ofile = ofile.replace(".XX", ".ci")
-	proc = subprocess.Popen([CROSS+"size", ofile], stdout=PIPE, stderr=PIPE)
-	stdout, stderr = proc.communicate()
-	stdout = stdout.decode("ascii")
-	# print(filname)
-	# print(ofile)
-	# print(stdout)
 
-	siz = stdout.split("\n")[1].split()[1]
-	return int(siz)
-
-
+	with open(ofile, 'rb') as elf:
+		e = ELFFile(elf)
+		data_section = e.get_section_by_name('.data')
+		if data_section:
+			return data_section['sh_size']
+		else:
+			return 0
 
 def write_table(filetype, fil, bank):
 	global totSize
@@ -102,9 +101,6 @@ def write_table(filetype, fil, bank):
 
 			totSize += sz
 			if filetype != "geo":
-				# if sz == 0x4 and filecount == 1:
-				# 	pass
-				# else:
 				fil.write("    "+str(hex(totSize))+",\n")
 				filecount += 1
 			else:
@@ -116,7 +112,6 @@ def write_table(filetype, fil, bank):
 	fil.write("};\n")
 
 
-print("writing bank%s filetable..." % bank)
 with open(outfile, "w+") as f:
 	write_table("geo", f, bank)
 	write_table("image", f, bank)
