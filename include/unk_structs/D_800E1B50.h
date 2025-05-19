@@ -46,16 +46,17 @@ struct Sub800E1B50_Unk94 {
     u32 unk1C;
 };
 
-struct Sub800E1B50 {
+struct Sub800E1B50_80 {
     u32 unk0;
     u32 unk4;
     u32 unk8;
     u32 unkC;
     f32 unk10;
-    u32 unk14;
+    f32 unk14;
     f32 unk18;
     u32 unk1C;
     u8 unk20;
+    u8 unk21
 };
 
 struct Sub800E1B50_34_4C {
@@ -104,7 +105,7 @@ struct Sub800E1B50_Unk98 {
     void (*func20)(GObj *);
 };
 
-struct UnkStruct800E1B50 {
+typedef struct UnkStruct800E1B50 {
     f32 unk0;
     f32 unk4;
     f32 unk8;
@@ -122,7 +123,7 @@ struct UnkStruct800E1B50 {
     u8 unk38;
     s8 unk39;
     u8 unk3A;
-    u8 unk3B;
+    s8 unk3B;
     u8 unk3C; // used as a turnaround timer?
     u8 unk3D;
     u8 unk3E;
@@ -142,7 +143,7 @@ struct UnkStruct800E1B50 {
     u32 unk74;
     u32 unk78;
     u32 unk7C;
-    struct Sub800E1B50 *unk80;
+    struct Sub800E1B50_80 *unk80;
     struct Sub800E1B50_Unk84 *unk84;
     struct Sub800E1B50_Unk88 *unk88;
     s32 *unk8C;
@@ -150,7 +151,7 @@ struct UnkStruct800E1B50 {
     struct Sub800E1B50_Unk94 *unk94;
     struct Sub800E1B50_Unk98 *unk98;
     void (*unk9C)(GObj *); // educated guess at arguments
-};
+} UnkStruct800E1B50;
 
 extern struct UnkStruct800E1B50 *D_800E1B50[];
 

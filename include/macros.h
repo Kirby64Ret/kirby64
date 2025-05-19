@@ -15,8 +15,10 @@
 // Avoid compiler warnings for unused variables
 #ifdef __GNUC__
 #define UNUSED __attribute__((unused))
+#define Unused __attribute__((unused))
 #else
 #define UNUSED
+#define Unused
 #endif
 
 // Avoid undefined behaviour for non-returning functions

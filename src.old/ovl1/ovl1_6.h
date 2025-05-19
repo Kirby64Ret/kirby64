@@ -8,7 +8,7 @@
 #define MultiType union {u32 as_u32; u32 *as_u32p; s32 as_s32; s32 *as_s32p; void *as_ptr;}
 #define _MultiType(CustomType) union {u32 as_u32; s32 as_s32; void *as_ptr; CustomType *consume;}
 
-extern s32 D_800DD710[];
+extern u32 D_800DD710[]; // "JN number"
 extern s32 D_800DE190[];
 extern s32 D_800DDFD0[];
 extern s32 D_800DDE10[];
