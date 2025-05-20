@@ -114,8 +114,8 @@ typedef struct UnkStruct800E1B50 {
     u32 unk14;
     f32 unk18;
     f32 unk1C;
-    u32 unk20;
-    u32 unk24;
+    f32 unk20;
+    f32 unk24;
     f32 unk28; // for fire enemy, ~0.29 when moving left, ~0.36 when moving right
     u32 unk2C;
     u32 unk30;
