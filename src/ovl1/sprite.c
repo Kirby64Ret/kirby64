@@ -87,14 +87,8 @@ void *func_800AC954(void *arg0, u32 arg1, void *arg2) {
     temp_v0->unk11 = 0;
     temp_v0->unk12 = 0;
     temp_v0->unk13 = 0;
-    temp_v0->unk17 = 0xFF;
-    temp_v0->unk16 = 0xFF;
-    temp_v0->unk15 = 0xFF;
-    temp_v0->unk14 = 0xFF;
-    temp_v0->unk1B = 0;
-    temp_v0->unk1A = 0;
-    temp_v0->unk19 = 0;
-    temp_v0->unk18 = 0;
+    temp_v0->unk14 = temp_v0->unk15 = temp_v0->unk16 = temp_v0->unk17 = 0xFF;
+    temp_v0->unk18 = temp_v0->unk19 = temp_v0->unk1A = temp_v0->unk1B = 0;
     temp_v0->unk1C = arg2->unk4;
     temp_v0->unk20 = 0.0f;
     temp_v0->unk24 = 0.0f;

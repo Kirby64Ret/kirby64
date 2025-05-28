@@ -221,17 +221,17 @@ Vector *func_800195D8(Vector *arg0, Vector *arg1) {
     return arg0;
 }
 
-Vector *func_80019648(Vector *arg0, Vector *arg1) {
-    f32 temp_f0;
+Vector *func_80019648(Vector *dst, Vector *in) {
+    f32 dot;
 
-    temp_f0 = VEC_DOT(arg1, arg0);
-    if (temp_f0 < 0.0f) {
-        temp_f0 *= -2.0f;
-        arg0->x += (arg1->x * temp_f0);
-        arg0->y += (arg1->y * temp_f0);
-        arg0->z += (arg1->z * temp_f0);
+    dot = VEC_DOT(in, dst);
+    if (dot < 0.0f) {
+        dot *= -2.0f;
+        dst->x += (in->x * dot);
+        dst->y += (in->y * dot);
+        dst->z += (in->z * dot);
     }
-    return arg0;
+    return dst;
 }
 
 // Returns 1 if the two vectors are less than 180 degrees apart,

@@ -1,6 +1,26 @@
 #ifndef GTL_H
 #define GTL_H
 
+enum UcodeTypes {
+    UCODE_F3DEX2_FIFO = 0,
+    UCODE_F3DEX2_XBUS = 1,
+    UCODE_F3DEX2_NON_FIFO = 2,
+    UCODE_F3DEX2_NON_XBUS = 3,
+    UCODE_F3DEX2_REJ_FIFO = 4,
+    UCODE_F3DEX2_REJ_XBUS = 5,
+    UCODE_F3DLX2_REJ_FIFO = 6,
+    UCODE_F3DLX2_REJ_XBUS = 7,
+    UCODE_L3DEX2_FIFO = 8,
+    UCODE_L3DEX2_XBUS = 9,
+    UCODE_S2DEX2_FIFO = 10,
+    UCODE_S2DEX2_XBUS = 11,
+// no clue what these are used for, but I _will_ be using them for f3dex3
+    UCODE_12_FIFO = 12,
+    UCODE_12_XBUS = 13,
+    UCODE_12_NON_FIFO = 14,
+    UCODE_12_NON_XBUS = 15
+};
+
 typedef struct {
     /* 0x00 */ u16 unk0;
     /* 0x04 */ void (*onUpdate)(void);
@@ -37,16 +57,24 @@ typedef struct {
     /* 0x5C */ u32 mtxCount;
     /* 0x60 */ Struct_8004B038* unk60;
     /* 0x64 */ void* unk64; // fn pointer void(*)(struct DObjDynamicStore *)
-    /* 0x68 */ u32 numOMAobjs;
-    /* 0x6C */ u32 numOMMobjs;
-    /* 0x70 */ u32 numOMDobjs;
+    /* 0x68 */ u32 AObjCount;
+    /* 0x6C */ u32 MObjCount;
+    /* 0x70 */ u32 DObjCount;
     /* 0x74 */ u32 omDobjSize;
-    /* 0x78 */ u32 numOMSobjs;
+    /* 0x78 */ u32 SobjCount;
     /* 0x7C */ u32 omSobjSize;
-    /* 0x80 */ u32 numOMCameras;
+    /* 0x80 */ u32 CameraCount;
     /* 0x84 */ u32 omCameraSize;
     /* 0x88 */ void (*postInitFunc)(void);
 } SceneSetup; // size >= 0x8C
+
+typedef struct FuncTable {
+    /* 0x00 */ u16 flags;
+    /* 0x04 */ void (*onPrivUpdate)(void);
+    /* 0x08 */ void (*onUpdate)(struct FuncTable *);
+    /* 0x0C */ void (*onPrivDraw)(void);
+    /* 0x10 */ void (*onDraw)(struct FuncTable *);
+} FuncTable; // size == 0x14
 
 extern Gfx *gDisplayListHeads[4];
 

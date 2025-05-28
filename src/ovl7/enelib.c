@@ -32,6 +32,8 @@ extern struct Sub800E1B50_Unk98 D_801CD2AC_ovl7;
 
 // ovl7_5
 void func_801AC364_ovl7(GObj *);
+void func_801A69B0_ovl7(GObj *);
+void func_801AC448_ovl7(GObj *);
 
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80198880_ovl7.s")
@@ -375,25 +377,17 @@ void func_801997C0_ovl7(s32 arg0) {
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC364_ovl7);
 }
 
-#ifdef MIPS_TO_C
+void func_8019985C_ovl7(Unused GObj *gobj) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-void func_8019985C_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
-    struct UnkStruct800E1B50 *temp_v1;
-
-    temp_v1 = D_800E1B50[omCurrentObj->objId];
-    sp1C = temp_v1;
     func_800FB914(1);
     D_800E83E0[omCurrentObj->objId] = 1;
-    if (temp_v1->unk44 == 0) {
-        temp_v1->unk44 = 1;
+    if (ent->unk44 == 0) {
+        ent->unk44 = 1;
     }
     gEntityVtableIndexArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A69B0_ovl7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019985C_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -695,31 +689,15 @@ void func_8019A36C_ovl7(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A36C_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_8019A4C0_ovl7(s32 arg0) {
-    u32 temp_v1;
-
-    D_800E3210[omCurrentObj->objId] = 0.0f;
-    temp_v1 = omCurrentObj->objId;
-    D_800E64D0[temp_v1] = D_800E3210[temp_v1];
+void func_8019A4C0_ovl7(Unused GObj *gobj) {
+    D_800E64D0[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = 0.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A4C0_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8019A508_ovl7(s32 arg0) {
-    u32 temp_v1;
-
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    temp_v1 = omCurrentObj->objId;
-    D_800E64D0[temp_v1] = D_800E6690[temp_v1];
+void func_8019A508_ovl7(Unused GObj *gobj) {
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E3210[omCurrentObj->objId] = 0.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A508_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8019A580_ovl7(s32 arg0) {
@@ -768,16 +746,11 @@ void func_8019A62C_ovl7(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A62C_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_8019A740_ovl7(s32 arg0) {
-    gKirbyState.action = -2;
+void func_8019A740_ovl7(Unused GObj *gobj) {
+    gKirbyState.unkD = -2;
     gEntityVtableIndexArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC448_ovl7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A740_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -940,6 +913,7 @@ f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
     return (((*gEntitiesNextPosYArray + 20.0f + arg2) - temp_f2) * (0.0f - temp_f14)) - ((sp34 - temp_f14) * (sp18 - temp_f2));
 }
 #else
+f32 func_8019AAD0_ovl7(f32, f32, f32);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AAD0_ovl7.s")
 #endif
 
@@ -989,133 +963,39 @@ s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, s32 arg2, ? arg3) {
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 func_8019ADB4_ovl7(f32 arg0, ? arg1) {
-    f32 *temp_v0;
-    f32 *var_v0;
-    f32 temp_f0;
-    f32 var_f0;
-    f32 var_f12;
+s32 func_8019ADB4_ovl7(f32 arg0, void *arg1) {
+    f32 ftmp;
 
     if (func_8019A900_ovl7(arg1) == 0) {
         return 0;
     }
-    temp_f0 = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], 0, D_800EB320, 0);
-    if (temp_f0 == 0.0f) {
+    ftmp = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], 0, 0);
+    if (ftmp == 0.0f) {
         return 0;
-    }
-    if (temp_f0 > 0.0f) {
-        var_f12 = arg0;
     } else {
-        var_f12 = -arg0;
+        D_800EB320[omCurrentObj->objId] = (ftmp > 0.0f) ? arg0 : -arg0;
+        while (D_800EB320[omCurrentObj->objId] > 6.2831855f) {
+            D_800EB320[omCurrentObj->objId] -= 6.2831855f;
+        }
+        while (D_800EB320[omCurrentObj->objId] < 0.0f) {
+            D_800EB320[omCurrentObj->objId] += 6.2831855f;
+        }
+        return 1;
     }
-    temp_v0 = &D_800EB320[omCurrentObj->objId];
-    *temp_v0 += var_f12;
-    var_v0 = &D_800EB320[omCurrentObj->objId];
-    var_f0 = *var_v0;
-    if (var_f0 > 6.2831855f) {
-        do {
-            *var_v0 = var_f0 - 6.2831855f;
-            var_v0 = &D_800EB320[omCurrentObj->objId];
-            var_f0 = *var_v0;
-        } while (var_f0 > 6.2831855f);
-    }
-    if (var_f0 < 0.0f) {
-        do {
-            *var_v0 = var_f0 + 6.2831855f;
-            var_v0 = &D_800EB320[omCurrentObj->objId];
-            var_f0 = *var_v0;
-        } while (var_f0 < 0.0f);
-    }
-    return 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019ADB4_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8019AF00_ovl7(f32 arg0) {
-    f32 sp1C;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 var_f12;
-    f32 var_f12_2;
-    f32 var_f12_3;
-    f32 var_f12_4;
-    f32 var_f12_5;
-    f32 var_f14;
-    f32 var_f14_2;
-    f32 var_f14_3;
-    f32 var_f2;
-    u32 temp_v1;
-    u32 temp_v1_2;
+    f32 angleSin = sinf(D_800EB320[omCurrentObj->objId]) * arg0;
+    f32 angleCos = cosf(D_800EB320[omCurrentObj->objId]) * arg0;
 
-    temp_f2 = sinf(D_800EB320[omCurrentObj->objId]) * arg0;
-    sp1C = temp_f2;
-    temp_f0 = cosf(D_800EB320[omCurrentObj->objId]);
-    D_800E6690[omCurrentObj->objId] = temp_f2 * 0.5f;
-    if (temp_f2 < 0.0f) {
-        var_f12 = -temp_f2;
-    } else {
-        var_f12 = temp_f2;
-    }
-    if (var_f12 < 0.0f) {
-        if (temp_f2 < 0.0f) {
-            var_f14 = -temp_f2;
-        } else {
-            var_f14 = temp_f2;
-        }
-        D_800E6850[omCurrentObj->objId] = -var_f14;
-    } else {
-        if (temp_f2 < 0.0f) {
-            var_f12_2 = -temp_f2;
-        } else {
-            var_f12_2 = temp_f2;
-        }
-        D_800E6850[omCurrentObj->objId] = var_f12_2;
-    }
-    temp_v1 = omCurrentObj->objId;
-    temp_f2_2 = temp_f0 * arg0;
-    D_800E3750[temp_v1] = D_800EB160[temp_v1] + (temp_f2_2 * 0.5f);
-    if (temp_f2_2 < 0.0f) {
-        var_f14_2 = -temp_f2_2;
-    } else {
-        var_f14_2 = temp_f2_2;
-    }
-    temp_v1_2 = omCurrentObj->objId;
-    temp_f0_2 = D_800EB160[temp_v1_2];
-    if (temp_f0_2 < 0.0f) {
-        var_f12_3 = -temp_f0_2;
-    } else {
-        var_f12_3 = temp_f0_2;
-    }
-    if ((var_f12_3 + var_f14_2) < 0.0f) {
-        if (temp_f2_2 < 0.0f) {
-            var_f14_3 = -temp_f2_2;
-        } else {
-            var_f14_3 = temp_f2_2;
-        }
-        if (temp_f0_2 < 0.0f) {
-            var_f12_4 = -temp_f0_2;
-        } else {
-            var_f12_4 = temp_f0_2;
-        }
-        D_800E3C90[temp_v1_2] = -(var_f12_4 + var_f14_3);
-        return;
-    }
-    if (temp_f2_2 < 0.0f) {
-        var_f12_5 = -temp_f2_2;
-    } else {
-        var_f12_5 = temp_f2_2;
-    }
-    if (temp_f0_2 < 0.0f) {
-        var_f2 = -temp_f0_2;
-    } else {
-        var_f2 = temp_f0_2;
-    }
-    D_800E3C90[temp_v1_2] = var_f2 + var_f12_5;
+    D_800E6690[omCurrentObj->objId] = angleSin * 0.5f;
+    D_800E6850[omCurrentObj->objId] = ABS(ABS(angleSin));
+    D_800E3750[omCurrentObj->objId] = D_800EB160[omCurrentObj->objId] + (angleCos * 0.5f);
+    D_800E3C90[omCurrentObj->objId] = ABS(ABS(D_800EB160[omCurrentObj->objId]) + ABS(angleCos));
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AF00_ovl7.s")
@@ -1267,7 +1147,7 @@ f32 func_8019B608_ovl7(s32 track) {
 #ifdef NON_MATCHING
 // magnitude does all the calculations,
 // and then does x + z + y instead of x+y+z.
-// I can't find a combo that matches
+// I can't find a combo that isnt a fake match
 s32 func_8019B738_ovl7(f32 distanceSq) {
     Vector toPlayer;
     Vector magnitude;

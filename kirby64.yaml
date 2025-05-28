@@ -461,7 +461,7 @@ segments:
     - [0x145420, asm, ovl7/ovl7_2]
     - [0x146DC0, c, ovl7/ovl7_3]
     - [0x149EF0, asm, ovl7/ovl7_4]
-    - [0x14D070, asm, ovl7/ovl7_5]
+    - [0x14D070, c, ovl7/ovl7_5]
     - [0x152A40, asm, ovl7/ovl7_5_2]
     - [0x153040, asm, ovl7/ovl7_6]
     - [0x154A90, asm, ovl7/ovl7_7]
@@ -480,7 +480,7 @@ segments:
     - [0x173F10, rodata, ovl7/ovl7_2]
     - [0x173FD0, .rodata, ovl7/ovl7_3]
     - [0x174020, rodata, ovl7/ovl7_4]
-    - [0x174090, rodata, ovl7/ovl7_5]
+    - [0x174090, .rodata, ovl7/ovl7_5]
     - [0x1741D0, rodata, ovl7/ovl7_5_2]
     - [0x174210, rodata, ovl7/ovl7_6]
     - [0x174290, rodata, ovl7/ovl7_7]
@@ -772,7 +772,7 @@ segments:
     - [0x2501C0, c, ovl20/tamper_check]
     - [0x2502A0, .data, ovl20/tamper_check]
     - [0x250320]
-    - {type: .bss, vram: 0x80300160, name: ovl20/tamper_check}
+    - {type: .bss, vram: 0x80300170, name: ovl20/tamper_check}
 
   - [0x250320, bin, sound/sound_250320]
   - [0x2A8CB0, bin, sound/ctl_2A8CB0]

@@ -288,7 +288,7 @@ s32 func_80227308_ovl18(s32 arg0) {
         D_803D6900[phi_v0] = 1;
         // D_803D6900[phi_v0 + 0x1F84] = 1;
     }
-    func_80007380(&D_8022AE4C);
+    gtlCreateScene(&D_8022AE4C);
     func_800BB3F0();
     return D_800D6B74;
 }

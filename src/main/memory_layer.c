@@ -1,4 +1,4 @@
-// ml: memory layer?
+// ml: memory library?
 
 #include <ultra64.h>
 

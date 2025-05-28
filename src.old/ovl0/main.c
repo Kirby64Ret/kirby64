@@ -112,7 +112,7 @@ extern void thread3_main(void *);
 extern void thread4_audio(void *);
 extern void func_800051E0(void *);
 void dma_overlay_load(struct Overlay *);
-void func_800076D0();
+void gtlInit();
 void game_tick(s32);
 void crash_screen_start_thread();
 
@@ -141,7 +141,7 @@ void thread5_game(UNUSED void *arg) {
     SETUP_STACK_AND_START_THREAD(gControllerThread, gThread6Stack);
     osRecvMesg(&gThreadInitializedMQ, NULL, OS_MESG_BLOCK);
     
-    func_800076D0();
+    gtlInit();
     dma_overlay_load(&mainSegOverlay);
     game_tick(0);
 }

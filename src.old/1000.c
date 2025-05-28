@@ -171,7 +171,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005378.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800053A8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlDisableNearClipping.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800053B4.s")
 
@@ -179,41 +179,41 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005400.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005430.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlResetHeap.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000548C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlSetDLBuffers.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005530.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlInitDisps.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000561C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800056DC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlSetDPOutputBuff.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005734.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800057AC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlGetSCTaskGfx.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005834.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlInitTaskBuffers.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005910.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlScheduleGfxEnd.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000597C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlEndCurrentGfxTask.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800059F8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlReset.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005A98.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlScheduleGfxTask.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005C64.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlGetL3DEX2Index.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005CC0.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005DE4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005F10.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlProcessDisps.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000630C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlMergeDisps.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006628.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlSwitchContext.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006740.s")
 
@@ -225,7 +225,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006854.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800068E4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlMain.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006DF8.s")
 
@@ -233,15 +233,15 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006E94.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006EE4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlDraw.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006F60.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlDrawSingle.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000708C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlStart.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80007328.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80007380.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlCreateScene.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800075DC.s")
 
@@ -255,7 +255,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80007694.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800076D0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlInit.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80007830.s")
 

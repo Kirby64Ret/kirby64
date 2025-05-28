@@ -23,23 +23,23 @@ void func_800BB580(GObj *gobj) {
 
 // many hidden unused saved registers
 #ifdef NON_MATCHING
-void func_800BB588(GObj *arg0) {
+void func_800BB588(GObj *gobj) {
     while (1) {
-        if (D_800DD8D0[arg0->objId] & 0x40000000) {
-            D_800D6B30 += 1;
-            switch (D_800D6B2B) {                       /* irregular */
+        if (D_800DD8D0[gobj->objId] & 0x40000000) {
+            D_800D6B30 ++;
+            switch (D_800D6B2B) {
                 case 0:
-                    D_800D6B24 = 0;
+                    D_800D6B24 = NULL;
                     omGDeleteObj(D_800D6B24);
-                    func_800B1900(arg0->objId);
+                    func_800B1900(gobj->objId);
                     break;
                 case 2:
-                    D_800D6B24 = 0;
+                    D_800D6B24 = NULL;
                     func_800067B8(D_800D6B24);
                     break;
             }
         } else {
-            func_8000E324(arg0);
+            func_8000E324(gobj);
         }
         ohSleep(1);
     }

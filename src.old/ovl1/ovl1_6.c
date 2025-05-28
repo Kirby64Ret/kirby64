@@ -7,157 +7,157 @@
 #include "unk_structs/D_800DE350.h"
 #include "unk_structs/D_800E1B50.h"
 
-void func_800AE138(s32);
+void initTrack(s32);
 extern s32 D_800EC9E0; 
 void func_800AE0F0(void) {
     s32 i;
 
     for (i = 0; i < 0x70; i++) {
-        func_800AE138(i);
+        initTrack(i);
     }
     D_800EC9E0 = 0;
 }
 
 // https://decomp.me/scratch/0l2Df
 #ifdef NON_MATCHING
-void func_800AE138(s32 arg0) {
+void initTrack(s32 track) {
     f32 lifeline, l2;
     
     struct Normal *temp_v1;
 
-    D_800DE350[arg0] = 0;
-    D_800DD710[arg0] = -1;
+    D_800DE350[track] = 0;
+    D_800DD710[track] = -1;
 
-    gEntityGObjProcessArray[arg0] = gEntityGObjProcessArray2[arg0] =
-    gEntityGObjProcessArray3[arg0] = gEntityGObjProcessArray4[arg0] =
-    gEntityGObjProcessArray5[arg0] = NULL;
+    gEntityGObjProcessArray[track] = gEntityGObjProcessArray2[track] =
+    gEntityGObjProcessArray3[track] = gEntityGObjProcessArray4[track] =
+    gEntityGObjProcessArray5[track] = NULL;
 
-    D_800DDE10[arg0] = D_800DDFD0[arg0] = D_800DE190[arg0] = 0;
-    gEntityVtableIndexArray[arg0] = 0;
-    D_800DD8D0[arg0] = 0;
-    gEntityRenderPriorityArray[arg0] = 0x10;
+    D_800DDE10[track] = D_800DDFD0[track] = D_800DE190[track] = 0;
+    gEntityVtableIndexArray[track] = 0;
+    D_800DD8D0[track] = 0;
+    gEntityRenderPriorityArray[track] = 0x10;
     
-    D_800E09D0[arg0] = D_800E0B90[arg0] = D_800D6B10;
+    D_800E09D0[track] = D_800E0B90[track] = D_800D6B10;
     
-    D_800E0D50[arg0] = D_800E0F10[arg0] = -1;
-    D_800E0490[arg0] = 0;
-    D_800E0650[arg0] = NULL;
-    D_800E1B50[arg0] = NULL;
-    D_800E1ED0[arg0] = -1;
-    D_800DEDD0[arg0] = 0;
-    D_800DEF90[arg0] = NULL;
-    D_800DF150[arg0] = NULL;
+    D_800E0D50[track] = D_800E0F10[track] = -1;
+    D_800E0490[track] = 0;
+    D_800E0650[track] = NULL;
+    D_800E1B50[track] = NULL;
+    D_800E1ED0[track] = -1;
+    D_800DEDD0[track] = 0;
+    D_800DEF90[track] = NULL;
+    D_800DF150[track] = NULL;
 
-    gSegment4StartArray[arg0] = (void *) (D_800DF690[arg0] = D_800DF850[arg0] = -1);
+    gSegment4StartArray[track] = (void *) (D_800DF690[track] = D_800DF850[track] = -1);
 
-    D_800E02D0[arg0] = D_800DFF50[arg0] = D_800E0110[arg0] = -1 + 1 - 1;
+    D_800E02D0[track] = D_800DFF50[track] = D_800E0110[track] = -1 + 1 - 1;
 
-    D_800DFBD0[arg0] = (void *)-1;
+    D_800DFBD0[track] = (void *)-1;
 
     
 
     l2 = 0.0f;
     // monster block        
-    D_800E3050[arg0] = D_800E3210[arg0] = D_800E33D0[arg0] =
-    D_800E3590[arg0] = D_800E3750[arg0] = D_800E3910[arg0] =
-    gEntitiesNextPosXArray[arg0] = gEntitiesNextPosYArray[arg0] = gEntitiesNextPosZArray[arg0] =
-    gEntitiesPosXArray[arg0] = gEntitiesPosYArray[arg0] = gEntitiesPosZArray[arg0] =
-    D_800E2090[arg0] = D_800E2250[arg0] = D_800E2410[arg0] =
+    D_800E3050[track] = D_800E3210[track] = D_800E33D0[track] =
+    D_800E3590[track] = D_800E3750[track] = D_800E3910[track] =
+    gEntitiesNextPosXArray[track] = gEntitiesNextPosYArray[track] = gEntitiesNextPosZArray[track] =
+    gEntitiesPosXArray[track] = gEntitiesPosYArray[track] = gEntitiesPosZArray[track] =
+    D_800E2090[track] = D_800E2250[track] = D_800E2410[track] =
         0.0f;
     
-    D_800E3AD0[arg0] = D_800E3C90[arg0] = D_800E3E50[arg0] = 65535.0f;
+    D_800E3AD0[track] = D_800E3C90[track] = D_800E3E50[track] = 65535.0f;
 
 
     lifeline = 1.0f;
-    // D_800E10D0[arg0] = D_800E1290[arg0] = D_800E1450[arg0] =
-    // gEntitiesAngleXArray[arg0] = gEntitiesAngleYArray[arg0] = gEntitiesAngleZArray[arg0] = 0.0f;
-    gEntitiesAngleZArray[arg0] = l2;
-    gEntitiesAngleYArray[arg0] = l2;
-    gEntitiesAngleXArray[arg0] = l2;
+    // D_800E10D0[track] = D_800E1290[track] = D_800E1450[track] =
+    // gEntitiesAngleXArray[track] = gEntitiesAngleYArray[track] = gEntitiesAngleZArray[track] = 0.0f;
+    gEntitiesAngleZArray[track] = l2;
+    gEntitiesAngleYArray[track] = l2;
+    gEntitiesAngleXArray[track] = l2;
 
-    D_800E10D0[arg0] = D_800E1290[arg0] = D_800E1450[arg0] = 0.0f;
+    D_800E10D0[track] = D_800E1290[track] = D_800E1450[track] = 0.0f;
         
-    gEntitiesScaleZArray[arg0] = lifeline;
-    gEntitiesScaleYArray[arg0] = lifeline;
-    gEntitiesScaleXArray[arg0] = lifeline;
+    gEntitiesScaleZArray[track] = lifeline;
+    gEntitiesScaleYArray[track] = lifeline;
+    gEntitiesScaleXArray[track] = lifeline;
 
-    // gEntitiesScaleXArray[arg0] = gEntitiesScaleYArray[arg0] = gEntitiesScaleZArray[arg0] = lifeline;
+    // gEntitiesScaleXArray[track] = gEntitiesScaleYArray[track] = gEntitiesScaleZArray[track] = lifeline;
     
 
-    D_800E4A90[arg0] = D_800E4C50[arg0] = D_800E4E10[arg0] =
-    D_800E5A50[arg0] = D_800E5C10[arg0] = D_800E5DD0[arg0] = 0.0f;
+    D_800E4A90[track] = D_800E4C50[track] = D_800E4E10[track] =
+    D_800E5A50[track] = D_800E5C10[track] = D_800E5DD0[track] = 0.0f;
 
     // float array
-    D_800E5350[arg0] = 1;
+    D_800E5350[track] = 1;
     if (1) {
-        D_800E4FD0[arg0] = D_800E5190[arg0] = D_800E5350[arg0];
+        D_800E4FD0[track] = D_800E5190[track] = D_800E5350[track];
     }
 
-    D_800E7650[arg0] = 0;
-    D_800E8AE0[arg0] = 0.0f;
-    D_800E8220[arg0] = 0.0f;
-    D_800E83E0[arg0] = 0.0f;
-    D_800E8760[arg0] = 0.0f;
-    D_800E8E60[arg0] = 0;
-    D_800E9020[arg0] = 0.0f;
-    D_800E76C0[arg0] = 0xFF;
-    D_800E7730[arg0] = 0xFF;
-    D_800E77A0[arg0] = 0xFFFF;
-    D_800E7880[arg0] = 0xFF;
-    D_800E78F0[arg0] = 0;
-    D_800E7B20[arg0] = 0.0f;
-    D_800E7CE0[arg0] = 0;
-    D_800EA520[arg0] = 0;
-    D_800EA360[arg0] = 0;
-    D_800EA1A0[arg0] = 0;
-    D_800E9FE0[arg0].as_s32 = 0;
-    D_800E9E20[arg0] = 0;
-    D_800E9C60[arg0] = 0;
-    D_800E9AA0[arg0] = NULL;
-    D_800E98E0[arg0] = 0;
-    D_800EB320[arg0] = 0.0f;
-    D_800EB160[arg0] = 0.0f;
-    D_800EAFA0[arg0] = 0.0f;
-    D_800EADE0[arg0] = 0.0f;
-    D_800EAC20[arg0] = 0.0f;
-    D_800EAA60[arg0] = 0.0f;
-    D_800EA8A0[arg0] = 0.0f;
-    D_800EA6E0[arg0] = 0.0f;
-    D_800EB6A0[arg0] = 0;
-    D_800EB4E0[arg0] = 0;
-    D_800EBA20[arg0] = 0.0f;
-    D_800EB860[arg0] = 0.0f;
-    D_800EC120[arg0] = -1;
-    D_800EBF60[arg0] = -1;
-    D_800EBDA0[arg0] = -1;
-    D_800EBBE0[arg0] = -1;
-    D_800EC4A0[arg0] = 0;
-    D_800EC2E0[arg0].as_s32 = 0;
-    D_800EC820[arg0] = 0.0f;
-    D_800EC660[arg0] = 0.0f;
-    D_800E6150[arg0] = -1;
-    D_800E5F90[arg0] = -1;
-    D_800E6D90[arg0] = 0.0f;
-    D_800E6BD0[arg0] = 0.0f;
-    D_800E17D0[arg0] = 0.0f;
-    D_800E1610[arg0] = 0.0f;
-    D_800E6A10[arg0] = 0.0f;
-    D_800E6690[arg0] = 0.0f;
-    D_800E64D0[arg0] = 0.0f;
+    D_800E7650[track] = 0;
+    D_800E8AE0[track] = 0.0f;
+    D_800E8220[track] = 0.0f;
+    D_800E83E0[track] = 0.0f;
+    D_800E8760[track] = 0.0f;
+    D_800E8E60[track] = 0;
+    D_800E9020[track] = 0.0f;
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = 0xFF;
+    D_800E77A0[track] = 0xFFFF;
+    D_800E7880[track] = 0xFF;
+    D_800E78F0[track] = 0;
+    D_800E7B20[track] = 0.0f;
+    D_800E7CE0[track] = 0;
+    D_800EA520[track] = 0;
+    D_800EA360[track] = 0;
+    D_800EA1A0[track] = 0;
+    D_800E9FE0[track].as_s32 = 0;
+    D_800E9E20[track] = 0;
+    D_800E9C60[track] = 0;
+    D_800E9AA0[track] = NULL;
+    D_800E98E0[track] = 0;
+    D_800EB320[track] = 0.0f;
+    D_800EB160[track] = 0.0f;
+    D_800EAFA0[track] = 0.0f;
+    D_800EADE0[track] = 0.0f;
+    D_800EAC20[track] = 0.0f;
+    D_800EAA60[track] = 0.0f;
+    D_800EA8A0[track] = 0.0f;
+    D_800EA6E0[track] = 0.0f;
+    D_800EB6A0[track] = 0;
+    D_800EB4E0[track] = 0;
+    D_800EBA20[track] = 0.0f;
+    D_800EB860[track] = 0.0f;
+    D_800EC120[track] = -1;
+    D_800EBF60[track] = -1;
+    D_800EBDA0[track] = -1;
+    D_800EBBE0[track] = -1;
+    D_800EC4A0[track] = 0;
+    D_800EC2E0[track].as_s32 = 0;
+    D_800EC820[track] = 0.0f;
+    D_800EC660[track] = 0.0f;
+    D_800E6150[track] = -1;
+    D_800E5F90[track] = -1;
+    D_800E6D90[track] = 0.0f;
+    D_800E6BD0[track] = 0.0f;
+    D_800E17D0[track] = 0.0f;
+    D_800E1610[track] = 0.0f;
+    D_800E6A10[track] = 0.0f;
+    D_800E6690[track] = 0.0f;
+    D_800E64D0[track] = 0.0f;
 
-    temp_v1 = &D_800E6F50[arg0];
+    temp_v1 = &D_800E6F50[track];
     temp_v1->x = temp_v1->y = temp_v1->z = 0.0f;
     temp_v1->originOffset = 9999.0f;
 
-    D_800E6850[arg0] = 65535.0f;
-    D_800E8CA0[arg0] = 0;
-    D_800E6310[arg0] = 0;
+    D_800E6850[track] = 65535.0f;
+    D_800E8CA0[track] = 0;
+    D_800E6310[track] = 0;
     
-    D_800E5890[arg0] = D_800E5510[arg0] = D_800E56D0[arg0] = 0.0f;
-    D_800E93A0[arg0] = D_800E9560[arg0] = D_800E9720[arg0] = 0;
+    D_800E5890[track] = D_800E5510[track] = D_800E56D0[track] = 0.0f;
+    D_800E93A0[track] = D_800E9560[track] = D_800E9720[track] = 0;
 }
 #else
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_6/func_800AE138.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_6/initTrack.s")
 #endif
 
 struct GObjProcess *omCreateProcess(s32 arg0, s32 arg1, u8 arg2, u32 arg3);

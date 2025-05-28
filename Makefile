@@ -49,10 +49,12 @@ PYTHON := python3
 
 TEXTURES_DIR := textures
 
+SYMBOL_HACKS := -T symbol_hacks.txt
+
 INCLUDE_FLAGS := -I$(BUILD_DIR) -Iinclude
 ASFLAGS = -mtune=vr4300 -march=vr4300 --no-pad-sections -mabi=32 -mips3 $(INCLUDE_FLAGS)
 LDFLAGS = --no-check-sections -mips3 --accept-unknown-input-arch \
-					-T libultra_unused.txt $(UNNAMED_SYMS) -T rcp_syms.txt \
+					-T libultra_unused.txt $(SYMBOL_HACKS) -T rcp_syms.txt \
 					-Map $(BUILD_DIR)/$(TARGET).map \
 					-T funcstodo.txt \
 					-T datatodo.txt \
@@ -243,7 +245,7 @@ $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
 $(BUILD_DIR)/$(UCODE_BASE_DIR)/%.o : $(UCODE_BASE_DIR)/%
 	$(OBJCOPY) -I binary -O elf32-big $< $@
 
-$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(UCODE_LD) rcp_syms.txt undefined_syms.txt unnamed_syms.txt $(GAME_ASSETS)
+$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(UCODE_LD) rcp_syms.txt unnamed_syms.txt $(GAME_ASSETS)
 	$(CPP) $(VERSION_CFLAGS) $(INCLUDE_CFLAGS) -MMD -MP -MT $@ -MF $@.d -o $@ $< \
 	-DBUILD_DIR=$(BUILD_DIR) -Umips
 

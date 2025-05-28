@@ -95,7 +95,7 @@ void func_80000510(void) {
 }
 
 extern void scThreadMain(void *);
-void func_800076D0();
+void gtlInit();
 
 extern OSPiHandle *osCartRomInit(void);
 
@@ -122,7 +122,7 @@ void thread5_game(UNUSED void *arg) {
     SETUP_STACK_AND_START_THREAD(gControllerThread, gThread6Stack);
     osRecvMesg(&gThreadInitializedMQ, NULL, OS_MESG_BLOCK);
     
-    func_800076D0();
+    gtlInit();
     dma_overlay_load(&ovl1Def);
     game_tick(0);
 }

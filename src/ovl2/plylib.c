@@ -2730,23 +2730,18 @@ void func_801212A4(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
 s32 func_801215DC(void) {
-    s32 var_v0;
-
     if (gKirbyState.isTurning & 1) {
         return 1;
     }
-    var_v0 = 0;
-    if ((gKirbyState.unk17 == 0) && (gKirbyController.buttonHeld & 0x300)) {
+    if ((gKirbyState.unk17 == 0) && (gKirbyController.buttonHeld & (L_JPAD | R_JPAD))) {
         if (func_80121194() != 0) {
             return 2;
         }
-        var_v0 = 1;
-        /* Duplicate return node #7. Try simplifying control flow for better match */
-        return var_v0;
+        return 1;
+    } else {
+        return 0;
     }
-    return var_v0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801215DC.s")
@@ -3484,7 +3479,7 @@ void set_kirby_action_2(s32 actionChange, u32 action) {
 
 void func_80122FB0(s32 arg0) {
     D_800DDE10[omCurrentObj->objId] = arg0;
-    assign_new_process_entry(gEntityGObjProcessArray3[omCurrentObj->objId], &D_80177098);
+    assign_new_process_entry(gEntityGObjProcessArray3[omCurrentObj->objId], func_80177098_ovl3);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80122FB0.s")

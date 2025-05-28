@@ -1,6 +1,8 @@
 #ifndef SPOBJ_H
 #define SPOBJ_H
 
+#include <PR/gs2dex.h>
+
 struct SPObj_68 {
     u32 unk0;
     u32 unk4;

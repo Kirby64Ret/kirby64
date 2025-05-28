@@ -2,10 +2,9 @@
 #include "common.h"
 #include "ovl1/ovl1_6.h"
 #include "GObj.h"
+#include "main/gtl.h"
 
 // All the filesystem loading magic happens here
-
-extern Gfx *gDisplayListHeads[4];
 
 #ifdef MIPS_TO_C
 
@@ -1136,24 +1135,12 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9864.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800A99E4(s32 arg0) {
-    struct LayoutNode ***sp1C;
-    struct LayoutNode ***temp_v0;
-    struct LayoutNode **temp_v1;
-
-    temp_v0 = &D_800DFBD0[arg0];
-    temp_v1 = *temp_v0;
-    if (temp_v1 != -1) {
-        sp1C = temp_v0;
-        func_800A8578(temp_v1 | 1);
+void func_800A99E4(s32 track) {
+    if ((u32)D_800DFBD0[track] != -1) {
+        func_800A8578((u32)D_800DFBD0[track] | 1);
     }
-    *temp_v0 = -1;
+    D_800DFBD0[track] = (struct LayoutNode**)-1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A99E4.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1294,35 +1281,16 @@ s32 func_800A9C78(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9C78.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800A9D64(s32 arg0) {
-    s32 sp1C;
-    u32 *sp18;
-    u32 *temp_v1;
-    u32 *temp_v1_2;
-    u32 temp_a1;
-    u32 temp_a1_2;
-
-    temp_v1 = &D_800DF690[arg0];
-    temp_a1 = *temp_v1;
-    if (temp_a1 != -1) {
-        sp1C = arg0 * 4;
-        sp18 = temp_v1;
-        func_800A8578(temp_a1 | 2, temp_a1, -1);
-        *temp_v1 = -1;
+void func_800A9D64(s32 track) {
+    if (D_800DF690[track] != -1) {
+        func_800A8578(D_800DF690[track] | 2, D_800DF690[track]);
+        D_800DF690[track] = -1;
     }
-    temp_v1_2 = &D_800DF850[arg0];
-    temp_a1_2 = *temp_v1_2;
-    if (temp_a1_2 != -1) {
-        sp18 = temp_v1_2;
-        func_800A8578(temp_a1_2 | 2, temp_a1_2, -1);
-        *temp_v1_2 = -1;
+    if (D_800DF850[track] != -1) {
+        func_800A8578(D_800DF850[track] | 2, D_800DF850[track]);
+        D_800DF850[track] = -1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9D64.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1431,15 +1399,15 @@ void func_800AA154(void) {
 #endif
 
 void func_800AA174(void) {
-    ((GObj_3C *)omCurrentObj->data)->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-    ((GObj_3C *)omCurrentObj->data)->posVec.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-    ((GObj_3C *)omCurrentObj->data)->posVec.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    ((GObj_3C *)omCurrentObj->data)->angleVec.x = gEntitiesAngleXArray[omCurrentObj->objId];
-    ((GObj_3C *)omCurrentObj->data)->angleVec.y = gEntitiesAngleYArray[omCurrentObj->objId];
-    ((GObj_3C *)omCurrentObj->data)->angleVec.z = gEntitiesAngleZArray[omCurrentObj->objId];
-    ((GObj_3C *)omCurrentObj->data)->scaleVec.x = gEntitiesScaleXArray[omCurrentObj->objId];
-    ((GObj_3C *)omCurrentObj->data)->scaleVec.y = gEntitiesScaleYArray[omCurrentObj->objId];
-    ((GObj_3C *)omCurrentObj->data)->scaleVec.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->scale.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->scale.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    ((struct LayoutNode *)omCurrentObj->data)->scale.z = gEntitiesScaleZArray[omCurrentObj->objId];
 }
 
 #ifdef MIPS_TO_C
@@ -1940,13 +1908,11 @@ void func_800AB0CC(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB0CC.s")
 #endif
 
-#ifdef MIPS_TO_C
 s32 func_800AB0F4(GObj *g) {
-    return gSegment4StartArray[g->objId][2];
+    u32 **buf = gSegment4StartArray[g->objId];
+
+    return buf[2];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB0F4.s")
-#endif
 
 void func_800AB110(GObj *g) {
 

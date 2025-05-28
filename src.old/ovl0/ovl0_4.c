@@ -281,7 +281,7 @@ void func_80016940(Gfx** arg0, Vp *arg1, s32 arg2) {
     if ((arg2 == 0) || (phi_v1 = temp_v1, (arg2 == 1))) {
         phi_v1 = temp_v1;
         if ((arg1->unk80 & 0x20) != 0) {
-            append_microcode_load(arg0, D_8004A446);
+            gtlLoadUcode(arg0, D_8004A446);
             D_8004A448 = 1;
             phi_v1 = *arg0;
         }
@@ -539,20 +539,20 @@ void func_80017E84(struct GObj *arg0, u32 arg1) {
     }
 }
 
-void func_8000630C();
-void func_80005F10();
-void func_800059F8();
+void gtlMergeDisps();
+void gtlProcessDisps();
+void gtlReset();
 
 void func_80017F78(struct unk80017B40 *arg0) {
     if ((arg0->unk80 & 0x04)) {
-        func_8000630C();
+        gtlMergeDisps();
     }
     if ((arg0->unk80 & 0x10)) {
-        func_80005F10();
-        func_800059F8();
+        gtlProcessDisps();
+        gtlReset();
     }
     if ((arg0->unk80 & 0x40)) {
-        func_80005F10();
+        gtlProcessDisps();
     }
 }
 
@@ -596,8 +596,8 @@ void func_8001810C(void) {
     void* sp1C;
 
     sp1C = D_8004A7C8->unk3C;
-    func_80005F10();
-    func_800059F8();
+    gtlProcessDisps();
+    gtlReset();
     func_80016940(&gDisplayListHeads[0], sp1C, 0);
     func_800171E0(&gDisplayListHead2 - 1, sp1C); // Had to be done like this to make it match
     func_80017B40(sp1C, 0);

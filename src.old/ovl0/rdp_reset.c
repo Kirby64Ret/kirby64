@@ -53,7 +53,7 @@ Gfx resetRDPDisplayList[] = {
 extern s32 gCurrScreenWidth;
 extern s32 gCurrScreenHeight;
 
-void setup_segment_15(Gfx **);
+void gtlSetSegment0F(Gfx **);
 
 #if NON_MATCHING
 // G_MAXZ needs to be loaded in later somehow
@@ -85,7 +85,7 @@ void reset_rdp_settings(Gfx **dlist) {
     Gfx *dlHead = *dlist;
 
     gSPSegment(dlHead++, 0x00, 0x00000000);
-    setup_segment_15(&dlHead);
+    gtlSetSegment0F(&dlHead);
     gDPSetDepthImage(dlHead++, gZBuffer);
     setup_viewport(&gViewport);
     gSPDisplayList(dlHead++, resetRDPDisplayList);

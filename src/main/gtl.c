@@ -1,7 +1,62 @@
+#include <PR/gbi.h>
+#include <PR/gs2dex.h>
+
 #include "common.h"
+#include "localsched.h"
+#include "object_manager.h"
+#include "gtl.h"
+
+// bss
+extern u32 gtlCurrentContextID;
+extern struct DynamicBuffer gDynamicBuffer2;
+extern struct DynamicBuffer gtlGfxHeapList[];
+extern struct DLBuffer gDLBuffers[2][4];
+extern Gfx *gtlPrevDLHeads[];
+extern Gfx *gtlRDPResetList;
+extern u16 D_8004A448;
+extern u32 scDPOutputBuffSize;
+
+extern u32 D_8003DCA0; // gtl rdp output type
+extern void *gtlDPOutputBuffer; // gtl rdp output buff
+extern u32 gtlDPOutputBufferSize; // gtl rdp output buff len
+
+extern u32 gtlNearClipDisabled;
+
+// SCTaskGfx* gtlGfxTasksBufferStart[2];
+// SCTaskGfx* gtlGfxTasksBufferPtr[2];
+// SCTaskGfx* gtlGfxTasksBufferEnd[2];
+extern SCTaskGfx *gtlGfxTaskBufferStarts[2];
+extern SCTaskGfx *gtlGfxTaskBufferPtrs[2];
+extern SCTaskGfx *gtlGfxTaskBufferEnds[2];
+extern SCTaskGfxEnd *gtlGfxEndTasks[];
+
+extern OSMesgQueue D_80049320;
+
+extern s32 gtlNumContexts;
+extern SCTaskVi *gtlVideoSettingsTasks[];
+
+extern void *gtlSegment0FBase;
+
+extern OSMesgQueue gtlResetMQ;
+extern OSMesg D_80049338[1];
+
+extern SCClient gtlSchedClient;
+extern OSMesgQueue gtlGameTickMQ;
+extern OSMesg gtlGameTickMesgs[4];
+
+extern OSMesgQueue D_80049320;
+extern OSMesg D_80049310[3];
+
+extern OSMesgQueue D_800492E8;
+extern OSMesg D_800492E0[1];
+
+extern u16 gtlUpdateInterval, gtlDrawInterval;
+extern u16 D_8004A444, D_8004A446;
+
+extern u32 D_800492DC;
+
 
 #ifdef MIPS_TO_C
-
 void func_80005350(? *arg0) {
     if (arg0 != NULL) {
         D_8004A48C = arg0;
@@ -13,32 +68,16 @@ void func_80005350(? *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005350.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void setup_segment_15(void **arg0) {
-    void *temp_v0;
-
-    D_80049308 = *arg0 + 4;
-    temp_v0 = *arg0;
-    *arg0 = temp_v0 + 8;
-    temp_v0->unk4 = 0;
-    temp_v0->unk0 = 0xDB06003C;
+void gtlSetSegment0F(Gfx **arg0) {
+    gtlSegment0FBase = &(*arg0)->words.w1;
+    gSPSegment((*arg0)++, 0x0F, 0x00000000);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/setup_segment_15.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800053A8(s32 arg0) {
-    D_8004A440 = arg0;
+void gtlDisableNearClipping(s32 disable) {
+    gtlNearClipDisabled = disable;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800053A8.s")
-#endif
 
 #ifdef MIPS_TO_C
-
 void func_800053B4(s16 arg0, s16 arg1) {
     D_8004A444 = arg0;
     D_8004A446 = arg1;
@@ -47,145 +86,55 @@ void func_800053B4(s16 arg0, s16 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800053B4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void alloc_region(s32 arg0, ? arg1) {
-    mlSetup(&gDynamicBuffer2, 0x10000, arg0, arg1);
+void gtlSetupHeap(void *start, u32 size) {
+    mlSetup(&gDynamicBuffer2, 0x10000, start, size);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/alloc_region.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void alloc_with_alignment(s32 arg0, ? arg1) {
-    mlAlloc(&gDynamicBuffer2, arg0, arg1);
+void gtlMalloc(u32 size, u32 alignment) {
+    mlAlloc(&gDynamicBuffer2, size, alignment);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/alloc_with_alignment.s")
-#endif
 
-#ifdef MIPS_TO_C
+void gtlResetHeap(void) {
+    gDynamicBuffer1.id = gtlGfxHeapList[gtlCurrentContextID].id;
+    gDynamicBuffer1.poolStart = gtlGfxHeapList[gtlCurrentContextID].poolStart;
+    gDynamicBuffer1.poolEnd = gtlGfxHeapList[gtlCurrentContextID].poolEnd;
+    gDynamicBuffer1.top = gtlGfxHeapList[gtlCurrentContextID].top;
 
-void func_80005430(void) {
-    void *temp_v0;
-
-    temp_v0 = (D_8004A450 * 0x10) + &D_8004A468;
-    gDynamicBuffer1.id = temp_v0->unk0;
-    gDynamicBuffer1.poolStart = temp_v0->unk4;
-    gDynamicBuffer1.poolEnd = temp_v0->unk8;
-    gDynamicBuffer1.top = temp_v0->unkC;
     mlReset(&gDynamicBuffer1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005430.s")
-#endif
 
-#ifdef MIPS_TO_C
+void gtlSetDLBuffers(struct DLBuffer (*buffers)[4]) {
+    s32 i, j;
 
-void func_8000548C(void *arg0) {
-    ? *var_a2;
-    ? *var_t0;
-    ? *var_t2;
-    ? *var_v1;
-    s32 *var_a3;
-    s32 temp_t6;
-    s32 temp_t9;
-    void *var_a1;
-    void *var_t1;
-    void *var_t3;
-
-    var_t2 = &D_8004A3A8;
-    var_t0 = &D_8004A3A0;
-    var_a2 = &D_8004A398;
-    var_v1 = &gDLBuffers;
-    var_a1 = arg0;
-    var_a3 = arg0 + 8;
-    var_t1 = arg0 + 0x10;
-    var_t3 = arg0 + 0x18;
-    do {
-        var_t2 += 0x20;
-        var_v1 += 0x20;
-        var_v1->unk-20 = var_a1->unk0;
-        temp_t6 = var_a1->unk4;
-        var_a1 += 0x20;
-        var_a2 += 0x20;
-        var_v1->unk-1C = temp_t6;
-        temp_t9 = *var_a3;
-        var_a3 += 0x20;
-        var_t0 += 0x20;
-        var_a2->unk-20 = temp_t9;
-        var_t1 += 0x20;
-        var_t3 += 0x20;
-        var_a2->unk-1C = var_a3->unk-1C;
-        var_t0->unk-20 = var_t1->unk-20;
-        var_t0->unk-1C = var_t1->unk-1C;
-        var_t2->unk-20 = var_t3->unk-20;
-        var_t2->unk-1C = var_t3->unk-1C;
-    } while (var_t2 != &D_8004A3E8);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_8000548C.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_80005530(void) {
-    s32 sp28;
-    Gfx **sp1C;
-    ? *var_a1;
-    Gfx **temp_a0;
-    Gfx **var_a0;
-    Gfx *temp_v0;
-    s32 *temp_a3;
-    s32 *var_v0;
-    s32 *var_v0_2;
-    s32 temp_a1;
-    s32 temp_v1;
-    s32 var_v1;
-
-    temp_a3 = (D_8004A450 << 5) + &gDLBuffers;
-    var_a0 = gDisplayListHeads;
-    var_a1 = &D_8004A3E0;
-    var_v0 = temp_a3;
-    do {
-        temp_v1 = *var_v0;
-        var_a0 += 4;
-        var_v0 += 8;
-        var_a1 += 4;
-        var_a1->unk-4 = temp_v1;
-        var_a0->unk-4 = temp_v1;
-    } while (var_a0 < &D_8004A3E0);
-    var_v1 = 0;
-    var_v0_2 = temp_a3;
-loop_3:
-    if (var_v0_2->unk4 != 0) {
-        temp_a1 = var_v1 * 4;
-        temp_a0 = &gDisplayListHeads[var_v1];
-        sp1C = temp_a0;
-        sp28 = temp_a1;
-        D_8004A44C = *temp_a0;
-        reset_rdp_settings(temp_a0, temp_a1, &D_8004A3E0, temp_a3);
-        temp_v0 = *temp_a0;
-        *temp_a0 = temp_v0 + 8;
-        temp_v0->words.w1 = 0;
-        temp_v0->words.w0 = 0xDF000000;
-        *(&D_8004A3E0 + temp_a1) = *temp_a0;
-    } else {
-        var_v1 += 1;
-        var_v0_2 += 8;
-        if (var_v1 != 4) {
-            goto loop_3;
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 4; j++) {
+            gDLBuffers[i][j] = buffers[i][j];
         }
     }
-    D_8004A448 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005530.s")
-#endif
+
+void gtlInitDisps(void) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        gDisplayListHeads[i] = gtlPrevDLHeads[i] = gDLBuffers[gtlCurrentContextID][i].start;
+    }
+
+    for (i = 0; i < 4; i++) {
+        if (gDLBuffers[gtlCurrentContextID][i].length != 0) {
+            // load "reset rdp" display list in the beginning and use reference to it every time we reload ucode
+            gtlRDPResetList = gDisplayListHeads[i];
+            reset_rdp_settings(&gDisplayListHeads[i]);
+            gSPEndDisplayList(gDisplayListHeads[i]++);
+            gtlPrevDLHeads[i] = gDisplayListHeads[i];
+            break;
+        }
+    }
+
+    D_8004A448 = FALSE;
+}
 
 #ifdef MIPS_TO_C
-
 void func_8000561C(void) {
     Gfx **var_a0;
     Gfx *temp_t0;
@@ -194,7 +143,7 @@ void func_8000561C(void) {
     s32 var_v1;
     void *var_v0;
 
-    var_v0 = (D_8004A450 << 5) + &gDLBuffers;
+    var_v0 = (gtlCurrentContextID << 5) + &gDLBuffers;
     var_a0 = gDisplayListHeads;
     var_v1 = 0;
 loop_1:
@@ -223,198 +172,110 @@ loop_7:
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_8000561C.s")
 #endif
 
-#ifdef MIPS_TO_C
+void gtlSetDPOutputBuff(void* buffer, s32 size) {
+    SCTaskRDPBuffer task;
 
-void func_800056DC(s32 arg0, s32 arg1) {
-    s32 sp44;
-    s32 sp40;
-    s32 sp20;
-    s32 sp1C;
-
-    sp40 = arg0;
-    sp1C = 8;
-    sp20 = 0x32;
-    sp44 = arg1;
-    scExecuteBlocking(&sp1C);
-    if (&scDPOutputBuffSize & 7) {
+    task.info.type = SC_TASK_TYPE_RDP_BUFFER;
+    task.info.priority = 50;
+    task.buffer = buffer;
+    task.size = size;
+    scExecuteBlocking(&task);
+    if ((u32)&scDPOutputBuffSize & 7) {
         fatal_printf("bad addr sc_rdp_output_len = %x\n", &scDPOutputBuffSize);
-loop_2:
-        goto loop_2;
+        while (1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800056DC.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80005734(s32 arg0, s32 arg1, s32 arg2) {
-    D_8003DCA0 = arg0;
-    D_8004A438 = arg1;
-    D_8004A43C = arg2;
-    if (((arg0 == 2) || (arg0 == 1)) && (arg2 == 0)) {
-        fatal_printf("gtl : Buffer size for RDP is zero !!\n", arg1);
-loop_4:
-        goto loop_4;
+void func_80005734(s32 type, void* buffer, u32 size) {
+    D_8003DCA0 = type;
+    gtlDPOutputBuffer = buffer;
+    gtlDPOutputBufferSize = size;
+    if ((type == 2) || (type == 1)) {
+        if (size == 0) {
+            fatal_printf("gtl : Buffer size for RDP is zero !!\n");
+            while (1);
+        }
     }
-    if (arg0 == 1) {
-        func_800056DC(arg1, arg2, arg1);
+    if (type == 1) {
+        gtlSetDPOutputBuff(buffer, size);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005734.s")
-#endif
 
-#ifdef MIPS_TO_C
+s32 gtlGetSCTaskGfx(void) {
+    SCTaskGfx* task;
 
-s32 func_800057AC(void) {
-    s32 *temp_a1;
-    s32 temp_v0;
-    s32 temp_v1;
-
-    temp_v0 = D_8004A450 * 4;
-    if (*(&D_8004A368 + temp_v0) == 0) {
+    if (gtlGfxTaskBufferStarts[gtlCurrentContextID] == NULL) {
         fatal_printf("gtl : not defined SCTaskGfx\n");
-loop_2:
-        goto loop_2;
+        while (1);
     }
-    temp_a1 = temp_v0 + &D_8004A370;
-    temp_v1 = *temp_a1;
-    if (temp_v1 == *(&D_8004A378 + temp_v0)) {
-        fatal_printf("gtl : couldn't get SCTaskGfx\n", temp_a1);
-loop_5:
-        goto loop_5;
+    if (gtlGfxTaskBufferPtrs[gtlCurrentContextID] == gtlGfxTaskBufferEnds[gtlCurrentContextID]) {
+        fatal_printf("gtl : couldn't get SCTaskGfx\n");
+        while (1);
     }
-    *temp_a1 = temp_v1 + 0x88;
-    return temp_v1;
+    task = gtlGfxTaskBufferPtrs[gtlCurrentContextID]++;
+    return task;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800057AC.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80005834(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    ? *var_t2;
-    s32 *var_a0;
-    s32 *var_s1;
-    s32 *var_t1;
-    s32 *var_t4;
-    s32 temp_at;
-    s32 temp_t3;
-    s32 temp_t7;
-    s32 var_a3;
-    s32 var_s2;
-    s32 var_t5;
-    s32 var_v0;
-
-    var_v0 = 0;
-    if (D_8004A460 > 0) {
-        var_s1 = &D_8004A388;
-        var_t4 = &D_8004A380;
-        var_t2 = &D_8004A378;
-        var_t1 = &D_8004A370;
-        var_a0 = &D_8004A368;
-        var_a3 = arg0;
-        var_t5 = arg2;
-        var_s2 = arg3;
-        do {
-            temp_t3 = var_v0 + 1;
-            temp_at = temp_t3 < D_8004A460;
-            *var_a0 = var_a3;
-            *var_t1 = var_a3;
-            *var_t4 = var_t5;
-            *var_s1 = var_s2;
-            var_s2 += 0x38;
-            temp_t7 = arg0 + (arg1 * 0x88 * temp_t3);
-            var_t5 += 0x2C;
-            var_a3 += arg1 * 0x88;
-            var_v0 = temp_t3;
-            var_a0 += 4;
-            var_t1 += 4;
-            var_t2 += 4;
-            var_t4 += 4;
-            var_s1 += 4;
-            var_t2->unk-4 = temp_t7;
-        } while (temp_at != 0);
+void gtlInitTaskBuffers(SCTaskGfx* gfxTasks, s32 taskBufferSize, SCTaskGfxEnd* gfxEndTasks, SCTaskVi* viTasks) {
+    s32 i;
+    for (i = 0; i < gtlNumContexts; i++) {
+        gtlGfxTaskBufferStarts[i] = (SCTaskGfx*) ((uintptr_t) (gfxTasks) + taskBufferSize * sizeof(SCTaskGfx) * i);
+        gtlGfxTaskBufferPtrs[i] = (SCTaskGfx*) ((uintptr_t) (gfxTasks) + taskBufferSize * sizeof(SCTaskGfx) * i);
+        gtlGfxTaskBufferEnds[i] = (SCTaskGfx*) ((uintptr_t) (gfxTasks) + taskBufferSize * sizeof(SCTaskGfx) * (i + 1));
+        gtlGfxEndTasks[i] = &gfxEndTasks[i];
+        gtlVideoSettingsTasks[i] = &viTasks[i];
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005834.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80005910(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    arg0->unk0 = 6;
-    arg0->unk4 = 0x64;
-    arg0->unk14 = 0;
-    arg0->unk20 = arg3;
-    arg0->unk1C = arg2;
-    arg0->unk24 = arg1;
-    arg0->unk28 = D_8004A450;
-    osSendMesg(&scTaskMQ, arg0, 0);
+void gtlScheduleGfxEnd(SCTaskGfxEnd *task, void *fb, s32 retVal, OSMesgQueue *mq) {
+    task->info.type = SC_TASK_TYPE_GFX_END;
+    task->info.priority = 100;
+    task->info.fnCheck = NULL;
+    task->info.mq = mq;
+    task->info.retVal = retVal;
+    task->fb = fb;
+    task->taskId = gtlCurrentContextID;
+    osSendMesg(&scTaskMQ, task, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005910.s")
-#endif
 
-#ifdef MIPS_TO_C
+void gtlEndCurrentGfxTask(void) {
+    SCTaskGfxEnd *task;
 
-void func_8000597C(void) {
-    s32 temp_a0;
-    s32 temp_v0;
-
-    temp_a0 = *(&D_8004A380 + (D_8004A450 * 4));
-    if (temp_a0 == 0) {
-        fatal_printf("gtl : not defined SCTaskGfxEnd\n", -1, D_8004A450);
-loop_2:
-        goto loop_2;
+    task = gtlGfxEndTasks[gtlCurrentContextID];
+    if (task == NULL) {
+        fatal_printf("gtl : not defined SCTaskGfxEnd\n");
+        while (1);
     }
-    func_80005910(temp_a0, -1, D_8004A450, &D_80049320);
-    temp_v0 = D_8004A450 * 4;
-    *(&D_8004A370 + temp_v0) = *(&D_8004A368 + temp_v0);
+    gtlScheduleGfxEnd(task, -1, gtlCurrentContextID, &D_80049320);
+    gtlGfxTaskBufferPtrs[gtlCurrentContextID] = gtlGfxTaskBufferStarts[gtlCurrentContextID];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_8000597C.s")
-#endif
 
-#ifdef MIPS_TO_C
+void gtlReset(void) {
+    OSMesg *msg;
+    SCTaskGfxEnd *task = gtlGfxEndTasks[gtlCurrentContextID];
 
-void func_800059F8(void) {
-    void *sp24;
-    s32 temp_a0;
-    s32 temp_v0;
-
-    temp_a0 = *(&D_8004A380 + (D_8004A450 * 4));
-    if (temp_a0 == 0) {
-        fatal_printf("gtl : not defined SCTaskGfxEnd\n", 0, D_8004A450);
-loop_2:
-        goto loop_2;
+    if (task == 0) {
+        fatal_printf("gtl : not defined SCTaskGfxEnd\n");
+        while (1);
     }
-    func_80005910(temp_a0, 0, D_8004A450, &D_80049340);
-    osRecvMesg(&D_80049340, &sp24, 1);
-    temp_v0 = D_8004A450 * 4;
-    *(&D_8004A370 + temp_v0) = *(&D_8004A368 + temp_v0);
-    func_80005430();
-    func_80005530();
+    gtlScheduleGfxEnd(task, NULL, gtlCurrentContextID, &gtlResetMQ);
+    osRecvMesg(&gtlResetMQ, &msg, 1);
+    gtlGfxTaskBufferPtrs[gtlCurrentContextID] = gtlGfxTaskBufferStarts[gtlCurrentContextID];
+    gtlResetHeap();
+    gtlInitDisps();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800059F8.s")
-#endif
 
 #ifdef MIPS_TO_C
-
-void func_80005A98(void *arg0, s32 arg1, u32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+void gtlScheduleGfxTask(void *arg0, s32 arg1, u32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
     s32 temp_v1;
     void *temp_v0;
 
     arg0->unk0 = 1;
     arg0->unk4 = 0x32;
-    if (D_80049308 != 0) {
+    if (gtlSegment0FBase != 0) {
         arg0->unk14 = D_8004A48C;
-        arg0->unk68 = D_80049308;
-        D_80049308 = 0;
+        arg0->unk68 = gtlSegment0FBase;
+        gtlSegment0FBase = 0;
     } else {
         arg0->unk14 = 0;
         arg0->unk68 = 0;
@@ -433,8 +294,8 @@ void func_80005A98(void *arg0, s32 arg1, u32 arg2, s32 arg3, s32 arg4, s32 arg5,
     arg0->unk2C = 4;
     arg0->unk30 = &gRSPBootUcode;
     arg0->unk34 = 0x100;
-    temp_v0 = (arg2 * 8) + &D_8003DCAC;
-    arg0->unk80 = D_8004A450;
+    temp_v0 = (arg2 * 8) + &gtlUcodeList;
+    arg0->unk80 = gtlCurrentContextID;
     temp_v1 = temp_v0->unk0;
     if (temp_v1 == 0) {
         fatal_printf("gtl : ucode isn't included  kind = %d\n", arg2);
@@ -444,7 +305,7 @@ loop_8:
     arg0->unk38 = temp_v1;
     arg0->data = 0x1000;
     arg0->unk44 = 0x800;
-    arg0->unk48 = ((&D_80049358 + 0xF) >> 4) * 0x10;
+    arg0->unk48 = ((&gtlDRAMStack + 0xF) >> 4) * 0x10;
     arg0->unk4C = 0x400;
     arg0->unk40 = temp_v0->unk4;
     switch (arg2) {
@@ -472,19 +333,18 @@ loop_8:
             break;
     }
     arg0->unk5C = 0;
-    arg0->unk60 = ((&D_80049760 + 0xF) >> 4) * 0x10;
+    arg0->unk60 = ((&gtlDPYieldBuffer + 0xF) >> 4) * 0x10;
     arg0->unk64 = 0xC00;
     arg0->unk58 = arg4;
     osWritebackDCacheAll();
     osSendMesg(&scTaskMQ, arg0, 0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005A98.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlScheduleGfxTask.s")
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 func_80005C64(void) {
+s32 gtlGetL3DEX2Index(void) {
     u16 var_v1;
 
     if (D_8004A448 != 0) {
@@ -506,37 +366,37 @@ s32 func_80005C64(void) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005C64.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlGetL3DEX2Index.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80005CC0(s32 arg0, s32 arg1) {
     u32 sp2C;
-    u16 var_a2;
+    u16 ucodeIdx;
 
     if (arg0 == 0) {
-        var_a2 = D_8004A444;
-        if (D_8004A440 == 1) {
-            switch (var_a2) {                       /* switch 1; irregular */
-                case 0:                             /* switch 1 */
-                    var_a2 = 2;
+        ucodeIdx = D_8004A444;
+        // correct to NoN versions of relevant microcodes if near clip is disabled
+        if (gtlNearClipDisabled == 1) {
+            switch (ucodeIdx) {
+                case 0:
+                    ucodeIdx = 2;
                     break;
-                case 1:                             /* switch 1 */
-                    var_a2 = 3;
+                case 1:
+                    ucodeIdx = 3;
                     break;
-                case 12:                            /* switch 1 */
-                    var_a2 = 0xE;
+                case 12:
+                    ucodeIdx = 14;
                     break;
-                case 13:                            /* switch 1 */
-                    var_a2 = 0xF;
+                case 13:
+                    ucodeIdx = 15;
                     break;
             }
         }
     } else {
-        var_a2 = func_80005C64();
+        ucodeIdx = gtlGetL3DEX2Index();
     }
-    switch (var_a2) {
+    switch (ucodeIdx) {
         case 1:
         case 3:
         case 5:
@@ -544,9 +404,8 @@ void func_80005CC0(s32 arg0, s32 arg1) {
         case 9:
         case 13:
         case 15:
-            sp2C = var_a2;
-            func_80005A98(func_800057AC(), 0, var_a2, D_8004A450, arg1, 0, 0);
-            return;
+            gtlScheduleGfxTask(gtlGetSCTaskGfx(), 0, ucodeIdx, gtlCurrentContextID, arg1, 0, 0);
+            break;
         case 0:
         case 2:
         case 4:
@@ -554,85 +413,42 @@ void func_80005CC0(s32 arg0, s32 arg1) {
         case 8:
         case 12:
         case 14:
-            sp2C = var_a2;
-            func_80005A98(func_800057AC(), 0, var_a2, D_8004A450, arg1, D_8004A438, D_8004A43C);
-            /* fallthrough */
+            gtlScheduleGfxTask(gtlGetSCTaskGfx(), 0, ucodeIdx, gtlCurrentContextID, arg1, gtlDPOutputBuffer, gtlDPOutputBufferSize);
+            break;
         default:
-            return;
+            break;
     }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005CC0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void append_microcode_load(void **arg0, u32 arg1) {
-    s32 var_v0;
-    void *temp_a1;
-    void *temp_a1_2;
-    void *temp_a1_3;
-    void *temp_a1_4;
-    void *temp_a1_5;
-    void *temp_a1_6;
-    void *temp_a1_7;
-
-    var_v0 = 0;
-    switch (arg1) {
+void gtlLoadUcode(Gfx **dlist, u32 kind) {
+    s32 loadedSpriteUcode = 0;
+    switch (kind) { 
         case 0:
-            temp_a1 = *arg0;
-            *arg0 = temp_a1 + 8;
-            temp_a1->unk0 = 0xE1000000;
-            temp_a1->unk4 = &D_41FF0;
-            temp_a1_2 = *arg0;
-            *arg0 = temp_a1_2 + 8;
-            temp_a1_2->unk0 = 0xDD0007FF;
-            temp_a1_2->unk4 = &D_39E90;
+            // F3DEX2
+            gSPLoadUcodeL((*dlist)++, gspF3DEX2_fifo);
             break;
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-            temp_a1_3 = *arg0;
-            *arg0 = temp_a1_3 + 8;
-            temp_a1_3->unk0 = 0xE1000000;
-            temp_a1_3->unk4 = &D_42410;
-            temp_a1_4 = *arg0;
-            *arg0 = temp_a1_4 + 8;
-            temp_a1_4->unk0 = 0xDD0007FF;
-            temp_a1_4->unk4 = &D_3B220;
+        case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
+            // L3DEX2
+            gSPLoadUcodeL((*dlist)++, gspL3DEX2_fifo);
             break;
-        case 9:
-        case 10:
-            temp_a1_5 = *arg0;
-            *arg0 = temp_a1_5 + 8;
-            temp_a1_5->unk0 = 0xE1000000;
-            temp_a1_5->unk4 = &D_42800;
-            temp_a1_6 = *arg0;
-            *arg0 = temp_a1_6 + 8;
-            var_v0 = 1;
-            temp_a1_6->unk0 = 0xDD0007FF;
-            temp_a1_6->unk4 = &D_3C3B0;
+        case 9: case 10:
+            // S2DEX2
+            gSPLoadUcodeL((*dlist)++, gspS2DEX2_fifo);
+            loadedSpriteUcode = 1;
+            break;
+        case 11: case 12: case 13: case 14: case 15: default:
             break;
     }
-    if (var_v0 == 0) {
-        temp_a1_7 = *arg0;
-        *arg0 = temp_a1_7 + 8;
-        temp_a1_7->unk0 = 0xDE000000;
-        temp_a1_7->unk4 = D_8004A44C;
+    if (loadedSpriteUcode == 0) {
+        gSPDisplayList((*dlist)++, gtlRDPResetList);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/append_microcode_load.s")
-#endif
 
 #ifdef MIPS_TO_C
-
-void func_80005F10(void) {
+void gtlProcessDisps(void) {
     s32 sp80;
     s32 sp2C;
     s32 sp28;
@@ -668,7 +484,7 @@ void func_80005F10(void) {
     s32 var_t1;
 
     var_a2 = 0;
-    var_v0 = &D_8004A3E0;
+    var_v0 = &gtlPrevDLHeads;
     var_v1 = gDisplayListHeads;
     do {
         temp_t7 = *var_v0;
@@ -678,34 +494,34 @@ void func_80005F10(void) {
             var_a2 |= 8;
         }
         var_v1 += 4;
-    } while (var_v0 != &D_8004A3F0);
+    } while (var_v0 != &gtlCurrentState);
     temp_t8 = var_a2 & 1;
     if (var_a2 != 0) {
         sp2C = temp_t8;
         if (temp_t8 != 0) {
             if (var_a2 & 4) {
                 sp80 = var_a2;
-                append_microcode_load(gDisplayListHeads, func_80005C64(&D_8004A3F0, var_a2));
+                gtlLoadUcode(gDisplayListHeads, gtlGetL3DEX2Index(&gtlCurrentState, var_a2));
                 temp_v0 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_v0 + 8;
                 temp_v0->words.w0 = 0xDE010000;
-                temp_v0->words.w1 = D_8004A3E0.unk8;
+                temp_v0->words.w1 = gtlPrevDLHeads.unk8;
             } else if (var_a2 & 2) {
                 if (D_8004A448 != 0) {
                     sp80 = var_a2;
-                    append_microcode_load(gDisplayListHeads, D_8004A444, var_a2);
+                    gtlLoadUcode(gDisplayListHeads, D_8004A444, var_a2);
                 }
                 temp_v0_2 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_v0_2 + 8;
                 temp_v0_2->words.w0 = 0xDE010000;
-                temp_v0_2->words.w1 = D_8004A3E0.unk4;
+                temp_v0_2->words.w1 = gtlPrevDLHeads.unk4;
             } else if (var_a2 & 8) {
                 sp80 = var_a2;
-                append_microcode_load(gDisplayListHeads, func_80005C64(&D_8004A3F0, var_a2));
+                gtlLoadUcode(gDisplayListHeads, gtlGetL3DEX2Index(&gtlCurrentState, var_a2));
                 temp_v0_3 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_v0_3 + 8;
                 temp_v0_3->words.w0 = 0xDE010000;
-                temp_v0_3->words.w1 = D_8004A3E0.unkC;
+                temp_v0_3->words.w1 = gtlPrevDLHeads.unkC;
             } else {
                 temp_v0_4 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_v0_4 + 8;
@@ -725,16 +541,16 @@ void func_80005F10(void) {
             if (var_t0 != 0) {
                 sp20 = var_a3;
                 sp24 = var_t0;
-                append_microcode_load(&D_8004A3D8, D_8004A444, var_a2, var_a3);
+                gtlLoadUcode(&D_8004A3D8, D_8004A444, var_a2, var_a3);
                 temp_v0_6 = gDisplayListHeads[2];
                 gDisplayListHeads[2] = temp_v0_6 + 8;
                 temp_v0_6->words.w0 = 0xDE010000;
-                temp_v0_6->words.w1 = D_8004A3E0.unk4;
+                temp_v0_6->words.w1 = gtlPrevDLHeads.unk4;
             } else if (var_a3 != 0) {
                 temp_v0_7 = gDisplayListHeads[2];
                 gDisplayListHeads[2] = temp_v0_7 + 8;
                 temp_v0_7->words.w0 = 0xDE010000;
-                temp_v0_7->words.w1 = D_8004A3E0.unkC;
+                temp_v0_7->words.w1 = gtlPrevDLHeads.unkC;
             } else {
                 temp_v0_8 = gDisplayListHeads[2];
                 gDisplayListHeads[2] = temp_v0_8 + 8;
@@ -750,11 +566,11 @@ void func_80005F10(void) {
             if (var_a3 != 0) {
                 sp20 = var_a3;
                 sp24 = var_t0;
-                append_microcode_load(gDisplayListHeads, func_80005C64());
+                gtlLoadUcode(gDisplayListHeads, gtlGetL3DEX2Index());
                 temp_v0_10 = gDisplayListHeads[1];
                 gDisplayListHeads[1] = temp_v0_10 + 8;
                 temp_v0_10->words.w0 = 0xDE010000;
-                temp_v0_10->words.w1 = D_8004A3E0.unkC;
+                temp_v0_10->words.w1 = gtlPrevDLHeads.unkC;
             } else {
                 temp_v0_11 = gDisplayListHeads[1];
                 gDisplayListHeads[1] = temp_v0_11 + 8;
@@ -798,26 +614,25 @@ block_33:
         temp_a1 = *temp_v1;
         *temp_v1 = temp_a1 + 8;
         temp_a1->words.w0 = 0xDE000000;
-        temp_a1->words.w1 = D_8004A44C;
+        temp_a1->words.w1 = gtlRDPResetList;
         temp_v0_15 = *temp_v1;
         *temp_v1 = temp_v0_15 + 8;
         temp_v0_15->words.w0 = 0xDE010000;
-        temp_v0_15->words.w1 = *(&D_8004A3E0 + temp_a2);
+        temp_v0_15->words.w1 = *(&gtlPrevDLHeads + temp_a2);
         func_80005CC0(var_a0, temp_a1, temp_a2, var_a3);
-        D_8004A3E0.unk0 = gDisplayListHeads->unk0;
-        D_8004A3E0.unk8 = gDisplayListHeads[2];
-        D_8004A3E0.unk4 = gDisplayListHeads[1];
-        D_8004A3E0.unkC = gDisplayListHeads[3];
+        gtlPrevDLHeads.unk0 = gDisplayListHeads->unk0;
+        gtlPrevDLHeads.unk8 = gDisplayListHeads[2];
+        gtlPrevDLHeads.unk4 = gDisplayListHeads[1];
+        gtlPrevDLHeads.unkC = gDisplayListHeads[3];
     }
     func_8000561C();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80005F10.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlProcessDisps.s")
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_8000630C(void) {
+void gtlMergeDisps(void) {
     s32 sp50;
     s32 sp24;
     s32 sp20;
@@ -838,7 +653,7 @@ void func_8000630C(void) {
 
     func_8000561C();
     var_a2 = 0;
-    var_v0 = &D_8004A3E0;
+    var_v0 = &gtlPrevDLHeads;
     var_v1 = gDisplayListHeads;
     do {
         temp_t7 = *var_v0;
@@ -848,12 +663,12 @@ void func_8000630C(void) {
             var_a2 |= 8;
         }
         var_v1 += 4;
-    } while (var_v0 != &D_8004A3F0);
+    } while (var_v0 != &gtlCurrentState);
     if (var_a2 != 0) {
         if (var_a2 & 1) {
             if (var_a2 & 4) {
                 sp50 = var_a2;
-                append_microcode_load(gDisplayListHeads, func_80005C64(&D_8004A3F0));
+                gtlLoadUcode(gDisplayListHeads, gtlGetL3DEX2Index(&gtlCurrentState));
                 temp_v0 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_v0 + 8;
                 temp_v0->words.w0 = 0xDE010000;
@@ -861,7 +676,7 @@ void func_8000630C(void) {
             } else if (var_a2 & 2) {
                 if (D_8004A448 != 0) {
                     sp50 = var_a2;
-                    append_microcode_load(gDisplayListHeads, D_8004A444, var_a2);
+                    gtlLoadUcode(gDisplayListHeads, D_8004A444, var_a2);
                 }
                 temp_v0_2 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_v0_2 + 8;
@@ -869,7 +684,7 @@ void func_8000630C(void) {
                 temp_v0_2->words.w1 = D_8004A3E4;
             } else if (var_a2 & 8) {
                 sp50 = var_a2;
-                append_microcode_load(gDisplayListHeads, func_80005C64(&D_8004A3F0));
+                gtlLoadUcode(gDisplayListHeads, gtlGetL3DEX2Index(&gtlCurrentState));
                 temp_v0_3 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_v0_3 + 8;
                 temp_v0_3->words.w0 = 0xDE010000;
@@ -881,7 +696,7 @@ void func_8000630C(void) {
         if (var_a2 & 4) {
             if (temp_a3 != 0) {
                 sp24 = temp_a3;
-                append_microcode_load(&D_8004A3D8, D_8004A444, var_a2, temp_a3);
+                gtlLoadUcode(&D_8004A3D8, D_8004A444, var_a2, temp_a3);
                 temp_v0_4 = gDisplayListHeads[2];
                 gDisplayListHeads[2] = temp_v0_4 + 8;
                 temp_v0_4->words.w0 = 0xDE010000;
@@ -893,7 +708,7 @@ void func_8000630C(void) {
                 temp_v0_5->words.w1 = D_8004A3EC;
             } else {
                 sp24 = temp_a3;
-                append_microcode_load(&D_8004A3D8, D_8004A444, var_a2, temp_a3);
+                gtlLoadUcode(&D_8004A3D8, D_8004A444, var_a2, temp_a3);
                 temp_v0_6 = gDisplayListHeads[2];
                 gDisplayListHeads[2] = temp_v0_6 + 8;
                 temp_v0_6->words.w0 = 0xDE010000;
@@ -903,14 +718,14 @@ void func_8000630C(void) {
         }
         if (temp_a3 != 0) {
             if (sp20 != 0) {
-                append_microcode_load(gDisplayListHeads, func_80005C64());
+                gtlLoadUcode(gDisplayListHeads, gtlGetL3DEX2Index());
                 temp_v1 = gDisplayListHeads[1];
                 gDisplayListHeads[1] = temp_v1 + 8;
                 temp_v1->words.w0 = 0xDE010000;
                 temp_v1->words.w1 = D_8004A3EC;
             } else {
                 if (D_8004A448 != 0) {
-                    append_microcode_load(&D_8004A3D4, D_8004A444);
+                    gtlLoadUcode(&D_8004A3D4, D_8004A444);
                 }
                 temp_v1_2 = gDisplayListHeads[1];
                 gDisplayListHeads[1] = temp_v1_2 + 8;
@@ -920,7 +735,7 @@ void func_8000630C(void) {
             D_8004A3E4 = gDisplayListHeads[1];
         }
         if (sp20 != 0) {
-            append_microcode_load(&D_8004A3DC, D_8004A444);
+            gtlLoadUcode(&D_8004A3DC, D_8004A444);
             temp_v1_3 = gDisplayListHeads[3];
             gDisplayListHeads[3] = temp_v1_3 + 8;
             temp_v1_3->words.w0 = 0xDE010000;
@@ -932,12 +747,11 @@ void func_8000630C(void) {
     func_8000561C();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_8000630C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlMergeDisps.s")
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 func_80006628(s32 arg0) {
+s32 gtlSwitchContext(s32 arg0) {
     void *sp3C;
     s32 *var_a0;
     s32 var_v1;
@@ -950,16 +764,16 @@ s32 func_80006628(s32 arg0) {
 loop_4:
     var_a0 = &D_8004A458;
     var_v1 = 0;
-    if (D_8004A460 > 0) {
+    if (gtlNumContexts > 0) {
 loop_5:
         if (*var_a0 == 0) {
-            D_8004A450 = var_v1;
+            gtlCurrentContextID = var_v1;
             *var_a0 = 1;
             return 1;
         }
         var_v1 += 1;
         var_a0 += 4;
-        if (var_v1 >= D_8004A460) {
+        if (var_v1 >= gtlNumContexts) {
             goto block_8;
         }
         goto loop_5;
@@ -975,11 +789,10 @@ block_8:
     goto loop_4;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80006628.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlSwitchContext.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80006740(void) {
     OSMesgQueue *sp54;
     s32 sp50;
@@ -1003,18 +816,16 @@ void func_80006740(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800067B8(void) {
-    D_8004A3F0 = 1;
+    gtlCurrentState = 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800067B8.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800067C8(s32 arg0) {
-    D_8004A3F0 = 2;
+    gtlCurrentState = 2;
     D_8004A3F4 = arg0;
 }
 #else
@@ -1022,12 +833,11 @@ void func_800067C8(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 s32 func_800067E0(void) {
     s32 sp20;
     s32 sp1C;
 
-    switch (D_8004A3F0) {                           /* irregular */
+    switch (gtlCurrentState) {                           /* irregular */
         case 1:
             return 1;
         case 2:
@@ -1047,7 +857,6 @@ s32 func_800067E0(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80006854(void) {
     if (D_800492DC == 1) {
         D_800492DC = 2;
@@ -1065,59 +874,46 @@ void func_80006854(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_800068E4(void *arg0) {
+void gtlMain(void *arg0) {
     ? *var_v0;
     s32 var_s0;
     s32 var_s0_2;
 
     D_800492DC = 0;
-    if (osRecvMesg(&D_80049320, NULL, 0) != -1) {
-        do {
-
-        } while (osRecvMesg(&D_80049320, NULL, 0) != -1);
-    }
-    if (osRecvMesg(&D_80049340, NULL, 0) != -1) {
-        do {
-
-        } while (osRecvMesg(&D_80049340, NULL, 0) != -1);
-    }
-    if (osRecvMesg(&D_800492C0, NULL, 0) != -1) {
-        do {
-
-        } while (osRecvMesg(&D_800492C0, NULL, 0) != -1);
-    }
-    D_8004A3F0 = 0;
+    while (osRecvMesg(&D_80049320, NULL, 0) != -1);
+    while (osRecvMesg(&gtlResetMQ, NULL, 0) != -1);
+    while (osRecvMesg(&gtlGameTickMQ, NULL, 0) != -1);
+    gtlCurrentState = 0;
     D_8004A3F4 = -1;
-    D_8004A450 = 1;
+    gtlCurrentContextID = 1;
     D_80048C64 = 0;
     var_v0 = &D_8004A458;
     do {
         var_v0 += 4;
         var_v0->unk-4 = 0;
-    } while (var_v0 != &D_8004A460);
+    } while (var_v0 != &gtlNumContexts);
     var_s0 = 0;
     if (arg0->unk0 & 1) {
         var_s0_2 = 0;
 loop_10:
         func_80006854();
         func_80000510();
-        if (D_800492D8 > 0) {
+        if (gtlUpdateInterval > 0) {
             do {
-                osRecvMesg(&D_800492C0, NULL, 1);
+                osRecvMesg(&gtlGameTickMQ, NULL, 1);
                 var_s0_2 += 1;
-            } while (var_s0_2 < D_800492D8);
+            } while (var_s0_2 < gtlUpdateInterval);
         }
-        if (osRecvMesg(&D_800492C0, NULL, 0) != -1) {
+        if (osRecvMesg(&gtlGameTickMQ, NULL, 0) != -1) {
             do {
 
-            } while (osRecvMesg(&D_800492C0, NULL, 0) != -1);
+            } while (osRecvMesg(&gtlGameTickMQ, NULL, 0) != -1);
         }
         D_8004A42C = osGetCount();
         arg0->unk8(arg0);
         D_8003DCA4 += 1;
         D_8004A430 = (osGetCount() - D_8004A42C) / 2971;
-        if ((func_800067E0() == 0) && (((D_8003DCA4 % D_800492DA) != 0) || (func_80006628(0), D_8004A42C = osGetCount(), arg0->unk10(arg0), D_8003DCA8 += 1, D_8004A434 = (osGetCount() - D_8004A42C) / 2971, (func_800067E0() == 0)))) {
+        if ((func_800067E0() == 0) && (((D_8003DCA4 % gtlDrawInterval) != 0) || (gtlSwitchContext(0), D_8004A42C = osGetCount(), arg0->unk10(arg0), D_8003DCA8 += 1, D_8004A434 = (osGetCount() - D_8004A42C) / 2971, (func_800067E0() == 0)))) {
             var_s0_2 = 0;
             goto loop_10;
         }
@@ -1125,51 +921,38 @@ loop_10:
 loop_19:
         func_80006854();
         func_80000510();
-        if (D_800492D8 > 0) {
+        if (gtlUpdateInterval > 0) {
             do {
-                osRecvMesg(&D_800492C0, NULL, 1);
+                osRecvMesg(&gtlGameTickMQ, NULL, 1);
                 var_s0 += 1;
-            } while (var_s0 < D_800492D8);
+            } while (var_s0 < gtlUpdateInterval);
         }
-        if (osRecvMesg(&D_800492C0, NULL, 0) != -1) {
+        if (osRecvMesg(&gtlGameTickMQ, NULL, 0) != -1) {
             do {
 
-            } while (osRecvMesg(&D_800492C0, NULL, 0) != -1);
+            } while (osRecvMesg(&gtlGameTickMQ, NULL, 0) != -1);
         }
         D_8004A42C = osGetCount();
         arg0->unk8(arg0);
         D_8003DCA4 += 1;
         D_8004A430 = (osGetCount() - D_8004A42C) / 2971;
-        if ((func_800067E0() == 0) && (((D_8003DCA4 % D_800492DA) != 0) || (func_80006628(1) == 0) || (D_8004A42C = osGetCount(), arg0->unk10(arg0), D_8003DCA8 += 1, D_8004A434 = (osGetCount() - D_8004A42C) / 2971, (func_800067E0() == 0)))) {
+        if ((func_800067E0() == 0) && (((D_8003DCA4 % gtlDrawInterval) != 0) || (gtlSwitchContext(1) == 0) || (D_8004A42C = osGetCount(), arg0->unk10(arg0), D_8003DCA8 += 1, D_8004A434 = (osGetCount() - D_8004A42C) / 2971, (func_800067E0() == 0)))) {
             var_s0 = 0;
             goto loop_19;
         }
     }
     func_80006740();
-    if (osRecvMesg(&D_80049320, NULL, 0) != -1) {
-        do {
-
-        } while (osRecvMesg(&D_80049320, NULL, 0) != -1);
-    }
-    if (osRecvMesg(&D_80049340, NULL, 0) != -1) {
-        do {
-
-        } while (osRecvMesg(&D_80049340, NULL, 0) != -1);
-    }
-    if (osRecvMesg(&D_800492C0, NULL, 0) != -1) {
-        do {
-
-        } while (osRecvMesg(&D_800492C0, NULL, 0) != -1);
-    }
+    while (osRecvMesg(&D_80049320, NULL, 0) != -1);
+    while (osRecvMesg(&gtlResetMQ, NULL, 0) != -1);
+    while (osRecvMesg(&gtlGameTickMQ, NULL, 0) != -1);
     set_scissor_callback(0);
     D_800492DC = 2;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800068E4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlMain.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80006DF8(void *arg0) {
     D_8004A488();
     arg0->unk4();
@@ -1179,21 +962,19 @@ void func_80006DF8(void *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80006E30(void *arg0) {
-    func_80005430();
-    func_80005530();
+    gtlResetHeap();
+    gtlInitDisps();
     arg0->unkC();
-    func_80005F10();
-    viScheduleApplySettings(*(&D_8004A388 + (D_8004A450 * 4)));
-    func_8000597C();
+    gtlProcessDisps();
+    viScheduleApplySettings(*(&gtlVideoSettingsTasks + (gtlCurrentContextID * 4)));
+    gtlEndCurrentGfxTask();
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80006E30.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80006E94(void *arg0) {
     D_8004A488();
     arg0->unk4();
@@ -1206,56 +987,51 @@ void func_80006E94(void *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_80006EE4(void *arg0) {
-    func_80005430();
-    func_80005530();
+void gtlDraw(void *arg0) {
+    gtlResetHeap();
+    gtlInitDisps();
     arg0->unkC();
-    func_80005F10();
-    viScheduleApplySettings(*(&D_8004A388 + (D_8004A450 * 4)));
-    func_8000597C();
+    gtlProcessDisps();
+    viScheduleApplySettings(*(&gtlVideoSettingsTasks + (gtlCurrentContextID * 4)));
+    gtlEndCurrentGfxTask();
     if (func_800067E0() != 0) {
         ohDeleteAllObjects();
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80006EE4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlDraw.s")
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_80006F60(void *arg0) {
-    void *sp34;
+void gtlDrawSingle(GObj *gobj) {
+    int idxmsg;
     s32 temp_a0;
     s32 temp_v0;
 
-    func_80006628(0);
-    func_80005430();
-    func_80005530();
-    arg0->unk2C(arg0);
-    func_80005F10();
-    temp_a0 = *(&D_8004A380 + (D_8004A450 * 4));
-    if (temp_a0 == 0) {
-        fatal_printf("gtl : not defined SCTaskGfxEnd\n", 0, D_8004A450);
-loop_2:
-        goto loop_2;
+    gtlSwitchContext(0);
+    gtlResetHeap();
+    gtlInitDisps();
+    gobj->onDraw(gobj);
+    gtlProcessDisps();
+    if (gtlGfxEndTasks[gtlCurrentContextID] == 0) {
+        fatal_printf("gtl : not defined SCTaskGfxEnd\n");
+        while (1);
     }
-    func_80005910(temp_a0, 0, D_8004A450, &D_80049320);
-    temp_v0 = D_8004A450 * 4;
-    *(&D_8004A370 + temp_v0) = *(&D_8004A368 + temp_v0);
+    gtlScheduleGfxEnd(gtlGfxEndTasks[gtlCurrentContextID], 0, &D_80049320);
+    gtlGfxTaskBufferPtrs[gtlCurrentContextID] = gtlGfxTaskBufferStarts[gtlCurrentContextID];
     do {
-        osRecvMesg(&D_80049320, &sp34, 1);
-        *(&D_8004A458 + (sp34 * 4)) = 0;
-    } while (*(&D_8004A458 + (D_8004A450 * 4)) != 0);
+        osRecvMesg(&D_80049320, &idxmsg, 1);
+        D_8004A458[idx] = 0;
+    } while (D_8004A458[gtlCurrentContextID] != 0);
+
     D_8003DCA8 += 1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80006F60.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlDrawSingle.s")
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_8000708C(void *arg0, ? (*arg1)()) {
+void gtlStart(void *arg0, ? (*arg1)()) {
     ? sp44;
     ? *var_s0;
     ? *var_s0_2;
@@ -1268,42 +1044,42 @@ void func_8000708C(void *arg0, ? (*arg1)()) {
     s32 var_v0;
 
     temp_t6 = arg0->unk18;
-    D_8004A460 = temp_t6;
+    gtlNumContexts = temp_t6;
     gDynamicBuffer3.unk0 = arg0->unk0;
     gDynamicBuffer3.unk4 = arg0->unk4;
     gDynamicBuffer3.unkC = arg0->unk8;
-    temp_s0 = alloc_with_alignment(arg0->unk14 * 0x88 * temp_t6, 8);
-    temp_s1 = alloc_with_alignment(D_8004A460 * 0x2C, 8);
-    func_80005834(temp_s0, arg0->unk14, temp_s1, alloc_with_alignment(D_8004A460 * 0x38, 8));
+    temp_s0 = gtlMalloc(arg0->unk14 * 0x88 * temp_t6, 8);
+    temp_s1 = gtlMalloc(gtlNumContexts * 0x2C, 8);
+    gtlInitTaskBuffers(temp_s0, arg0->unk14, temp_s1, gtlMalloc(gtlNumContexts * 0x38, 8));
     var_s3 = 0;
     var_s0 = &sp44;
-    if (D_8004A460 > 0) {
+    if (gtlNumContexts > 0) {
         do {
-            var_s0->unk0 = alloc_with_alignment(arg0->unk1C, 8);
+            var_s0->unk0 = gtlMalloc(arg0->unk1C, 8);
             var_s0->unk4 = arg0->unk1C;
-            var_s0->unk8 = alloc_with_alignment(arg0->unk20, 8);
+            var_s0->unk8 = gtlMalloc(arg0->unk20, 8);
             var_s0->unkC = arg0->unk20;
-            var_s0->unk10 = alloc_with_alignment(arg0->unk24, 8);
+            var_s0->unk10 = gtlMalloc(arg0->unk24, 8);
             var_s0->unk14 = arg0->unk24;
-            var_s0->unk18 = alloc_with_alignment(arg0->unk28, 8);
+            var_s0->unk18 = gtlMalloc(arg0->unk28, 8);
             var_s3 += 1;
             var_s0 += 0x20;
             var_s0->unk-4 = arg0->unk28;
-        } while (var_s3 < D_8004A460);
+        } while (var_s3 < gtlNumContexts);
         var_s3 = 0;
     }
-    func_8000548C(&sp44);
-    var_s0_2 = &D_8004A468;
-    if (D_8004A460 > 0) {
+    gtlSetDLBuffers(&sp44);
+    var_s0_2 = &gtlGfxHeapList;
+    if (gtlNumContexts > 0) {
         do {
-            mlSetup(&gDynamicBuffer1, 0x10002, alloc_with_alignment(arg0->unk2C, 8), arg0->unk2C);
+            mlSetup(&gDynamicBuffer1, 0x10002, gtlMalloc(arg0->unk2C, 8), arg0->unk2C);
             var_s3 += 1;
             var_s0_2 += 0x10;
             var_s0_2->unk-10 = gDynamicBuffer1.id;
             var_s0_2->unk-C = gDynamicBuffer1.poolStart;
             var_s0_2->unk-8 = gDynamicBuffer1.poolEnd;
             var_s0_2->unk-4 = gDynamicBuffer1.top;
-        } while (var_s3 < D_8004A460);
+        } while (var_s3 < gtlNumContexts);
     }
     var_v0 = arg0->unk34;
     arg0->unk30 = 2;
@@ -1311,7 +1087,7 @@ void func_8000708C(void *arg0, ? (*arg1)()) {
         var_v0 = 0x1000;
         arg0->unk34 = 0x1000;
     }
-    func_80005734(arg0->unk30, alloc_with_alignment(var_v0, 0x10), arg0->unk34);
+    func_80005734(arg0->unk30, gtlMalloc(var_v0, 0x10), arg0->unk34);
     set_scissor_callback(arg0->unk38);
     temp_t7 = arg0->data;
     D_8004A488 = temp_t7;
@@ -1326,84 +1102,80 @@ void func_8000708C(void *arg0, ? (*arg1)()) {
     if (arg1 != NULL) {
         arg1();
     }
-    func_800068E4(&gDynamicBuffer3);
+    gtlMain(&gDynamicBuffer3);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_8000708C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlStart.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80007328(void *arg0) {
-    alloc_region(arg0->unkC, arg0->unk10, arg0);
+    gtlSetupHeap(arg0->unkC, arg0->unk10, arg0);
     gDynamicBuffer3.unk8 = &func_80006DF8;
     gDynamicBuffer3.unk10 = &func_80006E30;
-    func_8000708C(arg0, 0);
+    gtlStart(arg0, 0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80007328.s")
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_80007380(void *arg0) {
+void gtlCreateScene(void *arg0) {
     s32 temp_v1;
 
-    alloc_region(arg0->unkC, arg0->unk10);
-    D_8004A490.unk0 = alloc_with_alignment(arg0->unk40 * 0x1C0, 8);
-    D_8004A490.unk4 = arg0->unk40;
-    D_8004A490.unk8 = arg0->unk44;
+    gtlSetupHeap(arg0->unkC, arg0->unk10);
+    gtlCurrentScene.unk0 = gtlMalloc(arg0->unk40 * 0x1C0, 8);
+    gtlCurrentScene.unk4 = arg0->unk40;
+    gtlCurrentScene.unk8 = arg0->unk44;
     temp_v1 = arg0->unk44;
     if (temp_v1 != 0) {
-        D_8004A490.unkC = alloc_with_alignment((temp_v1 + 8) * arg0->unk48, 8);
+        gtlCurrentScene.unkC = gtlMalloc((temp_v1 + 8) * arg0->unk48, 8);
     } else {
-        D_8004A490.unkC = 0;
+        gtlCurrentScene.unkC = 0;
     }
-    D_8004A490.unk10 = arg0->unk48;
-    D_8004A490.unk14 = arg0->unk4C;
-    D_8004A490.unk18 = alloc_with_alignment(arg0->unk50 * 0x24, 4);
-    D_8004A490.unk1C = arg0->unk50;
-    D_8004A490.unk20 = alloc_with_alignment(arg0->unk58 * arg0->unk54, 8);
-    D_8004A490.unk24 = arg0->unk54;
-    D_8004A490.unk28 = arg0->unk58;
-    D_8004A490.unk2C = alloc_with_alignment(arg0->unk5C * 0x48, 8);
-    D_8004A490.unk30 = arg0->unk5C;
+    gtlCurrentScene.unk10 = arg0->unk48;
+    gtlCurrentScene.unk14 = arg0->unk4C;
+    gtlCurrentScene.unk18 = gtlMalloc(arg0->unk50 * 0x24, 4);
+    gtlCurrentScene.unk1C = arg0->unk50;
+    gtlCurrentScene.unk20 = gtlMalloc(arg0->unk58 * arg0->unk54, 8);
+    gtlCurrentScene.unk24 = arg0->unk54;
+    gtlCurrentScene.unk28 = arg0->unk58;
+    gtlCurrentScene.unk2C = gtlMalloc(arg0->unk5C * 0x48, 8);
+    gtlCurrentScene.unk30 = arg0->unk5C;
     func_80010B44(arg0->unk60);
-    D_8004A490.unk34 = arg0->unk64;
-    D_8004A490.unk38 = alloc_with_alignment(arg0->unk68 * 0x24, 4);
-    D_8004A490.data = arg0->unk68;
-    D_8004A490.unk40 = alloc_with_alignment(arg0->unk6C * 0xA8, 4);
-    D_8004A490.unk44 = arg0->unk6C;
-    D_8004A490.unk48 = alloc_with_alignment(arg0->unk74 * arg0->unk70, 8);
-    D_8004A490.unk4C = arg0->unk70;
-    D_8004A490.unk50 = arg0->unk74;
-    D_8004A490.unk54 = alloc_with_alignment(arg0->unk7C * arg0->unk78, 8);
-    D_8004A490.unk58 = arg0->unk78;
-    D_8004A490.unk5C = arg0->unk7C;
-    D_8004A490.unk60 = alloc_with_alignment(arg0->unk84 * arg0->unk80, 8);
-    D_8004A490.unk64 = arg0->unk80;
-    D_8004A490.unk68 = arg0->unk84;
-    HS64_omInit(&D_8004A490);
+    gtlCurrentScene.unk34 = arg0->unk64;
+    gtlCurrentScene.unk38 = gtlMalloc(arg0->unk68 * 0x24, 4);
+    gtlCurrentScene.data = arg0->unk68;
+    gtlCurrentScene.unk40 = gtlMalloc(arg0->unk6C * 0xA8, 4);
+    gtlCurrentScene.unk44 = arg0->unk6C;
+    gtlCurrentScene.unk48 = gtlMalloc(arg0->unk74 * arg0->unk70, 8);
+    gtlCurrentScene.unk4C = arg0->unk70;
+    gtlCurrentScene.unk50 = arg0->unk74;
+    gtlCurrentScene.unk54 = gtlMalloc(arg0->unk7C * arg0->unk78, 8);
+    gtlCurrentScene.unk58 = arg0->unk78;
+    gtlCurrentScene.unk5C = arg0->unk7C;
+    gtlCurrentScene.unk60 = gtlMalloc(arg0->unk84 * arg0->unk80, 8);
+    gtlCurrentScene.unk64 = arg0->unk80;
+    gtlCurrentScene.unk68 = arg0->unk84;
+    HS64_omInit(&gtlCurrentScene);
     gDynamicBuffer3.unk8 = &func_80006E94;
-    gDynamicBuffer3.unk10 = &func_80006EE4;
-    func_8000708C(arg0, arg0->unk88);
+    gDynamicBuffer3.unk10 = &gtlDraw;
+    gtlStart(arg0, arg0->unk88);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80007380.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlCreateScene.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800075DC(s16 arg0, s16 arg1) {
-    D_800492D8 = arg0;
-    D_800492DA = arg1;
+    gtlUpdateInterval = arg0;
+    gtlDrawInterval = arg1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800075DC.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800075F8(void) {
     if (D_800492DC != 2) {
         D_800492DC = 1;
@@ -1414,7 +1186,6 @@ void func_800075F8(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
 s32 func_80007620(void) {
     if (D_800492DC == 2) {
         return 1;
@@ -1426,7 +1197,6 @@ s32 func_80007620(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80007648(void) {
     osSendMesg(&D_800492E8, NULL, 0);
 }
@@ -1435,10 +1205,9 @@ void func_80007648(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80007674(s32 arg0) {
     if ((arg0 == 1) || (arg0 == 2)) {
-        D_8004A460 = arg0;
+        gtlNumContexts = arg0;
     }
 }
 #else
@@ -1446,7 +1215,6 @@ void func_80007674(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 s32 func_80007694(s32 arg0) {
     if (((arg0 == 1) || (arg0 == 2)) && (*(&D_8004A454 + (arg0 * 4)) == 0)) {
         return 1;
@@ -1457,54 +1225,34 @@ s32 func_80007694(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_80007694.s")
 #endif
 
-#ifdef MIPS_TO_C
+void gtlInit(void) {
+    int i, j;
 
-void func_800076D0(void) {
-    ? *var_a0;
-    ? *var_a1;
-    ? *var_v0;
-    ? *var_v0_2;
-    ? *var_v1;
+    for (i = 0; i < 2; i++) {
+        gtlGfxTaskBufferEnds[i] = NULL;
+        gtlGfxTaskBufferPtrs[i] = NULL;
+        gtlGfxTaskBufferStarts[i] = NULL;
+        gtlGfxEndTasks[i] = NULL;
+    }
 
-    var_v0 = &D_8004A380;
-    var_a1 = &D_8004A368;
-    var_a0 = &D_8004A370;
-    var_v1 = &D_8004A378;
-    do {
-        var_v0 += 4;
-        var_v1 += 4;
-        var_a0 += 4;
-        var_a1 += 4;
-        var_v1->unk-4 = 0;
-        var_a0->unk-4 = 0;
-        var_a1->unk-4 = 0;
-        var_v0->unk-4 = 0;
-    } while (var_v0 < &D_8004A388);
-    D_8004A440 = 0;
-    D_8004A446 = 0;
-    D_8004A444 = 0;
-    var_v0_2 = &gDLBuffers;
-    do {
-        var_v0_2 += 0x20;
-        var_v0_2->unk-18 = 0;
-        var_v0_2->unk-14 = 0;
-        var_v0_2->unk-10 = 0;
-        var_v0_2->unk-C = 0;
-        var_v0_2->unk-8 = 0;
-        var_v0_2->unk-4 = 0;
-        var_v0_2->unk-20 = 0;
-        var_v0_2->unk-1C = 0;
-    } while (var_v0_2 != gDisplayListHeads);
-    D_80049308 = 0;
-    func_80005350(0, var_a1, &D_8004A388);
-    scAddClient(&D_80049300, &D_800492C0, &D_800492B0, 4);
-    osCreateMesgQueue(&D_80049320, &D_80049310, 3);
-    osCreateMesgQueue(&D_80049340, &D_80049338, 1);
-    D_800492DA = 1;
-    D_800492D8 = 1;
-    osCreateMesgQueue(&D_800492E8, &D_800492E0, 1);
+    gtlNearClipDisabled = FALSE;
+    D_8004A444 = D_8004A446 = 0;
+
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 4; j++) {
+            gDLBuffers[i][j].start = NULL;
+            gDLBuffers[i][j].length = 0;
+        }
+    }
+
+    gtlSegment0FBase = NULL;
+
+    func_80005350(0);
+    scAddClient(&gtlSchedClient, &gtlGameTickMQ, gtlGameTickMesgs, ARRAY_COUNT(gtlGameTickMesgs));
+    osCreateMesgQueue(&D_80049320, D_80049310, ARRAY_COUNT(D_80049310));
+    osCreateMesgQueue(&gtlResetMQ, D_80049338, ARRAY_COUNT(D_80049338));
+    gtlUpdateInterval = gtlDrawInterval = 1;
+    osCreateMesgQueue(&D_800492E8, D_800492E0, ARRAY_COUNT(D_800492E0));
+
     D_800492DC = 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/func_800076D0.s")
-#endif

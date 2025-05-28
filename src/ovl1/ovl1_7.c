@@ -1161,10 +1161,10 @@ void drop_process_from_list(GObjProcess **proclist, s32 idx) {
 }
 
 #ifdef MIPS_TO_C
-void func_800B19F4(GObj *arg0, s32 arg1) {
-    if (!(D_800DD8D0[arg1] & 0x80)) {
-        D_800DD8D0[arg1] = (D_800DD8D0[arg1] & ~0xFF) | (arg0 & 0xFF);
-        func_800B1C7C(D_800DE350[arg1], D_800DD8D0[arg1]);
+void func_800B19F4(u8 flags, s32 track) {
+    if (!(D_800DD8D0[track] & 0x80)) {
+        D_800DD8D0[track] = (D_800DD8D0[track] & ~0xFF) | (flags);
+        func_800B1C7C(D_800DE350[track], D_800DD8D0[track]);
     }
 }
 #else
@@ -1440,13 +1440,13 @@ void func_800B21FC(s32 **arg0, f32 arg1) {
     s32 *var_s1;
     s32 temp_a1;
     s8 var_s2;
-    struct UnkStruct8004A7C4_3C *temp_v0;
-    struct UnkStruct8004A7C4_3C *var_s0;
+    struct LayoutNode *node;
+    struct LayoutNode *var_s0;
 
-    var_s0 = omCurrentObj->unk3C;
+    var_s0 = omCurrentObj->data;
     var_s1 = *arg0;
     var_s2 = 1;
-    var_s0->unk0.y->unk40 = arg1;
+    var_s0->unk4->scale.x = arg1;
     if (var_s0 != NULL) {
         do {
             temp_a1 = *var_s1;
@@ -1731,9 +1731,10 @@ loop_1:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2F90.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800B3008(int arg0) {
-    struct UnkStruct800D79D8 *tmp = D_800D79D8[(arg0 - 10) / 2];
+    int idx = (arg0 - 10) / 2;
+    struct UnkStruct800D79D8 *tmp = D_800D79D8[idx];
 
 loop:
     if (tmp->unk74 != -3.4028235e38f) {
