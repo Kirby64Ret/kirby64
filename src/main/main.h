@@ -18,4 +18,6 @@
 
 extern OSMesgQueue gThreadInitializedMQ;
 
+void func_80000510(void);
+
 #endif

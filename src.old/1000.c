@@ -185,11 +185,11 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlInitDisps.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000561C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlCheckBuffers.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlSetDPOutputBuff.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80005734.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlSetDPOutputSettings.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlGetSCTaskGfx.s")
 
@@ -227,11 +227,11 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlMain.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006DF8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlFuncTableDefaultUpdate.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006E30.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlFuncTableDefaultDraw.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80006E94.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlUpdate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlDraw.s")
 

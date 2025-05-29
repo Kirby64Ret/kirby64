@@ -132,7 +132,7 @@ u32 gtlCurrentState; // 0x8004A3F0
 u32 D_8004A3F4; // 0x8004A3F4
 struct DynamicBuffer gDynamicBuffer1; // 0x8004A3F8
 struct DynamicBuffer gDynamicBuffer2; // 0x8004A408
-struct DynamicBufferSubclass gDynamicBuffer3; // 0x8004A418
+struct DynamicBufferSubclass gtlMainFuncTable; // 0x8004A418
 u32 D_8004A42C;
 u32 D_8004A430; 
 u32 D_8004A434;
@@ -238,7 +238,7 @@ void gtlInitDisps(void) {
     D_8004A448 = 0;
 }
 
-void func_8000561C(void) {
+void gtlCheckBuffers(void) {
     s32 i;
 
     for (i = 0; i < 4; i++) {
@@ -271,7 +271,7 @@ void gtlSetDPOutputBuff(s32 arg0, u32 arg1) {
 
 extern const char D_80040018[];
 
-void func_80005734(s32 arg0, u32 arg1, s32 bufSize) {
+void gtlSetDPOutputSettings(s32 arg0, u32 arg1, s32 bufSize) {
     D_8003DCA0 = arg0;
     gtlDPOutputBuffer = arg1;
     gtlDPOutputBufferSize = bufSize;
@@ -601,7 +601,7 @@ void gtlProcessDisps(void) {
         gtlPrevDLHeads[1] = gDisplayListHeads[1];
         gtlPrevDLHeads[3] = gDisplayListHeads[3];
     }
-    func_8000561C();
+    gtlCheckBuffers();
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2_5/gtlProcessDisps.s")
@@ -664,7 +664,7 @@ struct UNK_FUNC_80006DF8 {
     void (*unk4)();
 };
 
-void func_80006DF8(struct UNK_FUNC_80006DF8 *arg0) {
+void gtlFuncTableDefaultUpdate(struct UNK_FUNC_80006DF8 *arg0) {
     D_8004A488();
     arg0->unk4();
 }
@@ -676,7 +676,7 @@ struct unk_func8006E30 {
     void (*unkC)(void);
 };
 
-void func_80006E30(struct unk_func8006E30 *arg0) {
+void gtlFuncTableDefaultDraw(struct unk_func8006E30 *arg0) {
     gtlResetHeap();
     gtlInitDisps();
     arg0->unkC();
@@ -685,7 +685,7 @@ void func_80006E30(struct unk_func8006E30 *arg0) {
     gtlEndCurrentGfxTask();
 }
 
-void func_80006E94(struct UNK_FUNC_80006DF8 *arg0) {
+void gtlUpdate(struct UNK_FUNC_80006DF8 *arg0) {
     D_8004A488();
     arg0->unk4();
     if (func_800067E0() != 0) {
@@ -736,8 +736,8 @@ extern u32 D_80006E30;
 
 void func_80007328(struct UnkStructFunc80007380 *arg0) {
     gtlSetupHeap(arg0->unkC, arg0->unk10);
-    gDynamicBuffer3.buffer.poolEnd = &D_80006DF8;
-    gDynamicBuffer3.unk10 = &D_80006E30;
+    gtlMainFuncTable.buffer.poolEnd = &D_80006DF8;
+    gtlMainFuncTable.unk10 = &D_80006E30;
     gtlStart(arg0, 0);
 }
 
@@ -777,8 +777,8 @@ void gtlCreateScene(struct UnkStructFunc80007380 *arg0) {
     gtlCurrentScene.unk64 = arg0->unk80;
     gtlCurrentScene.unk68 = arg0->unk84;
     HS64_omInit(&gtlCurrentScene);
-    gDynamicBuffer3.buffer.poolEnd = &D_80006E94;
-    gDynamicBuffer3.unk10 = &D_80006EE4;
+    gtlMainFuncTable.buffer.poolEnd = &D_80006E94;
+    gtlMainFuncTable.unk10 = &D_80006EE4;
     gtlStart(arg0, arg0->unk88);
 }
 #else

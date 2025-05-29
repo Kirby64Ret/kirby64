@@ -18,11 +18,11 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlInitDisps.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/5F50/func_8000561C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlCheckBuffers.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlSetDPOutputBuff.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/5F50/func_80005734.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlSetDPOutputSettings.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlGetSCTaskGfx.s")
 
@@ -60,11 +60,11 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlMain.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/5F50/func_80006DF8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlFuncTableDefaultUpdate.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/5F50/func_80006E30.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlFuncTableDefaultDraw.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/5F50/func_80006E94.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlUpdate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlDraw.s")
 

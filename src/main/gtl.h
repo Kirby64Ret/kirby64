@@ -1,6 +1,9 @@
 #ifndef GTL_H
 #define GTL_H
 
+// todo: number of CFB's instead?
+#define NUM_GTL_CONTEXTS 2
+
 enum UcodeTypes {
     UCODE_F3DEX2_FIFO = 0,
     UCODE_F3DEX2_XBUS = 1,
@@ -22,7 +25,7 @@ enum UcodeTypes {
 };
 
 typedef struct {
-    /* 0x00 */ u16 unk0;
+    /* 0x00 */ u16 flags;
     /* 0x04 */ void (*onUpdate)(void);
     /* 0x08 */ void (*onDraw)(void);
     /* 0x0C */ void* heapBase;
@@ -40,10 +43,10 @@ typedef struct {
     /* 0x3C */ void (*contpadPoll)(void); // controller read callback?
 } BufferSetup;                              // size == 0x40
 
-typedef struct Struct_8004B038 {
+typedef struct MatrixFuncTable {
     /* 0x00 */ s32 (*unk_00)(Mtx*, void*, Gfx**);
     /* 0x04 */ s32 (*unk_04)(Mtx*, void*, Gfx**);
-} Struct_8004B038; // size = 0x08
+} MatrixFuncTable; // size = 0x08
 
 typedef struct {
     /* 0x00 */ BufferSetup gtlSetup;
@@ -55,7 +58,7 @@ typedef struct {
     /* 0x54 */ u32 objCount;
     /* 0x58 */ u32 objectSize;
     /* 0x5C */ u32 mtxCount;
-    /* 0x60 */ Struct_8004B038* unk60;
+    /* 0x60 */ MatrixFuncTable* mtxHandler;
     /* 0x64 */ void* unk64; // fn pointer void(*)(struct DObjDynamicStore *)
     /* 0x68 */ u32 AObjCount;
     /* 0x6C */ u32 MObjCount;
@@ -66,7 +69,7 @@ typedef struct {
     /* 0x80 */ u32 CameraCount;
     /* 0x84 */ u32 omCameraSize;
     /* 0x88 */ void (*postInitFunc)(void);
-} SceneSetup; // size >= 0x8C
+} SceneSetup; // size = 0x70
 
 typedef struct FuncTable {
     /* 0x00 */ u16 flags;

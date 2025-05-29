@@ -86,7 +86,6 @@ gControllers=0x80048EA0;
 gPlayerControllers=0x80048F20;
 gDLBuffers=0x8004A390;
 gDynamicBuffer2=0x8004A408;
-gDynamicBuffer3=0x8004A418;
 gZBuffer=0x8004A500;
 gCurrScreenWidth=0x8004A508;
 gCurrScreenHeight=0x8004A50C;
@@ -919,6 +918,12 @@ request_track_3 = 0x800AEC70; // type:func
 gEntityRenderPriorityArray = 0x800E0810;
 
 // gtl
+gtlUpdate = 0x80006E94; // type:func
+gtlUpdate = 0x80006E94; // type:func
+gtlFuncTableDefaultDraw = 0x80006E30; // type:func
+gtlFuncTableDefaultUpdate = 0x80006DF8; // type:func
+gtlCheckBuffers = 0x8000561C; // type:func
+gtlSetDPOutputSettings = 0x80005734; // type:func
 gtlDPOutputBufferSize = 0x8004A43C; 
 gtlDPOutputBuffer = 0x8004A438; 
 gtlGetL3DEX2Index = 0x80005C64; // type:func
@@ -969,6 +974,7 @@ gtlSetupHeap=0x800053d0; // type:func
 gtlMalloc=0x80005400; // type:func
 gtlLoadUcode=0x80005de4; // type:func
 gtlSetSegment0F=0x80005378; // type:func
+gtlMainFuncTable=0x8004A418;
 
 // ovl1_7
 procMainStub = 0x800B1434; // type:func

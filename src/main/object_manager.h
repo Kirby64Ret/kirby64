@@ -530,6 +530,37 @@ struct UnkStructFunc80007380 {
     u32 unk84;
     u32 unk88;
 };
+
+typedef struct {
+    /* 0x00 */ struct GObjThread* threads;
+    /* 0x04 */ s32 numThreads;
+    /* 0x08 */ u32 threadStackSize;
+    /* 0x0C */ struct ThreadStackNode* stacks;
+    /* 0x10 */ u32 numStacks;
+    /* 0x14 */ s32 unk_14;
+    /* 0x18 */ GObjProcess* processes;
+    /* 0x1C */ s32 numProcesses;
+    /* 0x20 */ struct GObj* objects;
+    /* 0x24 */ s32 numObjects;
+    /* 0x28 */ s32 objectSize;
+    /* 0x2C */ OMMtx* matrices;
+    /* 0x30 */ s32 numMatrices;
+    /* 0x34 */ void* cleanupFn; // void(*)(struct DObjDynamicStore *)
+    /* 0x38 */ struct AObj* aobjs;
+    /* 0x3C */ s32 numAObjs;
+    /* 0x40 */ struct MObj* mobjs;
+    /* 0x44 */ s32 numMObjs;
+    /* 0x48 */ struct DObj* dobjs;
+    /* 0x4C */ s32 numDObjs;
+    /* 0x50 */ s32 dobjSize;
+    /* 0x54 */ struct SObj* sobjs;
+    /* 0x58 */ s32 numSObjs;
+    /* 0x5C */ s32 sobjSize;
+    /* 0x60 */ struct OMCamera* cameras;
+    /* 0x64 */ s32 numCameras;
+    /* 0x68 */ s32 cameraSize;
+} ObjectSetup; // size == 0x6C
+
 void ohSleep(s32);
 
 // data
@@ -544,6 +575,6 @@ extern struct GObj *omGObjListHead[32];
 void omLinkGObjDL(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);
 struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
 void omUpdateAll();
-
+void HS64_omInit(ObjectSetup *);
 
 #endif
