@@ -15,6 +15,7 @@ typedef struct {
 } ScreenSettings; // size >= 0x18
 
 extern u16* viZBuffer;
+extern u16* gZBuffer;
 extern s32 viCFBFmt;
 extern s32 gCurrScreenWidth;
 extern s32 gCurrScreenHeight;

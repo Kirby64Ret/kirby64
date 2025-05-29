@@ -81,4 +81,6 @@ typedef struct FuncTable {
 
 extern Gfx *gDisplayListHeads[4];
 
+void gtlSetSegment0F(Gfx **);
+
 #endif // GTL_H

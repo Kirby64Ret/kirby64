@@ -1,7 +1,7 @@
 #include "common.h"
 #include "fault.h"
 #include "object_manager.h"
-#include "code_11720.h"
+#include "render.h"
 
 // data + early rodata
 s32 D_8003DE50 = 10000000;

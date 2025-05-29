@@ -49,8 +49,8 @@ segments:
     - [0x8800, c, main/rdp_reset]
     - [0x8B60, c, main/object_manager]
     - [0xBFE0, c, main/object_helpers]
-    - [0xCA90, c, main/code_CA90]
-    - [0x11720, c, main/code_11720]
+    - [0xCA90, c, main/anim]
+    - [0x11720, c, main/render]
     - [0x191B0, c, main/math]
     - [0x198A0, c, main/lbvector]
     - [0x1A630, c, main/lbmatrix]
@@ -193,6 +193,7 @@ segments:
     - [0x3C3B0, data, main/gspS2DEX2_fifo]
     - [0x3E870, .data, main/main]
     - [0x3E8A0, data, mainseg.2]
+    - [0x3E930, .data, main/rdp_reset]
     - [0x3EA50, .data, main/object_manager]
     - [0x3EB10, data, mainseg.2.0]
     - [0x3EB20, .data, main/math]
@@ -224,8 +225,8 @@ segments:
     - [0x40E10, .rodata, main/memory_layer]
     - [0x40E30, .rodata, main/object_manager]
     - [0x41270, .rodata, main/object_helpers]
-    - [0x412A0, .rodata, main/code_CA90]
-    - [0x415E0, .rodata, main/code_11720]
+    - [0x412A0, .rodata, main/anim]
+    - [0x415E0, .rodata, main/render]
     - [0x41820, .rodata, main/math]
     - [0x41870, .rodata, main/lbmatrix]
     - [0x418C0, rodata, mainseg.0.1]
@@ -252,6 +253,7 @@ segments:
     - {type: .bss, vram: 0x80048CF0, name: main/dma}
     - {type: .bss, vram: 0x80048DA0, name: main/contpad}
     - {type: bss, vram: 0x800492B0, name: mainseg.1}
+    - {type: .bss, vram: 0x8004A530, name: main/rdp_reset}
     - {type: .bss, vram: 0x8004A540, name: main/object_manager}
     - {type: bss, vram: 0x8004AA90, name: mainseg.2}
     - {type: lib, vram: 0x80097950, name: libultra_rom, object: sptask, section: .bss}
