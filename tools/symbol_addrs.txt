@@ -919,7 +919,6 @@ gEntityRenderPriorityArray = 0x800E0810;
 
 // gtl
 gtlUpdate = 0x80006E94; // type:func
-gtlUpdate = 0x80006E94; // type:func
 gtlFuncTableDefaultDraw = 0x80006E30; // type:func
 gtlFuncTableDefaultUpdate = 0x80006DF8; // type:func
 gtlCheckBuffers = 0x8000561C; // type:func
