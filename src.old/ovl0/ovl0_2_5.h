@@ -346,7 +346,7 @@ struct InterruptMessageTypeB {
 
 extern OSMesgQueue gInterruptMesgQueue;
 
-#include "omCurrentObj.h"
+// #include "omCurrentObj.h"
 
 struct Camera *func_80009F7C(struct GObj*);
 
@@ -361,7 +361,6 @@ typedef struct UserData8000BE90 {
     struct UserData8000BE90 *unk14;
 } UserData8000BE90;
 
-UserData8000BE90 *func_8000BE90(struct UserData8000BE90 *data);
 
 struct UnkStructFunc80007380 {
     u32 unk0;

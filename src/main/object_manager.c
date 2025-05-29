@@ -430,13 +430,13 @@ struct DObj *HS64_DObjPop(void) {
         while (TRUE);
     }
     temp_v0 = gDObjHead;
-    gDObjHead = gDObjHead->unk0;
+    gDObjHead = gDObjHead->nextFree;
     gDObjCount++;
     return temp_v0;
 }
 
 void HS64_DObjPush(struct DObj *arg0) {
-    arg0->unk0 = gDObjHead;
+    arg0->nextFree = gDObjHead;
     gDObjHead = arg0;
     gDObjCount--;
 }
@@ -755,21 +755,21 @@ struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
     if (gobj->data != NULL) {
         temp_v1 = gobj->data;
         
-        while (temp_v1->unk8 != 0) {
-            temp_v1 = temp_v1->unk8;
+        while (temp_v1->next != 0) {
+            temp_v1 = temp_v1->next;
         }
 
-        temp_v1->unk8 = dobj;
-        dobj->unkC = temp_v1;
+        temp_v1->next = dobj;
+        dobj->prev = temp_v1;
     } else {
         gobj->kind = 1;
         gobj->data = dobj;
-        dobj->unkC = 0;
+        dobj->prev = 0;
     }
     dobj->gobj = gobj;
-    dobj->unk14 = 1;
-    dobj->unk8 = NULL;
-    dobj->unk10 = NULL;
+    dobj->parent = (DObj*)1;
+    dobj->next = NULL;
+    dobj->firstChild = NULL;
     dobj->unk50 = arg1;
     func_80009BD4(dobj);
     return dobj;

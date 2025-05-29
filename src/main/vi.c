@@ -2,13 +2,14 @@
 #include "localsched.h"
 #include "vi.h"
 
-extern u16 *gZBuffer; // 0x8004A500
-extern s32 gCurrScreenWidth; // 0x8004A508
-extern s32 gCurrScreenHeight; // 0x8004A50C
-extern u32 viFlags;
-extern u32 viSettingsChanged;
-extern void *viCFBList[3];
-extern s16 viEdgeOffsetLeft, viEdgeOffsetRight, viEdgeOffsetTop, viEdgeOffsetBottom;
+u16 *gZBuffer; // 0x8004A500
+s32 viCFBFmt;
+s32 gCurrScreenWidth; // 0x8004A508
+s32 gCurrScreenHeight; // 0x8004A50C
+u32 viFlags;
+u32 viSettingsChanged;
+void *viCFBList[3];
+s16 viEdgeOffsetLeft, viEdgeOffsetRight, viEdgeOffsetTop, viEdgeOffsetBottom;
 
 u32 viPackRGBA(u32 color) {
     u32 temp_v0 = ((((color >> 0x10) & 0xF800) | ((color >> 0xD) & 0x7C0)) | ((color >> 0xA) & 0x3E)) | ((color >> 7) & 1);

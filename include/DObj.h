@@ -1,15 +1,15 @@
 #ifndef DOBJ_H
 #define DOBJ_H
 
-#include "ovl0/ovl0_2_5.h"
+#include "main/object_manager.h"
 
 typedef struct DObj {
-    struct DObj *unk0;
-    struct GObj *gobj;
-    struct DObj *unk8;
-    u32 unkC;
-    struct DObj *unk10;
-    u32 unk14;
+    /* 0x00 */ struct DObj* nextFree;
+    /* 0x04 */ struct GObj* gobj;
+    /* 0x08 */ struct DObj* next;
+    /* 0x0C */ struct DObj* prev;
+    /* 0x10 */ struct DObj* firstChild;
+    /* 0x14 */ struct DObj* parent; // checked with `1` for a top level
     struct DObj *unk18;
     u8 filler[0x4C - 0x18 - 0x04];
     u32 unk4C;

@@ -249,13 +249,14 @@ segments:
     - [0x43400, rodata, main/gspS2DEX2_fifo]
     - [0x43790]
     - {type: .bss, vram: 0x80042B90, name: main/main}
-    - {type: bss, vram: 0x80048B80, name: mainseg}
+    - {type: bss, vram: 0x80048B80, name: sched}
     - {type: .bss, vram: 0x80048CF0, name: main/dma}
     - {type: .bss, vram: 0x80048DA0, name: main/contpad}
-    - {type: bss, vram: 0x800492B0, name: mainseg.1}
+    - {type: bss, vram: 0x800492B0, name: gtl}
+    - {type: .bss, vram: 0x8004A500, name: main/vi}
     - {type: .bss, vram: 0x8004A530, name: main/rdp_reset}
     - {type: .bss, vram: 0x8004A540, name: main/object_manager}
-    - {type: bss, vram: 0x8004AA90, name: mainseg.2}
+    - {type: bss, vram: 0x8004AA90, name: audio_and_fault}
     - {type: lib, vram: 0x80097950, name: libultra_rom, object: sptask, section: .bss}
     - {type: lib, vram: 0x80097990, name: libultra_rom, object: leointerrupt, section: .bss}
     - {type: lib, vram: 0x80098990, name: libultra_rom, object: motor, section: .bss}

@@ -242,36 +242,6 @@ struct MObj {
     /* 0xA4 */ char unk_A4[0x4];
 }; // size = 0xA8;
 
-
-typedef struct DObj {
-    struct DObj *unk0;
-    struct GObj *gobj;
-    struct DObj *unk8;
-    u32 unkC;
-    struct DObj *unk10;
-    u32 unk14;
-    struct DObj *unk18;
-    u8 filler[0x4C - 0x18 - 0x04];
-    u32 unk4C;
-    u32 unk50;
-    u8 unk54;
-    u8 unk55;
-    u8 unk56;
-    u8 unk57;
-    u32 unk58;
-    u32 unk5C;
-    u32 unk60;
-    u32 unk64;
-    u32 unk68;
-    u32 unk6C;
-    u32 unk70;
-    f32 unk74;
-    f32 unk78;
-    f32 unk7C;
-    struct MObj *unk80;
-    u32 unk84;
-} DObj;
-
 enum CameraFlags {
     CAMERA_FLAG_1 = 0x01,
     CAMERA_FLAG_2 = 0x02,
@@ -472,21 +442,11 @@ extern OSMesgQueue gInterruptMesgQueue;
 
 #include "GObj.h"
 #include "AObj.h"
+#include "DObj.h"
 
 struct Camera *func_80009F7C(struct GObj*);
 
 void func_80009B5C(struct UnkStruct8004A7C4_3C *);
-
-typedef struct UserData8000BE90 {
-    s32 unk0;
-    s32 unk4;
-    struct UserData8000BE90 *unk8;
-    s32 unkC;
-    struct UserData8000BE90 *unk10;
-    struct UserData8000BE90 *unk14;
-} UserData8000BE90;
-
-UserData8000BE90 *func_8000BE90(struct UserData8000BE90 *data);
 
 struct UnkStructFunc80007380 {
     u32 unk0;
