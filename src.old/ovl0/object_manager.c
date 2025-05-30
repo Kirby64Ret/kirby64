@@ -738,7 +738,7 @@ void func_800099E4(struct Animation *anim) {
     anim->scale = D_80040654;
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2_5/func_80009A44.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2_5/omDObjAddMObj.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2_5/func_80009B5C.s")
 

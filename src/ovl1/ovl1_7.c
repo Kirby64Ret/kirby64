@@ -361,7 +361,7 @@ void func_800AF618(GObj *arg0, s32 **arg1, s32 *arg2) {
                     var_s0 = temp_v0_3;
                     if (var_s1 != 0) {
                         do {
-                            func_80009A44(var_s2, var_s1);
+                            omDObjAddMObj(var_s2, var_s1);
                             var_s1 = var_s0->unk4;
                             var_s0 += 4;
                         } while (var_s1 != 0);

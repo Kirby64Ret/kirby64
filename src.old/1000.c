@@ -389,7 +389,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800099E4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80009A44.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/omDObjAddMObj.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80009B5C.s")
 

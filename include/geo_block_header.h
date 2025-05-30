@@ -41,7 +41,7 @@ struct GeoBlockHeader {
 };
 
 
-struct TextureScroll {
+typedef struct TextureScroll {
     // start of a texture scroll struct?
     /* 0x08 */ u16 h_8;
     /* 0x0A */ s8 fmt1;
@@ -86,4 +86,4 @@ struct TextureScroll {
     /* 0x74 */ u32 unk74;
     /* 0x78 */ u32 unk78;
     /* 0x7C */ u32 unk7C;
-};
+} TextureScroll;

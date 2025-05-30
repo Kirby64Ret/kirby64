@@ -537,5 +537,6 @@ struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
 void omUpdateAll();
 void HS64_omInit(ObjectSetup *);
 AObj *func_800098AC(MObj *, u8);
+OMMtx *omDObjAppendMtx(struct DObj *arg0, u8 type, u8 param);
 
 #endif

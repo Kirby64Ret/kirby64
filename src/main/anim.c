@@ -1764,367 +1764,236 @@ void func_8000F510(GObj *obj, UnkE4E4Arg* arg1, DObj **arg2) {
     }
 }
 
-#ifdef MIPS_TO_C
-
-void func_8000F6EC(s32 arg0, s32 arg1, u8 arg2, u8 arg3) {
-    s32 temp_a1;
-
-    temp_a1 = arg1 & 0xFF;
-    if (temp_a1 != 0) {
-        omDObjAppendMtx(temp_a1, 0);
+void func_8000F6EC(DObj *dobj, u8 mtxType1, u8 mtxType2, u8 mtxType3) {
+    if (mtxType1 != 0) {
+        omDObjAppendMtx(dobj, mtxType1, 0);
     }
-    if (arg2 != 0) {
-        omDObjAppendMtx(arg0, arg2, 0);
+    if (mtxType2 != 0) {
+        omDObjAppendMtx(dobj, mtxType2, 0);
     }
-    if (arg3 != 0) {
-        omDObjAppendMtx(arg0, arg3, 0);
+    if (mtxType3 != 0) {
+        omDObjAppendMtx(dobj, mtxType3, 0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000F6EC.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8000F754(DObj *arg0, u8 arg1, u8 arg2, u8 arg3, s32 arg4) {
+    s32 isTranslate = false;
+    s32 isScale = 0;
+    s32 phi_v1 = 0;
+    s32 phi_t2 = 0;
 
-void func_8000F754(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    s32 sp20;
-    s32 sp1C;
-    s32 temp_a1;
-    s32 temp_a2;
-    s32 temp_a3;
-    s32 var_t0;
-    s32 var_t1;
-    s32 var_v1;
+    switch (arg1) {
+        case MTX_TYPE_TRANSLATE:
+            isTranslate = true;
+            break;
+        case MTX_TYPE_ROTATE_RPY:
+            phi_v1 = 1;
+            break;
+        case MTX_TYPE_ROTATE_RPY_TRANSLATE:
+            phi_v1 = 1;
+            isTranslate = true;
+            break;
+        case MTX_TYPE_ROTATE_RPY_TRANSLATE_SCALE:
+            isScale = 1;
+            phi_v1 = 1;
+            isTranslate = true;
+            break;
+        case MTX_TYPE_ROTATE_PYR:
+            phi_v1 = 2;
+            break;
+        case MTX_TYPE_ROTATE_PYR_TRANSLATE:
+            phi_v1 = 2;
+            isTranslate = true;
+            break;
+        case MTX_TYPE_ROTATE_PYR_TRANSLATE_SCALE:
+            phi_v1 = 2;
+            isScale = 1;
+            isTranslate = true;
+            break;
+        case MTX_TYPE_SCALE:
+            isScale = 1;
+            break;
+        // Removed MTX_TYPE_51, MTX_TYPE_52, and MTX_TYPE_54 handling
+    }
 
-    temp_a1 = arg1 & 0xFF;
-    temp_a3 = arg3 & 0xFF;
-    temp_a2 = arg2 & 0xFF;
-    var_t0 = 0;
-    var_t1 = 0;
-    var_v1 = 0;
-    switch (temp_a1) {
-        case 18:
-            var_t0 = 1;
+    switch (arg2) {
+        case MTX_TYPE_ROTATE_RPY:
+            phi_v1 = 1;
             break;
-        case 26:
-            var_v1 = 1;
+        case MTX_TYPE_ROTATE_PYR:
+            phi_v1 = 2;
             break;
-        case 27:
-            var_v1 = 1;
-            var_t0 = 1;
-            break;
-        case 28:
-            var_t1 = 1;
-            var_v1 = 1;
-            var_t0 = 1;
-            break;
-        case 29:
-            var_v1 = 2;
-            break;
-        case 30:
-            var_v1 = 2;
-            var_t0 = 1;
-            break;
-        case 31:
-            var_v1 = 2;
-            var_t1 = 1;
-            var_t0 = 1;
-            break;
-        case 32:
-            var_t1 = 1;
+        case MTX_TYPE_SCALE:
+            isScale = 1;
             break;
     }
-    switch (temp_a2) {                              /* switch 1; irregular */
-        case 26:                                    /* switch 1 */
-            var_v1 = 1;
-            break;
-        case 29:                                    /* switch 1 */
-            var_v1 = 2;
-            break;
-        case 32:                                    /* switch 1 */
-            var_t1 = 1;
-            break;
+
+    if (arg3 == MTX_TYPE_SCALE) {
+        isScale = 1;
     }
-    if (temp_a3 == 0x20) {
-        var_t1 = 1;
+
+    if (isTranslate) {
+        if (phi_t2) {
+            omDObjAppendMtx(arg0, MTX_TYPE_55, 0);
+        } else {
+            omDObjAppendMtx(arg0, MTX_TYPE_TRANSLATE, 0);
+        }
     }
-    if (var_t0 != 0) {
-        sp1C = var_v1;
-        sp20 = var_t1;
-        omDObjAppendMtx(0x12, 0, temp_a3);
-    }
+
     if (arg4 & 0x4000) {
-        if (var_v1 == 1) {
-            omDObjAppendMtx(arg0, 0x2E, 0);
-            return;
+        if (phi_v1 == 1) {
+            omDObjAppendMtx(arg0, MTX_TYPE_46, 0);
+        } else {
+            omDObjAppendMtx(arg0, MTX_TYPE_45, 0);
         }
-        omDObjAppendMtx(arg0, 0x2D, 0);
-        return;
-    }
-    if (arg4 & 0x2000) {
-        if (var_v1 == 1) {
-            omDObjAppendMtx(arg0, 0x30, 0);
-            return;
+    } else if (arg4 & 0x2000) {
+        if (phi_v1 == 1) {
+            omDObjAppendMtx(arg0, MTX_TYPE_48, 0);
+        } else {
+            omDObjAppendMtx(arg0, MTX_TYPE_47, 0);
         }
-        omDObjAppendMtx(arg0, 0x2F, 0);
-        return;
-    }
-    if (arg4 & 0x1000) {
-        if (var_v1 == 1) {
-            omDObjAppendMtx(arg0, 0x32, 0);
-            return;
+    } else if (arg4 & 0x1000) {
+        if (phi_v1 == 1) {
+            omDObjAppendMtx(arg0, MTX_TYPE_50, 0);
+        } else {
+            omDObjAppendMtx(arg0, MTX_TYPE_49, 0);
         }
-        omDObjAppendMtx(arg0, 0x31, 0);
-        return;
-    }
-    if (var_t1 != 0) {
-        if (var_v1 == 1) {
-            omDObjAppendMtx(arg0, 0x2C, 0);
-            return;
+    } else if (isScale) {
+        if (phi_v1 == 1) {
+            omDObjAppendMtx(arg0, MTX_TYPE_44, 0);
+        } else {
+            omDObjAppendMtx(arg0, MTX_TYPE_43, 0);
         }
-        omDObjAppendMtx(arg0, 0x2B, 0);
-        return;
-    }
-    if (var_v1 == 1) {
-        omDObjAppendMtx(arg0, 0x2A, 0);
-        return;
-    }
-    omDObjAppendMtx(arg0, 0x29, 0);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000F754.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8000F980(s32 arg0, s32 *arg1, void **arg2, s32 arg3, u8 arg4, u8 arg5) {
-    ? sp9C;
-    ? sp5C;
-    s32 sp58;
-    void *sp54;
-    ? *var_v0;
-    s32 *var_s1;
-    s32 temp_s6;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_v0_2;
-    void **temp_s2;
-    void **var_s3;
-    void *var_v0_3;
-
-    var_s1 = arg1;
-    var_s3 = arg2;
-    temp_s6 = arg3 & 0xFF;
-    sp54 = NULL;
-    sp58 = 0;
-    var_v0 = &sp5C;
-    do {
-        var_v0 += 0x10;
-        var_v0->unk-C = 0;
-        var_v0->unk-8 = 0;
-        var_v0->unk-4 = 0;
-        var_v0->unk-10 = 0;
-    } while (var_v0 != &sp9C);
-    var_v0_2 = *var_s1;
-    if (var_v0_2 != 0x12) {
-        do {
-            temp_v1 = var_v0_2 & 0xFFF;
-            if (temp_v1 != 0) {
-                temp_s2 = &(&sp54)[temp_v1];
-                var_v0_3 = omDObjAddChild(temp_s2->unk-4, var_s1->unk4);
-                temp_s2->unk0 = var_v0_3;
-            } else {
-                var_v0_3 = omGObjAddDObj(arg0, var_s1->unk4);
-                sp54 = var_v0_3;
-            }
-            temp_v0 = var_s1->unk0 & 0xF000;
-            if (temp_v0 != 0) {
-                func_8000F754(var_v0_3, temp_s6 & 0xFF, arg4 & 0xFF, arg5 & 0xFF, temp_v0);
-            } else {
-                func_8000F6EC(var_v0_3, temp_s6 & 0xFF, arg4 & 0xFF, arg5 & 0xFF);
-            }
-            var_v0_3->unk1C = var_s1->unk8;
-            var_v0_3->unk20 = var_s1->unkC;
-            var_v0_3->unk24 = var_s1->unk10;
-            var_v0_3->unk30 = var_s1->unk14;
-            var_v0_3->unk34 = var_s1->unk18;
-            var_v0_3->unk38 = var_s1->unk1C;
-            var_v0_3->unk40 = var_s1->unk20;
-            var_v0_3->unk44 = var_s1->unk24;
-            var_v0_3->unk48 = var_s1->unk28;
-            if (var_s3 != NULL) {
-                *var_s3 = var_v0_3;
-                var_s3 += 4;
-            }
-            var_v0_2 = var_s1->unk2C;
-            var_s1 += 0x2C;
-        } while (var_v0_2 != 0x12);
+    } else {
+        if (phi_v1 == 1) {
+            omDObjAppendMtx(arg0, MTX_TYPE_42, 0);
+        } else {
+            omDObjAppendMtx(arg0, MTX_TYPE_41, 0);
+        }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000F980.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8000F980(GObj *obj, UnkE4E4Arg* arg1, DObj **arg2, u8 arg3, u8 arg4, u8 arg5) {
+    int i;
+    DObj *dobj;
+    s32 trunc;
+    DObj *sp54[18];
 
-void func_8000FB10(s32 arg0, s32 *arg1, s32 **arg2, void **arg3, u8 arg4, u8 arg5, u8 arg6) {
-    ? spA4;
-    ? sp64;
-    s32 sp60;
-    void *sp5C;
-    ? *var_v0;
-    s32 **var_s4;
-    s32 *temp_v0_2;
-    s32 *var_s0;
-    s32 *var_s3;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_s1;
-    s32 var_v0_2;
-    void **temp_s0;
-    void **var_s5;
-    void *var_v0_3;
+    for (i = 0; i < ARRAY_COUNT(sp54); i++) {
+        sp54[i] = NULL;
+    }
 
-    var_s3 = arg1;
-    var_s4 = arg2;
-    var_s5 = arg3;
-    sp5C = NULL;
-    sp60 = 0;
-    var_v0 = &sp64;
-    do {
-        var_v0 += 0x10;
-        var_v0->unk-C = 0;
-        var_v0->unk-8 = 0;
-        var_v0->unk-4 = 0;
-        var_v0->unk-10 = 0;
-    } while (var_v0 != &spA4);
-    var_v0_2 = *var_s3;
-    if (var_v0_2 != 0x12) {
-        do {
-            temp_v1 = var_v0_2 & 0xFFF;
-            if (temp_v1 != 0) {
-                temp_s0 = &(&sp5C)[temp_v1];
-                var_v0_3 = omDObjAddChild(temp_s0->unk-4, var_s3->unk4);
-                temp_s0->unk0 = var_v0_3;
-            } else {
-                var_v0_3 = omGObjAddDObj(arg0, var_s3->unk4);
-                sp5C = var_v0_3;
-            }
-            temp_v0 = var_s3->unk0 & 0xF000;
-            if (temp_v0 != 0) {
-                func_8000F754(var_v0_3, arg4 & 0xFF, arg5 & 0xFF, arg6 & 0xFF, temp_v0);
-            } else {
-                func_8000F6EC(var_v0_3, arg4 & 0xFF, arg5 & 0xFF, arg6 & 0xFF);
-            }
-            var_v0_3->unk1C = var_s3->unk8;
-            var_v0_3->unk20 = var_s3->unkC;
-            var_v0_3->unk24 = var_s3->unk10;
-            var_v0_3->unk30 = var_s3->unk14;
-            var_v0_3->unk34 = var_s3->unk18;
-            var_v0_3->unk38 = var_s3->unk1C;
-            var_v0_3->unk40 = var_s3->unk20;
-            var_v0_3->unk44 = var_s3->unk24;
-            var_v0_3->unk48 = var_s3->unk28;
-            if (var_s4 != NULL) {
-                temp_v0_2 = *var_s4;
-                if (temp_v0_2 != NULL) {
-                    var_s1 = *temp_v0_2;
-                    var_s0 = temp_v0_2;
-                    if (var_s1 != 0) {
-                        do {
-                            func_80009A44(var_v0_3, var_s1);
-                            var_s1 = var_s0->unk4;
-                            var_s0 += 4;
-                        } while (var_s1 != 0);
-                    }
+    while (arg1->unk_00 != 18) {
+        trunc = arg1->unk_00 & 0xFFF;
+        if (trunc) {
+            dobj = sp54[trunc] = omDObjAddChild(sp54[trunc - 1], arg1->unk04);
+        } else {
+            dobj = sp54[0] = omGObjAddDObj(obj, arg1->unk04);
+        }
+
+        if (arg1->unk_00 & 0xF000) {
+            func_8000F754(dobj, arg3, arg4, arg5, arg1->unk_00 & 0xF000);
+        } else {
+            func_8000F6EC(dobj, arg3, arg4, arg5);
+        }
+
+        dobj->pos.v = arg1->position;
+        dobj->angle.v = arg1->rotation;
+        dobj->scale.v = arg1->scale;
+
+        if (arg2 != NULL) {
+            *arg2 = dobj;
+            arg2++;
+        }
+        arg1++;
+    }
+}
+
+void func_8000FB10(GObj *gobj, UnkE4E4Arg* arg1, TextureScroll*** arg2, DObj **arg3,
+                        u8 arg4, u8 arg5, u8 arg6) {
+    int i;
+    DObj *dobj;
+    s32 trunc;
+    DObj *sp5C[18];
+    TextureScroll** csr;
+    TextureScroll* msub;
+
+    for (i = 0; i < ARRAY_COUNT(sp5C); i++) {
+        sp5C[i] = NULL;
+    }
+
+    while (arg1->unk_00 != 18) {
+        trunc = arg1->unk_00 & 0xFFF;
+        if (trunc) {
+            dobj = sp5C[trunc] = omDObjAddChild(sp5C[trunc - 1], arg1->unk04);
+        } else {
+            dobj = sp5C[0] = omGObjAddDObj(gobj, arg1->unk04);
+        }
+        if (arg1->unk_00 & 0xF000) {
+            func_8000F754(dobj, arg4, arg5, arg6, arg1->unk_00 & 0xF000);
+        } else {
+            func_8000F6EC(dobj, arg4, arg5, arg6);
+        }
+        dobj->pos.v = arg1->position;
+        dobj->angle.v = arg1->rotation;
+        dobj->scale.v = arg1->scale;
+
+        if (arg2 != NULL) {
+            if (*arg2 != NULL) {
+                csr = *arg2;
+                msub = *csr;
+                while (msub != NULL) {
+                    omDObjAddMObj(dobj, msub);
+                    csr++;
+                    msub = *csr;
                 }
-                var_s4 += 4;
             }
-            if (var_s5 != NULL) {
-                *var_s5 = var_v0_3;
-                var_s5 += 4;
-            }
-            var_v0_2 = var_s3->unk2C;
-            var_s3 += 0x2C;
-        } while (var_v0_2 != 0x12);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000FB10.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8000FCE4(void *arg0, s32 **arg1) {
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s2;
-    s32 **var_s3;
-    s32 *temp_v0_2;
-    s32 *var_s0;
-    s32 var_s1;
-
-    var_s2 = arg0->unk3C;
-    var_s3 = arg1;
-    if (var_s2 != NULL) {
-        do {
-            if (var_s3 != NULL) {
-                temp_v0_2 = *var_s3;
-                if (temp_v0_2 != NULL) {
-                    var_s1 = *temp_v0_2;
-                    var_s0 = temp_v0_2;
-                    if (var_s1 != 0) {
-                        do {
-                            func_80009A44(var_s2, var_s1);
-                            var_s1 = var_s0->unk4;
-                            var_s0 += 4;
-                        } while (var_s1 != 0);
-                    }
-                }
-                var_s3 += 4;
-            }
-            temp_v0 = animModelTreeNextNode(var_s2);
-            var_s2 = temp_v0;
-        } while (temp_v0 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000FCE4.s")
-#endif
-
-#ifdef MIPS_TO_C
-void func_8000FD78(void *arg0, s32 *arg1) {
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s1;
-    s32 *var_s0;
-    s32 temp_t8;
-
-    var_s1 = arg0->unk3C;
-    var_s0 = arg1;
-    if ((var_s1 != NULL) && (*arg1 != 0x12)) {
-loop_2:
-        temp_t8 = var_s0->unk8;
-        var_s0 += 0x2C;
-        var_s1->unk1C = temp_t8;
-        var_s1->unk20 = var_s0->unk-20;
-        var_s1->unk24 = var_s0->unk-1C;
-        var_s1->unk30 = var_s0->unk-18;
-        var_s1->unk34 = var_s0->unk-14;
-        var_s1->unk38 = var_s0->unk-10;
-        var_s1->unk40 = var_s0->unk-C;
-        var_s1->unk44 = var_s0->unk-8;
-        var_s1->unk48 = var_s0->unk-4;
-        temp_v0 = animModelTreeNextNode(var_s1);
-        var_s1 = temp_v0;
-        if (temp_v0 != NULL) {
-            if (var_s0->unk0 != 0x12) {
-                goto loop_2;
-            }
+            arg2++;
         }
+        if (arg3 != NULL) {
+            *arg3 = dobj;
+            arg3++;
+        }
+        arg1++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000FD78.s")
-#endif
+
+void func_8000FCE4(GObj *arg0, TextureScroll*** arg1) {
+    DObj *dobj;
+    TextureScroll** csr;
+    TextureScroll* msub;
+
+    dobj = arg0->data;
+    while (dobj != NULL) {
+        if (arg1 != NULL) {
+            if (*arg1 != NULL) {
+                csr = *arg1;
+                msub = *csr;
+                while (msub != NULL) {
+                    omDObjAddMObj(dobj, msub);
+                    csr++;
+                    msub = *csr;
+                }
+            }
+            arg1++;
+        }
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
+
+void func_8000FD78(GObj *obj, UnkE4E4Arg* arg1) {
+    DObj *dobj;
+
+    dobj = obj->data;
+    while (dobj != NULL && arg1->unk_00 != 18) {
+        dobj->pos.v = arg1->position;
+        dobj->angle.v = arg1->rotation;
+        dobj->scale.v = arg1->scale;
+
+        arg1++;
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
 
 #ifdef MIPS_TO_C
 void func_8000FE2C(void *arg0, s32 arg1, f32 arg2) {

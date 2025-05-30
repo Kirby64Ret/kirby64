@@ -769,6 +769,7 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+omDObjAddMObj = 0x80009A44; // type:func
 omDObjAppendMtx = 0x80009628; // type:func
 omDObjResetAnimation = 0x8000984C; // type:func
 omEndProcess = 0x80008DA8; // type:func

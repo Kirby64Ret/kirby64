@@ -586,11 +586,11 @@ void omEndProcess(struct GObjProcess *proc) {
 }
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80008EC4.s")
+OMMtx *func_80008EC4(struct DObj *, u8, u8, u32);
 
-void func_80008EC4(struct DObj *, u8, u8, u32);
 
-void omDObjAppendMtx(struct DObj *arg0, u8 arg1, u8 arg2) {
-    func_80008EC4(arg0, arg1, arg2, arg0->unk56);
+OMMtx *omDObjAppendMtx(struct DObj *arg0, u8 arg1, u8 arg2) {
+    return func_80008EC4(arg0, arg1, arg2, arg0->unk56);
 }
 
 OMMtx* omCameraAddMtx(Camera* cam, u8 kind, u8 arg2) {
@@ -736,7 +736,44 @@ void func_800099E4(struct Animation *anim) {
     anim->scale = -FLT_MAX;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009A44.s")
+#ifdef MIPS_TO_C
+MObj* omDObjAddMObj(DObj* dobj, Texture* arg1) {
+    MObj* mobj;
+
+    mobj = omGetMObj();
+
+    if (dobj->mobjList != NULL) {
+        MObj* curr = dobj->mobjList->next;
+        MObj* prior = dobj->mobjList;
+        while (curr != NULL) {
+            prior = curr;
+            curr = curr->next;
+        }
+        prior->next = mobj;
+    } else {
+        dobj->mobjList = mobj;
+    }
+
+    mobj->next = NULL;
+    mobj->lodLevel = arg1->unk_54 / 255.0f;
+    mobj->texture = *arg1;
+
+    mobj->texture.unk_24 = arg1->unk_14;
+    mobj->texture.unk_28 = arg1->scaleS;
+    mobj->imageIndex = 0;
+    mobj->nextImageIndex = 0;
+    mobj->paletteIndex = 0.f;
+    mobj->aobjList = NULL;
+    mobj->animList = NULL;
+    mobj->timeLeft = ANIMATION_DISABLED;
+    mobj->animSpeed = 1.0f;
+    mobj->timePassed = 0.0f;
+
+    return mobj;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddMObj.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009B5C.s")
 

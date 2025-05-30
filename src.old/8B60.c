@@ -98,7 +98,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_800099E4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80009A44.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/8B60/omDObjAddMObj.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80009B5C.s")
 
