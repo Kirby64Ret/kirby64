@@ -177,10 +177,21 @@ typedef struct OMOrtho {
 
 typedef struct OMLookAt {
     /* 0x00 */ struct OMMtx *mtx;
-    /* 0x04 */ Vec3f eye;
-    /* 0x10 */ Vec3f at;
-    /* 0x1C */ Vec3f up;
+    /* 0x04 */ Vector eye;
+    /* 0x10 */ Vector at;
+    /* 0x1C */ Vector up;
 } OMLookAt; // size == 0x28;
+
+typedef struct OMLookAtRoll {
+    /* 0x00 */ struct OMMtx* mtx;
+    /* 0x04 */ f32 xEye;
+    /* 0x08 */ f32 yEye;
+    /* 0x0C */ f32 zEye;
+    /* 0x10 */ f32 xAt;
+    /* 0x14 */ f32 yAt;
+    /* 0x18 */ f32 zAt;
+    /* 0x1C */ f32 roll;
+} OMLookAtRoll; // size == 0x20;
 
 // TODO: is this an existing struct instead of a brand new one?
 struct unk80008840 {
@@ -254,7 +265,7 @@ enum CameraFlags {
 };
 
 typedef struct Camera {
-    struct Camera *unk0;
+    struct Camera *nextFree;
     struct GObj *gobj;
     /* 0x08 */ Vp viewport;
     /* 0x18 */ union {
@@ -263,22 +274,23 @@ typedef struct Camera {
     } perspMtx;
     /* 0x38 */ union {
         struct OMLookAt lookAt;
-        // struct OMLookAtRoll lookAtRoll;
+        struct OMLookAtRoll lookAtRoll;
     } viewMtx;
 
     u32 mtxCount;
     struct OMMtx *matrices[2];
     struct AObj *aobj;
-    u32 unk70;
 
-    // vec?
-    f32 unk74;
-    f32 unk78;
-    f32 unk7C;
+    // 0x70
+    union AnimCmd *animList;
+    f32 timeRemaining;
+    f32 animSpeed;
+    f32 timeElapsed;
 
+    // 0x80
     u32 flags;
     u32 bgcolor;
-    u32 unk88;
+    u32 *onBeforeRender;
     u32 unk8C;
 } Camera;
 
@@ -538,5 +550,6 @@ void omUpdateAll();
 void HS64_omInit(ObjectSetup *);
 AObj *func_800098AC(MObj *, u8);
 OMMtx *omDObjAppendMtx(struct DObj *arg0, u8 type, u8 param);
+AObj *omCameraAddAObj(Camera *, u8);
 
 #endif

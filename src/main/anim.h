@@ -43,7 +43,7 @@ enum AnimCommand {
     ANIM_CMD_SET_EXTRA_VALUE_LAST = 20,
     ANIM_CMD_SET_EXTRA_VALUE = 21,
     ANIM_CMD_22 = 22,
-    ANIM_CMD_23 = 23
+    ANIM_CMD_SET_CLIP_PLANES = 23
 };
 
 enum AnimParam {

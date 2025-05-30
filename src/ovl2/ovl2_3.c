@@ -2130,7 +2130,7 @@ void func_800FC62C(void) {
     D_800D7B38 = D_800D7B20;
     if (D_800D6B54 == 0) {
         sp1C = temp_v0;
-        func_80010988(&D_800D7B20);
+        animUpdateCameraAnimation(&D_800D7B20);
         temp_v1 = &D_800D7B38 + 0x18;
         if (temp_v0->unk74 == -3.4028235e38f) {
             temp_v0->unk48 = temp_v1->unk0;
@@ -2225,7 +2225,7 @@ block_9:
             func_800FBA78(arg0);
             break;
         default:
-            func_80010988(arg0);
+            animUpdateCameraAnimation(arg0);
             break;
     }
     D_800D7B68 = 1;

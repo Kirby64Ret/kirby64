@@ -683,12 +683,12 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000FCE4.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000FD78.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000FE2C.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animSetCameraAnimation.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000FE64.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animProcessCameraAnimation.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8001074C.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animUpdateCameraAnimatedParams.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_80010988.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animUpdateCameraAnimation.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_800109B4.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animGetTotalDuration.s")

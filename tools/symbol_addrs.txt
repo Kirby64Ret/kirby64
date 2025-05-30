@@ -579,7 +579,6 @@ vec3_sub_normalize=0x80018e24; // type:func
 vec3_subtract_compare_directions=0x800197ec; // type:func
 verify_save=0x800b92d8; // type:func
 write_to_buf=0x80021f80; // type:func
-func_800109B4=0x800109B4; // type:func size:0x16C
 ovl1_VRAM=0x8009B540;
 
 // force these to resolve into overlays
@@ -769,6 +768,7 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+omCameraAddAObj = 0x80009978; // type:func
 omDObjAddMObj = 0x80009A44; // type:func
 omDObjAppendMtx = 0x80009628; // type:func
 omDObjResetAnimation = 0x8000984C; // type:func
@@ -979,6 +979,11 @@ gtlSetSegment0F=0x80005378; // type:func
 gtlMainFuncTable=0x8004A418;
 
 // anim
+animGetTotalDuration = 0x800109B4; // type:func size:0x16C
+animUpdateCameraAnimation = 0x80010988; // type:func
+animUpdateCameraAnimatedParams = 0x8001074C; // type:func
+animProcessCameraAnimation = 0x8000FE64; // type:func
+animSetCameraAnimation = 0x8000FE2C; // type:func
 animGetModelParamValue = 0x8000E474; // type:func
 animSetModelAnimDuration = 0x8000E434; // type:func
 animGetAObjByParamID = 0x8000E3F8; // type:func

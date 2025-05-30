@@ -2,6 +2,7 @@
 #include "fault.h"
 #include "object_manager.h"
 #include "render.h"
+#include "anim.h"
 
 // data + early rodata
 s32 D_8003DE50 = 10000000;
@@ -449,13 +450,13 @@ struct Camera *HS64_CameraPop(void) {
         while (TRUE);
     }
     temp_v0 = gCameraHead;
-    gCameraHead = gCameraHead->unk0;
+    gCameraHead = gCameraHead->nextFree;
     gCameraCount++;
     return temp_v0;
 }
 
 void HS64_CameraPush(struct Camera *arg0) {
-    arg0->unk0 = gCameraHead;
+    arg0->nextFree = gCameraHead;
     gCameraHead = arg0;
     gCameraCount--;
 }
@@ -704,7 +705,7 @@ void func_80009918(struct unk80008840 *arg0) {
     arg0->unk98 = -FLT_MAX;
 }
 
-struct AObj *func_80009978(struct Animation* arg0, u8 arg1) {
+struct AObj *omCameraAddAObj(Camera *arg0, u8 arg1) {
     struct AObj *aobj;
 
     aobj = HS64_AObjPop();
@@ -845,13 +846,13 @@ struct Camera *omGObjSetCamera(GObj *gobj) {
 
     cam->flags = 0;
     cam->bgcolor = 0x00000000;
-    cam->unk88 = 0;
+    cam->onBeforeRender = NULL;
     cam->unk8C = 0;
     cam->aobj = NULL;
-    cam->unk70 = 0;
-    cam->unk74 = -FLT_MAX;
-    cam->unk78 = 1.0f;
-    cam->unk7C = 0.0f;
+    cam->animList = NULL;
+    cam->timeRemaining = ANIMATION_DISABLED;
+    cam->animSpeed = 1.0f;
+    cam->timeElapsed = 0.0f;
     return cam;
 }
 

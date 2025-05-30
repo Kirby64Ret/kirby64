@@ -704,7 +704,7 @@ void func_80009918(struct unk80008840 *arg0) {
     arg0->unk98 = D_80040650;
 }
 
-struct AObj *func_80009978(struct Animation* arg0, u8 arg1) {
+struct AObj *omCameraAddAObj(struct Animation* arg0, u8 arg1) {
     struct AObj *temp_v0;
 
     temp_v0 = HS64_AObjPop();

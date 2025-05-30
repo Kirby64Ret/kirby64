@@ -1708,7 +1708,7 @@ void func_800B2AD4(Vector *vec, struct LayoutNode *node, u32 track) {
 #ifdef MIPS_TO_C
 
 void func_800B2F54(GObj *arg0, ? arg2) {
-    func_8000FE2C(arg2, *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)), arg2);
+    animSetCameraAnimation(arg2, *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)), arg2);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2F54.s")
@@ -1720,7 +1720,7 @@ void func_800B2F90(GObj *arg0, ? arg2) {
     void *temp_s0;
 
     temp_s0 = *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4));
-    func_8000FE2C(arg2, temp_s0, arg2);
+    animSetCameraAnimation(arg2, temp_s0, arg2);
 loop_1:
     while (temp_s0->unk74 != -3.4028235e38f) {
         ohSleep(1);

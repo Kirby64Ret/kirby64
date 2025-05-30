@@ -1851,7 +1851,7 @@ void func_800AAF34(s32 arg0, s32 arg1, s32 arg2) {
     sp20 = temp_a3;
     temp_v0_2 = func_800A94F4(arg1);
     *temp_v1 = temp_v0_2;
-    func_8000FE2C(*(&D_800D79D8 + temp_a3), *temp_v0_2, arg2, temp_a3);
+    animSetCameraAnimation(*(&D_800D79D8 + temp_a3), *temp_v0_2, arg2, temp_a3);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAF34.s")

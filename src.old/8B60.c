@@ -94,7 +94,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80009918.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80009978.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/8B60/omCameraAddAObj.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_800099E4.s")
 

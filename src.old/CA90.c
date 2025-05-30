@@ -82,14 +82,14 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000FD78.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000FE2C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetCameraAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000FE64.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animProcessCameraAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8001074C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animUpdateCameraAnimatedParams.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_80010988.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animUpdateCameraAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_800109B4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animGetTotalDuration.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_80010B0C.s")

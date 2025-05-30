@@ -385,7 +385,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80009918.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80009978.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/omCameraAddAObj.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800099E4.s")
 
@@ -621,15 +621,15 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000FD78.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000FE2C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetCameraAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000FE64.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animProcessCameraAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001074C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animUpdateCameraAnimatedParams.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80010988.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animUpdateCameraAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800109B4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animGetTotalDuration.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80010B0C.s")
 
