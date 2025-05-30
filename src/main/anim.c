@@ -106,7 +106,7 @@ void animResetTextureAnimation(GObj *gobj) {
 }
 
 void animSetModelAnimation(DObj *dobj, AnimCmd *animList, f32 time) {
-    AObj *aobj = dobj->aobjList;
+    AObj *aobj = dobj->aobj;
 
     while (aobj != NULL) {
         aobj->kind = ANIM_TYPE_NONE;
@@ -114,12 +114,12 @@ void animSetModelAnimation(DObj *dobj, AnimCmd *animList, f32 time) {
     }
 
     dobj->animList = animList;
-    dobj->timeLeft = ANIMATION_CHANGED;
-    dobj->timePassed = time;
+    dobj->timeRemaining = ANIMATION_CHANGED;
+    dobj->timeElapsed = time;
 }
 
 void animSetTextureAnimation(MObj *mobj, AnimCmd *animList, f32 time) {
-    AObj *aobj = mobj->aobjList;
+    AObj *aobj = mobj->aobj;
 
     while (aobj != NULL) {
         aobj->kind = ANIM_TYPE_NONE;
@@ -127,8 +127,8 @@ void animSetTextureAnimation(MObj *mobj, AnimCmd *animList, f32 time) {
     }
 
     mobj->animList = animList;
-    mobj->timeLeft = ANIMATION_CHANGED;
-    mobj->timePassed = time;
+    mobj->timeRemaining = ANIMATION_CHANGED;
+    mobj->timeElapsed = time;
 }
 
 void animSetModelTreeAnimation(GObj *obj, AnimCmd **animLists, f32 time) {
@@ -143,7 +143,7 @@ void animSetModelTreeAnimation(GObj *obj, AnimCmd **animLists, f32 time) {
             dobj->animCBReceiver = s2;
             s2 = FALSE;
         } else {
-            dobj->timeLeft = ANIMATION_DISABLED;
+            dobj->timeRemaining = ANIMATION_DISABLED;
             dobj->animCBReceiver = FALSE;
         }
 
@@ -193,7 +193,7 @@ void animSetModelTreeAndTextureAnimation(GObj *obj, AnimCmd** modelAnimLists,
                 dobj->animCBReceiver = mainNode;
                 mainNode = FALSE;
             } else {
-                dobj->timeLeft = ANIMATION_DISABLED;
+                dobj->timeRemaining = ANIMATION_DISABLED;
                 dobj->animCBReceiver = FALSE;
             }
             modelAnimLists++;
@@ -224,18 +224,18 @@ void animProcessModelAnimation(DObj *dobj) {
     u32 bitMask;
     f32 duration;
 
-    if (dobj->timeLeft == ANIMATION_DISABLED) {
+    if (dobj->timeRemaining == ANIMATION_DISABLED) {
         return;
     }
 
-    if (dobj->timeLeft == ANIMATION_CHANGED) {
-        dobj->timeLeft = -dobj->timePassed;
+    if (dobj->timeRemaining == ANIMATION_CHANGED) {
+        dobj->timeRemaining = -dobj->timeElapsed;
     } else {
-        dobj->timeLeft -= dobj->animSpeed;
-        dobj->timePassed += dobj->animSpeed;
-        dobj->gobj->animTimer = dobj->timePassed;
+        dobj->timeRemaining -= dobj->animSpeed;
+        dobj->timeElapsed += dobj->animSpeed;
+        dobj->gobj->animTimer = dobj->timeElapsed;
 
-        if (dobj->timeLeft > 0.0f) {
+        if (dobj->timeRemaining > 0.0f) {
             return;
         }
     }
@@ -244,7 +244,7 @@ void animProcessModelAnimation(DObj *dobj) {
         aobjArray[i] = NULL;
     }
 
-    aobj = dobj->aobjList;
+    aobj = dobj->aobj;
     while (aobj != NULL) {
         if (aobj->paramID >= ANIM_PARAM_MODEL_MIN && aobj->paramID <= ANIM_PARAM_MODEL_MAX) {
             aobjArray[aobj->paramID - ANIM_PARAM_MODEL_MIN] = aobj;
@@ -254,16 +254,16 @@ void animProcessModelAnimation(DObj *dobj) {
 
     do {
         if (dobj->animList == NULL) {
-            aobj = dobj->aobjList;
+            aobj = dobj->aobj;
             while (aobj != NULL) {
                 if (aobj->kind != ANIM_TYPE_NONE) {
-                    aobj->timer += dobj->animSpeed + dobj->timeLeft;
+                    aobj->timer += dobj->animSpeed + dobj->timeRemaining;
                 }
                 aobj = aobj->next;
             }
-            dobj->timePassed = dobj->timeLeft;
-            dobj->gobj->animTimer = dobj->timeLeft;
-            dobj->timeLeft = ANIMATION_FINISHED;
+            dobj->timeElapsed = dobj->timeRemaining;
+            dobj->gobj->animTimer = dobj->timeRemaining;
+            dobj->timeRemaining = ANIMATION_FINISHED;
             return;
         }
 
@@ -293,13 +293,13 @@ void animProcessModelAnimation(DObj *dobj) {
                         if (duration != 0.0f) {
                             aobjArray[i]->Rduration = 1.0f / duration;
                         }
-                        aobjArray[i]->timer = -dobj->timeLeft - dobj->animSpeed;
+                        aobjArray[i]->timer = -dobj->timeRemaining - dobj->animSpeed;
                     }
                     bitMask >>= 1;
                 }
 
                 if (cmd == ANIM_CMD_SET_VALUE_ZERO_RATE_LAST) {
-                    dobj->timeLeft += duration;
+                    dobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_VALUE_LAST:
@@ -323,14 +323,14 @@ void animProcessModelAnimation(DObj *dobj) {
                         if (duration != 0.0f) {
                             aobjArray[i]->speed = (aobjArray[i]->goalVal - aobjArray[i]->startVal) / duration;
                         }
-                        aobjArray[i]->timer = -dobj->timeLeft - dobj->animSpeed;
+                        aobjArray[i]->timer = -dobj->timeRemaining - dobj->animSpeed;
                         aobjArray[i]->goalSpeed = 0.0f;
                     }
                     bitMask >>= 1;
                 }
 
                 if (cmd == ANIM_CMD_SET_VALUE_LAST) {
-                    dobj->timeLeft += duration;
+                    dobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_VALUE_WITH_RATE_LAST:
@@ -358,14 +358,14 @@ void animProcessModelAnimation(DObj *dobj) {
                         if (duration != 0.0f) {
                             aobjArray[i]->Rduration = 1.0f / duration;
                         }
-                        aobjArray[i]->timer = -dobj->timeLeft - dobj->animSpeed;
+                        aobjArray[i]->timer = -dobj->timeRemaining - dobj->animSpeed;
                     }
 
                     bitMask >>= 1;
                 }
 
                 if (cmd == ANIM_CMD_SET_VALUE_WITH_RATE_LAST) {
-                    dobj->timeLeft += duration;
+                    dobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_TARGET_RATE:
@@ -388,7 +388,7 @@ void animProcessModelAnimation(DObj *dobj) {
                 }
                 break;
             case ANIM_CMD_WAIT:
-                dobj->timeLeft += (f32) (dobj->animList++->w & 0x7FFF);
+                dobj->timeRemaining += (f32) (dobj->animList++->w & 0x7FFF);
                 break;
             case ANIM_CMD_SET_VALUE_AFTER_LAST:
             case ANIM_CMD_SET_VALUE_AFTER:
@@ -410,7 +410,7 @@ void animProcessModelAnimation(DObj *dobj) {
                         dobj->animList++;
                         aobjArray[i]->kind = ANIM_TYPE_STEP;
                         aobjArray[i]->Rduration = duration;
-                        aobjArray[i]->timer = -dobj->timeLeft - dobj->animSpeed;
+                        aobjArray[i]->timer = -dobj->timeRemaining - dobj->animSpeed;
                         aobjArray[i]->goalSpeed = 0.0f;
                     }
 
@@ -418,15 +418,15 @@ void animProcessModelAnimation(DObj *dobj) {
                 }
 
                 if (cmd == ANIM_CMD_SET_VALUE_AFTER_LAST) {
-                    dobj->timeLeft += duration;
+                    dobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_ANIMATION:
                 dobj->animList++;
                 dobj->animList = dobj->animList->ptr;
                 // reset animation timers
-                dobj->timePassed = -dobj->timeLeft;
-                dobj->gobj->animTimer = -dobj->timeLeft;
+                dobj->timeElapsed = -dobj->timeRemaining;
+                dobj->gobj->animTimer = -dobj->timeRemaining;
 
                 if (dobj->animCBReceiver && dobj->gobj->onAnimate != NULL) {
                     dobj->gobj->onAnimate(dobj, -2, 0);
@@ -469,22 +469,22 @@ void animProcessModelAnimation(DObj *dobj) {
                 dobj->animList++;
                 break;
             case ANIM_CMD_END:
-                for (aobj = dobj->aobjList; aobj != NULL; aobj = aobj->next) {
+                for (aobj = dobj->aobj; aobj != NULL; aobj = aobj->next) {
                     if (aobj->kind != ANIM_TYPE_NONE) {
-                        aobj->timer += dobj->animSpeed + dobj->timeLeft;
+                        aobj->timer += dobj->animSpeed + dobj->timeRemaining;
                     }
                 }
 
-                dobj->timePassed = dobj->timeLeft;
-                dobj->gobj->animTimer = dobj->timeLeft;
-                dobj->timeLeft = ANIMATION_FINISHED;
+                dobj->timeElapsed = dobj->timeRemaining;
+                dobj->gobj->animTimer = dobj->timeRemaining;
+                dobj->timeRemaining = ANIMATION_FINISHED;
                 if (dobj->animCBReceiver && dobj->gobj->onAnimate != NULL) {
                     dobj->gobj->onAnimate(dobj, -1, 0);
                 }
                 return;
             case ANIM_CMD_SET_FLAGS:
                 dobj->flags = (dobj->animList->w << 7) >> 22;
-                dobj->timeLeft += (f32) (dobj->animList++->w & 0x7FFF);
+                dobj->timeRemaining += (f32) (dobj->animList++->w & 0x7FFF);
                 break;
             case ANIM_CMD_16:
                 if (dobj->gobj->onAnimate != NULL) {
@@ -492,11 +492,11 @@ void animProcessModelAnimation(DObj *dobj) {
                                               ((dobj->animList->w << 7) >> 22) & 0xFF);
                 }
 
-                dobj->timeLeft += (f32) (dobj->animList++->w & 0x7FFF);
+                dobj->timeRemaining += (f32) (dobj->animList++->w & 0x7FFF);
                 break;
             case ANIM_CMD_17:
                 bitMask = (dobj->animList->w << 7) >> 22;
-                dobj->timeLeft += (f32) (dobj->animList++->w & 0x7FFF);
+                dobj->timeRemaining += (f32) (dobj->animList++->w & 0x7FFF);
 
                 for (i = 4; i < 14; i++) {
                     if (bitMask == 0) {
@@ -515,7 +515,7 @@ void animProcessModelAnimation(DObj *dobj) {
             default:
                 break;
         }
-    } while (dobj->timeLeft <= 0.0f);
+    } while (dobj->timeRemaining <= 0.0f);
 }
 
 f32 animGetAObjInterpValue(f32 Rduration, f32 elapsed, f32 initialValue, f32 targetValue, f32 initialRate,
@@ -583,12 +583,12 @@ void animUpdateModelAnimatedParams(DObj *dobj) {
     f32 value;
     AObj *aobj;
 
-    if (dobj->timeLeft != ANIMATION_DISABLED) {
-        aobj = dobj->aobjList;
+    if (dobj->timeRemaining != ANIMATION_DISABLED) {
+        aobj = dobj->aobj;
 
         while (aobj != NULL) {
             if (aobj->kind != ANIM_TYPE_NONE) {
-                if (dobj->timeLeft != ANIMATION_FINISHED) {
+                if (dobj->timeRemaining != ANIMATION_FINISHED) {
                     aobj->timer += dobj->animSpeed;
                 }
 
@@ -660,8 +660,8 @@ void animUpdateModelAnimatedParams(DObj *dobj) {
             aobj = aobj->next;
         }
 
-        if (dobj->timeLeft == ANIMATION_FINISHED) {
-            dobj->timeLeft = ANIMATION_DISABLED;
+        if (dobj->timeRemaining == ANIMATION_FINISHED) {
+            dobj->timeRemaining = ANIMATION_DISABLED;
         }
     }
 }
@@ -675,17 +675,17 @@ void animProcessTextureAnimation(MObj *mobj) {
     u32 bitMask;
     f32 duration;
 
-    if (mobj->timeLeft == ANIMATION_DISABLED) {
+    if (mobj->timeRemaining == ANIMATION_DISABLED) {
         return;
     }
 
-    if (mobj->timeLeft == ANIMATION_CHANGED) {
-        mobj->timeLeft = -mobj->timePassed;
+    if (mobj->timeRemaining == ANIMATION_CHANGED) {
+        mobj->timeRemaining = -mobj->timeElapsed;
     } else {
-        mobj->timeLeft -= mobj->animSpeed;
-        mobj->timePassed += mobj->animSpeed;
+        mobj->timeRemaining -= mobj->animSpeed;
+        mobj->timeElapsed += mobj->animSpeed;
 
-        if (mobj->timeLeft > 0.0f) {
+        if (mobj->timeRemaining > 0.0f) {
             return;
         }
     }
@@ -698,7 +698,7 @@ void animProcessTextureAnimation(MObj *mobj) {
         extraAobjArray[i] = NULL;
     }
 
-    aobj = mobj->aobjList;
+    aobj = mobj->aobj;
     while (aobj != NULL) {
         if (aobj->paramID >= ANIM_PARAM_TEXTURE_MIN && aobj->paramID <= ANIM_PARAM_TEXTURE_MAX) {
             aobjArray[aobj->paramID - ANIM_PARAM_TEXTURE_MIN] = aobj;
@@ -713,15 +713,15 @@ void animProcessTextureAnimation(MObj *mobj) {
 
     do {
         if (mobj->animList == NULL) {
-            aobj = mobj->aobjList;
+            aobj = mobj->aobj;
             while (aobj != NULL) {
                 if (aobj->kind != ANIM_TYPE_NONE) {
-                    aobj->timer += mobj->animSpeed + mobj->timeLeft;
+                    aobj->timer += mobj->animSpeed + mobj->timeRemaining;
                 }
                 aobj = aobj->next;
             }
-            mobj->timePassed = mobj->timeLeft;
-            mobj->timeLeft = ANIMATION_FINISHED;
+            mobj->timeElapsed = mobj->timeRemaining;
+            mobj->timeRemaining = ANIMATION_FINISHED;
             return;
         }
 
@@ -751,13 +751,13 @@ void animProcessTextureAnimation(MObj *mobj) {
                         if (duration != 0.0f) {
                             aobjArray[i]->Rduration = 1.0f / duration;
                         }
-                        aobjArray[i]->timer = -mobj->timeLeft - mobj->animSpeed;
+                        aobjArray[i]->timer = -mobj->timeRemaining - mobj->animSpeed;
                     }
                     bitMask >>= 1;
                 }
 
                 if (cmd == ANIM_CMD_SET_VALUE_ZERO_RATE_LAST) {
-                    mobj->timeLeft += duration;
+                    mobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_VALUE_LAST:
@@ -782,14 +782,14 @@ void animProcessTextureAnimation(MObj *mobj) {
                         if (duration != 0.0f) {
                             aobjArray[i]->speed = (aobjArray[i]->goalVal - aobjArray[i]->startVal) / duration;
                         }
-                        aobjArray[i]->timer = -mobj->timeLeft - mobj->animSpeed;
+                        aobjArray[i]->timer = -mobj->timeRemaining - mobj->animSpeed;
                         aobjArray[i]->goalSpeed = 0.0f;
                     }
                     bitMask >>= 1;
                 }
 
                 if (cmd == ANIM_CMD_SET_VALUE_LAST) {
-                    mobj->timeLeft += duration;
+                    mobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_VALUE_WITH_RATE_LAST:
@@ -817,13 +817,13 @@ void animProcessTextureAnimation(MObj *mobj) {
                         if (duration != 0.0f) {
                             aobjArray[i]->Rduration = 1.0f / duration;
                         }
-                        aobjArray[i]->timer = -mobj->timeLeft - mobj->animSpeed;
+                        aobjArray[i]->timer = -mobj->timeRemaining - mobj->animSpeed;
                     }
                     bitMask >>= 1;
                 }
 
                 if (cmd == ANIM_CMD_SET_VALUE_WITH_RATE_LAST) {
-                    mobj->timeLeft += duration;
+                    mobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_TARGET_RATE:
@@ -845,7 +845,7 @@ void animProcessTextureAnimation(MObj *mobj) {
                 }
                 break;
             case ANIM_CMD_WAIT:
-                mobj->timeLeft += (f32) (mobj->animList->w & 0x7FFF);
+                mobj->timeRemaining += (f32) (mobj->animList->w & 0x7FFF);
                 mobj->animList++;
                 break;
             case ANIM_CMD_SET_VALUE_AFTER_LAST:
@@ -868,20 +868,20 @@ void animProcessTextureAnimation(MObj *mobj) {
 
                         aobjArray[i]->kind = ANIM_TYPE_STEP;
                         aobjArray[i]->Rduration = duration;
-                        aobjArray[i]->timer = -mobj->timeLeft - mobj->animSpeed;
+                        aobjArray[i]->timer = -mobj->timeRemaining - mobj->animSpeed;
                         aobjArray[i]->goalSpeed = 0.0f;
                     }
                     bitMask >>= 1;
                 }
 
                 if (cmd == ANIM_CMD_SET_VALUE_AFTER_LAST) {
-                    mobj->timeLeft += duration;
+                    mobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_ANIMATION:
                 mobj->animList++;
                 mobj->animList = mobj->animList->ptr;
-                mobj->timePassed = -mobj->timeLeft;
+                mobj->timeElapsed = -mobj->timeRemaining;
                 break;
             case ANIM_CMD_JUMP:
                 mobj->animList++;
@@ -906,16 +906,16 @@ void animProcessTextureAnimation(MObj *mobj) {
                 }
                 break;
             case ANIM_CMD_END:
-                aobj = mobj->aobjList;
+                aobj = mobj->aobj;
                 while (aobj != NULL) {
                     if (aobj->kind != ANIM_TYPE_NONE) {
-                        aobj->timer += mobj->animSpeed + mobj->timeLeft;
+                        aobj->timer += mobj->animSpeed + mobj->timeRemaining;
                     }
                     aobj = aobj->next;
                 }
 
-                mobj->timePassed = mobj->timeLeft;
-                mobj->timeLeft = ANIMATION_FINISHED;
+                mobj->timeElapsed = mobj->timeRemaining;
+                mobj->timeRemaining = ANIMATION_FINISHED;
                 return; // not break
             case ANIM_CMD_SET_EXTRA_VALUE_AFTER_LAST:
             case ANIM_CMD_SET_EXTRA_VALUE_AFTER:
@@ -937,12 +937,12 @@ void animProcessTextureAnimation(MObj *mobj) {
 
                         extraAobjArray[i]->kind = ANIM_TYPE_STEP;
                         extraAobjArray[i]->Rduration = duration;
-                        extraAobjArray[i]->timer = -mobj->timeLeft - mobj->animSpeed;
+                        extraAobjArray[i]->timer = -mobj->timeRemaining - mobj->animSpeed;
                     }
                     bitMask >>= 1;
                 }
                 if (cmd == ANIM_CMD_SET_EXTRA_VALUE_AFTER_LAST) {
-                    mobj->timeLeft += duration;
+                    mobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_SET_EXTRA_VALUE_LAST:
@@ -967,16 +967,16 @@ void animProcessTextureAnimation(MObj *mobj) {
                         if (duration != 0.0f) {
                             extraAobjArray[i]->Rduration = 1.0f / duration;
                         }
-                        extraAobjArray[i]->timer = -mobj->timeLeft - mobj->animSpeed;
+                        extraAobjArray[i]->timer = -mobj->timeRemaining - mobj->animSpeed;
                     }
                     bitMask >>= 1;
                 }
                 if (cmd == ANIM_CMD_SET_EXTRA_VALUE_LAST) {
-                    mobj->timeLeft += duration;
+                    mobj->timeRemaining += duration;
                 }
                 break;
             case ANIM_CMD_22:
-                mobj->timeLeft = (f32) (mobj->animList->w & 0x7FFF);
+                mobj->timeRemaining = (f32) (mobj->animList->w & 0x7FFF);
 
                 bitMask = (mobj->animList++->w << 7) >> 22;
 
@@ -1004,7 +1004,7 @@ void animProcessTextureAnimation(MObj *mobj) {
             default:
                 break;
         }
-    } while (mobj->timeLeft <= 0.0f);
+    } while (mobj->timeRemaining <= 0.0f);
 }
 
 void animUpdateTextureAnimatedParams(MObj *mobj) {
@@ -1022,12 +1022,12 @@ void animUpdateTextureAnimatedParams(MObj *mobj) {
     ColorPack sp38;
     ColorPack sp34;
 
-    if (mobj->timeLeft != ANIMATION_DISABLED) {
-        aobj = mobj->aobjList;
+    if (mobj->timeRemaining != ANIMATION_DISABLED) {
+        aobj = mobj->aobj;
 
         while (aobj != NULL) {
             if (aobj->kind != ANIM_TYPE_NONE) {
-                if (mobj->timeLeft != ANIMATION_FINISHED) {
+                if (mobj->timeRemaining != ANIMATION_FINISHED) {
                     aobj->timer += mobj->animSpeed;
                 }
                 if (aobj->paramID < 36) {
@@ -1156,8 +1156,8 @@ void animUpdateTextureAnimatedParams(MObj *mobj) {
             aobj = aobj->next;
         }
 
-        if (mobj->timeLeft == ANIMATION_FINISHED) {
-            mobj->timeLeft = ANIMATION_DISABLED;
+        if (mobj->timeRemaining == ANIMATION_FINISHED) {
+            mobj->timeRemaining = ANIMATION_DISABLED;
         }
     }
 }
@@ -1215,8 +1215,8 @@ AObj *animGetAObjByParamID(AObj *aobj, u8 paramID) {
 void animSetModelAnimDuration(DObj *dobj, f32 duration) {
     AObj *aobj;
 
-    aobj = dobj->aobjList;
-    dobj->timeLeft = dobj->animSpeed + duration;
+    aobj = dobj->aobj;
+    dobj->timeRemaining = dobj->animSpeed + duration;
     while (aobj != NULL) {
         aobj->Rduration = 1.0f / duration;
         aobj = aobj->next;
@@ -1269,14 +1269,14 @@ f32 func_8000E4E4(UnkE4E4Arg* arg0, s32 paramID) {
     }
 }
 
-s32 func_8000E554(s32 arg0, DObj *dobj, f32* outValue, f32* outRate, AObj *aobjList, UnkE4E4Arg* arg5,
+s32 func_8000E554(s32 arg0, DObj *dobj, f32* outValue, f32* outRate, AObj *a, UnkE4E4Arg* arg5,
                        s32 paramID, s32 setRate, Vector *interpPos, s32* interpPosReady) {
     AObj *aobj;
 
-    aobj = animGetAObjByParamID(aobjList, paramID);
+    aobj = animGetAObjByParamID(a, paramID);
 
     if (aobj != NULL && aobj->kind != ANIM_TYPE_NONE) {
-        if (arg0 == 0 && dobj->timeLeft != ANIMATION_FINISHED) {
+        if (arg0 == 0 && dobj->timeRemaining != ANIMATION_FINISHED) {
             aobj->timer += dobj->animSpeed;
         }
         *outValue = animGetAObjValue(aobj);
@@ -1298,9 +1298,9 @@ s32 func_8000E554(s32 arg0, DObj *dobj, f32* outValue, f32* outRate, AObj *aobjL
                         break;
                 }
             } else {
-                aobj = animGetAObjByParamID(aobjList, ANIM_PARAM_4);
+                aobj = animGetAObjByParamID(a, ANIM_PARAM_4);
                 if (aobj != NULL && aobj->kind != ANIM_TYPE_NONE) {
-                    if (arg0 == 0 && dobj->timeLeft != ANIMATION_FINISHED) {
+                    if (arg0 == 0 && dobj->timeRemaining != ANIMATION_FINISHED) {
                         aobj->timer += dobj->animSpeed;
                     }
                     *outValue = animGetAObjValue(aobj);
@@ -1444,7 +1444,7 @@ void func_8000E818(s32 track, f32 translate, f32 rotate, f32 scale, f32* arg4, A
 
 f32 func_8000EC98(DObj *dobj, AnimCmd **animLists, f32 arg2, UnkE4E4Arg* arg3, s32 setRate, f32 duration,
                        f32 arg6, f32 arg7, f32 arg8) {
-    AObj *origAobjList;
+    AObj *origaobj;
     AObj *spC0;
     AObj *newAObj;
     AObj *origAObj;
@@ -1472,15 +1472,15 @@ f32 func_8000EC98(DObj *dobj, AnimCmd **animLists, f32 arg2, UnkE4E4Arg* arg3, s
         }
     }
 
-    origAobjList = dobj->aobjList;
-    dobj->aobjList = NULL;
+    origaobj = dobj->aobj;
+    dobj->aobj = NULL;
     if (animLists != NULL && *animLists != NULL) {
         dobj->animList = *animLists;
-        dobj->timeLeft = ANIMATION_CHANGED;
-        dobj->timePassed = arg2;
+        dobj->timeRemaining = ANIMATION_CHANGED;
+        dobj->timeElapsed = arg2;
         animProcessModelAnimation(dobj);
-        spC0 = dobj->aobjList;
-        dobj->aobjList = NULL;
+        spC0 = dobj->aobj;
+        dobj->aobj = NULL;
     }
 
     for (i = ANIM_PARAM_MODEL_MIN; i <= ANIM_PARAM_MODEL_MAX; i++) {
@@ -1494,7 +1494,7 @@ f32 func_8000EC98(DObj *dobj, AnimCmd **animLists, f32 arg2, UnkE4E4Arg* arg3, s
             continue;
         }
 
-        func_8000E554(1, dobj, &oldValue, &oldRate, origAobjList, arg3, i, setRate, &interpPos2, &interpPosReady2);
+        func_8000E554(1, dobj, &oldValue, &oldRate, origaobj, arg3, i, setRate, &interpPos2, &interpPosReady2);
 
         if (newValue != oldValue || newRate != oldRate) {
             newAObj = HS64_AObjNew(dobj, i);
@@ -1539,16 +1539,16 @@ f32 func_8000EC98(DObj *dobj, AnimCmd **animLists, f32 arg2, UnkE4E4Arg* arg3, s
         }
     }
 
-    origAObj = dobj->aobjList;
-    dobj->aobjList = origAobjList;
+    origAObj = dobj->aobj;
+    dobj->aobj = origaobj;
     omDObjResetAnimation(dobj);
-    dobj->aobjList = spC0;
+    dobj->aobj = spC0;
     omDObjResetAnimation(dobj);
 
-    dobj->aobjList = origAObj;
+    dobj->aobj = origAObj;
     dobj->animList = NULL;
-    dobj->timeLeft = dobj->animSpeed + duration;
-    dobj->timePassed = -dobj->animSpeed;
+    dobj->timeRemaining = dobj->animSpeed + duration;
+    dobj->timeElapsed = -dobj->animSpeed;
 
     return spA4;
 }
@@ -1635,7 +1635,7 @@ void func_8000F230(GObj* obj, AnimCmd** cmdList, f32 animTimer, UnkE4E4Arg* arg3
             for (i = ANIM_PARAM_MODEL_MIN; i <= ANIM_PARAM_MODEL_MAX; i++) {
                 if (i != ANIM_PARAM_4) {
 
-                    func_8000E554(0, dobj, &value, NULL, dobj->aobjList, arg3, i, 0, &sp70, &sp7C);
+                    func_8000E554(0, dobj, &value, NULL, dobj->aobj, arg3, i, 0, &sp70, &sp7C);
 
                     switch (i) {
                         case ANIM_PARAM_ROTATION_X:
@@ -1669,7 +1669,7 @@ void func_8000F230(GObj* obj, AnimCmd** cmdList, f32 animTimer, UnkE4E4Arg* arg3
                 }
             }
         } else {
-            dobj->timeLeft = ANIMATION_DISABLED;
+            dobj->timeRemaining = ANIMATION_DISABLED;
             dobj->animCBReceiver = false;
             if (arg3 != NULL) {
                 dobj->pos.v = arg3->position;

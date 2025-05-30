@@ -245,11 +245,11 @@ typedef struct MObj {
     /* 0x84 */ f32 primLOD;
     /* 0x88 */ f32 palIndex;
     /* 0x8C */ char unk_8C[0x4];
-    /* 0x90 */ struct AObj *aobjList;
+    /* 0x90 */ struct AObj *aobj;
     /* 0x94 */ union AnimCmd *animList;
-    /* 0x98 */ f32 timeLeft;
+    /* 0x98 */ f32 timeRemaining;
     /* 0x9C */ f32 animSpeed;
-    /* 0xA0 */ f32 timePassed;
+    /* 0xA0 */ f32 timeElapsed;
     /* 0xA4 */ char unk_A4[0x4];
 } MObj; // size = 0xA8;
 

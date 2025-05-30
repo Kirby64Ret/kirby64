@@ -737,8 +737,8 @@ void func_800099E4(struct Animation *anim) {
     anim->scale = -FLT_MAX;
 }
 
-#ifdef MIPS_TO_C
-MObj* omDObjAddMObj(DObj* dobj, Texture* arg1) {
+#ifdef NON_MATCHING
+MObj* omDObjAddMObj(DObj* dobj, TextureScroll *texture) {
     MObj* mobj;
 
     mobj = omGetMObj();
@@ -756,19 +756,19 @@ MObj* omDObjAddMObj(DObj* dobj, Texture* arg1) {
     }
 
     mobj->next = NULL;
-    mobj->lodLevel = arg1->unk_54 / 255.0f;
-    mobj->texture = *arg1;
+    mobj->primLOD = texture->unk_54 / 255.0f;
+    mobj->texture = *texture;
 
-    mobj->texture.unk_24 = arg1->unk_14;
-    mobj->texture.unk_28 = arg1->scaleS;
-    mobj->imageIndex = 0;
-    mobj->nextImageIndex = 0;
-    mobj->paletteIndex = 0.f;
-    mobj->aobjList = NULL;
+    mobj->texture.xScale = texture->xScale;
+    mobj->texture.yScale = texture->yScale;
+    mobj->texIndex1 = 0;
+    mobj->texIndex2 = 0;
+    mobj->palIndex = 0.f;
+    mobj->aobj = NULL;
     mobj->animList = NULL;
-    mobj->timeLeft = ANIMATION_DISABLED;
+    mobj->timeRemaining = ANIMATION_DISABLED;
     mobj->animSpeed = 1.0f;
-    mobj->timePassed = 0.0f;
+    mobj->timeElapsed = 0.0f;
 
     return mobj;
 }
