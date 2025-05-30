@@ -2401,7 +2401,7 @@ block_64:
             *temp_v0_5 += (1.0f / temp_a1->unkC) * var_f0_4;
             func_800F8570(omCurrentObj->objId, temp_a1, omCurrentObj, D_800E17D0);
             temp_v1_8 = omCurrentObj->objId;
-            func_8001E300(&argF, (D_80129114->unk4 + (D_800E5F90[temp_v1_8] * 0x10))->unk4, D_800E6BD0[temp_v1_8]);
+            mtxGetInterpolatedPosition(&argF, (D_80129114->unk4 + (D_800E5F90[temp_v1_8] * 0x10))->unk4, D_800E6BD0[temp_v1_8]);
             gEntitiesNextPosXArray[omCurrentObj->objId] = argF;
             gEntitiesNextPosZArray[omCurrentObj->objId] = arg11;
             gKirbyState.data = 0;
@@ -3239,7 +3239,7 @@ s32 func_801226FC(void) {
                 *temp_a1 += (1.0f / (D_80129114->unk4 + (D_800E5F90[temp_v0_2] * 0x10))->unk4->unkC) * var_f0;
                 func_800F8570(omCurrentObj->objId, temp_a1);
                 temp_v0_3 = omCurrentObj->objId;
-                func_8001E300(&sp2C, (D_80129114->unk4 + (D_800E5F90[temp_v0_3] * 0x10))->unk4, D_800E6BD0[temp_v0_3]);
+                mtxGetInterpolatedPosition(&sp2C, (D_80129114->unk4 + (D_800E5F90[temp_v0_3] * 0x10))->unk4, D_800E6BD0[temp_v0_3]);
                 gEntitiesNextPosXArray[omCurrentObj->objId] = sp2C;
                 gEntitiesNextPosZArray[omCurrentObj->objId] = sp34;
                 gKirbyState.unk168 = 0.0f;

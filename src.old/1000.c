@@ -373,7 +373,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80008EC4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80009628.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/omDObjAppendMtx.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80009658.s")
 
@@ -986,7 +986,7 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001E104.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001E300.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/mtxGetInterpolatedPosition.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001E344.s")
 

@@ -57,6 +57,12 @@ def main():
 
     with open(os.path.join(root_dir, "ctx.c"), "w", encoding="UTF-8") as f:
         f.write("#define NULL (void*)0\n")
+        f.write("#define FLOAT_MAX 3.4028234e38f\n")
+        f.write("#define ANIMATION_DISABLED ((-FLOAT_MAX))\n")
+        f.write("#define ANIMATION_CHANGED ((-FLOAT_MAX) / 2)\n")
+        f.write("#define ANIMATION_FINISHED ((-FLOAT_MAX) / 3)\n")
+        f.write("#define ARRAY_COUNT(arr) (s32)(sizeof(arr) / sizeof(arr[0]))\n")
+
         f.write(output)
 
 

@@ -33,7 +33,7 @@ extern s32 D_80129118;
 
 #include "unk_structs/D_80129114.h"
 
-extern void func_8001E300(f32 a, s32 b, f32 c, s32 d);
+extern void mtxGetInterpolatedPosition(f32 a, s32 b, f32 c, s32 d);
 
 u32 func_800F9020(struct Normal *arg0, s32 arg1, f32 arg2) {
     if (arg1 >= D_80129118 || arg1 < 0 || arg2 < 0.0f || arg2 > 1.0f) {
@@ -42,7 +42,7 @@ u32 func_800F9020(struct Normal *arg0, s32 arg1, f32 arg2) {
         arg0->x = 0.0f;
         return 1;
     } else {
-        func_8001E300(arg2, D_80129114->unk4[arg1].unk4, arg2, arg1);
+        mtxGetInterpolatedPosition(arg2, D_80129114->unk4[arg1].unk4, arg2, arg1);
         return 0;
     }
 }

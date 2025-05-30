@@ -297,7 +297,7 @@ void func_800F8E6C(s32 *arg0) {
         temp_a1_2 = (temp_v1->unk4 + var_a3)->unk4;
         sp2C = temp_v0;
         sp78 = temp_a1_2;
-        func_8001E300(&sp64, temp_a1_2, var_f0, var_a3);
+        mtxGetInterpolatedPosition(&sp64, temp_a1_2, var_f0, var_a3);
         gEntitiesNextPosXArray[temp_a2] = sp64;
         gEntitiesNextPosZArray[temp_a2] = sp6C;
         sp4C = 0.0f;
@@ -317,12 +317,12 @@ void func_800F8E6C(s32 *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F8E6C.s")
 #endif
 
-s32 func_800F9020(Vector *v, s32 arg1, f32 arg2) {
-    if ((arg1 >= D_80129118) || (arg1 < 0) || (arg2 < 0.0f) || (arg2 > 1.0f)) {
+s32 func_800F9020(Vector *v, s32 arg1, f32 param) {
+    if ((arg1 >= D_80129118) || (arg1 < 0) || (param < 0.0f) || (param > 1.0f)) {
         v->x = v->y = v->z = 0.0f;
         return 1;
     } else {
-        func_8001E300(arg2, D_80129114->unk4[arg1].unk4, arg2, arg1);
+        mtxGetInterpolatedPosition(v, D_80129114->unk4[arg1].unk4, param);
         return 0;
     }
 }
@@ -782,7 +782,7 @@ block_43:
 void func_800F9C54(Vector* arg0, f32 arg1, Vector* arg2, s32 arg3) {
     Vector tmp;
 
-    func_8001E300(&tmp, arg0, arg1, arg3);
+    mtxGetInterpolatedPosition(&tmp, arg0, arg1, arg3);
     vec3_dist_square(arg2, &tmp);
 }
 #else
@@ -975,16 +975,16 @@ void func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
         sp9C = temp_v1->unk4;
     }
     spA0 = var_f2;
-    func_8001E300(&sp70, arg0, var_f2);
-    func_8001E300(&sp7C, arg0, var_f20);
-    func_8001E300(&sp64, arg0, sp9C);
+    mtxGetInterpolatedPosition(&sp70, arg0, var_f2);
+    mtxGetInterpolatedPosition(&sp7C, arg0, var_f20);
+    mtxGetInterpolatedPosition(&sp64, arg0, sp9C);
     spAC = (func_800F9F80(arg1, &sp70, &sp7C) * (var_f20 - spA0)) + spA0;
     spA8 = (func_800F9F80(arg1, &sp7C, &sp64) * (sp9C - var_f20)) + var_f20;
     spAC = func_800F9F10(spAC, arg3);
     spA8 = func_800F9F10(spA8, arg3);
-    func_8001E300(&sp4C, arg0, spAC);
-    func_8001E300(&sp40, arg0, spA8);
-    func_8001E300(&sp58, arg0, var_f20);
+    mtxGetInterpolatedPosition(&sp4C, arg0, spAC);
+    mtxGetInterpolatedPosition(&sp40, arg0, spA8);
+    mtxGetInterpolatedPosition(&sp58, arg0, var_f20);
     sp8C = vec3_dist_square(&sp4C, arg1);
     sp90 = vec3_dist_square(&sp58, arg1);
     temp_f0 = vec3_dist_square(&sp40, arg1);

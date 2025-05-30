@@ -243,15 +243,15 @@ void func_8000B870(GObj *arg0) {
 #endif
 
 void ohCreateDefaultMatricesDeg(DObj *d) {
-    func_80009628(d, 0x12, 0);
-    func_80009628(d, 0x15, 0);
-    func_80009628(d, 0x20, 0);
+    omDObjAppendMtx(d, 0x12, 0);
+    omDObjAppendMtx(d, 0x15, 0);
+    omDObjAppendMtx(d, 0x20, 0);
 }
 
 void ohCreateDefaultMatricesRad(DObj *d) {
-    func_80009628(d, 0x12, 0);
-    func_80009628(d, 0x1A, 0);
-    func_80009628(d, 0x20, 0);
+    omDObjAppendMtx(d, 0x12, 0);
+    omDObjAppendMtx(d, 0x1A, 0);
+    omDObjAppendMtx(d, 0x20, 0);
 }
 
 void ohCreateDefaultCameraMatrices(Camera *cam) {

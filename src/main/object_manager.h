@@ -227,7 +227,7 @@ typedef struct MObj {
     /* 0x00 */ struct MObj *next;
     /* 0x04 */ s32 unk_04;
 
-    struct TextureScroll texScroll;
+    struct TextureScroll texture;
     
     /* 0x80 */ u16 texIndex1;
     /* 0x82 */ u16 texIndex2;
@@ -536,5 +536,6 @@ void omLinkGObjDL(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);
 struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
 void omUpdateAll();
 void HS64_omInit(ObjectSetup *);
+AObj *func_800098AC(MObj *, u8);
 
 #endif

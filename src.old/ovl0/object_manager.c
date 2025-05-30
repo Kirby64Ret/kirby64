@@ -629,7 +629,7 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2_5/func_80008EC4.s")
 
 void func_80008EC4(struct DObj *, u8, u8, u32);
 
-void func_80009628(struct DObj *arg0, u8 arg1, u8 arg2) {
+void omDObjAppendMtx(struct DObj *arg0, u8 arg1, u8 arg2) {
     func_80008EC4(arg0, arg1, arg2, arg0->unk56);
 }
 

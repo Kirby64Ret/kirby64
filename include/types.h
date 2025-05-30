@@ -91,6 +91,13 @@ struct UnkStruct8015C740 {
     u8 flags;
 };
 
+typedef union ColorPack {
+    struct {
+        u8 r, g, b, a;
+    } color;
+    u32 pack;
+} ColorPack;
+
 // technically everything in this struct is a void *, but it's so much easier this way
 struct BankHeader {
     /* 0x0  */ u32 *geoBlockTable;

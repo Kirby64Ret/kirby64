@@ -110,27 +110,27 @@ typedef struct {
     /* 0x10 */ s32* ids;
 } AnimationHeader;
 
-typedef struct UnkEC64Arg3 {
+typedef struct UnkE4E4Arg {
     /* 0x00 */ s32 unk_00;
     /* 0x04 */ void* unk04;
-    /* 0x08 */ Vec3f position;
-    /* 0x14 */ Vec3f rotation;
-    /* 0x20 */ Vec3f scale;
-} UnkEC64Arg3; // size == 0x2C
+    /* 0x08 */ Vector position;
+    /* 0x14 */ Vector rotation;
+    /* 0x20 */ Vector scale;
+} UnkE4E4Arg; // size == 0x2C
 
 DObj* animModelTreeNextNode(DObj*);
-// void anim_func_8000FBC4(GObj* obj, struct UnkEC64Arg3* arg1, DObj** arg2);
+// void anim_func_8000FBC4(GObj* obj, struct UnkE4E4Arg* arg1, DObj** arg2);
 void animSetModelAnimationSpeed(GObj* obj, f32 speed);
 void animSetTextureAnimationSpeed(GObj* obj, f32 speed);
 void animSetModelTreeAnimation(GObj* obj, AnimCmd** animLists, f32 skipFrames);
 void animSetModelTreeTextureAnimation(GObj* obj, AnimCmd*** textureAnimLists, f32 skipFrames);
 void animUpdateModelTreeAnimation(GObj* obj);
-// void anim_func_80010230(GObj* arg0, UnkEC64Arg3* arg1, Texture*** arg2, DObj** arg3,
+// void anim_func_80010230(GObj* arg0, UnkE4E4Arg* arg1, Texture*** arg2, DObj** arg3,
 //                    u8 arg4, u8 arg5, u8 arg6);
 void animSetCameraAnimation(Camera* cam, AnimCmd* animList, f32 skipFrames);
 void animUpdateCameraAnimation(GObj* obj);
 // void anim_func_8000FDA0(DObj* dobj, u8 arg1, u8 arg2, u8 arg3);
-// void anim_func_8000F8E4(GObj* arg0, AnimCmd** arg1, f32 arg2, UnkEC64Arg3* arg3);
+// void anim_func_8000F8E4(GObj* arg0, AnimCmd** arg1, f32 arg2, UnkE4E4Arg* arg3);
 void animSetModelAndTextureAnimationSpeed(GObj* obj, f32 speed);
 
 #endif // __ANIM_H__

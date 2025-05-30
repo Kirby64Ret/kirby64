@@ -72,6 +72,6 @@ void create_y_rotation_matrix(Mat4 arg0, f32 angle);
 void func_800A465C(Mat4 mf, f32 x, f32 y, f32 z);
 void func_8001B5E4(Mat4, f32, f32, f32);
 void HS64_MkTranslateMtxF(Mat4 mf, f32 x, f32 y, f32 z);
-void func_8001E300(f32 a, Vector *b, f32 c, s32 d);
+void mtxGetInterpolatedPosition(Vector *a, s32 *b, f32 c);
 
 #endif // LB_MATRIX_H

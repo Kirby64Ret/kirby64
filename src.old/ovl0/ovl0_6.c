@@ -702,6 +702,6 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001E000.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001E104.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001E300.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/mtxGetInterpolatedPosition.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001E344.s")

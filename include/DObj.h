@@ -3,6 +3,16 @@
 
 #include "main/object_manager.h"
 
+typedef struct {
+    OMMtx *mtx;
+    Vector v;
+} OMMtxFloat3;
+typedef struct {
+    OMMtx *mtx;
+    float a;
+    Vector v;
+} OMMtxFloat4;
+
 typedef struct DObj {
     /* 0x00 */ struct DObj* nextFree;
     /* 0x04 */ struct GObj* gobj;
@@ -10,9 +20,10 @@ typedef struct DObj {
     /* 0x0C */ struct DObj* prev;
     /* 0x10 */ struct DObj* firstChild;
     /* 0x14 */ struct DObj* parent; // checked with `1` for a top level
-    struct DObj *unk18;
-    u8 filler[0x4C - 0x18 - 0x04];
-    u32 unk4C;
+    OMMtxFloat3 pos;
+    OMMtxFloat4 angle;
+    OMMtxFloat3 scale;
+    u32 *unk4C;
     u32 unk50;
     u8 flags;
     u8 animCBReceiver;

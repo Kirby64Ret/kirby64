@@ -1666,6 +1666,8 @@ void func_8001D34C(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D34C.s")
 #endif
 
+// File split between lbmatrix and interpolation?
+
 #ifdef MIPS_TO_C
 void func_8001D3D0(void *arg0, void *arg1, f32 arg2, f32 arg3) {
     f32 sp8;
@@ -2077,12 +2079,11 @@ f32 func_8001E104(void *arg0, f32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_8001E300(s32 arg0, s32 arg1, ? arg2) {
+void mtxGetInterpolatedPosition(s32 arg0, s32 arg1, ? arg2) {
     func_8001DB54(arg0, arg1, func_8001E104(arg2, arg1, arg2));
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001E300.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/mtxGetInterpolatedPosition.s")
 #endif
 
 #ifdef MIPS_TO_C

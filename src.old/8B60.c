@@ -82,7 +82,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80008EC4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80009628.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/8B60/omDObjAppendMtx.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_80009658.s")
 

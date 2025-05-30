@@ -769,6 +769,7 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+omDObjAppendMtx = 0x80009628; // type:func
 omDObjResetAnimation = 0x8000984C; // type:func
 omEndProcess = 0x80008DA8; // type:func
 omCameraAddMtx = 0x80009658; // type:func
@@ -1001,6 +1002,8 @@ animSetTextureAnimationSpeed = 0x8000BFA0; // type:func
 animSetModelAndTextureAnimationSpeed = 0x8000BF3C; // type:func
 animSetModelAnimationSpeed = 0x8000BEF4; // type:func
 animModelTreeNextNode = 0x8000BE90; // type:func
+
+mtxGetInterpolatedPosition = 0x8001E300; // type:func
 
 // ovl1_7
 procMainStub = 0x800B1434; // type:func

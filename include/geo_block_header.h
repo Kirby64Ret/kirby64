@@ -71,17 +71,17 @@ struct TextureScroll {
     /* 0x4C */ f32 unk_4C;
     /* 0x50 */ s32 unk_50;
     /* 0x54 */ s32 unk_54;
-    /* 0x58 */ u8 primColor[4];
+    /* 0x58 */ ColorPack primColor;
 
     /* 0x5C */ u8 unk_5C;
     /* 0x5D */ s8 minLOD;
     /* 0x5E */ u8 unk_5E;
     /* 0x5F */ u8 unk_5F;
 
-    /* 0x60 */ u8 envColor[4];
-    /* 0x64 */ u8 blendColor[4];
-    /* 0x68 */ u8 lightColor1[4];
-    /* 0x6C */ u8 lightColor2[4];
+    /* 0x60 */ ColorPack envColor;
+    /* 0x64 */ ColorPack blendColor;
+    /* 0x68 */ ColorPack lightColor1;
+    /* 0x6C */ ColorPack lightColor2;
     /* 0x70 */ u32 unk70;
     /* 0x74 */ u32 unk74;
     /* 0x78 */ u32 unk78;

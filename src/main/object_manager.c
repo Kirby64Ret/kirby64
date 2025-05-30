@@ -589,7 +589,7 @@ void omEndProcess(struct GObjProcess *proc) {
 
 void func_80008EC4(struct DObj *, u8, u8, u32);
 
-void func_80009628(struct DObj *arg0, u8 arg1, u8 arg2) {
+void omDObjAppendMtx(struct DObj *arg0, u8 arg1, u8 arg2) {
     func_80008EC4(arg0, arg1, arg2, arg0->unk56);
 }
 
@@ -673,7 +673,7 @@ void omDObjResetAnimation(struct unk8000BE90Func *arg0) {
     arg0->unk74 = -FLT_MAX;
 }
 
-struct AObj *func_800098AC(s32 arg0, u8 index) {
+struct AObj *func_800098AC(MObj *mobj, u8 index) {
     struct AObj *toReturn;
 
     toReturn = HS64_AObjPop();
@@ -686,7 +686,7 @@ struct AObj *func_800098AC(s32 arg0, u8 index) {
     toReturn->startVal = 0.0f;
     toReturn->timer = 0.0f;
     toReturn->Rduration = 1.0f;
-    func_80008840(arg0, toReturn);
+    func_80008840(mobj, toReturn);
     return toReturn;
 }
 

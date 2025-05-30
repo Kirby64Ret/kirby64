@@ -152,6 +152,6 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001E104.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001E300.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/mtxGetInterpolatedPosition.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001E344.s")
