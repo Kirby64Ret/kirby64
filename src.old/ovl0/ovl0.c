@@ -3,7 +3,7 @@
 #include "ovl0_2_5.h"
 
 // ovl0
-OSViMode D_8003FDC0 = {
+OSViMode osViModeFpalLan1 = {
     0x2C,
     {
         0x0000311E,
