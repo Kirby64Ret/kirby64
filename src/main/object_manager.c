@@ -741,7 +741,7 @@ void func_800099E4(struct Animation *anim) {
 MObj* omDObjAddMObj(DObj* dobj, TextureScroll *texture) {
     MObj* mobj;
 
-    mobj = omGetMObj();
+    mobj = HS64_MObjPop();
 
     if (dobj->mobjList != NULL) {
         MObj* curr = dobj->mobjList->next;
