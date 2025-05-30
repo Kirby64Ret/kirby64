@@ -58,6 +58,11 @@
 // another way of converting virtual to physical
 #define VIRTUAL_TO_PHYSICAL2(addr)  ((u8 *)(addr) - 0x80000000U)
 
+#define true TRUE
+#define false FALSE
+
+#define SQ(x) ((x) * (x))
+
 #define ABSF(x) ((x) < 0.0f ? -(x) : (x))
 #define ABSFR(x) (-(x) < 0.0f ? (x) : -(x))
 #define ABS(x) ((x) < 0 ? -(x) : (x))
@@ -68,6 +73,9 @@
 #define ALIGN16(x) (((x) + 0xF) & -0x10)
 #define ALIGN8(x) (((x) + 7) & -8)
 #define ALIGN4(x) (((x) + 3) & -4)
+
+#define FLOAT_MAX 3.4028234e38f
+// #define FLOAT_NEG_MAX -FLOAT_MAX
 
 // makes it easier to move all the prototypes and externs to the top of the file
 #define IN_FILE

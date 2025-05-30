@@ -223,7 +223,7 @@ typedef struct {
     /* 0x08 */ s32 inc;
 } uvState;
 
-struct MObj {
+typedef struct MObj {
     /* 0x00 */ struct MObj *next;
     /* 0x04 */ s32 unk_04;
 
@@ -234,13 +234,13 @@ struct MObj {
     /* 0x84 */ f32 primLOD;
     /* 0x88 */ f32 palIndex;
     /* 0x8C */ char unk_8C[0x4];
-    /* 0x90 */ uvOP* ops;
-    /* 0x94 */ uvState* states;
-    /* 0x98 */ f32 offset;
-    /* 0x9C */ f32 increment;
-    /* 0xA0 */ f32 unk_A0;
+    /* 0x90 */ struct AObj *aobjList;
+    /* 0x94 */ union AnimCmd *animList;
+    /* 0x98 */ f32 timeLeft;
+    /* 0x9C */ f32 animSpeed;
+    /* 0xA0 */ f32 timePassed;
     /* 0xA4 */ char unk_A4[0x4];
-}; // size = 0xA8;
+} MObj; // size = 0xA8;
 
 enum CameraFlags {
     CAMERA_FLAG_1 = 0x01,

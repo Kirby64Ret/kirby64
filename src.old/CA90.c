@@ -1,52 +1,52 @@
 #include "common.h"
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000BE90.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animModelTreeNextNode.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000BEF4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetModelAnimationSpeed.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000BF3C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetModelAndTextureAnimationSpeed.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000BFA0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetTextureAnimationSpeed.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C000.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animResetModelAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C044.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animResetModelAndTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C0AC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animResetTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C10C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetModelAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C144.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C17C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetModelTreeAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C218.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetModelTreeTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C2C8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetModelTreeAndTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000C3D8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animProcessModelAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000CE18.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animGetAObjInterpValue.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000CECC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animGetAObjInterpRate.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000CF84.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animGetAObjValue.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000D030.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animGetAObjRate.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000D0AC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animUpdateModelAnimatedParams.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000D35C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animProcessTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000DE30.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animUpdateTextureAnimatedParams.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000E324.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animUpdateModelTreeAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000E3F8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animGetAObjByParamID.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000E434.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animSetModelAnimDuration.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000E474.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/CA90/animGetModelParamValue.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/CA90/func_8000E4E4.s")
 

@@ -1757,7 +1757,7 @@ void func_800AACC8(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
     if (var_s2 != NULL) {
         do {
             var_s2->unk55 = 0;
-            temp_v0 = func_8000BE90(var_s2);
+            temp_v0 = animModelTreeNextNode(var_s2);
             var_s2 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -1781,7 +1781,7 @@ void func_800AACC8(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
             temp_a1 = *(var_v0 + temp_s6);
             temp_s2 = *(D_800DFBD0[omCurrentObj->objId] + var_v0);
             if (temp_a1 != 0) {
-                func_8000C10C(temp_s2, temp_a1, arg3);
+                animSetModelAnimation(temp_s2, temp_a1, arg3);
                 temp_s2->unk55 = var_s5;
                 temp_s2->unk4->unk40 = arg3;
                 D_800DF310[omCurrentObj->objId] = NULL;
@@ -1801,7 +1801,7 @@ void func_800AACC8(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
                         do {
                             temp_a1_2 = *var_s1;
                             if (temp_a1_2 != 0) {
-                                func_8000C144(var_s0_2, temp_a1_2, arg3);
+                                animSetTextureAnimation(var_s0_2, temp_a1_2, arg3);
                             }
                             var_s0_2 = *var_s0_2;
                             var_s1 += 4;

@@ -657,7 +657,7 @@ struct AObj *HS64_AObjNew(struct Animation *anim, u8 index) {
 
 extern f32 D_8004064C;
 
-void func_8000984C(struct unk8000BE90Func *arg0) {
+void omDObjResetAnimation(struct unk8000BE90Func *arg0) {
     struct AObj *temp_s1;
     struct AObj *phi_s0;
 
@@ -1440,7 +1440,7 @@ void func_8000B988(struct GObj *arg0) {
     phi_s0 = arg0->unk3C;
     while (phi_s0 != 0) {
         func_80009B5C(phi_s0);
-        phi_s0 = func_8000BE90(phi_s0); // This indicates that struct unk8000BE90Func and struct UnkStruct8004A7C4_3C are the same
+        phi_s0 = animModelTreeNextNode(phi_s0); // This indicates that struct unk8000BE90Func and struct UnkStruct8004A7C4_3C are the same
     }
 }
 

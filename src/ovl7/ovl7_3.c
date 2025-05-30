@@ -1328,7 +1328,7 @@ void func_801A3E0C_ovl7(void) {
         func_801A3980_ovl7();
         return;
     }
-    func_8000E324();
+    animUpdateModelTreeAnimation();
     func_8019F3B0_ovl7();
 }
 #else

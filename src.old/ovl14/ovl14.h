@@ -8,7 +8,7 @@ extern void func_800FD570(s32, s32, f32, f32, f32);
 extern void func_800B1900(u16);
 extern void func_800B2288(s32, f32);
 extern s32 func_800F9888(s32 *, f32);
-extern void func_8000C144(void *, s32, f32);
+extern void animSetTextureAnimation(void *, s32, f32);
 extern void func_800B6474(s32);
 
 extern s32 D_801D9CCC; // OVL8

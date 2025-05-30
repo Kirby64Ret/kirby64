@@ -23,7 +23,7 @@ struct ModelNode{
 };
 
 
-struct LayoutNode {
+typedef struct LayoutNode {
 	struct LayoutNode *next;
 	struct LayoutNode *unk4;
 	struct LayoutNode *sibling;
@@ -57,7 +57,7 @@ struct LayoutNode {
     u32 unk7C;
     // TODO: analyze/fill out struct
     void *unk80;
-};
+} LayoutNode;
 
 struct struct8011BA10_temp {
     u8 unk0;

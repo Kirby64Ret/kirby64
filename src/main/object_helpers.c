@@ -264,7 +264,7 @@ void ohDobjTreeRemoveAllMObjs(GObj *g) {
 
     while (d != NULL) {
         func_80009B5C(d);
-        d = func_8000BE90(d);
+        d = animModelTreeNextNode(d);
     }
 }
 

@@ -14,8 +14,8 @@ typedef struct DObj {
     u8 filler[0x4C - 0x18 - 0x04];
     u32 unk4C;
     u32 unk50;
-    u8 unk54;
-    u8 unk55;
+    u8 flags;
+    u8 animCBReceiver;
     u8 unk56;
     u8 unk57;
     u32 unk58;
@@ -23,12 +23,12 @@ typedef struct DObj {
     u32 unk60;
     u32 unk64;
     u32 unk68;
-    u32 unk6C;
-    u32 unk70;
-    f32 unk74;
-    f32 unk78;
-    f32 unk7C;
-    struct MObj *unk80;
+    struct AObj *aobjList;
+    union AnimCmd *animList;
+    f32 timeLeft;
+    f32 animSpeed;
+    f32 timePassed;
+    struct MObj *mobjList;
     u32 unk84;
 } DObj;
 

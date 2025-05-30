@@ -27,8 +27,7 @@ You will need an original copy of the ROM to proceed.
  - Work on ASM shiftability and struct documentation (Asset shiftability is done!)
  
 ## TODO (Necessary)
- - Actually decompile the code
- - Clean up `undefined_syms.txt`
+ - Actually decompile the code lol
 
 ## TODO (Want to contribute? 😳)
  - Document Kirby's action states (Might require PJ64 Debugger)

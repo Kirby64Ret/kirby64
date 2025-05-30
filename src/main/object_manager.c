@@ -659,7 +659,7 @@ struct AObj *HS64_AObjNew(struct Animation *anim, u8 paramID) {
     return aobj;
 }
 
-void func_8000984C(struct unk8000BE90Func *arg0) {
+void omDObjResetAnimation(struct unk8000BE90Func *arg0) {
     struct AObj *temp_s1;
     struct AObj *phi_s0;
 
@@ -869,8 +869,8 @@ GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri) {
     toReturn->kind = 0;
     toReturn->data = NULL;
     toReturn->dl_link = 0x21;
-    toReturn->unk40 = 0.0f;
-    toReturn->unk48 = 0;
+    toReturn->animTimer = 0.0f;
+    toReturn->onAnimate = 0;
     toReturn->unk4C = 0;
     return toReturn;
 }

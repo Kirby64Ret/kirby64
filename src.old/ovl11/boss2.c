@@ -40,7 +40,7 @@ void func_801DB2BC_ovl11(struct GObj *this, f32 arg1) {
             tmp->unk88 = arg1;
             tmp = tmp->unk0;
         }
-        tmp_0 = func_8000BE90(tmp_0);
+        tmp_0 = animModelTreeNextNode(tmp_0);
     }
 }
 

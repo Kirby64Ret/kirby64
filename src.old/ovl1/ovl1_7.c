@@ -58,10 +58,10 @@ void func_800AEE20(s32 arg0, f32 arg1) {
     }
 }
 
-void func_8000C218(struct GObj *, s32, f32);
+void animSetModelTreeTextureAnimation(struct GObj *, s32, f32);
 
 void func_800AEEB4(s32 arg0, f32 arg1) {
-    func_8000C218(omCurrentObj, arg0, arg1);
+    animSetModelTreeTextureAnimation(omCurrentObj, arg0, arg1);
     if (arg1 != 0.0f) {
         func_8000E324_ovl1(omCurrentObj);
     }
@@ -77,7 +77,7 @@ void func_800AEF0C(s32 arg0, f32 arg1, struct GObj *arg2) {
 }
 
 void func_800AEFA4(s32 arg0, f32 arg1, struct GObj *arg2) {
-    func_8000C218(arg2, arg0, arg1);
+    animSetModelTreeTextureAnimation(arg2, arg0, arg1);
     if (arg1 != 0.0f) {
         func_8000E324_ovl1(arg2);
     }
@@ -124,7 +124,7 @@ u32 func_800AF0F4(void) {
         if (s0->unk80 != 0) {
             sp20 = s0->unk80;
         } else {
-            s0 = func_8000BE90(s0);
+            s0 = animModelTreeNextNode(s0);
         }
     }
     if (D_800D6700 == sp20->unk98 || D_800D6704 == sp20->unk98) {
@@ -161,7 +161,7 @@ void func_800AF314(void) {
 
     while (tmp != 0) {
         func_8000984C_ovl1(tmp);
-        tmp = func_8000BE90(tmp);
+        tmp = animModelTreeNextNode(tmp);
     }
     D_800DF310[omCurrentObj->objId] = 0;
     D_800DD8D0[omCurrentObj->objId] = D_800DD8D0[omCurrentObj->objId] & 0x3FFFFFFF;

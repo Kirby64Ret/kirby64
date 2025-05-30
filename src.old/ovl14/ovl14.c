@@ -1159,7 +1159,7 @@ void func_801DE548_ovl14(void *arg0, f32 arg1) {
                     var_v0 = var_v0->unk0;
                 } while (var_v0 != NULL);
             }
-            temp_v0 = func_8000BE90(var_s0);
+            temp_v0 = animModelTreeNextNode(var_s0);
             var_s0 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -1185,7 +1185,7 @@ void func_801DE5A8_ovl14(void *arg0, f32 arg1) {
                     var_v0 = var_v0->unk0;
                 } while (var_v0 != NULL);
             }
-            temp_v0 = func_8000BE90(var_s0);
+            temp_v0 = animModelTreeNextNode(var_s0);
             var_s0 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -1211,7 +1211,7 @@ loop_2:
                 var_v0 = var_v0->unk0;
             } while (var_v0 != NULL);
         }
-        temp_v0 = func_8000BE90(var_s0);
+        temp_v0 = animModelTreeNextNode(var_s0);
         var_s0 = temp_v0;
         if (((D_800D7098.unk10 != 0) || (temp_v0 < D_800DFBD0[omCurrentObj->objId]->unk2C)) && (var_s0 != NULL)) {
             goto loop_2;
@@ -1598,22 +1598,22 @@ void func_801DF580_ovl14(f32 arg0) {
 
     temp_s0 = *((s32***)D_800E9FE0[omCurrentObj->objId].as_ptr);
     if (D_800DFBD0[omCurrentObj->objId][4]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][4]->unk80, *temp_s0[4], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][4]->unk80, *temp_s0[4], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][5]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][5]->unk80, *temp_s0[5], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][5]->unk80, *temp_s0[5], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][6]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][6]->unk80, *temp_s0[6], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][6]->unk80, *temp_s0[6], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][7]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][7]->unk80, *temp_s0[7], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][7]->unk80, *temp_s0[7], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][8]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][8]->unk80, *temp_s0[8], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][8]->unk80, *temp_s0[8], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][9]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][9]->unk80, *temp_s0[9], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][9]->unk80, *temp_s0[9], arg0);
     }
 }
 
@@ -1626,22 +1626,22 @@ void func_801DF75C_ovl14(f32 arg0) {
 
     temp_s0 = *((s32***)D_800EC2E0[omCurrentObj->objId].as_ptr);
     if (D_800DFBD0[omCurrentObj->objId][4]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][4]->unk80, *temp_s0[4], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][4]->unk80, *temp_s0[4], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][5]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][5]->unk80, *temp_s0[5], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][5]->unk80, *temp_s0[5], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][6]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][6]->unk80, *temp_s0[6], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][6]->unk80, *temp_s0[6], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][7]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][7]->unk80, *temp_s0[7], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][7]->unk80, *temp_s0[7], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][8]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][8]->unk80, *temp_s0[8], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][8]->unk80, *temp_s0[8], arg0);
     }
     if (D_800DFBD0[omCurrentObj->objId][9]->unk80 != NULL) {
-        func_8000C144(D_800DFBD0[omCurrentObj->objId][9]->unk80, *temp_s0[9], arg0);
+        animSetTextureAnimation(D_800DFBD0[omCurrentObj->objId][9]->unk80, *temp_s0[9], arg0);
     }
 }
 
@@ -1661,7 +1661,7 @@ void func_801DF8FC_ovl14(? arg1) {
         var_s3 = omCurrentObj->unk3C;
         var_s2 = *D_800DF850[omCurrentObj->objId];
         do {
-            var_v0 = func_8000BE90(var_s3);
+            var_v0 = animModelTreeNextNode(var_s3);
             var_s0 += 1;
             var_s3 = var_v0;
         } while (var_s0 != 0xA);
@@ -1676,7 +1676,7 @@ void func_801DF8FC_ovl14(? arg1) {
                             do {
                                 temp_a1 = *var_s1;
                                 if (temp_a1 != 0) {
-                                    func_8000C144(var_s0_2, temp_a1, arg1);
+                                    animSetTextureAnimation(var_s0_2, temp_a1, arg1);
                                 }
                                 var_s0_2 = *var_s0_2;
                                 var_s1 += 4;
@@ -1685,7 +1685,7 @@ void func_801DF8FC_ovl14(? arg1) {
                     }
                     var_s2 += 4;
                 }
-                var_v0 = func_8000BE90(var_s3);
+                var_v0 = animModelTreeNextNode(var_s3);
                 var_s3 = var_v0;
             } while (var_v0 != NULL);
         }

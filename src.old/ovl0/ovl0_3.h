@@ -52,7 +52,7 @@ struct Animation {
   struct Animation *unk90;
 };
 
-void func_8000C3D8(struct Animation *anim);
+// void animProcessModelAnimation(DObj *);
 struct AObj *HS64_AObjNew(struct Animation *anim, u8 something);
 
 

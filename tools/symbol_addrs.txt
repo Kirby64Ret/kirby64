@@ -769,6 +769,7 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+omDObjResetAnimation = 0x8000984C; // type:func
 omEndProcess = 0x80008DA8; // type:func
 omCameraAddMtx = 0x80009658; // type:func
 omUpdateAll = 0x8000AD88; // type:func
@@ -974,6 +975,32 @@ gtlMalloc=0x80005400; // type:func
 gtlLoadUcode=0x80005de4; // type:func
 gtlSetSegment0F=0x80005378; // type:func
 gtlMainFuncTable=0x8004A418;
+
+// anim
+animGetModelParamValue = 0x8000E474; // type:func
+animSetModelAnimDuration = 0x8000E434; // type:func
+animGetAObjByParamID = 0x8000E3F8; // type:func
+animUpdateModelTreeAnimation = 0x8000E324; // type:func
+animUpdateTextureAnimatedParams = 0x8000DE30; // type:func
+animProcessTextureAnimation = 0x8000D35C; // type:func
+animUpdateModelAnimatedParams = 0x8000D0AC; // type:func
+animGetAObjRate = 0x8000D030; // type:func
+animGetAObjValue = 0x8000CF84; // type:func
+animGetAObjInterpRate = 0x8000CECC; // type:func
+animGetAObjInterpValue = 0x8000CE18; // type:func
+animProcessModelAnimation = 0x8000C3D8; // type:func
+animSetModelTreeAndTextureAnimation = 0x8000C2C8; // type:func
+animSetModelTreeTextureAnimation = 0x8000C218; // type:func
+animSetModelTreeAnimation = 0x8000C17C; // type:func
+animSetTextureAnimation = 0x8000C144; // type:func
+animSetModelAnimation = 0x8000C10C; // type:func
+animResetTextureAnimation = 0x8000C0AC; // type:func
+animResetModelAndTextureAnimation = 0x8000C044; // type:func
+animResetModelAnimation = 0x8000C000; // type:func
+animSetTextureAnimationSpeed = 0x8000BFA0; // type:func
+animSetModelAndTextureAnimationSpeed = 0x8000BF3C; // type:func
+animSetModelAnimationSpeed = 0x8000BEF4; // type:func
+animModelTreeNextNode = 0x8000BE90; // type:func
 
 // ovl1_7
 procMainStub = 0x800B1434; // type:func

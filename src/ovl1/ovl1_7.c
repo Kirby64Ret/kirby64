@@ -12,10 +12,10 @@
 #include "Player.h"
 
 // wherever ovl0_3 or code_CA90 is
-extern void func_8000BEF4(GObj *, f32);
-extern void func_8000BFA0(GObj *, f32);
-extern void func_8000C17C(GObj *, GObj *, f32);
-extern void func_8000C218(GObj *, GObj *, f32);
+extern void animSetModelAnimationSpeed(GObj *, f32);
+extern void animSetTextureAnimationSpeed(GObj *, f32);
+extern void animSetModelTreeAnimation(GObj *, GObj *, f32);
+extern void animSetModelTreeTextureAnimation(GObj *, GObj *, f32);
 
 extern void (*gDrawFuncList[])(struct GObj *);
 
@@ -30,14 +30,14 @@ s32 func_800B1E08(u32 bit, GObj *gobj, s32 track);
 void func_800AECC0(f32 arg0) {
     if (arg0 != D_800E09D0[omCurrentObj->objId]) {
         D_800E09D0[omCurrentObj->objId] = arg0;
-        func_8000BEF4(omCurrentObj, D_800E09D0[omCurrentObj->objId]);
+        animSetModelAnimationSpeed(omCurrentObj, D_800E09D0[omCurrentObj->objId]);
     }
 }
 
 void func_800AED20(f32 arg0) {
     if (arg0 != D_800E0B90[omCurrentObj->objId]) {
         D_800E0B90[omCurrentObj->objId] = arg0;
-        func_8000BFA0(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
+        animSetTextureAnimationSpeed(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
     }
 }
 
@@ -45,7 +45,7 @@ void func_800AED20(f32 arg0) {
 void func_800AED80(f32 arg0, s32 track) {
     if (D_800E09D0[track] != arg0) {
         D_800E09D0[track] = arg0;
-        func_8000BEF4(D_800DE350[track], arg0);
+        animSetModelAnimationSpeed(D_800DE350[track], arg0);
     }
 }
 #else
@@ -60,7 +60,7 @@ void func_800AEDD0(f32 arg0, s32 arg1) {
     temp_v1 = &D_800E0B90[arg1];
     if (arg0 != *temp_v1) {
         *temp_v1 = arg0;
-        func_8000BFA0(*(&D_800DE350 + (arg1 * 4)), arg0);
+        animSetTextureAnimationSpeed(*(&D_800DE350 + (arg1 * 4)), arg0);
     }
 }
 #else
@@ -70,32 +70,32 @@ void func_800AEDD0(f32 arg0, s32 arg1) {
 void func_800AEE20(GObj *arg0, f32 arg1) {
     D_800DF310[omCurrentObj->objId] = NULL;
     D_800DD8D0[omCurrentObj->objId] &= 0x3FFFFFFF;
-    func_8000C17C(omCurrentObj, arg0, arg1);
+    animSetModelTreeAnimation(omCurrentObj, arg0, arg1);
     if (arg1 != 0.0f) {
-        func_8000E324(omCurrentObj);
+        animUpdateModelTreeAnimation(omCurrentObj);
     }
 }
 
 void func_800AEEB4(GObj *arg0, f32 arg1) {
-    func_8000C218(omCurrentObj, arg0, arg1);
+    animSetModelTreeTextureAnimation(omCurrentObj, arg0, arg1);
     if (arg1 != 0.0f) {
-        func_8000E324(omCurrentObj);
+        animUpdateModelTreeAnimation(omCurrentObj);
     }
 }
 
 void func_800AEF0C(GObj *arg0, f32 arg1, GObj *arg2) {
     D_800DF310[arg2->objId] = NULL;
     D_800DD8D0[arg2->objId] &= 0x3FFFFFFF;
-    func_8000C17C(arg2, arg0, arg1);
+    animSetModelTreeAnimation(arg2, arg0, arg1);
     if (arg1 != 0.0f) {
-        func_8000E324(arg2);
+        animUpdateModelTreeAnimation(arg2);
     }
 }
 
 void func_800AEFA4(GObj *arg0, f32 arg1, GObj *arg2) {
-    func_8000C218(arg2, arg0, arg1);
+    animSetModelTreeTextureAnimation(arg2, arg0, arg1);
     if (arg1 != 0.0f) {
-        func_8000E324(arg2);
+        animUpdateModelTreeAnimation(arg2);
     }
 }
 
@@ -153,7 +153,7 @@ loop_1:
         if (temp_v0 != NULL) {
             sp20 = temp_v0;
         } else {
-            temp_v0_2 = func_8000BE90(var_s0);
+            temp_v0_2 = animModelTreeNextNode(var_s0);
             var_s0 = temp_v0_2;
             if (temp_v0_2 != NULL) {
                 goto loop_1;
@@ -218,8 +218,8 @@ void func_800AF314(void) {
     struct UnkStruct8004A7C4_3C *tmp = omCurrentObj->data;
 
     while (tmp != 0) {
-        func_8000984C(tmp);
-        tmp = func_8000BE90(tmp);
+        omDObjResetAnimation(tmp);
+        tmp = animModelTreeNextNode(tmp);
     }
     D_800DF310[omCurrentObj->objId] = 0;
     D_800DD8D0[omCurrentObj->objId] = D_800DD8D0[omCurrentObj->objId] & 0x3FFFFFFF;
@@ -242,7 +242,7 @@ void func_800AF3A0(void) {
                     var_s0 = var_s0->unk0;
                 } while (var_s0 != NULL);
             }
-            temp_v0 = func_8000BE90(var_s1);
+            temp_v0 = animModelTreeNextNode(var_s1);
             var_s1 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -264,7 +264,7 @@ void func_800AF408(void) {
     var_s1 = temp_v1->unk3C;
     if (var_s1 != NULL) {
         do {
-            func_8000984C(var_s1);
+            omDObjResetAnimation(var_s1);
             var_s0 = var_s1->unk80;
             if (var_s0 != NULL) {
                 do {
@@ -272,7 +272,7 @@ void func_800AF408(void) {
                     var_s0 = var_s0->unk0;
                 } while (var_s0 != NULL);
             }
-            temp_v0 = func_8000BE90(var_s1);
+            temp_v0 = animModelTreeNextNode(var_s1);
             var_s1 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -302,14 +302,14 @@ void func_800AF4BC(GObj *arg0, s32 arg1, s32 arg2) {
         func_8000F980(temp_s0, arg0, arg2, 0x1C, 0, 0);
         temp_f0 = D_800E09D0[omCurrentObj->objId];
         if (temp_s0->unk3C->unk78 != temp_f0) {
-            func_8000BEF4(omCurrentObj, temp_f0);
+            animSetModelAnimationSpeed(omCurrentObj, temp_f0);
         }
     } else {
         func_8000FB10(temp_s0, arg0, arg1, arg2, 0x1C, 0, 0);
         temp_f0_2 = D_800E09D0[omCurrentObj->objId];
         if (temp_s0->unk3C->unk78 != temp_f0_2) {
-            func_8000BEF4(omCurrentObj, temp_f0_2);
-            func_8000BFA0(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
+            animSetModelAnimationSpeed(omCurrentObj, temp_f0_2);
+            animSetTextureAnimationSpeed(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
         }
     }
     if (sp30 != 0) {
@@ -369,7 +369,7 @@ void func_800AF618(GObj *arg0, s32 **arg1, s32 *arg2) {
                 }
                 var_s3 += 4;
             }
-            temp_v0_2 = func_8000BE90(var_s2);
+            temp_v0_2 = animModelTreeNextNode(var_s2);
             var_s2 = temp_v0_2;
         } while (temp_v0_2 != NULL);
     }
@@ -378,9 +378,9 @@ void func_800AF618(GObj *arg0, s32 **arg1, s32 *arg2) {
     }
     temp_f0 = D_800E09D0[temp_s0_2->objId];
     if (temp_s0_2->unk3C->unk78 != temp_f0) {
-        func_8000BEF4(temp_s0_2, temp_f0);
+        animSetModelAnimationSpeed(temp_s0_2, temp_f0);
         if (sp30 != 0) {
-            func_8000BFA0(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
+            animSetTextureAnimationSpeed(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
         }
     }
 }
@@ -838,7 +838,7 @@ void func_800B0D90(void *arg0) {
         if (!(var_a1 & 0x80)) {
             if (!(var_a1 & 2) && (arg0->unk3C != 0) && (D_800DEF90[temp_v0] != NULL)) {
                 *temp_a2 = var_a1 & 0x3FFFFFFF;
-                func_8000E324(var_a1, temp_a2);
+                animUpdateModelTreeAnimation(var_a1, temp_a2);
                 temp_v0_2 = omCurrentObj->objId;
                 var_v0 = temp_v0_2 * 4;
                 var_a1 = D_800DD8D0[temp_v0_2];
@@ -1366,7 +1366,7 @@ void func_800B1FD0(GObj *arg0, s32 arg1, ? arg2, s32 arg3, f32 arg4) {
             if (var_s4 != 0) {
                 var_s4 += 0x2C;
             }
-            temp_v0 = func_8000BE90(var_s5);
+            temp_v0 = animModelTreeNextNode(var_s5);
             var_s5 = temp_v0;
         } while (arg0 != temp_v0);
     }
@@ -1425,7 +1425,7 @@ void func_800B20E0(void *arg0, void ***arg1) {
                     var_s0->unk80->unk80 = 0;
                 }
             }
-            temp_v0 = func_8000BE90(var_s0);
+            temp_v0 = animModelTreeNextNode(var_s0);
             var_s0 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -1451,12 +1451,12 @@ void func_800B21FC(s32 **arg0, f32 arg1) {
         do {
             temp_a1 = *var_s1;
             if (temp_a1 != 0) {
-                func_8000C10C(var_s0, temp_a1, arg1);
+                animSetModelAnimation(var_s0, temp_a1, arg1);
                 var_s0->unk55 = var_s2;
                 var_s2 = 0;
             }
             var_s1 += 4;
-            temp_v0 = func_8000BE90(var_s0);
+            temp_v0 = animModelTreeNextNode(var_s0);
             var_s0 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -1489,7 +1489,7 @@ void func_800B2288(s32 **arg0, ? arg1) {
                         do {
                             temp_a1 = *var_s1;
                             if (temp_a1 != 0) {
-                                func_8000C144(var_s0, temp_a1, arg1);
+                                animSetTextureAnimation(var_s0, temp_a1, arg1);
                             }
                             var_s0 = var_s0->unk0;
                             var_s1 += 4;
@@ -1498,7 +1498,7 @@ void func_800B2288(s32 **arg0, ? arg1) {
                 }
                 var_s2 += 4;
             }
-            temp_v0 = func_8000BE90(var_s3);
+            temp_v0 = animModelTreeNextNode(var_s3);
             var_s3 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -1814,7 +1814,7 @@ void func_800B31B4(void) {
     struct GObj *gobj = D_800DE350[omCurrentObj->objId];
 
     if (func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]) != 0) {
-        gobj->unk48 = NULL;
+        gobj->onAnimate = NULL;
         func_8019B7D8_ovl7(gobj);
         func_8019D8A0((u16) omCurrentObj->objId);
     }

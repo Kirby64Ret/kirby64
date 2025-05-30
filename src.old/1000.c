@@ -379,7 +379,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800097E0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000984C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/omDObjResetAnimation.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800098AC.s")
 
@@ -539,53 +539,53 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000BDF0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000BE90.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animModelTreeNextNode.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000BEF4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetModelAnimationSpeed.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000BF3C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetModelAndTextureAnimationSpeed.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000BFA0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetTextureAnimationSpeed.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C000.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animResetModelAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C044.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animResetModelAndTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C0AC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animResetTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C10C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetModelAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C144.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C17C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetModelTreeAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C218.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetModelTreeTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C2C8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetModelTreeAndTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000C3D8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animProcessModelAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000CE18.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animGetAObjInterpValue.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000CECC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animGetAObjInterpRate.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000CF84.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animGetAObjValue.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000D030.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animGetAObjRate.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000D0AC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animUpdateModelAnimatedParams.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000D35C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animProcessTextureAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000DE30.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animUpdateTextureAnimatedParams.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000E324.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animUpdateModelTreeAnimation.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000E3F8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animGetAObjByParamID.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000E434.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animSetModelAnimDuration.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000E474.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/animGetModelParamValue.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8000E4E4.s")
 

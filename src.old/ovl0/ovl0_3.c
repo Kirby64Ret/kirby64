@@ -6,7 +6,7 @@
 #include "ovl0_3.h"
 #include "omCurrentObj.h"
 
-UserData8000BE90 *func_8000BE90(UserData8000BE90* data) {
+UserData8000BE90 *animModelTreeNextNode(UserData8000BE90* data) {
     UserData8000BE90 *ret;
     
     UserData8000BE90 *tmp;
@@ -32,7 +32,7 @@ UserData8000BE90 *func_8000BE90(UserData8000BE90* data) {
 }
 
 
-// u32 func_8000BE90(struct unk8000BE90Func*);
+// u32 animModelTreeNextNode(struct unk8000BE90Func*);
 
 // TODO: is this ALSO 8004A7C4?
 struct unk8000BEF4Func {
@@ -41,13 +41,13 @@ struct unk8000BEF4Func {
     f32 unk40;
 };
 
-void func_8000BEF4(struct GObj *arg0, f32 arg1) {
+void animSetModelAnimationSpeed(struct GObj *arg0, f32 arg1) {
     struct UnkStruct8004A7C4_3C *phi_s0;
 
     phi_s0 = arg0->unk3C;
     while (phi_s0 != 0) {
         phi_s0->unk78 = arg1;
-        phi_s0 = func_8000BE90(phi_s0);
+        phi_s0 = animModelTreeNextNode(phi_s0);
     }
 }
 
@@ -57,7 +57,7 @@ struct unk8000BF3CFunc {
     f32 unk9C;
 };
 
-void func_8000BF3C(struct unk8000BEF4Func *arg0, f32 arg1) {
+void animSetModelAndTextureAnimationSpeed(struct unk8000BEF4Func *arg0, f32 arg1) {
     struct unk8000BF3CFunc *phi_v0;
     struct unk8000BE90Func *phi_s0;
 
@@ -69,11 +69,11 @@ void func_8000BF3C(struct unk8000BEF4Func *arg0, f32 arg1) {
             phi_v0->unk9C = arg1;
             phi_v0 = phi_v0->unk0;
         }
-        phi_s0 = func_8000BE90(phi_s0);
+        phi_s0 = animModelTreeNextNode(phi_s0);
     }
 }
 
-void func_8000BFA0(struct unk8000BEF4Func *arg0, f32 arg1) {
+void animSetTextureAnimationSpeed(struct unk8000BEF4Func *arg0, f32 arg1) {
     struct unk8000BF3CFunc *phi_v0;
     struct unk8000BE90Func *phi_s0;
 
@@ -84,43 +84,43 @@ void func_8000BFA0(struct unk8000BEF4Func *arg0, f32 arg1) {
             phi_v0->unk9C = arg1;
             phi_v0 = phi_v0->unk0;
         }
-        phi_s0 = func_8000BE90(phi_s0);
+        phi_s0 = animModelTreeNextNode(phi_s0);
     }
     
 }
 
-void func_8000984C(struct unk8000BE90Func*);
+void omDObjResetAnimation(struct unk8000BE90Func*);
 
-void func_8000C000(struct unk8000BEF4Func *arg0) {
+void animResetModelAnimation(struct unk8000BEF4Func *arg0) {
     s32 temp_v0;
     struct unk8000BE90Func* phi_s0;
 
     phi_s0 = arg0->unk3C;
     while (phi_s0 != 0) {
-        func_8000984C(phi_s0);
-        phi_s0 = func_8000BE90(phi_s0);
+        omDObjResetAnimation(phi_s0);
+        phi_s0 = animModelTreeNextNode(phi_s0);
     }
 }
 
 void func_80009918(void*);
 
-void func_8000C044(struct unk8000BEF4Func *arg0) {
+void animResetModelAndTextureAnimation(struct unk8000BEF4Func *arg0) {
     struct unk8000BE90Func* phi_s1;
     void **phi_s0;
 
     phi_s1 = arg0->unk3C;
     while (phi_s1 != 0) {
-        func_8000984C(phi_s1);
+        omDObjResetAnimation(phi_s1);
         phi_s0 = phi_s1->unk80;
         while (phi_s0 != 0) {
             func_80009918(phi_s0);
             phi_s0 = *phi_s0;
         }
-        phi_s1 = func_8000BE90(phi_s1);
+        phi_s1 = animModelTreeNextNode(phi_s1);
     }
 }
 
-void func_8000C0AC(struct unk8000BEF4Func *arg0) {
+void animResetTextureAnimation(struct unk8000BEF4Func *arg0) {
     struct unk8000BE90Func *phi_s1;
     void **phi_s0;
 
@@ -131,15 +131,15 @@ void func_8000C0AC(struct unk8000BEF4Func *arg0) {
             func_80009918(phi_s0);
             phi_s0 = *phi_s0;
         }
-        phi_s1 = func_8000BE90(phi_s1);
+        phi_s1 = animModelTreeNextNode(phi_s1);
     }
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000C10C.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animSetModelAnimation.s")
 
 extern f32 D_800406A4;
 
-// void func_8000C144(void *arg0, s32 arg1, f32 arg2) {
+// void animSetTextureAnimation(void *arg0, s32 arg1, f32 arg2) {
 //     void *var_v0;
 
 //     var_v0 = arg0->unk90;
@@ -153,24 +153,24 @@ extern f32 D_800406A4;
 //     arg0->unkA0 = arg2;
 //     arg0->unk98 = D_800406A4;
 // }
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000C144.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animSetTextureAnimation.s")
 
 extern f32 D_800406A8;
 
-void func_8000C10C(struct unk8000BEF4Func *, void*, f32);
+void animSetModelAnimation(struct unk8000BEF4Func *, void*, f32);
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000C17C.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animSetModelTreeAnimation.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000C218.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animSetModelTreeTextureAnimation.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000C2C8.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animSetModelTreeAndTextureAnimation.s")
 
 
 extern f32 D_800406B0, D_800406B4, D_800406B8, D_80040704;
 
 // Animation command processor
 #ifdef RESEARCHING
-void func_8000C3D8(struct Animation *anim) {
+void animProcessModelAnimation(struct Animation *anim) {
     struct AObj *sp8C;
     u32 *sp88;
     s32 sp84;
@@ -626,28 +626,28 @@ block_116:
     }
 }
 #else
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000C3D8.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animProcessModelAnimation.s")
 #endif
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000CE18.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animGetAObjInterpValue.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000CECC.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animGetAObjInterpRate.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000CF84.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animGetAObjValue.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000D030.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animGetAObjRate.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000D0AC.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animUpdateModelAnimatedParams.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000D35C.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animProcessTextureAnimation.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000DE30.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animUpdateTextureAnimatedParams.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000E324.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animUpdateModelTreeAnimation.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000E434.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animSetModelAnimDuration.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000E474.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/animGetModelParamValue.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_3/func_8000E4E4.s")
 

@@ -182,7 +182,7 @@ struct LayoutNode *func_8011BD30(void *arg0, s32 arg1) {
     if (D_8012E7B0.unk0 != NULL) {
         temp_a1_2 = *(*D_8012E7B0.unk0 + temp_s0);
         if (temp_a1_2 != 0) {
-            func_8000C10C(temp_t3, temp_a1_2, 0, var_a3);
+            animSetModelAnimation(temp_t3, temp_a1_2, 0, var_a3);
         }
     }
     if (D_8012E7B0.unk4 != NULL) {
@@ -193,7 +193,7 @@ struct LayoutNode *func_8011BD30(void *arg0, s32 arg1) {
                 do {
                     temp_a1_3 = *var_s1;
                     if (temp_a1_3 != 0) {
-                        func_8000C144(var_s0, temp_a1_3, 0);
+                        animSetTextureAnimation(var_s0, temp_a1_3, 0);
                     }
                     var_s0 = *var_s0;
                     var_s1 += 4;
@@ -537,7 +537,7 @@ void func_8011C838(void) {
     u32 track = request_track_general(0x12, 0, 1);
     GObj *g = D_800DE350[track];
 
-    g->unk48 = func_8011D0FC;
+    g->onAnimate = func_8011D0FC;
 }
 
 #ifdef MIPS_TO_C

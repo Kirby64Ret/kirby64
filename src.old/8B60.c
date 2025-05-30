@@ -88,7 +88,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_800097E0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_8000984C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/8B60/omDObjResetAnimation.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/8B60/func_800098AC.s")
 

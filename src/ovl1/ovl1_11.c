@@ -39,7 +39,7 @@ void func_800BB588(GObj *gobj) {
                     break;
             }
         } else {
-            func_8000E324(gobj);
+            animUpdateModelTreeAnimation(gobj);
         }
         ohSleep(1);
     }

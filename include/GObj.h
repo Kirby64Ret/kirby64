@@ -174,13 +174,13 @@ typedef struct GObj {
     u32 unk34;
     u32 unk38;
     // actually void*, but mainly used to store a layoutnode
-    struct LayoutNode *data;
+    /* 0x3C */ struct LayoutNode *data;
     // goes up by 2.0f per frame until it hits 40.0f, then resets to 0.0f
-    f32 unk40;
-    u32 flags;
+    /* 0x40 */ f32 animTimer;
+    /* 0x44 */ u32 flags;
     // grab arguments
-    void (*unk48)(void);
-    void *unk4C;
+    /* 0x48 */ void (*onAnimate)(struct DObj *, s32, f32);
+    /* 0x4C */ void *unk4C;
 } GObj;
 // size: 0x50
 extern struct GObj *omCurrentObj, *omCurrentCamera, *omCurrentDrawObj;

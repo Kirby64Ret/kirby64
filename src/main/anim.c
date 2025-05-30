@@ -1,8 +1,11 @@
 #include "common.h"
 
 #include "DObj.h"
+#include "GObj.h"
+#include "anim.h"
+#include "object_manager.h"
 
-DObj *func_8000BE90(DObj *dobj) {
+DObj *animModelTreeNextNode(DObj *dobj) {
     if (dobj->firstChild != NULL) {
         dobj = dobj->firstChild;
     } else if (dobj->next != NULL) {
@@ -24,840 +27,558 @@ DObj *func_8000BE90(DObj *dobj) {
     return dobj;
 }
 
-#ifdef MIPS_TO_C
-void func_8000BEF4(void *arg0, f32 arg1) {
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s0;
+void animSetModelAnimationSpeed(GObj *gobj, f32 speed) {
+    DObj *dobj = gobj->data;
 
-    var_s0 = arg0->unk3C;
-    if (var_s0 != NULL) {
-        do {
-            var_s0->unk78 = arg1;
-            temp_v0 = func_8000BE90(var_s0);
-            var_s0 = temp_v0;
-        } while (temp_v0 != NULL);
+    while (dobj != NULL) {
+        dobj->animSpeed = speed;
+        dobj = animModelTreeNextNode(dobj);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000BEF4.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8000BF3C(void *arg0, f32 arg1) {
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s0;
-    void *var_v0;
+void animSetModelAndTextureAnimationSpeed(GObj *gobj, f32 speed) {
+    DObj *dobj = gobj->data;
 
-    var_s0 = arg0->unk3C;
-    if (var_s0 != NULL) {
-        do {
-            var_v0 = var_s0->unk80;
-            var_s0->unk78 = arg1;
-            if (var_v0 != NULL) {
-                do {
-                    var_v0->unk9C = arg1;
-                    var_v0 = var_v0->unk0;
-                } while (var_v0 != NULL);
+    while (dobj != NULL) {
+        MObj *mobj = dobj->mobjList;
+        dobj->animSpeed = speed;
+        while (mobj != NULL) {
+            mobj->animSpeed = speed;
+            mobj = mobj->next;
+        }
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
+
+void animSetTextureAnimationSpeed(GObj *gobj, f32 speed) {
+    DObj *dobj = gobj->data;
+
+    while (dobj != NULL) {
+        MObj* mobj = dobj->mobjList;
+        while (mobj != NULL) {
+            mobj->animSpeed = speed;
+            mobj = mobj->next;
+        }
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
+
+void animResetModelAnimation(GObj *gobj) {
+    DObj* dobj = gobj->data;
+
+    while (dobj != NULL) {
+        omDObjResetAnimation(dobj);
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
+
+void animResetModelAndTextureAnimation(GObj *gobj) {
+    DObj* dobj = gobj->data;
+    MObj* mobj;
+
+    while (dobj != NULL) {
+        omDObjResetAnimation(dobj);
+        mobj = dobj->mobjList;
+        while (mobj != NULL) {
+            func_80009918(mobj);
+            mobj = mobj->next;
+        }
+
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
+
+void animResetTextureAnimation(GObj *gobj) {
+    DObj* dobj = gobj->data;
+    MObj* mobj;
+
+    while (dobj != NULL) {
+        mobj = dobj->mobjList;
+        while (mobj != NULL) {
+            func_80009918(mobj);
+            mobj = mobj->next;
+        }
+
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
+
+void animSetModelAnimation(DObj *dobj, AnimCmd *animList, f32 time) {
+    AObj *aobj = dobj->aobjList;
+
+    while (aobj != NULL) {
+        aobj->kind = ANIM_TYPE_NONE;
+        aobj = aobj->next;
+    }
+
+    dobj->animList = animList;
+    dobj->timeLeft = ANIMATION_CHANGED;
+    dobj->timePassed = time;
+}
+
+void animSetTextureAnimation(MObj *mobj, AnimCmd *animList, f32 time) {
+    AObj *aobj = mobj->aobjList;
+
+    while (aobj != NULL) {
+        aobj->kind = ANIM_TYPE_NONE;
+        aobj = aobj->next;
+    }
+
+    mobj->animList = animList;
+    mobj->timeLeft = ANIMATION_CHANGED;
+    mobj->timePassed = time;
+}
+
+void animSetModelTreeAnimation(GObj *obj, AnimCmd **animLists, f32 time) {
+    DObj *dobj;
+    u8 s2 = TRUE;
+
+    dobj = obj->data;
+    obj->animTimer = time;
+    while (dobj != NULL) {
+        if (*animLists != NULL) {
+            animSetModelAnimation(dobj, *animLists, time);
+            dobj->animCBReceiver = s2;
+            s2 = FALSE;
+        } else {
+            dobj->timeLeft = ANIMATION_DISABLED;
+            dobj->animCBReceiver = FALSE;
+        }
+
+        animLists++;
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
+
+void animSetModelTreeTextureAnimation(GObj* obj, AnimCmd*** textureAnimLists, f32 time) {
+    DObj* dobj;
+    MObj* mobj;
+    AnimCmd** cmdlist;
+
+    dobj = obj->data;
+    obj->animTimer = time;
+    while (dobj != NULL) {
+        if (textureAnimLists != NULL) {
+            if (*textureAnimLists != NULL) {
+                cmdlist = *textureAnimLists;
+                mobj = dobj->mobjList;
+                while (mobj != NULL) {
+                    if (*cmdlist != NULL) {
+                        animSetTextureAnimation(mobj, *cmdlist, time);
+                    }
+                    cmdlist++;
+                    mobj = mobj->next;
+                }
             }
-            temp_v0 = func_8000BE90(var_s0);
-            var_s0 = temp_v0;
-        } while (temp_v0 != NULL);
+            textureAnimLists++;
+        }
+        dobj = animModelTreeNextNode(dobj);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000BF3C.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8000BFA0(void *arg0, f32 arg1) {
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s0;
-    void *var_v0;
+void animSetModelTreeAndTextureAnimation(GObj* obj, AnimCmd** modelAnimLists,
+                                         AnimCmd*** textureAnimLists, f32 time) {
+    DObj* dobj = obj->data;
+    MObj* mobj;
+    AnimCmd** cmdlist;
+    u8 mainNode = TRUE;
 
-    var_s0 = arg0->unk3C;
-    if (var_s0 != NULL) {
-        do {
-            var_v0 = var_s0->unk80;
-            if (var_v0 != NULL) {
-                do {
-                    var_v0->unk9C = arg1;
-                    var_v0 = var_v0->unk0;
-                } while (var_v0 != NULL);
-            }
-            temp_v0 = func_8000BE90(var_s0);
-            var_s0 = temp_v0;
-        } while (temp_v0 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000BFA0.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8000C000(void *arg0) {
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s0;
-
-    var_s0 = arg0->unk3C;
-    if (var_s0 != NULL) {
-        do {
-            func_8000984C(var_s0);
-            temp_v0 = func_8000BE90(var_s0);
-            var_s0 = temp_v0;
-        } while (temp_v0 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C000.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8000C044(void *arg0) {
-    ? *var_s0;
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s1;
-
-    var_s1 = arg0->unk3C;
-    if (var_s1 != NULL) {
-        do {
-            func_8000984C(var_s1);
-            var_s0 = var_s1->unk80;
-            if (var_s0 != NULL) {
-                do {
-                    func_80009918(var_s0);
-                    var_s0 = *var_s0;
-                } while (var_s0 != NULL);
-            }
-            temp_v0 = func_8000BE90(var_s1);
-            var_s1 = temp_v0;
-        } while (temp_v0 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C044.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8000C0AC(void *arg0) {
-    ? *var_s0;
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s1;
-
-    var_s1 = arg0->unk3C;
-    if (var_s1 != NULL) {
-        do {
-            var_s0 = var_s1->unk80;
-            if (var_s0 != NULL) {
-                do {
-                    func_80009918(var_s0);
-                    var_s0 = *var_s0;
-                } while (var_s0 != NULL);
-            }
-            temp_v0 = func_8000BE90(var_s1);
-            var_s1 = temp_v0;
-        } while (temp_v0 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C0AC.s")
-#endif
-
-#ifdef MIPS_TO_C
-void func_8000C10C(void *arg0, s32 arg1, f32 arg2) {
-    void *var_v0;
-
-    var_v0 = arg0->unk6C;
-    if (var_v0 != NULL) {
-        do {
-            var_v0->unk5 = 0;
-            var_v0 = var_v0->unk0;
-        } while (var_v0 != NULL);
-    }
-    arg0->unk70 = arg1;
-    arg0->unk7C = arg2;
-    arg0->unk74 = -1.7014117e38f;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C10C.s")
-#endif
-
-#ifdef MIPS_TO_C
-void func_8000C144(void *arg0, s32 arg1, f32 arg2) {
-    void *var_v0;
-
-    var_v0 = arg0->unk90;
-    if (var_v0 != NULL) {
-        do {
-            var_v0->unk5 = 0;
-            var_v0 = var_v0->unk0;
-        } while (var_v0 != NULL);
-    }
-    arg0->unk94 = arg1;
-    arg0->unkA0 = arg2;
-    arg0->unk98 = -1.7014117e38f;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C144.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8000C17C(void *arg0, s32 *arg1, f32 arg2) {
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s0;
-    s32 *var_s1;
-    s32 temp_a1;
-    s8 var_s2;
-
-    var_s0 = arg0->unk3C;
-    var_s1 = arg1;
-    var_s2 = 1;
-    arg0->unk40 = arg2;
-    if (var_s0 != NULL) {
-        do {
-            temp_a1 = *var_s1;
-            if (temp_a1 != 0) {
-                func_8000C10C(var_s0, temp_a1, arg2);
-                var_s0->unk55 = var_s2;
-                var_s2 = 0;
+    obj->animTimer = time;
+    while (dobj != NULL) {
+        if (modelAnimLists != NULL) {
+            if (*modelAnimLists != NULL) {
+                animSetModelAnimation(dobj, *modelAnimLists, time);
+                dobj->animCBReceiver = mainNode;
+                mainNode = FALSE;
             } else {
-                var_s0->unk74 = -3.4028235e38f;
-                var_s0->unk55 = 0;
+                dobj->timeLeft = ANIMATION_DISABLED;
+                dobj->animCBReceiver = FALSE;
             }
-            var_s1 += 4;
-            temp_v0 = func_8000BE90(var_s0);
-            var_s0 = temp_v0;
-        } while (temp_v0 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C17C.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8000C218(void *arg0, s32 **arg1, f32 arg2) {
-    ? *var_s0;
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s3;
-    s32 **var_s2;
-    s32 *temp_v0_2;
-    s32 *var_s1;
-    s32 temp_a1;
-
-    var_s3 = arg0->unk3C;
-    var_s2 = arg1;
-    arg0->unk40 = arg2;
-    if (var_s3 != NULL) {
-        do {
-            if (var_s2 != NULL) {
-                temp_v0_2 = *var_s2;
-                if (temp_v0_2 != NULL) {
-                    var_s0 = var_s3->unk80;
-                    var_s1 = temp_v0_2;
-                    if (var_s0 != NULL) {
-                        do {
-                            temp_a1 = *var_s1;
-                            if (temp_a1 != 0) {
-                                func_8000C144(var_s0, temp_a1, arg2);
-                            }
-                            var_s0 = *var_s0;
-                            var_s1 += 4;
-                        } while (var_s0 != NULL);
-                    }
-                }
-                var_s2 += 4;
-            }
-            temp_v0 = func_8000BE90(var_s3);
-            var_s3 = temp_v0;
-        } while (temp_v0 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C218.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8000C2C8(void *arg0, s32 *arg1, s32 **arg2, f32 arg3) {
-    ? *var_s0;
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s2;
-    s32 **var_s4;
-    s32 *temp_v0_2;
-    s32 *var_s1;
-    s32 *var_s3;
-    s32 temp_a1;
-    s32 temp_a1_2;
-    s8 var_s5;
-
-    var_s2 = arg0->unk3C;
-    var_s3 = arg1;
-    var_s4 = arg2;
-    var_s5 = 1;
-    arg0->unk40 = arg3;
-    if (var_s2 != NULL) {
-        do {
-            if (var_s3 != NULL) {
-                temp_a1 = *var_s3;
-                if (temp_a1 != 0) {
-                    func_8000C10C(var_s2, temp_a1, arg3);
-                    var_s2->unk55 = var_s5;
-                    var_s5 = 0;
-                } else {
-                    var_s2->unk74 = -3.4028235e38f;
-                    var_s2->unk55 = 0;
-                }
-                var_s3 += 4;
-            }
-            if (var_s4 != NULL) {
-                temp_v0_2 = *var_s4;
-                if (temp_v0_2 != NULL) {
-                    var_s0 = var_s2->unk80;
-                    var_s1 = temp_v0_2;
-                    if (var_s0 != NULL) {
-                        do {
-                            temp_a1_2 = *var_s1;
-                            if (temp_a1_2 != 0) {
-                                func_8000C144(var_s0, temp_a1_2, arg3);
-                            }
-                            var_s0 = *var_s0;
-                            var_s1 += 4;
-                        } while (var_s0 != NULL);
-                    }
-                }
-                var_s4 += 4;
-            }
-            temp_v0 = func_8000BE90(var_s2);
-            var_s2 = temp_v0;
-        } while (temp_v0 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C2C8.s")
-#endif
-
-#ifdef MIPS_TO_C
-void func_8000C3D8(struct Animation *anim) {
-    struct AObj *sp8C;
-    ? sp88;
-    s32 sp84;
-    struct AObj *sp80;
-    ? *var_s0;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f20;
-    f32 temp_f20_2;
-    f32 temp_f20_3;
-    f32 temp_f20_4;
-    f32 var_f16;
-    s32 temp_t1;
-    s32 var_s1;
-    s32 var_s1_2;
-    s32 var_s1_3;
-    s32 var_s1_4;
-    s32 var_s1_5;
-    s32 var_s1_6;
-    struct AObj **temp_s0;
-    struct AObj **temp_s0_2;
-    struct AObj **temp_s0_3;
-    struct AObj **temp_s0_4;
-    struct AObj **temp_s0_5;
-    struct AObj **temp_s0_6;
-    struct AObj *temp_v0_2;
-    struct AObj *temp_v0_3;
-    struct AObj *temp_v0_4;
-    struct AObj *temp_v0_5;
-    struct AObj *temp_v0_6;
-    struct AObj *temp_v0_9;
-    struct AObj *temp_v1_3;
-    struct AObj *temp_v1_4;
-    struct AObj *temp_v1_5;
-    struct AObj *var_v0;
-    struct AObj *var_v0_2;
-    struct AObj *var_v0_3;
-    struct AObj *var_v1;
-    struct AObj *var_v1_2;
-    struct AObj *var_v1_3;
-    struct AObj *var_v1_4;
-    struct AObj *var_v1_5;
-    struct AObj *var_v1_6;
-    u32 *temp_t2;
-    u32 *temp_t8;
-    u32 *temp_v1_2;
-    u32 temp_f2;
-    u32 temp_v0;
-    u32 temp_v1_6;
-    u32 var_s0_2;
-    u32 var_s1_7;
-    u32 var_s2;
-    u32 var_s2_2;
-    u32 var_s2_3;
-    u32 var_s2_4;
-    u32 var_s2_5;
-    u32 var_s2_6;
-    u32 var_s2_7;
-    u8 temp_v1;
-    void (*temp_v0_10)(struct Animation *, u32, u32);
-    void (*temp_v0_11)(struct Animation *, u32, u32);
-    void (*temp_v0_12)(struct Animation *, u32, u32);
-    void (*temp_v0_7)(struct Animation *, u32, u32);
-    void (*temp_v0_8)(struct Animation *, u32, u32);
-
-    temp_f0 = anim->scale;
-    var_s0 = &sp88;
-    if (temp_f0 != -3.4028235e38f) {
-        if (temp_f0 == -1.7014117e38f) {
-            anim->scale = -anim->unk7C;
-            goto block_4;
+            modelAnimLists++;
         }
-        temp_f2 = anim->unk78;
-        anim->scale = temp_f0 - (bitwise f32) temp_f2;
-        anim->unk7C += (bitwise f32) temp_f2;
-        anim->unk4->unk40 = anim->unk7C;
-        if (!(anim->scale > 0.0f)) {
-block_4:
-            sp80 = NULL;
-            sp84 = 0;
-            do {
-                var_s0 += 0x10;
-                var_s0->unk-C = 0;
-                var_s0->unk-8 = 0;
-                var_s0->unk-4 = 0;
-                var_s0->unk-10 = 0;
-            } while (var_s0 != &anim);
-            var_v0 = anim->aobj;
-            if (var_v0 != NULL) {
-                do {
-                    temp_v1 = var_v0->unk4;
-                    if ((temp_v1 > 0) && (temp_v1 < 0xB)) {
-                        (&sp80)[temp_v1].unk-4 = var_v0;
+        if (textureAnimLists != NULL) {
+            if (*textureAnimLists != NULL) {
+                cmdlist = *textureAnimLists;
+                mobj = dobj->mobjList;
+                while (mobj != NULL) {
+                    if (*cmdlist != NULL) {
+                        animSetTextureAnimation(mobj, *cmdlist, time);
                     }
-                    var_v0 = var_v0->next;
-                } while (var_v0 != NULL);
-            }
-loop_12:
-            temp_v1_2 = anim->command;
-            if (temp_v1_2 == NULL) {
-                var_v0_2 = anim->aobj;
-                if (var_v0_2 != NULL) {
-                    do {
-                        if (var_v0_2->unk5 != 0) {
-                            var_v0_2->unkC += (bitwise f32) anim->unk78 + anim->scale;
-                        }
-                        var_v0_2 = var_v0_2->next;
-                    } while (var_v0_2 != NULL);
+                    cmdlist++;
+                    mobj = mobj->next;
                 }
-                anim->unk7C = anim->scale;
-                anim->unk4->unk40 = anim->scale;
-                anim->scale = -1.1342745e38f;
+            }
+            textureAnimLists++;
+        }
+        dobj = animModelTreeNextNode(dobj);
+    }
+}
+
+void animProcessModelAnimation(DObj* dobj) {
+    AObj* aobjArray[ANIM_PARAM_MODEL_MAX - ANIM_PARAM_MODEL_MIN + 1];
+    AObj* aobj;
+    s32 i;
+    u32 cmd;
+    u32 bitMask;
+    f32 duration;
+
+    if (dobj->timeLeft == ANIMATION_DISABLED) {
+        return;
+    }
+
+    if (dobj->timeLeft == ANIMATION_CHANGED) {
+        dobj->timeLeft = -dobj->timePassed;
+    } else {
+        dobj->timeLeft -= dobj->animSpeed;
+        dobj->timePassed += dobj->animSpeed;
+        dobj->gobj->animTimer = dobj->timePassed;
+
+        if (dobj->timeLeft > 0.0f) {
+            return;
+        }
+    }
+
+    for (i = 0; i < ARRAY_COUNT(aobjArray); i++) {
+        aobjArray[i] = NULL;
+    }
+
+    aobj = dobj->aobjList;
+    while (aobj != NULL) {
+        if (aobj->paramID >= ANIM_PARAM_MODEL_MIN && aobj->paramID <= ANIM_PARAM_MODEL_MAX) {
+            aobjArray[aobj->paramID - ANIM_PARAM_MODEL_MIN] = aobj;
+        }
+        aobj = aobj->next;
+    }
+
+    do {
+        if (dobj->animList == NULL) {
+            aobj = dobj->aobjList;
+            while (aobj != NULL) {
+                if (aobj->kind != ANIM_TYPE_NONE) {
+                    aobj->timer += dobj->animSpeed + dobj->timeLeft;
+                }
+                aobj = aobj->next;
+            }
+            dobj->timePassed = dobj->timeLeft;
+            dobj->gobj->animTimer = dobj->timeLeft;
+            dobj->timeLeft = ANIMATION_FINISHED;
+            return;
+        }
+
+        cmd = dobj->animList->w >> 25;
+        switch (cmd) {
+            case ANIM_CMD_SET_VALUE_ZERO_RATE_LAST:
+            case ANIM_CMD_SET_VALUE_ZERO_RATE:
+                duration = (f32) (dobj->animList->w & 0x7FFF);
+                bitMask = (dobj->animList++->w << 7) >> 22;
+
+                for (i = 0; i < ARRAY_COUNT(aobjArray); i++) {
+                    if (bitMask == 0) {
+                        break;
+                    }
+
+                    if (bitMask & 1) {
+                        if (aobjArray[i] == NULL) {
+                            aobjArray[i] = HS64_AObjNew(dobj, i + ANIM_PARAM_MODEL_MIN);
+                        }
+
+                        aobjArray[i]->startVal = aobjArray[i]->goalVal;
+                        aobjArray[i]->goalVal = dobj->animList->f;
+                        dobj->animList++;
+                        aobjArray[i]->speed = aobjArray[i]->goalSpeed;
+                        aobjArray[i]->goalSpeed = 0.0f;
+                        aobjArray[i]->kind = ANIM_TYPE_CUBIC;
+                        if (duration != 0.0f) {
+                            aobjArray[i]->Rduration = 1.0f / duration;
+                        }
+                        aobjArray[i]->timer = -dobj->timeLeft - dobj->animSpeed;
+                    }
+                    bitMask >>= 1;
+                }
+
+                if (cmd == ANIM_CMD_SET_VALUE_ZERO_RATE_LAST) {
+                    dobj->timeLeft += duration;
+                }
+                break;
+            case ANIM_CMD_SET_VALUE_LAST:
+            case ANIM_CMD_SET_VALUE:
+                duration = (f32) (dobj->animList->w & 0x7FFF);
+                bitMask = (dobj->animList++->w << 7) >> 22;
+
+                for (i = 0; i < ARRAY_COUNT(aobjArray); i++) {
+                    if (bitMask == 0) {
+                        break;
+                    }
+
+                    if (bitMask & 1) {
+                        if (aobjArray[i] == NULL) {
+                            aobjArray[i] = HS64_AObjNew(dobj, i + ANIM_PARAM_MODEL_MIN);
+                        }
+                        aobjArray[i]->startVal = aobjArray[i]->goalVal;
+                        aobjArray[i]->goalVal = dobj->animList->f;
+                        dobj->animList++;
+                        aobjArray[i]->kind = ANIM_TYPE_LINEAR;
+                        if (duration != 0.0f) {
+                            aobjArray[i]->speed = (aobjArray[i]->goalVal - aobjArray[i]->startVal) / duration;
+                        }
+                        aobjArray[i]->timer = -dobj->timeLeft - dobj->animSpeed;
+                        aobjArray[i]->goalSpeed = 0.0f;
+                    }
+                    bitMask >>= 1;
+                }
+
+                if (cmd == ANIM_CMD_SET_VALUE_LAST) {
+                    dobj->timeLeft += duration;
+                }
+                break;
+            case ANIM_CMD_SET_VALUE_WITH_RATE_LAST:
+            case ANIM_CMD_SET_VALUE_WITH_RATE:
+                duration = (f32) (dobj->animList->w & 0x7FFF);
+                bitMask = (dobj->animList++->w << 7) >> 22;
+
+                for (i = 0; i < ARRAY_COUNT(aobjArray); i++) {
+                    if (bitMask == 0) {
+                        break;
+                    }
+
+                    if (bitMask & 1) {
+                        if (aobjArray[i] == NULL) {
+                            aobjArray[i] = HS64_AObjNew(dobj, i + ANIM_PARAM_MODEL_MIN);
+                        }
+
+                        aobjArray[i]->startVal = aobjArray[i]->goalVal;
+                        aobjArray[i]->goalVal = dobj->animList->f;
+                        dobj->animList++;
+                        aobjArray[i]->speed = aobjArray[i]->goalSpeed;
+                        aobjArray[i]->goalSpeed = dobj->animList->f;
+                        dobj->animList++;
+                        aobjArray[i]->kind = ANIM_TYPE_CUBIC;
+                        if (duration != 0.0f) {
+                            aobjArray[i]->Rduration = 1.0f / duration;
+                        }
+                        aobjArray[i]->timer = -dobj->timeLeft - dobj->animSpeed;
+                    }
+
+                    bitMask >>= 1;
+                }
+
+                if (cmd == ANIM_CMD_SET_VALUE_WITH_RATE_LAST) {
+                    dobj->timeLeft += duration;
+                }
+                break;
+            case ANIM_CMD_SET_TARGET_RATE:
+                bitMask = (dobj->animList++->w << 7) >> 22;
+
+                for (i = 0; i < ARRAY_COUNT(aobjArray); i++) {
+                    if (bitMask == 0) {
+                        break;
+                    }
+
+                    if (bitMask & 1) {
+                        if (aobjArray[i] == NULL) {
+                            aobjArray[i] = HS64_AObjNew(dobj, i + ANIM_PARAM_MODEL_MIN);
+                        }
+
+                        aobjArray[i]->goalSpeed = dobj->animList->f;
+                        dobj->animList++;
+                    }
+                    bitMask >>= 1;
+                }
+                break;
+            case ANIM_CMD_WAIT:
+                dobj->timeLeft += (f32) (dobj->animList++->w & 0x7FFF);
+                break;
+            case ANIM_CMD_SET_VALUE_AFTER_LAST:
+            case ANIM_CMD_SET_VALUE_AFTER:
+                duration = (f32) (dobj->animList->w & 0x7FFF);
+                bitMask = (dobj->animList++->w << 7) >> 22;
+
+                for (i = 0; i < ARRAY_COUNT(aobjArray); i++) {
+                    if (bitMask == 0) {
+                        break;
+                    }
+
+                    if (bitMask & 1) {
+                        if (aobjArray[i] == NULL) {
+                            aobjArray[i] = HS64_AObjNew(dobj, i + ANIM_PARAM_MODEL_MIN);
+                        }
+
+                        aobjArray[i]->startVal = aobjArray[i]->goalVal;
+                        aobjArray[i]->goalVal = dobj->animList->f;
+                        dobj->animList++;
+                        aobjArray[i]->kind = ANIM_TYPE_STEP;
+                        aobjArray[i]->Rduration = duration;
+                        aobjArray[i]->timer = -dobj->timeLeft - dobj->animSpeed;
+                        aobjArray[i]->goalSpeed = 0.0f;
+                    }
+
+                    bitMask >>= 1;
+                }
+
+                if (cmd == ANIM_CMD_SET_VALUE_AFTER_LAST) {
+                    dobj->timeLeft += duration;
+                }
+                break;
+            case ANIM_CMD_SET_ANIMATION:
+                dobj->animList++;
+                dobj->animList = dobj->animList->ptr;
+                // reset animation timers
+                dobj->timePassed = -dobj->timeLeft;
+                dobj->gobj->animTimer = -dobj->timeLeft;
+
+                if (dobj->animCBReceiver && dobj->gobj->onAnimate != NULL) {
+                    dobj->gobj->onAnimate(dobj, -2, 0);
+                }
+                break;
+            case ANIM_CMD_JUMP:
+                dobj->animList++;
+                dobj->animList = dobj->animList->ptr;
+
+                if (dobj->animCBReceiver && dobj->gobj->onAnimate != NULL) {
+                    dobj->gobj->onAnimate(dobj, -2, 0);
+                }
+                break;
+            case ANIM_CMD_12:
+                duration = (f32) (dobj->animList->w & 0x7FFF);
+                bitMask = (dobj->animList++->w << 7) >> 22;
+
+                for (i = 0; i < ARRAY_COUNT(aobjArray); i++) {
+                    if (bitMask == 0) {
+                        break;
+                    }
+
+                    if (bitMask & 1) {
+                        if (aobjArray[i] == NULL) {
+                            aobjArray[i] = HS64_AObjNew(dobj, i + ANIM_PARAM_MODEL_MIN);
+                        }
+
+                        aobjArray[i]->timer += duration;
+                    }
+                    bitMask >>= 1;
+                }
+
+                break;
+            case ANIM_CMD_13:
+                dobj->animList++;
+                if (aobjArray[ANIM_PARAM_4 - ANIM_PARAM_MODEL_MIN] == NULL) {
+                    aobjArray[ANIM_PARAM_4 - ANIM_PARAM_MODEL_MIN] = HS64_AObjNew(dobj, ANIM_PARAM_4);
+                }
+                aobjArray[ANIM_PARAM_4 - ANIM_PARAM_MODEL_MIN]->unk20 = dobj->animList->ptr;
+                dobj->animList++;
+                break;
+            case ANIM_CMD_END:
+                for (aobj = dobj->aobjList; aobj != NULL; aobj = aobj->next) {
+                    if (aobj->kind != ANIM_TYPE_NONE) {
+                        aobj->timer += dobj->animSpeed + dobj->timeLeft;
+                    }
+                }
+
+                dobj->timePassed = dobj->timeLeft;
+                dobj->gobj->animTimer = dobj->timeLeft;
+                dobj->timeLeft = ANIMATION_FINISHED;
+                if (dobj->animCBReceiver && dobj->gobj->onAnimate != NULL) {
+                    dobj->gobj->onAnimate(dobj, -1, 0);
+                }
                 return;
-            }
-            var_s0_2 = *temp_v1_2;
-            temp_v0 = var_s0_2 >> 0x19;
-            switch (temp_v0) {
-                case 8:
-                case 9:
-                    temp_f20 = var_s0_2 & 0x7FFF;
-                    anim->command = temp_v1_2 + 4;
-                    var_s2 = (var_s0_2 << 7) >> 0x16;
-                    var_s1 = 0;
-loop_21:
-                    if (var_s2 != 0) {
-                        if (var_s2 & 1) {
-                            temp_s0 = &(&sp80)[var_s1];
-                            var_v1 = *temp_s0;
-                            if (var_v1 == NULL) {
-                                temp_v0_2 = HS64_AObjNew(anim, (var_s1 + 1) & 0xFF);
-                                *temp_s0 = temp_v0_2;
-                                var_v1 = temp_v0_2;
-                            }
-                            var_v1->unk10 = var_v1->unk14;
-                            (*temp_s0)->unk14 = (bitwise f32) *anim->command;
-                            anim->command += 4;
-                            temp_v1_3 = *temp_s0;
-                            temp_v1_3->unk18 = temp_v1_3->unk1C;
-                            (*temp_s0)->unk1C = 0.0f;
-                            (*temp_s0)->unk5 = 3;
-                            if (temp_f20 != 0.0f) {
-                                (*temp_s0)->unk8 = 1.0f / temp_f20;
-                            }
-                            (*temp_s0)->unkC = -anim->scale - (bitwise f32) anim->unk78;
-                        }
-                        var_s1 += 1;
-                        var_s2 = var_s2 >> 1;
-                        if (var_s1 != 0xA) {
-                            goto loop_21;
-                        }
-                    }
-                    if (temp_v0 == 8) {
-                        anim->scale += temp_f20;
-                    }
-                default:
-block_115:
-block_116:
-                    if (!(anim->scale <= 0.0f)) {
+            case ANIM_CMD_SET_FLAGS:
+                dobj->flags = (dobj->animList->w << 7) >> 22;
+                dobj->timeLeft += (f32) (dobj->animList++->w & 0x7FFF);
+                break;
+            case ANIM_CMD_16:
+                if (dobj->gobj->onAnimate != NULL) {
+                    dobj->gobj->onAnimate(dobj, ((dobj->animList->w << 7) >> 22) >> 8,
+                                              ((dobj->animList->w << 7) >> 22) & 0xFF);
+                }
 
-                    } else {
-                        goto loop_12;
+                dobj->timeLeft += (f32) (dobj->animList++->w & 0x7FFF);
+                break;
+            case ANIM_CMD_17:
+                bitMask = (dobj->animList->w << 7) >> 22;
+                dobj->timeLeft += (f32) (dobj->animList++->w & 0x7FFF);
+
+                for (i = 4; i < 14; i++) {
+                    if (bitMask == 0) {
+                        break;
                     }
-                    break;
-                case 3:
-                case 4:
-                    temp_f20_2 = var_s0_2 & 0x7FFF;
-                    anim->command = temp_v1_2 + 4;
-                    var_s2_2 = (var_s0_2 << 7) >> 0x16;
-                    var_s1_2 = 0;
-loop_33:
-                    if (var_s2_2 != 0) {
-                        if (var_s2_2 & 1) {
-                            temp_s0_2 = &(&sp80)[var_s1_2];
-                            var_v1_2 = *temp_s0_2;
-                            if (var_v1_2 == NULL) {
-                                temp_v0_3 = HS64_AObjNew(anim, (var_s1_2 + 1) & 0xFF);
-                                *temp_s0_2 = temp_v0_3;
-                                var_v1_2 = temp_v0_3;
-                            }
-                            var_v1_2->unk10 = var_v1_2->unk14;
-                            (*temp_s0_2)->unk14 = (bitwise f32) *anim->command;
-                            anim->command += 4;
-                            (*temp_s0_2)->unk5 = 2;
-                            if (temp_f20_2 != 0.0f) {
-                                temp_v1_4 = *temp_s0_2;
-                                temp_v1_4->unk18 = (temp_v1_4->unk14 - temp_v1_4->unk10) / temp_f20_2;
-                            }
-                            (*temp_s0_2)->unkC = -anim->scale - (bitwise f32) anim->unk78;
-                            (*temp_s0_2)->unk1C = 0.0f;
+
+                    if (bitMask & 1) {
+                        if (dobj->gobj->onAnimate != NULL) {
+                            dobj->gobj->onAnimate(dobj, i, dobj->animList->f);
                         }
-                        var_s1_2 += 1;
-                        var_s2_2 = var_s2_2 >> 1;
-                        if (var_s1_2 != 0xA) {
-                            goto loop_33;
-                        }
+                        dobj->animList++;
                     }
-                    if (temp_v0 == 3) {
-                        anim->scale += temp_f20_2;
-                    }
-                    goto block_115;
-                case 5:
-                case 6:
-                    temp_f20_3 = var_s0_2 & 0x7FFF;
-                    anim->command = temp_v1_2 + 4;
-                    var_s2_3 = (var_s0_2 << 7) >> 0x16;
-                    var_s1_3 = 0;
-loop_45:
-                    if (var_s2_3 != 0) {
-                        if (var_s2_3 & 1) {
-                            temp_s0_3 = &(&sp80)[var_s1_3];
-                            var_v1_3 = *temp_s0_3;
-                            if (var_v1_3 == NULL) {
-                                temp_v0_4 = HS64_AObjNew(anim, (var_s1_3 + 1) & 0xFF);
-                                *temp_s0_3 = temp_v0_4;
-                                var_v1_3 = temp_v0_4;
-                            }
-                            var_v1_3->unk10 = var_v1_3->unk14;
-                            (*temp_s0_3)->unk14 = (bitwise f32) *anim->command;
-                            anim->command += 4;
-                            temp_v1_5 = *temp_s0_3;
-                            temp_v1_5->unk18 = temp_v1_5->unk1C;
-                            (*temp_s0_3)->unk1C = (bitwise f32) *anim->command;
-                            anim->command += 4;
-                            (*temp_s0_3)->unk5 = 3;
-                            if (temp_f20_3 != 0.0f) {
-                                (*temp_s0_3)->unk8 = 1.0f / temp_f20_3;
-                            }
-                            (*temp_s0_3)->unkC = -anim->scale - (bitwise f32) anim->unk78;
-                        }
-                        var_s1_3 += 1;
-                        var_s2_3 = var_s2_3 >> 1;
-                        if (var_s1_3 != 0xA) {
-                            goto loop_45;
-                        }
-                    }
-                    if (temp_v0 == 5) {
-                        anim->scale += temp_f20_3;
-                    }
-                    goto block_115;
-                case 7:
-                    anim->command = temp_v1_2 + 4;
-                    var_s2_4 = (var_s0_2 << 7) >> 0x16;
-                    var_s1_4 = 0;
-loop_57:
-                    if (var_s2_4 != 0) {
-                        if (var_s2_4 & 1) {
-                            temp_s0_4 = &(&sp80)[var_s1_4];
-                            var_v1_4 = *temp_s0_4;
-                            if (var_v1_4 == NULL) {
-                                temp_v0_5 = HS64_AObjNew(anim, (var_s1_4 + 1) & 0xFF);
-                                *temp_s0_4 = temp_v0_5;
-                                var_v1_4 = temp_v0_5;
-                            }
-                            var_v1_4->unk1C = (bitwise f32) *anim->command;
-                            anim->command += 4;
-                        }
-                        var_s1_4 += 1;
-                        var_s2_4 = var_s2_4 >> 1;
-                        if (var_s1_4 != 0xA) {
-                            goto loop_57;
-                        }
-                    }
-                    goto block_115;
-                case 2:
-                    anim->command = temp_v1_2 + 4;
-                    anim->scale += var_s0_2 & 0x7FFF;
-                    goto block_115;
-                case 10:
-                case 11:
-                    temp_f20_4 = var_s0_2 & 0x7FFF;
-                    anim->command = temp_v1_2 + 4;
-                    var_s2_5 = (var_s0_2 << 7) >> 0x16;
-                    var_s1_5 = 0;
-loop_66:
-                    if (var_s2_5 != 0) {
-                        if (var_s2_5 & 1) {
-                            temp_s0_5 = &(&sp80)[var_s1_5];
-                            var_v1_5 = *temp_s0_5;
-                            if (var_v1_5 == NULL) {
-                                temp_v0_6 = HS64_AObjNew(anim, (var_s1_5 + 1) & 0xFF);
-                                *temp_s0_5 = temp_v0_6;
-                                var_v1_5 = temp_v0_6;
-                            }
-                            var_v1_5->unk10 = var_v1_5->unk14;
-                            (*temp_s0_5)->unk14 = (bitwise f32) *anim->command;
-                            anim->command += 4;
-                            (*temp_s0_5)->unk5 = 1;
-                            (*temp_s0_5)->unk8 = temp_f20_4;
-                            (*temp_s0_5)->unkC = -anim->scale - (bitwise f32) anim->unk78;
-                            (*temp_s0_5)->unk1C = 0.0f;
-                        }
-                        var_s1_5 += 1;
-                        var_s2_5 = var_s2_5 >> 1;
-                        if (var_s1_5 != 0xA) {
-                            goto loop_66;
-                        }
-                    }
-                    if (temp_v0 == 0xA) {
-                        anim->scale += temp_f20_4;
-                    }
-                    goto block_115;
-                case 14:
-                    temp_t2 = temp_v1_2 + 4;
-                    anim->command = temp_t2;
-                    temp_f0_2 = -anim->scale;
-                    anim->command = *temp_t2;
-                    anim->unk7C = temp_f0_2;
-                    anim->unk4->unk40 = temp_f0_2;
-                    if (anim->unk55 != 0) {
-                        temp_v0_7 = anim->unk4->unk48;
-                        if (temp_v0_7 != NULL) {
-                            temp_v0_7(anim, -2, 0);
-                        }
-                    }
-                    goto block_115;
-                case 1:
-                    temp_t8 = temp_v1_2 + 4;
-                    anim->command = temp_t8;
-                    anim->command = *temp_t8;
-                    if (anim->unk55 != 0) {
-                        temp_v0_8 = anim->unk4->unk48;
-                        if (temp_v0_8 != NULL) {
-                            temp_v0_8(anim, -2, 0);
-                        }
-                    }
-                    goto block_115;
-                case 12:
-                    anim->command = temp_v1_2 + 4;
-                    var_s2_6 = (var_s0_2 << 7) >> 0x16;
-                    var_s1_6 = 0;
-loop_84:
-                    if (var_s2_6 != 0) {
-                        if (var_s2_6 & 1) {
-                            temp_s0_6 = &(&sp80)[var_s1_6];
-                            var_v1_6 = *temp_s0_6;
-                            if (var_v1_6 == NULL) {
-                                temp_v0_9 = HS64_AObjNew(anim, (var_s1_6 + 1) & 0xFF);
-                                *temp_s0_6 = temp_v0_9;
-                                var_v1_6 = temp_v0_9;
-                            }
-                            var_v1_6->unkC += var_s0_2 & 0x7FFF;
-                        }
-                        var_s1_6 += 1;
-                        var_s2_6 = var_s2_6 >> 1;
-                        if (var_s1_6 != 0xA) {
-                            goto loop_84;
-                        }
-                    }
-                    goto block_115;
-                case 13:
-                    anim->command = temp_v1_2 + 4;
-                    if (sp8C == NULL) {
-                        sp8C = HS64_AObjNew(anim, 4);
-                    }
-                    sp8C->unk20 = *anim->command;
-                    anim->command += 4;
-                    goto block_116;
-                case 0:
-                    var_v0_3 = anim->aobj;
-                    if (var_v0_3 != NULL) {
-                        do {
-                            if (var_v0_3->unk5 != 0) {
-                                var_v0_3->unkC += (bitwise f32) anim->unk78 + anim->scale;
-                            }
-                            var_v0_3 = var_v0_3->next;
-                        } while (var_v0_3 != NULL);
-                    }
-                    anim->unk7C = anim->scale;
-                    anim->unk4->unk40 = anim->scale;
-                    anim->scale = -1.1342745e38f;
-                    if (anim->unk55 != 0) {
-                        temp_v0_10 = anim->unk4->unk48;
-                        if (temp_v0_10 != NULL) {
-                            temp_v0_10(anim, -1, 0);
-                            return;
-                        }
-                    }
-                    break;
-                case 15:
-                    anim->unk54 = (var_s0_2 << 7) >> 0x16;
-                    temp_t1 = *temp_v1_2 & 0x7FFF;
-                    var_f16 = temp_t1;
-                    if (temp_t1 < 0) {
-                        var_f16 += 4294967296.0f;
-                    }
-                    anim->command = temp_v1_2 + 4;
-                    anim->scale += var_f16;
-                    goto block_115;
-                case 16:
-                    temp_v0_11 = anim->unk4->unk48;
-                    if (temp_v0_11 != NULL) {
-                        temp_v1_6 = (var_s0_2 << 7) >> 0x16;
-                        temp_v0_11(anim, temp_v1_6 >> 8, (bitwise u32) (temp_v1_6 & 0xFF));
-                        var_s0_2 = *anim->command;
-                    }
-                    anim->command += 4;
-                    anim->scale += var_s0_2 & 0x7FFF;
-                    goto block_115;
-                case 17:
-                    var_s2_7 = (var_s0_2 << 7) >> 0x16;
-                    anim->command = temp_v1_2 + 4;
-                    var_s1_7 = 4;
-                    anim->scale += var_s0_2 & 0x7FFF;
-loop_108:
-                    if (var_s2_7 != 0) {
-                        if (var_s2_7 & 1) {
-                            temp_v0_12 = anim->unk4->unk48;
-                            if (temp_v0_12 != NULL) {
-                                temp_v0_12(anim, var_s1_7, *anim->command);
-                            }
-                            anim->command += 4;
-                        }
-                        var_s1_7 += 1;
-                        var_s2_7 = var_s2_7 >> 1;
-                        if (var_s1_7 != 0xE) {
-                            goto loop_108;
-                        }
-                    }
-                    goto block_115;
-            }
+                    bitMask >>= 1;
+                }
+                break;
+            default:
+                break;
         }
-    }
+    } while (dobj->timeLeft <= 0.0f);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000C3D8.s")
-#endif
 
-#ifdef MIPS_TO_C
-f32 func_8000CE18(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5) {
-    f32 sp18;
+f32 animGetAObjInterpValue(f32 Rduration, f32 time, f32 initialValue, f32 targetValue, f32 initialRate,
+                           f32 targetRate) {
+    f32 timeSquaredOverDuration;
     f32 sp14;
     f32 sp10;
-    f32 spC;
-    f32 sp0;
-    f32 temp_f10;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    f32 temp_f4;
+    f32 twoTimeCubedOverDurationCubed;
+    f32 timeCubedOverDurationSquared;
+    f32 RdurationSquared;
+    f32 timeSquared;
 
-    temp_f2 = arg1 * arg1;
-    temp_f18 = arg0 * arg0;
-    temp_f16 = temp_f2 * arg1 * temp_f18;
-    temp_f10 = 2.0f * temp_f16 * arg0;
-    spC = temp_f10;
-    temp_f4 = 3.0f * temp_f2 * temp_f18;
-    sp14 = temp_f4;
-    sp18 = temp_f2 * arg0;
-    sp0 = sp18;
-    sp10 = temp_f16 - sp18;
-    return (((temp_f10 - temp_f4) + 1.0f) * arg2) + (arg3 * (temp_f4 - temp_f10)) + (arg4 * ((sp10 - sp0) + arg1)) + (arg5 * sp10);
+    timeSquared = SQ(time);
+    RdurationSquared = SQ(Rduration);
+    timeCubedOverDurationSquared = timeSquared * time * RdurationSquared;
+    twoTimeCubedOverDurationCubed = 2.0f * timeCubedOverDurationSquared * Rduration;
+    sp14 = 3.0f * timeSquared * RdurationSquared;
+    timeSquaredOverDuration = timeSquared * Rduration;
+    sp10 = timeCubedOverDurationSquared - timeSquaredOverDuration;
+
+    return ((twoTimeCubedOverDurationCubed - sp14) + 1.0f) * initialValue + targetValue * (sp14 - twoTimeCubedOverDurationCubed) +
+           initialRate * ((sp10 - timeSquaredOverDuration) + time) + targetRate * sp10;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000CE18.s")
-#endif
 
-#ifdef MIPS_TO_C
-f32 func_8000CECC(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5) {
-    f32 temp_f16;
+f32 animGetAObjInterpRate(f32 invDuration, f32 time, f32 initialValue, f32 targetValue, f32 initialRate,
+                          f32 targetRate) {
     f32 temp_f18;
+    f32 temp_f16;
     f32 temp_f2;
 
-    temp_f18 = 6.0f * arg1;
-    temp_f16 = 3.0f * arg1 * arg1 * arg0 * arg0;
-    temp_f2 = 2.0f * arg1 * arg0;
-    return (((temp_f18 * arg1 * arg0 * arg0 * arg0) - (temp_f18 * arg0 * arg0)) * (arg2 - arg3)) + (arg4 * ((temp_f16 - (2.0f * temp_f2)) + 1.0f)) + (arg5 * (temp_f16 - temp_f2));
+    temp_f2 = 2.0f * time * invDuration;
+    temp_f16 = 3.0f * time * time * invDuration * invDuration;
+    temp_f18 = 6.0f * time;
+
+    return (temp_f18 * time * invDuration * invDuration * invDuration - temp_f18 * invDuration * invDuration) *
+               (initialValue - targetValue) +
+           initialRate * (temp_f16 - 2.0f * temp_f2 + 1.0f) + targetRate * (temp_f16 - temp_f2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000CECC.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8000CF84(void *arg0) {
-    u8 temp_v0;
-
-    temp_v0 = arg0->unk5;
-    switch (temp_v0) {                              /* irregular */
-        case 2:
-            return;
-        case 3:
-            func_8000CE18(arg0->unk8, arg0->unkC, arg0->unk10, arg0->unk14, arg0->unk18, arg0->unk1C);
-            return;
-        case 1:
-            if (arg0->unk8 <= arg0->unkC) {
-
-            }
-            return;
+f32 animGetAObjValue(AObj* aobj) {
+    switch (aobj->kind) {
+        case ANIM_TYPE_LINEAR:
+            return aobj->startVal + (aobj->timer * aobj->speed);
+        case ANIM_TYPE_CUBIC:
+            return animGetAObjInterpValue(aobj->Rduration, aobj->timer, aobj->startVal, aobj->goalVal,
+                                          aobj->speed, aobj->goalSpeed);
+        case ANIM_TYPE_STEP:
+            return aobj->Rduration <= aobj->timer ? aobj->goalVal : aobj->startVal;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000CF84.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8000D030(void *arg0) {
-    u8 temp_v0;
-
-    temp_v0 = arg0->unk5;
-    switch (temp_v0) {                              /* irregular */
-        case 2:
-            return;
-        case 3:
-            func_8000CECC(arg0->unk8, arg0->unkC, arg0->unk10, arg0->unk14, arg0->unk18, arg0->unk1C);
-            return;
-        case 1:
-            return;
+f32 animGetAObjRate(AObj* aobj) {
+    switch (aobj->kind) {
+        case ANIM_TYPE_LINEAR:
+            return aobj->speed;
+        case ANIM_TYPE_CUBIC:
+            return animGetAObjInterpRate(aobj->Rduration, aobj->timer, aobj->startVal, aobj->goalVal,
+                                         aobj->speed, aobj->goalSpeed);
+        case ANIM_TYPE_STEP:
+            return 0.0f;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000D030.s")
-#endif
 
 #ifdef MIPS_TO_C
-void func_8000D0AC(void *arg0) {
+void animUpdateModelAnimatedParams(void *arg0) {
     f32 sp54;
     f32 temp_f0;
     f32 temp_f12;
@@ -961,12 +682,12 @@ void func_8000D0AC(void *arg0) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000D0AC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/animUpdateModelAnimatedParams.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-void func_8000D35C(void *arg0) {
+void animProcessTextureAnimation(void *arg0) {
     void *sp7C;
     u32 sp58;
     f32 temp_f0;
@@ -1434,11 +1155,11 @@ loop_103:
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000D35C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/animProcessTextureAnimation.s")
 #endif
 
 #ifdef MIPS_TO_C
-void func_8000DE30(void *arg0) {
+void animUpdateTextureAnimatedParams(void *arg0) {
     f32 sp64;
     u8 sp47;
     u8 sp46;
@@ -1596,12 +1317,12 @@ void func_8000DE30(void *arg0) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000DE30.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/animUpdateTextureAnimatedParams.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-void func_8000E324(void *arg0) {
+void animUpdateModelTreeAnimation(void *arg0) {
     struct Animation *temp_v1;
     struct Animation *var_s1;
     u32 temp_v0;
@@ -1612,13 +1333,13 @@ void func_8000E324(void *arg0) {
     var_s1 = arg0->unk3C;
     if (var_s1 != NULL) {
         do {
-            func_8000C3D8(var_s1);
-            func_8000D0AC(var_s1);
+            animProcessModelAnimation(var_s1);
+            animUpdateModelAnimatedParams(var_s1);
             var_s0 = var_s1->unk80;
             if (var_s0 != 0) {
                 do {
-                    func_8000D35C(var_s0);
-                    func_8000DE30(var_s0);
+                    animProcessTextureAnimation(var_s0);
+                    animUpdateTextureAnimatedParams(var_s0);
                     var_s0 = *var_s0;
                 } while (var_s0 != 0);
             }
@@ -1649,11 +1370,11 @@ loop_7:
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000E324.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/animUpdateModelTreeAnimation.s")
 #endif
 
 #ifdef MIPS_TO_C
-void *func_8000E3F8(void *arg0, s32 arg1) {
+void *animGetAObjByParamID(void *arg0, s32 arg1) {
     void *var_a0;
 
     var_a0 = arg0;
@@ -1672,11 +1393,11 @@ loop_2:
     return NULL;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000E3F8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/animGetAObjByParamID.s")
 #endif
 
 #ifdef MIPS_TO_C
-void func_8000E434(void *arg0, f32 arg1) {
+void animSetModelAnimDuration(void *arg0, f32 arg1) {
     void *var_v0;
 
     var_v0 = arg0->unk6C;
@@ -1689,11 +1410,11 @@ void func_8000E434(void *arg0, f32 arg1) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000E434.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/animSetModelAnimDuration.s")
 #endif
 
 #ifdef MIPS_TO_C
-void func_8000E474(void *arg0, s32 arg1) {
+void animGetModelParamValue(void *arg0, s32 arg1) {
     switch (arg1) {
         case 1:
             return;
@@ -1719,7 +1440,7 @@ void func_8000E474(void *arg0, s32 arg1) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_8000E474.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/animGetModelParamValue.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1761,15 +1482,15 @@ s32 func_8000E554(s32 arg0, void *arg1, f32 *arg2, f32 *arg3, s32 arg4, s32 arg5
     void *temp_v0;
     void *temp_v0_2;
 
-    temp_v0 = func_8000E3F8(arg4, arg6);
+    temp_v0 = animGetAObjByParamID(arg4, arg6);
     if ((temp_v0 != NULL) && (temp_v0->unk5 != 0)) {
         if ((arg0 == 0) && (arg1->unk74 != -1.1342745e38f)) {
             temp_v0->unkC = temp_v0->unkC + arg1->unk78;
         }
         sp24 = temp_v0;
-        *arg2 = func_8000CF84(temp_v0);
+        *arg2 = animGetAObjValue(temp_v0);
         if (arg7 != 0) {
-            *arg3 = func_8000D030(sp24);
+            *arg3 = animGetAObjRate(sp24);
         }
         goto block_47;
     }
@@ -1788,13 +1509,13 @@ s32 func_8000E554(s32 arg0, void *arg1, f32 *arg2, f32 *arg3, s32 arg4, s32 arg5
             }
             goto block_47;
         }
-        temp_v0_2 = func_8000E3F8(arg4, 4, arg1, arg6);
+        temp_v0_2 = animGetAObjByParamID(arg4, 4, arg1, arg6);
         if ((temp_v0_2 != NULL) && (temp_v0_2->unk5 != 0)) {
             if ((arg0 == 0) && (arg1->unk74 != -1.1342745e38f)) {
                 temp_v0_2->unkC = temp_v0_2->unkC + arg1->unk78;
             }
             sp24 = temp_v0_2;
-            temp_f0 = func_8000CF84(temp_v0_2);
+            temp_f0 = animGetAObjValue(temp_v0_2);
             *arg2 = temp_f0;
             if (temp_f0 < 0.0f) {
                 *arg2 = 0.0f;
@@ -1823,7 +1544,7 @@ s32 func_8000E554(s32 arg0, void *arg1, f32 *arg2, f32 *arg3, s32 arg4, s32 arg5
             var_f0 = func_8000E4E4(arg5, arg6, arg1, arg6);
             goto block_46;
         }
-        var_f0 = func_8000E474(arg1, arg6, arg1, arg6);
+        var_f0 = animGetModelParamValue(arg1, arg6, arg1, arg6);
         goto block_46;
     }
     if (arg0 == 0) {
@@ -1833,7 +1554,7 @@ s32 func_8000E554(s32 arg0, void *arg1, f32 *arg2, f32 *arg3, s32 arg4, s32 arg5
         var_f0 = func_8000E4E4(arg5, arg6, arg1, arg6);
         goto block_46;
     }
-    var_f0 = func_8000E474(arg1, arg6, arg1, arg6);
+    var_f0 = animGetModelParamValue(arg1, arg6, arg1, arg6);
 block_46:
     *arg2 = var_f0;
 block_47:
@@ -2041,7 +1762,7 @@ f32 func_8000EC98(struct Animation *arg0, u32 **arg1, struct Animation *arg2, s3
     sp98 = 0;
     spA4 = 0.0f;
     if (((arg1 == NULL) || (*arg1 == NULL)) && (arg3 == 0)) {
-        func_8000984C(arg2, arg0);
+        omDObjResetAnimation(arg2, arg0);
         return 0.0f;
     }
     spC4 = arg0->aobj;
@@ -2052,7 +1773,7 @@ f32 func_8000EC98(struct Animation *arg0, u32 **arg1, struct Animation *arg2, s3
             arg0->command = temp_v0;
             arg0->unk7C = (bitwise f32) arg2;
             arg0->scale = -1.7014117e38f;
-            func_8000C3D8(arg0);
+            animProcessModelAnimation(arg0);
             spC0 = arg0->aobj;
             arg0->aobj = NULL;
         }
@@ -2130,9 +1851,9 @@ f32 func_8000EC98(struct Animation *arg0, u32 **arg1, struct Animation *arg2, s3
     } while (var_s0 != 0xB);
     temp_s0 = arg0->aobj;
     arg0->aobj = spC4;
-    func_8000984C(arg0);
+    omDObjResetAnimation(arg0);
     arg0->aobj = spC0;
-    func_8000984C(arg0);
+    omDObjResetAnimation(arg0);
     temp_f2 = arg0->unk78;
     arg0->aobj = temp_s0;
     arg0->command = NULL;
@@ -2176,7 +1897,7 @@ f32 func_8000F054(void *arg0, s32 arg1, f32 arg2, s32 arg3, s32 arg4, f32 arg5, 
                 if (var_s1 != 0) {
                     var_s1 += 0x2C;
                 }
-                temp_v0 = func_8000BE90(var_s2);
+                temp_v0 = animModelTreeNextNode(var_s2);
                 var_s2 = temp_v0;
             } while (temp_v0 != NULL);
             var_s2 = arg0->unk3C;
@@ -2188,8 +1909,8 @@ f32 func_8000F054(void *arg0, s32 arg1, f32 arg2, s32 arg3, s32 arg4, f32 arg5, 
         }
         if (var_s2 != NULL) {
             do {
-                func_8000E434(var_s2, var_f20);
-                temp_v0_2 = func_8000BE90(var_s2);
+                animSetModelAnimDuration(var_s2, var_f20);
+                temp_v0_2 = animModelTreeNextNode(var_s2);
                 var_s2 = temp_v0_2;
             } while (temp_v0_2 != NULL);
         }
@@ -2203,7 +1924,7 @@ f32 func_8000F054(void *arg0, s32 arg1, f32 arg2, s32 arg3, s32 arg4, f32 arg5, 
             if (var_s1 != 0) {
                 var_s1 += 0x2C;
             }
-            temp_v0_3 = func_8000BE90(var_s2);
+            temp_v0_3 = animModelTreeNextNode(var_s2);
             var_s2 = temp_v0_3;
         } while (temp_v0_3 != NULL);
     }
@@ -2238,7 +1959,7 @@ void func_8000F230(void *arg0, s32 *arg1, f32 arg2, void *arg3) {
         do {
             temp_a1 = *var_fp;
             if (temp_a1 != 0) {
-                func_8000C10C(var_s0, temp_a1, arg2);
+                animSetModelAnimation(var_s0, temp_a1, arg2);
                 var_s1 = 1;
                 var_s0->unk55 = sp6C;
                 sp6C = 0;
@@ -2296,7 +2017,7 @@ void func_8000F230(void *arg0, s32 *arg1, f32 arg2, void *arg3) {
             if (var_s2 != NULL) {
                 var_s2 += 0x2C;
             }
-            temp_v0 = func_8000BE90(var_s0);
+            temp_v0 = animModelTreeNextNode(var_s0);
             var_s0 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -2756,7 +2477,7 @@ void func_8000FCE4(void *arg0, s32 **arg1) {
                 }
                 var_s3 += 4;
             }
-            temp_v0 = func_8000BE90(var_s2);
+            temp_v0 = animModelTreeNextNode(var_s2);
             var_s2 = temp_v0;
         } while (temp_v0 != NULL);
     }
@@ -2787,7 +2508,7 @@ loop_2:
         var_s1->unk40 = var_s0->unk-C;
         var_s1->unk44 = var_s0->unk-8;
         var_s1->unk48 = var_s0->unk-4;
-        temp_v0 = func_8000BE90(var_s1);
+        temp_v0 = animModelTreeNextNode(var_s1);
         var_s1 = temp_v0;
         if (temp_v0 != NULL) {
             if (var_s0->unk0 != 0x12) {
@@ -3225,16 +2946,16 @@ void func_8001074C(void *arg0) {
                         temp_t0 = var_s0->unk4;
                         switch (temp_t0) {
                             case 25:
-                                arg0->unk3C = func_8000CF84(var_s0);
+                                arg0->unk3C = animGetAObjValue(var_s0);
                                 break;
                             case 26:
-                                arg0->unk40 = func_8000CF84(var_s0);
+                                arg0->unk40 = animGetAObjValue(var_s0);
                                 break;
                             case 27:
-                                arg0->unk44 = func_8000CF84(var_s0);
+                                arg0->unk44 = animGetAObjValue(var_s0);
                                 break;
                             case 28:
-                                temp_f0 = func_8000CF84(var_s0);
+                                temp_f0 = animGetAObjValue(var_s0);
                                 var_f2 = temp_f0;
                                 if (temp_f0 < 0.0f) {
                                     var_f2 = 0.0f;
@@ -3244,16 +2965,16 @@ void func_8001074C(void *arg0) {
                                 func_8001E300(M2C_ERROR(/* Read from unset register $f12 */), var_s0->unk20, var_f2, M2C_ERROR(/* Read from unset register $a3 */));
                                 break;
                             case 29:
-                                arg0->unk48 = func_8000CF84(var_s0);
+                                arg0->unk48 = animGetAObjValue(var_s0);
                                 break;
                             case 30:
-                                arg0->unk4C = func_8000CF84(var_s0);
+                                arg0->unk4C = animGetAObjValue(var_s0);
                                 break;
                             case 31:
-                                arg0->unk50 = func_8000CF84(var_s0);
+                                arg0->unk50 = animGetAObjValue(var_s0);
                                 break;
                             case 32:
-                                temp_f0_2 = func_8000CF84(var_s0);
+                                temp_f0_2 = animGetAObjValue(var_s0);
                                 var_f2_2 = temp_f0_2;
                                 if (temp_f0_2 < 0.0f) {
                                     var_f2_2 = 0.0f;
@@ -3263,10 +2984,10 @@ void func_8001074C(void *arg0) {
                                 func_8001E300(M2C_ERROR(/* Read from unset register $f12 */), var_s0->unk20, var_f2_2, M2C_ERROR(/* Read from unset register $a3 */));
                                 break;
                             case 33:
-                                arg0->unk54 = func_8000CF84(var_s0);
+                                arg0->unk54 = animGetAObjValue(var_s0);
                                 break;
                             case 34:
-                                arg0->unk20 = func_8000CF84(var_s0);
+                                arg0->unk20 = animGetAObjValue(var_s0);
                                 break;
                         }
                     }

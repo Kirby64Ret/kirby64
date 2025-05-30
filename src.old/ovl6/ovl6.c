@@ -8,7 +8,7 @@ extern void func_800067B8(void);
 extern void func_8000AD88(void);
 extern u32 D_8015A694;
 
-extern void func_8000E324(void);
+extern void animUpdateModelTreeAnimation(void);
 
 extern struct UnkStruct8015A560 *D_8015A560;
 extern u32 D_8015A690;
@@ -166,7 +166,7 @@ void func_80153868(void) {
         omEndProcess(gEntityGObjProcessArray[0x3F]);
         omEndProcess(gEntityGObjProcessArray2[0x3F]);
         omEndProcess(gEntityGObjProcessArray5[0x3F]);
-        func_80008A18(omCurrentObj, &func_8000E324, 1, 3);
+        func_80008A18(omCurrentObj, &animUpdateModelTreeAnimation, 1, 3);
         func_800A9864(D_8015A560->listIndex, 99999, 0xC);
         omCurrentObj = sp1C;
     }
