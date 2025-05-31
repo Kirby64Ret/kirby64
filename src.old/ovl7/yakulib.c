@@ -91,7 +91,7 @@ s32 func_801BBE50(s32 arg0, s32 arg1, u32 arg2) {
 extern u32 D_800E5F90[];
 extern f32 D_800E6BD0[];
 extern s32 D_800D7090;
-extern f32 func_8019B144_ovl7(void);
+extern f32 eneGetPlayerHeight(void);
 s32 func_801BBFE4_ovl7(s32 arg0) {
     s32 idx;
     s32 sp1C;
@@ -110,7 +110,7 @@ s32 func_801BBFE4_ovl7(s32 arg0) {
     D_800E6A10[idx] = D_800E6A10[D_800E0D50[idx]];
     if (D_800E0D50[idx] == 0) {
         sp1C = idx;
-        gEntitiesNextPosYArray[idx] = func_8019B144_ovl7();
+        gEntitiesNextPosYArray[idx] = eneGetPlayerHeight();
     } else {
         gEntitiesNextPosYArray[idx] = gEntitiesNextPosYArray[D_800E0D50[idx]];
     }
@@ -152,7 +152,7 @@ s32 func_801BC27C_ovl7(s32 arg0, s32 arg1) {
     D_800E6A10[idx] = D_800E6A10[D_800E0D50[idx]];
     if (D_800E0D50[idx] == 0) {
         sp1C = idx;
-        gEntitiesNextPosYArray[idx] = func_8019B144_ovl7();
+        gEntitiesNextPosYArray[idx] = eneGetPlayerHeight();
     } else {
         gEntitiesNextPosYArray[idx] = gEntitiesNextPosYArray[D_800E0D50[idx]];
     }
@@ -198,7 +198,7 @@ s32 func_801BC580_ovl7(s32 arg0) {
     D_800E6A10[idx] = D_800E6A10[D_800E0D50[idx]];
     if (D_800E0D50[idx] == 0) {
         sp1C = idx;
-        gEntitiesNextPosYArray[idx] = func_8019B144_ovl7();
+        gEntitiesNextPosYArray[idx] = eneGetPlayerHeight();
     } else {
         gEntitiesNextPosYArray[idx] = gEntitiesNextPosYArray[D_800E0D50[idx]];
     }
@@ -237,7 +237,7 @@ s32 func_801BC794_ovl7(s32 arg0) {
     D_800E6A10[idx] = D_800E6A10[D_800E0D50[idx]];
     if (D_800E0D50[idx] == 0) {
         sp1C = idx;
-        gEntitiesNextPosYArray[idx] = func_8019B144_ovl7();
+        gEntitiesNextPosYArray[idx] = eneGetPlayerHeight();
     } else {
         gEntitiesNextPosYArray[idx] = gEntitiesNextPosYArray[D_800E0D50[idx]];
     }

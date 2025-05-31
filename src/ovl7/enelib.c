@@ -1001,17 +1001,16 @@ void func_8019AF00_ovl7(f32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AF00_ovl7.s")
 #endif
 
-// eneGetPlayerHeight
 // regalloc, and just returning the value doesnt seem to emit the required mov.s
 #ifdef NON_MATCHING
-f32 func_8019B144_ovl7(void) {
+f32 eneGetPlayerHeight(void) {
     f32 ret = gEntitiesNextPosYArray[0] + 20.f;
 
     return ret;
 }
 #else
-f32 func_8019B144_ovl7(void);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B144_ovl7.s")
+f32 eneGetPlayerHeight(void);
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneGetPlayerHeight.s")
 #endif
 
 void func_8019B164_ovl7(void) {
@@ -1029,8 +1028,7 @@ void func_8019B164_ovl7(void) {
     }
 }
 
-// eneCheckAboveBelowPlayer
-s32 func_8019B20C_ovl7(void) {
+s32 eneCheckAboveBelowPlayer(void) {
     return (gEntitiesNextPosYArray[omCurrentObj->objId] < (gEntitiesNextPosYArray[0] + 20.0f)) ? 1 : -1;
 }
 
@@ -1038,7 +1036,7 @@ s32 func_8019B20C_ovl7(void) {
 // eneCheckAboveBelowPlayer2
 // its the same as the above except with a function call and you can add an offset
 s32 func_8019B260_ovl7(f32 offsetY) {
-    return ((gEntitiesNextPosYArray[omCurrentObj->objId] + offsetY) < func_8019B144_ovl7()) ? 1 : -1;
+    return ((gEntitiesNextPosYArray[omCurrentObj->objId] + offsetY) < eneGetPlayerHeight()) ? 1 : -1;
 }
 
 #ifdef MIPS_TO_C
@@ -1073,7 +1071,6 @@ void func_8019B2C0_ovl7(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_8019B3C8_ovl7(s32 arg0) {
     (*(&D_800DE350 + (omCurrentObj->objId * 4)))->unk3C->unk10->unk30 = 0.0f;
     (*(&D_800DE350 + (omCurrentObj->objId * 4)))->unk3C->unk10->unk38 = 0.0f;
@@ -1083,7 +1080,6 @@ void func_8019B3C8_ovl7(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_8019B424_ovl7(s32 arg0) {
     UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
     s32 sp1C;
@@ -1143,12 +1139,11 @@ f32 func_8019B608_ovl7(s32 track) {
     return ((D_800E6A10[omCurrentObj->objId] * angleXZ) < 0.0f) ? 1.0f : -1.0f;
 }
 
-// eneCheckCloseToPlayer
 #ifdef NON_MATCHING
 // magnitude does all the calculations,
 // and then does x + z + y instead of x+y+z.
 // I can't find a combo that isnt a fake match
-s32 func_8019B738_ovl7(f32 distanceSq) {
+s32 eneCheckNearPlayer(f32 distanceSq) {
     Vector toPlayer;
     Vector magnitude;
 
@@ -1163,7 +1158,7 @@ s32 func_8019B738_ovl7(f32 distanceSq) {
     return ((magnitude.x + magnitude.y + magnitude.z) < distanceSq) ? 1 : 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B738_ovl7.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneCheckNearPlayer.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1375,7 +1370,7 @@ block_12:
 
 // eneTurnCommon
 #ifdef MIPS_TO_C
-void func_8019BE9C_ovl7(s32 arg0) {
+void eneTurnCommon(s32 arg0) {
     struct UnkStruct800E1B50 *sp1C;
     f32 *temp_a0;
     f32 *temp_a0_3;
@@ -1499,12 +1494,12 @@ block_29:
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019BE9C_ovl7.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneTurnCommon.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-void func_8019C310_ovl7(s32 arg0) {
+void eneTurnCommon2(s32 arg0) {
     struct UnkStruct800E1B50 *sp1C;
     f32 *temp_a0;
     f32 *temp_a0_2;
@@ -1616,7 +1611,7 @@ void func_8019C310_ovl7(s32 arg0) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C310_ovl7.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneTurnCommon2.s")
 #endif
 
 #ifdef MIPS_TO_C

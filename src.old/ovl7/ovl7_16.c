@@ -365,7 +365,7 @@ GLOBAL_ASM("asm/non_matchings/ovl7/ovl7_16/func_801BE79C_ovl7.s")
 
 extern s32 func_8019A7E8_ovl7(f32);
 void func_801BEF18_ovl7(void);
-void func_8019BE9C_ovl7(s32);
+void eneTurnCommon(s32);
 
 void func_801BEE54_ovl7(UNUSED s32 arg0) {
     struct UnkStruct800E1B50 *sp1C;
@@ -373,7 +373,7 @@ void func_801BEE54_ovl7(UNUSED s32 arg0) {
     sp1C = D_800E1B50[omCurrentObj->objId];
     if (D_800E98E0[omCurrentObj->objId] == 1) {
         func_801BEF18_ovl7();
-        func_8019BE9C_ovl7(2);
+        eneTurnCommon(2);
         if (sp1C->unk3C == 0) {
             if (func_8019A7E8_ovl7(30.0f) != 0) {
                 D_800E98E0[omCurrentObj->objId] = 2;
@@ -382,7 +382,7 @@ void func_801BEE54_ovl7(UNUSED s32 arg0) {
     } else {
         if (D_800E98E0[omCurrentObj->objId] == 2) {
             func_801BEF18_ovl7();
-            func_8019BE9C_ovl7(2);
+            eneTurnCommon(2);
         }
     }
 }

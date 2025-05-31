@@ -945,8 +945,7 @@ void func_801A32A8_ovl7(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_801A32EC(void *arg0) {
+void func_801A32EC_ovl7(void *arg0) {
     D_801CE6D0_ovl7.unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
     D_801CE6D0_ovl7.unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
     D_801CE6D0_ovl7.unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
@@ -965,7 +964,7 @@ void func_801A32EC(void *arg0) {
 
 #ifdef MIPS_TO_C
 
-void func_801A33B8(void *arg0) {
+void func_801A33B8_ovl7(void *arg0) {
     f32 temp_f0;
     f32 temp_f2;
     s32 *var_at;
@@ -1031,7 +1030,6 @@ void func_801A3618_ovl7(void *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_801A36CC(s32 arg0) {
     ? *sp1C;
     ? *var_a2;
@@ -1048,7 +1046,7 @@ void func_801A36CC(s32 arg0) {
     func_8011BF4C(sp1C, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A36CC_ovl7.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A36CC.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1073,7 +1071,6 @@ void func_801A374C_ovl7(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_801A37B8_ovl7(s32 arg0, s32 arg1) {
     ? *sp2C;
     ? sp20;
@@ -1141,7 +1138,6 @@ s32 func_801A38BC_ovl7(void *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_801A3938(s32 arg0) {
     ? *var_v0;
     u32 temp_v1;
@@ -1158,7 +1154,7 @@ void func_801A3938(s32 arg0) {
     var_v0->unk1C = 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3938_ovl7.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3938.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1334,3 +1330,4 @@ void func_801A3E0C_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3E0C_ovl7.s")
 #endif
+

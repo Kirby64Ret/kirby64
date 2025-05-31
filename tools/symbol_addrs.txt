@@ -1022,6 +1022,16 @@ play_sound_and_wait = 0x800AFC20; // type:func
 // ovl1_data
 gDrawFuncList = 0x800D4F10;
 
+// ene
+eneCheckNearPlayer = 0x8019B738; // type:func segment:ovl7
+eneGetPlayerHeight = 0x8019B144; // type:func segment:ovl7
+eneCheckAboveBelowPlayer = 0x8019B20C; // type:func segment:ovl7
+eneTurnCommon2 = 0x8019C310; // type:func segment:ovl7
+eneTurnCommon = 0x8019BE9C; // type:func segment:ovl7
+
+func_801A36CC = 0x801A36CC; // type:func segment:ovl7
+func_801A3938 = 0x801A3938; // type:func segment:ovl7
+
 // splat meme
 D_8018E3A0_ovl5 = 0x8018E3A0; // segment:ovl5
 D_8018E99C_ovl5 = 0x8018E99C; // segment:ovl5
