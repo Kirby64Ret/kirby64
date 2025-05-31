@@ -959,7 +959,7 @@ void func_801A32EC_ovl7(void *arg0) {
     func_801051AC(&D_801CE6D0_ovl7);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A32EC_ovl7.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A32EC.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1013,7 +1013,7 @@ void func_801A33B8_ovl7(void *arg0) {
     func_80105238(&D_801CE6D0_ovl7, &D_8012BCA0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A33B8_ovl7.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A33B8.s")
 #endif
 
 #ifdef MIPS_TO_C

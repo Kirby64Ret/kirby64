@@ -1031,6 +1031,9 @@ eneTurnCommon = 0x8019BE9C; // type:func segment:ovl7
 
 func_801A36CC = 0x801A36CC; // type:func segment:ovl7
 func_801A3938 = 0x801A3938; // type:func segment:ovl7
+func_8019D8A0 = 0x8019D8A0; // type:func segment:ovl7
+func_801A32EC = 0x801A32EC; // type:func segment:ovl7
+func_801A33B8 = 0x801A33B8; // type:func segment:ovl7
 
 // splat meme
 D_8018E3A0_ovl5 = 0x8018E3A0; // segment:ovl5

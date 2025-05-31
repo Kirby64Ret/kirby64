@@ -2188,7 +2188,7 @@ void func_8019D8A0(s32 arg0) {
     func_800B1900(temp_s0 & 0xFFFF);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D8A0_ovl7.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D8A0.s")
 #endif
 
 #ifdef MIPS_TO_C
