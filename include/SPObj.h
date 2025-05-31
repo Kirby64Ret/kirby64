@@ -26,6 +26,10 @@ enum SPObj_ColorType {
     SPOBJ_CT_PRIM_TEX_EDGE,
 };
 
+struct SPObj_40_A0 {
+    u32 _000[0x60];
+};
+
 // spobj? according to debug string
 typedef struct SPObj {
     struct SPObj *next;
@@ -58,7 +62,7 @@ typedef struct SPObj {
     f32 unk34;
     f32 unk38;
     u32 unk3C;
-    void *unk40; // 0x60 bytes long
+    struct SPObj_40_A0 *unk40; // 0x60 bytes long
     u32 unk44;
     u32 unk48;
     u32 unk4C;
@@ -80,7 +84,7 @@ typedef struct SPObj {
     uObjMtx *unk88;
     u32 unk8C;
     u32 unk90[4];
-    u32 *unkA0; // same struct as unk40
+    struct SPObj_40_A0 *unkA0; // same struct as unk40
     u32 unkA4;
     u32 unkA8;
     u32 unkAC;

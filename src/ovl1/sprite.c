@@ -1,6 +1,10 @@
+#include <ultra64.h>
+
 #include <PR/gbi.h>
+#include <PR/gu.h>
 #include <PR/gs2dex.h>
 #include "common.h"
+#include "GObj.h"
 #include "SPObj.h"
 
 extern SPObj *D_800DD6E0; // SPObj head
@@ -47,89 +51,86 @@ SPObj *pop_spobj(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC8E0.s")
 
 void func_800AC924(uObjMtx *mtx) {
-    mtx->m.A = mtx->m.D = 0x10000;
+    mtx->m.A = mtx->m.D = FTOFIX32(1.0f);
     mtx->m.B = mtx->m.C = 0;
     mtx->m.X = mtx->m.Y = 0;
-    mtx->m.BaseScaleX = mtx->m.BaseScaleY = 0x400;
+    mtx->m.BaseScaleX = mtx->m.BaseScaleY = FTOFIX16(1.0f);
 }
 
 #ifdef MIPS_TO_C
+SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
+    SPObj* sprite;
+    void* var_a0;
+    void* var_v1;
+    SPObj* gobj_4C;
 
-void *func_800AC954(void *arg0, u32 arg1, void *arg2) {
-    void *temp_a1;
-    void *temp_v0;
-    void *var_a0;
-    void *var_v1;
-
-    temp_v0 = pop_spobj();
-    if (temp_v0 == NULL) {
+    sprite = pop_spobj();
+    if (sprite == NULL) {
         return NULL;
     }
-    temp_a1 = arg0->unk4C;
-    if (temp_a1 != NULL) {
-        var_v1 = temp_a1->unk8;
-        var_a0 = temp_a1;
-        if (var_v1 != NULL) {
-            do {
-                var_a0 = var_v1;
-                var_v1 = var_v1->unk8;
-            } while (var_v1 != NULL);
+    gobj_4C = gobj->unk4C;
+    if (gobj_4C != NULL) {
+        SPObj *next = gobj_4C->unk8;
+        while (next != NULL) {
+            next = next->unk8;
         }
-        var_a0->unk8 = temp_v0;
-        temp_v0->unkC = var_a0;
+        next->unk8 = sprite;
+        sprite->unkC = next;
     } else {
-        arg0->unk4C = temp_v0;
-        temp_v0->unkC = NULL;
+        gobj->unk4C = sprite;
+        sprite->unkC = 0;
     }
-    temp_v0->unk8 = 0;
-    temp_v0->unk4 = arg0;
-    temp_v0->unk10 = arg1;
-    temp_v0->unk11 = 0;
-    temp_v0->unk12 = 0;
-    temp_v0->unk13 = 0;
-    temp_v0->unk14 = temp_v0->unk15 = temp_v0->unk16 = temp_v0->unk17 = 0xFF;
-    temp_v0->unk18 = temp_v0->unk19 = temp_v0->unk1A = temp_v0->unk1B = 0;
-    temp_v0->unk1C = arg2->unk4;
-    temp_v0->unk20 = 0.0f;
-    temp_v0->unk24 = 0.0f;
-    temp_v0->unk30 = 0.0f;
-    temp_v0->unk34 = 0.0f;
-    temp_v0->unk38 = 0.0f;
-    temp_v0->unk28 = 1.0f;
-    temp_v0->unk2C = 1.0f;
-    temp_v0->unk1E = arg2->unk6;
-    switch (arg1) {
+    sprite->unk8 = 0;
+    sprite->gobj = gobj;
+    sprite->unk10 = (u8) kind;
+    sprite->unk11 = 0;
+    sprite->unk12 = 0;
+    sprite->renderFlags = 0;
+    sprite->primColorRed =
+    sprite->primColorGreen =
+    sprite->primColorBlue =
+    sprite->primColorAlpha = 0xFF;
+    sprite->envColorRed =
+    sprite->envColorGreen =
+    sprite->envColorBlue =
+    sprite->envColorAlpha = 0xFF;
+    sprite->width = arg2->width;
+    sprite->height = arg2->height;
+    sprite->xOffset = sprite->yOffset = 0.0f;
+    sprite->unk30 = sprite->unk34 = sprite->unk38 = 0.0f;
+    sprite->unk28 = sprite->unk2C = 1.0f;
+    switch (kind) {
         case 0:
-            func_800AC688(temp_v0 + 0x40, arg2, arg1, arg0);
+            func_800AC688(&sprite->unk40, arg2, kind, gobj);
             if (arg2->unk0 == 2) {
-                func_800AC8E0(temp_v0 + 0x68, arg2);
+                func_800AC8E0(&sprite->unk68, arg2);
             }
             break;
         case 1:
-            func_800AC700(temp_v0 + 0x40, arg2, arg1, arg0);
+            func_800AC700(&sprite->unk40, arg2, kind, gobj);
             if (arg2->unk0 == 2) {
-                func_800AC8E0(temp_v0 + 0x68, arg2);
+                func_800AC8E0(&sprite->unk68, arg2);
             }
             break;
         case 2:
-            func_800AC794(temp_v0 + 0x58, arg2, arg1, arg0);
-            func_800AC820(temp_v0 + 0x40, arg2);
+            func_800AC794(&sprite->unk58, arg2, kind, gobj);
+            func_800AC820(&sprite->unk40, arg2);
             if (arg2->unk0 == 2) {
-                func_800AC8E0(temp_v0 + 0x70, arg2);
+                func_800AC8E0((struct SPObj_68** ) &sprite->unk70, arg2);
             }
             break;
         case 3:
         case 4:
-            func_800AC794(temp_v0 + 0x58, arg2, arg1, arg0);
-            func_800AC820(temp_v0 + 0x40, arg2);
+            func_800AC794(&sprite->unk58, arg2, kind, gobj);
+            func_800AC820(&sprite->unk40, arg2);
             if (arg2->unk0 == 2) {
-                func_800AC8E0(temp_v0 + 0x70, arg2);
+                func_800AC8E0((struct SPObj_68** ) &sprite->unk70, arg2);
             }
-            func_800AC924(temp_v0 + 0x88);
+            func_800AC924((uObjMtx* ) &sprite->unk88);
             break;
     }
-    M2C_MEMCPY_ALIGNED(temp_v0 + 0xA0, temp_v0 + 0x40, 0x60);
-    return temp_v0;
+    *sprite->unkA0 = *sprite->unk40;
+    return sprite;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC954.s")

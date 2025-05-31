@@ -339,6 +339,8 @@ segments:
     - [0x9A980, c, ovl2/ovl2_10]
     - [0xA4480, c, ovl2/plylib]
     - [0xAC900, data, ovl2/ovl2]
+    - [0xACD40, data, ovl2/spawn]
+    - [0xAD030, data, ovl2/after_spawn]
     - [0xB1150, .rodata, ovl2/ovl2]
     - [0xB1180, .rodata, ovl2/ovl2_2]
     - [0xB1210, .rodata, ovl2/ovl2_3]

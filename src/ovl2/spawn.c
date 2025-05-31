@@ -15,11 +15,11 @@ extern s32 D_80129118;
 
 s32 func_800FCD14(u32 arg0, u8 node, f32 yScale, u8 bankID, u8 entID,
     u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
-    Vec3f *pos, Vec3f *angle, Vec3f *scale);
+    Vector *pos, Vector *angle, Vector *scale);
 
 s32 func_800FCDC0(u32 arg0, u8 bankID, u8 entID,
     u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
-    Vec3f *pos, Vec3f *angle, Vec3f *scale);
+    Vector *pos, Vector *angle, Vector *scale);
 
 u32 spawn_entity(u32 arg0, struct Entity *arg1) {
     if (!(arg1->respawnFlag & 1)) {
@@ -118,13 +118,13 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 entID, u8 arg3, u8 arg4, u8 arg5, s16 
 #else
 s32 setUpDispose(s32 arg0, u8 bankID, u8 entID,
     u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
-    Vec3f *pos, Vec3f *angle, Vec3f *scale);
+    Vector *pos, Vector *angle, Vector *scale);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/setUpDispose.s")
 #endif
 
 s32 func_800FCD14(u32 arg0, u8 node, f32 yScale, u8 bankID, u8 entID,
     u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
-    Vec3f *pos, Vec3f *angle, Vec3f *scale) {
+    Vector *pos, Vector *angle, Vector *scale) {
     s32 track;
 
     track = setUpDispose(arg0, bankID, entID, action, respawnFlag, unk5, saveToEeprom, pos, angle, scale);
@@ -140,7 +140,7 @@ s32 func_800FCD14(u32 arg0, u8 node, f32 yScale, u8 bankID, u8 entID,
 
 s32 func_800FCDC0(u32 arg0, u8 bankID, u8 entID,
     u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
-    Vec3f *pos, Vec3f *angle, Vec3f *scale) {
+    Vector *pos, Vector *angle, Vector *scale) {
     s32 track;
 
     track = setUpDispose(arg0, bankID, entID, action, respawnFlag, unk5, saveToEeprom, pos, angle, scale);
@@ -152,7 +152,6 @@ s32 func_800FCDC0(u32 arg0, u8 bankID, u8 entID,
 }
 
 #ifdef MIPS_TO_C
-
 ? *func_800FCE50(void) {
     u8 temp_v0;
 

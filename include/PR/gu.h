@@ -5,6 +5,7 @@
 #include <PR/ultratypes.h>
 
 #define	FTOFIX32(x)	(long)((x) * (float)0x00010000)
+#define FTOFIX16(x) (long)((x) * (float)(1 << 10))
 #define	FIX32TOF(x)	((float)(x) * (1.0f / (float)0x00010000))
 #define	FTOFRAC8(x)	((int) MIN(((x) * (128.0f)), 127.0f) & 0xff)
 

@@ -24,5 +24,6 @@ rm -rf src/ovl17/code_*
 rm -rf src/ovl18/code_*
 rm -rf src/ovl19/code_*
 splat split kirby64.yaml
-cp entry.s asm/
-make -j16
+# cp entry.s asm/
+make -j$(nproc)
+

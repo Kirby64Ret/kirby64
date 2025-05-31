@@ -13,14 +13,6 @@ extern s32 D_800D6E10;
 extern u32 D_801D02AC[][8];
 extern s32 D_80129118;
 
-s32 func_800FCD14(u32 arg0, u8 node, f32 yScale, u8 bankID, u8 entID,
-    u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
-    Vec3f *pos, Vec3f *angle, Vec3f *scale);
-
-s32 func_800FCDC0(u32 arg0, u8 bankID, u8 entID,
-    u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
-    Vec3f *pos, Vec3f *angle, Vec3f *scale);
-
 // another self-verification check
 s32 func_800F88A0(void) {
     s32 ret;
