@@ -56,7 +56,7 @@ struct Sub800E1B50_80 {
     f32 unk18;
     u32 unk1C;
     u8 unk20;
-    u8 unk21
+    u8 unk21;
 };
 
 struct Sub800E1B50_34_4C {
