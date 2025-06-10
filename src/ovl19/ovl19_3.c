@@ -1353,7 +1353,7 @@ void func_8022CE18_ovl19(s32 arg0) {
     D_800E3210[temp_v0_2] = D_800E3750[temp_v0_2];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
     gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
-    auStopAllSounds(D_800E3750, &omCurrentObj, omCurrentObj);
+    auFunc80020C88(D_800E3750, &omCurrentObj, omCurrentObj);
     func_800A7EB4();
     if ((gKirbyHp == 0.0f) && (D_800E7B20[omCurrentObj->objId] != 0.0f)) {
         play_sound(0xDC);

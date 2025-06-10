@@ -183,7 +183,8 @@ typedef struct GObj {
     /* 0x4C */ void *unk4C;
 } GObj;
 // size: 0x50
-extern struct GObj *omCurrentObj, *omCurrentCamera, *omCurrentDrawObj;
+extern struct GObj *omCurrentObj, *omCurrentDrawObj;
+extern GObj *omCurrentCamera;
 extern struct GObj *D_800DE44C;
 extern GObj *D_800DE350[];
 extern GObj *D_800D799C;

@@ -3,6 +3,21 @@
 
 #include "GObj.h"
 
+// GObjThreadStack?
+struct UnkStruct800B1EC8 {
+    struct UnkStruct800B1EC8 *unk0;
+    struct UnkStruct800B1EC8 *unk4;
+    struct UnkStruct800B1EC8 *unk8;
+    struct UnkStruct800B1EC8 *unkC; // pointer?
+    u32 unk10;
+    u32 unk14; // pointer?
+    u32 *unk18;
+    GObjThread *unk1C;
+
+    void (*unk20)(struct GObj *);
+
+};
+
 typedef struct ovl1_7_gobj_4c {
     u32 unk0[4];
     u8 unk10;
@@ -87,6 +102,7 @@ void func_800B2340(Vector *vec, struct LayoutNode *node, u32 track);
 void func_800B26D8(Vector *vec, struct LayoutNode *node, u32 track);
 void func_800B2928(Vector *vec, struct LayoutNode *node, u32 track);
 void setProcessMain(GObjProcess *proc, void (*cb)(GObj *));
+void assign_new_process_entry(struct GObjProcess *ts, void (*func)(struct GObj *));
 s32 func_800A4F48(s32 arg0, Vector *arg1, f32 arg2, f32 arg3);
 
 void procMainStub(GObj *g);

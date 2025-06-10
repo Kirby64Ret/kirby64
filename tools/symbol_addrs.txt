@@ -667,6 +667,7 @@ n_alSeqpDelete = 0x800653B8;
 __CallBackDmaNew = 0x80084D38;
 alGlobals = 0x800ED4C4;
 __MotorDataBuf=0x80098990;
+reqChildEneTrk = 0x8019DB7C; // type:func
 
 // audio.c
 auInit = 0x8001F24C; // type:func
@@ -678,7 +679,7 @@ n_alClose = 0x8002A138; // type:func
 n_alInit = 0x8002A178; // type:func
 alAudioFrame=0x800299F8; // type:func
 auStopBGM=0x800208D4; // type:func
-auStopAllSounds=0x80020C88; // type:func
+auFunc80020C88=0x80020C88; // type:func
 alHeapInit = 0x8001E3A0; // type:func
 alBnkfNew = 0x8001E490; // type:func
 _bnkfPatchBank = 0x8001E510; // type:func

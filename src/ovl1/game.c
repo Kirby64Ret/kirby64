@@ -335,7 +335,7 @@ void func_800A3150(s32 arg0) {
         func_800A2E98();
         func_800F6AD4(1);
         if ((D_800D6F38 != 0) && (D_800BE4F8 != 0)) {
-            auStopAllSounds();
+            auFunc80020C88();
         } else {
             break;
         }
@@ -682,7 +682,7 @@ void game_tick(s32 arg0) {
                         func_800A74D8();
                         break;
                     case 2:                             /* switch 2 */
-                        auStopAllSounds();
+                        auFunc80020C88();
                         func_800A3230();
                         break;
                     case 3:                             /* switch 2 */

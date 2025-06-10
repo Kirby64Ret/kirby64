@@ -2,6 +2,7 @@
 
 #include "GObj.h"
 #include "Player.h"
+#include "ovl1/ovl1_1_2.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/ovl1_8.h"
@@ -34,6 +35,7 @@ extern struct Sub800E1B50_Unk98 D_801CD2AC_ovl7;
 void func_801AC364_ovl7(GObj *);
 void func_801A69B0_ovl7(GObj *);
 void func_801AC448_ovl7(GObj *);
+void func_801A6DF0_ovl7(GObj *);
 
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80198880_ovl7.s")
@@ -90,16 +92,20 @@ void func_80198DBC_ovl7(void) {
     void *temp_v0;
 
     D_800E8920[omCurrentObj->objId] = 0;
-    D_800E7CE0[0x1C0 + omCurrentObj->objId] = D_800E8920[omCurrentObj->objId];
-    D_800E7CE0[omCurrentObj->objId] = D_800E8920[omCurrentObj->objId];
-    temp_v0 = func_80198914_ovl7(omCurrentObj->objId, omCurrentObj->objId - 0xE, D_800E8920[omCurrentObj->objId], temp_a3);
+    temp_v1 = omCurrentObj->objId;
+    temp_a2 = D_800E8920[temp_v1];
+    (D_800E7CE0 + 0x1C0)[temp_v1] = temp_a2;
+    D_800E7CE0[omCurrentObj->objId] = temp_a2;
+    temp_a3 = omCurrentObj->objId;
+    temp_v0 = func_80198914_ovl7(temp_a3, temp_a3 - 0xE, temp_a2, temp_a3);
     if (temp_v0 != NULL) {
         D_800E7B20[omCurrentObj->objId] = temp_v0->unk0;
         if (temp_v0->unk10 != 0) {
             func_801A2558_ovl7(temp_v0->unk10);
-            temp_a0 = D_800E1B50[omCurrentObj->objId]->unk84;
-            if ((D_800DD710[omCurrentObj->objId] == 0x1A) && (((temp_a1 = D_800E0D50[omCurrentObj->objId], var_v0 = temp_a1 * 4, (temp_a1 != -1)) && (D_800DD710[temp_a1] == 0x17)) || (var_v0 = temp_a1 * 4, (D_800DD710[temp_a1] == 0x12))) && (temp_a0 != NULL)) {
-                temp_a0->unk4 = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+            temp_v1_2 = omCurrentObj->objId;
+            temp_a0 = D_800E1B50[temp_v1_2]->unk84;
+            if ((D_800DD710[temp_v1_2] == 0x1A) && (((temp_a1 = D_800E0D50[temp_v1_2], var_v0 = temp_a1 * 4, (temp_a1 != -1)) && (D_800DD710[temp_a1] == 0x17)) || (var_v0 = temp_a1 * 4, (D_800DD710[temp_a1] == 0x12))) && (temp_a0 != NULL)) {
+                temp_a0->unk4 = *(gEntitiesNextPosXArray + var_v0);
                 temp_a0->unk8 = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
                 temp_a0->unkC = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
                 if (D_800E0D50[omCurrentObj->objId] == 0) {
@@ -110,22 +116,27 @@ void func_80198DBC_ovl7(void) {
         }
         func_801A3938(0);
     }
-    if (D_800E7730[omCurrentObj->objId] == 6) {
-        if ((D_800E77A0[omCurrentObj->objId] > 0) && (D_800E77A0[omCurrentObj->objId] < 8)) {
+    temp_a3_2 = omCurrentObj->objId;
+    temp_v0_2 = D_800E7730[temp_a3_2];
+    if (temp_v0_2 == 6) {
+        temp_a1_2 = D_800E77A0[temp_a3_2];
+        if ((temp_a1_2 > 0) && (temp_a1_2 < 8)) {
+            D_800D7090 = temp_a3_2;
+            return;
+        }
+    }
+    if (temp_v0_2 == 6) {
+        temp_a1_3 = D_800E77A0[temp_a3_2];
+        if ((temp_a1_3 >= 8) && (temp_a1_3 < 0x24)) {
+            func_801BC44C_ovl7(temp_a1_3, temp_a1_3);
             D_800D7090 = omCurrentObj->objId;
             return;
         }
     }
-    if (D_800E7730[omCurrentObj->objId] == 6) {
-        if ((D_800E77A0[omCurrentObj->objId] >= 8) && (D_800E77A0[omCurrentObj->objId] < 0x24)) {
-            func_801BC44C_ovl7(D_800E77A0[omCurrentObj->objId], D_800E77A0[omCurrentObj->objId]);
-            D_800D7090 = omCurrentObj->objId;
-            return;
-        }
-    }
-    if (D_800E7730[omCurrentObj->objId] == 6) {
-        if ((D_800E77A0[omCurrentObj->objId] >= 0x24) && (D_800E77A0[omCurrentObj->objId] < 0x2C)) {
-            func_801BC72C_ovl7(D_800E77A0[omCurrentObj->objId] - 0x24, D_800E77A0[omCurrentObj->objId]);
+    if (temp_v0_2 == 6) {
+        temp_a1_4 = D_800E77A0[temp_a3_2];
+        if ((temp_a1_4 >= 0x24) && (temp_a1_4 < 0x2C)) {
+            func_801BC72C_ovl7(temp_a1_4 - 0x24, temp_a1_4);
             D_800D7090 = omCurrentObj->objId;
         }
     }
@@ -185,11 +196,11 @@ void func_80199084_ovl7(void) {
     if ((var_a3 != 0) && (var_a1 != 0)) {
         func_800A9864(var_a3, var_a1, 0x10, var_a3);
         temp_v0_2 = omCurrentObj->objId;
-        (*(&D_800DE350 + (temp_v0_2 * 4)))->unk3C->unk1C = gEntitiesNextPosXArray[temp_v0_2];
+        D_800DE350[temp_v0_2]->data->pos.x = gEntitiesNextPosXArray[temp_v0_2];
         temp_v0_3 = omCurrentObj->objId;
-        (*(&D_800DE350 + (temp_v0_3 * 4)))->unk3C->unk20 = gEntitiesNextPosYArray[temp_v0_3];
+        D_800DE350[temp_v0_3]->data->pos.y = gEntitiesNextPosYArray[temp_v0_3];
         temp_v0_4 = omCurrentObj->objId;
-        (*(&D_800DE350 + (temp_v0_4 * 4)))->unk3C->unk24 = gEntitiesNextPosZArray[temp_v0_4];
+        D_800DE350[temp_v0_4]->data->pos.z = gEntitiesNextPosZArray[temp_v0_4];
         var_a0 = omCurrentObj->objId;
         var_a2 = D_800E7730[var_a0];
     }
@@ -231,9 +242,8 @@ void func_801992F0_ovl7(void) {
 #ifdef MIPS_TO_C
 
 void func_80199384_ovl7(void) {
-    s32 temp_a1;
+    UnkStruct800E1B50 *temp_v0;
     struct Sub800E1B50_Unk88 *temp_a0;
-    struct UnkStruct800E1B50 *temp_v0;
     u16 temp_v0_3;
     u16 temp_v0_4;
     u32 temp_v0_2;
@@ -241,7 +251,6 @@ void func_80199384_ovl7(void) {
     u8 temp_t8;
 
     var_v1 = omCurrentObj->objId;
-    temp_a1 = var_v1 * 4;
     temp_v0 = D_800E1B50[var_v1];
     if (temp_v0 != NULL) {
         temp_a0 = temp_v0->unk88;
@@ -249,7 +258,7 @@ void func_80199384_ovl7(void) {
             temp_v0_2 = temp_a0->unk4;
             if (temp_v0_2 != -1) {
                 if (temp_v0_2 != 0) {
-                    temp_v0_2(*(&D_800DE350 + temp_a1), temp_a1);
+                    temp_v0_2(D_800DE350[var_v1], var_v1 * 4);
                     var_v1 = omCurrentObj->objId;
                 }
                 temp_t8 = D_800E7730[var_v1];
@@ -309,7 +318,6 @@ void func_80199568_ovl7(void) {
 }
 
 #ifdef MIPS_TO_C
-
 s32 func_80199628_ovl7(s32 arg0) {
     s32 var_v0;
     u32 temp_v1;
@@ -329,9 +337,8 @@ s32 func_80199628_ovl7(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80199688_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *temp_a0;
+    UnkStruct800E1B50 *temp_a0;
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
@@ -341,7 +348,7 @@ void func_80199688_ovl7(s32 arg0) {
         temp_a0->unk44 = 1;
     }
     gEntityVtableIndexArray[omCurrentObj->objId] = -1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A69B0_ovl7);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A69B0_ovl7);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199688_ovl7.s")
@@ -350,7 +357,7 @@ void func_80199688_ovl7(s32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_80199724_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *temp_a0;
+    UnkStruct800E1B50 *temp_a0;
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
@@ -360,7 +367,7 @@ void func_80199724_ovl7(s32 arg0) {
         temp_a0->unk44 = 1;
     }
     gEntityVtableIndexArray[omCurrentObj->objId] = -1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A6DF0_ovl7);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199724_ovl7.s")
@@ -393,7 +400,7 @@ void func_8019985C_ovl7(Unused GObj *gobj) {
 
 void func_80199918_ovl7(s32 arg0) {
     D_800E1B50[omCurrentObj->objId]->unk40 = 1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A3E80_ovl7);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199918_ovl7.s")
@@ -403,7 +410,7 @@ void func_80199918_ovl7(s32 arg0) {
 
 void func_80199980_ovl7(s32 arg0) {
     gEntityVtableIndexArray[omCurrentObj->objId] = -1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A6C10_ovl7);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6C10_ovl7);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199980_ovl7.s")
@@ -413,7 +420,7 @@ void func_80199980_ovl7(s32 arg0) {
 
 void func_801999DC_ovl7(s32 arg0) {
     gEntityVtableIndexArray[omCurrentObj->objId] = -1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_8020C710_ovl9);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8020C710_ovl9);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_801999DC_ovl7.s")
@@ -422,24 +429,22 @@ void func_801999DC_ovl7(s32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_80199A38_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *sp1C;
     GObj *temp_v1;
+    UnkStruct800E1B50 *temp_a3;
     f32 *temp_v0_2;
     f32 *temp_v0_3;
     f32 var_f0;
     f32 var_f12;
     f32 var_f2;
     f32 var_f2_2;
-    s32 temp_a2_2;
-    struct UnkStruct800E1B50 *temp_a3;
     u32 temp_a0;
     u32 temp_a2;
-    u32 temp_a2_3;
+    u32 temp_a2_2;
     u32 temp_v0;
 
     temp_v1 = omCurrentObj;
     temp_a2 = temp_v1->objId;
-    temp_a2_2 = temp_a2 * 4;
     temp_v0 = D_8012BCA0 >> 0x13;
     temp_a3 = D_800E1B50[temp_a2];
     D_800E8920[temp_a2] = 0;
@@ -448,7 +453,7 @@ void func_80199A38_ovl7(s32 arg0) {
             temp_a0 = temp_a3->unk78;
             if (temp_a0 != 0) {
                 sp1C = temp_a3;
-                var_f12 = func_800F8824(temp_a0, D_800E17D0[temp_v1->objId], temp_a2_2, temp_a3);
+                var_f12 = func_800F8824(temp_a0, D_800E17D0[temp_v1->objId], temp_a2 * 4, temp_a3);
             } else {
                 var_f12 = 0.0f;
             }
@@ -457,8 +462,8 @@ void func_80199A38_ovl7(s32 arg0) {
         } else {
             var_f12 = -1.5707964f;
         }
-        temp_a2_3 = temp_v1->objId;
-        var_f0 = D_800EB320[temp_a2_3] + var_f12;
+        temp_a2_2 = temp_v1->objId;
+        var_f0 = D_800EB320[temp_a2_2] + var_f12;
         if (var_f0 > 6.2831855f) {
             do {
                 var_f0 -= 6.2831855f;
@@ -470,14 +475,14 @@ void func_80199A38_ovl7(s32 arg0) {
             } while (var_f0 < 0.0f);
         }
         if ((var_f0 >= 2.3561945f) && (var_f0 < 3.9269907f)) {
-            D_800E83E0[temp_a2_3] = 1;
+            D_800E83E0[temp_a2_2] = 1;
             temp_a3->unk44 = 1;
             gEntityVtableIndexArray[omCurrentObj->objId] = -1;
-            assign_new_process_entry(NULL, 1.5707964f, gEntityGObjProcessArray[omCurrentObj->objId], &func_801A6DF0_ovl7, temp_a2_3 * 4, temp_a3);
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
             return;
         }
         if ((var_f0 >= 1.9198622f) && (var_f0 < 4.363323f)) {
-            D_800E9AA0[temp_a2_3] = 0xF;
+            D_800E9AA0[temp_a2_2] = 0xF;
             if (var_f0 < 3.1415927f) {
                 if (var_f0 < 1.5707964f) {
                     var_f2 = -(var_f0 - 1.5707964f);
@@ -500,11 +505,10 @@ void func_80199A38_ovl7(s32 arg0) {
         D_800E83E0[temp_v1->objId] = 1;
         temp_a3->unk44 = 1;
         gEntityVtableIndexArray[omCurrentObj->objId] = -1;
-        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (bitwise f32) &func_801A6DF0_ovl7, temp_a2_2, temp_a3);
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
     }
 }
 #else
-void func_801A6DF0_ovl7(void);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199A38_ovl7.s")
 #endif
 
@@ -801,7 +805,7 @@ block_6:
 
 
 // new struct (only used once? only in this file? or a fundamental datatype?)
-#ifdef STRUCT
+#ifdef NON_MATCHING
 typedef struct test8019A900 {
     s32 _0;
     f32 _1;
@@ -913,7 +917,6 @@ f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
     return (((*gEntitiesNextPosYArray + 20.0f + arg2) - temp_f2) * (0.0f - temp_f14)) - ((sp34 - temp_f14) * (sp18 - temp_f2));
 }
 #else
-f32 func_8019AAD0_ovl7(f32, f32, f32);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AAD0_ovl7.s")
 #endif
 
@@ -963,25 +966,45 @@ s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, s32 arg2, ? arg3) {
 #endif
 
 #ifdef MIPS_TO_C
-s32 func_8019ADB4_ovl7(f32 arg0, void *arg1) {
-    f32 ftmp;
+
+s32 func_8019ADB4_ovl7(f32 arg0, ? arg1) {
+    f32 *temp_v0;
+    f32 *var_v0;
+    f32 temp_f0;
+    f32 var_f0;
+    f32 var_f12;
 
     if (func_8019A900_ovl7(arg1) == 0) {
         return 0;
     }
-    ftmp = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], 0, 0);
-    if (ftmp == 0.0f) {
+    temp_f0 = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], 0, D_800EB320, 0);
+    if (temp_f0 == 0.0f) {
         return 0;
-    } else {
-        D_800EB320[omCurrentObj->objId] = (ftmp > 0.0f) ? arg0 : -arg0;
-        while (D_800EB320[omCurrentObj->objId] > 6.2831855f) {
-            D_800EB320[omCurrentObj->objId] -= 6.2831855f;
-        }
-        while (D_800EB320[omCurrentObj->objId] < 0.0f) {
-            D_800EB320[omCurrentObj->objId] += 6.2831855f;
-        }
-        return 1;
     }
+    if (temp_f0 > 0.0f) {
+        var_f12 = arg0;
+    } else {
+        var_f12 = -arg0;
+    }
+    temp_v0 = &D_800EB320[omCurrentObj->objId];
+    *temp_v0 += var_f12;
+    var_v0 = &D_800EB320[omCurrentObj->objId];
+    var_f0 = *var_v0;
+    if (var_f0 > 6.2831855f) {
+        do {
+            *var_v0 = var_f0 - 6.2831855f;
+            var_v0 = &D_800EB320[omCurrentObj->objId];
+            var_f0 = *var_v0;
+        } while (var_f0 > 6.2831855f);
+    }
+    if (var_f0 < 0.0f) {
+        do {
+            *var_v0 = var_f0 + 6.2831855f;
+            var_v0 = &D_800EB320[omCurrentObj->objId];
+            var_f0 = *var_v0;
+        } while (var_f0 < 0.0f);
+    }
+    return 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019ADB4_ovl7.s")
@@ -1040,7 +1063,6 @@ s32 func_8019B260_ovl7(f32 offsetY) {
 }
 
 #ifdef MIPS_TO_C
-
 void func_8019B2C0_ovl7(s32 arg0) {
     f32 var_f2;
     u32 temp_a2;
@@ -1057,11 +1079,11 @@ void func_8019B2C0_ovl7(s32 arg0) {
         }
         switch (arg0) {                             /* irregular */
             case 1:
-                (*(&D_800DE350 + (omCurrentObj->objId * 4)))->unk3C->unk10->unk30 = -var_f2;
+                D_800DE350[omCurrentObj->objId]->data->parent->angle.x = -var_f2;
                 return;
             case 2:
                 temp_v0_2 = omCurrentObj->objId;
-                (*(&D_800DE350 + (temp_v0_2 * 4)))->unk3C->unk10->unk38 = var_f2 * D_800E6A10[temp_v0_2];
+                D_800DE350[temp_v0_2]->data->parent->angle.z = var_f2 * D_800E6A10[temp_v0_2];
                 break;
         }
     }
@@ -1072,19 +1094,21 @@ void func_8019B2C0_ovl7(s32 arg0) {
 
 #ifdef MIPS_TO_C
 void func_8019B3C8_ovl7(s32 arg0) {
-    (*(&D_800DE350 + (omCurrentObj->objId * 4)))->unk3C->unk10->unk30 = 0.0f;
-    (*(&D_800DE350 + (omCurrentObj->objId * 4)))->unk3C->unk10->unk38 = 0.0f;
+    D_800DE350[omCurrentObj->objId]->data->parent->angle.x = 0.0f;
+    D_800DE350[omCurrentObj->objId]->data->parent->angle.z = 0.0f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B3C8_ovl7.s")
 #endif
 
 #ifdef MIPS_TO_C
+
 void func_8019B424_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    UnkStruct800E1B50 *sp24;
     s32 sp1C;
 
-    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C != D_800E6A10[omCurrentObj->objId]) && (ent->unk3C == 0)) {
+    sp24 = D_800E1B50[omCurrentObj->objId];
+    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C != D_800E6A10[omCurrentObj->objId]) && (sp24->unk3C == 0)) {
         func_80199F1C_ovl7(arg0);
     }
 }
@@ -1095,7 +1119,7 @@ void func_8019B424_ovl7(s32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_8019B4BC_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp24;
+    UnkStruct800E1B50 *sp24;
     s32 sp1C;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -1163,8 +1187,8 @@ s32 eneCheckNearPlayer(f32 distanceSq) {
 
 #ifdef MIPS_TO_C
 void func_8019B7D8_ovl7(void) {
+    UnkStruct800E1B50 *temp_v0;
     struct Sub800E1B50_Unk88 *temp_v1;
-    struct UnkStruct800E1B50 *temp_v0;
     u32 temp_v0_2;
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
@@ -1193,7 +1217,7 @@ s32 func_8019B834_ovl7(void) {
     sp24 = gEntitiesNextPosXArray[omCurrentObj->objId];
     sp28 = gEntitiesNextPosYArray[omCurrentObj->objId];
     sp2C = gEntitiesNextPosZArray[omCurrentObj->objId];
-    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C != D_800E6A10[omCurrentObj->objId]) && (func_800A4F48(D_800D799C->unk3C, &sp24, 1.075f, 1.075f) == 0)) {
+    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C != D_800E6A10[omCurrentObj->objId]) && (func_800A4F48(D_800D799C->data, &sp24, 1.075f, 1.075f) == 0)) {
         return 1;
     }
     return 0;
@@ -1283,8 +1307,8 @@ void func_8019BBEC_ovl7(void) {
 #ifdef MIPS_TO_C
 
 void func_8019BC34_ovl7(f32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
-    struct UnkStruct800E1B50 *temp_v0;
+    UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *temp_v0;
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
     temp_v0->unk1C = arg0;
@@ -1299,10 +1323,10 @@ void func_8019BC34_ovl7(f32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_8019BC94_ovl7(void) {
-    struct UnkStruct800E1B50 *sp2C;
+    UnkStruct800E1B50 *sp2C;
     f32 sp28;
     s32 sp24;
-    struct UnkStruct800E1B50 *temp_a2;
+    UnkStruct800E1B50 *temp_a2;
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
@@ -1325,10 +1349,10 @@ void func_8019BC94_ovl7(void) {
 
 s32 func_8019BD38_ovl7(void) {
     s32 sp18;
+    UnkStruct800E1B50 *temp_v1;
     f32 temp_f0;
     s32 temp_a0;
     s32 var_t0;
-    struct UnkStruct800E1B50 *temp_v1;
     u32 temp_a2;
     u32 temp_v0;
 
@@ -1370,8 +1394,10 @@ block_12:
 
 // eneTurnCommon
 #ifdef MIPS_TO_C
+
 void eneTurnCommon(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *temp_t0;
     f32 *temp_a0;
     f32 *temp_a0_3;
     f32 *temp_a0_4;
@@ -1393,7 +1419,6 @@ void eneTurnCommon(s32 arg0) {
     s32 temp_a0_2;
     s32 var_a1;
     s32 var_a2;
-    struct UnkStruct800E1B50 *ent;
     u32 temp_a1;
     u32 temp_a1_2;
     u32 temp_a1_3;
@@ -1405,8 +1430,8 @@ void eneTurnCommon(s32 arg0) {
     temp_a1 = omCurrentObj->objId;
     var_a2 = arg0;
     var_a1 = temp_a1 * 4;
-    ent = D_800E1B50[temp_a1];
-    var_a3 = ent->unk3C;
+    temp_t0 = D_800E1B50[temp_a1];
+    var_a3 = temp_t0->unk3C;
     if (var_a3 != 0) {
         if (arg0 == 1) {
             temp_v0 = &D_800E6A10[temp_a1];
@@ -1429,27 +1454,29 @@ void eneTurnCommon(s32 arg0) {
                 var_f0_2 = temp_f2_2;
             }
             *temp_v0_2 = var_f0_2 * D_800E6A10[temp_a1_3];
-            ent->unk3C = 0;
+            temp_t0->unk3C = 0;
             func_8019BC94_ovl7(0, temp_a0, temp_a1_3 * 4, var_a2, var_a3);
             return;
         }
         if ((var_a2 % 2) == 1) {
-            print_error_stub("eneTurnCommon Error frame=%02d\n", var_a2);
+            sp1C = temp_t0;
+            print_error_stub("eneTurnCommon Error frame=%02d\n", var_a2, var_a2, var_a3);
             var_a2 = arg0 + 1;
-            var_a3 = ent->unk3C;
+            var_a3 = temp_t0->unk3C;
             var_a1 = omCurrentObj->objId * 4;
         }
         var_v0 = var_a3;
         if (var_a3 == 1) {
-            ent->unk20 = *(D_800E64D0 + var_a1);
-            var_v0 = ent->unk3C;
-            ent->unk24 = (bitwise u32) D_800E6690[omCurrentObj->objId];
+            temp_t0->unk20 = *(D_800E64D0 + var_a1);
+            var_v0 = temp_t0->unk3C;
+            temp_t0->unk24 = D_800E6690[omCurrentObj->objId];
             var_a1 = omCurrentObj->objId * 4;
         }
         temp_a0_2 = var_a2 / 2;
         if (var_v0 < temp_a0_2) {
             *(D_800E6690 + var_a1) = 0.0f;
-            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            temp_a1_4 = omCurrentObj->objId;
+            D_800E64D0[temp_a1_4] = D_800E6690[temp_a1_4];
             temp_a1_5 = omCurrentObj->objId;
             temp_v0_3 = &D_800E9020[temp_a1_5];
             if (D_800E6A10[temp_a1_5] == 1.0f) {
@@ -1461,19 +1488,25 @@ void eneTurnCommon(s32 arg0) {
             goto block_29;
         }
         if (temp_a0_2 == var_v0) {
-            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-                D_800E9020[omCurrentObj->objId] -= 3.1415927f / var_a2;
-                D_800E17D0[omCurrentObj->objId] += 3.1415927f;
-                D_800E9020[omCurrentObj->objId] += 3.1415927f;
+            if (*(D_800E6A10 + var_a1) == 1.0f) {
+                temp_v0_4 = D_800E9020 + var_a1;
+                *temp_v0_4 -= 3.1415927f / var_a2;
+                temp_a0_3 = &D_800E17D0[omCurrentObj->objId];
+                *temp_a0_3 += 3.1415927f;
+                temp_v0_5 = &D_800E9020[omCurrentObj->objId];
+                *temp_v0_5 += 3.1415927f;
             } else {
-                D_800E9020[omCurrentObj->objId] += 3.1415927f / var_a2;
-                D_800E17D0[omCurrentObj->objId] -= 3.1415927f;
-                D_800E9020[omCurrentObj->objId] -= 3.1415927f;
+                temp_v0_6 = D_800E9020 + var_a1;
+                *temp_v0_6 += 3.1415927f / var_a2;
+                temp_a0_4 = &D_800E17D0[omCurrentObj->objId];
+                *temp_a0_4 -= 3.1415927f;
+                temp_v0_7 = &D_800E9020[omCurrentObj->objId];
+                *temp_v0_7 -= 3.1415927f;
             }
             temp_v0_8 = &D_800E6A10[omCurrentObj->objId];
             *temp_v0_8 = -*temp_v0_8;
-            D_800E64D0[omCurrentObj->objId] = -ent->unk20;
-            D_800E6690[omCurrentObj->objId] = -ent->unk24;
+            D_800E64D0[omCurrentObj->objId] = -temp_t0->unk20;
+            D_800E6690[omCurrentObj->objId] = -temp_t0->unk24;
             goto block_29;
         }
         if (var_v0 < var_a2) {
@@ -1485,10 +1518,10 @@ void eneTurnCommon(s32 arg0) {
             }
             *temp_v0_9 += var_f0_4;
 block_29:
-            ent->unk3C += 1;
+            temp_t0->unk3C += 1;
         } else {
             *(D_800E9020 + var_a1) = 0.0f;
-            ent->unk3C = 0;
+            temp_t0->unk3C = 0;
             func_8019BC94_ovl7(temp_a0_2, var_a1, var_a2, D_800E9020);
         }
     }
@@ -1500,7 +1533,8 @@ block_29:
 #ifdef MIPS_TO_C
 
 void eneTurnCommon2(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *temp_a3;
     f32 *temp_a0;
     f32 *temp_a0_2;
     f32 *temp_a0_3;
@@ -1520,7 +1554,6 @@ void eneTurnCommon2(s32 arg0) {
     f32 var_f2_2;
     s32 var_a1;
     s32 var_a2;
-    struct UnkStruct800E1B50 *temp_a3;
     u32 temp_a1;
     u32 temp_a1_2;
     u32 temp_a1_3;
@@ -1569,7 +1602,7 @@ void eneTurnCommon2(s32 arg0) {
         var_a0 = var_v0;
         if (var_v0 == 1) {
             temp_a3->unk20 = *(D_800E64D0 + var_a1);
-            temp_a3->unk24 = (bitwise u32) D_800E6690[omCurrentObj->objId];
+            temp_a3->unk24 = D_800E6690[omCurrentObj->objId];
             temp_a1_4 = omCurrentObj->objId;
             if (D_800E6A10[temp_a1_4] == 1.0f) {
                 temp_v0_3 = &D_800E9020[temp_a1_4];
@@ -1588,8 +1621,8 @@ void eneTurnCommon2(s32 arg0) {
             }
             temp_v0_7 = &D_800E6A10[omCurrentObj->objId];
             *temp_v0_7 = -*temp_v0_7;
-            D_800E64D0[omCurrentObj->objId] = -(bitwise f32) temp_a3->unk20;
-            D_800E6690[omCurrentObj->objId] = -(bitwise f32) temp_a3->unk24;
+            D_800E64D0[omCurrentObj->objId] = -temp_a3->unk20;
+            D_800E6690[omCurrentObj->objId] = -temp_a3->unk24;
             var_a0 = temp_a3->unk3C;
             var_a1 = omCurrentObj->objId * 4;
         }
@@ -1617,8 +1650,8 @@ void eneTurnCommon2(s32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_8019C6AC_ovl7(s32 arg0) {
+    UnkStruct800E1B50 *temp_v1;
     s32 var_v0;
-    struct UnkStruct800E1B50 *temp_v1;
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
@@ -1638,7 +1671,7 @@ void func_8019C6AC_ovl7(s32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_8019C71C_ovl7(f32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *sp1C;
     u32 temp_v0;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
@@ -1655,10 +1688,10 @@ void func_8019C71C_ovl7(f32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_8019C79C_ovl7(void) {
-    struct UnkStruct800E1B50 *sp2C;
+    UnkStruct800E1B50 *sp2C;
     f32 sp28;
     s32 sp24;
-    struct UnkStruct800E1B50 *temp_a2;
+    UnkStruct800E1B50 *temp_a2;
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
@@ -1679,12 +1712,12 @@ void func_8019C79C_ovl7(void) {
 
 #ifdef MIPS_TO_C
 void func_8019C844_ovl7(void *arg0) {
+    UnkStruct800E1B50 *temp_v0;
     f32 *temp_v0_2;
     f32 *temp_v0_3;
     f32 *temp_v0_4;
     f32 temp_f0;
     s32 var_a1;
-    struct UnkStruct800E1B50 *temp_v0;
     u32 temp_a1;
     u32 temp_a1_2;
     u32 temp_a1_3;
@@ -1724,7 +1757,8 @@ void func_8019C844_ovl7(void *arg0) {
 #ifdef MIPS_TO_C
 
 void func_8019C9B0_ovl7(f32 arg0, u8 arg1) {
-    struct UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *temp_a2;
     f32 *temp_v0_10;
     f32 *temp_v0_3;
     f32 *temp_v0_4;
@@ -1735,7 +1769,6 @@ void func_8019C9B0_ovl7(f32 arg0, u8 arg1) {
     f32 *temp_v0_9;
     f32 temp_f2;
     f32 var_f0;
-    struct UnkStruct800E1B50 *temp_a2;
     u32 temp_v1;
     u32 temp_v1_2;
     u32 temp_v1_3;
@@ -1816,8 +1849,8 @@ block_21:
 #ifdef MIPS_TO_C
 
 void func_8019CD08_ovl7(f32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
-    struct UnkStruct800E1B50 *temp_v0;
+    UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *temp_v0;
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
     temp_v0->unk1C = arg0;
@@ -1831,11 +1864,11 @@ void func_8019CD08_ovl7(f32 arg0) {
 
 #ifdef MIPS_TO_C
 void func_8019CD68_ovl7(void) {
-    struct UnkStruct800E1B50 *sp2C;
+    UnkStruct800E1B50 *sp2C;
     f32 sp28;
     f32 sp24;
     f32 sp20;
-    struct UnkStruct800E1B50 *temp_v1;
+    UnkStruct800E1B50 *temp_v1;
 
     temp_v1 = D_800E1B50[omCurrentObj->objId];
     sp24 = 0.0f;
@@ -1852,6 +1885,7 @@ void func_8019CD68_ovl7(void) {
 
 #ifdef MIPS_TO_C
 s32 func_8019CE28_ovl7(void) {
+    UnkStruct800E1B50 *temp_v0;
     f32 temp_f0;
     f32 temp_f2;
     f32 var_f0;
@@ -1859,7 +1893,6 @@ s32 func_8019CE28_ovl7(void) {
     f32 var_f12;
     f32 var_f12_2;
     s32 var_a0;
-    struct UnkStruct800E1B50 *temp_v0;
     u32 temp_v1;
 
     temp_v1 = omCurrentObj->objId;
@@ -1932,13 +1965,13 @@ void func_8019CFD0_ovl7(void *arg0) {
     f32 sp30;
     f32 sp2C;
     f32 sp28;
+    UnkStruct800E1B50 *temp_a1;
     f32 *temp_a0;
     f32 *temp_a0_2;
     f32 *temp_v1_2;
     f32 temp_f0;
     f32 temp_f0_2;
     s32 var_v1;
-    struct UnkStruct800E1B50 *temp_a1;
     u32 temp_v1;
 
     temp_v1 = omCurrentObj->objId;
@@ -1985,11 +2018,11 @@ void func_8019CFD0_ovl7(void *arg0) {
 
 #ifdef MIPS_TO_C
 void func_8019D214_ovl7(void) {
-    struct UnkStruct800E1B50 *sp34;
+    UnkStruct800E1B50 *sp34;
     f32 sp30;
     f32 sp2C;
     f32 sp28;
-    struct UnkStruct800E1B50 *temp_a3;
+    UnkStruct800E1B50 *temp_a3;
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
@@ -2009,10 +2042,10 @@ void func_8019D214_ovl7(void) {
 #ifdef MIPS_TO_C
 
 void func_8019D2FC_ovl7(f32 arg0, u8 arg1) {
-    struct UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *sp1C;
+    UnkStruct800E1B50 *temp_a0;
     f32 *temp_v0_2;
     f32 *temp_v0_3;
-    struct UnkStruct800E1B50 *temp_a0;
     u32 temp_v1;
     u32 temp_v1_2;
     u8 temp_v0;
@@ -2055,6 +2088,7 @@ void func_8019D2FC_ovl7(f32 arg0, u8 arg1) {
 #ifdef MIPS_TO_C
 
 void func_8019D4D0_ovl7(f32 arg0, s32 arg1) {
+    UnkStruct800E1B50 *temp_a2;
     f32 *temp_a0_2;
     f32 *temp_a0_3;
     f32 *temp_a0_4;
@@ -2069,7 +2103,6 @@ void func_8019D4D0_ovl7(f32 arg0, s32 arg1) {
     f32 var_f6;
     f32 var_f8;
     s32 temp_a1;
-    struct UnkStruct800E1B50 *temp_a2;
     u32 temp_v0;
     u32 temp_v0_2;
     u32 temp_v0_3;
@@ -2085,8 +2118,8 @@ void func_8019D4D0_ovl7(f32 arg0, s32 arg1) {
     temp_a0 = temp_a2->unk3C;
     if (temp_a0 != 0) {
         if (temp_a0 == 1) {
-            temp_a2->unk20 = (bitwise u32) D_800E64D0[temp_v0];
-            temp_a2->unk24 = (bitwise u32) D_800E6690[omCurrentObj->objId];
+            temp_a2->unk20 = D_800E64D0[temp_v0];
+            temp_a2->unk24 = D_800E6690[omCurrentObj->objId];
             D_800E6690[omCurrentObj->objId] = 0.0f;
             temp_v0_2 = omCurrentObj->objId;
             D_800E64D0[temp_v0_2] = D_800E6690[temp_v0_2];
@@ -2128,8 +2161,8 @@ void func_8019D4D0_ovl7(f32 arg0, s32 arg1) {
             *temp_v0_7 = -*temp_v0_7;
             temp_a0_4 = &D_800E4C50[omCurrentObj->objId];
             *temp_a0_4 = -*temp_a0_4;
-            D_800E64D0[omCurrentObj->objId] = -(bitwise f32) temp_a2->unk20;
-            D_800E6690[omCurrentObj->objId] = -(bitwise f32) temp_a2->unk24;
+            D_800E64D0[omCurrentObj->objId] = -temp_a2->unk20;
+            D_800E6690[omCurrentObj->objId] = -temp_a2->unk24;
             goto block_19;
         }
         if (temp_a2->unk3C < temp_a1) {
@@ -2157,32 +2190,30 @@ block_19:
 #ifdef MIPS_TO_C
 
 void func_8019D8A0(s32 arg0) {
-    struct UnkStruct800E1B50 *sp24;
+    UnkStruct800E1B50 *sp24;
     s32 sp20;
+    UnkStruct800E1B50 *temp_v0;
     s32 temp_s0;
-    s32 temp_v1;
     struct Sub800E1B50_Unk34 *temp_a1;
-    struct UnkStruct800E1B50 *temp_v0;
     u8 *temp_v0_2;
-    u8 temp_v1_2;
+    u8 temp_v1;
 
     temp_s0 = arg0 & 0xFFFF;
-    temp_v1 = temp_s0 * 4;
     temp_v0 = D_800E1B50[temp_s0];
     temp_a1 = temp_v0->unk34;
     if (temp_a1 != NULL) {
         sp24 = temp_v0;
-        sp20 = temp_v1;
+        sp20 = temp_s0 * 4;
         func_800A22D4(temp_a1, temp_a1);
     }
     sp24 = temp_v0;
-    func_800A2300(*(&D_800DE350 + temp_v1));
+    func_800A2300(D_800DE350[temp_s0]);
     temp_v0->unk34 = NULL;
     func_8019BBA8_ovl7(temp_s0);
     func_801A32A8_ovl7(temp_s0);
-    temp_v1_2 = D_800E76C0[temp_s0];
-    temp_v0_2 = temp_v1_2 + (&D_800D6C68 + 0x28);
-    if (temp_v1_2 < 0x40) {
+    temp_v1 = D_800E76C0[temp_s0];
+    temp_v0_2 = temp_v1 + (&D_800D6C68 + 0x28);
+    if (temp_v1 < 0x40) {
         *temp_v0_2 &= 0x80;
     }
     func_800B1900(temp_s0 & 0xFFFF);
@@ -2192,44 +2223,24 @@ void func_8019D8A0(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
+void func_8019D958_ovl7(u16 arg0) {
+    UnkStruct800E1B50 *ent = D_800E1B50[track];;
 
-void func_8019D958_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp2C;
-    s32 sp28;
-    void **sp24;
-    s32 temp_s0;
-    s32 temp_v1;
-    struct Sub800E1B50_Unk34 *temp_a1;
-    struct UnkStruct800E1B50 *temp_v0;
-    u8 *temp_v0_2;
-    u8 temp_v1_2;
-    void **temp_a1_2;
-
-    temp_s0 = arg0 & 0xFFFF;
-    temp_v1 = temp_s0 * 4;
-    temp_v0 = D_800E1B50[temp_s0];
-    temp_a1 = temp_v0->unk34;
-    if (temp_a1 != NULL) {
-        sp2C = temp_v0;
-        sp28 = temp_v1;
-        func_800A22D4(temp_a1, temp_a1);
+    if (ent->unk34 != NULL) {
+        func_800A22D4(ent->unk34);
     }
-    temp_a1_2 = temp_v1 + &D_800DE350;
-    sp24 = temp_a1_2;
-    sp2C = temp_v0;
-    func_800A2300(*temp_a1_2, temp_a1_2);
-    temp_v0->unk34 = NULL;
-    (*temp_a1_2)->unk48 = 0;
-    func_8019BBA8_ovl7(temp_s0, temp_a1_2);
-    func_801A32A8_ovl7(temp_s0);
-    temp_v1_2 = D_800E76C0[temp_s0];
-    if (temp_v1_2 < 0x40) {
-        temp_v0_2 = temp_v1_2 + (&D_800D6C68 + 0x28);
-        if ((D_801290E0 + (temp_v1_2 * 0x2C))->unk5 & 1) {
+    func_800A2300(D_800DE350[track]);
+    ent->unk34 = NULL;
+    D_800DE350[track]->onAnimate = NULL;
+    func_8019BBA8_ovl7(track);
+    func_801A32A8_ovl7(track);
+    if (D_800E76C0[track] < 0x40) {
+        temp_v0_2 = D_800E76C0[track] + (&D_800D6C68 + 0x28);
+        if ((D_801290E0 + (D_800E76C0[track] * 0x2C))->unk5 & 1) {
             *temp_v0_2 &= 0x80;
         }
     }
-    func_800B1900(temp_s0 & 0xFFFF);
+    func_800B1900(track);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D958_ovl7.s")
@@ -2260,9 +2271,8 @@ f32 func_8019DA70_ovl7(s32 arg0) {
     temp_f0 = func_800F951C(D_800E5F90[temp_v0], D_800E6BD0[temp_v0], D_800E5F90[arg0], D_800E6BD0[arg0]);
     var_f2 = temp_f0;
     if (temp_f0 == 9999.0f) {
-        temp_v0_2 = omCurrentObj->objId;
-        temp_f0_2 = gEntitiesNextPosXArray[temp_v0_2] - gEntitiesNextPosXArray[arg0];
-        temp_f2 = gEntitiesNextPosZArray[temp_v0_2] - gEntitiesNextPosZArray[arg0];
+        temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
+        temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
         var_f2 = sqrtf((temp_f0_2 * temp_f0_2) + (temp_f2 * temp_f2));
     }
     return var_f2;
@@ -2271,55 +2281,36 @@ f32 func_8019DA70_ovl7(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DA70_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_8019DB58_ovl7(s32 arg0, s32 arg1) {
-    u8 *temp_v0;
-
-    temp_v0 = &D_800E76C0[arg0];
-    D_800E76C0[arg1] = *temp_v0;
-    *temp_v0 = 0xFF;
+    D_800E76C0[arg1] = D_800E76C0[arg0];
+    D_800E76C0[arg0] = 0xFF;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DB58_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+s32 reqChildEneTrk(u8 arg0, u8 arg1, u8 arg2) {
+    s32 track;
 
-s32 func_8019DB7C_ovl7(u8 arg0, u8 arg1, u8 arg2) {
-    s32 sp1C;
-    f32 temp_f0;
-    s32 temp_a1;
-    s32 temp_v0;
-
-    temp_v0 = request_track_general(0x17, 0x1E, 0x3C);
-    if ((temp_v0 >= 0x3C) || (temp_v0 == -1)) {
-        sp1C = temp_v0;
+    track = request_track_general(0x17, 0x1E, 0x3C);
+    if ((track >= 0x3C) || (track == -1)) {
         print_error_stub("reqChildEneTrk  Request Error!![enelib.cc]\n");
-        func_800B1900(temp_v0 & 0xFFFF);
-        return sp1C;
+        func_800B1900(track);
+        return track;
+    } else {
+        gEntityVtableIndexArray[track] = gEntityVtableIndexArray[omCurrentObj->objId];
+        D_800E76C0[track] = 0xFF;
+        D_800E7730[track] = arg0;
+        D_800E77A0[track] = arg1;
+        D_800E7880[track] = arg2;
+        D_800E5F90[track] = D_800E6150[track] = D_800E5F90[omCurrentObj->objId];
+        D_800E6BD0[track] = D_800E6D90[track] = D_800E6BD0[omCurrentObj->objId];
+        gEntitiesNextPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
+        gEntitiesPosXArray[track] = gEntitiesPosXArray[omCurrentObj->objId];
+        gEntitiesNextPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
+        gEntitiesPosYArray[track] = gEntitiesPosYArray[omCurrentObj->objId];
+        gEntitiesNextPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
+        gEntitiesPosZArray[track] = gEntitiesPosZArray[omCurrentObj->objId];
+        return track;
     }
-    gEntityVtableIndexArray[temp_v0] = gEntityVtableIndexArray[omCurrentObj->objId];
-    D_800E76C0[temp_v0] = 0xFF;
-    D_800E7730[temp_v0] = arg0;
-    D_800E77A0[temp_v0] = arg1;
-    D_800E7880[temp_v0] = arg2;
-    temp_a1 = D_800E5F90[omCurrentObj->objId];
-    D_800E6150[temp_v0] = temp_a1;
-    D_800E5F90[temp_v0] = temp_a1;
-    temp_f0 = D_800E6BD0[omCurrentObj->objId];
-    D_800E6D90[temp_v0] = temp_f0;
-    D_800E6BD0[temp_v0] = temp_f0;
-    gEntitiesNextPosXArray[temp_v0] = gEntitiesNextPosXArray[omCurrentObj->objId];
-    gEntitiesPosXArray[temp_v0] = gEntitiesPosXArray[omCurrentObj->objId];
-    gEntitiesNextPosYArray[temp_v0] = gEntitiesNextPosYArray[omCurrentObj->objId];
-    gEntitiesPosYArray[temp_v0] = gEntitiesPosYArray[omCurrentObj->objId];
-    gEntitiesNextPosZArray[temp_v0] = gEntitiesNextPosZArray[omCurrentObj->objId];
-    gEntitiesPosZArray[temp_v0] = gEntitiesPosZArray[omCurrentObj->objId];
-    return temp_v0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DB7C_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 

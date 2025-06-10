@@ -588,8 +588,7 @@ s32 func_80020C70(s32 arg0, ? arg1, ? arg2, ? arg3) {
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 auStopAllSounds(void) {
+s32 auFunc80020C88(void) {
     s32 var_v0;
 
     func_80023990();
@@ -603,7 +602,7 @@ s32 auStopAllSounds(void) {
     return 1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auStopAllSounds.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auFunc80020C88.s")
 #endif
 
 // TODO: returns int?
