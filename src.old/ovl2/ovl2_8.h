@@ -16,6 +16,7 @@ struct PositionState {
 /*0x58*/ u32    VI_Timer; //the VI
 };
 
+// same size as a OMMtx...
 struct ModelNode{
 	struct ModelNode *next;
 	u8 renderMode;
@@ -30,13 +31,17 @@ typedef struct LayoutNode {
 	struct LayoutNode *unkC;
 	struct LayoutNode *parent; //usually same as Unk0_Node
 	struct LayoutNode *child; //is 1 when at end of models layout
+
 	struct ModelNode *unk18;
 	Vector /*0x1c*/ pos;
+
 	struct ModelNode *unk28;
-	u32 *unk2C;
+	f32 unk2C;
 	Vector angle; /* 0x30 0x34 0x38 */
+
 	struct ModelNode *unk3C;
 	Vector scale; /* 0x40 0x44 0x48 */
+
 	u32 *unk4C;
 	u32 *model; //ptr to Bank4 model, probably only used upon load_
 	u8 unk54;
@@ -52,7 +57,9 @@ typedef struct LayoutNode {
     u32 unk68;
     u32 unk6C;
     u32 unk70;
-    u32 unk74;
+
+    // suspiciously the same layout as a DObj...
+    f32 unk74;
     u32 unk78;
     u32 unk7C;
     // TODO: analyze/fill out struct

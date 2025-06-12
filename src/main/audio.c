@@ -16,6 +16,8 @@ extern OSMesg auGameTickMessages[1];
 extern OSMesg auSPTaskMessages[1];
 extern OSMesg auDMAMessages[50];
 
+extern u8 D_800964D3;
+
 static void _bnkfPatchBank(ALBank* bank, s32 offset, s32 table);
 static void _bnkfPatchInst(ALInstrument* i, s32 offset, s32 table);
 static void _bnkfPatchSound(ALSound* s, s32 offset, s32 table);
@@ -587,19 +589,16 @@ s32 func_80020C70(s32 arg0, ? arg1, ? arg2, ? arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020C70.s")
 #endif
 
-#ifdef MIPS_TO_C
-s32 auFunc80020C88(void) {
-    s32 var_v0;
+#ifdef NON_MATCHING
+s32 auFunc80020C88() {
+    s32 i;
 
     func_80023990();
-    var_v0 = 0;
-    if (D_800964D3 > 0) {
-        do {
-            var_v0 += 1;
-        } while (var_v0 < D_800964D3);
-        return var_v0;
+
+    for (i = 0; i < D_800964D3; i++) {
+        ;
     }
-    return 1;
+    return i;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auFunc80020C88.s")
