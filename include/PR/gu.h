@@ -5,10 +5,12 @@
 #include <PR/ultratypes.h>
 
 #define	FTOFIX32(x)	(long)((x) * (float)0x00010000)
+#define FTOFIX16(x) (long)((x) * (float)(1 << 10))
 #define	FIX32TOF(x)	((float)(x) * (1.0f / (float)0x00010000))
 #define	FTOFRAC8(x)	((int) MIN(((x) * (128.0f)), 127.0f) & 0xff)
 
 #define GU_PI 3.1415926
+#define M_DTOR (3.14159265358979323846f / 180.0f)
 /* Functions */
 
 void guPerspectiveF(float mf[4][4], u16 *perspNorm, float fovy, float aspect,
