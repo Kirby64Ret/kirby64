@@ -10,6 +10,7 @@
 #include "ovl0/ovl0_2.h"
 #include "ovl1/ovl1_6.h"
 #include "main/contpad.h"
+#include "main/dma.h"
 #include "main/gtl.h"
 #include "main/lbmatrix.h"
 #include "main/math.h"
@@ -215,29 +216,29 @@ void func_800A465C(f32 (*mf)[4], f32 x, f32 y, f32 z) {
 #endif
 
 // utilGetTransformSRT
-void func_800A4794(Vector *vec, struct LayoutNode *node) {
+void func_800A4794(Vector *vec, DObj *dobj) {
     Mat4 finalMtx;
     Mat4 tmpMtx;
 
-    if (node == NULL) {
-        node = omCurrentObj->data;
+    if (dobj == NULL) {
+        dobj = omCurrentObj->data;
     }
     guMtxIdentF(finalMtx);
     do {
-        if ((node->scale.x != 1.0f) || (node->scale.y != 1.0f) || (node->scale.z != 1.0f)) {
-            HS64_MkScaleMtxF(tmpMtx, node->scale.x, node->scale.y, node->scale.z);
+        if ((dobj->scale.v.x != 1.0f) || (dobj->scale.v.y != 1.0f) || (dobj->scale.v.z != 1.0f)) {
+            HS64_MkScaleMtxF(tmpMtx, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
             guMtxCatF(finalMtx, tmpMtx, finalMtx);
         }
-        if ((node->angle.x != 0.0f) || (node->angle.y != 0.0f) || (node->angle.z != 0.0f)) {
-            HS64_MkRotationMtxF(tmpMtx, node->angle.x, node->angle.y, node->angle.z);
+        if ((dobj->angle.v.x != 0.0f) || (dobj->angle.v.y != 0.0f) || (dobj->angle.v.z != 0.0f)) {
+            HS64_MkRotationMtxF(tmpMtx, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
             guMtxCatF(finalMtx, tmpMtx, finalMtx);
         }
-        if ((node->pos.x != 0.0f) || (node->pos.y != 0.0f) || (node->pos.z != 0.0f)) {
-            HS64_MkTranslateMtxF(tmpMtx, node->pos.x, node->pos.y, node->pos.z);
+        if ((dobj->pos.v.x != 0.0f) || (dobj->pos.v.y != 0.0f) || (dobj->pos.v.z != 0.0f)) {
+            HS64_MkTranslateMtxF(tmpMtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z);
             guMtxCatF(finalMtx, tmpMtx, finalMtx);
         }
-        node = node->child;
-    } while ((u32)node != 1);
+        dobj = dobj->parent;
+    } while ((u32)dobj != 1);
 
     vec->x = finalMtx[3][0];
     vec->y = finalMtx[3][1];
@@ -245,56 +246,56 @@ void func_800A4794(Vector *vec, struct LayoutNode *node) {
 }
 
 // utilTransformChain
-void func_800A4958(Vector *vec, struct LayoutNode *node, Vector *input) {
+void func_800A4958(Vector *vec, DObj *dobj, Vector *input) {
     Mat4 finalMtx;
     Mat4 tmpMtx;
 
-    if (node == NULL) {
-        node = omCurrentObj->data;
+    if (dobj == NULL) {
+        dobj = omCurrentObj->data;
     }
     guMtxIdentF(finalMtx);
     do {
-        if ((node->scale.x != 1.0f) || (node->scale.y != 1.0f) || (node->scale.z != 1.0f)) {
-            HS64_MkScaleMtxF(tmpMtx, node->scale.x, node->scale.y, node->scale.z);
+        if ((dobj->scale.v.x != 1.0f) || (dobj->scale.v.y != 1.0f) || (dobj->scale.v.z != 1.0f)) {
+            HS64_MkScaleMtxF(tmpMtx, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
             guMtxCatF(finalMtx, tmpMtx, finalMtx);
         }
-        if ((node->angle.x != 0.0f) || (node->angle.y != 0.0f) || (node->angle.z != 0.0f)) {
-            HS64_MkRotationMtxF(tmpMtx, node->angle.x, node->angle.y, node->angle.z);
+        if ((dobj->angle.v.x != 0.0f) || (dobj->angle.v.y != 0.0f) || (dobj->angle.v.z != 0.0f)) {
+            HS64_MkRotationMtxF(tmpMtx, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
             guMtxCatF(finalMtx, tmpMtx, finalMtx);
         }
-        if ((node->pos.x != 0.0f) || (node->pos.y != 0.0f) || (node->pos.z != 0.0f)) {
-            HS64_MkTranslateMtxF(tmpMtx, node->pos.x, node->pos.y, node->pos.z);
+        if ((dobj->pos.v.x != 0.0f) || (dobj->pos.v.y != 0.0f) || (dobj->pos.v.z != 0.0f)) {
+            HS64_MkTranslateMtxF(tmpMtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z);
             guMtxCatF(finalMtx, tmpMtx, finalMtx);
         }
-        node = node->child;
-    } while ((u32)node != 1);
+        dobj = dobj->parent;
+    } while ((u32)dobj != 1);
     guMtxXFMF(finalMtx, input->x, input->y, input->z, &vec->x, &vec->y, &vec->z);
 }
 
-void func_800A4B34(Vector *dst, struct LayoutNode *node) {
+void func_800A4B34(Vector *dst, DObj *dobj) {
     Vector tmp;
     Mat4 sp7C;
     Mat4 sp3C;
 
-    if (node == 0) {
-        node = omCurrentObj->data;
+    if (dobj == 0) {
+        dobj = omCurrentObj->data;
     }
     guMtxIdentF(&sp7C);
     do {
-        if ((node->scale.x != 1.0f) || (node->scale.y != 1.0f) || (node->scale.z != 1.0f)) {
-            HS64_MkScaleMtxF(&sp3C, 1.0f / node->scale.x, 1.0f / node->scale.y, 1.0f / node->scale.z);
+        if ((dobj->scale.v.x != 1.0f) || (dobj->scale.v.y != 1.0f) || (dobj->scale.v.z != 1.0f)) {
+            HS64_MkScaleMtxF(&sp3C, 1.0f / dobj->scale.v.x, 1.0f / dobj->scale.v.y, 1.0f / dobj->scale.v.z);
             guMtxCatF(&sp3C, &sp7C, &sp7C);
         }
-        if ((node->angle.x != 0.0f) || (node->angle.y != 0.0f) || (node->angle.z != 0.0f)) {
-            func_800A465C(&sp3C, -node->angle.x, -node->angle.y, -node->angle.z);
+        if ((dobj->angle.v.x != 0.0f) || (dobj->angle.v.y != 0.0f) || (dobj->angle.v.z != 0.0f)) {
+            func_800A465C(&sp3C, -dobj->angle.v.x, -dobj->angle.v.y, -dobj->angle.v.z);
             guMtxCatF(&sp3C, &sp7C, &sp7C);
         }
-        if ((node->pos.x != 0.0f) || (node->pos.y != 0.0f) || (node->pos.z != 0.0f)) {
-            HS64_MkTranslateMtxF(&sp3C, -node->pos.x, -node->pos.y, -node->pos.z);
+        if ((dobj->pos.v.x != 0.0f) || (dobj->pos.v.y != 0.0f) || (dobj->pos.v.z != 0.0f)) {
+            HS64_MkTranslateMtxF(&sp3C, -dobj->pos.v.x, -dobj->pos.v.y, -dobj->pos.v.z);
             guMtxCatF(&sp3C, &sp7C, &sp7C);
         }
-        node = node->child;
-    } while ((u32) node != 1);
+        dobj = dobj->parent;
+    } while ((u32) dobj != 1);
 
     tmp.x = dst->x;
     tmp.y = dst->y;
@@ -308,21 +309,21 @@ void func_800A4B34(Vector *dst, struct LayoutNode *node) {
              + sp7C[3][2];
 }
 
-void func_800A4DB8(Vector *vec, struct LayoutNode *node) {
+void func_800A4DB8(Vector *vec, DObj *dobj) {
     Mat4 sp80;
     Mat4 sp40;
 
-    if (node == NULL) {
-        node = omCurrentObj->data;
+    if (dobj == NULL) {
+        dobj = omCurrentObj->data;
     }
     guMtxIdentF(&sp80[0]);
     do {
-        if ((node->angle.x != 0.0f) || (node->angle.y != 0.0f) || (node->angle.z != 0.0f)) {
-            HS64_MkRotationMtxF(&sp40[0], node->angle.x, node->angle.y, node->angle.z);
+        if ((dobj->angle.v.x != 0.0f) || (dobj->angle.v.y != 0.0f) || (dobj->angle.v.z != 0.0f)) {
+            HS64_MkRotationMtxF(&sp40[0], dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
             guMtxCatF(&sp80[0], &sp40[0], &sp80[0]);
         }
-        node = node->child;
-    } while ((u32)node != 1);
+        dobj = dobj->parent;
+    } while ((u32)dobj != 1);
 
     vec->y = asinf(-sp80[0][2]);
     if ((vec->y == 1.5707964f) || (vec->y == -1.5707964f)) {

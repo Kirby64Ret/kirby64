@@ -1218,7 +1218,7 @@ loop_2:
         }
     }
 }
-/* Warning: struct LayoutNode is not defined (only forward-declared) */
+/* Warning: struct DObj is not defined (only forward-declared) */
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/42.s")
 #endif
@@ -1238,7 +1238,7 @@ s32 func_801DE6C8_ovl14(void) {
     s32 temp_a0;
     struct EntityThing800E9AA0 *var_a0;
     struct EntityThing800E9AA0 *var_a0_2;
-    struct LayoutNode **temp_v1;
+    struct DObj **temp_v1;
     struct UnkStruct800E1B50 *temp_t6;
     u32 temp_v0;
     u32 temp_v0_2;
@@ -1351,7 +1351,7 @@ block_32:
         return sp6C;
     }
 }
-/* Warning: struct LayoutNode is not defined (only forward-declared) */
+/* Warning: struct DObj is not defined (only forward-declared) */
 /* Warning: struct EntityThing800E9AA0 is not defined (only forward-declared) */
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/43.s")

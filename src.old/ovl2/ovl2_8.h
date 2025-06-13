@@ -24,47 +24,47 @@ struct ModelNode{
 };
 
 
-typedef struct LayoutNode {
-	struct LayoutNode *next;
-	struct LayoutNode *unk4;
-	struct LayoutNode *sibling;
-	struct LayoutNode *unkC;
-	struct LayoutNode *parent; //usually same as Unk0_Node
-	struct LayoutNode *child; //is 1 when at end of models layout
+// typedef struct DObj {
+// 	struct DObj *next;
+// 	struct DObj *unk4;
+// 	struct DObj *sibling;
+// 	struct DObj *unkC;
+// 	struct DObj *parent; //usually same as Unk0_Node
+// 	struct DObj *child; //is 1 when at end of models layout
 
-	struct ModelNode *unk18;
-	Vector /*0x1c*/ pos;
+// 	struct ModelNode *unk18;
+// 	Vector /*0x1c*/ pos;
 
-	struct ModelNode *unk28;
-	f32 unk2C;
-	Vector angle; /* 0x30 0x34 0x38 */
+// 	struct ModelNode *unk28;
+// 	f32 unk2C;
+// 	Vector angle; /* 0x30 0x34 0x38 */
 
-	struct ModelNode *unk3C;
-	Vector scale; /* 0x40 0x44 0x48 */
+// 	struct ModelNode *unk3C;
+// 	Vector scale; /* 0x40 0x44 0x48 */
 
-	u32 *unk4C;
-	u32 *model; //ptr to Bank4 model, probably only used upon load_
-	u8 unk54;
-	u8 unk55;
-	u8 unk56;
-	u8 unk57;
+// 	u32 *unk4C;
+// 	u32 *model; //ptr to Bank4 model, probably only used upon load_
+// 	u8 unk54;
+// 	u8 unk55;
+// 	u8 unk56;
+// 	u8 unk57;
 
-	// goes up to at least 0x80?
-	u32 unk58;
-    u32 unk5C;
-    u32 unk60;
-    u32 unk64;
-    u32 unk68;
-    u32 unk6C;
-    u32 unk70;
+// 	// goes up to at least 0x80?
+// 	u32 unk58;
+//     u32 unk5C;
+//     u32 unk60;
+//     u32 unk64;
+//     u32 unk68;
+//     u32 unk6C;
+//     u32 unk70;
 
-    // suspiciously the same layout as a DObj...
-    f32 unk74;
-    u32 unk78;
-    u32 unk7C;
-    // TODO: analyze/fill out struct
-    void *unk80;
-} LayoutNode;
+//     // suspiciously the same layout as a DObj...
+//     f32 unk74;
+//     u32 unk78;
+//     u32 unk7C;
+//     // TODO: analyze/fill out struct
+//     void *unk80;
+// } DObj;
 
 struct struct8011BA10_temp {
     u8 unk0;

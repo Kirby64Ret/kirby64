@@ -133,7 +133,7 @@ void func_8021F174_ovl19(GObj *arg0) {
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x2006B, 0x1869F, 0x10);
-    D_800DFBD0[omCurrentObj->objId][12]->unk54 = 2;
+    D_800DFBD0[omCurrentObj->objId][12]->flags = 2;
     func_801230E8(0x203BC, 0x203BD, 0);
     while (D_800E8060[D_800E0D50[omCurrentObj->objId]] == 0) {
         ohSleep(1);
@@ -148,7 +148,7 @@ loop:
     while (D_800E8060[D_800E0D50[omCurrentObj->objId]] == 1) {
         ohSleep(1);
     }
-    D_800DFBD0[omCurrentObj->objId][12]->unk54 = 1;
+    D_800DFBD0[omCurrentObj->objId][12]->flags = 1;
     func_801230E8(0x203A6, 0x203A7, 0);
     curObjSleepForever();
 }
@@ -228,14 +228,14 @@ void func_8021F6D8_ovl19(struct GObj *arg0) {
     gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
     func_800A9864(0x20070, 0x1869F, 0x10);
     if (D_800D6E64 == 0) {
-        D_800DFBD0[omCurrentObj->objId][3]->unk54 = 1;
+        D_800DFBD0[omCurrentObj->objId][3]->flags = 1;
         func_801230E8(0x203DC, 0x203DD, 0);
         while (D_800E98E0[D_800E0D50[omCurrentObj->objId]] == 0) {
             ohSleep(1);
         }
         func_801230E8(0x203DA, 0x203DB, 0);
     } else {
-        D_800DFBD0[omCurrentObj->objId][3]->unk54 = 2;
+        D_800DFBD0[omCurrentObj->objId][3]->flags = 2;
     }
     curObjSleepForever();
 }
@@ -466,7 +466,7 @@ void func_802209A0_ovl19(GObj *arg0) {
     // the same rabbit hole as func_80220280_ovl19
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
 
-    // currently flying blind filling out LayoutNode->unk80 so I won't bother
+    // currently flying blind filling out DObj->unk80 so I won't bother
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220D54_ovl19.s")
 // }
 
@@ -729,7 +729,7 @@ void func_80222108_ovl19(GObj *g) {
     func_801230E8(0x203AC, 0x203AD, 1);
     D_800E98E0[omCurrentObj->objId] = 1;
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
-    D_800DFBD0[omCurrentObj->objId][8]->angle.z = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][8]->angle.v.z = 0.0f;
     curObjSleepForever();
 }
 
@@ -757,8 +757,8 @@ void func_802222F0_ovl19(GObj *arg0) {
                 var_f12 = 0.7853982f;
             }
         }
-        D_800DFBD0[omCurrentObj->objId][8]->angle.y = var_f12;
-        D_800DFBD0[omCurrentObj->objId][8]->pos.x = 30.0f * var_f12;
+        D_800DFBD0[omCurrentObj->objId][8]->angle.v.y = var_f12;
+        D_800DFBD0[omCurrentObj->objId][8]->pos.v.x = 30.0f * var_f12;
     }
     D_8022FAB0_ovl19->unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
     D_8022FAB0_ovl19->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -778,7 +778,7 @@ void func_802224BC_ovl19(GObj *arg0) {
 }
 
 void func_80222500_ovl19(void) {
-    struct LayoutNode *node = D_800DFBD0[omCurrentObj->objId][1];
+    struct DObj *node = D_800DFBD0[omCurrentObj->objId][1];
     Vector sp38;
     Vector sp2C;
     Vector sp20;
@@ -791,7 +791,7 @@ void func_80222500_ovl19(void) {
     sp2C.x = gEntitiesNextPosXArray[0] - sp20.x;
     sp2C.y = 0.0f;
     sp2C.z = gEntitiesNextPosZArray[0] - sp20.z;
-    node->angle.y = vec3_abs_angle_diff(&sp38, &sp2C);
+    node->angle.v.y = vec3_abs_angle_diff(&sp38, &sp2C);
 }
 
 void func_802225A4_ovl19(struct GObj *arg0) {

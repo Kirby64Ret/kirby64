@@ -29,7 +29,7 @@ extern u8 D_80126E20[];
 extern u8 D_8012E7D7;
 extern u32 D_801290D0;
 
-void func_8011D0FC(struct LayoutNode *ln, s32 arg1, u32 arg2);
+void func_8011D0FC(struct DObj *ln, s32 arg1, u32 arg2);
 
 void *func_8011BA10(struct CollisionTriangle *tri, u32 arg1) {
     u32 i;
@@ -53,7 +53,7 @@ void *func_8011BA10(struct CollisionTriangle *tri, u32 arg1) {
     }
 }
 
-struct LayoutNode *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
+struct DObj *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
     u32 i;
     struct DynGeo_List *destructGroups;
     struct vCollisionHeader *vColHeader;
@@ -82,13 +82,13 @@ struct LayoutNode *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
 
 #ifdef MIPS_TO_C
 
-struct LayoutNode *func_8011BB98(void *arg0, s32 arg1) {
+struct DObj *func_8011BB98(void *arg0, s32 arg1) {
     s32 sp44;
     s32 sp38;
     ? sp2C;
     s32 temp_lo;
     struct DynGeo_List *temp_a3;
-    struct LayoutNode *temp_s0;
+    struct DObj *temp_s0;
     struct struct8011BA10_temp *temp_v0;
     struct vCollisionHeader *var_a2;
     u16 *var_v1;
@@ -129,7 +129,7 @@ struct LayoutNode *func_8011BB98(void *arg0, s32 arg1) {
     return temp_s0;
 }
 #else
-struct LayoutNode *func_8011BB98(struct CollisionTriangle *tri, u32 arg1);
+struct DObj *func_8011BB98(struct CollisionTriangle *tri, u32 arg1);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011BB98.s")
 #endif
 
@@ -139,15 +139,15 @@ void func_8011BD08(struct CollisionTriangle *tri, u32 arg1) {
 }
 
 #ifdef MIPS_TO_C
-struct LayoutNode *func_8011BD30(void *arg0, s32 arg1) {
-    struct LayoutNode *sp2C;
+struct DObj *func_8011BD30(void *arg0, s32 arg1) {
+    struct DObj *sp2C;
     s32 *var_s1;
     s32 temp_a1_2;
     s32 temp_a1_3;
     s32 temp_lo;
     s32 temp_s0;
     struct DynGeo_List *temp_a1;
-    struct LayoutNode *temp_t3;
+    struct DObj *temp_t3;
     struct struct8011BA10_temp *temp_v0;
     struct vCollisionHeader *var_a0;
     u16 *var_v0;
@@ -809,7 +809,7 @@ void func_8011CFF4(GObj *gobj) {
 
 // plyWalk
 #ifdef MIPS_TO_C
-void func_8011D0FC(struct LayoutNode *arg0, s32 kind, int arg2) {
+void func_8011D0FC(struct DObj *arg0, s32 kind, int arg2) {
     f32 sp44;
     void *sp3C;
     f32 sp38;

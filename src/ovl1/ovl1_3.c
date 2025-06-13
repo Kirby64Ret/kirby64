@@ -1139,7 +1139,7 @@ void func_800A99E4(s32 track) {
     if ((u32)D_800DFBD0[track] != -1) {
         func_800A8578((u32)D_800DFBD0[track] | 1);
     }
-    D_800DFBD0[track] = (struct LayoutNode**)-1;
+    D_800DFBD0[track] = (struct DObj**)-1;
 }
 
 #ifdef MIPS_TO_C
@@ -1399,15 +1399,15 @@ void func_800AA154(void) {
 #endif
 
 void func_800AA174(void) {
-    ((struct LayoutNode *)omCurrentObj->data)->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-    ((struct LayoutNode *)omCurrentObj->data)->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-    ((struct LayoutNode *)omCurrentObj->data)->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    ((struct LayoutNode *)omCurrentObj->data)->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
-    ((struct LayoutNode *)omCurrentObj->data)->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
-    ((struct LayoutNode *)omCurrentObj->data)->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
-    ((struct LayoutNode *)omCurrentObj->data)->scale.x = gEntitiesScaleXArray[omCurrentObj->objId];
-    ((struct LayoutNode *)omCurrentObj->data)->scale.y = gEntitiesScaleYArray[omCurrentObj->objId];
-    ((struct LayoutNode *)omCurrentObj->data)->scale.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    ((DObj *)omCurrentObj->data)->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
 }
 
 #ifdef MIPS_TO_C
@@ -1677,7 +1677,7 @@ void func_800AA96C(s32 *arg0, u32 arg1, ? arg2, ? arg3, f32 arg4) {
 #ifdef MIPS_TO_C
 
 void func_800AAB3C(s32 *arg0, ? arg3, f32 arg4) {
-    struct LayoutNode *temp_s0;
+    struct DObj *temp_s0;
 
     func_800AA96C(arg3, arg3, arg4);
     temp_s0 = D_800DFBD0[omCurrentObj->objId][*arg0];

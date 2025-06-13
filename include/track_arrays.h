@@ -33,7 +33,7 @@ extern u32 D_800DF690[];
 extern u32 *gSegment4StartArray[];
 
 // i think this is an array of pairs (2-length arrays) of pointers but cba to figure out syntax
-extern struct LayoutNode **D_800DFBD0[];
+extern struct DObj **D_800DFBD0[];
 extern s32 D_800E0110[];
 extern s32 D_800DFF50[];
 extern s32 D_800E02D0[];

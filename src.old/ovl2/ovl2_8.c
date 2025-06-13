@@ -44,7 +44,7 @@ struct Struct800DFBD0 {
 extern u32 D_801290D0;
 
 
-struct LayoutNode *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
+struct DObj *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
     u32 i;
     struct DynGeo_List *destructGroups;
     struct vCollisionHeader *vColHeader;
@@ -71,16 +71,16 @@ struct LayoutNode *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
     return D_800DFBD0[phi_a0][destructGroups->Unk_Index];
 }
 
-extern func_800A4794(Vec3f, struct LayoutNode *, struct vCollisionHeader *, struct DynGeo_List *);
+extern func_800A4794(Vec3f, struct DObj *, struct vCollisionHeader *, struct DynGeo_List *);
 extern func_800FD754(s32 *, f32, f32, f32);
-extern func_800A4DB8(Vec3f, struct LayoutNode *);
+extern func_800A4DB8(Vec3f, struct DObj *);
 extern func_800A802C(s32 *, s32, s32, Vec3f, Vec3f);
 
 
-struct LayoutNode *func_8011BB98(struct CollisionTriangle *tri, u32 arg1) {
+struct DObj *func_8011BB98(struct CollisionTriangle *tri, u32 arg1) {
     u32 i;
     struct DynGeo_List *destructGroups;
-    struct LayoutNode *temp_s0;
+    struct DObj *temp_s0;
     struct vCollisionHeader *vColHeader;
     u16 *destrucIndex;
     u32 phi_t1;

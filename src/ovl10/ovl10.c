@@ -68,15 +68,15 @@ void func_801DB770_ovl10(GObj *obj) {
     func_800A9864(0x100E2, 0x1869F, 0x10);
     if (D_800EC2E0[omCurrentObj->objId].as_u32 == 0) {
         setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-        (obj->data)->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-        (obj->data)->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-        (obj->data)->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-        (obj->data)->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
-        (obj->data)->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
-        (obj->data)->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
-        (obj->data)->scale.x = gEntitiesScaleXArray[omCurrentObj->objId];
-        (obj->data)->scale.y = gEntitiesScaleYArray[omCurrentObj->objId];
-        (obj->data)->scale.z = gEntitiesScaleZArray[omCurrentObj->objId];
+        (obj->data)->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        (obj->data)->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        (obj->data)->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        (obj->data)->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+        (obj->data)->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+        (obj->data)->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+        (obj->data)->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+        (obj->data)->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+        (obj->data)->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
         func_800AA018(0x1062E);
     } else {
         D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
@@ -96,15 +96,15 @@ void func_801DB770_ovl10(GObj *obj) {
 void func_801DB9DC_ovl10(GObj *obj) {
     func_800A9864(0x100E3, 0x1869F, 0x10);
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    (obj->data)->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-    (obj->data)->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-    (obj->data)->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    (obj->data)->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
-    (obj->data)->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
-    (obj->data)->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
-    (obj->data)->scale.x = gEntitiesScaleXArray[omCurrentObj->objId];
-    (obj->data)->scale.y = gEntitiesScaleYArray[omCurrentObj->objId];
-    (obj->data)->scale.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    (obj->data)->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    (obj->data)->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    (obj->data)->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    (obj->data)->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    (obj->data)->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    (obj->data)->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    (obj->data)->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    (obj->data)->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    (obj->data)->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
     func_800AA018(0x10630);
     while (func_800AF230() == 0) {
         if (D_800E7B20[D_800E0D50[omCurrentObj->objId]] <= 0.0f) {

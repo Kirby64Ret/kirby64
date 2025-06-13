@@ -114,7 +114,7 @@ Vector *func_800BB98C(s32 arg0, s32 arg1) {
     GObj *prevObj;
     Camera *cam;
     s32 track;
-    struct LayoutNode *node;
+    struct DObj *dobj;
 
     gobj = HS64_omMakeGObj(8, NULL, 0x19, 0x80000000);
     if (gobj != NULL) {
@@ -143,12 +143,12 @@ Vector *func_800BB98C(s32 arg0, s32 arg1) {
             func_800AA018(D_800D5290[arg0].unk8);
         }
         omCurrentObj->onDraw = func_800BB6B0;
-        node = omCurrentObj->data;
-        node->scale.x = D_800D5290[arg0].unkC;
-        node->scale.y = D_800D5290[arg0].unkC;
+        dobj = omCurrentObj->data;
+        dobj->scale.v.x = D_800D5290[arg0].unkC;
+        dobj->scale.v.y = D_800D5290[arg0].unkC;
         omCurrentObj = prevObj;
         D_800D6B2B = arg1;
-        return &node->scale;
+        return &dobj->scale;
     }
 }
 #else

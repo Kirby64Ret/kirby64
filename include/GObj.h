@@ -63,7 +63,7 @@ struct UnkStruct8004A7C4_3C_10 {
 };
 
 // SOME chunk of the beginning of the struct is a union
-// SAME AS A LayoutNode??????
+// SAME AS A DObj??????
 typedef struct UnkStruct8004A7C4_3C {
     // u32 unk0;
     // u32 unk4;
@@ -174,7 +174,7 @@ typedef struct GObj {
     u32 unk34;
     u32 unk38;
     // actually void*, but mainly used to store a layoutnode
-    /* 0x3C */ struct LayoutNode *data;
+    /* 0x3C */ struct DObj *data;
     // goes up by 2.0f per frame until it hits 40.0f, then resets to 0.0f
     /* 0x40 */ f32 animTimer;
     /* 0x44 */ u32 flags;

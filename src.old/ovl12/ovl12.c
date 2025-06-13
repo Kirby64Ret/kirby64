@@ -283,10 +283,10 @@ GLOBAL_ASM("asm/non_matchings/ovl12/0/ovl12/16.s")
 // regalloc
 #ifdef NON_MATCHING
 void func_801DC094_ovl12(void) {
-    struct LayoutNode **lo_array;
-    struct LayoutNode *lo0;
-    struct LayoutNode *lo1;
-    struct LayoutNode *lo2;
+    struct DObj **lo_array;
+    struct DObj *lo0;
+    struct DObj *lo1;
+    struct DObj *lo2;
 
 
     lo_array = D_800DFBD0[omCurrentObj->objId];

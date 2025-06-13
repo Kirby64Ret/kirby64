@@ -91,7 +91,7 @@ void func_80229100_ovl19(GObj *g) {
     D_800E0490[omCurrentObj->objId] = &D_80192F64;
     func_80152348_ovl3(20.0f);
     gKirbyState.ability = 0;
-    D_800DFBD0[omCurrentObj->objId][23]->unk54 = 2;
+    D_800DFBD0[omCurrentObj->objId][23]->flags = 2;
     func_800AFBB4(0, omCurrentObj);
     func_800FF200(D_8012E944);
     D_800DF150[omCurrentObj->objId] = NULL;
@@ -409,7 +409,7 @@ void func_8022A018_ovl19(GObj *g) {
         func_800AA78C(0x20380, 0x20069, 3.0f);
     } else {
         func_800AFA54(D_800DFA10[omCurrentObj->objId], 0x20069);
-        D_800DFBD0[omCurrentObj->objId][23]->unk54 = 2;
+        D_800DFBD0[omCurrentObj->objId][23]->flags = 2;
     }
     func_801230E8(0x20380, 0x20381, 0);
     while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
@@ -503,7 +503,7 @@ void func_8022A410_ovl19(s32 arg0) {
     D_800E3750[omCurrentObj->objId] = -0.980665f;
     D_800E3C90[omCurrentObj->objId] = 17.0f;
     func_800AFA54(D_800DFA10[omCurrentObj->objId]);
-    D_800DFBD0[omCurrentObj->objId]->unk5C->unk54 = 2;
+    D_800DFBD0[omCurrentObj->objId]->unk5C->flags = 2;
     func_801230E8(0x20380, 0x20381, 0);
     while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
         ohSleep(1);
@@ -832,7 +832,7 @@ void func_8022B4C4_ovl19(GObj *gobj) {
         gKirbyState.unk4C = 0;
         D_800E9AA0[omCurrentObj->objId] = NULL;
         D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId];
-        ((struct LayoutNode *)gobj->data)->parent->angle.y = 0.0f;
+        ((struct DObj *)gobj->data)->parent->angle.v.y = 0.0f;
         D_800E64D0[omCurrentObj->objId] =
         D_800E6690[omCurrentObj->objId] = 0;
         D_800E6850[omCurrentObj->objId] = 65535.0f;
@@ -1009,7 +1009,7 @@ void func_8022BD44_ovl19(void *arg0) {
     D_800E8220[omCurrentObj->objId] = 0;
     func_8011CF58();
     D_800DDFD0[omCurrentObj->objId] = 0xE;
-    D_800DFBD0[omCurrentObj->objId]->unk5C->unk54 = 1;
+    D_800DFBD0[omCurrentObj->objId]->unk5C->flags = 1;
     func_80120A28();
     D_800E9720[omCurrentObj->objId] = 0;
     func_801230E8(0x20362, 0x20363, 0);
@@ -1085,7 +1085,7 @@ loop_10:
         }
     }
     D_800E9720[omCurrentObj->objId] = 0;
-    D_800DFBD0[omCurrentObj->objId]->unk5C->unk54 = 2;
+    D_800DFBD0[omCurrentObj->objId]->unk5C->flags = 2;
     gKirbyState.unk30 += 1;
     curObjSleepForever();
 }
@@ -1338,7 +1338,7 @@ void func_8022CE18_ovl19(s32 arg0) {
     *(&D_8012E90C + 0x10) = 0;
     func_800AFA54(*(&D_800DFA10 + (omCurrentObj->objId * 4)));
     func_800B20E0(omCurrentObj, *(&D_800DFD90 + (omCurrentObj->objId * 4)), omCurrentObj);
-    D_800DFBD0[omCurrentObj->objId]->unk5C->unk54 = 2;
+    D_800DFBD0[omCurrentObj->objId]->unk5C->flags = 2;
     gKirbyState.unk7 = 0;
     D_800E8060[omCurrentObj->objId] = -1;
     if ((gKirbyState.floorCollisionNext != 0) && (gKirbyState.ceilingCollisionNext != 0)) {
@@ -1646,7 +1646,7 @@ void func_8022D9F8_ovl19(s32 arg0) {
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x2006B, 0x20, 0x10);
-    D_800DFBD0[omCurrentObj->objId]->unk30->unk54 = 2;
+    D_800DFBD0[omCurrentObj->objId]->unk30->flags = 2;
     switch (D_800BE500) {                           /* irregular */
         case 1:
             D_800E5F90[omCurrentObj->objId] = 1;

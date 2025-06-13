@@ -28,7 +28,7 @@ void func_801E49B8_ovl17(s32 arg0) {
     f32 tmp;
     f32 tmp2;
     Vector sp30;
-    struct LayoutNode *sp2C = D_800DFBD0[D_800E0D50[omCurrentObj->objId]][0x19];
+    struct DObj *sp2C = D_800DFBD0[D_800E0D50[omCurrentObj->objId]][0x19];
 
     D_800DEF90[omCurrentObj->objId] = &D_800B4924;
     D_800DF150[omCurrentObj->objId] = func_801E4DD4_ovl17;

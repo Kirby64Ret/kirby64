@@ -2,6 +2,7 @@
 #include "ovl1_3.h"
 #include "ovl1/ovl1_6.h"
 #include "GObj.h"
+#include "DObj.h"
 #include "ovl1_7.h"
 #include "unk_structs/D_800DE350.h"
 #include "main/lbvector.h"
@@ -475,15 +476,15 @@ void func_800AFA54(GObj *gobj) {
 }
 
 void func_800AFA88(GObj *gobj) {
-    gobj->data->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-    gobj->data->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-    gobj->data->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    gobj->data->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
-    gobj->data->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
-    gobj->data->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
-    gobj->data->scale.x = gEntitiesScaleXArray[omCurrentObj->objId];
-    gobj->data->scale.y = gEntitiesScaleYArray[omCurrentObj->objId];
-    gobj->data->scale.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    gobj->data->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gobj->data->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gobj->data->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    gobj->data->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    gobj->data->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    gobj->data->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    gobj->data->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    gobj->data->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    gobj->data->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
 }
 
 #ifdef MIPS_TO_C
@@ -872,7 +873,7 @@ void func_800B0D90(void *arg0) {
 
 #ifdef MIPS_TO_C
 
-void func_800B0F28(struct LayoutNode *arg0, s32 arg1, s32 arg2) {
+void func_800B0F28(struct DObj *arg0, s32 arg1, s32 arg2) {
     f32 sp44;
     void *sp3C;
     f32 sp38;
@@ -1030,15 +1031,15 @@ void procMainStub(GObj *arg0) {
 void procMainMove(GObj *gobj) {
     if (!(D_800DD8D0[omCurrentObj->objId] & 0x40)) {
         if (gobj->data != NULL) {
-            ((struct LayoutNode *)gobj->data)->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-            ((struct LayoutNode *)gobj->data)->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-            ((struct LayoutNode *)gobj->data)->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-            ((struct LayoutNode *)gobj->data)->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
-            ((struct LayoutNode *)gobj->data)->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
-            ((struct LayoutNode *)gobj->data)->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
-            ((struct LayoutNode *)gobj->data)->scale.x = gEntitiesScaleXArray[omCurrentObj->objId];
-            ((struct LayoutNode *)gobj->data)->scale.y = gEntitiesScaleYArray[omCurrentObj->objId];
-            ((struct LayoutNode *)gobj->data)->scale.z = gEntitiesScaleZArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+            ((struct DObj *)gobj->data)->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
         }
     }
 }
@@ -1326,18 +1327,18 @@ void setProcessMain(GObjProcess *proc, void (*cb)(GObj *)) {
 // regalloc
 #ifdef NON_MATCHING
 // gets the closest node on the graph
-struct LayoutNode *func_800B1F70(struct LayoutNode *node, struct LayoutNode *stopnode) {
+struct DObj *func_800B1F70(struct DObj *node, struct DObj *stopnode) {
     if (node->parent) return node->parent;
-    if (node->sibling) return node->sibling;
+    if (node->next) return node->next;
 
     while (1) {
-        if (node->child == stopnode) {
+        if (node->parent == stopnode) {
             return NULL;
         }
-        if (node->child->sibling) {
-            return node->child->sibling;
+        if (node->parent->next) {
+            return node->parent->next;
         }
-        node = node->child;
+        node = node->parent;
     }
 }
 #else
@@ -1440,13 +1441,13 @@ void func_800B21FC(s32 **arg0, f32 arg1) {
     s32 *var_s1;
     s32 temp_a1;
     s8 var_s2;
-    struct LayoutNode *node;
-    struct LayoutNode *var_s0;
+    struct DObj *node;
+    struct DObj *var_s0;
 
     var_s0 = omCurrentObj->data;
     var_s1 = *arg0;
     var_s2 = 1;
-    var_s0->unk4->scale.x = arg1;
+    var_s0->unk4->scale.v.x = arg1;
     if (var_s0 != NULL) {
         do {
             temp_a1 = *var_s1;
@@ -1507,7 +1508,7 @@ void func_800B2288(s32 **arg0, ? arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2288.s")
 #endif
 
-void func_800B2340(Vector *vec, struct LayoutNode *node, u32 track) {
+void func_800B2340(Vector *vec, struct DObj *node, u32 track) {
     float finalMtx[4][4];
     float tmpMtx[4][4];
 
@@ -1515,21 +1516,21 @@ void func_800B2340(Vector *vec, struct LayoutNode *node, u32 track) {
         track = omCurrentObj->objId;
     }
     if (node == NULL) {
-        node = (struct LayoutNode *)omCurrentObj->data;
+        node = (struct DObj *)omCurrentObj->data;
     }
     guMtxIdentF(&finalMtx);
     do {
-        if ((u32)node->child != 1) {
-            if ((node->scale.x != 1.0f) || (node->scale.y != 1.0f) || (node->scale.z != 1.0f)) {
-                HS64_MkScaleMtxF(tmpMtx, node->scale.x, node->scale.y, node->scale.z);
+        if ((u32)node->parent != 1) {
+            if ((node->scale.v.x != 1.0f) || (node->scale.v.y != 1.0f) || (node->scale.v.z != 1.0f)) {
+                HS64_MkScaleMtxF(tmpMtx, node->scale.v.x, node->scale.v.y, node->scale.v.z);
                 guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
-            if ((node->angle.x != 0.0f) || (node->angle.y != 0.0f) || (node->angle.z != 0.0f)) {
-                HS64_MkRotationMtxF(tmpMtx, node->angle.x, node->angle.y, node->angle.z);
+            if ((node->angle.v.x != 0.0f) || (node->angle.v.y != 0.0f) || (node->angle.v.z != 0.0f)) {
+                HS64_MkRotationMtxF(tmpMtx, node->angle.v.x, node->angle.v.y, node->angle.v.z);
                 guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
-            if ((node->pos.x != 0.0f) || (node->pos.y != 0.0f) || (node->pos.z != 0.0f)) {
-                HS64_MkTranslateMtxF(tmpMtx, node->pos.x, node->pos.y, node->pos.z);
+            if ((node->pos.v.x != 0.0f) || (node->pos.v.y != 0.0f) || (node->pos.v.z != 0.0f)) {
+                HS64_MkTranslateMtxF(tmpMtx, node->pos.v.x, node->pos.v.y, node->pos.v.z);
                 guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
         } else {
@@ -1546,7 +1547,7 @@ void func_800B2340(Vector *vec, struct LayoutNode *node, u32 track) {
                 guMtxCatF(&finalMtx, tmpMtx, &finalMtx);
             }
         }
-        node = node->child;
+        node = node->parent;
     } while ((u32)node != 1);
     vec->x = finalMtx[3][0];
     vec->y = finalMtx[3][1];
@@ -1555,13 +1556,13 @@ void func_800B2340(Vector *vec, struct LayoutNode *node, u32 track) {
 
 #ifdef MIPS_TO_C
 
-void func_800B26D8(Vector *vec, struct LayoutNode *node, u32 track) {
+void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
     f32 temp_f0;
     f32 temp_f0_2;
     f32 temp_f0_3;
     f32 temp_f12;
     f32 temp_f2;
-    struct LayoutNode *var_s0;
+    struct DObj *var_s0;
     u32 var_s5;
 
     var_s0 = node;
@@ -1575,9 +1576,9 @@ void func_800B26D8(Vector *vec, struct LayoutNode *node, u32 track) {
     guMtxIdentF(&sp90[0]);
     do {
         if (var_s0->child != 1) {
-            temp_f0 = var_s0->angle.x;
-            if ((temp_f0 != 0.0f) || (var_s0->angle.y != 0.0f) || (var_s0->angle.z != 0.0f)) {
-                HS64_MkRotationMtxF(&sp50[0], temp_f0, var_s0->angle.y, var_s0->angle.z);
+            temp_f0 = var_s0->angle.v.x;
+            if ((temp_f0 != 0.0f) || (var_s0->angle.v.y != 0.0f) || (var_s0->angle.v.z != 0.0f)) {
+                HS64_MkRotationMtxF(&sp50[0], temp_f0, var_s0->angle.v.y, var_s0->angle.v.z);
                 guMtxCatF(&sp90[0], &sp50[0], &sp90[0]);
             }
         } else {
@@ -1611,12 +1612,12 @@ void func_800B26D8(Vector *vec, struct LayoutNode *node, u32 track) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_800B2928(Vector *vec, struct LayoutNode *node, u32 track) {
+void func_800B2928(Vector *vec, struct DObj *node, u32 track) {
     f32 temp_f0;
     f32 temp_f0_2;
     f32 temp_f12;
     f32 temp_f2;
-    struct LayoutNode *var_s0;
+    struct DObj *var_s0;
     u32 var_s5;
 
     var_s0 = node;
@@ -1630,9 +1631,9 @@ void func_800B2928(Vector *vec, struct LayoutNode *node, u32 track) {
     guMtxIdentF(&sp90[0]);
     do {
         if (var_s0->child != 1) {
-            temp_f0 = var_s0->scale.x;
-            if ((temp_f0 != 1.0f) || (var_s0->scale.y != 1.0f) || (var_s0->scale.z != 1.0f)) {
-                HS64_MkScaleMtxF(&sp50[0], temp_f0, var_s0->scale.y, var_s0->scale.z);
+            temp_f0 = var_s0->scale.v.x;
+            if ((temp_f0 != 1.0f) || (var_s0->scale.v.y != 1.0f) || (var_s0->scale.v.z != 1.0f)) {
+                HS64_MkScaleMtxF(&sp50[0], temp_f0, var_s0->scale.v.y, var_s0->scale.v.z);
                 guMtxCatF(&sp90[0], &sp50[0], &sp90[0]);
             }
         } else {
@@ -1655,7 +1656,7 @@ void func_800B2928(Vector *vec, struct LayoutNode *node, u32 track) {
 #endif
 
 #ifdef NON_MATCHING
-void func_800B2AD4(Vector *vec, struct LayoutNode *node, u32 track) {
+void func_800B2AD4(Vector *vec, struct DObj *node, u32 track) {
     Mat4 tmpMtx; // sp7C
     Mat4 finalMtx; // finalMtx
 
@@ -1663,21 +1664,21 @@ void func_800B2AD4(Vector *vec, struct LayoutNode *node, u32 track) {
         track = omCurrentObj->objId;
     }
     if (node == NULL) {
-        node = (struct LayoutNode *)omCurrentObj->data;
+        node = (struct DObj *)omCurrentObj->data;
     }
     guMtxIdentF(finalMtx);
     do {
-        if ((u32)node->child != 1) {
-            if ((node->scale.x != 1.0f) || (node->scale.y != 1.0f) || (node->scale.z != 1.0f)) {
-                HS64_MkScaleMtxF(tmpMtx, 1.0f / node->scale.x, 1.0f / node->scale.y, 1.0f / node->scale.z);
+        if ((u32)node->parent != 1) {
+            if ((node->scale.v.x != 1.0f) || (node->scale.v.y != 1.0f) || (node->scale.v.z != 1.0f)) {
+                HS64_MkScaleMtxF(tmpMtx, 1.0f / node->scale.v.x, 1.0f / node->scale.v.y, 1.0f / node->scale.v.z);
                 guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
-            if ((node->angle.x != 0.0f) || (node->angle.y != 0.0f) || (node->angle.z != 0.0f)) {
-                func_800A465C(tmpMtx, -node->angle.x, -node->angle.y, -node->angle.z);
+            if ((node->angle.v.x != 0.0f) || (node->angle.v.y != 0.0f) || (node->angle.v.z != 0.0f)) {
+                func_800A465C(tmpMtx, -node->angle.v.x, -node->angle.v.y, -node->angle.v.z);
                 guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
-            if ((node->pos.x != 0.0f) || (node->pos.y != 0.0f) || (node->pos.z != 0.0f)) {
-                HS64_MkTranslateMtxF(tmpMtx, -node->pos.x, -node->pos.y, -node->pos.z);
+            if ((node->pos.v.x != 0.0f) || (node->pos.v.y != 0.0f) || (node->pos.v.z != 0.0f)) {
+                HS64_MkTranslateMtxF(tmpMtx, -node->pos.v.x, -node->pos.v.y, -node->pos.v.z);
                 guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
         } else {
@@ -1694,7 +1695,7 @@ void func_800B2AD4(Vector *vec, struct LayoutNode *node, u32 track) {
                 guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
         }
-        node = node->child;
+        node = node->parent;
     } while ((u32)node != 1);
 
     vec->x = ((finalMtx[0][0] * vec->x) + (finalMtx[1][0] * vec->y) + (finalMtx[2][0] * vec->z)) + finalMtx[3][0];

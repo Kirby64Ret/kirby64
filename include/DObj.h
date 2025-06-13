@@ -16,10 +16,10 @@ typedef struct {
 typedef struct DObj {
     /* 0x00 */ struct DObj* nextFree;
     /* 0x04 */ struct GObj* gobj;
-    /* 0x08 */ struct DObj* next;
+    /* 0x08 */ struct DObj* next; // marked as sibling in LayoutNode
     /* 0x0C */ struct DObj* prev;
     /* 0x10 */ struct DObj* firstChild;
-    /* 0x14 */ struct DObj* parent; // checked with `1` for a top level
+    /* 0x14 */ struct DObj* parent; // marked as child in LayoutNode
     OMMtxFloat3 pos;
     OMMtxFloat4 angle;
     OMMtxFloat3 scale;

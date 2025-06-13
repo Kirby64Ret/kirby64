@@ -182,8 +182,8 @@ s32 func_8015874C_ovl4(void) {
     return 6;
 }
 
-struct LayoutNode *func_801587CC_ovl4(u32 arg0) {
-    struct LayoutNode *sp4;
+struct DObj *func_801587CC_ovl4(u32 arg0) {
+    struct DObj *sp4;
 
     switch (arg0) {
         case 0:
