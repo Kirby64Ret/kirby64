@@ -131,7 +131,7 @@ void func_800A4414(u8 c) {
 #endif
 
 // executes the virtual function at index arg0
-void call_virtual_function(u32 idx, u32 max, VTABLE callbackTbl) {
+void utilFuncTableJump(u32 idx, u32 max, FUNCLIST callbackTbl) {
     if (idx < max) callbackTbl[idx](omCurrentObj);
 }
 

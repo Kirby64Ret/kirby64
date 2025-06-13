@@ -6,7 +6,7 @@ f32 D_801E2AA0_ovl12[] = {
 };
 f32 D_801E2AB0_ovl12[] = { 700.0f, 6.0f, 5.0f, 4.0f };
 
-VTABLE D_801E2AC0_ovl12 = {
+FUNCLIST D_801E2AC0_ovl12 = {
     func_801DB2DC_ovl12,
     func_801DD02C_ovl12,
     func_801DD96C_ovl12,
@@ -14,7 +14,7 @@ VTABLE D_801E2AC0_ovl12 = {
     func_801DFFF0_ovl12,
 };
 
-VTABLE D_801E2AD4_ovl12 = {
+FUNCLIST D_801E2AD4_ovl12 = {
     func_801DB494_ovl12,
     func_801DB544_ovl12,
     func_801DB6D8_ovl12,

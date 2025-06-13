@@ -106,7 +106,7 @@ extern s32 D_801CD8B0;
 void func_801BD7C4_ovl7(UNUSED s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = &D_800B67A8;
     D_800E8920[omCurrentObj->objId] = 0;
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 2, &D_801CD8B0);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_801CD8B0);
 }
 
 void func_801BD88C_ovl7(UNUSED s32 arg0);
@@ -164,7 +164,7 @@ extern s32 D_801CD8B8;
 void func_801BDADC_ovl7(UNUSED s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = &D_800B67A8;
     D_800E8920[omCurrentObj->objId] = 0;
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 2, &D_801CD8B8);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_801CD8B8);
 }
 
 typedef struct {
@@ -235,7 +235,7 @@ void func_801BE068_ovl7(UNUSED s32 arg0) {
     if (func_800B9DF8(D_800E91E0[omCurrentObj->objId]) != 0) {
         D_800E7880[omCurrentObj->objId] += 3;
     }
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 7, &D_801CD8C0);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 7, &D_801CD8C0);
 }
 
 void func_801BE1A8_ovl7(s32 arg0);
@@ -281,7 +281,7 @@ void func_801BE21C_ovl7(UNUSED s32 arg0) {
     }
     func_800AFBB4(1, omCurrentObj);
     D_800E7880[omCurrentObj->objId]--;
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 7, &D_801CD8C0);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 7, &D_801CD8C0);
 }
 
 extern s32 D_800B6474;
@@ -290,7 +290,7 @@ extern s32 D_801CD8C0;
 void func_801BE3D8_ovl7(UNUSED s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = &D_800B6474;
     D_800E7880[omCurrentObj->objId] -= 2;
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 7, &D_801CD8C0);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 7, &D_801CD8C0);
 }
 
 void func_801BE490_ovl7(UNUSED s32 arg0);
@@ -435,7 +435,7 @@ extern s32 D_801CD8DC;
 void func_801BF12C_ovl7(UNUSED s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = &D_800B67A8;
     D_800E8920[omCurrentObj->objId] = 0;
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 2, &D_801CD8DC);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_801CD8DC);
 }
 
 void func_801BF1F4_ovl7(UNUSED s32 arg0);

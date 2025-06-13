@@ -6,7 +6,7 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
-extern VTABLE D_8022F070_ovl19;
+extern FUNCLIST D_8022F070_ovl19;
 
 extern void func_800B5094(s32, s32, f32);
 void func_8021EC64_ovl19(GObj *arg0);
@@ -19,7 +19,7 @@ void func_8021EA20_ovl19() {
 }
 
 void func_8021EA40_ovl19(s32 arg0) {
-    static VTABLE D_8022F070_ovl19 = {
+    static FUNCLIST D_8022F070_ovl19 = {
         func_8021EB6C_ovl19,
         func_8021ECC4_ovl19,
     };
@@ -29,7 +29,7 @@ void func_8021EA40_ovl19(s32 arg0) {
     D_800E1450[omCurrentObj->objId] = D_800E1450[D_800E0D50[omCurrentObj->objId]];
     D_800E6A10[omCurrentObj->objId] = D_800E6A10[D_800E0D50[omCurrentObj->objId]];
     D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[D_800E0D50[omCurrentObj->objId]];
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 2, &D_8022F070_ovl19);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, &D_8022F070_ovl19);
 }
 
 void func_8021EB6C_ovl19(GObj *arg0) {
@@ -80,7 +80,7 @@ s32 func_8021EE88_ovl19(GObj *arg0) {
 
     track = request_track_general(0x16, 0x3C, 0x4A);
     if (track != -1) {
-        gEntityVtableIndexArray[track] = arg0;
+        gEntityFuncListIDArray[track] = arg0;
     } else {
         print_error_stub("Helper Effect Request Error![helpeff.cc]\n");
     }

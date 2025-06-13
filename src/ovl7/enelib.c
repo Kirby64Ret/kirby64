@@ -347,7 +347,7 @@ void func_80199688_ovl7(s32 arg0) {
     if (temp_a0->unk44 == 0) {
         temp_a0->unk44 = 1;
     }
-    gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A69B0_ovl7);
 }
 #else
@@ -366,7 +366,7 @@ void func_80199724_ovl7(s32 arg0) {
     if (temp_a0->unk44 == 0) {
         temp_a0->unk44 = 1;
     }
-    gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
 }
 #else
@@ -380,7 +380,7 @@ void func_801997C0_ovl7(s32 arg0) {
     if (ent->unk44 == 0) {
         ent->unk44 = 1;
     }
-    gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC364_ovl7);
 }
 
@@ -392,7 +392,7 @@ void func_8019985C_ovl7(Unused GObj *gobj) {
     if (ent->unk44 == 0) {
         ent->unk44 = 1;
     }
-    gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A69B0_ovl7);
 }
 
@@ -409,7 +409,7 @@ void func_80199918_ovl7(s32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_80199980_ovl7(s32 arg0) {
-    gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6C10_ovl7);
 }
 #else
@@ -419,7 +419,7 @@ void func_80199980_ovl7(s32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_801999DC_ovl7(s32 arg0) {
-    gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8020C710_ovl9);
 }
 #else
@@ -477,7 +477,7 @@ void func_80199A38_ovl7(s32 arg0) {
         if ((var_f0 >= 2.3561945f) && (var_f0 < 3.9269907f)) {
             D_800E83E0[temp_a2_2] = 1;
             temp_a3->unk44 = 1;
-            gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+            gEntityFuncListIDArray[omCurrentObj->objId] = -1;
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
             return;
         }
@@ -504,7 +504,7 @@ void func_80199A38_ovl7(s32 arg0) {
     } else if (temp_v0 & 0x1C0) {
         D_800E83E0[temp_v1->objId] = 1;
         temp_a3->unk44 = 1;
-        gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = -1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
     }
 }
@@ -519,7 +519,7 @@ void func_80199D50_ovl7(void) {
         D_800E8920[omCurrentObj->objId] = 0;
         D_800E83E0[omCurrentObj->objId] = 1;
         ent->unk44 = 1;
-        gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = -1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A6DF0_ovl7);
     } else {
         func_80199A38_ovl7();
@@ -752,7 +752,7 @@ void func_8019A62C_ovl7(s32 arg0) {
 
 void func_8019A740_ovl7(Unused GObj *gobj) {
     gKirbyState.unkD = -2;
-    gEntityVtableIndexArray[omCurrentObj->objId] = -1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = -1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC448_ovl7);
 }
 
@@ -2295,7 +2295,7 @@ s32 reqChildEneTrk(u8 arg0, u8 arg1, u8 arg2) {
         func_800B1900(track);
         return track;
     } else {
-        gEntityVtableIndexArray[track] = gEntityVtableIndexArray[omCurrentObj->objId];
+        gEntityFuncListIDArray[track] = gEntityFuncListIDArray[omCurrentObj->objId];
         D_800E76C0[track] = 0xFF;
         D_800E7730[track] = arg0;
         D_800E77A0[track] = arg1;
@@ -2820,7 +2820,7 @@ void func_8019EBCC_ovl7(Unused GObj *gobj) {
     UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk3B == -1) {
-        ent->unk3B = gEntityVtableIndexArray[omCurrentObj->objId];
+        ent->unk3B = gEntityFuncListIDArray[omCurrentObj->objId];
     }
 }
 
@@ -2834,7 +2834,7 @@ void func_8019EC14_ovl7(s32 arg0) {
     temp_v0 = D_800E1B50[temp_v1];
     temp_a0 = temp_v0->unk3B;
     if (temp_a0 != -1) {
-        gEntityVtableIndexArray[temp_v1] = temp_a0;
+        gEntityFuncListIDArray[temp_v1] = temp_a0;
         temp_v0->unk3B = -1;
     }
 }

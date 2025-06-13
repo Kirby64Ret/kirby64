@@ -32,18 +32,18 @@ void func_801DB1E0_ovl16(s32 arg0) {
     D_800E17D0[omCurrentObj->objId] = D_801EFDF0_ovl16;
     D_800E6A10[omCurrentObj->objId] = -1.0f;
     func_801A3280_ovl16();
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 9, &D_801EF4C0_ovl16[0]);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 9, &D_801EF4C0_ovl16[0]);
     while (1)
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 0x23, &D_801EF4C0_ovl16[9]);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x23, &D_801EF4C0_ovl16[9]);
 }
 
 void func_801DB338_ovl16(s32 arg0) {
     while (1)
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 0x23, &D_801EF4C0_ovl16[9]);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x23, &D_801EF4C0_ovl16[9]);
 }
 
 void func_801DB3B8_ovl16(s32 arg0) {
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 0x1C, &D_801EF4C0_ovl16[44]);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 0x1C, &D_801EF4C0_ovl16[44]);
 }
 
 u32 func_801DB400_ovl16(void) {
@@ -83,7 +83,7 @@ void func_801DB528_ovl16(s32 arg0) {
             if ((D_800E7730[i] == 0) || (D_800E7730[i] == 4)) {
                 if ((D_800E77A0[i] != 0x39) && (D_800E77A0[i] != 0x3A)) {
                     if ((D_801EFDF8_ovl16 < D_800E7B20[j]) && (D_800E7B20[j] < D_801EFDF4_ovl16) && (D_800E83E0[j] != 1) && (D_800E0D50[j] != 0)) {
-                        gEntityVtableIndexArray[j] = -1;
+                        gEntityFuncListIDArray[j] = -1;
                         assign_new_process_entry(gEntityGObjProcessArray[j], func_801A3E80);
                     }
                 }
@@ -327,7 +327,7 @@ void func_801E20D8_ovl16(struct GObj *arg0) {
     D_800DFBD0[omCurrentObj->objId][4]->scale.x = D_800EA6E0[omCurrentObj->objId];
     D_800DFBD0[omCurrentObj->objId][4]->scale.z = D_800EA6E0[omCurrentObj->objId];
     func_800B33F4();
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0xB;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl16/ovl16/func_801E20D8_ovl16.s")
@@ -560,7 +560,7 @@ void func_801E4754_ovl16(s32 arg0) {
     D_800E3AD0[omCurrentObj->objId] = D_801EFFAC_ovl16;
     D_800EA6E0[omCurrentObj->objId] = 0.0f;
     D_800E9FE0[omCurrentObj->objId].as_s32 = 0;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0x17;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0x17;
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl16/ovl16/func_801E4754_ovl16.s")

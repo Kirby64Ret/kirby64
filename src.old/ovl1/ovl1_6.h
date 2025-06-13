@@ -12,7 +12,10 @@ extern u32 D_800DD710[]; // "JN number"
 extern s32 D_800DE190[];
 extern s32 D_800DDFD0[];
 extern s32 D_800DDE10[];
-extern s32 gEntityVtableIndexArray[];
+
+// 'List ID'
+extern s32 gEntityFuncListIDArray[];
+
 extern s32 D_800DD8D0[];
 extern s32 gEntityRenderPriorityArray[];
 

@@ -15,12 +15,12 @@ extern void func_800A77E8(s32, u32 *, u16 *);
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 
-VTABLE D_801E2CF0_ovl12 = {
+FUNCLIST D_801E2CF0_ovl12 = {
     func_801E1B90_ovl12,
     func_801E1890_ovl12
 };
 
-VTABLE D_801E2CF8_ovl12 = {
+FUNCLIST D_801E2CF8_ovl12 = {
     func_801E1CD4_ovl12,
     func_801E1A60_ovl12
 };
@@ -30,7 +30,7 @@ struct Work801E2E20 D_801E2E20_ovl12;
 
 
 void func_801E1590_ovl12(GObj *arg0) {
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], ARRAYLEN(D_801E2CF0_ovl12), D_801E2CF0_ovl12);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], ARRAYLEN(D_801E2CF0_ovl12), D_801E2CF0_ovl12);
 }
 
 void func_801E15D8_ovl12(s32 arg0, s32 arg1, f32 arg2) {
@@ -69,15 +69,15 @@ void func_801E1688_ovl12(GObj *arg0) {
             break;
     }
     D_800E9C60[omCurrentObj->objId] = 0;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 2, D_801E2CF0_ovl12);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, D_801E2CF0_ovl12);
     func_800AFA14();
 }
 
 void func_801E1804_ovl12(GObj *arg0) {
     struct UnkStruct8004A7C4_3C_10 *tmp = ((GObj*)D_800DE350[omCurrentObj->objId])->unk3C->unk10;
 
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], ARRAYLEN(D_801E2CF8_ovl12), D_801E2CF8_ovl12);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], ARRAYLEN(D_801E2CF8_ovl12), D_801E2CF8_ovl12);
     if (D_800E9C60[omCurrentObj->objId] != 0) {
         func_801A03E4_ovl7(tmp);
     }

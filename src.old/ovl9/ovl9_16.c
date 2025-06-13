@@ -6,15 +6,15 @@
 #include "buffers.h"
 #include "ovl0/ovl0_5.h"
 
-extern VTABLE D_8021CE00_ovl9;
-extern VTABLE D_8021CE04_ovl9;
-extern VTABLE D_8021CE10_ovl9;
-extern VTABLE D_8021CE1C_ovl9;
-extern VTABLE D_8021CE20_ovl9;
-extern VTABLE D_8021CE30_ovl9;
-extern VTABLE D_8021CE40_ovl9;
-extern VTABLE D_8021CE44_ovl9;
-extern VTABLE D_8021CE4C_ovl9;
+extern FUNCLIST D_8021CE00_ovl9;
+extern FUNCLIST D_8021CE04_ovl9;
+extern FUNCLIST D_8021CE10_ovl9;
+extern FUNCLIST D_8021CE1C_ovl9;
+extern FUNCLIST D_8021CE20_ovl9;
+extern FUNCLIST D_8021CE30_ovl9;
+extern FUNCLIST D_8021CE40_ovl9;
+extern FUNCLIST D_8021CE44_ovl9;
+extern FUNCLIST D_8021CE4C_ovl9;
 
 extern void func_800B67A8(void);
 extern void func_800B742C(void);
@@ -32,12 +32,12 @@ void func_8021A1A0_ovl9(struct GObj *arg0) {
     tmp->unk98 = &D_801CB470;
     func_8019BB58_ovl9();
     func_801A3280_ovl9();
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 1, &D_8021CE00_ovl9);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, &D_8021CE00_ovl9);
 }
 
 void func_8021A22C_ovl9(struct GObj *arg0) {
     while (1)
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 3, D_8021CE04_ovl9);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_8021CE04_ovl9);
 }
 
 void func_8021A2B8_ovl9(void) {
@@ -70,12 +70,12 @@ void func_8021A418_ovl9(struct GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800DF150[omCurrentObj->objId] = &func_8021A494_ovl9;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     func_8021A22C_ovl9(arg0);
 }
 
 void func_8021A494_ovl9(struct GObj *arg0) {
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 3, &D_8021CE10_ovl9);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021CE10_ovl9);
 }
 
 void func_8021A4DC_ovl9(struct GObj *arg0) {
@@ -99,10 +99,10 @@ void func_8021A9F0_ovl9(struct GObj *);
 void func_8021A5C0_ovl9(struct GObj *arg0) {
     func_8021A9F0_ovl9(arg0);
     if (D_800E98E0[omCurrentObj->objId] != 0) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8021A22C_ovl9);
     } else if (D_800E9C60[omCurrentObj->objId] != 0) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 2;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8021A22C_ovl9);
     }
 }
@@ -162,12 +162,12 @@ void func_8021A7FC_ovl9(struct GObj *arg0) {
 void func_8021A93C_ovl9(struct GObj *arg0) {
     func_8021A9F0_ovl9(arg0);
     if (D_800E98E0[omCurrentObj->objId] != 0) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8021A22C_ovl9);
         return;
     }
     if (D_800EA520[omCurrentObj->objId] != 0) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8021A22C_ovl9);
     }
 }
@@ -176,11 +176,11 @@ GLOBAL_ASM("asm/non_matchings/ovl9/ovl9_16/func_8021A9F0_ovl9.s")
 
 void func_8021AB6C_ovl9(struct GObj *arg0) {
     func_8019BB58_ovl9();
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 1, D_8021CE1C_ovl9);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, D_8021CE1C_ovl9);
 }
 
 void func_8021ABB4_ovl9(struct GObj *arg0) {
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 4, D_8021CE20_ovl9);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, D_8021CE20_ovl9);
 }
 
 
@@ -189,15 +189,15 @@ void func_8021ACA4_ovl9(struct GObj *arg0);
 
 void func_8021ABFC_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_8021ACA4_ovl9;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     func_8021B424_ovl9();
     func_8019CD08_ovl9(120.0f);
     D_800E9720[omCurrentObj->objId] = 0;
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 4, D_8021CE20_ovl9);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, D_8021CE20_ovl9);
 }
 
 void func_8021ACA4_ovl9(struct GObj *arg0) {
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 4, D_8021CE30_ovl9);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, D_8021CE30_ovl9);
 }
 
 void func_8021ACEC_ovl9(struct GObj *arg0) {
@@ -230,7 +230,7 @@ void func_8021B0D0_ovl9(struct GObj *arg0) {
         D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
         gEntitiesAngleYArray[omCurrentObj->objId] += D_8021DEE8_ovl9;
         func_8019CD68_ovl7();
-        gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8021ABB4_ovl9);
     }
 }
@@ -249,7 +249,7 @@ void func_8021B1D0_ovl9(struct GObj *arg0) {
 s32 func_8019A7E8_ovl9(f32);
 void func_8021B27C_ovl9(struct GObj *arg0) {
     if ((D_800E9E20[omCurrentObj->objId] != 0) && (func_8019A7E8_ovl9(120.0f) == 0)) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 3;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8021ABB4_ovl9);
     }
 }
@@ -266,7 +266,7 @@ void func_8021B310_ovl9(struct GObj *arg0) {
 void func_8021B3A0_ovl9(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
         D_800E9720[omCurrentObj->objId] = 0x3C;
-        gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8021ABB4_ovl9);
     }
 }
@@ -289,27 +289,27 @@ void func_8021B424_ovl9(void) {
 void func_8021B528_ovl9(struct GObj *arg0) {
     func_8019BB58_ovl9();
     D_800DEF90[omCurrentObj->objId] = func_800B742C;
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 1, D_8021CE40_ovl9);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, D_8021CE40_ovl9);
 }
 
 void func_8021B58C_ovl9(struct GObj *arg0) {
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 2, D_8021CE44_ovl9);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, D_8021CE44_ovl9);
 }
 
 void func_8021B5D4_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_8021B680_ovl9;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     temp_v0->unk42 = 2;
     temp_v0->unk98 = &D_801CD21C;
     func_801A0D50(func_8021B58C_ovl9);
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 2, D_8021CE44_ovl9);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, D_8021CE44_ovl9);
 }
 
 void func_8021B680_ovl9(void) {
     if (func_801A0D74_ovl9() == 0) {
-        call_virtual_function(D_800DDFD0[omCurrentObj->objId], 2, D_8021CE4C_ovl9);
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, D_8021CE4C_ovl9);
     }
 }
 
@@ -325,7 +325,7 @@ void func_8021B71C_ovl9(struct GObj *arg0) {
     struct GObj *temp_v0;
 
     if (func_8019A7E8_ovl7(160.0f) != 0) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &D_8021B58C);
     }
 }

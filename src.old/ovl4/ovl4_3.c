@@ -377,7 +377,7 @@ void func_80159B68_ovl4(s32 arg0);
 void func_80159CB8_ovl4(s32 arg0);
 
 void func_80159B00_ovl4(s32 arg0) {
-    switch (gEntityVtableIndexArray[omCurrentObj->objId]) {
+    switch (gEntityFuncListIDArray[omCurrentObj->objId]) {
         case 0:
             func_80159B68_ovl4(arg0);
             break;
@@ -457,9 +457,9 @@ void func_80159DE8_ovl4(void) {
     func_800A6BC0(4);
     D_8015C720 = 0;
     D_800D71F8 = request_track_general(5, 0, 0x70);
-    gEntityVtableIndexArray[D_800D71F8] = 0;
+    gEntityFuncListIDArray[D_800D71F8] = 0;
     D_800D71FC = request_track_general(5, 0, 0x70);
-    gEntityVtableIndexArray[D_800D71FC] = 1;
+    gEntityFuncListIDArray[D_800D71FC] = 1;
     HS64_omMakeGObj(0, func_80159D78_ovl4, 0x1A, 0x80000000);
     func_800A5744(0, 0, 0);
     func_800A5A14(0xFF, -0x10, 0);

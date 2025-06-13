@@ -334,35 +334,35 @@ extern u32 D_801242D0;
 
 void func_800FCF0C(UNUSED s32 arg0) {
     func_80199568_ovl2();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 0x6B, &D_801242D0);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0x6B, &D_801242D0);
 }
 
 extern u32 D_8012447C;
 
 void func_800FCF58(UNUSED s32 arg0) {
     func_80199568_ovl2();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 3, &D_8012447C);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 3, &D_8012447C);
 }
 
 extern u32 D_80124488;
 
 void func_800FCFA4(UNUSED s32 arg0) {
     func_80199568_ovl2();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 7, &D_80124488);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 7, &D_80124488);
 }
 
 extern u32 D_801244A4;
 
 void func_800FCFF0(UNUSED s32 arg0) {
     func_80199568_ovl2();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 0xE, &D_801244A4);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0xE, &D_801244A4);
 }
 
 extern u32 D_801244DC;
 
 void func_800FD03C(UNUSED s32 arg0) {
     func_80199568_ovl2();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 0x2C, &D_801244DC);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0x2C, &D_801244DC);
 }
 
 extern u32 D_80129124;
@@ -427,5 +427,5 @@ void func_800FD194(s32 arg0) {
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E0490[omCurrentObj->objId] = 0;
     D_801D02AC[omCurrentObj->objId][0] = 0;
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 0xB, &D_8012458C, D_800E3910);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0xB, &D_8012458C, D_800E3910);
 }

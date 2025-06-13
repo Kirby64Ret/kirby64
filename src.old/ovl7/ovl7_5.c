@@ -7,7 +7,7 @@
 #include "ovl1/ovl1_6.h"
 
 extern const f32 D_801CE04C;
-extern VTABLE D_801C29B0;
+extern FUNCLIST D_801C29B0;
 
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
@@ -22,7 +22,7 @@ void func_801A7000(struct GObj *arg0) {
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    call_virtual_function(D_800E8220[omCurrentObj->objId], 2, &D_801C29B0);
+    utilFuncTableJump(D_800E8220[omCurrentObj->objId], 2, &D_801C29B0);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl7/ovl7_5/func_801A7104_ovl7.s")
@@ -281,7 +281,7 @@ s32 func_801AC9D0_ovl7(s32 arg0, s32 arg1) {
         func_800B1900((u16) idx);
         return 0;
     }
-    gEntityVtableIndexArray[idx] = arg0;
+    gEntityFuncListIDArray[idx] = arg0;
     D_800E76C0[idx] = 0xFF;
     D_800E7730[idx] = 4;
     D_800E77A0[idx] = arg0 & 0xFF;

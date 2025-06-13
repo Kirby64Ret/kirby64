@@ -794,7 +794,7 @@ void func_8011CFF4(GObj *gobj) {
         func_80111534(omCurrentObj->objId, temp_a1, D_800E7CE0);
     }
     if (gKirbyState.actionChange != -1) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = gKirbyState.actionChange;
+        gEntityFuncListIDArray[omCurrentObj->objId] = gKirbyState.actionChange;
         gKirbyState.actionChange = -1;
         if (*(&D_800D6F58 + 0x5A) == 2) {
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &D_8022947C);

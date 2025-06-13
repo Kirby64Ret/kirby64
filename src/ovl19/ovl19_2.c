@@ -56,10 +56,10 @@ void func_80223200_ovl19(GObj *arg0) {
         gKirbyState.unk154 = 1;
         request_track_general(0x13, 1, 2);
         D_800E98E0[1] = 0;
-        gEntityVtableIndexArray[1] = 1;
+        gEntityFuncListIDArray[1] = 1;
         D_800E8220[1] = 0;
         request_track_general(0x13, 2, 3);
-        gEntityVtableIndexArray[2] = 0;
+        gEntityFuncListIDArray[2] = 0;
         D_800E8220[2] = 0;
         gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
         D_800E64D0[omCurrentObj->objId] = 0.0f;

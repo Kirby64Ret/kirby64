@@ -15,7 +15,7 @@
 
 // within this file
 extern f32 *D_80192F64;
-VTABLE D_8022F5B0_ovl19 = {
+FUNCLIST D_8022F5B0_ovl19 = {
     func_80229794_ovl19,
     func_80229C20_ovl19,
     func_80229E20_ovl19,
@@ -44,7 +44,7 @@ VTABLE D_8022F5B0_ovl19 = {
     func_8022D448_ovl19,
 };
 
-VTABLE D_8022F618_ovl19 = {
+FUNCLIST D_8022F618_ovl19 = {
     func_80229A54_ovl19,
     func_80229C9C_ovl19,
     func_80229F08_ovl19,
@@ -125,15 +125,15 @@ void func_80229100_ovl19(GObj *g) {
     D_8012E944->unk10.x = 24.0f;
     D_8012E944->unk10.y = 20.0f;
     D_8012E944->unk10.z = -240.0f;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 0x1A, &D_8022F5B0_ovl19);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x1A, &D_8022F5B0_ovl19);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_80229100_ovl19.s")
 #endif
 
 void func_8022947C_ovl19(s32 arg0) {
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 0x1A, &D_8022F5B0_ovl19);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x1A, &D_8022F5B0_ovl19);
 }
 
 #ifdef MIPS_TO_C
@@ -145,7 +145,7 @@ void func_802294C4_ovl19(s32 arg0) {
 
     func_8011E548();
     func_8011DAF8();
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 0x11, &D_8022F618_ovl19);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 0x11, &D_8022F618_ovl19);
     if (gKirbyState.unk17 == 0) {
         switch (D_800BE500) {                       /* irregular */
             case 1:
@@ -1490,7 +1490,7 @@ void func_8022D448_ovl19(s32 arg0) {
 void func_8022D528_ovl19(s32 arg0, s32 arg1, f32 arg2) {
     if ((arg1 == 0) && (arg2 != 0.0f)) {
         request_track_general(arg2, 0x13, 1, 2);
-        *(gEntityVtableIndexArray + 4) = 9;
+        *(gEntityFuncListIDArray + 4) = 9;
     }
 }
 #else
@@ -1506,7 +1506,7 @@ void func_8022D57C_ovl19(s32 arg0) {
 #endif
 
 void func_8022D584_ovl19(GObj *g) {
-    print_error_stub("No List Id:%d\n", gEntityVtableIndexArray[omCurrentObj->objId]);
+    print_error_stub("No List Id:%d\n", gEntityFuncListIDArray[omCurrentObj->objId]);
     D_800DF150[omCurrentObj->objId] = NULL;
     curObjSleepForever();
 }
@@ -1825,9 +1825,9 @@ void func_8022E58C_ovl19(void) {
     D_800D6FB2 = 2;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80229100_ovl19);
     request_track_general(0x13, 1, 2);
-    gEntityVtableIndexArray[1] = 7;
+    gEntityFuncListIDArray[1] = 7;
     request_track_general(0x13, 2, 3);
-    gEntityVtableIndexArray[2] = 8;
+    gEntityFuncListIDArray[2] = 8;
 }
 
 

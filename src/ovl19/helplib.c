@@ -20,7 +20,7 @@ void func_8021DF20_ovl19(struct GObj *arg0) {
     func_800AED20(D_800D6B10);
     D_800E8760[omCurrentObj->objId] = 0;
     D_800E83E0[omCurrentObj->objId] = D_800E8760[omCurrentObj->objId];
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 0xA, &D_8022F040_ovl19[0]);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0xA, &D_8022F040_ovl19[0]);
 }
 
 void func_8021DFD0_ovl19(void) {

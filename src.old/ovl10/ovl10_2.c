@@ -13,37 +13,37 @@ extern f32 gEntitiesNextPosYArray[];
 
 extern s32 D_800E98E0[];
 
-extern s32 gEntityVtableIndexArray[];
+extern s32 gEntityFuncListIDArray[];
 s32 func_801ACCA0_ovl10(s32, s32, f32, f32);
 
 extern void (*D_801F43F0_ovl10[])(s32);
 
 void func_801E2D40_ovl10(s32 arg0) {
     func_8019B9B0_ovl10();
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 3, &D_801F43F0_ovl10);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 3, &D_801F43F0_ovl10);
     while (1)
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 1, &D_801F43F0_ovl10[3]);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 1, &D_801F43F0_ovl10[3]);
 }
 
 void func_801E2DD8_ovl10(s32 arg0) {
     func_8019B9B0_ovl10();
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 3, &D_801F43F0_ovl10);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 3, &D_801F43F0_ovl10);
     while (1)
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 1, &D_801F43F0_ovl10[3]);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 1, &D_801F43F0_ovl10[3]);
 }
 
 void func_801E2E78_ovl10(s32 arg0) {
     D_800E6A10[omCurrentObj->objId] = -1.0f;
     func_800A9864(0x1008D, 0x23, 0x10);
     func_800AA018(0x10521);
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
 void func_801E2EF0_ovl10(s32 arg0) {
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     func_800A9864(0x1008D, 0x23, 0x10);
     func_800AA018(0x10521);
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
 extern f32 D_801F4A40_ovl10, D_801F4A48_ovl10, D_801F4A44_ovl10;
@@ -140,7 +140,7 @@ void func_801E3A64_ovl10(void) {
             func_800B1900(temp_v0 & 0xFFFF);
             break;
         }
-        gEntityVtableIndexArray[temp_v0] = gEntityVtableIndexArray[omCurrentObj->objId];
+        gEntityFuncListIDArray[temp_v0] = gEntityFuncListIDArray[omCurrentObj->objId];
         D_800E76C0[temp_v0] = 0xFF;
         D_800E7730[temp_v0] = 1;
         D_800E77A0[temp_v0] = 1;
@@ -176,12 +176,12 @@ void func_801E3C2C_ovl10(s32 arg0) {
     D_800E9560[omCurrentObj->objId] = 1;
     D_800EA360[omCurrentObj->objId] = 0;
     D_800EA6E0[omCurrentObj->objId] = 5.0f;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     sp1C->unk98 = &D_801CB494;
     func_801A0D50(&func_801E3BE4_ovl10);
     D_800EC2E0[omCurrentObj->objId].as_s32 = 0x1E;
     func_801E3A64_ovl10();
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 9, &D_801F44B0_ovl10[1]);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 9, &D_801F44B0_ovl10[1]);
 }
 
 extern void func_800BC1FC(s32);
@@ -214,7 +214,7 @@ void func_801E409C_ovl10(void) {
         func_800B1900((u16)new);
         return;
     }
-    gEntityVtableIndexArray[temp_v0] = gEntityVtableIndexArray[omCurrentObj->objId];
+    gEntityFuncListIDArray[temp_v0] = gEntityFuncListIDArray[omCurrentObj->objId];
     D_800E76C0[temp_v0] = 0xFF;
     D_800E7730[temp_v0] = 1;
     D_800E77A0[temp_v0] = 1;
@@ -680,9 +680,9 @@ void func_801EEFCC_ovl10(void) {
 
     do {
         switch (temp_a1) {
-            case 1: gEntityVtableIndexArray[omCurrentObj->objId] = 3; break;
-            case 2: gEntityVtableIndexArray[omCurrentObj->objId] = 8; break;
-            case 3: gEntityVtableIndexArray[omCurrentObj->objId] = 0xC; break;
+            case 1: gEntityFuncListIDArray[omCurrentObj->objId] = 3; break;
+            case 2: gEntityFuncListIDArray[omCurrentObj->objId] = 8; break;
+            case 3: gEntityFuncListIDArray[omCurrentObj->objId] = 0xC; break;
         }
     } while (0);
     D_800E98E0[omCurrentObj->objId] = temp_a1;

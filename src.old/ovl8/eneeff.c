@@ -19,7 +19,7 @@ void func_801D2040_ovl8(struct GObj *this, s32 arg1, f32 arg2) {
             func_800B1900(newIdx);
             return;
         }
-        gEntityVtableIndexArray[newIdx] = gEntityVtableIndexArray[omCurrentObj->objId];
+        gEntityFuncListIDArray[newIdx] = gEntityFuncListIDArray[omCurrentObj->objId];
         D_800E76C0[newIdx] = 0xFF;
         D_800E7730[newIdx] = 2;
         D_800E77A0[newIdx] = 0;

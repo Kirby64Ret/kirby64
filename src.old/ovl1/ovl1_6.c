@@ -33,7 +33,7 @@ void initTrack(s32 track) {
     gEntityGObjProcessArray5[track] = NULL;
 
     D_800DDE10[track] = D_800DDFD0[track] = D_800DE190[track] = 0;
-    gEntityVtableIndexArray[track] = 0;
+    gEntityFuncListIDArray[track] = 0;
     D_800DD8D0[track] = 0;
     gEntityRenderPriorityArray[track] = 0x10;
     

@@ -14,7 +14,7 @@ void func_800FD330(s32 arg0) {
         D_800E1290[omCurrentObj->objId] = D_800E1290[D_800E0D50[omCurrentObj->objId]];
         D_800E1450[omCurrentObj->objId] = D_800E1450[D_800E0D50[omCurrentObj->objId]];
     }
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 1, &D_801245C0);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 1, &D_801245C0);
 }
 
 extern u32 D_80124624;
@@ -162,7 +162,7 @@ s32 func_800FD9D4(s32 arg0) {
     if (temp_v0 == -1) {
         print_error_stub(&D_8012896C);
     } else {
-        gEntityVtableIndexArray[temp_v0] = arg0;
+        gEntityFuncListIDArray[temp_v0] = arg0;
     }
 
     return temp_v0;

@@ -26,17 +26,17 @@ void func_801DBC00_ovl10(s32 arg0) {
     }
     D_800DF150[omCurrentObj->objId] = &func_801DBDB8_ovl10;
     D_800E8920[omCurrentObj->objId] = 1;
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 8, &D_801F4220_ovl10[0]);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 8, &D_801F4220_ovl10[0]);
     while(1)
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 0x14, &D_801F4240_ovl10[0]);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x14, &D_801F4240_ovl10[0]);
 }
 
 void func_801DBD38_ovl10(s32 arg0) {
-    for(;;) call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 0x14, &D_801F4220_ovl10[8]);
+    for(;;) utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x14, &D_801F4220_ovl10[8]);
 }
 
 void func_801DBDB8_ovl10(s32 arg0) {
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 0x12, &D_801F4240_ovl10[20]);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 0x12, &D_801F4240_ovl10[20]);
 }
 
 void func_801DBE00_ovl10(s32 arg0) {
@@ -191,7 +191,7 @@ void func_801DCCB8_ovl10(s32 arg0) {
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
     D_800E0490[omCurrentObj->objId] = &D_801F3F94_ovl10;
     func_801A2ADC_ovl10(&D_801F3F94_ovl10);
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl10/ovl10_1/func_801DCCB8_ovl10.s")
@@ -214,7 +214,7 @@ void func_801DCDD4_ovl10(s32 arg0) {
     D_800E98E0[omCurrentObj->objId] = -1;
     ((s32*)D_800E9AA0)[omCurrentObj->objId] = -1;
     D_800EA360[omCurrentObj->objId] = 0;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 2;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl10/ovl10_1/func_801DCF48_ovl10.s")
@@ -253,7 +253,7 @@ void func_801DDAC8_ovl10(s32 arg0) {
         check = D_800E9AA0[omCurrentObj->objId];
     }
     D_800E9AA0[omCurrentObj->objId] = rand;
-    gEntityVtableIndexArray[omCurrentObj->objId] = rand;
+    gEntityFuncListIDArray[omCurrentObj->objId] = rand;
 
 }
 #else

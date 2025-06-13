@@ -37,7 +37,7 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
     sp18.x = gEntitiesNextPosXArray[omCurrentObj->objId];
     sp18.y = gEntitiesNextPosYArray[omCurrentObj->objId];
     sp18.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    oldIdx = gEntityVtableIndexArray[omCurrentObj->objId];
+    oldIdx = gEntityFuncListIDArray[omCurrentObj->objId];
     func_801A1724_ovl7(ent_sub84);
 
     if (((u32)ent->unk48 == (u32)func_8010B480)
@@ -75,33 +75,33 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
             functable->func20(arg0);
         }
         if (functable->unk0[6] != -1) {
-            gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[6];
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[6];
             func_80199628_ovl7(arg0);
         }
         if ((functable->func20 == NULL) && (functable->unk0[6] == -1)) {
             func_80199688_ovl7(arg0);
         }
-        return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+        return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     if ((ent->unk44 != 0) && ((functable->func20 != NULL) || (functable->unk0[6] != -1))) {
         if (functable->func20 != NULL) {
             functable->func20(arg0);
         }
         if (functable->unk0[6] != -1) {
-            gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[6];
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[6];
             func_80199628_ovl7(arg0);
         }
-        return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+        return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     if ((D_800E8AE0[omCurrentObj->objId] & 2) && ((functable->funcC != NULL) || (functable->unk0[1] != -1))) {
         if (functable->funcC != NULL) {
             functable->funcC(arg0);
         }
         if (functable->unk0[1] != -1) {
-            gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[1];
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[1];
             func_80199628_ovl7(arg0);
         }
-        return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+        return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     if (D_800E8920[omCurrentObj->objId] == 1) { // check if this is needed
         if ((D_800E8920[omCurrentObj->objId] == 0) && ((functable->func8 != NULL) || (functable->unk0[0] != -1))) {
@@ -109,10 +109,10 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
                 functable->func8(arg0);
             }
             if (functable->unk0[0] != -1) {
-                gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[0];
+                gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[0];
                 func_80199628_ovl7(arg0);
             }
-            return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+            return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
         }
     }
     else if ((D_800E8920[omCurrentObj->objId] == 1) && ((functable->func8 != NULL) || (functable->unk0[0] != -1))) {
@@ -120,10 +120,10 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
             functable->func8(arg0);
         }
         if (functable->unk0[0] != -1) {
-            gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[0];
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[0];
             func_80199628_ovl7(arg0);
         }
-        return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+        return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     if (((D_8012BCA0 >> 0x13) & 0x3F) ||
         ((D_800E6310[omCurrentObj->objId] != 0)
@@ -134,11 +134,11 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
             functable->func10(arg0);
         }
         if (functable->unk0[2] != -1) {
-            gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[2];
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[2];
             func_80199628_ovl7(arg0);
             omCurrentObj->objId = omCurrentObj->objId * 4;
         }
-        return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+        return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     if ((D_800E8920[omCurrentObj->objId] == 1)
         &&  ((D_800E6A10[omCurrentObj->objId] == 1.0f)
@@ -155,10 +155,10 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
             functable->func14(arg0);
         }
         if (functable->unk0[3] != -1) {
-            gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[3];
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[3];
             func_80199628_ovl7(arg0);
         }
-        return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+        return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     // else
     if ((D_800E8920[omCurrentObj->objId] == 0) && (((D_8012BCA0 >> 0x13) & 0x1C0) != 0) && ((functable->func18 != NULL) || (functable->unk0[4] != -1))) {
@@ -166,20 +166,20 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
             functable->func18(arg0);
         }
         if (functable->unk0[4] != -1) {
-            gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[4];
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[4];
             func_80199628_ovl7(arg0);
         }
-        return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+        return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     if ((D_800E8AE0[omCurrentObj->objId] & 4) && ((functable->func1C != NULL) || (functable->unk0[5] != -1))) {
         if (functable->func1C != NULL) {
             functable->func1C(arg0);
         }
         if (functable->unk0[5] != -1) {
-            gEntityVtableIndexArray[omCurrentObj->objId] = functable->unk0[5];
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[5];
             func_80199628_ovl7(arg0);
         }
-        return oldIdx != gEntityVtableIndexArray[omCurrentObj->objId];
+        return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     return 0;
 }

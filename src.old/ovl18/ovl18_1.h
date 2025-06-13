@@ -10,9 +10,9 @@ extern s32 D_800E8920[];
 
 extern u8 D_800E7880[];
 
-extern s32 gEntityVtableIndexArray[];
+extern s32 gEntityFuncListIDArray[];
 
-extern void call_virtual_function(s32, s32, void (*c));
+extern void utilFuncTableJump(s32, s32, void (*c));
 
 extern void (*D_8022AB80[58])(void);
 

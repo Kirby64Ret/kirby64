@@ -15,7 +15,7 @@ void func_8021EA40_ovl19(struct GObj *arg0) {
     D_800E1450[omCurrentObj->objId] = D_800E1450[D_800E0D50[omCurrentObj->objId]];
     D_800E6A10[omCurrentObj->objId] = D_800E6A10[D_800E0D50[omCurrentObj->objId]];
     D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[D_800E0D50[omCurrentObj->objId]];
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 2, &D_8022F070[0]);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, &D_8022F070[0]);
 }
 
 void func_8021EC64_ovl19(struct GObj *arg0);
@@ -80,7 +80,7 @@ s32 func_8021EE88_ovl19(s32 arg0) {
 
     temp_v0 = request_track_general(0x16, 0x3C, 0x4A);
     if (temp_v0 != -1) {
-        gEntityVtableIndexArray[temp_v0] = arg0;
+        gEntityFuncListIDArray[temp_v0] = arg0;
     } else {
         print_error_stub("Helper Effect Request Error![helpeff.cc]\n");
     }

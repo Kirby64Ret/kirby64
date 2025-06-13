@@ -180,7 +180,7 @@ void func_800FCF04(GObj *gobj) {
 
 void func_800FCF0C(s32 arg0) {
     func_80199568_ovl7();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 0x6B, &D_801242D0);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0x6B, &D_801242D0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCF0C.s")
@@ -190,7 +190,7 @@ void func_800FCF0C(s32 arg0) {
 
 void func_800FCF58(s32 arg0) {
     func_80199568_ovl7();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 3, &D_8012447C);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 3, &D_8012447C);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCF58.s")
@@ -200,7 +200,7 @@ void func_800FCF58(s32 arg0) {
 
 void func_800FCFA4(s32 arg0) {
     func_80199568_ovl7();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 7, &D_80124488);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 7, &D_80124488);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCFA4.s")
@@ -210,7 +210,7 @@ void func_800FCFA4(s32 arg0) {
 
 void func_800FCFF0(s32 arg0) {
     func_80199568_ovl7();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 0xE, &D_801244A4);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0xE, &D_801244A4);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCFF0.s")
@@ -220,7 +220,7 @@ void func_800FCFF0(s32 arg0) {
 
 void func_800FD03C(s32 arg0) {
     func_80199568_ovl7();
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 0x2C, &D_801244DC);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0x2C, &D_801244DC);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FD03C.s")
@@ -258,7 +258,7 @@ void func_800FD088(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FD088.s")
 #endif
 
-extern VTABLE D_8012458C;
+extern FUNCLIST D_8012458C;
 void func_800FD194(s32 arg0) {
     f32 temp_f0;
 
@@ -277,6 +277,6 @@ void func_800FD194(s32 arg0) {
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E0490[omCurrentObj->objId] = NULL;
     D_801D02AC[omCurrentObj->objId][0] = 0;
-    call_virtual_function(D_800E77A0[omCurrentObj->objId], 0xB, &D_8012458C);
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0xB, &D_8012458C);
 }
 

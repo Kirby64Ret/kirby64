@@ -17,7 +17,7 @@
 extern void func_800B113C(void);
 extern void func_801D0D44_ovl8(void);
 
-extern VTABLE D_801E0B00; // 4 funcs
+extern FUNCLIST D_801E0B00; // 4 funcs
 
 void func_801DB1E0_ovl11(struct GObj *this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -27,7 +27,7 @@ void func_801DB1E0_ovl11(struct GObj *this) {
     func_800FF0A8(tmp->unk80);
     gEntityRenderPriorityArray[omCurrentObj->objId] = 0x18;
     func_8000A888_ovl11(this, this->dl_link, gEntityRenderPriorityArray[omCurrentObj->objId]);
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 4, &D_801E0B00);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 4, &D_801E0B00);
 }
 
 void func_801DB2BC_ovl11(struct GObj *this, f32 arg1) {
@@ -65,7 +65,7 @@ void func_801DB34C_ovl11(void) {
             func_800B1900(temp_v0);
             return;
         }
-        gEntityVtableIndexArray[temp_v0] = gEntityVtableIndexArray[omCurrentObj->objId];
+        gEntityFuncListIDArray[temp_v0] = gEntityFuncListIDArray[omCurrentObj->objId];
         D_800E76C0[temp_v0] = 0xFF;
         D_800E7730[temp_v0] = 2;
         D_800E77A0[temp_v0] = 0;
@@ -130,9 +130,9 @@ void func_801DB7D0_ovl11(void) {
     }
 }
 
-extern VTABLE D_801E0B24;
+extern FUNCLIST D_801E0B24;
 void func_801DB8A0_ovl11(struct GObj *arg0) {
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 5, &D_801E0B24);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_801E0B24);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl11/ovl11/func_801DB8E8_ovl11.s")
@@ -150,15 +150,15 @@ void func_801DB9E0_ovl11(struct GObj *arg0) {
     D_800EA8A0[omCurrentObj->objId] = D_801E0C1C;
     D_800EC2E0[omCurrentObj->objId].as_s32 = 0x1E;
     D_800E7CE0[omCurrentObj->objId] = 0x6C;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     func_801DB34C_ovl11();
     D_800E9560[omCurrentObj->objId] = -1;
     D_800E93A0[omCurrentObj->objId] = D_800E9560[omCurrentObj->objId];
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 5, &D_801E0B24);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_801E0B24);
 }
 
 // #ifdef MIPS_TO_C
-extern VTABLE D_801E0B38;
+extern FUNCLIST D_801E0B38;
 extern void func_800BC1FC(s32);
 extern void func_800BC11C(f32);
 
@@ -170,7 +170,7 @@ void func_801DBB4C_ovl11(struct GObj *arg0) {
         func_800BC1FC(D_800D70D8);
         D_800EC2E0[omCurrentObj->objId].as_s32 = -1;
     }
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 5, &D_801E0B38);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 5, &D_801E0B38);
     if (D_800E9FE0[omCurrentObj->objId].as_s32 != 0) {
         func_801DB7D0_ovl11();
         func_801DB8E8_ovl11();
@@ -179,7 +179,7 @@ void func_801DBB4C_ovl11(struct GObj *arg0) {
         func_800BC11C(D_800D70D8);
     }
     if (D_800D70D8 <= 0.0f) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 4;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 4;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DB8A0_ovl11);
     }
 }
@@ -204,7 +204,7 @@ void func_801DBD58_ovl11(struct GObj *arg0) {
 
 void func_801DBDF8_ovl11(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801DB8A0_ovl11);
     }
 }
@@ -274,17 +274,17 @@ void func_801DC064_ovl11(struct GObj *arg0) {
 
 void func_801DC158_ovl11(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DB8A0_ovl11);
     }
 }
 
-extern VTABLE D_801E0B00;
+extern FUNCLIST D_801E0B00;
 void func_801DC1C4_ovl11(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 4;
     func_800BB468(2, 0);
     D_800E7880[omCurrentObj->objId] = 1;
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 4, &D_801E0B00);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 4, &D_801E0B00);
     func_800AFA14();
 }
 
@@ -293,9 +293,9 @@ void func_801DC250_ovl11(struct GObj *arg0) {
 
 }
 
-extern VTABLE D_801E0B4C;
+extern FUNCLIST D_801E0B4C;
 void func_801DC258_ovl11(struct GObj *arg0) {
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 9, &D_801E0B4C);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 9, &D_801E0B4C);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl11/ovl11/func_801DC2A0_ovl11.s")
@@ -392,7 +392,7 @@ void func_801DD900_ovl11(struct GObj *arg0) {
 void func_801DD9C8_ovl11(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
         D_800E9720[omCurrentObj->objId] = 0;
-        gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DC258_ovl11);
     }
 }
@@ -448,10 +448,10 @@ GLOBAL_ASM("asm/non_matchings/ovl11/ovl11/func_801DEE50_ovl11.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl11/ovl11/func_801DEED0_ovl11.s")
 
-extern VTABLE D_801E0BC4;
+extern FUNCLIST D_801E0BC4;
 
 void func_801DEF9C_ovl11(struct GObj *arg0) {
-    call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 3, &D_801E0BC4);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801E0BC4);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl11/ovl11/func_801DEFE4_ovl11.s")

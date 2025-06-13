@@ -189,6 +189,6 @@ extern struct GObj *D_800DE44C;
 extern GObj *D_800DE350[];
 extern GObj *D_800D799C;
 
-typedef void (*VTABLE[])(struct GObj *);
+typedef void (*FUNCLIST[])(struct GObj *);
 
 #endif // GOBJ_H

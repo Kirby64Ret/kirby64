@@ -640,7 +640,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A4414.s")
 
 
 // executes the virtual function at index arg0
-void call_virtual_function(u32 arg0, u32 arg1, VTABLE callback) {
+void utilFuncTableJump(u32 arg0, u32 arg1, FUNCLIST callback) {
     // __thiscall? But rarely any of these functions use omCurrentProc...
     if (arg0 < arg1) callback[arg0](omCurrentProc);
 }

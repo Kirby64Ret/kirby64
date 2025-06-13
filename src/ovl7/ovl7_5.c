@@ -16,7 +16,7 @@ extern void *D_801CA738_ovl7;
 
 
 // 168A20 - 168A30 is ovl7_5 .data
-extern VTABLE D_801C29B0_ovl7;
+extern FUNCLIST D_801C29B0_ovl7;
 
 // ovl1 bss
 extern f32 D_800D6B10;
@@ -32,7 +32,7 @@ void func_801A7000_ovl7(GObj *gobj) {
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    call_virtual_function(D_800E8220[omCurrentObj->objId], 2, &D_801C29B0_ovl7);
+    utilFuncTableJump(D_800E8220[omCurrentObj->objId], 2, &D_801C29B0_ovl7);
 }
 
 #ifdef MIPS_TO_C
@@ -2182,7 +2182,7 @@ block_17:
         temp_a0_3->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
         func_801051AC(temp_a0_3, gEntitiesNextPosYArray);
     }
-    gEntityVtableIndexArray[temp_v1->objId] = 0;
+    gEntityFuncListIDArray[temp_v1->objId] = 0;
     func_8019BB58_ovl7();
 }
 #else

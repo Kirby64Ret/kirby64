@@ -12,7 +12,7 @@
 
 // #define NEEDS_RODATA
 
-VTABLE D_801E2EA0_ovl14 = {
+FUNCLIST D_801E2EA0_ovl14 = {
     func_801DB228_ovl14,
     func_801DCBCC_ovl14,
     func_801DF9EC_ovl14
@@ -20,7 +20,7 @@ VTABLE D_801E2EA0_ovl14 = {
 
 void func_801DB1E0_ovl14(GObj *arg0) {
     func_8019BB58_ovl7();
-    call_virtual_function(D_800E7880[omCurrentObj->objId], 3, &D_801E2EA0_ovl14);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 3, &D_801E2EA0_ovl14);
 }
 
 
@@ -41,14 +41,14 @@ void func_801DB228_ovl14(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800EA520[omCurrentObj->objId] = 0;
     D_800EC660[omCurrentObj->objId] = 0.0f;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     func_801DB3B0_ovl14(arg0);
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/1.s")
 #endif
 
-VTABLE D_801E2EAC_ovl14 = {
+FUNCLIST D_801E2EAC_ovl14 = {
     func_801DB684_ovl14,
     func_801DB788_ovl14,
     func_801DB804_ovl14,
@@ -61,11 +61,11 @@ VTABLE D_801E2EAC_ovl14 = {
 void func_801DB3B0_ovl14(GObj *arg0) {
     while (1) {
         D_800DF150[omCurrentObj->objId] = func_801DB460_ovl14;
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 7, D_801E2EAC_ovl14);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 7, D_801E2EAC_ovl14);
     }
 }
 
-VTABLE D_801E2EC8_ovl14 = {
+FUNCLIST D_801E2EC8_ovl14 = {
     func_801DB780_ovl14,
     func_801DB7FC_ovl14,
     func_801DB9F8_ovl14,
@@ -99,11 +99,11 @@ void func_801DB460_ovl14(GObj *arg0) {
         }
     }
     if (D_800E7B20[omCurrentObj->objId] <= 0.0f) {
-        gEntityVtableIndexArray[omCurrentObj->objId] = 6;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 6;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DB3B0_ovl14);
         return;
     }
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 7, D_801E2EC8_ovl14);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 7, D_801E2EC8_ovl14);
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/3.s")
@@ -126,7 +126,7 @@ void func_801DB684_ovl14(GObj *arg0) {
     play_sound(0x190);
     func_800BC1FC((s32)D_800E7B20[omCurrentObj->objId]);
     func_800AF27C();
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 
 void func_801DB780_ovl14(GObj *arg0) {
@@ -138,7 +138,7 @@ void func_801DB788_ovl14(GObj *arg0) {
     func_800A9EA4(0x10438);
     ohSleep(0x3C);
     func_800AF27C();
-    gEntityVtableIndexArray[omCurrentObj->objId] = 2;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 
 void func_801DB7FC_ovl14(GObj *arg0) {
@@ -221,7 +221,7 @@ void func_801DBA00_ovl14(void *arg0) {
     ohSleep(0x14);
     func_800A9EA4(0x10438);
     ohSleep(0x32);
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/10.s")
@@ -275,7 +275,7 @@ loop_3:
     ohSleep(0x14);
     func_800A9EA4(0x10438);
     ohSleep(0x3C);
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/12.s")
@@ -357,7 +357,7 @@ loop_5:
         }
     }
     ohSleep(0x28);
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/14.s")
@@ -404,9 +404,9 @@ void func_801DC2A0_ovl14(void) {
     } while (D_800E98E0[omCurrentObj->objId] == rand);
     
     switch (D_800E98E0[omCurrentObj->objId] = rand) {
-        case 0: gEntityVtableIndexArray[omCurrentObj->objId] = 3; break;
-        case 1: gEntityVtableIndexArray[omCurrentObj->objId] = 4; break;
-        case 2: gEntityVtableIndexArray[omCurrentObj->objId] = 5; break;
+        case 0: gEntityFuncListIDArray[omCurrentObj->objId] = 3; break;
+        case 1: gEntityFuncListIDArray[omCurrentObj->objId] = 4; break;
+        case 2: gEntityFuncListIDArray[omCurrentObj->objId] = 5; break;
     }
 }
 #else
@@ -634,14 +634,14 @@ void func_801DCBCC_ovl14(GObj *arg0) {
         temp_s0->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
         func_801051AC(temp_s0);
     }
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     func_801DCE1C_ovl14(arg0);
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/25.s")
 #endif
 
-VTABLE D_801E2EE4_ovl14 = {
+FUNCLIST D_801E2EE4_ovl14 = {
     func_801DD018_ovl14,
     func_801DD4D0_ovl14,
     func_801DD590_ovl14,
@@ -653,11 +653,11 @@ VTABLE D_801E2EE4_ovl14 = {
 void func_801DCE1C_ovl14(GObj *arg0) {
     while (1) {
         D_800DF150[omCurrentObj->objId] = func_801DCEC0_ovl14;
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 6, D_801E2EE4_ovl14);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 6, D_801E2EE4_ovl14);
     }
 }
 
-VTABLE D_801E2EFC_ovl14 = {
+FUNCLIST D_801E2EFC_ovl14 = {
     func_801DD4C8_ovl14,
     func_801DD588_ovl14,
     func_801DDBD0_ovl14,
@@ -685,7 +685,7 @@ void func_801DCEC0_ovl14(GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
         func_801A0D74_ovl7(arg0);
     }
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 6, D_801E2EFC_ovl14);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 6, D_801E2EFC_ovl14);
     func_801DE6C8_ovl14();
 }
 
@@ -942,7 +942,7 @@ void func_801DD590_ovl14(void *arg0) {
     temp_v0_2 = &D_800E9AA0[omCurrentObj->objId];
     *temp_v0_2 = *temp_v0_2 & ~8;
     func_800AF27C();
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 /* Warning: struct EntityThing800E9AA0 is not defined (only forward-declared) */
 #else
@@ -1004,7 +1004,7 @@ void func_801DDBD8_ovl14(GObj *arg0) {
     ohSleep(0x1E);
     D_800E9AA0[omCurrentObj->objId] = 3;
     D_800EA360[omCurrentObj->objId] = &D_801D9CCC;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 
 void func_801DDE58_ovl14(GObj *arg0) {
@@ -1067,7 +1067,7 @@ void func_801DDE60_ovl14(GObj *arg0) {
     ohSleep(0x14);
     *(s32*)(&D_800E9AA0[omCurrentObj->objId]) |= 1;
     func_800AF27C();
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/36.s")
@@ -1329,7 +1329,7 @@ block_10:
         temp_a0 = D_800E83E0[var_v1_2];
         switch (temp_a0) {                          /* irregular */
             case 1:
-                gEntityVtableIndexArray[var_v1_2] = 5;
+                gEntityFuncListIDArray[var_v1_2] = 5;
                 assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCE1C_ovl14);
                 return 1;
             case 2:
@@ -1410,13 +1410,13 @@ void func_801DED24_ovl14(void) {
     temp_a1 = D_800E98E0[temp_a2];
     switch (temp_a1) {                              /* irregular */
         case 0:
-            gEntityVtableIndexArray[temp_a2] = 2;
+            gEntityFuncListIDArray[temp_a2] = 2;
             return;
         case 1:
-            gEntityVtableIndexArray[temp_a2] = 3;
+            gEntityFuncListIDArray[temp_a2] = 3;
             return;
         case 2:
-            gEntityVtableIndexArray[temp_a2] = 4;
+            gEntityFuncListIDArray[temp_a2] = 4;
             return;
     }
 }
@@ -1698,27 +1698,27 @@ GLOBAL_ASM("asm/non_matchings/ovl14/54.s")
 void func_801DF9EC_ovl14(GObj *arg0) {
     func_800B19F4(0x71, omCurrentObj->objId);
     D_800DEF90[omCurrentObj->objId] = func_800B6474;
-    gEntityVtableIndexArray[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     func_801DFA5C_ovl14(arg0);
 }
 
-VTABLE D_801E2F14_ovl14 = {
+FUNCLIST D_801E2F14_ovl14 = {
     func_801DFB48_ovl14,
     func_801DFC30_ovl14
 };
 void func_801DFA5C_ovl14(GObj *arg0) {
     while(1) {
         D_800DF150[omCurrentObj->objId] = func_801DFB00_ovl14;
-        call_virtual_function(gEntityVtableIndexArray[omCurrentObj->objId], 2, D_801E2F14_ovl14);
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, D_801E2F14_ovl14);
     }
 }
 
-VTABLE D_801E2F1C_ovl14 = {
+FUNCLIST D_801E2F1C_ovl14 = {
     func_801DFC28_ovl14,
     func_801DFD7C_ovl14,
 };
 void func_801DFB00_ovl14(GObj *arg0) {
-    call_virtual_function(D_800DDFD0[omCurrentObj->objId], 2, D_801E2F1C_ovl14);
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, D_801E2F1C_ovl14);
 }
 
 #ifdef NON_MATCHING
@@ -1731,7 +1731,7 @@ void func_801DFB48_ovl14(GObj *arg0) {
     do {
         ohSleep(1);
     } while (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 1);
-    gEntityVtableIndexArray[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl14/58.s")
