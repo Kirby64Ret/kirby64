@@ -82,7 +82,7 @@ s32 func_8021EE88_ovl19(GObj *arg0) {
     if (track != -1) {
         gEntityFuncListIDArray[track] = arg0;
     } else {
-        print_error_stub("Helper Effect Request Error![helpeff.cc]\n");
+        utilPrintf("Helper Effect Request Error![helpeff.cc]\n");
     }
     return track;
 }

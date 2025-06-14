@@ -199,7 +199,7 @@ s32 request_job(s32 id, s32 minIndex, u32 max_index, void (*arg3)(), void (*user
     }
 
     if (minIndex >= max_index) {
-        print_error_stub("Can't request job !!!\n");
+        utilPrintf("Can't request job !!!\n");
         return -1;
     }
     if ((omCurrentObj == NULL) || (omCurrentObj->link == 0x1A) || (omCurrentObj->link == 0x19)) {
@@ -211,7 +211,7 @@ s32 request_job(s32 id, s32 minIndex, u32 max_index, void (*arg3)(), void (*user
     else {
         v0 = (omCurrentObj->link & 0x18);
         if (v0 + 8 >= 32) {
-            print_error_stub("Job Request Deep OverFlow!!\n");
+            utilPrintf("Job Request Deep OverFlow!!\n");
             return -1;
         }
     }

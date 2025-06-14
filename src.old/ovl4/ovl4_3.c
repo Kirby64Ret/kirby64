@@ -362,8 +362,8 @@ void func_801598C4_ovl4(void) {
     }
     D_800E98E0[func_800AEC70(2, 0, 0x70)] = 9;
     HS64_omMakeGObj(0, func_8015986C_ovl4, 0x1A, 0x80000000);
-    func_800A5744(0, 0, 0);
-    func_800A5A14(0xFF, -0x10, 0);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
 }
 
 extern Gfx D_8015C028[];
@@ -443,8 +443,8 @@ extern s32 D_8015C720;
 
 void func_80159D78_ovl4(s32 arg0) {
     if ((D_800D6B24 == 0) && (D_8015C720 == 1) && (gPlayerControllers[0].buttonPressed & 0x9000)) {
-        func_800A5744(0, 0, 0);
-        func_800A5A14(0, 0x10, 2);
+        utilSetRectColorFullScreen(0, 0, 0);
+        utilSpawnRect(0, 0x10, 2);
     }
 }
 
@@ -461,8 +461,8 @@ void func_80159DE8_ovl4(void) {
     D_800D71FC = request_track_general(5, 0, 0x70);
     gEntityFuncListIDArray[D_800D71FC] = 1;
     HS64_omMakeGObj(0, func_80159D78_ovl4, 0x1A, 0x80000000);
-    func_800A5744(0, 0, 0);
-    func_800A5A14(0xFF, -0x10, 0);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
 }
 
 extern Gfx D_8015C3E0[];

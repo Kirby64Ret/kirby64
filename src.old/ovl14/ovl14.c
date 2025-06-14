@@ -420,7 +420,7 @@ s32 func_801DC38C_ovl14(u32 arg0) {
 
     track = request_track_general(0x17, 0x1E, 0x50);
     if ((track >= 0x3C) || (track == -1)) {
-        print_error_stub("enemy req over 18. Track Num:%d\n", track);
+        utilPrintf("enemy req over 18. Track Num:%d\n", track);
         func_800B1900(track);
         return -1;
     }
@@ -487,7 +487,7 @@ s32 func_801DC674_ovl14(GObj *arg0, u32 arg1) {
 
     track = request_track_general(0x1A, 0x1E, 0x50);
     if ((track >= 0x3C) || (track == -1)) {
-        print_error_stub("enemy req over 18. Track Num:%d\n", track);
+        utilPrintf("enemy req over 18. Track Num:%d\n", track);
         func_800B1900(track);
         return -1;
     }
@@ -557,7 +557,7 @@ s32 func_801DC954_ovl14(void) {
 
     track = request_track_general(0x19, 0x1E, 0x50);
     if ((track >= 0x3C) || (track == -1)) {
-        print_error_stub("enemy req over 18. Track Num:%d\n", track);
+        utilPrintf("enemy req over 18. Track Num:%d\n", track);
         func_800B1900(track);
         return -1;
     }
@@ -1439,7 +1439,7 @@ s32 func_801DEDE8_ovl14(void) {
 
     temp_v0 = request_track_general(0x17, 0x1E, 0x50);
     if ((temp_v0 >= 0x3C) || (temp_v0 == -1)) {
-        print_error_stub(&D_801E300C_ovl14, temp_v0);
+        utilPrintf(&D_801E300C_ovl14, temp_v0);
         func_800B1900(temp_v0 & 0xFFFF);
         return -1;
     }
@@ -1491,7 +1491,7 @@ s32 func_801DF01C_ovl14(f32 arg0) {
 
     temp_v0 = request_track_general(0x1A, 0xE, 0x50);
     if ((temp_v0 >= 0x1E) || (temp_v0 == -1)) {
-        print_error_stub(&D_801E3030_ovl14, temp_v0);
+        utilPrintf(&D_801E3030_ovl14, temp_v0);
         func_800B1900(temp_v0 & 0xFFFF);
         return -1;
     }
@@ -1545,7 +1545,7 @@ s32 func_801DF290_ovl14(void) {
 
     temp_v0 = request_track_general(0x1A, 0xE, 0x50);
     if ((temp_v0 >= 0x1E) || (temp_v0 == -1)) {
-        print_error_stub(&D_801E3054_ovl14, temp_v0);
+        utilPrintf(&D_801E3054_ovl14, temp_v0);
         func_800B1900(temp_v0 & 0xFFFF);
         return -1;
     }

@@ -8,12 +8,12 @@
 #include "ovl0/ovl0_2_5.h"
 #include "ovl0/ovl0_6.h"
 #include "save_file.h"
-u8 ovl1_TamperCheck(void);
+u8 utilTamperCheck(void);
 
 void func_800A6B18(void) ;
 
 
-void load_overlay(u32);
+void utilLoadOverlay(u32);
 
 extern s32 D_800D7288;
 extern s32 gGameState;
@@ -58,7 +58,7 @@ extern s32 D_800D6F50;
 extern s32 D_800EC9FC;
 void func_80154D60_ovl1(u32, u32);
 
-void load_overlay(u32 ovl);
+void utilLoadOverlay(u32 ovl);
 
 void crash_screen_print_gobj_info(struct GObj *gobj) {
     crash_screen_printf("gobj id:%d\n", gobj->objId);
@@ -195,7 +195,7 @@ void func_800A3058(void) {
 
     switch (osTvType) {
         default:
-            load_overlay(2);
+            utilLoadOverlay(2);
             func_80151CEC_ovl4(5);
         case 2:
         case 1:
@@ -209,21 +209,21 @@ void func_800A3058(void) {
             return;
         }
     }
-    load_overlay(2);
+    utilLoadOverlay(2);
     func_80151CEC_ovl4(4);
 }
 
 void func_800A30E8(void) {
-    load_overlay(19);
+    utilLoadOverlay(19);
     tamper_check_ovl20();
-    load_overlay(5);
-    load_overlay(6);
-    load_overlay(17);
+    utilLoadOverlay(5);
+    utilLoadOverlay(6);
+    utilLoadOverlay(17);
 }
 
 void load_menu_overlays(void) {
-    load_overlay(2);
-    load_overlay(3);
+    utilLoadOverlay(2);
+    utilLoadOverlay(3);
 }
 
 extern u32 D_800BE4F8;
@@ -256,7 +256,7 @@ void game_tick(s32 arg0) {
     func_800BE320(&D_800D7288);
     func_800A2B9C();
     func_800A6B18();
-    load_overlay(1);
+    utilLoadOverlay(1);
     func_800A2C80();
     func_800A3058();
     while (1) {
@@ -264,20 +264,20 @@ void game_tick(s32 arg0) {
         switch (gGameState) {                              /* switch 1 */
             default: continue;                                            /* switch 1 */
             case 1:                                         /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 func_80151CEC_ovl4(0);
                 gGameState = 2;
                 continue;
             case 2:                                         /* switch 1 */
                 if (D_800D6B74 == 1) {
-                    load_overlay(4);
+                    utilLoadOverlay(4);
                     func_80154D60_ovl1(0, 1);
                 }
                 gGameState = 3;
                 D_800D6B60 = 3;
                 continue;
             case 3:                                         /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     gGameState = 4;
                 } else {
@@ -293,7 +293,7 @@ void game_tick(s32 arg0) {
                 D_800D6B60 = 5;
                 continue;
             case 5:                                         /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     gGameState = 6;
                 } else {
@@ -309,7 +309,7 @@ void game_tick(s32 arg0) {
                 D_800D6B60 = 7;
                 continue;
             case 7:                                         /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     gGameState = 8;
                 } else {
@@ -325,7 +325,7 @@ void game_tick(s32 arg0) {
                 D_800D6B60 = 9;
                 continue;
             case 9:                                         /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     D_800D6B74 = 1;
                     gGameState = 2;
@@ -348,7 +348,7 @@ void game_tick(s32 arg0) {
                 continue;
             case 11:                                        /* switch 1 */
                 if (check_cutscene_watched(1) == 0) {
-                    load_overlay(4);
+                    utilLoadOverlay(4);
                     set_cutscene_watched(1, D_800D6B88);
                     func_800B9C50(D_800D6B88);
                     func_80154D60_ovl1(1, 2);
@@ -470,7 +470,7 @@ void game_tick(s32 arg0) {
                                 break;
                             case 5:                                 /* switch 3 */
                                 func_800A74D8();
-                                if (ovl1_TamperCheck() == 0) {
+                                if (utilTamperCheck() == 0) {
                                     gGameState = 0xB;
                                 } else {
                                     if ((gCurrentWorld == (D_800D6B98 + 1)) && (gCurrentWorld < 7)) {
@@ -489,7 +489,7 @@ void game_tick(s32 arg0) {
                                             D_800BE504 = 0;
                                             D_800BE508 = 0;
                                             D_800D6B9C = 0;
-                                            load_overlay(4);
+                                            utilLoadOverlay(4);
                                             set_cutscene_watched(0xD, D_800D6B88);
                                             func_800B9C50(D_800D6B88);
                                             func_80154D60_ovl1(0xD, 2);
@@ -532,7 +532,7 @@ void game_tick(s32 arg0) {
                 gGameState = 1;
                 continue;
             case 21:                                        /* switch 1 */
-                load_overlay(4);
+                utilLoadOverlay(4);
                 func_80154D60_ovl1(D_800D71E8, 0x15);
                 tmpState = gGameState;
                 gGameState = 0x17;
@@ -542,7 +542,7 @@ void game_tick(s32 arg0) {
                 func_800A36C0();
                 continue;
             case 18:                                        /* switch 1 */
-                load_overlay(4);
+                utilLoadOverlay(4);
                 set_cutscene_watched(0x11, D_800D6B88);
                 set_cutscene_watched(0x13, D_800D6B88);
                 func_800B9C50(D_800D6B88);
@@ -550,7 +550,7 @@ void game_tick(s32 arg0) {
                 gGameState = 1;
                 continue;
             case 19:                                        /* switch 1 */
-                load_overlay(4);
+                utilLoadOverlay(4);
                 set_cutscene_watched(0xD, D_800D6B88);
                 set_cutscene_watched(0x11, D_800D6B88);
                 set_cutscene_watched(0x12, D_800D6B88);
@@ -627,7 +627,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A377C.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A41B0.s")
 
-void print_error_stub(char* arg0, ...) {
+void utilPrintf(char* arg0, ...) {
 
 }
 
@@ -646,7 +646,7 @@ void utilFuncTableJump(u32 arg0, u32 arg1, FUNCLIST callback) {
 }
 
 extern f32 D_800D5C30;
-f32 vec3_dot_product(Vector *arg0, Vector *arg1) {
+f32 utilVec3Dot(Vector *arg0, Vector *arg1) {
     f32 dotProduct;
     f32 dotProductMag;
 
@@ -658,26 +658,26 @@ f32 vec3_dot_product(Vector *arg0, Vector *arg1) {
     return 0.0f;
 }
 
-f32 vec3_mag_square(Vector *arg0) {
+f32 utilVec3Mag(Vector *arg0) {
     f32 x = arg0->x;
     f32 y = arg0->y;
     f32 z = arg0->z;
     return (x * x) + (y * y) + (z * z);
 }
 
-f32 vec3_dist_square(Vector *v1, Vector *v2) {
+f32 utilVec3Dist(Vector *v1, Vector *v2) {
     f32 x2 = v2->x - v1->x;
     f32 y2 = v2->y - v1->y;
     f32 z2 = v2->z - v1->z;
     return (x2 * x2) + (y2 * y2) + (z2 * z2);
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A4598.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilWrapRotation.s")
 
 // copy of HS64_MkRotationMtxF???
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A465C.s")
 
-void func_800A4794(Vector *arg0, struct UnkStruct8004A7C4_3C *arg1) {
+void utilGetTransformSRT(Vector *arg0, struct UnkStruct8004A7C4_3C *arg1) {
     Mat4 finalMtx;
     Mat4 intermediateMtx;
 
@@ -705,7 +705,7 @@ void func_800A4794(Vector *arg0, struct UnkStruct8004A7C4_3C *arg1) {
     arg0->z = finalMtx[3][2];
 }
 
-void func_800A4958(Vector *dst, struct UnkStruct8004A7C4_3C *arg1, Vector *src) {
+void utilTransformPoint(Vector *dst, struct UnkStruct8004A7C4_3C *arg1, Vector *src) {
     Mat4 sp90;
     Mat4 sp50;
 
@@ -806,7 +806,7 @@ void func_800A4DB8(Vector *arg0, struct UnkStruct8004A7C4_3C *arg1) {
         arg0->x = atan2f(sp80[1][2], sp80[2][2]);
         arg0->z = atan2f(sp80[0][1], sp80[0][0]);
     }
-    func_800A4598(arg0);
+    utilWrapRotation(arg0);
 }
 #else
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A4DB8.s")
@@ -817,7 +817,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A4F48.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A509C.s")
 
-void copy_controller_inputs_to_kirby_controller(void) {
+void utilSetPlayerContPad(void) {
     if (!kirby_in_inactionable_state()) {
         gKirbyController.buttonHeld = gPlayerControllers->buttonHeld;
         gKirbyController.buttonPressed = gPlayerControllers->buttonPressed;
@@ -903,27 +903,27 @@ s32 func_800A55E0(u32 cont) {
     return v1;
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A5660.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilGetStickDirection.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A56F4.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilSetRectBoundsAndColor.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A5744.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilSetRectColorFullScreen.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A57A0.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilSetRectColor.s")
 
 extern s32 D_800D6B24;
 extern s16 D_800D6B30;
-extern s16 D_800D6B2C, D_800D6B2E;
+extern s16 D_800D6B2C, utilRectAlpha;
 extern u8 D_800D6B2B;
-void func_800A57C8(s32 arg0) {
+void utilFadeRectLoop(s32 arg0) {
     ohSleep(1);
     while (1) {
-        D_800D6B2E += D_800D6B2C;
-        if (D_800D6B2E <= 0) {
-            D_800D6B2E = 0;
+        utilRectAlpha += D_800D6B2C;
+        if (utilRectAlpha <= 0) {
+            utilRectAlpha = 0;
             break;
-        } else if (D_800D6B2E >= 0xFF) {
-            D_800D6B2E = 0xFF;
+        } else if (utilRectAlpha >= 0xFF) {
+            utilRectAlpha = 0xFF;
             break;
         } else {
             ohSleep(1);
@@ -952,14 +952,14 @@ void func_800A57C8(s32 arg0) {
 }
 
 
-extern s32 D_800D6B3C, D_800D6B40, D_800D6B34, D_800D6B38;
-extern u8 D_800D6B28, D_800D6B29, D_800D6B2A, D_800D6B2B;
+extern s32 utilRectBoundLrx, utilRectBoundLry, utilRectBoundUlx, utilRectBoundUly;
+extern u8 utilRectColorR, utilRectColorG, utilRectColorB, D_800D6B2B;
 extern Gfx *gDisplayListHeads[];
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A58E4.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilDrawRectGfx.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A5A14.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilSpawnRect.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A5AD8.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilResetRect.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A5B14.s")
 
@@ -985,16 +985,16 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A6534.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A6820.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A699C.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilPauseAllGObjs.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A6A18.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/utilResumeAllGObjs.s")
 
 void func_800A6B18(void) {
 
 }
 
 extern void *D_800BE8A0[];
-void load_overlay(u32 arg0) {
+void utilLoadOverlay(u32 arg0) {
     while (arg0 >= 0x14) {
         // ...were they going to do anything to remedy this issue?
     }
@@ -1002,7 +1002,7 @@ void load_overlay(u32 arg0) {
 }
 
 // some sort of integrity check
-u8 ovl1_TamperCheck(void) {
+u8 utilTamperCheck(void) {
     s32 buf[4];
 
     dma_read(0x00000F10, &buf, 0x10);

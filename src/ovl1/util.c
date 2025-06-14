@@ -15,6 +15,8 @@
 #include "main/lbmatrix.h"
 #include "main/math.h"
 
+#include "util.h"
+
 extern struct Overlay *gOverlayTable[];
 
 extern GObj *D_800D6B24;
@@ -24,23 +26,23 @@ extern u32 D_800BE4EC; // gameplay timer
 // struct?
 // {
     // inputs to primcolor r, g, b
-    extern u8 D_800D6B28, D_800D6B29, D_800D6B2A;
+    extern u8 utilRectColorR, utilRectColorG, utilRectColorB;
     extern u8 D_800D6B2B;
     extern s16 D_800D6B2C;
     // inputs to primcolor alpha
-    extern s16 D_800D6B2E;
+    extern s16 utilRectAlpha;
 
     extern s16 D_800D6B30;
 
     // bounds for fillrect
-    extern u32 D_800D6B34, D_800D6B38, D_800D6B3C, D_800D6B40;
+    extern u32 utilRectBoundUlx, utilRectBoundUly, utilRectBoundLrx, utilRectBoundLry;
 // }
 
 extern u32 *D_800BE5CC; // n64piok
 extern u32 *D_800BE5C4; // ptport
 extern u32 *D_800BE5C8; // ptstat
 
-void print_error_stub(char* fmt, ...) {
+void utilPrintf(char* fmt, ...) {
 
 }
 
@@ -112,7 +114,7 @@ s32 func_800A428C(s32 arg0, u8 *arg1, s32 arg2) {
     return 1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A428C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A428C.s")
 #endif
 
 // copy of PartnerN64 putPT
@@ -127,7 +129,7 @@ void func_800A4414(u8 c) {
     *D_800BE5C8 = c;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A4414.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A4414.s")
 #endif
 
 // executes the virtual function at index arg0
@@ -135,7 +137,7 @@ void utilFuncTableJump(u32 idx, u32 max, FUNCLIST callbackTbl) {
     if (idx < max) callbackTbl[idx](omCurrentObj);
 }
 
-f32 vec3_dot_product(Vector *arg0, Vector *arg1) {
+f32 utilVec3Dot(Vector *arg0, Vector *arg1) {
     f32 dotProduct;
     f32 dotProductMag;
 
@@ -147,22 +149,21 @@ f32 vec3_dot_product(Vector *arg0, Vector *arg1) {
     return 0.0f;
 }
 
-f32 vec3_mag_square(Vector *arg0) {
+f32 utilVec3Mag(Vector *arg0) {
     f32 x = arg0->x;
     f32 y = arg0->y;
     f32 z = arg0->z;
     return (x * x) + (y * y) + (z * z);
 }
 
-f32 vec3_dist_square(Vector *v1, Vector *v2) {
+f32 utilVec3Dist(Vector *v1, Vector *v2) {
     f32 x2 = v2->x - v1->x;
     f32 y2 = v2->y - v1->y;
     f32 z2 = v2->z - v1->z;
     return (x2 * x2) + (y2 * y2) + (z2 * z2);
 }
 
-// utilWrapRotation
-void func_800A4598(Vector *vec) {
+void utilWrapRotation(Vector *vec) {
     if (vec->x < 0.0f) {
         vec->x += M_TAU;
     } else if (vec->x >= M_TAU) {
@@ -212,11 +213,10 @@ void func_800A465C(f32 (*mf)[4], f32 x, f32 y, f32 z) {
     mf[3][3] = 1.0f;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A465C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A465C.s")
 #endif
 
-// utilGetTransformSRT
-void func_800A4794(Vector *vec, DObj *dobj) {
+void utilGetTransformSRT(Vector *vec, DObj *dobj) {
     Mat4 finalMtx;
     Mat4 tmpMtx;
 
@@ -245,8 +245,7 @@ void func_800A4794(Vector *vec, DObj *dobj) {
     vec->z = finalMtx[3][2];
 }
 
-// utilTransformChain
-void func_800A4958(Vector *vec, DObj *dobj, Vector *input) {
+void utilTransformPoint(Vector *vec, DObj *dobj, Vector *input) {
     Mat4 finalMtx;
     Mat4 tmpMtx;
 
@@ -333,7 +332,7 @@ void func_800A4DB8(Vector *vec, DObj *dobj) {
         vec->x = atan2f(sp80[1][2], sp80[2][2]);
         vec->z = atan2f(sp80[0][1], sp80[0][0]);
     }
-    func_800A4598(vec);
+    utilWrapRotation(vec);
 }
 
 // camera mtx
@@ -407,10 +406,10 @@ s32 func_800A509C(s32 arg0, void *arg1, f32 arg2, f32 arg3, f32 arg4) {
     return var_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A509C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A509C.s")
 #endif
 
-void copy_controller_inputs_to_kirby_controller(void) {
+void utilSetPlayerContPad(void) {
     if (!kirby_in_inactionable_state()) {
         gKirbyController.buttonHeld = gPlayerControllers[0].buttonHeld;
         gKirbyController.buttonPressed = gPlayerControllers[0].buttonPressed;
@@ -481,7 +480,7 @@ f32 func_800A52F0(f32 arg0, f32 arg1) {
     return var_f2;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A52F0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A52F0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -497,7 +496,7 @@ void func_800A5404(void *arg0, void *arg1) {
     arg0->unk12 = arg1->unk8;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5404.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5404.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -513,7 +512,7 @@ void func_800A5468(void *arg0, void *arg1) {
     arg0->unk12 = arg1->unk8;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5468.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5468.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -529,10 +528,10 @@ void func_800A54FC(void *arg0, void *arg1) {
     arg1->unk12 = arg0->unk12;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A54FC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A54FC.s")
 #endif
 
-s32 correct_stick_x(u32 channel) {
+s32 utilCorrectStickX(u32 channel) {
     s32 x;
 
     if (channel >= 4) channel = 3;
@@ -552,7 +551,7 @@ s32 correct_stick_x(u32 channel) {
     return x;
 }
 
-s32 correct_stick_y(u32 cont) {
+s32 utilCorrectStickY(u32 cont) {
     s32 y;
 
     if (cont >= 4) cont = 3;
@@ -571,16 +570,16 @@ s32 correct_stick_y(u32 cont) {
     return y;
 }
 
-s32 func_800A5660(s32 value, s32 axis, u32 framemaybe) {
+s32 utilGetStickDirection(s32 value, s32 axis, u32 framemaybe) {
     s32 stick;
 
     if ((D_800BE4EC % framemaybe) != 0) {
         return 0;
     }
     if (axis != 0) {
-        stick = correct_stick_y(value);
+        stick = utilCorrectStickY(value);
     } else {
-        stick = correct_stick_x(value);
+        stick = utilCorrectStickX(value);
     }
 
     if ((stick / 16) > 0) {
@@ -592,63 +591,50 @@ s32 func_800A5660(s32 value, s32 axis, u32 framemaybe) {
     }
 }
 
-#ifdef MIPS_TO_C
-
-void func_800A56F4(s32 ulx, s32 uly, s32 lrx, s32 lry, u8 red, u8 green, u8 blue) {
+void utilSetRectBoundsAndColor(s32 ulx, s32 uly, s32 lrx, s32 lry, u8 red, u8 green, u8 blue) {
     D_800D6B24 = NULL;
-    D_800D6B34 = ulx;
-    D_800D6B38 = uly;
-    D_800D6B3C = lrx;
-    D_800D6B40 = lry;
-    D_800D6B28 = red;
-    D_800D6B29 = green;
-    D_800D6B2A = blue;
+    utilRectBoundUlx = ulx;
+    utilRectBoundUly = uly;
+    utilRectBoundLrx = lrx;
+    utilRectBoundLry = lry;
+    utilRectColorR = red;
+    utilRectColorG = green;
+    utilRectColorB = blue;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A56F4.s")
-#endif
 
-#ifdef NON_MATCHING
-void func_800A5744(s32 red, s32 green, s32 blue) {
+void utilSetRectColorFullScreen(u16 red, u16 green, u16 blue) {
     D_800D6B24 = NULL;
 
-    D_800D6B34 = 10;
-    D_800D6B38 = 10;
-    D_800D6B3C = 310;
-    D_800D6B40 = 230;
+    utilRectBoundUlx = 10;
+    utilRectBoundUly = 10;
+    utilRectBoundLrx = 310;
+    utilRectBoundLry = 230;
 
 
-    D_800D6B28 = red;
-    D_800D6B29 = green;
-    D_800D6B2A = blue;
+    utilRectColorR = red;
+    utilRectColorG = green;
+    utilRectColorB = blue;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5744.s")
-#endif
 
-#ifdef NON_MATCHING
-void func_800A57A0(s32 red, s32 green, s32 blue) {
-    D_800D6B28 = red;
-    D_800D6B29 = green;
-    D_800D6B2A = blue;
+void utilSetRectColor(u16 red, u16 green, u16 blue) {
+    utilRectColorR = red;
+    utilRectColorG = green;
+    utilRectColorB = blue;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A57A0.s")
-#endif
 
-void func_800A57C8(s32 arg0) {
+void utilFadeRectLoop(s32 arg0) {
     ohSleep(1);
     while (1) {
-        D_800D6B2E += D_800D6B2C;
-        if (D_800D6B2E <= 0) {
-            D_800D6B2E = 0;
+        utilRectAlpha += D_800D6B2C;
+        if (utilRectAlpha <= 0) {
+            utilRectAlpha = 0;
             break;
-        } else if (D_800D6B2E >= 0xFF) {
-            D_800D6B2E = 0xFF;
+        } else if (utilRectAlpha >= 0xFF) {
+            utilRectAlpha = 0xFF;
             break;
-        } else {
-            ohSleep(1);
         }
+
+        ohSleep(1);
     }
     D_800D6B30 += 1;
     switch (D_800D6B2B) {
@@ -670,47 +656,42 @@ void func_800A57C8(s32 arg0) {
     }
 }
 
-void func_800A58E4(GObj *gobj) {
+void utilDrawRectGfx(GObj *gobj) {
     Gfx *glistp = gDisplayListHeads[1];
 
     gDPPipeSync(glistp++);
     gDPSetRenderMode(glistp++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
-    gDPSetPrimColor(glistp++, 0, 0, D_800D6B28, D_800D6B29, D_800D6B2A, (u8)D_800D6B2E);
+    gDPSetPrimColor(glistp++, 0, 0, utilRectColorR, utilRectColorG, utilRectColorB, (u8)utilRectAlpha);
     gDPSetCombineMode(glistp++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-    gDPFillRectangle(glistp++, D_800D6B34, D_800D6B38, D_800D6B3C, D_800D6B40);
+    gDPFillRectangle(glistp++,
+        utilRectBoundUlx,
+        utilRectBoundUly,
+        utilRectBoundLrx,
+        utilRectBoundLry
+    );
     gDPPipeSync(glistp++);
     gDPSetRenderMode(glistp++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
 
     gDisplayListHeads[1] = glistp;
 }
 
-#ifdef MIPS_TO_C
-
-void func_800A5A14(s16 arg0, s16 arg1, u8 arg2) {
+void utilSpawnRect(s16 alpha, s16 rate, u8 endKind) {
     if (D_800D6B24 == NULL) {
-        D_800D6B2E = arg0;
-        D_800D6B2C = arg1 * D_800D6B10;
-        D_800D6B2B = arg2;
-        D_800D6B24 = ohCreateCamera(2, 0, 0x19, 0x80000000, &func_800A58E4, 0, 0, 0, 0, 0, &func_800A57C8, 1, 0);
+        utilRectAlpha = alpha;
+        D_800D6B2C = rate * D_800D6B10;
+        D_800D6B2B = endKind;
+        D_800D6B24 = ohCreateCamera(2, 0, 0x19, 0x80000000, &utilDrawRectGfx, 0, 0, 0, 0, 0, &utilFadeRectLoop, 1, 0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5A14.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-s32 func_800A5AD8(void) {
+s32 utilResetRect(void) {
     if (D_800D6B24 == 0) {
         return 0;
     }
     D_800D6B2C = 0;
-    D_800D6B2E = D_800D6B2C;
+    utilRectAlpha = D_800D6B2C;
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5AD8.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_800A5B14(void *arg0, s8 arg1, s8 arg2, s8 arg3, u8 arg4) {
@@ -723,7 +704,7 @@ void func_800A5B14(void *arg0, s8 arg1, s8 arg2, s8 arg3, u8 arg4) {
     temp_v0->unk17 = arg4;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5B14.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B14.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -737,7 +718,7 @@ void func_800A5B3C(void *arg0, s8 arg1, s8 arg2, s8 arg3, u8 arg4) {
     temp_v0->unk1B = arg4;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5B3C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B3C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -758,7 +739,7 @@ f32 func_800A5B64(f32 arg0) {
     return var_f2;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5B64.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B64.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -779,7 +760,7 @@ f32 func_800A5BDC(f32 arg0) {
     return var_f2;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5BDC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5BDC.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -811,7 +792,7 @@ f32 func_800A5C60(f32 arg0) {
     return var_f2 / var_f12;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5C60.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5C60.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -830,7 +811,7 @@ void func_800A5D24(void *arg0, void *arg1) {
     arg0->unk2C = arg1->unk2C;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5D24.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5D24.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -894,7 +875,7 @@ void func_800A5D88(void *arg0, void *arg1) {
     arg1->unk2C = temp_v0_2->unk8;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5D88.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5D88.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -958,7 +939,7 @@ void func_800A5F94(s32 arg0, void *arg1) {
     arg1->unk2C = gEntitiesNextPosZArray[arg0];
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A5F94.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5F94.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -975,7 +956,7 @@ void func_800A6208(void *arg0, void *arg1) {
     arg1->unk8 = sp4.unk8;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A6208.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A6208.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -994,7 +975,7 @@ void func_800A62D8(void *arg0, void *arg1, void *arg2) {
     arg0->unk2C = arg1->unk2C + ((arg1->unk8 * arg2->unk24) + (arg1->unk14 * arg2->unk28) + (arg1->unk20 * arg2->unk2C));
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A62D8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A62D8.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1048,7 +1029,7 @@ loop_1:
     arg0->unk2C = arg0->unk2C * temp_f16_2;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A6534.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A6534.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1101,13 +1082,13 @@ void func_800A6820(void *arg0, void *arg1) {
     arg1->unk8 = atan2f(sp4C, sp48);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_1_2/func_800A6820.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A6820.s")
 #endif
 
-void func_800A699C(void) {
+void utilPauseAllGObjs(void) {
     int i;
 
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < ARRAY_COUNT(omGObjListHead); i++) {
         GObj *gobj = omGObjListHead[i];
         while (gobj != NULL) {
             GObj *next = gobj->next;
@@ -1119,10 +1100,10 @@ void func_800A699C(void) {
     }
 }
 
-void func_800A6A18(void) {
+void utilResumeAllGObjs(void) {
     int i;
 
-    for (i = 0; i < 32; i++) {
+    for (i = 0; i < ARRAY_COUNT(omGObjListHead); i++) {
         GObj *gobj = omGObjListHead[i];
         while (gobj != NULL) {
             GObj *next = gobj->next;
@@ -1143,15 +1124,15 @@ void func_800A6A18(void) {
 void func_800A6B18(void) {
 }
 
-void load_overlay(u32 arg0) {
+void utilLoadOverlay(u32 arg0) {
     while (arg0 >= 0x14) {
-        // ...were they going to do anything to remedy this issue?
+        // ... Too many overlays.
+        //      Maybe you'd have more space if you compressed your assets.......
     }
     dma_overlay_load(gOverlayTable[arg0]);
 }
 
-// some sort of integrity check
-u8 ovl1_TamperCheck(void) {
+u8 utilTamperCheck(void) {
     s32 buf[4];
 
     dma_read(0x00000F10, &buf, 0x10);

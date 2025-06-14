@@ -210,7 +210,7 @@ void func_8021F600_ovl19(GObj *arg0) {
         sp20.x = tmp->unk8;
         sp20.y = 0.0f;
         sp20.z = tmp->unk10;
-        if (vec3_dist_square(&sp2C, &sp20) < 102400.0f) {
+        if (utilVec3Dist(&sp2C, &sp20) < 102400.0f) {
             D_800E98E0[omCurrentObj->objId]++;
         }
     }
@@ -270,7 +270,7 @@ void func_8021FA2C_ovl19(void) {
         if (temp_v0 != -1) {
             func_800B1900(temp_v0 & 0xFFFF);
         }
-        print_error_stub("drawItemReq  Request Error!![helper.cc]\n");
+        utilPrintf("drawItemReq  Request Error!![helper.cc]\n");
         return;
     }
     // if (temp_v0 == -1) {
@@ -349,7 +349,7 @@ void func_8021FE5C_ovl19(struct GObj *arg0) {
                 sp20.x = gEntitiesNextPosXArray[omCurrentObj->objId];
                 sp20.y = 0.0f;
                 sp20.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-                if (vec3_dist_square(&sp2C, &sp20) < 6400.0f) {
+                if (utilVec3Dist(&sp2C, &sp20) < 6400.0f) {
                     D_800E98E0[omCurrentObj->objId]++;
                     gKirbyState.unk17 = 1;
                     gKirbyState.abilityState = 0;

@@ -68,7 +68,7 @@ void func_8015CB7C_ovl5(void) {
             s32 phi_v0;
 
             play_sound(SOUND_MINIPAUSE1);
-            func_800A699C();
+            utilPauseAllGObjs();
             D_800D7178.unk74 = 1;
             if (0) {
 
@@ -90,7 +90,7 @@ void func_8015CB7C_ovl5(void) {
     } else {
         if (D_800D7178.unk78 != 0) {
             if (D_800D7178.unk78 == 2) {
-                func_800A6A18();
+                utilResumeAllGObjs();
             }
             D_800D7178.unk74 = 0;
             D_800D7178.unk78 = 0;

@@ -119,10 +119,10 @@ struct DObj *func_8011BB98(void *arg0, s32 arg1) {
     temp_s0 = D_800DFBD0[var_t1][temp_a3->Unk_Index];
     temp_s0->unk54 = 2;
     if (arg0->unk10 == 0) {
-        func_800A4794(&sp44, temp_s0, var_a2, temp_a3);
+        utilGetTransformSRT(&sp44, temp_s0, var_a2, temp_a3);
         func_800FD754(0, sp44, sp48, sp4C);
     } else {
-        func_800A4794(&sp38, temp_s0, var_a2, temp_a3);
+        utilGetTransformSRT(&sp38, temp_s0, var_a2, temp_a3);
         func_800A4DB8(&sp2C, temp_s0);
         func_800A802C(0, 3, 0x36, &sp38, &sp2C);
     }
@@ -727,7 +727,7 @@ s32 func_8011CCB8(void) {
         case 2:                                     /* switch 1 */
         case 3:                                     /* switch 1 */
         case 5:                                     /* switch 1 */
-            print_error_stub("plyInitCatchOver: No DisType Number=%x\n", gKirbyState.inhaledEntityData);
+            utilPrintf("plyInitCatchOver: No DisType Number=%x\n", gKirbyState.inhaledEntityData);
             while(1);
     }
 
@@ -746,7 +746,7 @@ s32 func_8011CCB8(void) {
             gKirbyState.unkD = 2;
             break;
         default:                        /* switch 3 */
-            print_error_stub("plyInitCatchOver: New Catch Number=%x\n", gKirbyState.isHoldingEntity);
+            utilPrintf("plyInitCatchOver: New Catch Number=%x\n", gKirbyState.isHoldingEntity);
             while(1);
     }
 
@@ -3280,7 +3280,7 @@ void func_80122A10(GObj *g) {
     if ((D_8012E894 > 0) && (D_8012E894 < 5)) {
         func_800A8100(0, 1, D_80128420[D_8012E894]);
     } else {
-        print_error_stub("plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n", 5, D_8012E894);
+        utilPrintf("plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n", 5, D_8012E894);
     }
 }
 #else

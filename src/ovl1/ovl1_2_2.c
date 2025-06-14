@@ -15,18 +15,18 @@ extern s16 D_800C0040[];
 
 void play_sound(s32 arg0) {
     if (arg0 == 0x99999999) {
-        print_error_stub("use AllStopFGM macro.\n", arg0);
+        utilPrintf("use AllStopFGM macro.\n", arg0);
         return;
     }
     if (arg0 & 0x80000000) {
-        print_error_stub("use stopLoopSeml function.\n", arg0);
+        utilPrintf("use stopLoopSeml function.\n", arg0);
         return;
     }
     if (D_800C0040[arg0] >= 0) {
         func_80023CB0((u16)D_800C0040[arg0]);
         return;
     }
-    print_error_stub("Error: No Entry FGM Number: %d\n", arg0);
+    utilPrintf("Error: No Entry FGM Number: %d\n", arg0);
 }
 
 s32 sound_str_atoi(u8 *str) {

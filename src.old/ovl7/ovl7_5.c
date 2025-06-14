@@ -256,7 +256,7 @@ void func_801AC4EC_ovl7(struct GObj *arg0) {
         case 0: func_801A8CDC_ovl7(arg0); break;
         case 1: D_801A96C4_ovl7(arg0); break;
     }
-    print_error_stub("JL_CatchOver: No CatchInfo Address ID:%x\n", D_800E8060[omCurrentObj->objId]);
+    utilPrintf("JL_CatchOver: No CatchInfo Address ID:%x\n", D_800E8060[omCurrentObj->objId]);
     while (1);
 }
 
@@ -273,11 +273,11 @@ s32 func_801AC9D0_ovl7(s32 arg0, s32 arg1) {
 
     idx = request_track_general(0x1A, 0xE, 0x1E);
     if (idx == -1) {
-        print_error_stub(&D_801CE160);
+        utilPrintf(&D_801CE160);
         return 0;
     }
     if (idx >= 0x1E) {
-        print_error_stub(&D_801CE17C);
+        utilPrintf(&D_801CE17C);
         func_800B1900((u16) idx);
         return 0;
     }

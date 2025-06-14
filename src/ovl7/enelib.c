@@ -2,7 +2,7 @@
 
 #include "GObj.h"
 #include "Player.h"
-#include "ovl1/ovl1_1_2.h"
+#include "ovl1/util.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/ovl1_8.h"
@@ -787,7 +787,7 @@ s32 func_8019A7E8_ovl7(f32 arg0) {
         sp2C = gEntitiesNextPosYArray[omCurrentObj->objId];
         sp30 = gEntitiesNextPosZArray[omCurrentObj->objId];
         var_v1 = 0;
-        if (vec3_dist_square(&sp34, &sp28, gEntitiesNextPosYArray, gEntitiesNextPosZArray) < (arg0 * arg0)) {
+        if (utilVec3Dist(&sp34, &sp28, gEntitiesNextPosYArray, gEntitiesNextPosZArray) < (arg0 * arg0)) {
             return 1;
         }
         goto block_6;
@@ -1460,7 +1460,7 @@ void eneTurnCommon(s32 arg0) {
         }
         if ((var_a2 % 2) == 1) {
             sp1C = temp_t0;
-            print_error_stub("eneTurnCommon Error frame=%02d\n", var_a2, var_a2, var_a3);
+            utilPrintf("eneTurnCommon Error frame=%02d\n", var_a2, var_a2, var_a3);
             var_a2 = arg0 + 1;
             var_a3 = temp_t0->unk3C;
             var_a1 = omCurrentObj->objId * 4;
@@ -1594,7 +1594,7 @@ void eneTurnCommon2(s32 arg0) {
         }
         if ((var_a2 % 2) == 1) {
             sp1C = temp_a3;
-            print_error_stub("eneTurnCommon Error frame=%02d\n", var_a2, var_a2, temp_a3);
+            utilPrintf("eneTurnCommon Error frame=%02d\n", var_a2, var_a2, temp_a3);
             var_a2 = arg0 + 1;
             var_v0 = temp_a3->unk3C;
             var_a1 = omCurrentObj->objId * 4;
@@ -2291,7 +2291,7 @@ s32 reqChildEneTrk(u8 arg0, u8 arg1, u8 arg2) {
 
     track = request_track_general(0x17, 0x1E, 0x3C);
     if ((track >= 0x3C) || (track == -1)) {
-        print_error_stub("reqChildEneTrk  Request Error!![enelib.cc]\n");
+        utilPrintf("reqChildEneTrk  Request Error!![enelib.cc]\n");
         func_800B1900(track);
         return track;
     } else {
@@ -3108,7 +3108,7 @@ s32 func_8019F234_ovl7(s32 track) {
         case 25:
             return 1;
         default:
-            print_error_stub("serach enemy list error. JN number:%d [enelib.cc]\n", D_800DD710[track]);
+            utilPrintf("serach enemy list error. JN number:%d [enelib.cc]\n", D_800DD710[track]);
             return 1;
     }
 }

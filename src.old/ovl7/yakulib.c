@@ -3,7 +3,7 @@
 #include "yakulib.h"
 #include "omCurrentObj.h"
 
-extern void print_error_stub(const char *fmt, ...);
+extern void utilPrintf(const char *fmt, ...);
 
 extern u16 D_800E77A0[];
 extern u8 D_800E76C0[];
@@ -48,7 +48,7 @@ extern f32 D_801CE578;
 
 s32 request_track_general(s32, s32, s32);
 
-void func_800A4794(Vector*,s32);
+void utilGetTransformSRT(Vector*,s32);
 void func_800A4DB8(Vector*,s32);
 
 // this file
@@ -63,7 +63,7 @@ s32 func_801BBE50(s32 arg0, s32 arg1, u32 arg2) {
 
     idx = request_track_general(0x1F, 0x1E, 0x3C);
     if (idx == -1) {
-        print_error_stub("NmlBlock Request Error![yakulib.cc]\n");
+        utilPrintf("NmlBlock Request Error![yakulib.cc]\n");
         return -1;
     }
     D_800E0D50[idx] = arg2;
@@ -74,7 +74,7 @@ s32 func_801BBE50(s32 arg0, s32 arg1, u32 arg2) {
 
     D_800E8E60[idx] = 1;
     D_800E1D10[idx] = arg1;
-    func_800A4794(&posVec, arg0);
+    utilGetTransformSRT(&posVec, arg0);
     gEntitiesNextPosXArray[idx] = posVec.x;
     gEntitiesNextPosYArray[idx] = posVec.y;
     gEntitiesNextPosZArray[idx] = posVec.z;
@@ -98,7 +98,7 @@ s32 func_801BBFE4_ovl7(s32 arg0) {
 
     idx = request_track_general(0x1F, 0x1E, 0x3C);
     if (idx == -1) {
-        print_error_stub("reqDumpStarTrk Request Error!![yakulib.cc]\n");
+        utilPrintf("reqDumpStarTrk Request Error!![yakulib.cc]\n");
         return -1;
     }
     D_800E76C0[idx] = 0xFF;
@@ -140,7 +140,7 @@ s32 func_801BC27C_ovl7(s32 arg0, s32 arg1) {
 
     idx = request_track_general(0x1F, 0x1E, 0x3C);
     if (idx == -1) {
-        print_error_stub("reqMixStarTrk Request Error!![yakulib.cc]\n");
+        utilPrintf("reqMixStarTrk Request Error!![yakulib.cc]\n");
         return -1;
     }
     D_800E76C0[idx] = 0xFF;
@@ -186,7 +186,7 @@ s32 func_801BC580_ovl7(s32 arg0) {
 
     idx = request_track_general(0x1F, 0x1E, 0x3C);
     if (idx == -1) {
-        print_error_stub(&D_801CE520);
+        utilPrintf(&D_801CE520);
         return -1;
     }
     D_800E76C0[idx] = 0xFF;
@@ -225,7 +225,7 @@ s32 func_801BC794_ovl7(s32 arg0) {
 
     idx = request_track_general(0x1C, 0x1E, 0x3C);
     if (idx == -1) {
-        print_error_stub(&D_801CE54C);
+        utilPrintf(&D_801CE54C);
         return -1;
     }
     D_800E76C0[idx] = 0xFF;

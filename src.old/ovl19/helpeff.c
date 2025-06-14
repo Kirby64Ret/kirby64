@@ -82,7 +82,7 @@ s32 func_8021EE88_ovl19(s32 arg0) {
     if (temp_v0 != -1) {
         gEntityFuncListIDArray[temp_v0] = arg0;
     } else {
-        print_error_stub("Helper Effect Request Error![helpeff.cc]\n");
+        utilPrintf("Helper Effect Request Error![helpeff.cc]\n");
     }
     return temp_v0;
 }

@@ -199,7 +199,7 @@ void func_80226FD8_ovl18(u32 arg0) {
         temp_v0 = gPlayerControllers[1];
         if (temp_v0 & 0x9000 && D_800D6B24 == 0) {
             play_sound(237);
-            func_800A5A14(0, 0xC, 2);
+            utilSpawnRect(0, 0xC, 2);
             break;
         } else if (((temp_v0 & 0x200) != 0) && (D_800D6B24 == 0)) {
             play_sound(275);
@@ -243,8 +243,8 @@ void func_802271A8_ovl18(void) {
         D_800E9AA0[temp_v1] = 0;
     }
     D_800D6B30 = 0;
-    func_800A5744(0, 0, 0);
-    func_800A5A14(0xFF, -0xC, 0);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0xC, 0);
     func_800A74D8();
 }
 

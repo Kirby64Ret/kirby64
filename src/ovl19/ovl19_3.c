@@ -1506,7 +1506,7 @@ void func_8022D57C_ovl19(s32 arg0) {
 #endif
 
 void func_8022D584_ovl19(GObj *g) {
-    print_error_stub("No List Id:%d\n", gEntityFuncListIDArray[omCurrentObj->objId]);
+    utilPrintf("No List Id:%d\n", gEntityFuncListIDArray[omCurrentObj->objId]);
     D_800DF150[omCurrentObj->objId] = NULL;
     curObjSleepForever();
 }

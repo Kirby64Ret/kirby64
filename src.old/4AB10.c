@@ -55,13 +55,13 @@ void func_800A3228(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A455C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A4598.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilWrapRotation.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A465C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A4794.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilGetTransformSRT.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A4958.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilTransformPoint.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A4B34.s")
 
@@ -85,21 +85,21 @@ void func_800A3228(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A55E0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A5660.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilGetStickDirection.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A56F4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilSetRectBoundsAndColor.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A5744.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilSetRectColorFullScreen.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A57A0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilSetRectColor.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A57C8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilFadeRectLoop.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A58E4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilDrawRectGfx.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A5A14.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilSpawnRect.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A5AD8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilResetRect.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A5B14.s")
 
@@ -125,9 +125,9 @@ void func_800A3228(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A6820.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A699C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilPauseAllGObjs.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A6A18.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/utilResumeAllGObjs.s")
 
 void func_800A6B18(void) {
 }

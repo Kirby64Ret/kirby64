@@ -1365,7 +1365,7 @@ void func_800B83C8(GObj *gobj) {
     sp24.x = D_800E2090[omCurrentObj->objId];
     sp24.y = D_800E2250[omCurrentObj->objId];
     sp24.z = D_800E2410[omCurrentObj->objId];
-    func_800A4958(&sp30, node->parent, &sp24);
+    utilTransformPoint(&sp30, node->parent, &sp24);
     gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
     gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     gEntitiesPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];

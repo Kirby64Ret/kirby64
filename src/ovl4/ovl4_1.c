@@ -182,13 +182,13 @@ void func_80151338_ovl4(s32 arg0) {
     switch (D_800E98E0[omCurrentObj->objId]) {
         case 0: // N64 logo?
             func_800AF8C0(0x17, 0xE, 4);
-            func_800A57A0(0, 0, 0);
-            func_800A5A14(0xFF, -8, 0);
+            utilSetRectColor(0, 0, 0);
+            utilSpawnRect(0xFF, -8, 0);
             HS64_omMakeGObj(0, func_80151990_ovl4, 0x1A, 0x80000000);
             ohSleep(0x78);
             if (D_800D6B24 == 0) {
-                func_800A57A0(0xFF, 0xFF, 0xFF);
-                func_800A5A14(0, 8, 0);
+                utilSetRectColor(0xFF, 0xFF, 0xFF);
+                utilSpawnRect(0, 8, 0);
                 while (D_800D6B24 != 0) {
                     ohSleep(1);
                 }
@@ -199,20 +199,20 @@ void func_80151338_ovl4(s32 arg0) {
         case 1: // HAL logo? (just running this code shows the N64 logo)
             D_800E9C60[omCurrentObj->objId] = 0;
             func_800AF8C0(0x18, 0xE, 4);
-            func_800A57A0(0xFF, 0xFF, 0xFF);
-            func_800A5A14(0xFF, -8, 0);
+            utilSetRectColor(0xFF, 0xFF, 0xFF);
+            utilSpawnRect(0xFF, -8, 0);
             D_800DF150[omCurrentObj->objId] = check_save_file_completion_cheat_code;
             ohSleep(4 seconds);
-            func_800A57A0(0, 0, 0);
-            func_800A5A14(0, 8, 2);
+            utilSetRectColor(0, 0, 0);
+            utilSpawnRect(0, 8, 2);
             break;
         case 2: // Kirby 64 title bg
             gEntitiesNextPosXArray[omCurrentObj->objId] = 10.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = 10.0f;
             func_800AF8C0(0x19, 0x12, 4);
             func_800A6F68(0x10, 0.0f, 0.0f, 600.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-            func_800A57A0(0, 0, 0);
-            func_800A5A14(0xFF, -8, 0);
+            utilSetRectColor(0, 0, 0);
+            utilSpawnRect(0xFF, -8, 0);
             while (D_800D6B24 != 0) {
                 ohSleep(1);
             }
@@ -268,16 +268,16 @@ void func_80151338_ovl4(s32 arg0) {
             gEntitiesNextPosYArray[omCurrentObj->objId] = 88.0f;
             func_800AF8C0(0x1A, 0xE, 6);
             func_800A5B14(arg0, 0xFF, 0xD8, 0, 0xFF);
-            func_800A57A0(0, 0, 0);
-            func_800A5A14(0xFF, -8, 0);
+            utilSetRectColor(0, 0, 0);
+            utilSpawnRect(0xFF, -8, 0);
             break;
         case 10: // wrong region
             gEntitiesNextPosXArray[omCurrentObj->objId] = 48.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = 101.0f;
             func_800AF8C0(0x1B, 0xE, 6);
             func_800A5B14(arg0, 0xF7, 0xD6, 0, 0xFF);
-            func_800A57A0(0, 0, 0);
-            func_800A5A14(0xFF, -8, 0);
+            utilSetRectColor(0, 0, 0);
+            utilSpawnRect(0xFF, -8, 0);
     }
     curObjSleepForever();
 }
@@ -287,8 +287,8 @@ void func_80151990_ovl4(s32 arg0) {
     random_soft_u16();
     if ((D_800D6B24 == 0) && (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON))) {
         play_sound(SOUND_KETTEI);
-        func_800A57A0(0, 0, 0);
-        func_800A5A14(0, 0x10, 2);
+        utilSetRectColor(0, 0, 0);
+        utilSpawnRect(0, 0x10, 2);
         D_800D6B74 = 0;
     }
 }
@@ -300,8 +300,8 @@ void func_80151A0C_ovl4(s32 arg0) {
     if (D_800D6B24 == 0) {
         if (--D_8015C680_ovl4 < 0) {
             D_800D6B74 = 2;
-            func_800A57A0(0, 0, 0);
-            func_800A5A14(0, 0x10, 2);
+            utilSetRectColor(0, 0, 0);
+            utilSpawnRect(0, 0x10, 2);
         }
         else if (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON)) {
             if ((gPlayerControllers[0].buttonHeld & (Z_TRIG | L_TRIG | R_TRIG)) == (Z_TRIG | L_TRIG | R_TRIG)) {
@@ -309,8 +309,8 @@ void func_80151A0C_ovl4(s32 arg0) {
             } else {
                 play_sound(SOUND_KETTEI);
             }
-            func_800A57A0(0, 0, 0);
-            func_800A5A14(0, 0x10, 2);
+            utilSetRectColor(0, 0, 0);
+            utilSpawnRect(0, 0x10, 2);
         }
     }
 }
@@ -349,7 +349,7 @@ void func_80151B08_ovl4(void) {
             break;
     }
     D_800D6B30 = 0;
-    func_800A5744(0, 0, 0);
+    utilSetRectColorFullScreen(0, 0, 0);
 }
 
 void func_80151CC8_ovl4(Gfx **gp) {

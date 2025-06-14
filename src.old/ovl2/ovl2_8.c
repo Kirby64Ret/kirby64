@@ -71,7 +71,7 @@ struct DObj *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
     return D_800DFBD0[phi_a0][destructGroups->Unk_Index];
 }
 
-extern func_800A4794(Vec3f, struct DObj *, struct vCollisionHeader *, struct DynGeo_List *);
+extern utilGetTransformSRT(Vec3f, struct DObj *, struct vCollisionHeader *, struct DynGeo_List *);
 extern func_800FD754(s32 *, f32, f32, f32);
 extern func_800A4DB8(Vec3f, struct DObj *);
 extern func_800A802C(s32 *, s32, s32, Vec3f, Vec3f);
@@ -109,10 +109,10 @@ struct DObj *func_8011BB98(struct CollisionTriangle *tri, u32 arg1) {
     temp_s0->unk54 = 2;
     
     if (tri->collisionParameter == 0) {
-        func_800A4794(sp44, temp_s0, vColHeader, destructGroups);
+        utilGetTransformSRT(sp44, temp_s0, vColHeader, destructGroups);
         func_800FD754(NULL, sp44[0], sp44[1], sp44[2]);
     } else {
-        func_800A4794(sp38, temp_s0, vColHeader, destructGroups);
+        utilGetTransformSRT(sp38, temp_s0, vColHeader, destructGroups);
         func_800A4DB8(sp2C, temp_s0);
         func_800A802C(NULL, 3, 54, sp38, sp2C);
     }
@@ -723,7 +723,7 @@ void func_80122A10(s32 arg0) {
         return;
     }
     // "plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n"
-    print_error_stub("plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n", 5, D_8012E894);
+    utilPrintf("plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n", 5, D_8012E894);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122A80.s")

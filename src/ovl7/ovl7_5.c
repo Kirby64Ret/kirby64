@@ -2365,7 +2365,7 @@ block_10:
             var_v0_3 = omCurrentObj->objId;
             goto block_10;
     }
-    print_error_stub("JL_CatchOver: No CatchInfo Address ID:%x\n", *(D_800E8060 + var_v0_2));
+    utilPrintf("JL_CatchOver: No CatchInfo Address ID:%x\n", *(D_800E8060 + var_v0_2));
 loop_12:
     goto loop_12;
 }

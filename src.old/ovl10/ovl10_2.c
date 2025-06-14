@@ -136,7 +136,7 @@ void func_801E3A64_ovl10(void) {
     for (i = 0; i < 2; i++) {
         temp_v0 = request_track_general(0x18, 0x1E, 0x3C);
         if (temp_v0 >= 0x3C || temp_v0 == -1) {
-            print_error_stub(&D_801F4A80_ovl10);
+            utilPrintf(&D_801F4A80_ovl10);
             func_800B1900(temp_v0 & 0xFFFF);
             break;
         }
@@ -168,7 +168,7 @@ void func_801E3C2C_ovl10(s32 arg0) {
     gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] + -4.0f;
     D_800E9AA0[omCurrentObj->objId] = func_800FCE50();
     if (D_800E9AA0[omCurrentObj->objId] == 0) {
-        print_error_stub(&D_801F4AB0_ovl10);
+        utilPrintf(&D_801F4AB0_ovl10);
     }
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E9FE0[omCurrentObj->objId].as_u32p = &D_801F449C_ovl10;
@@ -210,7 +210,7 @@ void func_801E409C_ovl10(void) {
     temp_v0 = request_track_general(0x18, 0x1E, 0x3C);
     new = temp_v0;
     if (temp_v0 >= 0x3C || temp_v0 == -1) {
-        print_error_stub(&D_801F4AC8_ovl10);
+        utilPrintf(&D_801F4AC8_ovl10);
         func_800B1900((u16)new);
         return;
     }

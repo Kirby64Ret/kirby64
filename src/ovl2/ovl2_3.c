@@ -775,7 +775,7 @@ void func_800F9C54(Vector* arg0, f32 arg1, Vector* arg2, s32 arg3) {
     Vector tmp;
 
     mtxGetInterpolatedPosition(&tmp, arg0, arg1, arg3);
-    vec3_dist_square(arg2, &tmp);
+    utilVec3Dist(arg2, &tmp);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9C54.s")
@@ -919,8 +919,8 @@ f32 func_800F9F80(s32 arg0, s32 arg1, s32 arg2) {
 
     lbvector_Diff(&sp2C, arg2, arg1);
     lbvector_Diff(&sp20, arg0, arg1);
-    sp1C = vec3_dot_product(&sp2C, &sp20);
-    return sp1C / vec3_mag_square(&sp2C);
+    sp1C = utilVec3Dot(&sp2C, &sp20);
+    return sp1C / utilVec3Mag(&sp2C);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9F80.s")
@@ -977,9 +977,9 @@ void func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
     mtxGetInterpolatedPosition(&sp4C, arg0, spAC);
     mtxGetInterpolatedPosition(&sp40, arg0, spA8);
     mtxGetInterpolatedPosition(&sp58, arg0, var_f20);
-    sp8C = vec3_dist_square(&sp4C, arg1);
-    sp90 = vec3_dist_square(&sp58, arg1);
-    temp_f0 = vec3_dist_square(&sp40, arg1);
+    sp8C = utilVec3Dist(&sp4C, arg1);
+    sp90 = utilVec3Dist(&sp58, arg1);
+    temp_f0 = utilVec3Dist(&sp40, arg1);
     if (sp8C < temp_f0) {
         var_f2_2 = spAC;
         var_f12 = sp8C;

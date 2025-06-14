@@ -1112,7 +1112,7 @@ void func_800B83C8(s32 arg0) {
     sp24.x = D_800E2090[omCurrentObj->objId];
     sp24.y = D_800E2250[omCurrentObj->objId];
     sp24.z = D_800E2410[omCurrentObj->objId];
-    func_800A4958(&sp30, D_800DE350[D_800E0D50[omCurrentObj->objId]]->unk3C->unk10, &sp24);
+    utilTransformPoint(&sp30, D_800DE350[D_800E0D50[omCurrentObj->objId]]->unk3C->unk10, &sp24);
     gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
     gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     gEntitiesPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];

@@ -79,7 +79,7 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 entID, u8 arg3, u8 arg4, u8 arg5, s16 
             id = 0x21;
             break;
         default:
-            print_error_stub("setUpDispose failed. DisType =%02d\n", disType);
+            utilPrintf("setUpDispose failed. DisType =%02d\n", disType);
             return -1;
     }
 

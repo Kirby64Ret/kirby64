@@ -15,7 +15,7 @@ void func_801D2040_ovl8(struct GObj *this, s32 arg1, f32 arg2) {
     if (!(D_800D70D8 <= 0.0f) && (arg1 == 0) && ((s32)arg2 == 1)) {
         newIdx = request_track_general(0x19, 0x1E, 0x3C);
         if (newIdx >= 0x3C || newIdx == -1) {
-            print_error_stub("reqWhispyRootTrk  Request Error!![eneeff.cc]\n");
+            utilPrintf("reqWhispyRootTrk  Request Error!![eneeff.cc]\n");
             func_800B1900(newIdx);
             return;
         }

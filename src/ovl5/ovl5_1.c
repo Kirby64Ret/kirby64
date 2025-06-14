@@ -161,7 +161,7 @@ void func_8015CB7C_ovl5(void) {
     if ((D_800D6B24 == 0) && ((&D_800D7158 + 0x20)->unk74 == 0)) {
         if (gPlayerControllers + 2 & START_BUTTON) {
             play_sound(SOUND_MINIPAUSE1);
-            func_800A699C();
+            utilPauseAllGObjs();
             temp_v1 = &D_800D7158 + 0x20;
             temp_v0 = temp_v1->unk44;
             temp_v1->unk74 = 1;
@@ -183,7 +183,7 @@ void func_8015CB7C_ovl5(void) {
         temp_v0_2 = var_v1->unk78;
         if (temp_v0_2 != 0) {
             if (temp_v0_2 == 2) {
-                func_800A6A18();
+                utilResumeAllGObjs();
                 var_v1 = &D_800D7158 + 0x20;
             }
             var_v1->unk74 = 0;

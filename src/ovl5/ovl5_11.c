@@ -369,8 +369,8 @@ void func_80181FD8_ovl5(void) {
 }
 
 void func_80182024_ovl5(void) {
-    func_800A5744(0, 0, 0);
-    func_800A5A14(0, 0x10, 2);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0, 0x10, 2);
 }
 
 void func_8018205C_ovl5(s32 arg0) {
@@ -400,8 +400,8 @@ void func_8018209C_ovl5(void) {
     D_800E98E0[request_track_3(0xB, 0, 0x70)] = 6;
     D_800E98E0[request_track_3(0xB, 0, 0x70)] = 7;
     HS64_omMakeGObj(0, &func_8018205C_ovl5, 0x1A, 0x80000000);
-    func_800A5744(0, 0, 0);
-    func_800A5A14(0xFF, -0x10, 0);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
 }
 
 void func_80182288_ovl5(Gfx **g) {

@@ -83,7 +83,7 @@ f32 func_800F9F80(Vector *arg0, Vector *arg1, Vector *arg2) {
 
     lbvector_Diff(&sp2C, arg2, arg1);
     lbvector_Diff(&sp20, arg0, arg1);
-    return (vec3_dot_product(&sp2C, &sp20) / vec3_mag_square(&sp2C));
+    return (utilVec3Dot(&sp2C, &sp20) / utilVec3Mag(&sp2C));
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl2_3/func_800F9FDC.s")
@@ -227,7 +227,7 @@ s32 func_800FCA84(s32 arg0, u8 bankID, u8 entID,
         temp_a0 = 0x21;
         break;
     default:
-        print_error_stub("setUpDispose failed. DisType =%02d\n", bank);
+        utilPrintf("setUpDispose failed. DisType =%02d\n", bank);
         return -1;
     }
 

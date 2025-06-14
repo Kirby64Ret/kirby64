@@ -288,7 +288,7 @@ void func_800A3058(void) {
 
     switch (osTvType) {
         default:
-            load_overlay(2);
+            utilLoadOverlay(2);
             func_80151CEC_ovl4(5);
         case 2:
         case 1:
@@ -302,21 +302,21 @@ void func_800A3058(void) {
             return;
         }
     }
-    load_overlay(2);
+    utilLoadOverlay(2);
     func_80151CEC_ovl4(4);
 }
 
 void func_800A30E8(void) {
-    load_overlay(19);
+    utilLoadOverlay(19);
     tamper_check_ovl20();
-    load_overlay(5);
-    load_overlay(6);
-    load_overlay(17);
+    utilLoadOverlay(5);
+    utilLoadOverlay(6);
+    utilLoadOverlay(17);
 }
 
 void load_menu_overlays(void) {
-    load_overlay(2);
-    load_overlay(3);
+    utilLoadOverlay(2);
+    utilLoadOverlay(3);
 }
 
 void func_800A3150(s32 arg0) {
@@ -328,7 +328,7 @@ void func_800A3150(s32 arg0) {
     func_800A2CE4();
     func_800A2D5C();
     func_800A2D68();
-    load_overlay(18);
+    utilLoadOverlay(18);
     func_800BBBA0();
     while (1) {
         func_800A30E8();
@@ -360,7 +360,7 @@ void func_800A3230(void) {
                 func_800A74D8();
                 set_cutscene_watched((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, saveCurrentFileNum);
                 func_800B9C50(saveCurrentFileNum);
-                load_overlay(4);
+                utilLoadOverlay(4);
                 func_80154D60_ovl6((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, 2);
             }
             var_s0 += 3;
@@ -377,7 +377,7 @@ void func_800A336C(void) {
     if ((D_800BE500 >= 0) && (D_800BE500 < 5) && (check_cutscene_watched(D_800BE414[D_800BE500]) == 0)) {
         set_cutscene_watched(D_800BE414[D_800BE500], saveCurrentFileNum);
         func_800B9C50(saveCurrentFileNum);
-        load_overlay(4);
+        utilLoadOverlay(4);
         func_80154D60_ovl6(D_800BE414[D_800BE500], 2);
     }
 }
@@ -388,13 +388,13 @@ void func_800A336C(void) {
 #ifdef MIPS_TO_C
 void func_800A3408(void) {
     if ((saveCurrentWorld == 1) && (saveCurrentLevel == 1)) {
-        load_overlay(0x12);
+        utilLoadOverlay(0x12);
         if (func_80227308_ovl18(0) != 0) {
             D_800BE4F4 = gGameState;
             do {
                 gGameState = 0xE;
                 func_800A3150(4);
-                load_overlay(0x12);
+                utilLoadOverlay(0x12);
             } while (func_80227308_ovl18(1) == 1);
             func_800A2CE4();
             func_800B96A0(saveCurrentFileNum, 0);
@@ -478,7 +478,7 @@ void func_800A36C0(void) {
     temp_t6->unk0 = temp_t7->unk0;
     temp_t6->unk4 = temp_t7->unk4;
 loop_1:
-    load_overlay(4);
+    utilLoadOverlay(4);
     var_s0 += 4;
     if (func_80154D60_ovl6(*var_s0, 0x15) != 3) {
         if (var_s0 != &sp70) {
@@ -510,7 +510,7 @@ void game_tick(s32 arg0) {
     func_800BE320(&D_800D7288);
     func_800A2B9C();
     func_800A6B18();
-    load_overlay(1);
+    utilLoadOverlay(1);
     func_800A2C80();
     func_800A3058();
     while (1) {
@@ -520,20 +520,20 @@ void game_tick(s32 arg0) {
             default:                                            /* switch 1 */
                 continue;
             case 1:                                     /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 func_80151CEC_ovl4(0);
                 gGameState = 2;
                 continue;
             case 2:                                     /* switch 1 */
                 if (D_800D6B74 == 1) {
-                    load_overlay(4);
+                    utilLoadOverlay(4);
                     func_80154D60_ovl6(0, 1);
                 }
                 gGameState = 3;
                 D_800D6B60 = 3;
                 continue;
             case 3:                                     /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     gGameState = 4;
                 } else {
@@ -549,7 +549,7 @@ void game_tick(s32 arg0) {
                 D_800D6B60 = 5;
                 continue;
             case 5:                                     /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     gGameState = 6;
                 } else {
@@ -565,7 +565,7 @@ void game_tick(s32 arg0) {
                 D_800D6B60 = 7;
                 continue;
             case 7:                                     /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     gGameState = 8;
                 } else {
@@ -581,7 +581,7 @@ void game_tick(s32 arg0) {
                 D_800D6B60 = 9;
                 continue;
             case 9:                                     /* switch 1 */
-                load_overlay(2);
+                utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     D_800D6B74 = 1;
                     gGameState = 2;
@@ -604,7 +604,7 @@ void game_tick(s32 arg0) {
                 continue;
             case 11:                                    /* switch 1 */
                 if (check_cutscene_watched(1) == 0) {
-                    load_overlay(4);
+                    utilLoadOverlay(4);
                     set_cutscene_watched(1, saveCurrentFileNum);
                     func_800B9C50(saveCurrentFileNum);
                     func_80154D60_ovl6(1, 2);
@@ -725,7 +725,7 @@ void game_tick(s32 arg0) {
                                 break;
                             case 5:                     /* switch 3 */
                                 func_800A74D8();
-                                if (ovl1_TamperCheck() == 0) {
+                                if (utilTamperCheck() == 0) {
                                     gGameState = 0xB;
                                 } else {
                                     if ((saveCurrentWorld == (D_800D6B98 + 1)) && (saveCurrentWorld < 7)) {
@@ -743,7 +743,7 @@ void game_tick(s32 arg0) {
                                             D_800BE508 = 0;
                                             D_800BE504 = 0;
                                             D_800D6B9C = 0;
-                                            load_overlay(4);
+                                            utilLoadOverlay(4);
                                             set_cutscene_watched(0xD, saveCurrentFileNum);
                                             func_800B9C50(saveCurrentFileNum);
                                             func_80154D60_ovl6(0xD, 2);
@@ -787,7 +787,7 @@ void game_tick(s32 arg0) {
                 gGameState = 1;
                 continue;
             case 21:                                    /* switch 1 */
-                load_overlay(4);
+                utilLoadOverlay(4);
                 func_80154D60_ovl6(D_800D71E8, 0x15);
                 temp_t7 = gGameState;
                 gGameState = 0x17;
@@ -797,7 +797,7 @@ void game_tick(s32 arg0) {
                 func_800A36C0();
                 continue;
             case 18:                                    /* switch 1 */
-                load_overlay(4);
+                utilLoadOverlay(4);
                 set_cutscene_watched(0x11, saveCurrentFileNum);
                 set_cutscene_watched(0x13, saveCurrentFileNum);
                 func_800B9C50(saveCurrentFileNum);
@@ -805,7 +805,7 @@ void game_tick(s32 arg0) {
                 gGameState = 1;
                 continue;
             case 19:                                    /* switch 1 */
-                load_overlay(4);
+                utilLoadOverlay(4);
                 set_cutscene_watched(0xD, saveCurrentFileNum);
                 set_cutscene_watched(0x11, saveCurrentFileNum);
                 set_cutscene_watched(0x12, saveCurrentFileNum);

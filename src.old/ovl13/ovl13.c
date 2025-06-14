@@ -1447,7 +1447,7 @@ void func_801DF5D0_ovl13(GObj *arg0) {
     sp60 = D_800E5F90[temp_v1_6];
     sp64 = gEntitiesNextPosYArray[temp_v1_6];
     func_800AA154(0x1042B, omCurrentObj);
-    func_800A4794(&sp54, D_800DFBD0[omCurrentObj->objId]->unk4);
+    utilGetTransformSRT(&sp54, D_800DFBD0[omCurrentObj->objId]->unk4);
     temp_v1_7 = omCurrentObj->objId;
     func_800F9974(&D_800E5F90[temp_v1_7], &D_800E6BD0[temp_v1_7], D_800E6A10[temp_v1_7] * D_800DFBD0[temp_v1_7]->unk4->unk24);
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp58;
@@ -1560,7 +1560,7 @@ void func_801DF5D0_ovl13(GObj *arg0) {
     D_800E6BD0[omCurrentObj->objId] = sp68;
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp64;
     func_800AA154(0x1042D, omCurrentObj);
-    func_800A4794(&sp54, D_800DFBD0[omCurrentObj->objId]->unk4);
+    utilGetTransformSRT(&sp54, D_800DFBD0[omCurrentObj->objId]->unk4);
     temp_v1_16 = omCurrentObj->objId;
     func_800F9974(&D_800E5F90[temp_v1_16], &D_800E6BD0[temp_v1_16], D_800E6A10[temp_v1_16] * D_800DFBD0[temp_v1_16]->unk4->unk24);
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp58;
@@ -1769,7 +1769,7 @@ void func_801E0A90_ovl13(GObj *arg0) {
     D_800E98E0[D_800EBF60[omCurrentObj->objId]] = 1;
     D_800D709C = 0;
     D_800DEF90[omCurrentObj->objId] = D_800B7790;
-    func_800A4794(&sp44, D_800DFBD0[omCurrentObj->objId]->unk4, D_800DFBD0);
+    utilGetTransformSRT(&sp44, D_800DFBD0[omCurrentObj->objId]->unk4, D_800DFBD0);
     gEntitiesNextPosXArray[omCurrentObj->objId] = sp44;
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp48;
     gEntitiesNextPosZArray[omCurrentObj->objId] = sp4C;

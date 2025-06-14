@@ -1605,7 +1605,7 @@ void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
         vec->x = atan2f(spA8, spB8);
         vec->z = atan2f(sp90[1], sp90[0]);
     }
-    func_800A4598(vec);
+    utilWrapRotation(vec);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B26D8.s")

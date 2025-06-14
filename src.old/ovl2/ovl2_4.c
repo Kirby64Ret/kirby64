@@ -58,7 +58,7 @@ u32 func_800FD570(s32 arg0, u32 arg1, f32 arg2, f32 arg3, f32 arg4) {
     Vector sp28;
 
     if (arg0 != 0) {
-        func_800A4794(&sp28, arg0, arg0);
+        utilGetTransformSRT(&sp28, arg0, arg0);
     } else {
         sp28.x = gEntitiesNextPosXArray[omCurrentObj->objId];
         sp28.y = gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -67,7 +67,7 @@ u32 func_800FD570(s32 arg0, u32 arg1, f32 arg2, f32 arg3, f32 arg4) {
     if (D_801245C4[arg1][0] != 0) {
         u32 temp_v0_3 = func_800FD9D4(0);
         if (temp_v0_3 == -1) {
-            print_error_stub(D_801288E0);
+            utilPrintf(D_801288E0);
             return 0;
         }
         D_800EC2E0[temp_v0_3].as_u32 = arg1;
@@ -97,7 +97,7 @@ s32 func_800FD754(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     if (temp_v0[0] != 0) {
         s32 temp_v0_2 = func_800FD9D4(0);
         if (temp_v0_2 == -1) {
-            print_error_stub(&D_8012890C);
+            utilPrintf(&D_8012890C);
         }
         else {
             D_800EC2E0[temp_v0_2].as_s32 = arg0;
@@ -127,7 +127,7 @@ u32 func_800FD874(s32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f3
     if (D_801245C4[arg0][0] != 0) {
         temp_v0 = func_800FD9D4(0);
         if (temp_v0 == -1) {
-            print_error_stub(&D_8012893C);
+            utilPrintf(&D_8012893C);
         } else {
             D_800EC2E0[temp_v0].as_s32 = arg0;
             gEntitiesNextPosXArray[temp_v0] = arg1;
@@ -160,7 +160,7 @@ s32 func_800FD9D4(s32 arg0) {
 
     temp_v0 = request_track_general(0x22, 0x3C, 0x4A);
     if (temp_v0 == -1) {
-        print_error_stub(&D_8012896C);
+        utilPrintf(&D_8012896C);
     } else {
         gEntityFuncListIDArray[temp_v0] = arg0;
     }

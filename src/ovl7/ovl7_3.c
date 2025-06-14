@@ -1087,7 +1087,7 @@ void func_801A37B8_ovl7(s32 arg0, s32 arg1) {
     }
     sp2C = var_a2;
     func_801A3618_ovl7(var_a2, var_a2);
-    func_800A4794(&sp20, arg1);
+    utilGetTransformSRT(&sp20, arg1);
     sp2C->unk0 = sp20.unk0;
     sp2C->unk4 = sp20.unk4;
     sp2C->unk8 = sp20.unk8;
@@ -1109,7 +1109,7 @@ s32 func_801A3864_ovl7(void) {
     sp24 = temp_v0;
     temp_v0->unk54 = 2;
     play_sound(0xA);
-    func_800A4794(&sp18, sp24);
+    utilGetTransformSRT(&sp18, sp24);
     func_800FD754(0, sp18, sp1C, sp20);
     return 0;
 }
@@ -1130,7 +1130,7 @@ s32 func_801A38BC_ovl7(void *arg0) {
     temp_v0->unk54 = 2;
     if (arg0->unk10 == 0) {
         play_sound(0xA);
-        func_800A4794(&sp2C, sp44);
+        utilGetTransformSRT(&sp2C, sp44);
         func_800A4DB8(&sp20, sp44);
         func_800A802C(0, 3, 0x36, &sp2C, &sp20);
     }

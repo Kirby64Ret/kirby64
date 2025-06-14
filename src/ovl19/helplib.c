@@ -78,7 +78,7 @@ s32 func_8021E2D0_ovl19(u8 arg0, u8 arg1) {
             func_800B1900(idx);
             idx = -1;
         }
-        print_error_stub("reqHelpChildTrk  Request Error!![helplib.cc]\n");
+        utilPrintf("reqHelpChildTrk  Request Error!![helplib.cc]\n");
     } else {
         D_800E7730[idx] = 7;
         D_800E77A0[idx] = arg0;

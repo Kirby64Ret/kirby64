@@ -61,7 +61,7 @@ void func_801DB34C_ovl11(void) {
     for (i = 0; i < 3; i++) {
         temp_v0 = request_track_general(0x19, 0x1E, 0x3C);
         if (temp_v0 >= 0x3C || temp_v0 == -1) {
-            print_error_stub(&D_801E0BE0);
+            utilPrintf(&D_801E0BE0);
             func_800B1900(temp_v0);
             return;
         }

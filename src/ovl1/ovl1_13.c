@@ -12,7 +12,7 @@ s32 change_kirby_hp(f32 arg0) {
     f32 var_f12;
 
     var_f12 = arg0;
-    if (((random_u16() & 3) == 3) && (&ovl1_TamperCheck == NULL)) {
+    if (((random_u16() & 3) == 3) && (&utilTamperCheck == NULL)) {
         if (var_f12 < 0.0f) {
             var_f12 *= 2.0f;
         } else {
@@ -402,8 +402,8 @@ void func_800BCA5C(void) {
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E9AA0[omCurrentObj->objId] = NULL;
-    func_800A56F4(0xA, 0xA, 0x136, 0xB6, 0xF0, 0xD8, 0xA0);
-    func_800A5A14(0, 0x10, 0);
+    utilSetRectBoundsAndColor(0xA, 0xA, 0x136, 0xB6, 0xF0, 0xD8, 0xA0);
+    utilSpawnRect(0, 0x10, 0);
     auSetBGMVolumeSmooth(0, 0x5000, 0x10);
     func_80023884();
     play_sound(0xED);
@@ -413,7 +413,7 @@ void func_800BCA5C(void) {
         } while (D_800D6B24 != 0);
     }
     D_800E9AA0[omCurrentObj->objId] = 1;
-    func_800A5A14(0xFF, -0x10, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
     if (D_800D6B24 != 0) {
         do {
             ohSleep(1);
@@ -442,8 +442,8 @@ loop_14:
             D_800D6B6C = 1;
         }
         D_800BE4F8 = 0;
-        func_800A5744(0, 0, 0);
-        func_800A5A14(0, 0x20, 2);
+        utilSetRectColorFullScreen(0, 0, 0);
+        utilSpawnRect(0, 0x20, 2);
         auSetBGMVolumeSmooth(0, 0, 8);
         if (D_800D6B24 != 0) {
             do {
@@ -452,7 +452,7 @@ loop_14:
         }
         auStopSong(0);
     } else {
-        func_800A5A14(0, 0x10, 0);
+        utilSpawnRect(0, 0x10, 0);
         if (D_800D6B24 != 0) {
             do {
                 ohSleep(1);
@@ -462,7 +462,7 @@ loop_14:
         D_800E9C60[omCurrentObj->objId] = 1;
         auSetBGMVolumeSmooth(0, 0x7800, 0x10);
         func_80023794();
-        func_800A5A14(0xFF, -0x10, 0);
+        utilSpawnRect(0xFF, -0x10, 0);
         if (D_800D6B24 != 0) {
             do {
                 ohSleep(1);
