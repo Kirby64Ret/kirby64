@@ -260,7 +260,7 @@ void ohCreateDefaultCameraMatrices(Camera *cam) {
 }
 
 void ohDobjTreeRemoveAllMObjs(GObj *g) {
-    DObj *d = (DObj *)g->data;
+    DObj *d = g->data.dobj;
 
     while (d != NULL) {
         func_80009B5C(d);
@@ -371,8 +371,8 @@ void func_8000BBE0(GObj *g) {
     if (g == NULL) {
         g = omCurrentObj;
     }
-    while (g->data != NULL) {
-        func_80009DF4(g->data);
+    while (g->data.ptr != NULL) {
+        func_80009DF4(g->data.ptr);
     }
 }
 
@@ -447,7 +447,7 @@ GObj *ohCreateCameraWrapper(s32 link, s32 pri, s32 dlPriority, s32 flags, s32 bg
     if (g == NULL) {
         return NULL;
     }
-    cam = g->data;
+    cam = g->data.cam;
     cam->flags = flags;
     cam->bgcolor = bgColor;
     return g;

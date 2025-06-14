@@ -832,7 +832,7 @@ void func_8022B4C4_ovl19(GObj *gobj) {
         gKirbyState.unk4C = 0;
         D_800E9AA0[omCurrentObj->objId] = NULL;
         D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId];
-        ((struct DObj *)gobj->data)->parent->angle.v.y = 0.0f;
+        gobj->data.dobj->parent->angle.v.y = 0.0f;
         D_800E64D0[omCurrentObj->objId] =
         D_800E6690[omCurrentObj->objId] = 0;
         D_800E6850[omCurrentObj->objId] = 65535.0f;

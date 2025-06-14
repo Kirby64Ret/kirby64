@@ -277,7 +277,7 @@ void func_80021764(GObj *g) {
     s32 offsetX = 40;
     s32 offsetY = 0x1F;
 
-    func_8001663C(gDisplayListHeads, g->data, 0, g);
+    func_8001663C(gDisplayListHeads, g->data.ptr, 0, g);
     gDPPipeSync(gDisplayListHeads[0]++);
     gDPSetCycleType(gDisplayListHeads[0]++, G_CYC_FILL);
     gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_NOOP, G_RM_NOOP2);

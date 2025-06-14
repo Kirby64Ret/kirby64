@@ -660,18 +660,18 @@ struct AObj *HS64_AObjNew(struct Animation *anim, u8 paramID) {
     return aobj;
 }
 
-void omDObjResetAnimation(struct unk8000BE90Func *arg0) {
-    struct AObj *temp_s1;
-    struct AObj *phi_s0;
+void omDObjResetAnimation(DObj *dobj) {
+    struct AObj *next;
+    struct AObj *aobj;
 
-    phi_s0 = arg0->unk6C;
-    while (phi_s0 != 0) {
-        temp_s1 = phi_s0->next;
-        HS64_AObjRelease(phi_s0);
-        phi_s0 = temp_s1;
+    aobj = dobj->aobj;
+    while (aobj != 0) {
+        next = aobj->next;
+        HS64_AObjRelease(aobj);
+        aobj = next;
     }
-    arg0->unk6C = 0;
-    arg0->unk74 = -FLT_MAX;
+    dobj->aobj = NULL;
+    dobj->timeRemaining = -FLT_MAX;
 }
 
 struct AObj *func_800098AC(MObj *mobj, u8 index) {
@@ -790,8 +790,8 @@ struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
     }
     dobj = HS64_DObjPop();
     
-    if (gobj->data != NULL) {
-        temp_v1 = gobj->data;
+    if (gobj->data.dobj != NULL) {
+        temp_v1 = gobj->data.dobj;
         
         while (temp_v1->next != 0) {
             temp_v1 = temp_v1->next;
@@ -801,7 +801,7 @@ struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
         dobj->prev = temp_v1;
     } else {
         gobj->kind = 1;
-        gobj->data = dobj;
+        gobj->data.dobj = dobj;
         dobj->prev = 0;
     }
     dobj->gobj = gobj;
@@ -829,7 +829,7 @@ struct Camera *omGObjSetCamera(GObj *gobj) {
     gobj->kind = 3;
     cam = HS64_CameraPop();
 
-    gobj->data = cam;
+    gobj->data.cam = cam;
 
     cam->gobj = gobj;
 
@@ -864,7 +864,7 @@ void func_8000A02C(struct Camera *cam) {
 
     gobj = cam->gobj;
     gobj->kind = 0;
-    gobj->data = NULL;
+    gobj->data.ptr = NULL;
 
     for (i = 0; i < 2; i++) {
         mtx = cam->matrices[i];
@@ -905,7 +905,7 @@ GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri) {
     toReturn->procListTail = NULL;
     toReturn->flags = 0;
     toReturn->kind = 0;
-    toReturn->data = NULL;
+    toReturn->data.ptr = NULL;
     toReturn->dl_link = 0x21;
     toReturn->animTimer = 0.0f;
     toReturn->onAnimate = 0;
@@ -962,25 +962,25 @@ GObj *omAddGObjBefore(s32 id, s32 updateCB, GObj *arg2) {
 void func_8000BBE0(GObj *);
 void func_8000B870(GObj *);
 
-void omGDeleteObj(GObj *arg0) {
-    if (arg0 == 0 || arg0 == omCurrentObj) {
+void omGDeleteObj(GObj *gobj) {
+    if (gobj == 0 || gobj == omCurrentObj) {
         D_8004A7D4 = 2;
         return;
     }
-    func_8000B870(arg0);
-    switch (arg0->kind) {
+    func_8000B870(gobj);
+    switch (gobj->kind) {
         case 1:
-            func_8000BBE0(arg0);
+            func_8000BBE0(gobj);
         case 2: // stubbed out sprite functionality
             break;
         case 3:
-            func_8000A02C((struct Camera *)arg0->data);
+            func_8000A02C(gobj->data.cam);
     }
-    if (arg0->dl_link != 0x21) {
-        omGDLLinkDestructor(arg0);
+    if (gobj->dl_link != 0x21) {
+        omGDLLinkDestructor(gobj);
     }
-    func_80008528(arg0);
-    HS64_GObjRelease(arg0);
+    func_80008528(gobj);
+    HS64_GObjRelease(gobj);
 }
 
 // i genuinely don't know what's going on here

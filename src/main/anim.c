@@ -30,7 +30,7 @@ DObj *animModelTreeNextNode(DObj *dobj) {
 }
 
 void animSetModelAnimationSpeed(GObj *gobj, f32 speed) {
-    DObj *dobj = gobj->data;
+    DObj *dobj = gobj->data.dobj;
 
     while (dobj != NULL) {
         dobj->animSpeed = speed;
@@ -39,7 +39,7 @@ void animSetModelAnimationSpeed(GObj *gobj, f32 speed) {
 }
 
 void animSetModelAndTextureAnimationSpeed(GObj *gobj, f32 speed) {
-    DObj *dobj = gobj->data;
+    DObj *dobj = gobj->data.dobj;
 
     while (dobj != NULL) {
         MObj *mobj = dobj->mobjList;
@@ -53,7 +53,7 @@ void animSetModelAndTextureAnimationSpeed(GObj *gobj, f32 speed) {
 }
 
 void animSetTextureAnimationSpeed(GObj *gobj, f32 speed) {
-    DObj *dobj = gobj->data;
+    DObj *dobj = gobj->data.dobj;
 
     while (dobj != NULL) {
         MObj *mobj = dobj->mobjList;
@@ -66,7 +66,7 @@ void animSetTextureAnimationSpeed(GObj *gobj, f32 speed) {
 }
 
 void animResetModelAnimation(GObj *gobj) {
-    DObj *dobj = gobj->data;
+    DObj *dobj = gobj->data.dobj;
 
     while (dobj != NULL) {
         omDObjResetAnimation(dobj);
@@ -75,7 +75,7 @@ void animResetModelAnimation(GObj *gobj) {
 }
 
 void animResetModelAndTextureAnimation(GObj *gobj) {
-    DObj *dobj = gobj->data;
+    DObj *dobj = gobj->data.dobj;
     MObj *mobj;
 
     while (dobj != NULL) {
@@ -91,7 +91,7 @@ void animResetModelAndTextureAnimation(GObj *gobj) {
 }
 
 void animResetTextureAnimation(GObj *gobj) {
-    DObj *dobj = gobj->data;
+    DObj *dobj = gobj->data.dobj;
     MObj *mobj;
 
     while (dobj != NULL) {
@@ -135,7 +135,7 @@ void animSetModelTreeAnimation(GObj *obj, AnimCmd **animLists, f32 time) {
     DObj *dobj;
     u8 s2 = TRUE;
 
-    dobj = obj->data;
+    dobj = obj->data.dobj;
     obj->animTimer = time;
     while (dobj != NULL) {
         if (*animLists != NULL) {
@@ -157,7 +157,7 @@ void animSetModelTreeTextureAnimation(GObj *obj, AnimCmd*** textureAnimLists, f3
     MObj *mobj;
     AnimCmd** cmdlist;
 
-    dobj = obj->data;
+    dobj = obj->data.dobj;
     obj->animTimer = time;
     while (dobj != NULL) {
         if (textureAnimLists != NULL) {
@@ -180,7 +180,7 @@ void animSetModelTreeTextureAnimation(GObj *obj, AnimCmd*** textureAnimLists, f3
 
 void animSetModelTreeAndTextureAnimation(GObj *obj, AnimCmd** modelAnimLists,
                                          AnimCmd*** textureAnimLists, f32 time) {
-    DObj *dobj = obj->data;
+    DObj *dobj = obj->data.dobj;
     MObj *mobj;
     AnimCmd **cmdlist;
     u8 mainNode = TRUE;
@@ -1166,7 +1166,7 @@ void animUpdateModelTreeAnimation(GObj *obj) {
     DObj *dobj;
     MObj *mobj;
 
-    dobj = obj->data;
+    dobj = obj->data.dobj;
     while (dobj != NULL) {
         animProcessModelAnimation(dobj);
         animUpdateModelAnimatedParams(dobj);
@@ -1559,7 +1559,7 @@ f32 func_8000F054(GObj *gobj, AnimCmd** cmdList, f32 animTimer, UnkE4E4Arg* arg3
     UNUSED f32 tmp;
     DObj *dobj;
 
-    dobj = gobj->data;
+    dobj = gobj->data.dobj;
     gobj->animTimer = animTimer;
     if (arg4 == 2) {
         f32 sp68 = arg5;
@@ -1581,7 +1581,7 @@ f32 func_8000F054(GObj *gobj, AnimCmd** cmdList, f32 animTimer, UnkE4E4Arg* arg3
             dobj = animModelTreeNextNode(dobj);
         }
 
-        dobj = gobj->data;
+        dobj = gobj->data.dobj;
         if (arg5 < sp68) {
             arg5 = sp68;
         } else if (arg5 > arg6) {
@@ -1621,7 +1621,7 @@ void func_8000F230(GObj* obj, AnimCmd** cmdList, f32 animTimer, UnkE4E4Arg* arg3
     Vec3f sp70;
     s32 sp6C;
 
-    dobj = obj->data;
+    dobj = obj->data.dobj;
     sp7C = 0;
     sp6C = true;
     obj->animTimer = animTimer;
@@ -1963,7 +1963,7 @@ void func_8000FCE4(GObj *arg0, TextureScroll*** arg1) {
     TextureScroll** csr;
     TextureScroll* msub;
 
-    dobj = arg0->data;
+    dobj = arg0->data.dobj;
     while (dobj != NULL) {
         if (arg1 != NULL) {
             if (*arg1 != NULL) {
@@ -1984,7 +1984,7 @@ void func_8000FCE4(GObj *arg0, TextureScroll*** arg1) {
 void func_8000FD78(GObj *obj, UnkE4E4Arg* arg1) {
     DObj *dobj;
 
-    dobj = obj->data;
+    dobj = obj->data.dobj;
     while (dobj != NULL && arg1->unk_00 != 18) {
         dobj->pos.v = arg1->position;
         dobj->angle.v = arg1->rotation;
@@ -2344,7 +2344,7 @@ void animUpdateCameraAnimatedParams(Camera* cam) {
 }
 
 void animUpdateCameraAnimation(GObj *obj) {
-    Camera* cam = obj->data;
+    Camera* cam = obj->data.cam;
 
     animProcessCameraAnimation(cam);
     animUpdateCameraAnimatedParams(cam);

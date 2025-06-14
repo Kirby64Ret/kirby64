@@ -221,7 +221,7 @@ void utilGetTransformSRT(Vector *vec, DObj *dobj) {
     Mat4 tmpMtx;
 
     if (dobj == NULL) {
-        dobj = omCurrentObj->data;
+        dobj = omCurrentObj->data.dobj;
     }
     guMtxIdentF(finalMtx);
     do {
@@ -250,7 +250,7 @@ void utilTransformPoint(Vector *vec, DObj *dobj, Vector *input) {
     Mat4 tmpMtx;
 
     if (dobj == NULL) {
-        dobj = omCurrentObj->data;
+        dobj = omCurrentObj->data.dobj;
     }
     guMtxIdentF(finalMtx);
     do {
@@ -277,7 +277,7 @@ void func_800A4B34(Vector *dst, DObj *dobj) {
     Mat4 sp3C;
 
     if (dobj == 0) {
-        dobj = omCurrentObj->data;
+        dobj = omCurrentObj->data.dobj;
     }
     guMtxIdentF(&sp7C);
     do {
@@ -313,7 +313,7 @@ void func_800A4DB8(Vector *vec, DObj *dobj) {
     Mat4 sp40;
 
     if (dobj == NULL) {
-        dobj = omCurrentObj->data;
+        dobj = omCurrentObj->data.dobj;
     }
     guMtxIdentF(&sp80[0]);
     do {

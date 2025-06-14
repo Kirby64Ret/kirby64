@@ -35,10 +35,12 @@ typedef struct DObj {
     u32 unk64;
     u32 unk68;
     struct AObj *aobj;
+    // 0x70
     union AnimCmd *animList;
     f32 timeRemaining;
     f32 animSpeed;
     f32 timeElapsed;
+    // 0x80
     struct MObj *mobjList;
     u32 unk84;
 } DObj;

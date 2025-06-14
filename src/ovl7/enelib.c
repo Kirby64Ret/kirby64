@@ -196,11 +196,11 @@ void func_80199084_ovl7(void) {
     if ((var_a3 != 0) && (var_a1 != 0)) {
         func_800A9864(var_a3, var_a1, 0x10, var_a3);
         temp_v0_2 = omCurrentObj->objId;
-        D_800DE350[temp_v0_2]->data->pos.x = gEntitiesNextPosXArray[temp_v0_2];
+        D_800DE350[temp_v0_2]->data.dobj->pos.x = gEntitiesNextPosXArray[temp_v0_2];
         temp_v0_3 = omCurrentObj->objId;
-        D_800DE350[temp_v0_3]->data->pos.y = gEntitiesNextPosYArray[temp_v0_3];
+        D_800DE350[temp_v0_3]->data.dobj->pos.y = gEntitiesNextPosYArray[temp_v0_3];
         temp_v0_4 = omCurrentObj->objId;
-        D_800DE350[temp_v0_4]->data->pos.z = gEntitiesNextPosZArray[temp_v0_4];
+        D_800DE350[temp_v0_4]->data.dobj->pos.z = gEntitiesNextPosZArray[temp_v0_4];
         var_a0 = omCurrentObj->objId;
         var_a2 = D_800E7730[var_a0];
     }
@@ -1079,11 +1079,11 @@ void func_8019B2C0_ovl7(s32 arg0) {
         }
         switch (arg0) {                             /* irregular */
             case 1:
-                D_800DE350[omCurrentObj->objId]->data->parent->angle.x = -var_f2;
+                D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.x = -var_f2;
                 return;
             case 2:
                 temp_v0_2 = omCurrentObj->objId;
-                D_800DE350[temp_v0_2]->data->parent->angle.z = var_f2 * D_800E6A10[temp_v0_2];
+                D_800DE350[temp_v0_2]->data.dobj->parent->angle.z = var_f2 * D_800E6A10[temp_v0_2];
                 break;
         }
     }
@@ -1094,8 +1094,8 @@ void func_8019B2C0_ovl7(s32 arg0) {
 
 #ifdef MIPS_TO_C
 void func_8019B3C8_ovl7(s32 arg0) {
-    D_800DE350[omCurrentObj->objId]->data->parent->angle.x = 0.0f;
-    D_800DE350[omCurrentObj->objId]->data->parent->angle.z = 0.0f;
+    D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.x = 0.0f;
+    D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.z = 0.0f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B3C8_ovl7.s")
@@ -1217,7 +1217,7 @@ s32 func_8019B834_ovl7(void) {
     sp24 = gEntitiesNextPosXArray[omCurrentObj->objId];
     sp28 = gEntitiesNextPosYArray[omCurrentObj->objId];
     sp2C = gEntitiesNextPosZArray[omCurrentObj->objId];
-    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C != D_800E6A10[omCurrentObj->objId]) && (func_800A4F48(D_800D799C->data, &sp24, 1.075f, 1.075f) == 0)) {
+    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C != D_800E6A10[omCurrentObj->objId]) && (func_800A4F48(D_800D799C->data.ptr, &sp24, 1.075f, 1.075f) == 0)) {
         return 1;
     }
     return 0;
@@ -1232,7 +1232,7 @@ s32 func_8019B918_ovl7(void) {
     vec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
     vec.y = gEntitiesNextPosYArray[omCurrentObj->objId];
     vec.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    if (func_800A4F48(D_800D799C->data, &vec, 1.075f, 1.075f) == 0) {
+    if (func_800A4F48(D_800D799C->data.ptr, &vec, 1.075f, 1.075f) == 0) {
         return 1;
     } else {
         return 0;

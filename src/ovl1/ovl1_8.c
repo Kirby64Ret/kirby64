@@ -1360,7 +1360,7 @@ void func_800B8300(GObj *gobj) {
 void func_800B83C8(GObj *gobj) {
     Vector sp30;
     Vector sp24;
-    struct DObj *node = D_800DE350[D_800E0D50[omCurrentObj->objId]]->data;
+    struct DObj *node = D_800DE350[D_800E0D50[omCurrentObj->objId]]->data.dobj;
 
     sp24.x = D_800E2090[omCurrentObj->objId];
     sp24.y = D_800E2250[omCurrentObj->objId];

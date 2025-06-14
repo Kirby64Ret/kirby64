@@ -143,7 +143,7 @@ Vector *func_800BB98C(s32 arg0, s32 arg1) {
             func_800AA018(D_800D5290[arg0].unk8);
         }
         omCurrentObj->onDraw = func_800BB6B0;
-        dobj = omCurrentObj->data;
+        dobj = omCurrentObj->data.dobj;
         dobj->scale.v.x = D_800D5290[arg0].unkC;
         dobj->scale.v.y = D_800D5290[arg0].unkC;
         omCurrentObj = prevObj;

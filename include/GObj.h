@@ -174,7 +174,12 @@ typedef struct GObj {
     u32 unk34;
     u32 unk38;
     // actually void*, but mainly used to store a layoutnode
-    /* 0x3C */ struct DObj *data;
+    /* 0x3C */ union {
+        struct DObj *dobj;
+        struct MObj *mobj;
+        struct Camera *cam;
+        void *ptr;
+    } data;
     // goes up by 2.0f per frame until it hits 40.0f, then resets to 0.0f
     /* 0x40 */ f32 animTimer;
     /* 0x44 */ u32 flags;

@@ -320,7 +320,7 @@ void func_80151B08_ovl4(void) {
     s32 temp_v1;
     s32 i;
 
-    func_80007C00(&((Camera*)(ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF)->data))->viewport,
+    func_80007C00(&ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF)->data.cam->viewport,
         10.0f,
         10.0f,
         310.0f,

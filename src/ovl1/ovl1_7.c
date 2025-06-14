@@ -5,6 +5,7 @@
 #include "DObj.h"
 #include "ovl1_7.h"
 #include "unk_structs/D_800DE350.h"
+#include "main/object_helpers.h"
 #include "main/lbvector.h"
 #include "main/lbmatrix.h"
 #include "buffers.h"
@@ -216,7 +217,7 @@ void func_800AF27C(void) {
 #endif
 
 void func_800AF314(void) {
-    struct UnkStruct8004A7C4_3C *tmp = omCurrentObj->data;
+    DObj *tmp = omCurrentObj->data.dobj;
 
     while (tmp != 0) {
         omDObjResetAnimation(tmp);
@@ -476,15 +477,15 @@ void func_800AFA54(GObj *gobj) {
 }
 
 void func_800AFA88(GObj *gobj) {
-    gobj->data->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-    gobj->data->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-    gobj->data->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    gobj->data->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
-    gobj->data->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
-    gobj->data->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
-    gobj->data->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
-    gobj->data->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
-    gobj->data->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    gobj->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gobj->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gobj->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    gobj->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    gobj->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    gobj->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    gobj->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    gobj->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    gobj->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
 }
 
 #ifdef MIPS_TO_C
@@ -1030,16 +1031,16 @@ void procMainStub(GObj *arg0) {
 
 void procMainMove(GObj *gobj) {
     if (!(D_800DD8D0[omCurrentObj->objId] & 0x40)) {
-        if (gobj->data != NULL) {
-            ((struct DObj *)gobj->data)->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-            ((struct DObj *)gobj->data)->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-            ((struct DObj *)gobj->data)->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-            ((struct DObj *)gobj->data)->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
-            ((struct DObj *)gobj->data)->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
-            ((struct DObj *)gobj->data)->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
-            ((struct DObj *)gobj->data)->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
-            ((struct DObj *)gobj->data)->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
-            ((struct DObj *)gobj->data)->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+        if (gobj->data.dobj != NULL) {
+            gobj->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+            gobj->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            gobj->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+            gobj->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+            gobj->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+            gobj->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+            gobj->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+            gobj->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+            gobj->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
         }
     }
 }
@@ -1088,21 +1089,21 @@ void func_800B158C(GObj *gobj) {
 #endif
 
 void func_800B175C(GObj *gobj) {
-    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data != 0)) {
+    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data.ptr != NULL)) {
         func_8019BBEC_ovl7();
         procMainMove(gobj);
     }
 }
 
 void func_800B17B8(GObj *gobj) {
-    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data != NULL)) {
+    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data.ptr != NULL)) {
         procMainMove(gobj);
         func_801D1CAC_ovl8();
     }
 }
 
 void func_800B1814(GObj *gobj) {
-    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data != NULL)) {
+    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data.ptr != NULL)) {
         procMainMove(gobj);
         func_801D1E98_ovl8();
     }
@@ -1516,7 +1517,7 @@ void func_800B2340(Vector *vec, struct DObj *node, u32 track) {
         track = omCurrentObj->objId;
     }
     if (node == NULL) {
-        node = (struct DObj *)omCurrentObj->data;
+        node = omCurrentObj->data.dobj;
     }
     guMtxIdentF(&finalMtx);
     do {
@@ -1664,7 +1665,7 @@ void func_800B2AD4(Vector *vec, struct DObj *node, u32 track) {
         track = omCurrentObj->objId;
     }
     if (node == NULL) {
-        node = (struct DObj *)omCurrentObj->data;
+        node = omCurrentObj->data.dobj;
     }
     guMtxIdentF(finalMtx);
     do {
@@ -1836,7 +1837,7 @@ s32 func_800B3234(f32 x, f32 y, f32 z) {
         inVec.x = x;
         inVec.y = y;
         inVec.z = z;
-        result = func_800A4F48(D_800D799C->data, &inVec, 1.7f, 2.4f);
+        result = func_800A4F48(D_800D799C->data.ptr, &inVec, 1.7f, 2.4f);
         D_800E6F50[omCurrentObj->objId].x = inVec.x;
         D_800E6F50[omCurrentObj->objId].y = inVec.y;
         fromPlayer.x = x - gEntitiesNextPosXArray[PLAYERTRACK];
