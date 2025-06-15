@@ -7,6 +7,7 @@
 #include "ovl1/ovl1_7.h"
 #include "main/lbvector.h"
 #include "main/lbmatrix.h"
+#include "ovl1/util.h"
 #include "unk_structs/D_80129114.h"
 
 extern s32 D_800D6E10;

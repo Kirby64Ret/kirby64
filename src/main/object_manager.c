@@ -691,18 +691,18 @@ struct AObj *func_800098AC(MObj *mobj, u8 index) {
     return toReturn;
 }
 
-void func_80009918(struct unk80008840 *arg0) {
+void func_80009918(MObj *mobj) {
     struct AObj *next;
     struct AObj *aobj;
 
-    aobj = arg0->unk90;
+    aobj = mobj->aobj;
     while (aobj != 0) {
         next = aobj->next;
         HS64_AObjRelease(aobj);
         aobj = next;
     }
-    arg0->unk90 = 0;
-    arg0->unk98 = -FLT_MAX;
+    mobj->aobj = NULL;
+    mobj->timeRemaining = ANIMATION_DISABLED;
 }
 
 struct AObj *omCameraAddAObj(Camera *arg0, u8 arg1) {

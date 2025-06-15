@@ -5,24 +5,35 @@
 #include "Player.h"
 #include "ovl1/ovl1_6.h"
 #include "main/gtl.h"
+#include "main/math.h"
+#include "util.h"
 
-#ifdef MIPS_TO_C
+void draw_star_segments(s32 arg0, s32 arg1);
 
+extern f32 gKirbyHp;
+extern s32 gKirbyLives;
+
+extern s32 D_800D6E88;
+extern s32 D_800D6E8C;
+extern s32 D_800D6E90;
+
+#ifdef NON_MATCHING // regalloc
 s32 change_kirby_hp(f32 arg0) {
-    f32 var_f12;
-
-    var_f12 = arg0;
-    if (((random_u16() & 3) == 3) && (&utilTamperCheck == NULL)) {
-        if (var_f12 < 0.0f) {
-            var_f12 *= 2.0f;
-        } else {
-            var_f12 = 0.0f;
+    if ((random_u16() & 3) == 3) {
+        // They messed up this check, but the idea was that
+        //  Kirby would take twice damage and wouldnt heal (1 in 4 chance)
+        if (!utilTamperCheck) {
+            if (arg0 < 0.0f) {
+                arg0 *= 2;
+            } else {
+                arg0 = 0.0f;
+            }
         }
     }
     if (D_800D6E8C == 0.0f) {
         return 0;
     }
-    gKirbyHp += var_f12;
+    gKirbyHp += arg0;
     if (gKirbyHp <= 0.0f) {
         gKirbyHp = 0.0f;
     }
@@ -30,30 +41,23 @@ s32 change_kirby_hp(f32 arg0) {
         gKirbyHp = 6.0f;
     }
     D_800D6E8C = gKirbyHp;
-    *D_800E7B20 = gKirbyHp;
+    D_800E7B20[PLAYERTRACK] = gKirbyHp;
     return D_800D6E8C;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/change_kirby_hp.s")
 #endif
 
-#ifdef MIPS_TO_C
-
+// set lives?
 void func_800BC0F0(s32 arg0) {
-    s32 var_a0;
-
-    var_a0 = arg0;
-    if (var_a0 < 0) {
-        var_a0 = 0;
+    if (arg0 < 0) {
+        arg0 = 0;
     }
-    if (var_a0 >= 3) {
-        var_a0 = 2;
+    if (arg0 >= 3) {
+        arg0 = 2;
     }
-    D_800D6E90 = var_a0 + 0x23;
+    D_800D6E90 = arg0 + 0x23;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC0F0.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -97,7 +101,6 @@ void func_800BC1FC(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void change_kirby_stars(s32 arg0) {
     gKirbyStars += arg0;
 }
@@ -105,26 +108,16 @@ void change_kirby_stars(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/change_kirby_stars.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void change_kirby_lives(s32 arg0) {
-    s32 var_v0;
-
-    var_v0 = gKirbyLives + arg0;
-    gKirbyLives = var_v0;
-    if (var_v0 < 0) {
+    gKirbyLives += arg0;
+    if (gKirbyLives < 0) {
         gKirbyLives = 0;
-        var_v0 = 0;
     }
-    if (var_v0 >= 0x65) {
-        var_v0 = 0x64;
-        gKirbyLives = 0x64;
+    if (gKirbyLives > 100) {
+        gKirbyLives = 100;
     }
-    D_800D6E88 = var_v0;
+    D_800D6E88 = gKirbyLives;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/change_kirby_lives.s")
-#endif
 
 #ifdef MIPS_TO_C
 

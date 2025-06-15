@@ -138,7 +138,7 @@ void func_800F64B0(void) {
     D_800D6B30 = 0;
     temp_v0 = ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF);
     *(&D_800D6B18 + 8) = temp_v0;
-    func_80007C00(&temp_v0->data->next, 10.0f, 10.0f, 310.0f, 182.0f);
+    func_80007C00(&temp_v0->data.dobj->next, 10.0f, 10.0f, 310.0f, 182.0f);
     HS64_omMakeGObj(0, func_800F62A4, 0x1A, 0x80000000);
     func_800AE048(0x40);
     func_800AE0F0();
@@ -162,11 +162,11 @@ void func_800F64B0(void) {
     func_800A6BC0(5);
     var_a0 = 0;
     do {
-        var_v0 = (D_800D799C->data + var_a0)->unk64;
+        var_v0 = (D_800D799C->data.dobj + var_a0)->unk64;
         var_v1 = var_v0->unk4;
         if (var_v1 == 6) {
             var_v0->unk4 = 0xC;
-            var_v0 = (D_800D799C->data + var_a0)->unk64;
+            var_v0 = (D_800D799C->data.dobj + var_a0)->unk64;
             var_v1 = var_v0->unk4;
         }
         var_a0 += 4;
@@ -236,7 +236,7 @@ void func_800F6830(void) {
     *(&D_800D6F3C + 6) = gPlayerControllers.unk2;
     *(&D_800D6F3C + 8) = gPlayerControllers.unk4;
     if (D_800D7B68 != 0) {
-        temp_v0 = D_800D799C->data;
+        temp_v0 = D_800D799C->data.dobj;
         sp3C = temp_v0;
         guLookAtF(&sp40[0], (bitwise f32) temp_v0->scale.mtx, temp_v0->scale.v.x, temp_v0->scale.v.y, temp_v0->scale.v.z, (bitwise f32) temp_v0->unk4C, (bitwise f32) temp_v0->unk50, temp_v0->unk54, (bitwise f32) temp_v0->unk58, (bitwise f32) temp_v0->unk5C);
         func_8001B008(D_800D6ED0, &sp3A, sp3C->pos.v.y, sp3C->pos.v.z, sp3C->angle.mtx, sp3C->angle.a, sp3C->angle.v.x);

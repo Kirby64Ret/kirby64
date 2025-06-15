@@ -23,10 +23,8 @@ ifeq ($(PROGRESS), 1)
 	DEFS += -DGET_PROGRESS
 endif
 
-##################### Compiler Options #######################
-IRIX_ROOT := tools/ido7.1
+##################### Compiler #######################
 CC := tools/ido-7.1recomp/cc
-
 
 ifeq ($(shell type mips-linux-gnu-cpp >/dev/null 2>/dev/null; echo $$?), 0)
 	CROSS := mips-linux-gnu-
@@ -135,11 +133,12 @@ ACTOR_FILES := $(foreach file,$(DATA_FILES),$(BUILD_DIR)/$(file:.c=.o))
 
 
 # FLAGS
+SUPPRESS_WARNINGS := -woff 624,568
 OPT_FLAGS := -O2
 DEFS += -D_LANGUAGE_C -D_FINALROM
 INCLUDE_CFLAGS := -I include -Ilibreultra/include/2.0I -I $(BUILD_DIR) -I $(BUILD_DIR)/include -I $(BUILD_DIR)/assets -I src -Isrc.old -I .
 TARGET_CFLAGS := -nostdinc -I include/libc -DTARGET_N64 -DF3DEX_GBI_2
-CFLAGS = -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed $(DEFS) $(OPT_FLAGS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) $(MIPSISET)
+CFLAGS = -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed $(DEFS) $(OPT_FLAGS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) $(MIPSISET) $(SUPPRESS_WARNINGS)
 GCC_CFLAGS = -Wall $(DEFS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -fno-PIC -mno-abicalls -fno-zero-initialized-in-bss -fno-toplevel-reorder -Wno-missing-braces
 
 CC_CHECK := gcc -fsyntax-only -fsigned-char -m32 $(DEFS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) -std=gnu90 -Wall -Wextra -Wno-format-security -Wno-main -DNON_MATCHING -DAVOID_UB $(VERSION_CFLAGS) $(GRUCODE_CFLAGS)
@@ -165,10 +164,6 @@ DUMMY != ls f3dex2 >/dev/null || echo FAIL
 ifeq ($(DUMMY),FAIL)
   $(error Missing submodule f3dex2. Please run 'git submodule update --init')
 endif
-
-
-# hardcoded compiler for ml.c until i figure out why it's breaking recomp
-# $(BUILD_DIR)/src/ovl0/memory_layer.o: CC = $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
 
 default: all
 
