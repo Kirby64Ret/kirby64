@@ -1,10 +1,13 @@
 #include <ultra64.h>
 #include <macros.h>
 
-#include "main/object_manager.h"
 #include "GObj.h"
+
+#include "main/object_manager.h"
+#include "main/object_helpers.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
+#include "ovl1/util.h"
 
 extern FUNCLIST D_8022F070_ovl19;
 

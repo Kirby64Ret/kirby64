@@ -3,6 +3,7 @@
 #include "object_manager.h"
 #include "render.h"
 #include "anim.h"
+#include "object_helpers.h"
 
 // data + early rodata
 s32 D_8003DE50 = 10000000;

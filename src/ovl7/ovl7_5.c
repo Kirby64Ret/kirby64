@@ -5,6 +5,7 @@
 #include "GObj.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
+#include "ovl1/util.h"
 #include "enelib.h"
 
 // ovl7_3

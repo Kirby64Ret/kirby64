@@ -2,12 +2,17 @@
 
 #include <ultra64.h>
 #include <macros.h>
+
+#include "types.h"
+
+#include "GObj.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_1.h"
+#include "ovl1/util.h"
 #include "ovl2/ovl2_8.h"
 #include "unk_structs/D_8022FAB0.h"
-#include "GObj.h"
 #include "main/object_manager.h"
+#include "main/object_helpers.h"
 #include "ovl0/lbvector.h"
 #include "ovl2/ovl2_8.h"
 #include "ovl2/ovl2_3.h"

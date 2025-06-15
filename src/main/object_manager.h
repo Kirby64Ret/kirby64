@@ -21,22 +21,6 @@ struct ObjStack {
     u64 stack[0x20];
 };
 
-// if a function that uses GObjThread doesnt match, try this definition
-// struct GObjThread {
-//     struct GObjThread *unk0;
-//     u32 unk4;
-//     OSThread *unk8;
-//     u8 filler[0x1B8 - 0x04 - 0x08];
-//     // This might be a u8 pointer
-//     struct ObjStack *objStack;
-//     s32 unk1BC;
-// };
-
-struct UnkStruct800009E8 {
-    u32 unk0;
-    OSMesgQueue *unk4;
-};
-
 struct DynamicBuffer {
     u32 id;
     void *poolStart;
@@ -193,14 +177,6 @@ typedef struct OMLookAtRoll {
     /* 0x1C */ f32 roll;
 } OMLookAtRoll; // size == 0x20;
 
-// TODO: is this an existing struct instead of a brand new one?
-struct unk80008840 {
-    u8 padding[0x90];
-    struct AObj *unk90;
-    u32 unk94;
-    f32 unk98;
-};
-
 typedef f32 quartic[5];
 
 typedef struct {
@@ -294,128 +270,6 @@ typedef struct Camera {
     u32 unk8C;
 } Camera;
 
-struct Unk80005A98_2 {
-    u32 unk0;
-    u32 unk4;
-    u32 unk8;
-    u32 unkC;
-    u32 unk10;
-    u32 unk14;
-    u32 unk18;
-    u32 unk1C;
-    OSMesgQueue *unk20;
-    u32 unk24;
-    OSTask task;
-    u32 unk68;
-    u32 unk6C;
-    u32 unk70;
-    u32 unk74;
-    u32 unk78;
-    u32 unk7C;
-    u32 unk80;
-};
-
-// Definitely a DObj
-struct Unk80005A98 {
-    u32 unk0;
-    u32 unk4;
-    struct Unk80005A98 *unk8;
-    u32 unkC;
-    u32 unk10;
-    u32 unk14;
-    u32 unk18;
-    u32 unk1C;
-    OSMesgQueue *unk20;
-    u32 unk24;
-    u32 unk28;
-    void (*unk2C)(struct Unk80005A98*);
-    u32 unk30;
-    u32 unk34;
-    void* unk38;
-    u32 unk3C;
-    void* unk40;
-    u32 unk44;
-    u32 unk48;
-    u32 unk4C;
-    Gfx *unk50;
-    u32 unk54;
-    u32 unk58;
-    u32 unk5C;
-    u32 unk60;
-    u32 unk64;
-    u32 unk68;
-    u32 unk6C;
-    u32 unk70;
-    u32 unk74;
-    u32 unk78;
-    u32 unk7C;
-    u32 unk80;
-};
-
-// One of the message types sent on the interrupt message queue
-struct InterruptMessageType4 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-    s32 unk1C;
-    s32 unk20;
-    s32 unk24;
-    s32 unk28;
-    s32 unk2C;
-    s16 unk30;
-    s16 unk32;
-    s16 unk34;
-    s16 unk36;
-};
-
-// One of the message types sent on the ovl0_2 message queue
-struct Ovl0_2_MessageType1
-{
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-};
-
-// One of the message types sent on the ovl0_2 message queue
-struct Ovl0_2_MessageType2
-{
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-};
-
-// One of the message types sent on the ovl0_2 message queue
-struct Ovl0_2_MessageType3
-{
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10;
-};
-
-// One of the message types sent on the ovl0_2 message queue
-struct Ovl0_2_MessageType4
-{
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-};
-
-// One of the message types sent on the ovl0_2 message queue
-struct Ovl0_2_MessageType6
-{
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-};
-
 // Buffers allocated to hold the master displaylists
 struct DLBuffer
 {
@@ -456,53 +310,6 @@ extern OSMesgQueue gInterruptMesgQueue;
 #include "AObj.h"
 #include "DObj.h"
 
-struct Camera *func_80009F7C(struct GObj*);
-
-void func_80009B5C(struct DObj *);
-
-struct UnkStructFunc80007380 {
-    u32 unk0;
-    u32 unk4;
-    u32 unk8;
-
-    // some sort of range that is allocated for gDynamicBuffer2
-    void *unkC;
-    void *unk10;
-
-    u32 unk14;
-    u32 unk18;
-    u32 unk1C;
-    u32 unk20;
-    u32 unk24;
-    u32 unk28;
-    u32 unk2C;
-    u32 unk30;
-    u32 unk34;
-    u32 unk38;
-    u32 unk3C;
-
-
-    u32 unk40;
-    u32 unk44;
-    u32 unk48;
-    u32 unk4C;
-    u32 unk50;
-    u32 unk54;
-    u32 unk58;
-    u32 unk5C;
-    u32 unk60;
-    u32 unk64;
-    u32 unk68;
-    u32 unk6C;
-    u32 unk70;
-    u32 unk74;
-    u32 unk78;
-    u32 unk7C;
-    u32 unk80;
-    u32 unk84;
-    u32 unk88;
-};
-
 typedef struct {
     /* 0x00 */ struct GObjThread* threads;
     /* 0x04 */ s32 numThreads;
@@ -533,8 +340,6 @@ typedef struct {
     /* 0x68 */ s32 cameraSize;
 } ObjectSetup; // size == 0x6C
 
-void ohSleep(s32);
-
 // data
 extern u32 D_8003DE54;
 
@@ -544,6 +349,8 @@ extern OSMesgQueue HS64_GObjProcMesgQ;
 extern struct GObj *omGObjListHead[32];
 
 // extern funcs
+struct Camera *func_80009F7C(struct GObj*);
+void func_80009B5C(struct DObj *);
 void omLinkGObjDL(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);
 struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
 void omUpdateAll();
