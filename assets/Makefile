@@ -49,6 +49,9 @@ _PNG2C := $(foreach file,$(_BIN2C), $(file:.png=.o))
 _C2C := $(foreach file,$(_PNG2C), $(file:.c=.o))
 O_FILES := $(foreach file, $(_C2C), $(BUILD_DIR)/$(file))
 
+CC := $(CROSS)gcc
+AS := $(CROSS)as
+
 clean:
 	rm -f -r $(BUILD_DIR)
 
@@ -104,12 +107,12 @@ $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.bin
 $(BUILD_DIR)/%.o: %.c
 	@printf "    [Asset:CC] $<\n"
 	$(V)mkdir -p $(@D)
-	$(V)$(CROSS)gcc -c $(GCC_CFLAGS) -D__sgi -o $@ $<
+	$(V)$(CC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
 
 $(BUILD_DIR)/%.o: %.s
 	@printf "    [Asset:ASM] $<\n"
 	$(V)mkdir -p $(@D)
-	$(V)$(CROSS)as $(ASFLAGS) -o $@ $<
+	$(V)$(AS) $(ASFLAGS) -o $@ $<
 
 $(BUILD_DIR)/%.o: %.bin
 	@printf "    [Asset:BIN] $<\n"
