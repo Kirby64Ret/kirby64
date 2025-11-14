@@ -10,9 +10,6 @@
 [submodule "tools/rgb2c"]
 	path = tools/modern_rgb2c
 	url = https://github.com/someone2639/modern_rgb2c
-[submodule "splat"]
-	path = splat
-	url = https://github.com/ethteck/splat/
 [submodule "tools/armips"]
 	path = tools/armips
 	url = https://github.com/Kingcom/armips
