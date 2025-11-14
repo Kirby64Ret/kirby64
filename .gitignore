@@ -1,5 +1,12 @@
 ../*
 
+# we do not need to lock these, just have the latest everything
+.python-version
+uv.lock
+
+# Python virtual environment
+.venv/
+
 # NEW Splat Things
 asm/*
 undefined_syms_auto.txt

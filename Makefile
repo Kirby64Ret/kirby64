@@ -43,7 +43,7 @@ CPP     := $(CROSS)cpp -P -Wno-trigraphs
 LD = $(CROSS)ld
 OBJDUMP = $(CROSS)objdump
 OBJCOPY = $(CROSS)objcopy
-PYTHON := python3
+PYTHON := uv run
 
 TEXTURES_DIR := textures
 
@@ -265,7 +265,9 @@ setup:
 	$(MAKE) -C libreultra naudio BUILD_DIR=../$(BUILD_DIR) VERSION=
 	$(MAKE) -C tools
 	tools/extract_assets baserom.$(VERSION).z64
-	./splat/split.py kirby64.yaml
+	uv venv --clear
+	uv sync
+	uv run splat split kirby64.yaml
 
 .PHONY: all clean default diff test distclean
 

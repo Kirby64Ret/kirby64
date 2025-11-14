@@ -6,10 +6,10 @@ This repository contains a work-in-progress decompilation effort for Kirby 64.
 
 ## Installation
  - First, get Linux, or [Windows Subsystem for Linux](https://aka.ms/wslinstall) if you use Windows
- - Next, clone the repo by running `sudo apt update && sudo apt install git gcc-mips-linux-gnu && git clone https://github.com/Kirby64Ret/kirby64 --recursive`
- - Install the relevant Python packages by running `pip3 install gitpython splat64[mips]`
-   - **Warning:** For Arch Linux (and newer versions of Debian apparently), if it complains about `externally-managed-environment`, install gitpython from your package repos, and install `splat64[mips]` from pip using `--break-system-packages` at your own risk (in my experience nothing actually breaks)
- - Grab all the dependencies for your distro by using [this wiki page](https://github.com/HackerN64/HackerSM64/wiki/Installing-Dependencies).
+ - Next, grab dependencies by running `sudo apt update && sudo apt install git gcc-mips-linux-gnu`
+ - Next, clone the repo by running `git clone https://github.com/Kirby64Ret/kirby64 --recursive`
+ - Get `uv` (the Python Everything App) using the relevant instructions for your distribution, or using one of the package managers listed at the [installation page](https://docs.astral.sh/uv/getting-started/installation/#pypi). Running the standalone installer is not recommended.
+ - Grab the rest of the dependencies for your distro by using [this wiki page](https://github.com/HackerN64/HackerSM64/wiki/Installing-Dependencies).
  - Put your copy of the game into this folder, with the name `baserom.us.z64`
  - Run `make setup` to get assets extracted, then `make` to build
 
