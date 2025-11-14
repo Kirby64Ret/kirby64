@@ -56,7 +56,6 @@ LDFLAGS = --no-check-sections -mips3 --accept-unknown-input-arch \
 					-Map $(BUILD_DIR)/$(TARGET).map \
 					-T funcstodo.txt \
 					-T datatodo.txt \
-					-T ramvals.txt \
 					-T $(BUILD_DIR)/$(LD_SCRIPT)
 PRELIM_OBJCOPY_FLAGS = --pad-to=0x101000 --gap-fill=0x00
 OBJCOPY_FLAGS = --pad-to=0x2000000 --gap-fill=0xFF
