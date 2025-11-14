@@ -81,8 +81,8 @@ if args.make:
 baseimg = f"baserom.{version}.z64"
 basemap = f"kirby.{version}.map"
 
-myimg = f"build/{version}/kirby.{version}.z64"
-mymap = f"build/{version}/{basemap}"
+myimg = f"build/kirby.{version}.z64"
+mymap = f"build/{basemap}"
 
 if os.path.isfile("expected/" + mymap):
     basemap = "expected/" + mymap

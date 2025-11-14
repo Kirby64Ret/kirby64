@@ -15,4 +15,4 @@ struct UnkStruct800DE350 {
 	s32 unk4C;
 };
 
-extern struct UnkStruct800DE350 *D_800DE350[];
+extern GObj *D_800DE350[];

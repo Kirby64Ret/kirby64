@@ -21,6 +21,7 @@
 #define _GBI_H_
 
 #include <PR/ultratypes.h>
+#include <PR/os_convert.h>
 
 
 /*
@@ -1067,6 +1068,12 @@
  * BEGIN C-specific section: (typedef's)
  */
 #if defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS)
+
+extern long long int gspF3DEX2_fifoDataStart[];
+extern long long int gspF3DEX2_fifoTextStart[];
+
+extern long long int gspL3DEX2_fifoDataStart[];
+extern long long int gspL3DEX2_fifoTextStart[];
 
 /*
  * Data Structures

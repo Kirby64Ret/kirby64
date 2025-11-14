@@ -8,6 +8,7 @@ except Exception as e:
     pass
 import os
 import re
+import glob
 
 parser = argparse.ArgumentParser(description="Computes current progress throughout the whole project.")
 parser.add_argument("-m", "--matching", dest='matching', action='store_true',
@@ -18,6 +19,7 @@ args = parser.parse_args()
 
 NON_MATCHING_PATTERN = r"#ifdef\s+NON_MATCHING.*?#else\nGLOBAL_ASM\s*\(\s*\"(.*?)\"\s*\).*?#endif"
 M2C_PATTERN = r"#ifdef\s+MIPS_TO_C.*?#else\nGLOBAL_ASM\s*\(\s*\"(.*?)\"\s*\).*?#endif"
+UNTOUCHED_PATTERN = r"#pragma\s+GLOBAL_ASM\s*\(\s*\"(.*?)\"\s*\)"
 
 def GetNonMatchingFunctions(files):
     functions = []
@@ -25,6 +27,7 @@ def GetNonMatchingFunctions(files):
     for file in files:
         with open(file) as f:
             functions += re.findall(NON_MATCHING_PATTERN, f.read(), re.DOTALL)
+            functions += re.findall(UNTOUCHED_PATTERN, f.read(), re.DOTALL)
         if not args.matching:
             with open(file) as f:
                 functions += re.findall(M2C_PATTERN, f.read(), re.DOTALL)
@@ -39,13 +42,7 @@ def ReadAllLines(fileName):
     return lineList
 
 def GetFiles(path, ext):
-    files = []
-    
-    for r, d, f in os.walk(path):
-        for file in f:
-            if file.endswith(ext):
-                files.append(os.path.join(r, file))
-
+    files = glob.glob(f"{path}/**/*{ext}", recursive=True)
     return files
 
 nonMatchingFunctions = GetNonMatchingFunctions(GetFiles("src", ".c")) if not args.matching else []
@@ -66,7 +63,7 @@ def GetNonMatchingSize(path):
     return size
 
 
-mapFile = ReadAllLines("build/us/kirby.us.map")
+mapFile = ReadAllLines("build/kirby.us.map")
 src = 0
 code = 0
 boot = 0
@@ -82,16 +79,16 @@ for line in mapFile:
         objFile = lineSplit[3]
 
         if (section == ".text"):
-            if (objFile.startswith("build/us/src")):
+            if (objFile.startswith("build/src")):
                 src += size
-            if (objFile.startswith("build/us/libultra.a")):
+            if (objFile.startswith("build/libultra.a")):
                 src += size
-            if (objFile.startswith("build/us/libn_audio.a")):
+            if (objFile.startswith("build/libn_audio.a")):
                 src += size
-            elif (objFile.startswith("build/us/asm")):
+            elif (objFile.startswith("build/asm")):
                 asm += size
 
-nonMatchingASM = GetNonMatchingSize("asm/non_matchings")
+nonMatchingASM = GetNonMatchingSize("asm/nonmatchings")
 
 src -= nonMatchingASM
 asm += nonMatchingASM

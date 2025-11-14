@@ -2,32 +2,33 @@
 
 This repository contains a work-in-progress decompilation effort for Kirby 64.
 
-You will need an original copy of the ROM to proceed.
-
-## Exclusive Dependencies
- - Works best on the latest version of Ubuntu, Fedora, or Arch. PR's to support other Linux versions are welcome, but as of current those three are the only ones we can reliably test.
- - Python 3.10 with `pip`
- - `jq`
+### **This repository does not contain game assets. The original game is required to build this project.**
 
 ## Installation
  - First, get Linux, or [Windows Subsystem for Linux](https://aka.ms/wslinstall) if you use Windows
- - Next, clone the repo by running `sudo apt update && sudo apt install git gcc-mips-linux-gnu && git clone https://github.com/farisawan-2000/kirby64 --recursive`
- - Get the GitPython submodule by doing `pip3 install gitpython`
- - Grab the qemu-irix deb from [here](https://github.com/n64decomp/qemu-irix/releases) and install it with `sudo dpkg -i path/to/qemu(press tab here to autocomplete the name)` (Use `alien` on Fedora or `debtap` on Arch to convert)
- - Now just follow the instructions for SM64 decomp [here](https://github.com/n64decomp/sm64/tree/master/README.md), but before you go, keep reading.
- - Once dependencies are installed, run `make setup` to get assets extracted, then `make` to build!
+ - Next, grab dependencies by running `sudo apt update && sudo apt install python3 git gcc-mips-linux-gnu`
+ - Next, clone the repo by running `git clone https://github.com/Kirby64Ret/kirby64 --recursive`
+ - Get `uv` (the Python Everything App) with `python3 -m pip install uv`
+   - Or use the relevant instructions for your distribution/package manager at the [installation page](https://docs.astral.sh/uv/getting-started/installation/#pypi). **Running the standalone installer is not recommended.**
+ - Grab the rest of the dependencies for your distro by using [this wiki page](https://github.com/HackerN64/HackerSM64/wiki/Installing-Dependencies).
+ - Put your copy of the game into this folder, with the name `baserom.us.z64`
+ - Run `make setup` to get assets extracted, then `make` to build
 
-## Contributing
- - Pull requests are welcome! Everything is fair game to work on, including tons of easy functions that make for an easy PR! ;)
 ---
 
 ## TODO (Required)
  - Disassemble every asset that's extracted, or convert them into images and build them
- - Work on ASM shiftability and struct documentation (Asset shiftability is done!)
- 
+ - Test out full code shiftability
+
 ## TODO (Necessary)
- - Actually decompile the code
- - Clean up `undefined_syms.txt`
+ - Actually decompile the code lol
 
 ## TODO (Want to contribute? 😳)
- - Document Kirby's action states (Might require PJ64 Debugger)
+Pull requests are welcome! Everything is fair game to work on, as long as it increases the decomp percentage!
+
+I work on this decomp in a very messy way, so the best way to contribute is to essentially clean up after me. This involves:
+
+ - Fixing warnings
+ - Helping with documentation
+ - Finding interesting functions to work on
+

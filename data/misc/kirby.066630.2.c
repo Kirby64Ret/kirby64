@@ -6282,7 +6282,7 @@ Gfx D_800D4E98[] = {
     gsSPEndDisplayList(),
 };
 
-u32 D_800D4F10 = 0x800141D4;
+u32 gDrawFuncList = 0x800141D4;
 
 u32 D_800D4F14 = 0x800141F8;
 

@@ -1,13 +1,30 @@
 ../*
+
+# we do not need to lock these, just have the latest everything
+.python-version
+uv.lock
+
+# Python virtual environment
+.venv/
+
+# NEW Splat Things
+asm/*
+undefined_syms_auto.txt
+undefined_funcs_auto.txt
+kirby.ld
+assets/boot.bin
+
 **/**/*.bin
 build/*
 tools/GeoFromBin*
 tools/level_settings/convert
 tools/img_getprop
 tools/rgb2c
+tools/armips_bin/*
 assets/*.bin
 assets/**/*.png
 assets/tools/__pycache__/*
+tools/splat_ext/__pycache__/*
 f3dex2/F3DEX2_2.04H/*
 *.z64
 textures/*
@@ -34,5 +51,5 @@ ctx.c
 # Use these for scratch work
 *.x
 strings/*
-# asm-differ .o file diffs
+# asm-differ and objdiff .o file diffs
 expected/*
