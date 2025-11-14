@@ -20,12 +20,8 @@ jobs:
       run: sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
     - name: Install Dependencies
       run: sudo apt update && sudo apt install -y binutils-mips-linux-gnu gcc git gcc-mips-linux-gnu
-    - name: Install Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.10'
-    - name: Install Python Dependencies
-      run: pip3 install gitpython
+    - name: Install uv
+        uses: astral-sh/setup-uv@v6
     - name: More dependencies
       uses: actions/checkout@v2
       with:
@@ -45,4 +41,4 @@ jobs:
     - name: Prepare Kirby 64 for building
       run: make setup
     - name: Build Kirby 64
-      run: make -j4 VERBOSE=0
+      run: make -j$(nproc) VERBOSE=0

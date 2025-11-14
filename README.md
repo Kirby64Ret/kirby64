@@ -4,6 +4,8 @@ This repository contains a work-in-progress decompilation effort for Kirby 64.
 
 You will need an original copy of the ROM to proceed.
 
+# Development is done on the `splat` branch. Please point all PR's to that branch.
+
 ## Exclusive Dependencies
  - Works best on the latest version of Ubuntu, Fedora, or Arch. PR's to support other Linux versions are welcome, but as of current those three are the only ones we can reliably test.
  - Python 3.10 with `pip`
