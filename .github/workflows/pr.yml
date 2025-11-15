@@ -20,8 +20,12 @@ jobs:
       run: wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
     - name: Install Qemu Irix
       run: sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
-    - name: Install Dependencies
-      run: sudo apt update && sudo apt install -y binutils-mips-linux-gnu gcc git gcc-mips-linux-gnu
+    - name: Get a compiler that works
+      run: |
+        export N64_LIBGCCDIR="/opt/crashsdk/lib/gcc/mips64-elf/12.2.0"
+        PATH=$PATH:/opt/crashsdk/bin; export PATH
+        echo "deb [trusted=yes] https://crashoveride95.github.io/apt/ ./" | sudo tee /etc/apt/sources.list.d/n64sdk.list 
+        sudo apt update && sudo apt install binutils-mips-n64 gcc-mips-n64 newlib-mips-n64
     - name: Install uv
       uses: astral-sh/setup-uv@v6
     - name: More Dependencies
