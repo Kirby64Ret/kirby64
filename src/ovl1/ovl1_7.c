@@ -19,8 +19,6 @@ extern void animSetTextureAnimationSpeed(GObj *, f32);
 extern void animSetModelTreeAnimation(GObj *, GObj *, f32);
 extern void animSetModelTreeTextureAnimation(GObj *, GObj *, f32);
 
-extern void (*gDrawFuncList[])(struct GObj *);
-
 extern u32 gNewEntityStackSize;
 
 extern GObj *D_800D799C;

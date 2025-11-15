@@ -1,6 +1,11 @@
 #ifndef _MATH_H_
 #define _MATH_H_
 
+// TODO: in different files
+extern f32 sinf(f32 a);
+extern f32 cosf(f32 a);
+extern f32 sqrtf(f32 a);
+
 f32 atanf(f32);
 f32 asinf(f32);
 f32 atan2f(f32, f32);

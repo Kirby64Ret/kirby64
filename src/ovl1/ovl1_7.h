@@ -90,6 +90,7 @@ typedef struct ovl1_7_gobj_4c {
     s8 unkCF;
 } UnkStruct800B158C;
 
+extern void (*gDrawFuncList[])(struct GObj *);
 
 void func_800AFA88(GObj *gobj);
 extern s32 func_800B3234(f32, f32, f32);

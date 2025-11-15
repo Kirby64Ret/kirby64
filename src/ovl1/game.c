@@ -6,9 +6,6 @@
 #include "main/contpad.h"
 #include "game.h"
 
-// probably BSS for this file
-extern u32 D_800BE4F4;
-extern u32 gGameState;
 extern u32 saveCurrentLevel, saveCurrentWorld;
 extern s32 gKirbyLives;
 extern f32 gKirbyHp;
@@ -23,8 +20,7 @@ extern u32 D_800D6B8C;
 extern s32 D_800D6B44;
 extern s32 D_800D6F50;
 extern s32 D_800EC9FC;
-extern s32 D_800BE504, D_800D6B9C;
-extern u32 D_800BE4F8;
+extern s32 D_800D6B9C;
 extern u32 D_800D6B48;
 
 extern s32 D_800D7288;
@@ -34,27 +30,14 @@ extern s32 D_800D6B74;
 extern s32 D_800D6B60;
 extern u32 D_800D6B68;
 extern u32 D_800D6B78;
-extern u32 D_800BE500;
 extern u32 D_800D6B98;
-extern s32 D_800BE504, D_800D6B9C;
 extern u8 D_800D6B84;
-extern u32 D_800BE530;
 extern s32 D_800D6F38, D_800D6F3C;
-extern u32 D_800BE51C;
-extern u32 D_800BE4FC, D_800BE518;
-extern u32 D_800BE534;
-extern u32 D_800BE520;
-extern u32 D_800BE508, D_800BE50C;
-extern u32 D_800BE538;
-extern u32 D_800BE53C;
-extern f32 D_800BE524;
-extern f32 D_800BE510;
 extern s32 savePercentComplete;
 extern u32 D_800D71E8;
 
 extern u32 D_800D6F4C;
 extern u32 D_800D6E64;
-extern u32 D_800BE52C;
 extern u32 D_800D6E48;
 
 

@@ -484,16 +484,16 @@ f32 func_800A52F0(f32 arg0, f32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_800A5404(void *arg0, void *arg1) {
-    arg0->unk0 = arg0->unk4 = arg1->unk0;
-    arg0->unk1 = arg0->unk5 = arg1->unk1;
-    arg0->unk2 = arg0->unk6 = arg1->unk2;
-    arg0->unk8 = arg0->unkC = arg1->unk3;
-    arg0->unk9 = arg0->unkD = arg1->unk4;
-    arg0->unkA = arg0->unkE = arg1->unk5;
-    arg0->unk10 = arg1->unk6;
-    arg0->unk11 = arg1->unk7;
-    arg0->unk12 = arg1->unk8;
+void func_800A5404(void *arg0, char *bytestr) {
+    arg0->unk0 = arg0->unk4 = bytestr[0];
+    arg0->unk1 = arg0->unk5 = bytestr[1];
+    arg0->unk2 = arg0->unk6 = bytestr[2];
+    arg0->unk8 = arg0->unkC = bytestr[3];
+    arg0->unk9 = arg0->unkD = bytestr[4];
+    arg0->unkA = arg0->unkE = bytestr[5];
+    arg0->unk10 = bytestr[6];
+    arg0->unk11 = bytestr[7];
+    arg0->unk12 = bytestr[8];
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5404.s")

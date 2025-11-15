@@ -12,4 +12,6 @@ struct UnkStruct80128434 {
 
 extern struct UnkStruct80128434 D_80128434[];
 
+void func_8011C2A0(void *);
+
 #endif // PLYLIB_H

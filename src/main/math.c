@@ -71,10 +71,6 @@ u8 mathDetRNGVals[0x400] = {
 u16 mathDetRNGSeed = 0x00000000;
 s32 mathRNGSeed = 0x00000001;
 
-extern f32 sinf(f32 a);
-extern f32 cosf(f32 a);
-extern f32 sqrtf(f32 a);
-
 f32 tanf(f32 x) {
     return sinf(x) / cosf(x);
 }

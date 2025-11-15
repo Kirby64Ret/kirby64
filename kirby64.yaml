@@ -303,6 +303,8 @@ segments:
     - [0x63DF0, c, ovl1/ovl1_12]
     - [0x64230, c, ovl1/ovl1_13]
     - [0x66630, data, ovl1/ovl1]
+    - [0x66740, data, ovl1/game]
+    - [0x667A0, data, ovl1/ovl1_2]
     - [0x7D8B0, .rodata, ovl1/ovl1]
     - [0x7DCC0, .rodata, ovl1/game]
     - [0x7DE80, .rodata, ovl1/util]
