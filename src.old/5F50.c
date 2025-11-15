@@ -76,7 +76,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlCreateScene.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/5F50/func_800075DC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/5F50/gtlSetUpdateDrawRate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/5F50/func_800075F8.s")
 

@@ -909,6 +909,7 @@ request_track_3 = 0x800AEC70; // type:func
 gEntityRenderPriorityArray = 0x800E0810;
 
 // gtl
+gtlSetUpdateDrawRate = 0x800075DC; // type:func
 gtlUpdate = 0x80006E94; // type:func
 gtlFuncTableDefaultDraw = 0x80006E30; // type:func
 gtlFuncTableDefaultUpdate = 0x80006DF8; // type:func
@@ -1000,6 +1001,11 @@ animModelTreeNextNode = 0x8000BE90; // type:func
 mtxGetInterpolatedPosition = 0x8001E300; // type:func
 
 osViModeFpalLan1 = 0x8003FDC0;
+
+// game
+gameTicksPerDrawInv = 0x800D6B14; 
+gameTicksPerDraw = 0x800D6B10; 
+gameSetUpdateRate = 0x800A41B0; // type:func
 
 // ovl1_7
 procMainStub = 0x800B1434; // type:func

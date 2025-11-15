@@ -932,7 +932,7 @@ void gtlCreateScene(SceneSetup *scene) {
     gtlStart(scene, scene->postInitFunc);
 }
 
-void func_800075DC(u16 update, u16 draw) {
+void gtlSetUpdateDrawRate(u16 update, u16 draw) {
     gtlUpdateInterval = update;
     gtlDrawInterval = draw;
 }

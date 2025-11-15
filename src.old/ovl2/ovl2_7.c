@@ -1403,7 +1403,7 @@ void func_8011B858(void) {
     func_80118C88();
 }
 
-extern f32 D_800D6B14;
+extern f32 gameTicksPerDrawInv;
 extern s32 D_800D6E14;
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -1416,9 +1416,9 @@ void func_8011B878(s32 arg0) {
     while (D_800D6E14 == 0) {
         ohSleep(1);
     }
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
-    ohSleep((s32) (30.0f * D_800D6B14));
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    ohSleep((s32) (30.0f * gameTicksPerDrawInv));
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
     omEndProcess(NULL);

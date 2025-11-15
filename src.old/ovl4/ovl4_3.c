@@ -340,11 +340,11 @@ void func_80159828_ovl4(void) {
 void func_8015986C_ovl4(s32 arg0);
 GLOBAL_ASM("asm/non_matchings/ovl4/ovl4_3/func_8015986C_ovl4.s")
 
-void func_800A41B0(f32);
+void gameSetUpdateRate(f32);
 void func_801598C4_ovl4(void) {
     s32 phi_s0;
 
-    func_800A41B0(2.0f);
+    gameSetUpdateRate(2.0f);
     ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xA0A32FF);
     func_800AE048(0x80);
     func_800AE0F0();
@@ -425,8 +425,8 @@ void func_800B4924(void);
 void func_80159CB8_ovl4(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800DF150[omCurrentObj->objId] = func_80159D70_ovl4;
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     func_800A9864(0x300B6, 0x1869F, 0x10);
     func_800AA154(0x300AE);
     D_8015C720 = 1;

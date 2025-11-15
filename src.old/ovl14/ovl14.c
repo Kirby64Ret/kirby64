@@ -121,8 +121,8 @@ void func_801DB684_ovl14(GObj *arg0) {
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
     ohSleep(0x1E);
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     play_sound(0x190);
     func_800BC1FC((s32)D_800E7B20[omCurrentObj->objId]);
     func_800AF27C();
@@ -728,8 +728,8 @@ void func_801DD018_ovl14(GObj *arg0) {
     play_sound(0x1CD);
     D_800E9E20[omCurrentObj->objId] = 0;
     ohSleep(0x14);
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     play_sound(0x190);
     ohSleep(5);
     D_800E9AA0[omCurrentObj->objId] = 4;
@@ -989,8 +989,8 @@ void func_801DDBD8_ovl14(GObj *arg0) {
     ohSleep(5);
     func_801DF290_ovl14();
     ohSleep(5);
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     func_800AA018(0x10451);
     func_801DF290_ovl14();
     ohSleep(5);

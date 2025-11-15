@@ -311,8 +311,8 @@ void func_80199568_ovl7(void) {
     D_800DEF90[omCurrentObj->objId] = NULL;
     func_80199084_ovl7();
     func_80199384_ovl7();
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     func_801992F0_ovl7();
     func_80198B98_ovl7();
 }

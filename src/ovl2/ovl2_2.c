@@ -13,7 +13,7 @@
 
 #include "plylib.h"
 
-extern f32 D_800D6B14;
+extern f32 gameTicksPerDrawInv;
 
 void func_800F6C40(s32 arg0, UNUSED s32 arg1) {
     D_800BE4F8 = 2;
@@ -36,7 +36,7 @@ void func_800F6C88(void) {
 void func_800F6C98(UNUSED GObj *gobj) {
     D_800DEF90[omCurrentObj->objId] = NULL;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    ohSleep((u32) (120.0f * D_800D6B14));
+    ohSleep((u32) (120.0f * gameTicksPerDrawInv));
     if (D_800E98E0[omCurrentObj->objId] == 3) {
         func_800F6C68();
     }
@@ -74,7 +74,7 @@ void func_800F6E30(s32 arg0) {
     *(&D_800DF150 + (*omCurrentObj * 4)) = &func_800F7258;
     func_800A9864(*D_801290D8, 0x26, 0x10);
     func_800A2550(*(&D_800DFA10 + (D_801290D0 * 4)));
-    func_800B3070(0x10, D_800D6B10);
+    func_800B3070(0x10, gameTicksPerDraw);
     var_s1 = 0;
     var_s2 = 0;
     var_v1 = *omCurrentObj * 4;

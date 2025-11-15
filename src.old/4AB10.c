@@ -39,7 +39,7 @@ void func_800A3228(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A377C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A41B0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/4AB10/gameSetUpdateRate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/4AB10/func_800A4270.s")
 

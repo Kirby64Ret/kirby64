@@ -226,7 +226,7 @@ loop_2:
                 ohSleep(0x14);
                 D_800D7098.unk0 = 1;
                 ohSleep(1);
-                func_800AED80(D_800D6B10, D_801290D0);
+                func_800AED80(gameTicksPerDraw, D_801290D0);
                 func_800FB914(5);
                 ohSleep(0xC8);
                 if (func_8019DA70_ovl7(D_800E0D50[omCurrentObj->objId]) > 0.0f) {
@@ -511,7 +511,7 @@ void func_801DCB28_ovl13(GObj *arg0) {
     func_800AFBB4(0, omCurrentObj);
     play_sound(0x28);
     D_800E98E0[omCurrentObj->objId] = 2;
-    func_800AEDD0(D_800D6B10, temp_s0);
+    func_800AEDD0(gameTicksPerDraw, temp_s0);
     func_800AA038(0x10412, 0, temp_s0);
     ohSleep(0x2A);
     func_800AA038(0x1041F, 0, temp_s0);
@@ -593,7 +593,7 @@ void func_801DD148_ovl13(void) {
 #ifdef NON_MATCHING
 void func_801DD184_ovl13(GObj *arg0) {
     func_800AED20(0.0f);
-    func_800AECC0(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9384_ovl8;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAE1C_ovl8;
@@ -1017,7 +1017,7 @@ void func_801DE148_ovl13(GObj *arg0) {
     D_800EA8A0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 20.0f;
     D_800EAA60[omCurrentObj->objId] = 0.0f;
     ohSleep(0x14);
-    func_800AECC0(D_800D6B10 * 0.25f);
+    func_800AECC0(gameTicksPerDraw * 0.25f);
     rand = random_soft_s32_range(3);
     D_800EAA60[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * -(1.0f / D_801E5BAC_ovl13[rand]);
     D_800EAC20[omCurrentObj->objId] = 3.1415927f / (D_800E6A10[omCurrentObj->objId] * (D_801E5BAC_ovl13[rand] * 2.0f));
@@ -1034,7 +1034,7 @@ void func_801DE148_ovl13(GObj *arg0) {
     D_800E6690[omCurrentObj->objId] = 0.0f;
     
     D_800E6850[omCurrentObj->objId] = 65535.0f;
-    func_800AECC0(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
     play_sound(0x187);
     if ((gEntitiesNextPosYArray[D_800EBBE0[omCurrentObj->objId]] + 40.0f) < gEntitiesNextPosYArray[omCurrentObj->objId]) {
         D_800E3210[omCurrentObj->objId] = -2.0f;
@@ -1513,7 +1513,7 @@ void func_801DF5D0_ovl13(GObj *arg0) {
             ohSleep(1);
         } while (D_800E8920[omCurrentObj->objId] == 0);
     }
-    func_800AECC0(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
     func_800A9F98(0x1041C, 0x40400000);
     func_800B33F4();
     func_800FB914(1);
@@ -1642,7 +1642,7 @@ void func_801DF5D0_ovl13(GObj *arg0) {
     D_800DFBD0[omCurrentObj->objId]->unk8->unk30 = temp_f2_6;
     temp_a1 = &D_800E6A10[omCurrentObj->objId];
     *temp_a1 = -*temp_a1;
-    func_800AECC0(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
     func_800A9F98(0x1041C, 0x40400000);
     func_800B33F4();
     func_800FB914(1);
@@ -1785,7 +1785,7 @@ void func_801E0A90_ovl13(GObj *arg0) {
     D_800DFBD0[omCurrentObj->objId]->unk8->unk1C = temp_f0_2;
     temp_s4->unk80->unk10 = 60.0f;
     func_800AED20(0.0f);
-    func_800AECC0(D_800D6B10 * 0.5f);
+    func_800AECC0(gameTicksPerDraw * 0.5f);
     D_800DDFD0[omCurrentObj->objId] = 7;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D93F0;
     D_800E0490[omCurrentObj->objId] = &D_801DAB18;
@@ -1902,7 +1902,7 @@ GLOBAL_ASM("asm/non_matchings/ovl13/0/ovl13/31.s")
 
 void func_801E135C_ovl13(GObj *arg0) {
     func_800AED20(0.0f);
-    func_800AECC0(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
     D_800DDFD0[omCurrentObj->objId] = 8;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9384_ovl8;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAE1C_ovl8;
@@ -2593,7 +2593,7 @@ void func_801E3028_ovl13(GObj *arg0) {
 
     temp_s1 = D_800E1B50[omCurrentObj->objId];
     func_800AED20(0.0f);
-    func_800AECC0(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
     D_800DDFD0[omCurrentObj->objId] = 0xC;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D93F0;
     D_800E0490[omCurrentObj->objId] = &D_801DAB04;
@@ -2627,7 +2627,7 @@ void func_801E3028_ovl13(GObj *arg0) {
     func_800FD570(0, 4, 0.0f, *temp_s1->unk88->unk10, 0.0f);
     D_800EAC20[omCurrentObj->objId] = 0.017453292f;
     D_800EAFA0[omCurrentObj->objId] = 0.017453292f;
-    func_800AECC0(D_800D6B10 * 0.5f);
+    func_800AECC0(gameTicksPerDraw * 0.5f);
     func_800AA018(0x10427);
     D_800E3750[omCurrentObj->objId] = -0.6f;
     D_800E3C90[omCurrentObj->objId] = 6.0f;

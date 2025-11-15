@@ -19,8 +19,8 @@ s32 func_800B3158(void);
 
 void func_8021DF20_ovl19(struct GObj *arg0) {
     D_800E0650[omCurrentObj->objId] = 0;
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800E8760[omCurrentObj->objId] = 0;
     D_800E83E0[omCurrentObj->objId] = D_800E8760[omCurrentObj->objId];
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0xA, &D_8022F040_ovl19[0]);
@@ -30,8 +30,8 @@ void func_8021DFD0_ovl19(void) {
     f32 tmpY; // supposedly the function call changes this value
     u32 temp_a3;
 
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800DEF90[omCurrentObj->objId] = func_8021E4B0_ovl19;
     D_800E8920[omCurrentObj->objId] = 1;
     D_800E8AE0[omCurrentObj->objId] = 0;
@@ -54,8 +54,8 @@ void func_8021DFD0_ovl19(void) {
 void func_8021E184_ovl19(void) {
     u32 temp_a0;
 
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800DEF90[omCurrentObj->objId] = func_8021E7DC_ovl19;
     D_800E8920[omCurrentObj->objId] = 1;
     D_800E8AE0[omCurrentObj->objId] = 0;

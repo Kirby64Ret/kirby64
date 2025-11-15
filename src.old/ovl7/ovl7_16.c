@@ -5,7 +5,7 @@
 #include "ovl18/ovl18_1.h"
 
 extern f32 D_800E6A10[];
-extern f32 D_800D6B10;
+extern f32 gameTicksPerDraw;
 extern s32 D_800E8920[];
 extern void (*D_800DF150[])(s32);
 extern f32 gEntitiesNextPosYArray[];

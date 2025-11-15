@@ -65,7 +65,7 @@ extern s32 D_800B7790;
 extern s32 D_8022A988;
 
 extern s32 D_800E9560[];
-extern f32 D_800D6B10;
+extern f32 gameTicksPerDraw;
 extern f32 D_8022BBFC;
 
 extern s32 D_800B68AC;

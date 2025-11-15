@@ -412,7 +412,7 @@ void func_800BCA5C(void) {
             ohSleep(1);
         } while (D_800D6B24 != 0);
     }
-    ohSleep(3.0f * D_800D6B14);
+    ohSleep(3.0f * gameTicksPerDrawInv);
 loop_14:
     var_v0 = *(&gPlayerControllers + 2);
     if (!(var_v0 & 0x9000)) {

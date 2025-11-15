@@ -2186,12 +2186,12 @@ void func_800FC804(s32 arg0) {
             temp_v0 = &D_800D7088 + 4;
             if (M2C_ERROR(/* cfc1 */) & 0x78) {
                 if (!(M2C_ERROR(/* cfc1 */) & 0x78)) {
-                    var_t0 = (D_800D6B10 - 2.1474836e9f) | 0x80000000;
+                    var_t0 = (gameTicksPerDraw - 2.1474836e9f) | 0x80000000;
                 } else {
                     goto block_9;
                 }
             } else {
-                var_t0 = D_800D6B10;
+                var_t0 = gameTicksPerDraw;
                 if (var_t0 < 0) {
 block_9:
                     var_t0 = -1;

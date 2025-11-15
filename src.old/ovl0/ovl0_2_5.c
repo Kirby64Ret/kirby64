@@ -786,7 +786,7 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2_5/gtlCreateScene.s")
 #endif
 
 
-void func_800075DC(u16 arg0, u16 arg1) {
+void gtlSetUpdateDrawRate(u16 arg0, u16 arg1) {
     gtlUpdateInterval = arg0;
     gtlDrawInterval = arg1;
 }

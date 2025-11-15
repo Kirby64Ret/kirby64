@@ -37,7 +37,7 @@ void initTrack(s32 track) {
     D_800DD8D0[track] = 0;
     gEntityRenderPriorityArray[track] = 0x10;
     
-    D_800E09D0[track] = D_800E0B90[track] = D_800D6B10;
+    D_800E09D0[track] = D_800E0B90[track] = gameTicksPerDraw;
     
     D_800E0D50[track] = D_800E0F10[track] = -1;
     D_800E0490[track] = 0;

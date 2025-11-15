@@ -6,7 +6,7 @@
 #include "ovl18_3.h"
 #include "ovl18_5.h"
 
-extern f32 D_800D6B14;
+extern f32 gameTicksPerDrawInv;
 s32 func_800AEC70(s32, s32, s32);
 void ohSleep(s32);
 void func_802266E0_ovl18(s32 arg0, s32 arg1, s32 arg2) {
@@ -15,9 +15,9 @@ void func_802266E0_ovl18(s32 arg0, s32 arg1, s32 arg2) {
 
     temp_v0 = func_800AEC70(0x2D, 0x1E, 0x4F);
     D_800E98E0[temp_v0] = arg0;
-    D_800E9AA0[temp_v0] = arg1 * D_800D6B14;
+    D_800E9AA0[temp_v0] = arg1 * gameTicksPerDrawInv;
     if (arg2 != 0) {
-        ohSleep(arg2 * D_800D6B14);
+        ohSleep(arg2 * gameTicksPerDrawInv);
     }
 }
 
@@ -43,7 +43,7 @@ void func_8022677C_ovl18(s32 arg0) {
         ohSleep(D_800E9AA0[omCurrentObj->objId]);
         func_800B1900((u16) omCurrentObj->objId);
     }
-    ohSleep(30.0f * D_800D6B10);
+    ohSleep(30.0f * gameTicksPerDraw);
     func_802266E0_ovl18(0xD, 0xB4, 0);
     func_802266E0_ovl18(1, 0xB4, 0xC8);
     func_802266E0_ovl18(0xD, 0xB4, 0);
@@ -194,7 +194,7 @@ void func_80226FD8_ovl18(u32 arg0) {
     }
     D_800E98E0[omCurrentObj->objId] = 1;
     D_800D6B74 = D_800E98E0[omCurrentObj->objId];
-    ohSleep(15.0f * D_800D6B14);
+    ohSleep(15.0f * gameTicksPerDrawInv);
     while (1) {
         temp_v0 = gPlayerControllers[1];
         if (temp_v0 & 0x9000 && D_800D6B24 == 0) {
@@ -271,7 +271,7 @@ extern struct {
 extern u32 D_8012E700;
 extern u16 gFrameBuffer[320][240];
 extern u16 D_803FC100;
-void func_800A41B0(f32);
+void gameSetUpdateRate(f32);
 
 #ifdef NON_MATCHING
 s32 func_80227308_ovl18(s32 arg0) {
@@ -280,7 +280,7 @@ s32 func_80227308_ovl18(s32 arg0) {
     D_800D6B64 = arg0;
     func_80002B88_ovl18();
     func_80020998_ovl18(0, 0x7800);
-    func_800A41B0(2.0f);
+    gameSetUpdateRate(2.0f);
     D_8022AE30.zb = &D_8012E700;
     func_80007BA4(&D_8022AE30);
     D_8022AE4C.unk10 = (u32)&gFrameBuffer - (u32)&_ovl19SegNoloadEnd;

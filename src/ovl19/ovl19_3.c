@@ -1333,8 +1333,8 @@ void func_8022CE18_ovl19(s32 arg0) {
     *(&D_8012E7E8 + 8) = 1;
     D_800DF150[omCurrentObj->objId] = func_8022D13C_ovl19;
     setProcessMain(gEntityGObjProcessArray4[omCurrentObj->objId], &func_800B1870, omCurrentObj);
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     *(&D_8012E90C + 0x10) = 0;
     func_800AFA54(*(&D_800DFA10 + (omCurrentObj->objId * 4)));
     func_800B20E0(omCurrentObj, *(&D_800DFD90 + (omCurrentObj->objId * 4)), omCurrentObj);
@@ -1540,8 +1540,8 @@ void func_8022D5F8_ovl19(s32 arg0) {
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B4954;
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_8022D96C_ovl19;
     gEntitiesNextPosYArray[omCurrentObj->objId] = *gEntitiesNextPosYArray;
     D_800E17D0[omCurrentObj->objId] = *gEntitiesAngleYArray;

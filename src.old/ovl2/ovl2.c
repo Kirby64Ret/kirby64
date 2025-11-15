@@ -42,7 +42,7 @@ extern u32 D_803FC100;
 extern u32 D_80123EDC;
 extern u32 D_8012D200;
 extern u32 D_80123EEC;
-extern void func_800A41B0(f32 a, u32 *b);//, u32 *c);
+extern void gameSetUpdateRate(f32 a, u32 *b);//, u32 *c);
 extern void func_80007BA4_ovl2(struct Unk80123EC0 *a);
 
 // TOOD: fix loop

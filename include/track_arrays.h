@@ -152,7 +152,7 @@ extern s32 D_800E9720[];
 extern s32 D_800E9560[];
 extern s32 D_800E93A0[];
 
-extern f32 D_800D6B10;
+extern f32 gameTicksPerDraw;
 
 extern struct Normal D_800E6F50[];
 extern f32 D_800D66FC, D_800D66F8;

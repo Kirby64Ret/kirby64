@@ -311,7 +311,7 @@ void func_800F6AD4(s32 arg0, ? arg1) {
     D_800D7B80 = 0;
     D_800D7B7C = 0;
     D_800D7B78 = 0;
-    func_800A41B0(0x40000000, &D_800D7B7C, &D_803FC100);
+    gameSetUpdateRate(0x40000000, &D_800D7B7C, &D_803FC100);
     if ((D_800BE500 == 6) && (D_800BE504 == 0) && (D_800BE534 == 2)) {
         gtlCreateScene(&D_80123F68);
     } else {

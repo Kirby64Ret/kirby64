@@ -1,6 +1,7 @@
 #include "common.h"
 #include "GObj.h"
 #include "main/dma.h"
+#include "main/gtl.h"
 #include "main/object_manager.h"
 #include "main/fault.h"
 #include "main/contpad.h"
@@ -22,6 +23,8 @@ extern s32 D_800D6F50;
 extern s32 D_800EC9FC;
 extern s32 D_800D6B9C;
 extern u32 D_800D6B48;
+
+extern f32 gameTicksPerDraw, gameTicksPerDrawInv;
 
 extern s32 D_800D7288;
 extern u32 saveCurrentLevel;
@@ -139,7 +142,7 @@ void func_800A2B9C(void) {
         }
         var_v0 += 1;
         var_v0->unk-1 = temp_a0;
-    } while (var_v0 != &D_800D6B10);
+    } while (var_v0 != &gameTicksPerDraw);
     set_hard_rng_seed(0x3039);
     scRemovePostProcessFunc();
     gGameState = 1;
@@ -165,7 +168,7 @@ void func_800A2C80(void) {
     scRemovePostProcessFunc();
     auSetBGMVolume(0, 0x7800);
     func_80020CC4(0x7800);
-    func_800A41B0(1.0f);
+    gameSetUpdateRate(1.0f);
     func_80004674(0x10, 2);
     gGameTampered = 0;
     func_800BB418();
@@ -859,13 +862,12 @@ void game_tick(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/game_tick.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800A41B0(f32 arg0) {
-    D_800D6B10 = arg0;
-    D_800D6B14 = 1.0f / arg0;
-    func_800075DC(arg0 & 0xFFFF, 1);
+/**
+ * Sets the number of game update ticks that will happen per draw frame
+ */
+void gameSetUpdateRate(f32 ticksPerDraw) {
+    gameTicksPerDraw = ticksPerDraw;
+    gameTicksPerDrawInv = 1.0f / ticksPerDraw;
+    gtlSetUpdateDrawRate(ticksPerDraw, 1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A41B0.s")
-#endif
+

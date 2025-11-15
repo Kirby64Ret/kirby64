@@ -12,7 +12,7 @@
 #include "sounds.h"
 
 extern s32 D_800D6B24;
-extern f32 D_800D6B14;
+extern f32 gameTicksPerDrawInv;
 extern s32 D_8015C680_ovl4;
 extern Lights1 D_800BE548;
 extern u16 gFrameBuffer[][320];
@@ -217,7 +217,7 @@ void func_80151338_ovl4(s32 arg0) {
                 ohSleep(1);
             }
             ohSleep(0x1E);
-            D_8015C680_ovl4 = 600.0f * D_800D6B14;
+            D_8015C680_ovl4 = 600.0f * gameTicksPerDrawInv;
             HS64_omMakeGObj(0, func_80151A0C_ovl4, 0x1A, 0x80000000);
             break;
 // the characters for case 2

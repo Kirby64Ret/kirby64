@@ -13,8 +13,8 @@ extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 
 void func_801A7000(struct GObj *arg0) {
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     func_800AF408();
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];

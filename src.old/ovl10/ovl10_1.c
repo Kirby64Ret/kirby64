@@ -198,8 +198,8 @@ GLOBAL_ASM("asm/non_matchings/ovl10/ovl10_1/func_801DCCB8_ovl10.s")
 #endif
 
 void func_801DCDD4_ovl10(s32 arg0) {
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800DDFD0[omCurrentObj->objId] = 2;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F39F4_ovl10;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;

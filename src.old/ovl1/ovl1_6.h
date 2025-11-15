@@ -161,7 +161,7 @@ extern s32 D_800E9720[];
 extern s32 D_800E9560[];
 extern s32 D_800E93A0[];
 
-extern f32 D_800D6B10;
+extern f32 gameTicksPerDraw;
 
 // only x/y seem to be updated, and originOffset actually tracks distance
 extern struct Normal D_800E6F50[];

@@ -249,17 +249,17 @@ void func_801E42E4_ovl10(s32 arg0) {
     func_800AA864(0x1032E, 1);
     D_800EA1A0[omCurrentObj->objId] = 0;
     play_sound(0x1D1);
-    func_800AECC0(D_800D6B10 * 1.25f);
-    func_800AED20(D_800D6B10 * 1.25f);
+    func_800AECC0(gameTicksPerDraw * 1.25f);
+    func_800AED20(gameTicksPerDraw * 1.25f);
     func_801E409C_ovl10();
     func_800AA018(0x1032D);
     func_800AA864(0x1032C, 1);
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     func_800AA018(0x10331);
     func_800AA864(0x10330, 1);
-    func_800AECC0(D_800D6B10 + D_800D6B10);
-    func_800AED20(D_800D6B10 + D_800D6B10);
+    func_800AECC0(gameTicksPerDraw + gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw + gameTicksPerDraw);
     func_800AA018(0x10335);
     func_800AA018(0x10334);
     D_800DF310[omCurrentObj->objId] = &func_801E4284_ovl10;
@@ -267,8 +267,8 @@ void func_801E42E4_ovl10(s32 arg0) {
         ohSleep(1);
     }
     ohSleep(16);
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800E9E20[omCurrentObj->objId] = 1;
     func_800AFA14();
 }

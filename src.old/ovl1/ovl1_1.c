@@ -625,7 +625,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A377C.s")
 #endif
 
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/func_800A41B0.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_1/gameSetUpdateRate.s")
 
 void utilPrintf(char* arg0, ...) {
 

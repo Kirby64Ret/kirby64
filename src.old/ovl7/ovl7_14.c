@@ -5,7 +5,7 @@
 #include "sounds.h"
 
 extern f32 D_800E6A10[];
-extern f32 D_800D6B10;
+extern f32 gameTicksPerDraw;
 extern s32 D_800E8920[];
 extern void (*D_800DF150[])(s32);
 
@@ -83,8 +83,8 @@ void func_801BBBF4_ovl7(s32 arg0) {
     temp_a1->unk48 = &func_8010C274;
     temp_a1->unk98 = &D_801CB56C;
     D_800E8920[omCurrentObj->objId] = 0;
-    func_800AECC0(D_800D6B10, temp_a1);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw, temp_a1);
+    func_800AED20(gameTicksPerDraw);
     if (sp1C->unk4 != -1) {
         func_800AA018(sp1C->unk4);
     }

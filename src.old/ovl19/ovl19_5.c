@@ -12,7 +12,7 @@ extern void ohSleep(u32 arg0);
 extern void play_sound(u32 arg0);
 extern void func_8019F000_ovl19(struct EntityThing800E9AA0 *arg0, f32 *arg1, u32 arg2, f32 arg3);
 
-extern f32 D_800D6B10;
+extern f32 gameTicksPerDraw;
 extern f32 D_800E6A10[];
 extern u32 *D_800DEF90[];
 extern f32 D_800E6D90[];
@@ -30,8 +30,8 @@ extern f32 gEntitiesAngleYArray[];
 
 void func_8022E630_ovl19(s32 arg0) {
     Vector sp1C;
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800DEF90[omCurrentObj->objId] = &D_800B4924;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     ohSleep(0x60);
@@ -78,8 +78,8 @@ void func_8022E954_ovl19(struct CollisionState *arg0) {
     struct UnkStruct800E1B50 *sp20;
 
     sp20 = D_800E1B50[omCurrentObj->objId];
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800DEF90[omCurrentObj->objId] = &D_800B4924;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     func_800AA018(0x105F0);
@@ -88,8 +88,8 @@ void func_8022E954_ovl19(struct CollisionState *arg0) {
     func_800AECC0(0);
     func_800AED20(0);
     ohSleep(0x5F);
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     sp24.z = 0.0f;
     sp24.y = 30.0f;
     sp24.x = 0.0f;
@@ -113,8 +113,8 @@ void func_8022EE78_ovl19(s32 arg0);
 
 void func_8022ED10_ovl19(s32 arg0) {
     Vector sp1C;
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     D_800DEF90[omCurrentObj->objId] = &D_800B4924;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     ohSleep(0x60);

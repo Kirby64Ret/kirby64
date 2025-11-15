@@ -243,7 +243,7 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlCreateScene.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800075DC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/gtlSetUpdateDrawRate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800075F8.s")
 

@@ -64,8 +64,8 @@ void func_802205AC_ovl18(s32 arg0) {
 
     D_800DDFD0[omCurrentObj->objId] = 1;
     func_800B3520();
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     temp_f0 = func_801D650C_ovl18(arg0);
     D_800EADE0[omCurrentObj->objId] = temp_f0;
     if (0.0f < temp_f0) {
@@ -79,9 +79,9 @@ void func_802205AC_ovl18(s32 arg0) {
     D_800EBBE0[omCurrentObj->objId] = func_801ACC34_ovl18(0x2E, 0);
     play_sound(0xA6);
     ohSleep(4);
-    func_800AECC0(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
     do {
-        func_800AED20(D_800D6B10);
+        func_800AED20(gameTicksPerDraw);
         func_800AA154(0x10023);
     } while (0);
     D_800E98E0[omCurrentObj->objId] = 0x1E;
@@ -240,14 +240,14 @@ void func_80221498_ovl18(s32 arg0) {
     u32 phi_a0;
 
     D_800DDFD0[omCurrentObj->objId] = 0;
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     func_800B3520();
     temp_f20 = D_8022BBFC;
     while (TRUE) {
         D_800E8920[omCurrentObj->objId] = 0;
-        func_800AECC0(D_800D6B10 * temp_f20);
-        func_800AED20(D_800D6B10 * temp_f20);
+        func_800AECC0(gameTicksPerDraw * temp_f20);
+        func_800AED20(gameTicksPerDraw * temp_f20);
         func_800A9EA4((D_800E6A10[omCurrentObj->objId] == 1.0f) ? 0x000101B6 : 0x000101B4);
         D_800E3210[omCurrentObj->objId] = 4.5f;
         D_800E3750[omCurrentObj->objId] = -0.25f;

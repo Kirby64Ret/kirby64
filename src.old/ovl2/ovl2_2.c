@@ -29,13 +29,13 @@ void func_800F6C88(void) {
     D_800BE4F8 = 7;
 }
 
-extern f32 D_800D6B14;
+extern f32 gameTicksPerDrawInv;
 void procMainStub(void);
 
 void func_800F6C98(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = NULL;
     func_800B1F68(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    ohSleep((u32) (120.0f * D_800D6B14));
+    ohSleep((u32) (120.0f * gameTicksPerDrawInv));
     if (D_800E98E0[omCurrentObj->objId] == 3) {
         func_800F6C68();
     }

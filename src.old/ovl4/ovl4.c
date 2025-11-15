@@ -11,7 +11,7 @@ void func_80151A0C_ovl4(s32 arg0);
 
 extern s32 D_800D6B24;
 extern s32 D_8015C680;
-extern f32 D_800D6B14;
+extern f32 gameTicksPerDrawInv;
 void func_800A6F68(
     s32, 
     f32,
@@ -137,7 +137,7 @@ void func_80151338_ovl4(s32 arg0) {
                 ohSleep(1);
             }
             ohSleep(0x1E);
-            D_8015C680 = 600.0f * D_800D6B14;
+            D_8015C680 = 600.0f * gameTicksPerDrawInv;
             func_8000A180(0, func_80151A0C_ovl4, 0x1A, 0x80000000);
             break;
         case 5:

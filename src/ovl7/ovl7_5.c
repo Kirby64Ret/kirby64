@@ -20,14 +20,14 @@ extern void *D_801CA738_ovl7;
 extern FUNCLIST D_801C29B0_ovl7;
 
 // ovl1 bss
-extern f32 D_800D6B10;
+extern f32 gameTicksPerDraw;
 
 // ovl7_5.h
 void func_801A7524_ovl7(GObj *);
 
 void func_801A7000_ovl7(GObj *gobj) {
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     func_800AF408();
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E6850[omCurrentObj->objId] = 65535.0f;
@@ -2236,8 +2236,8 @@ void func_801AC1F4_ovl7(void *arg0) {
     func_800AF408();
     D_800DF150[omCurrentObj->objId] = NULL;
     D_800DEF90[omCurrentObj->objId] = func_800B6474;
-    func_800AECC0(D_800D6B10);
-    func_800AED20(D_800D6B10);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
     func_800B33F4();
     arg0->unk48 = 0;
     D_800DF310[omCurrentObj->objId] = NULL;

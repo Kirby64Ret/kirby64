@@ -380,7 +380,7 @@ void func_8018205C_ovl5(s32 arg0) {
 }
 
 void func_8018209C_ovl5(void) {
-    func_800A41B0(2.0f);
+    gameSetUpdateRate(2.0f);
     ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
     func_800AE048(0x80);
     func_800AE0F0();

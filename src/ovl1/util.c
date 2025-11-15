@@ -678,7 +678,7 @@ void utilDrawRectGfx(GObj *gobj) {
 void utilSpawnRect(s16 alpha, s16 rate, u8 endKind) {
     if (D_800D6B24 == NULL) {
         utilRectAlpha = alpha;
-        D_800D6B2C = rate * D_800D6B10;
+        D_800D6B2C = rate * gameTicksPerDraw;
         D_800D6B2B = endKind;
         D_800D6B24 = ohCreateCamera(2, 0, 0x19, 0x80000000, &utilDrawRectGfx, 0, 0, 0, 0, 0, &utilFadeRectLoop, 1, 0);
     }

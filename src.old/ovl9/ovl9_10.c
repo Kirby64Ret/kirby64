@@ -82,8 +82,8 @@ void func_8020938C_ovl9(s32 arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     func_800A9864(0x1008E, 0x23, 0x10);
     func_800AA018(0x10523);
-    func_800AECC0(D_800D6B10 * 0.75f);
-    func_800AED20(D_800D6B10 * 0.75f);
+    func_800AECC0(gameTicksPerDraw * 0.75f);
+    func_800AED20(gameTicksPerDraw * 0.75f);
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 6.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E6850[omCurrentObj->objId] = 6.0f;
