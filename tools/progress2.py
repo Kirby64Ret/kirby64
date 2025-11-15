@@ -10,15 +10,19 @@ import os
 import re
 import glob
 
+TOTAL_SHARDS_IN_KIRBY_64 = 74
+
 parser = argparse.ArgumentParser(description="Computes current progress throughout the whole project.")
 parser.add_argument("-m", "--matching", dest='matching', action='store_true',
                     help="Output matching progress instead of decompilation progress")
 parser.add_argument("-c", "--csv", dest="csv", action="store_true",
                     help="Output results in CSV format")
+parser.add_argument("-v", "--verbose", dest='verbose', action='store_true',
+                    help="Verbose debug prints")
 args = parser.parse_args()
 
-NON_MATCHING_PATTERN = r"#ifdef\s+NON_MATCHING.*?#else\nGLOBAL_ASM\s*\(\s*\"(.*?)\"\s*\).*?#endif"
-M2C_PATTERN = r"#ifdef\s+MIPS_TO_C.*?#else\nGLOBAL_ASM\s*\(\s*\"(.*?)\"\s*\).*?#endif"
+NON_MATCHING_PATTERN = r"#ifdef\s+NON_MATCHING.*?#else\n#pragma GLOBAL_ASM\s*\(\s*\"(.*?)\"\s*\).*?#endif"
+M2C_PATTERN = r"#ifdef\s+MIPS_TO_C.*?#else\n#pragma GLOBAL_ASM\s*\(\s*\"(.*?)\"\s*\).*?#endif"
 UNTOUCHED_PATTERN = r"#pragma\s+GLOBAL_ASM\s*\(\s*\"(.*?)\"\s*\)"
 
 def GetNonMatchingFunctions(files):
@@ -57,9 +61,11 @@ def GetNonMatchingSize(path):
             asmLines = ReadAllLines(asmFilePath)
 
             for asmLine in asmLines:
-                if (asmLine.startswith("/*")):
+                if (asmLine.strip().startswith("/*")):
                     size += 4
 
+    if args.verbose:
+        print(f"Found nonmatching asm worth {size} bytes")
     return size
 
 
@@ -80,18 +86,25 @@ for line in mapFile:
 
         if (section == ".text"):
             if (objFile.startswith("build/src")):
+                # if args.verbose: print(f"Found file: {objFile[:-1]} with size: {size}")
                 src += size
             if (objFile.startswith("build/libultra.a")):
+                # if args.verbose: print(f"Found file: {objFile[:-1]} with size: {size}")
                 src += size
             if (objFile.startswith("build/libn_audio.a")):
+                # if args.verbose: print(f"Found file: {objFile[:-1]} with size: {size}")
                 src += size
-            elif (objFile.startswith("build/asm")):
+            elif objFile.startswith("build/asm"):
+                # if args.verbose: print(f"Found file: {objFile[:-1]} with size: {size}")
                 asm += size
 
 nonMatchingASM = GetNonMatchingSize("asm/nonmatchings")
 
 src -= nonMatchingASM
 asm += nonMatchingASM
+
+if args.verbose:
+    print(f"src size: {src} asm size: {asm}")
 
 total_decompilable_code = \
     0x38DF0 + \
@@ -123,6 +136,9 @@ codeSize = total_decompilable_code
 total = src + asm
 total2 = codeSize
 
+if args.verbose:
+    print(f"Totals: {total} {total2}")
+
 srcPct = 100 * src / total
 asmPct = 100 * asm / total
 
@@ -130,15 +146,15 @@ srcPct2 = 100 * src / total2
 asmPct2 = 100 * asm / total2
 
 compiled_bytes = total
-bytesPerShard = compiled_bytes / 74
+bytesPerShard = compiled_bytes / TOTAL_SHARDS_IN_KIRBY_64
 
 adjective = "decompiled" if not args.matching else "matched"
 
 print("------------------------------------")
-print(str(total) + " total bytes of decompilable code.")
-print(str(src) + " bytes " + adjective + " in src.\n")
-print("         OoT Approach (src + asm): " + str(srcPct) + "%")
-print("Kirby64 Approach (pre-calculated): " + str(srcPct2) + "%\n")
+print(f"{total} total bytes of decompilable code.")
+print(f"{src} bytes {adjective} in src.\n")
+print(f"         OoT Approach (src + asm): {srcPct}%")
+print(f"Kirby64 Approach (pre-calculated): {srcPct2}%\n")
 print("------------------------------------")
 
 heartPieces = int(src / bytesPerShard)

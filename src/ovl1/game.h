@@ -22,5 +22,6 @@ extern u32 D_800BE538;
 extern u32 D_800BE53C;
 
 void game_tick(s32);
+void gameSetUpdateRate(f32 ticksPerDrawFrame);
 
 #endif // __GAME_H__

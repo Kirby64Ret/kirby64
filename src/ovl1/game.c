@@ -7,6 +7,8 @@
 #include "main/contpad.h"
 #include "game.h"
 
+extern u32 gGameTampered;
+
 extern u32 saveCurrentLevel, saveCurrentWorld;
 extern s32 gKirbyLives;
 extern f32 gKirbyHp;
@@ -158,7 +160,6 @@ void func_800A2B9C(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2B9C.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_800A2C80(void) {
     func_800BB3F0();
     scRemovePostProcessFunc();
@@ -169,9 +170,6 @@ void func_800A2C80(void) {
     gGameTampered = 0;
     func_800BB418();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2C80.s")
-#endif
 
 void func_800A2CE4(void) {
     saveCurrentFileNum = D_800EC9FC;
