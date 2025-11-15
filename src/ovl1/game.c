@@ -18,11 +18,9 @@ extern s32 D_800D6B7C;
 extern s32 D_800D6B80;
 extern s32 saveCurrentFileNum;
 extern u32 D_800D6B8C;
-extern s32 D_800D6B44;
 extern s32 D_800D6F50;
 extern s32 D_800EC9FC;
 extern s32 D_800D6B9C;
-extern u32 D_800D6B48;
 
 extern f32 gameTicksPerDraw, gameTicksPerDrawInv;
 
@@ -51,6 +49,9 @@ extern u8 D_800D6E30[16];
 
 extern s32 D_800D6F38;
 extern s32 D_800D6F3C;
+
+extern s32 D_800D6B44;
+extern u32 D_800D6B48;
 extern u32 D_800D6F54;
 
 extern void *D_800A2904; // struct
@@ -124,33 +125,28 @@ OSThread *crash_screen_print_page_3(void) {
     return retThread;
 }
 
-#ifdef MIPS_TO_C
-
+#ifdef NON_MATCHING
 void func_800A2B9C(void) {
-    u8 *var_v0;
-    u8 *var_v1;
-    u8 temp_a0;
+    int i;
 
     D_800D6B18 = 1;
-    var_v1 = &D_800BE3F0;
-    var_v0 = &D_800D6B00;
-    do {
-        temp_a0 = *var_v1;
-        var_v1 += 1;
-        if (*var_v0 != temp_a0) {
+    for (i = 0; i < 16; i++) {
+        if (D_800D6B00[i] != D_800BE3F0[i]) {
             D_800D6B18 = 0;
         }
-        var_v0 += 1;
-        var_v0->unk-1 = temp_a0;
-    } while (var_v0 != &gameTicksPerDraw);
+        D_800D6B00[i] = D_800BE3F0[i];
+    }
     set_hard_rng_seed(0x3039);
     scRemovePostProcessFunc();
     gGameState = 1;
     D_800BE4F8 = 0;
     D_800D6F3C = 0;
+
+    // Non matching quirk over here
     D_800D6B44 = -1;
     D_800D6B48 = -1;
     D_800D6F54 = -1;
+
     func_800BB24C();
     auSetReverbType(2);
     func_800A74B0();
