@@ -7,13 +7,19 @@
 #include "main/object_manager.h"
 
 // this file
-extern s8 D_800BE3E0, D_800BE3E4;
+// extern s8 D_800BE3E0, D_800BE3E4;
+
+s8 D_800BE3E0 = 0;
+s8 D_800BE3E4 = 0;
+u16 D_800BE3E8 = 0;
+s8 D_800BE3EC = 0x7B;
+
 extern u16 D_800D6AE2;
 extern s32 D_800D6AE4;
 extern u16 D_800D6AE8;
 extern s16 D_800D6AEA;
 extern s32 D_800D6AEC;
-extern u16 D_800BE3E8;
+// extern u16 D_800BE3E8;
 extern u32 D_800D6A14[];
 
 #ifdef MIPS_TO_C

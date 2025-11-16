@@ -1,53 +1,45 @@
+// possibly mglib.c
+
 #include "common.h"
+
+#include "sounds.h"
+#include "SPObj.h"
+
+#include "main/fault.h"
+#include "ovl1/sprite.h"
 
 extern u8 D_800D6BB9, D_800D6BBA, D_800D6BBB;
 
-#ifdef MIPS_TO_C
+SPObj *func_8015C740_ovl5(GObj *gobj, struct UnkStruct8015C740 *arg1) {
+    SPObj *sprite; 
 
-void *func_8015C740_ovl5(s32 arg0, void *arg1) {
-    u16 temp_v1;
-    u16 temp_v1_2;
-    void *temp_v0;
-
-    temp_v0 = func_800AC954(arg0, arg1->unk4, func_800A8C40(arg1->unk0));
-    if (temp_v0 == NULL) {
+    sprite = func_800AC954(gobj, arg1->mode, func_800A8C40(arg1->image));
+    if (sprite == NULL) {
         fatal_printf("Can't get spobj in mglib\n");
-loop_2:
-        goto loop_2;
+        while (1);
     }
-    temp_v0->unk20 = arg1->unk8;
-    temp_v0->unk24 = arg1->unkC;
-    temp_v1 = arg1->unk10;
-    if (temp_v1 != 0x29A) {
-        temp_v0->unk14 = temp_v1;
-        temp_v0->unk15 = arg1->unk12;
-        temp_v0->unk16 = arg1->unk14;
+    sprite->xOffset = arg1->xOffset;
+    sprite->yOffset = arg1->yOffset;
+    if (arg1->primColor[0] != 0x29A) {
+        sprite->primColorRed = arg1->primColor[0];
+        sprite->primColorGreen = arg1->primColor[1];
+        sprite->primColorBlue = arg1->primColor[2];
     }
-    temp_v1_2 = arg1->unk16;
-    if (temp_v1_2 != 0x29A) {
-        temp_v0->unk18 = temp_v1_2;
-        temp_v0->unk19 = arg1->unk18;
-        temp_v0->unk1A = arg1->unk1A;
+    if (arg1->envColor[0] != 0x29A) {
+        sprite->envColorRed = arg1->envColor[0];
+        sprite->envColorGreen = arg1->envColor[1];
+        sprite->envColorBlue = arg1->envColor[2];
     }
-    temp_v0->unk13 = temp_v0->unk13 | arg1->unk1C;
-    return temp_v0;
+    sprite->renderFlags |= arg1->flags;
+    return sprite;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_1/func_8015C740_ovl5.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8015C804_ovl5(void *arg0, f32 arg1, f32 arg2) {
-    f32 var_f6;
-    u16 temp_t7;
+#ifdef NON_MATCHING
+void func_8015C804_ovl5(SPObj *sprite, f32 x, f32 y) {
+    f32 divisor = 2.0f;
 
-    temp_t7 = arg0->unk1E;
-    var_f6 = temp_t7;
-    arg0->unk20 = arg1 - ((arg0->unk1C * arg0->unk28) / 2.0f);
-    if (temp_t7 < 0) {
-        var_f6 += 4294967296.0f;
-    }
-    arg0->unk24 = arg2 - ((var_f6 * arg0->unk2C) / 2.0f);
+    sprite->xOffset = x - ((sprite->width * sprite->xScale) / divisor);
+    sprite->yOffset = y - ((sprite->height * sprite->yScale) / divisor);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_1/func_8015C804_ovl5.s")
@@ -120,7 +112,11 @@ void func_8015C9B4_ovl5(void *arg0, void *arg1, f32 *arg2, f32 *arg3) {
     f32 var_f14;
 
     func_8001B008(&sp98, arg0 + 0x1C, arg0->unk20, arg0->unk24, arg0->unk28, arg0->unk2C, arg0->unk30);
-    guLookAtF(&sp58[0], arg0->unk3C, arg0->unk40, arg0->unk44, arg0->unk48, arg0->unk4C, arg0->unk50, arg0->unk54, arg0->unk58, arg0->unk5C);
+    guLookAtF(&sp58[0],
+                arg0->unk3C, arg0->unk40, arg0->unk44,
+                arg0->unk48, arg0->unk4C, arg0->unk50,
+                arg0->unk54, arg0->unk58, arg0->unk5C
+             );
     func_8015C884_ovl5(&sp58[0], &sp98, &spD8);
     temp_f0 = arg1->unk0;
     temp_f2 = arg1->unk4;
@@ -148,46 +144,41 @@ void func_8015C9B4_ovl5(void *arg0, void *arg1, f32 *arg2, f32 *arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_1/func_8015C9B4_ovl5.s")
 #endif
 
-#ifdef MIPS_TO_C
-
+#ifdef __MIPS_TO_C
 void func_8015CB7C_ovl5(void) {
-    s32 sp1C;
-    s32 temp_v0;
-    s32 temp_v0_2;
-    s32 var_v0;
-    void *temp_v1;
-    void *var_v1;
-
-    if ((D_800D6B24 == 0) && ((&D_800D7158 + 0x20)->unk74 == 0)) {
-        if (gPlayerControllers + 2 & START_BUTTON) {
+    s32 track;
+    void *gamestate;
+    //                                                paused
+    if ((D_800D6B24 == NULL) && ((&D_800D7158 + 0x20)->unk74 == 0)) {
+        if (gPlayerControllers[0].buttonPressed & START_BUTTON) {
             play_sound(SOUND_MINIPAUSE1);
             utilPauseAllGObjs();
-            temp_v1 = &D_800D7158 + 0x20;
-            temp_v0 = temp_v1->unk44;
-            temp_v1->unk74 = 1;
-            switch (temp_v0) {                      /* irregular */
+            gamestate = &D_800D7158 + 0x20;
+            // paused
+            gamestate->unk74 = 1;
+            switch (gamestate->unk44) {                      /* irregular */
                 case 29:
-                    var_v0 = request_track_3(8, 0, 0x70);
+                    track = request_track_3(8, 0, 0x70);
                     break;
                 case 31:
-                    var_v0 = request_track_3(6, 0, 0x70);
+                    track = request_track_3(6, 0, 0x70);
                     break;
                 case 30:
-                    var_v0 = request_track_3(7, 0, 0x70);
+                    track = request_track_3(7, 0, 0x70);
                     break;
             }
-            D_800E98E0[var_v0] = 0;
+            D_800E98E0[track] = 0;
         }
     } else {
-        var_v1 = &D_800D7158 + 0x20;
-        temp_v0_2 = var_v1->unk78;
-        if (temp_v0_2 != 0) {
-            if (temp_v0_2 == 2) {
+        gamestate = &D_800D7158 + 0x20;
+        if (gamestate->unk78 != 0) {
+            if (gamestate->unk78 == 2) {
                 utilResumeAllGObjs();
-                var_v1 = &D_800D7158 + 0x20;
+                gamestate = &D_800D7158 + 0x20;
             }
-            var_v1->unk74 = 0;
-            var_v1->unk78 = 0;
+            // paused
+            gamestate->unk74 = 0;
+            gamestate->unk78 = 0;
         }
     }
     omUpdateAll();

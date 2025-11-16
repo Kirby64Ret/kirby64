@@ -268,7 +268,12 @@ setup:
 	uv sync
 	uv run splat split kirby64.yaml
 
-.PHONY: all clean default diff test distclean
+split:
+	uv venv --clear
+	uv sync
+	uv run splat split kirby64.yaml
+
+.PHONY: all clean default diff test distclean split
 
 test: $(BUILD_DIR)/$(TARGET).z64
 	parallel-launcher $<

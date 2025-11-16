@@ -56,8 +56,8 @@ typedef struct SPObj {
 // 0x20
     f32 xOffset;
     f32 yOffset;
-    f32 unk28;
-    f32 unk2C;
+    f32 xScale;
+    f32 yScale;
     f32 unk30;
     f32 unk34;
     f32 unk38;

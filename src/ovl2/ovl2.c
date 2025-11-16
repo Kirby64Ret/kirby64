@@ -131,7 +131,7 @@ void func_800F64B0(void) {
     s32 sp20;
     GObj *temp_v0;
     s32 var_a0;
-    s32 var_a1;
+    s32 music;
     u8 var_v1;
     void *var_v0;
 
@@ -174,40 +174,37 @@ void func_800F64B0(void) {
             var_v0->unk4 = 0xD;
         }
     } while (var_a0 != 8);
-    var_a1 = D_801290D8->unkC;
-    switch (var_a1) {                               /* irregular */
+    music = D_801290D8->unkC;
+    switch (music) {                               /* irregular */
         case 39:
-            sp20 = var_a1;
-            if (func_800B9DF8(2, var_a1, 0xC, 7) != 0) {
-                var_a1 = 0xD;
+            if (func_800B9DF8(2, music, 0xC, 7) != 0) {
+                music = 0xD;
             }
             break;
         case 40:
-            sp20 = var_a1;
-            if (func_800B9DF8(2, var_a1, 0xC, 7) != 0) {
-                var_a1 = 0x12;
+            if (func_800B9DF8(2, music, 0xC, 7) != 0) {
+                music = 0x12;
             }
             break;
         case 41:
-            sp20 = var_a1;
-            if (func_800B9DF8(2, var_a1, 0xC, 7) != 0) {
-                var_a1 = 8;
+            if (func_800B9DF8(2, music, 0xC, 7) != 0) {
+                music = 8;
             }
             break;
         case 34:
             if (*(&D_800D6E20 + D_800BE508) != 0) {
-                var_a1 = D_800D6B48;
+                music = D_800D6B48;
             }
             break;
     }
-    D_800D6B48 = var_a1;
+    D_800D6B48 = music;
     if (*(&D_800D6B6C + 4) == 1) {
-        var_a1 = D_801290D8->unkC;
+        music = D_801290D8->unkC;
     }
     if ((D_800D6F3C >= 3) && (D_800D6F3C != 4)) {
-        var_a1 = 0;
+        music = 0;
     }
-    play_music(0, var_a1);
+    play_music(0, music);
     if (func_800F8560() == 2) {
         func_800BB98C(2, 0);
         return;

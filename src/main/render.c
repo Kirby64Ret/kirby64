@@ -4472,21 +4472,15 @@ void func_80017E84(void *arg0, ? arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80017F78(void *arg0) {
-    s32 var_v0;
-
-    var_v0 = arg0->unk80;
-    if (var_v0 & 4) {
+    if (arg0->unk80 & 4) {
         gtlMergeDisps();
-        var_v0 = arg0->unk80;
     }
-    if (var_v0 & 0x10) {
+    if (arg0->unk80 & 0x10) {
         gtlProcessDisps();
         gtlReset();
-        var_v0 = arg0->unk80;
     }
-    if (var_v0 & 0x40) {
+    if (arg0->unk80 & 0x40) {
         gtlProcessDisps();
     }
 }

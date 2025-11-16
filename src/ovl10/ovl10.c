@@ -1,6 +1,7 @@
 #include <ultra64.h>
 #include <macros.h>
 #include "GObj.h"
+#include "main/math.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl2/ovl2_8.h"
@@ -12,11 +13,11 @@ extern void func_800B4B9C();
 void func_801DB1E0_ovl10(void) {
     func_800B62AC();
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId] + 1.5707964f;
-    while (gEntitiesAngleYArray[omCurrentObj->objId] >= 6.2831855f) {
-        gEntitiesAngleYArray[omCurrentObj->objId] -= 6.2831855f;
+    while (gEntitiesAngleYArray[omCurrentObj->objId] >= M_TAU) {
+        gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;
     }
     while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f) {
-        gEntitiesAngleYArray[omCurrentObj->objId] += 6.2831855f;
+        gEntitiesAngleYArray[omCurrentObj->objId] += M_TAU;
     }
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
@@ -35,11 +36,11 @@ void func_801DB2FC_ovl10(void) {
 void func_801DB478_ovl10(void) {
     func_801DB2FC_ovl10();
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId] + (D_800E6A10[omCurrentObj->objId] * -1.5707964f);
-    while (gEntitiesAngleYArray[omCurrentObj->objId] >= 6.2831855f) {
-        gEntitiesAngleYArray[omCurrentObj->objId] -= 6.2831855f;
+    while (gEntitiesAngleYArray[omCurrentObj->objId] >= M_TAU) {
+        gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;
     }
     while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f) {
-        gEntitiesAngleYArray[omCurrentObj->objId] += 6.2831855f;
+        gEntitiesAngleYArray[omCurrentObj->objId] += M_TAU;
     }
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
@@ -54,14 +55,18 @@ void func_801DB594_ovl10(GObj *arg0) {
 
 void func_801DB678_ovl10(GObj *obj) {
     func_801DB594_ovl10(obj);
-    while (gEntitiesAngleYArray[omCurrentObj->objId] >= 6.2831855f) {
-        gEntitiesAngleYArray[omCurrentObj->objId] -= 6.2831855f;
+    while (gEntitiesAngleYArray[omCurrentObj->objId] >= M_TAU) {
+        gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;
     }
     while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f) {
-        gEntitiesAngleYArray[omCurrentObj->objId] += 6.2831855f;
+        gEntitiesAngleYArray[omCurrentObj->objId] += M_TAU;
     }
     D_800E17D0[omCurrentObj->objId] = gEntitiesAngleYArray[omCurrentObj->objId];
-    func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
+    func_800B3234(
+        gEntitiesNextPosXArray[omCurrentObj->objId],
+        gEntitiesNextPosYArray[omCurrentObj->objId],
+        gEntitiesNextPosZArray[omCurrentObj->objId]
+    );
 }
 
 void func_801DB770_ovl10(GObj *obj) {

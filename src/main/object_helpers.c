@@ -172,70 +172,47 @@ void ohResume(GObjProcess *proc) {
     proc->paused = 0;
 }
 
-#ifdef MIPS_TO_C
-void func_8000B7F0(GObj *arg0, s32 arg1) {
-    GObj *var_a0;
-    GObjProcess *var_v0;
+void func_8000B7F0(GObj *gobj, void (*entry)(struct GObj *)) {
+    GObjProcess *proc;
 
-    var_a0 = arg0;
-    if (var_a0 == NULL) {
-        var_a0 = omCurrentObj;
+    if (gobj == NULL) {
+        gobj = omCurrentObj;
     }
-    var_v0 = var_a0->procListHead;
-    if (var_v0 != NULL) {
-        do {
-            if (arg1 == var_v0->entryPoint) {
-                var_v0->paused = 1;
-            }
-            var_v0 = var_v0->next;
-        } while (var_v0 != NULL);
+    proc = gobj->procListHead;
+    while (proc != NULL) {
+        if (entry == proc->entryPoint) {
+            proc->paused = 1;
+        }
+        proc = proc->next;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B7F0.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8000B830(GObj *arg0, s32 arg1) {
-    GObj *var_a0;
-    GObjProcess *var_v0;
+void func_8000B830(GObj *gobj, void (*entry)(struct GObj *)) {
+    GObjProcess *proc;
 
-    var_a0 = arg0;
-    if (var_a0 == NULL) {
-        var_a0 = omCurrentObj;
+    if (gobj == NULL) {
+        gobj = omCurrentObj;
     }
-    var_v0 = var_a0->procListHead;
-    if (var_v0 != NULL) {
-        do {
-            if (arg1 == var_v0->entryPoint) {
-                var_v0->paused = 0;
-            }
-            var_v0 = var_v0->next;
-        } while (var_v0 != NULL);
+    proc = gobj->procListHead;
+    while (proc != NULL) {
+        if (entry == proc->entryPoint) {
+            proc->paused = 0;
+        }
+        proc = proc->next;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B830.s")
-#endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+void func_8000B870(GObj *gobj) {
+    GObjProcess *proc;
 
-void func_8000B870(GObj *arg0) {
-    GObj *var_a0;
-    GObjProcess *temp_s1;
-    GObjProcess *var_s0;
-
-    var_a0 = arg0;
-    if (var_a0 == NULL) {
-        var_a0 = omCurrentObj;
+    if (gobj == NULL) {
+        gobj = omCurrentObj;
     }
-    var_s0 = var_a0->procListHead;
-    if (var_s0 != NULL) {
-        do {
-            temp_s1 = var_s0->next;
-            omEndProcess(var_s0);
-            var_s0 = temp_s1;
-        } while (temp_s1 != NULL);
+    proc = gobj->procListHead;
+    while (proc != NULL) {
+        omEndProcess(proc);
+        proc = proc->next;
     }
 }
 #else
