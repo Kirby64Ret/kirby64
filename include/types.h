@@ -43,6 +43,10 @@ typedef f32 Vec3f[3];
 // TODO: where do i put this???
 typedef f32 Mat4[4][4];
 
+typedef struct {
+    s32 x, y, z;
+} Vector3Int;
+
 typedef struct Vector3 {
     f32 x;
     f32 y;

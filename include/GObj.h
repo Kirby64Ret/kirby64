@@ -157,7 +157,7 @@ typedef struct GObj {
     // todo: find the array this indexes
     /* 0x0D */ u8 dl_link;
     // seems to be similar to other GObj's in proximity
-    u8 unkE;
+    /* 0x0E */ u8 lastDrawFrame;
     u8 kind;
     /* 0x10 */
     u32 pri;

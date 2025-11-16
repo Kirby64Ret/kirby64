@@ -80,6 +80,8 @@ typedef struct FuncTable {
 } FuncTable; // size == 0x14
 
 extern Gfx *gDisplayListHeads[4];
+extern s32 gtlDrawnFrameCounter;
+extern u32 gtlCurrentContextID;
 
 void gtlSetSegment0F(Gfx **);
 void gtlSetUpdateDrawRate(u16 updateRate, u16 drawRate);

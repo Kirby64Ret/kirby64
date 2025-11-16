@@ -3,7 +3,7 @@
 #include "ovl0_4.h"
 #include "omCurrentObj.h"
 
-extern s32 D_8004AB9C;
+extern s32 renderMatrixHandler;
 extern Gfx *gDisplayListHeads[4];
 
 struct unk80017FEC {
@@ -21,10 +21,10 @@ extern u32 D_8003DCA8;
 
 extern struct UnkStruct8004A7F8 D_8004A7F8[];
 
-s32 D_8003DF10 = 0x0000000A;
-s32 D_8003DF14 = 0x0000000A;
-s32 D_8003DF18 = 0x0000000A;
-s32 D_8003DF1C = 0x0000000A;
+s32 renderCameraScissorTop = 0x0000000A;
+s32 renderCameraScissorBottom = 0x0000000A;
+s32 renderCameraScissorLeft = 0x0000000A;
+s32 renderCameraScissorRight = 0x0000000A;
 
 u8 D_8003DF20[0x400] = {
     0x2B, 0xE6, 0xDB, 0xB9, 0xB1, 0xF3, 0x53, 0x81, 0x37, 0x01, 0x7F, 0x44, 0x23, 0x3C, 0x11, 0xD0,
@@ -96,15 +96,15 @@ u8 D_8003DF20[0x400] = {
 u16 D_8003E320 = 0x00000000;
 s32 D_8003E324 = 0x00000001;
 
-void func_80010B20(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    D_8003DF10 = arg0;
-    D_8003DF14 = arg1;
-    D_8003DF18 = arg2;
-    D_8003DF1C = arg3;
+void renderSetCameraScissors(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    renderCameraScissorTop = arg0;
+    renderCameraScissorBottom = arg1;
+    renderCameraScissorLeft = arg2;
+    renderCameraScissorRight = arg3;
 }
 
-void func_80010B44(s32 arg0) {
-    D_8004AB9C = arg0;
+void renderSetMatrixHandler(s32 arg0) {
+    renderMatrixHandler = arg0;
 }
 
 void func_80010B50(void) {
@@ -168,9 +168,9 @@ void func_800147C8(struct UnkStruct8004A7C4_3C *arg0);
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_800147C8.s")
 
 
-extern f32 D_8004AA94;
+extern f32 renderScaleX;
 void func_80014AD4(struct GObj *arg0) {
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     func_800147C8(arg0->unk3C);
 }
 
@@ -202,7 +202,7 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001585C.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001588C.s")
 
-extern f32 D_8004AA94;
+extern f32 renderScaleX;
 
 struct unk80015BCC {
     u32 filler[15];
@@ -212,7 +212,7 @@ struct unk80015BCC {
 void func_8001588C(struct unk80015BCC *);
 
 void func_80015BCC(struct unk80015BCC *arg0) {
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     func_8001588C(arg0->unk3C);
 }
 
@@ -302,7 +302,7 @@ void func_80016940(Gfx** arg0, Vp *arg1, s32 arg2) {
     temp_lo = temp_t5 / 0x140;
     temp_t4 = temp_a3 - temp_t0;
     temp_t1 = temp_a2 + temp_a1;
-    temp_lo_2 = temp_lo * D_8003DF18;
+    temp_lo_2 = temp_lo * renderCameraScissorLeft;
     temp_t2 = temp_t0 + temp_a3;
     sp1C = temp_lo_2;
     phi_t3 = temp_t3;
@@ -311,17 +311,17 @@ void func_80016940(Gfx** arg0, Vp *arg1, s32 arg2) {
     }
     temp_v0_2 = gCurrScreenHeight;
     temp_lo_3 = temp_v0_2 / 0xF0;
-    temp_lo_4 = temp_lo_3 * D_8003DF10;
+    temp_lo_4 = temp_lo_3 * renderCameraScissorTop;
     phi_t4 = temp_t4;
     if (temp_t4 < temp_lo_4) {
         phi_t4 = temp_lo_4;
     }
-    temp_a1_2 = temp_t5 - (temp_lo * D_8003DF1C);
+    temp_a1_2 = temp_t5 - (temp_lo * renderCameraScissorRight);
     phi_t1 = temp_t1;
     if (temp_a1_2 < temp_t1) {
         phi_t1 = temp_a1_2;
     }
-    temp_a1_3 = temp_v0_2 - (temp_lo_3 * D_8003DF14);
+    temp_a1_3 = temp_v0_2 - (temp_lo_3 * renderCameraScissorBottom);
     phi_t2 = temp_t2;
     if (temp_a1_3 < temp_t2) {
         phi_t2 = temp_a1_3;

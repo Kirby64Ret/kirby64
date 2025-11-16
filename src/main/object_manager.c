@@ -592,7 +592,7 @@ OMMtx *func_80008EC4(struct DObj *, u8, u8, u32);
 
 
 OMMtx *omDObjAppendMtx(struct DObj *arg0, u8 arg1, u8 arg2) {
-    return func_80008EC4(arg0, arg1, arg2, arg0->unk56);
+    return func_80008EC4(arg0, arg1, arg2, arg0->numMatrices);
 }
 
 OMMtx* omCameraAddMtx(Camera* cam, u8 kind, u8 arg2) {
@@ -1056,7 +1056,7 @@ void omGLinkObjDLCommon(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 arg4) {
     arg0->renderPriority = prio;
     arg0->onDraw = drawCB;
     arg0->unk34 = arg4;
-    arg0->unkE = D_8003DCA8 - 1;
+    arg0->lastDrawFrame = D_8003DCA8 - 1;
 }
 
 void omLinkGObjDL(GObj *gobj, s32 drawCB, u8 link, s32 prio, s32 arg4) {
@@ -1098,7 +1098,7 @@ void func_8000A730(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) 
     o->unk30 = arg3;
     o->unk34 = arg4;
     o->unk38 = 0;
-    o->unkE = D_8003DCA8 - 1;
+    o->lastDrawFrame = D_8003DCA8 - 1;
 }
 
 void omGLinkObjDLCamera(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {

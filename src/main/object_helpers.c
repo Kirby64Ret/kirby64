@@ -245,12 +245,12 @@ void ohDobjTreeRemoveAllMObjs(GObj *g) {
     }
 }
 
-DObj *ohAddDObj(void) {
-    DObj *dobj;
+DObj *ohAddDObj(struct DObj *dobj, u8 *arg1) {
+    DObj *new_dobj;
 
-    dobj = omGObjAddDObj();
-    ohCreateDefaultMatricesDeg(dobj);
-    return dobj;
+    new_dobj = omGObjAddDObj(dobj, arg1);
+    ohCreateDefaultMatricesDeg(new_dobj);
+    return new_dobj;
 }
 
 DObj *ohAddDObjSibling(void) {
@@ -269,12 +269,12 @@ DObj *ohAddDObjChild(void) {
     return dobj;
 }
 
-DObj *ohAddDObjRad(void) {
-    DObj *dobj;
+DObj *ohAddDObjRad(struct DObj *dobj, u8 *arg1) {
+    DObj *new_dobj;
 
-    dobj = omGObjAddDObj();
-    ohCreateDefaultMatricesRad(dobj);
-    return dobj;
+    new_dobj = omGObjAddDObj(dobj, arg1);
+    ohCreateDefaultMatricesRad(new_dobj);
+    return new_dobj;
 }
 
 DObj *ohAddDObjSiblingRad(void) {

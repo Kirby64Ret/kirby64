@@ -1,8 +1,8 @@
 #include "common.h"
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80010B20.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderSetCameraScissors.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80010B44.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderSetMatrixHandler.s")
 
 void func_80010B50(void) {
 }

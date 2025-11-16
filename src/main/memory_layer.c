@@ -2,7 +2,7 @@
 
 #include <ultra64.h>
 
-#include "GObj.h"
+#include "object_manager.h"
 
 void fatal_printf(const char*, ...);
 

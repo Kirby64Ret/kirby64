@@ -909,6 +909,7 @@ request_track_3 = 0x800AEC70; // type:func
 gEntityRenderPriorityArray = 0x800E0810;
 
 // gtl
+gtlDrawnFrameCounter = 0x8003DCAB; 
 gtlSetUpdateDrawRate = 0x800075DC; // type:func
 gtlUpdate = 0x80006E94; // type:func
 gtlFuncTableDefaultDraw = 0x80006E30; // type:func
@@ -966,6 +967,19 @@ gtlMalloc=0x80005400; // type:func
 gtlLoadUcode=0x80005de4; // type:func
 gtlSetSegment0F=0x80005378; // type:func
 gtlMainFuncTable=0x8004A418;
+
+// render
+renderProjectionMtx = 0x8004AA90; 
+renderPerspectiveMtxF = 0x8004AA98; 
+renderMVPMatrixF = 0x8004AAD8; 
+renderScaleX = 0x8004AA94; 
+renderMatrixHandler = 0x8004AB9C; 
+renderSetMatrixHandler = 0x80010B44; // type:func
+renderCameraScissorRight = 0x8003DF1C; 
+renderCameraScissorLeft = 0x8003DF18; 
+renderCameraScissorBottom = 0x8003DF14; 
+renderCameraScissorTop = 0x8003DF10; 
+renderSetCameraScissors = 0x80010B20; // type:func
 
 // anim
 animGetTotalDuration = 0x800109B4; // type:func size:0x16C

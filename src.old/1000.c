@@ -633,9 +633,9 @@ void func_80000900(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80010B0C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80010B20.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderSetCameraScissors.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80010B44.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderSetMatrixHandler.s")
 
 void func_80010B50(void) {
 }

@@ -3,15 +3,37 @@
 
 #include "main/object_manager.h"
 
+/// This stores up to 3 `Mtx3Int`/`Mtx3Float`/`Mtx4Float` structures in the VLA data
+/// based on the kind id in the `kinds` arrays:
+/// Kind 1 - `struct Mtx3Int` or `union Mtx3fi`
+/// Kind 2 - `struct Mtx4Float`
+/// Kind 3 - `struct Mtx3Float`
+struct DObjDynamicStore {
+    /* 0x00 */ u8 kinds[3];
+    /* 0x03 */ u8 pad;
+    /* 0x04 */ u8 data[1];
+}; // size == 4 + VLA
+
 typedef struct {
     OMMtx *mtx;
     Vector v;
 } OMMtxFloat3;
+
+typedef struct {
+    /* 0x00 */ OMMtx *mtx;
+    /* 0x04 */ Vector3Int v;
+} OMMtxInt3; // size == 0x10
+
 typedef struct {
     OMMtx *mtx;
     float a;
     Vector v;
 } OMMtxFloat4;
+
+union Mtx3fi {
+    OMMtxFloat3 f;
+    OMMtxInt3 i;
+}; // size == 0x10
 
 typedef struct DObj {
     /* 0x00 */ struct DObj* nextFree;
@@ -23,17 +45,13 @@ typedef struct DObj {
     OMMtxFloat3 pos;
     OMMtxFloat4 angle;
     OMMtxFloat3 scale;
-    u32 *unk4C;
+    struct DObjDynamicStore *unk4C;
     u32 unk50;
     u8 flags;
     u8 animCBReceiver;
-    u8 unk56;
+    u8 numMatrices;
     u8 unk57;
-    u32 unk58;
-    u32 unk5C;
-    u32 unk60;
-    u32 unk64;
-    u32 unk68;
+    OMMtx *matrices[5];
     struct AObj *aobj;
     // 0x70
     union AnimCmd *animList;

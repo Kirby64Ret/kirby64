@@ -761,7 +761,7 @@ void gtlCreateScene(struct UnkStructFunc80007380 *arg0) {
     gtlCurrentScene.unk28 = arg0->unk58;
     gtlCurrentScene.unk2C = gtlMalloc(((arg0->unk5C * 8) + arg0->unk5C) * 8, 8);
     gtlCurrentScene.unk30 = arg0->unk5C;
-    func_80010B44(arg0->unk60);
+    renderSetMatrixHandler(arg0->unk60);
     gtlCurrentScene.unk34 = arg0->unk64;
     gtlCurrentScene.unk38 = gtlMalloc(((arg0->unk68 * 8) + arg0->unk68) * 4, 4);
     gtlCurrentScene.unk3C = arg0->unk68;

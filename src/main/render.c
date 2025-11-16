@@ -1,1540 +1,835 @@
 #include "common.h"
 
-#ifdef MIPS_TO_C
+#include "GObj.h"
+#include "DObj.h"
 
-void func_80010B20(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    D_8003DF10 = arg0;
-    D_8003DF14 = arg1;
-    D_8003DF18 = arg2;
-    D_8003DF1C = arg3;
+#include "gtl.h"
+#include "render.h"
+#include "object_manager.h"
+#include "lbmatrix.h"
+
+void renderSetCameraScissors(s32 top, s32 bottom, s32 left, s32 right) {
+    renderCameraScissorTop = top;
+    renderCameraScissorBottom = bottom;
+    renderCameraScissorLeft = left;
+    renderCameraScissorRight = right;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80010B20.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80010B44(s32 arg0) {
-    D_8004AB9C = arg0;
+void renderSetMatrixHandler(MatrixHandler *handler) {
+    renderMatrixHandler = handler;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80010B44.s")
-#endif
 
 void func_80010B50(void) {
+
 }
 
-#ifdef MIPS_TO_C
+void func_80010B58(Mtx *outputMtx, DObj *dobj, s32 setpos) {
+    Mat4 mtx;
+    f32 x, y, z;
 
-void func_80010B58(s32 arg0, void *arg1, s32 arg2) {
-    f32 sp84;
-    f32 sp80;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp18;
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f16;
-    f32 temp_f16_2;
-    f32 temp_f18;
-    f32 temp_f18_2;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 var_f12;
-    s32 temp_cond;
-    void *temp_v0;
+    Camera *cam;
+    f32 res;
 
-    temp_v0 = omCurrentCamera->unk3C;
-    temp_f16 = arg1->unk1C - temp_v0->unk3C;
-    temp_f2 = arg1->unk20 - temp_v0->unk40;
-    sp44 = temp_f16;
-    temp_f18 = arg1->unk24 - temp_v0->unk44;
-    sp40 = temp_f2;
-    sp3C = temp_f18;
-    temp_f14 = 1.0f / sqrtf((temp_f16 * temp_f16) + (temp_f2 * temp_f2) + (temp_f18 * temp_f18));
-    temp_f16_2 = temp_f16 * temp_f14;
-    temp_f2_2 = temp_f2 * temp_f14;
-    temp_f18_2 = temp_f18 * temp_f14;
-    sp44 = temp_f16_2;
-    sp40 = temp_f2_2;
-    sp3C = temp_f18_2;
-    temp_f0 = sqrtf((temp_f16_2 * temp_f16_2) + (temp_f2_2 * temp_f2_2));
-    var_f12 = 0.0f;
-    temp_cond = temp_f0 == 0.0f;
-    sp74 = 0.0f;
-    sp64 = 0.0f;
-    sp54 = 0.0f;
-    sp60 = 0.0f;
-    sp84 = 1.0f;
-    if (!temp_cond) {
-        var_f12 = -temp_f16_2;
-        sp70 = temp_f0;
-        temp_f14_2 = 1.0f / temp_f0;
-        sp48 = var_f12;
-        sp18 = -temp_f2_2;
-        sp58 = temp_f2_2 * temp_f14_2;
-        sp4C = sp18;
-        sp68 = var_f12 * temp_f18_2 * temp_f14_2;
-        sp5C = var_f12 * temp_f14_2;
-        sp50 = -temp_f18_2;
-        sp6C = sp18 * temp_f18_2 * temp_f14_2;
+    cam = omCurrentCamera->data.cam;
+    x = dobj->pos.v.x - cam->viewMtx.lookAt.eye.x;
+    y = dobj->pos.v.y - cam->viewMtx.lookAt.eye.y;
+    z = dobj->pos.v.z - cam->viewMtx.lookAt.eye.z;
+    res = 1.0f / sqrtf(SQ(x) + SQ(y) + SQ(z));
+    x *= res;
+    y *= res;
+    z *= res;
+
+    res = sqrtf(SQ(x) + SQ(y));
+
+    mtx[0][3] = mtx[1][3] = mtx[2][3] = mtx[1][2] = 0.0f;
+    mtx[3][3] = 1.0f;
+
+    if (res != 0.0f) {
+        f32 invrt = (1.0f / res);
+
+        mtx[0][0] = -x;
+        mtx[1][0] = y * invrt;
+        mtx[2][0] = -x * z * invrt;
+
+        mtx[0][1] = -y;
+        mtx[1][1] = -x * invrt;
+        mtx[2][1] = -y * z * invrt;
+
+        mtx[0][2] = -z;
+        mtx[2][2] = res;
     } else {
-        sp6C = 0.0f;
-        sp4C = 0.0f;
-        sp68 = 0.0f;
-        sp58 = 0.0f;
-        sp50 = 0.0f;
-        sp5C = 1.0f;
-        sp48 = 1.0f;
-        sp70 = 1.0f;
+        mtx[1][0] = mtx[2][0] = mtx[0][1] = mtx[2][1] = mtx[0][2] = 0.0f;
+        mtx[0][0] = mtx[1][1] = mtx[2][2] = 1.0f;
     }
-    if (arg2 != 0) {
-        sp78 = arg1->unk1C;
-        sp7C = arg1->unk20;
-        sp80 = arg1->unk24;
+
+    if (setpos) {
+        mtx[3][0] = dobj->pos.v.x;
+        mtx[3][1] = dobj->pos.v.y;
+        mtx[3][2] = dobj->pos.v.z;
     } else {
-        sp7C = 0.0f;
-        sp78 = 0.0f;
-        sp80 = 0.0f;
+        mtx[3][0] = mtx[3][1] = mtx[3][2] = 0.0f;
     }
-    HS64_MtxF2L43(var_f12, &sp48, arg0);
+
+    HS64_MtxF2L43(mtx, outputMtx);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80010B58.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80010D28(Mtx* arg0, DObj* arg1, s32 arg2) {
+    Mat4 sp48;
+    f32 x, y, z;
 
-void func_80010D28(s32 arg0, void *arg1, s32 arg2) {
-    f32 sp84;
-    f32 sp80;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp20;
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f16;
-    f32 temp_f16_2;
-    f32 temp_f18;
-    f32 temp_f18_2;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 var_f12;
-    s32 temp_cond;
-    void *temp_v0;
+    Camera* cam;
+    f32 res;
 
-    temp_v0 = omCurrentCamera->unk3C;
-    temp_f2 = arg1->unk1C - temp_v0->unk3C;
-    temp_f18 = arg1->unk20 - temp_v0->unk40;
-    sp44 = temp_f2;
-    temp_f14 = arg1->unk24 - temp_v0->unk44;
-    sp40 = temp_f18;
-    sp3C = temp_f14;
-    temp_f16 = 1.0f / sqrtf((temp_f2 * temp_f2) + (temp_f18 * temp_f18) + (temp_f14 * temp_f14));
-    temp_f2_2 = temp_f2 * temp_f16;
-    temp_f18_2 = temp_f18 * temp_f16;
-    temp_f14_2 = temp_f14 * temp_f16;
-    sp44 = temp_f2_2;
-    sp40 = temp_f18_2;
-    sp3C = temp_f14_2;
-    temp_f0 = sqrtf((temp_f2_2 * temp_f2_2) + (temp_f14_2 * temp_f14_2));
-    var_f12 = 0.0f;
-    temp_cond = temp_f0 == 0.0f;
-    sp74 = 0.0f;
-    sp64 = 0.0f;
-    sp54 = 0.0f;
-    sp4C = 0.0f;
-    sp84 = 1.0f;
-    if (!temp_cond) {
-        var_f12 = -temp_f18_2;
-        temp_f16_2 = 1.0f / temp_f0;
-        sp20 = -temp_f14_2;
-        sp5C = temp_f0;
-        sp6C = var_f12;
-        sp70 = sp20;
-        sp48 = sp20 * temp_f16_2;
-        sp68 = -temp_f2_2;
-        sp58 = var_f12 * temp_f2_2 * temp_f16_2;
-        sp50 = temp_f2_2 * temp_f16_2;
-        sp60 = var_f12 * temp_f14_2 * temp_f16_2;
+    cam = omCurrentCamera->data.cam;
+    x = arg1->pos.v.x - cam->viewMtx.lookAt.eye.x;
+    y = arg1->pos.v.y - cam->viewMtx.lookAt.eye.y;
+    z = arg1->pos.v.z - cam->viewMtx.lookAt.eye.z;
+    res = 1.0f / sqrtf(SQ(x) + SQ(y) + SQ(z));
+    x *= res;
+    y *= res;
+    z *= res;
+
+    res = sqrtf(SQ(x) + SQ(z));
+
+    sp48[0][3] = sp48[1][3] = sp48[2][3] = sp48[0][1] = 0.0f;
+    sp48[3][3] = 1.0f;
+
+    if (res != 0.0f) {
+        f32 invrt = (1.0f / res);
+
+        sp48[0][0] = -z * invrt;
+        sp48[1][0] = -y * x * invrt;
+        sp48[2][0] = -x;
+
+        sp48[1][1] = res;
+        sp48[2][1] = -y;
+
+        sp48[0][2] = x * invrt;
+        sp48[1][2] = -y * z * invrt;
+        sp48[2][2] = -z;
     } else {
-        sp50 = 0.0f;
-        sp6C = 0.0f;
-        sp68 = 0.0f;
-        sp58 = 0.0f;
-        sp60 = 0.0f;
-        sp5C = 1.0f;
-        sp48 = 1.0f;
-        sp70 = 1.0f;
+        sp48[1][0] = sp48[2][0] = sp48[2][1] = sp48[0][2] = sp48[1][2] = 0.0f;
+        sp48[0][0] = sp48[1][1] = sp48[2][2] = 1.0f;
     }
-    if (arg2 != 0) {
-        sp78 = arg1->unk1C;
-        sp7C = arg1->unk20;
-        sp80 = arg1->unk24;
+
+    if (arg2) {
+        sp48[3][0] = arg1->pos.v.x;
+        sp48[3][1] = arg1->pos.v.y;
+        sp48[3][2] = arg1->pos.v.z;
     } else {
-        sp7C = 0.0f;
-        sp78 = 0.0f;
-        sp80 = 0.0f;
+        sp48[3][0] = sp48[3][1] = sp48[3][2] = 0.0f;
     }
-    HS64_MtxF2L43(var_f12, temp_f14_2, &sp48, arg0);
+
+    HS64_MtxF2L43(sp48, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80010D28.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80010EF8(Mtx* arg0, DObj* arg1, s32 arg2) {
+    Mat4 sp48;
+    f32 x;
+    f32 y;
 
-void func_80010EF8(s32 arg0, void *arg1, s32 arg2) {
-    f32 sp84;
-    f32 sp80;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f16;
-    f32 temp_f2;
-    s32 temp_cond;
-    void *temp_v0;
+    Camera* cam;
+    f32 res;
 
-    temp_v0 = omCurrentCamera->unk3C;
-    temp_f16 = arg1->unk1C - temp_v0->unk3C;
-    temp_f14 = arg1->unk20 - temp_v0->unk40;
-    sp44 = temp_f16;
-    sp40 = temp_f14;
-    temp_f0 = sqrtf((temp_f16 * temp_f16) + (temp_f14 * temp_f14));
-    temp_cond = temp_f0 == 0.0f;
-    sp50 = 0.0f;
-    sp6C = 0.0f;
-    sp68 = 0.0f;
-    sp74 = 0.0f;
-    sp64 = 0.0f;
-    sp54 = 0.0f;
-    sp60 = 0.0f;
-    sp70 = 1.0f;
-    sp84 = 1.0f;
-    if (!temp_cond) {
-        temp_f12 = 1.0f / temp_f0;
-        temp_f14_2 = temp_f14 * temp_f12;
-        temp_f2 = -(temp_f16 * temp_f12);
-        sp48 = temp_f2;
-        sp58 = temp_f14_2;
-        sp4C = -temp_f14_2;
-        sp5C = temp_f2;
+    cam = omCurrentCamera->data.cam;
+    x = arg1->pos.v.x - cam->viewMtx.lookAt.eye.x;
+    y = arg1->pos.v.y - cam->viewMtx.lookAt.eye.y;
+    res = sqrtf(SQ(x) + SQ(y));
+
+    sp48[0][3] = sp48[1][3] = sp48[2][3] = sp48[2][0] = sp48[2][1] = sp48[0][2] = sp48[1][2] = 0.0f;
+    sp48[2][2] = sp48[3][3] = 1.0f;
+
+    if (res != 0.0f) {
+        f32 invrt = (1.0f / res);
+
+        x *= invrt;
+        y *= invrt;
+
+        sp48[0][0] = -x;
+        sp48[0][1] = -y;
+        sp48[1][0] = y;
+        sp48[1][1] = -x;
     } else {
-        sp58 = 0.0f;
-        sp4C = 0.0f;
-        sp48 = 1.0f;
-        sp5C = 1.0f;
+        sp48[1][0] = sp48[0][1] = 0.0f;
+        sp48[0][0] = sp48[1][1] = 1.0f;
     }
-    if (arg2 != 0) {
-        sp78 = arg1->unk1C;
-        sp7C = arg1->unk20;
-        sp80 = arg1->unk24;
+
+    if (arg2) {
+        sp48[3][0] = arg1->pos.v.x;
+        sp48[3][1] = arg1->pos.v.y;
+        sp48[3][2] = arg1->pos.v.z;
     } else {
-        sp7C = 0.0f;
-        sp78 = 0.0f;
-        sp80 = 0.0f;
+        sp48[3][0] = sp48[3][1] = sp48[3][2] = 0;
     }
-    HS64_MtxF2L43(&sp48, arg0);
+
+    HS64_MtxF2L43(sp48, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80010EF8.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8001103C(Mtx* arg0, DObj* arg1, s32 arg2) {
+    Mat4 sp48;
+    f32 x;
+    f32 z;
 
-void func_8001103C(s32 arg0, void *arg1, s32 arg2) {
-    f32 sp84;
-    f32 sp80;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    s32 temp_cond;
-    void *temp_v0;
+    Camera* cam;
+    f32 res;
 
-    temp_v0 = omCurrentCamera->unk3C;
-    temp_f14 = arg1->unk1C - temp_v0->unk3C;
-    temp_f16 = arg1->unk24 - temp_v0->unk44;
-    sp44 = temp_f14;
-    sp40 = temp_f16;
-    temp_f0 = sqrtf((temp_f14 * temp_f14) + (temp_f16 * temp_f16));
-    temp_cond = temp_f0 == 0.0f;
-    sp60 = 0.0f;
-    sp4C = 0.0f;
-    sp58 = 0.0f;
-    sp74 = 0.0f;
-    sp64 = 0.0f;
-    sp54 = 0.0f;
-    sp6C = 0.0f;
-    sp5C = 1.0f;
-    sp84 = 1.0f;
-    if (!temp_cond) {
-        temp_f12 = 1.0f / temp_f0;
-        temp_f18 = temp_f14 * temp_f12;
-        sp50 = temp_f18;
-        sp68 = -temp_f18;
-        temp_f2 = -(temp_f16 * temp_f12);
-        sp48 = temp_f2;
-        sp70 = temp_f2;
+    cam = omCurrentCamera->data.cam;
+    x = arg1->pos.v.x - cam->viewMtx.lookAt.eye.x;
+    z = arg1->pos.v.z - cam->viewMtx.lookAt.eye.z;
+    res = sqrtf(SQ(x) + SQ(z));
+
+    sp48[0][3] = sp48[1][3] = sp48[2][3] = sp48[1][0] = sp48[0][1] = sp48[1][2] = sp48[2][1] = 0.0f;
+    sp48[1][1] = sp48[3][3] = 1.0f;
+
+    if (res != 0.0f) {
+        f32 invrt = (1.0f / res);
+
+        x *= invrt;
+        z *= invrt;
+
+        sp48[0][2] = x;
+        sp48[2][0] = -x;
+        sp48[0][0] = -z;
+        sp48[2][2] = -z;
     } else {
-        sp68 = 0.0f;
-        sp50 = 0.0f;
-        sp48 = 1.0f;
-        sp70 = 1.0f;
+        sp48[2][0] = sp48[0][2] = 0.0f;
+        sp48[0][0] = sp48[2][2] = 1.0f;
     }
-    if (arg2 != 0) {
-        sp78 = arg1->unk1C;
-        sp7C = arg1->unk20;
-        sp80 = arg1->unk24;
+
+    if (arg2) {
+        sp48[3][0] = arg1->pos.v.x;
+        sp48[3][1] = arg1->pos.v.y;
+        sp48[3][2] = arg1->pos.v.z;
     } else {
-        sp7C = 0.0f;
-        sp78 = 0.0f;
-        sp80 = 0.0f;
+        sp48[3][0] = sp48[3][1] = sp48[3][2] = 0;
     }
-    HS64_MtxF2L43(&sp48, arg0);
+
+    HS64_MtxF2L43(sp48, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_8001103C.s")
-#endif
 
-#ifdef MIPS_TO_C
+// #ifdef NON_MATCHING
+s32 func_80011180(Gfx** gfxPtr, DObj* dobj) {
+    Gfx* sp2DC;
+    uintptr_t csr;
+    s32 sp2D4;
+    s32 i;
+    f32 f12;
+    union Mtx3fi* sp2C8;
+    OMMtxFloat4* sp2C4;
+    OMMtxFloat3* sp2C0;
+    f32 f0;
+    s32 sp2B8;
+    s32 (*func)(Mtx*, void*, Gfx**);
 
-s32 func_80011180(void **arg0, void *arg1, ? *arg2) {
-    void *sp2D4;
-    s32 sp2CC;
-    void *sp2C0;
-    void *sp2BC;
-    void *sp2B8;
-    f32 sp1CC;
-    f32 sp190;
-    ? *sp78;
-    void *sp74;
-    ? *temp_v0_3;
-    ? *var_a2;
-    ? *var_s0;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f12_3;
-    f32 temp_f12_4;
-    f32 temp_f12_5;
-    f32 temp_f12_6;
-    f32 temp_f12_7;
-    f32 temp_f12_8;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f16;
-    f32 temp_f16_2;
-    f32 temp_f18;
-    f32 temp_f18_2;
-    s32 (*var_a3)(? *, void *, void **, ?);
-    s32 (*var_a3_2)(? *, void *, void **, ?);
-    s32 var_a0;
-    s32 var_a0_2;
-    s32 var_a0_3;
-    s32 var_t3;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v0_2;
-    u8 temp_v0_4;
-    u8 temp_v0_5;
-    u8 temp_v0_6;
-    u8 temp_v1;
-    void *temp_a0;
-    void *temp_a0_10;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_a0_4;
-    void *temp_a0_5;
-    void *temp_a0_6;
-    void *temp_a0_7;
-    void *temp_a0_8;
-    void *temp_a0_9;
-    void *temp_s2;
-    void *temp_t1;
-    void *temp_t1_10;
-    void *temp_t1_11;
-    void *temp_t1_12;
-    void *temp_t1_13;
-    void *temp_t1_14;
-    void *temp_t1_2;
-    void *temp_t1_3;
-    void *temp_t1_4;
-    void *temp_t1_5;
-    void *temp_t1_6;
-    void *temp_t1_7;
-    void *temp_t1_8;
-    void *temp_t1_9;
-    void *temp_t2;
-    void *temp_t2_10;
-    void *temp_t2_11;
-    void *temp_t2_12;
-    void *temp_t2_13;
-    void *temp_t2_14;
-    void *temp_t2_2;
-    void *temp_t2_3;
-    void *temp_t2_4;
-    void *temp_t2_5;
-    void *temp_t2_6;
-    void *temp_t2_7;
-    void *temp_t2_8;
-    void *temp_t2_9;
-    void *temp_t3;
-    void *temp_t3_10;
-    void *temp_t3_11;
-    void *temp_t3_12;
-    void *temp_t3_13;
-    void *temp_t3_14;
-    void *temp_t3_2;
-    void *temp_t3_3;
-    void *temp_t3_4;
-    void *temp_t3_5;
-    void *temp_t3_6;
-    void *temp_t3_7;
-    void *temp_t3_8;
-    void *temp_t3_9;
-    void *temp_t4;
-    void *temp_t4_10;
-    void *temp_t4_11;
-    void *temp_t4_12;
-    void *temp_t4_13;
-    void *temp_t4_2;
-    void *temp_t4_3;
-    void *temp_t4_4;
-    void *temp_t4_5;
-    void *temp_t4_6;
-    void *temp_t4_7;
-    void *temp_t4_8;
-    void *temp_t4_9;
-    void *temp_t5;
-    void *temp_t5_10;
-    void *temp_t5_11;
-    void *temp_t5_12;
-    void *temp_t5_13;
-    void *temp_t5_2;
-    void *temp_t5_3;
-    void *temp_t5_4;
-    void *temp_t5_5;
-    void *temp_t5_6;
-    void *temp_t5_7;
-    void *temp_t5_8;
-    void *temp_t5_9;
-    void *temp_t6;
-    void *temp_t6_10;
-    void *temp_t6_11;
-    void *temp_t6_12;
-    void *temp_t6_13;
-    void *temp_t6_2;
-    void *temp_t6_3;
-    void *temp_t6_4;
-    void *temp_t6_5;
-    void *temp_t6_6;
-    void *temp_t6_7;
-    void *temp_t6_8;
-    void *temp_t6_9;
-    void *temp_t7;
-    void *temp_t7_10;
-    void *temp_t7_11;
-    void *temp_t7_12;
-    void *temp_t7_13;
-    void *temp_t7_14;
-    void *temp_t7_2;
-    void *temp_t7_3;
-    void *temp_t7_4;
-    void *temp_t7_5;
-    void *temp_t7_6;
-    void *temp_t7_7;
-    void *temp_t7_8;
-    void *temp_t7_9;
-    void *temp_t8;
-    void *temp_t8_10;
-    void *temp_t8_11;
-    void *temp_t8_12;
-    void *temp_t8_13;
-    void *temp_t8_14;
-    void *temp_t8_15;
-    void *temp_t8_2;
-    void *temp_t8_3;
-    void *temp_t8_4;
-    void *temp_t8_5;
-    void *temp_t8_6;
-    void *temp_t8_7;
-    void *temp_t8_8;
-    void *temp_t8_9;
-    void *temp_t9;
-    void *temp_t9_10;
-    void *temp_t9_11;
-    void *temp_t9_12;
-    void *temp_t9_13;
-    void *temp_t9_2;
-    void *temp_t9_3;
-    void *temp_t9_4;
-    void *temp_t9_5;
-    void *temp_t9_6;
-    void *temp_t9_7;
-    void *temp_t9_8;
-    void *temp_t9_9;
-    void *var_fp;
-    void *var_v1;
+    sp2DC = *gfxPtr;
+    sp2D4 = 0;
 
-    var_a2 = arg2;
-    sp2CC = 0;
-    sp2D4 = *arg0;
-    temp_v0 = arg1->unk4C;
-    var_fp = sp2BC;
-    var_v1 = temp_v0 + 4;
-    if (temp_v0 != NULL) {
-        var_a0 = 0;
-        var_a1 = temp_v0;
-        var_a2 = 1;
-        do {
-            temp_v0_2 = *var_a1;
-            var_a0 += 1;
-            switch (temp_v0_2) {                    /* switch 4; irregular */
-                case 0:                             /* switch 4 */
+    if (dobj->unk4C != NULL) {
+        csr = (uintptr_t) dobj->unk4C->data;
+        for (i = 0; i < 3; i++) {
+            switch (dobj->unk4C->kinds[i]) {
+                case 0:
                     break;
-                case 1:                             /* switch 4 */
-                    sp2C0 = var_v1;
-block_10:
-                    var_v1 += 0x10;
+                case 1:
+                    sp2C8 = (void*) csr;
+                    csr += sizeof(union Mtx3fi);
                     break;
-                case 2:                             /* switch 4 */
-                    var_fp = var_v1;
-                    var_v1 += 0x14;
+                case 2:
+                    sp2C4 = (void*) csr;
+                    csr += sizeof(OMMtxFloat4);
                     break;
-                case 3:                             /* switch 4 */
-                    sp2B8 = var_v1;
-                    goto block_10;
+                case 3:
+                    sp2C0 = (void*) csr;
+                    csr += sizeof(OMMtxFloat3);
+                    break;
             }
-            var_a1 += 1;
-        } while (var_a0 != 3);
-        sp2BC = var_fp;
+        }
     }
-    if (arg1->unk56 > 0) {
-        sp74 = arg1;
-        do {
-            temp_s2 = sp74->unk58;
-            temp_v0_3 = temp_s2 + 8;
-            if (temp_s2 != NULL) {
-                temp_v1 = temp_s2->unk5;
-                var_s0 = temp_v0_3;
-                sp78 = temp_v0_3;
-                if (temp_v1 != 2) {
-                    if (temp_v1 == 4) {
-                        if (D_8003DCAB != arg1->unk4->unkE) {
-                            *temp_v0_3 = gDynamicBuffer1.unkC;
-                            var_s0 = gDynamicBuffer1.unkC;
-                            gDynamicBuffer1.unkC = var_s0 + 0x40;
-                            goto block_36;
-                        }
-                        temp_v0_4 = temp_s2->unk4;
-                        switch (temp_v0_4) {        /* switch 1 */
-                            case 33:                /* switch 1 */
-                            case 34:                /* switch 1 */
-                            case 35:                /* switch 1 */
-                            case 36:                /* switch 1 */
-                            case 37:                /* switch 1 */
-                            case 38:                /* switch 1 */
-                            case 39:                /* switch 1 */
-                            case 40:                /* switch 1 */
-                            case 41:                /* switch 1 */
-                            case 42:                /* switch 1 */
-                            case 43:                /* switch 1 */
-                            case 44:                /* switch 1 */
-                            case 45:                /* switch 1 */
-                            case 46:                /* switch 1 */
-                            case 47:                /* switch 1 */
-                            case 48:                /* switch 1 */
-                            case 49:                /* switch 1 */
-                            case 50:                /* switch 1 */
-                                var_s0 = gDynamicBuffer1.unkC;
-                                gDynamicBuffer1.unkC = var_s0 + 0x40;
-                                goto block_36;
-                            default:                /* switch 1 */
-                                if (temp_v0_4 >= 0x43) {
-                                    var_s0 = gDynamicBuffer1.unkC;
-                                    gDynamicBuffer1.unkC = var_s0 + 0x40;
-                                    goto block_36;
-                                }
-                                var_s0 = *sp78;
-                                goto block_91;
-                        }
+
+    for (i = 0; i < dobj->numMatrices; i++) {
+        OMMtx* ommtx = dobj->matrices[i];
+        if (ommtx != NULL) {
+            Mtx** unk;
+            Mtx* mtx;
+
+            unk = (Mtx**) &ommtx->unk08;
+            mtx = &ommtx->unk08;
+
+            if (ommtx->unk05 != 2) {
+                if (ommtx->unk05 == 4) {
+                    if (dobj->gobj->lastDrawFrame != (u8) gtlDrawnFrameCounter) {
+                        *unk = gDynamicBuffer1.top;
+                        mtx = gDynamicBuffer1.top;
+                        gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
                     } else {
-                        if (gtlCurrentContextID > 0) {
-                            var_s0 = gDynamicBuffer1.unkC;
-                            gDynamicBuffer1.unkC = var_s0 + 0x40;
-                            goto block_36;
-                        }
-                        if (D_8003DCAB == arg1->unk4->unkE) {
-                            temp_v0_5 = temp_s2->unk4;
-                            switch (temp_v0_5) {    /* switch 2 */
-                                case 33:            /* switch 2 */
-                                case 34:            /* switch 2 */
-                                case 35:            /* switch 2 */
-                                case 36:            /* switch 2 */
-                                case 37:            /* switch 2 */
-                                case 38:            /* switch 2 */
-                                case 39:            /* switch 2 */
-                                case 40:            /* switch 2 */
-                                case 41:            /* switch 2 */
-                                case 42:            /* switch 2 */
-                                case 43:            /* switch 2 */
-                                case 44:            /* switch 2 */
-                                case 45:            /* switch 2 */
-                                case 46:            /* switch 2 */
-                                case 47:            /* switch 2 */
-                                case 48:            /* switch 2 */
-                                case 49:            /* switch 2 */
-                                case 50:            /* switch 2 */
-                                    var_s0 = gDynamicBuffer1.unkC;
-                                    gDynamicBuffer1.unkC = var_s0 + 0x40;
-                                    goto block_36;
-                                default:            /* switch 2 */
-                                    if (temp_v0_5 >= 0x43) {
-                                        var_s0 = gDynamicBuffer1.unkC;
-                                        gDynamicBuffer1.unkC = var_s0 + 0x40;
-                                        goto block_36;
-                                    }
-                                    if (temp_v1 == 3) {
-                                        var_s0 = D_8004A404;
-                                        D_8004A404 = var_s0 + 0x40;
-                                        goto block_36;
-                                    }
-                                    goto block_91;
-                            }
-                        } else {
-block_36:
-                            temp_v0_6 = temp_s2->unk4;
-                            var_a0_2 = 0;
-                            switch (temp_v0_6) {    /* switch 3 */
-                                case 0x1:           /* switch 3 */
-block_91:
-                                    if ((temp_s2->unk5 == 1) && ((temp_s2 + 8) == var_s0)) {
-                                        if ((temp_s2->unk4 == 0x1C) && (arg1->unk40 != 1.0f)) {
-                                            temp_s2->unk4 = 0x42;
-                                        }
-                                        temp_s2->unk5 = 2;
-                                    }
-                                    goto block_108;
-                                case 0x2:           /* switch 3 */
-                                    goto block_91;
-                                case 0x12:          /* switch 3 */
-                                    func_8001B784(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24);
-block_90:
-                                    goto block_91;
-                                case 0x13:          /* switch 3 */
-                                    func_8001D0B4(var_s0, arg1->unk2C, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x14:          /* switch 3 */
-                                    func_8001D184(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk2C, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x15:          /* switch 3 */
-                                    func_8001D264(var_s0, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x16:          /* switch 3 */
-                                    func_8001D34C(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x17:          /* switch 3 */
-                                    func_8001B9B8(var_s0, arg1->unk2C, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x18:          /* switch 3 */
-                                    func_8001BA60(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk2C, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x19:          /* switch 3 */
-                                    func_8001BB30(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk2C, arg1->unk30, arg1->unk34, arg1->unk38, arg1->unk40, arg1->unk44, arg1->unk48);
-                                    D_8004AA94 *= arg1->unk40;
-                                    goto block_91;
-                                case 0x1A:          /* switch 3 */
-                                    func_8001BCE0(var_s0, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x1B:          /* switch 3 */
-                                    func_8001BFDC(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x1C:          /* switch 3 */
-                                    func_8001C348(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk30, arg1->unk34, arg1->unk38, arg1->unk40, arg1->unk44, arg1->unk48);
-                                    D_8004AA94 *= arg1->unk40;
-                                    goto block_91;
-                                case 0x1D:          /* switch 3 */
-                                    func_8001C874(var_s0, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x1E:          /* switch 3 */
-                                    func_8001C90C(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk30, arg1->unk34, arg1->unk38);
-                                    goto block_90;
-                                case 0x1F:          /* switch 3 */
-                                    func_8001C9CC(var_s0, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk30, arg1->unk34, arg1->unk38, arg1->unk40, arg1->unk44, arg1->unk48);
-                                    D_8004AA94 *= arg1->unk40;
-                                    goto block_91;
-                                case 0x20:          /* switch 3 */
-                                    func_8001B540(var_s0, arg1->unk40, arg1->unk44, arg1->unk48);
-                                    D_8004AA94 *= arg1->unk40;
-                                    goto block_91;
-                                case 0x21:          /* switch 3 */
-                                    func_80010EF8(var_s0, arg1, 0);
-                                    goto block_90;
-                                case 0x22:          /* switch 3 */
-                                    func_80010EF8(var_s0, arg1, 1);
-                                    goto block_90;
-                                case 0x23:          /* switch 3 */
-                                    func_80010B58(var_s0, arg1, 0);
-                                    goto block_90;
-                                case 0x24:          /* switch 3 */
-                                    func_80010B58(var_s0, arg1, 1);
-                                    goto block_90;
-                                case 0x25:          /* switch 3 */
-                                    func_8001103C(var_s0, arg1, 0);
-                                    goto block_90;
-                                case 0x26:          /* switch 3 */
-                                    func_8001103C(var_s0, arg1, 1);
-                                    goto block_90;
-                                case 0x27:          /* switch 3 */
-                                    func_80010D28(var_s0, arg1, 0);
-                                    goto block_90;
-                                case 0x28:          /* switch 3 */
-                                    func_80010D28(var_s0, arg1, 1);
-                                    goto block_90;
-                                case 0x38:          /* switch 3 */
-                                    func_8001B784(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC);
-                                    goto block_90;
-                                case 0x39:          /* switch 3 */
-                                    func_8001B9B8(var_s0, sp2BC->unk4, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10);
-                                    goto block_90;
-                                case 0x3A:          /* switch 3 */
-                                    func_8001BCE0(var_s0, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10);
-                                    goto block_90;
-                                case 0x3B:          /* switch 3 */
-                                    func_8001B540(var_s0, sp2B8->unk4, sp2B8->unk8, sp2B8->unkC);
-                                    D_8004AA94 *= sp2B8->unk4;
-                                    goto block_91;
-                                case 0x3C:          /* switch 3 */
-                                    func_8001BA60(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC, sp2BC->unk4, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10);
-                                    goto block_90;
-                                case 0x3D:          /* switch 3 */
-                                    func_8001BB30(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC, sp2BC->unk4, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10, sp2B8->unk4, sp2B8->unk8, sp2B8->unkC);
-                                    D_8004AA94 *= sp2B8->unk4;
-                                    goto block_91;
-                                case 0x3E:          /* switch 3 */
-                                    func_8001BFDC(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10);
-                                    goto block_90;
-                                case 0x3F:          /* switch 3 */
-                                    func_8001C348(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10, sp2B8->unk4, sp2B8->unk8, sp2B8->unkC);
-                                    D_8004AA94 *= sp2B8->unk4;
-                                    goto block_91;
-                                case 0x29:          /* switch 3 */
-                                    temp_t7 = sp2D4;
-                                    sp2D4 = temp_t7 + 8;
-                                    temp_t7->unk4 = 0;
-                                    temp_t7->unk0 = 0xD5000001;
-                                    temp_t2 = sp2D4;
-                                    sp2D4 = temp_t2 + 8;
-                                    temp_t2->unk0 = 0xDB000008;
-                                    temp_t2->unk4 = D_8004AA90->unk0;
-                                    temp_t6 = sp2D4;
-                                    sp2D4 = temp_t6 + 8;
-                                    temp_t6->unk0 = 0xDB00000C;
-                                    temp_t6->unk4 = D_8004AA90->unk4;
-                                    temp_t1 = sp2D4;
-                                    sp2D4 = temp_t1 + 8;
-                                    temp_t1->unk0 = 0xDB000010;
-                                    temp_t1->unk4 = D_8004AA90->unk8;
-                                    temp_t7_2 = sp2D4;
-                                    sp2D4 = temp_t7_2 + 8;
-                                    temp_t7_2->unk0 = 0xDB000014;
-                                    temp_t7_2->unk4 = D_8004AA90->unkC;
-                                    temp_t3 = sp2D4;
-                                    sp2D4 = temp_t3 + 8;
-                                    temp_t3->unk0 = 0xDB000000;
-                                    temp_t3->unk4 = D_8004AA90->unk10;
-                                    temp_t8 = sp2D4;
-                                    sp2D4 = temp_t8 + 8;
-                                    temp_t8->unk0 = 0xDB000004;
-                                    temp_t8->unk4 = D_8004AA90->unk14;
-                                    temp_t5 = sp2D4;
-                                    sp2D4 = temp_t5 + 8;
-                                    temp_t5->unk0 = 0xDB000028;
-                                    temp_t5->unk4 = D_8004AA90->unk20;
-                                    temp_t9 = sp2D4;
-                                    sp2D4 = temp_t9 + 8;
-                                    temp_t9->unk0 = 0xDB00002C;
-                                    temp_t9->unk4 = D_8004AA90->unk24;
-                                    temp_t4_2 = sp2D4;
-                                    sp2D4 = temp_t4_2 + 8;
-                                    temp_t4_2->unk0 = 0xDB000030;
-                                    temp_t4_2->unk4 = D_8004AA90->unk28;
-                                    temp_t2_2 = sp2D4;
-                                    sp2D4 = temp_t2_2 + 8;
-                                    temp_t2_2->unk0 = 0xDB000034;
-                                    temp_t2_2->unk4 = D_8004AA90->unk2C;
-                                    temp_a0 = sp2D4;
-                                    sp2D4 = temp_a0 + 8;
-                                    temp_a0->unk0 = 0xDB000020;
-                                    temp_a0->unk4 = D_8004AA90->unk30;
-                                    temp_t1_2 = sp2D4;
-                                    sp2D4 = temp_t1_2 + 8;
-                                    temp_t1_2->unk0 = 0xDB000024;
-                                    temp_t1_2->unk4 = D_8004AA90->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                case 0x2A:          /* switch 3 */
-                                    temp_t8_2 = sp2D4;
-                                    sp2D4 = temp_t8_2 + 8;
-                                    temp_t8_2->unk4 = 0;
-                                    temp_t8_2->unk0 = 0xD5000001;
-                                    temp_t1_3 = sp2D4;
-                                    sp2D4 = temp_t1_3 + 8;
-                                    temp_t1_3->unk0 = 0xDB000000;
-                                    temp_t1_3->unk4 = D_8004AA90->unk0;
-                                    temp_t7_3 = sp2D4;
-                                    sp2D4 = temp_t7_3 + 8;
-                                    temp_t7_3->unk0 = 0xDB000004;
-                                    temp_t7_3->unk4 = D_8004AA90->unk4;
-                                    temp_t3_2 = sp2D4;
-                                    sp2D4 = temp_t3_2 + 8;
-                                    temp_t3_2->unk0 = 0xDB000008;
-                                    temp_t3_2->unk4 = D_8004AA90->unk8;
-                                    temp_t8_3 = sp2D4;
-                                    sp2D4 = temp_t8_3 + 8;
-                                    temp_t8_3->unk0 = 0xDB00000C;
-                                    temp_t8_3->unk4 = D_8004AA90->unkC;
-                                    temp_t5_2 = sp2D4;
-                                    sp2D4 = temp_t5_2 + 8;
-                                    temp_t5_2->unk0 = 0xDB000010;
-                                    temp_t5_2->unk4 = D_8004AA90->unk10;
-                                    temp_t9_2 = sp2D4;
-                                    sp2D4 = temp_t9_2 + 8;
-                                    temp_t9_2->unk0 = 0xDB000014;
-                                    temp_t9_2->unk4 = D_8004AA90->unk14;
-                                    temp_t4_3 = sp2D4;
-                                    sp2D4 = temp_t4_3 + 8;
-                                    temp_t4_3->unk0 = 0xDB000020;
-                                    temp_t4_3->unk4 = D_8004AA90->unk20;
-                                    temp_t2_3 = sp2D4;
-                                    sp2D4 = temp_t2_3 + 8;
-                                    temp_t2_3->unk0 = 0xDB000024;
-                                    temp_t2_3->unk4 = D_8004AA90->unk24;
-                                    temp_t6_2 = sp2D4;
-                                    sp2D4 = temp_t6_2 + 8;
-                                    temp_t6_2->unk0 = 0xDB000028;
-                                    temp_t6_2->unk4 = D_8004AA90->unk28;
-                                    temp_t1_4 = sp2D4;
-                                    sp2D4 = temp_t1_4 + 8;
-                                    temp_t1_4->unk0 = 0xDB00002C;
-                                    temp_t1_4->unk4 = D_8004AA90->unk2C;
-                                    temp_a0_2 = sp2D4;
-                                    sp2D4 = temp_a0_2 + 8;
-                                    temp_a0_2->unk0 = 0xDB000030;
-                                    temp_a0_2->unk4 = D_8004AA90->unk30;
-                                    temp_t3_3 = sp2D4;
-                                    sp2D4 = temp_t3_3 + 8;
-                                    temp_t3_3->unk0 = 0xDB000034;
-                                    temp_t3_3->unk4 = D_8004AA90->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                case 0x2B:          /* switch 3 */
-                                    temp_f18 = arg1->unk44 * D_8004AA94;
-                                    D_8004AA94 *= arg1->unk40;
-                                    D_8004AAD8.unk4 = 0.0f;
-                                    D_8004AAD8.unk8 = 0.0f;
-                                    D_8004AAD8.unkC = 0.0f;
-                                    temp_f12 = D_8004AA98.unk0 * D_8004AA94;
-                                    D_8004AAD8.unk10 = 0.0f;
-                                    D_8004AAD8.unk18 = 0.0f;
-                                    D_8004AAD8.unk14 = D_8004AA98.unk14 * temp_f18;
-                                    D_8004AAD8.unk1C = 0.0f;
-                                    D_8004AAD8.unk0 = temp_f12;
-                                    D_8004AAD8.unk20 = 0.0f;
-                                    D_8004AAD8.unk24 = 0.0f;
-                                    D_8004AAD8.unk28 = D_8004AA98.unk28 * D_8004AA94;
-                                    D_8004AAD8.unk2C = D_8004AA98.unk2C * D_8004AA94;
-                                    HS64_MtxF2L(temp_f12, D_8004AA98.unk14, &D_8004AAD8, var_s0, var_a2);
-                                    temp_t9_3 = sp2D4;
-                                    sp2D4 = temp_t9_3 + 8;
-                                    temp_t9_3->unk4 = 0;
-                                    temp_t9_3->unk0 = 0xD5000001;
-                                    temp_t3_4 = sp2D4;
-                                    sp2D4 = temp_t3_4 + 8;
-                                    temp_t3_4->unk0 = 0xDB000008;
-                                    temp_t3_4->unk4 = var_s0->unk0;
-                                    temp_t7_4 = sp2D4;
-                                    sp2D4 = temp_t7_4 + 8;
-                                    temp_t7_4->unk0 = 0xDB00000C;
-                                    temp_t7_4->unk4 = var_s0->unk4;
-                                    temp_t1_5 = sp2D4;
-                                    sp2D4 = temp_t1_5 + 8;
-                                    temp_t1_5->unk0 = 0xDB000010;
-                                    temp_t1_5->unk4 = var_s0->unk8;
-                                    temp_t6_3 = sp2D4;
-                                    sp2D4 = temp_t6_3 + 8;
-                                    temp_t6_3->unk0 = 0xDB000014;
-                                    temp_t6_3->unk4 = var_s0->unkC;
-                                    temp_t2_4 = sp2D4;
-                                    sp2D4 = temp_t2_4 + 8;
-                                    temp_t2_4->unk0 = 0xDB000000;
-                                    temp_t2_4->unk4 = var_s0->unk10;
-                                    temp_t4_4 = sp2D4;
-                                    sp2D4 = temp_t4_4 + 8;
-                                    temp_t4_4->unk0 = 0xDB000004;
-                                    temp_t4_4->unk4 = var_s0->unk14;
-                                    temp_t9_4 = sp2D4;
-                                    sp2D4 = temp_t9_4 + 8;
-                                    temp_t9_4->unk0 = 0xDB000028;
-                                    temp_t9_4->unk4 = var_s0->unk20;
-                                    temp_t5_3 = sp2D4;
-                                    sp2D4 = temp_t5_3 + 8;
-                                    temp_t5_3->unk0 = 0xDB00002C;
-                                    temp_t5_3->unk4 = var_s0->unk24;
-                                    temp_t8_4 = sp2D4;
-                                    sp2D4 = temp_t8_4 + 8;
-                                    temp_t8_4->unk0 = 0xDB000030;
-                                    temp_t8_4->unk4 = var_s0->unk28;
-                                    temp_t3_5 = sp2D4;
-                                    sp2D4 = temp_t3_5 + 8;
-                                    temp_t3_5->unk0 = 0xDB000034;
-                                    temp_t3_5->unk4 = var_s0->unk2C;
-                                    temp_a0_3 = sp2D4;
-                                    sp2D4 = temp_a0_3 + 8;
-                                    temp_a0_3->unk0 = 0xDB000020;
-                                    temp_a0_3->unk4 = var_s0->unk30;
-                                    temp_t1_6 = sp2D4;
-                                    sp2D4 = temp_t1_6 + 8;
-                                    temp_t1_6->unk0 = 0xDB000024;
-                                    temp_t1_6->unk4 = var_s0->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                case 0x2C:          /* switch 3 */
-                                    temp_f18_2 = arg1->unk44 * D_8004AA94;
-                                    D_8004AA94 *= arg1->unk40;
-                                    D_8004AAD8.unk4 = 0.0f;
-                                    D_8004AAD8.unk8 = 0.0f;
-                                    D_8004AAD8.unkC = 0.0f;
-                                    temp_f12_2 = D_8004AA98.unk0 * D_8004AA94;
-                                    D_8004AAD8.unk10 = 0.0f;
-                                    D_8004AAD8.unk18 = 0.0f;
-                                    D_8004AAD8.unk14 = D_8004AA98.unk14 * temp_f18_2;
-                                    D_8004AAD8.unk1C = 0.0f;
-                                    D_8004AAD8.unk0 = temp_f12_2;
-                                    D_8004AAD8.unk20 = 0.0f;
-                                    D_8004AAD8.unk24 = 0.0f;
-                                    D_8004AAD8.unk28 = D_8004AA98.unk28 * D_8004AA94;
-                                    D_8004AAD8.unk2C = D_8004AA98.unk2C * D_8004AA94;
-                                    HS64_MtxF2L(temp_f12_2, D_8004AA98.unk14, &D_8004AAD8, var_s0, var_a2);
-                                    temp_t7_5 = sp2D4;
-                                    sp2D4 = temp_t7_5 + 8;
-                                    temp_t7_5->unk4 = 0;
-                                    temp_t7_5->unk0 = 0xD5000001;
-                                    temp_t2_5 = sp2D4;
-                                    sp2D4 = temp_t2_5 + 8;
-                                    temp_t2_5->unk0 = 0xDB000000;
-                                    temp_t2_5->unk4 = var_s0->unk0;
-                                    temp_t4_5 = sp2D4;
-                                    sp2D4 = temp_t4_5 + 8;
-                                    temp_t4_5->unk0 = 0xDB000004;
-                                    temp_t4_5->unk4 = var_s0->unk4;
-                                    temp_t9_5 = sp2D4;
-                                    sp2D4 = temp_t9_5 + 8;
-                                    temp_t9_5->unk0 = 0xDB000008;
-                                    temp_t9_5->unk4 = var_s0->unk8;
-                                    temp_t5_4 = sp2D4;
-                                    sp2D4 = temp_t5_4 + 8;
-                                    temp_t5_4->unk0 = 0xDB00000C;
-                                    temp_t5_4->unk4 = var_s0->unkC;
-                                    temp_t8_5 = sp2D4;
-                                    sp2D4 = temp_t8_5 + 8;
-                                    temp_t8_5->unk0 = 0xDB000010;
-                                    temp_t8_5->unk4 = var_s0->unk10;
-                                    temp_t3_6 = sp2D4;
-                                    sp2D4 = temp_t3_6 + 8;
-                                    temp_t3_6->unk0 = 0xDB000014;
-                                    temp_t3_6->unk4 = var_s0->unk14;
-                                    temp_t7_6 = sp2D4;
-                                    sp2D4 = temp_t7_6 + 8;
-                                    temp_t7_6->unk0 = 0xDB000020;
-                                    temp_t7_6->unk4 = var_s0->unk20;
-                                    temp_t1_7 = sp2D4;
-                                    sp2D4 = temp_t1_7 + 8;
-                                    temp_t1_7->unk0 = 0xDB000024;
-                                    temp_t1_7->unk4 = var_s0->unk24;
-                                    temp_t6_4 = sp2D4;
-                                    sp2D4 = temp_t6_4 + 8;
-                                    temp_t6_4->unk0 = 0xDB000028;
-                                    temp_t6_4->unk4 = var_s0->unk28;
-                                    temp_t2_6 = sp2D4;
-                                    sp2D4 = temp_t2_6 + 8;
-                                    temp_t2_6->unk0 = 0xDB00002C;
-                                    temp_t2_6->unk4 = var_s0->unk2C;
-                                    temp_a0_4 = sp2D4;
-                                    sp2D4 = temp_a0_4 + 8;
-                                    temp_a0_4->unk0 = 0xDB000030;
-                                    temp_a0_4->unk4 = var_s0->unk30;
-                                    temp_t9_6 = sp2D4;
-                                    sp2D4 = temp_t9_6 + 8;
-                                    temp_t9_6->unk0 = 0xDB000034;
-                                    temp_t9_6->unk4 = var_s0->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                case 0x2D:          /* switch 3 */
-                                    sp1CC = sinf(arg1->unk30);
-                                    temp_f0 = cosf(arg1->unk30);
-                                    temp_f12_3 = arg1->unk44 * D_8004AA94;
-                                    D_8004AAD8.unk8 = 0.0f;
-                                    D_8004AAD8.unk18 = 0.0f;
-                                    D_8004AAD8.unkC = 0.0f;
-                                    D_8004AAD8.unk1C = 0.0f;
-                                    D_8004AA94 *= arg1->unk40;
-                                    D_8004AAD8.unk20 = 0.0f;
-                                    D_8004AAD8.unk24 = 0.0f;
-                                    temp_f14 = D_8004AA98.unk0 * D_8004AA94;
-                                    temp_f16 = D_8004AA98.unk14 * temp_f12_3;
-                                    D_8004AAD8.unk0 = temp_f14 * temp_f0;
-                                    D_8004AAD8.unk10 = temp_f14 * -sp1CC;
-                                    D_8004AAD8.unk4 = temp_f16 * sp1CC;
-                                    D_8004AAD8.unk14 = temp_f16 * temp_f0;
-                                    D_8004AAD8.unk28 = D_8004AA98.unk28 * D_8004AA94;
-                                    D_8004AAD8.unk2C = D_8004AA98.unk2C * D_8004AA94;
-                                    HS64_MtxF2L(temp_f12_3, temp_f14, &D_8004AAD8, var_s0);
-                                    temp_t4_6 = sp2D4;
-                                    sp2D4 = temp_t4_6 + 8;
-                                    temp_t4_6->unk4 = 0;
-                                    temp_t4_6->unk0 = 0xD5000001;
-                                    temp_t8_6 = sp2D4;
-                                    sp2D4 = temp_t8_6 + 8;
-                                    temp_t8_6->unk0 = 0xDB000000;
-                                    temp_t8_6->unk4 = var_s0->unk0;
-                                    temp_t3_7 = sp2D4;
-                                    sp2D4 = temp_t3_7 + 8;
-                                    temp_t3_7->unk0 = 0xDB000004;
-                                    temp_t3_7->unk4 = var_s0->unk4;
-                                    temp_t7_7 = sp2D4;
-                                    sp2D4 = temp_t7_7 + 8;
-                                    temp_t7_7->unk0 = 0xDB000008;
-                                    temp_t7_7->unk4 = var_s0->unk8;
-                                    temp_t1_8 = sp2D4;
-                                    sp2D4 = temp_t1_8 + 8;
-                                    temp_t1_8->unk0 = 0xDB00000C;
-                                    temp_t1_8->unk4 = var_s0->unkC;
-                                    temp_t6_5 = sp2D4;
-                                    sp2D4 = temp_t6_5 + 8;
-                                    temp_t6_5->unk0 = 0xDB000010;
-                                    temp_t6_5->unk4 = var_s0->unk10;
-                                    temp_t2_7 = sp2D4;
-                                    sp2D4 = temp_t2_7 + 8;
-                                    temp_t2_7->unk0 = 0xDB000014;
-                                    temp_t2_7->unk4 = var_s0->unk14;
-                                    temp_t4_7 = sp2D4;
-                                    sp2D4 = temp_t4_7 + 8;
-                                    temp_t4_7->unk0 = 0xDB000020;
-                                    temp_t4_7->unk4 = var_s0->unk20;
-                                    temp_t9_7 = sp2D4;
-                                    sp2D4 = temp_t9_7 + 8;
-                                    temp_t9_7->unk0 = 0xDB000024;
-                                    temp_t9_7->unk4 = var_s0->unk24;
-                                    temp_t5_5 = sp2D4;
-                                    sp2D4 = temp_t5_5 + 8;
-                                    temp_t5_5->unk0 = 0xDB000028;
-                                    temp_t5_5->unk4 = var_s0->unk28;
-                                    temp_t8_7 = sp2D4;
-                                    sp2D4 = temp_t8_7 + 8;
-                                    temp_t8_7->unk0 = 0xDB00002C;
-                                    temp_t8_7->unk4 = var_s0->unk2C;
-                                    temp_a0_5 = sp2D4;
-                                    sp2D4 = temp_a0_5 + 8;
-                                    temp_a0_5->unk0 = 0xDB000030;
-                                    temp_a0_5->unk4 = var_s0->unk30;
-                                    temp_t7_8 = sp2D4;
-                                    sp2D4 = temp_t7_8 + 8;
-                                    temp_t7_8->unk0 = 0xDB000034;
-                                    temp_t7_8->unk4 = var_s0->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                case 0x2E:          /* switch 3 */
-                                    sp190 = sinf(arg1->unk38);
-                                    temp_f0_2 = cosf(arg1->unk38);
-                                    temp_f12_4 = arg1->unk44 * D_8004AA94;
-                                    D_8004AAD8.unk8 = 0.0f;
-                                    D_8004AAD8.unk18 = 0.0f;
-                                    D_8004AAD8.unkC = 0.0f;
-                                    D_8004AAD8.unk1C = 0.0f;
-                                    D_8004AA94 *= arg1->unk40;
-                                    D_8004AAD8.unk20 = 0.0f;
-                                    D_8004AAD8.unk24 = 0.0f;
-                                    temp_f14_2 = D_8004AA98.unk0 * D_8004AA94;
-                                    temp_f16_2 = D_8004AA98.unk14 * temp_f12_4;
-                                    D_8004AAD8.unk0 = temp_f14_2 * temp_f0_2;
-                                    D_8004AAD8.unk10 = temp_f14_2 * -sp190;
-                                    D_8004AAD8.unk4 = temp_f16_2 * sp190;
-                                    D_8004AAD8.unk14 = temp_f16_2 * temp_f0_2;
-                                    D_8004AAD8.unk28 = D_8004AA98.unk28 * D_8004AA94;
-                                    D_8004AAD8.unk2C = D_8004AA98.unk2C * D_8004AA94;
-                                    HS64_MtxF2L(temp_f12_4, temp_f14_2, &D_8004AAD8, var_s0);
-                                    temp_t3_8 = sp2D4;
-                                    sp2D4 = temp_t3_8 + 8;
-                                    temp_t3_8->unk4 = 0;
-                                    temp_t3_8->unk0 = 0xD5000001;
-                                    temp_t6_6 = sp2D4;
-                                    sp2D4 = temp_t6_6 + 8;
-                                    temp_t6_6->unk0 = 0xDB000000;
-                                    temp_t6_6->unk4 = var_s0->unk0;
-                                    temp_t2_8 = sp2D4;
-                                    sp2D4 = temp_t2_8 + 8;
-                                    temp_t2_8->unk0 = 0xDB000004;
-                                    temp_t2_8->unk4 = var_s0->unk4;
-                                    temp_t4_8 = sp2D4;
-                                    sp2D4 = temp_t4_8 + 8;
-                                    temp_t4_8->unk0 = 0xDB000008;
-                                    temp_t4_8->unk4 = var_s0->unk8;
-                                    temp_t9_8 = sp2D4;
-                                    sp2D4 = temp_t9_8 + 8;
-                                    temp_t9_8->unk0 = 0xDB00000C;
-                                    temp_t9_8->unk4 = var_s0->unkC;
-                                    temp_t5_6 = sp2D4;
-                                    sp2D4 = temp_t5_6 + 8;
-                                    temp_t5_6->unk0 = 0xDB000010;
-                                    temp_t5_6->unk4 = var_s0->unk10;
-                                    temp_t8_8 = sp2D4;
-                                    sp2D4 = temp_t8_8 + 8;
-                                    temp_t8_8->unk0 = 0xDB000014;
-                                    temp_t8_8->unk4 = var_s0->unk14;
-                                    temp_t3_9 = sp2D4;
-                                    sp2D4 = temp_t3_9 + 8;
-                                    temp_t3_9->unk0 = 0xDB000020;
-                                    temp_t3_9->unk4 = var_s0->unk20;
-                                    temp_t7_9 = sp2D4;
-                                    sp2D4 = temp_t7_9 + 8;
-                                    temp_t7_9->unk0 = 0xDB000024;
-                                    temp_t7_9->unk4 = var_s0->unk24;
-                                    temp_t1_9 = sp2D4;
-                                    sp2D4 = temp_t1_9 + 8;
-                                    temp_t1_9->unk0 = 0xDB000028;
-                                    temp_t1_9->unk4 = var_s0->unk28;
-                                    temp_t6_7 = sp2D4;
-                                    sp2D4 = temp_t6_7 + 8;
-                                    temp_t6_7->unk0 = 0xDB00002C;
-                                    temp_t6_7->unk4 = var_s0->unk2C;
-                                    temp_a0_6 = sp2D4;
-                                    sp2D4 = temp_a0_6 + 8;
-                                    temp_a0_6->unk0 = 0xDB000030;
-                                    temp_a0_6->unk4 = var_s0->unk30;
-                                    temp_t4_9 = sp2D4;
-                                    sp2D4 = temp_t4_9 + 8;
-                                    temp_t4_9->unk0 = 0xDB000034;
-                                    temp_t4_9->unk4 = var_s0->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                case 0x2F:          /* switch 3 */
-                                    temp_f12_5 = arg1->unk44 * D_8004AA94;
-                                    D_8004AA94 *= arg1->unk40;
-                                    D_8004AAD8.unk0 = D_8004AB18.unk0 * D_8004AA94;
-                                    D_8004AAD8.unk4 = D_8004AB18.unk4 * D_8004AA94;
-                                    D_8004AAD8.unk8 = D_8004AB18.unk8 * D_8004AA94;
-                                    D_8004AAD8.unkC = D_8004AB18.unkC * D_8004AA94;
-                                    D_8004AAD8.unk10 = D_8004AB18.unk10 * temp_f12_5;
-                                    D_8004AAD8.unk14 = D_8004AB18.unk14 * temp_f12_5;
-                                    D_8004AAD8.unk18 = D_8004AB18.unk18 * temp_f12_5;
-                                    D_8004AAD8.unk1C = D_8004AB18.unk1C * temp_f12_5;
-                                    D_8004AAD8.unk20 = D_8004AB18.unk20 * D_8004AA94;
-                                    D_8004AAD8.unk24 = D_8004AB18.unk24 * D_8004AA94;
-                                    D_8004AAD8.unk28 = D_8004AB18.unk28 * D_8004AA94;
-                                    D_8004AAD8.unk2C = D_8004AB18.unk2C * D_8004AA94;
-                                    HS64_MtxF2L(temp_f12_5, (bitwise f32) &D_8004AAD8, var_s0, var_a2);
-                                    temp_t2_9 = sp2D4;
-                                    sp2D4 = temp_t2_9 + 8;
-                                    temp_t2_9->unk4 = 0;
-                                    temp_t2_9->unk0 = 0xD5000001;
-                                    temp_t5_7 = sp2D4;
-                                    sp2D4 = temp_t5_7 + 8;
-                                    temp_t5_7->unk0 = 0xDB000008;
-                                    temp_t5_7->unk4 = var_s0->unk0;
-                                    temp_t8_9 = sp2D4;
-                                    sp2D4 = temp_t8_9 + 8;
-                                    temp_t8_9->unk0 = 0xDB00000C;
-                                    temp_t8_9->unk4 = var_s0->unk4;
-                                    temp_t3_10 = sp2D4;
-                                    sp2D4 = temp_t3_10 + 8;
-                                    temp_t3_10->unk0 = 0xDB000010;
-                                    temp_t3_10->unk4 = var_s0->unk8;
-                                    temp_t7_10 = sp2D4;
-                                    sp2D4 = temp_t7_10 + 8;
-                                    temp_t7_10->unk0 = 0xDB000014;
-                                    temp_t7_10->unk4 = var_s0->unkC;
-                                    temp_t1_10 = sp2D4;
-                                    sp2D4 = temp_t1_10 + 8;
-                                    temp_t1_10->unk0 = 0xDB000000;
-                                    temp_t1_10->unk4 = var_s0->unk10;
-                                    temp_t6_8 = sp2D4;
-                                    sp2D4 = temp_t6_8 + 8;
-                                    temp_t6_8->unk0 = 0xDB000004;
-                                    temp_t6_8->unk4 = var_s0->unk14;
-                                    temp_t2_10 = sp2D4;
-                                    sp2D4 = temp_t2_10 + 8;
-                                    temp_t2_10->unk0 = 0xDB000028;
-                                    temp_t2_10->unk4 = var_s0->unk20;
-                                    temp_t4_10 = sp2D4;
-                                    sp2D4 = temp_t4_10 + 8;
-                                    temp_t4_10->unk0 = 0xDB00002C;
-                                    temp_t4_10->unk4 = var_s0->unk24;
-                                    temp_t9_9 = sp2D4;
-                                    sp2D4 = temp_t9_9 + 8;
-                                    temp_t9_9->unk0 = 0xDB000030;
-                                    temp_t9_9->unk4 = var_s0->unk28;
-                                    temp_t5_8 = sp2D4;
-                                    sp2D4 = temp_t5_8 + 8;
-                                    temp_t5_8->unk0 = 0xDB000034;
-                                    temp_t5_8->unk4 = var_s0->unk2C;
-                                    temp_a0_7 = sp2D4;
-                                    sp2D4 = temp_a0_7 + 8;
-                                    temp_a0_7->unk0 = 0xDB000020;
-                                    temp_a0_7->unk4 = var_s0->unk30;
-                                    temp_t3_11 = sp2D4;
-                                    sp2D4 = temp_t3_11 + 8;
-                                    temp_t3_11->unk0 = 0xDB000024;
-                                    temp_t3_11->unk4 = var_s0->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                case 0x30:          /* switch 3 */
-                                    temp_f12_6 = arg1->unk44 * D_8004AA94;
-                                    D_8004AA94 *= arg1->unk40;
-                                    D_8004AAD8.unk0 = D_8004AB18.unk0 * D_8004AA94;
-                                    D_8004AAD8.unk4 = D_8004AB18.unk4 * D_8004AA94;
-                                    D_8004AAD8.unk8 = D_8004AB18.unk8 * D_8004AA94;
-                                    D_8004AAD8.unkC = D_8004AB18.unkC * D_8004AA94;
-                                    D_8004AAD8.unk10 = D_8004AB18.unk10 * temp_f12_6;
-                                    D_8004AAD8.unk14 = D_8004AB18.unk14 * temp_f12_6;
-                                    D_8004AAD8.unk18 = D_8004AB18.unk18 * temp_f12_6;
-                                    D_8004AAD8.unk1C = D_8004AB18.unk1C * temp_f12_6;
-                                    D_8004AAD8.unk20 = D_8004AB18.unk20 * D_8004AA94;
-                                    D_8004AAD8.unk24 = D_8004AB18.unk24 * D_8004AA94;
-                                    D_8004AAD8.unk28 = D_8004AB18.unk28 * D_8004AA94;
-                                    D_8004AAD8.unk2C = D_8004AB18.unk2C * D_8004AA94;
-                                    HS64_MtxF2L(temp_f12_6, (bitwise f32) &D_8004AAD8, var_s0, var_a2);
-                                    temp_t8_10 = sp2D4;
-                                    sp2D4 = temp_t8_10 + 8;
-                                    temp_t8_10->unk4 = 0;
-                                    temp_t8_10->unk0 = 0xD5000001;
-                                    temp_t1_11 = sp2D4;
-                                    sp2D4 = temp_t1_11 + 8;
-                                    temp_t1_11->unk0 = 0xDB000000;
-                                    temp_t1_11->unk4 = var_s0->unk0;
-                                    temp_t6_9 = sp2D4;
-                                    sp2D4 = temp_t6_9 + 8;
-                                    temp_t6_9->unk0 = 0xDB000004;
-                                    temp_t6_9->unk4 = var_s0->unk4;
-                                    temp_t2_11 = sp2D4;
-                                    sp2D4 = temp_t2_11 + 8;
-                                    temp_t2_11->unk0 = 0xDB000008;
-                                    temp_t2_11->unk4 = var_s0->unk8;
-                                    temp_t4_11 = sp2D4;
-                                    sp2D4 = temp_t4_11 + 8;
-                                    temp_t4_11->unk0 = 0xDB00000C;
-                                    temp_t4_11->unk4 = var_s0->unkC;
-                                    temp_t9_10 = sp2D4;
-                                    sp2D4 = temp_t9_10 + 8;
-                                    temp_t9_10->unk0 = 0xDB000010;
-                                    temp_t9_10->unk4 = var_s0->unk10;
-                                    temp_t5_9 = sp2D4;
-                                    sp2D4 = temp_t5_9 + 8;
-                                    temp_t5_9->unk0 = 0xDB000014;
-                                    temp_t5_9->unk4 = var_s0->unk14;
-                                    temp_t8_11 = sp2D4;
-                                    sp2D4 = temp_t8_11 + 8;
-                                    temp_t8_11->unk0 = 0xDB000020;
-                                    temp_t8_11->unk4 = var_s0->unk20;
-                                    temp_t3_12 = sp2D4;
-                                    sp2D4 = temp_t3_12 + 8;
-                                    temp_t3_12->unk0 = 0xDB000024;
-                                    temp_t3_12->unk4 = var_s0->unk24;
-                                    temp_t7_11 = sp2D4;
-                                    sp2D4 = temp_t7_11 + 8;
-                                    temp_t7_11->unk0 = 0xDB000028;
-                                    temp_t7_11->unk4 = var_s0->unk28;
-                                    temp_t1_12 = sp2D4;
-                                    sp2D4 = temp_t1_12 + 8;
-                                    temp_t1_12->unk0 = 0xDB00002C;
-                                    temp_t1_12->unk4 = var_s0->unk2C;
-                                    temp_a0_8 = sp2D4;
-                                    sp2D4 = temp_a0_8 + 8;
-                                    temp_a0_8->unk0 = 0xDB000030;
-                                    temp_a0_8->unk4 = var_s0->unk30;
-                                    temp_t2_12 = sp2D4;
-                                    sp2D4 = temp_t2_12 + 8;
-                                    temp_t2_12->unk0 = 0xDB000034;
-                                    temp_t2_12->unk4 = var_s0->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                case 0x31:          /* switch 3 */
-                                    temp_f12_7 = arg1->unk44 * D_8004AA94;
-                                    D_8004AA94 *= arg1->unk40;
-                                    D_8004AAD8.unk0 = D_8004AB58.unk0 * D_8004AA94;
-                                    D_8004AAD8.unk4 = D_8004AB58.unk4 * D_8004AA94;
-                                    D_8004AAD8.unk8 = D_8004AB58.unk8 * D_8004AA94;
-                                    D_8004AAD8.unkC = D_8004AB58.unkC * D_8004AA94;
-                                    D_8004AAD8.unk10 = D_8004AB58.unk10 * temp_f12_7;
-                                    D_8004AAD8.unk14 = D_8004AB58.unk14 * temp_f12_7;
-                                    D_8004AAD8.unk18 = D_8004AB58.unk18 * temp_f12_7;
-                                    D_8004AAD8.unk1C = D_8004AB58.unk1C * temp_f12_7;
-                                    D_8004AAD8.unk20 = D_8004AB58.unk20 * D_8004AA94;
-                                    D_8004AAD8.unk24 = D_8004AB58.unk24 * D_8004AA94;
-                                    D_8004AAD8.unk28 = D_8004AB58.unk28 * D_8004AA94;
-                                    D_8004AAD8.unk2C = D_8004AB58.unk2C * D_8004AA94;
-                                    HS64_MtxF2L(temp_f12_7, (bitwise f32) &D_8004AAD8, var_s0, var_a2);
-                                    temp_t6_10 = sp2D4;
-                                    sp2D4 = temp_t6_10 + 8;
-                                    temp_t6_10->unk4 = 0;
-                                    temp_t6_10->unk0 = 0xD5000001;
-                                    temp_t9_11 = sp2D4;
-                                    sp2D4 = temp_t9_11 + 8;
-                                    temp_t9_11->unk0 = 0xDB000008;
-                                    temp_t9_11->unk4 = var_s0->unk0;
-                                    temp_t5_10 = sp2D4;
-                                    sp2D4 = temp_t5_10 + 8;
-                                    temp_t5_10->unk0 = 0xDB00000C;
-                                    temp_t5_10->unk4 = var_s0->unk4;
-                                    temp_t8_12 = sp2D4;
-                                    sp2D4 = temp_t8_12 + 8;
-                                    temp_t8_12->unk0 = 0xDB000010;
-                                    temp_t8_12->unk4 = var_s0->unk8;
-                                    temp_t3_13 = sp2D4;
-                                    sp2D4 = temp_t3_13 + 8;
-                                    temp_t3_13->unk0 = 0xDB000014;
-                                    temp_t3_13->unk4 = var_s0->unkC;
-                                    temp_t7_12 = sp2D4;
-                                    sp2D4 = temp_t7_12 + 8;
-                                    temp_t7_12->unk0 = 0xDB000000;
-                                    temp_t7_12->unk4 = var_s0->unk10;
-                                    temp_t1_13 = sp2D4;
-                                    sp2D4 = temp_t1_13 + 8;
-                                    temp_t1_13->unk0 = 0xDB000004;
-                                    temp_t1_13->unk4 = var_s0->unk14;
-                                    temp_t6_11 = sp2D4;
-                                    sp2D4 = temp_t6_11 + 8;
-                                    temp_t6_11->unk0 = 0xDB000028;
-                                    temp_t6_11->unk4 = var_s0->unk20;
-                                    temp_t2_13 = sp2D4;
-                                    sp2D4 = temp_t2_13 + 8;
-                                    temp_t2_13->unk0 = 0xDB00002C;
-                                    temp_t2_13->unk4 = var_s0->unk24;
-                                    temp_t4_12 = sp2D4;
-                                    sp2D4 = temp_t4_12 + 8;
-                                    temp_t4_12->unk0 = 0xDB000030;
-                                    temp_t4_12->unk4 = var_s0->unk28;
-                                    temp_t9_12 = sp2D4;
-                                    sp2D4 = temp_t9_12 + 8;
-                                    temp_t9_12->unk0 = 0xDB000034;
-                                    temp_t9_12->unk4 = var_s0->unk2C;
-                                    temp_a0_9 = sp2D4;
-                                    sp2D4 = temp_a0_9 + 8;
-                                    temp_a0_9->unk0 = 0xDB000020;
-                                    temp_a0_9->unk4 = var_s0->unk30;
-                                    temp_t8_13 = sp2D4;
-                                    sp2D4 = temp_t8_13 + 8;
-                                    temp_t8_13->unk0 = 0xDB000024;
-                                    temp_t8_13->unk4 = var_s0->unk34;
-                                    var_t3 = arg1->unk56 * 4;
-                                    goto block_116;
-                                case 0x32:          /* switch 3 */
-                                    temp_f12_8 = arg1->unk44 * D_8004AA94;
-                                    D_8004AA94 *= arg1->unk40;
-                                    D_8004AAD8.unk0 = D_8004AB58.unk0 * D_8004AA94;
-                                    D_8004AAD8.unk4 = D_8004AB58.unk4 * D_8004AA94;
-                                    D_8004AAD8.unk8 = D_8004AB58.unk8 * D_8004AA94;
-                                    D_8004AAD8.unkC = D_8004AB58.unkC * D_8004AA94;
-                                    D_8004AAD8.unk10 = D_8004AB58.unk10 * temp_f12_8;
-                                    D_8004AAD8.unk14 = D_8004AB58.unk14 * temp_f12_8;
-                                    D_8004AAD8.unk18 = D_8004AB58.unk18 * temp_f12_8;
-                                    D_8004AAD8.unk1C = D_8004AB58.unk1C * temp_f12_8;
-                                    D_8004AAD8.unk20 = D_8004AB58.unk20 * D_8004AA94;
-                                    D_8004AAD8.unk24 = D_8004AB58.unk24 * D_8004AA94;
-                                    D_8004AAD8.unk28 = D_8004AB58.unk28 * D_8004AA94;
-                                    D_8004AAD8.unk2C = D_8004AB58.unk2C * D_8004AA94;
-                                    HS64_MtxF2L(temp_f12_8, (bitwise f32) &D_8004AAD8, var_s0, var_a2);
-                                    temp_t5_11 = sp2D4;
-                                    sp2D4 = temp_t5_11 + 8;
-                                    temp_t5_11->unk4 = 0;
-                                    temp_t5_11->unk0 = 0xD5000001;
-                                    temp_t7_13 = sp2D4;
-                                    sp2D4 = temp_t7_13 + 8;
-                                    temp_t7_13->unk0 = 0xDB000000;
-                                    temp_t7_13->unk4 = var_s0->unk0;
-                                    temp_t1_14 = sp2D4;
-                                    sp2D4 = temp_t1_14 + 8;
-                                    temp_t1_14->unk0 = 0xDB000004;
-                                    temp_t1_14->unk4 = var_s0->unk4;
-                                    temp_t6_12 = sp2D4;
-                                    sp2D4 = temp_t6_12 + 8;
-                                    temp_t6_12->unk0 = 0xDB000008;
-                                    temp_t6_12->unk4 = var_s0->unk8;
-                                    temp_t2_14 = sp2D4;
-                                    sp2D4 = temp_t2_14 + 8;
-                                    temp_t2_14->unk0 = 0xDB00000C;
-                                    temp_t2_14->unk4 = var_s0->unkC;
-                                    temp_t4_13 = sp2D4;
-                                    sp2D4 = temp_t4_13 + 8;
-                                    temp_t4_13->unk0 = 0xDB000010;
-                                    temp_t4_13->unk4 = var_s0->unk10;
-                                    temp_t9_13 = sp2D4;
-                                    sp2D4 = temp_t9_13 + 8;
-                                    temp_t9_13->unk0 = 0xDB000014;
-                                    temp_t9_13->unk4 = var_s0->unk14;
-                                    temp_t5_12 = sp2D4;
-                                    sp2D4 = temp_t5_12 + 8;
-                                    temp_t5_12->unk0 = 0xDB000020;
-                                    temp_t5_12->unk4 = var_s0->unk20;
-                                    temp_t8_14 = sp2D4;
-                                    sp2D4 = temp_t8_14 + 8;
-                                    temp_t8_14->unk0 = 0xDB000024;
-                                    temp_t8_14->unk4 = var_s0->unk24;
-                                    temp_t3_14 = sp2D4;
-                                    sp2D4 = temp_t3_14 + 8;
-                                    temp_t3_14->unk0 = 0xDB000028;
-                                    temp_t3_14->unk4 = var_s0->unk28;
-                                    temp_t7_14 = sp2D4;
-                                    sp2D4 = temp_t7_14 + 8;
-                                    temp_t7_14->unk0 = 0xDB00002C;
-                                    temp_t7_14->unk4 = var_s0->unk2C;
-                                    temp_a0_10 = sp2D4;
-                                    sp2D4 = temp_a0_10 + 8;
-                                    temp_a0_10->unk0 = 0xDB000030;
-                                    temp_a0_10->unk4 = var_s0->unk30;
-                                    temp_t6_13 = sp2D4;
-                                    sp2D4 = temp_t6_13 + 8;
-                                    temp_t6_13->unk0 = 0xDB000034;
-                                    temp_t6_13->unk4 = var_s0->unk34;
-                                    var_a2 = (arg1->unk56 * 4) + arg1;
-                                    break;
-                                default:            /* switch 3 */
-                                    if ((temp_v0_6 >= 0x43) && (D_8004AB9C != 0)) {
-                                        if (D_8003DCAB != arg1->unk4->unkE) {
-                                            var_a3 = (D_8004AB9C + (temp_v0_6 * 8))->unk-218;
-                                        } else {
-                                            var_a3 = (D_8004AB9C + (temp_v0_6 * 8))->unk-214;
-                                        }
-                                        var_a0_2 = var_a3(var_s0, arg1, &sp2D4, var_a3);
-                                    }
-                                    if (var_a0_2 == 1) {
-                                        var_a2 = (arg1->unk56 * 4) + arg1;
-                                    } else {
-                                        goto block_90;
-                                    }
-                                    break;
-                            }
+                        switch (ommtx->kind) {
+                            case MTX_TYPE_33:
+                            case MTX_TYPE_34:
+                            case MTX_TYPE_35:
+                            case MTX_TYPE_36:
+                            case MTX_TYPE_37:
+                            case MTX_TYPE_38:
+                            case MTX_TYPE_39:
+                            case MTX_TYPE_40:
+                            case MTX_TYPE_41:
+                            case MTX_TYPE_42:
+                            case MTX_TYPE_43:
+                            case MTX_TYPE_44:
+                            case MTX_TYPE_45:
+                            case MTX_TYPE_46:
+                            case MTX_TYPE_47:
+                            case MTX_TYPE_48:
+                            case MTX_TYPE_49:
+                            case MTX_TYPE_50:
+                                mtx = gDynamicBuffer1.top;
+                                gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
+                                break;
+                            default:
+                                if (ommtx->kind >= MTX_TYPE_66) {
+                                    mtx = gDynamicBuffer1.top;
+                                    gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
+                                } else {
+                                    mtx = *unk;
+                                    goto END2;
+                                }
+                                break;
                         }
                     }
                 } else {
-                    var_a0_3 = 0;
-                    if (temp_s2->unk4 == 0x42) {
-                        D_8004AA94 *= arg1->unk40;
-                    }
-                    if ((temp_s2->unk4 >= 0x43) && (D_8004AB9C != 0)) {
-                        if (D_8003DCAB != arg1->unk4->unkE) {
-                            var_a3_2 = (D_8004AB9C + (temp_s2->unk4 * 8))->unk-218;
-                        } else {
-                            var_a3_2 = (D_8004AB9C + (temp_s2->unk4 * 8))->unk-214;
+                    if (gtlCurrentContextID > 0) {
+                        mtx = gDynamicBuffer1.top;
+                        gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
+                    } else if (dobj->gobj->lastDrawFrame == (u8) gtlDrawnFrameCounter) {
+                        switch (ommtx->kind) {
+                            case MTX_TYPE_33:
+                            case MTX_TYPE_34:
+                            case MTX_TYPE_35:
+                            case MTX_TYPE_36:
+                            case MTX_TYPE_37:
+                            case MTX_TYPE_38:
+                            case MTX_TYPE_39:
+                            case MTX_TYPE_40:
+                            case MTX_TYPE_41:
+                            case MTX_TYPE_42:
+                            case MTX_TYPE_43:
+                            case MTX_TYPE_44:
+                            case MTX_TYPE_45:
+                            case MTX_TYPE_46:
+                            case MTX_TYPE_47:
+                            case MTX_TYPE_48:
+                            case MTX_TYPE_49:
+                            case MTX_TYPE_50:
+                                mtx = gDynamicBuffer1.top;
+                                gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
+                                break;
+                            default:
+                                if (ommtx->kind >= MTX_TYPE_66) {
+                                    mtx = gDynamicBuffer1.top;
+                                    gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
+                                } else {
+                                    if (ommtx->unk05 != 3) {
+                                        goto END2;
+                                    }
+                                    mtx = gDynamicBuffer1.top;
+                                    gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
+                                }
+                                break;
                         }
-                        var_a0_3 = var_a3_2(sp78, arg1, &sp2D4, var_a3_2);
                     }
-                    if (var_a0_3 == 1) {
-                        var_t3 = arg1->unk56 * 4;
-                    } else {
-block_108:
-                        if (temp_s2->unk4 != 2) {
-                            temp_t8_15 = sp2D4;
-                            if ((sp2CC == 0) && ((temp_t5_13 = sp2D4, (arg1->unk14 == 1)) || (arg1->unk8 != 0))) {
-                                sp2D4 = temp_t5_13 + 8;
-                                temp_t5_13->unk0 = 0xDA380000;
-                                temp_t5_13->unk4 = var_s0;
-                            } else {
-                                sp2D4 = temp_t8_15 + 8;
-                                temp_t8_15->unk0 = 0xDA380001;
-                                temp_t8_15->unk4 = var_s0;
-                            }
-                            sp2CC += 1;
-                        }
-                        goto block_115;
-                    }
-                    goto block_116;
                 }
-            } else {
-block_115:
-                var_t3 = arg1->unk56 * 4;
-block_116:
-                var_a2 = var_t3 + arg1;
+
+                sp2B8 = 0;
+                switch (ommtx->kind) {
+                    case MTX_TYPE_1:
+                        break;
+                    case MTX_TYPE_2:
+                        break;
+                    case MTX_TYPE_TRANSLATE:
+                        func_8001B784(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_DEG:
+                        hal_rotate_deg(mtx, dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y,
+                                       dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_DEG_TRANSLATE:
+                        hal_rotate_translate_deg(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                                                 dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y,
+                                                 dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_RPY_DEG:
+                        hal_rotate_rpy_deg(mtx, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_RPY_TRANSLATE_DEG:
+                        hal_rotate_rpy_translate_deg(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                                                     dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE:
+                        hal_rotate(mtx, dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y,
+                                   dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_TRANSLATE:
+                        hal_rotate_translate(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                                             dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y,
+                                             dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_TRANSLATE_SCALE:
+                        hal_rotate_translate_scale(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                                                   dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y,
+                                                   dobj->angle.v.z, dobj->scale.v.x, dobj->scale.v.y,
+                                                   dobj->scale.v.z);
+                        renderScaleX *= dobj->scale.v.x;
+                        break;
+                    case MTX_TYPE_ROTATE_RPY:
+                        hal_rotate_rpy(mtx, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_RPY_TRANSLATE:
+                        hal_rotate_rpy_translate(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                                                 dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_RPY_TRANSLATE_SCALE:
+                        hal_rotate_rpy_translate_scale(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                                                       dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z,
+                                                       dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
+                        renderScaleX *= dobj->scale.v.x;
+                        break;
+                    case MTX_TYPE_ROTATE_PYR:
+                        hal_rotate_pyr(mtx, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_PYR_TRANSLATE:
+                        hal_rotate_pyr_translate(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                                                 dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                        break;
+                    case MTX_TYPE_ROTATE_PYR_TRANSLATE_SCALE:
+                        hal_rotate_pyr_translate_scale(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                                                       dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z,
+                                                       dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
+                        renderScaleX *= dobj->scale.v.x;
+                        break;
+                    case MTX_TYPE_SCALE:
+                        hal_scale(mtx, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
+                        renderScaleX *= dobj->scale.v.x;
+                        break;
+                    case MTX_TYPE_33:
+                        ren_func_80011608(mtx, dobj, false);
+                        break;
+                    case MTX_TYPE_34:
+                        ren_func_80011608(mtx, dobj, true);
+                        break;
+                    case MTX_TYPE_35:
+                        ren_func_80011268(mtx, dobj, false);
+                        break;
+                    case MTX_TYPE_36:
+                        ren_func_80011268(mtx, dobj, true);
+                        break;
+                    case MTX_TYPE_37:
+                        func_8001174C(mtx, dobj, false);
+                        break;
+                    case MTX_TYPE_38:
+                        func_8001174C(mtx, dobj, true);
+                        break;
+                    case MTX_TYPE_39:
+                        ren_func_80011438(mtx, dobj, false);
+                        break;
+                    case MTX_TYPE_40:
+                        ren_func_80011438(mtx, dobj, true);
+                        break;
+                    case MTX_TYPE_56:
+                        func_8001B784(mtx, sp2C8->f.v.x, sp2C8->f.v.y, sp2C8->f.v.z);
+                        break;
+                    case MTX_TYPE_57:
+                        hal_rotate(mtx, sp2C4->a, sp2C4->v.x, sp2C4->v.y, sp2C4->v.z);
+                        break;
+                    case MTX_TYPE_58:
+                        hal_rotate_rpy(mtx, sp2C4->v.x, sp2C4->v.y, sp2C4->v.z);
+                        break;
+                    case MTX_TYPE_59:
+                        hal_scale(mtx, sp2C0->v.x, sp2C0->v.y, sp2C0->v.z);
+                        renderScaleX *= sp2C0->v.x;
+                        // renScaleY *= sp2C0->v.y;
+                        // renScaleZ *= sp2C0->v.z;
+                        break;
+                    case MTX_TYPE_60:
+                        hal_rotate_translate(mtx, sp2C8->f.v.x, sp2C8->f.v.y, sp2C8->f.v.z, sp2C4->a, sp2C4->v.x,
+                                             sp2C4->v.y, sp2C4->v.z);
+                        break;
+                    case MTX_TYPE_61:
+                        hal_rotate_translate_scale(mtx, sp2C8->f.v.x, sp2C8->f.v.y, sp2C8->f.v.z, sp2C4->a,
+                                                   sp2C4->v.x, sp2C4->v.y, sp2C4->v.z, sp2C0->v.x, sp2C0->v.y,
+                                                   sp2C0->v.z);
+                        renderScaleX *= sp2C0->v.x;
+                        // renScaleY *= sp2C0->v.y;
+                        // renScaleZ *= sp2C0->v.z;
+                        break;
+                    case MTX_TYPE_62:
+                        hal_rotate_rpy_translate(mtx, sp2C8->f.v.x, sp2C8->f.v.y, sp2C8->f.v.z, sp2C4->v.x,
+                                                 sp2C4->v.y, sp2C4->v.z);
+                        break;
+                    case MTX_TYPE_63:
+                        hal_rotate_rpy_translate_scale(mtx, sp2C8->f.v.x, sp2C8->f.v.y, sp2C8->f.v.z, sp2C4->v.x,
+                                                       sp2C4->v.y, sp2C4->v.z, sp2C0->v.x, sp2C0->v.y, sp2C0->v.z);
+                        renderScaleX *= sp2C0->v.x;
+                        // renScaleY *= sp2C0->v.y;
+                        // renScaleZ *= sp2C0->v.z;
+                        break;
+                    case MTX_TYPE_41:
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, renderProjectionMtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, renderProjectionMtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, renderProjectionMtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, renderProjectionMtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, renderProjectionMtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, renderProjectionMtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, renderProjectionMtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, renderProjectionMtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, renderProjectionMtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, renderProjectionMtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, renderProjectionMtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, renderProjectionMtx->m[3][1]);
+                        continue;
+                    case MTX_TYPE_42:
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, renderProjectionMtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, renderProjectionMtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, renderProjectionMtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, renderProjectionMtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, renderProjectionMtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, renderProjectionMtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, renderProjectionMtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, renderProjectionMtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, renderProjectionMtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, renderProjectionMtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, renderProjectionMtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, renderProjectionMtx->m[3][1]);
+                        continue;
+                    case MTX_TYPE_43:
+                        f12 = dobj->scale.v.y * renderScaleX;
+                        renderScaleX *= dobj->scale.v.x;
+                        renderMVPMatrixF[0][0] = renderPerspectiveMtxF[0][0] * renderScaleX;
+                        renderMVPMatrixF[0][1] = 0.0f;
+                        renderMVPMatrixF[0][2] = 0.0f;
+                        renderMVPMatrixF[0][3] = 0.0f;
+                        renderMVPMatrixF[1][0] = 0.0f;
+                        renderMVPMatrixF[1][1] = renderPerspectiveMtxF[1][1] * f12;
+                        renderMVPMatrixF[1][2] = 0.0f;
+                        renderMVPMatrixF[1][3] = 0.0f;
+                        renderMVPMatrixF[2][0] = 0.0f;
+                        renderMVPMatrixF[2][1] = 0.0f;
+                        renderMVPMatrixF[2][2] = renderPerspectiveMtxF[2][2] * renderScaleX;
+                        renderMVPMatrixF[2][3] = renderPerspectiveMtxF[2][3] * renderScaleX;
+                        HS64_MtxF2L(renderMVPMatrixF, mtx);
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, mtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, mtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, mtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, mtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, mtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, mtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, mtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, mtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, mtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, mtx->m[3][1]);
+                        continue;
+                    case MTX_TYPE_44: {
+                        f12 = dobj->scale.v.y * renderScaleX;
+                        renderScaleX *= dobj->scale.v.x;
+                        renderMVPMatrixF[0][0] = renderPerspectiveMtxF[0][0] * renderScaleX;
+                        renderMVPMatrixF[0][1] = 0.0f;
+                        renderMVPMatrixF[0][2] = 0.0f;
+                        renderMVPMatrixF[0][3] = 0.0f;
+                        renderMVPMatrixF[1][0] = 0.0f;
+                        renderMVPMatrixF[1][1] = renderPerspectiveMtxF[1][1] * f12;
+                        renderMVPMatrixF[1][2] = 0.0f;
+                        renderMVPMatrixF[1][3] = 0.0f;
+                        renderMVPMatrixF[2][0] = 0.0f;
+                        renderMVPMatrixF[2][1] = 0.0f;
+                        renderMVPMatrixF[2][2] = renderPerspectiveMtxF[2][2] * renderScaleX;
+                        renderMVPMatrixF[2][3] = renderPerspectiveMtxF[2][3] * renderScaleX;
+                        HS64_MtxF2L(renderMVPMatrixF, mtx);
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, mtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, mtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, mtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, mtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, mtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, mtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, mtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, mtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, mtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, mtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[3][1]);
+                        continue;
+                    }
+                    case MTX_TYPE_45: {
+                        f32 sp1D4 = sinf(dobj->angle.v.x);
+                        f32 f0 = cosf(dobj->angle.v.x);
+
+                        f12 = dobj->scale.v.y * renderScaleX;
+                        renderScaleX *= dobj->scale.v.x;
+                        renderMVPMatrixF[0][0] = renderPerspectiveMtxF[0][0] * renderScaleX * f0;
+                        renderMVPMatrixF[1][0] = renderPerspectiveMtxF[0][0] * renderScaleX * -sp1D4;
+                        renderMVPMatrixF[0][1] = renderPerspectiveMtxF[1][1] * f12 * sp1D4;
+                        renderMVPMatrixF[1][1] = renderPerspectiveMtxF[1][1] * f12 * f0;
+                        renderMVPMatrixF[0][2] = 0.0f;
+                        renderMVPMatrixF[1][2] = 0.0f;
+                        renderMVPMatrixF[0][3] = 0.0f;
+                        renderMVPMatrixF[1][3] = 0.0f;
+                        renderMVPMatrixF[2][0] = 0.0f;
+                        renderMVPMatrixF[2][1] = 0.0f;
+                        renderMVPMatrixF[2][2] = renderPerspectiveMtxF[2][2] * renderScaleX;
+                        renderMVPMatrixF[2][3] = renderPerspectiveMtxF[2][3] * renderScaleX;
+                        HS64_MtxF2L(renderMVPMatrixF, mtx);
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, mtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, mtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, mtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, mtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, mtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, mtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, mtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, mtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, mtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, mtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[3][1]);
+                        continue;
+                    }
+                    case MTX_TYPE_46: {
+                        f32 sp1D4 = sinf(dobj->angle.v.z);
+                        f32 f0 = cosf(dobj->angle.v.z);
+
+                        f12 = dobj->scale.v.y * renderScaleX;
+                        renderScaleX *= dobj->scale.v.x;
+
+                        renderMVPMatrixF[0][0] = renderPerspectiveMtxF[0][0] * renderScaleX * f0;
+                        renderMVPMatrixF[1][0] = renderPerspectiveMtxF[0][0] * renderScaleX * -sp1D4;
+                        renderMVPMatrixF[0][1] = renderPerspectiveMtxF[1][1] * f12 * sp1D4;
+                        renderMVPMatrixF[1][1] = renderPerspectiveMtxF[1][1] * f12 * f0;
+                        renderMVPMatrixF[0][2] = 0.0f;
+                        renderMVPMatrixF[1][2] = 0.0f;
+                        renderMVPMatrixF[0][3] = 0.0f;
+                        renderMVPMatrixF[1][3] = 0.0f;
+                        renderMVPMatrixF[2][0] = 0.0f;
+                        renderMVPMatrixF[2][1] = 0.0f;
+                        renderMVPMatrixF[2][2] = renderPerspectiveMtxF[2][2] * renderScaleX;
+                        renderMVPMatrixF[2][3] = renderPerspectiveMtxF[2][3] * renderScaleX;
+                        HS64_MtxF2L(renderMVPMatrixF, mtx);
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, mtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, mtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, mtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, mtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, mtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, mtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, mtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, mtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, mtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, mtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[3][1]);
+                        continue;
+                    }
+                    case MTX_TYPE_47: {
+                        f12 = dobj->scale.v.y * renderScaleX;
+                        renderScaleX *= dobj->scale.v.x;
+                        renderMVPMatrixF[0][0] = D_8004AB18[0][0] * renderScaleX;
+                        renderMVPMatrixF[0][1] = D_8004AB18[0][1] * renderScaleX;
+                        renderMVPMatrixF[0][2] = D_8004AB18[0][2] * renderScaleX;
+                        renderMVPMatrixF[0][3] = D_8004AB18[0][3] * renderScaleX;
+                        renderMVPMatrixF[1][0] = D_8004AB18[1][0] * f12;
+                        renderMVPMatrixF[1][1] = D_8004AB18[1][1] * f12;
+                        renderMVPMatrixF[1][2] = D_8004AB18[1][2] * f12;
+                        renderMVPMatrixF[1][3] = D_8004AB18[1][3] * f12;
+                        renderMVPMatrixF[2][0] = D_8004AB18[2][0] * renderScaleX;
+                        renderMVPMatrixF[2][1] = D_8004AB18[2][1] * renderScaleX;
+                        renderMVPMatrixF[2][2] = D_8004AB18[2][2] * renderScaleX;
+                        renderMVPMatrixF[2][3] = D_8004AB18[2][3] * renderScaleX;
+                        HS64_MtxF2L(renderMVPMatrixF, mtx);
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, mtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, mtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, mtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, mtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, mtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, mtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, mtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, mtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, mtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, mtx->m[3][1]);
+                        continue;
+                    }
+                    case MTX_TYPE_48: {
+                        f12 = dobj->scale.v.y * renderScaleX;
+                        renderScaleX *= dobj->scale.v.x;
+                        renderMVPMatrixF[0][0] = D_8004AB18[0][0] * renderScaleX;
+                        renderMVPMatrixF[0][1] = D_8004AB18[0][1] * renderScaleX;
+                        renderMVPMatrixF[0][2] = D_8004AB18[0][2] * renderScaleX;
+                        renderMVPMatrixF[0][3] = D_8004AB18[0][3] * renderScaleX;
+                        renderMVPMatrixF[1][0] = D_8004AB18[1][0] * f12;
+                        renderMVPMatrixF[1][1] = D_8004AB18[1][1] * f12;
+                        renderMVPMatrixF[1][2] = D_8004AB18[1][2] * f12;
+                        renderMVPMatrixF[1][3] = D_8004AB18[1][3] * f12;
+                        renderMVPMatrixF[2][0] = D_8004AB18[2][0] * renderScaleX;
+                        renderMVPMatrixF[2][1] = D_8004AB18[2][1] * renderScaleX;
+                        renderMVPMatrixF[2][2] = D_8004AB18[2][2] * renderScaleX;
+                        renderMVPMatrixF[2][3] = D_8004AB18[2][3] * renderScaleX;
+                        HS64_MtxF2L(renderMVPMatrixF, mtx);
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, mtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, mtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, mtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, mtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, mtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, mtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, mtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, mtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, mtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, mtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[3][1]);
+                        continue;
+                    }
+                    case MTX_TYPE_49: {
+                        f12 = dobj->scale.v.y * renderScaleX;
+                        renderScaleX *= dobj->scale.v.x;
+                        renderMVPMatrixF[0][0] = D_8004AB58[0][0] * renderScaleX;
+                        renderMVPMatrixF[0][1] = D_8004AB58[0][1] * renderScaleX;
+                        renderMVPMatrixF[0][2] = D_8004AB58[0][2] * renderScaleX;
+                        renderMVPMatrixF[0][3] = D_8004AB58[0][3] * renderScaleX;
+                        renderMVPMatrixF[1][0] = D_8004AB58[1][0] * f12;
+                        renderMVPMatrixF[1][1] = D_8004AB58[1][1] * f12;
+                        renderMVPMatrixF[1][2] = D_8004AB58[1][2] * f12;
+                        renderMVPMatrixF[1][3] = D_8004AB58[1][3] * f12;
+                        renderMVPMatrixF[2][0] = D_8004AB58[2][0] * renderScaleX;
+                        renderMVPMatrixF[2][1] = D_8004AB58[2][1] * renderScaleX;
+                        renderMVPMatrixF[2][2] = D_8004AB58[2][2] * renderScaleX;
+                        renderMVPMatrixF[2][3] = D_8004AB58[2][3] * renderScaleX;
+                        HS64_MtxF2L(renderMVPMatrixF, mtx);
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, mtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, mtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, mtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, mtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, mtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, mtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, mtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, mtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, mtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, mtx->m[3][1]);
+                        continue;
+                    }
+                    case MTX_TYPE_50:
+                        f12 = dobj->scale.v.y * renderScaleX;
+                        renderScaleX *= dobj->scale.v.x;
+                        renderMVPMatrixF[0][0] = D_8004AB58[0][0] * renderScaleX;
+                        renderMVPMatrixF[0][1] = D_8004AB58[0][1] * renderScaleX;
+                        renderMVPMatrixF[0][2] = D_8004AB58[0][2] * renderScaleX;
+                        renderMVPMatrixF[0][3] = D_8004AB58[0][3] * renderScaleX;
+                        renderMVPMatrixF[1][0] = D_8004AB58[1][0] * f12;
+                        renderMVPMatrixF[1][1] = D_8004AB58[1][1] * f12;
+                        renderMVPMatrixF[1][2] = D_8004AB58[1][2] * f12;
+                        renderMVPMatrixF[1][3] = D_8004AB58[1][3] * f12;
+                        renderMVPMatrixF[2][0] = D_8004AB58[2][0] * renderScaleX;
+                        renderMVPMatrixF[2][1] = D_8004AB58[2][1] * renderScaleX;
+                        renderMVPMatrixF[2][2] = D_8004AB58[2][2] * renderScaleX;
+                        renderMVPMatrixF[2][3] = D_8004AB58[2][3] * renderScaleX;
+                        HS64_MtxF2L(renderMVPMatrixF, mtx);
+                        gSPMvpRecalc(sp2DC++);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_I, mtx->m[0][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_I, mtx->m[0][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_I, mtx->m[0][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_I, mtx->m[0][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_I, mtx->m[1][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_I, mtx->m[1][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XX_XY_F, mtx->m[2][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_XZ_XW_F, mtx->m[2][1]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YX_YY_F, mtx->m[2][2]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_YZ_YW_F, mtx->m[2][3]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[3][0]);
+                        gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[3][1]);
+                        continue;
+                    // case MTX_TYPE_51:
+                    //     hal_rotate_rpy_translate(mtx, dobj->pos.v.x * renderScaleX, dobj->pos.v.y * renScaleY,
+                    //                              dobj->pos.v.z * renScaleZ, dobj->angle.v.x, dobj->angle.v.y,
+                    //                              dobj->angle.v.z);
+                    //     break;
+                    // case MTX_TYPE_52:
+                    //     hal_rotate_pyr_translate(mtx, dobj->pos.v.x * renderScaleX, dobj->pos.v.y * renScaleY,
+                    //                              dobj->pos.v.z * renScaleZ, dobj->angle.v.x, dobj->angle.v.y,
+                    //                              dobj->angle.v.z);
+                    //     break;
+                    // case MTX_TYPE_53:
+                    //     renderScaleX *= dobj->scale.v.x;
+                    //     renScaleY *= dobj->scale.v.y;
+                    //     renScaleZ *= dobj->scale.v.z;
+                    //     hal_scale(mtx, renderScaleX, renScaleY, renScaleZ);
+                    //     renIsScaleMtxPushed = true;
+                    //     sp2B8 = 2;
+                    //     break;
+                    // case MTX_TYPE_55:
+                    //     func_8001B784(mtx, dobj->pos.v.x * renderScaleX, dobj->pos.v.y * renScaleY,
+                    //                   dobj->pos.v.z * renScaleZ);
+                    //     break;
+                    // case MTX_TYPE_64:
+                    //     renderScaleX *= sp2C0->v.x;
+                    //     renScaleY *= sp2C0->v.y;
+                    //     renScaleZ *= sp2C0->v.z;
+                    //     continue;
+                    // case MTX_TYPE_65:
+                    //     hal_rotate_translate(mtx, sp2C8->f.v.x, sp2C8->f.v.y, sp2C8->f.v.z, sp2C4->a, sp2C4->v.x,
+                    //                          sp2C4->v.y, sp2C4->v.z);
+                    //     renderScaleX *= sp2C0->v.x;
+                    //     renScaleY *= sp2C0->v.y;
+                    //     renScaleZ *= sp2C0->v.z;
+                    //     break;
+                    // case MTX_TYPE_54:
+                    //     func_8001ECD0(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
+                    //                   dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z, renderScaleX, renScaleY,
+                    //                   renScaleZ, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
+                    //     renderScaleX *= dobj->scale.v.x;
+                    //     renScaleY *= dobj->scale.v.y;
+                    //     renScaleZ *= dobj->scale.v.z;
+                    //     break;
+                    default:
+                        if (ommtx->kind >= MTX_TYPE_66 && renderMatrixHandler != NULL) {
+                            func = dobj->gobj->lastDrawFrame != (u8) gtlDrawnFrameCounter
+                                       ? renderMatrixHandler[ommtx->kind - MTX_TYPE_66].unk0
+                                       : renderMatrixHandler[ommtx->kind - MTX_TYPE_66].unk4;
+                            sp2B8 = func(mtx, dobj, &sp2DC);
+                        }
+                        if (sp2B8 == 1) {
+                            continue;
+                        }
+                        break;
+                }
+            END2:
+                if (ommtx->unk05 == 1 && &ommtx->unk08 == mtx) {
+                    ommtx->unk05 = 2;
+                }
             }
-            temp_t4 = sp74 + 4;
-            sp74 = temp_t4;
-        } while (temp_t4 < var_a2);
+            if (ommtx->kind != MTX_TYPE_2) {
+                if (sp2B8 == 2 || sp2D4 == 0 && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                    gSPMatrix(sp2DC++, mtx, G_MTX_PUSH | G_MTX_MUL | G_MTX_MODELVIEW);
+                } else {
+                    gSPMatrix(sp2DC++, mtx, G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
+                }
+                sp2D4++;
+            }
+        }
     }
-    *arg0 = sp2D4;
-    return sp2CC;
+
+    *gfxPtr = sp2DC;
+    return sp2D4;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80011180.s")
-#endif
+// #else
+// #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80011180.s")
+// #endif
 
 #ifdef MIPS_TO_C
 
@@ -2029,7 +1324,7 @@ void func_800140FC(void *arg0, void **arg1) {
     void *temp_v1_2;
 
     temp_a2 = arg0->unk3C;
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     if ((temp_a2->unk50 != 0) && (temp_a2->unk54 == 0)) {
         sp18 = temp_a2;
         sp1C = func_80011180(arg1, temp_a2, temp_a2, arg1);
@@ -2097,7 +1392,7 @@ void func_80014264(void *arg0) {
     void *var_s0;
 
     if (!(arg0->unk54 & 2)) {
-        sp24 = D_8004AA94;
+        sp24 = renderScaleX;
         sp2C = func_80011180(&gDisplayListHeads, arg0, arg0);
         if ((arg0->unk50 != 0) && !(arg0->unk54 & 1)) {
             func_80013300(arg0, &gDisplayListHeads, arg0);
@@ -2116,7 +1411,7 @@ void func_80014264(void *arg0) {
             temp_v1_2->unk4 = 0x40;
             temp_v1_2->unk0 = 0xD8380002;
         }
-        D_8004AA94 = sp24;
+        renderScaleX = sp24;
     }
     if (arg0->unkC == 0) {
         var_s0 = arg0->unk8;
@@ -2135,7 +1430,7 @@ void func_80014264(void *arg0) {
 #ifdef MIPS_TO_C
 
 void func_800143A4(void *arg0) {
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     func_80014264(arg0->unk3C);
 }
 #else
@@ -2301,7 +1596,7 @@ loop_16:
 void func_80014768(void *arg0) {
     void *temp_a0;
 
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     temp_a0 = arg0->unk3C;
     func_800143D4(temp_a0, temp_a0->unk50);
 }
@@ -2355,7 +1650,7 @@ void func_800147C8(void *arg0) {
 
     var_s4 = 0;
     if (!(arg0->unk54 & 2)) {
-        sp34 = D_8004AA94;
+        sp34 = renderScaleX;
         temp_a2 = arg0->unk50;
         sp40 = D_8004ABA0;
         sp44 = temp_a2;
@@ -2439,7 +1734,7 @@ void func_800147C8(void *arg0) {
             var_a2_2 += 8;
             var_a3 += 8;
         } while (var_a2_2 != &D_8004ABB8);
-        D_8004AA94 = sp34;
+        renderScaleX = sp34;
     }
     if (arg0->unkC == 0) {
         var_s0_3 = arg0->unk8;
@@ -2458,7 +1753,7 @@ void func_800147C8(void *arg0) {
 #ifdef MIPS_TO_C
 
 void func_80014AD4(void *arg0) {
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     func_800147C8(arg0->unk3C);
 }
 #else
@@ -2508,7 +1803,7 @@ void func_80014B4C(void *arg0) {
                 var_v1 += 8;
             } while (temp_f0 < temp_f6);
         }
-        D_8004AA94 = 1.0f;
+        renderScaleX = 1.0f;
         if (var_v1->unk4 != 0) {
             sp24 = var_v1;
             sp20 = func_80011180(&gDisplayListHeads, temp_s0, &gDisplayListHeads);
@@ -2543,7 +1838,7 @@ void func_80014C78(void *arg0) {
 
     temp_s0 = arg0->unk50;
     if (!(arg0->unk54 & 2)) {
-        sp20 = D_8004AA94;
+        sp20 = renderScaleX;
         sp2C = func_80011180(&gDisplayListHeads, arg0, arg0);
         if ((temp_s0 != 0) && (*(temp_s0 + (D_8004AD98 * 4)) != 0) && !(arg0->unk54 & 1)) {
             func_80013300(arg0, &gDisplayListHeads, arg0);
@@ -2562,7 +1857,7 @@ void func_80014C78(void *arg0) {
             temp_v1_2->unk4 = 0x40;
             temp_v1_2->unk0 = 0xD8380002;
         }
-        D_8004AA94 = sp20;
+        renderScaleX = sp20;
     }
     if (arg0->unkC == 0) {
         var_s0 = arg0->unk8;
@@ -2595,7 +1890,7 @@ void func_80014DF0(void *arg0) {
     void *var_s0;
 
     temp_a2 = arg0->unk3C;
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     if (!(temp_a2->unk54 & 2)) {
         temp_v1 = temp_a2->unk50;
         if (temp_v1 != NULL) {
@@ -2662,7 +1957,7 @@ void func_80014FA4(void *arg0) {
     void *temp_a2;
 
     temp_a2 = arg0->unk3C;
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     if (temp_a2->unk54 == 0) {
         temp_v0 = temp_a2->unk50;
         if (temp_v0 != NULL) {
@@ -2719,7 +2014,7 @@ void func_8001503C(void *arg0, s32 *arg2) {
     var_a2 = arg2;
     var_s4 = 0;
     if (!(arg0->unk54 & 2)) {
-        sp30 = D_8004AA94;
+        sp30 = renderScaleX;
         temp_s0 = arg0->unk50;
         if (temp_s0 != 0) {
             var_a2 = *(temp_s0 + (D_8004AD98 * 4));
@@ -2806,7 +2101,7 @@ void func_8001503C(void *arg0, s32 *arg2) {
             var_a2_3 += 8;
             var_a3 += 8;
         } while (var_a2_3 != &D_8004ABB8);
-        D_8004AA94 = sp30;
+        renderScaleX = sp30;
     }
     if (arg0->unkC == 0) {
         var_s0_3 = arg0->unk8;
@@ -2856,7 +2151,7 @@ void func_80015368(void *arg0) {
     void *var_s0_4;
 
     temp_s3 = arg0->unk3C;
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     var_s4 = 0;
     if (!(temp_s3->unk54 & 2)) {
         var_s0 = temp_s3->unk50;
@@ -2984,7 +2279,7 @@ void func_800156C4(void *arg0) {
     temp_v0 = arg0->unk54;
     temp_s0 = arg0->unk50;
     if (!(temp_v0 & 2)) {
-        sp24 = D_8004AA94;
+        sp24 = renderScaleX;
         if ((temp_s0 != NULL) && (temp_s0->unk0 != 0) && !(temp_v0 & 1)) {
             temp_v0_2 = gDisplayListHeads;
             gDisplayListHeads = temp_v0_2 + 8;
@@ -3009,7 +2304,7 @@ void func_800156C4(void *arg0) {
             temp_v0_4->unk4 = 0x40;
             temp_v0_4->unk0 = 0xD8380002;
         }
-        D_8004AA94 = sp24;
+        renderScaleX = sp24;
     }
     if (arg0->unkC == 0) {
         var_s0 = arg0->unk8;
@@ -3028,7 +2323,7 @@ void func_800156C4(void *arg0) {
 #ifdef MIPS_TO_C
 
 void func_8001585C(void *arg0) {
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     func_800156C4(arg0->unk3C);
 }
 #else
@@ -3070,7 +2365,7 @@ void func_8001588C(void *arg0) {
 
     var_s4 = 0;
     if (!(arg0->unk54 & 2)) {
-        sp34 = D_8004AA94;
+        sp34 = renderScaleX;
         temp_a2 = arg0->unk50;
         sp40 = D_8004ABA0;
         sp44 = temp_a2;
@@ -3162,7 +2457,7 @@ void func_8001588C(void *arg0) {
             var_a2_2 += 8;
             var_a3 += 8;
         } while (var_a2_2 != &D_8004ABB8);
-        D_8004AA94 = sp34;
+        renderScaleX = sp34;
     }
     if (arg0->unkC == 0) {
         var_s0_3 = arg0->unk8;
@@ -3181,7 +2476,7 @@ void func_8001588C(void *arg0) {
 #ifdef MIPS_TO_C
 
 void func_80015BCC(void *arg0) {
-    D_8004AA94 = 1.0f;
+    renderScaleX = 1.0f;
     func_8001588C(arg0->unk3C);
 }
 #else
@@ -3205,7 +2500,7 @@ void func_80015BFC(void *arg0) {
     temp_v0 = arg0->unk54;
     temp_s0 = arg0->unk50;
     if (!(temp_v0 & 2)) {
-        sp24 = D_8004AA94;
+        sp24 = renderScaleX;
         if (temp_s0 != 0) {
             sp20 = *(temp_s0 + (D_8004AD98 * 4));
         }
@@ -3233,7 +2528,7 @@ void func_80015BFC(void *arg0) {
             temp_v0_4->unk4 = 0x40;
             temp_v0_4->unk0 = 0xD8380002;
         }
-        D_8004AA94 = sp24;
+        renderScaleX = sp24;
     }
     if (arg0->unkC == 0) {
         var_s0 = arg0->unk8;
@@ -3269,7 +2564,7 @@ void func_80015DC4(void *arg0) {
     if (!(temp_a2->unk54 & 2)) {
         temp_v1 = temp_a2->unk50;
         if (temp_v1 != NULL) {
-            D_8004AA94 = 1.0f;
+            renderScaleX = 1.0f;
             D_8004AD98 = 0;
             sp2C = temp_v1;
             sp20 = temp_a2;
@@ -3358,7 +2653,7 @@ void func_80015F78(void *arg0, s32 *arg2) {
     var_a2 = arg2;
     var_s4 = 0;
     if (!(arg0->unk54 & 2)) {
-        sp30 = D_8004AA94;
+        sp30 = renderScaleX;
         temp_s0 = arg0->unk50;
         if (temp_s0 != 0) {
             var_a2 = *(temp_s0 + (D_8004AD98 * 4));
@@ -3453,7 +2748,7 @@ void func_80015F78(void *arg0, s32 *arg2) {
             var_a2_3 += 8;
             var_a3 += 8;
         } while (var_a2_3 != &D_8004ABB8);
-        D_8004AA94 = sp30;
+        renderScaleX = sp30;
     }
     if (arg0->unkC == 0) {
         var_s0_3 = arg0->unk8;
@@ -3507,7 +2802,7 @@ void func_800162D8(void *arg0) {
     if (!(temp_s3->unk54 & 2)) {
         var_s0 = temp_s3->unk50;
         if (var_s0 != NULL) {
-            D_8004AA94 = 1.0f;
+            renderScaleX = 1.0f;
             D_8004AD98 = 0;
             temp_f0 = func_80014B04(temp_s3);
             if (temp_f0 < *var_s0) {
@@ -3667,7 +2962,7 @@ void func_8001663C(void **arg0, void *arg1, s32 arg2) {
     temp_t0 = temp_v0->unk2 / 4;
     temp_lo = gCurrScreenWidth / 320;
     var_t5 = temp_a3 - temp_t0;
-    temp_lo_2 = temp_lo * D_8003DF18;
+    temp_lo_2 = temp_lo * renderCameraScissorLeft;
     var_ra = temp_a2 + temp_a1;
     sp18 = temp_t0 + temp_a3;
     if (var_t4 < temp_lo_2) {
@@ -3675,15 +2970,15 @@ void func_8001663C(void **arg0, void *arg1, s32 arg2) {
     }
     temp_lo_3 = gCurrScreenHeight / 240;
     var_a3 = sp18;
-    temp_lo_4 = temp_lo_3 * D_8003DF10;
+    temp_lo_4 = temp_lo_3 * renderCameraScissorTop;
     if (var_t5 < temp_lo_4) {
         var_t5 = temp_lo_4;
     }
-    temp_a1_2 = gCurrScreenWidth - (temp_lo * D_8003DF1C);
+    temp_a1_2 = gCurrScreenWidth - (temp_lo * renderCameraScissorRight);
     if (temp_a1_2 < var_ra) {
         var_ra = temp_a1_2;
     }
-    temp_a1_3 = gCurrScreenHeight - (temp_lo_3 * D_8003DF14);
+    temp_a1_3 = gCurrScreenHeight - (temp_lo_3 * renderCameraScissorBottom);
     if (temp_a1_3 < var_a3) {
         var_a3 = temp_a1_3;
     }
@@ -3774,22 +3069,22 @@ void func_80016940(void **arg0, void *arg1, s32 arg2) {
     temp_lo = gCurrScreenWidth / 320;
     var_t4 = var_a3 - temp_t0;
     var_t1 = temp_a2 + temp_a1;
-    temp_lo_2 = temp_lo * D_8003DF18;
+    temp_lo_2 = temp_lo * renderCameraScissorLeft;
     var_t2 = temp_t0 + var_a3;
     sp1C = temp_lo_2;
     if (var_t3 < temp_lo_2) {
         var_t3 = temp_lo_2;
     }
     temp_lo_3 = gCurrScreenHeight / 240;
-    temp_lo_4 = temp_lo_3 * D_8003DF10;
+    temp_lo_4 = temp_lo_3 * renderCameraScissorTop;
     if (var_t4 < temp_lo_4) {
         var_t4 = temp_lo_4;
     }
-    temp_a1_2 = gCurrScreenWidth - (temp_lo * D_8003DF1C);
+    temp_a1_2 = gCurrScreenWidth - (temp_lo * renderCameraScissorRight);
     if (temp_a1_2 < var_t1) {
         var_t1 = temp_a1_2;
     }
-    temp_a1_3 = gCurrScreenHeight - (temp_lo_3 * D_8003DF14);
+    temp_a1_3 = gCurrScreenHeight - (temp_lo_3 * renderCameraScissorBottom);
     if (temp_a1_3 < var_t2) {
         var_t2 = temp_a1_3;
     }
@@ -4062,18 +3357,18 @@ void func_800171E0(void **arg0, void *arg1) {
                         switch (temp_v1) {          /* switch 4; irregular */
                                 break;
                             case 3:                 /* switch 4 */
-                                func_8001B008(D_8004AA98, arg1 + 0x1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30);
-                                HS64_MtxF2L(D_8004AA98, var_s2);
-                                D_8004AA90 = var_s2;
+                                func_8001B008(renderPerspectiveMtxF, arg1 + 0x1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30);
+                                HS64_MtxF2L(renderPerspectiveMtxF, var_s2);
+                                renderProjectionMtx = var_s2;
                                 break;
                             case 4:                 /* switch 4 */
-                                func_8001B28C(D_8004AA98, arg1 + 0x1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30);
-                                HS64_MtxF2L(D_8004AA98, var_s2);
-                                D_8004AA90 = var_s2;
+                                func_8001B28C(renderPerspectiveMtxF, arg1 + 0x1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30);
+                                HS64_MtxF2L(renderPerspectiveMtxF, var_s2);
+                                renderProjectionMtx = var_s2;
                                 break;
                             case 5:                 /* switch 4 */
                                 guOrtho(var_s2, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30, arg1->unk34);
-                                D_8004AA90 = var_s2;
+                                renderProjectionMtx = var_s2;
                                 break;
                             case 6:                 /* switch 4 */
                             case 7:                 /* switch 4 */
@@ -4118,8 +3413,8 @@ void func_800171E0(void **arg0, void *arg1) {
                                 func_8001AD90(var_s2, temp_v0_3, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 0.0f, 1.0f);
                                 break;
                             default:                /* switch 4 */
-                                if (D_8004AB9C != 0) {
-                                    temp_a3 = (D_8004AB9C + (temp_v1 * 8))->unk-218;
+                                if (renderMatrixHandler != 0) {
+                                    temp_a3 = (renderMatrixHandler + (temp_v1 * 8))->unk-218;
                                     if (temp_a3 != NULL) {
                                         temp_a3(var_s2, arg1, &spDC, temp_a3);
                                     }
@@ -4191,8 +3486,8 @@ void func_800171E0(void **arg0, void *arg1) {
                             temp_t4_3->unk0 = 0xDA380003;
                             break;
                         default:                    /* switch 5 */
-                            if (D_8004AB9C != 0) {
-                                temp_a3_2 = (D_8004AB9C + (temp_v1_2 * 8))->unk-214;
+                            if (renderMatrixHandler != 0) {
+                                temp_a3_2 = (renderMatrixHandler + (temp_v1_2 * 8))->unk-214;
                                 if (temp_a3_2 != NULL) {
                                     temp_a3_2(var_s2, arg1, &spDC, temp_a3_2);
                                 }
@@ -4245,7 +3540,7 @@ block_65:
                     HS64_MkScaleMtxF(D_8004AB18, 0, 0, 0);
                 } else {
                     guLookAtF(D_8004AB18, 0.0f, sp98, var_f2, 0.0f, sp94, 0.0f, 0.0f, 1.0f, 0.0f);
-                    guMtxCatF(D_8004AB18, D_8004AA98, D_8004AB18);
+                    guMtxCatF(D_8004AB18, renderPerspectiveMtxF, D_8004AB18);
                 }
                 break;
             case 1:                                 /* switch 6 */
@@ -4273,7 +3568,7 @@ block_74:
                     HS64_MkScaleMtxF(D_8004AB58, 0, 0, 0);
                 } else {
                     guLookAtF(D_8004AB58, sp8C, 0.0f, var_f2_2, sp88, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-                    guMtxCatF(D_8004AB58, D_8004AA98, D_8004AB58);
+                    guMtxCatF(D_8004AB58, renderPerspectiveMtxF, D_8004AB58);
                 }
                 break;
             case 1:                                 /* switch 7 */

@@ -64,4 +64,31 @@ struct UnkStruct80014264 {
 // 00000000
 // 00000000
 
+// Gfx macros
+#define gSPMvpRecalc(pkt) gImmp21((pkt), G_SPECIAL_1, 0, 1, 0)
+#define gsSPMvpRecalc() gsImmp21(G_SPECIAL_1, 0, 1, 0)
+#define G_TX_TILE_5 (5)
+#define G_TX_TILE_BLOCK (6)
+
+typedef struct {
+    /* 0x00 */ s32 (*unk0)(Mtx*, void*, Gfx**);
+    /* 0x04 */ s32 (*unk4)(Mtx*, void*, Gfx**);
+} MatrixHandler;
+
+extern MatrixHandler *renderMatrixHandler;
+
+extern s32 renderCameraScissorTop;
+extern s32 renderCameraScissorBottom;
+extern s32 renderCameraScissorLeft;
+extern s32 renderCameraScissorRight;
+
+extern Mtx *renderProjectionMtx;
+extern f32 renderScaleX;
+extern Mat4 renderPerspectiveMtxF;
+extern Mat4 renderMVPMatrixF;
+extern Mat4 D_8004AB18;
+extern Mat4 D_8004AB58;
+
+void renderSetCameraScissors(s32 top, s32 bottom, s32 left, s32 right);
+
 #endif // _MAIN_4_H_

@@ -911,7 +911,7 @@ void gtlCreateScene(SceneSetup *scene) {
     gtlCurrentScene.objectSize = (s32) scene->objectSize;
     gtlCurrentScene.matrices = gtlMalloc(scene->mtxCount * 0x48, 8);
     gtlCurrentScene.numMatrices = (s32) scene->mtxCount;
-    func_80010B44(scene->mtxHandler);
+    renderSetMatrixHandler(scene->mtxHandler);
     gtlCurrentScene.cleanupFn = scene->unk64;
     gtlCurrentScene.aobjs = gtlMalloc(scene->AObjCount * 0x24, 4);
     gtlCurrentScene.numAObjs = (s32) scene->AObjCount;
