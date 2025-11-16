@@ -1,12 +1,15 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 
+#define GAME_30FPS 2.0f
+#define GAME_60FPS 1.0f
+
 // probably .data for this file
 extern u32 gGameState;
 extern u32 D_800BE4F4;
 extern u32 D_800BE4F8;
 extern u32 D_800BE4FC;
-extern u32 D_800BE500;
+extern s32 D_800BE500;
 extern s32 D_800BE504;
 extern u32 D_800BE508;
 extern u32 D_800BE50C;

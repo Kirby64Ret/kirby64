@@ -61,6 +61,8 @@ extern void *D_800A2904; // struct
 extern u32 D_800D6B18;
 extern u8 D_800D6B00[], D_800BE3F0[];
 
+extern s32 D_800BE414[]; // gameCutscenes
+
 void crash_screen_print_gobj_info(GObj *o) {
     crash_screen_printf("gobj id:%d\n", o->objId);
     crash_screen_printf("df:%x\n", o->onDraw);
@@ -165,7 +167,7 @@ void func_800A2C80(void) {
     scRemovePostProcessFunc();
     auSetBGMVolume(0, 0x7800);
     func_80020CC4(0x7800);
-    gameSetUpdateRate(1.0f);
+    gameSetUpdateRate(GAME_60FPS);
     func_80004674(0x10, 2);
     gGameTampered = 0;
     func_800BB418();
@@ -351,19 +353,17 @@ void func_800A3230(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A3230.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800A336C(void) {
-    if ((D_800BE500 >= 0) && (D_800BE500 < 5) && (check_cutscene_watched(D_800BE414[D_800BE500]) == 0)) {
+    if ((D_800BE500 >= 0)
+     && (D_800BE500 < 5)
+     && (check_cutscene_watched(D_800BE414[D_800BE500]) == 0)
+    ) {
         set_cutscene_watched(D_800BE414[D_800BE500], saveCurrentFileNum);
         func_800B9C50(saveCurrentFileNum);
         utilLoadOverlay(4);
         func_80154D60_ovl6(D_800BE414[D_800BE500], 2);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A336C.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_800A3408(void) {
@@ -860,6 +860,7 @@ void game_tick(s32 arg0) {
  * Sets the number of game update ticks that will happen per draw frame
  */
 void gameSetUpdateRate(f32 ticksPerDraw) {
+    // ticksPerDraw = 1.0f;
     gameTicksPerDraw = ticksPerDraw;
     gameTicksPerDrawInv = 1.0f / ticksPerDraw;
     gtlSetUpdateDrawRate(ticksPerDraw, 1);
