@@ -505,7 +505,7 @@ void HS64_MkScaleMtxF(Mat4 mf, f32 x, f32 y, f32 z) {
     }
 }
 
-void func_8001B540(Mtx* arg0, f32 arg1, f32 arg2, f32 arg3) {
+void HS64_MtxScale(Mtx* arg0, f32 arg1, f32 arg2, f32 arg3) {
     arg0->m[0][1] = 0;
     arg0->m[2][1] = 0;
     arg0->m[0][3] = 0;
@@ -545,7 +545,7 @@ void HS64_MkTranslateMtxF(Mat4 mf, f32 x, f32 y, f32 z) {
     mf[3][3] = 1.0f;
 }
 
-void func_8001B784(s32 arg0[4][4], f32 arg1, f32 arg2, f32 arg3) {
+void HS64_Translate(s32 arg0[4][4], f32 arg1, f32 arg2, f32 arg3) {
     s32 temp_f6;
     s32 temp_f4;
     s32 temp_f10;
@@ -576,23 +576,23 @@ void func_8001B784(s32 arg0[4][4], f32 arg1, f32 arg2, f32 arg3) {
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001B838.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001B9B8.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotate.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001BA04.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001BA60.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateTranslate.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001BAC4.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001BB30.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxTransformRTS.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001BBAC.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001BCE0.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateRPY.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001BF88.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001BFDC.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateRPYTranslate.s")
 
 
 extern void func_8001B5E4(Mat4, f32, f32, f32);
@@ -606,19 +606,19 @@ void func_8001C2E4(Mat4 arg0, Vector arg1, Vector arg4, Vector arg7) {
     func_8001B5E4(arg0, arg7.x, arg7.y, arg7.z);
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001C348.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateTransformSRT_RPY.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001C73C.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001C874.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotatePYR.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001C8B8.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001C90C.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateRPYTranslate.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001C968.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001C9CC.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxTransformRTS_PYR.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001CA40.s")
 
@@ -666,19 +666,19 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D014.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D060.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D0B4.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateDegrees.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D11C.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D184.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateTranslateDegrees.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D200.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D264.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateRPYDegrees.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D2DC.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D34C.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_MtxRotateRPYTranslateDegrees.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001D3D0.s")
 

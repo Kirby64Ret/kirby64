@@ -76,5 +76,41 @@ void func_8001B5E4(Mat4, f32, f32, f32);
 void HS64_MkTranslateMtxF(Mat4 mf, f32 x, f32 y, f32 z);
 void mtxGetInterpolatedPosition(Vector *a, s32 *b, f32 c);
 void HS64_MtxF2L43(Mat4 mf, Mtx *m);
+void HS64_MtxF2L(Mat4 mf, Mtx *m);
+
+void HS64_MtxRotate(Mtx *m, f32 angle, f32 x, f32 y, f32 z);
+void HS64_MtxRotateDegrees(Mtx *m, f32 angle, f32 x, f32 y, f32 z);
+void HS64_MtxRotatePYR(Mtx *m, f32 pitch, f32 yaw, f32 roll);
+void HS64_MtxRotatePYRTranslate(Mtx *m, f32 pitch, f32 yaw, f32 roll, f32 tx, f32 ty, f32 tz);
+void HS64_MtxRotateRPY(Mtx *m, f32 roll, f32 pitch, f32 yaw);
+void HS64_MtxRotateRPYDegrees(Mtx *m, f32 roll, f32 pitch, f32 yaw);
+void HS64_MtxRotateRPYTranslate(Mtx *m, f32 roll, f32 pitch, f32 yaw, f32 tx, f32 ty, f32 tz);
+void HS64_MtxRotateRPYTranslateDegrees(Mtx *m, f32 roll, f32 pitch, f32 yaw, f32 tx, f32 ty, f32 tz);
+void HS64_MtxRotateTransformSRT_RPY(Mtx *m,
+    f32 roll, f32 pitch, f32 yaw,
+    f32 tx, f32 ty, f32 tz,
+    f32 sx, f32 sy, f32 sz
+);
+void HS64_MtxRotateTranslate(Mtx *m,
+    f32 angle, f32 rx, f32 ry, f32 rz,
+    f32 tx, f32 ty, f32 tz
+);
+void HS64_MtxRotateTranslateDegrees(Mtx *m,
+    f32 angle, f32 rx, f32 ry, f32 rz,
+    f32 tx, f32 ty, f32 tz
+);
+void HS64_MtxScale(Mtx *m, f32 sx, f32 sy, f32 sz);
+void HS64_MtxTransformRTS(Mtx *m,
+    f32 angle, f32 rx, f32 ry, f32 rz,
+    f32 tx, f32 ty, f32 tz,
+    f32 sx, f32 sy, f32 sz
+);
+void HS64_MtxTransformRTS_PYR(Mtx *m,
+    f32 pitch, f32 yaw, f32 roll,
+    f32 tx, f32 ty, f32 tz,
+    f32 sx, f32 sy, f32 sz
+);
+void HS64_Translate(Mtx *m, f32 tx, f32 ty, f32 tz);
+
 
 #endif // LB_MATRIX_H

@@ -38,49 +38,49 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001B4AC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001B540.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxScale.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001B5E4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001B6E4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001B784.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_Translate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001B838.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001B9B8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001BA04.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001BA60.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateTranslate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001BAC4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001BB30.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxTransformRTS.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001BBAC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001BCE0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateRPY.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001BF88.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001BFDC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateRPYTranslate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001C2E4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001C348.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateTransformSRT_RPY.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001C73C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001C874.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotatePYR.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001C8B8.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001C90C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateRPYTranslate.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001C968.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001C9CC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxTransformRTS_PYR.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001CA40.s")
 
@@ -116,19 +116,19 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D060.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D0B4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateDegrees.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D11C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D184.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateTranslateDegrees.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D200.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D264.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateRPYDegrees.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D2DC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D34C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1A630/HS64_MtxRotateRPYTranslateDegrees.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1A630/func_8001D3D0.s")
 

@@ -629,7 +629,7 @@ void HS64_MkScaleMtxF(Mat4 mf, f32 x, f32 y, f32 z) {
     }
 }
 
-void func_8001B540(Mtx* arg0, f32 arg1, f32 arg2, f32 arg3) {
+void HS64_MtxScale(Mtx* arg0, f32 arg1, f32 arg2, f32 arg3) {
     arg0->m[0][1] = 0;
     arg0->m[2][1] = 0;
     arg0->m[0][3] = 0;
@@ -721,33 +721,35 @@ void HS64_MkTranslateMtxF(Mat4 mf, f32 x, f32 y, f32 z) {
     mf[3][3] = 1.0f;
 }
 
-void func_8001B784(s32 arg0[4][4], f32 arg1, f32 arg2, f32 arg3) {
-    s32 temp_f6;
-    s32 temp_f4;
-    s32 temp_f10;
-    u32 tmp;
+void HS64_Translate(Mtx* m, f32 x, f32 y, f32 z) {
+    u32 e1, e2;
 
-    arg0[0][0] = 0x10000;
-    arg0[2][0] = 0;
-    arg0[0][1] = 0;
-    arg0[2][1] = 0;
-    temp_f6 = arg1 * 65536.0f;
-    arg0[0][2] = 1;
-    arg0[2][2] = 0;
-    temp_f10 = arg2 * 65536.0f;
-    arg0[0][3] = 0;
-    tmp = (u32) temp_f10;
-    arg0[2][3] = 0;
-    arg0[1][0] = 0;
-    arg0[3][0] = 0;
-    arg0[1][1] = 0x10000;
-    arg0[3][1] = 0;
-    arg0[1][2] = COMBINE_INTEGRAL(temp_f6, (u32)temp_f10);
-    arg0[3][2] = COMBINE_FRACTIONAL(temp_f6, (u32)tmp);
-    temp_f4 = arg3 * 65536.0f;
-    temp_f6 = 1 << 16;
-    arg0[1][3] = COMBINE_INTEGRAL(temp_f4, temp_f6);
-    arg0[3][3] = COMBINE_FRACTIONAL(temp_f4, 0);
+    m->m[0][0] = COMBINE_INTEGRAL(FTOFIX32(1.0F), FTOFIX32(0.0F));
+    m->m[2][0] = COMBINE_FRACTIONAL(FTOFIX32(1.0F), FTOFIX32(0.0F));
+
+    m->m[0][1] = COMBINE_INTEGRAL(FTOFIX32(0.0F), FTOFIX32(0.0F));
+    m->m[2][1] = COMBINE_FRACTIONAL(FTOFIX32(0.0F), FTOFIX32(0.0F));
+
+    m->m[0][2] = COMBINE_INTEGRAL(FTOFIX32(0.0F), FTOFIX32(1.0F));
+    m->m[2][2] = COMBINE_FRACTIONAL(FTOFIX32(0.0F), FTOFIX32(1.0F));
+
+    m->m[0][3] = COMBINE_INTEGRAL(FTOFIX32(0.0F), FTOFIX32(0.0F));
+    m->m[2][3] = COMBINE_FRACTIONAL(FTOFIX32(0.0F), FTOFIX32(0.0F));
+
+    m->m[1][0] = COMBINE_INTEGRAL(FTOFIX32(0.0F), FTOFIX32(0.0F));
+    m->m[3][0] = COMBINE_FRACTIONAL(FTOFIX32(0.0F), FTOFIX32(0.0F));
+
+    m->m[1][1] = COMBINE_INTEGRAL(FTOFIX32(1.0F), FTOFIX32(0.0F));
+    m->m[3][1] = COMBINE_FRACTIONAL(FTOFIX32(1.0F), FTOFIX32(0.0F));
+
+    e1 = FTOFIX32(x);
+    e2 = FTOFIX32(y);
+    m->m[1][2] = COMBINE_INTEGRAL(e1, e2);
+    m->m[3][2] = COMBINE_FRACTIONAL(e1, e2);
+
+    e1 = FTOFIX32(z);
+    m->m[1][3] = COMBINE_INTEGRAL(e1, FTOFIX32(1.0F));
+    m->m[3][3] = COMBINE_FRACTIONAL(e1, FTOFIX32(1.0F));
 }
 
 #ifdef MIPS_TO_C
@@ -797,14 +799,14 @@ void func_8001B838(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4) {
 
 #ifdef MIPS_TO_C
 
-void func_8001B9B8(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4) {
+void HS64_MtxRotate(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4) {
     ? sp20;
 
     func_8001B838(arg1, arg2, &sp20, arg1, arg2, arg4);
     HS64_MtxF2L43(&sp20, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001B9B8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotate.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -821,14 +823,14 @@ void func_8001BA04(void *arg0, f32 arg1, f32 arg2, f32 arg3, s32 arg4, s32 arg5,
 
 #ifdef MIPS_TO_C
 
-void func_8001BA60(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7) {
+void HS64_MtxRotateTranslate(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7) {
     ? sp28;
 
     func_8001BA04(arg1, arg2, &sp28, arg1, arg2, arg4, arg5, arg6, arg7);
     HS64_MtxF2L43(&sp28, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001BA60.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotateTranslate.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -846,14 +848,14 @@ void func_8001BAC4(void *arg0, f32 arg1, f32 arg2, f32 arg3, s32 arg4, s32 arg5,
 
 #ifdef MIPS_TO_C
 
-void func_8001BB30(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9, f32 argA) {
+void HS64_MtxTransformRTS(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9, f32 argA) {
     ? sp38;
 
     func_8001BAC4(arg1, arg2, &sp38, arg1, arg2, arg4, arg5, arg6, arg7, arg8, arg9, argA);
     HS64_MtxF2L43(&sp38, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001BB30.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxTransformRTS.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -901,7 +903,7 @@ void HS64_MkRotationMtxF(Mat4 mf, f32 arg1, f32 arg2, f32 arg3);
 
 #ifdef MIPS_TO_C
 
-void func_8001BCE0(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
+void HS64_MtxRotateRPY(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     u32 sp8;
     s32 temp_a2;
     s32 temp_t0;
@@ -987,7 +989,7 @@ void func_8001BCE0(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
     arg0->unk34 = temp_v0_3 << 0x10;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001BCE0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotateRPY.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1004,7 +1006,7 @@ void func_8001BF88(void *arg0, f32 arg1, f32 arg2, f32 arg3, s32 arg4, s32 arg5,
 
 #ifdef MIPS_TO_C
 
-void func_8001BFDC(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
+void HS64_MtxRotateRPYTranslate(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
     u32 sp8;
     s32 temp_a2;
     s32 temp_f10;
@@ -1096,7 +1098,7 @@ void func_8001BFDC(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5,
     arg0->data = temp_f10 << 0x10;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001BFDC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotateRPYTranslate.s")
 #endif
 
 void func_8001C2E4(Mat4 arg0, Vector arg1, Vector arg4, Vector arg7) {
@@ -1108,7 +1110,7 @@ void func_8001C2E4(Mat4 arg0, Vector arg1, Vector arg4, Vector arg7) {
 }
 
 #ifdef MIPS_TO_C
-void func_8001C348(Mat4 mf, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9) {
+void HS64_MtxRotateTransformSRT_RPY(Mat4 mf, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9) {
     s32 sp10;
     s32 spC;
     s32 sp8;
@@ -1213,7 +1215,7 @@ void func_8001C348(Mat4 mf, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f3
     mf[3][3] = COMBINE_FRACTIONAL(arg3 * 65536.0f, 0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001C348.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotateTransformSRT_RPY.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1260,14 +1262,14 @@ void func_8001C73C(void *arg0, f32 arg1, f32 arg2, f32 arg3) {
 
 #ifdef MIPS_TO_C
 
-void func_8001C874(s32 arg0, ? arg1, ? arg2, ? arg3) {
+void HS64_MtxRotatePYR(s32 arg0, ? arg1, ? arg2, ? arg3) {
     ? sp18;
 
     func_8001C73C(arg1, arg2, &sp18, arg1, arg2);
     HS64_MtxF2L43(&sp18, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001C874.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotatePYR.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1284,14 +1286,14 @@ void func_8001C8B8(void *arg0, f32 arg1, f32 arg2, f32 arg3, s32 arg4, s32 arg5,
 
 #ifdef MIPS_TO_C
 
-void func_8001C90C(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
+void HS64_MtxRotatePYRTranslate(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
     ? sp28;
 
     func_8001C8B8(arg1, arg2, &sp28, arg1, arg2, arg4, arg5, arg6);
     HS64_MtxF2L43(&sp28, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001C90C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotatePYRTranslate.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1309,14 +1311,14 @@ void func_8001C968(void *arg0, f32 arg1, f32 arg2, f32 arg3, s32 arg4, s32 arg5,
 
 #ifdef MIPS_TO_C
 
-void func_8001C9CC(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9) {
+void HS64_MtxTransformRTS_PYR(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9) {
     ? sp30;
 
     func_8001C968(arg1, arg2, &sp30, arg1, arg2, arg4, arg5, arg6, arg7, arg8, arg9);
     HS64_MtxF2L43(&sp30, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001C9CC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxTransformRTS_PYR.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1594,14 +1596,14 @@ void func_8001D060(f32 arg1, ? arg2, ? arg3, f32 arg4) {
 
 #ifdef MIPS_TO_C
 
-void func_8001D0B4(s32 arg0, f32 arg1, ? arg2, ? arg3, f32 arg4) {
+void HS64_MtxRotateDegrees(s32 arg0, f32 arg1, ? arg2, ? arg3, f32 arg4) {
     ? sp20;
 
     func_8001B838(arg1, arg2, &sp20, (arg1 * 3.1415927f) / 180.0f, arg2, arg4);
     HS64_MtxF2L43(&sp20, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D0B4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotateDegrees.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1615,14 +1617,14 @@ void func_8001D11C(? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg
 
 #ifdef MIPS_TO_C
 
-void func_8001D184(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7) {
+void HS64_MtxRotateTranslateDegrees(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7) {
     ? sp28;
 
     func_8001BA04(arg1, arg2, &sp28, arg1, arg2, (arg4 * 3.1415927f) / 180.0f, arg5, arg6, arg7);
     HS64_MtxF2L43(&sp28, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D184.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotateTranslateDegrees.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1635,14 +1637,14 @@ void func_8001D200(f32 arg1, f32 arg2, f32 arg3) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_8001D264(Mat4 mf, f32 x, f32 y, f32 z) {
+void HS64_MtxRotateRPYDegrees(Mat4 mf, f32 x, f32 y, f32 z) {
     Mat4 tmp;
 
     HS64_MkRotationMtxF(tmp, (x * M_DTOR), (y * M_DTOR), (z * M_DTOR));
     HS64_MtxF2L43(tmp, mf);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D264.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotateRPYDegrees.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1656,14 +1658,14 @@ void func_8001D2DC(? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
 
 #ifdef MIPS_TO_C
 
-void func_8001D34C(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
+void HS64_MtxRotateRPYTranslateDegrees(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6) {
     ? sp28;
 
     func_8001BF88(arg1, arg2, &sp28, arg1, arg2, (arg4 * 3.1415927f) / 180.0f, (arg5 * 3.1415927f) / 180.0f, (arg6 * 3.1415927f) / 180.0f);
     HS64_MtxF2L43(&sp28, arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D34C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_MtxRotateRPYTranslateDegrees.s")
 #endif
 
 // File split between lbmatrix and interpolation?

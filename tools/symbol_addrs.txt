@@ -761,6 +761,21 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+HS64_MtxScale = 0x8001B540; // type:func
+HS64_MtxRotatePYRTranslate = 0x8001C90C; // type:func
+HS64_MtxTransformRTS_PYR = 0x8001C9CC; // type:func
+HS64_MtxRotatePYR = 0x8001C874; // type:func
+HS64_MtxRotateTransformSRT_RPY = 0x8001C348; // type:func
+HS64_MtxRotateRPYTranslate = 0x8001BFDC; // type:func
+HS64_MtxRotateRPY = 0x8001BCE0; // type:func
+HS64_MtxTransformRTS = 0x8001BB30; // type:func
+HS64_MtxRotateTranslate = 0x8001BA60; // type:func
+HS64_MtxRotate = 0x8001B9B8; // type:func
+HS64_MtxRotateRPYTranslateDegrees = 0x8001D34C; // type:func
+HS64_MtxRotateRPYDegrees = 0x8001D264; // type:func
+HS64_MtxRotateTranslateDegrees = 0x8001D184; // type:func
+HS64_MtxRotateDegrees = 0x8001D0B4; // type:func
+HS64_Translate = 0x8001B784; // type:func
 omCameraAddAObj = 0x80009978; // type:func
 omDObjAddMObj = 0x80009A44; // type:func
 omDObjAppendMtx = 0x80009628; // type:func
