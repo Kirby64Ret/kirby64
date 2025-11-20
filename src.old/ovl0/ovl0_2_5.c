@@ -24,7 +24,7 @@ extern long long int gspS2DEX2_fifoTextStart[];
 
 u32 D_8003DCA0 = 0;
 u32 D_8003DCA4 = 0;
-u32 D_8003DCA8 = 0;
+u32 gtlDrawnFrameCounter = 0;
 
 struct UcodeHandler gtlUcodeList[16] = {
     {gspF3DEX2_fifoTextStart, gspF3DEX2_fifoDataStart},
@@ -726,7 +726,7 @@ void gtlDrawSingle(struct Unk80005A98 *arg0) {
         D_8004A458[sp34] = 0;
     }
     while (D_8004A458[gtlCurrentContextID] != 0);
-    D_8003DCA8++;
+    gtlDrawnFrameCounter++;
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2_5/gtlStart.s")

@@ -171,7 +171,7 @@ typedef struct GObj {
     GObjFunc onDraw;
     /* 0x30 */
     u32 unk30;
-    u32 unk34;
+    u32 cameraTag;
     u32 unk38;
     // actually void*, but mainly used to store a layoutnode
     /* 0x3C */ union {

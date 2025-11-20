@@ -16,8 +16,8 @@ struct unk80017FEC {
 
 // extern struct {
 //     u32 unk0;
-// } D_8003DCA8;
-extern u32 D_8003DCA8;
+// } gtlDrawnFrameCounter;
+extern u32 gtlDrawnFrameCounter;
 
 extern struct UnkStruct8004A7F8 D_8004A7F8[];
 
@@ -176,7 +176,7 @@ void func_80014AD4(struct GObj *arg0) {
 
 #include "ovl0_5.h"
 
-f32 func_80014B04(struct UnkStruct8004A7C4_3C *arg0) {
+f32 renderDistanceToCamera(struct UnkStruct8004A7C4_3C *arg0) {
     Vector tmp;
 
     // extremely hacky cast because unk3C meme
@@ -184,7 +184,7 @@ f32 func_80014B04(struct UnkStruct8004A7C4_3C *arg0) {
     return VEC_MAG_SQUARE(tmp);
 } 
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80014B4C.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawGObjWithDObjTypeE.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80014C78.s")
 
@@ -522,9 +522,9 @@ void func_80017E84(struct GObj *arg0, u32 arg1) {
         if ((phi_s1 & 1) != 0) {
             if ((phi_s2 & 1) != 0) {
                 temp_a1 = phi_s0;
-                // D_8003DCA8 could be a struct? Seems strange to have an exact array index
+                // gtlDrawnFrameCounter could be a struct? Seems strange to have an exact array index
                 // update: probably the case
-                if ((u8)D_8003DCA8 == D_8004A7F8[phi_s0].unk0) {
+                if ((u8)gtlDrawnFrameCounter == D_8004A7F8[phi_s0].unk0) {
                     func_80017DB0(phi_s0);
                 } else {
                     func_80017C7C(arg0, temp_a1, arg1);

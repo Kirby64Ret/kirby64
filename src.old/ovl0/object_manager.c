@@ -1013,7 +1013,7 @@ void func_8000A544(struct GObj *arg0, struct GObj *arg1) {
     omGMoveCommon(3, arg0, arg1->link, arg1->unk10, arg1);
 }
 
-extern u32 D_8003DCA8;
+extern u32 gtlDrawnFrameCounter;
 
 void omGLinkObjDLCommon(struct GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4) {
     if (link >= 0x20) {
@@ -1025,7 +1025,7 @@ void omGLinkObjDLCommon(struct GObj *arg0, s32 arg1, u8 link, s32 prio, s32 arg4
     arg0->renderPriority = prio;
     arg0->unk2C = arg1;
     arg0->unk34 = arg4;
-    arg0->unkE = D_8003DCA8 - 1;
+    arg0->unkE = gtlDrawnFrameCounter - 1;
 }
 
 void func_8000A5FC(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4) {
@@ -1067,7 +1067,7 @@ void func_8000A730(struct GObj *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     arg0->unk30 = arg3;
     arg0->unk34 = arg4;
     arg0->unk38 = 0;
-    arg0->unkE = D_8003DCA8 - 1;
+    arg0->unkE = gtlDrawnFrameCounter - 1;
 }
 
 void func_8000A764(struct GObj *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
@@ -1174,7 +1174,7 @@ void func_8000AAE0(void) {
     D_8004A7CC = NULL;
 
     for (i = 0; i < 32; i++) {
-        D_8004A7F8[i].unk0 = D_8003DCA8 - 1;
+        D_8004A7F8[i].unk0 = gtlDrawnFrameCounter - 1;
     }
 
     obj = D_8004A700;

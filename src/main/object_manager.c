@@ -83,7 +83,7 @@ struct UnkStruct8004A7F8 D_8004A7F8[32]; // length 32 based on loop asm in omDra
 u8 D_8004AA78[0x18];
 
 // externs for their own headers
-extern u32 D_8003DCA8;
+extern u32 gtlDrawnFrameCounter;
 extern void HS64_AObjLinkToAnimation(struct Animation *anim, struct AObj *stack);
 
 
@@ -1047,7 +1047,7 @@ void func_8000A544(GObj *arg0, GObj *arg1) {
     omGMoveCommon(3, arg0, arg1->link, arg1->pri, arg1);
 }
 
-void omGLinkObjDLCommon(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 arg4) {
+void omGLinkObjDLCommon(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 camTag) {
     if (link >= 0x20) {
         fatal_printf("omGLinkObjDLCommon() : dl_link num over : dl_link = %d : id = %d\n", link, arg0->objId);
         while (1);
@@ -1055,23 +1055,23 @@ void omGLinkObjDLCommon(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 arg4) {
     arg0->dl_link = link;
     arg0->renderPriority = prio;
     arg0->onDraw = drawCB;
-    arg0->unk34 = arg4;
-    arg0->lastDrawFrame = D_8003DCA8 - 1;
+    arg0->cameraTag = camTag;
+    arg0->lastDrawFrame = gtlDrawnFrameCounter - 1;
 }
 
-void omLinkGObjDL(GObj *gobj, s32 drawCB, u8 link, s32 prio, s32 arg4) {
+void omLinkGObjDL(GObj *gobj, s32 drawCB, u8 link, s32 prio, s32 camTag) {
     if (gobj == NULL) {
         gobj = omCurrentObj;
     }
-    omGLinkObjDLCommon(gobj, drawCB, link, prio, arg4);
+    omGLinkObjDLCommon(gobj, drawCB, link, prio, camTag);
     omGSetupCameraDLLink(gobj);
 }
 
-void func_8000A640(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 arg4) {
+void func_8000A640(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 camTag) {
     if (arg0 == 0) {
         arg0 = omCurrentObj;
     }
-    omGLinkObjDLCommon(arg0, drawCB, link, prio, arg4);
+    omGLinkObjDLCommon(arg0, drawCB, link, prio, camTag);
     omGSetupDLLink_HighestPrioMax(arg0);
 }
 
@@ -1091,29 +1091,29 @@ void func_8000A6D8(GObj *o, s32 drawCB, s32 arg2, GObj *arg3) {
     omGInsertDLLink(o, arg3->prev);
 }
 
-void func_8000A730(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {
+void func_8000A730(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 camTag) {
     o->dl_link = 0x20;
     o->renderPriority = pri;
     o->onDraw = drawCallback;
     o->unk30 = arg3;
-    o->unk34 = arg4;
+    o->cameraTag = camTag;
     o->unk38 = 0;
-    o->lastDrawFrame = D_8003DCA8 - 1;
+    o->lastDrawFrame = gtlDrawnFrameCounter - 1;
 }
 
-void omGLinkObjDLCamera(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 arg4) {
+void omGLinkObjDLCamera(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 camTag) {
     if (o == 0) {
         o = omCurrentObj;
     }
-    func_8000A730(o, drawCallback, pri, arg3, arg4);
+    func_8000A730(o, drawCallback, pri, arg3, camTag);
     omGSetupCameraDLLink(o);
 }
 
-void func_8000A7A0(GObj *o, s32 arg1, s32 prio, s32 arg3, s32 arg4) {
+void func_8000A7A0(GObj *o, s32 arg1, s32 prio, s32 arg3, s32 camTag) {
     if (o == 0) {
         o = omCurrentObj;
     }
-    func_8000A730(o, arg1, prio, arg3, arg4);
+    func_8000A730(o, arg1, prio, arg3, camTag);
     omGSetupDLLink_HighestPrioMax(o);
 }
 
@@ -1203,7 +1203,7 @@ void omDrawAll(void) {
     omCurrentDrawObj = NULL;
 
     for (i = 0; i < 32; i++) {
-        D_8004A7F8[i].unk0 = D_8003DCA8 - 1;
+        D_8004A7F8[i].unk0 = gtlDrawnFrameCounter - 1;
     }
 
     obj = omGObjListDlHead[32];

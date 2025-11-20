@@ -8,6 +8,10 @@
 #include "object_manager.h"
 #include "lbmatrix.h"
 
+extern Gfx *D_8004ABA0;
+extern Gfx *D_8004ABA8[4];
+extern Gfx D_8004ABB8[60];
+
 void renderSetCameraScissors(s32 top, s32 bottom, s32 left, s32 right) {
     renderCameraScissorTop = top;
     renderCameraScissorBottom = bottom;
@@ -1349,393 +1353,194 @@ void renderDrawDObjFromGObj(GObj *gobj) {
     renderDrawDObj(gobj->data.dobj);
 }
 
-#ifdef MIPS_TO_C
+// one stack assignment
+#ifdef NON_MATCHING
+void func_800143D4(DObj* dobj, DObjPayloadTypeC* payload) {
+    Gfx* temp;
+    s32 sp30 = -1;
+    Gfx* t1;
+    Gfx* t0;
+    s32 ret;
+    u8* segaddr;
 
-void func_800143D4(void *arg0, void *arg1) {
-    s32 sp34;
-    s32 sp30;
-    void *sp2C;
-    s32 sp28;
-    s32 sp20;
-    s32 *temp_a2;
-    s32 *temp_a2_4;
-    s32 *temp_a2_5;
-    s32 *temp_a2_6;
-    s32 *temp_a2_7;
-    s32 *temp_a2_8;
-    s32 temp_a1;
-    s32 temp_a1_2;
-    s32 temp_t0;
-    s32 temp_v0;
-    s32 var_a1;
-    s32 var_t4;
-    void **temp_a0;
-    void **temp_a2_10;
-    void **temp_a2_11;
-    void **temp_a2_2;
-    void **temp_a2_3;
-    void **temp_a2_9;
-    void *temp_t1;
-    void *temp_t7;
-    void *temp_t7_2;
-    void *temp_t7_3;
-    void *temp_t9;
-    void *temp_t9_2;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v0_5;
-    void *temp_v0_6;
-    void *var_a3;
-    void *var_v0;
+    if (payload == NULL || dobj->flags) {
+        return;
+    }
 
-    sp30 = -1;
-    if ((arg1 != NULL) && (arg0->unk54 == 0)) {
-        temp_a0 = &gDisplayListHeads + (arg1->unk0 * 4);
-        temp_t1 = *temp_a0;
-        sp2C = temp_t1;
-        temp_v0 = renderPrepareModelMatrix(temp_a0, arg0, arg1);
-        temp_a1 = arg1->unk0;
-        temp_a2 = &gDisplayListHeads + (temp_a1 * 4);
-        var_t4 = temp_v0;
-        temp_t0 = *temp_a2;
-        if (arg1->unk4 != 0) {
-            sp28 = temp_t0;
-            sp2C = temp_t1;
-            sp34 = temp_v0;
-            sp20 = D_8004A404;
-            renderLoadTextures(arg0, temp_a2, temp_a2, arg1);
-            var_t4 = sp34;
-            temp_a2_2 = &gDisplayListHeads + (arg1->unk0 * 4);
-            temp_v0_2 = *temp_a2_2;
-            *temp_a2_2 = temp_v0_2 + 8;
-            temp_v0_2->unk0 = 0xDE000000;
-            temp_v0_2->unk4 = arg1->unk4;
-            if ((var_t4 != 0) && ((arg0->unk14 == 1) || (arg0->unk8 != 0))) {
-                temp_a2_3 = &gDisplayListHeads + (arg1->unk0 * 4);
-                temp_v0_3 = *temp_a2_3;
-                *temp_a2_3 = temp_v0_3 + 8;
-                temp_v0_3->unk4 = 0x40;
-                temp_v0_3->unk0 = 0xD8380002;
+    t1 = gDisplayListHeads[payload->dlistID];
+    ret = renderPrepareModelMatrix(&gDisplayListHeads[payload->dlistID], dobj);
+    t0 = gDisplayListHeads[payload->dlistID];
+
+    if (payload->dlist != NULL) {
+        segaddr = (u8 *)gDynamicBuffer1.top;
+        renderLoadTextures(dobj, &gDisplayListHeads[payload->dlistID]);
+        gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlist);
+
+        if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+            gSPPopMatrix(gDisplayListHeads[payload->dlistID]++, G_MTX_MODELVIEW);
+        }
+    } else {
+        sp30 = payload->dlistID;
+    }
+
+    payload++;
+
+    while (payload->dlistID != 4) {
+        if (payload->dlist != NULL) {
+            temp = t1;
+            while (temp != t0) {
+                *gDisplayListHeads[payload->dlistID]++ = *temp++;
             }
-        } else {
-            sp30 = temp_a1;
+
+            if (dobj->mobjList != NULL) {
+                goto DUMMY_LABEL;
+            DUMMY_LABEL:; // TODO find better match
+                gSPSegment(gDisplayListHeads[payload->dlistID]++, 0x0E, segaddr);
+            }
+            gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlist);
+
+            if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                gSPPopMatrix(gDisplayListHeads[payload->dlistID]++, G_MTX_MODELVIEW);
+            }
         }
-        var_a1 = arg1->unk8;
-        var_a3 = arg1 + 8;
-        if (var_a1 != 4) {
-            do {
-                if (var_a3->unk4 != 0) {
-                    var_v0 = temp_t1;
-                    if (temp_t1 != temp_t0) {
-                        temp_a1_2 = (temp_t0 - temp_t1) & 0x1F;
-                        if (temp_a1_2 != 0) {
-                            do {
-                                var_v0 += 8;
-                                temp_t7 = *(&gDisplayListHeads + (var_a3->unk0 * 4));
-                                temp_t7->unk0 = var_v0->unk-8;
-                                temp_t7->unk4 = var_v0->unk-4;
-                                temp_a2_4 = &gDisplayListHeads + (var_a3->unk0 * 4);
-                                *temp_a2_4 += 8;
-                            } while ((temp_a1_2 + temp_t1) != var_v0);
-                            if (var_v0 != temp_t0) {
-                                goto loop_16;
-                            }
-                        } else {
-                            do {
-loop_16:
-                                var_v0 += 0x20;
-                                temp_t9 = *(&gDisplayListHeads + (var_a3->unk0 * 4));
-                                temp_t9->unk0 = var_v0->unk-20;
-                                temp_t9->unk4 = var_v0->unk-1C;
-                                temp_a2_5 = &gDisplayListHeads + (var_a3->unk0 * 4);
-                                *temp_a2_5 += 8;
-                                temp_t7_2 = *(&gDisplayListHeads + (var_a3->unk0 * 4));
-                                temp_t7_2->unk0 = var_v0->unk-18;
-                                temp_t7_2->unk4 = var_v0->unk-14;
-                                temp_a2_6 = &gDisplayListHeads + (var_a3->unk0 * 4);
-                                *temp_a2_6 += 8;
-                                temp_t9_2 = *(&gDisplayListHeads + (var_a3->unk0 * 4));
-                                temp_t9_2->unk0 = var_v0->unk-10;
-                                temp_t9_2->unk4 = var_v0->unk-C;
-                                temp_a2_7 = &gDisplayListHeads + (var_a3->unk0 * 4);
-                                *temp_a2_7 += 8;
-                                temp_t7_3 = *(&gDisplayListHeads + (var_a3->unk0 * 4));
-                                temp_t7_3->unk0 = var_v0->unk-8;
-                                temp_t7_3->unk4 = var_v0->unk-4;
-                                temp_a2_8 = &gDisplayListHeads + (var_a3->unk0 * 4);
-                                *temp_a2_8 += 8;
-                            } while (var_v0 != temp_t0);
-                        }
-                        var_a1 = var_a3->unk0;
-                    }
-                    temp_a2_9 = &gDisplayListHeads + (var_a1 * 4);
-                    if (arg0->unk80 != 0) {
-                        temp_v0_4 = *temp_a2_9;
-                        *temp_a2_9 = temp_v0_4 + 8;
-                        temp_v0_4->unk0 = 0xDB060038;
-                        temp_v0_4->unk4 = sp20;
-                        var_a1 = var_a3->unk0;
-                    }
-                    temp_a2_10 = &gDisplayListHeads + (var_a1 * 4);
-                    temp_v0_5 = *temp_a2_10;
-                    *temp_a2_10 = temp_v0_5 + 8;
-                    temp_v0_5->unk0 = 0xDE000000;
-                    temp_v0_5->unk4 = var_a3->unk4;
-                    if ((var_t4 != 0) && ((arg0->unk14 == 1) || (arg0->unk8 != 0))) {
-                        temp_a2_11 = &gDisplayListHeads + (var_a3->unk0 * 4);
-                        temp_v0_6 = *temp_a2_11;
-                        *temp_a2_11 = temp_v0_6 + 8;
-                        temp_v0_6->unk4 = 0x40;
-                        temp_v0_6->unk0 = 0xD8380002;
-                    }
-                }
-                var_a1 = var_a3->unk8;
-                var_a3 += 8;
-            } while (var_a1 != 4);
-        }
-        if (sp30 != -1) {
-            *(&gDisplayListHeads + (sp30 * 4)) = temp_t1;
-        }
+        payload++;
+    }
+
+    if (sp30 != -1) {
+        gDisplayListHeads[sp30] = t1;
     }
 }
 #else
+void func_800143D4(DObj* dobj, DObjPayloadTypeC* payload);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800143D4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80014768(void *arg0) {
-    void *temp_a0;
-
+void func_80014768(GObj *gobj) {
     renderScaleX = 1.0f;
-    temp_a0 = arg0->unk3C;
-    func_800143D4(temp_a0, temp_a0->unk50);
+    func_800143D4(gobj->data.dobj, gobj->data.dobj->data.typeC);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80014768.s")
-#endif
 
-#ifdef MIPS_TO_C
-
+// weird
+#ifdef NON_MATCHING
 void func_8001479C(void) {
-    D_8004ABA0 = &D_8004ABB8;
-    D_8004ABA8 = &D_8004ABB8;
-    D_8004ABA8 = &D_8004ABB8;
-    D_8004ABB0 = &D_8004ABB8;
-    D_8004ABB0 = &D_8004ABB8;
+    int i;
+
+    D_8004ABA0 = D_8004ABB8;
+
+    for (i = 0; i < ARRAY_COUNT(D_8004ABA8); i++) { D_8004ABA8[i] = D_8004ABB8; }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_8001479C.s")
 #endif
 
-#ifdef MIPS_TO_C
+void func_800147C8(DObj* dobj) {
+    void* segaddr = NULL;
+    s32 sp50;
+    DObjPayloadTypeC* payload;
+    Gfx* sp48;
+    s32 i;
+    UNUSED s32 temp;
 
-void func_800147C8(void *arg0) {
-    s32 sp48;
-    s32 *sp44;
-    u32 sp40;
-    f32 sp34;
-    ? *var_a2_2;
-    s32 *temp_a2;
-    s32 *temp_v0;
-    s32 *temp_v1;
-    s32 *var_a2;
-    s32 var_a3;
-    s32 var_s0;
-    s32 var_s0_2;
-    s32 var_s4;
-    s32 var_t3;
-    s32 var_v0;
-    void **temp_v1_2;
-    void **temp_v1_3;
-    void **temp_v1_4;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_t5;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v1_5;
-    void *var_a0;
-    void *var_s0_3;
+    if (!(dobj->flags & 2)) {
+        f32 sp34 = renderScaleX;
 
-    var_s4 = 0;
-    if (!(arg0->unk54 & 2)) {
-        sp34 = renderScaleX;
-        temp_a2 = arg0->unk50;
-        sp40 = D_8004ABA0;
-        sp44 = temp_a2;
-        var_a2 = temp_a2;
-        var_t3 = renderPrepareModelMatrix(&D_8004ABA0, arg0, temp_a2);
-        if ((var_a2 != NULL) && !(arg0->unk54 & 1)) {
-            var_v0 = *var_a2;
-            if (var_v0 != 4) {
-                do {
-                    var_s0 = var_v0 * 4;
-                    if (var_a2->unk4 != 0) {
-                        var_a0 = *(&D_8004ABA8 + var_s0);
-                        if (D_8004ABA0 != var_a0) {
-                            do {
-                                temp_t5 = *(&gDisplayListHeads + var_s0);
-                                temp_t5->unk0 = var_a0->unk0;
-                                temp_t5->unk4 = var_a0->unk4;
-                                temp_v1 = &gDisplayListHeads + (var_a2->unk0 * 4);
-                                *temp_v1 += 8;
-                                temp_v0 = &D_8004ABA8 + (var_a2->unk0 * 4);
-                                *temp_v0 += 8;
-                                var_s0 = var_a2->unk0 * 4;
-                                var_a0 = *(&D_8004ABA8 + var_s0);
-                            } while (D_8004ABA0 != var_a0);
-                        }
-                        if (arg0->unk80 != 0) {
-                            temp_v1_2 = &gDisplayListHeads + var_s0;
-                            if (var_s4 == 0) {
-                                var_s4 = D_8004A404;
-                                sp44 = var_a2;
-                                sp48 = var_t3;
-                                renderLoadTextures(arg0, &gDisplayListHeads + var_s0, var_a2, &D_8004ABA8);
-                                var_s0_2 = var_a2->unk0;
-                            } else {
-                                temp_v0_2 = *temp_v1_2;
-                                *temp_v1_2 = temp_v0_2 + 8;
-                                temp_v0_2->unk4 = var_s4;
-                                temp_v0_2->unk0 = 0xDB060038;
-                                var_s0_2 = var_a2->unk0;
-                            }
-                            var_s0 = var_s0_2 * 4;
-                        }
-                        temp_v1_3 = &gDisplayListHeads + var_s0;
-                        temp_v0_3 = *temp_v1_3;
-                        *temp_v1_3 = temp_v0_3 + 8;
-                        temp_v0_3->unk0 = 0xDE000000;
-                        temp_v0_3->unk4 = var_a2->unk4;
+        payload = dobj->data.typeC;
+        sp48 = D_8004ABA0;
+        sp50 = renderPrepareModelMatrix(&D_8004ABA0, dobj);
+
+        if (payload != NULL && !(dobj->flags & 1)) {
+            while (payload->dlistID != 4) {
+                if (payload->dlist != 0) {
+                    while (D_8004ABA8[payload->dlistID] != D_8004ABA0) {
+                        *gDisplayListHeads[payload->dlistID]++ = *D_8004ABA8[payload->dlistID]++;
                     }
-                    var_v0 = var_a2->unk8;
-                    var_a2 += 8;
-                } while (var_v0 != 4);
+
+                    if (dobj->mobjList != NULL) {
+                        if (segaddr == NULL) {
+                            segaddr = gDynamicBuffer1.top;
+                            renderLoadTextures(dobj, &gDisplayListHeads[payload->dlistID]);
+                        } else {
+                            gSPSegment(gDisplayListHeads[payload->dlistID]++, 0x0E, segaddr);
+                        }
+                    }
+
+                    gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlist);
+                }
+                payload++;
             }
         }
-        temp_a0 = arg0->unk10;
-        if (temp_a0 != NULL) {
-            sp48 = var_t3;
-            func_800147C8(temp_a0);
+
+        if (dobj->firstChild != NULL) {
+            func_800147C8(dobj->firstChild);
         }
-        var_a2_2 = &D_8004ABA8;
-        var_a3 = 0;
-        D_8004ABA0 = sp40;
-        do {
-            if (D_8004ABA0 < var_a2_2->unk0) {
-                var_a2_2->unk0 = D_8004ABA0;
-                if ((var_t3 != 0) && ((temp_v1_4 = &gDisplayListHeads + var_a3, (arg0->unk14 == 1)) || (arg0->unk8 != NULL))) {
-                    temp_a0_2 = *temp_v1_4;
-                    *temp_v1_4 = temp_a0_2 + 8;
-                    temp_a0_2->unk4 = 0x40;
-                    temp_a0_2->unk0 = 0xD8380002;
+
+        D_8004ABA0 = sp48;
+
+        for (i = 0; i < 4; i++) {
+            if (D_8004ABA8[i] > D_8004ABA0) {
+                D_8004ABA8[i] = D_8004ABA0;
+                if (sp50 && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                    gSPPopMatrix(gDisplayListHeads[i]++, G_MTX_MODELVIEW);
                 }
             }
-            if (D_8004ABA0 < var_a2_2->unk4) {
-                var_a2_2->unk4 = D_8004ABA0;
-                if ((var_t3 != 0) && ((temp_v1_5 = &gDisplayListHeads + var_a3, (arg0->unk14 == 1)) || (arg0->unk8 != NULL))) {
-                    temp_a0_3 = temp_v1_5->unk4;
-                    temp_v1_5->unk4 = temp_a0_3 + 8;
-                    temp_a0_3->unk4 = 0x40;
-                    temp_a0_3->unk0 = 0xD8380002;
-                }
-            }
-            var_a2_2 += 8;
-            var_a3 += 8;
-        } while (var_a2_2 != &D_8004ABB8);
+            do { } while (0);
+        }
+
         renderScaleX = sp34;
     }
-    if (arg0->unkC == 0) {
-        var_s0_3 = arg0->unk8;
-        if (var_s0_3 != NULL) {
-            do {
-                func_800147C8(var_s0_3);
-                var_s0_3 = var_s0_3->unk8;
-            } while (var_s0_3 != NULL);
+
+    if (dobj->prev == NULL) {
+        DObj* curr = dobj->next;
+        while (curr != NULL) {
+            func_800147C8(curr);
+            curr = curr->next;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800147C8.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80014AD4(void *arg0) {
+void func_80014AD4(GObj *gobj) {
     renderScaleX = 1.0f;
-    func_800147C8(arg0->unk3C);
+    func_800147C8(gobj->data.dobj);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80014AD4.s")
-#endif
 
-#ifdef MIPS_TO_C
+f32 renderDistanceToCamera(DObj *dobj) {
+    f32 x, y, z;
+    Camera *cam = omCurrentCamera->data.cam;
 
-f32 func_80014B04(void *arg0) {
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f2;
-    void *temp_v0;
+    x = dobj->pos.v.x - cam->viewMtx.lookAt.eye.x;
+    y = dobj->pos.v.y - cam->viewMtx.lookAt.eye.y;
+    z = dobj->pos.v.z - cam->viewMtx.lookAt.eye.z;
 
-    temp_v0 = omCurrentCamera->unk3C;
-    temp_f2 = arg0->unk1C - temp_v0->unk3C;
-    temp_f12 = arg0->unk20 - temp_v0->unk40;
-    temp_f14 = arg0->unk24 - temp_v0->unk44;
-    return (temp_f2 * temp_f2) + (temp_f12 * temp_f12) + (temp_f14 * temp_f14);
+    return SQ(x) + SQ(y) + SQ(z);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80014B04.s")
-#endif
 
-#ifdef MIPS_TO_C
+void renderDrawGObjWithDObjTypeE(GObj* obj) {
+    DObjPayloadTypeE* payload;
+    s32 ret;
+    DObj* dobj;
 
-void func_80014B4C(void *arg0) {
-    f32 *sp24;
-    s32 sp20;
-    f32 *temp_v1;
-    f32 *var_v1;
-    f32 temp_f0;
-    f32 temp_f6;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_s0;
+    dobj = obj->data.dobj;
+    payload = dobj->data.typeE;
 
-    temp_s0 = arg0->unk3C;
-    temp_v1 = temp_s0->unk50;
-    if ((temp_v1 != NULL) && (temp_s0->unk54 == 0)) {
-        sp24 = temp_v1;
-        temp_f0 = func_80014B04(temp_s0);
-        var_v1 = temp_v1;
-        if (temp_f0 < *var_v1) {
-            do {
-                temp_f6 = var_v1->unk8;
-                var_v1 += 8;
-            } while (temp_f0 < temp_f6);
+    if (payload != NULL && !(dobj->flags)) {
+        f32 dist = renderDistanceToCamera(dobj);
+
+        while (payload->drawDistance > dist) {
+            payload++;
         }
+
         renderScaleX = 1.0f;
-        if (var_v1->unk4 != 0) {
-            sp24 = var_v1;
-            sp20 = renderPrepareModelMatrix(&gDisplayListHeads, temp_s0, &gDisplayListHeads);
-            renderLoadTextures(temp_s0, &gDisplayListHeads, &gDisplayListHeads);
-            temp_a0 = gDisplayListHeads;
-            gDisplayListHeads = temp_a0 + 8;
-            temp_a0->unk0 = 0xDE000000;
-            temp_a0->unk4 = var_v1->unk4;
-            if ((sp20 != 0) && ((temp_s0->unk14 == 1) || (temp_s0->unk8 != 0))) {
-                temp_a0_2 = gDisplayListHeads;
-                gDisplayListHeads = temp_a0_2 + 8;
-                temp_a0_2->unk4 = 0x40;
-                temp_a0_2->unk0 = 0xD8380002;
+
+        if (payload->dlist != NULL) {
+            ret = renderPrepareModelMatrix(&gDisplayListHeads[0], dobj);
+            renderLoadTextures(dobj, &gDisplayListHeads[0]);
+            gSPDisplayList(gDisplayListHeads[0]++, payload->dlist);
+            if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                gSPPopMatrix(gDisplayListHeads[0]++, G_MTX_MODELVIEW);
             }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80014B4C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1809,7 +1614,7 @@ void func_80014DF0(void *arg0) {
             D_8004AD98 = 0;
             sp2C = temp_v1;
             sp20 = temp_a2;
-            temp_f0 = func_80014B04(temp_a2, temp_a2);
+            temp_f0 = renderDistanceToCamera(temp_a2, temp_a2);
             var_v1 = temp_v1;
             if (temp_f0 < *var_v1) {
                 do {
@@ -1875,7 +1680,7 @@ void func_80014FA4(void *arg0) {
         if (temp_v0 != NULL) {
             sp24 = temp_v0;
             sp1C = temp_a2;
-            temp_f0 = func_80014B04(temp_a2, temp_a2);
+            temp_f0 = renderDistanceToCamera(temp_a2, temp_a2);
             var_v0 = temp_v0;
             if (temp_f0 < *var_v0) {
                 do {
@@ -2069,7 +1874,7 @@ void func_80015368(void *arg0) {
         var_s0 = temp_s3->unk50;
         if (var_s0 != NULL) {
             D_8004AD98 = 0;
-            temp_f0 = func_80014B04(temp_s3);
+            temp_f0 = renderDistanceToCamera(temp_s3);
             if (temp_f0 < *var_s0) {
                 do {
                     var_s0 += 8;
@@ -2480,7 +2285,7 @@ void func_80015DC4(void *arg0) {
             D_8004AD98 = 0;
             sp2C = temp_v1;
             sp20 = temp_a2;
-            temp_f0 = func_80014B04(temp_a2, temp_a2);
+            temp_f0 = renderDistanceToCamera(temp_a2, temp_a2);
             var_v1 = temp_v1;
             if (temp_f0 < *var_v1) {
                 do {
@@ -2716,7 +2521,7 @@ void func_800162D8(void *arg0) {
         if (var_s0 != NULL) {
             renderScaleX = 1.0f;
             D_8004AD98 = 0;
-            temp_f0 = func_80014B04(temp_s3);
+            temp_f0 = renderDistanceToCamera(temp_s3);
             if (temp_f0 < *var_s0) {
                 do {
                     var_s0 += 8;
@@ -3527,28 +3332,24 @@ void func_80017B40(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80017B40.s")
 #endif
 
-#ifdef MIPS_TO_C
+void func_80017B6C(GObj* camObj, s32 dlLink, s32 mode) {
+    GObj* curr = omGObjListDlHead[dlLink];
 
-void func_80017B6C(void *arg0, s32 arg1, s32 arg2) {
-    void *var_s0;
-
-    var_s0 = *(&omGObjListDlHead + (arg1 * 4));
-    if (var_s0 != NULL) {
-        do {
-            if (!(var_s0->unk44 & 1) && (((arg2 == 0) && (arg0->unk34 & var_s0->unk34)) || ((arg2 == 1) && (var_s0->unk34 == arg0->unk34)))) {
+    while (curr != NULL) {
+        if (!(curr->flags & GOBJ_FLAGS_HIDDEN)) {
+            if (mode == 0 && (camObj->cameraTag & curr->cameraTag) ||
+                mode == 1 && camObj->cameraTag == curr->cameraTag) {
                 D_8003DE54 = 4;
-                omCurrentDrawObj = var_s0;
-                var_s0->unk2C(var_s0);
+                omCurrentDrawObj = curr;
+                curr->onDraw(curr);
                 D_8003DE54 = 3;
-                var_s0->unkE = D_8003DCA8;
+                curr->lastDrawFrame = gtlDrawnFrameCounter;
             }
-            var_s0 = var_s0->unk20;
-        } while (var_s0 != NULL);
+        }
+
+        curr = curr->nextDL;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80017B6C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -3600,7 +3401,7 @@ void func_80017C7C(s32 arg0, s32 arg1) {
         var_v0_2 += 4;
         var_t1 += 4;
     } while (var_v1_2 != &gtlPrevDLHeads);
-    *(&D_8004A7F8 + (arg1 * 0x14)) = D_8003DCA8;
+    *(&D_8004A7F8 + (arg1 * 0x14)) = gtlDrawnFrameCounter;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80017C7C.s")
@@ -3659,7 +3460,7 @@ void func_80017E84(void *arg0, ? arg1) {
         do {
             if (var_s1 & 1) {
                 if (var_s2 & 1) {
-                    if (D_8003DCA8.unk3 == *(&D_8004A7F8 + (var_s0 * 0x14))) {
+                    if (gtlDrawnFrameCounter.unk3 == *(&D_8004A7F8 + (var_s0 * 0x14))) {
                         func_80017DB0(var_s0, var_s0);
                     } else {
                         func_80017C7C(arg0, var_s0, arg1);

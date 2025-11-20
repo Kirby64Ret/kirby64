@@ -347,6 +347,7 @@ extern u32 D_8003DE54;
 extern struct GObjProcess *omCurrentProc;
 extern OSMesgQueue HS64_GObjProcMesgQ;
 extern struct GObj *omGObjListHead[32];
+extern struct GObj *omGObjListDlHead[];
 
 // extern funcs
 struct Camera *func_80009F7C(struct GObj*);

@@ -40,7 +40,8 @@ extern SCTaskGfx *gtlGfxTaskBufferPtrs[NUM_GTL_CONTEXTS];
 extern SCTaskGfx *gtlGfxTaskBufferEnds[NUM_GTL_CONTEXTS];
 extern SCTaskGfxEnd *gtlGfxEndTasks[NUM_GTL_CONTEXTS];
 
-extern u32 D_8003DCA4, D_8003DCA8;
+extern u32 D_8003DCA4;
+extern s32 gtlDrawnFrameCounter;
 extern s32 D_8004A42C;
 extern u32 D_8004A430;
 
@@ -726,7 +727,7 @@ void gtlMain(FuncTable *this) {
                 gtlSwitchContext(0);
                 D_8004A42C = osGetCount();
                 this->onDraw(this);
-                D_8003DCA8 += 1;
+                gtlDrawnFrameCounter += 1;
                 D_8004A430 = (osGetCount() - D_8004A42C) / 2971;
 
                 if (func_800067E0()) {
@@ -754,7 +755,7 @@ void gtlMain(FuncTable *this) {
             if (D_8003DCA4 % gtlDrawInterval == 0 && gtlSwitchContext(1)) {
                 D_8004A42C = osGetCount();
                 this->onDraw(this);
-                D_8003DCA8 += 1;
+                gtlDrawnFrameCounter += 1;
                 D_8004A430 = (osGetCount() - D_8004A42C) / 2971;
                 if (func_800067E0()) {
                     break;
@@ -831,7 +832,7 @@ void gtlDrawSingle(GObj *gobj) {
         D_8004A458[idxmsg] = 0;
     } while (D_8004A458[gtlCurrentContextID] != 0);
 
-    D_8003DCA8 += 1;
+    gtlDrawnFrameCounter += 1;
 }
 
 void gtlStart(BufferSetup* setup, void (*postInitFunc)(void)) {
@@ -877,7 +878,7 @@ void gtlStart(BufferSetup* setup, void (*postInitFunc)(void)) {
     D_8004A488 = setup->contpadPoll;
     func_800046A4(D_8004A488 != func_80004624 ? TRUE : FALSE);
 
-    D_8003DCA4 = D_8003DCA8 = 0;
+    D_8003DCA4 = gtlDrawnFrameCounter = 0;
     if (postInitFunc != NULL) {
         postInitFunc();
     }

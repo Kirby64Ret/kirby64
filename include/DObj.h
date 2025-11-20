@@ -35,6 +35,18 @@ union Mtx3fi {
     OMMtxInt3 i;
 }; // size == 0x10
 
+// Some sort of payload to copy to the main glist
+typedef struct DObjPayloadTypeC {
+    /* 0x00 */ s32 dlistID;
+    /* 0x04 */ Gfx* dlist;
+} DObjPayloadTypeC; // size = 0x08
+
+// TODO: sorted by distance?
+typedef struct DObjPayloadTypeE {
+    /* 0x00 */ f32 drawDistance;
+    /* 0x04 */ Gfx* dlist;
+} DObjPayloadTypeE; // size = 0x08
+
 typedef struct DObj {
     /* 0x00 */ struct DObj* nextFree;
     /* 0x04 */ struct GObj* gobj;
@@ -47,8 +59,10 @@ typedef struct DObj {
     OMMtxFloat3 scale;
     struct DObjDynamicStore *unk4C;
     union {
-        void *data;
-        Gfx *glist;
+        /* 0x50 */ void *data;
+        /* 0x50 */ Gfx *glist;
+        /* 0x50 */ DObjPayloadTypeC *typeC;
+        /* 0x50 */ DObjPayloadTypeE *typeE;
     } data;
     u8 flags;
     u8 animCBReceiver;

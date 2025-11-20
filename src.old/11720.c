@@ -43,9 +43,9 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80014AD4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80014B04.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDistanceToCamera.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80014B4C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDrawGObjWithDObjTypeE.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80014C78.s")
 

@@ -344,7 +344,7 @@ void func_800AB174(struct GObj *arg0) {
 
 void func_800AB1F0(struct GObj *arg0) {
     gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
-    func_80014B4C(arg0);
+    renderDrawGObjWithDObjTypeE(arg0);
 }
 
 void func_800AB244(struct GObj *arg0) {

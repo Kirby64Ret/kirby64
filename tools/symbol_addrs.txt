@@ -924,7 +924,7 @@ request_track_3 = 0x800AEC70; // type:func
 gEntityRenderPriorityArray = 0x800E0810;
 
 // gtl
-gtlDrawnFrameCounter = 0x8003DCAB; 
+gtlDrawnFrameCounter = 0x8003DCA8; 
 gtlSetUpdateDrawRate = 0x800075DC; // type:func
 gtlUpdate = 0x80006E94; // type:func
 gtlFuncTableDefaultDraw = 0x80006E30; // type:func
@@ -984,6 +984,8 @@ gtlSetSegment0F=0x80005378; // type:func
 gtlMainFuncTable=0x8004A418;
 
 // render
+renderDrawGObjWithDObjTypeE = 0x80014B4C; // type:func
+renderDistanceToCamera = 0x80014B04; // type:func
 renderDrawDObjFromGObj = 0x800143A4; // type:func
 renderDrawDObj = 0x80014264; // type:func
 renderDrawGObjList3 = 0x80014240; // type:func

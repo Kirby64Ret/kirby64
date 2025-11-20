@@ -1935,7 +1935,7 @@ void func_800AB174(GObj *g) {
 
 void func_800AB1F0(GObj *g) {
     gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-    func_80014B4C(g);
+    renderDrawGObjWithDObjTypeE(g);
 }
 
 void func_800AB244(GObj *g) {

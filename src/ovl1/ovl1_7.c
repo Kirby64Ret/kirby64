@@ -493,7 +493,7 @@ void func_800AFBB4(GObj *gobj, GObj *gobj2) {
     } else {
         gobj2->flags &= ~1;
     }
-    gobj2->unkE = D_8003DCA8 - 1;
+    gobj2->unkE = gtlDrawnFrameCounter - 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800AFBB4.s")
