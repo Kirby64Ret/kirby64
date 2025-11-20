@@ -358,6 +358,6 @@ void HS64_omInit(ObjectSetup *);
 AObj *func_800098AC(MObj *, u8);
 OMMtx *omDObjAppendMtx(struct DObj *arg0, u8 type, u8 param);
 AObj *omCameraAddAObj(Camera *, u8);
-struct DObj *omGObjAddDObj(struct GObj *gobj, u8 *arg1);
+struct DObj *omGObjAddDObj(struct GObj *gobj, void *arg1);
 
 #endif

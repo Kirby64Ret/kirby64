@@ -61,7 +61,7 @@ void func_800BB6B0(GObj *gobj) {
         case 21:
         case 23:
         case 25:
-            func_800143A4(gobj);
+            renderDrawDObjFromGObj(gobj);
             break;
         case 27:
         case 29:

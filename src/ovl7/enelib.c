@@ -2521,7 +2521,7 @@ void func_8019E128_ovl7(s32 *arg0) {
                 gDisplayListHeads->unk0 = temp_s0_9 + 8;
                 temp_s0_9->words.w0 = 0xDB060010;
                 temp_s0_9->words.w1 = gSegment4StartArray[*arg0];
-                func_800143A4(arg0, 0xDB060010, gSegment4StartArray);
+                renderDrawDObjFromGObj(arg0, 0xDB060010, gSegment4StartArray);
                 temp_s0_10 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_s0_10 + 8;
                 temp_s0_10->words.w1 = 0x18;

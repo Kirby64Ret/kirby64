@@ -46,7 +46,10 @@ typedef struct DObj {
     OMMtxFloat4 angle;
     OMMtxFloat3 scale;
     struct DObjDynamicStore *unk4C;
-    u32 unk50;
+    union {
+        void *data;
+        Gfx *glist;
+    } data;
     u8 flags;
     u8 animCBReceiver;
     u8 numMatrices;

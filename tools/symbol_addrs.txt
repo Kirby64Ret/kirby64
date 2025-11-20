@@ -984,6 +984,15 @@ gtlSetSegment0F=0x80005378; // type:func
 gtlMainFuncTable=0x8004A418;
 
 // render
+renderDrawDObjFromGObj = 0x800143A4; // type:func
+renderDrawDObj = 0x80014264; // type:func
+renderDrawGObjList3 = 0x80014240; // type:func
+renderDrawGObjList2 = 0x8001421C; // type:func
+renderDrawGObjList1 = 0x800141F8; // type:func
+renderDrawGObjList0 = 0x800141D4; // type:func
+renderDrawGObj = 0x800140FC; // type:func
+renderPrepareModelMatrix = 0x80011180; // type:func
+renderLoadTextures = 0x80013300; // type:func
 renderProjectionMtx = 0x8004AA90; 
 renderPerspectiveMtxF = 0x8004AA98; 
 renderMVPMatrixF = 0x8004AAD8; 

@@ -270,7 +270,7 @@ void func_8015170C_ovl6(s32 *arg0) {
         case 21:
         case 23:
         case 25:
-            func_800143A4(arg0);
+            renderDrawDObjFromGObj(arg0);
             return;
         case 27:
         case 29:
@@ -387,7 +387,7 @@ void func_8015198C_ovl6(s32 *arg0) {
         case 21:
         case 23:
         case 25:
-            func_800143A4(arg0);
+            renderDrawDObjFromGObj(arg0);
             return;
         case 27:
         case 29:
@@ -564,7 +564,7 @@ void func_80151E60_ovl6(s32 *arg0, s32 arg1) {
         case 21:
         case 23:
         case 25:
-            func_800143A4(arg0);
+            renderDrawDObjFromGObj(arg0);
             break;
         case 27:
         case 29:
@@ -717,7 +717,7 @@ void func_80152138_ovl6(s32 *arg0, void *arg1) {
         case 21:
         case 23:
         case 25:
-            func_800143A4(arg0, arg1);
+            renderDrawDObjFromGObj(arg0, arg1);
             break;
         case 27:
         case 29:
@@ -886,7 +886,7 @@ void func_801524C8_ovl6(s32 *arg0) {
         case 21:
         case 23:
         case 25:
-            func_800143A4(arg0);
+            renderDrawDObjFromGObj(arg0);
             break;
         case 27:
         case 29:

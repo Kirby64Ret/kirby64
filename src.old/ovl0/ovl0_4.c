@@ -130,33 +130,33 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001103C.s")
 
 // file boundary?
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80011180.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderPrepareModelMatrix.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80013300.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderLoadTextures.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_800140FC.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawGObj.s")
 
 extern Gfx* gDisplayListHeads[4];
 
-void func_800141D4(void* arg0) {
-    func_800140FC(arg0, &gDisplayListHeads[0]);
+void renderDrawGObjList0(void* arg0) {
+    renderDrawGObj(arg0, &gDisplayListHeads[0]);
 }
 
-void func_800141F8(void* arg0) {
-    func_800140FC(arg0, &gDisplayListHeads[1]);
+void renderDrawGObjList1(void* arg0) {
+    renderDrawGObj(arg0, &gDisplayListHeads[1]);
 }
 
-void func_8001421C(void* arg0) {
-    func_800140FC(arg0, &gDisplayListHeads[2]);
+void renderDrawGObjList2(void* arg0) {
+    renderDrawGObj(arg0, &gDisplayListHeads[2]);
 }
 
-void func_80014240(void* arg0) {
-    func_800140FC(arg0, &gDisplayListHeads[3]);
+void renderDrawGObjList3(void* arg0) {
+    renderDrawGObj(arg0, &gDisplayListHeads[3]);
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80014264.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawDObj.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_800143A4.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawDObjFromGObj.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_800143D4.s")
 

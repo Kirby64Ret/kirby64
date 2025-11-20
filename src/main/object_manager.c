@@ -782,7 +782,7 @@ MObj* omDObjAddMObj(DObj* dobj, TextureScroll *texture) {
 // Not really sure what's going on here
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009BD4.s")
 
-struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
+struct DObj *omGObjAddDObj(GObj *gobj, void *arg1) {
     struct DObj *dobj;
     struct DObj *temp_v1;
 
@@ -809,7 +809,7 @@ struct DObj *omGObjAddDObj(GObj *gobj, u8 *arg1) {
     dobj->parent = (DObj*)1;
     dobj->next = NULL;
     dobj->firstChild = NULL;
-    dobj->unk50 = arg1;
+    dobj->data.data = arg1;
     func_80009BD4(dobj);
     return dobj;
 }

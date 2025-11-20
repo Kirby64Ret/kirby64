@@ -1924,7 +1924,7 @@ void func_800AB118(GObj *g) {
 
 void func_800AB120(GObj *g) {
     gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-    func_800141D4(g);
+    renderDrawGObjList0(g);
 }
 
 void func_800AB174(GObj *g) {
@@ -1946,7 +1946,7 @@ void func_800AB244(GObj *g) {
 
 void func_800AB2C0(GObj *g) {
     gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-    func_800143A4(g);
+    renderDrawDObjFromGObj(g);
 }
 
 void func_800AB314(GObj *g) {

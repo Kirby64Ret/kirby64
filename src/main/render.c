@@ -208,7 +208,7 @@ void func_8001103C(Mtx* arg0, DObj* arg1, s32 arg2) {
 }
 
 #ifdef NON_MATCHING
-s32 func_80011180(Gfx** gfxPtr, DObj* dobj) {
+s32 renderPrepareModelMatrix(Gfx** gfxPtr, DObj* dobj) {
     Gfx* sp2DC;
     uintptr_t csr;
     s32 sp2D4;
@@ -754,49 +754,6 @@ s32 func_80011180(Gfx** gfxPtr, DObj* dobj) {
                         gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZX_ZY_F, mtx->m[3][0]);
                         gMoveWd(sp2DC++, G_MW_MATRIX, G_MWO_MATRIX_ZZ_ZW_F, mtx->m[3][1]);
                         continue;
-                    // case MTX_TYPE_51:
-                    //     HS64_MtxRotateRPYTranslate(mtx, dobj->pos.v.x * renderScaleX, dobj->pos.v.y * renScaleY,
-                    //                              dobj->pos.v.z * renScaleZ, dobj->angle.v.x, dobj->angle.v.y,
-                    //                              dobj->angle.v.z);
-                    //     break;
-                    // case MTX_TYPE_52:
-                    //     HS64_MtxRotateRPYTranslate(mtx, dobj->pos.v.x * renderScaleX, dobj->pos.v.y * renScaleY,
-                    //                              dobj->pos.v.z * renScaleZ, dobj->angle.v.x, dobj->angle.v.y,
-                    //                              dobj->angle.v.z);
-                    //     break;
-                    // case MTX_TYPE_53:
-                    //     renderScaleX *= dobj->scale.v.x;
-                    //     renScaleY *= dobj->scale.v.y;
-                    //     renScaleZ *= dobj->scale.v.z;
-                    //     HS64_MtxScale(mtx, renderScaleX, renScaleY, renScaleZ);
-                    //     renIsScaleMtxPushed = true;
-                    //     sp2B8 = 2;
-                    //     break;
-                    // case MTX_TYPE_55:
-                    //     HS64_Translate(mtx, dobj->pos.v.x * renderScaleX, dobj->pos.v.y * renScaleY,
-                    //                   dobj->pos.v.z * renScaleZ);
-                    //     break;
-                    // case MTX_TYPE_64:
-                    //     renderScaleX *= sp2C0->v.x;
-                    //     renScaleY *= sp2C0->v.y;
-                    //     renScaleZ *= sp2C0->v.z;
-                    //     continue;
-                    // case MTX_TYPE_65:
-                    //     HS64_MtxRotateTranslate(mtx, sp2C8->f.v.x, sp2C8->f.v.y, sp2C8->f.v.z, sp2C4->a, sp2C4->v.x,
-                    //                          sp2C4->v.y, sp2C4->v.z);
-                    //     renderScaleX *= sp2C0->v.x;
-                    //     renScaleY *= sp2C0->v.y;
-                    //     renScaleZ *= sp2C0->v.z;
-                    //     break;
-                    // case MTX_TYPE_54:
-                    //     func_8001ECD0(mtx, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z,
-                    //                   dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z, renderScaleX, renScaleY,
-                    //                   renScaleZ, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
-                    //     renderScaleX *= dobj->scale.v.x;
-                    //     renScaleY *= dobj->scale.v.y;
-                    //     renScaleZ *= dobj->scale.v.z;
-                    //     break;
-
                     default:
                         if (ommtx->kind >= MTX_TYPE_66 && renderMatrixHandler != NULL) {
                             func = dobj->gobj->lastDrawFrame != (u8) gtlDrawnFrameCounter
@@ -829,12 +786,13 @@ s32 func_80011180(Gfx** gfxPtr, DObj* dobj) {
     return sp2D4;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80011180.s")
+s32 renderPrepareModelMatrix(Gfx **, DObj *);
+#pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderPrepareModelMatrix.s")
 #endif
 
 #ifdef MIPS_TO_C
 
-void func_80013300(void *arg0, void **arg1) {
+void renderLoadTextures(void *arg0, void **arg1) {
     f32 spDC;
     f32 spD8;
     f32 spD4;
@@ -1312,131 +1270,84 @@ block_70:
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80013300.s")
+void renderLoadTextures(DObj *, Gfx **);
+#pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderLoadTextures.s")
 #endif
 
-#ifdef MIPS_TO_C
+void renderDrawGObj(GObj* gobj, Gfx** gfxPtr) {
+    s32 ret;
+    DObj* dobj;
 
-void func_800140FC(void *arg0, void **arg1) {
-    s32 sp1C;
-    void *sp18;
-    void *temp_a2;
-    void *temp_v1;
-    void *temp_v1_2;
+    dobj = gobj->data.dobj;
 
-    temp_a2 = arg0->unk3C;
     renderScaleX = 1.0f;
-    if ((temp_a2->unk50 != 0) && (temp_a2->unk54 == 0)) {
-        sp18 = temp_a2;
-        sp1C = func_80011180(arg1, temp_a2, temp_a2, arg1);
-        func_80013300(sp18, arg1);
-        temp_v1 = *arg1;
-        *arg1 = temp_v1 + 8;
-        temp_v1->unk0 = 0xDE000000;
-        temp_v1->unk4 = temp_a2->unk50;
-        if ((sp1C != 0) && ((temp_a2->unk14 == 1) || (temp_a2->unk8 != 0))) {
-            temp_v1_2 = *arg1;
-            *arg1 = temp_v1_2 + 8;
-            temp_v1_2->unk4 = 0x40;
-            temp_v1_2->unk0 = 0xD8380002;
+
+    if (dobj->data.glist != NULL) {
+        if (dobj->flags == 0) {
+            ret = renderPrepareModelMatrix(gfxPtr, dobj);
+            renderLoadTextures(dobj, gfxPtr);
+            gSPDisplayList((*gfxPtr)++, dobj->data.glist);
+
+            if (ret != 0 && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                gSPPopMatrix((*gfxPtr)++, G_MTX_MODELVIEW);
+            }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800140FC.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800141D4(void) {
-    func_800140FC(&gDisplayListHeads);
+void renderDrawGObjList0(GObj *gobj) {
+    renderDrawGObj(gobj, &gDisplayListHeads[0]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800141D4.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800141F8(void) {
-    func_800140FC(&D_8004A3D4);
+void renderDrawGObjList1(GObj *gobj) {
+    renderDrawGObj(gobj, &gDisplayListHeads[1]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800141F8.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8001421C(void) {
-    func_800140FC(&D_8004A3D8);
+void renderDrawGObjList2(GObj *gobj) {
+    renderDrawGObj(gobj, &gDisplayListHeads[2]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_8001421C.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80014240(void) {
-    func_800140FC(&D_8004A3DC);
+void renderDrawGObjList3(GObj *gobj) {
+    renderDrawGObj(gobj, &gDisplayListHeads[3]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80014240.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80014264(void *arg0) {
-    s32 sp2C;
+void renderDrawDObj(DObj* dobj) {
+    s32 ret;
+    DObj* curr;
     f32 sp24;
-    void *temp_a0;
-    void *temp_v1;
-    void *temp_v1_2;
-    void *var_s0;
 
-    if (!(arg0->unk54 & 2)) {
+    if (!(dobj->flags & 2)) {
         sp24 = renderScaleX;
-        sp2C = func_80011180(&gDisplayListHeads, arg0, arg0);
-        if ((arg0->unk50 != 0) && !(arg0->unk54 & 1)) {
-            func_80013300(arg0, &gDisplayListHeads, arg0);
-            temp_v1 = gDisplayListHeads;
-            gDisplayListHeads = temp_v1 + 8;
-            temp_v1->unk0 = 0xDE000000;
-            temp_v1->unk4 = arg0->unk50;
+        ret = renderPrepareModelMatrix(&gDisplayListHeads[0], dobj);
+
+        if (dobj->data.glist != NULL && !(dobj->flags & 1)) {
+            renderLoadTextures(dobj, &gDisplayListHeads[0]);
+            gSPDisplayList(gDisplayListHeads[0]++, dobj->data.glist);
         }
-        temp_a0 = arg0->unk10;
-        if (temp_a0 != NULL) {
-            func_80014264(temp_a0);
+
+        if (dobj->firstChild != NULL) {
+            renderDrawDObj(dobj->firstChild);
         }
-        if ((sp2C != 0) && ((arg0->unk14 == 1) || (arg0->unk8 != NULL))) {
-            temp_v1_2 = gDisplayListHeads;
-            gDisplayListHeads = temp_v1_2 + 8;
-            temp_v1_2->unk4 = 0x40;
-            temp_v1_2->unk0 = 0xD8380002;
+
+        if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+            gSPPopMatrix(gDisplayListHeads[0]++, G_MTX_MODELVIEW);
         }
         renderScaleX = sp24;
     }
-    if (arg0->unkC == 0) {
-        var_s0 = arg0->unk8;
-        if (var_s0 != NULL) {
-            do {
-                func_80014264(var_s0);
-                var_s0 = var_s0->unk8;
-            } while (var_s0 != NULL);
+
+    if (dobj->prev == NULL) {
+        curr = dobj->next;
+        while (curr != NULL) {
+            renderDrawDObj(curr);
+            curr = curr->next;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80014264.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800143A4(void *arg0) {
+void renderDrawDObjFromGObj(GObj *gobj) {
     renderScaleX = 1.0f;
-    func_80014264(arg0->unk3C);
+    renderDrawDObj(gobj->data.dobj);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800143A4.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1483,7 +1394,7 @@ void func_800143D4(void *arg0, void *arg1) {
         temp_a0 = &gDisplayListHeads + (arg1->unk0 * 4);
         temp_t1 = *temp_a0;
         sp2C = temp_t1;
-        temp_v0 = func_80011180(temp_a0, arg0, arg1);
+        temp_v0 = renderPrepareModelMatrix(temp_a0, arg0, arg1);
         temp_a1 = arg1->unk0;
         temp_a2 = &gDisplayListHeads + (temp_a1 * 4);
         var_t4 = temp_v0;
@@ -1493,7 +1404,7 @@ void func_800143D4(void *arg0, void *arg1) {
             sp2C = temp_t1;
             sp34 = temp_v0;
             sp20 = D_8004A404;
-            func_80013300(arg0, temp_a2, temp_a2, arg1);
+            renderLoadTextures(arg0, temp_a2, temp_a2, arg1);
             var_t4 = sp34;
             temp_a2_2 = &gDisplayListHeads + (arg1->unk0 * 4);
             temp_v0_2 = *temp_a2_2;
@@ -1656,7 +1567,7 @@ void func_800147C8(void *arg0) {
         sp40 = D_8004ABA0;
         sp44 = temp_a2;
         var_a2 = temp_a2;
-        var_t3 = func_80011180(&D_8004ABA0, arg0, temp_a2);
+        var_t3 = renderPrepareModelMatrix(&D_8004ABA0, arg0, temp_a2);
         if ((var_a2 != NULL) && !(arg0->unk54 & 1)) {
             var_v0 = *var_a2;
             if (var_v0 != 4) {
@@ -1683,7 +1594,7 @@ void func_800147C8(void *arg0) {
                                 var_s4 = D_8004A404;
                                 sp44 = var_a2;
                                 sp48 = var_t3;
-                                func_80013300(arg0, &gDisplayListHeads + var_s0, var_a2, &D_8004ABA8);
+                                renderLoadTextures(arg0, &gDisplayListHeads + var_s0, var_a2, &D_8004ABA8);
                                 var_s0_2 = var_a2->unk0;
                             } else {
                                 temp_v0_2 = *temp_v1_2;
@@ -1807,8 +1718,8 @@ void func_80014B4C(void *arg0) {
         renderScaleX = 1.0f;
         if (var_v1->unk4 != 0) {
             sp24 = var_v1;
-            sp20 = func_80011180(&gDisplayListHeads, temp_s0, &gDisplayListHeads);
-            func_80013300(temp_s0, &gDisplayListHeads, &gDisplayListHeads);
+            sp20 = renderPrepareModelMatrix(&gDisplayListHeads, temp_s0, &gDisplayListHeads);
+            renderLoadTextures(temp_s0, &gDisplayListHeads, &gDisplayListHeads);
             temp_a0 = gDisplayListHeads;
             gDisplayListHeads = temp_a0 + 8;
             temp_a0->unk0 = 0xDE000000;
@@ -1840,9 +1751,9 @@ void func_80014C78(void *arg0) {
     temp_s0 = arg0->unk50;
     if (!(arg0->unk54 & 2)) {
         sp20 = renderScaleX;
-        sp2C = func_80011180(&gDisplayListHeads, arg0, arg0);
+        sp2C = renderPrepareModelMatrix(&gDisplayListHeads, arg0, arg0);
         if ((temp_s0 != 0) && (*(temp_s0 + (D_8004AD98 * 4)) != 0) && !(arg0->unk54 & 1)) {
-            func_80013300(arg0, &gDisplayListHeads, arg0);
+            renderLoadTextures(arg0, &gDisplayListHeads, arg0);
             temp_v1 = gDisplayListHeads;
             gDisplayListHeads = temp_v1 + 8;
             temp_v1->unk0 = 0xDE000000;
@@ -1908,12 +1819,12 @@ void func_80014DF0(void *arg0) {
             }
             sp2C = var_v1;
             sp20 = temp_a2;
-            sp28 = func_80011180(&gDisplayListHeads, temp_a2, temp_a2);
+            sp28 = renderPrepareModelMatrix(&gDisplayListHeads, temp_a2, temp_a2);
             var_a2 = temp_a2;
             if ((var_v1->unk4 != 0) && !(var_a2->unk54 & 1)) {
                 sp2C = var_v1;
                 sp20 = var_a2;
-                func_80013300(var_a2, &gDisplayListHeads, var_a2);
+                renderLoadTextures(var_a2, &gDisplayListHeads, var_a2);
                 temp_a0 = gDisplayListHeads;
                 gDisplayListHeads = temp_a0 + 8;
                 temp_a0->unk0 = 0xDE000000;
@@ -2023,7 +1934,7 @@ void func_8001503C(void *arg0, s32 *arg2) {
         }
         sp3C = D_8004ABA0;
         var_a2_2 = sp40;
-        var_t3 = func_80011180(&D_8004ABA0, arg0, var_a2);
+        var_t3 = renderPrepareModelMatrix(&D_8004ABA0, arg0, var_a2);
         if ((temp_s0 != 0) && (var_a2_2 != NULL) && !(arg0->unk54 & 1)) {
             var_v0 = *var_a2_2;
             if (var_v0 != 4) {
@@ -2050,7 +1961,7 @@ void func_8001503C(void *arg0, s32 *arg2) {
                                 var_s4 = D_8004A404;
                                 sp40 = var_a2_2;
                                 sp48 = var_t3;
-                                func_80013300(arg0, &gDisplayListHeads + var_s0, var_a2_2, &D_8004ABA8);
+                                renderLoadTextures(arg0, &gDisplayListHeads + var_s0, var_a2_2, &D_8004ABA8);
                                 var_s0_2 = var_a2_2->unk0;
                             } else {
                                 temp_v0_2 = *temp_v1_2;
@@ -2169,7 +2080,7 @@ void func_80015368(void *arg0) {
             sp34 = temp_a2;
             sp30 = D_8004ABA0;
             var_a2 = temp_a2;
-            var_t3 = func_80011180(&D_8004ABA0, temp_s3, temp_a2);
+            var_t3 = renderPrepareModelMatrix(&D_8004ABA0, temp_s3, temp_a2);
             if ((var_a2 != NULL) && !(temp_s3->unk54 & 1)) {
                 var_v0 = *var_a2;
                 if (var_v0 != 4) {
@@ -2196,7 +2107,7 @@ void func_80015368(void *arg0) {
                                     var_s4 = D_8004A404;
                                     sp34 = var_a2;
                                     sp44 = var_t3;
-                                    func_80013300(temp_s3, &gDisplayListHeads + var_s0_2, var_a2, &D_8004ABA8);
+                                    renderLoadTextures(temp_s3, &gDisplayListHeads + var_s0_2, var_a2, &D_8004ABA8);
                                     var_s0_3 = var_a2->unk0;
                                 } else {
                                     temp_v0_2 = *temp_v1_2;
@@ -2287,9 +2198,9 @@ void func_800156C4(void *arg0) {
             temp_v0_2->unk0 = 0xDE000000;
             temp_v0_2->unk4 = temp_s0->unk0;
         }
-        sp2C = func_80011180(&gDisplayListHeads, arg0, arg0, &gDisplayListHeads);
+        sp2C = renderPrepareModelMatrix(&gDisplayListHeads, arg0, arg0, &gDisplayListHeads);
         if ((temp_s0 != NULL) && (temp_s0->unk4 != 0) && !(arg0->unk54 & 1)) {
-            func_80013300(arg0, &gDisplayListHeads, arg0, &gDisplayListHeads);
+            renderLoadTextures(arg0, &gDisplayListHeads, arg0, &gDisplayListHeads);
             temp_v0_3 = gDisplayListHeads;
             gDisplayListHeads = temp_v0_3 + 8;
             temp_v0_3->unk0 = 0xDE000000;
@@ -2371,7 +2282,7 @@ void func_8001588C(void *arg0) {
         sp40 = D_8004ABA0;
         sp44 = temp_a2;
         var_a2 = temp_a2;
-        var_t3 = func_80011180(&D_8004ABA0, arg0, temp_a2);
+        var_t3 = renderPrepareModelMatrix(&D_8004ABA0, arg0, temp_a2);
         if ((var_a2 != NULL) && !(arg0->unk54 & 1)) {
             var_a1 = *var_a2;
             if (var_a1 != 4) {
@@ -2406,7 +2317,7 @@ void func_8001588C(void *arg0) {
                                 var_s4 = D_8004A404;
                                 sp44 = var_a2;
                                 sp48 = var_t3;
-                                func_80013300(arg0, &gDisplayListHeads + var_s0, var_a2, &D_8004ABA8);
+                                renderLoadTextures(arg0, &gDisplayListHeads + var_s0, var_a2, &D_8004ABA8);
                                 var_s0_2 = var_a2->unk0;
                             } else {
                                 temp_v0_3 = *temp_v1_3;
@@ -2511,9 +2422,9 @@ void func_80015BFC(void *arg0) {
             temp_v0_2->unk0 = 0xDE000000;
             temp_v0_2->unk4 = sp20->unk0;
         }
-        sp2C = func_80011180(&gDisplayListHeads, arg0, arg0, &gDisplayListHeads);
+        sp2C = renderPrepareModelMatrix(&gDisplayListHeads, arg0, arg0, &gDisplayListHeads);
         if ((temp_s0 != 0) && (sp20->unk4 != 0) && !(arg0->unk54 & 1)) {
-            func_80013300(arg0, &gDisplayListHeads, arg0, &gDisplayListHeads);
+            renderLoadTextures(arg0, &gDisplayListHeads, arg0, &gDisplayListHeads);
             temp_v0_3 = gDisplayListHeads;
             gDisplayListHeads = temp_v0_3 + 8;
             temp_v0_3->unk0 = 0xDE000000;
@@ -2579,12 +2490,12 @@ void func_80015DC4(void *arg0) {
             }
             sp2C = var_v1;
             sp20 = temp_a2;
-            sp28 = func_80011180(&gDisplayListHeads, temp_a2, temp_a2);
+            sp28 = renderPrepareModelMatrix(&gDisplayListHeads, temp_a2, temp_a2);
             var_a2 = temp_a2;
             if ((var_v1->unk4 != 0) && !(var_a2->unk54 & 1)) {
                 sp2C = var_v1;
                 sp20 = var_a2;
-                func_80013300(var_a2, &gDisplayListHeads, var_a2);
+                renderLoadTextures(var_a2, &gDisplayListHeads, var_a2);
                 temp_a0 = gDisplayListHeads;
                 gDisplayListHeads = temp_a0 + 8;
                 temp_a0->unk0 = 0xDE000000;
@@ -2662,7 +2573,7 @@ void func_80015F78(void *arg0, s32 *arg2) {
         }
         sp3C = D_8004ABA0;
         var_a2_2 = sp40;
-        var_t4 = func_80011180(&D_8004ABA0, arg0, var_a2);
+        var_t4 = renderPrepareModelMatrix(&D_8004ABA0, arg0, var_a2);
         if ((temp_s0 != 0) && (var_a2_2 != NULL) && !(arg0->unk54 & 1)) {
             var_a1 = *var_a2_2;
             if (var_a1 != 4) {
@@ -2697,7 +2608,7 @@ void func_80015F78(void *arg0, s32 *arg2) {
                                 var_s4 = D_8004A404;
                                 sp40 = var_a2_2;
                                 sp48 = var_t4;
-                                func_80013300(arg0, &gDisplayListHeads + var_s0, var_a2_2, &D_8004ABA8);
+                                renderLoadTextures(arg0, &gDisplayListHeads + var_s0, var_a2_2, &D_8004ABA8);
                                 var_s0_2 = var_a2_2->unk0;
                             } else {
                                 temp_v0_3 = *temp_v1_3;
@@ -2816,7 +2727,7 @@ void func_800162D8(void *arg0) {
             sp34 = temp_a2;
             sp30 = D_8004ABA0;
             var_a2 = temp_a2;
-            var_t3 = func_80011180(&D_8004ABA0, temp_s3, temp_a2);
+            var_t3 = renderPrepareModelMatrix(&D_8004ABA0, temp_s3, temp_a2);
             if ((var_a2 != NULL) && !(temp_s3->unk54 & 1)) {
                 var_v0 = *var_a2;
                 if (var_v0 != 4) {
@@ -2843,7 +2754,7 @@ void func_800162D8(void *arg0) {
                                     var_s4 = D_8004A404;
                                     sp34 = var_a2;
                                     sp44 = var_t3;
-                                    func_80013300(temp_s3, &gDisplayListHeads + var_s0_2, var_a2, &D_8004ABA8);
+                                    renderLoadTextures(temp_s3, &gDisplayListHeads + var_s0_2, var_a2, &D_8004ABA8);
                                     var_s0_3 = var_a2->unk0;
                                 } else {
                                     temp_v0_2 = *temp_v1_2;

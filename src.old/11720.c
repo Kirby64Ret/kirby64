@@ -15,23 +15,23 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/11720/func_8001103C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80011180.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderPrepareModelMatrix.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80013300.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderLoadTextures.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_800140FC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDrawGObj.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_800141D4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDrawGObjList0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_800141F8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDrawGObjList1.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_8001421C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDrawGObjList2.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80014240.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDrawGObjList3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_80014264.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDrawDObj.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/11720/func_800143A4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/11720/renderDrawDObjFromGObj.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/11720/func_800143D4.s")
 

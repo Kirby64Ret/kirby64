@@ -333,7 +333,7 @@ extern Gfx* gDisplayListHeads[];
 
 void func_800AB120(struct GObj *arg0) {
     gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
-    func_800141D4();
+    renderDrawGObjList0();
 }
 
 void func_800AB174(struct GObj *arg0) {
@@ -355,7 +355,7 @@ void func_800AB244(struct GObj *arg0) {
 
 void func_800AB2C0(struct GObj *arg0) {
     gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId])
-    func_800143A4();
+    renderDrawDObjFromGObj();
 }
 
 
