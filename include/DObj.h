@@ -41,11 +41,17 @@ typedef struct DObjPayloadTypeC {
     /* 0x04 */ Gfx* dlist;
 } DObjPayloadTypeC; // size = 0x08
 
-// TODO: sorted by distance?
+// TODO: sorted by distance? related to level of detail?
 typedef struct DObjPayloadTypeE {
     /* 0x00 */ f32 drawDistance;
     /* 0x04 */ Gfx* dlist;
 } DObjPayloadTypeE; // size = 0x08
+
+// copy a glist depending on draw distance
+typedef struct DObjPayloadTypeG {
+    /* 0x00 */ f32 drawDistance;
+    /* 0x04 */ DObjPayloadTypeC* typeC;
+} DObjPayloadTypeG; // size = 0x08
 
 typedef struct DObj {
     /* 0x00 */ struct DObj* nextFree;
@@ -63,6 +69,8 @@ typedef struct DObj {
         /* 0x50 */ Gfx *glist;
         /* 0x50 */ DObjPayloadTypeC *typeC;
         /* 0x50 */ DObjPayloadTypeE *typeE;
+        /* 0x50 */ Gfx **lod;
+        /* 0x50 */ DObjPayloadTypeC **typeH;
     } data;
     u8 flags;
     u8 animCBReceiver;

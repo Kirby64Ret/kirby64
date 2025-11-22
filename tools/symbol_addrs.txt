@@ -984,6 +984,13 @@ gtlSetSegment0F=0x80005378; // type:func
 gtlMainFuncTable=0x8004A418;
 
 // render
+renderPostCameraDraw = 0x80017F78; // type:func
+renderDrawObject_TypeG = 0x80014FA4; // type:func
+renderDrawDObj_TypeC = 0x800143D4; // type:func
+renderDrawObject_TypeC = 0x80014768; // type:func
+renderDrawObject_LevelOfDetail = 0x80014DF0; // type:func
+renderDrawDObj_LevelOfDetail = 0x80014C78; // type:func
+renderLevelOfDetail = 0x8004AD98; 
 renderDrawGObjWithDObjTypeE = 0x80014B4C; // type:func
 renderDistanceToCamera = 0x80014B04; // type:func
 renderDrawDObjFromGObj = 0x800143A4; // type:func
@@ -998,7 +1005,7 @@ renderLoadTextures = 0x80013300; // type:func
 renderProjectionMtx = 0x8004AA90; 
 renderPerspectiveMtxF = 0x8004AA98; 
 renderMVPMatrixF = 0x8004AAD8; 
-renderScaleX = 0x8004AA94; 
+renderObjectScale = 0x8004AA94; 
 renderMatrixHandler = 0x8004AB9C; 
 renderSetMatrixHandler = 0x80010B44; // type:func
 renderCameraScissorRight = 0x8003DF1C; 

@@ -2,13 +2,9 @@
 #define _MAIN_4_H_
 
 struct UnkStruct8004A7F8 {
-    u8 unk0;
-    u8 filler[3];
-    Gfx **unk4;
-    Gfx **unk8;
-    Gfx **unkC;
-    Gfx **unk10;
-};
+    /* 0x00 */ u8 drawFrame;
+    /* 0x04 */ Gfx* glists[4];
+}; // sizeof == 0x14
 
 struct unkAddr8004A7C8_2 {
     u8 filler[0x3C];
@@ -83,11 +79,13 @@ extern s32 renderCameraScissorLeft;
 extern s32 renderCameraScissorRight;
 
 extern Mtx *renderProjectionMtx;
-extern f32 renderScaleX;
+extern f32 renderObjectScale;
 extern Mat4 renderPerspectiveMtxF;
 extern Mat4 renderMVPMatrixF;
 extern Mat4 D_8004AB18;
 extern Mat4 D_8004AB58;
+
+extern s32 renderLevelOfDetail;
 
 void renderSetCameraScissors(s32 top, s32 bottom, s32 left, s32 right);
 

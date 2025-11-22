@@ -158,9 +158,9 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawDObj.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawDObjFromGObj.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_800143D4.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawDObj_TypeC.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80014768.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawObject_TypeC.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001479C.s")
 
@@ -168,9 +168,9 @@ void func_800147C8(struct UnkStruct8004A7C4_3C *arg0);
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_800147C8.s")
 
 
-extern f32 renderScaleX;
+extern f32 renderObjectScale;
 void func_80014AD4(struct GObj *arg0) {
-    renderScaleX = 1.0f;
+    renderObjectScale = 1.0f;
     func_800147C8(arg0->unk3C);
 }
 
@@ -186,11 +186,11 @@ f32 renderDistanceToCamera(struct UnkStruct8004A7C4_3C *arg0) {
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawGObjWithDObjTypeE.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80014C78.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawDObj_LevelOfDetail.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80014DF0.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawObject_LevelOfDetail.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80014FA4.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawObject_TypeG.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001503C.s")
 
@@ -202,7 +202,7 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001585C.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001588C.s")
 
-extern f32 renderScaleX;
+extern f32 renderObjectScale;
 
 struct unk80015BCC {
     u32 filler[15];
@@ -212,7 +212,7 @@ struct unk80015BCC {
 void func_8001588C(struct unk80015BCC *);
 
 void func_80015BCC(struct unk80015BCC *arg0) {
-    renderScaleX = 1.0f;
+    renderObjectScale = 1.0f;
     func_8001588C(arg0->unk3C);
 }
 
@@ -543,7 +543,7 @@ void gtlMergeDisps();
 void gtlProcessDisps();
 void gtlReset();
 
-void func_80017F78(struct unk80017B40 *arg0) {
+void renderPostCameraDraw(struct unk80017B40 *arg0) {
     if ((arg0->unk80 & 0x04)) {
         gtlMergeDisps();
     }
@@ -568,7 +568,7 @@ void func_80017FEC(struct GObj *arg0, Gfx** arg1, s32 arg2) {
     func_80017B40(temp_s0, arg2);
 
     func_80017E84(arg0, (temp_s0->unk80 & 8) != 0 ? 1 : 0);
-    func_80017F78(temp_s0);
+    renderPostCameraDraw(temp_s0);
 }
 
 // arg0 is the value at 8004A7C8

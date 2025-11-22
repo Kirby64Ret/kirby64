@@ -170,7 +170,7 @@ typedef struct GObj {
     u32 renderPriority;
     GObjFunc onDraw;
     /* 0x30 */
-    u32 unk30;
+    u32 dlLinkBitMask;
     u32 cameraTag;
     u32 unk38;
     // actually void*, but mainly used to store a layoutnode

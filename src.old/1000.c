@@ -666,9 +666,9 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/renderDrawDObjFromGObj.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_800143D4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderDrawDObj_TypeC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80014768.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderDrawObject_TypeC.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001479C.s")
 
@@ -680,11 +680,11 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/renderDrawGObjWithDObjTypeE.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80014C78.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderDrawDObj_LevelOfDetail.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80014DF0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderDrawObject_LevelOfDetail.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80014FA4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderDrawObject_TypeG.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001503C.s")
 
@@ -728,7 +728,7 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80017E84.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80017F78.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderPostCameraDraw.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80017FEC.s")
 

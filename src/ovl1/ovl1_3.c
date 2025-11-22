@@ -1930,7 +1930,7 @@ void func_800AB120(GObj *g) {
 void func_800AB174(GObj *g) {
     gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
     gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
-    func_80014768(g);
+    renderDrawObject_TypeC(g);
 }
 
 void func_800AB1F0(GObj *g) {
@@ -1941,7 +1941,7 @@ void func_800AB1F0(GObj *g) {
 void func_800AB244(GObj *g) {
     gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
     gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
-    func_80014FA4(g);
+    renderDrawObject_TypeG(g);
 }
 
 void func_800AB2C0(GObj *g) {

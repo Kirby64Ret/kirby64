@@ -78,11 +78,11 @@ void func_801512F0_ovl6(void) {
     func_800A04B8(0x10);
     gobj = HS64_omMakeGObj(0, 0, 0x18, 0x80000000);
     omLinkGObjDL(gobj, func_80151204_ovl6, 0x10, 8, 0x10);
-    gobj->unk30 = 1;
+    gobj->dlLinkBitMask = 0x1;
 
     gobj = HS64_omMakeGObj(0, 0, 0x18, 0x80000000);
     omLinkGObjDL(gobj, func_80151204_ovl6, 0x10, 0x10, 0x10);
-    gobj->unk30 = 2;
+    gobj->dlLinkBitMask = 0x2;
 
     for (i = 0; i < 8; i++) {
         D_800D6AB8[i] = 0;

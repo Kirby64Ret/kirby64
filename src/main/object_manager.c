@@ -1091,47 +1091,47 @@ void func_8000A6D8(GObj *o, s32 drawCB, s32 arg2, GObj *arg3) {
     omGInsertDLLink(o, arg3->prev);
 }
 
-void func_8000A730(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 camTag) {
+void func_8000A730(GObj *o, GObjFunc drawCallback, s32 pri, s32 linkMask, s32 camTag) {
     o->dl_link = 0x20;
     o->renderPriority = pri;
     o->onDraw = drawCallback;
-    o->unk30 = arg3;
+    o->dlLinkBitMask = linkMask;
     o->cameraTag = camTag;
     o->unk38 = 0;
     o->lastDrawFrame = gtlDrawnFrameCounter - 1;
 }
 
-void omGLinkObjDLCamera(GObj *o, GObjFunc drawCallback, s32 pri, s32 arg3, s32 camTag) {
+void omGLinkObjDLCamera(GObj *o, GObjFunc drawCallback, s32 pri, s32 linkMask, s32 camTag) {
     if (o == 0) {
         o = omCurrentObj;
     }
-    func_8000A730(o, drawCallback, pri, arg3, camTag);
+    func_8000A730(o, drawCallback, pri, linkMask, camTag);
     omGSetupCameraDLLink(o);
 }
 
-void func_8000A7A0(GObj *o, s32 arg1, s32 prio, s32 arg3, s32 camTag) {
+void func_8000A7A0(GObj *o, s32 arg1, s32 prio, s32 linkMask, s32 camTag) {
     if (o == 0) {
         o = omCurrentObj;
     }
-    func_8000A730(o, arg1, prio, arg3, camTag);
+    func_8000A730(o, arg1, prio, linkMask, camTag);
     omGSetupDLLink_HighestPrioMax(o);
 }
 
-void func_8000A7DC(GObj *o, s32 arg1, s32 arg2, s32 arg3, GObj *arg4) {
+void func_8000A7DC(GObj *o, s32 arg1, s32 linkMask, s32 camTag, GObj *arg4) {
     if (o == NULL) {
         o = omCurrentObj;
     }
 
-    func_8000A730(o, arg1, arg4->renderPriority, arg2, arg3);
+    func_8000A730(o, arg1, arg4->renderPriority, linkMask, camTag);
     omGInsertDLLink(o, arg4);
 }
 
-void func_8000A830(GObj *o, s32 arg1, s32 arg2, s32 arg3, GObj *arg4) {
+void func_8000A830(GObj *o, s32 arg1, s32 linkMask, s32 camTag, GObj *arg4) {
     if (o == NULL) {
         o = omCurrentObj;
     }
 
-    func_8000A730(o, arg1, arg4->renderPriority, arg2, arg3);
+    func_8000A730(o, arg1, arg4->renderPriority, linkMask, camTag);
     omGInsertDLLink(o, arg4->prev);
 }
 
@@ -1203,7 +1203,7 @@ void omDrawAll(void) {
     omCurrentDrawObj = NULL;
 
     for (i = 0; i < 32; i++) {
-        D_8004A7F8[i].unk0 = gtlDrawnFrameCounter - 1;
+        D_8004A7F8[i].drawFrame = gtlDrawnFrameCounter - 1;
     }
 
     obj = omGObjListDlHead[32];

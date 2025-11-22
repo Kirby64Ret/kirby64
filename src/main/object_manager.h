@@ -5,6 +5,7 @@
 #include <types.h>
 
 #include "geo_block_header.h"
+#include "render.h"
 
 #define STACK_CANARY 0x00000000FEDCBA98
 
@@ -25,7 +26,7 @@ struct DynamicBuffer {
     u32 id;
     void *poolStart;
     void *poolEnd;
-    u32 top;
+    u8 *top;
 };
 
 extern struct DynamicBuffer gDynamicBuffer1, gDynamicBuffer2;
@@ -266,7 +267,7 @@ typedef struct Camera {
     // 0x80
     u32 flags;
     u32 bgcolor;
-    u32 *onBeforeRender;
+    void (*onBeforeRender)(struct Camera *, s32);
     u32 unk8C;
 } Camera;
 
@@ -348,6 +349,8 @@ extern struct GObjProcess *omCurrentProc;
 extern OSMesgQueue HS64_GObjProcMesgQ;
 extern struct GObj *omGObjListHead[32];
 extern struct GObj *omGObjListDlHead[];
+
+extern struct UnkStruct8004A7F8 D_8004A7F8[32];
 
 // extern funcs
 struct Camera *func_80009F7C(struct GObj*);
