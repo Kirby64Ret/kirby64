@@ -172,9 +172,10 @@ extern const char D_800D66C0[];
 extern const char D_800D66D8[];
 
 struct UnkStruct800D4FD0 {
-        u8 unk0[4];
-        void (*unk4)(void);
-    };
+    u8 overlayIdx;
+    u8 flags;
+    void (*updateFunc)(void);
+};
 
 extern struct UnkStruct800D4FD0 D_800D4FD0[];
 

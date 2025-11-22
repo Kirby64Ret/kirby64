@@ -2635,7 +2635,7 @@ block_11:
                 gDisplayListHeads[1] = temp_s2_7 + 8;
                 temp_s2_7->words.w0 = 0xDB060010;
                 temp_s2_7->words.w1 = gSegment4StartArray[*arg0];
-                func_80014AD4(arg0, 0xDB060010, gSegment4StartArray);
+                renderDrawObject_TypeD(arg0, 0xDB060010, gSegment4StartArray);
                 temp_s0_26 = gDisplayListHeads->unk0;
                 gDisplayListHeads->unk0 = temp_s0_26 + 8;
                 temp_s0_26->words.w1 = 0x18;

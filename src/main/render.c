@@ -1438,7 +1438,7 @@ void func_8001479C(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_8001479C.s")
 #endif
 
-void func_800147C8(DObj* dobj) {
+void renderDrawDObj_TypeD(DObj* dobj) {
     void* segaddr = NULL;
     s32 sp50;
     DObjPayloadTypeC* payload;
@@ -1476,7 +1476,7 @@ void func_800147C8(DObj* dobj) {
         }
 
         if (dobj->firstChild != NULL) {
-            func_800147C8(dobj->firstChild);
+            renderDrawDObj_TypeD(dobj->firstChild);
         }
 
         D_8004ABA0 = sp48;
@@ -1497,15 +1497,15 @@ void func_800147C8(DObj* dobj) {
     if (dobj->prev == NULL) {
         DObj* curr = dobj->next;
         while (curr != NULL) {
-            func_800147C8(curr);
+            renderDrawDObj_TypeD(curr);
             curr = curr->next;
         }
     }
 }
 
-void func_80014AD4(GObj *gobj) {
+void renderDrawObject_TypeD(GObj *gobj) {
     renderObjectScale = 1.0f;
-    func_800147C8(gobj->data.dobj);
+    renderDrawDObj_TypeD(gobj->data.dobj);
 }
 
 f32 renderDistanceToCamera(DObj *dobj) {

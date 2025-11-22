@@ -1952,7 +1952,7 @@ void func_800AB2C0(GObj *g) {
 void func_800AB314(GObj *g) {
     gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
     gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
-    func_80014AD4(g);
+    renderDrawObject_TypeD(g);
 }
 
 void func_800AB390(GObj *g) {

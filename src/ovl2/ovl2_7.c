@@ -1,7 +1,17 @@
 #include "common.h"
 #include "ovl2/ovl2_6.h"
+#include "ovl2/ovl2_8.h"
+#include "main/lbvector.h"
+extern u32 D_8012BD00;
 
 extern struct CollisionState *gCollisionState;
+
+// TODO: either put these in ovl0_5.h, or use the ones already there
+#define PVPDP(a, b) ( a->x*b->x +  a->y*b->y +  a->z*b->z)
+#define NVPDP(a, b) (-a->x*b->x + -a->y*b->y + -a->z*b->z)
+
+u32 func_8011BED0(u16, u16, u16, struct Normal *);
+void func_80101400(u32 numFloorNorms);
 
 #ifdef MIPS_TO_C
 void func_80101400(u16 arg0) {
@@ -190,206 +200,163 @@ loop_1:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80101400.s")
 #endif
 
-#ifdef MIPS_TO_C
+// TODO: column limit of 104
+u32 func_80101920(struct CollisionTriangle *triangle, struct Normal *normal, Vector *vec, struct Normal *n2) {
+    u32 code = triangle->normalType;
 
-s32 func_80101920(void *arg0, void *arg1, void *arg2, void *arg3) {
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f2;
-    s32 temp_v0_2;
-    u16 temp_v0;
-
-    temp_v0 = arg0->unk8;
-    if (!(temp_v0 & 8)) {
-        if ((temp_v0 & 4) && ((D_8012BD00 >> 0x1F) == 0)) {
+    if (!(code & NON_SOLID)) {
+        if ((code & NO_SHADOW) && (D_8012BD00 >> 31) == 0) {
             return 0;
         }
-        temp_v0_2 = temp_v0 & 3;
-        if (temp_v0_2 != 0) {
-            if (temp_v0_2 == 3) {
-                if ((arg3 != NULL) && (arg2 != NULL)) {
-                    temp_f0 = arg1->unk0;
-                    temp_f2 = arg1->unk4;
-                    temp_f12 = arg1->unk8;
-                    if (((temp_f0 * arg3->unk0) + (temp_f2 * arg3->unk4) + (temp_f12 * arg3->unk8)) > 0.0f) {
-                        if (((-temp_f0 * arg2->unk0) + (-temp_f2 * arg2->unk4) + (-temp_f12 * arg2->unk8)) > 0.0f) {
+        code &= 3;
+        if (code != 0) {
+            if (code == DOUBLE_SIDED_NORMAL) {
+                if (n2 && vec) {
+                    if ((0.0f < VEC_DOT(normal, n2))) {
+                        if (0.0f < VEC_DOT_FIRST_ARG_NEGATE(normal, vec)) {
                             return 0;
+                        } else {
+                            goto match_label;
                         }
-                        /* Duplicate return node #13. Try simplifying control flow for better match */
-                        return 1;
                     }
-                    if (((temp_f0 * arg2->unk0) + (temp_f2 * arg2->unk4) + (temp_f12 * arg2->unk8)) > 0.0f) {
+                    else if (0.0f < VEC_DOT(normal, vec)) {
                         return 0;
                     }
-                    /* Duplicate return node #13. Try simplifying control flow for better match */
-                    return 1;
                 }
+                match_label:
                 return 1;
             }
-            if (temp_v0_2 & 1) {
-                if (((arg2 != NULL) && (((arg1->unk0 * arg2->unk0) + (arg1->unk4 * arg2->unk4) + (arg1->unk8 * arg2->unk8)) > 0.0f)) || ((arg3 != NULL) && (((arg1->unk0 * arg3->unk0) + (arg1->unk4 * arg3->unk4) + (arg1->unk8 * arg3->unk8)) > 0.0f))) {
+            else if (code & FORWARD_NORMAL) {
+                if (vec && (0.0f < VEC_DOT(normal, vec)) || n2 && (0.0f < VEC_DOT(normal, n2))) {
                     return 0;
                 }
-                /* Duplicate return node #25. Try simplifying control flow for better match */
-                return 1;
-            }
-            if (((arg2 != NULL) && (((-arg1->unk0 * arg2->unk0) + (-arg1->unk4 * arg2->unk4) + (-arg1->unk8 * arg2->unk8)) > 0.0f)) || ((arg3 != NULL) && (((-arg1->unk0 * arg3->unk0) + (-arg1->unk4 * arg3->unk4) + (-arg1->unk8 * arg3->unk8)) > 0.0f))) {
-                return 0;
-            }
-            return 1;
-        }
-        /* Duplicate return node #26. Try simplifying control flow for better match */
-        return 0;
-    }
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80101920.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-s32 func_80101BA0(void *arg0, void *arg1, void *arg2, void *arg3) {
-    s32 temp_v0_2;
-    u16 temp_v0;
-
-    temp_v0 = arg0->unk8;
-    if (!(temp_v0 & 8)) {
-        if ((temp_v0 & 4) && ((D_8012BD00 >> 0x1F) == 0)) {
-            return 0;
-        }
-        temp_v0_2 = temp_v0 & 3;
-        if (temp_v0_2 != 0) {
-            if (temp_v0_2 == 3) {
-                return 0;
-            }
-            if (temp_v0_2 & 1) {
-                if (((arg2 != NULL) && (((arg1->unk0 * arg2->unk0) + (arg1->unk4 * arg2->unk4) + (arg1->unk8 * arg2->unk8)) > 0.0f)) || ((arg3 != NULL) && (((arg1->unk0 * arg3->unk0) + (arg1->unk4 * arg3->unk4) + (arg1->unk8 * arg3->unk8)) > 0.0f))) {
+            } else {
+                if (vec && (0.0f < VEC_DOT_FIRST_ARG_NEGATE(normal, vec)) || (n2 && 0.0f < VEC_DOT_FIRST_ARG_NEGATE(normal, n2))) {
                     return 0;
                 }
-                /* Duplicate return node #18. Try simplifying control flow for better match */
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+u32 func_80101BA0(struct CollisionTriangle *triangle, struct Normal *normal, Vector *va, Vector *vb) {
+    u32 code = triangle->normalType;
+    if (!(code & NON_SOLID)) {
+        if ((code & NO_SHADOW) && D_8012BD00 >> 31 == 0) {
+            return 0;
+        }
+        else {
+            code &= DOUBLE_SIDED_NORMAL;
+            if (code != 0) {
+                if (code == DOUBLE_SIDED_NORMAL) {
+                    return 0;
+                }
+                if (code & FORWARD_NORMAL) {
+                    if ((va != NULL && PVPDP(normal, va) > 0.0F) || (vb != NULL && PVPDP(normal, vb) > 0.0F)) {
+                        return 0;
+                    }
+                } else {
+                    if ((va != NULL && NVPDP(normal, va) > 0.0F) || (vb != NULL && NVPDP(normal, vb) > 0.0F)) {
+                        return 0;
+                    }
+                }
                 return 1;
             }
-            if (((arg2 != NULL) && (((-arg1->unk0 * arg2->unk0) + (-arg1->unk4 * arg2->unk4) + (-arg1->unk8 * arg2->unk8)) > 0.0f)) || ((arg3 != NULL) && (((-arg1->unk0 * arg3->unk0) + (-arg1->unk4 * arg3->unk4) + (-arg1->unk8 * arg3->unk8)) > 0.0f))) {
-                return 0;
+        }
+    }
+    return 0;
+}
+
+u8 func_80101D50(struct CollisionTriangle *arg0, u32 arg1, u32 arg2, u32 arg3) {
+    if (!(arg0->normalType & NON_SOLID)) {
+        if ((arg0->normalType & (DOUBLE_SIDED_NORMAL))) {
+            if ((arg0->normalType & NO_SHADOW)) {
+                if ((D_8012BD00 >> 0x1F) == 0) {
+                    return 0;
+                }
             }
             return 1;
         }
-        /* Duplicate return node #19. Try simplifying control flow for better match */
-        return 0;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80101BA0.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-s32 func_80101D50(void *arg0, ? arg1, ? arg2, ? arg3) {
-    u16 temp_v0;
-
-    temp_v0 = arg0->unk8;
-    if (!(temp_v0 & 8) && (temp_v0 & 3)) {
-        if ((temp_v0 & 4) && ((D_8012BD00 >> 0x1F) == 0)) {
-            return 0;
-        }
-        return 1;
-    }
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80101D50.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-s32 func_80101DA8(void *arg0, ? arg1, ? arg2, ? arg3) {
-    u16 temp_v0;
-
-    temp_v0 = arg0->unk8;
-    if (!(temp_v0 & 8)) {
-        if (temp_v0 & 3) {
-            if ((temp_v0 & 4) && ((D_8012BD00 >> 0x1F) == 0)) {
-                return 0;
+u8 func_80101DA8(struct CollisionTriangle *arg0, u32 arg1, u32 arg2, u32 arg3) {
+    if (!(arg0->normalType & NON_SOLID)) {
+        if (arg0->normalType & DOUBLE_SIDED_NORMAL) {
+            if (arg0->normalType & NO_SHADOW) {
+                if ((D_8012BD00 >> 0x1F) == 0) {
+                    return 0;
+                }
             }
             return 1;
         }
-        /* Duplicate return node #8. Try simplifying control flow for better match */
-        return 0;
-    }
-    if (arg0->unk12 == 0) {
-        return 1;
-    }
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80101DA8.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_80101E14(void *arg1) {
-    f32 sp20;
-    f32 sp1C;
-    f32 sp18;
-
-    sp18 = -arg1->unk0;
-    sp1C = -arg1->unk4;
-    sp20 = -arg1->unk8;
-    func_80101920(&sp18);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80101E14.s")
-#endif
-
-#ifdef MIPS_TO_C
-s32 func_80101E5C(void *arg0, void *arg1, void *arg2, ? arg3) {
-    u16 temp_v0;
-
-    temp_v0 = arg0->unk8;
-    if ((temp_v0 & 8) && (arg0->unk12 == 0xC)) {
-        if (temp_v0 & 1) {
-            if ((arg2 != NULL) && (((arg1->unk0 * arg2->unk0) + (arg1->unk4 * arg2->unk4) + (arg1->unk8 * arg2->unk8)) > 0.0f)) {
-                return 0;
-            }
-            /* Duplicate return node #9. Try simplifying control flow for better match */
+    } else {
+        if (arg0->collisionType == COL_TYPE_DEFAULT) {
             return 1;
         }
-        if ((arg2 != NULL) && (((-arg1->unk0 * arg2->unk0) + (-arg1->unk4 * arg2->unk4) + (-arg1->unk8 * arg2->unk8)) > 0.0f)) {
-            return 0;
-        }
-        return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80101E5C.s")
-#endif
 
-#ifdef MIPS_TO_C
-s32 func_80101F4C(void *arg0, void *arg1, void *arg2, ? arg3) {
-    u16 temp_v0;
+// calls func_80101920 but with a negated arg1 Normal
+void func_80101E14(struct CollisionTriangle *arg0, struct Normal *arg1, Vector *arg2, struct Normal *arg3) {
+    struct Normal sp18;
 
-    temp_v0 = arg0->unk8;
-    if ((temp_v0 & 8) && (arg0->unk12 == 3)) {
-        if (temp_v0 & 1) {
-            if ((arg2 != NULL) && (((arg1->unk0 * arg2->unk0) + (arg1->unk4 * arg2->unk4) + (arg1->unk8 * arg2->unk8)) > 0.0f)) {
-                return 0;
+    sp18.x = -arg1->x;
+    sp18.y = -arg1->y;
+    sp18.z = -arg1->z;
+    func_80101920(arg0, &sp18, arg2, arg3);
+}
+
+// these two functions seem to handle non-solid triangles
+
+// TODO: check the prototypes to get the correct types and returns.
+u8 func_80101E5C(struct CollisionTriangle *arg0, struct Normal *arg1,
+    struct Normal *arg2, u32 arg3) {
+
+    if ((arg0->normalType & NON_SOLID)) {
+        if (arg0->collisionType == 0xC) {
+            if ((arg0->normalType & FORWARD_NORMAL)) {
+                if (arg2 && 0.0f < VEC_DOT(arg1, arg2)) {
+                    return 0;
+                }
+            } else {
+                if (arg2 && 0.0f < VEC_DOT_FIRST_ARG_NEGATE(arg1, arg2)) {
+                    return 0;
+                }
             }
-            /* Duplicate return node #9. Try simplifying control flow for better match */
             return 1;
         }
-        if ((arg2 != NULL) && (((-arg1->unk0 * arg2->unk0) + (-arg1->unk4 * arg2->unk4) + (-arg1->unk8 * arg2->unk8)) > 0.0f)) {
-            return 0;
-        }
-        return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80101F4C.s")
-#endif
+
+u8 func_80101F4C(struct CollisionTriangle *arg0, struct Normal *arg1,
+    struct Normal *arg2, u32 arg3) {
+
+    if (arg0->normalType & NON_SOLID) {
+        if (arg0->collisionType == COL_TYPE_DEATH_FLOOR) {
+            if ((arg0->normalType & FORWARD_NORMAL)) {
+                if (arg2) {
+                    if (0.0f < VEC_DOT(arg1, arg2)) {
+                        return 0;
+                    }
+                }
+            } else {
+                if (arg2) {
+                    if (0.0f < VEC_DOT_FIRST_ARG_NEGATE(arg1, arg2)) {
+                        return 0;
+                    }
+                }
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
 
 #ifdef MIPS_TO_C
 
@@ -425,36 +392,27 @@ block_11:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010203C.s")
 #endif
 
-#ifdef MIPS_TO_C
-s32 func_8010217C(void *arg0, ? arg1, ? arg2, ? arg3) {
-    if ((arg0->unk12 == 1) && (arg0->unk8 & 3)) {
-        return 1;
+u8 func_8010217C(struct CollisionTriangle *arg0, struct Normal *arg1, struct Normal *arg2, struct Normal *arg3) {
+    if (arg0->collisionType == COL_TYPE_WALL_LADDER) {
+        if (arg0->normalType & DOUBLE_SIDED_NORMAL) {
+            return 1;
+        }
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010217C.s")
-#endif
 
-#ifdef MIPS_TO_C
-s32 func_801021BC(void *arg0, ? arg1, ? arg2, ? arg3) {
-    if ((arg0->unk12 == 2) && (arg0->unk8 & 3)) {
-        return 1;
+u8 func_801021BC(struct CollisionTriangle *arg0, struct Normal *arg1, struct Normal *arg2, struct Normal *arg3) {
+    if (arg0->collisionType == COL_TYPE_ROPE) {
+        if (arg0->normalType & DOUBLE_SIDED_NORMAL) {
+            return 1;
+        }
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801021BC.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_801021FC(void) {
-    func_80101D50();
+void func_801021FC(struct CollisionTriangle *arg0, u32 arg1, u32 arg2, u32 arg3) {
+    func_80101D50(arg0, arg1, arg2, arg3);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801021FC.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_8010221C(void *arg0, void *arg1, void *arg2, ? arg3) {
@@ -480,16 +438,14 @@ s32 func_8010221C(void *arg0, void *arg1, void *arg2, ? arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010221C.s")
 #endif
 
-#ifdef MIPS_TO_C
-s32 func_80102324(void *arg0, ? arg1, ? arg2, ? arg3) {
-    if ((arg0->unk12 == 4) && (arg0->unk8 & 3)) {
-        return 1;
+u8 func_80102324(struct CollisionTriangle *arg0, struct Normal *arg1, struct Normal *arg2, struct Normal *arg3) {
+    if (arg0->collisionType == COL_TYPE_SEMI_SOLID) {
+        if ((arg0->normalType & DOUBLE_SIDED_NORMAL) != 0) {
+            return 1;
+        }
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80102324.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_80102364(void *arg0, s32 arg1) {
@@ -595,6 +551,7 @@ s32 func_801024E8(void *arg0, s32 arg1) {
     return 1;
 }
 #else
+u8 func_801024E8(Vector *arg0, s32 arg1);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801024E8.s")
 #endif
 
@@ -919,156 +876,115 @@ block_70:
     goto loop_57;
 }
 #else
+extern s32 func_80102570(
+    struct Normal *,
+    s32 *,
+    Vector *,
+    u32 (*)(void),
+    struct CollisionTriangle **
+);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80102570.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-s32 func_80103004(f32 *arg0, void *arg1, struct Normal **arg2, struct CollisionTriangle **arg3) {
+u32 func_80103004(f32 *MAXLRP, Vector *arg1, struct Normal **arg2, struct CollisionTriangle **arg3) {
+    u32 SP0[119];
     struct ColStateUnk4 sp9C;
-    s32 sp94;
-    struct CollisionTriangle *sp90;
-    struct bgmaprecord *sp8C;
-    s32 sp88;
-    struct CollisionTriangle *sp78;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 temp_f20;
-    f32 var_f22;
-    s32 temp_s2;
-    s32 temp_v1;
-    s32 var_s3;
-    struct CollisionState *temp_v0;
-    struct Normal *temp_s0;
-    struct bgmaprecord *temp_v1_2;
-    u16 temp_s1;
-    u16 temp_t7;
-    u32 var_s4;
-
-    var_f22 = *arg0;
+    f32 maxlevel = *MAXLRP;
     gCollisionState->numCells = 0;
     gCollisionState->unk4 = &sp9C;
-    gCollisionState->deltaPos.x = gCollisionState->nextPos.x - gCollisionState->currPos.x;
-    gCollisionState->deltaPos.y = gCollisionState->nextPos.y - gCollisionState->currPos.y;
-    gCollisionState->deltaPos.z = gCollisionState->nextPos.z - gCollisionState->currPos.z;
-    if ((gCollisionState->deltaPos.x == 0.0f) && (gCollisionState->deltaPos.y == 0.0f) && (gCollisionState->deltaPos.z == 0.0f)) {
-        goto block_25;
+    VEC_SUB(gCollisionState->deltaPos, gCollisionState->nextPos, gCollisionState->currPos)
+    if (IS_ZERO_VECTOR(gCollisionState->deltaPos)) {
+        return 0;
     }
     func_80101400(gCollisionState->unk30->header.Num_Floor_Norms);
-    temp_v0 = gCollisionState;
-    temp_v1 = temp_v0->numCells;
-    if (temp_v1 != 0) {
-        var_s4 = 0;
-        var_s3 = 0;
-        sp8C = temp_v0->unk30->header.Triangle_Norm_Cells;
-        if (temp_v1 != 0) {
-            do {
-                temp_s1 = *(temp_v0->unk4 + var_s3);
-                temp_v1_2 = &sp8C[temp_s1];
-                temp_t7 = temp_v1_2->code;
-                sp88 = temp_t7;
-                if (temp_t7 != 0) {
-                    temp_f20 = (temp_v0->unk4 + var_s3)->unk4;
-                    if (temp_f20 < var_f22) {
-                        temp_s0 = &temp_v0->unk30->header.Triangle_Normals[temp_v1_2->index];
-                        sp68 = (temp_v0->deltaPos.x * temp_f20) + temp_v0->currPos.x;
-                        sp6C = (temp_v0->deltaPos.y * temp_f20) + temp_v0->currPos.y;
-                        sp70 = (temp_v0->deltaPos.z * temp_f20) + temp_v0->currPos.z;
-                        temp_s2 = func_80102570(temp_s0, &sp88, &sp68, temp_v0->unk3C, &sp78);
-                        if (sp78 != NULL) {
-                            if (gCollisionState->unk40(sp78, temp_s0, &gCollisionState->deltaPos, gCollisionState->someNormal) != 0) {
-                                sp94 = temp_s1;
-                                var_f22 = temp_f20;
-                                sp90 = sp78;
-                            } else if (temp_s2 != 0) {
-                                sp88 += 1;
-                                func_80102570(temp_s0, &sp88, &sp68, gCollisionState->unk3C, &sp78);
-                                if ((sp78 != NULL) && (gCollisionState->unk40(sp78, temp_s0, &gCollisionState->deltaPos, gCollisionState->someNormal) != 0)) {
-                                    sp94 = temp_s1;
-                                    var_f22 = temp_f20;
+    if (gCollisionState->numCells != 0) {
+        u32 sp94;
+        struct CollisionTriangle *sp90;
+        struct bgmaprecord *sp8C = gCollisionState->unk30->header.Triangle_Norm_Cells;
+        s32 sp88;
+        u16 cell;
+        f32 LEVEL;
+        struct Normal *N;
+        struct CollisionTriangle *sp78;
+        s32 temp_s2;
+        Vector sp68;
+        u32 i;
+        for (i = 0; i < (unsigned)gCollisionState->numCells; i++) {
+            cell = gCollisionState->unk4[i].cell;
+            sp88 = sp8C[cell].code;
+            if (sp88 != 0) {
+                LEVEL = gCollisionState->unk4[i].projection;
+                if (LEVEL < maxlevel) {
+                    N = &gCollisionState->unk30->header.Triangle_Normals[sp8C[cell].index];
+                    sp68.x = (gCollisionState->deltaPos.x * LEVEL) + gCollisionState->currPos.x;
+                    sp68.y = (gCollisionState->deltaPos.y * LEVEL) + gCollisionState->currPos.y;
+                    sp68.z = (gCollisionState->deltaPos.z * LEVEL) + gCollisionState->currPos.z;
+                    temp_s2 = func_80102570(N, &sp88, &sp68, gCollisionState->unk3C, &sp78);
+                    if (sp78 != 0) {
+                        if (gCollisionState->unk40(sp78, N, &gCollisionState->deltaPos, gCollisionState->someNormal) != 0) {
+                            sp94 = cell;
+                            sp90 = sp78;
+                            maxlevel = LEVEL;
+                        } else if (temp_s2 != 0) {
+                            sp88++;
+                            func_80102570(N, &sp88, &sp68, gCollisionState->unk3C, &sp78);
+                            if (sp78 != 0) {
+                                if (gCollisionState->unk40(sp78, N, &gCollisionState->deltaPos, gCollisionState->someNormal) != 0) {
+                                    sp94 = cell;
                                     sp90 = sp78;
+                                    maxlevel = LEVEL;
                                 }
                             }
                         }
                     }
                 }
-                var_s4 += 1;
-                var_s3 += 8;
-            } while (var_s4 < gCollisionState->numCells);
-        }
-        if (var_f22 != *arg0) {
-            if (arg2 != NULL) {
-                *arg2 = &temp_v0->unk30->header.Triangle_Normals[sp8C[sp94].index];
             }
-            if (arg3 != NULL) {
+        }
+        if (*MAXLRP != maxlevel) {
+            if (arg2 != 0) {
+                *arg2 = &gCollisionState->unk30->header.Triangle_Normals[sp8C[sp94].index];
+            }
+            if (arg3 != 0) {
                 *arg3 = sp90;
             }
-            *arg0 = var_f22;
-            if (arg1 != NULL) {
-                arg1->unk0 = (gCollisionState->deltaPos.x * var_f22) + gCollisionState->currPos.x;
-                arg1->unk4 = (gCollisionState->deltaPos.y * var_f22) + gCollisionState->currPos.y;
-                arg1->unk8 = (gCollisionState->deltaPos.z * var_f22) + gCollisionState->currPos.z;
+            *MAXLRP = maxlevel;
+            if (arg1 != 0) {
+                arg1->x = (gCollisionState->deltaPos.x * maxlevel) + gCollisionState->currPos.x;
+                arg1->y = (gCollisionState->deltaPos.y * maxlevel) + gCollisionState->currPos.y;
+                arg1->z = (gCollisionState->deltaPos.z * maxlevel) + gCollisionState->currPos.z;
             }
             return 1;
         }
-        goto block_25;
     }
-block_25:
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103004.s")
-#endif
 
-#ifdef MIPS_TO_C
-s32 func_801033A8(void *arg0, void *arg1, void *arg2) {
-    f32 sp14;
-    f32 sp8;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f0_5;
-    f32 temp_f0_6;
-    s32 var_v0;
+u32 func_801033A8(struct struct8011BA10_temp *arg0, Vector *arg1, Vector *arg2) {
+    Vector sp14;
+    Vector sp8;
 
-    sp14.unk0 = arg1->unk0;
-    sp14.unk4 = arg1->unk4;
-    sp14.unk8 = arg1->unk8;
-    sp8.unk0 = arg2->unk0;
-    sp8.unk4 = arg2->unk4;
-    sp8.unk8 = arg2->unk8;
-    temp_f0 = arg0->unkA0;
-    if ((sp14 < temp_f0) && (sp8 < temp_f0)) {
+    sp14 = *arg1;
+    sp8 = *arg2;
+    if ((sp14.x < arg0->unkA0) && (sp8.x < arg0->unkA0)) {
         return 0;
     }
-    temp_f0_2 = arg0->unkAC;
-    if ((temp_f0_2 < sp14) && (temp_f0_2 < sp8)) {
+    if ((arg0->unkAC < sp14.x) && (arg0->unkAC < sp8.x)) {
         return 0;
     }
-    temp_f0_3 = arg0->unkA4;
-    if ((sp18 < temp_f0_3) && (spC < temp_f0_3)) {
+    if ((sp14.y < arg0->unkA4) && (sp8.y < arg0->unkA4)) {
         return 0;
     }
-    temp_f0_4 = arg0->unkB0;
-    if ((temp_f0_4 < sp18) && (temp_f0_4 < spC)) {
+    if ((arg0->unkB0 < sp14.y) && (arg0->unkB0 < sp8.y)) {
         return 0;
     }
-    temp_f0_5 = arg0->unkA8;
-    if ((sp1C < temp_f0_5) && (sp10 < temp_f0_5)) {
+    if ((sp14.z < arg0->unkA8) && (sp8.z < arg0->unkA8)) {
         return 0;
     }
-    temp_f0_6 = arg0->unkB4;
-    var_v0 = 1;
-    if ((temp_f0_6 < sp1C) && (temp_f0_6 < sp10)) {
-        var_v0 = 0;
+    if (arg0->unkB4 < sp14.z && arg0->unkB4 < sp8.z) {
+        return 0;
     }
-    return var_v0;
+    return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801033A8.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1191,32 +1107,24 @@ s32 func_80103528(f32 *arg0, ? *arg1, ? arg2, ? arg3, u32 *arg4) {
     return var_v0;
 }
 #else
+void func_80103528(s32, s32, s32, s32, s32);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103528.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80103930(void *arg0, void *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk3C = NULL;
-    sp20.unk44 = func_801024E8;
-    sp20.unk40 = func_80101920;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.someNormal = arg2;
+void func_80103930(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5,
+                        s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.unk3C = NULL;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_801024E8;
+    newColState.unk40 = func_80101920;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103930.s")
-#endif
 
 #ifdef MIPS_TO_C
 

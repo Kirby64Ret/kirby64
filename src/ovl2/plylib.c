@@ -911,6 +911,8 @@ void func_8011D40C(void) {
     }
 }
 #else
+// Needs a prototype to match func_801212A4
+void func_8011D40C(void);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D40C.s")
 #endif
 
@@ -2662,18 +2664,13 @@ u8 kirby_in_inactionable_state(void) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
-void func_80121284(u8 arg0) {
+void func_80121284(u32 arg0) {
     if (gKirbyState.abilityState == 0) {
         gKirbyState.unk17 = arg0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121284.s")
-#endif
 
 // Matched previously, needs correct function prototypes
-#ifdef NON_MATCHING
 void func_801212A4(void) {
     Vector currPos;
     Vector nextPos;
@@ -2725,9 +2722,6 @@ void func_801212A4(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801212A4.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_801215DC(void) {
@@ -2927,33 +2921,24 @@ void func_80121BCC(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121BCC.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 s32 func_80121C90(void) {
     if (!(gKirbyState.isTurning & 1)) {
         if (func_80121194() != 0) {
             gKirbyState.unk2C = 0xE;
             gKirbyState.isTurning |= 1;
-            goto block_9;
         }
-        if (gKirbyController.buttonHeld & 0x300) {
+        else if (gKirbyController.buttonHeld & 0x300) {
             return 1;
         }
-        goto block_9;
     }
-    if (gKirbyState.unk2C != 0) {
+    else if (gKirbyState.unk2C != 0) {
         gKirbyState.unk2C -= 1;
-        goto block_9;
-    }
-    if (gKirbyController.buttonHeld & 0x300) {
+    } else if (gKirbyController.buttonHeld & 0x300) {
         return 1;
     }
-block_9:
+
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121C90.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -3140,24 +3125,18 @@ block_33:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8012209C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 s32 func_80122460(void) {
     if ((gKirbyState.ceilingCollisionNext != 0) && (D_800E3210[omCurrentObj->objId] > 0.0f)) {
         if (((gKirbyState.ceilingType == 4) || (gKirbyState.ceilingType == 5)) && (func_8010D8A4(&gPositionState) != 0)) {
             return 1;
         }
-        goto block_11;
     }
-    if ((gKirbyState.floorCollisionNext != 0) && (D_800E3210[omCurrentObj->objId] <= 0.0f) && (gKirbyState.floorType == 4) && (func_8010D8A4(&gPositionState) != 0)) {
+    else if ((gKirbyState.floorCollisionNext != 0) && (D_800E3210[omCurrentObj->objId] <= 0.0f) && (gKirbyState.floorType == 4) && (func_8010D8A4(&gPositionState) != 0)) {
         return 1;
     }
-block_11:
+
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80122460.s")
-#endif
 
 #ifdef MIPS_TO_C
 

@@ -300,7 +300,7 @@ void func_8015170C_ovl6(s32 *arg0) {
             gDisplayListHeads.unk4 = temp_v0_11 + 8;
             temp_v0_11->unk0 = 0xDC08090A;
             temp_v0_11->unk4 = D_8015A670_ovl6;
-            func_80014AD4(arg0);
+            renderDrawObject_TypeD(arg0);
             return;
         case 28:
         case 30:
@@ -421,7 +421,7 @@ void func_8015198C_ovl6(s32 *arg0) {
             gDisplayListHeads.unk4 = temp_v0_13 + 8;
             temp_v0_13->unk0 = 0xFB000000;
             temp_v0_13->unk4 = (D_8015A670_ovl6->unkA << 8) | (D_8015A670_ovl6->unk8 << 0x18) | (D_8015A670_ovl6->unk9 << 0x10) | 0xFF;
-            func_80014AD4(arg0, D_8015A670_ovl6);
+            renderDrawObject_TypeD(arg0, D_8015A670_ovl6);
             return;
         case 28:
         case 30:
@@ -594,7 +594,7 @@ void func_80151E60_ovl6(s32 *arg0, s32 arg1) {
             gDisplayListHeads.unk4 = temp_v0_11 + 8;
             temp_v0_11->unk4 = arg1;
             temp_v0_11->unk0 = 0xDC08090A;
-            func_80014AD4(arg0);
+            renderDrawObject_TypeD(arg0);
             temp_v0_12 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_12 + 8;
             temp_v0_12->unk4 = 0;
@@ -751,7 +751,7 @@ void func_80152138_ovl6(s32 *arg0, void *arg1) {
             gDisplayListHeads.unk4 = temp_v0_13 + 8;
             temp_v0_13->unk0 = 0xFB000000;
             temp_v0_13->unk4 = (arg1->unkA << 8) | (arg1->unk8 << 0x18) | (arg1->unk9 << 0x10) | 0xFF;
-            func_80014AD4(arg0, arg1);
+            renderDrawObject_TypeD(arg0, arg1);
             temp_v0_14 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_14 + 8;
             temp_v0_14->unk4 = 0;
@@ -925,7 +925,7 @@ void func_801524C8_ovl6(s32 *arg0) {
             gDisplayListHeads.unk4 = temp_v0_15 + 8;
             temp_v0_15->unk0 = 0xF8000000;
             temp_v0_15->unk4 = (D_8015A7B8_ovl6.unk4 << 0x18) | (D_8015A7B8_ovl6.unk5 << 0x10) | (D_8015A7B8_ovl6.unk6 << 8) | 0xFF;
-            func_80014AD4(arg0, D_8015A7B8_ovl6.unk0, temp_a2_2, temp_v0_9);
+            renderDrawObject_TypeD(arg0, D_8015A7B8_ovl6.unk0, temp_a2_2, temp_v0_9);
             temp_v0_16 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_16 + 8;
             temp_v0_16->unk4 = 0;

@@ -984,6 +984,8 @@ gtlSetSegment0F=0x80005378; // type:func
 gtlMainFuncTable=0x8004A418;
 
 // render
+renderDrawDObj_TypeD = 0x800147C8; // type:func
+renderDrawObject_TypeD = 0x80014AD4; // type:func
 renderPostCameraDraw = 0x80017F78; // type:func
 renderDrawObject_TypeG = 0x80014FA4; // type:func
 renderDrawDObj_TypeC = 0x800143D4; // type:func
@@ -1117,3 +1119,5 @@ utilCorrectStickX = 0x800A5560; // type:func
 utilCorrectStickY = 0x800A55E0; // type:func
 gOverlayTable = 0x800BE8A0;
 
+
+D_800D4FD0 = 0x800D4FD0; // type:s32

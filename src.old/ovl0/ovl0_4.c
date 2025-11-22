@@ -164,14 +164,14 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawObject_TypeC.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001479C.s")
 
-void func_800147C8(struct UnkStruct8004A7C4_3C *arg0);
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_800147C8.s")
+void renderDrawDObj_TypeD(struct UnkStruct8004A7C4_3C *arg0);
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderDrawDObj_TypeD.s")
 
 
 extern f32 renderObjectScale;
-void func_80014AD4(struct GObj *arg0) {
+void renderDrawObject_TypeD(struct GObj *arg0) {
     renderObjectScale = 1.0f;
-    func_800147C8(arg0->unk3C);
+    renderDrawDObj_TypeD(arg0->unk3C);
 }
 
 #include "ovl0_5.h"

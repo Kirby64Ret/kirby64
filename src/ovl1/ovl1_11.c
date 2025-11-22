@@ -75,7 +75,7 @@ void func_800BB6B0(GObj *gobj) {
             gSPClearGeometryMode(gDisplayListHeads[1]++, G_ZBUFFER);
             gSPSegment(gDisplayListHeads[1]++, 0x04, gSegment4StartArray[gobj->objId]);
             gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
-            func_80014AD4(gobj);
+            renderDrawObject_TypeD(gobj);
             gDPPipeSync(gDisplayListHeads[1]++);
             gSPSetGeometryMode(gDisplayListHeads[1]++, G_ZBUFFER);
             gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);

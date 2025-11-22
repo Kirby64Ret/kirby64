@@ -362,7 +362,7 @@ void func_800AB2C0(struct GObj *arg0) {
 void func_800AB314(struct GObj *arg0) {
     gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
     gSPSegment(gDisplayListHeads[1]++, 0x04, gSegment4StartArray[arg0->objId]);
-    func_80014AD4(arg0);
+    renderDrawObject_TypeD(arg0);
 }
 
 void func_800AB390(s32 arg0) {
