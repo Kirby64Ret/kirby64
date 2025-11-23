@@ -1,10 +1,11 @@
 #include "common.h"
+#include "new_ovl2_7.h"
 #include "ovl2/ovl2_6.h"
 #include "ovl2/ovl2_8.h"
 #include "main/lbvector.h"
-extern u32 D_8012BD00;
 
 extern struct CollisionState *gCollisionState;
+extern u32 D_8012BD00;
 
 // TODO: either put these in ovl0_5.h, or use the ones already there
 #define PVPDP(a, b) ( a->x*b->x +  a->y*b->y +  a->z*b->z)
@@ -12,6 +13,9 @@ extern struct CollisionState *gCollisionState;
 
 u32 func_8011BED0(u16, u16, u16, struct Normal *);
 void func_80101400(u32 numFloorNorms);
+
+extern f32 D_80128A70;
+extern struct vCollisionHeader *D_80129410;
 
 #ifdef MIPS_TO_C
 void func_80101400(u16 arg0) {
@@ -358,37 +362,42 @@ u8 func_80101F4C(struct CollisionTriangle *arg0, struct Normal *arg1,
     return 0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+u8 func_8010203C(struct CollisionTriangle *arg0, struct Normal *arg1,
+    struct Normal *arg2, u32 arg3) {
 
-s32 func_8010203C(void *arg0, void *arg1, void *arg2, ? arg3) {
-    s32 sp24;
-    u16 temp_a0;
-    u16 temp_v1;
+    if (arg0->normalType & DOUBLE_SIDED_NORMAL) {
+        int particle = gCollisionState->unk4A;
 
-    temp_v1 = arg0->unk8;
-    if (temp_v1 & 3) {
-        temp_a0 = gCollisionState->unk4A;
-        if (temp_a0 == arg0->unk12) {
-            sp24 = temp_v1;
-            if (func_8011BED0(temp_a0, arg0->unk10, gCollisionState->unk4C, arg2) != 0) {
-                if (temp_v1 & 1) {
-                    if ((arg2 != NULL) && (((arg1->unk0 * arg2->unk0) + (arg1->unk4 * arg2->unk4) + (arg1->unk8 * arg2->unk8)) > 0.0f)) {
-                        goto block_11;
+        if (particle == arg0->breakParticle) {
+            if (func_8011BED0(
+                particle,
+                arg0->collisionParameter,
+                gCollisionState->unk4C,
+                arg2
+            ) != 0) {
+                if (arg0->normalType & FORWARD_NORMAL) {
+                    if (arg2) {
+                        if (0.0f < VEC_DOT(arg1, arg2)) {
+                            return 0;
+                        }
                     }
-                    goto block_10;
+                } else {
+                    if (arg2) {
+                        if (0.0f < VEC_DOT_FIRST_ARG_NEGATE(arg1, arg2)) {
+                            return 0;
+                        }
+                    }
                 }
-                if ((arg2 != NULL) && (((-arg1->unk0 * arg2->unk0) + (-arg1->unk4 * arg2->unk4) + (-arg1->unk8 * arg2->unk8)) > 0.0f)) {
-                    goto block_11;
-                }
-block_10:
                 return 1;
             }
         }
     }
-block_11:
     return 0;
 }
 #else
+u8 func_8010203C(struct CollisionTriangle *arg0, struct Normal *arg1,
+    struct Normal *arg2, u32 arg3);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010203C.s")
 #endif
 
@@ -435,6 +444,7 @@ s32 func_8010221C(void *arg0, void *arg1, void *arg2, ? arg3) {
     return 0;
 }
 #else
+s32 func_8010221C(void *arg0, void *arg1, void *arg2, s32 arg3);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010221C.s")
 #endif
 
@@ -480,6 +490,7 @@ s32 func_80102364(void *arg0, s32 arg1) {
     return 0;
 }
 #else
+s32 func_80102364(void *arg0, s32 arg1);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80102364.s")
 #endif
 
@@ -527,28 +538,28 @@ s32 func_801023FC(void *arg0, s32 arg1) {
     return 0;
 }
 #else
+u8 func_801023FC(struct Normal *arg0, s32 arg1);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801023FC.s")
 #endif
 
-#ifdef MIPS_TO_C
-s32 func_801024E8(void *arg0, s32 arg1) {
+// control flow
+#ifdef NON_MATCHING
+s32 func_801024E8(Vector *arg0, s32 arg1) {
     struct Normal *temp_v0;
 
-    temp_v0 = gCollisionState->someNormal;
-    if (temp_v0 != NULL) {
-        if (((temp_v0->x * arg0->unk0) + (temp_v0->y * arg0->unk4) + (temp_v0->z * arg0->unk8)) > 0.0f) {
+    if (gCollisionState->someNormal) {
+        if (VEC_DOT(gCollisionState->someNormal, arg0) > 0.0f) {
             if (arg1 == 0) {
                 return 1;
             }
-            /* Duplicate return node #7. Try simplifying control flow for better match */
-            return 0;
         }
-        if (arg1 != 0) {
+        else if (arg1 != 0) {
             return 1;
         }
-        return 0;
+        return 1;
     }
-    return 1;
+
+    return 0;
 }
 #else
 u8 func_801024E8(Vector *arg0, s32 arg1);
@@ -909,7 +920,7 @@ u32 func_80103004(f32 *MAXLRP, Vector *arg1, struct Normal **arg2, struct Collis
         s32 temp_s2;
         Vector sp68;
         u32 i;
-        for (i = 0; i < (unsigned)gCollisionState->numCells; i++) {
+        for (i = 0; i < (u32)gCollisionState->numCells; i++) {
             cell = gCollisionState->unk4[i].cell;
             sp88 = sp8C[cell].code;
             if (sp88 != 0) {
@@ -1126,56 +1137,36 @@ void func_80103930(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s3
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
 
-#ifdef MIPS_TO_C
-
-void func_801039E8(void *arg0, void *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk3C = NULL;
-    sp20.unk44 = func_80102364;
-    sp20.unk40 = func_80101920;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.someNormal = arg2;
+void func_801039E8(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5,
+                        s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.unk3C = NULL;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_80102364;
+    newColState.unk40 = func_80101920;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801039E8.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80103AA0(void *arg0, void *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk3C = NULL;
-    sp20.unk44 = func_801023FC;
-    sp20.unk40 = func_80101920;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.someNormal = arg2;
+void func_80103AA0(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.unk3C = NULL;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_801023FC;
+    newColState.unk40 = func_80101920;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103AA0.s")
-#endif
 
 #ifdef MIPS_TO_C
-
 s32 func_80103B58(f32 *arg0, ? arg1, ? arg2, ? arg3, u32 *arg4) {
     f32 sp54;
     ? *var_s0;
@@ -1217,38 +1208,26 @@ s32 func_80103B58(f32 *arg0, ? arg1, ? arg2, ? arg3, u32 *arg4) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103B58.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80103CC8(void *arg0, void *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk3C = NULL;
-    sp20.unk44 = func_801024E8;
-    sp20.unk40 = func_80101920;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.someNormal = arg2;
+void func_80103CC8(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
+        s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.unk3C = NULL;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_801024E8;
+    newColState.unk40 = func_80101920;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103CC8.s")
-#endif
 
-#ifdef MIPS_TO_C
+u32 func_80103D80(f32 *arg0, Vector *arg1, struct Normal *arg2, Vector *arg3) {
+    f32 sp1C = 1.1f;
 
-s32 func_80103D80(f32 *arg0) {
-    f32 sp1C;
-
-    sp1C = 1.1f;
-    gCollisionState->unk30 = D_80129410;
-    if (func_80103004(&sp1C) != 0) {
+    gCollisionState -> unk30 = D_80129410;
+    if (func_80103004(&sp1C, arg1, arg2, arg3) != 0) {
         if (arg0 != NULL) {
             *arg0 = sp1C;
         }
@@ -1256,312 +1235,198 @@ s32 func_80103D80(f32 *arg0) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103D80.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80103DE4(void *arg0, void *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk3C = NULL;
-    sp20.unk44 = func_801024E8;
-    sp20.unk40 = func_80101920;
-    sp20.unk34 = arg2;
-    sp20.unk38 = arg3;
+void func_80103DE4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
+    s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+    struct CollisionState newColState;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk3C = NULL;
+    newColState.unk44 = &func_801024E8;
+    newColState.unk40 = &func_80101920;
+    newColState.unk34 = arg2;
+    newColState.unk38 = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103DE4.s")
-#endif
 
-#ifdef MIPS_TO_C
 
-void func_80103EA0(void *arg0, void *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk44 = func_80102364;
-    sp20.unk40 = func_80101920;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
-    sp20.someNormal = arg2;
+void func_80103EA0(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
+    s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_80102364;
+    newColState.unk40 = func_80101920;
+    newColState.unk34 = 0;
+    newColState.unk38 = 0;
+    newColState.unk3C = NULL;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103EA0.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80103F58(void *arg0, void *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk44 = func_80102364;
-    sp20.unk40 = func_80101BA0;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
-    sp20.someNormal = arg2;
+void func_80103F58(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
+    s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_80102364;
+    newColState.unk40 = func_80101BA0;
+    newColState.unk34 = 0;
+    newColState.unk38 = 0;
+    newColState.unk3C = NULL;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103F58.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80104010(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
+    s32 arg5, s32 arg6, s32 arg7, s32 arg8)
+{
+    struct CollisionState newColState;
 
-void func_80104010(void *arg0, void *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk44 = func_80102364;
-    sp20.unk40 = func_80101920;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
-    sp20.someNormal = arg2;
-    sp20.unk34 = arg3;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_80102364;
+    newColState.unk40 = func_80101920;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
+    newColState.unk34 = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104010.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801040CC(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
 
-void func_801040CC(void *arg0, void *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_80102364;
-    sp20.unk40 = func_80101D50;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = arg2;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_80102364;
+    newColState.unk40 = func_80101D50;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = arg2;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801040CC.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80104184(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
 
-void func_80104184(void *arg0, void *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_80102364;
-    sp20.unk40 = func_80101E14;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = arg2;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_80102364;
+    newColState.unk40 = func_80101E14;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = arg2;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104184.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8010423C(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
 
-void func_8010423C(void *arg0, void *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk44 = func_801023FC;
-    sp20.unk40 = func_80101920;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
-    sp20.someNormal = arg2;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_801023FC;
+    newColState.unk40 = func_80101920;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010423C.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801042F4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+    struct CollisionState newColState;
 
-void func_801042F4(void *arg0, void *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.unk44 = func_801023FC;
-    sp20.unk40 = func_80101920;
-    sp20.unk34 = NULL;
-    sp20.unk3C = NULL;
-    sp20.someNormal = arg2;
-    sp20.unk38 = arg3;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = arg2;
+    newColState.unk44 = func_801023FC;
+    newColState.unk40 = func_80101920;
+    newColState.unk34 = NULL;
+    newColState.unk3C = NULL;
+    newColState.unk38 = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801042F4.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801043B0(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
 
-void func_801043B0(void *arg0, void *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_801023FC;
-    sp20.unk40 = func_80101E14;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = arg2;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_801023FC;
+    newColState.unk40 = func_80101E14;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = arg2;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801043B0.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80104468(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+    struct CollisionState newColState;
 
-void func_80104468(void *arg0, void *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_801023FC;
-    sp20.unk40 = func_80101DA8;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
-    sp20.unk34 = arg2;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_801023FC;
+    newColState.unk40 = func_80101DA8;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
+    newColState.unk34 = arg2;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104468.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80104520(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+    struct CollisionState newColState;
 
-void func_80104520(void *arg0, void *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_801024E8;
-    sp20.unk40 = func_80101DA8;
-    sp20.unk3C = NULL;
-    sp20.unk34 = arg2;
-    sp20.unk38 = arg3;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_801024E8;
+    newColState.unk40 = func_80101DA8;
+    newColState.unk3C = NULL;
+    newColState.unk34 = arg2;
+    newColState.unk38 = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104520.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801045DC(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+    struct CollisionState newColState;
 
-void func_801045DC(void *arg0, void *arg1, u16 arg2, u16 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_801024E8;
-    sp20.unk40 = func_8010203C;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
-    sp20.unk4A = arg2;
-    sp20.unk4C = arg3;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_801024E8;
+    newColState.unk40 = func_8010203C;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
+    newColState.unk4A = arg2;
+    newColState.unk4C = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801045DC.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_801046A0(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+void func_801046A0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     struct CollisionState sp18;
 
     gCollisionState = &sp18;
-    sp18.currPos.x = arg0->unk0;
-    sp18.currPos.y = arg0->unk4;
-    sp18.currPos.z = arg0->unk8;
-    sp18.nextPos.x = arg1->unk0;
-    sp18.nextPos.y = arg1->unk4;
-    sp18.nextPos.z = arg1->unk8;
+    sp18.currPos = *arg0;
+    sp18.nextPos = *arg1;
     sp18.someNormal = NULL;
     sp18.unk3C = NULL;
     sp18.unk44 = func_801023FC;
@@ -1570,22 +1435,13 @@ void func_801046A0(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg
     sp18.unk38 = NULL;
     func_80103D80(arg2, arg3, arg4, arg5);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801046A0.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8010474C(void *arg0, void *arg1) {
+void func_8010474C(Vector *arg0, Vector *arg1) {
     struct CollisionState sp18;
 
     gCollisionState = &sp18;
-    sp18.currPos.x = arg0->unk0;
-    sp18.currPos.y = arg0->unk4;
-    sp18.currPos.z = arg0->unk8;
-    sp18.nextPos.x = arg1->unk0;
-    sp18.nextPos.y = arg1->unk4;
-    sp18.nextPos.z = arg1->unk8;
+    sp18.currPos = *arg0;
+    sp18.nextPos = *arg1;
     sp18.someNormal = NULL;
     sp18.unk3C = NULL;
     sp18.unk44 = func_80102364;
@@ -1594,94 +1450,58 @@ void func_8010474C(void *arg0, void *arg1) {
     sp18.unk38 = NULL;
     func_80103D80(0, 0, 0, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010474C.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801047F0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+    struct CollisionState newColState;
 
-void func_801047F0(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_801023FC;
-    sp20.unk40 = func_8010217C;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_801023FC;
+    newColState.unk40 = func_8010217C;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
     func_80103B58(arg2, arg3, arg4, arg5, arg6);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801047F0.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801048A4(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+    struct CollisionState newColState;
 
-void func_801048A4(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_801023FC;
-    sp20.unk40 = func_801021BC;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_801023FC;
+    newColState.unk40 = func_801021BC;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
     func_80103B58(arg2, arg3, arg4, arg5, arg6);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801048A4.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80104958(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4) {
+    struct CollisionState newColState;
 
-void func_80104958(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_80102364;
-    sp20.unk40 = func_801021FC;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_80102364;
+    newColState.unk40 = func_801021FC;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
     func_80103B58(0, arg2, arg3, arg4, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104958.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80104A08(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
+void func_80104A08(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4) {
     struct CollisionState sp18;
 
     gCollisionState = &sp18;
-    sp18.currPos.x = arg0->unk0;
-    sp18.currPos.y = arg0->unk4;
-    sp18.currPos.z = arg0->unk8;
-    sp18.nextPos.x = arg1->unk0;
-    sp18.nextPos.y = arg1->unk4;
-    sp18.nextPos.z = arg1->unk8;
+    sp18.currPos = *arg0;
+    sp18.nextPos = *arg1;
     sp18.someNormal = NULL;
     sp18.unk44 = func_80102364;
     sp18.unk40 = func_801021FC;
@@ -1690,22 +1510,13 @@ void func_80104A08(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
     sp18.unk3C = NULL;
     func_80103D80(0, arg2, arg3, arg4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104A08.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80104AB4(void *arg0, void *arg1, u16 arg2, u16 arg3, s32 arg4) {
+void func_80104AB4(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, s32 arg4) {
     struct CollisionState sp18;
 
     gCollisionState = &sp18;
-    sp18.currPos.x = arg0->unk0;
-    sp18.currPos.y = arg0->unk4;
-    sp18.currPos.z = arg0->unk8;
-    sp18.nextPos.x = arg1->unk0;
-    sp18.nextPos.y = arg1->unk4;
-    sp18.nextPos.z = arg1->unk8;
+    sp18.currPos = *arg0;
+    sp18.nextPos = *arg1;
     sp18.someNormal = NULL;
     sp18.unk3C = NULL;
     sp18.unk44 = func_801024E8;
@@ -1716,33 +1527,21 @@ void func_80104AB4(void *arg0, void *arg1, u16 arg2, u16 arg3, s32 arg4) {
     sp18.unk4A = arg3;
     func_80103D80(0, 0, 0, arg4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104AB4.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80104B70(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+    struct CollisionState newColState;
 
-void func_80104B70(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    struct CollisionState sp20;
-
-    gCollisionState = &sp20;
-    sp20.currPos.x = arg0->unk0;
-    sp20.currPos.y = arg0->unk4;
-    sp20.currPos.z = arg0->unk8;
-    sp20.nextPos.x = arg1->unk0;
-    sp20.nextPos.y = arg1->unk4;
-    sp20.nextPos.z = arg1->unk8;
-    sp20.someNormal = NULL;
-    sp20.unk44 = func_80102364;
-    sp20.unk40 = func_80102324;
-    sp20.unk34 = NULL;
-    sp20.unk38 = NULL;
-    sp20.unk3C = NULL;
+    gCollisionState = &newColState;
+    newColState.currPos = *arg0;
+    newColState.nextPos = *arg1;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_80102364;
+    newColState.unk40 = func_80102324;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
     func_80103B58(arg2, arg3, arg4, arg5, arg6);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104B70.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1755,12 +1554,8 @@ s32 func_80104C24(void *arg0, void *arg1) {
     f32 sp1C;
 
     gCollisionState = &sp28;
-    sp28.currPos.x = arg0->unk0;
-    sp28.currPos.y = arg0->unk4;
-    sp28.currPos.z = arg0->unk8;
-    sp28.nextPos.x = arg1->unk0;
-    sp28.nextPos.y = arg1->unk4;
-    sp28.nextPos.z = arg1->unk8;
+    sp28.currPos = *arg0;
+    sp28.nextPos = *arg1;
     sp28.someNormal = NULL;
     sp28.unk3C = NULL;
     sp28.unk44 = func_801024E8;
@@ -1902,30 +1697,20 @@ void func_801050E0(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801050E0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80105180(void *arg0) {
-    arg0->unk4C = 0;
-    arg0->unk54 = 0x14;
-    arg0->unk50 = 0x14;
-    arg0->unk51 = 0x14;
-    arg0->unk53 = 0x14;
-    arg0->unk52 = 0x14;
-    arg0->unk58 = D_8012BD40;
+void func_80105180(struct PositionState *arg0) {
+    arg0->collisionFlags = 0;
+    arg0->byteArray[2] =
+    arg0->byteArray[3] =
+    arg0->byteArray[1] =
+    arg0->byteArray[0] =
+    arg0->byteArray[4] = 0x14;
+    arg0->VI_Timer = D_8012BD40;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80105180.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_801051AC(void *arg0) {
-    func_801050E0();
-    arg0->unk58 = D_8012BD40;
+void func_801051AC(struct PositionState *arg0) {
+    func_801050E0(arg0);
+    arg0->VI_Timer = D_8012BD40;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801051AC.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_801051DC(void *arg0) {
@@ -6289,28 +6074,30 @@ u8 func_8010E2A0(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010E2A0.s")
 #endif
 
-#ifdef MIPS_TO_C
-void mtx_create_translate_scale(void *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
-    arg0->unk30 = arg1;
-    arg0->unk34 = arg2;
-    arg0->unk38 = arg3;
-    arg0->unk0 = arg4;
-    arg0->unk14 = arg5;
-    arg0->unk4 = 0.0f;
-    arg0->unk8 = 0.0f;
-    arg0->unkC = 0.0f;
-    arg0->unk10 = 0.0f;
-    arg0->unk18 = 0.0f;
-    arg0->unk1C = 0.0f;
-    arg0->unk20 = 0.0f;
-    arg0->unk24 = 0.0f;
-    arg0->unk2C = 0.0f;
-    arg0->unk3C = 1.0f;
-    arg0->unk28 = arg6;
+// Creates matrix with format:
+// {   sx  , 0.0f, 0.0f, 0.0f,
+//     0.0f, sy  , 0.0f, 0.0f,
+//     0.0f, 0.0f, sz  , 0.0f,
+//     tx  , ty  , tz  , 1.0f }
+void mtx_create_translate_scale(f32 arg0[4][4], f32 tx, f32 ty, f32 tz, f32 sx, f32 sy, f32 sz) {
+    arg0[3][0] = tx;
+    arg0[3][1] = ty;
+    arg0[3][2] = tz;
+    arg0[0][0] = sx;
+    arg0[1][1] = sy;
+    arg0[2][2] = sz;
+
+    arg0[0][1] = 0.0f;
+    arg0[0][2] = 0.0f;
+    arg0[0][3] = 0.0f;
+    arg0[1][0] = 0.0f;
+    arg0[1][2] = 0.0f;
+    arg0[1][3] = 0.0f;
+    arg0[2][0] = 0.0f;
+    arg0[2][1] = 0.0f;
+    arg0[2][3] = 0.0f;
+    arg0[3][3] = 1.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/mtx_create_translate_scale.s")
-#endif
 
 #ifdef MIPS_TO_C
 

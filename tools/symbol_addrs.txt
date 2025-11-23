@@ -984,6 +984,7 @@ gtlSetSegment0F=0x80005378; // type:func
 gtlMainFuncTable=0x8004A418;
 
 // render
+renderInitCamera = 0x80016940; // type:func
 renderDrawDObj_TypeD = 0x800147C8; // type:func
 renderDrawObject_TypeD = 0x80014AD4; // type:func
 renderPostCameraDraw = 0x80017F78; // type:func

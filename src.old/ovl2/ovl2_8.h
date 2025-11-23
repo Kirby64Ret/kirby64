@@ -2,7 +2,7 @@
 #define OVL2_8_HEADER
 
 struct PositionState {
-/*0x0*/  u32    padding;
+/*0x0*/  u32    unk0;
 /*0x4*/  f32 	kirbyFootPos[3]; //Position of kirby at feet/back
 /*0x10*/ f32 	scale[3]; //this is prob for size of char (for dedede segments?)
 /*0x1c*/ f32 	faceAngle[3]; //Constat with mag, last member seems to be total H dist or something

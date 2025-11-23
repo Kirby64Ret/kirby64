@@ -710,7 +710,7 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001663C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80016940.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/renderInitCamera.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_80016DE8.s")
 

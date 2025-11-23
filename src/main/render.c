@@ -2616,7 +2616,7 @@ void func_8001663C(void **arg0, void *arg1, s32 arg2) {
 
 #ifdef MIPS_TO_C
 
-void func_80016940(void **arg0, void *arg1, s32 arg2) {
+void renderInitCamera(void **arg0, void *arg1, s32 arg2) {
     void *sp84;
     void *sp3C;
     s32 sp24;
@@ -2761,7 +2761,7 @@ void func_80016940(void **arg0, void *arg1, s32 arg2) {
     *arg0 = var_v1_4;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80016940.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderInitCamera.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -3312,7 +3312,7 @@ void func_80017FEC(void *arg0, s32 arg1, s32 arg2) {
     void *temp_s0;
 
     temp_s0 = arg0->unk3C;
-    func_80016940(arg1, temp_s0);
+    renderInitCamera(arg1, temp_s0);
     func_800171E0(arg1, temp_s0);
     func_80017B40(temp_s0, arg2);
     var_a1 = 0;
@@ -3370,7 +3370,7 @@ void func_8001810C(void) {
     sp1C = omCurrentCamera->unk3C;
     gtlProcessDisps();
     gtlReset();
-    func_80016940(&gDisplayListHeads, sp1C, 0);
+    renderInitCamera(&gDisplayListHeads, sp1C, 0);
     func_800171E0(&gDisplayListHeads, sp1C);
     func_80017B40(sp1C, 0);
 }
@@ -3397,16 +3397,16 @@ void func_80018170(void *arg0) {
     void *temp_v0;
 
     temp_s5 = arg0->unk3C;
-    func_80016940(&gDisplayListHeads, temp_s5, 0);
+    renderInitCamera(&gDisplayListHeads, temp_s5, 0);
     D_8004ADB0 = gDisplayListHeads + 8;
-    gDisplayListHeads->unk0 = 0xDE000000;
-    gDisplayListHeads->unk4 = gDisplayListHeads + 0x10;
-    gDisplayListHeads += 0x10;
+    gSPDisplayList(gDisplayListHeads[0]++, gDisplayListHeads[0] + 2);
     func_800171E0(&gDisplayListHeads, temp_s5);
+
     temp_s1 = gDisplayListHeads;
     gDisplayListHeads = temp_s1 + 8;
     temp_s1->unk4 = 0;
     temp_s1->unk0 = 0xDF000000;
+
     D_8004ADB0->unk0 = 0xDE010000;
     D_8004ADB0->unk4 = gDisplayListHeads;
     func_80017B40(temp_s5, 0);
@@ -3491,7 +3491,7 @@ void func_800183BC(void) {
 
     gtlProcessDisps();
     gtlReset();
-    func_80016940(&gDisplayListHeads[0], cam, 0);
+    renderInitCamera(&gDisplayListHeads[0], cam, 0);
     D_8004ADB0 = gDisplayListHeads[0] + 1;
     gSPDisplayList(gDisplayListHeads[0], gDisplayListHeads[0] + 2);
     gDisplayListHeads[0] += 2;

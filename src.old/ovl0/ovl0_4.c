@@ -231,7 +231,7 @@ void func_80016634(s32 arg0) {
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_8001663C.s")
 
 #ifdef WORK_ON_IT
-void func_80016940(Gfx** arg0, Vp *arg1, s32 arg2) {
+void renderInitCamera(Gfx** arg0, Vp *arg1, s32 arg2) {
     void *sp84;
     void *sp3C;
     s32 sp24;
@@ -431,7 +431,7 @@ void func_80016940(Gfx** arg0, Vp *arg1, s32 arg2) {
     // *arg0 = phi_v1_4;
 }
 #else
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80016940.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/renderInitCamera.s")
 #endif
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_4/func_80016DE8.s")
@@ -556,14 +556,14 @@ void renderPostCameraDraw(struct unk80017B40 *arg0) {
     }
 }
 
-void func_80016940(Gfx**, void *, s32);
+void renderInitCamera(Gfx**, void *, s32);
 void func_800171E0(Gfx**, void *);
 
 void func_80017FEC(struct GObj *arg0, Gfx** arg1, s32 arg2) {
     struct unk80017B40 *temp_s0;
 
     temp_s0 = arg0->unk3C;
-    func_80016940(arg1, temp_s0, arg2);
+    renderInitCamera(arg1, temp_s0, arg2);
     func_800171E0(arg1, temp_s0);
     func_80017B40(temp_s0, arg2);
 
@@ -598,7 +598,7 @@ void func_8001810C(void) {
     sp1C = D_8004A7C8->unk3C;
     gtlProcessDisps();
     gtlReset();
-    func_80016940(&gDisplayListHeads[0], sp1C, 0);
+    renderInitCamera(&gDisplayListHeads[0], sp1C, 0);
     func_800171E0(&gDisplayListHead2 - 1, sp1C); // Had to be done like this to make it match
     func_80017B40(sp1C, 0);
 }
