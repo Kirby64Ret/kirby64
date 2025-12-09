@@ -1,5 +1,6 @@
 #include "common.h"
 #include "lbmatrix.h"
+#include "lbvector.h"
 
 // This file is a combination of early Kirby64/HAL decomp work (see pull request #33).
 //  naming from melee (which should be changed to lbreflect -> lbmatrix),
@@ -17,21 +18,23 @@ void HS64_MtxF2L(float mf[4][4], Mtx *m) {
     // This is because the two `mtx->m[...][...] = ...` lines in the macro end up on the same line of code
     // When this happens, the two or instructions are misordered (confirmed by checking with the matching code).
     
-// #define MTXF_TO_MTXF_UNSIGNED_CELL(i, j, mtxf, mtx) \
-//     e1=FTOFIX32(mtxf[i][j*2]); \
-//     e2=FTOFIX32(mtxf[i][j*2+1]); \
-//     mtx->m[0 + i/2][j + 2 * (i % 2)] = COMBINE_INTEGRAL(e1, e2); \
-//     mtx->m[2 + i/2][j + 2 * (i % 2)] = COMBINE_FRACTIONAL(e1, e2);
+    /*
+    #define MTXF_TO_MTXF_UNSIGNED_CELL(i, j, mtxf, mtx) \
+        e1=FTOFIX32(mtxf[i][j*2]); \
+        e2=FTOFIX32(mtxf[i][j*2+1]); \
+        mtx->m[0 + i/2][j + 2 * (i % 2)] = COMBINE_INTEGRAL(e1, e2); \
+        mtx->m[2 + i/2][j + 2 * (i % 2)] = COMBINE_FRACTIONAL(e1, e2);
 
-//     MTXF_TO_MTXF_UNSIGNED_CELL(0,0,mf,m);
-//     MTXF_TO_MTXF_UNSIGNED_CELL(0,1,mf,m);
-//     MTXF_TO_MTXF_UNSIGNED_CELL(1,0,mf,m);
-//     MTXF_TO_MTXF_UNSIGNED_CELL(1,1,mf,m);
-    
-//     MTXF_TO_MTXF_UNSIGNED_CELL(2,0,mf,m);
-//     MTXF_TO_MTXF_UNSIGNED_CELL(2,1,mf,m);
-//     MTXF_TO_MTXF_UNSIGNED_CELL(3,0,mf,m);
-//     MTXF_TO_MTXF_UNSIGNED_CELL(3,1,mf,m);
+        MTXF_TO_MTXF_UNSIGNED_CELL(0,0,mf,m);
+        MTXF_TO_MTXF_UNSIGNED_CELL(0,1,mf,m);
+        MTXF_TO_MTXF_UNSIGNED_CELL(1,0,mf,m);
+        MTXF_TO_MTXF_UNSIGNED_CELL(1,1,mf,m);
+        
+        MTXF_TO_MTXF_UNSIGNED_CELL(2,0,mf,m);
+        MTXF_TO_MTXF_UNSIGNED_CELL(2,1,mf,m);
+        MTXF_TO_MTXF_UNSIGNED_CELL(3,0,mf,m);
+        MTXF_TO_MTXF_UNSIGNED_CELL(3,1,mf,m);
+    */
     
     // This is probably an unrolled loop, but I couldn't get it to match
     e1=FTOFIX32(mf[0][0]);
@@ -119,7 +122,7 @@ s32 lbreflect_Int16Sin(f32 arg0) {
 }
 
 s32 lbreflect_Int16Cos(f32 arg0) {
-    s32 idx = (arg0 + 1.5707964f) * 651.8986f;
+    s32 idx = (arg0 + (M_PIF / 2)) * 651.8986f;
 
     u16 ret = INT16_SIN(idx);
 
@@ -201,7 +204,11 @@ void guLookAt (Mtx *m, float xEye, float yEye, float zEye,
 }
 
 // Modified version of guLookAtF that takes an extra Vector* argument and calls func_800191F8
-void guLookAtF_2(float mf[4][4], float xEye, float yEye, float zEye, float xAt,  float yAt,  float zAt, Vector* arg7, float xUp,  float yUp,  float zUp) {
+void guLookAtF_2(float mf[4][4],
+    float xEye, float yEye, float zEye,
+    float xAt,  float yAt,  float zAt,
+    Vector* arg7, float xUp,  float yUp,  float zUp)
+ {
     f32 len;
     Vector look;
     Vector right;
@@ -258,16 +265,19 @@ void guLookAtF_2(float mf[4][4], float xEye, float yEye, float zEye, float xAt, 
 }
 
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+void HS64_LookAt(Mtx *outMtx,
+    float xEye, float yEye, float zEye,
+    float xAt,  float yAt,  float zAt,
+    Vector* arg7, float xUp,  float yUp, float zUp
+) {
+    float tmp[4][4];
 
-void func_8001A488(s32 arg0, ? arg1, ? arg2, ? arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9, f32 argA) {
-    ? sp38;
-
-    guLookAtF_2(arg1, arg2, &sp38, arg1, arg2, arg4, arg5, arg6, arg7, arg8, arg9, argA);
-    HS64_MtxF2L(&sp38, arg0);
+    guLookAtF_2(tmp, xEye, yEye, zEye, xAt, yAt, zAt, arg7, xUp, yUp, zUp);
+    HS64_MtxF2L(tmp, outMtx);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001A488.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/HS64_LookAt.s")
 #endif
 
 // Modified in the same way that guLookAtF was
@@ -498,12 +508,11 @@ void guOrtho(Mtx *m, float l, float r, float b, float t, float n, float f, float
     HS64_MtxF2L(mf, m);
 }
 
-// hal_perspective_fast_f
-void func_8001B008(Mat4 mf, u16* perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale) {
+void HS64_PerspectiveF(Mat4 mf, u16* perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale) {
     f32 cot;
     u16 sinAngle;
     f32 sinX, cosX;
-    s32 unused[4];
+    Unused s32 pad[4];
 
     fovy *= 0.008726646f;
 
@@ -544,11 +553,10 @@ void func_8001B008(Mat4 mf, u16* perspNorm, f32 fovy, f32 aspect, f32 near, f32 
     }
 }
 
-// hal_perspective_fast
-void func_8001B234(Mtx* m, u16* perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale) {
+void HS64_Perspective(Mtx* m, u16* perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale) {
     Mat4 mf;
 
-    func_8001B008(mf, perspNorm, fovy, aspect, near, far, scale);
+    HS64_PerspectiveF(mf, perspNorm, fovy, aspect, near, far, scale);
 
     HS64_MtxF2L(mf, m);
 }

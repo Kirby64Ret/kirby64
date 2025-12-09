@@ -111,7 +111,7 @@ void func_8015C9B4_ovl5(void *arg0, void *arg1, f32 *arg2, f32 *arg3) {
     f32 var_f0;
     f32 var_f14;
 
-    func_8001B008(&sp98, arg0 + 0x1C, arg0->unk20, arg0->unk24, arg0->unk28, arg0->unk2C, arg0->unk30);
+    HS64_PerspectiveF(&sp98, arg0 + 0x1C, arg0->unk20, arg0->unk24, arg0->unk28, arg0->unk2C, arg0->unk30);
     guLookAtF(&sp58[0],
                 arg0->unk3C, arg0->unk40, arg0->unk44,
                 arg0->unk48, arg0->unk4C, arg0->unk50,

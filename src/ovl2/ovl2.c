@@ -62,19 +62,16 @@ void func_800F62A4(s32 arg0) {
                 auFunc80020C88();
                 utilSetRectColorFullScreen(0, 0, 0);
                 utilSpawnRect(0, 0x10, 2);
-                return;
             }
-        default:
-            return;
+            break;
         case 3:
         case 4:
             if (D_800D6B24 == 0) {
                 if (func_800F8560() == 2) {
                     func_800BB98C(3, 2);
-                    return;
+                } else {
+                    func_800BB98C(1, 2);
                 }
-                func_800BB98C(1, 2);
-                return;
             }
             break;
         case 7:
@@ -82,32 +79,24 @@ void func_800F62A4(s32 arg0) {
                 if (gGameState == 0x21) {
                     utilSetRectColorFullScreen(0, 0, 0);
                     utilSpawnRect(0, 1, 2);
-                    return;
+                } else {
+                    utilSetRectColorFullScreen(0xFF, 0xFF, 0xFF);
+                    utilSpawnRect(0, 1, 2);
                 }
-                utilSetRectColorFullScreen(0xFF, 0xFF, 0xFF);
-                utilSpawnRect(0, 1, 2);
-                return;
             }
             break;
         case 6:
-            temp_v0 = &D_800D6B54 + 4;
-            temp_t2 = *temp_v0 - 1;
-            *temp_v0 = temp_t2;
-            if (temp_t2 == 0) {
+            if (D_800D6B54[1]-- == 0) {
                 func_8011CFE0();
                 func_800A74D8();
                 utilSetRectColorFullScreen(0, 0, 0);
                 utilSpawnRect(0, 0x10, 2);
-                return;
             }
             break;
         case 1:
             if (D_800D6F3C >= 2) {
-                if (D_800D6F3C == 4) {
-                    var_v0 = 0x1000;
-                } else {
-                    var_v0 = 0x9000;
-                }
+                var_v0 = (D_800D6F3C == 4) ? 0x1000 : 0x9000;
+
                 if ((*(&D_800D6F3C + 6) & var_v0) && (D_800D6B24 == 0)) {
                     D_800BE4F8 = 0;
                     utilSetRectColorFullScreen(0, 0, 0);
@@ -119,6 +108,8 @@ block_22:
             break;
         case 0:
             goto block_22;
+        default:
+            return;
     }
 }
 #else
@@ -236,7 +227,7 @@ void func_800F6830(void) {
         temp_v0 = D_800D799C->data.dobj;
         sp3C = temp_v0;
         guLookAtF(&sp40[0], (bitwise f32) temp_v0->scale.mtx, temp_v0->scale.v.x, temp_v0->scale.v.y, temp_v0->scale.v.z, (bitwise f32) temp_v0->unk4C, (bitwise f32) temp_v0->unk50, temp_v0->unk54, (bitwise f32) temp_v0->unk58, (bitwise f32) temp_v0->unk5C);
-        func_8001B008(D_800D6ED0, &sp3A, sp3C->pos.v.y, sp3C->pos.v.z, sp3C->angle.mtx, sp3C->angle.a, sp3C->angle.v.x);
+        HS64_PerspectiveF(D_800D6ED0, &sp3A, sp3C->pos.v.y, sp3C->pos.v.z, sp3C->angle.mtx, sp3C->angle.a, sp3C->angle.v.x);
         guMtxCatF(&sp40[0], D_800D6ED0, D_800D6ED0);
     }
     temp_v1 = (D_801290D8->unkA * 0xC) + &D_800D478C;

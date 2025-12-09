@@ -261,7 +261,7 @@ void guLookAtF_2(float mf[4][4], float xEye, float yEye, float zEye, float xAt, 
     mf[3][3] = 1;
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001A488.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_LookAt.s")
 
 // Modified in the same way that guLookAtF was
 void guLookAtReflectF(float mf[4][4], LookAt *l, 
@@ -480,9 +480,9 @@ void guOrtho(Mtx *m, float l, float r, float b, float t, float n, float f, float
     func_80019A30(mf, m);
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001B008.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_PerspectiveF.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_8001B234.s")
+GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/HS64_Perspective.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_6/func_0x80040000.s")
 

@@ -2962,7 +2962,7 @@ void func_800171E0(void **arg0, void *arg1) {
                         switch (temp_v1) {          /* switch 4; irregular */
                                 break;
                             case 3:                 /* switch 4 */
-                                func_8001B008(renderPerspectiveMtxF, arg1 + 0x1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30);
+                                HS64_PerspectiveF(renderPerspectiveMtxF, arg1 + 0x1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30);
                                 HS64_MtxF2L(renderPerspectiveMtxF, var_s2);
                                 renderProjectionMtx = var_s2;
                                 break;
@@ -2986,12 +2986,12 @@ void func_800171E0(void **arg0, void *arg1) {
                             case 8:                 /* switch 4 */
                             case 9:                 /* switch 4 */
                                 var_s3 = 1;
-                                func_8001A488(var_s2, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 1.0f, 0.0f);
+                                HS64_LookAt(var_s2, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 1.0f, 0.0f);
                                 break;
                             case 10:                /* switch 4 */
                             case 11:                /* switch 4 */
                                 var_s3 = 2;
-                                func_8001A488(var_s2, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 0.0f, 1.0f);
+                                HS64_LookAt(var_s2, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 0.0f, 1.0f);
                                 break;
                             case 12:                /* switch 4 */
                             case 13:                /* switch 4 */

@@ -848,7 +848,7 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001A1B0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001A488.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/HS64_LookAt.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001A504.s")
 
@@ -862,9 +862,9 @@ void func_80010B50(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001AFA4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001B008.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/HS64_PerspectiveF.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001B234.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/1000/HS64_Perspective.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/1000/func_8001B28C.s")
 

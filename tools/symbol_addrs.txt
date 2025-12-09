@@ -761,6 +761,9 @@ HS64_MtxF2L = 0x80019A30; // type:func
 HS64_MtxF2L43 = 0x80019C60; // type:func
 
 // om
+HS64_Perspective = 0x8001B234; // type:func
+HS64_PerspectiveF = 0x8001B008; // type:func
+HS64_LookAt = 0x8001A488; // type:func
 HS64_MtxScale = 0x8001B540; // type:func
 HS64_MtxRotatePYRTranslate = 0x8001C90C; // type:func
 HS64_MtxTransformRTS_PYR = 0x8001C9CC; // type:func

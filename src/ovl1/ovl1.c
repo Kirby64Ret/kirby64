@@ -1961,7 +1961,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
             temp_t9 = var_s5->matrices[0]->kind;
             switch (temp_t9) {                      /* switch 1 */
                 case 3:                             /* switch 1 */
-                    func_8001B008(&sp278[0], 0, temp_s0->perspMtx.persp.fovy, temp_s0->perspMtx.persp.aspect, temp_s0->perspMtx.persp.near, temp_s0->perspMtx.persp.far, temp_s0->perspMtx.persp.scale);
+                    HS64_PerspectiveF(&sp278[0], 0, temp_s0->perspMtx.persp.fovy, temp_s0->perspMtx.persp.aspect, temp_s0->perspMtx.persp.near, temp_s0->perspMtx.persp.far, temp_s0->perspMtx.persp.scale);
                     break;
                 case 4:                             /* switch 1 */
                     func_8001B28C(&sp278[0], 0, temp_s0->perspMtx.persp.fovy, temp_s0->perspMtx.persp.aspect, temp_s0->perspMtx.persp.near, temp_s0->perspMtx.persp.far, temp_s0->perspMtx.persp.scale);
@@ -1988,7 +1988,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
                     guLookAtF_2(&sp2F8[0], temp_s0->viewMtx.lookAt.eye.x, temp_s0->viewMtx.lookAt.eye.y, temp_s0->viewMtx.lookAt.eye.z, temp_s0->viewMtx.lookAt.at.x, temp_s0->viewMtx.lookAt.at.y, temp_s0->viewMtx.lookAt.at.z, temp_s0->viewMtx.lookAt.up.x, 0.0f, 0.0f, 1.0f);
                     break;
                 default:                            /* switch 1 */
-                    func_8001B008(&sp278[0], 0, temp_s0->perspMtx.persp.fovy, temp_s0->perspMtx.persp.aspect, temp_s0->perspMtx.persp.near, temp_s0->perspMtx.persp.far, temp_s0->perspMtx.persp.scale);
+                    HS64_PerspectiveF(&sp278[0], 0, temp_s0->perspMtx.persp.fovy, temp_s0->perspMtx.persp.aspect, temp_s0->perspMtx.persp.near, temp_s0->perspMtx.persp.far, temp_s0->perspMtx.persp.scale);
                     guLookAtF(&sp2F8[0], temp_s0->viewMtx.lookAt.eye.x, temp_s0->viewMtx.lookAt.eye.y, temp_s0->viewMtx.lookAt.eye.z, temp_s0->viewMtx.lookAt.at.x, temp_s0->viewMtx.lookAt.at.y, temp_s0->viewMtx.lookAt.at.z, temp_s0->viewMtx.lookAt.up.x, temp_s0->viewMtx.lookAt.up.y, temp_s0->viewMtx.lookAt.up.z);
                     break;
             }
