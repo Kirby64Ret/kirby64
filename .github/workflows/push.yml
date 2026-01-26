@@ -31,14 +31,14 @@ jobs:
     - name: Get the dependency
       run: cp dep/${{ secrets.ANOTHERSECRET }} .
     - name: Build Libultra
-      run: make -C libreultra -j4
+      run: make -C libreultra -j4 CROSS=mips-linux-gnu-
     - name: Build Naudio
-      run: make -C libreultra naudio -j4
+      run: make -C libreultra naudio -j4 CROSS=mips-linux-gnu-
     - name: Build Tools
       run: make -C tools
     - name: Assemble F3DEX2
       run: make -C f3dex2 VERSION=2.04H ARMIPS=../tools/armips
     - name: Prepare Kirby 64 for building
-      run: make setup
+      run: make setup CROSS=mips-linux-gnu-
     - name: Build Kirby 64
-      run: make -j$(nproc) VERBOSE=0
+      run: make -j$(nproc) VERBOSE=0 CROSS=mips-linux-gnu-
