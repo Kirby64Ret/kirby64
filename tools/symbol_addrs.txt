@@ -584,6 +584,7 @@ func_801BC27C_ovl7=0x801BC27C; // type:func
 func_8016BF60_ovl3=0x8016BF60; // type:func
 func_8017644C_ovl3=0x8017644C; // type:func
 func_80176484_ovl3=0x80176484; // type:func
+D_80198830_ovl3=0x80198830;
 
 func_80151CEC_ovl4=0x80151CEC; // type:func
 func_8015531C_ovl4=0x8015531C; // type:func
