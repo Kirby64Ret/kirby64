@@ -7,6 +7,7 @@ This repository contains a work-in-progress decompilation effort for Kirby 64.
 ## Installation
  - First, get Linux, or [Windows Subsystem for Linux](https://aka.ms/wslinstall) if you use Windows
  - Next, grab dependencies by running `sudo apt update && sudo apt install python3 git gcc-mips-linux-gnu`
+ - Grab the qemu-irix deb from [here](https://github.com/n64decomp/qemu-irix/releases) and install it with `sudo dpkg -i path/to/qemu(press tab here to autocomplete the name)` (Use `alien` on Fedora or `debtap` on Arch to convert)
  - Next, clone the repo by running `git clone https://github.com/Kirby64Ret/kirby64 --recursive`
  - Get `uv` (the Python Everything App) with `python3 -m pip install uv`
    - Or use the relevant instructions for your distribution/package manager at the [installation page](https://docs.astral.sh/uv/getting-started/installation/#pypi). **Running the standalone installer is not recommended.**
