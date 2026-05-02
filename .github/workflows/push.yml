@@ -15,13 +15,13 @@ jobs:
       with:
         submodules: recursive
     - name: Download Qemu Irix
-      run:
-        - wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
-        - sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb 
+      run: |
+        wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
+        sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb 
     - name: Install Dependencies
-      run:
-        - sudo apt update
-        - sudo apt install -y binutils-mips-linux-gnu gcc git gcc-mips-linux-gnu
+      run: |
+        sudo apt update
+        sudo apt install -y binutils-mips-linux-gnu gcc git gcc-mips-linux-gnu
     - name: Install uv
       uses: astral-sh/setup-uv@v6
     - name: More dependencies
