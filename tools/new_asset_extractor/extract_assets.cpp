@@ -58,6 +58,26 @@ void init_baserom(char *s) {
     fseek(baserom, 0, SEEK_SET);
 }
 
+#ifdef CI_CD
+void extract_empty(string k, json &v) {
+#ifdef RELEASE
+    fmt::print("Extracting {}...\n", k);
+#endif
+    String _ = v["meta"]["size"];
+
+    int size = strtoul(_.c_str(), nullptr, 16);
+
+
+    FILE *f = fopen_mkdir((char *)k.c_str(), (char *)"wb+");
+
+    char *buf = (char *)calloc(size, sizeof(char));
+    fwrite(buf, 1, size, f);
+    fclose(f);
+
+    free(buf);
+}
+#endif // CI_CD
+
 void extract_bin(string k, json &v) {
 #ifdef RELEASE
     fmt::print("Extracting {}...\n", k);
@@ -253,13 +273,17 @@ int main(int argc, char **argv) {
         fmt::print("OR:    {} --clean\n", argv[0]);
         return 1;
     }
-    init_baserom(argv[1]);
-    fmt::print("baserom opened: {:X}{:X}{:X}{:X}\n",
-        baserom_u8[0],
-        baserom_u8[1],
-        baserom_u8[2],
-        baserom_u8[3]
-    );
+
+    if constexpr (!IS_ENABLED(CI_CD)) {
+        // Do not 
+        init_baserom(argv[1]);
+        fmt::print("baserom opened: {:X}{:X}{:X}{:X}\n",
+            baserom_u8[0],
+            baserom_u8[1],
+            baserom_u8[2],
+            baserom_u8[3]
+        );
+    }
 
 
     ifstream i("assets_geo.json");
@@ -277,32 +301,43 @@ int main(int argc, char **argv) {
     i3 >> rest;
     i3.close();
 
-
-
-
     #pragma omp task
     for (auto& [key, value] : geo.items()) {
-        extract_bin(key, value);
+        if constexpr (IS_ENABLED(CI_CD)) {
+            extract_empty(key, value);
+        } else {
+            extract_bin(key, value);
+        }
     }
 
     #pragma omp task
     for (auto& [key, value] : pics.items()) {
-        const char* extension = get_file_extension(key.c_str());
+        if constexpr (IS_ENABLED(CI_CD)) {
+            extract_empty(key, value);
+        } else {
+            const char* extension = get_file_extension(key.c_str());
 
-        if (extension && strcmp(extension, "bin") == 0) {
-          extract_bin(key, value);
-        } else if (extension && strcmp(extension, "png") == 0) {
-          extract_img(pics, key, value);
+            if (extension && strcmp(extension, "bin") == 0) {
+              extract_bin(key, value);
+            } else if (extension && strcmp(extension, "png") == 0) {
+              extract_img(pics, key, value);
+            }
         }
     }
 
     #pragma omp task
     for (auto& [key, value] : rest.items()) {
-        extract_bin(key, value);
+        if constexpr (IS_ENABLED(CI_CD)) {
+            extract_empty(key, value);
+        } else {
+            extract_bin(key, value);
+        }
     }
 
-    fclose(baserom);
-    free(baserom_u8);
+    if constexpr (!IS_ENABLED(CI_CD)) {
+        fclose(baserom);
+        free(baserom_u8);
+    }
 
     return 0;
 }

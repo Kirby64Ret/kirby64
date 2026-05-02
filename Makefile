@@ -262,7 +262,7 @@ endif
 setup:
 	$(MAKE) -C libreultra BUILD_DIR=../$(BUILD_DIR) VERSION=
 	$(MAKE) -C libreultra naudio BUILD_DIR=../$(BUILD_DIR) VERSION=
-	$(MAKE) -C tools
+	$(MAKE) -C tools CI_CD=$(CI_CD)
 	tools/extract_assets baserom.$(VERSION).z64
 	uv venv --clear
 	uv sync
