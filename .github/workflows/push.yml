@@ -2,7 +2,7 @@ name: Kirby 64 Pull Request CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, splat ]
 
 jobs:
   build:
