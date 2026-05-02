@@ -20,10 +20,6 @@ patch_libultra_math_SOURCES := patch_libultra_math.c
 # who cares if you have armips, just use our version
 CXX_PROGRAMS := armips_bin/armips extract_assets img_getprop
 
-ifeq ($(CI_CD),1)
-	CI_FLAGS := -DCI_CD
-endif
-
 default: all
 
 level_settings/convert: $(wildcard level_settings/*.c)
@@ -42,7 +38,7 @@ extract_assets: new_asset_extractor/extract_assets.cpp new_asset_extractor/src/f
 	cc -c -I . -Wall -Wextra -Wno-unused-parameter -pedantic utils.c -lm -o _1.o -lm
 	cc -c -I . -Wall -Wextra -Wno-unused-parameter -pedantic new_asset_extractor/png_wrapper.c -lm -o _2.o -lm
 	cc -c -I . -Wall -Wextra -Wno-unused-parameter -pedantic new_asset_extractor/lodepng.c -lm -o _3.o -lm
-	c++ $(CI_FLAGS) -I ./new_asset_extractor/include -I ./new_asset_extractor/ -Wall -Wextra -pedantic -g -ggdb3 -std=c++17 -fopenmp -o $@ _0.o _1.o _2.o _3.o $^
+	c++ -I ./new_asset_extractor/include -I ./new_asset_extractor/ -Wall -Wextra -pedantic -g -ggdb3 -std=c++17 -fopenmp -o $@ _0.o _1.o _2.o _3.o $^
 
 img_getprop: new_asset_extractor/img_getprop.cpp new_asset_extractor/src/format.cc
 	cc -c -I . -Wall -Wextra -Wno-unused-parameter -pedantic n64graphics.c -lm -o _0.o -lm

@@ -274,16 +274,13 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    if constexpr (!IS_ENABLED(CI_CD)) {
-        // Do not 
-        init_baserom(argv[1]);
-        fmt::print("baserom opened: {:X}{:X}{:X}{:X}\n",
-            baserom_u8[0],
-            baserom_u8[1],
-            baserom_u8[2],
-            baserom_u8[3]
-        );
-    }
+    init_baserom(argv[1]);
+    fmt::print("baserom opened: {:X}{:X}{:X}{:X}\n",
+        baserom_u8[0],
+        baserom_u8[1],
+        baserom_u8[2],
+        baserom_u8[3]
+    );
 
 
     ifstream i("assets_geo.json");
@@ -303,41 +300,27 @@ int main(int argc, char **argv) {
 
     #pragma omp task
     for (auto& [key, value] : geo.items()) {
-        if constexpr (IS_ENABLED(CI_CD)) {
-            extract_empty(key, value);
-        } else {
-            extract_bin(key, value);
-        }
+        extract_bin(key, value);
     }
 
     #pragma omp task
     for (auto& [key, value] : pics.items()) {
-        if constexpr (IS_ENABLED(CI_CD)) {
-            extract_empty(key, value);
-        } else {
-            const char* extension = get_file_extension(key.c_str());
+        const char* extension = get_file_extension(key.c_str());
 
-            if (extension && strcmp(extension, "bin") == 0) {
-              extract_bin(key, value);
-            } else if (extension && strcmp(extension, "png") == 0) {
-              extract_img(pics, key, value);
-            }
+        if (extension && strcmp(extension, "bin") == 0) {
+          extract_bin(key, value);
+        } else if (extension && strcmp(extension, "png") == 0) {
+          extract_img(pics, key, value);
         }
     }
 
     #pragma omp task
     for (auto& [key, value] : rest.items()) {
-        if constexpr (IS_ENABLED(CI_CD)) {
-            extract_empty(key, value);
-        } else {
-            extract_bin(key, value);
-        }
+        extract_bin(key, value);
     }
 
-    if constexpr (!IS_ENABLED(CI_CD)) {
-        fclose(baserom);
-        free(baserom_u8);
-    }
+    fclose(baserom);
+    free(baserom_u8);
 
     return 0;
 }
