@@ -592,7 +592,7 @@ s32 func_80020C70(s32 arg0, ? arg1, ? arg2, ? arg3) {
 #endif
 
 #ifdef NON_MATCHING
-void func_80023990();
+void func_80023990(); // n_audio function (unknown)
 s32 auFunc80020C88() {
     s32 i;
 

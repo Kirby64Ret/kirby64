@@ -163,10 +163,11 @@ void contSetPlayerPads() {
 #ifdef NON_MATCHING
 s32 *func_80004250(void) {
     u8 sp43;
-    s32 i,j;
+    s32 i;
+    Unused s32 j;
 
-    osCreateMesgQueue(&sSIMesgQueue, &D_80048DB8, 1);
-    osSetEventMesg(5, &sSIMesgQueue, 1);
+    osCreateMesgQueue(&sSIMesgQueue, (OSMesg *)&D_80048DB8, 1);
+    osSetEventMesg(5, &sSIMesgQueue, (OSMesg) 1);
     osContInit(&sSIMesgQueue, &sp43, sControllerStatuses);
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
@@ -175,23 +176,23 @@ s32 *func_80004250(void) {
         }
     }
 
-    osCreateMesgQueue(&D_80048E10, &contEventMesgArray, 4);
+    osCreateMesgQueue(&D_80048E10, (OSMesg *)&contEventMesgArray, 4);
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
         D_80048F60[i].unk8 = i;
         D_80048F60[i].unk0 = 0;
         D_80048F60[i].unk4 = 5;
-        D_80048F60[i].unkC = &D_80048E10;
+        D_80048F60[i].mq = &D_80048E10;
         // needs members to result in 0x18 in struct size
     }
 
-    osCreateMesgQueue(&D_80048E38, &D_80048E28, 4);
+    osCreateMesgQueue(&D_80048E38, (OSMesg *)&D_80048E28, 4);
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
         D_80048FC0[i].unk8 = i;
         D_80048FC0[i].unk0 = 0;
         D_80048FC0[i].unk4 = 0xA;
-        D_80048FC0[i].unkC = &D_80048E38;
+        D_80048FC0[i].mq = &D_80048E38;
         // needs members to result in 0x44 in struct size
     }
 
@@ -199,7 +200,7 @@ s32 *func_80004250(void) {
     D_800490D0.unk0 = 0;
     D_800490D0.unk4 = 0xB;
     D_800490D0.unk8 = i;
-    D_800490D0.unkC = &D_80048E58;
+    D_800490D0.mq = &D_80048E58;
     // seems to be 0x20 in size
 
     for (i = 0; i < MAXCONTROLLERS; i++)
@@ -272,6 +273,7 @@ s32 *func_80004250(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800046D0.s")
 
+void func_800046FC(s32, s32);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800046FC.s")
 
 void func_800047B0(s32 arg0) {
@@ -295,37 +297,37 @@ void contHandlePfsEvent(ContEventPfs *arg0) {
 
     if (arg0->error == 0) {
         switch (arg0->goal) {
-            case 0:
+            case PFS_FINDFILE:
                 arg0->error = osPfsFindFile(
                                     &sPakDevices[arg0->channel],
                                     arg0->company_code,
                                     arg0->game_code,
-                                    arg0->game_name,
-                                    arg0->extension,
-                                    arg0->file_no_result
+                                    (u8 *)arg0->game_name,
+                                    (u8 *)arg0->extension,
+                                    (s32 *)arg0->file_no_result
                               );
                 break;
-            case 1:
+            case PFS_DELETEFILE:
                 arg0->error = osPfsDeleteFile(
                                     &sPakDevices[arg0->channel],
                                     arg0->company_code,
                                     arg0->game_code,
-                                    arg0->game_name,
-                                    arg0->extension
+                                    (u8 *)arg0->game_name,
+                                    (u8 *)arg0->extension
                               );
                 break;
-            case 2:
+            case PFS_ALLOCFILE:
                 arg0->error = osPfsAllocateFile(
                                     &sPakDevices[arg0->channel],
                                     arg0->company_code,
                                     arg0->game_code,
-                                    arg0->game_name,
-                                    arg0->extension,
+                                    (u8 *)arg0->game_name,
+                                    (u8 *)arg0->extension,
                                     arg0->file_allocation_size,
-                                    arg0->file_no_result
+                                    (s32 *)arg0->file_no_result
                               );
                 break;
-            case 3:
+            case PFS_READFILE:
                 arg0->error = osPfsReadWriteFile(
                                     &sPakDevices[arg0->channel],
                                     arg0->file_no,
@@ -335,7 +337,7 @@ void contHandlePfsEvent(ContEventPfs *arg0) {
                                     arg0->databuf
                               );
                 break;
-            case 4:
+            case PFS_WRITEFILE:
                 arg0->error = osPfsReadWriteFile(
                                     &sPakDevices[arg0->channel],
                                     arg0->file_no,
@@ -395,7 +397,7 @@ void contHandleEepEvent(struct ContEventEep *arg0) {
 // https://decomp.me/scratch/2fe7d
 void contHandleEvent(ContEvent *evt) {
     switch (evt->type) {
-        case 1: {
+        case CONT_EVENT_MESG: {
             read_controller_input();
             contSetPlayerPads();
             if (evt->mq != NULL) {
@@ -405,7 +407,7 @@ void contHandleEvent(ContEvent *evt) {
         }
         default:
             break;
-        case 2: {
+        case CONT_EVENT_MESG2: {
             if (D_80048F48 != 0) {
                 contSetPlayerPads();
                 if (evt->mq != NULL) {
@@ -416,7 +418,7 @@ void contHandleEvent(ContEvent *evt) {
             }
             break;
         }
-        case 3: {
+        case CONT_EVENT_HELD_BUTTONS: {
             int i;
             for (i = 0; i < MAXCONTROLLERS; i++) {
                 gControllers[i].holdDelay = ((ContEventHeldButtons *) evt)->holdDelay;
@@ -429,7 +431,7 @@ void contHandleEvent(ContEvent *evt) {
             }
             break;
         }
-        case 4: {
+        case CONT_EVENT_CHANNEL: {
             D_80048F50 = ((ContEventChannel *)evt)->channel;
             if (evt->mq != NULL) {
                 osSendMesg(evt->mq, evt->msg, 0);
@@ -437,7 +439,7 @@ void contHandleEvent(ContEvent *evt) {
             }
             break;
         }
-        case 6: {
+        case CONT_EVENT_CHANNEL2: {
             D_80048F54 = ((ContEventChannel *)evt)->channel;
             if (((ContEventChannel *)evt)->evt.mq != NULL) {
                 osSendMesg(((ContEventChannel *)evt)->evt.mq, ((ContEventChannel *)evt)->evt.msg, 0);
@@ -445,7 +447,7 @@ void contHandleEvent(ContEvent *evt) {
             }
             break;
         }
-        case 5: {
+        case CONT_EVENT_RUMBLE: {
             u32 channel;
 
             if ((gControllers[((ContEventChannel *)evt)->channel].errno == 0) && (gControllers[((ContEventChannel *)evt)->channel].status & 1)) {
@@ -472,7 +474,7 @@ void contHandleEvent(ContEvent *evt) {
             }
             break;
         }
-        case 10: {
+        case CONT_EVENT_CONTPAK: {
             if ((gControllers[((ContEventPfs *)evt)->channel].errno == 0) && (gControllers[((ContEventPfs *)evt)->channel].status & 1)) {
                 contHandlePfsEvent(((ContEventPfs *)evt));
             }
@@ -481,7 +483,7 @@ void contHandleEvent(ContEvent *evt) {
             }
             break;
         }
-        case 11: {
+        case CONT_EVENT_EEPROM: {
             contHandleEepEvent((ContEventEep *)evt);
             if (((ContEventEep *)evt)->evt.mq != NULL) {
                 osSendMesg(((ContEventEep *)evt)->evt.mq, ((ContEventEep *)evt)->evt.msg, 0);
@@ -491,12 +493,12 @@ void contHandleEvent(ContEvent *evt) {
     }
 }
 
-void contMain(void *arg) {
+void contMain(Unused void *arg) {
     OSMesg mesg;
 
     func_80004250();
-    scAddClient(&contClient, &contEventMQ, &D_80048DC8, ARRAY_COUNT(D_80048DC8));
-    osSendMesg(&gThreadInitializedMQ, 1, 0);
+    scAddClient(&contClient, &contEventMQ, (OSMesg *)&D_80048DC8, ARRAY_COUNT(D_80048DC8));
+    osSendMesg(&gThreadInitializedMQ, (OSMesg)1, 0);
     while (1) {
         osRecvMesg(&contEventMQ, &mesg, 1);
         if ((s32)mesg == 1) {

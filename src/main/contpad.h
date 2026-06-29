@@ -24,7 +24,7 @@ struct UnkStruct80048F60 {
     u32 unk0;
     u32 unk4;
     u32 unk8;
-    u32 unkC;
+    OSMesgQueue *mq;
     u32 unk10;
     u32 unk14;
 };
@@ -33,7 +33,7 @@ struct UnkStruct80048FC0 {
     u32 unk0;
     u32 unk4;
     u32 unk8;
-    u32 unkC;
+    OSMesgQueue *mq;
     u32 unk10;
     u32 unk14;
     u32 unk18;
@@ -53,7 +53,7 @@ struct UnkStruct800490D0 {
     u32 unk0;
     u32 unk4;
     u32 unk8;
-    u32 unkC;
+    OSMesgQueue *mq;
     s8 unk10;
     s8 unk11;
     s8 unk12;
@@ -63,14 +63,6 @@ struct UnkStruct800490D0 {
     u32 unk1C;
 };
 
-typedef struct ContEvent {
-    u32 type;
-    OSMesg msg;
-    OSMesgQueue *mq;
-} ContEvent;
-
-extern ContEvent *D_8004F4C0;
-
 enum EEPROMGoals {
     EEP_PROBE = 0,
     EEP_READ,
@@ -78,6 +70,33 @@ enum EEPROMGoals {
     EEP_LONGREAD,
     EEP_LONGWRITE,
 };
+
+enum PfsGoals {
+    PFS_FINDFILE = 0,
+    PFS_DELETEFILE,
+    PFS_ALLOCFILE,
+    PFS_READFILE,
+    PFS_WRITEFILE,
+};
+
+enum ContEventType {
+    CONT_EVENT_MESG = 1,
+    CONT_EVENT_MESG2,
+    CONT_EVENT_HELD_BUTTONS,
+    CONT_EVENT_CHANNEL,
+    CONT_EVENT_RUMBLE,
+    CONT_EVENT_CHANNEL2,
+
+    CONT_EVENT_CONTPAK = 10,
+    CONT_EVENT_EEPROM,
+};
+
+// Tagged Union
+typedef struct ContEvent {
+    enum ContEventType type;
+    OSMesg msg;
+    OSMesgQueue *mq;
+} ContEvent;
 
 typedef struct {
     ContEvent evt;
@@ -105,7 +124,7 @@ typedef struct ContEventEep {
 typedef struct ContEventPfs {
     ContEvent evt;
     s32 channel;
-    s32 goal;
+    enum PfsGoals goal;
     u16 company_code;
     u16 unk16;
     s32 game_code;
@@ -119,6 +138,8 @@ typedef struct ContEventPfs {
     u8 *databuf;
     s32 error;
 } ContEventPfs;
+
+extern ContEvent *D_8004F4C0;
 
 // data
 extern s32 scBeforeReset;
