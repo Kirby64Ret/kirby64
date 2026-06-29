@@ -4,6 +4,8 @@
 #include "synthInternals.h"
 #include "main.h"
 #include "audio.h"
+#include "fault.h"
+
 // mystery, seems to also be DMA
 extern OSMesgQueue D_80095E30;
 extern OSMesg D_80095E50[];
@@ -36,7 +38,7 @@ void alHeapInit(ALHeap* hp, u8* base, s32 len) {
     hp->count = 0;
 }
 
-void *alHeapDBAlloc(u8 *file, s32 line, ALHeap *hp, s32 num, s32 size) {
+void *alHeapDBAlloc(Unused u8 *file, Unused s32 line, ALHeap *hp, s32 num, s32 size) {
     s32 bytes;
     u8 *ptr;
 
@@ -168,7 +170,7 @@ s32 auDMA(s32 addr, s32 len, void* state) {
     u32 bStartAddr;
     u32 bEndAddr;
     AMDMABuffer* dBuff = &dState->buffers[dState->currentBuffer];
-    OSMesg dummyMesg;
+    Unused OSMesg dummyMesg;
 
     /*
      * Is it in the last buffer
@@ -177,7 +179,7 @@ s32 auDMA(s32 addr, s32 len, void* state) {
     bStartAddr = (u32) dBuff->addr;
     bEndAddr = (u32) bStartAddr + dBuff->len;
 
-    if ((addr >= bStartAddr) && (addr + len <= bEndAddr)) {
+    if (((u32)addr >= bStartAddr) && ((u32)addr + len <= bEndAddr)) {
         freeBuffer = dBuff->ptr + addr - dBuff->addr;
     } else {
         if (++dState->currentBuffer >= dState->nBuffers) {
@@ -432,7 +434,7 @@ void stopOsc(void* oscState) {
 void auInit(void) {
     scAddClient(&auClient, &auGameTickQueue, auGameTickMessages, 1);
     osCreateMesgQueue(&auDMA_MQ, auDMAMessages, 50);
-    osCreateMesgQueue(&D_80095E30, &D_80095E50, 1);
+    osCreateMesgQueue(&D_80095E30, (OSMesg)&D_80095E50, 1);
     osCreateMesgQueue(&auSPTaskMQ, auSPTaskMessages, 1);
     osSendMesg(&auSPTaskMQ, (OSMesg) NULL, OS_MESG_BLOCK);
 }
@@ -474,7 +476,7 @@ void auStopBGM(void) {
 
 // NOTE: this used to store the interrupt mask
 u32 auPlaySong(s32 playerID, u32 songID) {
-    if (songID < auSeqFile->seqCount) {
+    if (songID < (u32)auSeqFile->seqCount) {
         auBGMPlayerStatus[playerID] = 1;
         auBGMSongId[playerID] = songID;
         return songID;
@@ -520,7 +522,7 @@ void auSetBGMReverb(s32 playerID, u32 reverb) {
     }
 
     for (i = 0; i < 16; i++) {
-        n_alCSPSetChlFXMix(auBGMPlayers[playerID], i, reverb);
+        n_alCSPSetChlFXMix((N_ALCSPlayer *)auBGMPlayers[playerID], i, reverb);
     }
 }
 
@@ -533,7 +535,7 @@ void auSetBGMPriority(s32 playerID, u8 priority) {
     auGlobalSongPriority = priority;
 
     for (i = 0; i < 16; i++) {
-        n_alCSPSetChlPriority(auBGMPlayers[playerID], i, priority);
+        n_alCSPSetChlPriority((N_ALCSPlayer *)auBGMPlayers[playerID], i, priority);
     }
 }
 
@@ -590,10 +592,11 @@ s32 func_80020C70(s32 arg0, ? arg1, ? arg2, ? arg3) {
 #endif
 
 #ifdef NON_MATCHING
+void func_80023990();
 s32 auFunc80020C88() {
     s32 i;
 
-    func_80023990();
+    func_80023990(/* TODO: this function takes arguments? */);
 
     for (i = 0; i < D_800964D3; i++) {
         ;
@@ -667,7 +670,7 @@ void func_80020DAC(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020DAC.s")
 #endif
 
-void func_80020E00(s32 arg0, s32 arg1) {
+void func_80020E00(Unused s32 arg0, Unused s32 arg1) {
 
 }
 

@@ -2,6 +2,7 @@
 #define _AUDIO_H_
 
 #include <PR/libaudio.h>
+#include "libreultra/src/libnaudio/n_libaudio.h"
 #include "localsched.h"
 
 #define NUM_DMA_BUFFERS 4
