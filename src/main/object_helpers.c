@@ -253,20 +253,20 @@ DObj *ohAddDObj(struct DObj *dobj, u8 *arg1) {
     return new_dobj;
 }
 
-DObj *ohAddDObjSibling(void) {
-    DObj *dobj;
+DObj *ohAddDObjSibling(DObj *dobj, DObj *sibling) {
+    DObj *dobj_ret;
 
-    dobj = omDObjAddSibling();
-    ohCreateDefaultMatricesDeg(dobj);
-    return dobj;
+    dobj_ret = omDObjAddSibling(dobj, sibling);
+    ohCreateDefaultMatricesDeg(dobj_ret);
+    return dobj_ret;
 }
 
-DObj *ohAddDObjChild(void) {
-    DObj *dobj;
+DObj *ohAddDObjChild(DObj *dobj, void *arg1) {
+    DObj *dobj_ret;
 
-    dobj = omDObjAddChild();
-    ohCreateDefaultMatricesDeg(dobj);
-    return dobj;
+    dobj_ret = omDObjAddChild(dobj, arg1);
+    ohCreateDefaultMatricesDeg(dobj_ret);
+    return dobj_ret;
 }
 
 DObj *ohAddDObjRad(struct DObj *dobj, u8 *arg1) {
@@ -277,18 +277,18 @@ DObj *ohAddDObjRad(struct DObj *dobj, u8 *arg1) {
     return new_dobj;
 }
 
-DObj *ohAddDObjSiblingRad(void) {
+DObj *ohAddDObjSiblingRad(DObj *dobj, DObj *sibling) {
     DObj *d;
 
-    d = omDObjAddSibling();
+    d = omDObjAddSibling(dobj, sibling);
     ohCreateDefaultMatricesRad(d);
     return d;
 }
 
-DObj *ohAddDObjChildRad(void) {
+DObj *ohAddDObjChildRad(DObj *dobj, void *arg1) {
     DObj *d;
 
-    d = omDObjAddChild();
+    d = omDObjAddChild(dobj, arg1);
     ohCreateDefaultMatricesRad(d);
     return d;
 }

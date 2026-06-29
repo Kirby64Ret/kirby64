@@ -644,7 +644,7 @@ OMMtx* omCameraAddMtx(Camera* cam, u8 kind, u8 arg2) {
 }
 
 // Initializes a new AObj with an index
-struct AObj *HS64_AObjNew(struct Animation *anim, u8 paramID) {
+struct AObj *HS64_AObjNew(struct DObj *dobj, u8 paramID) {
     struct AObj *aobj;
 
     aobj = HS64_AObjPop();
@@ -657,7 +657,7 @@ struct AObj *HS64_AObjNew(struct Animation *anim, u8 paramID) {
     aobj->startVal = 0.0f;
     aobj->timer = 0.0f;
     aobj->Rduration = 1.0f;
-    HS64_AObjLinkToAnimation(anim, aobj);
+    HS64_AObjLinkToAnimation(dobj, aobj);
     return aobj;
 }
 

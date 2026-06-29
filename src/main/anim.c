@@ -1457,8 +1457,8 @@ f32 func_8000EC98(DObj *dobj, AnimCmd **animLists, f32 arg2, UnkE4E4Arg* arg3, s
     s32 i;
     s32 interpPosReady2;
     s32 interpPosReady;
-    Vec3f interpPos2;
-    Vec3f interpPos;
+    Vector interpPos2;
+    Vector interpPos;
 
     spC0 = NULL;
     interpPosReady2 = 0;
@@ -1618,7 +1618,7 @@ void func_8000F230(GObj* obj, AnimCmd** cmdList, f32 animTimer, UnkE4E4Arg* arg3
     f32 value;
     UNUSED s32 pad;
     s32 sp7C;
-    Vec3f sp70;
+    Vector sp70;
     s32 sp6C;
 
     dobj = obj->data.dobj;

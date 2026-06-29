@@ -360,8 +360,24 @@ struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
 void omUpdateAll();
 void HS64_omInit(ObjectSetup *);
 AObj *func_800098AC(MObj *, u8);
-OMMtx *omDObjAppendMtx(struct DObj *arg0, u8 type, u8 param);
-AObj *omCameraAddAObj(Camera *, u8);
 struct DObj *omGObjAddDObj(struct GObj *gobj, void *arg1);
+
+// AObj Functions
+struct AObj *HS64_AObjNew(struct DObj *dobj, u8 paramID);
+
+// GObj Functions
+
+// DObj Functions
+struct DObj *omDObjAddChild(struct DObj *dobj, void *);
+struct DObj *omDObjAddSibling(struct DObj *dobj, struct DObj *sibling);
+OMMtx *omDObjAppendMtx(struct DObj *arg0, u8 type, u8 param);
+void omDObjResetAnimation(struct DObj *dobj);
+MObj *omDObjAddMObj(struct DObj* dobj, TextureScroll *t);
+
+// Camera Functions
+AObj *omCameraAddAObj(Camera *, u8);
+
+// UNNAMED functions
+void func_80009918(MObj *mobj);
 
 #endif

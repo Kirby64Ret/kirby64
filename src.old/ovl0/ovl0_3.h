@@ -1,6 +1,8 @@
 #ifndef OVL0_3_H
 #define OVL0_3_H
 
+#include "DObj.h"
+
 struct AnimationUnk6C {
   struct AnimationUnk6C *next; // it's a list but is it really the next one?
   u8 unk4;
@@ -53,7 +55,6 @@ struct Animation {
 };
 
 // void animProcessModelAnimation(DObj *);
-struct AObj *HS64_AObjNew(struct Animation *anim, u8 something);
 
 
 // struct UnkStruct8004A7C4_3C
