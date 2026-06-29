@@ -5,8 +5,7 @@
 #include <PR/os_pi.h>
 #include "main.h"
 #include "dma.h"
-
-void fatal_printf(const char *arg0, ...);
+#include "fault.h"
 
 // actual externs
 extern u32 *scBeforeReset;
@@ -35,7 +34,7 @@ void dmaInit(void) {
 void dma_copy(OSPiHandle *handle, u32 physAddr, u32 vAddr, u32 size, u8 direction) {
     OSIoMesg dmaIOMesg;
 
-    dmaDevAddr = physAddr;
+    dmaDevAddr = (void *)physAddr;
     dmaVramAddr = (void*)vAddr;
     dmaLen = size;
     if (direction == OS_WRITE) {
