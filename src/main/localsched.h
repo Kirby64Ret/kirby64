@@ -121,4 +121,7 @@ s32 scCheckGfxTaskDefault(SCTaskGfx*);
 void scMain(void* arg);
 void scSetPostProcessFunc(void (*fn)(void*));
 
+// OS externs
+s32 osAfterPreNMI(void);
+
 #endif

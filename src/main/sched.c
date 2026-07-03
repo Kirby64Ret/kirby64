@@ -1,8 +1,9 @@
 #include "common.h"
+#include "contpad.h"
 #include "localsched.h"
 
 // sched.c
-extern SCTaskGfx *scCurrentDPTask, scDPTaskHead;
+extern SCTaskGfx *scCurrentDPTask, *scDPTaskHead;
 extern SCClient* scClientList;
 extern void (*scPostProcessFunc)(void *);
 extern void (*scPreNMIProc)(void);
@@ -10,14 +11,14 @@ extern s32 scPreNMIState;
 extern OSMesgQueue scTaskMQ;
 extern SCTaskGfx *scCurrentGfxTask;
 extern SCTaskGfx *scPausedQueueHead, *scPausedQueueTail;
-extern SCTaskGfx *scMainQueueHead, *scMainQueueTail;
+extern SCTaskInfo *scMainQueueHead, *scMainQueueTail;
 
 void func_80000900(void) {
 }
 
 void func_80000908(void) {
     while (1) {
-        if (scCurrentGfxTask || scCurrentDPTask || scDPTaskHead.info.type)
+        if (scCurrentGfxTask || scCurrentDPTask || scDPTaskHead)
             func_80000900();
         else break;
     }
@@ -189,6 +190,7 @@ loop_2:
     scMainQueueTail = task;
 }
 #else
+void scMainQueueAdd(SCTaskInfo *);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scMainQueueAdd.s")
 #endif
 
@@ -240,6 +242,7 @@ loop_2:
     scPausedQueueTail.info.type = arg0;
 }
 #else
+void scPausedQueueAdd(SCTaskInfo *info);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scPausedQueueAdd.s")
 #endif
 
@@ -301,6 +304,7 @@ void scDPQueueRemove(void *arg0) {
     D_80048BA0 = arg0->unk10;
 }
 #else
+u32 scDPQueueRemove(SCTaskInfo *);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scDPQueueRemove.s")
 #endif
 
@@ -375,7 +379,7 @@ void func_8000189C(SCTaskGfx *task) {
     if (scCurrentGfxTask != NULL) {
         osSpTaskYield();
         scCurrentGfxTask->info.state = 4;
-        scPausedQueueAdd(scCurrentGfxTask);
+        scPausedQueueAdd(&scCurrentGfxTask->info);
         task->info.state = SC_TASK_STATE_PRIORITY_PENDING;
     } else {
         osSpTaskLoad(&task->task);
@@ -662,14 +666,15 @@ void func_80001E20(void) {
     } while (var_s2 == 0);
 }
 #else
+void func_80001E20(void);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80001E20.s")
 #endif
 
 void func_80001FAC(void) {
-    if ((scCurrentDPTask == NULL) && (scDPTaskHead.info.type != 0)) {
-        scCurrentDPTask = scDPTaskHead.info.type;
-        scDPQueueRemove(scDPTaskHead.info.type);
-        scCurrentDPTask->info.state = 2;
+    if ((scCurrentDPTask == NULL) && (scDPTaskHead != NULL)) {
+        scCurrentDPTask = scDPTaskHead;
+        scDPQueueRemove(&scDPTaskHead->info);
+        scCurrentDPTask->info.state = SC_TASK_STATE_RUNNUNG;
         osDpSetNextBuffer(scCurrentDPTask->task.t.output_buff, scCurrentDPTask->rdpBufSize);
     }
 }
