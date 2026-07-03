@@ -109,8 +109,8 @@ void func_8000B65C(u32 link, u32 id) {
     func_8000B4D4(link, ohCheckId, id, 1);
 }
 
-void ohFindById(u32 id) {
-    func_8000B57C(ohCheckId, id, 1);
+GObj *ohFindById(u32 id) {
+    return func_8000B57C(ohCheckId, id, 1);
 }
 
 void ohUpdateStub(GObj *g) {

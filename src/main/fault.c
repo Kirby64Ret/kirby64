@@ -1,10 +1,24 @@
 #include <ultra64.h>
 #include <PR/os_vi.h>
+#include <string.h>
 #include "common.h"
 #include "libc/stdarg.h"
 #include "GObj.h"
 #include "contpad.h"
 #include "object_helpers.h"
+#include "render.h"
+#include "vi.h"
+
+// TODO: PR/os_internal.h
+extern OSThread *__osGetActiveQueue(void);
+// TODO: PR/os.h
+void *osViGetCurrentFramebuffer(void);
+// TODO: xstdio.h
+typedef char *outfun(char*,const char*,size_t);
+int _Printf(outfun prout, char *arg, const char *fmt, va_list args);
+
+extern OSThread *(*D_80096EF8)(void);
+extern OSMesgQueue D_80096ED8;
 
 // There is also some rmon functionality in this file
 
@@ -262,18 +276,18 @@ void func_80021618(s32 arg0, s32 arg1, f32 arg2, s32 arg3, s32 arg4, s32 arg5);
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_80021668(void *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     arg0->unk0 = ((((gCurrScreenWidth * arg3) / 320) & 0x3FF) << 0xE) | 0xF6000000 | ((((arg4 * gCurrScreenHeight) / 240) & 0x3FF) * 4);
     arg0->unk4 = ((((gCurrScreenWidth * arg1) / 320) & 0x3FF) << 0xE) | ((((arg2 * gCurrScreenHeight) / 240) & 0x3FF) * 4);
 }
 #else
+void func_80021668(Gfx *glistp, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80021668.s")
 #endif
 
 void func_80021764(GObj *g) {
     s32 i;
-    u32 temp_v1;
+    Unused u32 temp_v1;
     s32 offsetX = 40;
     s32 offsetY = 0x1F;
 
@@ -315,11 +329,11 @@ void func_80021764(GObj *g) {
     gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
 }
 
-s32 func_80021CB4(s32 arg0, s32 arg1, s32 arg2) {
+GObj *func_80021CB4(s32 link, s32 priority, s32 dlPriority) {
     if (ohFindById(-2) != 0) {
         return 0;
     }
-    return ohCreateCamera(-2, ohUpdateStub, arg0, arg1, &func_80021764, arg2, 0, 0, 0, 0, 0, 0, 0);
+    return ohCreateCamera(-2, ohUpdateStub, link, priority, &func_80021764, dlPriority, 0, 0, 0, 0, 0, 0, 0);
 }
 
 // hidden file boundary?
@@ -354,7 +368,7 @@ void *crash_screen_draw_rect(s32 x, s32 y, s32 width, s32 height) {
 #endif
 
 void crash_screen_draw_glyph(u32 x, u32 y, s32 glyph) {
-    u32 pad[4];
+    Unused u32 pad[4];
     const u32 *data;
     u16 *ptr;
     u32 bit;
@@ -391,7 +405,7 @@ void crash_screen_print(s32 x, s32 y, const char *fmt, ...) {
 
     
 
-    size = _Printf(write_to_buf, buf, fmt, (va_list)ALIGN4((u32)args));
+    size = _Printf(write_to_buf, (char *)buf, fmt, (va_list)ALIGN4((u32)args));
 
     if (size > 0) {
         ptr = buf;
@@ -625,8 +639,8 @@ OSThread *get_crashed_thread(void) {
     return NULL;
 }
 
-void faultSetUserCallback(OSThread (*arg0)()) {
-    gCrashScreenFramebuffer = arg0;
+void faultSetUserCallback(OSThread *(*callback_fn)()) {
+    gCrashScreenFramebuffer = callback_fn;
 }
 
 #ifdef MIPS_TO_C
@@ -635,6 +649,7 @@ void func_80022A44(s32 arg0, s32 arg1) {
     D_8003F870 = arg1;
 }
 #else
+void func_80022A44(s32 arg0, s32 arg1);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80022A44.s")
 #endif
 
@@ -644,7 +659,7 @@ void crash_screen_vprint(const char *fmt, va_list args) {
     u8 buf[256];
     u8 *ptr;
 
-    size = _Printf(write_to_buf, buf, fmt, args);
+    size = _Printf(write_to_buf, (char *)buf, fmt, args);
     if (size > 0) {
         ptr = buf;
 
@@ -678,18 +693,15 @@ void crash_screen_printf(const char *fmt, ...) {
     va_end(args);
 }
 
-
-extern OSThread *(*D_80096EF8)(void);
-extern OSMesgQueue *D_80096ED8;
-void func_80022BC4(s32 arg0) {
-    OSMesg *sp34;
+void func_80022BC4(Unused void *arg) {
+    OSMesg mesg;
     OSThread *cb_thread;
     OSThread *t;
 
-    osSetEventMesg(OS_EVENT_CPU_BREAK, &D_80096ED8, 1);
-    osSetEventMesg(OS_EVENT_FAULT, &D_80096ED8, 2);
+    osSetEventMesg(OS_EVENT_CPU_BREAK, &D_80096ED8, (OSMesg) 1);
+    osSetEventMesg(OS_EVENT_FAULT, &D_80096ED8, (OSMesg) 2);
     do {
-        osRecvMesg(&D_80096ED8, &sp34, 1);
+        osRecvMesg(&D_80096ED8, &mesg, 1);
         t = get_crashed_thread();
     } while (t == NULL);
     D_8003F688 = 1;
@@ -733,9 +745,9 @@ void crash_screen_start_thread(void) {
     osStartThread(&D_80096528);
 }
 
-void func_80022E04(s32 arg0);
+void func_80022E04(Unused void *arg);
 #ifdef _MIPS_TO_C
-void func_80022E04(s32 arg0) {
+void func_80022E04(Unused void *arg) {
     void *sp4C;
     OSThread *cb_thread;
     s32 pri;
@@ -796,7 +808,7 @@ void func_80022E04(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80022E04.s")
 #endif
 
-extern OSThread *gCrashScreenThread;
+extern OSThread gCrashScreenThread;
 extern u64 D_800978D8[];
 
 void crash_screen_init(void) {
@@ -807,7 +819,7 @@ void crash_screen_init(void) {
 #define SOME_ALIGNMENT(a) ((((u32)a) + 0x2F) & ~3)
 // make the SOME_ALIGNMENT() generate explicit alignment code
 #ifdef NON_MATCHING
-void fatal_printf(s32 fmt, ...) {
+void fatal_printf(const char *fmt, ...) {
     s32 pri;
     void *currFB;
     va_list args;
