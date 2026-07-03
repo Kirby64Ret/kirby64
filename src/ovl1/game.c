@@ -1,11 +1,17 @@
 #include "common.h"
 #include "GObj.h"
+#include "main/audio.h"
 #include "main/dma.h"
 #include "main/gtl.h"
 #include "main/object_manager.h"
 #include "main/fault.h"
+#include "main/math.h"
 #include "main/contpad.h"
+#include "ovl20/tamper_check.h"
+
 #include "game.h"
+#include "save_file.h"
+#include "util.h"
 
 extern u32 gGameTampered;
 
@@ -855,6 +861,7 @@ void game_tick(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/game_tick.s")
 #endif
+
 
 /**
  * Sets the number of game update ticks that will happen per draw frame

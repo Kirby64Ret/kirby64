@@ -1,5 +1,5 @@
 #include "common.h"
-#include "ovl1/save_file.h"
+#include "save_file.h"
 
 #define SAVE_CHECKSUM_MAGIC 0x97538642
 #define SAVE_INIT_MAGIC 0x99999999

@@ -1,3 +1,6 @@
+#ifndef _SAVE_FILE_H
+#define _SAVE_FILE_H
+
 typedef struct {
 	/* 0x0; */  u32 world;
     /* 0x4; */  u32 level;
@@ -47,3 +50,6 @@ extern struct EEPROM gSaveBuffer1;
 extern struct EEPROM gSaveBuffer2;
 
 s32 check_cutscene_watched(s32 arg0);
+s32 set_cutscene_watched(s32 scene, s32 fileNum);
+
+#endif // _SAVE_FILE_H

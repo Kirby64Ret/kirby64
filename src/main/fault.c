@@ -9,6 +9,8 @@
 #include "render.h"
 #include "vi.h"
 
+#include "fault.h"
+
 // TODO: PR/os_internal.h
 extern OSThread *__osGetActiveQueue(void);
 // TODO: PR/os.h

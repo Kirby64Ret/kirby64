@@ -593,7 +593,7 @@ s32 func_80020C70(s32 arg0, ? arg1, ? arg2, ? arg3) {
 
 #ifdef NON_MATCHING
 void func_80023990(); // n_audio function (unknown)
-s32 auFunc80020C88() {
+s32 auFunc80020C88(void) {
     s32 i;
 
     func_80023990(/* TODO: this function takes arguments? */);
@@ -604,6 +604,7 @@ s32 auFunc80020C88() {
     return i;
 }
 #else
+s32 auFunc80020C88(void);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auFunc80020C88.s")
 #endif
 
