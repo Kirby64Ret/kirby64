@@ -462,7 +462,7 @@ void HS64_CameraPush(struct Camera *arg0) {
     gCameraCount--;
 }
 
-struct GObjProcess *omCreateProcess(GObj *arg0, void (*arg1)(void), u8 kind, u32 pri) {
+struct GObjProcess *omCreateProcess(GObj *arg0, void (*arg1)(GObj *), u8 kind, u32 pri) {
     struct GObjProcess *sp24;
     struct GObjThread *oThread;
     struct GObjProcess *oProcess;
@@ -914,7 +914,7 @@ GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri) {
     return toReturn;
 }
 
-GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri) {
+GObj *HS64_omMakeGObj(s32 id, void (*func)(GObj *), u8 link, u32 pri) {
     GObj *o;
 
     o = omGAddCommon(id, func, link, pri);
@@ -1047,7 +1047,7 @@ void func_8000A544(GObj *arg0, GObj *arg1) {
     omGMoveCommon(3, arg0, arg1->link, arg1->pri, arg1);
 }
 
-void omGLinkObjDLCommon(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 camTag) {
+void omGLinkObjDLCommon(GObj *arg0, void (*drawCB)(GObj *), u8 link, s32 prio, s32 camTag) {
     if (link >= 0x20) {
         fatal_printf("omGLinkObjDLCommon() : dl_link num over : dl_link = %d : id = %d\n", link, arg0->objId);
         while (1);
@@ -1059,7 +1059,7 @@ void omGLinkObjDLCommon(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 camTag) {
     arg0->lastDrawFrame = gtlDrawnFrameCounter - 1;
 }
 
-void omLinkGObjDL(GObj *gobj, s32 drawCB, u8 link, s32 prio, s32 camTag) {
+void omLinkGObjDL(GObj *gobj, void (*drawCB)(GObj *), u8 link, s32 prio, s32 camTag) {
     if (gobj == NULL) {
         gobj = omCurrentObj;
     }
@@ -1067,7 +1067,7 @@ void omLinkGObjDL(GObj *gobj, s32 drawCB, u8 link, s32 prio, s32 camTag) {
     omGSetupCameraDLLink(gobj);
 }
 
-void func_8000A640(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 camTag) {
+void func_8000A640(GObj *arg0, void (*drawCB)(GObj *), u8 link, s32 prio, s32 camTag) {
     if (arg0 == 0) {
         arg0 = omCurrentObj;
     }
@@ -1075,7 +1075,7 @@ void func_8000A640(GObj *arg0, s32 drawCB, u8 link, s32 prio, s32 camTag) {
     omGSetupDLLink_HighestPrioMax(arg0);
 }
 
-void func_8000A684(GObj *arg0, s32 drawCB, s32 arg2, GObj *arg3) {
+void func_8000A684(GObj *arg0, void (*drawCB)(GObj *), s32 arg2, GObj *arg3) {
     if (arg0 == 0) {
         arg0 = omCurrentObj;
     }
@@ -1083,7 +1083,7 @@ void func_8000A684(GObj *arg0, s32 drawCB, s32 arg2, GObj *arg3) {
     omGInsertDLLink(arg0, arg3);
 }
 
-void func_8000A6D8(GObj *o, s32 drawCB, s32 arg2, GObj *arg3) {
+void func_8000A6D8(GObj *o, void (*drawCB)(GObj *), s32 arg2, GObj *arg3) {
     if (o == 0) {
         o = omCurrentObj;
     }

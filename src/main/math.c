@@ -98,7 +98,6 @@ f32 atanf(f32 yDivX) {
         case 0: return result; 
         case 1: return (M_PIF/2) - result;
         case 2: return (-M_PIF/2) - result;
-        default: return;
     }
 }
 

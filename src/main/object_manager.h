@@ -355,12 +355,17 @@ extern struct UnkStruct8004A7F8 D_8004A7F8[32];
 // extern funcs
 struct Camera *func_80009F7C(struct GObj*);
 void func_80009B5C(struct DObj *);
-void omLinkGObjDL(struct GObj *gobj, s32 arg1, u8 link, s32 prio, s32 arg4);
-struct GObj *HS64_omMakeGObj(s32 id, void (*func)(void), u8 link, u32 pri);
+void omLinkGObjDL(struct GObj *gobj, void (*func)(struct GObj *), u8 link, s32 prio, s32 arg4);
+struct GObj *HS64_omMakeGObj(s32 id, void (*func)(struct GObj *), u8 link, u32 pri);
 void omUpdateAll();
+void omGDeleteObj(struct GObj *gobj);
 void HS64_omInit(ObjectSetup *);
 AObj *func_800098AC(MObj *, u8);
+void omEndProcess(GObjProcess *proc);
+struct GObjProcess *omCreateProcess(struct GObj *arg0, void (*arg1)(struct GObj *), u8 kind, u32 pri);
 struct DObj *omGObjAddDObj(struct GObj *gobj, void *arg1);
+struct Camera *omGObjSetCamera(struct GObj *gobj);
+void omGLinkObjDLCamera(struct GObj *o, void (*drawCallback)(struct GObj *), s32 pri, s32 linkMask, s32 camTag);
 
 // AObj Functions
 struct AObj *HS64_AObjNew(struct DObj *dobj, u8 paramID);
@@ -376,8 +381,11 @@ MObj *omDObjAddMObj(struct DObj* dobj, TextureScroll *t);
 
 // Camera Functions
 AObj *omCameraAddAObj(Camera *, u8);
+OMMtx* omCameraAddMtx(Camera *cam, u8 kind, u8 arg2);
 
 // UNNAMED functions
 void func_80009918(MObj *mobj);
+s32 func_8000B4D4(s32 link, struct GObj *(*cb)(struct GObj *, u32), void *param, s32 single);
+void func_80009DF4(void *);
 
 #endif

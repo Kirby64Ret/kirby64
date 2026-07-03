@@ -1,5 +1,6 @@
 #include "common.h"
 #include "object_manager.h"
+#include "anim.h"
 #include "fault.h"
 #include "GObj.h"
 
@@ -58,6 +59,7 @@ s32 func_8000B4D4(s32 link, GObj* (*cb)(GObj*, void*), void* param, s32 single) 
     return ret;
 }
 #else
+s32 func_8000B4D4(s32 link, GObj* (*cb)(GObj*, u32), void* param, s32 single);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B4D4.s")
 #endif
 
@@ -98,22 +100,23 @@ block_6:
     goto loop_1;
 }
 #else
+GObj *func_8000B57C(GObj *(*check)(GObj *, u32), u32 arg1, s32 arg2);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B57C.s")
 #endif
 
-GObj *ohCheckId(GObj *g, s32 id) {
+GObj *ohCheckId(GObj *g, u32 id) {
     return (id == g->objId) ? g : NULL;
 }
 
 void func_8000B65C(u32 link, u32 id) {
-    func_8000B4D4(link, ohCheckId, id, 1);
+    func_8000B4D4(link, ohCheckId, (void *)id, 1);
 }
 
 GObj *ohFindById(u32 id) {
     return func_8000B57C(ohCheckId, id, 1);
 }
 
-void ohUpdateStub(GObj *g) {
+void ohUpdateStub(Unused GObj *g) {
     // stubbed out; the intended code is presented below.
     // cmdProcessCommands(NULL);
 }
@@ -245,10 +248,10 @@ void ohDobjTreeRemoveAllMObjs(GObj *g) {
     }
 }
 
-DObj *ohAddDObj(struct DObj *dobj, u8 *arg1) {
+DObj *ohAddDObj(GObj *gobj, u8 *arg1) {
     DObj *new_dobj;
 
-    new_dobj = omGObjAddDObj(dobj, arg1);
+    new_dobj = omGObjAddDObj(gobj, arg1);
     ohCreateDefaultMatricesDeg(new_dobj);
     return new_dobj;
 }
@@ -269,10 +272,10 @@ DObj *ohAddDObjChild(DObj *dobj, void *arg1) {
     return dobj_ret;
 }
 
-DObj *ohAddDObjRad(struct DObj *dobj, u8 *arg1) {
+DObj *ohAddDObjRad(struct GObj *gobj, u8 *arg1) {
     DObj *new_dobj;
 
-    new_dobj = omGObjAddDObj(dobj, arg1);
+    new_dobj = omGObjAddDObj(gobj, arg1);
     ohCreateDefaultMatricesRad(new_dobj);
     return new_dobj;
 }
