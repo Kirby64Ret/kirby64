@@ -267,8 +267,8 @@ s32 renderPrepareModelMatrix(Gfx** gfxPtr, DObj* dobj) {
             if (ommtx->unk05 != 2) {
                 if (ommtx->unk05 == 4) {
                     if (dobj->gobj->lastDrawFrame != (u8) gtlDrawnFrameCounter) {
-                        *unk = gDynamicBuffer1.top;
-                        mtx = gDynamicBuffer1.top;
+                        *unk = (Mtx *)gDynamicBuffer1.top;
+                        mtx = (Mtx *)gDynamicBuffer1.top;
                         gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
                     } else {
                         switch (ommtx->kind) {
@@ -290,12 +290,12 @@ s32 renderPrepareModelMatrix(Gfx** gfxPtr, DObj* dobj) {
                             case MTX_TYPE_48:
                             case MTX_TYPE_49:
                             case MTX_TYPE_50:
-                                mtx = gDynamicBuffer1.top;
+                                mtx = (Mtx *)gDynamicBuffer1.top;
                                 gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
                                 break;
                             default:
                                 if (ommtx->kind >= MTX_TYPE_66) {
-                                    mtx = gDynamicBuffer1.top;
+                                    mtx = (Mtx *)gDynamicBuffer1.top;
                                     gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
                                 } else {
                                     mtx = *unk;
@@ -306,7 +306,7 @@ s32 renderPrepareModelMatrix(Gfx** gfxPtr, DObj* dobj) {
                     }
                 } else {
                     if (gtlCurrentContextID > 0) {
-                        mtx = gDynamicBuffer1.top;
+                        mtx = (Mtx *)gDynamicBuffer1.top;
                         gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
                     } else if (dobj->gobj->lastDrawFrame == (u8) gtlDrawnFrameCounter) {
                         switch (ommtx->kind) {
@@ -328,18 +328,18 @@ s32 renderPrepareModelMatrix(Gfx** gfxPtr, DObj* dobj) {
                             case MTX_TYPE_48:
                             case MTX_TYPE_49:
                             case MTX_TYPE_50:
-                                mtx = gDynamicBuffer1.top;
+                                mtx = (Mtx *)gDynamicBuffer1.top;
                                 gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
                                 break;
                             default:
                                 if (ommtx->kind >= MTX_TYPE_66) {
-                                    mtx = gDynamicBuffer1.top;
+                                    mtx = (Mtx *)gDynamicBuffer1.top;
                                     gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
                                 } else {
                                     if (ommtx->unk05 != 3) {
                                         goto END2;
                                     }
-                                    mtx = gDynamicBuffer1.top;
+                                    mtx = (Mtx *)gDynamicBuffer1.top;
                                     gDynamicBuffer1.top = (u8*) gDynamicBuffer1.top + sizeof(Mtx);
                                 }
                                 break;
@@ -781,7 +781,7 @@ s32 renderPrepareModelMatrix(Gfx** gfxPtr, DObj* dobj) {
                 }
             }
             if (ommtx->kind != MTX_TYPE_2) {
-                if (sp2B8 == 2 || sp2D4 == 0 && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                if (sp2B8 == 2 || (sp2D4 == 0 && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL))) {
                     gSPMatrix(sp2DC++, mtx, G_MTX_PUSH | G_MTX_MUL | G_MTX_MODELVIEW);
                 } else {
                     gSPMatrix(sp2DC++, mtx, G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
@@ -2761,6 +2761,7 @@ void renderInitCamera(void **arg0, void *arg1, s32 arg2) {
     *arg0 = var_v1_4;
 }
 #else
+void renderInitCamera(Gfx **glistp, Camera *cam, s32 arg2);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderInitCamera.s")
 #endif
 
@@ -3195,6 +3196,7 @@ block_74:
     }
 }
 #else
+void func_800171E0(Gfx **glistp, Camera *cam);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800171E0.s")
 #endif
 

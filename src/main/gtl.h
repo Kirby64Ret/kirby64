@@ -85,6 +85,9 @@ extern Gfx *gDisplayListHeads[4];
 extern s32 gtlDrawnFrameCounter;
 extern u32 gtlCurrentContextID;
 
+void gtlMergeDisps(void);
+void gtlProcessDisps(void);
+void gtlReset(void);
 void gtlSetSegment0F(Gfx **);
 void gtlSetUpdateDrawRate(u16 updateRate, u16 drawRate);
 

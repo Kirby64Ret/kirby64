@@ -1109,29 +1109,29 @@ void omGLinkObjDLCamera(GObj *o, GObjFunc drawCallback, s32 pri, s32 linkMask, s
     omGSetupCameraDLLink(o);
 }
 
-void func_8000A7A0(GObj *o, s32 arg1, s32 prio, s32 linkMask, s32 camTag) {
+void func_8000A7A0(GObj *o, GObjFunc drawCB, s32 prio, s32 linkMask, s32 camTag) {
     if (o == 0) {
         o = omCurrentObj;
     }
-    func_8000A730(o, arg1, prio, linkMask, camTag);
+    func_8000A730(o, drawCB, prio, linkMask, camTag);
     omGSetupDLLink_HighestPrioMax(o);
 }
 
-void func_8000A7DC(GObj *o, s32 arg1, s32 linkMask, s32 camTag, GObj *arg4) {
+void func_8000A7DC(GObj *o, GObjFunc drawCB, s32 linkMask, s32 camTag, GObj *arg4) {
     if (o == NULL) {
         o = omCurrentObj;
     }
 
-    func_8000A730(o, arg1, arg4->renderPriority, linkMask, camTag);
+    func_8000A730(o, drawCB, arg4->renderPriority, linkMask, camTag);
     omGInsertDLLink(o, arg4);
 }
 
-void func_8000A830(GObj *o, s32 arg1, s32 linkMask, s32 camTag, GObj *arg4) {
+void func_8000A830(GObj *o, GObjFunc drawCB, s32 linkMask, s32 camTag, GObj *arg4) {
     if (o == NULL) {
         o = omCurrentObj;
     }
 
-    func_8000A730(o, arg1, arg4->renderPriority, linkMask, camTag);
+    func_8000A730(o, drawCB, arg4->renderPriority, linkMask, camTag);
     omGInsertDLLink(o, arg4->prev);
 }
 
