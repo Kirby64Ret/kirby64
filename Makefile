@@ -234,8 +234,9 @@ $(GAME_ASSETS): assets/assets.ld
 DUMMY != $(MAKE) -C f3dex2 $(GRUCODE) PARENT_OUTPUT_DIR=../$(BUILD_DIR)/ ARMIPS=../$(LOCAL_ARMIPS)
 
 $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
+	@printf "    [CC] $<\n"
 	@$(CC_CHECK) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(V)$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR)/$(UCODE_BASE_DIR)/%.o : $(UCODE_BASE_DIR)/%
 	$(OBJCOPY) -I binary -O elf32-big $< $@
