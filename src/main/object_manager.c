@@ -1,6 +1,7 @@
 #include "common.h"
 #include "fault.h"
 #include "object_manager.h"
+#include "rdp_reset.h"
 #include "render.h"
 #include "anim.h"
 #include "object_helpers.h"
@@ -84,7 +85,7 @@ u8 D_8004AA78[0x18];
 
 // externs for their own headers
 extern u32 gtlDrawnFrameCounter;
-extern void HS64_AObjLinkToAnimation(struct Animation *anim, struct AObj *stack);
+extern void HS64_AObjLinkToAnimation(DObj *anim, struct AObj *stack);
 
 
 struct GObjThread *HS64_GObjThreadPop(void) {
@@ -382,21 +383,20 @@ struct AObj *HS64_AObjPop(void) {
     return toReturn;
 }
 
-void HS64_AObjLinkToAnimation(struct Animation *anim, struct AObj *aobj) {
-    aobj->next = anim->aobj;
-    anim->aobj = aobj;
+void HS64_AObjLinkToAnimation(DObj *dobj, struct AObj *aobj) {
+    aobj->next = dobj->aobj;
+    dobj->aobj = aobj;
 }
 
-void func_80008840(struct Animation *arg0, struct AObj *aobj) {
-    aobj->next = arg0->unk90;
-    arg0->unk90 = aobj;
+void func_80008840(MObj *mobj, struct AObj *aobj) {
+    aobj->next = mobj->aobj;
+    mobj->aobj = aobj;
 }
-
 
 // TODO: is this _really_ for Animations?
-void func_80008850(struct Animation *anim, struct AObj *aobj) {
-    aobj->next = anim->aobj;
-    anim->aobj = aobj;
+void func_80008850(Camera *cam, struct AObj *aobj) {
+    aobj->next = cam->aobj;
+    cam->aobj = aobj;
 }
 
 void HS64_AObjRelease(struct AObj *arg0) {
@@ -462,8 +462,8 @@ void HS64_CameraPush(struct Camera *arg0) {
     gCameraCount--;
 }
 
-struct GObjProcess *omCreateProcess(GObj *arg0, void (*arg1)(GObj *), u8 kind, u32 pri) {
-    struct GObjProcess *sp24;
+struct GObjProcess *omCreateProcess(GObj *arg0, void *arg1, u8 kind, u32 pri) {
+    Unused struct GObjProcess *sp24;
     struct GObjThread *oThread;
     struct GObjProcess *oProcess;
     
@@ -479,21 +479,21 @@ struct GObjProcess *omCreateProcess(GObj *arg0, void (*arg1)(GObj *), u8 kind, u
     oProcess->kind = kind;
     oProcess->paused = 0;
     oProcess->gobj = arg0;
-    oProcess->entryPoint = arg1;
+    oProcess->entryPoint = (void (*)(GObj *)) arg1;
     switch (kind) {
         case HS64_GOBJPROC_KIND_GOBJTHREAD:
             oThread = HS64_GObjThreadPop();
             oProcess->payload.thread = oThread;
-            oThread->objStack = &HS64_GetGObjThreadStack()->stack;
+            oThread->objStack = (struct ObjStack *)&HS64_GetGObjThreadStack()->stack;
             oThread->objStackSize = gNewEntityStackSize;
-            osCreateThread(&oThread->thread, D_8003DE50++, arg1, arg0, &(oThread->objStack->stack[gNewEntityStackSize / 8]), 0x33);
+            osCreateThread(&oThread->thread, D_8003DE50++, (void (*)(void *)) arg1, arg0, &(oThread->objStack->stack[gNewEntityStackSize / 8]), 0x33);
             oThread->objStack->stack[7] = STACK_CANARY;
             if (D_8003DE50 >= 20000000) {
                 D_8003DE50 = 10000000;
             }
             break;
         case HS64_GOBJPROC_KIND_CALLBACK:
-            oProcess->payload.thread = arg1;
+            oProcess->payload.thread = (GObjThread *)arg1;
             break;
         default:
             fatal_printf("om : GObjProcess's kind is bad value\n");
@@ -505,7 +505,7 @@ struct GObjProcess *omCreateProcess(GObj *arg0, void (*arg1)(GObj *), u8 kind, u
 }
 
 // a somewhat more granular version of omCreateProcess
-struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri, s32 arg3, struct ObjStack *arg4, u32 stackSize) {
+struct GObjProcess *func_80008B94(GObj *arg0, void (*entry)(void *), u32 pri, s32 arg3, struct ObjStack *arg4, u32 stackSize) {
     struct GObjProcess *oProcess;
     struct GObjThread *oThread;
     s32 phi_a1;
@@ -521,11 +521,11 @@ struct GObjProcess *func_80008B94(GObj *arg0, struct GObjThread *entry, u32 pri,
     oProcess->pri = pri;
     oProcess->paused = 0;
     oProcess->gobj = arg0;
-    oProcess->entryPoint = entry;
+    oProcess->entryPoint = (void (*)(GObj *)) entry;
     oThread = HS64_GObjThreadPop(); oProcess->payload.thread = oThread;
     if (stackSize == 0) {
         oProcess->kind = HS64_GOBJPROC_KIND_GOBJTHREAD;
-        oThread->objStack = &HS64_GetGObjThreadStack()->stack;
+        oThread->objStack = (struct ObjStack *)&HS64_GetGObjThreadStack()->stack;
         oThread->objStackSize = gNewEntityStackSize;
         phi_a1 = (arg3 != -1) ? arg3 : D_8003DE50++;
         osCreateThread(&oThread->thread, phi_a1, entry, arg0, &(oThread->objStack->stack[gNewEntityStackSize / 8]), 0x33);
@@ -569,7 +569,10 @@ void omEndProcess(struct GObjProcess *proc) {
         switch (proc->kind) {
             case 0:
                 osDestroyThread(&proc->payload.thread->thread);
-                HS64_ReleaseGObjThreadStack(&proc->payload.thread->objStack->stack[0] - 1); // why???
+                HS64_ReleaseGObjThreadStack(
+                    (struct GObjThreadStack *)
+                        (&proc->payload.thread->objStack->stack[0] - 1)  // why???
+                );
                 HS64_GObjThreadRelease(proc->payload.thread);
                 break;
             case 1:
@@ -780,6 +783,7 @@ MObj* omDObjAddMObj(DObj* dobj, TextureScroll *texture) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009B5C.s")
 
 // Not really sure what's going on here
+void func_80009BD4(DObj *);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009BD4.s")
 
 struct DObj *omGObjAddDObj(GObj *gobj, void *arg1) {
@@ -887,7 +891,7 @@ void func_8000A02C(struct Camera *cam) {
     HS64_CameraPush(cam);
 }
 
-GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri) {
+GObj *omGAddCommon(u32 id, GObjFunc updateCallback, u8 link, u32 pri) {
     GObj *toReturn;
 
     if (link >= 32) {
@@ -914,7 +918,7 @@ GObj *omGAddCommon(u32 id, void (*updateCallback)(void), u8 link, u32 pri) {
     return toReturn;
 }
 
-GObj *HS64_omMakeGObj(s32 id, void (*func)(GObj *), u8 link, u32 pri) {
+GObj *HS64_omMakeGObj(s32 id, GObjFunc func, u8 link, u32 pri) {
     GObj *o;
 
     o = omGAddCommon(id, func, link, pri);
@@ -926,7 +930,7 @@ GObj *HS64_omMakeGObj(s32 id, void (*func)(GObj *), u8 link, u32 pri) {
     }
 }
 
-GObj *omAddGObjBeforeSamePriority(s32 arg0, s32 func, u8 arg2, s32 pri) {
+GObj *omAddGObjBeforeSamePriority(s32 arg0, GObjFunc func, u8 arg2, s32 pri) {
     GObj *o;
 
     o = omGAddCommon(arg0, func, arg2, pri);
@@ -938,7 +942,7 @@ GObj *omAddGObjBeforeSamePriority(s32 arg0, s32 func, u8 arg2, s32 pri) {
     }
 }
 
-GObj *omAddGObjAfter(s32 id, s32 func, GObj *arg2) {
+GObj *omAddGObjAfter(s32 id, GObjFunc func, GObj *arg2) {
     GObj *temp_v0;
 
     temp_v0 = omGAddCommon(id, func, arg2->link, arg2->pri);
@@ -949,10 +953,10 @@ GObj *omAddGObjAfter(s32 id, s32 func, GObj *arg2) {
     return temp_v0;
 }
 
-GObj *omAddGObjBefore(s32 id, s32 updateCB, GObj *arg2) {
+GObj *omAddGObjBefore(s32 id, GObjFunc func, GObj *arg2) {
     GObj *temp_v0;
 
-    temp_v0 = omGAddCommon(id, updateCB, arg2->link, arg2->pri);
+    temp_v0 = omGAddCommon(id, func, arg2->link, arg2->pri);
     if (temp_v0 == 0) {
         return NULL;
     }
@@ -1242,7 +1246,7 @@ GObj *omGUpdateObj(GObj *gobj) {
 #ifdef NON_MATCHING
 struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
     struct GObjProcess *ret;
-    void (*entry)(GObj *);
+    Unused void (*entry)(GObj *);
 
     D_8003DE54 = 2;
     omCurrentObj = proc->gobj;
@@ -1285,6 +1289,7 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
     return ret;
 }
 #else
+struct GObjProcess *omGDispatchProc(struct GObjProcess *proc);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGDispatchProc.s")
 #endif
 

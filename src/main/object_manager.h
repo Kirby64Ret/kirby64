@@ -362,7 +362,7 @@ void omGDeleteObj(struct GObj *gobj);
 void HS64_omInit(ObjectSetup *);
 AObj *func_800098AC(MObj *, u8);
 void omEndProcess(GObjProcess *proc);
-struct GObjProcess *omCreateProcess(struct GObj *arg0, void (*arg1)(struct GObj *), u8 kind, u32 pri);
+struct GObjProcess *omCreateProcess(struct GObj *arg0, void *arg1, u8 kind, u32 pri);
 struct DObj *omGObjAddDObj(struct GObj *gobj, void *arg1);
 struct Camera *omGObjSetCamera(struct GObj *gobj);
 void omGLinkObjDLCamera(struct GObj *o, void (*drawCallback)(struct GObj *), s32 pri, s32 linkMask, s32 camTag);
