@@ -1,10 +1,8 @@
 // ml: memory library?
-
 #include <ultra64.h>
 
-#include "object_manager.h"
-
-void fatal_printf(const char*, ...);
+#include "fault.h"
+#include "memory_library.h"
 
 // unused?
 void mlReset(struct DynamicBuffer *arg0) {

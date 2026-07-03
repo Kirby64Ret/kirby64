@@ -4,10 +4,15 @@
 #include "common.h"
 #include "localsched.h"
 #include "object_manager.h"
+#include "object_helpers.h"
+#include "fault.h"
 #include "gtl.h"
 #include "main.h"
+#include "memory_library.h"
 #include "contpad.h"
+#include "render.h"
 #include "rdp_reset.h"
+#include "vi.h"
 
 // sched
 extern u32 scDPOutputBuffSize;
@@ -26,7 +31,7 @@ extern s32 D_8004A458[NUM_GTL_CONTEXTS];
 extern void (*D_8004A488)(void);
 
 
-extern s32 gtlCurrentState;;
+extern s32 gtlCurrentState;
 
 extern u32 D_8003DCA0; // gtl rdp output type
 extern void *gtlDPOutputBuffer; // gtl rdp output buff
@@ -177,7 +182,7 @@ void gtlSetDPOutputBuff(void* buffer, s32 size) {
     task.info.priority = 50;
     task.buffer = buffer;
     task.size = size;
-    scExecuteBlocking(&task);
+    scExecuteBlocking(&task.info);
     if ((u32)&scDPOutputBuffSize & 7) {
         fatal_printf("bad addr sc_rdp_output_len = %x\n", &scDPOutputBuffSize);
         while (1);
@@ -199,8 +204,8 @@ void gtlSetDPOutputSettings(s32 type, void* buffer, u32 size) {
     }
 }
 
-s32 gtlGetSCTaskGfx(void) {
-    SCTaskGfx* task;
+SCTaskGfx *gtlGetSCTaskGfx(void) {
+    SCTaskGfx *task;
 
     if (gtlGfxTaskBufferStarts[gtlCurrentContextID] == NULL) {
         fatal_printf("gtl : not defined SCTaskGfx\n");
@@ -233,7 +238,7 @@ void gtlScheduleGfxEnd(SCTaskGfxEnd *task, void *fb, s32 retVal, OSMesgQueue *mq
     task->info.retVal = retVal;
     task->fb = fb;
     task->taskId = gtlCurrentContextID;
-    osSendMesg(&scTaskMQ, task, 0);
+    osSendMesg(&scTaskMQ, (OSMesg)task, 0);
 }
 
 void gtlEndCurrentGfxTask(void) {
@@ -244,12 +249,12 @@ void gtlEndCurrentGfxTask(void) {
         fatal_printf("gtl : not defined SCTaskGfxEnd\n");
         while (1);
     }
-    gtlScheduleGfxEnd(task, -1, gtlCurrentContextID, &D_80049320);
+    gtlScheduleGfxEnd(task, (void *)-1, gtlCurrentContextID, &D_80049320);
     gtlGfxTaskBufferPtrs[gtlCurrentContextID] = gtlGfxTaskBufferStarts[gtlCurrentContextID];
 }
 
 void gtlReset(void) {
-    OSMesg *msg;
+    OSMesg msg;
     SCTaskGfxEnd *task = gtlGfxEndTasks[gtlCurrentContextID];
 
     if (task == 0) {
@@ -338,6 +343,7 @@ loop_8:
     osSendMesg(&scTaskMQ, arg0, 0);
 }
 #else
+void gtlScheduleGfxTask(SCTaskGfx *arg0, s32 arg1, u32 arg2, s32 arg3, Gfx *arg4, void *arg5, size_t arg6);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlScheduleGfxTask.s")
 #endif
 
@@ -364,7 +370,7 @@ u32 gtlGetL3DEX2Index(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlGetL3DEX2Index.s")
 #endif
 
-void func_80005CC0(s32 isL3DEX2, s32 arg1) {
+void func_80005CC0(s32 isL3DEX2, Gfx *glistp) {
     u32 ucodeIdx;
 
     if (isL3DEX2 == 0) {
@@ -398,7 +404,7 @@ void func_80005CC0(s32 isL3DEX2, s32 arg1) {
         case 9:
         case 13:
         case 15:
-            gtlScheduleGfxTask(gtlGetSCTaskGfx(), 0, ucodeIdx, gtlCurrentContextID, arg1, NULL, NULL);
+            gtlScheduleGfxTask(gtlGetSCTaskGfx(), 0, ucodeIdx, gtlCurrentContextID, glistp, NULL, 0);
             break;
         // FIFO
         case 0:
@@ -408,7 +414,7 @@ void func_80005CC0(s32 isL3DEX2, s32 arg1) {
         case 8:
         case 12:
         case 14:
-            gtlScheduleGfxTask(gtlGetSCTaskGfx(), 0, ucodeIdx, gtlCurrentContextID, arg1, gtlDPOutputBuffer, gtlDPOutputBufferSize);
+            gtlScheduleGfxTask(gtlGetSCTaskGfx(), 0, ucodeIdx, gtlCurrentContextID, glistp, gtlDPOutputBuffer, gtlDPOutputBufferSize);
             break;
         default:
             break;
@@ -528,7 +534,7 @@ void gtlProcessDisps(void) {
         // after end ??
         gSPDisplayList(gDisplayListHeads[first]++, gtlRDPResetList);
         gSPBranchList(gDisplayListHeads[first]++, gtlPrevDLHeads[first]);
-        func_80005CC0(needLineUcode, (u64*) glistp);
+        func_80005CC0(needLineUcode, glistp);
 
         gtlPrevDLHeads[0] = gDisplayListHeads[0];
         gtlPrevDLHeads[2] = gDisplayListHeads[2];
@@ -814,7 +820,7 @@ void gtlDraw(FuncTable *this) {
 }
 
 void gtlDrawSingle(GObj *gobj) {
-    s32 idxmsg;
+    OSMesg idxmsg;
 
     gtlSwitchContext(0);
     gtlResetHeap();
@@ -829,7 +835,7 @@ void gtlDrawSingle(GObj *gobj) {
     gtlGfxTaskBufferPtrs[gtlCurrentContextID] = gtlGfxTaskBufferStarts[gtlCurrentContextID];
     do {
         osRecvMesg(&D_80049320, &idxmsg, 1);
-        D_8004A458[idxmsg] = 0;
+        D_8004A458[(u32)idxmsg] = 0;
     } while (D_8004A458[gtlCurrentContextID] != 0);
 
     gtlDrawnFrameCounter += 1;
@@ -930,7 +936,7 @@ void gtlCreateScene(SceneSetup *scene) {
     HS64_omInit(&gtlCurrentScene);
     gtlMainFuncTable.onUpdate = gtlUpdate;
     gtlMainFuncTable.onDraw = gtlDraw;
-    gtlStart(scene, scene->postInitFunc);
+    gtlStart(&scene->gtlSetup, scene->postInitFunc);
 }
 
 void gtlSetUpdateDrawRate(u16 update, u16 draw) {

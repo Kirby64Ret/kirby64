@@ -1,6 +1,8 @@
 #ifndef GTL_H
 #define GTL_H
 
+#include "render.h"
+
 // todo: number of CFB's instead?
 #define NUM_GTL_CONTEXTS 2
 
@@ -58,7 +60,7 @@ typedef struct {
     /* 0x54 */ u32 objCount;
     /* 0x58 */ u32 objectSize;
     /* 0x5C */ u32 mtxCount;
-    /* 0x60 */ MatrixFuncTable* mtxHandler;
+    /* 0x60 */ MatrixHandler *mtxHandler;
     /* 0x64 */ void* unk64; // fn pointer void(*)(struct DObjDynamicStore *)
     /* 0x68 */ u32 AObjCount;
     /* 0x6C */ u32 MObjCount;

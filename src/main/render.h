@@ -88,6 +88,7 @@ extern Mat4 D_8004AB58;
 extern s32 renderLevelOfDetail;
 
 void renderSetCameraScissors(s32 top, s32 bottom, s32 left, s32 right);
+void renderSetMatrixHandler(MatrixHandler *handler);
 
 // Unnamed functions
 void func_8001663C(Gfx **arg0, void *arg1, s32 arg2);
