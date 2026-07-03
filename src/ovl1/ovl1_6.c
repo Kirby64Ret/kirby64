@@ -5,8 +5,7 @@
 #include "ovl1_8.h"
 #include "unk_structs/D_800DE350.h"
 
-void initTrack(s32);
-extern s32 D_800EC9E0;
+#include "track.h"
 
 void func_800AE0F0(void) {
     s32 i;

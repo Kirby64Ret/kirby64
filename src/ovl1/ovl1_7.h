@@ -112,4 +112,6 @@ void func_800B158C(GObj *);
 void func_800B175C(GObj *gobj);
 void func_800B1C7C(GObj *gobj);
 
+void curObjSleepForever(void);
+
 #endif // OVL1_7_H

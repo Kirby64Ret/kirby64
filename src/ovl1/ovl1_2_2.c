@@ -1,8 +1,10 @@
 #include "common.h"
 
+#include "ovl1_2.h"
+#include "ovl1_2_2.h"
+
 extern u8 sMusicNames[][0x18];
 extern u8 sSoundNames[][0x18];
-extern u32 sMusicCount, sSoundCount;
 extern s16 D_800C0040[];
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2_2/func_800A74B0.s")

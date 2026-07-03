@@ -11,13 +11,10 @@
 #include "buffers.h"
 #include "ovl2/ovl2_8.h"
 #include "unk_structs/D_800D79D8.h"
+#include "main/anim.h"
 #include "Player.h"
 
 // wherever ovl0_3 or code_CA90 is
-extern void animSetModelAnimationSpeed(GObj *, f32);
-extern void animSetTextureAnimationSpeed(GObj *, f32);
-extern void animSetModelTreeAnimation(GObj *, GObj *, f32);
-extern void animSetModelTreeTextureAnimation(GObj *, GObj *, f32);
 
 extern u32 gNewEntityStackSize;
 

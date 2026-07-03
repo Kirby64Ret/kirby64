@@ -17,7 +17,8 @@ f32 atan2f(f32, f32);
 #define seconds * 30
 #define second seconds
 
-extern u16 random_u16(void);
+u16 random_u16(void);
+u16 random_soft_u16(void);
 void set_hard_rng_seed(s32 seed);
 
 #endif // _MATH_H_

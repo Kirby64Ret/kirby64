@@ -11,10 +11,8 @@
 void func_800A82C0(void) {
     s32 temp_t8;
 
-    temp_t8 = (gDynamicBuffer2.top + 0xFF) & ~0xFF;
-    D_800D7BB4 = temp_t8;
-    D_800D7BB0 = temp_t8;
-    D_800D7BB8 = gDynamicBuffer2.poolEnd - temp_t8;
+    D_800D7BB0 = D_800D7BB4 = (gDynamicBuffer2.top + 0xFF) & ~0xFF;
+    D_800D7BB8 = gDynamicBuffer2.poolEnd - D_800D7BB0;
     D_800D7C10 = 0x80400000;
 }
 #else

@@ -1,6 +1,14 @@
 #ifndef _SAVE_FILE_H
 #define _SAVE_FILE_H
 
+#define SAVE_CHECKSUM_MAGIC 0x97538642
+#define SAVE_INIT_MAGIC 0x99999999
+
+typedef enum {
+    SAVE_ACTION_LOAD = 0,
+    SAVE_ACTION_SAVE,
+} SaveAction;
+
 typedef struct {
 	/* 0x0; */  u32 world;
     /* 0x4; */  u32 level;
@@ -48,8 +56,17 @@ struct EEPROM {
 
 extern struct EEPROM gSaveBuffer1;
 extern struct EEPROM gSaveBuffer2;
+extern u32 saveCurrentLevel, saveCurrentWorld;
+extern s32 saveCurrentFileNum;
+extern u32 saveCurrentLevel;
+extern u32 saveCurrentWorld;
+extern s32 savePercentComplete;
+extern u32 saveCutscenesWatched;
 
-s32 check_cutscene_watched(s32 arg0);
-s32 set_cutscene_watched(s32 scene, s32 fileNum);
+void saveSetHeaderChecksum(void);
+u32 saveCalcHeaderChecksum(void);
+s32 saveCheckCutsceneWatched(s32 arg0);
+s32 saveSetCutsceneWatched(s32 scene, s32 fileNum);
+void saveForceCompleteFile(s32 fileNum);
 
 #endif // _SAVE_FILE_H

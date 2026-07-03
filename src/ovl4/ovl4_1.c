@@ -7,12 +7,16 @@
 #include "main/object_manager.h"
 #include "main/rdp_reset.h"
 #include "main/vi.h"
+#include "ovl1/game.h"
 #include "ovl1/save_file.h"
+#include "ovl1/ovl1_2_2.h"
 #include "ovl1/ovl1_6.h"
+#include "ovl1/ovl1_7.h"
+#include "ovl1/track.h"
+#include "ovl1/util.h"
 #include "sounds.h"
 
 extern s32 D_800D6B24;
-extern f32 gameTicksPerDrawInv;
 extern s32 D_8015C680_ovl4;
 extern Lights1 D_800BE548;
 extern u16 gFrameBuffer[][320];
@@ -109,8 +113,8 @@ void func_800A6F68(
 );
 
 // forward decl
-void func_80151990_ovl4(s32 arg0);
-void func_80151A0C_ovl4(s32 arg0);
+void func_80151990_ovl4(GObj *arg0);
+void func_80151A0C_ovl4(GObj *arg0);
 
 // send to ovl1 bss
 extern u32 D_800D6B74;
@@ -120,7 +124,7 @@ extern s16 D_800D6B30;
 // send to ovl1 data
 extern s32 D_800BE4EC;
 
-void check_save_file_completion_cheat_code(s32 arg0) {
+void check_save_file_completion_cheat_code(Unused GObj *arg0) {
     if (gPlayerControllers[1].buttonHeld & L_TRIG) {
         switch (D_800E9C60[omCurrentObj->objId]) {
             case 0:
@@ -151,10 +155,10 @@ void check_save_file_completion_cheat_code(s32 arg0) {
             case 5:
                 if ((gPlayerControllers[1].buttonPressed & START_BUTTON)
                  && (gSaveBuffer1.files[2].cutscenesWatched == 1)
-                 && (gSaveBuffer1.files[2].level != 0x99999999)
-                 && (gSaveBuffer1.files[1].level == 0x99999999))
+                 && (gSaveBuffer1.files[2].level != SAVE_INIT_MAGIC)
+                 && (gSaveBuffer1.files[1].level == SAVE_INIT_MAGIC))
                 {
-                    save_file_set_to_full_completion(2);
+                    saveForceCompleteFile(2);
                     play_sound(SOUND_1UP1);
                     D_800E9C60[omCurrentObj->objId] = -1;
                 }
@@ -176,7 +180,7 @@ void func_80151274_ovl4(void) {
     gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
 }
 
-void func_80151338_ovl4(s32 arg0) {
+void func_80151338_ovl4(GObj *arg0) {
     gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
     gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
     switch (D_800E98E0[omCurrentObj->objId]) {
@@ -282,7 +286,7 @@ void func_80151338_ovl4(s32 arg0) {
     curObjSleepForever();
 }
 
-void func_80151990_ovl4(s32 arg0) {
+void func_80151990_ovl4(Unused GObj *arg0) {
     random_u16();
     random_soft_u16();
     if ((D_800D6B24 == 0) && (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON))) {
@@ -293,7 +297,7 @@ void func_80151990_ovl4(s32 arg0) {
     }
 }
 
-void func_80151A0C_ovl4(s32 arg0) {
+void func_80151A0C_ovl4(Unused GObj *arg0) {
     random_u16();
     random_soft_u16();
     D_800BE4EC++;
@@ -316,8 +320,7 @@ void func_80151A0C_ovl4(s32 arg0) {
 }
 
 void func_80151B08_ovl4(void) {
-    s32 temp_s0;
-    s32 temp_v1;
+    Unused s32 pad[2];
     s32 i;
 
     func_80007C00(&ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF)->data.cam->viewport,
