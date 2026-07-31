@@ -38,7 +38,7 @@ endif
 
 # Whether to output a .lst file containing the uopt pass
 #  Useful for figuring out register swaps
-USE_TRACING := 1
+USE_TRACING := 0
 ifeq ($(USE_TRACING),1)
 TRACING_FLAGS = -Wo,-l,$@.lst -Wo,-zdbug:7
 endif
