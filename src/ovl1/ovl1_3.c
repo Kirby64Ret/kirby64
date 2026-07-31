@@ -5,6 +5,15 @@
 #include "main/gtl.h"
 
 // All the filesystem loading magic happens here
+extern u32 **D_800D00C4[];
+
+// not in this file?
+extern u32 D_800DFA10[];
+extern u32 *D_800DFD90[];
+
+
+// In this file
+void func_800B1FD0(DObj *, u32, u32, u32, f32);
 
 #ifdef MIPS_TO_C
 
@@ -1521,41 +1530,34 @@ void func_800AA5C4(s32 arg0, ? arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA5C4.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+// https://decomp.me/scratch/fS0Iu
+void func_800AA608(DObj *dobj, s32 arg1, u32 arg2, u32 model, f32 arg4) {
+    u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
+    u32 *tmpPtr;
 
-void func_800AA608(void *arg0, s32 arg1, ? arg2, u32 arg3, f32 arg4) {
-    u32 *sp34;
-    u32 **sp30;
-    u32 **temp_a2;
-    u32 *temp_t0;
-    u32 *temp_v0;
-    u32 *var_a3;
-    u32 temp_v1;
-
-    D_800E02D0[omCurrentObj->objId] = arg3;
-    temp_a2 = *(&D_800D00C4 + ((arg3 >> 0x10) * 4)) + ((arg3 & 0xFFFF) * 4);
-    temp_t0 = *temp_a2;
-    if (temp_t0 != NULL) {
-        gSegment4StartArray[omCurrentObj->objId] = temp_t0;
-        sp34 = temp_t0;
-        func_800A8564(*temp_a2, 1, temp_a2);
-        var_a3 = sp34;
+    D_800E02D0[omCurrentObj->objId] = model;
+    if (*modelPtr != NULL) {
+        gSegment4StartArray[omCurrentObj->objId] = *modelPtr;
+        func_800A8564(*modelPtr, 1, modelPtr);
+        tmpPtr = *modelPtr;
     } else {
-        sp30 = temp_a2;
-        temp_v0 = func_800A9250(arg3, 3, temp_a2);
-        *temp_a2 = temp_v0;
-        var_a3 = temp_v0;
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0;
+        *modelPtr = func_800A9250(model, 3, modelPtr);
+        gSegment4StartArray[omCurrentObj->objId] = *modelPtr;
+        tmpPtr = *modelPtr;
     }
-    *(&D_800DFA10 + (omCurrentObj->objId * 4)) = var_a3->unk0;
-    *(&D_800DFD90 + (omCurrentObj->objId * 4)) = var_a3->unk4;
+    D_800DFA10[omCurrentObj->objId] = tmpPtr[0];
+    D_800DFD90[omCurrentObj->objId] = tmpPtr[1];
     func_800A9B48(arg1);
-    temp_v1 = omCurrentObj->objId;
-    func_800B1FD0(arg0, *D_800DF690[temp_v1], arg2, *(&D_800DFA10 + (temp_v1 * 4)), arg4);
-loop_4:
-    if (arg0->unk74 != -3.4028235e38f) {
+    func_800B1FD0(
+        dobj,
+        /* * */D_800DF690[omCurrentObj->objId],
+        arg2,
+        D_800DFA10[omCurrentObj->objId],
+        arg4
+    );
+    while (dobj->timeRemaining != -FLOAT_MAX) {
         ohSleep(1);
-        goto loop_4;
     }
 }
 #else
@@ -1587,7 +1589,6 @@ void func_800AA7D0(f32 arg1, u16 arg2) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800AA864(? arg1) {
     func_800AA7D0(0, arg1);
 }
@@ -1596,29 +1597,26 @@ void func_800AA864(? arg1) {
 #endif
 
 // Is current obj's model loaded?
-#ifdef MIPS_TO_C
 s32 func_800AA888(u32 model) {
-    if (gSegment4StartArray[omCurrentObj->objId] == *(*(&D_800D00C4 + ((model >> 0x10) * 4)) + ((model & 0xFFFF) * 4))) {
-        return 1;
-    }
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA888.s")
-#endif
+    u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
 
-extern u32 *D_800D00C4[][2];
-// Is model loaded?
-#ifdef MIPS_TO_C
-s32 func_800AA8E4(s32 track, u32 model) {
-    if (gSegment4StartArray[track] == D_800D00C4[model >> 0x10][model & 0xFFFF]) {
+    if (gSegment4StartArray[omCurrentObj->objId] == *modelPtr) {
         return 1;
+    } else {
+        return 0;
     }
-    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA8E4.s")
-#endif
+
+// Match History: https://decomp.me/scratch/wW3bP
+s32 func_800AA8E4(s32 track, u32 model) {
+    u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
+
+    if (gSegment4StartArray[track] == *modelPtr) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
 
 #ifdef MIPS_TO_C
 s32 func_800AA934(s32 arg0) {
