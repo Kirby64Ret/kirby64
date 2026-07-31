@@ -6,8 +6,8 @@
 #define SAVE_INIT_MAGIC 0x99999999
 
 
-void calc_header_checksum(void);
-u32 calc_save_header_checksum(void);
+void saveSetHeaderChecksum(void);
+u32 saveCalcHeaderChecksum(void);
 extern u16 D_800ECB00[];
 
 #ifdef NON_MATCHING
@@ -16,7 +16,7 @@ void func_800B86FC(void) {
     s32 phi_v1;
 
     func_80004D00_ovl1(0, &gSaveBuffer1, 0x118);
-    if (calc_save_header_checksum() != gSaveBuffer1.header.checksum) {
+    if (saveCalcHeaderChecksum() != gSaveBuffer1.header.checksum) {
         func_800B9008();
     }
     
@@ -27,7 +27,7 @@ void func_800B86FC(void) {
     }
 
     gSaveBuffer1.header.head[2] = i;
-    calc_header_checksum();
+    saveSetHeaderChecksum();
     func_800B8BDC();
 
     gSaveBuffer2 = gSaveBuffer1;
@@ -56,14 +56,14 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_9/func_800B8BDC.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_9/func_800B8C08.s")
 
-extern void calc_file_checksum(u32 fileNum);
+extern void saveSetFileChecksum(u32 fileNum);
 extern u8 D_800D5150[]; // TODO: get correct type for this
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_9/func_800B8C34.s")
 
 // delete save file?
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_9/func_800B8E00.s")
 
-s32 calc_save_file_checksum(u32 fileNum) {
+s32 saveCalcFileChecksum(u32 fileNum) {
     u32 *i = &gSaveBuffer1.files[fileNum];
     u32 *saveEnd = &gSaveBuffer1.files[fileNum].checksum;
     u32 resultBuffer = SAVE_CHECKSUM_MAGIC;
@@ -74,14 +74,14 @@ s32 calc_save_file_checksum(u32 fileNum) {
     return resultBuffer;
 }
 
-void calc_file_checksum(u32 arg0) {
-    gSaveBuffer1.files[arg0].checksum = calc_save_file_checksum(arg0);
+void saveSetFileChecksum(u32 arg0) {
+    gSaveBuffer1.files[arg0].checksum = saveCalcFileChecksum(arg0);
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_9/func_800B9008.s")
 
 #ifdef NON_MATCHING
-u32 calc_save_header_checksum(void) {
+u32 saveCalcHeaderChecksum(void) {
     s32 *i = gSaveBuffer1.header.head;
     s32 *saveEnd = &gSaveBuffer1.header.checksum;
     u32 resultBuffer = SAVE_CHECKSUM_MAGIC;
@@ -117,8 +117,8 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_9/func_800B9068.s")
 #endif
 
 
-void calc_header_checksum(void) {
-    gSaveBuffer1.header.checksum = calc_save_header_checksum();
+void saveSetHeaderChecksum(void) {
+    gSaveBuffer1.header.checksum = saveCalcHeaderChecksum();
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_9/func_800B9104.s")
@@ -135,7 +135,7 @@ extern u8 D_800BE5A8[];
 // verify save
 // calculates percent complete and more
 #ifdef MIPS_TO_C_
-void verify_save(s32 fileNum) {
+void saveVerify(s32 fileNum) {
     u32 i;
     u32 percent;
 
@@ -253,14 +253,14 @@ s32 func_800B9E4C(void) {
     return 0;
 }
 
-s32 check_cutscene_watched(s32 arg0) {
+s32 saveCheckCutsceneWatched(s32 arg0) {
     return (gCutscenesWatched >> arg0) & 1;
 }
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_9/func_800B9F64.s")
 
 
-s32 set_cutscene_watched(s32 arg0, s32 fileNum) {
+s32 saveSetCutsceneWatched(s32 arg0, s32 fileNum) {
     gCutscenesWatched |= (1 << arg0);
     
     if (fileNum >= 0 && fileNum < 3) {

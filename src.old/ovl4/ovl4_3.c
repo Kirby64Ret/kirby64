@@ -176,7 +176,7 @@ s32 func_8015874C_ovl4(void) {
     if (D_800D6BA8 != 0x64) {
         return 5;
     }
-    if (check_cutscene_watched(0xD) == 0) {
+    if (saveCheckCutsceneWatched(0xD) == 0) {
         return 5;
     }
     return 6;

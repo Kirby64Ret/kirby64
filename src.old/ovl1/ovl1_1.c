@@ -347,9 +347,9 @@ void game_tick(s32 arg0) {
                 }
                 continue;
             case 11:                                        /* switch 1 */
-                if (check_cutscene_watched(1) == 0) {
+                if (saveCheckCutsceneWatched(1) == 0) {
                     utilLoadOverlay(4);
-                    set_cutscene_watched(1, D_800D6B88);
+                    saveSetCutsceneWatched(1, D_800D6B88);
                     func_800B9C50(D_800D6B88);
                     func_80154D60_ovl1(1, 2);
                 }
@@ -482,7 +482,7 @@ void game_tick(s32 arg0) {
                                     gGameState = 0x12;
                                     if (D_800D6BA8 == 0x64) {
                                         gGameState = 0xC;
-                                        if (check_cutscene_watched(0xD) == 0) {
+                                        if (saveCheckCutsceneWatched(0xD) == 0) {
                                             D_800BE500 = 6;
                                             D_800D6B98 = 6;
                                             // dereference?
@@ -490,7 +490,7 @@ void game_tick(s32 arg0) {
                                             D_800BE508 = 0;
                                             D_800D6B9C = 0;
                                             utilLoadOverlay(4);
-                                            set_cutscene_watched(0xD, D_800D6B88);
+                                            saveSetCutsceneWatched(0xD, D_800D6B88);
                                             func_800B9C50(D_800D6B88);
                                             func_80154D60_ovl1(0xD, 2);
                                             func_800A2D68();
@@ -543,19 +543,19 @@ void game_tick(s32 arg0) {
                 continue;
             case 18:                                        /* switch 1 */
                 utilLoadOverlay(4);
-                set_cutscene_watched(0x11, D_800D6B88);
-                set_cutscene_watched(0x13, D_800D6B88);
+                saveSetCutsceneWatched(0x11, D_800D6B88);
+                saveSetCutsceneWatched(0x13, D_800D6B88);
                 func_800B9C50(D_800D6B88);
                 func_80154D60_ovl1(0xE, 2);
                 gGameState = 1;
                 continue;
             case 19:                                        /* switch 1 */
                 utilLoadOverlay(4);
-                set_cutscene_watched(0xD, D_800D6B88);
-                set_cutscene_watched(0x11, D_800D6B88);
-                set_cutscene_watched(0x12, D_800D6B88);
-                set_cutscene_watched(0x13, D_800D6B88);
-                set_cutscene_watched(0x10, D_800D6B88);
+                saveSetCutsceneWatched(0xD, D_800D6B88);
+                saveSetCutsceneWatched(0x11, D_800D6B88);
+                saveSetCutsceneWatched(0x12, D_800D6B88);
+                saveSetCutsceneWatched(0x13, D_800D6B88);
+                saveSetCutsceneWatched(0x10, D_800D6B88);
                 func_800B9C50(D_800D6B88);
                 func_80154D60_ovl1(0xF, 0xA);
                 gGameState = 1;

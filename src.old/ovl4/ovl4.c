@@ -72,7 +72,7 @@ void check_save_file_completion_cheat_code(s32 arg0) {
                  && (gSaveBuffer1.files[2].level != 0x99999999)
                  && (gSaveBuffer1.files[1].level == 0x99999999))
                 {
-                    save_file_set_to_full_completion(2);
+                    saveForceCompleteFile(2);
                     play_sound(SOUND_1UP1);
                     D_800E9C60[omCurrentObj->objId] = -1;
                 }

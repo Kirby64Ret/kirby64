@@ -36,6 +36,13 @@ else
 	CROSS := mips64-elf-
 endif
 
+# Whether to output a .lst file containing the uopt pass
+#  Useful for figuring out register swaps
+USE_TRACING := 1
+ifeq ($(USE_TRACING),1)
+TRACING_FLAGS = -Wo,-l,$@.lst -Wo,-zdbug:7
+endif
+
 GCC := $(CROSS)gcc
 
 AS = $(CROSS)as
@@ -222,7 +229,7 @@ $(BUILD_DIR)/%.o: %.s
 $(BUILD_DIR)/%.o: %.c
 	@printf "    [CC] $<\n"
 	$(V)$(CC_CHECK) -Wno-unknown-pragmas -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
-	$(V)$(CC) -c $(CFLAGS) -o $@ $<
+	$(V)$(CC) -c $(CFLAGS) $(TRACING_FLAGS) -o $@ $<
 
 $(BUILD_DIR)/data/%.o: data/%.c
 	$(GCC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
@@ -236,7 +243,7 @@ DUMMY != $(MAKE) -C f3dex2 $(GRUCODE) PARENT_OUTPUT_DIR=../$(BUILD_DIR)/ ARMIPS=
 $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
 	@printf "    [CC] $<\n"
 	@$(CC_CHECK) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
-	$(V)$(CC) -c $(CFLAGS) -o $@ $<
+	$(V)$(CC) -c $(CFLAGS) $(TRACING_FLAGS) -o $@ $<
 
 $(BUILD_DIR)/$(UCODE_BASE_DIR)/%.o : $(UCODE_BASE_DIR)/%
 	$(OBJCOPY) -I binary -O elf32-big $< $@

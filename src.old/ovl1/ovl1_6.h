@@ -29,7 +29,7 @@ extern s32 *D_800E0650[];
 extern s32 D_800E1ED0[];
 extern void (*D_800DEDD0[])(struct GObj *);
 extern void (*D_800DEF90[])(s32);
-extern void (*D_800DF150[])(s32);
+extern void (*D_800DF150[])(struct GObj *);
 extern void (*D_800DF310[])(s32, s32, f32);
 extern u32 D_800DF850[];
 extern u32 D_800DF690[];
