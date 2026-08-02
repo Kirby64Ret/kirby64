@@ -32,7 +32,10 @@ extern void (*D_800DEF90[])(s32);
 extern void (*D_800DF150[])(struct GObj *);
 extern void (*D_800DF310[])(s32, s32, f32);
 extern u32 D_800DF850[];
-extern u32 D_800DF690[];
+extern union {
+    u32 as_u32;
+    u32 *as_u32p;
+} D_800DF690[];
 extern u32 *gSegment4StartArray[];
 
 // i think this is an array of pairs (2-length arrays) of pointers but cba to figure out syntax

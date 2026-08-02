@@ -1289,9 +1289,9 @@ s32 func_800A9C78(s32 arg0, s32 arg1) {
 #endif
 
 void func_800A9D64(s32 track) {
-    if (D_800DF690[track] != -1) {
-        func_800A8578(D_800DF690[track] | 2, D_800DF690[track]);
-        D_800DF690[track] = -1;
+    if (D_800DF690[track].as_u32 != -1) {
+        func_800A8578(D_800DF690[track].as_u32 | 2, D_800DF690[track].as_u32);
+        D_800DF690[track].as_u32 = -1;
     }
     if (D_800DF850[track] != -1) {
         func_800A8578(D_800DF850[track] | 2, D_800DF850[track]);
@@ -1553,7 +1553,7 @@ void func_800AA608(DObj *dobj, s32 arg1, f32 arg2, u32 model, f32 arg4) {
     func_800A9B48(arg1);
     func_800B1FD0(
         dobj,
-        *D_800DF690[omCurrentObj->objId],
+        *D_800DF690[omCurrentObj->objId].as_u32p,
         arg2,
         D_800DFA10[omCurrentObj->objId],
         arg4
