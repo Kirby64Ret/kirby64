@@ -35,4 +35,4 @@ jobs:
     - name: Prepare Kirby 64 for building
       run: make setup CROSS=mips-linux-gnu-
     - name: Build Kirby 64
-      run: make -j$(nproc) VERBOSE=0 CROSS=mips-linux-gnu-
+      run: make VERBOSE=1 CROSS=mips-linux-gnu-

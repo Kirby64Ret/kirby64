@@ -1532,32 +1532,37 @@ void func_800AA5C4(s32 arg0, ? arg1, f32 arg2) {
 
 #ifdef NON_MATCHING
 // https://decomp.me/scratch/fS0Iu
-void func_800AA608(DObj *dobj, s32 arg1, u32 arg2, u32 model, f32 arg4) {
-    u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
+void func_800AA608(DObj *dobj, s32 arg1, f32 arg2, u32 model, f32 arg4) {
     u32 *tmpPtr;
+    u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
 
     D_800E02D0[omCurrentObj->objId] = model;
     if (*modelPtr != NULL) {
-        gSegment4StartArray[omCurrentObj->objId] = *modelPtr;
-        func_800A8564(*modelPtr, 1, modelPtr);
+        u32 *tmp = *modelPtr;
+        gSegment4StartArray[omCurrentObj->objId] = tmp;
+        func_800A8564(*modelPtr, 1);
         tmpPtr = *modelPtr;
     } else {
-        *modelPtr = func_800A9250(model, 3, modelPtr);
-        gSegment4StartArray[omCurrentObj->objId] = *modelPtr;
-        tmpPtr = *modelPtr;
+        u32 *result = func_800A9250(model, 3);
+        *modelPtr = result;
+        gSegment4StartArray[omCurrentObj->objId] = result;
+        tmpPtr = result;
     }
     D_800DFA10[omCurrentObj->objId] = tmpPtr[0];
     D_800DFD90[omCurrentObj->objId] = tmpPtr[1];
     func_800A9B48(arg1);
     func_800B1FD0(
         dobj,
-        /* * */D_800DF690[omCurrentObj->objId],
+        *D_800DF690[omCurrentObj->objId],
         arg2,
         D_800DFA10[omCurrentObj->objId],
         arg4
     );
-    while (dobj->timeRemaining != -FLOAT_MAX) {
+
+sleep_loop:
+    if (dobj->timeRemaining != -FLOAT_MAX) {
         ohSleep(1);
+        goto sleep_loop;
     }
 }
 #else
