@@ -54,7 +54,7 @@ Vector *func_80019648(Vector *arg0, Vector *arg1);
 s32 vec3_compare_directions(Vector *arg0, Vector *arg1);
 s32 vec3_subtract_compare_directions(Vector *arg0, Vector *arg1, Vector *arg2);
 f32 func_800198C0(Vector *arg0, Vector *arg1, Vector *arg2, Vector *arg3);
-void func_800191F8(Vector *, Vector *, Vector *);
+void func_800191F8(Vector *, Vector *, f32);
 f32 lbvector_Len(Vector *arg0);
 
 #endif // LBVECTOR_H
