@@ -359,4 +359,35 @@ void func_80151CC8_ovl4(Gfx **gp) {
     gSPDisplayList((*gp)++, &D_8015A018_ovl4);
 }
 
+extern u16 D_803D6900[];
+extern u16 D_803FC100[];
+extern void auSetBGMVolume(s32 playerID, u32 vol);
+extern void func_800A74D8(void);
+extern void func_800BB3F0(void);
+
+#ifdef MIPS_TO_C
+// near-match: loop is 4x-unrolled by uopt with an extra rotation + the fill
+// constant cached in $s0 across calls; target rematerializes it in $v1 instead
+s32 func_80151CEC_ovl4(s32 arg0) {
+    s32 i;
+
+    D_800D6B54[2] = arg0;
+    D_800D6B74 = 1;
+    scRemovePostProcessFunc();
+    func_800A74D8();
+    auSetBGMVolume(0, 0x7800);
+    gameSetUpdateRate(2.0f);
+    D_8015A048_ovl4.zBuffer = (u16 *) D_8012EB00 - 0xC80;
+    viApplyScreenSettings(&D_8015A048_ovl4);
+    D_8015A064_ovl4.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
+    for (i = 0; i < 320 * 240; i++) {
+        D_803D6900[i + 0x1F80] = 1;
+        ((u16 *) gFrameBuffer)[i] = 1;
+    }
+    gtlCreateScene(&D_8015A064_ovl4);
+    func_800BB3F0();
+    return D_800D6B74;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_1/func_80151CEC_ovl4.s")
+#endif
