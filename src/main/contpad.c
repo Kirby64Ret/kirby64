@@ -312,7 +312,6 @@ void func_800046D0(s32 channel) {
 }
 
 void func_800046FC(s32 arg0, s32 arg1) {
-    ContEventChannelSlot *p;
     s32 i;
     OSMesg msg;
 
@@ -321,17 +320,16 @@ void func_800046FC(s32 arg0, s32 arg1) {
             break;
         }
     }
-    msg = (OSMesg)i;
     if (i == 4) {
+        msg = (OSMesg)i;
         osRecvMesg(&D_80048E10, &msg, OS_MESG_BLOCK);
-        p = &D_80048F60[(s32)msg];
+        i = (s32)msg;
     } else {
-        p = &D_80048F60[i];
-        p->busy = 1;
+        D_80048F60[i].busy = 1;
     }
-    p->evt.channel = arg0;
-    p->evt.unk10 = arg1;
-    osSendMesg(&contEventMQ, (OSMesg)&p->evt, OS_MESG_NOBLOCK);
+    D_80048F60[i].evt.channel = arg0;
+    D_80048F60[i].evt.unk10 = arg1;
+    osSendMesg(&contEventMQ, (OSMesg)&D_80048F60[i].evt, OS_MESG_NOBLOCK);
 }
 
 void func_800047B0(s32 arg0) {

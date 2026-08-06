@@ -68,6 +68,9 @@ FUNCLIST D_8022F618_ovl19 = {
 extern void func_80229100_ovl19(GObj *);
 extern void func_802294C4_ovl19(GObj *);
 
+// ovl1 extern
+extern void play_sound(s32);
+
 // ovl2 extern
 extern s32 func_80121828(f32, f32, f32, f32);
 extern void func_80153984_ovl3(void);

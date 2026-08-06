@@ -2035,15 +2035,15 @@ block_13:
 #endif
 
 void func_80154628_ovl6(void) {
-    s32 i;
+    GObj **p;
 
     D_8015A56C_ovl6 = NULL;
     D_8015A668_ovl6 = NULL;
     D_8015A66C_ovl6 = NULL;
     *D_8015A570_ovl6 = NULL;
     D_8015A574_ovl6 = NULL;
-    for (i = 0; i < 60; i++) {
-        D_8015A578_ovl6[i] = NULL;
+    for (p = D_8015A578_ovl6; p != &D_8015A578_ovl6[60]; p++) {
+        *p = NULL;
     }
     D_8015A568_ovl6 = 0;
     D_8015A7C0_ovl6 = NULL;

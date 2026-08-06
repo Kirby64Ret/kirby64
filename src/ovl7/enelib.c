@@ -2136,11 +2136,12 @@ f32 func_8019DA50_ovl7(void) {
 
 f32 func_8019DA70_ovl7(s32 arg0) {
     f32 var_f2 = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId], D_800E5F90[arg0], D_800E6BD0[arg0]);
+    f32 temp_f0_2;
+    f32 temp_f2;
 
     if (var_f2 == 9999.0f) {
-        f32 temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
-        f32 temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
-
+        temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
+        temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
         var_f2 = sqrtf((temp_f0_2 * temp_f0_2) + (temp_f2 * temp_f2));
     }
     return var_f2;
