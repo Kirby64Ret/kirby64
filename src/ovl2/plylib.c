@@ -24,11 +24,40 @@ extern u32 D_800D7010;
 
 // ovl2 data
 extern u8 D_80126E20[];
+extern s32 D_80126EF8[][0x90 / 4];
 
 // ovl2 bss
 extern u8 D_8012E7D7;
 extern u32 D_801290D0;
 
+struct UnkStruct800D6F18 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+};
+extern s32 D_800D6F34;
+extern s32 D_800D6F38;
+extern s32 D_800BE4F8;
+extern u32 D_800D7088;
+
+struct UnkStruct801290D8 {
+    u8 filler[0x14];
+    u16 unk14;
+};
+extern struct UnkStruct801290D8 *D_801290D8;
+
+struct DestructAnimBank {
+    union AnimCmd ***unk0;
+    union AnimCmd ****unk4;
+};
+extern struct DestructAnimBank D_8012E7B0;
+
+f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3);
+void func_800FD754(s32 *arg0, f32 arg1, f32 arg2, f32 arg3);
+void animSetModelAnimation(struct DObj *dobj, union AnimCmd *animList, f32 time);
+void animSetTextureAnimation(struct MObj *mobj, union AnimCmd *animList, f32 time);
+void func_8012307C(s32 arg0, s32 arg1, f32 arg2, s32 arg3);
 void func_8011D0FC(struct DObj *ln, s32 arg1, u32 arg2);
 
 void *func_8011BA10(struct CollisionTriangle *tri, u32 arg1) {
@@ -80,132 +109,107 @@ struct DObj *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
     return D_800DFBD0[phi_a0][destructGroups->Unk_Index];
 }
 
-#ifdef MIPS_TO_C
-
-struct DObj *func_8011BB98(void *arg0, s32 arg1) {
-    s32 sp44;
-    s32 sp38;
-    ? sp2C;
-    s32 temp_lo;
-    struct DynGeo_List *temp_a3;
+struct DObj *func_8011BB98(struct CollisionTriangle *tri, u32 arg1) {
+    u32 i;
+    struct DynGeo_List *destructGroups;
     struct DObj *temp_s0;
-    struct struct8011BA10_temp *temp_v0;
-    struct vCollisionHeader *var_a2;
-    u16 *var_v1;
-    u32 var_a0;
-    u8 var_t1;
-    void *temp_v0_2;
+    struct vCollisionHeader *vColHeader;
+    u16 *destrucIndex;
+    u32 phi_t1;
+    Vector sp44;
+    Vector sp38;
+    Vector sp2C;
 
-    if (arg1 != 0x14) {
-        temp_v0 = &D_8012D948[arg1];
-        var_a2 = temp_v0->unk4;
-        var_t1 = temp_v0->unk1;
+    if (arg1 != 20) {
+        vColHeader = D_8012D948[arg1].unk4;
+        phi_t1 = D_8012D948[arg1].unk1;
     } else {
-        var_a2 = D_80129410;
-        var_t1 = D_801290D0;
+        vColHeader = D_8012940C.unk4;
+        phi_t1 = D_801290D0;
     }
-    var_a0 = 0;
-    temp_a3 = &var_a2->header.Destructable_Groups[arg0->unkA];
-    var_v1 = &var_a2->header.Destructable_Indices[temp_a3->Index_To_Dynamic_Geo_Group];
-    if (temp_a3->Num_Dynamic_Geo_Group_Members != 0) {
-        do {
-            var_a0 += 1;
-            temp_lo = *var_v1 * 0x14;
-            var_v1 += 2;
-            temp_v0_2 = var_a2->header.Triangles + temp_lo;
-            temp_v0_2->unk8 = temp_v0_2->unk8 & ~3;
-        } while (var_a0 < temp_a3->Num_Dynamic_Geo_Group_Members);
+
+    destructGroups = &vColHeader->header.Destructable_Groups[tri->collisionIndex];
+
+    destrucIndex = &vColHeader->header.Destructable_Indices[destructGroups->Index_To_Dynamic_Geo_Group];
+
+    for (i = 0; i < destructGroups->Num_Dynamic_Geo_Group_Members; i++) {
+        vColHeader->header.Triangles[*destrucIndex].normalType &= ~3;
+        destrucIndex++;
     }
-    temp_s0 = D_800DFBD0[var_t1][temp_a3->Unk_Index];
-    temp_s0->unk54 = 2;
-    if (arg0->unk10 == 0) {
-        utilGetTransformSRT(&sp44, temp_s0, var_a2, temp_a3);
-        func_800FD754(0, sp44, sp48, sp4C);
+
+    temp_s0 = D_800DFBD0[phi_t1][destructGroups->Unk_Index];
+    temp_s0->flags = 2;
+
+    if (tri->collisionParameter == 0) {
+        utilGetTransformSRT(&sp44, temp_s0);
+        func_800FD754(NULL, sp44.x, sp44.y, sp44.z);
     } else {
-        utilGetTransformSRT(&sp38, temp_s0, var_a2, temp_a3);
+        utilGetTransformSRT(&sp38, temp_s0);
         func_800A4DB8(&sp2C, temp_s0);
-        func_800A802C(0, 3, 0x36, &sp38, &sp2C);
+        func_800A802C(NULL, 3, 54, &sp38, &sp2C);
     }
     return temp_s0;
 }
-#else
-struct DObj *func_8011BB98(struct CollisionTriangle *tri, u32 arg1);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011BB98.s")
-#endif
 
 void func_8011BD08(struct CollisionTriangle *tri, u32 arg1) {
     func_8011BB98(tri, arg1);
     play_sound(SOUND_BGBRAKE1);
 }
 
-#ifdef MIPS_TO_C
-struct DObj *func_8011BD30(void *arg0, s32 arg1) {
+struct DObj *func_8011BD30(struct CollisionTriangle *tri, u32 arg1) {
+    u32 i;
+    struct DynGeo_List *destructGroups;
+    struct vCollisionHeader *vColHeader;
+    u16 *destrucIndex;
+    u32 phi_a3;
+    u16 idx;
     struct DObj *sp2C;
-    s32 *var_s1;
-    s32 temp_a1_2;
-    s32 temp_a1_3;
-    s32 temp_lo;
-    s32 temp_s0;
-    struct DynGeo_List *temp_a1;
-    struct DObj *temp_t3;
-    struct struct8011BA10_temp *temp_v0;
-    struct vCollisionHeader *var_a0;
-    u16 *var_v0;
-    u16 temp_v0_2;
-    u32 var_v1;
-    u8 var_a3;
-    void *var_s0;
+    union AnimCmd *anim;
+    union AnimCmd **list;
+    struct MObj *mobj;
 
-    if (arg1 != 0x14) {
-        temp_v0 = &D_8012D948[arg1];
-        var_a0 = temp_v0->unk4;
-        var_a3 = temp_v0->unk1;
+    if (arg1 != 20) {
+        vColHeader = D_8012D948[arg1].unk4;
+        phi_a3 = D_8012D948[arg1].unk1;
     } else {
-        var_a0 = D_80129410;
-        var_a3 = D_801290D0;
+        vColHeader = D_8012940C.unk4;
+        phi_a3 = D_801290D0;
     }
-    temp_a1 = &var_a0->header.Destructable_Groups[arg0->unkA];
-    var_v1 = 0;
-    var_v0 = &var_a0->header.Destructable_Indices[temp_a1->Index_To_Dynamic_Geo_Group];
-    if (temp_a1->Num_Dynamic_Geo_Group_Members != 0) {
-        do {
-            var_v1 += 1;
-            temp_lo = *var_v0 * 0x14;
-            var_v0 += 2;
-            (var_a0->header.Triangles + temp_lo)->unk10 = 0;
-        } while (var_v1 < temp_a1->Num_Dynamic_Geo_Group_Members);
+
+    destructGroups = &vColHeader->header.Destructable_Groups[tri->collisionIndex];
+
+    destrucIndex = &vColHeader->header.Destructable_Indices[destructGroups->Index_To_Dynamic_Geo_Group];
+
+    for (i = 0; i < destructGroups->Num_Dynamic_Geo_Group_Members; i++) {
+        vColHeader->header.Triangles[*destrucIndex].collisionParameter = 0;
+        destrucIndex++;
     }
-    temp_v0_2 = temp_a1->Unk_Index;
-    temp_s0 = temp_v0_2 * 4;
-    temp_t3 = D_800DFBD0[var_a3][temp_v0_2];
-    sp2C = temp_t3;
+
+    idx = destructGroups->Unk_Index;
+    sp2C = D_800DFBD0[phi_a3][idx];
     if (D_8012E7B0.unk0 != NULL) {
-        temp_a1_2 = *(*D_8012E7B0.unk0 + temp_s0);
-        if (temp_a1_2 != 0) {
-            animSetModelAnimation(temp_t3, temp_a1_2, 0, var_a3);
+        anim = (*D_8012E7B0.unk0)[idx];
+        if (anim != NULL) {
+            animSetModelAnimation(sp2C, anim, 0.0f);
         }
     }
     if (D_8012E7B0.unk4 != NULL) {
-        var_s1 = *(*D_8012E7B0.unk4 + temp_s0);
-        if ((var_s1 != NULL) && (*var_s1 != 0)) {
-            var_s0 = sp2C->unk80;
-            if (var_s0 != NULL) {
+        list = (*D_8012E7B0.unk4)[idx];
+        if ((list != NULL) && (*list != NULL)) {
+            mobj = sp2C->mobjList;
+            if (mobj != NULL) {
                 do {
-                    temp_a1_3 = *var_s1;
-                    if (temp_a1_3 != 0) {
-                        animSetTextureAnimation(var_s0, temp_a1_3, 0);
+                    if (*list != NULL) {
+                        animSetTextureAnimation(mobj, *list, 0.0f);
                     }
-                    var_s0 = *var_s0;
-                    var_s1 += 4;
-                } while (var_s0 != NULL);
+                    mobj = mobj->next;
+                    list++;
+                } while (mobj != NULL);
             }
         }
     }
     return sp2C;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011BD30.s")
-#endif
 
 u32 func_8011BED0(u16 arg0, u16 arg1, u16 arg2) {
     if ((arg0) == 9) {
@@ -344,15 +348,10 @@ block_18:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011BF4C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_8011C2A0(void *arg0) {
     play_sound(SOUND_BGBRAKE2);
-    func_8011BA10(arg0->unk84, 0x14);
+    func_8011BA10(*(struct CollisionTriangle **)((u32)arg0 + 0x84), 20);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C2A0.s")
-#endif
 
 void vec3_cross_product(Vector *v1, Vector *v2, Vector *dst) {
     dst->x = (v1->y * v2->z) - (v1->z * v2->y);
@@ -541,9 +540,9 @@ void func_8011C838(void) {
 }
 
 #ifdef MIPS_TO_C
-
 void func_8011C87C(void) {
-    void *var_a0;
+    u32 i;
+    struct UnkStruct800D6F18 *p = (struct UnkStruct800D6F18 *)(&D_800D6F10 + 2);
 
     gKirbyState.unk4 = 0;
     gKirbyState.isHoldingEntity = 0;
@@ -551,29 +550,22 @@ void func_8011C87C(void) {
     gKirbyState.secondInhale = 0;
     gKirbyState.firstInhale = 0;
     gKirbyState.currentInhale = 0;
-    var_a0 = &D_800D6ED0 + 0x48;
-    do {
-        var_a0 += 0x10;
-        var_a0->unk-C = 0;
-        var_a0->unk-8 = 0;
-        var_a0->unk-4 = 0;
-        var_a0->unk-10 = 0;
-    } while (var_a0 != &D_800D6F38);
-    *(&D_800D6ED0 + 0x40) = 0;
+    for (i = 0; i < 2; i++) {
+        p[i].unk4 = 0;
+        p[i].unk8 = 0;
+        p[i].unkC = 0;
+        p[i].unk0 = 0;
+    }
+    D_800D6F10 = 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C87C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_8011C8D0(void) {
     func_80105180(&gPositionState);
-    *(&D_800D6ED0 + 0x64) = 0;
+    D_800D6F34 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C8D0.s")
-#endif
 
 #ifdef MIPS_TO_C
 // plyInit
@@ -896,25 +888,19 @@ void func_8011D0FC(struct DObj *arg0, s32 kind, int arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D0FC.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_8011D40C(void) {
     if (D_800D6B54 == 0) {
         D_8012E7D7 = 1;
         change_kirby_hp(-6.0f);
         D_800D6B54 = 1;
-        D_800D6B58 = 0x96;
+        (&D_800D6B54)[1] = 0x96;
         D_800BE4F8 = 6;
         func_800FA414(6);
-        D_800D708C = D_801290D8->unk14;
-        func_80020998_ovl2(0, 0x7800);
+        (&D_800D7088)[1] = D_801290D8->unk14;
+        auSetBGMVolume(0, 0x7800);
         play_music(0, 5);
     }
 }
-#else
-// Needs a prototype to match func_801212A4
-void func_8011D40C(void);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D40C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1059,20 +1045,15 @@ s32 func_8011D858(void *arg0, s32 arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D858.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-f32 func_8011D9E0(? arg1, ? arg3) {
+f32 func_8011D9E0(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
     f32 temp_f0;
 
-    temp_f0 = func_800F951C(arg1, arg3, arg1, arg3);
+    temp_f0 = func_800F951C(arg0, arg1, arg2, arg3);
     if (temp_f0 == 9999.0f) {
-        return 9999.0f;
+        return 9999.0;
     }
     return temp_f0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D9E0.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1126,25 +1107,13 @@ void func_8011DAF8(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DAF8.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_8011DC04(void) {
-    func_800A77E8(&D_8012E818, &D_8012E81C);
+void func_8011DC04(u32 arg0) {
+    func_800A77E8(arg0, &D_8012E818, &D_8012E81C);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DC04.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8011DC30(void) {
-    func_800A77E8(&D_8012E820, &D_8012E824);
+void func_8011DC30(u32 arg0) {
+    func_800A77E8(arg0, &D_8012E820, &D_8012E824);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DC30.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8011DC5C(void) {
     if (gKirbyState.unk58 != 0) {
@@ -1158,11 +1127,6 @@ void func_8011DC5C(void) {
     gKirbyState.unk60 = 0;
     gKirbyState.unk64 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DC5C.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8011DCD0(void) {
     if (gKirbyState.unk60 != 0) {
@@ -1171,20 +1135,13 @@ void func_8011DCD0(void) {
     gKirbyState.unk60 = 0;
     gKirbyState.unk64 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DCD0.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_8011DD18(u32 arg0) {
     if ((gGameState != 0x21) && (arg0 != gKirbyState.ability)) {
         gKirbyState.ability = arg0;
         func_8012310C(arg0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DD18.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1346,7 +1303,6 @@ void func_8011E0E8(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E0E8.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_8011E190(void) {
     if (gGameState != 0x21) {
         if (gKirbyState.currentInhale != 0) {
@@ -1358,11 +1314,6 @@ void func_8011E190(void) {
         gKirbyState.currentInhale = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E190.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 s32 func_8011E1E8(s32 arg0, s32 arg1) {
     if (arg1 >= 8) {
@@ -1371,66 +1322,38 @@ s32 func_8011E1E8(s32 arg0, s32 arg1) {
     if (arg0 >= 8) {
         return arg0;
     }
-    return *(&D_80126EF8 + ((arg0 * 0x90) + (arg1 * 4)));
+    return D_80126EF8[arg0][arg1];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E1E8.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_8011E234(void) {
     D_8012E922 = 0x14;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E234.s")
-#endif
 
-#ifdef MIPS_TO_C
 u8 func_8011E244(void) {
-    if (*D_800E8920 == 1) {
+    if (D_800E8920[PLAYERTRACK] == 1) {
         return D_8012E9B8;
     }
     return 0x14;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E244.s")
-#endif
 
-#ifdef MIPS_TO_C
-s32 func_8011E270(void) {
-    if ((D_8012E8C2 == 0x12) || (D_8012E8C2 == 0x13)) {
+u8 func_8011E270(void) {
+    if (D_8012E8C2 == 0x12 || D_8012E8C2 == 0x13) {
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E270.s")
-#endif
 
-#ifdef MIPS_TO_C
 f32 func_8011E2A0(void) {
     f32 temp_f2;
-    f32 var_f6;
-    u16 temp_t9;
 
-    if (!(gKirbyState.isTurning & 0x4000)) {
-        temp_t9 = gKirbyState.unk114->unk10;
-        var_f6 = temp_t9;
-        if (temp_t9 < 0) {
-            var_f6 += 4294967296.0f;
-        }
-        temp_f2 = var_f6 * 0.1f;
+    if ((gKirbyState.isTurning & 0x4000) == 0) {
+        temp_f2 = (f32)gKirbyState.unk114->unk10 * 0.1f;
         if (temp_f2 != 0.0f) {
             return temp_f2 * 0.1f;
         }
-        /* Duplicate return node #5. Try simplifying control flow for better match */
-        return 0.0f;
     }
     return 0.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E2A0.s")
-#endif
 
 void func_8011E31C(Vector *v) {
     v->x = gPositionState.kirbyHeadPos[0];
@@ -1438,25 +1361,16 @@ void func_8011E31C(Vector *v) {
     v->z = gPositionState.kirbyHeadPos[2];
 }
 
-#ifdef MIPS_TO_C
 struct KirbyState_114 *func_8011E340(void) {
     if (gKirbyState.floorCollisionNext != 0) {
         return gKirbyState.unk114;
     }
     return NULL;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E340.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 s32 func_8011E368(void) {
-    return *(&D_800D6ED0 + 0x40);
+    return D_800D6F10;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E368.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2830,16 +2744,11 @@ s32 func_80121828(f32 arg0, f32 arg1, ? arg2, f32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121828.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_801219C8(void) {
     if (func_801215DC() == 2) {
         gKirbyState.isTurning |= 1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801219C8.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -3238,7 +3147,6 @@ block_16:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801226FC.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_801229D0(void) {
     if (gPositionState.byteArray[2] != 0x14) {
         D_8012E922 = gPositionState.byteArray[2];
@@ -3248,9 +3156,6 @@ void func_801229D0(void) {
         D_8012E922 = gPositionState.byteArray[3];
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801229D0.s")
-#endif
 
 #ifdef NON_MATCHING
 extern s32 D_80128420[];
@@ -3426,19 +3331,14 @@ block_18:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80122CE8.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80122F08(s32 arg0) {
+void func_80122F08(u32 arg0) {
     if ((arg0 == 0x20007) || (arg0 == 0x20008) || (arg0 == 0x20009)) {
-        func_800A9760();
+        func_800A9760(arg0);
     } else {
-        func_800A8EC0();
+        func_800A8EC0(arg0);
     }
     func_800AFA88(omCurrentObj);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80122F08.s")
-#endif
 
 void set_kirby_action_1(s32 actionChange, s32 action) {
     if (actionChange != 0xFFFF) {
@@ -3497,26 +3397,16 @@ void func_8012307C(s32 arg0, s32 arg1, f32 arg2, s32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8012307C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_801230E8(s32 arg0, s32 arg1, s32 arg2) {
-    func_8012307C(0, arg2);
+    func_8012307C(arg0, arg1, 0.0f, arg2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801230E8.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8012310C(s32 currentInhale) {
     if (currentInhale != 0) {
         play_sound(0x104);
     }
-    func_800BC298(currentInhale, currentInhale);
+    func_800BC298(currentInhale);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8012310C.s")
-#endif
 
 #ifdef MIPS_TO_C
 

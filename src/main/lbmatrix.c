@@ -1306,7 +1306,6 @@ void HS64_MtxRotateRPYTranslateDegrees(Mtx* m, f32 dx, f32 dy, f32 dz, f32 r, f3
 
 // File split between lbmatrix and interpolation?
 
-#ifdef MIPS_TO_C
 void func_8001D3D0(Vector* out, Vector* pts, f32 s, f32 u) {
     f32 u2, u3;
     f32 b0, b1, b2, b3;
@@ -1321,9 +1320,6 @@ void func_8001D3D0(Vector* out, Vector* pts, f32 s, f32 u) {
     out->y = pts[3].y * b3 + (pts[0].y * b0 + pts[1].y * b1 + pts[2].y * b2);
     out->z = pts[3].z * b3 + (pts[0].z * b0 + pts[1].z * b1 + pts[2].z * b2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D3D0.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8001D514(Vector* out, Vector* pts, f32 s, f32 u) {
@@ -1343,35 +1339,25 @@ void func_8001D514(Vector* out, Vector* pts, f32 s, f32 u) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D514.s")
 #endif
 
-#ifdef MIPS_TO_C
+extern f32 D_80040CC0;
+extern f32 D_80040CC4;
+extern f32 D_80040CC8;
+extern f32 D_80040CCC;
 
-void func_8001D6A0(void *arg0, void *arg1, f32 arg2) {
-    f32 spC;
-    f32 sp4;
-    f32 temp_f0;
-    f32 temp_f10;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    f32 temp_f6;
+void func_8001D6A0(Vector* out, Vector* pts, f32 u) {
+    f32 u2, u3;
+    f32 b0, b1, b2, b3;
 
-    temp_f2 = arg2 * arg2;
-    temp_f0 = 1.0f - arg2;
-    temp_f14 = temp_f2 * arg2;
-    temp_f6 = D_80040CC0 * temp_f14;
-    sp4 = temp_f6;
-    temp_f16 = D_80040CC4 * temp_f0 * temp_f0 * temp_f0;
-    temp_f18 = (((3.0f * temp_f14) - (6.0f * temp_f2)) + 4.0f) * D_80040CC8;
-    temp_f10 = ((((temp_f2 - temp_f14) + arg2) * 3.0f) + 1.0f) * D_80040CCC;
-    spC = temp_f10;
-    arg0->unk0 = (arg1->unk24 * temp_f6) + ((arg1->unk0 * temp_f16) + (arg1->unkC * temp_f18) + (arg1->unk18 * temp_f10));
-    arg0->unk4 = (arg1->unk28 * temp_f6) + ((arg1->unk4 * temp_f16) + (arg1->unk10 * temp_f18) + (arg1->unk1C * spC));
-    arg0->unk8 = (arg1->unk2C * temp_f6) + ((arg1->unk8 * temp_f16) + (arg1->unk14 * temp_f18) + (arg1->unk20 * spC));
+    u2 = u * u;
+    u3 = u2 * u;
+    b3 = D_80040CC0 * u3;
+    b0 = D_80040CC4 * (1.0f - u) * (1.0f - u) * (1.0f - u);
+    b1 = ((3.0f * u3) - (6.0f * u2) + 4.0f) * D_80040CC8;
+    b2 = (((u2 - u3) + u) * 3.0f + 1.0f) * D_80040CCC;
+    out->x = pts[3].x * b3 + (pts[0].x * b0 + pts[1].x * b1 + pts[2].x * b2);
+    out->y = pts[3].y * b3 + (pts[0].y * b0 + pts[1].y * b1 + pts[2].y * b2);
+    out->z = pts[3].z * b3 + (pts[0].z * b0 + pts[1].z * b1 + pts[2].z * b2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D6A0.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8001D800(void *arg0, void *arg1, f32 arg2) {

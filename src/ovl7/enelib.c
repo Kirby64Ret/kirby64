@@ -21,6 +21,18 @@
 // helplib.h
 void func_800F88C8(s32, s32, f32);
 
+// ovl1_7
+void func_800B3520(void);
+
+// ovl2_3
+s32 func_800F9888(s32 *, f32);
+
+// audio
+void auSetBGMVolumeSmooth(s32, u32, u32);
+
+extern f32 gKirbyHp;
+extern s32 D_800BE544;
+
 // plylib?
 extern Lights1 D_800BE550, D_800BE548;
 
@@ -36,6 +48,17 @@ void func_801AC364_ovl7(GObj *);
 void func_801A69B0_ovl7(GObj *);
 void func_801AC448_ovl7(GObj *);
 void func_801A6DF0_ovl7(GObj *);
+void func_801A3E80_ovl7(GObj *);
+void func_801A6C10_ovl7(GObj *);
+
+// ovl9
+void func_8020C710_ovl9(GObj *);
+
+// forward declared
+f32 func_8019B608_ovl7(s32 track);
+void func_8019BC94_ovl7(void);
+void func_8019C79C_ovl7(void);
+void func_8019CD68_ovl7(void);
 
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80198880_ovl7.s")
@@ -317,61 +340,37 @@ void func_80199568_ovl7(void) {
     func_80198B98_ovl7();
 }
 
-#ifdef MIPS_TO_C
-s32 func_80199628_ovl7(s32 arg0) {
-    s32 var_v0;
-    u32 temp_v1;
-    void (*temp_a1)(GObj *);
+s32 func_80199628_ovl7(Unused GObj *gobj) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-    temp_v1 = omCurrentObj->objId;
-    temp_a1 = D_800E1B50[temp_v1]->unk9C;
-    var_v0 = 0;
-    if (temp_a1 != NULL) {
-        assign_new_process_entry(gEntityGObjProcessArray[temp_v1], temp_a1);
-        var_v0 = 1;
+    if (ent->unk9C != NULL) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], ent->unk9C);
+        return 1;
     }
-    return var_v0;
+    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199628_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_80199688_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *temp_a0;
-    u32 temp_v0;
+void func_80199688_ovl7(Unused GObj *gobj) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a0 = D_800E1B50[temp_v0];
-    D_800E83E0[temp_v0] = 1;
-    if (temp_a0->unk44 == 0) {
-        temp_a0->unk44 = 1;
+    D_800E83E0[omCurrentObj->objId] = 1;
+    if (ent->unk44 == 0) {
+        ent->unk44 = 1;
     }
     gEntityFuncListIDArray[omCurrentObj->objId] = -1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A69B0_ovl7);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A69B0_ovl7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199688_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80199724_ovl7(Unused GObj *gobj) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-void func_80199724_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *temp_a0;
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    temp_a0 = D_800E1B50[temp_v0];
-    D_800E83E0[temp_v0] = 1;
-    if (temp_a0->unk44 == 0) {
-        temp_a0->unk44 = 1;
+    D_800E83E0[omCurrentObj->objId] = 1;
+    if (ent->unk44 == 0) {
+        ent->unk44 = 1;
     }
     gEntityFuncListIDArray[omCurrentObj->objId] = -1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A6DF0_ovl7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199724_ovl7.s")
-#endif
 
 void func_801997C0_ovl7(s32 arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -396,35 +395,22 @@ void func_8019985C_ovl7(Unused GObj *gobj) {
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A69B0_ovl7);
 }
 
-#ifdef MIPS_TO_C
+void func_80199918_ovl7(Unused GObj *gobj) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-void func_80199918_ovl7(s32 arg0) {
-    D_800E1B50[omCurrentObj->objId]->unk40 = 1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+    ent->unk40 = 1;
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A3E80_ovl7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199918_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80199980_ovl7(s32 arg0) {
+void func_80199980_ovl7(Unused GObj *gobj) {
     gEntityFuncListIDArray[omCurrentObj->objId] = -1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6C10_ovl7);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A6C10_ovl7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199980_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_801999DC_ovl7(s32 arg0) {
+void func_801999DC_ovl7(Unused GObj *gobj) {
     gEntityFuncListIDArray[omCurrentObj->objId] = -1;
-    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8020C710_ovl9);
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_8020C710_ovl9);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_801999DC_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -756,15 +742,10 @@ void func_8019A740_ovl7(Unused GObj *gobj) {
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC448_ovl7);
 }
 
-#ifdef MIPS_TO_C
-
-void func_8019A7A8_ovl7(s32 arg0) {
+void func_8019A7A8_ovl7(Unused GObj *gobj) {
     D_800EC2E0[omCurrentObj->objId].as_u32 = 1;
     func_800B3520();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A7A8_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1092,19 +1073,14 @@ void func_8019B2C0_ovl7(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B2C0_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_8019B3C8_ovl7(s32 arg0) {
-    D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.x = 0.0f;
-    D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.z = 0.0f;
+void func_8019B3C8_ovl7(Unused GObj *gobj) {
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = 0.0f;
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 0.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B3C8_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8019B424_ovl7(s32 arg0) {
     UnkStruct800E1B50 *sp24;
+    f32 sp20;
     s32 sp1C;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -1112,14 +1088,10 @@ void func_8019B424_ovl7(s32 arg0) {
         func_80199F1C_ovl7(arg0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B424_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8019B4BC_ovl7(s32 arg0) {
     UnkStruct800E1B50 *sp24;
+    f32 sp20;
     s32 sp1C;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -1130,17 +1102,10 @@ void func_8019B4BC_ovl7(s32 arg0) {
         func_80199F1C_ovl7(arg0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B4BC_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8019B570_ovl7(s32 arg0) {
+void func_8019B570_ovl7(Unused GObj *gobj) {
     func_800AFBB4(0, omCurrentObj);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B570_ovl7.s")
-#endif
 
 void func_8019B59C_ovl7(s32 arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId] + ((D_800E6A10[omCurrentObj->objId] == 1.0f) ? -M_PIF/2 : M_PIF/2);
@@ -1185,26 +1150,22 @@ s32 eneCheckNearPlayer(f32 distanceSq) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneCheckNearPlayer.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_8019B7D8_ovl7(void) {
     UnkStruct800E1B50 *temp_v0;
     struct Sub800E1B50_Unk88 *temp_v1;
-    u32 temp_v0_2;
+    void (*temp_v0_2)(void);
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
     if (temp_v0 != NULL) {
         temp_v1 = temp_v0->unk88;
         if (temp_v1 != NULL) {
-            temp_v0_2 = temp_v1->unk8;
-            if (temp_v0_2 != 0) {
+            temp_v0_2 = (void (*)(void)) temp_v1->unk8;
+            if (temp_v0_2 != NULL) {
                 temp_v0_2();
             }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B7D8_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1304,23 +1265,15 @@ void func_8019BBEC_ovl7(void) {
     }
 }
 
-#ifdef MIPS_TO_C
-
 void func_8019BC34_ovl7(f32 arg0) {
-    UnkStruct800E1B50 *sp1C;
-    UnkStruct800E1B50 *temp_v0;
+    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    f32 *tmp = &arg0;
+    f32 two = 2.0f;
 
-    temp_v0 = D_800E1B50[omCurrentObj->objId];
-    temp_v0->unk1C = arg0;
-    sp1C = temp_v0;
+    ent->unk1C = *tmp;
     func_8019BC94_ovl7();
-    temp_v0->unk1C = arg0 * 2.0f;
+    ent->unk1C = *tmp * two;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019BC34_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8019BC94_ovl7(void) {
     UnkStruct800E1B50 *sp2C;
@@ -1334,16 +1287,13 @@ void func_8019BC94_ovl7(void) {
     sp24 = D_800E5F90[temp_v0];
     sp2C = temp_a2;
     sp28 = D_800E6BD0[omCurrentObj->objId];
-    if (func_800F9888(&sp24, D_800E6A10[temp_v0] * temp_a2->unk1C, temp_a2) == 0) {
+    if (func_800F9888(&sp24, D_800E6A10[temp_v0] * temp_a2->unk1C) == 0) {
         sp2C->unk2C = sp24;
         sp2C->unk28 = sp28;
         return;
     }
     sp2C->unk2C = -1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019BC94_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1647,28 +1597,15 @@ void eneTurnCommon2(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneTurnCommon2.s")
 #endif
 
-#ifdef MIPS_TO_C
+void func_8019C6AC_ovl7(Unused GObj *gobj) {
+    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-void func_8019C6AC_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *temp_v1;
-    s32 var_v0;
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    var_v0 = temp_v0 * 4;
-    temp_v1 = D_800E1B50[temp_v0];
-    if (temp_v1->unk3C == 0) {
-        temp_v1->unk3C = 1;
-        var_v0 = omCurrentObj->objId * 4;
+    if (ent->unk3C == 0) {
+        ent->unk3C = 1;
     }
-    *(D_800E6690 + var_v0) = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
     func_8019C79C_ovl7();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C6AC_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8019C71C_ovl7(f32 arg0) {
     UnkStruct800E1B50 *sp1C;
@@ -1681,11 +1618,6 @@ void func_8019C71C_ovl7(f32 arg0) {
         D_800E6690[temp_v0] = D_800E6A10[temp_v0] * arg0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C71C_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8019C79C_ovl7(void) {
     UnkStruct800E1B50 *sp2C;
@@ -1699,16 +1631,13 @@ void func_8019C79C_ovl7(void) {
     sp24 = D_800E5F90[temp_v0];
     sp2C = temp_a2;
     sp28 = D_800E6BD0[omCurrentObj->objId];
-    if (func_800F9888(&sp24, -D_800E6A10[temp_v0] * temp_a2->unk1C, temp_a2) == 0) {
+    if (func_800F9888(&sp24, -D_800E6A10[temp_v0] * temp_a2->unk1C) == 0) {
         sp2C->unk2C = sp24;
         sp2C->unk28 = sp28;
         return;
     }
     sp2C->unk2C = -1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C79C_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8019C844_ovl7(void *arg0) {
@@ -1846,21 +1775,15 @@ block_21:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C9B0_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_8019CD08_ovl7(f32 arg0) {
-    UnkStruct800E1B50 *sp1C;
-    UnkStruct800E1B50 *temp_v0;
+    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    f32 *tmp = &arg0;
+    f32 two = 2.0f;
 
-    temp_v0 = D_800E1B50[omCurrentObj->objId];
-    temp_v0->unk1C = arg0;
-    sp1C = temp_v0;
+    ent->unk1C = *tmp;
     func_8019CD68_ovl7();
-    temp_v0->unk1C = arg0 * 2.0f;
+    ent->unk1C = *tmp * two;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019CD08_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8019CD68_ovl7(void) {
@@ -2246,14 +2169,11 @@ void func_8019D958_ovl7(u16 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D958_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
+f32 func_8019DA70_ovl7(s32 track);
 
-void func_8019DA50_ovl7(void) {
-    func_8019DA70_ovl7(0);
+f32 func_8019DA50_ovl7(void) {
+    return func_8019DA70_ovl7(0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DA50_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2312,117 +2232,68 @@ s32 reqChildEneTrk(u8 arg0, u8 arg1, u8 arg2) {
     }
 }
 
-#ifdef MIPS_TO_C
-
 s32 func_8019DD78_ovl7(u8 arg0, s32 arg1) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    s32 temp_a1;
-    s32 temp_v0;
+    s32 track;
 
-    temp_v0 = request_track_general(0x17, 0x1E, 0x3C);
-    if ((temp_v0 >= 0x3C) || (temp_v0 == -1)) {
-        func_800B1900(temp_v0 & 0xFFFF);
+    track = request_track_general(0x17, 0x1E, 0x3C);
+    if ((track >= 0x3C) || (track == -1)) {
+        func_800B1900(track);
         return -1;
     }
-    D_800E76C0[temp_v0] = 0xFF;
-    D_800E7730[temp_v0] = 0;
-    D_800E77A0[temp_v0] = arg0;
-    D_800E7880[temp_v0] = arg1;
-    temp_a1 = D_800E5F90[omCurrentObj->objId];
-    D_800E6150[temp_v0] = temp_a1;
-    D_800E5F90[temp_v0] = temp_a1;
-    temp_f0 = D_800E6BD0[omCurrentObj->objId];
-    D_800E6D90[temp_v0] = temp_f0;
-    D_800E6BD0[temp_v0] = temp_f0;
-    temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId];
-    gEntitiesPosXArray[temp_v0] = temp_f0_2;
-    gEntitiesNextPosXArray[temp_v0] = temp_f0_2;
-    temp_f0_3 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    gEntitiesPosYArray[temp_v0] = temp_f0_3;
-    gEntitiesNextPosYArray[temp_v0] = temp_f0_3;
-    temp_f0_4 = gEntitiesNextPosZArray[omCurrentObj->objId];
-    gEntitiesPosZArray[temp_v0] = temp_f0_4;
-    gEntitiesNextPosZArray[temp_v0] = temp_f0_4;
-    D_800E0D50[temp_v0] = omCurrentObj->objId;
-    return temp_v0;
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = 0;
+    D_800E77A0[track] = arg0;
+    D_800E7880[track] = arg1;
+    D_800E5F90[track] = D_800E6150[track] = D_800E5F90[omCurrentObj->objId];
+    D_800E6BD0[track] = D_800E6D90[track] = D_800E6BD0[omCurrentObj->objId];
+    gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesNextPosYArray[track] = gEntitiesPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[track] = gEntitiesPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800E0D50[track] = omCurrentObj->objId;
+    return track;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DD78_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+s32 func_8019DF0C_ovl7(arg0, arg1)
+u8 arg0;
+s32 arg1;
+{
+    s32 track;
 
-s32 func_8019DF0C_ovl7(u8 arg0, s32 arg1) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    s32 temp_a1;
-    s32 temp_v0;
-
-    temp_v0 = request_track_general(0x19, 0x1E, 0x3C);
-    if ((temp_v0 >= 0x3C) || (temp_v0 == -1)) {
-        func_800B1900(temp_v0 & 0xFFFF);
+    track = request_track_general(0x19, 0x1E, 0x3C);
+    if ((track >= 0x3C) || (track == -1)) {
+        func_800B1900(track);
         return -1;
     }
-    D_800E76C0[temp_v0] = 0xFF;
-    D_800E7730[temp_v0] = 2;
-    D_800E77A0[temp_v0] = arg0;
-    D_800E7880[temp_v0] = arg1;
-    temp_a1 = D_800E5F90[omCurrentObj->objId];
-    D_800E6150[temp_v0] = temp_a1;
-    D_800E5F90[temp_v0] = temp_a1;
-    temp_f0 = D_800E6BD0[omCurrentObj->objId];
-    D_800E6D90[temp_v0] = temp_f0;
-    D_800E6BD0[temp_v0] = temp_f0;
-    temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId];
-    gEntitiesPosXArray[temp_v0] = temp_f0_2;
-    gEntitiesNextPosXArray[temp_v0] = temp_f0_2;
-    temp_f0_3 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    gEntitiesPosYArray[temp_v0] = temp_f0_3;
-    gEntitiesNextPosYArray[temp_v0] = temp_f0_3;
-    temp_f0_4 = gEntitiesNextPosZArray[omCurrentObj->objId];
-    gEntitiesPosZArray[temp_v0] = temp_f0_4;
-    gEntitiesNextPosZArray[temp_v0] = temp_f0_4;
-    D_800E0D50[temp_v0] = omCurrentObj->objId;
-    return temp_v0;
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = 2;
+    D_800E77A0[track] = arg0;
+    D_800E7880[track] = arg1;
+    D_800E5F90[track] = D_800E6150[track] = D_800E5F90[omCurrentObj->objId];
+    D_800E6BD0[track] = D_800E6D90[track] = D_800E6BD0[omCurrentObj->objId];
+    gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesNextPosYArray[track] = gEntitiesPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[track] = gEntitiesPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800E0D50[track] = omCurrentObj->objId;
+    return track;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DF0C_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+s32 func_8019E0A4_ovl7(s32 arg0, s32 arg1) {
+    s32 track = func_8019DF0C_ovl7(arg0, arg1);
 
-s32 func_8019E0A4_ovl7(void) {
-    s32 temp_v0;
-
-    temp_v0 = func_8019DF0C_ovl7();
-    if (temp_v0 != -1) {
-        D_800E8E60[temp_v0] = 1;
+    if (track != -1) {
+        D_800E8E60[track] = 1;
     }
-    return temp_v0;
+    return track;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019E0A4_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+s32 func_8019E0E8_ovl7(s32 arg0, s32 arg1) {
+    s32 track = func_8019DF0C_ovl7(arg0, arg1);
 
-s32 func_8019E0E8_ovl7(void) {
-    s32 temp_v0;
-
-    temp_v0 = func_8019DF0C_ovl7();
-    if (temp_v0 != -1) {
-        D_800E8E60[temp_v0] = 0;
+    if (track != -1) {
+        D_800E8E60[track] = 0;
     }
-    return temp_v0;
+    return track;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019E0E8_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2824,8 +2695,7 @@ void func_8019EBCC_ovl7(Unused GObj *gobj) {
     }
 }
 
-#ifdef MIPS_TO_C
-void func_8019EC14_ovl7(s32 arg0) {
+void func_8019EC14_ovl7(Unused GObj *gobj) {
     s8 temp_a0;
     struct UnkStruct800E1B50 *temp_v0;
     u32 temp_v1;
@@ -2838,9 +2708,6 @@ void func_8019EC14_ovl7(s32 arg0) {
         temp_v0->unk3B = -1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019EC14_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8019EC5C_ovl7(void *arg0) {
@@ -3047,17 +2914,12 @@ void func_8019F130_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019F130_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_8019F1EC_ovl7(void) {
     if (gKirbyHp > 0.0f) {
         D_800BE544 = -9999;
         auSetBGMVolumeSmooth(0, 0, 0x1E);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019F1EC_ovl7.s")
-#endif
 
 s32 func_8019F234_ovl7(s32 track) {
     if ((D_800E7B20[track] == 0.0f) || (D_800E8E60[track] == 1) || ((D_800DE350[track]->flags & GOBJ_FLAGS_HIDDEN))) {

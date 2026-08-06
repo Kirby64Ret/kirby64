@@ -3,11 +3,21 @@
 #include "common.h"
 #include "GObj.h"
 #include "main/gtl.h"
+#include "ovl1/ovl1_3.h"
+#include "ovl1/sprite.h"
+#include "ovl1/track.h"
 
 typedef struct {
-    u32 unk0;
-    u16 unk4;
-    u16 drawRate;
+    u16 unk0;
+    u8 unk2;
+    u8 unk3;
+    union {
+        u32 unk4;
+        struct {
+            u16 unk4hi;
+            u16 drawRate;
+        };
+    };
 } UnkStruct8015A560_ovl6;
 
 extern UnkStruct8015A560_ovl6 *D_8015A560_ovl6;
@@ -16,7 +26,55 @@ extern void *D_8015A694_ovl6;
 extern u32 D_800D6AB8[];
 
 extern Lights1 D_8015A670_ovl6;
-extern void *D_8015A56C_ovl6; // possible also a lights1?
+extern GObj *D_8015A56C_ovl6;
+
+extern u32 D_8015A7A8_ovl6;
+extern u32 D_8015A7AC_ovl6;
+extern u32 D_8015A7B0_ovl6;
+
+extern GObj *D_8015A570_ovl6[];
+extern GObj *D_8015A668_ovl6;
+extern GObj *D_8015A66C_ovl6;
+
+typedef struct {
+    u16 unk0;
+    u16 unk2;
+    u8 unk4;
+    u8 unk5;
+    u8 unk6;
+} UnkStruct8015A7B8_ovl6;
+
+extern UnkStruct8015A7B8_ovl6 D_8015A7B8_ovl6;
+extern UnkStruct8015A560_ovl6 *D_8015A7C0_ovl6;
+
+extern s32 D_8015A684_ovl6;
+extern GObjProcess *D_8015A688_ovl6;
+extern u32 D_8015A68C_ovl6;
+extern s32 D_8015A690_ovl6;
+extern s32 D_8015A698_ovl6;
+extern s32 D_8015A69C_ovl6;
+extern GObj *D_8015A6A0_ovl6;
+
+void func_8015170C_ovl6(GObj *gobj);
+void func_8015198C_ovl6(GObj *gobj);
+void func_801524C8_ovl6(GObj *gobj);
+void func_80152B28_ovl6(GObj *gobj);
+void func_80152B9C_ovl6(GObj *gobj);
+void func_80152C10_ovl6(GObj *gobj);
+void func_80152C84_ovl6(GObj *gobj);
+void func_801536A0_ovl6(GObj *gobj);
+void func_80153228_ovl6(s32 arg0);
+void func_801532F4_ovl6(GObj *gobj);
+void func_8015374C_ovl6(GObj *gobj);
+void func_8015392C_ovl6(GObj *gobj);
+void func_80153B34_ovl6(GObj *gobj);
+void func_80153B80_ovl6(GObj *gobj);
+void func_80153CBC_ovl6(GObj *gobj);
+void func_80153DC8_ovl6(GObj *gobj);
+void func_80153E1C_ovl6(s32 arg0);
+void func_801548A4_ovl6(void);
+void func_80154858_ovl6(void);
+void omGMoveObjDLHead(GObj *o, u8 link, s32 renderPri);
 
 void func_80151100_ovl6(void) {
     if (D_8015A694_ovl6 != 0) {
@@ -89,13 +147,9 @@ void func_801512F0_ovl6(void) {
     }
 }
 
-#ifdef MIPS_TO_C
 void func_801513C8_ovl6(void) {
     func_800A7A70(0, 0x40001, 0x40002);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801513C8_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1090,13 +1144,9 @@ void func_80152C84_ovl6(s32 *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152C84_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_80152CF8_ovl6(s32 arg0) {
+void func_80152CF8_ovl6(GObj *gobj) {
 
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152CF8_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_80152D00_ovl6(void *arg0) {
@@ -1273,16 +1323,9 @@ loop_11:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152EA8_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_80153040_ovl6(void) {
-    D_8015A7B0_ovl6 = 0;
-    D_8015A7AC_ovl6 = 0;
-    D_8015A7A8_ovl6 = 0;
+    D_8015A7A8_ovl6 = D_8015A7AC_ovl6 = D_8015A7B0_ovl6 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153040_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1355,17 +1398,12 @@ loop_4:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015314C_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 s32 func_801531FC_ovl6(void) {
     if (D_8015A7AC_ovl6 == D_8015A7B0_ovl6) {
         return 0;
     }
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801531FC_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1396,14 +1434,9 @@ void func_80153228_ovl6(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153228_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_801532CC_ovl6(void) {
     func_80153228_ovl6(D_8015A560_ovl6->unk3);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801532CC_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_801532F4_ovl6(void *arg0) {
@@ -1466,161 +1499,81 @@ loop_11:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801532F4_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_801533C0_ovl6(void) {
-    s32 sp1C;
+    GObj *sp1C;
 
     sp1C = omCurrentObj;
-    omCurrentObj = *(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4));
+    omCurrentObj = D_800DE350[D_8015A560_ovl6->unk3];
     func_800AA018(D_8015A560_ovl6->unk4);
     func_801532F4_ovl6(omCurrentObj);
     omCurrentObj = sp1C;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801533C0_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80153424_ovl6(void) {
-    s32 sp1C;
+    GObj *sp1C;
 
     sp1C = omCurrentObj;
-    omCurrentObj = *(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4));
+    omCurrentObj = D_800DE350[D_8015A560_ovl6->unk3];
     func_800AA018(D_8015A560_ovl6->unk4);
     omCurrentObj = sp1C;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153424_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8015347C_ovl6(void) {
-    (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk2C = &func_8015170C_ovl6;
+    D_800DE350[D_8015A560_ovl6->unk3]->onDraw = func_8015170C_ovl6;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015347C_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801534A8_ovl6(void) {
-    (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk2C = &func_8015198C_ovl6;
+    D_800DE350[D_8015A560_ovl6->unk3]->onDraw = func_8015198C_ovl6;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801534A8_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801534D4_ovl6(void) {
-    (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk2C = &func_80152B28_ovl6;
-    *(&D_8015A570_ovl6 + (D_8015A560_ovl6->unk3 * 4)) = *(&D_800DE350 + (D_8015A560_ovl6->unk4 * 4));
+    D_800DE350[D_8015A560_ovl6->unk3]->onDraw = func_80152B28_ovl6;
+    D_8015A570_ovl6[D_8015A560_ovl6->unk3] = D_800DE350[D_8015A560_ovl6->unk4];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801534D4_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80153530_ovl6(void) {
-    (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk2C = &func_80152B9C_ovl6;
-    *(&D_8015A570_ovl6 + (D_8015A560_ovl6->unk3 * 4)) = *(&D_800DE350 + (D_8015A560_ovl6->unk4 * 4));
+    D_800DE350[D_8015A560_ovl6->unk3]->onDraw = func_80152B9C_ovl6;
+    D_8015A570_ovl6[D_8015A560_ovl6->unk3] = D_800DE350[D_8015A560_ovl6->unk4];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153530_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8015358C_ovl6(void) {
-    (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk2C = &func_80152C10_ovl6;
-    *(&D_8015A570_ovl6 + (D_8015A560_ovl6->unk3 * 4)) = *(&D_800DE350 + (D_8015A560_ovl6->unk4 * 4));
+    D_800DE350[D_8015A560_ovl6->unk3]->onDraw = func_80152C10_ovl6;
+    D_8015A570_ovl6[D_8015A560_ovl6->unk3] = D_800DE350[D_8015A560_ovl6->unk4];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015358C_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801535E8_ovl6(void) {
-    (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk2C = &func_80152C84_ovl6;
-    *(&D_8015A570_ovl6 + (D_8015A560_ovl6->unk3 * 4)) = *(&D_800DE350 + (D_8015A560_ovl6->unk4 * 4));
+    D_800DE350[D_8015A560_ovl6->unk3]->onDraw = func_80152C84_ovl6;
+    D_8015A570_ovl6[D_8015A560_ovl6->unk3] = D_800DE350[D_8015A560_ovl6->unk4];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801535E8_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80153644_ovl6(void) {
-    (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk2C = &func_801524C8_ovl6;
+    D_800DE350[D_8015A560_ovl6->unk3]->onDraw = func_801524C8_ovl6;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153644_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80153670_ovl6(void) {
     func_800AAF34(0x10, D_8015A560_ovl6->unk4, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153670_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_801536A0_ovl6(s32 arg0) {
+void func_801536A0_ovl6(GObj *gobj) {
 
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801536A0_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801536A8_ovl6(void) {
-    void *temp_t9;
-
-    temp_t9 = *(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4));
-    D_8015A56C_ovl6 = temp_t9;
-    temp_t9->unk2C = &func_801536A0_ovl6;
+    D_8015A56C_ovl6 = D_800DE350[D_8015A560_ovl6->unk3];
+    D_8015A56C_ovl6->onDraw = func_801536A0_ovl6;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801536A8_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801536E0_ovl6(void) {
-    (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk2C = &func_801536A0_ovl6;
+    D_800DE350[D_8015A560_ovl6->unk3]->onDraw = func_801536A0_ovl6;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801536E0_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8015370C_ovl6(void) {
-    D_800D799C->unk3C->unk84 = D_8015A560_ovl6->unk4;
+    D_800D799C->data.cam->bgcolor = D_8015A560_ovl6->unk4;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015370C_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8015372C_ovl6(void) {
-    void *temp_v0;
-
-    temp_v0 = D_800D799C->unk3C;
-    temp_v0->unk80 = temp_v0->unk80 & ~2;
+    D_800D799C->data.cam->flags &= ~2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015372C_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1743,45 +1696,22 @@ void func_8015392C_ovl6(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015392C_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_80153A48_ovl6(void) {
-    void *temp_a0;
-
-    temp_a0 = *(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4));
-    D_8015A668_ovl6 = temp_a0;
-    omGMoveObjDLHead(temp_a0, 0x10, 1);
-    D_8015A668_ovl6->unk2C = &func_8015374C_ovl6;
+    D_8015A668_ovl6 = D_800DE350[D_8015A560_ovl6->unk3];
+    omGMoveObjDLHead(D_8015A668_ovl6, 0x10, 1);
+    D_8015A668_ovl6->onDraw = func_8015374C_ovl6;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153A48_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80153AA8_ovl6(void) {
-    void *temp_t9;
-    void *temp_v0;
-
-    temp_t9 = *(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4));
-    D_8015A66C_ovl6 = temp_t9;
-    temp_t9->unk2C = &func_801536A0_ovl6;
-    temp_v0 = D_800D799C->unk3C;
-    temp_v0->unk80 = temp_v0->unk80 | 2;
+    D_8015A66C_ovl6 = D_800DE350[D_8015A560_ovl6->unk3];
+    D_8015A66C_ovl6->onDraw = func_801536A0_ovl6;
+    D_800D799C->data.cam->flags |= 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153AA8_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80153AF8_ovl6(void) {
     play_music(0, 0x99999999);
     play_music(0, D_8015A560_ovl6->unk4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153AF8_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1850,23 +1780,16 @@ void func_80153CBC_ovl6(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153CBC_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_80153D10_ovl6(void) {
-    s32 sp1C;
-    s32 temp_t7;
+    GObj *sp1C;
 
     if (D_8015A690_ovl6 == 0) {
-        temp_t7 = omCurrentObj;
-        omCurrentObj = *(&D_800DE350 + 0xFC);
-        sp1C = temp_t7;
+        sp1C = omCurrentObj;
+        omCurrentObj = D_800DE350[0x3F];
         func_800AA018(D_8015A560_ovl6->unk4);
         omCurrentObj = sp1C;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153D10_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1995,51 +1918,33 @@ void func_8015405C_ovl6(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015405C_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_80154088_ovl6(void) {
-    s32 temp_a0;
-    void *temp_v0;
+    u32 temp_a0;
+    SPObj *temp_v0;
 
+    temp_v0 = D_800DE350[D_8015A560_ovl6->unk3]->unk4C;
     temp_a0 = D_8015A560_ovl6->unk4;
-    temp_v0 = (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk4C;
-    temp_v0->unk20 = (temp_a0 & 0xFFFF0000) >> 0x10;
-    temp_v0->unk24 = temp_a0 & 0xFFFF;
+    temp_v0->xOffset = (temp_a0 & 0xFFFF0000) >> 0x10;
+    temp_v0->yOffset = temp_a0 & 0xFFFF;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154088_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80154100_ovl6(void) {
-    s32 temp_t5;
-    void *temp_v0;
+    SPObj *temp_v0;
+    u32 temp_t5;
 
+    temp_v0 = D_800DE350[D_8015A560_ovl6->unk3]->unk4C;
     temp_t5 = D_8015A560_ovl6->unk4;
-    temp_v0 = (*(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4)))->unk4C;
-    temp_v0->unk14 = (temp_t5 & 0xFF000000) >> 0x18;
-    temp_v0->unk15 = (temp_t5 & 0xFF0000) >> 0x10;
-    temp_v0->unk16 = (temp_t5 & 0xFF00) >> 8;
-    temp_v0->unk17 = temp_t5;
+    temp_v0->primColorRed = (temp_t5 & 0xFF000000) >> 0x18;
+    temp_v0->primColorGreen = (temp_t5 & 0xFF0000) >> 0x10;
+    temp_v0->primColorBlue = (temp_t5 & 0xFF00) >> 8;
+    temp_v0->primColorAlpha = temp_t5 & 0xFF;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154100_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80154158_ovl6(void) {
-    void *temp_t6;
-
     D_8015A7C0_ovl6 = D_8015A560_ovl6;
-    temp_t6 = D_8015A560_ovl6->unk4;
-    D_8015A560_ovl6 = temp_t6;
-    D_8015A560_ovl6 = temp_t6 - 8;
+    D_8015A560_ovl6 = *(UnkStruct8015A560_ovl6 **)&D_8015A560_ovl6->unk4;
+    D_8015A560_ovl6--;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154158_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2052,42 +1957,26 @@ void func_80154180_ovl6(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154180_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_801541EC_ovl6(void) {
     func_8009C0E4();
     func_800A2024();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801541EC_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80154214_ovl6(void) {
-    s32 temp_v0;
+    u32 temp_v0;
 
     temp_v0 = D_8015A560_ovl6->unk4;
     D_8015A7B8_ovl6.unk4 = (temp_v0 & 0xFF000000) >> 0x18;
     D_8015A7B8_ovl6.unk5 = (temp_v0 & 0xFF0000) >> 0x10;
     D_8015A7B8_ovl6.unk6 = (temp_v0 & 0xFF00) >> 8;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154214_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80154258_ovl6(void) {
-    s32 temp_t9;
+    u32 temp_t9 = D_8015A560_ovl6->unk4;
 
-    temp_t9 = D_8015A560_ovl6->unk4;
     D_8015A7B8_ovl6.unk0 = (temp_t9 & 0xFFFF0000) >> 0x10;
-    D_8015A7B8_ovl6.unk2 = temp_t9;
+    D_8015A7B8_ovl6.unk2 = temp_t9 & 0xFFFF;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154258_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
