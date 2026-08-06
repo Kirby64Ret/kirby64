@@ -1126,3 +1126,4 @@ gOverlayTable = 0x800BE8A0;
 
 
 D_800D4FD0 = 0x800D4FD0; // type:s32
+D_800D7178 = 0x800D7178; // size:0x70

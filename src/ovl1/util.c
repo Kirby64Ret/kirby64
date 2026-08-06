@@ -38,9 +38,15 @@ extern u32 D_800BE4EC; // gameplay timer
     extern u32 utilRectBoundUlx, utilRectBoundUly, utilRectBoundLrx, utilRectBoundLry;
 // }
 
-extern u32 *D_800BE5CC; // n64piok
-extern u32 *D_800BE5C4; // ptport
-extern u32 *D_800BE5C8; // ptstat
+extern vu32 *D_800BE5CC; // n64piok
+extern vu32 *D_800BE5C4; // ptport
+extern vu32 *D_800BE5C8; // ptstat
+extern s32 D_800BE5C0;
+
+extern f32 D_800BE8F0[];
+extern f32 D_800BF8EC[];
+
+void func_800A4414(u8 c);
 
 void utilPrintf(char* fmt, ...) {
 
@@ -118,7 +124,6 @@ s32 func_800A428C(s32 arg0, u8 *arg1, s32 arg2) {
 #endif
 
 // copy of PartnerN64 putPT
-#ifdef MIPS_TO_C
 void func_800A4414(u8 c) {
     while (*D_800BE5CC & (PI_STATUS_IO_BUSY | PI_STATUS_DMA_BUSY)) {
         ;
@@ -128,9 +133,6 @@ void func_800A4414(u8 c) {
     }
     *D_800BE5C8 = c;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A4414.s")
-#endif
 
 // executes the virtual function at index arg0
 void utilFuncTableJump(u32 idx, u32 max, FUNCLIST callbackTbl) {
@@ -183,38 +185,34 @@ void utilWrapRotation(Vector *vec) {
 }
 
 // mtx order...........
-#ifdef NON_MATCHING
-void func_800A465C(f32 (*mf)[4], f32 x, f32 y, f32 z) {
-    f32 sinX = sinf(x);
-    f32 cosX = cosf(x);
-    f32 sinY = sinf(y);
-    f32 cosY = cosf(y);
-    f32 sinZ = sinf(z);
-    f32 cosZ = cosf(z);
+void func_800A465C(Mat4 mf, f32 x, f32 y, f32 z) {
+    f32 sinX, sinY, sinZ;
+    f32 cosX, cosY, cosZ;
 
+    sinX = sinf(x);
+    cosX = cosf(x);
+    sinY = sinf(y);
+    cosY = cosf(y);
+    sinZ = sinf(z);
+    cosZ = cosf(z);
+
+    mf[2][0] = sinY;
     mf[0][0] = cosZ * cosY;
     mf[0][1] = (sinZ * cosX) + ((cosZ * sinY) * sinX);
     mf[0][2] = (sinZ * sinX) - ((cosZ * sinY) * cosX);
-    mf[0][3] = 0.0f;
-
     mf[1][0] = -sinZ * cosY;
     mf[1][1] = (cosZ * cosX) - ((sinZ * sinY) * sinX);
     mf[1][2] = (cosZ * sinX) + ((sinZ * sinY) * cosX);
-    mf[1][3] = 0.0f;
-
-    mf[2][0] = sinY;
     mf[2][1] = -cosY * sinX;
     mf[2][2] = cosY * cosX;
-    mf[2][3] = 0.0f;
-
-    mf[3][0] = 0.0f;
-    mf[3][1] = 0.0f;
     mf[3][2] = 0.0f;
-    mf[3][3] = 1.0f;
+    mf[3][1] = 0.0f;
+    mf[3][0] = 0.0f;
+    mf[2][3] = 0.0f;
+    mf[1][3] = 0.0f;
+    mf[0][3] = 0.0f;
+    (*(Mat4 *)mf)[3][3] = 1.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A465C.s")
-#endif
 
 void utilGetTransformSRT(Vector *vec, DObj *dobj) {
     Mat4 finalMtx;
@@ -354,56 +352,31 @@ s32 func_800A4F48(void* arg0, Vector* vec, f32 arg2, f32 arg3) {
 }
 
 #ifdef MIPS_TO_C
+s32 func_800A509C(void *arg0, Vector *vec, f32 arg2, f32 arg3, f32 arg4) {
+    f32 x = vec->x;
+    f32 y = vec->y;
+    f32 z = vec->z;
+    f32 tmpX, tmpY, tmpZ, tmpInv;
+    s32 ret;
 
-s32 func_800A509C(s32 arg0, void *arg1, f32 arg2, f32 arg3, f32 arg4) {
-    f32 sp18;
-    f32 sp14;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f18;
-    f32 temp_f18_2;
-    f32 temp_f20;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f4;
-    f32 var_f0;
-    f32 var_f2;
-    s32 var_v0;
-
-    temp_f0 = arg1->unk0;
-    temp_f2 = arg1->unk4;
-    temp_f18 = arg1->unk8;
-    temp_f4 = D_800D6ED0.unk34 + ((D_800D6ED0.unk4 * temp_f0) + (D_800D6ED0.unk14 * temp_f2) + (D_800D6ED0.unk24 * temp_f18));
-    sp18 = temp_f4;
-    sp14 = D_800D6ED0.unk38 + ((D_800D6ED0.unk8 * temp_f0) + (D_800D6ED0.unk18 * temp_f2) + (D_800D6ED0.unk28 * temp_f18));
-    var_v0 = 0;
-    temp_f20 = 1.0f / (D_800D6ED0.unk3C + ((D_800D6ED0.unkC * temp_f0) + (D_800D6ED0.unk1C * temp_f2) + (D_800D6ED0.unk2C * temp_f18)));
-    arg1->unk0 = (D_800D6ED0.unk30 + ((D_800D6ED0.unk0 * temp_f0) + (D_800D6ED0.unk10 * temp_f2) + (D_800D6ED0.unk20 * temp_f18))) * temp_f20;
-    arg1->unk4 = temp_f4 * temp_f20;
-    arg1->unk8 = sp14 * temp_f20;
+    tmpX = D_800D6ED0[3][0] + ((D_800D6ED0[0][0] * x) + (D_800D6ED0[1][0] * y) + (D_800D6ED0[2][0] * z));
+    tmpY = D_800D6ED0[3][1] + ((D_800D6ED0[0][1] * x) + (D_800D6ED0[1][1] * y) + (D_800D6ED0[2][1] * z));
+    tmpZ = D_800D6ED0[3][2] + ((D_800D6ED0[0][2] * x) + (D_800D6ED0[1][2] * y) + (D_800D6ED0[2][2] * z));
+    tmpInv = 1.0f / (D_800D6ED0[3][3] + ((D_800D6ED0[0][3] * x) + (D_800D6ED0[1][3] * y) + (D_800D6ED0[2][3] * z)));
+    vec->x = tmpX * tmpInv;
+    vec->y = tmpY * tmpInv;
+    vec->z = tmpZ * tmpInv;
+    ret = 0;
     if ((arg2 != 0.0f) && (arg3 != 0.0f) && (arg4 != 0.0f)) {
-        temp_f0_2 = arg1->unk0;
-        if (temp_f0_2 < 0.0f) {
-            var_f2 = -temp_f0_2;
-        } else {
-            var_f2 = temp_f0_2;
-        }
-        if (var_f2 < arg2) {
-            temp_f2_2 = arg1->unk4;
-            if (temp_f2_2 < 0.0f) {
-                var_f0 = -temp_f2_2;
-            } else {
-                var_f0 = temp_f2_2;
-            }
-            if (var_f0 < arg3) {
-                temp_f18_2 = arg1->unk8;
-                if ((temp_f18_2 > 0.0f) && (temp_f18_2 < arg4)) {
-                    var_v0 = 1;
+        if (ABSF(vec->x) < arg2) {
+            if (ABSF(vec->y) < arg3) {
+                if ((vec->z > 0.0f) && (vec->z < arg4)) {
+                    ret = 1;
                 }
             }
         }
     }
-    return var_v0;
+    return ret;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A509C.s")
@@ -428,108 +401,100 @@ void utilSetPlayerContPad(void) {
 }
 
 #ifdef MIPS_TO_C
-
 f32 func_800A52F0(f32 arg0, f32 arg1) {
-    f32 temp_f0;
-    f32 var_f12;
-    f32 var_f12_2;
-    f32 var_f14;
-    f32 var_f2;
-    s32 var_v0;
-    s32 var_v1;
+    f32 x = arg0;
+    f32 angle;
+    f32 absX;
+    f32 absY;
+    f32 base;
+    f32 limit;
+    f32 ret;
+    s32 yNeg;
+    s32 xNeg;
 
     if (arg0 < 0.0f) {
-        var_f12 = -arg0;
+        arg0 = -arg0;
     } else {
-        var_f12 = arg0;
+        arg0 = x;
     }
-    var_f14 = arg1;
+    absY = arg1;
     if (arg1 < 0.0f) {
-        var_f14 = -arg1;
+        absY = -arg1;
     }
-    temp_f0 = atan2f(var_f12, var_f14);
-    var_v1 = 0;
+    angle = atan2f(arg0, absY);
+    yNeg = 0;
     if (arg1 < 0.0f) {
-        var_v1 = 1;
+        yNeg = 1;
     }
-    if (var_v1 != 0) {
-        var_f12_2 = 3.1415927f;
-        var_v0 = 0;
-        if (arg0 < 0.0f) {
-            var_v0 = 1;
+    if (yNeg != 0) {
+        base = 3.1415927f;
+        xNeg = 0;
+        if (x < 0.0f) {
+            xNeg = 1;
         }
+        limit = 6.2831855f;
     } else {
-        var_v0 = 0;
-        if (arg0 < 0.0f) {
-            var_v0 = 1;
+        xNeg = 0;
+        if (x < 0.0f) {
+            xNeg = 1;
         }
-        if (var_v0 != 0) {
-            var_f12_2 = 6.2831855f;
+        if (xNeg != 0) {
+            limit = 6.2831855f;
+            base = limit;
         } else {
-            var_f12_2 = 0.0f;
+            base = 0.0f;
+            limit = 6.2831855f;
         }
     }
-    if (var_v1 != var_v0) {
-        var_f2 = var_f12_2 - temp_f0;
+    if (yNeg != xNeg) {
+        ret = base - angle;
     } else {
-        var_f2 = var_f12_2 + temp_f0;
+        ret = base + angle;
     }
-    if (var_f2 > 6.2831855f) {
-        var_f2 -= 6.2831855f;
+    if (ret > limit) {
+        ret -= limit;
     }
-    return var_f2;
+    return ret;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A52F0.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800A5404(void *arg0, char *bytestr) {
-    arg0->unk0 = arg0->unk4 = bytestr[0];
-    arg0->unk1 = arg0->unk5 = bytestr[1];
-    arg0->unk2 = arg0->unk6 = bytestr[2];
-    arg0->unk8 = arg0->unkC = bytestr[3];
-    arg0->unk9 = arg0->unkD = bytestr[4];
-    arg0->unkA = arg0->unkE = bytestr[5];
-    arg0->unk10 = bytestr[6];
-    arg0->unk11 = bytestr[7];
-    arg0->unk12 = bytestr[8];
+void func_800A5404(u8 *arg0, u8 *arg1) {
+    arg0[0x0] = arg0[0x4] = arg1[0];
+    arg0[0x1] = arg0[0x5] = arg1[1];
+    arg0[0x2] = arg0[0x6] = arg1[2];
+    arg0[0x8] = arg0[0xC] = arg1[3];
+    arg0[0x9] = arg0[0xD] = arg1[4];
+    arg0[0xA] = arg0[0xE] = arg1[5];
+    arg0[0x10] = arg1[6];
+    arg0[0x11] = arg1[7];
+    arg0[0x12] = arg1[8];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5404.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800A5468(void *arg0, void *arg1) {
-    arg0->unk0 = arg0->unk4 += arg1->unk0;
-    arg0->unk1 = arg0->unk5 += arg1->unk1;
-    arg0->unk2 = arg0->unk6 += arg1->unk2;
-    arg0->unk8 = arg0->unkC += arg1->unk3;
-    arg0->unk9 = arg0->unkD += arg1->unk4;
-    arg0->unkA = arg0->unkE += arg1->unk5;
-    arg0->unk10 = arg1->unk6;
-    arg0->unk11 = arg1->unk7;
-    arg0->unk12 = arg1->unk8;
+void func_800A5468(u8 *arg0, u8 *arg1) {
+    arg0[0x0] = arg0[0x4] += arg1[0];
+    arg0[0x1] = arg0[0x5] += arg1[1];
+    arg0[0x2] = arg0[0x6] += arg1[2];
+    arg0[0x8] = arg0[0xC] += arg1[3];
+    arg0[0x9] = arg0[0xD] += arg1[4];
+    arg0[0xA] = arg0[0xE] += arg1[5];
+    arg0[0x10] = arg1[6];
+    arg0[0x11] = arg1[7];
+    arg0[0x12] = arg1[8];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5468.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800A54FC(void *arg0, void *arg1) {
-    arg1->unk0 = arg1->unk4 = arg0->unk0;
-    arg1->unk1 = arg1->unk5 = arg0->unk1;
-    arg1->unk2 = arg1->unk6 = arg0->unk2;
-    arg1->unk8 = arg1->unkC = arg0->unk8;
-    arg1->unk9 = arg1->unkD = arg0->unk9;
-    arg1->unkA = arg1->unkE = arg0->unkA;
-    arg1->unk10 = arg0->unk10;
-    arg1->unk11 = arg0->unk11;
-    arg1->unk12 = arg0->unk12;
+void func_800A54FC(u8 *arg0, u8 *arg1) {
+    arg1[0x0] = arg1[0x4] = arg0[0x0];
+    arg1[0x1] = arg1[0x5] = arg0[0x1];
+    arg1[0x2] = arg1[0x6] = arg0[0x2];
+    arg1[0x8] = arg1[0xC] = arg0[0x8];
+    arg1[0x9] = arg1[0xD] = arg0[0x9];
+    arg1[0xA] = arg1[0xE] = arg0[0xA];
+    arg1[0x10] = ((s8 *)arg0)[0x10];
+    arg1[0x11] = ((s8 *)arg0)[0x11];
+    arg1[0x12] = ((s8 *)arg0)[0x12];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A54FC.s")
-#endif
 
 s32 utilCorrectStickX(u32 channel) {
     s32 x;
@@ -693,126 +658,93 @@ s32 utilResetRect(void) {
     return 1;
 }
 
-#ifdef MIPS_TO_C
-void func_800A5B14(void *arg0, s8 arg1, s8 arg2, s8 arg3, u8 arg4) {
-    void *temp_v0;
+void func_800A5B14(DObj *arg0, u8 arg1, u8 arg2, u8 arg3, u8 arg4) {
+    u8 *store = (u8 *)arg0->unk4C;
 
-    temp_v0 = arg0->unk4C;
-    temp_v0->unk14 = arg1;
-    temp_v0->unk15 = arg2;
-    temp_v0->unk16 = arg3;
-    temp_v0->unk17 = arg4;
+    store[0x14] = arg1;
+    store[0x15] = arg2;
+    store[0x16] = arg3;
+    store[0x17] = arg4;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B14.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800A5B3C(void *arg0, s8 arg1, s8 arg2, s8 arg3, u8 arg4) {
-    void *temp_v0;
+void func_800A5B3C(DObj *arg0, u8 arg1, u8 arg2, u8 arg3, u8 arg4) {
+    u8 *store = (u8 *)arg0->unk4C;
 
-    temp_v0 = arg0->unk4C;
-    temp_v0->unk18 = arg1;
-    temp_v0->unk19 = arg2;
-    temp_v0->unk1A = arg3;
-    temp_v0->unk1B = arg4;
+    store[0x18] = arg1;
+    store[0x19] = arg2;
+    store[0x1A] = arg3;
+    store[0x1B] = arg4;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B3C.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 f32 func_800A5B64(f32 arg0) {
-    f32 var_f2;
-    s32 temp_v0;
+    u16 idx = (s32)(arg0 * 651.8986f) & 0xFFF;
+    f32 val;
 
-    temp_v0 = (arg0 * 651.8986f) & 0xFFF & 0xFFFF;
-    if (temp_v0 & 0x400) {
-        var_f2 = *(&D_800BF8EC + -((temp_v0 & 0x3FF) * 4));
+    if (idx & 0x400) {
+        val = *(f32 *) ((u8 *) D_800BF8EC + -((idx & 0x3FF) * 4));
     } else {
-        var_f2 = *(&D_800BE8F0 + ((temp_v0 & 0x3FF) * 4));
+        val = D_800BE8F0[idx & 0x3FF];
     }
-    if (temp_v0 & 0x800) {
-        return -var_f2;
+    if (idx & 0x800) {
+        return -val;
     }
-    return var_f2;
+    return val;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B64.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 f32 func_800A5BDC(f32 arg0) {
-    f32 var_f2;
-    s32 temp_v0;
+    u16 idx = (s32)((arg0 + 1.5707964f) * 651.8986f) & 0xFFF;
+    f32 val;
 
-    temp_v0 = ((arg0 + 1.5707964f) * 651.8986f) & 0xFFF & 0xFFFF;
-    if (temp_v0 & 0x400) {
-        var_f2 = *(&D_800BF8EC + -((temp_v0 & 0x3FF) * 4));
+    if (idx & 0x400) {
+        val = *(f32 *) ((u8 *) D_800BF8EC + -((idx & 0x3FF) * 4));
     } else {
-        var_f2 = *(&D_800BE8F0 + ((temp_v0 & 0x3FF) * 4));
+        val = D_800BE8F0[idx & 0x3FF];
     }
-    if (temp_v0 & 0x800) {
-        return -var_f2;
+    if (idx & 0x800) {
+        return -val;
     }
-    return var_f2;
+    return val;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5BDC.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 f32 func_800A5C60(f32 arg0) {
-    f32 var_f12;
-    f32 var_f2;
-    s32 temp_a0;
-    s32 temp_v0;
+    u16 idx = (s32)(arg0 * 651.8986f) & 0xFFF;
+    f32 sinVal;
+    f32 cosVal;
 
-    temp_a0 = (arg0 * 651.8986f) & 0xFFF & 0xFFFF;
-    if (temp_a0 & 0x400) {
-        var_f2 = *(&D_800BF8EC + -((temp_a0 & 0x3FF) * 4));
+    if (idx & 0x400) {
+        sinVal = *(f32 *) ((u8 *) D_800BF8EC + -((idx & 0x3FF) * 4));
     } else {
-        var_f2 = *(&D_800BE8F0 + ((temp_a0 & 0x3FF) * 4));
+        sinVal = D_800BE8F0[idx & 0x3FF];
     }
-    if (temp_a0 & 0x800) {
-        var_f2 = -var_f2;
+    if (idx & 0x800) {
+        sinVal = -sinVal;
     }
-    temp_v0 = (temp_a0 + 0x400) & 0xFFF & 0xFFFF;
-    if (temp_v0 & 0x400) {
-        var_f12 = *(&D_800BF8EC + -((temp_v0 & 0x3FF) * 4));
+    idx = (idx + 0x400) & 0xFFF;
+    if (idx & 0x400) {
+        cosVal = *(f32 *) ((u8 *) D_800BF8EC + -((idx & 0x3FF) * 4));
     } else {
-        var_f12 = *(&D_800BE8F0 + ((temp_v0 & 0x3FF) * 4));
+        cosVal = D_800BE8F0[idx & 0x3FF];
     }
-    if (temp_v0 & 0x800) {
-        var_f12 = -var_f12;
+    if (idx & 0x800) {
+        cosVal = -cosVal;
     }
-    return var_f2 / var_f12;
+    return sinVal / cosVal;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5C60.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800A5D24(void *arg0, void *arg1) {
-    arg0->unk0 = arg1->unk0;
-    arg0->unkC = arg1->unkC;
-    arg0->unk18 = arg1->unk18;
-    arg0->unk24 = arg1->unk24;
-    arg0->unk4 = arg1->unk4;
-    arg0->unk10 = arg1->unk10;
-    arg0->unk1C = arg1->unk1C;
-    arg0->unk28 = arg1->unk28;
-    arg0->unk8 = arg1->unk8;
-    arg0->unk14 = arg1->unk14;
-    arg0->unk20 = arg1->unk20;
-    arg0->unk2C = arg1->unk2C;
+void func_800A5D24(f32 (*arg0)[3], f32 (*arg1)[3]) {
+    arg0[0][0] = arg1[0][0];
+    arg0[1][0] = arg1[1][0];
+    arg0[2][0] = arg1[2][0];
+    arg0[3][0] = arg1[3][0];
+    arg0[0][1] = arg1[0][1];
+    arg0[1][1] = arg1[1][1];
+    arg0[2][1] = arg1[2][1];
+    arg0[3][1] = arg1[3][1];
+    arg0[0][2] = arg1[0][2];
+    arg0[1][2] = arg1[1][2];
+    arg0[2][2] = arg1[2][2];
+    arg0[3][2] = arg1[3][2];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5D24.s")
-#endif
 
 #ifdef MIPS_TO_C
 

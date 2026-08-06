@@ -19,6 +19,14 @@ extern OSMesg auSPTaskMessages[1];
 extern OSMesg auDMAMessages[50];
 
 extern u8 D_800964D3;
+extern s32 *D_8009646C;
+extern AuSettings auPublicSettings;
+extern s32 func_80023464(s32, u32, u32, s32);
+extern s32 func_80023CB0(u16);
+extern s32 func_80023990(void);
+extern void func_800233F4(s32, u8);
+extern void func_80023384(s32, u8);
+extern void func_80023A28(s32);
 
 static void _bnkfPatchBank(ALBank* bank, s32 offset, s32 table);
 static void _bnkfPatchInst(ALInstrument* i, s32 offset, s32 table);
@@ -440,7 +448,113 @@ void auInit(void) {
 }
 
 // https://decomp.me/scratch/CvKIB
+// Near-match draft (~92/338 insns differ, all in the auPublicSettings mirror
+// stores: target shares one lui/uses a base reg where this emits two luis).
+#ifdef MIPS_TO_C
+void auLoadAssets(void) {
+    s32 j;
+    ALBankFile *file;
+    s32 i;
+    s32 len;
+    s32 *buf3;
+    s32 *buf4;
+    s32 *buf5;
+    u8 **ptr;
+    AuSettings *pub;
+
+    bzero(auCurrentSettings.heapBase, auCurrentSettings.heapSize);
+    alHeapInit(&auHeap, auCurrentSettings.heapBase, auCurrentSettings.heapSize);
+
+    if ((u32) auCurrentSettings.bank2Start >= 0x80000000) {
+        auSeqBank = (ALBank *) auCurrentSettings.bank2Start;
+    } else {
+        len = auCurrentSettings.bank2End - auCurrentSettings.bank2Start;
+        file = alHeapAlloc(&auHeap, 1, len);
+        auRomRead(auCurrentSettings.bank2Start, file, len);
+        alBnkfNew(file, auCurrentSettings.table2Start);
+        auSeqBank = file->bankArray[0];
+    }
+
+    if ((u32) auCurrentSettings.bank1Start >= 0x80000000) {
+        D_80096468 = (ALBank *) auCurrentSettings.bank1Start;
+    } else {
+        len = auCurrentSettings.bank1End - auCurrentSettings.bank1Start;
+        file = alHeapAlloc(&auHeap, 1, len);
+        auRomRead(auCurrentSettings.bank1Start, file, len);
+        alBnkfNew(file, auCurrentSettings.table1Start);
+        D_80096468 = file->bankArray[0];
+    }
+
+    if ((u32) auCurrentSettings.romSbkStart >= 0x80000000) {
+        auSeqFile = (ALSeqFile *) auCurrentSettings.romSbkStart;
+    } else {
+        auSeqFile = alHeapAlloc(&auHeap, 1, 4);
+        auRomRead(auCurrentSettings.romSbkStart, auSeqFile, 4);
+        len = auSeqFile->seqCount * 8 + 4;
+        auSeqFile = alHeapAlloc(&auHeap, 1, auSeqFile->seqCount * 8 + 4);
+        auRomRead(auCurrentSettings.romSbkStart, auSeqFile, len);
+        alSeqFileNew(auSeqFile, (u8 *) auCurrentSettings.romSbkStart);
+    }
+
+    i = 0;
+    len = 0;
+    for (; i < auSeqFile->seqCount; i++) {
+        auSeqFile->seqArray[i].len += auSeqFile->seqArray[i].len & 1;
+        if (len < auSeqFile->seqArray[i].len) {
+            len = auSeqFile->seqArray[i].len;
+        }
+    }
+
+    ptr = auBGMSeqData;
+    do {
+        *ptr++ = alHeapAlloc(&auHeap, 1, len);
+    } while (ptr < (u8 **) &auBGMPlayerStatus);
+
+    auCmdListBuffers[0] = alHeapAlloc(&auHeap, 1, 0x8000);
+    auCmdListBuffers[1] = alHeapAlloc(&auHeap, 1, 0x8000);
+    auScTasks[0] = alHeapAlloc(&auHeap, 1, 0x68);
+    auScTasks[1] = alHeapAlloc(&auHeap, 1, 0x68);
+    auDataBuffers[0] = alHeapAlloc(&auHeap, 1, 0xE60);
+    auDataBuffers[1] = alHeapAlloc(&auHeap, 1, 0xE60);
+    auDataBuffers[2] = alHeapAlloc(&auHeap, 1, 0xE60);
+
+    if ((u32) auCurrentSettings.bank3Start < 0x80000000) {
+        len = auCurrentSettings.bank3End - auCurrentSettings.bank3Start;
+        buf3 = alHeapAlloc(&auHeap, 1, len);
+        auRomRead(auCurrentSettings.bank3Start, buf3, len);
+        auPublicSettings.unk4C = auCurrentSettings.unk4C = *buf3;
+        auPublicSettings.unk44 = auCurrentSettings.unk44 = (u32) (buf3 + 1);
+    }
+
+    if ((u32) auCurrentSettings.bank4Start < 0x80000000) {
+        len = auCurrentSettings.bank4End - auCurrentSettings.bank4Start;
+        buf4 = alHeapAlloc(&auHeap, 1, len);
+        auRomRead(auCurrentSettings.bank4Start, buf4, len);
+        auPublicSettings.unk4A = auCurrentSettings.unk4A = *buf4;
+        auPublicSettings.unk40 = auCurrentSettings.unk40 = (u32 *) (buf4 + 1);
+        for (j = 0; j < auCurrentSettings.unk4A; j++) {
+            auCurrentSettings.unk40[j] += (u32) buf4;
+        }
+    }
+
+    if ((u32) auCurrentSettings.bank5Start < 0x80000000) {
+        i = 0;
+        len = auCurrentSettings.bank5End - auCurrentSettings.bank5Start;
+        buf5 = alHeapAlloc(&auHeap, 1, len);
+        auRomRead(auCurrentSettings.bank5Start, buf5, len);
+        pub = &auPublicSettings;
+        auCurrentSettings.unk48 = *buf5;
+        pub->unk48 = auCurrentSettings.unk48;
+        auCurrentSettings.unk3C = (u32 *) (buf5 + 1);
+        pub->unk3C = auCurrentSettings.unk3C;
+        for (; i < auCurrentSettings.unk48; i++) {
+            auCurrentSettings.unk3C[i] += (u32) buf5;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auLoadAssets.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auCreatePlayers.s")
 
@@ -546,62 +660,37 @@ s32 func_80020BB8(s32 playerID) {
     return 1;
 }
 
-#ifdef MIPS_TO_C
-
 s32 func_80020BE8(s32 arg0) {
-    s32 sp24;
-    s32 sp1C;
-    s32 *var_v0;
-    s32 temp_t6;
-    s32 var_a1;
-    s32 var_v1;
+    s32 i;
 
-    var_a1 = 0;
-    if (D_800964D3 > 0) {
-        var_v0 = D_8009646C;
-        var_v1 = 0;
-loop_2:
-        temp_t6 = *var_v0;
-        var_v0 += 4;
-        if (temp_t6 == 0) {
-            sp1C = var_v1;
-            sp24 = var_a1;
-            *(D_8009646C + var_v1) = func_80023CB0(arg0 & 0xFFFF, var_a1, D_800964D3, arg0);
-            return var_a1;
+    for (i = 0; i < D_800964D3; i++) {
+        if (D_8009646C[i] == 0) {
+            D_8009646C[i] = func_80023CB0(arg0);
+            return i;
         }
-        var_a1 += 1;
-        var_v1 += 4;
-        if (var_a1 >= D_800964D3) {
-            goto block_5;
-        }
-        goto loop_2;
     }
-block_5:
     return -1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020BE8.s")
-#endif
 
+s32 func_80020C70(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    return -1;
+}
+
+// Near-match draft: only difference is i/count allocated v1/v0 instead of
+// v0/v1 (one extra move at the end). Returns 1 when D_800964D3 == 0.
 #ifdef MIPS_TO_C
-s32 func_80020C70(s32 arg0, ? arg1, ? arg2, ? arg3) {
-    return -1;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020C70.s")
-#endif
-
-#ifdef NON_MATCHING
-void func_80023990(); // n_audio function (unknown)
 s32 auFunc80020C88(void) {
     s32 i;
 
-    func_80023990(/* TODO: this function takes arguments? */);
+    func_80023990();
 
-    for (i = 0; i < D_800964D3; i++) {
-        ;
+    i = 0;
+    if (D_800964D3 > 0) {
+        do {
+            i++;
+        } while (i < D_800964D3);
+        return i;
     }
-    return i;
 }
 #else
 s32 auFunc80020C88(void);
@@ -620,93 +709,61 @@ void func_80020CC4(u32 volume) {
     func_80023360(var_a0, volume);
 }
 
-#ifdef MIPS_TO_C
-
 void func_80020D00(s32 arg0, u32 arg1) {
     s32 temp_a0;
     u32 var_a2;
 
     var_a2 = arg1;
-    if (arg1 >= 0x8000) {
+    if (arg1 >= 0x8000U) {
         var_a2 = 0x7FFF;
     }
-    temp_a0 = *(D_8009646C + (arg0 * 4));
+    temp_a0 = D_8009646C[arg0];
     if (temp_a0 != 0) {
         func_80023464(temp_a0, (var_a2 >> 8) & 0xFF, var_a2, arg0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020D00.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_80020D58(s32 arg0, u8 arg1) {
-    if (arg1 >= 0x80) {
-        arg1 = 0x7F;
+void func_80020D58(s32 arg0, s32 arg1) {
+    u8 vol = arg1;
+
+    if ((arg1 & 0xFF) >= 0x80) {
+        vol = 0x7F;
     }
     if (D_8009646C[arg0] != 0) {
-        func_800233F4(D_8009646C[arg0]);
+        func_800233F4(D_8009646C[arg0], vol);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020D58.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80020DAC(s32 arg0, s32 arg1) {
-    s32 temp_a0;
-    s32 var_a2;
+    u8 vol = arg1;
 
-    var_a2 = arg1 & 0xFF;
     if ((arg1 & 0xFF) >= 0x80) {
-        var_a2 = 0x7F;
+        vol = 0x7F;
     }
-    temp_a0 = *(D_8009646C + (arg0 * 4));
-    if (temp_a0 != 0) {
-        func_80023384(temp_a0, var_a2 & 0xFF, var_a2, arg0);
+    if (D_8009646C[arg0] != 0) {
+        func_80023384(D_8009646C[arg0], vol);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020DAC.s")
-#endif
 
 void func_80020E00(Unused s32 arg0, Unused s32 arg1) {
 
 }
 
-#ifdef MIPS_TO_C
-
 void func_80020E0C(s32 arg0) {
-    s32 sp1C;
-    s32 temp_a1;
-    s32 temp_v0;
-
-    temp_v0 = arg0 * 4;
-    temp_a1 = *(D_8009646C + temp_v0);
-    if (temp_a1 != 0) {
-        sp1C = temp_v0;
-        func_80023A28(temp_a1, temp_a1);
-        *(D_8009646C + temp_v0) = 0;
+    if (D_8009646C[arg0] != 0) {
+        func_80023A28(D_8009646C[arg0]);
+        D_8009646C[arg0] = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020E0C.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80020E5C(s32 arg0, u8 arg1) {
+    u8 *temp;
 
-void func_80020E5C(s32 arg0, s32 arg1) {
-    void *temp_v0;
-
-    temp_v0 = *(D_8009646C + (arg0 * 4));
-    if (temp_v0 != NULL) {
-        temp_v0->unk1F = arg1 & 0xFF;
+    temp = (u8 *) D_8009646C[arg0];
+    if (temp != NULL) {
+        temp[0x1F] = arg1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020E5C.s")
-#endif
 
 void func_80020E8C(void) {
     auSettingsUpdated = 1;

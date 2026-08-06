@@ -6,737 +6,667 @@
 #include "main/gtl.h"
 #include "main/object_manager.h"
 
+#include "DObj.h"
+
 // this file
 // extern s8 D_800BE3E0, D_800BE3E4;
 
 s8 D_800BE3E0 = 0;
 s8 D_800BE3E4 = 0;
 u16 D_800BE3E8 = 0;
-s8 D_800BE3EC = 0x7B;
+u8 D_800BE3EC = 0x7B;
 
+typedef struct UnkEmitter {
+    struct UnkEmitter *next;
+    f32 unk4;
+    f32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    f32 unk1C;
+    f32 unk20;
+    f32 unk24;
+    u8 unk28;
+    u8 unk29;
+    u16 unk2A;
+    u8 pad2C[0x88];
+    void (*unkB4)();
+    u16 unkB8;
+    u8 unkBA;
+} UnkEmitter;
+
+typedef struct UnkGenerator {
+    struct UnkGenerator *next;
+    u16 generator_id;
+    u16 flags;
+    u8 bank_id;
+    u8 kind;
+    u16 texture_id;
+    u16 particle_lifetime;
+    u16 generator_lifetime;
+    u8 *bytecode;
+    f32 posX;
+    f32 posY;
+    f32 posZ;
+    f32 velX;
+    f32 velY;
+    f32 velZ;
+    f32 gravity;
+    f32 friction;
+    f32 size;
+    f32 unk38;
+    f32 unk3C;
+    f32 update_rate;
+    f32 frame;
+    void *dobj;
+    UnkEmitter *xf;
+    union {
+        struct {
+            f32 base;
+            f32 target;
+        } rotate;
+        struct {
+            f32 x;
+            f32 y;
+            f32 z;
+        } move;
+        struct {
+            f32 f;
+            u16 lifetime;
+        } vortex;
+    } vars;
+} UnkGenerator;
+
+typedef struct UnkParticle {
+    struct UnkParticle *next;
+    u16 unk4;
+    u16 unk6;
+    u8 unk8;
+    u8 unk9;
+    u8 unkA;
+    u8 unkB;
+    u8 unkC;
+    u8 unkD;
+    u16 unkE;
+    u16 unk10;
+    u16 unk12;
+    u16 unk14;
+    u16 unk16;
+    u8 *unk18;
+    u16 unk1C;
+    u16 unk1E;
+    u16 unk20;
+    u16 unk22;
+    f32 unk24;
+    f32 unk28;
+    f32 unk2C;
+    f32 unk30;
+    f32 unk34;
+    f32 unk38;
+    f32 unk3C;
+    f32 unk40;
+    f32 unk44;
+    f32 unk48;
+    u8 unk4C;
+    u8 unk4D;
+    u8 unk4E;
+    u8 unk4F;
+    u8 unk50;
+    u8 unk51;
+    u8 unk52;
+    u8 unk53;
+    u8 unk54;
+    u8 unk55;
+    u8 unk56;
+    u8 unk57;
+    u32 unk58;
+    UnkGenerator *unk5C;
+    UnkEmitter *unk60;
+} UnkParticle;
+
+typedef struct UnkScript {
+    u16 kind;
+    u16 texture_id;
+    u16 generator_lifetime;
+    u16 particle_lifetime;
+    u16 unk8;
+    u16 flags;
+    f32 gravity;
+    f32 friction;
+    f32 velX;
+    f32 velY;
+    f32 velZ;
+    f32 unk20;
+    f32 unk24;
+    f32 unk28;
+    f32 size;
+    f32 unk30;
+    f32 unk34;
+    f32 unk38;
+    u8 bytecode[1];
+} UnkScript;
+
+typedef struct UnkScriptDesc {
+    s32 scripts_num;
+    UnkScript *scripts[1];
+} UnkScriptDesc;
+
+typedef struct UnkTexture {
+    u32 count;
+    s32 fmt;
+    s32 siz;
+    s32 width;
+    s32 height;
+    u16 palettes_num;
+    u16 flags;
+    void *data[1];
+} UnkTexture;
+
+typedef struct UnkTextureDesc {
+    s32 textures_num;
+    UnkTexture *textures[1];
+} UnkTextureDesc;
+
+void *gtlMalloc(u32 size, u32 alignment);
+void func_8009E834(GObj *arg0);
+GObj *ohFindById(u32 id);
+UnkParticle *func_8009C4E0();
+f32 random_f32(void);
+f32 sinf(f32);
+f32 cosf(f32);
+f32 sqrtf(f32);
+f32 atan2f(f32, f32);
+
+extern UnkParticle *D_800D69C0;
+extern UnkParticle *D_800D69C8[16];
+extern s32 D_800D6A10;
+extern u16 D_800D6AE0;
 extern u16 D_800D6AE2;
-extern s32 D_800D6AE4;
+extern u16 D_800D6AE4;
+extern u16 D_800D6AE6;
 extern u16 D_800D6AE8;
-extern s16 D_800D6AEA;
-extern s32 D_800D6AEC;
+extern u16 D_800D6AEA;
+extern UnkEmitter *D_800D6AEC;
 // extern u16 D_800BE3E8;
 extern u32 D_800D6A14[];
+extern s32 D_800D6A38[8];
+extern s32 D_800D6A58[8];
+extern UnkScript **D_800D6A78[8];
+extern UnkTexture **D_800D6A98[8];
 
-#ifdef MIPS_TO_C
-
-s32 func_8009B550(s32 arg0, ? arg1) {
-    s32 *temp_v0;
+s32 func_8009B550(s32 arg0, s32 arg1) {
+    UnkEmitter *temp_v0;
     s32 var_s0;
 
-    D_800D6AEC = 0;
+    D_800D6AEC = NULL;
     var_s0 = 0;
     if (arg0 > 0) {
-loop_1:
-        temp_v0 = gtlMalloc(arg1, 4);
-        if (temp_v0 == NULL) {
-
-        } else {
-            var_s0 += 1;
-            *temp_v0 = D_800D6AEC;
-            D_800D6AEC = temp_v0;
-            if (var_s0 == arg0) {
-                goto block_4;
+        do {
+            temp_v0 = gtlMalloc(arg1, 4);
+            if (temp_v0 == NULL) {
+                return var_s0;
             }
-            goto loop_1;
-        }
-    } else {
-block_4:
-        D_800D6AE4 = 0;
-        D_800D6AEA = 0;
+            var_s0 += 1;
+            temp_v0->next = D_800D6AEC;
+            D_800D6AEC = temp_v0;
+        } while (var_s0 != arg0);
     }
+    D_800D6AE4 = 0;
+    D_800D6AEA = 0;
     return var_s0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009B550.s")
-#endif
 
-#ifdef MIPS_TO_C
+UnkEmitter *func_8009B5E8(u8 arg0, u16 arg1) {
+    UnkEmitter *xf = D_800D6AEC;
 
-s32 func_8009B5E8(s32 arg0, s32 arg1) {
-    s16 temp_v0;
-    s32 temp_v1;
-    u16 temp_t0;
-
-    temp_v1 = D_800D6AEC;
-    if (temp_v1 != 0) {
-        D_800D6AEC = temp_v1->unk0;
-        temp_v1->unk2A = 1;
-        temp_v1->unk28 = arg0 & 0xFF;
-        temp_v1->unkB8 = arg1 & 0xFFFF;
-        temp_v1->unkB4 = 0;
-        temp_v1->unkBA = 0;
-        temp_v1->unk29 = D_800BE3EC;
-        temp_v1->unkC = 0.0f;
-        temp_v1->unk8 = 0.0f;
-        temp_v1->unk4 = 0.0f;
-        temp_v1->unk18 = 0.0f;
-        temp_v1->unk14 = 0.0f;
-        temp_v1->unk10 = 0.0f;
-        temp_v1->unk24 = 1.0f;
-        temp_v1->unk20 = 1.0f;
-        temp_v1->unk1C = 1.0f;
-        temp_t0 = D_800D6AE4 + 1;
-        temp_v0 = temp_t0 & 0xFFFF;
-        D_800D6AE4 = temp_t0;
-        if (D_800D6AEA < temp_v0) {
-            D_800D6AEA = temp_v0;
+    if (xf != NULL) {
+        D_800D6AEC = xf->next;
+        xf->unk2A = 1;
+        xf->unk29 = D_800BE3EC;
+        xf->unk4 = xf->unk8 = xf->unkC = 0.0f;
+        xf->unk10 = xf->unk14 = xf->unk18 = 0.0f;
+        xf->unk1C = xf->unk20 = xf->unk24 = 1.0f;
+        xf->unkB4 = NULL;
+        xf->unk28 = arg0;
+        xf->unkB8 = arg1;
+        xf->unkBA = 0;
+        D_800D6AE4++;
+        if (D_800D6AEA < D_800D6AE4) {
+            D_800D6AEA = D_800D6AE4;
         }
     }
-    return temp_v1;
+    return xf;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009B5E8.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8009B69C(s32 *arg0) {
-    ? (*temp_v0)();
+void func_8009B69C(UnkEmitter *arg0) {
+    void (*temp_v0)();
 
     temp_v0 = arg0->unkB4;
     if (temp_v0 != NULL) {
         temp_v0();
     }
-    arg0->unk0 = D_800D6AEC;
+    arg0->next = D_800D6AEC;
     D_800D6AEC = arg0;
     D_800D6AE4 -= 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009B69C.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8009B6F0(void *arg0, s32 arg1) {
-    arg0->unk60 = func_8009B5E8(arg1 & 0xFF, arg0->unk4, arg1);
+void func_8009B6F0(UnkParticle *arg0, u8 arg1) {
+    arg0->unk60 = func_8009B5E8(arg1, arg0->unk4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009B6F0.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8009B72C(void *arg0, s32 arg1) {
-    arg0->unk4C = func_8009B5E8(arg1 & 0xFF, arg0->unk4, arg1);
+void func_8009B72C(void *arg0, u8 arg1) {
+    *(UnkEmitter **)((u8 *)arg0 + 0x4C) = func_8009B5E8(arg1, *(u16 *)((u8 *)arg0 + 4));
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009B72C.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8009B768(s32 bank_id, UnkScriptDesc *script_desc, UnkTextureDesc *texture_desc) {
+    s32 i, j;
 
-void func_8009B768(s32 arg0, s32 *arg1, s32 *arg2) {
-    s32 *temp_a0;
-    s32 *temp_t0;
-    s32 *var_a1;
-    s32 *var_a3;
-    s32 temp_a1;
-    s32 temp_t5;
-    s32 temp_t6;
-    s32 temp_t7;
-    s32 temp_t7_2;
-    s32 temp_t9;
-    s32 var_a1_2;
-    s32 var_t2;
-    s32 var_t2_2;
-    s32 var_t2_3;
-    s32 var_v1;
-    s32 var_v1_2;
-    u16 temp_t2;
-    u32 *var_t0;
-    u32 var_a3_2;
-    u32 var_a3_3;
-    u32 var_a3_4;
-    u32 var_t1;
-    void **temp_v0;
-    void *temp_t3;
-    void *temp_t3_2;
-    void *temp_t3_3;
-    void *temp_t3_4;
+    if (bank_id >= 8) {
+        return;
+    }
+    D_800D6A38[bank_id] = script_desc->scripts_num;
+    D_800D6A58[bank_id] = texture_desc->textures_num;
+    D_800D6A78[bank_id] = script_desc->scripts;
+    D_800D6A98[bank_id] = texture_desc->textures;
 
-    if (arg0 < 8) {
-        temp_a1 = arg0 * 4;
-        temp_t0 = temp_a1 + &D_800D6A38;
-        *temp_t0 = *arg1;
-        temp_a0 = temp_a1 + &D_800D6A58;
-        *temp_a0 = *arg2;
-        *(&D_800D6A78 + temp_a1) = arg1 + 4;
-        temp_v0 = temp_a1 + &D_800D6A98;
-        *temp_v0 = arg2 + 4;
-        var_v1 = 1;
-        if (*temp_t0 > 0) {
-            var_a1 = arg1 + 4;
-            do {
-                temp_t9 = *var_a1;
-                var_v1 += 1;
-                var_a1 += 4;
-                var_a1->unk-4 = temp_t9 + arg1;
-            } while (*temp_t0 >= var_v1);
-            var_v1 = 1;
+    for (i = 1; i <= D_800D6A38[bank_id]; i++) {
+        script_desc->scripts[i - 1] = (UnkScript *)((u8 *)script_desc + (s32)script_desc->scripts[i - 1]);
+    }
+    for (i = 1; i <= D_800D6A58[bank_id]; i++) {
+        texture_desc->textures[i - 1] = (UnkTexture *)((u8 *)texture_desc + (s32)texture_desc->textures[i - 1]);
+    }
+    for (i = 0; i < D_800D6A58[bank_id]; i++) {
+        for (j = 0; j < D_800D6A98[bank_id][i]->count; j++) {
+            D_800D6A98[bank_id][i]->data[j] = (void *)((u8 *)texture_desc + (s32)D_800D6A98[bank_id][i]->data[j]);
         }
-        var_a3 = arg2 + 4;
-        if (*temp_a0 > 0) {
-            do {
-                temp_t7 = *var_a3;
-                var_v1 += 1;
-                var_a3 += 4;
-                var_a3->unk-4 = temp_t7 + arg2;
-            } while (*temp_a0 >= var_v1);
-        }
-        var_v1_2 = 0;
-        if (*temp_a0 > 0) {
-            var_a1_2 = 0;
-            do {
-                var_a3_2 = 0;
-                var_t2 = 0;
-                var_t0 = *(*temp_v0 + var_a1_2);
-                var_t1 = *var_t0;
-                if (var_t1 != 0) {
-                    do {
-                        temp_t3 = var_t0 + var_t2;
-                        temp_t6 = temp_t3->unk18;
-                        var_a3_2 += 1;
-                        var_t2 += 4;
-                        temp_t3->unk18 = temp_t6 + arg2;
-                        var_t0 = *(*temp_v0 + var_a1_2);
-                        var_t1 = *var_t0;
-                    } while (var_a3_2 < var_t1);
+        if (D_800D6A98[bank_id][i]->fmt == 2) {
+            if (D_800D6A98[bank_id][i]->flags & 1) {
+                j = D_800D6A98[bank_id][i]->count;
+
+                D_800D6A98[bank_id][i]->data[j] = (void *)((u8 *)texture_desc + (s32)D_800D6A98[bank_id][i]->data[j]);
+            } else if (D_800D6A98[bank_id][i]->palettes_num != 0) {
+                for (j = D_800D6A98[bank_id][i]->count; j < D_800D6A98[bank_id][i]->count + D_800D6A98[bank_id][i]->palettes_num; j++) {
+                    D_800D6A98[bank_id][i]->data[j] = (void *)((u8 *)texture_desc + (s32)D_800D6A98[bank_id][i]->data[j]);
                 }
-                if (var_t0->unk4 == 2) {
-                    temp_t3_2 = var_t0 + (var_t1 * 4);
-                    if (var_t0->unk16 & 1) {
-                        temp_t3_2->unk18 = temp_t3_2->unk18 + arg2;
-                    } else {
-                        temp_t2 = var_t0->unk14;
-                        if (temp_t2 != 0) {
-                            var_a3_3 = var_t1;
-                            if (var_t1 < (temp_t2 + var_t1)) {
-                                var_t2_2 = var_t1 * 4;
-                                do {
-                                    temp_t3_3 = var_t0 + var_t2_2;
-                                    temp_t7_2 = temp_t3_3->unk18;
-                                    var_a3_3 += 1;
-                                    var_t2_2 += 4;
-                                    temp_t3_3->unk18 = temp_t7_2 + arg2;
-                                    var_t0 = *(*temp_v0 + var_a1_2);
-                                } while (var_a3_3 < (var_t0->unk14 + var_t0->unk0));
-                            }
-                        } else {
-                            var_a3_4 = var_t1;
-                            if (var_t1 < (var_t1 * 2)) {
-                                var_t2_3 = var_t1 * 4;
-                                do {
-                                    temp_t3_4 = var_t0 + var_t2_3;
-                                    temp_t5 = temp_t3_4->unk18;
-                                    var_a3_4 += 1;
-                                    var_t2_3 += 4;
-                                    temp_t3_4->unk18 = temp_t5 + arg2;
-                                    var_t0 = *(*temp_v0 + var_a1_2);
-                                } while (var_a3_4 < (*var_t0 * 2));
-                            }
-                        }
-                    }
+            } else {
+                for (j = D_800D6A98[bank_id][i]->count; j < D_800D6A98[bank_id][i]->count * 2; j++) {
+                    D_800D6A98[bank_id][i]->data[j] = (void *)((u8 *)texture_desc + (s32)D_800D6A98[bank_id][i]->data[j]);
                 }
-                var_v1_2 += 1;
-                var_a1_2 += 4;
-            } while (var_v1_2 < *temp_a0);
+            }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009B768.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-GObj *func_8009B99C(s32 arg0) {
-    ? *temp_v0;
-    ? *var_v0;
-    s32 var_s0;
+GObj *func_8009B99C(s32 num) {
+    s32 i;
+    UnkParticle *pc;
 
     D_800D69C0 = NULL;
-    var_v0 = &D_800D69C8;
-    do {
-        var_v0 += 4;
-        var_v0->unk-4 = 0;
-    } while (var_v0 < &D_800D6A08);
-    var_s0 = arg0 - 1;
-    if (var_s0 >= 0) {
-loop_3:
-        temp_v0 = gtlMalloc(0x64, 4);
-        if (temp_v0 == NULL) {
+
+    for (i = 0; i < 16; i++) {
+        D_800D69C8[i] = NULL;
+    }
+    for (i = num - 1; i >= 0; i--) {
+        pc = gtlMalloc(sizeof(*pc), 4);
+
+        if (pc == NULL) {
             return NULL;
         }
-        var_s0 -= 1;
-        *temp_v0 = D_800D69C0;
-        D_800D69C0 = temp_v0;
-        if (var_s0 < 0) {
-            goto block_6;
-        }
-        goto loop_3;
+        pc->next = D_800D69C0;
+        D_800D69C0 = pc;
     }
-block_6:
     D_800D6AE0 = 0;
     D_800D6AE6 = 0;
-    if (ohFindById(-6) != 0) {
+
+    if (ohFindById(-6) != NULL) {
         return NULL;
     }
     return HS64_omMakeGObj(-6, func_8009E834, 0, 0x80000000);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009B99C.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8009BA68(s32 arg0) {
     D_800D6A10 = arg0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BA68.s")
-#endif
 
 #ifdef MIPS_TO_C
+UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode, s32 lifetime, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z, f32 size, f32 gravity, f32 friction, u32 texture_flags, UnkGenerator *gn) {
+    UnkParticle *new_pc;
+    s32 val;
 
-void *func_8009BA74(void **arg0, s8 arg1, s16 arg2, s32 arg3, s32 arg4, s32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9, f32 argA, f32 argB, f32 argC, f32 argD, f32 argE, s32 argF, void *arg10) {
-    s32 temp_v0;
-    u16 temp_t4;
-    u16 temp_t7;
-    void **temp_v0_2;
-    void *temp_t5;
-    void *temp_v1;
+    new_pc = D_800D69C0;
 
-    temp_v1 = D_800D69C0;
-    if (temp_v1 == NULL) {
+    if (new_pc == NULL) {
         return NULL;
     }
-    temp_t7 = D_800D6AE0 + 1;
-    temp_v0 = temp_t7 & 0xFFFF;
-    D_800D6AE0 = temp_t7;
-    if (D_800D6AE6 < temp_v0) {
-        D_800D6AE6 = temp_v0;
+    D_800D6AE0++;
+
+    if (D_800D6AE6 < D_800D6AE0) {
+        D_800D6AE6 = D_800D6AE0;
     }
-    if (arg10 != NULL) {
-        temp_v1->unk4 = arg10->unk4;
+    if (gn != NULL) {
+        new_pc->unk4 = gn->generator_id;
     } else {
-        temp_t4 = D_800BE3E8 + 1;
-        D_800BE3E8 = temp_t4;
-        temp_v1->unk4 = temp_t4;
+        new_pc->unk4 = ++D_800BE3E8;
     }
-    if (arg10 != NULL) {
-        temp_t5 = arg10->unk4C;
-        temp_v1->unk60 = temp_t5;
-        if (temp_t5 != NULL) {
-            temp_t5->unk2A = temp_t5->unk2A + 1;
+    if (gn != NULL) {
+        new_pc->unk60 = gn->xf;
+
+        if (new_pc->unk60 != NULL) {
+            new_pc->unk60->unk2A++;
         }
     } else {
-        temp_v1->unk60 = NULL;
+        new_pc->unk60 = NULL;
     }
-    D_800D69C0 = temp_v1->unk0;
-    if (arg0 == NULL) {
-        temp_v0_2 = ((arg1 >> 3) * 4) + &D_800D69C8;
-        temp_v1->unk0 = *temp_v0_2;
-        *temp_v0_2 = temp_v1;
+    D_800D69C0 = new_pc->next;
+
+    if (this_pc == NULL) {
+        new_pc->next = D_800D69C8[bank_id >> 3];
+        D_800D69C8[bank_id >> 3] = new_pc;
     } else {
-        temp_v1->unk0 = *arg0;
-        *arg0 = temp_v1;
+        new_pc->next = this_pc->next;
+        this_pc->next = new_pc;
     }
-    temp_v1->unk8 = arg1;
-    temp_v1->unk6 = arg2;
-    temp_v1->unkA = arg3 & 0xFFFF;
-    temp_v1->unk24 = arg6;
-    temp_v1->unk28 = arg7;
-    temp_v1->unk2C = arg8;
-    temp_v1->unk30 = arg9;
-    temp_v1->unk34 = argA;
-    temp_v1->unk38 = argB;
-    temp_v1->unk44 = argC;
-    temp_v1->unk3C = argD;
-    temp_v1->unk40 = argE;
-    temp_v1->unk1C = 0;
-    temp_v1->unk1E = 0;
-    temp_v1->unk22 = arg5 + 1;
-    temp_v1->unk18 = arg4;
-    if (argF != 0) {
-        temp_v1->unk6 = arg2 | 0x10;
+    new_pc->unk8 = bank_id;
+    new_pc->unk6 = flags;
+    new_pc->unkA = texture_id;
+
+    new_pc->unk24 = pos_x;
+    new_pc->unk28 = pos_y;
+    new_pc->unk2C = pos_z;
+
+    new_pc->unk30 = vel_x;
+    new_pc->unk34 = vel_y;
+    new_pc->unk38 = vel_z;
+
+    new_pc->unk44 = size;
+    new_pc->unk3C = gravity;
+    new_pc->unk40 = friction;
+
+    new_pc->unk22 = lifetime + 1;
+    new_pc->unk1C = 0;
+    new_pc->unk1E = 0;
+
+    new_pc->unk18 = bytecode;
+
+    if (texture_flags != 0) {
+        new_pc->unk6 |= 0x10;
     }
-    if (arg4 != 0) {
-        temp_v1->unk10 = 1;
+    if (bytecode != NULL) {
+        new_pc->unk10 = 1;
+        val = 0;
     } else {
-        temp_v1->unk10 = 0;
+        new_pc->unk10 = 0;
+        val = 0;
     }
-    temp_v1->unkC = 0xFF;
-    temp_v1->unk4F = 0xFF;
-    temp_v1->unk4E = 0xFF;
-    temp_v1->unk4D = 0xFF;
-    temp_v1->unk4C = 0xFF;
-    temp_v1->unk56 = 0;
-    temp_v1->unk55 = 0;
-    temp_v1->unk54 = 0;
-    temp_v1->unkB = 0;
-    temp_v1->unk57 = 0;
-    temp_v1->unk16 = 0;
-    temp_v1->unk14 = 0;
-    temp_v1->unk12 = 0;
-    temp_v1->unk5C = arg10;
-    return temp_v1;
+
+    new_pc->unk4C = new_pc->unk4D = new_pc->unk4E = new_pc->unk4F = new_pc->unkC = 0xFF;
+    new_pc->unk54 = new_pc->unk55 = new_pc->unk56 = val;
+
+    new_pc->unkB = 0;
+    new_pc->unk57 = 0;
+
+    new_pc->unk12 = new_pc->unk14 = new_pc->unk16 = 0;
+
+    new_pc->unk5C = gn;
+
+    return new_pc;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BA74.s")
 #endif
 
 #ifdef MIPS_TO_C
+UnkParticle *func_8009BC4C(UnkParticle *pc, s32 bank_id, s32 script_id) {
+    UnkScript *script;
+    s32 id = bank_id & 7;
 
-s32 func_8009BC4C(s32 arg1, s32 arg2) {
-    s32 temp_v0_2;
-    s32 temp_v1;
-    u16 temp_a3;
-    void *temp_v0;
+    if (id >= 8) {
+        return NULL;
+    }
+    if (script_id >= D_800D6A38[id]) {
+        return NULL;
+    }
+    script = D_800D6A78[id][script_id];
 
-    temp_v0_2 = arg1 & 7;
-    if (temp_v0_2 >= 8) {
-        return 0;
-    }
-    temp_v1 = temp_v0_2 * 4;
-    if (arg2 >= *(&D_800D6A38 + temp_v1)) {
-        return 0;
-    }
-    temp_v0 = *(*(&D_800D6A78 + temp_v1) + (arg2 * 4));
-    temp_a3 = temp_v0->unk2;
-    return func_8009BA74(temp_v0->unkA, temp_a3, temp_v0 + 0x3C, temp_v0->unk6, 0.0f, 0.0f, 0.0f, temp_v0->unk14, temp_v0->unk18, temp_v0->unk1C, temp_v0->unk2C, temp_v0->unkC, temp_v0->unk10, (*(*(&D_800D6A98 + temp_v1) + (temp_a3 * 4)))->unk16, 0);
+    return func_8009BA74(pc, bank_id, script->flags, script->texture_id, script->bytecode, script->particle_lifetime,
+                         0.0f, 0.0f, 0.0f, script->velX, script->velY, script->velZ, script->size, script->gravity,
+                         script->friction, D_800D6A98[id][script->texture_id]->flags, NULL);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BC4C.s")
 #endif
 
 #ifdef MIPS_TO_C
+UnkParticle *func_8009BD3C(s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode, s32 lifetime, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z, f32 size, f32 gravity, f32 friction, u32 texture_flags, UnkGenerator *gn) {
+    UnkParticle *pc = func_8009BA74(NULL, bank_id, flags, texture_id, bytecode, lifetime, pos_x, pos_y, pos_z,
+                                    vel_x, vel_y, vel_z, size, gravity, friction, texture_flags, gn);
 
-s32 func_8009BD3C(s32 arg0, ? arg1, u16 arg2, s32 arg3, s32 arg4, f32 arg5, f32 arg6, f32 arg7, f32 arg8, f32 arg9, f32 argA, f32 argB, f32 argC, f32 argD, s32 argE, s32 argF) {
-    s32 sp54;
-    s32 temp_v0;
-    s32 var_a0;
-
-    temp_v0 = func_8009BA74(0, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, argA, argB, argC, argD, argE, argF);
-    var_a0 = temp_v0;
-    if (temp_v0 != 0) {
-        sp54 = temp_v0;
-        func_8009C4E0(var_a0, 0, arg0 >> 3);
-        var_a0 = sp54;
+    if (pc != NULL) {
+        func_8009C4E0(pc, 0, bank_id >> 3);
     }
-    return var_a0;
+    return pc;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BD3C.s")
 #endif
 
-#ifdef MIPS_TO_C
+UnkParticle *func_8009BE04(s32 bank_id, s32 script_id) {
+    UnkParticle *pc = func_8009BC4C(NULL, bank_id, script_id);
 
-s32 func_8009BE04(s32 arg0, ? arg1) {
-    s32 sp1C;
-    s32 temp_v0;
-    s32 var_a0;
-
-    temp_v0 = func_8009BC4C(0, arg0, arg1);
-    var_a0 = temp_v0;
-    if (temp_v0 != 0) {
-        sp1C = temp_v0;
-        func_8009C4E0(var_a0, 0, arg0 >> 3);
-        var_a0 = sp1C;
+    if (pc != NULL) {
+        func_8009C4E0(pc, NULL, bank_id >> 3);
     }
-    return var_a0;
+    return pc;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BE04.s")
-#endif
 
 #ifdef MIPS_TO_C
+UnkParticle *func_8009BE54(s32 bank_id, s32 script_id, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z) {
+    UnkParticle *pc;
+    UnkScript *script;
+    s32 id = bank_id & 7;
 
-s32 func_8009BE54(s32 arg0, s32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6, f32 arg7) {
-    s32 sp54;
-    s32 temp_v0;
-    s32 temp_v0_3;
-    s32 temp_v1;
-    s32 var_a0;
-    u16 temp_a3;
-    void *temp_v0_2;
+    if (id >= 8) {
+        return NULL;
+    }
+    if (script_id >= D_800D6A38[id]) {
+        return NULL;
+    }
+    script = D_800D6A78[id][script_id];
 
-    temp_v0 = arg0 & 7;
-    if (temp_v0 >= 8) {
-        return 0;
+    pc = func_8009BA74(NULL, bank_id, script->flags, script->texture_id, script->bytecode, script->particle_lifetime,
+                       pos_x, pos_y, pos_z, vel_x, vel_y, vel_z, script->size, script->gravity, script->friction,
+                       D_800D6A98[id][script->texture_id]->flags, NULL);
+
+    if (pc != NULL) {
+        func_8009C4E0(pc, 0, bank_id >> 3);
     }
-    temp_v1 = temp_v0 * 4;
-    if (arg1 >= *(&D_800D6A38 + temp_v1)) {
-        return 0;
-    }
-    temp_v0_2 = *(*(&D_800D6A78 + temp_v1) + (arg1 * 4));
-    temp_a3 = temp_v0_2->unk2;
-    temp_v0_3 = func_8009BA74(arg2, arg3, 0, arg0, temp_v0_2->unkA, temp_a3, temp_v0_2 + 0x3C, temp_v0_2->unk6, arg2, arg3, arg4, arg5, arg6, arg7, temp_v0_2->unk2C, temp_v0_2->unkC, temp_v0_2->unk10, (*(*(&D_800D6A98 + temp_v1) + (temp_a3 * 4)))->unk16, 0);
-    var_a0 = temp_v0_3;
-    if (temp_v0_3 != 0) {
-        sp54 = temp_v0_3;
-        func_8009C4E0(var_a0, 0, arg0 >> 3);
-        var_a0 = sp54;
-    }
-    return var_a0;
+    return pc;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BE54.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_8009BF7C(s32 arg0, ? arg1) {
-    func_8009BC4C(0, arg0, arg1);
+UnkParticle *func_8009BF7C(s32 bank_id, s32 script_id) {
+    return func_8009BC4C(NULL, bank_id, script_id);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BF7C.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8009BFA8(void *arg0) {
-    if (arg0 != NULL) {
-        func_8009C4E0(0, arg0->unk8 >> 3);
+void func_8009BFA8(UnkParticle *pc) {
+    if (pc != NULL) {
+        func_8009C4E0(pc, NULL, pc->unk8 >> 3);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BFA8.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8009BFD4(UnkParticle *this_pc) {
+    UnkParticle *prev_pc;
+    UnkParticle *current_pc;
+    UnkGenerator *gn;
+    s32 bank_id;
 
-void func_8009BFD4(void *arg0) {
-    ? *sp18;
-    ? **temp_a2;
-    ? *var_v0;
-    ? *var_v1;
-    void *temp_a1;
-    void *temp_a1_2;
-    void *temp_v1;
+    bank_id = this_pc->unk8 >> 3;
+    current_pc = D_800D69C8[bank_id];
+    prev_pc = NULL;
 
-    temp_a2 = ((arg0->unk8 >> 3) * 4) + &D_800D69C8;
-    var_v0 = *temp_a2;
-    var_v1 = NULL;
-    if (var_v0 != NULL) {
-loop_1:
-        if (var_v0 == arg0) {
-            if (var_v1 == NULL) {
-                *temp_a2 = *var_v0;
+    while (current_pc != NULL) {
+        if (current_pc == this_pc) {
+            if (prev_pc == NULL) {
+                D_800D69C8[bank_id] = current_pc->next;
             } else {
-                *var_v1 = *var_v0;
+                prev_pc->next = current_pc->next;
             }
-            temp_v1 = arg0->unk5C;
-            if ((temp_v1 != NULL) && (arg0->unk6 & 4) && (temp_v1->unk9 == 2)) {
-                temp_v1->unk54 = temp_v1->unk54 - 1;
+            gn = this_pc->unk5C;
+
+            if ((gn != NULL) && (this_pc->unk6 & 4) && (gn->kind == 2)) {
+                gn->vars.vortex.lifetime--;
             }
-            temp_a1 = arg0->unk60;
-            if (temp_a1 != NULL) {
-                temp_a1->unk2A = temp_a1->unk2A - 1;
-                temp_a1_2 = arg0->unk60;
-                if (temp_a1_2->unk2A == 0) {
-                    sp18 = var_v0;
-                    func_8009B69C(temp_a1_2, temp_a1_2, temp_a2);
+            if (this_pc->unk60 != NULL) {
+                this_pc->unk60->unk2A--;
+
+                if (this_pc->unk60->unk2A == 0) {
+                    func_8009B69C(this_pc->unk60);
                 }
             }
-            *var_v0 = D_800D69C0;
-            D_800D69C0 = var_v0;
-            D_800D6AE0 -= 1;
-            return;
-        }
-        var_v1 = var_v0;
-        var_v0 = *var_v0;
-        if (var_v0 == NULL) {
+            current_pc->next = D_800D69C0;
+            D_800D69C0 = current_pc;
+            D_800D6AE0--;
 
-        } else {
-            goto loop_1;
+            break;
         }
+        prev_pc = current_pc;
+        current_pc = current_pc->next;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BFD4.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8009C0E4(void) {
-    ? **var_s2;
-    ? *temp_s1;
-    ? *var_s0;
+    UnkParticle *current_pc;
+    UnkParticle *next_pc;
+    s32 i;
 
-    var_s2 = &D_800D69C8;
-    do {
-        var_s0 = *var_s2;
-        if (var_s0 != NULL) {
-            do {
-                temp_s1 = *var_s0;
-                func_8009BFD4(var_s0);
-                var_s0 = temp_s1;
-            } while (temp_s1 != NULL);
-        }
-        var_s2 += 4;
-    } while (var_s2 != &D_800D6A08);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009C0E4.s")
-#endif
+    for (i = 0; i < 16; i++) {
+        current_pc = D_800D69C8[i];
 
-#ifdef MIPS_TO_C
-void *func_8009C154(void *arg0, f32 *arg1) {
-    u8 sp7;
-    u8 sp6;
-    u8 sp5;
-    u8 sp4;
+        while (current_pc != NULL) {
+            next_pc = current_pc->next;
 
-    sp4 = arg0->unk0;
-    sp5 = arg0->unk1;
-    sp6 = arg0->unk2;
-    sp7 = arg0->unk3;
-    *arg1 = sp4;
-    return arg0 + 4;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009C154.s")
-#endif
+            func_8009BFD4(current_pc);
 
-#ifdef MIPS_TO_C
-u8 *func_8009C18C(u8 *arg0, s16 *arg1) {
-    u8 *var_a0;
-    u8 temp_v0;
-    u8 var_v1;
-
-    temp_v0 = *arg0;
-    var_a0 = arg0 + 1;
-    var_v1 = temp_v0;
-    if (temp_v0 & 0x80) {
-        var_v1 = (*var_a0 + ((temp_v0 & 0x7F) << 8)) & 0xFFFF;
-        var_a0 += 1;
-    }
-    *arg1 = var_v1 + 1;
-    return var_a0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009C18C.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_8009C1C8(void *arg0, f32 arg1) {
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f12;
-    f32 temp_f20;
-    f32 temp_f20_2;
-    f32 temp_f20_3;
-    f32 temp_f22;
-    f32 temp_f22_2;
-    f32 temp_f24;
-    f32 temp_f24_2;
-    f32 temp_f26;
-    f32 temp_f2;
-
-    temp_f20 = arg0->unk34;
-    temp_f24 = arg0->unk38;
-    temp_f22 = arg0->unk30;
-    temp_f0 = atan2f(temp_f20, temp_f24);
-    sp58 = temp_f0;
-    temp_f26 = sinf(temp_f0);
-    temp_f0_2 = cosf(sp58);
-    sp4C = temp_f0_2;
-    temp_f0_3 = atan2f(temp_f22, (temp_f20 * temp_f26) + (temp_f24 * temp_f0_2));
-    sp54 = temp_f0_3;
-    sp48 = sinf(temp_f0_3);
-    sp44 = cosf(sp54);
-    sp5C = sqrtf((temp_f22 * temp_f22) + (temp_f20 * temp_f20) + (temp_f24 * temp_f24));
-    temp_f20_2 = random_f32() * 6.2831855f;
-    temp_f24_2 = sinf(arg1) * sp5C;
-    temp_f22_2 = cosf(temp_f20_2) * temp_f24_2;
-    temp_f20_3 = sinf(temp_f20_2) * temp_f24_2;
-    temp_f2 = cosf(arg1) * sp5C;
-    temp_f12 = -temp_f22_2;
-    arg0->unk30 = (temp_f22_2 * sp44) + (temp_f2 * sp48);
-    arg0->unk34 = (temp_f12 * temp_f26 * sp48) + (temp_f20_3 * sp4C) + (temp_f2 * temp_f26 * sp44);
-    arg0->unk38 = ((temp_f12 * sp4C * sp48) - (temp_f20_3 * temp_f26)) + (temp_f2 * sp4C * sp44);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009C1C8.s")
-#endif
-
-#ifdef MIPS_TO_C
-void func_8009C350(void *arg0, void *arg1) {
-    f32 sp24;
-    f32 sp20;
-    f32 sp1C;
-    f32 sp18;
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-
-    if (arg1 != NULL) {
-        temp_f16 = arg1->unk1C - arg0->unk24;
-        temp_f18 = arg1->unk20 - arg0->unk28;
-        sp1C = arg1->unk24 - arg0->unk2C;
-        temp_f0 = arg0->unk30;
-        temp_f2 = arg0->unk34;
-        temp_f14 = arg0->unk38;
-        sp20 = temp_f18;
-        sp24 = temp_f16;
-        temp_f2_2 = sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2) + (temp_f14 * temp_f14));
-        temp_f12 = (temp_f16 * temp_f16) + (temp_f18 * temp_f18) + (sp1C * sp1C);
-        if (temp_f12 != 0.0f) {
-            sp18 = temp_f2_2;
-            sp24 = temp_f16;
-            sp20 = temp_f18;
-            temp_f2_3 = temp_f2_2 / sqrtf(temp_f12);
-            arg0->unk30 = temp_f16 * temp_f2_3;
-            arg0->unk34 = temp_f18 * temp_f2_3;
-            arg0->unk38 = sp1C * temp_f2_3;
+            current_pc = next_pc;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009C350.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8009C44C(void *arg0, void *arg1, f32 arg2) {
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f2;
+u8 *func_8009C154(u8 *csr, f32 *f) {
+    u8 bytes[4];
 
-    if (arg1 != NULL) {
-        temp_f0 = arg1->unk1C - arg0->unk24;
-        temp_f2 = arg1->unk20 - arg0->unk28;
-        temp_f12 = arg1->unk24 - arg0->unk2C;
-        temp_f16 = (temp_f0 * temp_f0) + (temp_f2 * temp_f2) + (temp_f12 * temp_f12);
-        if (temp_f16 != 0.0f) {
-            temp_f14 = arg2 / temp_f16;
-            arg0->unk30 = arg0->unk30 + (temp_f14 * temp_f0);
-            arg0->unk34 = arg0->unk34 + (temp_f14 * temp_f2);
-            arg0->unk38 = arg0->unk38 + (temp_f14 * temp_f12);
-        }
+    bytes[0] = *csr++;
+    bytes[1] = *csr++;
+    bytes[2] = *csr++;
+    bytes[3] = *csr++;
+
+    *f = *(f32 *)bytes;
+
+    return csr;
+}
+
+u8 *func_8009C18C(u8 *csr, u16 *s) {
+    u16 value = *csr++;
+
+    if (value & 0x80) {
+        value = ((value & 0x7F) << 8) + *csr++;
+    }
+    *s = value + 1;
+
+    return csr;
+}
+
+void func_8009C1C8(UnkParticle *pc, f32 angle) {
+    Vector vel;
+    f32 sin_angle;
+    f32 magnitude;
+    f32 pitch;
+    f32 yaw;
+    f32 sin_pitch;
+    f32 cos_pitch;
+    f32 sin_yaw;
+    f32 cos_yaw;
+    f32 cos_angle;
+
+    vel.x = pc->unk30;
+    vel.y = pc->unk34;
+    vel.z = pc->unk38;
+
+    pitch = atan2f(vel.y, vel.z);
+    sin_pitch = sinf(pitch);
+    cos_pitch = cosf(pitch);
+
+    yaw = atan2f(vel.x, (vel.y * sin_pitch) + (vel.z * cos_pitch));
+    sin_yaw = sinf(yaw);
+    cos_yaw = cosf(yaw);
+
+    magnitude = sqrtf((vel.x * vel.x) + (vel.y * vel.y) + (vel.z * vel.z));
+
+    vel.y = random_f32() * 6.2831855f;
+
+    sin_angle = sinf(angle) * magnitude;
+
+    vel.z = sin_yaw;
+    vel.x = cosf(vel.y) * sin_angle;
+    vel.y = sinf(vel.y) * sin_angle;
+
+    cos_angle = cosf(angle) * magnitude;
+
+    pc->unk30 = (vel.x * cos_yaw) + (cos_angle * sin_yaw);
+    pc->unk34 = (((-vel.x * sin_pitch) * sin_yaw) + (vel.y * cos_pitch)) + ((cos_angle * sin_pitch) * cos_yaw);
+    pc->unk38 = (((-vel.x * cos_pitch) * vel.z) - (vel.y * sin_pitch)) + ((cos_angle * cos_pitch) * cos_yaw);
+}
+
+void func_8009C350(UnkParticle *pc, DObj *dobj) {
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 dist;
+
+    if (dobj == NULL) {
+        return;
+    }
+    dx = dobj->pos.v.x - pc->unk24;
+    dy = dobj->pos.v.y - pc->unk28;
+    dz = dobj->pos.v.z - pc->unk2C;
+
+    dist = sqrtf((pc->unk30 * pc->unk30) + (pc->unk34 * pc->unk34) + (pc->unk38 * pc->unk38));
+
+    if (((dx * dx) + (dy * dy) + (dz * dz)) != 0.0f) {
+        dist /= sqrtf((dx * dx) + (dy * dy) + (dz * dz));
+
+        pc->unk30 = dx * dist;
+        pc->unk34 = dy * dist;
+        pc->unk38 = dz * dist;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009C44C.s")
-#endif
+
+void func_8009C44C(UnkParticle *pc, DObj *dobj, f32 magnitude) {
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 dist;
+
+    if (dobj == NULL) {
+        return;
+    }
+    dx = dobj->pos.v.x - pc->unk24;
+    dy = dobj->pos.v.y - pc->unk28;
+    dz = dobj->pos.v.z - pc->unk2C;
+
+    dist = (dx * dx) + (dy * dy) + (dz * dz);
+
+    if (dist != 0.0f) {
+        dist = magnitude / dist;
+
+        pc->unk30 += dist * dx;
+        pc->unk34 += dist * dy;
+        pc->unk38 += dist * dz;
+    }
+}
 
 #ifdef MIPS_TO_C
 

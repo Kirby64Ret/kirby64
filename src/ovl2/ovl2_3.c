@@ -7,11 +7,129 @@
 #include "ovl1/ovl1_7.h"
 #include "main/lbvector.h"
 #include "main/lbmatrix.h"
+#include "main/math.h"
+#include "ovl1/game.h"
 #include "unk_structs/D_80129114.h"
 
 extern s32 D_800D6E10;
 extern u32 D_801D02AC[][8];
 extern s32 D_80129118;
+
+extern u32 D_800D7088;
+extern u32 D_800D6F4C;
+extern s32 D_800D6E40;
+extern f32 *D_801242B4[];
+extern s32 D_801293F8;
+extern s32 D_801293FC;
+extern f32 D_80129400;
+extern f32 D_80129404;
+
+f32 utilVec3Dist(Vector *v1, Vector *v2);
+f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3);
+s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2);
+void func_801DC98C_ovl17(void);
+
+struct TrackCameraNode {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ u8 unk2;
+    /* 0x03 */ u8 unk3;
+    /* 0x04 */ u8 unk4;
+    /* 0x05 */ u8 unk5;
+    /* 0x06 */ u8 unk6;
+    /* 0x07 */ u8 unk7;
+    /* 0x08 */ u8 unk8;
+    /* 0x09 */ u8 unk9;
+    /* 0x0A */ s16 unkA;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+    /* 0x1C */ f32 unk1C;
+    /* 0x20 */ f32 unk20;
+    /* 0x24 */ f32 unk24;
+    /* 0x28 */ f32 unk28;
+    /* 0x2C */ f32 unk2C;
+    /* 0x30 */ f32 unk30;
+    /* 0x34 */ f32 unk34;
+    /* 0x38 */ f32 unk38;
+    /* 0x3C */ f32 unk3C;
+    /* 0x40 */ f32 unk40;
+    /* 0x44 */ f32 unk44;
+    /* 0x48 */ f32 unk48;
+    /* 0x4C */ f32 unk4C;
+    /* 0x50 */ f32 unk50;
+    /* 0x54 */ f32 unk54;
+    /* 0x58 */ f32 unk58;
+    /* 0x5C */ f32 unk5C;
+    /* 0x60 */ f32 unk60;
+    /* 0x64 */ f32 unk64;
+    /* 0x68 */ f32 unk68;
+    /* 0x6C */ f32 unk6C;
+};
+
+struct TrackKirbyNode {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ u16 unk2;
+    /* 0x04 */ u8 unk4;
+    /* 0x05 */ u8 unk5;
+    /* 0x06 */ u8 unk6;
+    /* 0x07 */ u8 unk7;
+    /* 0x08 */ u8 unk8;
+    /* 0x09 */ u8 unk9;
+    /* 0x0A */ u8 unkA;
+    /* 0x0B */ u8 unkB;
+    /* 0x0C */ s16 unkC;
+    /* 0x0E */ s16 unkE;
+    /* 0x10 */ s16 unk10;
+    /* 0x12 */ s16 unk12;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+    /* 0x1C */ u32 unk1C;
+    /* 0x20 */ struct TrackCameraNode unk20;
+};
+
+struct TrackConnection {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ u8 unk2;
+    /* 0x03 */ u8 unk3;
+};
+
+struct TrackPathPoint {
+    /* 0x00 */ f32 unk0;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ f32 unk8;
+};
+
+struct TrackFooter {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ s16 unk2;
+    /* 0x04 */ u32 unk4;
+    /* 0x08 */ struct TrackPathPoint *unk8;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 *unk10;
+    /* 0x14 */ f32 (*unk14)[5];
+};
+
+struct TrackNodeHeader {
+    /* 0x00 */ struct TrackKirbyNode *unk0;
+    /* 0x04 */ struct TrackFooter *unk4;
+    /* 0x08 */ struct TrackConnection *unk8;
+    /* 0x0C */ s16 unkC;
+    /* 0x0E */ s16 unkE;
+};
+
+struct TrackHit {
+    /* 0x00 */ u8 unk0[0xE];
+    /* 0x0E */ u16 unkE;
+    /* 0x10 */ u16 unk10;
+    /* 0x12 */ u16 unk12;
+};
+
+s32 func_801046A0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, struct TrackHit **arg5);
 
 // another self-verification check
 s32 func_800F88A0(void) {
@@ -25,8 +143,6 @@ s32 func_800F88A0(void) {
     return ret;
 }
 
-// regalloc https://decomp.me/scratch/uC9Ye
-#ifdef NON_MATCHING
 void func_800F88C8(GObj *g, s32 arg1, f32 arg2) {
     s32 objId = g->objId;
     struct Unk80129114_4_4 *sub4_4;
@@ -35,7 +151,7 @@ void func_800F88C8(GObj *g, s32 arg1, f32 arg2) {
 
     D_800E6150[objId] = arg1;
     D_800E5F90[objId] = arg1;
-    sub4 = &D_80129114->unk4[arg1];
+    sub4 = (struct Unk80129114_4 *) ((arg1 * 0x10) + (s32) D_80129114->unk4);
     sub4_4 = sub4->unk4;
     if (arg2 <= 0.0f) {
         arg2 = 0.001f;
@@ -54,9 +170,6 @@ void func_800F88C8(GObj *g, s32 arg1, f32 arg2) {
     D_800E6D90[objId] = arg2;
     D_800E6BD0[objId] = arg2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F88C8.s")
-#endif
 
 f32 vec3_abs_angle_diff(Vector *v1, Vector *v2) {
     Vector tmp;
@@ -89,149 +202,121 @@ void func_800F8A24(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-
 s32 func_800F8B1C(s32 arg0) {
-    f32 *temp_t1;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f2;
-    f32 var_f12;
-    f32 var_f2;
-    s16 temp_t0;
-    s32 *temp_a1;
-    s32 temp_a2;
-    s32 temp_a3;
-    s32 var_a0;
-    s32 var_t2;
-    u8 *temp_t3;
-    u8 temp_t0_2;
-    void *temp_v0;
+    s32 *nodePtr;
+    s32 cur;
+    struct TrackNodeHeader *node;
+    s32 n;
+    f32 *progressPtr;
+    f32 progress;
+    s32 dir;
+    s32 idx;
+    struct TrackConnection *conn;
+    f32 len;
+    f32 dist;
+    f32 nextLen;
+    f32 newProgress;
 
-    temp_a1 = &D_800E5F90[arg0];
-    temp_a2 = *temp_a1;
-    temp_a3 = D_80129114->unk4;
-    temp_v0 = (temp_a2 * 0x10) + temp_a3;
-    temp_t0 = temp_v0->unkC;
-    temp_t1 = &D_800E6BD0[arg0];
-    if (temp_t0 == 0) {
+    nodePtr = &D_800E5F90[arg0];
+    cur = *nodePtr;
+    node = (struct TrackNodeHeader *) ((cur * 0x10) + (s32) D_80129114->unk4);
+    n = node->unkC;
+    if (n == 0) {
         return 0;
     }
-    temp_f0 = *temp_t1;
-    var_a0 = 0;
-    var_t2 = -1;
-    if (temp_f0 > 1.0f) {
-        var_a0 = 1;
+    dir = 0;
+    progressPtr = &D_800E6BD0[arg0];
+    progress = *progressPtr;
+    idx = -1;
+    if (progress > 1.0f) {
+        dir = 1;
     }
-    if (temp_f0 < 0.0f) {
-        var_a0 = -1;
+    if (progress < 0.0f) {
+        dir = -1;
     }
-    if (var_a0 == 0) {
+    if (dir == 0) {
         return 0;
     }
-    temp_t3 = temp_v0->unk8;
-    if (var_a0 > 0) {
-        if ((temp_t0 != 0) && ((temp_t3 + (temp_t0 * 4))->unk-4 != 0)) {
-            var_t2 = temp_t0 - 1;
+    conn = node->unk8;
+    if (dir > 0) {
+        if ((n != 0) && (conn[n - 1].unk0 != 0)) {
+            idx = n - 1;
         }
-    } else if (*temp_t3 == 0) {
-        var_t2 = 0;
+    } else if (conn->unk0 == 0) {
+        idx = 0;
     }
-    if (var_t2 == -1) {
+    if (idx == -1) {
         return 0;
     }
-    temp_f2 = temp_v0->unk4->unkC;
-    if (var_a0 > 0) {
-        var_f12 = (temp_f0 * temp_f2) - temp_f2;
+    len = node->unk4->unkC;
+    if (dir > 0) {
+        dist = (progress * len) - len;
     } else {
-        var_f12 = temp_f0 * temp_f2;
+        dist = progress * len;
     }
-    temp_t0_2 = (temp_t3 + (var_t2 * 4))->unk2;
-    temp_f0_2 = (temp_a3 + (temp_t0_2 * 0x10))->unk4->unkC;
-    if (var_a0 > 0) {
-        var_f2 = var_f12 / temp_f0_2;
+    n = conn[idx].unk2;
+    node = &((struct TrackNodeHeader *) D_80129114->unk4)[n];
+    nextLen = node->unk4->unkC;
+    if (dir > 0) {
+        newProgress = dist / nextLen;
     } else {
-        var_f2 = (temp_f0_2 + var_f12) / temp_f0_2;
+        newProgress = (nextLen + dist) / nextLen;
     }
-    D_800E6150[arg0] = temp_a2;
-    *temp_a1 = temp_t0_2;
-    D_800E6D90[arg0] = var_f2;
-    *temp_t1 = var_f2;
+    D_800E6150[arg0] = cur;
+    *nodePtr = n;
+    D_800E6D90[arg0] = newProgress;
+    *progressPtr = newProgress;
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F8B1C.s")
-#endif
 
 #ifdef MIPS_TO_C
-
+// close but not matching: stack layout and register allocation differ
 void func_800F8C70(s32 *arg0) {
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    void *sp50;
-    s32 sp4C;
-    void *sp48;
-    s32 sp34;
-    s32 sp2C;
-    s32 *sp28;
-    f32 *temp_v0_3;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f6;
-    f32 var_f2;
-    s32 *temp_a3;
-    s32 temp_v0;
-    u16 temp_a1;
-    u16 temp_a2;
-    u16 var_t0;
-    void *temp_a0;
-    void *temp_v0_2;
+    Vector spA;
+    Vector spB;
+    struct TrackHit *hit;
+    s32 *nodePtr;
+    struct TrackFooter *footer;
+    s32 objId;
+    u16 newNode;
+    u16 cell;
+    s32 idx;
+    f32 dx;
+    f32 dz;
+    f32 dist;
+    f32 delta;
 
-    temp_v0 = *arg0;
-    temp_f6 = (gEntitiesPosYArray[temp_v0] + gEntitiesNextPosYArray[temp_v0] + 20.0f) / 2.0f;
-    sp2C = temp_v0 * 4;
-    sp60 = gEntitiesPosXArray[temp_v0];
-    sp68 = gEntitiesPosZArray[temp_v0];
-    sp54 = gEntitiesNextPosXArray[temp_v0];
-    sp5C = gEntitiesNextPosZArray[temp_v0];
-    sp58 = temp_f6;
-    sp64 = temp_f6;
-    if (func_801046A0(&sp60, &sp54, 0, 0, 0, &sp50) != 0) {
-        temp_a3 = sp2C + D_800E5F90;
-        temp_a1 = sp50->unkE;
-        if (temp_a1 != *temp_a3) {
-            temp_a2 = sp50->unk12;
-            temp_a0 = (D_80129114->unk4 + (temp_a1 * 0x10))->unk4;
-            var_t0 = temp_a2;
-            if (temp_a0->unk0 != 0) {
-                var_t0 = temp_a2 + 1;
-            }
-            temp_v0_2 = temp_a0->unk8 + (var_t0 * 0xC);
-            temp_f0 = sp54 - temp_v0_2->unk0;
-            sp28 = temp_a3;
-            sp34 = temp_a2;
-            temp_f2 = sp5C - temp_v0_2->unk8;
-            sp4C = temp_a1;
-            sp48 = temp_a0;
-            temp_f0_2 = sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2));
-            *temp_a3 = temp_a1;
-            temp_v0_3 = sp2C + D_800E6BD0;
-            *temp_v0_3 = *(temp_a0->unk10 + (temp_a2 * 4));
-            temp_f2_2 = temp_f0_2 / temp_a0->unkC;
-            if (*(D_800E6A10 + sp2C) >= 0.0f) {
-                var_f2 = temp_f2_2 * 0.1f;
-            } else {
-                var_f2 = temp_f2_2 * -0.1f;
-            }
-            *temp_v0_3 += var_f2;
-        }
+    objId = *arg0;
+    spA.y = spB.y = (gEntitiesPosYArray[objId] + gEntitiesNextPosYArray[objId] + 20.0f) / 2;
+    spA.x = gEntitiesPosXArray[objId];
+    spA.z = gEntitiesPosZArray[objId];
+    spB.x = gEntitiesNextPosXArray[objId];
+    spB.z = gEntitiesNextPosZArray[objId];
+    if (func_801046A0(&spA, &spB, 0, 0, 0, &hit) == 0) {
+        return;
     }
+    nodePtr = &D_800E5F90[objId];
+    newNode = hit->unkE;
+    if (newNode == *nodePtr) {
+        return;
+    }
+    footer = ((struct TrackNodeHeader *) D_80129114->unk4)[newNode].unk4;
+    cell = hit->unk12;
+    idx = cell;
+    if (footer->unk0 != 0) {
+        idx = cell + 1;
+    }
+    dx = spB.x - footer->unk8[idx].unk0;
+    dz = spB.z - footer->unk8[idx].unk8;
+    dist = sqrtf((dx * dx) + (dz * dz));
+    *nodePtr = newNode;
+    D_800E6BD0[objId] = footer->unk10[cell];
+    if (D_800E6A10[objId] >= 0.0f) {
+        delta = (dist / footer->unkC) * 0.1f;
+    } else {
+        delta = (dist / footer->unkC) * -0.1f;
+    }
+    D_800E6BD0[objId] += delta;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F8C70.s")
@@ -429,23 +514,19 @@ block_9:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F90C0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 s32 func_800F93EC(s32 arg0) {
-    if ((*(D_80129114->unk4 + (D_800E5F90[arg0] * 0x10)))->unkE & 1) {
+    struct TrackKirbyNode *node = (struct TrackKirbyNode *) D_80129114->unk4[D_800E5F90[arg0]].unk0;
+
+    if (node->unkE & 1) {
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F93EC.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 s32 func_800F9438(s32 arg0) {
-    u8 temp_v1;
-    void *temp_v0;
+    struct TrackKirbyNode *node;
+    s32 shade;
+    s32 max;
 
     if (D_800D6F4C != 0) {
         return 0;
@@ -453,28 +534,26 @@ s32 func_800F9438(s32 arg0) {
     if (D_800BE4F8 != 1) {
         return 0;
     }
-    temp_v0 = *(D_80129114->unk4 + (arg0 * 0x10));
-    if (!(temp_v0->unkE & 1)) {
+    node = ((struct TrackNodeHeader *) D_80129114->unk4)[arg0].unk0;
+    if (!(node->unkE & 1)) {
         return 0;
     }
-    if ((temp_v0->unk7 == 0x1F) && (D_800D6E40 == 0)) {
+    max = 0x1F;
+    if ((max == node->unk7) && (D_800D6E40 == 0)) {
         return 0;
     }
-    D_800BE52C = temp_v0->unk4;
-    D_800BE530 = temp_v0->unk5;
-    D_800BE534 = temp_v0->unk6;
-    temp_v1 = temp_v0->unk7;
-    if (temp_v1 == 0x1F) {
-        D_800BE538 = 0x1F - temp_v1;
+    D_800BE52C = node->unk4;
+    D_800BE530 = node->unk5;
+    D_800BE534 = node->unk6;
+    shade = node->unk7;
+    if (max == shade) {
+        D_800BE538 = max - shade;
     } else {
-        D_800BE538 = temp_v1;
+        D_800BE538 = shade;
     }
     D_800BE4FC = 2;
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9438.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -566,58 +645,46 @@ f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F951C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800F9828(s32 arg0, s32 arg1) {
-    func_800F951C(D_800E5F90[arg0], D_800E6BD0[arg0], D_800E5F90[arg1], D_800E6BD0[arg1]);
+f32 func_800F9828(s32 arg0, s32 arg1) {
+    return func_800F951C(D_800E5F90[arg0], D_800E6BD0[arg0], D_800E5F90[arg1], D_800E6BD0[arg1]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9828.s")
-#endif
 
-#ifdef MIPS_TO_C
+struct TrackPosition {
+    s32 unk0;
+    f32 unk4;
+};
 
-s32 func_800F9888(void *arg0, ? arg1) {
+s32 func_800F9888(struct TrackPosition *arg0, f32 arg1) {
+    s32 pad[1];
     s32 sp20;
     f32 sp1C;
-    s32 temp_v0;
+    s32 ret;
 
     sp20 = arg0->unk0;
     sp1C = arg0->unk4;
-    temp_v0 = func_800F9974(arg1, &sp20, &sp1C, arg1, arg0);
-    if (temp_v0 == 0) {
+    ret = func_800F9974(&sp20, &sp1C, arg1);
+    if (ret == 0) {
         arg0->unk0 = sp20;
         arg0->unk4 = sp1C;
     }
-    return temp_v0;
+    return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9888.s")
-#endif
 
 #ifdef MIPS_TO_C
-
-s32 func_800F98EC(s32 arg0, ? arg1) {
+// close but not matching: sp28/sp24 land 4 bytes higher on the stack than the target
+s32 func_800F98EC(s32 arg0, f32 arg1) {
     s32 sp28;
     f32 sp24;
-    s32 *sp20;
-    f32 *sp1C;
-    f32 *temp_a3;
-    s32 *temp_v1;
-    s32 temp_v0;
+    s32 ret;
 
-    temp_v1 = &D_800E5F90[arg0];
-    temp_a3 = &D_800E6BD0[arg0];
-    sp1C = temp_a3;
-    sp20 = temp_v1;
-    sp28 = *temp_v1;
-    sp24 = *temp_a3;
-    temp_v0 = func_800F9974(arg1, &sp28, &sp24, arg1, temp_a3);
-    if (temp_v0 == 0) {
-        *sp20 = sp28;
-        *sp1C = sp24;
+    sp28 = D_800E5F90[arg0];
+    sp24 = D_800E6BD0[arg0];
+    ret = func_800F9974(&sp28, &sp24, arg1);
+    if (ret == 0) {
+        D_800E5F90[arg0] = sp28;
+        D_800E6BD0[arg0] = sp24;
     }
-    return temp_v0;
+    return ret;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F98EC.s")
@@ -770,16 +837,13 @@ block_43:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9974.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800F9C54(Vector* arg0, f32 arg1, Vector* arg2, s32 arg3) {
+f32 func_800F9C54(s32 *arg0, f32 arg1, Vector *arg2) {
+    s32 pad[1];
     Vector tmp;
 
-    mtxGetInterpolatedPosition(&tmp, arg0, arg1, arg3);
-    utilVec3Dist(arg2, &tmp);
+    mtxGetInterpolatedPosition(&tmp, arg0, arg1);
+    return utilVec3Dist(arg2, &tmp);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9C54.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -886,45 +950,34 @@ block_10:
 #endif
 
 #ifdef MIPS_TO_C
+// close but not matching: target allocates 1.0f to $f0 and 0.0f to $f2, this compiles to the opposite
 f32 func_800F9F10(f32 arg0, s32 arg1) {
-    f32 var_f12;
-
-    var_f12 = arg0;
-    if (var_f12 > 1.0f) {
-        if (arg1 == 1) {
-            return var_f12 - 1.0f;
+    if (arg0 > 1.0f) {
+        if (arg1 != 1) {
+            return 1.0f;
         }
-        return 1.0f;
-    }
-    if (var_f12 < 0.0f) {
+        arg0 -= 1.0f;
+    } else if (arg0 < 0.0f) {
         if (arg1 == 1) {
-            return var_f12 + 1.0f;
+            arg0 += 1.0f;
+        } else {
+            arg0 = 0.0f;
         }
-        var_f12 = 0.0f;
-        /* Duplicate return node #8. Try simplifying control flow for better match */
-        return var_f12;
     }
-    return var_f12;
+    return arg0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9F10.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-f32 func_800F9F80(s32 arg0, s32 arg1, s32 arg2) {
-    ? sp2C;
-    ? sp20;
-    f32 sp1C;
+f32 func_800F9F80(Vector *arg0, Vector *arg1, Vector *arg2) {
+    Vector sp2C;
+    Vector sp20;
 
     lbvector_Diff(&sp2C, arg2, arg1);
     lbvector_Diff(&sp20, arg0, arg1);
-    sp1C = utilVec3Dot(&sp2C, &sp20);
-    return sp1C / utilVec3Mag(&sp2C);
+    return utilVec3Dot(&sp2C, &sp20) / utilVec3Mag(&sp2C);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9F80.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1073,16 +1126,11 @@ void func_800FA2D4(void *arg0, void *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA2D4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800FA414(s32 arg0) {
     if (!(D_800D7088 & 0x80000000)) {
         D_800D7088 = arg0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA414.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1793,14 +1841,9 @@ void func_800FB9B4(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB9B4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800FBA78(void) {
     func_801DC98C_ovl17();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBA78.s")
-#endif
 
 #ifdef MIPS_TO_C
 

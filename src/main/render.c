@@ -7,6 +7,7 @@
 #include "render.h"
 #include "object_manager.h"
 #include "lbmatrix.h"
+#include "vi.h"
 
 extern u32 D_8004AB98;
 
@@ -14,10 +15,29 @@ extern Gfx *D_8004ABA0;
 extern Gfx *D_8004ABA8[4];
 extern Gfx D_8004ABB8[60];
 
+extern Gfx *D_8004ADA4[3];
 extern Gfx *D_8004ADB0;
 extern Gfx *D_8004A3D4[];
 
 extern Gfx *D_8004A404;
+
+extern u16 D_8004A446;
+extern u16 D_8004A448;
+
+void gtlLoadUcode(Gfx **dlist, u32 kind);
+
+void HS64_PerspectiveF(Mat4 mf, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
+void func_8001B28C(Mat4 mf, u16 *perspNorm, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale);
+void HS64_LookAt(Mtx *outMtx, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 roll,
+                 f32 xUp, f32 yUp, f32 zUp);
+void func_8001AD90(Mtx *m, LookAt *l, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt,
+                   f32 roll, f32 xUp, f32 yUp, f32 zUp);
+void *mlAlloc(struct DynamicBuffer *buffer, u32 size, u32 alignment);
+void guLookAt(Mtx *m, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt,
+              f32 xUp, f32 yUp, f32 zUp);
+void guLookAtF(f32 mf[4][4], f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt,
+               f32 xUp, f32 yUp, f32 zUp);
+void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
 
 // like DObjPayloadTypeC, but with a second display list drawn in front
 typedef struct {
@@ -1731,151 +1751,79 @@ void func_8001503C(DObj* dobj) {
     }
 }
 
-#ifdef MIPS_TO_C
+void func_80015368(GObj* obj) {
+    DObj* dobj = obj->data.dobj;
+    void* segaddr = NULL;
+    s32 ret;
+    DObjPayloadTypeG* payload;
+    s32 i;
+    f32 dist;
+    DObjPayloadTypeC* curPayload;
+    Gfx* sp30;
 
-void func_80015368(void *arg0) {
-    s32 sp44;
-    s32 *sp34;
-    u32 sp30;
-    ? *var_a2_2;
-    f32 *var_s0;
-    f32 temp_f0;
-    s32 *temp_a2;
-    s32 *temp_v0;
-    s32 *temp_v1;
-    s32 *var_a2;
-    s32 var_a3;
-    s32 var_s0_2;
-    s32 var_s0_3;
-    s32 var_s4;
-    s32 var_t3;
-    s32 var_v0;
-    void **temp_v1_2;
-    void **temp_v1_3;
-    void **temp_v1_4;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_s3;
-    void *temp_t7;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v1_5;
-    void *var_a0;
-    void *var_s0_4;
-
-    temp_s3 = arg0->unk3C;
     renderObjectScale = 1.0f;
-    var_s4 = 0;
-    if (!(temp_s3->unk54 & 2)) {
-        var_s0 = temp_s3->unk50;
-        if (var_s0 != NULL) {
+
+    if (!(dobj->flags & 2)) {
+        payload = dobj->data.data;
+        if (payload != NULL) {
             renderLevelOfDetail = 0;
-            temp_f0 = renderDistanceToCamera(temp_s3);
-            if (temp_f0 < *var_s0) {
-                do {
-                    var_s0 += 8;
-                    renderLevelOfDetail += 1;
-                } while (temp_f0 < *var_s0);
+            dist = renderDistanceToCamera(dobj);
+            while (payload->drawDistance > dist) {
+                payload++;
+                renderLevelOfDetail++;
             }
-            temp_a2 = var_s0->unk4;
-            sp34 = temp_a2;
+
+            curPayload = payload->typeC;
             sp30 = D_8004ABA0;
-            var_a2 = temp_a2;
-            var_t3 = renderPrepareModelMatrix(&D_8004ABA0, temp_s3, temp_a2);
-            if ((var_a2 != NULL) && !(temp_s3->unk54 & 1)) {
-                var_v0 = *var_a2;
-                if (var_v0 != 4) {
-                    do {
-                        var_s0_2 = var_v0 * 4;
-                        if (var_a2->unk4 != 0) {
-                            var_a0 = *(&D_8004ABA8 + var_s0_2);
-                            if (D_8004ABA0 != var_a0) {
-                                do {
-                                    temp_t7 = *(&gDisplayListHeads + var_s0_2);
-                                    temp_t7->unk0 = var_a0->unk0;
-                                    temp_t7->unk4 = var_a0->unk4;
-                                    temp_v1 = &gDisplayListHeads + (var_a2->unk0 * 4);
-                                    *temp_v1 += 8;
-                                    temp_v0 = &D_8004ABA8 + (var_a2->unk0 * 4);
-                                    *temp_v0 += 8;
-                                    var_s0_2 = var_a2->unk0 * 4;
-                                    var_a0 = *(&D_8004ABA8 + var_s0_2);
-                                } while (D_8004ABA0 != var_a0);
-                            }
-                            if (temp_s3->unk80 != 0) {
-                                temp_v1_2 = &gDisplayListHeads + var_s0_2;
-                                if (var_s4 == 0) {
-                                    var_s4 = D_8004A404;
-                                    sp34 = var_a2;
-                                    sp44 = var_t3;
-                                    renderLoadTextures(temp_s3, &gDisplayListHeads + var_s0_2, var_a2, &D_8004ABA8);
-                                    var_s0_3 = var_a2->unk0;
-                                } else {
-                                    temp_v0_2 = *temp_v1_2;
-                                    *temp_v1_2 = temp_v0_2 + 8;
-                                    temp_v0_2->unk4 = var_s4;
-                                    temp_v0_2->unk0 = 0xDB060038;
-                                    var_s0_3 = var_a2->unk0;
-                                }
-                                var_s0_2 = var_s0_3 * 4;
-                            }
-                            temp_v1_3 = &gDisplayListHeads + var_s0_2;
-                            temp_v0_3 = *temp_v1_3;
-                            *temp_v1_3 = temp_v0_3 + 8;
-                            temp_v0_3->unk0 = 0xDE000000;
-                            temp_v0_3->unk4 = var_a2->unk4;
+            ret = renderPrepareModelMatrix(&D_8004ABA0, dobj);
+
+            if (curPayload != NULL && !(dobj->flags & 1)) {
+                while (curPayload->dlistID != 4) {
+                    if (curPayload->dlist != NULL) {
+                        while (D_8004ABA8[curPayload->dlistID] != D_8004ABA0) {
+                            *gDisplayListHeads[curPayload->dlistID]++ = *D_8004ABA8[curPayload->dlistID]++;
                         }
-                        var_v0 = var_a2->unk8;
-                        var_a2 += 8;
-                    } while (var_v0 != 4);
+
+                        if (dobj->mobjList != NULL) {
+                            if (segaddr == NULL) {
+                                segaddr = D_8004A404;
+                                renderLoadTextures(dobj, &gDisplayListHeads[curPayload->dlistID]);
+                            } else {
+                                gSPSegment(gDisplayListHeads[curPayload->dlistID]++, 0x0E, segaddr);
+                            }
+                        }
+
+                        gSPDisplayList(gDisplayListHeads[curPayload->dlistID]++, curPayload->dlist);
+                    }
+                    curPayload++;
                 }
             }
-            temp_a0 = temp_s3->unk10;
-            if (temp_a0 != NULL) {
-                sp44 = var_t3;
-                func_8001503C(temp_a0);
+
+            if (dobj->firstChild != NULL) {
+                func_8001503C(dobj->firstChild);
             }
-            var_a2_2 = &D_8004ABA8;
-            var_a3 = 0;
+
             D_8004ABA0 = sp30;
-            do {
-                if (D_8004ABA0 < var_a2_2->unk0) {
-                    var_a2_2->unk0 = D_8004ABA0;
-                    if ((var_t3 != 0) && ((temp_v1_4 = &gDisplayListHeads + var_a3, (temp_s3->unk14 == 1)) || (temp_s3->unk8 != NULL))) {
-                        temp_a0_2 = *temp_v1_4;
-                        *temp_v1_4 = temp_a0_2 + 8;
-                        temp_a0_2->unk4 = 0x40;
-                        temp_a0_2->unk0 = 0xD8380002;
+            for (i = 0; i < 4; i++) {
+                if (D_8004ABA8[i] > D_8004ABA0) {
+                    D_8004ABA8[i] = D_8004ABA0;
+                    if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                        gSPPopMatrix(gDisplayListHeads[i]++, G_MTX_MODELVIEW);
                     }
                 }
-                if (D_8004ABA0 < var_a2_2->unk4) {
-                    var_a2_2->unk4 = D_8004ABA0;
-                    if ((var_t3 != 0) && ((temp_v1_5 = &gDisplayListHeads + var_a3, (temp_s3->unk14 == 1)) || (temp_s3->unk8 != NULL))) {
-                        temp_a0_3 = temp_v1_5->unk4;
-                        temp_v1_5->unk4 = temp_a0_3 + 8;
-                        temp_a0_3->unk4 = 0x40;
-                        temp_a0_3->unk0 = 0xD8380002;
-                    }
-                }
-                var_a2_2 += 8;
-                var_a3 += 8;
-            } while (var_a2_2 != &D_8004ABB8);
-            if (temp_s3->unkC == 0) {
-                var_s0_4 = temp_s3->unk8;
-                if (var_s0_4 != NULL) {
-                    do {
-                        func_8001503C(var_s0_4);
-                        var_s0_4 = var_s0_4->unk8;
-                    } while (var_s0_4 != NULL);
+                do { } while (0);
+            }
+
+            if (dobj->prev == NULL) {
+                DObj* curr = dobj->next;
+                while (curr != NULL) {
+                    func_8001503C(curr);
+                    curr = curr->next;
                 }
             }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80015368.s")
-#endif
 
 void func_800156C4(DObj* dobj) {
     s32 ret;
@@ -1924,158 +1872,79 @@ void func_8001585C(GObj *gobj) {
     func_800156C4(gobj->data.dobj);
 }
 
-#ifdef MIPS_TO_C
+void func_8001588C(DObj* dobj) {
+    void* segaddr = NULL;
+    s32 ret;
+    DObjPayloadTypeI* payload;
+    Gfx* sp48;
+    s32 i;
+    UNUSED s32 temp;
 
-void func_8001588C(void *arg0) {
-    s32 sp48;
-    s32 *sp44;
-    u32 sp40;
-    f32 sp34;
-    ? *var_a2_2;
-    s32 *temp_a2;
-    s32 *temp_v0_2;
-    s32 *temp_v1_2;
-    s32 *var_a2;
-    s32 var_a1;
-    s32 var_a3;
-    s32 var_s0;
-    s32 var_s0_2;
-    s32 var_s4;
-    s32 var_t3;
-    void **temp_v1;
-    void **temp_v1_3;
-    void **temp_v1_4;
-    void **temp_v1_5;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_t9;
-    void *temp_v0;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v1_6;
-    void *var_a0;
-    void *var_s0_3;
+    if (!(dobj->flags & 2)) {
+        f32 sp34 = renderObjectScale;
 
-    var_s4 = 0;
-    if (!(arg0->unk54 & 2)) {
-        sp34 = renderObjectScale;
-        temp_a2 = arg0->unk50;
-        sp40 = D_8004ABA0;
-        sp44 = temp_a2;
-        var_a2 = temp_a2;
-        var_t3 = renderPrepareModelMatrix(&D_8004ABA0, arg0, temp_a2);
-        if ((var_a2 != NULL) && !(arg0->unk54 & 1)) {
-            var_a1 = *var_a2;
-            if (var_a1 != 4) {
-                do {
-                    if (var_a2->unk8 != 0) {
-                        temp_v1 = &gDisplayListHeads + (var_a1 * 4);
-                        if (var_a2->unk4 != 0) {
-                            temp_v0 = *temp_v1;
-                            *temp_v1 = temp_v0 + 8;
-                            temp_v0->unk0 = 0xDE000000;
-                            temp_v0->unk4 = var_a2->unk4;
-                            var_a1 = var_a2->unk0;
-                        }
-                        var_s0 = var_a1 * 4;
-                        var_a0 = *(&D_8004ABA8 + var_s0);
-                        if (D_8004ABA0 != var_a0) {
-                            do {
-                                temp_t9 = *(&gDisplayListHeads + var_s0);
-                                temp_t9->unk0 = var_a0->unk0;
-                                temp_t9->unk4 = var_a0->unk4;
-                                temp_v1_2 = &gDisplayListHeads + (var_a2->unk0 * 4);
-                                *temp_v1_2 += 8;
-                                temp_v0_2 = &D_8004ABA8 + (var_a2->unk0 * 4);
-                                *temp_v0_2 += 8;
-                                var_s0 = var_a2->unk0 * 4;
-                                var_a0 = *(&D_8004ABA8 + var_s0);
-                            } while (D_8004ABA0 != var_a0);
-                        }
-                        if (arg0->unk80 != 0) {
-                            temp_v1_3 = &gDisplayListHeads + var_s0;
-                            if (var_s4 == 0) {
-                                var_s4 = D_8004A404;
-                                sp44 = var_a2;
-                                sp48 = var_t3;
-                                renderLoadTextures(arg0, &gDisplayListHeads + var_s0, var_a2, &D_8004ABA8);
-                                var_s0_2 = var_a2->unk0;
-                            } else {
-                                temp_v0_3 = *temp_v1_3;
-                                *temp_v1_3 = temp_v0_3 + 8;
-                                temp_v0_3->unk4 = var_s4;
-                                temp_v0_3->unk0 = 0xDB060038;
-                                var_s0_2 = var_a2->unk0;
-                            }
-                            var_s0 = var_s0_2 * 4;
-                        }
-                        temp_v1_4 = &gDisplayListHeads + var_s0;
-                        temp_v0_4 = *temp_v1_4;
-                        *temp_v1_4 = temp_v0_4 + 8;
-                        temp_v0_4->unk0 = 0xDE000000;
-                        temp_v0_4->unk4 = var_a2->unk8;
+        payload = dobj->data.data;
+        sp48 = D_8004ABA0;
+        ret = renderPrepareModelMatrix(&D_8004ABA0, dobj);
+
+        if (payload != NULL && !(dobj->flags & 1)) {
+            while (payload->dlistID != 4) {
+                if (payload->dlistAfter != NULL) {
+                    if (payload->dlistBefore != NULL) {
+                        gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlistBefore);
                     }
-                    var_a1 = var_a2->unkC;
-                    var_a2 += 0xC;
-                } while (var_a1 != 4);
+
+                    while (D_8004ABA8[payload->dlistID] != D_8004ABA0) {
+                        *gDisplayListHeads[payload->dlistID]++ = *D_8004ABA8[payload->dlistID]++;
+                    }
+
+                    if (dobj->mobjList != NULL) {
+                        if (segaddr == NULL) {
+                            segaddr = D_8004A404;
+                            renderLoadTextures(dobj, &gDisplayListHeads[payload->dlistID]);
+                        } else {
+                            gSPSegment(gDisplayListHeads[payload->dlistID]++, 0x0E, segaddr);
+                        }
+                    }
+
+                    gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlistAfter);
+                }
+                payload++;
             }
         }
-        temp_a0 = arg0->unk10;
-        if (temp_a0 != NULL) {
-            sp48 = var_t3;
-            func_8001588C(temp_a0);
+
+        if (dobj->firstChild != NULL) {
+            func_8001588C(dobj->firstChild);
         }
-        var_a2_2 = &D_8004ABA8;
-        var_a3 = 0;
-        D_8004ABA0 = sp40;
-        do {
-            if (D_8004ABA0 < var_a2_2->unk0) {
-                var_a2_2->unk0 = D_8004ABA0;
-                if ((var_t3 != 0) && ((temp_v1_5 = &gDisplayListHeads + var_a3, (arg0->unk14 == 1)) || (arg0->unk8 != NULL))) {
-                    temp_a0_2 = *temp_v1_5;
-                    *temp_v1_5 = temp_a0_2 + 8;
-                    temp_a0_2->unk4 = 0x40;
-                    temp_a0_2->unk0 = 0xD8380002;
+
+        D_8004ABA0 = sp48;
+
+        for (i = 0; i < 4; i++) {
+            if (D_8004ABA8[i] > D_8004ABA0) {
+                D_8004ABA8[i] = D_8004ABA0;
+                if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                    gSPPopMatrix(gDisplayListHeads[i]++, G_MTX_MODELVIEW);
                 }
             }
-            if (D_8004ABA0 < var_a2_2->unk4) {
-                var_a2_2->unk4 = D_8004ABA0;
-                if ((var_t3 != 0) && ((temp_v1_6 = &gDisplayListHeads + var_a3, (arg0->unk14 == 1)) || (arg0->unk8 != NULL))) {
-                    temp_a0_3 = temp_v1_6->unk4;
-                    temp_v1_6->unk4 = temp_a0_3 + 8;
-                    temp_a0_3->unk4 = 0x40;
-                    temp_a0_3->unk0 = 0xD8380002;
-                }
-            }
-            var_a2_2 += 8;
-            var_a3 += 8;
-        } while (var_a2_2 != &D_8004ABB8);
+            do { } while (0);
+        }
+
         renderObjectScale = sp34;
     }
-    if (arg0->unkC == 0) {
-        var_s0_3 = arg0->unk8;
-        if (var_s0_3 != NULL) {
-            do {
-                func_8001588C(var_s0_3);
-                var_s0_3 = var_s0_3->unk8;
-            } while (var_s0_3 != NULL);
+
+    if (dobj->prev == NULL) {
+        DObj* curr = dobj->next;
+        while (curr != NULL) {
+            func_8001588C(curr);
+            curr = curr->next;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_8001588C.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80015BCC(void *arg0) {
+void func_80015BCC(GObj *gobj) {
     renderObjectScale = 1.0f;
-    func_8001588C(arg0->unk3C);
+    func_8001588C(gobj->data.dobj);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80015BCC.s")
-#endif
 
 void func_80015BFC(DObj* dobj) {
     s32 ret;
@@ -2171,979 +2040,596 @@ void func_80015DC4(GObj* obj) {
     }
 }
 
-#ifdef MIPS_TO_C
+void func_80015F78(DObj* dobj) {
+    void* segaddr = NULL;
+    s32 ret;
+    UNUSED s32 temp;
+    DObjPayloadTypeI* payload;
+    Gfx* sp3C;
+    s32 i;
+    DObjPayloadTypeI** lodLists;
 
-void func_80015F78(void *arg0, s32 *arg2) {
-    s32 sp48;
-    s32 *sp40;
-    u32 sp3C;
-    f32 sp30;
-    ? *var_a2_3;
-    s32 *temp_v0_2;
-    s32 *temp_v1_2;
-    s32 *var_a2;
-    s32 *var_a2_2;
-    s32 temp_s0;
-    s32 var_a1;
-    s32 var_a3;
-    s32 var_s0;
-    s32 var_s0_2;
-    s32 var_s4;
-    s32 var_t4;
-    void **temp_v1;
-    void **temp_v1_3;
-    void **temp_v1_4;
-    void **temp_v1_5;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_t7;
-    void *temp_v0;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v1_6;
-    void *var_a0;
-    void *var_s0_3;
+    if (!(dobj->flags & 2)) {
+        f32 sp30 = renderObjectScale;
 
-    var_a2 = arg2;
-    var_s4 = 0;
-    if (!(arg0->unk54 & 2)) {
-        sp30 = renderObjectScale;
-        temp_s0 = arg0->unk50;
-        if (temp_s0 != 0) {
-            var_a2 = *(temp_s0 + (renderLevelOfDetail * 4));
-            sp40 = var_a2;
+        lodLists = dobj->data.data;
+        if (lodLists != NULL) {
+            payload = lodLists[renderLevelOfDetail];
         }
+
         sp3C = D_8004ABA0;
-        var_a2_2 = sp40;
-        var_t4 = renderPrepareModelMatrix(&D_8004ABA0, arg0, var_a2);
-        if ((temp_s0 != 0) && (var_a2_2 != NULL) && !(arg0->unk54 & 1)) {
-            var_a1 = *var_a2_2;
-            if (var_a1 != 4) {
-                do {
-                    if (var_a2_2->unk8 != 0) {
-                        temp_v1 = &gDisplayListHeads + (var_a1 * 4);
-                        if (var_a2_2->unk4 != 0) {
-                            temp_v0 = *temp_v1;
-                            *temp_v1 = temp_v0 + 8;
-                            temp_v0->unk0 = 0xDE000000;
-                            temp_v0->unk4 = var_a2_2->unk4;
-                            var_a1 = var_a2_2->unk0;
-                        }
-                        var_s0 = var_a1 * 4;
-                        var_a0 = *(&D_8004ABA8 + var_s0);
-                        if (D_8004ABA0 != var_a0) {
-                            do {
-                                temp_t7 = *(&gDisplayListHeads + var_s0);
-                                temp_t7->unk0 = var_a0->unk0;
-                                temp_t7->unk4 = var_a0->unk4;
-                                temp_v1_2 = &gDisplayListHeads + (var_a2_2->unk0 * 4);
-                                *temp_v1_2 += 8;
-                                temp_v0_2 = &D_8004ABA8 + (var_a2_2->unk0 * 4);
-                                *temp_v0_2 += 8;
-                                var_s0 = var_a2_2->unk0 * 4;
-                                var_a0 = *(&D_8004ABA8 + var_s0);
-                            } while (D_8004ABA0 != var_a0);
-                        }
-                        if (arg0->unk80 != 0) {
-                            temp_v1_3 = &gDisplayListHeads + var_s0;
-                            if (var_s4 == 0) {
-                                var_s4 = D_8004A404;
-                                sp40 = var_a2_2;
-                                sp48 = var_t4;
-                                renderLoadTextures(arg0, &gDisplayListHeads + var_s0, var_a2_2, &D_8004ABA8);
-                                var_s0_2 = var_a2_2->unk0;
-                            } else {
-                                temp_v0_3 = *temp_v1_3;
-                                *temp_v1_3 = temp_v0_3 + 8;
-                                temp_v0_3->unk4 = var_s4;
-                                temp_v0_3->unk0 = 0xDB060038;
-                                var_s0_2 = var_a2_2->unk0;
-                            }
-                            var_s0 = var_s0_2 * 4;
-                        }
-                        temp_v1_4 = &gDisplayListHeads + var_s0;
-                        temp_v0_4 = *temp_v1_4;
-                        *temp_v1_4 = temp_v0_4 + 8;
-                        temp_v0_4->unk0 = 0xDE000000;
-                        temp_v0_4->unk4 = var_a2_2->unk8;
+        ret = renderPrepareModelMatrix(&D_8004ABA0, dobj);
+
+        if (lodLists != NULL && payload != NULL && !(dobj->flags & 1)) {
+            while (payload->dlistID != 4) {
+                if (payload->dlistAfter != NULL) {
+                    if (payload->dlistBefore != NULL) {
+                        gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlistBefore);
                     }
-                    var_a1 = var_a2_2->unkC;
-                    var_a2_2 += 0xC;
-                } while (var_a1 != 4);
+
+                    while (D_8004ABA8[payload->dlistID] != D_8004ABA0) {
+                        *gDisplayListHeads[payload->dlistID]++ = *D_8004ABA8[payload->dlistID]++;
+                    }
+
+                    if (dobj->mobjList != NULL) {
+                        if (segaddr == NULL) {
+                            segaddr = D_8004A404;
+                            renderLoadTextures(dobj, &gDisplayListHeads[payload->dlistID]);
+                        } else {
+                            gSPSegment(gDisplayListHeads[payload->dlistID]++, 0x0E, segaddr);
+                        }
+                    }
+
+                    gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlistAfter);
+                }
+                payload++;
             }
         }
-        temp_a0 = arg0->unk10;
-        if (temp_a0 != NULL) {
-            sp48 = var_t4;
-            func_80015F78(temp_a0);
+
+        if (dobj->firstChild != NULL) {
+            func_80015F78(dobj->firstChild);
         }
-        var_a2_3 = &D_8004ABA8;
-        var_a3 = 0;
+
         D_8004ABA0 = sp3C;
-        do {
-            if (D_8004ABA0 < var_a2_3->unk0) {
-                var_a2_3->unk0 = D_8004ABA0;
-                if ((var_t4 != 0) && ((temp_v1_5 = &gDisplayListHeads + var_a3, (arg0->unk14 == 1)) || (arg0->unk8 != NULL))) {
-                    temp_a0_2 = *temp_v1_5;
-                    *temp_v1_5 = temp_a0_2 + 8;
-                    temp_a0_2->unk4 = 0x40;
-                    temp_a0_2->unk0 = 0xD8380002;
+
+        for (i = 0; i < 4; i++) {
+            if (D_8004ABA8[i] > D_8004ABA0) {
+                D_8004ABA8[i] = D_8004ABA0;
+                if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                    gSPPopMatrix(gDisplayListHeads[i]++, G_MTX_MODELVIEW);
                 }
             }
-            if (D_8004ABA0 < var_a2_3->unk4) {
-                var_a2_3->unk4 = D_8004ABA0;
-                if ((var_t4 != 0) && ((temp_v1_6 = &gDisplayListHeads + var_a3, (arg0->unk14 == 1)) || (arg0->unk8 != NULL))) {
-                    temp_a0_3 = temp_v1_6->unk4;
-                    temp_v1_6->unk4 = temp_a0_3 + 8;
-                    temp_a0_3->unk4 = 0x40;
-                    temp_a0_3->unk0 = 0xD8380002;
-                }
-            }
-            var_a2_3 += 8;
-            var_a3 += 8;
-        } while (var_a2_3 != &D_8004ABB8);
+            do { } while (0);
+        }
+
         renderObjectScale = sp30;
     }
-    if (arg0->unkC == 0) {
-        var_s0_3 = arg0->unk8;
-        if (var_s0_3 != NULL) {
-            do {
-                func_80015F78(var_s0_3);
-                var_s0_3 = var_s0_3->unk8;
-            } while (var_s0_3 != NULL);
+
+    if (dobj->prev == NULL) {
+        DObj* curr = dobj->next;
+        while (curr != NULL) {
+            func_80015F78(curr);
+            curr = curr->next;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80015F78.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_800162D8(GObj* obj) {
+    DObj* dobj = obj->data.dobj;
+    void* segaddr = NULL;
+    s32 ret;
+    DObjPayloadTypeG* payload;
+    s32 i;
+    f32 dist;
+    DObjPayloadTypeC* curPayload;
+    Gfx* sp30;
 
-void func_800162D8(void *arg0) {
-    s32 sp44;
-    s32 *sp34;
-    u32 sp30;
-    ? *var_a2_2;
-    f32 *var_s0;
-    f32 temp_f0;
-    s32 *temp_a2;
-    s32 *temp_v0;
-    s32 *temp_v1;
-    s32 *var_a2;
-    s32 var_a3;
-    s32 var_s0_2;
-    s32 var_s0_3;
-    s32 var_s4;
-    s32 var_t3;
-    s32 var_v0;
-    void **temp_v1_2;
-    void **temp_v1_3;
-    void **temp_v1_4;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_s3;
-    void *temp_t7;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v1_5;
-    void *var_a0;
-    void *var_s0_4;
-
-    temp_s3 = arg0->unk3C;
-    var_s4 = 0;
-    if (!(temp_s3->unk54 & 2)) {
-        var_s0 = temp_s3->unk50;
-        if (var_s0 != NULL) {
+    if (!(dobj->flags & 2)) {
+        payload = dobj->data.data;
+        if (payload != NULL) {
             renderObjectScale = 1.0f;
             renderLevelOfDetail = 0;
-            temp_f0 = renderDistanceToCamera(temp_s3);
-            if (temp_f0 < *var_s0) {
-                do {
-                    var_s0 += 8;
-                    renderLevelOfDetail += 1;
-                } while (temp_f0 < *var_s0);
+            dist = renderDistanceToCamera(dobj);
+            while (payload->drawDistance > dist) {
+                payload++;
+                renderLevelOfDetail++;
             }
-            temp_a2 = var_s0->unk4;
-            sp34 = temp_a2;
+
+            curPayload = payload->typeC;
             sp30 = D_8004ABA0;
-            var_a2 = temp_a2;
-            var_t3 = renderPrepareModelMatrix(&D_8004ABA0, temp_s3, temp_a2);
-            if ((var_a2 != NULL) && !(temp_s3->unk54 & 1)) {
-                var_v0 = *var_a2;
-                if (var_v0 != 4) {
-                    do {
-                        var_s0_2 = var_v0 * 4;
-                        if (var_a2->unk4 != 0) {
-                            var_a0 = *(&D_8004ABA8 + var_s0_2);
-                            if (D_8004ABA0 != var_a0) {
-                                do {
-                                    temp_t7 = *(&gDisplayListHeads + var_s0_2);
-                                    temp_t7->unk0 = var_a0->unk0;
-                                    temp_t7->unk4 = var_a0->unk4;
-                                    temp_v1 = &gDisplayListHeads + (var_a2->unk0 * 4);
-                                    *temp_v1 += 8;
-                                    temp_v0 = &D_8004ABA8 + (var_a2->unk0 * 4);
-                                    *temp_v0 += 8;
-                                    var_s0_2 = var_a2->unk0 * 4;
-                                    var_a0 = *(&D_8004ABA8 + var_s0_2);
-                                } while (D_8004ABA0 != var_a0);
-                            }
-                            if (temp_s3->unk80 != 0) {
-                                temp_v1_2 = &gDisplayListHeads + var_s0_2;
-                                if (var_s4 == 0) {
-                                    var_s4 = D_8004A404;
-                                    sp34 = var_a2;
-                                    sp44 = var_t3;
-                                    renderLoadTextures(temp_s3, &gDisplayListHeads + var_s0_2, var_a2, &D_8004ABA8);
-                                    var_s0_3 = var_a2->unk0;
-                                } else {
-                                    temp_v0_2 = *temp_v1_2;
-                                    *temp_v1_2 = temp_v0_2 + 8;
-                                    temp_v0_2->unk4 = var_s4;
-                                    temp_v0_2->unk0 = 0xDB060038;
-                                    var_s0_3 = var_a2->unk0;
-                                }
-                                var_s0_2 = var_s0_3 * 4;
-                            }
-                            temp_v1_3 = &gDisplayListHeads + var_s0_2;
-                            temp_v0_3 = *temp_v1_3;
-                            *temp_v1_3 = temp_v0_3 + 8;
-                            temp_v0_3->unk0 = 0xDE000000;
-                            temp_v0_3->unk4 = var_a2->unk4;
+            ret = renderPrepareModelMatrix(&D_8004ABA0, dobj);
+
+            if (curPayload != NULL && !(dobj->flags & 1)) {
+                while (curPayload->dlistID != 4) {
+                    if (curPayload->dlist != NULL) {
+                        while (D_8004ABA8[curPayload->dlistID] != D_8004ABA0) {
+                            *gDisplayListHeads[curPayload->dlistID]++ = *D_8004ABA8[curPayload->dlistID]++;
                         }
-                        var_v0 = var_a2->unk8;
-                        var_a2 += 8;
-                    } while (var_v0 != 4);
+
+                        if (dobj->mobjList != NULL) {
+                            if (segaddr == NULL) {
+                                segaddr = D_8004A404;
+                                renderLoadTextures(dobj, &gDisplayListHeads[curPayload->dlistID]);
+                            } else {
+                                gSPSegment(gDisplayListHeads[curPayload->dlistID]++, 0x0E, segaddr);
+                            }
+                        }
+
+                        gSPDisplayList(gDisplayListHeads[curPayload->dlistID]++, curPayload->dlist);
+                    }
+                    curPayload++;
                 }
             }
-            temp_a0 = temp_s3->unk10;
-            if (temp_a0 != NULL) {
-                sp44 = var_t3;
-                func_80015F78(temp_a0);
+
+            if (dobj->firstChild != NULL) {
+                func_80015F78(dobj->firstChild);
             }
-            var_a2_2 = &D_8004ABA8;
-            var_a3 = 0;
+
             D_8004ABA0 = sp30;
-            do {
-                if (D_8004ABA0 < var_a2_2->unk0) {
-                    var_a2_2->unk0 = D_8004ABA0;
-                    if ((var_t3 != 0) && ((temp_v1_4 = &gDisplayListHeads + var_a3, (temp_s3->unk14 == 1)) || (temp_s3->unk8 != NULL))) {
-                        temp_a0_2 = *temp_v1_4;
-                        *temp_v1_4 = temp_a0_2 + 8;
-                        temp_a0_2->unk4 = 0x40;
-                        temp_a0_2->unk0 = 0xD8380002;
+            for (i = 0; i < 4; i++) {
+                if (D_8004ABA8[i] > D_8004ABA0) {
+                    D_8004ABA8[i] = D_8004ABA0;
+                    if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
+                        gSPPopMatrix(gDisplayListHeads[i]++, G_MTX_MODELVIEW);
                     }
                 }
-                if (D_8004ABA0 < var_a2_2->unk4) {
-                    var_a2_2->unk4 = D_8004ABA0;
-                    if ((var_t3 != 0) && ((temp_v1_5 = &gDisplayListHeads + var_a3, (temp_s3->unk14 == 1)) || (temp_s3->unk8 != NULL))) {
-                        temp_a0_3 = temp_v1_5->unk4;
-                        temp_v1_5->unk4 = temp_a0_3 + 8;
-                        temp_a0_3->unk4 = 0x40;
-                        temp_a0_3->unk0 = 0xD8380002;
-                    }
-                }
-                var_a2_2 += 8;
-                var_a3 += 8;
-            } while (var_a2_2 != &D_8004ABB8);
-            if (temp_s3->unkC == 0) {
-                var_s0_4 = temp_s3->unk8;
-                if (var_s0_4 != NULL) {
-                    do {
-                        func_80015F78(var_s0_4);
-                        var_s0_4 = var_s0_4->unk8;
-                    } while (var_s0_4 != NULL);
+                do { } while (0);
+            }
+
+            if (dobj->prev == NULL) {
+                DObj* curr = dobj->next;
+                while (curr != NULL) {
+                    func_80015F78(curr);
+                    curr = curr->next;
                 }
             }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800162D8.s")
-#endif
 
 void func_80016634(s32 arg0) {
 }
 
-#ifdef MIPS_TO_C
+void func_8001663C(Gfx **gfx, Camera *cam, s32 arg2) {
+    Gfx *g;
+    Vp *vp;
+    s32 ulx;
+    s32 uly;
+    s32 lrx;
+    s32 lry;
 
-void func_8001663C(void **arg0, void *arg1, s32 arg2) {
-    s32 sp18;
-    s32 temp_a1;
-    s32 temp_a1_2;
-    s32 temp_a1_3;
-    s32 temp_a2;
-    s32 temp_a3;
-    s32 temp_lo;
-    s32 temp_lo_2;
-    s32 temp_lo_3;
-    s32 temp_lo_4;
-    s32 temp_t0;
-    s32 var_a3;
-    s32 var_ra;
-    s32 var_t4;
-    s32 var_t5;
-    void *temp_v0;
-    void *temp_v1;
-    void *temp_v1_2;
-    void *temp_v1_3;
-    void *temp_v1_4;
-    void *temp_v1_5;
-    void *var_v1;
-    void *var_v1_2;
+    g = *gfx;
+    if ((arg2 == 0 || arg2 == 1) && (cam->flags & CAMERA_FLAG_20)) {
+        gtlLoadUcode(gfx, D_8004A446);
+        D_8004A448 = TRUE;
+        g = *gfx;
+    }
 
-    var_v1 = *arg0;
-    if (((arg2 == 0) || (arg2 == 1)) && (arg1->unk80 & 0x20)) {
-        gtlLoadUcode(arg0, D_8004A446);
-        D_8004A448 = 1;
-        var_v1 = *arg0;
+    vp = &cam->viewport;
+    do { } while (0);
+    gSPViewport(g++, vp);
+
+    ulx = vp->vp.vtrans[0] / 4 - vp->vp.vscale[0] / 4;
+    uly = vp->vp.vtrans[1] / 4 - vp->vp.vscale[1] / 4;
+    lrx = vp->vp.vtrans[0] / 4 + vp->vp.vscale[0] / 4;
+    lry = vp->vp.vtrans[1] / 4 + vp->vp.vscale[1] / 4;
+
+    if (ulx < gCurrScreenWidth / 320 * renderCameraScissorLeft) {
+        ulx = gCurrScreenWidth / 320 * renderCameraScissorLeft;
     }
-    var_v1->unk0 = 0xDC080008;
-    temp_v0 = arg1 + 8;
-    var_v1->unk4 = temp_v0;
-    temp_v1 = var_v1 + 8;
-    temp_a1 = temp_v0->unk8 / 4;
-    temp_a2 = temp_v0->unk0 / 4;
-    var_t4 = temp_a1 - temp_a2;
-    temp_a3 = temp_v0->unkA / 4;
-    temp_t0 = temp_v0->unk2 / 4;
-    temp_lo = gCurrScreenWidth / 320;
-    var_t5 = temp_a3 - temp_t0;
-    temp_lo_2 = temp_lo * renderCameraScissorLeft;
-    var_ra = temp_a2 + temp_a1;
-    sp18 = temp_t0 + temp_a3;
-    if (var_t4 < temp_lo_2) {
-        var_t4 = temp_lo_2;
+    if (uly < gCurrScreenHeight / 240 * renderCameraScissorTop) {
+        uly = gCurrScreenHeight / 240 * renderCameraScissorTop;
     }
-    temp_lo_3 = gCurrScreenHeight / 240;
-    var_a3 = sp18;
-    temp_lo_4 = temp_lo_3 * renderCameraScissorTop;
-    if (var_t5 < temp_lo_4) {
-        var_t5 = temp_lo_4;
+    if (gCurrScreenWidth - gCurrScreenWidth / 320 * renderCameraScissorRight < lrx) {
+        lrx = gCurrScreenWidth - gCurrScreenWidth / 320 * renderCameraScissorRight;
     }
-    temp_a1_2 = gCurrScreenWidth - (temp_lo * renderCameraScissorRight);
-    if (temp_a1_2 < var_ra) {
-        var_ra = temp_a1_2;
+    if (gCurrScreenHeight - gCurrScreenHeight / 240 * renderCameraScissorBottom < lry) {
+        lry = gCurrScreenHeight - gCurrScreenHeight / 240 * renderCameraScissorBottom;
     }
-    temp_a1_3 = gCurrScreenHeight - (temp_lo_3 * renderCameraScissorBottom);
-    if (temp_a1_3 < var_a3) {
-        var_a3 = temp_a1_3;
-    }
-    temp_v1_2 = temp_v1 + 8;
-    temp_v1_3 = temp_v1_2 + 8;
-    temp_v1_4 = temp_v1_3 + 8;
-    temp_v1_5 = temp_v1_4 + 8;
-    temp_v1->unk0 = (((var_t4 * 4.0f) & 0xFFF) << 0xC) | 0xED000000 | ((var_t5 * 4.0f) & 0xFFF);
-    temp_v1->unk4 = (((var_ra * 4.0f) & 0xFFF) << 0xC) | ((var_a3 * 4.0f) & 0xFFF);
-    temp_v1_2->unk0 = 0xE7000000;
-    temp_v1_2->unk4 = 0;
-    temp_v1_3->unk4 = 0x0F000000;
-    temp_v1_3->unk0 = ((viCFBFmt & 3) << 0x13) | 0xFF000000 | ((gCurrScreenWidth - 1) & 0xFFF);
-    temp_v1_4->unk0 = 0xE3000A01;
-    temp_v1_4->unk4 = 0;
-    if ((arg2 == 0) || (arg2 == 2)) {
-        temp_v1_5->unk4 = 0x552078;
-        var_v1_2 = temp_v1_5 + 8;
-        temp_v1_5->unk0 = 0xE200001C;
+
+    gDPSetScissor(g++, G_SC_NON_INTERLACE, ulx, uly, lrx, lry);
+    gDPPipeSync(g++);
+    gDPSetColorImage(g++, G_IM_FMT_RGBA, viCFBFmt, gCurrScreenWidth, 0x0F000000);
+    gDPSetCycleType(g++, G_CYC_1CYCLE);
+
+    if (arg2 == 0 || arg2 == 2) {
+        gDPSetRenderMode(g++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
     } else {
-        temp_v1_5->unk0 = 0xE200001C;
-        temp_v1_5->unk4 = 0x5049D8;
-        var_v1_2 = temp_v1_5 + 8;
+        gDPSetRenderMode(g++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
     }
-    *arg0 = var_v1_2;
+
+    *gfx = g;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_8001663C.s")
-#endif
 
-#ifdef MIPS_TO_C
+void renderInitCamera(Gfx **gfx, Camera *cam, s32 arg2) {
+    Gfx *g;
+    Vp *vp;
+    s32 lrx;
+    s32 lry;
+    s32 ulx;
+    s32 uly;
 
-void renderInitCamera(void **arg0, void *arg1, s32 arg2) {
-    void *sp84;
-    void *sp3C;
-    s32 sp24;
-    s32 sp20;
-    s32 sp1C;
-    s32 temp_a1;
-    s32 temp_a1_2;
-    s32 temp_a1_3;
-    s32 temp_a2;
-    s32 temp_lo;
-    s32 temp_lo_2;
-    s32 temp_lo_3;
-    s32 temp_lo_4;
-    s32 temp_t0;
-    s32 temp_t1;
-    s32 temp_t2;
-    s32 var_a3;
-    s32 var_t1;
-    s32 var_t2;
-    s32 var_t3;
-    s32 var_t4;
-    void *temp_a1_4;
-    void *temp_a2_2;
-    void *temp_v0;
-    void *temp_v1;
-    void *temp_v1_10;
-    void *temp_v1_2;
-    void *temp_v1_3;
-    void *temp_v1_4;
-    void *temp_v1_5;
-    void *temp_v1_6;
-    void *temp_v1_7;
-    void *temp_v1_8;
-    void *temp_v1_9;
-    void *var_v1;
-    void *var_v1_2;
-    void *var_v1_3;
-    void *var_v1_4;
+    g = *gfx;
+    if ((arg2 == 0 || arg2 == 1) && (cam->flags & CAMERA_FLAG_20)) {
+        gtlLoadUcode(gfx, D_8004A446);
+        D_8004A448 = TRUE;
+        g = *gfx;
+    }
 
-    var_v1 = *arg0;
-    if (((arg2 == 0) || (arg2 == 1)) && (arg1->unk80 & 0x20)) {
-        gtlLoadUcode(arg0, D_8004A446);
-        D_8004A448 = 1;
-        var_v1 = *arg0;
+    vp = &cam->viewport;
+    do { } while (0);
+    gSPViewport(g++, vp);
+
+    ulx = vp->vp.vtrans[0] / 4 - vp->vp.vscale[0] / 4;
+    uly = vp->vp.vtrans[1] / 4 - vp->vp.vscale[1] / 4;
+    lrx = vp->vp.vtrans[0] / 4 + vp->vp.vscale[0] / 4;
+    lry = vp->vp.vtrans[1] / 4 + vp->vp.vscale[1] / 4;
+
+    if (ulx < gCurrScreenWidth / 320 * renderCameraScissorLeft) {
+        ulx = gCurrScreenWidth / 320 * renderCameraScissorLeft;
     }
-    var_v1->unk0 = 0xDC080008;
-    temp_v0 = arg1 + 8;
-    var_v1->unk4 = temp_v0;
-    temp_v1 = var_v1 + 8;
-    temp_a1 = temp_v0->unk8 / 4;
-    temp_a2 = temp_v0->unk0 / 4;
-    var_t3 = temp_a1 - temp_a2;
-    var_a3 = temp_v0->unkA / 4;
-    temp_t0 = temp_v0->unk2 / 4;
-    temp_lo = gCurrScreenWidth / 320;
-    var_t4 = var_a3 - temp_t0;
-    var_t1 = temp_a2 + temp_a1;
-    temp_lo_2 = temp_lo * renderCameraScissorLeft;
-    var_t2 = temp_t0 + var_a3;
-    sp1C = temp_lo_2;
-    if (var_t3 < temp_lo_2) {
-        var_t3 = temp_lo_2;
+    if (uly < gCurrScreenHeight / 240 * renderCameraScissorTop) {
+        uly = gCurrScreenHeight / 240 * renderCameraScissorTop;
     }
-    temp_lo_3 = gCurrScreenHeight / 240;
-    temp_lo_4 = temp_lo_3 * renderCameraScissorTop;
-    if (var_t4 < temp_lo_4) {
-        var_t4 = temp_lo_4;
+    if (gCurrScreenWidth - gCurrScreenWidth / 320 * renderCameraScissorRight < lrx) {
+        lrx = gCurrScreenWidth - gCurrScreenWidth / 320 * renderCameraScissorRight;
     }
-    temp_a1_2 = gCurrScreenWidth - (temp_lo * renderCameraScissorRight);
-    if (temp_a1_2 < var_t1) {
-        var_t1 = temp_a1_2;
+    if (gCurrScreenHeight - gCurrScreenHeight / 240 * renderCameraScissorBottom < lry) {
+        lry = gCurrScreenHeight - gCurrScreenHeight / 240 * renderCameraScissorBottom;
     }
-    temp_a1_3 = gCurrScreenHeight - (temp_lo_3 * renderCameraScissorBottom);
-    if (temp_a1_3 < var_t2) {
-        var_t2 = temp_a1_3;
+
+    gDPSetScissor(g++, G_SC_NON_INTERLACE, ulx, uly, lrx, lry);
+    lrx -= 1;
+    lry -= 1;
+
+    if (cam->flags & CAMERA_FLAG_1) {
+        gDPPipeSync(g++);
+        gDPSetCycleType(g++, G_CYC_FILL);
+        gDPSetRenderMode(g++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetColorImage(g++, G_IM_FMT_RGBA, G_IM_SIZ_16b, gCurrScreenWidth, gZBuffer);
+        gDPSetFillColor(g++, GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0));
+        gDPFillRectangle(g++, ulx, uly, lrx, lry);
     }
-    var_v1_2 = temp_v1 + 8;
-    temp_t1 = var_t1 - 1;
-    temp_v1->unk0 = (((var_t3 * 4.0f) & 0xFFF) << 0xC) | 0xED000000 | ((var_t4 * 4.0f) & 0xFFF);
-    temp_t2 = var_t2 - 1;
-    temp_v1->unk4 = (((var_t1 * 4.0f) & 0xFFF) << 0xC) | ((var_t2 * 4.0f) & 0xFFF);
-    if (arg1->unk80 & 1) {
-        temp_v1_2 = var_v1_2 + 8;
-        var_v1_2->unk0 = 0xE7000000;
-        var_v1_2->unk4 = 0;
-        temp_v1_3 = temp_v1_2 + 8;
-        temp_v1_2->unk4 = 0x300000;
-        temp_v1_2->unk0 = 0xE3000A01;
-        temp_v1_3->unk0 = 0xE200001C;
-        temp_v1_3->unk4 = 0;
-        temp_v1_4 = temp_v1_3 + 8;
-        temp_v1_4->unk0 = ((gCurrScreenWidth - 1) & 0xFFF) | 0xFF100000;
-        temp_v1_5 = temp_v1_4 + 8;
-        temp_v1_4->unk4 = gZBuffer;
-        var_a3 = temp_v1_5;
-        var_a3->unk4 = 0xFFFCFFFC;
-        var_a3->unk0 = 0xF7000000;
-        temp_v1_6 = temp_v1_5 + 8;
-        temp_v1_6->unk0 = ((temp_t1 & 0x3FF) << 0xE) | 0xF6000000 | ((temp_t2 & 0x3FF) * 4);
-        temp_v1_6->unk4 = ((var_t3 & 0x3FF) << 0xE) | ((var_t4 & 0x3FF) * 4);
-        var_v1_2 = temp_v1_6 + 8;
+
+    gDPPipeSync(g++);
+    gDPSetColorImage(g++, G_IM_FMT_RGBA, viCFBFmt, gCurrScreenWidth, 0x0F000000);
+
+    if (cam->flags & CAMERA_FLAG_2) {
+        gDPSetCycleType(g++, G_CYC_FILL);
+        gDPSetRenderMode(g++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(g++, viPackRGBA(cam->bgcolor));
+        gDPFillRectangle(g++, ulx, uly, lrx, lry);
     }
-    var_v1_2->unk0 = 0xE7000000;
-    var_v1_2->unk4 = 0;
-    temp_v1_7 = var_v1_2 + 8;
-    temp_v1_7->unk4 = 0x0F000000;
-    temp_v1_7->unk0 = ((viCFBFmt & 3) << 0x13) | 0xFF000000 | ((gCurrScreenWidth - 1) & 0xFFF);
-    var_v1_3 = temp_v1_7 + 8;
-    if (arg1->unk80 & 2) {
-        var_v1_3->unk0 = 0xE3000A01;
-        temp_a1_4 = var_v1_3 + 8;
-        var_v1_3->unk4 = 0x300000;
-        temp_a1_4->unk4 = 0;
-        temp_a1_4->unk0 = 0xE200001C;
-        temp_a2_2 = temp_a1_4 + 8;
-        temp_a2_2->unk0 = 0xF7000000;
-        sp24 = ((temp_t1 & 0x3FF) << 0xE) | 0xF6000000 | ((temp_t2 & 0x3FF) * 4);
-        temp_v1_8 = temp_a2_2 + 8;
-        sp84 = temp_v1_8;
-        sp20 = ((var_t3 & 0x3FF) << 0xE) | ((var_t4 & 0x3FF) * 4);
-        sp3C = temp_a2_2;
-        temp_a2_2->unk4 = viPackRGBA(arg1->unk84, temp_a1_4, temp_a2_2, var_a3);
-        temp_v1_8->unk0 = sp24;
-        var_v1_3 = temp_v1_8 + 8;
-        temp_v1_8->unk4 = sp20;
-    }
-    temp_v1_9 = var_v1_3 + 8;
-    var_v1_3->unk0 = 0xE7000000;
-    var_v1_3->unk4 = 0;
-    temp_v1_9->unk0 = 0xE3000A01;
-    temp_v1_9->unk4 = 0;
-    temp_v1_10 = temp_v1_9 + 8;
-    if ((arg2 == 0) || (arg2 == 2)) {
-        temp_v1_10->unk4 = 0x552078;
-        var_v1_4 = temp_v1_10 + 8;
-        temp_v1_10->unk0 = 0xE200001C;
+
+    gDPPipeSync(g++);
+    gDPSetCycleType(g++, G_CYC_1CYCLE);
+
+    if (arg2 == 0 || arg2 == 2) {
+        gDPSetRenderMode(g++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
     } else {
-        temp_v1_10->unk4 = 0x5049D8;
-        temp_v1_10->unk0 = 0xE200001C;
-        var_v1_4 = temp_v1_10 + 8;
+        gDPSetRenderMode(g++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
     }
-    *arg0 = var_v1_4;
+
+    *gfx = g;
 }
-#else
-void renderInitCamera(Gfx **glistp, Camera *cam, s32 arg2);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderInitCamera.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_80016DE8(Gfx **gfx, Camera *cam, s32 arg2, void *cimg, s32 width, s32 height, void *zimg) {
+    Gfx *g;
+    s32 lrx;
+    s32 lry;
+    s32 ulx;
+    s32 uly;
+    UNUSED s32 pad[1];
 
-void func_80016DE8(void **arg0, void *arg1, s32 arg2, void *arg3, s32 arg4, s32 arg5, s32 arg6) {
-    void *sp8C;
-    void *sp40;
-    s32 sp28;
-    s32 sp24;
-    s32 temp_t0;
-    s32 temp_t1;
-    s32 temp_t2;
-    s32 temp_t3;
-    s32 temp_t4;
-    s32 temp_t5;
-    s32 var_ra;
-    s32 var_s1;
-    s32 var_t4;
-    s32 var_t5;
-    void *temp_a1;
-    void *temp_a2;
-    void *temp_v1;
-    void *temp_v1_10;
-    void *temp_v1_11;
-    void *temp_v1_12;
-    void *temp_v1_2;
-    void *temp_v1_3;
-    void *temp_v1_4;
-    void *temp_v1_5;
-    void *temp_v1_6;
-    void *temp_v1_7;
-    void *temp_v1_8;
-    void *temp_v1_9;
-    void *var_a3;
-    void *var_v1;
-    void *var_v1_2;
+    g = *gfx;
+    gSPViewport(g++, &cam->viewport);
 
-    var_a3 = arg3;
-    temp_v1 = *arg0;
-    temp_v1->unk4 = arg1 + 8;
-    temp_v1->unk0 = 0xDC080008;
-    temp_v1_2 = temp_v1 + 8;
-    temp_t0 = arg1->unk10 / 4;
-    temp_t1 = arg1->unk8 / 4;
-    var_ra = temp_t0 - temp_t1;
-    temp_t2 = arg1->unk12 / 4;
-    temp_t3 = arg1->unkA / 4;
-    var_s1 = temp_t2 - temp_t3;
-    var_t4 = temp_t1 + temp_t0;
-    var_t5 = temp_t3 + temp_t2;
-    if (var_ra < 0) {
-        var_ra = 0;
+    ulx = cam->viewport.vp.vtrans[0] / 4 - cam->viewport.vp.vscale[0] / 4;
+    uly = cam->viewport.vp.vtrans[1] / 4 - cam->viewport.vp.vscale[1] / 4;
+    lrx = cam->viewport.vp.vtrans[0] / 4 + cam->viewport.vp.vscale[0] / 4;
+    lry = cam->viewport.vp.vtrans[1] / 4 + cam->viewport.vp.vscale[1] / 4;
+
+    if (ulx < 0) {
+        ulx = 0;
     }
-    if (var_s1 < 0) {
-        var_s1 = 0;
+    if (uly < 0) {
+        uly = 0;
     }
-    if (arg4 < var_t4) {
-        var_t4 = arg4;
+    if (width < lrx) {
+        lrx = width;
     }
-    if (arg5 < var_t5) {
-        var_t5 = arg5;
+    if (height < lry) {
+        lry = height;
     }
-    var_v1 = temp_v1_2 + 8;
-    temp_t4 = var_t4 - 1;
-    temp_v1_2->unk0 = (((var_ra * 4.0f) & 0xFFF) << 0xC) | 0xED000000 | ((var_s1 * 4.0f) & 0xFFF);
-    temp_t5 = var_t5 - 1;
-    temp_v1_2->unk4 = (((var_t4 * 4.0f) & 0xFFF) << 0xC) | ((var_t5 * 4.0f) & 0xFFF);
-    if (arg1->unk80 & 1) {
-        temp_v1_3 = var_v1 + 8;
-        var_v1->unk0 = 0xE7000000;
-        var_v1->unk4 = 0;
-        temp_v1_4 = temp_v1_3 + 8;
-        temp_v1_3->unk4 = 0x300000;
-        temp_v1_3->unk0 = 0xE3000A01;
-        temp_v1_5 = temp_v1_4 + 8;
-        temp_v1_4->unk0 = 0xE200001C;
-        temp_v1_4->unk4 = 0;
-        temp_v1_5->unk0 = ((arg4 - 1) & 0xFFF) | 0xFF100000;
-        temp_v1_6 = temp_v1_5 + 8;
-        temp_v1_5->unk4 = arg6;
-        var_a3 = temp_v1_6;
-        var_a3->unk4 = 0xFFFCFFFC;
-        var_a3->unk0 = 0xF7000000;
-        temp_v1_7 = temp_v1_6 + 8;
-        temp_v1_7->unk0 = ((temp_t4 & 0x3FF) << 0xE) | 0xF6000000 | ((temp_t5 & 0x3FF) * 4);
-        temp_v1_7->unk4 = ((var_ra & 0x3FF) << 0xE) | ((var_s1 & 0x3FF) * 4);
-        var_v1 = temp_v1_7 + 8;
+
+    gDPSetScissor(g++, G_SC_NON_INTERLACE, ulx, uly, lrx, lry);
+    lrx -= 1;
+    lry -= 1;
+
+    if (cam->flags & CAMERA_FLAG_1) {
+        gDPPipeSync(g++);
+        gDPSetCycleType(g++, G_CYC_FILL);
+        gDPSetRenderMode(g++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetColorImage(g++, G_IM_FMT_RGBA, G_IM_SIZ_16b, width, zimg);
+        gDPSetFillColor(g++, GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0));
+        gDPFillRectangle(g++, ulx, uly, lrx, lry);
     }
-    var_v1->unk0 = 0xE7000000;
-    var_v1->unk4 = 0;
-    temp_v1_8 = var_v1 + 8;
-    temp_v1_8->unk0 = ((viCFBFmt & 3) << 0x13) | 0xFF000000 | ((arg4 - 1) & 0xFFF);
-    temp_v1_9 = temp_v1_8 + 8;
-    temp_v1_8->unk4 = arg3;
-    temp_v1_9->unk0 = 0xFE000000;
-    var_v1_2 = temp_v1_9 + 8;
-    temp_v1_9->unk4 = arg6;
-    temp_a1 = var_v1_2 + 8;
-    if (arg1->unk80 & 2) {
-        var_v1_2->unk4 = 0x300000;
-        var_v1_2->unk0 = 0xE3000A01;
-        temp_a1->unk0 = 0xE200001C;
-        temp_a1->unk4 = 0;
-        temp_a2 = temp_a1 + 8;
-        temp_a2->unk0 = 0xF7000000;
-        sp28 = ((temp_t4 & 0x3FF) << 0xE) | 0xF6000000 | ((temp_t5 & 0x3FF) * 4);
-        temp_v1_10 = temp_a2 + 8;
-        sp8C = temp_v1_10;
-        sp24 = ((var_ra & 0x3FF) << 0xE) | ((var_s1 & 0x3FF) * 4);
-        sp40 = temp_a2;
-        temp_a2->unk4 = viPackRGBA(arg1->unk84, temp_a1, temp_a2, var_a3);
-        var_v1_2 = temp_v1_10 + 8;
-        temp_v1_10->unk0 = sp28;
-        temp_v1_10->unk4 = sp24;
+
+    gDPPipeSync(g++);
+    gDPSetColorImage(g++, G_IM_FMT_RGBA, viCFBFmt, width, cimg);
+    gDPSetDepthImage(g++, zimg);
+
+    if (cam->flags & CAMERA_FLAG_2) {
+        gDPSetCycleType(g++, G_CYC_FILL);
+        gDPSetRenderMode(g++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(g++, viPackRGBA(cam->bgcolor));
+        gDPFillRectangle(g++, ulx, uly, lrx, lry);
     }
-    temp_v1_11 = var_v1_2 + 8;
-    var_v1_2->unk0 = 0xE7000000;
-    var_v1_2->unk4 = 0;
-    temp_v1_11->unk0 = 0xE3000A01;
-    temp_v1_11->unk4 = 0;
-    temp_v1_12 = temp_v1_11 + 8;
-    if ((arg2 == 0) || (arg2 == 2)) {
-        temp_v1_12->unk0 = 0xE200001C;
-        temp_v1_12->unk4 = 0x552078;
+
+    gDPPipeSync(g++);
+    gDPSetCycleType(g++, G_CYC_1CYCLE);
+
+    if (arg2 == 0 || arg2 == 2) {
+        gDPSetRenderMode(g++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
     } else {
-        temp_v1_12->unk0 = 0xE200001C;
-        temp_v1_12->unk4 = 0x5049D8;
+        gDPSetRenderMode(g++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
     }
-    *arg0 = temp_v1_12 + 8;
+
+    *gfx = g;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80016DE8.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_800171E0(Gfx **gfx, Camera *cam) {
+    Gfx *g;
+    s32 i;
+    OMMtx *ommtx;
+    Mtx *mtx;
+    s32 mode;
+    s32 mode2;
+    LookAt *lookAt;
 
-void func_800171E0(void **arg0, void *arg1) {
-    void *spDC;
-    s32 spC8;
-    LookAt *spC4;
-    f32 sp98;
-    f32 sp94;
-    f32 sp8C;
-    f32 sp88;
-    ? (*temp_a3)(Mtx *, void *, void **, ?);
-    ? (*temp_a3_2)(Mtx *, void *, void **, ?);
-    LookAt *temp_v0;
-    LookAt *temp_v0_2;
-    LookAt *temp_v0_3;
-    LookAt *var_s4;
-    Mtx *var_s2;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-    f32 var_f2;
-    f32 var_f2_2;
-    s32 var_a2;
-    s32 var_fp;
-    s32 var_s3;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    void *temp_s1;
-    void *temp_t0;
-    void *temp_t0_2;
-    void *temp_t0_3;
-    void *temp_t4;
-    void *temp_t4_2;
-    void *temp_t4_3;
-    void *temp_t7;
-    void *temp_t7_2;
-    void *temp_t7_3;
-    void *var_s6;
+    g = *gfx;
+    mode2 = 0;
+    mode = 0;
 
-    spC8 = 0;
-    spDC = *arg0;
-    var_a2 = arg1->unk60;
-    var_s3 = 0;
-    if (var_a2 != 0) {
-        var_fp = 0;
-        if (var_a2 > 0) {
-            var_s6 = arg1;
-            var_s4 = spC4;
-            do {
-                temp_s1 = var_s6->unk64;
-                if (temp_s1 != NULL) {
-                    var_s2 = temp_s1 + 8;
-                    if (temp_s1->unk5 != 2) {
-                        if (gtlCurrentContextID > 0) {
-                            var_s2 = gDynamicBuffer1.unkC;
-                            gDynamicBuffer1.unkC = var_s2 + 0x40;
-                        }
-                        temp_v1 = temp_s1->unk4;
-                        switch (temp_v1) {          /* switch 4; irregular */
-                                break;
-                            case 3:                 /* switch 4 */
-                                HS64_PerspectiveF(renderPerspectiveMtxF, arg1 + 0x1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30);
-                                HS64_MtxF2L(renderPerspectiveMtxF, var_s2);
-                                renderProjectionMtx = var_s2;
-                                break;
-                            case 4:                 /* switch 4 */
-                                func_8001B28C(renderPerspectiveMtxF, arg1 + 0x1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30);
-                                HS64_MtxF2L(renderPerspectiveMtxF, var_s2);
-                                renderProjectionMtx = var_s2;
-                                break;
-                            case 5:                 /* switch 4 */
-                                guOrtho(var_s2, arg1->unk1C, arg1->unk20, arg1->unk24, arg1->unk28, arg1->unk2C, arg1->unk30, arg1->unk34);
-                                renderProjectionMtx = var_s2;
-                                break;
-                            case 6:                 /* switch 4 */
-                            case 7:                 /* switch 4 */
-                                guLookAt(var_s2, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, arg1->unk58, arg1->unk5C);
-                                var_s3 = 2;
-                                if (arg1->unk5C < arg1->unk58) {
-                                    var_s3 = 1;
-                                }
-                                break;
-                            case 8:                 /* switch 4 */
-                            case 9:                 /* switch 4 */
-                                var_s3 = 1;
-                                HS64_LookAt(var_s2, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 1.0f, 0.0f);
-                                break;
-                            case 10:                /* switch 4 */
-                            case 11:                /* switch 4 */
-                                var_s3 = 2;
-                                HS64_LookAt(var_s2, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 0.0f, 1.0f);
-                                break;
-                            case 12:                /* switch 4 */
-                            case 13:                /* switch 4 */
-                                temp_v0 = mlAlloc(&gDynamicBuffer1, 0x20, 8);
-                                var_s4 = temp_v0;
-                                guLookAtReflect(var_s2, temp_v0, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, arg1->unk58, arg1->unk5C);
-                                var_s3 = 2;
-                                if (arg1->unk5C < arg1->unk58) {
-                                    var_s3 = 1;
-                                }
-                                break;
-                            case 14:                /* switch 4 */
-                            case 15:                /* switch 4 */
-                                var_s3 = 1;
-                                temp_v0_2 = mlAlloc(&gDynamicBuffer1, 0x20, 8);
-                                var_s4 = temp_v0_2;
-                                func_8001AD90(var_s2, temp_v0_2, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 1.0f, 0.0f);
-                                break;
-                            case 16:                /* switch 4 */
-                            case 17:                /* switch 4 */
-                                var_s3 = 2;
-                                temp_v0_3 = mlAlloc(&gDynamicBuffer1, 0x20, 8);
-                                var_s4 = temp_v0_3;
-                                func_8001AD90(var_s2, temp_v0_3, arg1->unk3C, arg1->unk40, arg1->unk44, arg1->unk48, arg1->unk4C, arg1->unk50, arg1->unk54, 0.0f, 0.0f, 1.0f);
-                                break;
-                            default:                /* switch 4 */
-                                if (renderMatrixHandler != 0) {
-                                    temp_a3 = (renderMatrixHandler + (temp_v1 * 8))->unk-218;
-                                    if (temp_a3 != NULL) {
-                                        temp_a3(var_s2, arg1, &spDC, temp_a3);
-                                    }
-                                }
-                                break;
-                        }
-                        if ((temp_s1->unk5 == 1) && ((temp_s1 + 8) == var_s2)) {
-                            temp_s1->unk5 = 2;
-                        }
+    if ((s32) cam->mtxCount != 0) {
+        for (i = 0; i < (s32) cam->mtxCount; i++) {
+            ommtx = cam->matrices[i];
+            if (ommtx != NULL) {
+                mtx = &ommtx->unk08;
+                if (ommtx->unk05 != 2) {
+                    if ((s32) gtlCurrentContextID > 0) {
+                        mtx = (Mtx *) gDynamicBuffer1.top;
+                        gDynamicBuffer1.top = (u8 *) gDynamicBuffer1.top + sizeof(Mtx);
                     }
-                    temp_v1_2 = temp_s1->unk4;
-                    switch (temp_v1_2) {            /* switch 5; irregular */
+                    switch (ommtx->kind) {
+                        case 1:
                             break;
-                        case 3:                     /* switch 5 */
-                        case 4:                     /* switch 5 */
-                            temp_t7 = spDC;
-                            spDC = temp_t7 + 8;
-                            temp_t7->unk4 = var_s2;
-                            temp_t7->unk0 = 0xDA380007;
-                            temp_t0 = spDC;
-                            spDC = temp_t0 + 8;
-                            temp_t0->unk0 = 0xDB0E0000;
-                            temp_t0->unk4 = (bitwise u16) arg1->unk1C;
+                        case 2:
                             break;
-                        case 5:                     /* switch 5 */
-                            temp_t4 = spDC;
-                            spDC = temp_t4 + 8;
-                            temp_t4->unk4 = var_s2;
-                            temp_t4->unk0 = 0xDA380007;
+                        case 3:
+                            HS64_PerspectiveF(renderPerspectiveMtxF, &cam->perspMtx.persp.perspNorm,
+                                              cam->perspMtx.persp.fovy, cam->perspMtx.persp.aspect,
+                                              cam->perspMtx.persp.near, cam->perspMtx.persp.far,
+                                              cam->perspMtx.persp.scale);
+                            HS64_MtxF2L(renderPerspectiveMtxF, mtx);
+                            renderProjectionMtx = mtx;
                             break;
-                        case 12:                    /* switch 5 */
-                        case 14:                    /* switch 5 */
-                        case 16:                    /* switch 5 */
-                            temp_t7_2 = spDC;
-                            spDC = temp_t7_2 + 8;
-                            temp_t7_2->unk4 = var_s4;
-                            temp_t7_2->unk0 = 0xDC08000A;
-                            temp_t0_2 = spDC;
-                            spDC = temp_t0_2 + 8;
-                            temp_t0_2->unk4 = &var_s4->l[1];
-                            temp_t0_2->unk0 = 0xDC08030A;
-                            /* fallthrough */
-                        case 6:                     /* switch 5 */
-                        case 8:                     /* switch 5 */
-                        case 10:                    /* switch 5 */
-                            temp_t4_2 = spDC;
-                            spDC = temp_t4_2 + 8;
-                            temp_t4_2->unk4 = var_s2;
-                            temp_t4_2->unk0 = 0xDA380005;
+                        case 4:
+                            func_8001B28C(renderPerspectiveMtxF, &cam->perspMtx.persp.perspNorm,
+                                          cam->perspMtx.persp.fovy, cam->perspMtx.persp.aspect,
+                                          cam->perspMtx.persp.near, cam->perspMtx.persp.far,
+                                          cam->perspMtx.persp.scale);
+                            HS64_MtxF2L(renderPerspectiveMtxF, mtx);
+                            renderProjectionMtx = mtx;
                             break;
-                        case 13:                    /* switch 5 */
-                        case 15:                    /* switch 5 */
-                        case 17:                    /* switch 5 */
-                            temp_t7_3 = spDC;
-                            spDC = temp_t7_3 + 8;
-                            temp_t7_3->unk4 = var_s4;
-                            temp_t7_3->unk0 = 0xDC08000A;
-                            temp_t0_3 = spDC;
-                            spDC = temp_t0_3 + 8;
-                            temp_t0_3->unk4 = &var_s4->l[1];
-                            temp_t0_3->unk0 = 0xDC08030A;
-                            /* fallthrough */
-                        case 7:                     /* switch 5 */
-                        case 9:                     /* switch 5 */
-                        case 11:                    /* switch 5 */
-                            temp_t4_3 = spDC;
-                            spDC = temp_t4_3 + 8;
-                            temp_t4_3->unk4 = var_s2;
-                            temp_t4_3->unk0 = 0xDA380003;
+                        case 5:
+                            guOrtho(mtx, cam->perspMtx.ortho.left, cam->perspMtx.ortho.right,
+                                    cam->perspMtx.ortho.bottom, cam->perspMtx.ortho.top,
+                                    cam->perspMtx.ortho.near, cam->perspMtx.ortho.far,
+                                    cam->perspMtx.ortho.scale);
+                            renderProjectionMtx = mtx;
                             break;
-                        default:                    /* switch 5 */
-                            if (renderMatrixHandler != 0) {
-                                temp_a3_2 = (renderMatrixHandler + (temp_v1_2 * 8))->unk-214;
-                                if (temp_a3_2 != NULL) {
-                                    temp_a3_2(var_s2, arg1, &spDC, temp_a3_2);
+                        case 6:
+                        case 7:
+                            guLookAt(mtx, cam->viewMtx.lookAt.eye.x, cam->viewMtx.lookAt.eye.y,
+                                     cam->viewMtx.lookAt.eye.z, cam->viewMtx.lookAt.at.x,
+                                     cam->viewMtx.lookAt.at.y, cam->viewMtx.lookAt.at.z,
+                                     cam->viewMtx.lookAt.up.x, cam->viewMtx.lookAt.up.y,
+                                     cam->viewMtx.lookAt.up.z);
+                            mode = (cam->viewMtx.lookAt.up.z < cam->viewMtx.lookAt.up.y) ? 1 : 2;
+                            break;
+                        case 8:
+                        case 9:
+                            HS64_LookAt(mtx, cam->viewMtx.lookAtRoll.xEye, cam->viewMtx.lookAtRoll.yEye,
+                                        cam->viewMtx.lookAtRoll.zEye, cam->viewMtx.lookAtRoll.xAt,
+                                        cam->viewMtx.lookAtRoll.yAt, cam->viewMtx.lookAtRoll.zAt,
+                                        cam->viewMtx.lookAtRoll.roll, 0.0f, 1.0f, 0.0f);
+                            mode = 1;
+                            break;
+                        case 10:
+                        case 11:
+                            HS64_LookAt(mtx, cam->viewMtx.lookAtRoll.xEye, cam->viewMtx.lookAtRoll.yEye,
+                                        cam->viewMtx.lookAtRoll.zEye, cam->viewMtx.lookAtRoll.xAt,
+                                        cam->viewMtx.lookAtRoll.yAt, cam->viewMtx.lookAtRoll.zAt,
+                                        cam->viewMtx.lookAtRoll.roll, 0.0f, 0.0f, 1.0f);
+                            mode = 2;
+                            break;
+                        case 12:
+                        case 13:
+                            lookAt = mlAlloc(&gDynamicBuffer1, sizeof(LookAt), 8);
+                            guLookAtReflect(mtx, lookAt, cam->viewMtx.lookAt.eye.x,
+                                            cam->viewMtx.lookAt.eye.y, cam->viewMtx.lookAt.eye.z,
+                                            cam->viewMtx.lookAt.at.x, cam->viewMtx.lookAt.at.y,
+                                            cam->viewMtx.lookAt.at.z, cam->viewMtx.lookAt.up.x,
+                                            cam->viewMtx.lookAt.up.y, cam->viewMtx.lookAt.up.z);
+                            mode = (cam->viewMtx.lookAt.up.z < cam->viewMtx.lookAt.up.y) ? 1 : 2;
+                            break;
+                        case 14:
+                        case 15:
+                            lookAt = mlAlloc(&gDynamicBuffer1, sizeof(LookAt), 8);
+                            mode = 1;
+                            func_8001AD90(mtx, lookAt, cam->viewMtx.lookAtRoll.xEye,
+                                          cam->viewMtx.lookAtRoll.yEye, cam->viewMtx.lookAtRoll.zEye,
+                                          cam->viewMtx.lookAtRoll.xAt, cam->viewMtx.lookAtRoll.yAt,
+                                          cam->viewMtx.lookAtRoll.zAt, cam->viewMtx.lookAtRoll.roll,
+                                          0.0f, 1.0f, 0.0f);
+                            break;
+                        case 16:
+                        case 17:
+                            lookAt = mlAlloc(&gDynamicBuffer1, sizeof(LookAt), 8);
+                            mode = 2;
+                            func_8001AD90(mtx, lookAt, cam->viewMtx.lookAtRoll.xEye,
+                                          cam->viewMtx.lookAtRoll.yEye, cam->viewMtx.lookAtRoll.zEye,
+                                          cam->viewMtx.lookAtRoll.xAt, cam->viewMtx.lookAtRoll.yAt,
+                                          cam->viewMtx.lookAtRoll.zAt, cam->viewMtx.lookAtRoll.roll,
+                                          0.0f, 0.0f, 1.0f);
+                            break;
+                        default:
+                            if (ommtx->kind >= 67 && renderMatrixHandler != NULL) {
+                                if (renderMatrixHandler[ommtx->kind - 67].unk0 != NULL) {
+                                    renderMatrixHandler[ommtx->kind - 67].unk0(mtx, cam, &g);
                                 }
                             }
                             break;
                     }
-                    var_a2 = arg1->unk60;
+                    if (ommtx->unk05 == 1 && &ommtx->unk08 == mtx) {
+                        ommtx->unk05 = 2;
+                    }
                 }
-                var_fp += 1;
-                var_s6 += 4;
-            } while (var_fp < var_a2);
-            spC4 = var_s4;
-        }
-        switch (D_8004AB98) {                       /* switch 3 */
-            case 0:                                 /* switch 3 */
-                spC8 = var_s3;
-                break;
-            case 1:                                 /* switch 3 */
-block_58:
-                var_s3 = 0;
-                break;
-            case 2:                                 /* switch 3 */
-                spC8 = 1;
-                var_s3 = 1;
-                break;
-            case 3:                                 /* switch 3 */
-                var_s3 = 1;
-                break;
-            case 4:                                 /* switch 3 */
-                spC8 = 1;
-                goto block_58;
-            case 5:                                 /* switch 3 */
-                spC8 = 2;
-                var_s3 = 2;
-                break;
-            case 6:                                 /* switch 3 */
-                var_s3 = 2;
-                break;
-            case 7:                                 /* switch 3 */
-                spC8 = 2;
-                goto block_58;
-        }
-        switch (var_s3) {                           /* switch 6; irregular */
-            case 0:                                 /* switch 6 */
-                break;
-            default:                                /* switch 6 */
-                var_f2 = sp9C;
-block_65:
-                if (var_f2 < 0.0001f) {
-                    HS64_MkScaleMtxF(D_8004AB18, 0, 0, 0);
-                } else {
-                    guLookAtF(D_8004AB18, 0.0f, sp98, var_f2, 0.0f, sp94, 0.0f, 0.0f, 1.0f, 0.0f);
-                    guMtxCatF(D_8004AB18, renderPerspectiveMtxF, D_8004AB18);
+                switch (ommtx->kind) {
+                    case 1:
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                    case 4:
+                        gSPMatrix(g++, mtx, G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+                        gSPPerspNormalize(g++, cam->perspMtx.persp.perspNorm);
+                        break;
+                    case 5:
+                        gSPMatrix(g++, mtx, G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+                        break;
+                    case 12:
+                    case 14:
+                    case 16:
+                        gSPLookAtX(g++, lookAt);
+                        gSPLookAtY(g++, &lookAt->l[1]);
+                        /* fallthrough */
+                    case 6:
+                    case 8:
+                    case 10:
+                        gSPMatrix(g++, mtx, G_MTX_PROJECTION | G_MTX_MUL | G_MTX_NOPUSH);
+                        break;
+                    case 13:
+                    case 15:
+                    case 17:
+                        gSPLookAtX(g++, lookAt);
+                        gSPLookAtY(g++, &lookAt->l[1]);
+                        /* fallthrough */
+                    case 7:
+                    case 9:
+                    case 11:
+                        gSPMatrix(g++, mtx, G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
+                        break;
+                    default:
+                        if (ommtx->kind >= 67 && renderMatrixHandler != NULL) {
+                            if (renderMatrixHandler[ommtx->kind - 67].unk4 != NULL) {
+                                renderMatrixHandler[ommtx->kind - 67].unk4(mtx, cam, &g);
+                            }
+                        }
+                        break;
                 }
-                break;
-            case 1:                                 /* switch 6 */
-                temp_f0 = arg1->unk50 - arg1->unk44;
-                temp_f2 = arg1->unk48 - arg1->unk3C;
-                var_f2 = sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2));
-                sp98 = arg1->unk40;
-                sp94 = arg1->unk4C;
-                goto block_65;
-            case 2:                                 /* switch 6 */
-                temp_f14 = arg1->unk4C - arg1->unk40;
-                temp_f2_2 = arg1->unk48 - arg1->unk3C;
-                var_f2 = sqrtf((temp_f14 * temp_f14) + (temp_f2_2 * temp_f2_2));
-                sp98 = arg1->unk44;
-                sp94 = arg1->unk50;
-                goto block_65;
+            }
         }
-        switch (spC8) {                             /* switch 7; irregular */
-            case 0:                                 /* switch 7 */
+
+        switch (D_8004AB98) {
+            case 0:
+                mode2 = mode;
                 break;
-            default:                                /* switch 7 */
-                var_f2_2 = sp90;
-block_74:
-                if (var_f2_2 < 0.0001f) {
-                    HS64_MkScaleMtxF(D_8004AB58, 0, 0, 0);
-                } else {
-                    guLookAtF(D_8004AB58, sp8C, 0.0f, var_f2_2, sp88, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-                    guMtxCatF(D_8004AB58, renderPerspectiveMtxF, D_8004AB58);
-                }
+            case 1:
+                mode = 0;
                 break;
-            case 1:                                 /* switch 7 */
-                temp_f14_2 = arg1->unk4C - arg1->unk40;
-                temp_f0_2 = arg1->unk50 - arg1->unk44;
-                var_f2_2 = sqrtf((temp_f14_2 * temp_f14_2) + (temp_f0_2 * temp_f0_2));
-                sp8C = arg1->unk3C;
-                sp88 = arg1->unk48;
-                goto block_74;
-            case 2:                                 /* switch 7 */
-                temp_f0_3 = arg1->unk50 - arg1->unk44;
-                temp_f2_3 = arg1->unk48 - arg1->unk3C;
-                var_f2_2 = sqrtf((temp_f0_3 * temp_f0_3) + (temp_f2_3 * temp_f2_3));
-                sp8C = arg1->unk40;
-                sp88 = arg1->unk4C;
-                goto block_74;
+            case 2:
+                mode2 = 1;
+                mode = 1;
+                break;
+            case 3:
+                mode = 1;
+                break;
+            case 4:
+                mode2 = 1;
+                mode = 0;
+                break;
+            case 5:
+                mode2 = 2;
+                mode = 2;
+                break;
+            case 6:
+                mode = 2;
+                break;
+            case 7:
+                mode2 = 2;
+                mode = 0;
+                break;
         }
-        *arg0 = spDC;
+
+        if (mode != 0) {
+            f32 dist;
+            f32 h;
+            f32 hAt;
+
+            switch (mode) {
+                case 1:
+                    dist = sqrtf(SQ(cam->viewMtx.lookAt.at.z - cam->viewMtx.lookAt.eye.z) +
+                                 SQ(cam->viewMtx.lookAt.at.x - cam->viewMtx.lookAt.eye.x));
+                    h = cam->viewMtx.lookAt.eye.y;
+                    hAt = cam->viewMtx.lookAt.at.y;
+                    break;
+                case 2:
+                    dist = sqrtf(SQ(cam->viewMtx.lookAt.at.y - cam->viewMtx.lookAt.eye.y) +
+                                 SQ(cam->viewMtx.lookAt.at.x - cam->viewMtx.lookAt.eye.x));
+                    h = cam->viewMtx.lookAt.eye.z;
+                    hAt = cam->viewMtx.lookAt.at.z;
+                    break;
+            }
+            if (dist < 0.0001f) {
+                HS64_MkScaleMtxF(D_8004AB18, 0.0f, 0.0f, 0.0f);
+            } else {
+                guLookAtF(D_8004AB18, 0.0f, h, dist, 0.0f, hAt, 0.0f, 0.0f, 1.0f, 0.0f);
+                guMtxCatF(D_8004AB18, renderPerspectiveMtxF, D_8004AB18);
+            }
+        }
+
+        if (mode2 != 0) {
+            f32 dist2;
+            f32 h2;
+            f32 h2At;
+
+            switch (mode2) {
+                case 1:
+                    dist2 = sqrtf(SQ(cam->viewMtx.lookAt.at.y - cam->viewMtx.lookAt.eye.y) +
+                                  SQ(cam->viewMtx.lookAt.at.z - cam->viewMtx.lookAt.eye.z));
+                    h2 = cam->viewMtx.lookAt.eye.x;
+                    h2At = cam->viewMtx.lookAt.at.x;
+                    break;
+                case 2:
+                    dist2 = sqrtf(SQ(cam->viewMtx.lookAt.at.z - cam->viewMtx.lookAt.eye.z) +
+                                  SQ(cam->viewMtx.lookAt.at.x - cam->viewMtx.lookAt.eye.x));
+                    h2 = cam->viewMtx.lookAt.eye.y;
+                    h2At = cam->viewMtx.lookAt.at.y;
+                    break;
+            }
+            if (dist2 < 0.0001f) {
+                HS64_MkScaleMtxF(D_8004AB58, 0.0f, 0.0f, 0.0f);
+            } else {
+                guLookAtF(D_8004AB58, h2, 0.0f, dist2, h2At, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+                guMtxCatF(D_8004AB58, renderPerspectiveMtxF, D_8004AB58);
+            }
+        }
+
+        *gfx = g;
     }
 }
-#else
-void func_800171E0(Gfx **glistp, Camera *cam);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800171E0.s")
-#endif
 
 void func_80017B34(s32 arg0) {
     D_8004AB98 = arg0;
@@ -3293,115 +2779,112 @@ void func_8001810C(void) {
 }
 
 #ifdef MIPS_TO_C
+void func_80018170(GObj* camObj) {
+    Camera* cam;
+    Gfx* g;
+    Gfx** p;
+    Gfx** q;
+    Gfx* start;
+    Gfx* h;
+    Gfx* tmp;
+    s32 i;
+    s32 mode;
 
-void func_80018170(void *arg0) {
-    ? var_a1;
-    s32 *var_s2;
-    s32 *var_s2_2;
-    s32 temp_v1;
-    s32 var_s3;
-    void **var_s1;
-    void **var_s1_2;
-    void *temp_s0;
-    void *temp_s0_2;
-    void *temp_s0_3;
-    void *temp_s1;
-    void *temp_s5;
-    void *temp_t8;
-    void *temp_v0;
+    cam = camObj->data.cam;
+    renderInitCamera(&gDisplayListHeads[0], cam, 0);
 
-    temp_s5 = arg0->unk3C;
-    renderInitCamera(&gDisplayListHeads, temp_s5, 0);
-    D_8004ADB0 = gDisplayListHeads + 8;
-    gSPDisplayList(gDisplayListHeads[0]++, gDisplayListHeads[0] + 2);
-    func_800171E0(&gDisplayListHeads, temp_s5);
+    g = gDisplayListHeads[0];
+    D_8004ADB0 = g + 1;
+    gSPDisplayList(g, gDisplayListHeads[0] + 2);
+    gDisplayListHeads[0] += 2;
 
-    temp_s1 = gDisplayListHeads;
-    gDisplayListHeads = temp_s1 + 8;
-    temp_s1->unk4 = 0;
-    temp_s1->unk0 = 0xDF000000;
+    func_800171E0(&gDisplayListHeads[0], cam);
 
-    D_8004ADB0->unk0 = 0xDE010000;
-    D_8004ADB0->unk4 = gDisplayListHeads;
-    func_80017B40(temp_s5, 0);
-    if (temp_s5->unk80 & 0x20) {
-        func_8001663C(&D_8004A3D4, temp_s5, 1);
+    gSPEndDisplayList(gDisplayListHeads[0]++);
+    gSPBranchList(D_8004ADB0, gDisplayListHeads[0]);
+
+    func_80017B40(cam, 0);
+
+    if (cam->flags & CAMERA_FLAG_20) {
+        func_8001663C(&D_8004A3D4[0], cam, 1);
     }
-    var_s2 = &D_8004ADA4;
-    var_s1 = &D_8004A3D4;
-    do {
-        var_s2 += 4;
-        temp_t8 = *var_s1 + 8;
-        var_s1 += 4;
-        var_s1->unk-4 = temp_t8;
-        var_s2->unk-4 = temp_t8;
-    } while (var_s2 < &D_8004ADB0);
-    var_a1 = 0;
-    if (temp_s5->unk80 & 8) {
-        var_a1 = 1;
+
+    {
+        Gfx** q2 = D_8004ADA4;
+        Gfx** p2 = &D_8004A3D4[0];
+        do {
+            q2++;
+            tmp = *p2 + 1;
+            p2++;
+            p2[-1] = tmp;
+            q2[-1] = tmp;
+        } while (q2 < &D_8004ADA4[3]);
     }
-    func_80017E84(arg0, var_a1);
-    var_s2_2 = &D_8004ADA4;
-    var_s1_2 = &D_8004A3D4;
-    var_s3 = 1;
+
+    mode = (cam->flags & CAMERA_FLAG_8) ? 1 : 0;
+    func_80017E84(camObj, mode);
+
+    q = D_8004ADA4;
+    p = &gDisplayListHeads[1];
+    i = 1;
     do {
-        temp_v1 = *var_s2_2;
-        temp_s0 = *var_s1_2;
-        temp_v0 = temp_v1 - 8;
-        if (temp_v1 == temp_s0) {
-            *var_s1_2 = temp_s0 - 8;
+        start = *q;
+        h = *p;
+
+        if (start == h) {
+            *p = h - 1;
         } else {
-            *var_s1_2 = temp_s0 + 8;
-            temp_v0->unk0 = 0xDE000000;
-            temp_v0->unk4 = *var_s1_2;
-            if ((var_s3 != 1) || !(temp_s5->unk80 & 0x20)) {
-                func_8001663C(var_s1_2, temp_s5, var_s3);
+            *p = h + 1;
+            gSPDisplayList(start - 1, *p);
+
+            if (i != 1 || !(cam->flags & CAMERA_FLAG_20)) {
+                func_8001663C(p, cam, i);
             }
-            temp_s0_2 = *var_s1_2;
-            *var_s1_2 = temp_s0_2 + 8;
-            temp_s0_2->unk0 = 0xDE000000;
-            temp_s0_2->unk4 = D_8004ADB0 + 8;
-            func_80017B40(temp_s5, var_s3);
-            temp_s0_3 = *var_s1_2;
-            *var_s1_2 = temp_s0_3 + 8;
-            temp_s0_3->unk4 = NULL;
-            temp_s0_3->unk0 = 0xDF000000;
-            temp_s0->unk0 = 0xDE010000;
-            temp_s0->unk4 = *var_s1_2;
+
+            gSPDisplayList((*p)++, D_8004ADB0 + 1);
+            func_80017B40(cam, i);
+            gSPEndDisplayList((*p)++);
+            gSPBranchList(h, *p);
         }
-        var_s3 += 1;
-        var_s1_2 += 4;
-        var_s2_2 += 4;
-    } while (var_s3 != 4);
-    renderPostCameraDraw(temp_s5);
+        i++;
+        p++;
+        q++;
+    } while (i != 4);
+
+    renderPostCameraDraw(cam);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80018170.s")
 #endif
 
-// https://decomp.me/scratch/hUtDy
-#ifdef NON_MATCHING
+#ifdef MIPS_TO_C
 void func_800183BC(void) {
-    s32 i;
-    Camera *cam = omCurrentCamera->data.cam;
+    Gfx** p = &gDisplayListHeads[1];
+    Gfx** q = D_8004ADA4;
+    s32 i = 1;
     Gfx* start;
-    Gfx** new_var = gDisplayListHeads;
+    Gfx* temp;
+    Camera *cam = omCurrentCamera->data.cam;
 
-    for (i = 1; i < 4; i++) {
-        start = new_var[i];
+    do {
+        start = *p;
 
-        if (D_8004A3D4[i] == gDisplayListHeads[i]) {
-            gDisplayListHeads[i]--;
+        if (*q == *p) {
+            *p = *p - 1;
         } else {
-            gDisplayListHeads[i]++;
-            gSPDisplayList(&D_8004A3D4[i][-1], gDisplayListHeads[i]);
-            func_8001663C(&gDisplayListHeads[i], cam, i);
-            gSPDisplayList(gDisplayListHeads[i]++, D_8004ADB0 + 1);
+            *p = *p + 1;
+            temp = *q - 1;
+            gSPDisplayList(temp, *p);
+            func_8001663C(p, cam, i);
+            gSPDisplayList((*p)++, D_8004ADB0 + 1);
             func_80017B40(cam, i);
-            gSPEndDisplayList(gDisplayListHeads[i]++);
-            gSPBranchList(start, gDisplayListHeads[i]);
+            gSPEndDisplayList((*p)++);
+            gSPBranchList(start, *p);
         }
-    }
+        i++;
+        p++;
+        q++;
+    } while (i < 4);
 
     gtlProcessDisps();
     gtlReset();
@@ -3421,3 +2904,4 @@ void func_800183BC(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800183BC.s")
 #endif
+

@@ -46,14 +46,16 @@ typedef struct {
     /* 0x28 */ u8* table2Start;
     /* 0x2C */ s32 romSbkStart;
     /* 0x30 */ u8 fxType; u8 pad31[3];
-    u32 unk34;
+    u16 unk34;
+    u16 unk36;
     u32 unk38;
     u32 *unk3C;
     u32 *unk40;
     u32 unk44;
     u16 unk48;
     u16 unk4A;
-    u32 unk4C;
+    u16 unk4C;
+    u16 unk4E;
 // 0x50/0xx54
     u32 bank3Start;
     u32 bank3End;
@@ -64,6 +66,34 @@ typedef struct {
     u32 bank5Start;
     u32 bank5End;
 } AuSettings;
+
+typedef struct {
+    /* 0x00 */ s32 maxVVoices;
+    /* 0x04 */ s32 maxPVoices;
+    /* 0x08 */ s32 maxUpdates;
+    /* 0x0C */ s32 unk0C;
+    /* 0x10 */ ALDMANew dmaNew;
+    /* 0x14 */ ALHeap *heap;
+    /* 0x18 */ s32 outputRate;
+    /* 0x1C */ u8 fxType;
+} AuSynConfig;
+
+typedef struct {
+    /* 0x00 */ u16 unk00;
+    /* 0x02 */ u16 unk02;
+    /* 0x04 */ u16 unk04;
+    /* 0x06 */ u16 unk06;
+    /* 0x08 */ u16 unk08;
+    /* 0x0A */ u16 unk0A;
+    /* 0x0C */ u16 unk0C;
+    /* 0x10 */ void *unk10;
+    /* 0x14 */ u32 *unk14;
+    /* 0x18 */ u32 *unk18;
+    /* 0x1C */ u32 unk1C;
+    /* 0x20 */ ALHeap *heap;
+    /* 0x24 */ u8 unk24;
+    /* 0x26 */ s16 unk26[6];
+} AuSndConfig;
 
 typedef struct {
     u8 rate;

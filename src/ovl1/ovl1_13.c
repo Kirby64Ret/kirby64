@@ -3,30 +3,78 @@
 #include "GObj.h"
 #include "SPObj.h"
 #include "Player.h"
+#include "ovl1/ovl1_2_2.h"
 #include "ovl1/ovl1_6.h"
 #include "main/gtl.h"
 #include "main/math.h"
 #include "util.h"
 
+void draw_lives_digit(s32 arg0, s32 arg1);
+void draw_hp_segment(s32 arg0, s32 arg1);
 void draw_star_segments(s32 arg0, s32 arg1);
+void func_800BD208(s32 arg0, s32 arg1);
+void func_800BD460(s32 arg0, s32 arg1);
+void func_800BD6E0(void);
+void func_800BD7FC(void);
+void func_800BD92C(void);
+void func_800BDAA8(void);
 
 extern f32 gKirbyHp;
 extern s32 gKirbyLives;
+extern s32 gKirbyStars;
 
+extern s32 D_800D6E54;
+extern f32 D_800D6E58;
+extern f32 D_800D6E5C;
 extern s32 D_800D6E88;
 extern s32 D_800D6E8C;
 extern s32 D_800D6E90;
+extern s32 D_800D6E94;
+extern s32 D_800D6E98;
+extern s32 D_800D6E9C;
+extern s32 D_800D6EA0;
+extern s32 D_800D6EA4;
+extern s32 D_800D6EA8;
+extern s32 D_800D6EAC;
+extern s32 D_800D6EB0;
+extern s32 D_800D6EB4;
+extern s32 D_800D6EB8;
+extern s32 D_800D6EBC;
+extern s32 D_800D6EC0;
+extern s32 D_800F4D10;
+extern s32 D_8012E850;
 
-#ifdef NON_MATCHING // regalloc
+extern s32 D_800D55D0[];
+extern u8 D_800D55F8[];
+extern s32 D_800BE4FC;
+extern s32 D_800BE508;
+extern s32 D_800D6B24;
+extern s16 D_800D6B30;
+
+extern s32 saveHUDTheme;
+extern u32 D_800D552C[];
+extern u32 D_800D5550[];
+extern u32 D_800D5574[];
+extern u32 D_800D5598[];
+extern s32 D_800D5310[];
+extern s32 D_800D53DC[];
+extern s32 D_800D5408[];
+extern s32 D_800D5434[];
+extern s32 D_800D5460[];
+extern u16 D_800ED510[];
+
+s32 func_800A8BAC(s32 arg0);
+void func_800B1900(u16 arg0);
+
 s32 change_kirby_hp(f32 arg0) {
     if ((random_u16() & 3) == 3) {
         // They messed up this check, but the idea was that
         //  Kirby would take twice damage and wouldnt heal (1 in 4 chance)
         if (!utilTamperCheck) {
-            if (arg0 < 0.0f) {
+            if (arg0 < 0) {
                 arg0 *= 2;
             } else {
-                arg0 = 0.0f;
+                arg0 = 0;
             }
         }
     }
@@ -44,9 +92,6 @@ s32 change_kirby_hp(f32 arg0) {
     D_800E7B20[PLAYERTRACK] = gKirbyHp;
     return D_800D6E8C;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/change_kirby_hp.s")
-#endif
 
 // set lives?
 void func_800BC0F0(s32 arg0) {
@@ -59,8 +104,6 @@ void func_800BC0F0(s32 arg0) {
     D_800D6E90 = arg0 + 0x23;
 }
 
-#ifdef MIPS_TO_C
-
 s32 func_800BC11C(f32 arg0) {
     f32 temp_f12;
 
@@ -72,41 +115,32 @@ s32 func_800BC11C(f32 arg0) {
         D_800D6E58 = D_800D6E5C;
     }
     temp_f12 = (D_800D6E58 / D_800D6E5C) * 30.0f;
-    if (D_800D6E5C == D_800D6E58) {
+    if (D_800D6E58 == D_800D6E5C) {
         D_800D6E94 = 0x1E;
-    } else if (D_800D6E58 == 0.0f) {
-        D_800D6E94 = 0;
-    } else if (temp_f12 < 1.0f) {
-        D_800D6E94 = 1;
     } else {
-        D_800D6E94 = temp_f12;
+        if (D_800D6E58 == 0.0f) {
+            D_800D6E94 = 0;
+        } else {
+            if (temp_f12 < 1.0f) {
+                D_800D6E94 = 1;
+            } else {
+                D_800D6E94 = temp_f12;
+            }
+        }
     }
     return D_800D6E94;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC11C.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BC1FC(s32 arg0) {
     D_800D6E58 = arg0;
     D_800D6E5C = D_800D6E58;
-    D_800D6EB8 = 0;
-    D_800D6EAC = 0;
+    D_800D6EAC = D_800D6EB8 = 0;
     D_800D6E94 = 0x1E;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC1FC.s")
-#endif
 
-#ifdef MIPS_TO_C
 void change_kirby_stars(s32 arg0) {
     gKirbyStars += arg0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/change_kirby_stars.s")
-#endif
 
 void change_kirby_lives(s32 arg0) {
     gKirbyLives += arg0;
@@ -119,231 +153,120 @@ void change_kirby_lives(s32 arg0) {
     D_800D6E88 = gKirbyLives;
 }
 
-#ifdef MIPS_TO_C
-
 void func_800BC298(s32 arg0) {
-    s32 var_a0;
-
-    var_a0 = arg0;
     if ((random_u16() & 3) == 2) {
-        var_a0 = arg0;
-        if (func_800F88A0(var_a0) == 0) {
-            D_800D6E54 = 0;
-            D_800D6E90 = 0;
-            D_8012E850 = 0;
+        if (func_800F88A0(arg0) == 0) {
+            D_8012E850 = D_800D6E90 = D_800D6E54 = 0;
             return;
         }
     }
-    if (var_a0 < 0) {
-        var_a0 = 0;
+    if (arg0 < 0) {
+        arg0 = 0;
     }
-    if (var_a0 >= 0x24) {
-        var_a0 = 0x23;
+    if (arg0 >= 0x24) {
+        arg0 = 0x23;
     }
-    D_800D6E90 = var_a0;
-    D_800D6E54 = var_a0;
+    D_800D6E90 = arg0;
+    D_800D6E54 = arg0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC298.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BC328(s32 arg0) {
-    ? var_a3;
-    f32 var_f16;
-    f32 var_f6;
-    s32 temp_a3;
-    s32 temp_t8;
-    s32 temp_t9;
-    s32 temp_v0_2;
-    s32 var_v0;
-    u32 temp_t0;
-    void *temp_v0;
+    u32 *data;
+    s32 mode;
 
-    temp_t0 = omCurrentObj->objId;
-    temp_a3 = D_800E9E20[temp_t0];
-    temp_v0 = (temp_a3 * 4) + &D_800D552C;
-    temp_t8 = temp_v0->unk0;
-    var_f6 = temp_t8;
-    if (temp_t8 < 0) {
-        var_f6 += 4294967296.0f;
-    }
-    gEntitiesNextPosXArray[temp_t0] = var_f6;
-    temp_t9 = temp_v0->unk4;
-    var_f16 = temp_t9;
-    if (temp_t9 < 0) {
-        var_f16 += 4294967296.0f;
-    }
-    gEntitiesNextPosYArray[omCurrentObj->objId] = var_f16;
-    func_800AF8C0(temp_v0->unk8, 0xA, 6, temp_a3);
+    mode = D_800E9E20[omCurrentObj->objId];
+    data = &D_800D552C[mode];
+    gEntitiesNextPosXArray[omCurrentObj->objId] = data[0];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = data[1];
+    func_800AF8C0(data[2], 0xA, 6, mode);
     func_800A5B14(arg0, 0xD0, 0xB0, 0x80, 0xFF);
-loop_5:
-    temp_v0_2 = D_800E0D50[omCurrentObj->objId];
-    var_v0 = temp_v0_2 * 4;
-    if (D_800E9C60[temp_v0_2] != 0) {
-        func_800ACBDC(arg0);
-        func_800B1900(omCurrentObj->unk2);
-        var_v0 = D_800E0D50[omCurrentObj->objId] * 4;
+    while (1) {
+        if (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 0) {
+            func_800ACBDC(arg0);
+            func_800B1900(omCurrentObj->objId);
+        }
+        mode = 0;
+        if (D_800E9AA0[D_800E0D50[omCurrentObj->objId]] != 0) {
+            mode = 1;
+        }
+        func_800AF920(mode);
+        ohSleep(1);
     }
-    var_a3 = 0;
-    if (*(D_800E9AA0 + var_v0) != 0) {
-        var_a3 = 1;
-    }
-    func_800AF920(var_a3);
-    ohSleep(1);
-    goto loop_5;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC328.s")
-#endif
 
 #ifdef MIPS_TO_C
-
 void func_800BC4C0(s32 arg0) {
-    ? var_a3;
-    f32 var_f16;
-    f32 var_f6;
-    s32 temp_a3;
-    s32 temp_t8;
-    s32 temp_t9;
-    s32 temp_v0_2;
-    s32 var_v0;
-    u32 temp_t0;
-    void *temp_v0;
+    u32 *data;
+    s32 mode;
 
-    temp_t0 = omCurrentObj->objId;
-    temp_a3 = D_800E9E20[temp_t0];
-    temp_v0 = (temp_a3 * 4) + &D_800D5550;
-    temp_t8 = temp_v0->unk0;
-    var_f6 = temp_t8;
-    if (temp_t8 < 0) {
-        var_f6 += 4294967296.0f;
+    mode = D_800E9E20[omCurrentObj->objId];
+    data = &D_800D5550[mode];
+    gEntitiesNextPosXArray[omCurrentObj->objId] = data[0];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = data[1];
+    func_800AF8C0(data[2], 0xA, 4, mode);
+    while (1) {
+        if (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 0) {
+            func_800ACBDC(arg0);
+            func_800B1900(omCurrentObj->objId);
+        }
+        mode = 0;
+        if ((D_800E98E0[D_800E0D50[omCurrentObj->objId]] == 0) && (D_800E9AA0[D_800E0D50[omCurrentObj->objId]] != 0)) {
+            mode = 1;
+        }
+        func_800AF920(mode);
+        ohSleep(1);
     }
-    gEntitiesNextPosXArray[temp_t0] = var_f6;
-    temp_t9 = temp_v0->unk4;
-    var_f16 = temp_t9;
-    if (temp_t9 < 0) {
-        var_f16 += 4294967296.0f;
-    }
-    gEntitiesNextPosYArray[omCurrentObj->objId] = var_f16;
-    func_800AF8C0(temp_v0->unk8, 0xA, 4, temp_a3);
-loop_5:
-    temp_v0_2 = D_800E0D50[omCurrentObj->objId];
-    var_v0 = temp_v0_2 * 4;
-    if (D_800E9C60[temp_v0_2] != 0) {
-        func_800ACBDC(arg0);
-        func_800B1900(omCurrentObj->unk2);
-        var_v0 = D_800E0D50[omCurrentObj->objId] * 4;
-    }
-    var_a3 = 0;
-    if ((*(D_800E98E0 + var_v0) == 0) && (*(D_800E9AA0 + var_v0) != 0)) {
-        var_a3 = 1;
-    }
-    func_800AF920(var_a3);
-    ohSleep(1);
-    goto loop_5;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC4C0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800BC664(s32 arg0) {
-    ? var_a3;
-    f32 var_f16;
-    f32 var_f6;
-    s32 temp_a3;
-    s32 temp_t8;
-    s32 temp_t9;
-    s32 temp_v0_2;
-    s32 var_v0;
-    u32 temp_t0;
-    void *temp_v0;
+    u32 *data;
+    s32 mode;
 
-    temp_t0 = omCurrentObj->objId;
-    temp_a3 = D_800E9E20[temp_t0];
-    temp_v0 = (temp_a3 * 4) + &D_800D5574;
-    temp_t8 = temp_v0->unk0;
-    var_f6 = temp_t8;
-    if (temp_t8 < 0) {
-        var_f6 += 4294967296.0f;
-    }
-    gEntitiesNextPosXArray[temp_t0] = var_f6;
-    temp_t9 = temp_v0->unk4;
-    var_f16 = temp_t9;
-    if (temp_t9 < 0) {
-        var_f16 += 4294967296.0f;
-    }
-    gEntitiesNextPosYArray[omCurrentObj->objId] = var_f16;
-    func_800AF8C0(temp_v0->unk8, 0xA, 6, temp_a3);
+    mode = D_800E9E20[omCurrentObj->objId];
+    data = &D_800D5574[mode];
+    gEntitiesNextPosXArray[omCurrentObj->objId] = data[0];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = data[1];
+    func_800AF8C0(data[2], 0xA, 6, mode);
     func_800A5B14(arg0, 0xD0, 0xB0, 0x80, 0xFF);
-loop_5:
-    temp_v0_2 = D_800E0D50[omCurrentObj->objId];
-    var_v0 = temp_v0_2 * 4;
-    if (D_800E9C60[temp_v0_2] != 0) {
-        func_800ACBDC(arg0);
-        func_800B1900(omCurrentObj->unk2);
-        var_v0 = D_800E0D50[omCurrentObj->objId] * 4;
+    while (1) {
+        if (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 0) {
+            func_800ACBDC(arg0);
+            func_800B1900(omCurrentObj->objId);
+        }
+        mode = 0;
+        if (D_800E9AA0[D_800E0D50[omCurrentObj->objId]] != 0) {
+            mode = 1;
+        }
+        func_800AF920(mode);
+        ohSleep(1);
     }
-    var_a3 = 0;
-    if (*(D_800E9AA0 + var_v0) != 0) {
-        var_a3 = 1;
-    }
-    func_800AF920(var_a3);
-    ohSleep(1);
-    goto loop_5;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC664.s")
-#endif
 
 #ifdef MIPS_TO_C
-
 void func_800BC800(s32 arg0) {
-    ? var_a3;
-    f32 var_f16;
-    f32 var_f6;
-    s32 temp_a3;
-    s32 temp_t8;
-    s32 temp_t9;
-    s32 temp_v0_2;
-    s32 var_v0;
-    u32 temp_t0;
-    void *temp_v0;
+    u32 *data;
+    s32 mode;
 
-    temp_t0 = omCurrentObj->objId;
-    temp_a3 = D_800E9E20[temp_t0];
-    temp_v0 = (temp_a3 * 4) + &D_800D5598;
-    temp_t8 = temp_v0->unk0;
-    var_f6 = temp_t8;
-    if (temp_t8 < 0) {
-        var_f6 += 4294967296.0f;
+    mode = D_800E9E20[omCurrentObj->objId];
+    data = &D_800D5598[mode];
+    gEntitiesNextPosXArray[omCurrentObj->objId] = data[0];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = data[1];
+    func_800AF8C0(data[2], 0xA, 4, mode);
+    while (1) {
+        if (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 0) {
+            func_800ACBDC(arg0);
+            func_800B1900(omCurrentObj->objId);
+        }
+        mode = 0;
+        if ((D_800E98E0[D_800E0D50[omCurrentObj->objId]] != 0) && (D_800E9AA0[D_800E0D50[omCurrentObj->objId]] != 0)) {
+            mode = 1;
+        }
+        func_800AF920(mode);
+        ohSleep(1);
     }
-    gEntitiesNextPosXArray[temp_t0] = var_f6;
-    temp_t9 = temp_v0->unk4;
-    var_f16 = temp_t9;
-    if (temp_t9 < 0) {
-        var_f16 += 4294967296.0f;
-    }
-    gEntitiesNextPosYArray[omCurrentObj->objId] = var_f16;
-    func_800AF8C0(temp_v0->unk8, 0xA, 4, temp_a3);
-loop_5:
-    temp_v0_2 = D_800E0D50[omCurrentObj->objId];
-    var_v0 = temp_v0_2 * 4;
-    if (D_800E9C60[temp_v0_2] != 0) {
-        func_800ACBDC(arg0);
-        func_800B1900(omCurrentObj->unk2);
-        var_v0 = D_800E0D50[omCurrentObj->objId] * 4;
-    }
-    var_a3 = 0;
-    if ((*(D_800E98E0 + var_v0) != 0) && (*(D_800E9AA0 + var_v0) != 0)) {
-        var_a3 = 1;
-    }
-    func_800AF920(var_a3);
-    ohSleep(1);
-    goto loop_5;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC800.s")
@@ -487,127 +410,62 @@ void func_800BCEEC(GObj *gobj) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BCEEC.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void draw_lives_digit(s32 arg0, s32 arg1) {
-    s32 temp_t6;
-    s32 var_a1;
-    void *var_a0;
-    void *var_v1;
+    s32 *src;
+    s32 *dst;
+    s32 i;
 
-    var_v1 = func_800A8BAC(*(&D_800D5460 + ((saveHUDTheme * 0xA * 4) + (arg1 * 4)))) + 0x10;
-    var_a0 = (arg0 * 2) + 0x1400 + &D_800ED510;
-    var_a1 = 0;
-    do {
-        var_a1 += 2;
-        var_a0 += 0x500;
-        var_a0->unk-500 = var_v1->unk0;
-        temp_t6 = var_v1->unk4;
-        var_v1 += 0x50;
-        var_a0->unk-4FC = temp_t6;
-        var_a0->unk-4F8 = var_v1->unk-48;
-        var_a0->unk-4F4 = var_v1->unk-44;
-        var_a0->unk-4F0 = var_v1->unk-40;
-        var_a0->unk-4EC = var_v1->unk-3C;
-        var_a0->unk-4E8 = var_v1->unk-38;
-        var_a0->unk-4E4 = var_v1->unk-34;
-        var_a0->unk-4E0 = var_v1->unk-30;
-        var_a0->unk-280 = var_v1->unk-28;
-        var_a0->unk-27C = var_v1->unk-24;
-        var_a0->unk-278 = var_v1->unk-20;
-        var_a0->unk-274 = var_v1->unk-1C;
-        var_a0->unk-270 = var_v1->unk-18;
-        var_a0->unk-26C = var_v1->unk-14;
-        var_a0->unk-268 = var_v1->unk-10;
-        var_a0->unk-264 = var_v1->unk-C;
-        var_a0->unk-260 = var_v1->unk-8;
-    } while (var_a1 != 0x1E);
+    src = (s32 *) (func_800A8BAC(D_800D5460[saveHUDTheme * 10 + arg1]) + 0x10);
+    dst = (s32 *) &D_800ED510[arg0 + 0xA00];
+    for (i = 0; i != 0x1E; i++, src += 10) {
+        dst[i * 0xA0 + 0] = src[0];
+        dst[i * 0xA0 + 1] = src[1];
+        dst[i * 0xA0 + 2] = src[2];
+        dst[i * 0xA0 + 3] = src[3];
+        dst[i * 0xA0 + 4] = src[4];
+        dst[i * 0xA0 + 5] = src[5];
+        dst[i * 0xA0 + 6] = src[6];
+        dst[i * 0xA0 + 7] = src[7];
+        dst[i * 0xA0 + 8] = src[8];
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/draw_lives_digit.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void draw_hp_segment(s32 arg0, s32 arg1) {
-    s32 *var_a0;
-    s32 *var_v1;
-    s32 temp_t6;
-    s32 var_a1;
+    s32 *src;
+    s32 *dst;
+    s32 i;
 
-    var_v1 = func_800A8BAC(*(&D_800D53DC + ((saveHUDTheme * 8) + (arg1 * 4)))) + 0x10;
-    var_a0 = (arg0 * 0x14 * 2) + 0xAB4 + &D_800ED510;
-    var_a1 = 0;
-    do {
-        temp_t6 = *var_v1;
-        var_a1 += 2;
-        var_v1 += 0x50;
-        *var_a0 = temp_t6;
-        var_a0 += 0x500;
-        var_a0->unk-4FC = var_v1->unk-4C;
-        var_a0->unk-4F8 = var_v1->unk-48;
-        var_a0->unk-4F4 = var_v1->unk-44;
-        var_a0->unk-4F0 = var_v1->unk-40;
-        var_a0->unk-4EC = var_v1->unk-3C;
-        var_a0->unk-4E8 = var_v1->unk-38;
-        var_a0->unk-4E4 = var_v1->unk-34;
-        var_a0->unk-4E0 = var_v1->unk-30;
-        var_a0->unk-4DC = var_v1->unk-2C;
-        var_a0->unk-280 = var_v1->unk-28;
-        var_a0->unk-27C = var_v1->unk-24;
-        var_a0->unk-278 = var_v1->unk-20;
-        var_a0->unk-274 = var_v1->unk-1C;
-        var_a0->unk-270 = var_v1->unk-18;
-        var_a0->unk-26C = var_v1->unk-14;
-        var_a0->unk-268 = var_v1->unk-10;
-        var_a0->unk-264 = var_v1->unk-C;
-        var_a0->unk-260 = var_v1->unk-8;
-        var_a0->unk-25C = var_v1->unk-4;
-    } while (var_a1 != 0x1A);
+    src = (s32 *) (func_800A8BAC(D_800D53DC[saveHUDTheme * 2 + arg1]) + 0x10);
+    dst = (s32 *) &D_800ED510[arg0 * 0x14 + 0x55A];
+    for (i = 0; i != 0x1A; i++) {
+        dst[i * 0xA0 + 0] = src[0];
+        dst[i * 0xA0 + 1] = src[1];
+        dst[i * 0xA0 + 2] = src[2];
+        dst[i * 0xA0 + 3] = src[3];
+        dst[i * 0xA0 + 4] = src[4];
+        dst[i * 0xA0 + 5] = src[5];
+        dst[i * 0xA0 + 6] = src[6];
+        dst[i * 0xA0 + 7] = src[7];
+        dst[i * 0xA0 + 8] = src[8];
+        dst[i * 0xA0 + 9] = src[9];
+        src += 10;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/draw_hp_segment.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BD208(s32 arg0, s32 arg1) {
-    s32 *temp_a0;
-    s32 *var_a0;
-    s32 *var_v1;
-    s32 temp_t2;
-    s32 var_v0;
-    void *temp_v0;
+    s32 *src;
+    s32 *dst;
+    s32 i;
 
-    temp_v0 = func_800A8BAC(*(&D_800D5408 + ((saveHUDTheme * 8) + (arg1 * 4))));
-    temp_a0 = (arg0 * 8) + 0x4E34 + &D_800ED510;
-    *temp_a0 = temp_v0->unk10;
-    var_a0 = temp_a0 + 0x780;
-    var_v1 = temp_v0 + 0x28;
-    var_a0->unk-77C = temp_v0->unk14;
-    var_v0 = 3;
-    var_a0->unk-500 = var_v1->unk-10;
-    var_a0->unk-4FC = var_v1->unk-C;
-    var_a0->unk-280 = var_v1->unk-8;
-    var_a0->unk-27C = var_v1->unk-4;
-    do {
-        temp_t2 = *var_v1;
-        var_v0 += 4;
-        var_v1 += 0x20;
-        *var_a0 = temp_t2;
-        var_a0 += 0xA00;
-        var_a0->unk-9FC = var_v1->unk-1C;
-        var_a0->unk-780 = var_v1->unk-18;
-        var_a0->unk-77C = var_v1->unk-14;
-        var_a0->unk-500 = var_v1->unk-10;
-        var_a0->unk-4FC = var_v1->unk-C;
-        var_a0->unk-280 = var_v1->unk-8;
-        var_a0->unk-27C = var_v1->unk-4;
-    } while (var_v0 != 0xB);
+    src = (s32 *) (func_800A8BAC(D_800D5408[saveHUDTheme * 2 + arg1]) + 0x10);
+    dst = (s32 *) &D_800ED510[arg0 * 4 + 0x271A];
+    for (i = 0; i != 0xB; i++) {
+        dst[0] = src[0];
+        dst[1] = src[1];
+        src += 2;
+        dst += 0xA0;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BD208.s")
-#endif
 
 void draw_kirby_stars(s32 arg0) {
     s32 i;
@@ -629,364 +487,216 @@ void draw_kirby_stars(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-
 void draw_star_segments(s32 arg0, s32 arg1) {
-    s32 *temp_a0;
-    s32 *var_a0;
-    s32 *var_v1;
-    s32 temp_t2;
-    s32 var_v0;
-    void *temp_v0;
+    s32 *src;
+    s32 *dst;
+    s32 i;
 
-    temp_v0 = func_800A8BAC(*(&D_800D5434 + ((saveHUDTheme * 8) + (arg1 * 4))));
-    temp_a0 = (arg0 * 8) + 0x4E34 + &D_800ED510;
-    *temp_a0 = temp_v0->unk10;
-    var_a0 = temp_a0 + 0x780;
-    var_v1 = temp_v0 + 0x28;
-    var_a0->unk-77C = temp_v0->unk14;
-    var_v0 = 3;
-    var_a0->unk-500 = var_v1->unk-10;
-    var_a0->unk-4FC = var_v1->unk-C;
-    var_a0->unk-280 = var_v1->unk-8;
-    var_a0->unk-27C = var_v1->unk-4;
-    do {
-        temp_t2 = *var_v1;
-        var_v0 += 4;
-        var_v1 += 0x20;
-        *var_a0 = temp_t2;
-        var_a0 += 0xA00;
-        var_a0->unk-9FC = var_v1->unk-1C;
-        var_a0->unk-780 = var_v1->unk-18;
-        var_a0->unk-77C = var_v1->unk-14;
-        var_a0->unk-500 = var_v1->unk-10;
-        var_a0->unk-4FC = var_v1->unk-C;
-        var_a0->unk-280 = var_v1->unk-8;
-        var_a0->unk-27C = var_v1->unk-4;
-    } while (var_v0 != 0xB);
+    src = (s32 *) (func_800A8BAC(D_800D5434[saveHUDTheme * 2 + arg1]) + 0x10);
+    dst = (s32 *) &D_800ED510[arg0 * 4 + 0x271A];
+    for (i = 0; i != 0xB; i++) {
+        dst[0] = src[0];
+        dst[1] = src[1];
+        src += 2;
+        dst += 0xA0;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/draw_star_segments.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BD460(s32 arg0, s32 arg1) {
-    s32 temp_t8;
-    s32 temp_t9;
-    s32 var_a1;
-    void *var_a0;
-    void *var_v1;
+    u64 *src;
+    u64 *dst;
+    s32 i;
 
-    var_v1 = func_800A8BAC(*(&D_800D5310 + ((saveHUDTheme * 0xA * 4) + (arg1 * 4)))) + 0x10;
-    var_a0 = (arg0 * 2) + 0x1180 + &D_800ED510;
-    var_a1 = 0;
-    do {
-        var_a1 += 4;
-        var_a0->unk0 = var_v1->unk0;
-        var_a0->unk4 = var_v1->unk4;
-        temp_t9 = var_v1->unkC;
-        temp_t8 = var_v1->unk8;
-        var_v1 += 0xC0;
-        var_a0->unkC = temp_t9;
-        var_a0->unk8 = temp_t8;
-        var_a0 += 0xA00;
-        var_a0->unk-9EC = var_v1->unk-AC;
-        var_a0->unk-9F0 = var_v1->unk-B0;
-        var_a0->unk-9E4 = var_v1->unk-A4;
-        var_a0->unk-9E8 = var_v1->unk-A8;
-        var_a0->unk-9DC = var_v1->unk-9C;
-        var_a0->unk-9E0 = var_v1->unk-A0;
-        var_a0->unk-9D4 = var_v1->unk-94;
-        var_a0->unk-9D8 = var_v1->unk-98;
-        var_a0->unk-77C = var_v1->unk-8C;
-        var_a0->unk-780 = var_v1->unk-90;
-        var_a0->unk-774 = var_v1->unk-84;
-        var_a0->unk-778 = var_v1->unk-88;
-        var_a0->unk-76C = var_v1->unk-7C;
-        var_a0->unk-770 = var_v1->unk-80;
-        var_a0->unk-764 = var_v1->unk-74;
-        var_a0->unk-768 = var_v1->unk-78;
-        var_a0->unk-75C = var_v1->unk-6C;
-        var_a0->unk-760 = var_v1->unk-70;
-        var_a0->unk-754 = var_v1->unk-64;
-        var_a0->unk-758 = var_v1->unk-68;
-        var_a0->unk-4FC = var_v1->unk-5C;
-        var_a0->unk-500 = var_v1->unk-60;
-        var_a0->unk-4F4 = var_v1->unk-54;
-        var_a0->unk-4F8 = var_v1->unk-58;
-        var_a0->unk-4EC = var_v1->unk-4C;
-        var_a0->unk-4F0 = var_v1->unk-50;
-        var_a0->unk-4E4 = var_v1->unk-44;
-        var_a0->unk-4E8 = var_v1->unk-48;
-        var_a0->unk-4DC = var_v1->unk-3C;
-        var_a0->unk-4E0 = var_v1->unk-40;
-        var_a0->unk-4D4 = var_v1->unk-34;
-        var_a0->unk-4D8 = var_v1->unk-38;
-        var_a0->unk-27C = var_v1->unk-2C;
-        var_a0->unk-280 = var_v1->unk-30;
-        var_a0->unk-274 = var_v1->unk-24;
-        var_a0->unk-278 = var_v1->unk-28;
-        var_a0->unk-26C = var_v1->unk-1C;
-        var_a0->unk-270 = var_v1->unk-20;
-        var_a0->unk-264 = var_v1->unk-14;
-        var_a0->unk-268 = var_v1->unk-18;
-        var_a0->unk-25C = var_v1->unk-C;
-        var_a0->unk-260 = var_v1->unk-10;
-        var_a0->unk-254 = var_v1->unk-4;
-        var_a0->unk-258 = var_v1->unk-8;
-    } while (var_a1 != 0x20);
+    src = (u64 *) (func_800A8BAC(D_800D5310[saveHUDTheme * 10 + arg1]) + 0x10);
+    dst = (u64 *) &D_800ED510[arg0 + 0x8C0];
+    for (i = 0; i != 0x20; i++) {
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = src[3];
+        dst[4] = src[4];
+        dst[5] = src[5];
+        src += 6;
+        dst += 0x50;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BD460.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void draw_kirby_lives(void) {
-    s32 sp18;
-    s32 var_a2;
+    s32 temp2;
+    s32 temp_a2;
 
-    var_a2 = D_800D6E88 - 1;
-    if (D_800D6E88 != D_800D6EA0) {
+    temp_a2 = D_800D6E88 - 1;
+    if (D_800D6EA0 != D_800D6E88) {
         D_800D6EA0 = D_800D6E88;
-        if (var_a2 >= 0x64) {
-            var_a2 = 0x63;
+        if (temp_a2 > 99) {
+            temp_a2 = 99;
         }
-        if (var_a2 < 0) {
-            var_a2 = 0;
+        if (temp_a2 < 0) {
+            temp_a2 = 0;
         }
-        sp18 = var_a2;
-        draw_lives_digit(0x22, var_a2 / 10, var_a2);
-        draw_lives_digit(0x34, var_a2 % 10, var_a2);
+        draw_lives_digit(0x22, temp_a2 / 10);
+
+        temp2 = temp_a2;
+        temp_a2 = temp2 % 10;
+        draw_lives_digit(0x34, temp_a2);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/draw_kirby_lives.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BD6E0(void) {
-    ? var_a1;
-    s32 temp_t4;
     s32 var_a0;
-    s32 var_v0;
+    s32 var_a1;
 
-    if ((D_800D6E8C == 1) && (D_800D6EC0 == 0) && (func_800F8560(1) != 3) && (D_800D6B24 == 0)) {
+    if ((D_800D6E8C == 1) && (D_800D6EC0 == 0) && (func_800F8560() != 3) && (D_800D6B24 == 0)) {
         play_sound(0xEC);
-        D_800D6EC0 += 1;
+        D_800D6EC0++;
     }
-    if (D_800D6EA4 == D_800D6E8C) {
+    if (D_800D6E8C == D_800D6EA4) {
         D_800D6EB4 = 0;
         return;
     }
-    var_v0 = D_800D6EB4 + 1;
-    D_800D6EB4 = var_v0;
-    if (var_v0 >= 5) {
+    D_800D6EB4++;
+    if (D_800D6EB4 >= 5) {
         D_800D6EB4 = 1;
-        var_v0 = 1;
     }
-    if (var_v0 == 1) {
-        var_a1 = 0;
+    if (D_800D6EB4 == 1) {
         if (D_800D6E8C < D_800D6EA4) {
+            var_a1 = 0;
             var_a0 = D_800D6EA4 - 1;
-            D_800D6EA4 = var_a0;
+            D_800D6EA4 = D_800D6EA4 - 1;
         } else {
-            play_sound(0xD3, 0, &D_800D6EA4, 1);
+            play_sound(0xD3);
             var_a1 = 1;
-            temp_t4 = D_800D6EA4 + 1;
-            D_800D6EA4 = temp_t4;
-            var_a0 = temp_t4 - 1;
-            if (temp_t4 >= 2) {
+            D_800D6EA4++;
+            var_a0 = D_800D6EA4 - 1;
+            if (D_800D6EA4 >= 2) {
                 D_800D6EC0 = 0;
             }
         }
-        draw_hp_segment(var_a0, var_a1, &D_800D6EA4);
+        draw_hp_segment(var_a0, var_a1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BD6E0.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BD7FC(void) {
-    ? var_s1;
-    s32 temp_a0;
-    s32 temp_t1;
-    s32 temp_t7;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_s0;
+    s32 flag;
+    s32 i;
 
-    temp_t7 = D_800D6EBC - 1;
-    D_800D6EBC = temp_t7;
-    if (temp_t7 <= 0) {
-        temp_v1 = D_800F4D10;
+    D_800D6EBC--;
+    if (D_800D6EBC <= 0) {
         D_800D6EBC = 0;
-        if (temp_v1 != 0) {
-            goto block_2;
+        if (D_800F4D10 != 0) {
+block_2:
+            D_800D6EBC = D_800D55D0[++D_800F4D10];
+            if (D_800D6EBC < 0) {
+                D_800F4D10 = 0;
+                D_800D6EBC = 0;
+                return;
+            }
+            flag = 0;
+            if (D_800D6EBC >= 0xA) {
+                flag = 1;
+            }
+            for (i = 0; i != 0x1E; i++) {
+                draw_star_segments(i, flag);
+            }
+            return;
         }
-        temp_t1 = D_800D6E98 + 1;
-        if (gKirbyStars != D_800D6E98) {
-            D_800D6E98 = temp_t1;
-            if (temp_t1 >= 0x1E) {
+        if (D_800D6E98 != gKirbyStars) {
+            D_800D6E98++;
+            if (D_800D6E98 >= 0x1E) {
                 D_800F4D10 = 0;
                 gKirbyStars -= 0x1E;
                 D_800D6E98 = 0;
-                play_sound(1, &gKirbyStars);
+                play_sound(1);
                 change_kirby_lives(1);
-block_2:
-                temp_v0 = temp_v1 + 1;
-                D_800F4D10 = temp_v0;
-                temp_a0 = *(&D_800D55D0 + (temp_v0 * 4));
-                D_800D6EBC = temp_a0;
-                if (temp_a0 < 0) {
-                    D_800F4D10 = 0;
-                    D_800D6EBC = 0;
-                    return;
-                }
-                var_s1 = 0;
-                if (temp_a0 >= 0xA) {
-                    var_s1 = 1;
-                }
-                var_s0 = 0;
-                do {
-                    draw_star_segments(var_s0, var_s1);
-                    var_s0 += 1;
-                } while (var_s0 != 0x1E);
-                return;
+                goto block_2;
             }
             D_800D6EBC = 3;
-            play_sound(0x117, &gKirbyStars);
+            play_sound(0x117);
             draw_star_segments(D_800D6E98 - 1, 1);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BD7FC.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BD92C(void) {
-    ? var_a1;
-    s32 temp_t2;
-    s32 temp_t6;
-    s32 var_s0;
-    s32 var_s0_2;
     s32 var_v0;
+    s32 var_s0;
+    s32 var_a1;
+    s32 temp;
 
     if (D_800D6E5C == 0.0f) {
         D_800D6EB8 = 0;
         return;
     }
-    if ((D_800D6EAC == D_800D6E94) && (D_800D6E9C != 0)) {
+    if ((D_800D6E94 == D_800D6EAC) && (D_800D6E9C != 0)) {
         D_800D6EB8 = 0;
         return;
     }
-    var_v0 = D_800D6EB8 + 1;
-    D_800D6EB8 = var_v0;
-    if (var_v0 >= 3) {
-        var_v0 = 1;
+    D_800D6EB8++;
+    if (D_800D6EB8 >= 3) {
         D_800D6EB8 = 1;
     }
-    if (var_v0 == 1) {
+    if (D_800D6EB8 == 1) {
         var_s0 = 0;
         if (D_800D6E94 == 0) {
             do {
                 func_800BD208(var_s0, 0);
-                var_s0 += 1;
+                var_s0++;
             } while (var_s0 != 0x1E);
             D_800D6E94 = 0;
             D_800D6EAC = 0;
             return;
         }
         if (D_800D6E9C == 0) {
-            play_sound(0xD3, D_800D6E94, &D_800D6E9C);
-            temp_t2 = D_800D6EAC + 1;
+            play_sound(0xD3);
             var_a1 = 1;
-            D_800D6EAC = temp_t2;
-            var_s0_2 = temp_t2 - 1;
-            if (temp_t2 == 0x1E) {
-                D_800D6E9C += 1;
+            temp = ++D_800D6EAC;
+            var_s0 = temp - 1;
+            if (D_800D6EAC == 0x1E) {
+                D_800D6E9C++;
             }
         } else {
-            var_a1 = 0;
             if (D_800D6E94 < D_800D6EAC) {
-                var_s0_2 = D_800D6EAC - 1;
-                D_800D6EAC = var_s0_2;
+                var_a1 = 0;
+                var_s0 = D_800D6EAC - 1;
+                D_800D6EAC = var_s0;
             } else {
-                play_sound(0xD3, 0, &D_800D6E9C);
+                play_sound(0xD3);
                 var_a1 = 1;
-                temp_t6 = D_800D6EAC + 1;
-                D_800D6EAC = temp_t6;
-                var_s0_2 = temp_t6 - 1;
+                temp = ++D_800D6EAC;
+                var_s0 = temp - 1;
             }
         }
-        func_800BD208(var_s0_2, var_a1);
+        func_800BD208(var_s0, var_a1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BD92C.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BDAA8(void) {
-    s32 temp_v0;
-
-    temp_v0 = D_800D6E90;
-    if (D_800D6EA8 != temp_v0) {
-        func_800BD460(0xE4, *(&D_800D55F8 + (temp_v0 * 2)));
-        func_800BD460(0x108, *(&D_800D55F9 + (D_800D6E90 * 2)));
+    if (D_800D6E90 != D_800D6EA8) {
+        func_800BD460(0xE4, D_800D55F8[D_800D6E90 * 2]);
+        func_800BD460(0x108, D_800D55F8[D_800D6E90 * 2 + 1]);
     }
-    D_800D6EA8 = temp_v0;
+    D_800D6EA8 = D_800D6E90;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDAA8.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BDB18(void) {
-    s32 temp_s1;
-    u32 var_s0;
-    u32 var_v0;
-    s32 phi_s1;
+    s32 i;
 
-    temp_s1 = gKirbyStars;
-    phi_s1 = temp_s1;
-    if (temp_s1 >= 0x1E) {
+    if (gKirbyStars >= 30) {
         do {
-            gKirbyStars = temp_s1 - 0x1E;
+            gKirbyStars -= 30;
             change_kirby_lives(1);
-            phi_s1 = gKirbyStars;
-        } while (gKirbyStars >= 0x1E);
+        } while (gKirbyStars >= 30);
     }
-    if ((D_800BE508 != 0) || (D_800BE4FC != 0)) {
-        var_s0 = 0;
-        var_v0 = gKirbyHp;
-        if (var_v0 != 0) {
-            do {
-                draw_hp_segment(var_s0, 1);
-                var_s0 += 1;
-                var_v0 = gKirbyHp;
-            } while (var_s0 < var_v0);
-        }
-        D_800D6EA4 = var_v0;
-        D_800D6E8C = var_v0;
-    }
-    draw_kirby_stars(phi_s1);
-    D_800D6EB0 = gKirbyStars;
-    D_800D6E98 = gKirbyStars;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDB18.s")
-#endif
 
-#ifdef MIPS_TO_C
+    if ((D_800BE508 != 0) || (D_800BE4FC != 0)) {
+            for (i = 0; i < (u32) gKirbyHp; i++) {
+                draw_hp_segment(i, 1);
+            }
+        D_800D6E8C = D_800D6EA4 = (u32) gKirbyHp;
+    }
+    draw_kirby_stars(gKirbyStars);
+    D_800D6E98 = D_800D6EB0 = gKirbyStars;
+}
 
 void func_800BDD08(void) {
     draw_kirby_lives();
@@ -999,52 +709,24 @@ void func_800BDD08(void) {
     }
     func_800BDAA8();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDD08.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BDD68(void) {
     func_800BDAA8();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDD68.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_800BDD88(s32 arg0) {
 
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDD88.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_800BDD90(s32 arg0) {
 
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDD90.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800BDD98(void) {
     D_800D6EA8 = -1;
-    D_800D6EA0 = 0;
-    D_800D6EB0 = 0;
-    D_800D6EAC = 0;
-    D_800D6EA4 = 0;
-    D_800D6EC0 = 0;
-    D_800F4D10 = 0;
-    D_800D6EBC = 0;
-    D_800D6EB8 = 0;
-    D_800D6EB4 = 0;
+    D_800D6EA4 = D_800D6EAC = D_800D6EB0 = D_800D6EA0 = 0;
+    D_800D6EB4 = D_800D6EB8 = D_800D6EBC = D_800F4D10 = D_800D6EC0 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDD98.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1127,57 +809,25 @@ void func_800BDF2C(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDF2C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800BDFB8(s32 arg0, s32 arg1, u32 arg2) {
-    s32 *var_s1;
-    s32 temp_a0;
-    u32 var_s0;
-
-    var_s0 = 0;
-    if (arg2 != 0) {
-        var_s1 = arg0 + (arg1 * 4);
-loop_2:
-        temp_a0 = *var_s1;
-        if (temp_a0 != 0xFFFF) {
-            func_800A8BAC(temp_a0);
-            var_s0 += 1;
-            var_s1 += 4;
-            if (var_s0 < arg2) {
-                goto loop_2;
-            }
+void func_800BDFB8(s32 *arg0, s32 arg1, u32 arg2) {
+    s32 i;
+    for (i = 0; i < arg2; i++) {
+        if (arg0[arg1 + i] == 0xffff) {
+            break;
         }
+        func_800A8BAC(arg0[arg1 + i]);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDFB8.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800BE028(s32 arg0, s32 arg1, u32 arg2) {
-    s32 *var_s1;
-    s32 temp_a0;
-    u32 var_s0;
-
-    var_s0 = 0;
-    if (arg2 != 0) {
-        var_s1 = arg0 + (arg1 * 4);
-loop_2:
-        temp_a0 = *var_s1;
-        if (temp_a0 != 0xFFFF) {
-            func_800A8A7C(temp_a0);
-            var_s0 += 1;
-            var_s1 += 4;
-            if (var_s0 < arg2) {
-                goto loop_2;
-            }
+void func_800BE028(s32 *arg0, s32 arg1, u32 arg2) {
+    s32 i;
+    for (i = 0; i < arg2; i++) {
+        if (arg0[arg1 + i] == 0xffff) {
+            break;
         }
+        func_800A8A7C(arg0[arg1 + i]);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BE028.s")
-#endif
 
 #ifdef MIPS_TO_C
 

@@ -1,6 +1,8 @@
 #ifndef _MAIN_4_H_
 #define _MAIN_4_H_
 
+struct Camera;
+
 struct UnkStruct8004A7F8 {
     /* 0x00 */ u8 drawFrame;
     /* 0x04 */ Gfx* glists[4];
@@ -91,6 +93,6 @@ void renderSetCameraScissors(s32 top, s32 bottom, s32 left, s32 right);
 void renderSetMatrixHandler(MatrixHandler *handler);
 
 // Unnamed functions
-void func_8001663C(Gfx **arg0, void *arg1, s32 arg2);
+void func_8001663C(Gfx **arg0, struct Camera *arg1, s32 ar2);
 
 #endif // _MAIN_4_H_
