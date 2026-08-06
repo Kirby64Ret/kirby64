@@ -25,7 +25,12 @@ void func_800F88C8(s32, s32, f32);
 void func_800B3520(void);
 
 // ovl2_3
-s32 func_800F9888(s32 *, f32);
+struct TrackPosition {
+    s32 unk0;
+    f32 unk4;
+};
+s32 func_800F9888(struct TrackPosition *, f32);
+f32 func_800F951C(s32, f32, s32, f32);
 
 // audio
 void auSetBGMVolumeSmooth(s32, u32, u32);
@@ -1276,70 +1281,51 @@ void func_8019BC34_ovl7(f32 arg0) {
 }
 
 void func_8019BC94_ovl7(void) {
-    UnkStruct800E1B50 *sp2C;
-    f32 sp28;
-    s32 sp24;
-    UnkStruct800E1B50 *temp_a2;
-    u32 temp_v0;
+    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct TrackPosition sp24;
+    f32 speed = D_800E6A10[omCurrentObj->objId] * ent->unk1C;
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a2 = D_800E1B50[temp_v0];
-    sp24 = D_800E5F90[temp_v0];
-    sp2C = temp_a2;
-    sp28 = D_800E6BD0[omCurrentObj->objId];
-    if (func_800F9888(&sp24, D_800E6A10[temp_v0] * temp_a2->unk1C) == 0) {
-        sp2C->unk2C = sp24;
-        sp2C->unk28 = sp28;
+    sp24.unk0 = D_800E5F90[omCurrentObj->objId];
+    sp24.unk4 = D_800E6BD0[omCurrentObj->objId];
+    if (func_800F9888(&sp24, speed) == 0) {
+        ent->unk2C = sp24.unk0;
+        ent->unk28 = sp24.unk4;
         return;
     }
-    sp2C->unk2C = -1;
+    ent->unk2C = -1;
 }
 
-#ifdef MIPS_TO_C
-
 s32 func_8019BD38_ovl7(void) {
-    s32 sp18;
-    UnkStruct800E1B50 *temp_v1;
-    f32 temp_f0;
-    s32 temp_a0;
-    s32 var_t0;
-    u32 temp_a2;
-    u32 temp_v0;
+    UnkStruct800E1B50 *temp_v1 = D_800E1B50[omCurrentObj->objId];
+    s32 var_t0 = 0;
+    u32 temp_a2 = temp_v1->unk2C;
+    u32 temp_a0;
 
-    temp_v0 = omCurrentObj->objId;
-    temp_v1 = D_800E1B50[temp_v0];
-    var_t0 = 0;
-    temp_a2 = temp_v1->unk2C;
     if (temp_a2 == -1) {
         return 0;
     }
-    temp_a0 = D_800E5F90[temp_v0];
+    temp_a0 = D_800E5F90[omCurrentObj->objId];
     if (temp_a2 == temp_a0) {
-        if (D_800E6A10[temp_v0] == 1.0f) {
-            if (temp_v1->unk28 <= D_800E6BD0[temp_v0]) {
-                goto block_12;
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+            if (temp_v1->unk28 <= D_800E6BD0[omCurrentObj->objId]) {
+                var_t0 = 1;
             }
-        } else if (D_800E6BD0[temp_v0] <= temp_v1->unk28) {
-            goto block_12;
+        } else if (D_800E6BD0[omCurrentObj->objId] <= temp_v1->unk28) {
+            var_t0 = 1;
         }
     } else {
-        sp18 = 0;
-        temp_f0 = func_800F951C(temp_a0, D_800E6BD0[temp_v0], temp_a2, temp_v1->unk28);
-        var_t0 = 0;
+        f32 temp_f0 = func_800F951C(temp_a0, D_800E6BD0[omCurrentObj->objId], temp_a2, temp_v1->unk28);
+
         if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
             if (temp_f0 < 0.0f) {
-                goto block_12;
+                var_t0 = 1;
             }
         } else if (temp_f0 >= 0.0f) {
-block_12:
             var_t0 = 1;
         }
     }
     return var_t0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019BD38_ovl7.s")
-#endif
 
 
 // eneTurnCommon
@@ -1609,34 +1595,27 @@ void func_8019C6AC_ovl7(Unused GObj *gobj) {
 
 void func_8019C71C_ovl7(f32 arg0) {
     UnkStruct800E1B50 *sp1C;
-    u32 temp_v0;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
     if (func_8019BD38_ovl7() != 0) {
         sp1C->unk3C = 1;
-        temp_v0 = omCurrentObj->objId;
-        D_800E6690[temp_v0] = D_800E6A10[temp_v0] * arg0;
+        D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * arg0;
     }
 }
 
 void func_8019C79C_ovl7(void) {
-    UnkStruct800E1B50 *sp2C;
-    f32 sp28;
-    s32 sp24;
-    UnkStruct800E1B50 *temp_a2;
-    u32 temp_v0;
+    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct TrackPosition sp24;
+    f32 speed = -D_800E6A10[omCurrentObj->objId] * ent->unk1C;
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a2 = D_800E1B50[temp_v0];
-    sp24 = D_800E5F90[temp_v0];
-    sp2C = temp_a2;
-    sp28 = D_800E6BD0[omCurrentObj->objId];
-    if (func_800F9888(&sp24, -D_800E6A10[temp_v0] * temp_a2->unk1C) == 0) {
-        sp2C->unk2C = sp24;
-        sp2C->unk28 = sp28;
+    sp24.unk0 = D_800E5F90[omCurrentObj->objId];
+    sp24.unk4 = D_800E6BD0[omCurrentObj->objId];
+    if (func_800F9888(&sp24, speed) == 0) {
+        ent->unk2C = sp24.unk0;
+        ent->unk28 = sp24.unk4;
         return;
     }
-    sp2C->unk2C = -1;
+    ent->unk2C = -1;
 }
 
 #ifdef MIPS_TO_C
@@ -1785,26 +1764,16 @@ void func_8019CD08_ovl7(f32 arg0) {
     ent->unk1C = *tmp * two;
 }
 
-#ifdef MIPS_TO_C
 void func_8019CD68_ovl7(void) {
-    UnkStruct800E1B50 *sp2C;
-    f32 sp28;
-    f32 sp24;
-    f32 sp20;
-    UnkStruct800E1B50 *temp_v1;
+    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    Vector vec;
 
-    temp_v1 = D_800E1B50[omCurrentObj->objId];
-    sp24 = 0.0f;
-    sp20 = 0.0f;
-    sp28 = temp_v1->unk1C;
-    sp2C = temp_v1;
-    lbvector_Rotate(&sp20, 2, gEntitiesAngleYArray[omCurrentObj->objId]);
-    sp2C->unkC = (bitwise u32) (gEntitiesNextPosXArray[omCurrentObj->objId] + sp20);
-    sp2C->unk14 = (bitwise u32) (gEntitiesNextPosZArray[omCurrentObj->objId] + sp28);
+    vec.x = vec.y = 0.0f;
+    vec.z = ent->unk1C;
+    lbvector_Rotate(&vec, 2, gEntitiesAngleYArray[omCurrentObj->objId]);
+    *(f32 *)&ent->unkC = gEntitiesNextPosXArray[omCurrentObj->objId] + vec.x;
+    *(f32 *)&ent->unk14 = gEntitiesNextPosZArray[omCurrentObj->objId] + vec.z;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019CD68_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_8019CE28_ovl7(void) {
@@ -1939,28 +1908,18 @@ void func_8019CFD0_ovl7(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019CFD0_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_8019D214_ovl7(void) {
-    UnkStruct800E1B50 *sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp28;
-    UnkStruct800E1B50 *temp_a3;
-    u32 temp_v0;
+    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    Vector vec;
+    f32 angle = gEntitiesAngleYArray[omCurrentObj->objId] * -D_800E6A10[omCurrentObj->objId];
 
-    temp_v0 = omCurrentObj->objId;
-    sp28 = 0.0f;
-    sp2C = 0.0f;
-    temp_a3 = D_800E1B50[temp_v0];
-    sp34 = temp_a3;
-    sp30 = D_800E6A10[omCurrentObj->objId] * temp_a3->unk1C;
-    lbvector_Rotate(&sp28, 2, -D_800E6A10[temp_v0] * gEntitiesAngleYArray[temp_v0]);
-    sp34->unkC = (bitwise u32) (gEntitiesNextPosXArray[omCurrentObj->objId] + sp28);
-    sp34->unk14 = (bitwise u32) (gEntitiesNextPosZArray[omCurrentObj->objId] + sp30);
+    vec.x = 0.0f;
+    vec.y = 0.0f;
+    vec.z = D_800E6A10[omCurrentObj->objId] * ent->unk1C;
+    lbvector_Rotate(&vec, 2, angle);
+    *(f32 *)&ent->unkC = gEntitiesNextPosXArray[omCurrentObj->objId] + vec.x;
+    *(f32 *)&ent->unk14 = gEntitiesNextPosZArray[omCurrentObj->objId] + vec.z;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D214_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2175,31 +2134,17 @@ f32 func_8019DA50_ovl7(void) {
     return func_8019DA70_ovl7(0);
 }
 
-#ifdef MIPS_TO_C
-
 f32 func_8019DA70_ovl7(s32 arg0) {
-    s32 sp18;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f2;
-    f32 var_f2;
-    u32 temp_v0;
-    u32 temp_v0_2;
+    f32 var_f2 = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId], D_800E5F90[arg0], D_800E6BD0[arg0]);
 
-    temp_v0 = omCurrentObj->objId;
-    sp18 = arg0 * 4;
-    temp_f0 = func_800F951C(D_800E5F90[temp_v0], D_800E6BD0[temp_v0], D_800E5F90[arg0], D_800E6BD0[arg0]);
-    var_f2 = temp_f0;
-    if (temp_f0 == 9999.0f) {
-        temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
-        temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
+    if (var_f2 == 9999.0f) {
+        f32 temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
+        f32 temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
+
         var_f2 = sqrtf((temp_f0_2 * temp_f0_2) + (temp_f2 * temp_f2));
     }
     return var_f2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DA70_ovl7.s")
-#endif
 
 void func_8019DB58_ovl7(s32 arg0, s32 arg1) {
     D_800E76C0[arg1] = D_800E76C0[arg0];

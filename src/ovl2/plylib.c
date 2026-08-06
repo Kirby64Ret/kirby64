@@ -17,6 +17,16 @@
 // ovl7_5.h
 void func_801AC4EC_ovl7(GObj *);
 
+u32 func_800F8560(void);
+void func_8016BF60_ovl3(s32);
+void func_801F0050_ovl10(s32);
+void func_80111534(s32);
+void func_800B19F4(s32 flags, s32 track);
+extern u32 D_8012E7E8;
+extern u32 D_8022947C;
+extern u32 D_8016C510;
+extern struct GObjProcess *gEntityGObjProcessArray[];
+
 // ovl1 bss
 extern s32 D_800E85A0[];
 extern s32 D_800D6B54;
@@ -39,7 +49,13 @@ struct UnkStruct800D6F18 {
 extern s32 D_800D6F34;
 extern s32 D_800D6F38;
 extern s32 D_800BE4F8;
-extern u32 D_800D7088;
+extern u32 D_800D7088[];
+extern u16 D_800D6FB2;
+extern u16 D_800D6F58[];
+extern s32 D_801926E8;
+extern s32 D_80190358;
+extern s32 D_80192F64;
+extern s32 D_801923DC;
 
 struct UnkStruct801290D8 {
     u8 filler[0x14];
@@ -58,6 +74,7 @@ void func_800FD754(s32 *arg0, f32 arg1, f32 arg2, f32 arg3);
 void animSetModelAnimation(struct DObj *dobj, union AnimCmd *animList, f32 time);
 void animSetTextureAnimation(struct MObj *mobj, union AnimCmd *animList, f32 time);
 void func_8012307C(s32 arg0, s32 arg1, f32 arg2, s32 arg3);
+void func_80122F08(u32 arg0);
 void func_8011D0FC(struct DObj *ln, s32 arg1, u32 arg2);
 
 void *func_8011BA10(struct CollisionTriangle *tri, u32 arg1) {
@@ -484,46 +501,43 @@ void func_8011C4E8(s32 arg0, void *arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_8011C720(s32 arg0) {
-    s16 *temp_v1;
-    u32 temp_v0;
+    u16 *temp_v1;
 
-    *(&D_800D6F58 + 0x5A) = 0;
-    *(&D_800D6F58 + 0x58) = 0;
+    D_800D6FB2 = 0;
+    temp_v1 = &D_800D6F58[0x2C];
+    *temp_v1 = 0;
     D_8012E7E8 = 0;
-    temp_v0 = func_800F8560();
-    temp_v1 = &D_800D6F58 + 0x58;
-    switch (temp_v0) {
+    switch (func_800F8560()) {
         case 0:
         case 1:
         case 2:
         case 10:
-            func_8016BF60_ovl3(arg0, arg0);
+            func_8016BF60_ovl3(arg0);
             break;
         case 3:
-            func_801F0050_ovl10(arg0, arg0);
+            func_801F0050_ovl10(arg0);
             break;
         case 4:
             play_sound(SOUND_TAKI1);
-            *(&D_800D6F58 + 0x58) = 0x102;
+            *temp_v1 = 0x102;
             func_8016BF60_ovl3(arg0);
             break;
         case 5:
             *temp_v1 = 0x101;
-            func_8016BF60_ovl3(arg0, arg0);
+            func_8016BF60_ovl3(arg0);
             break;
         case 6:
             *temp_v1 = 0x100;
-            func_8016BF60_ovl3(arg0, arg0);
+            func_8016BF60_ovl3(arg0);
             break;
         case 8:
             *temp_v1 = 0x200;
-            func_8016BF60_ovl3(arg0, arg0);
+            func_8016BF60_ovl3(arg0);
             break;
         case 9:
             D_8012E7E8 = 1;
-            func_8016BF60_ovl3(arg0, arg0);
+            func_8016BF60_ovl3(arg0);
             break;
     }
     curObjSleepForever();
@@ -774,30 +788,26 @@ void func_8011CFE0(void) {
     gKirbyState.numberInhaled = 0;
 }
 
-#ifdef MIPS_TO_C
 void func_8011CFF4(GObj *gobj) {
     if (D_800E7CE0[omCurrentObj->objId] != 0) {
         D_800E7CE0[omCurrentObj->objId]--;
-        if (D_800E7CE0[omCurrentObj->objId] <= 0) {
+        if (D_800E7CE0[omCurrentObj->objId] < 0) {
             D_800E7CE0[omCurrentObj->objId] = 0;
         }
     }
     if (omCurrentObj->objId == PLAYERTRACK) {
-        func_80111534(omCurrentObj->objId, temp_a1, D_800E7CE0);
+        func_80111534(omCurrentObj->objId);
     }
     if (gKirbyState.actionChange != -1) {
         gEntityFuncListIDArray[omCurrentObj->objId] = gKirbyState.actionChange;
         gKirbyState.actionChange = -1;
-        if (*(&D_800D6F58 + 0x5A) == 2) {
-            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &D_8022947C);
+        if (D_800D6FB2 == 2) {
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(struct GObj *))&D_8022947C);
         } else {
-            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &D_8016C510);
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(struct GObj *))&D_8016C510);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011CFF4.s")
-#endif
 
 // plyWalk
 #ifdef MIPS_TO_C
@@ -888,19 +898,25 @@ void func_8011D0FC(struct DObj *arg0, s32 kind, int arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D0FC.s")
 #endif
 
+#ifdef MIPS_TO_C
 void func_8011D40C(void) {
     if (D_800D6B54 == 0) {
         D_8012E7D7 = 1;
         change_kirby_hp(-6.0f);
         D_800D6B54 = 1;
-        (&D_800D6B54)[1] = 0x96;
+        D_800D6B58 = 0x96;
         D_800BE4F8 = 6;
         func_800FA414(6);
-        (&D_800D7088)[1] = D_801290D8->unk14;
+        D_800D7088[1] = D_801290D8->unk14;
         auSetBGMVolume(0, 0x7800);
         play_music(0, 5);
     }
 }
+#else
+// Needs a prototype to match func_801212A4
+void func_8011D40C(void);
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D40C.s")
+#endif
 
 #ifdef MIPS_TO_C
 
@@ -948,33 +964,30 @@ void *func_8011D4A4(f32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D4A4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_8011D614(void) {
     func_8011CF58();
     func_800A9760(0x20007);
-    D_800E0490[omCurrentObj->objId] = &D_801926E8;
-    gKirbyState.unk15C = &D_80190358;
+    D_800E0490[omCurrentObj->objId] = (f32 **)&D_801926E8;
+    gKirbyState.unk15C = (u32)&D_80190358;
     gKirbyState.unk154 = 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D614.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_8011D67C(void) {
-    if (*(&D_800D6F58 + 0x5A) == 2) {
+    if (D_800D6FB2 == 2) {
         func_8011CF58();
-        D_800E0490[omCurrentObj->objId] = &D_80192F64;
-        gKirbyState.unk15C = &D_801923DC;
+        D_800E0490[omCurrentObj->objId] = (f32 **)&D_80192F64;
+        gKirbyState.unk15C = (u32)&D_801923DC;
         gKirbyState.unk154 = 2;
-    } else if (func_800AA888(0x20007) == 0) {
+        goto post;
+    }
+    if (func_800AA888(0x20007) == 0) {
         func_8011CF58();
         func_80122F08(0x20007);
-        D_800E0490[omCurrentObj->objId] = &D_801926E8;
-        gKirbyState.unk15C = &D_80190358;
+        D_800E0490[omCurrentObj->objId] = (f32 **)&D_801926E8;
+        gKirbyState.unk15C = (u32)&D_80190358;
         gKirbyState.unk154 = 2;
     }
+post:
     gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
@@ -997,9 +1010,6 @@ void func_8011D67C(void) {
         set_kirby_action_1(6, 6);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D67C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1055,34 +1065,19 @@ f32 func_8011D9E0(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
     return temp_f0;
 }
 
-#ifdef MIPS_TO_C
-
 void func_8011DA34(void) {
-    s32 *var_s2;
-    s32 temp_v0;
-    s32 var_s0;
-    s32 var_s1;
+    s32 i;
 
-    var_s2 = D_800DD710 + 0x10;
-    var_s0 = 4;
-    var_s1 = 0x10;
-    do {
-        temp_v0 = *var_s2;
-        if ((temp_v0 != -1) && (temp_v0 != 0x23)) {
-            if (*(D_800DD8D0 + var_s1) & 0x40) {
-                func_800B19F4(0x7F, var_s0);
+    for (i = 4; i != 0x4A; i++) {
+        if ((D_800DD710[i] != -1) && (D_800DD710[i] != 0x23)) {
+            if (D_800DD8D0[i] & 0x40) {
+                func_800B19F4(0x7F, i);
             } else {
-                func_800B19F4(0x3F, var_s0);
+                func_800B19F4(0x3F, i);
             }
         }
-        var_s0 += 1;
-        var_s1 += 4;
-        var_s2 += 4;
-    } while (var_s0 != 0x4A);
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DA34.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8011DAF8(void) {

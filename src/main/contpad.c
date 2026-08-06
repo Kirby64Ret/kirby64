@@ -34,9 +34,9 @@ s32 D_80048F50; // 0x80048F50
 s32 D_80048F54; // 0x80048F54
 s32 contPollTimer; // 0x80048F58
 // 0x80048F5C? bss file boundary? lines up with function alignment
-struct UnkStruct80048F60 D_80048F60[4]; // 4 * 0x18
-struct UnkStruct80048FC0 D_80048FC0[4]; // 4 * 0x44
-struct UnkStruct800490D0 D_800490D0; // 0x20
+ContEventChannelSlot D_80048F60[4]; // 4 * 0x18
+ContEventPfsSlot D_80048FC0[4]; // 4 * 0x44
+ContEventEepSlot D_800490D0; // 0x20
 OSPfs sPakDevices[MAXCONTROLLERS]; // 0x800490F0
 // more potential bss from this file??
 u32 pad[2];
@@ -261,20 +261,78 @@ s32 *func_80004250(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004250.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/contSendEvent.s")
+void contSendEvent(ContEvent *evt) {
+    OSMesg msg;
+    OSMesgQueue mq;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004624.s")
+    osCreateMesgQueue(&mq, &msg, 1);
+    evt->msg = (OSMesg)1;
+    evt->mq = &mq;
+    osSendMesg(&contEventMQ, (OSMesg)evt, OS_MESG_BLOCK);
+    osRecvMesg(&mq, NULL, OS_MESG_BLOCK);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_8000464C.s")
+void func_80004624(void) {
+    ContEvent evt;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004674.s")
+    evt.type = CONT_EVENT_MESG;
+    contSendEvent(&evt);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800046A4.s")
+void func_8000464C(void) {
+    ContEvent evt;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800046D0.s")
+    evt.type = CONT_EVENT_MESG2;
+    contSendEvent(&evt);
+}
 
-void func_800046FC(s32, s32);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800046FC.s")
+void func_80004674(u32 holdDelay, u32 holdInterval) {
+    ContEventHeldButtons evt;
+
+    evt.evt.type = CONT_EVENT_HELD_BUTTONS;
+    evt.holdDelay = holdDelay;
+    evt.holdInterval = holdInterval;
+    contSendEvent(&evt.evt);
+}
+
+void func_800046A4(s32 channel) {
+    ContEventSetChannel evt;
+
+    evt.evt.type = CONT_EVENT_CHANNEL;
+    evt.channel = channel;
+    contSendEvent(&evt.evt);
+}
+
+void func_800046D0(s32 channel) {
+    ContEventSetChannel evt;
+
+    evt.evt.type = CONT_EVENT_CHANNEL2;
+    evt.channel = channel;
+    contSendEvent(&evt.evt);
+}
+
+void func_800046FC(s32 arg0, s32 arg1) {
+    ContEventChannelSlot *p;
+    s32 i;
+    OSMesg msg;
+
+    for (i = 0; i < 4; i++) {
+        if (D_80048F60[i].busy == 0) {
+            break;
+        }
+    }
+    msg = (OSMesg)i;
+    if (i == 4) {
+        osRecvMesg(&D_80048E10, &msg, OS_MESG_BLOCK);
+        p = &D_80048F60[(s32)msg];
+    } else {
+        p = &D_80048F60[i];
+        p->busy = 1;
+    }
+    p->evt.channel = arg0;
+    p->evt.unk10 = arg1;
+    osSendMesg(&contEventMQ, (OSMesg)&p->evt, OS_MESG_NOBLOCK);
+}
 
 void func_800047B0(s32 arg0) {
     func_800046FC(arg0, 1);

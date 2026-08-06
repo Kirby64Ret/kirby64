@@ -139,6 +139,26 @@ typedef struct ContEventPfs {
     s32 error;
 } ContEventPfs;
 
+typedef struct {
+    ContEvent evt;
+    u32 channel;
+} ContEventSetChannel;
+
+typedef struct {
+    u32 busy;
+    ContEventChannel evt;
+} ContEventChannelSlot; // size: 0x18
+
+typedef struct {
+    u32 busy;
+    ContEventPfs evt;
+} ContEventPfsSlot; // size: 0x44
+
+typedef struct {
+    u32 busy;
+    ContEventEep evt;
+} ContEventEepSlot; // size: 0x20
+
 extern ContEvent *D_8004F4C0;
 
 // data
