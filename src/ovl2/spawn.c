@@ -13,6 +13,11 @@
 extern s32 D_800D6E10;
 extern u32 D_801D02AC[][8];
 extern s32 D_80129118;
+extern void *D_801242D0;
+extern void *D_8012447C;
+extern void *D_80124488;
+extern void *D_801244A4;
+extern void *D_801244DC;
 
 s32 func_800FCD14(u32 arg0, u8 node, f32 yScale, u8 bankID, u8 entID,
     u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
@@ -177,55 +182,30 @@ void func_800FCF04(GObj *gobj) {
 
 }
 
-#ifdef MIPS_TO_C
-
 void func_800FCF0C(s32 arg0) {
     func_80199568_ovl7();
     utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0x6B, &D_801242D0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCF0C.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800FCF58(s32 arg0) {
     func_80199568_ovl7();
     utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 3, &D_8012447C);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCF58.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800FCFA4(s32 arg0) {
     func_80199568_ovl7();
     utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 7, &D_80124488);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCFA4.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800FCFF0(s32 arg0) {
     func_80199568_ovl7();
     utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0xE, &D_801244A4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCFF0.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_800FD03C(s32 arg0) {
     func_80199568_ovl7();
     utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0x2C, &D_801244DC);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FD03C.s")
-#endif
 
 #ifdef MIPS_TO_C
 

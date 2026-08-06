@@ -1921,51 +1921,37 @@ void func_8019D214_ovl7(void) {
     *(f32 *)&ent->unk14 = gEntitiesNextPosZArray[omCurrentObj->objId] + vec.z;
 }
 
-#ifdef MIPS_TO_C
-
 void func_8019D2FC_ovl7(f32 arg0, u8 arg1) {
-    UnkStruct800E1B50 *sp1C;
     UnkStruct800E1B50 *temp_a0;
-    f32 *temp_v0_2;
-    f32 *temp_v0_3;
-    u32 temp_v1;
-    u32 temp_v1_2;
     u8 temp_v0;
 
     temp_a0 = D_800E1B50[omCurrentObj->objId];
     temp_v0 = temp_a0->unk3C;
     if (temp_v0 != 0) {
         if (temp_v0 == 1) {
-            sp1C = temp_a0;
-            func_8019D214_ovl7(temp_a0, &omCurrentObj);
+            func_8019D214_ovl7();
         }
         if (arg1 != 1) {
-            if (temp_a0->unk3C < arg1) {
-                temp_v1 = omCurrentObj->objId;
-                if (D_800E6A10[temp_v1] == 1.0f) {
-                    D_800E9020[temp_v1] = -((arg0 * 3.1415927f) / 180.0f);
+            if (arg1 > temp_a0->unk3C) {
+                if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                    D_800E9020[omCurrentObj->objId] = -((arg0 * 3.1415927f) / 180.0f);
                 } else {
-                    D_800E9020[temp_v1] = (arg0 * 3.1415927f) / 180.0f;
+                    D_800E9020[omCurrentObj->objId] = (arg0 * 3.1415927f) / 180.0f;
                 }
-                temp_a0->unk3C += 1;
             } else {
                 temp_a0->unk3C = 0;
                 D_800E9020[omCurrentObj->objId] = 0.0f;
-                temp_v1_2 = omCurrentObj->objId;
-                if (D_800E6A10[temp_v1_2] == 1.0f) {
-                    temp_v0_2 = &gEntitiesAngleYArray[temp_v1_2];
-                    *temp_v0_2 -= (arg0 * 3.1415927f) / 180.0f;
-                    return;
+                if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                    gEntitiesAngleYArray[omCurrentObj->objId] -= (arg0 * 3.1415927f) / 180.0f;
+                } else {
+                    gEntitiesAngleYArray[omCurrentObj->objId] += (arg0 * 3.1415927f) / 180.0f;
                 }
-                temp_v0_3 = &gEntitiesAngleYArray[temp_v1_2];
-                *temp_v0_3 += (arg0 * 3.1415927f) / 180.0f;
+                return;
             }
+            temp_a0->unk3C += 1;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D2FC_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 

@@ -160,11 +160,10 @@ void contSetPlayerPads() {
     D_80048F48 = 0;
 }
 
-#ifdef NON_MATCHING
 s32 *func_80004250(void) {
     u8 sp43;
     s32 i;
-    Unused s32 j;
+    s32 j;
 
     osCreateMesgQueue(&sSIMesgQueue, (OSMesg *)&D_80048DB8, 1);
     osSetEventMesg(5, &sSIMesgQueue, (OSMesg) 1);
@@ -176,32 +175,30 @@ s32 *func_80004250(void) {
         }
     }
 
+    j = CONT_EVENT_RUMBLE;
     osCreateMesgQueue(&D_80048E10, (OSMesg *)&contEventMesgArray, 4);
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
-        D_80048F60[i].unk8 = i;
-        D_80048F60[i].unk0 = 0;
-        D_80048F60[i].unk4 = 5;
-        D_80048F60[i].mq = &D_80048E10;
-        // needs members to result in 0x18 in struct size
+        D_80048F60[i].evt.evt.msg = (OSMesg)i;
+        D_80048F60[i].busy = 0;
+        D_80048F60[i].evt.evt.type = j;
+        D_80048F60[i].evt.evt.mq = &D_80048E10;
     }
 
     osCreateMesgQueue(&D_80048E38, (OSMesg *)&D_80048E28, 4);
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
-        D_80048FC0[i].unk8 = i;
-        D_80048FC0[i].unk0 = 0;
-        D_80048FC0[i].unk4 = 0xA;
-        D_80048FC0[i].mq = &D_80048E38;
-        // needs members to result in 0x44 in struct size
+        D_80048FC0[i].evt.evt.msg = (OSMesg)i;
+        D_80048FC0[i].busy = 0;
+        D_80048FC0[i].evt.evt.type = CONT_EVENT_CONTPAK;
+        D_80048FC0[i].evt.evt.mq = &D_80048E38;
     }
 
     osCreateMesgQueue(&D_80048E58, &D_80048E50, 1);
-    D_800490D0.unk0 = 0;
-    D_800490D0.unk4 = 0xB;
-    D_800490D0.unk8 = i;
-    D_800490D0.mq = &D_80048E58;
-    // seems to be 0x20 in size
+    D_800490D0.busy = 0;
+    D_800490D0.evt.evt.type = CONT_EVENT_EEPROM;
+    D_800490D0.evt.evt.msg = (OSMesg)i;
+    D_800490D0.evt.evt.mq = &D_80048E58;
 
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
@@ -213,7 +210,7 @@ s32 *func_80004250(void) {
         gControllers[i].buttonHeld = 0;
         gControllers[i].holdTimer = 30;
         gControllers[i].holdDelay = 30;
-        gControllers[i].holdInterval = 5;
+        gControllers[i].holdInterval = j;
         gPlayerControllers[i].buttonHeldLong = 0;
         gPlayerControllers[i].buttonPressed = 0;
         gPlayerControllers[i].buttonHeld = 0;
@@ -257,9 +254,6 @@ s32 *func_80004250(void) {
     D_800492A1 = 0;
     return &D_80048F54;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004250.s")
-#endif
 
 void contSendEvent(ContEvent *evt) {
     OSMesg msg;
@@ -313,7 +307,6 @@ void func_800046D0(s32 channel) {
 
 void func_800046FC(s32 arg0, s32 arg1) {
     s32 i;
-    OSMesg msg;
 
     for (i = 0; i < 4; i++) {
         if (D_80048F60[i].busy == 0) {
@@ -321,9 +314,7 @@ void func_800046FC(s32 arg0, s32 arg1) {
         }
     }
     if (i == 4) {
-        msg = (OSMesg)i;
-        osRecvMesg(&D_80048E10, &msg, OS_MESG_BLOCK);
-        i = (s32)msg;
+        osRecvMesg(&D_80048E10, (OSMesg *)&i, OS_MESG_BLOCK);
     } else {
         D_80048F60[i].busy = 1;
     }
@@ -407,27 +398,110 @@ void contHandlePfsEvent(ContEventPfs *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_800049BC.s")
+s32 func_800049BC(s32 channel, s32 file_no, s32 file_offset, s32 file_size, u8 *databuf) {
+    OSMesg msg;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004A3C.s")
+    D_80048FC0[0].evt.channel = channel;
+    D_80048FC0[0].evt.goal = PFS_WRITEFILE;
+    D_80048FC0[0].evt.file_no = file_no;
+    D_80048FC0[0].evt.file_offset = file_offset;
+    D_80048FC0[0].evt.file_size = file_size;
+    D_80048FC0[0].evt.databuf = databuf;
+    osSendMesg(&contEventMQ, (OSMesg)&D_80048FC0[0].evt, OS_MESG_NOBLOCK);
+    osRecvMesg(&D_80048E38, &msg, OS_MESG_BLOCK);
+    return D_80048FC0[0].evt.error;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004ABC.s")
+s32 func_80004A3C(s32 channel, s32 file_no, s32 file_offset, s32 file_size, u8 *databuf) {
+    OSMesg msg;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004B50.s")
+    D_80048FC0[0].evt.channel = channel;
+    D_80048FC0[0].evt.goal = PFS_READFILE;
+    D_80048FC0[0].evt.file_no = file_no;
+    D_80048FC0[0].evt.file_offset = file_offset;
+    D_80048FC0[0].evt.file_size = file_size;
+    D_80048FC0[0].evt.databuf = databuf;
+    osSendMesg(&contEventMQ, (OSMesg)&D_80048FC0[0].evt, OS_MESG_NOBLOCK);
+    osRecvMesg(&D_80048E38, &msg, OS_MESG_BLOCK);
+    return D_80048FC0[0].evt.error;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004BD4.s")
+s32 func_80004ABC(s32 channel, u16 company_code, s32 game_code, char *game_name, char *extension, s32 file_allocation_size, s32 *file_no_result) {
+    OSMesg msg;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004C5C.s")
+    D_80048FC0[0].evt.channel = channel;
+    D_80048FC0[0].evt.goal = PFS_ALLOCFILE;
+    D_80048FC0[0].evt.company_code = company_code;
+    D_80048FC0[0].evt.game_code = game_code;
+    D_80048FC0[0].evt.game_name = game_name;
+    D_80048FC0[0].evt.extension = extension;
+    D_80048FC0[0].evt.file_allocation_size = file_allocation_size;
+    D_80048FC0[0].evt.file_no_result = (s32)file_no_result;
+    osSendMesg(&contEventMQ, (OSMesg)&D_80048FC0[0].evt, OS_MESG_NOBLOCK);
+    osRecvMesg(&D_80048E38, &msg, OS_MESG_BLOCK);
+    return D_80048FC0[0].evt.error;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004CD4.s")
+s32 func_80004B50(s32 channel, u16 company_code, s32 game_code, char *game_name, char *extension) {
+    OSMesg msg;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004D00.s")
+    D_80048FC0[0].evt.channel = channel;
+    D_80048FC0[0].evt.goal = PFS_DELETEFILE;
+    D_80048FC0[0].evt.company_code = company_code;
+    D_80048FC0[0].evt.game_code = game_code;
+    D_80048FC0[0].evt.game_name = game_name;
+    D_80048FC0[0].evt.extension = extension;
+    osSendMesg(&contEventMQ, (OSMesg)&D_80048FC0[0].evt, OS_MESG_NOBLOCK);
+    osRecvMesg(&D_80048E38, &msg, OS_MESG_BLOCK);
+    return D_80048FC0[0].evt.error;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004D34.s")
+s32 func_80004BD4(s32 channel, u16 company_code, s32 game_code, char *game_name, char *extension, s32 *file_no_result) {
+    OSMesg msg;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004D68.s")
+    D_80048FC0[0].evt.channel = channel;
+    D_80048FC0[0].evt.goal = PFS_FINDFILE;
+    D_80048FC0[0].evt.company_code = company_code;
+    D_80048FC0[0].evt.game_code = game_code;
+    D_80048FC0[0].evt.game_name = game_name;
+    D_80048FC0[0].evt.extension = extension;
+    D_80048FC0[0].evt.file_no_result = (s32)file_no_result;
+    osSendMesg(&contEventMQ, (OSMesg)&D_80048FC0[0].evt, OS_MESG_NOBLOCK);
+    osRecvMesg(&D_80048E38, &msg, OS_MESG_BLOCK);
+    return D_80048FC0[0].evt.error;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004D98.s")
+s32 func_80004C5C(u8 goal, u8 addr, u8 *buffer, s32 nbytes) {
+    OSMesg msg;
+
+    D_800490D0.evt.goal = goal;
+    D_800490D0.evt.addr = addr;
+    D_800490D0.evt.buffer = buffer;
+    D_800490D0.evt.nbytes = nbytes;
+    osSendMesg(&contEventMQ, (OSMesg)&D_800490D0.evt, OS_MESG_BLOCK);
+    osRecvMesg(&D_80048E58, &msg, OS_MESG_BLOCK);
+    return D_800490D0.evt.result;
+}
+
+s32 func_80004CD4(void) {
+    return func_80004C5C(EEP_PROBE, 0, NULL, 0);
+}
+
+s32 func_80004D00(u8 addr, u8 *buffer, s32 nbytes) {
+    return func_80004C5C(EEP_LONGREAD, addr, buffer, nbytes);
+}
+
+s32 func_80004D34(u8 addr, u8 *buffer, s32 nbytes) {
+    return func_80004C5C(EEP_LONGWRITE, addr, buffer, nbytes);
+}
+
+s32 func_80004D68(u8 addr, u8 *buffer) {
+    return func_80004C5C(EEP_READ, addr, buffer, 0);
+}
+
+s32 func_80004D98(u8 addr, u8 *buffer) {
+    return func_80004C5C(EEP_WRITE, addr, buffer, 0);
+}
 
 void contHandleEepEvent(struct ContEventEep *arg0) {
     switch (arg0->goal)

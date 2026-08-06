@@ -3,6 +3,8 @@
 #include "ovl1/ovl1_6.h"
 #include "GObj.h"
 #include "main/gtl.h"
+#include "main/anim.h"
+#include "unk_structs/D_800D79D8.h"
 
 // All the filesystem loading magic happens here
 extern u32 **D_800D00C4[];
@@ -15,18 +17,60 @@ extern u32 *D_800DFD90[];
 // In this file
 void func_800B1FD0(DObj *, u32, u32, u32, f32);
 
-#ifdef MIPS_TO_C
+// A node in the dynamic-buffer free-list allocator (see func_800A82C0 / func_800A8358).
+struct CacheLine {
+    u32 unk0;
+    u32 unk4;
+    u32 unk8;
+    u32 unkC;
+};
+
+extern u32 D_800D7BB0;
+extern u32 D_800D7BB4;
+extern u32 D_800D7BB8;
+extern struct CacheLine *D_800D7BBC;
+extern u32 D_800D7C10;
+
+extern struct CacheLine *D_800D7BC0[4];
+extern struct CacheLine *D_800D7BD0[4];
+extern struct CacheLine *D_800D7BE0[4];
+
+extern u32 D_800D00E4[];
+extern u32 D_800D0124[];
+extern struct BGHeader **D_800D0104[];
+extern u32 D_800D0144;
+
+struct CacheEntry800C4654 {
+    u32 unk0;
+    u32 unk4;
+    u32 unk8;
+    u32 unkC;
+};
+extern struct CacheEntry800C4654 D_800C4654[];
+extern u8 D_800C4640[];
+
+extern u32 D_800D6E68;
+extern u32 D_800D6E6C;
+extern u32 D_800D6E70;
+extern u32 D_800D6E74;
+extern u32 D_800D6E78;
+extern u32 D_800D6E7C;
+extern u32 D_800D6E80;
+extern u32 D_800D6E84;
+
+extern struct BankHeader *D_800D0184[];
+
+extern struct UnkStruct800D79D8 *D_800D79D8[];
+extern u32 D_800D7A00[];
+
+void animSetModelAnimation(void *, void *, f32);
+void animSetTextureAnimation(void *, s32, f32);
 
 void func_800A82C0(void) {
-    s32 temp_t8;
-
-    D_800D7BB0 = D_800D7BB4 = (gDynamicBuffer2.top + 0xFF) & ~0xFF;
-    D_800D7BB8 = gDynamicBuffer2.poolEnd - D_800D7BB0;
+    D_800D7BB0 = D_800D7BB4 = ((u32)gDynamicBuffer2.top + 0xFF) & ~0xFF;
+    D_800D7BB8 = (u32)gDynamicBuffer2.poolEnd - D_800D7BB0;
     D_800D7C10 = 0x80400000;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A82C0.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -134,49 +178,30 @@ void func_800A84F0(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A84F0.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800A8518(s32 arg0) {
+void func_800A8518(void *arg0) {
+    struct CacheLine *temp_v0 = (struct CacheLine *)((u8 *)arg0 - 0x10);
     s32 temp_t7;
-    void *temp_v0;
 
-    temp_v0 = arg0 - 0x10;
     temp_t7 = temp_v0->unkC & 0xFFFFFF;
     temp_v0->unkC = temp_t7;
     temp_v0->unkC = temp_t7 | 0x99000000;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8518.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800A8540(s32 arg0) {
-    void *temp_v0;
+void func_800A8540(void *arg0) {
+    struct CacheLine *temp_v0 = (struct CacheLine *)((u8 *)arg0 - 0x10);
 
-    temp_v0 = arg0 - 0x10;
     temp_v0->unkC = temp_v0->unkC & 0xFFFFFF;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8540.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_800A855C(void *arg0, s32 arg1) {
-    arg0->unk-4 = arg1;
+    ((s32 *)arg0)[-1] = arg1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A855C.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800A8564(s32 arg0, s32 arg1) {
-    void *temp_v0;
+void func_800A8564(void *arg0, s32 arg1) {
+    struct CacheLine *temp_v0 = (struct CacheLine *)((u8 *)arg0 - 0x10);
 
-    temp_v0 = arg0 - 0x10;
     temp_v0->unkC = temp_v0->unkC + arg1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8564.s")
-#endif
 
 #ifdef MIPS_TO_C
 

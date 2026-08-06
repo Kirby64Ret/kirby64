@@ -789,17 +789,19 @@ void func_8011CFE0(void) {
 }
 
 void func_8011CFF4(GObj *gobj) {
+    s32 temp2;
+
     if (D_800E7CE0[omCurrentObj->objId] != 0) {
-        D_800E7CE0[omCurrentObj->objId]--;
-        if (D_800E7CE0[omCurrentObj->objId] < 0) {
+        if (D_800E7CE0[omCurrentObj->objId]-- <= 0) {
             D_800E7CE0[omCurrentObj->objId] = 0;
         }
     }
     if (omCurrentObj->objId == PLAYERTRACK) {
         func_80111534(omCurrentObj->objId);
     }
-    if (gKirbyState.actionChange != -1) {
-        gEntityFuncListIDArray[omCurrentObj->objId] = gKirbyState.actionChange;
+    temp2 = gKirbyState.actionChange;
+    if (temp2 != -1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = temp2;
         gKirbyState.actionChange = -1;
         if (D_800D6FB2 == 2) {
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(struct GObj *))&D_8022947C);
@@ -1079,28 +1081,18 @@ void func_8011DA34(void) {
     }
 }
 
-#ifdef MIPS_TO_C
 void func_8011DAF8(void) {
-    f32 temp_f0;
-    u32 temp_v0;
-    u32 temp_v0_2;
-
     if ((gKirbyState.action != 0x17) && !(gKirbyState.isTurning & 1)) {
         if ((gKirbyState.action == 0x16) || (gKirbyState.action == 0x18)) {
-            temp_v0 = omCurrentObj->objId;
-            gEntitiesAngleYArray[temp_v0] = D_800E17D0[temp_v0];
+            gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
             return;
         }
-        temp_v0_2 = omCurrentObj->objId;
-        temp_f0 = D_800E6A10[temp_v0_2];
-        if (((temp_f0 == 1.0f) && (D_800E64D0[temp_v0_2] >= 0.0f)) || ((temp_f0 == -1.0f) && (D_800E64D0[temp_v0_2] <= 0.0f))) {
-            gEntitiesAngleYArray[temp_v0_2] = D_800E17D0[temp_v0_2];
+        if (((D_800E6A10[omCurrentObj->objId] == 1.0f) && (D_800E64D0[omCurrentObj->objId] >= 0.0f))
+            || ((D_800E6A10[omCurrentObj->objId] == -1.0f) && (D_800E64D0[omCurrentObj->objId] <= 0.0f))) {
+            gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DAF8.s")
-#endif
 
 void func_8011DC04(u32 arg0) {
     func_800A77E8(arg0, &D_8012E818, &D_8012E81C);
@@ -1266,37 +1258,26 @@ block_42:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DD5C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_8011E0E8(void) {
-    struct Player *var_v0;
-    u32 temp_a0;
-
-    var_v0 = &gKirbyState;
     if (gKirbyState.unk4C != 0) {
         if (gKirbyState.unk48 == 0) {
             func_800A22D4(gKirbyState.unk4C);
         } else {
             func_800A1F30(gKirbyState.unk4C);
         }
-        var_v0 = &gKirbyState;
         gKirbyState.unk4C = 0;
         gKirbyState.unk48 = 0;
     }
-    temp_a0 = var_v0->unk50;
-    if (temp_a0 != 0) {
-        if (var_v0->unk48 == 0) {
-            func_800A22D4(temp_a0);
+    if (gKirbyState.unk50 != 0) {
+        if (gKirbyState.unk48 == 0) {
+            func_800A22D4(gKirbyState.unk50);
         } else {
-            func_800A1F30(temp_a0);
+            func_800A1F30(gKirbyState.unk50);
         }
         gKirbyState.unk50 = 0;
         gKirbyState.unk48 = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E0E8.s")
-#endif
 
 void func_8011E190(void) {
     if (gGameState != 0x21) {
@@ -2521,8 +2502,6 @@ block_14:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80120E74.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 s32 func_801210B4(void) {
     if ((D_800D6B54 == 0) && (gKirbyController.buttonHeld & 0x300)) {
         if (gKirbyController.buttonHeld & 0x100) {
@@ -2532,23 +2511,16 @@ s32 func_801210B4(void) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801210B4.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-s32 func_801210FC(void) {
-    f32 temp_f0;
-
-    if ((D_8012E7D7 == 0) && (((temp_f0 = D_800E6A10[omCurrentObj->objId], (temp_f0 == 1.0f)) && (gKirbyController.buttonHeld & 0x100)) || ((temp_f0 == -1.0f) && (gKirbyController.buttonHeld & 0x200)))) {
+u32 func_801210FC(void) {
+    if (D_8012E7D7 == 0
+        && ((D_800E6A10[omCurrentObj->objId] == 1.0f && gKirbyController.buttonHeld & R_JPAD)
+        ||  (D_800E6A10[omCurrentObj->objId] == -1.0f && gKirbyController.buttonHeld & L_JPAD))
+        ) {
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801210FC.s")
-#endif
 
 u32 func_80121194(void) {
     if (D_8012E7D7 == 0
@@ -2632,12 +2604,11 @@ void func_801212A4(void) {
     }
 }
 
-#ifdef MIPS_TO_C
 s32 func_801215DC(void) {
     if (gKirbyState.isTurning & 1) {
         return 1;
     }
-    if ((gKirbyState.unk17 == 0) && (gKirbyController.buttonHeld & (L_JPAD | R_JPAD))) {
+    if ((gKirbyState.unk17 == 0) && (gKirbyController.buttonHeld & 0x300)) {
         if (func_80121194() != 0) {
             return 2;
         }
@@ -2646,11 +2617,7 @@ s32 func_801215DC(void) {
         return 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801215DC.s")
-#endif
 
-#ifdef MIPS_TO_C
 s32 func_80121658(void) {
     u32 temp_a0;
     u32 temp_a0_2;
@@ -2664,7 +2631,6 @@ s32 func_80121658(void) {
             D_800E3C90[omCurrentObj->objId] = 65535.0f;
             return 1;
         }
-        /* Duplicate return node #8. Try simplifying control flow for better match */
         return 0;
     }
     if (D_800E8AE0[temp_a0] & 6) {
@@ -2673,16 +2639,11 @@ s32 func_80121658(void) {
             D_800E3C90[omCurrentObj->objId] = 1.0f;
         }
     } else if (D_800E3C90[temp_a0] != 16.0f) {
-        D_800E3750[temp_a0] = -0.980665f;
+        D_800E3750[temp_a0] = -0.9806650281f;
         D_800E3C90[omCurrentObj->objId] = 16.0f;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121658.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 s32 func_801217B8(void) {
     if (func_80121658() != 0) {
@@ -2695,9 +2656,6 @@ s32 func_801217B8(void) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_801217B8.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_80121828(f32 arg0, f32 arg1, ? arg2, f32 arg3) {

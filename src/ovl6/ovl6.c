@@ -4,6 +4,7 @@
 #include "GObj.h"
 #include "buffers.h"
 #include "main/anim.h"
+#include "main/fault.h"
 #include "main/gtl.h"
 #include "main/rdp_reset.h"
 #include "ovl1/game.h"
@@ -30,12 +31,31 @@ extern UnkStruct8015A560_ovl6 *D_8015A560_ovl6;
 extern s32 D_8015A694_ovl6;
 extern u32 D_800D6AB8[];
 
-extern Lights1 D_8015A670_ovl6;
+extern Lights1 *D_8015A670_ovl6;
 extern GObj *D_8015A56C_ovl6;
+extern Gfx D_80154E58_ovl6[];
+extern SceneSetup D_80154E9C_ovl6;
+
+void gtlCreateScene(SceneSetup *scene);
+void func_80005350(s32 (*func)());
+void func_8015166C_ovl6(Gfx **glistp);
+s32 func_80151138_ovl6(void *arg0);
+
+extern u16 *scNextFrameBuffer;
+extern u16 *gCurrFrameBuffer;
+extern u32 scTimestampSetFb;
+extern u16 *D_8015A678_ovl6[3];
 
 extern u32 D_8015A7A8_ovl6;
 extern u32 D_8015A7AC_ovl6;
 extern u32 D_8015A7B0_ovl6;
+
+typedef struct {
+    s32 unk0;
+    u8 unk4;
+} UnkStruct8015A6A8_ovl6;
+
+extern UnkStruct8015A6A8_ovl6 D_8015A6A8_ovl6[];
 
 extern GObj *D_8015A570_ovl6[];
 extern GObj *D_8015A574_ovl6;
@@ -106,30 +126,29 @@ void func_80151100_ovl6(void) {
     omUpdateAll();
 }
 
-#ifdef MIPS_TO_C
-
-s32 func_80151138_ovl6(s32 arg0) {
+s32 func_80151138_ovl6(void *arg0) {
+    void *sp24;
+    void *sp20;
     void *sp1C;
-    s32 temp_a0;
+    u16 *temp_a0;
     s32 var_v1;
     void *temp_v0;
 
-    if (scNextFrameBuffer != 0) {
+    if (scNextFrameBuffer != NULL) {
         return 1;
     }
     sp1C = osViGetNextFramebuffer();
     temp_v0 = osViGetCurrentFramebuffer();
-    if (gCurrFrameBuffer == gFrameBuffers.unk0) {
+    if (gCurrFrameBuffer == D_8015A678_ovl6[0]) {
         var_v1 = 1;
-    } else if (gCurrFrameBuffer == gFrameBuffers.unk4) {
+    } else if (gCurrFrameBuffer == D_8015A678_ovl6[1]) {
         var_v1 = 2;
+    } else if (gCurrFrameBuffer == D_8015A678_ovl6[2]) {
+        var_v1 = 0;
     } else {
-        if (gCurrFrameBuffer == gFrameBuffers.unk8) {
-
-        }
         var_v1 = 0;
     }
-    temp_a0 = *(&gFrameBuffers + (var_v1 * 4));
+    temp_a0 = D_8015A678_ovl6[var_v1];
     if ((temp_v0 != temp_a0) && (sp1C != temp_a0)) {
         scNextFrameBuffer = temp_a0;
         scTimestampSetFb = osGetCount();
@@ -137,9 +156,6 @@ s32 func_80151138_ovl6(s32 arg0) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151138_ovl6.s")
-#endif
 
 void func_80151204_ovl6(GObj *gobj) {
     gDPPipeSync(gDisplayListHeads[1]++);
@@ -1330,76 +1346,68 @@ void func_80153040_ovl6(void) {
     D_8015A7A8_ovl6 = D_8015A7AC_ovl6 = D_8015A7B0_ovl6 = 0;
 }
 
-#ifdef MIPS_TO_C
-
 void func_80153064_ovl6(void) {
-    u32 temp_v0;
-    u32 temp_v0_3;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    void *temp_v0_2;
+    UnkStruct8015A6A8_ovl6 *entry;
+    u32 next;
+    u32 b0;
+    u32 ac;
+    u32 a8;
 
-    temp_v1 = D_8015A7B0_ovl6;
-    temp_v0 = D_8015A7AC_ovl6;
-    if (temp_v0 != temp_v1) {
+    b0 = D_8015A7B0_ovl6;
+    ac = D_8015A7AC_ovl6;
+    if (ac != b0) {
         do {
-            temp_v0_2 = &D_8015A6A8_ovl6 + (temp_v1 * 8);
-            if (temp_v0_2->unk4 != 0) {
-                func_800A8E54(temp_v0_2->unk0, 3);
+            entry = &D_8015A6A8_ovl6[b0];
+            if (entry->unk4 != 0) {
+                func_800A8E54(entry->unk0, 3);
             } else {
-                func_800A8D64(temp_v0_2->unk0, 3);
+                func_800A8D64(entry->unk0, 3);
             }
-            temp_v0_3 = D_8015A7B0_ovl6 + 1;
-            if (temp_v0_3 >= 0x20) {
+            next = D_8015A7B0_ovl6 + 1;
+            if (next >= 0x20) {
                 D_8015A7B0_ovl6 = 0;
             } else {
-                D_8015A7B0_ovl6 = temp_v0_3;
+                D_8015A7B0_ovl6 = next;
             }
-        } while (D_8015A7AC_ovl6 != D_8015A7B0_ovl6);
+            ac = D_8015A7AC_ovl6;
+            b0 = D_8015A7B0_ovl6;
+        } while (ac != b0);
     }
-    if (D_8015A7A8_ovl6 != temp_v0) {
+    a8 = D_8015A7A8_ovl6;
+    if (a8 != ac) {
         do {
-            temp_v1_2 = temp_v0 + 1;
-            if (temp_v1_2 >= 0x20) {
+            next = ac + 1;
+            if (next >= 0x20) {
                 D_8015A7AC_ovl6 = 0;
             } else {
-                D_8015A7AC_ovl6 = temp_v1_2;
+                D_8015A7AC_ovl6 = next;
             }
-        } while (D_8015A7A8_ovl6 != D_8015A7AC_ovl6);
+            ac = D_8015A7AC_ovl6;
+        } while (a8 != ac);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153064_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8015314C_ovl6(s32 arg0, u8 arg1) {
+    UnkStruct8015A6A8_ovl6 *entry;
+    u32 next;
 
-void func_8015314C_ovl6(s32 arg0, s32 arg1) {
-    s8 temp_a1;
-    u32 temp_v1;
-    void *temp_v0;
-
-    temp_a1 = arg1 & 0xFF;
     if (arg0 != -1) {
-        if ((D_8015A7B0_ovl6 != D_8015A7AC_ovl6) && (D_8015A7B0_ovl6 == D_8015A7A8_ovl6)) {
-            fatal_printf("movie: Too many free data\n", temp_a1, arg0);
-loop_4:
-            goto loop_4;
+        if ((D_8015A7AC_ovl6 != D_8015A7B0_ovl6) && (D_8015A7A8_ovl6 == D_8015A7B0_ovl6)) {
+            fatal_printf("movie: Too many free data\n");
+            for (;;) {
+            }
         }
-        temp_v0 = (D_8015A7A8_ovl6 * 8) + &D_8015A6A8_ovl6;
-        temp_v0->unk0 = arg0;
-        temp_v0->unk4 = temp_a1;
-        temp_v1 = D_8015A7A8_ovl6 + 1;
-        if (temp_v1 >= 0x20) {
+        entry = &D_8015A6A8_ovl6[D_8015A7A8_ovl6];
+        entry->unk0 = arg0;
+        entry->unk4 = arg1;
+        next = D_8015A7A8_ovl6 + 1;
+        if (next >= 0x20) {
             D_8015A7A8_ovl6 = 0;
-            return;
+        } else {
+            D_8015A7A8_ovl6 = next;
         }
-        D_8015A7A8_ovl6 = temp_v1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015314C_ovl6.s")
-#endif
 
 s32 func_801531FC_ovl6(void) {
     if (D_8015A7AC_ovl6 == D_8015A7B0_ovl6) {
@@ -2034,21 +2042,25 @@ block_13:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801544E8_ovl6.s")
 #endif
 
+#ifdef MIPS_TO_C
+// close but not matching: the two peeled stores to D_8015A570/D_8015A574 get an
+// extra lui and are scheduled before the loop setup instead of after
 void func_80154628_ovl6(void) {
-    GObj **p;
+    s32 i;
 
     D_8015A56C_ovl6 = NULL;
     D_8015A668_ovl6 = NULL;
     D_8015A66C_ovl6 = NULL;
-    *D_8015A570_ovl6 = NULL;
-    D_8015A574_ovl6 = NULL;
-    for (p = D_8015A578_ovl6; p != &D_8015A578_ovl6[60]; p++) {
-        *p = NULL;
+    for (i = 0; i < 62; i++) {
+        D_8015A570_ovl6[i] = NULL;
     }
     D_8015A568_ovl6 = 0;
     D_8015A7C0_ovl6 = NULL;
     D_8015A698_ovl6 = 0;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154628_ovl6.s")
+#endif
 
 void func_80154690_ovl6(void) {
     gameSetUpdateRate(1.0f);
@@ -2057,11 +2069,11 @@ void func_80154690_ovl6(void) {
 }
 
 void func_801546D8_ovl6(GObj *arg0) {
-    MObj *temp_v0;
+    ColorPack *c;
 
     if (D_8015A66C_ovl6 != NULL) {
-        temp_v0 = D_8015A66C_ovl6->data.dobj->mobjList;
-        D_800D799C->data.cam->bgcolor = (temp_v0->texture.primColor.color.r << 0x18) | (temp_v0->texture.primColor.color.g << 0x10) | (temp_v0->texture.primColor.color.b << 8) | 0xFF;
+        c = &D_8015A66C_ovl6->data.dobj->mobjList->texture.primColor;
+        D_800D799C->data.cam->bgcolor = (c->color.r << 0x18) | (c->color.g << 0x10) | (c->color.b << 8) | 0xFF;
     }
     animUpdateCameraAnimation(arg0);
 }
@@ -2211,13 +2223,11 @@ block_13:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154A40_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_80154B14_ovl6(void) {
     D_8015A694_ovl6 = 0;
     D_8015A690_ovl6 = 0;
     D_8015A69C_ovl6 = 0;
-    D_8015A6A0_ovl6 = 0;
+    D_8015A6A0_ovl6 = NULL;
     func_80153040_ovl6();
     func_80154690_ovl6();
     func_800AE048(func_80154A40_ovl6());
@@ -2229,28 +2239,15 @@ void func_80154B14_ovl6(void) {
     func_80154748_ovl6();
     func_80154938_ovl6();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154B14_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80154BA0_ovl6(void **arg0) {
-    void *temp_v1;
-
-    temp_v1 = *arg0;
-    *arg0 = temp_v1 + 8;
-    temp_v1->unk0 = 0xDE000000;
-    temp_v1->unk4 = &D_80154E58_ovl6;
-    if (D_8015A56C_ovl6 != 0) {
-        D_8015A670_ovl6 = gDynamicBuffer1.unkC;
-        gDynamicBuffer1.unkC = gDynamicBuffer1.unkC + 0x18;
-        func_8015166C_ovl6();
+void func_80154BA0_ovl6(Gfx **arg0) {
+    gSPDisplayList((*arg0)++, D_80154E58_ovl6);
+    if (D_8015A56C_ovl6 != NULL) {
+        D_8015A670_ovl6 = (Lights1 *)gDynamicBuffer1.top;
+        gDynamicBuffer1.top += 0x18;
+        func_8015166C_ovl6(arg0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154BA0_ovl6.s")
-#endif
 
 void func_80154C08_ovl6(void) {
     omDrawAll();
@@ -2308,11 +2305,9 @@ void func_80154C64_ovl6(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154C64_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 s32 func_80154D60_ovl6(s32 arg0, s32 arg1) {
     D_8015A68C_ovl6 = arg1;
-    func_80005350(&func_80151138_ovl6);
+    func_80005350(func_80151138_ovl6);
     func_80154C64_ovl6();
     func_80154C38_ovl6(arg0);
     gtlCreateScene(&D_80154E9C_ovl6);
@@ -2320,6 +2315,3 @@ s32 func_80154D60_ovl6(s32 arg0, s32 arg1) {
     func_80005350(NULL);
     return D_8015A690_ovl6;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154D60_ovl6.s")
-#endif

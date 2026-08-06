@@ -13,6 +13,44 @@ extern void func_8010B284(struct Sub800E1B50_Unk84 *);
 extern void func_8010B67C(struct Sub800E1B50_Unk84 *);
 extern void func_8010B860(struct Sub800E1B50_Unk84 *);
 
+extern void func_8010DC8C(struct Sub800E1B50_Unk84 *);
+extern void func_80105180(struct Sub800E1B50_Unk84 *);
+extern void func_801051AC(struct Sub800E1B50_Unk84 *);
+extern void func_800B1BF0(s32, s32);
+extern struct DObj *func_8011BABC();
+extern s32 func_8011BF4C(void *, void *);
+extern void func_800FD754(s32 *, f32, f32, f32);
+
+struct Ovl7TrackParams {
+    u32 unk0;
+    u32 unk4;
+    u32 unk8;
+    u32 unkC;
+    u32 unk10;
+};
+
+struct UnkOvl7Track {
+    f32 unk0;
+    f32 unk4;
+    f32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    void *unk1C;
+};
+
+extern struct Sub800E1B50_Unk84 D_801CE6D0_ovl7;
+extern struct Ovl7TrackParams D_801CE6E0_ovl7;
+extern struct UnkOvl7Track D_801CE730_ovl7;
+extern struct UnkOvl7Track D_801D0450_ovl7[];
+
+void func_801A32A8_ovl7(s32 arg0);
+void func_801A3618_ovl7(struct UnkOvl7Track *arg0);
+void func_801A3980_ovl7(GObj *arg0);
+void func_801A3A14_ovl7(GObj *arg0);
+void func_801A3B40_ovl7(void);
+
 void func_801A0D50_ovl7(void (*cb)(GObj *)) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -916,33 +954,18 @@ void func_801A3198_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3198_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_801A3280_ovl7(void) {
     func_801A32A8_ovl7(omCurrentObj->objId);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3280_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801A32A8_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *sp1C;
-    UnkStruct800E1B50 *temp_v0;
-    struct Sub800E1B50_Unk84 *temp_a1;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[arg0];
 
-    temp_v0 = D_800E1B50[arg0];
-    temp_a1 = temp_v0->unk84;
-    if (temp_a1 != NULL) {
-        sp1C = temp_v0;
-        func_8010DC8C(temp_a1, temp_a1);
-        temp_v0->unk84 = NULL;
+    if (ent->unk84 != NULL) {
+        func_8010DC8C(ent->unk84);
+        ent->unk84 = NULL;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A32A8_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
