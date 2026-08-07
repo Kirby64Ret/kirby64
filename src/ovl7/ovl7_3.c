@@ -3,6 +3,7 @@
 #include "GObj.h"
 #include "unk_structs/D_800E1B50.h"
 #include "ovl1/ovl1_6.h"
+#include "ovl1/util.h"
 #include "main/anim.h"
 
 // ovl2 bss
@@ -20,6 +21,21 @@ extern void func_800B1BF0(s32, s32);
 extern struct DObj *func_8011BABC();
 extern s32 func_8011BF4C(void *, void *);
 extern void func_800FD754(s32 *, f32, f32, f32);
+extern void func_800A4DB8(Vector *, struct DObj *);
+extern void func_800A802C(void *, s32, s32, Vector *, Vector *);
+extern void func_800FD570(s32, s32, f32, f32, f32);
+extern void func_800A7F74(s32, s32, s32, f32, f32, f32);
+extern void func_800B19F4(s32, s32);
+extern void func_800A9760(u32);
+extern void func_800AECC0(f32);
+extern void func_800AED20(f32);
+extern void func_800AA018(s32);
+extern void func_800AF408(void);
+extern s32 func_8010D668(struct Sub800E1B50_Unk84 *, f32);
+
+extern u32 D_801C2E84_ovl7[];
+extern u32 D_801F33FC[];
+extern u32 D_801D789C[];
 
 struct Ovl7TrackParams {
     u32 unk0;
@@ -28,6 +44,14 @@ struct Ovl7TrackParams {
     u32 unkC;
     u32 unk10;
 };
+
+struct Ovl7WarpStep {
+    f32 unk0;
+    f32 unk4;
+    f32 unk8;
+};
+
+extern struct Ovl7WarpStep D_801C28B0_ovl7[];
 
 struct UnkOvl7Track {
     f32 unk0;
@@ -45,10 +69,11 @@ extern struct Ovl7TrackParams D_801CE6E0_ovl7;
 extern struct UnkOvl7Track D_801CE730_ovl7;
 extern struct UnkOvl7Track D_801D0450_ovl7[];
 
+void func_8019F3B0_ovl7(void);
 void func_801A32A8_ovl7(s32 arg0);
 void func_801A3618_ovl7(struct UnkOvl7Track *arg0);
 void func_801A3980_ovl7(GObj *arg0);
-void func_801A3A14_ovl7(GObj *arg0);
+void func_801A3A14_ovl7(s32 arg0);
 void func_801A3B40_ovl7(void);
 
 void func_801A0D50_ovl7(void (*cb)(GObj *)) {
@@ -542,36 +567,27 @@ block_15:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2068_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_801A239C_ovl7(void) {
-    UnkStruct800E1B50 *temp_v0;
-    s8 temp_v1;
-    u16 temp_a0;
-    u32 temp_v1_2;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    u32 idx;
 
-    temp_v0 = D_800E1B50[omCurrentObj->objId];
-    temp_v1 = temp_v0->unk39;
-    if ((temp_v1 != -1) && (temp_v0->unk39 = temp_v1 - 1, (temp_v0->unk39 == 0))) {
-        temp_v0->unk39 = 0x1E;
-        temp_v1_2 = omCurrentObj->objId;
-        temp_a0 = D_800E77A0[temp_v1_2];
-        if ((temp_a0 >= 0x4E) && (temp_a0 < 0x5D)) {
-            func_800FD570(0, 3, 0, 0, 0.0f);
-            return;
+    if (ent->unk39 != -1) {
+        ent->unk39 -= 1;
+        if (ent->unk39 == 0) {
+            ent->unk39 = 0x1E;
+            idx = omCurrentObj->objId;
+            if ((D_800E77A0[idx] >= 0x4E) && (D_800E77A0[idx] < 0x5D)) {
+                func_800FD570(0, 3, 0.0f, 0.0f, 0.0f);
+            } else {
+                func_800A7F74(3, 2, 0x3F, gEntitiesNextPosXArray[idx], gEntitiesNextPosYArray[idx], gEntitiesNextPosZArray[idx]);
+            }
         }
-        func_800A7F74(3, 2, 0x3F, gEntitiesNextPosXArray[temp_v1_2], gEntitiesNextPosYArray[temp_v1_2], gEntitiesNextPosZArray[temp_v1_2]);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A239C_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_801A248C_ovl7(void *arg0, ? arg1) {
+void func_801A248C_ovl7(struct Sub800E1B50_Unk84 *arg0, f32 arg1) {
     if (arg0 != NULL) {
-        if (func_8010D668(arg1, arg1) != 0) {
+        if (func_8010D668(arg0, arg1) != 0) {
             gEntitiesNextPosXArray[omCurrentObj->objId] = arg0->unk4;
             gEntitiesNextPosYArray[omCurrentObj->objId] = arg0->unk8;
             gEntitiesNextPosZArray[omCurrentObj->objId] = arg0->unkC;
@@ -583,9 +599,6 @@ void func_801A248C_ovl7(void *arg0, ? arg1) {
         func_801051AC(arg0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A248C_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -749,53 +762,23 @@ block_50:
 #endif
 
 #ifdef MIPS_TO_C
-void func_801A2ADC_ovl7(void *arg0) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    struct Sub800E1B50_Unk84 *temp_a1;
-    u32 temp_v1;
+void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
+    u32 idx = omCurrentObj->objId;
+    struct Sub800E1B50_Unk84 *sub84 = D_800E1B50[idx]->unk84;
 
-    temp_v1 = omCurrentObj->objId;
-    temp_a1 = D_800E1B50[temp_v1]->unk84;
-    if (temp_a1 != NULL) {
-        temp_a1->unk4 = gEntitiesNextPosXArray[temp_v1];
-        temp_a1->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
-        temp_a1->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
-        temp_a1->unk10 = arg0->unk0;
-        temp_a1->unk14 = arg0->unk4;
-        temp_a1->unk18 = arg0->unk8;
-        temp_a1->unk1C = arg0->unkC;
-        temp_a1->unk20 = arg0->unk10;
+    if (sub84 != NULL) {
+        sub84->unk4 = gEntitiesNextPosXArray[idx];
+        sub84->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
+        sub84->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+        *(struct Ovl7TrackParams *) &sub84->unk10 = *arg0;
         if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-            temp_f0 = temp_a1->unk1C;
-            if (temp_f0 < 0.0f) {
-                temp_a1->unk1C = -temp_f0;
-            } else {
-                temp_a1->unk1C = temp_f0;
-            }
-            temp_f0_2 = temp_a1->unk20;
-            if (temp_f0_2 < 0.0f) {
-                temp_a1->unk20 = --temp_f0_2;
-            } else {
-                temp_a1->unk20 = -temp_f0_2;
-            }
+            sub84->unk1C = ABSF(sub84->unk1C);
+            sub84->unk20 = (sub84->unk20) < 0.0f ? -(-(sub84->unk20)) : -(sub84->unk20);
         } else {
-            temp_f0_3 = temp_a1->unk1C;
-            if (temp_f0_3 < 0.0f) {
-                temp_a1->unk1C = --temp_f0_3;
-            } else {
-                temp_a1->unk1C = -temp_f0_3;
-            }
-            temp_f0_4 = temp_a1->unk20;
-            if (temp_f0_4 < 0.0f) {
-                temp_a1->unk20 = -temp_f0_4;
-            } else {
-                temp_a1->unk20 = temp_f0_4;
-            }
+            sub84->unk1C = (sub84->unk1C) < 0.0f ? -(-(sub84->unk1C)) : -(sub84->unk1C);
+            sub84->unk20 = ABSF(sub84->unk20);
         }
-        temp_a1->unk24 = D_800E17D0[omCurrentObj->objId];
+        sub84->unk24 = D_800E17D0[omCurrentObj->objId];
     }
 }
 #else
@@ -925,24 +908,21 @@ void func_801A3000_ovl7(s32 arg0) {
 
 #ifdef MIPS_TO_C
 void func_801A3198_ovl7(void) {
-    UnkStruct800E1B50 *temp_v0;
+    struct UnkStruct800E1B50 *temp_v0;
+    struct CollisionTriangle *temp_a1;
     f32 *temp_v0_2;
     f32 var_f6;
     u16 temp_a2;
-    u16 temp_t7;
+    u32 temp_t7;
     u32 temp_a0;
-    u32 temp_a1;
 
     temp_a0 = omCurrentObj->objId;
     temp_v0 = D_800E1B50[temp_a0];
-    if ((D_800E8920[temp_a0] == 1) && (temp_a1 = temp_v0->unk7C, (temp_a1 != 0)) && ((temp_a2 = temp_a1->unk12, (temp_a2 == 0x13)) || (temp_a2 == 0x12))) {
-        temp_t7 = temp_a1->unk10;
+    if ((D_800E8920[temp_a0] == 1) && (temp_a1 = (struct CollisionTriangle *) temp_v0->unk7C, (temp_a1 != NULL)) && ((temp_a2 = temp_a1->collisionType, (temp_a2 == 0x13)) || (temp_a2 == 0x12))) {
+        temp_t7 = temp_a1->collisionParameter;
         var_f6 = temp_t7;
-        if (temp_t7 < 0) {
-            var_f6 += 4294967296.0f;
-        }
         D_800E5510[temp_a0] = var_f6 * 0.1f;
-        if (temp_v0->unk7C->unk12 == 0x12) {
+        if (((struct CollisionTriangle *) temp_v0->unk7C)->collisionType == 0x12) {
             temp_v0_2 = &D_800E5510[omCurrentObj->objId];
             *temp_v0_2 *= -1.0f;
         }
@@ -967,24 +947,15 @@ void func_801A32A8_ovl7(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-
-void func_801A32EC(void *arg0) {
+void func_801A32EC(struct Ovl7TrackParams *arg0) {
     D_801CE6D0_ovl7.unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
     D_801CE6D0_ovl7.unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
     D_801CE6D0_ovl7.unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
-    D_801CE6E0_ovl7.unk0 = arg0->unk0;
-    D_801CE6E0_ovl7.unk4 = arg0->unk4;
-    D_801CE6E0_ovl7.unk8 = arg0->unk8;
-    D_801CE6E0_ovl7.unkC = arg0->unkC;
-    D_801CE6E0_ovl7.unk10 = arg0->unk10;
+    D_801CE6E0_ovl7 = *arg0;
     D_801CE6D0_ovl7.unk24 = D_800E17D0[omCurrentObj->objId];
-    func_80105180(&D_801CE6D0_ovl7, arg0);
+    func_80105180(&D_801CE6D0_ovl7);
     func_801051AC(&D_801CE6D0_ovl7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A32EC.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1040,8 +1011,7 @@ void func_801A33B8(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A33B8.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_801A3618_ovl7(void *arg0) {
+void func_801A3618_ovl7(struct UnkOvl7Track *arg0) {
     arg0->unk0 = gEntitiesNextPosXArray[omCurrentObj->objId];
     arg0->unk4 = gEntitiesNextPosYArray[omCurrentObj->objId];
     arg0->unk8 = gEntitiesNextPosZArray[omCurrentObj->objId];
@@ -1049,51 +1019,28 @@ void func_801A3618_ovl7(void *arg0) {
     arg0->unk10 = gEntitiesPosYArray[omCurrentObj->objId];
     arg0->unk14 = gEntitiesPosZArray[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3618_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801A36CC(void *arg0) {
+    struct UnkOvl7Track *track = &D_801D0450_ovl7[omCurrentObj->objId - 14];
 
-void func_801A36CC(s32 arg0) {
-    ? *sp1C;
-    ? *var_a2;
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    var_a2 = (temp_v0 << 5) - 0x1C0 + &D_801D0450_ovl7;
-    if (temp_v0 == 0) {
-        var_a2 = &D_801CE730_ovl7;
+    if (omCurrentObj->objId == 0) {
+        track = &D_801CE730_ovl7;
     }
-    sp1C = var_a2;
-    func_801A3618_ovl7(var_a2, var_a2);
-    sp1C->unk18 = D_800E17D0[omCurrentObj->objId];
-    func_8011BF4C(sp1C, arg0);
+    func_801A3618_ovl7(track);
+    track->unk18 = D_800E17D0[omCurrentObj->objId];
+    func_8011BF4C(track, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A36CC.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801A374C_ovl7(void *arg0) {
+    struct UnkOvl7Track *track = &D_801D0450_ovl7[omCurrentObj->objId - 14];
 
-void func_801A374C_ovl7(s32 arg0) {
-    ? *sp1C;
-    ? *var_a2;
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    var_a2 = (temp_v0 << 5) - 0x1C0 + &D_801D0450_ovl7;
-    if (temp_v0 == 0) {
-        var_a2 = &D_801CE730_ovl7;
+    if (omCurrentObj->objId == 0) {
+        track = &D_801CE730_ovl7;
     }
-    sp1C = var_a2;
-    func_801A3618_ovl7(var_a2, var_a2);
-    sp1C->unk18 = *D_800E17D0;
-    func_8011BF4C(sp1C, arg0);
+    func_801A3618_ovl7(track);
+    track->unk18 = D_800E17D0[0];
+    func_8011BF4C(track, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A374C_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1121,238 +1068,154 @@ void func_801A37B8_ovl7(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A37B8_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 s32 func_801A3864_ovl7(void) {
-    void *sp24;
-    s32 sp18;
-    void *temp_v0;
+    struct DObj *dobj;
+    Vector sp18;
 
-    temp_v0 = func_8011BABC();
-    sp24 = temp_v0;
-    temp_v0->unk54 = 2;
+    dobj = func_8011BABC();
+    dobj->flags = 2;
     play_sound(0xA);
-    utilGetTransformSRT(&sp18, sp24);
-    func_800FD754(0, sp18, sp1C, sp20);
+    utilGetTransformSRT(&sp18, dobj);
+    func_800FD754(0, sp18.x, sp18.y, sp18.z);
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3864_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+s32 func_801A38BC_ovl7(struct CollisionTriangle *arg0) {
+    struct DObj *dobj;
+    Vector sp38;
+    Vector sp2C;
+    Vector sp20;
 
-s32 func_801A38BC_ovl7(void *arg0) {
-    void *sp44;
-    ? sp2C;
-    ? sp20;
-    void *temp_v0;
-
-    temp_v0 = func_8011BABC();
-    sp44 = temp_v0;
-    temp_v0->unk54 = 2;
-    if (arg0->unk10 == 0) {
+    dobj = func_8011BABC();
+    dobj->flags = 2;
+    if (arg0->collisionParameter == 0) {
         play_sound(0xA);
-        utilGetTransformSRT(&sp2C, sp44);
-        func_800A4DB8(&sp20, sp44);
-        func_800A802C(0, 3, 0x36, &sp2C, &sp20);
+        utilGetTransformSRT(&sp2C, dobj);
+        func_800A4DB8(&sp20, dobj);
+        func_800A802C(NULL, 3, 0x36, &sp2C, &sp20);
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A38BC_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801A3938(void *arg0) {
+    struct UnkOvl7Track *track = &D_801D0450_ovl7[omCurrentObj->objId - 14];
 
-void func_801A3938(s32 arg0) {
-    ? *var_v0;
-    u32 temp_v1;
-
-    temp_v1 = omCurrentObj->objId;
-    var_v0 = (temp_v1 << 5) - 0x1C0 + &D_801D0450_ovl7;
-    if (temp_v1 == 0) {
-        var_v0 = &D_801CE730_ovl7;
+    if (omCurrentObj->objId == 0) {
+        track = &D_801CE730_ovl7;
     }
-    if (arg0 != 0) {
-        var_v0->unk1C = arg0;
-        return;
+    if (arg0 != NULL) {
+        track->unk1C = arg0;
+    } else {
+        track->unk1C = NULL;
     }
-    var_v0->unk1C = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3938.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801A3980_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-void func_801A3980_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *sp1C;
-    UnkStruct800E1B50 *temp_v1;
-    u32 temp_a1;
-
-    temp_a1 = omCurrentObj->objId;
-    temp_v1 = D_800E1B50[temp_a1];
-    sp1C = temp_v1;
-    func_800B1BF0(0, temp_a1);
-    gEntitiesNextPosXArray[omCurrentObj->objId] = temp_v1->unk4C;
-    gEntitiesNextPosYArray[omCurrentObj->objId] = temp_v1->unk50;
-    gEntitiesNextPosZArray[omCurrentObj->objId] = temp_v1->unk54;
+    func_800B1BF0(0, omCurrentObj->objId);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = ent->unk4C;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = ent->unk50;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = ent->unk54;
 }
-#else
-void func_801A3980_ovl7(GObj *arg0);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3980_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801A3A14_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *temp_v0;
-    void *temp_a1;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl7WarpStep *step;
+    s32 idx = (0xF - ent->unk3D) & 0xFF;
 
-    temp_v0 = D_800E1B50[omCurrentObj->objId];
-    temp_a1 = (((0xF - temp_v0->unk3D) & 0xFF) * 0xC) + &D_801C28B0_ovl7;
-    temp_v0->unk58 = temp_a1->unkC;
-    temp_v0->unk5C = temp_a1->unk10;
-    temp_v0->unk60 = temp_a1->unk14;
-    gEntitiesNextPosXArray[omCurrentObj->objId] = temp_v0->unk58 + temp_v0->unk4C;
-    gEntitiesNextPosYArray[omCurrentObj->objId] = temp_v0->unk5C + temp_v0->unk50;
-    gEntitiesNextPosZArray[omCurrentObj->objId] = (bitwise f32) temp_v0->unk60 + temp_v0->unk54;
+    step = &D_801C28B0_ovl7[idx];
+    ent->unk58 = step[1].unk0;
+    ent->unk5C = step[1].unk4;
+    ent->unk60 = step[1].unk8;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = ent->unk58 + ent->unk4C;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = ent->unk5C + ent->unk50;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = ent->unk60 + ent->unk54;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3A14_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_801A3AE0_ovl7(GObj *gobj) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-void func_801A3AE0_ovl7(void) {
-    UnkStruct800E1B50 *temp_v0;
-    u8 temp_t0;
-
-    temp_v0 = D_800E1B50[omCurrentObj->objId];
-    temp_t0 = temp_v0->unk3D - 1;
-    temp_v0->unk3D = temp_t0;
-    if (!(temp_t0 & 0xFF)) {
-        func_801A3980_ovl7();
-        return;
+    ent->unk3D -= 1;
+    if (ent->unk3D == 0) {
+        func_801A3980_ovl7(gobj);
+    } else {
+        func_801A3A14_ovl7((s32) gobj);
     }
-    func_801A3A14_ovl7();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3AE0_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801A3B40_ovl7(void) {
-    u16 temp_v1;
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    if ((D_800E7730[temp_v0] == 0) && ((temp_v1 = D_800E77A0[temp_v0], ((temp_v1 < 0x4E) != 0)) || (temp_v1 >= 0x5D))) {
+    if ((D_800E7730[omCurrentObj->objId] == 0)
+        && ((D_800E77A0[omCurrentObj->objId] < 0x4E) || (D_800E77A0[omCurrentObj->objId] >= 0x5D))) {
         play_sound(0x157);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3B40_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801A3BA4_ovl7(void) {
-    UnkStruct800E1B50 *temp_v0;
-    u32 temp_v1;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-    temp_v1 = omCurrentObj->objId;
-    temp_v0 = D_800E1B50[temp_v1];
-    if (D_800E83E0[temp_v1] == 2) {
-        temp_v0->unk3D = 0xF;
+    if (D_800E83E0[omCurrentObj->objId] == 2) {
+        ent->unk3D = 0xF;
     } else {
-        temp_v0->unk3D = 0xF;
+        ent->unk3D = 0xF;
     }
-    temp_v0->unk6C = D_800E83E0[omCurrentObj->objId];
-    temp_v0->unk30 = D_800E83E0[omCurrentObj->objId];
-    temp_v0->unk4C = gEntitiesNextPosXArray[omCurrentObj->objId];
-    temp_v0->unk50 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    temp_v0->unk54 = gEntitiesNextPosZArray[omCurrentObj->objId];
-    func_801A3B40_ovl7(D_800E83E0, &omCurrentObj);
-    func_800B19F4(0x3E, omCurrentObj->objId, &omCurrentObj);
+    ent->unk6C = D_800E83E0[omCurrentObj->objId];
+    ent->unk30 = D_800E83E0[omCurrentObj->objId];
+    ent->unk4C = gEntitiesNextPosXArray[omCurrentObj->objId];
+    ent->unk50 = gEntitiesNextPosYArray[omCurrentObj->objId];
+    ent->unk54 = gEntitiesNextPosZArray[omCurrentObj->objId];
+    func_801A3B40_ovl7();
+    func_800B19F4(0x3E, omCurrentObj->objId);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3BA4_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801A3CA8_ovl7(void) {
-    s32 var_a0;
-    u32 temp_v1;
-    u8 temp_v0;
+    u32 idx = omCurrentObj->objId;
+    u32 snd;
 
-    temp_v1 = omCurrentObj->objId;
-    temp_v0 = D_800E7730[temp_v1];
-    switch (temp_v0) {                              /* irregular */
-        default:
-            var_a0 = 0;
-            break;
+    switch (D_800E7730[idx]) {
         case 0:
-            var_a0 = *(&D_801C2E84_ovl7 + (D_800E77A0[temp_v1] * 4));
+            snd = D_801C2E84_ovl7[D_800E77A0[idx]];
             break;
         case 1:
-            var_a0 = *(&D_801F33FC + (D_800E77A0[temp_v1] * 4));
+            snd = D_801F33FC[D_800E77A0[idx]];
             break;
         case 2:
-            var_a0 = *(&D_801D789C + (D_800E77A0[temp_v1] * 4));
+            snd = D_801D789C[D_800E77A0[idx]];
+            break;
+        default:
+            snd = 0;
             break;
     }
-    if (var_a0 != 0) {
-        func_800A9760(var_a0);
+    if (snd != 0) {
+        func_800A9760(snd);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3CA8_ovl7.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_801A3D6C_ovl7(void) {
-    UnkStruct800E1B50 *temp_s0;
-    struct Sub800E1B50_Unk94 *temp_v0;
-    u32 temp_a0;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-    temp_s0 = D_800E1B50[omCurrentObj->objId];
     func_801A3CA8_ovl7();
-    temp_v0 = temp_s0->unk94;
-    if (temp_v0->pad[0] != -1) {
-        func_800AECC0(temp_v0->pad[2]);
-        func_800AED20(temp_s0->unk94->pad[2]);
-        func_800AA018(temp_s0->unk94->pad[0]);
-        temp_a0 = temp_s0->unk94->pad[1];
-        if (temp_a0 != -1) {
-            func_800AA018(temp_a0);
+    if (ent->unk94->unk0 != -1) {
+        func_800AECC0(ent->unk94->unk8);
+        func_800AED20(ent->unk94->unk8);
+        func_800AA018(ent->unk94->unk0);
+        if (ent->unk94->unk4 != -1) {
+            func_800AA018(ent->unk94->unk4);
         }
     } else {
         func_800AF408();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3D6C_ovl7.s")
-#endif
 
-// regalloc
-#ifdef NON_MATCHING
 void func_801A3E0C_ovl7(GObj *gobj) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
-    s32 tmp = ent->unk3D--;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-    if ((u8)tmp == 0) {
+    ent->unk3D -= 1;
+    if (ent->unk3D == 0) {
         func_801A3980_ovl7(gobj);
     } else {
         animUpdateModelTreeAnimation(gobj);
         func_8019F3B0_ovl7();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3E0C_ovl7.s")
-#endif
 

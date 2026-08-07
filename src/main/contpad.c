@@ -160,10 +160,10 @@ void contSetPlayerPads() {
     D_80048F48 = 0;
 }
 
+#ifdef NON_MATCHING
 s32 *func_80004250(void) {
-    u8 sp43;
     s32 i;
-    s32 j;
+    u8 sp43;
 
     osCreateMesgQueue(&sSIMesgQueue, (OSMesg *)&D_80048DB8, 1);
     osSetEventMesg(5, &sSIMesgQueue, (OSMesg) 1);
@@ -175,13 +175,12 @@ s32 *func_80004250(void) {
         }
     }
 
-    j = CONT_EVENT_RUMBLE;
     osCreateMesgQueue(&D_80048E10, (OSMesg *)&contEventMesgArray, 4);
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
         D_80048F60[i].evt.evt.msg = (OSMesg)i;
         D_80048F60[i].busy = 0;
-        D_80048F60[i].evt.evt.type = j;
+        D_80048F60[i].evt.evt.type = CONT_EVENT_RUMBLE;
         D_80048F60[i].evt.evt.mq = &D_80048E10;
     }
 
@@ -210,7 +209,7 @@ s32 *func_80004250(void) {
         gControllers[i].buttonHeld = 0;
         gControllers[i].holdTimer = 30;
         gControllers[i].holdDelay = 30;
-        gControllers[i].holdInterval = j;
+        gControllers[i].holdInterval = 5;
         gPlayerControllers[i].buttonHeldLong = 0;
         gPlayerControllers[i].buttonPressed = 0;
         gPlayerControllers[i].buttonHeld = 0;
@@ -254,6 +253,9 @@ s32 *func_80004250(void) {
     D_800492A1 = 0;
     return &D_80048F54;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004250.s")
+#endif
 
 void contSendEvent(ContEvent *evt) {
     OSMesg msg;

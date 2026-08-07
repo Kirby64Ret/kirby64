@@ -1391,6 +1391,7 @@ void renderDrawDObjFromGObj(GObj *gobj) {
 #ifdef NON_MATCHING
 void renderDrawDObj_TypeC(DObj* dobj, DObjPayloadTypeC* payload) {
     Gfx* temp;
+    u32 enddl;
     s32 sp30 = -1;
     Gfx* t1;
     Gfx* t0;
@@ -1454,14 +1455,17 @@ void renderDrawObject_TypeC(GObj *gobj) {
     renderDrawDObj_TypeC(gobj->data.dobj, gobj->data.dobj->data.typeC);
 }
 
-// weird
-#ifdef NON_MATCHING
+extern Gfx *D_8004ABAC;
+extern Gfx *D_8004ABB0;
+extern Gfx *D_8004ABB4;
+
+#ifdef MIPS_TO_C
 void func_8001479C(void) {
-    int i;
-
     D_8004ABA0 = D_8004ABB8;
-
-    for (i = 0; i < ARRAY_COUNT(D_8004ABA8); i++) { D_8004ABA8[i] = D_8004ABB8; }
+    D_8004ABA8[0] = D_8004ABB8;
+    D_8004ABAC = D_8004ABB8;
+    D_8004ABB0 = D_8004ABB8;
+    D_8004ABB4 = D_8004ABB8;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_8001479C.s")
@@ -2858,48 +2862,72 @@ void func_80018170(GObj* camObj) {
 #endif
 
 #ifdef MIPS_TO_C
+// 70/126 insns match; remaining diffs: i<4 loop test gets rewritten to i!=4 with 4
+// hoisted to $s7 (target keeps slti and puts 0xDF000000 in $fp instead), and
+// temp-1 address computation gets folded into the store offsets.
 void func_800183BC(void) {
     Gfx** p = &gDisplayListHeads[1];
     Gfx** q = D_8004ADA4;
-    s32 i = 1;
+    s32 i;
+    Gfx* g;
     Gfx* start;
     Gfx* temp;
+    u32 enddl;
     Camera *cam = omCurrentCamera->data.cam;
 
-    do {
-        start = *p;
+    enddl = 0xDF000000;
+    for (i = 1; i < 4; i++) {
+        g = *p;
+        start = g;
+        temp = *q;
 
-        if (*q == *p) {
-            *p = *p - 1;
+        if (temp == g) {
+            *p = g - 1;
         } else {
-            *p = *p + 1;
-            temp = *q - 1;
-            gSPDisplayList(temp, *p);
+            *p = g + 1;
+            temp -= 1;
+            temp->words.w0 = 0xDE000000;
+            temp->words.w1 = (u32)*p;
             func_8001663C(p, cam, i);
-            gSPDisplayList((*p)++, D_8004ADB0 + 1);
+            g = *p;
+            *p = g + 1;
+            g->words.w0 = 0xDE000000;
+            g->words.w1 = (u32)(D_8004ADB0 + 1);
             func_80017B40(cam, i);
-            gSPEndDisplayList((*p)++);
-            gSPBranchList(start, *p);
+            g = *p;
+            *p = g + 1;
+            g->words.w1 = 0;
+            g->words.w0 = enddl;
+            start->words.w0 = 0xDE010000;
+            start->words.w1 = (u32)*p;
         }
-        i++;
-        p++;
         q++;
-    } while (i < 4);
+        p++;
+    }
 
     gtlProcessDisps();
     gtlReset();
     renderInitCamera(&gDisplayListHeads[0], cam, 0);
-    D_8004ADB0 = gDisplayListHeads[0] + 1;
-    gSPDisplayList(gDisplayListHeads[0], gDisplayListHeads[0] + 2);
-    gDisplayListHeads[0] += 2;
+    g = gDisplayListHeads[0];
+    D_8004ADB0 = g + 1;
+    g->words.w0 = 0xDE000000;
+    g->words.w1 = (u32)(gDisplayListHeads[0] + 2);
+    gDisplayListHeads[0] = gDisplayListHeads[0] + 2;
     func_800171E0(&gDisplayListHeads[0], cam);
-    gSPEndDisplayList(gDisplayListHeads[0]++);
-    gSPBranchList(D_8004ADB0, gDisplayListHeads[0]);
+    g = gDisplayListHeads[0];
+    gDisplayListHeads[0] = g + 1;
+    g->words.w1 = 0;
+    g->words.w0 = enddl;
+    D_8004ADB0->words.w0 = 0xDE010000;
+    D_8004ADB0->words.w1 = (u32)gDisplayListHeads[0];
     func_80017B40(cam, 0);
 
-    for (i = 1; i < 4; i++) {
-        D_8004A3D4[i] = ++gDisplayListHeads[i];
-    }
+    p = &gDisplayListHeads[1];
+    q = D_8004ADA4;
+    do {
+        *q++ = ++*p;
+        p++;
+    } while (p != &gDisplayListHeads[4]);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800183BC.s")

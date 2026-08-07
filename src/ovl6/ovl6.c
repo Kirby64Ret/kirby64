@@ -111,6 +111,7 @@ void func_80153CBC_ovl6(GObj *gobj);
 void func_80153DC8_ovl6(GObj *gobj);
 void func_80153E1C_ovl6(s32 arg0);
 void func_801548A4_ovl6(void);
+void func_801548F8_ovl6(GObj *arg0);
 void func_80154858_ovl6(void);
 void omGMoveObjDLHead(GObj *o, u8 link, s32 renderPri);
 void func_800AD1A0(GObj *gobj);
@@ -218,102 +219,62 @@ void func_801513F8_ovl6(struct DObj *arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-void func_801514A0_ovl6(void *arg0, void *arg1) {
-    u8 temp_v1;
-    u8 temp_v1_2;
-    u8 temp_v1_3;
-    u8 temp_v1_4;
-    u8 temp_v1_5;
-    u8 temp_v1_6;
-    void *temp_v0;
-    void *temp_v0_2;
+void func_801514A0_ovl6(GObj *arg0, Lights1 *arg1) {
+    TextureScroll *ts = &arg0->data.dobj->mobjList->texture;
 
-    temp_v0 = arg0->unk3C->unk80;
-    temp_v1 = temp_v0->unk68;
-    temp_v0_2 = temp_v0 + 8;
-    arg1->unkC = temp_v1;
-    arg1->unk8 = temp_v1;
-    temp_v1_2 = temp_v0_2->unk61;
-    arg1->unkD = temp_v1_2;
-    arg1->unk9 = temp_v1_2;
-    temp_v1_3 = temp_v0_2->unk62;
-    arg1->unkE = temp_v1_3;
-    arg1->unkA = temp_v1_3;
-    temp_v1_4 = temp_v0_2->unk64;
-    arg1->unk4 = temp_v1_4;
-    arg1->unk0 = temp_v1_4;
-    temp_v1_5 = temp_v0_2->unk65;
-    arg1->unk5 = temp_v1_5;
-    arg1->unk1 = temp_v1_5;
-    temp_v1_6 = temp_v0_2->unk66;
-    arg1->unkB = 0;
-    arg1->unkF = 0;
-    arg1->unk13 = 0;
-    arg1->unk3 = 0;
-    arg1->unk7 = 0;
-    arg1->unk6 = temp_v1_6;
-    arg1->unk2 = temp_v1_6;
+    arg1->l[0].l.col[0] = arg1->l[0].l.colc[0] = ts->lightColor1.color.r;
+    arg1->l[0].l.col[1] = arg1->l[0].l.colc[1] = ts->lightColor1.color.g;
+    arg1->l[0].l.col[2] = arg1->l[0].l.colc[2] = ts->lightColor1.color.b;
+    arg1->a.l.col[0] = arg1->a.l.colc[0] = ts->lightColor2.color.r;
+    arg1->a.l.col[1] = arg1->a.l.colc[1] = ts->lightColor2.color.g;
+    arg1->l[0].l.pad1 = 0;
+    arg1->l[0].l.pad2 = 0;
+    arg1->l[0].l.pad3 = 0;
+    arg1->a.l.pad1 = 0;
+    arg1->a.l.pad2 = 0;
+    arg1->a.l.col[2] = arg1->a.l.colc[2] = ts->lightColor2.color.b;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801514A0_ovl6.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_8015150C_ovl6(void) {
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp28;
-    f32 sp24;
-    f32 sp20;
-    f32 temp_f0;
-    f32 temp_f16;
-    f32 temp_f18;
+    Vector sp34;
+    f32 sin_x;
+    f32 cos_x;
+    f32 sin_y;
+    f32 cos_y;
+    f32 sin_z;
+    f32 cos_z;
     f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f8;
-    void *temp_t8;
 
-    temp_t8 = D_8015A56C_ovl6->unk3C;
-    sp34.unk0 = temp_t8->unk30;
-    sp34.unk4 = temp_t8->unk34;
-    sp34.unk8 = temp_t8->unk38;
-    sp30 = sinf(sp34);
-    sp2C = cosf(sp34);
-    sp28 = sinf(sp38);
-    sp24 = cosf(sp38);
-    sp20 = sinf(sp3C);
-    temp_f0 = cosf(sp3C);
-    temp_f2 = sp2C * sp28;
-    temp_f16 = (temp_f2 * temp_f0) + (sp30 * sp20);
-    sp34 = temp_f16;
-    temp_f18 = (temp_f2 * sp20) - (sp30 * temp_f0);
-    temp_f8 = sp2C * sp24;
-    sp38 = temp_f18;
-    sp3C = temp_f8;
-    temp_f2_2 = 100.0f / sqrtf((temp_f16 * temp_f16) + (temp_f18 * temp_f18) + (temp_f8 * temp_f8));
-    D_8015A670_ovl6->unk10 = -(sp34 * temp_f2_2);
-    D_8015A670_ovl6->unk11 = -(sp38 * temp_f2_2);
-    D_8015A670_ovl6->unk12 = -(sp3C * temp_f2_2);
+    sp34 = D_8015A56C_ovl6->data.dobj->angle.v;
+    sin_x = sinf(sp34.x);
+    cos_x = cosf(sp34.x);
+    sin_y = sinf(sp34.y);
+    cos_y = cosf(sp34.y);
+    sin_z = sinf(sp34.z);
+    cos_z = cosf(sp34.z);
+    temp_f2 = cos_x * sin_y;
+    sp34.x = (temp_f2 * cos_z) + (sin_x * sin_z);
+    sp34.y = (temp_f2 * sin_z) - (sin_x * cos_z);
+    sp34.z = cos_x * cos_y;
+    temp_f2 = 100.0f / sqrtf((sp34.x * sp34.x) + (sp34.y * sp34.y) + (sp34.z * sp34.z));
+    D_8015A670_ovl6->l[0].l.dir[0] = -(s32)(sp34.x * temp_f2);
+    D_8015A670_ovl6->l[0].l.dir[1] = -(s32)(sp34.y * temp_f2);
+    D_8015A670_ovl6->l[0].l.dir[2] = -(s32)(sp34.z * temp_f2);
 }
 #else
-void func_8015150C_ovl6(void);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015150C_ovl6.s")
 #endif
 
-#ifdef NON_MATCHING
 void func_8015166C_ovl6(Gfx **glistp) {
     func_8015150C_ovl6();
     func_801514A0_ovl6(D_8015A56C_ovl6, D_8015A670_ovl6);
 
-    gSPSetLights1(*glistp++, D_8015A670_ovl6);
+    gSPSetLights1((*glistp)++, (*D_8015A670_ovl6));
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015166C_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1182,61 +1143,36 @@ void func_80152CF8_ovl6(GObj *gobj) {
 
 }
 
-#ifdef MIPS_TO_C
-void func_80152D00_ovl6(void *arg0) {
-    u32 var_v1;
-    void *temp_a0;
-    void *temp_a2;
-    void *temp_v1;
-    void *temp_v1_2;
-    void *temp_v1_3;
-    void *var_a1;
-    void *var_v0;
+void func_80152D00_ovl6(GObj *arg0) {
+    u32 i;
+    DObj *var_v0;
 
-    var_v0 = arg0->unk3C;
+    var_v0 = arg0->data.dobj;
     if (var_v0 != NULL) {
         do {
-            var_v1 = 0;
-            var_a1 = var_v0;
-            if (var_v0->unk56 != 0) {
-                do {
-                    temp_a2 = var_a1->unk58;
-                    var_v1 += 1;
-                    if (temp_a2->unk4 == 0x1C) {
-                        temp_a2->unk5 = 1;
-                    }
-                    var_a1 += 4;
-                } while (var_v1 < var_v0->unk56);
+            for (i = 0; i < var_v0->numMatrices; i++) {
+                if (var_v0->matrices[i]->kind == 0x1C) {
+                    var_v0->matrices[i]->unk05 = 1;
+                }
             }
-            temp_v1 = var_v0->unk10;
-            if (temp_v1 != NULL) {
-                var_v0 = temp_v1;
+            if (var_v0->firstChild != NULL) {
+                var_v0 = var_v0->firstChild;
+            } else if (var_v0->next != NULL) {
+                var_v0 = var_v0->next;
             } else {
-                temp_v1_2 = var_v0->unk8;
-                if (temp_v1_2 != NULL) {
-                    var_v0 = temp_v1_2;
-                } else {
 loop_9:
-                    temp_v1_3 = var_v0->unk14;
-                    if (temp_v1_3 == 1) {
-                        var_v0 = NULL;
-                    } else {
-                        temp_a0 = temp_v1_3->unk8;
-                        if (temp_a0 != NULL) {
-                            var_v0 = temp_a0;
-                        } else {
-                            var_v0 = temp_v1_3;
-                            goto loop_9;
-                        }
-                    }
+                if (var_v0->parent == (DObj *)1) {
+                    var_v0 = NULL;
+                } else if (var_v0->parent->next != NULL) {
+                    var_v0 = var_v0->parent->next;
+                } else {
+                    var_v0 = var_v0->parent;
+                    goto loop_9;
                 }
             }
         } while (var_v0 != NULL);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152D00_ovl6.s")
-#endif
 
 void func_80152DB8_ovl6(void) {
     GObj *sp2C;
@@ -1346,6 +1282,9 @@ void func_80153040_ovl6(void) {
     D_8015A7A8_ovl6 = D_8015A7AC_ovl6 = D_8015A7B0_ovl6 = 0;
 }
 
+#ifdef MIPS_TO_C
+// close but not matching: in the second loop the "D_8015A7AC_ovl6 = next" store
+// picks $at addressing instead of the CSE'd &D_8015A7AC_ovl6 kept in $s1
 void func_80153064_ovl6(void) {
     UnkStruct8015A6A8_ovl6 *entry;
     u32 next;
@@ -1377,15 +1316,18 @@ void func_80153064_ovl6(void) {
     if (a8 != ac) {
         do {
             next = ac + 1;
-            if (next >= 0x20) {
-                D_8015A7AC_ovl6 = 0;
-            } else {
+            if (next < 0x20) {
                 D_8015A7AC_ovl6 = next;
+            } else {
+                D_8015A7AC_ovl6 = 0;
             }
             ac = D_8015A7AC_ovl6;
         } while (a8 != ac);
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153064_ovl6.s")
+#endif
 
 void func_8015314C_ovl6(s32 arg0, u8 arg1) {
     UnkStruct8015A6A8_ovl6 *entry;
@@ -1410,105 +1352,80 @@ void func_8015314C_ovl6(s32 arg0, u8 arg1) {
 }
 
 s32 func_801531FC_ovl6(void) {
-    if (D_8015A7AC_ovl6 == D_8015A7B0_ovl6) {
+    if (D_8015A7B0_ovl6 == D_8015A7AC_ovl6) {
         return 0;
     }
     return 1;
 }
 
-#ifdef MIPS_TO_C
-
 void func_80153228_ovl6(s32 arg0) {
+    s32 sp1C;
     s32 sp18;
-    s32 temp_a0;
-    s32 temp_a1;
-    s32 temp_v0;
-    void *temp_v1;
+    GObj *temp_v1;
 
-    temp_v0 = arg0 * 4;
-    temp_v1 = *(&D_800DE350 + temp_v0);
-    sp18 = *(&D_800E02D0 + temp_v0);
-    temp_a1 = temp_v1->unk2C;
-    if ((&func_800AD1A0 == temp_a1) || (&func_801548F8_ovl6 == temp_a1)) {
-        temp_a0 = temp_v1->unk4C;
-        if (temp_a0 != 0) {
-            func_800ACB7C(temp_a0, temp_a1, arg0);
+    temp_v1 = D_800DE350[arg0];
+    sp18 = D_800E02D0[arg0];
+    if ((temp_v1->onDraw == func_800AD1A0) || (temp_v1->onDraw == func_801548F8_ovl6)) {
+        if (temp_v1->unk4C != NULL) {
+            func_800ACB7C(temp_v1->unk4C);
         }
         func_800B1900(arg0 & 0xFFFF);
         func_8015314C_ovl6(sp18, 1);
         return;
     }
-    func_800B1900(arg0 & 0xFFFF, temp_a1, arg0);
+    func_800B1900(arg0 & 0xFFFF);
     func_8015314C_ovl6(sp18, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153228_ovl6.s")
-#endif
 
 void func_801532CC_ovl6(void) {
     func_80153228_ovl6(D_8015A560_ovl6->unk3);
 }
 
-#ifdef MIPS_TO_C
-void func_801532F4_ovl6(void *arg0) {
-    s8 var_v1;
-    u32 var_a0;
-    void *temp_a0;
-    void *temp_a3;
-    void *temp_v1;
-    void *temp_v1_2;
-    void *temp_v1_3;
-    void *var_a2;
-    void *var_v0;
+void func_801532F4_ovl6(GObj *arg0) {
+    u32 i;
+    s32 var_v1;
+    OMMtx **walk;
+    OMMtx *mtx;
+    DObj *var_v0;
 
-    var_v0 = arg0->unk3C;
+    var_v0 = arg0->data.dobj;
     if (var_v0 != NULL) {
         do {
-            var_a0 = 0;
-            var_v1 = 0;
-            var_a2 = var_v0;
-            if (var_v0->unk70 == 0) {
+            if (var_v0->animList == NULL) {
                 var_v1 = 1;
-            }
-            if (var_v0->unk56 != 0) {
-                do {
-                    temp_a3 = var_a2->unk58;
-                    var_a0 += 1;
-                    if (temp_a3->unk4 == 0x1C) {
-                        temp_a3->unk5 = var_v1;
-                    }
-                    var_a2 += 4;
-                } while (var_a0 < var_v0->unk56);
-            }
-            temp_v1 = var_v0->unk10;
-            if (temp_v1 != NULL) {
-                var_v0 = temp_v1;
             } else {
-                temp_v1_2 = var_v0->unk8;
-                if (temp_v1_2 != NULL) {
-                    var_v0 = temp_v1_2;
-                } else {
-loop_11:
-                    temp_v1_3 = var_v0->unk14;
-                    if (temp_v1_3 == 1) {
-                        var_v0 = NULL;
-                    } else {
-                        temp_a0 = temp_v1_3->unk8;
-                        if (temp_a0 != NULL) {
-                            var_v0 = temp_a0;
-                        } else {
-                            var_v0 = temp_v1_3;
-                            goto loop_11;
-                        }
+                var_v1 = 0;
+            }
+            i = 0;
+            if (var_v0->numMatrices != 0) {
+                walk = (OMMtx **)var_v0;
+                do {
+                    mtx = walk[22];
+                    i++;
+                    if (mtx->kind == 0x1C) {
+                        mtx->unk05 = var_v1;
                     }
+                    walk++;
+                } while (i < var_v0->numMatrices);
+            }
+            if (var_v0->firstChild != NULL) {
+                var_v0 = var_v0->firstChild;
+            } else if (var_v0->next != NULL) {
+                var_v0 = var_v0->next;
+            } else {
+loop_11:
+                if (var_v0->parent == (DObj *)1) {
+                    var_v0 = NULL;
+                } else if (var_v0->parent->next != NULL) {
+                    var_v0 = var_v0->parent->next;
+                } else {
+                    var_v0 = var_v0->parent;
+                    goto loop_11;
                 }
             }
         } while (var_v0 != NULL);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801532F4_ovl6.s")
-#endif
 
 void func_801533C0_ovl6(void) {
     GObj *sp1C;

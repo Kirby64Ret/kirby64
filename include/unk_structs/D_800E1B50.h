@@ -38,7 +38,10 @@ struct Sub800E1B50_Unk88 {
 };
 
 struct Sub800E1B50_Unk94 {
-    u32 pad[4];
+    s32 unk0;
+    s32 unk4;
+    f32 unk8;
+    u32 unkC;
     u32 unk10;
     u32 unk14;
     u32 unk18;
@@ -134,8 +137,12 @@ typedef struct UnkStruct800E1B50 {
     u8 unk43;
     u32 unk44;
     int (*unk48)(struct Sub800E1B50_Unk84*);
-    u8 pad2 [0x14];
-    u32 unk60;
+    f32 unk4C;
+    f32 unk50;
+    f32 unk54;
+    f32 unk58;
+    f32 unk5C;
+    f32 unk60;
     u32 unk64;
     u32 unk68;
     u32 unk6C;

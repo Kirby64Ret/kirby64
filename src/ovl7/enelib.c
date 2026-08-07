@@ -24,6 +24,9 @@ void func_800F88C8(s32, s32, f32);
 // ovl1_7
 void func_800B3520(void);
 
+// ovl1 util
+f32 utilVec3Dist(Vector *, Vector *);
+
 // ovl2_3
 struct TrackPosition {
     s32 unk0;
@@ -584,105 +587,69 @@ void func_8019A19C_ovl7(Unused GObj *gobj) {
     D_800E6850[omCurrentObj->objId] = 65535.0f;
 }
 
-#ifdef MIPS_TO_C
-void func_8019A200_ovl7(s32 arg0) {
-    f32 *temp_a0;
-    f32 *temp_a0_2;
-    f32 *temp_a1;
-    f32 temp_f0;
+void func_8019A200_ovl7(Unused GObj *gobj) {
+    f32 max = 65535.0f;
     f32 temp_f0_2;
     f32 var_f2;
     f32 var_f2_2;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
 
-    temp_v1 = omCurrentObj->objId;
-    temp_f0 = D_800E6850[temp_v1];
-    temp_a0 = &D_800E64D0[temp_v1];
-    if (temp_f0 == 65535.0f) {
-        var_f2 = temp_f0;
+    if (max == D_800E6850[omCurrentObj->objId]) {
+        var_f2 = D_800E6850[omCurrentObj->objId];
     } else {
-        var_f2 = temp_f0 * 0.5f;
+        var_f2 = D_800E6850[omCurrentObj->objId] * 0.5f;
     }
-    *temp_a0 *= 0.5f;
-    temp_v1_2 = omCurrentObj->objId;
-    D_800E6690[temp_v1_2] = D_800E64D0[temp_v1_2] * 0.5f;
+    D_800E64D0[omCurrentObj->objId] *= 0.5f;
+    D_800E6690[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId] * 0.5f;
     if (var_f2 < 0.0f) {
         D_800E6850[omCurrentObj->objId] = -var_f2;
     } else {
         D_800E6850[omCurrentObj->objId] = var_f2;
     }
-    temp_v1_3 = omCurrentObj->objId;
-    temp_f0_2 = D_800E3C90[temp_v1_3];
-    temp_a0_2 = &D_800E3210[temp_v1_3];
-    if (temp_f0_2 == 65535.0f) {
+    temp_f0_2 = D_800E3C90[omCurrentObj->objId];
+    if (max == temp_f0_2) {
         var_f2_2 = temp_f0_2;
     } else {
         var_f2_2 = temp_f0_2 * 0.5f;
     }
-    *temp_a0_2 *= 0.5f;
-    temp_a1 = &D_800E3750[omCurrentObj->objId];
-    *temp_a1 *= 0.5f;
+    D_800E3210[omCurrentObj->objId] *= 0.5f;
+    D_800E3750[omCurrentObj->objId] *= 0.5f;
     if (var_f2_2 < 0.0f) {
         D_800E3C90[omCurrentObj->objId] = -var_f2_2;
         return;
     }
     D_800E3C90[omCurrentObj->objId] = var_f2_2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A200_ovl7.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8019A36C_ovl7(s32 arg0) {
-    f32 *temp_a0;
-    f32 *temp_a0_2;
-    f32 *temp_a1;
-    f32 temp_f0;
-    f32 temp_f0_2;
+void func_8019A36C_ovl7(Unused GObj *gobj) {
+    f32 max = 65535.0f;
     f32 var_f2;
     f32 var_f2_2;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
 
-    temp_v1 = omCurrentObj->objId;
-    temp_f0 = D_800E6850[temp_v1];
-    temp_a0 = &D_800E64D0[temp_v1];
-    if (temp_f0 == 65535.0f) {
-        var_f2 = temp_f0;
+    if (max == D_800E6850[omCurrentObj->objId]) {
+        var_f2 = D_800E6850[omCurrentObj->objId];
     } else {
-        var_f2 = 2.0f * temp_f0;
+        var_f2 = D_800E6850[omCurrentObj->objId] * 2.0f;
     }
-    *temp_a0 *= 2.0f;
-    temp_v1_2 = omCurrentObj->objId;
-    D_800E6690[temp_v1_2] = 2.0f * D_800E64D0[temp_v1_2];
+    D_800E64D0[omCurrentObj->objId] *= 2.0f;
+    D_800E6690[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId] * 2.0f;
     if (var_f2 < 0.0f) {
         D_800E6850[omCurrentObj->objId] = -var_f2;
     } else {
         D_800E6850[omCurrentObj->objId] = var_f2;
     }
-    temp_v1_3 = omCurrentObj->objId;
-    temp_f0_2 = D_800E3C90[temp_v1_3];
-    temp_a0_2 = &D_800E3210[temp_v1_3];
-    if (temp_f0_2 == 65535.0f) {
-        var_f2_2 = temp_f0_2;
+    if (max == D_800E3C90[omCurrentObj->objId]) {
+        var_f2_2 = D_800E3C90[omCurrentObj->objId];
     } else {
-        var_f2_2 = 2.0f * temp_f0_2;
+        var_f2_2 = D_800E3C90[omCurrentObj->objId] * 2.0f;
     }
-    *temp_a0_2 *= 2.0f;
-    temp_a1 = &D_800E3750[omCurrentObj->objId];
-    *temp_a1 *= 2.0f;
+    D_800E3210[omCurrentObj->objId] *= 2.0f;
+    D_800E3750[omCurrentObj->objId] *= 2.0f;
     if (var_f2_2 < 0.0f) {
         D_800E3C90[omCurrentObj->objId] = -var_f2_2;
         return;
     }
     D_800E3C90[omCurrentObj->objId] = var_f2_2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A36C_ovl7.s")
-#endif
 
 void func_8019A4C0_ovl7(Unused GObj *gobj) {
     D_800E64D0[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = 0.0f;
@@ -694,23 +661,14 @@ void func_8019A508_ovl7(Unused GObj *gobj) {
     D_800E3210[omCurrentObj->objId] = 0.0f;
 }
 
-#ifdef MIPS_TO_C
-void func_8019A580_ovl7(s32 arg0) {
-    u32 temp_v1;
-    u32 temp_v1_2;
-
+void func_8019A580_ovl7(Unused GObj *gobj) {
     D_800E6690[omCurrentObj->objId] = 0.0f;
-    temp_v1 = omCurrentObj->objId;
-    D_800E64D0[temp_v1] = D_800E6690[temp_v1];
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    temp_v1_2 = omCurrentObj->objId;
-    D_800E3210[temp_v1_2] = D_800E3750[temp_v1_2];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A580_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -753,34 +711,31 @@ void func_8019A7A8_ovl7(Unused GObj *gobj) {
 }
 
 #ifdef MIPS_TO_C
-
 s32 func_8019A7E8_ovl7(f32 arg0) {
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp28;
-    f32 temp_f0;
+    Vector sp34;
+    Vector sp28;
+    f32 temp_f0 = D_800E6F50[omCurrentObj->objId].originOffset;
     s32 var_v1;
 
-    temp_f0 = *(&D_800E6F50->originOffset + (omCurrentObj->objId * 0x10));
-    if (temp_f0 == 9999.0f) {
-        sp38 = *gEntitiesNextPosYArray + 20.0f;
-        sp34 = *gEntitiesNextPosXArray;
-        sp3C = *gEntitiesNextPosZArray;
-        sp28 = gEntitiesNextPosXArray[omCurrentObj->objId];
-        sp2C = gEntitiesNextPosYArray[omCurrentObj->objId];
-        sp30 = gEntitiesNextPosZArray[omCurrentObj->objId];
+    if (9999.0f == temp_f0) {
+        sp34.x = gEntitiesNextPosXArray[0];
+        sp34.y = gEntitiesNextPosYArray[0] + 20.0f;
+        sp34.z = gEntitiesNextPosZArray[0];
+        sp28.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        sp28.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        sp28.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        temp_f0 = utilVec3Dist(&sp34, &sp28);
         var_v1 = 0;
-        if (utilVec3Dist(&sp34, &sp28, gEntitiesNextPosYArray, gEntitiesNextPosZArray) < (arg0 * arg0)) {
+        if (temp_f0 < (arg0 * arg0)) {
             return 1;
+        } else {
+            goto block_6;
         }
-        goto block_6;
     }
     var_v1 = 0;
     if (temp_f0 < arg0) {
         var_v1 = 1;
+    } else {
     }
 block_6:
     return var_v1;
@@ -790,26 +745,16 @@ block_6:
 #endif
 
 
-// new struct (only used once? only in this file? or a fundamental datatype?)
-#ifdef NON_MATCHING
-typedef struct test8019A900 {
-    s32 _0;
-    f32 _1;
-} Test8019;
-s32 func_8019A900_ovl7(Test8019 *arg0) {
+s32 func_8019A900_ovl7(struct TrackPosition *arg0) {
     f32 temp_f0 = func_800F9828(omCurrentObj->objId, 0);
 
     if (temp_f0 == 9999.0f) {
         return 0;
-    } else {
-        arg0->_1 = temp_f0;
-        arg0->_0 = (temp_f0 > 0.0f) ? 1.0f : -1.0f;
-        return 1;
     }
+    arg0->unk4 = temp_f0;
+    arg0->unk0 = (temp_f0 > 0.0f) ? 1.0f : -1.0f;
+    return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A900_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1010,17 +955,12 @@ void func_8019AF00_ovl7(f32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AF00_ovl7.s")
 #endif
 
-// regalloc, and just returning the value doesnt seem to emit the required mov.s
-#ifdef NON_MATCHING
 f32 eneGetPlayerHeight(void) {
-    f32 ret = gEntitiesNextPosYArray[0] + 20.f;
+    f32 ret = gEntitiesNextPosYArray[0];
 
+    ret += 20.0f;
     return ret;
 }
-#else
-f32 eneGetPlayerHeight(void);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneGetPlayerHeight.s")
-#endif
 
 void func_8019B164_ovl7(void) {
     // TODO: struct
@@ -2120,6 +2060,7 @@ f32 func_8019DA50_ovl7(void) {
     return func_8019DA70_ovl7(0);
 }
 
+#ifdef MIPS_TO_C
 f32 func_8019DA70_ovl7(s32 arg0) {
     f32 var_f2 = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId], D_800E5F90[arg0], D_800E6BD0[arg0]);
     f32 temp_f0_2;
@@ -2132,6 +2073,9 @@ f32 func_8019DA70_ovl7(s32 arg0) {
     }
     return var_f2;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DA70_ovl7.s")
+#endif
 
 void func_8019DB58_ovl7(s32 arg0, s32 arg1) {
     D_800E76C0[arg1] = D_800E76C0[arg0];
@@ -2627,6 +2571,7 @@ void func_8019EBCC_ovl7(Unused GObj *gobj) {
     }
 }
 
+#ifdef MIPS_TO_C
 void func_8019EC14_ovl7(Unused GObj *gobj) {
     s8 temp_a0;
     struct UnkStruct800E1B50 *temp_v0;
@@ -2640,6 +2585,9 @@ void func_8019EC14_ovl7(Unused GObj *gobj) {
         temp_v0->unk3B = -1;
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019EC14_ovl7.s")
+#endif
 
 #ifdef MIPS_TO_C
 void func_8019EC5C_ovl7(void *arg0) {
