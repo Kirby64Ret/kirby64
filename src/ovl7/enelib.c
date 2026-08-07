@@ -2205,23 +2205,14 @@ f32 func_8019DA50_ovl7(void) {
     return func_8019DA70_ovl7(0);
 }
 
-#ifdef MIPS_TO_C
-f32 func_8019DA70_ovl7(s32 arg0) {
-    f32 var_f2;
-    f32 temp_f0_2;
-    f32 temp_f2;
-
-    var_f2 = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId], D_800E5F90[arg0], D_800E6BD0[arg0]);
-    if (var_f2 == 9999.0f) {
-        temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
-        temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
-        var_f2 = sqrtf((temp_f0_2 * temp_f0_2) + (temp_f2 * temp_f2));
-    }
-    return var_f2;
+f32 func_8019DA70_ovl7(s32 arg0)
+{
+  f32 var_f2;
+  f32 temp_f0_2;
+  f32 temp_f2;
+ do { var_f2 = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId], D_800E5F90[arg0], D_800E6BD0[arg0]); if (var_f2 == 9999.0f) { temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0]; temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0]; var_f2 = sqrtf((temp_f0_2 * temp_f0_2) + (temp_f2 * temp_f2)); } } while (0);
+  return var_f2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019DA70_ovl7.s")
-#endif
 
 void func_8019DB58_ovl7(s32 arg0, s32 arg1) {
     D_800E76C0[arg1] = D_800E76C0[arg0];
@@ -2717,21 +2708,18 @@ void func_8019EBCC_ovl7(Unused GObj *gobj) {
     }
 }
 
-#ifdef MIPS_TO_C
-void func_8019EC14_ovl7(Unused GObj *gobj) {
-    s8 temp_a0;
-    struct UnkStruct800E1B50 *temp_v0;
-
-    temp_v0 = D_800E1B50[omCurrentObj->objId];
-    temp_a0 = temp_v0->unk3B;
-    if (temp_a0 != -1) {
-        gEntityFuncListIDArray[omCurrentObj->objId] = temp_a0;
-        temp_v0->unk3B = -1;
-    }
+void func_8019EC14_ovl7(GObj *gobj)
+{
+  s8 temp_a0;
+  struct UnkStruct800E1B50 *temp_v0;
+  temp_v0 = D_800E1B50[omCurrentObj->objId];
+  temp_a0 = temp_v0->unk3B;
+  if (temp_v0->unk3B != (-1))
+  {
+    gEntityFuncListIDArray[omCurrentObj->objId] = temp_v0->unk3B;
+    temp_v0->unk3B = -1;
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019EC14_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8019EC5C_ovl7(void *arg0) {
