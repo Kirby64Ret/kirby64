@@ -60,6 +60,9 @@ extern s32 D_8012BCBC;
 extern struct CollisionTriangle *D_8012BCC0;
 extern s32 D_8012BCC8;
 extern struct CollisionTriangle *D_8012BCCC;
+extern s32 D_8012BCD4;
+extern struct CollisionTriangle *D_8012BCD8;
+extern struct Normal *D_8012BCDC;
 extern u32 D_8012D940;
 
 struct UnkBD48 {
@@ -82,6 +85,8 @@ void func_8010DDA4(void *arg0, s32 arg1);
 s32 func_80109BF0(struct PositionState *arg0, struct UnkBCA0 *arg1, s32 arg2);
 s32 func_8010AEF0(struct PositionState *arg0, struct UnkBCA0 *arg1, s32 arg2);
 void func_80104FB8(struct PositionState *arg0);
+s32 func_80104D2C(Vector *arg0, Vector *arg1, Vector *arg2, f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, s32 *arg7);
+s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3);
 s32 func_80105530(struct PositionState *arg0, struct UnkBCA0 *arg1);
 s32 func_801056C8(struct PositionState *arg0, struct UnkBCA0 *arg1);
 s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1);
@@ -1199,7 +1204,7 @@ void func_80103528(s32, s32, s32, s32, s32);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103528.s")
 #endif
 
-void func_80103930(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5,
+s32 func_80103930(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5,
                         s32 arg6, s32 arg7) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
@@ -1406,7 +1411,7 @@ void func_80104184(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
-void func_8010423C(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+s32 func_8010423C(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, s32 *arg7) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1874,128 +1879,82 @@ s32 func_80105284(void *arg0, void *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80105284.s")
 #endif
 
-#ifdef MIPS_TO_C
+s32 func_80105530(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    Vector sp54;
+    Vector sp48;
+    Vector sp3C;
 
-s32 func_80105530(void *arg0, u32 *arg1) {
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    void *sp38;
-    void *sp34;
-    void *sp30;
-    void *temp_t0;
-    void *temp_t1;
-    void *temp_t2;
-
-    if (!((*arg1 >> 0x13) & 7)) {
-        sp3C = D_8012BD00.unk14;
-        sp40 = 0.0f;
-        sp44 = D_8012BD00.unk18;
-        temp_t0 = arg1 + 0x24;
-        temp_t1 = arg1 + 0x20;
-        sp54 = arg0->unk4 + D_8012BD00.unkC;
-        temp_t2 = arg1 + 0x1C;
-        sp58 = arg0->unk8 + arg0->unk10;
-        sp5C = arg0->unkC + D_8012BD00.unk10;
-        sp4C = sp58;
-        sp48 = arg0->unk4 + D_8012BD00.unk4;
-        sp30 = temp_t2;
-        sp34 = temp_t1;
-        sp38 = temp_t0;
-        sp50 = arg0->unkC + D_8012BD00.unk8;
-        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, temp_t0, temp_t1, temp_t2) != 0) {
-            *arg1 = (((*arg1 >> 0x13) | 1) * 8) | (*arg1 & 7);
+    if (!((arg1->flags.w >> 0x13) & 7)) {
+        sp3C.x = BD00.unk14;
+        sp3C.y = 0.0f;
+        sp3C.z = BD00.unk18;
+        sp54.x = BD00.unkC + arg0->kirbyFootPos[0];
+        sp54.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+        sp54.z = BD00.unk10 + arg0->kirbyFootPos[2];
+        sp48.x = BD00.unk4 + arg0->kirbyFootPos[0];
+        sp48.y = sp54.y;
+        sp48.z = BD00.unk8 + arg0->kirbyFootPos[2];
+        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[2].norm, &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
+            arg1->flags.f.a |= 1;
             return 1;
         }
-        sp48 = arg0->unk4 + D_8012BD00.unk24;
-        sp50 = arg0->unkC + D_8012BD00.unk28;
-        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, sp38, sp34, sp30) != 0) {
+        sp48.x = BD00.unk24 + arg0->kirbyFootPos[0];
+        sp48.z = BD00.unk28 + arg0->kirbyFootPos[2];
+        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[2].norm, &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
             return 1;
         }
-        goto block_5;
     }
-block_5:
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80105530.s")
-#endif
 
-#ifdef MIPS_TO_C
 
-s32 func_801056C8(void *arg0, u32 *arg1) {
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
+s32 func_801056C8(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    f32 sp54;
+    Vector sp48;
+    Vector sp3C;
+    Vector sp30;
 
-    sp48 = arg0->unk34;
-    sp4C = arg0->unk2C;
-    sp50 = arg0->unk38;
-    sp3C = arg0->unk4 + D_8012BD00.unk4;
-    sp40 = arg0->unk8 + arg0->unk10;
-    sp44 = arg0->unkC + D_8012BD00.unk8;
-    sp30 = D_8012BD00.unk14;
-    sp34 = 0.0f;
-    sp38 = D_8012BD00.unk18;
-    if (func_80104D2C(&sp48, &sp3C, &sp30, 0, &D_8012BD34, arg1 + 0x24, arg1 + 0x20, arg1 + 0x1C) != 0) {
-        *arg1 = (((*arg1 >> 0x13) | 1) * 8) | (*arg1 & 7);
+    sp48.x = arg0->kirbyGroundPath[0];
+    sp48.y = arg0->kirbyHeadPos[1];
+    sp48.z = arg0->kirbyGroundPath[1];
+    sp3C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp3C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp3C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp30.x = BD00.unk14;
+    sp30.y = 0.0f;
+    sp30.z = BD00.unk18;
+    if (func_80104D2C(&sp48, &sp3C, &sp30, 0, &D_8012BD34, &arg1->rec[2].norm, &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
+        arg1->flags.f.a |= 1;
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801056C8.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3) {
+    Vector sp24;
     f32 sp20;
     f32 sp1C;
-    f32 spC;
-    f32 sp8;
-    f32 sp4;
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    f32 temp_f4;
-    f32 temp_f6;
-    f32 temp_f6_2;
+    Vector sp10;
+    f32 sp4[3];
+    f32 dx;
+    f32 dy;
+    f32 dz;
 
-    temp_f2 = arg1->x;
-    temp_f18 = arg1->z;
-    temp_f14 = arg1->y;
-    temp_f0 = arg2->x - temp_f2;
-    spC = arg0->x;
-    temp_f4 = arg0->y;
-    temp_f16 = arg2->z - temp_f18;
-    sp8 = temp_f4;
-    temp_f12 = arg2->y - temp_f14;
-    sp4 = arg0->z;
-    temp_f6 = (spC * temp_f0) + (temp_f4 * temp_f12) + (sp4 * temp_f16);
-    sp1C = temp_f6;
-    if (temp_f6 == 0.0f) {
+    sp4[2] = arg0->x;
+    sp4[1] = arg0->y;
+    sp4[0] = arg0->z;
+    dx = arg2->x - arg1->x;
+    dy = arg2->y - arg1->y;
+    dz = arg2->z - arg1->z;
+    sp1C = (sp4[2] * dx) + (sp4[1] * dy) + (sp4[0] * dz);
+    if (sp1C == 0.0f) {
         return 0;
     }
-    temp_f6_2 = -(((spC * temp_f2) + (sp8 * temp_f14) + (sp4 * temp_f18) + arg0->originOffset) / sp1C);
-    sp20 = temp_f6_2;
-    arg3->x = temp_f2 + (temp_f0 * temp_f6_2);
-    arg3->y = arg1->y + (temp_f12 * temp_f6_2);
-    arg3->z = arg1->z + (temp_f16 * sp20);
+    sp20 = -(((sp4[2] * arg1->x) + (sp4[1] * arg1->y) + (sp4[0] * arg1->z) + arg0->originOffset) / sp1C);
+    arg3->x = arg1->x + (dx * sp20);
+    arg3->y = arg1->y + (dy * sp20);
+    arg3->z = arg1->z + (dz * sp20);
     return 1;
 }
 #else
@@ -2337,171 +2296,118 @@ block_11:
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 func_801063F0(void *arg0, void *arg1) {
+// Near match: first 53 insns identical; target keeps `&arg0->scale[0]` in a
+// pointer temp (sp30) that IDO here folds back into direct s0-relative loads.
+s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    f32 sp7C;
     f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
+    Vector sp6C;
+    Vector sp60;
+    Vector sp54;
     s32 sp50;
     f32 sp4C;
-    ? sp40;
-    s32 sp3C;
-    s32 sp38;
+    Vector sp40;
+    struct Normal *sp3C;
+    struct CollisionTriangle *sp38;
     s32 sp34;
-    void *sp30;
-    s32 var_v0;
-    s32 var_v1;
-    s32 var_v1_2;
-    s32 var_v1_3;
-    void *temp_t0;
+    Vector *sp30;
 
     sp78 = 1.1f;
-    sp54 = D_8012BD00.unk1C;
-    sp58 = 0.0f;
-    sp5C = D_8012BD00.unk20;
-    sp6C = arg0->unk3C;
-    sp70 = arg0->unk2C;
-    sp74 = arg0->unk40;
-    sp60 = arg0->unk4 + D_8012BD00.unkC;
-    sp64 = arg0->unk8 + arg0->unk10;
+    sp54.x = BD00.unk1C;
+    sp54.y = 0.0f;
+    sp54.z = BD00.unk20;
+    sp6C.x = arg0->kirbyHeadPath[0];
+    sp6C.y = arg0->kirbyHeadPos[1];
+    sp6C.z = arg0->kirbyHeadPath[1];
+    sp60.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp60.y = arg0->scale[0] + arg0->kirbyFootPos[1];
     sp50 = 0;
-    sp68 = arg0->unkC + D_8012BD00.unk10;
-    var_v1 = sp50;
-    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, arg1 + 0x30, arg1 + 0x2C, arg1 + 0x28) != 0) {
-        var_v1 = 8;
+    sp60.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
+        sp50 = 8;
     }
-    temp_t0 = arg0 + 0x10;
-    sp70 = arg0->unk48;
-    sp64 = arg0->unk8 + temp_t0->unk8;
-    sp30 = temp_t0;
-    sp50 = var_v1;
-    var_v1_2 = sp50;
-    if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) && ((var_v1_2 == 0) || ((sp3C != arg1->unk30) && (sp4C < sp78)))) {
-        D_8012BD34.unk0 = sp40.unk0;
-        var_v1_2 = 0x20;
-        D_8012BD34.unk8 = sp40.unk8;
-        D_8012BD34.unk4 = sp40.unk4;
-        arg1->unk30 = sp3C;
-        arg1->unk2C = sp38;
-        arg1->unk28 = sp34;
+    sp30 = (Vector *) arg0->scale;
+    sp6C.y = arg0->kirbyHeight[1];
+    sp60.y = arg0->kirbyFootPos[1] + sp30->z;
+    if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) &&
+            ((sp50 == 0) || ((sp3C != arg1->rec[3].norm) && (sp4C < sp78)))) {
+        D_8012BD34 = sp40;
+        sp50 = 0x20;
+        arg1->rec[3].norm = sp3C;
+        arg1->rec[3].tri = sp38;
+        arg1->rec[3].type = sp34;
         sp78 = sp4C;
     }
-    sp70 = arg0->unk44;
-    sp50 = var_v1_2;
-    sp64 = arg0->unk8 + sp30->unk4;
-    var_v1_3 = sp50;
-    if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) && ((var_v1_3 == 0) || ((sp3C != arg1->unk30) && (sp4C < sp78)))) {
-        D_8012BD34.unk0 = sp40.unk0;
-        var_v1_3 = 0x10;
-        D_8012BD34.unk8 = sp40.unk8;
-        D_8012BD34.unk4 = sp40.unk4;
-        arg1->unk30 = sp3C;
-        arg1->unk2C = sp38;
-        arg1->unk28 = sp34;
+    sp6C.y = arg0->kirbyHeight[0];
+    sp60.y = arg0->kirbyFootPos[1] + sp30->y;
+    if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) &&
+            ((sp50 == 0) || ((sp3C != arg1->rec[3].norm) && (sp4C < sp78)))) {
+        D_8012BD34 = sp40;
+        sp50 = 0x10;
+        arg1->rec[3].norm = sp3C;
+        arg1->rec[3].tri = sp38;
+        arg1->rec[3].type = sp34;
     }
-    var_v0 = 0;
-    if (var_v1_3 != 0) {
-        var_v0 = 1;
-        arg1->unk0 = (((arg1->unk0 >> 0x13) | var_v1_3) * 8) | (arg1->unk0 & 7);
-    }
-    return var_v0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801063F0.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-s32 func_8010669C(void *arg0, u32 *arg1) {
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    void *sp38;
-    void *sp34;
-    void *sp30;
-    void *temp_t0;
-    void *temp_t1;
-    void *temp_t2;
-
-    if (!((*arg1 >> 0x13) & 0x38)) {
-        sp3C = D_8012BD00.unk1C;
-        sp40 = 0.0f;
-        sp44 = D_8012BD00.unk20;
-        temp_t0 = arg1 + 0x30;
-        temp_t1 = arg1 + 0x2C;
-        sp54 = arg0->unk4 + D_8012BD00.unk4;
-        temp_t2 = arg1 + 0x28;
-        sp58 = arg0->unk8 + arg0->unk10;
-        sp5C = arg0->unkC + D_8012BD00.unk8;
-        sp4C = sp58;
-        sp48 = arg0->unk4 + D_8012BD00.unkC;
-        sp30 = temp_t2;
-        sp34 = temp_t1;
-        sp38 = temp_t0;
-        sp50 = arg0->unkC + D_8012BD00.unk10;
-        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, temp_t0, temp_t1, temp_t2) != 0) {
-            *arg1 = (((*arg1 >> 0x13) | 8) * 8) | (*arg1 & 7);
-            return 1;
-        }
-        sp48 = arg0->unk4 + D_8012BD00.unk2C;
-        sp50 = arg0->unkC + D_8012BD00.unk30;
-        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, sp38, sp34, sp30) != 0) {
-            return 1;
-        }
-        goto block_5;
-    }
-block_5:
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010669C.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-s32 func_80106834(void *arg0, u32 *arg1) {
-    ? sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-
-    sp4C = arg0->unk3C;
-    sp50 = arg0->unk2C;
-    sp54 = arg0->unk40;
-    sp40 = arg0->unk4 + D_8012BD00.unkC;
-    sp44 = arg0->unk8 + arg0->unk10;
-    sp48 = arg0->unkC + D_8012BD00.unk10;
-    sp34 = D_8012BD00.unk1C;
-    sp38 = 0.0f;
-    sp3C = D_8012BD00.unk20;
-    if (func_80104D2C(&sp4C, &sp40, &sp34, &sp58, &D_8012BD34, arg1 + 0x30, arg1 + 0x2C, arg1 + 0x28) != 0) {
-        *arg1 = (((*arg1 >> 0x13) | 8) * 8) | (*arg1 & 7);
+    if (sp50 != 0) {
+        arg1->flags.f.a |= sp50;
         return 1;
     }
     return 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80106834.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801063F0.s")
 #endif
+
+s32 func_8010669C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    Vector sp54;
+    Vector sp48;
+    Vector sp3C;
+
+    if (!((arg1->flags.w >> 0x13) & 0x38)) {
+        sp3C.x = BD00.unk1C;
+        sp3C.y = 0.0f;
+        sp3C.z = BD00.unk20;
+        sp54.x = BD00.unk4 + arg0->kirbyFootPos[0];
+        sp54.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+        sp54.z = BD00.unk8 + arg0->kirbyFootPos[2];
+        sp48.x = BD00.unkC + arg0->kirbyFootPos[0];
+        sp48.y = sp54.y;
+        sp48.z = BD00.unk10 + arg0->kirbyFootPos[2];
+        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
+            arg1->flags.f.a |= 8;
+            return 1;
+        }
+        sp48.x = BD00.unk2C + arg0->kirbyFootPos[0];
+        sp48.z = BD00.unk30 + arg0->kirbyFootPos[2];
+        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+s32 func_80106834(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    f32 sp5C;
+    f32 sp58;
+    Vector sp4C;
+    Vector sp40;
+    Vector sp34;
+
+    sp4C.x = arg0->kirbyHeadPath[0];
+    sp4C.y = arg0->kirbyHeadPos[1];
+    sp4C.z = arg0->kirbyHeadPath[1];
+    sp40.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp40.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp40.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp34.x = BD00.unk1C;
+    sp34.y = 0.0f;
+    sp34.z = BD00.unk20;
+    if (func_80104D2C(&sp4C, &sp40, &sp34, &sp58, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
+        arg1->flags.f.a |= 8;
+        return 1;
+    }
+    return 0;
+}
 
 #ifdef MIPS_TO_C
 
@@ -3742,41 +3648,33 @@ void func_8010924C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 }
 
 #ifdef MIPS_TO_C
-
-void func_80109318(void *arg0, void *arg1) {
-    void *sp4C;
+// Near match (19/123 insns): only an f16/f18 register-parity difference from
+// the `(sp2C.z - sp20.z) * BD00.unk18` multiply onward.
+void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    struct Normal *sp4C;
+    f32 sp48;
     f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp20;
-    f32 temp_f0;
-    s16 var_t4;
-    void *temp_v0;
+    Vector sp38;
+    Vector sp2C;
+    Vector sp20;
 
-    temp_v0 = arg1->unk18;
-    sp2C = arg0->unk4 + D_8012BD00.unk4;
-    sp30 = arg0->unk8 + arg0->unk10;
-    sp34 = arg0->unkC + D_8012BD00.unk8;
-    sp38 = arg0->unk4 + D_8012BD00.unkC;
-    sp40 = arg0->unkC + D_8012BD00.unk10;
-    temp_f0 = 1.0f / temp_v0->unk4;
-    sp3C = (temp_v0->unk0 * (sp2C - sp38)) + (temp_v0->unk8 * (sp34 - sp40) * temp_f0) + sp30;
-    sp44 = temp_f0;
-    sp4C = temp_v0;
-    func_801057C4(arg1->unk24, &sp2C, &sp38, &sp20);
-    if ((((sp2C - sp20) * D_8012BD00.unk14) + ((sp34 - sp28) * D_8012BD00.unk18)) < 0.0f) {
-        var_t4 = (((arg1->unk0 >> 0x13) & 0xFFF8) * 8) | (arg1->unk0 & 7);
+    sp4C = arg1->rec[1].norm;
+    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp2C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp44 = 1.0f / sp4C->y;
+    sp38.y = (sp4C->x * (sp2C.x - sp38.x)) + ((sp4C->z * (sp2C.z - sp38.z)) * sp44) + sp2C.y;
+    func_801057C4(arg1->rec[2].norm, &sp2C, &sp38, &sp20);
+    if ((((sp2C.z - sp20.z) * BD00.unk18) + ((sp2C.x - sp20.x) * BD00.unk14)) < 0.0f) {
+        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
     } else {
-        arg0->unk4 = sp20 - D_8012BD00.unk24;
-        arg0->unkC = sp28 - D_8012BD00.unk28;
-        arg0->unk8 = ((-((sp4C->unk0 * arg0->unk4) + (sp4C->unk8 * arg0->unkC) + sp4C->unkC) * sp44) - arg0->unk14) - 0.1f;
-        var_t4 = ((((arg1->unk0 >> 0x13) & 0xFFF8) | 1) * 8) | (arg1->unk0 & 7);
+        arg0->kirbyFootPos[0] = sp20.x - BD00.unk24;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.unk28;
+        arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[1]) - 0.1f;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
     }
-    arg1->unk0 = var_t4;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109318.s")
@@ -3807,7 +3705,6 @@ void func_80109504(void *arg0, void *arg1) {
     temp_f0 = 1.0f / temp_v0->unk4;
     sp30 = (temp_v0->unk0 * (sp38 - sp2C)) + (temp_v0->unk8 * (sp40 - sp34) * temp_f0) + sp3C;
     sp44 = temp_f0;
-    sp4C = temp_v0;
     func_801057C4(arg1->unk30, &sp2C, &sp38, &sp20);
     if ((((sp38 - sp20) * D_8012BD00.unk1C) + ((sp40 - sp28) * D_8012BD00.unk20)) < 0.0f) {
         var_t4 = (((arg1->unk0 >> 0x13) & 0xFFC7) * 8) | (arg1->unk0 & 7);
@@ -3859,7 +3756,6 @@ void func_80109784(void *arg0, void *arg1) {
     temp_f0 = 1.0f / temp_v0->unk4;
     sp3C = (temp_v0->unk0 * (sp2C - sp38)) + (temp_v0->unk8 * (sp34 - sp40) * temp_f0) + sp30;
     sp44 = temp_f0;
-    sp4C = temp_v0;
     func_801057C4(arg1->unk24, &sp2C, &sp38, &sp20);
     if ((((sp2C - sp20) * D_8012BD00.unk14) + ((sp34 - sp28) * D_8012BD00.unk18)) < 0.0f) {
         var_t4 = (((arg1->unk0 >> 0x13) & 0xFFF8) * 8) | (arg1->unk0 & 7);
@@ -3900,7 +3796,6 @@ void func_80109970(void *arg0, void *arg1) {
     temp_f0 = 1.0f / temp_v0->unk4;
     sp30 = (temp_v0->unk0 * (sp38 - sp2C)) + (temp_v0->unk8 * (sp40 - sp34) * temp_f0) + sp3C;
     sp44 = temp_f0;
-    sp4C = temp_v0;
     func_801057C4(arg1->unk30, &sp2C, &sp38, &sp20);
     if ((((sp38 - sp20) * D_8012BD00.unk1C) + ((sp40 - sp28) * D_8012BD00.unk20)) < 0.0f) {
         var_t4 = (((arg1->unk0 >> 0x13) & 0xFFC7) * 8) | (arg1->unk0 & 7);
@@ -3993,7 +3888,6 @@ s32 func_80109E00(struct PositionState *arg0) {
     return ret;
 }
 
-#ifdef MIPS_TO_C
 s32 func_80109E44(struct PositionState *arg0) {
     s32 temp_a0;
     u32 var_v1;
@@ -4003,21 +3897,21 @@ s32 func_80109E44(struct PositionState *arg0) {
     BD00.unk0_80 = 0;
     var_v1 = D_8012BCA0.flags.w >> 0x13;
     if ((var_v1 & 7) && (D_8012BCA0.rec[2].tri->normalType & 4)) {
-        D_8012BCA0.flags.f.a = var_v1 & 0xFFF8;
+        var_v1 &= 0xFFF8;
+        D_8012BCA0.flags.f.a = var_v1;
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
     if ((var_v1 & 0x38) && (D_8012BCA0.rec[3].tri->normalType & 4)) {
-        D_8012BCA0.flags.f.a = var_v1 & 0xFFC7;
+        var_v1 &= 0xFFC7;
+        D_8012BCA0.flags.f.a = var_v1;
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
     if ((var_v1 & 0x1C0) && (D_8012BCA0.rec[1].tri->normalType & 4)) {
-        D_8012BCA0.flags.f.a = var_v1 & 0xFE3F;
+        var_v1 &= 0xFE3F;
+        D_8012BCA0.flags.f.a = var_v1;
     }
     return temp_a0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109E44.s")
-#endif
 
 s32 func_80109F60(struct PositionState *arg0) {
     s32 ret;
@@ -4528,7 +4422,6 @@ s32 func_8010B0D8(struct PositionState *arg0) {
     return ret;
 }
 
-#ifdef MIPS_TO_C
 s32 func_8010B11C(struct PositionState *arg0) {
     s32 temp_a0;
     u32 var_v1;
@@ -4538,21 +4431,21 @@ s32 func_8010B11C(struct PositionState *arg0) {
     BD00.unk0_80 = 0;
     var_v1 = D_8012BCA0.flags.w >> 0x13;
     if ((var_v1 & 7) && (D_8012BCA0.rec[2].tri->normalType & 4)) {
-        D_8012BCA0.flags.f.a = var_v1 & 0xFFF8;
+        var_v1 &= 0xFFF8;
+        D_8012BCA0.flags.f.a = var_v1;
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
     if ((var_v1 & 0x38) && (D_8012BCA0.rec[3].tri->normalType & 4)) {
-        D_8012BCA0.flags.f.a = var_v1 & 0xFFC7;
+        var_v1 &= 0xFFC7;
+        D_8012BCA0.flags.f.a = var_v1;
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
     if ((var_v1 & 0x1C0) && (D_8012BCA0.rec[1].tri->normalType & 4)) {
-        D_8012BCA0.flags.f.a = var_v1 & 0xFE3F;
+        var_v1 &= 0xFE3F;
+        D_8012BCA0.flags.f.a = var_v1;
     }
     return temp_a0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010B11C.s")
-#endif
 
 s32 func_8010B238(struct PositionState *arg0) {
     s32 ret;
@@ -4685,7 +4578,7 @@ s32 func_8010B67C(void *arg0) {
     f32 sp3C;
     f32 sp38;
     f32 sp34;
-    f32 *sp30;
+    Vector *sp30;
     f32 *temp_v0;
 
     func_80105218(&D_8012BCA0);
@@ -4737,7 +4630,7 @@ s32 func_8010B860(void *arg0) {
     f32 sp3C;
     f32 sp38;
     f32 sp34;
-    f32 *sp30;
+    Vector *sp30;
     f32 *temp_v0;
 
     func_80105218(&D_8012BCA0);
@@ -4966,34 +4859,26 @@ s32 func_8010BFAC(struct PositionState *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010BFAC.s")
 #endif
 
-#ifdef MIPS_TO_C
+s32 func_8010C184(struct PositionState *arg0) {
+    f32 sp4C;
+    Vector sp40;
+    Vector sp34;
 
-s32 func_8010C184(void *arg0) {
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-
-    D_8012BD44 = arg0->unk58;
+    D_8012BD44 = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
-    sp40 = arg0->unk28;
-    sp44 = arg0->unk2C;
-    sp48 = arg0->unk30;
-    sp34 = arg0->unk4;
-    sp38 = arg0->unk8 + arg0->unk10;
-    sp3C = arg0->unkC;
-    if (func_80103930(&sp40, &sp34, 0, 0, arg0 + 4, &D_8012BCDC, &D_8012BCD8, &D_8012BCD4) != 0) {
-        arg0->unk8 = arg0->unk8 - arg0->unk10;
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x8000;
+    sp40.x = arg0->kirbyHeadPos[0];
+    sp40.y = arg0->kirbyHeadPos[1];
+    sp40.z = arg0->kirbyHeadPos[2];
+    sp34.x = arg0->kirbyFootPos[0];
+    sp34.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp34.z = arg0->kirbyFootPos[2];
+    if (func_80103930(&sp40, &sp34, NULL, 0, arg0->kirbyFootPos, &D_8012BCDC, &D_8012BCD8, &D_8012BCD4) != 0) {
+        arg0->kirbyFootPos[1] -= arg0->scale[0];
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x8000;
     }
-    arg0->unk58 = D_8012BD40;
+    arg0->VI_Timer = D_8012BD40;
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010C184.s")
-#endif
 
 #ifdef MIPS_TO_C
 
