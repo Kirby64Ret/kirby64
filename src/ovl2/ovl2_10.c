@@ -1856,7 +1856,31 @@ void func_8011B050(struct GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011B0A4.s")
+void func_8011B0A4(GObj *arg0)
+{
+  f32 temp_f12;
+  f32 temp_f14;
+  f32 var_f2;
+  u32 temp_v0;
+ temp_v0 = arg0->objId; temp_f14 = gEntitiesNextPosXArray[temp_v0]; temp_f12 = (*gEntitiesNextPosXArray) - (temp_f14 + (-1350.0f)); if (temp_f12 > 450.0f) {
+    var_f2 = temp_f12 - 450.0f;
+    if (var_f2 < 3.5f)
+    {
+      var_f2 = 3.5f;
+    }
+  }
+  else
+  {
+    var_f2 = 3.5f;
+  }
+  if ((temp_f14 + var_f2) > 6450.0f)
+  {
+    var_f2 = 6450.0f - temp_f14;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011B050;
+  }
+  D_800E3050[temp_v0] = var_f2;
+  func_800B4924(arg0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011B188.s")
 
