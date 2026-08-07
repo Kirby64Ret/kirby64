@@ -520,15 +520,15 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x174740, asm, ovl8/ovl8]
-    - [0x175B20, asm, ovl8/eneeff]
-    - [0x176670, asm, ovl8/ovl8_3]
-    - [0x178090, asm, ovl8/ovl8_4]
+    - [0x174740, c, ovl8/ovl8]
+    - [0x175B20, c, ovl8/eneeff]
+    - [0x176670, c, ovl8/ovl8_3]
+    - [0x178090, c, ovl8/ovl8_4]
     - [0x17B360, data, ovl8/ovl8]
-    - [0x17EB40, rodata, ovl8/ovl8]
-    - [0x17EB60, rodata, ovl8/eneeff]
-    - [0x17EC20, rodata, ovl8/ovl8_3]
-    - [0x17EC60, rodata, ovl8/ovl8_4]
+    - [0x17EB40, .rodata, ovl8/ovl8]
+    - [0x17EB60, .rodata, ovl8/eneeff]
+    - [0x17EC20, .rodata, ovl8/ovl8_3]
+    - [0x17EC60, .rodata, ovl8/ovl8_4]
     - [0x17ECB0]
     - {type: bss, vram: 0x801DB1D0, name: ovl8/ovl8}
 
@@ -623,7 +623,7 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x30
     subsegments:
-    - [0x1E5AA0, asm, ovl11/ovl11]
+    - [0x1E5AA0, c, ovl11/ovl11]
     - [0x1EB3C0, data, ovl11/ovl11]
     - [0x1EB520]
     - {type: bss, vram: 0x801E0C60, name: ovl11/ovl11}
@@ -637,8 +637,8 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x1EB520, asm, ovl12/code_1EB520]
-    - [0x1F18D0, asm, ovl12/code_1F18D0]
+    - [0x1EB520, c, ovl12/code_1EB520]
+    - [0x1F18D0, c, ovl12/code_1F18D0]
     - [0x1F2DE0, data, ovl12/ovl12]
     - [0x1F3160]
     - {type: bss, vram: 0x801e2e20, name: ovl12/ovl12}
@@ -652,9 +652,9 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x1F3160, asm, ovl13/code_1F3160]
-    - [0x1FBD40, asm, ovl13/code_1FBD40]
-    - [0x1FC420, asm, ovl13/code_1FC420]
+    - [0x1F3160, c, ovl13/code_1F3160]
+    - [0x1FBD40, c, ovl13/code_1FBD40]
+    - [0x1FC420, c, ovl13/code_1FC420]
     - [0x1FDA00, data, ovl13/ovl13]
     - [0x1FDDD0]
     - {type: bss, vram: 0x801e5e50, name: ovl13/ovl13}
@@ -668,8 +668,8 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x1FDDD0, asm, ovl14/ovl14]
-    - [0x202980, asm, ovl14/ovl14_2]
+    - [0x1FDDD0, c, ovl14/ovl14]
+    - [0x202980, c, ovl14/ovl14_2]
     - [0x205A90, data, ovl14/ovl14]
     - [0x205d40]
     - {type: bss, vram: 0x801e3150, name: ovl14/ovl14}
@@ -683,8 +683,8 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x205D40, asm, ovl15/ovl15]
-    - [0x210970, asm, ovl15/ovl15_2]
+    - [0x205D40, c, ovl15/ovl15]
+    - [0x210970, c, ovl15/ovl15_2]
     - [0x210FB0, data, ovl15/ovl15]
     - [0x211490]
     - {type: bss, vram: 0x801E6930, name: ovl15/ovl15}
@@ -698,7 +698,7 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x110
     subsegments:
-    - [0x211490, asm, ovl16/ovl16]
+    - [0x211490, c, ovl16/ovl16]
     - [0x225770, data, ovl16/ovl16]
     - [0x2263D0]
     - {type: bss, vram: 0x801F0120, name: ovl16/ovl16}
@@ -712,9 +712,9 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x70
     subsegments:
-    - [0x2263D0, asm, ovl17/ovl17]
-    - [0x228AE0, asm, ovl17/ovl17_2]
-    - [0x22BEF0, asm, ovl17/ovl17_3]
+    - [0x2263D0, c, ovl17/ovl17]
+    - [0x228AE0, c, ovl17/ovl17_2]
+    - [0x22BEF0, c, ovl17/ovl17_3]
     - [0x230050, data, ovl17/ovl17]
     - [0x2308C0]
     - {type: bss, vram: 0x801e56d0, name: ovl17/ovl17}
@@ -729,14 +729,14 @@ segments:
     exclusive_ram_id: ovl_18_19
     bss_size: 0xB0
     subsegments:
-    - [0x2308C0, asm, ovl18/code_2308C0]
-    - [0x232B60, asm, ovl18/code_232B60]
-    - [0x234830, asm, ovl18/code_234830]
-    - [0x234BC0, asm, ovl18/code_234BC0]
-    - [0x236CC0, asm, ovl18/code_236CC0]
-    - [0x236F20, asm, ovl18/code_236F20]
-    - [0x2385A0, asm, ovl18/code_2385A0]
-    - [0x239080, asm, ovl18/code_239080]
+    - [0x2308C0, c, ovl18/code_2308C0]
+    - [0x232B60, c, ovl18/code_232B60]
+    - [0x234830, c, ovl18/code_234830]
+    - [0x234BC0, c, ovl18/code_234BC0]
+    - [0x236CC0, c, ovl18/code_236CC0]
+    - [0x236F20, c, ovl18/code_236F20]
+    - [0x2385A0, c, ovl18/code_2385A0]
+    - [0x239080, c, ovl18/code_239080]
     - [0x239D80, data, ovl18/ovl18]
     - [0x23E630]
     - {type: bss, vram: 0x8022bc90, name: ovl18/ovl18}
