@@ -86,6 +86,8 @@ extern Controller_800D6FE8 gPlayerControllers;
 extern GObj *D_800D7998;
 
 extern UnkStruct8015A560_ovl6 **D_8015A3B4_ovl6[];
+extern void (*D_80154DC0_ovl6[])(void);
+extern UnkStruct8015A560_ovl6 D_80154E48_ovl6[];
 extern UnkStruct8015A560_ovl6 **D_8015A564_ovl6;
 extern s32 D_8015A568_ovl6;
 
@@ -1359,40 +1361,26 @@ void func_80153DC8_ovl6(GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-
 void func_80153E1C_ovl6(s32 arg0) {
-    void *sp1C;
-    ? *sp18;
-    ? *temp_t2;
-    ? *temp_t6;
-    s32 temp_a3;
-    void **temp_a3_2;
-    void *temp_a0;
+    GObj *sp1C;
+    UnkStruct8015A560_ovl6 *sp18;
 
-    temp_a3 = *(&D_800DE350 + 0xFC);
-    if (temp_a3 == 0) {
-        temp_t6 = D_8015A560_ovl6;
-        D_8015A560_ovl6 = &D_80154E48_ovl6;
-        sp18 = temp_t6;
-        *(&D_80154DC0_ovl6 + (D_80154E48_ovl6.unk2 * 4))(temp_a3);
-        temp_t2 = D_8015A560_ovl6 + 8;
-        D_8015A560_ovl6 = temp_t2;
-        *(&D_80154DC0_ovl6 + (temp_t2->unk2 * 4))();
-        temp_a3_2 = &D_800DE350 + 0xFC;
-        D_8015A560_ovl6 = temp_t6;
-        temp_a0 = *temp_a3_2;
-        sp1C = temp_a0;
-        omGMoveObjDLHead(temp_a0, 0xC, 0, temp_a3_2);
-        sp1C->unk2C = &func_80153DC8_ovl6;
+    sp1C = D_800DE44C;
+    if (sp1C == NULL) {
+        sp18 = D_8015A560_ovl6;
+        D_8015A560_ovl6 = D_80154E48_ovl6;
+        D_80154DC0_ovl6[D_8015A560_ovl6->unk2]();
+        D_8015A560_ovl6++;
+        D_80154DC0_ovl6[D_8015A560_ovl6->unk2]();
+        D_8015A560_ovl6 = sp18;
+        sp1C = D_800DE44C;
+        omGMoveObjDLHead(sp1C, 0xC, 0);
+        sp1C->onDraw = func_80153DC8_ovl6;
         func_801548A4_ovl6();
         D_8015A690_ovl6 = arg0;
         D_8015A698_ovl6 = 1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153E1C_ovl6.s")
-#endif
 
 void func_80153F00_ovl6(void) {
     gtlSetUpdateDrawRate(1, D_8015A560_ovl6->drawRate);
@@ -1533,29 +1521,24 @@ loop_12:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154284_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_80154464_ovl6(void) {
-    s32 *var_s1;
+    GObj **var_s1;
     s32 var_s0;
 
-    var_s1 = &D_800DE350;
+    var_s1 = D_800DE350;
     var_s0 = 0;
     do {
-        if (*var_s1 != 0) {
+        if (*var_s1 != NULL) {
             func_80153228_ovl6(var_s0);
         }
-        var_s0 += 1;
-        var_s1 += 4;
+        var_s0++;
+        var_s1++;
     } while (var_s0 != 0x3E);
     func_8009C0E4();
     func_800A2024();
     D_8015A560_ovl6 = *D_8015A564_ovl6;
     func_80154628_ovl6();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154464_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
 
