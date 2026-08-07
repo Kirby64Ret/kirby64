@@ -91,6 +91,15 @@ extern s32 D_8015A568_ovl6;
 
 void func_801544E8_ovl6(GObj *gobj);
 void func_80154628_ovl6(void);
+void func_80151E60_ovl6(GObj *gobj, Lights1 *light);
+void func_80152138_ovl6(GObj *gobj, Lights1 *light);
+s32 func_800AB0F4(GObj *g);
+void renderDrawDObjFromGObj(GObj *g);
+void renderDrawObject_TypeD(GObj *g);
+void func_8001585C(GObj *g);
+void func_80015BCC(GObj *g);
+
+extern Lights1 *D_8004A404;
 
 void func_8015170C_ovl6(GObj *gobj);
 void func_8015198C_ovl6(GObj *gobj);
@@ -218,27 +227,35 @@ void func_801513F8_ovl6(struct DObj *arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#ifdef MIPS_TO_C
 void func_801514A0_ovl6(GObj *arg0, Lights1 *arg1) {
     TextureScroll *ts = &arg0->data.dobj->mobjList->texture;
+    u8 c;
 
-    arg1->l[0].l.col[0] = arg1->l[0].l.colc[0] = ts->lightColor1.color.r;
-    arg1->l[0].l.col[1] = arg1->l[0].l.colc[1] = ts->lightColor1.color.g;
-    arg1->l[0].l.col[2] = arg1->l[0].l.colc[2] = ts->lightColor1.color.b;
-    arg1->a.l.col[0] = arg1->a.l.colc[0] = ts->lightColor2.color.r;
-    arg1->a.l.col[1] = arg1->a.l.colc[1] = ts->lightColor2.color.g;
+    c = ts->lightColor1.color.r;
+    arg1->l[0].l.colc[0] = c;
+    arg1->l[0].l.col[0] = c;
+    c = ts->lightColor1.color.g;
+    arg1->l[0].l.colc[1] = c;
+    arg1->l[0].l.col[1] = c;
+    c = ts->lightColor1.color.b;
+    arg1->l[0].l.colc[2] = c;
+    arg1->l[0].l.col[2] = c;
+    c = ts->lightColor2.color.r;
+    arg1->a.l.colc[0] = c;
+    arg1->a.l.col[0] = c;
+    c = ts->lightColor2.color.g;
+    arg1->a.l.colc[1] = c;
+    arg1->a.l.col[1] = c;
+    c = ts->lightColor2.color.b;
     arg1->l[0].l.pad1 = 0;
     arg1->l[0].l.pad2 = 0;
     arg1->l[0].l.pad3 = 0;
     arg1->a.l.pad1 = 0;
     arg1->a.l.pad2 = 0;
-    arg1->a.l.col[2] = arg1->a.l.colc[2] = ts->lightColor2.color.b;
+    arg1->a.l.colc[2] = c;
+    arg1->a.l.col[2] = c;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801514A0_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
 void func_8015150C_ovl6(void) {
     Vector sp34;
     f32 sin_x;
@@ -261,13 +278,10 @@ void func_8015150C_ovl6(void) {
     sp34.y = (temp_f2 * sin_z) - (sin_x * cos_z);
     sp34.z = cos_x * cos_y;
     temp_f2 = 100.0f / sqrtf((sp34.x * sp34.x) + (sp34.y * sp34.y) + (sp34.z * sp34.z));
-    D_8015A670_ovl6->l[0].l.dir[0] = -(s32)(sp34.x * temp_f2);
-    D_8015A670_ovl6->l[0].l.dir[1] = -(s32)(sp34.y * temp_f2);
-    D_8015A670_ovl6->l[0].l.dir[2] = -(s32)(sp34.z * temp_f2);
+    D_8015A670_ovl6->l[0].l.dir[0] = -(s8)(sp34.x * temp_f2);
+    D_8015A670_ovl6->l[0].l.dir[1] = -(s8)(sp34.y * temp_f2);
+    D_8015A670_ovl6->l[0].l.dir[2] = -(s8)(sp34.z * temp_f2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015150C_ovl6.s")
-#endif
 
 void func_8015166C_ovl6(Gfx **glistp) {
     func_8015150C_ovl6();
@@ -276,339 +290,126 @@ void func_8015166C_ovl6(Gfx **glistp) {
     gSPSetLights1((*glistp)++, (*D_8015A670_ovl6));
 }
 
-#ifdef MIPS_TO_C
-
-void func_8015170C_ovl6(s32 *arg0) {
-    s32 temp_v0_6;
-    void *temp_v0;
-    void *temp_v0_10;
-    void *temp_v0_11;
-    void *temp_v0_12;
-    void *temp_v0_13;
-    void *temp_v0_14;
-    void *temp_v0_15;
-    void *temp_v0_16;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v0_5;
-    void *temp_v0_7;
-    void *temp_v0_8;
-    void *temp_v0_9;
-
+void func_8015170C_ovl6(GObj *arg0) {
     gDPPipeSync(gDisplayListHeads[0]++);
-    temp_v0_2 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_2 + 8;
-    temp_v0_2->unk0 = 0xDB060010;
-    temp_v0_2->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-    temp_v0_3 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_3 + 8;
-    temp_v0_3->unk4 = 0x18;
-    temp_v0_3->unk0 = 0xDB020000;
-    temp_v0_4 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_4 + 8;
-    temp_v0_4->unk0 = 0xDC08060A;
-    temp_v0_4->unk4 = D_8015A670_ovl6 + 8;
-    temp_v0_5 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_5 + 8;
-    temp_v0_5->unk0 = 0xDC08090A;
-    temp_v0_5->unk4 = D_8015A670_ovl6;
-    temp_v0_6 = func_800AB0F4();
-    switch (temp_v0_6) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+    gSPSetLights1(gDisplayListHeads[0]++, (*D_8015A670_ovl6));
+    switch (func_800AB0F4(arg0)) {
         case 19:
         case 21:
         case 23:
         case 25:
             renderDrawDObjFromGObj(arg0);
-            return;
+            break;
         case 27:
         case 29:
             func_8001585C(arg0);
-            return;
+            break;
         case 20:
         case 22:
         case 24:
         case 26:
-            temp_v0_7 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_7 + 8;
-            temp_v0_7->unk4 = 0;
-            temp_v0_7->unk0 = 0xE7000000;
-            temp_v0_8 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_8 + 8;
-            temp_v0_8->unk0 = 0xDB060010;
-            temp_v0_8->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-            temp_v0_9 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_9 + 8;
-            temp_v0_9->unk4 = 0x18;
-            temp_v0_9->unk0 = 0xDB020000;
-            temp_v0_10 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_10 + 8;
-            temp_v0_10->unk0 = 0xDC08060A;
-            temp_v0_10->unk4 = D_8015A670_ovl6 + 8;
-            temp_v0_11 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_11 + 8;
-            temp_v0_11->unk0 = 0xDC08090A;
-            temp_v0_11->unk4 = D_8015A670_ovl6;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSetLights1(gDisplayListHeads[1]++, (*D_8015A670_ovl6));
             renderDrawObject_TypeD(arg0);
-            return;
+            break;
         case 28:
         case 30:
-            temp_v0_12 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_12 + 8;
-            temp_v0_12->unk4 = 0;
-            temp_v0_12->unk0 = 0xE7000000;
-            temp_v0_13 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_13 + 8;
-            temp_v0_13->unk0 = 0xDB060010;
-            temp_v0_13->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-            temp_v0_14 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_14 + 8;
-            temp_v0_14->unk4 = 0x18;
-            temp_v0_14->unk0 = 0xDB020000;
-            temp_v0_15 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_15 + 8;
-            temp_v0_15->unk0 = 0xDC08060A;
-            temp_v0_15->unk4 = D_8015A670_ovl6 + 8;
-            temp_v0_16 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_16 + 8;
-            temp_v0_16->unk0 = 0xDC08090A;
-            temp_v0_16->unk4 = D_8015A670_ovl6;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSetLights1(gDisplayListHeads[1]++, (*D_8015A670_ovl6));
             func_80015BCC(arg0);
-            /* fallthrough */
-        default:
-            return;
+            break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015170C_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_8015198C_ovl6(s32 *arg0) {
-    s32 temp_v0_7;
-    void *temp_v0;
-    void *temp_v0_10;
-    void *temp_v0_11;
-    void *temp_v0_12;
-    void *temp_v0_13;
-    void *temp_v0_14;
-    void *temp_v0_15;
-    void *temp_v0_16;
-    void *temp_v0_17;
-    void *temp_v0_18;
-    void *temp_v0_19;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v0_5;
-    void *temp_v0_6;
-    void *temp_v0_8;
-    void *temp_v0_9;
-
-    temp_v0 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0 + 8;
-    temp_v0->unk0 = 0xE7000000;
-    temp_v0->unk4 = 0;
-    temp_v0_2 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_2 + 8;
-    temp_v0_2->unk0 = 0xDB060010;
-    temp_v0_2->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-    temp_v0_3 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_3 + 8;
-    temp_v0_3->unk4 = 0x18;
-    temp_v0_3->unk0 = 0xDB020000;
-    temp_v0_4 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_4 + 8;
-    temp_v0_4->unk0 = 0xDC08060A;
-    temp_v0_4->unk4 = D_8015A670_ovl6 + 8;
-    temp_v0_5 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_5 + 8;
-    temp_v0_5->unk0 = 0xDC08090A;
-    temp_v0_5->unk4 = D_8015A670_ovl6;
-    temp_v0_6 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_6 + 8;
-    temp_v0_6->unk0 = 0xFB000000;
-    temp_v0_6->unk4 = (D_8015A670_ovl6->unkA << 8) | (D_8015A670_ovl6->unk8 << 0x18) | (D_8015A670_ovl6->unk9 << 0x10) | 0xFF;
-    temp_v0_7 = func_800AB0F4(D_8015A670_ovl6);
-    switch (temp_v0_7) {
+void func_8015198C_ovl6(GObj *arg0) {
+    gDPPipeSync(gDisplayListHeads[0]++);
+    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+    gSPSetLights1(gDisplayListHeads[0]++, (*D_8015A670_ovl6));
+    gDPSetEnvColor(gDisplayListHeads[0]++, D_8015A670_ovl6->l[0].l.col[0], D_8015A670_ovl6->l[0].l.col[1],
+                   D_8015A670_ovl6->l[0].l.col[2], 0xFF);
+    switch (func_800AB0F4(arg0)) {
         case 19:
         case 21:
         case 23:
         case 25:
             renderDrawDObjFromGObj(arg0);
-            return;
+            break;
         case 27:
         case 29:
             func_8001585C(arg0);
-            return;
+            break;
         case 20:
         case 22:
         case 24:
         case 26:
-            temp_v0_8 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_8 + 8;
-            temp_v0_8->unk4 = 0;
-            temp_v0_8->unk0 = 0xE7000000;
-            temp_v0_9 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_9 + 8;
-            temp_v0_9->unk0 = 0xDB060010;
-            temp_v0_9->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-            temp_v0_10 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_10 + 8;
-            temp_v0_10->unk4 = 0x18;
-            temp_v0_10->unk0 = 0xDB020000;
-            temp_v0_11 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_11 + 8;
-            temp_v0_11->unk0 = 0xDC08060A;
-            temp_v0_11->unk4 = D_8015A670_ovl6 + 8;
-            temp_v0_12 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_12 + 8;
-            temp_v0_12->unk0 = 0xDC08090A;
-            temp_v0_12->unk4 = D_8015A670_ovl6;
-            temp_v0_13 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_13 + 8;
-            temp_v0_13->unk0 = 0xFB000000;
-            temp_v0_13->unk4 = (D_8015A670_ovl6->unkA << 8) | (D_8015A670_ovl6->unk8 << 0x18) | (D_8015A670_ovl6->unk9 << 0x10) | 0xFF;
-            renderDrawObject_TypeD(arg0, D_8015A670_ovl6);
-            return;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSetLights1(gDisplayListHeads[1]++, (*D_8015A670_ovl6));
+            gDPSetEnvColor(gDisplayListHeads[1]++, D_8015A670_ovl6->l[0].l.col[0], D_8015A670_ovl6->l[0].l.col[1],
+                           D_8015A670_ovl6->l[0].l.col[2], 0xFF);
+            renderDrawObject_TypeD(arg0);
+            break;
         case 28:
         case 30:
-            temp_v0_14 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_14 + 8;
-            temp_v0_14->unk4 = 0;
-            temp_v0_14->unk0 = 0xE7000000;
-            temp_v0_15 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_15 + 8;
-            temp_v0_15->unk0 = 0xDB060010;
-            temp_v0_15->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-            temp_v0_16 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_16 + 8;
-            temp_v0_16->unk4 = 0x18;
-            temp_v0_16->unk0 = 0xDB020000;
-            temp_v0_17 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_17 + 8;
-            temp_v0_17->unk0 = 0xDC08060A;
-            temp_v0_17->unk4 = D_8015A670_ovl6 + 8;
-            temp_v0_18 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_18 + 8;
-            temp_v0_18->unk0 = 0xDC08090A;
-            temp_v0_18->unk4 = D_8015A670_ovl6;
-            temp_v0_19 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_19 + 8;
-            temp_v0_19->unk0 = 0xFB000000;
-            temp_v0_19->unk4 = (D_8015A670_ovl6->unkA << 8) | (D_8015A670_ovl6->unk8 << 0x18) | (D_8015A670_ovl6->unk9 << 0x10) | 0xFF;
-            func_80015BCC(arg0, D_8015A670_ovl6);
-            /* fallthrough */
-        default:
-            return;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSetLights1(gDisplayListHeads[1]++, (*D_8015A670_ovl6));
+            gDPSetEnvColor(gDisplayListHeads[1]++, D_8015A670_ovl6->l[0].l.col[0], D_8015A670_ovl6->l[0].l.col[1],
+                           D_8015A670_ovl6->l[0].l.col[2], 0xFF);
+            func_80015BCC(arg0);
+            break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015198C_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80151CD0_ovl6(s32 arg0, ? arg1) {
-    f32 sp24;
+void func_80151CD0_ovl6(s32 arg0, Vector *arg1) {
+    Vector sp24;
     f32 temp_f0;
     f32 temp_f2;
 
-    lbvector_Diff(&sp24, (*(&D_8015A570_ovl6 + (arg0 * 4)))->unk3C + 0x1C, arg1, arg0);
-    temp_f0 = sqrtf((sp24 * sp24) + (sp28 * sp28) + (sp2C * sp2C));
+    lbvector_Diff(&sp24, &D_8015A570_ovl6[arg0]->data.dobj->pos.v, arg1);
+    temp_f0 = sqrtf((sp24.x * sp24.x) + (sp24.y * sp24.y) + (sp24.z * sp24.z));
     if (temp_f0 == 0.0f) {
-        gDynamicBuffer1.unkC->unk12 = 0;
-        gDynamicBuffer1.unkC->unk10 = gDynamicBuffer1.unkC->unk12;
-        gDynamicBuffer1.unkC->unk11 = 0x64;
+        ((Lights1 *)gDynamicBuffer1.top)->l[0].l.dir[2] = 0;
+        ((Lights1 *)gDynamicBuffer1.top)->l[0].l.dir[0] = ((Lights1 *)gDynamicBuffer1.top)->l[0].l.dir[2];
+        ((Lights1 *)gDynamicBuffer1.top)->l[0].l.dir[1] = 100;
         return;
     }
     temp_f2 = 100.0f / temp_f0;
-    gDynamicBuffer1.unkC->unk10 = sp24 * temp_f2;
-    gDynamicBuffer1.unkC->unk11 = sp28 * temp_f2;
-    gDynamicBuffer1.unkC->unk12 = sp2C * temp_f2;
+    ((Lights1 *)gDynamicBuffer1.top)->l[0].l.dir[0] = sp24.x * temp_f2;
+    ((Lights1 *)gDynamicBuffer1.top)->l[0].l.dir[1] = sp24.y * temp_f2;
+    ((Lights1 *)gDynamicBuffer1.top)->l[0].l.dir[2] = sp24.z * temp_f2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151CD0_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80151DDC_ovl6(s32 arg0) {
-    func_80151CD0_ovl6((*(&D_800DE350 + (arg0 * 4)))->unk3C + 0x1C);
+    func_80151CD0_ovl6(arg0, &D_800DE350[arg0]->data.dobj->pos.v);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151DDC_ovl6.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80151E10_ovl6(s32 arg0) {
-    ? sp1C;
+    Vector sp1C;
 
-    utilGetTransformSRT(&sp1C, (*(&D_800DE350 + (arg0 * 4)))->unk3C->unk10->unk10);
+    utilGetTransformSRT(&sp1C, D_800DE350[arg0]->data.dobj->firstChild->firstChild);
     func_80151CD0_ovl6(arg0, &sp1C);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151E10_ovl6.s")
-#endif
 
 #ifdef MIPS_TO_C
+void func_80151E60_ovl6(GObj *arg0, Lights1 *arg1) {
+    u32 **seg;
+    Light *light;
+    u32 id;
 
-void func_80151E60_ovl6(s32 *arg0, s32 arg1) {
-    s32 *sp2C;
-    s32 sp28;
-    s32 *temp_t3;
-    s32 temp_t4;
-    s32 temp_v0_6;
-    void *temp_v0;
-    void *temp_v0_10;
-    void *temp_v0_11;
-    void *temp_v0_12;
-    void *temp_v0_13;
-    void *temp_v0_14;
-    void *temp_v0_15;
-    void *temp_v0_16;
-    void *temp_v0_17;
-    void *temp_v0_18;
-    void *temp_v0_19;
-    void *temp_v0_20;
-    void *temp_v0_21;
-    void *temp_v0_22;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v0_5;
-    void *temp_v0_7;
-    void *temp_v0_8;
-    void *temp_v0_9;
-
-    temp_v0 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0 + 8;
-    temp_v0->unk0 = 0xE7000000;
-    temp_v0->unk4 = 0;
-    temp_v0_2 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_2 + 8;
-    temp_t3 = (*arg0 * 4) + &gSegment4StartArray;
-    temp_v0_2->unk0 = 0xDB060010;
-    temp_v0_2->unk4 = *temp_t3;
-    temp_v0_3 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_3 + 8;
-    temp_v0_3->unk4 = 0x18;
-    temp_v0_3->unk0 = 0xDB020000;
-    temp_v0_4 = gDisplayListHeads.unk0;
-    temp_t4 = arg1 + 8;
-    gDisplayListHeads.unk0 = temp_v0_4 + 8;
-    temp_v0_4->unk4 = temp_t4;
-    temp_v0_4->unk0 = 0xDC08060A;
-    temp_v0_5 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_5 + 8;
-    temp_v0_5->unk4 = arg1;
-    temp_v0_5->unk0 = 0xDC08090A;
-    sp28 = temp_t4;
-    sp2C = temp_t3;
-    temp_v0_6 = func_800AB0F4();
-    switch (temp_v0_6) {
+    id = arg0->objId;
+    gDPPipeSync(gDisplayListHeads[0]++);
+    seg = &gSegment4StartArray[id];
+    gSPSegment(gDisplayListHeads[0]++, 4, *seg);
+    gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+    light = &arg1->l[0];
+    gSPLight(gDisplayListHeads[0]++, light, 1);
+    gSPLight(gDisplayListHeads[0]++, arg1, 2);
+    id = func_800AB0F4(arg0);
+    switch (id) {
         case 19:
         case 21:
         case 23:
@@ -623,77 +424,29 @@ void func_80151E60_ovl6(s32 *arg0, s32 arg1) {
         case 22:
         case 24:
         case 26:
-            temp_v0_7 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_7 + 8;
-            temp_v0_7->unk4 = 0;
-            temp_v0_7->unk0 = 0xE7000000;
-            temp_v0_8 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_8 + 8;
-            temp_v0_8->unk0 = 0xDB060010;
-            temp_v0_8->unk4 = *temp_t3;
-            temp_v0_9 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_9 + 8;
-            temp_v0_9->unk4 = 0x18;
-            temp_v0_9->unk0 = 0xDB020000;
-            temp_v0_10 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_10 + 8;
-            temp_v0_10->unk4 = temp_t4;
-            temp_v0_10->unk0 = 0xDC08060A;
-            temp_v0_11 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_11 + 8;
-            temp_v0_11->unk4 = arg1;
-            temp_v0_11->unk0 = 0xDC08090A;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, *seg);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, light, 1);
+            gSPLight(gDisplayListHeads[1]++, arg1, 2);
             renderDrawObject_TypeD(arg0);
-            temp_v0_12 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_12 + 8;
-            temp_v0_12->unk4 = 0;
-            temp_v0_12->unk0 = 0xE7000000;
-            temp_v0_13 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_13 + 8;
-            temp_v0_13->unk0 = 0xDC08060A;
-            temp_v0_13->unk4 = D_8015A670_ovl6 + 8;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPLight(gDisplayListHeads[1]++, &D_8015A670_ovl6->l[0], 1);
             break;
         case 28:
         case 30:
-            temp_v0_14 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_14 + 8;
-            temp_v0_14->unk4 = 0;
-            temp_v0_14->unk0 = 0xE7000000;
-            temp_v0_15 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_15 + 8;
-            temp_v0_15->unk0 = 0xDB060010;
-            temp_v0_15->unk4 = *temp_t3;
-            temp_v0_16 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_16 + 8;
-            temp_v0_16->unk4 = 0x18;
-            temp_v0_16->unk0 = 0xDB020000;
-            temp_v0_17 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_17 + 8;
-            temp_v0_17->unk4 = temp_t4;
-            temp_v0_17->unk0 = 0xDC08060A;
-            temp_v0_18 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_18 + 8;
-            temp_v0_18->unk4 = arg1;
-            temp_v0_18->unk0 = 0xDC08090A;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, *seg);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, light, 1);
+            gSPLight(gDisplayListHeads[1]++, arg1, 2);
             func_80015BCC(arg0);
-            temp_v0_19 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_19 + 8;
-            temp_v0_19->unk4 = 0;
-            temp_v0_19->unk0 = 0xE7000000;
-            temp_v0_20 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_20 + 8;
-            temp_v0_20->unk0 = 0xDC08060A;
-            temp_v0_20->unk4 = D_8015A670_ovl6 + 8;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPLight(gDisplayListHeads[1]++, &D_8015A670_ovl6->l[0], 1);
             break;
     }
-    temp_v0_21 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_21 + 8;
-    temp_v0_21->unk4 = 0;
-    temp_v0_21->unk0 = 0xE7000000;
-    temp_v0_22 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_22 + 8;
-    temp_v0_22->unk0 = 0xDC08060A;
-    temp_v0_22->unk4 = D_8015A670_ovl6 + 8;
+    gDPPipeSync(gDisplayListHeads[0]++);
+    gSPLight(gDisplayListHeads[0]++, &D_8015A670_ovl6->l[0], 1);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151E60_ovl6.s")
@@ -1063,81 +816,53 @@ block_6:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801524C8_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80152B28_ovl6(s32 *arg0) {
+void func_80152B28_ovl6(GObj *arg0) {
     s32 sp1C;
-    s32 sp18;
-    s32 temp_a2;
+    Lights1 *sp18;
 
-    temp_a2 = *arg0;
-    sp1C = temp_a2;
+    sp1C = arg0->objId;
     sp18 = D_8004A404;
-    func_80151DDC_ovl6(temp_a2, temp_a2);
-    func_801514A0_ovl6(*(&D_8015A570_ovl6 + (temp_a2 * 4)), sp18, temp_a2);
-    gDynamicBuffer1.unkC = gDynamicBuffer1.unkC + 0x18;
+    func_80151DDC_ovl6(sp1C);
+    func_801514A0_ovl6(D_8015A570_ovl6[sp1C], sp18);
+    gDynamicBuffer1.top += 0x18;
     func_80151E60_ovl6(arg0, sp18);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152B28_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80152B9C_ovl6(s32 *arg0) {
+void func_80152B9C_ovl6(GObj *arg0) {
     s32 sp1C;
-    s32 sp18;
-    s32 temp_a2;
+    Lights1 *sp18;
 
-    temp_a2 = *arg0;
-    sp1C = temp_a2;
+    sp1C = arg0->objId;
     sp18 = D_8004A404;
-    func_80151DDC_ovl6(temp_a2, temp_a2);
-    func_801514A0_ovl6(*(&D_8015A570_ovl6 + (temp_a2 * 4)), sp18, temp_a2);
-    gDynamicBuffer1.unkC = gDynamicBuffer1.unkC + 0x18;
+    func_80151DDC_ovl6(sp1C);
+    func_801514A0_ovl6(D_8015A570_ovl6[sp1C], sp18);
+    gDynamicBuffer1.top += 0x18;
     func_80152138_ovl6(arg0, sp18);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152B9C_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80152C10_ovl6(s32 *arg0) {
+void func_80152C10_ovl6(GObj *arg0) {
     s32 sp1C;
-    s32 sp18;
-    s32 temp_a2;
+    Lights1 *sp18;
 
-    temp_a2 = *arg0;
-    sp1C = temp_a2;
+    sp1C = arg0->objId;
     sp18 = D_8004A404;
-    func_80151E10_ovl6(temp_a2, temp_a2);
-    func_801514A0_ovl6(*(&D_8015A570_ovl6 + (temp_a2 * 4)), sp18, temp_a2);
-    gDynamicBuffer1.unkC = gDynamicBuffer1.unkC + 0x18;
+    func_80151E10_ovl6(sp1C);
+    func_801514A0_ovl6(D_8015A570_ovl6[sp1C], sp18);
+    gDynamicBuffer1.top += 0x18;
     func_80151E60_ovl6(arg0, sp18);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152C10_ovl6.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80152C84_ovl6(s32 *arg0) {
+void func_80152C84_ovl6(GObj *arg0) {
     s32 sp1C;
-    s32 sp18;
-    s32 temp_a2;
+    Lights1 *sp18;
 
-    temp_a2 = *arg0;
-    sp1C = temp_a2;
+    sp1C = arg0->objId;
     sp18 = D_8004A404;
-    func_80151E10_ovl6(temp_a2, temp_a2);
-    func_801514A0_ovl6(*(&D_8015A570_ovl6 + (temp_a2 * 4)), sp18, temp_a2);
-    gDynamicBuffer1.unkC = gDynamicBuffer1.unkC + 0x18;
+    func_80151E10_ovl6(sp1C);
+    func_801514A0_ovl6(D_8015A570_ovl6[sp1C], sp18);
+    gDynamicBuffer1.top += 0x18;
     func_80152138_ovl6(arg0, sp18);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152C84_ovl6.s")
-#endif
 
 void func_80152CF8_ovl6(GObj *gobj) {
 
@@ -1282,9 +1007,6 @@ void func_80153040_ovl6(void) {
     D_8015A7A8_ovl6 = D_8015A7AC_ovl6 = D_8015A7B0_ovl6 = 0;
 }
 
-#ifdef MIPS_TO_C
-// close but not matching: in the second loop the "D_8015A7AC_ovl6 = next" store
-// picks $at addressing instead of the CSE'd &D_8015A7AC_ovl6 kept in $s1
 void func_80153064_ovl6(void) {
     UnkStruct8015A6A8_ovl6 *entry;
     u32 next;
@@ -1315,19 +1037,15 @@ void func_80153064_ovl6(void) {
     a8 = D_8015A7A8_ovl6;
     if (a8 != ac) {
         do {
-            next = ac + 1;
-            if (next < 0x20) {
-                D_8015A7AC_ovl6 = next;
-            } else {
+            if (ac + 1 >= 0x20) {
                 D_8015A7AC_ovl6 = 0;
+            } else {
+                D_8015A7AC_ovl6 = ac + 1;
             }
             ac = D_8015A7AC_ovl6;
         } while (a8 != ac);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80153064_ovl6.s")
-#endif
 
 void func_8015314C_ovl6(s32 arg0, u8 arg1) {
     UnkStruct8015A6A8_ovl6 *entry;
@@ -1503,55 +1221,20 @@ void func_8015372C_ovl6(void) {
     D_800D799C->data.cam->flags &= ~2;
 }
 
-#ifdef MIPS_TO_C
+void func_8015374C_ovl6(GObj *arg0) {
+    TextureScroll *ts = &arg0->data.dobj->mobjList->texture;
 
-void func_8015374C_ovl6(void *arg0) {
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_a0_4;
-    void *temp_a0_5;
-    void *temp_a0_6;
-    void *temp_a0_7;
-    void *temp_v0;
-    void *temp_v0_2;
-
-    temp_v0 = arg0->unk3C->unk80;
-    temp_v0_2 = temp_v0 + 8;
-    if (temp_v0->unk5B != 0) {
-        temp_a0 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0 + 8;
-        temp_a0->unk4 = 0;
-        temp_a0->unk0 = 0xE7000000;
-        temp_a0_2 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_2 + 8;
-        temp_a0_2->unk4 = 0xFFFDF6FB;
-        temp_a0_2->unk0 = 0xFCFFFFFF;
-        temp_a0_3 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_3 + 8;
-        temp_a0_3->unk4 = 0x504340;
-        temp_a0_3->unk0 = 0xE200001C;
-        temp_a0_4 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_4 + 8;
-        temp_a0_4->unk0 = 0xFA000000;
-        temp_a0_4->unk4 = (temp_v0_2->unk50 << 0x18) | (temp_v0_2->unk51 << 0x10) | (temp_v0_2->unk52 << 8) | temp_v0_2->unk53;
-        temp_a0_5 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_5 + 8;
-        temp_a0_5->unk4 = 0xC0098;
-        temp_a0_5->unk0 = 0xF6440328;
-        temp_a0_6 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_6 + 8;
-        temp_a0_6->unk4 = 0;
-        temp_a0_6->unk0 = 0xE7000000;
-        temp_a0_7 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_7 + 8;
-        temp_a0_7->unk4 = 0x5049D8;
-        temp_a0_7->unk0 = 0xE200001C;
+    if (ts->primColor.color.a != 0) {
+        gDPPipeSync(gDisplayListHeads[1]++);
+        gDPSetCombineMode(gDisplayListHeads[1]++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+        gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
+        gDPSetPrimColor(gDisplayListHeads[1]++, 0, 0, ts->primColor.color.r, ts->primColor.color.g,
+                        ts->primColor.color.b, ts->primColor.color.a);
+        gDPFillRectangle(gDisplayListHeads[1]++, 48, 38, 272, 202);
+        gDPPipeSync(gDisplayListHeads[1]++);
+        gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015374C_ovl6.s")
-#endif
 
 void func_80153868_ovl6(void) {
     GObj *sp1C;
@@ -1569,55 +1252,20 @@ void func_80153868_ovl6(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+void func_8015392C_ovl6(GObj *arg0) {
+    TextureScroll *ts = &arg0->data.dobj->mobjList->texture;
 
-void func_8015392C_ovl6(void *arg0) {
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_a0_4;
-    void *temp_a0_5;
-    void *temp_a0_6;
-    void *temp_a0_7;
-    void *temp_v0;
-    void *temp_v0_2;
-
-    temp_v0 = arg0->unk3C->unk80;
-    temp_v0_2 = temp_v0 + 8;
-    if (temp_v0->unk5B != 0) {
-        temp_a0 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0 + 8;
-        temp_a0->unk4 = 0;
-        temp_a0->unk0 = 0xE7000000;
-        temp_a0_2 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_2 + 8;
-        temp_a0_2->unk4 = 0xFFFDF6FB;
-        temp_a0_2->unk0 = 0xFCFFFFFF;
-        temp_a0_3 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_3 + 8;
-        temp_a0_3->unk4 = 0x504340;
-        temp_a0_3->unk0 = 0xE200001C;
-        temp_a0_4 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_4 + 8;
-        temp_a0_4->unk0 = 0xFA000000;
-        temp_a0_4->unk4 = (temp_v0_2->unk50 << 0x18) | (temp_v0_2->unk51 << 0x10) | (temp_v0_2->unk52 << 8) | temp_v0_2->unk53;
-        temp_a0_5 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_5 + 8;
-        temp_a0_5->unk4 = 0x28028;
-        temp_a0_5->unk0 = 0xF64D8398;
-        temp_a0_6 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_6 + 8;
-        temp_a0_6->unk4 = 0;
-        temp_a0_6->unk0 = 0xE7000000;
-        temp_a0_7 = gDisplayListHeads.unk4;
-        gDisplayListHeads.unk4 = temp_a0_7 + 8;
-        temp_a0_7->unk4 = 0x5049D8;
-        temp_a0_7->unk0 = 0xE200001C;
+    if (ts->primColor.color.a != 0) {
+        gDPPipeSync(gDisplayListHeads[1]++);
+        gDPSetCombineMode(gDisplayListHeads[1]++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+        gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
+        gDPSetPrimColor(gDisplayListHeads[1]++, 0, 0, ts->primColor.color.r, ts->primColor.color.g,
+                        ts->primColor.color.b, ts->primColor.color.a);
+        gDPFillRectangle(gDisplayListHeads[1]++, 10, 10, 310, 230);
+        gDPPipeSync(gDisplayListHeads[1]++);
+        gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_8015392C_ovl6.s")
-#endif
 
 void func_80153A48_ovl6(void) {
     D_8015A668_ovl6 = D_800DE350[D_8015A560_ovl6->unk3];
@@ -1960,8 +1608,10 @@ block_13:
 #endif
 
 #ifdef MIPS_TO_C
-// close but not matching: the two peeled stores to D_8015A570/D_8015A574 get an
-// extra lui and are scheduled before the loop setup instead of after
+// close but not matching: target has a single lui $at with both peeled stores
+// (arr[0]/arr[1]) scheduled after the loop setup; IDO's unroll peel always
+// emits lui+sw for arr[0] immediately, then a second lui for arr[1]
+// (confirmed in isolation with the project's exact cc/flags)
 void func_80154628_ovl6(void) {
     s32 i;
 

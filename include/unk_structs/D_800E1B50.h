@@ -35,6 +35,10 @@ struct Sub800E1B50_Unk88 {
     u32 unk8;
     struct SubSub800E1B50_Unk88_UnkC *unkC;
     u32 unk10;
+    s32 *unk14;
+    struct Sub800E1B50_Unk94 *unk18;
+    u32 unk1C;
+    int (*unk20)(struct Sub800E1B50_Unk84 *);
 };
 
 struct Sub800E1B50_Unk94 {

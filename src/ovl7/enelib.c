@@ -62,16 +62,168 @@ void func_801A6C10_ovl7(GObj *);
 // ovl9
 void func_8020C710_ovl9(GObj *);
 
+// ovl7_3
+void func_801A2558_ovl7(s32);
+void func_801A3938(void *);
+
+// ovl2_7
+void func_801051AC();
+
+// ovl7_14?
+void func_801BC44C_ovl7(s32);
+void func_801BC72C_ovl7(s32);
+void func_801C06FC_ovl7(void);
+void func_801C1E08_ovl7(void);
+
+// audio
+void func_800A9864(s32, s32, s32);
+
+// sound id tables
+extern u32 D_801C2E84_ovl7[];
+extern u32 D_801F33FC[];
+extern u32 D_801D789C[];
+extern u32 D_801C3030_ovl7[];
+extern u32 D_801C3068_ovl7[];
+
+extern s32 D_800D7090;
+
+// enemy setup tables
+extern struct UnkStruct800E1B50 D_801CE790_ovl7[];
+extern struct Sub800E1B50_Unk88 *D_801F33F0_ovl10[];
+extern struct Sub800E1B50_Unk88 *D_801D7880_ovl8[];
+extern struct Sub800E1B50_Unk88 *D_801C2B6C_ovl7[];
+extern u32 D_801C2C84_ovl7[];
+extern struct Sub800E1B50_Unk88 *D_801C2D9C_ovl7[];
+extern struct Sub800E1B50_Unk88 *D_801C2DD4_ovl7[];
+extern struct Sub800E1B50_Unk88 *D_801C29C0_ovl7[];
+
+// object_helpers
+void ohSleep(s32);
+
+// ovl1_7
+s32 func_800B3158(void);
+s32 func_800B30BC(f32, f32, s32);
+
 // forward declared
+void func_8019D8A0(s32);
+s32 func_8019A7E8_ovl7(f32);
+void func_8019B164_ovl7(void);
 f32 func_8019B608_ovl7(s32 track);
 void func_8019BC94_ovl7(void);
 void func_8019C79C_ovl7(void);
 void func_8019CD68_ovl7(void);
 
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80198880_ovl7.s")
+void func_80198880_ovl7(struct Sub800E1B50_Unk88 *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    s32 temp;
 
+    ent->unk88 = arg0;
+    ent->unk94 = arg0->unk18;
+    ent->unk8C = arg0->unk14;
+    ent->unk98 = 0;
+    ent->unk9C = NULL;
+    ent->unk48 = arg0->unk20;
+    D_800E7B20[omCurrentObj->objId] = arg0->unk0;
+    temp = arg0->unk10;
+    if (temp != 0) {
+        func_801A2558_ovl7(temp);
+    }
+    func_801A3938(NULL);
+}
+
+#ifdef MIPS_TO_C
+// NEAR MISS (63/161 insns differ, count equal): remaining diffs are systemic:
+// target keeps arg0*4 in $a2 and &D_800E7730[arg0] in $v0 (ours swapped), and
+// target never hoists loads from D_800E7730/D_800E77A0 above stores through ent
+// (case 4 sw unk88 before 2nd lhu; *kind reload late). Tried: temp var
+// permutations, chained/two-step D_800E1B50 assignment, register/volatile,
+// K&R decl, signature type variants, unused 3rd arg (homes to stack - wrong).
+// Constants: target uses TWO regs holding 1 (unk42/unk41 via late $a0,
+// unk38 via $t2 hoisted into beqz delay slot) - could not reproduce split.
+struct Sub800E1B50_Unk88 *func_80198914_ovl7(s32 arg0, s32 arg1) {
+    struct UnkStruct800E1B50 *ent;
+    u8 *kind;
+
+    kind = &D_800E7730[arg0];
+    ent = &D_801CE790_ovl7[arg1];
+    D_800E1B50[arg0] = ent;
+    ent->unk90 = 0;
+    switch (*kind) {
+        case 1:
+            ent->unk88 = D_801F33F0_ovl10[D_800E77A0[arg0]];
+            break;
+        case 2:
+            ent->unk88 = D_801D7880_ovl8[D_800E77A0[arg0]];
+            break;
+        case 4:
+            ent->unk88 = D_801C2B6C_ovl7[D_800E77A0[arg0]];
+            ent->unk90 = D_801C2C84_ovl7[D_800E77A0[arg0]];
+            break;
+        case 3:
+            ent->unk88 = D_801C2D9C_ovl7[D_800E77A0[arg0]];
+            break;
+        case 6:
+            ent->unk88 = D_801C2DD4_ovl7[D_800E77A0[arg0]];
+            break;
+        case 0:
+        case 5:
+        default:
+            ent->unk88 = D_801C29C0_ovl7[D_800E77A0[arg0]];
+            break;
+    }
+    if (ent->unk88 != NULL) {
+        ent->unk94 = ent->unk88->unk18;
+        ent->unk8C = ent->unk88->unk14;
+        ent->unk48 = ent->unk88->unk20;
+    } else {
+        ent->unk94 = NULL;
+        ent->unk8C = NULL;
+        ent->unk48 = (void *)-1;
+    }
+    ent->unk98 = 0;
+    ent->unk9C = NULL;
+    ent->unk42 = 1;
+    ent->unk41 = 1;
+    ent->unk38 = 1;
+    if (*kind == 4) {
+        ent->unk39 = -1;
+    } else {
+        ent->unk39 = 0x1E;
+    }
+    ent->unk74 = 0;
+    ent->unk78 = 0;
+    ent->unk7C = 0;
+    ent->unk80 = NULL;
+    ent->unk84 = NULL;
+    ent->unk30 = 0;
+    ent->unk3D = 0;
+    ent->unk44 = 0;
+    ent->unk43 = 0;
+    ent->unk3F = 0;
+    ent->unk3E = 0;
+    ent->unk3B = -1;
+    ent->unk18 = gEntitiesScaleXArray[arg0];
+    ent->unk0 = gEntitiesNextPosXArray[arg0];
+    ent->unk4 = gEntitiesNextPosYArray[arg0];
+    ent->unk8 = gEntitiesNextPosZArray[arg0];
+    ent->unk3C = 0;
+    ent->unk2C = 0;
+    ent->unk1C = 0.0f;
+    ent->unk28 = 0.0f;
+    *(f32 *)&ent->unkC = 0.0f;
+    *(f32 *)&ent->unk10 = 0.0f;
+    *(f32 *)&ent->unk14 = 0.0f;
+    ent->unk20 = 0.0f;
+    ent->unk24 = 0.0f;
+    ent->unk40 = 0;
+    ent->unk3A = -1;
+    ent->unk34 = NULL;
+    return ent->unk88;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80198914_ovl7.s")
+#endif
 
 void func_80198B98_ovl7(void) {
     switch (D_800E7730[omCurrentObj->objId]) {
@@ -100,148 +252,143 @@ void func_80198B98_ovl7(void) {
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_800B175C);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80198CA8_ovl7.s")
+void func_80198CA8_ovl7(void) {
+    f32 tmpY;
+
+    tmpY = gEntitiesNextPosYArray[omCurrentObj->objId];
+    func_800F88C8(D_800DE350[omCurrentObj->objId],
+                  D_800E5F90[omCurrentObj->objId],
+                  D_800E6BD0[omCurrentObj->objId]);
+    gEntitiesNextPosYArray[omCurrentObj->objId] = tmpY;
+    if (D_800E7730[omCurrentObj->objId] != 6) {
+        if (D_800E6A10[omCurrentObj->objId] == 0.0f) {
+            func_8019B164_ovl7();
+        }
+    }
+    func_800F8E6C(D_800DE350[omCurrentObj->objId]);
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+}
 
 void func_80198DB4_ovl7(void) {
 }
 
-#ifdef MIPS_TO_C
-
 void func_80198DBC_ovl7(void) {
-    s32 temp_a1;
-    s32 temp_a2;
-    s32 var_v0;
-    struct Sub800E1B50_Unk84 *temp_a0;
-    u16 temp_a1_2;
-    u16 temp_a1_3;
-    u16 temp_a1_4;
-    u32 temp_a3;
-    u32 temp_a3_2;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u8 temp_v0_2;
-    void *temp_v0;
+    struct Sub800E1B50_Unk88 *cfg;
+    struct UnkStruct800E1B50 *ent;
+    struct Sub800E1B50_Unk84 *sub;
 
     D_800E8920[omCurrentObj->objId] = 0;
-    temp_v1 = omCurrentObj->objId;
-    temp_a2 = D_800E8920[temp_v1];
-    (D_800E7CE0 + 0x1C0)[temp_v1] = temp_a2;
-    D_800E7CE0[omCurrentObj->objId] = temp_a2;
-    temp_a3 = omCurrentObj->objId;
-    temp_v0 = func_80198914_ovl7(temp_a3, temp_a3 - 0xE, temp_a2, temp_a3);
-    if (temp_v0 != NULL) {
-        D_800E7B20[omCurrentObj->objId] = temp_v0->unk0;
-        if (temp_v0->unk10 != 0) {
-            func_801A2558_ovl7(temp_v0->unk10);
-            temp_v1_2 = omCurrentObj->objId;
-            temp_a0 = D_800E1B50[temp_v1_2]->unk84;
-            if ((D_800DD710[temp_v1_2] == 0x1A) && (((temp_a1 = D_800E0D50[temp_v1_2], var_v0 = temp_a1 * 4, (temp_a1 != -1)) && (D_800DD710[temp_a1] == 0x17)) || (var_v0 = temp_a1 * 4, (D_800DD710[temp_a1] == 0x12))) && (temp_a0 != NULL)) {
-                temp_a0->unk4 = *(gEntitiesNextPosXArray + var_v0);
-                temp_a0->unk8 = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
-                temp_a0->unkC = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+    D_800E7CE0[omCurrentObj->objId] = D_800E7EA0[omCurrentObj->objId] = D_800E8920[omCurrentObj->objId];
+    cfg = func_80198914_ovl7((s32) omCurrentObj->objId, omCurrentObj->objId - 0xE);
+    if (cfg != NULL) {
+        D_800E7B20[omCurrentObj->objId] = cfg->unk0;
+        if (cfg->unk10 != 0) {
+            func_801A2558_ovl7(cfg->unk10);
+            ent = D_800E1B50[omCurrentObj->objId];
+            sub = ent->unk84;
+            if ((D_800DD710[omCurrentObj->objId] == 0x1A)
+                && (((D_800E0D50[omCurrentObj->objId] != -1) && (D_800DD710[D_800E0D50[omCurrentObj->objId]] == 0x17))
+                    || (D_800DD710[D_800E0D50[omCurrentObj->objId]] == 0x12))
+                && (sub != NULL)) {
+                sub->unk4 = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+                sub->unk8 = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+                sub->unkC = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
                 if (D_800E0D50[omCurrentObj->objId] == 0) {
-                    temp_a0->unk8 += 20.0f;
+                    sub->unk8 += 20.0f;
                 }
-                func_801051AC(temp_a0, temp_a1, D_800DD710, D_800E0D50);
+                func_801051AC(sub);
             }
         }
-        func_801A3938(0);
+        func_801A3938(NULL);
     }
-    temp_a3_2 = omCurrentObj->objId;
-    temp_v0_2 = D_800E7730[temp_a3_2];
-    if (temp_v0_2 == 6) {
-        temp_a1_2 = D_800E77A0[temp_a3_2];
-        if ((temp_a1_2 > 0) && (temp_a1_2 < 8)) {
-            D_800D7090 = temp_a3_2;
-            return;
-        }
-    }
-    if (temp_v0_2 == 6) {
-        temp_a1_3 = D_800E77A0[temp_a3_2];
-        if ((temp_a1_3 >= 8) && (temp_a1_3 < 0x24)) {
-            func_801BC44C_ovl7(temp_a1_3, temp_a1_3);
+    if (D_800E7730[omCurrentObj->objId] == 6) {
+        if ((D_800E77A0[omCurrentObj->objId] > 0) && (D_800E77A0[omCurrentObj->objId] < 8)) {
             D_800D7090 = omCurrentObj->objId;
             return;
         }
     }
-    if (temp_v0_2 == 6) {
-        temp_a1_4 = D_800E77A0[temp_a3_2];
-        if ((temp_a1_4 >= 0x24) && (temp_a1_4 < 0x2C)) {
-            func_801BC72C_ovl7(temp_a1_4 - 0x24, temp_a1_4);
+    if (D_800E7730[omCurrentObj->objId] == 6) {
+        if ((D_800E77A0[omCurrentObj->objId] >= 8) && (D_800E77A0[omCurrentObj->objId] < 0x24)) {
+            func_801BC44C_ovl7(D_800E77A0[omCurrentObj->objId]);
+            D_800D7090 = omCurrentObj->objId;
+            return;
+        }
+    }
+    if (D_800E7730[omCurrentObj->objId] == 6) {
+        if ((D_800E77A0[omCurrentObj->objId] >= 0x24) && (D_800E77A0[omCurrentObj->objId] < 0x2C)) {
+            func_801BC72C_ovl7(D_800E77A0[omCurrentObj->objId] - 0x24);
             D_800D7090 = omCurrentObj->objId;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80198DBC_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
-
+// NEAR MISS (33/156, equal insn count, all semantic ops identical): remaining
+// diffs are pure register-allocation: target puts the case-6/tail u16 val web
+// in $v0 (ours lands in $v1 + one extra move after the tail lhu), and after the
+// func_801C06FC_ovl7 call target re-reads omCurrentObj with a folded lui+lw
+// (fresh single-use web) while ours re-materializes the shared addiu base web.
+// Tried: val type variants, separate tail var, assignment-in-condition,
+// register hint, declaration order, expression-only case 6, idx reassignment.
 void func_80199084_ovl7(void) {
-    s32 var_a1;
-    s32 var_a3;
-    u16 temp_v0;
-    u16 var_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 var_a0;
-    u8 var_a2;
+    u32 idx;
+    u32 kind;
+    u32 snd;
+    s32 mode;
+    u16 val;
 
-    var_a0 = omCurrentObj->objId;
-    var_a2 = D_800E7730[var_a0];
-    switch (var_a2) {
+    idx = omCurrentObj->objId;
+    kind = D_800E7730[idx];
+    switch (kind) {
         case 0:
-            var_a1 = 0x23;
-            var_a3 = *(&D_801C2E84_ovl7 + (D_800E77A0[var_a0] * 4));
+            mode = 0x23;
+            snd = D_801C2E84_ovl7[D_800E77A0[idx]];
             break;
         case 1:
-            var_a1 = 0x23;
-            var_a3 = *(&D_801F33FC + (D_800E77A0[var_a0] * 4));
+            mode = 0x23;
+            snd = D_801F33FC[D_800E77A0[idx]];
             break;
         case 2:
-            var_a1 = 0x23;
-            var_a3 = *(&D_801D789C + (D_800E77A0[var_a0] * 4));
+            mode = 0x23;
+            snd = D_801D789C[D_800E77A0[idx]];
             break;
         case 3:
-            var_a1 = 0x27;
-            var_a3 = *(&D_801C3030_ovl7 + (D_800E77A0[var_a0] * 4));
+            mode = 0x27;
+            snd = D_801C3030_ovl7[D_800E77A0[idx]];
             break;
         case 6:
-            temp_v0 = D_800E77A0[var_a0];
-            var_a3 = *(&D_801C3068_ovl7 + (temp_v0 * 4));
-            if (temp_v0 == 0) {
-                var_a1 = 0x27;
-            } else if ((temp_v0 >= 0x24) && (temp_v0 < 0x2C)) {
-                var_a1 = 0x2B;
+            val = D_800E77A0[idx];
+            snd = D_801C3068_ovl7[val];
+            if (val == 0) {
+                mode = 0x27;
+            } else if ((val >= 0x24) && (val < 0x2C)) {
+                mode = 0x2B;
             } else {
-                var_a1 = 0x23;
+                mode = 0x23;
             }
             break;
+        case 4:
+        case 5:
         default:
-            var_a3 = 0;
-            var_a1 = 0;
+            snd = 0;
+            mode = 0;
             break;
     }
-    if ((var_a3 != 0) && (var_a1 != 0)) {
-        func_800A9864(var_a3, var_a1, 0x10, var_a3);
-        temp_v0_2 = omCurrentObj->objId;
-        D_800DE350[temp_v0_2]->data.dobj->pos.x = gEntitiesNextPosXArray[temp_v0_2];
-        temp_v0_3 = omCurrentObj->objId;
-        D_800DE350[temp_v0_3]->data.dobj->pos.y = gEntitiesNextPosYArray[temp_v0_3];
-        temp_v0_4 = omCurrentObj->objId;
-        D_800DE350[temp_v0_4]->data.dobj->pos.z = gEntitiesNextPosZArray[temp_v0_4];
-        var_a0 = omCurrentObj->objId;
-        var_a2 = D_800E7730[var_a0];
+    if ((snd != 0) && (mode != 0)) {
+        func_800A9864(snd, mode, 0x10);
+        D_800DE350[omCurrentObj->objId]->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        D_800DE350[omCurrentObj->objId]->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        D_800DE350[omCurrentObj->objId]->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        idx = omCurrentObj->objId;
+        kind = D_800E7730[idx];
     }
-    if (var_a2 == 6) {
-        var_v0 = D_800E77A0[var_a0];
-        if ((var_v0 > 0) && (var_v0 < 8)) {
-            func_801C06FC_ovl7(var_a0);
-            var_v0 = D_800E77A0[omCurrentObj->objId];
+    if (kind == 6) {
+        val = D_800E77A0[idx];
+        if ((val > 0) && (val < 8)) {
+            func_801C06FC_ovl7();
+            val = D_800E77A0[omCurrentObj->objId];
         }
-        if ((var_v0 >= 8) && (var_v0 < 0x24)) {
+        if ((val >= 8) && (val < 0x24)) {
             func_801C1E08_ovl7();
         }
     }
@@ -271,29 +418,23 @@ void func_801992F0_ovl7(void) {
 }
 
 #ifdef MIPS_TO_C
-
 void func_80199384_ovl7(void) {
-    UnkStruct800E1B50 *temp_v0;
-    struct Sub800E1B50_Unk88 *temp_a0;
-    u16 temp_v0_3;
-    u16 temp_v0_4;
-    u32 temp_v0_2;
-    u32 var_v1;
-    u8 temp_t8;
+    UnkStruct800E1B50 *ent;
+    u32 id;
+    u32 cb;
+    u16 w;
 
-    var_v1 = omCurrentObj->objId;
-    temp_v0 = D_800E1B50[var_v1];
-    if (temp_v0 != NULL) {
-        temp_a0 = temp_v0->unk88;
-        if (temp_a0 != NULL) {
-            temp_v0_2 = temp_a0->unk4;
-            if (temp_v0_2 != -1) {
-                if (temp_v0_2 != 0) {
-                    temp_v0_2(D_800DE350[var_v1], var_v1 * 4);
-                    var_v1 = omCurrentObj->objId;
+    id = omCurrentObj->objId;
+    ent = D_800E1B50[id];
+    if (ent != NULL) {
+        if (ent->unk88 != NULL) {
+            cb = ent->unk88->unk4;
+            if (cb != -1) {
+                if (cb != 0) {
+                    ((void (*)(GObj *)) cb)(D_800DE350[id]);
+                    id = omCurrentObj->objId;
                 }
-                temp_t8 = D_800E7730[var_v1];
-                switch (temp_t8) {
+                switch (D_800E7730[id]) {
                     case 1:
                     case 2:
                     case 4:
@@ -301,24 +442,34 @@ void func_80199384_ovl7(void) {
                     case 6:
                         break;
                     case 3:
-                        temp_v0_3 = D_800E77A0[var_v1];
-                        if ((temp_v0_3 != 8) && ((temp_v0_3 != 7) || (D_800E7880[var_v1] != 2)) && ((temp_v0_3 != 0) || (D_800E7880[var_v1] != 1)) && ((temp_v0_3 != 5) || (D_800E7880[var_v1] != 1)) && ((temp_v0_3 != 9) || (D_800E7880[var_v1] != 1))) {
-                        case 0:
-                            temp_v0_4 = D_800E77A0[var_v1];
-                            if (((temp_v0_4 < 0x4E) || (temp_v0_4 >= 0x5D)) && (D_800E0D50[var_v1] != 0) && !(D_800E78F0[var_v1] & 0x20)) {
-loop_20:
+                        w = D_800E77A0[id];
+                        if (w == 8) {
+                            break;
+                        }
+                        if ((w == 7) && (D_800E7880[id] == 2)) {
+                            break;
+                        }
+                        if ((w == 0) && (D_800E7880[id] == 1)) {
+                            break;
+                        }
+                        if ((w == 5) && (D_800E7880[id] == 1)) {
+                            break;
+                        }
+                        if ((w == 9) && (D_800E7880[id] == 1)) {
+                            break;
+                        }
+                    case 0:
+                        w = D_800E77A0[id];
+                        if (((w < 0x4E) || (w >= 0x5D)) && (D_800E0D50[id] != 0) && !(D_800E78F0[id] & 0x20)) {
+                            while (1) {
                                 if (func_800B3158() == 0) {
-                                    func_8019D8A0(omCurrentObj->unk2);
+                                    func_8019D8A0((u16) omCurrentObj->objId);
                                     curObjSleepForever();
                                 }
-                                if (func_8019A7E8_ovl7(0x447A0000) == 0) {
-block_24:
-                                    ohSleep(1);
-                                    goto loop_20;
+                                if ((func_8019A7E8_ovl7(1000.0f) != 0) && (func_800B30BC(1.2f, 1.3f, 0x44BB8000) != 0)) {
+                                    break;
                                 }
-                                if (func_800B30BC(1.2f, 1.3f, 0x44BB8000) == 0) {
-                                    goto block_24;
-                                }
+                                ohSleep(1);
                             }
                         }
                         break;

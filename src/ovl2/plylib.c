@@ -1398,27 +1398,25 @@ s32 func_8011E368(void) {
     return D_800D6F10;
 }
 
-#ifdef MIPS_TO_C
 f32 func_8011E374(void) {
+    struct Unk80129114_4_4 *p;
+    f32 angle;
     Vector sp2C;
     Vector sp20;
-    f32 temp_f0;
 
+    p = D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].unk4;
     sp2C.y = 0.0f;
     sp20.x = 0.0f;
     sp20.y = 0.0f;
-    sp2C.y = 0.0f;
     sp20.z = D_800E6A10[omCurrentObj->objId];
-    func_8001E344(&sp2C, D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].unk4, D_800E6BD0[omCurrentObj->objId]);
-    temp_f0 = vec3_abs_angle_diff(&sp20, &sp2C);
-    if (temp_f0 < 0.0f) {
-        return temp_f0 + 6.2831855f;
+    ((f32 *)&sp20)[4] = 0.0;
+    func_8001E344(&sp2C, p, D_800E6BD0[omCurrentObj->objId]);
+    angle = vec3_abs_angle_diff(&sp20, &sp2C);
+    if (angle < 0.0f) {
+        angle += 6.2831855f;
     }
-    return temp_f0;
+    return angle;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E374.s")
-#endif
 
 void func_8011E438(void) {
     gKirbyState.unk4 = 0;
@@ -2388,29 +2386,26 @@ void func_80120AF8(Vector *arg0) {
 }
 
 // control flow
-#ifdef NON_MATCHING
 extern f32 gKirbyHp;
 extern u32 D_80128348[];
 s32 func_80120BCC(void) {
-    if ((gKirbyState.ability != 0) && (gKirbyState.abilityInUse == 0)) {
+    s32 ability = gKirbyState.ability;
+    s32 ret = 0;
+
+    if ((ability != 0) && (gKirbyState.abilityInUse == 0)) {
         gKirbyState.hpAfterDamage = gKirbyHp;
-        if (gKirbyState.abilityDropTimer == 0) {
-            gKirbyState.abilityDropTimer = D_80128348[gKirbyState.hpAfterDamage] + 0x2D;
-            return 0;
+        if ((s16)gKirbyState.abilityDropTimer == 0) {
+            gKirbyState.abilityDropTimer = D_80128348[(s16)gKirbyState.hpAfterDamage] + 0x2D;
         } else {
-            gKirbyState.droppedAbility = gKirbyState.ability;
+            gKirbyState.droppedAbility = ability;
             gKirbyState.abilityDropTimer = 0;
             gKirbyState.isTakingDamage = 1;
             gKirbyState.ability = 0;
-            return 1;
+            ret = 1;
         }
-    } else {
-        return 0;
     }
+    return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80120BCC.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_80120CCC(f32 arg0, f32 arg1) {

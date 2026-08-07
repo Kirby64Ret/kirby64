@@ -76,6 +76,7 @@ extern void func_800B4954(s32);
 extern struct UnkStruct8022FAB0 *func_800FF144(void);
 
 // ovl2 extern
+extern void func_8011D4A4(f32);
 extern s32 func_80121828(f32, f32, f32, f32);
 extern void func_80153984_ovl3(void);
 extern void func_8011ED68(void);
@@ -111,6 +112,7 @@ extern s32 D_800E85A0[];
 extern s16 D_800D6FB2;
 
 // ovl2 bss
+extern s32 D_800D6B54;
 extern u32 D_8012E7DC[];
 extern s32 D_8012E7E8[];
 extern s32 D_8012E80C;
@@ -124,8 +126,6 @@ extern u32 D_800DFA10[];
 extern f32 *D_801923DC;
 extern f32 *D_80192444;
 
-// ordering meme loading D_800E6D90
-#ifdef NON_MATCHING
 void func_80229100_ovl19(GObj *g) {
     func_800A9760(0x20069);
     gKirbyState.unk154 = 2;
@@ -137,7 +137,7 @@ void func_80229100_ovl19(GObj *g) {
     func_800AFBB4(0, omCurrentObj);
     func_800FF200(D_8012E944);
     D_800DF150[omCurrentObj->objId] = NULL;
-    switch (D_800BE500) {
+    switch ((s32) D_800BE500) {
         case 1:
             D_800E5F90[omCurrentObj->objId] = 3;
             D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId] = 0.055f;
@@ -170,26 +170,21 @@ void func_80229100_ovl19(GObj *g) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x1A, &D_8022F5B0_ovl19);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_80229100_ovl19.s")
-#endif
 
 void func_8022947C_ovl19(s32 arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x1A, &D_8022F5B0_ovl19);
 }
 
-#ifdef MIPS_TO_C
-
-void func_802294C4_ovl19(s32 arg0) {
-    f32 sp24;
+void func_802294C4_ovl19(GObj *g) {
     s32 temp_v0;
-    void *temp_v1;
+    f32 **temp_v1;
+    Vector sp24;
 
     func_8011E548();
     func_8011DAF8();
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 0x11, &D_8022F618_ovl19);
     if (gKirbyState.unk17 == 0) {
-        switch (D_800BE500) {                       /* irregular */
+        switch ((s32) D_800BE500) {
             case 1:
                 if (func_8012209C() != 0) {
                     gKirbyState.unk17 = 1;
@@ -218,32 +213,26 @@ void func_802294C4_ovl19(s32 arg0) {
         gKirbyState.isTurning &= ~4;
     }
     if ((gKirbyState.ceilingCollisionNext != 0) && (gKirbyState.vel[1] > 8.0f)) {
-        temp_v0 = func_801693C4(4);
+        temp_v0 = func_801693C4_ovl3(4);
         if (temp_v0 != -1) {
+            temp_v1 = D_800E0490[omCurrentObj->objId];
             D_800EC2E0[temp_v0].as_u32 = 0;
-            temp_v1 = D_800E0490[omCurrentObj->objId]->unk4;
-            D_800EC660[temp_v0] = temp_v1->unk0 + temp_v1->unk4;
+            D_800EC660[temp_v0] = temp_v1[1][1] + temp_v1[1][0];
         }
     }
     if (gKirbyState.action == 0xB) {
-        func_800B2340(&sp24, D_800DFBD0[omCurrentObj->objId]->unk8, 0xFFFF);
-        D_8012E944->unk4 = sp24;
-        D_8012E944->unk8 = sp28;
-        D_8012E944->unkC = sp2C;
+        func_800B2340(&sp24, D_800DFBD0[omCurrentObj->objId][2], 0xFFFF);
+        D_8012E944->unk4 = sp24.x;
+        D_8012E944->unk8 = sp24.y;
+        D_8012E944->unkC = sp24.z;
         D_8012E944->unk1C = gEntitiesAngleYArray[omCurrentObj->objId];
         return;
     }
     func_800FF200(D_8012E944);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_802294C4_ovl19.s")
-#endif
 
-// weird loop
-#ifdef NON_MATCHING
 void func_80229794_ovl19(GObj *g) {
-    gKirbyState.unk30 = 0;
-    gKirbyState.unk2C = 0;
+    gKirbyState.unk2C = gKirbyState.unk30 = 0;
     func_8011CF58();
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E0490[omCurrentObj->objId] = &D_80192F64;
@@ -260,7 +249,7 @@ void func_80229794_ovl19(GObj *g) {
     gKirbyState.unk3C = 0;
     D_800E9AA0[omCurrentObj->objId] = gKirbyState.turnDirection;
     gKirbyState.isTurning |= 2;
-    while (1) {
+    for (;;) {
         if (gKirbyState.unk150 == 2) {
             gKirbyState.unk30 = 1;
         } else {
@@ -273,7 +262,7 @@ void func_80229794_ovl19(GObj *g) {
                 func_800AA78C(0x2036E, 0x20069, 3.0f);
             }
         } else {
-            gKirbyState.unk3C += 1;
+            gKirbyState.unk3C++;
         }
         if (gKirbyState.unk30 == 0) {
             func_801230E8(0x20370, 0x20371, 0);
@@ -281,18 +270,18 @@ void func_80229794_ovl19(GObj *g) {
             func_801230E8(0x2036E, 0x2036F, 0);
         }
         D_800E9720[omCurrentObj->objId] = 0xF;
-        while (--D_800E9720[omCurrentObj->objId] > 0) {
-            ohSleep(1);
+        while (D_800E9720[omCurrentObj->objId]--) {
+            ohSleep((u32) 1);
         }
         play_sound(0x261);
-        if (!(gKirbyState.isTurning & 1)) {
-            ohSleep(1);
+        while (1) {
+            if (gKirbyState.isTurning & 1) {
+                break;
+            }
+            ohSleep((u32) 1);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_80229794_ovl19.s")
-#endif
 
 void func_80229A54_ovl19(GObj *g) {
     u8 cmd[] = {2, 3, 9, 0xB, 15};
@@ -533,7 +522,7 @@ void func_8022A9E8_ovl19(GObj *g) {
         if (gKirbyController.buttonPressed & 0x8000) {
             D_800E9560[omCurrentObj->objId] = 2;
         } else if (D_800E9560[omCurrentObj->objId] != 0) {
-            D_800E9560[omCurrentObj->objId] -= 1;
+            D_800E9560[omCurrentObj->objId]--;
         }
         if (D_800E8920[omCurrentObj->objId] != 0) {
             D_800E3750[omCurrentObj->objId] = 0.0f;
@@ -550,7 +539,7 @@ void func_8022A9E8_ovl19(GObj *g) {
                         func_80122B40();
                         set_kirby_action_1(1, 3);
                     } else {
-                        gKirbyState.unk38 = 0.0f;
+                        gKirbyState.unk38 = 0.0;
                         set_kirby_action_1(2, 4);
                     }
                     func_80122FB0(1);
@@ -564,8 +553,8 @@ void func_8022A9E8_ovl19(GObj *g) {
                 D_800EC2E0->as_u32 = 0x80000000;
                 gKirbyState.unk7 = 0;
                 D_800E3210[omCurrentObj->objId] = 8.0f;
-                D_800E3750[omCurrentObj->objId] = 0.0f;
-                D_800E3C90[omCurrentObj->objId] = 0.0f;
+                D_800E3750[omCurrentObj->objId] = 0.0;
+                D_800E3C90[omCurrentObj->objId] = 0.0;
                 set_kirby_action_1(5, 5);
             }
         }

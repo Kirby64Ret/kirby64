@@ -53,6 +53,13 @@ struct UnkBCA0 {
 };
 
 extern struct UnkBCA0 D_8012BCA0;
+extern u32 D_8012BCA4[];
+extern s32 D_8012BCA8[];
+extern struct CollisionTriangle *D_8012BCB4;
+extern s32 D_8012BCBC;
+extern struct CollisionTriangle *D_8012BCC0;
+extern s32 D_8012BCC8;
+extern struct CollisionTriangle *D_8012BCCC;
 extern u32 D_8012D940;
 
 struct UnkBD48 {
@@ -2923,31 +2930,26 @@ block_18:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801073C4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_801077D4(void *arg0, void *arg1) {
+void func_801077D4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 temp_f0;
     u32 temp_v0;
-    void *temp_v1;
+    struct Normal *temp_v1;
 
-    temp_v0 = arg1->unk0 >> 0x13;
+    temp_v0 = arg1->flags.w >> 0x13;
     if (temp_v0 & 0x40) {
-        arg0->unk4 = D_8012BD00.unk34;
-        arg0->unk8 = (D_8012BD00.unk38 - arg0->unk14) - 0.1f;
-        arg0->unkC = D_8012BD00.unk3C;
+        arg0->kirbyFootPos[0] = BD00.unk34;
+        arg0->kirbyFootPos[1] = (BD00.unk38 - arg0->scale[1]) - 0.1f;
+        arg0->kirbyFootPos[2] = BD00.unk3C;
         return;
     }
-    temp_v1 = arg1->unk18;
-    temp_f0 = (-((temp_v1->unk0 * arg0->unk4) + (temp_v1->unk8 * arg0->unkC) + temp_v1->unkC) / temp_v1->unk4) - arg0->unk14;
-    if (temp_f0 < arg0->unk8) {
-        arg0->unk8 = temp_f0 - 0.1f;
+    temp_v1 = arg1->rec[1].norm;
+    temp_f0 = (-((temp_v1->x * arg0->kirbyFootPos[0]) + (temp_v1->z * arg0->kirbyFootPos[2]) + temp_v1->originOffset) / temp_v1->y) - arg0->scale[1];
+    if (temp_f0 < arg0->kirbyFootPos[1]) {
+        arg0->kirbyFootPos[1] = temp_f0 - 0.1f;
         return;
     }
-    arg1->unk0 = ((temp_v0 & 0xFE3F) * 8) | (arg1->unk0 & 7);
+    arg1->flags.f.a = temp_v0 & 0xFE3F;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801077D4.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -3145,7 +3147,6 @@ block_35:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801078A0.s")
 #endif
 
-#ifdef MIPS_TO_C
 s32 func_80107F94(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 sp5C;
     f32 sp58;
@@ -3158,7 +3159,7 @@ s32 func_80107F94(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp4C.y = arg0->kirbyHeight[1];
     sp4C.z = arg0->kirbyHeadPos[2];
     sp40.x = arg0->kirbyFootPos[0];
-    sp40.y = arg0->kirbyFootPos[1] + arg0->scale[2];
+    sp40.y = arg0->scale[2] + arg0->kirbyFootPos[1];
     sp40.z = arg0->kirbyFootPos[2];
     sp34.x = 0.0f;
     sp34.z = 0.0f;
@@ -3169,9 +3170,6 @@ s32 func_80107F94(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80107F94.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -4779,77 +4777,68 @@ s32 func_8010B860(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010B860.s")
 #endif
 
-#ifdef MIPS_TO_C
 s32 func_8010BA44(struct PositionState *arg0) {
-    struct UnkBCA0 *rec = &D_8012BCA0;
     u32 temp_v0;
 
     D_8012BD44 = arg0->VI_Timer;
-    func_80105218(rec);
-    if (func_801072E0(arg0, rec) != 0) {
-        func_801077D4(arg0, rec);
+    func_80105218(&D_8012BCA0);
+    if (func_801072E0(arg0, &D_8012BCA0) != 0) {
+        func_801077D4(arg0, &D_8012BCA0);
     }
-    if (func_80107F94(arg0, rec) != 0) {
-        func_8010924C(arg0, rec);
+    if (func_80107F94(arg0, &D_8012BCA0) != 0) {
+        func_8010924C(arg0, &D_8012BCA0);
     }
-    temp_v0 = D_8012BCA0.flags.w >> 0x13;
-    if ((temp_v0 != 0) && (temp_v0 & 0xE00) && (D_8012BCA0.rec[0].type != 0x14)) {
-        func_801072E0(arg0, rec);
+    temp_v0 = D_8012BCA4[-1] >> 0x13;
+    if ((temp_v0 != 0) && (temp_v0 & 0xE00) && (D_8012BCA8[-1] != 0x14)) {
+        func_801072E0(arg0, &D_8012BCA0);
     }
     arg0->VI_Timer = D_8012BD40;
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010BA44.s")
-#endif
 
-#ifdef MIPS_TO_C
 s32 func_8010BB08(struct PositionState *arg0) {
-    struct UnkBCA0 *rec = &D_8012BCA0;
     u32 temp_v0;
 
     D_8012BD44 = arg0->VI_Timer;
-    func_80105218(rec);
+    func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
-    if (func_80106C5C(arg0, rec) != 0) {
-        func_801077D4(arg0, rec);
+    if (func_80106C5C(arg0, &D_8012BCA0) != 0) {
+        func_801077D4(arg0, &D_8012BCA0);
     }
-    if (func_801078A0(arg0, rec) != 0) {
-        func_8010924C(arg0, rec);
+    if (func_801078A0(arg0, &D_8012BCA0) != 0) {
+        func_8010924C(arg0, &D_8012BCA0);
     }
-    temp_v0 = D_8012BCA0.flags.w >> 0x13;
-    if ((temp_v0 != 0) && (temp_v0 & 0xE00) && (D_8012BCA0.rec[0].type != 0x14)) {
-        func_80106C5C(arg0, rec);
+    temp_v0 = D_8012BCA4[-1] >> 0x13;
+    if ((temp_v0 != 0) && (temp_v0 & 0xE00) && (D_8012BCA8[-1] != 0x14)) {
+        func_80106C5C(arg0, &D_8012BCA0);
     }
     arg0->VI_Timer = D_8012BD40;
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010BB08.s")
-#endif
 
 #ifdef MIPS_TO_C
+// Near match: only regalloc differs (s0/s1 swapped; target has arg0 in s0
+// and &D_8012BCA0 in s1 while keeping the flags loads folded through s1).
 s32 func_8010BBD4(struct PositionState *arg0) {
-    struct UnkBCA0 *rec = &D_8012BCA0;
     u32 var_v1;
 
     BD00.unk0_80 = 1;
     BD00.unk44 = arg0->VI_Timer;
-    func_80105218(rec);
+    func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
-    if (func_80106C5C(arg0, rec) != 0) {
-        func_801077D4(arg0, rec);
+    if (func_80106C5C(arg0, &D_8012BCA0) != 0) {
+        func_801077D4(arg0, &D_8012BCA0);
     }
-    if (func_801078A0(arg0, rec) != 0) {
-        func_8010924C(arg0, rec);
+    if (func_801078A0(arg0, &D_8012BCA0) != 0) {
+        func_8010924C(arg0, &D_8012BCA0);
     }
     var_v1 = D_8012BCA0.flags.w >> 0x13;
-    if ((var_v1 != 0) && (var_v1 & 0xE00) && (D_8012BCA0.rec[0].type != 0x14)) {
-        func_80106C5C(arg0, rec);
+    if ((var_v1 != 0) && (var_v1 & 0xE00) && (D_8012BCA8[-1] != 0x14)) {
+        func_80106C5C(arg0, &D_8012BCA0);
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
-    if ((var_v1 & 0x1C0) && (D_8012BCA0.rec[1].tri->normalType & 4)) {
-        D_8012BCA0.flags.f.a = (D_8012BCA0.flags.w >> 0x13) & 0xFE3F;
+    if ((var_v1 & 0x1C0) && (D_8012BCB4->normalType & 4)) {
+        D_8012BCA0.flags.f.a = (D_8012BCA4[-1] >> 0x13) & 0xFE3F;
     }
     BD00.unk0_80 = 0;
     arg0->VI_Timer = BD00.unk40;
@@ -4870,81 +4859,37 @@ s32 func_8010BD0C(struct PositionState *arg0) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
 s32 func_8010BD84(struct PositionState *arg0) {
-    struct UnkBCA0 *rec = &D_8012BCA0;
+    u32 pad;
     u32 temp_v1;
 
     D_8012BD44 = arg0->VI_Timer;
-    func_80105218(rec);
+    func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
-    if (func_801056C8(arg0, rec) != 0) {
-        func_80109FAC(arg0, rec);
+    if (func_801056C8(arg0, &D_8012BCA0) != 0) {
+        func_80109FAC(arg0, &D_8012BCA0);
     }
-    if (func_80106834(arg0, rec) != 0) {
-        func_8010A138(arg0, rec);
+    if (func_80106834(arg0, &D_8012BCA0) != 0) {
+        func_8010A138(arg0, &D_8012BCA0);
     }
-    temp_v1 = D_8012BCA0.flags.w >> 0x13;
+    temp_v1 = D_8012BCA4[-1] >> 0x13;
     if (temp_v1 != 0) {
-        if ((temp_v1 & 7) && (D_8012BCA0.rec[2].type != 0x14)) {
-            func_80106834(arg0, rec);
+        if ((temp_v1 & 7) && (D_8012BCBC != 0x14)) {
+            func_80106834(arg0, &D_8012BCA0);
         }
-        if ((temp_v1 & 0x38) && (D_8012BCA0.rec[3].type != 0x14)) {
-            func_801056C8(arg0, rec);
+        if ((temp_v1 & 0x38) && (D_8012BCC8 != 0x14)) {
+            func_801056C8(arg0, &D_8012BCA0);
         }
     }
     arg0->VI_Timer = D_8012BD40;
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010BD84.s")
-#endif
 
-#ifdef MIPS_TO_C
 s32 func_8010BE7C(struct PositionState *arg0) {
-    struct UnkBCA0 *rec = &D_8012BCA0;
+    u32 pad;
     u32 temp_v1;
 
     D_8012BD44 = arg0->VI_Timer;
-    func_80105218(rec);
-    func_80104FB8(arg0);
-    if (func_80105284(arg0, rec) != 0) {
-        func_80109FAC(arg0, rec);
-    }
-    if (func_801063F0(arg0, rec) != 0) {
-        func_8010A138(arg0, rec);
-    }
-    if (func_8010669C(arg0, rec) != 0) {
-        func_80106930(arg0, rec);
-    }
-    if (func_80105530(arg0, rec) != 0) {
-        func_80109FAC(arg0, rec);
-    }
-    temp_v1 = D_8012BCA0.flags.w >> 0x13;
-    if (temp_v1 != 0) {
-        if ((temp_v1 & 7) && (D_8012BCA0.rec[2].type != 0x14)) {
-            func_801063F0(arg0, rec);
-        }
-        if ((temp_v1 & 0x38) && (D_8012BCA0.rec[3].type != 0x14)) {
-            func_80105284(arg0, rec);
-        }
-    }
-    arg0->VI_Timer = D_8012BD40;
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010BE7C.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-s32 func_8010BFAC(void *arg0) {
-    u32 sp20;
-    u32 temp_v1;
-    u32 var_v0;
-
-    D_8012BD00.unk0 = D_8012BD00.unk0 | 0x80;
-    D_8012BD00.unk44 = arg0->unk58;
     func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
     if (func_80105284(arg0, &D_8012BCA0) != 0) {
@@ -4959,26 +4904,62 @@ s32 func_8010BFAC(void *arg0) {
     if (func_80105530(arg0, &D_8012BCA0) != 0) {
         func_80109FAC(arg0, &D_8012BCA0);
     }
-    temp_v1 = D_8012BCA0 >> 0x13;
+    temp_v1 = D_8012BCA4[-1] >> 0x13;
     if (temp_v1 != 0) {
         if ((temp_v1 & 7) && (D_8012BCBC != 0x14)) {
-            sp20 = temp_v1;
             func_801063F0(arg0, &D_8012BCA0);
         }
         if ((temp_v1 & 0x38) && (D_8012BCC8 != 0x14)) {
             func_80105284(arg0, &D_8012BCA0);
         }
     }
-    var_v0 = D_8012BCA0 >> 0x13;
-    if ((var_v0 & 7) && (D_8012BCC0->unk8 & 4)) {
-        D_8012BCA0 = ((var_v0 & 0xFFF8) * 8) | (D_8012BCA0 & 7);
-        var_v0 = D_8012BCA0 >> 0x13;
+    arg0->VI_Timer = D_8012BD40;
+    return 0;
+}
+
+#ifdef MIPS_TO_C
+// Near match: differs only in scheduling around the second flags test
+// (target hoists the D_8012BD00 address into $v1 before the beqz, avoiding
+// a move; temp registers shift by one as a result).
+s32 func_8010BFAC(struct PositionState *arg0) {
+    u32 pad;
+    u32 temp_v1;
+
+    BD00.unk0_80 = 1;
+    BD00.unk44 = arg0->VI_Timer;
+    func_80105218(&D_8012BCA0);
+    func_80104FB8(arg0);
+    if (func_80105284(arg0, &D_8012BCA0) != 0) {
+        func_80109FAC(arg0, &D_8012BCA0);
     }
-    if ((var_v0 & 0x38) && (D_8012BCCC->unk8 & 4)) {
-        D_8012BCA0 = (((D_8012BCA0 >> 0x13) & 0xFFC7) * 8) | (D_8012BCA0 & 7);
+    if (func_801063F0(arg0, &D_8012BCA0) != 0) {
+        func_8010A138(arg0, &D_8012BCA0);
     }
-    D_8012BD00.unk0 = D_8012BD00.unk0 & 0xFF7F;
-    arg0->unk58 = D_8012BD00.unk40;
+    if (func_8010669C(arg0, &D_8012BCA0) != 0) {
+        func_80106930(arg0, &D_8012BCA0);
+    }
+    if (func_80105530(arg0, &D_8012BCA0) != 0) {
+        func_80109FAC(arg0, &D_8012BCA0);
+    }
+    temp_v1 = D_8012BCA0.flags.w >> 0x13;
+    if (temp_v1 != 0) {
+        if ((temp_v1 & 7) && (D_8012BCBC != 0x14)) {
+            func_801063F0(arg0, &D_8012BCA0);
+        }
+        if ((temp_v1 & 0x38) && (D_8012BCC8 != 0x14)) {
+            func_80105284(arg0, &D_8012BCA0);
+        }
+    }
+    temp_v1 = D_8012BCA0.flags.w >> 0x13;
+    if ((temp_v1 & 7) && (D_8012BCC0->normalType & 4)) {
+        D_8012BCA0.flags.f.a = temp_v1 & 0xFFF8;
+        temp_v1 = D_8012BCA0.flags.w >> 0x13;
+    }
+    if ((temp_v1 & 0x38) && (D_8012BCCC->normalType & 4)) {
+        D_8012BCA0.flags.f.a = (D_8012BCA0.flags.w >> 0x13) & 0xFFC7;
+    }
+    BD00.unk0_80 = 0;
+    arg0->VI_Timer = BD00.unk40;
     return 0;
 }
 #else
@@ -5803,6 +5784,8 @@ loop_17:
 #endif
 
 #ifdef MIPS_TO_C
+// Near match: all instructions correct, but the 8-byte local sits at sp+0x38
+// instead of sp+0x30 (target leaves an 8-byte hole at the top of the frame).
 s32 func_8010DF9C(void *arg0) {
     struct UnkBD48 sp30;
     struct struct8011BA10_temp *var_s0;
