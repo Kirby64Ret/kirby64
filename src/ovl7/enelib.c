@@ -1224,27 +1224,21 @@ f32 func_8019B608_ovl7(s32 track) {
     return ((D_800E6A10[omCurrentObj->objId] * angleXZ) < 0.0f) ? 1.0f : -1.0f;
 }
 
-#ifdef NON_MATCHING
-// magnitude does all the calculations,
-// and then does x + z + y instead of x+y+z.
-// I can't find a combo that isnt a fake match
 s32 eneCheckNearPlayer(f32 distanceSq) {
     Vector toPlayer;
     Vector magnitude;
+    f32 sum;
 
     toPlayer.z = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
     toPlayer.x = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
     toPlayer.y = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
 
-
     magnitude.x = (toPlayer.x * toPlayer.x);
     magnitude.y = (toPlayer.y * toPlayer.y);
     magnitude.z = (toPlayer.z * toPlayer.z);
-    return ((magnitude.x + magnitude.y + magnitude.z) < distanceSq) ? 1 : 0;
+    sum = magnitude.x + magnitude.y;
+    return ((magnitude.z + sum) < distanceSq) ? 1 : 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneCheckNearPlayer.s")
-#endif
 
 void func_8019B7D8_ovl7(void) {
     UnkStruct800E1B50 *temp_v0;
@@ -2213,10 +2207,11 @@ f32 func_8019DA50_ovl7(void) {
 
 #ifdef MIPS_TO_C
 f32 func_8019DA70_ovl7(s32 arg0) {
-    f32 var_f2 = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId], D_800E5F90[arg0], D_800E6BD0[arg0]);
+    f32 var_f2;
     f32 temp_f0_2;
     f32 temp_f2;
 
+    var_f2 = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId], D_800E5F90[arg0], D_800E6BD0[arg0]);
     if (var_f2 == 9999.0f) {
         temp_f0_2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
         temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
@@ -2726,13 +2721,11 @@ void func_8019EBCC_ovl7(Unused GObj *gobj) {
 void func_8019EC14_ovl7(Unused GObj *gobj) {
     s8 temp_a0;
     struct UnkStruct800E1B50 *temp_v0;
-    u32 temp_v1;
 
-    temp_v1 = omCurrentObj->objId;
-    temp_v0 = D_800E1B50[temp_v1];
+    temp_v0 = D_800E1B50[omCurrentObj->objId];
     temp_a0 = temp_v0->unk3B;
     if (temp_a0 != -1) {
-        gEntityFuncListIDArray[temp_v1] = temp_a0;
+        gEntityFuncListIDArray[omCurrentObj->objId] = temp_a0;
         temp_v0->unk3B = -1;
     }
 }
@@ -2917,28 +2910,28 @@ void func_8019F000_ovl7(void *arg0, void *arg1, s32 arg2, f32 arg3) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_8019F130_ovl7(void) {
-    u16 temp_v0_2;
-    u32 *temp_v1;
-    u32 temp_a1;
+    struct UnkStruct800E1B50 *temp_t0;
+    s32 temp_a1;
     u32 temp_v0;
-    void *temp_t0;
+    u16 temp_v0_2;
 
     temp_v0 = omCurrentObj->objId;
-    temp_v1 = &D_800E7CE0[temp_v0];
-    temp_a1 = *temp_v1;
-    temp_t0 = *(&D_800E1B50 + (temp_v0 * 4));
-    *temp_v1 = temp_a1 - 1;
+    temp_a1 = D_800E7CE0[temp_v0];
+    temp_t0 = D_800E1B50[temp_v0];
+    D_800E7CE0[temp_v0] = temp_a1 - 1;
     if (temp_a1 <= 0) {
         D_800E7CE0[omCurrentObj->objId] = 0;
     }
-    if ((temp_t0->unk3D != 0) && ((temp_v0_2 = D_800E77A0[omCurrentObj->objId], ((temp_v0_2 < 0x4E) != 0)) || (temp_v0_2 >= 0x5D))) {
-        if (temp_t0->unk6C == 2) {
-            func_801A3AE0_ovl7(temp_a1, omCurrentObj);
-            return;
+    if (temp_t0->unk3D != 0) {
+        temp_v0_2 = D_800E77A0[omCurrentObj->objId];
+        if ((temp_v0_2 < 0x4E) || (temp_v0_2 >= 0x5D)) {
+            if (temp_t0->unk6C == 2) {
+                func_801A3AE0_ovl7();
+            } else {
+                func_801A3E0C_ovl7();
+            }
         }
-        func_801A3E0C_ovl7(temp_a1, omCurrentObj);
     }
 }
 #else

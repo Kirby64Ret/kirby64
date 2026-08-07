@@ -17,6 +17,11 @@ extern u32 *D_800DFD90[];
 // In this file
 void func_800B1FD0(DObj *, u32, u32, u32, f32);
 s32 func_800A9B48(s32);
+void func_800AA49C(DObj *, s32, f32, u32, f32);
+void func_800AACC8(s32 *, s32, s32, f32);
+void func_800AA96C(s32 *, u32, s32, f32, f32);
+void func_800AAF34(s32, s32, f32);
+void func_800AA608(DObj *, s32, f32, u32, f32);
 
 // ovl1_7
 void func_800AEE20(struct GObj *, f32);
@@ -49,6 +54,10 @@ extern u32 D_800D7C10;
 extern struct CacheLine *D_800D7BC0[4];
 extern struct CacheLine *D_800D7BD0[4];
 extern struct CacheLine *D_800D7BE0[4];
+extern s32 D_800D7BF0[];
+extern s32 D_800D7C00[];
+
+s32 func_800A86C8(s32, s32 *, s32 *);
 
 extern u32 D_800D00E4[];
 extern u32 D_800D0124[];
@@ -189,11 +198,14 @@ void *func_800A840C(u32 arg0, s32 arg1) {
 
 #ifdef MIPS_TO_C
 // Nearly matching: only remaining diff is a one-slot temp-register rotation
-// (target uses t7/t8/t9 + addr in a1; this compiles to t6/t7/t8 + addr in a1).
+// (target uses t7/t8/t9, this compiles to t6/t7/t8; addr in a1 either way).
 u32 func_800A84F0(s32 arg0) {
-    u32 temp_v0 = D_800D7C10;
+    u32 temp_v0;
+    u32 size;
 
-    D_800D7C10 = temp_v0 + ((arg0 + 0xF) & 0xFFFFF0);
+    temp_v0 = D_800D7C10;
+    size = (arg0 + 0xF) & 0xFFFFF0;
+    D_800D7C10 = temp_v0 + size;
     return temp_v0;
 }
 #else
@@ -274,58 +286,40 @@ s32 arg0;
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8578.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 s32 func_800A8648(void) {
-    ? *var_s1;
-    ? *var_s2;
-    s32 temp_v0;
-    s32 var_s0;
-    s32 var_s3;
+    s32 ret;
+    s32 i;
 
-    var_s3 = 0;
-    var_s2 = &D_800D7C00;
-    var_s1 = &D_800D7BF0;
-    var_s0 = 0;
-    do {
-        temp_v0 = func_800A86C8(var_s0, var_s1, var_s2);
-        var_s0 += 1;
-        var_s1 += 4;
-        var_s2 += 4;
-        var_s3 += temp_v0;
-    } while (var_s0 != 4);
-    return var_s3;
+    ret = 0;
+    for (i = 0; i < 4; i++) {
+        ret += func_800A86C8(i, &D_800D7BF0[i], &D_800D7C00[i]);
+    }
+    return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8648.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 s32 func_800A86C8(s32 arg0, s32 *arg1, s32 *arg2) {
-    s32 var_a3;
-    s32 var_v1;
-    void *temp_v0;
-    void *var_t0;
+    struct CacheLine *start;
+    struct CacheLine *cur;
+    s32 count;
+    s32 total;
+    s32 size;
 
-    temp_v0 = *(&D_800D7BC0 + ((arg0 & 3) * 4));
-    var_v1 = 0;
-    var_a3 = 0x30;
-    var_t0 = temp_v0;
+    start = D_800D7BC0[arg0 & 3];
+    count = 0;
+    total = 0x30;
+    cur = start;
     do {
-        if (var_t0->unkC & 0xFF) {
-            var_v1 += 1;
-            var_a3 = var_a3 + var_t0->unk8 + 0x10;
+        if (cur->unkC & 0xFF) {
+            size = cur->unk8;
+            count++;
+            total = total + size + 0x10;
         }
-        var_t0 = var_t0->unk4;
-    } while (var_t0 != temp_v0);
-    *arg1 = var_a3;
-    *arg2 = var_v1;
-    return var_a3;
+        cur = cur->unk4;
+    } while (cur != start);
+    *arg1 = total;
+    *arg2 = count;
+    return total;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A86C8.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -453,167 +447,111 @@ block_4:
 #endif
 
 #ifdef MIPS_TO_C
+// Nearly matching (30/39): structure is right, the compiler keeps the masked
+// index in t9 where the target reuses the free argument register a1, which
+// rotates the following temp registers by one slot.
+void *func_800A89E0(u32 arg0) {
+    s32 size;
+    void *buf;
+    u32 *entry;
+    u32 *rom;
+    struct BankHeader *bank;
 
-s32 func_800A89E0(u32 arg0) {
-    s32 sp24;
-    s32 sp20;
-    void *sp1C;
-    s32 sp18;
-    s32 temp_a0;
-    s32 temp_a1;
-    s32 temp_a3;
-    s32 temp_v0;
-    void *temp_v0_2;
-    void *temp_v1;
-
-    temp_v0_2 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
-    temp_a1 = arg0 & 0xFFFF;
-    temp_v1 = temp_v0_2->unk8 + (temp_a1 * 4);
-    sp18 = temp_v0_2->unkC;
-    temp_a3 = (temp_v1->unk4 - temp_v1->unk0) + 3;
-    temp_a0 = temp_a3 & 0xFFFFFC;
-    sp24 = temp_a0;
-    sp1C = temp_v1;
-    temp_v0 = func_800A84F0(temp_a0, temp_a1, temp_a3);
-    sp20 = temp_v0;
-    dma_read(temp_v1->unk0 + sp18, temp_v0, sp24 & 0xFFFFFC, sp24);
-    return temp_v0;
+    bank = D_800D0184[arg0 >> 16];
+    entry = bank->imageBlockTable;
+    rom = bank->imageROMOffset;
+    entry += arg0 & 0xFFFF;
+    size = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
+    buf = (void *)func_800A84F0(size);
+    dma_read(entry[0] + (u32)rom, buf, size & 0xFFFFFC);
+    return buf;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A89E0.s")
 #endif
 
-#ifdef MIPS_TO_C
+struct BGHeader *func_800A8A7C(u32 arg0) {
+    struct BGHeader ***temp_v1;
+    s32 idx;
 
-s32 func_800A8A7C(u32 arg0) {
-    s32 *sp1C;
-    s32 sp18;
-    s32 *temp_v1;
-    s32 temp_a2;
-    s32 temp_a3;
-
-    temp_v1 = ((arg0 >> 0x10) * 4) + &D_800D0104;
-    temp_a3 = (arg0 & 0xFFFF) * 4;
-    temp_a2 = *(*temp_v1 + temp_a3);
-    if (temp_a2 != 0) {
-        sp1C = temp_v1;
-        sp18 = temp_a3;
-        func_800A8564(temp_a2, 1, temp_a2, temp_a3);
+    temp_v1 = &D_800D0104[arg0 >> 16];
+    idx = arg0 & 0xFFFF;
+    if ((*temp_v1)[idx] != NULL) {
+        func_800A8564((struct CacheLine *)(*temp_v1)[idx], 1);
     } else {
-        sp1C = temp_v1;
-        sp18 = temp_a3;
-        *(*temp_v1 + temp_a3) = func_800A89E0(1, temp_a2, temp_a3);
+        (*temp_v1)[idx] = (struct BGHeader *)func_800A89E0(arg0);
     }
-    return *(*temp_v1 + temp_a3);
+    return (*temp_v1)[idx];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8A7C.s")
-#endif
 
 #ifdef MIPS_TO_C
+// Nearly matching: same temp-register rotation as func_800A89E0 (target keeps
+// the masked index in the free argument register a2).
+void *func_800A8B0C(u32 arg0, s32 arg1) {
+    s32 size;
+    void *buf;
+    u32 *entry;
+    u32 *rom;
+    struct BankHeader *bank;
 
-s32 func_800A8B0C(u32 arg0, s32 arg1) {
-    s32 sp24;
-    s32 sp20;
-    void *sp1C;
-    s32 sp18;
-    s32 temp_a2;
-    s32 temp_a3;
-    s32 temp_v0;
-    void *temp_v0_2;
-    void *temp_v1;
-
-    temp_v0_2 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
-    temp_a2 = arg0 & 0xFFFF;
-    temp_v1 = temp_v0_2->unk8 + (temp_a2 * 4);
-    sp18 = temp_v0_2->unkC;
-    temp_a3 = ((temp_v1->unk4 - temp_v1->unk0) + 3) & 0xFFFFFC;
-    sp24 = temp_a3;
-    sp1C = temp_v1;
-    temp_v0 = func_800A8358(temp_a3 | arg1, temp_a2, temp_a3);
-    sp20 = temp_v0;
-    dma_read(temp_v1->unk0 + sp18, temp_v0, temp_a3 & 0xFFFFFC, temp_a3);
-    return temp_v0;
+    bank = D_800D0184[arg0 >> 16];
+    entry = bank->imageBlockTable;
+    rom = bank->imageROMOffset;
+    entry += arg0 & 0xFFFF;
+    size = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
+    buf = (void *)func_800A8358(size | arg1);
+    dma_read(entry[0] + (u32)rom, buf, size & 0xFFFFFC);
+    return buf;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8B0C.s")
 #endif
 
-#ifdef MIPS_TO_C
+struct BGHeader *func_800A8BAC(u32 arg0) {
+    struct BGHeader ***temp_v1;
+    s32 idx;
 
-s32 func_800A8BAC(u32 arg0) {
-    s32 *sp1C;
-    s32 sp18;
-    s32 *temp_v1;
-    s32 temp_a2;
-    s32 temp_a3;
-
-    temp_v1 = ((arg0 >> 0x10) * 4) + &D_800D0104;
-    temp_a3 = (arg0 & 0xFFFF) * 4;
-    temp_a2 = *(*temp_v1 + temp_a3);
-    if (temp_a2 != 0) {
-        sp1C = temp_v1;
-        sp18 = temp_a3;
-        func_800A8564(temp_a2, 1, temp_a2, temp_a3);
+    temp_v1 = &D_800D0104[arg0 >> 16];
+    idx = arg0 & 0xFFFF;
+    if ((*temp_v1)[idx] != NULL) {
+        func_800A8564((struct CacheLine *)(*temp_v1)[idx], 1);
     } else {
-        sp1C = temp_v1;
-        sp18 = temp_a3;
-        *(*temp_v1 + temp_a3) = func_800A8B0C(3, temp_a2, temp_a3);
+        (*temp_v1)[idx] = (struct BGHeader *)func_800A8B0C(arg0, 3);
     }
-    return *(*temp_v1 + temp_a3);
+    return (*temp_v1)[idx];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8BAC.s")
-#endif
+
+struct BGHeader *func_800A8C40(u32 arg0) {
+    struct BGHeader ***temp_a2;
+    s32 idx;
+    u32 *temp_v1;
+
+    temp_a2 = &D_800D0104[arg0 >> 16];
+    idx = arg0 & 0xFFFF;
+    if ((*temp_a2)[idx] == NULL) {
+        (*temp_a2)[idx] = (struct BGHeader *)func_800A8B0C(arg0, 3);
+        temp_v1 = (u32 *)(*temp_a2)[idx];
+        temp_v1[2] = temp_v1[2] + (u32)temp_v1;
+        temp_v1[3] = temp_v1[3] + (u32)temp_v1;
+    }
+    return (*temp_a2)[idx];
+}
 
 #ifdef MIPS_TO_C
+// Structure is right; IDO folds the `* 2` index into a single sll 3 where the
+// target keeps `sll 1` + `sll 2`, and the spill slots land in a different order.
+void *func_800A8CE0(u32 arg0, s32 arg1) {
+    s32 idx;
+    u32 *entry;
+    s32 size;
+    void *buf;
 
-s32 func_800A8C40(u32 arg0) {
-    s32 *sp20;
-    s32 sp1C;
-    s32 *temp_a2;
-    s32 temp_a3;
-    s32 var_a1;
-    void *temp_v1;
-
-    temp_a2 = ((arg0 >> 0x10) * 4) + &D_800D0104;
-    temp_a3 = (arg0 & 0xFFFF) * 4;
-    var_a1 = *(*temp_a2 + temp_a3);
-    if (var_a1 == 0) {
-        sp20 = temp_a2;
-        sp1C = temp_a3;
-        *(*temp_a2 + temp_a3) = func_800A8B0C(3, temp_a2, temp_a3);
-        temp_v1 = *(*temp_a2 + temp_a3);
-        temp_v1->unk8 = temp_v1->unk8 + temp_v1;
-        temp_v1->unkC = temp_v1->unkC + temp_v1;
-        var_a1 = *(*temp_a2 + temp_a3);
-    }
-    return var_a1;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8C40.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-s32 func_800A8CE0(u32 arg0, s32 arg1) {
-    s32 sp2C;
-    s32 sp20;
-    void *sp1C;
-    s32 temp_a0;
-    s32 temp_a2;
-    s32 temp_v0;
-    void *temp_v1;
-
-    temp_a2 = (arg0 & 0xFFFF) * 2;
-    temp_v1 = **(&D_800D0184 + ((arg0 >> 0x10) * 4)) + (temp_a2 * 4);
-    sp1C = temp_v1;
-    temp_a0 = (temp_v1->unk4 - temp_v1->unk0) | arg1;
-    sp2C = temp_a0;
-    temp_v0 = func_800A8358(temp_a0, temp_a2);
-    sp20 = temp_v0;
-    dma_read(temp_v1->unk0, temp_v0, sp2C & 0xFFFFFC, sp2C);
-    return temp_v0;
+    idx = (arg0 & 0xFFFF) * 2;
+    entry = &D_800D0184[arg0 >> 16]->geoBlockTable[idx];
+    size = (entry[1] - entry[0]) | arg1;
+    buf = (void *)func_800A8358(size);
+    dma_read(entry[0], buf, size & 0xFFFFFC);
+    return buf;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
@@ -658,29 +596,22 @@ void func_800A8D64(u32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8D64.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800A8E54(u32 arg0, s32 arg1) {
-    s32 *sp1C;
-    s32 sp18;
-    s32 *temp_v1;
-    s32 temp_a2;
-    s32 temp_v0;
+    struct BGHeader ***temp_v1;
+    s32 idx;
+    struct BGHeader *tmp;
+    s32 ret;
 
-    temp_v1 = ((arg0 >> 0x10) * 4) + &D_800D0104;
-    temp_a2 = (arg0 & 0xFFFF) * 4;
-    temp_v0 = *(*temp_v1 + temp_a2);
-    if (temp_v0 != 0) {
-        sp1C = temp_v1;
-        sp18 = temp_a2;
-        if (func_800A8578(temp_v0 | arg1, temp_a2) == 0) {
-            *(*temp_v1 + temp_a2) = 0;
+    temp_v1 = &D_800D0104[arg0 >> 16];
+    idx = arg0 & 0xFFFF;
+    tmp = (*temp_v1)[idx];
+    if (tmp != NULL) {
+        ret = func_800A8578((s32)tmp | arg1);
+        if (ret == 0) {
+            (*temp_v1)[idx] = NULL;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8E54.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1485,14 +1416,9 @@ void func_800AA49C(s32 arg0, s32 arg1, s32 arg2, u32 arg3, f32 arg4) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA49C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800AA5C4(s32 arg0, ? arg1, f32 arg2) {
-    func_800AA49C(arg2, omCurrentObj->unk3C->unk10, arg0, 0, arg1, arg2);
+void func_800AA5C4(s32 arg0, u32 arg1, f32 arg2) {
+    func_800AA49C(omCurrentObj->data.dobj->firstChild, arg0, 0.0f, arg1, arg2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA5C4.s")
-#endif
 
 #ifdef NON_MATCHING
 // https://decomp.me/scratch/fS0Iu
@@ -1533,14 +1459,9 @@ sleep_loop:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA608.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800AA78C(s32 arg0, s32 arg1, f32 arg2) {
-    func_800AA608(arg2, omCurrentObj->unk3C->unk10, arg0, 0, arg1, arg2);
+void func_800AA78C(s32 arg0, u32 arg1, f32 arg2) {
+    func_800AA608(omCurrentObj->data.dobj->firstChild, arg0, 0.0f, arg1, arg2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA78C.s")
-#endif
 
 void func_800AA7D0(s32 arg0, f32 arg1, u32 arg2) {
     if (func_800A9B48(arg0) != 0) {
@@ -1626,57 +1547,57 @@ void func_800AA96C(s32 *arg0, u32 arg1, ? arg2, ? arg3, f32 arg4) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA96C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800AAB3C(s32 *arg0, ? arg3, f32 arg4) {
+void func_800AAB3C(s32 *arg0, u32 arg1, s32 arg2, f32 arg3, f32 arg4) {
     struct DObj *temp_s0;
 
-    func_800AA96C(arg3, arg3, arg4);
+    func_800AA96C(arg0, arg1, arg2, arg3, arg4);
     temp_s0 = D_800DFBD0[omCurrentObj->objId][*arg0];
-loop_1:
-    if ((bitwise f32) temp_s0->unk74 != -3.4028235e38f) {
+    while (1) {
+        if (temp_s0->timeRemaining == -3.4028235e38f) {
+            break;
+        }
         ohSleep(1);
-        goto loop_1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAB3C.s")
-#endif
 
 #ifdef MIPS_TO_C
+// Nearly matching (50/61): identical structure/scheduling, the only difference
+// is that the target hands v0 to the DObj temp (index -> v1, pointer -> a1)
+// while IDO gives v0 to the pointer here.
 void func_800AABD4(s32 *arg0, f32 arg1, f32 arg2) {
     s32 *var_a1;
-    s32 *var_a1_2;
     s32 var_v1;
-    s32 var_v1_2;
-    void *var_a0;
+    DObj *dobj;
+    MObj *mobj;
 
     if (arg1 != 65535.0f) {
-        var_v1 = *arg0;
         var_a1 = arg0;
+        var_v1 = *arg0;
         if (var_v1 != -1) {
             do {
-                var_a1 += 4;
-                D_800DFBD0[omCurrentObj->objId][var_v1]->unk78 = (bitwise u32) arg1;
+                var_a1++;
+                dobj = D_800DFBD0[omCurrentObj->objId][var_v1];
+                dobj->animSpeed = arg1;
                 var_v1 = *var_a1;
             } while (var_v1 != -1);
         }
     }
     if (arg2 != 65535.0f) {
-        var_v1_2 = *arg0;
-        var_a1_2 = arg0;
-        if (var_v1_2 != -1) {
+        var_a1 = arg0;
+        var_v1 = *arg0;
+        if (var_v1 != -1) {
             do {
-                var_a0 = D_800DFBD0[omCurrentObj->objId][var_v1_2]->unk80;
-                if (var_a0 != NULL) {
+                dobj = D_800DFBD0[omCurrentObj->objId][var_v1];
+                mobj = dobj->mobjList;
+                if (mobj != NULL) {
                     do {
-                        var_a0->unk9C = arg2;
-                        var_a0 = var_a0->unk0;
-                    } while (var_a0 != NULL);
+                        mobj->animSpeed = arg2;
+                        mobj = mobj->next;
+                    } while (mobj != NULL);
                 }
-                var_v1_2 = var_a1_2->unk4;
-                var_a1_2 += 4;
-            } while (var_v1_2 != -1);
+                var_v1 = var_a1[1];
+                var_a1++;
+            } while (var_v1 != -1);
         }
     }
 }
@@ -1770,61 +1691,45 @@ void func_800AACC8(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AACC8.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800AAF04(? arg3) {
-    func_800AACC8(arg3, arg3);
+void func_800AAF04(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
+    func_800AACC8(arg0, arg1, arg2, arg3);
     func_800AF27C();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAF04.s")
-#endif
 
 #ifdef MIPS_TO_C
+// Nearly matching (30/36): only the frame size differs (0x30 vs 0x28) - the
+// target reserves one 4-byte local slot fewer than IDO gives this shape.
+void func_800AAF34(s32 arg0, s32 arg1, f32 arg2) {
+    s32 idx;
+    u32 *slot;
+    u32 *anim;
 
-void func_800AAF34(s32 arg0, s32 arg1, s32 arg2) {
-    s32 sp20;
-    s32 *sp1C;
-    s32 *temp_v1;
-    s32 temp_a3;
-    s32 temp_v0;
-    s32 temp_v0_2;
-
-    temp_a3 = ((arg0 - 0xA) >> 1) * 4;
-    temp_v1 = temp_a3 + &D_800D7A00;
-    temp_v0 = *temp_v1;
-    if (temp_v0 != 0) {
-        sp1C = temp_v1;
-        sp20 = temp_a3;
-        func_800A8578(temp_v0 | 2, temp_a3);
-        *temp_v1 = 0;
+    idx = (arg0 - 0xA) >> 1;
+    slot = &D_800D7A00[idx];
+    if (*slot != 0) {
+        func_800A8578(*slot | 2);
+        *slot = 0;
     }
-    sp1C = temp_v1;
-    sp20 = temp_a3;
-    temp_v0_2 = func_800A94F4(arg1);
-    *temp_v1 = temp_v0_2;
-    animSetCameraAnimation(*(&D_800D79D8 + temp_a3), *temp_v0_2, arg2, temp_a3);
+    anim = (u32 *)func_800A94F4(arg1);
+    *slot = (u32)anim;
+    animSetCameraAnimation((Camera *)D_800D79D8[idx], (AnimCmd *)anim[0], arg2);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAF34.s")
 #endif
 
-#ifdef MIPS_TO_C
+void func_800AAFC4(s32 arg0, s32 arg1, f32 arg2) {
+    struct UnkStruct800D79D8 *temp_s0;
 
-void func_800AAFC4(s32 arg0, ? arg2) {
-    void *temp_s0;
-
-    func_800AAF34(arg2, arg2);
-    temp_s0 = *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4));
-loop_1:
-    if (temp_s0->unk74 != -3.4028235e38f) {
+    func_800AAF34(arg0, arg1, arg2);
+    temp_s0 = D_800D79D8[(arg0 - 0xA) >> 1];
+    while (1) {
+        if (temp_s0->unk74 == -3.4028235e38f) {
+            break;
+        }
         ohSleep(1);
-        goto loop_1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAFC4.s")
-#endif
 
 void func_800AB040(s32 arg0) {
     struct UnkStruct800D79D8 *temp_s0 = D_800D79D8[(arg0 - 0xA) >> 1];

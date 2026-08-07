@@ -8,14 +8,51 @@
 #include "SPObj.h"
 
 extern SPObj *D_800DD6E0; // SPObj head
+extern SPObj *D_800DD6E4;
+extern SPObj *D_800DD6E8;
+extern SPObj *D_800DD6EC;
+extern SPObj *D_800DD6F0;
+extern u8 D_800D4E60[];
+extern s16 D_800D4E64;
+extern s16 D_800D4E68;
+extern s16 D_800D4E6C;
+extern s16 D_800D4E70;
+extern u8 D_800D4E74;
 extern u32 sTextureImageCommand;
 extern u32 sSetTileCommand;
 // mainseg bss
 extern Gfx *gDisplayListHeads[4];
 
+struct C954Arg2 {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ u8 unk2;
+    /* 0x03 */ u8 unk3;
+    /* 0x04 */ u16 width;
+    /* 0x06 */ u16 height;
+    /* 0x08 */ u32 unk8;
+    /* 0x0C */ u32 unkC;
+};
+
 #define G_CC_PRIM_RGBA PRIMITIVE, 0, TEXEL0, 0, PRIMITIVE, 0, TEXEL0, 0
 
+#ifdef MIPS_TO_C
+// Nearly matching (10/22): only a one-slot temp-register rotation - the target
+// burns two virtual registers per s16 store, this shape only burns one.
+void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
+    D_800D4E64 = arg0 * 4;
+    D_800D4E68 = arg1 * 4;
+    D_800D4E6C = arg2 * 4;
+    D_800D4E70 = arg3 * 4;
+    if (arg4 != 0) {
+        D_800D4E74 = 1;
+        return;
+    }
+    D_800D4E74 = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB680.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB6D8.s")
 
@@ -36,19 +73,80 @@ SPObj *pop_spobj(void) {
     return ret;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC5E0.s")
+void func_800AC5E0(SPObj *spobj) {
+    if (D_800DD6E8 == NULL) {
+        D_800DD6E8 = spobj;
+    }
+    spobj->next = D_800DD6E4;
+    D_800DD6E4 = spobj;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC610.s")
+void func_800AC610(void) {
+    if (D_800DD6EC != NULL) {
+        D_800DD6F0->next = D_800DD6E0;
+        D_800DD6E0 = D_800DD6EC;
+        D_800DD6EC = D_800DD6F0 = NULL;
+    }
+    if (D_800DD6E4 != NULL) {
+        D_800DD6EC = D_800DD6E4;
+        D_800DD6F0 = D_800DD6E8;
+        D_800DD6E8 = D_800DD6E4 = NULL;
+    }
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC688.s")
+void func_800AC688(uObjBg *bg, struct C954Arg2 *arg1) {
+    bg->b.imageX = bg->b.imageY = 0;
+    bg->b.frameW = bg->b.imageW = arg1->width * 4;
+    bg->b.frameH = bg->b.imageH = arg1->height * 4;
+    bg->b.frameX = bg->b.frameY = 0;
+    bg->b.imagePtr = (u64 *)arg1->unk8;
+    bg->b.imageLoad = G_BGLT_LOADTILE;
+    bg->b.imageFmt = arg1->unk0;
+    bg->b.imageSiz = arg1->unk1;
+    bg->b.imagePal = 0;
+    bg->b.imageFlip = 0;
+    guS2DInitBg(bg);
+}
 
+#ifdef MIPS_TO_C
+// Structure is right; IDO puts the alignment mask in v0 (target: v1) and keeps
+// the aligned width in a temp instead of v0, rotating the rest of the temps.
+void func_800AC700(uObjBg *bg, struct C954Arg2 *arg1) {
+    u8 mask = D_800D4E60[arg1->unk1];
+
+    bg->s.imageX = bg->s.imageY = 0;
+    bg->s.imageW = ((arg1->width + mask) & ~mask) * 4;
+    bg->s.frameW = arg1->width * 4;
+    bg->s.frameH = bg->s.imageH = arg1->height * 4;
+    bg->s.frameX = bg->s.frameY = 0;
+    bg->s.imagePtr = (u64 *)arg1->unk8;
+    bg->s.imageLoad = G_BGLT_LOADTILE;
+    bg->s.imageFmt = arg1->unk0;
+    bg->s.imageSiz = arg1->unk1;
+    bg->s.imagePal = 0;
+    bg->s.imageFlip = 0;
+    bg->s.scaleW = 0x400;
+    bg->s.scaleH = 0x400;
+    bg->s.imageYorig = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC700.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC794.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC820.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC8E0.s")
+void func_800AC8E0(struct SPObj_68 *arg0, struct C954Arg2 *arg1) {
+    arg0->unk0 = 0x30;
+    arg0->unk4 = arg1->unkC;
+    arg0->unk8 = 0x100;
+    arg0->unkA = (arg1->unk2 - 1) & 0xFF;
+    arg0->unkC = 0;
+    arg0->unkE = 0;
+    arg0->unk10 = arg1->unkC;
+    arg0->unk14 = -1;
+}
 
 void func_800AC924(uObjMtx *mtx) {
     mtx->m.A = mtx->m.D = FTOFIX32(1.0f);
@@ -140,7 +238,10 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ACBDC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ACC30.s")
+void func_800ACC30(s16 *arg0, s16 *arg1, SPObj *spobj) {
+    *arg0 = spobj->xOffset * 4.0f;
+    *arg1 = spobj->yOffset * 4.0f;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ACC68.s")
 

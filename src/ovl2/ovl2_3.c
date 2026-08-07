@@ -23,6 +23,20 @@ extern s32 D_801293F8;
 extern s32 D_801293FC;
 extern f32 D_80129400;
 extern f32 D_80129404;
+extern s32 D_80129408;
+
+struct Ovl2CamPos {
+    Vector unk0;
+    Vector unkC;
+};
+
+extern struct Ovl2CamPos D_800D7B20;
+extern struct Ovl2CamPos D_800D7B38;
+extern Vector D_800D7B2C;
+extern f32 D_80129370[6];
+extern f32 D_801292C8[6];
+extern f32 D_801293DC[6];
+s32 func_800FC03C(f32 *, f32 *, f32 *);
 
 f32 utilVec3Dist(Vector *v1, Vector *v2);
 f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3);
@@ -130,6 +144,75 @@ struct TrackHit {
 };
 
 s32 func_801046A0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, struct TrackHit **arg5);
+
+struct Ovl2CamState {
+    /* 0x00 */ s16 unk0;
+    /* 0x02 */ s16 unk2;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ f32 unk8;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ u8 unk18;
+    /* 0x19 */ u8 unk19;
+    /* 0x1A */ u8 unk1A;
+    /* 0x1B */ u8 unk1B;
+    /* 0x1C */ u8 unk1C;
+    /* 0x1D */ u8 unk1D;
+    /* 0x1E */ u8 unk1E;
+    /* 0x1F */ u8 unk1F;
+    /* 0x20 */ f32 unk20;
+    /* 0x24 */ f32 unk24;
+    /* 0x28 */ f32 unk28;
+    /* 0x2C */ f32 unk2C;
+    /* 0x30 */ f32 unk30;
+    /* 0x34 */ f32 unk34;
+    /* 0x38 */ f32 unk38;
+    /* 0x3C */ f32 unk3C;
+    /* 0x40 */ f32 unk40;
+    /* 0x44 */ f32 unk44;
+    /* 0x48 */ f32 unk48;
+    /* 0x4C */ f32 unk4C;
+    /* 0x50 */ f32 unk50;
+    /* 0x54 */ f32 unk54;
+    /* 0x58 */ f32 unk58;
+    /* 0x5C */ f32 unk5C;
+};
+
+struct Ovl2CamOut {
+    /* 0x00 */ f32 unk0;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ f32 unk8;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+    /* 0x1C */ f32 unk1C;
+    /* 0x20 */ f32 unk20;
+    /* 0x24 */ f32 unk24;
+    /* 0x28 */ f32 unk28;
+    /* 0x2C */ f32 unk2C;
+    /* 0x30 */ u32 unk30;
+    /* 0x34 */ u32 unk34;
+    /* 0x38 */ u32 unk38;
+};
+
+extern struct Ovl2CamState D_80129150;
+extern struct Ovl2CamState D_801291B0;
+extern struct Ovl2CamState D_80129210;
+extern struct Ovl2CamOut D_80129270;
+extern struct Ovl2CamOut D_801292B0;
+extern struct Ovl2CamOut D_801292F0;
+
+void func_800FBBB8(void);
+void func_800FA2D4(struct Ovl2CamState *, struct Ovl2CamOut *);
+s32 func_800FC164(struct Ovl2CamState *);
+void func_800FA438(s32, struct Ovl2CamState *);
+void func_800FA608(s32, struct Ovl2CamState *, struct Ovl2CamOut *);
+void func_800FA7EC(s32, struct Ovl2CamState *, struct Ovl2CamOut *);
+void func_800FA92C(s32, struct Ovl2CamState *, struct Ovl2CamOut *);
+void func_800FAC74(struct Ovl2CamOut *, struct Ovl2CamState *, struct Ovl2CamOut *);
+extern s32 D_80129138;
 
 // another self-verification check
 s32 func_800F88A0(void) {
@@ -670,12 +753,10 @@ s32 func_800F9888(struct TrackPosition *arg0, f32 arg1) {
     return ret;
 }
 
-#ifdef MIPS_TO_C
-// close but not matching: sp28/sp24 land 4 bytes higher on the stack than the target
 s32 func_800F98EC(s32 arg0, f32 arg1) {
+    s32 ret;
     s32 sp28;
     f32 sp24;
-    s32 ret;
 
     sp28 = D_800E5F90[arg0];
     sp24 = D_800E6BD0[arg0];
@@ -686,9 +767,7 @@ s32 func_800F98EC(s32 arg0, f32 arg1) {
     }
     return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F98EC.s")
-#endif
+
 
 #ifdef MIPS_TO_C
 
@@ -1090,41 +1169,28 @@ f32 func_800FA1D4(void *arg0, ? arg1, s32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA1D4.s")
 #endif
 
-#ifdef MIPS_TO_C
 
-void func_800FA2D4(void *arg0, void *arg1) {
+void func_800FA2D4(struct Ovl2CamState *arg0, struct Ovl2CamOut *arg1) {
+    Camera *cam;
     f32 temp_f0;
     f32 temp_f2;
-    void *temp_v0;
 
-    temp_v0 = D_800D799C->data;
-    D_800D7B38.unk0 = D_800D7B20.unk0;
-    D_800D7B38.unk4 = D_800D7B20.unk4;
-    D_800D7B38.unk8 = D_800D7B20.unk8;
-    D_800D7B38.unkC = D_800D7B20.unkC;
-    temp_f0 = D_8012940C * 0.01f;
-    D_800D7B38.unk10 = D_800D7B20.unk10;
+    cam = D_800D799C->data.cam;
+    temp_f0 = *(s32 *) &D_8012940C * 0.01f;
     temp_f2 = D_80129408 * 0.01f;
-    D_800D7B38.unk14 = D_800D7B20.unk14;
-    temp_v0->data = arg1->unk24 + (D_80129400 * temp_f0);
-    temp_v0->unk40 = arg1->unk28 + (D_80129404 * temp_f0);
-    temp_v0->unk44 = arg1->unk2C;
-    temp_v0->unk48 = arg1->unk18 + (D_80129400 * temp_f2);
-    temp_v0->unk4C = arg1->unk1C + (D_80129404 * temp_f2);
-    temp_v0->unk50 = arg1->unk20;
-    D_800D7B20.unk0 = temp_v0->unk48;
-    D_800D7B20.unk4 = temp_v0->unk4C;
-    D_800D7B20.unk8 = temp_v0->unk50;
-    D_800D7B2C.unk0 = temp_v0->data;
-    D_800D7B2C.unk4 = temp_v0->unk40;
-    D_800D7B2C.unk8 = temp_v0->unk44;
-    temp_v0->unk20 = arg0->unk10;
-    temp_v0->unk28 = arg0->unk54;
-    temp_v0->unk2C = arg0->unk58;
+    D_800D7B38 = D_800D7B20;
+    cam->viewMtx.lookAt.eye.x = arg1->unk24 + (D_80129400 * temp_f0);
+    cam->viewMtx.lookAt.eye.y = arg1->unk28 + (D_80129404 * temp_f0);
+    cam->viewMtx.lookAt.eye.z = arg1->unk2C;
+    cam->viewMtx.lookAt.at.x = arg1->unk18 + (D_80129400 * temp_f2);
+    cam->viewMtx.lookAt.at.y = arg1->unk1C + (D_80129404 * temp_f2);
+    cam->viewMtx.lookAt.at.z = arg1->unk20;
+    D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
+    D_800D7B2C = cam->viewMtx.lookAt.eye;
+    cam->perspMtx.persp.fovy = arg0->unk10;
+    cam->perspMtx.persp.near = arg0->unk54;
+    cam->perspMtx.persp.far = arg0->unk58;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA2D4.s")
-#endif
 
 void func_800FA414(s32 arg0) {
     if (!(D_800D7088 & 0x80000000)) {
@@ -1132,71 +1198,51 @@ void func_800FA414(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
 
-void func_800FA438(s32 arg0, void *arg1) {
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f14;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    void *temp_v1;
-    void *temp_v1_2;
+void func_800FA438(s32 arg0, struct Ovl2CamState *arg1) {
+    struct TrackCameraNode *cam;
+    f32 t;
 
-    temp_v1 = *(D_80129114->unk4 + (D_800E5F90[arg0] * 0x10));
-    temp_f0 = D_800E6BD0[arg0];
-    temp_v1_2 = temp_v1 + 0x20;
-    arg1->unk0 = temp_v1->unk20;
-    arg1->unk2 = temp_v1_2->unk1;
-    temp_f2 = temp_v1_2->unk20;
-    arg1->unk4 = ((temp_v1_2->unk24 - temp_f2) * temp_f0) + temp_f2;
-    temp_f12 = temp_v1_2->unk28;
-    arg1->unk8 = ((temp_v1_2->unk2C - temp_f12) * temp_f0) + temp_f12;
-    temp_f14 = temp_v1_2->unk30;
-    arg1->unkC = ((temp_v1_2->unk34 - temp_f14) * temp_f0) + temp_f14;
-    temp_f2_2 = temp_v1_2->unk38;
-    arg1->unk10 = ((temp_v1_2->data - temp_f2_2) * temp_f0) + temp_f2_2;
-    temp_f12_2 = temp_v1_2->unk40;
-    arg1->unk14 = ((temp_v1_2->unk44 - temp_f12_2) * temp_f0) + temp_f12_2;
-    arg1->unk18 = temp_v1_2->unk2;
-    arg1->unk19 = temp_v1_2->unk3;
-    arg1->unk1A = temp_v1_2->unk4;
-    arg1->unk1C = temp_v1_2->unk6;
-    arg1->unk1D = temp_v1_2->unk7;
-    arg1->unk1E = temp_v1_2->unk8;
-    arg1->unk1F = temp_v1_2->unk9;
-    arg1->unk20 = temp_v1_2->unk48;
-    arg1->unk24 = temp_v1_2->unk4C;
-    arg1->unk28 = temp_v1_2->unk50;
-    arg1->unk2C = temp_v1_2->unk54;
-    arg1->unk30 = temp_v1_2->unk58;
-    arg1->unk34 = temp_v1_2->unk5C;
-    arg1->unk38 = temp_v1_2->unk60;
-    arg1->data = temp_v1_2->unk64;
-    arg1->unk40 = temp_v1_2->unk68;
-    arg1->unk44 = temp_v1_2->unk6C;
-    arg1->unk48 = temp_v1_2->unkC;
-    arg1->unk4C = temp_v1_2->unk10;
-    arg1->unk50 = temp_v1_2->unk14;
-    arg1->unk54 = temp_v1_2->unk18;
-    arg1->unk58 = temp_v1_2->unk1C;
-    arg1->unk5C = temp_v1_2->unkA;
+    t = D_800E6BD0[arg0];
+    cam = &((struct TrackNodeHeader *) D_80129114->unk4)[D_800E5F90[arg0]].unk0->unk20;
+    arg1->unk0 = cam->unk0;
+    arg1->unk2 = cam->unk1;
+    arg1->unk4 = ((cam->unk24 - cam->unk20) * t) + cam->unk20;
+    arg1->unk8 = ((cam->unk2C - cam->unk28) * t) + cam->unk28;
+    arg1->unkC = ((cam->unk34 - cam->unk30) * t) + cam->unk30;
+    arg1->unk10 = ((cam->unk3C - cam->unk38) * t) + cam->unk38;
+    arg1->unk14 = ((cam->unk44 - cam->unk40) * t) + cam->unk40;
+    arg1->unk18 = cam->unk2;
+    arg1->unk19 = cam->unk3;
+    arg1->unk1A = cam->unk4;
+    arg1->unk1C = cam->unk6;
+    arg1->unk1D = cam->unk7;
+    arg1->unk1E = cam->unk8;
+    arg1->unk1F = cam->unk9;
+    arg1->unk20 = cam->unk48;
+    arg1->unk24 = cam->unk4C;
+    arg1->unk28 = cam->unk50;
+    arg1->unk2C = cam->unk54;
+    arg1->unk30 = cam->unk58;
+    arg1->unk34 = cam->unk5C;
+    arg1->unk38 = cam->unk60;
+    arg1->unk3C = cam->unk64;
+    arg1->unk40 = cam->unk68;
+    arg1->unk44 = cam->unk6C;
+    arg1->unk48 = cam->unkC;
+    arg1->unk4C = cam->unk10;
+    arg1->unk50 = cam->unk14;
+    arg1->unk54 = cam->unk18;
+    arg1->unk58 = cam->unk1C;
+    arg1->unk5C = cam->unkA;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA438.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800FA5C0(s32 arg0, void *arg1, void *arg2) {
+void func_800FA5C0(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
     arg2->unk0 = gEntitiesNextPosXArray[arg0];
     arg2->unk4 = gEntitiesNextPosYArray[arg0];
     arg2->unk8 = gEntitiesNextPosZArray[arg0];
     arg2->unk4 = arg2->unk4 + arg1->unk14;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA5C0.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1237,8 +1283,7 @@ void func_800FA608(s32 arg0, void *arg1, void *arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA608.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800FA7EC(s32 arg0, void *arg1, void *arg2) {
+void func_800FA7EC(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
     f32 temp_f0;
     f32 temp_f0_2;
     f32 temp_f0_3;
@@ -1256,42 +1301,39 @@ void func_800FA7EC(s32 arg0, void *arg1, void *arg2) {
         temp_f0 = arg1->unk20;
         if (arg2->unk24 <= temp_f0) {
             arg2->unk24 = temp_f0;
-            arg2->unk30 = 1;
+            arg2->unk30 |= 1;
         }
         temp_f0_2 = arg1->unk24;
         if (temp_f0_2 <= arg2->unk24) {
             arg2->unk24 = temp_f0_2;
-            arg2->unk30 = arg2->unk30 | 2;
+            arg2->unk30 |= 2;
         }
     }
     if (arg1->unk19 != 0) {
         temp_f0_3 = arg1->unk28;
         if (arg2->unk28 <= temp_f0_3) {
             arg2->unk28 = temp_f0_3;
-            arg2->unk34 = arg2->unk34 | 1;
+            arg2->unk34 |= 1;
         }
         temp_f0_4 = arg1->unk2C;
         if (temp_f0_4 <= arg2->unk28) {
             arg2->unk28 = temp_f0_4;
-            arg2->unk34 = arg2->unk34 | 2;
+            arg2->unk34 |= 2;
         }
     }
     if (arg1->unk1A != 0) {
         temp_f0_5 = arg1->unk30;
         if (arg2->unk2C <= temp_f0_5) {
             arg2->unk2C = temp_f0_5;
-            arg2->unk38 = arg2->unk38 | 1;
+            arg2->unk38 |= 1;
         }
         temp_f0_6 = arg1->unk34;
         if (temp_f0_6 <= arg2->unk2C) {
             arg2->unk2C = temp_f0_6;
-            arg2->unk38 = arg2->unk38 | 2;
+            arg2->unk38 |= 2;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA7EC.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1784,7 +1826,6 @@ block_9:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB814.s")
 #endif
 
-#ifdef MIPS_TO_C
 
 s32 func_800FB914(s32 arg0) {
     if (arg0 == 0) {
@@ -1803,9 +1844,6 @@ s32 func_800FB914(s32 arg0) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB914.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1845,11 +1883,10 @@ void func_800FBA78(void) {
     func_801DC98C_ovl17();
 }
 
-#ifdef MIPS_TO_C
 
 void func_800FBA98(void) {
-    M2C_MEMCPY_ALIGNED(&D_80129150, &D_801291B0, 0x60);
-    M2C_MEMCPY_ALIGNED(&D_80129270, &D_801292F0, 0x3C);
+    D_80129150 = D_801291B0;
+    D_80129270 = D_801292F0;
     func_800FA438(D_80129138, &D_801291B0);
     func_800FA5C0(D_80129138, &D_801291B0, &D_801292F0);
     func_800FA608(D_80129138, &D_801291B0, &D_801292F0);
@@ -1858,9 +1895,6 @@ void func_800FBA98(void) {
     func_800FAC74(&D_801292B0, &D_801291B0, &D_801292F0);
     func_800FA2D4(&D_801291B0, &D_801292B0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBA98.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1902,15 +1936,11 @@ void func_800FBBB8(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBBB8.s")
 #endif
 
-#ifdef MIPS_TO_C
 
 void func_800FBDE8(void) {
     func_800FBBB8();
     func_800FA2D4(&D_80129210, &D_801292B0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBDE8.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1942,48 +1972,42 @@ void func_800FBE1C(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBE1C.s")
 #endif
 
-#ifdef MIPS_TO_C
 
 void func_800FBF18(s32 arg0) {
-    void *temp_v0;
-    void *temp_v0_2;
+    struct TrackCameraNode *cam;
 
-    temp_v0 = *(D_80129114->unk4 + (arg0 * 0x10));
-    temp_v0_2 = temp_v0 + 0x20;
-    D_80129210.unk0 = temp_v0->unk20;
-    D_80129210.unk2 = temp_v0_2->unk1;
-    D_80129210.unk4 = temp_v0_2->unk20;
-    D_80129210.unk8 = temp_v0_2->unk28;
-    D_80129210.unkC = temp_v0_2->unk30;
-    D_80129210.unk10 = temp_v0_2->unk38;
-    D_80129210.unk14 = temp_v0_2->unk40;
-    D_80129210.unk18 = temp_v0_2->unk2;
-    D_80129210.unk19 = temp_v0_2->unk3;
-    D_80129210.unk1A = temp_v0_2->unk4;
-    D_80129210.unk1C = temp_v0_2->unk6;
-    D_80129210.unk1D = temp_v0_2->unk7;
-    D_80129210.unk1E = temp_v0_2->unk8;
-    D_80129210.unk1F = temp_v0_2->unk9;
-    D_80129210.unk20 = temp_v0_2->unk48;
-    D_80129210.unk24 = temp_v0_2->unk4C;
-    D_80129210.unk28 = temp_v0_2->unk50;
-    D_80129210.unk2C = temp_v0_2->unk54;
-    D_80129210.unk30 = temp_v0_2->unk58;
-    D_80129210.unk34 = temp_v0_2->unk5C;
-    D_80129210.unk38 = temp_v0_2->unk60;
-    D_80129210.data = temp_v0_2->unk64;
-    D_80129210.unk40 = temp_v0_2->unk68;
-    D_80129210.unk44 = temp_v0_2->unk6C;
-    D_80129210.unk48 = temp_v0_2->unkC;
-    D_80129210.unk4C = temp_v0_2->unk10;
-    D_80129210.unk50 = temp_v0_2->unk14;
-    D_80129210.unk54 = temp_v0_2->unk18;
-    D_80129210.unk58 = temp_v0_2->unk1C;
-    D_80129210.unk5C = temp_v0_2->unkA;
+    cam = &((struct TrackNodeHeader *) D_80129114->unk4)[arg0].unk0->unk20;
+    D_80129210.unk0 = cam->unk0;
+    D_80129210.unk2 = cam->unk1;
+    D_80129210.unk4 = cam->unk20;
+    D_80129210.unk8 = cam->unk28;
+    D_80129210.unkC = cam->unk30;
+    D_80129210.unk10 = cam->unk38;
+    D_80129210.unk14 = cam->unk40;
+    D_80129210.unk18 = cam->unk2;
+    D_80129210.unk19 = cam->unk3;
+    D_80129210.unk1A = cam->unk4;
+    D_80129210.unk1C = cam->unk6;
+    D_80129210.unk1D = cam->unk7;
+    D_80129210.unk1E = cam->unk8;
+    D_80129210.unk1F = cam->unk9;
+    D_80129210.unk20 = cam->unk48;
+    D_80129210.unk24 = cam->unk4C;
+    D_80129210.unk28 = cam->unk50;
+    D_80129210.unk2C = cam->unk54;
+    D_80129210.unk30 = cam->unk58;
+    D_80129210.unk34 = cam->unk5C;
+    D_80129210.unk38 = cam->unk60;
+    D_80129210.unk3C = cam->unk64;
+    D_80129210.unk40 = cam->unk68;
+    D_80129210.unk44 = cam->unk6C;
+    D_80129210.unk48 = cam->unkC;
+    D_80129210.unk4C = cam->unk10;
+    D_80129210.unk50 = cam->unk14;
+    D_80129210.unk54 = cam->unk18;
+    D_80129210.unk58 = cam->unk1C;
+    D_80129210.unk5C = cam->unkA;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBF18.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2033,73 +2057,63 @@ s32 func_800FC03C(f32 *arg0, f32 *arg1, f32 *arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC03C.s")
 #endif
 
-#ifdef MIPS_TO_C
 
-s32 func_800FC164(void *arg0) {
+#ifdef MIPS_TO_C
+s32 func_800FC164(struct Ovl2CamState *arg0) {
     f32 sp30;
     f32 sp2C;
-    s32 var_s0;
-    s32 var_v0;
-    void *temp_s1;
+    s32 count;
+    s32 ret;
+    Camera *cam;
 
-    temp_s1 = D_800D799C->data;
-    var_s0 = 0;
-    sp30 = D_8012940C * 0.01f;
+    cam = D_800D799C->data.cam;
+    count = 0;
+    sp30 = *(s32 *) &D_8012940C * 0.01f;
     sp2C = D_80129408 * 0.01f;
-    if (func_800FC03C(&D_80129370, &D_801292C8, &D_801293DC) != 0) {
-        var_s0 = 1;
+    if (func_800FC03C(&D_80129370[0], &D_801292C8[0], &D_801293DC[0]) != 0) {
+        count = 1;
     }
-    if (func_800FC03C(&D_80129374, &D_801292CC, &D_801293E0) != 0) {
-        var_s0 += 1;
+    if (func_800FC03C(&D_80129370[1], &D_801292C8[1], &D_801293DC[1]) != 0) {
+        count += 1;
     }
-    if (func_800FC03C(&D_80129378, &D_801292D0, &D_801293E4) != 0) {
-        var_s0 += 1;
+    if (func_800FC03C(&D_80129370[2], &D_801292C8[2], &D_801293DC[2]) != 0) {
+        count += 1;
     }
-    if (func_800FC03C(&D_8012937C, &D_801292D4, &D_801293E8) != 0) {
-        var_s0 += 1;
+    if (func_800FC03C(&D_80129370[3], &D_801292C8[3], &D_801293DC[3]) != 0) {
+        count += 1;
     }
-    if (func_800FC03C(&D_80129380, &D_801292D8, &D_801293EC) != 0) {
-        var_s0 += 1;
+    if (func_800FC03C(&D_80129370[4], &D_801292C8[4], &D_801293DC[4]) != 0) {
+        count += 1;
     }
-    if (func_800FC03C(&D_80129384, &D_801292DC, &D_801293F0) != 0) {
-        var_s0 += 1;
+    if (func_800FC03C(&D_80129370[5], &D_801292C8[5], &D_801293DC[5]) != 0) {
+        count += 1;
     }
-    D_800D7B38.unk0 = D_800D7B20.unk0;
-    D_800D7B38.unk4 = D_800D7B20.unk4;
-    D_800D7B38.unk8 = D_800D7B20.unk8;
-    D_800D7B38.unkC = D_800D7B20.unkC;
-    D_800D7B38.unk10 = D_800D7B20.unk10;
-    D_800D7B38.unk14 = D_800D7B20.unk14;
-    temp_s1->unk48 = (D_80129400 * sp2C) + D_80129370.unk0;
-    temp_s1->unk4C = (D_80129404 * sp2C) + D_80129370.unk4;
-    temp_s1->unk50 = D_80129370.unk8;
-    temp_s1->data = (D_80129400 * sp30) + D_80129370.unkC;
-    temp_s1->unk40 = (D_80129404 * sp30) + D_80129370.unk10;
-    temp_s1->unk44 = D_80129370.unk14;
-    D_800D7B20.unk0 = temp_s1->unk48;
-    D_800D7B20.unk4 = temp_s1->unk4C;
-    D_800D7B20.unk8 = temp_s1->unk50;
-    var_v0 = 0;
-    D_800D7B2C.unk0 = temp_s1->data;
-    D_800D7B2C.unk4 = temp_s1->unk40;
-    D_800D7B2C.unk8 = temp_s1->unk44;
-    temp_s1->unk20 = arg0->unk10;
-    temp_s1->unk28 = arg0->unk54;
-    temp_s1->unk2C = arg0->unk58;
-    if (var_s0 == 6) {
-        var_v0 = 1;
+    D_800D7B38 = D_800D7B20;
+    cam->viewMtx.lookAt.at.x = (D_80129400 * sp2C) + D_80129370[0];
+    cam->viewMtx.lookAt.at.y = (D_80129404 * sp2C) + D_80129370[1];
+    cam->viewMtx.lookAt.at.z = D_80129370[2];
+    cam->viewMtx.lookAt.eye.x = (D_80129400 * sp30) + D_80129370[3];
+    cam->viewMtx.lookAt.eye.y = (D_80129404 * sp30) + D_80129370[4];
+    cam->viewMtx.lookAt.eye.z = D_80129370[5];
+    D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
+    ret = 0;
+    D_800D7B2C = cam->viewMtx.lookAt.eye;
+    cam->perspMtx.persp.fovy = arg0->unk10;
+    cam->perspMtx.persp.near = arg0->unk54;
+    cam->perspMtx.persp.far = arg0->unk58;
+    if (count == 6) {
+        ret = 1;
     }
-    return var_v0;
+    return ret;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC164.s")
 #endif
 
-#ifdef MIPS_TO_C
 
 void func_800FC3D8(void) {
-    M2C_MEMCPY_ALIGNED(&D_80129150, &D_801291B0, 0x60);
-    M2C_MEMCPY_ALIGNED(&D_80129270, &D_801292F0, 0x3C);
+    D_80129150 = D_801291B0;
+    D_80129270 = D_801292F0;
     func_800FA438(D_80129138, &D_801291B0);
     func_800FA5C0(D_80129138, &D_801291B0, &D_801292F0);
     func_800FA608(D_80129138, &D_801291B0, &D_801292F0);
@@ -2110,11 +2124,7 @@ void func_800FC3D8(void) {
         D_800D7088 = 2;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC3D8.s")
-#endif
 
-#ifdef MIPS_TO_C
 
 void func_800FC500(void) {
     func_800FBBB8();
@@ -2122,34 +2132,25 @@ void func_800FC500(void) {
         D_800D7088 = 0xB;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC500.s")
-#endif
 
-#ifdef MIPS_TO_C
 
 void func_800FC53C(void) {
-    void *sp1C;
+    Camera *cam;
     f32 temp_f0;
     f32 temp_f2;
-    void *temp_v0;
 
-    temp_v0 = D_800D799C->data;
-    sp1C = temp_v0;
+    cam = D_800D799C->data.cam;
     func_800FA438(D_80129138, &D_801291B0);
-    temp_f0 = D_8012940C * 0.01f;
+    temp_f0 = *(s32 *) &D_8012940C * 0.01f;
     temp_f2 = D_80129408 * 0.01f;
-    temp_v0->unk48 = temp_v0->unk48 + (D_80129400 * temp_f2);
-    temp_v0->unk4C = temp_v0->unk4C + (D_80129404 * temp_f2);
-    temp_v0->data = temp_v0->data + (D_80129400 * temp_f0);
-    temp_v0->unk40 = temp_v0->unk40 + (D_80129404 * temp_f0);
-    temp_v0->unk20 = D_801291B0.unk10;
-    temp_v0->unk28 = D_801291B0.unk54;
-    temp_v0->unk2C = D_801291B0.unk58;
+    cam->viewMtx.lookAt.at.x += D_80129400 * temp_f2;
+    cam->viewMtx.lookAt.at.y += D_80129404 * temp_f2;
+    cam->viewMtx.lookAt.eye.x += D_80129400 * temp_f0;
+    cam->viewMtx.lookAt.eye.y += D_80129404 * temp_f0;
+    cam->perspMtx.persp.fovy = D_801291B0.unk10;
+    cam->perspMtx.persp.near = D_801291B0.unk54;
+    cam->perspMtx.persp.far = D_801291B0.unk58;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC53C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2183,7 +2184,7 @@ void func_800FC62C(void) {
             temp_v1_2->unk10 = temp_v0->unk40;
             temp_v1_2->unk14 = temp_v0->unk44;
         }
-        temp_f0 = D_8012940C * 0.01f;
+        temp_f0 = *(s32 *) &D_8012940C * 0.01f;
         temp_f2 = D_80129408 * 0.01f;
         temp_v0->unk48 = temp_v0->unk48 + (D_80129400 * temp_f2);
         D_800D7B20.unk0 = temp_v0->unk48;
