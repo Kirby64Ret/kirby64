@@ -554,7 +554,7 @@ segments:
     - [0x1A9AF0, asm, ovl9/ovl9_9]
     - [0x1AFE30, asm, ovl9/ovl9_10]
     - [0x1B5310, asm, ovl9/ovl9_11]
-    - [0x1B7080, c, ovl9/ovl9_12]
+    - [0x1B7080, asm, ovl9/ovl9_12]
     - [0x1B7770, asm, ovl9/ovl9_13]
     - [0x1BDFD0, asm, ovl9/ovl9_14]
     - [0x1C2A50, asm, ovl9/ovl9_14_2]

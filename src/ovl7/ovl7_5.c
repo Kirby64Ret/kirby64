@@ -794,7 +794,6 @@ block_168:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A7524_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
 s32 func_801A8BAC_ovl7(void) {
 
 
@@ -816,9 +815,6 @@ s32 func_801A8BAC_ovl7(void) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8BAC_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 

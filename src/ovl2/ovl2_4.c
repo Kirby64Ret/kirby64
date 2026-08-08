@@ -21,6 +21,7 @@ void func_800AA018(s32);
 void func_800AF27C(void);
 void func_800B4D40(s32);
 
+#ifdef MIPS_TO_C
 void func_800FD330(s32 arg0) {
     if (D_800DD710[D_800E0D50[omCurrentObj->objId]] != -1) {
         D_800E10D0[omCurrentObj->objId] = D_800E10D0[D_800E0D50[omCurrentObj->objId]];
@@ -29,6 +30,9 @@ void func_800FD330(s32 arg0) {
     }
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 1, &D_801245C0);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_4/func_800FD330.s")
+#endif
 
 #ifdef NON_MATCHING
 void func_800FD418(GObj *arg0) {
@@ -126,6 +130,7 @@ s32 func_800FD754(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
 
 extern const char *D_8012893C;
 
+#ifdef MIPS_TO_C
 u32 func_800FD874(s32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
     s32 temp_v0;
     u32 temp_a1;
@@ -147,7 +152,11 @@ u32 func_800FD874(s32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f3
     }
     return 0;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_4/func_800FD874.s")
+#endif
 
+#ifdef MIPS_TO_C
 s32 func_800FD968(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     s32 temp_v0;
 
@@ -159,9 +168,15 @@ s32 func_800FD968(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     }
     return temp_v0;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_4/func_800FD968.s")
+#endif
 
 extern const char D_8012896C[];
 
+// last function in this translation unit: its listing carries the TU's
+// trailing rodata/alignment padding, which C does not emit
+#ifdef MIPS_TO_C
 s32 func_800FD9D4(s32 arg0) {
     s32 temp_v0;
 
@@ -174,3 +189,6 @@ s32 func_800FD9D4(s32 arg0) {
 
     return temp_v0;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_4/func_800FD9D4.s")
+#endif

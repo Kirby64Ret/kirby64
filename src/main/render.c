@@ -15,6 +15,7 @@ extern Gfx *D_8004ABA0;
 extern Gfx *D_8004ABA8[4];
 extern Gfx D_8004ABB8[60];
 
+extern Gfx *D_8004ADA0[4];
 extern Gfx *D_8004ADA4[3];
 extern Gfx *D_8004ADB0;
 extern Gfx *D_8004A3D4[];
@@ -1387,68 +1388,73 @@ void renderDrawDObjFromGObj(GObj *gobj) {
     renderDrawDObj(gobj->data.dobj);
 }
 
-// one stack assignment
-#ifdef NON_MATCHING
-void renderDrawDObj_TypeC(DObj* dobj, DObjPayloadTypeC* payload) {
-    Gfx* temp;
-    u32 enddl;
-    s32 sp30 = -1;
-    Gfx* t1;
-    Gfx* t0;
-    s32 ret;
-    u8* segaddr; // this seems to be at the wrong stack pos
+void renderDrawDObj_TypeC(DObj *dobj, DObjPayloadTypeC *payload)
+{
+    s32 num;
+    s32 list_id;
+    Gfx *dl_start;
+    Gfx *dl_end;
+    s32 unused;
+    void *ptr;
 
-    if (payload == NULL || dobj->flags) {
-        return;
-    }
+    list_id = -1;
 
-    t1 = gDisplayListHeads[payload->dlistID];
-    ret = renderPrepareModelMatrix(&gDisplayListHeads[payload->dlistID], dobj);
-    t0 = gDisplayListHeads[payload->dlistID];
+    if ((payload != NULL) && (dobj->flags == 0))
+    {
+        dl_start = gDisplayListHeads[payload->dlistID];
+        num = renderPrepareModelMatrix(&gDisplayListHeads[payload->dlistID], dobj);
+        dl_end = gDisplayListHeads[payload->dlistID];
 
-    if (payload->dlist != NULL) {
-        segaddr = (u8 *)gDynamicBuffer1.top;
-        renderLoadTextures(dobj, &gDisplayListHeads[payload->dlistID]);
-        gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlist);
+        if (payload->dlist != NULL)
+        {
+            ptr = gDynamicBuffer1.top;
 
-        if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
-            gSPPopMatrix(gDisplayListHeads[payload->dlistID]++, G_MTX_MODELVIEW);
-        }
-    } else {
-        sp30 = payload->dlistID;
-    }
-
-    payload++;
-
-    while (payload->dlistID != 4) {
-        if (payload->dlist != NULL) {
-            temp = t1;
-            while (temp != t0) {
-                *gDisplayListHeads[payload->dlistID]++ = *temp++;
-            }
-
-            if (dobj->mobjList != NULL) {
-                goto DUMMY_LABEL;
-            DUMMY_LABEL:; // TODO find better match
-                gSPSegment(gDisplayListHeads[payload->dlistID]++, 0x0E, segaddr);
-            }
+            renderLoadTextures(dobj, &gDisplayListHeads[payload->dlistID]);
             gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlist);
 
-            if (ret && ((uintptr_t) dobj->parent == 1 || dobj->next != NULL)) {
-                gSPPopMatrix(gDisplayListHeads[payload->dlistID]++, G_MTX_MODELVIEW);
+            if (num != 0)
+            {
+                if (((uintptr_t) dobj->parent == 1) || (dobj->next != NULL))
+                {
+                    gSPPopMatrix(gDisplayListHeads[payload->dlistID]++, G_MTX_MODELVIEW);
+                }
             }
         }
-        payload++;
-    }
+        else list_id = payload->dlistID;
 
-    if (sp30 != -1) {
-        gDisplayListHeads[sp30] = t1;
+        while ((++payload)->dlistID != ARRAY_COUNT(gDisplayListHeads))
+        {
+            if (payload->dlist != NULL)
+            {
+                Gfx *dl_curr = dl_start;
+
+                while (dl_curr != dl_end)
+                {
+                    *gDisplayListHeads[payload->dlistID]++ = *dl_curr++;
+                }
+                if (dobj->mobjList != NULL)
+                {
+                    gSPSegment(gDisplayListHeads[payload->dlistID]++, 0xE, ptr);
+                }
+                gSPDisplayList(gDisplayListHeads[payload->dlistID]++, payload->dlist);
+
+                if (num != 0)
+                {
+                    if (((uintptr_t) dobj->parent == 1) || (dobj->next != NULL))
+                    {
+                        gSPPopMatrix(gDisplayListHeads[payload->dlistID]++, G_MTX_MODELVIEW);
+                    }
+                }
+            }
+            continue; // Required!
+        }
+        if (list_id != -1)
+        {
+            gDisplayListHeads[list_id] = dl_start;
+        }
     }
+    else return;
 }
-#else
-void renderDrawDObj_TypeC(DObj* dobj, DObjPayloadTypeC* payload);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderDrawDObj_TypeC.s")
-#endif
 
 void renderDrawObject_TypeC(GObj *gobj) {
     renderObjectScale = 1.0f;
@@ -2782,84 +2788,56 @@ void func_8001810C(void) {
     func_80017B40(cam, 0);
 }
 
-#ifdef MIPS_TO_C
-void func_80018170(GObj* camObj) {
-    Camera* cam;
-    Gfx* g;
-    Gfx** p;
-    Gfx** q;
-    Gfx* start;
-    Gfx* h;
-    Gfx* tmp;
+void func_80018170(GObj *camObj)
+{
+    Camera *cam = camObj->data.cam;
     s32 i;
-    s32 mode;
 
-    cam = camObj->data.cam;
-    renderInitCamera(&gDisplayListHeads[0], cam, 0);
-
-    g = gDisplayListHeads[0];
-    D_8004ADB0 = g + 1;
-    gSPDisplayList(g, gDisplayListHeads[0] + 2);
+    renderInitCamera(gDisplayListHeads, cam, 0);
+    D_8004ADB0 = gDisplayListHeads[0] + 1;
+    gSPDisplayList(gDisplayListHeads[0], gDisplayListHeads[0] + 2);
     gDisplayListHeads[0] += 2;
 
-    func_800171E0(&gDisplayListHeads[0], cam);
-
+    func_800171E0(gDisplayListHeads, cam);
     gSPEndDisplayList(gDisplayListHeads[0]++);
     gSPBranchList(D_8004ADB0, gDisplayListHeads[0]);
 
     func_80017B40(cam, 0);
 
-    if (cam->flags & CAMERA_FLAG_20) {
-        func_8001663C(&D_8004A3D4[0], cam, 1);
-    }
-
+    if (cam->flags & CAMERA_FLAG_20)
     {
-        Gfx** q2 = D_8004ADA4;
-        Gfx** p2 = &D_8004A3D4[0];
-        do {
-            q2++;
-            tmp = *p2 + 1;
-            p2++;
-            p2[-1] = tmp;
-            q2[-1] = tmp;
-        } while (q2 < &D_8004ADA4[3]);
+        func_8001663C(&gDisplayListHeads[1], cam, 1);
     }
+    for (i = 1; i < 4; i++)
+    {
+        D_8004ADA0[i] = ++gDisplayListHeads[i];
+    }
+    func_80017E84(camObj, (cam->flags & CAMERA_FLAG_8) ? 1 : 0);
 
-    mode = (cam->flags & CAMERA_FLAG_8) ? 1 : 0;
-    func_80017E84(camObj, mode);
-
-    q = D_8004ADA4;
-    p = &gDisplayListHeads[1];
-    i = 1;
-    do {
-        start = *q;
-        h = *p;
-
-        if (start == h) {
-            *p = h - 1;
-        } else {
-            *p = h + 1;
-            gSPDisplayList(start - 1, *p);
-
-            if (i != 1 || !(cam->flags & CAMERA_FLAG_20)) {
-                func_8001663C(p, cam, i);
-            }
-
-            gSPDisplayList((*p)++, D_8004ADB0 + 1);
-            func_80017B40(cam, i);
-            gSPEndDisplayList((*p)++);
-            gSPBranchList(h, *p);
+    for (i = 1; i < 4; i++)
+    {
+        if (D_8004ADA0[i] == gDisplayListHeads[i])
+        {
+            gDisplayListHeads[i]--;
         }
-        i++;
-        p++;
-        q++;
-    } while (i != 4);
+        else
+        {
+            Gfx *start = gDisplayListHeads[i]++;
 
+            gSPDisplayList(D_8004ADA0[i] - 1, gDisplayListHeads[i]);
+
+            if ((i != 1) || !(cam->flags & CAMERA_FLAG_20))
+            {
+                func_8001663C(&gDisplayListHeads[i], cam, i);
+            }
+            gSPDisplayList(gDisplayListHeads[i]++, D_8004ADB0 + 1);
+            func_80017B40(cam, i);
+            gSPEndDisplayList(gDisplayListHeads[i]++);
+            gSPBranchList(start, gDisplayListHeads[i]);
+        }
+    }
     renderPostCameraDraw(cam);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_80018170.s")
-#endif
 
 #ifdef MIPS_TO_C
 // 70/126 insns match; remaining diffs: i<4 loop test gets rewritten to i!=4 with 4

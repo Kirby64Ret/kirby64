@@ -45,9 +45,27 @@ void func_801DC71C_ovl17(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DCB44_ovl17.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DCFD4_ovl17.s")
+extern f32 D_800D7164;
+extern f32 D_800D7168;
+extern f32 D_800D716C;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DD040_ovl17.s")
+void func_801DCFD4_ovl17(Vector *arg0) {
+    Vector sp1C;
+
+    sp1C.x = -D_801E56D0_ovl17 * 0.8f;
+    sp1C.y = -(D_801E56D4_ovl17 - D_800D7164) * 0.8f;
+    sp1C.z = D_800D716C;
+    func_801DD09C_ovl17(&sp1C, arg0);
+}
+
+void func_801DD040_ovl17(Vector *arg0) {
+    Vector sp1C;
+
+    sp1C.x = 0.0f;
+    sp1C.y = D_800D7164 + 10000.0f;
+    sp1C.z = D_800D716C - D_800D7168;
+    func_801DD09C_ovl17(&sp1C, arg0);
+}
 
 void func_801DD09C_ovl17(Vector *arg0, Vector *arg1) {
     Mat4 sp60;
@@ -106,7 +124,37 @@ void func_801DD60C_ovl17(struct GObj *arg0) {
     func_800B1900((u16) omCurrentObj->objId);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DD704_ovl17.s")
+s32 func_800A8234(s32, s32, s32);
+void func_800A22D4(struct GObj *);
+void func_800BC0F0(s32);
+void func_800B4924(struct GObj *);
+
+void func_801DD704_ovl17(struct GObj *arg0) {
+    f32 temp_f0;
+
+    temp_f0 = 0.2f;
+    D_800DEF90[omCurrentObj->objId] = &func_800B4924;
+    gEntitiesScaleXArray[omCurrentObj->objId] = temp_f0;
+    gEntitiesScaleYArray[omCurrentObj->objId] = temp_f0;
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
+    D_800DDA90[omCurrentObj->objId] = 0x22;
+    D_800DF150[omCurrentObj->objId] = &func_801DD88C_ovl17;
+    func_800A9864(0x100F3, 0x23, 0x10);
+    func_800AA018(0x10690);
+    func_800AA018(0x10692);
+    D_800E98E0[omCurrentObj->objId] = func_800A8234(0, 0, 0x42);
+    ohSleep(0x82);
+    play_sound(0x264);
+    func_800BC0F0(1);
+    ohSleep(0x20);
+    play_sound(0x266);
+    func_800BC0F0(2);
+    func_800AF27C();
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        func_800A22D4((struct GObj *) D_800E98E0[omCurrentObj->objId]);
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
 
 void func_801DD88C_ovl17(struct GObj *arg0) {
     GObj *temp_v1;

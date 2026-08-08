@@ -1144,7 +1144,17 @@ void func_801E8D58_ovl16(s32 arg0) {
         utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_801EFD48_ovl16[0]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E8DD8_ovl16.s")
+void func_801E8DD8_ovl16(s32 arg0) {
+    u32 temp_a1;
+
+    D_800E6A10[omCurrentObj->objId] = -1.0f;
+    func_800A9864(0x100B7, 0x23, 0x10);
+    gEntitiesPosZArray[omCurrentObj->objId] = 10.0f;
+    temp_a1 = omCurrentObj->objId;
+    gEntitiesNextPosZArray[temp_a1] = gEntitiesPosZArray[temp_a1];
+    D_800E9E20[omCurrentObj->objId] = random_soft_s32_range(5);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 
 void func_801E8EA4_ovl16(s32 arg0) {
     s32 sp24;
