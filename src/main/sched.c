@@ -12,6 +12,24 @@ extern OSMesgQueue scTaskMQ;
 extern SCTaskGfx *scCurrentGfxTask;
 extern SCTaskGfx *scPausedQueueHead, *scPausedQueueTail;
 extern SCTaskInfo *scMainQueueHead, *scMainQueueTail;
+extern SCTaskInfo *D_80048BA0;
+extern SCTaskGfx *D_80048B90;
+extern u32 D_80048C70;
+extern s32 scFrameBuffers[3];
+extern s32 scNextFrameBuffer;
+extern s32 D_80048C60;
+extern s32 scRDPOutputBufferUsed;
+extern u32 scTimestampSetFb;
+extern OSViMode D_80048BA8;
+extern OSViMode gCurrentViMode;
+extern u32 D_80048C7C;
+extern u32 D_80048C48;
+extern s32 scBeforeReset;
+extern u32 D_80048CD0;
+extern OSMesgQueue *D_80048CD4;
+extern s32 gCurrFrameBuffer;
+extern s32 D_80048C64;
+extern u32 D_80048C74;
 
 void func_80000900(void) {
 }
@@ -96,83 +114,46 @@ block_15:
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scCheckGfxTaskDefault.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-s32 func_80000B64(SCTaskInfo *t) {
-    s32 var_v0;
-    s32 var_v0_3;
-    void *var_v0_2;
+s32 func_80000B64(SCTaskInfo *arg0) {
+    SCTaskInfo *var_v0;
 
     if ((scCurrentGfxTask != NULL) && (scCurrentGfxTask->info.type == 1)) {
         return 0;
     }
-    var_v0 = scPausedQueueHead.info.type;
-    if (var_v0 != 0) {
-loop_4:
-        if (var_v0->unk0 == 1) {
+    var_v0 = (SCTaskInfo *)scPausedQueueHead;
+    while (var_v0 != NULL) {
+        if (var_v0->type == 1) {
             return 0;
         }
-        var_v0 = var_v0->unkC;
-        if (var_v0 == 0) {
-            goto block_7;
-        }
-        goto loop_4;
+        var_v0 = var_v0->next;
     }
-block_7:
-    var_v0_2 = scMainQueueHead;
-    if (var_v0_2 != NULL) {
-loop_8:
-        if (var_v0_2->unk0 == 1) {
+    var_v0 = scMainQueueHead;
+    while (var_v0 != NULL) {
+        if (var_v0->type == 1) {
             return 0;
         }
-        var_v0_2 = var_v0_2->unkC;
-        if (var_v0_2 == NULL) {
-            goto block_11;
-        }
-        goto loop_8;
+        var_v0 = var_v0->next;
     }
-block_11:
     if ((scCurrentDPTask != NULL) && (scCurrentDPTask->info.type == 1)) {
         return 0;
     }
-    var_v0_3 = scDPTaskHead.info.type;
-    if (var_v0_3 != 0) {
-loop_15:
-        if (var_v0_3->unk0 == 1) {
+    var_v0 = (SCTaskInfo *)scDPTaskHead;
+    while (var_v0 != NULL) {
+        if (var_v0->type == 1) {
             return 0;
         }
-        var_v0_3 = var_v0_3->unkC;
-        if (var_v0_3 == 0) {
-            /* Duplicate return node #18. Try simplifying control flow for better match */
-            return 1;
-        }
-        goto loop_15;
+        var_v0 = var_v0->next;
     }
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000B64.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void scMainQueueAdd(SCTaskInfo *task) {
     SCTaskInfo *temp_v0;
     SCTaskInfo *var_v0;
-    s32 temp_v1;
 
     var_v0 = scMainQueueTail;
-    if (var_v0 != NULL) {
-        temp_v1 = task->priority;
-        if (var_v0->priority < temp_v1) {
-loop_2:
-            var_v0 = var_v0->prev;
-            if (var_v0 != NULL) {
-                if (var_v0->priority < temp_v1) {
-                    goto loop_2;
-                }
-            }
-        }
+    while ((var_v0 != NULL) && (var_v0->priority < task->priority)) {
+        var_v0 = var_v0->prev;
     }
     task->prev = var_v0;
     if (var_v0 != NULL) {
@@ -189,10 +170,6 @@ loop_2:
     }
     scMainQueueTail = task;
 }
-#else
-void scMainQueueAdd(SCTaskInfo *);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scMainQueueAdd.s")
-#endif
 
 void scMainQueueRemove(SCTaskInfo *task) {
     if (task->prev != NULL) {
@@ -207,173 +184,110 @@ void scMainQueueRemove(SCTaskInfo *task) {
     }
 }
 
-#ifdef MIPS_TO_C
-void scPausedQueueAdd(void *arg0) {
-    s32 temp_v1;
-    s32 var_v0;
-    void *temp_v0;
+void scPausedQueueAdd(SCTaskInfo *task) {
+    SCTaskInfo *temp_v0;
+    SCTaskInfo *var_v0;
 
-    var_v0 = scPausedQueueTail.info.type;
-    if (var_v0 != 0) {
-        temp_v1 = arg0->unk4;
-        if (var_v0->unk4 < temp_v1) {
-loop_2:
-            var_v0 = var_v0->unk10;
-            if (var_v0 != 0) {
-                if (var_v0->unk4 < temp_v1) {
-                    goto loop_2;
-                }
-            }
-        }
+    var_v0 = (SCTaskInfo *)scPausedQueueTail;
+    while ((var_v0 != NULL) && (var_v0->priority < task->priority)) {
+        var_v0 = var_v0->prev;
     }
-    arg0->unk10 = var_v0;
-    if (var_v0 != 0) {
-        arg0->unkC = var_v0->unkC;
-        var_v0->unkC = arg0;
+    task->prev = var_v0;
+    if (var_v0 != NULL) {
+        task->next = var_v0->next;
+        var_v0->next = task;
     } else {
-        arg0->unkC = scPausedQueueHead.info.type;
-        scPausedQueueHead.info.type = arg0;
+        task->next = (SCTaskInfo *)scPausedQueueHead;
+        scPausedQueueHead = (SCTaskGfx *)task;
     }
-    temp_v0 = arg0->unkC;
+    temp_v0 = task->next;
     if (temp_v0 != NULL) {
-        temp_v0->unk10 = arg0;
+        temp_v0->prev = task;
         return;
     }
-    scPausedQueueTail.info.type = arg0;
+    scPausedQueueTail = (SCTaskGfx *)task;
 }
-#else
-void scPausedQueueAdd(SCTaskInfo *info);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scPausedQueueAdd.s")
-#endif
 
-#ifdef MIPS_TO_C
-void scPausedQueueRemove(void *arg0) {
-    s32 temp_v0_2;
-    void *temp_v0;
-
-    temp_v0 = arg0->unk10;
-    if (temp_v0 != NULL) {
-        temp_v0->unkC = arg0->unkC;
+void scPausedQueueRemove(SCTaskInfo *task) {
+    if (task->prev != NULL) {
+        task->prev->next = task->next;
     } else {
-        scPausedQueueHead.info.type = arg0->unkC;
+        scPausedQueueHead = (SCTaskGfx *)task->next;
     }
-    temp_v0_2 = arg0->unkC;
-    if (temp_v0_2 != 0) {
-        temp_v0_2->unk10 = arg0->unk10;
-        return;
+    if (task->next != NULL) {
+        task->next->prev = task->prev;
+    } else {
+        scPausedQueueTail = (SCTaskGfx *)task->prev;
     }
-    scPausedQueueTail.info.type = arg0->unk10;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scPausedQueueRemove.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80000E14(void *arg0) {
-    arg0->unkC = 0;
-    arg0->unk10 = D_80048BA0;
+void func_80000E14(SCTaskInfo *task) {
+    task->next = NULL;
+    task->prev = D_80048BA0;
     if (D_80048BA0 != NULL) {
-        D_80048BA0->unkC = arg0;
+        D_80048BA0->next = task;
     } else {
-        scDPTaskHead.info.type = arg0;
+        scDPTaskHead = (SCTaskGfx *)task;
     }
-    D_80048BA0 = arg0;
+    D_80048BA0 = task;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000E14.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void scDPQueueRemove(void *arg0) {
-    s32 temp_v0_2;
-    void *temp_v0;
-
-    temp_v0 = arg0->unk10;
-    if (temp_v0 != NULL) {
-        temp_v0->unkC = arg0->unkC;
+void scDPQueueRemove(SCTaskInfo *task) {
+    if (task->prev != NULL) {
+        task->prev->next = task->next;
     } else {
-        scDPTaskHead.info.type = arg0->unkC;
+        scDPTaskHead = (SCTaskGfx *)task->next;
     }
-    temp_v0_2 = arg0->unkC;
-    if (temp_v0_2 != 0) {
-        temp_v0_2->unk10 = arg0->unk10;
-        return;
+    if (task->next != NULL) {
+        task->next->prev = task->prev;
+    } else {
+        D_80048BA0 = task->prev;
     }
-    D_80048BA0 = arg0->unk10;
 }
-#else
-u32 scDPQueueRemove(SCTaskInfo *);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scDPQueueRemove.s")
-#endif
 
-#ifdef MIPS_TO_C
+#define GET_BIT(x, n) (((u32)(x) << (31 - (n))) >> 31)
 
 void func_80000E9C(void) {
-    u32 var_v0;
-    u32 var_v0_2;
-    void *temp_t6;
-
-    M2C_MEMCPY_ALIGNED(&D_80048BA8, &gCurrentViMode, 0x48);
-    temp_t6 = &gCurrentViMode + 0x48;
-    D_80048BA8.fldRegs[1].vBurst.unk0 = temp_t6->unk0;
-    D_80048BA8.fldRegs[1].vBurst.unk4 = temp_t6->unk4;
+    D_80048BA8 = gCurrentViMode;
     osViSetMode(&D_80048BA8);
-    var_v0 = (D_80048C7C * 0x10) >> 0x1F;
-    if (var_v0 != 0) {
+    if (GET_BIT(D_80048C7C, 27)) {
         osViSetYScale(1.0f);
-        var_v0_2 = D_80048C7C * 0x10;
-        goto block_4;
-    }
-    if (osTvType == 0) {
+    } else if (osTvType == 0) {
         osViSetYScale(0.833f);
-        var_v0_2 = D_80048C7C * 0x10;
-block_4:
-        var_v0 = var_v0_2 >> 0x1F;
     }
-    osViBlack(var_v0 & 0xFF);
+    osViBlack(GET_BIT(D_80048C7C, 27));
     D_80048C48 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000E9C.s")
-#endif
 
 // weird long function
 void func_80000F78(u32 width, u32 height, s32 flags, s16 edgeOffsetLeft, s16 edgeOffsetRight, s16 edgeOffsetTop, s16 edgeOffsetBottom);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000F78.s")
 
-#ifdef MIPS_TO_C
-
 void func_80001774(void *arg0) {
     if ((D_80048C48 != 0) && (scBeforeReset == 0)) {
-        func_80000E9C(arg0);
+        func_80000E9C();
     }
     if (D_80048CD0 != 0) {
-        osSendMesg(D_80048CD4, 1, 0);
-        if (arg0 == -1) {
+        osSendMesg(D_80048CD4, (OSMesg) 1, OS_MESG_NOBLOCK);
+        if ((u32)arg0 == -1) {
             gCurrFrameBuffer = scNextFrameBuffer;
-            scNextFrameBuffer = NULL;
+            scNextFrameBuffer = 0;
         } else {
-            goto block_12;
+            gCurrFrameBuffer = (s32)arg0;
         }
-    } else if (arg0 == -1) {
-        osViSwapBuffer(scNextFrameBuffer);
-        if (scNextFrameBuffer == D_80048C60) {
+    } else if ((u32)arg0 == -1) {
+        osViSwapBuffer((void *)scNextFrameBuffer);
+        if (D_80048C60 == scNextFrameBuffer) {
             D_80048C64 = 1;
         }
         gCurrFrameBuffer = scNextFrameBuffer;
-        scNextFrameBuffer = NULL;
+        scNextFrameBuffer = 0;
     } else {
         osViSwapBuffer(arg0);
-block_12:
-        gCurrFrameBuffer = arg0;
+        gCurrFrameBuffer = (s32)arg0;
     }
-    D_80048C74 = (osGetCount() - scTimestampSetFb) / 2971;
+    D_80048C74 = (osGetCount() - scTimestampSetFb) / 0xB9B;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80001774.s")
-#endif
 
 void func_8000189C(SCTaskGfx *task) {
     if (scCurrentGfxTask != NULL) {
@@ -389,29 +303,19 @@ void func_8000189C(SCTaskGfx *task) {
     scCurrentGfxTask = task;
 }
 
-#ifdef MIPS_TO_C
-
-void func_80001924(void *arg0) {
-    OSTask *sp1C;
-    OSTask *temp_a0;
-
+void func_80001924(SCTaskGfx *task) {
     D_80048C70 = osGetCount();
     if ((scCurrentGfxTask != NULL) && (scCurrentGfxTask->info.state == 2)) {
         osSpTaskYield();
         scCurrentGfxTask->info.state = 4;
-        arg0->unk8 = 3;
+        task->info.state = 3;
     } else {
-        temp_a0 = arg0 + 0x28;
-        sp1C = temp_a0;
-        osSpTaskLoad(temp_a0);
-        osSpTaskStartGo(temp_a0);
-        arg0->unk8 = 2;
+        osSpTaskLoad(&task->task);
+        osSpTaskStartGo(&task->task);
+        task->info.state = 2;
     }
-    D_80048B90 = arg0;
+    D_80048B90 = task;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80001924.s")
-#endif
 
 #ifdef MIPS_TO_C
 

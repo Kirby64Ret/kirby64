@@ -20,6 +20,39 @@ void func_800B1900(s32);
 void func_800B1BF0(s32, s32);
 void dma_read(u32, void *, u32);
 
+extern s32 D_800E83E0[];
+extern s32 D_800E7CE0[];
+extern u16 D_800E77A0[];
+extern s32 D_800E98E0[];
+extern f32 D_800D6E58;
+extern s32 D_802297E4_ovl18;
+extern void (*D_802297E0_ovl18)(void);
+extern f32 gEntitiesAngleXArray[];
+extern f32 gEntitiesAngleYArray[];
+extern f32 gEntitiesAngleZArray[];
+extern f32 gEntitiesScaleXArray[];
+extern f32 gEntitiesScaleYArray[];
+extern f32 gEntitiesScaleZArray[];
+extern s32 gEntityGObjProcessArray[];
+
+void func_800B19F4(s32, u32, struct UnkStruct800D70D8 *);
+void func_800BB468(s32, s32);
+s32 func_800BC11C(s32);
+void func_801A3E80_ovl7(struct GObj *);
+void assign_new_process_entry(s32, void (*)(struct GObj *));
+void func_80111550(u32);
+s32 func_80111C88(s32 *, u32);
+void func_80111ECC(s32);
+void play_sound(s32);
+s32 func_8021F70C_ovl18(void);
+void func_8021FB18_ovl18(void);
+void func_8021F4E8_ovl18(void);
+s32 func_8021F658_ovl18(void);
+void func_8021F970_ovl18(void);
+void func_8021FF80_ovl18(void);
+void func_80220038_ovl18(void);
+
+
 void func_8021DF20_ovl18(struct GObj *arg0) {
     Mtx *temp_a0;
 
@@ -152,4 +185,7 @@ void func_8021FB18_ovl18(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_80220038_ovl18.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_80220184_ovl18.s")
+void func_80220184_ovl18(void) {
+    func_8021FF80_ovl18();
+    func_80220038_ovl18();
+}

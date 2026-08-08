@@ -26,20 +26,20 @@ OMLookAt D_8003DE94 = {
     { 0.0f, 1.0f, 0.0f }
 };
 
-f32 D_8003DEBC[4] = {
-    0.0f, 0.0f, 0.0f, 0.0f
+OMMtxFloat3 D_8003DEBC = {
+    NULL, { 0.0f, 0.0f, 0.0f }
 };
 
-f32 D_8003DECC[5] = {
-    0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+OMMtxFloat4 D_8003DECC = {
+    NULL, 0.0f, { 0.0f, 0.0f, 1.0f }
 };
 
-f32 D_8003DEE0[5] = {
-    0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+OMMtxFloat4 D_8003DEE0 = {
+    NULL, 0.0f, { 0.0f, 0.0f, 0.0f }
 };
 
-f32 D_8003DEF4[4] = {
-    0.0f, 1.0f, 1.0f, 1.0f
+OMMtxFloat3 D_8003DEF4 = {
+    NULL, { 1.0f, 1.0f, 1.0f }
 };
 
 // bss
@@ -138,8 +138,48 @@ struct GObjProcess *HS64_GObjProcessPop(void) {
     return ret;
 }
 
-void HS64_GObjProcessLink(struct GObjProcess *);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_GObjProcessLink.s")
+void HS64_GObjProcessLink(struct GObjProcess *proc) {
+    GObj *gobj = proc->gobj;
+    s32 link = proc->gobj->link;
+    GObj *prevGObj = proc->gobj;
+
+    while (TRUE) {
+        while (prevGObj != NULL) {
+            struct GObjProcess *prevProc = prevGObj->procListTail;
+
+            while (prevProc != NULL) {
+                if (prevProc->pri == proc->pri) {
+                    proc->nextPriProc = prevProc->nextPriProc;
+                    prevProc->nextPriProc = proc;
+                    proc->prevPriProc = prevProc;
+                    goto loop_break;
+                }
+                prevProc = prevProc->prev;
+            }
+            prevGObj = prevGObj->prev;
+        }
+        if (link != 0) {
+            prevGObj = omGObjListTail[--link];
+        } else {
+            proc->nextPriProc = omGObjProcList[proc->pri];
+            omGObjProcList[proc->pri] = proc;
+            proc->prevPriProc = NULL;
+            break;
+        }
+    }
+loop_break:
+    if (proc->nextPriProc != NULL) {
+        proc->nextPriProc->prevPriProc = proc;
+    }
+    if (gobj->procListTail != NULL) {
+        gobj->procListTail->next = proc;
+    } else {
+        gobj->procListHead = proc;
+    }
+    proc->prev = gobj->procListTail;
+    proc->next = NULL;
+    gobj->procListTail = proc;
+}
 
 void HS64_GObjProcessRelease(struct GObjProcess *proc) {
     proc->next = gGObjProcessHead;
@@ -590,8 +630,170 @@ void omEndProcess(struct GObjProcess *proc) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80008EC4.s")
-OMMtx *func_80008EC4(struct DObj *, u8, u8, u32);
+OMMtx *func_80008EC4(struct DObj *dobj, u8 kind, u8 arg2, s32 index) {
+    uintptr_t csr;
+    OMMtxFloat3 *translate;
+    OMMtxFloat4 *rotate;
+    OMMtxFloat3 *scale;
+    OMMtx *mtx;
+    s32 i;
+
+    if (dobj->numMatrices == ARRAY_COUNT(dobj->matrices)) {
+        fatal_printf("om : couldn't add OMMtx for DObj\n");
+        while (1) {};
+    }
+
+    if (dobj->unk4C != NULL) {
+        csr = (uintptr_t)dobj->unk4C->data;
+
+        for (i = 0; i < ARRAY_COUNT(dobj->unk4C->kinds); i++) {
+            switch (dobj->unk4C->kinds[i]) {
+                case 0:
+                    break;
+                case 1:
+                    translate = (OMMtxFloat3 *)csr;
+                    csr += sizeof(OMMtxFloat3);
+                    break;
+                case 2:
+                    rotate = (OMMtxFloat4 *)csr;
+                    csr += sizeof(OMMtxFloat4);
+                    break;
+                case 3:
+                    scale = (OMMtxFloat3 *)csr;
+                    csr += sizeof(OMMtxFloat3);
+                    break;
+            }
+        }
+    }
+
+    for (i = dobj->numMatrices; i > index; i--) {
+        dobj->matrices[i] = dobj->matrices[i - 1];
+    }
+    dobj->numMatrices++;
+
+    dobj->matrices[index] = mtx = HS64_OMMtxPop();
+    mtx->kind = kind;
+
+    switch (kind) {
+        case MTX_TYPE_TRANSLATE:
+        case MTX_TYPE_34:
+        case MTX_TYPE_36:
+        case MTX_TYPE_38:
+        case MTX_TYPE_40:
+        case MTX_TYPE_55:
+            dobj->pos = D_8003DEBC;
+            dobj->pos.mtx = mtx;
+            break;
+        case MTX_TYPE_ROTATE_DEG:
+        case MTX_TYPE_ROTATE:
+            dobj->angle = D_8003DECC;
+            dobj->angle.mtx = mtx;
+            break;
+        case MTX_TYPE_ROTATE_DEG_TRANSLATE:
+        case MTX_TYPE_ROTATE_TRANSLATE:
+            dobj->pos = D_8003DEBC;
+            dobj->angle = D_8003DECC;
+            dobj->pos.mtx = mtx;
+            dobj->angle.mtx = mtx;
+            break;
+        case MTX_TYPE_ROTATE_RPY_DEG:
+        case MTX_TYPE_ROTATE_RPY:
+        case MTX_TYPE_ROTATE_PYR:
+            dobj->angle = D_8003DEE0;
+            dobj->angle.mtx = mtx;
+            break;
+        case MTX_TYPE_ROTATE_RPY_TRANSLATE_DEG:
+        case MTX_TYPE_ROTATE_RPY_TRANSLATE:
+        case MTX_TYPE_ROTATE_PYR_TRANSLATE:
+        case MTX_TYPE_51:
+        case MTX_TYPE_52:
+            dobj->pos = D_8003DEBC;
+            dobj->angle = D_8003DEE0;
+            dobj->pos.mtx = mtx;
+            dobj->angle.mtx = mtx;
+            break;
+        case MTX_TYPE_ROTATE_TRANSLATE_SCALE:
+            dobj->pos = D_8003DEBC;
+            dobj->angle = D_8003DECC;
+            dobj->scale = D_8003DEF4;
+            dobj->pos.mtx = mtx;
+            dobj->angle.mtx = mtx;
+            dobj->scale.mtx = mtx;
+            break;
+        case MTX_TYPE_ROTATE_RPY_TRANSLATE_SCALE:
+        case MTX_TYPE_ROTATE_PYR_TRANSLATE_SCALE:
+        case MTX_TYPE_54:
+            dobj->pos = D_8003DEBC;
+            dobj->angle = D_8003DEE0;
+            dobj->scale = D_8003DEF4;
+            dobj->pos.mtx = mtx;
+            dobj->angle.mtx = mtx;
+            dobj->scale.mtx = mtx;
+            break;
+        case MTX_TYPE_SCALE:
+        case MTX_TYPE_43:
+        case MTX_TYPE_44:
+        case MTX_TYPE_47:
+        case MTX_TYPE_48:
+        case MTX_TYPE_49:
+        case MTX_TYPE_50:
+        case MTX_TYPE_53:
+            dobj->scale = D_8003DEF4;
+            dobj->scale.mtx = mtx;
+            break;
+        case MTX_TYPE_45:
+        case MTX_TYPE_46:
+            dobj->angle = D_8003DECC;
+            dobj->scale = D_8003DEF4;
+            dobj->angle.mtx = mtx;
+            dobj->scale.mtx = mtx;
+            break;
+        case MTX_TYPE_56:
+            *translate = D_8003DEBC;
+            translate->mtx = mtx;
+            break;
+        case MTX_TYPE_57:
+            *rotate = D_8003DECC;
+            rotate->mtx = mtx;
+            break;
+        case MTX_TYPE_58:
+            *rotate = D_8003DEE0;
+            rotate->mtx = mtx;
+            break;
+        case MTX_TYPE_59:
+            *scale = D_8003DEF4;
+            scale->mtx = mtx;
+            break;
+        case MTX_TYPE_60:
+            *translate = D_8003DEBC;
+            *rotate = D_8003DECC;
+            translate->mtx = rotate->mtx = mtx;
+            break;
+        case MTX_TYPE_61:
+            *translate = D_8003DEBC;
+            *rotate = D_8003DECC;
+            *scale = D_8003DEF4;
+            translate->mtx = rotate->mtx = scale->mtx = mtx;
+            break;
+        case MTX_TYPE_62:
+            *translate = D_8003DEBC;
+            *rotate = D_8003DEE0;
+            translate->mtx = rotate->mtx = mtx;
+            break;
+        case MTX_TYPE_63:
+            *translate = D_8003DEBC;
+            *rotate = D_8003DEE0;
+            *scale = D_8003DEF4;
+            translate->mtx = rotate->mtx = scale->mtx = mtx;
+            break;
+        case MTX_TYPE_1:
+        case MTX_TYPE_2:
+            break;
+    }
+
+    mtx->unk05 = arg2;
+    return mtx;
+}
 
 
 OMMtx *omDObjAppendMtx(struct DObj *arg0, u8 arg1, u8 arg2) {
@@ -741,7 +943,6 @@ void func_800099E4(struct Animation *anim) {
     anim->scale = -FLT_MAX;
 }
 
-#ifdef NON_MATCHING
 MObj* omDObjAddMObj(DObj* dobj, TextureScroll *texture) {
     MObj* mobj;
 
@@ -760,11 +961,11 @@ MObj* omDObjAddMObj(DObj* dobj, TextureScroll *texture) {
     }
 
     mobj->next = NULL;
-    mobj->primLOD = texture->unk_54 / 255.0f;
+    mobj->primLOD = texture->unk_5C / 255.0f;
     mobj->texture = *texture;
 
-    mobj->texture.xScale = texture->xScale;
-    mobj->texture.yScale = texture->yScale;
+    mobj->texture.field_0x2c = texture->xFrac0;
+    mobj->texture.field_0x30 = texture->xScale;
     mobj->texIndex1 = 0;
     mobj->texIndex2 = 0;
     mobj->palIndex = 0.f;
@@ -776,15 +977,47 @@ MObj* omDObjAddMObj(DObj* dobj, TextureScroll *texture) {
 
     return mobj;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddMObj.s")
-#endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009B5C.s")
+void func_80009B5C(DObj *dobj) {
+    MObj *current_mobj;
+    MObj *next_mobj;
+    struct AObj *current_aobj;
+    struct AObj *next_aobj;
 
-// Not really sure what's going on here
-void func_80009BD4(DObj *);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009BD4.s")
+    current_mobj = dobj->mobjList;
+    while (current_mobj != NULL) {
+        current_aobj = current_mobj->aobj;
+        while (current_aobj != NULL) {
+            next_aobj = current_aobj->next;
+            HS64_AObjRelease(current_aobj);
+            current_aobj = next_aobj;
+        }
+        next_mobj = current_mobj->next;
+        HS64_MObjPush(current_mobj);
+        current_mobj = next_mobj;
+    }
+    dobj->mobjList = NULL;
+}
+
+void func_80009BD4(DObj *dobj) {
+    s32 i;
+
+    dobj->unk4C = NULL;
+    dobj->flags = 0;
+    dobj->animCBReceiver = 0;
+    dobj->numMatrices = 0;
+
+    for (i = 0; i < ARRAY_COUNT(dobj->matrices); i++) {
+        dobj->matrices[i] = NULL;
+    }
+    dobj->aobj = NULL;
+    dobj->animList = NULL;
+    dobj->timeRemaining = ANIMATION_DISABLED;
+    dobj->animSpeed = 1.0f;
+    dobj->timeElapsed = 0.0f;
+    dobj->mobjList = NULL;
+    dobj->unk84 = 0;
+}
 
 struct DObj *omGObjAddDObj(GObj *gobj, void *arg1) {
     struct DObj *dobj;

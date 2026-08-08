@@ -226,6 +226,6 @@ extern int func_80023360(u32, u32);
 void auThreadMain(void *);
 void auSetBGMVolume(s32 playerID, u32 vol);
 void auSetReverbType(s32 fxType);
-s32 auFunc80020C88(void);
+void auFunc80020C88(void);
 
 #endif

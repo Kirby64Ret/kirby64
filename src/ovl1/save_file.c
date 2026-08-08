@@ -4,7 +4,6 @@
 
 extern u16 D_800ECB00[];
 extern u32 D_800ECB10[];
-extern u32 D_800ECA04;
 extern u32 D_800ECBAC;
 extern u8 D_800D5157[];
 extern s32 D_800BE500;
@@ -71,30 +70,34 @@ void saveSetFileChecksum(u32 file) {
     gSaveBuffer1.files[file].checksum = saveCalcFileChecksum(file);
 }
 
+#ifdef MIPS_TO_C
 void func_800B9008(void) {
-    u32 *i = (u32 *)&gSaveBuffer1;
-    u32 *saveEnd = &D_800ECA04;
+    s32 i;
 
-    while (i != saveEnd) {
-        *i = 0;
-        i++;
+    for (i = 0; i < 3; i++) {
+        gSaveBuffer1.header.head[i] = 0;
     }
     gSaveBuffer1.header.head[0] = 0;
     gSaveBuffer1.header.head[1] = 0;
     gSaveBuffer1.header.head[2] = 0;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9008.s")
+#endif
 
+#ifdef MIPS_TO_C
 u32 saveCalcHeaderChecksum(void) {
-    u32 *i = (u32 *)&gSaveBuffer1;
-    u32 *saveEnd = &D_800ECA04;
+    s32 i;
     u32 resultBuffer = SAVE_CHECKSUM_MAGIC;
 
-    while (i != saveEnd) {
-        resultBuffer += *i;
-        i++;
+    for (i = 0; i < 3; i++) {
+        resultBuffer += gSaveBuffer1.header.head[i];
     }
     return resultBuffer;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/saveCalcHeaderChecksum.s")
+#endif
 
 void saveSetHeaderChecksum(void) {
     gSaveBuffer1.header.checksum = saveCalcHeaderChecksum();
@@ -132,6 +135,7 @@ void func_800B9C50(s32 fileNum) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9CB4.s")
 
+#ifdef MIPS_TO_C
 void func_800B9D60(s32 fileNum, s32 arg1) {
     gSaveBuffer1.files[fileNum].data34[arg1] = 1;
     D_800D6BC0[arg1] = 1;
@@ -139,6 +143,9 @@ void func_800B9D60(s32 fileNum, s32 arg1) {
     saveSetFileChecksum(fileNum);
     func_800B891C(fileNum);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9D60.s")
+#endif
 
 s32 func_800B9DC8(void) {
     if (D_800D6BC0[D_800BE500] != 0) {

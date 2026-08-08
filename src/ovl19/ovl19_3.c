@@ -484,7 +484,7 @@ void func_8022A410_ovl19(GObj *g) {
         ohSleep(1);
     }
     func_801230E8(0x20382, 0x20383, 1);
-    gKirbyState.unk30++;
+    ++gKirbyState.unk30;
     curObjSleepForever();
 }
 
@@ -615,7 +615,6 @@ void func_8022AE24_ovl19(GObj *g) {
     }
 }
 
-#ifdef MIPS_TO_C
 void func_8022AEA0_ovl19(GObj *g) {
     if (D_8012E7E8[2] == 0) {
         D_800DDFD0[omCurrentObj->objId] = 8;
@@ -673,9 +672,6 @@ void func_8022AEA0_ovl19(GObj *g) {
     }
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022AEA0_ovl19.s")
-#endif
 
 void func_8022B2A4_ovl19(GObj *g) {
     u8 cmd[] = {2, 9, 15};

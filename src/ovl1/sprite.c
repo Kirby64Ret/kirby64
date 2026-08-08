@@ -7,6 +7,9 @@
 #include "GObj.h"
 #include "SPObj.h"
 
+void func_800AC5E0(SPObj *);
+void func_800ACB7C(SPObj *);
+
 extern SPObj *D_800DD6E0; // SPObj head
 extern SPObj *D_800DD6E4;
 extern SPObj *D_800DD6E8;
@@ -234,7 +237,24 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC954.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ACB7C.s")
+void func_800ACB7C(SPObj *sp) {
+    GObj *gobj;
+    SPObj *other;
+
+    gobj = (GObj *) sp->unk4;
+    if (sp == gobj->unk4C) {
+        gobj->unk4C = (void *) sp->unk8;
+    }
+    other = (SPObj *) sp->unkC;
+    if (other != NULL) {
+        other->unk8 = sp->unk8;
+    }
+    other = (SPObj *) sp->unk8;
+    if (other != NULL) {
+        other->unkC = sp->unkC;
+    }
+    func_800AC5E0(sp);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ACBDC.s")
 

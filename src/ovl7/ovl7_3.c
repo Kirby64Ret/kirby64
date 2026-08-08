@@ -1042,31 +1042,22 @@ void func_801A374C_ovl7(void *arg0) {
     func_8011BF4C(track, arg0);
 }
 
-#ifdef MIPS_TO_C
-
-void func_801A37B8_ovl7(s32 arg0, s32 arg1) {
-    ? *sp2C;
-    ? sp20;
-    ? *var_a2;
+void func_801A37B8_ovl7(void *arg0, struct DObj *arg1) {
+    struct UnkOvl7Track *var_a2;
+    Vector sp20;
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
-    var_a2 = (temp_v0 << 5) - 0x1C0 + &D_801D0450_ovl7;
+    var_a2 = &D_801D0450_ovl7[temp_v0 - 14];
     if (temp_v0 == 0) {
         var_a2 = &D_801CE730_ovl7;
     }
-    sp2C = var_a2;
-    func_801A3618_ovl7(var_a2, var_a2);
+    func_801A3618_ovl7(var_a2);
     utilGetTransformSRT(&sp20, arg1);
-    sp2C->unk0 = sp20.unk0;
-    sp2C->unk4 = sp20.unk4;
-    sp2C->unk8 = sp20.unk8;
-    sp2C->unk18 = D_800E17D0[omCurrentObj->objId];
-    func_8011BF4C(sp2C, arg0);
+    *(Vector *)var_a2 = sp20;
+    var_a2->unk18 = D_800E17D0[omCurrentObj->objId];
+    func_8011BF4C(var_a2, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A37B8_ovl7.s")
-#endif
 
 s32 func_801A3864_ovl7(void) {
     struct DObj *dobj;

@@ -678,24 +678,13 @@ s32 func_80020C70(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 
 // Near-match draft: only difference is i/count allocated v1/v0 instead of
 // v0/v1 (one extra move at the end). Returns 1 when D_800964D3 == 0.
-#ifdef MIPS_TO_C
-s32 auFunc80020C88(void) {
+void auFunc80020C88(void) {
     s32 i;
 
     func_80023990();
-
-    i = 0;
-    if (D_800964D3 > 0) {
-        do {
-            i++;
-        } while (i < D_800964D3);
-        return i;
+    for (i = 0; i < D_800964D3; i++) {
     }
 }
-#else
-s32 auFunc80020C88(void);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auFunc80020C88.s")
-#endif
 
 // TODO: returns int?
 void func_80020CC4(u32 volume) {

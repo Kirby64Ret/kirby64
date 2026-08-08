@@ -1580,9 +1580,9 @@ void func_8001DF68(f32 arg0, void *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001DF68.s")
 #endif
 
-#ifdef MIPS_TO_C
+f32 func_8001DF68(f32 arg0, void *arg1);
 
-f32 func_8001E000(f32 arg0, f32 arg1, ? arg2) {
+f32 func_8001E000(f32 arg0, f32 arg1, void *arg2) {
     f32 sp4C;
     f32 temp_f20;
     f32 temp_f24;
@@ -1590,7 +1590,7 @@ f32 func_8001E000(f32 arg0, f32 arg1, ? arg2) {
     f32 var_f22;
     s32 var_s0;
 
-    temp_f24 = (arg1 - arg0) / 8.0f;
+    temp_f24 = (arg1 - arg0) / (f32)8;
     var_f22 = 0.0f;
     var_s0 = 2;
     sp4C = temp_f24;
@@ -1607,9 +1607,6 @@ f32 func_8001E000(f32 arg0, f32 arg1, ? arg2) {
     temp_f20 = func_8001DF68(arg0, arg2);
     return ((func_8001DF68(arg1, arg2) + (temp_f20 + var_f22)) * sp4C) / 3.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001E000.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1690,19 +1687,14 @@ f32 func_8001E104(void *arg0, f32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001E104.s")
 #endif
 
-#ifdef MIPS_TO_C
-void mtxGetInterpolatedPosition(s32 arg0, s32 arg1, ? arg2) {
-    func_8001DB54(arg0, arg1, func_8001E104(arg2, arg1, arg2));
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/mtxGetInterpolatedPosition.s")
-#endif
+void func_8001DB54(void *arg0, void *arg1, f32 arg2);
+void func_8001DDE0(void *arg0, void *arg1, f32 arg2);
+f32 func_8001E104(void *arg0, f32 arg1);
 
-#ifdef MIPS_TO_C
-
-void func_8001E344(s32 arg0, s32 arg1, ? arg2) {
-    func_8001DDE0(arg0, arg1, func_8001E104(arg2, arg1, arg2));
+void mtxGetInterpolatedPosition(Vector *arg0, s32 *arg1, f32 arg2) {
+    func_8001DB54(arg0, arg1, func_8001E104(arg1, arg2));
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001E344.s")
-#endif
+
+void func_8001E344(void *arg0, void *arg1, f32 arg2) {
+    func_8001DDE0(arg0, arg1, func_8001E104(arg1, arg2));
+}

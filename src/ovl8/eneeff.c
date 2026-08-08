@@ -15,6 +15,7 @@ extern void func_800AA018(s32);
 extern void func_800AF27C(void);
 extern void func_800B1900(u16);
 extern void func_800B4B9C(s32);
+extern void func_800B4D40(s32);
 extern void func_800FB914(s32);
 extern void func_801D1E58_ovl8(s32);
 
@@ -90,7 +91,62 @@ void func_801D23EC_ovl8(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D2590_ovl8.s")
+void func_801D2590_ovl8(s32 arg0) {
+    func_800A9864(0x100E5, 0x1869F, 0x10);
+    D_800DEF90[omCurrentObj->objId] = func_800B4D40;
+    D_800DDA90[omCurrentObj->objId] = 0x25;
+    func_800AA018(0x1064F);
+    while (1) {
+        switch (D_800DFF50[D_800E0D50[omCurrentObj->objId]] + 0xFFFEFBC3) {
+            case 12:
+                func_800A9EA4(0x1064B);
+                break;
+            case 24:
+                func_800A9EA4(0x10658);
+                break;
+            case 26:
+                func_800AA018(0x1065A);
+                func_800AF27C();
+                func_800AA018(0x10650);
+                while (D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x10457) {
+                    ohSleep(1);
+                }
+                break;
+            case 0:
+                func_800A9EA4(0x1063F);
+                break;
+            case 2:
+                func_800A9EA4(0x10641);
+                break;
+            case 4:
+                func_800A9EA4(0x10643);
+                break;
+            case 6:
+                func_800A9EA4(0x10645);
+                break;
+            case 22:
+                func_800A9EA4(0x10656);
+                break;
+            case 8:
+                func_800A9EA4(0x10647);
+                break;
+            case 20:
+                func_800A9EA4(0x10654);
+                break;
+            case 14:
+                func_800A9EA4(0x1064D);
+                break;
+            case 10:
+                func_800AA018(0x10649);
+                func_800AF27C();
+                func_800B1900(omCurrentObj->objId);
+                break;
+            default:
+                break;
+        }
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D281C_ovl8.s")
 
