@@ -1,6 +1,7 @@
 #include "common.h"
 #include "contpad.h"
 #include "localsched.h"
+#include "main.h"
 
 // sched.c
 extern SCTaskGfx *scCurrentDPTask, *scDPTaskHead;
@@ -22,14 +23,35 @@ extern s32 scRDPOutputBufferUsed;
 extern u32 scTimestampSetFb;
 extern OSViMode D_80048BA8;
 extern OSViMode gCurrentViMode;
-extern u32 D_80048C7C;
+typedef struct SCImageSetup {
+    /* 0 0x80 */ u32 antialias : 1;
+    /* 0 0x40 */ u32 serrate : 1;
+    /* 0 0x20 */ u32 colordepth32 : 1;
+    /* 0 0x10 */ u32 gamma : 1;
+    /* 0 0x08 */ u32 blackout : 1;
+    /* 0 0x04 */ u32 unk_b04 : 1;
+    /* 0 0x02 */ u32 gammadither : 1;
+    /* 0 0x01 */ u32 ditherfilter : 1;
+    /* 1 0x80 */ u32 divot : 1;
+} SCImageSetup;
+
+extern SCImageSetup D_80048C7C;
 extern u32 D_80048C48;
 extern s32 scBeforeReset;
-extern u32 D_80048CD0;
+extern s32 D_80048CD0;
 extern OSMesgQueue *D_80048CD4;
 extern s32 gCurrFrameBuffer;
 extern s32 D_80048C64;
 extern u32 D_80048C74;
+extern OSMesg D_80048C98[8];
+extern OSViMode osViModeNtscLan1;
+extern OSViMode osViModeFpalLan1;
+extern OSViMode osViModeMpalLan1;
+void scPreNMIDefault(void);
+extern u32 D_80048C78;
+extern u64 *D_80048C8C;
+extern u32 D_80048C90;
+extern u64 scDPOutputBuffSize;
 
 void func_80000900(void) {
 }
@@ -65,54 +87,41 @@ void scAddClient(SCClient *client, OSMesgQueue *mq, OSMesg *msg, u32 count) {
     scExecuteBlocking(&t.info);
 }
 
-#ifdef MIPS_TO_C
-
-s32 scCheckGfxTaskDefault(SCTaskGfx *arg0) {
-    void *sp1C;
-    s32 *var_v1;
-    s32 temp_a0;
-    s32 temp_a0_2;
-    s32 temp_v1;
-    void *temp_v0;
+s32 scCheckGfxTaskDefault(SCTaskGfx *t) {
+    s32 unused;
+    s32 i;
+    void *next, *curr, *free;
 
     if (scNextFrameBuffer != 0) {
         return 1;
+    } else if (D_80048C60 != 0) {
+        return 0;
     }
-    if (D_80048C60 != 0) {
-        goto block_15;
-    }
-    sp1C = osViGetNextFramebuffer();
-    temp_v0 = osViGetCurrentFramebuffer();
-    temp_v1 = arg0->fbIdx;
-    if (temp_v1 != -1) {
-        temp_a0 = (&scFrameBuffers)[temp_v1];
-        if ((temp_a0 != 0) && (temp_v0 != temp_a0) && (sp1C != temp_a0)) {
-            scNextFrameBuffer = temp_a0;
-            D_80048C60 = temp_a0;
+    next = (void *)osViGetNextFramebuffer();
+    curr = (void *)osViGetCurrentFramebuffer();
+
+    if (t->fbIdx != -1) {
+        free = (void *)scFrameBuffers[t->fbIdx];
+
+        if ((free != NULL) && (curr != free) && (next != free)) {
+            D_80048C60 = scNextFrameBuffer = (s32)free;
             scRDPOutputBufferUsed = 0;
             scTimestampSetFb = osGetCount();
             return 1;
         }
     }
-    var_v1 = &scFrameBuffers;
-loop_10:
-    temp_a0_2 = *var_v1;
-    var_v1 += 4;
-    if ((temp_a0_2 != 0) && (temp_v0 != temp_a0_2) && (sp1C != temp_a0_2)) {
-        scNextFrameBuffer = temp_a0_2;
-        scRDPOutputBufferUsed = 0;
-        scTimestampSetFb = osGetCount();
-        return 1;
+    for (i = 0; i < ARRAY_COUNT(scFrameBuffers); i++) {
+        free = (void *)scFrameBuffers[i];
+
+        if ((free != NULL) && (curr != free) && (next != free)) {
+            scNextFrameBuffer = (s32)free;
+            scRDPOutputBufferUsed = 0;
+            scTimestampSetFb = osGetCount();
+            return 1;
+        }
     }
-    if (var_v1 == &scNextFrameBuffer) {
-block_15:
-        return 0;
-    }
-    goto loop_10;
+    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scCheckGfxTaskDefault.s")
-#endif
 
 s32 func_80000B64(SCTaskInfo *arg0) {
     SCTaskInfo *var_v0;
@@ -250,12 +259,12 @@ void scDPQueueRemove(SCTaskInfo *task) {
 void func_80000E9C(void) {
     D_80048BA8 = gCurrentViMode;
     osViSetMode(&D_80048BA8);
-    if (GET_BIT(D_80048C7C, 27)) {
+    if (D_80048C7C.blackout) {
         osViSetYScale(1.0f);
     } else if (osTvType == 0) {
         osViSetYScale(0.833f);
     }
-    osViBlack(GET_BIT(D_80048C7C, 27));
+    osViBlack(D_80048C7C.blackout);
     D_80048C48 = 0;
 }
 
@@ -317,262 +326,246 @@ void func_80001924(SCTaskGfx *task) {
     D_80048B90 = task;
 }
 
-#ifdef MIPS_TO_C
-
 s32 scExecuteTask(SCTaskInfo *task) {
-    s32 sp4C;
-    SCTaskInfo *sp34;
-    ? *var_v0;
-    OSMesgQueue *temp_a0;
-    OSMesgQueue *temp_a0_10;
-    OSMesgQueue *temp_a0_2;
-    OSMesgQueue *temp_a0_3;
-    OSMesgQueue *temp_a0_5;
-    OSMesgQueue *temp_a0_6;
-    OSMesgQueue *temp_a0_7;
-    OSMesgQueue *temp_a0_8;
-    OSMesgQueue *temp_a0_9;
-    SCClient *temp_a0_4;
-    SCClient *temp_v0_2;
-    SCTaskGfx *var_a0;
-    SCTaskGfx *var_v0_3;
-    SCTaskGfx *var_v1_2;
-    SCTaskInfo *var_v1;
-    s32 *temp_v0;
-    s32 temp_t2;
-    s32 temp_t6;
-    s32 temp_v0_3;
-    s32 var_v0_2;
-    s32 var_v0_4;
+    s32 ret = 0;
+    s32 unused[4];
+    SCTaskInfo *sp34[2];
 
-    sp4C = 0;
-    temp_t6 = task->type;
-    switch (temp_t6) {
-        case 1:
-            temp_v0 = task->unk68;
-            if (temp_v0 != NULL) {
-                *temp_v0 |= scNextFrameBuffer;
-                osWritebackDCache(task->unk68, 4);
+    switch (task->type) {
+        case SC_TASK_TYPE_GFX: {
+            SCTaskGfx *t = (void *)task;
+
+            if (t->unk68 != NULL) {
+                *t->unk68 |= (u32)scNextFrameBuffer;
+                osWritebackDCache(t->unk68, sizeof(t->unk68));
             }
-            if (task->unk50 == -1) {
-                task->unk50 = D_80048C8C + scRDPOutputBufferUsed;
-                osWritebackDCache(task + 0x50, 4);
+            if (t->task.t.output_buff == (u64 *)-1) {
+                t->task.t.output_buff = (u64 *)((uintptr_t)D_80048C8C + scRDPOutputBufferUsed);
+                osWritebackDCache(&t->task.t.output_buff, sizeof(t->task.t.output_buff));
             }
-            if (task->unk74 == 1) {
-                osInvalDCache(&scDPOutputBuffSize, 8);
+            if (t->unk74 == 1) {
+                osInvalDCache(&scDPOutputBuffSize, sizeof(scDPOutputBuffSize));
             }
-            func_8000189C(task);
-            sp4C = 1;
+            func_8000189C(t);
+            ret = 1;
             break;
-        case 2:
+        }
+        case SC_TASK_TYPE_AUDIO: {
+            SCTaskGfx *t = (void *)task;
+
             osWritebackDCacheAll();
-            func_80001924(task);
-            sp4C = 1;
+            func_80001924(t);
+            ret = 1;
             break;
-        case 3:
-            temp_v0_2 = task->unk24;
-            temp_v0_2->next = scClientList;
-            scClientList = temp_v0_2;
-            temp_a0 = task->mq;
-            if (temp_a0 != NULL) {
-                osSendMesg(temp_a0, task->retVal, 0);
-            }
-            break;
-        case 4:
-            func_80000F78(task->unk24, task->unk28, task->unk2C, task->unk30, task->unk32, task->unk34, task->unk36);
-            temp_a0_2 = task->mq;
-            if (temp_a0_2 != NULL) {
-                osSendMesg(temp_a0_2, task->retVal, 0);
-            }
-            break;
-        case 5:
-            var_v0 = &scFrameBuffers;
-            var_v1 = task;
-            do {
-                temp_t2 = var_v1->unk24;
-                var_v0 += 4;
-                var_v1 += 4;
-                var_v0->unk-4 = temp_t2;
-            } while (var_v0 != &scNextFrameBuffer);
-            temp_a0_3 = task->mq;
-            if (temp_a0_3 != NULL) {
-                osSendMesg(temp_a0_3, task->retVal, 0);
-            }
-            break;
-        case 6:
-            var_v1_2 = NULL;
-            if ((scCurrentGfxTask != NULL) && (scCurrentGfxTask->info.type == 1) && (task->unk28 == scCurrentGfxTask->taskId)) {
-                var_v1_2 = scCurrentGfxTask;
-            }
-            var_v0_2 = scPausedQueueHead.info.type;
-            if (var_v0_2 != 0) {
-                do {
-                    if ((var_v0_2->unk0 == 1) && (task->unk28 == var_v0_2->unk80)) {
-                        var_v1_2 = var_v0_2;
-                    }
-                    var_v0_2 = var_v0_2->unkC;
-                } while (var_v0_2 != 0);
-            }
-            var_v0_3 = scMainQueueHead;
-            if (var_v0_3 != NULL) {
-                do {
-                    if ((var_v0_3->info.type == 1) && (task->unk28 == var_v0_3->taskId)) {
-                        var_v1_2 = var_v0_3;
-                    }
-                    var_v0_3 = var_v0_3->info.next;
-                } while (var_v0_3 != NULL);
-            }
-            if ((scCurrentDPTask != NULL) && (scCurrentDPTask->info.type == 1) && (task->unk28 == scCurrentGfxTask->taskId)) {
-                var_v1_2 = scCurrentDPTask;
-            }
-            var_v0_4 = scDPTaskHead.info.type;
-            if (var_v0_4 != 0) {
-                do {
-                    if ((var_v0_4->unk0 == 1) && (task->unk28 == var_v0_4->unk80)) {
-                        var_v1_2 = var_v0_4;
-                    }
-                    var_v0_4 = var_v0_4->unkC;
-                } while (var_v0_4 != 0);
-            }
-            if (var_v1_2 != NULL) {
-                var_v1_2->info.retVal = task->retVal;
-                var_v1_2->info.mq = task->mq;
-                var_v1_2->fb = task->unk24;
-            } else {
-                temp_a0_4 = task->unk24;
-                if (temp_a0_4 != NULL) {
-                    func_80001774(temp_a0_4, 1);
-                }
-                temp_a0_5 = task->mq;
-                if (temp_a0_5 != NULL) {
-                    osSendMesg(temp_a0_5, task->retVal, 0);
-                }
-            }
-            break;
-        case 7:
-            temp_a0_6 = task->mq;
-            if (temp_a0_6 != NULL) {
-                osSendMesg(temp_a0_6, task->retVal, 0);
-            }
-            break;
-        case 8:
-            D_80048C8C = task->unk24;
-            D_80048C90 = task->unk28;
-            temp_a0_7 = task->mq;
-            if (temp_a0_7 != NULL) {
-                osSendMesg(temp_a0_7, task->retVal, 0);
-            }
-            break;
-        case 9:
-            D_80048CD0 = 1;
-            D_80048CD4 = task->unk24;
-            temp_a0_8 = task->mq;
-            if (temp_a0_8 != NULL) {
-                osSendMesg(temp_a0_8, task->retVal, 0);
-            }
-            break;
-        case 10:
-            D_80048CD0 = 0;
-            temp_a0_9 = task->mq;
-            if (temp_a0_9 != NULL) {
-                osSendMesg(temp_a0_9, task->retVal, 0);
-            }
-            break;
-        case 11:
-            var_a0 = scMainQueueHead;
-            if (var_a0 != NULL) {
-                do {
-                    temp_v0_3 = var_a0->info.type;
-                    if ((temp_v0_3 == 1) || (temp_v0_3 == 4)) {
-                        sp34 = var_a0->info.next;
-                        scMainQueueRemove(&var_a0->info);
-                        var_a0 = sp34;
-                    } else {
-                        var_a0 = var_a0->info.next;
-                    }
-                } while (var_a0 != NULL);
-            }
-            D_80048C60 = 0;
-            temp_a0_10 = task->mq;
-            if (temp_a0_10 != NULL) {
-                osSendMesg(temp_a0_10, task->retVal, 0);
-            }
-            break;
-    }
-    return sp4C;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scExecuteTask.s")
-#endif
+        }
+        case SC_TASK_TYPE_ADD_CLIENT: {
+            SCTaskAddClient *t = (void *)task;
+            SCClient *temp;
 
-#ifdef MIPS_TO_C
+            temp = t->client;
+            temp->next = scClientList;
+            scClientList = temp;
+
+            if (t->info.mq != NULL) {
+                osSendMesg(t->info.mq, (OSMesg)t->info.retVal, OS_MESG_NOBLOCK);
+            }
+            break;
+        }
+        case SC_TASK_TYPE_VI: {
+            SCTaskVi *t = (void *)task;
+
+            func_80000F78(t->width, t->height, t->flags, t->edgeOffsetLeft, t->edgeOffsetRight,
+                          t->edgeOffsetTop, t->edgeOffsetBottom);
+
+            if (t->info.mq != NULL) {
+                osSendMesg(t->info.mq, (OSMesg)t->info.retVal, OS_MESG_NOBLOCK);
+            }
+            break;
+        }
+        case SC_TASK_TYPE_FRAMEBUFFERS: {
+            SCTaskFb *t = (void *)task;
+            s32 i;
+
+            for (i = 0; i < ARRAY_COUNT(scFrameBuffers); i++) {
+                scFrameBuffers[i] = (s32)t->cfb[i];
+            }
+
+            if (t->info.mq != NULL) {
+                osSendMesg(t->info.mq, (OSMesg)t->info.retVal, OS_MESG_NOBLOCK);
+            }
+            break;
+        }
+        case SC_TASK_TYPE_GFX_END: {
+            SCTaskGfxEnd *t = (void *)task;
+            SCTaskGfx *v1 = NULL;
+            SCTaskInfo *v0;
+
+            if (scCurrentGfxTask != NULL && scCurrentGfxTask->info.type == SC_TASK_TYPE_GFX &&
+                scCurrentGfxTask->taskId == t->taskId) {
+                v1 = scCurrentGfxTask;
+            }
+
+            v0 = &scPausedQueueHead->info;
+            while (v0 != NULL) {
+                if (v0->type == SC_TASK_TYPE_GFX) {
+                    if (((SCTaskGfx *)v0)->taskId == t->taskId) {
+                        v1 = (void *)v0;
+                    }
+                }
+                v0 = v0->next;
+            }
+
+            v0 = scMainQueueHead;
+            while (v0 != NULL) {
+                if (v0->type == SC_TASK_TYPE_GFX) {
+                    if (((SCTaskGfx *)v0)->taskId == t->taskId) {
+                        v1 = (void *)v0;
+                    }
+                }
+                v0 = v0->next;
+            }
+
+            v0 = &scCurrentDPTask->info;
+            if (v0 != NULL) {
+                if (v0->type == SC_TASK_TYPE_GFX) {
+                    if (scCurrentGfxTask->taskId == t->taskId) {
+                        v1 = (void *)v0;
+                    }
+                }
+            }
+
+            v0 = &scDPTaskHead->info;
+            while (v0 != NULL) {
+                if (v0->type == SC_TASK_TYPE_GFX) {
+                    if (((SCTaskGfx *)v0)->taskId == t->taskId) {
+                        v1 = (void *)v0;
+                    }
+                }
+                v0 = v0->next;
+            }
+
+            if (v1 != NULL) {
+                v1->info.retVal = t->info.retVal;
+                v1->info.mq = t->info.mq;
+                v1->fb = t->fb;
+            } else {
+                if (t->fb != NULL) {
+                    func_80001774(t->fb);
+                }
+
+                if (t->info.mq != NULL) {
+                    osSendMesg(t->info.mq, (OSMesg)t->info.retVal, OS_MESG_NOBLOCK);
+                }
+            }
+            break;
+        }
+        case SC_TASK_TYPE_NOP:
+            if (task->mq != NULL) {
+                osSendMesg(task->mq, (OSMesg)task->retVal, OS_MESG_NOBLOCK);
+            }
+            break;
+        case SC_TASK_TYPE_RDP_BUFFER: {
+            SCTaskRDPBuffer *t = (void *)task;
+
+            D_80048C8C = t->buffer;
+            D_80048C90 = t->size;
+            if (t->info.mq != NULL) {
+                osSendMesg(t->info.mq, (OSMesg)t->info.retVal, OS_MESG_NOBLOCK);
+            }
+            break;
+        }
+        case SC_TASK_TYPE_CUSTOM_BUFFERING: {
+            SCTaskType9 *t = (void *)task;
+
+            D_80048CD0 = 1;
+            D_80048CD4 = t->unk24;
+
+            if (t->info.mq != NULL) {
+                osSendMesg(t->info.mq, (OSMesg)t->info.retVal, OS_MESG_NOBLOCK);
+            }
+            break;
+        }
+        case SC_TASK_TYPE_DEFAULT_BUFFERING:
+            D_80048CD0 = 0;
+            if (task->mq != NULL) {
+                osSendMesg(task->mq, (OSMesg)task->retVal, OS_MESG_NOBLOCK);
+            }
+            break;
+        case SC_TASK_TYPE_11: {
+            SCTaskInfo *a0 = scMainQueueHead;
+            while (a0 != NULL) {
+                if (a0->type == SC_TASK_TYPE_GFX || a0->type == SC_TASK_TYPE_VI) {
+                    sp34[0] = a0->next;
+                    scMainQueueRemove(a0);
+                    a0 = sp34[0];
+                } else {
+                    a0 = a0->next;
+                }
+            }
+
+            D_80048C60 = 0;
+            if (task->mq != NULL) {
+                osSendMesg(task->mq, (OSMesg)task->retVal, OS_MESG_NOBLOCK);
+            }
+            break;
+        }
+    }
+    return ret;
+}
 
 void func_80001E20(void) {
-    SCTaskInfo *temp_s1;
-    SCTaskInfo *var_s0;
-    s32 (*temp_v0)(SCTaskInfo *);
-    s32 var_a0;
-    s32 var_s2;
-    s32 var_s4;
-    s32 var_s7;
-    s32 var_v0;
-    s32 var_v1;
+    s32 yieldPriority;
+    s32 currPriority;
+    s32 isTaskReady;
+    SCTaskInfo *curr, *next;
+    s32 isTaskStarted = 0;
+    s32 pausedPriority;
+    s32 avPriority;
 
-    var_s2 = 0;
-    if (scCurrentGfxTask != NULL) {
-        var_s7 = scCurrentGfxTask->info.priority;
-    } else {
-        var_s7 = -1;
-    }
+    avPriority = (scCurrentGfxTask != NULL) ? scCurrentGfxTask->info.priority : -1;
+
     if (D_80048B90 != NULL) {
-        var_s7 = D_80048B90->unk4;
+        avPriority = D_80048B90->info.priority;
     }
-    var_s4 = -1;
-    if (scPausedQueueHead.info.type != 0) {
-        var_s4 = scPausedQueueHead.info.type->unk4;
+    pausedPriority = (scPausedQueueHead != NULL) ? scPausedQueueHead->info.priority : -1;
+
+    curr = scMainQueueHead;
+
+    while (isTaskStarted == 0) {
+        currPriority = (curr != NULL) ? curr->priority : -1;
+
+        if (pausedPriority >= currPriority) {
+            isTaskReady = 0;
+            yieldPriority = pausedPriority;
+        } else {
+            isTaskReady = 1;
+            yieldPriority = currPriority;
+        }
+        if (avPriority >= yieldPriority) {
+            isTaskStarted = 1;
+        } else switch (isTaskReady) {
+            case 0:
+                osSpTaskLoad(&scPausedQueueHead->task);
+                osSpTaskStartGo(&scPausedQueueHead->task);
+                isTaskStarted = 1;
+                scPausedQueueHead->info.state = SC_TASK_STATE_RUNNUNG;
+                scCurrentGfxTask = scPausedQueueHead;
+                scPausedQueueRemove(&scPausedQueueHead->info);
+                break;
+
+            case 1:
+                if ((curr->fnCheck == NULL) || (curr->fnCheck(curr) != 0)) {
+                    isTaskStarted = scExecuteTask(curr);
+                    next = curr->next;
+                    scMainQueueRemove(curr);
+                    curr = next;
+                } else {
+                    isTaskStarted = 1;
+                }
+                break;
+        }
     }
-    var_s0 = scMainQueueHead;
-    do {
-        var_v0 = -1;
-        if (var_s0 != NULL) {
-            var_v0 = var_s0->priority;
-        }
-        var_v1 = 1;
-        if (var_s4 >= var_v0) {
-            var_v1 = 0;
-            var_a0 = var_s4;
-        } else {
-            var_a0 = var_v0;
-        }
-        if (var_s7 >= var_a0) {
-            var_s2 = 1;
-        } else {
-            switch (var_v1) {                       /* irregular */
-                case 0:
-                    var_s2 = 1;
-                    osSpTaskLoad(scPausedQueueHead.info.type + 0x28);
-                    osSpTaskStartGo(scPausedQueueHead.info.type + 0x28);
-                    scPausedQueueHead.info.type->unk8 = 2;
-                    scCurrentGfxTask = scPausedQueueHead.info.type;
-                    scPausedQueueRemove(scPausedQueueHead.info.type);
-                    break;
-                case 1:
-                    temp_v0 = var_s0->fnCheck;
-                    if ((temp_v0 == NULL) || (var_s2 = 1, (temp_v0(var_s0) != 0))) {
-                        var_s2 = scExecuteTask(var_s0);
-                        temp_s1 = var_s0->next;
-                        scMainQueueRemove(var_s0);
-                        var_s0 = temp_s1;
-                    }
-                    break;
-            }
-        }
-    } while (var_s2 == 0);
 }
-#else
-void func_80001E20(void);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80001E20.s")
-#endif
 
 void func_80001FAC(void) {
     if ((scCurrentDPTask == NULL) && (scDPTaskHead != NULL)) {
@@ -601,169 +594,114 @@ void scHandleVRetrace(void) {
     func_80001E20();
 }
 
-#ifdef MIPS_TO_C
-
 void scHandleSPTaskDone(void) {
-    s32 sp1C;
-    u32 sp18;
-    SCTaskGfx *temp_v0;
-    s32 temp_t2;
-    s32 temp_t6;
-    s32 temp_t8;
-    s32 temp_v1;
-
-    if ((D_80048B90 != NULL) && (D_80048B90->unk8 == 2)) {
-        osSendMesg(D_80048B90->unk20, NULL, 0);
+    if ((D_80048B90 != NULL) && (D_80048B90->info.state == SC_TASK_STATE_RUNNUNG)) {
+        osSendMesg(D_80048B90->info.mq, (OSMesg)NULL, OS_MESG_NOBLOCK);
         D_80048B90 = NULL;
         func_80001E20();
         D_80048C78 = (osGetCount() - D_80048C70) / 2971;
-        return;
-    }
-    temp_v0 = scCurrentGfxTask;
-    if ((temp_v0 != NULL) && (temp_v0->info.state == 4)) {
-        if (osSpTaskYielded(&temp_v0->task) == 1) {
-            scCurrentGfxTask->info.state = 5;
-            scPausedQueueAdd(scCurrentGfxTask);
-            scCurrentGfxTask = NULL;
-        } else {
-            scCurrentGfxTask->info.state = 6;
-        }
-        osSpTaskLoad(D_80048B90 + 0x28);
-        osSpTaskStartGo(D_80048B90 + 0x28);
-        D_80048B90->unk8 = 2;
-    }
-    if ((temp_v0 != NULL) && (temp_v0->info.unk_18 == 1) && (temp_v0->info.state != 5)) {
-        if ((temp_v0->info.type == 1) && (temp_v0->unk74 == 1)) {
-            osInvalDCache(&scDPOutputBuffSize, 8);
-            scCurrentGfxTask->rdpBufSize = scDPOutputBuffSize.unk4;
-            temp_t2 = scRDPOutputBufferUsed + scDPOutputBuffSize.unk4;
-            sp18 = scDPOutputBuffSize.unk0;
-            temp_t6 = ((temp_t2 + 0xF) >> 4) * 0x10;
-            temp_t8 = temp_t6 >> 0x1F;
-            scRDPOutputBufferUsed = temp_t2;
-            scRDPOutputBufferUsed = temp_t6;
-            sp1C = scDPOutputBuffSize.unk4;
-            if ((sp18 >= temp_t8) && ((temp_t8 < sp18) || (temp_t6 < scDPOutputBuffSize.unk4))) {
-                fatal_printf("rdp_output_buff over !! size = %d\n byte", temp_t6, 1, &scCurrentGfxTask);
-loop_18:
-                goto loop_18;
+    } else {
+        if ((scCurrentGfxTask != NULL) && (scCurrentGfxTask->info.state == SC_TASK_STATE_SUSPENDING)) {
+            if (osSpTaskYielded(&scCurrentGfxTask->task) == 1) {
+                scCurrentGfxTask->info.state = SC_TASK_STATE_SUSPENDED;
+                scPausedQueueAdd(&scCurrentGfxTask->info);
+                scCurrentGfxTask = NULL;
+            } else {
+                scCurrentGfxTask->info.state = SC_TASK_STATE_STOPPED;
             }
-            scCurrentGfxTask->info.state = 1;
-            func_80000E14(scCurrentGfxTask, temp_t6, 1, &scCurrentGfxTask);
-            func_80001FAC();
-            goto block_20;
+            osSpTaskLoad(&D_80048B90->task);
+            osSpTaskStartGo(&D_80048B90->task);
+            D_80048B90->info.state = SC_TASK_STATE_RUNNUNG;
         }
-block_20:
-        scCurrentGfxTask = NULL;
-        func_80001E20();
-        return;
-    }
-    if ((temp_v0 != NULL) && (temp_v0->info.unk_18 == 2) && (temp_v0->info.type == 1)) {
-        temp_v0->info.state = 6;
-        temp_v1 = scCurrentGfxTask->unk7C;
-        if (!(temp_v1 & 2)) {
-            scCurrentGfxTask->unk7C = temp_v1 | 1;
+        if ((scCurrentGfxTask != NULL) && (scCurrentGfxTask->info.unk_18 == 1) &&
+            (scCurrentGfxTask->info.state != SC_TASK_STATE_SUSPENDED)) {
+            if ((scCurrentGfxTask->info.type == SC_TASK_TYPE_GFX) && (scCurrentGfxTask->unk74 == 1)) {
+                osInvalDCache(&scDPOutputBuffSize, sizeof(scDPOutputBuffSize));
+                scCurrentGfxTask->rdpBufSize = scDPOutputBuffSize;
+                scRDPOutputBufferUsed += (s32) scDPOutputBuffSize;
+                scRDPOutputBufferUsed = OS_DCACHE_ROUNDUP_SIZE(scRDPOutputBufferUsed);
+
+                if (scRDPOutputBufferUsed < scDPOutputBuffSize) {
+                    fatal_printf("rdp_output_buff over !! size = %d\n byte", scRDPOutputBufferUsed);
+                    while (1);
+                }
+                scCurrentGfxTask->info.state = SC_TASK_STATE_QUEUED;
+                func_80000E14(&scCurrentGfxTask->info);
+                func_80001FAC();
+            }
+            scCurrentGfxTask = NULL;
+            func_80001E20();
+        } else if ((scCurrentGfxTask != NULL) && (scCurrentGfxTask->info.unk_18 == 2) &&
+                   (scCurrentGfxTask->info.type == SC_TASK_TYPE_GFX)) {
+            scCurrentGfxTask->info.state = SC_TASK_STATE_STOPPED;
+
+            if (!(scCurrentGfxTask->unk7C & 2)) {
+                scCurrentGfxTask->unk7C |= 1;
+            }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scHandleSPTaskDone.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void scHandleDPTaskDone(void) {
-    OSMesgQueue *temp_a0;
-    OSMesgQueue *temp_a0_2;
-    OSMesgQueue *temp_a0_3;
-    SCTaskGfx *temp_v0;
-    SCTaskGfx *temp_v0_2;
-    s32 *var_a0;
-    s32 *var_a0_2;
-    s32 *var_a0_3;
-    s32 temp_a3;
-
-    temp_v0 = scCurrentGfxTask;
-    if ((temp_v0 != NULL) && (temp_v0->info.unk_18 == 2)) {
-        if (temp_v0->info.type == 1) {
-            var_a0 = temp_v0->fb;
-            if (var_a0 != NULL) {
+    if ((scCurrentGfxTask != NULL) && (scCurrentGfxTask->info.unk_18 == 2)) {
+        if (scCurrentGfxTask->info.type == SC_TASK_TYPE_GFX) {
+            if (scCurrentGfxTask->fb != NULL) {
                 if (scPostProcessFunc != NULL) {
-                    if (var_a0 == -1) {
-                        scPostProcessFunc(scNextFrameBuffer);
-                        var_a0 = scCurrentGfxTask->fb;
+                    if (scCurrentGfxTask->fb == (s32 *)-1) {
+                        scPostProcessFunc((void *)scNextFrameBuffer);
                     } else {
-                        scPostProcessFunc(var_a0);
-                        var_a0 = scCurrentGfxTask->fb;
+                        scPostProcessFunc(scCurrentGfxTask->fb);
                     }
                 }
-                func_80001774(var_a0);
+                func_80001774(scCurrentGfxTask->fb);
             }
-            temp_a0 = temp_v0->info.mq;
-            if (temp_a0 != NULL) {
-                osSendMesg(temp_a0, temp_v0->info.retVal, 0);
+            if (scCurrentGfxTask->info.mq != NULL) {
+                osSendMesg(scCurrentGfxTask->info.mq, (OSMesg)scCurrentGfxTask->info.retVal, OS_MESG_NOBLOCK);
             }
-            if (temp_v0->info.state == 4) {
-                osSpTaskLoad(D_80048B90 + 0x28);
-                osSpTaskStartGo(D_80048B90 + 0x28);
-                D_80048B90->unk8 = 2;
+            if (scCurrentGfxTask->info.state == SC_TASK_STATE_SUSPENDING) {
+                osSpTaskLoad(&D_80048B90->task);
+                osSpTaskStartGo(&D_80048B90->task);
+                D_80048B90->info.state = SC_TASK_STATE_RUNNUNG;
             }
         }
         scCurrentGfxTask = NULL;
         func_80001E20();
-        return;
-    }
-    temp_v0_2 = scCurrentDPTask;
-    if (temp_v0_2 != NULL) {
-        var_a0_2 = temp_v0_2->fb;
-        if (var_a0_2 != NULL) {
+    } else if (scCurrentDPTask != NULL) {
+        if (scCurrentDPTask->fb != NULL) {
             if (scPostProcessFunc != NULL) {
-                if (var_a0_2 == -1) {
-                    scPostProcessFunc(scNextFrameBuffer);
-                    var_a0_2 = scCurrentDPTask->fb;
+                if (scCurrentDPTask->fb == (s32 *)-1) {
+                    scPostProcessFunc((void *)scNextFrameBuffer);
                 } else {
-                    scPostProcessFunc(var_a0_2);
-                    var_a0_2 = scCurrentDPTask->fb;
+                    scPostProcessFunc(scCurrentDPTask->fb);
                 }
             }
-            func_80001774(var_a0_2);
+            func_80001774(scCurrentDPTask->fb);
         }
-        temp_a0_2 = temp_v0_2->info.mq;
-        if (temp_a0_2 != NULL) {
-            osSendMesg(temp_a0_2, temp_v0_2->info.retVal, 0);
+        if (scCurrentDPTask->info.mq != NULL) {
+            osSendMesg(scCurrentDPTask->info.mq, (OSMesg)scCurrentDPTask->info.retVal, OS_MESG_NOBLOCK);
         }
         scCurrentDPTask = NULL;
         func_80001FAC();
-        return;
-    }
-    temp_a3 = scPausedQueueHead.info.type;
-    if ((temp_a3 != 0) && (temp_a3->unk18 == 2)) {
-        if (temp_a3->unk0 == 1) {
-            var_a0_3 = temp_a3->unk6C;
-            if (var_a0_3 != NULL) {
+    } else if ((scPausedQueueHead != NULL) && (scPausedQueueHead->info.unk_18 == 2)) {
+        if (scPausedQueueHead->info.type == SC_TASK_TYPE_GFX) {
+            if (scPausedQueueHead->fb != NULL) {
                 if (scPostProcessFunc != NULL) {
-                    if (var_a0_3 == -1) {
-                        scPostProcessFunc(scNextFrameBuffer);
-                        var_a0_3 = scPausedQueueHead.info.type->unk6C;
+                    if (scPausedQueueHead->fb == (s32 *)-1) {
+                        scPostProcessFunc((void *)scNextFrameBuffer);
                     } else {
-                        scPostProcessFunc(var_a0_3);
-                        var_a0_3 = scPausedQueueHead.info.type->unk6C;
+                        scPostProcessFunc(scPausedQueueHead->fb);
                     }
                 }
-                func_80001774(var_a0_3);
+                func_80001774(scPausedQueueHead->fb);
             }
-            temp_a0_3 = temp_a3->unk20;
-            if (temp_a0_3 != NULL) {
-                osSendMesg(temp_a0_3, temp_a3->unk1C, 0);
+            if (scPausedQueueHead->info.mq != NULL) {
+                osSendMesg(scPausedQueueHead->info.mq, (OSMesg)scPausedQueueHead->info.retVal, OS_MESG_NOBLOCK);
             }
-            scPausedQueueRemove(temp_a3);
+            scPausedQueueRemove(&scPausedQueueHead->info);
         }
         func_80001E20();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scHandleDPTaskDone.s")
-#endif
 
 void scAddTask(SCTaskInfo *task) {
     task->state = SC_TASK_STATE_QUEUED;
@@ -772,7 +710,93 @@ void scAddTask(SCTaskInfo *task) {
 }
 
 #ifdef MIPS_TO_C
-anime
+// 344/345 instructions; the only diff is one extra `lui $a0, %hi(D_80048BA8)`
+// scheduled into the osTvType switch's first branch-delay slot.
+void scThreadMain(void *arg) {
+    u32 mesg;
+
+    scClientList = NULL;
+
+    scMainQueueHead = scMainQueueTail = (SCTaskInfo *)(scCurrentGfxTask = D_80048B90 = scPausedQueueHead = scPausedQueueTail = NULL);
+    scCurrentDPTask = scDPTaskHead = (SCTaskGfx *)(D_80048BA0 = NULL);
+
+    D_80048C48 = 0;
+    gCurrFrameBuffer = scNextFrameBuffer = D_80048C60 = 0;
+    D_80048CD0 = 0;
+    scPreNMIProc = scPreNMIDefault;
+    scBeforeReset = 0;
+    scPreNMIState = -1;
+
+    switch (osTvType) {
+        case 1:
+            gCurrentViMode = D_80048BA8 = osViModeNtscLan1;
+            break;
+
+        case 0:
+            gCurrentViMode = D_80048BA8 = osViModeFpalLan1;
+            break;
+
+        case 2:
+            gCurrentViMode = D_80048BA8 = osViModeMpalLan1;
+            break;
+    }
+
+    D_80048BA8.comRegs.ctrl = 0x10016;
+    gCurrentViMode.comRegs.ctrl = 0x10016;
+    osViSetMode(&D_80048BA8);
+    osViBlack(1);
+
+    D_80048C7C.antialias = 1;
+    D_80048C7C.serrate = 0;
+    D_80048C7C.colordepth32 = 0;
+    D_80048C7C.gamma = 0;
+    D_80048C7C.blackout = 1;
+    D_80048C7C.unk_b04 = 0;
+    D_80048C7C.gammadither = 1;
+    D_80048C7C.ditherfilter = 1;
+    D_80048C7C.divot = 1;
+
+    osCreateMesgQueue(&scTaskMQ, D_80048C98, ARRAY_COUNT(D_80048C98));
+    osViSetEvent(&scTaskMQ, (OSMesg)1, 1);
+    osSetEventMesg(OS_EVENT_SP, &scTaskMQ, (OSMesg)2);
+    osSetEventMesg(OS_EVENT_DP, &scTaskMQ, (OSMesg)3);
+    osSetEventMesg(OS_EVENT_PRENMI, &scTaskMQ, (OSMesg)99);
+
+    osSendMesg(&gThreadInitializedMQ, (OSMesg)1, OS_MESG_NOBLOCK);
+
+    while (1) {
+        osRecvMesg(&scTaskMQ, (OSMesg)&mesg, OS_MESG_BLOCK);
+
+        switch (mesg) {
+            case 1:
+                scHandleVRetrace();
+                break;
+
+            case 2:
+                scHandleSPTaskDone();
+
+                if ((scBeforeReset == 1) && (scPreNMIState == -1)) {
+                    scPreNMIState = osAfterPreNMI();
+                }
+                break;
+
+            case 3:
+                scHandleDPTaskDone();
+                break;
+
+            case 99:
+                if (scPreNMIProc != NULL) {
+                    scPreNMIProc();
+                }
+                break;
+
+            default:
+                if (scBeforeReset == 0) {
+                    scAddTask((SCTaskInfo *)mesg);
+                }
+        }
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/scThreadMain.s")
 #endif

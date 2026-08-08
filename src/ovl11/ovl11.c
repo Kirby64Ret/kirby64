@@ -966,7 +966,22 @@ void func_801DF650_ovl11(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF728_ovl11.s")
+void func_801DF728_ovl11(void) {
+    s32 *temp_v1;
+    s32 temp_a1;
+    u32 temp_v0;
+
+    temp_v0 = omCurrentObj->objId;
+    temp_v1 = &D_800E98E0[temp_v0];
+    temp_a1 = *temp_v1;
+    if (temp_a1 == 0) {
+        assign_new_process_entry(gEntityGObjProcessArray[temp_v0], func_801ACF84_ovl7);
+        return;
+    }
+    *temp_v1 = temp_a1 - 1;
+    func_801A0D74_ovl7();
+    func_801A03B4_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF798_ovl11.s")
 
@@ -1025,7 +1040,12 @@ void func_801DFD3C_ovl11(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801E00B8_ovl11.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801E0168_ovl11.s")
+void func_801E0168_ovl11(void)
+{
+  struct GObj **var_s1;
+  s32 var_s0;
+ do { if (D_800E09D0[omCurrentObj->objId] == 0.0f) { var_s0 = 0x1E; var_s1 = &D_800DE350[0x1E]; do { if ((((*var_s1) != ((void *) 0)) && (D_800E7880[var_s0] == 2)) && (func_801E00B8_ovl11(var_s0) != 0)) { assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7); return; } var_s0 += 1; var_s1 += 1; } while (var_s0 != 0x3C); } } while (0);
+}
 
 void func_801E024C_ovl11(void) {
     func_801A0D74_ovl7();
