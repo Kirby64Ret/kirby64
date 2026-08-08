@@ -258,34 +258,20 @@ loop_7:
 #pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80021444.s")
 #endif
 
-#ifdef MIPS_TO_C
+void func_80021444(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5);
 
-void func_800215F0(s32 arg4) {
-    func_80021444(0, arg4);
+void func_800215F0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    func_80021444(arg0, arg1, arg2, arg3, 0, arg4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_800215F0.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_80021618(f32 arg2, s32 arg4, s32 arg5) {
-    func_80021444(arg2, *(&D_8003F660 + (arg4 * 4)) * arg2, arg4, arg5);
+void func_80021618(s32 arg0, s32 arg1, f32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+    func_80021444(arg0, arg1, D_8003F660[arg4] * arg2, arg3, arg4, arg5);
 }
-#else
-void func_80021618(s32 arg0, s32 arg1, f32 arg2, s32 arg3, s32 arg4, s32 arg5);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80021618.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_80021668(void *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    arg0->unk0 = ((((gCurrScreenWidth * arg3) / 320) & 0x3FF) << 0xE) | 0xF6000000 | ((((arg4 * gCurrScreenHeight) / 240) & 0x3FF) * 4);
-    arg0->unk4 = ((((gCurrScreenWidth * arg1) / 320) & 0x3FF) << 0xE) | ((((arg2 * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+void func_80021668(Gfx *glistp, u32 arg1, u32 arg2, u32 arg3, u32 arg4) {
+    glistp->words.w0 = ((((gCurrScreenWidth * arg3) / 320) & 0x3FF) << 0xE) | 0xF6000000 | ((((arg4 * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+    glistp->words.w1 = ((((gCurrScreenWidth * arg1) / 320) & 0x3FF) << 0xE) | ((((arg2 * gCurrScreenHeight) / 240) & 0x3FF) * 4);
 }
-#else
-void func_80021668(Gfx *glistp, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80021668.s")
-#endif
 
 void func_80021764(GObj *g) {
     s32 i;
@@ -351,9 +337,7 @@ typedef struct {
 } FaultDesc;
 extern FaultDesc gCrashScreen;
 
-// https://decomp.me/scratch/fwh8t 98.04%
-#ifdef NON_MATCHING
-void *crash_screen_draw_rect(s32 x, s32 y, s32 width, s32 height) {
+void crash_screen_draw_rect(s32 x, s32 y, s32 width, s32 height) {
     u16* fb = (u16*) osViGetCurrentFramebuffer() + (gCurrScreenWidth * y) + x;
     s32 i;
     s32 j;
@@ -365,9 +349,6 @@ void *crash_screen_draw_rect(s32 x, s32 y, s32 width, s32 height) {
         fb += gCurrScreenWidth - width;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fault/crash_screen_draw_rect.s")
-#endif
 
 void crash_screen_draw_glyph(u32 x, u32 y, s32 glyph) {
     Unused u32 pad[4];
@@ -645,15 +626,10 @@ void faultSetUserCallback(OSThread *(*callback_fn)()) {
     gCrashScreenFramebuffer = callback_fn;
 }
 
-#ifdef MIPS_TO_C
 void func_80022A44(s32 arg0, s32 arg1) {
     D_8003F86C = arg0;
     D_8003F870 = arg1;
 }
-#else
-void func_80022A44(s32 arg0, s32 arg1);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80022A44.s")
-#endif
 
 void crash_screen_vprint(const char *fmt, va_list args) {
     u32 glyph;
@@ -747,16 +723,21 @@ void crash_screen_start_thread(void) {
     osStartThread(&D_80096528);
 }
 
+extern SCClient D_80096F00;
+extern OSMesg D_80096F08;
+extern OSMesgQueue D_80096F10;
+extern s32 D_8003DCA4;
+extern OSThread gGameThread;
+
 void func_80022E04(Unused void *arg);
-#ifdef _MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80022E04(Unused void *arg) {
-    void *sp4C;
+    OSMesg sp4C;
     OSThread *cb_thread;
     s32 pri;
     s32 var_s0;
     s32 var_s4;
 
-    
     var_s0 = 0;
     scAddClient(&D_80096F00, &D_80096F10, &D_80096F08, 1);
     while (1) {
@@ -818,14 +799,13 @@ void crash_screen_init(void) {
     osStartThread(&gCrashScreenThread);
 }
 
-#define SOME_ALIGNMENT(a) ((((u32)a) + 0x2F) & ~3)
-// make the SOME_ALIGNMENT() generate explicit alignment code
-#ifdef NON_MATCHING
+#define SOME_ALIGNMENT(a) ((((u32)(a)) + 3) & ~3)
 void fatal_printf(const char *fmt, ...) {
-    s32 pri;
     void *currFB;
+    s32 pri;
     va_list args;
     va_start(args, fmt);
+    args = (va_list)SOME_ALIGNMENT(args);
 
     D_8003F688 = 1;
     pri = osGetThreadPri(NULL);
@@ -845,17 +825,11 @@ void fatal_printf(const char *fmt, ...) {
         crash_screen_draw_rect(0x19, 0x14, 0x10E, 0x19);
         func_80022A44(0x1E, 0x19);
         crash_screen_vprint(fmt, args);
-        if (faultWaitButton(0, currFB) != 0) {
-            continue;
-        }
-    } while (faultWaitButton(0x2030, currFB) != 0);
+    } while (faultWaitButton(0, currFB) != 0 || faultWaitButton(0x2030, currFB) != 0);
     osSetThreadPri(NULL, pri);
     D_8003F688 = 0;
     va_end(args);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fault/fatal_printf.s")
-#endif
 
 void func_800231F0(void (*funcPointer)(void)) {
     s32 sp24;

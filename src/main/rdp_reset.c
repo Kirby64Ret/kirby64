@@ -43,19 +43,18 @@ Gfx resetRDPDisplayList[] = {
     gsSPEndDisplayList(),
 };
 
-#ifdef MIPS_TO_C
-void func_80007C00(Vp *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4) {
-    s16 constant = G_MAXZ / 2;
+void func_80007C00(Vp *viewport, f32 ulx, f32 uly, f32 lrx, f32 lry)
+{
+    f32 h = (ulx + lrx) / 2.0F;
+    f32 v = (uly + lry) / 2.0F;
 
-    arg0->vp.vscale[0] = ((arg3 - ((arg1 + arg3) / 2.0f)) * 4.0f);
-    arg0->vp.vscale[1] = ((arg4 - ((arg2 + arg4) / 2.0f)) * 4.0f);
-    arg0->vp.vtrans[0] = (((arg1 + arg3) / 2.0f) * 4.0f);
-    arg0->vp.vtrans[1] = (((arg2 + arg4) / 2.0f) * 4.0f);
-    arg0->vp.vscale[2] = arg0->vp.vtrans[2] = constant;
+    viewport->vp.vscale[0] = ((s32) ((lrx - h) * 4.0F)) & 0xFFFF;
+    viewport->vp.vscale[1] = ((s32) ((lry - v) * 4.0F)) & 0xFFFF;
+    viewport->vp.vtrans[0] = ((s32) (h * 4.0F)) & 0xFFFF;
+    viewport->vp.vtrans[1] = ((s32) (v * 4.0F)) & 0xFFFF;
+
+    viewport->vp.vscale[2] = viewport->vp.vtrans[2] = G_MAXZ / 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/rdp_reset/func_80007C00.s")
-#endif
 
 void setup_viewport(Vp *viewport) {
     viewport->vp.vscale[0] = viewport->vp.vtrans[0] = gCurrScreenWidth * 2;

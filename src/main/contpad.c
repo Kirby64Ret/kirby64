@@ -201,22 +201,22 @@ s32 *func_80004250(void) {
 
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
-        gControllers[i].stick_y = 0;
-        gPlayerControllers[i].stickY = 0;
         sContPads[i].button = 0;
+
         gControllers[i].buttonHeldLong = 0;
         gControllers[i].buttonPressed = 0;
         gControllers[i].buttonHeld = 0;
+        gControllers[i].stick_y = 0;
         gControllers[i].holdTimer = 30;
         gControllers[i].holdDelay = 30;
         gControllers[i].holdInterval = 5;
-        gPlayerControllers[i].buttonHeldLong = 0;
-        gPlayerControllers[i].buttonPressed = 0;
-        gPlayerControllers[i].buttonHeld = 0;
+
         gControllers[i].stick_x = gControllers[i].stick_y;
         gControllers[i].errno = sControllerStatuses[i].errno;
         gControllers[i].status = sControllerStatuses[i].status;
-        gPlayerControllers[i].stickX = gPlayerControllers[i].stickY;
+
+        gPlayerControllers[i].buttonHeld = gPlayerControllers[i].buttonPressed = gPlayerControllers[i].buttonHeldLong = 0;
+        gPlayerControllers[i].stickX = gPlayerControllers[i].stickY = 0;
     }
 
     gValidControllerCount = 0;

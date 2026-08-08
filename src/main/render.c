@@ -829,489 +829,282 @@ s32 renderPrepareModelMatrix(Gfx **, DObj *);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderPrepareModelMatrix.s")
 #endif
 
-#ifdef MIPS_TO_C
+void renderLoadTextures(DObj *dobj, Gfx **dl_head)
+{
+    s32 mobj_count;
+    s32 i;
+    MObj *mobj;
+    Gfx *new_dl;
+    Gfx *branch_dl;
+    u32 flags;
+    f32 scau;
+    f32 scav;
+    f32 trau;
+    f32 trav;
+    f32 scrollu;
+    f32 scrollv;
+    s32 uls, ult;
+    s32 s, t;
 
-void renderLoadTextures(void *arg0, void **arg1) {
-    f32 spDC;
-    f32 spD8;
-    f32 spD4;
-    f32 spD0;
-    f32 spCC;
-    f32 spC8;
-    s32 sp2C;
-    s32 sp1C;
-    ? *temp_v0;
-    ? *var_a2;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 var_f0;
-    f32 var_f0_2;
-    f32 var_f0_3;
-    f32 var_f0_4;
-    f32 var_f0_5;
-    f32 var_f0_6;
-    f32 var_f10;
-    f32 var_f10_2;
-    f32 var_f10_3;
-    f32 var_f12;
-    f32 var_f2;
-    f32 var_f4;
-    f32 var_f4_2;
-    f32 var_f4_3;
-    f32 var_f4_4;
-    f32 var_f6;
-    f32 var_f8;
-    f32 var_f8_2;
-    s32 *temp_t0;
-    s32 *temp_v0_12;
-    s32 *temp_v0_13;
-    s32 *temp_v0_14;
-    s32 *temp_v0_2;
-    s32 *temp_v0_3;
-    s32 *temp_v0_4;
-    s32 *temp_v0_5;
-    s32 *temp_v0_6;
-    s32 *temp_v1;
-    s32 *var_a1;
-    s32 *var_a1_2;
-    s32 *var_t2;
-    s32 temp_f10;
-    s32 temp_t7;
-    s32 temp_v0_10;
-    s32 temp_v0_11;
-    s32 temp_v0_8;
-    s32 temp_v0_9;
-    s32 temp_v1_2;
-    s32 temp_v1_3;
-    s32 temp_v1_4;
-    s32 temp_v1_5;
-    s32 var_a0;
-    s32 var_a0_2;
-    s32 var_a0_3;
-    s32 var_a0_4;
-    s32 var_a0_5;
-    s32 var_a0_6;
-    s32 var_a0_7;
-    s32 var_a3;
-    s32 var_a3_2;
-    s32 var_a3_3;
-    s32 var_a3_4;
-    s32 var_t5;
-    s32 var_t6;
-    s32 var_v0;
-    s32 var_v0_2;
-    s32 var_v0_3;
-    s32 var_v0_4;
-    s32 var_v0_5;
-    s32 var_v1;
-    s32 var_v1_2;
-    s32 var_v1_3;
-    s32 var_v1_4;
-    u16 temp_a0;
-    u16 temp_a0_2;
-    u16 temp_a0_3;
-    u16 temp_a0_4;
-    u16 temp_t6;
-    u16 temp_t7_2;
-    u16 temp_t7_3;
-    u16 temp_t7_4;
-    u16 temp_t7_5;
-    u16 temp_t8;
-    u16 temp_t8_2;
-    u16 temp_t9;
-    u16 temp_t9_2;
-    u16 temp_t9_3;
-    u16 var_t1;
-    u8 temp_v0_7;
-    void *temp_a1;
-    void *temp_a1_2;
-    void *temp_a1_3;
-    void *temp_a1_4;
-    void *temp_a1_5;
-    void *temp_a1_6;
-    void *temp_a3;
-
-    if (arg0->unk80 != NULL) {
-        temp_a3 = *arg1;
-        *arg1 = temp_a3 + 8;
-        temp_a3->unk0 = 0xDB060038;
-        var_t5 = 0;
-        temp_a3->unk4 = D_8004A404;
-        temp_v0 = arg0->unk80;
-        var_a2 = temp_v0;
-        if (temp_v0 != NULL) {
-            do {
-                var_a2 = *var_a2;
-                var_t5 += 1;
-            } while (var_a2 != NULL);
-            var_a2 = temp_v0;
-        }
-        var_a1 = D_8004A404 + (var_t5 * 8);
-        if (var_t5 > 0) {
-            sp1C = var_t5 * 8;
-            sp2C = 0;
-            var_t2 = D_8004A404;
-            var_f12 = spD8;
-            var_f2 = spDC;
-            do {
-                var_t1 = var_a2->unk38;
-                temp_v0_2 = var_a1;
-                if (var_t1 == 0) {
-                    var_t1 = 0xA1;
-                }
-                if (var_t1 & 0xE0) {
-                    var_f2 = var_a2->unk24;
-                    var_f12 = var_a2->unk28;
-                    spD4 = var_a2->unk1C;
-                    spD0 = var_a2->unk20;
-                    spCC = var_a2->unk44;
-                    spC8 = var_a2->unk48;
-                    if (var_a2->unk18 != 0) {
-                        var_f2 *= 0.5f;
-                        temp_f0 = var_a2->unk30 * 0.5f;
-                        spD4 = (((spD4 - var_a2->unk2C) + 1.0f) - temp_f0) * 0.5f;
-                        spCC = (((spCC - var_a2->unk4C) + 1.0f) - temp_f0) * 0.5f;
-                    }
-                }
-                var_t2->unk0 = 0xDE010000;
-                var_t2->unk4 = var_a1;
-                if (var_t1 & 4) {
-                    temp_v0_2->unk0 = 0xFD100000;
-                    var_a1 += 8;
-                    temp_v0_2->unk4 = *(var_a2->unk34 + (var_a2->unk88 * 4));
-                    if (var_t1 & 3) {
-                        temp_a1 = var_a1 + 8;
-                        var_a1->unk0 = 0xE8000000;
-                        var_a1->unk4 = 0;
-                        temp_a1_2 = temp_a1 + 8;
-                        temp_a1->unk4 = 0x05000000;
-                        temp_a1->unk0 = 0xF5000100;
-                        temp_a1_3 = temp_a1_2 + 8;
-                        temp_a1_2->unk0 = 0xE6000000;
-                        temp_a1_2->unk4 = 0;
-                        temp_a1_3->unk0 = 0xF0000000;
-                        temp_a1_4 = temp_a1_3 + 8;
-                        if (var_a2->unkB == 1) {
-                            var_v0 = 0xFF;
-                        } else {
-                            var_v0 = 0xF;
-                        }
-                        temp_a1_3->unk4 = ((var_v0 & 0x3FF) << 0xE) | 0x05000000;
-                        temp_a1_4->unk0 = 0xE7000000;
-                        temp_a1_4->unk4 = 0;
-                        var_a1 = temp_a1_4 + 8;
-                    }
-                }
-                var_t2 += 8;
-                if (var_t1 & 0x1000) {
-                    var_a1->unk0 = 0xDB0A0000;
-                    temp_a1_5 = var_a1 + 8;
-                    var_a1->unk4 = var_a2->unk68;
-                    temp_a1_5->unk0 = 0xDB0A0004;
-                    var_a1 = temp_a1_5 + 8;
-                    temp_a1_5->unk4 = var_a2->unk68;
-                }
-                if (var_t1 & 0x2000) {
-                    var_a1->unk0 = 0xDB0A0018;
-                    temp_a1_6 = var_a1 + 8;
-                    var_a1->unk4 = var_a2->unk6C;
-                    temp_a1_6->unk0 = 0xDB0A001C;
-                    var_a1 = temp_a1_6 + 8;
-                    temp_a1_6->unk4 = var_a2->unk6C;
-                }
-                if (var_t1 & 0x218) {
-                    if (var_t1 & 0x10) {
-                        temp_f0_2 = var_a2->unk84;
-                        temp_f10 = temp_f0_2;
-                        temp_v1 = var_a1;
-                        var_a1 += 8;
-                        temp_v1->unk0 = (var_a2->unk5D << 8) | 0xFA000000 | (((temp_f0_2 - temp_f10) * 256.0f) & 0xFF);
-                        temp_v1->unk4 = (var_a2->unk58 << 0x18) | (var_a2->unk59 << 0x10) | (var_a2->unk5A << 8) | var_a2->unk5B;
-                        var_a2->unk80 = temp_f10;
-                        var_a2->unk82 = temp_f10 + 1;
-                    } else {
-                        temp_v0_3 = var_a1;
-                        var_a1 += 8;
-                        temp_v0_3->unk0 = (var_a2->unk5D << 8) | 0xFA000000 | ((var_a2->unk84 * 255.0f) & 0xFF);
-                        temp_v0_3->unk4 = (var_a2->unk58 << 0x18) | (var_a2->unk59 << 0x10) | (var_a2->unk5A << 8) | var_a2->unk5B;
-                    }
-                }
-                temp_v0_4 = var_a1;
-                if (var_t1 & 0x400) {
-                    temp_v0_4->unk0 = 0xFB000000;
-                    var_a1 += 8;
-                    temp_v0_4->unk4 = (var_a2->unk60 << 0x18) | (var_a2->unk61 << 0x10) | (var_a2->unk62 << 8) | var_a2->unk63;
-                }
-                temp_v0_5 = var_a1;
-                if (var_t1 & 0x800) {
-                    temp_v0_5->unk0 = 0xF9000000;
-                    var_a1 += 8;
-                    temp_v0_5->unk4 = (var_a2->unk64 << 0x18) | (var_a2->unk65 << 0x10) | (var_a2->unk66 << 8) | var_a2->unk67;
-                }
-                if (var_t1 & 0x12) {
-                    var_v1 = 2;
-                    if (var_a2->unk3B == 3) {
-                        var_v1 = 3;
-                    }
-                    temp_v0_6 = var_a1;
-                    temp_v0_6->unk0 = ((var_a2->unk3A & 7) << 0x15) | 0xFD000000 | ((var_v1 & 3) << 0x13);
-                    var_a1 += 8;
-                    temp_v0_6->unk4 = *(var_a2->unkC + (var_a2->unk82 * 4));
-                    if (var_t1 & 0x11) {
-                        var_a1->unk0 = 0xE6000000;
-                        var_a1->unk4 = 0;
-                        temp_v0_7 = var_a2->unk3B;
-                        var_a1_2 = var_a1 + 8;
-                        temp_t0 = var_a1_2;
-                        switch (temp_v0_7) {        /* irregular */
-                            case 0:
-                                temp_t0->unk0 = 0xF3000000;
-                                temp_a0 = var_a2->unk3C;
-                                var_a1_2 += 8;
-                                var_a3 = 0x7FF;
-                                temp_v0_8 = (((temp_a0 * var_a2->unk3E) + 3) >> 2) - 1;
-                                if (temp_v0_8 < 0x7FF) {
-                                    var_a3 = temp_v0_8;
-                                }
-                                temp_v1_2 = temp_a0 / 16;
-                                var_a0 = temp_v1_2;
-                                if (temp_v1_2 <= 0) {
-                                    var_a0 = 1;
-                                }
-                                if (temp_v1_2 <= 0) {
-                                    var_v0_2 = 1;
-                                } else {
-                                    var_v0_2 = temp_v1_2;
-                                }
-                                var_t6 = (((var_a0 + 0x7FF) / var_v0_2) & 0xFFF) | 0x06000000 | ((var_a3 & 0xFFF) << 0xC);
-block_70:
-                                temp_t0->unk4 = var_t6;
-                                break;
-                            case 1:
-                                var_a1_2->unk0 = 0xF3000000;
-                                temp_a0_2 = var_a2->unk3C;
-                                var_a1_2 += 8;
-                                var_a3_2 = 0x7FF;
-                                temp_v0_9 = (((temp_a0_2 * var_a2->unk3E) + 1) >> 1) - 1;
-                                if (temp_v0_9 < 0x7FF) {
-                                    var_a3_2 = temp_v0_9;
-                                }
-                                temp_v1_3 = temp_a0_2 / 8;
-                                var_a0_2 = temp_v1_3;
-                                if (temp_v1_3 <= 0) {
-                                    var_a0_2 = 1;
-                                }
-                                if (temp_v1_3 <= 0) {
-                                    var_v0_3 = 1;
-                                } else {
-                                    var_v0_3 = temp_v1_3;
-                                }
-                                var_t6 = (((var_a0_2 + 0x7FF) / var_v0_3) & 0xFFF) | 0x06000000 | ((var_a3_2 & 0xFFF) << 0xC);
-                                goto block_70;
-                            case 2:
-                                var_a1_2->unk0 = 0xF3000000;
-                                temp_a0_3 = var_a2->unk3C;
-                                var_a1_2 += 8;
-                                var_a3_3 = 0x7FF;
-                                temp_v0_10 = (temp_a0_3 * var_a2->unk3E) - 1;
-                                if (temp_v0_10 < 0x7FF) {
-                                    var_a3_3 = temp_v0_10;
-                                }
-                                temp_v1_4 = (temp_a0_3 * 2) / 8;
-                                var_a0_3 = temp_v1_4;
-                                if (temp_v1_4 <= 0) {
-                                    var_a0_3 = 1;
-                                }
-                                if (temp_v1_4 <= 0) {
-                                    var_v0_4 = 1;
-                                } else {
-                                    var_v0_4 = temp_v1_4;
-                                }
-                                var_t6 = (((var_a0_3 + 0x7FF) / var_v0_4) & 0xFFF) | 0x06000000 | ((var_a3_3 & 0xFFF) << 0xC);
-                                goto block_70;
-                            case 3:
-                                var_a1_2->unk0 = 0xF3000000;
-                                temp_a0_4 = var_a2->unk3C;
-                                var_a1_2 += 8;
-                                var_a3_4 = 0x7FF;
-                                temp_v0_11 = (temp_a0_4 * var_a2->unk3E) - 1;
-                                if (temp_v0_11 < 0x7FF) {
-                                    var_a3_4 = temp_v0_11;
-                                }
-                                temp_v1_5 = (temp_a0_4 * 4) / 8;
-                                var_a0_4 = temp_v1_5;
-                                if (temp_v1_5 <= 0) {
-                                    var_a0_4 = 1;
-                                }
-                                if (temp_v1_5 <= 0) {
-                                    var_v0_5 = 1;
-                                } else {
-                                    var_v0_5 = temp_v1_5;
-                                }
-                                var_t6 = (((var_a0_4 + 0x7FF) / var_v0_5) & 0xFFF) | 0x06000000 | ((var_a3_4 & 0xFFF) << 0xC);
-                                goto block_70;
-                        }
-                        var_a1_2->unk0 = 0xE6000000;
-                        var_a1_2->unk4 = 0;
-                        var_a1 = var_a1_2 + 8;
-                    }
-                }
-                if (var_t1 & 0x11) {
-                    temp_v0_12 = var_a1;
-                    temp_v0_12->unk0 = ((var_a2->unkA & 7) << 0x15) | 0xFD000000 | ((var_a2->unkB & 3) << 0x13);
-                    var_a1 += 8;
-                    temp_v0_12->unk4 = *(var_a2->unkC + (var_a2->unk80 * 4));
-                }
-                temp_v0_13 = var_a1;
-                if (var_t1 & 0x20) {
-                    if (var_f2 < 0.0f) {
-                        var_f0 = -var_f2;
-                    } else {
-                        var_f0 = var_f2;
-                    }
-                    if (var_f0 > 0.000015259022f) {
-                        temp_t7_2 = var_a2->unk14;
-                        var_f10 = temp_t7_2;
-                        if (temp_t7_2 < 0) {
-                            var_f10 += 4294967296.0f;
-                        }
-                        temp_t8 = var_a2->unk12;
-                        var_f10_2 = temp_t8;
-                        if (temp_t8 < 0) {
-                            var_f10_2 += 4294967296.0f;
-                        }
-                        var_a0_5 = (((var_f10 * spD4) + var_f10_2) / var_f2) * 4.0f;
-                    } else {
-                        var_a0_5 = 0.0f;
-                    }
-                    if (var_f12 < 0.0f) {
-                        var_f0_2 = -var_f12;
-                    } else {
-                        var_f0_2 = var_f12;
-                    }
-                    if (var_f0_2 > 0.000015259022f) {
-                        temp_t7_3 = var_a2->unk16;
-                        var_f6 = temp_t7_3;
-                        if (temp_t7_3 < 0) {
-                            var_f6 += 4294967296.0f;
-                        }
-                        temp_t8_2 = var_a2->unk12;
-                        var_f10_3 = temp_t8_2;
-                        if (temp_t8_2 < 0) {
-                            var_f10_3 += 4294967296.0f;
-                        }
-                        var_v1_2 = (((((1.0f - var_f12) - spD0) * var_f6) + var_f10_3) / var_f12) * 4.0f;
-                    } else {
-                        var_v1_2 = 0.0f;
-                    }
-                    temp_v0_13->unk0 = ((var_a0_5 & 0xFFF) << 0xC) | 0xF2000000 | (var_v1_2 & 0xFFF);
-                    var_a1 += 8;
-                    temp_v0_13->unk4 = (((((var_a2->unk14 - 1) * 4) + var_a0_5) & 0xFFF) << 0xC) | ((((var_a2->unk16 - 1) * 4) + var_v1_2) & 0xFFF);
-                }
-                temp_v0_14 = var_a1;
-                if (var_t1 & 0x40) {
-                    if (var_f2 < 0.0f) {
-                        var_f0_3 = -var_f2;
-                    } else {
-                        var_f0_3 = var_f2;
-                    }
-                    if (var_f0_3 > 0.000015259022f) {
-                        temp_t9 = var_a2->unk40;
-                        var_f4 = temp_t9;
-                        if (temp_t9 < 0) {
-                            var_f4 += 4294967296.0f;
-                        }
-                        temp_t7_4 = var_a2->unk12;
-                        var_f4_2 = temp_t7_4;
-                        if (temp_t7_4 < 0) {
-                            var_f4_2 += 4294967296.0f;
-                        }
-                        var_a0_6 = (((var_f4 * spCC) + var_f4_2) / var_f2) * 4.0f;
-                    } else {
-                        var_a0_6 = 0.0f;
-                    }
-                    if (var_f12 < 0.0f) {
-                        var_f0_4 = -var_f12;
-                    } else {
-                        var_f0_4 = var_f12;
-                    }
-                    if (var_f0_4 > 0.000015259022f) {
-                        temp_t9_2 = var_a2->unk42;
-                        var_f8 = temp_t9_2;
-                        if (temp_t9_2 < 0) {
-                            var_f8 += 4294967296.0f;
-                        }
-                        temp_t7_5 = var_a2->unk12;
-                        var_f4_3 = temp_t7_5;
-                        if (temp_t7_5 < 0) {
-                            var_f4_3 += 4294967296.0f;
-                        }
-                        var_v1_3 = (((((1.0f - var_f12) - spC8) * var_f8) + var_f4_3) / var_f12) * 4.0f;
-                    } else {
-                        var_v1_3 = 0.0f;
-                    }
-                    temp_v0_14->unk0 = ((var_a0_6 & 0xFFF) << 0xC) | 0xF2000000 | (var_v1_3 & 0xFFF);
-                    var_a1 += 8;
-                    temp_v0_14->unk4 = (((((var_a2->unk40 - 1) * 4) + var_a0_6) & 0xFFF) << 0xC) | 0x01000000 | ((((var_a2->unk42 - 1) * 4) + var_v1_3) & 0xFFF);
-                }
-                if (var_t1 & 0x80) {
-                    if (var_f2 < 0.0f) {
-                        var_f0_5 = -var_f2;
-                    } else {
-                        var_f0_5 = var_f2;
-                    }
-                    if (var_f0_5 > 0.000015259022f) {
-                        temp_t6 = var_a2->unk10;
-                        var_f4_4 = temp_t6;
-                        if (temp_t6 < 0) {
-                            var_f4_4 += 4294967296.0f;
-                        }
-                        var_a0_7 = (2097152.0f / var_f4_4) / var_f2;
-                    } else {
-                        var_a0_7 = 0.0f;
-                    }
-                    if (var_f12 < 0.0f) {
-                        var_f0_6 = -var_f12;
-                    } else {
-                        var_f0_6 = var_f12;
-                    }
-                    if (var_f0_6 > 0.000015259022f) {
-                        temp_t9_3 = var_a2->unk10;
-                        var_f8_2 = temp_t9_3;
-                        if (temp_t9_3 < 0) {
-                            var_f8_2 += 4294967296.0f;
-                        }
-                        var_v1_4 = (2097152.0f / var_f8_2) / var_f12;
-                    } else {
-                        var_v1_4 = 0.0f;
-                    }
-                    if (var_a0_7 >= 0x10000) {
-                        var_a0_7 = 0xFFFF;
-                    }
-                    if (var_v1_4 >= 0x10000) {
-                        var_v1_4 = 0xFFFF;
-                    }
-                    var_a1->unk0 = 0xD7000002;
-                    var_a1->unk4 = (var_a0_7 << 0x10) | (var_v1_4 & 0xFFFF);
-                    var_a1 += 8;
-                }
-                var_a1->unk0 = 0xDF000000;
-                var_a1->unk4 = 0;
-                var_a1 += 8;
-                temp_t7 = sp2C + 8;
-                sp2C = temp_t7;
-                var_a2 = var_a2->unk0;
-            } while (temp_t7 != sp1C);
-            spD8 = var_f12;
-            spDC = var_f2;
-        }
-        D_8004A404 = var_a1;
+    if (dobj->mobjList == NULL)
+    {
+        return;
     }
+    gSPSegment(dl_head[0]++, 0xE, gDynamicBuffer1.top);
+
+    for (mobj_count = 0, mobj = dobj->mobjList; mobj != NULL; mobj_count++)
+    {
+        mobj = mobj->next;
+    }
+    mobj = dobj->mobjList;
+    branch_dl = (Gfx*) (((Gfx*) gDynamicBuffer1.top) + mobj_count);
+    new_dl = (Gfx*) gDynamicBuffer1.top;
+
+    for (i = 0; i < mobj_count; i++, mobj = mobj->next)
+    {
+        flags = mobj->texture.flags;
+
+        if (flags == 0)
+        {
+            flags = (0x80 | 0x20 | 0x1);
+        }
+        if (flags & (0x80 | 0x40 | 0x20))
+        {
+            scau = mobj->texture.xScale;
+            scav = mobj->texture.yScale;
+            trau = mobj->texture.xFrac0;
+            trav = mobj->texture.yFrac0;
+            scrollu = mobj->texture.xFrac1;
+            scrollv = mobj->texture.yFrac1;
+
+            if (mobj->texture.halve != 0)
+            {
+                scau *= 0.5F;
+                trau = ((trau - mobj->texture.field_0x2c) + 1.0F - (mobj->texture.field_0x30 * 0.5F)) * 0.5F;
+                scrollu = ((scrollu - mobj->texture.unk_4C) + 1.0F - (mobj->texture.field_0x30 * 0.5F)) * 0.5F;
+            }
+        }
+        gSPBranchList(&new_dl[i], branch_dl);
+
+        if (flags & 0x4)
+        {
+            gDPSetTextureImage(branch_dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, mobj->texture.palettes[(s32)mobj->palIndex]);
+
+            if (flags & (0x2 | 0x1))
+            {
+                gDPTileSync(branch_dl++);
+                gDPSetTile
+                (
+                    branch_dl++,
+                    G_IM_FMT_RGBA,
+                    G_IM_SIZ_4b,
+                    0,
+                    0x0100,
+                    5,
+                    0,
+                    G_TX_NOMIRROR | G_TX_WRAP,
+                    G_TX_NOMASK,
+                    G_TX_NOLOD,
+                    G_TX_NOMIRROR | G_TX_WRAP,
+                    G_TX_NOMASK,
+                    G_TX_NOLOD
+                );
+                gDPLoadSync(branch_dl++);
+                gDPLoadTLUTCmd(branch_dl++, 5, ((u8)mobj->texture.siz1 == G_IM_SIZ_8b) ? 0xFF : 0xF);
+                gDPPipeSync(branch_dl++);
+            }
+        }
+        if (flags & 0x1000)
+        {
+            gSPLightColor(branch_dl++, LIGHT_1, mobj->texture.lightColor1.pack);
+        }
+        if (flags & 0x2000)
+        {
+            gSPLightColor(branch_dl++, LIGHT_2, mobj->texture.lightColor2.pack);
+        }
+        if (flags & (0x200 | 0x10 | 0x8))
+        {
+            if (flags & 0x10)
+            {
+                s32 trunc = mobj->primLOD;
+
+                gDPSetPrimColor
+                (
+                    branch_dl++,
+                    (u8)mobj->texture.minLOD,
+                    (mobj->primLOD - trunc) * 256.0F,
+                    mobj->texture.primColor.color.r,
+                    mobj->texture.primColor.color.g,
+                    mobj->texture.primColor.color.b,
+                    mobj->texture.primColor.color.a
+                );
+                mobj->texIndex1 = trunc;
+                mobj->texIndex2 = trunc + 1;
+            }
+            else
+            {
+                gDPSetPrimColor
+                (
+                    branch_dl++,
+                    (u8)mobj->texture.minLOD,
+                    mobj->primLOD * 255.0F,
+                    mobj->texture.primColor.color.r,
+                    mobj->texture.primColor.color.g,
+                    mobj->texture.primColor.color.b,
+                    mobj->texture.primColor.color.a
+                );
+            }
+        }
+        if (flags & 0x400)
+        {
+            gDPSetEnvColor
+            (
+                branch_dl++,
+                mobj->texture.envColor.color.r,
+                mobj->texture.envColor.color.g,
+                mobj->texture.envColor.color.b,
+                mobj->texture.envColor.color.a
+            );
+        }
+        if (flags & 0x800)
+        {
+            gDPSetBlendColor
+            (
+                branch_dl++,
+                mobj->texture.blendColor.color.r,
+                mobj->texture.blendColor.color.g,
+                mobj->texture.blendColor.color.b,
+                mobj->texture.blendColor.color.a
+            );
+        }
+        if (flags & (0x10 | 0x2))
+        {
+            s32 block_siz = ((u8)mobj->texture.siz2 == G_IM_SIZ_32b) ? G_IM_SIZ_32b : G_IM_SIZ_16b;
+
+            gDPSetTextureImage
+            (
+                branch_dl++,
+                (u8)mobj->texture.fmt2,
+                block_siz,
+                1,
+                mobj->texture.textures[mobj->texIndex2]
+            );
+            if (flags & (0x10 | 0x1))
+            {
+                gDPLoadSync(branch_dl++);
+
+                switch ((u8)mobj->texture.siz2)
+                {
+                case G_IM_SIZ_4b:
+                    gDPLoadBlock
+                    (
+                        branch_dl++,
+                        6,
+                        0,
+                        0,
+                        (((mobj->texture.w2 * mobj->texture.h2) + 3) >> 2) - 1,
+                        (((mobj->texture.w2 / 16 <= 0) ? 1 : mobj->texture.w2 / 16) + 0x7FF) / ((mobj->texture.w2 / 16 <= 0) ? 1 : mobj->texture.w2 / 16)
+                    );
+                    break;
+
+                case G_IM_SIZ_8b:
+                    gDPLoadBlock
+                    (
+                        branch_dl++,
+                        6,
+                        0,
+                        0,
+                        (((mobj->texture.w2 * mobj->texture.h2) + 1) >> 1) - 1,
+                        (((mobj->texture.w2 / 8 <= 0) ? 1 : mobj->texture.w2 / 8) + 0x7FF) / ((mobj->texture.w2 / 8 <= 0) ? 1 : mobj->texture.w2 / 8)
+                    );
+                    break;
+
+                case G_IM_SIZ_16b:
+                    gDPLoadBlock
+                    (
+                        branch_dl++,
+                        6,
+                        0,
+                        0,
+                        (mobj->texture.w2 * mobj->texture.h2) - 1,
+                        ((((mobj->texture.w2 * 2) / 8 <= 0) ? 1 : (mobj->texture.w2 * 2) / 8) + 0x7FF) / (((mobj->texture.w2 * 2) / 8 <= 0) ? 1 : (mobj->texture.w2 * 2) / 8)
+                    );
+                    break;
+
+                case G_IM_SIZ_32b:
+                    gDPLoadBlock
+                    (
+                        branch_dl++,
+                        6,
+                        0,
+                        0,
+                        (mobj->texture.w2 * mobj->texture.h2) - 1,
+                        ((((mobj->texture.w2 * 4) / 8 <= 0) ? 1 : (mobj->texture.w2 * 4) / 8) + 0x7FF) / (((mobj->texture.w2 * 4) / 8 <= 0) ? 1 : (mobj->texture.w2 * 4) / 8)
+                    );
+                    break;
+                }
+                gDPLoadSync(branch_dl++);
+            }
+        }
+        if (flags & (0x10 | 0x1))
+        {
+            gDPSetTextureImage
+            (
+                branch_dl++,
+                (u8)mobj->texture.fmt1,
+                (u8)mobj->texture.siz1,
+                1,
+                mobj->texture.textures[mobj->texIndex1]
+            );
+        }
+        if (flags & 0x20)
+        {
+            uls = (ABSF(scau) > (1.0F / 65535.0F)) ? (((mobj->texture.t0w * trau) + mobj->texture.sharedOffset) / scau) * 4.0F : 0.0F;
+            ult = (ABSF(scav) > (1.0F / 65535.0F)) ? (((((1.0F - scav) - trav) * mobj->texture.t0h) + mobj->texture.sharedOffset) / scav) * 4.0F : 0.0F;
+
+            gDPSetTileSize
+            (
+                branch_dl++,
+                0,
+                uls,
+                ult,
+                ((mobj->texture.t0w - 1) << 2) + uls,
+                ((mobj->texture.t0h - 1) << 2) + ult
+            );
+        }
+        if (flags & 0x40)
+        {
+            uls = (ABSF(scau) > (1.0F / 65535.0F)) ? (((mobj->texture.t1w * scrollu) + mobj->texture.sharedOffset) / scau) * 4.0F : 0.0F;
+            ult = (ABSF(scav) > (1.0F / 65535.0F)) ? (((((1.0F - scav) - scrollv) * mobj->texture.t1h) + mobj->texture.sharedOffset) / scav) * 4.0F : 0.0F;
+
+            gDPSetTileSize
+            (
+                branch_dl++,
+                1,
+                uls,
+                ult,
+                ((mobj->texture.t1w - 1) << 2) + uls,
+                ((mobj->texture.t1h - 1) << 2) + ult
+            );
+        }
+        if (flags & 0x80)
+        {
+            s = (ABSF(scau) > (1.0F / 65535.0F)) ? (2097152.0F / mobj->texture.stretch) / scau : 0.0F;
+            t = (ABSF(scav) > (1.0F / 65535.0F)) ? (2097152.0F / mobj->texture.stretch) / scav : 0.0F;
+            if (s > 0xFFFF)
+            {
+                s = 0xFFFF;
+            }
+            if (t > 0xFFFF)
+            {
+                t = 0xFFFF;
+            }
+            gSPTexture(branch_dl++, s, t, 0, 0, G_ON);
+        }
+        gSPEndDisplayList(branch_dl++);
+    }
+    gDynamicBuffer1.top = (void*) branch_dl;
 }
-#else
-void renderLoadTextures(DObj *, Gfx **);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderLoadTextures.s")
-#endif
 
 void renderDrawGObj(GObj* gobj, Gfx** gfxPtr) {
     s32 ret;

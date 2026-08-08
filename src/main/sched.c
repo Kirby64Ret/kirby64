@@ -269,8 +269,275 @@ void func_80000E9C(void) {
 }
 
 // weird long function
+// Transcribed from SSB64 sySchedulerUpdateViMode; all 511 instructions are
+// present but IDO swaps two register assignments ($v1 <-> $a0).
+#ifdef NON_MATCHING
+void func_80000F78(u32 width, u32 height, u32 flags, s16 edgeOffsetLeft, s16 edgeOffsetRight, s16 edgeOffsetTop, s16 edgeOffsetBottom)
+{
+    s32 not_phi_v1;
+    s32 phi_v1;
+    s32 not_res_in_bounds;
+    s32 is_res_in_bounds;
+    s32 vertical;
+    s32 pos1;
+    s32 pos2;
+
+    is_res_in_bounds = ((width > 320) || (height > 240)) ? FALSE : TRUE;
+
+    if (flags & 0x4)
+    {
+        D_80048C7C.serrate = TRUE;
+        gCurrentViMode.comRegs.ctrl |= 0x40;
+    }
+    if (flags & 0x8)
+    {
+        D_80048C7C.serrate = FALSE;
+        gCurrentViMode.comRegs.ctrl &= ~0x40;
+    }
+    if (flags & 0x10)
+    {
+        D_80048C7C.colordepth32 = FALSE;
+        gCurrentViMode.comRegs.ctrl &= ~(0x3 | 0x2);
+        gCurrentViMode.comRegs.ctrl |= 0x2;
+    }
+    if (flags & 0x20)
+    {
+        D_80048C7C.colordepth32 = TRUE;
+        gCurrentViMode.comRegs.ctrl &= ~(0x3 | 0x2);
+        gCurrentViMode.comRegs.ctrl |= 0x3;
+    }
+    if (flags & 0x40)
+    {
+        D_80048C7C.gamma = TRUE;
+        gCurrentViMode.comRegs.ctrl |= 0x8;
+    }
+    if (flags & 0x80)
+    {
+        D_80048C7C.gamma = FALSE;
+        gCurrentViMode.comRegs.ctrl &= ~0x8;
+    }
+    if (flags & 0x1000)
+    {
+        D_80048C7C.gammadither = TRUE;
+        gCurrentViMode.comRegs.ctrl |= 0x4;
+    }
+    if (flags & 0x2000)
+    {
+        D_80048C7C.gammadither = FALSE;
+        gCurrentViMode.comRegs.ctrl &= ~0x4;
+    }
+    if (flags & 0x4000)
+    {
+        D_80048C7C.ditherfilter = TRUE;
+        gCurrentViMode.comRegs.ctrl |= 0x10000;
+    }
+    if (flags & 0x8000)
+    {
+        D_80048C7C.ditherfilter = FALSE;
+        gCurrentViMode.comRegs.ctrl &= ~0x10000;
+    }
+    if (flags & 0x10000)
+    {
+        D_80048C7C.divot = TRUE;
+        gCurrentViMode.comRegs.ctrl |= 0x10;
+    }
+    if (flags & 0x20000)
+    {
+        D_80048C7C.divot = FALSE;
+        gCurrentViMode.comRegs.ctrl &= ~0x10;
+    }
+    if (flags & 0x100)
+    {
+        D_80048C7C.blackout = TRUE;
+    }
+    if (flags & 0x200)
+    {
+        D_80048C7C.blackout = FALSE;
+    }
+    if (flags & 0x400)
+    {
+        D_80048C7C.unk_b04 = TRUE;
+    }
+    if (flags & 0x800)
+    {
+        D_80048C7C.unk_b04 = FALSE;
+    }
+    if (flags & 0x1)
+    {
+        D_80048C7C.antialias = TRUE;
+    }
+    if (flags & 0x2)
+    {
+        D_80048C7C.antialias = FALSE;
+    }
+    gCurrentViMode.comRegs.ctrl &= ~0x300;
+
+    if (D_80048C7C.antialias)
+    {
+        gCurrentViMode.comRegs.ctrl |= ((D_80048C7C.ditherfilter) ? 0 : 0x100);
+    }
+    else if (!(D_80048C7C.unk_b04) && (D_80048C7C.colordepth32 == TRUE))
+    {
+        gCurrentViMode.comRegs.ctrl |= 0x300;
+    }
+    else gCurrentViMode.comRegs.ctrl |= 0x200;
+
+    if (is_res_in_bounds != FALSE)
+    {
+        phi_v1 = (D_80048C7C.serrate) ? FALSE : TRUE;
+    }
+    else phi_v1 = (D_80048C7C.unk_b04) ? FALSE : TRUE;
+
+    edgeOffsetTop &= ~1;
+    edgeOffsetBottom &= ~1;
+
+    not_phi_v1 = !phi_v1;
+    not_res_in_bounds = !is_res_in_bounds;
+
+    vertical = (((not_res_in_bounds != FALSE) && (not_phi_v1 != FALSE)) ? 2 : 1) *
+        (((height * 2048) / ((edgeOffsetBottom - edgeOffsetTop) + 480)) / ((is_res_in_bounds != FALSE) ? 1 : 2));
+
+    gCurrentViMode.comRegs.width = (((not_res_in_bounds != FALSE) && (phi_v1 != FALSE)) ? 2 : 1) * width;
+
+    if (TRUE)
+    {
+        if (osTvType == 1)
+        {
+            gCurrentViMode.comRegs.burst     = 0x3E52239;
+            gCurrentViMode.comRegs.vSync     = 0x20C;
+            gCurrentViMode.comRegs.hSync     = 0xC15;
+            gCurrentViMode.comRegs.leap      = 0xC150C15;
+            gCurrentViMode.comRegs.hStart    = 0x6C02EC;
+            gCurrentViMode.fldRegs[0].vStart = 0x2501FF;
+            gCurrentViMode.fldRegs[0].vBurst = 0xE0204;
+        }
+        if (osTvType == 2)
+        {
+            gCurrentViMode.comRegs.burst     = 0x4651E39;
+            gCurrentViMode.comRegs.vSync     = 0x20C;
+            gCurrentViMode.comRegs.hSync     = 0xC10;
+            gCurrentViMode.comRegs.leap      = 0xC1C0C1C;
+            gCurrentViMode.comRegs.hStart    = 0x6C02EC;
+            gCurrentViMode.fldRegs[0].vStart = 0x2501FF;
+            gCurrentViMode.fldRegs[0].vBurst = 0xE0204;
+        }
+    }
+
+    gCurrentViMode.fldRegs[1].vStart = gCurrentViMode.fldRegs[0].vStart;
+
+    pos1 = gCurrentViMode.comRegs.hStart >> 16;
+    pos2 = gCurrentViMode.comRegs.hStart & 0xFFFF;
+
+    pos1 += edgeOffsetLeft;
+
+    if (pos1 < 0)
+    {
+        pos1 = 0;
+    }
+    pos2 += edgeOffsetRight;
+
+    if (pos2 < 0)
+    {
+        pos2 = 0;
+    }
+    gCurrentViMode.comRegs.hStart = (pos1 << 16) | pos2;
+
+    pos1 = gCurrentViMode.fldRegs[0].vStart >> 16;
+    pos2 = gCurrentViMode.fldRegs[0].vStart & 0xFFFF;
+
+    pos1 += edgeOffsetTop;
+
+    if (pos1 < 0)
+    {
+        pos1 = 0;
+    }
+    pos2 += edgeOffsetBottom;
+
+    if (pos2 < 0)
+    {
+        pos2 = 0;
+    }
+    gCurrentViMode.fldRegs[0].vStart = (pos1 << 16) | pos2;
+
+    pos1 = gCurrentViMode.fldRegs[1].vStart >> 16;
+    pos2 = gCurrentViMode.fldRegs[1].vStart & 0xFFFF;
+
+    pos1 += edgeOffsetTop;
+
+    if (pos1 < 0)
+    {
+        pos1 = 0;
+    }
+    pos2 += edgeOffsetBottom;
+
+    if (pos2 < 0)
+    {
+        pos2 = 0;
+    }
+    gCurrentViMode.fldRegs[1].vStart = (pos1 << 16) | pos2;
+
+    gCurrentViMode.fldRegs[1].vBurst = gCurrentViMode.fldRegs[0].vBurst;
+
+    if ((is_res_in_bounds != FALSE) && (phi_v1 != FALSE))
+    {
+        gCurrentViMode.comRegs.vSync += 1;
+        if (1);
+
+        if (osTvType == 2)
+        {
+            gCurrentViMode.comRegs.hSync += 0x40001;
+
+        }
+        if (osTvType == 2)
+        {
+            gCurrentViMode.comRegs.leap += 0xFFFCFFFE;
+        }
+    }
+    else
+    {
+        gCurrentViMode.fldRegs[0].vStart += 0xFFFDFFFE;
+        if (1);
+
+        if (osTvType == 2)
+        {
+            gCurrentViMode.fldRegs[0].vBurst += 0xFFFCFFFE;
+        }
+        if (osTvType == 0)
+        {
+            gCurrentViMode.fldRegs[1].vBurst += 0x2FFFE;
+        }
+    }
+
+    gCurrentViMode.comRegs.vCurrent  = 0;
+    gCurrentViMode.comRegs.xScale    = (width * 1024) / ((edgeOffsetRight - edgeOffsetLeft) + 640);
+    gCurrentViMode.fldRegs[0].origin = (!(D_80048C7C.colordepth32) ? 1 : 2) * width * 2;
+    phi_v1 = D_80048C7C.colordepth32;
+    gCurrentViMode.fldRegs[1].origin = (!(phi_v1) ? 1 : 2) * (((is_res_in_bounds != FALSE) ? 1 : 2) * width * 2);
+    gCurrentViMode.fldRegs[0].yScale = vertical;
+    gCurrentViMode.fldRegs[1].yScale = vertical;
+
+    if (D_80048C7C.unk_b04)
+    {
+        if (1);
+        if (height < 360)
+        {
+            gCurrentViMode.fldRegs[0].yScale += 0x3000000;
+            gCurrentViMode.fldRegs[1].yScale += 0x1000000;
+        }
+        else
+        {
+            gCurrentViMode.fldRegs[0].yScale += 0x2000000;
+            gCurrentViMode.fldRegs[1].yScale += 0x2000000;
+        }
+    }
+    gCurrentViMode.fldRegs[0].vIntr = 2;
+    gCurrentViMode.fldRegs[1].vIntr = 2;
+    D_80048C48 = 1;
+}
+#else
 void func_80000F78(u32 width, u32 height, s32 flags, s16 edgeOffsetLeft, s16 edgeOffsetRight, s16 edgeOffsetTop, s16 edgeOffsetBottom);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000F78.s")
+#endif
 
 void func_80001774(void *arg0) {
     if ((D_80048C48 != 0) && (scBeforeReset == 0)) {
@@ -709,9 +976,9 @@ void scAddTask(SCTaskInfo *task) {
     func_80001E20();
 }
 
-#ifdef MIPS_TO_C
-// 344/345 instructions; the only diff is one extra `lui $a0, %hi(D_80048BA8)`
-// scheduled into the osTvType switch's first branch-delay slot.
+// 345/350 instructions; the osTvType switch materialises one extra
+// `lui $a0, %hi(D_80048BA8)` per path.
+#ifdef NON_MATCHING
 void scThreadMain(void *arg) {
     u32 mesg;
 
