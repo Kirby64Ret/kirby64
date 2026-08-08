@@ -43,8 +43,7 @@ Gfx resetRDPDisplayList[] = {
     gsSPEndDisplayList(),
 };
 
-#ifdef NON_MATCHING
-// G_MAXZ needs to be loaded in later somehow
+#ifdef MIPS_TO_C
 void func_80007C00(Vp *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4) {
     s16 constant = G_MAXZ / 2;
 
