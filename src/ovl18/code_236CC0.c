@@ -34,4 +34,15 @@ void func_80224320_ovl18(UNUSED s32 arg0) {
     curObjSleepForever();
 }
 
+#ifdef MIPS_TO_C
+void func_802244FC_ovl18(void) {
+    if (D_800E98E0[omCurrentObj->objId] == 0) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801ACF84_ovl7);
+    } else {
+        D_800E98E0[omCurrentObj->objId] -= 1;
+        func_801ACF5C_ovl7();
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_236CC0/func_802244FC_ovl18.s")
+#endif

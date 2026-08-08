@@ -803,15 +803,13 @@ s32 func_801A8BAC_ovl7(void) {
 
     f32 temp_f0;
     f32 temp_f2;
-    f32 temp_f4;
     s32 temp_a0;
 
     temp_a0 = D_800E0D50[omCurrentObj->objId];
     if (D_800E6F50[omCurrentObj->objId].originOffset < 50.0f) {
         temp_f0 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[temp_a0];
         temp_f2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[temp_a0];
-        temp_f4 = sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2));
-        D_80198820_ovl3 = -func_800A52F0(gEntitiesNextPosYArray[omCurrentObj->objId] - (gEntitiesNextPosYArray[temp_a0] + 28.0f), temp_f4);
+        D_80198820_ovl3 = -func_800A52F0(gEntitiesNextPosYArray[omCurrentObj->objId] - (gEntitiesNextPosYArray[temp_a0] + 28.0f), sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2)));
     }
     if (D_800E6F50[omCurrentObj->objId].originOffset < 26.0f) {
         return 1;
