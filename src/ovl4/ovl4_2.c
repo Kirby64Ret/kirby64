@@ -1,5 +1,10 @@
 #include <ultra64.h>
 #include <macros.h>
+#include "GObj.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/ovl1_7.h"
+#include "ovl1/util.h"
+#include "track_arrays.h"
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80151DE0_ovl4.s")
 
@@ -49,25 +54,45 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801533A8_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80153AB0_ovl4.s")
+extern s32 D_8015C694_ovl4;
+
+void func_80153AB0_ovl4(struct GObj *arg0) {
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80153AEC_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80153C3C_ovl4.s")
+extern s32 D_8015C694_ovl4;
+
+void func_80153C3C_ovl4(struct GObj *arg0) {
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80153C78_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_8015427C_ovl4.s")
+extern s32 D_8015C694_ovl4;
+
+void func_8015427C_ovl4(struct GObj *arg0) {
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801542B8_ovl4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801543C8_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154880_ovl4.s")
+extern s32 D_8015C694_ovl4;
+
+void func_80154880_ovl4(struct GObj *arg0) {
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801548BC_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154DA0_ovl4.s")
+extern s32 D_8015C694_ovl4;
+
+void func_80154DA0_ovl4(struct GObj *arg0) {
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154DDC_ovl4.s")
 
