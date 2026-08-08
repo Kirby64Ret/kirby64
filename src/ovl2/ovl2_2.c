@@ -368,10 +368,8 @@ block_14:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7578.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800F7844(void) {
-    switch (D_800BE4FC) {                           /* irregular */
+    switch (D_800BE4FC) {
         case 0:
             D_800BE508 = 0;
             D_800BE50C = 0;
@@ -388,9 +386,6 @@ void func_800F7844(void) {
             return;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7844.s")
-#endif
 
 #ifdef MIPS_TO_C
 

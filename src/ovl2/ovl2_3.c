@@ -1028,14 +1028,13 @@ block_10:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9C94.s")
 #endif
 
-#ifdef MIPS_TO_C
-// close but not matching: target allocates 1.0f to $f0 and 0.0f to $f2, this compiles to the opposite
 f32 func_800F9F10(f32 arg0, s32 arg1) {
     if (arg0 > 1.0f) {
-        if (arg1 != 1) {
-            return 1.0f;
+        if (arg1 == 1) {
+            arg0 -= 1.0f;
+        } else {
+            arg0 = 1.0f;
         }
-        arg0 -= 1.0f;
     } else if (arg0 < 0.0f) {
         if (arg1 == 1) {
             arg0 += 1.0f;
@@ -1045,9 +1044,6 @@ f32 func_800F9F10(f32 arg0, s32 arg1) {
     }
     return arg0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9F10.s")
-#endif
 
 f32 func_800F9F80(Vector *arg0, Vector *arg1, Vector *arg2) {
     Vector sp2C;

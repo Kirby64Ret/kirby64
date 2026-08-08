@@ -140,7 +140,53 @@ Vector *vec3_negate(Vector *arg0) {
     return arg0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbvector/func_800191F8.s")
+// rotates a vector about an arbitrary direction vector
+Vector *func_800191F8(Vector *dst, Vector *dir, f32 angle) {
+    f32 mag_yz;
+    f32 ratio_z;
+    f32 ratio_y;
+    f32 rot_x;
+    f32 sin;
+    f32 cos;
+    f32 rot_y;
+    f32 intermediate_x;
+    f32 intermediate_z;
+    f32 rot_z;
+
+    mag_yz = sqrtf(SQ(dir->y) + SQ(dir->z));
+    sin = sinf(angle);
+    cos = cosf(angle);
+
+    if (mag_yz != 0.0f) {
+        ratio_z = dir->z / mag_yz;
+        ratio_y = dir->y / mag_yz;
+        rot_x = dst->x;
+        rot_y = dst->y * ratio_z - dst->z * ratio_y;
+        rot_z = dst->y * ratio_y + dst->z * ratio_z;
+    } else {
+        rot_x = rot_z = dst->x;
+        rot_y = dst->y;
+        rot_z = dst->z;
+    }
+    intermediate_z = rot_x * mag_yz - rot_z * dir->x;
+    intermediate_x = rot_x * dir->x + rot_z * mag_yz;
+    rot_x = intermediate_z * cos - rot_y * sin;
+
+    rot_y = intermediate_z * sin + rot_y * cos;
+    intermediate_z = rot_x * mag_yz + intermediate_x * dir->x;
+    intermediate_x = -rot_x * dir->x + intermediate_x * mag_yz;
+
+    if (mag_yz != 0.0f) {
+        dst->x = intermediate_z;
+        dst->y = rot_y * ratio_z + intermediate_x * ratio_y;
+        dst->z = -rot_y * ratio_y + intermediate_x * ratio_z;
+    } else {
+        dst->x = intermediate_z;
+        dst->y = rot_y;
+        dst->z = intermediate_x;
+    }
+    return dst;
+}
 
 // granularly negates components of a vector
 Vector *lbvector_Negate(Vector *arg0, s32 flag) {

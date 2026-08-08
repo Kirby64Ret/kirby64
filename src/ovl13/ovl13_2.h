@@ -9,6 +9,7 @@ extern void func_800AFBB4(s32, GObj *);
 extern void func_800B19F4(s32, s32);
 extern void func_800B6FD8(GObj *);
 extern void func_801A3E80_ovl7(GObj *);
+extern s32 D_801DAD20;
 extern s32 D_801DAD44;
 extern s32 D_801DAD68;
 void func_801E45B8_ovl13(GObj *);
