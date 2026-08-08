@@ -1,13 +1,120 @@
-#include "common.h"
+#include <ultra64.h>
+#include <macros.h>
+#include "GObj.h"
+#include "main/object_helpers.h"
+#include "ovl1/ovl1_2_2.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/track.h"
+#include "ovl1/util.h"
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D2040_ovl8.s")
+extern f32 D_800D70D8;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D223C_ovl8.s")
+extern void func_800A9864();
+extern void func_800A9EA4(s32);
+extern void func_800AA018(s32);
+extern void func_800AF27C(void);
+extern void func_800B1900(u16);
+extern void func_800B4B9C(s32);
+extern void func_800FB914(s32);
+extern void func_801D1E58_ovl8(s32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D23EC_ovl8.s")
+void func_801D2040_ovl8(s32 arg0, s32 arg1, f32 arg2) {
+    s32 pad2[3];
+    s32 newIdx;
+
+    if (!(D_800D70D8 <= 0.0f) && (arg1 == 0) && ((s32)arg2 == 1)) {
+        newIdx = request_track_general(0x19, 0x1E, 0x3C);
+        if (newIdx >= 0x3C || newIdx == -1) {
+            utilPrintf("reqWhispyRootTrk  Request Error!![eneeff.cc]\n");
+            func_800B1900(newIdx);
+            return;
+        }
+        gEntityFuncListIDArray[newIdx] = gEntityFuncListIDArray[omCurrentObj->objId];
+        D_800E76C0[newIdx] = 0xFF;
+        D_800E7730[newIdx] = 2;
+        D_800E77A0[newIdx] = 0;
+        D_800E7880[newIdx] = 3;
+        gEntitiesNextPosXArray[newIdx] = gEntitiesNextPosXArray[omCurrentObj->objId];
+        gEntitiesNextPosYArray[newIdx] = gEntitiesNextPosYArray[omCurrentObj->objId];
+        gEntitiesNextPosZArray[newIdx] = gEntitiesNextPosZArray[omCurrentObj->objId];
+        gEntitiesPosXArray[newIdx] = gEntitiesNextPosXArray[newIdx];
+        gEntitiesPosYArray[newIdx] = gEntitiesNextPosYArray[newIdx];
+        gEntitiesPosZArray[newIdx] = gEntitiesNextPosZArray[newIdx];
+        D_800E8E60[newIdx] = 1;
+        D_800EA520[newIdx] = D_800EA520[omCurrentObj->objId];
+        gEntitiesAngleYArray[newIdx] = gEntitiesAngleYArray[omCurrentObj->objId];
+        func_800FB914(1);
+        play_sound(0x1E0);
+    }
+}
+
+void func_801D223C_ovl8(struct GObj *this) {
+    func_800A9864(0x100DE, 0x1869F, 0x10, this);
+    ((GObj_3C *) this->data.ptr)->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    ((GObj_3C *) this->data.ptr)->posVec.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    ((GObj_3C *) this->data.ptr)->posVec.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    ((GObj_3C *) this->data.ptr)->angleVec.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    ((GObj_3C *) this->data.ptr)->angleVec.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    ((GObj_3C *) this->data.ptr)->angleVec.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    ((GObj_3C *) this->data.ptr)->scaleVec.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    ((GObj_3C *) this->data.ptr)->scaleVec.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    ((GObj_3C *) this->data.ptr)->scaleVec.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    func_800AA018(0x10621);
+    D_800DF310[omCurrentObj->objId] = func_801D2040_ovl8;
+    func_800AF27C();
+    func_800B1900(omCurrentObj->objId);
+}
+
+void func_801D23EC_ovl8(s32 arg0) {
+    func_800A9864(0x100E4, 0x1869F, 0x10);
+    D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
+    D_800DDA90[omCurrentObj->objId] = 0x25;
+    func_800AA018(0x10638);
+    while (1) {
+        switch (D_800DFF50[D_800E0D50[omCurrentObj->objId]]) {
+            case 0x10434:
+                func_800A9EA4(0x10637);
+                break;
+            case 0x10438:
+                func_800A9EA4(0x1063C);
+                break;
+            case 0x10439:
+                func_800A9EA4(0x1063D);
+                func_800AF27C();
+                func_800B1900(omCurrentObj->objId);
+                break;
+            default:
+                func_800B1900(omCurrentObj->objId);
+        }
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D2590_ovl8.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D281C_ovl8.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D29C8_ovl8.s")
+void func_801D29C8_ovl8(struct GObj *arg0) {
+    switch (D_800EA520[omCurrentObj->objId]) {
+        case 1:
+            func_800A9864(0x100ED, 0x1869F, 0x10);
+            func_800AA018(0x1067E);
+            break;
+        case 2:
+            func_800A9864(0x100EE, 0x1869F, 0x10);
+            func_800AA018(0x1067F);
+            break;
+        case 3:
+            func_800A9864(0x100EF, 0x1869F, 0x10);
+            func_800AA018(0x10680);
+            break;
+    }
+    ((GObj_3C *) arg0->data.ptr)->posVec.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    ((GObj_3C *) arg0->data.ptr)->posVec.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    ((GObj_3C *) arg0->data.ptr)->posVec.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    ((GObj_3C *) arg0->data.ptr)->angleVec.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    ((GObj_3C *) arg0->data.ptr)->angleVec.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    ((GObj_3C *) arg0->data.ptr)->angleVec.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    func_800AF27C();
+    func_800B1900(omCurrentObj->objId);
+}

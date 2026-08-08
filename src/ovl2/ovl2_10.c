@@ -137,17 +137,16 @@ s32 func_80112498(struct UnkRay *arg0) {
 }
 
 #ifdef MIPS_TO_C
+// 10 instructions off: target puts nx in $f2 and dot in $f0, this compiles to the opposite
 s32 func_8011253C(struct UnkRay *arg0) {
-    struct UnkPlane *pl;
+    f32 nx;
     f32 dot;
     f32 t;
-    f32 nx;
-    f32 nz;
+    struct UnkPlane *pl;
 
-    nz = -D_8012D934->unk54;
-    nx = -D_8012D934->unk50;
     pl = &D_8012D934->unk60[D_8012D934->unk84];
-    dot = (pl->unk0 * nx) + (pl->unk8 * nz);
+    nx = -D_8012D934->unk50;
+    dot = (pl->unk0 * nx) + (pl->unk8 * -D_8012D934->unk54);
     t = (dot < 0.0f) ? -dot : dot;
     if (t < 1e-4f) {
         return 0;
@@ -183,11 +182,36 @@ s32 func_80112600(struct UnkRay *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801126A4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112768.s")
+s32 func_80112768(struct UnkRay *arg0) {
+    f32 x = arg0->unk4;
+    f32 y = arg0->unk8 + arg0->unk14;
+    f32 z = arg0->unkC;
+    struct UnkPlane *pl = &D_8012D934->unk60[0];
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801127D8.s")
+    if (((pl->unk0 * x) + (pl->unk4 * y) + (pl->unk8 * z) + pl->unkC) > 0.0f) {
+        return 1;
+    }
+    return 0;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112828.s")
+s32 func_801127D8(struct UnkRay *arg0) {
+    struct UnkPlane *pl = &D_8012D934->unk60[0];
+
+    arg0->unk8 = (-((pl->unk0 * arg0->unk4) + (pl->unk8 * arg0->unkC) + pl->unkC) / pl->unk4) - arg0->unk14;
+    return 4;
+}
+
+s32 func_80112828(struct UnkRay *arg0) {
+    f32 x = arg0->unk4;
+    f32 y = arg0->unk8 + arg0->unk18 + 60.0f;
+    f32 z = arg0->unkC;
+    struct UnkPlane *pl = &D_8012D934->unk60[1];
+
+    if (((pl->unk0 * x) + (pl->unk4 * y) + (pl->unk8 * z) + pl->unkC) > 0.0f) {
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801128A4.s")
 
@@ -2003,7 +2027,22 @@ void func_8011B0A4(GObj *arg0)
   func_800B4924(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011B188.s")
+void func_8011B188(struct GObj *arg0) {
+    s32 objId = arg0->objId;
+
+    func_800B4924(arg0);
+    if (D_800E98E0[objId] != 0) {
+        D_800E98E0[objId]--;
+        if (D_800E98E0[objId] == 0) {
+            func_800FB914(4);
+        }
+    }
+    D_800E9AA0[objId].as_s32--;
+    if (D_800E9AA0[objId].as_s32 <= 0) {
+        func_8011E504();
+        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011B0A4;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011B22C.s")
 

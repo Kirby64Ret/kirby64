@@ -15,6 +15,11 @@
 
 #include "enelib.h"
 
+extern u8 D_800D6C68[];
+void func_800A22D4(void *);
+void func_800A2300(GObj *);
+void func_801A32A8_ovl7(s32);
+
 // enelib.c
 // prefix: ene
 
@@ -2140,40 +2145,7 @@ block_19:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D4D0_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_8019D8A0(s32 arg0) {
-    UnkStruct800E1B50 *sp24;
-    s32 sp20;
-    UnkStruct800E1B50 *temp_v0;
-    s32 temp_s0;
-    struct Sub800E1B50_Unk34 *temp_a1;
-    u8 *temp_v0_2;
-    u8 temp_v1;
-
-    temp_s0 = arg0 & 0xFFFF;
-    temp_v0 = D_800E1B50[temp_s0];
-    temp_a1 = temp_v0->unk34;
-    if (temp_a1 != NULL) {
-        sp24 = temp_v0;
-        sp20 = temp_s0 * 4;
-        func_800A22D4(temp_a1, temp_a1);
-    }
-    sp24 = temp_v0;
-    func_800A2300(D_800DE350[temp_s0]);
-    temp_v0->unk34 = NULL;
-    func_8019BBA8_ovl7(temp_s0);
-    func_801A32A8_ovl7(temp_s0);
-    temp_v1 = D_800E76C0[temp_s0];
-    temp_v0_2 = temp_v1 + (&D_800D6C68 + 0x28);
-    if (temp_v1 < 0x40) {
-        *temp_v0_2 &= 0x80;
-    }
-    func_800B1900(temp_s0 & 0xFFFF);
-}
-#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D8A0.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8019D958_ovl7(u16 arg0) {

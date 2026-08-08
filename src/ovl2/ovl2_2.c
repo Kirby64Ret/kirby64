@@ -15,6 +15,18 @@
 
 extern f32 gameTicksPerDrawInv;
 
+struct UnkStruct801290D8_2 {
+    u8 filler[0x16];
+    u16 unk16;
+};
+extern struct UnkStruct801290D8_2 *D_801290D8;
+extern u8 D_800D6C68[];
+extern u32 D_800D6D10[][2];
+extern u8 D_800D7010[];
+extern u8 D_80124000[];
+
+void func_800A5404(void *, void *);
+
 void func_800F6C40(s32 arg0, UNUSED s32 arg1) {
     D_800BE4F8 = 2;
     D_800BE4FC = 1;
@@ -151,15 +163,11 @@ void func_800F716C(GObj *gobj) {
     gDrawFuncList[gSegment4StartArray[gobj->objId][2]](gobj);
 }
 
-#ifdef MIPS_TO_C
 void func_800F7258(s32 arg0) {
-    func_800A5404(&D_800D7010, &D_80124000);
-    func_800A5404(&D_800D7010 + 0x18, &D_80124000);
-    func_800A5404(&D_800D7010 + 0x30, &D_80124000);
+    func_800A5404(&D_800D7010[0], &D_80124000[0]);
+    func_800A5404(&D_800D7010[0x18], &D_80124000[0]);
+    func_800A5404(&D_800D7010[0x30], &D_80124000[0]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7258.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_800F72B0(s32 arg0) {
@@ -207,43 +215,27 @@ block_7:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F72B0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
+#ifdef NON_MATCHING
+// register allocation only: target keeps two separate materializations of D_800D6D10
 void func_800F7404(s32 arg0) {
-    s32 var_a0;
-    s8 temp_t9;
-    u32 *var_v1;
-    u32 temp_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 var_v0;
-    void *var_a1;
-    void *var_a2;
+    u32 *src;
+    u8 *dst;
+    u8 *p;
+    u32 val;
+    s32 i;
 
-    var_a1 = &D_800D6C68 + 0x68;
-    var_v1 = (arg0 * 8) + &D_800D6D10;
+    src = D_800D6D10[arg0];
+    dst = &D_800D6C68[0x68];
     do {
-        var_v0 = *var_v1;
-        var_a0 = 0;
-        var_a2 = var_a1;
-loop_2:
-        temp_t9 = var_v0 & 1;
-        temp_v0 = var_v0 >> 1;
-        temp_v0_2 = temp_v0 >> 1;
-        temp_v0_3 = temp_v0_2 >> 1;
-        var_a0 += 4;
-        var_a2->unk3 = temp_v0_3 & 1;
-        var_v0 = temp_v0_3 >> 1;
-        var_a2->unk2 = temp_v0_2 & 1;
-        var_a2->unk1 = temp_v0 & 1;
-        var_a2 += 4;
-        var_a2->unk-4 = temp_t9;
-        if (var_a0 != 0x20) {
-            goto loop_2;
+        val = *src;
+        p = dst;
+        for (i = 0; i < 0x20; i++) {
+            *p++ = val & 1;
+            val >>= 1;
         }
-        var_a1 += 0x20;
-        var_v1 += 4;
-    } while (var_a1 != &D_800D6D10);
+        dst += 0x20;
+        src++;
+    } while (dst != (u8 *) D_800D6D10);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7404.s")
@@ -298,19 +290,14 @@ loop_2:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7484.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800F753C(void) {
-    u8 temp_v0;
+    s32 temp_v0;
 
-    temp_v0 = *(&D_800E76C0 + *omCurrentObj);
+    temp_v0 = D_800E76C0[omCurrentObj->objId];
     if ((temp_v0 >= 0) && (temp_v0 < 0x40)) {
-        *(&D_800D6C68 + 0x68 + temp_v0) = 1;
+        D_800D6C68[temp_v0 + 0x68] = 1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F753C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -848,13 +835,9 @@ void func_800F8464(void *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8464.s")
 #endif
 
-#ifdef MIPS_TO_C
 u16 func_800F8560(void) {
     return D_801290D8->unk16;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8560.s")
-#endif
 
 #ifdef MIPS_TO_C
 

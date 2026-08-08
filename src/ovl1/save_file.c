@@ -3,6 +3,17 @@
 
 
 extern u16 D_800ECB00[];
+extern u32 D_800ECB10[];
+extern u32 D_800ECBAC;
+extern u8 D_800D5157[];
+extern s32 D_800BE500;
+extern s32 D_800BE504;
+extern u8 D_800D6BC0[];
+
+void func_80004D34(s32, void *, s32);
+void func_800B891C(s32);
+void saveSetFileChecksum(u32 file);
+u32 func_800B922C(void);
 extern u8 D_800D6BC8[];
 extern u8 D_800D6BC5;
 
@@ -12,19 +23,33 @@ extern u8 D_800D6BC5;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B891C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8AD4.s")
+void func_800B8AD4(s32 fileNum) {
+    func_80004D34(D_800D5157[fileNum * 2], &gSaveBuffer1.files[fileNum], 0x58);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8B2C.s")
+void func_800B8B2C(void) {
+    func_80004D34(2, &gSaveBuffer1.files[0], 0x58);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8B58.s")
+void func_800B8B58(void) {
+    func_80004D34(0xD, &gSaveBuffer1.files[1], 0x58);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8B84.s")
+void func_800B8B84(void) {
+    func_80004D34(0x18, &gSaveBuffer1.files[2], 0x58);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8BB0.s")
+void func_800B8BB0(void) {
+    func_80004D34(2, &gSaveBuffer1.files[0], 0x108);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8BDC.s")
+void func_800B8BDC(void) {
+    func_80004D34(0, &gSaveBuffer1, 0x10);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8C08.s")
+void func_800B8C08(void) {
+    func_80004D34(0x23, D_800ECB10, 0xA0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/init_save_file_maybe.s")
 
@@ -45,9 +70,30 @@ void saveSetFileChecksum(u32 file) {
     gSaveBuffer1.files[file].checksum = saveCalcFileChecksum(file);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9008.s")
+void func_800B9008(void) {
+    u32 *i = (u32 *)&gSaveBuffer1;
+    u32 *saveEnd = &gSaveBuffer1.header.checksum;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/saveCalcHeaderChecksum.s")
+    while (i != saveEnd) {
+        *i = 0;
+        i++;
+    }
+    gSaveBuffer1.header.head[0] = 0;
+    gSaveBuffer1.header.head[1] = 0;
+    gSaveBuffer1.header.head[2] = 0;
+}
+
+u32 saveCalcHeaderChecksum(void) {
+    u32 *i = (u32 *)&gSaveBuffer1;
+    u32 *saveEnd = &gSaveBuffer1.header.checksum;
+    u32 resultBuffer = SAVE_CHECKSUM_MAGIC;
+
+    while (i != saveEnd) {
+        resultBuffer += *i;
+        i++;
+    }
+    return resultBuffer;
+}
 
 void saveSetHeaderChecksum(void) {
     gSaveBuffer1.header.checksum = saveCalcHeaderChecksum();
@@ -59,7 +105,9 @@ void saveSetHeaderChecksum(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B922C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B92B4.s")
+void func_800B92B4(void) {
+    D_800ECBAC = func_800B922C();
+}
 
 void saveVerify(s32 fileNum);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/saveVerify.s")
@@ -83,11 +131,27 @@ void func_800B9C50(s32 fileNum) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9CB4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9D60.s")
+void func_800B9D60(s32 fileNum, s32 arg1) {
+    gSaveBuffer1.files[fileNum].data34[arg1] = 1;
+    D_800D6BC0[arg1] = 1;
+    saveVerify(fileNum);
+    saveSetFileChecksum(fileNum);
+    func_800B891C(fileNum);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9DC8.s")
+s32 func_800B9DC8(void) {
+    if (D_800D6BC0[D_800BE500] != 0) {
+        return 1;
+    }
+    return 0;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9DF8.s")
+s32 func_800B9DF8(s32 arg0) {
+    if (D_800D6BC8[(D_800BE500 * 4) + D_800BE504] & (1 << (arg0 % 3))) {
+        return 1;
+    }
+    return 0;
+}
 
 s32 saveCollectedAllShards(void) {
     s32 shards;
@@ -119,7 +183,9 @@ s32 saveCheckCutsceneWatched(s32 scene) {
     return (saveCutscenesWatched >> scene) & 1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9F64.s")
+s32 func_800B9F64(s32 fileNum, s32 scene) {
+    return (gSaveBuffer1.files[fileNum].cutscenesWatched >> scene) & 1;
+}
 
 s32 saveSetCutsceneWatched(s32 scene, s32 fileNum) {
     saveCutscenesWatched |= (1 << scene);
