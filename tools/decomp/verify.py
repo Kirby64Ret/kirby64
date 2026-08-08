@@ -236,6 +236,19 @@ def main():
         else: unk += 1
         if res is True and len(targets) <= 5: print(msg)
     print(f'== {cfile}: {ok} match, {bad} diff, {unk} unverifiable ==')
+    # "0 diff" when NOTHING was checked reads as success and is not. A file
+    # whose listings were deleted by the background splat run has every
+    # function unverifiable, so this line stayed green while the file held an
+    # unguarded non-matching function -- which silently corrupts the ROM.
+    # Say so, and make the exit status non-zero so a script cannot miss it.
+    if ok == 0 and bad == 0 and unk:
+        print(f'!! NOTHING WAS VERIFIED in {cfile}: all {unk} function(s) are '
+              f'unverifiable (no .s listing, or still a pragma).\n'
+              f'!! "0 diff" here means "0 checks", not "correct". Use '
+              f'tools/decomp/verify_rom.py, which compares the LINKED ROM and '
+              f'cannot be blinded this way.')
+        if warns: print('\n'.join(warns[:10]))
+        return 2
     if warns: print('\n'.join(warns[:10]))
     return 1 if bad else 0
 
