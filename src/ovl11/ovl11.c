@@ -583,7 +583,29 @@ void func_801DD160_ovl11(struct GObj *arg0) {
     }
 }
 
+#ifdef MIPS_TO_C
+void func_801DD1CC_ovl11(struct GObj *arg0) {
+    Vector sp24;
+    f32 sp20;
+    f32 temp_f0;
+    s32 temp_v0_2;
+    u32 temp_v0;
+
+    temp_v0 = omCurrentObj->objId;
+    temp_f0 = gEntitiesAngleYArray[temp_v0] + D_800EAA60[temp_v0];
+    sp20 = temp_f0;
+    sp24.x = 0.0f;
+    sp24.y = 200.0f;
+    sp24.z = 160.0f;
+    lbvector_Rotate(&sp24, 2, temp_f0);
+    temp_v0_2 = func_801ACD90_ovl7(0x21, 0, &sp24);
+    if (temp_v0_2 != 0) {
+        gEntitiesAngleYArray[temp_v0_2] = sp20;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DD1CC_ovl11.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DD270_ovl11.s")
 
@@ -966,22 +988,7 @@ void func_801DF650_ovl11(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-void func_801DF728_ovl11(void) {
-    s32 *temp_v1;
-    s32 temp_a1;
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    temp_v1 = &D_800E98E0[temp_v0];
-    temp_a1 = *temp_v1;
-    if (temp_a1 == 0) {
-        assign_new_process_entry(gEntityGObjProcessArray[temp_v0], func_801ACF84_ovl7);
-        return;
-    }
-    *temp_v1 = temp_a1 - 1;
-    func_801A0D74_ovl7();
-    func_801A03B4_ovl7();
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF728_ovl11.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF798_ovl11.s")
 
@@ -1038,7 +1045,31 @@ void func_801DFD3C_ovl11(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DFEA8_ovl11.s")
 
+#ifdef MIPS_TO_C
+s32 func_801E00B8_ovl11(s32 arg0)
+{
+  f32 temp_f12;
+  f32 temp_f14;
+  float new_var;
+  f32 temp_f2;
+  s32 var_v1;
+  var_v1 = 0;
+  temp_f14 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
+  temp_f2 = temp_f14;
+  temp_f12 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
+  temp_f14 = gEntitiesNextPosYArray[omCurrentObj->objId] - (gEntitiesNextPosYArray[arg0] + 20.0f);
+  temp_f14 = temp_f14;
+  new_var = (temp_f12 * temp_f12) + (temp_f14 * temp_f14);
+  temp_f12 = (temp_f2 * temp_f2) + new_var;
+  if (temp_f12 <= 1600.0f)
+  {
+    var_v1 = 1;
+  }
+  return var_v1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801E00B8_ovl11.s")
+#endif
 
 void func_801E0168_ovl11(void)
 {
