@@ -758,20 +758,44 @@ void func_80020E8C(void) {
     auSettingsUpdated = 1;
 }
 
+// last function in this translation unit: its listing carries the
+// TU's trailing alignment padding, which C does not emit
+#ifdef MIPS_TO_C
 s32 func_80020E9C(void) {
     return auSettingsUpdated;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020E9C.s")
+#endif
 
+// last function in this translation unit: its listing carries the
+// TU's trailing alignment padding, which C does not emit
+#ifdef MIPS_TO_C
 s32 func_80020EA8(void) {
     return auRestarting;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020EA8.s")
+#endif
 
+// last function in this translation unit: its listing carries the
+// TU's trailing alignment padding, which C does not emit
+#ifdef MIPS_TO_C
 s32 func_80020EB4(void) {
     return auRestarting | auSettingsUpdated;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020EB4.s")
+#endif
 
+// last function in this translation unit: its listing carries the
+// TU's trailing alignment padding, which C does not emit
+#ifdef MIPS_TO_C
 void func_80020ECC(void) {
     osRecvMesg(&gThreadInitializedMQ, 0, 0);
     auSettingsUpdated = 1;
     osRecvMesg(&gThreadInitializedMQ, 0, 1);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020ECC.s")
+#endif

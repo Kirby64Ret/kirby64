@@ -720,7 +720,7 @@ segments:
     bss_size: 0x70
     subsegments:
     - [0x2263D0, c, ovl17/ovl17]
-    - [0x228B10, c, ovl17/ovl17_2]
+    - [0x228AE0, c, ovl17/ovl17_2]
     - [0x22BEF0, c, ovl17/ovl17_3]
     - [0x230050, data, ovl17/ovl17]
     - [0x2308C0]

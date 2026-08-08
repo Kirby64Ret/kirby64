@@ -185,7 +185,13 @@ void func_8021FB18_ovl18(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_80220038_ovl18.s")
 
+// last function in this translation unit: its listing carries the
+// TU's trailing alignment padding, which C does not emit
+#ifdef MIPS_TO_C
 void func_80220184_ovl18(void) {
     func_8021FF80_ovl18();
     func_80220038_ovl18();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_80220184_ovl18.s")
+#endif

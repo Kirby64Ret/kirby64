@@ -354,6 +354,10 @@ void func_80003838(u32 arg0, u32 arg1) {
     func_800037F0(arg0, arg1, sp18, ARRAY_COUNT(sp18));
 }
 
+// This function is the last in the dma translation unit and its listing
+// carries 16 bytes of trailing alignment padding that C does not emit,
+// so converting it shortens the TU and shifts contpad onward.
+#ifdef MIPS_TO_C
 void func_8000385C(u16 *data, u8 *out_buf) {
 #undef VPK0_READ_USHORT
 #undef VPK0_GET_BITS
@@ -552,3 +556,6 @@ void func_8000385C(u16 *data, u8 *out_buf) {
         }
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/dma/func_8000385C.s")
+#endif
