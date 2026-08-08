@@ -11,7 +11,13 @@ extern FUNCLIST D_8021CE44_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021A1A0_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021A22C_ovl9.s")
+extern FUNCLIST D_8021CE04_ovl9;
+
+void func_8021A22C_ovl9(struct GObj *arg0) {
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_8021CE04_ovl9);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021A2B8_ovl9.s")
 
