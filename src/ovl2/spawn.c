@@ -157,22 +157,20 @@ s32 func_800FCDC0(u32 arg0, u8 bankID, u8 entID,
     return track;
 }
 
-#ifdef MIPS_TO_C
-? *func_800FCE50(void) {
-    u8 temp_v0;
+extern struct Entity *D_801290E0;
+extern struct Entity D_801290E8;
 
-    temp_v0 = D_800E76C0[omCurrentObj->objId];
+struct Entity *func_800FCE50(void) {
+    u8 temp_v0 = D_800E76C0[omCurrentObj->objId];
+
     if (temp_v0 != 0xFF) {
-        if (((D_801290E0 + (temp_v0 * 0x2C))->unk5 & 0xC) == 4) {
-            return (temp_v0 * 0x2C) + D_801290E0 + 0x2C;
+        if ((D_801290E0[temp_v0].unk5 & 0xC) == 4) {
+            return &D_801290E0[temp_v0 + 1];
         }
         return NULL;
     }
     return &D_801290E8;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FCE50.s")
-#endif
 
 void func_800FCED8(GObj *gobj) {
     func_800B1900(omCurrentObj->objId);
@@ -207,34 +205,34 @@ void func_800FD03C(s32 arg0) {
     utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0x2C, &D_801244DC);
 }
 
-#ifdef MIPS_TO_C
+extern u32 D_80129124;
+extern u8 D_800D6C68[];
+s32 func_80114DBC(s32, Vec3f *);
 
+#ifdef NON_MATCHING
+// 2 instructions off: the original references a symbol at 0x800D6C90 (D_800D6C68 + 0x28)
+// that does not exist yet, so IDO folds the +0x28 into the store displacement instead.
 void func_800FD088(void) {
+    struct Entity *e;
+    u32 i;
     s32 temp_v0;
-    u16 temp_s1;
-    u32 var_s2;
-    void *var_s0;
+    s32 temp_s1;
 
-    var_s0 = D_801290E0;
-    var_s2 = 0;
-    if (D_80129124 != 0) {
-        do {
-            if (var_s0->unk1 == 5) {
-                temp_s1 = (var_s0->unk3 << 8) + var_s0->unk2;
-                temp_v0 = func_80114DBC(temp_s1, var_s0 + 8);
-                *(var_s2 + (&D_800D6C68 + 0x28)) = 1;
-                if (temp_v0 != 0) {
-                    D_800E7730[temp_v0] = var_s0->unk1;
-                    D_800E77A0[temp_v0] = temp_s1;
-                    D_800E7880[temp_v0] = var_s0->unk3;
-                }
+    e = D_801290E0;
+    for (i = 0; i < D_80129124; i++) {
+        if (e->bankID == 5) {
+            temp_s1 = (e->action << 8) + e->entityID;
+            temp_v0 = func_80114DBC(temp_s1, &e->pos);
+            D_800D6C68[i + 0x28] = 1;
+            if (temp_v0 != 0) {
+                D_800E7730[temp_v0] = e->bankID;
+                D_800E77A0[temp_v0] = temp_s1;
+                D_800E7880[temp_v0] = e->action;
             }
-            var_s2 += 1;
-            var_s0 += 0x2C;
-        } while (var_s2 < D_80129124);
+        }
+        e++;
     }
 }
-
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FD088.s")
 #endif

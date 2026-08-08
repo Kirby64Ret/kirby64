@@ -41,11 +41,7 @@ void func_801E07E8_ovl14(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E07F0_ovl14.s")
 
-void func_801E0958_ovl14(GObj *arg0) {
-    while (1) {
-        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_801E2F54_ovl14);
-    }
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E0958_ovl14.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E09D8_ovl14.s")
 
@@ -63,11 +59,7 @@ void func_801E0FA8_ovl14(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E0FB0_ovl14.s")
 
-void func_801E1118_ovl14(GObj *arg0) {
-    while (1) {
-        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_801E2F6C_ovl14);
-    }
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E1118_ovl14.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E1198_ovl14.s")
 
@@ -105,11 +97,7 @@ void func_801E29D0_ovl14(GObj *arg0) {
     func_801E2A54_ovl14(arg0);
 }
 
-void func_801E2A54_ovl14(GObj *arg0) {
-    while (1) {
-        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_801E2F84_ovl14);
-    }
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E2A54_ovl14.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E2AD8_ovl14.s")
 

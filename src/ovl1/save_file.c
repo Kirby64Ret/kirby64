@@ -4,6 +4,7 @@
 
 extern u16 D_800ECB00[];
 extern u32 D_800ECB10[];
+extern u32 D_800ECA04;
 extern u32 D_800ECBAC;
 extern u8 D_800D5157[];
 extern s32 D_800BE500;
@@ -72,7 +73,7 @@ void saveSetFileChecksum(u32 file) {
 
 void func_800B9008(void) {
     u32 *i = (u32 *)&gSaveBuffer1;
-    u32 *saveEnd = &gSaveBuffer1.header.checksum;
+    u32 *saveEnd = &D_800ECA04;
 
     while (i != saveEnd) {
         *i = 0;
@@ -85,7 +86,7 @@ void func_800B9008(void) {
 
 u32 saveCalcHeaderChecksum(void) {
     u32 *i = (u32 *)&gSaveBuffer1;
-    u32 *saveEnd = &gSaveBuffer1.header.checksum;
+    u32 *saveEnd = &D_800ECA04;
     u32 resultBuffer = SAVE_CHECKSUM_MAGIC;
 
     while (i != saveEnd) {

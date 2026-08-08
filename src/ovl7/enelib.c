@@ -2147,25 +2147,41 @@ block_19:
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D8A0.s")
 
-#ifdef MIPS_TO_C
-void func_8019D958_ovl7(u16 arg0) {
-    UnkStruct800E1B50 *ent = D_800E1B50[track];;
+struct EneSpawnEntry {
+    /* 0x00 */ u8 pad0[5];
+    /* 0x05 */ u8 unk5;
+    /* 0x06 */ u8 pad6[0x26];
+}; /* size = 0x2C */
 
-    if (ent->unk34 != NULL) {
-        func_800A22D4(ent->unk34);
+extern struct EneSpawnEntry *D_801290E0;
+
+#ifdef MIPS_TO_C
+void func_8019D958_ovl7(s32 arg0) {
+    UnkStruct800E1B50 *temp_v0;
+    s32 temp_s0;
+    struct Sub800E1B50_Unk34 *temp_a1;
+    u8 *temp_v0_2;
+    u8 temp_v1;
+
+    temp_s0 = (u16) arg0;
+    temp_v0 = D_800E1B50[temp_s0];
+    temp_a1 = temp_v0->unk34;
+    if (temp_a1 != NULL) {
+        func_800A22D4(temp_a1);
     }
-    func_800A2300(D_800DE350[track]);
-    ent->unk34 = NULL;
-    D_800DE350[track]->onAnimate = NULL;
-    func_8019BBA8_ovl7(track);
-    func_801A32A8_ovl7(track);
-    if (D_800E76C0[track] < 0x40) {
-        temp_v0_2 = D_800E76C0[track] + (&D_800D6C68 + 0x28);
-        if ((D_801290E0 + (D_800E76C0[track] * 0x2C))->unk5 & 1) {
+    func_800A2300(D_800DE350[temp_s0]);
+    temp_v0->unk34 = NULL;
+    D_800DE350[temp_s0]->onAnimate = NULL;
+    func_8019BBA8_ovl7(temp_s0);
+    func_801A32A8_ovl7(temp_s0);
+    temp_v1 = D_800E76C0[temp_s0];
+    if (temp_v1 < 0x40) {
+        temp_v0_2 = &D_800D6C68[0x28] + temp_v1;
+        if (D_801290E0[temp_v1].unk5 & 1) {
             *temp_v0_2 &= 0x80;
         }
     }
-    func_800B1900(track);
+    func_800B1900(temp_s0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D958_ovl7.s")

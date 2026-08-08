@@ -11,7 +11,11 @@ struct UnkStruct800D7098 {
     u32 unk24;
     u32 unk28;
     u32 unk2C;
-}; // 0x40 bytes? an array?
+    u32 unk30;
+    u32 unk34;
+    u32 unk38;
+    u32 unk3C;
+}; // 0x40 bytes (splat: .space 0x40)
 
 struct UnkStruct800D70D8 {
     f32 unk0;
