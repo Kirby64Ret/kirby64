@@ -90,11 +90,11 @@ extern s32 D_801E6500_ovl15[];
 extern s32 D_801E6508_ovl15;
 extern s32 D_801E6520_ovl15[];
 extern s32 D_801E6554_ovl15;
-extern s32 D_801E65B4_ovl15;
+extern u8 D_801E65B4_ovl15[];
 extern s32 D_801E65EC_ovl15[];
 extern s32 D_801E65FC_ovl15[];
 extern s32 D_801E6614_ovl15[];
-extern s32 D_801E664C_ovl15;
+extern u8 D_801E664C_ovl15[];
 extern s32 D_801E665C_ovl15;
 extern s32 D_801E6670_ovl15[];
 extern s32 D_801E6680_ovl15[];
@@ -212,127 +212,7 @@ void func_801DB378_ovl15(struct GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 0xC, D_801E64C0_ovl15);
 }
 
-void func_801DB400_ovl15(s32 arg0) {
-    s32 temp_v0;
-    s32 temp_v0_2;
-    u32 var_v1;
-
-    func_800B19F4(0x79, omCurrentObj->objId);
-    func_800AFBB4(0, omCurrentObj);
-    D_800DEF90[omCurrentObj->objId] = func_800B7790;
-    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    D_800DF150[omCurrentObj->objId] = NULL;
-    func_800B33F4();
-    D_800D7098.unk3C = 0;
-    var_v1 = 0;
-    D_800D7098.unk2C = 0;
-    D_800D7098.unk28 = 0;
-    D_800D7098.unkC = 0;
-    D_800D7098.unk8 = 0;
-    D_800D7098.unk38 = omCurrentObj->objId;
-loop_1:
-    if (var_v1 < 0xAU) {
-loop_2:
-        switch (var_v1) {
-        case 0:
-            temp_v0 = func_8019E0A4_ovl7(4, 3);
-            D_800EBBE0[omCurrentObj->objId] = temp_v0;
-            D_800D7098.unk30 = (u32) temp_v0;
-            temp_v0_2 = func_8019E0A4_ovl7(4, 1);
-            D_800EC120[omCurrentObj->objId] = temp_v0_2;
-            D_800D7098.unk34 = (u32) temp_v0_2;
-            D_800EBBE0[D_800EBBE0[omCurrentObj->objId]] = D_800EC120[omCurrentObj->objId];
-            var_v1 = D_800D7098.unk3C;
-            if (var_v1 == 0) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 0);
-            }
-            goto loop_1;
-        case 1:
-            if (var_v1 == 1) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 1);
-            }
-            goto loop_1;
-        case 2:
-            if (var_v1 == 2) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 2);
-            }
-            goto loop_1;
-        case 3:
-            if (var_v1 == 3) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 3);
-            }
-            goto loop_1;
-        case 4:
-            if (var_v1 == 4) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 4);
-            }
-            goto loop_1;
-        case 5:
-            if (var_v1 == 5) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 5);
-            }
-            goto loop_1;
-        case 6:
-            if (var_v1 == 6) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 6);
-            }
-            goto loop_1;
-        case 7:
-            if (var_v1 == 7) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 7);
-            }
-            goto loop_1;
-        case 8:
-            if (var_v1 == 8) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 8);
-            }
-            goto loop_1;
-        case 9:
-            if (var_v1 == 9) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 9);
-                if (var_v1 < 0xAU) {
-                    goto loop_2;
-                }
-            } else {
-                goto loop_1;
-            }
-            break;
-        }
-    }
-    curObjSleepForever();
-    var_v1 = D_800D7098.unk3C;
-    goto loop_1;
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DB400_ovl15.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DB770_ovl15.s")
 
@@ -429,7 +309,22 @@ void func_801DCA3C_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DCDA8_ovl15.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD03C_ovl15.s")
+void func_801DD03C_ovl15(s32 arg0) {
+
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
+    D_800DF150[omCurrentObj->objId] = func_801DD208_ovl15;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    func_800B19F4(0x71, omCurrentObj->objId);
+    func_800AFBB4(0, omCurrentObj);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 0) ? 0 : 1;
+    D_800E1B50[omCurrentObj->objId]->unk8C = (D_800E9C60[omCurrentObj->objId] != 0) ? &D_801D8D54 : &D_801D8D78;
+    ohSleep(0x41);
+    func_8019D958_ovl7(omCurrentObj->objId);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD208_ovl15.s")
 
