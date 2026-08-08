@@ -9,7 +9,7 @@
 // data + early rodata
 s32 D_8003DE50 = 10000000;
 
-u32 D_8003DE54 = 0x00000000;
+s32 D_8003DE54 = 0x00000000;
 
 OMPersp D_8003DE58 = {
     NULL, 0.0f, 30.0f, 4.0f / 3.0f, 100.0f, 12800.0f, 1.0f
@@ -1581,11 +1581,8 @@ GObj *omGUpdateObj(GObj *gobj) {
     return g;
 }
 
-// Matches on decomp.me but not locally??????
-#ifdef NON_MATCHING
 struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
     struct GObjProcess *ret;
-    Unused void (*entry)(GObj *);
 
     D_8003DE54 = 2;
     omCurrentObj = proc->gobj;
@@ -1599,10 +1596,9 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
         case 1:
             proc->payload.callback(proc->gobj);
             break;
-        // case 2: default: break;
     }
 
-    ret = proc->prev;
+    ret = proc->nextPriProc;
 
     omCurrentObj = NULL;
     omCurrentProc = NULL;
@@ -1611,8 +1607,8 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
     switch (D_8004A7D4) {
         case 2:
             D_8004A7D4 = 0;
-            while (ret != NULL && ret->gobj == proc->gobj) {
-                ret = ret->prev;
+            while ((ret != NULL) && (ret->gobj == proc->gobj)) {
+                ret = ret->nextPriProc;
             }
 
             omGDeleteObj(proc->gobj);
@@ -1627,10 +1623,6 @@ struct GObjProcess *omGDispatchProc(struct GObjProcess *proc) {
 
     return ret;
 }
-#else
-struct GObjProcess *omGDispatchProc(struct GObjProcess *proc);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGDispatchProc.s")
-#endif
 
 void omUpdateAll(void) {
     s32 i;

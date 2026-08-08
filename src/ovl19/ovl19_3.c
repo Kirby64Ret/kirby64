@@ -484,7 +484,7 @@ void func_8022A410_ovl19(GObj *g) {
         ohSleep(1);
     }
     func_801230E8(0x20382, 0x20383, 1);
-    ++gKirbyState.unk30;
+    gKirbyState.unk30++;
     curObjSleepForever();
 }
 
@@ -629,6 +629,9 @@ void func_8022AEA0_ovl19(GObj *g) {
         D_800E3C90[omCurrentObj->objId] = 65535.0f;
         D_800E9720[omCurrentObj->objId] = 0;
         play_sound(0x103);
+        // empty block is load-bearing: it splits the basic block so the
+        // gKirbyState base lands in $v0
+        do { } while (0);
         gKirbyState.unk30++;
     }
     switch (D_800E98E0[omCurrentObj->objId]) {

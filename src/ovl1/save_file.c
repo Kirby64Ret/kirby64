@@ -1,9 +1,25 @@
 #include "common.h"
 #include "save_file.h"
+#include "main/contpad.h"
+
+void func_80004D00(s32, void *, s32);
+void func_800B91B8(void);
+void func_800B92B4(void);
+void func_800B8C08(void);
+void func_800B8BDC(void);
+void func_800B9008(void);
+
+typedef struct SaveBlock {
+    u32 data[0x6E];
+} SaveBlock;
+
+#define SAVE_U32(off) (*(u32 *)((u8 *)&gSaveBuffer1 + (off)))
+#define SAVE_U16(off) (*(u16 *)((u8 *)&gSaveBuffer1 + (off)))
 
 
 extern u16 D_800ECB00[];
 extern u32 D_800ECB10[];
+extern u32 D_800ECBA8;
 extern u32 D_800ECBAC;
 extern u8 D_800D5157[];
 extern s32 D_800BE500;
@@ -17,7 +33,24 @@ u32 func_800B922C(void);
 extern u8 D_800D6BC8[];
 extern u8 D_800D6BC5;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8700.s")
+void func_800B8700(void) {
+    s32 count;
+    s32 i;
+
+    func_80004D00(0, &gSaveBuffer1, 0x118);
+    if (saveCalcHeaderChecksum() != gSaveBuffer1.header.checksum) {
+        func_800B9008();
+    }
+    for (i = 0, count = 0; i < 3; i++) {
+        if (gSaveBuffer1.files[i].level != SAVE_INIT_MAGIC) {
+            count++;
+        }
+    }
+    gSaveBuffer1.header.head[2] = count;
+    saveSetHeaderChecksum();
+    func_800B8BDC();
+    *(SaveBlock *)&gSaveBuffer2 = *(SaveBlock *)&gSaveBuffer1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B87E0.s")
 
@@ -103,7 +136,21 @@ void saveSetHeaderChecksum(void) {
     gSaveBuffer1.header.checksum = saveCalcHeaderChecksum();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9104.s")
+void func_800B9104(void) {
+    func_80004624();
+    if ((gPlayerControllers[0].buttonHeld & 0x830) == 0x830) {
+        SAVE_U32(0x1B4) += 1;
+        SAVE_U32(0x118) += 1;
+    }
+    if (SAVE_U32(0x118) != SAVE_CHECKSUM_MAGIC) {
+        func_80004D00(0x23, D_800ECB10, 0xA0);
+        if (func_800B922C() != SAVE_U32(0x1B4)) {
+            func_800B91B8();
+            func_800B92B4();
+            func_800B8C08();
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B91B8.s")
 

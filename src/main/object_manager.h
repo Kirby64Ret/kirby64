@@ -342,7 +342,7 @@ typedef struct {
 } ObjectSetup; // size == 0x6C
 
 // data
-extern u32 D_8003DE54;
+extern s32 D_8003DE54;
 
 // BSS
 extern struct GObjProcess *omCurrentProc;
