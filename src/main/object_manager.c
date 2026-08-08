@@ -1051,11 +1051,113 @@ struct DObj *omGObjAddDObj(GObj *gobj, void *arg1) {
     return dobj;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddSibling.s")
+struct DObj *omDObjAddSibling(struct DObj *dobj, struct DObj *arg1) {
+    struct DObj *newDObj = HS64_DObjPop();
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omDObjAddChild.s")
+    if (dobj->next != NULL) {
+        dobj->next->prev = newDObj;
+    }
+    newDObj->prev = dobj;
+    newDObj->next = dobj->next;
+    dobj->next = newDObj;
+    newDObj->gobj = dobj->gobj;
+    newDObj->parent = dobj->parent;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/func_80009DF4.s")
+    newDObj->firstChild = NULL;
+    newDObj->data.data = arg1;
+
+    func_80009BD4(newDObj);
+
+    return newDObj;
+}
+
+struct DObj *omDObjAddChild(struct DObj *dobj, void *arg1) {
+    struct DObj *newDObj = HS64_DObjPop();
+    struct DObj *child;
+
+    if (dobj->firstChild != NULL) {
+        child = dobj->firstChild;
+
+        while (child->next != NULL) {
+            child = child->next;
+        }
+        child->next = newDObj;
+        newDObj->prev = child;
+    } else {
+        dobj->firstChild = newDObj;
+        newDObj->prev = NULL;
+    }
+    newDObj->gobj = dobj->gobj;
+    newDObj->parent = dobj;
+    newDObj->firstChild = NULL;
+    newDObj->next = NULL;
+    newDObj->data.data = arg1;
+
+    func_80009BD4(newDObj);
+
+    return newDObj;
+}
+
+void func_80009DF4(void *arg0) {
+    DObj *dobj = arg0;
+    s32 i;
+    struct AObj *current_aobj;
+    struct AObj *next_aobj;
+    MObj *current_mobj;
+    MObj *next_mobj;
+
+    while (dobj->firstChild != NULL) {
+        func_80009DF4(dobj->firstChild);
+    }
+    if (dobj->parent == (DObj *)1) {
+        if (dobj == dobj->gobj->data.dobj) {
+            dobj->gobj->data.dobj = dobj->next;
+
+            if (dobj->gobj->data.dobj == NULL) {
+                dobj->gobj->kind = 0;
+            }
+        }
+    } else if (dobj == dobj->parent->firstChild) {
+        dobj->parent->firstChild = dobj->next;
+    }
+    if (dobj->prev != NULL) {
+        dobj->prev->next = dobj->next;
+    }
+    if (dobj->next != NULL) {
+        dobj->next->prev = dobj->prev;
+    }
+    for (i = 0; i < ARRAY_COUNT(dobj->matrices); i++) {
+        if (dobj->matrices[i] != NULL) {
+            HS64_OMMtxRelease(dobj->matrices[i]);
+        }
+    }
+    if ((dobj->unk4C != NULL) && (D_8004A798 != NULL)) {
+        D_8004A798(dobj->unk4C);
+    }
+    current_aobj = dobj->aobj;
+
+    while (current_aobj != NULL) {
+        next_aobj = current_aobj->next;
+        HS64_AObjRelease(current_aobj);
+        current_aobj = next_aobj;
+    }
+    current_mobj = dobj->mobjList;
+
+    while (current_mobj != NULL) {
+        current_aobj = current_mobj->aobj;
+
+        while (current_aobj != NULL) {
+            next_aobj = current_aobj->next;
+            HS64_AObjRelease(current_aobj);
+            current_aobj = next_aobj;
+        }
+        next_mobj = current_mobj->next;
+        HS64_MObjPush(current_mobj);
+        current_mobj = next_mobj;
+    }
+
+    HS64_DObjPush(dobj);
+}
 
 struct Camera *omGObjSetCamera(GObj *gobj) {
     int i;

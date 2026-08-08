@@ -135,17 +135,12 @@ void func_800B9C50(s32 fileNum) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9CB4.s")
 
-#ifdef MIPS_TO_C
 void func_800B9D60(s32 fileNum, s32 arg1) {
-    gSaveBuffer1.files[fileNum].data34[arg1] = 1;
-    D_800D6BC0[arg1] = 1;
+    D_800D6BC0[arg1] = (gSaveBuffer1.files[fileNum].data34[arg1] = 1);
     saveVerify(fileNum);
     saveSetFileChecksum(fileNum);
     func_800B891C(fileNum);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9D60.s")
-#endif
 
 s32 func_800B9DC8(void) {
     if (D_800D6BC0[D_800BE500] != 0) {
