@@ -31,6 +31,10 @@ struct DynamicBuffer {
 
 extern struct DynamicBuffer gDynamicBuffer1, gDynamicBuffer2;
 
+struct SObj {
+    struct SObj *nextFree;
+};
+
 struct GObjThread
 {
     struct GObjThread *next; // function?
@@ -60,7 +64,6 @@ typedef struct GObjProcess {
         void (*callback)(struct GObj *);
     } payload; // 0x1C
     /* 0x20 */ void (*entryPoint)(struct GObj *);
-    u32 *ptr;
 } GObjProcess;
 
 enum MatrixType {
@@ -315,7 +318,7 @@ typedef struct {
     /* 0x00 */ struct GObjThread* threads;
     /* 0x04 */ s32 numThreads;
     /* 0x08 */ u32 threadStackSize;
-    /* 0x0C */ struct ThreadStackNode* stacks;
+    /* 0x0C */ struct GObjThreadStack* stacks;
     /* 0x10 */ u32 numStacks;
     /* 0x14 */ s32 unk_14;
     /* 0x18 */ GObjProcess* processes;
@@ -336,7 +339,7 @@ typedef struct {
     /* 0x54 */ struct SObj* sobjs;
     /* 0x58 */ s32 numSObjs;
     /* 0x5C */ s32 sobjSize;
-    /* 0x60 */ struct OMCamera* cameras;
+    /* 0x60 */ struct Camera* cameras;
     /* 0x64 */ s32 numCameras;
     /* 0x68 */ s32 cameraSize;
 } ObjectSetup; // size == 0x6C
@@ -385,7 +388,7 @@ OMMtx* omCameraAddMtx(Camera *cam, u8 kind, u8 arg2);
 
 // UNNAMED functions
 void func_80009918(MObj *mobj);
-s32 func_8000B4D4(s32 link, struct GObj *(*cb)(struct GObj *, u32), void *param, s32 single);
+struct GObj *func_8000B4D4(s32 link, struct GObj *(*cb)(struct GObj *, u32), void *param, s32 single);
 void func_80009DF4(struct DObj *);
 
 #endif

@@ -7,6 +7,12 @@
 // ovl0_4 (gtl??)
 void func_8001806C(struct GObj *arg0);
 
+struct DObjTraDesc {
+    /* 0x00 */ s32 id;
+    /* 0x04 */ void *dl;
+    /* 0x08 */ Vector translate;
+};
+
 void func_8000B3E0(s32 link, void (*cb)(GObj*, void*), void* param) {
     GObj* curr;
     GObj* next;
@@ -34,8 +40,7 @@ void func_8000B448(void (*cb)(GObj*, void*), void* param) {
     }
 }
 
-#ifdef MIPS_TO_C
-s32 func_8000B4D4(s32 link, GObj* (*cb)(GObj*, void*), void* param, s32 single) {
+GObj *func_8000B4D4(s32 link, GObj* (*cb)(GObj*, u32), void* param, s32 single) {
     GObj* curr;
     GObj* next;
     GObj* ret = NULL;
@@ -45,11 +50,11 @@ s32 func_8000B4D4(s32 link, GObj* (*cb)(GObj*, void*), void* param, s32 single) 
         GObj* retVal;
 
         next = curr->next;
-        retVal = cb(curr, param);
+        retVal = cb(curr, (u32)param);
 
         if (retVal != NULL) {
             ret = retVal;
-            if (single) {
+            if (single == TRUE) {
                 return ret;
             }
         }
@@ -58,51 +63,33 @@ s32 func_8000B4D4(s32 link, GObj* (*cb)(GObj*, void*), void* param, s32 single) 
 
     return ret;
 }
-#else
-s32 func_8000B4D4(s32 link, GObj* (*cb)(GObj*, u32), void* param, s32 single);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B4D4.s")
-#endif
 
-#ifdef MIPS_TO_C
+GObj *func_8000B57C(GObj *(*cb)(GObj *, u32), u32 param, s32 single) {
+    GObj *curr;
+    GObj *next;
+    s32 link;
+    GObj *ret = NULL;
 
-s32 func_8000B57C(s32 (*arg0)(void *, ?), ? arg1, s32 arg2) {
-    s32 temp_v0;
-    s32 var_s5;
-    void **var_s6;
-    void *temp_s0;
-    void *var_a0;
+    for (link = 0; link < ARRAY_COUNT(omGObjListHead); link++) {
+        curr = omGObjListHead[link];
 
-    var_s5 = 0;
-    var_s6 = &omGObjListHead;
-loop_1:
-    var_a0 = *var_s6;
-    if (var_a0 != NULL) {
-loop_2:
-        temp_s0 = var_a0->unk4;
-        temp_v0 = arg0(var_a0, arg1);
-        if (temp_v0 != 0) {
-            var_s5 = temp_v0;
-            if (arg2 == 1) {
-                return temp_v0;
+        while (curr != NULL) {
+            GObj *retVal;
+
+            next = curr->next;
+            retVal = cb(curr, param);
+
+            if (retVal != NULL) {
+                ret = retVal;
+                if (single == TRUE) {
+                    return ret;
+                }
             }
+            curr = next;
         }
-        var_a0 = temp_s0;
-        if (temp_s0 == NULL) {
-            goto block_6;
-        }
-        goto loop_2;
     }
-block_6:
-    var_s6 += 4;
-    if (var_s6 == &omGObjListTail) {
-        return var_s5;
-    }
-    goto loop_1;
+    return ret;
 }
-#else
-GObj *func_8000B57C(GObj *(*check)(GObj *, u32), u32 arg1, s32 arg2);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B57C.s")
-#endif
 
 GObj *ohCheckId(GObj *g, u32 id) {
     return (id == g->objId) ? g : NULL;
@@ -205,22 +192,22 @@ void func_8000B830(GObj *gobj, void (*entry)(struct GObj *)) {
     }
 }
 
-#ifdef NON_MATCHING
 void func_8000B870(GObj *gobj) {
     GObjProcess *proc;
+    GObjProcess *next;
 
     if (gobj == NULL) {
         gobj = omCurrentObj;
     }
     proc = gobj->procListHead;
     while (proc != NULL) {
+        next = proc->next;
+
         omEndProcess(proc);
-        proc = proc->next;
+
+        proc = next;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000B870.s")
-#endif
 
 void ohCreateDefaultMatricesDeg(DObj *d) {
     omDObjAppendMtx(d, 0x12, 0);
@@ -296,56 +283,30 @@ DObj *ohAddDObjChildRad(DObj *dobj, void *arg1) {
     return d;
 }
 
-#ifdef MIPS_TO_C
+void func_8000BAEC(GObj *gobj, struct DObjTraDesc *desc, DObj **dobjs) {
+    s32 i;
+    DObj *dobj;
+    DObj *array_dobjs[18];
 
-void func_8000BAEC(s32 arg0, s32 *arg1, void **arg2) {
-    ? sp80;
-    ? sp40;
-    s32 sp3C;
-    void *sp38;
-    ? *var_v0;
-    s32 *var_s0;
-    s32 var_v0_2;
-    void **var_s1;
-    void *var_v0_3;
+    for (i = 0; i < ARRAY_COUNT(array_dobjs); i++) {
+        array_dobjs[i] = NULL;
+    }
 
-    var_s0 = arg1;
-    var_s1 = arg2;
-    sp38 = NULL;
-    sp3C = 0;
-    var_v0 = &sp40;
-    do {
-        var_v0 += 0x10;
-        var_v0->unk-C = 0;
-        var_v0->unk-8 = 0;
-        var_v0->unk-4 = 0;
-        var_v0->unk-10 = 0;
-    } while (var_v0 != &sp80);
-    var_v0_2 = *var_s0;
-    if (var_v0_2 != 0x12) {
-        do {
-            if (var_v0_2 != 0) {
-                var_v0_3 = ohAddDObjChild((&sp38)[var_v0_2].unk-4, var_s0->unk4);
-                (&sp38)[var_s0->unk0] = var_v0_3;
-            } else {
-                var_v0_3 = ohAddDObj(arg0, var_s0->unk4);
-                sp38 = var_v0_3;
-            }
-            var_v0_3->unk1C = var_s0->unk8;
-            var_v0_3->unk20 = var_s0->unkC;
-            var_v0_3->unk24 = var_s0->unk10;
-            if (var_s1 != NULL) {
-                *var_s1 = var_v0_3;
-                var_s1 += 4;
-            }
-            var_v0_2 = var_s0->unk14;
-            var_s0 += 0x14;
-        } while (var_v0_2 != 0x12);
+    while (desc->id != 18) {
+        if (desc->id != 0) {
+            dobj = array_dobjs[desc->id] = ohAddDObjChild(array_dobjs[desc->id - 1], desc->dl);
+        } else {
+            dobj = array_dobjs[0] = ohAddDObj(gobj, desc->dl);
+        }
+
+        dobj->pos.v = desc->translate;
+
+        if (dobjs != NULL) {
+            *dobjs++ = dobj;
+        }
+        desc++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_helpers/func_8000BAEC.s")
-#endif
 
 void func_8000BBE0(GObj *g) {
     if (g == NULL) {

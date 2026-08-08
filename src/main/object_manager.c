@@ -70,7 +70,7 @@ struct MObj* gMObjHead;
 u32 gMObjCount;
 struct DObj* gDObjHead;
 u32 gDObjCount;
-u32 D_8004A7B4;
+struct SObj *D_8004A7B4;
 u32 D_8004A7B8;
 struct Camera* gCameraHead;
 u32 gCameraCount;
@@ -1655,4 +1655,191 @@ void omUpdateAll(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/HS64_omInit.s")
+void HS64_omInit(ObjectSetup *setup) {
+    s32 i;
+
+    gNewEntityStackSize = setup->threadStackSize;
+    D_8004A550 = (void (*)(struct ObjStack *)) setup->unk_14;
+
+    if (setup->numThreads != 0) {
+        struct GObjThread *thread;
+
+        gGObjThreadHead = thread = setup->threads;
+
+        for (i = 0; i < setup->numThreads - 1; i++) {
+            struct GObjThread *next = thread + 1;
+
+            thread->next = next;
+            thread = next;
+        }
+        thread->next = NULL;
+    } else {
+        gGObjThreadHead = NULL;
+    }
+
+    if ((setup->numStacks != 0) && (setup->threadStackSize != 0)) {
+        struct GObjThreadStack *stack;
+
+        gGObjThreadStackHead = stack = setup->stacks;
+
+        for (i = 0; i < setup->numStacks - 1; i++) {
+            stack->next = (struct GObjThreadStack *) ((uintptr_t) stack + gNewEntityStackSize + 8);
+            stack = (struct GObjThreadStack *) ((uintptr_t) stack + gNewEntityStackSize + 8);
+        }
+        stack->next = NULL;
+    } else {
+        gGObjThreadStackHead = NULL;
+    }
+
+    if (setup->numProcesses != 0) {
+        struct GObjProcess *proc;
+
+        gGObjProcessHead = proc = setup->processes;
+
+        for (i = 0; i < setup->numProcesses - 1; i++) {
+            struct GObjProcess *next = proc + 1;
+
+            proc->next = next;
+            proc = next;
+        }
+        proc->next = NULL;
+    } else {
+        gGObjProcessHead = NULL;
+    }
+
+    for (i = 0; i < ARRAY_COUNT(omGObjProcList); i++) {
+        omGObjProcList[i] = NULL;
+    }
+
+    if (setup->numObjects != 0) {
+        GObj *gobj;
+
+        gGObjHead = gobj = setup->objects;
+
+        for (i = 0; i < setup->numObjects - 1; i++) {
+            gobj->next = (GObj *) ((uintptr_t) gobj + setup->objectSize);
+            gobj = gobj->next;
+        }
+        gobj->next = NULL;
+    } else {
+        gGObjHead = NULL;
+    }
+
+    D_8004A798 = (void (*)()) setup->cleanupFn;
+
+    if (setup->numMatrices != 0) {
+        struct OMMtx *mtx;
+
+        gOMMtxHead = mtx = setup->matrices;
+
+        for (i = 0; i < setup->numMatrices - 1; i++) {
+            struct OMMtx *next = mtx + 1;
+
+            mtx->next = next;
+            mtx = next;
+        }
+        mtx->next = NULL;
+    } else {
+        gOMMtxHead = NULL;
+    }
+
+    if (setup->numAObjs != 0) {
+        struct AObj *aobj;
+
+        gAObjHead = aobj = setup->aobjs;
+
+        for (i = 0; i < setup->numAObjs - 1; i++) {
+            struct AObj *next = aobj + 1;
+
+            aobj->next = next;
+            aobj = next;
+        }
+        aobj->next = NULL;
+    } else {
+        gAObjHead = NULL;
+    }
+
+    if (setup->numMObjs != 0) {
+        struct MObj *mobj;
+
+        gMObjHead = mobj = setup->mobjs;
+
+        for (i = 0; i < setup->numMObjs - 1; i++) {
+            struct MObj *next = mobj + 1;
+
+            mobj->next = next;
+            mobj = next;
+        }
+        mobj->next = NULL;
+    } else {
+        gMObjHead = NULL;
+    }
+
+    if (setup->numDObjs != 0) {
+        struct DObj *dobj;
+
+        gDObjHead = dobj = setup->dobjs;
+
+        for (i = 0; i < setup->numDObjs - 1; i++) {
+            dobj->nextFree = (struct DObj *) ((uintptr_t) dobj + setup->dobjSize);
+            dobj = dobj->nextFree;
+        }
+        dobj->nextFree = NULL;
+    } else {
+        gDObjHead = NULL;
+    }
+
+    if (setup->numSObjs != 0) {
+        struct SObj *sobj;
+
+        D_8004A7B4 = sobj = setup->sobjs;
+
+        for (i = 0; i < setup->numSObjs - 1; i++) {
+            sobj->nextFree = (struct SObj *) ((uintptr_t) sobj + setup->sobjSize);
+            sobj = sobj->nextFree;
+        }
+        sobj->nextFree = NULL;
+    } else {
+        D_8004A7B4 = NULL;
+    }
+
+    if (setup->numCameras != 0) {
+        struct Camera *cam;
+
+        gCameraHead = cam = setup->cameras;
+
+        for (i = 0; i < setup->numCameras - 1; i++) {
+            cam->nextFree = (struct Camera *) ((uintptr_t) cam + setup->cameraSize);
+            cam = cam->nextFree;
+        }
+        cam->nextFree = NULL;
+    } else {
+        gCameraHead = NULL;
+    }
+
+    for (i = 0; i < ARRAY_COUNT(omGObjListHead); i++) {
+        omGObjListHead[i] = omGObjListTail[i] = NULL;
+    }
+    for (i = 0; i < ARRAY_COUNT(omGObjListDlHead); i++) {
+        omGObjListDlHead[i] = omGObjListDlTail[i] = NULL;
+    }
+
+    func_8001479C();
+    osCreateMesgQueue(&HS64_GObjProcMesgQ, &D_8004A7D8, 1);
+
+    omActiveThreadStacks =
+    gGObjThreadCount =
+    gGObjProcessCount =
+    gGObjCount =
+    gOMMtxCount =
+    gAObjCount =
+    gDObjCount =
+    D_8004A7B8 =
+    gCameraCount = 0;
+
+    omProcEndCallback = NULL;
+
+    func_80017B34(0);
+
+    D_8003DE54 = 0;
+}

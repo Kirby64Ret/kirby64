@@ -49,6 +49,7 @@ extern u32 D_8003DCA4;
 extern s32 gtlDrawnFrameCounter;
 extern s32 D_8004A42C;
 extern u32 D_8004A430;
+extern u32 D_8004A434;
 
 extern OSMesgQueue D_80049320;
 
@@ -80,6 +81,16 @@ extern ObjectSetup gtlCurrentScene;
 extern FuncTable gtlMainFuncTable;
 
 extern s32 (*D_8004A48C)(SCTaskGfx*);
+
+struct GtlUcode {
+    /* 0x00 */ u64 *text;
+    /* 0x04 */ u64 *data;
+};
+
+extern struct GtlUcode gtlUcodeList[];
+extern u64 gtlDRAMStack[];
+extern u64 gtlDPYieldBuffer[];
+extern u8 gRSPBootUcode[0x100];
 
 void func_80005350(s32 (*taskCB)(SCTaskGfx *)) {
     if (taskCB != NULL) {
@@ -151,12 +162,11 @@ void gtlInitDisps(void) {
     D_8004A448 = FALSE;
 }
 
-#ifdef NON_MATCHING
 void gtlCheckBuffers(void) {
     s32 i;
 
     for (i = 0; i < 4; i++) {
-        if ((u32)(gDLBuffers[gtlCurrentContextID][i].start + gDLBuffers[gtlCurrentContextID][i].length) <
+        if (gDLBuffers[gtlCurrentContextID][i].length + (u32)gDLBuffers[gtlCurrentContextID][i].start <
             (u32)gDisplayListHeads[i]) {
             fatal_printf("gtl : DLBuffer over flow !  kind = %d  vol = %d byte\n", i,
                          (u32)gDisplayListHeads[i] - (u32)gDLBuffers[gtlCurrentContextID][i].start);
@@ -170,10 +180,6 @@ void gtlCheckBuffers(void) {
         while (1);
     }
 }
-#else
-void gtlCheckBuffers(void);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlCheckBuffers.s")
-#endif
 
 void gtlSetDPOutputBuff(void* buffer, s32 size) {
     SCTaskRDPBuffer task;
@@ -268,50 +274,53 @@ void gtlReset(void) {
     gtlInitDisps();
 }
 
-#ifdef MIPS_TO_C
-void gtlScheduleGfxTask(void *arg0, s32 arg1, u32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    s32 temp_v1;
-    void *temp_v0;
+void gtlScheduleGfxTask(SCTaskGfx *t, s32 arg1, u32 ucodeId, s32 arg3, Gfx *arg4, void *arg5, size_t arg6) {
+    struct GtlUcode *ucode;
 
-    arg0->unk0 = 1;
-    arg0->unk4 = 0x32;
-    if (gtlSegment0FBase != 0) {
-        arg0->unk14 = D_8004A48C;
-        arg0->unk68 = gtlSegment0FBase;
-        gtlSegment0FBase = 0;
+    t->info.type = SC_TASK_TYPE_GFX;
+    t->info.priority = 50;
+
+    if (gtlSegment0FBase != NULL) {
+        t->info.fnCheck = (SCTaskCallback) D_8004A48C;
+        t->unk68 = gtlSegment0FBase;
+        gtlSegment0FBase = NULL;
     } else {
-        arg0->unk14 = 0;
-        arg0->unk68 = 0;
+        t->info.fnCheck = NULL;
+        t->unk68 = NULL;
     }
-    arg0->unk6C = arg1;
-    arg0->unk70 = D_8004A3F4;
+    t->fb = (s32 *) arg1;
+    t->fbIdx = D_8004A3F4;
+
     if (arg1 != 0) {
-        arg0->unk20 = &D_80049320;
-        arg0->unk1C = arg3;
+        t->info.mq = &D_80049320;
+        t->info.retVal = arg3;
     } else {
-        arg0->unk20 = NULL;
+        t->info.mq = NULL;
     }
-    arg0->unk18 = 2;
-    arg0->unk7C = 0;
-    arg0->unk28 = 1;
-    arg0->unk2C = 4;
-    arg0->unk30 = &gRSPBootUcode;
-    arg0->unk34 = 0x100;
-    temp_v0 = (arg2 * 8) + &gtlUcodeList;
-    arg0->unk80 = gtlCurrentContextID;
-    temp_v1 = temp_v0->unk0;
-    if (temp_v1 == 0) {
-        fatal_printf("gtl : ucode isn't included  kind = %d\n", arg2);
-loop_8:
-        goto loop_8;
+
+    t->info.unk_18 = 2;
+    t->taskId = gtlCurrentContextID;
+    t->unk7C = 0;
+
+    t->task.t.type = M_GFXTASK;
+    t->task.t.flags = OS_TASK_LOADABLE;
+    t->task.t.ucode_boot = (u64 *) gRSPBootUcode;
+    t->task.t.ucode_boot_size = sizeof(gRSPBootUcode);
+
+    ucode = &gtlUcodeList[ucodeId];
+
+    if (ucode->text == NULL) {
+        fatal_printf("gtl : ucode isn't included  kind = %d\n", ucodeId);
+        while (1);
     }
-    arg0->unk38 = temp_v1;
-    arg0->data = 0x1000;
-    arg0->unk44 = 0x800;
-    arg0->unk48 = ((&gtlDRAMStack + 0xF) >> 4) * 0x10;
-    arg0->unk4C = 0x400;
-    arg0->unk40 = temp_v0->unk4;
-    switch (arg2) {
+    t->task.t.ucode = ucode->text;
+    t->task.t.ucode_data = ucode->data;
+    t->task.t.ucode_size = SP_UCODE_SIZE;
+    t->task.t.ucode_data_size = SP_UCODE_DATA_SIZE;
+    t->task.t.dram_stack = OS_DCACHE_ROUNDUP_ADDR(gtlDRAMStack);
+    t->task.t.dram_stack_size = SP_DRAM_STACK_SIZE8;
+
+    switch (ucodeId) {
         case 0:
         case 2:
         case 4:
@@ -319,9 +328,9 @@ loop_8:
         case 8:
         case 12:
         case 14:
-            arg0->unk50 = arg5;
-            arg0->unk74 = 2;
-            arg0->unk54 = arg5 + arg6;
+            t->task.t.output_buff = arg5;
+            t->task.t.output_buff_size = (u64 *) ((u32) arg5 + arg6);
+            t->unk74 = 2;
             break;
         case 1:
         case 3:
@@ -330,24 +339,20 @@ loop_8:
         case 9:
         case 13:
         case 15:
-            arg0->unk50 = 0;
-            arg0->unk54 = 0;
-            arg0->unk74 = 0;
+            t->task.t.output_buff = NULL;
+            t->task.t.output_buff_size = NULL;
+            t->unk74 = 0;
             break;
     }
-    arg0->unk5C = 0;
-    arg0->unk60 = ((&gtlDPYieldBuffer + 0xF) >> 4) * 0x10;
-    arg0->unk64 = 0xC00;
-    arg0->unk58 = arg4;
-    osWritebackDCacheAll();
-    osSendMesg(&scTaskMQ, arg0, 0);
-}
-#else
-void gtlScheduleGfxTask(SCTaskGfx *arg0, s32 arg1, u32 arg2, s32 arg3, Gfx *arg4, void *arg5, size_t arg6);
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlScheduleGfxTask.s")
-#endif
+    t->task.t.data_ptr = (u64 *) arg4;
+    t->task.t.data_size = 0;
+    t->task.t.yield_data_ptr = OS_DCACHE_ROUNDUP_ADDR(gtlDPYieldBuffer);
+    t->task.t.yield_data_size = OS_YIELD_DATA_SIZE;
 
-#ifdef NON_MATCHING
+    osWritebackDCacheAll();
+    osSendMesg(&scTaskMQ, t, OS_MESG_NOBLOCK);
+}
+
 u32 gtlGetL3DEX2Index(void) {
     u32 idx = (D_8004A448 != 0) ? D_8004A446 : D_8004A444;
 
@@ -360,15 +365,14 @@ u32 gtlGetL3DEX2Index(void) {
         case 13:
         case 15:
             idx = 9;
+            break;
         default:
             idx = 8;
+            break;
     }
 
     return idx;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlGetL3DEX2Index.s")
-#endif
 
 void func_80005CC0(s32 isL3DEX2, Gfx *glistp) {
     u32 ucodeIdx;
@@ -691,8 +695,6 @@ void func_80006854(void) {
 }
 
 // FuncTable::main
-// different store to D_8004A430
-#ifdef NON_MATCHING
 void gtlMain(FuncTable *this) {
     s32 i;
 
@@ -734,7 +736,7 @@ void gtlMain(FuncTable *this) {
                 D_8004A42C = osGetCount();
                 this->onDraw(this);
                 gtlDrawnFrameCounter += 1;
-                D_8004A430 = (osGetCount() - D_8004A42C) / 2971;
+                D_8004A434 = (osGetCount() - D_8004A42C) / 2971;
 
                 if (func_800067E0()) {
                     break;
@@ -762,7 +764,7 @@ void gtlMain(FuncTable *this) {
                 D_8004A42C = osGetCount();
                 this->onDraw(this);
                 gtlDrawnFrameCounter += 1;
-                D_8004A430 = (osGetCount() - D_8004A42C) / 2971;
+                D_8004A434 = (osGetCount() - D_8004A42C) / 2971;
                 if (func_800067E0()) {
                     break;
                 }
@@ -777,9 +779,6 @@ void gtlMain(FuncTable *this) {
     set_scissor_callback(NULL);
     D_800492DC = 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/gtl/gtlMain.s")
-#endif
 
 // FuncTable::update
 void gtlFuncTableDefaultUpdate(FuncTable *this) {
