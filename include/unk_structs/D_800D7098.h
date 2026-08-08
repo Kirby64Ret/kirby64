@@ -27,6 +27,13 @@ struct UnkStruct800D70D8 {
     f32 unk18;
     f32 unk1C;
     f32 unk20;
+    f32 unk24;
+    f32 unk28;
+    f32 unk2C;
+    f32 unk30;
+    f32 unk34;
+    f32 unk38;
+    f32 unk3C;
 };
 
 extern struct UnkStruct800D7098 D_800D7098;

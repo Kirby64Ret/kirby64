@@ -237,7 +237,20 @@ void func_802252A4_ovl18(void) {
     func_8021F5CC_ovl18();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_236F20/func_80225304_ovl18.s")
+void func_80225304_ovl18(UNUSED s32 arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800AA018(0x10135);
+    func_800AA018(0x10136);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.5f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 3.5f;
+    while (1) {
+        func_801ACC34_ovl7(0x45, 0);
+        play_sound(0x169);
+        ohSleep(random_soft_s32_range(0xA) + 0x1E);
+    }
+}
 
 void func_80225410_ovl18(UNUSED s32 arg0) {
 

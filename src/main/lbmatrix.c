@@ -1306,281 +1306,256 @@ void HS64_MtxRotateRPYTranslateDegrees(Mtx* m, f32 dx, f32 dy, f32 dz, f32 r, f3
 
 // File split between lbmatrix and interpolation?
 
-#ifdef MIPS_TO_C
-void func_8001D3D0(Vector* out, Vector* pts, f32 s, f32 u) {
-    f32 u2, u3;
-    f32 b0, b1, b2, b3;
+#define BIQUAD(x) ((x) * (x) * (x) * (x))
+#define CUBE(x) ((x) * (x) * (x))
 
-    u2 = u * u;
-    u3 = u2 * u;
-    b3 = (u3 - u2) * s;
-    b0 = ((2.0f * u2 - u3) - u) * s;
-    b1 = (2.0f - s) * u3 + (s - 3.0f) * u2 + 1.0f;
-    b2 = (s - 2.0f) * u3 + (3.0f - 2.0f * s) * u2 + s * u;
-    out->x = pts[3].x * b3 + (pts[0].x * b0 + pts[1].x * b1 + pts[2].x * b2);
-    out->y = pts[3].y * b3 + (pts[0].y * b0 + pts[1].y * b1 + pts[2].y * b2);
-    out->z = pts[3].z * b3 + (pts[0].z * b0 + pts[1].z * b1 + pts[2].z * b2);
+typedef struct InterpDesc {
+    /* 0x00 */ u8 kind;
+    /* 0x02 */ s16 pointsNum;
+    /* 0x04 */ f32 unk04;
+    /* 0x08 */ Vector *points;
+    /* 0x0C */ f32 length;
+    /* 0x10 */ f32 *keyframes;
+    /* 0x14 */ f32 *quartics;
+} InterpDesc; // size = 0x18
+
+enum InterpKind {
+    INTERP_KIND_LINEAR,
+    INTERP_KIND_BEZIER_S3,
+    INTERP_KIND_BEZIER,
+    INTERP_KIND_CATROM
+};
+
+// Catmull-Rom cubic spline
+void func_8001D3D0(Vector *out, Vector *ctrl, f32 s, f32 t) {
+    Vector *lctrl = ctrl;
+    f32 sqt = SQ(t);
+    f32 w0, w1, w2, w3;
+    f32 cbt = sqt * t;
+
+    w0 = (2.0f * sqt - cbt - t) * s;
+    w1 = (2.0f - s) * cbt + (s - 3.0f) * sqt + 1.0f;
+    w2 = (s - 2.0f) * cbt + (3.0f - 2.0f * s) * sqt + s * t;
+    w3 = (cbt - sqt) * s;
+
+    out->x = lctrl[0].x * w0 + lctrl[1].x * w1 + lctrl[2].x * w2 + lctrl[3].x * w3;
+    out->y = lctrl[0].y * w0 + lctrl[1].y * w1 + lctrl[2].y * w2 + lctrl[3].y * w3;
+    out->z = lctrl[0].z * w0 + lctrl[1].z * w1 + lctrl[2].z * w2 + lctrl[3].z * w3;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D3D0.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8001D514(Vector* out, Vector* pts, f32 s, f32 u) {
-    f32 u2;
-    f32 b0, b1, b2, b3;
+void func_8001D514(Vector *out, Vector *ctrl, f32 s, f32 t) {
+    f32 sqt;
+    f32 w1;
+    f32 w2;
+    f32 w0;
+    f32 temp;
+    f32 w3;
 
-    u2 = u * u;
-    b3 = (3.0f * u2 - 2.0f * u) * s;
-    b0 = ((-3.0f * u2 + 4.0f * u) - 1.0f) * s;
-    b1 = (2.0f - s) * 3.0f * u2 + 2.0f * (s - 3.0f) * u;
-    b2 = (s - 2.0f) * 3.0f * u2 + 2.0f * (3.0f - 2.0f * s) * u + s;
-    out->x = pts[3].x * b3 + (pts[0].x * b0 + pts[1].x * b1 + pts[2].x * b2);
-    out->y = pts[3].y * b3 + (pts[0].y * b0 + pts[1].y * b1 + pts[2].y * b2);
-    out->z = pts[3].z * b3 + (pts[0].z * b0 + pts[1].z * b1 + pts[2].z * b2);
+    sqt = t * t;
+    w0 = ((((-3.0f) * sqt) + (4.0f * t)) - 1.0f) * s;
+    temp = s - 3.0f;
+    w3 = s;
+    w1 = (((2.0f - w3) * 3.0f) * sqt) + ((2.0f * temp) * t);
+    temp = 3.0f - (2.0f * w3);
+    w2 = ((((w3 - 2.0f) * 3.0f) * sqt) + ((2.0f * temp) * t)) + w3;
+    w3 = ((3.0f * sqt) - (2.0f * t)) * w3;
+
+    out->x = (ctrl[0].x * w0) + (ctrl[1].x * w1) + (ctrl[2].x * w2) + (ctrl[3].x * w3);
+    out->y = (ctrl[0].y * w0) + (ctrl[1].y * w1) + (ctrl[2].y * w2) + (ctrl[3].y * w3);
+    out->z = (ctrl[0].z * w0) + (ctrl[1].z * w1) + (ctrl[2].z * w2) + (ctrl[3].z * w3);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D514.s")
-#endif
 
-#ifdef MIPS_TO_C
-extern f32 D_80040CC0;
-extern f32 D_80040CC4;
-extern f32 D_80040CC8;
-extern f32 D_80040CCC;
+void func_8001D6A0(Vector *out, Vector *ctrl, f32 t) {
+    Vector *lctrl = ctrl;
+    f32 subt;
+    f32 cbt;
+    f32 w0, w1, w2, w3;
+    f32 sqt;
 
-void func_8001D6A0(Vector* out, Vector* pts, f32 u) {
-    f32 t, u2, u3;
-    f32 b0, b1, b2, b3;
+    subt = 1.0f - t;
+    sqt = SQ(t);
+    cbt = sqt * t;
 
-    t = 1.0f - u;
-    u2 = u * u;
-    u3 = u2 * u;
-    b3 = D_80040CC0 * u3;
-    b0 = D_80040CC4 * t * t * t;
-    b1 = ((3.0f * u3) - (6.0f * u2) + 4.0f) * D_80040CC8;
-    b2 = (((u2 - u3) + u) * 3.0f + 1.0f) * D_80040CCC;
-    out->x = pts[3].x * b3 + (pts[0].x * b0 + pts[1].x * b1 + pts[2].x * b2);
-    out->y = pts[3].y * b3 + (pts[0].y * b0 + pts[1].y * b1 + pts[2].y * b2);
-    out->z = pts[3].z * b3 + (pts[0].z * b0 + pts[1].z * b1 + pts[2].z * b2);
+    w0 = (1.0f / 6.0f) * subt * subt * subt;
+    w1 = (1.0f / 6.0f) * (3.0f * cbt - 6.0f * sqt + 4.0f);
+    w2 = (1.0f / 6.0f) * (3.0f * (sqt - cbt + t) + 1.0f);
+    w3 = (1.0f / 6.0f) * cbt;
+
+    out->x = lctrl[0].x * w0 + lctrl[1].x * w1 + lctrl[2].x * w2 + lctrl[3].x * w3;
+    out->y = lctrl[0].y * w0 + lctrl[1].y * w1 + lctrl[2].y * w2 + lctrl[3].y * w3;
+    out->z = lctrl[0].z * w0 + lctrl[1].z * w1 + lctrl[2].z * w2 + lctrl[3].z * w3;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D6A0.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8001D800(void *arg0, void *arg1, f32 arg2) {
-    f32 sp4;
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    f32 temp_f8;
+void func_8001D800(Vector *out, Vector *ctrl, f32 t) {
+    s32 unused[2];
+    f32 sqt;
+    f32 mt;
+    f32 w1;
+    f32 w2;
+    f32 w3;
+    f32 w0;
 
-    temp_f0 = arg2 * arg2;
-    temp_f8 = 1.0f - arg2;
-    temp_f18 = 0.5f * temp_f0;
-    sp4 = temp_f8;
-    temp_f2 = -0.5f * temp_f8 * temp_f8;
-    temp_f14 = ((3.0f * temp_f0) - (4.0f * arg2)) * 0.5f;
-    temp_f16 = ((-3.0f * temp_f0) + (2.0f * arg2) + 1.0f) * 0.5f;
-    arg0->unk0 = (arg1->unk24 * temp_f18) + ((arg1->unk0 * temp_f2) + (arg1->unkC * temp_f14) + (arg1->unk18 * temp_f16));
-    arg0->unk4 = (arg1->unk28 * temp_f18) + ((arg1->unk4 * temp_f2) + (arg1->unk10 * temp_f14) + (arg1->unk1C * temp_f16));
-    arg0->unk8 = (arg1->unk2C * temp_f18) + ((arg1->unk8 * temp_f2) + (arg1->unk14 * temp_f14) + (arg1->unk20 * temp_f16));
+    sqt = t * t;
+    w0 = 1.0f - t;
+    w3 = -0.5f * w0 * w0;
+    mt = ((3.0f * sqt) - (4.0f * t)) * 0.5f;
+    w1 = ((-3.0f * sqt) + (2.0f * t) + 1.0f) * 0.5f;
+    w2 = 0.5f * sqt;
+
+    out->x = (ctrl[0].x * w3) + (ctrl[1].x * mt) + (ctrl[2].x * w1) + (ctrl[3].x * w2);
+    out->y = (ctrl[0].y * w3) + (ctrl[1].y * mt) + (ctrl[2].y * w1) + (ctrl[3].y * w2);
+    out->z = (ctrl[0].z * w3) + (ctrl[1].z * mt) + (ctrl[2].z * w1) + (ctrl[3].z * w2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D800.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8001D934(void *arg0, void *arg1, f32 arg2) {
-    f32 sp8;
-    f32 sp4;
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    f32 temp_f8;
+void func_8001D934(Vector *out, Vector *ctrl, f32 t) {
+    f32 sqt;
+    f32 w1;
+    f32 w2;
+    f32 w3;
+    f32 w0;
+    f32 subt;
+    f32 sqsubt;
 
-    temp_f2 = arg2 * arg2;
-    temp_f0 = 1.0f - arg2;
-    temp_f14 = temp_f0 * temp_f0;
-    sp4 = temp_f2 * arg2;
-    temp_f16 = temp_f14 * temp_f0;
-    temp_f18 = 3.0f * arg2 * temp_f14;
-    temp_f8 = 3.0f * temp_f2 * temp_f0;
-    sp8 = temp_f8;
-    arg0->unk0 = (arg1->unk24 * sp4) + ((arg1->unk0 * temp_f16) + (arg1->unkC * temp_f18) + (arg1->unk18 * temp_f8));
-    arg0->unk4 = (arg1->unk28 * sp4) + ((arg1->unk4 * temp_f16) + (arg1->unk10 * temp_f18) + (arg1->unk1C * sp8));
-    arg0->unk8 = (arg1->unk2C * sp4) + ((arg1->unk8 * temp_f16) + (arg1->unk14 * temp_f18) + (arg1->unk20 * temp_f8));
+    subt = 1.0f - t;
+    sqt = SQ(t);
+    sqsubt = SQ(subt);
+
+    w0 = sqsubt * subt;
+    w1 = 3.0f * t * sqsubt;
+    w2 = 3.0f * sqt * subt;
+    w3 = sqt * t;
+
+    out->x = ctrl[0].x * w0 + ctrl[1].x * w1 + ctrl[2].x * w2 + ctrl[3].x * w3;
+    out->y = ctrl[0].y * w0 + ctrl[1].y * w1 + ctrl[2].y * w2 + ctrl[3].y * w3;
+    out->z = ctrl[0].z * w0 + ctrl[1].z * w1 + ctrl[2].z * w2 + ctrl[3].z * w3;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001D934.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_8001DA48(void *arg0, void *arg1, f32 arg2) {
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
+void func_8001DA48(Vector *out, Vector *ctrl, f32 t) {
+    f32 mt;
+    f32 w0;
+    f32 w1;
+    f32 w2;
+    f32 w3;
 
-    temp_f0 = arg2 - 1.0f;
-    temp_f14 = 3.0f * (arg2 * arg2);
-    temp_f2 = -3.0f * temp_f0 * temp_f0;
-    temp_f16 = ((1.0f - (4.0f * arg2)) + temp_f14) * 3.0f;
-    temp_f18 = ((2.0f * arg2) - temp_f14) * 3.0f;
-    arg0->unk0 = (arg1->unk24 * temp_f14) + ((arg1->unk0 * temp_f2) + (arg1->unkC * temp_f16) + (arg1->unk18 * temp_f18));
-    arg0->unk4 = (arg1->unk28 * temp_f14) + ((arg1->unk4 * temp_f2) + (arg1->unk10 * temp_f16) + (arg1->unk1C * temp_f18));
-    arg0->unk8 = (arg1->unk2C * temp_f14) + ((arg1->unk8 * temp_f2) + (arg1->unk14 * temp_f16) + (arg1->unk20 * temp_f18));
+    mt = t - 1.0f;
+    w3 = -3.0f * mt * mt;
+    w0 = SQ(t);
+    w0 = 3.0f * w0;
+    w1 = ((1.0f - (4.0f * t)) + w0) * 3.0f;
+    w2 = ((2.0f * t) - w0) * 3.0f;
+
+    out->x = (ctrl[0].x * w3) + (ctrl[1].x * w1) + (ctrl[2].x * w2) + (ctrl[3].x * w0);
+    out->y = (ctrl[0].y * w3) + (ctrl[1].y * w1) + (ctrl[2].y * w2) + (ctrl[3].y * w0);
+    out->z = (ctrl[0].z * w3) + (ctrl[1].z * w1) + (ctrl[2].z * w2) + (ctrl[3].z * w0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001DA48.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8001DB54(Vector *out, InterpDesc *desc, f32 t) {
+    s16 targetFrame;
+    Vector *point;
 
-void func_8001DB54(void *arg0, void *arg1, f32 arg2) {
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f14;
-    f32 temp_f2;
-    s16 temp_t0;
-    s32 temp_f10;
-    u8 temp_v0;
-    u8 temp_v0_3;
-    void *temp_v0_2;
-    void *temp_v0_4;
-    void *temp_v0_5;
-    void *temp_v0_6;
-    void *temp_v0_7;
+    if ((t < 0.0f) || (t > 1.0f)) {
+        return;
+    } else if (t < 1.0f) {
+        t *= (f32) (desc->pointsNum - 1);
 
-    if (!(arg2 < 0.0f) && !(arg2 > 1.0f)) {
-        if (arg2 < 1.0f) {
-            temp_v0 = arg1->unk0;
-            temp_f12 = arg2 * (arg1->unk2 - 1);
-            temp_f10 = temp_f12;
-            temp_f12_2 = temp_f12 - temp_f10;
-            switch (temp_v0) {                      /* switch 1; irregular */
-                case 0:                             /* switch 1 */
-                    temp_v0_2 = arg1->unk8 + (temp_f10 * 0xC);
-                    temp_f0 = temp_v0_2->unk0;
-                    arg0->unk0 = temp_f0 + ((temp_v0_2->unkC - temp_f0) * temp_f12_2);
-                    temp_f2 = temp_v0_2->unk4;
-                    arg0->unk4 = temp_f2 + ((temp_v0_2->unk10 - temp_f2) * temp_f12_2);
-                    temp_f14 = temp_v0_2->unk8;
-                    arg0->unk8 = temp_f14 + ((temp_v0_2->unk14 - temp_f14) * temp_f12_2);
-                    return;
-                case 1:                             /* switch 1 */
-                    func_8001D934(temp_f12_2, arg1->unk8 + (temp_f10 * 0x24), temp_f12_2);
-                    return;
-                case 2:                             /* switch 1 */
-                    func_8001D6A0(temp_f12_2, arg1->unk8 + (temp_f10 * 0xC), temp_f12_2);
-                    return;
-                case 3:                             /* switch 1 */
-                    func_8001D3D0(temp_f12_2, arg1->unk8 + (temp_f10 * 0xC), arg1->unk4, temp_f12_2);
-                    return;
-            }
-        } else {
-            temp_v0_3 = arg1->unk0;
-            temp_t0 = arg1->unk2 - 1;
-            switch (temp_v0_3) {                    /* irregular */
-                case 0:
-                    temp_v0_4 = arg1->unk8 + (temp_t0 * 0xC);
-                    arg0->unk0 = temp_v0_4->unk0;
-                    arg0->unk4 = temp_v0_4->unk4;
-                    arg0->unk8 = temp_v0_4->unk8;
-                    return;
-                case 1:
-                    temp_v0_5 = arg1->unk8 + (temp_t0 * 0x24);
-                    arg0->unk0 = temp_v0_5->unk0;
-                    arg0->unk4 = temp_v0_5->unk4;
-                    arg0->unk8 = temp_v0_5->unk8;
-                    return;
-                case 2:
-                    func_8001D6A0(arg2, (arg1->unk8 + (temp_t0 * 0xC)) - 0xC, 1.0f);
-                    return;
-                case 3:
-                    temp_v0_6 = arg1->unk8 + (temp_t0 * 0xC);
-                    temp_v0_7 = temp_v0_6 + 0xC;
-                    arg0->unk0 = temp_v0_6->unkC;
-                    arg0->unk4 = temp_v0_7->unk4;
-                    arg0->unk8 = temp_v0_7->unk8;
-                    break;
-            }
+        targetFrame = t;
+
+        t -= targetFrame;
+
+        switch (desc->kind) {
+            case INTERP_KIND_LINEAR:
+                point = &desc->points[targetFrame];
+                out->x = (point[1].x - point[0].x) * t + point[0].x;
+                out->y = (point[1].y - point[0].y) * t + point[0].y;
+                out->z = (point[1].z - point[0].z) * t + point[0].z;
+                break;
+
+            case INTERP_KIND_BEZIER_S3:
+                func_8001D934(out, &desc->points[targetFrame * 3], t);
+                break;
+
+            case INTERP_KIND_BEZIER:
+                func_8001D6A0(out, &desc->points[targetFrame], t);
+                break;
+
+            case INTERP_KIND_CATROM:
+                func_8001D3D0(out, &desc->points[targetFrame], desc->unk04, t);
+                break;
         }
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001DB54.s")
-#endif
+    } else {
+        targetFrame = desc->pointsNum - 1;
 
-#ifdef MIPS_TO_C
+        switch (desc->kind) {
+            case INTERP_KIND_LINEAR:
+                point = &desc->points[targetFrame];
+                *out = *point;
+                break;
 
-void func_8001DDE0(void *arg0, void *arg1, f32 arg2) {
-    f32 temp_f12;
-    f32 temp_f12_2;
-    s16 var_t0;
-    s32 temp_f10;
-    u8 temp_v1;
-    void *temp_v0;
+            case INTERP_KIND_BEZIER_S3:
+                point = &desc->points[targetFrame * 3];
+                *out = *point;
+                break;
 
-    if (!(arg2 < 0.0f) && !(arg2 > 1.0f)) {
-        temp_v1 = arg1->unk0;
-        temp_f12 = arg2 * (arg1->unk2 - 1);
-        temp_f10 = temp_f12;
-        var_t0 = temp_f10;
-        temp_f12_2 = temp_f12 - temp_f10;
-        switch (temp_v1) {                          /* irregular */
-            case 0:
-                if (arg2 == 1.0f) {
-                    var_t0 -= 1;
-                }
-                temp_v0 = arg1->unk8 + (var_t0 * 0xC);
-                arg0->unk0 = temp_v0->unkC - temp_v0->unk0;
-                arg0->unk4 = temp_v0->unk10 - temp_v0->unk4;
-                arg0->unk8 = temp_v0->unk14 - temp_v0->unk8;
-                return;
-            case 1:
-                func_8001DA48(temp_f12_2, arg1->unk8 + (var_t0 * 0x24), temp_f12_2);
-                return;
-            case 2:
-                func_8001D800(temp_f12_2, arg1->unk8 + (var_t0 * 0xC), temp_f12_2);
-                return;
-            case 3:
-                func_8001D514(temp_f12_2, arg1->unk8 + (var_t0 * 0xC), arg1->unk4, temp_f12_2);
+            case INTERP_KIND_BEZIER:
+                func_8001D6A0(out, &desc->points[targetFrame - 1], 1.0f);
+                break;
+
+            case INTERP_KIND_CATROM:
+                point = &desc->points[targetFrame + 1];
+                *out = *point;
                 break;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001DDE0.s")
-#endif
 
-#ifdef MIPS_TO_C
+void func_8001DDE0(Vector *out, InterpDesc *desc, f32 t) {
+    s16 targetFrame;
+    f32 tOrigin;
+    Vector *point;
 
-void func_8001DF68(f32 arg0, void *arg1) {
-    f32 temp_f0;
-    f32 temp_f2;
-    f32 var_f14;
+    if ((t < 0.0f) || (t > 1.0f)) {
+        return;
+    } else {
+        tOrigin = t;
+        t *= (f32) (desc->pointsNum - 1);
 
-    temp_f0 = arg0 * arg0;
-    temp_f2 = temp_f0 * arg0;
-    var_f14 = arg1->unk10 + ((arg1->unk0 * (temp_f2 * arg0)) + (arg1->unk4 * temp_f2) + (arg1->unk8 * temp_f0) + (arg1->unkC * arg0));
-    if ((var_f14 < 0.0f) && (D_80040CD0 < var_f14)) {
-        var_f14 = 0.0f;
+        targetFrame = t;
+        t = t - (f32) targetFrame;
+
+        switch (desc->kind) {
+            case INTERP_KIND_LINEAR:
+                if (tOrigin == 1.0f) {
+                    targetFrame--;
+                }
+                point = desc->points + targetFrame;
+                out->x = point[1].x - point[0].x;
+                out->y = point[1].y - point[0].y;
+                out->z = point[1].z - point[0].z;
+                break;
+
+            case INTERP_KIND_BEZIER_S3:
+                func_8001DA48(out, &desc->points[targetFrame * 3], t);
+                break;
+
+            case INTERP_KIND_BEZIER:
+                func_8001D800(out, &desc->points[targetFrame], t);
+                break;
+
+            case INTERP_KIND_CATROM:
+                func_8001D514(out, &desc->points[targetFrame], desc->unk04, t);
+                break;
+        }
     }
-    sqrtf(var_f14);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001DF68.s")
-#endif
 
-f32 func_8001DF68(f32 arg0, void *arg1);
+f32 func_8001DF68(f32 x, f32 *cof) {
+    f32 sum = cof[0] * BIQUAD(x) + cof[1] * CUBE(x) + cof[2] * SQ(x) + cof[3] * x + cof[4];
+
+    if ((sum < 0.0f) && (sum > -0.001f)) {
+        sum = 0.0f;
+    }
+    return sqrtf(sum);
+}
 
 f32 func_8001E000(f32 arg0, f32 arg1, void *arg2) {
     f32 sp4C;
@@ -1608,93 +1583,40 @@ f32 func_8001E000(f32 arg0, f32 arg1, void *arg2) {
     return ((func_8001DF68(arg1, arg2) + (temp_f20 + var_f22)) * sp4C) / 3.0f;
 }
 
-#ifdef MIPS_TO_C
+f32 func_8001E104(InterpDesc *desc, f32 t) {
+    f32 *point;
+    s32 id;
+    f32 fracFrame;
+    f32 timeScale;
+    f32 min = 0.0f;
+    f32 max = 1.0f;
+    f32 res;
+    f32 diff;
 
-f32 func_8001E104(void *arg0, f32 arg1) {
-    f32 sp5C;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f14;
-    f32 temp_f28;
-    f32 temp_f6;
-    f32 var_f0;
-    f32 var_f0_2;
-    f32 var_f20;
-    f32 var_f22;
-    f32 var_f24;
-    f32 var_f26;
-    s32 var_s1;
-    u8 temp_v0;
-    void *temp_v0_2;
-    void *temp_v1;
-    void *var_v0;
+    id = 0;
 
-    temp_v1 = arg0->unk10;
-    var_s1 = 0;
-    var_f24 = 1.0f;
-    var_f20 = 0.0f;
-    if (temp_v1->unk4 < arg1) {
-        var_v0 = temp_v1;
+    if (desc->keyframes[1] < t) {
+        point = desc->keyframes;
         do {
-            temp_f6 = var_v0->unk8;
-            var_s1 += 1;
-            var_v0 += 4;
-        } while (temp_f6 < arg1);
+            id++;
+            point++;
+        } while (point[1] < t);
     }
-    temp_v0 = arg0->unk0;
-    switch (temp_v0) {                              /* irregular */
-        case 0:
-            temp_v0_2 = temp_v1 + (var_s1 * 4);
-            temp_f0 = temp_v0_2->unk0;
-            var_f26 = (arg1 - temp_f0) / (temp_v0_2->unk4 - temp_f0);
+    switch (desc->kind) {
+        case INTERP_KIND_LINEAR:
+            fracFrame = (t - desc->keyframes[id]) / (desc->keyframes[id + 1] - desc->keyframes[id]);
             break;
-        case 1:
-        case 2:
-        case 3:
-            var_f22 = (arg1 - *(temp_v1 + (var_s1 * 4))) * arg0->unkC;
-            if (0.0f < 1.0f) {
-                var_f0 = -(0.0f - 1.0f);
-            } else {
-                var_f0 = 0.0f - 1.0f;
-            }
-            temp_f28 = D_80040CD4;
-            if (temp_f28 <= var_f0) {
-                do {
-                    temp_f14 = (var_f20 + var_f24) * 0.5f;
-                    temp_f0_2 = func_8001E000(var_f20, temp_f14, arg0->unk14 + (var_s1 * 0x14));
-                    if (var_f22 < (temp_f0_2 + temp_f28)) {
-                        var_f24 = temp_f14;
-                    } else {
-                        var_f20 = temp_f14;
-                        var_f22 -= temp_f0_2;
-                    }
-                    if (var_f20 < var_f24) {
-                        var_f0_2 = -(var_f20 - var_f24);
-                    } else {
-                        var_f0_2 = var_f20 - var_f24;
-                    }
-                } while (temp_f28 <= var_f0_2);
-                sp5C = temp_f14;
-            }
-            /* fallthrough */
-        default:
-            var_f26 = sp5C;
-            break;
-    }
-    return (var_s1 + var_f26) / (arg0->unk2 - 1.0f);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lbmatrix/func_8001E104.s")
-#endif
 
-void func_8001DB54(void *arg0, void *arg1, f32 arg2);
-void func_8001DDE0(void *arg0, void *arg1, f32 arg2);
-f32 func_8001E104(void *arg0, f32 arg1);
+// the single-line do/while(0) shape below is load-bearing for the match
+        do { case INTERP_KIND_BEZIER_S3: case INTERP_KIND_BEZIER: case INTERP_KIND_CATROM: timeScale = (t - desc->keyframes[id]) * desc->length; diff = (min < max) ? (-(min - max)) : (min - max); while (0.00001f <= diff) { fracFrame = (min + max) * 0.5f; res = func_8001E000(min, fracFrame, desc->quartics + (id * 5)); if (timeScale < (res + 0.00001f)) { max = fracFrame; } else { min = fracFrame; timeScale -= res; } diff = (min < max) ? (-(min - max)) : (min - max); } break; } while (0);
+    }
+    return ((f32) id + fracFrame) / ((f32) desc->pointsNum - 1.0f);
+}
 
 void mtxGetInterpolatedPosition(Vector *arg0, s32 *arg1, f32 arg2) {
-    func_8001DB54(arg0, arg1, func_8001E104(arg1, arg2));
+    func_8001DB54(arg0, (InterpDesc *)arg1, func_8001E104((InterpDesc *)arg1, arg2));
 }
 
-void func_8001E344(void *arg0, void *arg1, f32 arg2) {
+void func_8001E344(Vector *arg0, InterpDesc *arg1, f32 arg2) {
     func_8001DDE0(arg0, arg1, func_8001E104(arg1, arg2));
 }

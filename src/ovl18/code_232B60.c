@@ -53,7 +53,7 @@ void func_802204F8_ovl18(s32 arg0) {
     if (D_800E98E0[omCurrentObj->objId] > 0) {
         D_800E98E0[omCurrentObj->objId] -= 1;
     }
-    if ((D_800E98E0[omCurrentObj->objId] <= 0) && (eneCheckNearPlayer(D_8022BBC0_ovl18) != 0)) {
+    if ((D_800E98E0[omCurrentObj->objId] <= 0) && (eneCheckNearPlayer(160000.0f) != 0)) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_802202B8_ovl18);
     }
@@ -115,7 +115,7 @@ void func_80220898_ovl18(s32 arg0) {
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_8022A214_ovl18;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_8022A964_ovl18;
     D_800E6A10[omCurrentObj->objId] = -1.0f;
-    D_800EADE0[omCurrentObj->objId] = D_8022BBC4_ovl18;
+    D_800EADE0[omCurrentObj->objId] = 0.013089969754219055f;
     D_800EAFA0[omCurrentObj->objId] = -1.0f;
     D_800EB160[omCurrentObj->objId] = 240.0f;
     D_800EB320[omCurrentObj->objId] = 0.0f;

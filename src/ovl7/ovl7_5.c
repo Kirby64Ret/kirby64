@@ -1704,36 +1704,25 @@ void func_801AAAF8_ovl7(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AAAF8_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_801AAE60_ovl7(void) {
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
-    temp_v1 = omCurrentObj->objId;
-    if (D_800E8AE0[D_800E0D50[temp_v1]] & 6) {
-        D_800E64D0[temp_v1] = D_800E6A10[temp_v1] * 7.0f;
+    if (D_800E8AE0[D_800E0D50[omCurrentObj->objId]] & 6) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 7.0f;
         D_800E6690[omCurrentObj->objId] = 0.0f;
         D_800E6850[omCurrentObj->objId] = 7.0f;
         D_800E3750[omCurrentObj->objId] = 0.0f;
-        temp_v1_2 = omCurrentObj->objId;
-        D_800E3210[temp_v1_2] = D_800E3750[temp_v1_2];
+        D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
         D_800E3C90[omCurrentObj->objId] = 65535.0f;
         ohSleep(0x78);
         return;
     }
-    D_800E64D0[temp_v1] = D_800E6A10[temp_v1] * 14.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E6850[omCurrentObj->objId] = 14.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    temp_v1_3 = omCurrentObj->objId;
-    D_800E3210[temp_v1_3] = D_800E3750[temp_v1_3];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AAE60_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_801AB008_ovl7(void) {

@@ -136,29 +136,22 @@ s32 func_80112498(struct UnkRay *arg0) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
-// 10 instructions off: target puts nx in $f2 and dot in $f0, this compiles to the opposite
 s32 func_8011253C(struct UnkRay *arg0) {
-    f32 nx;
     f32 dot;
     f32 t;
     struct UnkPlane *pl;
 
     pl = &D_8012D934->unk60[D_8012D934->unk84];
-    nx = -D_8012D934->unk50;
-    dot = (pl->unk0 * nx) + (pl->unk8 * -D_8012D934->unk54);
+    dot = (pl->unk0 * -D_8012D934->unk50) + (pl->unk8 * -D_8012D934->unk54);
     t = (dot < 0.0f) ? -dot : dot;
     if (t < 1e-4f) {
         return 0;
     }
     t = -D_8012D934->unk80 / dot;
-    arg0->unk4 += nx * t;
+    arg0->unk4 += -D_8012D934->unk50 * t;
     arg0->unkC += -D_8012D934->unk54 * t;
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011253C.s")
-#endif
 
 s32 func_80112600(struct UnkRay *arg0) {
     s32 i;
@@ -954,22 +947,19 @@ void func_80118618(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80118638.s")
 
-#ifdef MIPS_TO_C
+// The reassignment of temp (rather than a separate Vector *) is load-bearing:
+// it is what makes IDO emit the addiu that rebases the last store.
 void func_80118760(struct GObj *arg0) {
     struct DObj *temp;
-    Vector *v;
     u32 id;
 
-    id = arg0->objId;
     temp = arg0->data.dobj;
-    v = &temp->pos.v;
+    id = arg0->objId;
     temp->pos.v.x = gEntitiesNextPosXArray[id];
     temp->pos.v.y = gEntitiesNextPosYArray[id];
-    v->z = gEntitiesNextPosZArray[id];
+    temp = (struct DObj *)&temp->pos.v;
+    ((Vector *)temp)->z = gEntitiesNextPosZArray[id];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80118760.s")
-#endif
 
 void func_801187A4(void) {
     func_800AECC0(0.0f);
