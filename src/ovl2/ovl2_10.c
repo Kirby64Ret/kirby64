@@ -75,22 +75,7 @@ void func_80113F08(struct GObj *);
 extern void (*D_801249C0[])(struct GObj *);
 void func_80117210(s32);
 void func_80115F04(s32);
-extern f32 D_80128CDC, D_80128D08, D_80128D0C, D_80128D30;
-extern f32 D_80128D38;
 void func_801173F4(s32);
-
-struct Unk80129118 {
-    /* 0x00 */ f32 *unk0;
-    /* 0x04 */ s32 pad[3];
-};
-
-struct Unk80129114 {
-    /* 0x00 */ s32 unk0;
-    /* 0x04 */ struct Unk80129118 *unk4;
-};
-
-extern struct Unk80129114 *D_80129114;
-extern f32 D_80129210[];
 
 struct UnkPlane {
     /* 0x00 */ f32 unk0;
@@ -191,6 +176,12 @@ s32 func_80112600(struct UnkRay *arg0) {
     return 0;
 }
 
+// Uses constants from this TU's MIGRATED .rodata block. Referencing
+// them as `extern f32 D_80128...` does not link (nothing defines them --
+// migrated rodata is emitted BY this file), and writing them as literals
+// does not reproduce the ROM's rodata layout. Needs the constants placed
+// in the right order, not a symbol swap.
+#ifdef MIPS_TO_C
 s32 func_801126A4(struct UnkPlane *arg0) {
     struct UnkPlane *temp_v0;
     f32 temp_f0;
@@ -204,7 +195,7 @@ s32 func_801126A4(struct UnkPlane *arg0) {
     } else {
         var_f12 = temp_f0;
     }
-    if (var_f12 < D_80128CDC) {
+    if (var_f12 < 0.0001f) {
         return 0;
     }
     temp_f12 = -D_8012D934->unk80 / temp_f0;
@@ -212,6 +203,9 @@ s32 func_801126A4(struct UnkPlane *arg0) {
     arg0->unkC = arg0->unkC + (-D_8012D934->unk5C * temp_f12);
     return 2;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801126A4.s")
+#endif
 
 s32 func_80112768(struct UnkRay *arg0) {
     f32 x = arg0->unk4;
@@ -299,7 +293,37 @@ void func_80112F70(f32 arg0[4][4], f32 *arg1, s16 *arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80113028.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80113300.s")
+void func_80113300(struct GObj *arg0, s32 arg1) {
+    struct DObj *var_v0;
+    u32 var_v1;
+
+    var_v0 = omCurrentObj->data.dobj;
+    while (var_v0 != NULL) {
+        for (var_v1 = 0; var_v1 < var_v0->numMatrices; var_v1++) {
+            if (var_v0->matrices[var_v1]->kind == 0x1C) {
+                var_v0->matrices[var_v1]->unk05 = arg1;
+            }
+        }
+        if (var_v0->firstChild != NULL) {
+            var_v0 = var_v0->firstChild;
+        } else if (var_v0->next != NULL) {
+            var_v0 = var_v0->next;
+        } else {
+            while (TRUE) {
+                if ((u32) var_v0->parent == 1) {
+                    var_v0 = NULL;
+                    break;
+                }
+                if (var_v0->parent->next != NULL) {
+                    var_v0 = var_v0->parent->next;
+                    break;
+                } else {
+                    var_v0 = var_v0->parent;
+                }
+            }
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801133C8.s")
 
@@ -531,6 +555,12 @@ void func_80115EFC(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115F04.s")
 
+// Uses constants from this TU's MIGRATED .rodata block. Referencing
+// them as `extern f32 D_80128...` does not link (nothing defines them --
+// migrated rodata is emitted BY this file), and writing them as literals
+// does not reproduce the ROM's rodata layout. Needs the constants placed
+// in the right order, not a symbol swap.
+#ifdef MIPS_TO_C
 void func_80116118(struct GObj *arg0) {
     u8 *sp1C = arg0->unk4C;
     f32 *temp_v0;
@@ -541,8 +571,8 @@ void func_80116118(struct GObj *arg0) {
     temp_v0 = &arg0->data.dobj->angle.v.x;
     temp_a1 = arg0->objId;
     temp_v1 = &D_800EA6E0[temp_a1];
-    temp_f0 = (-*temp_v0 * D_80128D08) + *temp_v1;
-    temp_f0 = temp_f0 * D_80128D0C;
+    temp_f0 = (-*temp_v0 * 0.01f) + *temp_v1;
+    temp_f0 = temp_f0 * 0.8f;
     *temp_v1 = temp_f0;
     *temp_v0 += temp_f0;
     if (func_8011E244() == *sp1C) {
@@ -550,6 +580,9 @@ void func_80116118(struct GObj *arg0) {
     }
     func_80112B4C(arg0);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80116118.s")
+#endif
 
 void func_801161D4(struct GObj *arg0) {
     D_800EA6E0[arg0->objId] = 0.0f;
@@ -565,19 +598,7 @@ void func_8011623C(s32 arg0) {
     omEndProcess(0);
 }
 
-void func_80116260(s32 arg0) {
-    f32 *temp_v0;
-    f32 *temp_v0_2;
-
-    temp_v0 = D_80129114->unk4[D_800E5F90[0]].unk0;
-    temp_v0_2 = temp_v0 + 8;
-    temp_v0_2[8] = D_80129210[1] + temp_v0[16];
-    temp_v0_2[9] = D_80129210[1] + temp_v0[17];
-    temp_v0_2[12] = D_80129210[3] + temp_v0_2[12];
-    temp_v0_2[13] = D_80129210[3] + temp_v0_2[13];
-    temp_v0_2[16] = D_80129210[5] + temp_v0_2[16];
-    temp_v0_2[17] = D_80129210[5] + temp_v0_2[17];
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80116260.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801162F4.s")
 
@@ -776,6 +797,12 @@ void func_801171F0(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117210.s")
 
+// Uses constants from this TU's MIGRATED .rodata block. Referencing
+// them as `extern f32 D_80128...` does not link (nothing defines them --
+// migrated rodata is emitted BY this file), and writing them as literals
+// does not reproduce the ROM's rodata layout. Needs the constants placed
+// in the right order, not a symbol swap.
+#ifdef MIPS_TO_C
 void func_80117328(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 temp_v0;
@@ -786,16 +813,25 @@ void func_80117328(struct GObj *arg0) {
         D_800E98E0[temp_v0] -= 1;
         if (D_800E98E0[temp_v0] == 0) {
             D_800E3750[temp_v0] = 0.5f;
-            D_800E3C90[temp_v0] = D_80128D30;
+            D_800E3C90[temp_v0] = 4.4f;
             D_800DEF90[omCurrentObj->objId] = func_80117210;
         }
     } else {
         D_800E98E0[temp_v0] = 0xA;
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117328.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801173F4.s")
 
+// Uses constants from this TU's MIGRATED .rodata block. Referencing
+// them as `extern f32 D_80128...` does not link (nothing defines them --
+// migrated rodata is emitted BY this file), and writing them as literals
+// does not reproduce the ROM's rodata layout. Needs the constants placed
+// in the right order, not a symbol swap.
+#ifdef MIPS_TO_C
 void func_80117570(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 temp_v0;
@@ -807,13 +843,16 @@ void func_80117570(struct GObj *arg0) {
         if (D_800E98E0[temp_v0] == 0) {
             play_sound(0xC);
             D_800E3750[temp_v0] = -0.5f;
-            D_800E3C90[temp_v0] = D_80128D38;
+            D_800E3C90[temp_v0] = 8.8f;
             D_800DEF90[omCurrentObj->objId] = func_801173F4;
         }
     } else {
         D_800E98E0[temp_v0] = 0xA;
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117570.s")
+#endif
 
 void func_8011764C(struct GObj *arg0) {
     s32 id = arg0->objId;
