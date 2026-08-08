@@ -79,6 +79,19 @@ extern f32 D_80128CDC, D_80128D08, D_80128D0C, D_80128D30;
 extern f32 D_80128D38;
 void func_801173F4(s32);
 
+struct Unk80129118 {
+    /* 0x00 */ f32 *unk0;
+    /* 0x04 */ s32 pad[3];
+};
+
+struct Unk80129114 {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ struct Unk80129118 *unk4;
+};
+
+extern struct Unk80129114 *D_80129114;
+extern f32 D_80129210[];
+
 struct UnkPlane {
     /* 0x00 */ f32 unk0;
     /* 0x04 */ f32 unk4;
@@ -119,28 +132,7 @@ extern struct Unk8012D934 *D_8012D934;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801121E0.s")
 
-void func_801123AC(f32 *arg0) {
-    f32 sp1C;
-    f32 temp_f0;
-    f32 *temp_v0;
-
-    sp1C = cosf(arg0[9]);
-    temp_f0 = sinf(arg0[9]);
-    temp_v0 = arg0 + 4;
-    D_8012D934->unk40 = arg0[7] * temp_f0;
-    D_8012D934->unk44 = temp_v0[3] * sp1C;
-    D_8012D934->unk48 = temp_v0[4] * temp_f0;
-    D_8012D934->unk4C = temp_v0[4] * sp1C;
-    if (temp_v0[3] > 0.0f) {
-        D_8012D934->unk50 = temp_f0;
-        D_8012D934->unk54 = sp1C;
-    } else {
-        D_8012D934->unk50 = -temp_f0;
-        D_8012D934->unk54 = -sp1C;
-    }
-    D_8012D934->unk58 = -D_8012D934->unk50;
-    D_8012D934->unk5C = -D_8012D934->unk54;
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801123AC.s")
 
 s32 func_80112498(struct UnkRay *arg0) {
     s32 i;
@@ -573,7 +565,19 @@ void func_8011623C(s32 arg0) {
     omEndProcess(0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80116260.s")
+void func_80116260(s32 arg0) {
+    f32 *temp_v0;
+    f32 *temp_v0_2;
+
+    temp_v0 = D_80129114->unk4[D_800E5F90[0]].unk0;
+    temp_v0_2 = temp_v0 + 8;
+    temp_v0_2[8] = D_80129210[1] + temp_v0[16];
+    temp_v0_2[9] = D_80129210[1] + temp_v0[17];
+    temp_v0_2[12] = D_80129210[3] + temp_v0_2[12];
+    temp_v0_2[13] = D_80129210[3] + temp_v0_2[13];
+    temp_v0_2[16] = D_80129210[5] + temp_v0_2[16];
+    temp_v0_2[17] = D_80129210[5] + temp_v0_2[17];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801162F4.s")
 
