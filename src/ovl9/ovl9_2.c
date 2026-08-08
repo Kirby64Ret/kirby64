@@ -12,7 +12,13 @@ extern FUNCLIST D_8021BD4C_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D8DC0_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D8EF8_ovl9.s")
+extern FUNCLIST D_8021BC54_ovl9;
+
+void func_801D8EF8_ovl9(struct GObj *arg0) {
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_8021BC54_ovl9);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D8F78_ovl9.s")
 
@@ -32,7 +38,13 @@ void func_801D9018_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D9558_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D9698_ovl9.s")
+extern FUNCLIST D_8021BC74_ovl9;
+
+void func_801D9698_ovl9(struct GObj *arg0) {
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 6, D_8021BC74_ovl9);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D9718_ovl9.s")
 
@@ -58,7 +70,13 @@ void func_801D98B8_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DA498_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DA618_ovl9.s")
+extern FUNCLIST D_8021BC98_ovl9;
+
+void func_801DA618_ovl9(struct GObj *arg0) {
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 6, D_8021BC98_ovl9);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DA698_ovl9.s")
 
@@ -88,7 +106,13 @@ void func_801DA7A0_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DB3A4_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DB4D8_ovl9.s")
+extern FUNCLIST D_8021BCC0_ovl9;
+
+void func_801DB4D8_ovl9(struct GObj *arg0) {
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, D_8021BCC0_ovl9);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DB558_ovl9.s")
 
@@ -114,7 +138,13 @@ void func_801DB62C_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DBD14_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DBE78_ovl9.s")
+extern FUNCLIST D_8021BD3C_ovl9;
+
+void func_801DBE78_ovl9(struct GObj *arg0) {
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, D_8021BD3C_ovl9);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DBEF8_ovl9.s")
 
