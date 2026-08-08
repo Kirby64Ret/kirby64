@@ -23,6 +23,8 @@ void func_801E1C20_ovl15(s32);
 void func_801E1E88_ovl15(struct GObj *);
 void func_801DF410_ovl15(struct GObj *);
 void func_801DDD74_ovl15(struct GObj *);
+extern s32 D_801E6544_ovl15[];
+extern s32 D_801E654C_ovl15[];
 extern s32 D_801D8C7C;
 extern s32 D_801D8CA0;
 extern s32 D_801D8CC4;
@@ -135,54 +137,11 @@ void func_801DCA3C_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DCDA8_ovl15.s")
 
-void func_801DD03C_ovl15(s32 arg0) {
-    D_800DEF90[omCurrentObj->objId] = func_800B7560;
-    D_800DF150[omCurrentObj->objId] = func_801DD208_ovl15;
-    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    func_800B19F4(0x71, omCurrentObj->objId);
-    func_800AFBB4(0, omCurrentObj);
-    gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
-    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
-    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
-    D_800E98E0[omCurrentObj->objId] = 0;
-    if (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 0) {
-        D_800E9C60[omCurrentObj->objId] = 0;
-    } else {
-        D_800E9C60[omCurrentObj->objId] = 1;
-    }
-    if (D_800E9C60[omCurrentObj->objId] != 0) {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8D54;
-    } else {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8D78;
-    }
-    ohSleep(0x41);
-    func_8019D958_ovl7(omCurrentObj->objId);
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD03C_ovl15.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD208_ovl15.s")
 
-void func_801DD318_ovl15(s32 arg0) {
-    D_800D7098.unk14 = 0;
-    D_800D7098.unk10 = 0;
-    D_800D7098.unk24 = 0;
-    D_800D7098.unk4 = 0;
-    D_800EA520[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
-    D_800EB320[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
-    D_800EADE0[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
-    D_800EAFA0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
-    D_800EB160[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
-    D_800D7118.unk3C = -1;
-    D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800E17D0[omCurrentObj->objId] = 1.570796371f;
-    gEntitiesNextPosXArray[omCurrentObj->objId] = 7200.0f;
-    gEntitiesNextPosZArray[omCurrentObj->objId] = -540.0f;
-    D_800D7098.unk20 = 0;
-    D_800D7098.unk1C = -1;
-    D_800DEF90[omCurrentObj->objId] = func_800B7560;
-    func_800A9864(0x10066, 0x2A, 0x10);
-    D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *) D_801E6510_ovl15[random_soft_s32_range(4)];
-    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD318_ovl15.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD4EC_ovl15.s")
 
@@ -201,34 +160,7 @@ void func_801DD7C0_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD950_ovl15.s")
 
-void func_801DDBA8_ovl15(struct GObj *arg0) {
-    f32 temp_f0;
-    s32 temp_v1;
-
-    temp_f0 = D_800EAC20[omCurrentObj->objId];
-    if ((temp_f0 >= 100.0f) && (temp_f0 <= 132.0f)) {
-        temp_v1 = D_800EBDA0[omCurrentObj->objId] == -1;
-        if (D_800E9C60[omCurrentObj->objId] != 0) {
-            if (temp_v1 != 0) {
-                D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8CA0;
-            } else {
-                D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8C7C;
-            }
-            func_801E177C_ovl15();
-        } else {
-            if (temp_v1 != 0) {
-                D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8CE8;
-            } else {
-                D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8CC4;
-            }
-            func_801E177C_ovl15();
-        }
-        if ((gEntityFuncListIDArray[omCurrentObj->objId] != 7) && (D_800E83E0[omCurrentObj->objId] == 1)) {
-            func_801DDD74_ovl15(arg0);
-        }
-    }
-    D_800EAC20[omCurrentObj->objId] += D_800E09D0[omCurrentObj->objId];
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DDBA8_ovl15.s")
 
 void func_801DDD74_ovl15(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 7;
@@ -329,20 +261,8 @@ void func_801DF148_ovl15(struct GObj *arg0) {
 
 void func_801DF260_ovl15(struct GObj *arg0) {
     D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = D_800E3050[omCurrentObj->objId];
-    func_801E1E88_ovl15(arg0);
-    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D92AC;
-    func_801E19D0_ovl15(D_800DFBD0[omCurrentObj->objId][4], D_800DFBD0[omCurrentObj->objId][22], 0);
-    if (D_800D7098.unk0 != 0) {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120;
-    } else if (D_800EA1A0[omCurrentObj->objId] != 0) {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120;
-    } else {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D90D8;
-    }
-    func_801E1868_ovl15(D_800DFBD0[omCurrentObj->objId][6], 0, 0);
-    if ((D_800E83E0[omCurrentObj->objId] == 1) && (gEntityFuncListIDArray[omCurrentObj->objId] != 0x10)) {
-        func_801DF410_ovl15(arg0);
-    }
+    // the do/while(0) wrapper is load-bearing: it splits the basic block and fixes register allocation
+    do { func_801E1E88_ovl15(arg0); D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D92AC; func_801E19D0_ovl15(D_800DFBD0[omCurrentObj->objId][4], D_800DFBD0[omCurrentObj->objId][22], 0); if (D_800D7098.unk0 != 0) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120; } else if (D_800EA1A0[omCurrentObj->objId] != 0) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120; } else { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D90D8; } func_801E1868_ovl15(D_800DFBD0[omCurrentObj->objId][6], 0, 0); if ((D_800E83E0[omCurrentObj->objId] == 1) && (gEntityFuncListIDArray[omCurrentObj->objId] != 0x10)) { func_801DF410_ovl15(arg0); } } while (0);
     func_801E1C20_ovl15((s32) arg0);
 }
 
@@ -392,20 +312,8 @@ void func_801DF9C8_ovl15(struct GObj *arg0) {
 
 void func_801DFA60_ovl15(struct GObj *arg0) {
     D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = D_800E3050[omCurrentObj->objId];
-    func_801E1E88_ovl15(arg0);
-    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D92AC;
-    func_801E19D0_ovl15(D_800DFBD0[omCurrentObj->objId][4], D_800DFBD0[omCurrentObj->objId][22], 0);
-    if (D_800D7098.unk0 != 0) {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120;
-    } else if (D_800EA1A0[omCurrentObj->objId] != 0) {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120;
-    } else {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D90D8;
-    }
-    func_801E1868_ovl15(D_800DFBD0[omCurrentObj->objId][6], 0, 0);
-    if ((D_800E83E0[omCurrentObj->objId] == 1) && (gEntityFuncListIDArray[omCurrentObj->objId] != 0x10)) {
-        func_801DF410_ovl15(arg0);
-    }
+    // the do/while(0) wrapper is load-bearing: it splits the basic block and fixes register allocation
+    do { func_801E1E88_ovl15(arg0); D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D92AC; func_801E19D0_ovl15(D_800DFBD0[omCurrentObj->objId][4], D_800DFBD0[omCurrentObj->objId][22], 0); if (D_800D7098.unk0 != 0) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120; } else if (D_800EA1A0[omCurrentObj->objId] != 0) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120; } else { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D90D8; } func_801E1868_ovl15(D_800DFBD0[omCurrentObj->objId][6], 0, 0); if ((D_800E83E0[omCurrentObj->objId] == 1) && (gEntityFuncListIDArray[omCurrentObj->objId] != 0x10)) { func_801DF410_ovl15(arg0); } } while (0);
     func_801E1C20_ovl15((s32) arg0);
 }
 
@@ -428,20 +336,8 @@ void func_801DFC10_ovl15(s32 arg0, s32 arg1, f32 arg2) {
 
 void func_801DFF14_ovl15(struct GObj *arg0) {
     D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = D_800E3050[omCurrentObj->objId];
-    func_801E1E88_ovl15(arg0);
-    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D92AC;
-    func_801E19D0_ovl15(D_800DFBD0[omCurrentObj->objId][4], D_800DFBD0[omCurrentObj->objId][22], 0);
-    if (D_800D7098.unk0 != 0) {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120;
-    } else if (D_800EA1A0[omCurrentObj->objId] != 0) {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120;
-    } else {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D90D8;
-    }
-    func_801E1868_ovl15(D_800DFBD0[omCurrentObj->objId][6], 0, 0);
-    if ((D_800E83E0[omCurrentObj->objId] == 1) && (gEntityFuncListIDArray[omCurrentObj->objId] != 0x10)) {
-        func_801DF410_ovl15(arg0);
-    }
+    // the do/while(0) wrapper is load-bearing: it splits the basic block and fixes register allocation
+    do { func_801E1E88_ovl15(arg0); D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D92AC; func_801E19D0_ovl15(D_800DFBD0[omCurrentObj->objId][4], D_800DFBD0[omCurrentObj->objId][22], 0); if (D_800D7098.unk0 != 0) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120; } else if (D_800EA1A0[omCurrentObj->objId] != 0) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120; } else { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D90D8; } func_801E1868_ovl15(D_800DFBD0[omCurrentObj->objId][6], 0, 0); if ((D_800E83E0[omCurrentObj->objId] == 1) && (gEntityFuncListIDArray[omCurrentObj->objId] != 0x10)) { func_801DF410_ovl15(arg0); } } while (0);
     func_801E1C20_ovl15((s32) arg0);
 }
 
