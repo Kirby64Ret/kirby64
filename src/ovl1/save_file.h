@@ -52,6 +52,10 @@ struct EEPHeader {
 struct EEPROM {
 	struct EEPHeader header;
 	File files[3]; // 0x10, 0x68, 0xC0
+	// gSaveBuffer2 - gSaveBuffer1 == 0x1B8, so the object extends 0xA0 past
+	// files[]. func_800B8700 copies the whole 0x1B8 and func_800B9104/91B8/922C
+	// reach 0x118/0x164/0x1B0/0x1B4. Contents not yet identified.
+	/* 0x118 */ u8 unk118[0xA0];
 };
 
 extern struct EEPROM gSaveBuffer1;
