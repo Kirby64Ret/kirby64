@@ -18,13 +18,47 @@
 
 #include "ovl17.h"
 
+struct Ovl17CamPos {
+    Vector unk0;
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+};
+
+extern struct Ovl17CamPos D_800D7B20;
+extern Vector D_800D7B2C;
+extern struct Ovl17CamPos D_800D7B38;
+extern Vector D_801E4E60_ovl17;
+extern s32 D_800D6B54;
+extern f32 D_800D715C;
+extern f32 D_800D7160;
+extern f32 D_800D7164;
+extern f32 D_800D7168;
+extern f32 D_800D716C;
+extern f32 D_801E56F0_ovl17;
+extern f32 D_801E56F4_ovl17;
+extern f32 D_801E56F8_ovl17;
+void func_800A71A0(s32);
+
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DB1E0_ovl17.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DBA8C_ovl17.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DBDA8_ovl17.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC2D0_ovl17.s")
+
+void func_801DC2D0_ovl17(void) {
+    Vector sp1C;
+
+    sp1C = D_801E4E60_ovl17;
+    lbvector_Normalize(&sp1C);
+    lbvector_Rotate(&sp1C, 1, D_800EA6E0[omCurrentObj->objId]);
+    lbvector_Rotate(&sp1C, 2, D_800EA8A0[omCurrentObj->objId]);
+    lbvector_Rotate(&sp1C, 4, D_800EAA60[omCurrentObj->objId]);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = -sp1C.x * D_800D716C;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = -sp1C.y * D_800D716C;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = -sp1C.z * D_800D716C;
+}
 
 void func_801DC3F4_ovl17(void) {
     gEntitiesAngleXArray[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
@@ -39,15 +73,69 @@ void func_801DC71C_ovl17(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC724_ovl17.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC91C_ovl17.s")
+#ifdef MIPS_TO_C
+void func_801DC91C_ovl17(struct GObj *arg0) {
+    s32 temp_v0;
+    s32 temp_v1;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC98C_ovl17.s")
+    temp_v0 = D_800E7CE0[omCurrentObj->objId];
+    if (temp_v0 != 0) {
+        D_800E7CE0[omCurrentObj->objId] = temp_v0 - 1;
+        if (temp_v0 <= 0) {
+            D_800E7CE0[omCurrentObj->objId] = 0;
+        }
+    }
+    temp_v1 = omCurrentObj->objId;
+    if (temp_v1 == 0) {
+        func_80111534(temp_v1);
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC91C_ovl17.s")
+#endif
+
+
+void func_801DC98C_ovl17(void) {
+    Vector sp2C;
+    Camera *cam;
+
+    cam = D_800D799C->data.cam;
+    if (D_800D7098.unk0 == 2) {
+        func_801DD17C_ovl17();
+        return;
+    }
+    if (D_800D6B54 == 1) {
+        func_801DD2B0_ovl17();
+        return;
+    }
+    if (D_800D7098.unk0 == 1) {
+        D_800D7168 += 1.2f;
+    }
+    D_800D7B38 = D_800D7B20;
+    func_801DCB44_ovl17(&sp2C);
+    cam->viewMtx.lookAt.eye.x = sp2C.x;
+    cam->viewMtx.lookAt.eye.y = sp2C.y;
+    cam->viewMtx.lookAt.eye.z = sp2C.z;
+    func_801DCFD4_ovl17(&sp2C);
+    cam->viewMtx.lookAt.at.x = sp2C.x;
+    cam->viewMtx.lookAt.at.y = sp2C.y;
+    cam->viewMtx.lookAt.at.z = sp2C.z;
+    func_801DD040_ovl17(&sp2C);
+    cam->viewMtx.lookAt.up.x = sp2C.x;
+    cam->viewMtx.lookAt.up.y = sp2C.y;
+    cam->viewMtx.lookAt.up.z = sp2C.z;
+    cam->perspMtx.persp.fovy = D_800D7158[0];
+    cam->perspMtx.persp.near = D_800D715C;
+    cam->perspMtx.persp.far = D_800D7160;
+    D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
+    D_800D7B2C = cam->viewMtx.lookAt.eye;
+    D_801E56F0_ovl17 = cam->viewMtx.lookAt.eye.x;
+    D_801E56F4_ovl17 = cam->viewMtx.lookAt.eye.y;
+    D_801E56F8_ovl17 = cam->viewMtx.lookAt.eye.z;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DCB44_ovl17.s")
 
-extern f32 D_800D7164;
-extern f32 D_800D7168;
-extern f32 D_800D716C;
 
 void func_801DCFD4_ovl17(Vector *arg0) {
     Vector sp1C;
@@ -83,7 +171,25 @@ void func_801DD09C_ovl17(Vector *arg0, Vector *arg1) {
     arg1->z = sp60[3][2];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DD17C_ovl17.s")
+
+void func_801DD17C_ovl17(void) {
+    Camera *cam;
+
+    cam = D_800D799C->data.cam;
+    D_800D7B38 = D_800D7B20;
+    func_800A71A0(0x10);
+    cam->viewMtx.lookAt.eye.x *= 0.2f;
+    cam->viewMtx.lookAt.eye.y = (cam->viewMtx.lookAt.eye.y * 0.2f) + D_800D7164;
+    cam->viewMtx.lookAt.eye.z *= 0.2f;
+    cam->viewMtx.lookAt.at.x *= 0.2f;
+    cam->viewMtx.lookAt.at.y *= 0.2f;
+    cam->viewMtx.lookAt.at.z *= 0.2f;
+    cam->perspMtx.persp.fovy = D_800D7158[0];
+    cam->perspMtx.persp.near = D_800D715C;
+    cam->perspMtx.persp.far = D_800D7160;
+    D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
+    D_800D7B2C = cam->viewMtx.lookAt.eye;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DD2B0_ovl17.s")
 

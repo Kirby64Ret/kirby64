@@ -56,6 +56,129 @@ struct Ovl15DObj {
     struct Ovl15MObj *mobjList;
 };
 
+extern s32 D_800BE4EC;
+extern s32 D_800D6B54;
+extern s32 D_800D7088;
+extern s32 D_80129210;
+extern s32 D_801292B0;
+extern s32 D_801D7B60;
+extern s32 D_801D7BC4;
+extern s32 D_801D7C04;
+extern s32 D_801D7C48;
+extern s32 D_801D7C8C;
+extern s32 D_801D8ACC;
+extern s32 D_801D8AF0;
+extern s32 D_801D8B14;
+extern s32 D_801D8B38;
+extern s32 D_801D8B5C;
+extern s32 D_801D8B80;
+extern s32 D_801D8DC0;
+extern s32 D_801D8E08;
+extern s32 D_801D8F70;
+extern s32 D_801D8F94;
+extern s32 D_801D8FB8;
+extern s32 D_801D8FDC;
+extern s32 D_801D906C;
+extern s32 D_801D921C;
+extern s32 D_801DA04C;
+extern s32 D_801DA070;
+extern s32 D_801DA0B8;
+extern s32 D_801DA0DC;
+extern s32 D_801DAF3C;
+extern s32 D_801E64F0_ovl15[];
+extern s32 D_801E6500_ovl15[];
+extern s32 D_801E6508_ovl15;
+extern s32 D_801E6520_ovl15[];
+extern s32 D_801E6554_ovl15;
+extern s32 D_801E65B4_ovl15;
+extern s32 D_801E65EC_ovl15[];
+extern s32 D_801E65FC_ovl15[];
+extern s32 D_801E6614_ovl15[];
+extern s32 D_801E664C_ovl15;
+extern s32 D_801E665C_ovl15;
+extern s32 D_801E6670_ovl15[];
+extern s32 D_801E6680_ovl15[];
+extern s32 D_801E6690_ovl15[];
+extern s32 D_801E66C4_ovl15[];
+extern s32 D_801E66F4_ovl15[];
+extern s32 D_801E6714_ovl15[];
+extern s32 D_801E6724_ovl15[];
+extern s32 D_801E6734_ovl15[];
+extern s32 D_801E6744_ovl15[];
+extern s32 D_801E6754_ovl15[];
+extern s32 D_801E6764_ovl15[];
+extern s32 D_801E6774_ovl15[];
+extern s32 D_801E6910_ovl15;
+void func_800A1F30();
+void func_800A8100();
+void func_800A8234();
+void func_800A9760();
+void func_800A9EA4();
+void func_800AA038();
+void func_800AA0C4();
+void func_800AEDD0();
+void func_800AF230();
+void func_800B1814();
+void func_800B4924();
+void func_800B7138();
+void func_800B7790();
+void func_800F8E6C();
+void func_800FA414();
+void func_800FBF18();
+void func_80110B00();
+void func_80110FD4();
+void func_801129AC();
+void func_801129DC();
+void func_80169430_ovl3();
+void func_80198880_ovl7();
+void func_8019B918_ovl7();
+void func_8019B9B0_ovl7();
+void func_8019BA3C_ovl7();
+void func_8019EEE4_ovl7();
+void func_8019F1EC_ovl7();
+void func_801A2ADC_ovl7();
+void func_801AC9D0_ovl7();
+void func_801ACCA0_ovl7();
+void func_801BC794_ovl7();
+void func_801DB400_ovl15();
+void func_801DB770_ovl15();
+void func_801DBE20_ovl15();
+void func_801DBEAC_ovl15();
+void func_801DC13C_ovl15();
+void func_801DC594_ovl15();
+void func_801DC890_ovl15();
+void func_801DCB64_ovl15();
+void func_801DCDA8_ovl15();
+void func_801DD03C_ovl15();
+void func_801DD318_ovl15();
+void func_801DD7C8_ovl15();
+void func_801DD950_ovl15();
+void func_801DDBA8_ovl15();
+void func_801DDE90_ovl15();
+void func_801DE234_ovl15();
+void func_801DE7C8_ovl15();
+void func_801DEA98_ovl15();
+void func_801DF52C_ovl15();
+void func_801DF790_ovl15();
+void func_801DFCF4_ovl15();
+void func_801E00C4_ovl15();
+void func_801E0380_ovl15();
+void func_801E05A8_ovl15();
+void func_801E0F44_ovl15();
+void func_801E1230_ovl15();
+void func_801E1F34_ovl15();
+void func_801E27BC_ovl15();
+void func_801E30F8_ovl15();
+void func_801E3678_ovl15();
+void func_801E3B58_ovl15();
+void func_801E3ED4_ovl15();
+void func_801E48E4_ovl15();
+void func_801E5080_ovl15();
+void func_801E531C_ovl15();
+void func_801E56CC_ovl15();
+void func_801E5C34_ovl15();
+void func_801E5D54_ovl15();
+
 void func_801DB1E0_ovl15(s32 arg0) {
     func_801A3280_ovl7();
     D_800E8E60[omCurrentObj->objId] = 1;
@@ -89,7 +212,127 @@ void func_801DB378_ovl15(struct GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 0xC, D_801E64C0_ovl15);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DB400_ovl15.s")
+void func_801DB400_ovl15(s32 arg0) {
+    s32 temp_v0;
+    s32 temp_v0_2;
+    u32 var_v1;
+
+    func_800B19F4(0x79, omCurrentObj->objId);
+    func_800AFBB4(0, omCurrentObj);
+    D_800DEF90[omCurrentObj->objId] = func_800B7790;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DF150[omCurrentObj->objId] = NULL;
+    func_800B33F4();
+    D_800D7098.unk3C = 0;
+    var_v1 = 0;
+    D_800D7098.unk2C = 0;
+    D_800D7098.unk28 = 0;
+    D_800D7098.unkC = 0;
+    D_800D7098.unk8 = 0;
+    D_800D7098.unk38 = omCurrentObj->objId;
+loop_1:
+    if (var_v1 < 0xAU) {
+loop_2:
+        switch (var_v1) {
+        case 0:
+            temp_v0 = func_8019E0A4_ovl7(4, 3);
+            D_800EBBE0[omCurrentObj->objId] = temp_v0;
+            D_800D7098.unk30 = (u32) temp_v0;
+            temp_v0_2 = func_8019E0A4_ovl7(4, 1);
+            D_800EC120[omCurrentObj->objId] = temp_v0_2;
+            D_800D7098.unk34 = (u32) temp_v0_2;
+            D_800EBBE0[D_800EBBE0[omCurrentObj->objId]] = D_800EC120[omCurrentObj->objId];
+            var_v1 = D_800D7098.unk3C;
+            if (var_v1 == 0) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 0);
+            }
+            goto loop_1;
+        case 1:
+            if (var_v1 == 1) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 1);
+            }
+            goto loop_1;
+        case 2:
+            if (var_v1 == 2) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 2);
+            }
+            goto loop_1;
+        case 3:
+            if (var_v1 == 3) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 3);
+            }
+            goto loop_1;
+        case 4:
+            if (var_v1 == 4) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 4);
+            }
+            goto loop_1;
+        case 5:
+            if (var_v1 == 5) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 5);
+            }
+            goto loop_1;
+        case 6:
+            if (var_v1 == 6) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 6);
+            }
+            goto loop_1;
+        case 7:
+            if (var_v1 == 7) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 7);
+            }
+            goto loop_1;
+        case 8:
+            if (var_v1 == 8) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 8);
+            }
+            goto loop_1;
+        case 9:
+            if (var_v1 == 9) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 9);
+                if (var_v1 < 0xAU) {
+                    goto loop_2;
+                }
+            } else {
+                goto loop_1;
+            }
+            break;
+        }
+    }
+    curObjSleepForever();
+    var_v1 = D_800D7098.unk3C;
+    goto loop_1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DB770_ovl15.s")
 
@@ -113,9 +356,58 @@ void func_801DC10C_ovl15(struct Ovl15DObj *arg0, struct Ovl15Color *arg1) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DC13C_ovl15.s")
+void func_801DC13C_ovl15(s32 arg0) {
+    f32 temp_f0;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DC310_ovl15.s")
+    gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;
+    temp_f0 = gEntitiesAngleZArray[omCurrentObj->objId];
+    gEntitiesAngleYArray[omCurrentObj->objId] = temp_f0;
+    gEntitiesAngleXArray[omCurrentObj->objId] = temp_f0;
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    D_800E17D0[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId];
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    D_800DF150[omCurrentObj->objId] = func_801DC310_ovl15;
+    func_800A9864(0x1008F, 0x23, 0x10);
+    func_800AFBB4(1, omCurrentObj);
+    func_800AA018(0x10526);
+    func_800AA154(0x10525);
+    func_800AA018(0x10528);
+    func_800AA154(0x10527);
+    func_800AA018(0x1052A);
+    func_800AA018(0x10529);
+    if (D_800E98E0[D_800EBBE0[omCurrentObj->objId]] < 2) {
+        do {
+            ohSleep(1);
+        } while (D_800E98E0[D_800EBBE0[omCurrentObj->objId]] < 2);
+    }
+    func_8019D958_ovl7(omCurrentObj->objId);
+}
+
+void func_801DC310_ovl15(struct GObj *arg0) {
+    Vector sp24;
+    f32 temp_f0;
+
+    temp_f0 = D_800DFBD0[D_800E0D50[omCurrentObj->objId]][6]->angle.v.y;
+    D_800DFBD0[omCurrentObj->objId][4]->angle.v.y = temp_f0;
+    D_800DFBD0[omCurrentObj->objId][3]->angle.v.y = temp_f0;
+    utilGetTransformSRT(&sp24, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][7]);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp24.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = sp24.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp24.z;
+    if (D_800E98E0[D_800EBBE0[omCurrentObj->objId]] == 1) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = sp24.x;
+        D_800DFBD0[omCurrentObj->objId][2]->pos.v.x = (f32) (gEntitiesNextPosXArray[D_800EBBE0[omCurrentObj->objId]] - gEntitiesNextPosXArray[omCurrentObj->objId]);
+        gEntitiesNextPosYArray[omCurrentObj->objId] = sp24.y;
+        D_800DFBD0[omCurrentObj->objId][2]->pos.v.y = (f32) (gEntitiesNextPosYArray[D_800EBBE0[omCurrentObj->objId]] - gEntitiesNextPosYArray[omCurrentObj->objId]);
+        gEntitiesNextPosZArray[omCurrentObj->objId] = sp24.z;
+        D_800DFBD0[omCurrentObj->objId][2]->pos.v.z = (f32) (gEntitiesNextPosZArray[D_800EBBE0[omCurrentObj->objId]] - gEntitiesNextPosZArray[omCurrentObj->objId]);
+        return;
+    }
+    D_800DFBD0[omCurrentObj->objId][2]->pos.v.z = 0.0f;
+    temp_f0 = D_800DFBD0[omCurrentObj->objId][2]->pos.v.z;
+    D_800DFBD0[omCurrentObj->objId][2]->pos.v.y = temp_f0;
+    D_800DFBD0[omCurrentObj->objId][2]->pos.v.x = temp_f0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DC594_ovl15.s")
 
