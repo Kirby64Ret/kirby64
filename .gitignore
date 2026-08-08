@@ -53,3 +53,8 @@ ctx.c
 strings/*
 # asm-differ and objdiff .o file diffs
 expected/*
+
+# Python bytecode, anywhere. The entries above are path-specific and miss
+# any new tools directory (tools/decomp/ was untracked because of this).
+**/__pycache__/
+*.pyc
