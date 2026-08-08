@@ -79,6 +79,7 @@ def main():
     # overlay happens to sort first.
     import glob
     owner = {}
+    owner_obj = {}
     for obj in glob.glob('build/src/*/*.o') + glob.glob('build/asm/**/*.o', recursive=True):
         seg = obj.split('/')[2]
         o = subprocess.run(['mips-linux-gnu-nm', obj], capture_output=True, text=True).stdout
@@ -87,6 +88,7 @@ def main():
             if len(q) == 3 and q[1] in 'Tt' and not q[2].endswith('.NON_MATCHING') \
                and not q[2].startswith('_asmpp'):
                 owner.setdefault(q[2], seg)
+                owner_obj.setdefault(q[2], obj)
 
     el = subprocess.run(['mips-linux-gnu-readelf', '-sW', 'build/kirby.us.elf'],
                         capture_output=True, text=True).stdout
@@ -100,6 +102,11 @@ def main():
                 continue
             if size and addr and name in owner:
                 funcs.append((addr, size, name))
+    # NOTE: a function built from build/asm/**.o has no C file at all, so it is
+    # in neither `prag` nor any src/ file. Counting those as "C" inflated the
+    # decompiled total by every function still living in a monolithic asm
+    # subsegment -- 392 of them for ovl7 alone, reported as decompiled when
+    # nothing had been written. They are counted as 'asm' now.
 
     totals = {}
     shown = 0
@@ -119,7 +126,12 @@ def main():
         a = base[base_off:base_off + size]
         b = built[built_off:built_off + size]
         ok = (a == b and len(a) == size)
-        kind = 'pragma' if name in prag else 'C'
+        if name in prag:
+            kind = 'pragma'
+        elif owner_obj.get(name, '').startswith('build/asm/'):
+            kind = 'asm'
+        else:
+            kind = 'C'
         # Distinguish a REAL defect from a knock-on effect. The oversize
         # rodata moves every symbol that lives after it, so any function
         # referencing one differs only in that instruction's low 16 bits --
@@ -131,7 +143,8 @@ def main():
                     cls = 'REAL'; break
             if len(a) != len(b):
                 cls = 'REAL'
-        t = totals.setdefault(sname, {'C': [0, 0, 0], 'pragma': [0, 0, 0]})
+        t = totals.setdefault(sname, {'C': [0, 0, 0], 'pragma': [0, 0, 0],
+                                     'asm': [0, 0, 0]})
         if ok:
             t[kind][0] += 1
         elif cls == 'reloc':
