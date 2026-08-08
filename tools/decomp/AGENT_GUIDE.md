@@ -418,3 +418,37 @@ It deletes the .s for any function currently written in C and briefly leaves
 directories empty (verify.py then fails with "Cannot open file GLOBAL_ASM").
 A listing you have un-guarded can be PERMANENTLY LOST if the regen lands in
 that window. Keep a backup of asm/nonmatchings before un-guarding anything.
+
+## The constant-reference lever is exhausted; what is left is real work
+
+Where a converted function writes a float literal but the ROM references a
+named symbol, naming the symbol instead sometimes fixes it. It worked for
+ovl11 (7) and ovl14 (3). It does NOT work anywhere else, and the reason is
+structural, not a bug to be fixed:
+
+  an `extern f32` is a memory operand IDO reloads at each use, while a
+  literal is CSE'd into a register. Where the ROM shares one load, the
+  extern form emits extra ones and the TU comes out 16 bytes LONGER.
+
+Measured on every remaining candidate: ovl13/code_1F3160 +16, ovl17/ovl17
++16, ovl17/ovl17_2 +16, ovl16/ovl16 fails to compile. So the residual rodata
+oversize in ovl13/15/16/17/18 needs per-function decompilation that makes IDO
+share the load the way the ROM does -- it is not a symbol swap.
+
+### Gate cheaply, in this order
+
+1. compile the ONE object
+2. check_tu_size.py -- if the TU changed size, revert NOW. No relink needed,
+   and a size change means every later function in the segment has shifted,
+   so a ground-truth run would report dozens of "REAL defects" that are all
+   one cause. This is seconds instead of minutes and it localises correctly.
+3. only then relink and run verify_rom.py
+
+Skipping step 2 cost three full relinks reporting 36, 96 and 63 defects that
+were a single 16-64 byte shift each.
+
+### One file per relink
+
+Applying several files and checking once cannot attribute the failure. Three
+files at once gave 13 defects with no way to tell which file caused them;
+one file per relink found it immediately. This has cost work twice.

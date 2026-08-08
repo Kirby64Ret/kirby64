@@ -35,6 +35,38 @@ def segments():
     return out
 
 
+def subsegment_kinds():
+    """[(seg, vram_lo, vram_hi, kind)] so a target address can be classified.
+
+    This matters because the two rodata models want OPPOSITE fixes:
+
+      target in a MIGRATED `.rodata` subsegment -> the C is supposed to emit
+        that constant, so a literal is correct and naming a symbol would not
+        even link
+      target in `data` / an unmigrated `rodata` -> the constant lives in the
+        ROM's own block, so the C must NAME it rather than emit a copy
+
+    Without this the tool proposes substitutions that cannot work.
+    """
+    y = open('kirby64.yaml').read()
+    out = []
+    for m in re.finditer(r'- name: (\w+)\n(.*?)(?=\n  - name: |\Z)', y, re.S):
+        seg, blk = m.group(1), m.group(2)
+        r = re.search(r'start: (0x[0-9A-Fa-f]+)', blk)
+        v = re.search(r'vram: (0x[0-9A-Fa-f]+)', blk)
+        if not (r and v):
+            continue
+        rbase, vbase = int(r.group(1), 16), int(v.group(1), 16)
+        subs = []
+        for sm in re.finditer(r'- \[(0x[0-9A-Fa-f]+)(?:, (\S+?),)?', blk):
+            subs.append((int(sm.group(1), 16), sm.group(2) or 'pad'))
+        subs.sort(key=lambda x: x[0])
+        for i, (off, kind) in enumerate(subs):
+            nxt = subs[i + 1][0] if i + 1 < len(subs) else off
+            out.append((seg, vbase + (off - rbase), vbase + (nxt - rbase), kind))
+    return out
+
+
 def data_symbols():
     """{vram: name} for every dlabel in the data/rodata listings."""
     out = {}
@@ -65,6 +97,7 @@ def main():
     sym = {p[2]: int(p[0], 16) for p in (l.split() for l in nm.split('\n'))
            if len(p) == 3}
     dsyms = data_symbols()
+    kinds = subsegment_kinds()
 
     owner = {}
     for obj in glob.glob('build/src/*/*.o'):
@@ -122,15 +155,36 @@ def main():
                     hits.append(hi[rs] + off)
         if not hits:
             continue
-        found += 1
         src = 'src/' + obj[len('build/src/'):-2] + '.c'
-        print(f'{name}  ({src})')
-        for t in hits:
-            off = rstart + (t - vram)
+        rows = []
+        for tgt in hits:
+            kind = next((k for s, lo, hi_, k in kinds
+                         if s == seg and lo <= tgt < hi_), None)
+            nm_ = dsyms.get(tgt)
+            off = rstart + (tgt - vram)
             val = base[off:off + 4]
             f = struct.unpack('>f', val)[0] if len(val) == 4 else None
-            nm_ = dsyms.get(t, f'(no symbol at 0x{t:08X})')
-            print(f'    0x{t:08X}  {nm_:26} = {val.hex().upper()}  {f!r}')
+            # Only an unmigrated data/rodata target with a real symbol can be
+            # fixed by naming it. A migrated .rodata target wants a literal; a
+            # jump table or a target with no symbol is not a constant load at
+            # all and means the decode picked up the wrong %hi pair.
+            if kind == '.rodata':
+                why = 'MIGRATED -> keep literal'
+            elif nm_ is None:
+                why = 'no symbol -> not a constant load'
+            elif nm_.startswith('jtbl'):
+                why = 'jump table -> not a constant'
+            elif kind in ('data', 'rodata'):
+                why = 'FIXABLE'
+            else:
+                why = f'in {kind} -> skip'
+            rows.append((tgt, nm_ or '-', val.hex().upper(), f, why))
+        if not any(r[4] == 'FIXABLE' for r in rows):
+            continue
+        found += 1
+        print(f'{name}  ({src})')
+        for tgt, nm_, hx, f, why in rows:
+            print(f'    0x{tgt:08X}  {nm_:26} = {hx}  {f!r:22} {why}')
     print(f'\n-- {found} function(s) with unresolved constant references --')
 
 
