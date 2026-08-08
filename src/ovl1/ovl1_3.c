@@ -1560,50 +1560,55 @@ void func_800AAB3C(s32 *arg0, u32 arg1, s32 arg2, f32 arg3, f32 arg4) {
     }
 }
 
-#ifdef MIPS_TO_C
-// Nearly matching (50/61): identical structure/scheduling, the only difference
-// is that the target hands v0 to the DObj temp (index -> v1, pointer -> a1)
-// while IDO gives v0 to the pointer here.
-void func_800AABD4(s32 *arg0, f32 arg1, f32 arg2) {
-    s32 *var_a1;
-    s32 var_v1;
-    DObj *dobj;
-    MObj *mobj;
-
-    if (arg1 != 65535.0f) {
-        var_a1 = arg0;
-        var_v1 = *arg0;
-        if (var_v1 != -1) {
-            do {
-                var_a1++;
-                dobj = D_800DFBD0[omCurrentObj->objId][var_v1];
-                dobj->animSpeed = arg1;
-                var_v1 = *var_a1;
-            } while (var_v1 != -1);
-        }
+void func_800AABD4(s32 *arg0, f32 arg1, f32 arg2)
+{
+  s32 *var_a1;
+  s32 var_v1;
+  DObj *dobj;
+  MObj *mobj;
+  unsigned int new_var;
+  if ((arg1 != 65535.0f) ^ 0)
+  {
+    var_v1 = (new_var = *arg0);
+    var_a1 = arg0;
+    if (var_v1 != (-1))
+    {
+      do
+      {
+        var_a1++;
+        dobj = D_800DFBD0[omCurrentObj->objId][var_v1];
+        dobj->animSpeed = arg1;
+        var_v1 = *var_a1;
+      }
+      while (var_v1 != (-1));
     }
-    if (arg2 != 65535.0f) {
-        var_a1 = arg0;
-        var_v1 = *arg0;
-        if (var_v1 != -1) {
-            do {
-                dobj = D_800DFBD0[omCurrentObj->objId][var_v1];
-                mobj = dobj->mobjList;
-                if (mobj != NULL) {
-                    do {
-                        mobj->animSpeed = arg2;
-                        mobj = mobj->next;
-                    } while (mobj != NULL);
-                }
-                var_v1 = var_a1[1];
-                var_a1++;
-            } while (var_v1 != -1);
+  }
+  if (arg2 != 65535.0f)
+  {
+    var_a1 = arg0;
+    var_v1 = *arg0;
+    if (var_v1 != (-1))
+    {
+      do
+      {
+        dobj = D_800DFBD0[omCurrentObj->objId][var_v1];
+        mobj = dobj->mobjList;
+        if (mobj != ((void *) 0))
+        {
+          do
+          {
+            mobj->animSpeed = arg2;
+            mobj = mobj->next;
+          }
+          while (mobj != ((void *) 0));
         }
+        var_v1 = var_a1[1];
+        var_a1++;
+      }
+      while (var_v1 != (-1));
     }
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AABD4.s")
-#endif
 
 #ifdef MIPS_TO_C
 

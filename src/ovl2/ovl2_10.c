@@ -72,6 +72,41 @@ s32 request_track_general(s32, s32, s32);
 extern s32 D_800D7098[];
 extern s32 D_8012D940;
 void func_80113F08(struct GObj *);
+extern void (*D_801249C0[])(struct GObj *);
+
+struct UnkPlane {
+    /* 0x00 */ f32 unk0;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ f32 unk8;
+    /* 0x0C */ f32 unkC;
+};
+
+struct Unk8012D934 {
+    /* 0x00 */ f32 unk0[4][4];
+    /* 0x40 */ f32 unk40;
+    /* 0x44 */ f32 unk44;
+    /* 0x48 */ f32 unk48;
+    /* 0x4C */ f32 unk4C;
+    /* 0x50 */ f32 unk50;
+    /* 0x54 */ f32 unk54;
+    /* 0x58 */ f32 unk58;
+    /* 0x5C */ f32 unk5C;
+    /* 0x60 */ struct UnkPlane unk60[2];
+    /* 0x80 */ f32 unk80;
+    /* 0x84 */ s32 unk84;
+};
+
+struct UnkRay {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ f32 unk8;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+};
+
+extern struct Unk8012D934 *D_8012D934;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80111F10.s")
 
@@ -81,11 +116,70 @@ void func_80113F08(struct GObj *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801123AC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112498.s")
+s32 func_80112498(struct UnkRay *arg0) {
+    s32 i;
+    f32 x = arg0->unk4 + D_8012D934->unk40;
+    f32 y = arg0->unk8 + arg0->unk10;
+    f32 z = arg0->unkC + D_8012D934->unk44;
+    f32 t;
+    struct UnkPlane *pl;
 
+    for (i = 0; i < 2; i++) {
+        pl = &D_8012D934->unk60[i];
+        t = (pl->unk0 * x) + (pl->unk4 * y) + (pl->unk8 * z) + pl->unkC;
+        if (t > 0.0f) {
+            D_8012D934->unk84 = i;
+            D_8012D934->unk80 = t;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+#ifdef MIPS_TO_C
+s32 func_8011253C(struct UnkRay *arg0) {
+    struct UnkPlane *pl;
+    f32 dot;
+    f32 t;
+    f32 nx;
+    f32 nz;
+
+    nz = -D_8012D934->unk54;
+    nx = -D_8012D934->unk50;
+    pl = &D_8012D934->unk60[D_8012D934->unk84];
+    dot = (pl->unk0 * nx) + (pl->unk8 * nz);
+    t = (dot < 0.0f) ? -dot : dot;
+    if (t < 1e-4f) {
+        return 0;
+    }
+    t = -D_8012D934->unk80 / dot;
+    arg0->unk4 += nx * t;
+    arg0->unkC += -D_8012D934->unk54 * t;
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011253C.s")
+#endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112600.s")
+s32 func_80112600(struct UnkRay *arg0) {
+    s32 i;
+    f32 x = arg0->unk4 + D_8012D934->unk48;
+    f32 y = arg0->unk8 + arg0->unk10;
+    f32 z = arg0->unkC + D_8012D934->unk4C;
+    f32 t;
+    struct UnkPlane *pl;
+
+    for (i = 0; i < 2; i++) {
+        pl = &D_8012D934->unk60[i];
+        t = (pl->unk0 * x) + (pl->unk4 * y) + (pl->unk8 * z) + pl->unkC;
+        if (t > 0.0f) {
+            D_8012D934->unk84 = i;
+            D_8012D934->unk80 = t;
+            return 1;
+        }
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801126A4.s")
 
@@ -152,7 +246,10 @@ void func_80114974(void) {
     omCreateProcess(sp1C, func_80113F08, 1, 3);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801149C0.s")
+void func_801149C0(struct GObj *arg0) {
+    ohSleep(1);
+    D_801249C0[D_800E77A0[arg0->objId]](arg0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80114A14.s")
 
@@ -833,7 +930,22 @@ void func_80118618(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80118638.s")
 
+#ifdef MIPS_TO_C
+void func_80118760(struct GObj *arg0) {
+    struct DObj *temp;
+    Vector *v;
+    u32 id;
+
+    id = arg0->objId;
+    temp = arg0->data.dobj;
+    v = &temp->pos.v;
+    temp->pos.v.x = gEntitiesNextPosXArray[id];
+    temp->pos.v.y = gEntitiesNextPosYArray[id];
+    v->z = gEntitiesNextPosZArray[id];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80118760.s")
+#endif
 
 void func_801187A4(void) {
     func_800AECC0(0.0f);
@@ -898,7 +1010,16 @@ void func_80118A60(struct GObj *arg0, u32 arg1) {
     func_800AED20(0.0f);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80118B60.s")
+void func_80118B60(struct GObj *arg0, u32 arg1) {
+    if (D_800D6E20[D_800BE508] != 0) {
+        func_80118A60(arg0, arg1);
+    } else {
+        func_80115578(arg0);
+        func_80118760(arg0);
+        func_8011884C(arg1);
+    }
+    omEndProcess(NULL);
+}
 
 void func_80118BC8(struct GObj *arg0, u32 arg1) {
     func_80115578(arg0);
