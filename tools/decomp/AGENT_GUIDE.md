@@ -1,0 +1,420 @@
+# Kirby 64 decomp — function matching guide
+
+Repo: /home/user/kirby64_decomp (work here). Scratch dir (shared, read-only tools): /tmp/claude-0/-home-user-kirby64-decomp/cb15b3c6-5ddf-53f9-96ee-b58ac853ac0f/scratchpad — call it $S below.
+
+## Goal
+Convert `#pragma GLOBAL_ASM(...)` stubs in YOUR ASSIGNED C FILE into matching C.
+A function is DONE only when the verifier prints `MATCH`. Never leave a function
+converted-but-not-matching: if you can't match it, restore the original
+`#ifdef MIPS_TO_C ... #else #pragma ... #endif` block (you may improve the draft inside).
+
+## The verifier (ground truth = real ROM disassembly in asm/)
+    python3 $S/verify.py <cfile> <func_name>     # verify one function
+    python3 $S/verify.py <cfile> --all           # verify all non-pragma funcs in file
+It compiles the file with the project's exact IDO 7.1 flags and word-diffs the
+function against asm/nonmatchings/.../<func>.s (relocations masked).
+- MATCH = done. DIFF prints target vs current per instruction.
+- COMPILE FAILED prints compiler output — fix and retry.
+- At the END of your work, run `--all` and confirm 0 diff: you must not regress
+  previously-matched functions in the file.
+
+## Workflow per function
+1. Read the target asm: asm/nonmatchings/<seg>/<file>/<func>.s
+   (comment columns are: rom_offset vram raw_word).
+2. Many functions already have an m2c draft in `#ifdef MIPS_TO_C` blocks — start
+   from it. Replace the whole `#ifdef MIPS_TO_C…#endif` construct with the plain
+   C function once it matches (that's the project convention for matched code).
+3. No draft? Generate one:
+       mips-linux-gnu-cpp -P -Wno-trigraphs -D_LANGUAGE_C -D_FINALROM -DTARGET_N64 \
+         -DF3DEX_GBI_2 -nostdinc -Iinclude/libc -Iinclude -Ilibreultra/include/2.0I \
+         -Ibuild -Ibuild/include -Ibuild/assets -Isrc -Isrc.old -I. <cfile> -o $S/ctx_<name>.c
+       python3 $S/m2c/m2c.py --target mips-ido-c --context $S/ctx_<name>.c \
+         asm/nonmatchings/<seg>/<file>/<func>.s
+4. Also check src.old/ — the pre-migration tree often has a hand-written version
+   of the same function (search by name or by called functions). Prefer its
+   structure; it usually matched in the old build.
+5. Iterate until MATCH.
+
+## Matching IDO 7.1 -O2 tips
+- `lw` of the symbol itself ⇒ the global is a POINTER (`extern s32 *X;`), not an array.
+  Direct indexed access from `%lo(X)($reg)` with computed offset ⇒ array.
+- Unsigned compare `sltu`/`sltiu` ⇒ u32 types/casts; `slt`/`slti` ⇒ s32.
+- Order of register assignment often follows source expression order; introduce
+  or remove temp variables to fix register/instruction-order diffs.
+- `beql/bnel` (likely branches) come from `if` with simple body; plain `beq/bne`
+  + delay-slot from `if/else` or loop shapes.
+- Loop with counter compared via `slt` at bottom ⇒ `do { } while`; via top ⇒ `while/for`.
+- Float constants come from .rodata via lui/lwc1 pairs — use the literal value (e.g. 0.5f).
+- Division by constants shows as magic-number multiply (`mult` + shifts) — write `/ N`.
+- `& 0xFF` vs u8 cast, `<< 16 >> 16` vs s16 cast — try both forms.
+- Struct field access: get offsets right; check existing struct defs in
+  include/ and src/<seg>/*.h before inventing types. Common types: GObj (include/GObj.h),
+  AObj/DObj, etc.
+- Function calls with implicit declarations default to s32 return — fine, but the
+  project prefers real prototypes; add externs near the top of the file (match the
+  file's existing style) or use existing headers.
+- Data symbols: declare `extern <type> D_XXXXXXXX...;` locally in the file like the
+  file already does. The linker resolves them via unnamed_syms.txt — do NOT add
+  symbols to linker scripts.
+
+## Hard rules
+- ONLY edit your assigned C file (and, if truly needed for declarations, its
+  paired .h). Do not touch the Makefile, yaml, linker scripts, or other files' code.
+- Do not run `make` (other agents share the tree); use only verify.py.
+- Do not commit or push. Do not create new files in the repo.
+- Keep the file's existing style: 4-space indent, same brace style, no added
+  comments about the process, no `// TODO` spam.
+- If IDO emits warnings for your function, resolve them if trivially possible
+  (verify.py prints error lines).
+
+## Report format (your final message)
+- MATCHED: list of function names now matching (plain C, pragma removed)
+- ATTEMPTED-NO-MATCH: functions you tried but restored to pragma blocks, one line each on what differs
+- File ends with `--all` result line proving 0 diff.
+
+## CRITICAL rules learned from integration failures (violations broke the ROM build)
+1. NEVER flip an existing `#ifdef NON_MATCHING` / `#ifndef NON_MATCHING` guard.
+   The active branch was chosen because it matches. Flipping one silently broke
+   the whole ROM layout.
+2. NEVER modify a function that is already plain (unguarded) C — it's already
+   matched. This includes "cleanups" like reordering declarations or fixing a
+   comment that says a variable is in a weird place. Weird IS the match.
+3. Header edits: strictly additive (new prototypes, new structs). Do not change
+   existing struct fields, types, or prototypes others may depend on.
+4. Beware symbol aliasing: `D_XXXXXXXX` names encode addresses; a D_ symbol may
+   point INTO a named array (e.g. D_8004A3D4 == &gDisplayListHeads[1]). Before
+   using a D_ symbol, confirm with `grep <name> build/kirby.us.map` that it is
+   linkable, and check tools/symbol_addrs.txt for named symbols at nearby
+   addresses. If a symbol you need does not exist in the map, DO NOT invent it,
+   DO NOT run splat, DO NOT edit linker scripts — note it in your report and
+   restore the pragma for that function.
+5. Float/double constants: write the LITERAL, never an extern f32 reference.
+   (In scaffolded overlays the literal creates a duplicate rodata entry — that
+   is expected and is fixed later by a yaml .rodata migration, NOT by you.
+   See the RODATA RULE section at the end.) Get exact bits:
+   python3 -c "import struct;print(hex(struct.unpack('>I',struct.pack('>f',float('X')))[0]))"
+   and confirm against the .late_rodata words at the top of the target listing.
+6. Final self-check before reporting, in addition to --all:
+   mips-linux-gnu-nm build/src/<yourfile>.o | grep ' U ' — every undefined
+   symbol must appear in build/kirby.us.map (grep it). Anything missing means
+   your code references a symbol the link can't resolve — fix or revert it.
+7. NEVER delete or rename a top-level DATA object (e.g. `u8 D_8022F67C_ovl19[] = {...}`,
+   FUNCLIST tables, Gfx display lists). These often sit INSIDE a `#else` branch
+   next to a pragma, so they look like part of the block you are replacing —
+   they are not. When you convert a function, move any data definition in that
+   `#else` branch OUT of the block, keeping it at file scope. Deleting one
+   breaks the link or silently shifts the segment.
+
+## IDO 7.1 is LINE-NUMBER SENSITIVE (verified experimentally)
+Reformatting a matched function — with the exact same tokens, only whitespace
+and line breaks changed — CAN change register/spill allocation and break the
+match. Confirmed on func_8011A588 in ovl2_10.c: collapsing/expanding one
+`do {...} while (0)` block flipped a spill slot from 0x1C to 0x18.
+Consequences:
+- Apply permuter output VERBATIM. Do not tidy it up, do not re-indent it,
+  do not add a comment line above it, until you have re-verified.
+- After ANY cosmetic edit to a matched function, re-run verify.py on it.
+- If a function matches only in an odd shape (one-liner, `do {} while (0)`,
+  a seemingly useless local), LEAVE IT and add a short comment saying the
+  shape is load-bearing.
+
+## The permuter (for near-misses that are 1-5 instructions off)
+    python3 $S/setup_permuter.py <cfile> <func>      # builds $S/perm/<func>/
+    cd $S/decomp-permuter && ./permuter.py $S/perm/<func> -j4 --stop-on-zero
+It randomly mutates the C (swapping temps, reordering decls, changing casts)
+and scores each candidate against the ROM's own assembly; score 0 = match.
+Found a match for func_8011A588 in ~2 minutes / 287 iterations.
+IMPORTANT: the permuter works on a PREPROCESSED copy whose declaration set can
+differ from the real file, so a score-0 result may still be a few instructions
+off in-place. Paste it into the real file, run verify.py, and if it is close,
+try permuting the DECLARATION ORDER of the locals (that alone fixed 8011A588).
+
+## PORTING A NEWLY SCAFFOLDED OVERLAY (ovl8, ovl11-ovl18)
+These files were just generated by splat and contain only `#include "common.h"`
+plus one pragma per function. Most of their functions already exist, written by
+hand, in `src.old/` — porting those is far faster than decompiling from asm.
+
+Procedure:
+1. Find the old file: `ls src.old/ovlN/` and grep it for your function names.
+   Old and new file splits differ, so a function may live in any old file in
+   that overlay (or occasionally in a differently-numbered one).
+2. Copy the old file's `#include` lines into the new file first, then port
+   functions in batches and run verify.py. Expect most to match on the first
+   compile — they matched in the old build.
+3. Add headers the old file used (e.g. `src.old/ovl12/ovl12.h`) by copying them
+   to `src/ovlN/`. That IS allowed for these new overlays (they have no headers
+   yet). Keep them minimal — only what your file needs.
+
+DO NOT port `*.data` files (e.g. `src.old/ovl12/ovl12.data`) and do NOT add
+top-level data objects from the old tree. In the new layout these overlays get
+their data from asm (`data` subsegments -> asm/data/ovlN/*.s). Defining them in
+C too will cause duplicate-symbol link errors or silently shift the segment.
+If a function needs a data symbol, declare it `extern` and confirm the symbol
+exists in build/kirby.us.map.
+
+## RODATA RULE for scaffolded overlays (learned the hard way)
+Overlays ovl8/ovl11-ovl18 were split with all code as asm, so the compiler's
+generated float/double constants got lumped into the `data` subsegment and
+splat gave them names (e.g. D_801E2D20_ovl12 = 3.927). This creates a trap:
+
+- If ported C writes the float LITERAL, IDO emits its own copy into .rodata.
+  Each function still assembles to identical bytes -- verify.py PASSES -- but
+  the duplicate constants shift every later rodata reference and the ROM
+  stops matching. verify.py cannot see this; only the full ROM build can.
+- If you instead reference the data symbol as `extern f32 D_xxx;`, the codegen
+  usually differs and the function stops matching.
+
+The real fix is in kirby64.yaml: declare the constants' address range as
+`.rodata` belonging to the C file, so IDO's generated rodata lands exactly
+where the originals were. BUT:
+
+  A rodata block can only be migrated to .rodata when EVERY function that
+  references it has been decompiled to C. If some users are still pragmas,
+  their .s listings reference the now-migrated symbols and the link fails
+  (or the block duplicates). Mixed pragma/C use of one rodata block cannot
+  be made to match.
+
+So: finish an overlay's rodata-using functions FIRST, then migrate. ovl12 is
+the worked example (see the commit that ports it). $S/find_rodata_bounds.py
+prints the suggested yaml subsegment lines for an overlay.
+
+## Rodata drift check (integration step, run before committing a batch)
+    python3 $S/check_rodata.py          # compares vs a green-build baseline
+Flags any object whose .rodata GREW, which means ported C is emitting float
+constants the ROM keeps in its asm data blob. verify.py cannot see this (the
+functions still assemble to identical bytes) -- only this check and the full
+ROM build can. After a successful sha1-matching build, refresh the baseline:
+    python3 $S/check_rodata.py --save
+
+## Layout drift check (THIRD blind spot verify.py cannot see)
+    python3 $S/check_layout.py [ovlN]
+Some listings carry padding words AFTER the `.size` directive (IDO's alignment
+padding, e.g. following an infinite loop). Those words are assembled in while
+the function is a `#pragma GLOBAL_ASM`, but VANISH the moment you convert it to
+C. The function still verifies as MATCH, yet everything after it in the segment
+shifts (a real 28-byte shift was found this way in ovl16). Such functions must
+STAY as pragmas.
+check_layout.py compares every C function's offset in its object against its
+true address and reports any drift, so it catches this and any other cause
+(extra rodata, wrong local count). Run it before committing a batch.
+Find padded listings directly with:
+    awk '/^\.size /{f=1;next} f&&NF{print FILENAME}' asm/nonmatchings/<seg>/<file>/*.s | sort -u
+
+## Fast near-miss finder (use this before picking functions to work on)
+    python3 $S/scan.py <cfile>
+Un-guards every MIPS_TO_C draft in a file one at a time and reports each one's
+diff count, so you can spot the 2-instruction near-misses among 30 pragmas in
+seconds instead of trying them blind. Written by an agent; it found a 4/257 and
+a 2/76 immediately.
+
+## Permuter caveat
+When a function's only difference is a STACK SLOT OFFSET, the permuter's scorer
+reports `base score = 0` (a false positive -- verified by compiling its own
+base.c). It is reliable for register-allocation diffs, not stack-layout ones.
+
+## IDO quirks found late in the session
+- `x / 8.0f` is strength-reduced to a multiply, but `x / (f32)8` keeps `div.s`.
+- An empty block (`do { } while (0);` or `if (1) {}`) between two statements can
+  be load-bearing: it splits the basic block and changes which register a struct
+  base lands in. Found in func_8022AEA0_ovl19 and func_801D0E3C_ovl8.
+- A function may only match with a `void` return even when it computes a value,
+  because IDO fills a branch delay slot differently when $v0 is dead. Check the
+  callers before changing a prototype's return type.
+
+## CROSS-GAME ENGINE PORT (highest-yield technique found — use it first)
+Kirby 64 and Super Smash Bros 64 are both HAL Laboratory titles and share the
+SAME engine SOURCE, not merely the same design. A clone of the SSB64 decomp
+(~96% matched, fully named) is at /workspace/vetritheretri/ssb-decomp-re/,
+engine source in src/sys/ (objman.c objanim.c objdisplay.c objhelper.c
+objscript.c matrix.c vector.c taskman.c scheduler.c video.c).
+
+Measured result: 22 of 24 Kirby engine functions matched on the FIRST compile
+with ZERO iteration, including 473- and 343-instruction functions.
+object_manager.c, object_helpers.c and gtl.c went to 0 pragmas this way.
+
+Method:
+1. Read Kirby's asm listing; find the SSB counterpart by matching STRUCT FIELD
+   OFFSETS and call shape (grep the src/sys/ files).
+2. Transcribe the SSB body VERBATIM. Do NOT reorder statements or tidy it --
+   reordering two adjacent stores was one of only two failures.
+3. Rename fields/symbols to Kirby's equivalents, then verify.
+4. When it does not match, suspect a TYPE mismatch, not logic. The other
+   failure was a global defined u32 while declared s32, which blocked CSE
+   against signed comparisons.
+
+Confirmed layout mapping (identical between the games):
+  GObjProcess (0x24): link_next->next 0x00, link_prev->prev 0x04,
+    priority_next->nextPriProc 0x08, priority_prev->prevPriProc 0x0C,
+    priority->pri 0x10, kind 0x14, is_paused->paused 0x15,
+    parent_gobj->gobj 0x18, exec->payload 0x1C
+  GObj: objId 0x00, next 0x04, prev 0x08, link_id->link 0x0C, pri 0x10,
+    onUpdate 0x14, gobjproc_head->procListHead 0x18, gobjproc_tail->procListTail 0x1C
+  Globals: sGCCommonLinks->omGObjListTail, sGCProcessQueue->omGObjProcList
+
+SSB is ALSO ground truth for struct layouts and types, and has already exposed
+real errors in Kirby's headers (GObjProcess was declared 0x28 but is 0x24;
+MObj primLOD comes from unk_5C not unk_54). If you correct a shared header,
+A/B-compile every dependent file and prove the disassembly is unchanged first.
+
+## Jump tables in #pragma GLOBAL_ASM (fixed 2026-08-08)
+
+If a function you are converting has a jump table (`jlabel .L8...` in its
+listing, `jtbl_8...` in asm/data/<seg>/<file>.rodata.s), it used to fail at
+link with `undefined reference to .L8...`. Root cause: asm-processor's own
+prelude.inc defines `jlabel` without `.global`, while include/macro.inc
+defines it with. Jump tables here live in a SEPARATE rodata object, so the
+label must be exported across the object boundary.
+
+Fixed by include/asmpp_prelude.inc (a project-local copy of the submodule's
+prelude with the .global added), passed via --asm-prelude in the Makefile.
+Do not patch tools/asm-processor -- it is a submodule and a fresh clone would
+not get the change.
+
+Debugging note: `nm` hides .L-prefixed symbols even when they are GLOBAL.
+Use `readelf -sW` when checking whether a jump-table label is exported, or
+you will conclude the working case is broken too.
+
+## Scaffolding a segment that is still monolithic `asm`
+
+scratchpad/split_ovl.py + scratchpad/convert_asm_seg.py do this without
+re-running splat (which rewrites every segment at once and would clobber
+other agents' work). Split at the `nonmatching <fn>, 0x<size>` directives,
+NOT at glabel -- splitting there is what leaves each TU's trailing alignment
+padding in the LAST function's listing, where it has to stay.
+
+Always verify a fresh scaffold before trusting it:
+  1. every instruction word vs the base ROM at its own ROM offset
+  2. 0 internal gaps / overlaps in each TU's coverage
+  3. check_tu_size.py: each object's .text == its yaml subsegment
+  4. the segment links at exactly its original size (+0)
+
+Remember kirby.ld also has a SEPARATE `.<seg>_bss` output section outside the
+main `.<seg>` block -- a regex scoped to the main block will miss it and the
+link fails with "cannot find build/asm/<seg>/<file>.o".
+
+## IDO aligns the dead epilogue after an infinite loop to 32 bytes
+
+A function ending in `while (1) { ... }` has an unreachable epilogue. IDO
+still emits it, and pads with nops so it starts on a 32-byte boundary
+RELATIVE TO THE TRANSLATION UNIT'S BASE.
+
+Consequence: two copies of byte-identical C do NOT always produce identical
+code. A copy whose offset already lands on a boundary gets 0 nops; another
+gets 1-7. If the ROM's copy has padding your C cannot reproduce, that
+function has to stay a #pragma -- no source form fixes it. Ruled out by
+testing: -O1/-O2, -Olimit, -Wo,-loopunroll[,0], for(;;) vs while(1) vs
+do/while, `GObj *` vs `struct GObj *`, trailing `return;`.
+
+Second consequence, and the nastier one: a function can verify ALONE and
+fail IN PLACE. Verifying one function compiles the file with every other
+function still a pragma, i.e. at its exact ROM size. Convert a neighbour
+that comes out 16 bytes short and everything after it shifts, changing its
+alignment phase. So after any batch conversion, re-run verify.py --all per
+file and roll back anything that now differs, repeating until the file stops
+changing. scratchpad/apply_family.py + stabilize.py do this.
+
+Symptom to recognise: the first N instructions match exactly and the diff is
+only a run of nops before `lw $ra` at the end.
+
+## Clone families
+
+scratchpad/find_clones.py groups functions by opcode+register skeleton with
+every instruction's low 16 bits masked (relocation immediates, branch
+displacements, stack offsets, small constants). HAL reused code heavily, so
+these are real families from the same original C.
+
+572 of the remaining pragmas sit in 177 families. Decompile the
+representative by hand, extract each copy's differing symbols from its own
+relocations, generate the rest, verify each, roll back what fails.
+
+Note there are only ~25 usable donors (functions already in C that still
+have a listing) -- listings are removed as functions are converted, so
+clone-porting from existing C mostly is not available. The lever is
+pragma-to-pragma families.
+
+
+## Corrections and additions (from the ovl17/ovl11 agent)
+
+The padding-detector awk given earlier does NOT reset its flag between
+files, so it flags almost everything. Run it per file as:
+
+    awk 'BEGIN{f=0} /^\.size /{f=1;next} f&&NF{c++} END{print c+0}' <one .s>
+
+The 32-byte dead-epilogue rule is also a PROBE FOR A WRONG TU BOUNDARY.
+If two functions are byte-identical except the nop count in the unreachable
+epilogue, compute where the ROM's epilogue sits in object-offset terms. If
+the ROM's is not 32-aligned and yours is, splat's `c` subsegment split is not
+where the original translation unit started. Confirmed independently on
+ovl17_2 (func_801DDB8C/func_801DDF6C) and ovl14_2. No source form fixes
+these -- the yaml split has to be corrected first.
+
+Four techniques that closed real matches:
+
+1. Arg-register coalescing. ROM has `or $a0, $v1, $zero` but IDO computes
+   straight into $a0: give the callee a POINTER parameter and cast at the
+   call site to force the temp.
+2. Type-split constants. IDO keeps separate constant registers per type, so
+   `D_800D7098.unk4 = 1;` (u32) forks a second `li reg,1`. Writing
+   `*(s32 *) &D_800D7098.unk4 = 1;` shares it. Took one function 76 -> 13.
+3. `||` over a shared float constant: a ternary reproduces the control flow
+   but costs 8 bytes of stack temps; a `goto` into the `then` branch of an
+   if/else reproduces it exactly with no stack cost.
+4. Local DECLARATION ORDER controls stack offsets -- later-declared locals
+   get LOWER addresses.
+
+And a literal trap: 31.2f is 0x41F9999A, but the ROM word is 0x41F99999.
+Write 31.199999f. Always check float literal bits against the data word.
+
+Open anomaly, currently the single largest blocker in the near-misses: three
+unrelated functions (func_801E14B0_ovl17, func_801DD1CC_ovl11,
+func_801E0D00_ovl17) are instruction-for-instruction correct but IDO reserves
+4-8 bytes BELOW the local block that the ROM does not. Adding or removing
+declared locals shifts the block wholesale instead of closing the gap.
+
+## Matching idioms (from the ovl2/ovl7 engine-port agent)
+
+- IDO REVERSES THE OPERAND ORDER OF THE OUTERMOST FLOAT `+`. To get
+  `add.s fd, fA, fB`, write `Bexpr + Aexpr`. This alone took two functions
+  from 19 and 6 diffs to MATCH.
+- Splitting a compound float expression into two statements changes FP
+  register assignment: `(a+b)*c` vs `t = a+b; t = t*c;` gave 6 diffs vs 1.
+- UNUSED SCALAR LOCALS DECLARED FIRST take the highest stack slots and push
+  the compiler's spill temps down. One function needed exactly 3 dead s32s,
+  another exactly 2. This is the lever for frame-size and spill-offset
+  diffs, and it is directional: each one grows the frame by 8.
+- Swapping the operands of a comparison against a call result (`*p != f()`
+  vs `f() != *p`) changes which spill slot is used.
+- Removing a pointer local (inlining it) can flip integer register
+  allocation. Conversely an explicit `f32 *p = &x->field;` is REQUIRED where
+  the ROM materialises base+offset in a register -- IDO otherwise folds the
+  offset into every access.
+
+## The two rodata models -- do not mix them up
+
+    migrated    `.rodata, seg/file` in the yaml
+                -> write LITERALS; the C file emits the block
+    unmigrated  `rodata` or `data` asm subsegment
+                -> reference EXTERN symbols
+
+ovl2 is migrated; ovl16/ovl17 are not. Using the extern form on a migrated
+TU produces `undefined reference to D_8012...` at LINK time -- and because
+an unresolvable symbol makes verify.py skip its relocation check, every
+affected function still reports MATCH. That combination put an unlinkable
+tree into history once already.
+
+## verify.py is not proof the ROM is right
+
+It compiles ONE OBJECT and never links. It cannot see: undefined symbols,
+translation units that came out short, segment growth from duplicated
+rodata, or any function whose .s listing has been deleted (reported as
+"unverifiable", which does not affect the 0-diff line). Before committing:
+run the full build, confirm build/kirby.us.elf actually exists, and compare
+the linked segment bytes against the base ROM. A green verify.py with a
+broken link is a state this project has reached more than once.
+
+## Hazard: a background splat run regenerates asm/nonmatchings
+
+It deletes the .s for any function currently written in C and briefly leaves
+directories empty (verify.py then fails with "Cannot open file GLOBAL_ASM").
+A listing you have un-guarded can be PERMANENTLY LOST if the regen lands in
+that window. Keep a backup of asm/nonmatchings before un-guarding anything.
