@@ -18,8 +18,30 @@ struct Unk2385A0_84 {
     f32 unk14;
 };
 
+struct Unk2385A0_8C_8 {
+    u8 filler0[0x4];
+    s32 unk4;
+};
+
+struct Unk2385A0_8C {
+    u8 filler0[0x8];
+    struct Unk2385A0_8C_8 *unk8;
+};
+
+struct Unk2385A0_24_24 {
+    u8 filler0[0x8];
+    struct DObj *unk8;
+    u8 filler0C[0x24];
+    struct DObj *unk30;
+};
+
+struct Unk2385A0_24 {
+    u8 filler0[0x24];
+    struct Unk2385A0_24_24 *unk24;
+};
+
 extern s32 D_8022A76C_ovl18;
-extern s32 D_8022A91C_ovl18;
+extern f32 D_8022A91C_ovl18;
 extern s32 D_8022AAF0_ovl18;
 extern s32 D_8022AB14_ovl18;
 extern s32 D_8022AB38_ovl18;
@@ -39,8 +61,8 @@ void func_800AA018();
 void func_800AA154(s32);
 void func_800AF27C(void);
 void func_80111550(s32);
-s32 func_80111C88(s32 *, u32);
-void func_80111ECC(s32);
+struct Unk2385A0_24 *func_80111C88(s32 *, u32);
+void func_80111ECC(struct Unk2385A0_24 *);
 void func_801A0D50_ovl7(void *);
 s32 func_801A0D74_ovl7(void);
 void func_801ACF5C_ovl7(struct GObj *);
@@ -101,7 +123,46 @@ void func_80225EB8_ovl18(s32 arg0) {
     func_80225E40_ovl18(arg0);
 }
 
+// near-match (94/97): identical instruction stream, but the ROM frame is 0x30
+// (8-byte hole at 0x24) and spills arg0 lazily in the jal delay slot.
+#ifdef MIPS_TO_C
+void func_80225FA8_ovl18(struct GObj *arg0) {
+    f32 sp2C;
+    struct DObj *sp20;
+    struct UnkStruct800E1B50 *sp1C;
+    struct DObj *temp_v0;
+    struct DObj *temp_v1;
+    struct Unk2385A0_24 *temp_v0_2;
+    struct Unk2385A0_84 *temp_a1;
+    u32 temp_a0;
+
+    temp_a1 = (struct Unk2385A0_84 *) D_800E1B50[omCurrentObj->objId]->unk84;
+    if (temp_a1 != NULL) {
+        temp_v0 = arg0->data.dobj->firstChild;
+        temp_v1 = temp_v0->firstChild;
+        temp_a1->unk14 = temp_v1->pos.v.y + temp_v1->firstChild->pos.v.y + temp_v0->pos.v.y + D_8022A91C_ovl18;
+        temp_a1->unk10 = temp_a1->unk14 * 0.5f;
+    }
+    sp2C = func_801A0D74_ovl7();
+    eneTurnCommon2(6);
+    if (sp2C == 0.0f) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8022AD10_ovl18);
+    }
+    temp_a0 = omCurrentObj->objId;
+    sp20 = arg0->data.dobj->firstChild->firstChild->firstChild;
+    sp1C = D_800E1B50[temp_a0];
+    func_80111550(temp_a0);
+    temp_v0_2 = func_80111C88(sp1C->unk8C, omCurrentObj->objId);
+    if ((((struct Unk2385A0_8C *) sp1C->unk8C)->unk8->unk4 == 0) && (sp20 != NULL)) {
+        temp_v0_2->unk24->unk8 = sp20;
+        temp_v0_2->unk24->unk30 = sp20;
+    }
+    func_80111ECC(temp_v0_2);
+    func_8021F658_ovl18();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_80225FA8_ovl18.s")
+#endif
 
 #ifdef MIPS_TO_C
 void func_8022612C_ovl18(UNUSED s32 arg0) {
@@ -135,7 +196,32 @@ void func_80226294_ovl18(UNUSED s32 arg0) {
 
 }
 
+// This body compiles byte-identical to the ROM when it is the only function in
+// the TU (permuter score 0); in place IDO CSEs the two `1` constants into $a3
+// instead of rematerialising them, because 65535.0f lands at .rodata+8.
+#ifdef MIPS_TO_C
+void func_8022629C_ovl18(s32 arg0)
+{
+  struct UnkStruct800E1B50 *temp_a1;
+  temp_a1 = D_800E1B50[omCurrentObj->objId];
+  D_800DDFD0[omCurrentObj->objId] = 1;
+  temp_a1->unk98 = &D_8022AB38_ovl18;
+  D_800E8920[omCurrentObj->objId] = 1;
+  D_800E6690[omCurrentObj->objId] = 0.0f;
+  D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+  D_800E6850[omCurrentObj->objId] = 65535.0f;
+ D_800E3750[omCurrentObj->objId] = 0.0f; D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+  D_800E3C90[omCurrentObj->objId] = 65535.0f;
+  func_800A9EA4(0x1002F);
+  if (D_800DE350[omCurrentObj->objId]->data.dobj->timeRemaining != (-3.4028235e38f))
+  {
+    func_800AF27C();
+  }
+  gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_8022629C_ovl18.s")
+#endif
 
 void func_80226414_ovl18(UNUSED s32 arg0) {
 

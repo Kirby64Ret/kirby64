@@ -7,6 +7,7 @@
 #include "ovl18_5.h"
 
 void func_802218E4_ovl18(s32 arg0);
+void func_80220F68_ovl18(s32 arg0);
 
 void func_802201C0_ovl18(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = &func_800B72AC;
@@ -134,74 +135,140 @@ void func_80220AA8_ovl18(s32 arg0) {
     func_801A239C_ovl7();
 }
 
-// lots of small things to look out for
-#ifdef NON_MATCHING
 extern f32 D_8022BBC8_ovl18;
 extern u32 D_800D7098;
 extern f32 D_8022BBCC_ovl18, D_8022BBD0_ovl18;
 extern f32 D_8022BBD4_ovl18, D_8022BBD8_ovl18;
 void func_80199F1C_ovl7(s32);
-void func_80220B00_ovl18(s32 arg0) {
-    f32 temp_f0;
-    f32 phi_f12;
-    f32 temp_f20;
-    f32 temp_f24;
-    f32 temp_f26;
-    f32 temp_f28;
-    f32 temp_f30;
+s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2);
+void func_80220B00_ovl18(s32 arg0)
+{
+  f32 temp_f0;
+  f32 phi_f12;
+  f32 temp_f20;
+  f32 temp_f24;
+  f32 temp_f26;
+  f32 temp_f28;
+  f32 temp_f30;
+  D_800DDFD0[omCurrentObj->objId] = 0;
+ func_800A9EA4(0x10091); temp_f20 = D_8022BBC8_ovl18; while (1) { if (D_800D7098 == 0) { temp_f28 = cosf(D_800EB320[omCurrentObj->objId]) * D_800EB160[omCurrentObj->objId];
+      temp_f30 = sinf(D_800EB320[omCurrentObj->objId]) * D_800EB160[omCurrentObj->objId];
+      D_800EB320[omCurrentObj->objId] += D_800EADE0[omCurrentObj->objId] * (-D_800EAFA0[omCurrentObj->objId]);
+      while (D_800EB320[omCurrentObj->objId] >= temp_f20)
+      {
+        D_800EB320[omCurrentObj->objId] -= temp_f20;
+      }
 
-    D_800DDFD0[omCurrentObj->objId] = 0;
-    func_800A9EA4(0x10091);
-    temp_f20 = D_8022BBC8_ovl18;
-    while (TRUE) {
-        if (D_800D7098 == 0) {
-            temp_f28 = D_800EB160[omCurrentObj->objId] * cosf(D_800EB320[omCurrentObj->objId]);
-            temp_f30 = D_800EB160[omCurrentObj->objId] * sinf(D_800EB320[omCurrentObj->objId]);
-            D_800EB320[omCurrentObj->objId] += (D_800EADE0[omCurrentObj->objId] * -D_800EAFA0[omCurrentObj->objId]);
-            while (D_800EB320[omCurrentObj->objId] >= temp_f20) {
-                D_800EB320[omCurrentObj->objId] -= temp_f20;
-            }
-            while (D_800EB320[omCurrentObj->objId] < 0.0f) {
-                D_800EB320[omCurrentObj->objId] += temp_f20;
-            }
-            temp_f24 = D_800EB160[omCurrentObj->objId] * cosf(D_800EB320[omCurrentObj->objId]);
-            temp_f0 = sinf(D_800EB320[omCurrentObj->objId]);
-            D_800E5F90[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
-            temp_f26 = D_800EB160[omCurrentObj->objId] * temp_f0;
-            D_800E6BD0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
-            gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
-            func_800F9974(&D_800E5F90[omCurrentObj->objId], &D_800E6BD0[omCurrentObj->objId], temp_f28);
-            gEntitiesNextPosYArray[omCurrentObj->objId] += temp_f30;
-            D_800E6150[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
-            D_800E6D90[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
-            gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
-            D_800E64D0[omCurrentObj->objId] = temp_f24 - temp_f28;
-            D_800E3210[omCurrentObj->objId] = temp_f26 - temp_f30;
-            if (D_8022BBCC_ovl18 <= D_800EB320[omCurrentObj->objId]) {
-                if (D_800EB320[omCurrentObj->objId] <= D_8022BBD0_ovl18) {
-                    if (D_800E6A10[omCurrentObj->objId] == -1.0f) {
-                        func_80199F1C_ovl7(arg0);
-                    }
-                }
-            }
-            if ((D_8022BBD4_ovl18 <= D_800EB320[omCurrentObj->objId]) || (D_800EB320[omCurrentObj->objId] <= D_8022BBD8_ovl18)) {
-                if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-                    func_80199F1C_ovl7(arg0);
-                }
-            }
-        ohSleep(1);
+      while (D_800EB320[omCurrentObj->objId] < 0.0f)
+      {
+        D_800EB320[omCurrentObj->objId] += temp_f20;
+      }
+
+      temp_f24 = cosf(D_800EB320[omCurrentObj->objId]);
+      temp_f24 = temp_f24 * D_800EB160[omCurrentObj->objId];
+      temp_f0 = sinf(D_800EB320[omCurrentObj->objId]);
+      temp_f26 = temp_f0 * D_800EB160[omCurrentObj->objId];
+      D_800E5F90[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
+      D_800E6BD0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+      gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
+      func_800F9974(&D_800E5F90[omCurrentObj->objId], &D_800E6BD0[omCurrentObj->objId], temp_f28);
+      gEntitiesNextPosYArray[omCurrentObj->objId] += temp_f30;
+      D_800E6150[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+      D_800E6D90[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+      gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+      D_800E64D0[omCurrentObj->objId] = temp_f24 - temp_f28;
+      D_800E3210[omCurrentObj->objId] = temp_f26 - temp_f30;
+      if (D_8022BBCC_ovl18 <= D_800EB320[omCurrentObj->objId])
+      {
+        if (D_800EB320[omCurrentObj->objId] <= D_8022BBD0_ovl18)
+        {
+          if (D_800E6A10[omCurrentObj->objId] == (-1.0f))
+          {
+            func_80199F1C_ovl7(arg0);
+          }
+        }
+      }
+      if ((D_8022BBD4_ovl18 <= D_800EB320[omCurrentObj->objId]) || (D_800EB320[omCurrentObj->objId] <= D_8022BBD8_ovl18))
+      {
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f)
+        {
+          func_80199F1C_ovl7(arg0);
+        }
+      }
     }
-    }
+    ohSleep(1);
+  }
+
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_232B60/func_80220B00_ovl18.s")
-#endif
 
 void func_80220F48_ovl18(s32 arg0) {
     func_8021F5CC_ovl18();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_232B60/func_80220F68_ovl18.s")
+extern char D_8022BBA0_ovl18[];
+extern f32 D_8022BBDC_ovl18, D_8022BBE0_ovl18;
+extern f32 D_8022BBE4_ovl18, D_8022BBE8_ovl18;
+extern f32 D_8022BBEC_ovl18, D_8022BBF0_ovl18;
+extern f32 D_8022BBF4_ovl18, D_8022BBF8_ovl18;
+void utilPrintf(char *fmt, ...);
+void func_8019BC94_ovl7(void);
+
+void func_80220F68_ovl18(s32 arg0) {
+    UnkStruct800E1B50 *temp_t0;
+    f32 var_f0;
+    s32 temp_a0;
+    s32 var_v0;
+
+    temp_t0 = D_800E1B50[omCurrentObj->objId];
+    if (temp_t0->unk3C != 0) {
+        if (arg0 == 1) {
+            D_800E6A10[omCurrentObj->objId] *= -1.0f;
+            temp_t0->unk3C = 0;
+            func_8019BC94_ovl7();
+            return;
+        }
+        if ((arg0 % 2) == 1) {
+            utilPrintf(D_8022BBA0_ovl18);
+            arg0 += 1;
+        }
+        var_v0 = temp_t0->unk3C;
+        temp_a0 = arg0 / 2;
+        if (var_v0 < temp_a0) {
+            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                var_f0 = D_8022BBDC_ovl18 / arg0;
+            } else {
+                var_f0 = -(D_8022BBE0_ovl18 / arg0);
+            }
+            D_800E9020[omCurrentObj->objId] -= var_f0;
+        } else if (temp_a0 == var_v0) {
+            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                var_f0 = D_8022BBE4_ovl18;
+                D_800E9020[omCurrentObj->objId] -= D_8022BBE8_ovl18 / arg0;
+                D_800E17D0[omCurrentObj->objId] += var_f0;
+                D_800E9020[omCurrentObj->objId] += var_f0;
+            } else {
+                var_f0 = D_8022BBEC_ovl18;
+                D_800E9020[omCurrentObj->objId] += D_8022BBF0_ovl18 / arg0;
+                D_800E17D0[omCurrentObj->objId] -= var_f0;
+                D_800E9020[omCurrentObj->objId] -= var_f0;
+            }
+            D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+        } else if (var_v0 < arg0) {
+            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                var_f0 = D_8022BBF4_ovl18 / arg0;
+            } else {
+                var_f0 = -(D_8022BBF8_ovl18 / arg0);
+            }
+            D_800E9020[omCurrentObj->objId] += var_f0;
+        } else {
+            D_800E9020[omCurrentObj->objId] = 0.0f;
+            temp_t0->unk3C = 0;
+            func_8019BC94_ovl7();
+            return;
+        }
+        temp_t0->unk3C += 1;
+    }
+}
 
 void func_80221288_ovl18(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = &func_800B72AC;

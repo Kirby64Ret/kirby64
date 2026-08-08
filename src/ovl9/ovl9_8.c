@@ -3,12 +3,18 @@
 #include "track_arrays.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/util.h"
+#include "buffers.h"
+#include "ovl1/ovl1_7.h"
 
 extern FUNCLIST D_8021C504_ovl9;
 extern FUNCLIST D_8021C544_ovl9;
 extern FUNCLIST D_8021C57C_ovl9;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8730_ovl9.s")
+extern FUNCLIST D_8021C500_ovl9;
+
+void func_801F8730_ovl9(struct GObj *arg0) {
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, &D_8021C500_ovl9);
+}
 
 void func_801F8774_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 7, &D_8021C504_ovl9);
@@ -32,7 +38,14 @@ void func_801F8774_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8D48_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8E60_ovl9.s")
+void func_801F8774_ovl9(struct GObj *);
+
+void func_801F8E60_ovl9(struct GObj *arg0) {
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F8774_ovl9);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8ECC_ovl9.s")
 

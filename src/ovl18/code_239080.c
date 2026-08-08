@@ -277,6 +277,7 @@ void func_802271A8_ovl18(void) {
     func_800A74D8();
 }
 
+#ifdef MIPS_TO_C
 u32 func_80227308_ovl18(s32 arg0) {
     s32 i;
 
@@ -289,11 +290,14 @@ u32 func_80227308_ovl18(s32 arg0) {
     D_8022AE4C_ovl18.unk10 = (u32)gFrameBuffer - (u32)&D_8022FB50;
     i = 0;
     do {
-        D_803D6900[i + 0x1F80] = 1;
         gFrameBuffer[i] = 1;
+        D_803D6900[i + 0x1F80] = 1;
         i++;
     } while (i < 0x12C00);
     gtlCreateScene(&D_8022AE4C_ovl18);
     func_800BB3F0();
     return D_800D6B74;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_239080/func_80227308_ovl18.s")
+#endif
