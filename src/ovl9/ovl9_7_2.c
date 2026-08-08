@@ -95,7 +95,13 @@ void func_801F4234_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F427C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F4368_ovl9.s")
+extern FUNCLIST D_8021C400_ovl9;
+void func_8019F3B0_ovl7(void);
+
+void func_801F4368_ovl9(struct GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021C400_ovl9);
+    func_8019F3B0_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F43B8_ovl9.s")
 
