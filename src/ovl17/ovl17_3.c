@@ -18,6 +18,12 @@
 
 #include "ovl17.h"
 
+extern f32 D_801E5688_ovl17;
+extern f32 D_801E568C_ovl17;
+extern f32 D_801E5690_ovl17;
+extern f32 D_801E5694_ovl17;
+extern f32 D_801E5698_ovl17;
+
 struct Ovl17AnimInfo {
     u8 unk0;
     u8 unk1;
@@ -166,9 +172,9 @@ void func_801E1170_ovl17(struct GObj *arg0) {
     u32 temp_a0;
 
     temp_s1 = D_800E1B50[omCurrentObj->objId];
-    gEntitiesAngleXArray[omCurrentObj->objId] = random_soft_f32() * 6.2831855f;
-    gEntitiesAngleYArray[omCurrentObj->objId] = random_soft_f32() * 6.2831855f;
-    gEntitiesAngleZArray[omCurrentObj->objId] = random_soft_f32() * 6.2831855f;
+    gEntitiesAngleXArray[omCurrentObj->objId] = random_soft_f32() * D_801E5688_ovl17;
+    gEntitiesAngleYArray[omCurrentObj->objId] = random_soft_f32() * D_801E568C_ovl17;
+    gEntitiesAngleZArray[omCurrentObj->objId] = random_soft_f32() * D_801E5690_ovl17;
     func_800FD874(temp_s1->unk94->unk18, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId], gEntitiesAngleXArray[omCurrentObj->objId], gEntitiesAngleYArray[omCurrentObj->objId], gEntitiesAngleZArray[omCurrentObj->objId]);
     if (omCurrentObj->objId & 1) {
         temp_a0 = temp_s1->unk94->unk1C;
@@ -181,7 +187,7 @@ void func_801E1170_ovl17(struct GObj *arg0) {
     temp_s1->unk8C = &D_801CA28C_ovl7;
     temp_s1->unk90 = 0;
     D_800E0D50[omCurrentObj->objId] = -1;
-    D_800E7B20[omCurrentObj->objId] = 9999.0f;
+    D_800E7B20[omCurrentObj->objId] = D_801E5694_ovl17;
     D_800DF150[omCurrentObj->objId] = func_801E1424_ovl17;
     func_800AFBB4(0, omCurrentObj);
     func_800AF408();
@@ -287,7 +293,7 @@ void func_801E1960_ovl17(void) {
     }
     if ((D_800D7170 * 0.75f) <= var_f2) {
 big:
-        sp34 = 31.199999f;
+        sp34 = D_801E5698_ovl17;
     } else {
         sp34 = 24.0f;
     }

@@ -18,6 +18,11 @@
 
 #include "ovl17.h"
 
+extern f32 D_801E5558_ovl17;
+extern f32 D_801E5578_ovl17;
+extern f32 D_801E557C_ovl17;
+extern f32 D_801E5580_ovl17;
+
 struct Ovl17CamPos {
     Vector unk0;
     s32 unkC;
@@ -109,7 +114,7 @@ void func_801DC98C_ovl17(void) {
         return;
     }
     if (D_800D7098.unk0 == 1) {
-        D_800D7168 += 1.2f;
+        D_800D7168 += D_801E5558_ovl17;
     }
     D_800D7B38 = D_800D7B20;
     func_801DCB44_ovl17(&sp2C);
@@ -150,7 +155,7 @@ void func_801DD040_ovl17(Vector *arg0) {
     Vector sp1C;
 
     sp1C.x = 0.0f;
-    sp1C.y = D_800D7164 + 10000.0f;
+    sp1C.y = D_800D7164 + D_801E557C_ovl17;
     sp1C.z = D_800D716C - D_800D7168;
     func_801DD09C_ovl17(&sp1C, arg0);
 }

@@ -18,6 +18,12 @@
 
 #include "ovl17.h"
 
+extern f32 D_801E55E8_ovl17;
+extern f32 D_801E55EC_ovl17;
+extern f32 D_801E55F0_ovl17;
+extern f32 D_801E55F4_ovl17;
+extern f32 D_801E55F8_ovl17;
+
 extern f32 D_800D7170;
 extern f32 D_801E5700_ovl17;
 extern f32 D_801E5704_ovl17;
@@ -186,7 +192,7 @@ void func_801DE74C_ovl17(struct GObj *arg0) {
         temp_v0->flags = 0;
     }
     if (D_800E93A0[omCurrentObj->objId] > 0) {
-        func_801DF768_ovl17(-(D_800D7170 * 1.8f) * 3.0f);
+        func_801DF768_ovl17(-(D_800D7170 * D_801E55EC_ovl17) * 3.0f);
         D_800E93A0[omCurrentObj->objId] -= 1;
     }
     temp_a1 = D_800EA360[omCurrentObj->objId];
