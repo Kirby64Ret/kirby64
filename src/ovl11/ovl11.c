@@ -14,6 +14,14 @@
 #include "unk_structs/D_800DE350.h"
 #include "unk_structs/D_800E1B50.h"
 
+extern f32 D_801E0C0C_ovl11;
+extern f32 D_801E0C18_ovl11;
+extern f32 D_801E0C1C_ovl11;
+extern f32 D_801E0C20_ovl11;
+extern f32 D_801E0C30_ovl11;
+extern f32 D_801E0C34_ovl11;
+extern f32 D_801E0C40_ovl11;
+
 extern FUNCLIST D_801E0B00_ovl11;
 typedef struct Ovl11Color {
     u8 r;
@@ -170,7 +178,7 @@ void func_801DB34C_ovl11(void) {
     s32 temp_v0;
     s32 i;
 
-    temp_f22 = 670.0f;
+    temp_f22 = D_801E0C0C_ovl11;
 
     for (i = 0; i < 3; i++) {
         temp_v0 = request_track_general(0x19, 0x1E, 0x3C);
@@ -224,7 +232,7 @@ void func_801DB7D0_ovl11(void) {
     if (D_800E9720[omCurrentObj->objId] == 0) {
         if (D_800E4C50[omCurrentObj->objId] < D_800EA8A0[omCurrentObj->objId]) {
             phi_f0 = ABSF(temp_f0);
-            if (phi_f0 <= 0.3926990926f) {
+            if (phi_f0 <= D_801E0C18_ovl11) {
                 D_800EA520[omCurrentObj->objId] = 2;
                 return;
             }
@@ -247,7 +255,7 @@ void func_801DB9E0_ovl11(struct GObj *arg0) {
     D_800EA520[omCurrentObj->objId] = 0;
     D_800E9720[omCurrentObj->objId] = 0;
     D_800D70D8 = 6.0f;
-    D_800EA8A0[omCurrentObj->objId] = 0.01745329238f;
+    D_800EA8A0[omCurrentObj->objId] = D_801E0C1C_ovl11;
     D_800EC2E0[omCurrentObj->objId].as_s32 = 0x1E;
     D_800E7CE0[omCurrentObj->objId] = 0x6C;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
@@ -459,7 +467,7 @@ void func_801DC8F8_ovl11(struct GObj *arg0) {
     D_800EA520[omCurrentObj->objId] = 0;
     D_800E9720[omCurrentObj->objId] = 0;
     D_800D70D8 = 6.0f;
-    D_800EA8A0[omCurrentObj->objId] = 0.03490658477f;
+    D_800EA8A0[omCurrentObj->objId] = D_801E0C20_ovl11;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     D_800E9560[omCurrentObj->objId] = -1;
     D_800E93A0[omCurrentObj->objId] = D_800E9560[omCurrentObj->objId];
@@ -795,11 +803,11 @@ void func_801DE548_ovl11(struct GObj *arg0) {
         func_800AA864(0x10408, 1);
     }
     if (D_800E9FE0[omCurrentObj->objId].as_s32 == 1) {
-        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 2.700000048f;
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E0C30_ovl11;
         D_800E3210[omCurrentObj->objId] = 12.0f;
         D_800E3750[omCurrentObj->objId] = -1.0f;
     } else {
-        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.400000095f;
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E0C34_ovl11;
         D_800E3210[omCurrentObj->objId] = 8.0f;
         D_800E3750[omCurrentObj->objId] = -1.0f;
     }
@@ -1029,7 +1037,7 @@ void func_801DFACC_ovl11(struct GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E3C90[omCurrentObj->objId] = D_801E0C40_ovl11;
 }
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DFB44_ovl11.s")

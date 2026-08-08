@@ -10,6 +10,10 @@
 #include "unk_structs/D_800D7098.h"
 #include "ovl2/ovl2_8.h"
 
+extern f32 D_801E30B4_ovl14;
+extern f32 D_801E30B8_ovl14;
+extern f32 D_801E30BC_ovl14;
+
 extern u32 D_801CB470;
 extern s32 D_800D7154;
 
@@ -496,12 +500,12 @@ void func_801DFC28_ovl14(GObj *arg0) {
 
 void func_801DFC30_ovl14(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 1;
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.30967742f;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E30B4_ovl14;
     ohSleep(0xA);
     D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.096774f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E30B8_ovl14;
     ohSleep(0x122);
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.30967742f;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E30BC_ovl14;
     ohSleep(0xA);
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
