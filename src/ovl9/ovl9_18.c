@@ -1,5 +1,13 @@
-#include <ultra64.h>
-#include <macros.h>
+#include "common.h"
+#include "GObj.h"
+#include "track_arrays.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/util.h"
+
+extern FUNCLIST D_8021CE10_ovl9;
+extern FUNCLIST D_8021CE20_ovl9;
+extern FUNCLIST D_8021CE30_ovl9;
+extern FUNCLIST D_8021CE44_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021A1A0_ovl9.s")
 
@@ -9,7 +17,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021A418_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021A494_ovl9.s")
+void func_8021A494_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021CE10_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021A4DC_ovl9.s")
 
@@ -27,11 +37,15 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021AB6C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021ABB4_ovl9.s")
+void func_8021ABB4_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021CE20_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021ABFC_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021ACA4_ovl9.s")
+void func_8021ACA4_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, &D_8021CE30_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021ACEC_ovl9.s")
 
@@ -53,7 +67,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021B528_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021B58C_ovl9.s")
+void func_8021B58C_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, &D_8021CE44_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021B5D4_ovl9.s")
 

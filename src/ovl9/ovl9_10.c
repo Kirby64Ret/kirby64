@@ -1,9 +1,25 @@
-#include <ultra64.h>
-#include <macros.h>
+#include "common.h"
+#include "GObj.h"
+#include "track_arrays.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/util.h"
+
+extern FUNCLIST D_8021C7B4_ovl9;
+extern FUNCLIST D_8021C7D0_ovl9;
+extern FUNCLIST D_8021C7E8_ovl9;
+extern FUNCLIST D_8021C800_ovl9;
+extern FUNCLIST D_8021C828_ovl9;
+extern FUNCLIST D_8021C838_ovl9;
+extern FUNCLIST D_8021C83C_ovl9;
+extern FUNCLIST D_8021C844_ovl9;
+extern FUNCLIST D_8021C86C_ovl9;
+extern FUNCLIST D_8021C89C_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80201DE0_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80201E40_ovl9.s")
+void func_80201E40_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_8021C7B4_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80201E88_ovl9.s")
 
@@ -25,7 +41,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_8020246C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80202518_ovl9.s")
+void func_80202518_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, &D_8021C7D0_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80202560_ovl9.s")
 
@@ -43,7 +61,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80202A4C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80202AD8_ovl9.s")
+void func_80202AD8_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_8021C7E8_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80202B20_ovl9.s")
 
@@ -63,7 +83,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802031D4_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802033B0_ovl9.s")
+void func_802033B0_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C800_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802033F8_ovl9.s")
 
@@ -91,7 +113,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80203F84_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80203FC8_ovl9.s")
+void func_80203FC8_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, &D_8021C828_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204010_ovl9.s")
 
@@ -107,11 +131,15 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204484_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204500_ovl9.s")
+void func_80204500_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 1, &D_8021C838_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204548_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802045F8_ovl9.s")
+void func_802045F8_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 1, &D_8021C83C_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204640_ovl9.s")
 
@@ -119,7 +147,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802046C4_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204750_ovl9.s")
+void func_80204750_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C844_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204798_ovl9.s")
 
@@ -155,7 +185,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802054B8_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_8020554C_ovl9.s")
+void func_8020554C_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 6, &D_8021C86C_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80205594_ovl9.s")
 
@@ -189,7 +221,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80206274_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802063AC_ovl9.s")
+void func_802063AC_ovl9(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 6, &D_8021C89C_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802063F4_ovl9.s")
 

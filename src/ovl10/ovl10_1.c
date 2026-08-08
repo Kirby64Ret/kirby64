@@ -1,11 +1,18 @@
-#include <ultra64.h>
-#include <macros.h>
+#include "common.h"
+#include "GObj.h"
+#include "track_arrays.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/util.h"
+
+extern FUNCLIST D_801F4290_ovl10;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DBC00_ovl10.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DBD38_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DBDB8_ovl10.s")
+void func_801DBDB8_ovl10(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 18, &D_801F4290_ovl10);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DBE00_ovl10.s")
 

@@ -1,5 +1,14 @@
-#include <ultra64.h>
-#include <macros.h>
+#include "common.h"
+#include "GObj.h"
+#include "track_arrays.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/util.h"
+
+extern FUNCLIST D_8021BAE8_ovl9;
+extern FUNCLIST D_8021BB40_ovl9;
+extern FUNCLIST D_8021BC00_ovl9;
+extern FUNCLIST D_8021BC20_ovl9;
+extern FUNCLIST D_8021BC40_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D0C60_ovl9.s")
 
@@ -11,7 +20,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D0F1C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D0FAC_ovl9.s")
+void func_801D0FAC_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 8, &D_8021BAE8_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D0FF4_ovl9.s")
 
@@ -63,7 +74,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D3618_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D3698_ovl9.s")
+void func_801D3698_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021BB40_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D36E0_ovl9.s")
 
@@ -135,7 +148,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D6A58_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D6A94_ovl9.s")
+void func_801D6A94_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8021BC00_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D6ADC_ovl9.s")
 
@@ -165,7 +180,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D78B8_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D78F0_ovl9.s")
+void func_801D78F0_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021BC20_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D7938_ovl9.s")
 
@@ -191,7 +208,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D8198_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D8218_ovl9.s")
+void func_801D8218_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8021BC40_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D8260_ovl9.s")
 

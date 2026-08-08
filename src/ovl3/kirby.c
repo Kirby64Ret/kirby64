@@ -1,9 +1,16 @@
-#include <ultra64.h>
-#include <macros.h>
+#include "common.h"
+#include "GObj.h"
+#include "track_arrays.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/util.h"
+extern FUNCLIST D_80196990_ovl3;
+extern FUNCLIST D_80196CA8_ovl3;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016BF60_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016C510_ovl3.s")
+void func_8016C510_ovl3(GObj *arg0) {
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 86, &D_80196990_ovl3);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016C558_ovl3.s")
 
@@ -137,7 +144,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80177000_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80177098_ovl3.s")
+void func_80177098_ovl3(GObj *arg0) {
+    utilFuncTableJump(D_800DDE10[omCurrentObj->objId], 2, &D_80196CA8_ovl3);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801770E0_ovl3.s")
 

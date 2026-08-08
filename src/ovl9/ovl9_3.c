@@ -1,5 +1,10 @@
-#include <ultra64.h>
-#include <macros.h>
+#include "common.h"
+#include "GObj.h"
+#include "track_arrays.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/util.h"
+
+extern FUNCLIST D_8021BE08_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DC8C0_ovl9.s")
 
@@ -73,7 +78,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DF838_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DF8B8_ovl9.s")
+void func_801DF8B8_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021BE08_ovl9);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DF900_ovl9.s")
 
