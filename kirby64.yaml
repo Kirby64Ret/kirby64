@@ -660,6 +660,8 @@ segments:
     - [0x1FDA00, data, ovl13/ovl13]
     - [0x1fdd80, .rodata, ovl13/code_1FBD40]
     - [0x1fdd98, data, ovl13/ovl13_2]
+    - [0x1fdda0, .rodata, ovl13/code_1FC420]
+    - [0x1fddc4, data, ovl13/ovl13_3]
     - [0x1FDDD0]
     - {type: bss, vram: 0x801e5e50, name: ovl13/ovl13}
 

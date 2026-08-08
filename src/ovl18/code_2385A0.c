@@ -103,7 +103,33 @@ void func_80225EB8_ovl18(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_80225FA8_ovl18.s")
 
+#ifdef MIPS_TO_C
+void func_8022612C_ovl18(UNUSED s32 arg0) {
+    struct UnkStruct800E1B50 *sp2C = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    sp2C->unk98 = &D_8022AAF0_ovl18;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 4.0f;
+    D_800E3750[omCurrentObj->objId] = -0.25300002098083496f;
+    D_800E3C90[omCurrentObj->objId] = 13.0f;
+    func_800AA018(0x10031);
+    play_sound(0x165);
+    while (1) {
+        if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+            D_800E3210[omCurrentObj->objId] = 0.0f;
+            break;
+        }
+        ohSleep(1);
+    }
+    sp2C->unk98 = &D_8022AB14_ovl18;
+    func_800AA154(0x10030);
+    func_800AA018(0x1002F);
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_8022612C_ovl18.s")
+#endif
 
 void func_80226294_ovl18(UNUSED s32 arg0) {
 
@@ -154,6 +180,12 @@ void func_802265FC_ovl18(UNUSED s32 arg0) {
     curObjSleepForever(D_800E6690);
 }
 
+// Must stay a pragma: the listing carries 0x10 bytes of alignment padding after
+// its .size directive, which vanishes if this is compiled from C.
+#ifdef MIPS_TO_C
 void func_802266C8_ovl18(UNUSED s32 arg0) {
 
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_802266C8_ovl18.s")
+#endif

@@ -41,7 +41,7 @@ void func_8019D958_ovl7(u16);
 void func_801A3280_ovl7(void);
 void func_8019BB58_ovl7(void);
 void func_801A0D50_ovl7(void *);
-s32 func_801ACC34_ovl7(s32, s32, s32);
+s32 func_801ACC34_ovl7(s32, s32);
 extern f32 D_800D6E5C;
 #include "ovl1/ovl1_2_2.h"
 
