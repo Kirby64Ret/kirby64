@@ -1098,8 +1098,7 @@ struct DObj *omDObjAddChild(struct DObj *dobj, void *arg1) {
     return newDObj;
 }
 
-void func_80009DF4(void *arg0) {
-    DObj *dobj = arg0;
+void func_80009DF4(DObj *dobj) {
     s32 i;
     struct AObj *current_aobj;
     struct AObj *next_aobj;
@@ -1323,10 +1322,10 @@ void omGDeleteObj(GObj *gobj) {
     HS64_GObjRelease(gobj);
 }
 
-// i genuinely don't know what's going on here
-#ifdef NON_MATCHING
 void omGMoveCommon(s32 addWhere, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
     GObjProcess *proc;
+    GObjProcess *head;
+    GObjProcess *next;
 
     if (link >= 0x20) {
         fatal_printf("omGMoveCommon() : link num over : link = %d : id = %d\n", link, gobj->objId);
@@ -1335,9 +1334,12 @@ void omGMoveCommon(s32 addWhere, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
     if (gobj == NULL) {
         gobj = omCurrentObj;
     }
-    proc = gobj->procListHead;
+    head = gobj->procListHead;
+
     gobj->procListHead = NULL;
-    gobj->procListTail = 0;
+    gobj->procListTail = NULL;
+
+    proc = head;
 
     while (proc != NULL) {
         HS64_GObjProcessReleasePri(proc);
@@ -1347,7 +1349,8 @@ void omGMoveCommon(s32 addWhere, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
     func_80008528(gobj);
     gobj->link = link;
     gobj->pri = pri;
-    switch (addWhere) { /* irregular */
+
+    switch (addWhere) {
         case 0:
             omLinkGObjAfterSamePriority(gobj);
             break;
@@ -1361,14 +1364,15 @@ void omGMoveCommon(s32 addWhere, GObj *gobj, u8 link, u32 pri, GObj *arg4) {
             omLinkGObjAfter(gobj, arg4->prev);
             break;
     }
+
+    proc = head;
+
     while (proc != NULL) {
+        next = proc->next;
         HS64_GObjProcessLink(proc);
-        proc = proc->next;
+        proc = next;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/object_manager/omGMoveCommon.s")
-#endif
 
 void func_8000A498(GObj *arg0, u8 arg1, s32 arg2) {
     omGMoveCommon(0, arg0, arg1, arg2, NULL);

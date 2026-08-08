@@ -386,6 +386,6 @@ OMMtx* omCameraAddMtx(Camera *cam, u8 kind, u8 arg2);
 // UNNAMED functions
 void func_80009918(MObj *mobj);
 s32 func_8000B4D4(s32 link, struct GObj *(*cb)(struct GObj *, u32), void *param, s32 single);
-void func_80009DF4(void *);
+void func_80009DF4(struct DObj *);
 
 #endif
