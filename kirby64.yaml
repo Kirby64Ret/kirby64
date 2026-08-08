@@ -640,6 +640,8 @@ segments:
     - [0x1EB520, c, ovl12/code_1EB520]
     - [0x1F18D0, c, ovl12/code_1F18D0]
     - [0x1F2DE0, data, ovl12/ovl12]
+    - [0x1F3060, .rodata, ovl12/code_1EB520]
+    - [0x1F3120, .rodata, ovl12/code_1F18D0]
     - [0x1F3160]
     - {type: bss, vram: 0x801e2e20, name: ovl12/ovl12}
 
