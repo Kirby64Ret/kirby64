@@ -264,8 +264,16 @@ $(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).elf
 	@python3 tools/progress2.py -m
 
 
+# include/asmpp_prelude.inc is tools/asm-processor's own prelude.inc with one
+# change: `jlabel` is `.global`. Jump tables here live in a separate `rodata`
+# subsegment, so their `.word .L8...` entries reference the label from another
+# object and it has to be exported -- otherwise converting a jump-table
+# function to #pragma GLOBAL_ASM assembles fine but fails at link. Kept in
+# include/ rather than patched into the submodule so a fresh clone builds.
+ASMPP_PRELUDE := include/asmpp_prelude.inc
+
 ifeq ($(PROGRESS), 0)
-$(GLOBAL_ASM_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py $(CC) -- $(AS) $(ASFLAGS) --
+$(GLOBAL_ASM_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py --asm-prelude $(ASMPP_PRELUDE) $(CC) -- $(AS) $(ASFLAGS) --
 endif
 
 setup:
