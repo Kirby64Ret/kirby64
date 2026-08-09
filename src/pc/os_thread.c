@@ -118,6 +118,29 @@ int pc_in_event_delivery;
 static ucontext_t sBootCtx;
 static int sSchedReady;
 
+/* WHICH CONTEXT ARE WE PHYSICALLY ON. Not the same question as "which thread
+ * is running", and conflating the two was a real bug.
+ *
+ * __osRunningThread is the SCHEDULER's answer, and the scheduler deliberately
+ * sets it to NULL before switching away -- pc_block_on() does exactly that,
+ * because a blocked thread is not running by any definition the game would
+ * recognise. But the CPU is still standing on that thread's stack until
+ * swapcontext() executes, so "where do I save the outgoing registers" has a
+ * different answer, and it must be that thread's own slot.
+ *
+ * Saving into sBootCtx instead (which is what deriving the outgoing context
+ * from __osRunningThread does) loses the blocked thread's context: the next
+ * swapcontext(&sBootCtx, ...) from any other thread overwrites it, and when
+ * the blocked thread is finally made runnable again it is resumed from a
+ * ucontext_t that was last written by getcontext() at creation time -- a
+ * register set with a stale stack pointer. It survives with two alternating
+ * threads because sBootCtx happens to round-trip; Kirby 64 has eight, and it
+ * crashes on the third distinct blocker with a program counter pointing into
+ * .bss.
+ *
+ * NULL means the boot context (cboot's), which owns no PCThread. */
+static PCThread *sCurCtx;
+
 extern int pc_ints_enabled(void);
 
 /* ------------------------------------------------------------- side table */
@@ -257,9 +280,8 @@ void pc_idle(void) {
 static void trampoline(void);
 
 static void dispatch(void) {
-    OSThread *prev = __osRunningThread;
     OSThread *next;
-    PCThread *pp;
+    PCThread *from = sCurCtx;
     PCThread *np;
 
     for (;;) {
@@ -274,25 +296,23 @@ static void dispatch(void) {
     next->state = OS_STATE_RUNNING;
     __osRunningThread = next;
 
-    if (next == prev) {
-        return;
-    }
-
     np = slot_of(next);
-    pc_trace(PC_TR_SCHED, "[sched] %s -> id %d pri %d\n",
-             prev ? "switch" : "enter", (int)next->id, (int)next->priority);
+    if (np == from) {
+        /* Already standing on that context -- nothing to switch. */
+        return;
+    }
 
-    if (prev == NULL) {
-        /* First ever dispatch: leave the boot context behind. */
-        swapcontext(&sBootCtx, &np->uc);
-        return;
-    }
-    pp = slot_of(prev);
-    if (pp == NULL) {
-        swapcontext(&sBootCtx, &np->uc);
-        return;
-    }
-    swapcontext(&pp->uc, &np->uc);
+    pc_trace(PC_TR_SCHED, "[sched] %s -> id %d pri %d\n",
+             from ? "switch" : "enter", (int)next->id, (int)next->priority);
+
+    sCurCtx = np;
+    /* The outgoing register set goes to the context we are ON, which is
+     * `from` -- see the sCurCtx note above. The boot context has no slot. */
+    swapcontext(from ? &from->uc : &sBootCtx, &np->uc);
+
+    /* Reached again when something switches back to `from`. Restore the
+     * bookkeeping to match the physical truth. */
+    sCurCtx = from;
 }
 
 void pc_make_runnable(OSThread *t) {

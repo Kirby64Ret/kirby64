@@ -66,7 +66,17 @@ def target_words(listing_path):
     return words, texts
 
 def compile_file(cfile):
-    obj = os.path.join('build', cfile[:-2] + '.o')
+    # Write UNDER build/verify/, never to build/<cfile>.o itself.
+    #
+    # Sharing make's object path poisons the next build. Running
+    # `VERIFY_CC=cc_o3.py verify.py src/main/audio.c` left an -O3 audio.o where
+    # make expects an -O2 one; make did not rebuild it (source older than
+    # object) and the following link produced 33 phantom REAL DEFECT lines
+    # across a file nobody had touched. That cost a full bad build to diagnose.
+    #
+    # The same hazard exists for a merely non-matching draft: the object lands
+    # looking current even though it would fail to link.
+    obj = os.path.join('build/verify', cfile[:-2] + '.o')
     os.makedirs(os.path.dirname(obj), exist_ok=True)
     opt = OPT_OVERRIDES.get(cfile, '-O2')
     # n_audio was built at -O3, so main/libn_audio*.c cannot match at -O2 no

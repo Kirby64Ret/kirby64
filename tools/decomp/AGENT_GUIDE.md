@@ -1573,3 +1573,76 @@ func_801802A8_ovl5, func_80182FE8_ovl5 (8 diffs each), plus func_800BDF2C
 
 Anyone who works out the source form that moves that bump closes seven
 functions at once. That is a better return than any single conversion left.
+
+# The audio TUs, resolved
+
+`-O3` is now wired into the ROM build for `src/main/libn_audio.c` and
+`src/main/libn_audio_2.c`, and the ROM stays byte-exact. No `ujoin` shim was
+needed: asm-processor accepts a multi-token compiler, so `cc_o3.py` drops in as
+a per-object `CC` override. The override must sit AFTER the
+`$(GLOBAL_ASM_O_FILES)` assignment -- for one target the last target-specific
+assignment wins.
+
+**`src/main/audio.c` must stay at -O2.** At -O3 its disassembly changes in 2578
+places while the ROM is byte-exact at -O2. It is game code, not library code.
+
+**IDO 5.3 is ruled out**, and it looked plausible: `libreultra/Makefile` builds
+libnaudio with `tools/ido-5.3recomp` at `-mips2 -O3`, and four real
+`libn_audio.a` members land immediately before this region. Measured on
+libn_audio_2.c: 7.1 -O3 gives 22 match / 0 diff, 5.3 -O3 gives 17 / 5. 7.1 -O3
+is correct.
+
+## Proven IPA-blocked in the audio TUs -- do not re-litigate
+
+No `ujoin` means no inlining and no custom calling conventions. These read
+arguments from registers o32 cannot produce:
+
+* `func_8002581C` (`__readVarLen`) takes its two arguments in **$t2/$t3**. That
+  poisons every caller: `alCSeqNew`, `alCSeqNextEvent` (which additionally has
+  `__alCSeqGetTrackEvent` fully inlined -- 190 words, one `jr $ra`) and
+  `alCSeqNewMarker`.
+* `func_80023B34` takes its argument in **$s1**, blocking `func_80023C48` and
+  `func_80023D00`.
+* `func_80026460` reads a pointer from `$a0` AND a float from `$f12`
+  simultaneously.
+
+## libn_audio.c is NOT padding-limited
+
+44 of its 47 remaining pragmas classify `clean` (pad 0) -- the vein is wide
+open. libn_audio_2.c is the padded one, 13 of 22.
+
+Seven functions across both files verify MATCH at -O3 and are blocked ONLY by
+the inter-object 16-byte alignment described earlier: `alCSPSetSeq`,
+`n_alSynSetPitch`, `func_8002CEC0`, `alCSPSetVol`, `n_alSynDelete`,
+`n_alSynAddPlayer`, `n_alSynStopVoice`. They are one yaml TU-split away from
+free.
+
+## Levers from the audio work
+
+1. **An inlined callee's parameter copy must be written as an explicit local.**
+   Where the ROM has `or $a0, $s0, $zero` after a call and then uses `$a0` for
+   one store and `$s0` for another, the original called a small function that
+   ujoin inlined. `ln = dl;` and using `ln` through the inlined body took
+   `func_80029888` from 20 diffs to MATCH.
+2. **`else { x = x; }` reproduces the duplicated store in a `bc1fl` delay
+   slot** -- the self-assignment has to be written explicitly.
+3. **`(f32)(s32)(x & 0xFFFF)` and `(f32)(u16)x` differ**: the u16 cast emits the
+   full u32-to-float fixup (`bgez` + 0x4F800000); mask-then-s32 gives a plain
+   `cvt.s.w`.
+4. **`x / (f32)65536` keeps `div.s`**; `65536.0f` strength-reduces.
+5. **Safe draft scanning in libn_audio.c**: replace every OTHER
+   `#pragma GLOBAL_ASM` line with a BLANK line, preserving the line count since
+   IDO is line-number sensitive. verify.py then compiles the file directly
+   rather than through asm-processor, which sidesteps the `libn_audio.a`
+   garbage-collection link trap entirely, and is faster.
+
+## verify.py no longer writes into build/
+
+It used to put its object at `build/<cfile>.o`, which is where make expects
+one. Running it with a non-default compiler therefore poisoned the next build:
+an -O3 `audio.o` sat where make wanted -O2, make did not rebuild it (source
+older than object), and the following link produced 33 phantom REAL DEFECT
+lines across a file nobody had edited.
+
+Objects now go to `build/verify/`. If you are using an older checkout, delete
+the object or touch the .c after verifying at a non-build optimisation level.
