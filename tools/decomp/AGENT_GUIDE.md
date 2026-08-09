@@ -1312,3 +1312,21 @@ different reason than padding: `D_801CE14C_ovl7` exists ONLY inside that
 pragma's listing, not in `asm/data/ovl7/`, so converting the function removes
 rodata the segment still needs. Exclude any listing containing the string
 `rodata` unless the file has a migrated `.rodata` subsegment.
+
+## Scanning drafts in src/main/libn_audio.c breaks the LINK, not the match
+
+Un-guarding a `#ifdef MIPS_TO_C` draft is normally free: if it does not match
+you guard it again and nothing is lost. In `src/main/libn_audio.c` it is not
+free. Several drafts call symbols that live only in `build/libn_audio.a`, and
+those archive members are garbage-collected unless something already references
+them. Un-guarding `n_alSynNew` made the whole tree stop linking:
+
+    `n_alFxPull' referenced in section `.text' of build/src/main/libn_audio.o:
+    defined in discarded section `.text' of build/libn_audio.a(n_reverb.o)
+
+A broken link is much worse than a broken function, because every other agent's
+gate runs `make` and then verify_rom.py, and verify_rom REFUSES to report
+against a stale ELF. One un-guarded draft therefore stalls everyone.
+
+So: scan drafts in that file on a TEMP COPY, never in place. Everywhere else,
+in-place is fine.
