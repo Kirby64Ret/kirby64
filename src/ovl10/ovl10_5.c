@@ -78,7 +78,22 @@ void func_801F0014_ovl10(void *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F0EC8_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F111C_ovl10.s")
+extern u8 D_800D6C10;
+extern u8 D_800D6C11[];
+
+s32 func_801F111C_ovl10(void) {
+    s32 i;
+
+    if (D_800D6C10 == 0) {
+        return 0;
+    }
+    for (i = 0; i < 80; i++) {
+        if (D_800D6C11[i] == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F11A8_ovl10.s")
 

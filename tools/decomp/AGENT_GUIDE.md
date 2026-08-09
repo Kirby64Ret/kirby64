@@ -978,3 +978,49 @@ Honest record, so nobody repeats the exercise:
 Sibling agents write src/ concurrently. A harness that edits a file and
 restores it can revert another agent's work in the window between. Use a TEMP
 COPY instead (scratchpad/jb_try.py does this correctly).
+
+## Levers that closed functions in ovl5 (wave 4)
+
+- UNROLLED LOOPS keep paying: 9 of 44 matches were straight-line listings that
+  are plain 4-iteration loops in the source. One was a GUARDED 2-diff draft
+  written as hand-unrolled ifs -- rewriting it as `for (i=0;i<4;i++)` matched
+  instantly. Note this lever is function-specific: a tree-wide retry pass found
+  it did NOT apply to several functions whose diffs merely looked similar.
+  Read the listing for the actual unroll, do not assume from the diff shape.
+- `(u32)` CASTS ON COMPARISONS fork a constant IDO would otherwise hoist into
+  a saved register. One function compared and stored 0x29A six times; IDO
+  parked it in $s0 (46 diffs). Casting only the COMPARISON operands to (u32),
+  leaving the stores s32, gave the ROM's `addiu $at, $zero, 0x29A` per compare
+  -> MATCH. Type-splitting the store did NOT work; the cast on the compare did.
+- `if (!r)` KEEPS IDO's signed-% correction; `if (r == 0)` DELETES it. For
+  `r = x % 8`, `r == 0` folds to `(x & 7) == 0` with no bgez/addiu fixup. A
+  `switch (r)` with one case also folds; with several cases it forces the true
+  modulo.
+- `goto` INTO a shared return block placed inside a switch's case group, where
+  `if (range) return 1;` duplicates the block (48 diffs).
+- `((u16 *) omCurrentObj)[1]` produces `lhu $a0, 0x2($t0)`;
+  `(u16) omCurrentObj->objId` gives `lw` + `andi`.
+- Declaring an INTEGER THAT LIVES IN A SAVED REGISTER before a struct local
+  moves the struct 4 bytes without growing the frame, where a leading `s32
+  pad` grows it by 8.
+
+## A second missing-symbol blocker, same class as D_800D71E8
+
+func_80164DF0_ovl5 and func_80176530_ovl5 are fully decoded but end with four
+stores to D_800D7178 + 0x58/0x5C/0x60/0x64 in `lui $at; sw reg, %lo(sym)($at)`
+form. Proven by A/B compile that ONLY four separate named `extern s32` globals
+produce it -- a struct member, an array with constant indices, and an absolute
+`*(s32*)0x800D71D0` all CSE the base or use the wrong register class.
+D_800D7178 is one 0x70-byte symbol in symbol_addrs.txt with no sub-symbols.
+
+Together with func_80159DE8_ovl4 (needs 0x800D71F8/0x800D71FC), that is three
+functions blocked purely on splitting bss blobs into named sub-symbols. This
+needs splat to regenerate the data listings, which currently aborts on the
+ovl3 rodata name collision (54 subsegment pairs need renaming).
+
+## Concurrent builds can corrupt objects
+
+A link failed with `bad reloc symbol index (0x80805 >= 0x254) for offset
+0x8080808` -- a partially-written .o from a sibling agent compiling the same
+file. Delete that object and its .asmproc.d and rebuild; it is not a real
+defect.
