@@ -11,22 +11,112 @@ typedef struct {
     ALEventQueue        evtq;
 } N_CSPlayer;
 
+typedef struct {
+    /* 0x00 */ u8  unk00;
+    /* 0x01 */ u8  unk01;
+    /* 0x02 */ u8  unk02;
+    /* 0x03 */ u8  pad03[9];
+    /* 0x0C */ s16 unk0C;
+} KSound;
+
+typedef struct {
+    /* 0x00 */ KSound *unk00;
+    /* 0x04 */ s16 unk04;
+    /* 0x06 */ u8  unk06;
+    /* 0x07 */ u8  unk07;
+    /* 0x08 */ u8  unk08;
+    /* 0x09 */ u8  unk09;
+    /* 0x0A */ u8  unk0A;
+    /* 0x0B */ u8  unk0B;
+    /* 0x0C */ f32 unk0C;
+    /* 0x10 */ u8  unk10;
+    /* 0x11 */ u8  unk11;
+    /* 0x12 */ u8  unk12;
+    /* 0x13 */ u8  unk13;
+    /* 0x14 */ u8  unk14;
+    /* 0x15 */ u8  pad15[3];
+} KChanState;
+
+typedef struct {
+    /* 0x00 */ u8 pad00[0x0C];
+    /* 0x0C */ u8 unk0C;
+    /* 0x0D */ u8 unk0D;
+} KEnvel;
+
+typedef struct KVoiceState {
+    /* 0x00 */ struct KVoiceState *next;
+    /* 0x04 */ u8 pad04[0x10];
+    /* 0x14 */ struct KVoiceState *unk14;
+    /* 0x18 */ u8 pad18[0x8];
+    /* 0x20 */ KEnvel *unk20;
+    /* 0x24 */ u8 pad24[0xC];
+    /* 0x30 */ u8 unk30;
+    /* 0x31 */ u8 unk31;
+    /* 0x32 */ u8 unk32;
+    /* 0x33 */ u8 unk33;
+    /* 0x34 */ u8 unk34;
+    /* 0x35 */ u8 unk35;
+    /* 0x36 */ u8 unk36;
+} KVoiceState;
+
+typedef struct {
+    /* 0x00 */ u8 pad00[0x3C];
+    /* 0x3C */ u8 unk3C;
+    /* 0x3D */ u8 pad3D[0x2B];
+    /* 0x68 */ KChanState *chanState;
+    /* 0x6C */ KVoiceState *unk6C;
+    /* 0x70 */ KVoiceState *unk70;
+    /* 0x74 */ KVoiceState *unk74;
+} KSeqPlayer;
+
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002AD90.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002AE74.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002AF60.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B03C.s")
+void func_8002B03C(KSeqPlayer *seqp, KSound *sound, s32 chan) {
+    seqp->chanState[chan].unk00 = sound;
+    seqp->chanState[chan].unk07 = sound->unk01;
+    seqp->chanState[chan].unk09 = 0x7F;
+    seqp->chanState[chan].unk08 = sound->unk02;
+    seqp->chanState[chan].unk04 = sound->unk0C;
+    seqp->chanState[chan].unk11 = sound->unk00;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B0A8.s")
+void func_8002B0A8(KSeqPlayer *seqp, s32 chan) {
+    seqp->chanState[chan].unk06 = 0;
+    seqp->chanState[chan].unk0A = 0;
+    seqp->chanState[chan].unk07 = 0x40;
+    seqp->chanState[chan].unk09 = 0x7F;
+    seqp->chanState[chan].unk08 = 5;
+    seqp->chanState[chan].unk0B = 0;
+    seqp->chanState[chan].unk04 = 0xC8;
+    seqp->chanState[chan].unk0C = 1.0f;
+    seqp->chanState[chan].unk12 = 0;
+    seqp->chanState[chan].unk13 = 0x5F;
+    seqp->chanState[chan].unk14 = 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B158.s")
 
 void func_8002B20C(void) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B214.s")
+typedef struct {
+    u8                  unk00[0x24];
+    s32                 unk24;
+} N_CSPTime;
+
+s32 func_8002B214(N_CSPTime *seqp, s32 arg1) {
+    s32 ret = 1000;
+    s32 delta = seqp->unk24 - arg1;
+
+    if (delta >= 0) {
+        return delta;
+    }
+    return ret;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B238.s")
 
@@ -34,17 +124,82 @@ void func_8002B20C(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B40C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B4B4.s")
+void func_8002B4B4(KSeqPlayer *seqp, void *arg1) {
+    KVoiceState *prev = NULL;
+    KVoiceState *cur = seqp->unk6C;
+    KVoiceState *target = (KVoiceState *)((u8 *)arg1 - 4);
+
+    while (cur != NULL) {
+        if (cur == target) {
+            if (prev != NULL) {
+                prev->next = cur->next;
+            } else {
+                seqp->unk6C = cur->next;
+            }
+            if (cur == seqp->unk70) {
+                seqp->unk70 = prev;
+            }
+            cur->next = seqp->unk74;
+            seqp->unk74 = cur;
+            return;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B524.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B59C.s")
+void func_8002B59C(KSeqPlayer *seqp, KSound *sound, s32 chan) {
+    seqp->chanState[chan].unk00 = sound;
+    seqp->chanState[chan].unk08 = sound->unk02;
+    seqp->chanState[chan].unk04 = sound->unk0C;
+    seqp->chanState[chan].unk11 = sound->unk00;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B5E8.s")
+u8 func_8002B5E8(KVoiceState *state, KSeqPlayer *seqp) {
+    s32 vol = seqp->chanState[state->unk31].unk07 + state->unk20->unk0C - 0x40;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B638.s")
+    if (vol <= 0) {
+        vol = 0;
+    }
+    if (vol >= 0x7F) {
+        vol = 0x7F;
+    }
+    return vol;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B6A8.s")
+KVoiceState *func_8002B638(KSeqPlayer *seqp, u8 arg1, u8 arg2) {
+    KVoiceState *state;
+
+    for (state = seqp->unk6C; state != NULL; state = state->next) {
+        if ((state->unk32 == arg1) && (state->unk31 == arg2) &&
+            (state->unk35 != 3) && (state->unk35 != 4)) {
+            return state;
+        }
+    }
+    return NULL;
+}
+
+KVoiceState *func_8002B6A8(KSeqPlayer *seqp, u8 arg1, u8 arg2, u8 arg3) {
+    KVoiceState *state = seqp->unk74;
+
+    if (state != NULL) {
+        seqp->unk74 = state->next;
+        state->next = NULL;
+        if (seqp->unk6C == NULL) {
+            seqp->unk6C = state;
+        } else {
+            seqp->unk70->next = state;
+        }
+        seqp->unk70 = state;
+        state->unk31 = arg3;
+        state->unk32 = arg1;
+        state->unk33 = arg2;
+        state->unk14 = state;
+    }
+    return state;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B70C.s")
 
@@ -54,13 +209,30 @@ void func_8002B20C(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C68C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C790.s")
+void func_8002C790(KSeqPlayer *seqp) {
+    s32 i;
+
+    for (i = 0; i < seqp->unk3C; i++) {
+        seqp->chanState[i].unk00 = NULL;
+        seqp->chanState[i].unk10 = 0;
+        func_8002B0A8(seqp, i);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C80C.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C990.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C9B0.s")
+typedef struct {
+    u8                  unk00[0x3A];
+    s16                 unk3A;
+    u8                  unk3C[0x3C];
+    u8                  unk78;
+} N_CSPVol;
+
+s16 func_8002C9B0(N_CSPVol *seqp) {
+    return (seqp->unk3A * seqp->unk78) >> 7;
+}
 
 void alSeqSetLoc(ALSeq *seq, ALSeqMarker *m) {
     seq->curPtr = m->curPtr;
@@ -227,7 +399,13 @@ void alCSPPlay(ALCSPlayer *seqp) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002D120.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002D180.s")
+void func_8002D180(ALCSPlayer *seqp) {
+    N_ALEvent evt;
+
+    evt.type = AL_SEQP_STOPPING_EVT;
+
+    n_alEvtqPostEvent(&((N_CSPlayer *) seqp)->evtq, &evt, 0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002D1B0.s")
 

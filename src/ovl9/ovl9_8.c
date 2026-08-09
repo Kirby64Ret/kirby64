@@ -12,6 +12,8 @@ extern void func_800AF27C(void);
 
 extern void func_8019F410_ovl7(struct DObj *);
 extern FUNCLIST D_8021C5AC_ovl9;
+extern void func_800AA864(s32, s32);
+extern s32 random_soft_s32_range(s32);
 extern FUNCLIST D_8021C588_ovl9;
 
 extern s32 D_801C8CFC;
@@ -140,7 +142,15 @@ void func_801F907C_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9124_ovl9.s")
+void func_801F9124_ovl9(struct GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    func_800A9EA4(0x100DB);
+    func_800AA864(0x100DA, 3);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 void func_801F8774_ovl9(struct GObj *);
 
@@ -218,7 +228,15 @@ void func_801F974C_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F97B8_ovl9.s")
+void func_801F97B8_ovl9(struct GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    func_800AFBB4(1, omCurrentObj);
+    func_800AA864(0x100B0, 1);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9858_ovl9.s")
 
@@ -296,7 +314,15 @@ void func_801FA28C_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FA2F8_ovl9.s")
+void func_801FA2F8_ovl9(struct GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    func_800AFBB4(1, omCurrentObj);
+    func_800AA864(0x100B0, 1);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FA398_ovl9.s")
 
@@ -464,7 +490,25 @@ void func_801FB468_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef MIPS_TO_C
+void func_801FB528_ovl9(void) {
+    s32 sp1C = D_800E9AA0[omCurrentObj->objId].as_s32;
+    s32 v;
+    s32 n;
+
+    v = random_soft_s32_range(2);
+    v = (v != 0) ? v : -1;
+    n = v + sp1C;
+    if (n >= 8) {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    } else {
+        v = (n >= 0) ? n : 7;
+        D_800E9AA0[omCurrentObj->objId].as_s32 = v;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB528_ovl9.s")
+#endif
 
 void func_801FB5D4_ovl9(void) {
     s32 v = D_800E9AA0[omCurrentObj->objId].as_s32;
