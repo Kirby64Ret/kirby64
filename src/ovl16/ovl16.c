@@ -134,7 +134,7 @@ extern s32 D_801D9948;
 extern s32 D_801D9A20;
 extern s32 D_801D9AB0;
 
-void func_800A9864(s32, s32, s32);
+s32 func_800A9864(s32, s32, s32);
 void func_801DF62C_ovl16(void);
 void func_800AA018(s32);
 void func_800AA154(s32);
@@ -509,7 +509,35 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
     return 0;
 }
 
+#ifdef NON_MATCHING
+/* 7/43: every instruction correct, frame 0x48 vs 0x40. The ROM declares only
+ * sp20 and sp1C (sp1C spilled at 0x1C, BELOW the struct); the anim-object
+ * pointer never gets a stack word here. Swept all six declaration orders, a
+ * nested block for temp_v0 and a re-call; L is 0x28 (mod 8 == 0) so the frame
+ * arithmetic cannot reach 0x40 while three locals are declared. */
+s32 func_801DC8E4_ovl16(s32 arg0) {
+    struct UnkStruct800E1B50 *sp1C;
+    struct Ovl16AnimObj *temp_v0;
+    struct Ovl16AnimInfo sp20;
+
+    sp1C = D_800E1B50[omCurrentObj->objId];
+    func_80111550(omCurrentObj->objId);
+    temp_v0 = func_80111C88(sp1C->unk8C, omCurrentObj->objId);
+    if (temp_v0 != NULL) {
+        if (arg0 != 0) {
+            temp_v0->unk24->unk8 = arg0;
+            temp_v0->unk24->unk18 = sp1C->unk80->unk10;
+        }
+        func_80111ECC(temp_v0);
+    }
+    func_80110B00(&sp20);
+    func_80110FD4(&sp20);
+    func_80110150(&sp20);
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DC8E4_ovl16.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DC990_ovl16.s")
 
@@ -623,7 +651,25 @@ void func_801DE840_ovl16(s32 arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DE8DC_ovl16.s")
+void func_801DE8DC_ovl16(s32 arg0) {
+    void func_800BC1FC(s32);
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9438;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAEF4;
+    D_800EBBE0[omCurrentObj->objId] = func_8019E0A4_ovl7(5, 2);
+    D_800E17D0[D_800EBBE0[omCurrentObj->objId]] = D_800E17D0[omCurrentObj->objId];
+    D_800E9020[D_800EBBE0[omCurrentObj->objId]] = D_800E9020[omCurrentObj->objId];
+    D_800E98E0[D_800EBBE0[omCurrentObj->objId]] = 1;
+    D_800D7098.unk1C = random_soft_s32_range(3);
+    D_800D7098.unk20 = random_soft_s32_range(0x23);
+    D_800D7098.unk24 = random_soft_s32_range(2);
+    D_800D7098.unk28 = 0;
+    ohSleep(0x1E);
+    func_800BC1FC((s32) D_800E7B20[omCurrentObj->objId]);
+    *(s32 *) &D_800D7098.unk0 = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 
 void func_801DEA94_ovl16(s32 arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
@@ -1412,7 +1458,14 @@ void func_801E8D58_ovl16(s32 arg0) {
         utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_801EFD48_ovl16[0]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E8DD8_ovl16.s")
+void func_801E8DD8_ovl16(s32 arg0) {
+    D_800E6A10[omCurrentObj->objId] = -1.0f;
+    func_800A9864(0x100B7, 0x23, 0x10);
+    gEntitiesPosZArray[omCurrentObj->objId] = 10.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesPosZArray[omCurrentObj->objId];
+    D_800E9E20[omCurrentObj->objId] = random_soft_s32_range(5);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 
 void func_801E8EA4_ovl16(s32 arg0) {
     s32 sp24;
@@ -1885,4 +1938,16 @@ void func_801EF32C_ovl16(s32 arg0) {
     func_801A04B8_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801EF3B0_ovl16.s")
+void func_801EF3B0_ovl16(s32 arg0, s32 arg1) {
+    D_800E6BD0[arg0] = D_800E6BD0[arg1];
+    D_800E5F90[arg0] = D_800E5F90[arg1];
+    gEntitiesNextPosYArray[arg0] = gEntitiesNextPosYArray[arg1];
+    D_800E6D90[arg0] = D_800E6D90[arg1];
+    D_800E6150[arg0] = D_800E6150[arg1];
+    gEntitiesPosYArray[arg0] = gEntitiesPosYArray[arg1];
+    D_800E6A10[arg0] = D_800E6A10[arg1];
+    gEntitiesAngleXArray[arg0] = gEntitiesAngleXArray[arg1];
+    gEntitiesAngleYArray[arg0] = gEntitiesAngleYArray[arg1];
+    gEntitiesAngleZArray[arg0] = gEntitiesAngleZArray[arg1];
+    D_800E8E60[arg0] = 0;
+}

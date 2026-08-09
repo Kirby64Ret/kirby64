@@ -64,3 +64,6 @@ tools/decomp/perm/
 
 # libultraship writes a runtime log here; it churns on every run of the port.
 logs/
+
+# libultraship writes its runtime config here on every run of the port.
+kirby64.cfg

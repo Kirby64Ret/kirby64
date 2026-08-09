@@ -180,23 +180,43 @@ static uint64_t now_ns(void) {
 
 /* --------------------------------------------------------------- start-up */
 
-/* Where the resource archive lives. LUS refuses to start a default Context
- * without one: ArchiveManager marks itself initialised only if it found at
- * least one archive, and CreateDefaultInstance returns nullptr otherwise.
+/* Where resources come from. TWO paths, and the split is not arbitrary.
  *
- * Kirby 64 has no .o2r yet -- Torch is built but no exporter config has been
- * written for this game -- so the port points LUS at a DIRECTORY, which
- * ArchiveManager mounts as a FolderArchive. An empty directory is a valid,
- * empty archive, and that is enough to get the window and the renderer up
- * while the asset pipeline is still missing. When Torch does produce a
- * kirby64.o2r, dropping it into this same directory is the whole change. */
-static std::string archive_dir(void) {
-    const char* env = getenv("KIRBY_ASSETS");
-    std::string dir = env ? env : "port/assets";
-
+ * LUS will not start without at least one archive: ArchiveManager marks itself
+ * initialised only if it found one, and a Context with an uninitialised
+ * ResourceManager is refused. It is not only the game's assets that live
+ * there either -- FAST3D ITSELF LOADS ITS SHADERS AS RESOURCES. gfx_opengl
+ * asks the ResourceManager for "shaders/opengl/default.shader.glsl" and calls
+ * abort() if it is missing, with the message "missing f3d.o2r?". A port that
+ * mounts nothing does not merely lack textures; it cannot draw at all.
+ *
+ *   port/assets   a plain directory, mounted as a FolderArchive. It holds
+ *                 libultraship's own shader, copied out of the LUS tree by
+ *                 tools/pc/stage_assets.sh, and anything else the port wants
+ *                 to serve loose during development.
+ *   port/o2r      where a Torch-built kirby64.o2r goes.
+ *
+ * They are SEPARATE DIRECTORIES because of a rule in
+ * ArchiveManager::GetArchiveListInPaths: if a directory contains any .o2r,
+ * .otr, .zip or .mpq, only those files are mounted and the directory itself is
+ * NOT mounted as a folder. Dropping kirby64.o2r into port/assets would
+ * therefore silently unmount the shaders and turn a working renderer into an
+ * abort. Keeping archives in their own directory makes that impossible.
+ *
+ * KIRBY_ASSETS overrides the first, KIRBY_O2R the second. */
+static std::vector<std::string> archive_paths(void) {
+    const char* assetsEnv = getenv("KIRBY_ASSETS");
+    const char* o2rEnv = getenv("KIRBY_O2R");
+    std::vector<std::string> paths;
     std::error_code ec;
-    std::filesystem::create_directories(dir, ec);
-    return dir;
+
+    paths.push_back(assetsEnv ? assetsEnv : "port/assets");
+    paths.push_back(o2rEnv ? o2rEnv : "port/o2r");
+
+    for (const auto& p : paths) {
+        std::filesystem::create_directories(p, ec);
+    }
+    return paths;
 }
 
 static bool lus_init(void) {
@@ -292,9 +312,20 @@ static bool lus_init(void) {
          * CreateDefaultInstance's rule and it exists so a component's Init can
          * look up siblings without an ordering dependency. */
         nlohmann::json rmArgs;
-        rmArgs["archivePaths"] = std::vector<std::string>{ archive_dir() };
+        rmArgs["archivePaths"] = archive_paths();
         rmArgs["validHashes"] = std::vector<uint32_t>{};
         resourceManager->Init(rmArgs);
+
+        /* KIRBY_PC_WINDOWED=1 forces a window. Worth having because LUS
+         * persists Window.Fullscreen.Enabled and a headless or remote session
+         * that once wrote `true` then hangs on every later start: SDL waits
+         * for a fullscreen mode switch that a virtual display never
+         * completes, IsFrameReady stays false, and DrawAndRunGraphicsCommands
+         * silently draws nothing. That failure looks exactly like a broken
+         * renderer and is not one. */
+        if (getenv("KIRBY_PC_WINDOWED") != nullptr) {
+            config->SetBool("Window.Fullscreen.Enabled", false);
+        }
 
         console->Init();
         sWindow->Init();

@@ -84,6 +84,7 @@ extern struct GObjProcess *gEntityGObjProcessArray[];
 // ovl1 bss
 extern s32 D_800E85A0[];
 extern s32 D_800D6B54;
+extern s32 D_800D6B58;
 extern u32 D_800D7010;
 
 // ovl2 data
@@ -957,7 +958,6 @@ void func_8011D0FC(struct DObj *arg0, s32 kind, int arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D0FC.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_8011D40C(void) {
     if (D_800D6B54 == 0) {
         D_8012E7D7 = 1;
@@ -971,11 +971,6 @@ void func_8011D40C(void) {
         play_music(0, 5);
     }
 }
-#else
-// Needs a prototype to match func_801212A4
-void func_8011D40C(void);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D40C.s")
-#endif
 
 #ifdef MIPS_TO_C
 

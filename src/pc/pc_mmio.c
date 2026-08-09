@@ -48,6 +48,7 @@
 #include <ultra64.h>
 #include <PR/rcp.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 
@@ -62,6 +63,57 @@
 #define MMIO_SIZE      (MMIO_PHYS_END - MMIO_PHYS_BASE)
 
 static int sMapped;
+
+/* ------------------------------------------------- the low-memory invariant
+ *
+ * THE PORT REQUIRES EVERY GAME-VISIBLE ADDRESS TO FIT IN 32 BITS, and this is
+ * the check that says so out loud instead of letting a violation turn into a
+ * wild pointer three subsystems away.
+ *
+ * The build is LP64 so that libultraship can be linked (it is a 64-bit
+ * library and that is not negotiable), but the GAME is not LP64-clean and
+ * cannot be made so without editing decompiled source that has to keep
+ * matching. The clearest example is src/main/dma.c:
+ *
+ *     void dma_read(u32 physAddr, void *vAddr, u32 size) {
+ *         dma_copy(gRomHandle, physAddr, (u32)vAddr, size, OS_READ);
+ *     }
+ *
+ * That `(u32)vAddr` is in the game's own source because on N64 it is exactly
+ * right. Under LP64 with a position-independent executable at 0x555555554000
+ * it silently drops the top 32 bits, and the first symptom is a memcpy to
+ * 0x5575b640 during the RSP boot-ucode DMA -- which is what the first 64-bit
+ * run actually did.
+ *
+ * The fix is not to edit the game. It is to make the truncation LOSSLESS by
+ * keeping everything the game can see below 4 GiB, which -no-pie does by
+ * loading the image at 0x400000 (see tools/pc/link.sh). Statics, bss and the
+ * brk heap all land there. Only libultraship's and SDL's own allocations go
+ * high, and no 32-bit game field ever holds one of those.
+ *
+ * The check below is cheap, runs once, and turns a future "why is this
+ * pointer garbage" into one line at startup. */
+extern u8 gEntryStack[];
+
+void pc_check_low_memory(void) {
+    uintptr_t stat = (uintptr_t)(void *)gEntryStack;
+    uintptr_t heap = (uintptr_t)(void *)&sMapped;
+    void *probe = malloc(64);
+    uintptr_t dyn = (uintptr_t)probe;
+
+    free(probe);
+
+    if (stat >> 32 || heap >> 32 || dyn >> 32) {
+        fprintf(stderr,
+                "[pc] FATAL: the image is not in low memory (bss %p, heap %p).\n"
+                "     Game code stores host pointers in 32-bit fields "
+                "(src/main/dma.c), which is\n"
+                "     only lossless below 4 GiB. Link with -no-pie -- see "
+                "tools/pc/link.sh.\n",
+                (void *)stat, probe);
+        abort();
+    }
+}
 
 int pc_mmio_map(void) {
     void *want = (void *)(uintptr_t)MMIO_ADDR;

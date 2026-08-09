@@ -173,5 +173,34 @@ void func_80180284_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_80189868_ovl5);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_801802A8_ovl5.s")
+#include "main/vi.h"
+#include "main/gtl.h"
+extern u16 gFrameBuffer[][320];
+extern u16 D_8012EB00[][320];
+extern void *D_8018EE60;
+extern u16 D_803D6900[];
+extern ScreenSettings D_80189898_ovl5;
+extern SceneSetup D_801898B4_ovl5;
+void func_800A74D8(void);
+
+// The (u32) cast on D_8012EB00 and the vu16 casts in the clear loop are both
+// load-bearing; see src/ovl5/ovl5_7.c func_8017CC3C_ovl5. verify.py reports
+// one reloc false positive on the a1 bound (%hi(D_803D6900)+2 / %lo+0x5800
+// links to 0x803FC100 exactly).
+void func_801802A8_ovl5(void) {{
+    s32 i;
+
+    func_800A74D8();
+    D_80189898_ovl5.zBuffer = (u16 *) ((u32) D_8012EB00 - 0x1900);
+    viApplyScreenSettings(&D_80189898_ovl5);
+    D_801898B4_ovl5.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
+    i = 0;
+    do {{
+        ((vu16 *) gFrameBuffer)[i] = 1;
+        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
+        i++;
+    }} while (i != 320 * 240);
+    gtlCreateScene(&D_801898B4_ovl5);
+}}
+
 

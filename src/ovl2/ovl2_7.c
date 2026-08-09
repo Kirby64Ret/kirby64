@@ -5668,13 +5668,13 @@ loop_17:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010DDA4.s")
 #endif
 
-#ifdef MIPS_TO_C
-// Near match: all instructions correct, but the 8-byte local sits at sp+0x38
-// instead of sp+0x30 (target leaves an 8-byte hole at the top of the frame).
+// Declaration order is load-bearing: var_s0/var_s1 live in saved registers but
+// still reserve stack words because sp30's address is taken, so declaring sp30
+// LAST is what puts it at sp+0x30 instead of sp+0x38.
 s32 func_8010DF9C(void *arg0) {
-    struct UnkBD48 sp30;
     struct struct8011BA10_temp *var_s0;
     u32 var_s1;
+    struct UnkBD48 sp30;
 
     sp30.unk0 = D_80129410;
     sp30.unk4 = 0;
@@ -5694,9 +5694,6 @@ s32 func_8010DF9C(void *arg0) {
     }
     return sp30.unk4;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010DF9C.s")
-#endif
 
 #ifdef MIPS_TO_C
 

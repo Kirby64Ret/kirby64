@@ -90,8 +90,6 @@ void func_8020938C_ovl9(s32 arg0) {
     curObjSleepForever();
 }
 
-/* 7 diffs: ROM loads D_800E98E0[objId] into $a1, IDO into $a0 (argument-
-   register rotation, the confirmed floor). Everything else is exact. */
 void func_802094DC_ovl9(struct GObj *this) {
     if (D_800E98E0[omCurrentObj->objId] == 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);

@@ -20,11 +20,12 @@ set -e
 cd /home/user/kirby64_decomp
 
 OUT=build/pc/kirby64
-# -no-pie is load-bearing, not a preference. See the LOW-MEMORY note in
-# src/pc/pc_lowmem.h: game code stores host pointers in 32-bit fields
+# -no-pie is load-bearing, not a preference. See the low-memory note in
+# src/pc/pc_mmio.c: game code stores host pointers in 32-bit fields
 # (src/main/dma.c casts a void* to u32 before handing it to osEPiStartDma),
 # and that truncation is only lossless while every game-visible address fits
-# in 32 bits. A no-pie image loads at 0x400000, so all statics do.
+# in 32 bits. A no-pie image loads at 0x400000, so all statics do, and
+# pc_check_low_memory() aborts at startup if that ever stops being true.
 CC="gcc -m64 -no-pie -fno-pie"
 CXX="g++ -m64 -no-pie -fno-pie"
 

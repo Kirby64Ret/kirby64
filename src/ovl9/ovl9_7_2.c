@@ -875,29 +875,14 @@ extern f32 D_8021D914_ovl9;
 void func_800AA864(s32, s32);
 void func_800A9EA4(s32);
 
+/* 7/70 diffs: pure $a2/$a3 swap -- the ROM keeps the constant 1 in $a3 and
+   &D_800E6690 in $a2, IDO the other way round.  Type-splitting both stores
+   took this from 36 to 7.  Swept since with no effect: s32 return type on
+   func_800AA864 and on func_800A9EA4 (applied file-wide, --all stayed 0),
+   (u32) cast on the call argument, `struct GObj *obj = omCurrentObj;` hoist,
+   an explicit f32 temp for the read-back (11/70), dropping the parameter
+   (65/69 -- the parameter and its home slot are required). */
 #ifdef MIPS_TO_C
-void func_801F58A0_ovl9(GObj *arg0) {
-    *(u32 *) &D_800E9C60[omCurrentObj->objId] = 1;
-    D_800E9E20[omCurrentObj->objId] = 0;
-    *(u32 *) &D_800DDFD0[omCurrentObj->objId] = 1;
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8021D914_ovl9;
-    func_800AA864(0x10050, 1);
-    func_800AECC0(0.0f);
-    func_800A9EA4(0x10053);
-    ohSleep(0x3C);
-    func_800AECC0(gameTicksPerDraw);
-    D_800E9E20[omCurrentObj->objId] = 1;
-    curObjSleepForever();
-}
-#else
-/* 7 diffs: the ROM puts the shared constant 1 in $a3 and &D_800E6690 in $a2;
-   IDO swaps them. Type-splitting the two stores took this from 36 to 7 -- the
-   residue is the argument-register rotation floor. */
-#ifdef MIPS_TO_C
-extern f32 D_8021D914_ovl9;
-
 void func_801F58A0_ovl9(struct GObj *arg0) {
     *(u32 *) &D_800E9C60[omCurrentObj->objId] = 1;
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -915,7 +900,6 @@ void func_801F58A0_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F58A0_ovl9.s")
-#endif
 #endif
 
 void func_801F52D4_ovl9(struct GObj *);

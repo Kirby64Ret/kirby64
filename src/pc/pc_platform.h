@@ -95,6 +95,10 @@ void pc_ai_init(void);
  * fault. See src/pc/pc_mmio.c. Returns 0 on success. */
 int pc_mmio_map(void);
 
+/* Abort if any game-visible address needs more than 32 bits. See the
+ * low-memory note in src/pc/pc_mmio.c -- this is what -no-pie buys. */
+void pc_check_low_memory(void);
+
 /* Per-subsystem host pumping, called from pc_pump_events(). */
 void pc_vi_tick(void);
 void pc_ai_tick(void);

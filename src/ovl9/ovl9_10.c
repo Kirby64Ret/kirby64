@@ -280,7 +280,16 @@ void func_8020285C_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802028F4_ovl9.s")
+void func_802028F4_ovl9(struct GObj *arg0) {
+    if (ABSF(D_800E64D0[omCurrentObj->objId]) < ABSF(D_800E6690[omCurrentObj->objId])) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0;
+        D_800E6850[omCurrentObj->objId] = 3.0f;
+        func_80199F1C_ovl7(arg0);
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80202518_ovl9);
+    }
+}
 
 void func_80202A08_ovl9(struct GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;

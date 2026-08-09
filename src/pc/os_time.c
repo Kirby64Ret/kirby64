@@ -119,9 +119,23 @@ int pc_ints_enabled(void) {
  * therefore the correct mapping, not a shortcut -- the two spaces are the
  * same space.
  *
- * This holds only while the port stays 32-bit. If pointers ever become 8
- * bytes, this cannot return one in a u32 and the VI/DP register model has to
- * change with it. */
+ * LP64 UPDATE. The old note here said this holds "only while the port stays
+ * 32-bit", because the return type was effectively u32 and a host pointer no
+ * longer fits. That is now resolved, and it is worth saying how, because the
+ * obvious fix -- a handle table mapping 32-bit tokens to pointers -- was not
+ * needed:
+ *
+ *   * the return type is uintptr_t, which include/PR/ultratypes.h widens to
+ *     64 bits under PORT, and include/PR/os_convert.h declares it in the same
+ *     terms so the two agree. Nothing truncates on the way out;
+ *   * every game-visible address fits in 32 bits anyway, because the port
+ *     links -no-pie and loads at 0x400000. That is what makes the places game
+ *     code DOES truncate (src/main/dma.c casts a void* to u32 before calling
+ *     osEPiStartDma) lossless rather than fatal. See tools/pc/link.sh.
+ *
+ * So identity remains correct at both widths, and the constraint moved from
+ * "the port must be 32-bit" to "game-visible memory must live below 4 GiB",
+ * which is a linker flag rather than an architecture. */
 uintptr_t osVirtualToPhysical(void *addr) {
     return (uintptr_t)addr;
 }
@@ -200,6 +214,7 @@ void osInitialize(void) {
     done = 1;
 
     trace_from_env();
+    pc_check_low_memory();
     pc_time_init();
     pc_mmio_map();
     pc_sched_init();
