@@ -98,7 +98,29 @@ s32 func_8015F4C4_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
+#ifdef MIPS_TO_C
+/* 4 diffs: ROM schedules the arg1 index addu before the arg0 one */
+s32 func_8015F5DC_ovl5(s32 arg0, s32 arg1) {
+    f32 a = gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]];
+    f32 b = gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]];
+    f32 d;
+
+    if (a < b) {
+        d = -(a - b);
+    } else {
+        d = a - b;
+    }
+    if (d < 200.0f) {
+        return 2;
+    }
+    if (a < b) {
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F5DC_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F67C_ovl5.s")
 
@@ -284,7 +306,11 @@ f32 func_801619E0_ovl5(s32 arg0) {
     return gEntitiesNextPosXArray[*p] + (sinf(*(f32 *) ((u8 *) D_800DE350[*p]->data.dobj->firstChild + 0x38)) * 50.0f);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801619E0_ovl5.s")
+extern f32 sinf(f32);
+
+f32 func_801619E0_ovl5(s32 arg0) {
+    return gEntitiesNextPosXArray[D_8018E050_ovl5[arg0]] + sinf(D_800DE350[D_8018E050_ovl5[arg0]]->data.dobj->firstChild->angle.v.z) * 50.0f;
+}
 #endif
 
 s32 func_80161A54_ovl5(s32 arg0) {
