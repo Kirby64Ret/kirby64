@@ -46,9 +46,41 @@ extern f32 D_801CE1E8_ovl7;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE154_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE304_ovl7.s")
+extern f32 D_801CE1E0_ovl7;
+void func_800B5064(s32);
+void func_800AA018(s32);
+void func_800AF27C(void);
+void func_800B1900(u16);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE3DC_ovl7.s")
+void func_801AE304_ovl7(s32 arg0) {
+    func_800A9864(0x100CD, 0x1869F, 0x10);
+    D_800DEF90[omCurrentObj->objId] = func_800B5064;
+    D_800E0F10[omCurrentObj->objId] = 1;
+    D_800DDA90[omCurrentObj->objId] = 0x25;
+    func_800AA018(0x105FB);
+    gEntitiesAngleYArray[omCurrentObj->objId] += D_801CE1E0_ovl7;
+    func_800AF27C();
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
+
+extern f32 D_801CE1E4_ovl7;
+void func_800B8550(s32);
+void func_801AE4E4_ovl7(struct GObj *);
+void func_801AE52C_ovl7(void);
+void func_801AE5D4_ovl7(void);
+void func_800A7F74(u32, u32, u16, f32, f32, f32);
+
+void func_801AE3DC_ovl7(s32 arg0) {
+    D_800DF150[omCurrentObj->objId] = func_801AE4E4_ovl7;
+    D_800DEF90[omCurrentObj->objId] = func_800B8550;
+    func_801AE52C_ovl7();
+    func_801AE5D4_ovl7();
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801CE1E4_ovl7;
+    ohSleep(0xC);
+    func_800A7F74(3, 2, 0xEC, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
+    play_sound(0x158);
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 void func_801AE4E4_ovl7(GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] -= D_801CE1E8_ovl7 * D_800E6A10[omCurrentObj->objId];

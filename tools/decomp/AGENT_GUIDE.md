@@ -1083,3 +1083,26 @@ then emit a `dlabel` for it in asm/data/<seg>/*.bss.s and the object definition
 would collide with the linker-script assignment. datatodo.txt alone is enough,
 and it leaves every existing listing textually unchanged, so no other agent's
 in-flight function is disturbed.
+
+## RETRACTION: "splat unblock lifts the jump-table ban" was WRONG
+
+Renaming 54 colliding rodata subsegments to `<name>_rd` made splat runnable.
+It did NOT migrate any rodata. After the change ovl3 and ovl9 still have ZERO
+migrated subsegments.
+
+What misled me: kirby.ld gained `build/src/<seg>/<file>.o(.rodata)` input
+rules. Those rules are emitted for `c` subsegments regardless of migration,
+and they sit BEFORE the asm rodata blobs at ovlN_RODATA_START -- so a C object
+emitting anything there INSERTS bytes and shifts the segment. A converted
+jump-table function also leaves the surviving asm blob referencing the
+pragma's labels: `undefined reference to '.L8015xxxx_ovl4'`.
+
+THE TEST for whether a jump table is legal in a TU is a DOTTED
+`.rodata, <seg>/<file>` entry in kirby64.yaml for that exact file. Nothing
+else. Migration also requires every user of the block to be in C already and
+the asm blob to be deleted.
+
+Cost of this error: two agents were sent at a seam that does not exist, and
+two others broke the ROM link mid-session reaching the same wall
+independently. Verify a claimed unblock by CONVERTING ONE FUNCTION and
+checking check_sections.py plus the link, before briefing anyone on it.

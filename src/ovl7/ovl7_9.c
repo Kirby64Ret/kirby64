@@ -69,7 +69,24 @@ void func_801B20BC_ovl7(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_801CD5EC_ovl7);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2104_ovl7.s")
+extern struct Sub800E1B50_Unk98 D_801CB7AC_ovl7;
+extern f32 *D_801CAA48_ovl7;
+extern f32 D_801CE2C0_ovl7;
+void func_801A2ADC_ovl7(f32 **);
+void func_800B3520(void);
+void func_800A9EA4(s32);
+
+void func_801B2104_ovl7(s32 arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E0490[omCurrentObj->objId] = &D_801CAA48_ovl7;
+    func_801A2ADC_ovl7(&D_801CAA48_ovl7);
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB7AC_ovl7;
+    func_800B3520();
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801CE2C0_ovl7;
+    func_800A9EA4(0x1008F);
+    ohSleep(*(s32 *) &D_800E9AA0[omCurrentObj->objId]);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 
 void func_801B2204_ovl7(GObj *arg0) {
     gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];

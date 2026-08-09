@@ -67,6 +67,19 @@ extern void func_800AED20(f32);
 extern f32 D_8015C668_ovl4;
 void func_8015986C_ovl4(GObj *arg0);
 s32 func_8015874C_ovl4(void);
+struct DObj *func_801587CC_ovl4(u32 arg0);
+void func_80158CFC_ovl4(GObj *arg0);
+extern s32 D_8015C300_ovl4[];
+extern s32 D_8015C31C_ovl4;
+extern s32 D_8015C320_ovl4;
+extern s32 D_8015C324_ovl4;
+extern void *D_8015C328_ovl4[][2];
+extern f32 D_8015C664_ovl4;
+extern void func_800A1F30(s32);
+extern s32 func_800A8234(s32, s32, s32);
+extern void func_800B1900(u16);
+void func_800B2340(Vector *vec, struct DObj *node, u32 track);
+void func_800B26D8(Vector *vec, struct DObj *node, u32 track);
 
 // The listing for this function is 0x70 and spans the empty
 // func_80158188_ovl4 that follows it -- splat merged them because there
@@ -200,7 +213,69 @@ s32 func_8015874C_ovl4(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_801587CC_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_801588F4_ovl4.s")
+void func_801588F4_ovl4(GObj *arg0, s32 arg1) {
+    s32 unused;
+    Vector posVec;
+    Vector angleVec;
+    s32 unused2;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    if (func_8015874C_ovl4() < arg1) {
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+    D_800DF150[omCurrentObj->objId] = func_80158CFC_ovl4;
+    func_800B2340(&posVec, func_801587CC_ovl4(arg1), D_8015C714_ovl4);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = posVec.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = posVec.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = posVec.z;
+    func_800B26D8(&angleVec, func_801587CC_ovl4(arg1), D_8015C714_ovl4);
+    gEntitiesAngleXArray[omCurrentObj->objId] = angleVec.x;
+    gEntitiesAngleYArray[omCurrentObj->objId] = angleVec.y;
+    gEntitiesAngleZArray[omCurrentObj->objId] = angleVec.z;
+    if ((arg1 == 5) && (func_8015874C_ovl4() != 6)) {
+        func_800A9864(D_8015C31C_ovl4, 0x1869F, 0x10);
+        if (D_8015C320_ovl4 != 0) {
+            func_800AA018(D_8015C320_ovl4);
+        }
+        if (D_8015C324_ovl4 != 0) {
+            func_800AA018(D_8015C324_ovl4);
+        }
+    } else {
+        func_800A9864(D_8015C300_ovl4[arg1], 0x1869F, 0x10);
+        if (D_8015C328_ovl4[arg1][0] != NULL) {
+            func_800AA018((s32) D_8015C328_ovl4[arg1][0]);
+        }
+        if (D_8015C328_ovl4[arg1][1] != NULL) {
+            func_800AA018((s32) D_8015C328_ovl4[arg1][1]);
+        }
+    }
+    if (arg1 == 6) {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = func_800A8234(1, 0, 6);
+    }
+    while (1) {
+        if (arg1 == 2) {
+            if ((arg0->animTimer == 24.0f)
+             || (arg0->animTimer == 124.0f)
+             || (arg0->animTimer == 224.0f)
+             || (arg0->animTimer == 324.0f)
+             || (arg0->animTimer == 424.0f)
+             || (arg0->animTimer == 524.0f)) {
+                D_800E9AA0[omCurrentObj->objId].as_s32 = func_800A8234(1, 0, 2);
+            }
+            if ((arg0->animTimer == 50.0f)
+             || (arg0->animTimer == 150.0f)
+             || (arg0->animTimer == 250.0f)
+             || (arg0->animTimer == 350.0f)
+             || (arg0->animTimer == 450.0f)
+             || (arg0->animTimer == D_8015C664_ovl4)) {
+                func_800A1F30(D_800E9AA0[omCurrentObj->objId].as_s32);
+                D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+            }
+        }
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80158CFC_ovl4.s")
 

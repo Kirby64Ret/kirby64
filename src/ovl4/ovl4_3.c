@@ -58,6 +58,14 @@ extern Unk6Words D_8015A9A8_ovl4;
 extern Unk2Words D_8015A9C0_ovl4;
 extern s32 func_800B9F64(s32, s32);
 
+struct UnkStruct8015C740;
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+extern struct UnkStruct8015C740 D_8015AB50_ovl4;
+void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
+void func_800AD1A0(GObj *);
+void procMainStub(struct GObj *);
+s32 func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
+
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801553C0_ovl4.s")
 
 s32 func_801554F0_ovl4(void) {
@@ -119,7 +127,12 @@ void func_80156054_ovl4(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80156160_ovl4.s")
+void func_80156160_ovl4(GObj *arg0) {
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x16, 0x80000000, 0x16);
+    func_8015C740_ovl5(arg0, &D_8015AB50_ovl4);
+    curObjSleepForever();
+}
 
 s32 func_801561DC_ovl4(void) {
     Unk3Words sp4C = D_8015A990_ovl4;

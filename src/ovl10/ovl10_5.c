@@ -135,7 +135,23 @@ s32 func_801F19DC_ovl10(s32 arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1A24_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1CA0_ovl10.s")
+extern f32 D_801F4CA8_ovl10;
+extern s32 D_801F4908_ovl10[];
+extern s32 D_801F4914_ovl10[];
+void func_800A9864(s32, s32, s32);
+void func_801F1554_ovl10(GObj *, s32);
+
+void func_801F1CA0_ovl10(GObj *arg0, s32 arg1) {
+    s32 idx = arg1 + 1;
+
+    func_800A9864(D_801F4908_ovl10[arg1], 0x2C, 0x10);
+    gEntitiesScaleXArray[omCurrentObj->objId] = D_801F4CA8_ovl10;
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_801F4CA8_ovl10;
+    gEntitiesScaleZArray[omCurrentObj->objId] = D_801F4CA8_ovl10;
+    func_800AA018(D_801F4914_ovl10[idx]);
+    func_801F1554_ovl10(arg0, arg1);
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1D60_ovl10.s")
 

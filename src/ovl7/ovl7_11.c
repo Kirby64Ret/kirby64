@@ -247,7 +247,22 @@ void func_801B5BB0_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B5DEC_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B6020_ovl7.s")
+extern f32 D_801CE348_ovl7;
+
+void func_801B6020_ovl7(s32 arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    ent->unk98 = &D_801CC064_ovl7;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801CE348_ovl7;
+    func_800AA864(0x100C4, 2);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 void func_801B6130_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -342,7 +357,25 @@ void func_801B6810_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B68BC_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B6A14_ovl7.s")
+extern struct Sub800E1B50_Unk98 D_801CC0D0_ovl7;
+void func_800B3520(void);
+void func_800A9EA4(s32);
+
+void func_801B6A14_ovl7(s32 arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    ent->unk98 = &D_801CC0D0_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800B3520();
+    D_800E3210[omCurrentObj->objId] = 4.0f;
+    D_800E3750[omCurrentObj->objId] = -1.0f;
+    D_800E3C90[omCurrentObj->objId] = 4.0f;
+    func_800A9EA4(0x100C5);
+    curObjSleepForever();
+}
 
 void func_801B6B18_ovl7(GObj *arg0) {
 }

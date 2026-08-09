@@ -14,7 +14,7 @@ extern Gfx *gDisplayListHeads[4];
 void HS64_Translate(Mtx *, f32, f32, f32);
 
 void func_8021E978_ovl18(void);
-void func_8021ED10_ovl18(void);
+void func_8021ED10_ovl18();
 void func_8021ED3C_ovl18(void);
 void func_800B1900(s32);
 void func_800B1BF0(s32, s32);
@@ -107,7 +107,14 @@ s32 func_8021E4CC_ovl18(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E978_ovl18.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021ED10_ovl18.s")
+/* K&R definition is load-bearing: the parameter home slot (sw $a0) is only
+ * emitted with a declared parameter, and a prototyped one would reject the
+ * zero-argument call in func_8021F400_ovl18. */
+void func_8021ED10_ovl18(arg0)
+s32 arg0;
+{
+    func_800B1900(((u16 *)omCurrentObj)[1]);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021ED3C_ovl18.s")
 

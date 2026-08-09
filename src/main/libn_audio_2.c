@@ -195,11 +195,6 @@ s32 func_8002B214(N_CSPTime *seqp, s32 arg1) {
     return ret;
 }
 
-#ifdef NON_MATCHING
-/* 3 diffs: the (D0D0 * unk0D * chvol) >> 14 value must land in $a0 and be
- * reused by the sra; IDO takes two temps ($t4/$t5) and reverses the final
- * multu operands. Frame size and both spill slots are exact in this shape --
- * do not reorder the locals (vol, unused, chvol) or the final multiply. */
 s16 func_8002C9B0();
 s32 func_8002D0D0();
 
@@ -207,15 +202,14 @@ s16 func_8002B238(KVoiceState *state, KSeqPlayer *seqp) {
     s32 vol;
     s32 unused;
     s16 chvol;
+    s32 t;
 
     vol = (state->unk36 * state->unk33 * state->unk30) >> 6;
     chvol = func_8002C9B0(seqp);
-    vol = (u32)(((func_8002D0D0(seqp, state->unk31) * state->unk20->unk0D * chvol) >> 14) * vol) >> 15;
+    t = (func_8002D0D0(seqp, state->unk31) * state->unk20->unk0D * chvol) >> 14;
+    vol = (u32)(vol * t) >> 15;
     return vol;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B238.s")
-#endif
 
 void func_8002B2E8(KSeqp *seqp, KVoice *voice, ALMicroTime deltaTime) {
     N_ALEvent evt;

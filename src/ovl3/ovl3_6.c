@@ -31,7 +31,11 @@ extern s32 func_801693C4_ovl3(s32);
 extern s32 func_800A8100(s32, s32, s32, struct DObj *);
 extern void func_80122F08(s32);
 extern void func_801230E8(s32, s32, s32);
-extern void func_801632B8_ovl3(s32);
+extern s32 func_801632B8_ovl3(s32);
+extern s32 random_soft_s32_range(s32);
+extern s32 D_8012E7FC;
+#include "DObj.h"
+#include "unk_structs/D_800E1B50.h"
 extern void func_8015449C_ovl3(u8 *, s32);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017CF60_ovl3.s")
@@ -40,7 +44,32 @@ extern void func_8015449C_ovl3(u8 *, s32);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017D8E8_ovl3.s")
 
+#ifdef MIPS_TO_C
+// 31/55: the ROM re-reads gKirbyState.unk3C for the D_800EC2E0 store after the
+// loop; IDO CSEs it with the loop's own compare no matter how the loop or the
+// store is written (do/while, while(1)+break, swapped compare, type-split
+// store, pointer-punned read).
+void func_8017DAD8_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    s32 idx;
+    s32 rnd;
+
+    if (arg1 == 0) {
+        if (arg2 != 0.0f) {
+            idx = func_801632B8_ovl3(3);
+            D_800E1B50[idx + 0x70] = (struct UnkStruct800E1B50 *) arg0;
+            do {
+                rnd = random_soft_s32_range(5);
+            } while (rnd == gKirbyState.unk3C);
+            D_8012E7FC = rnd;
+            D_800EC2E0[idx].as_s32 = gKirbyState.unk3C;
+            D_800EC660[idx] = D_800EA8A0[omCurrentObj->objId];
+            D_800EA8A0[omCurrentObj->objId] = -D_800EA8A0[omCurrentObj->objId];
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017DAD8_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017DBB8_ovl3.s")
 
@@ -238,7 +267,21 @@ void func_80187FD0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80188078_ovl3.s")
+void func_80188078_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    s32 temp;
+
+    if (arg1 == 0) {
+        if (arg2 != 0.0f) {
+            temp = func_801632B8_ovl3(9);
+            D_800E98E0[temp] = gKirbyState.unk58;
+            D_800E9AA0[temp].as_s32 = gKirbyState.unk5C;
+            D_800E1B50[temp + 0x70] = (struct UnkStruct800E1B50 *) D_800DFBD0[omCurrentObj->objId][0xE];
+            gKirbyState.unk58 = 0;
+            gKirbyState.unk5C = 0;
+            D_800DFBD0[omCurrentObj->objId][0xE]->flags = 2;
+        }
+    }
+}
 
 void func_8018813C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     if (arg1 == 0) {
