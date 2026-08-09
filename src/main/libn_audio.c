@@ -199,11 +199,34 @@ call:
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023E80.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80024628.s")
+extern KNote *D_8009791C;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80024680.s")
+void func_80024628(void) {
+    OSIntMask mask = osSetIntMask(OS_IM_NONE);
+    KNote *note = D_8009791C;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800246E4.s")
+    while (note != NULL) {
+        note->unk28 = 0;
+        note->unk2A = 2;
+        note->unk48 = 0;
+        note = *(KNote **) note;
+    }
+    osSetIntMask(mask);
+}
+
+extern s32 D_8003FB24;
+
+f32 func_80024680(void) {
+    D_8003FB24 = D_8003FB24 * 214013 + 0x269EC3;
+    return (f32) (s32) ((D_8003FB24 >> 16) & 0xFFFF) / (f32) 65536;
+}
+
+extern s32 D_8003FB20;
+
+f32 func_800246E4(void) {
+    D_8003FB20 = D_8003FB20 * 214013 + 0x269EC3;
+    return (f32) (s32) ((D_8003FB20 >> 16) & 0xFFFF) / (f32) 65536;
+}
 
 void func_80024748(void) {
 }
@@ -220,7 +243,32 @@ void func_80024748(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNewMarker.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/__alCSeqNextDelta.s")
+char __alCSeqNextDelta(ALCSeq *seq, s32 *pDeltaTicks)
+{
+    u32     i;
+    u32	    firstTime = 0xFFFFFFFF;
+    u32     lastTicks = seq->lastDeltaTicks;
+
+    if (!seq->validTracks)
+	return FALSE;
+
+    for(i = 0; i < 16 ; i++)
+    {
+	if((seq->validTracks >> i) & 1)
+        {
+	    if(seq->deltaFlag)
+		seq->evtDeltaTicks[i] -= lastTicks;
+
+	    if(seq->evtDeltaTicks[i] < firstTime)
+		firstTime = seq->evtDeltaTicks[i];
+        }
+    }
+ 
+    seq->deltaFlag = 0;
+    *pDeltaTicks = firstTime;
+
+    return TRUE;
+}
 
 void alLink(ALLink *ln, ALLink *to) {
     ln->next = to->next;
@@ -376,7 +424,32 @@ void func_8002639C(f32 arg0) {
     D_8003FB18 = arg0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800263F0.s")
+typedef struct {
+    /* 0x00 */ u8            pad00[0x18];
+    /* 0x18 */ ALCSeq       *target;
+    /* 0x1C */ u8            pad1C[0x10];
+    /* 0x2C */ s32           uspt;
+    /* 0x30 */ u8            pad30[4];
+    /* 0x34 */ s32           state;
+    /* 0x38 */ u8            pad38[0x18];
+    /* 0x50 */ ALEventQueue  evtq;
+} KCSeqp;
+
+void func_800263F0(KCSeqp *seqp) {
+    N_ALEvent evt;
+    s32 deltaTicks;
+    ALCSeq *seq;
+
+    if (seqp->state == AL_PLAYING) {
+        seq = seqp->target;
+        if (seq != NULL) {
+            if (__alCSeqNextDelta(seq, &deltaTicks)) {
+                evt.type = AL_SEQ_REF_EVT;
+                n_alEvtqPostEvent(&seqp->evtq, &evt, seqp->uspt * deltaTicks);
+            }
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026460.s")
 
@@ -494,7 +567,18 @@ s32 n_alEnvmixerParam(N_PVoice *filter, s32 paramID, void *param) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800275C0.s")
+void func_800275C0(ALLink *ln) {
+    ALLink *to;
+
+    alUnlink(ln);
+
+    to = &n_syn->pLameList;
+    ln->next = to->next;
+    ln->prev = to;
+    if (to->next)
+        to->next->prev = ln;
+    to->next = ln;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027610.s")
 
@@ -540,7 +624,22 @@ s32 _n_timeToSamples(s32 micros) {
     return (s32) tmp & ~0xf;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80029888.s")
+void func_80029888(void) {
+    ALLink *dl;
+    ALLink *ln;
+    ALLink *to;
+
+    while ((dl = n_syn->pLameList.next) != 0) {
+        alUnlink(dl);
+        ln = dl;
+        to = &n_syn->pFreeList;
+        ln->next = to->next;
+        ln->prev = to;
+        if (to->next)
+            to->next->prev = ln;
+        to->next = ln;
+    }
+}
 
 ALParam *__n_allocParam(void) {
     ALParam *update = 0;
