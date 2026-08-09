@@ -441,7 +441,43 @@ void func_80176EFC_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80177524_ovl5.s")
 
+// Draft, 2/116: the shared constant 7 (first store value and loop bound, CSE'd
+// into $s2 by both) is materialised one slot late. Loop form and store-value
+// spellings swept.
+#ifdef MIPS_TO_C
+void gameSetUpdateRate(f32);
+void func_800AAF34(s32, s32, f32);
+
+void func_8017783C_ovl5(void) {
+    s32 i;
+
+    gameSetUpdateRate(2.0f);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
+    func_800AE048(0x200);
+    func_800AE0F0();
+    func_800A6E64();
+    func_800A8724(1);
+    func_8017712C_ovl5();
+    func_800A6BC0(8);
+    func_800AAF34(0x10, 0x3007B, 0.0f);
+    func_800A71A0(0x10);
+    D_800E98E0[request_track_3(8, 0, 0x70)] = 7;
+    D_800E98E0[request_track_3(8, 0, 0x70)] = 8;
+    D_800E98E0[request_track_3(8, 0, 0x70)] = 0xF;
+    D_800E98E0[request_track_general(8, 0, 0x70)] = 1;
+    D_800E98E0[request_track_3(8, 0, 0x70)] = 0x11;
+    for (i = 3; i != 7; i++) {
+        D_800E98E0[request_track_general(8, 0, 0x70)] = i;
+    }
+    func_801735A4_ovl5();
+    D_800E98E0[func_800AEA64(8, 0, 0x70)] = 0xE;
+    HS64_omMakeGObj(0, &func_80176530_ovl5, 0x1A, 0x80000000);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017783C_ovl5.s")
+#endif
 
 void func_80177A0C_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_801874A0_ovl5);

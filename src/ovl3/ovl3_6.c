@@ -50,7 +50,7 @@ extern void curObjSleepForever(void);
 void func_8017DAD8_ovl3(s32, s32, f32);
 
 void func_8017D8E8_ovl3(s32 arg0) {
-    gKirbyState.unk7C = z;
+    gKirbyState.unk7C = 0.0f;
     gKirbyState.unk80 = gKirbyState.unk7C;
     gKirbyState.unk3C = -1;
     gKirbyState.unk30 = 0;
@@ -334,7 +334,7 @@ void func_801810D0_ovl3(s32 arg0) {
 extern void func_800AF314(void);
 
 void func_80181AF0_ovl3(s32 arg0) {
-    gKirbyState.unk7C = z;
+    gKirbyState.unk7C = 0.0f;
     gKirbyState.unk80 = gKirbyState.unk7C;
     gKirbyState.unk30 = 0;
     gKirbyState.unk7 = 0;
@@ -411,7 +411,7 @@ extern f32 D_801977AC_ovl3;
 extern void func_8011DC30(s32);
 
 void func_80183E38_ovl3(s32 arg0) {
-    gKirbyState.unk7C = z;
+    gKirbyState.unk7C = 0.0f;
     gKirbyState.unk80 = gKirbyState.unk7C;
     gKirbyState.unk30 = gKirbyState.unk3C = 0;
     func_8011CF58();
@@ -422,7 +422,7 @@ void func_80183E38_ovl3(s32 arg0) {
     func_80122F08(0x20018);
     gKirbyState.unk154 = 1;
     if (D_800E8920[omCurrentObj->objId] == 1) {
-        D_800E6690[omCurrentObj->objId] = z;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
         D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
         D_800E6850[omCurrentObj->objId] = D_801977AC_ovl3;
         gKirbyState.isTurning |= 0x4000;
@@ -442,27 +442,30 @@ void func_80183E38_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80183FF4_ovl3.s")
 
+#ifdef MIPS_TO_C
+/* 8/219: 6 of the 8 are the $f0/$f2 swap between the shared 0.0f and `temp`
+   (see func_8018E164_ovl3); the other 2 are the scheduler putting `i = 0`
+   before rather than after the &D_800EC2E0 addiu. Swept: statement order of
+   the temp assignment (3 positions), double 0.0 literals, a named zero. */
 extern f32 D_801977D0_ovl3;
 extern u8 D_8019080C_ovl3[];
 
 void func_80184538_ovl3(s32 arg0) {
     f32 temp;
-    f32 z;
     s32 i;
 
-    gKirbyState.unk7C = z;
+    gKirbyState.unk7C = 0.0f;
     gKirbyState.unk80 = gKirbyState.unk7C;
     gKirbyState.unk30 = 0;
     gKirbyState.unk4C = 0;
     gKirbyState.unk7 = 0;
-    z = 0.0f;
     func_8011CF58();
     temp = D_801977D0_ovl3;
     D_800DDFD0[omCurrentObj->objId] = 0x36;
-    D_800E3750[omCurrentObj->objId] = z;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = temp;
-    D_800E6690[omCurrentObj->objId] = z;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = temp;
     D_800E83E0[omCurrentObj->objId] = 0;
@@ -510,6 +513,9 @@ void func_80184538_ovl3(s32 arg0) {
     gKirbyState.unk30 += 1;
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80184538_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_801848A4_ovl3.s")
 
@@ -754,7 +760,7 @@ void func_8018D460_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 void func_8018DF78_ovl3(s32, s32, f32);
 
 void func_8018DDCC_ovl3(s32 arg0) {
-    gKirbyState.unk7C = z;
+    gKirbyState.unk7C = 0.0f;
     gKirbyState.unk80 = gKirbyState.unk7C;
     gKirbyState.unk30 = gKirbyState.unk44 = 0;
     gKirbyState.unk7 = 0;
@@ -871,7 +877,7 @@ void func_8018E164_ovl3(s32 arg0) {
     D_80198848_ovl3[0] = D_800E64D0[omCurrentObj->objId];
     D_80198848_ovl3[1] = D_800E6690[omCurrentObj->objId];
     D_80198848_ovl3[2] = D_800E6850[omCurrentObj->objId];
-    D_800E6690[omCurrentObj->objId] = z;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = temp;
     if (D_800E8920[omCurrentObj->objId] == 0) {
@@ -879,7 +885,7 @@ void func_8018E164_ovl3(s32 arg0) {
         D_80198858_ovl3[1] = D_800E3750[omCurrentObj->objId];
         D_80198858_ovl3[2] = D_800E3C90[omCurrentObj->objId];
     }
-    D_800E3750[omCurrentObj->objId] = z;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = temp;
     func_801693C4_ovl3(0x14);

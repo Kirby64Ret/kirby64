@@ -314,7 +314,6 @@ void func_80025FA4(ALEventQueue *evtq, s16 type) {
     osSetIntMask(mask);
 }
 
-#ifdef MIPS_TO_C
 void n_alEvtqPostEvent(ALEventQueue *evtq, N_ALEvent *evt, ALMicroTime delta) {
     N_ALEventListItem *item;
     N_ALEventListItem *nextItem;
@@ -369,11 +368,7 @@ void n_alEvtqPostEvent(ALEventQueue *evtq, N_ALEvent *evt, ALMicroTime delta) {
 
     osSetIntMask(mask);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alEvtqPostEvent.s")
-#endif
 
-#ifdef MIPS_TO_C
 ALMicroTime func_800261B0(ALEventQueue *evtq, N_ALEvent *evt) {
     N_ALEventListItem *item;
     ALMicroTime delta;
@@ -401,9 +396,6 @@ ALMicroTime func_800261B0(ALEventQueue *evtq, N_ALEvent *evt) {
 
     return delta;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800261B0.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026260.s")
 

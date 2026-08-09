@@ -32,8 +32,22 @@ typedef float  f32;
 typedef double f64;
 
 #ifdef TARGET_N64
+#ifdef PORT
+/* Same argument as uintptr_t below, and for the same reason: src/pc/ is the
+   one part of this tree that includes the HOST's <stddef.h> and <stdio.h>,
+   and glibc typedefs size_t/ssize_t itself. u32 there is a hard "conflicting
+   types for size_t" at -m64. On MIPS32 these ARE 32-bit, so the matching
+   build is unaffected -- PORT is defined only by Makefile.pc. */
+#ifdef __SIZE_TYPE__
+typedef __SIZE_TYPE__ size_t;
+#else
+typedef unsigned long size_t;
+#endif
+typedef long ssize_t;
+#else
 typedef u32 size_t;
 typedef s32 ssize_t;
+#endif
 #ifdef PORT
 /* The whole LP64 problem for this port was this one typedef.
  *

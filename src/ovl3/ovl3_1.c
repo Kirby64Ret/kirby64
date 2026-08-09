@@ -181,11 +181,9 @@ s32 func_80153AD4_ovl3(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80153FC8_ovl3.s")
 
-// Blocked: the ROM addresses this block through a symbol at 0x8012E948,
-// which does not exist. IDO can only emit gKirbyState + 0x188.
-#ifdef MIPS_TO_C
 void func_8015439C_ovl3(f32 *arg0) {
-    f32 *dst = &gKirbyState._184.unk4;
+    extern f32 D_8012E948[];
+    f32 *dst = D_8012E948;
 
     dst[0] = arg0[0];
     dst[1] = arg0[1];
@@ -195,9 +193,6 @@ void func_8015439C_ovl3(f32 *arg0) {
     dst[5] = gEntitiesPosZArray[omCurrentObj->objId];
     dst[6] = D_800E17D0[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_8015439C_ovl3.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_80154428_ovl3(f32 *arg0) {

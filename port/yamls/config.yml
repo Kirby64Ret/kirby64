@@ -20,9 +20,29 @@
 
   # Segmented address table. Torch maps segment N+1 to segments[N].
   #
-  # Kirby 64's asset banks are not resident at fixed segment bases the way
-  # SM64's are -- the bank loader picks a segment per bank at load time -- so
-  # this list is deliberately empty for now. Texture/DL nodes below therefore
-  # use absolute ROM offsets, which Torch accepts directly, rather than
-  # segmented pointers.
-  segments: []
+  # This is an IDENTITY map, and it is not decoration -- it is required.
+  #
+  # Torch has no separate notion of "raw ROM offset": Decompressor::TranslateAddr
+  # calls IS_SEGMENTED(addr), which is `(addr >> 24) is in 1..0x1F`, on every
+  # offset it is given. Kirby 64's ROM is 32 MB and its assets run to
+  # 0x1E8BB50, so every offset at or above 0x01000000 -- a large share of the
+  # image, geo and animation banks -- gets its top byte read as a segment
+  # number and fails with "Segment data missing from game config, please add an
+  # entry for segment 1" unless segment 1 is defined.
+  #
+  # Mapping segment N to N << 24 makes the translation a no-op
+  # (base 0x01000000 + offset 0x00116010 == 0x01116010), so absolute ROM
+  # offsets work uniformly across the whole cartridge. Games whose ROMs are
+  # under 16 MB never hit this, which is why no upstream Torch config does it.
+  #
+  # Per-file `:config: segments:` still overrides this (Companion checks
+  # temporal, then local, then global), which is what lets the per-geo-block
+  # GFX ymls remap segment 0x04 to their own base.
+  segments:
+    - 0x01000000   # segment 1
+    - 0x02000000   # segment 2 (past end of ROM; present for completeness)
+    - 0x03000000
+    - 0x04000000
+    - 0x05000000
+    - 0x06000000
+    - 0x07000000

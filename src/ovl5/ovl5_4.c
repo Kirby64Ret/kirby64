@@ -506,7 +506,52 @@ void func_8016F770_ovl5(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016F7EC_ovl5.s")
+void gameSetUpdateRate(f32);
+void func_800B2F54(s32, void *, f32);
+extern u32 D_80186960_ovl5[];
+
+void func_8016F7EC_ovl5(void) {
+    s32 i;
+    s32 t;
+
+    gameSetUpdateRate(2.0f);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF);
+    func_800AE048(0x100);
+    func_800AE0F0();
+    func_800A6E64();
+    func_800A8724(1);
+    func_80165634_ovl5();
+    func_800A6BC0(9);
+    func_800B2F54(0x10, &D_80186960_ovl5, 0.0f);
+    func_800A71A0(0x10);
+    for (i = 0x3F; i >= 0; i--) {
+        t = request_track_general(7, 0, 0x70);
+        D_800E98E0[t] = 0xA;
+        ((s32 *) D_800E9AA0)[t] = i;
+    }
+    D_800E98E0[request_track_3(7, 0, 0x70)] = 0xE;
+    D_800E98E0[request_track_3(7, 0, 0x70)] = 1;
+    for (i = 2; i != 6; i++) {
+        D_800E98E0[request_track_general(7, 0, 0x70)] = i;
+        t = request_track_general(7, 0, 0x70);
+        D_800E98E0[t] = 0x10;
+        ((s32 *) D_800E9FE0)[t] = i - 2;
+    }
+    D_800E98E0[func_800AEA64(7, 0, 0x70)] = 6;
+    for (i = 0; i != 4; i++) {
+        t = request_track_3(7, 0, 0x70);
+        D_800E98E0[t] = 8;
+        ((s32 *) D_800E9FE0)[t] = i;
+        t = request_track_3(7, 0, 0x70);
+        D_800E98E0[t] = 9;
+        ((s32 *) D_800E9FE0)[t] = i;
+    }
+    D_800E98E0[request_track_3(7, 0, 0x70)] = 0x12;
+    D_800E98E0[request_track_3(7, 0, 0x70)] = 0x13;
+    HS64_omMakeGObj(0, &func_8016F770_ovl5, 0x1A, 0x80000000);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
+}
 
 void func_8016FA8C_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_80186A80_ovl5);

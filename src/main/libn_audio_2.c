@@ -651,9 +651,6 @@ void n_alSynSetPitch(N_ALVoice *v, f32 pitch) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/n_alSynSetPitch.s")
 #endif
 
-/* 24/41 diffs: structure is exact; the ROM keeps seqp in $t0 across the
- * if/else chain where IDO spills it to the $a0 home slot and reloads it. */
-#ifdef NON_MATCHING
 void func_8002CE20(N_CSPlayer *seqp, ALBank *b, u8 kind) {
     N_ALEvent evt;
 
@@ -671,9 +668,6 @@ void func_8002CE20(N_CSPlayer *seqp, ALBank *b, u8 kind) {
         n_alEvtqPostEvent(&seqp->evtq, &evt, 0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002CE20.s")
-#endif
 
 /* Byte-exact at -O3; blocked by -O2's home store and by the 16-byte library
  * alignment.  See the note above alCSPSetSeq. */

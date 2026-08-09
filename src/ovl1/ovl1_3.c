@@ -446,12 +446,17 @@ block_4:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8934.s")
 #endif
 
+#ifdef MIPS_TO_C
+// 9/39: structure exact; the ROM puts the masked index in the free argument
+// register $a1 and we get $t9, rotating every later temp by one slot. Swept
+// all 120 declaration orders x 2 statement orders, callee prototypes (void /
+// non-void / implicit), K&R and extra-parameter forms. Rotation floor.
 void *func_800A89E0(u32 arg0) {
-    struct BankHeader *bank;
+    s32 size;
     void *buf;
     u32 *entry;
-    s32 size;
     u32 *rom;
+    struct BankHeader *bank;
 
     bank = D_800D0184[arg0 >> 16];
     entry = bank->imageBlockTable;
@@ -462,14 +467,9 @@ void *func_800A89E0(u32 arg0) {
     dma_read(entry[0] + (u32)rom, buf, size & 0xFFFFFC);
     return buf;
 }
-
-
-
-
-
-
-
-
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A89E0.s")
+#endif
 struct BGHeader *func_800A8A7C(u32 arg0) {
     struct BGHeader ***temp_v1;
     s32 idx;

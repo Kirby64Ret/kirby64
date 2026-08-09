@@ -11,18 +11,26 @@
 #   make -f Makefile.pc gap       # what is still undefined, by category
 #   make -f Makefile.pc objs      # just compile everything
 #
-# WHY 32-BIT: measured, not assumed. At -m64, three files fail to compile --
-# gbi.h casts a pointer into a 32-bit display-list word inside a static
-# initializer, which is not a constant expression when pointers are 8 bytes,
-# and va_list is an array type so fault.c's (va_list) cast is invalid. At -m32
-# all 151 files compile clean. ILP32 also keeps every struct layout and every
-# pointer-bearing data table identical to the N64's, which is what lets the
-# translated data tables in build/pc/data link at all.
+# THE BUILD IS LP64 (-m64 -DPORT). It was -m32 while the port had no renderer,
+# because at -m64 three files failed to compile and 32-bit kept every
+# pointer-bearing data table the same shape as the N64's. Both reasons are
+# gone:
+#
+#   * the compile failures were one typedef. include/PR/ultratypes.h widens
+#     uintptr_t under PORT, which fixes rdp_reset.c and ovl4_1.c (gbi.h stores
+#     a uintptr_t per display-list word and was always 64-bit-ready), and
+#     src/main/fault.c has a PORT branch for the (va_list) cast. Nothing the
+#     N64 build compiles changes -- PORT is defined only here.
+#   * libultraship is a 64-bit library. -m32 and libultraship are mutually
+#     exclusive, so the renderer decision forces the pointer width.
+#
+# PORT is therefore the flag that means "this is the native port", and it is
+# defined in exactly one place: here.
 
 PC_BUILD  := build/pc
 PC_CC     := gcc
-PC_ARCH   := -m32
-PC_DEFS   := -D_LANGUAGE_C -DTARGET_N64 -DF3DEX_GBI_2 -DAVOID_UB -DNON_MATCHING
+PC_ARCH   := -m64
+PC_DEFS   := -D_LANGUAGE_C -DTARGET_N64 -DPORT -DF3DEX_GBI_2 -DAVOID_UB -DNON_MATCHING
 PC_INC    := -Iinclude -Iinclude/libc -Ilibreultra/include/2.0I -Ibuild \
              -Ibuild/include -Ibuild/assets -Isrc -Isrc.old -I.
 PC_CFLAGS := $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) $(PC_INC)
