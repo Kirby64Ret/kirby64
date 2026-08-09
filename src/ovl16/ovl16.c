@@ -1938,7 +1938,10 @@ void func_801EF32C_ovl16(s32 arg0) {
     func_801A04B8_ovl7();
 }
 
-void func_801EF3B0_ovl16(s32 arg0, s32 arg1) {
+void func_801EF3B0_ovl16(arg0, arg1)
+s32 arg0;
+s32 arg1;
+{
     D_800E6BD0[arg0] = D_800E6BD0[arg1];
     D_800E5F90[arg0] = D_800E5F90[arg1];
     gEntitiesNextPosYArray[arg0] = gEntitiesNextPosYArray[arg1];
