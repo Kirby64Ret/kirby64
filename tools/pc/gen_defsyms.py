@@ -32,6 +32,30 @@ os.chdir(REPO)
 ADDR = re.compile(r'/\*\s*(?:[0-9A-F]+\s+)?(8[0-9A-F]{7})\s')
 
 
+def named_blocks(skip):
+    """[(start, last, symbol)] from tools/symbol_addrs.txt.
+
+    A dlabel only exists while a block is still assembly. Once a block is
+    migrated into C the listing goes away, and any datatodo symbol pointing
+    INTO it becomes unresolvable -- which is exactly what happened to the six
+    entries hand-added for D_800D7178 and D_800D71E8. symbol_addrs.txt still
+    carries the address and usually a `// size:0xNN`, so it covers the gap.
+
+    `skip` is the set of names datatodo.txt itself defines; using one of those
+    as a base would just move the problem.
+    """
+    out = []
+    for line in open('tools/symbol_addrs.txt'):
+        m = re.match(r'(\w+)\s*=\s*0x([0-9A-Fa-f]+)\s*;(.*)', line)
+        if not m or m.group(1) in skip:
+            continue
+        addr = int(m.group(2), 16)
+        sz = re.search(r'size:\s*(0x[0-9A-Fa-f]+|\d+)', m.group(3))
+        out.append((addr, addr + (int(sz.group(1), 0) - 1 if sz else 0),
+                    m.group(1)))
+    return out
+
+
 def data_blocks():
     """[(start_vram, last_vram, symbol)] for every dlabel, sorted by address."""
     blocks = []
@@ -59,10 +83,11 @@ def main():
         out = sys.argv[sys.argv.index('-o') + 1]
     os.makedirs(os.path.dirname(out), exist_ok=True)
 
-    blocks = data_blocks()
+    text = open('datatodo.txt').read()
+    own = set(re.findall(r'^(\w+)\s*=', text, re.M))
+    blocks = sorted(data_blocks() + named_blocks(own))
     starts = [b[0] for b in blocks]
 
-    text = open('datatodo.txt').read()
     lines, unresolved, relative = [], [], 0
     for name, expr in re.findall(r'^(\w+)\s*=\s*([^;]+);', text, re.M):
         expr = expr.strip()
