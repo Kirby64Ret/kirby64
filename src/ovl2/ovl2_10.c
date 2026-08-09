@@ -676,7 +676,30 @@ void func_80115C4C(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115D38.s")
+extern struct GObjProcess *gEntityGObjProcessArray[];
+
+void func_80115D38(struct GObj *arg0) {
+    s32 old = arg0->objId;
+    s32 track = request_track_general(0x1E, 0x1E, 0x3C);
+    s32 unused;
+
+    omCurrentObj = D_800DE350[track];
+    omEndProcess(gEntityGObjProcessArray[track]);
+    func_800AF980(0x17);
+    func_800A9864(0x20060, 0x1869F, 0x10);
+    gEntitiesNextPosXArray[track] = gEntitiesNextPosXArray[old];
+    gEntitiesNextPosYArray[track] = gEntitiesNextPosYArray[old] + 220.0f;
+    gEntitiesNextPosZArray[track] = gEntitiesNextPosZArray[old];
+    gEntitiesScaleZArray[track] = 0.2f;
+    gEntitiesScaleYArray[track] = 0.2f;
+    gEntitiesScaleXArray[track] = 0.2f;
+    func_800AA018(0x202E5);
+    func_800AA018(0x202E6);
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80115ACC;
+    D_800E98E0[old] = track;
+    omCurrentObj = arg0;
+    func_801153B8(arg0);
+}
 
 void func_80115EAC(struct GObj *arg0) {
     D_800E98E0[arg0->objId] = 0;

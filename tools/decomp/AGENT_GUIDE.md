@@ -2037,3 +2037,42 @@ file, so the damage looks like a decompilation result.
 Fixed: the `#else` must be immediately above the pragma and the `#endif`
 immediately below, and it refuses if the region contains another guard or
 pragma. If you use the shared `scan.py`, it inherits the fix.
+
+## The callee-return-type lever fires on ALREADY-DECLARED callees too
+
+The guide framed this as an implicit-declaration problem. It is not limited to
+that: flipping an existing `extern void f(s32);` to `extern s32 f(s32);` closed
+func_8020BC98_ovl9 (7 -> 0), and `void func_8019F3B0_ovl7(void)` -> `s32`
+closed func_801E51EC_ovl9 (15 -> 0). Both left their files at 0 diff.
+
+That makes it mechanically sweepable rather than a per-function insight: try
+both directions on every callee of a draft. Do that before hand-analysis.
+
+## Two hidden translation-unit splits in ovl10 -- known, deliberately not acted on
+
+`src/ovl10/ovl10_3.c` is two TUs in the ROM and kirby64.yaml does not know it.
+The mechanism is confirmed rather than inferred: compiling
+`void f(void){while(1){g();}}` with the project's IDO flags and `-S` shows IDO
+emitting a literal `.align 5` after the loop's `b`, so a dead epilogue is
+32-byte aligned FROM THE OBJECT'S .text BASE.
+
+The split is bracketed to **0x1DC9D0 (func_801EBC60_ovl10)** by independent
+evidence: kirby64.yaml has an orphan rodata subsegment
+`[0x1E58F0, rodata, ovl10/1E58F0]` between ovl10_3's and ovl10_4's rodata --
+a third TU's rodata -- whose only two users are func_801EBC60_ovl10 and
+func_801EBF2C_ovl10, while the last `ovl10_3_rd` user is func_801EAB98_ovl10.
+Of the candidates in that gap only 0x1DBE30 and 0x1DC9D0 are congruent to
+16 mod 32.
+
+`src/ovl10/ovl10_5.c` needs one too (func_801F11A8_ovl10 and
+func_801F2098_ovl10). A reachability scan validated every other TU base in both
+segments, so only these two are wrong.
+
+**It is not being acted on, and the reason is a judgement worth recording.**
+kirby.ld is generated and gitignored, so correcting this needs a splat run that
+regenerates listings tree-wide -- disruptive while several agents share the
+working tree. And the payoff was measured smaller than first briefed: exactly
+ONE dead-epilogue function in ovl10_3, not a class. The other 8-diff functions
+there are argument-register rotations and unrelated. Three functions is not
+worth risking a shared tree; this is a good task for a quiet moment with no
+agents running.
