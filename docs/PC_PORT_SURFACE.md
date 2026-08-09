@@ -128,6 +128,40 @@ counts symbols rather than weighting these three will be wrong.
 **audio sink — 2** `osAiSetFrequency` `osAiSetNextBuffer`
 **other — 4** `osInitialize` `osAfterPreNMI` `osSetTime` `osTvType`
 
+## Overlays cannot be emulated, only intercepted
+
+This is the one architectural item that is not a symbol count, and it is worth
+knowing before the DMA path is designed.
+
+Kirby 64 is built as 20 overlays that share VRAM ranges. `struct Overlay` in
+`include/types.h` is nine pointers -- ROM start/end, RAM start, and the text,
+data and bss extents -- and the loader DMAs an overlay's image from the
+cartridge into RAM and then calls into it. `include/segments.h` declares the
+linker-supplied bounds for all twenty, and `src/main/main.c` builds one table
+entry from them: `struct Overlay ovl1Def = OVERLAY(ovl1);`. The other nineteen
+are still in assembly data.
+
+On PC that copy cannot be allowed to happen. The overlay images in the ROM are
+MIPS machine code; the native binary's code for those same functions is x86 and
+is already linked in and resident. Copying cartridge bytes to a RAM address and
+jumping there would execute the wrong instruction set at the wrong address.
+
+So the overlay loader has to be *intercepted* rather than implemented: the load
+becomes a no-op (or at most a bookkeeping update), and every overlay stays
+resident, which is affordable on PC precisely because the memory pressure that
+motivated overlays does not exist. The nine bounds pointers still have to exist
+and be self-consistent, because game code compares against them.
+
+This also sets the shape of the `osEPiStartDma` work. Two kinds of DMA go
+through it and they need opposite treatment: **asset** reads are real and must
+come from the ROM file, while **overlay code** reads must be neutralised. The
+70 unresolvable entries in `tools/pc/gen_defsyms.py` are ROM file offsets on the
+asset side of that split.
+
+Note the ordering: the overlay loader itself is not decompiled yet, so this
+cannot be finished today. It is listed here so the DMA design accounts for it
+rather than being rewritten later.
+
 ## What is already in the tree
 
 `libreultra/src/` contains real libultra sources (os, io, gu, audio, libc,
