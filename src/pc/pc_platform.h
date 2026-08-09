@@ -135,6 +135,14 @@ void pc_stub_notice(const char *file, int line, const char *what);
 void pc_gfx_trace_task(OSTask *task);
 
 /* -------------------------------------------------------------------------
+ * Synthetic display lists (src/pc/gfx_selftest.c). KIRBY_PC_GFXTEST=1.
+ * The renderer path has no other exercise until auThreadMain is decompiled;
+ * see the header of that file.
+ * ------------------------------------------------------------------------- */
+int pc_gfx_selftest_enabled(void);
+void pc_gfx_selftest_frame(void);
+
+/* -------------------------------------------------------------------------
  * Cartridge / overlay interception (src/pc/os_pi.c, src/pc/pc_overlay.c)
  * ------------------------------------------------------------------------- */
 

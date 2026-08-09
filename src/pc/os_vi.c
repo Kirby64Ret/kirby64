@@ -125,6 +125,10 @@ static void retrace(void) {
     if (pcb_has_renderer()) {
         pcb_frame_end();
         pcb_frame_begin();
+        /* Off unless KIRBY_PC_GFXTEST=1. Submitted here because this is where
+         * the game's own graphics task will land once it gets that far: after
+         * a frame boundary and before the next one. */
+        pc_gfx_selftest_frame();
     } else if (!sBlack) {
         pcb_video_present(sCurrentFb, mode_width(), mode_height(), mode_bpp());
     } else {

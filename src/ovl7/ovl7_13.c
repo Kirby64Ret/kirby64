@@ -89,7 +89,51 @@ extern struct Sub800E1B50_Unk98 D_801CCBEC_ovl7;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B8F20_ovl7.s")
 
+/* 3 diffs: registers and every instruction are exact; only the emission order
+   of the three loop-invariant constant loads differs (ROM loads AC,B0,B4 and
+   assigns $f24,$f22,$f20; IDO emits them in assignment order). Assignment
+   order fixes the registers but not the load order. */
+#ifdef MIPS_TO_C
+extern void (*D_800DEDD0[])(struct GObj *);
+extern void (*D_800DEF90[])(s32);
+extern void (*D_800DF150[])(struct GObj *);
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+void procMainStub(struct GObj *);
+void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
+void func_800B74B8(s32);
+void func_8019BB58_ovl7(void);
+void func_801A3280_ovl7(void);
+s32 func_800B30BC(f32, f32, f32);
+void func_801BA32C_ovl7(void);
+extern s32 D_800D6B54;
+extern f32 D_801CE3AC_ovl7, D_801CE3B0_ovl7, D_801CE3B4_ovl7;
+
+void func_801B9150_ovl7(struct GObj *arg0) {
+    f32 sp2C;
+    f32 sp28;
+    f32 sp24;
+
+    D_800DEDD0[omCurrentObj->objId] = 0;
+    D_800DEF90[omCurrentObj->objId] = func_800B74B8;
+    D_800DF150[omCurrentObj->objId] = 0;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    func_800AFBB4(0, omCurrentObj);
+    func_8019BB58_ovl7();
+    func_801A3280_ovl7();
+    ohSleep(random_soft_s32_range(0x3C));
+    sp24 = D_801CE3B4_ovl7;
+    sp28 = D_801CE3B0_ovl7;
+    sp2C = D_801CE3AC_ovl7;
+    while (1) {
+        if ((func_800B30BC(sp24, sp28, sp2C) != 0) && (D_800D6B54 == 0)) {
+            func_801BA32C_ovl7();
+        }
+        ohSleep(random_soft_s32_range(0x1E) + 0x78);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B9150_ovl7.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B929C_ovl7.s")
 

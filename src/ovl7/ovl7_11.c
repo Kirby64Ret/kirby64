@@ -107,7 +107,37 @@ void func_801B4DB0_ovl7(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_801CD628_ovl7);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B4DF8_ovl7.s")
+extern struct Sub800E1B50_Unk98 D_801CC52C_ovl7;
+extern FUNCLIST D_801CD628_ovl7;
+extern void (*D_800DF150[])(struct GObj *);
+extern s32 D_800E9720[], D_800EA520[], D_800E5F90[];
+extern f32 D_800EB320[], D_800E6BD0[];
+void func_8019BB58_ovl7(void);
+void func_801B4F60_ovl7(struct GObj *);
+void func_801B4DB0_ovl7(struct GObj *);
+void func_801A6C10_ovl7(struct GObj *);
+void func_801A0D50_ovl7(void *);
+
+void func_801B4DF8_ovl7(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    func_8019BB58_ovl7();
+    ent->unk98 = &D_801CC52C_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801B4F60_ovl7;
+    D_800E9720[omCurrentObj->objId] = 0;
+    D_800EB320[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+    D_800EA520[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        func_801A6C10_ovl7(arg0);
+    }
+    if (D_800E7880[omCurrentObj->objId] == 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+    }
+    func_801A0D50_ovl7(func_801B4DB0_ovl7);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_801CD628_ovl7);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B4F60_ovl7.s")
 
@@ -518,7 +548,38 @@ void func_801B71AC_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
+/* 7 diffs: stack layout, spill slot and every instruction are exact; the
+   D_800E1B50 element lives in $a0 where the ROM uses $a1 (one-slot argument
+   register rotation). Callee return types, prototypes and a dummy parameter
+   were all swept. */
+#ifdef MIPS_TO_C
+extern s32 D_800EA360[], D_800E9E20[], D_800E9C60[];
+void func_80199F1C_ovl7(void);
+void func_8019CFD0_ovl7(void *);
+void func_801B6B88_ovl7(struct GObj *);
+
+void func_801B726C_ovl7(void) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    Vector sp20;
+
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        if (D_800E9C60[omCurrentObj->objId] == 0) {
+            func_80199F1C_ovl7();
+            D_800E9C60[omCurrentObj->objId] = 1;
+        }
+        if (ent->unk3C == 0) {
+            sp20.x = D_800EA360[omCurrentObj->objId] * 13.0f;
+            sp20.y = D_800EA360[omCurrentObj->objId] * -2.0f;
+            sp20.z = D_800EA360[omCurrentObj->objId] * 13.0f;
+            func_8019CFD0_ovl7(&sp20);
+            gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B6B88_ovl7);
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B726C_ovl7.s")
+#endif
 
 #ifdef MIPS_TO_C
 // 99/125 diffs: all stores are right; every base-address temp is rotated
