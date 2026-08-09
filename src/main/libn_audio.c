@@ -131,11 +131,111 @@ void func_80023360(u8 arg0) {
     D_8009793A = arg0;
 }
 
+typedef struct {
+    /* 0x00 */ u8 pad00[0x38];
+    /* 0x38 */ u8 unk38;
+    /* 0x39 */ u8 pad39[1];
+    /* 0x3A */ u8 unk3A;
+    /* 0x3B */ u8 pad3B[1];
+    /* 0x3C */ u8 unk3C;
+} KChanVoice;
+
+typedef struct KChan {
+    /* 0x00 */ struct KChan *next;
+    /* 0x04 */ struct KChan *owner;
+    /* 0x08 */ u8 pad08[0x1A];
+    /* 0x22 */ u8 unk22;
+    /* 0x23 */ u8 pad23[0x5];
+    /* 0x28 */ KChanVoice *unk28;
+    /* 0x2C */ u8 pad2C[0x2];
+    /* 0x2E */ u8 unk2E;
+    /* 0x2F */ u8 unk2F;
+    /* 0x30 */ u8 unk30;
+} KChan;
+
+extern KChan *D_80097920;
+
+/* 2/28 diffs, and only the one-slot temp-register rotation: the ROM puts note->owner in $t7 where IDO picks $t6.  Swept comparison operand order, a local for chan->unk28, dead locals of both classes, a chained assignment and s32/u8 parameter forms -- none move it. */
+#ifdef NON_MATCHING
+void func_80023384(KChan *chan, u8 arg1) {
+    KChan *note;
+    KChan *next;
+
+    if (arg1 >= 0x80) {
+        arg1 = 0x7F;
+    }
+    chan->unk30 = arg1;
+    if (chan->unk28 != NULL) {
+        chan->unk28->unk3C = arg1;
+    }
+    note = D_80097920;
+    while (note != NULL) {
+        next = note->next;
+        if (note->owner == chan) {
+            note->unk30 = arg1;
+            if (note->unk28 != NULL) {
+                note->unk28->unk3C = arg1;
+            }
+        }
+        note = next;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023384.s")
+#endif
 
+/* Twin of func_80023384; same 2/28 register rotation. */
+#ifdef NON_MATCHING
+void func_800233F4(KChan *chan, u8 arg1) {
+    KChan *note;
+    KChan *next;
+
+    if (arg1 >= 0x80) {
+        arg1 = 0x7F;
+    }
+    chan->unk2F = arg1;
+    if (chan->unk28 != NULL) {
+        chan->unk28->unk3A = arg1;
+    }
+    note = D_80097920;
+    while (note != NULL) {
+        next = note->next;
+        if (note->owner == chan) {
+            note->unk2F = arg1;
+            if (note->unk28 != NULL) {
+                note->unk28->unk3A = arg1;
+            }
+        }
+        note = next;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800233F4.s")
+#endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023464.s")
+void func_80023464(KChan *chan, u8 arg1) {
+    KChan *note;
+    KChan *next;
+
+    if (arg1 >= 0x80) {
+        arg1 = 0x7F;
+    }
+    chan->unk2E = arg1;
+    if (chan->unk28 != NULL) {
+        chan->unk28->unk38 = (chan->unk22 * arg1) >> 7;
+    }
+    note = D_80097920;
+    while (note != NULL) {
+        next = note->next;
+        if (note->owner == chan) {
+            note->unk2E = arg1;
+            if (note->unk28 != NULL) {
+                note->unk28->unk38 = (chan->unk22 * arg1) >> 7;
+            }
+        }
+        note = next;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800234F4.s")
 
@@ -157,7 +257,55 @@ void func_8002397C(KNote *arg0) {
     arg0->unk48 = 0;
 }
 
+/* 29/38 diffs, all of them the one-slot ARGUMENT-register rotation: the ROM
+ * holds &D_800978E0 in $a2, the constant 2 in $a1 and tone->unk28 in $a0
+ * where IDO picks $a1/$a0/$v0.  Every instruction is otherwise in the right
+ * place.  Swept leading dummy scalars and all four declaration orders. */
+#ifdef NON_MATCHING
+typedef struct KTone {
+    /* 0x00 */ struct KTone *next;
+    /* 0x04 */ u8    pad04[0xC];
+    /* 0x10 */ s16   unk10;
+    /* 0x12 */ u8    pad12[0x14];
+    /* 0x26 */ s16   unk26;
+    /* 0x28 */ KNote *unk28;
+} KTone;
+
+/* KAudioMgr needs `KTone *unk38` at 0x38 and `KTone *unk40` at 0x40. */
+void func_80023990(void) {
+    KTone *tone;
+    KNote *voice;
+    KTone *last;
+    OSIntMask mask;
+
+    mask = osSetIntMask(OS_IM_NONE);
+    func_80023794();
+
+    tone = D_800978E0.unk40;
+    while (tone != NULL) {
+        voice = tone->unk28;
+        tone->unk10 = 0;
+        tone->unk26 = 0;
+        if (voice != NULL) {
+            voice->unk28 = 0;
+            voice->unk2A = 2;
+            voice->unk48 = 0;
+        }
+        last = tone;
+        tone = tone->next;
+    }
+
+    if (D_800978E0.unk40 != NULL) {
+        last->next = D_800978E0.unk38;
+        D_800978E0.unk38 = D_800978E0.unk40;
+        D_800978E0.unk40 = NULL;
+    }
+
+    osSetIntMask(mask);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023990.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023A28.s")
 
@@ -595,7 +743,38 @@ Acmd *n_alAuxBusPull(s32 sampleOffset, Acmd *p) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027F38.s")
 
+/* 4/34 diffs: shape is exact (the `else { osc->unk14 = osc->unk14; }` is what
+ * reproduces the ROM's duplicated store in the bc1fl delay slot), but the ROM
+ * uses $f0 for the reload where IDO takes $f2. */
+#ifdef NON_MATCHING
+typedef struct {
+    /* 0x00 */ u8  pad00[0x10];
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ u8  pad18[0x4];
+    /* 0x1C */ f32 unk1C;
+} KOsc;
+
+f32 func_80028080(KOsc *osc, s32 arg1) {
+    f32 tmp;
+
+    osc->unk14 = osc->unk14 + osc->unk10 * (f32) arg1;
+
+    if (osc->unk14 > 2.0f) {
+        osc->unk14 = osc->unk14 - 4.0f;
+    } else {
+        osc->unk14 = osc->unk14;
+    }
+
+    tmp = osc->unk14;
+    if (tmp < 0.0f) {
+        tmp = -tmp;
+    }
+    return osc->unk1C * (tmp - 1.0f);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80028080.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002810C.s")
 
@@ -657,6 +836,13 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
     return ptr;
 }
 
+/* 2/18 diffs at -O3: instruction-for-instruction right except that the ROM
+ * emits the aSaveBuffer word (0x8) BEFORE the aInterleave word (0x0) while
+ * IDO emits them in source order; reversing the two macro calls reverses the
+ * two `lui`s as well and is worse.  Its listing also carries an extra unnamed
+ * empty function at 0x800299F0 (`jr $ra; nop` past the epilogue), so a
+ * conversion must define `void func_800299F0(void) {}` after it or the TU
+ * comes out 8 bytes short. */
 #ifdef MIPS_TO_C
 Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
     Acmd *ptr = p;

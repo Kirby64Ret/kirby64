@@ -2,6 +2,7 @@
 # Source: assets_image.json
 background2_i8:
   type: TEXTURE
+  symbol: k64_tex_1BDD6A0
   format: I8
   width: 256
   height: 80
@@ -10,6 +11,7 @@ background2_i8:
 
 background3_ia8:
   type: TEXTURE
+  symbol: k64_tex_1BE26B0
   format: IA8
   width: 64
   height: 32
@@ -18,6 +20,7 @@ background3_ia8:
 
 background6_i8:
   type: TEXTURE
+  symbol: k64_tex_1BE4100
   format: I8
   width: 32
   height: 80
@@ -26,6 +29,7 @@ background6_i8:
 
 background7_i8:
   type: TEXTURE
+  symbol: k64_tex_1BE4B10
   format: I8
   width: 16
   height: 120
@@ -34,6 +38,7 @@ background7_i8:
 
 background9_i4:
   type: TEXTURE
+  symbol: k64_tex_1BF44B0
   format: I4
   width: 64
   height: 64
@@ -42,6 +47,7 @@ background9_i4:
 
 background11_i4:
   type: TEXTURE
+  symbol: k64_tex_1BF62CC
   format: I4
   width: 64
   height: 32
@@ -50,6 +56,7 @@ background11_i4:
 
 background13_rgba16:
   type: TEXTURE
+  symbol: k64_tex_1BF83CC
   format: RGBA16
   width: 128
   height: 95
@@ -58,6 +65,7 @@ background13_rgba16:
 
 background14_i4:
   type: TEXTURE
+  symbol: k64_tex_1BFE2DC
   format: I4
   width: 64
   height: 64
@@ -66,6 +74,7 @@ background14_i4:
 
 background15_i8:
   type: TEXTURE
+  symbol: k64_tex_1BFEAEC
   format: I8
   width: 320
   height: 60
@@ -74,6 +83,7 @@ background15_i8:
 
 background17_i8:
   type: TEXTURE
+  symbol: k64_tex_1C0780C
   format: I8
   width: 64
   height: 128
@@ -82,6 +92,7 @@ background17_i8:
 
 background18_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C0981C
   format: IA4
   width: 16
   height: 96
@@ -90,6 +101,7 @@ background18_ia4:
 
 background20_i4:
   type: TEXTURE
+  symbol: k64_tex_1C0BC38
   format: I4
   width: 64
   height: 30
@@ -98,6 +110,7 @@ background20_i4:
 
 background22_i8:
   type: TEXTURE
+  symbol: k64_tex_1C0E218
   format: I8
   width: 128
   height: 60
@@ -106,6 +119,7 @@ background22_i8:
 
 background23_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C10028
   format: IA8
   width: 64
   height: 64
@@ -114,6 +128,7 @@ background23_ia8:
 
 background26_i8:
   type: TEXTURE
+  symbol: k64_tex_1C14078
   format: I8
   width: 128
   height: 60
@@ -122,6 +137,7 @@ background26_i8:
 
 background27_i8:
   type: TEXTURE
+  symbol: k64_tex_1C15E88
   format: I8
   width: 128
   height: 222
@@ -130,6 +146,7 @@ background27_i8:
 
 background30_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C244B8
   format: IA4
   width: 64
   height: 120
@@ -138,6 +155,7 @@ background30_ia4:
 
 background36_i8:
   type: TEXTURE
+  symbol: k64_tex_1C341A2
   format: I8
   width: 64
   height: 120
@@ -146,6 +164,7 @@ background36_i8:
 
 background38_i8:
   type: TEXTURE
+  symbol: k64_tex_1C391C2
   format: I8
   width: 128
   height: 40
@@ -154,6 +173,7 @@ background38_i8:
 
 background39_i4:
   type: TEXTURE
+  symbol: k64_tex_1C3A5D2
   format: I4
   width: 32
   height: 32
@@ -162,6 +182,7 @@ background39_i4:
 
 41_i4:
   type: TEXTURE
+  symbol: k64_tex_1C3E48A
   format: I4
   width: 32
   height: 32
@@ -170,6 +191,7 @@ background39_i4:
 
 42_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C3E68A
   format: IA4
   width: 32
   height: 64
@@ -178,6 +200,7 @@ background39_i4:
 
 43_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C3EA8A
   format: IA4
   width: 32
   height: 32
@@ -186,6 +209,7 @@ background39_i4:
 
 44_i4:
   type: TEXTURE
+  symbol: k64_tex_1C3EC8A
   format: I4
   width: 16
   height: 16
@@ -194,6 +218,7 @@ background39_i4:
 
 45_i4:
   type: TEXTURE
+  symbol: k64_tex_1C3ED0A
   format: I4
   width: 32
   height: 32
@@ -202,6 +227,7 @@ background39_i4:
 
 46_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C3EF0A
   format: IA4
   width: 32
   height: 32
@@ -210,6 +236,7 @@ background39_i4:
 
 47_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C3F10A
   format: IA4
   width: 16
   height: 32
@@ -218,6 +245,7 @@ background39_i4:
 
 48_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C3F20A
   format: IA4
   width: 32
   height: 8
@@ -226,6 +254,7 @@ background39_i4:
 
 51_i4:
   type: TEXTURE
+  symbol: k64_tex_1C3F58A
   format: I4
   width: 32
   height: 32
@@ -234,6 +263,7 @@ background39_i4:
 
 52_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C3F78A
   format: IA4
   width: 32
   height: 16
@@ -242,6 +272,7 @@ background39_i4:
 
 56_i4:
   type: TEXTURE
+  symbol: k64_tex_1C3FA8A
   format: I4
   width: 16
   height: 16
@@ -250,6 +281,7 @@ background39_i4:
 
 57_i4:
   type: TEXTURE
+  symbol: k64_tex_1C3FB0A
   format: I4
   width: 32
   height: 32
@@ -258,6 +290,7 @@ background39_i4:
 
 58_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C3FD0A
   format: IA8
   width: 32
   height: 32
@@ -266,6 +299,7 @@ background39_i4:
 
 61_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4050A
   format: IA4
   width: 32
   height: 8
@@ -274,6 +308,7 @@ background39_i4:
 
 62_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4058A
   format: I4
   width: 32
   height: 32
@@ -282,6 +317,7 @@ background39_i4:
 
 63_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4078A
   format: I4
   width: 32
   height: 32
@@ -290,6 +326,7 @@ background39_i4:
 
 67_i4:
   type: TEXTURE
+  symbol: k64_tex_1C40CAA
   format: I4
   width: 32
   height: 32
@@ -298,6 +335,7 @@ background39_i4:
 
 68_i4:
   type: TEXTURE
+  symbol: k64_tex_1C40EAA
   format: I4
   width: 32
   height: 32
@@ -306,6 +344,7 @@ background39_i4:
 
 69_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C410AA
   format: IA4
   width: 32
   height: 16
@@ -314,6 +353,7 @@ background39_i4:
 
 70_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C411AA
   format: IA4
   width: 64
   height: 64
@@ -322,6 +362,7 @@ background39_i4:
 
 71_i4:
   type: TEXTURE
+  symbol: k64_tex_1C419AA
   format: I4
   width: 32
   height: 32
@@ -330,6 +371,7 @@ background39_i4:
 
 72_i4:
   type: TEXTURE
+  symbol: k64_tex_1C41BAA
   format: I4
   width: 16
   height: 16
@@ -338,6 +380,7 @@ background39_i4:
 
 73_i4:
   type: TEXTURE
+  symbol: k64_tex_1C41C2A
   format: I4
   width: 32
   height: 32
@@ -346,6 +389,7 @@ background39_i4:
 
 74_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C41E2A
   format: IA4
   width: 64
   height: 40
@@ -354,6 +398,7 @@ background39_i4:
 
 75_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4232A
   format: I4
   width: 32
   height: 32
@@ -362,6 +407,7 @@ background39_i4:
 
 76_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4252A
   format: IA4
   width: 32
   height: 16
@@ -370,6 +416,7 @@ background39_i4:
 
 78_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4272A
   format: IA4
   width: 32
   height: 16
@@ -378,6 +425,7 @@ background39_i4:
 
 80_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4292A
   format: I4
   width: 32
   height: 32
@@ -386,6 +434,7 @@ background39_i4:
 
 81_i4:
   type: TEXTURE
+  symbol: k64_tex_1C42B2A
   format: I4
   width: 32
   height: 32
@@ -394,6 +443,7 @@ background39_i4:
 
 82_i4:
   type: TEXTURE
+  symbol: k64_tex_1C42D2A
   format: I4
   width: 16
   height: 16
@@ -402,6 +452,7 @@ background39_i4:
 
 85_i4:
   type: TEXTURE
+  symbol: k64_tex_1C42FEA
   format: I4
   width: 16
   height: 16
@@ -410,6 +461,7 @@ background39_i4:
 
 86_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4306A
   format: I4
   width: 32
   height: 32
@@ -418,6 +470,7 @@ background39_i4:
 
 87_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4326A
   format: I4
   width: 32
   height: 32
@@ -426,6 +479,7 @@ background39_i4:
 
 88_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4346A
   format: I4
   width: 16
   height: 16
@@ -434,6 +488,7 @@ background39_i4:
 
 89_i4:
   type: TEXTURE
+  symbol: k64_tex_1C434EA
   format: I4
   width: 64
   height: 64
@@ -442,6 +497,7 @@ background39_i4:
 
 90_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C43CEA
   format: IA4
   width: 64
   height: 64
@@ -450,6 +506,7 @@ background39_i4:
 
 91_i4:
   type: TEXTURE
+  symbol: k64_tex_1C444EA
   format: I4
   width: 64
   height: 64
@@ -458,6 +515,7 @@ background39_i4:
 
 92_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C44CEA
   format: IA8
   width: 32
   height: 32
@@ -466,6 +524,7 @@ background39_i4:
 
 93_i4:
   type: TEXTURE
+  symbol: k64_tex_1C450EA
   format: I4
   width: 32
   height: 32
@@ -474,6 +533,7 @@ background39_i4:
 
 94_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C452EA
   format: IA4
   width: 64
   height: 32
@@ -482,6 +542,7 @@ background39_i4:
 
 96_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4570A
   format: IA4
   width: 32
   height: 8
@@ -490,6 +551,7 @@ background39_i4:
 
 97_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4578A
   format: IA4
   width: 16
   height: 40
@@ -498,6 +560,7 @@ background39_i4:
 
 98_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C458CA
   format: IA4
   width: 64
   height: 64
@@ -506,6 +569,7 @@ background39_i4:
 
 99_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C460CA
   format: IA4
   width: 64
   height: 64
@@ -514,6 +578,7 @@ background39_i4:
 
 100_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C468CA
   format: IA4
   width: 64
   height: 64
@@ -522,6 +587,7 @@ background39_i4:
 
 101_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C470CA
   format: IA4
   width: 32
   height: 64
@@ -530,6 +596,7 @@ background39_i4:
 
 104_i4:
   type: TEXTURE
+  symbol: k64_tex_1C47D0A
   format: I4
   width: 128
   height: 32
@@ -538,6 +605,7 @@ background39_i4:
 
 106_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4858A
   format: I4
   width: 32
   height: 64
@@ -546,6 +614,7 @@ background39_i4:
 
 107_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4898A
   format: I4
   width: 64
   height: 64
@@ -554,6 +623,7 @@ background39_i4:
 
 108_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4918A
   format: I4
   width: 64
   height: 32
@@ -562,6 +632,7 @@ background39_i4:
 
 109_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4958A
   format: I4
   width: 32
   height: 32
@@ -570,6 +641,7 @@ background39_i4:
 
 110_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C4978A
   format: IA8
   width: 32
   height: 32
@@ -578,6 +650,7 @@ background39_i4:
 
 111_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C49B8A
   format: IA4
   width: 64
   height: 32
@@ -586,6 +659,7 @@ background39_i4:
 
 112_i4:
   type: TEXTURE
+  symbol: k64_tex_1C49F8A
   format: I4
   width: 64
   height: 64
@@ -594,6 +668,7 @@ background39_i4:
 
 113_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4A78A
   format: I4
   width: 32
   height: 32
@@ -602,6 +677,7 @@ background39_i4:
 
 114_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4A98A
   format: I4
   width: 64
   height: 64
@@ -610,6 +686,7 @@ background39_i4:
 
 115_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4B18A
   format: I4
   width: 64
   height: 64
@@ -618,6 +695,7 @@ background39_i4:
 
 116_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4B98A
   format: IA4
   width: 32
   height: 32
@@ -626,6 +704,7 @@ background39_i4:
 
 117_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4BB8A
   format: IA4
   width: 64
   height: 64
@@ -634,6 +713,7 @@ background39_i4:
 
 120_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4C68A
   format: IA4
   width: 64
   height: 64
@@ -642,6 +722,7 @@ background39_i4:
 
 121_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4CE8A
   format: I4
   width: 32
   height: 32
@@ -650,6 +731,7 @@ background39_i4:
 
 122_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4D08A
   format: I4
   width: 64
   height: 64
@@ -658,6 +740,7 @@ background39_i4:
 
 123_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4D88A
   format: IA4
   width: 64
   height: 32
@@ -666,6 +749,7 @@ background39_i4:
 
 124_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4DC8A
   format: IA4
   width: 32
   height: 64
@@ -674,6 +758,7 @@ background39_i4:
 
 125_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4E08A
   format: IA4
   width: 64
   height: 64
@@ -682,6 +767,7 @@ background39_i4:
 
 126_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4E88A
   format: IA4
   width: 64
   height: 32
@@ -690,6 +776,7 @@ background39_i4:
 
 127_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4EC8A
   format: I4
   width: 32
   height: 32
@@ -698,6 +785,7 @@ background39_i4:
 
 128_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4EE8A
   format: IA4
   width: 64
   height: 32
@@ -706,6 +794,7 @@ background39_i4:
 
 131_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4F662
   format: I4
   width: 32
   height: 32
@@ -714,6 +803,7 @@ background39_i4:
 
 132_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4F862
   format: I4
   width: 16
   height: 16
@@ -722,6 +812,7 @@ background39_i4:
 
 133_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4F8E2
   format: IA4
   width: 32
   height: 32
@@ -730,6 +821,7 @@ background39_i4:
 
 134_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4FAE2
   format: I4
   width: 16
   height: 16
@@ -738,6 +830,7 @@ background39_i4:
 
 135_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4FB62
   format: I4
   width: 32
   height: 32
@@ -746,6 +839,7 @@ background39_i4:
 
 136_i4:
   type: TEXTURE
+  symbol: k64_tex_1C4FD62
   format: I4
   width: 16
   height: 16
@@ -754,6 +848,7 @@ background39_i4:
 
 137_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C4FDE2
   format: IA4
   width: 32
   height: 64
@@ -762,6 +857,7 @@ background39_i4:
 
 138_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C501E2
   format: IA4
   width: 32
   height: 64
@@ -770,6 +866,7 @@ background39_i4:
 
 139_i4:
   type: TEXTURE
+  symbol: k64_tex_1C505E2
   format: I4
   width: 64
   height: 64
@@ -778,6 +875,7 @@ background39_i4:
 
 140_i4:
   type: TEXTURE
+  symbol: k64_tex_1C50DE2
   format: I4
   width: 64
   height: 64
@@ -786,6 +884,7 @@ background39_i4:
 
 141_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C515E2
   format: IA8
   width: 64
   height: 64
@@ -794,6 +893,7 @@ background39_i4:
 
 142_i4:
   type: TEXTURE
+  symbol: k64_tex_1C525E2
   format: I4
   width: 32
   height: 32
@@ -802,6 +902,7 @@ background39_i4:
 
 143_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C527E2
   format: IA8
   width: 64
   height: 64
@@ -810,6 +911,7 @@ background39_i4:
 
 144_i4:
   type: TEXTURE
+  symbol: k64_tex_1C537E2
   format: I4
   width: 64
   height: 64
@@ -818,6 +920,7 @@ background39_i4:
 
 145_i4:
   type: TEXTURE
+  symbol: k64_tex_1C53FE2
   format: I4
   width: 64
   height: 64
@@ -826,6 +929,7 @@ background39_i4:
 
 146_i4:
   type: TEXTURE
+  symbol: k64_tex_1C547E2
   format: I4
   width: 64
   height: 64
@@ -834,6 +938,7 @@ background39_i4:
 
 147_i4:
   type: TEXTURE
+  symbol: k64_tex_1C54FE2
   format: I4
   width: 32
   height: 32
@@ -842,6 +947,7 @@ background39_i4:
 
 148_i4:
   type: TEXTURE
+  symbol: k64_tex_1C551E2
   format: I4
   width: 64
   height: 64
@@ -850,6 +956,7 @@ background39_i4:
 
 149_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C559E2
   format: IA4
   width: 64
   height: 64
@@ -858,6 +965,7 @@ background39_i4:
 
 152_i4:
   type: TEXTURE
+  symbol: k64_tex_1C56402
   format: I4
   width: 32
   height: 32
@@ -866,6 +974,7 @@ background39_i4:
 
 153_i4:
   type: TEXTURE
+  symbol: k64_tex_1C56602
   format: I4
   width: 32
   height: 32
@@ -874,6 +983,7 @@ background39_i4:
 
 154_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C56802
   format: IA4
   width: 32
   height: 32
@@ -882,6 +992,7 @@ background39_i4:
 
 155_i4:
   type: TEXTURE
+  symbol: k64_tex_1C56A02
   format: I4
   width: 32
   height: 16
@@ -890,6 +1001,7 @@ background39_i4:
 
 156_i4:
   type: TEXTURE
+  symbol: k64_tex_1C56B02
   format: I4
   width: 16
   height: 16
@@ -898,6 +1010,7 @@ background39_i4:
 
 157_i4:
   type: TEXTURE
+  symbol: k64_tex_1C56B82
   format: I4
   width: 32
   height: 32
@@ -906,6 +1019,7 @@ background39_i4:
 
 158_i4:
   type: TEXTURE
+  symbol: k64_tex_1C56D82
   format: I4
   width: 16
   height: 16
@@ -914,6 +1028,7 @@ background39_i4:
 
 162_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C57302
   format: IA4
   width: 32
   height: 32
@@ -922,6 +1037,7 @@ background39_i4:
 
 163_i4:
   type: TEXTURE
+  symbol: k64_tex_1C57502
   format: I4
   width: 32
   height: 16
@@ -930,6 +1046,7 @@ background39_i4:
 
 166_i4:
   type: TEXTURE
+  symbol: k64_tex_1C57A02
   format: I4
   width: 32
   height: 32
@@ -938,6 +1055,7 @@ background39_i4:
 
 171_i4:
   type: TEXTURE
+  symbol: k64_tex_1C58282
   format: I4
   width: 32
   height: 32
@@ -946,6 +1064,7 @@ background39_i4:
 
 172_i4:
   type: TEXTURE
+  symbol: k64_tex_1C58482
   format: I4
   width: 32
   height: 32
@@ -954,6 +1073,7 @@ background39_i4:
 
 173_i4:
   type: TEXTURE
+  symbol: k64_tex_1C58682
   format: I4
   width: 32
   height: 32
@@ -962,6 +1082,7 @@ background39_i4:
 
 174_i4:
   type: TEXTURE
+  symbol: k64_tex_1C58882
   format: I4
   width: 32
   height: 32
@@ -970,6 +1091,7 @@ background39_i4:
 
 175_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C58A82
   format: IA4
   width: 16
   height: 16
@@ -978,6 +1100,7 @@ background39_i4:
 
 176_i4:
   type: TEXTURE
+  symbol: k64_tex_1C58B02
   format: I4
   width: 64
   height: 64
@@ -986,6 +1109,7 @@ background39_i4:
 
 181_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5A022
   format: I4
   width: 8
   height: 8
@@ -994,6 +1118,7 @@ background39_i4:
 
 182_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5A042
   format: I4
   width: 8
   height: 8
@@ -1002,6 +1127,7 @@ background39_i4:
 
 185_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5A282
   format: I4
   width: 64
   height: 64
@@ -1010,6 +1136,7 @@ background39_i4:
 
 186_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5AA82
   format: I4
   width: 64
   height: 64
@@ -1018,6 +1145,7 @@ background39_i4:
 
 187_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5B282
   format: I4
   width: 32
   height: 32
@@ -1026,6 +1154,7 @@ background39_i4:
 
 188_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5B482
   format: I4
   width: 32
   height: 32
@@ -1034,6 +1163,7 @@ background39_i4:
 
 191_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5B8A2
   format: I4
   width: 32
   height: 32
@@ -1042,6 +1172,7 @@ background39_i4:
 
 192_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5BAA2
   format: I4
   width: 32
   height: 16
@@ -1050,6 +1181,7 @@ background39_i4:
 
 193_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5BBA2
   format: I4
   width: 32
   height: 32
@@ -1058,6 +1190,7 @@ background39_i4:
 
 194_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5BDA2
   format: I4
   width: 32
   height: 16
@@ -1066,6 +1199,7 @@ background39_i4:
 
 195_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5BEA2
   format: I4
   width: 64
   height: 64
@@ -1074,6 +1208,7 @@ background39_i4:
 
 196_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C5C6A2
   format: IA8
   width: 64
   height: 64
@@ -1082,6 +1217,7 @@ background39_i4:
 
 198_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5DEA2
   format: I4
   width: 64
   height: 32
@@ -1090,6 +1226,7 @@ background39_i4:
 
 199_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5E2A2
   format: I4
   width: 32
   height: 32
@@ -1098,6 +1235,7 @@ background39_i4:
 
 201_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5E4C2
   format: I4
   width: 32
   height: 32
@@ -1106,6 +1244,7 @@ background39_i4:
 
 202_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5E6C2
   format: I4
   width: 32
   height: 32
@@ -1114,6 +1253,7 @@ background39_i4:
 
 204_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5F0C2
   format: I4
   width: 8
   height: 8
@@ -1122,6 +1262,7 @@ background39_i4:
 
 205_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5F0E2
   format: I4
   width: 8
   height: 8
@@ -1130,6 +1271,7 @@ background39_i4:
 
 206_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5F102
   format: I4
   width: 8
   height: 8
@@ -1138,6 +1280,7 @@ background39_i4:
 
 207_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5F122
   format: I4
   width: 8
   height: 8
@@ -1146,6 +1289,7 @@ background39_i4:
 
 212_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5FA02
   format: I4
   width: 8
   height: 8
@@ -1154,6 +1298,7 @@ background39_i4:
 
 213_i4:
   type: TEXTURE
+  symbol: k64_tex_1C5FA22
   format: I4
   width: 64
   height: 64
@@ -1162,6 +1307,7 @@ background39_i4:
 
 225_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C60782
   format: IA4
   width: 32
   height: 16
@@ -1170,6 +1316,7 @@ background39_i4:
 
 230_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C60902
   format: IA4
   width: 32
   height: 16
@@ -1178,6 +1325,7 @@ background39_i4:
 
 246_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C61E42
   format: IA8
   width: 32
   height: 32
@@ -1186,6 +1334,7 @@ background39_i4:
 
 257_i4:
   type: TEXTURE
+  symbol: k64_tex_1C623C2
   format: I4
   width: 32
   height: 32
@@ -1194,6 +1343,7 @@ background39_i4:
 
 258_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C625C2
   format: IA8
   width: 64
   height: 32
@@ -1202,6 +1352,7 @@ background39_i4:
 
 270_i4:
   type: TEXTURE
+  symbol: k64_tex_1C63CA2
   format: I4
   width: 64
   height: 32
@@ -1210,6 +1361,7 @@ background39_i4:
 
 284_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C64E22
   format: IA4
   width: 32
   height: 32
@@ -1218,6 +1370,7 @@ background39_i4:
 
 298_i4:
   type: TEXTURE
+  symbol: k64_tex_1C653E2
   format: I4
   width: 32
   height: 32
@@ -1226,6 +1379,7 @@ background39_i4:
 
 304_i4:
   type: TEXTURE
+  symbol: k64_tex_1C656A2
   format: I4
   width: 64
   height: 16
@@ -1234,6 +1388,7 @@ background39_i4:
 
 305_i4:
   type: TEXTURE
+  symbol: k64_tex_1C658A2
   format: I4
   width: 64
   height: 64
@@ -1242,6 +1397,7 @@ background39_i4:
 
 306_i4:
   type: TEXTURE
+  symbol: k64_tex_1C660A2
   format: I4
   width: 16
   height: 16
@@ -1250,6 +1406,7 @@ background39_i4:
 
 310_i4:
   type: TEXTURE
+  symbol: k64_tex_1C661E2
   format: I4
   width: 32
   height: 32
@@ -1258,6 +1415,7 @@ background39_i4:
 
 322_i4:
   type: TEXTURE
+  symbol: k64_tex_1C66722
   format: I4
   width: 16
   height: 16
@@ -1266,6 +1424,7 @@ background39_i4:
 
 324_i4:
   type: TEXTURE
+  symbol: k64_tex_1C667C2
   format: I4
   width: 32
   height: 32
@@ -1274,6 +1433,7 @@ background39_i4:
 
 335_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C66DC2
   format: IA4
   width: 32
   height: 32
@@ -1282,6 +1442,7 @@ background39_i4:
 
 336_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C66FC2
   format: IA4
   width: 32
   height: 16
@@ -1290,6 +1451,7 @@ background39_i4:
 
 337_i4:
   type: TEXTURE
+  symbol: k64_tex_1C670C2
   format: I4
   width: 16
   height: 16
@@ -1298,6 +1460,7 @@ background39_i4:
 
 348_i4:
   type: TEXTURE
+  symbol: k64_tex_1C68342
   format: I4
   width: 32
   height: 32
@@ -1306,6 +1469,7 @@ background39_i4:
 
 350_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C68942
   format: IA4
   width: 32
   height: 32
@@ -1314,6 +1478,7 @@ background39_i4:
 
 351_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C68B42
   format: IA4
   width: 32
   height: 32
@@ -1322,6 +1487,7 @@ background39_i4:
 
 353_i4:
   type: TEXTURE
+  symbol: k64_tex_1C69142
   format: I4
   width: 32
   height: 32
@@ -1330,6 +1496,7 @@ background39_i4:
 
 354_i4:
   type: TEXTURE
+  symbol: k64_tex_1C69342
   format: I4
   width: 32
   height: 32
@@ -1338,6 +1505,7 @@ background39_i4:
 
 367_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6A762
   format: I4
   width: 64
   height: 64
@@ -1346,6 +1514,7 @@ background39_i4:
 
 368_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6AF62
   format: I4
   width: 64
   height: 64
@@ -1354,6 +1523,7 @@ background39_i4:
 
 375_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6C3C2
   format: I4
   width: 32
   height: 32
@@ -1362,6 +1532,7 @@ background39_i4:
 
 376_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6C5C2
   format: I4
   width: 32
   height: 16
@@ -1370,6 +1541,7 @@ background39_i4:
 
 378_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6C6E2
   format: I4
   width: 32
   height: 32
@@ -1378,6 +1550,7 @@ background39_i4:
 
 379_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C6C8E2
   format: IA4
   width: 64
   height: 32
@@ -1386,6 +1559,7 @@ background39_i4:
 
 380_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6CCE2
   format: I4
   width: 64
   height: 32
@@ -1394,6 +1568,7 @@ background39_i4:
 
 382_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6D102
   format: I4
   width: 64
   height: 32
@@ -1402,6 +1577,7 @@ background39_i4:
 
 383_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6D502
   format: I4
   width: 64
   height: 32
@@ -1410,6 +1586,7 @@ background39_i4:
 
 384_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6D902
   format: I4
   width: 64
   height: 32
@@ -1418,6 +1595,7 @@ background39_i4:
 
 385_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C6DD02
   format: IA4
   width: 64
   height: 32
@@ -1426,6 +1604,7 @@ background39_i4:
 
 386_rgba16:
   type: TEXTURE
+  symbol: k64_tex_1C6E102
   format: RGBA16
   width: 32
   height: 8
@@ -1434,6 +1613,7 @@ background39_i4:
 
 390_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6E3C2
   format: I4
   width: 32
   height: 32
@@ -1442,6 +1622,7 @@ background39_i4:
 
 391_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6E5C2
   format: I4
   width: 16
   height: 32
@@ -1450,6 +1631,7 @@ background39_i4:
 
 393_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6E6E2
   format: I4
   width: 64
   height: 64
@@ -1458,6 +1640,7 @@ background39_i4:
 
 396_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6F702
   format: I4
   width: 32
   height: 16
@@ -1466,6 +1649,7 @@ background39_i4:
 
 398_i4:
   type: TEXTURE
+  symbol: k64_tex_1C6F822
   format: I4
   width: 32
   height: 32
@@ -1474,6 +1658,7 @@ background39_i4:
 
 405_i4:
   type: TEXTURE
+  symbol: k64_tex_1C70082
   format: I4
   width: 32
   height: 32
@@ -1482,6 +1667,7 @@ background39_i4:
 
 406_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C70282
   format: IA4
   width: 64
   height: 64
@@ -1490,6 +1676,7 @@ background39_i4:
 
 409_i4:
   type: TEXTURE
+  symbol: k64_tex_1C70CA2
   format: I4
   width: 32
   height: 32
@@ -1498,6 +1685,7 @@ background39_i4:
 
 412_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C710C2
   format: IA4
   width: 128
   height: 64
@@ -1506,6 +1694,7 @@ background39_i4:
 
 413_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C720C2
   format: IA4
   width: 128
   height: 64
@@ -1514,6 +1703,7 @@ background39_i4:
 
 414_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C730C2
   format: IA4
   width: 128
   height: 64
@@ -1522,6 +1712,7 @@ background39_i4:
 
 415_i4:
   type: TEXTURE
+  symbol: k64_tex_1C740C2
   format: I4
   width: 128
   height: 32
@@ -1530,6 +1721,7 @@ background39_i4:
 
 416_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C748C2
   format: IA4
   width: 64
   height: 64
@@ -1538,6 +1730,7 @@ background39_i4:
 
 417_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C750C2
   format: IA4
   width: 32
   height: 32
@@ -1546,6 +1739,7 @@ background39_i4:
 
 418_i4:
   type: TEXTURE
+  symbol: k64_tex_1C752C2
   format: I4
   width: 32
   height: 32
@@ -1554,6 +1748,7 @@ background39_i4:
 
 419_i4:
   type: TEXTURE
+  symbol: k64_tex_1C754C2
   format: I4
   width: 64
   height: 64
@@ -1562,6 +1757,7 @@ background39_i4:
 
 420_i4:
   type: TEXTURE
+  symbol: k64_tex_1C75CC2
   format: I4
   width: 64
   height: 64
@@ -1570,6 +1766,7 @@ background39_i4:
 
 423_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C76CE2
   format: IA4
   width: 64
   height: 64
@@ -1578,6 +1775,7 @@ background39_i4:
 
 424_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C774E2
   format: IA4
   width: 64
   height: 64
@@ -1586,6 +1784,7 @@ background39_i4:
 
 425_i4:
   type: TEXTURE
+  symbol: k64_tex_1C77CE2
   format: I4
   width: 64
   height: 32
@@ -1594,6 +1793,7 @@ background39_i4:
 
 426_i4:
   type: TEXTURE
+  symbol: k64_tex_1C780E2
   format: I4
   width: 32
   height: 32
@@ -1602,6 +1802,7 @@ background39_i4:
 
 427_i4:
   type: TEXTURE
+  symbol: k64_tex_1C782E2
   format: I4
   width: 64
   height: 64
@@ -1610,6 +1811,7 @@ background39_i4:
 
 428_i4:
   type: TEXTURE
+  symbol: k64_tex_1C78AE2
   format: I4
   width: 32
   height: 32
@@ -1618,6 +1820,7 @@ background39_i4:
 
 430_i4:
   type: TEXTURE
+  symbol: k64_tex_1C78D02
   format: I4
   width: 32
   height: 32
@@ -1626,6 +1829,7 @@ background39_i4:
 
 431_i4:
   type: TEXTURE
+  symbol: k64_tex_1C78F02
   format: I4
   width: 32
   height: 32
@@ -1634,6 +1838,7 @@ background39_i4:
 
 433_i4:
   type: TEXTURE
+  symbol: k64_tex_1C79142
   format: I4
   width: 64
   height: 64
@@ -1642,6 +1847,7 @@ background39_i4:
 
 434_i4:
   type: TEXTURE
+  symbol: k64_tex_1C79942
   format: I4
   width: 64
   height: 64
@@ -1650,6 +1856,7 @@ background39_i4:
 
 435_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C7A142
   format: IA4
   width: 64
   height: 64
@@ -1658,6 +1865,7 @@ background39_i4:
 
 436_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C7A942
   format: IA4
   width: 64
   height: 64
@@ -1666,6 +1874,7 @@ background39_i4:
 
 437_i4:
   type: TEXTURE
+  symbol: k64_tex_1C7B142
   format: I4
   width: 64
   height: 64
@@ -1674,6 +1883,7 @@ background39_i4:
 
 438_i4:
   type: TEXTURE
+  symbol: k64_tex_1C7B942
   format: I4
   width: 64
   height: 64
@@ -1682,6 +1892,7 @@ background39_i4:
 
 439_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C7C142
   format: IA4
   width: 128
   height: 32
@@ -1690,6 +1901,7 @@ background39_i4:
 
 442_i4:
   type: TEXTURE
+  symbol: k64_tex_1C7D15A
   format: I4
   width: 64
   height: 64
@@ -1698,6 +1910,7 @@ background39_i4:
 
 443_i4:
   type: TEXTURE
+  symbol: k64_tex_1C7D95A
   format: I4
   width: 32
   height: 32
@@ -1706,6 +1919,7 @@ background39_i4:
 
 444_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C7DB5A
   format: IA4
   width: 64
   height: 64
@@ -1714,6 +1928,7 @@ background39_i4:
 
 445_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C7E35A
   format: IA8
   width: 64
   height: 64
@@ -1722,6 +1937,7 @@ background39_i4:
 
 446_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C7F35A
   format: IA8
   width: 64
   height: 64
@@ -1730,6 +1946,7 @@ background39_i4:
 
 449_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8059A
   format: IA4
   width: 64
   height: 64
@@ -1738,6 +1955,7 @@ background39_i4:
 
 450_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C80D9A
   format: IA4
   width: 64
   height: 64
@@ -1746,6 +1964,7 @@ background39_i4:
 
 451_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8159A
   format: IA4
   width: 32
   height: 64
@@ -1754,6 +1973,7 @@ background39_i4:
 
 452_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8199A
   format: IA4
   width: 64
   height: 44
@@ -1762,6 +1982,7 @@ background39_i4:
 
 453_i4:
   type: TEXTURE
+  symbol: k64_tex_1C81F1A
   format: I4
   width: 64
   height: 64
@@ -1770,6 +1991,7 @@ background39_i4:
 
 454_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8271A
   format: I4
   width: 64
   height: 64
@@ -1778,6 +2000,7 @@ background39_i4:
 
 455_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C82F1A
   format: IA4
   width: 32
   height: 32
@@ -1786,6 +2009,7 @@ background39_i4:
 
 456_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8311A
   format: IA4
   width: 64
   height: 64
@@ -1794,6 +2018,7 @@ background39_i4:
 
 457_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8391A
   format: I4
   width: 32
   height: 32
@@ -1802,6 +2027,7 @@ background39_i4:
 
 458_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C83B1A
   format: IA4
   width: 64
   height: 64
@@ -1810,6 +2036,7 @@ background39_i4:
 
 459_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8431A
   format: I4
   width: 64
   height: 64
@@ -1818,6 +2045,7 @@ background39_i4:
 
 460_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C84B1A
   format: IA4
   width: 64
   height: 64
@@ -1826,6 +2054,7 @@ background39_i4:
 
 461_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8531A
   format: IA4
   width: 32
   height: 64
@@ -1834,6 +2063,7 @@ background39_i4:
 
 462_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8571A
   format: I4
   width: 64
   height: 64
@@ -1842,6 +2072,7 @@ background39_i4:
 
 463_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C85F1A
   format: IA4
   width: 64
   height: 64
@@ -1850,6 +2081,7 @@ background39_i4:
 
 464_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8671A
   format: I4
   width: 32
   height: 32
@@ -1858,6 +2090,7 @@ background39_i4:
 
 465_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8691A
   format: I4
   width: 16
   height: 32
@@ -1866,6 +2099,7 @@ background39_i4:
 
 466_i4:
   type: TEXTURE
+  symbol: k64_tex_1C86A1A
   format: I4
   width: 64
   height: 32
@@ -1874,6 +2108,7 @@ background39_i4:
 
 467_i4:
   type: TEXTURE
+  symbol: k64_tex_1C86E1A
   format: I4
   width: 32
   height: 32
@@ -1882,6 +2117,7 @@ background39_i4:
 
 468_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8701A
   format: I4
   width: 64
   height: 32
@@ -1890,6 +2126,7 @@ background39_i4:
 
 470_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8743A
   format: I4
   width: 32
   height: 32
@@ -1898,6 +2135,7 @@ background39_i4:
 
 471_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8763A
   format: I4
   width: 32
   height: 64
@@ -1906,6 +2144,7 @@ background39_i4:
 
 474_i4:
   type: TEXTURE
+  symbol: k64_tex_1C87C5A
   format: I4
   width: 32
   height: 32
@@ -1914,6 +2153,7 @@ background39_i4:
 
 475_i4:
   type: TEXTURE
+  symbol: k64_tex_1C87E5A
   format: I4
   width: 32
   height: 32
@@ -1922,6 +2162,7 @@ background39_i4:
 
 476_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8805A
   format: I4
   width: 32
   height: 32
@@ -1930,6 +2171,7 @@ background39_i4:
 
 477_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8825A
   format: I4
   width: 64
   height: 64
@@ -1938,6 +2180,7 @@ background39_i4:
 
 478_i4:
   type: TEXTURE
+  symbol: k64_tex_1C88A5A
   format: I4
   width: 32
   height: 32
@@ -1946,6 +2189,7 @@ background39_i4:
 
 479_i4:
   type: TEXTURE
+  symbol: k64_tex_1C88C5A
   format: I4
   width: 64
   height: 32
@@ -1954,6 +2198,7 @@ background39_i4:
 
 481_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C8907A
   format: IA8
   width: 64
   height: 64
@@ -1962,6 +2207,7 @@ background39_i4:
 
 482_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8A07A
   format: I4
   width: 32
   height: 32
@@ -1970,6 +2216,7 @@ background39_i4:
 
 483_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C8A27A
   format: IA8
   width: 32
   height: 32
@@ -1978,6 +2225,7 @@ background39_i4:
 
 484_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8A67A
   format: I4
   width: 32
   height: 32
@@ -1986,6 +2234,7 @@ background39_i4:
 
 485_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8A87A
   format: I4
   width: 32
   height: 32
@@ -1994,6 +2243,7 @@ background39_i4:
 
 486_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8AA7A
   format: I4
   width: 32
   height: 32
@@ -2002,6 +2252,7 @@ background39_i4:
 
 487_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8AC7A
   format: I4
   width: 32
   height: 32
@@ -2010,6 +2261,7 @@ background39_i4:
 
 488_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8AE7A
   format: IA4
   width: 32
   height: 32
@@ -2018,6 +2270,7 @@ background39_i4:
 
 489_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C8B07A
   format: IA8
   width: 32
   height: 32
@@ -2026,6 +2279,7 @@ background39_i4:
 
 490_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C8B47A
   format: IA8
   width: 32
   height: 32
@@ -2034,6 +2288,7 @@ background39_i4:
 
 491_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8B87A
   format: I4
   width: 32
   height: 32
@@ -2042,6 +2297,7 @@ background39_i4:
 
 492_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8BA7A
   format: I4
   width: 64
   height: 64
@@ -2050,6 +2306,7 @@ background39_i4:
 
 493_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8C27A
   format: I4
   width: 64
   height: 64
@@ -2058,6 +2315,7 @@ background39_i4:
 
 494_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8CA7A
   format: IA4
   width: 64
   height: 32
@@ -2066,6 +2324,7 @@ background39_i4:
 
 495_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8CE7A
   format: I4
   width: 32
   height: 32
@@ -2074,6 +2333,7 @@ background39_i4:
 
 496_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8D07A
   format: I4
   width: 16
   height: 16
@@ -2082,6 +2342,7 @@ background39_i4:
 
 497_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C8D0FA
   format: IA8
   width: 32
   height: 32
@@ -2090,6 +2351,7 @@ background39_i4:
 
 498_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8D4FA
   format: I4
   width: 32
   height: 32
@@ -2098,6 +2360,7 @@ background39_i4:
 
 499_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8D6FA
   format: I4
   width: 32
   height: 32
@@ -2106,6 +2369,7 @@ background39_i4:
 
 500_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8D8FA
   format: IA4
   width: 128
   height: 64
@@ -2114,6 +2378,7 @@ background39_i4:
 
 501_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8E8FA
   format: I4
   width: 32
   height: 32
@@ -2122,6 +2387,7 @@ background39_i4:
 
 502_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8EAFA
   format: IA4
   width: 32
   height: 16
@@ -2130,6 +2396,7 @@ background39_i4:
 
 503_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8EBFA
   format: I4
   width: 32
   height: 32
@@ -2138,6 +2405,7 @@ background39_i4:
 
 504_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8EDFA
   format: IA4
   width: 32
   height: 64
@@ -2146,6 +2414,7 @@ background39_i4:
 
 505_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8F1FA
   format: IA4
   width: 32
   height: 32
@@ -2154,6 +2423,7 @@ background39_i4:
 
 506_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8F3FA
   format: IA4
   width: 16
   height: 16
@@ -2162,6 +2432,7 @@ background39_i4:
 
 507_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C8F47A
   format: IA8
   width: 32
   height: 64
@@ -2170,6 +2441,7 @@ background39_i4:
 
 508_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8FC7A
   format: I4
   width: 16
   height: 16
@@ -2178,6 +2450,7 @@ background39_i4:
 
 509_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C8FCFA
   format: IA4
   width: 32
   height: 16
@@ -2186,6 +2459,7 @@ background39_i4:
 
 510_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8FDFA
   format: I4
   width: 32
   height: 32
@@ -2194,6 +2468,7 @@ background39_i4:
 
 511_i4:
   type: TEXTURE
+  symbol: k64_tex_1C8FFFA
   format: I4
   width: 32
   height: 32
@@ -2202,6 +2477,7 @@ background39_i4:
 
 512_i4:
   type: TEXTURE
+  symbol: k64_tex_1C901FA
   format: I4
   width: 32
   height: 32
@@ -2210,6 +2486,7 @@ background39_i4:
 
 513_i4:
   type: TEXTURE
+  symbol: k64_tex_1C903FA
   format: I4
   width: 32
   height: 32
@@ -2218,6 +2495,7 @@ background39_i4:
 
 514_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C905FA
   format: IA4
   width: 32
   height: 32
@@ -2226,6 +2504,7 @@ background39_i4:
 
 515_i4:
   type: TEXTURE
+  symbol: k64_tex_1C907FA
   format: I4
   width: 16
   height: 16
@@ -2234,6 +2513,7 @@ background39_i4:
 
 516_i4:
   type: TEXTURE
+  symbol: k64_tex_1C9087A
   format: I4
   width: 32
   height: 16
@@ -2242,6 +2522,7 @@ background39_i4:
 
 517_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9097A
   format: IA4
   width: 64
   height: 64
@@ -2250,6 +2531,7 @@ background39_i4:
 
 518_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C9117A
   format: IA8
   width: 32
   height: 32
@@ -2258,6 +2540,7 @@ background39_i4:
 
 519_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9157A
   format: IA4
   width: 32
   height: 64
@@ -2266,6 +2549,7 @@ background39_i4:
 
 520_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C9197A
   format: IA8
   width: 32
   height: 32
@@ -2274,6 +2558,7 @@ background39_i4:
 
 521_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C91D7A
   format: IA8
   width: 32
   height: 32
@@ -2282,6 +2567,7 @@ background39_i4:
 
 523_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C921BA
   format: IA4
   width: 32
   height: 16
@@ -2290,6 +2576,7 @@ background39_i4:
 
 531_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9247A
   format: IA4
   width: 32
   height: 16
@@ -2298,6 +2585,7 @@ background39_i4:
 
 532_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9257A
   format: IA4
   width: 32
   height: 16
@@ -2306,6 +2594,7 @@ background39_i4:
 
 533_i4:
   type: TEXTURE
+  symbol: k64_tex_1C9267A
   format: I4
   width: 32
   height: 32
@@ -2314,6 +2603,7 @@ background39_i4:
 
 534_i4:
   type: TEXTURE
+  symbol: k64_tex_1C9287A
   format: I4
   width: 32
   height: 32
@@ -2322,6 +2612,7 @@ background39_i4:
 
 535_ia8:
   type: TEXTURE
+  symbol: k64_tex_1C92A7A
   format: IA8
   width: 32
   height: 32
@@ -2330,6 +2621,7 @@ background39_i4:
 
 536_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C92E7A
   format: IA4
   width: 32
   height: 16
@@ -2338,6 +2630,7 @@ background39_i4:
 
 541_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9307A
   format: IA4
   width: 32
   height: 16
@@ -2346,6 +2639,7 @@ background39_i4:
 
 542_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9317A
   format: IA4
   width: 64
   height: 32
@@ -2354,6 +2648,7 @@ background39_i4:
 
 543_i4:
   type: TEXTURE
+  symbol: k64_tex_1C9357A
   format: I4
   width: 32
   height: 32
@@ -2362,6 +2657,7 @@ background39_i4:
 
 544_i4:
   type: TEXTURE
+  symbol: k64_tex_1C9377A
   format: I4
   width: 16
   height: 16
@@ -2370,6 +2666,7 @@ background39_i4:
 
 547_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9401A
   format: IA4
   width: 32
   height: 8
@@ -2378,6 +2675,7 @@ background39_i4:
 
 551_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C942DA
   format: IA4
   width: 32
   height: 16
@@ -2386,6 +2684,7 @@ background39_i4:
 
 553_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C943FA
   format: IA4
   width: 32
   height: 8
@@ -2394,6 +2693,7 @@ background39_i4:
 
 555_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9449A
   format: IA4
   width: 64
   height: 32
@@ -2402,6 +2702,7 @@ background39_i4:
 
 556_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9489A
   format: IA4
   width: 64
   height: 64
@@ -2410,6 +2711,7 @@ background39_i4:
 
 557_i4:
   type: TEXTURE
+  symbol: k64_tex_1C9509A
   format: I4
   width: 32
   height: 32
@@ -2418,6 +2720,7 @@ background39_i4:
 
 562_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C95CDA
   format: IA4
   width: 32
   height: 64
@@ -2426,6 +2729,7 @@ background39_i4:
 
 570_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9675A
   format: IA4
   width: 64
   height: 16
@@ -2434,6 +2738,7 @@ background39_i4:
 
 572_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9697A
   format: IA4
   width: 32
   height: 8
@@ -2442,6 +2747,7 @@ background39_i4:
 
 582_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9711A
   format: IA4
   width: 32
   height: 8
@@ -2450,6 +2756,7 @@ background39_i4:
 
 590_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C97E1A
   format: IA4
   width: 64
   height: 16
@@ -2458,6 +2765,7 @@ background39_i4:
 
 598_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9929A
   format: IA4
   width: 64
   height: 16
@@ -2466,6 +2774,7 @@ background39_i4:
 
 604_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C99EFA
   format: IA4
   width: 32
   height: 8
@@ -2474,6 +2783,7 @@ background39_i4:
 
 606_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C99F9A
   format: IA4
   width: 64
   height: 16
@@ -2482,6 +2792,7 @@ background39_i4:
 
 612_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9ABFA
   format: IA4
   width: 64
   height: 16
@@ -2490,6 +2801,7 @@ background39_i4:
 
 614_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9AE1A
   format: IA4
   width: 64
   height: 16
@@ -2498,6 +2810,7 @@ background39_i4:
 
 616_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9B03A
   format: IA4
   width: 32
   height: 64
@@ -2506,6 +2819,7 @@ background39_i4:
 
 618_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9B45A
   format: IA4
   width: 32
   height: 64
@@ -2514,6 +2828,7 @@ background39_i4:
 
 620_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9B87A
   format: IA4
   width: 32
   height: 64
@@ -2522,6 +2837,7 @@ background39_i4:
 
 622_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9BC9A
   format: IA4
   width: 32
   height: 64
@@ -2530,6 +2846,7 @@ background39_i4:
 
 630_ia4:
   type: TEXTURE
+  symbol: k64_tex_1C9C71A
   format: IA4
   width: 32
   height: 64
@@ -2538,6 +2855,7 @@ background39_i4:
 
 652_i4:
   type: TEXTURE
+  symbol: k64_tex_1C9FCFA
   format: I4
   width: 32
   height: 64
@@ -2546,6 +2864,7 @@ background39_i4:
 
 654_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CA011A
   format: IA4
   width: 32
   height: 64
@@ -2554,6 +2873,7 @@ background39_i4:
 
 656_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA053A
   format: I4
   width: 32
   height: 64
@@ -2562,6 +2882,7 @@ background39_i4:
 
 657_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA093A
   format: I4
   width: 64
   height: 64
@@ -2570,6 +2891,7 @@ background39_i4:
 
 660_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CA195A
   format: IA4
   width: 32
   height: 32
@@ -2578,6 +2900,7 @@ background39_i4:
 
 661_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA1B5A
   format: I4
   width: 16
   height: 16
@@ -2586,6 +2909,7 @@ background39_i4:
 
 666_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA249A
   format: I4
   width: 64
   height: 64
@@ -2594,6 +2918,7 @@ background39_i4:
 
 668_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA2CBA
   format: I4
   width: 64
   height: 64
@@ -2602,6 +2927,7 @@ background39_i4:
 
 669_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA34BA
   format: I4
   width: 64
   height: 64
@@ -2610,6 +2936,7 @@ background39_i4:
 
 670_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CA3CBA
   format: IA4
   width: 32
   height: 8
@@ -2618,6 +2945,7 @@ background39_i4:
 
 672_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA3D5A
   format: I4
   width: 64
   height: 64
@@ -2626,6 +2954,7 @@ background39_i4:
 
 674_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA457A
   format: I4
   width: 64
   height: 64
@@ -2634,6 +2963,7 @@ background39_i4:
 
 675_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA4D7A
   format: I4
   width: 64
   height: 64
@@ -2642,6 +2972,7 @@ background39_i4:
 
 680_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA5E3A
   format: I4
   width: 32
   height: 64
@@ -2650,6 +2981,7 @@ background39_i4:
 
 682_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CA625A
   format: IA4
   width: 32
   height: 8
@@ -2658,6 +2990,7 @@ background39_i4:
 
 684_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CA62FA
   format: IA4
   width: 32
   height: 32
@@ -2666,6 +2999,7 @@ background39_i4:
 
 686_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA651A
   format: I4
   width: 32
   height: 32
@@ -2674,6 +3008,7 @@ background39_i4:
 
 692_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA6B7A
   format: I4
   width: 32
   height: 64
@@ -2682,6 +3017,7 @@ background39_i4:
 
 699_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CA75DA
   format: IA4
   width: 32
   height: 16
@@ -2690,6 +3026,7 @@ background39_i4:
 
 703_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA7F1A
   format: I4
   width: 32
   height: 64
@@ -2698,6 +3035,7 @@ background39_i4:
 
 709_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA937A
   format: I4
   width: 32
   height: 64
@@ -2706,6 +3044,7 @@ background39_i4:
 
 711_i4:
   type: TEXTURE
+  symbol: k64_tex_1CA979A
   format: I4
   width: 32
   height: 64
@@ -2714,6 +3053,7 @@ background39_i4:
 
 713_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CA9BBA
   format: IA4
   width: 32
   height: 16
@@ -2722,6 +3062,7 @@ background39_i4:
 
 715_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CA9CDA
   format: IA4
   width: 64
   height: 32
@@ -2730,6 +3071,7 @@ background39_i4:
 
 721_i4:
   type: TEXTURE
+  symbol: k64_tex_1CAA23A
   format: I4
   width: 64
   height: 64
@@ -2738,6 +3080,7 @@ background39_i4:
 
 722_i4:
   type: TEXTURE
+  symbol: k64_tex_1CAAA3A
   format: I4
   width: 32
   height: 32
@@ -2746,6 +3089,7 @@ background39_i4:
 
 723_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CAAC3A
   format: IA4
   width: 64
   height: 128
@@ -2754,6 +3098,7 @@ background39_i4:
 
 724_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CABC3A
   format: IA4
   width: 64
   height: 64
@@ -2762,6 +3107,7 @@ background39_i4:
 
 739_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CAFE9A
   format: IA4
   width: 16
   height: 32
@@ -2770,6 +3116,7 @@ background39_i4:
 
 741_i4:
   type: TEXTURE
+  symbol: k64_tex_1CAFFBA
   format: I4
   width: 32
   height: 32
@@ -2778,6 +3125,7 @@ background39_i4:
 
 742_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB01BA
   format: I4
   width: 32
   height: 32
@@ -2786,6 +3134,7 @@ background39_i4:
 
 743_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB03BA
   format: I4
   width: 64
   height: 64
@@ -2794,6 +3143,7 @@ background39_i4:
 
 744_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CB0BBA
   format: IA4
   width: 128
   height: 32
@@ -2802,6 +3152,7 @@ background39_i4:
 
 745_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB13BA
   format: I4
   width: 64
   height: 64
@@ -2810,6 +3161,7 @@ background39_i4:
 
 746_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CB1BBA
   format: IA4
   width: 64
   height: 64
@@ -2818,6 +3170,7 @@ background39_i4:
 
 750_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB28BA
   format: I4
   width: 32
   height: 32
@@ -2826,6 +3179,7 @@ background39_i4:
 
 751_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CB2ABA
   format: IA4
   width: 64
   height: 64
@@ -2834,6 +3188,7 @@ background39_i4:
 
 752_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB32BA
   format: I4
   width: 64
   height: 64
@@ -2842,6 +3197,7 @@ background39_i4:
 
 753_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB3ABA
   format: I4
   width: 32
   height: 32
@@ -2850,6 +3206,7 @@ background39_i4:
 
 754_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB3CBA
   format: I4
   width: 64
   height: 64
@@ -2858,6 +3215,7 @@ background39_i4:
 
 755_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CB44BA
   format: IA4
   width: 64
   height: 32
@@ -2866,6 +3224,7 @@ background39_i4:
 
 756_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB48BA
   format: I4
   width: 64
   height: 64
@@ -2874,6 +3233,7 @@ background39_i4:
 
 757_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB50BA
   format: I4
   width: 64
   height: 64
@@ -2882,6 +3242,7 @@ background39_i4:
 
 758_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CB58BA
   format: IA4
   width: 64
   height: 64
@@ -2890,6 +3251,7 @@ background39_i4:
 
 759_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CB60BA
   format: IA4
   width: 32
   height: 32
@@ -2898,6 +3260,7 @@ background39_i4:
 
 760_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CB62BA
   format: IA4
   width: 64
   height: 32
@@ -2906,6 +3269,7 @@ background39_i4:
 
 761_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB66BA
   format: I4
   width: 32
   height: 32
@@ -2914,6 +3278,7 @@ background39_i4:
 
 762_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB68BA
   format: I4
   width: 64
   height: 64
@@ -2922,6 +3287,7 @@ background39_i4:
 
 763_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB70BA
   format: I4
   width: 64
   height: 64
@@ -2930,6 +3296,7 @@ background39_i4:
 
 764_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB78BA
   format: I4
   width: 64
   height: 64
@@ -2938,6 +3305,7 @@ background39_i4:
 
 765_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB80BA
   format: I4
   width: 64
   height: 64
@@ -2946,6 +3314,7 @@ background39_i4:
 
 766_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB88BA
   format: I4
   width: 64
   height: 64
@@ -2954,6 +3323,7 @@ background39_i4:
 
 767_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB90BA
   format: I4
   width: 64
   height: 64
@@ -2962,6 +3332,7 @@ background39_i4:
 
 768_i4:
   type: TEXTURE
+  symbol: k64_tex_1CB98BA
   format: I4
   width: 64
   height: 64
@@ -2970,6 +3341,7 @@ background39_i4:
 
 769_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBA0BA
   format: IA4
   width: 64
   height: 32
@@ -2978,6 +3350,7 @@ background39_i4:
 
 770_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBA4BA
   format: IA4
   width: 32
   height: 32
@@ -2986,6 +3359,7 @@ background39_i4:
 
 771_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBA6BA
   format: IA4
   width: 32
   height: 32
@@ -2994,6 +3368,7 @@ background39_i4:
 
 772_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBA8BA
   format: I4
   width: 32
   height: 32
@@ -3002,6 +3377,7 @@ background39_i4:
 
 778_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBAF1A
   format: IA4
   width: 16
   height: 32
@@ -3010,6 +3386,7 @@ background39_i4:
 
 779_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBB01A
   format: IA4
   width: 16
   height: 32
@@ -3018,6 +3395,7 @@ background39_i4:
 
 780_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBB11A
   format: I4
   width: 16
   height: 16
@@ -3026,6 +3404,7 @@ background39_i4:
 
 781_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBB19A
   format: IA4
   width: 16
   height: 16
@@ -3034,6 +3413,7 @@ background39_i4:
 
 782_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBB21A
   format: I4
   width: 16
   height: 16
@@ -3042,6 +3422,7 @@ background39_i4:
 
 783_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBB29A
   format: I4
   width: 16
   height: 16
@@ -3050,6 +3431,7 @@ background39_i4:
 
 784_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBB31A
   format: I4
   width: 16
   height: 16
@@ -3058,6 +3440,7 @@ background39_i4:
 
 785_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBB39A
   format: IA4
   width: 16
   height: 32
@@ -3066,6 +3449,7 @@ background39_i4:
 
 786_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBB49A
   format: I4
   width: 16
   height: 16
@@ -3074,6 +3458,7 @@ background39_i4:
 
 787_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBB51A
   format: I4
   width: 16
   height: 16
@@ -3082,6 +3467,7 @@ background39_i4:
 
 788_ia8:
   type: TEXTURE
+  symbol: k64_tex_1CBB59A
   format: IA8
   width: 16
   height: 32
@@ -3090,6 +3476,7 @@ background39_i4:
 
 789_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBB79A
   format: I4
   width: 16
   height: 16
@@ -3098,6 +3485,7 @@ background39_i4:
 
 790_ia8:
   type: TEXTURE
+  symbol: k64_tex_1CBB81A
   format: IA8
   width: 16
   height: 32
@@ -3106,6 +3494,7 @@ background39_i4:
 
 791_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBBA1A
   format: IA4
   width: 16
   height: 32
@@ -3114,6 +3503,7 @@ background39_i4:
 
 793_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBBB3A
   format: I4
   width: 32
   height: 16
@@ -3122,6 +3512,7 @@ background39_i4:
 
 795_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBBC5A
   format: I4
   width: 32
   height: 16
@@ -3130,6 +3521,7 @@ background39_i4:
 
 796_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBBD5A
   format: IA4
   width: 32
   height: 16
@@ -3138,6 +3530,7 @@ background39_i4:
 
 797_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBBE5A
   format: IA4
   width: 16
   height: 32
@@ -3146,6 +3539,7 @@ background39_i4:
 
 798_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBBF5A
   format: IA4
   width: 16
   height: 16
@@ -3154,6 +3548,7 @@ background39_i4:
 
 799_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBBFDA
   format: I4
   width: 16
   height: 16
@@ -3162,6 +3557,7 @@ background39_i4:
 
 800_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBC05A
   format: I4
   width: 16
   height: 16
@@ -3170,6 +3566,7 @@ background39_i4:
 
 801_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBC0DA
   format: IA4
   width: 32
   height: 32
@@ -3178,6 +3575,7 @@ background39_i4:
 
 802_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBC2DA
   format: IA4
   width: 32
   height: 32
@@ -3186,6 +3584,7 @@ background39_i4:
 
 803_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBC4DA
   format: I4
   width: 32
   height: 32
@@ -3194,6 +3593,7 @@ background39_i4:
 
 804_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBC6DA
   format: I4
   width: 64
   height: 64
@@ -3202,6 +3602,7 @@ background39_i4:
 
 805_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBCEDA
   format: I4
   width: 32
   height: 32
@@ -3210,6 +3611,7 @@ background39_i4:
 
 807_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBD2DA
   format: I4
   width: 32
   height: 32
@@ -3218,6 +3620,7 @@ background39_i4:
 
 808_ia8:
   type: TEXTURE
+  symbol: k64_tex_1CBD4DA
   format: IA8
   width: 64
   height: 32
@@ -3226,6 +3629,7 @@ background39_i4:
 
 809_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBDCDA
   format: IA4
   width: 32
   height: 16
@@ -3234,6 +3638,7 @@ background39_i4:
 
 812_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBDE7A
   format: I4
   width: 64
   height: 64
@@ -3242,6 +3647,7 @@ background39_i4:
 
 813_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBE67A
   format: I4
   width: 16
   height: 8
@@ -3250,6 +3656,7 @@ background39_i4:
 
 814_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBE6BA
   format: I4
   width: 16
   height: 16
@@ -3258,6 +3665,7 @@ background39_i4:
 
 815_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBE73A
   format: IA4
   width: 32
   height: 32
@@ -3266,6 +3674,7 @@ background39_i4:
 
 816_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBE93A
   format: IA4
   width: 32
   height: 32
@@ -3274,6 +3683,7 @@ background39_i4:
 
 817_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBEB3A
   format: IA4
   width: 32
   height: 8
@@ -3282,6 +3692,7 @@ background39_i4:
 
 818_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBEBBA
   format: I4
   width: 16
   height: 8
@@ -3290,6 +3701,7 @@ background39_i4:
 
 819_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBEBFA
   format: IA4
   width: 32
   height: 16
@@ -3298,6 +3710,7 @@ background39_i4:
 
 820_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBECFA
   format: I4
   width: 32
   height: 32
@@ -3306,6 +3719,7 @@ background39_i4:
 
 821_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBEEFA
   format: IA4
   width: 32
   height: 32
@@ -3314,6 +3728,7 @@ background39_i4:
 
 822_ia8:
   type: TEXTURE
+  symbol: k64_tex_1CBF0FA
   format: IA8
   width: 16
   height: 64
@@ -3322,6 +3737,7 @@ background39_i4:
 
 823_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CBF4FA
   format: IA4
   width: 32
   height: 32
@@ -3330,6 +3746,7 @@ background39_i4:
 
 824_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBF6FA
   format: I4
   width: 16
   height: 8
@@ -3338,6 +3755,7 @@ background39_i4:
 
 825_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBF73A
   format: I4
   width: 64
   height: 64
@@ -3346,6 +3764,7 @@ background39_i4:
 
 826_i4:
   type: TEXTURE
+  symbol: k64_tex_1CBFF3A
   format: I4
   width: 64
   height: 64
@@ -3354,6 +3773,7 @@ background39_i4:
 
 827_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC073A
   format: IA4
   width: 16
   height: 16
@@ -3362,6 +3782,7 @@ background39_i4:
 
 828_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC07BA
   format: IA4
   width: 32
   height: 16
@@ -3370,6 +3791,7 @@ background39_i4:
 
 834_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC0FDA
   format: IA4
   width: 32
   height: 16
@@ -3378,6 +3800,7 @@ background39_i4:
 
 839_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC151A
   format: IA4
   width: 32
   height: 8
@@ -3386,6 +3809,7 @@ background39_i4:
 
 842_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC181A
   format: IA4
   width: 32
   height: 8
@@ -3394,6 +3818,7 @@ background39_i4:
 
 847_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC1DBA
   format: IA4
   width: 16
   height: 32
@@ -3402,6 +3827,7 @@ background39_i4:
 
 856_i4:
   type: TEXTURE
+  symbol: k64_tex_1CC291A
   format: I4
   width: 128
   height: 20
@@ -3410,6 +3836,7 @@ background39_i4:
 
 857_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC2E1A
   format: IA4
   width: 64
   height: 16
@@ -3418,6 +3845,7 @@ background39_i4:
 
 863_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC357A
   format: IA4
   width: 32
   height: 56
@@ -3426,6 +3854,7 @@ background39_i4:
 
 865_i4:
   type: TEXTURE
+  symbol: k64_tex_1CC3AFA
   format: I4
   width: 32
   height: 32
@@ -3434,6 +3863,7 @@ background39_i4:
 
 870_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC413A
   format: IA4
   width: 32
   height: 32
@@ -3442,6 +3872,7 @@ background39_i4:
 
 871_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC433A
   format: IA4
   width: 32
   height: 32
@@ -3450,6 +3881,7 @@ background39_i4:
 
 872_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC453A
   format: IA4
   width: 32
   height: 32
@@ -3458,6 +3890,7 @@ background39_i4:
 
 873_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC473A
   format: IA4
   width: 32
   height: 32
@@ -3466,6 +3899,7 @@ background39_i4:
 
 874_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC493A
   format: IA4
   width: 32
   height: 32
@@ -3474,6 +3908,7 @@ background39_i4:
 
 875_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC4B3A
   format: IA4
   width: 32
   height: 32
@@ -3482,6 +3917,7 @@ background39_i4:
 
 876_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC4D3A
   format: IA4
   width: 32
   height: 32
@@ -3490,6 +3926,7 @@ background39_i4:
 
 878_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC4F7A
   format: IA4
   width: 32
   height: 24
@@ -3498,6 +3935,7 @@ background39_i4:
 
 880_i4:
   type: TEXTURE
+  symbol: k64_tex_1CC510A
   format: I4
   width: 32
   height: 32
@@ -3506,6 +3944,7 @@ background39_i4:
 
 882_i4:
   type: TEXTURE
+  symbol: k64_tex_1CC532A
   format: I4
   width: 32
   height: 32
@@ -3514,6 +3953,7 @@ background39_i4:
 
 892_ia8:
   type: TEXTURE
+  symbol: k64_tex_1CC638A
   format: IA8
   width: 32
   height: 32
@@ -3522,6 +3962,7 @@ background39_i4:
 
 893_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC678A
   format: IA4
   width: 64
   height: 16
@@ -3530,6 +3971,7 @@ background39_i4:
 
 894_i4:
   type: TEXTURE
+  symbol: k64_tex_1CC698A
   format: I4
   width: 32
   height: 32
@@ -3538,6 +3980,7 @@ background39_i4:
 
 895_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC6B8A
   format: IA4
   width: 32
   height: 32
@@ -3546,6 +3989,7 @@ background39_i4:
 
 898_i4:
   type: TEXTURE
+  symbol: k64_tex_1CC6F0A
   format: I4
   width: 16
   height: 16
@@ -3554,6 +3998,7 @@ background39_i4:
 
 902_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC740A
   format: IA4
   width: 64
   height: 16
@@ -3562,6 +4007,7 @@ background39_i4:
 
 915_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC816A
   format: IA4
   width: 32
   height: 16
@@ -3570,6 +4016,7 @@ background39_i4:
 
 919_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC82EA
   format: IA4
   width: 16
   height: 16
@@ -3578,6 +4025,7 @@ background39_i4:
 
 923_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC85AA
   format: IA4
   width: 16
   height: 32
@@ -3586,6 +4034,7 @@ background39_i4:
 
 925_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC86CA
   format: IA4
   width: 32
   height: 64
@@ -3594,6 +4043,7 @@ background39_i4:
 
 927_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC8AEA
   format: IA4
   width: 32
   height: 64
@@ -3602,6 +4052,7 @@ background39_i4:
 
 937_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CC940A
   format: IA4
   width: 32
   height: 32
@@ -3610,6 +4061,7 @@ background39_i4:
 
 939_ia8:
   type: TEXTURE
+  symbol: k64_tex_1CC962A
   format: IA8
   width: 64
   height: 32
@@ -3618,6 +4070,7 @@ background39_i4:
 
 947_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCA3AA
   format: IA4
   width: 16
   height: 32
@@ -3626,6 +4079,7 @@ background39_i4:
 
 949_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCA4CA
   format: IA4
   width: 32
   height: 16
@@ -3634,6 +4088,7 @@ background39_i4:
 
 969_i4:
   type: TEXTURE
+  symbol: k64_tex_1CCCA0A
   format: I4
   width: 32
   height: 32
@@ -3642,6 +4097,7 @@ background39_i4:
 
 970_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCCC0A
   format: IA4
   width: 16
   height: 16
@@ -3650,6 +4106,7 @@ background39_i4:
 
 979_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCD5AA
   format: IA4
   width: 32
   height: 16
@@ -3658,6 +4115,7 @@ background39_i4:
 
 981_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCD6CA
   format: IA4
   width: 32
   height: 16
@@ -3666,6 +4124,7 @@ background39_i4:
 
 983_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCD7EA
   format: IA4
   width: 128
   height: 16
@@ -3674,6 +4133,7 @@ background39_i4:
 
 985_i4:
   type: TEXTURE
+  symbol: k64_tex_1CCDC0A
   format: I4
   width: 32
   height: 32
@@ -3682,6 +4142,7 @@ background39_i4:
 
 986_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCDE0A
   format: IA4
   width: 32
   height: 64
@@ -3690,6 +4151,7 @@ background39_i4:
 
 994_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCF27A
   format: IA4
   width: 32
   height: 64
@@ -3698,6 +4160,7 @@ background39_i4:
 
 996_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CCF69A
   format: IA4
   width: 32
   height: 32
@@ -3706,6 +4169,7 @@ background39_i4:
 
 1002_i4:
   type: TEXTURE
+  symbol: k64_tex_1CCFFEA
   format: I4
   width: 32
   height: 16
@@ -3714,6 +4178,7 @@ background39_i4:
 
 1003_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD00EA
   format: I4
   width: 16
   height: 32
@@ -3722,6 +4187,7 @@ background39_i4:
 
 1005_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD020A
   format: I4
   width: 32
   height: 32
@@ -3730,6 +4196,7 @@ background39_i4:
 
 1008_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD062A
   format: I4
   width: 32
   height: 32
@@ -3738,6 +4205,7 @@ background39_i4:
 
 1009_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD082A
   format: I4
   width: 64
   height: 64
@@ -3746,6 +4214,7 @@ background39_i4:
 
 1014_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD146A
   format: I4
   width: 128
   height: 64
@@ -3754,6 +4223,7 @@ background39_i4:
 
 1015_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD246A
   format: IA4
   width: 64
   height: 32
@@ -3762,6 +4232,7 @@ background39_i4:
 
 1016_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD286A
   format: I4
   width: 64
   height: 64
@@ -3770,6 +4241,7 @@ background39_i4:
 
 1017_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD306A
   format: IA4
   width: 64
   height: 64
@@ -3778,6 +4250,7 @@ background39_i4:
 
 1018_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD386A
   format: IA4
   width: 64
   height: 64
@@ -3786,6 +4259,7 @@ background39_i4:
 
 1019_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD406A
   format: IA4
   width: 64
   height: 64
@@ -3794,6 +4268,7 @@ background39_i4:
 
 1020_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD486A
   format: I4
   width: 64
   height: 64
@@ -3802,6 +4277,7 @@ background39_i4:
 
 1021_ia8:
   type: TEXTURE
+  symbol: k64_tex_1CD506A
   format: IA8
   width: 64
   height: 64
@@ -3810,6 +4286,7 @@ background39_i4:
 
 1022_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD606A
   format: IA4
   width: 64
   height: 64
@@ -3818,6 +4295,7 @@ background39_i4:
 
 1029_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD736A
   format: I4
   width: 32
   height: 32
@@ -3826,6 +4304,7 @@ background39_i4:
 
 1032_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD778A
   format: I4
   width: 16
   height: 32
@@ -3834,6 +4313,7 @@ background39_i4:
 
 1036_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD7ACA
   format: IA4
   width: 32
   height: 64
@@ -3842,6 +4322,7 @@ background39_i4:
 
 1037_ia8:
   type: TEXTURE
+  symbol: k64_tex_1CD7ECA
   format: IA8
   width: 128
   height: 6
@@ -3850,6 +4331,7 @@ background39_i4:
 
 1039_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD81EA
   format: IA4
   width: 32
   height: 8
@@ -3858,6 +4340,7 @@ background39_i4:
 
 1043_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD82EA
   format: I4
   width: 32
   height: 64
@@ -3866,6 +4349,7 @@ background39_i4:
 
 1045_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD870A
   format: I4
   width: 32
   height: 32
@@ -3874,6 +4358,7 @@ background39_i4:
 
 1046_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD890A
   format: I4
   width: 32
   height: 32
@@ -3882,6 +4367,7 @@ background39_i4:
 
 1047_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD8B0A
   format: IA4
   width: 32
   height: 64
@@ -3890,6 +4376,7 @@ background39_i4:
 
 1049_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD8F2A
   format: I4
   width: 16
   height: 32
@@ -3898,6 +4385,7 @@ background39_i4:
 
 1051_i4:
   type: TEXTURE
+  symbol: k64_tex_1CD904A
   format: I4
   width: 64
   height: 64
@@ -3906,6 +4394,7 @@ background39_i4:
 
 1056_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CD9C8A
   format: IA4
   width: 64
   height: 64
@@ -3914,6 +4403,7 @@ background39_i4:
 
 1057_i4:
   type: TEXTURE
+  symbol: k64_tex_1CDA48A
   format: I4
   width: 64
   height: 64
@@ -3922,6 +4412,7 @@ background39_i4:
 
 1060_i4:
   type: TEXTURE
+  symbol: k64_tex_1CDAEAA
   format: I4
   width: 32
   height: 64
@@ -3930,6 +4421,7 @@ background39_i4:
 
 1062_i4:
   type: TEXTURE
+  symbol: k64_tex_1CDB2CA
   format: I4
   width: 32
   height: 32
@@ -3938,6 +4430,7 @@ background39_i4:
 
 1063_i4:
   type: TEXTURE
+  symbol: k64_tex_1CDB4CA
   format: I4
   width: 32
   height: 32
@@ -3946,6 +4439,7 @@ background39_i4:
 
 1064_i4:
   type: TEXTURE
+  symbol: k64_tex_1CDB6CA
   format: I4
   width: 64
   height: 32
@@ -3954,6 +4448,7 @@ background39_i4:
 
 1070_i4:
   type: TEXTURE
+  symbol: k64_tex_1CDBF2A
   format: I4
   width: 64
   height: 64
@@ -3962,6 +4457,7 @@ background39_i4:
 
 1071_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CDC72A
   format: IA4
   width: 64
   height: 64
@@ -3970,6 +4466,7 @@ background39_i4:
 
 1072_i4:
   type: TEXTURE
+  symbol: k64_tex_1CDCF2A
   format: I4
   width: 32
   height: 32
@@ -3978,6 +4475,7 @@ background39_i4:
 
 1111_i4:
   type: TEXTURE
+  symbol: k64_tex_1CDFE2A
   format: I4
   width: 32
   height: 32
@@ -3986,6 +4484,7 @@ background39_i4:
 
 1115_i4:
   type: TEXTURE
+  symbol: k64_tex_1CE02EA
   format: I4
   width: 64
   height: 64
@@ -3994,6 +4493,7 @@ background39_i4:
 
 1116_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CE0AEA
   format: IA4
   width: 64
   height: 64
@@ -4002,6 +4502,7 @@ background39_i4:
 
 1117_i4:
   type: TEXTURE
+  symbol: k64_tex_1CE12EA
   format: I4
   width: 64
   height: 32
@@ -4010,6 +4511,7 @@ background39_i4:
 
 1118_i4:
   type: TEXTURE
+  symbol: k64_tex_1CE16EA
   format: I4
   width: 64
   height: 32
@@ -4018,6 +4520,7 @@ background39_i4:
 
 1119_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CE1AEA
   format: IA4
   width: 128
   height: 64
@@ -4026,6 +4529,7 @@ background39_i4:
 
 1120_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CE2AEA
   format: IA4
   width: 128
   height: 64
@@ -4034,6 +4538,7 @@ background39_i4:
 
 1121_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CE3AEA
   format: IA4
   width: 32
   height: 64
@@ -4042,6 +4547,7 @@ background39_i4:
 
 1122_i4:
   type: TEXTURE
+  symbol: k64_tex_1CE3EEA
   format: I4
   width: 16
   height: 32
@@ -4050,6 +4556,7 @@ background39_i4:
 
 1123_i4:
   type: TEXTURE
+  symbol: k64_tex_1CE3FEA
   format: I4
   width: 32
   height: 16
@@ -4058,6 +4565,7 @@ background39_i4:
 
 1124_i4:
   type: TEXTURE
+  symbol: k64_tex_1CE40EA
   format: I4
   width: 32
   height: 48
@@ -4066,6 +4574,7 @@ background39_i4:
 
 1126_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CE442A
   format: IA4
   width: 32
   height: 32
@@ -4074,6 +4583,7 @@ background39_i4:
 
 1127_ia4:
   type: TEXTURE
+  symbol: k64_tex_1CE462A
   format: IA4
   width: 64
   height: 96
@@ -4082,6 +4592,7 @@ background39_i4:
 
 1128_i4:
   type: TEXTURE
+  symbol: k64_tex_1CE522A
   format: I4
   width: 64
   height: 64

@@ -29,7 +29,7 @@
 
 PC_BUILD  := build/pc
 PC_CC     := gcc
-PC_ARCH   := -m64
+PC_ARCH   := -m64 -fno-pie
 PC_DEFS   := -D_LANGUAGE_C -DTARGET_N64 -DPORT -DF3DEX_GBI_2 -DAVOID_UB -DNON_MATCHING
 PC_INC    := -Iinclude -Iinclude/libc -Ilibreultra/include/2.0I -Ibuild \
              -Ibuild/include -Ibuild/assets -Isrc -Isrc.old -I.

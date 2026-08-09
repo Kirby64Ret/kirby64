@@ -2,6 +2,7 @@
 # Source: assets_image.json
 3_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A0EC20
   format: I4
   width: 64
   height: 77
@@ -10,6 +11,7 @@
 
 26_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A11060
   format: I4
   width: 64
   height: 24
@@ -18,6 +20,7 @@
 
 27_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A11370
   format: I4
   width: 64
   height: 24
@@ -26,6 +29,7 @@
 
 28_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A11680
   format: I4
   width: 64
   height: 24
@@ -34,6 +38,7 @@
 
 35_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A13050
   format: I4
   width: 64
   height: 17
@@ -42,6 +47,7 @@
 
 58_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A151C0
   format: I4
   width: 80
   height: 33
@@ -50,6 +56,7 @@
 
 59_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A156F8
   format: I4
   width: 48
   height: 43
@@ -58,6 +65,7 @@
 
 61_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A15E20
   format: I4
   width: 32
   height: 19
@@ -66,6 +74,7 @@
 
 62_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A15F60
   format: I4
   width: 32
   height: 19
@@ -74,6 +83,7 @@
 
 63_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A160A0
   format: I4
   width: 32
   height: 19
@@ -82,6 +92,7 @@
 
 82_background_ia4:
   type: TEXTURE
+  symbol: k64_tex_A2E640
   format: IA4
   width: 32
   height: 27
@@ -90,6 +101,7 @@
 
 83_background_ia4:
   type: TEXTURE
+  symbol: k64_tex_A2E800
   format: IA4
   width: 32
   height: 27
@@ -98,6 +110,7 @@
 
 84_background_ia4:
   type: TEXTURE
+  symbol: k64_tex_A2E9C0
   format: IA4
   width: 32
   height: 27
@@ -106,6 +119,7 @@
 
 85_background_ia4:
   type: TEXTURE
+  symbol: k64_tex_A2EB80
   format: IA4
   width: 32
   height: 27
@@ -114,6 +128,7 @@
 
 130_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A57ED8
   format: I4
   width: 64
   height: 30
@@ -122,6 +137,7 @@
 
 131_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A582A8
   format: I4
   width: 48
   height: 38
@@ -130,6 +146,7 @@
 
 132_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A58648
   format: I4
   width: 48
   height: 38
@@ -138,6 +155,7 @@
 
 133_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A589E8
   format: I4
   width: 48
   height: 38
@@ -146,6 +164,7 @@
 
 134_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A58D88
   format: I4
   width: 48
   height: 38
@@ -154,6 +173,7 @@
 
 139_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A5BD68
   format: I4
   width: 48
   height: 18
@@ -162,6 +182,7 @@
 
 140_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A5BF28
   format: I4
   width: 48
   height: 18
@@ -170,6 +191,7 @@
 
 141_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A5C0E8
   format: I4
   width: 48
   height: 18
@@ -178,6 +200,7 @@
 
 143_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A5C538
   format: I4
   width: 48
   height: 42
@@ -186,6 +209,7 @@
 
 144_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A5C938
   format: I4
   width: 48
   height: 42
@@ -194,6 +218,7 @@
 
 145_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A5CD38
   format: I4
   width: 48
   height: 42
@@ -202,6 +227,7 @@
 
 146_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A5D138
   format: I4
   width: 48
   height: 42
@@ -210,6 +236,7 @@
 
 153_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A61C60
   format: I4
   width: 64
   height: 21
@@ -218,6 +245,7 @@
 
 154_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A61F10
   format: I4
   width: 64
   height: 21
@@ -226,6 +254,7 @@
 
 155_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A621C0
   format: I4
   width: 64
   height: 44
@@ -234,6 +263,7 @@
 
 159_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A629E0
   format: I4
   width: 32
   height: 8
@@ -242,6 +272,7 @@
 
 161_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A62A80
   format: I4
   width: 64
   height: 40
@@ -250,6 +281,7 @@
 
 163_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A62FA0
   format: I4
   width: 32
   height: 16
@@ -258,6 +290,7 @@
 
 165_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A630C0
   format: I4
   width: 32
   height: 8
@@ -266,6 +299,7 @@
 
 171_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A63600
   format: I4
   width: 32
   height: 64
@@ -274,6 +308,7 @@
 
 175_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A63A80
   format: I4
   width: 32
   height: 64
@@ -282,6 +317,7 @@
 
 188_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A66210
   format: I4
   width: 112
   height: 86
@@ -290,6 +326,7 @@
 
 208_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A6AF20
   format: I4
   width: 64
   height: 13
@@ -298,6 +335,7 @@
 
 209_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A6B0D0
   format: I4
   width: 128
   height: 13
@@ -306,6 +344,7 @@
 
 211_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A6F4C0
   format: I4
   width: 208
   height: 32
@@ -314,6 +353,7 @@
 
 213_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A710A0
   format: I4
   width: 160
   height: 98
@@ -322,6 +362,7 @@
 
 214_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A72F50
   format: I4
   width: 240
   height: 22
@@ -330,6 +371,7 @@
 
 217_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A75110
   format: I4
   width: 48
   height: 22
@@ -338,6 +380,7 @@
 
 233_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A7FE30
   format: I4
   width: 32
   height: 32
@@ -346,6 +389,7 @@
 
 234_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A80030
   format: I4
   width: 32
   height: 32
@@ -354,6 +398,7 @@
 
 235_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A80230
   format: I4
   width: 16
   height: 16
@@ -362,6 +407,7 @@
 
 236_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A802B0
   format: I4
   width: 32
   height: 32
@@ -370,6 +416,7 @@
 
 242_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A80C50
   format: I4
   width: 64
   height: 24
@@ -378,6 +425,7 @@
 
 243_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A80F60
   format: I4
   width: 256
   height: 44
@@ -386,6 +434,7 @@
 
 246_background_i4:
   type: TEXTURE
+  symbol: k64_tex_A848B0
   format: I4
   width: 64
   height: 95
@@ -394,6 +443,7 @@
 
 461_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A9AC68
   format: I4
   width: 32
   height: 32
@@ -402,6 +452,7 @@
 
 462_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A9AE68
   format: I4
   width: 32
   height: 32
@@ -410,6 +461,7 @@
 
 463_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A9B068
   format: I4
   width: 32
   height: 32
@@ -418,6 +470,7 @@
 
 464_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A9B268
   format: I4
   width: 64
   height: 64
@@ -426,6 +479,7 @@
 
 474_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A9EB58
   format: I4
   width: 32
   height: 32
@@ -434,6 +488,7 @@
 
 476_image_i4:
   type: TEXTURE
+  symbol: k64_tex_A9FD58
   format: I4
   width: 16
   height: 16
@@ -442,6 +497,7 @@
 
 480_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA0070
   format: I4
   width: 16
   height: 16
@@ -450,6 +506,7 @@
 
 481_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA00F0
   format: I4
   width: 16
   height: 16
@@ -458,6 +515,7 @@
 
 482_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA0170
   format: I4
   width: 32
   height: 32
@@ -466,6 +524,7 @@
 
 484_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA0570
   format: I4
   width: 16
   height: 16
@@ -474,6 +533,7 @@
 
 485_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA05F0
   format: I4
   width: 16
   height: 16
@@ -482,6 +542,7 @@
 
 494_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA1420
   format: I4
   width: 64
   height: 32
@@ -490,6 +551,7 @@
 
 495_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA1820
   format: I4
   width: 32
   height: 32
@@ -498,6 +560,7 @@
 
 497_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA1E20
   format: I4
   width: 32
   height: 32
@@ -506,6 +569,7 @@
 
 500_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA2320
   format: I4
   width: 32
   height: 32
@@ -514,6 +578,7 @@
 
 501_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA2520
   format: I4
   width: 32
   height: 32
@@ -522,6 +587,7 @@
 
 531_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AA9CF0
   format: I4
   width: 16
   height: 14
@@ -530,6 +596,7 @@
 
 571_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB0B18
   format: I4
   width: 64
   height: 32
@@ -538,6 +605,7 @@
 
 572_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB0F18
   format: I4
   width: 64
   height: 32
@@ -546,6 +614,7 @@
 
 573_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB1318
   format: I4
   width: 64
   height: 32
@@ -554,6 +623,7 @@
 
 574_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB1718
   format: I4
   width: 64
   height: 32
@@ -562,6 +632,7 @@
 
 575_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB1B18
   format: I4
   width: 64
   height: 32
@@ -570,6 +641,7 @@
 
 576_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB1F18
   format: I4
   width: 64
   height: 32
@@ -578,6 +650,7 @@
 
 577_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB2318
   format: I4
   width: 64
   height: 32
@@ -586,6 +659,7 @@
 
 578_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB2718
   format: I4
   width: 64
   height: 32
@@ -594,6 +668,7 @@
 
 579_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB2B18
   format: I4
   width: 64
   height: 32
@@ -602,6 +677,7 @@
 
 580_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB2F18
   format: I4
   width: 64
   height: 32
@@ -610,6 +686,7 @@
 
 581_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB3318
   format: I4
   width: 64
   height: 32
@@ -618,6 +695,7 @@
 
 583_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB3738
   format: I4
   width: 32
   height: 60
@@ -626,6 +704,7 @@
 
 587_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB3BA8
   format: I4
   width: 32
   height: 8
@@ -634,6 +713,7 @@
 
 588_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB3C28
   format: I4
   width: 32
   height: 64
@@ -642,6 +722,7 @@
 
 617_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AB9FF8
   format: I4
   width: 32
   height: 32
@@ -650,6 +731,7 @@
 
 618_image_i4:
   type: TEXTURE
+  symbol: k64_tex_ABA1F8
   format: I4
   width: 32
   height: 32
@@ -658,6 +740,7 @@
 
 670_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AC6B28
   format: I4
   width: 32
   height: 32
@@ -666,6 +749,7 @@
 
 672_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AC6D48
   format: I4
   width: 16
   height: 32
@@ -674,6 +758,7 @@
 
 674_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AC6E68
   format: I4
   width: 32
   height: 16
@@ -682,6 +767,7 @@
 
 762_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD7840
   format: I4
   width: 32
   height: 32
@@ -690,6 +776,7 @@
 
 763_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD7A40
   format: I4
   width: 32
   height: 32
@@ -698,6 +785,7 @@
 
 764_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD7C40
   format: I4
   width: 32
   height: 32
@@ -706,6 +794,7 @@
 
 765_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD7E40
   format: I4
   width: 32
   height: 32
@@ -714,6 +803,7 @@
 
 766_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD8040
   format: I4
   width: 32
   height: 32
@@ -722,6 +812,7 @@
 
 767_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD8240
   format: I4
   width: 32
   height: 32
@@ -730,6 +821,7 @@
 
 770_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD8840
   format: I4
   width: 32
   height: 32
@@ -738,6 +830,7 @@
 
 772_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD8C40
   format: I4
   width: 32
   height: 32
@@ -746,6 +839,7 @@
 
 773_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD8E40
   format: I4
   width: 32
   height: 32
@@ -754,6 +848,7 @@
 
 775_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD9240
   format: I4
   width: 32
   height: 32
@@ -762,6 +857,7 @@
 
 776_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD9440
   format: I4
   width: 32
   height: 32
@@ -770,6 +866,7 @@
 
 782_image_i4:
   type: TEXTURE
+  symbol: k64_tex_AD9C60
   format: I4
   width: 16
   height: 16
@@ -778,6 +875,7 @@
 
 795_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B38B70
   format: I4
   width: 16
   height: 16
@@ -786,6 +884,7 @@
 
 796_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B38BF0
   format: I4
   width: 16
   height: 16
@@ -794,6 +893,7 @@
 
 797_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B38C70
   format: I4
   width: 32
   height: 32
@@ -802,6 +902,7 @@
 
 798_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B38E70
   format: I4
   width: 16
   height: 16
@@ -810,6 +911,7 @@
 
 799_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B38EF0
   format: I4
   width: 32
   height: 32
@@ -818,6 +920,7 @@
 
 800_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B390F0
   format: I4
   width: 32
   height: 32
@@ -826,6 +929,7 @@
 
 809_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3A5B0
   format: I4
   width: 32
   height: 32
@@ -834,6 +938,7 @@
 
 810_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3A7B0
   format: I4
   width: 32
   height: 16
@@ -842,6 +947,7 @@
 
 811_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3A8B0
   format: I4
   width: 32
   height: 32
@@ -850,6 +956,7 @@
 
 812_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3AAB0
   format: I4
   width: 32
   height: 20
@@ -858,6 +965,7 @@
 
 813_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3ABF0
   format: I4
   width: 16
   height: 16
@@ -866,6 +974,7 @@
 
 814_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3AC70
   format: I4
   width: 16
   height: 16
@@ -874,6 +983,7 @@
 
 815_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3ACF0
   format: I4
   width: 16
   height: 16
@@ -882,6 +992,7 @@
 
 816_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3AD70
   format: I4
   width: 16
   height: 16
@@ -890,6 +1001,7 @@
 
 817_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3ADF0
   format: I4
   width: 16
   height: 16
@@ -898,6 +1010,7 @@
 
 818_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3AE70
   format: I4
   width: 16
   height: 16
@@ -906,6 +1019,7 @@
 
 820_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3AFF0
   format: I4
   width: 32
   height: 32
@@ -914,6 +1028,7 @@
 
 821_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B3B1F0
   format: I4
   width: 32
   height: 32
@@ -922,6 +1037,7 @@
 
 843_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B4313E
   format: I4
   width: 64
   height: 64
@@ -930,6 +1046,7 @@
 
 844_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B4393E
   format: I4
   width: 32
   height: 32
@@ -938,6 +1055,7 @@
 
 845_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B43B3E
   format: I4
   width: 32
   height: 32
@@ -946,6 +1064,7 @@
 
 846_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B43D3E
   format: I4
   width: 32
   height: 32
@@ -954,6 +1073,7 @@
 
 849_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B4463E
   format: I4
   width: 32
   height: 32
@@ -962,6 +1082,7 @@
 
 853_background_i4:
   type: TEXTURE
+  symbol: k64_tex_B4611E
   format: I4
   width: 32
   height: 240
@@ -970,6 +1091,7 @@
 
 868_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B5F53E
   format: I4
   width: 32
   height: 32
@@ -978,6 +1100,7 @@
 
 869_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B5F73E
   format: I4
   width: 32
   height: 32
@@ -986,6 +1109,7 @@
 
 870_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B5F93E
   format: I4
   width: 32
   height: 32
@@ -994,6 +1118,7 @@
 
 871_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B5FB3E
   format: I4
   width: 32
   height: 32
@@ -1002,6 +1127,7 @@
 
 872_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B5FD3E
   format: I4
   width: 32
   height: 20
@@ -1010,6 +1136,7 @@
 
 873_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B5FE7E
   format: I4
   width: 32
   height: 20
@@ -1018,6 +1145,7 @@
 
 874_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B5FFBE
   format: I4
   width: 32
   height: 20
@@ -1026,6 +1154,7 @@
 
 875_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B600FE
   format: I4
   width: 32
   height: 20
@@ -1034,6 +1163,7 @@
 
 876_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B6023E
   format: I4
   width: 32
   height: 20
@@ -1042,6 +1172,7 @@
 
 882_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B606DE
   format: I4
   width: 32
   height: 32
@@ -1050,6 +1181,7 @@
 
 892_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B610E2
   format: I4
   width: 32
   height: 32
@@ -1058,6 +1190,7 @@
 
 893_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B612E2
   format: I4
   width: 32
   height: 32
@@ -1066,6 +1199,7 @@
 
 895_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B618E2
   format: I4
   width: 32
   height: 32
@@ -1074,6 +1208,7 @@
 
 901_background_i4:
   type: TEXTURE
+  symbol: k64_tex_B673E2
   format: I4
   width: 192
   height: 27
@@ -1082,6 +1217,7 @@
 
 937_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B6DF52
   format: I4
   width: 8
   height: 8
@@ -1090,6 +1226,7 @@
 
 966_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B70A0A
   format: I4
   width: 8
   height: 8
@@ -1098,6 +1235,7 @@
 
 982_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B7236A
   format: I4
   width: 32
   height: 32
@@ -1106,6 +1244,7 @@
 
 983_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B7256A
   format: I4
   width: 32
   height: 32
@@ -1114,6 +1253,7 @@
 
 1021_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B761E2
   format: I4
   width: 32
   height: 32
@@ -1122,6 +1262,7 @@
 
 1026_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B76542
   format: I4
   width: 16
   height: 32
@@ -1130,6 +1271,7 @@
 
 1028_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B76682
   format: I4
   width: 16
   height: 32
@@ -1138,6 +1280,7 @@
 
 1030_image_i4:
   type: TEXTURE
+  symbol: k64_tex_B767C2
   format: I4
   width: 32
   height: 32

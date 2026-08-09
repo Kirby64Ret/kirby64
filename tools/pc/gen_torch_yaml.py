@@ -255,6 +255,7 @@ def render_textures(textures, palettes, dry):
     for p in palettes:
         by_bank[p["bank"]].append(p)
     for bank, items in sorted(by_bank.items()):
+        assert_unique("image/bank_%d.yml" % bank, items)
         items.sort(key=lambda x: x["offset"])
         out = [BANNER.format(src="assets_image.json")]
         for it in items:
@@ -273,7 +274,16 @@ def render_textures(textures, palettes, dry):
     return sum(len(v) for v in by_bank.values())
 
 
+def assert_unique(path, items):
+    """A duplicate mapping key in a yml is silently last-wins, so guard it here."""
+    dup = [k for k, c in Counter(i["key"] for i in items).items() if c > 1]
+    if dup:
+        raise SystemExit("duplicate node keys in %s: %s%s"
+                         % (path, dup[:5], " ..." if len(dup) > 5 else ""))
+
+
 def render_blobs(path, items, src, dry, header=""):
+    assert_unique(path, items)
     items = sorted(items, key=lambda x: x["offset"])
     out = [BANNER.format(src=src), header]
     for it in items:
@@ -332,9 +342,22 @@ def main():
     misc_groups, dropped = parse_misc(assets)
 
     n_tex = render_textures(textures, palettes, dry)
-    n_imgblob = render_blobs(os.path.join(OUT, "image_raw", "all.yml"),
-                             img_blobs, "assets_image.json (meta.size entries)", dry,
-                             "# Image-bank entries with no identified dimensions.\n\n")
+
+    # Split per bank. The index in `assets/image/bank_N/<idx>/block.bin` is only
+    # unique WITHIN a bank, so pooling all 3049 into one yml silently collapses
+    # them onto ~500 distinct keys -- Torch keeps the last definition of a
+    # duplicate mapping key and the archive comes out short and wrong. Caught
+    # by comparing every emitted resource against the ROM; assert_unique() below
+    # is what stops it recurring.
+    n_imgblob = 0
+    img_by_bank = defaultdict(list)
+    for it in img_blobs:
+        img_by_bank[it["bank"]].append(it)
+    for bank, items in sorted(img_by_bank.items()):
+        n_imgblob += render_blobs(
+            os.path.join(OUT, "image_raw", "bank_%d.yml" % bank), items,
+            "assets_image.json (meta.size entries)", dry,
+            "# Image-bank entries with no identified dimensions.\n\n")
 
     n_geo = 0
     by_bank = defaultdict(list)

@@ -2,6 +2,7 @@
 # Source: assets_image.json
 1_palette_rgba16:
   type: TEXTURE
+  symbol: k64_tex_4B3260
   format: TLUT
   colors: 8
   offset: 0x4B3260
@@ -9,6 +10,7 @@
 
 2_ci4:
   type: TEXTURE
+  symbol: k64_tex_4B3270
   format: CI4
   width: 32
   height: 32
@@ -17,6 +19,7 @@
 
 3_i4:
   type: TEXTURE
+  symbol: k64_tex_4B3470
   format: I4
   width: 32
   height: 32
@@ -25,6 +28,7 @@
 
 4_i4:
   type: TEXTURE
+  symbol: k64_tex_4B3670
   format: I4
   width: 32
   height: 32
@@ -33,6 +37,7 @@
 
 5_i4:
   type: TEXTURE
+  symbol: k64_tex_4B3870
   format: I4
   width: 32
   height: 32
@@ -41,6 +46,7 @@
 
 6_i4:
   type: TEXTURE
+  symbol: k64_tex_4B3A70
   format: I4
   width: 32
   height: 32
@@ -49,6 +55,7 @@
 
 7_i4:
   type: TEXTURE
+  symbol: k64_tex_4B3C70
   format: I4
   width: 32
   height: 32
@@ -57,6 +64,7 @@
 
 8_i4:
   type: TEXTURE
+  symbol: k64_tex_4B3E70
   format: I4
   width: 32
   height: 32
@@ -65,6 +73,7 @@
 
 9_i4:
   type: TEXTURE
+  symbol: k64_tex_4B4070
   format: I4
   width: 32
   height: 32
@@ -73,6 +82,7 @@
 
 10_i4:
   type: TEXTURE
+  symbol: k64_tex_4B4270
   format: I4
   width: 32
   height: 32
@@ -81,6 +91,7 @@
 
 11_i4:
   type: TEXTURE
+  symbol: k64_tex_4B4470
   format: I4
   width: 32
   height: 32
@@ -89,6 +100,7 @@
 
 12_i4:
   type: TEXTURE
+  symbol: k64_tex_4B4670
   format: I4
   width: 64
   height: 64
@@ -97,6 +109,7 @@
 
 13_rgba32:
   type: TEXTURE
+  symbol: k64_tex_4B4E70
   format: RGBA32
   width: 32
   height: 32
@@ -105,6 +118,7 @@
 
 14_i4:
   type: TEXTURE
+  symbol: k64_tex_4B5E70
   format: I4
   width: 32
   height: 32
@@ -113,6 +127,7 @@
 
 15_i4:
   type: TEXTURE
+  symbol: k64_tex_4B6070
   format: I4
   width: 32
   height: 32
@@ -121,6 +136,7 @@
 
 16_i4:
   type: TEXTURE
+  symbol: k64_tex_4B6270
   format: I4
   width: 32
   height: 32
@@ -129,6 +145,7 @@
 
 17_i4:
   type: TEXTURE
+  symbol: k64_tex_4B6470
   format: I4
   width: 32
   height: 32
@@ -137,6 +154,7 @@
 
 18_i4:
   type: TEXTURE
+  symbol: k64_tex_4B6670
   format: I4
   width: 32
   height: 32
@@ -145,6 +163,7 @@
 
 19_i4:
   type: TEXTURE
+  symbol: k64_tex_4B6870
   format: I4
   width: 32
   height: 32
@@ -153,6 +172,7 @@
 
 20_i4:
   type: TEXTURE
+  symbol: k64_tex_4B6A70
   format: I4
   width: 16
   height: 16
@@ -161,6 +181,7 @@
 
 21_i4:
   type: TEXTURE
+  symbol: k64_tex_4B6AF0
   format: I4
   width: 16
   height: 16
@@ -169,6 +190,7 @@
 
 22_i4:
   type: TEXTURE
+  symbol: k64_tex_4B6B70
   format: I4
   width: 32
   height: 32
@@ -177,6 +199,7 @@
 
 23_background_ci8:
   type: TEXTURE
+  symbol: k64_tex_4B6D80
   format: CI8
   width: 320
   height: 240
@@ -185,6 +208,7 @@
 
 24_background_ci8:
   type: TEXTURE
+  symbol: k64_tex_4C9B90
   format: CI8
   width: 320
   height: 240
@@ -193,6 +217,7 @@
 
 25_background_ci8:
   type: TEXTURE
+  symbol: k64_tex_4DC9A0
   format: CI8
   width: 304
   height: 220
@@ -201,6 +226,7 @@
 
 26_background_i4:
   type: TEXTURE
+  symbol: k64_tex_4ED0F0
   format: I4
   width: 256
   height: 64
@@ -209,6 +235,7 @@
 
 27_background_i4:
   type: TEXTURE
+  symbol: k64_tex_4EF100
   format: I4
   width: 224
   height: 38

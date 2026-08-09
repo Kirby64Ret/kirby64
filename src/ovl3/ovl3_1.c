@@ -194,36 +194,41 @@ void func_8015439C_ovl3(f32 *arg0) {
     dst[6] = D_800E17D0[omCurrentObj->objId];
 }
 
-#ifdef MIPS_TO_C
 s32 func_80154428_ovl3(f32 *arg0) {
+    extern f32 D_8012E948[];
+    f32 *dst = D_8012E948;
     f32 **temp;
 
     temp = D_800E0490[omCurrentObj->objId];
-    if (temp == NULL) {
-        return 0;
+    if (temp != NULL) {
+        *(f32 **) &dst[7] = temp[0];
+        if (*(f32 **) &dst[7] != NULL) {
+            func_8015439C_ovl3(arg0);
+            func_8011BF4C(dst, 0);
+            return 0;
+        }
     }
-    *(f32 **) &gKirbyState._184.unk20 = temp[0];
-    if (temp[0] == NULL) {
-        return 0;
-    }
-    func_8015439C_ovl3(arg0);
-    func_8011BF4C(&gKirbyState._184.unk4, 0);
+    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80154428_ovl3.s")
-#endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_8015449C_ovl3.s")
+void func_8015449C_ovl3(void *arg0, s32 arg1) {
+    extern f32 D_8012E948[];
+    f32 *dst = D_8012E948;
 
-#ifdef MIPS_TO_C
-/* Blocked: the ROM materialises %hi/%lo(D_8012E944 + 0x4) as an ADDRESS.
-   D_8012E944 does link at 0x8012e944 (contrary to an older guide note), but
-   IDO folds a constant +4 into every store displacement instead, so neither
-   &gKirbyState._184.unk4 nor (f32 *)&D_8012E944[4] reproduces it (39/52).
-   A `D_8012E948 = 0x8012E948;` line in datatodo.txt would unblock this and
-   func_8015439C / func_80154428 / func_8015449C / func_80152348. */
+    dst[0] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    dst[1] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    dst[2] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    dst[3] = gEntitiesPosXArray[omCurrentObj->objId];
+    dst[4] = gEntitiesPosYArray[omCurrentObj->objId];
+    dst[5] = gEntitiesPosZArray[omCurrentObj->objId];
+    dst[6] = D_800E17D0[omCurrentObj->objId];
+    *(void **) &dst[7] = arg0;
+    func_8011BF4C(dst, arg1);
+}
+
 void func_80154578_ovl3(void *arg0, s32 arg1, f32 arg2) {
-    f32 *dst = &gKirbyState._184.unk4;
+    extern f32 D_8012E948[];
+    f32 *dst = D_8012E948;
 
     dst[0] = gEntitiesNextPosXArray[omCurrentObj->objId];
     dst[1] = gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -235,9 +240,6 @@ void func_80154578_ovl3(void *arg0, s32 arg1, f32 arg2) {
     *(void **) &dst[7] = arg0;
     func_8011BF4C(dst, arg1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80154578_ovl3.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80154648_ovl3.s")
 

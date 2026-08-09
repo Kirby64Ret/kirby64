@@ -20,8 +20,13 @@ set -e
 cd /home/user/kirby64_decomp
 
 OUT=build/pc/kirby64
-CC="gcc -m64"
-CXX="g++ -m64"
+# -no-pie is load-bearing, not a preference. See the LOW-MEMORY note in
+# src/pc/pc_lowmem.h: game code stores host pointers in 32-bit fields
+# (src/main/dma.c casts a void* to u32 before handing it to osEPiStartDma),
+# and that truncation is only lossless while every game-visible address fits
+# in 32 bits. A no-pie image loads at 0x400000, so all statics do.
+CC="gcc -m64 -no-pie -fno-pie"
+CXX="g++ -m64 -no-pie -fno-pie"
 
 PC_LUS=${PC_LUS:-1}
 LUS_ROOT=${LUS_ROOT:-/workspace/jr3dful/libultraship}
