@@ -234,7 +234,21 @@ void func_801BDBFC_ovl7(void) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BDEB0_ovl7.s")
+void func_801BDEB0_ovl7(GObj *arg0) {
+    func_801A0880_ovl7();
+    if (((f32) D_800E5F90[omCurrentObj->objId] == D_800EA6E0[omCurrentObj->objId]) && (D_800E83E0[omCurrentObj->objId] == 0xA)) {
+        if ((D_800EAA60[omCurrentObj->objId] == 1.0f) && (D_800EA8A0[omCurrentObj->objId] < D_800E6BD0[omCurrentObj->objId])) {
+            D_800EAA60[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId] * -1.0f;
+        } else if ((D_800EAA60[omCurrentObj->objId] == -1.0f) && (D_800E6BD0[omCurrentObj->objId] < D_800EA8A0[omCurrentObj->objId])) {
+            D_800EAA60[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId] * -1.0f;
+        }
+        D_800E64D0[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId];
+    } else {
+        D_800E64D0[omCurrentObj->objId] = 0.0f;
+        D_800E5F90[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+        D_800E6BD0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    }
+}
 
 void func_801BE068_ovl7(GObj *arg0) {
     func_801A3280_ovl7();

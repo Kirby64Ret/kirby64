@@ -18,6 +18,22 @@ extern f32 D_80186940_ovl5[];
 void func_800A7F74(s32, s32, s32, f32, f32, f32);
 extern u8 D_8018E220_ovl5;
 void func_8016253C_ovl5(struct GObj *);
+extern s32 D_8018E050_ovl5[];
+extern u8 D_8018E228_ovl5[];
+extern u8 D_8018E208_ovl5[];
+s32 func_8015F4C4_ovl5(s32, s32);
+typedef struct Unk8Bytes {
+    s32 unk0;
+    s32 unk4;
+} Unk8Bytes;
+
+extern Unk8Bytes D_8018E1E8_ovl5[];
+
+typedef union Unk16Bytes {
+    s32 unk0[4];
+} Unk16Bytes;
+
+extern Unk16Bytes D_80185FB0_ovl5;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015CD00_ovl5.s")
 
@@ -59,7 +75,13 @@ void func_80160088_ovl5(s32 arg0) {
     D_8018E22C_ovl5[arg0 * 12] = 3;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801600A8_ovl5.s")
+s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
+    if (func_8015F4C4_ovl5((arg1 == 1) ? D_8018E228_ovl5[arg0 * 12 + 8] : D_8018E228_ovl5[arg0 * 12 + 7],
+                           D_8018E228_ovl5[arg0 * 12 + 6]) == 2) {
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160120_ovl5.s")
 
@@ -107,7 +129,14 @@ s32 func_80160A20_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160A20_ovl5.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160A78_ovl5.s")
+s32 func_80160A78_ovl5(s32 arg0) {
+    Unk16Bytes sp8 = D_80185FB0_ovl5;
+    s32 pad;
+    s32 idx;
+
+    idx = D_8018E1E8_ovl5[arg0].unk0;
+    return D_800DFBD0[D_8018E030_ovl5[arg0]][sp8.unk0[idx]];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160AF8_ovl5.s")
 
@@ -140,9 +169,27 @@ void func_801615D8_ovl5(s32 arg0, f32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161610_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801616A8_ovl5.s")
+s32 func_801616A8_ovl5(void) {
+    s32 i;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161720_ovl5.s")
+    for (i = 0; i < 20; i++) {
+        if (D_8018E208_ovl5[i] == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+s32 func_80161720_ovl5(void) {
+    s32 i;
+
+    for (i = 0; i < 20; i++) {
+        if (D_8018E208_ovl5[i] != 2) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8016179C_ovl5.s")
 

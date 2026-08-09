@@ -13,6 +13,8 @@ void func_801AF398_ovl7(GObj *);
 void func_801AF314_ovl7(GObj *);
 
 extern FUNCLIST D_801CD594_ovl7;
+extern struct Sub800E1B50_Unk98 D_801CD384_ovl7;
+void curObjSleepForever(void);
 extern f32 D_801CE24C_ovl7, D_801CE250_ovl7, D_801CE25C_ovl7, D_801CE260_ovl7;
 
 
@@ -73,7 +75,15 @@ void func_801AFD28_ovl7(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AFDE0_ovl7.s")
+void func_801AFDE0_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    ent->unk98 = &D_801CD384_ovl7;
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800B3520();
+    curObjSleepForever();
+}
 
 void func_801AFE60_ovl7(GObj *arg0) {
 }

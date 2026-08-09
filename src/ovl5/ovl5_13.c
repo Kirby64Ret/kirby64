@@ -10,6 +10,8 @@ extern u8 D_800D6C10[];
 extern Gfx D_8018A5B8_ovl5[];
 void func_80183FC8_ovl5(void);
 void func_80184084_ovl5(void);
+extern s32 D_8018EE20_ovl5[];
+
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801830A0_ovl5.s")
 
@@ -46,7 +48,14 @@ void func_80183FA0_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183FC8_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80184084_ovl5.s")
+void func_80184084_ovl5(void) {
+    s32 i;
+
+    for (i = 0; i < 9; i++) {
+        func_800ACBDC(D_800DE350[D_8018EE20_ovl5[i]]);
+        func_800B1900(D_8018EE20_ovl5[i]);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801840F0_ovl5.s")
 

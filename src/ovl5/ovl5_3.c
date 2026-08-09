@@ -13,6 +13,10 @@ extern u8 D_8018E298_ovl5;
 extern s32 D_8018736C_ovl5[];
 void play_music(s32, s32);
 void func_800A9F98(s32, f32);
+extern u8 D_8018E3C0_ovl5;
+extern u8 D_8018E3C1_ovl5;
+extern u8 D_8018E3C2_ovl5;
+extern u8 D_8018E3C3_ovl5;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165440_ovl5.s")
 
@@ -60,7 +64,29 @@ Vector *func_801659DC_ovl5(Vector *arg0, s32 arg1) {
     return arg0;
 }
 
+#ifdef MIPS_TO_C
+/* 2 diffs: IDO schedules `li at, 1` before `lui t9, %hi(D_8018E3C3_ovl5)`,
+   the ROM has them the other way round. Everything else is exact. */
+s32 func_80165A4C_ovl5(s32 arg0) {
+    s32 count = 0;
+
+    if ((D_8018E3C0_ovl5 != 0) && (arg0 != 0)) {
+        count = 1;
+    }
+    if ((D_8018E3C1_ovl5 != 0) && (arg0 != 1)) {
+        count++;
+    }
+    if ((D_8018E3C2_ovl5 != 0) && (arg0 != 2)) {
+        count++;
+    }
+    if ((D_8018E3C3_ovl5 != 0) && (arg0 != 3)) {
+        count++;
+    }
+    return count;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165A4C_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165AD0_ovl5.s")
 
@@ -68,13 +94,67 @@ Vector *func_801659DC_ovl5(Vector *arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165D30_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165E14_ovl5.s")
+s32 func_80165E14_ovl5(s32 arg0, f32 arg1) {
+    Vector sp1C;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165E98_ovl5.s")
+    func_800B2340(&sp1C, func_801658C4_ovl5(arg0), D_8018E2A0_ovl5[arg0]);
+    if ((sp1C.x - 150.0f <= arg1) && (arg1 <= sp1C.x + 150.0f)) {
+        return 1;
+    }
+    return 0;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165F1C_ovl5.s")
+s32 func_80165E98_ovl5(s32 arg0, f32 arg1) {
+    Vector sp1C;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165FB8_ovl5.s")
+    func_800B2340(&sp1C, func_801658C4_ovl5(arg0), D_8018E2A0_ovl5[arg0]);
+    if ((sp1C.z - 150.0f <= arg1) && (arg1 <= sp1C.z + 150.0f)) {
+        return 1;
+    }
+    return 0;
+}
+
+s32 func_80165F1C_ovl5(s32 arg0) {
+    Vector sp24;
+    s32 i;
+
+    func_801659DC_ovl5(&sp24, arg0);
+    for (i = 0; i != 8; i++) {
+        if (func_80165E14_ovl5(i, sp24.x) != 0) {
+            break;
+        }
+    }
+    if (i == 8) {
+        return 0x29A;
+    }
+    for (; i < 0x40; i += 8) {
+        if (func_80165E98_ovl5(i, sp24.z) != 0) {
+            return i;
+        }
+    }
+    return 0x29A;
+}
+
+s32 func_80165FB8_ovl5(s32 arg0) {
+    Vector sp24;
+    s32 i;
+
+    func_801659DC_ovl5(&sp24, arg0);
+    for (i = 0; i != 8; i++) {
+        if (func_80165E14_ovl5(i, sp24.x) != 0) {
+            break;
+        }
+    }
+    if (i == 8) {
+        return 0x29A;
+    }
+    for (; i < 0x40; i += 8) {
+        if (func_80165E98_ovl5(i, sp24.z) != 0) {
+            return i;
+        }
+    }
+    return 0x29A;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80166054_ovl5.s")
 

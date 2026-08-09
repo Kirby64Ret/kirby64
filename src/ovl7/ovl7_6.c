@@ -23,6 +23,7 @@ void func_800AF408(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800A9F98(s32, f32);
+extern f32 D_801CE1E8_ovl7;
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801ACFD0_ovl7.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD0E8_ovl7.s")
@@ -49,7 +50,9 @@ void func_800A9F98(s32, f32);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE3DC_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE4E4_ovl7.s")
+void func_801AE4E4_ovl7(GObj *arg0) {
+    gEntitiesAngleYArray[omCurrentObj->objId] -= D_801CE1E8_ovl7 * D_800E6A10[omCurrentObj->objId];
+}
 
 void func_801AE52C_ovl7(void) {
     struct Ovl7Unk94 *p;

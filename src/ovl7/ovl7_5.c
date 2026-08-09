@@ -795,7 +795,9 @@ block_168:
 #endif
 
 #ifdef MIPS_TO_C
-// 2 diffs: IDO puts the spilled index at 0x18($sp), the ROM at 0x1C.
+// 2 diffs: the compiler spill slot is 0x18($sp), the ROM's is 0x1C. Frame size
+// already matches; declaration order, dummy scalars, dummy arrays/structs and
+// expression reshaping were all swept without moving it.
 s32 func_801A8BAC_ovl7(void) {
     f32 temp_f0;
     f32 temp_f2;

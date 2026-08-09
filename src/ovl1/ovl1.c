@@ -3533,15 +3533,13 @@ void func_800A2024(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2024.s")
 #endif
 
-#ifdef MIPS_TO_C
+extern void (*D_800D6AD8)();
+extern void (*D_800D6ADC)();
 
-void func_800A206C(s32 arg0, s32 arg1) {
+void func_800A206C(void (*arg0)(), void (*arg1)()) {
     D_800D6ADC = arg0;
     D_800D6AD8 = arg1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A206C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -3633,23 +3631,22 @@ block_29:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2080.s")
 #endif
 
-#ifdef MIPS_TO_C
+typedef struct UnkA22A8 {
+    u8  unk0[4];
+    u16 unk4;
+    u8  unk6[2];
+    u8  unk8;
+    u8  unk9;
+    u8  unkA;
+} UnkA22A8;
 
-void func_800A22A8(void *arg0) {
+void func_800A22A8(UnkA22A8 *arg0) {
     func_800A2080(arg0->unk4, arg0->unk8 >> 3, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A22A8.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800A22D4(void *arg0) {
+void func_800A22D4(UnkA22A8 *arg0) {
     func_800A2080(arg0->unk4, arg0->unkA >> 3, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A22D4.s")
-#endif
 
 #ifdef MIPS_TO_C
 

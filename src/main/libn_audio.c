@@ -109,7 +109,14 @@ void alN_PVoiceNew(N_PVoice *mv, ALDMANew dmaNew, ALHeap *hp);
 ALParam *__n_allocParam(void);
 s32 n_alEnvmixerParam(N_PVoice *p, s32 paramID, void *param);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023360.s")
+extern u8 D_8009793A;
+
+void func_80023360(u8 arg0) {
+    if (arg0 >= 0x80) {
+        arg0 = 0x7F;
+    }
+    D_8009793A = arg0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023384.s")
 
@@ -305,7 +312,11 @@ ALMicroTime func_800261B0(ALEventQueue *evtq, N_ALEvent *evt) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026260.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002638C.s")
+extern u16 D_8003FB1C;
+
+void func_8002638C(u16 arg0) {
+    D_8003FB1C = arg0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002639C.s")
 
@@ -327,7 +338,10 @@ ALMicroTime func_800261B0(ALEventQueue *evtq, N_ALEvent *evt) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002714C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027340.s")
+void func_80027340(ALParam *param) {
+    param->next = n_syn->paramList;
+    n_syn->paramList = param;
+}
 
 s32 n_alLoadParam(N_PVoice *filter, s32 paramID, void *param) {
     N_PVoice *a = filter;
@@ -647,7 +661,10 @@ void n_alInit(N_ALGlobals *g, ALSynConfig *c) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002A290.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002A4E4.s")
+s32 func_8002A4E4(N_PVoice *filter, s32 paramID, void *param) {
+    n_alLoadParam(filter, paramID, param);
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002A508.s")
 
