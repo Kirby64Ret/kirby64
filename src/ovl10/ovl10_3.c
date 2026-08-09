@@ -909,7 +909,24 @@ void func_801E8548_ovl10(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E85B8_ovl10.s")
+void func_801E85B8_ovl10(GObj *arg0) {
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800DEF90[omCurrentObj->objId] = &func_801DB1E0_ovl10;
+    func_801E5CF0_ovl10(D_800EA8A0[omCurrentObj->objId]);
+    func_800A9EA4(0x103A5);
+    func_800A9EA4(0x103A4);
+    ohSleep(0xF);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 2.5f;
+    D_800E3C90[omCurrentObj->objId] = 2.5f;
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E871C_ovl10.s")
 

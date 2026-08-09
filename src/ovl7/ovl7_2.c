@@ -134,7 +134,27 @@ s32 func_8019F590_ovl7(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019F650_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019F9D0_ovl7.s")
+void func_8019F9D0_ovl7(GObj *arg0) {
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
+    s32 pad3;
+    s32 pad4;
+    s32 pad5;
+    s32 pad6;
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct Ovl7AnimObj *obj;
+    struct Ovl7AnimHdrSub *sub;
+
+    func_80111550(omCurrentObj->objId);
+    obj = func_80111C88(tmp->unk8C, omCurrentObj->objId);
+    sub = ((struct Ovl7AnimHdr *) tmp->unk8C)->unk8;
+    if ((sub->unk4 == 0) && (arg0 != NULL)) {
+        obj->unk24->unk8 = (s32) arg0;
+    }
+    func_80111ECC(obj);
+    func_801A0C70_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019FA68_ovl7.s")
 

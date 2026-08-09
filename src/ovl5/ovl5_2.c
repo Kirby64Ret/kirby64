@@ -23,6 +23,7 @@ extern s32 D_8018E050_ovl5[];
 extern u8 D_8018E228_ovl5[];
 extern u8 D_8018E208_ovl5[];
 s32 func_8015F4C4_ovl5(s32, s32);
+f32 func_801619E0_ovl5(s32);
 void func_801642A4_ovl5(s32, s32, s32, s32);
 typedef union Unk28Words {
     s32 unk0[10];
@@ -82,7 +83,20 @@ extern Unk16Bytes D_80185FB0_ovl5;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F300_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F4C4_ovl5.s")
+s32 func_8015F4C4_ovl5(s32 arg0, s32 arg1) {
+    f32 diff;
+
+    diff = (gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] < func_801619E0_ovl5(arg1))
+               ? -(gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] - func_801619E0_ovl5(arg1))
+               : (gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] - func_801619E0_ovl5(arg1));
+    if (diff < 100.0f) {
+        return 2;
+    }
+    if (gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] < gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]]) {
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F5DC_ovl5.s")
 
@@ -273,7 +287,20 @@ f32 func_801619E0_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801619E0_ovl5.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161A54_ovl5.s")
+s32 func_80161A54_ovl5(s32 arg0) {
+    s32 i;
+    f32 diff;
+
+    for (i = 0; i < 4; i++) {
+        diff = (gEntitiesNextPosXArray[D_8018E030_ovl5[i]] < func_801619E0_ovl5(arg0))
+                   ? -(gEntitiesNextPosXArray[D_8018E030_ovl5[i]] - func_801619E0_ovl5(arg0))
+                   : (gEntitiesNextPosXArray[D_8018E030_ovl5[i]] - func_801619E0_ovl5(arg0));
+        if (diff < 100.0f) {
+            return i;
+        }
+    }
+    return 0xFF;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161B4C_ovl5.s")
 

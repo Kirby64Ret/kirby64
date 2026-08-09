@@ -926,3 +926,55 @@ ADDRESS -- and the target is inside a larger bss object, neither `SYM[4]` nor
 both cases. Tried and failed on func_80159DE8_ovl4 (2/60 diffs, otherwise
 exact). A real linkable symbol at that address is the only known fix, and that
 needs splat to regenerate the data listings.
+
+## The residue: a one-slot register-allocation offset (measured, not guessed)
+
+A tree-wide census enumerated all 422 guarded drafts across 88 files
+(searching BOTH `#ifdef MIPS_TO_C` and `#ifdef NON_MATCHING`) and measured
+every one: 7 report MATCH but are padding traps, 68 sit at <= 25 diffs, 303
+are raw m2c that does not compile. The ranked table is in the scratchpad as
+scan/res_*.json.
+
+Working ~15 of the 68 in depth found they are all ONE phenomenon: our compile
+allocates exactly ONE REGISTER EARLIER IN ITS CLASS than the ROM does. It
+appears in every register file:
+
+  integer temps   t6/t7/t8 vs ROM t7/t8/t9
+  argument regs   $a0 vs ROM $a1
+  $v0/$v1         swapped between a pointer and a value
+  FP              $f0/$f2 swapped between a constant and a value
+
+Swept against this class with ZERO effect: integer and FP declaration order
+and count; adding AND removing pointer locals; inlining vs temping
+omCurrentObj->objId; chained assignment; ternary vs if/else; comparison
+operand order; (void) vs K&R () vs adding a parameter; struct-pointer locals;
+un-nesting nested calls; do{}while(0) block splitting; blank lines inside and
+before the function. Line-number sensitivity does NOT affect this class, even
+though it does affect spill slots.
+
+Flags ruled out: -O2, -O2 -Wo,-loopunroll, -Wo,-loopunroll,0, -Olimit 1000 are
+byte-identical; only -O1 differs and is wrong. The permuter does not find it
+either (28,800 iterations stuck at base score on one function).
+
+So: if a function's ONLY residue is a one-slot register offset, further source
+permutation has poor expected value. Guard it and move on. The next real lever
+is understanding why IDO's allocator skips a slot, not more permutations.
+
+## The three "new" rules did NOT close anything on re-litigation
+
+Honest record, so nobody repeats the exercise:
+- Unrolled loops: the theory was right about shape but the drafts were ALREADY
+  loops. func_800A84F0, func_8002C9FC and func_800AB680 contain no unrolled
+  loop at all.
+- Frame anomaly: measured exactly as IDO align8(locals+0x2C) vs ROM
+  align8(locals+0x24). Each dead scalar moves the struct 4 bytes and every
+  second one grows the frame 8, so the offset cycles 0x30/0x2C and NEVER
+  reaches the ROM's 0x28. Not reachable by local count in either direction.
+- `arr[i*2]` -> struct array: does not apply anywhere. No guarded near-miss in
+  the tree indexes by i*2.
+
+## NEVER dispatch a read-modify-restore harness in this tree
+
+Sibling agents write src/ concurrently. A harness that edits a file and
+restores it can revert another agent's work in the window between. Use a TEMP
+COPY instead (scratchpad/jb_try.py does this correctly).
