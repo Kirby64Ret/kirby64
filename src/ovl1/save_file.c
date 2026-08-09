@@ -181,7 +181,13 @@ void func_800B9C50(s32 fileNum) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9CB4.s")
+void func_800B9CB4(s32 fileNum, s32 arg1) {
+    D_800D6BC8[(D_800BE500 * 4) + D_800BE504] |= 1 << (arg1 % 3);
+    ((u8 *) gSaveBuffer1.files[fileNum].shards)[((u32) D_800BE500 * 4) + D_800BE504] |= 1 << (arg1 % 3);
+    saveVerify(fileNum);
+    saveSetFileChecksum(fileNum);
+    func_800B891C(fileNum);
+}
 
 void func_800B9D60(s32 fileNum, s32 arg1) {
     D_800D6BC0[arg1] = (gSaveBuffer1.files[fileNum].data34[arg1] = 1);

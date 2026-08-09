@@ -221,6 +221,12 @@ s32 func_80154428_ovl3(f32 *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_8015449C_ovl3.s")
 
 #ifdef MIPS_TO_C
+/* Blocked: the ROM materialises %hi/%lo(D_8012E944 + 0x4) as an ADDRESS.
+   D_8012E944 does link at 0x8012e944 (contrary to an older guide note), but
+   IDO folds a constant +4 into every store displacement instead, so neither
+   &gKirbyState._184.unk4 nor (f32 *)&D_8012E944[4] reproduces it (39/52).
+   A `D_8012E948 = 0x8012E948;` line in datatodo.txt would unblock this and
+   func_8015439C / func_80154428 / func_8015449C / func_80152348. */
 void func_80154578_ovl3(void *arg0, s32 arg1, f32 arg2) {
     f32 *dst = &gKirbyState._184.unk4;
 

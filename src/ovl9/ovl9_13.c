@@ -144,7 +144,7 @@ extern f32 D_8021DBE4_ovl9;
 extern f32 D_8021DBE8_ovl9;
 extern f32 D_8021DBEC_ovl9;
 extern f32 D_8021DBF0_ovl9;
-extern void func_800AFBB4(s32);
+extern void func_800AFBB4();
 extern struct Sub800E1B50_Unk98 D_801CC8F8;
 extern struct Sub800E1B50_Unk98 D_801CC91C;
 extern f32 D_8021DBC8_ovl9;
@@ -1461,7 +1461,21 @@ void func_8020DF94_ovl9(struct GObj *arg0) {
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_8021CAA0_ovl9);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020DF94_ovl9.s")
+extern FUNCLIST D_8021CAA0_ovl9;
+
+void func_8020DF94_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DEF90[omCurrentObj->objId] = func_800B67A8;
+    func_800AFBB4(1, omCurrentObj);
+    func_8019BB58_ovl7();
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - 60.0f;
+    tmp->unk4 = gEntitiesNextPosYArray[omCurrentObj->objId];
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_8021CAA0_ovl9);
+}
 #endif
 
 void func_8020E0A0_ovl9(struct GObj *arg0) {
@@ -1704,7 +1718,28 @@ void func_8020F760_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020F768_ovl9.s")
+extern s32 D_801CC9F4;
+extern f32 D_8021DC68_ovl9;
+extern void func_8019AF00_ovl7(f32);
+
+void func_8020F768_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    tmp->unk98 = &D_801CC9F4;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    if (D_800E6A10[omCurrentObj->objId] == -1.0f) {
+        f32 temp = D_8021DC68_ovl9;
+
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
+        D_800EB320[omCurrentObj->objId] = temp - D_800EB320[omCurrentObj->objId];
+        D_800EA6E0[omCurrentObj->objId] = temp - D_800EA6E0[omCurrentObj->objId];
+    }
+    func_800AA018(0x100F2);
+    func_8019AF00_ovl7(4.5f);
+    ohSleep(0xF0);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 
 void func_8020F8A0_ovl9(s32 arg0) {
 

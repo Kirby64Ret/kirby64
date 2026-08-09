@@ -458,7 +458,8 @@ s32 func_80164914_ovl5(s32);
 
 #ifdef MIPS_TO_C
 /* 4 diffs: ROM stores before both induction increments; we sink the sw into
-   the branch delay slot. The empty `if` reproduces the dead $s2 induction. */
+   the branch delay slot. The empty `if` reproduces the dead $s2 induction.
+   Swept: for/while/do-while, != vs <, pointer inductions, dead-local read. */
 void func_801649CC_ovl5(void) {
     s32 i;
 

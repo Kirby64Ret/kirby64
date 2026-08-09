@@ -80,4 +80,8 @@ void func_80111C4C(s32 *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80111C88.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80111ECC.s")
+void func_80111ECC(s32 *arg0) {
+    if (arg0 != NULL) {
+        func_80110138(arg0[0], arg0[7], arg0[8], arg0[9]);
+    }
+}

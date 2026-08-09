@@ -62,7 +62,29 @@ void func_80207374_ovl9(void) {
 }
 #else
 void func_80207374_ovl9(void);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_80207374_ovl9.s")
+extern void func_800B7B64(struct GObj *);
+extern FUNCLIST D_8021C8D8_ovl9;
+void func_802074B0_ovl9(struct GObj *);
+void func_80207304_ovl9(struct GObj *);
+
+void func_80207374_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DEF90[omCurrentObj->objId] = func_800B7B64;
+    tmp->unk98 = &D_801CC550;
+    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+    D_800DF150[omCurrentObj->objId] = func_802074B0_ovl9;
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        func_801A6C10_ovl7();
+    }
+    if (D_800E8920[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+    }
+    func_801A0D50_ovl7(func_80207304_ovl9);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C8D8_ovl9);
+}
 #endif
 
 

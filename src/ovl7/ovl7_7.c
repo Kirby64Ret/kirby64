@@ -7,7 +7,12 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
-extern f32 D_801CE274_ovl7;
+extern f32 D_801CE274_ovl7, D_801CE23C_ovl7;
+void func_800B6474(GObj *);
+extern FUNCLIST D_801CD590_ovl7;
+s32 func_800A8234(s32, s32, s32);
+extern s32 D_800E9720[];
+void func_800A77E8(s32, s32 *, u16 *);
 extern s32 D_801CA35C_ovl7[], D_801CA380_ovl7[];
 extern void *D_801CB388_ovl7;
 extern f32 D_800EA6E0[];
@@ -32,6 +37,23 @@ void func_801AF314_ovl7(GObj *);
 extern FUNCLIST D_801CD594_ovl7;
 extern struct Sub800E1B50_Unk98 D_801CD384_ovl7;
 void curObjSleepForever(void);
+extern f32 D_801CE264_ovl7, D_801CE268_ovl7;
+extern struct Sub800E1B50_Unk98 D_801CD360_ovl7;
+extern s32 D_800DDFD0[];
+extern s32 D_800E8AE0[], D_800E8920[], D_800E93A0[];
+extern f32 D_800E3750[], D_800E3C90[];
+void func_800A9760(s32);
+void func_800AA018(s32);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+extern f32 gameTicksPerDraw;
+struct Ovl7_7_CD530 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+};
+
+extern struct Ovl7_7_CD530 D_801CD530_ovl7[];
 
 struct Ovl7AnimInfo {
     u8 unk0;
@@ -44,6 +66,7 @@ struct Ovl7AnimInfo {
 };
 
 void func_80111550(void *);
+extern s32 D_800E83E0[];
 void *func_80111C88(void *, u32);
 void func_80111ECC(void *);
 s32 func_80110150(void *);
@@ -61,9 +84,47 @@ void func_801AEFC0_ovl7(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEFFC_ovl7.s")
+s32 func_801AEFFC_ovl7(void) {
+    s32 ret = 0;
 
+    func_800A9760(D_801CD530_ovl7[D_800E93A0[omCurrentObj->objId]].unk0);
+    if (D_801CD530_ovl7[D_800E93A0[omCurrentObj->objId]].unk4 != 0) {
+        func_800AA018(D_801CD530_ovl7[D_800E93A0[omCurrentObj->objId]].unk4);
+        func_800AECC0(gameTicksPerDraw);
+        ret = 1;
+    }
+    if (D_801CD530_ovl7[D_800E93A0[omCurrentObj->objId]].unk8 != 0) {
+        func_800AA018(D_801CD530_ovl7[D_800E93A0[omCurrentObj->objId]].unk8);
+        func_800AED20(gameTicksPerDraw);
+    }
+    return ret;
+}
+
+#ifdef MIPS_TO_C
+// 67/105 diffs: stores are right; every temp is rotated one register slot.
+// Frame needs 8 more bytes of dead locals to reach the ROM 0x30.
+void func_801AF104_ovl7(GObj *arg0) {
+    s32 sp2C;
+    u16 sp2A;
+
+    D_800DEF90[omCurrentObj->objId] = func_800B6474;
+    func_800A9864(0x20031, 0x23, 0x10);
+    D_800DDA90[omCurrentObj->objId] = 0x23;
+    gEntitiesScaleZArray[omCurrentObj->objId] = D_801CE23C_ovl7;
+    gEntitiesScaleYArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
+    gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
+    D_800EA6E0[omCurrentObj->objId] = 1.0f;
+    D_800E9720[omCurrentObj->objId] = 4;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A77E8(0x1F, &sp2C, &sp2A);
+    *(s32 *) &D_800E9AA0[omCurrentObj->objId] = sp2C;
+    D_800E9C60[omCurrentObj->objId] = sp2A;
+    D_800E98E0[omCurrentObj->objId] = func_800A8234(1, 1, 0xC);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, &D_801CD590_ovl7);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AF104_ovl7.s")
+#endif
 
 void func_801AF2A4_ovl7(GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_801AF398_ovl7;
@@ -121,7 +182,21 @@ void func_801AFDE0_ovl7(GObj *arg0) {
 void func_801AFE60_ovl7(GObj *arg0) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AFE68_ovl7.s")
+void func_801AFE68_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    ent->unk98 = &D_801CD360_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    if (D_800E8AE0[omCurrentObj->objId] & 1) {
+        D_800E3750[omCurrentObj->objId] = D_801CE264_ovl7;
+        D_800E3C90[omCurrentObj->objId] = 7.0f;
+    } else {
+        D_800E3750[omCurrentObj->objId] = D_801CE268_ovl7;
+        D_800E3C90[omCurrentObj->objId] = 14.0f;
+    }
+    curObjSleepForever();
+}
 
 void func_801AFF64_ovl7(GObj *arg0) {
     if (D_800E8AE0[omCurrentObj->objId] & 1) {

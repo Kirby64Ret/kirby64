@@ -585,23 +585,142 @@ void alSeqNewMarker(ALSeq *seq, ALSeqMarker *m, u32 ticks) {
     }
 }
 
+/* Needs IDO's interprocedural register allocation (-O3/ujoin): the ROM keeps
+ * seq/pDeltaTicks/savedPtr in $a2/$t0/$a3 across the call to func_8002C9FC.
+ * Its listing also carries two unnamed empty functions (8002CD44/8002CD4C). */
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/__alSeqNextDelta.s")
 
+/* Byte-exact when compiled at -O3 (cfe/uopt/ugen/as1 driven by hand; the cc
+ * driver cannot, it wants the missing ujoin).  At the build's -O2, IDO adds a
+ * dead `sw $a0, 0x28($sp)` parameter home store the ROM does not have.
+ * Blocked for a SECOND, independent reason: this run of functions comes from
+ * libn_audio.a, where each was its own object and so is 16-byte aligned.  The
+ * trailing nops after `.size` are that alignment; a C definition cannot emit
+ * them and the TU comes out short (measured: -40 bytes for the five here). */
+#ifdef NON_MATCHING
+void alCSPSetSeq(ALCSPlayer *seqp, ALCSeq *seq) {
+    N_ALEvent evt;
+
+    evt.type = AL_SEQP_SEQ_EVT;
+    evt.msg.spseq.seq = seq;
+
+    n_alEvtqPostEvent(&((N_CSPlayer *) seqp)->evtq, &evt, 0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/alCSPSetSeq.s")
+#endif
 
+#ifdef NON_MATCHING
+typedef struct {
+    /* 0x00 */ u8  pad00[0x88];
+    /* 0x88 */ s32 offset;
+} KPVoice;
+
+typedef struct KParam_s {
+    /* 0x00 */ struct KParam_s *next;
+    /* 0x04 */ s32 delta;
+    /* 0x08 */ s16 type;
+    /* 0x0C */ union {
+        f32 f;
+        s32 i;
+    } data;
+} KParam;
+
+KParam *__n_allocParam(void);
+s32 n_alEnvmixerParam(KPVoice *p, s32 paramID, void *param);
+
+/* MATCHES as C; blocked by the same 16-byte library alignment. */
+void n_alSynSetPitch(N_ALVoice *v, f32 pitch) {
+    KParam *update;
+
+    if (v->pvoice) {
+        update = __n_allocParam();
+        if (update == 0) {
+            return;
+        }
+
+        update->delta = n_syn->paramSamples + ((KPVoice *) v->pvoice)->offset;
+        update->type = 7;
+        update->data.f = pitch;
+        update->next = 0;
+
+        n_alEnvmixerParam((KPVoice *) v->pvoice, 3, update);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/n_alSynSetPitch.s")
+#endif
 
+/* 24/41 diffs: structure is exact; the ROM keeps seqp in $t0 across the
+ * if/else chain where IDO spills it to the $a0 home slot and reloads it. */
+#ifdef NON_MATCHING
+void func_8002CE20(N_CSPlayer *seqp, ALBank *b, u8 kind) {
+    N_ALEvent evt;
+
+    if (kind == 0) {
+        evt.type = AL_SEQP_BANK_EVT;
+        evt.msg.spbank.bank = b;
+        n_alEvtqPostEvent(&seqp->evtq, &evt, 0);
+    } else if (kind == 1) {
+        evt.type = 24;
+        evt.msg.spbank.bank = b;
+        n_alEvtqPostEvent(&seqp->evtq, &evt, 0);
+    } else if (kind == 2) {
+        evt.type = 25;
+        evt.msg.spbank.bank = b;
+        n_alEvtqPostEvent(&seqp->evtq, &evt, 0);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002CE20.s")
+#endif
 
+/* Byte-exact at -O3; blocked by -O2's home store and by the 16-byte library
+ * alignment.  See the note above alCSPSetSeq. */
+#ifdef NON_MATCHING
+void func_8002CEC0(N_CSPlayer *seqp, ALBank *b) {
+    N_ALEvent evt;
+
+    evt.type = AL_SEQP_BANK_EVT;
+    evt.msg.spbank.bank = b;
+
+    n_alEvtqPostEvent(&seqp->evtq, &evt, 0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002CEC0.s")
+#endif
 
+/* Byte-exact at -O3; blocked by -O2's home store and by the 16-byte library
+ * alignment.  See the note above alCSPSetSeq. */
+#ifdef NON_MATCHING
+void alCSPSetVol(ALCSPlayer *seqp, s16 vol) {
+    N_ALEvent evt;
+
+    evt.type = AL_SEQP_VOL_EVT;
+    evt.msg.spvol.vol = vol;
+
+    n_alEvtqPostEvent(&((N_CSPlayer *) seqp)->evtq, &evt, 0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/alCSPSetVol.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002CF40.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002CFE4.s")
 
+/* MATCHES as C at -O2; blocked purely by the 16-byte library alignment
+ * (its listing carries one trailing nop that C cannot emit). */
+#ifdef NON_MATCHING
+void n_alSynDelete(void) {
+    n_syn->head = 0;
+    n_syn->n_seqp1 = NULL;
+    n_syn->n_seqp2 = NULL;
+    n_syn->n_sndp = NULL;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/n_alSynDelete.s")
+#endif
 
 void alCSPPlay(ALCSPlayer *seqp) {
     N_ALEvent evt;

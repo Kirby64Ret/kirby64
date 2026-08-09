@@ -384,7 +384,11 @@ loop_14:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BCA5C.s")
 #endif
 
-#ifdef DOC
+extern u32 D_800ED500[];
+SPObj *func_800AC954(GObj *, u32, void *);
+void func_800AD1A0(GObj *);
+void func_800AF96C(s32);
+
 void func_800BCEEC(GObj *gobj) {
     SPObj *sprite;
 
@@ -398,10 +402,6 @@ void func_800BCEEC(GObj *gobj) {
     D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_u32;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BCEEC.s")
-#endif
-
 void draw_lives_digit(s32 arg0, s32 arg1) {
     s32 *src;
     s32 *dst;
@@ -769,37 +769,37 @@ loop_4:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDE0C.s")
 #endif
 
+// Draft, 4/35: instruction-exact except the loop counter's `or $a1,$zero,$zero`,
+// which IDO schedules before the two hoisted array-base addu and the ROM after.
+// Swept for/while/do-while, both store orders, u32 counter, hoisted pointers,
+// dummy locals, constant-in-local.
 #ifdef MIPS_TO_C
+extern u32 D_800F5770[][0x40];
+extern u32 D_800F4D70[][0x40];
+extern s32 D_800D6F50;
+extern s32 D_800F4D14;
 
 void func_800BDF2C(void) {
-    s32 temp_t7;
-    s32 var_a1;
-    void *var_a0;
-    void *var_v1;
+    s32 i;
 
-    temp_t7 = D_800D6F50 << 8;
-    var_v1 = temp_t7 + &D_800F5770;
-    var_a0 = temp_t7 + &D_800F4D70;
-    var_a1 = 0;
+    i = 0;
     do {
-        var_a1 += 4;
-        var_v1->unk0 = 0xFFFE7961;
-        var_a0->unk0 = 0;
-        var_v1->unk4 = 0xFFFE7961;
-        var_a0->unk4 = 0;
-        var_v1->unk8 = 0xFFFE7961;
-        var_a0->unk8 = 0;
-        var_v1->unkC = 0xFFFE7961;
-        var_a0->unkC = 0;
-        var_v1 += 0x10;
-        var_a0 += 0x10;
-    } while (var_a1 != 0x40);
-    func_800BDD98(var_a0, var_a1, 0x40);
+        D_800F5770[D_800D6F50][i] = 0xFFFE7961;
+        D_800F4D70[D_800D6F50][i] = 0;
+        i++;
+    } while (i != 0x40);
+    func_800BDD98();
     D_800F4D14 = 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDF2C.s")
 #endif
+
+
+
+
+
+
 
 void func_800BDFB8(s32 *arg0, s32 arg1, u32 arg2) {
     s32 i;

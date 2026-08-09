@@ -167,7 +167,28 @@ void func_80215464_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_802154E4_ovl9.s")
+extern void func_800A9EA4(s32);
+extern s32 D_801CCCA0;
+extern f32 D_8021DE04_ovl9;
+extern f32 D_8021DE08_ovl9;
+extern void ohSleep(u8);
+
+void func_802154E4_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    tmp->unk98 = &D_801CCCA0;
+    if (tmp->unk3C == 0) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021DE04_ovl9;
+        D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021DE08_ovl9;
+        D_800E6850[omCurrentObj->objId] = 2.0f;
+    }
+    func_800A9EA4(0x10007);
+    ohSleep(0x3B);
+    func_800AF27C();
+    D_800EA360[omCurrentObj->objId] = 2;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 
 void func_80215608_ovl9(s32 arg0) {
 
@@ -522,7 +543,27 @@ void func_80216BA0_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80216BD0_ovl9.s")
+extern s32 D_801CCE2C;
+extern f32 D_8021DE24_ovl9;
+
+void func_80216BD0_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    tmp->unk98 = &D_801CCE2C;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_8021DE24_ovl9;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    func_800AECC0(6.0f);
+    func_800AED20(6.0f);
+    while (1) {
+        func_800AA154(0x10046);
+        ohSleep(1);
+    }
+}
 
 void func_80216D14_ovl9(s32 arg0) {
 
@@ -743,7 +784,22 @@ void func_80217DBC_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217DC4_ovl9.s")
+extern void func_800A9F98(s32, f32);
+
+void func_80217DC4_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    func_800A9760(0x1000A);
+    D_800DDFD0[omCurrentObj->objId] = 6;
+    tmp->unk98 = &D_801CCE50;
+    D_800E8920[omCurrentObj->objId] = 1;
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 0.0f;
+    func_800A9F98(0x10036, 2.0f);
+    func_800A9F98(0x10037, 2.0f);
+    func_800AF27C();
+    func_800A9760(0x10009);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 
 void func_80217ECC_ovl9(s32 arg0) {
     func_8019B2C0_ovl7(2);
@@ -815,7 +871,32 @@ void func_8021817C_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80218248_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80218378_ovl9.s")
+extern s32 D_801CCEE0;
+extern f32 D_8021DE68_ovl9;
+
+void func_80218378_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    tmp->unk98 = &D_801CCEE0;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 10.0f;
+    D_800E3750[omCurrentObj->objId] = D_8021DE68_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 13.0f;
+    func_800AA018(0x10031);
+    play_sound(0x164);
+    while (1) {
+        if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+            D_800E3210[omCurrentObj->objId] = 0.0;
+            break;
+        }
+        ohSleep(1);
+    }
+    tmp->unk98 = &D_801CCF04;
+    func_800AA154(0x10030);
+    func_800AA018(0x1002F);
+    curObjSleepForever();
+}
 
 void func_802184E0_ovl9(struct GObj *arg0) {
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_800EA6E0[omCurrentObj->objId];
@@ -838,13 +919,7 @@ void func_8021870C_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
-// PADDING TRAP: this listing carries the TU's alignment padding after its
-// last .size, so converting it shortens the segment. Must stay a pragma.
-void func_802187B4_ovl9(struct GObj *arg0) {
+void func_802187B4_ovl9(s32 arg0) {
 
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_802187B4_ovl9.s")
-#endif
 

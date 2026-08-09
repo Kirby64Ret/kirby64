@@ -143,4 +143,5 @@ void func_8010F964(f32 *arg0, f32 *arg1) {
 void func_80110130(void) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_80110138.s")
+void func_80110138(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+}

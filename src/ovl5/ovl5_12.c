@@ -138,9 +138,11 @@ void func_80182700_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182804_ovl5.s")
 
-#ifdef MIPS_TO_C
 /* 3 diffs: the hoisted `lwc1 $f20, D_8018DE24_ovl5` must sit AFTER both
-   `addiu` of the hoisted array bases; no source/format form moves it. */
+   `addiu` of the hoisted array bases; no source/format form moves it.
+   Re-swept wave 7: decl order, inline reads, statement order, one-line and
+   empty-block line-number tricks -- all 3. Clone twin: func_80182A1C_ovl5. */
+#ifdef MIPS_TO_C
 void func_8018293C_ovl5(GObj *arg0) {
     f32 inc;
     f32 wrap;

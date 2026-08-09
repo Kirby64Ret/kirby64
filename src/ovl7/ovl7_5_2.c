@@ -8,6 +8,16 @@
 #include "unk_structs/D_800E1B50.h"
 
 s32 func_800F98EC(s32, f32);
+void func_801A3E80_ovl7(GObj *);
+void func_80198CA8_ovl7(void);
+void func_80198DB4_ovl7(void);
+void func_80198DBC_ovl7(void);
+void func_801992F0_ovl7(void);
+void func_80198B98_ovl7(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+extern f32 gameTicksPerDraw;
+extern FUNCLIST D_801CD3B0_ovl7;
 
 s32 func_801ACC34_ovl7();
 void func_800B1900(u16);
@@ -124,7 +134,20 @@ s32 func_801ACD90_ovl7(s32 arg0, s32 arg1, Vector *arg2) {
     return idx;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5_2/func_801ACE60_ovl7.s")
+void func_801ACE60_ovl7(GObj *arg0) {
+    if (D_800E8E60[omCurrentObj->objId] == 0) {
+        func_80198CA8_ovl7();
+    } else {
+        func_80198DB4_ovl7();
+    }
+    func_80198DBC_ovl7();
+    D_800DF150[omCurrentObj->objId] = NULL;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_801992F0_ovl7();
+    func_80198B98_ovl7();
+    utilFuncTableJump(D_800E77A0[omCurrentObj->objId], 0x46, &D_801CD3B0_ovl7);
+}
 
 void func_801ACF30_ovl7(GObj *arg0) {
     func_800B1900(omCurrentObj->objId);
@@ -135,5 +158,10 @@ void func_801ACF5C_ovl7(void) {
     func_801A03B4_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5_2/func_801ACF84_ovl7.s")
+void func_801ACF84_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    ent->unk43 = 1;
+    func_801A3E80_ovl7(arg0);
+}
 

@@ -16,6 +16,7 @@ extern u16 gFrameBuffer[][320];
 extern u16 D_8012EB00[][320];
 extern void *D_8018EE60;
 extern u16 D_803D6900[];
+extern u16 D_803FC100[];
 extern ScreenSettings D_80188988_ovl5;
 extern SceneSetup D_801889A4_ovl5;
 extern u8 D_8018ED00_ovl5;
@@ -332,7 +333,33 @@ void func_8017CC18_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_80188958_ovl5);
 }
 
+// Draft, 8/41 real diffs (the a1 bound is a reloc false positive: IDO's
+// %hi(D_803D6900)+2 / %lo+0x5800 links to 0x803FC100 exactly).
+// Residue: IDO hoists the D_803D6900 induction bump to the top of the
+// 4x-unrolled body; the ROM keeps it before the last store. Swept for/while/
+// do-while, both store orders, index and pointer inductions.
+// NOTE the (u32) cast on D_8012EB00 is load-bearing -- it stops IDO folding
+// the -0x1900 into %lo and is worth 26 diffs.
+// Clone family: func_801822AC_ovl5, func_80185EEC_ovl5, func_801802A8_ovl5,
+// func_80182FE8_ovl5 are the same function with a leading func_800A74D8().
+#ifdef MIPS_TO_C
+void func_8017CC3C_ovl5(void) {
+    s32 i;
+
+    D_80188988_ovl5.zBuffer = (u16 *) ((u32) D_8012EB00 - 0x1900);
+    viApplyScreenSettings(&D_80188988_ovl5);
+    D_801889A4_ovl5.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
+    i = 0;
+    do {
+        ((u16 *) gFrameBuffer)[i] = 1;
+        D_803D6900[i + 0x1F80] = 1;
+        i++;
+    } while (i != 320 * 240);
+    gtlCreateScene(&D_801889A4_ovl5);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017CC3C_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017CCE0_ovl5.s")
 

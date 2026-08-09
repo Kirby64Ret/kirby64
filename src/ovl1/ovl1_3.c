@@ -446,10 +446,6 @@ block_4:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8934.s")
 #endif
 
-#ifdef MIPS_TO_C
-// Nearly matching (30/39): structure is right, the compiler keeps the masked
-// index in t9 where the target reuses the free argument register a1, which
-// rotates the following temp registers by one slot.
 void *func_800A89E0(u32 arg0) {
     s32 size;
     void *buf;
@@ -466,9 +462,13 @@ void *func_800A89E0(u32 arg0) {
     dma_read(entry[0] + (u32)rom, buf, size & 0xFFFFFC);
     return buf;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A89E0.s")
-#endif
+
+
+
+
+
+
+
 
 struct BGHeader *func_800A8A7C(u32 arg0) {
     struct BGHeader ***temp_v1;

@@ -62,6 +62,7 @@ typedef struct Unk4Bytes {
 extern FUNCLIST D_801F451C_ovl10;
 extern FUNCLIST D_801F4534_ovl10;
 extern FUNCLIST D_801F454C_ovl10;
+extern FUNCLIST D_801F45CC_ovl10;
 extern FUNCLIST D_801F4564_ovl10;
 extern FUNCLIST D_801F457C_ovl10;
 void func_801E6D08_ovl10(struct GObj *);
@@ -518,7 +519,18 @@ void func_801E5B08_ovl10(f32 *arg0, u8 arg1, f32 arg2) {
     D_800E3750[omCurrentObj->objId] = sp28.unk24;
 }
 
+#ifdef MIPS_TO_C
+// 32/41 diffs: same instructions; ROM schedules the u8->f32 conversion
+// after both numerator adds, IDO hoists it to the top.
+void func_801E5C4C_ovl10(f32 *arg0, u8 arg1) {
+    struct EntityThing800E9AA0 *tmp = D_800E9AA0[omCurrentObj->objId].as_ptr;
+
+    D_800E3050[omCurrentObj->objId] = ((tmp->unk8 + arg0[0]) - gEntitiesNextPosXArray[omCurrentObj->objId]) / arg1;
+    D_800E33D0[omCurrentObj->objId] = ((tmp->unk10 + arg0[2]) - gEntitiesNextPosZArray[omCurrentObj->objId]) / arg1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E5C4C_ovl10.s")
+#endif
 
 int func_800F98EC(u32, f32);
 void func_801A2558_ovl7(s32);
@@ -1387,7 +1399,7 @@ void func_801EA784_ovl10(GObj *arg0) {
 }
 
 extern s32 D_801F35CC_ovl10;
-void func_801EA900_ovl10(struct GObj *);
+void func_801EA900_ovl10();
 
 void func_801EA7CC_ovl10(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
@@ -1405,7 +1417,31 @@ void func_801EA7CC_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_801F45B8_ovl10);
 }
 
+#ifdef MIPS_TO_C
+// 8 diffs, same floor as its twin func_801E7760_ovl10: `temp` lands in $a0
+// where the ROM uses $a1.
+void func_801EA900_ovl10(void) {
+    s32 id;
+    s32 temp = 0;
+
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        temp = func_801A0D74_ovl7();
+    }
+    if (temp == 0) {
+        id = D_800DDFD0[omCurrentObj->objId];
+        utilFuncTableJump(id, 5, &D_801F45CC_ovl10);
+    }
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        if (D_800EA1A0[omCurrentObj->objId] != 0) {
+            func_801E5F60_ovl10();
+        }
+        eneTurnCommon(1);
+        func_801E6030_ovl10();
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EA900_ovl10.s")
+#endif
 
 void func_801EA9CC_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;

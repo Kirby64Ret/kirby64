@@ -33,7 +33,15 @@ extern f32 D_800E64D0[], D_800E6690[], D_800E6850[], D_800E6A10[];
 extern f32 D_800EC660[], D_800EC820[], D_800E9020[];
 extern f32 D_800E3750[], D_800E3210[], D_800E3C90[];
 extern s32 D_800E8920[];
-extern f32 D_801CE290_ovl7;
+extern f32 D_801CE290_ovl7, D_801CE298_ovl7, D_801CE29C_ovl7, D_801CE28C_ovl7, D_801CE294_ovl7;
+void func_800B67A8(GObj *);
+void func_800B6FD8(GObj *);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+extern f32 gameTicksPerDraw;
+void ohSleep(s32);
+extern f32 D_801CE2B8_ovl7;
+void func_801AC840_ovl7(void);
 void func_801ABBA0_ovl7(void);
 void func_800AA018(s32);
 
@@ -72,7 +80,30 @@ void func_800B6FD8(GObj *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B0550_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B069C_ovl7.s")
+void func_801B069C_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    func_801ABBA0_ovl7();
+    D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
+    ent->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        func_800AA018(0x1002A);
+    } else {
+        func_800AA018(0x10027);
+    }
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801CE28C_ovl7;
+    ohSleep(0x3C);
+    func_801AC11C_ovl7(arg0);
+}
 
 void func_801B0880_ovl7(s32 arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
@@ -95,9 +126,64 @@ void func_801B0880_ovl7(s32 arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B0A20_ovl7.s")
+void func_801B0A20_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    func_801ABBA0_ovl7();
+    D_800DEF90[omCurrentObj->objId] = func_800B67A8;
+    D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
+    ent->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        func_800AA018(0x101B6);
+    } else {
+        func_800AA018(0x101B4);
+    }
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801CE294_ovl7;
+    ohSleep(0x3C);
+    func_801AC11C_ovl7(arg0);
+}
+
+#ifdef MIPS_TO_C
+// 60/128 diffs: all stores are right; temps are rotated one register slot.
+void func_801B0C20_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent;
+    struct DObj *d;
+
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    d = arg0->data.dobj->firstChild;
+    ent = D_800E1B50[omCurrentObj->objId];
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    func_801ABBA0_ovl7();
+    D_800DEF90[omCurrentObj->objId] = func_800B6FD8;
+    D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
+    ent->unk48 = &func_8010C274;
+    ent->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    d->angle.v.z = -D_800E6A10[omCurrentObj->objId] * D_801CE298_ovl7;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA018(0x101AF);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801CE29C_ovl7;
+    ohSleep(0x3C);
+    func_801AC11C_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B0C20_ovl7.s")
+#endif
 
 void func_801B0E20_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
@@ -275,5 +361,20 @@ void func_801B1BB0_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B1D08_ovl7.s")
+void func_801B1D08_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
+    func_800A9864(0x1002E, 0x23, 0x10);
+    ent->unk48 = &func_8010C274;
+    ent->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801CE2B8_ovl7;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3210[omCurrentObj->objId] = 6.0f;
+    D_800E3750[omCurrentObj->objId] = -1.0f;
+    D_800E3C90[omCurrentObj->objId] = 6.0f;
+    curObjSleepForever();
+}
 

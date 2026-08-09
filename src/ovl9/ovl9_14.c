@@ -499,7 +499,24 @@ void func_80211EC0_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80211EC8_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CCAA8;
+extern void func_800AF408(void);
+extern void ohSleep(s32);
+
+void func_80211EC8_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    tmp->unk98 = &D_801CCAA8;
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800AA018(0x100E4);
+    func_800AA018(0x100E5);
+    func_800AF408();
+    do {
+        ohSleep(1);
+    } while (func_8019A9AC_ovl7(480.0f, 240.0f) != 3);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 void func_80211FC0_ovl9(s32 arg0) {
 
@@ -697,7 +714,24 @@ void func_80212CD0_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80212DE4_ovl9.s")
+extern s32 D_801CCB38;
+extern void ohSleep(s32);
+
+void func_80212DE4_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    tmp->unk98 = &D_801CCB38;
+    func_800A9EA4(0x10161);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 2.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 2.0f;
+    D_800E3210[omCurrentObj->objId] = 6.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3C90[omCurrentObj->objId] = 6.0f;
+    ohSleep(5);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 void func_80212F0C_ovl9(void) {
     func_801A0D74_ovl7();
@@ -1011,13 +1045,44 @@ void func_80214640_ovl9(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80214708_ovl9.s")
+extern s32 D_801CCC10;
+extern void func_800AEFFC(s32);
+
+void func_80214708_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    tmp->unk98 = &D_801CCC10;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    func_800AA018(0x101DC);
+    func_800AA018(0x101DD);
+    func_800B3520();
+    D_800E98E0[omCurrentObj->objId] = 0;
+    func_800AF27C();
+    func_800AA018(0x101C2);
+    func_800AA018(0x101C3);
+    func_800AF27C();
+    func_800AA018(0x101C4);
+    func_800AA018(0x101C5);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    play_sound(0x15F);
+    ohSleep(5);
+    D_800E98E0[omCurrentObj->objId] = 2;
+    func_800AEFFC(7);
+    func_800AA018(0x101C6);
+    func_800AA018(0x101C7);
+    ohSleep(4);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 
 extern void func_801A0C70_ovl7(void);
 extern s32 D_801C9718;
 extern s32 D_801C9784;
-#ifdef MIPS_TO_C
 // 7 diffs: the ROM keeps omCurrentObj->objId in $v0, IDO in $a2.
+#ifdef MIPS_TO_C
+// 7 diffs: the ROM keeps omCurrentObj->objId in $v0, IDO in $a2. A named local
+// for the id makes it worse (28 diffs).
 void func_80214888_ovl9(struct GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         func_80111550(omCurrentObj->objId);

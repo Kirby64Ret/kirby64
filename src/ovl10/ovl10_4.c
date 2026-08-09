@@ -66,4 +66,7 @@ void func_801EF3F0_ovl10(struct GObj *this) {
     func_801ACF84_ovl7(this);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_4/func_801EF760_ovl10.s")
+void func_801EF760_ovl10(void) {
+    func_801A0D74_ovl7();
+    func_801A03B4_ovl7();
+}

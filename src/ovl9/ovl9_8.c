@@ -170,7 +170,24 @@ void func_801F8D40_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8D48_ovl9.s")
+extern s32 D_801CBF20;
+extern f32 D_8021D954_ovl9;
+
+void func_801F8D48_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    tmp->unk98 = &D_801CBF20;
+    D_800DDFD0[omCurrentObj->objId] = 5;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_8021D954_ovl9;
+    func_800A9EA4(0x100D1);
+    func_800AA864(0x100D0, 1);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 void func_801F8774_ovl9(struct GObj *);
 
@@ -199,7 +216,22 @@ void func_801F8ECC_ovl9(s32 arg0, s32 arg1, f32 arg2) {
     D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8F7C_ovl9.s")
+void func_801F8F7C_ovl9(struct GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    if (D_800E8920[omCurrentObj->objId] == 0) {
+        func_800AECC0(gameTicksPerDraw * 2.0f);
+        func_800AED20(gameTicksPerDraw * 2.0f);
+    }
+    func_800A9EA4(0x100C8);
+    func_800AA864(0x100C7, 1);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800A9EA4(0x100CA);
+    func_800A9EA4(0x100C9);
+    D_800DF310[omCurrentObj->objId] = func_801F8ECC_ovl9;
+    curObjSleepForever();
+}
 
 void func_801F907C_ovl9(struct GObj *arg0) {
     if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
@@ -454,7 +486,25 @@ void func_801F9F4C_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9F54_ovl9.s")
+extern s32 D_801CBFB0;
+extern f32 D_8021D96C_ovl9;
+
+void func_801F9F54_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9C60[omCurrentObj->objId] = 1;
+    tmp->unk98 = &D_801CBFB0;
+    D_800DDFD0[omCurrentObj->objId] = 6;
+    func_800A9EA4(0x100AE);
+    func_800AECC0(0.0f);
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_8021D96C_ovl9;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E3C90[omCurrentObj->objId] = 5.0f;
+    curObjSleepForever();
+}
 
 void func_801FA08C_ovl9(s32 arg0) {
 
@@ -612,7 +662,26 @@ void func_801FAA78_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FAAE4_ovl9.s")
+extern s32 D_801CBFF8;
+extern f32 D_8021D980_ovl9;
+extern void func_800A9760(s32);
+
+void func_801FAAE4_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    tmp->unk98 = &D_801CBFF8;
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 0.0f;
+    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+    D_800E17D0[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId] + D_8021D980_ovl9;
+    func_800A9760(0x10024);
+    func_800AA864(0x100B9, 1);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 void func_801FA704_ovl9(struct GObj *);
 
@@ -768,7 +837,30 @@ void func_801FB528_ovl9(void) {
     }
 }
 #else
+/* Whole-function register shift: the ROM materialises &omCurrentObj and
+   &D_800E9AA0 only AFTER the random_soft_s32_range call, IDO hoists both above
+   it, so every instruction is offset. */
+#ifdef MIPS_TO_C
+extern s32 random_soft_s32_range(s32);
+
+void func_801FB528_ovl9(struct GObj *arg0) {
+    s32 sp1C = D_800E9AA0[omCurrentObj->objId].as_s32;
+    s32 r;
+
+    r = random_soft_s32_range(2);
+    if (r == 0) {
+        r = -1;
+    }
+    r = r + sp1C;
+    if (r >= 8) {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    } else {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = (r < 0) ? 7 : r;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB528_ovl9.s")
+#endif
 #endif
 
 void func_801FB5D4_ovl9(void) {

@@ -9,6 +9,7 @@ extern void func_800AA018(s32);
 #include "GObj.h"
 #include "track_arrays.h"
 #include "ovl1/util.h"
+#include "Player.h"
 
 extern u8 D_801CA980;
 extern FUNCLIST D_80196910_ovl3;
@@ -20,7 +21,79 @@ extern f32 D_80197278_ovl3;
 extern void func_8016BD24_ovl3(s32);
 extern void func_801696F0_ovl3(s32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_80169430_ovl3.s")
+extern struct GObjProcess *gEntityGObjProcessArray[];
+extern struct GObjProcess *gEntityGObjProcessArray3[];
+extern s32 D_8012EAE0;
+extern f32 D_801971F0_ovl3;
+extern f32 D_801971F4_ovl3;
+extern void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
+extern void animResetModelAndTextureAnimation(GObj *);
+extern void func_8011DC5C(void);
+extern void func_8011E0E8(void);
+extern void func_800A22D4(s32);
+void func_80169694_ovl3(s32);
+void func_80177098_ovl3(s32);
+
+void func_80169430_ovl3(arg0, arg1, arg2, arg3)
+s32 arg0;
+s32 arg1;
+u8 arg2;
+s32 arg3;
+{
+    f32 temp;
+    f32 scale;
+
+    D_800E8760[arg0] = 1;
+    D_800EA520[arg0] = (*((u8 *) &arg1 + 3) << 8) | arg2;
+    gEntityFuncListIDArray[arg0] = arg3;
+    assign_new_process_entry(gEntityGObjProcessArray[arg0], func_80169694_ovl3);
+    D_800DF150[arg0] = NULL;
+    if (*((u8 *) &arg1 + 3) == 0) {
+        *(s32 *) &gKirbyState.actionChange = -1;
+        gKirbyState.unk4 = 0;
+        gKirbyState.previousAction = gKirbyState.action;
+        gKirbyState.action = 0x15;
+        gKirbyState.abilityInUse = 0;
+        gKirbyState.unk7 = 0;
+        gKirbyState.isTurning = 0;
+        gEntitiesAngleYArray[arg0] = D_800E17D0[arg0];
+        gKirbyState.isInhaling = 0;
+        gKirbyState.unkB8 = 0;
+        gKirbyState.unkD = -3;
+        D_800E8060[arg0] = -1;
+        gKirbyState.damageType = 0;
+        *(s16 *) &gKirbyState.damageFlashTimer = -1;
+        gEntitiesAngleXArray[arg0] = 0.0;
+        func_8011DC5C();
+        func_8011E0E8();
+        if (D_8012EAE0 != 0) {
+            func_800A22D4(D_8012EAE0);
+            D_8012EAE0 = 0;
+        }
+        D_800DDE10[arg0] = 0;
+        assign_new_process_entry(gEntityGObjProcessArray3[arg0], func_80177098_ovl3);
+    }
+    temp = D_801971F0_ovl3;
+    scale = D_801971F4_ovl3;
+    D_800DDA90[arg0] = 0x26;
+    D_800E0D50[arg0] = omCurrentObj->objId;
+    D_800E33D0[arg0] = 0.0f;
+    D_800E3210[arg0] = 0.0f;
+    D_800E3050[arg0] = 0.0f;
+    D_800E64D0[arg0] = 0.0f;
+    D_800E3910[arg0] = 0.0f;
+    D_800E3750[arg0] = 0.0f;
+    D_800E3590[arg0] = 0.0f;
+    D_800E6690[arg0] = 0.0f;
+    D_800E3E50[arg0] = temp;
+    D_800E3C90[arg0] = temp;
+    D_800E3AD0[arg0] = temp;
+    D_800E6850[arg0] = temp;
+    gEntitiesScaleZArray[arg0] = scale;
+    gEntitiesScaleYArray[arg0] = scale;
+    gEntitiesScaleXArray[arg0] = scale;
+    animResetModelAndTextureAnimation(D_800DE350[arg0]);
+}
 
 void func_80169694_ovl3(s32 arg0) {
     func_801A32EC(&D_801CA980);
@@ -32,7 +105,72 @@ void func_801696F0_ovl3(s32 arg0) {
     func_800FF200(D_8012E944);
 }
 
+#ifdef MIPS_TO_C
+/* 12/224: instruction-for-instruction exact; only the FP register names
+   differ. The ROM allocates $f12 to the shared 0.0f and $f14 to `temp`;
+   IDO gives the 0.0f $f14 and `temp` $f2 whatever the statement order,
+   whether the zero is a literal or a named local, and whether the
+   D_800E3E50 group is chained or split. Same class as the one-slot
+   register-allocation residue in the guide. */
+extern f32 D_801971F8_ovl3;
+extern f32 D_801971FC_ovl3;
+extern void func_800A9760(s32);
+extern void func_8016BBD0_ovl3(void);
+extern void func_800FF0A8(s32);
+extern void func_800FF0C4(s32);
+extern void func_800FBE1C(void);
+extern void func_800FA414(s32);
+extern void func_800BB468(s32, s32);
+void func_800B4924(s32);
+extern void func_800B531C(struct GObj *);
+void curObjSleepForever(void);
+void ohSleep(s32);
+void func_80169A98_ovl3(s32);
+
+void func_80169718_ovl3(GObj *arg0) {
+    f32 temp;
+
+    if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
+        func_800A9760(0x20007);
+    }
+    D_800DF150[omCurrentObj->objId] = func_80169A98_ovl3;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    func_8016BBD0_ovl3();
+    arg0->flags |= 1;
+    func_800FF0A8(D_8012E944);
+    temp = D_801971F8_ovl3;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = temp;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = temp;
+    func_800FBE1C();
+    func_800FA414(5);
+    func_800BB468(0, 0);
+    ohSleep(0x41);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    arg0->flags ^= 1;
+    func_800FF0C4(D_8012E944);
+    D_800E5F90[omCurrentObj->objId] = D_800E6150[omCurrentObj->objId] =
+        D_800E5F90[D_800E0D50[omCurrentObj->objId]];
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId] =
+        D_800E6BD0[D_800E0D50[omCurrentObj->objId]];
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800DEF90[omCurrentObj->objId] = func_800B531C;
+    D_800E3210[omCurrentObj->objId] = -10.0f;
+    D_800E3750[omCurrentObj->objId] = D_801971FC_ovl3;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    func_800FA414(3);
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_80169718_ovl3.s")
+#endif
 
 extern f32 gKirbyHp;
 extern void play_sound(s32);

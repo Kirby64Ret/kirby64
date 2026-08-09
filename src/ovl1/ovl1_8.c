@@ -1284,17 +1284,17 @@ void func_800B7D88(GObj *gobj) {
     }
 }
 
-#ifdef NON_MATCHING
 void func_800B7E44(void) {
     f32 zero = 0.0f;
+    f32 dx;
+    f32 dz;
 
-    D_800E2090[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId] * (zero - gEntitiesNextPosXArray[omCurrentObj->objId]);
-    D_800E2410[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId] * (zero - gEntitiesNextPosZArray[omCurrentObj->objId]);
-    D_800E2250[omCurrentObj->objId] = 0.0f;
+    dx = zero - gEntitiesNextPosXArray[omCurrentObj->objId];
+    dz = zero - gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800E2090[omCurrentObj->objId] = dx * D_800EB320[omCurrentObj->objId];
+    D_800E2410[omCurrentObj->objId] = dz * D_800EB320[omCurrentObj->objId];
+    D_800E2250[omCurrentObj->objId] = 0.0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_8/func_800B7E44.s")
-#endif
 
 void func_800B7ED4(GObj *gobj) {
     func_800B5A7C(gobj);
@@ -1356,16 +1356,20 @@ void func_800B8300(GObj *gobj) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_800E0D50[omCurrentObj->objId]];
 }
 
-#ifdef NON_MATCHING
+// The three leading dead locals are load-bearing: they place sp24/sp30 and give
+// the ROM's 0x50 frame.
 void func_800B83C8(GObj *gobj) {
+    Vector unused0;
+    s32 unused1;
+    s32 unused2;
     Vector sp30;
     Vector sp24;
-    struct DObj *node = D_800DE350[D_800E0D50[omCurrentObj->objId]]->data.dobj;
+    struct DObj *node = D_800DE350[D_800E0D50[omCurrentObj->objId]]->data.dobj->firstChild;
 
     sp24.x = D_800E2090[omCurrentObj->objId];
     sp24.y = D_800E2250[omCurrentObj->objId];
     sp24.z = D_800E2410[omCurrentObj->objId];
-    utilTransformPoint(&sp30, node->parent, &sp24);
+    utilTransformPoint(&sp30, node, &sp24);
     gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
     gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     gEntitiesPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
@@ -1375,9 +1379,6 @@ void func_800B83C8(GObj *gobj) {
     D_800E9C60[omCurrentObj->objId] = 1;
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_8/func_800B83C8.s")
-#endif
 
 void func_800B8550(GObj *gobj) {
     func_800B62AC(gobj);

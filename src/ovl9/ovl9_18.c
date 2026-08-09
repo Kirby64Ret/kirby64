@@ -336,17 +336,15 @@ void func_8021B788_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
 void func_8021B848_ovl9(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
-        if (D_800E9720[omCurrentObj->objId]-- == 0) {
+        if (D_800E9720[omCurrentObj->objId] == 0) {
             func_8021B8B0_ovl9(arg0);
+        } else {
+            D_800E9720[omCurrentObj->objId]--;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021B848_ovl9.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021B8B0_ovl9.s")
 

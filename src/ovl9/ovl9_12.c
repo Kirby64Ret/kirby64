@@ -90,6 +90,8 @@ void func_8020938C_ovl9(s32 arg0) {
     curObjSleepForever();
 }
 
+/* 7 diffs: ROM loads D_800E98E0[objId] into $a1, IDO into $a0 (argument-
+   register rotation, the confirmed floor). Everything else is exact. */
 #ifdef MIPS_TO_C
 void func_802094DC_ovl9(void) {
     if (D_800E98E0[omCurrentObj->objId] == 0) {

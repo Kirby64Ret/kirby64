@@ -26,6 +26,7 @@ typedef struct EneCurve {
 
 
 extern u8 D_800D6C68[];
+extern u8 D_800D6C90[];
 void func_800A22D4(void *);
 void func_800A2300(GObj *);
 void func_801A32A8_ovl7(s32);
@@ -2155,7 +2156,30 @@ block_19:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D4D0_ovl7.s")
 #endif
 
+#ifdef MIPS_TO_C
+// 20/46 diffs: body is right; ROM frame is 0x28 with the arg home slot
+// stored (sw $a0, 0x28($sp)) and temps at 0x20/0x24. K&R form, u16 param
+// and inlining ent all fail to reproduce the home-slot store.
+void func_8019D8A0(arg0)
+s32 arg0;
+{
+    struct UnkStruct800E1B50 *ent = D_800E1B50[(u16) arg0];
+
+    if (ent->unk34 != NULL) {
+        func_800A22D4(ent->unk34);
+    }
+    func_800A2300(D_800DE350[(u16) arg0]);
+    ent->unk34 = NULL;
+    func_8019BBA8_ovl7((u16) arg0);
+    func_801A32A8_ovl7((u16) arg0);
+    if (D_800E76C0[(u16) arg0] < 0x40) {
+        D_800D6C90[D_800E76C0[(u16) arg0]] &= 0x80;
+    }
+    func_800B1900((u16) arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D8A0.s")
+#endif
 
 struct EneSpawnEntry {
     /* 0x00 */ u8 pad0[5];

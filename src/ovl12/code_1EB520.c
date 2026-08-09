@@ -290,16 +290,19 @@ void func_801DBDA8_ovl12(void) {
 }
 
 // https://decomp.me/scratch/QLRcY
-#ifdef NON_MATCHING
 void func_801DBFAC_ovl12(void) {
-    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    f32 temp;
+
+    D_800E64D0[omCurrentObj->objId] = 0.0;
     D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.5f;
-    D_800E6850[omCurrentObj->objId] = ABSF(D_801E2AB0_ovl12[D_800D7098.unk10]);
-    D_800E6850[omCurrentObj->objId] = ((D_800E6850[omCurrentObj->objId] * 2.0f) + 2.0f) * 0.75f;
+    temp = D_801E2AB0_ovl12[D_800D7098.unk18];
+    if (temp < 0.0f) {
+        D_800E6850[omCurrentObj->objId] = -temp;
+    } else {
+        D_800E6850[omCurrentObj->objId] = temp;
+    }
+    D_800E6850[omCurrentObj->objId] = ((D_800E6850[omCurrentObj->objId] * 2) + 2.0f) * 0.75f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DBFAC_ovl12.s")
-#endif
 
 void func_801DC094_ovl12(void) {
     struct DObj *lo0;
@@ -476,12 +479,7 @@ void func_801DCA4C_ovl12(void) {
     }
 }
 
-#ifdef NON_MATCHING
 u8 func_801DCAB0_ovl12(void) {
-    s32 var_v1;
-    u32 temp_v1;
-    u32 temp_v1_2;
-
     D_800E98E0[omCurrentObj->objId] = 0;
     if ((gEntitiesNextPosYArray[omCurrentObj->objId] - 40.0f) <= gEntitiesNextPosYArray[D_800D7098.unk0]) {
         D_800E98E0[omCurrentObj->objId] = 1;
@@ -490,13 +488,10 @@ u8 func_801DCAB0_ovl12(void) {
         D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.5f;
         D_800E6850[omCurrentObj->objId] = 5.0f;
         D_800D7098.unk8 = 0;
-        D_800D7098.unk10 = 1;
+        *(s32 *) &D_800D7098.unk10 = 1;
     }
     return D_800E98E0[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DCAB0_ovl12.s")
-#endif
 
 void func_801DCBC4_ovl12(void) {
     if (D_800E9720[omCurrentObj->objId] != 0) {
@@ -971,7 +966,26 @@ void func_801DE7E8_ovl12(GObj *arg0) {
     }
 }
 #else
+#ifdef NON_MATCHING
+/* 12/48: structurally exact; ROM rotates the pointer/value/sum triple one
+ * register higher (a3/t0/a2 vs a3/a2/t0). */
+void func_801DE7E8_ovl12(GObj *arg0) {
+    s32 temp;
+    s32 val;
+
+    val = D_800E9560[omCurrentObj->objId];
+    temp = gEntityFuncListIDArray[omCurrentObj->objId] + val;
+    if ((D_800D7098.unk8 == 1) || (D_800D7098.unk10 == 0)) {
+        D_800E9560[omCurrentObj->objId] = val + 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = temp - 2;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DE3D4_ovl12);
+    } else if (D_800D7098.unk10 == 0) {
+        func_801DCDFC_ovl12();
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DE7E8_ovl12.s")
+#endif
 #endif
 
 void func_801DE8A8_ovl12(GObj *arg0) {

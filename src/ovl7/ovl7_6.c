@@ -19,6 +19,12 @@ struct Ovl7Unk94 {
 
 
 extern f32 D_801CE1DC_ovl7;
+extern f32 D_800E10D0[], D_800E1290[], D_800E1450[];
+extern FUNCLIST D_801CD4D0_ovl7;
+void func_800B4924(s32);
+void func_800B4954(s32);
+s32 func_800F98EC(s32, f32);
+void func_800F8E6C(GObj *);
 extern s32 D_800E0D50[];
 extern f32 D_800E17D0[], D_800E6A10[];
 
@@ -39,7 +45,17 @@ void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800A9F98(s32, f32);
 extern f32 D_801CE1E8_ovl7;
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801ACFD0_ovl7.s")
+void func_801ACFD0_ovl7(GObj *arg0) {
+    if (D_800E8E60[omCurrentObj->objId] == 0) {
+        D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    } else {
+        D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    }
+    D_800E10D0[omCurrentObj->objId] = D_800E10D0[D_800E0D50[omCurrentObj->objId]];
+    D_800E1290[omCurrentObj->objId] = D_800E1290[D_800E0D50[omCurrentObj->objId]];
+    D_800E1450[omCurrentObj->objId] = D_800E1450[D_800E0D50[omCurrentObj->objId]];
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x15, &D_801CD4D0_ovl7);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD0E8_ovl7.s")
 
@@ -227,7 +243,16 @@ s32 func_801AE73C_ovl7(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     return idx;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE7E0_ovl7.s")
+s32 func_801AE7E0_ovl7(s32 arg0) {
+    s32 ret = func_801AE73C_ovl7(arg0, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
+
+    if (ret == -1) {
+        return -1;
+    }
+    D_800E5F90[ret] = D_800E6150[ret] = D_800E5F90[omCurrentObj->objId];
+    D_800E6BD0[ret] = D_800E6D90[ret] = D_800E6BD0[omCurrentObj->objId];
+    return ret;
+}
 
 s32 func_801AE8AC_ovl7(s32 arg0, Vector *arg1) {
     s32 idx;
@@ -248,5 +273,19 @@ s32 func_801AE8AC_ovl7(s32 arg0, Vector *arg1) {
     return idx;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE940_ovl7.s")
+s32 func_801AE940_ovl7(s32 arg0, f32 arg1, f32 arg2) {
+    s32 ret = func_801AE7E0_ovl7(arg0);
+
+    if (ret == -1) {
+        return -1;
+    }
+    D_800E8E60[ret] = 0;
+    gEntitiesNextPosYArray[ret] += arg2;
+    if (func_800F98EC(ret, D_800E6A10[omCurrentObj->objId] * arg1) != 0) {
+        func_800B1900((u16) ret);
+        return -1;
+    }
+    func_800F8E6C(D_800DE350[ret]);
+    return ret;
+}
 

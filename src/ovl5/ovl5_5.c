@@ -38,6 +38,14 @@ typedef union Unk28Words {
 
 extern Unk28Words D_801873A0_ovl5;
 void func_800AD1A0(GObj *);
+extern s32 D_8018ECA8_ovl5[];
+typedef struct Unk801875F0 {
+    s32 unk0;
+    s32 unk4;
+} Unk801875F0;
+extern Unk801875F0 D_801875F0_ovl5[];
+void play_sound(s32);
+s32 random_soft_s32_range(s32);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8016FB80_ovl5.s")
 
@@ -153,7 +161,25 @@ s32 func_80171868_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171E6C_ovl5.s")
 
+// Draft, 2/61 diffs: instruction-exact, frame 0x30 vs ROM 0x28. IDO packs the
+// three spill slots at the BOTTOM of the temp area (0x18/1C/20), the ROM at the
+// TOP (0x1C/20/24); any declared local grows the frame by 8 instead of shifting it.
+#ifdef MIPS_TO_C
+void func_801720D8_ovl5(s32 arg0) {
+    s32 pad;
+    Unk801875F0 *p;
+    s32 temp = D_8018ECA8_ovl5[arg0];
+
+    play_sound(0xBA);
+    D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
+    D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_s32;
+    D_8018E998_ovl5[arg0]++;
+    p = &D_801875F0_ovl5[temp];
+    D_800E98E0[omCurrentObj->objId] = (random_soft_s32_range(p->unk4) + p->unk0) * 0.5f;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801720D8_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801721CC_ovl5.s")
 

@@ -10,8 +10,22 @@ extern f32 D_801F4D30_ovl10[];
 extern FUNCLIST D_801F4290_ovl10;
 
 void func_801A0D74_ovl7();
-void func_801DD760_ovl10(void);
-void func_801E28C8_ovl10(s32);
+f32 func_801DD760_ovl10(void);
+extern s32 D_800DDFD0[], D_800EA360[];
+extern struct Sub800E1B50_Unk98 D_801F4094_ovl10;
+void func_800AECC0(f32);
+void func_800AED20(f32);
+extern f32 gameTicksPerDraw;
+void func_800B33F4(void);
+void play_sound(s32);
+void func_800BB468(s32, s32);
+void func_800A22D4(void *);
+void func_800AA018(s32);
+void func_800AA154(s32);
+extern s32 D_801F3A18_ovl10[], D_801F3B38_ovl10[];
+s32 func_801E2BD8_ovl10(s32, void *);
+s32 func_8019A7E8_ovl7(f32);
+s32 func_801E28C8_ovl10(s32);
 #include "buffers.h"
 #include "ovl1/ovl1_7.h"
 #include "unk_structs/D_800E1B50.h"
@@ -258,11 +272,35 @@ void func_801DCF48_ovl10(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DCFC4_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DD2CC_ovl10.s")
+void func_801DD2CC_ovl10(GObj *arg0) {
+    if (func_8019A7E8_ovl7(160.0f) != 0) {
+        D_800E98E0[omCurrentObj->objId] = 0;
+        D_800EA520[omCurrentObj->objId] = 0x3E8;
+    }
+    func_801A0D74_ovl7(arg0);
+    func_801E28C8_ovl10(0);
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 9;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DBD38_ovl10);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DD390_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DD674_ovl10.s")
+void func_801DD674_ovl10(GObj *arg0) {
+    if (func_801DD760_ovl10() != 0.0f) {
+        D_800EA520[omCurrentObj->objId] = 0x3E8;
+    }
+    if (func_8019A7E8_ovl7(160.0f) != 0) {
+        D_800EA520[omCurrentObj->objId] = 0x3E8;
+    }
+    func_801A0D74_ovl7(arg0);
+    func_801E28C8_ovl10(0);
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 9;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DBD38_ovl10);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DD760_ovl10.s")
 
@@ -307,7 +345,30 @@ void func_801DE5CC_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DE650_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DEA98_ovl10.s")
+struct Ovl10AnimInfo1 {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0xC];
+};
+
+void func_801DEA98_ovl10(GObj *arg0) {
+    struct Ovl10AnimInfo1 sp24;
+
+    func_801DD760_ovl10();
+    func_801A0D74_ovl7(arg0);
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A18_ovl10;
+    func_801E28C8_ovl10(0);
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 9;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DBD38_ovl10);
+    }
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3B38_ovl10;
+    func_801E2BD8_ovl10(D_800DFBD0[omCurrentObj->objId][20], &sp24);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DEB94_ovl10.s")
 
@@ -335,7 +396,24 @@ void func_801DF310_ovl10(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DF394_ovl10.s")
+void func_801DF394_ovl10(GObj *arg0) {
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 9;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F39F4_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+    func_800B33F4();
+    play_sound(0x1DF);
+    play_sound(0x2A);
+    func_800BB468(2, 0);
+    if (D_800EA360[omCurrentObj->objId] != 0) {
+        func_800A22D4((void *) D_800EA360[omCurrentObj->objId]);
+        D_800EA360[omCurrentObj->objId] = 0;
+    }
+    func_800AA018(0x102DF);
+    func_800AA154(0x102DE);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0xA;
+}
 
 void func_801DF4CC_ovl10(void) {
     D_800E8920[omCurrentObj->objId] = 0;

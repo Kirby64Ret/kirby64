@@ -2683,37 +2683,36 @@ void func_800A04A4(u32 arg0, u32 arg1) {
     D_800BE3E4 = arg1;
 }
 
-#ifdef MIPS_TO_C
+struct Ovl1ParticleNode;
+extern UnkParticle *D_800D6A08;
+extern struct Ovl1ParticleNode *D_800D6A0C;
+void func_800A09AC(void *);
 
 GObj *func_800A04B8(s32 arg0) {
-    ? *temp_v0;
-    s32 var_s0;
+    UnkParticle *p;
+    s32 i;
 
-    var_s0 = arg0 - 1;
-    D_800D6A08 = NULL;
-    D_800D6A0C = 0;
-    if (var_s0 >= 0) {
-loop_1:
-        temp_v0 = gtlMalloc(0x78, 4);
-        if (temp_v0 == NULL) {
+    D_800D6A08 = (UnkParticle *) (D_800D6A0C = NULL);
+    for (i = arg0 - 1; i >= 0; i--) {
+        p = gtlMalloc(0x78, 4);
+        if (p == NULL) {
             return NULL;
         }
-        var_s0 -= 1;
-        *temp_v0 = D_800D6A08;
-        D_800D6A08 = temp_v0;
-        if (var_s0 < 0) {
-            goto block_4;
-        }
-        goto loop_1;
+        p->next = D_800D6A08;
+        D_800D6A08 = p;
     }
-block_4:
     D_800D6AE2 = 0;
     D_800D6AE8 = 0;
     return HS64_omMakeGObj(-7, func_800A09AC, 0, 0x80000000);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A04B8.s")
-#endif
+
+
+
+
+
+
+
+
 
 #ifdef MIPS_TO_C
 
@@ -3275,39 +3274,37 @@ block_105:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A09AC.s")
 #endif
 
-#ifdef MIPS_TO_C
+struct Ovl1ParticleNode;
+extern UnkParticle *D_800D6A08;
+extern struct Ovl1ParticleNode *D_800D6A0C;
+extern struct Ovl1ParticleNode *D_800D6AF0;
 
-? *func_800A194C(void) {
-    ? *temp_v1;
-    s32 temp_v0;
-    u16 temp_t4;
-    u16 temp_t7;
+UnkParticle *func_800A194C(void) {
+    UnkParticle *p;
 
-    temp_v1 = D_800D6A08;
-    if (temp_v1 == NULL) {
+    p = D_800D6A08;
+    if (p == NULL) {
         return NULL;
     }
-    temp_t7 = D_800D6AE2 + 1;
-    temp_v0 = temp_t7 & 0xFFFF;
-    D_800D6AE2 = temp_t7;
-    if (D_800D6AE8 < temp_v0) {
-        D_800D6AE8 = temp_v0;
+    D_800D6AE2++;
+    if (D_800D6AE8 < D_800D6AE2) {
+        D_800D6AE8 = D_800D6AE2;
     }
-    D_800D6A08 = temp_v1->unk0;
-    temp_v1->unk0 = D_800D6A0C;
-    D_800D6A0C = temp_v1;
+    D_800D6A08 = p->next;
+    p->next = (UnkParticle *) D_800D6A0C;
+    D_800D6A0C = (struct Ovl1ParticleNode *) p;
     if (D_800D6AF0 == NULL) {
-        D_800D6AF0 = temp_v1;
+        D_800D6AF0 = (struct Ovl1ParticleNode *) p;
     }
-    temp_t4 = D_800BE3E8 + 1;
-    D_800BE3E8 = temp_t4;
-    temp_v1->unk4 = temp_t4;
-    temp_v1->unk4C = 0;
-    return temp_v1;
+    D_800BE3E8 = D_800BE3E8 + 1;
+    p->unk4 = D_800BE3E8;
+    *(s32 *) &p->unk4C = 0;
+    return p;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A194C.s")
-#endif
+
+
+
+
 
 #ifdef MIPS_TO_C
 

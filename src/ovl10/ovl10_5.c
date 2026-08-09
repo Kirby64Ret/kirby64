@@ -1,5 +1,6 @@
 #include "common.h"
 #include "GObj.h"
+#include "unk_structs/D_800E1B50.h"
 #include "track_arrays.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
@@ -15,8 +16,45 @@ void func_801A0880_ovl7(void);
 void func_801EFF98_ovl10(void);
 void func_800FF200(void *);
 s32 func_801F1870_ovl10(void);
+extern s32 D_801F4D68_ovl10[];
+f32 sqrtf(f32);
+extern f32 D_801F4C40_ovl10, D_801F4C44_ovl10, D_801F4C48_ovl10;
+extern s32 D_801CA04C_ovl7[];
+void func_800B7790(s32);
+void func_801EF9B0_ovl10(GObj *);
+void func_800AA018(s32);
+void ohSleep(s32);
 
+#ifdef MIPS_TO_C
+// 98/140 diffs: structure is right, but $v0/$v1 are swapped between the
+// omCurrentObj pointer and the objId value throughout.
+void func_801EF790_ovl10(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DEF90[omCurrentObj->objId] = func_800B7790;
+    D_800E8E60[omCurrentObj->objId] = 1;
+    D_800E6A10[omCurrentObj->objId] = D_800E0D50[omCurrentObj->objId];
+    ent->unk8C = D_801CA04C_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801EF9B0_ovl10;
+    func_800AA018(0x105F9);
+    func_800AA018(0x105FA);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = D_801F4C40_ovl10;
+    D_800E3750[omCurrentObj->objId] = D_801F4C44_ovl10;
+    D_800E3050[omCurrentObj->objId] = -(gEntitiesNextPosXArray[omCurrentObj->objId] / 60.0f);
+    ohSleep(0x3C);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801F4C48_ovl10;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EF790_ovl10.s")
+#endif
 
 void func_801EF9B0_ovl10(GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {
@@ -153,7 +191,29 @@ void func_801F1CA0_ovl10(GObj *arg0, s32 arg1) {
     curObjSleepForever();
 }
 
+#ifdef MIPS_TO_C
+// 15/58 diffs: loop and arithmetic exact; the two hoisted array bases take
+// $s3/$s4 the other way round and the prologue saves $s0 last.
+s32 func_801F1D60_ovl10(Vector vec, s32 count, f32 dist) {
+    s32 i;
+    s32 *p;
+
+    if (count > 0) {
+        i = 0;
+        p = D_801F4D68_ovl10;
+        do {
+            if (sqrtf(((vec.z - gEntitiesNextPosZArray[*p]) * (vec.z - gEntitiesNextPosZArray[*p])) + ((vec.x - gEntitiesNextPosXArray[*p]) * (vec.x - gEntitiesNextPosXArray[*p]))) < dist) {
+                return 1;
+            }
+            i++;
+            p++;
+        } while (i != count);
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1D60_ovl10.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1E48_ovl10.s")
 

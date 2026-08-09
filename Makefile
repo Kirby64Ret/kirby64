@@ -276,6 +276,15 @@ ifeq ($(PROGRESS), 0)
 $(GLOBAL_ASM_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py --asm-prelude $(ASMPP_PRELUDE) $(CC) -- $(AS) $(ASFLAGS) --
 endif
 
+# n_audio was built at -O3. tools/ido-7.1recomp/cc cannot do -O3 (ujoin is
+# missing from the recompiled toolchain), so tools/decomp/cc_o3.py drives the
+# four IDO phases directly with -O2 rewritten to -O3. These two objects, and
+# only these two, need it -- src/main/audio.c is game code and is -O2.
+# This assignment must come AFTER the GLOBAL_ASM_O_FILES one above: for the
+# same target the last target-specific assignment wins.
+N_AUDIO_O_FILES := $(BUILD_DIR)/src/main/libn_audio.o $(BUILD_DIR)/src/main/libn_audio_2.o
+$(N_AUDIO_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py --asm-prelude $(ASMPP_PRELUDE) $(PYTHON) tools/decomp/cc_o3.py -- $(AS) $(ASFLAGS) --
+
 setup:
 	$(MAKE) -C libreultra BUILD_DIR=../$(BUILD_DIR) VERSION=
 	$(MAKE) -C libreultra naudio BUILD_DIR=../$(BUILD_DIR) VERSION=

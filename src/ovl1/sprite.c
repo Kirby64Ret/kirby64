@@ -23,6 +23,7 @@ extern s16 D_800D4E70;
 extern u8 D_800D4E74;
 extern u32 sTextureImageCommand;
 extern u32 sSetTileCommand;
+extern s8 D_800DD70A;
 // mainseg bss
 extern Gfx *gDisplayListHeads[4];
 
@@ -57,9 +58,31 @@ void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB680.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB6D8.s")
+void func_800AB6D8(Gfx **gp, u32 arg1, s16 arg2, s16 arg3) {
+    (*gp)->words.w0 = sTextureImageCommand;
+    (*gp)->words.w1 = arg1;
+    (*gp)++;
+    (*gp)->words.w0 = 0xE6000000;
+    (*gp)++;
+    (*gp)->words.w0 = 0xF4000000;
+    if (D_800DD70A == 3) {
+        (*gp)->words.w1 = ((arg3 - 1) << 16) | 0x07000000;
+    } else {
+        (*gp)->words.w1 = (((arg3 - 1) << 16) | 0x07000000) | ((arg2 * 4) - 1);
+    }
+    (*gp)++;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB790.s")
+void func_800AB6D8(Gfx **gp, u32 arg1, s16 arg2, s16 arg3);
+
+void func_800AB790(Gfx **gp, u32 arg1, s16 arg2, s16 arg3, s16 arg4) {
+    (*gp)->words.w0 = 0xE8000000;
+    (*gp)++;
+    (*gp)->words.w0 = arg3 | sSetTileCommand;
+    (*gp)->words.w1 = 0x07000000;
+    (*gp)++;
+    func_800AB6D8(gp, arg1, arg2, arg4);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB804.s")
 
@@ -111,34 +134,61 @@ void func_800AC688(uObjBg *bg, struct C954Arg2 *arg1) {
     guS2DInitBg(bg);
 }
 
-#ifdef MIPS_TO_C
-// Structure is right; IDO puts the alignment mask in v0 (target: v1) and keeps
-// the aligned width in a temp instead of v0, rotating the rest of the temps.
 void func_800AC700(uObjBg *bg, struct C954Arg2 *arg1) {
-    u8 mask = D_800D4E60[arg1->unk1];
+    s32 tmemW = (arg1->width + D_800D4E60[arg1->unk1]) & ~D_800D4E60[arg1->unk1];
 
     bg->s.imageX = bg->s.imageY = 0;
-    bg->s.imageW = ((arg1->width + mask) & ~mask) * 4;
     bg->s.frameW = arg1->width * 4;
+    bg->s.imageW = tmemW * 4;
     bg->s.frameH = bg->s.imageH = arg1->height * 4;
     bg->s.frameX = bg->s.frameY = 0;
-    bg->s.imagePtr = (u64 *)arg1->unk8;
+    bg->s.imagePtr = (u64 *) arg1->unk8;
     bg->s.imageLoad = G_BGLT_LOADTILE;
     bg->s.imageFmt = arg1->unk0;
     bg->s.imageSiz = arg1->unk1;
     bg->s.imagePal = 0;
     bg->s.imageFlip = 0;
-    bg->s.scaleW = 0x400;
-    bg->s.scaleH = 0x400;
+    bg->s.scaleW = bg->s.scaleH = 0x400;
     bg->s.imageYorig = 0;
 }
+
+// Draft, 14/35: v0/v1 and the stores are right; IDO schedules the ~mask/and
+// pair ten slots later than the ROM. Swept 90 statement permutations, both
+// index forms and extra locals; its twin func_800AC700 closed on a store
+// permutation but this one does not move.
+#ifdef MIPS_TO_C
+void func_800AC794(uObjSprite *sp, struct C954Arg2 *arg1) {
+    s32 tmemW = (arg1->width + D_800D4E60[arg1->unk1]) & ~D_800D4E60[arg1->unk1];
+
+    sp->s.objX = sp->s.objY = 0;
+    sp->s.scaleW = sp->s.scaleH = 0x400;
+    sp->s.imageW = arg1->width * 0x20;
+    sp->s.imageH = arg1->height * 0x20;
+    sp->s.paddingY = 0;
+    sp->s.paddingX = 0;
+    sp->s.imageAdrs = 0;
+    sp->s.imageStride = GS_PIX2TMEM(tmemW, arg1->unk1);
+    sp->s.imageFmt = arg1->unk0;
+    sp->s.imageSiz = arg1->unk1;
+    sp->s.imagePal = 0;
+    sp->s.imageFlags = 0;
+}
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC700.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC794.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC794.s")
+void func_800AC820(uObjTxtr *tx, struct C954Arg2 *arg1) {
+    s32 tmemW = (arg1->width + D_800D4E60[arg1->unk1]) & ~D_800D4E60[arg1->unk1];
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC820.s")
+    tx->block.type = G_OBJLT_TXTRBLOCK;
+    tx->block.image = (u64 *) arg1->unk8;
+    tx->block.tmem = GS_PIX2TMEM(0, arg1->unk1);
+    tx->block.tsize = GS_TB_TSIZE(arg1->height * tmemW, arg1->unk1);
+    tx->block.tline = GS_TB_TLINE(tmemW, arg1->unk1);
+    tx->block.sid = 0;
+    tx->block.flag = arg1->unk8;
+    tx->block.mask = -1;
+}
 
 void func_800AC8E0(struct SPObj_68 *arg0, struct C954Arg2 *arg1) {
     arg0->unk0 = 0x30;
@@ -342,4 +392,32 @@ s32 func_800ACE88(SPObj *spobj, u8 colortype) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ADD14.s")
 
+// Draft, 4/39: two scheduler pair-swaps (the D_800DD6E0 store vs the zero-trip
+// guard, and the loop's sltu vs sw). Loop must be the explicit if+do/while --
+// a for() gets 4x-unrolled; the tail must be one chained assignment or the
+// three leading symbols lose their full-address materialisation.
+#ifdef MIPS_TO_C
+void func_800AE048(u32 count) {
+    SPObj *p;
+    u32 i;
+
+    if (count == 0) {
+        D_800DD6E0 = NULL;
+    } else {
+        p = gtlMalloc(count * 0x100, 8);
+        D_800DD6E0 = p;
+        if (count - 1 != 0) {
+            i = 0;
+            do {
+                i++;
+                p->next = (SPObj *) ((u8 *) p + 0x100);
+                p = p->next;
+            } while (i < count - 1);
+        }
+        p->next = NULL;
+    }
+    D_800DD6E4 = D_800DD6E8 = D_800DD6EC = D_800DD6F0 = NULL;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AE048.s")
+#endif

@@ -36,7 +36,14 @@ void func_800A7F74(s32, s32, s32, f32, f32, f32);
 s32 func_801A0D74_ovl7(void);
 extern u32 D_8012BCA0;
 extern void *D_801CA28C_ovl7[], *D_801CA2B0_ovl7[], *D_801CA2F4_ovl7[], *D_801CA318_ovl7[];
-extern f32 D_801CDFB4_ovl7, D_801CDFB8_ovl7;
+extern f32 D_801CDFB4_ovl7, D_801CDFB8_ovl7, D_801CDFC0_ovl7;
+void func_801A522C_ovl7(GObj *);
+void func_801A6610_ovl7(void);
+void func_801A4414_ovl7(GObj *);
+void ohSleep(s32);
+extern f32 D_800E6690[], D_800E64D0[], D_800E6850[];
+extern f32 D_800E3910[], D_800E3750[], D_800E3590[], D_800E33D0[], D_800E3210[], D_800E3050[];
+extern f32 D_800E3E50[], D_800E3C90[], D_800E3AD0[];
 void func_801A42B8_ovl7(GObj *);
 void func_800B19F4(s32, s32);
 void func_8019BB58_ovl7(void);
@@ -108,7 +115,33 @@ void func_801A470C_ovl7(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4F70_ovl7.s")
 
+#ifdef MIPS_TO_C
+// 84/104 diffs: stores are right; $v0/$v1 swapped for omCurrentObj/objId and
+// the D_801CDFC0 constant lands in $f0 instead of $f14.
+void func_801A50B0_ovl7(GObj *arg0) {
+    f32 c = D_801CDFC0_ovl7;
+
+    D_800DF150[omCurrentObj->objId] = func_801A522C_ovl7;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3590[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E33D0[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3210[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_801A6610_ovl7();
+    func_800AF408();
+    ohSleep(0xA);
+    func_801A4414_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A50B0_ovl7.s")
+#endif
 
 void func_801A522C_ovl7(GObj *arg0) {
     if (D_800EC9E4 != 0.0f) {

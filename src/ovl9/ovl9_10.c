@@ -590,7 +590,25 @@ void func_8020412C_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204184_ovl9.s")
+extern s32 D_801CC430;
+extern void func_800B3520(void);
+extern void func_800A9EA4(s32);
+
+void func_80204184_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    tmp->unk98 = &D_801CC430;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    func_800B3520();
+    if (((u32) D_800DD8D0[omCurrentObj->objId] >> 30) == 0) {
+        do {
+            ohSleep(1);
+        } while ((D_800DD8D0[omCurrentObj->objId] & 0xC0000000) == 0);
+    }
+    func_800B3520();
+    func_800A9EA4(0x10224);
+    curObjSleepForever();
+}
 
 void func_80204270_ovl9(s32 arg0) {
 

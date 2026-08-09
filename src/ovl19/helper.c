@@ -472,7 +472,16 @@ void func_802209A0_ovl19(GObj *arg0) {
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
 
     // currently flying blind filling out DObj->unk80 so I won't bother
-    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220D54_ovl19.s")
+void func_80220D54_ovl19(GObj *arg0) {
+    func_8021E184_ovl19();
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = -140.0f;
+    func_800A9864(0x20079, 0x1869F, 0x10);
+    *(u16 *) ((u8 *) D_800DFBD0[omCurrentObj->objId][2]->mobjList + 0x80) =
+        D_800EC2E0[omCurrentObj->objId].as_u32;
+    curObjSleepForever();
+}
 // }
 
 void func_80220E14_ovl19(struct GObj *arg0) {
