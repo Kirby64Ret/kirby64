@@ -735,3 +735,39 @@ A K&R declaration default-promotes to double: `func(..., f32)` gives
 `addiu $a3, $zero, 0` where the unprototyped form gives 22 diffs. Conversely,
 a trailing `0` argument that must be `addiu` rather than `move` tells you that
 parameter is `f32` and the literal is `0.0f`.
+
+## INTEGER declaration order controls $v0/$v1 (the most reused lever found)
+
+Unlike FP -- where only order of first ASSIGNMENT matters -- the first-declared
+integer local takes $v0 and the second takes $v1. Where the ROM puts a pointer
+in $v1 and a loaded field in $v0, declare a variable for the FIELD first.
+
+Closed three functions at 13 diffs each in one session and is the first thing
+to try on any pure v0/v1 swap. It also supersedes half of the "two opposite
+cures" note above: try declaration order BEFORE adding or removing a pointer
+local.
+
+## More strength-reduction and argument-type tells
+
+- `x * 2.0f` is strength-reduced to `add.s`. `x * 2` with an INTEGER literal
+  (and `(f32)2`) keeps `mul.s`.
+- A `0.0f` argument landing in an integer register emits `addiu $aN, $zero, 0`,
+  not `move $aN, $zero`. So addiu-vs-move on a zero argument tells you that
+  parameter is `f32`.
+- Type-split applies to compare-vs-store of the SAME constant:
+  `if (a[i] == 1) b[i] = 1;` CSEs both 1s into one register, while the ROM
+  often keeps $at for the compare and a separate register for the store.
+  `*(u32 *) &b[i] = 1;` forks them.
+
+## Loop form controls whether the bound gets a saved register
+
+`do { ... i++; } while (i != N);` promotes the loop bound into a saved
+register; `for (i = 0; i != N; i++)` does not. And if a `switch` in the same
+function also tests N, the loop counter must be a DIFFERENT type (`u32 i`) or
+IDO CSEs the two constants. Both were needed on one function to go 103 -> 11.
+
+## Where the ROM hoists a constant into a callee-saved $f2x across a call
+
+An `extern f32` reference cannot be hoisted that way. Assign it to a local
+`f32` IMMEDIATELY BEFORE THE LOOP instead. Took one function from 215 diffs
+to 4.

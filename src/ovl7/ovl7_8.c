@@ -22,6 +22,14 @@ extern s32 D_801CA738_ovl7[];
 extern s32 D_801CA77C_ovl7[];
 
 extern s32 D_8012E7FC;
+extern void *D_801CADB8_ovl7[], *D_801CA994_ovl7[];
+extern s32 *D_801CB4DC_ovl7;
+extern f32 D_801CE2B0_ovl7, D_801CE2B4_ovl7;
+void func_800A9864(s32, s32, s32);
+void func_801A2558_ovl7(void *);
+void func_8010C274(void);
+void curObjSleepForever(void);
+extern f32 D_800E64D0[], D_800E6690[], D_800E6850[], D_800E6A10[];
 
 void func_801AC840_ovl7(void);
 
@@ -101,9 +109,41 @@ void func_801B19F8_ovl7(GObj *arg0) {
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 3, &D_801CD5C0_ovl7);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B1A58_ovl7.s")
+void func_801B1A58_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B1BB0_ovl7.s")
+    D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
+    func_800A9864(0x10030, 0x23, 0x10);
+    func_801A2558_ovl7(&D_801CADB8_ovl7);
+    ent->unk48 = &func_8010C274;
+    ent->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801CE2B0_ovl7;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3210[omCurrentObj->objId] = 12.0f;
+    D_800E3750[omCurrentObj->objId] = -1.0f;
+    D_800E3C90[omCurrentObj->objId] = 12.0f;
+    curObjSleepForever();
+}
+
+void func_801B1BB0_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
+    func_800A9864(0x1002F, 0x23, 0x10);
+    func_801A2558_ovl7(&D_801CA994_ovl7);
+    ent->unk48 = &func_8010C274;
+    ent->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801CE2B4_ovl7;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3210[omCurrentObj->objId] = 9.0f;
+    D_800E3750[omCurrentObj->objId] = -1.0f;
+    D_800E3C90[omCurrentObj->objId] = 9.0f;
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B1D08_ovl7.s")
 

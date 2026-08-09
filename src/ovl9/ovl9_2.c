@@ -308,7 +308,30 @@ void func_801DBF48_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, &D_8021BD4C_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DBF90_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CB938;
+u32 eneCheckNearPlayer(f32);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800B3520(void);
+void func_800A9EA4(s32);
+void func_800AF27C(void);
+
+void func_801DBF90_ovl9(GObj *arg0) {
+    f32 dist;
+
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB938;
+    func_800B3520();
+    func_800A9EA4(0x1019B);
+    func_800AF27C();
+    dist = 25600.0f;
+    while (eneCheckNearPlayer(dist) == 0) {
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DC06C_ovl9.s")
 

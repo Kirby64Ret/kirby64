@@ -194,7 +194,23 @@ void func_801E34F8_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E38F0_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E3CD0_ovl9.s")
+extern f32 *D_801CAAD4_ovl7;
+void func_800B68AC(s32);
+void func_801E3DA8_ovl9(struct GObj *);
+void func_801E34F8_ovl9(struct GObj *);
+void func_801A0D50_ovl7(void *);
+void func_801A2ADC_ovl7(void *);
+
+void func_801E3CD0_ovl9(GObj *arg0) {
+    D_800DEF90[omCurrentObj->objId] = func_800B68AC;
+    D_800DF150[omCurrentObj->objId] = &func_801E3DA8_ovl9;
+    func_801A0D50_ovl7(&func_801E34F8_ovl9);
+    D_800E9FE0[omCurrentObj->objId].as_s32 = 4;
+    D_800E0490[omCurrentObj->objId] = &D_801CAAD4_ovl7;
+    func_801A2ADC_ovl7(&D_801CAAD4_ovl7);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 void func_801E3DA8_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, &D_8021BED0_ovl9);

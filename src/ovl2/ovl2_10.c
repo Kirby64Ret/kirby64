@@ -38,6 +38,8 @@ struct Unk80124E14 {
 };
 
 extern struct Unk80124E14 D_80124E14[];
+extern s32 D_800D6F10;
+s32 func_8011E368(void);
 
 struct Unk4C {
     /* 0x00 */ u8 unk0;
@@ -1840,7 +1842,22 @@ void func_8011A294(struct GObj *arg0) {
     func_80118BC8(arg0, 0x3C);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011A2F4.s")
+void func_8011A2F4(struct GObj *arg0) {
+    u8 *sp24 = arg0->unk4C;
+    s32 sp20;
+    struct Unk80124E14 *sp18;
+
+    if (func_8011E368() != 0) {
+        sp20 = func_8011E244();
+        if (sp20 == *sp24) {
+            sp18 = &D_80124E14[D_800E77A0[arg0->objId]];
+            func_800AA018(sp18->unk8);
+            D_800DEF90[omCurrentObj->objId] = sp18->unk14;
+            (&D_800D6F10)[5] = sp20 - 0xBF;
+            play_sound(0x1FD);
+        }
+    }
+}
 
 
 void func_8011A3B8(struct GObj *arg0) {
@@ -1961,7 +1978,22 @@ void func_8011A770(struct GObj *arg0) {
     omEndProcess(0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011A7A8.s")
+void func_8011A7A8(struct GObj *arg0) {
+    u8 *sp24 = arg0->unk4C;
+    s32 sp20;
+    struct Unk80124E14 *sp18;
+
+    if (func_8011E368() != 0) {
+        sp20 = func_8011E244();
+        if (sp20 == *sp24) {
+            sp18 = &D_80124E14[D_800E77A0[arg0->objId]];
+            func_800AA018(sp18->unk8);
+            D_800DEF90[omCurrentObj->objId] = sp18->unk14;
+            (&D_800D6F10)[5] = sp20 - 0xCD;
+            play_sound(0x1FD);
+        }
+    }
+}
 
 void func_8011A86C(struct GObj *arg0) {
     func_801153B8(arg0);

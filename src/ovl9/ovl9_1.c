@@ -96,7 +96,25 @@ void func_801D1678_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D1718_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D1BCC_ovl9.s")
+void func_801A0D74_ovl7();
+void func_80199688_ovl7(struct GObj *);
+void func_8019F3B0_ovl7(void);
+
+void func_801D1BCC_ovl9(GObj *arg0) {
+    D_800E98E0[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId] - 1;
+    if (D_800E98E0[omCurrentObj->objId] < 0) {
+        D_800E98E0[omCurrentObj->objId] = 0;
+    }
+    D_800E9C60[omCurrentObj->objId] = D_800E9C60[omCurrentObj->objId] - 1;
+    if (D_800E9C60[omCurrentObj->objId] < 0) {
+        D_800E9C60[omCurrentObj->objId] = 0;
+    }
+    func_801A0D74_ovl7(arg0);
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        func_80199688_ovl7(arg0);
+    }
+    func_8019F3B0_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D1CA8_ovl9.s")
 
@@ -433,7 +451,7 @@ void func_801D6EBC_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-void func_801D7064_ovl9(struct DObj *);
+s32 func_801D7064_ovl9(void *);
 void func_801D7140_ovl9(struct GObj *);
 
 void func_801D6F8C_ovl9(GObj *arg0) {
@@ -452,7 +470,57 @@ void func_801D6F8C_ovl9(GObj *arg0) {
 void func_801D705C_ovl9(GObj *arg0) {
 }
 
+#ifdef MIPS_TO_C
+struct Ovl9AnimCmdA {
+    u8 filler0[8];
+    void *unk8;
+};
+
+struct Ovl9AnimObjA {
+    u8 filler0[0x24];
+    struct Ovl9AnimCmdA *unk24;
+};
+
+struct Ovl9Unk8C2 {
+    u32 unk0;
+    u32 unk4;
+};
+
+void func_80111550(u32);
+struct Ovl9AnimObjA *func_80111C88(s32 *, u32);
+void func_80111ECC(struct Ovl9AnimObjA *);
+s32 func_801D7330_ovl9(void);
+s32 func_8019F650_ovl7(void);
+
+s32 func_801D7064_ovl9(void *arg0) {
+    UnkStruct800E1B50 *temp;
+    s32 id;
+    struct Ovl9AnimObjA *anim;
+    struct Ovl9Unk8C2 *p;
+
+    id = omCurrentObj->objId;
+    temp = D_800E1B50[id];
+    if (temp == NULL) {
+        return 0;
+    }
+    if (temp->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550(id);
+    anim = func_80111C88(temp->unk8C, omCurrentObj->objId);
+    p = (struct Ovl9Unk8C2 *) temp->unk8C[2];
+    if ((p->unk4 == 0) && (arg0 != NULL)) {
+        anim->unk24->unk8 = arg0;
+    }
+    func_80111ECC(anim);
+    if (func_801D7330_ovl9() == 0) {
+        return func_8019F650_ovl7();
+    }
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D7064_ovl9.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D7140_ovl9.s")
 
