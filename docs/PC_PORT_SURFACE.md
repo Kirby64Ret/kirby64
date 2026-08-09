@@ -125,7 +125,10 @@ counts symbols rather than weighting these three will be wrong.
 `osWritebackDCacheAll` -- no-ops on PC.
 
 **timers — 2** `osGetCount` `osGetTime`
-**audio sink — 2** `osAiSetFrequency` `osAiSetNextBuffer`
+**audio sink — 0 measured** `osAiSetFrequency` `osAiSetNextBuffer` were
+listed here from reading the headers, but never appeared in the gap output at
+all: their only caller is `auThreadMain`, which is still undecompiled. They are
+implemented anyway.
 **other — 4** `osInitialize` `osAfterPreNMI` `osSetTime` `osTvType`
 
 ## Overlays cannot be emulated, only intercepted
@@ -161,6 +164,26 @@ asset side of that split.
 Note the ordering: the overlay loader itself is not decompiled yet, so this
 cannot be finished today. It is listed here so the DMA design accounts for it
 rather than being rewritten later.
+
+## A category this measurement structurally cannot see
+
+Everything on this page is counted from undefined symbols. There is one class
+of porting work with no symbol attached at all: direct `HW_REG()` MMIO from
+game code.
+
+`check_sp_imem` in `src/main/main.c` is `*(volatile u32 *)0xA4001000`. No
+symbol, no relocation, nothing for `gap.py` to report -- and it stayed
+completely invisible until the native boot got far enough to execute it and
+segfault. It was found by running, not by reading.
+
+`src/pc/pc_mmio.c` reserves the RCP register window (0xA3F00000-0xA4900000) as
+anonymous memory seeded with the values the boot self-tests expect. That is a
+memory map, not an emulator, and it is deliberately the minimum that lets the
+boot proceed.
+
+The lesson generalises: a symbol count bounds the work that has names. Running
+the binary is what finds the rest, which is the argument for the stub layer
+that lets it link before the decompilation is finished.
 
 ## What is already in the tree
 

@@ -17,10 +17,13 @@ symbol plus a byte offset:
 `ld --defsym` takes exactly that form, so the native link gets the same
 aliasing the N64 link gets, without the game sources knowing anything about it.
 
-77 of the 495 do not land in any data block because they are ROM FILE offsets
-rather than VRAM addresses (D_39E90 = 0x39E90 and friends -- asset pointers).
-Those cannot be resolved this way; they need the ROM-loading path, so they are
-reported rather than silently emitted as something wrong.
+The residue does not resolve this way, but NOT for the reason first assumed. It
+was written up as 77 "ROM file offsets ... asset pointers", and that claim was
+carried into the DMA design brief before anyone checked it. Only 6 are ROM file
+offsets. The other 71 are VRAM addresses in 0x8012E000-0x8013xxxx that fall
+outside every asm/data block, so a cartridge-reading path could never have
+satisfied them. They are reported rather than emitted as something plausible
+but wrong.
 
 Usage: gen_defsyms.py [-o build/pc/defsyms.txt]
 """
@@ -111,8 +114,11 @@ def main():
 
     print(f'{len(lines)} --defsym entries -> {out} '
           f'({relative} already symbol-relative)')
-    print(f'{len(unresolved)} unresolvable: ROM file offsets, not VRAM '
-          f'addresses -- these need the ROM-loading path')
+    # Do NOT call these "ROM file offsets" -- most are not. Classify them.
+    rom = [u for u in unresolved if int(u[1], 16) < 0x8000000]
+    print(f'{len(unresolved)} unresolvable: {len(rom)} ROM file offset(s), '
+          f'{len(unresolved) - len(rom)} VRAM address(es) outside every known '
+          f'data block')
     for n, e in unresolved[:8]:
         print(f'    {n} = {e}')
     if len(unresolved) > 8:
