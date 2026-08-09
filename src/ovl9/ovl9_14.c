@@ -1137,10 +1137,6 @@ void func_80214708_ovl9(struct GObj *arg0) {
 extern void func_801A0C70_ovl7(void);
 extern s32 D_801C9718;
 extern s32 D_801C9784;
-// 7 diffs: the ROM keeps omCurrentObj->objId in $v0, IDO in $a2.
-#ifdef MIPS_TO_C
-// 7 diffs: the ROM keeps omCurrentObj->objId in $v0, IDO in $a2. A named local
-// for the id makes it worse (28 diffs).
 void func_80214888_ovl9(struct GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         func_80111550((void *) omCurrentObj->objId);
@@ -1152,9 +1148,6 @@ void func_80214888_ovl9(struct GObj *arg0) {
         func_801A0C70_ovl7();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80214888_ovl9.s")
-#endif
 
 extern s32 D_801CCC34;
 extern f32 D_8021DDC4_ovl9;

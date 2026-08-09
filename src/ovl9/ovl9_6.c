@@ -106,10 +106,6 @@ void func_801EB8E8_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 5;
 }
 
-/* 2 diffs: both `sll objId, 2` temps are hoisted above the branch and the ROM
-   emits them in the opposite order ($t5 then $t4). Inverted conditions, goto
-   form, ternary and type-split stores were all swept. */
-#ifdef MIPS_TO_C
 void ohSleep(s32);
 
 void func_801EB98C_ovl9(struct GObj *arg0) {
@@ -118,11 +114,7 @@ void func_801EB98C_ovl9(struct GObj *arg0) {
     func_800B33F4();
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
-    if ((D_800E7880[omCurrentObj->objId] & 1) != 0) {
-        D_800E3210[omCurrentObj->objId] = -8.0f;
-    } else {
-        D_800E3210[omCurrentObj->objId] = 8.0f;
-    }
+    D_800E3210[omCurrentObj->objId] = ((D_800E7880[omCurrentObj->objId] & 1) != 0) ? -8.0f : 8.0f;
     ohSleep((s32) (D_800EADE0[omCurrentObj->objId] * 0.125f));
     func_800B33F4();
     D_800E5F90[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
@@ -131,9 +123,6 @@ void func_801EB98C_ovl9(struct GObj *arg0) {
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0x3C;
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EB98C_ovl9.s")
-#endif
 
 struct Ovl9AnimCmd2 {
     u8 filler0[8];

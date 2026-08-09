@@ -67,3 +67,8 @@ logs/
 
 # libultraship writes its runtime config here on every run of the port.
 kirby64.cfg
+
+# Agents sweep source variants in temp copies named with a leading dot, beside
+# the real file -- GNU make's wildcard never matches those, so a concurrent
+# build cannot pick them up. They are scratch, never deliverables.
+src/**/.*.c
