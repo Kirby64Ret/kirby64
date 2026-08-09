@@ -60,14 +60,33 @@ TRAPS, in the order they bite
     by not binding them statically -- see the note in us/geo/README-ish header
     comments and the report in docs/.
 
-6.  Geo blocks are emitted as BLOB, not GFX. Their display lists ARE decodable
+6.  `symbol:` is mandatory on TEXTURE nodes. TextureFactory::parse reads it
+    with no default and throws, and Torch turns that into a std::terminate that
+    kills the whole run -- 10,000 good resources lost to one missing key. It is
+    emitted unconditionally even though an o2r export never uses it.
+
+7.  Index numbers in `assets/<class>/bank_N/<idx>/...` are unique only WITHIN a
+    bank. Pooling several banks into one yml collapses them onto one namespace
+    and YAML silently keeps the last definition, so the archive comes out short
+    and the surviving entries point at the wrong ROM ranges. Every render path
+    goes through assert_unique().
+
+8.  Geo blocks are emitted as BLOB, not GFX. Their display lists ARE decodable
     (verified: Torch's DisplayListFactory produces correct F3DEX2 for them),
     but every geo block is its own segment-0x04 base -- all 689 blocks have
     header pointers of the form 0x04xxxxxx with xxxxxx < the block's own size.
     Torch's `:config: segments` mapping is per-yml-FILE, so a GFX-based export
     needs one yml file per geo block, and the display lists' texture addresses
     are runtime-patched placeholders (0x0000000A and friends) that Torch cannot
-    resolve. See --geo-gfx for the opt-in per-block GFX emission.
+    resolve -- all 6843 G_SETTIMG commands in the game carry a segment-0x00
+    address, with the real binding held in the geo header's img_refs list. See
+    --geo-gfx for the opt-in per-block GFX emission, and docs/PC_PORT_ASSETS.md
+    for the measurement.
+
+One more thing that is not a trap in this file but bites the moment you run
+Torch: `port/yamls/config.yml` carries an IDENTITY segment map (segment N ->
+N << 24). Torch reads the top byte of every offset as a segment number, so
+every asset at or above ROM 0x01000000 -- most of this game -- fails without it.
 
 Usage:
     tools/pc/gen_torch_yaml.py                 # write port/yamls/us/

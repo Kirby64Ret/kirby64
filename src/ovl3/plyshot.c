@@ -314,7 +314,6 @@ void func_80163320_ovl3(s32 arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x16, D_801967F0_ovl3);
 }
 
-#ifdef MIPS_TO_C
 typedef struct Unk80196848 {
     s32 unk0;
     s32 unk4;
@@ -328,17 +327,10 @@ void func_800B5094(GObj *);
 void curObjSleepForever(void);
 void func_801636A4_ovl3(s32);
 
-/* 2/116: exact except the spilled base of D_80196848_ovl3 lands at 0x18($sp)
-   where the ROM uses 0x1C. IDO gives this shape two spill slots below the
-   local block and picks the lower one; the ROM's block base is 4 higher,
-   i.e. the original has THREE 4-byte locals, not four. Dropping `temp`
-   (3 locals) fixes frame and spill exactly but then the D_8019714C_ovl3
-   load schedules after the D_800EA520 store (16 diffs). */
 void func_801634D4_ovl3(s32 arg0) {
     f32 temp;
     s32 sp28;
     s32 sp24;
-    s32 idx;
 
     D_800DEF90[omCurrentObj->objId] = func_800B5094;
     D_800E0F10[omCurrentObj->objId] = 8;
@@ -346,15 +338,15 @@ void func_801634D4_ovl3(s32 arg0) {
     D_800E9720[omCurrentObj->objId] = -1;
     D_800E8AE0[omCurrentObj->objId] = D_800E8AE0[D_800E0D50[omCurrentObj->objId]];
     if (D_800E8AE0[omCurrentObj->objId] & 6) {
-        idx = 1;
+        arg0 = 1;
     } else {
-        idx = 0;
+        arg0 = 0;
     }
     D_800E9FE0[omCurrentObj->objId].as_ptr = &sp24;
-    func_800A77E8(D_80196848_ovl3[idx].unk0, &sp24, &sp28);
-    idx = func_800A8234(1, 1, D_80196848_ovl3[idx].unk4);
+    func_800A77E8(D_80196848_ovl3[arg0].unk0, &sp24, &sp28);
+    arg0 = func_800A8234(1, 1, D_80196848_ovl3[arg0].unk4);
     temp = D_8019714C_ovl3;
-    D_800EA520[omCurrentObj->objId] = idx;
+    D_800EA520[omCurrentObj->objId] = arg0;
     gEntitiesScaleXArray[omCurrentObj->objId] = temp;
     gEntitiesScaleYArray[omCurrentObj->objId] = temp;
     gEntitiesScaleZArray[omCurrentObj->objId] = temp;
@@ -363,9 +355,6 @@ void func_801634D4_ovl3(s32 arg0) {
     func_801230E8(0x2028D, 0x2028E, 0);
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801634D4_ovl3.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801636A4_ovl3.s")
 

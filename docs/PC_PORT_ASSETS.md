@@ -165,7 +165,14 @@ real entry point produces exactly what it should — `gsDPPipeSync`,
 `gsSPClearGeometryMode`, `gsDPSetCombineLERP`, `gsDPSetTile`, `gsSPVertex` with
 the vertex array pulled out into a proper `Vtx[]`, `gsSP2Triangles`,
 `gsSPEndDisplayList`. `tools/pc/gen_torch_yaml.py --geo-gfx` emits 3,307 display
-lists across 382 geo blocks and Torch processes them without error.
+lists across 382 geo blocks; Torch processes all of them with **zero errors**,
+producing 45,148 resources in a 24.5 MB archive — the 3,307 display lists plus
+31,257 `Vtx` arrays that the factory pulls out of them automatically.
+
+That run takes 462 s and about 700 MB RSS, against 3.4 s for the default, which
+is why `--geo-gfx` is opt-in and its output is not kept in the tree.
+The remaining 307 geo blocks use rendering modes 0x13/0x14/0x17/0x1B, whose
+entry-point walks differ; only 0x18 and 0x1C are implemented.
 
 Two things stop that being immediately useful, and the first is the important
 one.

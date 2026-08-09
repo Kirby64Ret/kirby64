@@ -7,7 +7,35 @@
 
 extern FUNCLIST D_8021BE08_ovl9;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DC8C0_ovl9.s")
+extern FUNCLIST D_8021BD60_ovl9;
+extern FUNCLIST D_8021BD70_ovl9;
+extern s32 D_801C8080_ovl7;
+extern f32 D_8021CF60_ovl9;
+void func_800B6B8C(s32);
+void func_801DCBAC_ovl9(struct GObj *);
+void func_801DCA78_ovl9(struct GObj *);
+void func_801A0D50_ovl7(void *);
+
+void func_801DC8C0_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    ent->unk39 = -1;
+    D_800DEF90[omCurrentObj->objId] = func_800B6B8C;
+    D_800DF150[omCurrentObj->objId] = func_801DCBAC_ovl9;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
+    func_801A0D50_ovl7(func_801DCA78_ovl9);
+    D_800EAC20[omCurrentObj->objId] = 0.0f;
+    D_800EADE0[omCurrentObj->objId] = D_8021CF60_ovl9;
+    D_800EAFA0[omCurrentObj->objId] = 0.0f;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    D_800E9C60[omCurrentObj->objId] = 0x64;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 4, &D_8021BD60_ovl9);
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 9, D_8021BD70_ovl9);
+    }
+}
 
 extern FUNCLIST D_8021BD70_ovl9;
 
