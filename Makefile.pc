@@ -40,6 +40,12 @@ all: objs
 # is a separate invocation rather than a prerequisite.
 data:
 	@python3 tools/pc/gen_data.py
+	@python3 tools/pc/gen_defsyms.py >/dev/null
+
+# datatodo.txt's absolute N64 addresses re-expressed against the translated C
+# symbols. Pass these to the eventual link: $(shell cat build/pc/defsyms.txt)
+defsyms:
+	@python3 tools/pc/gen_defsyms.py
 
 objs: $(GAME_OBJS)
 	@$(MAKE) -s -f Makefile.pc data

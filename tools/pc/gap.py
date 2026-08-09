@@ -36,6 +36,14 @@ def symbols():
             undef.add(p[1])
         elif len(p) == 3 and p[1] not in 'Uu':
             defined.add(p[2])
+    # datatodo.txt's absolute symbols are supplied to the link as --defsym, not
+    # by any object, so counting them as missing overstates the gap by 220.
+    # See tools/pc/gen_defsyms.py.
+    if os.path.exists('build/pc/defsyms.txt'):
+        for line in open('build/pc/defsyms.txt'):
+            m = re.match(r'--defsym\s+(\w+)=', line)
+            if m:
+                defined.add(m.group(1))
     return sorted(undef - defined), len(defined)
 
 
