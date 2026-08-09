@@ -20,6 +20,7 @@ extern s32 D_80187C34_ovl5[][2];
 s32 func_80171538_ovl5(s32);
 extern s32 D_8018E478_ovl5[][82];
 extern const char D_8018D7AC_ovl5[];
+extern const char D_8018D798_ovl5[];
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 extern u8 D_80187898_ovl5[];
 void *func_8015C740_ovl5(GObj *, void *);
@@ -145,7 +146,17 @@ Vector *func_80172B38_ovl5(Vector *arg0, s32 arg1, s32 arg2) {
     return arg0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80172B98_ovl5.s")
+Vector func_80172B98_ovl5(s32 arg1, s32 arg2) {
+    Vector sp1C;
+
+    sp1C.x = gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][arg2]];
+    sp1C.y = gEntitiesNextPosYArray[D_8018E478_ovl5[arg1][arg2]];
+    sp1C.z = gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]];
+    if (sp1C.z == 0.0f) {
+        utilPrintf(D_8018D798_ovl5);
+    }
+    return sp1C;
+}
 
 s32 func_80172C50_ovl5(s32 arg0) {
     if (arg0 == 0x14 || arg0 == 0x28 || arg0 == 0x3C) {
