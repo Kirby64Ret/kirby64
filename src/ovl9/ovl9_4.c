@@ -150,7 +150,20 @@ void func_801E309C_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E333C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E3430_ovl9.s")
+extern FUNCLIST D_8021BEA4_ovl9;
+extern FUNCLIST D_8021BEB8_ovl9;
+void func_801A6C10_ovl7(void);
+
+void func_801E3430_ovl9(void) {
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = -1;
+        func_801A6C10_ovl7();
+    }
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 5, &D_8021BEA4_ovl9);
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 6, &D_8021BEB8_ovl9);
+    }
+}
 
 extern FUNCLIST D_8021BEB8_ovl9;
 
@@ -214,7 +227,26 @@ f32 func_801E4F18_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E4F88_ovl9.s")
 
+#ifdef MIPS_TO_C
+s32 func_800B3234(f32, f32, f32);
+void func_8019D8A0(u16);
+void func_801A0D74_ovl7();
+void func_8019F3B0_ovl7(void);
+
+void func_801E51EC_ovl9(GObj *arg0) {
+    func_801A0D74_ovl7(arg0);
+    func_8019F3B0_ovl7();
+    if (D_800E83E0[omCurrentObj->objId] != 0) {
+        D_800E98E0[omCurrentObj->objId] = 1;
+    }
+    if (func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]) != 0) {
+        D_800E98E0[omCurrentObj->objId] = 1;
+        func_8019D8A0((u16) omCurrentObj->objId);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E51EC_ovl9.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E52A4_ovl9.s")
 

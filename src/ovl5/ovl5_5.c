@@ -4,6 +4,7 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/util.h"
+#include "ovl1/save_file.h"
 
 extern Gfx D_801874A0_ovl5[];
 extern u8 D_8018EA00_ovl5[];
@@ -54,7 +55,15 @@ s32 func_8016FFC4_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801707B0_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170820_ovl5.s")
+s32 func_80170820_ovl5(s32 arg0) {
+    s32 i;
+
+    for (i = D_8018E998_ovl5[arg0] - 1; i >= 0; i--) {
+        if (D_8018EB58_ovl5[(arg0 * 0x52) + i] != 0) {
+            return i;
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170884_ovl5.s")
 
@@ -181,7 +190,16 @@ void func_801764F0_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017685C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801769D8_ovl5.s")
+u16 func_801769D8_ovl5(s32 arg0) {
+    switch (arg0) {
+        case 0x1D:
+            return gSaveBuffer1.files[saveCurrentFileNum].hundredYardHopRecord;
+        case 0x1F:
+            return gSaveBuffer1.files[saveCurrentFileNum].bumperCropBumpRecord;
+        case 0x1E:
+            return gSaveBuffer1.files[saveCurrentFileNum].checkerBoardChaseRecord;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176A80_ovl5.s")
 
