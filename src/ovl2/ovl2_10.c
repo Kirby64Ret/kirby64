@@ -767,7 +767,31 @@ void func_80116260(s32 arg0) {
     p[17] += D_80129210[5];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801162F4.s")
+void func_801162F4(struct GObj *arg0) {
+    extern f32 D_80129210[];
+    extern void func_800AF27C(void);
+    struct Unk80124E14 *p = &D_80124E14[D_800E77A0[arg0->objId]];
+
+    D_800D7098[0] = arg0->objId;
+    func_800AF980(0x17);
+    func_800A9864(p->unk4, 0x1869F, 0x10);
+    func_800AA018(p->unk8);
+    if (p->unkC != 0) {
+        func_800AA018(p->unkC);
+    }
+    D_800DEF90[omCurrentObj->objId] = p->unk10;
+    D_80129210[1] = 0.017894737422466278f;
+    D_80129210[3] = 0.17894737422466278f;
+    D_80129210[5] = -0.04210526496171951f;
+    ohSleep(0x14);
+    play_sound(0x183);
+    ohSleep(0x28);
+    D_800DF150[omCurrentObj->objId] = func_80116260;
+    func_800AF27C();
+    D_800DF150[omCurrentObj->objId] = NULL;
+    play_sound(0x181);
+    omEndProcess(0);
+}
 
 void func_80116438(struct GObj *arg0) {
     D_800D7098[0] = arg0->objId;
@@ -1313,7 +1337,48 @@ void func_80118618(struct GObj *arg0) {
     func_80115070(arg0);
 }
 
+#ifdef MIPS_TO_C
+/* 17/74: body is exact. Two residues, both structural.
+ * (1) sp40 lands at 0x48, the ROM has it at 0x40. IDO's local-block base here
+ *     is a constant 0x48 (frame = align8(0x48 + L)), so sp40 -- always the
+ *     lowest local -- cannot go below it; pads declared between sp54 and sp40
+ *     grow the frame upward instead (measured: L 0x10 -> frame 0x58,
+ *     L 0x18 -> frame 0x60, base 0x48 in both). The ROM has base 0x40 with
+ *     frame 0x58, i.e. 8 bytes less than the formula.
+ * (2) the dead epilogue after the `while (1)` comes out 16 bytes later than
+ *     the ROM's, so the whole function is 4 instructions LONG -- converting it
+ *     would shift the segment even though verify.py reports only 17 diffs.
+ * Also swept: `v & 0xFF` vs `v` at the second func_8010E288 call (the ROM has
+ * `andi $a1, $s2, 0xFF`, we get `move`), f32 sp40[5], a combined
+ * {Vector; s32; s32} struct local, and all declaration orders of sp54/sp40. */
+void func_80118638(struct GObj *arg0) {
+    extern s32 D_8012BCE0;
+    extern s32 func_8010DF9C(Vector *);
+    extern u8 func_8010E2A0(s32);
+    extern void func_8010E288(s32, s32);
+    s32 sp54;
+    Vector sp40;
+    u8 v;
+    s32 id = arg0->objId;
+
+    sp40.x = gEntitiesNextPosXArray[id];
+    sp40.y = gEntitiesNextPosYArray[id];
+    sp40.z = gEntitiesNextPosZArray[id];
+    if (func_8010DF9C(&sp40) != 0) {
+        sp54 = D_8012BCE0;
+    }
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    v = func_8010E2A0(sp54);
+    while (1) {
+        func_8010E288(sp54, 0x50);
+        ohSleep((s32) (120.0f * gameTicksPerDrawInv));
+        func_8010E288(sp54, v);
+        ohSleep((s32) (60.0f * gameTicksPerDrawInv));
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80118638.s")
+#endif
 
 // The reassignment of temp (rather than a separate Vector *) is load-bearing:
 // it is what makes IDO emit the addiu that rebases the last store.

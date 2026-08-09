@@ -276,7 +276,124 @@ void func_800B92B4(void) {
 }
 
 void saveVerify(s32 fileNum);
+#ifdef NON_MATCHING
+/* Fully decoded and behaviourally complete; kept under NON_MATCHING so the PC
+   port has a real implementation while the ROM keeps the pragma.
+   It compiles to exactly 136 instructions -- the same length as the ROM -- and
+   every displacement, constant and branch shape lines up.  The residue (120
+   "diffs", nearly all of it a shift) is register allocation plus one scheduling
+   choice: the ROM materialises `&gSaveBuffer1 + fileNum * 0x58` TWICE ($v0 for
+   the scalar fields, $a3 for the two byte arrays) and drives loop 1's `= 0`
+   store from an induction pointer while the `= 1` store uses base+index; IDO
+   uses one induction pointer for both.  It also gives $v0 to the struct base
+   and pushes `count`/`i` to $v1/$a1 where we get $v0/$v1, and there is no call
+   in the function so the callee-return-type lever does not apply.
+   Layout notes for whoever finishes this: File+0x34 is a u8[8] (not
+   data34[4]+data38[4]) -- indices 0..4 are the world-unlocked flags written by
+   loop 1, [5] and [6] are set together when world >= 8 and cleared when
+   world < 6, and [7] is cleared unconditionally.  File+0x3C `shards[6]` is
+   u8[6][4]: loop 2 walks it 4 bytes per world and counts bits 0/1/2 of each of
+   the four bytes.  Making the header say so needs src/ovl4/ovl4_3.c updated
+   too (it reads .data38[1], i.e. flag [5]).
+   Swept: File * / u8 * pointer locals (they emit the `addiu +0x10` the ROM
+   folds into displacements), declaration order of count/i, for vs do/while,
+   and the uncast `.data34[i]` / `(u8 (*)[4])` array forms (137 insns, worse). */
+extern u8 D_800BE5A8[];
+
+extern u8 D_800BE5A8[];
+
+void saveVerify(s32 fileNum) {
+    s32 count;
+    s32 i;
+
+    count = 0;
+    i = 0;
+    if (gSaveBuffer1.files[fileNum].hundredYardHopRecord < 600) {
+        gSaveBuffer1.files[fileNum].hundredYardHopRecord = 600;
+    }
+    if (gSaveBuffer1.files[fileNum].bumperCropBumpRecord > 200) {
+        gSaveBuffer1.files[fileNum].bumperCropBumpRecord = 200;
+    }
+    if (gSaveBuffer1.files[fileNum].checkerBoardChaseRecord < 600) {
+        gSaveBuffer1.files[fileNum].checkerBoardChaseRecord = 600;
+    }
+    ((u8 *) gSaveBuffer1.files[fileNum].shards)[23] = 0;
+    ((u8 *) gSaveBuffer1.files[fileNum].shards)[3] = 0;
+    ((u8 *) gSaveBuffer1.files[fileNum].data34)[7] = 0;
+    if (gSaveBuffer1.files[fileNum].cutscenesWatched & 2) {
+        count = 2;
+    }
+    do {
+        ((u8 *) gSaveBuffer1.files[fileNum].data34)[i] = 0;
+        if ((u32) i < gSaveBuffer1.files[fileNum].world - 1) {
+            ((u8 *) gSaveBuffer1.files[fileNum].data34)[i] = 1;
+        }
+        i++;
+    } while (i < 5);
+    if (gSaveBuffer1.files[fileNum].world >= 8) {
+        ((u8 *) gSaveBuffer1.files[fileNum].data34)[6] = 1;
+        ((u8 *) gSaveBuffer1.files[fileNum].data34)[5] = 1;
+    }
+    if (gSaveBuffer1.files[fileNum].world < 6) {
+        ((u8 *) gSaveBuffer1.files[fileNum].data34)[6] = 0;
+        ((u8 *) gSaveBuffer1.files[fileNum].data34)[5] = 0;
+    }
+    i = 0;
+    do {
+        if (((u8 *) gSaveBuffer1.files[fileNum].data34)[i] != 0) {
+            count += D_800BE5A8[i];
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] & 1) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] & 2) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] & 4) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] & 1) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] & 2) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] & 4) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] & 1) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] & 2) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] & 4) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] & 1) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] & 2) {
+            count++;
+        }
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] & 4) {
+            count++;
+        }
+        i++;
+    } while (i != 6);
+    gSaveBuffer1.files[fileNum].percentComplete = count;
+    gSaveBuffer1.files[fileNum].data13 = 0;
+    if (((u8 *) gSaveBuffer1.files[fileNum].data34)[5] != 0) {
+        gSaveBuffer1.files[fileNum].data13 = 1;
+    }
+    gSaveBuffer1.files[fileNum].data14 = 0;
+    if (((u8 *) gSaveBuffer1.files[fileNum].data34)[6] != 0) {
+        gSaveBuffer1.files[fileNum].data14 = 1;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/saveVerify.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B94FC.s")
 

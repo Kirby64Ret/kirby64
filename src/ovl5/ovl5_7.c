@@ -184,7 +184,32 @@ void func_8017ABA4_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B35C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B560_ovl5.s")
+typedef union Unk20Ptrs {
+    void *unk0[5];
+} Unk20Ptrs;
+
+extern Unk20Ptrs D_801888C0_ovl5;
+extern void *D_80188B90_ovl5;
+void func_800ACBDC(GObj *);
+
+void func_8017B560_ovl5(GObj *arg0) {
+    s32 pad0;
+    Unk20Ptrs sp38 = D_801888C0_ovl5;
+    s32 i;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    func_8015C740_ovl5(arg0, &D_80188B90_ovl5);
+    for (i = 1; i <= D_8018EDA0_ovl5; i++) {
+        func_8015C740_ovl5(arg0, sp38.unk0[i]);
+    }
+    while (D_8018ED04_ovl5 == 0) {
+        ohSleep(1);
+    }
+    func_800ACBDC(arg0);
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B6B4_ovl5.s")
 

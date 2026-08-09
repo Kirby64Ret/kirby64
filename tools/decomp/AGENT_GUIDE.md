@@ -2076,3 +2076,60 @@ ONE dead-epilogue function in ovl10_3, not a class. The other 8-diff functions
 there are argument-register rotations and unrelated. Three functions is not
 worth risking a shared tree; this is a good task for a quiet moment with no
 agents running.
+
+# `volatile` is the general anti-CSE knob
+
+Wave 9 introduced `volatile` narrowly, as a way to stop IDO hoisting an
+induction bump. That undersold it.
+
+**A `volatile` cast on the SECOND read of a global defeats IDO's CSE with an
+earlier read.** `*(vs32 *) &gKirbyState.unk3C` closed `func_8017DAD8_ovl3` --
+a RECORDED FLOOR -- with no other change.
+
+It also forces a full address materialisation where IDO would fold
+`lui $at; sw %lo(sym)($at)`, which is otherwise unreachable below the use-count
+threshold (`*(vs32 *) &D_800D71F8 = temp;`, func_80221108_ovl19, 26/37 ->
+11/38).
+
+So: whenever the residue is "the ROM re-reads or re-materialises something IDO
+shares", try `volatile` before anything structural. It is not universal --
+`volatile f32 temp` took func_801FDB28_ovl9 from 3 diffs to 85 -- so measure.
+
+## Inline versus hoisted: both directions are real
+
+The guide has long said to hoist `omCurrentObj` into a local. The opposite is
+equally a lever: **writing everything fully INLINE, with no `GObj *obj` and no
+temp locals, controls address scheduling and `$v0`/`$v1`.**
+`func_80173EBC_ovl5` was 18/98 with an `obj` local and MATCHED with the
+identical body inline; `func_8015F5DC_ovl5` matched once its two `f32` locals
+were dropped.
+
+Try both before concluding anything about register allocation.
+
+## More levers
+
+**`for (;;) { v = ...; if (...) break; ... }` gives test-at-top plus an
+unconditional `b` back; `while ((v = ...) != k)` duplicates the test as a
+`bnel`.** On func_80166588_ovl3 that was 37 -> 1, and it also fixed the
+saved-register allocation, because the rotated shape changes register weights.
+
+**A named sentinel local puts the constant as the FIRST `beq` operand.**
+`s32 sentinel = -1; if (sentinel == val) break;` -- both `val == -1` and
+`-1 == val` emit the operands the other way.
+
+**A dead-looking reload of a global right before `jal f; nop` means f TAKES
+that global as an argument.** Adding the parameter explained an entire
+`$a0`-vs-`$v0` allocation.
+
+**A pointer local must be recomputed inside EACH ARM** where the ROM
+materialises the array base twice; hoisting it above the branch cost 59 diffs.
+
+**Struct-copy width follows the member type**: `u8 unk0[6]` copies
+`lw/sw + lhu/sh`; a `{u32; u16;}` struct copies 8 bytes as two `sw`.
+
+**`x + x` versus `x * 2` when the result is scaled again**: `+` keeps two shift
+steps, where `* 2`, `<< 1`, `2 *`, a separate index local and `&table[i*2]` all
+fold to one `sll 3`.
+
+**Type-split zero applies to store-versus-compare too**: `= 0.0;` (double) on
+two position stores forked the `mtc1 $zero` that a `!= 0.0f` compare needs.
