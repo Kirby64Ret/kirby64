@@ -10,7 +10,18 @@
  */
 #include <stdio.h>
 
-extern void EntryPoint(void);
+extern void cboot(void);
+extern void pc_stub_report(void);
+
+/* asm/entry.s does two things: zero 0x589B0 bytes of RAM starting at
+   gEntryStack, then jump to cboot with $sp pointing into gIdleThread.
+   Neither survives the port. The host C runtime already zeroes statics, and
+   the stack belongs to the host thread, so the faithful equivalent of the
+   whole routine is the tail call. Defining it here (strongly) overrides the
+   weak stub. */
+void EntryPoint(void) {
+    cboot();
+}
 
 int main(int argc, char **argv) {
     (void)argc;
@@ -18,5 +29,8 @@ int main(int argc, char **argv) {
     printf("kirby64-pc: entering game\n");
     fflush(stdout);
     EntryPoint();
+    /* Only reached under KIRBY_PC_TRACE=1, where a missing symbol logs and
+       returns instead of exiting. */
+    pc_stub_report();
     return 0;
 }
