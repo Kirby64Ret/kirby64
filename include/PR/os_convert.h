@@ -98,8 +98,17 @@ extern "C" {
 
 /* Address translation routines and macros */
 
+/* os_misc.h declares osVirtualToPhysical as returning uintptr_t. The two
+   agree only while uintptr_t is u32, which stops being true once PORT widens
+   it for LP64 -- so under PORT these have to be stated in the same terms. On
+   N64 uintptr_t IS u32, so nothing about the matching build changes. */
+#ifdef PORT
+extern uintptr_t osVirtualToPhysical(void *);
+extern void *    osPhysicalToVirtual(uintptr_t);
+#else
 extern u32       osVirtualToPhysical(void *);
 extern void *        osPhysicalToVirtual(u32);
+#endif
 
 
 #endif  /* defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS) */

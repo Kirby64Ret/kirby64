@@ -388,7 +388,15 @@ void crash_screen_print(s32 x, s32 y, const char *fmt, ...) {
 
     
 
+#ifdef PORT
+/* ALIGN4 on a va_list is an N64 idiom: there va_list is a char*, so the
+   varargs pointer can be rounded. On x86-64 va_list is an ARRAY type and
+   cannot be cast to at all, and there is nothing to round -- the host ABI
+   already aligns arguments. Pass it through unchanged under PORT. */
+    size = _Printf(write_to_buf, (char *)buf, fmt, args);
+#else
     size = _Printf(write_to_buf, (char *)buf, fmt, (va_list)ALIGN4((u32)args));
+#endif
 
     if (size > 0) {
         ptr = buf;
@@ -666,7 +674,11 @@ void crash_screen_printf(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
+#ifdef PORT
+    crash_screen_vprint(fmt, args);
+#else
     crash_screen_vprint(fmt, (va_list)ALIGN4((u32)args));
+#endif
 
     va_end(args);
 }
@@ -805,7 +817,9 @@ void fatal_printf(const char *fmt, ...) {
     s32 pri;
     va_list args;
     va_start(args, fmt);
+#ifndef PORT
     args = (va_list)SOME_ALIGNMENT(args);
+#endif
 
     D_8003F688 = 1;
     pri = osGetThreadPri(NULL);
