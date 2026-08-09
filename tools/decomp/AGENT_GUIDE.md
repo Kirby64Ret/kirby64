@@ -1958,3 +1958,16 @@ with blank lines, preserving the line count since IDO is line-number sensitive.
 verify.py then compiles the file directly instead of through asm-processor, so
 `--all` runs in seconds and every guarded draft can be measured in one pass --
 and it sidesteps the `libn_audio.a` garbage-collection link trap completely.
+
+## Count pragmas from the LINKED BINARY, not from grep
+
+`grep -rho 'GLOBAL_ASM("' src --include=*.c | wc -l` is wrong, and it cost a
+misreported figure. `grep -r` traverses hidden files, so it counts every
+`.ab_tmp.c` sweep copy an agent has left lying beside a real file -- inflating
+the total by 40+ and appearing as a sudden regression.
+
+Python's `glob` skips dotfiles, so every tool in tools/decomp is correct. Only
+ad-hoc shell counting is affected.
+
+The authority is `verify_rom.py`'s `P ok` column, which counts what actually
+linked. Use that. And delete your temp copies when you finish.

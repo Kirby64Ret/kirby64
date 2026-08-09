@@ -716,7 +716,36 @@ void func_80167290_ovl3(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80167330_ovl3.s")
+void func_80167330_ovl3(s32 arg0) {
+    void func_800A7870(void **, u16 *);
+    void func_80167578_ovl3(s32);
+    s32 sp2C;
+    s32 sp28;
+
+    D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
+    D_800DF150[omCurrentObj->objId] = func_80167578_ovl3;
+    D_800E9FE0[omCurrentObj->objId].as_ptr = &sp28;
+    sp28 = 0;
+    switch (D_800EC2E0[omCurrentObj->objId].as_s32) {
+    case 0:
+        D_800E0650[omCurrentObj->objId] = 1;
+        func_800AECC0(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+        func_800AED20(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+        func_800A9864(0x2005A, 0x22, 0x10);
+        func_800AA154(0x202C9);
+        break;
+    case 1:
+        func_800A9864(0x2005B, 0x22, 0x10);
+        func_800AECC0(D_800E09D0[D_800EBBE0[D_800E0D50[omCurrentObj->objId]]]);
+        func_800AED20(D_800E09D0[D_800EBBE0[D_800E0D50[omCurrentObj->objId]]]);
+        func_800A77E8(0x3F, &sp28, &sp2C);
+        func_801230E8(0x202CB, 0x202CC, 1);
+        func_800A7870((void **) &sp28, (u16 *) &sp2C);
+        D_800EA520[D_800E0D50[omCurrentObj->objId]]++;
+        break;
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
 
 typedef struct Unk800E9FE0 {
     void *unk0;
