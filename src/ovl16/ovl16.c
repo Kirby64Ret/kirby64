@@ -182,7 +182,7 @@ extern s32 D_801EF9F8_ovl16[];
 
 void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
 void procMainStub(struct GObj *);
-void ohSleep(s32);
+void ohSleep(u32);
 void func_800A9EA4(s32);
 s32 random_soft_s32_range(s32);
 s32 func_801DB698_ovl16(s32);
@@ -618,7 +618,63 @@ void func_801DCA84_ovl16(s32 arg0) {
     curObjSleepForever();
 }
 
+#ifdef MIPS_TO_C
+// 67/116 diffs. Instruction count is exact and the whole prologue matches.
+// Residue: IDO CONSTANT-FOLDS the 3..6 loop after unrolling it (our compile
+// emits eight stores with literal indices) while the ROM keeps `i` live in $v1
+// and does the four `bne $v1, 6/5/4` compares. for/do-while, `<7`/`!=7`/`<=6`
+// were all swept and all fold. Also: the four `3` constants are separate
+// `addiu` in the ROM and one shared register here.
+// What IS settled and should be kept:
+//   * D_801F0144/0124/0148/0128_ovl16 are their OWN bss symbols (see
+//     asm/data/ovl16/ovl16.bss.s); spelling them as D_801F0140_ovl16[1] etc.
+//     makes IDO materialise the array base instead of the ROM's folded
+//     `lui $at` + `sw %lo(sym)($at)` (80 -> 67 with the separate symbols).
+//   * D_800D7098.unk4 is u32 and .unk8 is s32, so a plain `-1` to both forks
+//     the constant; `*(s32 *) &D_800D7098.unk4 = -1;` shares it (103 -> 83).
+//   * `ent` must be an explicit local -- the inline form puts &omCurrentObj in
+//     $v0 where the ROM has $v1 (80 -> 67).
+extern s32 D_801F0124_ovl16;
+extern s32 D_801F0128_ovl16;
+extern s32 D_801F0144_ovl16;
+extern s32 D_801F0148_ovl16;
+
+void func_801DCBF8_ovl16(s32 arg0) {
+    struct UnkStruct800E1B50 *ent;
+    s32 i;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    ent->unk80->unk10 = 40.0f;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
+    func_800B33F4();
+    D_800D7098.unk8 = -1;
+    *(s32 *) &D_800D7098.unk4 = -1;
+    D_800D7098.unkC = 7;
+    D_800D7098.unk18 = 0;
+    D_800D7118.unk3C = -1;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    func_800A9864(0x10080, 0x23, 0x10);
+    func_800AA018(0x104DC);
+    D_801F0140_ovl16[0] = 0;
+    D_801F0120_ovl16[0] = 3;
+    D_801F0144_ovl16 = 1;
+    D_801F0124_ovl16 = 3;
+    D_801F0148_ovl16 = 2;
+    D_801F0128_ovl16 = 3;
+    for (i = 3; i < 7; i++) {
+        D_801F0140_ovl16[i] = i;
+        if (i == 6) {
+            D_801F0120_ovl16[i] = 2;
+        } else {
+            D_801F0120_ovl16[i] = 3;
+        }
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DCBF8_ovl16.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DCDC8_ovl16.s")
 
@@ -671,7 +727,27 @@ void func_801DDE54_ovl16(s32 arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] = 10.0f;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DDEB0_ovl16.s")
+// `void ohSleep(u32);` is load-bearing for this function: with the s32
+// prototype IDO re-materialises the argument (`li $a0, 1`) instead of reusing
+// the saved register the loop test already parked the constant 1 in. A/B of
+// the whole object shows no other function changes.
+void func_801DDEB0_ovl16(struct GObj *arg0) {
+    func_8019BB58_ovl7();
+    func_800AFBB4(0, omCurrentObj);
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DF150[omCurrentObj->objId] = NULL;
+    func_800B33F4();
+    D_800E98E0[omCurrentObj->objId] = 0;
+    while (D_800D7098.unk2C == 1) {
+        if (D_800E98E0[omCurrentObj->objId] == 0) {
+            play_sound(0x1AE);
+        }
+        D_800E98E0[omCurrentObj->objId] = (D_800E98E0[omCurrentObj->objId] + 1) % 6;
+        ohSleep(1);
+    }
+    func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DE030_ovl16.s")
 

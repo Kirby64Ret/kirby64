@@ -92,7 +92,47 @@ void func_801E3244_ovl10(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_2/func_801E3450_ovl10.s")
 
+/* 6 diffs, all in the SECOND normalisation loop: the ROM binds the addend
+   D_801F4A78_ovl10 to $f0 and the bound D_801F4A7C_ovl10 to $f12 (the same
+   role->register mapping the first loop gets, which does match), IDO binds
+   them the other way round. $f0 is also the return register, and the ROM's
+   `mov.s $f0, $f2` in the bc1fl delay slot overwrites the addend there --
+   that reuse is what puts the addend in $f0. Swept: `r < b` vs `b > r` vs
+   `!(b <= r)`, `if + do/while`, `r = k + r` vs `r += k`, and locals for the
+   addend alone, the bound alone and both in either assignment order (the
+   plain extern form is 9). Everything before the loop, including the
+   atan2f/sqrtf ternary, is exact. */
+#ifdef MIPS_TO_C
+extern f32 D_801F4A70_ovl10;
+extern f32 D_801F4A74_ovl10;
+extern f32 D_801F4A78_ovl10;
+extern f32 D_801F4A7C_ovl10;
+extern f32 atan2f(f32, f32);
+extern f32 sqrtf(f32);
+
+f32 func_801E3614_ovl10(struct GObj *arg0) {
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 r;
+    f32 k;
+
+    dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    dy = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
+    dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
+    r = atan2f(dx, (dy < 0.0f) ? -sqrtf((dy * dy) + (dz * dz)) : sqrtf((dy * dy) + (dz * dz)));
+    while (D_801F4A70_ovl10 < r) {
+        r -= D_801F4A74_ovl10;
+    }
+    k = D_801F4A78_ovl10;
+    while (r < D_801F4A7C_ovl10) {
+        r += k;
+    }
+    return r;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_2/func_801E3614_ovl10.s")
+#endif
 
 void func_801E3748_ovl10(void) {
     func_801A0D74_ovl7();

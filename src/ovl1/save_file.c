@@ -77,7 +77,72 @@ void func_800B87E0(void) {
     }
 }
 
+// Draft, 34/110: correct; residue is the frame being 8 bytes too big (IDO gives
+// 10 local slots where the ROM has 8) and the register rotation that follows from
+// it. Two levers are load-bearing here: `j = 0; p = src; q = dst;` in THAT order
+// (assignment order, not declaration order, decides that $v0 holds the counter),
+// and `8U` as the SECOND loop's bound -- without the unsigned spelling IDO CSEs
+// the two `8`s into one saved register and drops the ROM's second `addiu $s0,8`.
+// Swept: local count/order, one-temp and zero-temp compare forms, separate
+// counters for the two loops.
+#ifdef NON_MATCHING
+void func_800B891C(s32 fileNum) {
+    void func_80004D98(s32, void *);
+    s32 j;
+    u32 *p;
+    u32 *q;
+    u32 *src;
+    u32 *dst;
+    u32 i;
+    u32 a;
+    u32 b;
+    if ((saveCurrentFileNum >= 0) && (saveCurrentFileNum < 3)) {
+        src = (u32 *) &gSaveBuffer1.files[fileNum];
+        dst = (u32 *) &gSaveBuffer2.files[fileNum];
+        for (i = 0; i < 11; i++) {
+            j = 0;
+            p = src;
+            q = dst;
+            do {
+                a = *p;
+                b = *q;
+                j += 4;
+                p++;
+                if (a != b) {
+                    func_80004D98((u8) (*(u16 *) &D_800D5150[fileNum * 2 + 0] + i), src);
+                    break;
+                }
+                q++;
+            } while (j != 8);
+            src += 2;
+            dst += 2;
+        }
+        src = (u32 *) &gSaveBuffer1.files[fileNum];
+        dst = (u32 *) &gSaveBuffer2.files[fileNum];
+        for (i = 0; i != 11; i++) {
+            j = 0;
+            p = src;
+            q = dst;
+            do {
+                a = *p;
+                b = *q;
+                j += 4;
+                p++;
+                if (a != b) {
+                    func_80004D98((u8) (*(u16 *) &D_800D5150[fileNum * 2 + 6] + i), src);
+                    break;
+                }
+                q++;
+            } while (j != 8U);
+            src += 2;
+            dst += 2;
+        }
+        gSaveBuffer2.files[fileNum] = gSaveBuffer1.files[fileNum];
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B891C.s")
+#endif
 
 void func_800B8AD4(s32 fileNum) {
     func_80004D34(D_800D5157[fileNum * 2], &gSaveBuffer1.files[fileNum], 0x58);
@@ -109,7 +174,33 @@ void func_800B8C08(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/init_save_file_maybe.s")
 
+// Draft, 4/77: only the 4x-unrolled fill body's store order is left -- the ROM
+// emits -0x10/-0xC/-0x8 then -0x4 in the delay slot, IDO rotates it to
+// -0xC/-0x8/-0x4 then -0x10. vu32 on the store (the wave-9 lever) does not move
+// it; do/while and `<` cost the whole loop (64-66 diffs).
+// Load-bearing: the single leading `s32 pad0;` (frame 0x40, spill at 0x2C -- 0
+// pads gives 0x30 and 2 gives the spill at 0x28), and assigning `p` BEFORE `end`
+// so the ROM's start-then-end pointer order is reproduced.
+#ifdef NON_MATCHING
+void func_800B8E00(s32 fileNum) {
+    s32 pad0;
+    u32 *p;
+    u32 *end;
+
+    p = (u32 *) &gSaveBuffer1.files[fileNum];
+    end = (u32 *) &gSaveBuffer1.files[fileNum].checksum;
+    while (p != end) {
+        *p = SAVE_INIT_MAGIC;
+        p++;
+    }
+    saveSetFileChecksum(fileNum);
+    func_80004D34(D_800D5150[fileNum * 2 + 1], &gSaveBuffer1.files[fileNum], 0x58);
+    func_80004D34(D_800D5150[fileNum * 2 + 7], &gSaveBuffer1.files[fileNum], 0x58);
+    gSaveBuffer2.files[fileNum] = gSaveBuffer1.files[fileNum];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8E00.s")
+#endif
 
 s32 saveCalcFileChecksum(u32 fileNum) {
     u32 *i = (u32 *)&gSaveBuffer1.files[fileNum];

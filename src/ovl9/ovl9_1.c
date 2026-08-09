@@ -219,7 +219,32 @@ void func_801D29BC_ovl9(GObj *arg0) {
     func_8019F3B0_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D2A14_ovl9.s")
+s32 func_8019A900_ovl7(s32 *);
+f32 func_8019B608_ovl7(s32);
+void func_801D0FF4_ovl9(struct GObj *, s32);
+
+void func_801D2A14_ovl9(struct GObj *arg0) {
+    s32 pad;
+    s32 sp28;
+    f32 temp;
+
+    if (gEntitiesNextPosYArray[omCurrentObj->objId] < (gEntitiesNextPosYArray[0] + 20.0f)) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 8;
+    } else {
+        if (func_8019A900_ovl7(&sp28) != 0) {
+            temp = (f32) sp28;
+        } else {
+            temp = func_8019B608_ovl7(0);
+        }
+        if (temp != D_800E6A10[omCurrentObj->objId]) {
+            if (D_800E9AA0[omCurrentObj->objId].as_s32 == 1) {
+                func_801D0FF4_ovl9(arg0, 0);
+            }
+            D_800E6A10[omCurrentObj->objId] = temp;
+        }
+        gEntityFuncListIDArray[omCurrentObj->objId] = 9;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D2B3C_ovl9.s")
 
@@ -839,7 +864,32 @@ void func_801D7D54_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D7E34_ovl9.s")
+s32 func_801ACD48_ovl7(s32, s32);
+void utilGetTransformSRT(Vector *, struct DObj *);
+
+void func_801D7E34_ovl9(s32 arg0, s32 arg1, f32 arg2) {
+    s32 id;
+    Vector sp20;
+    struct DObj *p;
+
+    if (arg1 == 0) {
+        if ((s32) arg2 == 1) {
+            id = func_801ACD48_ovl7(0xA, 0);
+            if (id != 0) {
+                p = (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) ? D_800DFBD0[omCurrentObj->objId][7] : D_800DFBD0[omCurrentObj->objId][5];
+                utilGetTransformSRT(&sp20, p);
+                gEntitiesPosXArray[id] = sp20.x;
+                gEntitiesNextPosXArray[id] = sp20.x;
+                gEntitiesPosYArray[id] = sp20.y;
+                gEntitiesNextPosYArray[id] = sp20.y;
+                gEntitiesPosZArray[id] = sp20.z;
+                gEntitiesNextPosZArray[id] = sp20.z;
+                D_800E8E60[id] = 1;
+                play_sound(0x169);
+            }
+        }
+    }
+}
 
 void func_800AA864(s32, s32);
 

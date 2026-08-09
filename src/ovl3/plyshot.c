@@ -645,7 +645,41 @@ void func_801660F4_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80166210_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80166588_ovl3.s")
+extern f32 D_80197194_ovl3;
+extern s32 D_801968EC_ovl3[];
+void func_800B5094(GObj *);
+void func_80166768_ovl3(s32);
+void curObjSleepForever(void);
+
+void func_80166588_ovl3(s32 arg0) {
+    s32 val;
+    s32 sentinel = -1;
+    f32 temp = D_80197194_ovl3;
+
+    D_800E0650[omCurrentObj->objId] = 1;
+    D_800E98E0[omCurrentObj->objId] = sentinel;
+    D_800DEF90[omCurrentObj->objId] = func_800B5094;
+    D_800E0F10[omCurrentObj->objId] = 8;
+    D_800DF150[omCurrentObj->objId] = func_80166768_ovl3;
+    gEntitiesScaleXArray[omCurrentObj->objId] = temp;
+    gEntitiesScaleYArray[omCurrentObj->objId] = temp;
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp;
+    func_800A9864(0x2004F, 0x22, 0x10);
+    func_800AECC0(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+    func_800AED20(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+    for (;;) {
+        val = gKirbyState.unk44;
+        if (sentinel == val) {
+            break;
+        }
+        if (val != D_800E98E0[omCurrentObj->objId]) {
+            D_800E98E0[omCurrentObj->objId] = val;
+            func_800AA018(D_801968EC_ovl3[val]);
+        }
+        ohSleep(1);
+    }
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80166768_ovl3.s")
 

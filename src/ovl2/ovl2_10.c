@@ -537,7 +537,48 @@ void func_80115578(struct GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = temp_s0->unk10;
 }
 
+#ifdef MIPS_TO_C
+// 19/69 diffs. The instruction multiset is exact; the residue is purely where
+// IDO schedules `lui %hi(D_800DE350)` (it hoists it above the D_800DEF90 store,
+// the ROM keeps it after the `lw 0x4C(arg0)`), which drags the surrounding
+// address arithmetic with it. Statement order inside the `if` (all 6
+// permutations), inlining `arg0->unk4C`, and a separate index temp were swept.
+// Settled and worth keeping:
+//   * `u8 *p = arg0->unk4C;` as its own local is what puts `idx` in $v1 and the
+//     unk4C pointer in $v0 (28 -> 22); the inline form swaps them.
+//   * `temp_a0 = g->unk8;` before the test loads straight into $a0 the way the
+//     ROM does; the inline `if (g->unk8)` costs a $v0 + `move` (22 -> 19).
+void func_80115618(struct GObj *arg0) {
+    struct Unk80124E14 *sp1C = &D_80124E14[D_800E77A0[arg0->objId]];
+    struct Unk80126CD0 *g;
+    u8 *p;
+    s32 temp_a0;
+    u16 idx;
+
+    func_800AF980(0x17);
+    func_800A9864(sp1C->unk4, 0x1869F, 0x10);
+    func_800AA018(sp1C->unk8);
+    temp_a0 = sp1C->unkC;
+    if (temp_a0 != 0) {
+        func_800AA018(temp_a0);
+    }
+    D_800DEF90[omCurrentObj->objId] = sp1C->unk10;
+    idx = sp1C->unk1A;
+    if (idx != 0) {
+        g = &D_80126CD0[idx];
+        p = arg0->unk4C;
+        omCurrentObj = D_800DE350[p[3]];
+        func_800AA018(g->unk4);
+        temp_a0 = g->unk8;
+        if (temp_a0 != 0) {
+            func_800AA018(temp_a0);
+        }
+        omCurrentObj = arg0;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115618.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011572C.s")
 
