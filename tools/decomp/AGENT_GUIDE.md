@@ -771,3 +771,41 @@ IDO CSEs the two constants. Both were needed on one function to go 103 -> 11.
 An `extern f32` reference cannot be hoisted that way. Assign it to a local
 `f32` IMMEDIATELY BEFORE THE LOOP instead. Took one function from 215 diffs
 to 4.
+
+## verify_rom's "reloc" bucket is not a safe place to ignore
+
+A difference confined to an instruction's low 16 bits is a relocation
+immediate ONLY if the instruction carries a relocation. A load/store based on
+$sp does not -- its immediate is a STACK OFFSET, and a wrong one is a real
+defect. The classifier used to lump those in with "reloc", which let a
+2-instruction spill-slot diff sit in the tree looking clean until an agent
+found it by hand. Fixed: $sp-based load/store and `addiu $sp` immediates now
+classify as REAL.
+
+## A double 0.0 store forks the zero constant
+
+Where the ROM materialises `mtc1 $zero,$f14` for a store AND `mtc1 $zero,$f12`
+for an ABSF compare, writing `arr[i] = 0.0f` CSEs them into one register.
+Writing `arr[i] = 0.0;` (DOUBLE literal) emits two. Closed four functions that
+were 6-78 diffs off.
+
+## Prototype presence controls the argument-register move
+
+`f(sub->unk4)` with a `void f(s32)` prototype forces `lw $vN` + `move $a0`;
+with NO prototype (`void f();`) IDO loads straight into $a0. The reverse case
+needs the prototype ADDED to force the move. Per-TU knob; closed four
+functions.
+
+## A single leading `s32 pad;` shifts the local block by 4, not 8
+
+Where the ROM leaves a 4-byte hole at the TOP of the local block, one
+first-declared dummy scalar reproduces it. Note clone twins of the same
+function often need none -- check each.
+
+## Strings in a migrated-rodata TU must be LITERALS
+
+`extern const char D_8012893C[]` in a TU whose rodata is migrated references a
+symbol nothing defines, and the strings the pragma listings used to supply
+vanish with the pragma -- shrinking the block and the whole segment. This is
+what took ovl2_4.c from 0xB0 to 0x30 and shifted the back half of the ROM.
+Write the literal, and convert all users so they land in source order.

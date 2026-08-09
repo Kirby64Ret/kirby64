@@ -1842,6 +1842,10 @@ void func_8011A294(struct GObj *arg0) {
     func_80118BC8(arg0, 0x3C);
 }
 
+#ifdef MIPS_TO_C
+// 22 diffs: the ROM keeps D_800E77A0[objId] in $v0 and the Unk80124E14
+// pointer in $v1; IDO puts both in $t-registers and lays the two spill
+// slots out as 0x1C/0x20 instead of 0x18/0x20.
 void func_8011A2F4(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 sp20;
@@ -1858,6 +1862,9 @@ void func_8011A2F4(struct GObj *arg0) {
         }
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011A2F4.s")
+#endif
 
 
 void func_8011A3B8(struct GObj *arg0) {
@@ -1978,6 +1985,10 @@ void func_8011A770(struct GObj *arg0) {
     omEndProcess(0);
 }
 
+#ifdef MIPS_TO_C
+// 22 diffs: the ROM keeps D_800E77A0[objId] in $v0 and the Unk80124E14
+// pointer in $v1; IDO puts both in $t-registers and lays the two spill
+// slots out as 0x1C/0x20 instead of 0x18/0x20.
 void func_8011A7A8(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 sp20;
@@ -1994,6 +2005,9 @@ void func_8011A7A8(struct GObj *arg0) {
         }
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011A7A8.s")
+#endif
 
 void func_8011A86C(struct GObj *arg0) {
     func_801153B8(arg0);

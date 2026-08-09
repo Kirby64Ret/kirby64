@@ -157,8 +157,25 @@ def main():
         # the relocation immediate. A differing OPCODE is a genuine defect.
         cls = 'reloc'
         if not ok:
+            import struct as _s
             for i in range(0, min(len(a), len(b)), 4):
-                if a[i:i+4] != b[i:i+4] and a[i:i+2] != b[i:i+2]:
+                if a[i:i+4] == b[i:i+4]:
+                    continue
+                if a[i:i+2] != b[i:i+2]:
+                    cls = 'REAL'; break        # opcode/register differs
+                # Low 16 bits differ. That is a relocation immediate ONLY if
+                # the instruction actually carries one. A load/store based on
+                # $sp has no relocation -- its immediate is a STACK OFFSET, and
+                # a wrong one is a real defect. Classifying those as "reloc"
+                # let a 2-instruction spill-slot diff sit in the tree looking
+                # clean; an agent found it by hand.
+                w = _s.unpack('>I', a[i:i+4])[0]
+                op, rs = w >> 26, (w >> 21) & 31
+                LOADSTORE = {0x20,0x21,0x23,0x24,0x25,0x28,0x29,0x2B,
+                             0x31,0x35,0x39,0x3D}
+                if op in LOADSTORE and rs == 29:      # 29 = $sp
+                    cls = 'REAL'; break
+                if op == 0x09 and rs == 29:           # addiu $sp, $sp, N
                     cls = 'REAL'; break
             if len(a) != len(b):
                 cls = 'REAL'
