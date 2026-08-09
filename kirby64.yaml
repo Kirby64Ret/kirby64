@@ -659,10 +659,10 @@ segments:
     - [0x1FBD40, c, ovl13/code_1FBD40]
     - [0x1FC420, c, ovl13/code_1FC420]
     - [0x1FDA00, data, ovl13/ovl13]
+    # 0x1fdd98 and 0x1fddc4 are the assembler's 16-byte tail padding of the two
+    # migrated .rodata blocks, not data: the C objects emit them themselves.
     - [0x1fdd80, .rodata, ovl13/code_1FBD40]
-    - [0x1fdd98, data, ovl13/ovl13_2]
     - [0x1fdda0, .rodata, ovl13/code_1FC420]
-    - [0x1fddc4, data, ovl13/ovl13_3]
     - [0x1FDDD0]
     - {type: bss, vram: 0x801e5e50, name: ovl13/ovl13}
 
@@ -746,7 +746,10 @@ segments:
     - [0x239080, c, ovl18/code_239080]
     - [0x239D80, data, ovl18/ovl18]
     - [0x23e5b0, .rodata, ovl18/code_234BC0]
-    - [0x23e5d8, data, ovl18/ovl18_2]
+    # 0x23e5d8..0x23e5e0 is code_234BC0's own .rodata padding. What follows is
+    # read-only data that the ROM places AFTER that block, so it has to be a
+    # rodata subsegment: the linker emits every .data input before any .rodata.
+    - [0x23e5e0, rodata, ovl18/ovl18_2]
     - [0x23E630]
     - {type: bss, vram: 0x8022bc90, name: ovl18/ovl18}
 

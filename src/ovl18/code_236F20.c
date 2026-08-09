@@ -331,6 +331,11 @@ void func_802258EC_ovl18(UNUSED s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_236F20/func_80225958_ovl18.s")
 
+#ifdef NON_MATCHING
+/* Byte-exact as written, but the `switch` makes IDO emit its own jump table
+ * into this TU's .rodata while the ROM's copy (jtbl_8022BC58_ovl18) still
+ * comes from asm/data/ovl18/ovl18_2.rodata.s -- two tables, segment grows.
+ * Parked until ovl18/code_236F20's rodata block can be migrated whole. */
 void func_80225B44_ovl18(void) {
     D_800E6A10[omCurrentObj->objId] = -1.0f;
     switch (D_800E9560[omCurrentObj->objId]) {
@@ -347,3 +352,6 @@ void func_80225B44_ovl18(void) {
             func_800AA018(0x10240, D_800E6A10);
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_236F20/func_80225B44_ovl18.s")
+#endif

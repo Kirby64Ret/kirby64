@@ -14,6 +14,9 @@
 #include "unk_structs/D_800DE350.h"
 #include "unk_structs/D_800E1B50.h"
 
+/* Unmigrated rodata: the format string must be referenced as a data
+   symbol, or IDO emits a second copy into this TU's .rodata. */
+extern const char D_801E0BE0_ovl11[];
 extern f32 D_801E0C0C_ovl11;
 extern f32 D_801E0C18_ovl11;
 extern f32 D_801E0C1C_ovl11;
@@ -184,7 +187,7 @@ void func_801DB34C_ovl11(void) {
     for (i = 0; i < 3; i++) {
         temp_v0 = request_track_general(0x19, 0x1E, 0x3C);
         if (temp_v0 >= 0x3C || temp_v0 == -1) {
-            utilPrintf("reqWhispyJrTrk  Request Error!![boss2.cc]\n");
+            utilPrintf(D_801E0BE0_ovl11);
             func_800B1900(temp_v0);
             return;
         }

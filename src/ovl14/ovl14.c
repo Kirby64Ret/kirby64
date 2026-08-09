@@ -17,6 +17,10 @@ extern f32 D_801E30BC_ovl14;
 extern u32 D_801CB470;
 extern s32 D_800D7154;
 
+/* The segment's rodata is an unmigrated asm block, so the format string must
+   be referenced as a data symbol; writing the literal emits a second copy. */
+extern const char D_801E2FE8_ovl14[];
+
 void func_801DB1E0_ovl14(GObj *arg0) {
     func_8019BB58_ovl7();
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 3, &D_801E2EA0_ovl14);
@@ -151,7 +155,7 @@ s32 func_801DC954_ovl14(void) {
 
     track = request_track_general(0x19, 0x1E, 0x50);
     if ((track >= 0x3C) || (track == -1)) {
-        utilPrintf("enemy req over 18. Track Num:%d\n", track);
+        utilPrintf(D_801E2FE8_ovl14, track);
         func_800B1900(track);
         return -1;
     }
