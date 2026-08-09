@@ -105,10 +105,29 @@ def render(sym, section, entries, refs):
 
     kinds = {k for k, _ in entries}
 
-    # .bss -- plain zeroed storage, and it must NOT be const
+    # .bss -- plain zeroed storage, and it must NOT be const.
+    #
+    # DOUBLED, and this is not caution, it is a correctness fix found by a
+    # crash. The listing records the size the symbol had on N64, where a
+    # pointer is 4 bytes. This build is LP64. Every bss object that holds
+    # pointers is therefore too small by exactly the number of pointers in it,
+    # and the game writes past the end of it into whatever the linker put next.
+    #
+    # The one that found it: sched.c declares `OSMesg D_80048C98[8]` and the
+    # listing says `.space 32`. At LP64 an OSMesg is 8 bytes, so the queue
+    # needs 64 -- and the 32 bytes it ran into were scTaskMQ, whose mtqueue
+    # field became the message value 1. osSendMesg then dereferenced 0x1.
+    #
+    # 2x is an exact upper bound rather than a guess: the only thing that grows
+    # is a pointer, 4 -> 8, and alignment inside these structs never exceeds 8,
+    # so no layout can more than double. It costs address space and nothing
+    # else -- these are zeroed pages the game never reads past its own extent.
+    # It cannot disturb tools/pc/gen_defsyms.py either, which resolves an
+    # absolute N64 address to <symbol>+<offset from that symbol's N64 start>;
+    # growing a symbol does not move its own start.
     if kinds == {'space'}:
         n = sum(int(v, 0) for _, v in entries)
-        return f'extern u8 {sym}[];\n', f'u8 {c_ident(sym)}[{n}];\n'
+        return f'extern u8 {sym}[];\n', f'u8 {c_ident(sym)}[{n * 2}];\n'
 
     # Strings. The listing may hold several in one block, in which case the
     # only faithful C form is a flat char array with the terminators kept.
