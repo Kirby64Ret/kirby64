@@ -14,6 +14,7 @@ s32 func_800F8560(void);
 void func_801A0880_ovl7(void);
 void func_801EFF98_ovl10(void);
 void func_800FF200(void *);
+s32 func_801F1870_ovl10(void);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EF790_ovl10.s")
 
@@ -87,7 +88,28 @@ void func_801F0014_ovl10(void *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1870_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1934_ovl10.s")
+s32 func_801F1934_ovl10(s32 arg0) {
+    switch (func_801F1870_ovl10()) {
+    case 1:
+        if (arg0 == 0) {
+            return 1;
+        }
+        return 0;
+    case 2:
+        if (arg0 == 0 || arg0 == 2) {
+            return 1;
+        }
+        return 0;
+    case 3:
+        if (arg0 != 1) {
+            return 1;
+        }
+        return 0;
+    case 4:
+        return 1;
+    }
+    return 0;
+}
 
 s32 func_801F19DC_ovl10(s32 arg0, s32 arg1) {
     if (arg1 >= D_800BE560[arg0]) {

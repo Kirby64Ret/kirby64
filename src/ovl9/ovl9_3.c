@@ -317,19 +317,21 @@ void func_801E03E4_ovl9(GObj *arg0) {
 extern s32 D_801C8520_ovl7;
 extern s32 D_801C8568;
 
+/* 2 diffs: ROM keeps the objId index in $v1, this form puts it in $v0 and the
+   shift result in $v1.  Declaration order / extra locals do not move it. */
 void func_801E06C0_ovl9(GObj *arg0) {
-    s32 temp_v0;
+    s32 id;
 
     func_801A0D74_ovl7(arg0);
-    if (D_800E9C60[omCurrentObj->objId] != 0) {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8520_ovl7;
+    id = omCurrentObj->objId;
+    if (D_800E9C60[id] != 0) {
+        D_800E1B50[id]->unk8C = &D_801C8520_ovl7;
         func_8019F3B0_ovl7();
         if (D_800E83E0[omCurrentObj->objId] != 0) {
-            temp_v0 = func_8019DD78_ovl7(0xD, 1);
-            D_800EBBE0[omCurrentObj->objId] = temp_v0;
+            D_800EBBE0[omCurrentObj->objId] = func_8019DD78_ovl7(0xD, 1);
         }
     } else {
-        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8568;
+        D_800E1B50[id]->unk8C = &D_801C8568;
         func_8019F3B0_ovl7();
     }
 }

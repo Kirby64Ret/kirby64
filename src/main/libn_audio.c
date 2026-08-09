@@ -8,6 +8,19 @@ extern N_ALGlobals *n_alGlobals;
 extern N_ALSynth *n_syn;
 extern f32 D_800417A0;
 
+typedef struct {
+    /* 0x00 */ u8   pad00[0x1C];
+    /* 0x1C */ void **unk1C;
+    /* 0x20 */ void **unk20;
+    /* 0x24 */ u8   pad24[4];
+    /* 0x28 */ u16  unk28;
+    /* 0x2A */ u16  unk2A;
+    /* 0x2C */ u8   pad2C[0x14];
+    /* 0x40 */ void *unk40;
+} KAudioMgr;
+
+extern KAudioMgr D_800978E0;
+
 typedef struct N_PVoice_s {
     ALLink                      node;
     struct N_ALVoice_s          *vvoice;
@@ -130,25 +143,59 @@ void func_80023360(u8 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023884.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002397C.s")
+typedef struct {
+    /* 0x00 */ u8  pad00[0x28];
+    /* 0x28 */ s16 unk28;
+    /* 0x2A */ u8  unk2A;
+    /* 0x2B */ u8  pad2B[0x1D];
+    /* 0x48 */ s16 unk48;
+} KNote;
+
+void func_8002397C(KNote *arg0) {
+    arg0->unk28 = 0;
+    arg0->unk2A = 2;
+    arg0->unk48 = 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023990.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023A28.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023AE4.s")
+void func_80023AE4(void *arg0) {
+    OSIntMask mask = osSetIntMask(OS_IM_NONE);
+
+    if (arg0 != NULL) {
+        *(void **) arg0 = D_800978E0.unk40;
+        D_800978E0.unk40 = arg0;
+    }
+    osSetIntMask(mask);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023B34.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023C48.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023CB0.s")
+s32 func_80023CB0(u16 arg0) {
+    if (arg0 < D_800978E0.unk28) {
+        goto call;
+    }
+    return 0;
+call:
+    return func_80023C48(D_800978E0.unk1C[arg0]);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D00.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D5C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023E30.s")
+s32 func_80023E30(u16 arg0) {
+    if (arg0 < D_800978E0.unk2A) {
+        goto call;
+    }
+    return 0;
+call:
+    return func_80023D5C(D_800978E0.unk20[arg0]);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023E80.s")
 
@@ -318,7 +365,16 @@ void func_8002638C(u16 arg0) {
     D_8003FB1C = arg0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002639C.s")
+extern f32 D_8003FB18;
+
+void func_8002639C(f32 arg0) {
+    if (arg0 <= 0.0f) {
+        arg0 = 1.0f;
+    } else if (10.0f < arg0) {
+        arg0 = 1.0f;
+    }
+    D_8003FB18 = arg0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800263F0.s")
 

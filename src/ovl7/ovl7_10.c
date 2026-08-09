@@ -18,6 +18,8 @@ extern s32 D_801CB0BC_ovl7[];
 extern s32 D_801CA738_ovl7[];
 
 extern s32 D_801D0A98_ovl7;
+extern f32 D_801CE31C_ovl7, D_801CE320_ovl7;
+void func_801AC840_ovl7(void);
 extern s32 D_801CB3D0_ovl7[];
 extern s32 D_801C8E64_ovl7[];
 void play_sound(s32);
@@ -91,7 +93,23 @@ void func_801B3A74_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3ACC_ovl7.s")
 
+#ifdef MIPS_TO_C
+// 8 diffs: instruction sequence is right; the omCurrentObj base lands in $a0
+// instead of $a1 and thr/angle get $f0/$f2 instead of $f2/$f0.
+void func_801B3C54_ovl7(void) {
+    f32 thr = D_801CE31C_ovl7;
+    struct DObj *d = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+
+    d->angle.v.x += D_801CE320_ovl7;
+    d = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+    if (thr <= d->angle.v.x) {
+        d->angle.v.x -= thr;
+    }
+    func_801AC840_ovl7();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3C54_ovl7.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3CF4_ovl7.s")
 

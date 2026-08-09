@@ -1701,27 +1701,17 @@ void func_800AAF04(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
     func_800AF27C();
 }
 
-#ifdef MIPS_TO_C
-// Nearly matching (30/36): only the frame size differs (0x30 vs 0x28) - the
-// target reserves one 4-byte local slot fewer than IDO gives this shape.
 void func_800AAF34(s32 arg0, s32 arg1, f32 arg2) {
-    s32 idx;
     u32 *slot;
-    u32 *anim;
 
-    idx = (arg0 - 0xA) >> 1;
-    slot = &D_800D7A00[idx];
+    slot = &D_800D7A00[(arg0 - 0xA) >> 1];
     if (*slot != 0) {
         func_800A8578(*slot | 2);
         *slot = 0;
     }
-    anim = (u32 *)func_800A94F4(arg1);
-    *slot = (u32)anim;
-    animSetCameraAnimation((Camera *)D_800D79D8[idx], (AnimCmd *)anim[0], arg2);
+    *slot = (u32)func_800A94F4(arg1);
+    animSetCameraAnimation((Camera *)D_800D79D8[(arg0 - 0xA) >> 1], (AnimCmd *)*(u32 *)*slot, arg2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAF34.s")
-#endif
 
 void func_800AAFC4(s32 arg0, s32 arg1, f32 arg2) {
     struct UnkStruct800D79D8 *temp_s0;

@@ -1163,14 +1163,14 @@ void func_801DF18C_ovl12(void) {
 #endif
 
 // regalloc
-#ifdef NON_MATCHING
+void func_801DF3F0_ovl12(void);
+
 void func_801DF394_ovl12(void) {
-    D_800D70D8.unk4 -= (D_800EB160[omCurrentObj->objId] - D_800E7B20[omCurrentObj->objId]);
+    f32 diff = D_800EB160[omCurrentObj->objId] - D_800E7B20[omCurrentObj->objId];
+
+    D_800D70D8.unk4 -= diff;
     func_801DF3F0_ovl12();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DF394_ovl12.s")
-#endif
 
 void func_801DF3F0_ovl12(void) {
     struct DObj *sp30 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;

@@ -24,6 +24,14 @@ extern s32 D_8018E2A0_ovl5[];
 s32 func_80165F1C_ovl5(s32);
 extern u8 D_8018E3C8_ovl5[];
 extern u8 D_8018E3D8_ovl5[];
+extern s32 D_8018E428_ovl5[];
+s32 func_8016F3A8_ovl5(s32);
+s32 func_8016F3C4_ovl5(s32);
+s32 func_8016F3E8_ovl5(s32);
+void func_8016E650_ovl5(s32, s32, s32, s32);
+extern f32 D_8018732C_ovl5[];
+Vector2 func_80166C68_ovl5(s32);
+Vector *func_801659DC_ovl5(Vector *, s32);
 #include "main/contpad.h"
 #include "ovl1/game.h"
 
@@ -202,11 +210,34 @@ void func_8016C208_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C508_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C8C0_ovl5.s")
+void func_8016C8C0_ovl5(GObj *arg0) {
+    s32 track;
+    s32 idx;
+    Vector sp24;
+    Vector2 sp1C;
+
+    track = D_800E98E0[omCurrentObj->objId];
+    sp1C = func_80166C68_ovl5(track);
+    idx = *(s32 *) &sp1C;
+    func_801659DC_ovl5(&sp24, track);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp24.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_8018732C_ovl5[idx];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp24.z;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C974_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016CA4C_ovl5.s")
+s32 func_8016CA4C_ovl5(s32 arg0) {
+    s32 count = 0;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if ((arg0 != i) && (D_8018E428_ovl5[arg0] < D_8018E428_ovl5[i])) {
+            count++;
+        }
+    }
+    return count;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016CB14_ovl5.s")
 
@@ -220,7 +251,26 @@ void func_8016C208_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016E6F0_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016E8D0_ovl5.s")
+void func_8016E8D0_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
+    s32 sp34;
+    s32 sp30;
+    s32 sp2C;
+
+    if (arg1 >= 0x464F) {
+        sp2C = 0x63;
+        sp30 = 0x3B;
+        sp34 = 9;
+    } else {
+        sp2C = func_8016F3A8_ovl5(arg1);
+        sp30 = func_8016F3C4_ovl5(arg1);
+        sp34 = func_8016F3E8_ovl5(arg1);
+    }
+    func_8016E650_ovl5(arg0, sp2C % 10, (s32) (arg2 + 38.0f), (s32) arg3);
+    func_8016E650_ovl5(arg0, sp2C / 10, (s32) (arg2 + 31.0f), (s32) arg3);
+    func_8016E650_ovl5(arg0, sp30 % 10, (s32) (arg2 + 19.0f), (s32) arg3);
+    func_8016E650_ovl5(arg0, sp30 / 10, (s32) (arg2 + 12.0f), (s32) arg3);
+    func_8016E650_ovl5(arg0, sp34, (s32) arg2, (s32) arg3);
+}
 
 void func_8016EA4C_ovl5(void) {
 }

@@ -1985,20 +1985,18 @@ void func_8011A770(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-// 22 diffs: the ROM keeps D_800E77A0[objId] in $v0 and the Unk80124E14
-// pointer in $v1; IDO puts both in $t-registers and lays the two spill
-// slots out as 0x1C/0x20 instead of 0x18/0x20.
+// 13 diffs: stack layout and instruction order are exact; only the integer
+// register allocation is rotated one slot (ROM idx=$v0/ptr=$v1, IDO gives
+// $v1/$a1). Clone twin of func_8011A2F4 -- one fix closes both.
 void func_8011A7A8(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 sp20;
-    struct Unk80124E14 *sp18;
 
     if (func_8011E368() != 0) {
-        sp20 = func_8011E244();
-        if (sp20 == *sp24) {
-            sp18 = &D_80124E14[D_800E77A0[arg0->objId]];
-            func_800AA018(sp18->unk8);
-            D_800DEF90[omCurrentObj->objId] = sp18->unk14;
+        if (func_8011E244() == *sp24) {
+            sp20 = D_800E77A0[arg0->objId];
+            func_800AA018(D_80124E14[sp20].unk8);
+            D_800DEF90[omCurrentObj->objId] = D_80124E14[sp20].unk14;
             (&D_800D6F10)[5] = sp20 - 0xCD;
             play_sound(0x1FD);
         }
@@ -2007,7 +2005,6 @@ void func_8011A7A8(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011A7A8.s")
 #endif
-
 void func_8011A86C(struct GObj *arg0) {
     func_801153B8(arg0);
 }

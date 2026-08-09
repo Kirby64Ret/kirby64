@@ -17,6 +17,7 @@ extern u8 D_8018E3C0_ovl5;
 extern u8 D_8018E3C1_ovl5;
 extern u8 D_8018E3C2_ovl5;
 extern u8 D_8018E3C3_ovl5;
+extern f32 D_8018D6A8_ovl5;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165440_ovl5.s")
 
@@ -88,7 +89,22 @@ s32 func_80165A4C_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165A4C_ovl5.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165AD0_ovl5.s")
+s32 func_80165AD0_ovl5(s32 arg0) {
+    f32 v = gEntitiesAngleYArray[D_8018E268_ovl5[arg0]] / D_8018D6A8_ovl5 * 180.0f;
+
+    if (v == 0.0f) {
+        return 0;
+    }
+    if (v == 90.0f) {
+        return 2;
+    }
+    if (v == 180.0f) {
+        return 1;
+    }
+    if (v == 270.0f) {
+        return 3;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165B84_ovl5.s")
 

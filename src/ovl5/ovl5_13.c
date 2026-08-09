@@ -13,6 +13,8 @@ void func_80184084_ovl5(void);
 extern s32 D_8018EE20_ovl5[];
 extern s32 D_8018EE14_ovl5;
 void func_80183270_ovl5(GObj *);
+extern u8 D_8018EE18_ovl5;
+#include "ovl1/track.h"
 
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801830A0_ovl5.s")
@@ -55,7 +57,17 @@ void func_80183FA0_ovl5(void) {
     func_80183FC8_ovl5();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183FC8_ovl5.s")
+void func_80183FC8_ovl5(void) {
+    s32 i;
+    s32 t;
+
+    for (i = 0; i < 9; i++) {
+        t = request_track_3(0xF, 0, 0x70);
+        D_800E98E0[t] = 2;
+        ((s32 *) D_800E9AA0)[t] = i;
+        D_800E9C60[t] = D_8018EE18_ovl5 * 9 + i;
+    }
+}
 
 void func_80184084_ovl5(void) {
     s32 i;

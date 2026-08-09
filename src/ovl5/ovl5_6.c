@@ -16,6 +16,9 @@ typedef struct Unk10Bytes {
 
 extern Unk10Bytes D_800D7178[];
 void func_80178E98_ovl5(s32, s32, s32, s32);
+s32 func_80178F38_ovl5(s32);
+s32 func_80178F54_ovl5(s32);
+s32 func_80178F78_ovl5(s32);
 extern s32 D_8018ECE4_ovl5;
 void func_80177D04_ovl5(GObj *);
 
@@ -72,7 +75,26 @@ s32 func_80178F78_ovl5(s32 arg0) {
     return (arg0 / 30) / 60;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178F9C_ovl5.s")
+void func_80178F9C_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
+    s32 sp34;
+    s32 sp30;
+    s32 sp2C;
+
+    if (arg1 >= 0x464F) {
+        sp2C = 0x63;
+        sp30 = 0x3B;
+        sp34 = 9;
+    } else {
+        sp2C = func_80178F38_ovl5(arg1);
+        sp30 = func_80178F54_ovl5(arg1);
+        sp34 = func_80178F78_ovl5(arg1);
+    }
+    func_80178E98_ovl5(arg0, sp2C % 10, (s32) (arg2 + 38.0f), (s32) arg3);
+    func_80178E98_ovl5(arg0, sp2C / 10, (s32) (arg2 + 31.0f), (s32) arg3);
+    func_80178E98_ovl5(arg0, sp30 % 10, (s32) (arg2 + 19.0f), (s32) arg3);
+    func_80178E98_ovl5(arg0, sp30 / 10, (s32) (arg2 + 12.0f), (s32) arg3);
+    func_80178E98_ovl5(arg0, sp34, (s32) arg2, (s32) arg3);
+}
 
 void func_80179118_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
     s32 pad;

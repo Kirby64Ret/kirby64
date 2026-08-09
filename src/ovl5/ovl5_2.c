@@ -23,6 +23,7 @@ extern u8 D_8018E228_ovl5[];
 extern u8 D_8018E208_ovl5[];
 s32 func_8015F4C4_ovl5(s32, s32);
 void func_801642A4_ovl5(s32, s32, s32, s32);
+extern u8 D_8018E1E0_ovl5[];
 typedef struct Unk8Bytes {
     s32 unk0;
     s32 unk4;
@@ -316,7 +317,17 @@ void func_801648D8_ovl5(u8 *arg0, u16 *arg1) {
 void func_8016490C_ovl5(void) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164914_ovl5.s")
+s32 func_80164914_ovl5(s32 arg0) {
+    s32 count = 0;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if ((arg0 != i) && (D_8018E1E0_ovl5[arg0] < D_8018E1E0_ovl5[i])) {
+            count++;
+        }
+    }
+    return count;
+}
 
 typedef struct Unk10Bytes {
     u32 unk0;
