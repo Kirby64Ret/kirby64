@@ -1106,3 +1106,48 @@ Cost of this error: two agents were sent at a seam that does not exist, and
 two others broke the ROM link mid-session reaching the same wall
 independently. Verify a claimed unblock by CONVERTING ONE FUNCTION and
 checking check_sections.py plus the link, before briefing anyone on it.
+
+## verify.py now REFUSES to report on a padding trap
+
+A listing with words after its LAST `.size` carries the TU's alignment
+padding. C cannot emit those, so converting the function shortens the TU and
+shifts the segment -- while verify.py reported MATCH, because the function's
+own instructions are all correct.
+
+An agent scanning ovl9's guarded drafts found FOUR reporting MATCH that were
+all padding traps (func_80208EF8, func_8021A118, func_8021BA80,
+func_80209698). Any draft-scanning tool must have this check wired in, so it
+is now inside verify.py itself: such a function reports PADDING TRAP instead
+of a result. 103 still-pragma functions tree-wide are in this class.
+
+## K&R definitions solve the home-slot problem
+
+If the only residue is a missing `sw $a0, 0xNN($sp)`, the function takes a
+parameter -- but a prototyped `(s32 arg0)` breaks zero-argument call sites in
+the same TU. Write it K&R:
+
+    void f(arg0)
+    s32 arg0;
+    { ... }
+
+and demote the forward declaration to `void f();`. That emits the home slot
+AND keeps existing callers compiling. 9 diffs -> MATCH. Several agents have
+now needed this in both directions (a function 1 instruction SHORT wants the
+parameter, 1 instruction LONG wants `(void)`).
+
+## A temp local's initializer is not the same as a following statement
+
+    vol = (u32)(vol * ((a*b*c) >> 14)) >> 15;   -> 3 diffs
+    t = a*b*c;      ... (t >> 14)               -> 2 diffs
+    t = a*b*c; t = t >> 14;                     -> 10 diffs
+    t = (a*b*c) >> 14;  vol = (u32)(vol*t) >> 15;  -> MATCH
+
+Only the form with the shift FOLDED INTO the initializer gets both the mflo
+destination and the multu operand order right.
+
+## src.old files that look like goldmines are often m2c dumps
+
+src.old/ovl13/ovl13.c has "definitions" for 29 of 30 pragmas and only 2
+compile (`? *sp38;`, `temp_v0[23]` on an s32, undefined symbols). Spot-check
+before budgeting time: src.old/ovl14/ovl14.c (19/21) and
+src.old/ovl12/code_1EB520.c (16/18) are the same shape.

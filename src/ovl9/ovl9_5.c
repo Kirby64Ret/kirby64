@@ -638,7 +638,19 @@ void func_801E9298_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E92DC_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E9648_ovl9.s")
+extern s32 D_801C7FF0_ovl7;
+extern s32 D_801CB6D4;
+extern f32 D_8021D0F0_ovl9;
+
+void func_801E9648_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C7FF0_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB6D4;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_8021D0F0_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E9724_ovl9.s")
 

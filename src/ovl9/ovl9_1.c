@@ -567,7 +567,22 @@ void func_801D7BE4_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D7BEC_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D7D54_ovl9.s")
+void func_801D7838_ovl9(struct GObj *);
+
+void func_801D7D54_ovl9(struct GObj *arg0) {
+    switch (D_800E9E20[omCurrentObj->objId]) {
+    case 0xA:
+        D_800E98E0[omCurrentObj->objId] = 0x1E;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801D7838_ovl9);
+        break;
+    case 1:
+        D_800E98E0[omCurrentObj->objId] = 0x1E;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801D7838_ovl9);
+        break;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D7E34_ovl9.s")
 

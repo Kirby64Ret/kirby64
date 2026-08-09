@@ -717,10 +717,27 @@ void func_800F81A4(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F81A4.s")
 #endif
 
-#ifdef MIPS_TO_C
+extern f32 D_801293AC;
+extern f32 D_801293B0;
+extern f32 D_801293B4;
+extern f32 D_801293B8;
+extern f32 D_801293BC;
+extern f32 D_801293C0;
+extern f32 D_801293C4;
+extern f32 D_801293C8;
+extern f32 D_801293CC;
+extern f32 D_801293D0;
+extern f32 D_801293D4;
+extern s32 D_801293D8;
+extern s32 D_80129408;
+void func_800FB914(s32);
+void func_800F78E4(void);
+void func_800F8378(void);
+void func_800F8078(void);
+void func_800F81A4(void);
 
 void func_800F8274(void) {
-    D_801293AC = 0.0f;
+    D_801293AC = 0.0;
     D_801293B0 = 0.0f;
     D_801293B4 = 5.0f;
     D_801293B8 = 16.0f;
@@ -734,16 +751,13 @@ void func_800F8274(void) {
     D_801293D8 = 0;
     func_800FB914(0);
     D_80129408 = 0xC8;
-    D_8012940C = 0x64;
+    *(s32 *) &D_8012940C = 0x64;
     func_800F7844();
     func_800F78E4();
     func_800F8378();
     func_800F8078();
     func_800F81A4();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8274.s")
-#endif
 
 #ifdef MIPS_TO_C
 

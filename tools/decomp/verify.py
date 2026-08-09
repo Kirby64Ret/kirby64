@@ -158,6 +158,25 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
         return None, (f'{func}: STILL A PRAGMA -- not decompiled yet. A MATCH here '
                       f'would be circular (its bytes come from the .s file).')
     listing = find_listing(func)
+    if listing is not None:
+        # A listing with words after its LAST .size carries the translation
+        # unit's alignment padding. C cannot emit those, so converting the
+        # function silently shortens the TU and shifts everything after it --
+        # while this check happily reports MATCH, because the function's own
+        # instructions are all correct. Four such traps were found sitting in
+        # ovl9 drafts, every one of them reporting MATCH.
+        _t = open(listing).read()
+        _i = _t.rfind('\n.size ')
+        if _i >= 0:
+            _tail = _t[_i + 1:]
+            _tail = _tail[_tail.find('\n') + 1:]
+            _pad = len(re.findall(r'^\s*/\*.*\*/\s*\S', _tail, re.M))
+            if _pad:
+                return None, (f'{func}: PADDING TRAP -- its listing has {_pad} '
+                              f'word(s) after the last .size (the TU\'s alignment '
+                              f'padding). It can NEVER be C: converting it shortens '
+                              f'the TU and shifts the segment, even though the '
+                              f'instructions themselves are right.')
     if listing is None:
         return None, f'{func}: no asm.old listing (unverifiable — was decompiled in src.old)'
     twords, ttexts = target_words(listing)

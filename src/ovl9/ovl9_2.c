@@ -49,7 +49,25 @@ void func_801D91A0_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D91C8_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CB860;
+extern f32 D_8021CF30_ovl9;
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800B3520(void);
+void func_800AA018(s32);
+
+void func_801D91C8_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB860;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B3520();
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_8021CF30_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    func_800AA018(0x10121);
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D92AC_ovl9.s")
 

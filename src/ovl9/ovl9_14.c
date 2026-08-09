@@ -337,7 +337,24 @@ void func_80211FC0_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80211FC8_ovl9.s")
+extern s32 D_801CCACC;
+extern f32 D_8021DD58_ovl9;
+
+void func_80211FC8_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    tmp->unk48 = NULL;
+    tmp->unk98 = &D_801CCACC;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800AA018(0x100E4);
+    func_800AA018(0x100E5);
+    play_sound(0x21E);
+    func_800AF27C();
+    D_800E3750[omCurrentObj->objId] = D_8021DD58_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    curObjSleepForever();
+}
 
 void func_802120A8_ovl9(s32 arg0) {
 
@@ -758,9 +775,40 @@ void func_802144F8_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80214578_ovl9.s")
+extern s32 D_801CCC10;
+extern void ohSleep(s32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80214640_ovl9.s")
+void func_80214578_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    tmp->unk98 = &D_801CCC10;
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    func_800AA018(0x101DA);
+    func_800AA018(0x101DB);
+    func_800B3520();
+    D_800E98E0[omCurrentObj->objId] = 0;
+    ohSleep(0x3C);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
+
+extern void func_8019B424_ovl7(void);
+extern s32 func_8019A9AC_ovl7(f32, f32);
+void func_80214480_ovl9(struct GObj *);
+
+void func_80214640_ovl9(void) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    func_8019B424_ovl7();
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        if (tmp->unk3C == 0) {
+            if (func_8019A9AC_ovl7(320.0f, 320.0f) == 3) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80214480_ovl9);
+            }
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80214708_ovl9.s")
 

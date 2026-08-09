@@ -492,6 +492,7 @@ void func_80216ED0_ovl9(struct GObj *arg0, s32 arg1, f32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80216F98_ovl9.s")
 
+/* the leading `unused` is load-bearing: it puts sp28 above the spill slot */
 void func_80217098_ovl9(struct GObj *arg0) {
     s32 unused;
     s32 sp28;

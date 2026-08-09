@@ -3514,24 +3514,23 @@ loop_1:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A1F30.s")
 #endif
 
-#ifdef MIPS_TO_C
+struct Ovl1ParticleNode {
+    struct Ovl1ParticleNode *next;
+};
+
+extern struct Ovl1ParticleNode *D_800D6A0C;
 
 void func_800A2024(void) {
-    ? *temp_s1;
-    ? *var_s0;
+    struct Ovl1ParticleNode *var_s0;
+    struct Ovl1ParticleNode *temp_s1;
 
     var_s0 = D_800D6A0C;
-    if (var_s0 != NULL) {
-        do {
-            temp_s1 = *var_s0;
-            func_800A1F30(var_s0);
-            var_s0 = temp_s1;
-        } while (temp_s1 != NULL);
+    while (var_s0 != NULL) {
+        temp_s1 = var_s0->next;
+        func_800A1F30(var_s0);
+        var_s0 = temp_s1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2024.s")
-#endif
 
 extern void (*D_800D6AD8)();
 extern void (*D_800D6ADC)();
