@@ -7,6 +7,9 @@
 #include "ovl1/ovl1_7.h"
 #include "unk_structs/D_800E1B50.h"
 
+extern void func_800AA018(s32);
+extern void func_800AF27C(void);
+
 extern void func_8019F410_ovl7(struct DObj *);
 extern FUNCLIST D_8021C5AC_ovl9;
 extern FUNCLIST D_8021C588_ovl9;
@@ -169,7 +172,14 @@ void func_801F936C_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9374_ovl9.s")
+void func_801F9374_ovl9(struct GObj *arg0) {
+    f32 v;
+
+    D_800E3210[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] * 0.25f;
+    D_800E3750[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] * 0.25f;
+    v = D_800E3C90[omCurrentObj->objId] * 0.25f;
+    D_800E3C90[omCurrentObj->objId] = (v < 0.0f) ? -v : v;
+}
 
 void func_801F9410_ovl9(struct GObj *arg0) {
     D_800E3210[omCurrentObj->objId] = 0.0f;
@@ -362,9 +372,24 @@ void func_801FAC98_ovl9(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FAD0C_ovl9.s")
+void func_801FAD0C_ovl9(struct GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    func_800AA018(0x100B7);
+    D_800DF310[omCurrentObj->objId] = func_801FAC98_ovl9;
+    func_800AF27C();
+    func_800AA018(0x100B5);
+    curObjSleepForever();
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FADA8_ovl9.s")
+void func_801FADA8_ovl9(struct GObj *arg0) {
+    if (((u32) D_800DD8D0[omCurrentObj->objId] >> 30) != 0) {
+        if (func_8019A7E8_ovl7(160.0f) == 0) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FA704_ovl9);
+        }
+    }
+}
 
 void func_801FAE40_ovl9(s32 arg0, s32 arg1, f32 arg2) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];

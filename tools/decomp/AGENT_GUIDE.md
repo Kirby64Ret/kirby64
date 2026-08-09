@@ -657,3 +657,40 @@ write source files during the build, so by the time it runs the ELF is already
 stale. It will refuse rather than report -- believe the refusal. Numbers taken
 mid-flight have been wrong by over a thousand functions in both directions.
 Measure when the fleet is idle, or gate per-file with checkpoint.py.
+
+## A local array initializer can emit .data and shift the segment
+
+Several ovl5 clone families copy a local array initializer out of a named data
+symbol (D_80185FF8_ovl5, D_801881DC_ovl5). Writing that initializer in C makes
+IDO emit its own .data blob into a TU whose `data` subsegment is still
+unmigrated asm. verify.py sees nothing; the segment grows; the ROM breaks.
+
+Same family as the rodata rule, different section. tools/decomp/check_sections.py
+now checks BOTH .rodata and .data, and flags any file that emits a section for
+which it has no migrated subsegment at all.
+
+## Unnamed empty functions merged into a neighbour's listing
+
+ovl5_2's func_80160A20 and func_801613C0 each end with an extra dead
+`jr $ra; nop` past the natural epilogue -- an unnamed 8-byte function that
+splat could not split out because there is no symbol at that address.
+Converting either shortens the TU by 8 bytes.
+
+Note the post-.size padding detector does NOT catch these: the words are
+BEFORE .size, inside the listing proper. Same shape as ovl4's func_80158120
+(0x70 listing containing the empty func_80158188) and ovl4's func_801555AC.
+If a function is a couple of instructions short and its listing ends with two
+`jr $ra` pairs, this is why.
+
+## More IDO idioms
+
+- IDO range-propagates from an ABS() ternary and drops the signed-% correction.
+  Assign the modulo to its own variable (`s32 r = temp % 8; if (r)`) to defeat
+  it. 10 diffs -> MATCH, and nothing else worked.
+- `(u16)x` and `x & 0xFFFF` are NOT interchangeable: only the cast produces the
+  spill-reload (`sw` / `lw $v1` / `andi $a0,$v1`) around a call.
+- Union copies: .as_s32/.as_u32/.as_ptr all match; plain union assignment and
+  .as_f32 schedule their stores differently.
+- Chained `a = b = expr;` versus two statements with a repeated RHS controls FP
+  register REUSE: the ROM reuses $f0 for every group where separate statements
+  allocate $f0/$f2/$f12/$f14.

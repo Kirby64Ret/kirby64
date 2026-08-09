@@ -216,7 +216,19 @@ s32 func_801DF588_ovl9(s32 arg0, void *arg1) {
     return func_80110150(arg1);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DF628_ovl9.s")
+extern FUNCLIST D_8021BDE0_ovl9;
+void func_801A6C10_ovl7(void);
+
+void func_801DF628_ovl9(void) {
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = -1;
+        func_801A6C10_ovl7();
+    }
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_8021BDE0_ovl9);
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 8, &D_8021BDE8_ovl9);
+    }
+}
 
 extern FUNCLIST D_8021BDE8_ovl9;
 

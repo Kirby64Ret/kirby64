@@ -124,7 +124,24 @@ void func_801E2B04_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E2B2C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E2C68_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CBA34;
+f32 func_8019B608_ovl7(s32);
+void func_800B33F4(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800AF27C(void);
+
+void func_801E2C68_ovl9(GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBA34;
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AF27C();
+    D_800E6A10[omCurrentObj->objId] = func_8019B608_ovl7(0);
+    D_800E98E0[omCurrentObj->objId] = 8;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E2D34_ovl9.s")
 
@@ -203,7 +220,24 @@ void func_801E3FB4_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E4B34_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E4CF8_ovl9.s")
+extern struct GObjProcess *gEntityGObjProcessArray[];
+void func_800FB914(s32);
+void func_801E34F8_ovl9(struct GObj *);
+void func_801E4DC8_ovl9(void);
+void func_8019F3F0_ovl7(void);
+
+void func_801E4CF8_ovl9(void) {
+    func_801A0D74_ovl7();
+    if (D_800E8920[omCurrentObj->objId] == 1) {
+        func_800FB914(1);
+        play_sound(0x98);
+        D_800E64D0[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId] * 0.75f;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801E34F8_ovl9);
+    }
+    func_8019F3F0_ovl7();
+    func_801E4DC8_ovl9();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E4DC8_ovl9.s")
 

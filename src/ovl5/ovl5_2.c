@@ -4,6 +4,7 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/util.h"
+#include "ovl1/save_file.h"
 #include "buffers.h"
 
 extern s32 D_8018E030_ovl5[];
@@ -90,7 +91,21 @@ s32 func_801609D0_ovl5(s32 arg0) {
     return 1;
 }
 
+#ifdef MIPS_TO_C
+/* ROM listing has 8 bytes of trailing dead epilogue (jr ra; nop) this C
+   cannot emit, so converting it would shorten the TU. */
+s32 func_80160A20_ovl5(s32 arg0) {
+    switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
+        case 4:
+        case 5:
+        case 0xB:
+            return 0;
+    }
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160A20_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160A78_ovl5.s")
 
@@ -131,9 +146,37 @@ void func_801615D8_ovl5(s32 arg0, f32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8016179C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161974_ovl5.s")
+extern u8 D_8018E208_ovl5[];
+extern s32 random_soft_s32_range(s32);
 
+s32 func_80161974_ovl5(void) {
+    s32 sp28[20];
+    s32 count;
+    s32 i;
+
+    count = 0;
+    for (i = 0; i < 20; i++) {
+        if (D_8018E208_ovl5[i] == 0) {
+            sp28[count] = i;
+            count++;
+        }
+    }
+    return sp28[random_soft_s32_range(count)];
+}
+
+extern s32 D_8018E050_ovl5[];
+
+#ifdef MIPS_TO_C
+/* 2 diffs: the spilled pointer lands at 0x18($sp), the ROM uses 0x1C -- the
+   known frame-layout anomaly, unaffected by local count/order. */
+f32 func_801619E0_ovl5(s32 arg0) {
+    s32 *p = &D_8018E050_ovl5[arg0];
+
+    return gEntitiesNextPosXArray[*p] + (sinf(*(f32 *) ((u8 *) D_800DE350[*p]->data.dobj->firstChild + 0x38)) * 50.0f);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801619E0_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161A54_ovl5.s")
 
@@ -178,7 +221,16 @@ void func_80162C68_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164344_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801643E8_ovl5.s")
+u16 func_801643E8_ovl5(s32 arg0) {
+    switch (arg0) {
+        case 0x1D:
+            return gSaveBuffer1.files[saveCurrentFileNum].hundredYardHopRecord;
+        case 0x1F:
+            return gSaveBuffer1.files[saveCurrentFileNum].bumperCropBumpRecord;
+        case 0x1E:
+            return gSaveBuffer1.files[saveCurrentFileNum].checkerBoardChaseRecord;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164490_ovl5.s")
 
@@ -196,7 +248,29 @@ void func_8016490C_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164914_ovl5.s")
 
+typedef struct Unk10Bytes {
+    u32 unk0;
+    u32 unk4;
+    u32 unk8;
+    u32 unkC;
+} Unk10Bytes;
+
+extern Unk10Bytes D_800D7178[];
+extern u8 D_8018E224_ovl5[];
+s32 func_80164914_ovl5(s32);
+
+#ifdef MIPS_TO_C
+/* ROM also keeps a dead D_8018E224_ovl5 induction pointer in $s2 */
+void func_801649CC_ovl5(void) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        D_800D7178[i].unkC = func_80164914_ovl5(i);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801649CC_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164A34_ovl5.s")
 

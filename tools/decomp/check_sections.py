@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Every MIGRATED .rodata block must be exactly its yaml subsegment size.
+"""Every emitted .rodata/.data block must match what the yaml gives it room for.
 
 check_tu_size.py checks .text only. For a segment with MIGRATED rodata
 (`.rodata, seg/file` in the yaml) the C file also emits the rodata block, and
@@ -23,8 +23,13 @@ REPO = '/home/user/kirby64_decomp'
 os.chdir(REPO)
 
 
-def expected():
-    """{'src/<seg>/<file>.c': size} for every MIGRATED .rodata subsegment."""
+def expected(section='.rodata'):
+    """{'src/<seg>/<file>.c': size} for every MIGRATED subsegment of `section`.
+
+    A file with NO migrated subsegment must emit NOTHING for that section: its
+    data lives in an unmigrated asm block, so anything the C emits is an extra
+    copy that grows the segment. That is checked separately below.
+    """
     y = open('kirby64.yaml').read()
     out = {}
     for m in re.finditer(r'- name: (\w+)\n(.*?)(?=\n  - name: |\Z)', y, re.S):
@@ -34,36 +39,46 @@ def expected():
             subs.append((int(sm.group(1), 16), sm.group(2), sm.group(3)))
         subs.sort(key=lambda x: x[0])
         for i, (off, kind, name) in enumerate(subs):
-            if kind != '.rodata' or not name or i + 1 >= len(subs):
+            if kind != section or not name or i + 1 >= len(subs):
                 continue
             seg, file = name.split('/')
             out[f'src/{seg}/{file}.c'] = subs[i + 1][0] - off
     return out
 
 
-def actual(obj):
+def actual(obj, section='.rodata'):
     h = subprocess.run(['mips-linux-gnu-objdump', '-h', obj],
                        capture_output=True, text=True).stdout
-    m = re.search(r'\s\.rodata\s+([0-9a-f]+)', h)
+    m = re.search(r'\s' + re.escape(section) + r'\s+([0-9a-f]+)', h)
     return int(m.group(1), 16) if m else 0
 
 
 def main():
     want = sys.argv[1:]
     bad = 0
-    for cfile, size in sorted(expected().items()):
-        seg = cfile.split('/')[1]
-        if want and seg not in want:
-            continue
-        obj = f'build/{cfile[:-2]}.o'
-        if not os.path.exists(obj):
-            continue
-        got = actual(obj)
-        if got != size:
-            print(f'{cfile:38} .rodata=0x{got:X} expected=0x{size:X} '
-                  f'({got - size:+d})')
-            bad += 1
-    print(f'-- {bad} migrated rodata block(s) with wrong size --')
+    for section in ('.rodata', '.data'):
+        exp = expected(section)
+        for obj in sorted(glob.glob('build/src/*/*.o')):
+            cfile = 'src/' + obj[len('build/src/'):-2] + '.c'
+            seg = cfile.split('/')[1]
+            if want and seg not in want:
+                continue
+            got = actual(obj, section)
+            size = exp.get(cfile)
+            if size is None:
+                # No migrated subsegment -> the C must emit nothing. A local
+                # array initializer copied out of a named data symbol makes
+                # IDO emit its own blob here, which is invisible to verify.py
+                # and shifts the whole segment.
+                if got:
+                    print(f'{cfile:38} {section}=0x{got:X} but this file has NO '
+                          f'migrated {section} subsegment -- it must emit none')
+                    bad += 1
+            elif got != size:
+                print(f'{cfile:38} {section}=0x{got:X} expected=0x{size:X} '
+                      f'({got - size:+d})')
+                bad += 1
+    print(f'-- {bad} section size problem(s) --')
     return 1 if bad else 0
 
 

@@ -611,7 +611,20 @@ void func_801E8A38_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8DD0_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8EC8_ovl9.s")
+void func_801E8F74_ovl9(struct GObj *);
+void func_801A0D74_ovl7();
+void func_8019F3F0_ovl7(void);
+
+void func_801E8EC8_ovl9(GObj *arg0) {
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800EAA60[omCurrentObj->objId];
+    if (D_800E7880[omCurrentObj->objId] == 5) {
+        func_801E8F74_ovl9(arg0);
+    }
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        func_801A0D74_ovl7(arg0);
+    }
+    func_8019F3F0_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8F74_ovl9.s")
 
