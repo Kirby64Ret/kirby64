@@ -758,7 +758,37 @@ void func_801FAF68_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FAFE8_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CC040;
+extern s32 D_801CABC4_ovl7;
+extern f32 D_8021D984_ovl9, D_8021D988_ovl9;
+int func_8010BA44(struct Sub800E1B50_Unk84 *);
+void func_800A9760(s32);
+void func_800AECC0(f32);
+void func_801A2ADC_ovl7(void *);
+
+void func_801FAFE8_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9C60[omCurrentObj->objId] = 0;
+    ent->unk48 = func_8010BA44;
+    ent->unk98 = &D_801CC040;
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    func_800A9760(0x10023);
+    func_800AA018(0x100B6);
+    func_800AECC0(4.0f);
+    if (D_800E9AA0[omCurrentObj->objId].as_s32 == 0) {
+        func_801A2ADC_ovl7(&D_801CABC4_ovl7);
+    } else {
+        D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = D_8021D984_ovl9;
+    }
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_8021D988_ovl9;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E3C90[omCurrentObj->objId] = 5.0f;
+    curObjSleepForever();
+}
 
 void func_801FB190_ovl9(struct GObj *arg0) {
     if (D_800E8920[omCurrentObj->objId] == 1) {

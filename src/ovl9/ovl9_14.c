@@ -433,7 +433,7 @@ void func_802119F8_ovl9(struct GObj *arg0) {
 }
 
 extern FUNCLIST D_8021CB88_ovl9;
-void func_8021217C_ovl9(void);
+s32 func_8021217C_ovl9(void);
 
 #ifdef MIPS_TO_C
 // 13 diffs: structurally exact; every pointer local sits one register slot
@@ -562,7 +562,42 @@ void func_80212174_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_8021217C_ovl9.s")
+struct Ovl9_14AnimCmd {
+    u8 filler0[0x10];
+    f32 unk10;
+    u8 filler14[8];
+    f32 unk1C;
+};
+
+struct Ovl9_14AnimObj {
+    u8 filler0[0x24];
+    struct Ovl9_14AnimCmd *unk24;
+};
+
+extern void func_80111550(void *);
+extern void *func_80111C88(s32 *, void *);
+extern void func_80111ECC(void *);
+s32 func_8019F650_ovl7(void);
+
+s32 func_8021217C_ovl9(void) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl9_14AnimObj *anim;
+    struct DObj *sp1C = D_800DFBD0[omCurrentObj->objId][3];
+    struct DObj *sp18 = D_800DFBD0[omCurrentObj->objId][2];
+
+    if (ent == NULL) {
+        return 0;
+    }
+    if (ent->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550((void *) omCurrentObj->objId);
+    anim = func_80111C88(ent->unk8C, (void *) omCurrentObj->objId);
+    anim->unk24->unk10 = (sp1C->pos.v.y * 0.5f) - 10.0f;
+    anim->unk24->unk1C = sp18->pos.v.y + 10.0f;
+    func_80111ECC(anim);
+    return func_8019F650_ovl7();
+}
 
 extern FUNCLIST D_8021CBA0_ovl9;
 
@@ -695,7 +730,30 @@ void func_80212AF8_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 6, &D_8021CC00_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80212B40_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CCAF0;
+extern f32 D_8021DD68_ovl9;
+
+void func_80212B40_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    ent->unk98 = &D_801CCAF0;
+    func_800AFBB4(1, omCurrentObj);
+    func_800AA018(0x10161);
+    if (D_800E7880[omCurrentObj->objId] == 2) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.5f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 3.5f;
+    } else {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 8.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 8.0f;
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_8021DD68_ovl9;
+    curObjSleepForever();
+}
 
 void func_80212CD0_ovl9(void) {
     if (func_801A0D74_ovl7() == 0) {
@@ -934,12 +992,12 @@ void func_80213F9C_ovl9(struct GObj *arg0) {
 extern s32 D_801CA5E0;
 extern f32 gKirbyHp;
 extern s32 func_80169430_ovl3(s32, s32, s32, s32);
-extern void func_80111550(u32);
+extern void func_80111550(void *);
 extern void *func_80111C88(s32 *, void *);
 extern void func_80111ECC(void *);
 
 s32 func_80213FDC_ovl9(struct GObj *arg0) {
-    func_80111550(omCurrentObj->objId);
+    func_80111550((void *) omCurrentObj->objId);
     func_80111ECC(func_80111C88(&D_801CA5E0, omCurrentObj->objId));
     if (D_800E6F50[omCurrentObj->objId].originOffset < 40.0f) {
         if (gKirbyHp != 0.0f) {
@@ -1085,7 +1143,7 @@ extern s32 D_801C9784;
 // for the id makes it worse (28 diffs).
 void func_80214888_ovl9(struct GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {
-        func_80111550(omCurrentObj->objId);
+        func_80111550((void *) omCurrentObj->objId);
         if (D_800E98E0[omCurrentObj->objId] == 1) {
             func_80111ECC(func_80111C88(&D_801C9784, (void *) omCurrentObj->objId));
         } else {

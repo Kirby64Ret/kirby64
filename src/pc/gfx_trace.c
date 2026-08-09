@@ -23,6 +23,15 @@
  * `seg%X:%06X` rather than silently mapped to something wrong.
  *
  * Enable with PC_TRACE=gfx.
+ *
+ * A NOTE ON POINTER WIDTH, because this file got it wrong once and the output
+ * was plausible enough to be believed. A Gfx is TWO uintptr_t, not two u32:
+ * include/PR/gbi.h declares Gwords that way and include/PR/ultratypes.h widens
+ * uintptr_t under PORT, so a display-list command is 8 bytes on N64 and 16 in
+ * this build. Walking it as `const u32 *` with `p += 2` therefore reads every
+ * command's low half twice and shifts by one word per command -- which decoded
+ * SETFILLCOLOR's colour argument as if it were the next opcode. It walks Gfx
+ * now, which is the only correct thing at either width.
  */
 #include <ultra64.h>
 #include <PR/gbi.h>
@@ -35,7 +44,7 @@
 #define MAX_CMDS  200000
 
 typedef struct {
-    u32 seg[16];
+    uintptr_t seg[16];
     int depth;
     unsigned count;
     unsigned tris;
@@ -107,9 +116,19 @@ static const char *op_name(u32 op) {
  * Segment 0 is the identity segment on N64 (a raw KSEG0 address). On PC the
  * "physical" address IS the host pointer -- see osVirtualToPhysical in
  * src/pc/os_time.c -- so segment 0 resolves to the value itself. */
-static const void *resolve(TraceState *st, u32 addr) {
-    u32 seg = (addr >> 24) & 0xF;
-    u32 off = addr & 0x00FFFFFF;
+static const void *resolve(TraceState *st, uintptr_t addr) {
+    u32 seg;
+    u32 off;
+
+    /* A value that does not fit in 32 bits cannot be a segmented address: it
+     * is a host pointer that the LP64 gbi.h macros stored directly. This is
+     * the case for every list the port builds itself, and it will be the case
+     * for game lists once assets stop being segmented ROM offsets. */
+    if (addr > 0xFFFFFFFFu) {
+        return (const void *)addr;
+    }
+    seg = (u32)((addr >> 24) & 0xF);
+    off = (u32)(addr & 0x00FFFFFF);
 
     if (seg == 0) {
         return (const void *)addr;
@@ -120,7 +139,7 @@ static const void *resolve(TraceState *st, u32 addr) {
     return (const void *)(st->seg[seg] + off);
 }
 
-static void trace_list(TraceState *st, const u32 *p);
+static void trace_list(TraceState *st, const Gfx *p);
 
 static void trace_indent(TraceState *st) {
     int i;
@@ -130,13 +149,15 @@ static void trace_indent(TraceState *st) {
     }
 }
 
-static void trace_list(TraceState *st, const u32 *p) {
+static void trace_list(TraceState *st, const Gfx *p) {
     if (p == NULL || st->depth >= MAX_DEPTH) {
         return;
     }
     st->depth++;
 
     for (;;) {
+        uintptr_t full0;
+        uintptr_t full1;
         u32 w0;
         u32 w1;
         u32 op;
@@ -146,12 +167,15 @@ static void trace_list(TraceState *st, const u32 *p) {
             fprintf(stderr, "... command limit reached, list truncated\n");
             break;
         }
-        w0 = p[0];
-        w1 = p[1];
+        full0 = p->words.w0;
+        full1 = p->words.w1;
+        w0 = (u32)full0;
+        w1 = (u32)full1;
         op = w0 >> 24;
 
         trace_indent(st);
-        fprintf(stderr, "%08X %08X  %s", w0, w1, op_name(op));
+        fprintf(stderr, "%016llX %016llX  %s", (unsigned long long)full0,
+                (unsigned long long)full1, op_name(op));
 
         switch (op) {
             case G_VTX: {
@@ -179,13 +203,14 @@ static void trace_list(TraceState *st, const u32 *p) {
                     /* offset is the segment number * 4 */
                     unsigned s = (offset >> 2) & 0xF;
 
-                    st->seg[s] = w1;
-                    fprintf(stderr, "   [segment %X = %08X]", s, w1);
+                    st->seg[s] = full1;
+                    fprintf(stderr, "   [segment %X = %016llX]", s,
+                            (unsigned long long)full1);
                 }
                 break;
             }
             case G_SETTIMG: {
-                const void *t = resolve(st, w1);
+                const void *t = resolve(st, full1);
 
                 if (t != NULL) {
                     fprintf(stderr, "  img=%p", t);
@@ -212,18 +237,19 @@ static void trace_list(TraceState *st, const u32 *p) {
                 fprintf(stderr, "  <<< microcode switch >>> text=%08X", w1);
                 break;
             case G_DL: {
-                const void *sub = resolve(st, w1);
+                const void *sub = resolve(st, full1);
                 int push = ((w0 >> 16) & 0xFF) == G_DL_PUSH;
 
-                fprintf(stderr, "  %s %08X\n", push ? "push" : "branch", w1);
+                fprintf(stderr, "  %s %016llX\n", push ? "push" : "branch",
+                        (unsigned long long)full1);
                 if (sub != NULL) {
-                    trace_list(st, (const u32 *)sub);
+                    trace_list(st, (const Gfx *)sub);
                 }
                 if (!push) {
                     st->depth--;
                     return; /* branch does not return */
                 }
-                p += 2;
+                p++;
                 continue;
             }
             case G_ENDDL:
@@ -234,7 +260,7 @@ static void trace_list(TraceState *st, const u32 *p) {
                 break;
         }
         fputc('\n', stderr);
-        p += 2;
+        p++;
     }
     st->depth--;
 }
@@ -251,7 +277,7 @@ void pc_gfx_trace_task(OSTask *task) {
 
     fprintf(stderr, "[gfx] ==== display list at %p (%u bytes declared) ====\n",
             (void *)task->t.data_ptr, (unsigned)task->t.data_size);
-    trace_list(&st, (const u32 *)task->t.data_ptr);
+    trace_list(&st, (const Gfx *)task->t.data_ptr);
     fprintf(stderr, "[gfx] ==== %u commands, %u vertices, %u triangles ====\n",
             st.count, st.verts, st.tris);
 }

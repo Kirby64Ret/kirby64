@@ -1708,3 +1708,83 @@ ROM has a bare `addiu $vN, $vN, 0x20` before a run of stores, write
 `func_80116260` was 23/37 -- every instruction right, only that `addiu` missing
 -- and went to MATCH. A `for` loop and a struct-array rewrite both made it
 worse; the bias is the whole trick.
+
+# The callee-return-type lever, consolidated
+
+Three agents found this independently from three directions in one wave, and
+between them it has closed at least eight functions that earlier waves recorded
+as permanent floors. Treat the whole family as the FIRST thing to try on any
+`$v0`/`$v1` or one-slot temp rotation in a function that contains a call.
+
+IDO reserves `$v0` across a caller for any callee that returns a value. Which
+way you need to move depends on what the callee is currently declared as:
+
+**Declared `void`, need temps UP a slot** -> give it a non-void return type.
+`s32 func_801E28C8_ovl10(s32);` closed `func_801DD674_ovl10` (7 diffs),
+`func_801DD2CC_ovl10` (11, previously guarded) and `func_801B44FC_ovl7` (4).
+
+**IMPLICITLY DECLARED, need temps DOWN a slot** -> declare it `void`. This is
+the case that hides, because nothing in the source looks wrong: an
+undeclared callee is `int f()` to IDO, so it silently reserves `$v0`.
+`void func_800AA018(s32);` closed BOTH `func_8011A2F4` and `func_8011A7A8` in
+ovl2_10.c -- two functions this guide had listed as confirmed floors.
+`void play_sound(s32);` took `func_801EC598_ovl9` from 21 diffs to MATCH;
+`play_sound` has no prototype anywhere in include/.
+
+Placement matters and differs between the two: a `void` declaration for a
+previously-implicit callee MUST be at file scope, because once an earlier call
+has established the implicit `int f()`, a later block-scope declaration is a
+hard `redeclaration` error. A/B the whole object either way -- `--all` on the
+file stayed at 0 diff in every case above, so the knob is per-TU and cheap.
+
+It does not always help: `func_801E06C0_ovl9` got WORSE with the s32-return
+form (2 -> 4). Measure, do not assume.
+
+## Pad locals above and below an address-taken struct are separate knobs
+
+The guide previously described only leading pads. Measured on
+`func_801D7140_ovl9`:
+
+    Vector sp38;                        -> 0x34, frame 0x40
+    s32 p0; Vector sp38;                -> 0x30, frame 0x40   (moves down)
+    s32 p0; s32 p1; Vector sp38;        -> 0x34, frame 0x48   (frame grows)
+    s32 p0; Vector sp38; s32 p1;        -> 0x38, frame 0x48   MATCH
+
+A LEADING pad moves the struct down without growing the frame; a TRAILING pad
+grows the frame without moving the struct. 5 diffs -> 0.
+
+Related: a pointer local declared BEFORE an address-taken struct takes the
+higher slot even when it lives in a register and is only spilled
+(`func_801B726C_ovl7`, 11 -> 7). This complements the wave-6 "`ent`-last"
+note -- the direction depends on whether the pointer is spilled or purely
+register-resident.
+
+## More levers
+
+**Chained assignment fixes `$v0`/`$v1`, not only a shared load.**
+`p->angle.v.x = p->angle.v.y = p->angle.v.z;` closed `func_801D2480_ovl9`
+(55 diffs -> MATCH). Three separate statements re-loaded the field AND put the
+value in the wrong `$v` register; the chain fixed both at once.
+
+**Type-split store on a u8 array beside an s32 compare.**
+`func_801E9AA0_ovl9` was 34/126 solely because `D_800E7880[i] = 1;` CSE'd its
+constant with `D_800E8E60[i] == 1`. `*(s8 *) &D_800E7880[i] = 1;` matched.
+Note the `(u32)`-on-the-compare cure from wave 4 did not compile here.
+
+**A `(void *)` parameter change is safe to apply to a prototype shared with
+already-matched functions**, as long as every call site in the TU is cast.
+`func_8021217C_ovl9` needed `or $a0, $a1, $zero`; widening
+`func_80111550(u32)` to `(void *)` and casting all three call sites closed it
+and left the other two functions matching.
+
+## Pre-existing nested guards exist in ovl9 -- and they are benign
+
+`src/ovl9/ovl9_4.c:459`, `ovl9_7_2.c:898`, `ovl9_8.c:873`, `ovl9_9.c:984`,
+`ovl9_14.c:345`, `ovl9_15.c:470` and `:484` contain
+`#ifdef MIPS_TO_C ... #else <inner #ifdef MIPS_TO_C ... #else pragma #endif> #endif`.
+Both branches resolve to the pragma, so the ROM is unaffected and there is
+nothing to fix.
+
+But a tool that un-guards "the first `#ifdef MIPS_TO_C`" will produce garbage
+in those files. The wave-7 nesting warning applies to READING as well as
+writing.

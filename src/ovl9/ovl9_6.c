@@ -106,7 +106,34 @@ void func_801EB8E8_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 5;
 }
 
+/* 2 diffs: both `sll objId, 2` temps are hoisted above the branch and the ROM
+   emits them in the opposite order ($t5 then $t4). Inverted conditions, goto
+   form, ternary and type-split stores were all swept. */
+#ifdef MIPS_TO_C
+void ohSleep(s32);
+
+void func_801EB98C_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8784_ovl7;
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    if ((D_800E7880[omCurrentObj->objId] & 1) != 0) {
+        D_800E3210[omCurrentObj->objId] = -8.0f;
+    } else {
+        D_800E3210[omCurrentObj->objId] = 8.0f;
+    }
+    ohSleep((s32) (D_800EADE0[omCurrentObj->objId] * 0.125f));
+    func_800B33F4();
+    D_800E5F90[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
+    D_800E6BD0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0x3C;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EB98C_ovl9.s")
+#endif
 
 struct Ovl9AnimCmd2 {
     u8 filler0[8];
@@ -238,9 +265,69 @@ void func_801EC4A8_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EC598_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CBC2C;
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800B33F4(void);
+void func_800AA018(s32);
+void func_800AF27C(void);
+void play_sound(s32);
+s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EC800_ovl9.s")
+void func_801EC598_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBC2C;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800AECC0(gameTicksPerDraw * 2.0f);
+    func_800AED20(gameTicksPerDraw * 2.0f);
+    func_800AA018(0x1020A);
+    ohSleep(5);
+    D_800E98E0[omCurrentObj->objId] = 0x14;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBC2C;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 14.0f;
+    D_800E3750[omCurrentObj->objId] = -1.0f;
+    D_800E3C90[omCurrentObj->objId] = 14.0f;
+    play_sound(0x166);
+    ohSleep(8);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA018(0x10208);
+    ohSleep(3);
+    D_800EBBE0[omCurrentObj->objId] = func_801ACCA0_ovl7(0x27, 0, 30.0f, -5.0f);
+    play_sound(0xA7);
+    D_800E6A10[D_800EBBE0[omCurrentObj->objId]] = D_800E6A10[omCurrentObj->objId];
+    D_800E3750[omCurrentObj->objId] = -1.0f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+}
+
+void func_8019BB58_ovl7(void);
+void func_800B7514(s32);
+
+void func_801EC800_ovl9(struct GObj *arg0) {
+    f32 temp;
+
+    func_801A3280_ovl7();
+    func_8019BB58_ovl7();
+    D_800E8E60[omCurrentObj->objId] = 1;
+    D_800DEF90[omCurrentObj->objId] = func_800B7514;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800EA6E0[omCurrentObj->objId] = gEntitiesAngleXArray[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = gEntitiesAngleYArray[omCurrentObj->objId];
+    D_800EAA60[omCurrentObj->objId] = gEntitiesAngleZArray[omCurrentObj->objId];
+    func_800AA018(0x10211);
+    D_800E3210[omCurrentObj->objId] = sinf(gEntitiesAngleXArray[omCurrentObj->objId]) * -1.0f;
+    temp = cosf(gEntitiesAngleXArray[omCurrentObj->objId]);
+    D_800E3050[omCurrentObj->objId] = sinf(gEntitiesAngleYArray[omCurrentObj->objId]) * temp;
+    D_800E33D0[omCurrentObj->objId] = cosf(gEntitiesAngleYArray[omCurrentObj->objId]) * temp;
+    curObjSleepForever();
+}
 
 extern FUNCLIST D_8021C0CC_ovl9;
 extern FUNCLIST D_8021C104_ovl9;
@@ -274,7 +361,7 @@ void func_801ECAD8_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801ED018_ovl9.s")
 
 extern struct GObjProcess *gEntityGObjProcessArray5[];
-extern void func_800B7514(s32);
+void func_800B7514(s32);
 void func_801A3280_ovl7(void);
 void func_8019BB58_ovl7(void);
 void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
