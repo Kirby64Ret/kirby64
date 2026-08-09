@@ -67,8 +67,12 @@ def main():
     # exist. Refuse to report rather than mislead.
     import glob as _glob
     _et = os.path.getmtime('build/kirby.us.elf')
+    # src/pc/ is the PC port's platform layer. The N64 build never compiles it
+    # -- SRC_DIRS in the Makefile does not match it -- so an edit there cannot
+    # make the linked ROM stale. Including it meant a PC agent working on
+    # os_vi.c blocked every decompilation agent's verification.
     _newer = [f for f in _glob.glob('src/**/*.c', recursive=True)
-              if os.path.getmtime(f) > _et]
+              if not f.startswith('src/pc/') and os.path.getmtime(f) > _et]
     if _newer and '--stale-ok' not in sys.argv:
         raise SystemExit(
             f'REFUSING TO REPORT: {len(_newer)} source file(s) are newer than\n'
