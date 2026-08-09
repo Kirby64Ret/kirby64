@@ -794,6 +794,8 @@ block_168:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A7524_ovl7.s")
 #endif
 
+#ifdef MIPS_TO_C
+// 2 diffs: IDO puts the spilled index at 0x18($sp), the ROM at 0x1C.
 s32 func_801A8BAC_ovl7(void) {
     f32 temp_f0;
     f32 temp_f2;
@@ -812,6 +814,9 @@ s32 func_801A8BAC_ovl7(void) {
     }
     return 0;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8BAC_ovl7.s")
+#endif
 
 #ifdef MIPS_TO_C
 

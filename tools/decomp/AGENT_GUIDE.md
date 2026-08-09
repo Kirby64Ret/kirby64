@@ -606,3 +606,54 @@ casts, `<<2` vs `*4`, extra parameters, statement order, block scoping,
 A scanner that only knows `#ifdef MIPS_TO_C` silently skips real near-misses.
 Two functions that turned out to match were sitting under `#ifdef
 NON_MATCHING`. Search for both.
+
+## Jump tables block conversion in ovl3/ovl4 (and anywhere rodata is unmigrated)
+
+kirby.ld places `.rodata` only for the MIGRATED files. Any C `switch` big
+enough to make IDO emit a `jtbl_*` produces an ORPHAN `.rodata` section in a
+segment whose rodata is still an unmigrated asm block. 30 of ovl3/ovl4's
+remaining pragmas have `jlabel` in their listing -- do not convert those until
+the yaml rodata is migrated.
+
+Float literals are fine: IDO emits lui+mtc1 for any float whose low 16 bits
+are zero, so 2.0f / 50.0f / 3.5f / 60.0f cost no rodata at all. Check with
+`objdump -h` rather than assuming.
+
+A switch over 2-4 cases emits a COMPARE CHAIN, not a jump table, so it is safe
+-- and it is often the only form that yields `beq`+`beq` where if/else gives
+`bne`. One function went 51 diffs -> MATCH on that change alone.
+
+## Symbols that look usable but are not
+
+`D_8012E944` links at 0x8012e8f4, NOT 0x8012E944. Functions needing the folded
+address gKirbyState+0x188 cannot be written: IDO only emits
+%hi/%lo(gKirbyState) plus a displacement. Blocks func_8015439C_ovl3,
+func_80154428_ovl3, func_80154578_ovl3.
+
+By contrast `D_8012E7E8` and `D_8012E860` DO link exactly at gKirbyState+0x28
+and +0xA0, and `*(s32 *)((u8 *) &D_8012E7E8 + 8) = 0;` is what the ROM wants
+where the listing says `%lo(D_8012E7E8 + 0x8)`. Always check the MAP before
+concluding a symbol is missing.
+
+## More levers
+
+- Type-split ZERO: where the ROM has two separate `mtc1 $zero`, one is an int
+  0 and one a 0.0f -- write `arr[i] = 0;` for one. Took two functions from 31
+  and 61 diffs to MATCH. Where the ROM SHARES one `mtc1 $zero`, both must be
+  0.0f.
+- `goto` into a following label reproduces block ordering no if/else shape
+  can: `if (c) goto ret7; return 6; ret7: return 7;`. Nested ifs duplicate the
+  return block; `&&` orders the blocks wrongly.
+- `s16 sp[2]` where only [0] is used places the short in the LOW half of its
+  word (0x24 vs 0x26) -- same lever as the `f32 sp[4]` trick.
+- A struct copy from an extern reproduces a local array initializer WITHOUT
+  emitting rodata: wrap the data symbol in a typedef and write
+  `Foo sp0 = D_8015A358_ovl4;`. Three functions matched first try on this.
+
+## Measuring ground truth while agents are running
+
+You cannot. verify_rom compares the linked ROM to the base ROM, and agents
+write source files during the build, so by the time it runs the ELF is already
+stale. It will refuse rather than report -- believe the refusal. Numbers taken
+mid-flight have been wrong by over a thousand functions in both directions.
+Measure when the fleet is idle, or gate per-file with checkpoint.py.

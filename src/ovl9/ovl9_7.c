@@ -109,5 +109,20 @@ void func_801F253C_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F2584_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F2910_ovl9.s")
+void func_801A0D74_ovl7();
+void func_801A03B4_ovl7(void);
+
+void func_801F2910_ovl9(void) {
+    f32 dx;
+    f32 dy;
+    f32 dz;
+
+    func_801A0D74_ovl7();
+    dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    dy = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
+    dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
+    if (sqrtf((dx * dx) + (dy * dy) + (dz * dz)) < 80.0f) {
+        func_801A03B4_ovl7();
+    }
+}
 

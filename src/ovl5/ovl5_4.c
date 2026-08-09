@@ -4,6 +4,7 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/util.h"
+#include "ovl1/save_file.h"
 
 extern s32 D_80187384_ovl5[];
 extern Gfx D_80186A80_ovl5[];
@@ -139,7 +140,16 @@ s32 func_8016A69C_ovl5(s32 arg0) {
 void func_8016EA4C_ovl5(void) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016EA54_ovl5.s")
+u16 func_8016EA54_ovl5(s32 arg0) {
+    switch (arg0) {
+        case 0x1D:
+            return gSaveBuffer1.files[saveCurrentFileNum].hundredYardHopRecord;
+        case 0x1F:
+            return gSaveBuffer1.files[saveCurrentFileNum].bumperCropBumpRecord;
+        case 0x1E:
+            return gSaveBuffer1.files[saveCurrentFileNum].checkerBoardChaseRecord;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016EAFC_ovl5.s")
 

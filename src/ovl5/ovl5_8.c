@@ -1,6 +1,8 @@
 #include <ultra64.h>
 #include <macros.h>
+#include "buffers.h"
 #include "GObj.h"
+#include "SPObj.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/util.h"
@@ -41,7 +43,29 @@ void func_8017E274_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_8/func_8017E350_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_8/func_8017E64C_ovl5.s")
+extern struct UnkStruct8015C740 D_80189348_ovl5;
+extern struct UnkStruct8015C740 D_80189368_ovl5;
+extern struct UnkStruct8015C740 D_80189388_ovl5;
+extern struct UnkStruct8015C740 D_801893A8_ovl5;
+SPObj *func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
+void func_800AD1A0(void);
+void func_8017E64C_ovl5(GObj *arg0) {
+    SPObj *spobj;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    func_8015C740_ovl5(arg0, &D_80189348_ovl5);
+    spobj = func_8015C740_ovl5(arg0, &D_80189348_ovl5);
+    spobj->xOffset = 160.0f;
+    spobj->yOffset = 10.0f;
+    spobj->unk5A |= 1;
+    spobj->unkBA |= 1;
+    func_8015C740_ovl5(arg0, &D_80189368_ovl5);
+    func_8015C740_ovl5(arg0, &D_80189388_ovl5);
+    func_8015C740_ovl5(arg0, &D_801893A8_ovl5);
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_8/func_8017E754_ovl5.s")
 

@@ -2632,7 +2632,6 @@ s32 func_801215DC(void) {
     }
 }
 
-#ifdef MIPS_TO_C
 s32 func_80121658(void) {
     if (D_800E8920[omCurrentObj->objId] != 0) {
         if (D_800E3210[omCurrentObj->objId] == 0.0f) {
@@ -2647,7 +2646,9 @@ s32 func_80121658(void) {
         if (D_800E3C90[omCurrentObj->objId] == 1.0f) {
             goto ret0;
         }
-        D_800E3750[omCurrentObj->objId] = -0.4f;
+        if (1) {
+            D_800E3750[omCurrentObj->objId] = -0.4f;
+        }
         D_800E3C90[omCurrentObj->objId] = 1.0f;
     } else if (D_800E3C90[omCurrentObj->objId] != 16.0f) {
         D_800E3750[omCurrentObj->objId] = -0.9806650281f;
@@ -2656,9 +2657,6 @@ s32 func_80121658(void) {
 ret0:
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121658.s")
-#endif
 
 s32 func_801217B8(void) {
     if (func_80121658() != 0) {

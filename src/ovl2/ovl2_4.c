@@ -98,14 +98,13 @@ u32 func_800FD570(s32 arg0, u32 arg1, f32 arg2, f32 arg3, f32 arg4) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_4/func_800FD570.s")
 #endif
 
-#ifdef NON_MATCHING
 s32 func_800FD754(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     u32 *temp_v0 = D_801245C4[arg0];
 
-    if (temp_v0[0] != 0) {
+    if (D_801245C4[arg0][0] != 0) {
         s32 temp_v0_2 = func_800FD9D4(0);
         if (temp_v0_2 == -1) {
-            utilPrintf(D_8012890C);
+            utilPrintf("ExplosionPos(model) Request Error![effect.cc]\n");
             return 0;
         }
         D_800EC2E0[temp_v0_2].as_s32 = arg0;
@@ -115,16 +114,11 @@ s32 func_800FD754(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
         return 1;
     }
     if (temp_v0 != &D_80124630) {
-        func_800A7F74(3, 2, temp_v0[1], arg1, arg2, arg3);
+        func_800A7F74(3, 2, D_801245C4[arg0][1], arg1, arg2, arg3);
     } else {
-        func_800A7F74(0, 2, temp_v0[1], arg1, arg2, arg3);
+        func_800A7F74(0, 2, D_801245C4[arg0][1], arg1, arg2, arg3);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_4/func_800FD754.s")
-#endif
-
-extern const char *D_8012893C;
 
 u32 func_800FD874(s32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
     s32 temp_v0;
@@ -133,7 +127,7 @@ u32 func_800FD874(s32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f3
     if (D_801245C4[arg0][0] != 0) {
         temp_v0 = func_800FD9D4(0);
         if (temp_v0 == -1) {
-            utilPrintf(&D_8012893C);
+            utilPrintf("ExplosionPos(model) Request Error![effect.cc]\n");
         } else {
             D_800EC2E0[temp_v0].as_s32 = arg0;
             gEntitiesNextPosXArray[temp_v0] = arg1;
@@ -160,8 +154,6 @@ s32 func_800FD968(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     return temp_v0;
 }
 
-extern const char D_8012896C[];
-
 // last function in this translation unit: its listing carries the TU's
 // trailing rodata/alignment padding, which C does not emit
 s32 func_800FD9D4(s32 arg0) {
@@ -169,7 +161,7 @@ s32 func_800FD9D4(s32 arg0) {
 
     temp_v0 = request_track_general(0x22, 0x3C, 0x4A);
     if (temp_v0 == -1) {
-        utilPrintf(&D_8012896C);
+        utilPrintf("Effect Request Error![effect.cc]\n");
     } else {
         gEntityFuncListIDArray[temp_v0] = arg0;
     }

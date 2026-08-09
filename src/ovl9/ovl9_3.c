@@ -226,7 +226,22 @@ void func_801DF6F8_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DF778_ovl9.s")
+void func_800B6A2C(s32);
+void func_801DF8B8_ovl9(struct GObj *);
+void func_801DF6F8_ovl9(struct GObj *);
+void func_801A0D50_ovl7(void *);
+
+void func_801DF778_ovl9(GObj *arg0) {
+    D_800DEF90[omCurrentObj->objId] = func_800B6A2C;
+    D_800DF150[omCurrentObj->objId] = &func_801DF8B8_ovl9;
+    func_801A0D50_ovl7(&func_801DF6F8_ovl9);
+    D_800E98E0[omCurrentObj->objId] = 5;
+    if (D_800E8920[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 5;
+    }
+}
 
 void func_8019BB58_ovl7(void);
 extern void func_800B6B8C(s32);
