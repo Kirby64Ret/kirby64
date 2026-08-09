@@ -14,6 +14,12 @@ extern u8 D_8018EDD0_ovl5;
 extern Gfx D_80189868_ovl5[];
 s32 saveCheckCutsceneWatched(s32);
 void func_801800CC_ovl5(void);
+typedef union Unk48Ptrs {
+    struct UnkStruct8015C740 *unk0[18];
+} Unk48Ptrs;
+
+extern Unk48Ptrs D_80189820_ovl5;
+extern struct UnkStruct8015C740 D_80189BC0_ovl5;
 void func_8017F6F8_ovl5();
 void func_8017FA7C_ovl5();
 void func_8017FD84_ovl5();
@@ -72,7 +78,19 @@ s32 func_8017FB84_ovl5(s32 arg0) {
     return saveCheckCutsceneWatched(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017FBA4_ovl5.s")
+SPObj *func_8017FBA4_ovl5(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
+    Unk48Ptrs sp20 = D_80189820_ovl5;
+    SPObj *sp;
+
+    if (func_8017FB84_ovl5((&D_80189C98_ovl5)[arg1]) != 0) {
+        sp = func_8015C740_ovl5(arg0, sp20.unk0[arg1]);
+    } else {
+        sp = func_8015C740_ovl5(arg0, &D_80189BC0_ovl5);
+    }
+    sp->xOffset = arg2;
+    sp->yOffset = arg3;
+    return sp;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017FC58_ovl5.s")
 

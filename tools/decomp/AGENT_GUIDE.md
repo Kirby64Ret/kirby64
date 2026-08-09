@@ -845,3 +845,51 @@ leading `s32 unused;` to place the array at 0x20, the ABS ternary written as
 the ABSF() macro inline in the `if`, and `sp20[1] = 0.0;` as a DOUBLE literal
 to fork the second `mtc1 $zero`. Three separate levers on one function; its
 clone needed the identical treatment.
+
+## IDO -O2 FULLY UNROLLS small constant-trip loops (no flag needed)
+
+The highest-yield discovery of the session, and it inverts an assumption that
+had been costing matches all day.
+
+Straight-line code in a listing is often a LOOP in the source, not unrolled C.
+Signatures:
+  - four separate `lui %hi(SYM+0x10)` absolute accesses in a row
+  - a 4x-unrolled byte scan ending in a pointer compare against a named
+    end symbol
+  - per-copy temp registers stepping t6/t7/t8/t9 that no straight-line C
+    reproduces
+
+`for (i = 0; i < 20; i++) if (arr[i] == 0) return 0;` matched a 30-instruction
+4x-unrolled listing EXACTLY. Hand-unrolling the same logic gave 107/109 diffs.
+
+A 3-instruction remainder loop BEFORE a 4x-unrolled body is IDO's `n % 4`
+prologue -- again, write the plain loop.
+
+## Other levers from the same pass
+
+- `arr[i * 2]` on an `s32[]` costs one more IDO temp than `arr[i].unk0` on an
+  8-byte struct. Redeclaring the array as a 2-word struct array took a
+  one-slot temp rotation from 16 diffs to MATCH -- so that signature is not
+  always immovable.
+- `switch` BODY layout order follows source case order while the compare chain
+  stays sorted numerically. One function needed its cases written 0,1,3,2.
+- IDO folds `x = f(); ... x - 1;`, but NOT a read-back of a just-stored
+  global. Where the ROM computes `addiu $t2, $v1, -1` from a value it just
+  stored, the source re-reads the array element.
+- `return 1; return 0;` beats a `ret` local where the ROM has
+  `or $v0,$zero,$zero` before the compares -- the local costs 8 frame bytes
+  and a spill.
+
+## Correction: the frame anomaly is NOT always unfixable
+
+This guide told agents to stop on sight. func_800AAF34 was closed by REMOVING
+user locals: three gave frame 0x30, two gave 0x28, ONE gave an exact match,
+and any dead or padding local of any type re-grew it. Sweep DOWNWARD in local
+count before giving up. Some cases (func_80166C68_ovl5, 2 diffs) really are
+immovable, but do the downward sweep first.
+
+## The ROM sha1 is now the gate
+
+`make` reaching `build/kirby.us.z64: OK` proves the whole build byte-for-byte.
+Run it before every commit. Every other tool here is now for LOCALISING a
+break, not for catching one.
