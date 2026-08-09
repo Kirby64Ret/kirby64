@@ -1197,7 +1197,7 @@ Do not hand-roll this scan. Call `padtrap.classify(listing_path, func)`; it
 returns `('trap'|'benign'|'clean', n_words)`. Of the pragmas remaining, 32 are
 traps and 69 are benign tails that are ordinary decompilation work.
 
-## K&R definitions solve the home-slot problem
+## K&R definitions solve the home-slot problem -- but only with 2+ parameters
 
 If the only residue is a missing `sw $a0, 0xNN($sp)`, the function takes a
 parameter -- but a prototyped `(s32 arg0)` breaks zero-argument call sites in
@@ -2133,3 +2133,58 @@ fold to one `sll 3`.
 
 **Type-split zero applies to store-versus-compare too**: `= 0.0;` (double) on
 two position stores forked the `mtc1 $zero` that a `!= 0.0f` compare needs.
+
+## Correction: a SINGLE-parameter K&R definition does not home its parameter
+
+The wave-6 note said a K&R definition emits the home slot. Measured on
+`func_8019D8A0` (ovl7/enelib.c, 20/46): **a K&R definition with ONE parameter
+does not home it; a multi-parameter K&R definition homes all of them.** A
+narrow `u16` parameter, K&R or prototyped, does emit the home store but then
+re-reads it with `lhu 0x2(sp)` instead of keeping `andi $s0,$a0,0xFFFF`
+(42/46).
+
+So the lever is real but its precondition is 2+ parameters.
+
+## `*(vs32 *) &SYM` forces ADDRESS MATERIALISATION
+
+Distinct from the anti-CSE effect. Three forms, three outcomes, measured on
+`func_801B8714_ovl7` (45/49 -> 33 -> 24/50):
+
+    s32 *p = &SYM;        address folded into %lo() at every use
+    vs32 *p = &SYM;       halfway
+    *(vs32 *) &SYM        lui + addiu into a register, then lw/sw 0(reg)
+
+Use it wherever the ROM has a materialised base you cannot otherwise
+reproduce.
+
+Related: **a TWO-term chained assignment materialises the first-stored symbol's
+address into `$v0`.** `D_80129138 = D_8012913C = 0;` emits `lui $v0`/`addiu
+$v0`/`sw 0($v0)` for the second symbol and the ordinary `lui $at; sw %lo()($at)`
+for the first. Three separate statements fold both, and THREE-term chains do
+not work -- exactly two.
+
+## Spill slots have their own knobs, separate from register class
+
+* **Declaration order controls spill-slot assignment.** `func_80114DBC` sat at
+  2/49 on a call-result spill 4 bytes low; moving the pointer local LAST closed
+  it. All six permutations swept, only one lands.
+* **Inlining `arg0->objId` instead of caching it in a local moves a spill slot
+  up 4 bytes WITHOUT growing the frame** (`func_8011AA7C`, 2/64 -> MATCH). A
+  leading `s32 pad` fixes the same slot but grows the frame by 8; `s16`/`s8`
+  pads behave identically to `s32`.
+* **A TRAILING dead local moves a compiler spill slot up without moving the
+  other locals** (`func_80115D38`, 3/93 -> 1). Leading pads made it worse.
+
+## Read the argument COUNT before believing a reload is a live range
+
+`func_801ED444_ovl16` looked like it needed three dead `lw $a2, 0x2C($sp)`
+reloads. They were the THIRD ARGUMENT: `func_800AA038(s32, f32, s32)`. Getting
+the callee's arity right took it 62/124 -> 36/125 with no other change.
+
+## NEVER write `open(path, 'w').write(splice(path, ...))`
+
+Python evaluates the `open()` first, so the file is TRUNCATED before `splice`
+reads it. This emptied `src/ovl2/ovl2_2.c` -- 1013 lines to 0 -- mid-session.
+
+Compute the new text into a variable, assert it non-empty, and only then open
+for write. Recovery: `git show HEAD:<path> > <path>`.

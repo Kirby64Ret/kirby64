@@ -277,22 +277,28 @@ void func_801B865C_ovl7(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-// 45/49 diffs (same length): the ROM materialises &D_801D0A98_ovl7 into $a1
-// and spills arg1 first; IDO keeps the address in $t9 and uses absolute form.
+// 24/50 (was 45/49). `*(vs32 *) &D_801D0A98_ovl7` is what makes IDO
+// MATERIALISE the symbol's address into a register (lui + addiu, then
+// lw/sw 0(reg)) three times, exactly as the ROM does; a plain
+// `s32 *p = &D_801D0A98_ovl7;` local folds the address into %lo() at every
+// use (45 diffs) and a `vs32 *p` local is halfway (33). The whole remaining
+// residue is that the ROM parks that address in $a1 -- which also forces the
+// arg1 home store ahead of the $ra store -- while IDO uses $t9/$t4/$t5.
+// Swept: `&&` vs nested ifs for the ent->unk34 test, an explicit local for
+// ent->unk34, and both declaration orders.
 void func_801B8714_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
-    s32 *p = &D_801D0A98_ovl7;
 
-    if (*p == 0) {
+    if ((*(vs32 *) &D_801D0A98_ovl7) == 0) {
         if ((s32) arg2 != 0) {
             play_sound(0x15F);
         }
     }
-    *p = (s32) arg2;
+    (*(vs32 *) &D_801D0A98_ovl7) = (s32) arg2;
     if (((s32) arg2 == 0) && (ent->unk34 != NULL)) {
         func_800A22D4(ent->unk34);
         ent->unk34 = NULL;
-        D_801D0A9C_ovl7 = *p;
+        D_801D0A9C_ovl7 = (*(vs32 *) &D_801D0A98_ovl7);
     }
 }
 #else

@@ -1235,7 +1235,44 @@ void func_801FFC60_ovl9(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FFCE8_ovl9.s")
+
+
+
+
+void func_801FFCE8_ovl9(s32 arg0) {
+    UnkStruct800E1B50 *temp_s0;
+    GObj *o;
+    u32 temp_v1;
+
+    o = omCurrentObj;
+    temp_v1 = o->objId * 4;
+    *(s32 *) ((u8 *) D_800E9E20 + temp_v1) = 0;
+    temp_s0 = *(UnkStruct800E1B50 **) ((u8 *) D_800E1B50 + temp_v1);
+    D_800DDFD0[o->objId] = 1;
+    if (temp_s0->unk3C != 0) {
+        do {
+            ohSleep(1);
+        } while (temp_s0->unk3C != 0);
+    }
+    func_800AECC0(2.0f * gameTicksPerDraw);
+    func_800AED20(2.0f * gameTicksPerDraw);
+    func_800A9EA4(0x1014D);
+    func_800AA864(0x1014C, 1);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800A9EA4(0x1014F);
+    func_800A9EA4(0x1014E);
+    D_800DF310[omCurrentObj->objId] = func_801FF4E8_ovl9;
+    func_800AF27C();
+    func_800AECC0(gameTicksPerDraw * 1.5f);
+    func_800AED20(gameTicksPerDraw * 1.5f);
+    func_800A9EA4(0x10157);
+    func_800AA864(0x10156, 1);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 IN_FILE void func_801FF860_ovl9(struct GObj *);
 void func_801FFE78_ovl9(struct GObj *arg0) {
