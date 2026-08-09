@@ -68,7 +68,38 @@ void func_8017F008_ovl5(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_9/func_8017F110_ovl5.s")
+typedef union Unk3Ptrs {
+    struct UnkStruct8015C740 *unk0[3];
+} Unk3Ptrs;
+
+extern Unk3Ptrs D_80189580_ovl5;
+extern Unk3Ptrs D_8018958C_ovl5;
+extern Unk3Ptrs D_80189598_ovl5;
+void func_800ACBDC(GObj *);
+
+void func_8017F110_ovl5(GObj *arg0) {
+    s32 pad;
+    s32 prev;
+    Unk3Ptrs sp5C = D_80189580_ovl5;
+    Unk3Ptrs sp50 = D_8018958C_ovl5;
+    Unk3Ptrs sp44 = D_80189598_ovl5;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    prev = 3;
+    while (1) {
+        if (prev != D_8018EDC4_ovl5) {
+            prev = D_8018EDC4_ovl5;
+            func_800ACBDC(arg0);
+            func_8015C740_ovl5(arg0, sp5C.unk0[prev]);
+            func_8015C740_ovl5(arg0, sp50.unk0[prev]);
+            func_8015C740_ovl5(arg0, sp44.unk0[prev]);
+        }
+        ohSleep(1);
+    }
+}
+
 
 void func_8017F2A8_ovl5(void) {
     D_800E98E0[request_track_3(9, 0, 0x70)] = 1;

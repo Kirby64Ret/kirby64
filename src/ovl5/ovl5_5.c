@@ -181,7 +181,34 @@ void func_801720D8_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801720D8_ovl5.s")
 #endif
 
+/* Draft, 5/88: instruction-exact except the frame (0x28 vs ROM 0x20) and one
+   `addu $t7, $v0, $t0` whose operands IDO emits swapped. The frame is the same
+   +8 anomaly as its sibling func_801720D8_ovl5 above and never shrinks: swept
+   0/1/2/3 declared locals in every position, leading/trailing/middle pads, u8
+   pads, pointer vs index for both values -- every pad adds 8, nothing removes
+   it. The addu survived operand swap, a temp local for the call result, an
+   explicit (s32)(f32) cast and `/ 2.0f`. */
+#ifdef MIPS_TO_C
+void func_801721CC_ovl5(s32 arg0) {
+    s32 *q = &D_8018E998_ovl5[arg0];
+    s32 temp = D_8018ECA8_ovl5[arg0];
+
+    if (*q == 0x50) {
+        play_sound(0xBA);
+        D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
+        D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_s32;
+        (*q)++;
+    } else {
+        play_sound(0xBA);
+        D_800E9FE0[omCurrentObj->objId].as_s32 = 2;
+        D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_s32;
+        *q += 2;
+    }
+    D_800E98E0[omCurrentObj->objId] = (random_soft_s32_range(D_801875F0_ovl5[temp].unk4) + D_801875F0_ovl5[temp].unk0) * 0.5f;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801721CC_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017232C_ovl5.s")
 
@@ -281,7 +308,43 @@ void func_80175808_ovl5(GObj *arg0) {
     D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[D_800E98E0[omCurrentObj->objId]];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801758AC_ovl5.s")
+extern u8 D_80187618_ovl5[];
+extern u8 D_80187638_ovl5[];
+extern u8 D_80187658_ovl5[];
+extern u8 D_80187678_ovl5[];
+extern u8 D_80187698_ovl5[];
+extern u8 D_801876B8_ovl5[];
+extern u8 D_801876D8_ovl5[];
+extern u8 D_801876F8_ovl5[];
+extern u8 D_8018ECD8_ovl5;
+
+void func_801758AC_ovl5(GObj *arg0) {
+    SPObj *spobj;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    omLinkGObjDL(arg0, func_800AD1A0, 0xE, 0x80000000, 0xE);
+    omGMoveObjDL(arg0, arg0->dl_link, 0x18);
+    if (D_8018ECD8_ovl5 == 3) {
+        func_8015C740_ovl5(arg0, D_80187658_ovl5);
+        func_8015C740_ovl5(arg0, D_80187678_ovl5);
+        spobj = (SPObj *) func_8015C740_ovl5(arg0, D_80187698_ovl5);
+        spobj->unk5A |= 1;
+        spobj->unkBA |= 1;
+        func_8015C740_ovl5(arg0, D_80187618_ovl5);
+        spobj = (SPObj *) func_8015C740_ovl5(arg0, D_80187638_ovl5);
+        spobj->unk5A |= 1;
+        spobj->unkBA |= 1;
+    } else {
+        func_8015C740_ovl5(arg0, D_801876B8_ovl5);
+        func_8015C740_ovl5(arg0, D_801876D8_ovl5);
+        spobj = (SPObj *) func_8015C740_ovl5(arg0, D_801876F8_ovl5);
+        spobj->unk5A |= 1;
+        spobj->unkBA |= 1;
+    }
+    curObjSleepForever();
+}
+
 
 void func_80175A28_ovl5(GObj *arg0) {
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
@@ -441,15 +504,12 @@ void func_80176EFC_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80177524_ovl5.s")
 
-// Draft, 2/116: the shared constant 7 (first store value and loop bound, CSE'd
-// into $s2 by both) is materialised one slot late. Loop form and store-value
-// spellings swept.
-#ifdef MIPS_TO_C
 void gameSetUpdateRate(f32);
 void func_800AAF34(s32, s32, f32);
 
 void func_8017783C_ovl5(void) {
     s32 i;
+    s32 t;
 
     gameSetUpdateRate(2.0f);
     ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
@@ -461,7 +521,8 @@ void func_8017783C_ovl5(void) {
     func_800A6BC0(8);
     func_800AAF34(0x10, 0x3007B, 0.0f);
     func_800A71A0(0x10);
-    D_800E98E0[request_track_3(8, 0, 0x70)] = 7;
+    t = request_track_3(8, 0, 0x70);
+    D_800E98E0[t] = 7;
     D_800E98E0[request_track_3(8, 0, 0x70)] = 8;
     D_800E98E0[request_track_3(8, 0, 0x70)] = 0xF;
     D_800E98E0[request_track_general(8, 0, 0x70)] = 1;
@@ -475,9 +536,6 @@ void func_8017783C_ovl5(void) {
     utilSetRectColorFullScreen(0, 0, 0);
     utilSpawnRect(0xFF, -0x10, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017783C_ovl5.s")
-#endif
 
 void func_80177A0C_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_801874A0_ovl5);

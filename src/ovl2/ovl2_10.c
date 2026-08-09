@@ -115,13 +115,74 @@ struct UnkRay {
 
 extern struct Unk8012D934 *D_8012D934;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80111F10.s")
+void vec3_sub_normalize(Vector *, Vector *, Vector *);
+void vec3_normalized_cross_product(Vector *, Vector *, Vector *);
+void vec3_cross_product(Vector *, Vector *, Vector *);
+
+void func_80111F10(void) {
+    Camera *cam;
+    struct Unk8012D934 *m;
+    Vector sp4C;
+    Vector sp40;
+    Vector sp34;
+
+    cam = D_800D799C->data.cam;
+    m = D_8012D934;
+    vec3_sub_normalize(&sp4C, &cam->viewMtx.lookAt.at, &cam->viewMtx.lookAt.eye);
+    vec3_normalized_cross_product(&cam->viewMtx.lookAt.up, &sp4C, &sp40);
+    vec3_cross_product(&cam->viewMtx.lookAt.up, &sp4C, &sp40);
+    vec3_cross_product(&sp4C, &sp40, &sp34);
+    m->unk0[0][0] = sp40.x;
+    m->unk0[0][1] = sp40.y;
+    m->unk0[0][2] = sp40.z;
+    m->unk0[1][0] = sp34.x;
+    m->unk0[1][1] = sp34.y;
+    m->unk0[1][2] = sp34.z;
+    m->unk0[2][0] = sp4C.x;
+    m->unk0[2][1] = sp4C.y;
+    m->unk0[2][2] = sp4C.z;
+    m->unk0[0][3] = m->unk0[1][3] = m->unk0[2][3] = m->unk0[3][0] = m->unk0[3][1] = m->unk0[3][2] = 0.0f;
+    m->unk0[3][3] = 1.0f;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112000.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801121E0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801123AC.s")
+// Load-bearing: the `p = &arg0[1]` element-address local is what produces the
+// ROM's bare `addiu $v0, $v0, 0x10` base bias -- a `(u8 *)arg0 + 0x10` cast, a
+// 2D-array row pointer and plain member access all get folded into the
+// displacements instead.  `f32 pad0;` sizes the frame to 0x28.
+struct Unk801123AC {
+    /* 0x0 */ f32 unk0;
+    /* 0x4 */ f32 unk4;
+    /* 0x8 */ f32 unk8;
+    /* 0xC */ f32 unkC;
+};
+
+void func_801123AC(struct Unk801123AC *arg0) {
+    f32 pad0;
+    f32 s;
+    f32 c;
+    struct Unk801123AC *p;
+
+    p = &arg0[1];
+    c = cosf(arg0[2].unk4);
+    s = sinf(arg0[2].unk4);
+    D_8012D934->unk40 = p[0].unkC * s;
+    D_8012D934->unk44 = p[0].unkC * c;
+    D_8012D934->unk48 = p[1].unk0 * s;
+    D_8012D934->unk4C = p[1].unk0 * c;
+    if (0.0f < p[0].unkC) {
+        D_8012D934->unk50 = s;
+        D_8012D934->unk54 = c;
+    } else {
+        D_8012D934->unk50 = -s;
+        D_8012D934->unk54 = -c;
+    }
+    D_8012D934->unk58 = -D_8012D934->unk50;
+    D_8012D934->unk5C = -D_8012D934->unk54;
+}
 
 s32 func_80112498(struct UnkRay *arg0) {
     s32 i;

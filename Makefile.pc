@@ -44,13 +44,22 @@ GAME_OBJS := $(patsubst %.c,$(PC_BUILD)/%.o,$(GAME_SRCS))
 # wildcard above, so it needs no separate object list, but it does need a
 # different include path -- see the rule near the bottom of this file.
 #
-# PC_SDL=1 selects the SDL2 backend instead of the headless one. Off by
-# default because it does not link here: this port is 32-bit and the SDL2
-# installed on this machine is x86_64 only (there is no
-# /usr/lib/i386-linux-gnu/libSDL2.so, and /usr/include/SDL2/SDL_config.h
-# forwards to an x86_64-only header). `apt install libsdl2-dev:i386` is the
-# whole fix. src/pc/pc_backend_null.c and src/pc/pc_backend_sdl.c are guarded
-# so exactly one of them contributes symbols either way.
+# THREE BACKENDS NOW, and this Makefile builds only two of them.
+#
+#   pc_backend_null.c   headless. The default here.
+#   pc_backend_sdl.c    PC_SDL=1. An SDL2 window with a streaming texture; it
+#                       blits an N64 framebuffer and has no renderer.
+#   pc_backend_lus.cpp  libultraship: window, Fast3D, input, audio. It is C++
+#                       and cannot share an include path with the game's
+#                       headers (see the comment at the top of that file), so
+#                       it is compiled by tools/pc/build_lus_backend.sh and
+#                       linked by tools/pc/link.sh, which is also what drops
+#                       the other two objects. It is the DEFAULT for the
+#                       binary; this Makefile only ever produces objects.
+#
+# So: `make -f Makefile.pc objs` for the measurement, `tools/pc/link.sh` for a
+# binary. pc_backend_null.c and pc_backend_sdl.c are #ifdef'd against each
+# other so exactly one of them contributes symbols either way.
 PC_SDL     ?=
 ifeq ($(PC_SDL),1)
 PC_PLAT_DEFS := -DPC_SDL $(shell sdl2-config --cflags)

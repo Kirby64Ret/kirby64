@@ -116,8 +116,13 @@ void func_801A470C_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4F70_ovl7.s")
 
 #ifdef MIPS_TO_C
-// 84/104 diffs: stores are right; $v0/$v1 swapped for omCurrentObj/objId and
-// the D_801CDFC0 constant lands in $f0 instead of $f14.
+/* 9/95: every store and every address computation is exact; only the FP
+ * register NAMES differ -- ROM has 0.0 in $f12, D_801CDFC0_ovl7 in $f14 and
+ * the D_800E3E50 read-back in $f2, IDO gives $f14/$f2/$f12. Swept: separate
+ * locals for the zero and the constant in both declaration orders, assigning
+ * each immediately before first use, inlining the constant, and an extra
+ * named temp for either read-back group (40-91 diffs each). The chained
+ * assignments themselves took this from 84 to 9 and are load-bearing. */
 void func_801A50B0_ovl7(GObj *arg0) {
     f32 c = D_801CDFC0_ovl7;
 
@@ -126,14 +131,9 @@ void func_801A50B0_ovl7(GObj *arg0) {
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = c;
     D_800E3910[omCurrentObj->objId] = 0.0f;
-    D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-    D_800E3590[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-    D_800E33D0[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-    D_800E3210[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-    D_800E3050[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
     D_800E3E50[omCurrentObj->objId] = c;
-    D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
-    D_800E3AD0[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
     func_801A6610_ovl7();
     func_800AF408();
     ohSleep(0xA);
@@ -142,7 +142,6 @@ void func_801A50B0_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A50B0_ovl7.s")
 #endif
-
 void func_801A522C_ovl7(GObj *arg0) {
     if (D_800EC9E4 != 0.0f) {
         D_800E3210[omCurrentObj->objId] = -D_800EC9E4;

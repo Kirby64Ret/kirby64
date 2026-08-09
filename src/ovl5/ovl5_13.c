@@ -267,7 +267,7 @@ void func_800A74D8(void);
 // load-bearing; see src/ovl5/ovl5_7.c func_8017CC3C_ovl5. verify.py reports
 // one reloc false positive on the a1 bound (%hi(D_803D6900)+2 / %lo+0x5800
 // links to 0x803FC100 exactly).
-void func_80185EEC_ovl5(void) {{
+void func_80185EEC_ovl5(void) {
     s32 i;
 
     func_800A74D8();
@@ -275,12 +275,12 @@ void func_80185EEC_ovl5(void) {{
     viApplyScreenSettings(&D_8018A5E8_ovl5);
     D_8018A604_ovl5.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
     i = 0;
-    do {{
+    do {
         ((vu16 *) gFrameBuffer)[i] = 1;
         ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
         i++;
-    }} while (i != 320 * 240);
+    } while (i != 320 * 240);
     gtlCreateScene(&D_8018A604_ovl5);
-}}
+}
 
 

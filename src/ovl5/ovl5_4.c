@@ -60,7 +60,43 @@ Vector *func_801659DC_ovl5(Vector *, s32);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_801668E0_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80166B28_ovl5.s")
+typedef union Unk10Bytes {
+    struct UnkStruct8015C740 *unk0[4];
+} Unk10Bytes;
+
+typedef struct UnkD800D7178 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+} UnkD800D7178;
+
+extern Unk10Bytes D_801869FC_ovl5;
+extern UnkD800D7178 D_800D7178[];
+extern struct UnkStruct8015C740 D_80186C48_ovl5;
+
+void func_80166B28_ovl5(GObj *arg0) {
+    SPObj *spobj;
+    Unk10Bytes sp24 = D_801869FC_ovl5;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    spobj = func_8015C740_ovl5(arg0, sp24.unk0[D_800D7178[4].unk0]);
+    if (D_800D7178[4].unk0 == 3) {
+        spobj->xScale = 2.0f;
+        spobj->yScale = 2.0f;
+        func_8015C740_ovl5(arg0, &D_80186C48_ovl5);
+    } else {
+        spobj = func_8015C740_ovl5(arg0, sp24.unk0[D_800D7178[4].unk0]);
+        spobj->xOffset = 160.0f;
+        spobj->yOffset = 10.0f;
+        spobj->unk5A |= 1;
+        spobj->unkBA |= 1;
+    }
+    curObjSleepForever();
+}
+
 
 Vector2 func_80166C68_ovl5(s32 idx) {
     Vector2 sp8;
@@ -318,7 +354,28 @@ s32 func_8016A6B0_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016B754_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016BEB0_ovl5.s")
+void func_800B1900(u16);
+
+void func_8016BEB0_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    s32 pad0;
+    s32 pad1;
+    Vector sp2C;
+
+    func_800A9864((void *) 0x300A8, 0x1869F, 0x10);
+    func_801659DC_ovl5(&sp2C, arg2);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp2C.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp2C.z;
+    func_800AA018((void *) 0x30099);
+    func_800AA018((void *) 0x3009A);
+    func_800AF27C();
+    func_800AA018((void *) 0x30098);
+    while (D_800E9C60[D_8018E268_ovl5[arg2]] == 3) {
+        ohSleep(1);
+    }
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
+
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016BFF0_ovl5.s")
 

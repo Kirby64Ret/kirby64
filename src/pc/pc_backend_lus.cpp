@@ -292,7 +292,22 @@ static bool lus_init(void) {
         sControlDeck = std::make_shared<LUS::ControlDeck>(nullptr, cvars);
         sContext->GetChildren().Add(sControlDeck);
 
-        sContext->GetChildren().Add(std::make_shared<Ship::CrashHandler>());
+        /* THE CRASH HANDLER IS OPT-IN, and that is a considered choice.
+         *
+         * Ship::CrashHandler installs sigaction handlers for SIGINT and
+         * SIGTERM whose body is `exit(1)`. exit() from a signal handler runs
+         * atexit handlers and static destructors -- tearing down the GL
+         * context, joining the thread pool, freeing the resource cache -- none
+         * of which is async-signal-safe. Measured behaviour in this port:
+         * Ctrl-C and `timeout` do not stop the process at all (it wedges in
+         * teardown), and when it does get far enough it reports
+         * "free(): corrupted unsorted chunks".
+         *
+         * A development binary that cannot be interrupted is worse than one
+         * without a crash log, so it is off unless asked for. */
+        if (getenv("KIRBY_PC_CRASHHANDLER") != nullptr) {
+            sContext->GetChildren().Add(std::make_shared<Ship::CrashHandler>());
+        }
 
         auto console = std::make_shared<Ship::Console>();
         sContext->GetChildren().Add(console);
@@ -342,6 +357,7 @@ static bool lus_init(void) {
         EventSystemSetEvents(sContext->GetChildren().GetFirst<Ship::Events>());
         AudioSetAudioComponent(audio);
         CrashHandlerSetComponent(sContext->GetChildren().GetFirst<Ship::CrashHandler>());
+
         GfxSetFast3dWindow(sWindow);
     } catch (const std::exception& e) {
         fprintf(stderr, "[lus] context creation threw: %s\n", e.what());
@@ -361,10 +377,37 @@ static bool lus_init(void) {
      * but stating it costs nothing and documents the assumption. */
     sWindow->SetRendererUCode(ucode_f3dex2);
 
+    /* TWO PACERS IS ONE TOO MANY, and this is which one wins.
+     *
+     * GfxWindowBackendSDL::SwapBuffersBegin calls SyncFramerateWithTime,
+     * which nanosleeps until 1/mTargetFps has elapsed since the last frame.
+     * That happens inside Interpreter::EndFrame, which this port calls from
+     * pcb_gfx_run, which is called from osSpTaskStartGo -- so LUS's frame
+     * limiter sleeps INSIDE the game's RSP execution, with the game's
+     * scheduler stopped behind it. Meanwhile src/pc/os_vi.c is already pacing
+     * the whole system from the same monotonic clock the game reads through
+     * osGetCount, at exactly the rate the game expects.
+     *
+     * Two independent limiters on one frame do not average out, they beat
+     * against each other: whichever is momentarily slower stalls the other,
+     * and the visible result is a game running below its own frame rate for
+     * no reason the profile can explain. (It was observed directly -- a
+     * SIGTERM landed with the main thread parked in SyncFramerateWithTime,
+     * inside osSpTaskStartGo, several frames deep.)
+     *
+     * The game's VI wins, because sched.c's framebuffer recycling and its
+     * whole task state machine are driven by the retrace and cannot be paced
+     * by anything else. Setting a target far above the real rate makes
+     * SyncFramerateWithTime's deadline always already past, so it never
+     * sleeps. KIRBY_PC_TARGET_FPS overrides it for experiments. */
+    {
+        const char* fpsEnv = getenv("KIRBY_PC_TARGET_FPS");
+        sWindow->SetTargetFps(fpsEnv ? atoi(fpsEnv) : 1000);
+    }
+
     /* The N64 renders 320x240 and everything in the display list is in those
      * units -- scissors, texture rectangles, the viewport. Fast3D scales from
      * this to the window. */
-    sWindow->SetTargetFps(60);
     GfxSetNativeDimensions(320, 240);
 
     sInitOk = true;

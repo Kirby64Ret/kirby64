@@ -100,19 +100,16 @@ s32 func_801AEFFC_ovl7(void) {
     return ret;
 }
 
-#ifdef MIPS_TO_C
-// 67/105 diffs: stores are right; every temp is rotated one register slot.
-// Frame needs 8 more bytes of dead locals to reach the ROM 0x30.
 void func_801AF104_ovl7(GObj *arg0) {
     s32 sp2C;
     u16 sp2A;
+
 
     D_800DEF90[omCurrentObj->objId] = func_800B6474;
     func_800A9864(0x20031, 0x23, 0x10);
     D_800DDA90[omCurrentObj->objId] = 0x23;
     gEntitiesScaleZArray[omCurrentObj->objId] = D_801CE23C_ovl7;
-    gEntitiesScaleYArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
-    gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
+    gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleYArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
     D_800EA6E0[omCurrentObj->objId] = 1.0f;
     D_800E9720[omCurrentObj->objId] = 4;
     D_800E8920[omCurrentObj->objId] = 0;
@@ -122,9 +119,6 @@ void func_801AF104_ovl7(GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = func_800A8234(1, 1, 0xC);
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, &D_801CD590_ovl7);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AF104_ovl7.s")
-#endif
 
 void func_801AF2A4_ovl7(GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_801AF398_ovl7;

@@ -99,6 +99,10 @@ int pc_mmio_map(void);
  * low-memory note in src/pc/pc_mmio.c -- this is what -no-pie buys. */
 void pc_check_low_memory(void);
 
+/* Non-zero once SIGINT or SIGTERM has been delivered. See the termination
+ * note in src/pc/os_time.c -- nothing else in this process notices them. */
+int pc_quit_requested(void);
+
 /* Per-subsystem host pumping, called from pc_pump_events(). */
 void pc_vi_tick(void);
 void pc_ai_tick(void);

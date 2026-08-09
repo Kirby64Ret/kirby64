@@ -3,7 +3,7 @@
 #include "common.h"
 #include "ovl1/ovl1_2_2.h"
 
-extern u8 *func_8011BABC(void);
+extern u8 *func_8011BABC();
 #include "GObj.h"
 #include "track_arrays.h"
 
@@ -327,21 +327,20 @@ s32 func_80155664_ovl3(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155838_ovl3.s")
 
+/* 47/58: the ROM hoists one `or $v0, $zero, $zero` above both early exits and
+   keeps arg1 in $a1 until the last read; IDO instead relocates arg1 into $a3 at
+   entry, materialises the `a1 = 0` for func_8011BF4C two slots early, and emits
+   a per-exit `move v0,zero`. Swept: separate ifs vs `||` vs nested ifs vs `&&`,
+   a `ret` local (init 0 and plain), a goto into a shared return block, the
+   fused `(*(f32**)&dst[7] = p[0]) == NULL` vs a separate store, an extra local
+   for p[0], declaration order and position of dst/p, dropping the (f32*)arg0
+   cast, and a K&R prototype for func_8011BF4C. */
 #ifdef MIPS_TO_C
-/* 54/61: the ROM hoists one `or $v0, $zero, $zero` above both early returns
-   and keeps arg1 in $a1 until the last read; IDO emits a likely-branch skip
-   with a per-exit `move v0,zero` and moves arg1 to $a2. Swept: declaration
-   order of the dst/p locals, inlining the (f32 *)arg0 cast, a goto into a
-   shared return block, and a `ret` local. */
 s32 func_80155C68_ovl3(s32 arg0, f32 *arg1) {
     f32 *dst = (f32 *) arg0;
     f32 **p = D_800E0490[omCurrentObj->objId];
 
-    if (p == NULL) {
-        return 0;
-    }
-    *(f32 **) &dst[7] = p[0];
-    if (p[0] == NULL) {
+    if ((p == NULL) || ((*(f32 **) &dst[7] = p[0]) == NULL)) {
         return 0;
     }
     dst[0] = arg1[0];
@@ -352,6 +351,7 @@ s32 func_80155C68_ovl3(s32 arg0, f32 *arg1) {
     dst[5] = gEntitiesPosZArray[omCurrentObj->objId];
     dst[6] = gEntitiesAngleYArray[omCurrentObj->objId];
     func_8011BF4C(dst, 0);
+    return 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155C68_ovl3.s")
@@ -398,5 +398,35 @@ s32 func_80155ED8_ovl3(void) {
     return 1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155F0C_ovl3.s")
+extern s32 D_8012E7FC;
+extern u8 *func_8011BD30();
+extern void func_800A4DB8(Vector *, void *);
+extern void func_800A802C(s32, s32, s32, Vector *, Vector *);
+extern void func_800A7F74(s32, s32, u32, f32, f32, f32);
+extern void func_800BB468(s32, s32);
+
+s32 func_80155F0C_ovl3(struct CollisionTriangle *tri) {
+    u8 *temp;
+    Vector sp38;
+    Vector sp2C;
+
+    if ((*(s32 *) ((u8 *) &D_8012E7FC + 8) == 2) || (tri->collisionParameter == 0)) {
+        temp = func_8011BABC(tri);
+        temp[0x54] = 2;
+        play_sound(0xA);
+        utilGetTransformSRT(&sp38, temp);
+        func_800A4DB8(&sp2C, temp);
+        func_800A802C(6, 3, tri->breakParticle * 2, &sp38, &sp2C);
+        func_800BB468(0, 0);
+        goto ret0;
+    }
+    utilGetTransformSRT(&sp38, func_8011BD30(tri));
+    func_800A7F74(6, 3, tri->breakParticle * 2 + 1, D_800EA6E0[omCurrentObj->objId],
+                  D_800EA8A0[omCurrentObj->objId], D_800EAA60[omCurrentObj->objId]);
+    D_800E8220[omCurrentObj->objId] = 1;
+    return 1;
+ret0:
+    return 0;
+}
+
 

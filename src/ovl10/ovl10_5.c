@@ -112,7 +112,23 @@ void func_801F0014_ovl10(void *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F0050_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F0DD0_ovl10.s")
+void func_801F0DD0_ovl10(struct GObj *arg0) {
+    if (D_800E9C60[omCurrentObj->objId] == 1) {
+        if ((gKirbyController.buttonPressed & 0x8000) != 0) {
+            D_800E98E0[omCurrentObj->objId] = 1;
+        } else {
+            D_800E98E0[omCurrentObj->objId] = 0;
+        }
+    }
+    if (D_800E9C60[omCurrentObj->objId] == 2) {
+        if ((gKirbyController.buttonPressed & 0x8000) != 0) {
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+        } else {
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+        }
+    }
+    func_800FF200(D_800EA520[omCurrentObj->objId]);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F0EC8_ovl10.s")
 
@@ -135,11 +151,60 @@ s32 func_801F111C_ovl10(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F11A8_ovl10.s")
 
+/* 11/64 diffs, all one shift: the ROM loads D_801F4CA0_ovl10 into $f12 right
+   after the if/else, ten instructions earlier than IDO schedules it.  Every
+   instruction is otherwise identical.  Swept with no improvement: a `lim`
+   local assigned at the declaration (29), before the if (29), after the store
+   (23) or declared first (29); both operand orders of the outer float `+`;
+   both operand orders of the 1.0f compare. */
+#ifdef MIPS_TO_C
+extern f32 D_801F4C98_ovl10;
+extern f32 D_801F4C9C_ovl10;
+extern f32 D_801F4CA0_ovl10;
+
+void func_801F1454_ovl10(struct GObj *arg0) {
+    f32 v;
+
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        v = D_801F4C98_ovl10;
+    } else {
+        v = D_801F4C9C_ovl10;
+    }
+    gEntitiesAngleYArray[omCurrentObj->objId] = v + D_800E17D0[omCurrentObj->objId];
+    while (D_801F4CA0_ovl10 <= gEntitiesAngleYArray[omCurrentObj->objId]) {
+        gEntitiesAngleYArray[omCurrentObj->objId] -= D_801F4CA0_ovl10;
+    }
+    while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f) {
+        gEntitiesAngleYArray[omCurrentObj->objId] += D_801F4CA0_ovl10;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1454_ovl10.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1554_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1870_ovl10.s")
+extern s32 D_800D6B98;
+extern s32 D_800D6B9C;
+
+s32 func_801F1870_ovl10(void) {
+    if (D_800D6B98 != 0) {
+        return 4;
+    }
+    if (func_801F19DC_ovl10(0, 2) == 2) {
+        return 4;
+    }
+    if (func_801F19DC_ovl10(0, 1) == 2 && D_800D6B9C >= 2) {
+        return 4;
+    }
+    if (func_801F19DC_ovl10(0, 1) == 2) {
+        return 3;
+    }
+    if (func_801F19DC_ovl10(0, 0) == 2 && D_800D6B9C > 0) {
+        return 3;
+    }
+    return 2;
+}
 
 s32 func_801F1934_ovl10(s32 arg0) {
     switch (func_801F1870_ovl10()) {
@@ -215,9 +280,53 @@ s32 func_801F1D60_ovl10(Vector vec, s32 count, f32 dist) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1D60_ovl10.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1E48_ovl10.s")
+extern u32 D_801F4D60_ovl10;
+extern f32 D_801F4CAC_ovl10;
+extern f32 D_801F4CB0_ovl10;
+extern s32 random_soft_s32_range(s32);
+extern f32 cosf(f32);
+extern f32 sinf(f32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F1F7C_ovl10.s")
+Vector *func_801F1E48_ovl10(Vector *arg0) {
+    Vector sp34;
+    Vector sp28;
+    f32 sp24;
+    f32 sp20;
+
+    func_800B2340(&sp34, D_800DFBD0[D_801F4D60_ovl10][5], D_801F4D60_ovl10);
+    sp24 = (f32) random_soft_s32_range(7) * 20.0f + 50.0f;
+    sp20 = (f32) random_soft_s32_range(0x13) * 5.0f - 45.0f;
+    sp28.x = cosf(sp20 * D_801F4CAC_ovl10 / 180.0f) * sp24 + sp34.x;
+    sp28.y = sp34.y + 20.0f;
+    sp28.z = -sinf(sp20 * D_801F4CB0_ovl10 / 180.0f) * sp24 + sp34.z;
+    *arg0 = sp28;
+    return arg0;
+}
+
+s32 func_801F1D60_ovl10(Vector, s32, f32);
+Vector *func_801F1E48_ovl10(Vector *);
+
+Vector *func_801F1F7C_ovl10(Vector *arg0, s32 arg1) {
+    s32 lp0;
+    s32 lp1;
+    s32 lp2;
+    Vector sp58;
+    s32 tp0;
+    f32 dist;
+    s32 i;
+
+    dist = 60.0f;
+    i = 0;
+    do {
+        i++;
+        if (i == 50 || i == 100 || i == 150) {
+            dist -= 5.0f;
+        }
+        func_801F1E48_ovl10(&sp58);
+    } while (func_801F1D60_ovl10(sp58, arg1, dist) != 0);
+    *arg0 = sp58;
+    return arg0;
+}
 
 s32 func_801F2074_ovl10(s32 arg0) {
     if (arg0 == 4 || arg0 == 5) {
@@ -230,7 +339,32 @@ s32 func_801F2074_ovl10(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F25FC_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F2770_ovl10.s")
+extern s32 D_801F4968_ovl10;
+extern s32 D_801F496C_ovl10;
+extern s32 D_801F4970_ovl10;
+void func_800A9864(s32, s32, s32);
+
+void func_801F2770_ovl10(struct GObj *arg0) {
+    Vector sp2C;
+    Vector sp20;
+
+    func_800B2340(&sp2C, D_800DE350[0]->data.dobj, 0);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp2C.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = sp2C.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp2C.z;
+    func_800B26D8(&sp20, D_800DE350[0]->data.dobj, 0);
+    gEntitiesAngleXArray[omCurrentObj->objId] = sp20.x;
+    gEntitiesAngleYArray[omCurrentObj->objId] = sp20.y;
+    gEntitiesAngleZArray[omCurrentObj->objId] = sp20.z;
+    func_800A9864(D_801F4968_ovl10, 0x1869F, 0x10);
+    if (D_801F496C_ovl10 != 0) {
+        func_800AA018(D_801F496C_ovl10);
+    }
+    if (D_801F4970_ovl10 != 0) {
+        func_800AA018(D_801F4970_ovl10);
+    }
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F28AC_ovl10.s")
 

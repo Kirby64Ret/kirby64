@@ -96,12 +96,18 @@ same type), and three `(va_list)` casts in `fault.c` -- an N64 idiom for
 rounding the varargs pointer, invalid on x86-64 where `va_list` is an array
 type and pointless where the ABI already aligns arguments.
 
-The 32-bit build remains as a measurement harness until the LP64 one links,
-since it boots and runs today.
+The LP64 build now links and runs, so the 32-bit harness is gone: Makefile.pc
+is `-m64 -DPORT` and tools/pc/link.sh adds `-no-pie`, which is what keeps the
+places game code truncates a pointer to `u32` lossless. See
+docs/PC_PORT_LIBULTRASHIP.md, "LP64: what actually broke".
 
 ## Dependencies: resolved
 
-Both are present and working.
+Both are present and working, and the integration on top of them has landed --
+**docs/PC_PORT_LIBULTRASHIP.md** is the current state of it: the port is LP64,
+links against libultraship, and Fast3D executes the display lists that reach
+`osSpTaskStartGo`. That page also records what is proven by running versus
+merely wired, and the three LP64 *data* bugs the 64-bit move exposed.
 
     libultraship  /workspace/jr3dful/libultraship   commit 6f42b9c, 2026-08-04
     Torch         /workspace/jr3dful/torch          cloned AND BUILT

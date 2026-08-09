@@ -101,7 +101,7 @@ void func_800BB6B0(GObj *gobj);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_11/func_800BB6B0.s")
 #endif
 
-#ifdef NON_MATCHING
+
 extern struct {
     u32 unk0;
     u32 unk4;
@@ -111,9 +111,9 @@ extern struct {
 
 Vector *func_800BB98C(s32 arg0, s32 arg1) {
     GObj *gobj;
-    GObj *prevObj;
     Camera *cam;
     s32 track;
+    GObj *prevObj;
     struct DObj *dobj;
 
     gobj = HS64_omMakeGObj(8, NULL, 0x19, 0x80000000);
@@ -128,7 +128,7 @@ Vector *func_800BB98C(s32 arg0, s32 arg1) {
         cam->perspMtx.ortho.right = 150.0f;
         cam->perspMtx.ortho.bottom = -110.0f;
         cam->perspMtx.ortho.top = 110.0f;
-        cam->perspMtx.ortho.near = 3000.0f;
+        cam->viewMtx.lookAt.eye.z = 3000.0f;
         func_80007C00(&cam->viewport, 10.0f, 10.0f, 310.0f, 230.0f);
         track = request_track_general(0x2B, 0x3C, 0x4A);
         prevObj = omCurrentObj;
@@ -144,13 +144,12 @@ Vector *func_800BB98C(s32 arg0, s32 arg1) {
         }
         omCurrentObj->onDraw = func_800BB6B0;
         dobj = omCurrentObj->data.dobj;
-        dobj->scale.v.x = D_800D5290[arg0].unkC;
-        dobj->scale.v.y = D_800D5290[arg0].unkC;
+        dobj->scale.v.y = dobj->scale.v.x = D_800D5290[arg0].unkC;
         omCurrentObj = prevObj;
         D_800D6B2B = arg1;
-        return &dobj->scale;
+        return &dobj->scale.v;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_11/func_800BB98C.s")
-#endif
+
+
+

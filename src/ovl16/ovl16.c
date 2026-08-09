@@ -539,7 +539,37 @@ s32 func_801DC8E4_ovl16(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DC8E4_ovl16.s")
 #endif
 
+#ifdef NON_MATCHING
+/* 6/61: frame and every instruction correct; ROM keeps sp1C in $a0 and
+ * reloads arg1 into $a1, IDO does the reverse. Swept nested ifs, reversed
+ * condition order, s32 vs pointer parameters, an explicit cast at the
+ * func_80111ECC call, and the return-type/prototype-presence lever on all
+ * five callees -- 6 diffs in every case. Pure argument-register rotation. */
+s32 func_801DC990_ovl16(struct Ovl16AnimCmd *arg0, struct Ovl16AnimCmd *arg1) {
+    struct Ovl16AnimInfo sp20;
+    void *sp1C;
+
+    sp1C = D_800E1B50[omCurrentObj->objId];
+    func_80111550(omCurrentObj->objId);
+    sp1C = func_80111C88(((struct UnkStruct800E1B50 *) sp1C)->unk8C, omCurrentObj->objId);
+    if (sp1C != NULL) {
+        if ((arg0 != NULL) && (arg1 != NULL)) {
+            ((struct Ovl16AnimObj *) sp1C)->unk24->unk8 = (s32) arg0;
+            ((struct Ovl16AnimObj *) sp1C)->unk24->unk30 = (s32) arg0;
+            ((struct Ovl16AnimObj *) sp1C)->unk24->unk1C = -arg0->unk20;
+            ((struct Ovl16AnimObj *) sp1C)->unk24->unk44 = -arg0->unk20;
+            ((struct Ovl16AnimObj *) sp1C)->unk24->unk18 = ((struct Ovl16AnimObj *) sp1C)->unk24->unk24 * arg1->unk40;
+            ((struct Ovl16AnimObj *) sp1C)->unk24->unk40 = ((struct Ovl16AnimObj *) sp1C)->unk24->unk4C * -arg1->unk40;
+        }
+        func_80111ECC(sp1C);
+    }
+    func_80110B00(&sp20);
+    func_80110150(&sp20);
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DC990_ovl16.s")
+#endif
 
 void func_801DCA84_ovl16(s32 arg0) {
     s32 temp_a1;

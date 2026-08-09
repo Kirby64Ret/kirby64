@@ -1938,35 +1938,29 @@ void func_800FBDE8(void) {
     func_800FA2D4(&D_80129210, &D_801292B0);
 }
 
-#ifdef MIPS_TO_C
+extern Vector D_8012937C;
+extern f32 D_801293E0;
+extern f32 D_801293E4;
+extern f32 D_801293E8;
+extern f32 D_801293EC;
+extern f32 D_801293F0;
+extern f32 D_801293F4;
 
 void func_800FBE1C(void) {
-    void *temp_v0;
+    Camera *cam;
 
-    temp_v0 = D_800D799C->data;
+    cam = D_800D799C->data.cam;
     D_801293F0 = 0.0f;
     D_801293EC = D_801293F0;
     D_801293E8 = D_801293EC;
     D_801293E4 = D_801293E8;
     D_801293E0 = D_801293E4;
-    D_801293DC = D_801293E0;
-    D_80129370.unk0 = temp_v0->unk48;
-    D_80129370.unk4 = temp_v0->unk4C;
-    D_80129370.unk8 = temp_v0->unk50;
-    D_8012937C.unk0 = temp_v0->data;
-    D_8012937C.unk4 = temp_v0->unk40;
-    D_8012937C.unk8 = temp_v0->unk44;
+    D_801293DC[0] = D_801293E0;
+    *(Vector *)&D_80129370[0] = cam->viewMtx.lookAt.at;
+    D_8012937C = cam->viewMtx.lookAt.eye;
     D_801293F4 = 1.0f;
-    D_800D7B38.unk4 = D_800D7B20.unk4;
-    D_800D7B38.unk0 = D_800D7B20.unk0;
-    D_800D7B38.unk8 = D_800D7B20.unk8;
-    D_800D7B38.unkC = D_800D7B20.unkC;
-    D_800D7B38.unk14 = D_800D7B20.unk14;
-    D_800D7B38.unk10 = D_800D7B20.unk10;
+    D_800D7B38 = D_800D7B20;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBE1C.s")
-#endif
 
 
 void func_800FBF18(s32 arg0) {

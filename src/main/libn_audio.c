@@ -261,7 +261,7 @@ void func_8002397C(KNote *arg0) {
  * holds &D_800978E0 in $a2, the constant 2 in $a1 and tone->unk28 in $a0
  * where IDO picks $a1/$a0/$v0.  Every instruction is otherwise in the right
  * place.  Swept leading dummy scalars and all four declaration orders. */
-#ifdef NON_MATCHING
+#ifdef MIPS_TO_C
 typedef struct KTone {
     /* 0x00 */ struct KTone *next;
     /* 0x04 */ u8    pad04[0xC];
@@ -743,10 +743,6 @@ Acmd *n_alAuxBusPull(s32 sampleOffset, Acmd *p) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027F38.s")
 
-/* 4/34 diffs: shape is exact (the `else { osc->unk14 = osc->unk14; }` is what
- * reproduces the ROM's duplicated store in the bc1fl delay slot), but the ROM
- * uses $f0 for the reload where IDO takes $f2. */
-#ifdef NON_MATCHING
 typedef struct {
     /* 0x00 */ u8  pad00[0x10];
     /* 0x10 */ f32 unk10;
@@ -770,11 +766,9 @@ f32 func_80028080(KOsc *osc, s32 arg1) {
     if (tmp < 0.0f) {
         tmp = -tmp;
     }
-    return osc->unk1C * (tmp - 1.0f);
+    tmp = tmp - 1.0f;
+    return osc->unk1C * tmp;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80028080.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002810C.s")
 

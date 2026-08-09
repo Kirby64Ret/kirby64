@@ -20,6 +20,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
+#include <unistd.h>
 
 #include "pc/pc_platform.h"
 #include "pc/pc_backend.h"
@@ -198,6 +200,47 @@ static void trace_from_env(void) {
     }
 }
 
+/* ------------------------------------------------------------ termination
+ *
+ * WHY THE PORT INSTALLS ITS OWN SIGINT/SIGTERM HANDLER.
+ *
+ * Neither SDL nor libultraship turns a terminal interrupt into anything this
+ * process notices. Measured: send SIGTERM to a running port binary and the
+ * main thread stays in pc_idle's nanosleep -- no SDL_EVENT_QUIT arrives, so
+ * GfxWindowBackendSDL::IsRunning() stays true and pcb_alive() never returns 0.
+ * `timeout` and Ctrl-C both do nothing, and the only way to stop it is
+ * SIGKILL. For a binary that is run from scripts dozens of times a day that is
+ * not a small annoyance, it is the difference between a usable and an unusable
+ * development loop.
+ *
+ * The handler does the minimum an async-signal-safe handler may do: set a
+ * flag. pc_idle() reads it at the next scheduling point and leaves through
+ * _exit(), NOT exit(): exit() would run static destructors that tear down the
+ * GL context and join libultraship's thread pools, from a process that has
+ * been asked to stop now. The cost is that libultraship does not write its
+ * config file on an interrupted run, which is the right trade for a
+ * development build and is stated here so it is not a mystery. */
+static volatile sig_atomic_t sQuitRequested;
+
+static void quit_handler(int sig) {
+    (void)sig;
+    sQuitRequested = 1;
+}
+
+int pc_quit_requested(void) {
+    return (int)sQuitRequested;
+}
+
+static void install_quit_handler(void) {
+    struct sigaction sa;
+
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = quit_handler;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
+}
+
 /* ----------------------------------------------------------- osInitialize */
 
 /* On N64 this is called from EntryPoint before anything else exists: it sets
@@ -214,6 +257,7 @@ void osInitialize(void) {
     done = 1;
 
     trace_from_env();
+    install_quit_handler();
     pc_check_low_memory();
     pc_time_init();
     pc_mmio_map();

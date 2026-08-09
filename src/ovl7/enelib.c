@@ -2610,35 +2610,21 @@ block_11:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019E128_ovl7.s")
 #endif
 
-// either regalloc or tmp needs to be set elsewhere
-#ifdef NON_MATCHING
-void func_8019E860_ovl7(void) {
-    Gfx **tmp;
-
+void func_8019E860_ovl7(s32 *arg0) {
     gSPNumLights(gDisplayListHeads[0]++, 1);
     gSPLight(gDisplayListHeads[0]++, &D_801C27D8_ovl7, 1);
     gSPLight(gDisplayListHeads[0]++, &D_801C27D0_ovl7, 2);
-
-
     gSPNumLights(gDisplayListHeads[1]++, 1);
     gSPLight(gDisplayListHeads[1]++, &D_801C27D8_ovl7, 1);
-
-    tmp = gDisplayListHeads[1];
     gSPLight(gDisplayListHeads[1]++, &D_801C27D0_ovl7, 2);
-    func_8019E128_ovl7(tmp);
-
+    func_8019E128_ovl7(arg0);
     gSPNumLights(gDisplayListHeads[0]++, 1);
     gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
     gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
-
     gSPNumLights(gDisplayListHeads[1]++, 1);
     gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
     gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
-
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019E860_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 

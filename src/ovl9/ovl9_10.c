@@ -408,7 +408,55 @@ void func_802030CC_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
+/* 88/118 diffs, first 30 instructions exact (frame 0x50, Vector at 0x2C, the
+   sp44/sp48 out-param pair and the tmp spill at 0x4C all land correctly with
+   `tmp` declared FIRST and two pad words).  Residue is basic-block shape: IDO
+   emits `bgtzl` into the big block where the ROM has `bgtz` + nop and hoists
+   the `lwc1 0x48($sp)` above the branch.  Swept with no effect: pad count 0-4,
+   if/else vs early return vs goto, `!(x > 0)`, dropping the sp38 copy, an
+   empty do-block before the branch. */
+#ifdef MIPS_TO_C
+extern f32 D_8021DA54_ovl9;
+extern s32 func_8019A900_ovl7(s32 *);
+extern f32 eneGetPlayerHeight(void);
+extern void func_801A6DF0_ovl7(struct GObj *);
+extern Vector *lbvector_Rotate(Vector *, s32, f32);
+extern f32 atan2f(f32, f32);
+
+void func_802031D4_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    f32 sp48;
+    s32 sp44;
+    s32 pad0;
+    s32 pad1;
+    f32 sp38;
+    Vector sp2C;
+
+    D_800E9720[omCurrentObj->objId] -= 1;
+    func_8019A900_ovl7(&sp44);
+    sp38 = sp48;
+    if (D_800E9720[omCurrentObj->objId] <= 0) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
+        D_800E9C60[omCurrentObj->objId] = 1;
+    } else {
+        sp2C.z = 0.0f;
+        sp2C.y = 0.0f;
+        sp2C.x = D_8021DA54_ovl9;
+        lbvector_Rotate(&sp2C, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], sp38));
+        D_800E6690[omCurrentObj->objId] = sp2C.x;
+        D_800E3750[omCurrentObj->objId] = sp2C.y;
+        if (tmp->unk3C == 0) {
+            if ((f32) sp44 != D_800E6A10[omCurrentObj->objId]) {
+                if (ABSF(D_800E64D0[omCurrentObj->objId]) < 1.0f) {
+                    func_80199F1C_ovl7(arg0);
+                }
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802031D4_ovl9.s")
+#endif
 
 void func_802033B0_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C800_ovl9);

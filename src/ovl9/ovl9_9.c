@@ -619,7 +619,26 @@ void func_801FD93C_ovl9(void) {
     func_801A0C70_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FD9B0_ovl9.s")
+extern f32 D_8021D9AC_ovl9;
+
+void func_801FD9B0_ovl9(struct GObj *arg0) {
+    if (D_800E6690[omCurrentObj->objId] != 0.0f) {
+        if (ABSF(D_800E64D0[omCurrentObj->objId]) < 0.25f) {
+            D_800E6690[omCurrentObj->objId] = 0.0;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = D_8021D9AC_ovl9;
+        }
+    }
+    switch (D_800E9E20[omCurrentObj->objId]) {
+    case 2:
+        gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FD2C0_ovl9);
+        break;
+    case 0:
+        func_801FD93C_ovl9();
+        break;
+    }
+}
 
 void func_801FDAE0_ovl9(s32 arg0, s32 arg1, f32 arg2) {
     if (arg1 == 0) {
@@ -871,7 +890,26 @@ void func_801FE6F4_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FE7E0_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FE97C_ovl9.s")
+extern f32 D_8021D9CC_ovl9;
+
+void func_801FE97C_ovl9(struct GObj *arg0) {
+    if (D_800E6690[omCurrentObj->objId] != 0.0f) {
+        if (ABSF(D_800E64D0[omCurrentObj->objId]) < 0.25f) {
+            D_800E6690[omCurrentObj->objId] = 0.0;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = D_8021D9CC_ovl9;
+        }
+    }
+    switch (D_800E9E20[omCurrentObj->objId]) {
+    case 3:
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FE2D8_ovl9);
+        break;
+    case 1:
+        func_801FD93C_ovl9();
+        break;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FEAAC_ovl9.s")
 
@@ -1324,7 +1362,28 @@ void func_80200504_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_8020059C_ovl9.s")
+extern Vector *lbvector_Rotate(Vector *, s32, f32);
+
+void func_8020059C_ovl9(struct GObj *arg0) {
+    struct DObj *d;
+    f32 angle;
+    Vector sp1C;
+    d = arg0->data.dobj->firstChild;
+    angle = d->angle.v.x;
+    sp1C.y = 0.0f;
+    sp1C.z = 0.0f;
+    sp1C.x = D_800E6A10[omCurrentObj->objId];
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        angle = -angle;
+    }
+    lbvector_Rotate(&sp1C, 4, angle);
+    D_800EA6E0[omCurrentObj->objId] = sp1C.x * 24.0f;
+    D_800EA8A0[omCurrentObj->objId] = sp1C.y * 24.0f;
+    D_800EAA60[omCurrentObj->objId] = sp1C.x * -2.0f;
+    D_800EAC20[omCurrentObj->objId] = sp1C.y * -2.0f;
+    D_800EADE0[omCurrentObj->objId] = sp1C.x * -4.0f;
+    D_800EAFA0[omCurrentObj->objId] = sp1C.y * -4.0f;
+}
 
 void func_802006F0_ovl9(struct GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;

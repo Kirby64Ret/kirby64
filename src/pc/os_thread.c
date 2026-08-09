@@ -82,6 +82,7 @@
 #include <string.h>
 #include <ucontext.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "pc/pc_platform.h"
 #include "pc/pc_backend.h"
@@ -265,9 +266,16 @@ void pc_idle(void) {
     if (!only_idle_runnable()) {
         return;
     }
+    if (pc_quit_requested()) {
+        fprintf(stderr, "[pc] interrupted\n");
+        fflush(NULL);
+        _exit(0); /* not exit() -- see the termination note in os_time.c */
+    }
     if (!pcb_alive()) {
         fprintf(stderr, "[pc] host asked to quit\n");
-        exit(0);
+        fflush(NULL);
+        pcb_video_shutdown();
+        _exit(0);
     }
     /* Sleeping here rather than spinning is the whole benefit of intercepting
      * the idle thread: the port gives the CPU back instead of burning a core
@@ -370,6 +378,16 @@ void pc_pump_events(void) {
      * audio library relies on it to keep its player list consistent. */
     if (!pc_ints_enabled()) {
         return;
+    }
+    /* Checked here as well as in pc_idle because pc_idle is only reached when
+     * NOTHING is runnable, and under a renderer the process can spend most of
+     * its time inside pcb_gfx_run with the game's scheduler stopped behind it.
+     * Every blocking libultra call comes through here, so this is the point
+     * that is always reached soon after a signal. */
+    if (pc_quit_requested()) {
+        fprintf(stderr, "[pc] interrupted\n");
+        fflush(NULL);
+        _exit(0);
     }
     reentrant = 1;
     pc_in_event_delivery = 1;

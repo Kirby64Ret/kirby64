@@ -107,7 +107,32 @@ void func_801783B8_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178690_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_8017890C_ovl5.s")
+typedef struct UnkPtrPair {
+    void *unk0;
+    void *unk4;
+} UnkPtrPair;
+
+extern void *D_80188830_ovl5[];
+extern UnkPtrPair D_80188840_ovl5[];
+extern UnkPtrPair D_80188860_ovl5[];
+
+void func_8017890C_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    func_800A9864(D_80188830_ovl5[arg2], 0x1869F, 0x10);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_801887C0_ovl5[arg1].x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_801887C0_ovl5[arg1].y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_801887C0_ovl5[arg1].z;
+    func_800AA018(D_80188840_ovl5[arg2].unk0);
+    if (D_80188840_ovl5[arg2].unk4 != NULL) {
+        func_800AA018(D_80188840_ovl5[arg2].unk4);
+    }
+    func_800AF27C();
+    func_800AA018(D_80188860_ovl5[arg2].unk0);
+    if (D_80188860_ovl5[arg2].unk4 != NULL) {
+        func_800AA018(D_80188860_ovl5[arg2].unk4);
+    }
+    curObjSleepForever();
+}
+
 
 s32 func_80178A3C_ovl5(s32 arg0, s32 arg1) {
     Unk16Bytes sp0 = D_801881DC_ovl5;
