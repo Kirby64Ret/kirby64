@@ -115,7 +115,20 @@ s32 func_80178A3C_ovl5(s32 arg0, s32 arg1) {
     return D_800DFBD0[D_8018ECE8_ovl5[arg0]][sp0.unk0[arg1]];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178AAC_ovl5.s")
+extern void *D_80188880_ovl5[];
+
+void func_80178AAC_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    Vector sp44;
+
+    func_800A9864(D_80188880_ovl5[((s32 *) D_800D7178)[arg1 * 4 + 3]], 0x1869F, 0x10);
+    while (1) {
+        func_800B2340(&sp44, func_80178A3C_ovl5(arg1, arg2), D_8018ECE8_ovl5[arg1]);
+        gEntitiesNextPosXArray[omCurrentObj->objId] = sp44.x;
+        gEntitiesNextPosYArray[omCurrentObj->objId] = sp44.y;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = sp44.z;
+        ohSleep(1);
+    }
+}
 
 void func_80178BEC_ovl5(GObj *arg0, s32 arg1) {
     func_800A9864(D_80188898_ovl5, 0x1869F, 0x10);

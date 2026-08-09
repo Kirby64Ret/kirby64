@@ -481,7 +481,44 @@ void func_80164058_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80164320_ovl3.s")
 
+#ifdef MIPS_TO_C
+/* 69/111: logic decoded, but IDO keeps omCurrentObj->objId in $s0 (saving
+   and restoring it) where the ROM re-reads it, and puts `h` in a register
+   instead of spilling it to 0x1C($sp). Tried s32 vs f32** for h and an
+   explicit id local. */
+extern char D_801912EC_ovl3[];
+extern f32 D_80193C64_ovl3[][4];
+extern f32 D_80198700_ovl3[][4];
+extern s32 D_80193D64_ovl3[];
+extern s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
+extern void func_80155D50_ovl3(f32 *, s32, s32, s32);
+
+void func_801644EC_ovl3(s32 arg0) {
+    f32 **h;
+
+    if (D_8012E860 != 0) {
+        if (D_800E98E0[omCurrentObj->objId] == 0) {
+            h = (f32 **) func_80111A04(D_801912EC_ovl3, omCurrentObj->objId);
+            h[8][6] = 85.0f;
+            gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];
+            func_80152070_ovl3(D_80193C64_ovl3, D_80198700_ovl3, 0x10, 1.25f);
+        } else {
+            h = (f32 **) func_80111A04(D_801912EC_ovl3, omCurrentObj->objId);
+            h[8][6] = 45.0f;
+            gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];
+            func_80152070_ovl3(D_80193C64_ovl3, D_80198700_ovl3, 0x10, 0.7f);
+        }
+        func_80111C4C((s32) h);
+        func_80155D50_ovl3(D_80198540_ovl3[omCurrentObj->objId - 60], (s32) D_80193D64_ovl3, 0,
+                           omCurrentObj->objId);
+        gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+    } else {
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801644EC_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801646A4_ovl3.s")
 
@@ -812,5 +849,16 @@ s32 func_8016854C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8016858C_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801693C4_ovl3.s")
+extern char D_80197120_ovl3[];
+
+s32 func_801693C4_ovl3(s32 arg0) {
+    s32 temp = request_track_general(0x15, 0x3C, 0x50);
+
+    if (temp != -1) {
+        gEntityFuncListIDArray[temp] = arg0;
+    } else {
+        utilPrintf(D_80197120_ovl3);
+    }
+    return temp;
+}
 

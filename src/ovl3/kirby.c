@@ -301,7 +301,31 @@ void func_80172A3C_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80173AF4_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80173CB4_ovl3.s")
+void func_80173CB4_ovl3(s32 arg0) {
+    gKirbyState.unk30 = 0;
+    func_8011CF58();
+    D_800DDFD0[omCurrentObj->objId] = 0x18;
+    func_80120A28();
+    gKirbyState.unkD = 6;
+    func_80122F08(0x20008);
+    gKirbyState.unk154 = 2;
+    if (gKirbyState.unk4 == 1) {
+        if (D_800E8AE0[omCurrentObj->objId] & 6) {
+            func_800A8100(1, 1, 9, (s32) D_800DFBD0[omCurrentObj->objId][2]);
+        } else {
+            func_800A8100(1, 1, 8, (s32) D_800DFBD0[omCurrentObj->objId][2]);
+        }
+    } else {
+        D_800EC2E0[func_801632B8_ovl3(0)].as_s32 = (s32) D_800DFBD0[omCurrentObj->objId][2];
+    }
+    gKirbyState.unk4 = 0;
+    D_800E0490[omCurrentObj->objId] = D_801926E8_ovl3;
+    func_801230E8(0x20152, 0x20153, 1);
+    func_80122F08(0x20007);
+    gKirbyState.unk154 = 2;
+    gKirbyState.unk30 += 1;
+    curObjSleepForever();
+}
 
 void func_80173E40_ovl3(s32 arg0) {
     func_80153984_ovl3();
@@ -317,7 +341,11 @@ void func_80173E40_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-// 6 diffs: IDO swaps $f0/$f2 between the 0.0f and the D_80197434_ovl3 load
+/* 6/99: IDO swaps $f0/$f2 between the shared 0.0f and the D_80197434_ovl3
+   load. Re-swept in wave 7 with no effect: statement order (4 positions), a
+   named `zero` local with and without a declaration initializer, deriving the
+   zero from temp-temp, re-reading D_800E6690 for the second zero. Same
+   residue as func_8018E164_ovl3 in ovl3_6.c. */
 void func_80173EC0_ovl3(GObj *arg0) {
     f32 temp;
 
@@ -409,16 +437,13 @@ void func_801741DC_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80174284_ovl3.s")
 
-#ifdef MIPS_TO_C
-// all temp registers are allocated one slot lower than the ROM
 void func_80174504_ovl3(GObj *arg0) {
     s32 temp;
 
     gKirbyState.unk30 = 0;
     gKirbyState.unkA = 0;
     gKirbyState.unkD = 0;
-    gKirbyState.secondInhale = 0;
-    gKirbyState.firstInhale = 0;
+    gKirbyState.firstInhale = gKirbyState.secondInhale = 0;
     func_8011CF58();
     D_800DDFD0[omCurrentObj->objId] = 0x10;
     func_80120A28();
@@ -427,7 +452,7 @@ void func_80174504_ovl3(GObj *arg0) {
     if (gKirbyState.unk4 == 1) {
         func_801230E8(0x20146, 0x20147, 0);
     } else {
-        if (gKirbyState.ability < 8) {
+        if ((s32) gKirbyState.ability < 8) {
             temp = func_801BBFE4_ovl7();
         } else {
             temp = func_801BC27C_ovl7(gKirbyState.ability, 0);
@@ -448,9 +473,6 @@ void func_80174504_ovl3(GObj *arg0) {
     gKirbyState.unk30 = gKirbyState.unk30 + 1;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80174504_ovl3.s")
-#endif
 
 void func_80174680_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     if (arg1 == 0) {

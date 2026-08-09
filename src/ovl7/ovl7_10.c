@@ -36,6 +36,11 @@ extern f32 D_801CE314_ovl7, D_801CE318_ovl7, D_801CE324_ovl7, D_801CE310_ovl7;
 extern s32 D_800E0D50[];
 void func_80198880_ovl7(void *);
 extern s32 D_801C424C_ovl7[];
+void func_800B0F28(struct DObj *, s32, f32);
+void func_801B41BC_ovl7(void);
+extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
+extern f32 D_801CE328_ovl7, D_801CE330_ovl7;
+void func_800AA864(s32, u32);
 void func_800B6FD8(GObj *);
 extern f32 D_800E9020[];
 void func_801B3C54_ovl7(void);
@@ -180,7 +185,47 @@ void func_801B3CF4_ovl7(GObj *arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
+#ifdef MIPS_TO_C
+// 138/189 diffs but the same instruction count: the home-slot store of $a0
+// is scheduled first instead of mid-function and every temp is rotated one slot.
+void func_801B3EC8_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    arg0->onAnimate = func_800B0F28;
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
+    func_801ABBA0_ovl7();
+    D_800DF150[omCurrentObj->objId] = func_801B41BC_ovl7;
+    ent->unk48 = NULL;
+    ent->unk98 = &D_801CB500_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA018(0x100B2);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 7.0f;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (f32) 0;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E3C90[omCurrentObj->objId] = D_801CE328_ovl7;
+    while (D_800E8920[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801CE330_ovl7;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_801CE330_ovl7;
+    D_800EC2E0[omCurrentObj->objId].as_s32 = 0;
+    func_800AA864(0x100AC, 1);
+    ent->unk40 = 1;
+    func_801AC11C_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3EC8_ovl7.s")
+#endif
 
 void func_801B41BC_ovl7(void) {
     if (D_800EC2E0[omCurrentObj->objId].as_s32 != 0) {

@@ -30,6 +30,7 @@ void func_8019D958_ovl7(u16);
 void func_801A7000_ovl7(GObj *);
 
 extern s32 D_801CB0F8_ovl7[];
+extern s32 D_800E8760[];
 extern s32 D_801D0A38_ovl7[];
 void func_801A3938(void *);
 void func_801A36CC(void *);
@@ -600,9 +601,9 @@ void func_801C2134_ovl7(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
+// 18/57 diffs and one instruction short: the ROM re-reads omCurrentObj->objId
+// after the D_800E8920 store and keeps omCurrentObj in $a0, not $v1.
 void func_801C2264_ovl7(GObj *arg0) {
-    s32 *p;
-
     if (func_801C0588_ovl7() == 0) {
         if ((D_800E83E0[omCurrentObj->objId] != 0) || (D_800E8760[omCurrentObj->objId] != 0)) {
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801AC11C_ovl7);
@@ -610,9 +611,8 @@ void func_801C2264_ovl7(GObj *arg0) {
             func_801A3938(D_801CB0F8_ovl7);
             func_801A36CC(func_801A3864_ovl7);
             func_801A0D74_ovl7(arg0);
-            p = &D_800E8920[omCurrentObj->objId];
-            if (*p == 1) {
-                *p = 0;
+            if (D_800E8920[omCurrentObj->objId] == 1) {
+                D_800E8920[omCurrentObj->objId] = 0;
             }
             func_80111C4C(func_801117BC(D_801D0A38_ovl7, omCurrentObj->objId));
         }

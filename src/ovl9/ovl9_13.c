@@ -1446,21 +1446,6 @@ void func_8020DF8C_ovl9(s32 arg0) {
 
 }
 
-#ifdef MIPS_TO_C
-void func_8020DF94_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
-
-    D_800DEF90[omCurrentObj->objId] = func_800B67A8;
-    func_800AFBB4(1);
-    func_8019BB58_ovl7();
-    D_800E8920[omCurrentObj->objId] = 0;
-    D_800E98E0[omCurrentObj->objId] = 0;
-    D_800E9C60[omCurrentObj->objId] = 0;
-    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - 60.0f;
-    sp1C->unk4 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_8021CAA0_ovl9);
-}
-#else
 extern FUNCLIST D_8021CAA0_ovl9;
 
 void func_8020DF94_ovl9(struct GObj *arg0) {
@@ -1476,7 +1461,6 @@ void func_8020DF94_ovl9(struct GObj *arg0) {
     tmp->unk4 = gEntitiesNextPosYArray[omCurrentObj->objId];
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_8021CAA0_ovl9);
 }
-#endif
 
 void func_8020E0A0_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_8020E178_ovl9;

@@ -321,7 +321,35 @@ s32 func_80155664_ovl3(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155838_ovl3.s")
 
+#ifdef MIPS_TO_C
+/* 54/61: the ROM hoists one `or $v0, $zero, $zero` above both early returns
+   and keeps arg1 in $a1 until the last read; IDO emits a likely-branch skip
+   with a per-exit `move v0,zero` and moves arg1 to $a2. Swept: declaration
+   order of the dst/p locals, inlining the (f32 *)arg0 cast, a goto into a
+   shared return block, and a `ret` local. */
+s32 func_80155C68_ovl3(s32 arg0, f32 *arg1) {
+    f32 *dst = (f32 *) arg0;
+    f32 **p = D_800E0490[omCurrentObj->objId];
+
+    if (p == NULL) {
+        return 0;
+    }
+    *(f32 **) &dst[7] = p[0];
+    if (p[0] == NULL) {
+        return 0;
+    }
+    dst[0] = arg1[0];
+    dst[1] = arg1[1];
+    dst[2] = arg1[2];
+    dst[3] = gEntitiesPosXArray[omCurrentObj->objId];
+    dst[4] = gEntitiesPosYArray[omCurrentObj->objId];
+    dst[5] = gEntitiesPosZArray[omCurrentObj->objId];
+    dst[6] = gEntitiesAngleYArray[omCurrentObj->objId];
+    func_8011BF4C(dst, 0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155C68_ovl3.s")
+#endif
 
 void func_80155D50_ovl3(f32 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     arg0[0] = gEntitiesNextPosXArray[arg3];

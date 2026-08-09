@@ -125,7 +125,29 @@ void func_8017E85C_ovl5(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_8/func_8017E95C_ovl5.s")
+typedef union Unk5Ptrs {
+    struct UnkStruct8015C740 *unk0[5];
+} Unk5Ptrs;
+
+extern Unk5Ptrs D_80189258_ovl5;
+
+void func_8017E95C_ovl5(GObj *arg0) {
+    s32 i;
+    Unk5Ptrs sp38 = D_80189258_ovl5;
+
+    i = D_8018EDBA_ovl5 + 1;
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0xE, 0x80000000, 0xE);
+    while (1) {
+        if (i != D_8018EDBA_ovl5) {
+            i = D_8018EDBA_ovl5;
+            func_800ACBDC(arg0);
+            func_8015C740_ovl5(arg0, sp38.unk0[i]);
+        }
+        ohSleep(1);
+    }
+}
 
 void func_8017EA7C_ovl5(void) {
     D_8018EDB0_ovl5 = 0;
@@ -149,7 +171,26 @@ void func_8017EAE8_ovl5(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_8/func_8017EB28_ovl5.s")
+void gameSetUpdateRate(f32);
+
+void func_8017EB28_ovl5(void) {
+    gameSetUpdateRate(2.0f);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
+    func_800AE048(0x80);
+    func_800AE0F0();
+    func_800A6E64();
+    func_800A8724(0);
+    func_800A6BC0(0xA);
+    func_8017EA7C_ovl5();
+    D_800E98E0[request_track_3(0xD, 0, 0x70)] = 0;
+    D_800E98E0[request_track_3(0xD, 0, 0x70)] = 1;
+    D_800E98E0[request_track_3(0xD, 0, 0x70)] = 2;
+    D_800E98E0[request_track_3(0xD, 0, 0x70)] = 3;
+    D_800E98E0[request_track_3(0xD, 0, 0x70)] = 4;
+    HS64_omMakeGObj(0, &func_8017EAE8_ovl5, 0x1A, 0x80000000);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
+}
 
 void func_8017EC80_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_80189270_ovl5);

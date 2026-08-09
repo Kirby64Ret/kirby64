@@ -953,19 +953,6 @@ void func_801DE790_ovl12(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef NON_MATCHING // awful
-void func_801DE7E8_ovl12(GObj *arg0) {
-    if ((D_800D7098.unk8 == 1) || (D_800D7098.unk10 == 0)) {
-        D_800E9560[omCurrentObj->objId]++;
-        gEntityFuncListIDArray[omCurrentObj->objId] += D_800E9560[omCurrentObj->objId] - 2;
-        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DE3D4_ovl12);
-        return;
-    }
-    if (D_800D7098.unk10 == 0) {
-        func_801DCDFC_ovl12();
-    }
-}
-#else
 #ifdef NON_MATCHING
 /* 12/48: structurally exact; ROM rotates the pointer/value/sum triple one
  * register higher (a3/t0/a2 vs a3/a2/t0). */
@@ -985,7 +972,6 @@ void func_801DE7E8_ovl12(GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DE7E8_ovl12.s")
-#endif
 #endif
 
 void func_801DE8A8_ovl12(GObj *arg0) {

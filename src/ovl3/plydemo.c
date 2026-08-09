@@ -63,7 +63,7 @@ extern void func_8022E58C_ovl19(void);
 void func_80157C5C_ovl3();
 void func_80157F18_ovl3(struct GObj *);
 void func_8015814C_ovl3(s32, void (*)(), f32);
-void func_80158294_ovl3(struct GObj *);
+void func_80158294_ovl3();
 void func_801583BC_ovl3(void);
 void func_80158410_ovl3(s32);
 void func_80157E38_ovl3(s32);
@@ -190,7 +190,9 @@ void func_8015814C_ovl3(s32 arg0, void (*arg1)(), f32 arg2) {
 
 extern void set_kirby_action_1(s32, s32);
 
-void func_80158294_ovl3(GObj *arg0) {
+void func_80158294_ovl3(arg0)
+GObj *arg0;
+{
     f32 v;
     s32 idx;
 
@@ -492,8 +494,15 @@ void func_8015A144_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
+/* 75/75: logic is right (switch gives the ROM's shared $v1=1/$a1=2 compare
+   chain) but IDO emits the gKirbyState base into $v0 and defers the
+   `sw $a0, 0($sp)` parameter home store, where the ROM homes $a0 first and
+   then reuses $a0 for the base, so every register differs. Swept: K&R
+   definition, with/without a local for the switch value. */
 void func_8015A31C_ovl3(s32 arg0) {
-    switch (gKirbyState.unk44) {
+    s32 state = gKirbyState.unk44;
+
+    switch (state) {
         case 1:
             if ((D_800E5F90[omCurrentObj->objId] == 5) && (D_80196FB4_ovl3 <= D_800E6BD0[omCurrentObj->objId])) {
                 D_800E6690[omCurrentObj->objId] = 0.0f;
@@ -516,31 +525,7 @@ void func_8015A31C_ovl3(s32 arg0) {
     }
 }
 #else
-void func_8015A31C_ovl3(s32 arg0) {
-    switch (gKirbyState.unk44) {
-    case 1:
-        if (D_800E5F90[omCurrentObj->objId] == 5) {
-            if (D_80196FB4_ovl3 <= D_800E6BD0[omCurrentObj->objId]) {
-                D_800E6690[omCurrentObj->objId] = 0.0f;
-                D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-                D_800E6850[omCurrentObj->objId] = D_80196FB8_ovl3;
-                gKirbyState.unk44 = 2;
-            }
-        }
-        break;
-    case 2:
-        if (gKirbyState.unk30 != 0) {
-            D_800BE52C = D_800BE500;
-            D_800BE530 = D_800BE504;
-            D_800BE534 = D_800BE508 + 1;
-            D_800BE538 = 0;
-            D_800BE4FC = 1;
-            D_800BE4F8 = 2;
-            gKirbyState.unk30 = 0;
-        }
-        break;
-    }
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_8015A31C_ovl3.s")
 #endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_8015A44C_ovl3.s")

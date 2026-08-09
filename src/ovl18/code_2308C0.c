@@ -163,7 +163,33 @@ void func_8021F4A0_ovl18(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021F70C_ovl18.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021F970_ovl18.s")
+void func_8021F970_ovl18(void) {
+    struct UnkStruct800E1B50 *sp1C;
+    s32 sp18;
+
+    sp1C = D_800E1B50[omCurrentObj->objId];
+    sp18 = D_800E77A0[omCurrentObj->objId] - 0x4E;
+    play_sound(0x28);
+    sp1C->unk3D = ((u8 *) &D_802297E4_ovl18)[sp18 * 8];
+    D_800E7CE0[omCurrentObj->objId] = sp1C->unk3D;
+    D_800D70D8.unk0 = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_800D70D8.unk4 = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_800D70D8.unk8 = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800D70D8.unkC = gEntitiesAngleXArray[omCurrentObj->objId];
+    D_800D70D8.unk10 = gEntitiesAngleYArray[omCurrentObj->objId];
+    D_800D70D8.unk14 = gEntitiesAngleZArray[omCurrentObj->objId];
+    D_800D70D8.unk18 = gEntitiesScaleXArray[omCurrentObj->objId];
+    D_800D70D8.unk1C = gEntitiesScaleYArray[omCurrentObj->objId];
+    D_800D70D8.unk20 = gEntitiesScaleZArray[omCurrentObj->objId];
+    D_800D7098.unk0 = 1;
+    D_800D7098.unk4 = 0;
+    D_800D7098.unk8 = 0;
+    D_800D7098.unkC = 0;
+    D_800D7098.unk10 = 0;
+    D_800D7098.unk14 = 0;
+    D_800D7098.unk18 = 0;
+    func_800B19F4(6, omCurrentObj->objId, &D_800D70D8);
+}
 
 void func_8021FB18_ovl18(void) {
     D_800E7CE0[omCurrentObj->objId] = 0;
@@ -182,7 +208,18 @@ void func_8021FB18_ovl18(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FC40_ovl18.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FD48_ovl18.s")
+extern f32 D_8022BB84_ovl18;
+extern f32 D_8022BB88_ovl18;
+void func_8021FD48_ovl18(void) {
+    D_800D7098.unk4 = D_800D7098.unk4 + 1;
+    if (D_800E77A0[omCurrentObj->objId] == 0x56) {
+        gEntitiesAngleXArray[omCurrentObj->objId] =
+            D_800D70D8.unkC - (*(s32 *) &D_800D7098.unk4 * D_8022BB84_ovl18);
+    } else {
+        gEntitiesAngleYArray[omCurrentObj->objId] =
+            (*(s32 *) &D_800D7098.unk4 * D_8022BB88_ovl18) + D_800D70D8.unk10;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FDF4_ovl18.s")
 

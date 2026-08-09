@@ -664,12 +664,14 @@ void func_801E8A38_ovl9(struct GObj *);
 void func_801E89B8_ovl9(struct GObj *);
 
 void func_801E8860_ovl9(struct GObj *arg0) {
-    D_800E1B50[omCurrentObj->objId]->unk39 = -1;
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    tmp->unk39 = -1;
     D_800DF150[omCurrentObj->objId] = func_801E8A38_ovl9;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C7FF0_ovl7;
     func_801A0D50_ovl7(func_801E89B8_ovl9);
     if (D_800E8E60[omCurrentObj->objId] == 1) {
-        if (D_800E7880[omCurrentObj->objId] < 6) {
+        if ((u32) D_800E7880[omCurrentObj->objId] < 6) {
             D_800E7880[omCurrentObj->objId] = D_800E7880[omCurrentObj->objId] + 6;
             func_801A3280_ovl7();
         }

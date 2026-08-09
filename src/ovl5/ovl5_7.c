@@ -327,7 +327,34 @@ void func_8017CA90_ovl5(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017CAD0_ovl5.s")
+void gameSetUpdateRate(f32);
+void func_800AAF34(s32, s32, f32);
+
+void func_8017CAD0_ovl5(void) {
+    s32 i;
+    s32 t;
+
+    gameSetUpdateRate(2.0f);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
+    func_800AE048(0x80);
+    func_800AE0F0();
+    func_800A6E64();
+    func_800A8724(0);
+    func_800A6BC0(0xA);
+    func_800AAF34(0x10, 0x30001, 0.0f);
+    func_800A71A0(0x10);
+    func_8017C890_ovl5();
+    for (i = 0; i != 4; i++) {
+        t = request_track_3(0xA, 0, 0x70);
+        D_800E98E0[t] = 0;
+        ((s32 *) D_800E9AA0)[t] = i;
+    }
+    D_800E98E0[request_track_3(0xA, 0, 0x70)] = 3;
+    func_8017C61C_ovl5();
+    HS64_omMakeGObj(0, &func_8017CA90_ovl5, 0x1A, 0x80000000);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
+}
 
 void func_8017CC18_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_80188958_ovl5);

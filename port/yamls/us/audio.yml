@@ -1,0 +1,94 @@
+# Kirby 64 audio -- N64 SDK libaudio ("n_audio") ALBankFile / ALSeqFile format.
+#
+# IMPORTANT: this is NOT the SM64/OoT "Audiobank + Audiotable" format that
+# Torch's NAUDIO:V0 / NAUDIO:V1 factories parse. Those expect an index file
+# whose header is `u16 magic(1|2); u16 numEntries; {u32 off,u32 len}[]`, plus a
+# CTLHeader of {numInstruments, numDrums, sharedFlag}. Kirby 64 has neither.
+# It uses the stock SDK structures that `alBnkfNew`/`alSeqFileNew` patch:
+#
+#   ALBankFile   s16 revision(0x4231 'B1'); s16 bankCount; u32 bankArray[]
+#   ALBank       s16 instCount; u8 flags; u8 pad; s32 sampleRate;
+#                u32 percussion; u32 instArray[]
+#   ALInstrument u8 volume,pan,priority,flags; u8 trem[4]; u8 vib[4];
+#                s16 bendRange; s16 soundCount; u32 soundArray[]
+#   ALSound      u32 envelope; u32 keyMap; u32 wavetable;
+#                u8 samplePan, sampleVolume, flags
+#   ALWaveTable  u32 base (offset into the *tbl*); s32 len; u8 type; u8 flags;
+#                union { {u32 loop; u32 book} adpcm; {u32 loop} raw }
+#   ALSeqFile    s16 revision(0x5331 'S1'); s16 seqCount; {u32 off,s32 len}[]
+#
+# All ctl-internal pointers are byte offsets from the start of the ctl; the
+# single exception is ALWaveTable.base, which is an offset into the tbl.
+#
+# The offsets and pairings below are not inferred from the splat subsegment
+# names. They come from `auPublicSettings` (asm/data/main/audio.data.s, ROM
+# 0x3FF50), the table `auLoadAssets` in src/main/audio.c reads:
+#
+#   +0x14 bank1Start   0x003E1400   +0x18 bank1End 0x003E6BC0
+#   +0x1C table1Start  0x003E6BC0
+#   +0x20 bank2Start   0x002A8CB0   +0x24 bank2End 0x002B1510
+#   +0x28 table2Start  0x002B1510
+#   +0x2C romSbkStart  0x00250320
+#
+# so ctl_3E1400 pairs with sound_3E6BC0 (bank1, SFX) and ctl_2A8CB0 pairs with
+# sound_2B1510 (bank2, music). That is *not* what adjacency alone suggests: the
+# two ctl blocks are far apart in the ROM and each is followed by its own tbl.
+#
+# Cross-check: walking each ctl and taking max(wavetable.base + len) gives
+# 0xB89CC for bank1 and 0x12FEEE for bank2. Rounded up to 16 that is 0xB89D0
+# and 0x12FEF0 -- exactly the gap to the next splat subsegment in both cases.
+# The pairing is therefore confirmed by the data as well as by the loader.
+#
+# Factories used: BK64:SOUNDFONT_CTL / BK64:SOUNDFONT_TBL. Despite the name
+# these are game-agnostic ALBankFile handlers -- Banjo-Kazooie is another SDK
+# libaudio title. SOUNDFONT_CTL emits the ctl verbatim; SOUNDFONT_TBL walks the
+# paired ctl to compute the tbl length rather than trusting a hardcoded size.
+# Both emit raw buffers, so the port feeds them to its own decompiled
+# alBnkfNew() unchanged, which is exactly what auLoadAssets() already does.
+
+# ---------------------------------------------------------------------------
+# bank1 -- sound effects. 1 instrument, 106 sounds, 106 ADPCM wavetables,
+# sampleRate 44100.
+# ---------------------------------------------------------------------------
+sfx_bank_ctl:
+  type: BK64:SOUNDFONT_CTL
+  offset: 0x3E1400
+  size: 0x57C0
+
+sfx_bank_tbl:
+  type: BK64:SOUNDFONT_TBL
+  offset: 0x3E6BC0
+  ctl_offset: 0x3E1400
+  ctl_size: 0x57C0
+
+# ---------------------------------------------------------------------------
+# bank2 -- music instrument bank, bound to the sequence player. 57 instrument
+# slots (56 distinct + percussion at ctl+0x2BD0), 171 sounds, 139 distinct
+# ADPCM wavetables, sampleRate 32000.
+# ---------------------------------------------------------------------------
+music_bank_ctl:
+  type: BK64:SOUNDFONT_CTL
+  offset: 0x2A8CB0
+  size: 0x8860
+
+music_bank_tbl:
+  type: BK64:SOUNDFONT_TBL
+  offset: 0x2B1510
+  ctl_offset: 0x2A8CB0
+  ctl_size: 0x8860
+
+# ---------------------------------------------------------------------------
+# Sequence bank -- ALSeqFile 'S1', 63 sequences in SDK compressed-MIDI form
+# (ALCMidiHdr: s32 trackOffset[16]; s32 division -- so every sequence starts
+# with 0x00000044, the offset of track 0 past the 0x44-byte header, which the
+# ROM bytes confirm).
+#
+# Emitted as a single BLOB rather than per-sequence nodes because
+# alSeqFileNew() patches seqArray[i].offset in place against the base address
+# of the whole file; splitting it would break that relocation. There is no
+# NAUDIO sequence factory that understands this container.
+# ---------------------------------------------------------------------------
+sequence_bank:
+  type: BLOB
+  offset: 0x250320
+  size: 0x58990

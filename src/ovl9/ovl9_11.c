@@ -41,33 +41,13 @@ void func_80207304_ovl9(struct GObj *this) {
 IN_FILE void func_802074B0_ovl9(void);
 extern void func_800B7B64(void);
 
+/* 7 diffs: one-slot rotation -- the ROM holds D_800E1B50[objId] in $a2 and
+   &D_800E6A10[objId] in $a1, IDO uses $a1/$a0. An explicit `f32 *p` local
+   makes it far worse (79 diffs). */
 #ifdef MIPS_TO_C
-void func_80207374_ovl9(void) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
-
-    D_800DEF90[omCurrentObj->objId] = func_800B7B64;
-    tmp->unk98 = &D_801CC550;
-    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
-    D_800DF150[omCurrentObj->objId] = &func_802074B0_ovl9;
-    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
-        func_801A6C10_ovl7();
-    }
-    if (D_800E8920[omCurrentObj->objId] == 1) {
-        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
-    } else {
-        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
-    }
-    func_801A0D50_ovl7(func_80207304_ovl9);
-    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C8D8_ovl9);
-}
-#else
-void func_80207374_ovl9(void);
-extern void func_800B7B64(struct GObj *);
 extern FUNCLIST D_8021C8D8_ovl9;
-void func_802074B0_ovl9(struct GObj *);
-void func_80207304_ovl9(struct GObj *);
 
-void func_80207374_ovl9(struct GObj *arg0) {
+void func_80207374_ovl9(void) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B7B64;
@@ -85,6 +65,8 @@ void func_80207374_ovl9(struct GObj *arg0) {
     func_801A0D50_ovl7(func_80207304_ovl9);
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C8D8_ovl9);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_80207374_ovl9.s")
 #endif
 
 

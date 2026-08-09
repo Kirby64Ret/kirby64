@@ -60,6 +60,12 @@ void func_801D9018_ovl9(GObj *arg0) {
 }
 
 extern s32 D_801CB83C;
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800B3520(void);
+void func_800AA018(s32);
+void func_800AA864(s32, s32);
+void ohSleep(s32);
 
 void func_801D9060_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;

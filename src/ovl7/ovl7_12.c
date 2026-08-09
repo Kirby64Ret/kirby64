@@ -21,7 +21,13 @@ extern f32 D_801CE374_ovl7;
 void func_801AC364_ovl7(GObj *);
 void func_801B8068_ovl7(GObj *);
 extern struct Sub800E1B50_Unk98 D_801CB56C_ovl7;
-extern f32 D_801CE36C_ovl7;
+extern f32 D_801CE36C_ovl7, D_801CE368_ovl7;
+void func_801B7E80_ovl7(GObj *);
+extern s32 D_800E8AE0[];
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800AA018(s32);
+void ohSleep(s32);
 
 extern f32 D_801CE378_ovl7;
 void func_800B6FD8();
@@ -84,7 +90,42 @@ void func_800B6FD8(GObj *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B79B0_ovl7.s")
 
+#ifdef MIPS_TO_C
+// 65/147 diffs and one instruction short: everything up to the if matches;
+// the ROM hoists the D_800E3750 base before the if and gets a beql whose
+// delay slot preloads 14.0f.
+void func_801B7C30_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    func_801ABBA0_ovl7();
+    D_800DF150[omCurrentObj->objId] = func_801B7E80_ovl7;
+    ent->unk48 = &func_8010C274;
+    ent->unk98 = &D_801CB56C_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA018(0x100EF);
+    arg0->data.dobj->firstChild->angle.v.x = 0.0f;
+    if (D_800E8AE0[D_800E0D50[omCurrentObj->objId]] & 6) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 7.0f;
+        D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (f32) 0;
+        D_800E6850[omCurrentObj->objId] = 7.0f;
+    } else {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 14.0f;
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801CE368_ovl7;
+    ohSleep(0x3C);
+    func_801AC364_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B7C30_ovl7.s")
+#endif
 
 void func_801B7E80_ovl7(GObj *arg0) {
     func_801BA240_ovl7();
@@ -236,6 +277,8 @@ void func_801B865C_ovl7(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
+// 45/49 diffs (same length): the ROM materialises &D_801D0A98_ovl7 into $a1
+// and spills arg1 first; IDO keeps the address in $t9 and uses absolute form.
 void func_801B8714_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
     s32 *p = &D_801D0A98_ovl7;

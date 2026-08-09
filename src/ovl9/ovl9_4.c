@@ -237,6 +237,10 @@ void func_801E2B04_ovl9(void) {
 
 extern s32 D_801CBA58;
 extern f32 D_8021CFBC_ovl9;
+void func_800B33F4(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void ohSleep(s32);
 
 void func_801E2B2C_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;

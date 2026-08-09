@@ -199,11 +199,55 @@ s32 func_80160A78_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160AF8_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160D50_ovl5.s")
+void func_80160D50_ovl5(GObj *arg0) {
+    s32 t;
+    Vector sp30;
+    Vector sp24;
+    void *dobj;
+
+    t = D_800E98E0[omCurrentObj->objId];
+    dobj = func_80160A78_ovl5(t);
+    func_800B2340(&sp30, dobj, D_8018E030_ovl5[t]);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp30.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = sp30.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp30.z;
+    func_800B26D8(&sp24, dobj, D_8018E030_ovl5[t]);
+    gEntitiesAngleXArray[omCurrentObj->objId] = sp24.x;
+    gEntitiesAngleYArray[omCurrentObj->objId] = sp24.y;
+    gEntitiesAngleZArray[omCurrentObj->objId] = sp24.z;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160E6C_ovl5.s")
 
+// Draft, 14/76: instruction-exact; the ROM keeps D_800E98E0[objId] in $v0 with
+// no stack home, we need an `s32 t` local to get $v0 and that grows the frame
+// 0x40 -> 0x48. All 24 declaration permutations swept, with and without t.
+#ifdef MIPS_TO_C
+extern s32 D_8018E040_ovl5[];
+extern s32 D_801868FC_ovl5;
+
+void func_80161078_ovl5(GObj *arg0) {
+    void *dobj;
+    s32 *p;
+    s32 t;
+    Vector sp30;
+    Vector sp24;
+
+    t = D_800E98E0[omCurrentObj->objId];
+    p = &D_8018E040_ovl5[t];
+    dobj = D_800DFBD0[*p][D_801868FC_ovl5];
+    func_800B2340(&sp30, dobj, *p);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp30.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = sp30.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp30.z;
+    func_800B26D8(&sp24, dobj, *p);
+    gEntitiesAngleXArray[omCurrentObj->objId] = sp24.x;
+    gEntitiesAngleYArray[omCurrentObj->objId] = sp24.y;
+    gEntitiesAngleZArray[omCurrentObj->objId] = sp24.z;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161078_ovl5.s")
+#endif
 
 void func_801611A8_ovl5(GObj *arg0, s32 arg1) {
     func_800A9864(D_80186900_ovl5, 0x1869F, 0x10);

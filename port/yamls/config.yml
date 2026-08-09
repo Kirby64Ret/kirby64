@@ -1,0 +1,28 @@
+# Torch configuration for Kirby 64: The Crystal Shards (US).
+#
+# Key is the SHA-1 of baserom.us.z64, which is what Torch keys its per-ROM
+# config on (N64::Cartridge::GetHash). Same value as kirby.us.sha1.
+#
+# The yml tree under `path` is walked recursively; every node in every file
+# becomes one resource in the archive, named by its path within that tree.
+
+6cea2d46b929a3bb347b060a77fccc83526fb855:
+  name: Kirby64
+  path: us/
+  config:
+    # Kirby 64 is F3DEX2 (see Makefile: -DF3DEX_GBI_2), same as SSB64.
+    gbi: F3DEX2
+    sort: OFFSET
+    output:
+      binary: kirby64.o2r
+      headers: include
+      code: code
+
+  # Segmented address table. Torch maps segment N+1 to segments[N].
+  #
+  # Kirby 64's asset banks are not resident at fixed segment bases the way
+  # SM64's are -- the bank loader picks a segment per bank at load time -- so
+  # this list is deliberately empty for now. Texture/DL nodes below therefore
+  # use absolute ROM offsets, which Torch accepts directly, rather than
+  # segmented pointers.
+  segments: []
