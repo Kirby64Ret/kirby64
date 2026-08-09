@@ -554,7 +554,31 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
     return buf;
 }
 #else
+#ifdef MIPS_TO_C
+// 9/33: same family as func_800A89E0/func_800A8B0C. The five locals (two dead)
+// are needed for the ROM's frame 0x30 and its 0x1C/0x20/0x2C spill slots.
+// The `+` form of the doubling is what stops IDO folding the two shifts into
+// one `sll 3` -- `* 2`, `<< 1`, `2 *`, a separate index local, indexing the
+// table twice and &table[i] all collapse to sll 3 and score 24-25. Residue is
+// `addu` where the ROM has `sll 1`, plus the usual one-slot temp rotation
+// (ROM $v0/$a2 where we get $v1/$v0).
+void *func_800A8CE0(u32 arg0, s32 arg1) {
+    s32 size;
+    s32 pad0;
+    s32 pad1;
+    void *buf;
+    u32 *entry;
+
+    entry = D_800D0184[arg0 >> 16]->geoBlockTable;
+    entry += (arg0 & 0xFFFF) + (arg0 & 0xFFFF);
+    size = (entry[1] - entry[0]) | arg1;
+    buf = (void *)func_800A8358(size);
+    dma_read(entry[0], buf, size & 0xFFFFFC);
+    return buf;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
+#endif
 #endif
 
 #ifdef MIPS_TO_C

@@ -141,7 +141,7 @@ void func_801E22FC_ovl9(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E236C_ovl9.s")
 
 void func_801A0D74_ovl7();
-void func_8019F3B0_ovl7(void);
+s32 func_8019F3B0_ovl7(void);
 
 void func_801E2548_ovl9() {
     D_800E8920[omCurrentObj->objId] = 0;
@@ -168,7 +168,7 @@ void func_801E2588_ovl9(struct GObj *arg0) {
 }
 
 void func_801A0D74_ovl7();
-void func_8019F3B0_ovl7(void);
+s32 func_8019F3B0_ovl7(void);
 
 void func_801E2698_ovl9(void) {
     func_801A0D74_ovl7();
@@ -228,7 +228,7 @@ void func_801E2970_ovl9(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E29B8_ovl9.s")
 
 void func_801A0D74_ovl7();
-void func_8019F3B0_ovl7(void);
+s32 func_8019F3B0_ovl7(void);
 
 void func_801E2B04_ovl9(void) {
     func_801A0D74_ovl7();
@@ -435,30 +435,9 @@ f32 func_801E4F18_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E4F88_ovl9.s")
 
-#ifdef MIPS_TO_C
-s32 func_800B3234(f32, f32, f32);
-void func_8019D8A0(u16);
-void func_801A0D74_ovl7();
-void func_8019F3B0_ovl7(void);
-
-void func_801E51EC_ovl9(GObj *arg0) {
-    func_801A0D74_ovl7(arg0);
-    func_8019F3B0_ovl7();
-    if (D_800E83E0[omCurrentObj->objId] != 0) {
-        D_800E98E0[omCurrentObj->objId] = 1;
-    }
-    if (func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]) != 0) {
-        D_800E98E0[omCurrentObj->objId] = 1;
-        func_8019D8A0((u16) omCurrentObj->objId);
-    }
-}
-#else
 extern s32 func_800B3234(f32, f32, f32);
 extern void func_8019D8A0(u16);
 
-#ifdef MIPS_TO_C
-// 15 diffs: structurally exact; the ROM keeps omCurrentObj in $a1 and
-// objId<<2 in $v1, IDO uses $v1/$v0 (one-slot register-class offset).
 void func_801E51EC_ovl9(void) {
     func_801A0D74_ovl7();
     func_8019F3B0_ovl7();
@@ -471,10 +450,6 @@ void func_801E51EC_ovl9(void) {
         func_8019D8A0(((u16 *) omCurrentObj)[1]);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E51EC_ovl9.s")
-#endif
-#endif
 
 extern void func_800B68AC(s32);
 extern s32 D_801C8640_ovl7;

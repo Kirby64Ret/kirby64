@@ -200,16 +200,14 @@ void func_80161CE0_ovl3(s32 arg0) {
 
 #include "unk_structs/D_80129114.h"
 
-#ifdef MIPS_TO_C
-/* 66/75: one instruction long -- IDO materialises &omCurrentObj with lui+addiu
-   where the ROM uses lui+lw straight into $v0; everything after shifts. */
 void func_80161D94_ovl3(void) {
+    GObj *obj = omCurrentObj;
     f32 *p;
     f32 v;
 
-    D_800E6310[omCurrentObj->objId] = 0;
-    p = &D_800E6BD0[omCurrentObj->objId];
-    if (D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].unkE != 0) {
+    D_800E6310[obj->objId] = 0;
+    if (D_80129114->unk4[D_800E5F90[obj->objId]].unkE != 0) {
+        p = &D_800E6BD0[obj->objId];
         v = *p;
         if (1.0f < v) {
             *p = v - 1.0f;
@@ -220,28 +218,23 @@ void func_80161D94_ovl3(void) {
         }
         return;
     }
+    p = &D_800E6BD0[obj->objId];
     v = *p;
     if (1.0f < v) {
         *p = 1.0f;
-        D_800E6310[omCurrentObj->objId]++;
+        D_800E6310[obj->objId]++;
         return;
     }
     if (v < 0.0f) {
         *p = 0.0f;
-        D_800E6310[omCurrentObj->objId]++;
+        D_800E6310[obj->objId]++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80161D94_ovl3.s")
-#endif
 
 void func_800B2340(Vector *, s32, s32);
 void func_800F98EC(s32, f32);
-void func_800F8E6C(void);
+void func_800F8E6C(GObj *);
 
-#ifdef MIPS_TO_C
-/* 38/79: stack layout and code are exact; IDO keeps the merged omCurrentObj
-   value in $v0 where the ROM uses $a0 (one-slot allocator offset). */
 void func_80161EC0_ovl3(s32 arg0, f32 arg1, f32 arg2) {
     Vector sp24;
 
@@ -250,20 +243,17 @@ void func_80161EC0_ovl3(s32 arg0, f32 arg1, f32 arg2) {
     } else {
         sp24.y = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
     }
-    gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0;
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp24.y + arg2;
-    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0;
     if (D_800E6A10[omCurrentObj->objId] == -1.0f) {
         arg1 = -arg1;
     }
     if (arg1 != 0.0f) {
         func_800F98EC(omCurrentObj->objId, arg1);
     }
-    func_800F8E6C();
+    func_800F8E6C(omCurrentObj);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80161EC0_ovl3.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80162000_ovl3.s")
 
@@ -466,9 +456,120 @@ void func_80164058_ovl3(s32 arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80164130_ovl3.s")
+#ifdef MIPS_TO_C
+/* 3/124: everything matches except the scratch register IDO picks for the
+   D_800E98E0 base -- the ROM materialises it in $t0 and loads the value into
+   $a1, IDO uses $a1 for both.  Levers already applied to get here: `s32 kind`
+   for the switch value (8 -> 3), the chained `p[2] = ...` inside the call
+   argument (10 -> 8) and `f32 temp` declared FIRST (frame 0x30 -> 0x28).
+   Swept with no effect: a local for the loaded value, for the divide and for
+   objId, *(p+2), ((s32 *) D_800E98E0)[i], and s32/void return types on
+   func_80111C4C / func_80152070_ovl3 / func_80155D50_ovl3. */
+extern char D_80191268_ovl3[];
+extern char D_80191288_ovl3[];
+extern char D_801912A8_ovl3[];
+extern s32 D_80193C40_ovl3[];
+extern s32 D_80193C4C_ovl3[];
+extern s32 D_80193C58_ovl3[];
+extern f32 D_80193B40_ovl3[][4];
 
+void func_80164130_ovl3(struct GObj *arg0) {
+    extern f32 D_80198540_ovl3[][8];
+    s32 func_80111A04(char *, s32);
+    s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
+    void func_80155D50_ovl3(f32 *, s32, s32, s32);
+    f32 temp;
+    s32 *p;
+    f32 **h;
+    s32 kind;
+
+    gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+    temp = D_800DFBD0[omCurrentObj->objId][1]->scale.v.y;
+    kind = D_800EC2E0[omCurrentObj->objId].as_s32;
+    switch (kind) {
+    case 5:
+        p = D_80193C40_ovl3;
+        h = (f32 **) func_80111A04(D_80191268_ovl3, omCurrentObj->objId);
+        break;
+    case 0x20:
+        p = D_80193C4C_ovl3;
+        h = (f32 **) func_80111A04(D_80191288_ovl3, omCurrentObj->objId);
+        break;
+    default:
+        p = D_80193C58_ovl3;
+        h = (f32 **) func_80111A04(D_801912A8_ovl3, omCurrentObj->objId);
+        break;
+    }
+    h[8][6] = h[8][6] * temp;
+    h[8][3] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    h[8][4] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    h[8][5] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    func_80111C4C((s32) h);
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+    func_80152070_ovl3(D_80193B40_ovl3, (f32 (*)[4]) (p[2] = D_800E98E0[omCurrentObj->objId]), 0x10, temp / 3.0f);
+    func_80155D50_ovl3(D_80198540_ovl3[omCurrentObj->objId - 60], (s32) p, 0, omCurrentObj->objId);
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80164130_ovl3.s")
+#endif
+
+#ifdef MIPS_TO_C
+/* 1 real diff (the rest of the 58/119 is the resulting one-instruction shift):
+   the ROM materialises gPlayerControllers TWICE -- `lui $v0; lhu %lo(...)` for
+   the pre-loop read and a separate `lui/addiu $s0` base for the three reads
+   inside the loop.  IDO promotes the base in the preheader and uses it for the
+   pre-loop read too, so we come out one instruction short.
+   Swept with no effect: for-init vs separate statement, `((u16 *) gPC)[0]`,
+   vu16 on the pre-loop read only, splitting the mask into its own statement,
+   `0x300 & x`, swapping the if/else arms, an explicit `Controller *c` for the
+   loop reads (112/118), do{}while(0) and if(1){} block splits (70), an
+   intervening call (82). */
+extern Controller_800D6FE8 gPlayerControllers[];
+
+void func_80164320_ovl3(s32 arg0) {
+    void func_800A9760(s32);
+    void func_801644EC_ovl3(s32);
+    s32 v;
+
+    D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
+    D_800DF150[omCurrentObj->objId] = func_801644EC_ovl3;
+    func_800A9864(0x20043, 0x22, 0x10);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    func_800A9760(0x20044);
+    func_800AA018(0x20298);
+    while (gKirbyState.unk44 == 0) {
+        ohSleep(1);
+    }
+    v = gPlayerControllers[0].buttonHeld & 0x300;
+    for (;;) {
+        if (v == 0) {
+            D_800E98E0[omCurrentObj->objId] = 0;
+            func_800A9760(0x20043);
+            func_800AA018(0x20295);
+            for (;;) {
+                v = gPlayerControllers[0].buttonHeld & 0x300;
+                if (v != 0) {
+                    break;
+                }
+                ohSleep(1);
+            }
+        } else {
+            D_800E98E0[omCurrentObj->objId] = 1;
+            func_800A9760(0x20044);
+            func_800AA018(0x20298);
+            for (;;) {
+                v = gPlayerControllers[0].buttonHeld & 0x300;
+                if (v == 0) {
+                    break;
+                }
+                ohSleep(1);
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80164320_ovl3.s")
+#endif
 
 #ifdef MIPS_TO_C
 /* 69/111: logic decoded and every instruction lines up -- the whole diff is a
@@ -513,7 +614,37 @@ void func_801644EC_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801644EC_ovl3.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801646A4_ovl3.s")
+void func_801646A4_ovl3(s32 arg0) {
+    void func_80164914_ovl3(s32);
+    void func_800AF27C(void);
+    void func_80164890_ovl3(s32, s32, f32);
+
+    D_800EA520[omCurrentObj->objId] = 0;
+    D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
+    D_800DF150[omCurrentObj->objId] = func_80164914_ovl3;
+    func_800AECC0(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+    func_800AED20(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+    switch (D_800EC2E0[omCurrentObj->objId].as_s32) {
+    case 0:
+        func_800A9864(0x20045, 0x22, 0x10);
+        func_800AA154(0x2029B);
+        break;
+    case 1:
+        func_800A9864(0x20045, 0x22, 0x10);
+        func_800AA154(0x2029D);
+        break;
+    case 2:
+        func_800A9864(0x20046, 0x22, 0x10);
+        func_800AA018(0x2029F);
+        D_800DF310[omCurrentObj->objId] = func_80164890_ovl3;
+        func_800AF27C();
+        if (D_800EA520[omCurrentObj->objId] != 0) {
+            func_800A22D4(D_800EA520[omCurrentObj->objId]);
+        }
+        break;
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
 
 void func_80164890_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     if (arg1 == 0) {

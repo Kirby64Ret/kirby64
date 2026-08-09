@@ -37,10 +37,10 @@ extern s32 gEntityGObjProcessArray[];
 
 void func_800B19F4(s32, u32, struct UnkStruct800D70D8 *);
 void func_800BB468(s32, s32);
-s32 func_800BC11C(s32);
+s32 func_800BC11C(f32);
 void func_801A3E80_ovl7(struct GObj *);
 void assign_new_process_entry(s32, void (*)(struct GObj *));
-void func_80111550(u32);
+extern void func_80111550(void *);
 s32 func_80111C88(s32 *, u32);
 void func_80111ECC(s32);
 void play_sound(s32);
@@ -132,7 +132,33 @@ u8 func_8021F304_ovl18(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021F35C_ovl18.s")
+extern u8 utilTamperCheck(void);
+
+/* Checksums the two functions' own instruction words and compares them.
+ * The zeroed sums must be assigned BEFORE the two pointers -- that order is
+ * what puts the sums in $v0/$v1 and the walkers in $a0/$a2. */
+s32 func_8021F35C_ovl18(void) {
+    s32 sum1;
+    s32 sum2;
+    s32 *p;
+    s32 *q;
+    s32 i;
+
+    sum2 = 0;
+    sum1 = 0;
+    p = (s32 *) utilTamperCheck;
+    q = (s32 *) func_8021F304_ovl18;
+    i = 0;
+    do {
+        sum1 += *p++;
+        sum2 += *q++;
+        i++;
+    } while (i != 10);
+    if (sum1 != sum2) {
+        return 0;
+    }
+    return 1;
+}
 
 void func_8021F400_ovl18(void) {
     switch (D_800E7880[omCurrentObj->objId]) {
@@ -155,11 +181,59 @@ void func_8021F4A0_ovl18(void) {
     D_800D7098.unk0 = 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021F4E8_ovl18.s")
+void func_8021F4E8_ovl18(void) {
+    struct UnkStruct800E1B50 *temp_a0;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021F5CC_ovl18.s")
+    temp_a0 = D_800E1B50[omCurrentObj->objId];
+    if (D_800E83E0[omCurrentObj->objId] == 2 || D_800E83E0[omCurrentObj->objId] == 1) {
+        temp_a0->unk43 = 0;
+        D_800D6E58 = D_800E7B20[omCurrentObj->objId];
+        if (D_800E83E0[omCurrentObj->objId] == 2) {
+            func_8021F970_ovl18();
+        }
+        if (func_800BC11C(D_800D6E58) == 0) {
+            func_800BB468(2, 0);
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        }
+    }
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021F658_ovl18.s")
+s32 func_8021F5CC_ovl18(void) {
+    struct UnkStruct800E1B50 *temp_v0;
+
+    temp_v0 = D_800E1B50[omCurrentObj->objId];
+    if (temp_v0 == NULL) {
+        return 0;
+    }
+    if (temp_v0->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550((void *) omCurrentObj->objId);
+    func_80111ECC(func_80111C88(temp_v0->unk8C, omCurrentObj->objId));
+    return func_8021F658_ovl18();
+}
+
+s32 func_8021F658_ovl18(void) {
+    struct UnkStruct800E1B50 *sp24;
+    s32 sp20;
+    s32 sp1C;
+
+    sp24 = D_800E1B50[omCurrentObj->objId];
+    sp1C = D_800E77A0[omCurrentObj->objId] - 0x4E;
+    sp20 = func_8021F70C_ovl18();
+    func_8021F4E8_ovl18();
+    if (D_800D7098.unk0 != 0) {
+        sp24->unk3D = sp24->unk3D - 1;
+        if (sp24->unk3D != 0) {
+            /* the byte-offset spelling is load-bearing: the [i * 2] array form
+             * costs one temp slot */
+            (*(void (**)(void)) ((u8 *) &D_802297E0_ovl18 + sp1C * 8))();
+        } else {
+            func_8021FB18_ovl18();
+        }
+    }
+    return sp20;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021F70C_ovl18.s")
 
@@ -221,7 +295,51 @@ void func_8021FD48_ovl18(void) {
     }
 }
 
+/* 45/57 and one instruction short.  The `goto out` shape below is what
+ * reproduces the ROM's two likely-branch exits out of the ABS()/sign test;
+ * the residue is a $v0/$v1 swap (ROM keeps omCurrentObj in $v1 and the
+ * D_800E1B50 entry in $v0) plus one missing instruction.  Swept: an explicit
+ * `struct GObj *obj` local, inline omCurrentObj at every use, and if/else vs
+ * goto for the negate path. */
+#ifdef MIPS_TO_C
+extern f32 D_8022BB8C_ovl18;
+
+void func_8021FDF4_ovl18(void) {
+    struct UnkStruct800E1B50 *ent;
+    struct GObj *obj;
+    s32 temp;
+    s32 old;
+    s32 sum;
+
+    obj = omCurrentObj;
+    ent = D_800E1B50[obj->objId];
+    if (ent->unk3D == 0x17) {
+        D_800D7098.unk8 = 1;
+    }
+    temp = *(s32 *) &D_800D7098.unk4;
+    if (ABS(temp) < 3) {
+        old = D_800D7098.unk8;
+        if (old >= 0) {
+            sum = old + temp;
+            goto out;
+        }
+        if (temp > 0) {
+            sum = old + temp;
+            goto out;
+        }
+    }
+    old = D_800D7098.unk8;
+    temp = *(s32 *) &D_800D7098.unk4;
+    old = -old;
+    D_800D7098.unk8 = old;
+    sum = old + temp;
+out:
+    gEntitiesAngleXArray[obj->objId] = D_800D70D8.unkC + (D_8022BB8C_ovl18 * sum);
+    *(s32 *) &D_800D7098.unk4 = sum;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FDF4_ovl18.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FEBC_ovl18.s")
 

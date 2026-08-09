@@ -511,8 +511,30 @@ void func_80220F48_ovl19(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220F8C_ovl19.s")
 
 extern u32 D_800D71F8;
-// the same rabbit hole as func_80220280_ovl19
+/* 11/38 and structurally exact.  The `vs32` cast is what makes IDO materialise
+ * the full address of D_800D71F8 into a register (lui+addiu+sw) instead of
+ * folding it into `lui $at; sw %lo(sym)($at)` -- without it the TU is one
+ * instruction short.  The residue is a one-slot register rotation: the ROM puts
+ * that address in $a1 and the D_800E98E0 base in $a2 with temps t6..t9, IDO
+ * uses $t6 and $a1 with temps t7..t0.  Swept: pointer local (volatile and not),
+ * struct-base and array spellings, && vs nested ifs, s32 vs GObj* first
+ * parameter, one and two pad locals, a pointer local for D_800E98E0. */
+#ifdef MIPS_TO_C
+void func_80221108_ovl19(struct GObj *arg0, s32 arg1, f32 arg2) {
+    s32 temp;
+
+    if (arg1 == 0) {
+        if (arg2 != 0.0f) {
+            temp = func_8021E2D0_ovl19(5, 2);
+            *(vs32 *) &D_800D71F8 = temp;
+            D_800EC2E0[temp].as_s32 = D_800E98E0[omCurrentObj->objId];
+            D_800E98E0[omCurrentObj->objId] += 1;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221108_ovl19.s")
+#endif
 
 // the same rabbit hole as func_80220280_ovl19
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")

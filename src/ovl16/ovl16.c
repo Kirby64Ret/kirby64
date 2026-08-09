@@ -567,7 +567,16 @@ s32 func_801DC8E4_ovl16(s32 arg0) {
  * reloads arg1 into $a1, IDO does the reverse. Swept nested ifs, reversed
  * condition order, s32 vs pointer parameters, an explicit cast at the
  * func_80111ECC call, and the return-type/prototype-presence lever on all
- * five callees -- 6 diffs in every case. Pure argument-register rotation. */
+ * five callees -- 6 diffs in every case. Pure argument-register rotation.
+ *
+ * Measured further: giving the func_80111C88 result its OWN local (instead of
+ * reusing sp1C) fixes the register swap completely -- 0 register diffs -- but
+ * costs a second named local word, and then L = 0x28 (mod 8 == 0), so the
+ * frame goes 0x40 -> 0x48 and is unreachable by the frame arithmetic. A union
+ * of the two types, `register`, an inner block, a third prototyped parameter
+ * and a third K&R parameter all fail: IDO gives every named local a word here
+ * (sp20's address is taken) and homes every parameter of a 3-parameter
+ * definition. The two halves of the fix are mutually exclusive. */
 s32 func_801DC990_ovl16(struct Ovl16AnimCmd *arg0, struct Ovl16AnimCmd *arg1) {
     struct Ovl16AnimInfo sp20;
     void *sp1C;

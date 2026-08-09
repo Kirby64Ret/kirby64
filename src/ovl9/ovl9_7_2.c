@@ -358,9 +358,7 @@ void func_801F3B50_ovl9(GObj *arg0) {
 s32 func_8019A9AC_ovl7(f32, f32);
 void func_801F399C_ovl9(struct GObj *);
 
-#ifdef MIPS_TO_C
 void func_801F3C38_ovl9(GObj *arg0) {
-    f32 *p;
     f32 v;
     f32 a;
 
@@ -369,17 +367,13 @@ void func_801F3C38_ovl9(GObj *arg0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F399C_ovl9);
     } else {
         func_8019B424_ovl7(arg0);
-        p = &D_800E3750[omCurrentObj->objId];
         v = D_800E3210[omCurrentObj->objId];
         a = (v < 0.0f) ? -v : v;
         if (D_800E3C90[omCurrentObj->objId] <= a) {
-            *p = -*p;
+            D_800E3750[omCurrentObj->objId] = -D_800E3750[omCurrentObj->objId];
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F3C38_ovl9.s")
-#endif
 
 void func_801F3D2C_ovl9(GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;

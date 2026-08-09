@@ -147,6 +147,13 @@ void func_801B3ACC_ovl7(GObj *arg0) {
 #ifdef MIPS_TO_C
 // 8 diffs: instruction sequence is right; the omCurrentObj base lands in $a0
 // instead of $a1 and thr/angle get $f0/$f2 instead of $f2/$f0.
+// Both residues are the one-slot rotation and both want the register one
+// HIGHER. Swept: compare operand order, thr as an extern used twice, thr
+// assigned late, an explicit f32 for the angle load, declaration order of
+// thr/d, `x = x + k` vs `x += k`, and the callee-return-type lever on
+// func_801AC840_ovl7 in all four forms (void/s32/f32/f64) -- 8 in every case.
+// The return-type lever cannot reach it: the call is the LAST statement, so
+// nothing is live across it.
 void func_801B3C54_ovl7(void) {
     f32 thr = D_801CE31C_ovl7;
     struct DObj *d = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;

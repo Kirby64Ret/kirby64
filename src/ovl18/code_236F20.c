@@ -304,7 +304,25 @@ void func_80225650_ovl18(UNUSED s32 arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_236F20/func_80225724_ovl18.s")
+/* The byte-scaled index is load-bearing: with `s32 id = objId;` and normal
+ * `arr[id]` indexing IDO keeps id in $v0 and puts objId*4 in $a2, where the ROM
+ * overwrites $v0 with the shift.  Pre-scaling by 4 and indexing through a u8*
+ * bias is the only form that reuses the register (3/32 -> MATCH). */
+void func_80225724_ovl18(struct GObj *arg0) {
+    s32 id;
+    s32 *p;
+    s32 temp_a1;
+
+    id = omCurrentObj->objId * 4;
+    p = (s32 *) ((u8 *) D_800E9720 + id);
+    temp_a1 = *p;
+    if (temp_a1 == 0) {
+        *(s32 *) ((u8 *) gEntityFuncListIDArray + id) = 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80225478_ovl18);
+    } else {
+        *p = temp_a1 - 1;
+    }
+}
 
 void func_802257A4_ovl18(UNUSED s32 arg0) {
     D_800DDFD0[omCurrentObj->objId] = 1;

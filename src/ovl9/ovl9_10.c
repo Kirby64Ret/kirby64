@@ -879,8 +879,13 @@ void func_8020506C_ovl9(struct GObj *arg0) {
 }
 
 struct Ovl9_10AnimInfo {
-    u8 filler0[0x14];
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[0x10];
     f32 unk14;
+    u8 filler18[8];
 };
 
 #ifdef MIPS_TO_C
@@ -903,7 +908,65 @@ void func_802050E4_ovl9(struct Ovl9_10AnimInfo *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802050E4_ovl9.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802051D4_ovl9.s")
+struct Ovl9_10AnimCmdA {
+    u8 filler0[0x10];
+    f32 unk10;
+    u8 filler14[8];
+    f32 unk1C;
+};
+
+struct Ovl9_10AnimCmdB {
+    u8 filler0[8];
+    struct DObj *unk8;
+    u8 fillerC[0x10];
+    f32 unk1C;
+};
+
+struct Ovl9_10AnimObj {
+    u8 filler0[0x1C];
+    struct Ovl9_10AnimCmdA *unk1C;
+    u8 filler20[4];
+    struct Ovl9_10AnimCmdB *unk24;
+};
+
+extern s32 D_801C90A0;
+/* the (void *) parameter is load-bearing: it forces `or $a0, $v1, $zero` */
+void func_80111550(void *);
+struct Ovl9_10AnimObj *func_80111C88(s32 *, u32);
+void func_80111ECC(struct Ovl9_10AnimObj *);
+s32 func_80110150(struct Ovl9_10AnimInfo *);
+s32 func_80110B00(struct Ovl9_10AnimInfo *);
+s32 func_80110FD4(struct Ovl9_10AnimInfo *);
+
+void func_802051D4_ovl9(void) {
+    struct DObj *a;
+    struct DObj *b;
+    struct Ovl9_10AnimInfo sp30;
+    struct Ovl9_10AnimObj *p;
+    f32 t;
+    s32 r;
+
+    a = D_800DFBD0[omCurrentObj->objId][3];
+    b = D_800DFBD0[omCurrentObj->objId][4];
+    t = (a->pos.v.y < 0.0f) ? -a->pos.v.y : a->pos.v.y;
+    func_80111550((void *) omCurrentObj->objId);
+    p = func_80111C88(&D_801C90A0, omCurrentObj->objId);
+    p->unk1C->unk1C = t;
+    p->unk1C->unk10 = t * 0.5f;
+    p->unk24->unk8 = b;
+    p->unk24->unk1C = a->pos.v.y;
+    func_80111ECC(p);
+    r = func_80110B00(&sp30);
+    if (r == 0) {
+        r = func_80110150(&sp30);
+        if (r == 0) {
+            r = func_80110FD4(&sp30);
+        }
+    }
+    if (r != 0 && sp30.unk2 != 0xA) {
+        func_802050E4_ovl9(&sp30);
+    }
+}
 
 #ifdef MIPS_TO_C
 // 11/30 diffs: structurally exact, but the ROM keeps objId<<2 in $v0 and `a`

@@ -1971,3 +1971,69 @@ ad-hoc shell counting is affected.
 
 The authority is `verify_rom.py`'s `P ok` column, which counts what actually
 linked. Use that. And delete your temp copies when you finish.
+
+# The `sll $vN, $vN, 2` signature -- a byte-bias index
+
+Where the ROM does `sll $vN, $vN, 2` IN PLACE, overwriting the objId register,
+and your compile puts the shift in a fresh register, pre-scale and index
+through a byte bias:
+
+    id = omCurrentObj->objId * 4;
+    temp = *(s32 *) ((u8 *) D_800E9720 + id);
+
+Plain `arr[id]` with `s32 id = objId;` keeps `id` alive in its own register and
+never reuses it. Proved on func_80225724_ovl18 (3/32 -> MATCH) and
+func_801DF3DC_ovl11 (7/53 -> MATCH); it also fixed an ARGUMENT-register
+rotation in func_801DC91C_ovl17.
+
+**With the bias form, a pointer local must be used for the LOAD ONLY.**
+`p = (s32 *)((u8 *)D_800E9720 + id); temp = *p;` for the read, but the bias
+expression again for the write. `*p = ...` is an aliasing barrier that makes
+IDO re-materialise `&omCurrentObj` -- one function went 5 -> 55 diffs.
+
+It is not universal: on func_801DF728_ovl11 it fixes the shift register but
+moves the value out of `$a1`, and on func_801DC91C_ovl17 it fixes `$a2`/`$a1`
+but the loaded value then lands in `$a0` instead of `$v1`.
+
+197 remaining pragmas in ovl8/11/12/13/14/15/17/18/19 alone carry this
+signature, and the detector is a one-line regex over the listings. It is worth
+sweeping mechanically in every segment.
+
+## More levers
+
+**Assignment order of zeroed accumulators vs pointers decides `$v0`/`$v1` vs
+`$a0`/`$a2`.** Moving two `sum = 0;` above two pointer initialisations closed
+func_8021F35C_ovl18 (35/40 -> MATCH). Declaration order was inert in all four
+permutations; assignment order was not.
+
+**A function-pointer table with stride 8 must be spelled as a byte offset**:
+`(*(void (**)(void)) ((u8 *) &SYM + i * 8))()`. The array form
+`((void (**)(void)) &SYM)[i * 2]()` costs exactly one temp slot.
+
+**`volatile` forces a full address materialisation, not only scheduling.** The
+wave-9 note frames `vu16` as anti-hoisting; it also flips
+`lui $at; sw %lo(sym)($at)` into `lui/addiu/sw` for a SINGLE-USE global, which
+the use-count threshold otherwise puts out of reach.
+`*(vs32 *) &D_800D71F8 = temp;` took func_80221108_ovl19 from 26/37 to 11/38.
+
+**`func_80111550` wants `(void *)` AND an inline `omCurrentObj->objId`
+argument.** The prototype alone does nothing, and a passed-through temp local
+does nothing; only the inline argument emits the ROM's `or $a0, $v1, $zero`.
+
+**Collapsing an if/else onto one physical line is a real scheduling knob.**
+func_801E5E10_ovl15 was 2/153 with two `lui`s swapped and matched when
+collapsed. Its twin matches EXPANDED, so it is per-function -- and it means
+physical line breaks are load-bearing, which is worth remembering before
+reformatting anything.
+
+## setup_permuter.unguard() could silently delete hundreds of lines
+
+Given a BARE pragma -- one not inside a guard -- in a file that contains guards
+elsewhere, it searched backwards for the nearest `#else` ANYWHERE above, took
+that block's `#ifdef` as the opening and the next `#endif` after the pragma as
+the close, and deleted everything between. It runs on a copy of a real source
+file, so the damage looks like a decompilation result.
+
+Fixed: the `#else` must be immediately above the pragma and the `#endif`
+immediately below, and it refuses if the region contains another guard or
+pragma. If you use the shared `scan.py`, it inherits the fix.

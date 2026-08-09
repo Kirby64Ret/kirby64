@@ -610,5 +610,75 @@ void func_801DC680_ovl9(void) {
     }
 }
 
+/* 3 diffs, and they are the SAME residue as its twin func_801E07DC_ovl9
+   (ovl9_3.c): the ROM keeps omCurrentObj->objId in $v0, IDO puts it in
+   $a1. Swept on both twins with no effect: all declaration orders, no
+   `id` local at all, u32 id, re-reading the global for the call, a
+   returned-value local, merging the two null checks, and every callee
+   return-type flip in the TU. One-slot register-class offset. */
+#ifdef MIPS_TO_C
+struct Ovl9Unk8C2 {
+    u32 unk0;
+    u32 unk4;
+};
+
+struct Ovl9AnimCmdX {
+    u8 filler0[8];
+    s32 unk8;
+};
+
+struct Ovl9AnimObjX {
+    u8 filler0[0x24];
+    struct Ovl9AnimCmdX *unk24;
+};
+
+struct Ovl9AnimInfoX {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0x10];
+};
+
+void func_80111550(u32);
+struct Ovl9AnimObjX *func_80111C88(s32 *, u32);
+void func_80111ECC(struct Ovl9AnimObjX *);
+s32 func_80110B00(struct Ovl9AnimInfoX *);
+
+s32 func_801DC788_ovl9(s32 arg0) {
+    struct Ovl9AnimInfoX sp30;
+    struct UnkStruct800E1B50 *temp;
+    struct Ovl9AnimObjX *anim;
+    struct Ovl9Unk8C2 *p;
+    s32 id;
+
+    id = omCurrentObj->objId;
+    temp = D_800E1B50[id];
+    if (temp == NULL) {
+        return 0;
+    }
+    if (temp->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550(id);
+    anim = func_80111C88(temp->unk8C, omCurrentObj->objId);
+    p = (struct Ovl9Unk8C2 *) temp->unk8C[2];
+    if ((p->unk4 == 0) && (arg0 != 0)) {
+        anim->unk24->unk8 = arg0;
+    }
+    func_80111ECC(anim);
+    if (func_80110B00(&sp30) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp30.unk2;
+        temp->unk43 = sp30.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        temp->unk43 = 0;
+    }
+    return D_800E83E0[omCurrentObj->objId];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DC788_ovl9.s")
+#endif
 

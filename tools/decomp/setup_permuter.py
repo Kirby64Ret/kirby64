@@ -34,19 +34,37 @@ def unguard(text, func):
     idx = next((i for i, l in enumerate(lines) if pat.search(l)), None)
     if idx is None:
         return text, False
-    # nearest #else above the pragma, then its opening #ifdef
-    e = next((i for i in range(idx, -1, -1) if lines[i].strip() == '#else'), None)
-    if e is None:
+    # The `#else` must be the line IMMEDIATELY above the pragma and the
+    # `#endif` immediately below.
+    #
+    # The previous version searched backwards for the nearest `#else` anywhere
+    # above. For a BARE pragma -- one not inside a guard at all -- that finds
+    # an `#else` belonging to some unrelated earlier block, takes its `#ifdef`
+    # as the opening, takes the next `#endif` after the pragma as the close,
+    # and deletes everything between. In a file with mixed bare and guarded
+    # pragmas that silently removes hundreds of lines, and since this runs on a
+    # copy of a real source file the damage looks like a decompilation result.
+    # Found by the small-segments agent, which hit it and wrote its own
+    # replacement rather than trusting this one.
+    if idx == 0 or lines[idx - 1].strip() != '#else':
         return text, False
-    o = next((i for i in range(e, -1, -1)
+    if idx + 1 >= len(lines) or lines[idx + 1].strip() != '#endif':
+        return text, False
+    e, n = idx - 1, idx + 1
+    o = next((i for i in range(e - 1, -1, -1)
               if lines[i].strip().startswith(('#ifdef ', '#ifndef '))), None)
-    n = next((i for i in range(idx, len(lines))
-              if lines[i].strip() == '#endif'), None)
-    if o is None or n is None:
+    if o is None:
         return text, False
     body = lines[o + 1:e]
     if not any(s.strip() for s in body):
         return text, False
+    # Refuse if the region we are about to remove contains another guard or
+    # pragma: that means the nesting is not the simple shape assumed here.
+    for s in body:
+        t = s.strip()
+        if t.startswith(('#ifdef ', '#ifndef ', '#else', '#endif')) \
+           or 'GLOBAL_ASM' in t:
+            return text, False
     return '\n'.join(lines[:o] + body + lines[n + 1:]), True
 
 def main():

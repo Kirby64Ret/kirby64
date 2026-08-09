@@ -129,29 +129,15 @@ s32 func_8015F4C4_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
-/* 4 diffs: ROM schedules the arg1 index addu before the arg0 one */
 s32 func_8015F5DC_ovl5(s32 arg0, s32 arg1) {
-    f32 a = gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]];
-    f32 b = gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]];
-    f32 d;
-
-    if (a < b) {
-        d = -(a - b);
-    } else {
-        d = a - b;
-    }
-    if (d < 200.0f) {
+    if (ABSF(gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] - gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]]) < 200.0f) {
         return 2;
     }
-    if (a < b) {
+    if (gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] < gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]]) {
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F5DC_ovl5.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F67C_ovl5.s")
 
@@ -253,6 +239,13 @@ void func_80160D50_ovl5(GObj *arg0) {
 // Draft, 14/76: instruction-exact; the ROM keeps D_800E98E0[objId] in $v0 with
 // no stack home, we need an `s32 t` local to get $v0 and that grows the frame
 // 0x40 -> 0x48. All 24 declaration permutations swept, with and without t.
+// Wave 10: DROPPING `t` and writing the index inline gives the ROM's exact
+// frame (0x40) and spill slots with declaration order dobj, sp30, sp24, p --
+// 38 diffs, ALL of them the same one-slot temp rotation ($t9/$t0/$t1 where the
+// ROM has $v0/$t9/$t0), i.e. IDO never uses $v0 at all.  Every local costs a
+// word here because sp30/sp24 are address-taken, so no 5th local can buy $v0.
+// Also swept at that order: pointer arithmetic instead of &arr[i], a (u8 *)
+// byte bias, and reusing the parameter as the scratch (72).
 #ifdef MIPS_TO_C
 extern s32 D_8018E040_ovl5[];
 extern s32 D_801868FC_ovl5;

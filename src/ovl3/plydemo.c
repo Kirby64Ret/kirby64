@@ -525,7 +525,42 @@ void func_8015A31C_ovl3(s32 arg0) {
     }
 }
 #else
+#ifdef MIPS_TO_C
+/* Logic exact; 4 register/scheduling diffs (the 75/75 count is the resulting
+   shift).  The ROM keeps &gKirbyState in $a0 and the switch value in $v0 with
+   both constants materialised before the first beq; IDO puts the base in $v0,
+   the value in $v1 and sinks `li 2` into the beq delay slot.
+   Swept: a local for the switch value (declared and initialised), a
+   `struct Player *k` pointer local, an if/else-if chain instead of the switch,
+   reusing the parameter as the scratch, a leading pad local, K&R definition. */
+void func_8015A31C_ovl3(s32 arg0) {
+    s32 state = gKirbyState.unk44;
+
+    switch (state) {
+        case 1:
+            if ((D_800E5F90[omCurrentObj->objId] == 5) && (D_80196FB4_ovl3 <= D_800E6BD0[omCurrentObj->objId])) {
+                D_800E6690[omCurrentObj->objId] = 0.0f;
+                D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+                D_800E6850[omCurrentObj->objId] = D_80196FB8_ovl3;
+                gKirbyState.unk44 = 2;
+            }
+            break;
+        case 2:
+            if (gKirbyState.unk30 != 0) {
+                D_800BE52C = D_800BE500;
+                D_800BE530 = D_800BE504;
+                D_800BE534 = D_800BE508 + 1;
+                D_800BE538 = 0;
+                D_800BE4FC = 1;
+                D_800BE4F8 = 2;
+                gKirbyState.unk30 = 0;
+            }
+            break;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_8015A31C_ovl3.s")
+#endif
 #endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_8015A44C_ovl3.s")

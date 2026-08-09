@@ -1023,27 +1023,29 @@ void func_801DF384_ovl11(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-// 7/53: correct instruction for instruction, but IDO puts objId*4 in $a2 and
-// the counter in $v1 where the ROM uses $v1 and $a1.
-#ifdef MIPS_TO_C
+/* Byte-scaled index + a pointer local used ONLY for the load.  Plain
+ * `D_800E9720[objId]` puts the shift in $a2 where the ROM overwrites $v1;
+ * a pointer local used for the STORE too is an aliasing barrier that makes
+ * IDO re-materialise &omCurrentObj (55 diffs). */
 void func_801DF3DC_ovl11(struct GObj *arg0) {
+    s32 id;
+    s32 *p;
     s32 temp;
 
-    temp = D_800E9720[omCurrentObj->objId];
+    id = omCurrentObj->objId * 4;
+    p = (s32 *) ((u8 *) D_800E9720 + id);
+    temp = *p;
     if (temp == 0) {
-        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+        *(s32 *) ((u8 *) gEntityFuncListIDArray + id) = 2;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DEF9C_ovl11);
         return;
     }
-    D_800E9720[omCurrentObj->objId] = temp - 1;
+    *(s32 *) ((u8 *) D_800E9720 + id) = temp - 1;
     if (D_800D70D8 <= 0.0f) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 2;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DEF9C_ovl11);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF3DC_ovl11.s")
-#endif
 
 void func_801DF4B0_ovl11(struct GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;

@@ -272,7 +272,23 @@ s32 func_80173778_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80173A38_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80173EBC_ovl5.s")
+void func_80173EBC_ovl5(GObj *arg0) {
+    switch (D_800E9AA0[omCurrentObj->objId].as_s32) {
+    case 0:
+        gEntitiesNextPosZArray[omCurrentObj->objId] =
+            gEntitiesNextPosZArray[D_8018E478_ovl5[D_800E98E0[omCurrentObj->objId]][D_800E9AA0[omCurrentObj->objId].as_s32]] - 350.0f;
+        break;
+    case 100:
+        gEntitiesNextPosZArray[omCurrentObj->objId] =
+            gEntitiesNextPosZArray[D_8018E478_ovl5[D_800E98E0[omCurrentObj->objId]][D_800E9AA0[omCurrentObj->objId].as_s32]] + 300.0f;
+        break;
+    default:
+        gEntitiesNextPosZArray[omCurrentObj->objId] =
+            gEntitiesNextPosZArray[D_8018E478_ovl5[D_800E98E0[omCurrentObj->objId]][D_800E9AA0[omCurrentObj->objId].as_s32]] + 280.0f;
+        break;
+    }
+    D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[D_800E98E0[omCurrentObj->objId]];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80174044_ovl5.s")
 

@@ -277,22 +277,36 @@ void func_802271A8_ovl18(void) {
     func_800A74D8();
 }
 
-/* 14/54, all inside the clear loop.  Twin of func_80151CEC_ovl4 (also 14).
- * The four screen-clear siblings that write gFrameBuffer FIRST
- * (func_8015531C/80158048/80159A54/80159EFC_ovl4) all match with these vu16
- * casts; these two write D_803D6900 first and IDO will not follow.  IDO makes
- * the SECOND-written array the induction pointer; both ROM functions make the
- * FIRST-written one (D_803D6900) the induction and give it $v0, with the fill
- * constant in $v1 and gFrameBuffer in $a0.  Swept: both store orders, all four
- * vu16/u16 combinations, for vs do/while, comparing against &D_803D6900[i] and
- * against D_803FC100, explicit fb-pointer and zb-pointer walks (34 and 16), and
- * an s32 return type on each of the six callees in turn -- every one stays at
- * 14 or gets worse.  An explicit `vu16 *fb` walk DOES reproduce the ROM's loop
- * body exactly (D store first, bump before the last gFrameBuffer store) but
- * costs 6 preheader diffs to a gFrameBuffer lui that then CSEs with the
- * heapSize subtraction, and rotates $v0/$v1/$a0 the other way. */
+/* 14/54.  Twin of func_80151CEC_ovl4 (also 14).  Wave 10 narrowed it hard:
+ * hoisting the zbuffer base into an explicit `vu16 *zp` local (below) and
+ * writing the D store FIRST makes the WHOLE LOOP BODY structurally exact --
+ * D store first, the `addiu` bump before the last gFrameBuffer store, `bne`
+ * against the end symbol with the fb bump in the delay slot.  That kills the
+ * old "induction choice is the wall" diagnosis: the induction IS reachable,
+ * the array just has to be reached through a pointer local while the other
+ * stays an indexed cast.
+ *
+ * What is left is exactly ONE thing: $v0 and $v1 are SWAPPED.  ROM keeps the
+ * zp induction pointer in $v0 and the fill constant 1 in $v1; IDO does the
+ * reverse.  (The `addiu $a1` bound also shows as a diff, but that is the
+ * known verify.py reloc false positive: ROM spells it %hi/%lo(D_803FC100),
+ * IDO spells it D_803D6900 + 0x25800, same linked word.)
+ *
+ * Swept against the swap with no movement: declaration order of zp/i/pads,
+ * u32 vs s32 index, for vs do/while, i++ vs i += 1, 320*240 vs 0x12C00,
+ * assigning i before/after zp, `zp = &((vu16 *) D_803D6900)[0x1F80]` with a
+ * bare zp[i], volatile on neither/either/both arrays, a named `s32 val = 1;`
+ * fill variable in both declaration positions, a chained
+ * `fb[i] = zp[i + 0x1F80] = 1;`, a second `vu16 *fb` local, an explicit
+ * pointer walk on both arrays, comparing against D_803FC100 directly, and an
+ * s32 return type on EACH of scRemovePostProcessFunc / auSetBGMVolume /
+ * gameSetUpdateRate / viApplyScreenSettings / gtlCreateScene / func_800BB3F0
+ * in turn.  Everything stays at 14 or gets worse.  The remaining lever has to
+ * be whatever forces IDO to pick $v0 for a loop-induction pointer over a
+ * loop-invariant constant. */
 #ifdef MIPS_TO_C
 u32 func_80227308_ovl18(s32 arg0) {
+    vu16 *zp;
     s32 i;
 
     D_800D6B60[1] = arg0;
@@ -302,10 +316,11 @@ u32 func_80227308_ovl18(s32 arg0) {
     D_8022AE30_ovl18.zb = (u32)&D_8012EB00 - 0x1900;
     viApplyScreenSettings(&D_8022AE30_ovl18);
     D_8022AE4C_ovl18.unk10 = (u32)gFrameBuffer - (u32)&D_8022FB50;
+    zp = (vu16 *) D_803D6900;
     i = 0;
     do {
+        zp[i + 0x1F80] = 1;
         ((vu16 *) gFrameBuffer)[i] = 1;
-        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
         i++;
     } while (i != 0x12C00);
     gtlCreateScene(&D_8022AE4C_ovl18);

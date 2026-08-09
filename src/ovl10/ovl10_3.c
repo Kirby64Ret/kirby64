@@ -520,13 +520,23 @@ void func_801E5B08_ovl10(f32 *arg0, u8 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-// 32/41 diffs: same instructions; ROM schedules the u8->f32 conversion
-// after both numerator adds, IDO hoists it to the top.
+// 23/41 diffs (was 32). Two levers found: reading arg0[0]/arg0[2] into locals
+// first reproduces the ROM's FP allocation order, and quotient temps keep both
+// divisions before the first store (the store otherwise forces a reload of
+// omCurrentObj->objId). Residue: the ROM converts arg1 to f32 LATE (into $f16,
+// interleaved with the second numerator) while IDO hoists the andi/mtc1/cvt to
+// function entry. Swept with no effect: K&R vs prototyped u8, an f32 divisor
+// local at every position, (f32)(s32) casts, four load locals (grows the TU),
+// both operand orders of the inner +, and numerator-only temps.
 void func_801E5C4C_ovl10(f32 *arg0, u8 arg1) {
     struct EntityThing800E9AA0 *tmp = D_800E9AA0[omCurrentObj->objId].as_ptr;
+    f32 x = arg0[0];
+    f32 z = arg0[2];
+    f32 a = ((x + tmp->unk8) - gEntitiesNextPosXArray[omCurrentObj->objId]) / arg1;
+    f32 b = ((z + tmp->unk10) - gEntitiesNextPosZArray[omCurrentObj->objId]) / arg1;
 
-    D_800E3050[omCurrentObj->objId] = ((tmp->unk8 + arg0[0]) - gEntitiesNextPosXArray[omCurrentObj->objId]) / arg1;
-    D_800E33D0[omCurrentObj->objId] = ((tmp->unk10 + arg0[2]) - gEntitiesNextPosZArray[omCurrentObj->objId]) / arg1;
+    D_800E3050[omCurrentObj->objId] = a;
+    D_800E33D0[omCurrentObj->objId] = b;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E5C4C_ovl10.s")
@@ -1694,14 +1704,14 @@ void func_801EC37C_ovl10(GObj *arg0) {
 
 /* Instruction-for-instruction EXACT; the only residue is the dead epilogue
    after the infinite loop, where the ROM has four alignment nops and IDO has
-   none. This is the 32-byte dead-epilogue rule used as a TU-boundary PROBE:
-   the ROM's `lw $ra` sits at rom 0x1DD210, i.e. offset 0x8D30 from the yaml's
-   ovl10_3 start (0x1D44E0), which is 0x10 mod 32 -- so ovl10_3's real second
-   translation unit (the "hidden split in ovl10_3" the yaml already flags)
-   must begin at a rom offset congruent to 16 mod 32. Candidates below this
-   function are 0x1D6CD0, 0x1D7450, 0x1D7D70, 0x1D84D0, 0x1D8A30, 0x1D9070,
-   0x1DB230, 0x1DB670, 0x1DBE30, 0x1DC9D0, 0x1DCE90 and 0x1DD010. No source
-   form fixes this; the yaml split has to be corrected first. */
+   none. Mechanism confirmed: IDO emits a literal `.align 5` after the loop's
+   `b`, so the epilogue is 32-byte aligned FROM THE OBJECT'S .text BASE. The
+   ROM's `lw $ra` is at rom 0x1DD210 == 16 mod 32, so the hidden second TU
+   starts at a rom offset == 16 mod 32. Independent evidence narrows it: the
+   orphan rodata block `ovl10/1E58F0` (D_801F4B80/84) has exactly two users,
+   func_801EBC60 (0x1DC9D0) and func_801EBF2C, while the LAST ovl10_3_rd user
+   is func_801EAB98 (0x1DB908). Only 0x1DBE30 and 0x1DC9D0 are == 16 mod 32 in
+   that gap; 0x1DC9D0 is the likely split. Needs a coordinated splat run. */
 #ifdef MIPS_TO_C
 extern FUNCLIST D_801F45E4_ovl10;
 void func_801EC4CC_ovl10(struct GObj *);

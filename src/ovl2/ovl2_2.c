@@ -707,19 +707,23 @@ void func_800F8078(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8078.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800F81A4(void) {
+    extern s32 D_801290D0, D_801290D4, D_8012B9B0;
+    extern s32 D_8012913C, D_80129138, D_80129140, D_80129144, D_801292E0;
+    extern void func_8010137C(void);
+    extern void func_800FA414(s32);
+    extern void func_800FBF18(s32);
+    extern u16 func_800F8560(void);
+
     D_801290D0 = request_track_general(0x24, 0x4A, 0x50);
-    if (D_801290D8->unk4 != 0) {
+    if (((s32 *) D_801290D8)[1] != 0) {
         D_801290D4 = request_track_general(0x25, 0x4A, 0x50);
     }
     if (D_8012B9B0 != 0) {
         func_8010137C();
     }
     func_800FA414(2);
-    D_8012913C = 0;
-    D_80129138 = 0;
+    D_80129138 = D_8012913C = 0;
     D_80129140 = 0;
     D_80129144 = -1;
     D_801292E0 = 0x270F;
@@ -728,9 +732,6 @@ void func_800F81A4(void) {
         func_800FBF18(0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F81A4.s")
-#endif
 
 extern f32 D_801293AC;
 extern f32 D_801293B0;
@@ -774,90 +775,111 @@ void func_800F8274(void) {
     func_800F81A4();
 }
 
-#ifdef MIPS_TO_C
+struct UnkStruct80129418 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+    s32 unk1C;
+    s32 unk20;
+    s32 unk24;
+    s32 unk28;
+    s32 unk2C;
+    s32 unk30;
+    s32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    s32 unk40;
+    s32 unk44;
+};
+extern struct UnkStruct80129418 D_80129418;
+extern struct UnkStruct80129418 *D_80129410;
+extern struct UnkStruct80129418 *D_8012911C;
+extern s32 D_801290DC;
 
 void func_800F8378(void) {
-    s32 temp_a0;
-    s32 temp_a0_2;
+    struct UnkStruct80129418 *src = D_8012911C;
+    s32 base = D_801290DC;
+    s32 temp;
 
     D_80129418.unk0 = 0;
-    D_80129418.unk4 = D_8012911C->unk0 + D_801290DC;
-    D_80129418.unk8 = D_8012911C->unk4;
-    D_80129418.unkC = D_8012911C->unk8 + D_801290DC;
-    D_80129418.unk10 = D_8012911C->unkC;
-    D_80129418.unk14 = D_8012911C->unk10 + D_801290DC;
-    D_80129418.unk18 = D_8012911C->unk14;
-    D_80129418.unk1C = D_8012911C->unk18 + D_801290DC;
-    D_80129418.unk20 = D_8012911C->unk1C;
-    D_80129418.unk24 = D_8012911C->unk20 + D_801290DC;
-    D_80129418.unk28 = D_8012911C->unk24;
-    D_80129418.unk2C = D_8012911C->unk28;
-    D_80129418.unk30 = D_8012911C->unk2C + D_801290DC;
-    D_80129418.unk34 = D_8012911C->unk30 + D_801290DC;
-    temp_a0 = D_8012911C->unk34;
-    if (temp_a0 != 0) {
-        D_80129418.unk38 = temp_a0 + D_801290DC;
+    D_80129418.unk4 = src->unk0 + base;
+    D_80129418.unk8 = src->unk4;
+    D_80129418.unkC = src->unk8 + base;
+    D_80129418.unk10 = src->unkC;
+    D_80129418.unk14 = src->unk10 + base;
+    D_80129418.unk18 = src->unk14;
+    D_80129418.unk1C = src->unk18 + base;
+    D_80129418.unk20 = src->unk1C;
+    D_80129418.unk24 = src->unk20 + base;
+    D_80129418.unk28 = src->unk24;
+    D_80129418.unk2C = src->unk28;
+    D_80129418.unk30 = src->unk2C + base;
+    D_80129418.unk34 = src->unk30 + base;
+    temp = src->unk34;
+    if (temp != 0) {
+        D_80129418.unk38 = temp + base;
     } else {
         D_80129418.unk38 = 0;
     }
-    D_80129418.unk3C = D_8012911C->unk38;
-    temp_a0_2 = D_8012911C->unk3C;
-    if (temp_a0_2 != 0) {
-        D_80129418.unk40 = temp_a0_2 + D_801290DC;
+    D_80129418.unk3C = src->unk38;
+    temp = src->unk3C;
+    if (temp != 0) {
+        D_80129418.unk40 = temp + base;
     } else {
         D_80129418.unk40 = 0;
     }
-    D_80129418.unk44 = D_8012911C->unk40;
+    D_80129418.unk44 = src->unk40;
     D_80129410 = &D_80129418;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8378.s")
-#endif
 
-#ifdef MIPS_TO_C
+s32 func_800A9AA8(s32, s32);
 
-void func_800F8464(void *arg1) {
-    s32 *temp_v0;
-    s32 temp_a0;
-    s32 temp_a0_2;
-    s32 temp_t6;
-    void *temp_v1;
+void func_800F8464(s32 arg0, struct UnkStruct80129418 *dst) {
+    s32 base = func_800A9AA8(arg0, 3);
+    struct UnkStruct80129418 *src = (struct UnkStruct80129418 *) (*(s32 *) base + base);
+    s32 temp;
 
-    temp_v0 = func_800A9AA8(3, arg1);
-    temp_t6 = *temp_v0;
-    arg1->unk0 = 0;
-    temp_v1 = temp_t6 + temp_v0;
-    arg1->unk4 = temp_v1->unk0 + temp_v0;
-    arg1->unk8 = temp_v1->unk4;
-    arg1->unkC = temp_v1->unk8 + temp_v0;
-    arg1->unk10 = temp_v1->unkC;
-    arg1->unk14 = temp_v1->unk10 + temp_v0;
-    arg1->unk18 = temp_v1->unk14;
-    arg1->unk1C = temp_v1->unk18 + temp_v0;
-    arg1->unk20 = temp_v1->unk1C;
-    arg1->unk24 = temp_v1->unk20 + temp_v0;
-    arg1->unk28 = temp_v1->unk24;
-    arg1->unk2C = temp_v1->unk28;
-    arg1->unk30 = temp_v1->unk2C + temp_v0;
-    arg1->unk34 = temp_v1->unk30 + temp_v0;
-    temp_a0 = temp_v1->unk34;
-    if (temp_a0 != 0) {
-        arg1->unk38 = temp_a0 + temp_v0;
+    dst->unk0 = 0;
+    dst->unk4 = src->unk0 + base;
+    dst->unk8 = src->unk4;
+    dst->unkC = src->unk8 + base;
+    dst->unk10 = src->unkC;
+    dst->unk14 = src->unk10 + base;
+    dst->unk18 = src->unk14;
+    dst->unk1C = src->unk18 + base;
+    dst->unk20 = src->unk1C;
+    dst->unk24 = src->unk20 + base;
+    dst->unk28 = src->unk24;
+    dst->unk2C = src->unk28;
+    dst->unk30 = src->unk2C + base;
+    dst->unk34 = src->unk30 + base;
+    temp = src->unk34;
+    if (temp != 0) {
+        dst->unk38 = temp + base;
     } else {
-        arg1->unk38 = NULL;
+        dst->unk38 = 0;
     }
-    arg1->unk3C = temp_v1->unk38;
-    temp_a0_2 = temp_v1->unk3C;
-    if (temp_a0_2 != 0) {
-        arg1->unk40 = temp_a0_2 + temp_v0;
+    dst->unk3C = src->unk38;
+    temp = src->unk3C;
+    if (temp != 0) {
+        dst->unk40 = temp + base;
     } else {
-        arg1->unk40 = NULL;
+        dst->unk40 = 0;
     }
-    arg1->unk44 = temp_v1->unk40;
+    dst->unk44 = src->unk40;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8464.s")
-#endif
+
+
+
+
+
+
+
+
 
 u16 func_800F8560(void) {
     return D_801290D8->unk16;

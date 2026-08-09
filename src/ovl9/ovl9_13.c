@@ -176,7 +176,7 @@ void func_8020CAD8_ovl9(void);
 extern FUNCLIST D_8021CA24_ovl9;
 extern FUNCLIST D_8021CA3C_ovl9;
 extern void func_8019F410_ovl7(struct DObj *);
-extern void func_800A9760(s32);
+extern s32 func_800A9760(s32);
 extern void func_801A2ADC_ovl7(u32);
 extern struct Sub800E1B50_Unk88 D_801C446C;
 extern struct Sub800E1B50_Unk88 D_801C4428_ovl7;
@@ -823,7 +823,6 @@ void func_8020BC24_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
 void func_8020BC98_ovl9(struct GObj *arg0) {
     f32 sp1C;
     struct UnkStruct800E1B50 *sp18 = D_800E1B50[omCurrentObj->objId];
@@ -845,9 +844,6 @@ void func_8020BC98_ovl9(struct GObj *arg0) {
         D_800E7B20[omCurrentObj->objId] = sp18->unk88->unk0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020BC98_ovl9.s")
-#endif
 
 void func_8020BDC8_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];

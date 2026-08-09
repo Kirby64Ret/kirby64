@@ -430,7 +430,29 @@ s32 func_80114D54(s32 arg0) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80114DBC.s")
+void *func_800A8358(s32);
+void func_800F8464(s32, void *);
+s32 func_80114A14(void *, s32, s32);
+
+s32 func_80114DBC(s32 arg0, s32 arg1) {
+    s32 val;
+    void *temp;
+    struct Unk80124E14 *p;
+
+    if ((u32) arg0 < 0x115) {
+        p = &D_80124E14[arg0];
+        val = p->unk0;
+        if (val != 0) {
+            temp = func_800A8358(0x4B);
+            func_800F8464(p->unk0, temp);
+            return func_80114A14(temp, arg1, func_80114D54(arg0));
+        }
+        val = request_track_general(0x1D, 0x1E, 0x3C);
+        D_800DE350[val]->onAnimate = func_80114E80;
+        return val;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80114E80.s")
 
@@ -755,7 +777,25 @@ void func_80116B68(struct GObj *arg0) {
     func_80115070(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80116B90.s")
+void func_80116B90(arg0)
+struct GObj *arg0;
+{
+    struct Unk80124E14 *p = &D_80124E14[D_800E77A0[arg0->objId]];
+
+    func_800AF980(0x17);
+    func_800A9864(p->unk4, 0x1869F, 0x10);
+    D_800DEF90[omCurrentObj->objId] = p->unk10;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    func_800AA018(p->unk8);
+    while (D_800D7098[0] == 0) {
+        ohSleep(1);
+    }
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+    omEndProcess(0);
+}
 
 void func_80116CA0(void) {
     func_80116B90();
@@ -2176,7 +2216,33 @@ void func_8011A9EC(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011AA7C.s")
+struct Unk80126DCC {
+    s32 unk0;
+    s32 unk4;
+};
+extern struct Unk80126DCC D_80126DCC[];
+
+void func_8011AA7C(struct GObj *arg0) {
+    struct Unk80126DCC *p;
+    u32 k;
+
+    if (gEntitiesNextPosYArray[arg0->objId] <= gEntitiesNextPosYArray[0]) {
+        k = D_800E77A0[arg0->objId];
+        if (k >= 0xF5) {
+            D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+            k = k - 0xF1;
+            p = &D_80126DCC[k];
+            func_800AA018(p->unk4);
+            func_800AA018(p->unk0);
+        } else {
+            D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011A9EC;
+            k = k - 0xD6;
+            p = &D_80126DCC[k];
+            func_800AA018(p->unk4);
+            func_800AA018(p->unk0);
+        }
+    }
+}
 
 void func_8011AB7C(struct GObj *arg0) {
     func_80115070(arg0);

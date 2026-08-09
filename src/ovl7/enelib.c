@@ -2160,6 +2160,14 @@ block_19:
 // 20/46 diffs: body is right; ROM frame is 0x28 with the arg home slot
 // stored (sw $a0, 0x28($sp)) and temps at 0x20/0x24. K&R form, u16 param
 // and inlining ent all fail to reproduce the home-slot store.
+// Measured further: a K&R definition with a single s32 parameter does NOT
+// home it (contrast a K&R definition with several parameters, which homes
+// all of them) -- so the wave-7 "K&R solves the home-slot problem" note is
+// arity-dependent. A narrow K&R/prototyped `u16 arg0` DOES emit the home
+// store but then re-reads it with `lhu 0x2(sp)` instead of keeping
+// `andi $s0, $a0, 0xFFFF` in a saved register (42/46), and assigning to the
+// parameter kills the $s0 copy entirely (37/45). Also swept: demoting the
+// forward declaration to `void f();`, a 2-parameter K&R form.
 void func_8019D8A0(arg0)
 s32 arg0;
 {
