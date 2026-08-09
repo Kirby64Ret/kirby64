@@ -1024,3 +1024,27 @@ A link failed with `bad reloc symbol index (0x80805 >= 0x254) for offset
 0x8080808` -- a partially-written .o from a sibling agent compiling the same
 file. Delete that object and its .asmproc.d and rebuild; it is not a real
 defect.
+
+## splat is RUNNABLE again, and rodata is now MIGRATED for six segments
+
+The abort was a name collision: splat's rodata migration triggers whenever a
+`rodata` subsegment shares its name with a `c` subsegment, and then demands
+the dotted `.rodata` form. 54 such pairs existed across ovl3/4/5/7/9/10.
+Renaming them to `<name>_rd` in kirby64.yaml makes splat run.
+
+Consequences, all verified by a FULL CLEAN REBUILD to a byte-exact ROM:
+
+  - kirby.ld now has `build/src/<seg>/<file>.o(.rodata)` input rules for those
+    six segments -- 20 for ovl9 alone, 49 across the others.
+  - THE JUMP-TABLE BAN IS LIFTED for ovl3/4/5/7/9/10. Previously any function
+    needing a `switch` jump table had to stay a pragma because those segments
+    emitted no .rodata and the linker had nowhere to put one. They now do.
+    That was ~45 blocked functions (12 tagged JTBL in ovl9, ~30 in ovl3/ovl4,
+    3 in ovl7).
+  - Those segments are now MIGRATED, so the rodata model flips: write float
+    constants as LITERALS there, not `extern f32`. The old advice applied to
+    the unmigrated state and is now wrong for these six.
+
+Re-running splat did NOT delete any listing (3838 before and after). The
+earlier claim that splat destroys nonmatchings coverage was true of some past
+invocation, not of this one -- but back up asm/ before running it anyway.
