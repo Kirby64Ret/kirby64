@@ -117,17 +117,48 @@ def render(sym, section, entries, refs):
         return (f'extern {const}char {sym}[];\n',
                 f'{const}char {c_ident(sym)}[] = {lits};\n')
 
-    # Anything naming a symbol has to become a pointer array: only the linker
-    # can supply the address. Pointer words are 4 bytes and so is a u32, which
-    # is precisely why the port is ILP32.
-    if any(_is_ref(v) for k, v in entries if k == 'word'):
+    # A block that is BOTH pointer-bearing and mixed-width cannot be an array
+    # of anything. 24 blocks are like this -- string tables where inline .asciz
+    # data sits next to pointer words (sSoundNames, D_80192F50_ovl3, ...). An
+    # earlier version emitted a void* array with a placeholder for each string,
+    # which lost the string AND shifted every later index, because a 9-byte
+    # string is not one pointer slot. A packed struct is the only faithful
+    # form, and it also beats byte-serialisation for the 41 mixed-width blocks
+    # with no pointers, since it keeps the pointers and the values both.
+    has_ref = any(_is_ref(v) for k, v in entries if k == 'word')
+    if len(kinds) > 1:
+        fields, inits = [], []
+        for i, (k, v) in enumerate(entries):
+            if k == 'asciz':
+                n = len(v.strip('"').encode('latin-1', 'replace')) + 1
+                fields.append(f'    char f{i}[{n}];')
+                inits.append(v)
+            elif k == 'space':
+                fields.append(f'    u8 f{i}[{int(v, 0)}];')
+                inits.append('{ 0 }')
+            elif k == 'word' and _is_ref(v):
+                m = re.match(r'([A-Za-z_]\w*)', v)
+                refs.add(m.group(1))
+                fields.append(f'    void *f{i};')
+                inits.append(f'&{v}' if re.fullmatch(r'\w+', v)
+                             else f'(void *)((u8 *)&{m.group(1)} + 0)')
+            else:
+                fields.append(f'    {CTYPE.get(k, "u32")} f{i};')
+                inits.append(v)
+        tag = f'{sym}_t'
+        decl = ('struct __attribute__((packed)) ' + tag + ' {\n'
+                + '\n'.join(fields) + '\n};\n'
+                + f'extern {const}struct {tag} {sym};\n')
+        body = (f'{const}struct {tag} {c_ident(sym)} = {{\n    '
+                + ',\n    '.join(inits) + '\n};\n')
+        return decl, body
+
+    # Pure pointer array: only the linker can supply these addresses. A pointer
+    # word is 4 bytes and so is a u32, which is precisely why the port is ILP32.
+    if has_ref:
         body = []
         for k, v in entries:
-            if k != 'word':
-                # a non-word entry inside a pointer block cannot be expressed;
-                # keep the slot so later indices stay right
-                body.append('(void *)0 /* ' + k + ' ' + v + ' */')
-            elif not _is_ref(v):
+            if not _is_ref(v):
                 body.append(f'(void *)(u32)({v})')
             elif re.fullmatch(r'\w+', v):
                 refs.add(v)
@@ -142,40 +173,18 @@ def render(sym, section, entries, refs):
                     body.append('(void *)0')
         return (f'extern {const}void *{sym}[];\n',
                 f'{const}void *{c_ident(sym)}[] = {{\n    ' +
-                ',\n    '.join(body) + '\n}};\n'.replace('}}', '}'))
+                ',\n    '.join(body) + '\n};\n')
 
     # Homogeneous scalar block -- emit its natural C type so the host reads it
     # with the same value the N64 would. These are VALUES, not a byte image:
     # writing 0x3F800000 as a u32 gives the right float on either endianness,
     # whereas copying the ROM's bytes would not.
-    if len(kinds) == 1:
-        k = kinds.pop()
-        if k in CTYPE:
-            vals = ', '.join(v for _, v in entries)
-            return (f'extern {const}{CTYPE[k]} {sym}[];\n',
-                    f'{const}{CTYPE[k]} {c_ident(sym)}[] = {{ {vals} }};\n')
-
-    # Mixed widths -- a struct, in other words. Lay it out as a byte array in
-    # HOST order per field, which keeps both the field offsets and the field
-    # values correct. Serialising the ROM's big-endian bytes instead would
-    # preserve offsets and corrupt every multi-byte value.
-    import struct as _s
-    raw = bytearray()
-    for k, v in entries:
-        if k == 'space':
-            raw += b'\x00' * int(v, 0)
-        elif k == 'asciz':
-            raw += v.strip('"').encode('latin-1', 'replace') + b'\x00'
-        elif k == 'float':
-            raw += _s.pack('<f', float(v))
-        elif k == 'double':
-            raw += _s.pack('<d', float(v))
-        elif k in WIDTH:
-            n = int(v, 0) & ((1 << (WIDTH[k] * 8)) - 1)
-            raw += n.to_bytes(WIDTH[k], 'little')
-    body = ', '.join(f'0x{b:02X}' for b in raw)
-    return (f'extern {const}u8 {sym}[];\n',
-            f'{const}u8 {c_ident(sym)}[] = {{ {body} }};\n')
+    k = next(iter(kinds))
+    if k in CTYPE:
+        vals = ', '.join(v for _, v in entries)
+        return (f'extern {const}{CTYPE[k]} {sym}[];\n',
+                f'{const}{CTYPE[k]} {c_ident(sym)}[] = {{ {vals} }};\n')
+    return '', ''
 
 
 def main():
