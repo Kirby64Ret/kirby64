@@ -49,6 +49,7 @@ extern struct GObjProcess *gEntityGObjProcessArray[];
 
 extern void func_800B113C(struct DObj *, s32, f32);
 extern void func_800B1900(u16);
+extern void func_8019D958_ovl7(u16);
 extern void func_800BB468(s32, s32);
 extern void func_800BC11C(f32);
 extern void func_800BC1FC(s32);
@@ -977,7 +978,12 @@ void func_801DF4B0_ovl11(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF548_ovl11.s")
+void func_801DF548_ovl11(struct GObj *arg0) {
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        (*(s32 *) &D_800E9AA0[D_800EA520[omCurrentObj->objId]])++;
+        func_8019D958_ovl7((u16) omCurrentObj->objId);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF5B8_ovl11.s")
 

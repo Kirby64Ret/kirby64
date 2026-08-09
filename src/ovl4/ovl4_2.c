@@ -6,9 +6,23 @@
 #include "ovl1/util.h"
 #include "track_arrays.h"
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80151DE0_ovl4.s")
+extern s32 D_8015C690_ovl4;
+extern s32 D_800D6B78;
+extern Gfx D_8015A790_ovl4[];
+extern u8 D_800D6BC0[];
+extern u8 D_800D6BC8[];
+extern s32 D_800BE560[];
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80151E00_ovl4.s")
+extern void func_80151E20_ovl4(void);
+extern void func_80154DDC_ovl4(void);
+
+void func_80151DE0_ovl4(void) {
+    func_80151E20_ovl4();
+}
+
+void func_80151E00_ovl4(void) {
+    func_80154DDC_ovl4();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80151E20_ovl4.s")
 
@@ -44,11 +58,26 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_8015306C_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80153294_ovl4.s")
+s32 func_80153294_ovl4(s32 arg0, s32 arg1, s32 arg2) {
+    if (D_800D6BC8[(arg0 * 4) + arg1] & (1 << arg2)) {
+        return 1;
+    }
+    return 0;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801532CC_ovl4.s")
+s32 func_801532CC_ovl4(s32 arg0, s32 arg1) {
+    if (arg1 + 1 == D_800BE560[arg0]) {
+        return 1;
+    }
+    return 0;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801532FC_ovl4.s")
+s32 func_801532FC_ovl4(s32 arg0) {
+    if (D_800D6BC0[arg0] != 0) {
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80153324_ovl4.s")
 
@@ -96,13 +125,18 @@ void func_80154DA0_ovl4(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154DDC_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801550D4_ovl4.s")
+void func_801550D4_ovl4(void) {
+    D_8015C690_ovl4 = 2;
+    D_800D6B78 = 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801550EC_ovl4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80155168_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801552F8_ovl4.s")
+void func_801552F8_ovl4(Gfx **gfxP) {
+    gSPDisplayList((*gfxP)++, D_8015A790_ovl4);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_8015531C_ovl4.s")
 

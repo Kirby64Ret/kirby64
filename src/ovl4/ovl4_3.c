@@ -1,5 +1,15 @@
 #include <ultra64.h>
 #include <macros.h>
+#include "common.h"
+#include "GObj.h"
+#include "main/object_manager.h"
+
+extern Gfx D_8015AA70_ovl4[];
+extern s32 D_800D6B24;
+extern s32 D_8015C6D8_ovl4;
+
+extern void func_800AC610(void);
+extern void func_80157C38_ovl4(void);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801553C0_ovl4.s")
 
@@ -41,7 +51,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157028_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157250_ovl4.s")
+s32 func_80157250_ovl4(void) {
+    return 4;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157258_ovl4.s")
 
@@ -55,15 +67,26 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157C38_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157CB0_ovl4.s")
+void func_80157CB0_ovl4(s32 arg0) {
+    if (D_800D6B24 == 0) {
+        if (D_8015C6D8_ovl4 != 0) {
+            func_80157C38_ovl4();
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157CF0_ovl4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157E04_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157FFC_ovl4.s")
+void func_80157FFC_ovl4(Gfx **gfxP) {
+    gSPDisplayList((*gfxP)++, D_8015AA70_ovl4);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80158020_ovl4.s")
+void func_80158020_ovl4(void) {
+    omDrawAll();
+    func_800AC610();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80158048_ovl4.s")
 
