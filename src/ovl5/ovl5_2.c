@@ -503,7 +503,11 @@ s32 func_80164914_ovl5(s32);
 #ifdef MIPS_TO_C
 /* 4 diffs: ROM stores before both induction increments; we sink the sw into
    the branch delay slot. The empty `if` reproduces the dead $s2 induction.
-   Swept: for/while/do-while, != vs <, pointer inductions, dead-local read. */
+   Swept: for/while/do-while, != vs <, pointer inductions, dead-local read,
+   volatile on either array (the vu16 lever that closed the fb-clear family
+   does NOT apply here -- it costs the whole loop), statement order, temp
+   local, self-assignment, `continue`, unused local. Clone twins with the
+   identical residue: func_8016CB14_ovl5, func_80176108_ovl5. */
 void func_801649CC_ovl5(void) {
     s32 i;
 

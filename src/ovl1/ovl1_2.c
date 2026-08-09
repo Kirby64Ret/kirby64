@@ -22,6 +22,15 @@ extern u32 D_800D7B78;
 extern u32 D_800D7B7C;
 extern u32 D_800D7B80;
 
+struct Ovl1CamPos {
+    Vector unk0;
+    Vector unkC;
+};
+
+extern struct Ovl1CamPos D_800D7B20;
+extern struct Ovl1CamPos D_800D7B38;
+extern Vector D_800D7B2C;
+
 void omDrawAll(void);
 void func_800AC610(void);
 
@@ -129,7 +138,18 @@ void func_800A71A0(u32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2/func_800A71E0.s")
+void func_800A71E0(void) {
+    Camera *cam;
+    OMLookAt *look;
+
+    omCreateProcess(D_800D79BC, func_800FC804, 1, 0);
+    cam = D_800D79BC->data.cam;
+    D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
+    look = &cam->viewMtx.lookAt;
+    D_800D7B2C = look->eye;
+    D_800D7B38 = D_800D7B20;
+    D_800D79BC->dlLinkBitMask |= 0x2000000;
+}
 
 void func_800A72AC(GObj *arg0) {
     Camera *src;

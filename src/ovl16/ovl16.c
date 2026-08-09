@@ -203,7 +203,7 @@ extern s32 D_801DA55C;
 void func_801A03B4_ovl7(void);
 void func_801A03E4_ovl7(struct DObj *, struct DObj ***);
 s32 func_801A0244_ovl7(s8);
-void func_801EF3B0_ovl16(s32, s8);
+void func_801EF3B0_ovl16(s32, s32);
 void func_801EF1A4_ovl16(s32);
 void func_801ECB88_ovl16(struct GObj *);
 void curObjSleepForever(void);
@@ -1409,7 +1409,7 @@ void func_801E820C_ovl16(s32 arg0) {
             if (temp_a0 != -1) {
                 temp_v0 = func_801A0244_ovl7(temp_a0);
                 if (temp_v0 != -1) {
-                    func_801EF3B0_ovl16(temp_v0, temp_s0->unk3A);
+                    func_801EF3B0_ovl16(temp_v0, (s8) temp_s0->unk3A);
                     D_800E83E0[omCurrentObj->objId] = 0x12;
                     play_sound(0xF4);
                     temp_s0->unk94 = NULL;
@@ -1703,7 +1703,7 @@ void func_801EC1D8_ovl16(s32 arg0) {
             if (temp_a0 != -1) {
                 temp_v0_3 = func_801A0244_ovl7(temp_a0);
                 if (temp_v0_3 != -1) {
-                    func_801EF3B0_ovl16(temp_v0_3, temp_s0->unk3A);
+                    func_801EF3B0_ovl16(temp_v0_3, (s8) temp_s0->unk3A);
                     D_800E83E0[omCurrentObj->objId] = 0x12;
                     play_sound(0xF4);
                     temp_s0->unk94 = NULL;
@@ -1770,7 +1770,7 @@ void func_801ECB88_ovl16(struct GObj *arg0) {
             if (temp_a0 != -1) {
                 temp_v0 = func_801A0244_ovl7(temp_a0);
                 if (temp_v0 != -1) {
-                    func_801EF3B0_ovl16(temp_v0, temp_s0->unk3A);
+                    func_801EF3B0_ovl16(temp_v0, (s8) temp_s0->unk3A);
                     D_800E83E0[omCurrentObj->objId] = 0x12;
                     play_sound(0xF4);
                     temp_s0->unk94 = NULL;
@@ -1879,7 +1879,7 @@ void func_801EF080_ovl16(s32 arg0) {
         if (temp_a0 != -1) {
             temp_v0 = func_801A0244_ovl7(temp_a0);
             if (temp_v0 != -1) {
-                func_801EF3B0_ovl16(temp_v0, temp_s0->unk3A);
+                func_801EF3B0_ovl16(temp_v0, (s8) temp_s0->unk3A);
                 D_800E83E0[omCurrentObj->objId] = 0x12;
                 play_sound(0xF4);
                 temp_s0->unk94 = NULL;
@@ -1938,10 +1938,7 @@ void func_801EF32C_ovl16(s32 arg0) {
     func_801A04B8_ovl7();
 }
 
-void func_801EF3B0_ovl16(arg0, arg1)
-s32 arg0;
-s32 arg1;
-{
+void func_801EF3B0_ovl16(s32 arg0, s32 arg1) {
     D_800E6BD0[arg0] = D_800E6BD0[arg1];
     D_800E5F90[arg0] = D_800E5F90[arg1];
     gEntitiesNextPosYArray[arg0] = gEntitiesNextPosYArray[arg1];

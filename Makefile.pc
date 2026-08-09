@@ -105,7 +105,13 @@ LU_OBJS := $(addprefix $(PC_BUILD)/src/libreultra/gu_,$(addsuffix .o,$(LU_GU_SRC
 
 # libreultra's sources want their own headers first (its <PR/os.h>, <mbi.h>,
 # <libaudio.h>), which the game tree does not have.
-LU_INC := -Ilibreultra/include/2.0I -Ilibreultra/include/2.0I/PR -Ilibreultra/src \
+# -include tools/pc/lu_lp64.h: libreultra's own <PR/ultratypes.h> typedefs u32
+# as `unsigned long`, which is 8 bytes at -m64 and silently doubles every field
+# in every struct it compiles. The shim claims that header's include guard and
+# supplies LP64-correct types instead. Read its comment before removing it --
+# the failure it prevents is wrong data, not a build error.
+LU_INC := -include tools/pc/lu_lp64.h \
+          -Ilibreultra/include/2.0I -Ilibreultra/include/2.0I/PR -Ilibreultra/src \
           -Ilibreultra/src/gu -Ilibreultra/src/io -Ilibreultra/src/audio \
           -Ilibreultra/src/libnaudio -Iinclude -I.
 
