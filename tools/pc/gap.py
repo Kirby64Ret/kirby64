@@ -53,16 +53,44 @@ CATS = [
     ('libultra os/io',          r'^(os|__os)'),
     ('audio library',           r'^(al|n_al)'),
     ('gu math',                 r'^gu'),
+    # Not gaps: the host libc and libm supply these at link time. Counting
+    # them as porting work overstates the platform layer.
+    ('supplied by libc/libm',
+     r'^(memcpy|memset|memmove|strlen|strcpy|bcopy|bzero|sinf|cosf|sqrtf|'
+     r'sincosf|_GLOBAL_OFFSET_TABLE_|__stack_chk_fail_local)$'),
+    # Linker-script segment bounds, not code. On PC these come from whatever
+    # overlay model the port adopts -- see docs/PC_PORT_SURFACE.md.
+    ('overlay segment bounds',  r'^ovl\d+_(ROM|VRAM|TEXT|DATA|RODATA|BSS)'),
 ]
+
+
+def pragma_names():
+    """Every function still behind a #pragma GLOBAL_ASM.
+
+    Matching on `^func_` alone undercounts: plenty of functions have real
+    names -- game_tick, auThreadMain, eneTurnCommon, initTrack, saveVerify,
+    saveForceCompleteFile, saveCalcHeaderChecksum -- and were landing in the
+    "libc / other" bucket, which made the platform layer look bigger than it is
+    and the decompilation smaller. The pragma set is the authority.
+    """
+    out = set()
+    for cf in glob.glob('src/**/*.c', recursive=True):
+        out |= set(re.findall(r'GLOBAL_ASM\("[^"]*/(\w+)\.s"\)', open(cf).read()))
+    return out
 
 
 def main():
     gap, ndef = symbols()
     want = sys.argv[sys.argv.index('--list') + 1] if '--list' in sys.argv else None
 
+    prag = pragma_names()
     buckets, seen = [], set()
     for name, pat in CATS:
-        hit = [s for s in gap if re.match(pat, s)]
+        if name.startswith('un-decompiled'):
+            hit = [s for s in gap if re.match(pat, s) or s in prag]
+        else:
+            hit = [s for s in gap if re.match(pat, s) and s not in seen
+                   and s not in prag]
         seen |= set(hit)
         buckets.append((name, hit))
     buckets.append(('libc / other', [s for s in gap if s not in seen]))
@@ -74,8 +102,9 @@ def main():
             for s in hit:
                 print(f'      {s}')
 
-    plat = sum(len(h) for n, h in buckets if n != 'un-decompiled functions'
-               and n != 'unresolved data')
+    NOT_PORT = ('un-decompiled functions', 'unresolved data',
+                'supplied by libc/libm')
+    plat = sum(len(h) for n, h in buckets if n not in NOT_PORT)
     print(f'\nplatform layer: {plat} symbols. Decompilation still owes '
           f'{len(buckets[0][1])} functions;\nuntil those land the binary cannot '
           f'link no matter how complete the platform layer is.')
