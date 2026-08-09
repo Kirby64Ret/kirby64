@@ -1372,3 +1372,127 @@ against a stale ELF. One un-guarded draft therefore stalls everyone.
 
 So: scan drafts in that file on a TEMP COPY, never in place. Everywhere else,
 in-place is fine.
+
+# Wave 7 levers
+
+## The register-rotation "floor" is partly NOT a floor
+
+Five waves recorded one-slot register rotation as unreachable, and this guide
+said so. That was too strong.
+
+**A callee prototyped with a NON-VOID return type reserves $v0 across the whole
+caller, shifting every temp one register up.** Declaring
+`s32 func_801E28C8_ovl10(s32);` instead of `void ...` took
+`func_801DD674_ovl10` from 7 diffs to MATCH and closed `func_801DD2CC_ovl10`
+(11 diffs, previously guarded) with no other change.
+`s32 func_801A37B8_ovl7(void *, struct DObj *);` closed `func_801B44FC_ovl7`.
+
+Try this FIRST on any pure $v0/$v1 or $tN+1 rotation in a function that
+contains a call. It is a per-TU knob and cost nothing elsewhere -- `--all`
+stayed at 0 diff in both files.
+
+The rotation cases that remain floors are the ones with no suitable call:
+`func_801E7760_ovl10`/`func_801EA900_ovl10` reach only `utilFuncTableJump`
+(declared outside the segment) and a callee that already returns s32.
+
+## Float operand order
+
+**IDO reverses the operands of the outermost float `*` as well as `+`** -- but
+only when BOTH sides are computed. `arr[i] * (ABSF(x) + 3.5f)` emits
+`mul.s $f4, $f_sum, $f_array`; `arr[i] * 14.0f` stays in source order.
+
+**In the outer float `+`, the FIRST source operand takes the HIGHER FP
+register.** Read which operand the ROM loads first and write it second.
+Confirmed in both directions on twins (`func_801DFDA0_ovl14` vs
+`func_801E07F0_ovl14`).
+
+**An integer literal and a float literal of the same value fork IDO's FP
+constant; two literals of the same spelling CSE.** `((x * 2) + 2.0f) * 0.75f`
+matched where `*2 +2`, `*(f32)2 +2` and `*2.0f +2` all shared one register.
+
+## Statement shapes
+
+**Chained assignment is the shape for "one load, N stores", and the chain reads
+in REVERSE store order.** `A[i]=B[i]=C[i]=D[i]=E[i]=src[i];` emits stores
+E,D,C,B,A. Took `func_801E0618_ovl14` from 94 diffs to MATCH. Not
+interchangeable with separate statements when one of them is a genuine
+read-back.
+
+**A store through a struct pointer is an aliasing barrier**: it forces IDO to
+re-load globals and to switch a global to the `lui/addiu` address form. When
+the ROM keeps `omCurrentObj` in one register but your compile materialises
+`&omCurrentObj`, look for a store through a local pointer sitting between two
+global reads and sink it below them (`func_801F5C18_ovl9`, 48/48 -> MATCH).
+
+**Splitting a call's float sub-expressions into named locals fixes load
+scheduling that no operand reordering reaches.** `dx = ...; dz = ...;
+atan2f(dx, dz)` matched where the inline form was 3/90 off in either direction.
+
+**A hoisted mask constant in a saved register means the loop test is `&`, not
+`>>`.** Writing the entry test and the loop test as explicitly different forms
+matched `func_80204184_ovl9` (55/59 -> 0).
+
+## Types
+
+**`(u32)` cast on a u8 array compare.** `arr[i] < 6` on a `u8[]` emits SIGNED
+`slti` in IDO; the ROM has `sltiu`. This qualifies the existing "u8 promotes
+unsigned" note -- that holds for float conversion, not for integer relational
+compares.
+
+**A zero argument emitted as `addiu $aN, $zero, 0` proves that parameter is
+`f32`**, even though it travels in an integer register.
+
+**`Vector` passed BY VALUE occupies $a0/$a1/$a2** and reads back from the home
+slots as `.x` at +0x00 and `.z` at +0x08.
+
+**Changing only a callee's PROTOTYPE forks a shared constant.** `ohSleep(1)`
+was 1 diff off until `void ohSleep(u8);` -- the argument then re-materialises
+instead of sharing an `s32` constant register.
+
+## Dead locals cut both ways
+
+**Dead scalar locals are NOT eliminated when another local's address is taken,
+and their position controls that local's offset.** `s32 pad0; s32 sp28;
+s32 pad1;` put sp28 at exactly 0x28 (`func_801E040C_ovl9`). This is the
+counter-case to "dummy locals get optimised away", which still holds where no
+address-taken neighbour exists (`func_801DBC38_ovl9`).
+
+Frame arithmetic, measured: `frame = align8(fixed + L)`, fixed = 0x18 for a
+leaf-ish frame and 0x20 with an outgoing-argument area. A struct local's SIZE
+is the knob for placing it; pad locals grow the frame instead of shifting it.
+
+## Two tooling hazards that produce NESTED GUARDS
+
+Both were hit independently by two agents, and both are invisible to most of
+the gate.
+
+1. Replacing a `#pragma GLOBAL_ASM(...)` line by string match can land your C
+   INSIDE an existing `#ifdef MIPS_TO_C ... #else <pragma> #endif`, activating
+   it. Guarding "the function" then wraps the OLD draft, leaving a nested guard
+   whose active branch is your non-matching C.
+2. Pragmas can be INDENTED, and guards can carry trailing comments
+   (`#ifdef NON_MATCHING // awful`). A scanner anchored on `^#pragma` or on a
+   bare `#ifdef NON_MATCHING\n` misses them and creates the same nesting.
+
+check_tu_size and check_sections both stay at 0 for these. Only check_layout
+caught it (drift -12 and -4), and verify_rom sees it as "pragma N bytes
+differ". Audit `#if` depth after every automated guard insertion.
+
+## A duplicate identical `extern` is a hard ERROR in IDO 7.1
+
+Not a warning: `redeclaration of 'f'; Incompatible function return type`. Put
+per-function prototypes at BLOCK scope inside the function body -- it avoids
+collisions with later file-scope declarations and does not shift the line
+numbers of already-matched neighbours.
+
+Related: verify.py's compiler output is tail-truncated, so a hard `cfe: Error`
+can be invisible. If verify.py returns nothing, compile the object directly
+with `tools/ido-7.1recomp/cc`.
+
+## ovl6 is not the cheap completion its count suggests
+
+Its 9 remaining pragmas are not 9 easy functions: the only tractable entry
+(`func_80154628_ovl6`, 26 instructions) sits at 20/27 on a pure scheduling
+difference, and the other 8 are m2c drafts of 182-408 instructions that do not
+compile. An earlier brief called it "the single best completion target in the
+tree" on the count alone -- that was wrong.
