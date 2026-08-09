@@ -76,12 +76,28 @@ SDL2 here is x86_64 only, so `gcc -m32 ... -lSDL2` cannot link, and
 libultraship is a 64-bit build. **32-bit and libultraship are mutually
 exclusive**, so the port has to go LP64.
 
-The SSB port solves the resulting pointer-truncation problem the same way we
-will: where N64 code stores a `T*` in a 32-bit word, the port declares it `u32`
-under `#ifdef PORT` and defers address resolution to runtime through a
-`PORT_RESOLVE()` macro. The 32-bit build stays useful in the meantime as a
-measurement harness -- it links and runs today, which the 64-bit build will not
-until the PORT guards are in.
+**This is now done, and it was three lines rather than a project.** All 151
+game files compile at `-m64` under `-DPORT`, with the N64 build verified
+byte-exact afterwards.
+
+The SSB port needs `PORT_RESOLVE()` relocation tokens because it stores a `T*`
+in a 32-bit word. Kirby 64's tree did not, because `gbi.h` here is already
+64-bit aware -- `Gwords` holds two `uintptr_t`, so a display list can carry a
+real pointer. The entire problem was `include/PR/ultratypes.h` hardwiring
+`uintptr_t` to `u32`, which made those static display lists fail with
+"initializer element is not constant": casting a 64-bit pointer to a 32-bit
+integer is not something the linker can resolve. Widening it under PORT fixed
+both files with no change to their source, and on MIPS32 a pointer is 4 bytes
+so `u32` was correct there anyway.
+
+The other two changes were `osVirtualToPhysical`, declared as returning `u32`
+in one header and `uintptr_t` in another (they agree only while those are the
+same type), and three `(va_list)` casts in `fault.c` -- an N64 idiom for
+rounding the varargs pointer, invalid on x86-64 where `va_list` is an array
+type and pointless where the ABI already aligns arguments.
+
+The 32-bit build remains as a measurement harness until the LP64 one links,
+since it boots and runs today.
 
 ## Dependencies: resolved
 
