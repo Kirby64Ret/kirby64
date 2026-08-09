@@ -193,8 +193,24 @@ def main():
                              txt, re.M):
             defined.add(m.group(1))
 
-    nfiles = nsyms = 0
+    # Not every .s on disk is live. 54 rodata listings exist under two names --
+    # `<file>.rodata.s` and `<file>_rd.rodata.s` -- byte-identical duplicates
+    # left behind when the subsegments were renamed to break a splat name
+    # collision. The N64 build links only the `_rd` object, so the plain one is
+    # stale; emitting both gives thousands of multiple-definition errors at the
+    # native link. build/kirby.ld is the authority on which is real.
+    live = None
+    if os.path.exists('build/kirby.ld'):
+        ld = open('build/kirby.ld').read()
+        live = set(re.findall(r'build/asm/data/(\S+?)\.o', ld))
+        if not live:
+            live = None
+
+    nfiles = nsyms = skipped = 0
     for path in sorted(glob.glob('asm/data/**/*.s', recursive=True)):
+        if live is not None and path[len('asm/data/'):-2] not in live:
+            skipped += 1
+            continue
         blocks = [b for b in parse(path) if b[0] not in defined]
         if not blocks:
             continue
@@ -221,7 +237,8 @@ def main():
             f.write('\n')
             f.writelines(bodies)
         nfiles += 1
-    print(f'{nsyms} data symbols -> {nfiles} C files in {outdir}')
+    print(f'{nsyms} data symbols -> {nfiles} C files in {outdir}'
+          + (f' ({skipped} stale listing(s) skipped)' if skipped else ''))
 
 
 if __name__ == '__main__':
