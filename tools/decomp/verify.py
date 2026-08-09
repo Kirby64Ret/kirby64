@@ -69,6 +69,10 @@ def compile_file(cfile):
     obj = os.path.join('build', cfile[:-2] + '.o')
     os.makedirs(os.path.dirname(obj), exist_ok=True)
     opt = OPT_OVERRIDES.get(cfile, '-O2')
+    # n_audio was built at -O3, so main/libn_audio*.c cannot match at -O2 no
+    # matter how good the source is. tools/decomp/cc_o3.py drives the four IDO
+    # phases directly, which the cc driver cannot (ujoin is missing).
+    CC = os.environ.get('VERIFY_CC', 'tools/ido-7.1recomp/cc')
     has_asm = 'GLOBAL_ASM' in open(cfile).read()
     if has_asm:
         # --asm-prelude must match the Makefile's. Without it, `jlabel` is not
@@ -76,10 +80,10 @@ def compile_file(cfile):
         # here but then fails to link, AND it lands in build/ looking current,
         # so a later `make` does not rebuild it.
         cmd = (f'python3 tools/asm-processor/build.py '
-               f'--asm-prelude include/asmpp_prelude.inc tools/ido-7.1recomp/cc -- '
+               f'--asm-prelude include/asmpp_prelude.inc {CC} -- '
                f'mips-linux-gnu-as {ASFLAGS} -- {CFLAGS.format(opt=opt)} -o {obj} {cfile}')
     else:
-        cmd = f'tools/ido-7.1recomp/cc {CFLAGS.format(opt=opt)} -o {obj} {cfile}'
+        cmd = f'{CC} {CFLAGS.format(opt=opt)} -o {obj} {cfile}'
     r = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if r.returncode != 0 or not os.path.exists(obj):
         print(r.stdout[-3000:]); print(r.stderr[-3000:])
