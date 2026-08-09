@@ -160,8 +160,7 @@ void contSetPlayerPads() {
     D_80048F48 = 0;
 }
 
-#ifdef NON_MATCHING
-s32 *func_80004250(void) {
+void func_80004250(void) {
     s32 i;
     u8 sp43;
 
@@ -180,7 +179,7 @@ s32 *func_80004250(void) {
     {
         D_80048F60[i].evt.evt.msg = (OSMesg)i;
         D_80048F60[i].busy = 0;
-        D_80048F60[i].evt.evt.type = CONT_EVENT_RUMBLE;
+        *(u32 *) &D_80048F60[i].evt.evt.type = 5;
         D_80048F60[i].evt.evt.mq = &D_80048E10;
     }
 
@@ -220,42 +219,26 @@ s32 *func_80004250(void) {
     }
 
     gValidControllerCount = 0;
-    contChannelMap[0] = -1;
-    if (gControllers[0].errno == 0) {
-        contChannelMap[gValidControllerCount] = 0;
-        gValidControllerCount++;
-    }
-    contChannelMap[1] = -1;
-    if (gControllers[1].errno == 0) {
-        contChannelMap[gValidControllerCount] = 1;
-        gValidControllerCount++;
-    }
-    contChannelMap[2] = -1;
-    if (gControllers[2].errno == 0) {
-        contChannelMap[gValidControllerCount] = 2;
-        gValidControllerCount++;
-    }
-    contChannelMap[3] = -1;
-    if (gControllers[3].errno == 0) {
-        contChannelMap[gValidControllerCount] = 3;
-        gValidControllerCount++;
+    for (i = 0; i < MAXCONTROLLERS; i++)
+    {
+        contChannelMap[i] = -1;
+        if (gControllers[i].errno == 0) {
+            contChannelMap[gValidControllerCount] = i;
+            gValidControllerCount++;
+        }
     }
     D_80048F48 = 0;
     D_80048F4C = NULL;
     D_80048F50 = 1;
-    D_80048F54 = 1;
-    contPollTimer = 1;
+    contPollTimer = D_80048F54 = 1;
     D_8004929A = 0;
     D_80049298 = 0;
     D_8004929C = 0;
     D_8004929E = 0;
     D_800492A0 = 0;
     D_800492A1 = 0;
-    return &D_80048F54;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004250.s")
-#endif
+
 
 void contSendEvent(ContEvent *evt) {
     OSMesg msg;
