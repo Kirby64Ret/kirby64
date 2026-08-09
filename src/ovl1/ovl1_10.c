@@ -255,7 +255,6 @@ void func_800BB028(RumbleCmd *arg0) {
     osRecvMesg(&mq, NULL, OS_MESG_BLOCK);
 }
 
-#ifdef MIPS_TO_C
 void func_800BB08C(s32 arg0, s32 arg1, s32 arg2) {
     RumbleCont *cont;
     RumbleItem *item;
@@ -272,17 +271,13 @@ void func_800BB08C(s32 arg0, s32 arg1, s32 arg2) {
                 }
                 item->unk00 = arg1;
                 item->unk01 = 0;
-                item->unk02 = 0;
-                item->unk04 = 0;
+                item->unk02 = item->unk04 = 0;
                 item->unk0C = NULL;
                 item->unk10 = D_800D5238[arg1];
             }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB08C.s")
-#endif
 
 void func_800BB12C(s32 arg0) {
     RumbleCont *cont;

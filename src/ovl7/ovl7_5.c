@@ -794,7 +794,6 @@ block_168:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A7524_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
 s32 func_801A8BAC_ovl7(void) {
     f32 temp_f0;
     f32 temp_f2;
@@ -813,9 +812,6 @@ s32 func_801A8BAC_ovl7(void) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8BAC_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -2250,60 +2246,31 @@ void func_801AC448_ovl7(GObj *gobj) {
     func_801AC2D8_ovl7(gobj);
 }
 
-#ifdef MIPS_TO_C
-
 void func_801AC4EC_ovl7(GObj *arg0) {
-    s32 temp_v1_2;
-    s32 var_v0_2;
-    u16 var_v0;
-    u32 temp_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 temp_v1;
-    u32 var_v0_3;
-
-    temp_v0 = omCurrentObj->objId;
-    gEntitiesNextPosXArray[temp_v0] = gEntitiesNextPosXArray[D_800E0D50[temp_v0]];
-    temp_v0_2 = omCurrentObj->objId;
-    gEntitiesNextPosYArray[temp_v0_2] = gEntitiesNextPosYArray[D_800E0D50[temp_v0_2]];
-    temp_v0_3 = omCurrentObj->objId;
-    gEntitiesNextPosZArray[temp_v0_3] = gEntitiesNextPosZArray[D_800E0D50[temp_v0_3]];
-    func_80199568_ovl7(D_800E0D50, gEntitiesNextPosXArray, gEntitiesNextPosYArray);
-    temp_v1 = omCurrentObj->objId;
-    if (D_800E7730[temp_v1] == 4) {
-        var_v0 = D_800E77A0[temp_v1];
-        if (var_v0 == 1) {
+    gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+    func_80199568_ovl7();
+    if (D_800E7730[omCurrentObj->objId] == 4) {
+        if (D_800E77A0[omCurrentObj->objId] == 1) {
             func_800A9864(0x10087, 0x23, 0x10);
-            var_v0 = D_800E77A0[omCurrentObj->objId];
         }
-        if (var_v0 == 0x13) {
+        if (D_800E77A0[omCurrentObj->objId] == 0x13) {
             func_800A9864(0x10094, 0x23, 0x10);
         }
     }
     func_8019BB58_ovl7();
-    temp_v0_4 = omCurrentObj->objId;
-    var_v0_2 = temp_v0_4 * 4;
-    temp_v1_2 = D_800E8220[temp_v0_4];
-    switch (temp_v1_2) {                            /* irregular */
+    switch (D_800E8220[omCurrentObj->objId]) {
         case 0:
             func_801A8CDC_ovl7(arg0);
-            var_v0_3 = omCurrentObj->objId;
-block_10:
-            var_v0_2 = var_v0_3 * 4;
             break;
         case 1:
             func_801A96C4_ovl7(arg0);
-            var_v0_3 = omCurrentObj->objId;
-            goto block_10;
+            break;
     }
-    utilPrintf("JL_CatchOver: No CatchInfo Address ID:%x\n", *(D_800E8060 + var_v0_2));
-loop_12:
-    goto loop_12;
+    utilPrintf("JL_CatchOver: No CatchInfo Address ID:%x\n", D_800E8060[omCurrentObj->objId]);
+    while (1) {}
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AC4EC_ovl7.s")
-#endif
 
 s32 func_801AC6D0_ovl7(struct AnimTrack *arg0) {
     s32 sp1C;

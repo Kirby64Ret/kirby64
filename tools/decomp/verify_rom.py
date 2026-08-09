@@ -60,6 +60,25 @@ def main():
         raise SystemExit('build/kirby.us.elf missing -- link first; without it '
                          'this check would silently pass everything')
 
+    # A STALE ELF is worse than a missing one: it produces confident, precise,
+    # wrong numbers. If a compile failed, `make` never relinks, so the ROM
+    # still reflects an older tree while the pragma lists come from the
+    # current sources -- which manufactured "57 REAL defects" that did not
+    # exist. Refuse to report rather than mislead.
+    import glob as _glob
+    _et = os.path.getmtime('build/kirby.us.elf')
+    _newer = [f for f in _glob.glob('src/**/*.c', recursive=True)
+              if os.path.getmtime(f) > _et]
+    if _newer and '--stale-ok' not in sys.argv:
+        raise SystemExit(
+            f'REFUSING TO REPORT: {len(_newer)} source file(s) are newer than\n'
+            f'build/kirby.us.elf, so the linked ROM does not correspond to the\n'
+            f'current tree. A failed compile leaves the ELF behind and this\n'
+            f'check would report confident nonsense.\n'
+            f'  e.g. {", ".join(_newer[:3])}\n'
+            f'Run `make` to a successful link first (or pass --stale-ok if you\n'
+            f'genuinely want the old measurement).')
+
     base = open('baserom.us.z64', 'rb').read()
     built = open('build/kirby.us.z64', 'rb').read()
     segs = segments()

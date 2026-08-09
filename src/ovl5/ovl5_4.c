@@ -14,7 +14,16 @@ void func_800BB3F0(void);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80166B28_ovl5.s")
 
+#ifdef MIPS_TO_C
+/* frame comes out 0x8 instead of 0x10 and the copy schedules differently */
+Vector2 func_80166C68_ovl5(s32 arg1) {
+    Vector2 sp8 = D_8018E3A0_ovl5[arg1];
+
+    return sp8;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80166C68_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80166CAC_ovl5.s")
 
@@ -44,13 +53,32 @@ void func_800BB3F0(void);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168928_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168A04_ovl5.s")
+s32 func_80168A04_ovl5(s32 arg0, s32 arg1) {
+    s32 temp = ABS(arg0 - arg1);
+    s32 r = temp % 8;
+
+    if (r) {
+        return 0;
+    }
+    return 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168A44_ovl5.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168B30_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168E34_ovl5.s")
+typedef struct Unk2Bytes {
+    s8 unk0;
+    s8 unk1;
+} Unk2Bytes;
+
+Unk2Bytes func_80168E34_ovl5(s32 arg1) {
+    Unk2Bytes sp4;
+
+    sp4.unk0 = arg1 % 8;
+    sp4.unk1 = arg1 / 8;
+    return sp4;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168E84_ovl5.s")
 

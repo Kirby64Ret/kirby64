@@ -121,24 +121,23 @@ void func_801B531C_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B5408_ovl7.s")
 
-#ifdef MIPS_TO_C
 void func_801B554C_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    u32 temp;
+
     D_800DDFD0[omCurrentObj->objId] = 3;
     D_800E9C60[omCurrentObj->objId] = 1;
     D_800E9E20[omCurrentObj->objId] = 0;
     func_800B3520();
     func_800A2300(arg0);
-    if (ent->unk94->unk1C != 0x80000000) {
-        play_sound(ent->unk94->unk1C);
+    temp = ent->unk94->unk1C;
+    if (temp != 0x80000000) {
+        play_sound(temp);
     }
     func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
     D_800E9E20[omCurrentObj->objId] = 1;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B554C_ovl7.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B5638_ovl7.s")
 

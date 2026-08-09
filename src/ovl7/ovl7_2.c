@@ -36,7 +36,7 @@ struct Ovl7AnimObj {
 
 void func_80111550(u32);
 struct Ovl7AnimObj *func_80111C88(s32 *, u32);
-void func_80111ECC(struct Ovl7AnimObj *);
+void func_80111ECC();
 
 s32 func_8019F410_ovl7(s32);
 s32 func_8019F4D0_ovl7(s32);
@@ -60,10 +60,11 @@ void func_8019F3F0_ovl7(void) {
     func_8019F590_ovl7(0);
 }
 
-#ifdef MIPS_TO_C
 s32 func_8019F410_ovl7(s32 arg0) {
     struct UnkStruct800E1B50 *ent;
+    u32 objId;
     struct Ovl7AnimObj *anim;
+    struct Ovl7AnimHdrSub *hdr;
 
     ent = D_800E1B50[omCurrentObj->objId];
     if (ent == NULL) {
@@ -72,21 +73,64 @@ s32 func_8019F410_ovl7(s32 arg0) {
     if (ent->unk8C == NULL) {
         return 0;
     }
-    func_80111550(omCurrentObj->objId);
+    objId = omCurrentObj->objId;
+    func_80111550(objId);
     anim = func_80111C88(ent->unk8C, omCurrentObj->objId);
-    if ((((struct Ovl7AnimHdr *) ent->unk8C)->unk8->unk4 == 0) && (arg0 != 0)) {
+    hdr = ((struct Ovl7AnimHdr *) ent->unk8C)->unk8;
+    if ((hdr->unk4 == 0) && (arg0 != 0)) {
         anim->unk24->unk8 = arg0;
     }
     func_80111ECC(anim);
     return func_8019F650_ovl7();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019F410_ovl7.s")
-#endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019F4D0_ovl7.s")
+s32 func_8019F4D0_ovl7(s32 arg0) {
+    struct UnkStruct800E1B50 *ent;
+    u32 objId;
+    struct Ovl7AnimObj *anim;
+    struct Ovl7AnimHdrSub *hdr;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019F590_ovl7.s")
+    ent = D_800E1B50[omCurrentObj->objId];
+    if (ent == NULL) {
+        return 0;
+    }
+    if (ent->unk8C == NULL) {
+        return 0;
+    }
+    objId = omCurrentObj->objId;
+    func_80111550(objId);
+    anim = func_80111C88(ent->unk8C, omCurrentObj->objId);
+    hdr = ((struct Ovl7AnimHdr *) ent->unk8C)->unk8;
+    if ((hdr->unk4 == 0) && (arg0 != 0)) {
+        anim->unk24->unk8 = arg0;
+    }
+    func_80111ECC(anim);
+    return func_8019FA68_ovl7();
+}
+
+s32 func_8019F590_ovl7(s32 arg0) {
+    struct UnkStruct800E1B50 *ent;
+    u32 objId;
+    struct Ovl7AnimObj *anim;
+    struct Ovl7AnimHdrSub *hdr;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    if (ent == NULL) {
+        return 0;
+    }
+    if (ent->unk8C == NULL) {
+        return 0;
+    }
+    objId = omCurrentObj->objId;
+    func_80111550(objId);
+    anim = func_80111C88(ent->unk8C, omCurrentObj->objId);
+    hdr = ((struct Ovl7AnimHdr *) ent->unk8C)->unk8;
+    if ((hdr->unk4 == 0) && (arg0 != 0)) {
+        anim->unk24->unk8 = arg0;
+    }
+    func_80111ECC(anim);
+    return func_8019FDE8_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019F650_ovl7.s")
 
@@ -103,22 +147,22 @@ void func_801A03B4_ovl7(void) {
     func_801A04B8_ovl7();
 }
 
-#ifdef MIPS_TO_C
 void func_801A03E4_ovl7(s32 arg0) {
     struct UnkStruct800E1B50 *ent;
     struct Ovl7AnimObj *anim;
+    struct Ovl7AnimHdrSub *hdr;
 
     ent = D_800E1B50[omCurrentObj->objId];
     anim = func_801A0464_ovl7();
-    if ((((struct Ovl7AnimHdr *) ent->unk8C)->unk8->unk4 == 0) && (arg0 != 0)) {
+    hdr = ((struct Ovl7AnimHdr *) ent->unk8C)->unk8;
+    if ((hdr->unk4 == 0) && (arg0 != 0)) {
         anim->unk24->unk8 = arg0;
     }
-    func_80111ECC(anim);
+    func_80111ECC(anim, arg0);
+    if (arg0) {
+    }
     func_801A04B8_ovl7();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A03E4_ovl7.s")
-#endif
 
 struct Ovl7AnimObj *func_801A0464_ovl7(void) {
     struct UnkStruct800E1B50 *ent;

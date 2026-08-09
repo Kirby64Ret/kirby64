@@ -126,7 +126,6 @@ s32 func_800FD754(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
 
 extern const char *D_8012893C;
 
-#ifdef MIPS_TO_C
 u32 func_800FD874(s32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
     s32 temp_v0;
     u32 temp_a1;
@@ -148,9 +147,6 @@ u32 func_800FD874(s32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f3
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_4/func_800FD874.s")
-#endif
 
 s32 func_800FD968(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     s32 temp_v0;
@@ -168,7 +164,6 @@ extern const char D_8012896C[];
 
 // last function in this translation unit: its listing carries the TU's
 // trailing rodata/alignment padding, which C does not emit
-#ifdef MIPS_TO_C
 s32 func_800FD9D4(s32 arg0) {
     s32 temp_v0;
 
@@ -181,6 +176,3 @@ s32 func_800FD9D4(s32 arg0) {
 
     return temp_v0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_4/func_800FD9D4.s")
-#endif

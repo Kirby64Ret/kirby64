@@ -9,13 +9,56 @@
 
 s32 func_800F98EC(s32, f32);
 
-s32 func_801AC9D0_ovl7(void);
 s32 func_801ACC34_ovl7();
 void func_800B1900(u16);
 s32 func_801A0D74_ovl7(void);
 void func_801A03B4_ovl7(void);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5_2/func_801AC9D0_ovl7.s")
+extern const char D_801CE160_ovl7[];
+extern const char D_801CE17C_ovl7[];
+extern f32 D_800E6D90[];
+s32 request_track_general(s32, s32, s32);
+
+s32 func_801AC9D0_ovl7(arg0, arg1)
+s32 arg0;
+s32 arg1;
+{
+    s32 idx;
+    f32 temp_f0;
+
+    idx = request_track_general(0x1A, 0xE, 0x1E);
+    if (idx == -1) {
+        utilPrintf(D_801CE160_ovl7);
+        return 0;
+    }
+    if (idx >= 0x1E) {
+        utilPrintf(D_801CE17C_ovl7);
+        func_800B1900((u16) idx);
+        return 0;
+    }
+    gEntityFuncListIDArray[idx] = arg0;
+    D_800E76C0[idx] = 0xFF;
+    D_800E7730[idx] = 4;
+    D_800E77A0[idx] = arg0 & 0xFF;
+    D_800E7880[idx] = arg1;
+    D_800E78F0[idx] = D_800E78F0[omCurrentObj->objId];
+    D_800E5F90[idx] =
+    D_800E6150[idx] =
+        D_800E5F90[omCurrentObj->objId];
+    temp_f0 = D_800E6BD0[omCurrentObj->objId];
+    D_800E6D90[idx] = temp_f0;
+    D_800E6BD0[idx] = temp_f0;
+    D_800E6A10[idx] = D_800E6A10[omCurrentObj->objId];
+    gEntitiesNextPosXArray[idx] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesPosXArray[idx] = gEntitiesPosXArray[omCurrentObj->objId];
+    gEntitiesNextPosYArray[idx] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesPosYArray[idx] = gEntitiesPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[idx] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    gEntitiesPosZArray[idx] = gEntitiesPosZArray[omCurrentObj->objId];
+    D_800E8E60[idx] = 0;
+    D_800E8AE0[idx] = D_800E8AE0[omCurrentObj->objId];
+    return idx;
+}
 
 s32 func_801ACC34_ovl7() {
     s32 temp;

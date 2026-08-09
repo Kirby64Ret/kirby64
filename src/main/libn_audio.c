@@ -151,7 +151,8 @@ s32 n_alEnvmixerParam(N_PVoice *p, s32 paramID, void *param);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800246E4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80024748.s")
+void func_80024748(void) {
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80024750.s")
 
@@ -460,7 +461,8 @@ Acmd *n_alAuxBusPull(s32 sampleOffset, Acmd *p) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800296C0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80029834.s")
+void func_80029834(void) {
+}
 
 s32 _n_timeToSamples(s32 micros) {
     f32 tmp = ((f32) micros) * n_syn->outputRate / D_800417A0 + 0.5f;

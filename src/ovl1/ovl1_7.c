@@ -1344,64 +1344,54 @@ void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B26D8.s")
 #endif
 
-#ifdef MIPS_TO_C
 void func_800B2928(Vector *vec, struct DObj *node, u32 track) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f12;
-    f32 temp_f2;
-    struct DObj *var_s0;
-    u32 var_s5;
+    Mat4 finalMtx;
+    Mat4 tmpMtx;
 
-    var_s0 = node;
-    var_s5 = track;
-    if (track == 0xFFFF) {
-        var_s5 = omCurrentObj->objId;
-    }
-    if (var_s0 == NULL) {
-        var_s0 = omCurrentObj->unk3C;
-    }
-    guMtxIdentF(&sp90[0]);
-    do {
-        if (var_s0->child != 1) {
-            temp_f0 = var_s0->scale.v.x;
-            if ((temp_f0 != 1.0f) || (var_s0->scale.v.y != 1.0f) || (var_s0->scale.v.z != 1.0f)) {
-                HS64_MkScaleMtxF(&sp50[0], temp_f0, var_s0->scale.v.y, var_s0->scale.v.z);
-                guMtxCatF(&sp90[0], &sp50[0], &sp90[0]);
-            }
-        } else {
-            temp_f0_2 = gEntitiesScaleXArray[var_s5];
-            temp_f2 = gEntitiesScaleYArray[var_s5];
-            temp_f12 = gEntitiesScaleZArray[var_s5];
-            if ((temp_f0_2 != 1.0f) || (temp_f2 != 1.0f) || (temp_f12 != 1.0f)) {
-                HS64_MkScaleMtxF(&sp50[0], temp_f0_2, temp_f2, temp_f12);
-                guMtxCatF(&sp90[0], &sp50[0], &sp90[0]);
-            }
-        }
-        var_s0 = var_s0->child;
-    } while (var_s0->child != 1);
-    vec->x = sp90[0];
-    vec->y = spA4;
-    vec->z = spB8;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2928.s")
-#endif
-
-#ifdef NON_MATCHING
-void func_800B2AD4(Vector *vec, struct DObj *node, u32 track) {
-    Mat4 tmpMtx; // sp7C
-    Mat4 finalMtx; // finalMtx
-
+    track = track;
     if (track == 0xFFFF) {
         track = omCurrentObj->objId;
     }
-    if (node == NULL) {
+    node = node;
+    if (node == 0) {
         node = omCurrentObj->data.dobj;
     }
     guMtxIdentF(finalMtx);
     do {
-        if ((u32)node->parent != 1) {
+        if ((u32) node->parent != 1) {
+            if ((node->scale.v.x != 1.0f) || (node->scale.v.y != 1.0f) || (node->scale.v.z != 1.0f)) {
+                HS64_MkScaleMtxF(tmpMtx, node->scale.v.x, node->scale.v.y, node->scale.v.z);
+                guMtxCatF(finalMtx, tmpMtx, finalMtx);
+            }
+        } else {
+            if ((gEntitiesScaleXArray[track] != 1.0f) || (gEntitiesScaleYArray[track] != 1.0f) || (gEntitiesScaleZArray[track] != 1.0f)) {
+                HS64_MkScaleMtxF(tmpMtx, gEntitiesScaleXArray[track], gEntitiesScaleYArray[track], gEntitiesScaleZArray[track]);
+                guMtxCatF(finalMtx, tmpMtx, finalMtx);
+            }
+        }
+        node = node->parent;
+    } while ((u32) node != 1);
+
+    vec->x = finalMtx[0][0];
+    vec->y = finalMtx[1][1];
+    vec->z = finalMtx[2][2];
+}
+
+void func_800B2AD4(Vector *vec, struct DObj *node, u32 track) {
+    Vector tmp;
+    Mat4 finalMtx;
+    Mat4 tmpMtx;
+
+    if (track == 0xFFFF) {
+        track = omCurrentObj->objId;
+    }
+
+    if (node == 0) {
+        node = omCurrentObj->data.dobj;
+    }
+    guMtxIdentF(finalMtx);
+    do {
+        if ((u32) node->parent != 1) {
             if ((node->scale.v.x != 1.0f) || (node->scale.v.y != 1.0f) || (node->scale.v.z != 1.0f)) {
                 HS64_MkScaleMtxF(tmpMtx, 1.0f / node->scale.v.x, 1.0f / node->scale.v.y, 1.0f / node->scale.v.z);
                 guMtxCatF(tmpMtx, finalMtx, finalMtx);
@@ -1416,28 +1406,44 @@ void func_800B2AD4(Vector *vec, struct DObj *node, u32 track) {
             }
         } else {
             if ((gEntitiesScaleXArray[track] != 1.0f) || (gEntitiesScaleYArray[track] != 1.0f) || (gEntitiesScaleZArray[track] != 1.0f)) {
-                HS64_MkScaleMtxF(tmpMtx, 1.0f / gEntitiesScaleXArray[track], 1.0f / gEntitiesScaleYArray[track], 1.0f / gEntitiesScaleZArray[track]);
+                HS64_MkScaleMtxF(tmpMtx,
+                    1.0f / gEntitiesScaleXArray[track],
+                    1.0f / gEntitiesScaleYArray[track],
+                    1.0f / gEntitiesScaleZArray[track]
+                );
                 guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
             if ((gEntitiesAngleXArray[track] != 0.0f) || (gEntitiesAngleYArray[track] != 0.0f) || (gEntitiesAngleZArray[track] != 0.0f)) {
-                func_800A465C(tmpMtx, -gEntitiesAngleXArray[track], -gEntitiesAngleYArray[track], -gEntitiesAngleZArray[track]);
+                func_800A465C(tmpMtx,
+                    -gEntitiesAngleXArray[track],
+                    -gEntitiesAngleYArray[track],
+                    -gEntitiesAngleZArray[track]
+                );
                 guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
             if ((gEntitiesNextPosXArray[track] != 0.0f) || (gEntitiesNextPosYArray[track] != 0.0f) || (gEntitiesNextPosZArray[track] != 0.0f)) {
-                HS64_MkTranslateMtxF(tmpMtx, -gEntitiesNextPosXArray[track], -gEntitiesNextPosYArray[track], -gEntitiesNextPosZArray[track]);
+                HS64_MkTranslateMtxF(tmpMtx,
+                    -gEntitiesNextPosXArray[track],
+                    -gEntitiesNextPosYArray[track],
+                    -gEntitiesNextPosZArray[track]
+                );
                 guMtxCatF(tmpMtx, finalMtx, finalMtx);
             }
         }
         node = node->parent;
-    } while ((u32)node != 1);
+    } while ((u32) node != 1);
 
-    vec->x = ((finalMtx[0][0] * vec->x) + (finalMtx[1][0] * vec->y) + (finalMtx[2][0] * vec->z)) + finalMtx[3][0];
-    vec->y = ((finalMtx[0][1] * vec->y) + (finalMtx[1][1] * vec->y) + (finalMtx[2][1] * vec->z)) + finalMtx[3][1];
-    vec->z = ((finalMtx[0][2] * vec->z) + (finalMtx[1][2] * vec->y) + (finalMtx[2][2] * vec->z)) + finalMtx[3][2];
+    tmp.x = vec->x;
+    tmp.y = vec->y;
+    tmp.z = vec->z;
+
+    vec->x = ((finalMtx[0][0] * tmp.x) + (finalMtx[1][0] * tmp.y) + (finalMtx[2][0] * tmp.z))
+             + finalMtx[3][0];
+    vec->y = ((finalMtx[0][1] * tmp.x) + (finalMtx[1][1] * tmp.y) + (finalMtx[2][1] * tmp.z))
+             + finalMtx[3][1];
+    vec->z = ((finalMtx[0][2] * tmp.x) + (finalMtx[1][2] * tmp.y) + (finalMtx[2][2] * tmp.z))
+             + finalMtx[3][2];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2AD4.s")
-#endif
 
 void func_800B2F54(s32 arg0, AnimCmd *anim, f32 arg2) {
     animSetCameraAnimation((Camera *) D_800D79D8[(arg0 - 10) >> 1], anim, arg2);

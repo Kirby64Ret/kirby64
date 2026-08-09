@@ -242,7 +242,6 @@ void func_801E54A4_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E54D0_ovl9.s")
 
-#ifdef MIPS_TO_C
 struct Ovl9AnimCmd2 {
     u8 filler0[8];
     s32 unk8;
@@ -259,11 +258,13 @@ void func_80111ECC(struct Ovl9AnimObj2 *);
 s32 func_80110150(void *);
 
 s32 func_801E55C0_ovl9(s32 arg0, void *arg1) {
+    struct Sub800E1B50_Unk88 *sp0;
     struct UnkStruct800E1B50 *temp;
     struct Ovl9AnimObj2 *temp_v0;
 
     temp = D_800E1B50[omCurrentObj->objId];
-    if (temp->unk88 == NULL) {
+    sp0 = temp->unk88;
+    if (sp0 == NULL) {
         return 0;
     }
     func_80111550(omCurrentObj->objId);
@@ -276,9 +277,6 @@ s32 func_801E55C0_ovl9(s32 arg0, void *arg1) {
     }
     return func_80110150(arg1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E55C0_ovl9.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E5660_ovl9.s")
 

@@ -561,3 +561,48 @@ POINTER (and casting at the call site) reproduces the move. Declarations are
 per-TU here, so this does not affect other callers -- ovl8/eneeff.c declares
 func_800A9EA4(void *) while ovl11/ovl14 declare it (s32). A/B the whole object
 before keeping such a change, and comment it as load-bearing.
+
+
+## Padding detector: use the LAST .size, and beware jump tables
+
+The awk one-liner earlier in this guide is wrong twice over. It anchors on the
+first `.size`, and in a listing that carries a jump table it also trips on
+`.size jtbl_...`, so it flags nearly everything. Use:
+
+    python3 - <<EOF
+    import re
+    t = open('asm/nonmatchings/<seg>/<tu>/<fn>.s').read()
+    i = t.rfind('\n.size ')
+    tail = t[i+1:]; tail = tail[tail.find('\n')+1:]
+    print(len(re.findall(r'^\s*/\*.*\*/\s*\S', tail, re.M)), 'padding words')
+    EOF
+
+Anything > 0 can NEVER be C. Some of these currently verify as MATCH -- that
+is the trap: the loss only shows up as drift once a C function follows them.
+
+## IDO -O3 does not help. The lever is closed, not merely unavailable.
+
+`cc -O3` fails here only because the `ujoin` binary is missing, and the phases
+can be driven by hand (cfe -O3 > uc; uopt -O3; ugen -O3; as1 -O3). Doing so
+produces output BYTE-IDENTICAL to -O2. IDO's inlining and inter-procedural
+work live in ujoin/umerge, not uopt, so the inlined shapes seen in n_audio
+(read8, __n_alCSeqGetTrackEvent) cannot be reproduced by any flag combination
+available. Do not spend time trying.
+
+## The one-slot temp-register rotation
+
+Structurally perfect function, but every temp register is rotated by exactly
+one slot (ROM uses t7/t8/t9, you get t6/t7/t8; or the ROM reuses a free $a1
+where you take a $t). This means the original source created ONE MORE
+source-level temporary than your C does.
+
+Proven fixable: a chained assignment (`a = b = 0;`) forks the extra temp and
+closed func_800BB08C. Swept without effect: declaration order and count,
+casts, `<<2` vs `*4`, extra parameters, statement order, block scoping,
+-Olimit, -Wo,-loopunroll, -O3.
+
+## Drafts are guarded with EITHER MIPS_TO_C or NON_MATCHING
+
+A scanner that only knows `#ifdef MIPS_TO_C` silently skips real near-misses.
+Two functions that turned out to match were sitting under `#ifdef
+NON_MATCHING`. Search for both.

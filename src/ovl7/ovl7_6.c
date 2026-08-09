@@ -51,11 +51,12 @@ void func_800A9F98(s32, f32);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE4E4_ovl7.s")
 
-#ifdef MIPS_TO_C
 void func_801AE52C_ovl7(void) {
     struct Ovl7Unk94 *p;
+    struct Sub800E1B50_Unk88 *q;
 
-    p = (struct Ovl7Unk94 *) ((struct Sub800E1B50_Unk88 *) D_800E9E20[omCurrentObj->objId])->unk18;
+    q = (struct Sub800E1B50_Unk88 *) D_800E9E20[omCurrentObj->objId];
+    p = (struct Ovl7Unk94 *) q->unk18;
     func_800A9864(D_800E9AA0[omCurrentObj->objId], 0x1869F, 0x10);
     if (p->unkC != -1) {
         func_800AECC0(p->unk14);
@@ -67,9 +68,6 @@ void func_801AE52C_ovl7(void) {
     }
     func_800AF408();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE52C_ovl7.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE5D4_ovl7.s")
 

@@ -130,7 +130,6 @@ OSThread *crash_screen_print_page_3(void) {
     return retThread;
 }
 
-#ifdef NON_MATCHING
 void func_800A2B9C(void) {
     int i;
 
@@ -146,12 +145,8 @@ void func_800A2B9C(void) {
     gGameState = 1;
     D_800BE4F8 = 0;
     D_800D6F3C = 0;
-
-    // Non matching quirk over here
-    D_800D6B44 = -1;
-    D_800D6B48 = -1;
+    D_800D6B48 = D_800D6B44 = -1;
     D_800D6F54 = -1;
-
     func_800BB24C();
     auSetReverbType(2);
     func_800A74B0();
@@ -159,9 +154,6 @@ void func_800A2B9C(void) {
     func_800046D0(0x3C);
     func_800B8700();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2B9C.s")
-#endif
 
 void func_800A2C80(void) {
     func_800BB3F0();

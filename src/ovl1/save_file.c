@@ -120,11 +120,12 @@ void func_800B9008(void) {
 
 #ifdef MIPS_TO_C
 u32 saveCalcHeaderChecksum(void) {
-    s32 i;
+    u32 *p = gSaveBuffer1.header.head;
+    u32 *end = &gSaveBuffer1.header.checksum;
     u32 resultBuffer = SAVE_CHECKSUM_MAGIC;
 
-    for (i = 0; i < 3; i++) {
-        resultBuffer += gSaveBuffer1.header.head[i];
+    while (p != end) {
+        resultBuffer += *p++;
     }
     return resultBuffer;
 }

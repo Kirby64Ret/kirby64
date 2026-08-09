@@ -39,9 +39,9 @@ struct C954Arg2 {
 
 #define G_CC_PRIM_RGBA PRIMITIVE, 0, TEXEL0, 0, PRIMITIVE, 0, TEXEL0, 0
 
-#ifdef MIPS_TO_C
 // Nearly matching (10/22): only a one-slot temp-register rotation - the target
 // burns two virtual registers per s16 store, this shape only burns one.
+#ifdef MIPS_TO_C
 void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
     D_800D4E64 = arg0 * 4;
     D_800D4E68 = arg1 * 4;
@@ -256,7 +256,14 @@ void func_800ACB7C(SPObj *sp) {
     func_800AC5E0(sp);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ACBDC.s")
+void func_800ACBDC(GObj *gobj) {
+    if (gobj == 0) {
+        gobj = omCurrentObj;
+    }
+    while (gobj->unk4C != 0) {
+        func_800ACB7C(gobj->unk4C);
+    }
+}
 
 void func_800ACC30(s16 *arg0, s16 *arg1, SPObj *spobj) {
     *arg0 = spobj->xOffset * 4.0f;

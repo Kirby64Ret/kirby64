@@ -74,8 +74,16 @@ def main():
                 q = line.split()
                 if len(q) == 3 and q[1] in 'Tt':
                     owner.setdefault(q[2], src)
-        vr = subprocess.run([sys.executable, 'tools/decomp/verify_rom.py'],
-                            capture_output=True, text=True).stdout
+        _p = subprocess.run([sys.executable, 'tools/decomp/verify_rom.py'],
+                            capture_output=True, text=True)
+        vr = _p.stdout + _p.stderr
+        # verify_rom refuses to report against a stale ELF. Without this the
+        # refusal produced zero "REAL DEFECT" lines and the checkpoint quietly
+        # fell back to structural gates while looking fully verified.
+        if 'REFUSING TO REPORT' in vr:
+            print('  WARNING: the linked ROM is stale (a compile is failing), '
+                  'so ROM-level correctness is UNCHECKED for this checkpoint')
+            vr = ''
         for line in vr.split('\n'):
             m = re.match(r'REAL DEFECT \s*\S+\s+(\S+)', line)
             if m and m.group(1) in owner:

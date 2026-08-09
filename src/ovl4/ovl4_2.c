@@ -5,6 +5,7 @@
 #include "ovl1/ovl1_7.h"
 #include "ovl1/util.h"
 #include "track_arrays.h"
+#include <math.h>
 
 extern s32 D_8015C690_ovl4;
 extern s32 D_800D6B78;
@@ -18,6 +19,16 @@ extern s32 D_8015C69C_ovl4;
 extern void func_80151E20_ovl4(void);
 extern void func_80154DDC_ovl4(void);
 
+extern s32 D_800D6B24;
+extern s32 D_800D6B98;
+extern s32 D_8015C6A0_ovl4;
+extern s32 savePercentComplete;
+extern s32 saveCheckCutsceneWatched(s32);
+extern GObj *D_800DE350[];
+
+s32 func_80152220_ovl4(s32 arg0, s32 arg1);
+s32 func_801532CC_ovl4(s32 arg0, s32 arg1);
+
 void func_80151DE0_ovl4(void) {
     func_80151E20_ovl4();
 }
@@ -28,7 +39,21 @@ void func_80151E00_ovl4(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80151E20_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152124_ovl4.s")
+s32 func_80152124_ovl4(void) {
+    if (D_800D6B98 != 0) {
+        return 4;
+    }
+    if (func_80152220_ovl4(0, 2) == 2) {
+        return 4;
+    }
+    if (func_80152220_ovl4(0, 1) == 2) {
+        return 3;
+    }
+    if (func_80152220_ovl4(0, 0) == 2) {
+        return 2;
+    }
+    return 1;
+}
 
 s32 func_801521AC_ovl4(s32 arg0) {
     switch (D_8015C69C_ovl4) {
@@ -79,19 +104,122 @@ s32 func_80152318_ovl4(f32 arg0) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152360_ovl4.s")
+Vector *func_80152360_ovl4(Vector *arg0) {
+    *arg0 = D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v;
+    return arg0;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801523A0_ovl4.s")
+typedef struct {
+    s32 unk0[6][7];
+} Unk8015A358;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152444_ovl4.s")
+typedef struct {
+    s32 unk0[6][6];
+} Unk8015A400;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801524E4_ovl4.s")
+extern Unk8015A358 D_8015A358_ovl4;
+extern Unk8015A400 D_8015A400_ovl4;
+extern s32 D_8015C6A8_ovl4[];
+extern s32 D_8015C694_ovl4;
+extern s32 D_8015C698_ovl4;
+extern s32 D_8015A954_ovl4[];
+
+typedef struct {
+    s32 unk0;
+    s32 unk4;
+} Unk8015A8F8;
+
+extern Unk8015A8F8 D_8015A8F8_ovl4[];
+
+extern void func_800A71A0(s32);
+extern void func_800AA018(s32);
+extern s32 func_800AF230(void);
+extern void func_800B2F54(s32, s32, f32);
+extern void func_800B3070(s32, f32);
+
+Vector *func_801523A0_ovl4(Vector *arg0, s32 arg1, s32 arg2) {
+    Unk8015A358 sp0 = D_8015A358_ovl4;
+
+    *arg0 = D_800DFBD0[D_8015C6A8_ovl4[arg2]][sp0.unk0[arg1][arg2]]->pos.v;
+    return arg0;
+}
+
+Vector *func_80152444_ovl4(Vector *arg0, s32 arg1, s32 arg2) {
+    Unk8015A400 sp0 = D_8015A400_ovl4;
+
+    *arg0 = D_800DFBD0[D_8015C694_ovl4][sp0.unk0[arg1][arg2]]->pos.v;
+    return arg0;
+}
+
+s32 func_801524E4_ovl4(void) {
+    s32 unused;
+    Vector sp50;
+    Vector sp44;
+    s32 i;
+
+    for (i = 0; (u32) i <= (u32) D_800BE560[D_800D6B98]; i++) {
+        if ((i != 0) && (func_80152220_ovl4(D_800D6B98, i - 1) == 0)) {
+            continue;
+        }
+        func_80152360_ovl4(&sp50);
+        func_801523A0_ovl4(&sp44, D_800D6B98, i);
+        if (sqrtf(((sp44.x - sp50.x) * (sp44.x - sp50.x)) + ((sp44.z - sp50.z) * (sp44.z - sp50.z))) <= 35.0f) {
+            return i;
+        }
+    }
+    return 0x29A;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801525E8_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152A48_ovl4.s")
+void func_80152A48_ovl4(void) {
+    s32 i;
 
+    func_800B3070(0x10, 2.0f);
+    switch (D_8015C690_ovl4) {
+        case 2:
+            func_800B2F54(0x10, D_8015A954_ovl4[D_800D6B98], 50.0f);
+            break;
+        case 3:
+            func_800B2F54(0x10, D_8015A954_ovl4[D_800D6B98], 0.0f);
+            break;
+        default:
+            return;
+    }
+    for (i = 0; i != 0x32; i++) {
+        func_800A71A0(0x10);
+        if ((i == 0x22) && (D_8015C690_ovl4 == 3)) {
+            D_8015C690_ovl4 = 5;
+        }
+        ohSleep(1);
+    }
+}
+
+#ifdef MIPS_TO_C
+// Only the register allocation differs: the ROM rematerialises the
+// D_8015A8F8_ovl4 base inside the loop while IDO keeps it in a saved
+// register for the whole function.
+void func_80152B50_ovl4(GObj *arg0, s32 arg1) {
+    Unk8015A8F8 *p = &D_8015A8F8_ovl4[arg1];
+
+    if (p->unk0 != 0) {
+        func_800AA018(p->unk0);
+    }
+    if (p->unk4 != 0) {
+        func_800AA018(p->unk4);
+    }
+    while (func_800AF230() == 0) {
+        if ((p == D_8015A8F8_ovl4) && (arg0->animTimer == 28.0f)) {
+            play_sound(0xE2);
+        }
+        ohSleep(1);
+    }
+    D_800EA1A0[D_8015C698_ovl4] = 1;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152B50_ovl4.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152C34_ovl4.s")
 
@@ -120,7 +248,14 @@ s32 func_801532FC_ovl4(s32 arg0) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80153324_ovl4.s")
+s32 func_80153324_ovl4(s32 arg0) {
+    if ((D_800D6B98 == 5) && (func_801532CC_ovl4(D_800D6B98, arg0) != 0)
+     && (D_800D6BC0[5] != 0) && (D_800D6BC0[6] == 0)
+     && (saveCheckCutsceneWatched(0xD) == 0) && (savePercentComplete == 0x64)) {
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801533A8_ovl4.s")
 
@@ -171,7 +306,16 @@ void func_801550D4_ovl4(void) {
     D_800D6B78 = 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801550EC_ovl4.s")
+void func_801550EC_ovl4(GObj *arg0) {
+    if ((D_800D6B24 == 0) && (D_8015C690_ovl4 == 5)) {
+        utilSetRectColorFullScreen(0, 0, 0);
+        if (D_800D6B78 != 0) {
+            utilSpawnRect(0, 0x10, 2);
+        } else {
+            utilSpawnRect(0, 8, 2);
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80155168_ovl4.s")
 

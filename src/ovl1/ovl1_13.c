@@ -194,7 +194,6 @@ void func_800BC328(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
 void func_800BC4C0(s32 arg0) {
     u32 *data;
     s32 mode;
@@ -217,9 +216,6 @@ void func_800BC4C0(s32 arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC4C0.s")
-#endif
 
 void func_800BC664(s32 arg0) {
     u32 *data;
@@ -245,7 +241,6 @@ void func_800BC664(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
 void func_800BC800(s32 arg0) {
     u32 *data;
     s32 mode;
@@ -268,9 +263,6 @@ void func_800BC800(s32 arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BC800.s")
-#endif
 
 void draw_pause_bg(GObj *gobj) {
     Gfx* list = gDisplayListHeads[0];
