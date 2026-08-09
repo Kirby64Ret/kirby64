@@ -694,3 +694,44 @@ If a function is a couple of instructions short and its listing ends with two
 - Chained `a = b = expr;` versus two statements with a repeated RHS controls FP
   register REUSE: the ROM reuses $f0 for every group where separate statements
   allocate $f0/$f2/$f12/$f14.
+
+## u8 promotes UNSIGNED in IDO (K&R rules)
+
+`tmp->unk3C < 7.0f` on a `u8` field emits the full u32->float conversion with
+the 0x4F800000 fixup; copying the same value into an `s32` first gives a plain
+`cvt.s.w`. If the listing has that fixup, the source read the u8 directly.
+Closed a 172-instruction function on the first try.
+
+## sw $a0, refined
+
+  `sw $a0` IN the jal delay slot      -> callee takes NO arguments
+  `sw $a0` before the call + nop      -> the argument IS passed
+  NO `sw $a0` anywhere, and the jal's
+  delay slot does not touch $a0       -> the function takes the argument and
+                                         passes it straight through, with no
+                                         move at all
+
+Several functions already matching as `(void)` had to become
+`(struct GObj *arg0)` for the third case.
+
+## Dead scalar locals: multiplicity matters
+
+One dummy local is usually optimised away; two or three are not. A frame of
+0x28 with a spill at 0x1C came from `s32 unused0; s32 unused1; T real; s32
+unused2;`. Declaration order is highest-slot-first.
+
+## v0/v1 swap on a pointer+value pair has two OPPOSITE cures
+
+  ROM has v1=pointer, v0=value -> DROP the pointer local, index the array
+                                  directly in every arm
+  ROM has v0=pointer, v1=value -> INTRODUCE `s32 *p = &...`
+
+Both shapes occur in ovl9. Read which register holds which before trying
+either.
+
+## Float arguments must be prototyped
+
+A K&R declaration default-promotes to double: `func(..., f32)` gives
+`addiu $a3, $zero, 0` where the unprototyped form gives 22 diffs. Conversely,
+a trailing `0` argument that must be `addiu` rather than `move` tells you that
+parameter is `f32` and the literal is `0.0f`.

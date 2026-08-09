@@ -217,6 +217,7 @@ s32 func_801DF588_ovl9(s32 arg0, void *arg1) {
 }
 
 extern FUNCLIST D_8021BDE0_ovl9;
+extern FUNCLIST D_8021BDE8_ovl9;
 void func_801A6C10_ovl7(void);
 
 void func_801DF628_ovl9(void) {

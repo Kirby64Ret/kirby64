@@ -87,16 +87,12 @@ void func_801D9718_ovl9(GObj *arg0) {
 }
 
 void func_801D97E8_ovl9(GObj *arg0) {
-    D_800E98E0[omCurrentObj->objId] = 1;
+    *(u32 *) &D_800E98E0[omCurrentObj->objId] = 1;
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
     D_800EB160[omCurrentObj->objId] = 9.0f;
     D_800EA520[omCurrentObj->objId] = 0x20;
     D_800EB320[omCurrentObj->objId] = 6.0f;
-    if (D_800E8920[omCurrentObj->objId] == 1) {
-        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
-    } else {
-        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
-    }
+    if (D_800E8920[omCurrentObj->objId] == 1) { gEntityFuncListIDArray[omCurrentObj->objId] = 3; } else { gEntityFuncListIDArray[omCurrentObj->objId] = 2; }
 }
 
 void func_801D98B8_ovl9(GObj *arg0) {
