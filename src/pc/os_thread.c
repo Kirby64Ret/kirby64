@@ -358,6 +358,7 @@ void pc_pump_events(void) {
     pc_ai_tick();
     pc_pi_tick();
     pc_cont_tick();
+    pc_sp_tick();
     pc_in_event_delivery = 0;
     reentrant = 0;
 }

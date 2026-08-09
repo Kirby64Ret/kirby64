@@ -10,6 +10,10 @@
  * pacing, DMA out of the cartridge, the audio ring -- runs at true wall-clock
  * rate, so timing bugs and deadlocks are reproducible without a display.
  */
+/* Guarded so both backends can sit in the build and only one contributes
+ * symbols: pc_backend_sdl.c is the mirror image of this #ifdef. */
+#ifndef PC_SDL
+
 #include <stdio.h>
 #include <string.h>
 
@@ -82,3 +86,5 @@ void pcb_audio_queue(const void *samples, u32 bytes) {
 u32 pcb_audio_queued(void) {
     return sAudioQueued;
 }
+
+#endif /* !PC_SDL */

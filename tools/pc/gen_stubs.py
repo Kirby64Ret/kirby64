@@ -59,6 +59,38 @@ LIBC = re.compile(r'^(memcpy|memset|memmove|strlen|strcpy|bcopy|bzero|'
                   r'__stack_chk_fail_local)$')
 
 
+def host_symbols():
+    """Everything the host's C library actually defines.
+
+    The hand-written list above was enough while the only undefined symbols
+    came from game code. It stopped being enough the moment src/pc/ appeared:
+    a platform layer calls fopen, getenv, snprintf, clock_gettime,
+    swapcontext, and references stderr, and a `void stderr(void)` stub does
+    not merely shadow the real one -- it fails to compile against <stdio.h>.
+
+    Reading the real symbol table instead of maintaining a list means this
+    cannot drift again. Falls back to the regex if the libraries are not
+    where they are expected, which only costs the old behaviour.
+    """
+    names = set()
+    for lib in ('libc.so.6', 'libm.so.6', 'libpthread.so.0', 'librt.so.1'):
+        for d in ('/lib/x86_64-linux-gnu', '/usr/lib/x86_64-linux-gnu',
+                  '/lib/i386-linux-gnu', '/usr/lib/i386-linux-gnu',
+                  '/lib', '/usr/lib'):
+            p = os.path.join(d, lib)
+            if not os.path.exists(p):
+                continue
+            out = subprocess.run(['nm', '-D', '--defined-only', p],
+                                 capture_output=True, text=True).stdout
+            for line in out.split('\n'):
+                parts = line.split()
+                if len(parts) >= 3 and parts[1] not in 'Aa':
+                    # nm prints versioned names as `strcmp@@GLIBC_2.2.5`
+                    names.add(parts[2].split('@')[0])
+            break
+    return names
+
+
 def main():
     out = 'build/pc/stubs.c'
     if '-o' in sys.argv:
@@ -70,9 +102,10 @@ def main():
         prag |= set(re.findall(r'GLOBAL_ASM\("[^"]*/(\w+)\.s"\)',
                                open(cf).read()))
 
+    host = host_symbols()
     funcs, data = [], []
     for s in missing():
-        if LIBC.match(s):
+        if LIBC.match(s) or s in host:
             continue
         if s.startswith('func_') or s in prag:
             funcs.append(s)

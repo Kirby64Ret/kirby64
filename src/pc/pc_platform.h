@@ -91,11 +91,16 @@ void pc_cont_init(void);
 void pc_pi_init(void);
 void pc_ai_init(void);
 
+/* Reserve the RCP MMIO window so direct HW_REG() accesses in game code do not
+ * fault. See src/pc/pc_mmio.c. Returns 0 on success. */
+int pc_mmio_map(void);
+
 /* Per-subsystem host pumping, called from pc_pump_events(). */
 void pc_vi_tick(void);
 void pc_ai_tick(void);
 void pc_pi_tick(void);
 void pc_cont_tick(void);
+void pc_sp_tick(void);
 
 /* -------------------------------------------------------------------------
  * Diagnostics. PC_TRACE=<subsystem list> in the environment turns these on.

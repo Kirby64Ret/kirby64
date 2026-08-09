@@ -201,6 +201,7 @@ void osInitialize(void) {
 
     trace_from_env();
     pc_time_init();
+    pc_mmio_map();
     pc_sched_init();
     pc_pi_init();
     pc_vi_init();

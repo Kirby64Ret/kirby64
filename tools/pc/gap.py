@@ -55,6 +55,10 @@ CATS = [
     ('gu math',                 r'^gu'),
     # Not gaps: the host libc and libm supply these at link time. Counting
     # them as porting work overstates the platform layer.
+    #
+    # The membership test is NOT this pattern -- see host_supplied() below,
+    # which reads the real symbol tables. The pattern is kept only as the
+    # fallback for a machine where those cannot be read.
     ('supplied by libc/libm',
      r'^(memcpy|memset|memmove|strlen|strcpy|bcopy|bzero|sinf|cosf|sqrtf|'
      r'sincosf|_GLOBAL_OFFSET_TABLE_|__stack_chk_fail_local)$'),
@@ -62,6 +66,51 @@ CATS = [
     # overlay model the port adopts -- see docs/PC_PORT_SURFACE.md.
     ('overlay segment bounds',  r'^ovl\d+_(ROM|VRAM|TEXT|DATA|RODATA|BSS)'),
 ]
+
+
+def host_supplied():
+    """Symbols the host toolchain resolves at link time, read rather than listed.
+
+    A hand-maintained list was fine while every undefined symbol came from
+    game code. The platform layer under src/pc/ broke that: it calls fopen,
+    getenv, mmap, snprintf, clock_gettime, swapcontext and references stderr,
+    and thirty such names were landing in "libc / other" and being counted as
+    remaining PORTING work. They are not -- the link resolves every one of
+    them today.
+
+    Three sources, all authoritative rather than guessed:
+      * the C library and friends, from their dynamic symbol tables;
+      * libgcc, for the 64-bit division helpers a 32-bit build needs;
+      * the handful of symbols ld itself defines.
+
+    tools/pc/gen_stubs.py needs the same set for the same reason and has its
+    own copy; if a third caller appears, this belongs in a shared module.
+    """
+    names = set()
+    for lib in ('libc.so.6', 'libm.so.6', 'libpthread.so.0', 'librt.so.1'):
+        for d in ('/lib/x86_64-linux-gnu', '/usr/lib/x86_64-linux-gnu',
+                  '/lib/i386-linux-gnu', '/usr/lib/i386-linux-gnu',
+                  '/lib', '/usr/lib'):
+            p = os.path.join(d, lib)
+            if not os.path.exists(p):
+                continue
+            out = subprocess.run(['nm', '-D', '--defined-only', p],
+                                 capture_output=True, text=True).stdout
+            for line in out.split('\n'):
+                parts = line.split()
+                if len(parts) >= 3 and parts[1] not in 'Aa':
+                    names.add(parts[2].split('@')[0])
+            break
+    # libgcc's soft-arithmetic helpers. gcc emits calls to these for 64-bit
+    # division on i386 and always links them.
+    names |= {'__udivdi3', '__divdi3', '__umoddi3', '__moddi3', '__udivmoddi4'}
+    # Defined by the linker, not by any object.
+    names |= {'__executable_start', '_etext', '_edata', '__bss_start', 'end',
+              '_GLOBAL_OFFSET_TABLE_'}
+    # The host entry point lives in tools/pc/hostmain.c, which is compiled by
+    # tools/pc/link.sh rather than into build/pc/src/*/ where this looks.
+    names |= {'EntryPoint', 'main'}
+    return names
 
 
 def pragma_names():
@@ -84,13 +133,18 @@ def main():
     want = sys.argv[sys.argv.index('--list') + 1] if '--list' in sys.argv else None
 
     prag = pragma_names()
+    host = host_supplied()
     buckets, seen = [], set()
     for name, pat in CATS:
         if name.startswith('un-decompiled'):
-            hit = [s for s in gap if re.match(pat, s) or s in prag]
+            hit = [s for s in gap if (re.match(pat, s) or s in prag)
+                   and s not in host]
+        elif name.startswith('supplied by'):
+            hit = [s for s in gap if (re.match(pat, s) or s in host)
+                   and s not in seen and s not in prag]
         else:
             hit = [s for s in gap if re.match(pat, s) and s not in seen
-                   and s not in prag]
+                   and s not in prag and s not in host]
         seen |= set(hit)
         buckets.append((name, hit))
     buckets.append(('libc / other', [s for s in gap if s not in seen]))

@@ -30,6 +30,77 @@ PC_CFLAGS := $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) $(PC_INC)
 GAME_SRCS := $(wildcard src/*/*.c)
 GAME_OBJS := $(patsubst %.c,$(PC_BUILD)/%.o,$(GAME_SRCS))
 
+# ---------------------------------------------------------------- platform
+#
+# src/pc/ is the libultra replacement. It is picked up by the src/*/*.c
+# wildcard above, so it needs no separate object list, but it does need a
+# different include path -- see the rule near the bottom of this file.
+#
+# PC_SDL=1 selects the SDL2 backend instead of the headless one. Off by
+# default because it does not link here: this port is 32-bit and the SDL2
+# installed on this machine is x86_64 only (there is no
+# /usr/lib/i386-linux-gnu/libSDL2.so, and /usr/include/SDL2/SDL_config.h
+# forwards to an x86_64-only header). `apt install libsdl2-dev:i386` is the
+# whole fix. src/pc/pc_backend_null.c and src/pc/pc_backend_sdl.c are guarded
+# so exactly one of them contributes symbols either way.
+PC_SDL     ?=
+ifeq ($(PC_SDL),1)
+PC_PLAT_DEFS := -DPC_SDL $(shell sdl2-config --cflags)
+PC_PLAT_LIBS := $(shell sdl2-config --libs)
+else
+PC_PLAT_DEFS :=
+PC_PLAT_LIBS :=
+endif
+
+# ------------------------------------------------- reused libultra sources
+#
+# libreultra/src holds real libultra C. The parts that touch no hardware are
+# reused rather than rewritten -- rewriting guS2DInitBg or the NTSC VI
+# register table by hand would only be an opportunity to get a constant wrong.
+#
+# They build into $(PC_BUILD)/src/libreultra/ so that tools/pc/gap.py and
+# tools/pc/link.sh, which both glob build/pc/src/*/*.o, pick them up with no
+# change.
+LU_GU_SRCS := mtxcatf mtxutil normalize us2dex
+LU_IO_SRCS := vimodentsclan1 vimodempallan1 vimodefpallan1
+LU_AU_SRCS := cents2ratio copy
+LU_NA_SRCS := n_cspsetfxmix n_cspsetpriority n_event n_synsetvol
+#
+# THREE MORE libreultra audio files would each supply one still-missing
+# symbol, and all three are deliberately left out because they collide with
+# the decompilation that already landed:
+#
+#   audio/seq.c          alSeqNextEvent    but also alSeqSetLoc,
+#                                          alSeqGetTicks, alSeqNewMarker,
+#                                          which src/main/libn_audio_2.c has
+#   libnaudio/n_env.c    n_alEnvmixerPull  but also n_alEnvmixerParam
+#   libnaudio/n_synthesizer.c
+#                        n_alSynNew        but also _n_timeToSamples and
+#                                          __n_allocParam
+#
+# Linking them gives "multiple definition" on the overlap. The granularity of
+# reuse is the translation unit, and once a TU is half-decompiled the reusable
+# half is no longer separable -- so these three symbols are cheaper to finish
+# in the decompilation than to fight for here.
+
+
+# libultra's printf engine, which the game's fatal_printf and osSyncPrintf go
+# through. Reused rather than mapped onto the host's vsnprintf because the
+# format string extensions are libultra's, not C89's.
+LU_LC_SRCS := xprintf xldtob xlitob
+
+LU_OBJS := $(addprefix $(PC_BUILD)/src/libreultra/gu_,$(addsuffix .o,$(LU_GU_SRCS))) \
+           $(addprefix $(PC_BUILD)/src/libreultra/io_,$(addsuffix .o,$(LU_IO_SRCS))) \
+           $(addprefix $(PC_BUILD)/src/libreultra/au_,$(addsuffix .o,$(LU_AU_SRCS))) \
+           $(addprefix $(PC_BUILD)/src/libreultra/na_,$(addsuffix .o,$(LU_NA_SRCS))) \
+           $(addprefix $(PC_BUILD)/src/libreultra/lc_,$(addsuffix .o,$(LU_LC_SRCS)))
+
+# libreultra's sources want their own headers first (its <PR/os.h>, <mbi.h>,
+# <libaudio.h>), which the game tree does not have.
+LU_INC := -Ilibreultra/include/2.0I -Ilibreultra/include/2.0I/PR -Ilibreultra/src \
+          -Ilibreultra/src/gu -Ilibreultra/src/io -Ilibreultra/src/audio \
+          -Ilibreultra/src/libnaudio -Iinclude -I.
+
 DATA_SRCS := $(wildcard $(PC_BUILD)/data/*.c)
 DATA_OBJS := $(patsubst %.c,%.o,$(DATA_SRCS))
 
@@ -47,16 +118,54 @@ data:
 defsyms:
 	@python3 tools/pc/gen_defsyms.py
 
-objs: $(GAME_OBJS)
+objs: $(GAME_OBJS) $(LU_OBJS)
 	@$(MAKE) -s -f Makefile.pc data
 	@$(MAKE) -s -f Makefile.pc dataobjs
-	@echo "$(words $(GAME_OBJS)) game objects built"
+	@echo "$(words $(GAME_OBJS)) game objects built, $(words $(LU_OBJS)) reused from libreultra"
 
 dataobjs: $(DATA_OBJS)
 
 $(PC_BUILD)/%.o: %.c
 	@mkdir -p $(dir $@)
 	@$(PC_CC) $(PC_CFLAGS) -c $< -o $@
+
+# The platform layer needs the HOST libc headers, and include/libc/ shadows
+# them with the four-declaration stubs the matching build uses (its stdio.h
+# declares sprintf and nothing else; libreultra/include/2.0I/stdarg.h shadows
+# gcc's, which breaks glibc's <stdio.h> at __gnuc_va_list). Both directories
+# are therefore demoted with -idirafter: still searched, but after the system
+# ones, so <stdio.h> is real and <PR/os_pfs.h> still resolves.
+PC_PLAT_INC := -Iinclude -Isrc -I. \
+               -idirafter libreultra/include/2.0I -idirafter include/libc \
+               -idirafter build -idirafter build/include -idirafter build/assets
+
+$(PC_BUILD)/src/pc/%.o: src/pc/%.c
+	@mkdir -p $(dir $@)
+	@$(PC_CC) $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) \
+	    $(PC_PLAT_DEFS) $(PC_PLAT_INC) -c $< -o $@
+
+$(PC_BUILD)/src/libreultra/gu_%.o: libreultra/src/gu/%.c
+	@mkdir -p $(dir $@)
+	@$(PC_CC) $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) $(LU_INC) -c $< -o $@
+
+$(PC_BUILD)/src/libreultra/io_%.o: libreultra/src/io/%.c
+	@mkdir -p $(dir $@)
+	@$(PC_CC) $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) $(LU_INC) -c $< -o $@
+
+$(PC_BUILD)/src/libreultra/au_%.o: libreultra/src/audio/%.c
+	@mkdir -p $(dir $@)
+	@$(PC_CC) $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) $(LU_INC) -c $< -o $@
+
+$(PC_BUILD)/src/libreultra/na_%.o: libreultra/src/libnaudio/%.c
+	@mkdir -p $(dir $@)
+	@$(PC_CC) $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) $(LU_INC) -c $< -o $@
+
+# -include stddef.h: libreultra's own <string.h> uses size_t without ever
+# defining it, which the IDO build got away with and gcc does not.
+$(PC_BUILD)/src/libreultra/lc_%.o: libreultra/src/libc/%.c
+	@mkdir -p $(dir $@)
+	@$(PC_CC) $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) \
+	    -include stddef.h -Ilibreultra/src/libc $(LU_INC) -c $< -o $@
 
 $(PC_BUILD)/data/%.o: $(PC_BUILD)/data/%.c
 	@$(PC_CC) $(PC_ARCH) -std=gnu90 -w -Isrc -c $< -o $@
