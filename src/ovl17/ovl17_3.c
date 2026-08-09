@@ -214,10 +214,14 @@ void func_801E1424_ovl17(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
+/* 3 diffs: the objId must live in $v0 and be moved into $a0 in the jal delay
+ * slot; IDO loads it straight into $a0 and leaves the slot empty. The leading
+ * u32 temp_v0 declaration IS load-bearing -- it is what puts sp2C at 0x2C
+ * instead of 0x30 (the "frame anomaly"), so do not remove it. */
 s32 func_801E14B0_ovl17(void) {
+    u32 temp_v0;
     struct Ovl17AnimInfo sp2C;
     struct UnkStruct800E1B50 *temp_s0;
-    u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
     temp_s0 = D_800E1B50[temp_v0];

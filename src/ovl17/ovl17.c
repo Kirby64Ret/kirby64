@@ -81,20 +81,24 @@ void func_801DC71C_ovl17(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC724_ovl17.s")
 
 #ifdef MIPS_TO_C
+/* 6 diffs (was 16): hoisting omCurrentObj into a local is what puts it in $v0.
+ * What is left is a one-slot rotation of the ARGUMENT registers -- the ROM
+ * keeps $a0 reserved (base in $a2, element address in $a1) while IDO reuses
+ * $a0 for the element address. */
 void func_801DC91C_ovl17(struct GObj *arg0) {
-    s32 temp_v0;
+    struct GObj *obj;
     s32 temp_v1;
 
-    temp_v0 = D_800E7CE0[omCurrentObj->objId];
-    if (temp_v0 != 0) {
-        D_800E7CE0[omCurrentObj->objId] = temp_v0 - 1;
-        if (temp_v0 <= 0) {
-            D_800E7CE0[omCurrentObj->objId] = 0;
+    obj = omCurrentObj;
+    temp_v1 = D_800E7CE0[obj->objId];
+    if (temp_v1 != 0) {
+        D_800E7CE0[obj->objId] = temp_v1 - 1;
+        if (temp_v1 <= 0) {
+            D_800E7CE0[obj->objId] = 0;
         }
     }
-    temp_v1 = omCurrentObj->objId;
-    if (temp_v1 == 0) {
-        func_80111534(temp_v1);
+    if (obj->objId == 0) {
+        func_80111534(obj->objId);
     }
 }
 #else

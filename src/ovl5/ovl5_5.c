@@ -1,5 +1,6 @@
 #include "common.h"
 #include "GObj.h"
+#include "SPObj.h"
 #include "track_arrays.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
@@ -16,12 +17,14 @@ extern f32 D_80187C94_ovl5[];
 extern s32 D_8018E998_ovl5[];
 extern u8 D_8018EB58_ovl5[];
 extern s32 D_8018E458_ovl5[];
+extern s32 D_8018E468_ovl5[];
 extern s32 D_80187C34_ovl5[][2];
 s32 func_80171538_ovl5(s32);
 extern s32 D_8018E478_ovl5[][82];
 extern const char D_8018D7AC_ovl5[];
 extern const char D_8018D798_ovl5[];
 extern struct GObjProcess *gEntityGObjProcessArray5[];
+void func_80175F50_ovl5(GObj *);
 extern u8 D_80187898_ovl5[];
 void *func_8015C740_ovl5(GObj *, void *);
 u8 func_80172B10_ovl5(s32, s32);
@@ -29,6 +32,11 @@ s32 func_80175B70_ovl5(s32);
 s32 func_80175B8C_ovl5(s32);
 s32 func_80175BB0_ovl5(s32);
 void func_80175AD0_ovl5(s32, s32, s32, s32);
+typedef union Unk28Words {
+    s32 unk0[10];
+} Unk28Words;
+
+extern Unk28Words D_801873A0_ovl5;
 void func_800AD1A0(GObj *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8016FB80_ovl5.s")
@@ -118,9 +126,28 @@ s32 func_801716E0_ovl5(s32 arg0) {
     return count;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171768_ovl5.s")
+s32 func_80171768_ovl5(s32 arg0) {
+    s32 count = 0;
+    s32 i;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171868_ovl5.s")
+    for (i = 0; i < 4; i++) {
+        if ((arg0 != i) && (D_8018E998_ovl5[i] == 0x51) && (D_8018E468_ovl5[i] < D_8018E468_ovl5[arg0])) {
+            count++;
+        }
+    }
+    return count;
+}
+
+s32 func_80171868_ovl5(void) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if ((D_8018E998_ovl5[i] != 0x51) || (D_800E9C60[D_8018E458_ovl5[i]] != 0)) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171950_ovl5.s")
 
@@ -239,7 +266,14 @@ void func_80175A28_ovl5(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175AD0_ovl5.s")
+void func_80175AD0_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Unk28Words sp20 = D_801873A0_ovl5;
+    SPObj *spobj;
+
+    spobj = (SPObj *) func_8015C740_ovl5(arg0, sp20.unk0[arg1]);
+    spobj->xOffset = arg2;
+    spobj->yOffset = arg3;
+}
 
 s32 func_80175B70_ovl5(s32 arg0) {
     return (arg0 % 30) * 3;
@@ -255,9 +289,31 @@ s32 func_80175BB0_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175BD4_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175DBC_ovl5.s")
+void func_80175DBC_ovl5(GObj *arg0) {
+    s32 i;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175E98_ovl5.s")
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
+    omGMoveObjDL(arg0, arg0->dl_link, 0x18);
+    while (1) {
+        func_800ACBDC(arg0);
+        for (i = 0; i < 4; i++) {
+            func_80175BD4_ovl5(arg0, i);
+        }
+        ohSleep(1);
+    }
+}
+
+void func_80175E98_ovl5(GObj *arg0) {
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DF150[omCurrentObj->objId] = func_80175F50_ovl5;
+    D_800DDA90[omCurrentObj->objId] = 0x24;
+    while (1) {
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175F50_ovl5.s")
 

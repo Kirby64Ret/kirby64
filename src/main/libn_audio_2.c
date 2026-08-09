@@ -3,6 +3,10 @@
 #include <PR/n_libaudio.h>
 
 s32 func_8002C9FC(ALSeq *seq);
+char __alSeqNextDelta(ALSeq *seq, s32 *pDeltaTicks);
+void alSeqSetLoc(ALSeq *seq, ALSeqMarker *m);
+s32 alSeqGetTicks(ALSeq *seq);
+void func_8002C990(N_ALVoice *voice, s16 priority);
 void n_alEvtqPostEvent(ALEventQueue *evtq, N_ALEvent *evt, ALMicroTime delta);
 
 /* Kirby's N_ALCSPlayer differs from the stock SDK layout; only evtq is used here. */
@@ -43,13 +47,43 @@ typedef struct {
     /* 0x0D */ u8 unk0D;
 } KEnvel;
 
+typedef struct {
+    /* 0x00 */ u8 pad00[0x10];
+    /* 0x10 */ struct KVoiceState *clientPrivate;
+} KVoice;
+
+typedef struct {
+    /* 0x00 */ u8 pad00[0x08];
+    /* 0x08 */ KSound *unk08;
+    /* 0x0C */ KSound *unk0C[1];
+} KSoundBank;
+
+/* Kirby's sequence player; same fields as N_ALSeqPlayer but a different layout. */
+typedef struct {
+    /* 0x00 */ u8            pad00[0x18];
+    /* 0x18 */ ALSeq        *target;
+    /* 0x1C */ ALMicroTime   curTime;
+    /* 0x20 */ u8            pad20[0x0C];
+    /* 0x2C */ s32           uspt;
+    /* 0x30 */ s32           nextDelta;
+    /* 0x34 */ s32           state;
+    /* 0x38 */ u8            pad38[0x18];
+    /* 0x50 */ ALEventQueue  evtq;
+    /* 0x64 */ u8            pad64[0x20];
+    /* 0x84 */ ALOscStop     stopOsc;
+    /* 0x88 */ ALSeqMarker  *loopStart;
+    /* 0x8C */ ALSeqMarker  *loopEnd;
+    /* 0x90 */ s32           loopCount;
+} KSeqp;
+
 typedef struct KVoiceState {
     /* 0x00 */ struct KVoiceState *next;
     /* 0x04 */ u8 pad04[0x10];
     /* 0x14 */ struct KVoiceState *unk14;
     /* 0x18 */ u8 pad18[0x8];
     /* 0x20 */ KEnvel *unk20;
-    /* 0x24 */ u8 pad24[0xC];
+    /* 0x24 */ ALMicroTime envEndTime;
+    /* 0x28 */ u8 pad28[0x8];
     /* 0x30 */ u8 unk30;
     /* 0x31 */ u8 unk31;
     /* 0x32 */ u8 unk32;
@@ -57,6 +91,7 @@ typedef struct KVoiceState {
     /* 0x34 */ u8 unk34;
     /* 0x35 */ u8 unk35;
     /* 0x36 */ u8 unk36;
+    /* 0x37 */ u8 flags;
 } KVoiceState;
 
 typedef struct {
@@ -73,7 +108,32 @@ typedef struct {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002AE74.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002AF60.s")
+void func_8002AF60(KSeqp *seqp) {
+    N_ALEvent evt;
+    s32 deltaTicks;
+    ALSeq *seq = seqp->target;
+
+    if ((seqp->state != AL_PLAYING) || (seq == NULL)) {
+        return;
+    }
+
+    if (!__alSeqNextDelta(seq, &deltaTicks)) {
+        return;
+    }
+
+    if (seqp->loopCount) {
+        if (alSeqGetTicks(seq) + deltaTicks >= seqp->loopEnd->curTicks) {
+            alSeqSetLoc(seq, seqp->loopStart);
+
+            if (seqp->loopCount != -1) {
+                seqp->loopCount--;
+            }
+        }
+    }
+
+    evt.type = AL_SEQ_REF_EVT;
+    n_alEvtqPostEvent(&seqp->evtq, &evt, deltaTicks * seqp->uspt);
+}
 
 void func_8002B03C(KSeqPlayer *seqp, KSound *sound, s32 chan) {
     seqp->chanState[chan].unk00 = sound;
@@ -98,7 +158,24 @@ void func_8002B0A8(KSeqPlayer *seqp, s32 chan) {
     seqp->chanState[chan].unk14 = 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B158.s")
+void func_8002B158(KSeqPlayer *seqp, KSoundBank *bank) {
+    KSound *sound;
+    s32 i;
+
+    i = 0;
+    do {
+        sound = bank->unk0C[i];
+        i++;
+    } while (sound == NULL);
+    for (i = 0; i < seqp->unk3C; i++) {
+        func_8002B0A8(seqp, i);
+        func_8002B03C(seqp, sound, i);
+    }
+    if (bank->unk08 != NULL) {
+        func_8002B0A8(seqp, i);
+        func_8002B03C(seqp, bank->unk08, 9);
+    }
+}
 
 void func_8002B20C(void) {
 }
@@ -140,9 +217,82 @@ s16 func_8002B238(KVoiceState *state, KSeqPlayer *seqp) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B238.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B2E8.s")
+void func_8002B2E8(KSeqp *seqp, KVoice *voice, ALMicroTime deltaTime) {
+    N_ALEvent evt;
+    KVoiceState *vs = voice->clientPrivate;
 
+    if (vs->unk34 == AL_PHASE_ATTACK) {
+        ALLink *thisNode;
+        ALLink *nextNode;
+        N_ALEventListItem *thisItem, *nextItem;
+
+        thisNode = seqp->evtq.allocList.next;
+        while (thisNode != 0) {
+            nextNode = thisNode->next;
+            thisItem = (N_ALEventListItem *)thisNode;
+            nextItem = (N_ALEventListItem *)nextNode;
+            if (thisItem->evt.type == AL_SEQP_ENV_EVT) {
+                if (thisItem->evt.msg.vol.voice == (struct N_ALVoice_s *)voice) {
+                    if (nextItem) {
+                        nextItem->delta += thisItem->delta;
+                    }
+                    alUnlink(thisNode);
+                    alLink(thisNode, &seqp->evtq.freeList);
+                }
+            }
+            thisNode = nextNode;
+        }
+    }
+
+    vs->unk33 = 0;
+    vs->unk34 = AL_PHASE_RELEASE;
+    vs->unk30 = 0;
+    vs->envEndTime = seqp->curTime + deltaTime;
+
+    func_8002C990((N_ALVoice *)voice, 0);
+    n_alSynSetVol((N_ALVoice *)voice, 0, deltaTime);
+    evt.type = AL_NOTE_END_EVT;
+    evt.msg.note.voice = (struct N_ALVoice_s *)voice;
+
+    n_alEvtqPostEvent(&seqp->evtq, &evt, deltaTime);
+}
+
+#ifdef NON_MATCHING
+char func_8002B40C(KSeqp *seqp, KVoice *voice, ALMicroTime killTime) {
+    ALLink *thisNode;
+    ALLink *nextNode;
+    N_ALEventListItem *thisItem;
+    ALMicroTime itemTime = 0;
+    char needsNoteKill = TRUE;
+
+    thisNode = seqp->evtq.allocList.next;
+    while (thisNode != 0) {
+        nextNode = thisNode->next;
+        thisItem = (N_ALEventListItem *)thisNode;
+        itemTime += thisItem->delta;
+
+        if (thisItem->evt.type == AL_NOTE_END_EVT) {
+            if (thisItem->evt.msg.note.voice == (struct N_ALVoice_s *)voice) {
+                if (itemTime > killTime) {
+                    if ((N_ALEventListItem *)nextNode) {
+                        ((N_ALEventListItem *)nextNode)->delta += thisItem->delta;
+                    }
+                    alUnlink(thisNode);
+                    alLink(thisNode, &seqp->evtq.freeList);
+                } else {
+                    needsNoteKill = FALSE;
+                }
+                break;
+            }
+        }
+        thisNode = nextNode;
+    }
+
+    return needsNoteKill;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B40C.s")
+#endif
 
 void func_8002B4B4(KSeqPlayer *seqp, void *arg1) {
     KVoiceState *prev = NULL;
@@ -168,7 +318,30 @@ void func_8002B4B4(KSeqPlayer *seqp, void *arg1) {
     }
 }
 
+#ifdef NON_MATCHING
+void func_8002B524(N_ALEvent *event, KSeqp *seqp) {
+    ALTempoEvent *tevt = &event->msg.tempo;
+    s32 tempo;
+    f32 ftempo;
+
+    if (event->msg.tempo.status == AL_MIDI_Meta) {
+        if (event->msg.tempo.type == AL_MIDI_META_TEMPO) {
+            tempo =
+                (tevt->byte1 << 16) |
+                (tevt->byte2 <<  8) |
+                (tevt->byte3 <<  0);
+            ftempo = (f32)tempo;
+            if (seqp->target) {
+                seqp->uspt = (s32)(ftempo * seqp->target->qnpt);
+            } else {
+                seqp->uspt = 488;
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B524.s")
+#endif
 
 void func_8002B59C(KSeqPlayer *seqp, KSound *sound, s32 chan) {
     seqp->chanState[chan].unk00 = sound;
@@ -227,7 +400,36 @@ KVoiceState *func_8002B6A8(KSeqPlayer *seqp, u8 arg1, u8 arg2, u8 arg3) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C044.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C68C.s")
+void func_8002C68C(KSeqp *seqp, KVoiceState *vs) {
+    N_ALEventListItem *thisNode, *nextNode;
+    s16 evtType;
+
+    thisNode = (N_ALEventListItem *)seqp->evtq.allocList.next;
+    while (thisNode) {
+        nextNode = (N_ALEventListItem *)thisNode->node.next;
+        evtType = thisNode->evt.type;
+        if (evtType == AL_TREM_OSC_EVT || evtType == AL_VIB_OSC_EVT) {
+            if (thisNode->evt.msg.osc.vs == (struct N_ALVoiceState_s *)vs) {
+                (*seqp->stopOsc)(thisNode->evt.msg.osc.oscState);
+                alUnlink((ALLink *)thisNode);
+                if (nextNode) {
+                    nextNode->delta += thisNode->delta;
+                }
+                alLink((ALLink *)thisNode, &seqp->evtq.freeList);
+                if (evtType == AL_TREM_OSC_EVT) {
+                    vs->flags = vs->flags & 0xFE;
+                } else {
+                    vs->flags = vs->flags & 0xFD;
+                }
+                if (!vs->flags) {
+                    return;
+                }
+            }
+        }
+
+        thisNode = nextNode;
+    }
+}
 
 void func_8002C790(KSeqPlayer *seqp) {
     s32 i;

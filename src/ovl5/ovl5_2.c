@@ -1,5 +1,6 @@
 #include "common.h"
 #include "GObj.h"
+#include "SPObj.h"
 #include "track_arrays.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
@@ -23,7 +24,27 @@ extern u8 D_8018E228_ovl5[];
 extern u8 D_8018E208_ovl5[];
 s32 func_8015F4C4_ovl5(s32, s32);
 void func_801642A4_ovl5(s32, s32, s32, s32);
+typedef union Unk28Words {
+    s32 unk0[10];
+} Unk28Words;
+
+extern Unk28Words D_80185FF8_ovl5;
+s32 func_8015C740_ovl5();
 extern u8 D_8018E1E0_ovl5[];
+extern u8 D_8018E1E1_ovl5;
+extern void *D_80186900_ovl5;
+extern void *D_80186908_ovl5;
+extern void *D_80186910_ovl5;
+void func_800A9864(void *, s32, s32);
+void func_800AA018(void *);
+void func_800AF27C(void);
+extern u8 D_8018E1E2_ovl5;
+extern u8 D_8018E1E3_ovl5;
+extern s32 D_800D6B24;
+extern u32 D_800D6B68;
+extern s32 D_8018E020_ovl5;
+#include "main/contpad.h"
+#include "ovl1/game.h"
 typedef struct Unk8Bytes {
     s32 unk0;
     s32 unk4;
@@ -148,7 +169,18 @@ s32 func_80160A78_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161078_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801611A8_ovl5.s")
+void func_801611A8_ovl5(GObj *arg0, s32 arg1) {
+    func_800A9864(D_80186900_ovl5, 0x1869F, 0x10);
+    func_800AA018(D_80186908_ovl5);
+    if (D_80186910_ovl5 != NULL) {
+        func_800AA018(D_80186910_ovl5);
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[D_8018E030_ovl5[arg1]];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E030_ovl5[arg1]];
+    func_800AF27C();
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 f32 func_80161298_ovl5(s32 arg0, s32 arg1) {
     return D_80186950_ovl5[arg0] * 0.5f + D_80186950_ovl5[arg1] * 0.5f;
@@ -280,7 +312,14 @@ void func_80162C68_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164174_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801642A4_ovl5.s")
+void func_801642A4_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Unk28Words sp20 = D_80185FF8_ovl5;
+    SPObj *spobj;
+
+    spobj = (SPObj *) func_8015C740_ovl5(arg0, sp20.unk0[arg1]);
+    spobj->xOffset = arg2;
+    spobj->yOffset = arg3;
+}
 
 void func_80164344_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
     s32 pad;
@@ -336,7 +375,7 @@ typedef struct Unk10Bytes {
     u32 unkC;
 } Unk10Bytes;
 
-extern Unk10Bytes D_800D7178[];
+#include "unk_structs/D_800D7178.h"
 extern u8 D_8018E224_ovl5[];
 s32 func_80164914_ovl5(s32);
 

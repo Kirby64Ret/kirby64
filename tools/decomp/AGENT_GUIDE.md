@@ -893,3 +893,36 @@ immovable, but do the downward sweep first.
 `make` reaching `build/kirby.us.z64: OK` proves the whole build byte-for-byte.
 Run it before every commit. Every other tool here is now for LOCALISING a
 break, not for catching one.
+
+## The frame anomaly cuts BOTH ways
+
+Earlier this guide said "sweep downward in local count". That is only half of
+it. func_801E14B0_ovl17 was closed by ADDING a leading scalar local (`u32
+temp_v0;` declared BEFORE the struct local), which moved sp30 -> sp2C: 6 diffs
+-> 3, frame and every spill slot exact. func_800AAF34 was closed by REMOVING
+locals. Sweep in BOTH directions before giving up.
+
+## Hoisting omCurrentObj into a local forces it into $v0
+
+This contradicts the standing rule "write omCurrentObj->objId inline at every
+use". Both are real: use the inline form when the ROM re-reads the global, and
+`struct GObj *obj = omCurrentObj;` when the ROM holds the pointer in $v0
+across the body. func_801DC91C_ovl17 went 16 -> 6 diffs on that alone.
+
+## IDO picks the LAST array written in a loop as the induction pointer
+
+Measured directly: store order `D, G` gives induction on G; order `G, D` gives
+induction on D. So the induction choice is controlled by store order and
+NOTHING ELSE. Where the ROM writes an array first AND uses it as the
+induction, no store order reproduces it -- that combination is unreachable.
+(func_80227308_ovl18: the 4x-unrolled body is exact, the induction choice is
+the wall.)
+
+## An offset into a bss blob cannot always be spelled
+
+Where the ROM has `lui/addiu %hi/%lo(SYM + 0x10)` -- materialising a full
+ADDRESS -- and the target is inside a larger bss object, neither `SYM[4]` nor
+`&SYM[4]` reproduces it: IDO folds the +0x10 into the store displacement in
+both cases. Tried and failed on func_80159DE8_ovl4 (2/60 diffs, otherwise
+exact). A real linkable symbol at that address is the only known fix, and that
+needs splat to regenerate the data listings.

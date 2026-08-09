@@ -10,6 +10,14 @@
 #include "unk_structs/D_800D7178.h"
 
 extern s32 D_800D6B24;
+#include "main/vi.h"
+#include "main/gtl.h"
+extern u16 gFrameBuffer[][320];
+extern u16 D_8012EB00[][320];
+extern void *D_8018EE60;
+extern u16 D_803D6900[];
+extern ScreenSettings D_80188988_ovl5;
+extern SceneSetup D_801889A4_ovl5;
 extern u8 D_8018ED00_ovl5;
 extern s32 D_8018ED3C_ovl5;
 extern s32 D_801891E4_ovl5[][4];
@@ -132,7 +140,16 @@ void func_8017A360_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017A3E4_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017A588_ovl5.s")
+s32 func_8017A588_ovl5(void) {
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if (((&D_8018ED38_ovl5)[i] == 0) && (D_800EA1A0[D_8018ED90_ovl5[i]] == 0)) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 void func_8017A670_ovl5(void) {
     s32 i;

@@ -17,16 +17,61 @@ extern f32 D_8018DE24_ovl5;
 extern f32 D_8018DE28_ovl5;
 extern f32 D_8018DE2C_ovl5;
 void func_800A9864(void *, s32, s32);
+extern s32 D_8018EE04_ovl5;
+extern s32 D_800D6B6C;
+extern void *D_8018A49C_ovl5;
+extern void *D_8018A4A0_ovl5;
+extern void *D_8018A4A8_ovl5;
+extern void *D_8018A4B0_ovl5;
+extern void *D_8018A4B4_ovl5;
+extern void *D_8018A4BC_ovl5;
+extern void *D_8018A4C4_ovl5;
+extern void *D_8018A4C8_ovl5;
+extern void *D_8018A4D0_ovl5;
+void func_800AA018(void *);
+void func_800AF27C(void);
+void func_801824B0_ovl5(GObj *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182360_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182414_ovl5.s")
+void func_80182414_ovl5(GObj *arg0) {
+    D_8018EE04_ovl5 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0xA;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800DF150[omCurrentObj->objId] = func_801824B0_ovl5;
+    while (1) {
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_801824B0_ovl5.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_801825E8_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182700_ovl5.s")
+void func_80182700_ovl5(GObj *arg0) {
+    switch (D_800D6B6C) {
+        case 1:
+            func_800A9864(D_8018A4C4_ovl5, 0x1869F, 0x10);
+            func_800AA018(D_8018A4C8_ovl5);
+            func_800AF27C();
+            func_800AA018(D_8018A4D0_ovl5);
+            break;
+        case 2:
+            func_800A9864(D_8018A49C_ovl5, 0x1869F, 0x10);
+            func_800AA018(D_8018A4A0_ovl5);
+            func_800AF27C();
+            func_800AA018(D_8018A4A8_ovl5);
+            break;
+        case 3:
+            func_800A9864(D_8018A4B0_ovl5, 0x1869F, 0x10);
+            func_800AA018(D_8018A4B4_ovl5);
+            func_800AF27C();
+            func_800AA018(D_8018A4BC_ovl5);
+            break;
+    }
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182804_ovl5.s")
 

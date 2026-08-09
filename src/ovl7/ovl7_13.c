@@ -49,6 +49,18 @@ extern FUNCLIST D_801CD7E8_ovl7;
 extern FUNCLIST D_801CD804_ovl7;
 extern FUNCLIST D_801CD798_ovl7;
 extern FUNCLIST D_801CD7B8_ovl7;
+extern void func_8019AF00_ovl7(f32);
+extern f32 D_801CE3E0_ovl7;
+extern f32 D_801CE3E4_ovl7;
+extern f32 D_801CE3E8_ovl7;
+extern f32 D_801CE3EC_ovl7;
+extern f32 D_801CE3F0_ovl7;
+extern f32 D_801CE3F4_ovl7;
+extern f32 D_801CE3F8_ovl7;
+extern f32 D_801CE3FC_ovl7;
+extern f32 D_801CE400_ovl7;
+extern f32 D_801CE404_ovl7;
+extern f32 D_801CE408_ovl7;
 extern f32 D_801CE45C_ovl7;
 extern f32 D_801CE460_ovl7;
 extern f32 D_801CE464_ovl7;
@@ -90,7 +102,18 @@ void func_801B9974_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B99F8_ovl7.s")
+void func_801B99F8_ovl7(GObj *arg0) {
+    if ((0.0f < D_800EB320[omCurrentObj->objId]) && (D_800EB320[omCurrentObj->objId] < D_801CE3E0_ovl7)) {
+        D_800EB320[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId] + D_801CE3E4_ovl7;
+    } else if ((D_801CE3E8_ovl7 <= D_800EB320[omCurrentObj->objId]) && (D_800EB320[omCurrentObj->objId] < D_801CE3EC_ovl7)) {
+        D_800EB320[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId] + D_801CE3F0_ovl7;
+    } else if ((D_801CE3F4_ovl7 <= D_800EB320[omCurrentObj->objId]) && (D_800EB320[omCurrentObj->objId] < D_801CE3F8_ovl7)) {
+        D_800EB320[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId] - D_801CE3FC_ovl7;
+    } else if ((D_801CE400_ovl7 <= D_800EB320[omCurrentObj->objId]) && (D_800EB320[omCurrentObj->objId] < D_801CE3F4_ovl7)) {
+        D_800EB320[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId] - D_801CE404_ovl7;
+    }
+    func_8019AF00_ovl7(4.5f);
+}
 
 void func_801B9B40_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -114,7 +137,18 @@ void func_801B9BA8_ovl7(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B9C5C_ovl7.s")
+void func_801B9C5C_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    ent->unk98 = &D_801CC964_ovl7;
+    func_800AA018(0x100EC);
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_801CE408_ovl7;
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 5;
+}
 
 void func_801B9D38_ovl7(GObj *arg0) {
 }

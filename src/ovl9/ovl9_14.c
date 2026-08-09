@@ -629,7 +629,21 @@ void func_802142C4_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80214304_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_802143B8_ovl9.s")
+IN_FILE void func_802144F8_ovl9();
+IN_FILE void func_80214480_ovl9();
+void func_802143B8_ovl9(struct GObj *arg0) {
+    D_800DF150[omCurrentObj->objId] = func_802144F8_ovl9;
+    func_801A0D50_ovl7(func_80214480_ovl9);
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        func_801A6C10_ovl7(arg0);
+    }
+    if (D_800E8920[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+    }
+    func_80214480_ovl9(arg0);
+}
 
 extern FUNCLIST D_8021CC94_ovl9;
 

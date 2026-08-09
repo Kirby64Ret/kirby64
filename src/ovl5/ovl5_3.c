@@ -18,6 +18,7 @@ extern u8 D_8018E3C1_ovl5;
 extern u8 D_8018E3C2_ovl5;
 extern u8 D_8018E3C3_ovl5;
 extern f32 D_8018D6A8_ovl5;
+extern u8 D_8018E424_ovl5;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165440_ovl5.s")
 
@@ -65,29 +66,17 @@ Vector *func_801659DC_ovl5(Vector *arg0, s32 arg1) {
     return arg0;
 }
 
-#ifdef MIPS_TO_C
-/* 2 diffs: IDO schedules `li at, 1` before `lui t9, %hi(D_8018E3C3_ovl5)`,
-   the ROM has them the other way round. Everything else is exact. */
 s32 func_80165A4C_ovl5(s32 arg0) {
     s32 count = 0;
+    s32 i;
 
-    if ((D_8018E3C0_ovl5 != 0) && (arg0 != 0)) {
-        count = 1;
-    }
-    if ((D_8018E3C1_ovl5 != 0) && (arg0 != 1)) {
-        count++;
-    }
-    if ((D_8018E3C2_ovl5 != 0) && (arg0 != 2)) {
-        count++;
-    }
-    if ((D_8018E3C3_ovl5 != 0) && (arg0 != 3)) {
-        count++;
+    for (i = 0; i < 4; i++) {
+        if (((&D_8018E3C0_ovl5)[i] != 0) && (arg0 != i)) {
+            count++;
+        }
     }
     return count;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165A4C_ovl5.s")
-#endif
 
 s32 func_80165AD0_ovl5(s32 arg0) {
     f32 v = gEntitiesAngleYArray[D_8018E268_ovl5[arg0]] / D_8018D6A8_ovl5 * 180.0f;
@@ -108,7 +97,38 @@ s32 func_80165AD0_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165B84_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165D30_ovl5.s")
+s32 func_80165D30_ovl5(s32 arg0) {
+    s32 r;
+    s32 r2;
+
+    if (((arg0 >= 0x38) && (arg0 < 0x40)) || ((arg0 >= 0) && (arg0 < 8))) {
+        goto retA;
+    }
+    r = arg0 % 8;
+    if (!r) {
+        goto retA;
+    }
+    r2 = (arg0 + 1) % 8;
+    if (!r2) {
+retA:
+        return 1;
+    }
+    if (D_8018E424_ovl5 == 2) {
+        if (((arg0 >= 0x30) && (arg0 < 0x38)) || ((arg0 >= 8) && (arg0 < 0x10))) {
+            goto retB;
+        }
+        r = (arg0 + 7) % 8;
+        if (!r) {
+            goto retB;
+        }
+        r2 = (arg0 + 2) % 8;
+        if (!r2) {
+retB:
+            return 1;
+        }
+    }
+    return 0;
+}
 
 s32 func_80165E14_ovl5(s32 arg0, f32 arg1) {
     Vector sp1C;

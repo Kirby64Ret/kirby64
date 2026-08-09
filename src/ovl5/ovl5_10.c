@@ -11,6 +11,8 @@
 
 extern s32 D_800D6B24;
 extern u8 D_8018EDD0_ovl5;
+extern s32 D_8018EDDC_ovl5;
+void func_8017F7B0_ovl5(GObj *);
 extern Gfx D_80189868_ovl5[];
 s32 saveCheckCutsceneWatched(s32);
 void func_801800CC_ovl5(void);
@@ -46,7 +48,16 @@ void func_8017F660_ovl5(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017F6F8_ovl5.s")
+void func_8017F6F8_ovl5(GObj *arg0) {
+    D_8018EDDC_ovl5 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0xA;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800DF150[omCurrentObj->objId] = func_8017F7B0_ovl5;
+    while (1) {
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017F7B0_ovl5.s")
 
@@ -56,6 +67,9 @@ extern struct UnkStruct8015C740 D_80189C38_ovl5;
 extern struct UnkStruct8015C740 D_80189C78_ovl5;
 SPObj *func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
 void func_800AD1A0(void);
+extern struct UnkStruct8015C740 D_80189BF8_ovl5;
+extern struct UnkStruct8015C740 D_80189C18_ovl5;
+extern struct UnkStruct8015C740 D_80189C58_ovl5;
 void func_8017FA7C_ovl5(GObj *arg0) {
     SPObj *spobj;
 
@@ -96,7 +110,19 @@ SPObj *func_8017FBA4_ovl5(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017FD84_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017FFB8_ovl5.s")
+void func_8017FFB8_ovl5(GObj *arg0) {
+    SPObj *spobj;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0xA, 0x80000000, 0xA);
+    func_8015C740_ovl5(arg0, &D_80189BF8_ovl5);
+    spobj = func_8015C740_ovl5(arg0, &D_80189C18_ovl5);
+    spobj->unk5A |= 1;
+    spobj->unkBA |= 1;
+    func_8015C740_ovl5(arg0, &D_80189C58_ovl5);
+    curObjSleepForever();
+}
 
 void func_80180080_ovl5(void) {
     D_8018EDD0_ovl5 = 0;

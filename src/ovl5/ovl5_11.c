@@ -13,6 +13,10 @@
 #include "ovl5/ovl5_11.h"
 
 extern u8 D_8018A12C_ovl5[];
+typedef union Unk28Words {
+    s32 unk0[10];
+} Unk28Words;
+
 extern s32 D_8018EDEC_ovl5; // track
 extern SPObj *D_80189DE8_ovl5;
 extern SPObj *D_80189E08_ovl5;
@@ -211,7 +215,14 @@ void func_801813FC_ovl5(GObj *arg0) {
 
 // struct copy + phantom stack
 SPObj *func_801815BC_ovl5(GObj *o, s32 arg1, f32 x, f32 y);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_11/func_801815BC_ovl5.s")
+SPObj *func_801815BC_ovl5(GObj *o, s32 arg1, f32 x, f32 y) {
+    Unk28Words sp20 = *(Unk28Words *) &D_80189CE8_ovl5;
+    SPObj *spobj;
+
+    spobj = func_8015C740_ovl5(o, sp20.unk0[arg1]);
+    spobj->xOffset = x;
+    spobj->yOffset = y;
+}
 
 void func_80181644_ovl5(SPObj *spobj, u8 cond1, s32 cond2, s32 idx) {
     f32 *var_v0;

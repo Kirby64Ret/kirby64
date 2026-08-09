@@ -313,12 +313,12 @@ void func_801E03E4_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801E058C_ovl9.s")
 
-#ifdef MIPS_TO_C
 extern s32 D_801C8520_ovl7;
 extern s32 D_801C8568;
 
 /* 2 diffs: ROM keeps the objId index in $v1, this form puts it in $v0 and the
    shift result in $v1.  Declaration order / extra locals do not move it. */
+#ifdef MIPS_TO_C
 void func_801E06C0_ovl9(GObj *arg0) {
     s32 id;
 

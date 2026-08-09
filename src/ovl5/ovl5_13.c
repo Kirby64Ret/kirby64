@@ -14,6 +14,27 @@ extern s32 D_8018EE20_ovl5[];
 extern s32 D_8018EE14_ovl5;
 void func_80183270_ovl5(GObj *);
 extern u8 D_8018EE18_ovl5;
+extern u8 D_8018EE10_ovl5;
+extern u8 D_8018EE44_ovl5;
+extern s32 D_8018EE48_ovl5;
+extern s32 D_8018EE4C_ovl5;
+extern s32 D_8018EE50_ovl5;
+extern s32 D_8018EE54_ovl5;
+extern s32 D_8018EE58_ovl5;
+extern u16 D_8018EE4A_ovl5;
+#include "SPObj.h"
+extern struct UnkStruct8015C740 D_8018A690_ovl5;
+extern struct UnkStruct8015C740 D_8018A6B0_ovl5;
+extern struct UnkStruct8015C740 D_8018A990_ovl5;
+SPObj *func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
+void func_800AD1A0(void);
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+extern void *D_8018A714_ovl5;
+extern void *D_8018A718_ovl5;
+extern void *D_8018A98C_ovl5;
+s32 func_800A9AA8(void *, s32);
+void func_800BA284(s32);
+#include "ovl1/save_file.h"
 #include "ovl1/track.h"
 
 
@@ -30,7 +51,22 @@ void func_801831E0_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183270_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183AFC_ovl5.s")
+void func_80183AFC_ovl5(GObj *arg0) {
+    SPObj *spobj;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    func_8015C740_ovl5(arg0, &D_8018A690_ovl5);
+    spobj = func_8015C740_ovl5(arg0, &D_8018A690_ovl5);
+    spobj->xOffset = 160.0f;
+    spobj->yOffset = 10.0f;
+    spobj->unk5A |= 1;
+    spobj->unkBA |= 1;
+    func_8015C740_ovl5(arg0, &D_8018A6B0_ovl5);
+    func_8015C740_ovl5(arg0, &D_8018A990_ovl5);
+    curObjSleepForever();
+}
 
 s32 func_80183BF4_ovl5(s32 arg0) {
     return 1;
@@ -78,7 +114,23 @@ void func_80184084_ovl5(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801840F0_ovl5.s")
+void func_801840F0_ovl5(void) {
+    if (D_8018EE48_ovl5 != 0x29A) {
+        func_800ACBDC(D_800DE350[D_8018EE48_ovl5]);
+        func_800B1900(D_8018EE4A_ovl5);
+        D_8018EE48_ovl5 = 0x29A;
+    }
+    if (D_8018EE4C_ovl5 != 0x29A) {
+        if ((u32) D_800EA360[D_8018EE4C_ovl5] != 0x29A) {
+            func_800B1900((u16) D_800EA360[D_8018EE4C_ovl5]);
+        }
+        if ((u32) D_800EA520[D_8018EE4C_ovl5] != 0x29A) {
+            func_800B1900((u16) D_800EA520[D_8018EE4C_ovl5]);
+        }
+        func_800B1900((u16) D_8018EE4C_ovl5);
+        D_8018EE4C_ovl5 = 0x29A;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801841C0_ovl5.s")
 
@@ -102,7 +154,17 @@ void func_80184084_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185A4C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185C10_ovl5.s")
+void func_80185C10_ovl5(void) {
+    D_8018EE10_ovl5 = 0;
+    D_8018EE18_ovl5 = 0;
+    D_8018EE44_ovl5 = 0;
+    D_8018EE48_ovl5 = 0x29A;
+    D_8018EE4C_ovl5 = 0x29A;
+    func_800BA284(saveCurrentFileNum);
+    D_8018EE50_ovl5 = func_800A9AA8(D_8018A714_ovl5, 3);
+    D_8018EE54_ovl5 = func_800A9AA8(D_8018A718_ovl5, 3);
+    D_8018EE58_ovl5 = func_800A9AA8(D_8018A98C_ovl5, 3);
+}
 
 void func_80185CA4_ovl5(void) {
     utilSetRectColorFullScreen(0, 0, 0);

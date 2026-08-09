@@ -19,6 +19,7 @@ void func_8017F110_ovl5();
 extern u32 D_800D6B68;
 extern u8 D_8018EDC0_ovl5;
 extern s32 D_8018EDC4_ovl5;
+#include "ovl1/game.h"
 
 void func_8017ED60_ovl5(void) {
     switch (D_800E98E0[omCurrentObj->objId]) {
@@ -94,7 +95,23 @@ void func_8017F304_ovl5(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_9/func_8017F38C_ovl5.s")
+void func_8017F38C_ovl5(void) {
+    if (gGameState != 0xA) {
+        switch (D_8018EDC4_ovl5) {
+            case 0:
+                D_800D7178.unk44 = 0x1D;
+                break;
+            case 2:
+                D_800D7178.unk44 = 0x1E;
+                break;
+            case 1:
+                D_800D7178.unk44 = 0x1F;
+                break;
+        }
+    }
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0, 0x10, 2);
+}
 
 extern s32 D_800D6B24;
 extern u8 D_8018EDC0_ovl5;

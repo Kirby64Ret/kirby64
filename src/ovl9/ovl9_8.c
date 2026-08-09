@@ -65,9 +65,40 @@ void func_801F8774_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 7, &D_8021C504_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F87BC_ovl9.s")
+extern s32 D_801CBF20;
+extern FUNCLIST D_8021C504_ovl9;
+IN_FILE void func_801F8774_ovl9();
+IN_FILE void func_801F889C_ovl9();
+void func_801F87BC_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F889C_ovl9.s")
+    tmp->unk98 = &D_801CBF20;
+    D_800DF150[omCurrentObj->objId] = func_801F889C_ovl9;
+    if (D_800E8920[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 6;
+    }
+    func_801A0D50_ovl7(func_801F8774_ovl9);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 7, &D_8021C504_ovl9);
+}
+
+extern FUNCLIST D_8021C520_ovl9;
+void func_801F889C_ovl9(struct GObj *arg0) {
+    s32 unused; /* load-bearing: puts the spill of `v` at 0x18 */
+    s32 v = func_801A0D74_ovl7();
+
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        func_8019B424_ovl7(arg0);
+    }
+    if (v == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 7, &D_8021C520_ovl9);
+    }
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        eneTurnCommon(6);
+    }
+    func_8019F3B0_ovl7();
+}
 
 void func_801F8958_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -81,7 +112,22 @@ void func_801F8958_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F89FC_ovl9.s")
+extern s32 func_8019B260_ovl7(f32);
+void func_801F89FC_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    if (tmp->unk3C == 0) {
+        if (func_8019A7E8_ovl7(280.0f) != 0) {
+            if (func_8019B260_ovl7(60.0f) == 1) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+            } else {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+            }
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F8774_ovl9);
+        }
+    }
+}
+
 
 void func_801F8ACC_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -99,7 +145,17 @@ void func_801F8ACC_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8BEC_ovl9.s")
+extern s32 D_801CBF44;
+void func_801F8BEC_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    if ((D_800EA6E0[omCurrentObj->objId] <= gEntitiesNextPosYArray[omCurrentObj->objId]) || (D_800EB320[omCurrentObj->objId] <= gEntitiesNextPosYArray[omCurrentObj->objId])) {
+        D_800E3750[omCurrentObj->objId] = -1.0f;
+        tmp->unk98 = &D_801CBF44;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F8774_ovl9);
+    }
+}
 
 void func_801F8CBC_ovl9(struct GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
@@ -125,7 +181,23 @@ void func_801F8E60_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8ECC_ovl9.s")
+extern s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
+extern s32 func_801AE940_ovl7(s32, f32, f32);
+void func_801F8ECC_ovl9(s32 arg0, s32 arg1, f32 arg2) {
+    s32 ret;
+
+    if (arg1 != 0) {
+        return;
+    }
+    if ((s32) arg2 != 1) {
+        return;
+    }
+    func_801ACCA0_ovl7(9, 0, 32.0f, 0.0f);
+    ret = func_801AE940_ovl7(5, 0.0f, -20.0f);
+    gEntitiesAngleYArray[ret] = gEntitiesAngleYArray[omCurrentObj->objId];
+    play_sound(0x96);
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F8F7C_ovl9.s")
 
@@ -209,9 +281,43 @@ void func_801F94D0_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 7, &D_8021C544_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9518_ovl9.s")
+extern s32 D_801CBF8C;
+extern FUNCLIST D_8021C544_ovl9;
+IN_FILE void func_801F9610_ovl9();
+IN_FILE void func_801F94D0_ovl9();
+void func_801F9518_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9610_ovl9.s")
+    tmp->unk98 = &D_801CBF8C;
+    D_800DF150[omCurrentObj->objId] = func_801F9610_ovl9;
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        func_801A6C10_ovl7(arg0);
+    }
+    D_800E8920[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    func_801A0D50_ovl7(func_801F94D0_ovl9);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 7, &D_8021C544_ovl9);
+}
+
+extern FUNCLIST D_8021C560_ovl9;
+extern void func_8019B2C0_ovl7(s32);
+void func_801F9610_ovl9(void) {
+    s32 unused; /* load-bearing: puts the spill of `v` at 0x18 */
+    s32 v = func_801A0D74_ovl7();
+
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        func_8019B2C0_ovl7(1);
+    } else {
+        func_8019B2C0_ovl7(2);
+    }
+    if (v == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 7, &D_8021C560_ovl9);
+    }
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        eneTurnCommon(6);
+        func_8019F3B0_ovl7();
+    }
+}
 
 void func_801F96DC_ovl9(struct GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
@@ -238,9 +344,50 @@ void func_801F97B8_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9858_ovl9.s")
+extern f32 D_8021D95C_ovl9;
+extern f32 D_8021D960_ovl9;
+void func_801F9858_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9A1C_ovl9.s")
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        func_8019B164_ovl7();
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 0x50;
+        D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+        tmp->unk3C = 3;
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+            D_800E9020[omCurrentObj->objId] = D_8021D95C_ovl9;
+        } else {
+            D_800E9020[omCurrentObj->objId] = D_8021D960_ovl9;
+        }
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 3.0f;
+        tmp->unk20 = D_800E64D0[omCurrentObj->objId];
+        tmp->unk24 = D_800E6690[omCurrentObj->objId];
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F94D0_ovl9);
+    }
+}
+
+extern void func_800B6A2C(struct GObj *);
+extern f32 D_8021D964_ovl9;
+void func_801F9A1C_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9C60[omCurrentObj->objId] = 1;
+    tmp->unk98 = &D_801CBF8C;
+    D_800DEF90[omCurrentObj->objId] = func_800B6A2C;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    func_800AECC0(gameTicksPerDraw);
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_8021D964_ovl9;
+    func_800A9EA4(0x100B2);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 3.0f;
+    curObjSleepForever();
+}
 
 void func_801F9B84_ovl9(struct GObj *arg0) {
     if (D_800E9AA0[omCurrentObj->objId].as_s32 <= 0) {
@@ -251,7 +398,18 @@ void func_801F9B84_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9C04_ovl9.s")
+extern f32 D_8021D968_ovl9;
+void func_801F9C04_ovl9(struct GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_8021D968_ovl9;
+    func_800AA864(0x100AC, 1);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 void func_801F9CF0_ovl9(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -259,7 +417,24 @@ void func_801F9CF0_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801F9D38_ovl9.s")
+extern s32 D_801CBFD4;
+void func_801F9D38_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E8920[omCurrentObj->objId] = 0;
+    tmp->unk98 = &D_801CBFD4;
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    func_800A9EA4(0x100AE);
+    func_800AECC0(0.0f);
+    D_800E3210[omCurrentObj->objId] = 8.0f;
+    D_800E3750[omCurrentObj->objId] = -1.0f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 3.0f;
+    curObjSleepForever();
+}
 
 void func_801F9E8C_ovl9(s32 arg0) {
 
@@ -289,7 +464,18 @@ void func_801FA094_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_8021C57C_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FA0DC_ovl9.s")
+extern FUNCLIST D_8021C57C_ovl9;
+IN_FILE void func_801FA1A0_ovl9();
+void func_801FA0DC_ovl9(struct GObj *arg0) {
+    D_800DF150[omCurrentObj->objId] = func_801FA1A0_ovl9;
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        func_801A6C10_ovl7(arg0);
+    }
+    func_801A3280_ovl7();
+    D_800E8920[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_8021C57C_ovl9);
+}
 
 void func_801FA1A0_ovl9(struct GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021C588_ovl9);
@@ -324,9 +510,40 @@ void func_801FA2F8_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FA398_ovl9.s")
+extern f32 D_8021D970_ovl9;
+extern f32 D_8021D974_ovl9;
+IN_FILE void func_801FA094_ovl9();
+void func_801FA398_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FA4B8_ovl9.s")
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        func_8019B164_ovl7();
+        D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+        tmp->unk3C = 3;
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+            D_800E9020[omCurrentObj->objId] = D_8021D970_ovl9;
+        } else {
+            D_800E9020[omCurrentObj->objId] = D_8021D974_ovl9;
+        }
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FA094_ovl9);
+    }
+}
+
+extern void func_800B6A2C(struct GObj *);
+void func_801FA4B8_ovl9(struct GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800DEF90[omCurrentObj->objId] = func_800B6A2C;
+    func_800A9EA4(0x100B2);
+    func_800AECC0(0.0f);
+    ohSleep(30);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AA864(0x100AC, 1);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 void func_801FA59C_ovl9(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -341,14 +558,36 @@ void func_801FA5E4_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FA628_ovl9.s")
+extern FUNCLIST D_8021C594_ovl9;
+extern void func_800B6B8C(struct GObj *);
+void func_801FA628_ovl9(struct GObj *arg0) {
+    D_800DEF90[omCurrentObj->objId] = func_800B6B8C;
+    if (gEntitiesAngleZArray[omCurrentObj->objId] != 0.0f) {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+        D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+        gEntitiesAngleZArray[omCurrentObj->objId] = 0.0;
+    }
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, &D_8021C594_ovl9);
+}
+
 
 void func_801FA704_ovl9(struct GObj *arg0) {
     func_800AECC0(gameTicksPerDraw);
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_8021C598_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FA758_ovl9.s")
+extern s32 D_801CBFF8;
+IN_FILE void func_801FA80C_ovl9();
+IN_FILE void func_801FA704_ovl9();
+void func_801FA758_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    tmp->unk98 = &D_801CBFF8;
+    D_800DF150[omCurrentObj->objId] = func_801FA80C_ovl9;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    func_801A0D50_ovl7(func_801FA704_ovl9);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_8021C598_ovl9);
+}
 
 void func_801FA80C_ovl9(void) {
     /* the three dead locals are load-bearing: they set the 0x28 frame and put
@@ -427,7 +666,19 @@ void func_801FAE40_ovl9(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FAE94_ovl9.s")
+
+void func_801FAE94_ovl9(struct GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    func_800AA018(0x100B8);
+    D_800DF310[omCurrentObj->objId] = func_801FAE40_ovl9;
+    func_800AF27C();
+    func_800AA018(0x100B6);
+    ohSleep(30);
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 void func_801FAF68_ovl9(struct GObj *arg0) {
     if ((u32)D_800DD8D0[omCurrentObj->objId] >> 30) {
@@ -467,7 +718,17 @@ void func_801FB2E8_ovl9(struct GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 1, &D_8021C5C4_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB33C_ovl9.s")
+extern FUNCLIST D_8021C5C4_ovl9;
+IN_FILE void func_801FB408_ovl9();
+IN_FILE void func_801FB2E8_ovl9();
+void func_801FB33C_ovl9(struct GObj *arg0) {
+    D_800DF150[omCurrentObj->objId] = func_801FB408_ovl9;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    func_801A0D50_ovl7(func_801FB2E8_ovl9);
+    D_800E98E0[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+    D_800EA6E0[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 1, &D_8021C5C4_ovl9);
+}
 
 void func_801FB408_ovl9(void) {
     if (func_801A0D74_ovl7() == 0) {
@@ -520,7 +781,12 @@ void func_801FB5D4_ovl9(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB614_ovl9.s")
+void func_801FB614_ovl9(void) {
+    D_800E64D0[omCurrentObj->objId] = D_8021C5CC_ovl9[D_800E9AA0[omCurrentObj->objId].as_s32].unk0;
+    D_800E6690[omCurrentObj->objId] = D_8021C5CC_ovl9[D_800E9AA0[omCurrentObj->objId].as_s32].unk4;
+    D_800E3210[omCurrentObj->objId] = D_8021C5CC_ovl9[D_800E9AA0[omCurrentObj->objId].as_s32].unk8;
+    D_800E3750[omCurrentObj->objId] = D_8021C5CC_ovl9[D_800E9AA0[omCurrentObj->objId].as_s32].unkC;
+}
 
 void func_801FB6D0_ovl9(void) {
     D_800E6690[omCurrentObj->objId] = -D_8021C5CC_ovl9[D_800E9AA0[omCurrentObj->objId].as_s32].unk4;
