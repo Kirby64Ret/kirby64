@@ -711,7 +711,27 @@ void func_801DDD80_ovl11(void) {
     play_sound(0x1C9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DDE08_ovl11.s")
+void func_801DDE08_ovl11(void) {
+    UnkStruct800E1B50 *tmp;
+    struct GObj *obj;
+
+    tmp = D_800E1B50[omCurrentObj->objId];
+    obj = D_800DE350[omCurrentObj->objId];
+    tmp->unk70--;
+    if (tmp->unk70 == 0) {
+        tmp->unk70 = 2;
+        tmp->unk6C ^= 1;
+        if (tmp->unk6C != 0) {
+            func_801DB2BC_ovl11(obj, 1.0f);
+        } else {
+            func_801DB2BC_ovl11(obj, 0.0f);
+        }
+        tmp->unk68--;
+        if (tmp->unk68 == 0) {
+            D_800EA1A0[omCurrentObj->objId] = 0;
+        }
+    }
+}
 
 void func_801DDEC0_ovl11(struct GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, D_801E0B9C_ovl11);
@@ -876,7 +896,20 @@ void func_801DEAE8_ovl11(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DEB78_ovl11.s")
+void func_801DEB78_ovl11(struct GObj *arg0) {
+    UnkStruct800E1B50 *tmp;
+    struct Sub800E1B50_Unk94 *temp;
+
+    tmp = D_800E1B50[omCurrentObj->objId];
+    tmp->unk40 = 1;
+    temp = tmp->unk94;
+    if (temp->unk1C != 0x80000000) {
+        play_sound(temp->unk1C);
+        temp = tmp->unk94;
+    }
+    func_800FD570(0, temp->unk18, 0.0f, *(f32 *) tmp->unk88->unk10, 0.0f);
+    func_801A3E80_ovl7(arg0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DEC08_ovl11.s")
 
@@ -893,7 +926,28 @@ void func_801DEE50_ovl11(void) {
     func_801DB2BC_ovl11(temp_a0, 1.0f);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DEED0_ovl11.s")
+void func_801DEED0_ovl11(void) {
+    UnkStruct800E1B50 *tmp;
+    struct GObj *obj;
+
+    tmp = D_800E1B50[omCurrentObj->objId];
+    obj = D_800DE350[omCurrentObj->objId];
+    tmp->unk70--;
+    if (tmp->unk70 == 0) {
+        tmp->unk70 = 2;
+        tmp->unk6C ^= 1;
+        if (tmp->unk6C != 0) {
+            func_801DB2BC_ovl11(obj, 1.0f);
+        } else {
+            func_801DB2BC_ovl11(obj, 0.0f);
+        }
+        tmp->unk68--;
+        if (tmp->unk68 == 0) {
+            D_800EA1A0[omCurrentObj->objId] = 0;
+            func_801DB2BC_ovl11(obj, 2.0f);
+        }
+    }
+}
 
 void func_801DEF9C_ovl11(struct GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_801E0BC4_ovl11);
@@ -966,7 +1020,27 @@ void func_801DF384_ovl11(struct GObj *arg0) {
     curObjSleepForever();
 }
 
+// 7/53: correct instruction for instruction, but IDO puts objId*4 in $a2 and
+// the counter in $v1 where the ROM uses $v1 and $a1.
+#ifdef MIPS_TO_C
+void func_801DF3DC_ovl11(struct GObj *arg0) {
+    s32 temp;
+
+    temp = D_800E9720[omCurrentObj->objId];
+    if (temp == 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DEF9C_ovl11);
+        return;
+    }
+    D_800E9720[omCurrentObj->objId] = temp - 1;
+    if (D_800D70D8 <= 0.0f) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DEF9C_ovl11);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF3DC_ovl11.s")
+#endif
 
 void func_801DF4B0_ovl11(struct GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;

@@ -1,5 +1,9 @@
 #include <ultra64.h>
 #include <macros.h>
+#include "common.h"
+#include "ovl1/ovl1_2_2.h"
+
+extern u8 *func_8011BABC(void);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80152070_ovl3.s")
 
@@ -73,7 +77,11 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155E58_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155ED8_ovl3.s")
+s32 func_80155ED8_ovl3(void) {
+    func_8011BABC()[0x54] = 2;
+    play_sound(0x25A);
+    return 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155F0C_ovl3.s")
 

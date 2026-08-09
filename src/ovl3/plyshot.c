@@ -1,5 +1,14 @@
 #include <ultra64.h>
 #include <macros.h>
+#include "common.h"
+#include "GObj.h"
+
+extern s32 D_8012E860;
+
+extern void func_800B1900(s32);
+extern void func_80111C4C(s32);
+extern s32 func_80168408_ovl3(s32, s32, f32);
+#include "Player.h"
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015AC90_ovl3.s")
 
@@ -101,11 +110,19 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801651FC_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801653AC_ovl3.s")
+void func_801653AC_ovl3(s32 arg0) {
+    if ((gKirbyState.unk30 != 0) || (gKirbyState.action != 0xE)) {
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801653F4_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801654CC_ovl3.s")
+void func_801654CC_ovl3(s32 arg0) {
+    if (D_8012E860 == 0) {
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80165504_ovl3.s")
 
@@ -141,11 +158,19 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80167974_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80167B48_ovl3.s")
+void func_80167B48_ovl3(s32 arg0) {
+    if (D_8012E860 == 0) {
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80167B80_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80167CCC_ovl3.s")
+void func_80167CCC_ovl3(s32 arg0) {
+    if (D_8012E860 == 0) {
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80167D04_ovl3.s")
 
@@ -153,7 +178,14 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80168408_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8016854C_ovl3.s")
+s32 func_8016854C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    s32 temp = func_80168408_ovl3(arg0, arg1, arg2);
+
+    if (temp != 0) {
+        func_80111C4C(temp);
+    }
+    return temp;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8016858C_ovl3.s")
 

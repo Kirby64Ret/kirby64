@@ -1,5 +1,6 @@
 #include "common.h"
 #include "GObj.h"
+#include "Player.h"
 #include "track_arrays.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/util.h"
@@ -7,6 +8,22 @@
 #include "ovl1/ovl1_7.h"
 extern FUNCLIST D_80196990_ovl3;
 extern FUNCLIST D_80196CA8_ovl3;
+
+extern s16 D_80198824_ovl3;
+extern s32 D_80196CB8_ovl3[];
+
+typedef struct Unk80196C74 {
+    u8 unk0[7];
+} Unk80196C74;
+
+extern Unk80196C74 D_80196C74_ovl3;
+
+extern void func_80151E94_ovl3(Unk80196C74 *);
+extern void func_80153984_ovl3(void);
+extern void func_801217B8(void);
+extern s32 func_80121658(void);
+extern void func_8011D67C(void);
+extern void func_8011E548(void);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016BF60_ovl3.s")
 
@@ -44,7 +61,12 @@ void func_8016C510_ovl3(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016F6DC_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016F7C8_ovl3.s")
+void func_8016F7C8_ovl3(s32 arg0) {
+    Unk80196C74 sp18 = D_80196C74_ovl3;
+
+    func_80153984_ovl3();
+    func_80151E94_ovl3(&sp18);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016F80C_ovl3.s")
 
@@ -132,13 +154,30 @@ void func_8016C510_ovl3(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80176398_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017644C_ovl3.s")
+void func_8017644C_ovl3(void) {
+    if (D_80198824_ovl3 != 0) {
+        D_80198824_ovl3 += 5;
+        if (D_80198824_ovl3 >= 0xFF) {
+            D_80198824_ovl3 = 0xFF;
+        }
+    }
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80176484_ovl3.s")
+void func_80176484_ovl3(void) {
+    D_80198824_ovl3 = 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80176490_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80176814_ovl3.s")
+void func_80176814_ovl3(s32 arg0) {
+    if (gKirbyState.unk30 != 0) {
+        func_80153984_ovl3();
+        if (func_80121658() != 0) {
+            gKirbyState.unk30 = 0;
+        }
+    }
+    func_8011E548();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80176860_ovl3.s")
 
@@ -158,15 +197,21 @@ void func_801770E0_ovl3(struct GObj *arg0) {
     func_80120E74(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80177130_ovl3.s")
+void func_80177130_ovl3(s32 arg0) {
+    D_800DE190[omCurrentObj->objId] = 0;
+    curObjSleepForever();
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017716C_ovl3.s")
+void func_8017716C_ovl3(s32 arg0) {
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80177174_ovl3.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80177270_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801772CC_ovl3.s")
+s32 func_801772CC_ovl3(s32 arg0) {
+    return D_80196CB8_ovl3[arg0];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801772E0_ovl3.s")
 
@@ -220,7 +265,13 @@ void func_801770E0_ovl3(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BD68_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BEF4_ovl3.s")
+void func_8017BEF4_ovl3(s32 arg0) {
+    func_80153984_ovl3();
+    func_801217B8();
+    if (gKirbyState.unk30 != 0) {
+        func_8011D67C();
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BF34_ovl3.s")
 

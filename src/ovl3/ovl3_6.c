@@ -1,5 +1,15 @@
 #include <ultra64.h>
 #include <macros.h>
+#include "common.h"
+#include "Player.h"
+
+extern u8 D_801957D4_ovl3[];
+
+extern void func_80153984_ovl3(void);
+extern void func_801217B8(void);
+extern void func_8011D67C(void);
+extern void func_801632B8_ovl3(s32);
+extern void func_8015449C_ovl3(u8 *, s32);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017CF60_ovl3.s")
 
@@ -37,7 +47,13 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80181014_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_801810D0_ovl3.s")
+void func_801810D0_ovl3(s32 arg0) {
+    func_80153984_ovl3();
+    func_801217B8();
+    if (gKirbyState.unk30 != 0) {
+        func_8011D67C();
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80181110_ovl3.s")
 
@@ -73,7 +89,13 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80184B24_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80184C64_ovl3.s")
+void func_80184C64_ovl3(s32 arg0) {
+    func_80153984_ovl3();
+    func_801217B8();
+    if (gKirbyState.unk30 != 0) {
+        func_8011D67C();
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80184CA4_ovl3.s")
 
@@ -83,7 +105,13 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_801856A4_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80185748_ovl3.s")
+void func_80185748_ovl3(s32 arg0) {
+    func_80153984_ovl3();
+    func_801217B8();
+    if (gKirbyState.unk30 != 0) {
+        func_8011D67C();
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80185788_ovl3.s")
 
@@ -103,7 +131,13 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80188078_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018813C_ovl3.s")
+void func_8018813C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    if (arg1 == 0) {
+        if (arg2 != 0.0f) {
+            func_8015449C_ovl3(D_801957D4_ovl3, 0);
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80188184_ovl3.s")
 
@@ -123,13 +157,25 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018DDCC_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018DF78_ovl3.s")
+void func_8018DF78_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    if (arg1 == 0) {
+        if (arg2 != 0.0f) {
+            gKirbyState.unk44 += 1;
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018DFB4_ovl3.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018E164_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018E36C_ovl3.s")
+void func_8018E36C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    if (arg1 == 0) {
+        if (arg2 != 0.0f) {
+            func_801632B8_ovl3(0xA);
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018E3B0_ovl3.s")
 

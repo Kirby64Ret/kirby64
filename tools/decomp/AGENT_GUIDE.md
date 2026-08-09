@@ -518,3 +518,46 @@ check_layout.py is the arbiter.
 A generate->apply->verify->revert driver over 33 ovl9 pragmas produced ZERO
 matches (union/struct type inference failures, then register allocation).
 Hand-decompiling from the listing was ~10x more productive.
+
+## The frame-layout anomaly, now measured
+
+Symptom: the function is instruction-for-instruction correct but every stack
+offset is shifted, and adding or removing locals moves the whole block instead
+of closing the gap.
+
+Measured form (from ovl14, matching earlier reports in ovl11 and ovl17):
+
+    IDO:  frame = align8(0x1C + sizeof(locals))
+    ROM:  frame = align8(0x18 + sizeof(locals))
+
+IDO reserves 4 bytes below the local block that the ROM does not. Swept the
+local size from 0x18 to 0x30, tried u8[] and s32[] locals and a leading dummy
+scalar -- the offset moves wholesale and never closes. Four separate agents
+have failed on this. Do NOT spend time on a function showing this signature;
+guard it and move on.
+
+Affected and confirmed: func_801DEC34_ovl14, func_801DECAC_ovl14,
+func_801E14B0_ovl17, func_801DD1CC_ovl11, func_8010DF9C (ovl2_7),
+func_801A56C8_ovl7.
+
+## Two scheduling idioms
+
+1. Where the ROM computes a global's address into a register and stores
+   through it but `f32 *p = &arr[i]` fails, try a redundant read FIRST:
+       tmp = arr[i];
+       p   = &arr[i];
+   The redundant read is what makes IDO hoist the caller's spilled argument
+   early. Took func_8021E4B0_ovl19 from 13 diffs to MATCH.
+2. Statement order inside a struct initialisation is load-bearing even when
+   the emitted store order is unchanged. Write it in DEPENDENCY order, not
+   field order -- the scheduler sinks the dependent store and slots the
+   constant store into the gap. func_802222F0_ovl19: 16 diffs -> 0.
+
+## A prototype can be deliberately "wrong" to force a move
+
+If the ROM has `or $a0, $vN, $zero` before a call but IDO coalesces the value
+straight into $a0 so the move disappears, declaring the callee to take a
+POINTER (and casting at the call site) reproduces the move. Declarations are
+per-TU here, so this does not affect other callers -- ovl8/eneeff.c declares
+func_800A9EA4(void *) while ovl11/ovl14 declare it (s32). A/B the whole object
+before keeping such a change, and comment it as load-bearing.

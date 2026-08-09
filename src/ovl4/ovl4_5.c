@@ -12,6 +12,8 @@
 extern s32 D_800D6B24;
 extern s32 D_800D71E8[];
 extern s32 D_8015C720_ovl4;
+extern f32 D_8015C670_ovl4;
+extern f32 D_8015C674_ovl4;
 extern Gfx D_8015C3E0_ovl4[];
 
 extern void func_800A6BC0(s32);
@@ -21,8 +23,12 @@ extern void func_800A9864(s32, s32, s32);
 extern void func_800AA154(s32);
 extern void func_800AE0F0(void);
 extern void func_800B4924(s32);
+extern void func_800A71A0(s32);
+extern void func_800AAF34(s32, s32, f32);
+extern void play_music(s32, s32);
 
-void func_80159B68_ovl4(void);
+void func_80159B68_ovl4();
+void func_80159C40_ovl4(GObj *);
 void func_80159CB8_ovl4();
 void func_80159D70_ovl4(GObj *arg0);
 void func_80159D78_ovl4(GObj *arg0);
@@ -38,9 +44,31 @@ void func_80159B00_ovl4(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_5/func_80159B68_ovl4.s")
+void func_80159B68_ovl4(GObj *arg0) {
+    D_800DF150[omCurrentObj->objId] = func_80159C40_ovl4;
+    func_800AAF34(0x10, 0x300AF, 0.0f);
+    func_800A71A0(0x10);
+    gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+    D_800EA6E0[omCurrentObj->objId] = D_8015C670_ovl4;
+    func_800A9864(0x300B7, 0x1869F, 0x10);
+    D_8015C720_ovl4 = 2;
+    ohSleep(0x1E);
+    play_music(0, 0x17);
+    curObjSleepForever();
+}
 
+#ifdef MIPS_TO_C
+void func_80159C40_ovl4(GObj *arg0) {
+    f32 temp = D_8015C674_ovl4;
+
+    gEntitiesAngleYArray[omCurrentObj->objId] += D_800EA6E0[omCurrentObj->objId];
+    if (temp <= D_800E4C50[omCurrentObj->objId]) {
+        D_800E4C50[omCurrentObj->objId] -= temp;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_5/func_80159C40_ovl4.s")
+#endif
 
 void func_80159CB8_ovl4(GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
