@@ -1509,3 +1509,67 @@ Its 9 remaining pragmas are not 9 easy functions: the only tractable entry
 difference, and the other 8 are m2c drafts of 182-408 instructions that do not
 compile. An earlier brief called it "the single best completion target in the
 tree" on the count alone -- that was wrong.
+
+## A sweep harness that keeps the best variant is how segments get displaced
+
+Both segment-wide displacements in wave 7 came from this, and it cost hours of
+diagnosis across three agents:
+
+    src/ovl3/plyshot.c    +16 bytes  -> 228 functions in ovl3 looked broken
+    src/ovl1/save_file.c  +48 bytes  -> 2952 spurious relocation diffs tree-wide
+
+Neither was a wrong decompilation. Both were a sweep harness that tries N source
+variants, scores them, and **leaves the best-scoring one in the file**. When
+none of them reaches 0 diff, what stays behind is a live, un-guarded
+non-matching function — and a non-matching function is usually the wrong
+LENGTH, which displaces every symbol after it in the segment.
+
+verify.py cannot see this. It reports MATCH for functions whose instructions
+are individually correct, and the guilty function is simply "not matched yet".
+verify_rom.py reports hundreds of REAL defects but attributes them to the
+displaced functions, not the cause.
+
+**Rule: after every sweep, re-guard the loser and run check_tu_size.py.** It
+takes seconds and it is the only check that sees this class directly. If a
+sweep leaves anything un-guarded, it must be because it reached 0.
+
+The same mistake in a checkpoint commit captures the broken state: commit
+76c1cc1 froze src/ovl1/ovl1_3.c with func_800A89E0 un-guarded and +8 bytes.
+
+## Beware: files whose already-matched functions have no listing
+
+`src/ovl1/ovl1.c` and `src/ovl1/ovl1_13.c` carry 22 and 29 functions that were
+matched before this session and have no `.s` listing at all. verify.py reports
+them "unverifiable" and cannot check them, so every edit in those files must
+preserve the EXACT LINE COUNT of whatever block it replaces — IDO's register
+allocation is line-number sensitive, and a shifted line silently changes
+codegen in functions you never touched. verify_rom.py is the only check that
+would notice.
+
+## The ovl5 "level init" family is a free vein
+
+Ten functions call `ohCreateCameraWrapper` and share one shape:
+`gameSetUpdateRate(2.0f)` / camera / func_800AE048 / func_800AE0F0 /
+func_800A6E64 / func_800A8724 / func_800A6BC0 / ... /
+`D_800E98E0[request_track_3(...)] = k` / HS64_omMakeGObj /
+utilSetRectColorFullScreen / utilSpawnRect.
+
+Six matched on FIRST COMPILE, up to 168 instructions. The unlock is declaring
+`void gameSetUpdateRate(f32);` plus `void func_800AAF34(s32, s32, f32);` and
+`void func_800B2F54(s32, void *, f32);` in the TU — the trailing `0` argument
+is `0.0f`, visible in the listing as `addiu $aN, $zero, 0` rather than `move`.
+
+`func_80182B80_ovl5` (ovl5_12, 273 instructions) is the last unworked member.
+
+## The best-value unsolved scheduling question in the tree
+
+One IDO scheduling decision now blocks SEVEN functions with identical residue:
+IDO hoists the `D_803D6900` induction bump to the top of a 4x-unrolled body,
+the ROM keeps it before the last store.
+
+Members: func_8017CC3C_ovl5, func_801822AC_ovl5, func_80185EEC_ovl5,
+func_801802A8_ovl5, func_80182FE8_ovl5 (8 diffs each), plus func_800BDF2C
+(ovl1_13, 4/35) and func_800AE048 (sprite, 4/39).
+
+Anyone who works out the source form that moves that bump closes seven
+functions at once. That is a better return than any single conversion left.
