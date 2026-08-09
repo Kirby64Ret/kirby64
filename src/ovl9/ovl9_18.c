@@ -350,13 +350,7 @@ void func_8021B848_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021B8B0_ovl9.s")
 
-/* Listing carries the TU's trailing alignment padding after .size, so this must
-   stay a pragma. */
-#ifdef MIPS_TO_C
 void func_8021BA80_ovl9(s32 arg0) {
     func_801A2E64_ovl7();
     func_8021B8B0_ovl9(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021BA80_ovl9.s")
-#endif

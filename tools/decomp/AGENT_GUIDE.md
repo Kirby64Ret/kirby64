@@ -1107,18 +1107,40 @@ two others broke the ROM link mid-session reaching the same wall
 independently. Verify a claimed unblock by CONVERTING ONE FUNCTION and
 checking check_sections.py plus the link, before briefing anyone on it.
 
-## verify.py now REFUSES to report on a padding trap
+## The padding trap, and the two false alarms it produced
 
-A listing with words after its LAST `.size` carries the TU's alignment
+A listing with words after its own `.size` carries the TU's alignment
 padding. C cannot emit those, so converting the function shortens the TU and
-shifts the segment -- while verify.py reported MATCH, because the function's
-own instructions are all correct.
+shifts the segment -- while verify.py reports MATCH, because the function's
+own instructions are all correct. The test lives in `tools/decomp/padtrap.py`
+and is wired into both verify.py (refuses to report) and check_layout.py.
 
-An agent scanning ovl9's guarded drafts found FOUR reporting MATCH that were
-all padding traps (func_80208EF8, func_8021A118, func_8021BA80,
-func_80209698). Any draft-scanning tool must have this check wired in, so it
-is now inside verify.py itself: such a function reports PADDING TRAP instead
-of a result. 103 still-pragma functions tree-wide are in this class.
+**The first version of this test was wrong in two ways, and both cost real
+work.** It claimed 103 functions were permanently impossible. The true number
+is 32. If you were briefed on the old figure, ignore it.
+
+1. It anchored on the file's LAST `.size`. When a listing's only `.size`
+   belongs to a leading `.late_rodata` block, that anchor sits before
+   `.section .text` and the ENTIRE FUNCTION BODY reads as padding
+   (`src/ovl2/ovl2_4.c func_800FD9D4`). The `.size` must name the function.
+
+2. It flagged any tail at all. But `.text` is aligned to 16 bytes, and a nop
+   is 0x00000000 -- exactly what the assembler's alignment zero-fill emits. A
+   tail of 1-3 nops is put straight back by the alignment and dropping it
+   changes nothing.
+
+The 16-byte cutoff was measured, not assumed. Seven condemned ovl9 drafts were
+un-guarded in one build: the six with 1-2 nop tails came back byte-exact, and
+`func_80209698_ovl9` -- tail of FOUR nops -- came up exactly 16 bytes short. A
+4-word tail means the function already ended on a 16-byte boundary, so that
+block is deliberate and no `.align` will reproduce it.
+
+**Rule: a tail is harmless iff it is all zero AND under 4 words.** Any
+non-zero word, or a full 16-byte block, is the real trap.
+
+Do not hand-roll this scan. Call `padtrap.classify(listing_path, func)`; it
+returns `('trap'|'benign'|'clean', n_words)`. Of the pragmas remaining, 32 are
+traps and 69 are benign tails that are ordinary decompilation work.
 
 ## K&R definitions solve the home-slot problem
 
@@ -1192,3 +1214,101 @@ advance which functions are worth attempting.
 signature. Two separate `if (...) return 0;` produce `bc1fl` skips instead.
 One function went 43/54 -> MATCH on that change alone, and the same shape then
 gave two more first-compile, one of them 102 instructions.
+
+# Wave 6 levers (ovl9 +53, ovl7 +18, ovl10 +10, all byte-exact)
+
+The productive vein was straight-line entity setup/init: filter the listings
+for `pad==0 && no jlabel && no 'rodata' in the .s && branch count <= 1`, read
+the listing and write the segment idiom directly. 22 of 28 matched on the
+FIRST compile. That filter still has unworked entries.
+
+## Declaration order
+
+**A pointer local declared FIRST reserves the top stack slot even when it only
+ever lives in a register.** `func_801B00BC_ovl7` was 4/103 off purely because
+`struct UnkStruct800E1B50 *temp` was declared before two address-taken locals;
+moving it LAST closed it. This is the inverse of the "declare `ent` first"
+rule and both are real -- `ent`-first is for CSE of `omCurrentObj->objId`,
+`ent`-last is for stack layout when other locals have their address taken.
+
+**`f32 *p = &arr[i]` is often the wrong lever.** Where the ROM re-materialises
+the element address, the inline form plus a `struct UnkStruct800E1B50 *tmp =
+D_800E1B50[objId];` initializer is what matches; the pointer local pushed
+`func_80206038_ovl9` to 59 diffs while the inline form matched instantly. The
+pointer local also makes IDO reload `omCurrentObj` after a store through it
+(aliasing).
+
+**The float CSE is separate from the objId CSE.** `func_801E2588_ovl9`
+re-reads `omCurrentObj->objId` for every store but loads `D_800E6690[objId]`
+once -- it needs an explicit `f32 temp;` even though the index is written
+inline. 40 diffs -> MATCH.
+
+## Constants and types
+
+* **`x * (f32)0` keeps `mul.s`; `x * 0.0f` is const-folded to a zero store.**
+* **`arr[i] = 0.0;` (double literal) forks the zero constant.** Confirmed
+  again: `func_801B7EA8_ovl7` was 47 diffs off solely because one
+  `angle.v.x = 0.0f` CSE'd with a shared `0.0f`.
+* **`-1` into adjacent `u8`/`s8` fields must be type-split.** `tmp->unk38 = -1`
+  on a `u8` emits `li 255`; the ROM shares one `-1` register with the `s8`
+  neighbour. `*(s8 *)&tmp->unk38 = -1;` fixes it (28 diffs -> MATCH).
+* **`ohSleep` takes `u8`** -- a bare `u8` local gives `lbu` with no `andi`.
+* **Float args past the first two go in integer registers as raw bits.**
+  `lui $a1, 0x41C8` before a call is `25.0f`, not an int. `func_802119F8_ovl9`
+  went 44 diffs -> MATCH once the callee was prototyped `(ptr, f32)`.
+* **`ABSF(f())` calls the function three times** -- three identical `jal`s
+  around a `neg.s`/`mov.s` pair is the macro, not a loop.
+
+## Control flow
+
+* **`if (x == 0) {big} else {small}` puts the small block last.** Where the ROM
+  branches forward to a two-instruction block, INVERT the condition rather
+  than using `else if`. `func_801FC820_ovl9`: 58 diffs -> MATCH on that alone.
+* **A ternary's arm order is visible from which constant is preloaded.**
+* **A call whose result is compared AFTER an intervening call needs an
+  explicit local.** Not `a && f() == 3` (that short-circuits); write
+  `r = f(); if (a && r == 3)`.
+* **`b = (a = expr) - k;`** is the shape when the ROM loads a value once,
+  stores it, and stores a derived value. Two statements re-read the index and
+  lose the CSE.
+
+## Two ways a guarded draft can silently corrupt the TU
+
+1. **A prototype hoisted out of a dead `#ifdef MIPS_TO_C` branch changes the
+   whole TU.** Un-guarding a draft and moving its `void f(struct GObj *);`
+   above the guard added +16 bytes to ovl9_7_2 by changing the argument-
+   register moves of LATER, ALREADY-MATCHED functions. verify.py showed 0
+   diff; only check_tu_size caught it. Keep a draft's declarations INSIDE the
+   dead branch.
+
+2. **A nested guard silently activates your C.** Wrapping a function already
+   inside `#ifdef MIPS_TO_C … #else <pragma> #endif` gives an outer guard
+   whose `#else` branch is your C -- the pragma never assembles. TU size and
+   layout can both stay clean; only verify_rom.py sees it (reported as
+   "pragma N bytes differ"). Check nesting after any automated guard insertion.
+
+## verify.py reloc false positive
+
+`%hi/%lo(SYM + N)` in the ROM vs IDO's `%hi(SYM)` plus an in-place addend
+produces IDENTICAL linked words when the hi does not carry, but verify.py
+reports a diff because objdump prints only the symbol name. Seen on
+`func_801DBC00_ovl10` and `func_801BF220_ovl7`; the latter was applied anyway
+and the ROM is byte-exact, which settles it. verify_rom.py is the arbiter.
+
+## Confirmed floors -- do not re-litigate
+
+**Argument/temp register rotation.** `func_801E6564_ovl10` and its three twins
+(`6E84`/`8184`/`8AF8`, all 44 insns, 8 diffs, ROM `$a1` vs IDO `$a0`) survived
+if/else, ternary, separate assignment, `!var`, two locals and a cast
+parameter. `func_801DBC00_ovl10` and `func_801E932C_ovl10` are the same family.
+
+**FP register assignment and load scheduling are coupled and cannot be
+separated.** In `func_802114E4_ovl9` the variable assigned first gets both
+`$f0` and the earlier load slot; the ROM pairs them oppositely, so no source
+order reaches it. All six declaration orders swept.
+
+**Any ovl7 listing containing `.section .late_rodata` is a trap** for a
+different reason than padding: `D_801CE14C_ovl7` exists ONLY inside that
+pragma's listing, not in `asm/data/ovl7/`, so converting the function removes
+rodata the segment still needs. Exclude any listing containing the string
+`rodata` unless the file has a migrated `.rodata` subsegment.

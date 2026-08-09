@@ -594,9 +594,6 @@ void func_80208E44_ovl9(struct GObj *this) {
     }
 }
 
-/* Listing carries the TU's trailing alignment padding after .size, so this must
-   stay a pragma. */
-#ifdef MIPS_TO_C
 void func_80208EF8_ovl9(struct GObj *this) {
     if (D_800E8AE0[omCurrentObj->objId] & 1) {
         D_800E64D0[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId] * 0.5f;
@@ -610,6 +607,3 @@ void func_80208EF8_ovl9(struct GObj *this) {
         D_800E3750[omCurrentObj->objId] = 2.0f * D_800E3750[omCurrentObj->objId];
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_80208EF8_ovl9.s")
-#endif

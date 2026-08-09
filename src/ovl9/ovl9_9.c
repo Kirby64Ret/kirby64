@@ -1465,9 +1465,6 @@ void func_80201D10_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-// PADDING TRAP: this listing carries the TU's alignment padding after its
-// last .size, so converting it shortens the segment. Must stay a pragma.
 void func_80201D7C_ovl9(struct GObj *arg0) {
     if (D_800E7880[omCurrentObj->objId] != 0xFF) {
         if (D_800E83E0[omCurrentObj->objId] == 3) {
@@ -1475,7 +1472,4 @@ void func_80201D7C_ovl9(struct GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_80201D7C_ovl9.s")
-#endif
 

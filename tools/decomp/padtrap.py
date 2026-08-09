@@ -15,17 +15,28 @@ two whole classes of false alarm, and both cost real agent time:
     function body reads as padding. (src/ovl2/ovl2_4.c func_800FD9D4.)
     Fixed by requiring the `.size` to name THIS function.
 
-  * an all-`nop` tail is 0x00000000 repeated, which is byte-identical to the
-    zero fill the assembler emits for end-of-.text alignment. Dropping it
-    changes nothing, and the byte-exact ROM proves it: ovl7_14 and ovl7_16 both
-    sat converted with 3-nop tails while sha1 matched.
-    Fixed by classifying a zero-only tail as BENIGN.
+  * a SHORT all-`nop` tail is 0x00000000 repeated, which is byte-identical to
+    the zero fill the assembler emits aligning .text to 16 bytes. Dropping it
+    changes nothing because the alignment puts it straight back, and the
+    byte-exact ROM proves it: ovl7_14 and ovl7_16 both sat converted with
+    3-nop tails while sha1 matched.
 
-A tail with any NON-ZERO word is the real trap: those bytes exist nowhere else
-and no alignment pad will reproduce them.
+The cutoff is the alignment quantum, and it was measured, not assumed. Seven
+condemned ovl9 drafts were un-guarded at once: six with 1-2 nop tails rebuilt
+byte-exact, and the seventh -- func_80209698_ovl9, tail of FOUR nops -- came up
+exactly 16 bytes short. A 4-word tail means the function already ended on a
+16-byte boundary, so those 16 bytes are a deliberate extra block that no
+alignment directive will reproduce.
+
+So a tail is BENIGN iff it is all zero AND shorter than one 16-byte block.
+Anything else is the real trap: a non-zero word exists nowhere else, and a
+full block is padding the alignment will not regenerate.
 
 classify() -> ('trap' | 'benign' | 'clean', n_words)
 """
+
+ALIGN_WORDS = 4          # .text aligns to 16 bytes; measured, see above.
+
 import re
 
 WORD = re.compile(r'^\s*/\* \w+ \w+ ([0-9A-Fa-f]{8}) \*/\s*\S', re.M)
@@ -48,6 +59,6 @@ def classify(listing_path, func):
     words = WORD.findall(tail)
     if not words:
         return 'clean', 0
-    if all(int(w, 16) == 0 for w in words):
+    if all(int(w, 16) == 0 for w in words) and len(words) < ALIGN_WORDS:
         return 'benign', len(words)
     return 'trap', len(words)

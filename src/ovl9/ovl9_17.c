@@ -146,9 +146,6 @@ void func_80219F70_ovl9(s32 this) {
     func_801ACF84_ovl7(this);
 }
 
-/* Listing carries the TU's trailing alignment padding after .size, so this must
-   stay a pragma. */
-#ifdef MIPS_TO_C
 void func_8021A118_ovl9(struct GObj *this) {
     func_801A0D74_ovl7(this);
     if (D_800E8AE0[omCurrentObj->objId] & 0x10) {
@@ -158,6 +155,3 @@ void func_8021A118_ovl9(struct GObj *this) {
         func_801A03B4_ovl7();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_17/func_8021A118_ovl9.s")
-#endif
