@@ -11,11 +11,20 @@ extern Gfx D_8018A5B8_ovl5[];
 void func_80183FC8_ovl5(void);
 void func_80184084_ovl5(void);
 extern s32 D_8018EE20_ovl5[];
+extern s32 D_8018EE14_ovl5;
+void func_80183270_ovl5(GObj *);
 
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801830A0_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801831E0_ovl5.s")
+void func_801831E0_ovl5(GObj *arg0) {
+    D_8018EE14_ovl5 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0xA;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800DF150[omCurrentObj->objId] = func_80183270_ovl5;
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183270_ovl5.s")
 

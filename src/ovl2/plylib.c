@@ -608,6 +608,9 @@ void func_8011C838(void) {
 }
 
 #ifdef MIPS_TO_C
+// 16 diffs, register naming only: the ROM keeps gKirbyState in $a1 and the
+// D_800D6F10+8 pointer in $a0; IDO starts one register lower ($a0/$v1).
+// Loop form, index type, pointer-walk form and declaration order were swept.
 void func_8011C87C(void) {
     u32 i;
     struct UnkStruct800D6F18 *p = (struct UnkStruct800D6F18 *)(&D_800D6F10 + 2);

@@ -22,6 +22,7 @@ extern s32 D_8018E050_ovl5[];
 extern u8 D_8018E228_ovl5[];
 extern u8 D_8018E208_ovl5[];
 s32 func_8015F4C4_ovl5(s32, s32);
+void func_801642A4_ovl5(s32, s32, s32, s32);
 typedef struct Unk8Bytes {
     s32 unk0;
     s32 unk4;
@@ -167,7 +168,21 @@ void func_801615D8_ovl5(s32 arg0, f32 arg1) {
     D_800EAA60[D_8018E030_ovl5[arg0]] = arg1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161610_ovl5.s")
+void func_80161610_ovl5(s32 arg0) {
+    s32 idx = D_8018E030_ovl5[arg0];
+    f32 *p = &gEntitiesNextPosXArray[idx];
+
+    *p += D_800EAA60[idx];
+    if (D_800EAA60[idx] < 0.0f) {
+        if (*p <= D_800EA6E0[idx]) {
+            *p = D_800EA6E0[idx];
+        }
+    } else {
+        if (D_800EA6E0[idx] <= *p) {
+            *p = D_800EA6E0[idx];
+        }
+    }
+}
 
 s32 func_801616A8_ovl5(void) {
     s32 i;
@@ -266,7 +281,15 @@ void func_80162C68_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801642A4_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164344_ovl5.s")
+void func_80164344_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
+    s32 pad;
+
+    if (arg1 >= 100) {
+        arg1 = 99;
+    }
+    func_801642A4_ovl5(arg0, arg1 % 10, (s32) (arg2 + 7.0f), (s32) arg3);
+    func_801642A4_ovl5(arg0, arg1 / 10, (s32) arg2, (s32) arg3);
+}
 
 u16 func_801643E8_ovl5(s32 arg0) {
     switch (arg0) {

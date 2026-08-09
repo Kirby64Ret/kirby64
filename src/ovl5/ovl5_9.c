@@ -12,8 +12,27 @@
 
 extern Gfx D_801895A8_ovl5[];
 void func_8017EE4C_ovl5(GObj *);
+void func_8017EDE0_ovl5();
+void func_8017F008_ovl5();
+void func_8017F110_ovl5();
+#include "unk_structs/D_800D7178.h"
+extern u32 D_800D6B68;
+extern u8 D_8018EDC0_ovl5;
+extern s32 D_8018EDC4_ovl5;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_9/func_8017ED60_ovl5.s")
+void func_8017ED60_ovl5(void) {
+    switch (D_800E98E0[omCurrentObj->objId]) {
+        case 0:
+            func_8017EDE0_ovl5();
+            break;
+        case 1:
+            func_8017F008_ovl5();
+            break;
+        case 2:
+            func_8017F110_ovl5();
+            break;
+    }
+}
 
 void func_8017EDE0_ovl5(GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = 0xA;
@@ -55,7 +74,25 @@ void func_8017F2A8_ovl5(void) {
     D_800E98E0[request_track_3(9, 0, 0x70)] = 2;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_9/func_8017F304_ovl5.s")
+void func_8017F304_ovl5(void) {
+    D_8018EDC0_ovl5 = 0;
+    if (D_800D6B68 == 0xA) {
+        D_8018EDC4_ovl5 = 0;
+        D_800D7178.unk68 = 1;
+        return;
+    }
+    switch (D_800D7178.unk44) {
+        case 0x1D:
+            D_8018EDC4_ovl5 = 0;
+            break;
+        case 0x1F:
+            D_8018EDC4_ovl5 = 1;
+            break;
+        case 0x1E:
+            D_8018EDC4_ovl5 = 2;
+            break;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_9/func_8017F38C_ovl5.s")
 

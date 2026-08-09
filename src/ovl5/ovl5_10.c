@@ -14,12 +14,31 @@ extern u8 D_8018EDD0_ovl5;
 extern Gfx D_80189868_ovl5[];
 s32 saveCheckCutsceneWatched(s32);
 void func_801800CC_ovl5(void);
+void func_8017F6F8_ovl5();
+void func_8017FA7C_ovl5();
+void func_8017FD84_ovl5();
+void func_8017FFB8_ovl5();
 extern u32 D_800D6B68;
 extern u8 D_8018EDD0_ovl5;
 extern u32 D_8018EDD4_ovl5;
 extern u32 D_80189C98_ovl5;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017F660_ovl5.s")
+void func_8017F660_ovl5(void) {
+    switch (D_800E98E0[omCurrentObj->objId]) {
+        case 0:
+            func_8017F6F8_ovl5();
+            break;
+        case 1:
+            func_8017FA7C_ovl5();
+            break;
+        case 2:
+            func_8017FD84_ovl5();
+            break;
+        case 3:
+            func_8017FFB8_ovl5();
+            break;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017F6F8_ovl5.s")
 

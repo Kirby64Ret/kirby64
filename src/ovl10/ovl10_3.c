@@ -51,6 +51,25 @@ extern FUNCLIST D_801F457C_ovl10;
 void func_801E6D08_ovl10(struct GObj *);
 void func_801E8008_ovl10(struct GObj *);
 
+struct Ovl10AnimInfo {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0x10];
+};
+
+extern s32 D_801F3F28_ovl10;
+extern f32 D_801F4B50_ovl10;
+extern s32 D_801F3F70_ovl10;
+void func_80111550(void *);
+void *func_80111C88(void *, u32);
+void func_80111ECC(void *);
+s32 func_80110150(void *);
+void func_80169430_ovl3(s32, u8, u8, s32);
+
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E3770_ovl10.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E3874_ovl10.s")
@@ -334,14 +353,18 @@ void func_801E63FC_ovl10(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E6444_ovl10.s")
 
 #ifdef MIPS_TO_C
+// 8 diffs: only the register holding `var` (ROM $a1, IDO $a0) and the
+// consequent delay-slot fill differ.
 void func_801E6564_ovl10(void) {
+    s32 id;
     s32 var = 0;
 
     if (D_800E9C60[omCurrentObj->objId] != 0) {
         var = func_801A0D74_ovl7();
     }
     if (var == 0) {
-        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_801F451C_ovl10);
+        id = D_800DDFD0[omCurrentObj->objId];
+        utilFuncTableJump(id, 3, &D_801F451C_ovl10);
     }
     if (D_800E9C60[omCurrentObj->objId] != 0) {
         eneTurnCommon(6);
@@ -516,7 +539,13 @@ void func_801E78D4_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E7990_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E7C38_ovl10.s")
+void func_801E7C38_ovl10(GObj *arg0) {
+    if (D_800E9E20[omCurrentObj->objId] == 1) {
+        *(u32 *) &D_800E8920[omCurrentObj->objId] = 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801E75E4_ovl10);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E7CC0_ovl10.s")
 
@@ -641,7 +670,12 @@ void func_801E90CC_ovl10(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E9128_ovl10.s")
+void func_801E9128_ovl10(GObj *arg0) {
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801F4B50_ovl10;
+    D_800E3210[omCurrentObj->objId] = 13.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+}
 
 void func_801E91B0_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 6, &D_801F4588_ovl10);
@@ -668,7 +702,14 @@ void func_801E93F8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E95C4_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E9770_ovl10.s")
+void func_801E9770_ovl10(GObj *arg0) {
+    if (D_800E9E20[omCurrentObj->objId] == 1) {
+        D_800E9FE0[omCurrentObj->objId].as_s32 = -1;
+        D_800E9560[omCurrentObj->objId] = 0;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801E91B0_ovl10);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E980C_ovl10.s")
 
@@ -881,9 +922,48 @@ void func_801EE5A8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EEE44_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EEED4_ovl10.s")
+#ifdef MIPS_TO_C
+// Instruction-for-instruction correct; only the local block sits 8 bytes
+// high. IDO reserves an 8-byte temp area for the nested
+// func_80111ECC(func_80111C88(...)) call that the ROM does not; splitting
+// it into two statements, prototype changes and struct resizing do not
+// remove it.
+s32 func_801EEED4_ovl10(GObj *arg0) {
+    struct Ovl10AnimInfo sp1C;
 
+    func_80111550((void *) omCurrentObj->objId);
+    func_80111ECC(func_80111C88(&D_801F3F28_ovl10, omCurrentObj->objId));
+    if (func_80110150(&sp1C) != 0) {
+        func_80169430_ovl3(sp1C.unkC, sp1C.unk0, sp1C.unk1, 4);
+        return 1;
+    }
+    return 0;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EEED4_ovl10.s")
+#endif
+
+#ifdef MIPS_TO_C
+// Instruction-for-instruction correct; only the local block sits 8 bytes
+// high. IDO reserves an 8-byte temp area for the nested
+// func_80111ECC(func_80111C88(...)) call that the ROM does not; splitting
+// it into two statements, prototype changes and struct resizing do not
+// remove it.
+s32 func_801EEF4C_ovl10(GObj *arg0) {
+    struct Ovl10AnimInfo sp18;
+
+    func_80111550((void *) omCurrentObj->objId);
+    func_80111ECC(func_80111C88(&D_801F3F70_ovl10, omCurrentObj->objId));
+    if (func_80110150(&sp18) != 0) {
+        func_80169430_ovl3(sp18.unkC, sp18.unk0, sp18.unk1, 5);
+        play_sound(0x1EE);
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EEF4C_ovl10.s")
+#endif
 
 void func_801EEFCC_ovl10(void) {
     s32 temp_a1;

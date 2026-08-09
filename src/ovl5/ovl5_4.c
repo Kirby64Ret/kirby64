@@ -10,17 +10,47 @@ extern s32 D_80187384_ovl5[];
 extern Gfx D_80186A80_ovl5[];
 extern Vector2 D_8018E3A0_ovl5[];
 void func_800BB3F0(void);
+extern f32 D_8018D6D0_ovl5;
+extern f32 D_8018D6D4_ovl5;
+extern s32 D_8018E268_ovl5[];
+f32 func_80167164_ovl5(s32);
+extern f32 D_8018D6CC_ovl5;
+extern s32 D_800D6B24;
+extern u32 D_800D6B68;
+extern s32 D_8018E260_ovl5;
+s32 func_80165B84_ovl5(s32);
+void func_8016CB14_ovl5(void);
+extern s32 D_8018E2A0_ovl5[];
+s32 func_80165F1C_ovl5(s32);
+extern u8 D_8018E3C8_ovl5[];
+extern u8 D_8018E3D8_ovl5[];
+#include "main/contpad.h"
+#include "ovl1/game.h"
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_801668E0_ovl5.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80166B28_ovl5.s")
 
 #ifdef MIPS_TO_C
-/* frame comes out 0x8 instead of 0x10 and the copy schedules differently */
-Vector2 func_80166C68_ovl5(s32 arg1) {
-    Vector2 sp8 = D_8018E3A0_ovl5[arg1];
+/* 2 diffs, both the frame size: IDO emits 0x18, the ROM has 0x10 (the 4-byte
+   frame anomaly). Every instruction and stack offset is otherwise exact with
+   an 8-byte-aligned two-word union local. */
+typedef union UnkVec2 {
+    struct {
+        s32 unk0;
+        s32 unk4;
+    } s;
+    f64 force_align;
+} UnkVec2;
 
-    return sp8;
+UnkVec2 *func_80166C68_ovl5(UnkVec2 *dst, s32 idx) {
+    UnkVec2 *p = (UnkVec2 *) &D_8018E3A0_ovl5[idx];
+    UnkVec2 sp8;
+
+    sp8.s.unk0 = p->s.unk0;
+    sp8.s.unk4 = p->s.unk4;
+    *dst = sp8;
+    return dst;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80166C68_ovl5.s")
@@ -34,9 +64,30 @@ Vector2 func_80166C68_ovl5(s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80166F14_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80167164_ovl5.s")
+f32 func_80167164_ovl5(s32 arg0) {
+    if (gPlayerControllers[arg0].buttonHeld & 0x800) {
+        return 180.0f;
+    }
+    if (gPlayerControllers[arg0].buttonHeld & 0x100) {
+        return 90.0f;
+    }
+    if (gPlayerControllers[arg0].buttonHeld & 0x400) {
+        return 0.0f;
+    }
+    if (gPlayerControllers[arg0].buttonHeld & 0x200) {
+        return 270.0f;
+    }
+    return D_8018D6CC_ovl5;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_801671E8_ovl5.s")
+void func_801671E8_ovl5(s32 arg0) {
+    f32 temp;
+
+    temp = func_80167164_ovl5(arg0);
+    if (temp != D_8018D6D0_ovl5) {
+        gEntitiesAngleYArray[D_8018E268_ovl5[arg0]] = temp * D_8018D6D4_ovl5 / 180.0f;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016725C_ovl5.s")
 
@@ -44,7 +95,21 @@ Vector2 func_80166C68_ovl5(s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80167650_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80167898_ovl5.s")
+s32 func_80167898_ovl5(s32 arg0) {
+    s32 temp;
+
+    if (D_8018E3C8_ovl5[arg0] == 0) {
+        if (gPlayerControllers[arg0].buttonHeld & 0xF00) {
+            return 1;
+        }
+        return 0;
+    }
+    temp = D_8018E3D8_ovl5[arg0 * 20];
+    if (temp == 0 || temp == 1 || temp == 2 || temp == 3) {
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016792C_ovl5.s")
 
@@ -93,7 +158,22 @@ Unk2Bytes func_80168E34_ovl5(s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016A2B8_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016A61C_ovl5.s")
+s32 func_8016A61C_ovl5(s32 arg0, s32 arg1) {
+    if (func_80165B84_ovl5(arg0) != 0) {
+        return 0x29A;
+    }
+    switch (arg1) {
+        case 0:
+            return arg0 + 8;
+        case 1:
+            return arg0 - 8;
+        case 3:
+            return arg0 - 1;
+        case 2:
+            return arg0 + 1;
+    }
+    return 0x29A;
+}
 
 s32 func_8016A69C_ovl5(s32 arg0) {
     return D_80187384_ovl5[arg0];
@@ -109,7 +189,12 @@ s32 func_8016A69C_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016BFF0_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C208_ovl5.s")
+void func_8016C208_ovl5(GObj *arg0) {
+    if (func_80165F1C_ovl5(D_800E98E0[omCurrentObj->objId]) != D_800E9AA0[omCurrentObj->objId].as_s32) {
+        D_800E9C60[D_8018E2A0_ovl5[D_800E9AA0[omCurrentObj->objId].as_s32]] = 0;
+        func_800B1900(omCurrentObj->objId);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C28C_ovl5.s")
 
@@ -186,7 +271,19 @@ void func_8016F730_ovl5(void) {
     utilSpawnRect(0, 0x10, 2);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016F770_ovl5.s")
+void func_8016F770_ovl5(s32 arg0) {
+    if (D_800D6B24 == 0) {
+        if (D_8018E260_ovl5 != 0) {
+            D_8018E260_ovl5--;
+            if ((D_8018E260_ovl5 == 0) || (gPlayerControllers->buttonPressed & 0x9000)) {
+                D_800D6B68 = gGameState;
+                gGameState = 0x20;
+                func_8016CB14_ovl5();
+                func_8016F730_ovl5();
+            }
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016F7EC_ovl5.s")
 

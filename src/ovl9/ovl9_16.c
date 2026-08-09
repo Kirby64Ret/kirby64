@@ -60,32 +60,25 @@ extern void *func_80111C88(s32 *, u32);
 extern void func_80111ECC(void *);
 extern s32 func_80110B00(struct Ovl9AnimInfo *);
 
-#ifdef MIPS_TO_C
 void func_802187C0_ovl9(s32 arg0) {
-    s32 *p = &D_800EA1A0[omCurrentObj->objId];
-    s32 temp = *p;
-
-    if (temp < arg0 / 2) {
+    if (D_800EA1A0[omCurrentObj->objId] < arg0 / 2) {
         if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
             D_800E9020[omCurrentObj->objId] -= D_8021DE80_ovl9 / (f32) arg0;
         } else {
             D_800E9020[omCurrentObj->objId] += D_8021DE84_ovl9 / (f32) arg0;
         }
-    } else if (temp < arg0) {
+    } else if (D_800EA1A0[omCurrentObj->objId] < arg0) {
         if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
             D_800E9020[omCurrentObj->objId] -= D_8021DE88_ovl9 / (f32) arg0;
         } else {
             D_800E9020[omCurrentObj->objId] += D_8021DE8C_ovl9 / (f32) arg0;
         }
     } else {
-        *p = 0;
+        D_800EA1A0[omCurrentObj->objId] = 0;
         return;
     }
     D_800EA1A0[omCurrentObj->objId]++;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_16/func_802187C0_ovl9.s")
-#endif
 
 void func_80218930_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];

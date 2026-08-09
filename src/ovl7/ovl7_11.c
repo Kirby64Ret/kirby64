@@ -16,6 +16,15 @@ extern struct Sub800E1B50_Unk98 D_801CC088_ovl7;
 extern struct Sub800E1B50_Unk98 D_801CC0AC_ovl7;
 extern struct Sub800E1B50_Unk98 D_801CC0F4_ovl7;
 extern FUNCLIST D_801CD6D0_ovl7;
+
+struct Unk801CD648 {
+    f32 unk0;
+    s32 unk4;
+};
+
+extern struct Unk801CD648 D_801CD648_ovl7[];
+extern f32 D_801CD688_ovl7[];
+extern s32 random_soft_s32_range(s32);
 extern FUNCLIST D_801CD718_ovl7;
 void func_8019B424_ovl7(struct GObj *);
 void eneTurnCommon(s32);
@@ -103,7 +112,14 @@ void func_801B514C_ovl7(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B51F0_ovl7.s")
+void func_801B51F0_ovl7(void) {
+    s32 r = random_soft_s32_range(8);
+
+    D_800E3210[omCurrentObj->objId] = D_801CD648_ovl7[r].unk0;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E9720[omCurrentObj->objId] = D_801CD648_ovl7[r].unk4;
+    D_800E64D0[omCurrentObj->objId] = D_801CD688_ovl7[r];
+}
 
 void func_801B5294_ovl7(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 1;

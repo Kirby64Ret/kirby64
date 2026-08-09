@@ -809,3 +809,39 @@ symbol nothing defines, and the strings the pragma listings used to supply
 vanish with the pragma -- shrinking the block and the whole segment. This is
 what took ovl2_4.c from 0xB0 to 0x30 and shifted the back half of the ROM.
 Write the literal, and convert all users so they land in source order.
+
+## Correction: declaration order is not the whole $v0/$v1 story
+
+The rule "first-declared integer local takes $v0" is real but incomplete. On
+func_802187C0_ovl9 (25 diffs) reordering did nothing -- the cure was DELETING
+both locals (`s32 *p`, `s32 temp`) and indexing inline. The locals were
+squatting on $v0/$v1, which the ROM reserves for the omCurrentObj value and
+the objId<<2 temp.
+
+So the ladder on a v0/v1 mismatch is: reorder the declarations, then REMOVE
+them, then add one. All three appear in ovl9.
+
+## `tmp = D_800E1B50[objId]` must be the declaration INITIALIZER
+
+IDO's CSE window shares the FIRST `omCurrentObj->objId` read between the two
+adjacent statements. Writing the assignment as the second statement makes it
+share reads 2 and 3 instead of 1 and 2, and the whole function shifts. Two
+functions went 24->0 and 23->0 on this alone. One function needed the
+opposite, which was visible from the `lui` order in its listing.
+
+## A prototype can HURT as well as help
+
+Adding `extern void f(f32);` for a float-argument callee is mandatory -- one
+missing prototype inserted a `cvt.d.s` and offset an entire function by 48
+diffs. But REMOVING `extern void play_sound(s32);` was what closed another
+function: it let IDO load the argument straight into $a0 instead of `lw $v0` +
+`move`. Prototypes are a per-TU knob in both directions; constant-argument
+callers are unaffected either way.
+
+## Not every Vector local is a Vector
+
+func_801FD080_ovl9 needed `Vector sp20` rewritten as `f32 sp20[3]` with a
+leading `s32 unused;` to place the array at 0x20, the ABS ternary written as
+the ABSF() macro inline in the `if`, and `sp20[1] = 0.0;` as a DOUBLE literal
+to fork the second `mtc1 $zero`. Three separate levers on one function; its
+clone needed the identical treatment.
