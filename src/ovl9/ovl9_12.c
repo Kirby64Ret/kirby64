@@ -16,7 +16,7 @@ extern void func_800A7F74(s32, s32, s32, f32, f32, f32);
 extern s32 D_801CB4DC_ovl7;
 
 void func_80209698_ovl9(void);
-void func_802094DC_ovl9(void);
+void func_802094DC_ovl9(struct GObj *);
 void func_802091B4_ovl9(struct GObj *);
 
 void func_80209030_ovl9(struct GObj *this) {
@@ -92,19 +92,15 @@ void func_8020938C_ovl9(s32 arg0) {
 
 /* 7 diffs: ROM loads D_800E98E0[objId] into $a1, IDO into $a0 (argument-
    register rotation, the confirmed floor). Everything else is exact. */
-#ifdef MIPS_TO_C
-void func_802094DC_ovl9(void) {
+void func_802094DC_ovl9(struct GObj *this) {
     if (D_800E98E0[omCurrentObj->objId] == 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
     } else {
         D_800E98E0[omCurrentObj->objId]--;
-        func_801A0D74_ovl7();
+        func_801A0D74_ovl7(this);
         func_801A03B4_ovl7();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_12/func_802094DC_ovl9.s")
-#endif
 
 void func_8020954C_ovl9(struct GObj *this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
