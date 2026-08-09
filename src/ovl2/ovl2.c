@@ -5,8 +5,11 @@
 #include "ovl1/util.h"
 #include "main/object_helpers.h"
 #include "main/rdp_reset.h"
+#include "main/vi.h"
+#include "main/gtl.h"
 
 extern Gfx D_80123E90[];
+void gameSetUpdateRate(f32);
 
 #ifdef MIPS_TO_C
 
@@ -266,40 +269,53 @@ void func_800F6AB0(Gfx **glistp) {
     gSPDisplayList((*glistp)++, D_80123E90);
 }
 
-#ifdef MIPS_TO_C
+// The vu16 casts in the clear loop are load-bearing: without volatile IDO
+// hoists the D_803D6900 induction bump to the top of the 4x-unrolled body,
+// where the ROM keeps it before the last store (see ovl5_7 func_8017CC3C_ovl5).
+// The chained store into D_80123EEC / heapSize is load-bearing too: two plain
+// statements fold the struct base into the store displacement instead of
+// materialising it into $v0.
+// verify.py reports 1 reloc false positive on the loop bound: IDO emits
+// %hi(D_803D6900)+2 / %lo+0x5800, which links to 0x803FC100 exactly.
+void func_800F6AD4(s32 arg0, s32 arg1) {
+    extern u16 gFrameBuffer[][320];
+    extern u16 D_8012EB00[][320];
+    extern u16 D_803D6900[];
+    extern void *D_8022FB50;
+    extern ScreenSettings D_80123EC0;
+    extern SceneSetup D_80123F68;
+    extern SceneSetup D_80123EDC;
+    extern s32 D_80123EEC;
+    extern s32 D_800D6B6C;
+    extern s32 D_800D6FA8;
+    extern s32 D_800D6FAC;
+    extern s32 D_8012D920;
+    extern s32 D_800D7B78;
+    extern s32 D_800D7B7C;
+    extern s32 D_800D7B80;
+    extern s32 D_800BE500;
+    extern s32 D_800BE504;
+    extern s32 D_800BE508;
+    extern s32 D_800BE534;
+    s32 i;
+    s32 heap;
 
-void func_800F6AD4(s32 arg0, ? arg1) {
-    ? *var_a0;
-    ? *var_v1;
-    s32 temp_t0;
-
-    *(&D_800D6B6C + 4) = arg0;
-    D_80123EC0.unkC = &D_8012EB00 - 0x1900;
-    viApplyScreenSettings(&D_80123EC0, arg0);
-    var_v1 = &D_803D6900;
-    var_a0 = &gFrameBuffer;
+    *(s32 *) ((u8 *) &D_800D6B6C + 4) = arg0;
+    D_80123EC0.zBuffer = (u16 *) ((u32) D_8012EB00 - 0x1900);
+    viApplyScreenSettings(&D_80123EC0);
+    i = 0;
     do {
-        var_a0->unk0 = 1;
-        var_v1->unk3F00 = 1;
-        var_a0->unk2 = 1;
-        var_v1->unk3F02 = 1;
-        var_a0->unk4 = 1;
-        var_v1->unk3F04 = 1;
-        var_a0->unk6 = 1;
-        var_v1 += 8;
-        var_v1->unk3EFE = 1;
-        var_a0 += 8;
-    } while (var_v1 != &D_803FC100);
-    temp_t0 = &gFrameBuffer - &D_8022FB50;
-    D_80123F68.unk10 = temp_t0;
-    D_80123EEC = temp_t0;
-    *(&D_800D6F58 + 0x50) = 0;
+        ((vu16 *) gFrameBuffer)[i] = 1;
+        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
+        i++;
+    } while (i != 320 * 240);
+    heap = (u8 *) gFrameBuffer - (u8 *) &D_8022FB50;
+    D_80123EEC = D_80123F68.gtlSetup.heapSize = heap;
+    D_800D6FA8 = 0;
     D_8012D920 = 0;
-    *(&D_800D6F58 + 0x54) = 0;
-    D_800D7B80 = 0;
-    D_800D7B7C = 0;
-    D_800D7B78 = 0;
-    gameSetUpdateRate(0x40000000, &D_800D7B7C, &D_803FC100);
+    D_800D6FAC = 0;
+    D_800D7B78 = D_800D7B7C = D_800D7B80 = 0;
+    gameSetUpdateRate(2.0f);
     if ((D_800BE500 == 6) && (D_800BE504 == 0) && (D_800BE534 == 2)) {
         gtlCreateScene(&D_80123F68);
     } else {
@@ -308,6 +324,3 @@ void func_800F6AD4(s32 arg0, ? arg1) {
     func_800F7484(D_800BE508);
     func_800BB3F0();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2/func_800F6AD4.s")
-#endif

@@ -277,6 +277,20 @@ void func_802271A8_ovl18(void) {
     func_800A74D8();
 }
 
+/* 14/54, all inside the clear loop.  Twin of func_80151CEC_ovl4 (also 14).
+ * The four screen-clear siblings that write gFrameBuffer FIRST
+ * (func_8015531C/80158048/80159A54/80159EFC_ovl4) all match with these vu16
+ * casts; these two write D_803D6900 first and IDO will not follow.  IDO makes
+ * the SECOND-written array the induction pointer; both ROM functions make the
+ * FIRST-written one (D_803D6900) the induction and give it $v0, with the fill
+ * constant in $v1 and gFrameBuffer in $a0.  Swept: both store orders, all four
+ * vu16/u16 combinations, for vs do/while, comparing against &D_803D6900[i] and
+ * against D_803FC100, explicit fb-pointer and zb-pointer walks (34 and 16), and
+ * an s32 return type on each of the six callees in turn -- every one stays at
+ * 14 or gets worse.  An explicit `vu16 *fb` walk DOES reproduce the ROM's loop
+ * body exactly (D store first, bump before the last gFrameBuffer store) but
+ * costs 6 preheader diffs to a gFrameBuffer lui that then CSEs with the
+ * heapSize subtraction, and rotates $v0/$v1/$a0 the other way. */
 #ifdef MIPS_TO_C
 u32 func_80227308_ovl18(s32 arg0) {
     s32 i;
@@ -290,10 +304,10 @@ u32 func_80227308_ovl18(s32 arg0) {
     D_8022AE4C_ovl18.unk10 = (u32)gFrameBuffer - (u32)&D_8022FB50;
     i = 0;
     do {
-        gFrameBuffer[i] = 1;
-        D_803D6900[i + 0x1F80] = 1;
+        ((vu16 *) gFrameBuffer)[i] = 1;
+        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
         i++;
-    } while (i < 0x12C00);
+    } while (i != 0x12C00);
     gtlCreateScene(&D_8022AE4C_ovl18);
     func_800BB3F0();
     return D_800D6B74;

@@ -84,6 +84,9 @@ typedef struct N_ALMainBus_s {
 #define N_AL_AUX_R_OUT          2352
 #define N_AL_DIVIDED            368
 #define N_FIXED_SAMPLE          184
+#define N_AL_TEMP_0             0
+#define N_AL_TEMP_1             368
+#define N_AL_TEMP_2             736
 #define ADPCMFBYTES             9
 #define ADPCMVSIZE              8
 
@@ -101,6 +104,42 @@ typedef struct N_ALMainBus_s {
     _a->words.w0 = (_SHIFTL(A_SAVEBUFF, 24, 8) | _SHIFTL(c, 12, 12)|    \
                     _SHIFTL(d, 0, 12));                                 \
     _a->words.w1 = (unsigned int)(s);                                   \
+}
+
+#define n_aLoadBuffer(pkt, c, d, s)                                     \
+{                                                                       \
+    Acmd *_a = (Acmd *)pkt;                                             \
+                                                                        \
+    _a->words.w0 = (_SHIFTL(A_LOADBUFF, 24, 8) | _SHIFTL(c, 12, 12)|    \
+                    _SHIFTL(d, 0, 12));                                 \
+    _a->words.w1 = (unsigned int)(s);                                   \
+}
+
+#define n_aLoadADPCM(pkt, c, d)                                         \
+{                                                                       \
+    Acmd *_a = (Acmd *)pkt;                                             \
+                                                                        \
+    _a->words.w0 = _SHIFTL(A_LOADADPCM, 24, 8) | _SHIFTL(c, 0, 24);     \
+    _a->words.w1 = (unsigned int) d;                                    \
+}
+
+#define n_aPoleFilter(pkt, f, g, t, s)                                  \
+{                                                                       \
+    Acmd *_a = (Acmd *)pkt;                                             \
+                                                                        \
+    _a->words.w0 = (_SHIFTL(A_POLEF, 24, 8) | _SHIFTL(f, 16, 8) |       \
+                    _SHIFTL(g, 0, 16));                                 \
+    _a->words.w1 = (_SHIFTL(t, 24, 8) |                                 \
+                    _SHIFTL((unsigned int)(s), 0, 24));                 \
+}
+
+#define n_aResample(pkt, s, f, p, i, o)                                 \
+{                                                                       \
+    Acmd *_a = (Acmd *)pkt;                                             \
+                                                                        \
+    _a->words.w0 = (_SHIFTL(A_RESAMPLE, 24, 8) | _SHIFTL(s, 0, 24));    \
+    _a->words.w1 = (_SHIFTL(f, 30, 2) | _SHIFTL(p, 14, 16) |            \
+                    _SHIFTL(i, 2, 12) | _SHIFTL(o, 0, 2));              \
 }
 
 typedef struct N_ALAuxBus_s {
@@ -737,11 +776,67 @@ Acmd *n_alAuxBusPull(s32 sampleOffset, Acmd *p) {
     return ptr;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027D58.s")
+Acmd *func_80027D58(ALFx *r, s16 *curr_ptr, s32 buff, Acmd *p) {
+    Acmd *ptr = p;
+    s32 after_end, before_end;
+    s16 *updated_ptr, *delay_end;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027E84.s")
+    delay_end = &r->base[r->length];
+    if (curr_ptr < r->base)
+        curr_ptr += r->length;
+    updated_ptr = curr_ptr + N_FIXED_SAMPLE;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027F38.s")
+    if (updated_ptr > delay_end) {
+        after_end = updated_ptr - delay_end;
+        before_end = delay_end - curr_ptr;
+
+        n_aSaveBuffer(ptr++, before_end << 1, buff, osVirtualToPhysical(curr_ptr));
+        n_aSaveBuffer(ptr++, after_end << 1, buff + (before_end << 1), osVirtualToPhysical(r->base));
+    } else {
+        n_aSaveBuffer(ptr++, N_FIXED_SAMPLE << 1, buff, osVirtualToPhysical(curr_ptr));
+    }
+
+    return ptr;
+}
+
+Acmd *func_80027E84(ALLowPass *lp, s32 buff, Acmd *p) {
+    Acmd *ptr = p;
+    {
+        s16 tmp;
+
+        tmp = buff >> 8;
+        n_aLoadADPCM(ptr++, 32, osVirtualToPhysical(lp->fcvec.fccoef));
+        n_aPoleFilter(ptr++, lp->first, lp->fgain, tmp, osVirtualToPhysical(lp->fstate));
+    }
+
+    lp->first = 0;
+
+    return ptr;
+}
+
+Acmd *func_80027F38(ALFx *r, s16 *curr_ptr, s32 buff, s32 count, Acmd *p) {
+    Acmd *ptr = p;
+    s32 after_end, before_end;
+    s16 *updated_ptr, *delay_end;
+
+    delay_end = &r->base[r->length];
+
+    if (curr_ptr < r->base)
+        curr_ptr += r->length;
+    updated_ptr = curr_ptr + count;
+
+    if (updated_ptr > delay_end) {
+        after_end = updated_ptr - delay_end;
+        before_end = delay_end - curr_ptr;
+
+        n_aLoadBuffer(ptr++, before_end << 1, buff, osVirtualToPhysical(curr_ptr));
+        n_aLoadBuffer(ptr++, after_end << 1, buff + (before_end << 1), osVirtualToPhysical(r->base));
+    } else {
+        n_aLoadBuffer(ptr++, count << 1, buff, osVirtualToPhysical(curr_ptr));
+    }
+
+    return ptr;
+}
 
 typedef struct {
     /* 0x00 */ u8  pad00[0x10];
@@ -770,9 +865,118 @@ f32 func_80028080(KOsc *osc, s32 arg1) {
     return osc->unk1C * tmp;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002810C.s")
+Acmd *func_8002810C(ALFx *r, ALDelay *d, s32 buff, Acmd *p) {
+    Acmd *ptr = p;
+    s32 ratio, count, rbuff = N_AL_TEMP_2;
+    s16 *out_ptr;
+    f32 fincount, fratio, delta;
+    s32 ramalign = 0, length;
+    s32 incount = N_FIXED_SAMPLE;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80028318.s")
+    if (d->rs) {
+        length = d->output - d->input;
+        delta = func_80028080(d, incount);
+        delta /= length;
+        delta = (s32) (delta * UNITY_PITCH);
+        delta = delta / UNITY_PITCH;
+        fratio = 1.0f - delta;
+        fincount = d->rs->delta + (fratio * (f32) incount);
+        count = (s32) fincount;
+        d->rs->delta = fincount - (f32) count;
+        out_ptr = &r->input[-(d->output - d->rsdelta)];
+        ramalign = ((s32) out_ptr & 0x7) >> 1;
+        ptr = func_80027F38(r, out_ptr - ramalign, rbuff, count + ramalign, ptr);
+
+        ratio = (s32) (fratio * UNITY_PITCH);
+        {
+            s16 tmp;
+
+            tmp = buff >> 8;
+            n_aResample(ptr++, osVirtualToPhysical(d->rs->state), d->rs->first, ratio,
+                        rbuff + (ramalign << 1), tmp);
+        }
+        d->rs->first = 0;
+        d->rsdelta += count - incount;
+    } else {
+        out_ptr = &r->input[-d->output];
+        ptr = func_80027F38(r, out_ptr, buff, N_FIXED_SAMPLE, ptr);
+    }
+
+    return ptr;
+}
+
+#define SWAP(in, out)   \
+{                       \
+    s16 t = out;        \
+    out = in;           \
+    in = t;             \
+}
+
+Acmd *func_80028318(s32 sampleOffset, Acmd *p) {
+    Acmd *ptr = p;
+    ALFx *r = (ALFx *) ((N_ALAuxBus *) n_syn->auxBus)->fx;
+    s16 i, buff1, buff2, input, output;
+    s16 *in_ptr, *out_ptr, gain, *prev_out_ptr = 0;
+    ALDelay *d, *pd;
+
+    ptr = n_alAuxBusPull(sampleOffset, p);
+
+    input = N_AL_AUX_L_OUT;
+    output = N_AL_AUX_R_OUT;
+    buff1 = N_AL_TEMP_0;
+    buff2 = N_AL_TEMP_1;
+
+    aMix(ptr++, 0, 0xda83, N_AL_AUX_L_OUT, input);
+    aMix(ptr++, 0, 0x5a82, N_AL_AUX_R_OUT, input);
+
+    ptr = func_80027D58(r, r->input, input, ptr);
+
+    aClearBuffer(ptr++, output, N_FIXED_SAMPLE << 1);
+
+    for (i = 0; i < r->section_count; i++) {
+        d = &r->delay[i];
+        in_ptr = &r->input[-d->input];
+        out_ptr = &r->input[-d->output];
+
+        if (in_ptr == prev_out_ptr) {
+            SWAP(buff1, buff2);
+        } else {
+            ptr = func_80027F38(r, in_ptr, buff1, N_FIXED_SAMPLE, ptr);
+        }
+        ptr = func_8002810C(r, d, buff2, ptr);
+
+        if (d->ffcoef) {
+            aMix(ptr++, 0, (u16) d->ffcoef, buff1, buff2);
+            if (!d->rs && !d->lp) {
+                ptr = func_80027D58(r, out_ptr, buff2, ptr);
+            }
+        }
+
+        if (d->fbcoef) {
+            aMix(ptr++, 0, (u16) d->fbcoef, buff2, buff1);
+            ptr = func_80027D58(r, in_ptr, buff1, ptr);
+        }
+
+        if (d->lp)
+            ptr = func_80027E84(d->lp, buff2, ptr);
+
+        if (!d->rs)
+            ptr = func_80027D58(r, out_ptr, buff2, ptr);
+
+        if (d->gain)
+            aMix(ptr++, 0, (u16) d->gain, buff2, output);
+
+        prev_out_ptr = &r->input[d->output];
+    }
+
+    r->input += N_FIXED_SAMPLE;
+    if (r->input > &r->base[r->length])
+        r->input -= r->length;
+
+    aDMEMMove(ptr++, output, N_AL_AUX_L_OUT, N_FIXED_SAMPLE << 1);
+
+    return ptr;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800285F8.s")
 

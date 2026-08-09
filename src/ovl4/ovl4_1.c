@@ -365,29 +365,42 @@ extern void auSetBGMVolume(s32 playerID, u32 vol);
 extern void func_800A74D8(void);
 extern void func_800BB3F0(void);
 
+/* 14/59.  Every instruction is right; the residue is the induction choice plus a
+ * $v0/$v1 swap.  IDO makes the SECOND-written array the loop's induction
+ * pointer, and this ROM makes the FIRST-written one (D_803D6900) the induction
+ * while gFrameBuffer keeps $a0.  Swept: both store orders, all four vu16/u16
+ * volatile combinations, for vs do/while, u32 index, leading and trailing pad
+ * locals, an explicit pointer walk (77 insns, much worse), reusing arg0 as the
+ * index, chained assignment in both directions, and s32 return types on
+ * func_800BB3F0 / gtlCreateScene.  The four sibling clears (ovl4_2/3/4/5) all
+ * write gFrameBuffer first and match with the vu16 casts; only this one does
+ * not. */
 #ifdef MIPS_TO_C
-// near-match: loop is 4x-unrolled by uopt with an extra rotation + the fill
-// constant cached in $s0 across calls; target rematerializes it in $v1 instead
+// The (u32) cast on D_8012EB00 and the vu16 casts in the clear loop are both
+// load-bearing; see src/ovl5/ovl5_7.c func_8017CC3C_ovl5.
 s32 func_80151CEC_ovl4(s32 arg0) {
     s32 i;
 
     D_800D6B54[2] = arg0;
-    D_800D6B74 = 1;
+    *(s32 *) &D_800D6B74 = 1;
     scRemovePostProcessFunc();
     func_800A74D8();
     auSetBGMVolume(0, 0x7800);
     gameSetUpdateRate(2.0f);
-    D_8015A048_ovl4.zBuffer = (u16 *) D_8012EB00 - 0xC80;
+    D_8015A048_ovl4.zBuffer = (u16 *) ((u32) D_8012EB00 - 0x1900);
     viApplyScreenSettings(&D_8015A048_ovl4);
     D_8015A064_ovl4.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
-    for (i = 0; i < 320 * 240; i++) {
-        D_803D6900[i + 0x1F80] = 1;
-        ((u16 *) gFrameBuffer)[i] = 1;
-    }
+    i = 0;
+    do {
+        ((vu16 *) gFrameBuffer)[i] = 1;
+        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
+        i++;
+    } while (i != 320 * 240);
     gtlCreateScene(&D_8015A064_ovl4);
     func_800BB3F0();
     return D_800D6B74;
 }
+
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_1/func_80151CEC_ovl4.s")
 #endif

@@ -28,6 +28,18 @@ extern Gfx D_8015AA70_ovl4[];
 extern s32 D_800D6B24;
 extern s32 D_8015C6D8_ovl4;
 
+#include "main/vi.h"
+#include "main/gtl.h"
+extern u16 gFrameBuffer[][320];
+extern u16 D_8012EB00[][320];
+extern void *D_8018EE60;
+extern u16 D_803D6900[];
+extern ScreenSettings D_8015AAA8_ovl4;
+extern SceneSetup D_8015AAC4_ovl4;
+extern s32 saveSoundMode;
+extern void auSetHighSoundQuality(void);
+extern void auSetLowSoundQuality(void);
+
 extern void func_800AC610(void);
 extern void func_80157C38_ovl4(void);
 
@@ -256,5 +268,25 @@ void func_80158020_ovl4(void) {
     func_800AC610();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80158048_ovl4.s")
+// The (u32) cast on D_8012EB00 and the vu16 casts in the clear loop are both
+// load-bearing; see src/ovl5/ovl5_7.c func_8017CC3C_ovl5.
+void func_80158048_ovl4(void) {
+    s32 i;
+
+    D_8015AAA8_ovl4.zBuffer = (u16 *) ((u32) D_8012EB00 - 0x1900);
+    viApplyScreenSettings(&D_8015AAA8_ovl4);
+    D_8015AAC4_ovl4.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
+    i = 0;
+    do {
+        ((vu16 *) gFrameBuffer)[i] = 1;
+        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
+        i++;
+    } while (i != 320 * 240);
+    gtlCreateScene(&D_8015AAC4_ovl4);
+    if (saveSoundMode == 1) {
+        auSetHighSoundQuality();
+    } else {
+        auSetLowSoundQuality();
+    }
+}
 

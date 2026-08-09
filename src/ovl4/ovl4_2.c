@@ -29,6 +29,15 @@ extern GObj *D_800DE350[];
 s32 func_80152220_ovl4(s32 arg0, s32 arg1);
 s32 func_801532CC_ovl4(s32 arg0, s32 arg1);
 
+#include "main/vi.h"
+#include "main/gtl.h"
+extern u16 gFrameBuffer[][320];
+extern u16 D_8012EB00[][320];
+extern void *D_8018EE60;
+extern u16 D_803D6900[];
+extern ScreenSettings D_8015A7C0_ovl4;
+extern SceneSetup D_8015A7DC_ovl4;
+
 void func_80151DE0_ovl4(void) {
     func_80151E20_ovl4();
 }
@@ -323,5 +332,20 @@ void func_801552F8_ovl4(Gfx **gfxP) {
     gSPDisplayList((*gfxP)++, D_8015A790_ovl4);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_8015531C_ovl4.s")
+// The (u32) cast on D_8012EB00 and the vu16 casts in the clear loop are both
+// load-bearing; see src/ovl5/ovl5_7.c func_8017CC3C_ovl5.
+void func_8015531C_ovl4(void) {
+    s32 i;
+
+    D_8015A7C0_ovl4.zBuffer = (u16 *) ((u32) D_8012EB00 - 0x1900);
+    viApplyScreenSettings(&D_8015A7C0_ovl4);
+    D_8015A7DC_ovl4.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
+    i = 0;
+    do {
+        ((vu16 *) gFrameBuffer)[i] = 1;
+        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
+        i++;
+    } while (i != 320 * 240);
+    gtlCreateScene(&D_8015A7DC_ovl4);
+}
 

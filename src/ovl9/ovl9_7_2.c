@@ -951,7 +951,7 @@ void func_801F5BD0_ovl9(GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CBDB8;
-void func_801F5CD4_ovl9(struct GObj *);
+void func_801F5CD4_ovl9();
 void func_801F5BD0_ovl9(struct GObj *);
 
 void func_801F5C18_ovl9(struct GObj *arg0) {
@@ -967,14 +967,16 @@ void func_801F5C18_ovl9(struct GObj *arg0) {
 extern FUNCLIST D_8021C470_ovl9;
 extern struct GObjProcess *gEntityGObjProcessArray[];
 s32 func_801A0D74_ovl7(void);
-void func_8019F3F0_ovl7(void);
+/* the s32 return type is load-bearing: it reserves $v0 and rotates every temp
+   in func_801F5CD4_ovl9 up one slot (9 diffs -> 7). */
+s32 func_8019F3F0_ovl7(void);
 void func_801F5BD0_ovl9(struct GObj *);
 
-#ifdef MIPS_TO_C
 void func_801F5CD4_ovl9(void) {
     s32 ret;
     s32 v;
     GObj *o;
+    s32 *p;
 
     ret = 0;
     if (D_800EA1A0[omCurrentObj->objId] != 0) {
@@ -986,11 +988,12 @@ void func_801F5CD4_ovl9(void) {
     if (D_800E9C60[omCurrentObj->objId] != 0) {
         func_8019F3F0_ovl7();
         o = omCurrentObj;
-        v = D_800E98E0[o->objId];
+        p = &D_800E98E0[o->objId];
+        v = *p;
         if (v > 0) {
-            D_800E98E0[o->objId] = v - 1;
+            *p = v - 1;
         } else if (v == 0) {
-            D_800E98E0[o->objId] = -1;
+            *p = -1;
             if (ret == 0) {
                 gEntityFuncListIDArray[o->objId] = 3;
                 assign_new_process_entry(gEntityGObjProcessArray[o->objId], func_801F5BD0_ovl9);
@@ -998,9 +1001,6 @@ void func_801F5CD4_ovl9(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F5CD4_ovl9.s")
-#endif
 
 void func_800B74B8(s32);
 void func_800AFBB4(s32, struct GObj *);
@@ -1160,7 +1160,7 @@ void func_801F651C_ovl9(struct GObj *arg0) {
     }
 }
 
-void func_801F6794_ovl9(struct GObj *);
+void func_801F6794_ovl9();
 
 void func_801F66D4_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -1173,7 +1173,35 @@ void func_801F66D4_ovl9(struct GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_8021C45C_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F6794_ovl9.s")
+void func_801F6794_ovl9(void) {
+    s32 ret;
+    s32 v;
+    GObj *o;
+    s32 *p;
+
+    ret = 0;
+    if (D_800EA1A0[omCurrentObj->objId] != 0) {
+        ret = func_801A0D74_ovl7();
+    }
+    if (ret == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 5, &D_8021C470_ovl9);
+    }
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        func_8019F3F0_ovl7();
+        o = omCurrentObj;
+        p = &D_800E98E0[o->objId];
+        v = *p;
+        if (v > 0) {
+            *p = v - 1;
+        } else if (v == 0) {
+            *p = -1;
+            if (ret == 0) {
+                gEntityFuncListIDArray[o->objId] = 3;
+                assign_new_process_entry(gEntityGObjProcessArray[o->objId], func_801F5BD0_ovl9);
+            }
+        }
+    }
+}
 
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));

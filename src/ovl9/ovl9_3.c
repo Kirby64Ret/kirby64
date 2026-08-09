@@ -429,7 +429,16 @@ extern s32 D_801C8520_ovl7;
 extern s32 D_801C8568;
 
 /* 2 diffs: ROM keeps the objId index in $v1, this form puts it in $v0 and the
-   shift result in $v1.  Declaration order / extra locals do not move it. */
+   shift result in $v1.  Declaration order / extra locals do not move it.
+   Wave 10 also swept: inline objId at every use (5), an `obj = omCurrentObj`
+   local (32 -- rotates every temp DOWN one and DOES put the id in $v1, so the
+   register class is reachable, just not in isolation), `(void)` definition with
+   a no-argument call, s32 return type, a declaration initializer, u32/u16 id,
+   a leading dead scalar, a leading pointer local, and a named local for the
+   func_8019DD78_ovl7 result declared both first and second.  The three callees
+   are all declared at FILE scope earlier in the TU, so the callee-return-type
+   lever cannot be applied here without breaking func_801DFB28_ovl9 /
+   func_801DFE00_ovl9. */
 #ifdef MIPS_TO_C
 // 5 diffs: objId<<2 is in $v0, the ROM uses $v1.
 void func_801E06C0_ovl9(GObj *arg0) {
@@ -461,7 +470,67 @@ void func_801E078C_ovl9(GObj *arg0, s32 arg1, f32 arg2) {
     }
 }
 
+/* 3 diffs, and the identical residue to its twin func_801D7064_ovl9 (ovl9_1.c):
+   the ROM keeps omCurrentObj->objId in $v0 while IDO parks it in $a1, so the
+   `or $a0, $v0, $zero` before func_80111550 differs too. Swept: every
+   declaration order, id inlined at both uses, a declaration initializer for
+   temp, u32/(u32)-cast id, a leading dead scalar, `goto` to a shared return-0
+   block (64), and s32/void/K&R/(void *) prototypes for func_80111550,
+   func_801D7330_ovl9 and func_8019F650_ovl7 on the twin. The value's live
+   range spans two `return 0` blocks that set $v0, which is what makes IDO
+   skip $v0; nothing in the source reaches it. */
+#ifdef MIPS_TO_C
+struct Ovl9Unk8C3 {
+    u32 unk0;
+    u32 unk4;
+};
+
+struct Ovl9AnimInfo3 {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0x10];
+};
+
+s32 func_80110B00(struct Ovl9AnimInfo3 *);
+
+s32 func_801E07DC_ovl9(s32 arg0) {
+    struct Ovl9AnimInfo3 sp30;
+    struct UnkStruct800E1B50 *temp;
+    struct Ovl9AnimObj2 *anim;
+    struct Ovl9Unk8C3 *p;
+    s32 id;
+
+    id = omCurrentObj->objId;
+    temp = D_800E1B50[id];
+    if (temp == NULL) {
+        return 0;
+    }
+    if (temp->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550(id);
+    anim = func_80111C88(temp->unk8C, omCurrentObj->objId);
+    p = (struct Ovl9Unk8C3 *) temp->unk8C[2];
+    if ((p->unk4 == 0) && (arg0 != 0)) {
+        anim->unk24->unk8 = arg0;
+    }
+    func_80111ECC(anim);
+    if (func_80110B00(&sp30) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp30.unk2;
+        temp->unk43 = sp30.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        temp->unk43 = 0;
+    }
+    return D_800E83E0[omCurrentObj->objId];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801E07DC_ovl9.s")
+#endif
 
 extern void func_800B6FD8(s32);
 extern void func_801A0D50_ovl7(void *);

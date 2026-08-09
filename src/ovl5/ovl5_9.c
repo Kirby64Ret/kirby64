@@ -185,5 +185,40 @@ void func_8017F570_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_801895A8_ovl5);
 }
 
+// PADDING TRAP (padtrap: trap, 4 words after .size) -- converting this would
+// shorten the TU and shift the segment, so the pragma must stay. The body below
+// is the framebuffer-clear form proved byte-exact on func_8017CC3C_ovl5 (the
+// vu16 casts are what stop IDO hoisting the D_803D6900 induction bump); it is
+// kept live for the PC port, which builds with NON_MATCHING.
+#ifdef NON_MATCHING
+#include "main/vi.h"
+#include "main/gtl.h"
+
+extern u16 gFrameBuffer[][320];
+extern u16 D_8012EB00[][320];
+extern void *D_8018EE60;
+extern u16 D_803D6900[];
+extern ScreenSettings D_801895D8_ovl5;
+extern SceneSetup D_801895F4_ovl5;
+
+void func_8017F594_ovl5(void) {
+    s32 i;
+
+    if (D_800D6B68 != 0x1C) {
+        func_800A74D8();
+    }
+    D_801895D8_ovl5.zBuffer = (u16 *) ((u32) D_8012EB00 - 0x1900);
+    viApplyScreenSettings(&D_801895D8_ovl5);
+    D_801895F4_ovl5.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
+    i = 0;
+    do {
+        ((vu16 *) gFrameBuffer)[i] = 1;
+        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
+        i++;
+    } while (i != 320 * 240);
+    gtlCreateScene(&D_801895F4_ovl5);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_9/func_8017F594_ovl5.s")
+#endif
 

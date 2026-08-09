@@ -392,10 +392,12 @@ s32 func_800ACE88(SPObj *spobj, u8 colortype) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ADD14.s")
 
-// Draft, 4/39: two scheduler pair-swaps (the D_800DD6E0 store vs the zero-trip
-// guard, and the loop's sltu vs sw). Loop must be the explicit if+do/while --
-// a for() gets 4x-unrolled; the tail must be one chained assignment or the
-// three leading symbols lose their full-address materialisation.
+// Draft, 2/39: only the loop's `sltu $at` vs `sw $v0, 0($v1)` pair-swap is left.
+// Hoisting `i = 0;` ABOVE the zero-trip `if` was worth 2 diffs: it gives IDO a
+// delay-slot filler so the D_800DD6E0 store stays before the beqz. NOT the wave-9
+// volatile family -- there is no unrolled loop here. Swept: for(), chained store,
+// temp local, volatile store, condition-in-a-local, ptr arith, u32/s32 compare
+// casts, guard as `count != 1`, decl order -- all 2 or worse.
 #ifdef MIPS_TO_C
 void func_800AE048(u32 count) {
     SPObj *p;
@@ -406,8 +408,8 @@ void func_800AE048(u32 count) {
     } else {
         p = gtlMalloc(count * 0x100, 8);
         D_800DD6E0 = p;
+        i = 0;
         if (count - 1 != 0) {
-            i = 0;
             do {
                 i++;
                 p->next = (SPObj *) ((u8 *) p + 0x100);

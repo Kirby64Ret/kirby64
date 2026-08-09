@@ -769,10 +769,10 @@ loop_4:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDE0C.s")
 #endif
 
-// Draft, 4/35: instruction-exact except the loop counter's `or $a1,$zero,$zero`,
-// which IDO schedules before the two hoisted array-base addu and the ROM after.
-// Swept for/while/do-while, both store orders, u32 counter, hoisted pointers,
-// dummy locals, constant-in-local.
+// Draft, 4/35: `or $a1,$zero,$zero` (counter init) scheduled 3 slots early.
+// Split residue: for() fixes the ENTRY exactly but hoists the pointer bumps;
+// vu32 on both stores fixes the bumps but sinks the counter bump (8/35). The
+// two cures are incompatible here. Swept loop forms, casts, pads, unroll.
 #ifdef MIPS_TO_C
 extern u32 D_800F5770[][0x40];
 extern u32 D_800F4D70[][0x40];

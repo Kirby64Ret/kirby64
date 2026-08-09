@@ -206,13 +206,40 @@ void func_800A2D68(void) {
     D_800BE504 = D_800BE530 = D_800D6B9C;
 }
 
-#ifdef MIPS_TO_C
+extern s32 D_800D6E88;
+extern s32 D_800D6E8C;
+extern s32 D_800D6E90;
+extern s32 D_800D6E94;
+extern s32 D_800D6E98;
+extern s32 D_800D6E9C;
+extern s32 D_800D6B54;
+extern s32 D_800D7090;
+extern s32 D_800D7098[16];
+extern f32 D_800D70D8[16];
+extern s32 D_800D7118[16];
+extern s32 D_800D6E10;
+extern s32 D_800D7088;
+extern f32 D_800EC9E4;
+extern s32 D_800D6E40;
+extern s32 D_800D6E44;
+extern s32 D_800D6E1C;
+extern s32 D_800D6E18;
+extern s32 D_800D6E14;
+extern s32 D_800D6E78;
+extern s32 D_800D6E68;
+extern s32 D_800D6E7C;
+extern s32 D_800D6E6C;
+extern s32 D_800D6E80;
+extern s32 D_800D6E70;
+extern s32 D_800D6E84;
+extern s32 D_800D6E74;
+extern u32 D_800BE544;
+
+void func_8011C8D0(void);
 
 void func_800A2E98(void) {
-    ? *var_v0;
-    ? *var_v0_2;
-    ? *var_v0_3;
-    s32 temp_f18;
+    s32 *p;
+    f32 *q;
 
     D_800D6E88 = gKirbyLives;
     D_800D6E8C = gKirbyHp;
@@ -220,31 +247,26 @@ void func_800A2E98(void) {
     D_800D6E98 = gKirbyStars;
     D_800D6E5C = 0.0f;
     D_800D6E58 = D_800D6E5C;
-    temp_f18 = D_800D6E58;
-    D_800D6E9C = temp_f18;
-    D_800D6E94 = temp_f18;
+    D_800D6E94 = D_800D6E9C = D_800D6E58;
     D_800D6B54 = 0;
     D_800D7090 = -1;
-    func_8011C8D0(-1, &D_800D6E9C);
+    func_8011C8D0();
     D_800BE4F8 = 1;
     D_800BE544 = -0x1E;
-    for (i = 0; i < 64; i++) {
-        D_800D7098[i] = 0;
+    for (p = D_800D7098; p < &D_800D7098[16]; p++) {
+        *p = 0;
     }
-    for (i = 0; i < 64; i++) {
-        D_800D70D8[i] = 0;
+    for (q = D_800D70D8; q < &D_800D70D8[16]; q++) {
+        *q = 0.0;
     }
-    for (i = 0; i < 64; i++) {
-        D_800D7118[i] = 0;
+    for (p = D_800D7118; p < &D_800D7118[16]; p++) {
+        *p = -1;
     }
     D_800D6E10 = 0;
     D_800D7088 = 0;
-    D_800EC9E4 = 0.0f;
-    D_800D6E40 = 0;
-    D_800D6E44 = 0;
-    D_800D6E1C = 0;
-    D_800D6E18 = 0;
-    D_800D6E14 = 0;
+    D_800EC9E4 = 0.0;
+    D_800D6E44 = D_800D6E40 = 0;
+    D_800D6E14 = D_800D6E18 = D_800D6E1C = 0;
     D_800D6E78 = 0;
     D_800D6E68 = 0;
     D_800D6E7C = 0;
@@ -254,9 +276,6 @@ void func_800A2E98(void) {
     D_800D6E84 = 0;
     D_800D6E74 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A2E98.s")
-#endif
 
 void func_800A3058(void) {
     u32 i;
@@ -321,30 +340,24 @@ void func_800A3150(s32 arg0) {
 void func_800A3228(void) {
 }
 
-#ifdef MIPS_TO_C
+extern u8 D_800BE400[][6];
 
 void func_800A3230(void) {
-    s32 var_s0;
-    void *temp_v0;
+    s32 i;
 
     if (D_800BE500 == 0) {
-        var_s0 = 0;
-        do {
-            temp_v0 = &D_800BE400 + (D_800BE504 * 6) + var_s0;
-            if ((D_800BE508 == temp_v0->unk0) && (D_800BE534 == temp_v0->unk1) && (saveCheckCutsceneWatched(temp_v0->unk2) == 0)) {
+        for (i = 0; i != 6; i += 3) {
+            if ((D_800BE508 == D_800BE400[D_800BE504][i]) && (D_800BE534 == D_800BE400[D_800BE504][i + 1]) &&
+                (saveCheckCutsceneWatched(D_800BE400[D_800BE504][i + 2]) == 0)) {
                 func_800A74D8();
-                saveSetCutsceneWatched((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, saveCurrentFileNum);
+                saveSetCutsceneWatched(D_800BE400[D_800BE504][i + 2], saveCurrentFileNum);
                 func_800B9C50(saveCurrentFileNum);
                 utilLoadOverlay(4);
-                func_80154D60_ovl6((&D_800BE400 + (D_800BE504 * 6) + var_s0)->unk2, 2);
+                func_80154D60_ovl6(D_800BE400[D_800BE504][i + 2], 2);
             }
-            var_s0 += 3;
-        } while (var_s0 != 6);
+        }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A3230.s")
-#endif
 
 void func_800A336C(void) {
     if ((D_800BE500 >= 0)
@@ -358,9 +371,8 @@ void func_800A336C(void) {
     }
 }
 
-#ifdef MIPS_TO_C
 void func_800A3408(void) {
-    if ((saveCurrentWorld == 1) && (saveCurrentLevel == 1)) {
+    if (((s32) saveCurrentWorld == 1) && ((s32) saveCurrentLevel == 1)) {
         utilLoadOverlay(0x12);
         if (func_80227308_ovl18(0) != 0) {
             D_800BE4F4 = gGameState;
@@ -375,18 +387,23 @@ void func_800A3408(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A3408.s")
-#endif
 
-#ifdef MIPS_TO_C
+// Draft, 54/126: semantically complete and structurally exact; the residue is
+// purely the ALLOCATION ORDER of the nine saved registers holding the loop's
+// hoisted global addresses. ROM order is BE4FC,1,-1,D6B98,D6B9C,BE534,BE518,
+// D6F3C; IDO gives 1,-1,D6B98,D6B9C,BE4FC,BE518,D6F3C,BE534. The two
+// type-splits below are load-bearing and worth 48 diffs: `*(s32 *) &D_800BE4FC`
+// shares the `1` with gKirbyLives into a saved register, and
+// `*(u32 *) &D_800D6B44 = -1` forks that store's -1 from the hoisted compare -1.
+// Swept: all 24 statement orders in the BE4FC..BE534 group, two-temp loads,
+// a pointer local for &D_800BE4FC, s32/void prototypes for func_800F6AD4.
+#ifdef NON_MATCHING
+extern s32 D_800D6B6C;
+extern s32 D_800BE438[];
 
 void func_800A34C8(void) {
-    s32 *var_s0;
-    s32 *var_v1;
-    s32 temp_t5;
-
-    var_v1 = &D_800D6B6C;
+    s32 *p;
+    s32 temp;
     D_800D6B6C = 2;
     gKirbyLives = 1;
     gKirbyHp = 6.0f;
@@ -396,39 +413,34 @@ void func_800A34C8(void) {
     gKirbyStars = 0;
     D_800D6B7C = 0;
     D_800D6B80 = 0;
-    D_800D6B44 = -1;
-    if (D_800BE438 != -1) {
-        var_s0 = &D_800BE438;
-loop_2:
-        func_800A30E8();
-        func_800A2D5C();
-        D_800D6B98 = var_s0->unk0;
-        D_800D6B9C = var_s0->unk4;
-        func_800A2D68();
-        D_800BE4FC = 1;
-        D_800BE518 = 1;
-        D_800D6F3C = 0;
-        D_800BE534 = var_s0->unk8;
-        func_800BBBA0();
-        func_800A2C80();
-        func_800A2E98();
-        func_800F6AD4(1);
-        func_800A74D8();
-        if ((D_800BE4F8 == 6) || (D_800D6B6C == 1)) {
-            D_800D6B6C = 1;
-        } else {
-            temp_t5 = var_s0->unkC;
-            var_s0 += 0xC;
-            if (temp_t5 == -1) {
-
-            } else {
-                goto loop_2;
+    *(u32 *) &D_800D6B44 = -1;
+    if (D_800BE438[0] != -1) {
+        p = D_800BE438;
+        do {
+            func_800A30E8();
+            func_800A2D5C();
+            D_800D6B98 = p[0];
+            D_800D6B9C = p[1];
+            func_800A2D68();
+            *(s32 *) &D_800BE4FC = 1;
+            *(s32 *) &D_800BE518 = 1;
+            D_800D6F3C = 0;
+            D_800BE534 = p[2];
+            func_800BBBA0();
+            func_800A2C80();
+            func_800A2E98();
+            func_800F6AD4(1);
+            func_800A74D8();
+            if ((D_800BE4F8 == 6) || (D_800D6B6C == 1)) {
+                D_800D6B6C = 1;
+                break;
             }
-        }
-        var_v1 = &D_800D6B6C;
+            temp = p[3];
+            p += 3;
+        } while (temp != -1);
     }
-    if ((*var_v1 == 2) && (gKirbyHp == 6.0f)) {
-        *var_v1 = 3;
+    if ((D_800D6B6C == 2) && (gKirbyHp == 6.0f)) {
+        D_800D6B6C = 3;
     }
     gGameState = 0x1A;
 }
@@ -436,34 +448,27 @@ loop_2:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A34C8.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800A36C0(void) {
-    ? sp70;
-    s32 sp2C;
-    s32 *temp_t6;
-    s32 *var_s0;
-    void *temp_t7;
+typedef struct {
+    s32 unk0[17];
+} GameOverlayList;
 
-    M2C_MEMCPY_ALIGNED(&sp2C, &D_800BE498, 0x3C);
-    temp_t6 = &sp2C + 0x3C;
-    temp_t7 = &D_800BE498 + 0x3C;
-    var_s0 = &sp2C;
-    temp_t6->unk0 = temp_t7->unk0;
-    temp_t6->unk4 = temp_t7->unk4;
-loop_1:
-    utilLoadOverlay(4);
-    var_s0 += 4;
-    if (func_80154D60_ovl6(*var_s0, 0x15) != 3) {
-        if (var_s0 != &sp70) {
-            continue;
+extern GameOverlayList D_800BE498;
+
+void func_800A36C0(void) {
+    s32 i;
+    s32 pad0;
+    GameOverlayList sp2C;
+
+    sp2C = D_800BE498;
+    for (i = 0; i < 17; i++) {
+        utilLoadOverlay(4);
+        if (func_80154D60_ovl6(sp2C.unk0[i], 0x15) == 3) {
+            break;
         }
     }
     D_800D6B68 = gGameState;
     gGameState = 0x17;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/game/func_800A36C0.s")
-#endif
 
 #ifdef MIPS_TO_C
 void game_tick(s32 arg0) {

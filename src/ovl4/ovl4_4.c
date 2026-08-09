@@ -364,23 +364,20 @@ void func_80159A30_ovl4(Gfx **gp) {
     gSPDisplayList((*gp)++, &D_8015C028_ovl4);
 }
 
-#ifdef MIPS_TO_C
-// near-match: same 4x unroll, but the ROM rotates the loop so the D_803D6900
-// pointer bump lands before the last store and the bound is the D_803FC100
-// symbol; no index/pointer form reproduces both.
+// The vu16 casts in the clear loop are load-bearing: they stop IDO hoisting the
+// induction bump to the top of the 4x-unrolled body.  See func_8017CC3C_ovl5.
 void func_80159A54_ovl4(void) {
     s32 i;
 
-    D_8015C058_ovl4.zBuffer = (u16 *) D_8012EB00 - 0xC80;
+    D_8015C058_ovl4.zBuffer = (u16 *) ((u32) D_8012EB00 - 0x1900);
     viApplyScreenSettings(&D_8015C058_ovl4);
     D_8015C074_ovl4.gtlSetup.heapSize = (u8 *) gFrameBuffer - (u8 *) &D_8018EE60;
-    for (i = 0; i < 320 * 240; i++) {
-        ((u16 *) gFrameBuffer)[i] = 1;
-        D_803D6900[i + 0x1F80] = 1;
-    }
+    i = 0;
+    do {
+        ((vu16 *) gFrameBuffer)[i] = 1;
+        ((vu16 *) D_803D6900)[i + 0x1F80] = 1;
+        i++;
+    } while (i != 320 * 240);
     D_8015C710_ovl4 = 0;
     gtlCreateScene(&D_8015C074_ovl4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80159A54_ovl4.s")
-#endif

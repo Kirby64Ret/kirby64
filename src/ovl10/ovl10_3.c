@@ -1800,7 +1800,19 @@ void func_801ED7C8_ovl10(GObj *arg0) {
    every operand order of the inner mul/add, and inlining either constant
    (70/71).  Writing the loop as `if (...) { ... do {} while (...) }` rather
    than `while` is load-bearing: it puts the two loads in the preheader after
-   the guard and took this from 59 to 15. */
+   the guard and took this from 59 to 15.
+   Wave 10 measured the coupling exactly: the callee-saved FP register follows
+   the ORDER OF THE TWO lwc1 IN THE PREHEADER, not the order of first
+   assignment -- `a = 0.0f; b = BC8; a = BC4;` still gives $f20 <- BC8.  The
+   ROM needs load order (BC4, BC8) with register order ($f22, $f20), i.e. the
+   reverse, which no source form reaches.  Additionally swept: comma operator
+   both ways, `b = (a = BC4, BC8)`, self-assignment after the pair, a dead
+   0.0f pre-assignment to either, `a = BC4 + (b - b)`, hoisting either
+   assignment above the `if`, both assignments inside the `do` body, and the
+   chained `a = b = BC8; a = BC4;` form.  Note `-(a * i + b)` (rather than
+   `-(b + a * i)`) is what gets `add.s $f6, $f20, $f4` operand-exact -- it
+   costs one diff here but is the correct outer-`+` order and matches the
+   rodata emission order BC4-before-BC8. */
 #ifdef MIPS_TO_C
 extern f32 D_801F4BC0_ovl10;
 extern f32 D_801F4BC4_ovl10;

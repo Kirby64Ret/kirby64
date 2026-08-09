@@ -242,50 +242,50 @@ void func_800F7404(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
+// 22/46 diffs. Body and instruction count are exact; the residue is the whole
+// $t register file allocated one slot low (ROM t7/t8/t9 where IDO takes
+// t6/t7/t8), the resulting prologue schedule, and one `ori` where the ROM has
+// `addiu` for the loop bound. Same family as func_800F7404 above.
+// What DID work and is worth keeping if anyone returns to it:
+//   * priming `val = 0; i = 0;` BEFORE the outer loop is what puts val/i in
+//     $v0/$v1 and src/dst in $a1/$a2 (42 -> 27); declaration order is inert.
+//   * spelling src as &D_800D6C94[0x3C] and the bound as a DIFFERENT symbol
+//     stops IDO CSEing the one base the ROM materialises twice (45 -> 46
+//     instructions). &sym[N] as a loop BOUND is recomputed inside the loop,
+//     so only the absolute form (u8 *) 0x800D6D10 costs 2 instructions.
+//   * `dst++; dst[-1] = val;` gives the ROM's `addiu $a2,4` + `sw -0x4($a2)`
+//     in the delay slot; `*dst++ = val;` puts the bump in the delay slot.
+extern u8 D_800D6C94[];
 
 void func_800F7484(s32 arg0) {
-    s32 var_v1;
-    u32 var_v0;
-    u32 var_v0_2;
-    u32 var_v0_3;
-    u32 var_v0_4;
-    void *var_a0;
-    void *var_a1;
-    void *var_a2;
+    u32 val;
+    s32 i;
+    u8 *p;
+    u8 *src;
+    u32 *dst;
 
-    var_a2 = (arg0 * 8) + &D_800D6D10;
-    var_a1 = &D_800D6C68 + 0x68;
+    val = 0;
+    i = 0;
+    p = src = &D_800D6C94[0x3C];
+    dst = D_800D6D10[arg0];
     do {
-        var_v0 = 0;
-        var_v1 = 0;
-        var_a0 = var_a1;
-loop_2:
-        var_v1 += 4;
-        var_v0_2 = var_v0 >> 1;
-        if (var_a0->unk0 & 1) {
-            var_v0_2 |= 0x80000000;
+        val = 0;
+        p = src;
+        for (i = 0; i < 0x20; i++) {
+            val >>= 1;
+            if (p[i] & 1) {
+                val |= 0x80000000;
+            }
         }
-        var_v0_3 = var_v0_2 >> 1;
-        if (var_a0->unk1 & 1) {
-            var_v0_3 |= 0x80000000;
-        }
-        var_v0_4 = var_v0_3 >> 1;
-        if (var_a0->unk2 & 1) {
-            var_v0_4 |= 0x80000000;
-        }
-        var_v0 = var_v0_4 >> 1;
-        if (var_a0->unk3 & 1) {
-            var_v0 |= 0x80000000;
-        }
-        var_a0 += 4;
-        if (var_v1 != 0x20) {
-            goto loop_2;
-        }
-        var_a1 += 0x20;
-        var_a2 += 4;
-        var_a2->unk-4 = var_v0;
-    } while (var_a1 != &D_800D6D10);
+        src += 0x20;
+        dst++;
+        dst[-1] = val;
+    } while (src != (u8 *) 0x800D6D10);
 }
+
+
+
+
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7484.s")
 #endif
