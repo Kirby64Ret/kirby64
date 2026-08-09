@@ -112,6 +112,22 @@ void pcb_video_shutdown(void) {
     }
 }
 
+/* This backend blits an N64 framebuffer; it has no display-list renderer. See
+ * the renderer-seam note in pc_backend.h. */
+int pcb_has_renderer(void) {
+    return 0;
+}
+
+void pcb_frame_begin(void) {
+}
+
+void pcb_frame_end(void) {
+}
+
+void pcb_gfx_run(const void *displayList) {
+    (void)displayList;
+}
+
 int pcb_alive(void) {
     return sAlive;
 }

@@ -1646,3 +1646,65 @@ lines across a file nobody had edited.
 
 Objects now go to `build/verify/`. If you are using an older checkout, delete
 the object or touch the .c after verifying at a non-build optimisation level.
+
+## The rotation class cracks from BOTH sides
+
+Wave 7 found that a NON-VOID return type on a callee reserves `$v0` and rotates
+temps UP one slot. The inverse is also true and closes different functions:
+
+**A `void` prototype for an IMPLICITLY-DECLARED callee frees `$v0` and rotates
+temps DOWN one slot.** Adding `void func_800AA018(s32);` to
+`src/ovl2/ovl2_10.c` closed BOTH `func_8011A2F4` and `func_8011A7A8` -- the two
+13-diff functions this guide listed as confirmed ovl2 floors -- with no other
+change and no effect on any other function in the TU. Both were `$v1`/`$a1`
+where the ROM had `$v0`/`$v1`.
+
+An implicitly-declared callee is `int f()` to IDO, so it reserves `$v0`;
+declaring it `void` gives the register back. It MUST go at file scope: once an
+earlier call has established the implicit `int f()`, a later block-scope `void`
+declaration is a hard `redeclaration` error. So A/B the whole object.
+
+Between the two directions, try both before calling any rotation a floor.
+
+## datatodo.txt unblocking has a USE-COUNT threshold
+
+`D_8012E948 = 0x8012E948;` was added to unblock five ovl3 functions. Three
+matched first-compile with `extern f32 D_8012E948[]; f32 *dst = D_8012E948;`
+-- so the mechanism is real. The other two did not, and the reason is worth
+knowing before adding more lines:
+
+**IDO folds a SINGLE-USE constant address into `lui $at; sw ..., %lo(sym)($at)`
+and only materialises it into a register when it is used several times.** The
+three that matched do 7-8 stores through the address. `func_80154428_ovl3` does
+one, so no amount of symbol work reaches it -- reading the slot back forces a
+second use and does materialise the address, but costs the reload (25/30).
+
+So a datatodo line helps when the ROM materialises the address AND the function
+uses it repeatedly. For a single use, the ROM's own form is the folded one and
+the problem is elsewhere.
+
+`D_800D6B58 = 0x800D6B58;` has been added on the same basis, for
+`func_8011D40C` (ovl2/plylib.c), which is otherwise fully decoded: IDO CSEs the
+base whenever two constant-offset accesses to one symbol exist, proved both
+with `*(s32 *)((u8 *) &D_800D6B54 + 4)` and by redeclaring as an array (36/38
+either way). Not yet converted -- a lead.
+
+## More levers
+
+**Reuse the PARAMETER as a scratch variable instead of declaring a local.** A
+parameter's home slot sits ABOVE the frame, so it costs zero local-block bytes
+and every spill slot moves up 4. `func_801634D4_ovl3` needed a 12-byte local
+block while keeping four live values; `arg0 = 1; ... arr[arg0] ...` in place of
+a declared `s32 idx` took it from 2/116 to MATCH.
+
+Layout measured alongside it: `spill = local_block_base - 8`,
+`base = frame_top - sizeof(locals)`, and EVERY named local gets a word when a
+neighbour is address-taken. A nested `{ f32 temp; }` block does not escape
+this.
+
+**A byte bias on a pointer is not folded into the displacements.** Where the
+ROM has a bare `addiu $vN, $vN, 0x20` before a run of stores, write
+`f32 *p = (f32 *)((u8 *) base + 0x20);` and index from there.
+`func_80116260` was 23/37 -- every instruction right, only that `addiu` missing
+-- and went to MATCH. A `for` loop and a struct-array rewrite both made it
+worse; the bias is the whole trick.

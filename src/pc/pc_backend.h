@@ -40,6 +40,34 @@ void pcb_video_init(int width, int height);
 void pcb_video_present(const void *fb, int width, int height, int fmt);
 void pcb_video_shutdown(void);
 
+/* -------------------------------------------------------------------------
+ * THE RENDERER SEAM
+ *
+ * pcb_video_present() answers "get this block of RGBA5551 onto a screen". A
+ * backend with a real renderer never sees such a block: Fast3D intercepts the
+ * display list before rasterisation and draws with the host GPU, so nothing
+ * ever writes an N64 framebuffer. The seam moves from the framebuffer to the
+ * display list, and these four calls are where it moves to.
+ *
+ * pcb_has_renderer() is what lets both kinds of backend coexist behind one
+ * header rather than forcing every caller to be rewritten: os_vi.c presents a
+ * framebuffer when it is 0 and marks a frame boundary when it is 1.
+ * ------------------------------------------------------------------------- */
+
+/* 1 if this backend rasterises display lists itself. Constant per build. */
+int pcb_has_renderer(void);
+
+/* Frame boundaries. begin is called when the game submits the first display
+ * list of a frame; end when the VI retraces, i.e. when the game considers the
+ * frame finished and asks for it to be shown. */
+void pcb_frame_begin(void);
+void pcb_frame_end(void);
+
+/* Hand an F3DEX2 display list to the renderer. Returns only once it has been
+ * consumed, so the caller can then raise SP-done and DP-done in an order the
+ * game's scheduler will accept. */
+void pcb_gfx_run(const void *displayList);
+
 /* Returns 0 once the user has asked to quit. */
 int pcb_alive(void);
 

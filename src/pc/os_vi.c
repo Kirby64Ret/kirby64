@@ -110,7 +110,22 @@ static void retrace(void) {
         sNextFb = NULL;
     }
 
-    if (!sBlack) {
+    /* Two kinds of backend, two different meanings for "the field ended".
+     *
+     * Without a renderer the VI is doing its literal job: sCurrentFb is a
+     * block of RGBA5551 in RAM and the backend's task is to get it onto a
+     * screen.
+     *
+     * With Fast3D there is no such block -- the display list was drawn and
+     * presented in osSpTaskStartGo -- and the only thing left for the retrace
+     * to say is that a frame boundary passed. The framebuffer POINTERS still
+     * matter and still move exactly as before: sched.c picks a free buffer by
+     * comparing against osViGetCurrentFramebuffer/osViGetNextFramebuffer, and
+     * that logic is untouched by whether anything was drawn into them. */
+    if (pcb_has_renderer()) {
+        pcb_frame_end();
+        pcb_frame_begin();
+    } else if (!sBlack) {
         pcb_video_present(sCurrentFb, mode_width(), mode_height(), mode_bpp());
     } else {
         pcb_video_present(NULL, mode_width(), mode_height(), mode_bpp());

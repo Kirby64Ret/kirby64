@@ -509,7 +509,28 @@ void func_801E7060_ovl9(void) {
     D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800EA8A0[omCurrentObj->objId];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E7170_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CBB54;
+extern f32 D_8021D068_ovl9;
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800AA018(s32);
+void func_800AF27C(void);
+
+void func_801E7170_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 8;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBB54;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = D_8021D068_ovl9;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E8920[omCurrentObj->objId] = 1;
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    func_800AA018(0x101F5);
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 extern s32 D_800BE4EC;
 void func_801E5D2C_ovl9(void);
@@ -577,7 +598,30 @@ void func_801E79F4_ovl9(GObj *arg0) {
     func_800AFBB4(0, omCurrentObj);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E7A20_ovl9.s")
+extern void func_800B79F4(struct GObj *);
+extern f32 D_8021D074_ovl9;
+extern FUNCLIST D_8021BF48_ovl9;
+extern FUNCLIST D_8021BF50_ovl9;
+void func_801E7C88_ovl9(GObj *);
+void func_801E7BB8_ovl9(struct GObj *);
+
+void func_801E7A20_ovl9(struct GObj *arg0) {
+    D_800DEF90[omCurrentObj->objId] = func_800B79F4;
+    D_800DF150[omCurrentObj->objId] = func_801E7C88_ovl9;
+    D_800E4C50[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021D074_ovl9;
+    func_801A0D50_ovl7(func_801E7BB8_ovl9);
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = -1;
+        func_801A6C10_ovl7(arg0);
+    }
+    D_800E98E0[omCurrentObj->objId] = -1;
+    D_800E9C60[omCurrentObj->objId] = -1;
+    D_800E9E20[omCurrentObj->objId] = 1;
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_8021BF48_ovl9);
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_8021BF50_ovl9);
+    }
+}
 
 extern FUNCLIST D_8021BF50_ovl9;
 
@@ -812,7 +856,38 @@ void func_801E9A28_ovl9(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E9AA0_ovl9.s")
+extern s32 D_801C8958_ovl7;
+extern FUNCLIST D_8021C044_ovl9;
+extern FUNCLIST D_8021C04C_ovl9;
+void func_801E9D18_ovl9(struct GObj *);
+void func_801E9C98_ovl9(struct GObj *);
+void func_8019BB58_ovl7(void);
+void func_801A3280_ovl7(void);
+
+void func_801E9AA0_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    ent->unk39 = -1;
+    D_800E98E0[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+    D_800EADE0[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+    D_800EAFA0[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_800EB160[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_800EB320[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800DF150[omCurrentObj->objId] = func_801E9D18_ovl9;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8958_ovl7;
+    func_801A0D50_ovl7(func_801E9C98_ovl9);
+    func_8019BB58_ovl7();
+    if (D_800E8E60[omCurrentObj->objId] == 1) {
+        *(s8 *) &D_800E7880[omCurrentObj->objId] = 1;
+        func_801A3280_ovl7();
+    } else {
+        D_800E7880[omCurrentObj->objId] = 0;
+    }
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_8021C044_ovl9);
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 2, &D_8021C04C_ovl9);
+    }
+}
 
 extern FUNCLIST D_8021C04C_ovl9;
 
@@ -826,7 +901,25 @@ void func_801E9D18_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8021C054_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E9D60_ovl9.s")
+extern void func_800B6E84(struct GObj *);
+extern f32 D_8021C05C_ovl9[];
+
+void func_801E9D60_ovl9(struct GObj *arg0) {
+    f32 temp;
+
+    D_800DEF90[omCurrentObj->objId] = func_800B6E84;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800EAA60[omCurrentObj->objId] = gEntitiesAngleZArray[omCurrentObj->objId];
+    gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesAngleXArray[omCurrentObj->objId] = gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleZArray[omCurrentObj->objId];
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_800EA6E0[omCurrentObj->objId] = temp = D_8021C05C_ovl9[D_800E7880[omCurrentObj->objId]];
+    D_800EA8A0[omCurrentObj->objId] = temp + D_800EAA60[omCurrentObj->objId];
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.z = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = D_800DFBD0[omCurrentObj->objId][2]->angle.v.z;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 
 extern void func_800B7514(struct GObj *);
 extern f32 D_8021C05C_ovl9[];
@@ -844,9 +937,54 @@ void func_801E9F08_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA048_ovl9.s")
+extern s32 D_801CB470_ovl7;
 
+void func_801EA048_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8958_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB470_ovl7;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    ohSleep(0x3C);
+    if (D_800E8E60[omCurrentObj->objId] == 0) {
+        while (480.0f <= D_800E6F50[omCurrentObj->objId].originOffset) {
+            ohSleep(1);
+        }
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
+
+/* 22 diffs: the ROM sinks the `sw $a0` home-slot store into the delay slot of
+   the func_801EA2F8_ovl9 call and keeps arg0 in $a0; IDO spills it in the
+   prologue and reloads it in that delay slot instead. */
+#ifdef MIPS_TO_C
+void func_801EA2F8_ovl9(struct GObj *);
+void func_801EA628_ovl9(void);
+void func_801A0D74_ovl7();
+void func_8019F3F0_ovl7(void);
+
+void func_801EA190_ovl9(struct GObj *arg0) {
+    if (D_800E8E60[omCurrentObj->objId] == 0) {
+        D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800EAA60[omCurrentObj->objId];
+        func_801EA2F8_ovl9(arg0);
+        if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
+            func_801A0D74_ovl7(arg0);
+            D_800E5F90[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
+            D_800E6BD0[omCurrentObj->objId] = D_800EADE0[omCurrentObj->objId];
+            gEntitiesNextPosXArray[omCurrentObj->objId] = D_800EAFA0[omCurrentObj->objId];
+            gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EB160[omCurrentObj->objId];
+            gEntitiesNextPosZArray[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId];
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+        }
+        func_8019F3F0_ovl7();
+    } else {
+        func_801EA628_ovl9();
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA190_ovl9.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA2F8_ovl9.s")
 

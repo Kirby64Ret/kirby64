@@ -1,0 +1,536 @@
+/* The libultraship backend: window, renderer, input and audio.
+ *
+ * =====================================================================
+ * HOW LUS'S MAIN LOOP AND THE GAME'S SCHEDULER WERE RECONCILED
+ *
+ * This is the design question the integration turns on, so it is answered
+ * here rather than in a doc that will drift away from the code.
+ * =====================================================================
+ *
+ * The premise everyone starts from is that these two things fight:
+ *
+ *   * libultraship expects to own the main loop. Every existing LUS port has
+ *     a `while (WindowIsRunning()) { StartFrame(); GameFrame(); EndFrame(); }`
+ *     somewhere, and the SSB64/BattleShip method is explicitly to *collapse*
+ *     the N64 threads into that loop with graphics, audio and input called at
+ *     fixed points.
+ *   * src/pc/os_thread.c also owns it: cboot() starts the idle thread and
+ *     never returns, and from then on the ucontext scheduler decides what
+ *     runs.
+ *
+ * THEY DO NOT ACTUALLY FIGHT, and the reason is the single most useful
+ * property of the platform layer that was already here: **the cooperative
+ * scheduler runs every game thread on ONE host thread.** os_thread.c chose
+ * ucontext over pthreads because the game has no locks anywhere and relies on
+ * osSetIntMask as an assertion that nothing else is executing. That decision
+ * was made for correctness of the game's own data, but it is also exactly
+ * what makes LUS embeddable here:
+ *
+ *     - an OpenGL context is bound to a thread, and there is only one thread;
+ *     - SDL requires event pumping on the thread that created the window, and
+ *       there is only one thread;
+ *     - Fast3D's Interpreter has process-global state (g_exec_stack), and
+ *       there is only one thread.
+ *
+ * So no ownership question arises. LUS calls happen wherever the game reaches
+ * them, and "wherever" is always the same OS thread. Had the platform layer
+ * used pthreads -- one host thread per OSThread, as a naive port would -- the
+ * scheduler thread would be submitting display lists from a thread with no GL
+ * context while the idle thread pumped SDL from another, and the honest fix
+ * would have been the SSB collapse. The collapse is the price of real
+ * threads; this port does not pay it because it does not have them.
+ *
+ * WHAT REPLACES THE MAIN LOOP. A LUS main loop is three things happening in a
+ * fixed order once per frame. The game already emits all three, as events, at
+ * points that mean the same thing:
+ *
+ *     LUS main loop            this port
+ *     -----------------------  -------------------------------------------
+ *     HandleEvents()           pcb_pump(), called from pc_pump_events(),
+ *                              which every blocking libultra call goes
+ *                              through. Rate-limited below; see sPumpBudget.
+ *     game logic               the game threads, dispatched by priority
+ *     Draw + Present           pcb_gfx_run(), called from osSpTaskStartGo()
+ *                              when the game hands the RSP a graphics task
+ *     "no frame this tick"     pcb_frame_end() at VI retrace, which runs the
+ *                              GUI alone if no display list arrived
+ *
+ * The frame boundary is therefore *the game's own*, not a wall-clock timer:
+ * a frame exists exactly when the game submits a display list for it. That is
+ * strictly better than a timer, because sched.c's framebuffer recycling is
+ * driven by the same event and the two can never disagree.
+ *
+ * THE ONE PLACE THIS IS STILL WRONG, stated plainly: Fast3D's Interpreter::Run
+ * clears the framebuffer on entry, so it is one-call-per-frame by
+ * construction. If Kirby 64 ever submits two graphics tasks for a single
+ * displayed frame -- and its scheduler can, it has a yield/resume path for
+ * exactly that -- the second one erases the first and both get presented.
+ * This is detected and warned about once (sMultiTaskFrame) rather than
+ * silently producing a flickering game. The fix when it happens is to
+ * concatenate the lists across a frame and Run once at osViSwapBuffer, which
+ * needs the game to be far enough along to observe the real pattern.
+ *
+ * =====================================================================
+ * WHY THIS FILE DOES NOT #include "pc/pc_backend.h"
+ * =====================================================================
+ *
+ * pc_backend.h includes <PR/ultratypes.h>, and libultraship ships its own
+ * libultra headers: both define u8..f64, size_t, uintptr_t, OSMesgQueue,
+ * OSContPad and Gfx, with different definitions. Including both in one
+ * translation unit is not a warning, it is a wall of redefinition errors.
+ *
+ * So the C surface is re-declared here from <cstdint>, which is exact --
+ * ultratypes' u16 IS uint16_t, its s8 IS int8_t -- and a compile-time check
+ * on the PCPad layout is kept below so the two cannot drift apart silently.
+ */
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <filesystem>
+#include <memory>
+#include <unordered_map>
+#include <thread>
+#include <algorithm>
+#include <vector>
+
+#include "libultraship/libultraship.h"
+#include "libultraship/bridge.h"
+#include "fast/Fast3dWindow.h"
+#include "fast/debug/GfxDebugger.h"
+#include "ship/core/Context.h"
+#include "ship/window/Window.h"
+#include "ship/window/FileDrop.h"
+#include "libultraship/controller/controldeck/ControlDeck.h"
+#include "ship/audio/Audio.h"
+#include "ship/config/ConsoleVariable.h"
+#include "ship/config/Config.h"
+#include "ship/log/Logger.h"
+#include "ship/thread/ThreadPool.h"
+#include "ship/resource/ResourceManager.h"
+#include "ship/resource/archive/ArchiveManager.h"
+#include "ship/debug/Console.h"
+#include "ship/debug/CrashHandler.h"
+#include "ship/events/Events.h"
+
+/* --------------------------------------------------------- the C surface */
+
+/* Mirror of PCPad in src/pc/pc_backend.h. Kept in step by the static_assert
+ * below plus the field-by-field copy in pcb_input_poll. */
+typedef struct {
+    uint16_t button;
+    int8_t stick_x;
+    int8_t stick_y;
+    uint8_t present;
+} PCPad;
+
+static_assert(sizeof(PCPad) == 6, "PCPad layout drifted from pc_backend.h");
+
+extern "C" {
+void pcb_video_init(int width, int height);
+void pcb_video_present(const void* fb, int width, int height, int fmt);
+void pcb_video_shutdown(void);
+int pcb_has_renderer(void);
+void pcb_frame_begin(void);
+void pcb_frame_end(void);
+void pcb_gfx_run(const void* displayList);
+int pcb_alive(void);
+void pcb_pump(void);
+void pcb_input_poll(PCPad* pads, int n);
+void pcb_input_rumble(int port, int on);
+void pcb_audio_init(int freq);
+void pcb_audio_set_freq(int freq);
+void pcb_audio_queue(const void* samples, uint32_t bytes);
+uint32_t pcb_audio_queued(void);
+
+/* From src/pc/os_time.c -- the platform layer's own trace switch, so LUS
+ * diagnostics obey the same PC_TRACE= variable as everything else. */
+void pc_trace(unsigned bit, const char* fmt, ...);
+}
+
+#define PC_TR_VI 0x02
+#define PC_TR_GFX 0x08
+#define PC_TR_AI 0x20
+
+/* ------------------------------------------------------------------ state */
+
+static std::shared_ptr<Ship::Context> sContext;
+static std::shared_ptr<Fast::Fast3dWindow> sWindow;
+static std::shared_ptr<LUS::ControlDeck> sControlDeck;
+static bool sInitTried;
+static bool sInitOk;
+
+static int sFramesDrawn;
+static int sTasksThisFrame;
+static bool sMultiTaskFrame;
+
+/* pc_pump_events() is called at the top of every blocking libultra entry
+ * point, which in this game is thousands of times a second. SDL_PollEvent is
+ * cheap but not free, and more importantly LUS's HandleEvents can resize the
+ * renderer. Once per millisecond is far finer than any input device and
+ * removes the call from the hot path. */
+static uint64_t sLastPumpNs;
+
+static uint64_t now_ns(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec;
+}
+
+/* --------------------------------------------------------------- start-up */
+
+/* Where the resource archive lives. LUS refuses to start a default Context
+ * without one: ArchiveManager marks itself initialised only if it found at
+ * least one archive, and CreateDefaultInstance returns nullptr otherwise.
+ *
+ * Kirby 64 has no .o2r yet -- Torch is built but no exporter config has been
+ * written for this game -- so the port points LUS at a DIRECTORY, which
+ * ArchiveManager mounts as a FolderArchive. An empty directory is a valid,
+ * empty archive, and that is enough to get the window and the renderer up
+ * while the asset pipeline is still missing. When Torch does produce a
+ * kirby64.o2r, dropping it into this same directory is the whole change. */
+static std::string archive_dir(void) {
+    const char* env = getenv("KIRBY_ASSETS");
+    std::string dir = env ? env : "port/assets";
+
+    std::error_code ec;
+    std::filesystem::create_directories(dir, ec);
+    return dir;
+}
+
+static bool lus_init(void) {
+    if (sInitTried) {
+        return sInitOk;
+    }
+    sInitTried = true;
+
+    /* WHY THIS ASSEMBLES THE CONTEXT BY HAND instead of calling
+     * Context::CreateDefaultInstance, which is the documented one-liner.
+     *
+     * CreateDefaultInstance constructs the Config itself but takes the Window
+     * and the ControlDeck as finished objects -- and both of those need the
+     * Config at CONSTRUCTION time, not at Init time:
+     *
+     *   Ship::Window caches its Config in the constructor and
+     *   Window::GetConfig() throws "Window requires Config dependency" if it
+     *   is null. It never looks the Config up from the hierarchy.
+     *
+     *   Ship::ControlDeck's constructor builds a GlobalSDLDeviceSettings,
+     *   which immediately calls ConsoleVariable::GetInteger. A deck built
+     *   with the documented default arguments dereferences null and crashes
+     *   before the Context exists.
+     *
+     * So the factory's own contract cannot be satisfied: it wants to create
+     * the Config after receiving objects that needed it beforehand. Passing a
+     * second, privately-built Config to those two works, but then two Config
+     * objects are open on one file with last-write-wins, which is a bug that
+     * would surface much later as settings silently not persisting.
+     *
+     * The assembly below is CreateDefaultInstance's own component list and
+     * init order, with one Config threaded through it. It is more code and it
+     * is the honest version. The order is load-bearing and is annotated. */
+    try {
+        auto name = std::string("Kirby 64: The Crystal Shards");
+        auto shortName = std::string("kirby64");
+
+        sContext = Ship::Context::CreateInstance(name, shortName);
+        /* Components validate their dependencies with RequireDependency,
+         * which rejects an un-Init'ed one -- and the Gui checks the Context
+         * itself. CreateInstance only constructs it. */
+        sContext->Init();
+
+        /* Logging first: everything after this can report failure. */
+        auto logger = std::make_shared<Ship::Logger>(
+            name, Ship::Context::GetPathRelativeToAppDirectory("logs/" + name + ".log"));
+        sContext->GetChildren().Add(logger);
+        logger->Init();
+
+        /* The Window is constructed before the Config that it needs -- so the
+         * Config is constructed first and the Window is handed it. The Config
+         * also wants the Window (it re-reads window geometry on save); that
+         * link is set below, after the Window exists. */
+        auto config = std::make_shared<Ship::Config>(
+            Ship::Context::GetPathRelativeToAppDirectory("kirby64.cfg"));
+        sContext->GetChildren().Add(config);
+
+        auto cvars = std::make_shared<Ship::ConsoleVariable>(config);
+        sContext->GetChildren().Add(cvars);
+
+        auto threadPool = std::make_shared<Ship::ThreadPool>(
+            std::max(1u, std::thread::hardware_concurrency() > 2
+                             ? std::thread::hardware_concurrency() - 2
+                             : 1u));
+        sContext->GetChildren().Add(threadPool);
+
+        auto resourceManager = std::make_shared<Ship::ResourceManager>(threadPool);
+        sContext->GetChildren().Add(resourceManager);
+
+        /* Ship::ControlDeck is abstract (WriteToPad is pure virtual).
+         * LUS::ControlDeck is the concrete N64 one, and it is what turns
+         * host gamepads into OSContPad. */
+        sControlDeck = std::make_shared<LUS::ControlDeck>(nullptr, cvars);
+        sContext->GetChildren().Add(sControlDeck);
+
+        sContext->GetChildren().Add(std::make_shared<Ship::CrashHandler>());
+
+        auto console = std::make_shared<Ship::Console>();
+        sContext->GetChildren().Add(console);
+
+        sWindow = std::make_shared<Fast::Fast3dWindow>(config, cvars, sControlDeck);
+        sContext->GetChildren().Add(sWindow);
+
+        auto audio = std::make_shared<Ship::Audio>(Ship::AudioSettings{}, config);
+        sContext->GetChildren().Add(audio);
+
+        sContext->GetChildren().Add(std::make_shared<Ship::Events>());
+
+        auto fileDrop = std::make_shared<Ship::FileDrop>(sWindow);
+        sContext->GetChildren().Add(fileDrop);
+
+        /* EVERY component is in the hierarchy before any Init runs. That is
+         * CreateDefaultInstance's rule and it exists so a component's Init can
+         * look up siblings without an ordering dependency. */
+        nlohmann::json rmArgs;
+        rmArgs["archivePaths"] = std::vector<std::string>{ archive_dir() };
+        rmArgs["validHashes"] = std::vector<uint32_t>{};
+        resourceManager->Init(rmArgs);
+
+        console->Init();
+        sWindow->Init();
+        fileDrop->Init();
+        audio->Init();
+
+        /* The C bridge functions (AudioPlayerPlayFrame, GfxSetNativeDimensions,
+         * WindowIsRunning...) resolve through these cached pointers. The
+         * factory does this via a private helper; done explicitly here. */
+        ResourceSetResourceManager(resourceManager);
+        CVarSetConsoleVariable(cvars);
+        WindowSetWindowComponent(sWindow);
+        ControllerSetControlDeck(sControlDeck);
+        EventSystemSetEvents(sContext->GetChildren().GetFirst<Ship::Events>());
+        AudioSetAudioComponent(audio);
+        CrashHandlerSetComponent(sContext->GetChildren().GetFirst<Ship::CrashHandler>());
+        GfxSetFast3dWindow(sWindow);
+    } catch (const std::exception& e) {
+        fprintf(stderr, "[lus] context creation threw: %s\n", e.what());
+        sContext = nullptr;
+    }
+
+    if (sContext == nullptr) {
+        fprintf(stderr,
+                "[lus] libultraship failed to start. The window, the renderer "
+                "and audio are unavailable;\n"
+                "      the platform layer keeps running headless.\n");
+        sWindow = nullptr;
+        return false;
+    }
+
+    /* Kirby 64 is F3DEX2, the same microcode as SSB64. Fast3D defaults to it,
+     * but stating it costs nothing and documents the assumption. */
+    sWindow->SetRendererUCode(ucode_f3dex2);
+
+    /* The N64 renders 320x240 and everything in the display list is in those
+     * units -- scissors, texture rectangles, the viewport. Fast3D scales from
+     * this to the window. */
+    sWindow->SetTargetFps(60);
+    GfxSetNativeDimensions(320, 240);
+
+    sInitOk = true;
+    return true;
+}
+
+/* --------------------------------------------------------------- video */
+
+void pcb_video_init(int width, int height) {
+    (void)width;
+    (void)height;
+    if (!lus_init()) {
+        return;
+    }
+    pc_trace(PC_TR_VI, "[lus] window %ux%u backend=%s\n", sWindow->GetWidth(),
+             sWindow->GetHeight(), sWindow->GetWindowBackendName().c_str());
+}
+
+/* Never called with this backend -- os_vi.c asks pcb_has_renderer() first --
+ * and it must not become a second presentation path if it ever is. */
+void pcb_video_present(const void* fb, int width, int height, int fmt) {
+    (void)fb;
+    (void)width;
+    (void)height;
+    (void)fmt;
+}
+
+void pcb_video_shutdown(void) {
+    if (sWindow != nullptr) {
+        sWindow->Close();
+    }
+    sWindow = nullptr;
+    sContext = nullptr;
+}
+
+int pcb_has_renderer(void) {
+    return 1;
+}
+
+int pcb_alive(void) {
+    if (!sInitOk) {
+        return 1; /* headless fallback: nothing can ask us to quit */
+    }
+    return sWindow->IsRunning() ? 1 : 0;
+}
+
+void pcb_pump(void) {
+    uint64_t t;
+
+    if (!sInitOk) {
+        return;
+    }
+    t = now_ns();
+    if (t - sLastPumpNs < 1000000ull) {
+        return;
+    }
+    sLastPumpNs = t;
+    sWindow->HandleEvents();
+}
+
+/* --------------------------------------------------- the display-list path */
+
+void pcb_frame_begin(void) {
+    sTasksThisFrame = 0;
+}
+
+void pcb_gfx_run(const void* displayList) {
+    if (!sInitOk || displayList == nullptr) {
+        return;
+    }
+
+    if (++sTasksThisFrame > 1 && !sMultiTaskFrame) {
+        sMultiTaskFrame = true;
+        fprintf(stderr,
+                "[lus] WARNING: %d graphics tasks in one frame. Fast3D's "
+                "Interpreter::Run clears\n"
+                "      the framebuffer on entry, so all but the last are "
+                "erased. See the note at the\n"
+                "      top of src/pc/pc_backend_lus.cpp.\n",
+                sTasksThisFrame);
+    }
+
+    /* One call, one complete frame: StartDraw, Interpreter::StartFrame, Run,
+     * EndDraw, Interpreter::EndFrame (which swaps buffers). Returns false when
+     * LUS decided to drop the frame for pacing, which is not an error. */
+    static const std::unordered_map<Mtx*, MtxF> kNoMtxReplacements;
+    if (sWindow->DrawAndRunGraphicsCommands((Gfx*)displayList, kNoMtxReplacements)) {
+        sFramesDrawn++;
+        pc_trace(PC_TR_GFX, "[lus] frame %d drawn from dl %p\n", sFramesDrawn,
+                 displayList);
+    }
+}
+
+void pcb_frame_end(void) {
+    if (!sInitOk) {
+        return;
+    }
+    /* A retrace with no display list behind it. The game is alive but has not
+     * produced a frame -- which is where this port sits today, because
+     * auThreadMain is undecompiled and thread5_game never gets past waiting
+     * for the audio thread to report in. Running the GUI alone keeps the
+     * window drawn and responsive instead of looking hung, and it is also
+     * what LUS does for its own pause/loading states. */
+    if (sTasksThisFrame == 0) {
+        sWindow->RunGuiOnly();
+    }
+    sTasksThisFrame = 0;
+}
+
+/* --------------------------------------------------------------- input */
+
+void pcb_input_poll(PCPad* pads, int n) {
+    int i;
+
+    for (i = 0; i < n; i++) {
+        pads[i].button = 0;
+        pads[i].stick_x = 0;
+        pads[i].stick_y = 0;
+        pads[i].present = 0;
+    }
+    if (!sInitOk) {
+        pads[0].present = (n > 0);
+        return;
+    }
+
+    if (sControlDeck == nullptr) {
+        return;
+    }
+    /* ControlDeck already produces N64 pad state -- turning modern gamepads
+     * into CONT_* bits and an 80-unit stick is the entire reason it exists --
+     * so this is a field copy and src/pc/os_cont.c never learns where the bits
+     * came from. */
+    /* WriteToPad refreshes the deck's own buffer from the mapped devices; it
+     * is the call a LUS main loop makes once per frame. Here the game asks
+     * whenever osContStartReadData runs, which is the same cadence. */
+    OSContPad* src = sControlDeck->GetPads();
+    if (src != nullptr) {
+        sControlDeck->WriteToPad(src);
+    }
+    if (src == nullptr) {
+        return;
+    }
+    for (i = 0; i < n && i < MAXCONTROLLERS; i++) {
+        pads[i].button = src[i].button;
+        pads[i].stick_x = src[i].stick_x;
+        pads[i].stick_y = src[i].stick_y;
+        /* LUS has no "is a controller physically plugged in" concept that
+         * matches the SI bus: a keyboard is always a valid port 1 device.
+         * Reporting port 1 present keeps src/main/contpad.c on its normal
+         * path rather than its no-controller path. */
+        pads[i].present = (i == 0) ? 1 : 0;
+    }
+}
+
+void pcb_input_rumble(int port, int on) {
+    (void)port;
+    (void)on;
+    /* Deliberately unimplemented rather than faked. LUS drives rumble through
+     * per-device rumble mappings on the ControlDeck, and wiring it before the
+     * game's own osMotorInit path is exercised would be untestable code. */
+}
+
+/* --------------------------------------------------------------- audio */
+
+void pcb_audio_init(int freq) {
+    (void)freq;
+    /* LUS's Audio component is created and initialised by
+     * Context::CreateDefaultInstance, at the sample rate in AudioSettings.
+     * Nothing to do here.
+     *
+     * NOTE the frequency mismatch that is NOT resolved yet: the N64 AI runs at
+     * whatever osAiSetFrequency was asked for (Kirby 64 uses 32000 Hz) and
+     * LUS's AudioSettings defaults to 44100. Handing 32 kHz samples to a
+     * 44.1 kHz sink plays everything ~38% fast. This is left alone because
+     * auThreadMain -- the only caller of osAiSetNextBuffer -- is still
+     * undecompiled, so there is no way to observe the real rate yet, and
+     * guessing it here would be a bug waiting to be believed. */
+}
+
+void pcb_audio_set_freq(int freq) {
+    (void)freq;
+}
+
+void pcb_audio_queue(const void* samples, uint32_t bytes) {
+    if (!sInitOk) {
+        return;
+    }
+    /* osAiSetNextBuffer in src/pc/os_ai.c has already byte-swapped the samples
+     * into host order and paced on the queued-byte count, which is exactly the
+     * contract AudioPlayerPlayFrame wants. */
+    AudioPlayerPlayFrame((const uint8_t*)samples, (size_t)bytes);
+}
+
+uint32_t pcb_audio_queued(void) {
+    if (!sInitOk) {
+        return 0;
+    }
+    int32_t buffered = AudioPlayerBuffered();
+    return buffered > 0 ? (uint32_t)buffered : 0u;
+}

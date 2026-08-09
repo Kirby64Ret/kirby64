@@ -1,7 +1,16 @@
 /* RSP and RDP.
  *
  * =====================================================================
- * THESE ARE STUBS, DELIBERATELY. Read this before assuming otherwise.
+ * WITH A RENDERER-BEARING BACKEND (libultraship), THE GRAPHICS TASK IS
+ * REAL: osSpTaskStartGo hands the display list to Fast3D, which executes
+ * it on the host GPU. pcb_has_renderer() selects between that and the
+ * trace-only path below, at run time, from one build.
+ *
+ * The audio task is still a stub under both, and so is osDpSetNextBuffer;
+ * see below for why the latter is *correctly* a stub rather than a hole.
+ *
+ * =====================================================================
+ * THE ORIGINAL STUB NOTE, still accurate for the null/SDL backends.
  * =====================================================================
  *
  * The game hands osSpTaskLoad an OSTask describing a program for a
@@ -60,6 +69,7 @@
 #include <string.h>
 
 #include "pc/pc_platform.h"
+#include "pc/pc_backend.h"
 
 static OSTask *sLoadedTask;
 static int sSpDonePending;
@@ -88,6 +98,27 @@ void osSpTaskStartGo(OSTask *task) {
 
     if (task->t.type == M_GFXTASK) {
         pc_gfx_trace_task(task);
+
+        /* THE RENDERER SEAM. task->t.data_ptr is the head of an F3DEX2
+         * display list; on hardware the RSP would walk it, transform and
+         * light, and emit RDP primitives. Fast3D walks the same list and
+         * draws with the host GPU instead, which is the entire reason
+         * libultraship is in this port.
+         *
+         * pcb_gfx_run() returns only when the list has been consumed, and the
+         * SP-done/DP-done events are still DEFERRED to the next pump below.
+         * Both halves of that matter and for different reasons:
+         *
+         *   - completing the draw before signalling is what stops sched.c
+         *     recycling the framebuffer mid-frame;
+         *   - deferring the signal is what stops scHandleSPTaskDone starting
+         *     the next task from inside this call, recursing through the
+         *     scheduler once per queued task with no bound.
+         */
+        if (pcb_has_renderer()) {
+            pcb_gfx_run((const void *)task->t.data_ptr);
+        }
+
         /* A graphics task produces RDP work, so both interrupts follow. */
         sSpDonePending = 1;
         sDpDonePending = 1;
@@ -145,13 +176,25 @@ void osDpGetCounters(u32 *counters) {
 }
 
 s32 osDpSetNextBuffer(void *addr, u64 size) {
-    /* Hands the RDP a buffer of already-assembled RDP commands (the "XBUS" /
-     * direct-DP path, used when the SP has written its output somewhere the
-     * DP can read). Rasterising it is the same missing rasteriser as above.
+    /* Hands the RDP a buffer of already-assembled RDP commands. Kirby 64's
+     * scheduler uses this: src/main/sched.c's func_80001FAC starts a queued DP
+     * task with the graphics task's t.output_buff, which is the N64 "XBUS"
+     * split -- the RSP writes RDP commands into a FIFO and the DP is started
+     * separately to consume them.
      *
-     * The DP-done interrupt is still raised, because the caller waits for it. */
+     * UNDER FAST3D THIS SPLIT DOES NOT EXIST, and that is a fact about the
+     * architecture rather than a gap. Fast3D consumes the SP's *input* display
+     * list (t.data_ptr) and draws it; nothing ever writes an RDP command FIFO,
+     * so t.output_buff holds whatever the game left in it and there is nothing
+     * to rasterise. Raising DP-done and returning is not a stub standing in
+     * for missing work -- it is the correct translation, and the drawing has
+     * already happened in osSpTaskStartGo.
+     *
+     * With a non-renderer backend it IS a stub, and says so. */
     pc_trace(PC_TR_GFX, "[dp] buffer %p size %u\n", addr, (unsigned)size);
-    PC_STUB_ONCE("osDpSetNextBuffer: no RDP rasteriser.");
+    if (!pcb_has_renderer()) {
+        PC_STUB_ONCE("osDpSetNextBuffer: no RDP rasteriser.");
+    }
     sDpDonePending = 1;
     return 0;
 }

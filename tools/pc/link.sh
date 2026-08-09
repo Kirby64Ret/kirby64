@@ -52,6 +52,16 @@ GAME_OBJS=$(ls build/pc/src/main/*.o build/pc/src/ovl*/*.o build/pc/src/pc/*.o \
                build/pc/data/*.o 2>/dev/null | tr '\n' ' ')
 LU_OBJS=$(ls build/pc/src/libreultra/*.o 2>/dev/null | tr '\n' ' ')
 
+# Exactly one backend contributes pcb_* symbols. pc_backend_null.c and
+# pc_backend_sdl.c are #ifdef'd against each other, but the libultraship one is
+# C++ and is not built by Makefile.pc at all, so the C ones are dropped here
+# instead.
+if [ "$PC_LUS" = "1" ]; then
+    GAME_OBJS=$(echo "$GAME_OBJS" | tr ' ' '\n' \
+        | grep -v 'pc_backend_null\.o$' | grep -v 'pc_backend_sdl\.o$' \
+        | tr '\n' ' ')
+fi
+
 if [ -n "$LU_OBJS" ]; then
     # shellcheck disable=SC2086
     nm -g --defined-only $GAME_OBJS 2>/dev/null | awk '$2!="U"{print $3}' \
@@ -84,7 +94,7 @@ if [ "$PC_LUS" = "1" ]; then
     sh tools/pc/build_lus_backend.sh
     LUS_LIBS=$(sh tools/pc/lus_flags.sh --libs)
     LD="$CXX"
-    LUS_OBJ="build/pc/src/pc/pc_backend_lus.o build/pc/src/pc/fast3d_bridge.o"
+    LUS_OBJ="build/pc/lus_backend.o"
 else
     LUS_LIBS=""
     LD="$CC"

@@ -4,6 +4,7 @@
 #include "main/object_helpers.h"
 #include "main/object_manager.h"
 #include "DObj.h"
+#include "unk_structs/D_80129114.h"
 
 extern struct {
     u32 unk0_80 : 1;
@@ -40,6 +41,7 @@ struct Unk80124E14 {
 extern struct Unk80124E14 D_80124E14[];
 extern s32 D_800D6F10;
 s32 func_8011E368(void);
+void func_800AA018(s32);
 
 struct Unk4C {
     /* 0x00 */ u8 unk0;
@@ -534,7 +536,21 @@ void func_80115B64(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115C4C.s")
+void func_80115C4C(struct GObj *arg0) {
+    s32 sp1C = arg0->objId;
+    u8 *sp18 = arg0->unk4C;
+
+    if (func_8011E244() == *sp18) {
+        func_800AA018(0x60003);
+        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80115B64;
+        omCurrentObj = D_800DE350[sp18[3]];
+        func_800AA018(0x60004);
+        omCurrentObj = D_800DE350[D_800E98E0[sp1C]];
+        func_800AA018(0x202EB);
+        func_800AA018(0x202EC);
+        omCurrentObj = arg0;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115D38.s")
 
@@ -592,7 +608,17 @@ void func_8011623C(s32 arg0) {
     omEndProcess(0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80116260.s")
+void func_80116260(s32 arg0) {
+    extern f32 D_80129210[];
+    f32 *p = (f32 *) ((u8 *) D_80129114->unk4[D_800E5F90[0]].unk0 + 0x20);
+
+    p[8] += D_80129210[1];
+    p[9] += D_80129210[1];
+    p[12] += D_80129210[3];
+    p[13] += D_80129210[3];
+    p[16] += D_80129210[5];
+    p[17] += D_80129210[5];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801162F4.s")
 
@@ -1842,11 +1868,6 @@ void func_8011A294(struct GObj *arg0) {
     func_80118BC8(arg0, 0x3C);
 }
 
-#ifdef MIPS_TO_C
-// 13 diffs: stack layout and instruction order are exact; only the integer
-// register allocation is rotated one slot (ROM idx=$v0/ptr=$v1, IDO gives
-// $v1/$a1). Declaration order, block scope, chained assignment and the
-// comparison shape were all swept without effect.
 void func_8011A2F4(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 sp20;
@@ -1861,9 +1882,6 @@ void func_8011A2F4(struct GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011A2F4.s")
-#endif
 
 
 void func_8011A3B8(struct GObj *arg0) {
@@ -1984,10 +2002,6 @@ void func_8011A770(struct GObj *arg0) {
     omEndProcess(0);
 }
 
-#ifdef MIPS_TO_C
-// 13 diffs: stack layout and instruction order are exact; only the integer
-// register allocation is rotated one slot (ROM idx=$v0/ptr=$v1, IDO gives
-// $v1/$a1). Clone twin of func_8011A2F4 -- one fix closes both.
 void func_8011A7A8(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 sp20;
@@ -2002,9 +2016,6 @@ void func_8011A7A8(struct GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011A7A8.s")
-#endif
 void func_8011A86C(struct GObj *arg0) {
     func_801153B8(arg0);
 }

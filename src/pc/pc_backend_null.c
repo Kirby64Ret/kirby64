@@ -41,6 +41,23 @@ void pcb_video_present(const void *fb, int width, int height, int fmt) {
 void pcb_video_shutdown(void) {
 }
 
+/* No renderer here, so os_vi.c keeps presenting framebuffers and os_sp.c keeps
+ * only tracing display lists. These three exist so that pc_backend.h has one
+ * shape rather than two. */
+int pcb_has_renderer(void) {
+    return 0;
+}
+
+void pcb_frame_begin(void) {
+}
+
+void pcb_frame_end(void) {
+}
+
+void pcb_gfx_run(const void *displayList) {
+    (void)displayList;
+}
+
 int pcb_alive(void) {
     return 1;
 }
