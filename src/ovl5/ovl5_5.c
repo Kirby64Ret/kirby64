@@ -185,7 +185,14 @@ void func_801764F0_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176A80_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176EC8_ovl5.s")
+void func_80176EC8_ovl5(u8 *arg0, u16 *arg1) {
+    arg0[0x14] = arg1[0];
+    arg0[0x15] = arg1[1];
+    arg0[0x16] = arg1[2];
+    arg0[0x18] = arg1[3];
+    arg0[0x19] = arg1[4];
+    arg0[0x1A] = arg1[5];
+}
 
 void func_80176EFC_ovl5(void) {
 }

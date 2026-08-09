@@ -3,6 +3,13 @@
 #include <PR/n_libaudio.h>
 
 s32 func_8002C9FC(ALSeq *seq);
+void n_alEvtqPostEvent(ALEventQueue *evtq, N_ALEvent *evt, ALMicroTime delta);
+
+/* Kirby's N_ALCSPlayer differs from the stock SDK layout; only evtq is used here. */
+typedef struct {
+    u8                  unk00[0x50];
+    ALEventQueue        evtq;
+} N_CSPlayer;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002AD90.s")
 
@@ -16,7 +23,8 @@ s32 func_8002C9FC(ALSeq *seq);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B158.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B20C.s")
+void func_8002B20C(void) {
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B214.s")
 
@@ -207,7 +215,13 @@ void alSeqNewMarker(ALSeq *seq, ALSeqMarker *m, u32 ticks) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/n_alSynDelete.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/alCSPPlay.s")
+void alCSPPlay(ALCSPlayer *seqp) {
+    N_ALEvent evt;
+
+    evt.type = AL_SEQP_PLAY_EVT;
+
+    n_alEvtqPostEvent(&((N_CSPlayer *) seqp)->evtq, &evt, 0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002D0D0.s")
 

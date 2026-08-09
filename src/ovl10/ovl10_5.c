@@ -10,18 +10,43 @@ extern u8 D_800D6BE0[];
 void func_801BE79C_ovl7(void);
 extern s32 D_800BE500;
 s32 func_800F8560(void);
+#include "buffers.h"
+void func_801A0880_ovl7(void);
+void func_801EFF98_ovl10(void);
+void func_800FF200(void *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EF790_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EF9B0_ovl10.s")
+void func_801EF9B0_ovl10(GObj *arg0) {
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        func_801A0880_ovl7();
+        if (D_800E83E0[omCurrentObj->objId] == 1) {
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801EFF98_ovl10);
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EFA38_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EFC58_ovl10.s")
+void func_801EFC58_ovl10(GObj *arg0) {
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        func_801A0880_ovl7();
+        if (D_800E83E0[omCurrentObj->objId] == 1) {
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801EFF98_ovl10);
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EFCE0_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EFF10_ovl10.s")
+void func_801EFF10_ovl10(GObj *arg0) {
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        func_801A0880_ovl7();
+        if (D_800E83E0[omCurrentObj->objId] == 1) {
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801EFF98_ovl10);
+        }
+    }
+}
 
 void func_801EFF98_ovl10(void) {
     func_801BE79C_ovl7();
@@ -38,7 +63,13 @@ s32 func_801EFFC0_ovl10(void) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F0014_ovl10.s")
+void func_801F0014_ovl10(void *arg0) {
+    *((u8 *) arg0 + 0x21) = 0;
+    *(f32 *) ((u8 *) arg0 + 0x10) = 20.0f;
+    *(f32 *) ((u8 *) arg0 + 0x14) = 20.0f;
+    *(f32 *) ((u8 *) arg0 + 0x18) = -240.0f;
+    func_800FF200(arg0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801F0050_ovl10.s")
 

@@ -130,7 +130,21 @@ void func_801E2B04_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E2F5C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E309C_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CBA34;
+void func_800B33F4(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800AA154(s32);
+
+void func_801E309C_ovl9(GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBA34;
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA154(0x101B5);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E3134_ovl9.s")
 
@@ -228,7 +242,43 @@ void func_801E54A4_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E54D0_ovl9.s")
 
+#ifdef MIPS_TO_C
+struct Ovl9AnimCmd2 {
+    u8 filler0[8];
+    s32 unk8;
+};
+
+struct Ovl9AnimObj2 {
+    u8 filler0[0x24];
+    struct Ovl9AnimCmd2 *unk24;
+};
+
+void func_80111550(u32);
+struct Ovl9AnimObj2 *func_80111C88(s32 *, u32);
+void func_80111ECC(struct Ovl9AnimObj2 *);
+s32 func_80110150(void *);
+
+s32 func_801E55C0_ovl9(s32 arg0, void *arg1) {
+    struct UnkStruct800E1B50 *temp;
+    struct Ovl9AnimObj2 *temp_v0;
+
+    temp = D_800E1B50[omCurrentObj->objId];
+    if (temp->unk88 == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    temp_v0 = func_80111C88(temp->unk8C, omCurrentObj->objId);
+    if (temp_v0 != NULL) {
+        if (arg0 != 0) {
+            temp_v0->unk24->unk8 = arg0;
+        }
+        func_80111ECC(temp_v0);
+    }
+    return func_80110150(arg1);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E55C0_ovl9.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E5660_ovl9.s")
 

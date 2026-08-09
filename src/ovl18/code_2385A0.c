@@ -42,6 +42,9 @@ struct Unk2385A0_24 {
 
 extern s32 D_8022A76C_ovl18;
 extern f32 D_8022A91C_ovl18;
+extern f32 D_8022BC70_ovl18;
+extern f32 D_8022BC74_ovl18;
+extern f32 D_8022BC8C_ovl18;
 extern s32 D_8022AAF0_ovl18;
 extern s32 D_8022AB14_ovl18;
 extern s32 D_8022AB38_ovl18;
@@ -94,9 +97,9 @@ void func_80225C00_ovl18(s32 arg0) {
     gEntitiesScaleZArray[omCurrentObj->objId] = gEntitiesScaleZArray[D_800E0D50[omCurrentObj->objId]];
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E6850[omCurrentObj->objId] = D_8022BC70_ovl18;
     D_800E3210[omCurrentObj->objId] = -1.0f;
-    D_800E3750[omCurrentObj->objId] = -0.65f;
+    D_800E3750[omCurrentObj->objId] = D_8022BC74_ovl18;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     ohSleep(0x3C);
     func_801ACF84_ovl7(arg0);
@@ -262,7 +265,7 @@ void func_802265FC_ovl18(UNUSED s32 arg0) {
     func_800AA018(0x10006);
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E6850[omCurrentObj->objId] = D_8022BC8C_ovl18;
     curObjSleepForever(D_800E6690);
 }
 

@@ -1,5 +1,11 @@
-#include <ultra64.h>
-#include <macros.h>
+#include "common.h"
+#include "GObj.h"
+#include "track_arrays.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/ovl1_7.h"
+#include "ovl1/util.h"
+
+extern Gfx D_80188218_ovl5[];
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80177B00_ovl5.s")
 
@@ -33,11 +39,17 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178E98_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178F38_ovl5.s")
+s32 func_80178F38_ovl5(s32 arg0) {
+    return (arg0 % 30) * 3;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178F54_ovl5.s")
+s32 func_80178F54_ovl5(s32 arg0) {
+    return (arg0 / 30) % 60;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178F78_ovl5.s")
+s32 func_80178F78_ovl5(s32 arg0) {
+    return (arg0 / 30) / 60;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178F9C_ovl5.s")
 
@@ -59,7 +71,9 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80179B48_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80179D24_ovl5.s")
+void func_80179D24_ovl5(Gfx **g) {
+    gSPDisplayList((*g)++, D_80188218_ovl5);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80179D48_ovl5.s")
 

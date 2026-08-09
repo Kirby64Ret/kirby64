@@ -105,7 +105,16 @@ def main():
             if len(p) != 3 or p[1] not in 'Tt' or p[2].endswith('.NON_MATCHING'):
                 continue
             off, sym = int(p[0], 16), p[2]
-            if sym in pragmas or sym.startswith('_asmpp'):
+            # Do NOT skip pragma'd functions. Their offsets are just as
+            # checkable, and skipping them created a real blind spot: convert a
+            # function whose listing carries post-.size padding and the padding
+            # is lost, but if only PRAGMAS follow it nothing here notices --
+            # and check_tu_size stays clean too, because IDO's end-of-.text
+            # 16-byte alignment pad absorbs the shortfall. The drift only
+            # surfaced when a later C function happened to be converted.
+            # Found by the n_audio agent on n_alSynAddPlayer/n_alSynStopVoice,
+            # which had both "verified MATCH" and a 12-byte drift at once.
+            if sym.startswith('_asmpp'):
                 continue
             addr = canon_addr(sym) or named_addr(sym)
             if addr is None:

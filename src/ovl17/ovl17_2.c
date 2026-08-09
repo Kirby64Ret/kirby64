@@ -19,6 +19,7 @@
 #include "ovl17.h"
 
 extern f32 D_801E55E8_ovl17;
+extern f32 D_801E567C_ovl17;
 extern f32 D_801E55EC_ovl17;
 extern f32 D_801E55F0_ovl17;
 extern f32 D_801E55F4_ovl17;
@@ -262,7 +263,7 @@ void func_801E069C_ovl17(void) {
             temp_v0->scale.v.y = 0.0f;
             return;
         }
-        temp_v0->scale.v.y = temp_a0 * 0.1f;
+        temp_v0->scale.v.y = temp_a0 * D_801E567C_ovl17;
     }
 }
 

@@ -11,6 +11,14 @@
 
 #include "ovl13.h"
 
+extern f32 D_801E5CDC_ovl13;
+extern f32 D_801E5D78_ovl13;
+extern f32 D_801E5D7C_ovl13;
+extern f32 D_801E5D80_ovl13;
+extern f32 D_801E5D84_ovl13;
+extern f32 D_801E5D88_ovl13;
+extern f32 D_801E5D8C_ovl13;
+
 void func_801DB1E0_ovl13(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk39 = -1;
     D_800DF150[omCurrentObj->objId] = func_801DB358_ovl13;
@@ -125,13 +133,16 @@ s32 func_801DDC18_ovl13(void) {
 }
 
 void func_801DDC58_ovl13(GObj *arg0) {
+    f32 c;
+
     D_800DDFD0[omCurrentObj->objId] = 3;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D93A8_ovl8;
     D_800E0490[omCurrentObj->objId] = &D_801DAAF0_ovl8;
     func_801A2ADC_ovl7(&D_801DAAF0_ovl8);
+    c = D_801E5CDC_ovl13;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAD8C_ovl8;
-    D_800E6690[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId] * -0.1f;
-    D_800E3750[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] * -0.1f;
+    D_800E6690[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId] * c;
+    D_800E3750[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] * c;
     ohSleep(0xA);
     func_800B33F4();
     func_800AF27C();
@@ -212,8 +223,8 @@ void func_801E135C_ovl13(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAE1C_ovl8;
     func_800B33F4();
     D_800DFBD0[omCurrentObj->objId][1]->pos.v.z = 0.0f;
-    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = -1.5707964f;
-    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = 3.1415927f;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_801E5D78_ovl13;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = D_801E5D7C_ovl13;
     D_800DFBD0[omCurrentObj->objId][2]->angle.v.z = 0.0f;
     func_800A9F98(0x10412, 3.0f);
     func_800AA018(0x10426);
@@ -225,7 +236,7 @@ void func_801E135C_ovl13(GObj *arg0) {
     }
     func_800AF27C();
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.0f;
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.1f;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E5D80_ovl13;
     gEntityFuncListIDArray[omCurrentObj->objId] = 10;
 }
 
@@ -252,10 +263,10 @@ void func_801E1680_ovl13(GObj *arg0) {
     }
     D_800EAC20[omCurrentObj->objId] = 0.0f;
     D_800DFBD0[omCurrentObj->objId][1]->pos.v.z = D_800EAC20[omCurrentObj->objId];
-    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = 3.1415927f;
-    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = -1.5707964f;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = D_801E5D84_ovl13;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_801E5D88_ovl13;
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.0f;
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.1f;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E5D8C_ovl13;
     gEntityFuncListIDArray[omCurrentObj->objId] = 10;
 }
 

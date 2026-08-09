@@ -8,6 +8,8 @@
 #include "unk_structs/D_800E1B50.h"
 
 extern s32 D_801CCB5C;
+extern s32 D_801CCA84;
+extern f32 D_8021DD54_ovl9;
 
 extern FUNCLIST D_8021CB28_ovl9;
 extern FUNCLIST D_8021CB48_ovl9;
@@ -147,7 +149,19 @@ void func_80211DE8_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80211DF0_ovl9.s")
+void func_80211DF0_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    tmp->unk48 = NULL;
+    tmp->unk98 = &D_801CCA84;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A9EA4(0x100EA);
+    func_800A9EA4(0x100EB);
+    D_800E3750[omCurrentObj->objId] = D_8021DD54_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    curObjSleepForever();
+}
 
 void func_80211EC0_ovl9(s32 arg0) {
 

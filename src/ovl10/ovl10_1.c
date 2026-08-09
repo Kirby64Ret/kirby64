@@ -8,6 +8,9 @@ extern FUNCLIST D_801F4290_ovl10;
 
 void func_801A0D74_ovl7(void);
 void func_801E28C8_ovl10(s32);
+#include "buffers.h"
+#include "ovl1/ovl1_7.h"
+void func_801DBD38_ovl10(struct GObj *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DBC00_ovl10.s")
 
@@ -104,7 +107,15 @@ void func_801DF4CC_ovl10(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DFF88_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E03CC_ovl10.s")
+void func_801E03CC_ovl10(void) {
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801A0D74_ovl7();
+    func_801E28C8_ovl10(0);
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0x12;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DBD38_ovl10);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E0460_ovl10.s")
 
@@ -124,11 +135,27 @@ void func_801E1880_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E18A8_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E1D3C_ovl10.s")
+void func_801E1D3C_ovl10(void) {
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801A0D74_ovl7();
+    func_801E28C8_ovl10(0);
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0x12;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DBD38_ovl10);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E1DD0_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E1FD8_ovl10.s")
+void func_801E1FD8_ovl10(void) {
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801A0D74_ovl7();
+    func_801E28C8_ovl10(0);
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0x12;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DBD38_ovl10);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E206C_ovl10.s")
 

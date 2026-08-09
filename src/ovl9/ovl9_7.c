@@ -3,6 +3,7 @@
 #include "track_arrays.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/util.h"
+#include "unk_structs/D_800E1B50.h"
 #include "buffers.h"
 #include "ovl1/ovl1_7.h"
 
@@ -18,9 +19,47 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F1044_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F13B4_ovl9.s")
+void func_801A0D74_ovl7();
+s32 func_801F1440_ovl9(f32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F1440_ovl9.s")
+void func_801F13B4_ovl9(void) {
+    f32 temp;
+
+    temp = D_800EA6E0[omCurrentObj->objId];
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp;
+    gEntitiesScaleYArray[omCurrentObj->objId] = temp;
+    gEntitiesScaleXArray[omCurrentObj->objId] = temp;
+    func_801A0D74_ovl7();
+    func_801F1440_ovl9(D_800EA6E0[omCurrentObj->objId]);
+}
+
+struct Ovl9AnimCmd {
+    u8 filler0[0x18];
+    f32 unk18;
+};
+
+struct Ovl9AnimObj {
+    u8 filler0[0x24];
+    struct Ovl9AnimCmd *unk24;
+};
+
+void func_80111ECC(struct Ovl9AnimObj *);
+struct Ovl9AnimObj *func_801A0464_ovl7(void);
+void func_801A04B8_ovl7(void);
+
+s32 func_801F1440_ovl9(f32 arg0) {
+    struct Ovl9AnimObj *temp;
+    UnkStruct800E1B50 *p;
+
+    p = D_800E1B50[omCurrentObj->objId];
+    if (p->unk8C == NULL) {
+        return 0;
+    }
+    temp = func_801A0464_ovl7();
+    temp->unk24->unk18 = temp->unk24->unk18 * arg0;
+    func_80111ECC(temp);
+    func_801A04B8_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F14B8_ovl9.s")
 
