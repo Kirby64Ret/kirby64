@@ -1,0 +1,62 @@
+# Native build of the game's own code. Completely separate from the matching
+# N64 build -- it reads the same sources but writes only under build/pc, and
+# nothing here can change build/kirby.us.z64.
+#
+# The point of this target is measurement, not a playable binary yet. It
+# compiles every C file the decompilation has produced, plus the data listings
+# translated to C, and reports exactly which symbols are still missing. That
+# number IS the remaining porting work, and it moves every time a function is
+# matched.
+#
+#   make -f Makefile.pc gap       # what is still undefined, by category
+#   make -f Makefile.pc objs      # just compile everything
+#
+# WHY 32-BIT: measured, not assumed. At -m64, three files fail to compile --
+# gbi.h casts a pointer into a 32-bit display-list word inside a static
+# initializer, which is not a constant expression when pointers are 8 bytes,
+# and va_list is an array type so fault.c's (va_list) cast is invalid. At -m32
+# all 151 files compile clean. ILP32 also keeps every struct layout and every
+# pointer-bearing data table identical to the N64's, which is what lets the
+# translated data tables in build/pc/data link at all.
+
+PC_BUILD  := build/pc
+PC_CC     := gcc
+PC_ARCH   := -m32
+PC_DEFS   := -D_LANGUAGE_C -DTARGET_N64 -DF3DEX_GBI_2 -DAVOID_UB -DNON_MATCHING
+PC_INC    := -Iinclude -Iinclude/libc -Ilibreultra/include/2.0I -Ibuild \
+             -Ibuild/include -Ibuild/assets -Isrc -Isrc.old -I.
+PC_CFLAGS := $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) $(PC_INC)
+
+GAME_SRCS := $(wildcard src/*/*.c)
+GAME_OBJS := $(patsubst %.c,$(PC_BUILD)/%.o,$(GAME_SRCS))
+
+DATA_SRCS := $(wildcard $(PC_BUILD)/data/*.c)
+DATA_OBJS := $(patsubst %.c,%.o,$(DATA_SRCS))
+
+.PHONY: all objs data gap clean
+all: objs
+
+# The data translation has to run before its objects can be enumerated, so it
+# is a separate invocation rather than a prerequisite.
+data:
+	@python3 tools/pc/gen_data.py
+
+objs: $(GAME_OBJS)
+	@$(MAKE) -s -f Makefile.pc data
+	@$(MAKE) -s -f Makefile.pc dataobjs
+	@echo "$(words $(GAME_OBJS)) game objects built"
+
+dataobjs: $(DATA_OBJS)
+
+$(PC_BUILD)/%.o: %.c
+	@mkdir -p $(dir $@)
+	@$(PC_CC) $(PC_CFLAGS) -c $< -o $@
+
+$(PC_BUILD)/data/%.o: $(PC_BUILD)/data/%.c
+	@$(PC_CC) $(PC_ARCH) -std=gnu90 -w -Isrc -c $< -o $@
+
+gap: objs
+	@python3 tools/pc/gap.py
+
+clean:
+	@rm -rf $(PC_BUILD)

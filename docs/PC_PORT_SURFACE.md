@@ -1,78 +1,128 @@
 # PC port: the platform surface, measured
 
-This is not a plan. It is an inventory, taken from the built objects, of every
-libultra symbol the game's own code actually calls. It bounds the porting work
-in a way that reading the SDK headers does not: libultra has hundreds of
-entry points and Kirby 64 uses 100.
+This is not a plan. It is an inventory, taken from the built objects, of what
+the port still needs. Nothing here is estimated; every number comes from
+compiling the tree and reading the symbol table.
 
-Regenerate with the snippet at the bottom; it reads `build/src/*/*.o`, so it
-stays honest as more of the game moves from assembly into C.
+Regenerate the whole page's numbers with:
 
-## Totals
+    make -f Makefile.pc gap
 
-| group | symbols | notes |
-|---|---|---|
-| os / io | 62 | the real platform layer |
-| audio (`al*`, `n_al*`) | 25 | library logic is portable; only the AI sink is not |
-| `gu*` | 11 | pure math, reusable verbatim |
-| misc | 2 | |
-| **total** | **100** | |
+## The headline
 
-## os/io, by subsystem
+    12974 symbols defined, 1402 still missing
 
-These are the ones that need an actual backend.
+      un-decompiled functions     1081
+      unresolved data              220
+      libultra os/io                60
+      audio library                  9
+      gu math                        5
+      libc / other                  27
 
-**controllers / SI — 17** (largest group, and the least interesting)
-`osContInit` `osContStartQuery` `osContGetQuery` `osContStartReadData`
-`osContGetReadData` `osMotorInit` `__osMotorAccess` `osEepromProbe`
-`osEepromRead` `osEepromWrite` `osEepromLongRead` `osEepromLongWrite`
-`osPfsInitPak` `osPfsAllocateFile` `osPfsDeleteFile` `osPfsFindFile`
-`osPfsReadWriteFile`
+The platform layer -- the part that is actually *porting* work -- is 101
+symbols. The other 1301 are decompilation work that has to happen anyway.
 
-Controller reads map onto any input API. EEPROM and the Controller Pak are
-save data — back them with a file. Rumble is a no-op or a gamepad rumble call.
+## The game's own C already builds natively
 
-**video (VI) — 12**
-`osCreateViManager` `osViSetMode` `osViSetEvent` `osViSwapBuffer` `osViBlack`
-`osViSetYScale` `osViGetCurrentFramebuffer` `osViGetNextFramebuffer`
-`osViModeNtscLan1` `osViModeMpalLan1` `osViModeFpalLan1` `osVirtualToPhysical`
+All 151 files in `src/` compile with host gcc, today, with no source changes.
+That was worth checking early and the result was better than expected.
 
-The VI is a scanout engine: a mode, a framebuffer pointer, and a vsync event.
-Swapping buffers and signalling the retrace message is most of it.
+**The port is 32-bit, and that was measured rather than chosen.** At `-m64`
+three files fail:
 
-**threads / scheduler — 10**
-`osCreateThread` `osStartThread` `osStopThread` `osDestroyThread`
-`osGetThreadPri` `osSetThreadPri` `osSetIntMask` `__osGetActiveQueue`
-`osSpTaskYield` `osSpTaskYielded`
+  * `rdp_reset.c` and `ovl4_1.c` -- `gbi.h` casts a pointer into a 32-bit
+    display-list word inside a *static initializer*, which stops being a
+    constant expression when pointers are 8 bytes wide.
+  * `fault.c` -- `va_list` is an array type on x86-64, so `(va_list)ALIGN4(...)`
+    is an invalid cast.
 
-Maps onto host threads. Note the game relies on N64 priority semantics —
-strict priority, no preemption between equal priorities — so a naive
-1:1 mapping to OS threads can change behaviour. Worth considering a
-cooperative scheduler instead.
+At `-m32` all 151 compile clean. ILP32 also keeps every struct layout and every
+pointer-bearing data table bit-identical in shape to the N64's, which is what
+lets the translated data tables link at all. Going 64-bit later means reworking
+segmented addressing and the display-list format -- a real project, and not a
+prerequisite for anything.
 
-**messages — 4**
-`osCreateMesgQueue` `osSendMesg` `osRecvMesg` `osSetEventMesg`
+## The data listings translate mechanically
 
-Blocking queues. Straightforward, but they are the synchronisation backbone
-for everything above.
+`asm/data/**/*.s` holds ~79,000 entries of game data that the N64 build
+assembles directly and a native build cannot. This looked like a second
+decompilation project. It is not: splat has already resolved every pointer word
+to a *symbol name* rather than a raw address -- 7,161 of them -- so the
+listings can be translated to C by a script.
 
-**DMA / PI / cart — 4**
-`osCartRomInit` `osCreatePiManager` `osEPiLinkHandle` `osEPiStartDma`
+`tools/pc/gen_data.py` does that, emitting 9,003 symbols across 177 C files,
+all of which compile. It cut the unresolved-data count from 1,959 to 220.
 
-All asset loading goes through here. On PC the "cartridge" is the ROM file (or
-extracted assets), and DMA becomes a read or a memcpy.
+Two things about it are worth knowing:
 
-**RSP / RDP — 3**
-`osSpTaskLoad` `osSpTaskStartGo` `osDpSetNextBuffer`
+  * It is **PC-only** and writes nothing the N64 build reads. Migrating data
+    into C for the *matching* build means reproducing the ROM's byte layout
+    exactly, which is the same hard problem as rodata migration. Here only
+    semantics matter, so the two jobs are unrelated and this one cannot break
+    the ROM.
+  * The generated files include **no game headers**. Many of these symbols are
+    declared elsewhere with real types, and a `u32 D_800E1B50[]` definition
+    would conflict with an `extern struct Foo *D_800E1B50[]` declaration. C does
+    no cross-TU type checking at link time, so isolation is exactly what makes
+    the set compile.
 
-This is the renderer boundary, and the single largest piece of work in the
-whole port. The game hands over an F3DEX2 display list; something has to
-interpret it. Everything else on this page is plumbing by comparison.
+Values are emitted as values, not as a byte image: `.float 0.315` becomes an
+`f32`, `.word 0x3F800000` becomes a `u32`. Copying the ROM's big-endian bytes
+instead would preserve the offsets and corrupt every multi-byte number on a
+little-endian host.
 
-**cache — 4**
-`osInvalDCache` `osInvalICache` `osWritebackDCache` `osWritebackDCacheAll`
+## The 101 platform symbols
 
-No-ops on PC.
+`gu*` (5 remaining) is pure math and `libreultra/src/gu` already has it.
+The audio library logic is portable; only the AI sink is not.
+
+The os/io group is where the actual work is. Grouped by what they need:
+
+**controllers / SI — 17** `osContInit` `osContStartQuery` `osContGetQuery`
+`osContStartReadData` `osContGetReadData` `osMotorInit` `__osMotorAccess`
+`osEepromProbe` `osEepromRead` `osEepromWrite` `osEepromLongRead`
+`osEepromLongWrite` `osPfsInitPak` `osPfsAllocateFile` `osPfsDeleteFile`
+`osPfsFindFile` `osPfsReadWriteFile`
+
+The largest group and the least interesting. Controller reads map onto any
+input API; EEPROM and the Controller Pak are save data, so back them with a
+file; rumble is a no-op or a gamepad call.
+
+**video (VI) — 12** `osCreateViManager` `osViSetMode` `osViSetEvent`
+`osViSwapBuffer` `osViBlack` `osViSetYScale` `osViGetCurrentFramebuffer`
+`osViGetNextFramebuffer` `osViModeNtscLan1` `osViModeMpalLan1`
+`osViModeFpalLan1` `osVirtualToPhysical`
+
+A scanout engine: a mode, a framebuffer pointer, a vsync event. Swapping
+buffers and signalling retrace is most of it.
+
+**threads / scheduler — 10** `osCreateThread` `osStartThread` `osStopThread`
+`osDestroyThread` `osGetThreadPri` `osSetThreadPri` `osSetIntMask`
+`__osGetActiveQueue` `osSpTaskYield` `osSpTaskYielded`
+
+The game relies on N64 priority semantics -- strict priority, no preemption
+between equal priorities -- so a naive 1:1 mapping onto OS threads can change
+behaviour. A cooperative scheduler is worth considering instead.
+
+**messages — 4** `osCreateMesgQueue` `osSendMesg` `osRecvMesg` `osSetEventMesg`
+
+Blocking queues, and the synchronisation backbone for everything above.
+
+**DMA / PI / cart — 4** `osCartRomInit` `osCreatePiManager` `osEPiLinkHandle`
+`osEPiStartDma`
+
+All asset loading goes through here. On PC the cartridge is the ROM file and
+DMA becomes a read or a memcpy.
+
+**RSP / RDP — 3** `osSpTaskLoad` `osSpTaskStartGo` `osDpSetNextBuffer`
+
+The renderer boundary, and the single largest piece of work in the port. The
+game hands over an F3DEX2 display list and something has to interpret it.
+Everything else on this page is plumbing by comparison -- any estimate that
+counts symbols rather than weighting these three will be wrong.
+
+**cache — 4** `osInvalDCache` `osInvalICache` `osWritebackDCache`
+`osWritebackDCacheAll` -- no-ops on PC.
 
 **timers — 2** `osGetCount` `osGetTime`
 **audio sink — 2** `osAiSetFrequency` `osAiSetNextBuffer`
@@ -88,30 +138,13 @@ libnaudio/*.c` is the real n_audio source and has already been used to match
 So the port does not start from nothing: the pure-computation half of libultra
 is present, and only the parts that touch hardware need replacing.
 
-## Honest sizing
+## The order of work
 
-The 62 os symbols are mostly small. `osSpTaskLoad` / `osSpTaskStartGo` /
-`osDpSetNextBuffer` are three of them and represent an F3DEX2 interpreter plus
-a rasteriser backend — comparable in effort to everything else here combined.
-Any estimate that counts symbols rather than weighting that one will be wrong.
+The 1,081 un-decompiled functions gate everything. Until they land the binary
+cannot link no matter how complete the platform layer is, and that is why the
+matching decompilation is still the critical path rather than the renderer.
 
-The prerequisite is unchanged: a PC port needs essentially all of the game's
-own code in C. Every remaining `#pragma GLOBAL_ASM` is a function that would
-be missing from the binary.
-
-## Regenerating this
-
-```sh
-python3 - <<'EOF'
-import re, subprocess, glob
-called = set()
-for obj in glob.glob('build/src/*/*.o'):
-    o = subprocess.run(['mips-linux-gnu-nm', '-u', obj],
-                       capture_output=True, text=True).stdout
-    for l in o.split('\n'):
-        p = l.split()
-        if len(p) == 2 and p[0] == 'U' and p[1].startswith(('os', '__os')):
-            called.add(p[1])
-print(len(called)); print('\n'.join(sorted(called)))
-EOF
-```
+What *can* proceed in parallel, and has: the native build itself, the data
+translation, and this measurement. `make -f Makefile.pc gap` re-reads the
+objects, so the numbers on this page move on their own as functions are
+matched -- there is no separate porting metric to maintain.
