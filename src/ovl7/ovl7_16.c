@@ -7,6 +7,10 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
+struct Sub800E1B50_Unk34 *func_800A8100(s32, s32, s32, void *);
+void func_801BDBDC_ovl7(GObj *);
+void func_801BE1A8_ovl7(GObj *);
+
 void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
 extern struct GObjProcess *gEntityGObjProcessArray[];
 void func_801BE79C_ovl7(GObj *);
@@ -93,7 +97,15 @@ void func_801BDADC_ovl7(GObj *arg0) {
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_801CD8B8_ovl7);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BDB50_ovl7.s")
+void func_801BDB50_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DF150[omCurrentObj->objId] = func_801BDBDC_ovl7;
+    func_800AA018(0x105F0);
+    func_800AA018(0x105F1);
+    ent->unk34 = func_800A8100(0, 2, 0x34, arg0->data.dobj);
+    curObjSleepForever();
+}
 
 void func_801BDBDC_ovl7(GObj *arg0) {
     func_801A0880_ovl7();
@@ -105,7 +117,16 @@ void func_801BDBDC_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BE068_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BE10C_ovl7.s")
+void func_801BE10C_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct DObj *dobj = D_800DFBD0[omCurrentObj->objId][1];
+
+    D_800DF150[omCurrentObj->objId] = func_801BE1A8_ovl7;
+    func_800AA018(0x105F9);
+    func_800AA018(0x105FA);
+    ent->unk34 = func_800A8100(0, 2, 0x33, dobj);
+    curObjSleepForever();
+}
 
 void func_801BE1A8_ovl7(GObj *arg0) {
     func_801A0880_ovl7();

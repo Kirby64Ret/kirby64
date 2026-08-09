@@ -739,7 +739,6 @@ void func_80222108_ovl19(GObj *g) {
 }
 
 // i suspect its that if/else block
-#ifdef NON_MATCHING
 void func_802222F0_ovl19(GObj *arg0) {
     Vector sp34;
     Vector sp28;
@@ -749,8 +748,8 @@ void func_802222F0_ovl19(GObj *arg0) {
         sp34.y = 0.0f;
         sp34.x = 0.0f;
         sp34.z = 1.0f;
-        sp28.y = 0.0f;
         sp28.x = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+        sp28.y = 0.0f;
         sp28.z = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
         var_f12 = vec3_abs_angle_diff(&sp34, &sp28) * 0.6f;
         if (var_f12 < 0.0f) {
@@ -769,9 +768,6 @@ void func_802222F0_ovl19(GObj *arg0) {
     D_8022FAB0_ovl19->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
     D_8022FAB0_ovl19->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802222F0_ovl19.s")
-#endif
 
 void func_802224BC_ovl19(GObj *arg0) {
     static FUNCLIST D_8022F14C_ovl19 = {

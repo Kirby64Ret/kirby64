@@ -59,6 +59,34 @@ def main():
         if m:
             bad_size.add(m.group(1))
 
+    # Exclude any file containing a function that is WRONG IN THE LINKED ROM.
+    # The gates above are structural -- they cannot tell correct C from
+    # incorrect C. verify_rom.py can, so use it when the tree links.
+    defective = set()
+    if os.path.exists('build/kirby.us.elf'):
+        owner = {}
+        import glob as _g
+        for obj in _g.glob('build/src/*/*.o'):
+            src = 'src/' + obj[len('build/src/'):-2] + '.c'
+            o = subprocess.run(['mips-linux-gnu-nm', obj],
+                               capture_output=True, text=True).stdout
+            for line in o.split('\n'):
+                q = line.split()
+                if len(q) == 3 and q[1] in 'Tt':
+                    owner.setdefault(q[2], src)
+        vr = subprocess.run([sys.executable, 'tools/decomp/verify_rom.py'],
+                            capture_output=True, text=True).stdout
+        for line in vr.split('\n'):
+            m = re.match(r'REAL DEFECT \s*\S+\s+(\S+)', line)
+            if m and m.group(1) in owner:
+                defective.add(owner[m.group(1)])
+        if defective:
+            print(f'  {len(defective)} file(s) hold a function that is wrong in '
+                  f'the linked ROM; excluded')
+    else:
+        print('  WARNING: tree does not link, so ROM-level correctness is '
+              'UNCHECKED for this checkpoint')
+
     eligible = []
     for f in quiet:
         ok, why = guards_ok(f)
@@ -71,6 +99,9 @@ def main():
             continue
         if f in bad_size:
             print(f'  SKIP {f}: translation unit is the wrong size')
+            continue
+        if f in defective:
+            print(f'  SKIP {f}: contains a function that is wrong in the ROM')
             continue
         eligible.append(f)
 

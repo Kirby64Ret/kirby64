@@ -301,19 +301,14 @@ void func_801DBFAC_ovl12(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DBFAC_ovl12.s")
 #endif
 
-// regalloc
-#ifdef NON_MATCHING
 void func_801DC094_ovl12(void) {
-    struct DObj **lo_array;
     struct DObj *lo0;
     struct DObj *lo1;
     struct DObj *lo2;
 
-
-    lo_array = D_800DFBD0[omCurrentObj->objId];
-    lo0 = lo_array[2];
-    lo1 = lo_array[3];
-    lo2 = lo_array[4];
+    lo0 = D_800DFBD0[omCurrentObj->objId][2];
+    lo1 = D_800DFBD0[omCurrentObj->objId][3];
+    lo2 = D_800DFBD0[omCurrentObj->objId][4];
     gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[D_800D7098.unk0] + 100.0f;
     lo0->pos.v.x = gEntitiesNextPosXArray[D_800D7098.unk1C];
     lo0->pos.v.z = gEntitiesNextPosZArray[D_800D7098.unk1C];
@@ -322,9 +317,6 @@ void func_801DC094_ovl12(void) {
     lo2->pos.v.x = gEntitiesNextPosXArray[D_800D7098.unk24];
     lo2->pos.v.z = gEntitiesNextPosZArray[D_800D7098.unk24];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DC094_ovl12.s")
-#endif
 
 void func_801DC17C_ovl12(void) {
     struct DObj *temp_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
@@ -455,22 +447,20 @@ void func_801DC8CC_ovl12(void) {
 }
 
 // https://decomp.me/scratch/J5YmU
-#ifdef NON_MATCHING
 void func_801DC930_ovl12(void) {
     struct UnkStruct800E1B50 *temp_v0 =  D_800E1B50[omCurrentObj->objId];
+    f32 x = 0.0f - temp_v0->unk0;
+    f32 z = 0.0f - temp_v0->unk8;
 
-    D_800E2090[omCurrentObj->objId] = 0.0f - temp_v0->unk0;
-    D_800E2410[omCurrentObj->objId] = 0.0f - temp_v0->unk8;
-    D_800E2250[omCurrentObj->objId] = 0.0f;
+    D_800E2090[omCurrentObj->objId] = x;
+    D_800E2410[omCurrentObj->objId] = z;
+    D_800E2250[omCurrentObj->objId] = 0;
     D_800EB320[omCurrentObj->objId] = 1.0f;
     if (D_800E7880[omCurrentObj->objId] == 1) {
         D_800D7098.unk10 = 0;
         D_800D7098.unkC = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DC930_ovl12.s")
-#endif
 
 void func_801DC9E8_ovl12(void) {
     D_800EB320[omCurrentObj->objId] -= 0.025f;
@@ -583,7 +573,6 @@ void func_801DCFE4_ovl12(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], ARRAYLEN(D_801E2B04_ovl12), D_801E2B04_ovl12);
 }
 
-#ifdef NON_MATCHING
 void func_801DD02C_ovl12(GObj *arg0) {
     D_800DDA90[omCurrentObj->objId] = 0x24;
     D_800DF150[omCurrentObj->objId] = func_801DD110_ovl12;
@@ -591,13 +580,10 @@ void func_801DD02C_ovl12(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800EA360[omCurrentObj->objId] = 1;
-    D_800D7098.unk8 = 0;
     D_800D7098.unk1C = omCurrentObj->objId;
+    D_800D7098.unk8 = 0;
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 7, D_801E2B04_ovl12);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DD02C_ovl12.s")
-#endif
 
 void func_801DD110_ovl12(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], ARRAYLEN(D_801E2B20_ovl12), D_801E2B20_ovl12);
@@ -719,23 +705,18 @@ void func_801DD74C_ovl12(GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
 void func_801DD7CC_ovl12(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 6;
     while (D_800E3210[D_800D7098.unk0] != 0.0f) {
         ohSleep(1);
     }
     ohSleep(0x3C);
-    // some meme here
-    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    D_800EA8A0[omCurrentObj->objId] = 0;
     D_800EA6E0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
     D_800E7880[omCurrentObj->objId] = 4;
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], ARRAYLEN(D_801E2AC0_ovl12), D_801E2AC0_ovl12);
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DD7CC_ovl12.s")
-#endif
 
 void func_801DD8FC_ovl12(GObj *arg0) {
     func_801DCDFC_ovl12();
@@ -895,24 +876,18 @@ void func_801DE1FC_ovl12(GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
 void func_801DE27C_ovl12(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 5;
     while (D_800E3210[D_800D7098.unk0] != 0.0f) {
         ohSleep(1);
     }
     ohSleep(0x3C);
-
-    // this pattern again
-    D_800EA6E0[omCurrentObj->objId] =
-    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    D_800EA8A0[omCurrentObj->objId] = 0;
+    D_800EA6E0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
     D_800E7880[omCurrentObj->objId] = 4;
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], ARRAYLEN(D_801E2AC0_ovl12), D_801E2AC0_ovl12);
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DE27C_ovl12.s")
-#endif
 
 void func_801DE3AC_ovl12(GObj *arg0) {
     func_801DCDFC_ovl12();
@@ -1018,23 +993,18 @@ void func_801DE944_ovl12(GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
 void func_801DE9C4_ovl12(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 4;
     while (D_800E3210[D_800D7098.unk0] != 0.0f) {
         ohSleep(1);
     }
     ohSleep(0x3C);
-    // that pattern
-    D_800EA6E0[omCurrentObj->objId] =
-    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    D_800EA8A0[omCurrentObj->objId] = 0;
+    D_800EA6E0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
     D_800E7880[omCurrentObj->objId] = 4;
-    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 5, D_801E2AC0_ovl12);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], ARRAYLEN(D_801E2AC0_ovl12), D_801E2AC0_ovl12);
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DE9C4_ovl12.s")
-#endif
 
 void func_801DEAF4_ovl12(GObj *arg0) {
     func_801DCDFC_ovl12();
@@ -1138,12 +1108,11 @@ void func_801DF064_ovl12(void) {
 }
 
 // complex control flow
-#ifdef NON_MATCHING
 void func_801DF0D8_ovl12(void) {
     s32 track;
 
     if (D_800E7B20[omCurrentObj->objId] > 0.0f) {
-        if (D_800E93A0[omCurrentObj->objId] != -1 && D_800E93A0[omCurrentObj->objId] >= 0x11) {
+        if (D_800E93A0[omCurrentObj->objId] == -1 || D_800E93A0[omCurrentObj->objId] >= 0x11) {
             if (D_800D7098.unk18 != -1) {
                 track = func_801ACD48_ovl7(0x2A, 0);
                 if (track != 0) {
@@ -1153,9 +1122,6 @@ void func_801DF0D8_ovl12(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DF0D8_ovl12.s")
-#endif
 
 // SUPER complex control flow
 #ifdef NON_MATCHING
@@ -1353,28 +1319,24 @@ void func_801DF910_ovl12(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DF910_ovl12.s")
 #endif
 
-#ifdef NON_MATCHING
 void func_801DF9DC_ovl12(void) {
     struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
     GObj *obj = ((GObj*)D_800DE350[omCurrentObj->objId]);
+    struct DObj *child = obj->data.dobj->firstChild;
 
     temp_v0->unk70 = 2;
     temp_v0->unk68 = 0x15;
     temp_v0->unk6C = 1;
     D_800EA1A0[omCurrentObj->objId] = 1;
-    func_801DF910_ovl12(obj->data.dobj->firstChild);
+    func_801DF910_ovl12(child);
     temp_v0->unk68 -= 1;
     play_sound(0x1C9);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DF9DC_ovl12.s")
-#endif
 
-// weird
-#ifdef NON_MATCHING
 void func_801DFA7C_ovl12(void) {
     struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
-    struct DObj *temp_a1 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+    GObj *obj = ((GObj*)D_800DE350[omCurrentObj->objId]);
+    struct DObj *temp_a1 = obj->data.dobj->firstChild;
 
     temp_v0->unk70--;
     if (temp_v0->unk70 == 0) {
@@ -1391,30 +1353,15 @@ void func_801DFA7C_ovl12(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DFA7C_ovl12.s")
-#endif
 
-#ifdef MIPS_TO_C
-//generated by mips_to_c commit 3c3b0cede1a99430bfd3edf8d385802b94f91307
 void func_801DFB34_ovl12(void) {
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
     D_800E6690[omCurrentObj->objId] = 0.0f;
-    temp_v1 = omCurrentObj->objId;
-    D_800E64D0[temp_v1] = D_800E6690[temp_v1];
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = 65535.0f;
-    temp_v1_2 = omCurrentObj->objId;
-    D_800E2090[temp_v1_2] = gEntitiesNextPosXArray[temp_v1_2];
-    temp_v1_3 = omCurrentObj->objId;
-    D_800E2410[temp_v1_3] = gEntitiesNextPosZArray[temp_v1_3];
+    D_800E2090[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_800E2410[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
     D_800E9560[omCurrentObj->objId] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DFB34_ovl12.s")
-#endif
 
 void func_801DFBEC_ovl12(void) {
     D_800E64D0[omCurrentObj->objId] = D_800E64D0[D_800D7098.unk28];
@@ -1730,16 +1677,14 @@ void func_801E0FC8_ovl12(GObj *arg0) {
     }
 }
 
-// another data meme
-#ifdef NON_MATCHING
+// the s32 casts are load-bearing: they let IDO share the single `1` constant
+// register between the two stores instead of materialising it twice.
 void func_801E10C4_ovl12(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 8;
-    D_800E9AA0[omCurrentObj->objId] = 1;
-    D_800D7098.unk2C = 1;
+    *(s32 *)&D_800E9AA0[omCurrentObj->objId] = 1;
+    *(s32 *)&D_800D7098.unk2C = 1;
+    curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801E10C4_ovl12.s")
-#endif
 
 void func_801E1124_ovl12(GObj *arg0) {
     if (D_800EB320[omCurrentObj->objId] < 0.75f) {

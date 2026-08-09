@@ -1,5 +1,12 @@
-#include <ultra64.h>
-#include <macros.h>
+#include "common.h"
+
+#include "GObj.h"
+#include "ovl1/util.h"
+#include "ovl1/ovl1_6.h"
+#include "ovl1/ovl1_7.h"
+#include "unk_structs/D_800E1B50.h"
+
+#include "ovl1/track.h"
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801ACFD0_ovl7.s")
 
@@ -33,7 +40,20 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE5D4_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE73C_ovl7.s")
+s32 func_801AE73C_ovl7(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
+    s32 idx;
+
+    idx = request_track_general(0x1B, 0x3C, 0x4A);
+    if (idx == -1) {
+        return -1;
+    }
+    gEntityFuncListIDArray[idx] = arg0;
+    gEntitiesNextPosXArray[idx] = arg1;
+    gEntitiesNextPosYArray[idx] = arg2;
+    gEntitiesNextPosZArray[idx] = arg3;
+    D_800E8E60[idx] = 1;
+    return idx;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE7E0_ovl7.s")
 

@@ -10,7 +10,9 @@
 extern f32 D_800D70D8;
 
 extern void func_800A9864();
-extern void func_800A9EA4(s32);
+/* the pointer parameter here is load-bearing: with an s32 parameter IDO
+ * coalesces the switch value straight into $a0 and drops the ROM's move. */
+extern void func_800A9EA4(void *);
 extern void func_800AA018(s32);
 extern void func_800AF27C(void);
 extern void func_800B1900(u16);
@@ -148,7 +150,36 @@ void func_801D2590_ovl8(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/eneeff/func_801D281C_ovl8.s")
+void func_801D281C_ovl8(s32 arg0) {
+    s32 temp;
+    s32 track;
+
+    func_800A9864(0x100E4, 0x1869F, 0x10);
+    D_800DEF90[omCurrentObj->objId] = func_801D1E58_ovl8;
+    D_800DDA90[omCurrentObj->objId] = 0x25;
+    func_800AA018(0x10638);
+    while (1) {
+        switch (D_800E9C60[D_800E0D50[omCurrentObj->objId]]) {
+            case 0x10633:
+            case 0x10634:
+            case 0x10635:
+            case 0x10636:
+            case 0x10639:
+            case 0x1063A:
+            case 0x1063B:
+                func_800A9EA4(D_800E9C60[D_800E0D50[omCurrentObj->objId]]);
+                break;
+            default:
+                func_800B1900(omCurrentObj->objId);
+                break;
+        }
+        track = D_800E0D50[omCurrentObj->objId];
+        if (D_800E7730[track] != 4 || D_800E77A0[track] != 0x2B) {
+            func_800B1900(omCurrentObj->objId);
+        }
+        ohSleep(1);
+    }
+}
 
 void func_801D29C8_ovl8(struct GObj *arg0) {
     switch (D_800EA520[omCurrentObj->objId]) {

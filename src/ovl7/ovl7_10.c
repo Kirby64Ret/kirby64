@@ -7,6 +7,16 @@
 #include "ovl1/ovl1_7.h"
 #include "unk_structs/D_800E1B50.h"
 
+void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
+extern struct GObjProcess *gEntityGObjProcessArray[];
+s32 func_801A0D74_ovl7(void);
+void func_801A36CC(void *);
+s32 func_801117BC(void *, u32);
+void func_801AC33C_ovl7(GObj *);
+void func_801AC11C_ovl7(GObj *);
+extern s32 D_801CB0BC_ovl7[];
+extern s32 D_801CA738_ovl7[];
+
 extern s32 D_801D0A98_ovl7;
 extern s32 D_801CB3D0_ovl7[];
 extern s32 D_801C8E64_ovl7[];
@@ -90,7 +100,21 @@ void func_801B4664_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B46C4_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B4938_ovl7.s")
+void func_801B4938_ovl7(void) {
+    if (D_800E83E0[omCurrentObj->objId] != 0) {
+        if (D_800E83E0[omCurrentObj->objId] == 0x12) {
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801AC33C_ovl7);
+        } else {
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801AC11C_ovl7);
+        }
+    } else {
+        if (func_801A0D74_ovl7() != 0) {
+            func_801A3938(D_801CB0BC_ovl7);
+            func_801A36CC(func_801A3864_ovl7);
+        }
+        func_80111C4C(func_801117BC(D_801CA738_ovl7, omCurrentObj->objId));
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B4A00_ovl7.s")
 

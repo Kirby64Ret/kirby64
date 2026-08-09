@@ -7,6 +7,19 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
+extern s32 D_801C8158_ovl7[];
+void func_800B3520(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_80199F58_ovl7(GObj *);
+void func_800AA018(s32);
+void func_800AA154(s32);
+void func_800AA864(s32, u32);
+s32 func_801A0D74_ovl7();
+
+void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
+extern struct GObjProcess *gEntityGObjProcessArray[];
+
 extern s32 D_801C81A0_ovl7[];
 extern s32 D_801C820C_ovl7[];
 void func_8019F3B0_ovl7(void);
@@ -54,15 +67,43 @@ void func_801B20BC_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2104_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2204_ovl7.s")
+void func_801B2204_ovl7(GObj *arg0) {
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    if (D_800E6F50[omCurrentObj->objId].originOffset < 120.0f) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B1FD8_ovl7);
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801A0D74_ovl7(arg0);
+    func_8019F3B0_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B22D0_ovl7.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2588_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B27D4_ovl7.s")
+void func_801B27D4_ovl7(GObj *arg0) {
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    if (D_800E6F50[omCurrentObj->objId].originOffset < 160.0f) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B1FD8_ovl7);
+    }
+    func_8019F3B0_ovl7();
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B287C_ovl7.s")
+void func_801B287C_ovl7(GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8158_ovl7;
+    func_800B3520();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_80199F58_ovl7(arg0);
+    func_800AA018(0x1008E);
+    func_800AA154(0x1008D);
+    func_800AA018(0x1008C);
+    func_800AA864(0x1008B, 2);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B294C_ovl7.s")
 
