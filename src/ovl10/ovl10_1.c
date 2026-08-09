@@ -6,6 +6,9 @@
 
 extern FUNCLIST D_801F4290_ovl10;
 
+void func_801A0D74_ovl7(void);
+void func_801E28C8_ovl10(s32);
+
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DBC00_ovl10.s")
 
 extern FUNCLIST D_801F4240_ovl10;
@@ -26,7 +29,10 @@ void func_801DBDB8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DC0EC_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DC2BC_ovl10.s")
+void func_801DC2BC_ovl10(void) {
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801A0D74_ovl7();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DC2F4_ovl10.s")
 
@@ -34,7 +40,9 @@ void func_801DBDB8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DC598_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DCA20_ovl10.s")
+void func_801DCA20_ovl10(GObj *arg0) {
+    func_801E28C8_ovl10(0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DCA44_ovl10.s")
 
@@ -54,7 +62,9 @@ void func_801DBDB8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DD760_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DDAA0_ovl10.s")
+void func_801DDAA0_ovl10(GObj *arg0) {
+    D_800EA520[omCurrentObj->objId] = 5;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DDAC8_ovl10.s")
 
@@ -78,7 +88,11 @@ void func_801DBDB8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DF394_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DF4CC_ovl10.s")
+void func_801DF4CC_ovl10(void) {
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801A0D74_ovl7();
+    func_801E28C8_ovl10(0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DF50C_ovl10.s")
 
@@ -104,7 +118,9 @@ void func_801DBDB8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E1550_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E1880_ovl10.s")
+void func_801E1880_ovl10(GObj *arg0) {
+    D_800EA520[omCurrentObj->objId] = 0x3E8;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E18A8_ovl10.s")
 
@@ -120,7 +136,10 @@ void func_801DBDB8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E27E8_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E28A0_ovl10.s")
+void func_801E28A0_ovl10(void) {
+    func_801A0D74_ovl7();
+    func_801E28C8_ovl10(0);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E28C8_ovl10.s")
 

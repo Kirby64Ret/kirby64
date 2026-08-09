@@ -6,6 +6,11 @@
 #include "ovl1/util.h"
 #include "track_arrays.h"
 
+extern u8 D_800D6C10[];
+extern Gfx D_8018A5B8_ovl5[];
+void func_80183FC8_ovl5(void);
+void func_80184084_ovl5(void);
+
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801830A0_ovl5.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801831E0_ovl5.s")
@@ -14,15 +19,30 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183AFC_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183BF4_ovl5.s")
+s32 func_80183BF4_ovl5(s32 arg0) {
+    return 1;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183C00_ovl5.s")
+s32 func_80183C00_ovl5(s32 arg0) {
+    if (D_800D6C10[arg0] == 1) {
+        return 1;
+    }
+    return 0;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183C2C_ovl5.s")
+s32 func_80183C2C_ovl5(s32 arg0) {
+    if (D_800D6C10[arg0] == 0) {
+        return 0;
+    }
+    return 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183C54_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183FA0_ovl5.s")
+void func_80183FA0_ovl5(void) {
+    func_80184084_ovl5();
+    func_80183FC8_ovl5();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183FC8_ovl5.s")
 
@@ -54,7 +74,10 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185C10_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185CA4_ovl5.s")
+void func_80185CA4_ovl5(void) {
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0, 0x10, 2);
+}
 
 extern s32 D_800D6B24;
 extern u8 D_8018EE10_ovl5;
@@ -68,7 +91,9 @@ void func_80185CDC_ovl5(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185D1C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185EC8_ovl5.s")
+void func_80185EC8_ovl5(Gfx **g) {
+    gSPDisplayList((*g)++, D_8018A5B8_ovl5);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185EEC_ovl5.s")
 

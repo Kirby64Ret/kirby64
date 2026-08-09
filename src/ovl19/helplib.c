@@ -16,6 +16,7 @@ void func_8021E4B0_ovl19(struct GObj *);
 void func_800F88C8(s32, s32, f32);//, f32);
 void func_8021E7DC_ovl19(struct GObj *);
 s32 func_800B3158(void);
+extern u8 D_800D6C90[];
 
 void func_8021DF20_ovl19(struct GObj *arg0) {
     D_800E0650[omCurrentObj->objId] = 0;
@@ -103,16 +104,16 @@ s32 func_8021E2D0_ovl19(u8 arg0, u8 arg1) {
     return idx;
 }
 
-// how
-#ifdef NON_MATCHING
 void func_8021E4B0_ovl19(struct GObj *arg0) {
     f32 tmp;
+    f32 *p;
 
     func_800B4864();
     if (D_800E6BD0[omCurrentObj->objId] != D_800E6D90[omCurrentObj->objId]) {
         func_800B35F0();
         tmp = D_800E64D0[omCurrentObj->objId];
-        D_800E64D0[omCurrentObj->objId] += (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]);
+        p = &D_800E64D0[omCurrentObj->objId];
+        *p = (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]) + *p;
         func_800F8E6C(arg0);
         D_800E64D0[omCurrentObj->objId] = tmp;
         func_800B4640();
@@ -120,25 +121,22 @@ void func_8021E4B0_ovl19(struct GObj *arg0) {
     }
     if (func_800B3158() == 0) {
         if (D_800E76C0[omCurrentObj->objId] < 0x40) {
-            D_800D6C68.unk28[omCurrentObj->objId] &= 0x80;
+            D_800D6C90[D_800E76C0[omCurrentObj->objId]] &= 0x80;
         }
         func_800B1900((u16) omCurrentObj->objId);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E4B0_ovl19.s")
-#endif
 
-// regalloc
-#ifdef NON_MATCHING
 void func_8021E5DC_ovl19(s32 arg0) {
     f32 tmp;
+    f32 *p;
 
     func_800B4864();
     if (D_800E6BD0[omCurrentObj->objId] != D_800E6D90[omCurrentObj->objId]) {
         func_800B35F0();
         tmp = D_800E64D0[omCurrentObj->objId];
-        D_800E64D0[omCurrentObj->objId] += (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]);
+        p = &D_800E64D0[omCurrentObj->objId];
+        *p = (D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId]) + *p;
         func_800F8E6C(arg0);
         D_800E64D0[omCurrentObj->objId] = tmp;
         func_800B4640();
@@ -158,16 +156,12 @@ void func_8021E5DC_ovl19(s32 arg0) {
             func_8019D958_ovl7((u16) D_800EC120[omCurrentObj->objId]);
         }
         if (D_800E76C0[omCurrentObj->objId] < 0x40) {
-            D_800D6C68.unk28[omCurrentObj->objId] &= 0x80;
+            D_800D6C90[D_800E76C0[omCurrentObj->objId]] &= 0x80;
         }
         func_800B1900((u16) omCurrentObj->objId);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E5DC_ovl19.s")
-#endif
 
-#ifdef NON_MATCHING
 void func_8021E7DC_ovl19(struct GObj *arg0) {
     func_800B4024();
     if (gEntitiesNextPosXArray[omCurrentObj->objId] != gEntitiesPosXArray[omCurrentObj->objId]) {
@@ -176,17 +170,12 @@ void func_8021E7DC_ovl19(struct GObj *arg0) {
     }
     if (func_800B3158() == 0) {
         if (D_800E76C0[omCurrentObj->objId] < 0x40) {
-            D_800D6C68.unk28[D_800E76C0[omCurrentObj->objId]] &= 0x80;
+            D_800D6C90[D_800E76C0[omCurrentObj->objId]] &= 0x80;
         }
         func_800B1900(omCurrentObj->objId);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E7DC_ovl19.s")
-#endif
 
-// regalloc
-#ifdef NON_MATCHING
 void func_8021E894_ovl19(struct GObj *arg0) {
     func_800B4024();
     if (gEntitiesNextPosXArray[omCurrentObj->objId] != gEntitiesPosXArray[omCurrentObj->objId]) {
@@ -205,15 +194,12 @@ void func_8021E894_ovl19(struct GObj *arg0) {
         }
         if (D_800EC120[omCurrentObj->objId] != -1) {
             if (D_800DE350[D_800EC120[omCurrentObj->objId]] != 0) {
-                func_8019D958_ovl7(D_800EC120[omCurrentObj->objId]);
+                func_8019D958_ovl7((u16) D_800EC120[omCurrentObj->objId]);
             }
         }
         if (D_800E76C0[omCurrentObj->objId] < 0x40) {
-            D_800D6C68.unk28[omCurrentObj->objId] &= 0x80;
+            D_800D6C90[D_800E76C0[omCurrentObj->objId]] &= 0x80;
         }
         func_800B1900(omCurrentObj->objId);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helplib/func_8021E894_ovl19.s")
-#endif

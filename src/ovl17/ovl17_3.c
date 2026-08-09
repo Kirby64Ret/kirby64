@@ -19,6 +19,7 @@
 #include "ovl17.h"
 
 extern f32 D_801E5688_ovl17;
+extern f32 D_801E56C4_ovl17;
 extern f32 D_801E568C_ovl17;
 extern f32 D_801E5690_ovl17;
 extern f32 D_801E5694_ovl17;
@@ -576,9 +577,11 @@ void func_801E34F4_ovl17(struct GObj *arg0) {
 }
 
 void func_801E36AC_ovl17(struct GObj *arg0) {
-    gEntitiesNextPosXArray[omCurrentObj->objId] *= 0.7f;
-    gEntitiesNextPosYArray[omCurrentObj->objId] *= 0.7f;
-    gEntitiesNextPosZArray[omCurrentObj->objId] *= 0.7f;
+    f32 c = D_801E56C4_ovl17;
+
+    gEntitiesNextPosXArray[omCurrentObj->objId] *= c;
+    gEntitiesNextPosYArray[omCurrentObj->objId] *= c;
+    gEntitiesNextPosZArray[omCurrentObj->objId] *= c;
     func_801E373C_ovl17();
 }
 

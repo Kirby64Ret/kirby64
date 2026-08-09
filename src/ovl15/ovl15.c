@@ -23,6 +23,11 @@ void func_801E1C20_ovl15(s32);
 void func_801E1E88_ovl15(struct GObj *);
 void func_801DF410_ovl15(struct GObj *);
 void func_801DDD74_ovl15(struct GObj *);
+extern f32 D_801E684C_ovl15;
+extern f32 D_801E68A4_ovl15;
+extern f32 D_801E68A8_ovl15;
+extern f32 D_801E68AC_ovl15;
+extern f32 D_801E68E8_ovl15;
 extern s32 D_801E6544_ovl15[];
 extern s32 D_801E654C_ovl15[];
 extern s32 D_801D8C7C;
@@ -434,7 +439,7 @@ void func_801DF148_ovl15(struct GObj *arg0) {
     D_800D7098.unk14 = 1;
     D_800DDFD0[omCurrentObj->objId] = 5;
     func_800B33F4();
-    if (-6000.0f < gEntitiesNextPosXArray[omCurrentObj->objId]) {
+    if (D_801E684C_ovl15 < gEntitiesNextPosXArray[omCurrentObj->objId]) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 0xA;
         D_800E3050[omCurrentObj->objId] = -2.0f;
         D_800E3590[omCurrentObj->objId] = 0.0f;
@@ -544,7 +549,7 @@ void func_801E15B0_ovl15(s32 arg0) {
         func_800FB914(3);
         D_800E3750[omCurrentObj->objId] = 0.0f;
         D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-        D_800E3C90[omCurrentObj->objId] = 65535.0f;
+        D_800E3C90[omCurrentObj->objId] = D_801E68A4_ovl15;
         ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 1;
         play_sound(0x19D);
     }
@@ -590,7 +595,7 @@ s32 func_801E1868_ovl15(void) {
         if ((D_800EBDA0[omCurrentObj->objId] != -1) && (D_800D6E5C != 0.0f)) {
             func_800BC11C(D_800E7B20[omCurrentObj->objId]);
         }
-        if ((3.1f < sp1C) && (sp18 < 3.1f)) {
+        if ((D_801E68A8_ovl15 < sp1C) && (sp18 < D_801E68A8_ovl15)) {
             gEntityFuncListIDArray[omCurrentObj->objId] = 0xF;
             D_800D7098.unk0 = 1;
         }
@@ -625,7 +630,7 @@ void func_801E1E88_ovl15(struct GObj *arg0) {
         gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
         D_800E3750[omCurrentObj->objId] = 0.0f;
         D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-        D_800E3C90[omCurrentObj->objId] = 65535.0f;
+        D_800E3C90[omCurrentObj->objId] = D_801E68AC_ovl15;
         D_800E8920[omCurrentObj->objId] = 1;
     }
 }
@@ -666,7 +671,7 @@ void func_801E30B8_ovl15(struct GObj *arg0) {
 
 void func_801E3404_ovl15(s32 arg0) {
     if (D_800E3050[omCurrentObj->objId] != 0.0f) {
-        D_800DFBD0[omCurrentObj->objId][1]->angle.v.z += 0.104719758f * -D_800E6A10[omCurrentObj->objId];
+        D_800DFBD0[omCurrentObj->objId][1]->angle.v.z += D_801E68E8_ovl15 * -D_800E6A10[omCurrentObj->objId];
     }
     if ((D_800E3210[omCurrentObj->objId] <= 0.0f) && (gEntitiesNextPosYArray[omCurrentObj->objId] < 16.0f)) {
         gEntitiesNextPosYArray[omCurrentObj->objId] = 16.0f;

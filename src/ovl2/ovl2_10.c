@@ -181,7 +181,6 @@ s32 func_80112600(struct UnkRay *arg0) {
 // migrated rodata is emitted BY this file), and writing them as literals
 // does not reproduce the ROM's rodata layout. Needs the constants placed
 // in the right order, not a symbol swap.
-#ifdef MIPS_TO_C
 s32 func_801126A4(struct UnkPlane *arg0) {
     struct UnkPlane *temp_v0;
     f32 temp_f0;
@@ -203,9 +202,6 @@ s32 func_801126A4(struct UnkPlane *arg0) {
     arg0->unkC = arg0->unkC + (-D_8012D934->unk5C * temp_f12);
     return 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801126A4.s")
-#endif
 
 s32 func_80112768(struct UnkRay *arg0) {
     f32 x = arg0->unk4;
@@ -560,7 +556,6 @@ void func_80115EFC(s32 arg0) {
 // migrated rodata is emitted BY this file), and writing them as literals
 // does not reproduce the ROM's rodata layout. Needs the constants placed
 // in the right order, not a symbol swap.
-#ifdef MIPS_TO_C
 void func_80116118(struct GObj *arg0) {
     u8 *sp1C = arg0->unk4C;
     f32 *temp_v0;
@@ -580,9 +575,6 @@ void func_80116118(struct GObj *arg0) {
     }
     func_80112B4C(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80116118.s")
-#endif
 
 void func_801161D4(struct GObj *arg0) {
     D_800EA6E0[arg0->objId] = 0.0f;
@@ -802,7 +794,6 @@ void func_801171F0(struct GObj *arg0) {
 // migrated rodata is emitted BY this file), and writing them as literals
 // does not reproduce the ROM's rodata layout. Needs the constants placed
 // in the right order, not a symbol swap.
-#ifdef MIPS_TO_C
 void func_80117328(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 temp_v0;
@@ -820,9 +811,6 @@ void func_80117328(struct GObj *arg0) {
         D_800E98E0[temp_v0] = 0xA;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117328.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801173F4.s")
 
@@ -831,7 +819,6 @@ void func_80117328(struct GObj *arg0) {
 // migrated rodata is emitted BY this file), and writing them as literals
 // does not reproduce the ROM's rodata layout. Needs the constants placed
 // in the right order, not a symbol swap.
-#ifdef MIPS_TO_C
 void func_80117570(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 temp_v0;
@@ -850,9 +837,6 @@ void func_80117570(struct GObj *arg0) {
         D_800E98E0[temp_v0] = 0xA;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117570.s")
-#endif
 
 void func_8011764C(struct GObj *arg0) {
     s32 id = arg0->objId;

@@ -207,11 +207,9 @@ void func_800FD03C(s32 arg0) {
 
 extern u32 D_80129124;
 extern u8 D_800D6C68[];
+extern u8 D_800D6C90[];
 s32 func_80114DBC(s32, Vec3f *);
 
-#ifdef NON_MATCHING
-// 2 instructions off: the original references a symbol at 0x800D6C90 (D_800D6C68 + 0x28)
-// that does not exist yet, so IDO folds the +0x28 into the store displacement instead.
 void func_800FD088(void) {
     struct Entity *e;
     u32 i;
@@ -223,7 +221,7 @@ void func_800FD088(void) {
         if (e->bankID == 5) {
             temp_s1 = (e->action << 8) + e->entityID;
             temp_v0 = func_80114DBC(temp_s1, &e->pos);
-            D_800D6C68[i + 0x28] = 1;
+            D_800D6C90[i] = 1;
             if (temp_v0 != 0) {
                 D_800E7730[temp_v0] = e->bankID;
                 D_800E77A0[temp_v0] = temp_s1;
@@ -233,9 +231,6 @@ void func_800FD088(void) {
         e++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/func_800FD088.s")
-#endif
 
 extern FUNCLIST D_8012458C;
 void func_800FD194(s32 arg0) {
