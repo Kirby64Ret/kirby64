@@ -667,10 +667,23 @@ A switch over 2-4 cases emits a COMPARE CHAIN, not a jump table, so it is safe
 
 ## Symbols that look usable but are not
 
-`D_8012E944` links at 0x8012e8f4, NOT 0x8012E944. Functions needing the folded
-address gKirbyState+0x188 cannot be written: IDO only emits
-%hi/%lo(gKirbyState) plus a displacement. Blocks func_8015439C_ovl3,
-func_80154428_ovl3, func_80154578_ovl3.
+**This section previously claimed `D_8012E944` links at 0x8012e8f4. It does
+not** -- build/kirby.us.map and the ELF both put it at 0x8012e944, exactly
+where its name says, and it is in tools/symbol_addrs.txt. Anyone who took that
+claim at face value would have gone looking for the wrong problem.
+
+The real blocker for func_8015439C_ovl3, func_80154428_ovl3, func_8015449C_ovl3,
+func_80154578_ovl3 and func_80152348_ovl3 is the folding one: the ROM
+materialises `%hi/%lo(D_8012E944 + 0x4)` as an address that is then
+DEREFERENCED, and IDO folds the +4 into every store displacement instead. Both
+`&gKirbyState._184.unk4` and `(f32 *) &D_8012E944[4]` give 39/52.
+
+That is the exact shape datatodo.txt exists to fix, so
+`D_8012E948 = 0x8012E948;` has been added there -- it allocates nothing, cannot
+move a byte, and was verified not to change the ROM. The five functions above
+are now unblocked and want a separate named extern rather than an offset
+expression. NONE of them has been converted yet, so this is a lead, not a
+result.
 
 By contrast `D_8012E7E8` and `D_8012E860` DO link exactly at gKirbyState+0x28
 and +0xA0, and `*(s32 *)((u8 *) &D_8012E7E8 + 8) = 0;` is what the ROM wants
