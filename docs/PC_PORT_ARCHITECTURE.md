@@ -83,23 +83,36 @@ under `#ifdef PORT` and defers address resolution to runtime through a
 measurement harness -- it links and runs today, which the 64-bit build will not
 until the PORT guards are in.
 
-## Current blocker, and what clears it
+## Dependencies: resolved
 
-`libultraship` and `torch` cannot be fetched in this session. GitHub access is
-scoped to `jr3dful`, and `add_repo` refuses cross-owner adds:
+Both are present and working.
 
-    add_repo: cross-tier adds are not supported in v1: requested
-    "harbourmasters/libultraship" but session already has repos from owner(s)
-    [jr3dful]
+    libultraship  /workspace/jr3dful/libultraship   commit 6f42b9c, 2026-08-04
+    Torch         /workspace/jr3dful/torch          cloned AND BUILT
 
-Either of these clears it:
+The library lives at **Kenix3/libultraship**, not under HarbourMasters --
+HarbourMasters hosts the ports (Shipwright, Starship), not the library. An
+earlier version of this page sent someone to a URL that does not exist.
 
-1. **Fork `HarbourMasters/libultraship` and `HarbourMasters/Torch` into the
-   `jr3dful` account**, then they can be added as same-owner repos. This keeps
-   the current session and the seven running agents alive.
-2. Start a session with libultraship as an initial source.
+Getting them here needed a detour worth recording. GitHub access is scoped to
+one owner and `add_repo` refuses cross-owner adds, so the upstream repositories
+are unreachable from this session; forks under the session's own owner are
+served by the proxy's anonymous read lane. That is the general workaround for
+any third-party dependency here.
 
-Until then the work that does not need the dependency proceeds: the `PORT`
-guards, the `port/` layer structure, the CMake pipeline, the reloc-token
-codegen, and -- most importantly -- the decompilation, which gates the port
-under either architecture.
+The current libultraship migrated to SDL3 on 2026-08-04 (#1191), and SDL3 is
+not packaged for this distribution. It builds from source: libsdl.org is
+reachable even though github.com is not, so SDL3 3.2.10 was fetched from there
+and installed to /usr/local. The fallback, if that had failed, was to check out
+the commit before the SDL3 migration, since SDL2 is packaged.
+
+Its other dependencies -- libzip, nlohmann_json, spdlog, tinyxml2, glew -- are
+all in apt.
+
+Torch's factory list is a good omen for the audio work: it has NAUDIO:V0 and
+NAUDIO:V1 factories (AUDIO_HEADER, BANK, SAMPLE, SEQUENCE, SOUND_FONT,
+INSTRUMENT, ENVELOPE, ADPCM_BOOK, ADPCM_LOOP), and n_audio is exactly the
+library Kirby 64 uses. Kirby 64's audio blocks are the `bin` subsegments in
+kirby64.yaml (`sound/ctl_2A8CB0`, `sound/ctl_3E1400` and the `sound/sound_*`
+banks).
+
