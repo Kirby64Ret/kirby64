@@ -58,3 +58,6 @@ expected/*
 # any new tools directory (tools/decomp/ was untracked because of this).
 **/__pycache__/
 *.pyc
+
+# decomp-permuter working directories (scratch output, not source)
+tools/decomp/perm/
