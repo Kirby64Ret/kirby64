@@ -58,6 +58,10 @@ void func_80159B68_ovl4(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
+// 4/30 diffs: a pure $f0/$f2 swap (the ROM keeps the constant in $f2 and the
+// array element in $f0). Swept: local count and order, initializer vs separate
+// assignment, inlining either side, reversed compare -- all give 4 or 14 diffs.
+// This is the one-slot register-class residue, not a source-form problem.
 void func_80159C40_ovl4(GObj *arg0) {
     f32 temp = D_8015C674_ovl4;
 
@@ -96,10 +100,6 @@ void func_80159D78_ovl4(GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-// 2 diffs: D_800D71F8/D_800D71FC are not linkable symbols (they live inside the
-// 0xA0-byte bss blob D_800D71E8), and every form that keeps the D_800D71E8
-// symbol folds the +0x10/+0x14 into the store displacement instead of %lo().
 extern s32 D_800D71F8;
 extern s32 D_800D71FC;
 
@@ -118,9 +118,6 @@ void func_80159DE8_ovl4(void) {
     utilSetRectColorFullScreen(0, 0, 0);
     utilSpawnRect(0xFF, -0x10, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_5/func_80159DE8_ovl4.s")
-#endif
 
 void func_80159ED8_ovl4(Gfx **gp) {
     gSPDisplayList((*gp)++, &D_8015C3E0_ovl4);

@@ -1647,13 +1647,8 @@ void func_801EE5A8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EEE44_ovl10.s")
 
-#ifdef MIPS_TO_C
-// Instruction-for-instruction correct; only the local block sits 8 bytes
-// high. IDO reserves an 8-byte temp area for the nested
-// func_80111ECC(func_80111C88(...)) call that the ROM does not; splitting
-// it into two statements, prototype changes and struct resizing do not
-// remove it.
 s32 func_801EEED4_ovl10(GObj *arg0) {
+    s32 pad;
     struct Ovl10AnimInfo sp1C;
 
     func_80111550((void *) omCurrentObj->objId);
@@ -1664,9 +1659,6 @@ s32 func_801EEED4_ovl10(GObj *arg0) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EEED4_ovl10.s")
-#endif
 
 #ifdef MIPS_TO_C
 // Instruction-for-instruction correct; only the local block sits 8 bytes

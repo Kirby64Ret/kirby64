@@ -56,6 +56,15 @@ extern void play_music(s32, s32);
 
 f32 func_80159124_ovl4(s32 arg0);
 void func_80158428_ovl4(GObj *arg0);
+void func_80158E98_ovl4(s32, s32, s32);
+void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+extern void procMainMove(struct GObj *);
+extern void func_800B4924(s32);
+extern void func_800A9F98(s32, f32);
+extern void func_800AECC0(f32);
+extern void func_800AED20(f32);
+extern f32 D_8015C668_ovl4;
 void func_8015986C_ovl4(GObj *arg0);
 s32 func_8015874C_ovl4(void);
 
@@ -204,7 +213,34 @@ f32 func_80159124_ovl4(s32 arg0) {
     return D_8015C368_ovl4[arg0];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80159160_ovl4.s")
+void func_80159160_ovl4(GObj *arg0) {
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainMove);
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    D_800DF150[omCurrentObj->objId] = NULL;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_8015C668_ovl4;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
+    D_8015C714_ovl4 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = D_800D6B98;
+    func_800A9864(0x3000A, 0x1869F, 0x10, &D_800E3750);
+    if (D_8015C71C_ovl4 == 1) {
+        func_800A9F98(0x30012, func_80159124_ovl4(D_800D6B98));
+    } else {
+        func_800A9F98(0x30014, func_80159124_ovl4(D_800D6B98));
+    }
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    while (D_8015C710_ovl4 == 0) {
+        if (D_800E9C60[D_8015C718_ovl4] != 0) {
+            func_80158E98_ovl4(D_800D6B98, D_800E9E20[D_8015C718_ovl4], D_800E9C60[D_8015C718_ovl4]);
+        }
+        ohSleep(1);
+    }
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_801593A4_ovl4.s")
 

@@ -427,7 +427,28 @@ void func_80164DB0_ovl5(void) {
     utilSpawnRect(0, 0x10, 2);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164DF0_ovl5.s")
+extern s32 D_800D71D0;
+extern s32 D_800D71D4;
+extern s32 D_800D71D8;
+extern s32 D_800D71DC;
+void func_801649CC_ovl5(void);
+
+void func_80164DF0_ovl5(GObj *arg0) {
+    if (D_800D6B24 == 0) {
+        if (D_8018E020_ovl5 != 0) {
+            if ((--D_8018E020_ovl5 == 0) || (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON))) {
+                D_800D6B68 = gGameState;
+                gGameState = 0x20;
+                func_801649CC_ovl5();
+                D_800D71D0 = D_8018E1E0_ovl5[0];
+                D_800D71D4 = D_8018E1E1_ovl5;
+                D_800D71D8 = D_8018E1E2_ovl5;
+                D_800D71DC = D_8018E1E3_ovl5;
+                func_80164DB0_ovl5();
+            }
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164EA8_ovl5.s")
 

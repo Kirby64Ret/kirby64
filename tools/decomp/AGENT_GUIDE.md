@@ -1048,3 +1048,38 @@ Consequences, all verified by a FULL CLEAN REBUILD to a byte-exact ROM:
 Re-running splat did NOT delete any listing (3838 before and after). The
 earlier claim that splat destroys nonmatchings coverage was true of some past
 invocation, not of this one -- but back up asm/ before running it anyway.
+
+## Offsets inside a bss blob: use datatodo.txt, NOT splat
+
+The "an offset into a bss blob cannot always be spelled" blocker is SOLVED, and
+it never needed splat, symbol_addrs.txt or a yaml change.
+
+`datatodo.txt` (repo root, git-TRACKED) is a plain linker script fed to ld via
+`-T datatodo.txt` in the Makefile. Every line is an absolute symbol assignment:
+
+    D_800D71F8 = 0x800D71F8;
+
+That defines a real linkable symbol at an arbitrary address. It allocates
+nothing, is in no section, and CANNOT move a byte -- the sha1 is unchanged.
+`symbol_hacks.txt`, `funcstodo.txt` and `rcp_syms.txt` are the same mechanism.
+
+So when a listing has `lui $at; sw $reg, %lo(SYM + 0x10)($at)` and SYM is a big
+unnamed bss blob:
+
+  1. add `D_<addr> = 0x<addr>;` to datatodo.txt for each referenced offset,
+  2. declare `extern s32 D_<addr>;` in your TU and assign to it directly.
+
+Separate named externs are the ONLY form that produces the absolute
+`lui $at / sw %lo(sym)($at)` pair; struct members, constant array indices and
+`*(s32 *) 0x800D71F8` all CSE the base or pick the wrong register class.
+
+Closed with this, all three first-compile MATCH and the ROM still byte-exact:
+  func_80159DE8_ovl4  (D_800D71F8, D_800D71FC)
+  func_80164DF0_ovl5  (D_800D71D0/D4/D8/DC = D_800D7178 + 0x58..0x64)
+  func_80176530_ovl5  (same four)
+
+Caveat: do NOT also add the same name to tools/symbol_addrs.txt. splat would
+then emit a `dlabel` for it in asm/data/<seg>/*.bss.s and the object definition
+would collide with the linker-script assignment. datatodo.txt alone is enough,
+and it leaves every existing listing textually unchanged, so no other agent's
+in-flight function is disturbed.

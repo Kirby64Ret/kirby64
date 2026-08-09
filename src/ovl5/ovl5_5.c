@@ -327,7 +327,37 @@ void func_801764F0_ovl5(void) {
     utilSpawnRect(0, 0x10, 2);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176530_ovl5.s")
+#include "main/contpad.h"
+#include "ovl1/game.h"
+
+extern s32 D_800D6B24;
+extern u32 D_800D6B68;
+extern u8 D_8018E450_ovl5;
+extern s32 D_8018E46C_ovl5;
+extern s32 D_8018E470_ovl5;
+extern s32 D_8018E474_ovl5;
+extern s32 D_800D71D0;
+extern s32 D_800D71D4;
+extern s32 D_800D71D8;
+extern s32 D_800D71DC;
+void func_80176108_ovl5(void);
+
+void func_80176530_ovl5(GObj *arg0) {
+    if (D_800D6B24 == 0) {
+        if (D_8018E450_ovl5 != 0) {
+            if ((--D_8018E450_ovl5 == 0) || (gPlayerControllers[0].buttonPressed & (A_BUTTON | START_BUTTON))) {
+                D_800D6B68 = gGameState;
+                gGameState = 0x20;
+                func_80176108_ovl5();
+                D_800D71D0 = D_8018E468_ovl5[0];
+                D_800D71D4 = D_8018E46C_ovl5;
+                D_800D71D8 = D_8018E470_ovl5;
+                D_800D71DC = D_8018E474_ovl5;
+                func_801764F0_ovl5();
+            }
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801765EC_ovl5.s")
 
