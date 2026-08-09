@@ -52,7 +52,30 @@ void func_800B8700(void) {
     *(SaveBlock *)&gSaveBuffer2 = *(SaveBlock *)&gSaveBuffer1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B87E0.s")
+extern u8 D_800D5150[];
+
+void func_800B87E0(void) {
+    s32 saveCalcFileChecksum(u32);
+    void saveVerify(s32);
+    void func_800B8E00(s32);
+    s32 i;
+
+    for (i = 0; i != 3; i++) {
+        if (saveCalcFileChecksum(i) == gSaveBuffer1.files[i].checksum) {
+            saveVerify(i);
+            saveSetFileChecksum(i);
+            func_800B891C(i);
+        } else {
+            func_80004D00(D_800D5150[i * 2 + 7], &gSaveBuffer1.files[i], 0x58);
+            if (saveCalcFileChecksum(i) == gSaveBuffer1.files[i].checksum) {
+                func_80004D34(D_800D5150[i * 2 + 1], &gSaveBuffer1.files[i], 0x58);
+            } else {
+                func_800B8E00(i);
+            }
+        }
+        gSaveBuffer2.files[i] = gSaveBuffer1.files[i];
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B891C.s")
 

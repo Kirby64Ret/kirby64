@@ -216,26 +216,41 @@ block_7:
 #endif
 
 #ifdef NON_MATCHING
-// register allocation only: target keeps two separate materializations of D_800D6D10
+// 13/32 diffs; the residue is ONLY the whole $t file allocated one slot low
+// (ROM t7/t8/t9/t1/t2/t3, IDO t6/t7/t8/t9/t1/t2). Everything else is exact.
+// Two reusable levers got it here:
+//   * IDO hands out $v0/$v1/$a0..$a3 in order of FIRST ASSIGNMENT, so priming
+//     the locals before the loop in the ROM's register order (val, src, i,
+//     dst, p) fixes the allocation at no instruction cost -- the dead stores
+//     are eliminated but the ordering survives (22 -> 13).
+//   * the ROM materialises D_800D6D10 TWICE; IDO CSEs one symbol, so the loop
+//     bound has to be spelled as something else. (u8 *) 0x800D6D10 is the only
+//     form that stays 2 instructions (a &sym[N] bound is recomputed inside the
+//     loop); it costs one `ori` where the ROM has `addiu`.
+extern u8 D_800D6C94[];
+
 void func_800F7404(s32 arg0) {
-    u32 *src;
-    u8 *dst;
-    u8 *p;
     u32 val;
     s32 i;
+    u8 *p;
+    u8 *dst;
+    u32 *src;
 
+    val = 0;
     src = D_800D6D10[arg0];
-    dst = &D_800D6C68[0x68];
+    i = 0;
+    dst = &D_800D6C94[0x3C];
+    p = dst;
     do {
         val = *src;
         p = dst;
         for (i = 0; i < 0x20; i++) {
-            *p++ = val & 1;
+            p[i] = val & 1;
             val >>= 1;
         }
         dst += 0x20;
         src++;
-    } while (dst != (u8 *) D_800D6D10);
+    } while (dst != (u8 *) 0x800D6D10);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7404.s")

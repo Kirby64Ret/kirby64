@@ -44,7 +44,45 @@ s32 func_801103C4(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80111184.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_8011145C.s")
+struct UnkStruct8011145C_A {
+    u8 pad0[4];
+    u16 unk4;
+    u8 pad6[6];
+    u8 unkC;
+    u8 padD[11];
+    s32 unk18;
+};
+
+struct UnkStruct8011145C_B {
+    s32 unk0;
+    u8 pad4[12];
+    s32 unk10;
+};
+
+// The bit tests are load-bearing: `x & 0x80000000` in a boolean context gives
+// IDO's `sll rd, rt, 0` + `bltz` pair, while `x >= 0` gives a bare `bltz`; and
+// `sign` has to be its own local so the mask lands in a register (`and`) rather
+// than folding into another sign test.
+void func_8011145C(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1) {
+    s32 idx;
+    s32 flags;
+    s32 sign;
+
+    idx = arg1->unk0;
+    if (!(arg1->unk10 & 0x80000000)) {
+        flags = arg0->unk18;
+        if (!(flags & 0x40000000)) {
+            sign = flags & 0x80000000;
+            if (!(arg0->unk4 & 6)) {
+                if (sign || (flags & 0x78)) {
+                    D_800E83E0[idx] = 6;
+                } else {
+                    D_800E83E0[idx] = (arg0->unkC << 16) + 2;
+                }
+            }
+        }
+    }
+}
 
 void func_801114E0(void) {
     D_8012D580 = D_8012D0C0 = 0x50;

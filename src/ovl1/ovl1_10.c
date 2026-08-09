@@ -328,7 +328,61 @@ void func_800BB198(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB198.s")
 #endif
 
+// Draft, 8/70: correct and structurally exact. Residue is (a) the outer loop's
+// node/cont pointer bumps emitted in the opposite order, and (b) the trailing
+// 64-bit canary store: the ROM materialises 0xFEDCBA98 and a separate `li 0`
+// FIRST and then shares one `lui $at` between both stores. `extern u64` gets the
+// `li $t4, 0` right but splits the lui; a 2-word array, a 2-field struct, split
+// named externs and a hoisted local all keep the lui unshared.
+// The interleaved head (node/item pointer assignments BETWEEN the stores) is
+// load-bearing -- grouping them before or after costs 5-12 diffs.
+#ifdef NON_MATCHING
+extern RumbleItem D_800ED320[][3];
+extern RumbleNode D_800ED410[][3];
+extern OSThread D_800ECD70;
+extern s32 D_800ECF58[2];
+
+void func_800BAD0C(void *);
+
+void func_800BB24C(void) {
+    RumbleNode *node;
+    RumbleNode *prev;
+    RumbleItem *item;
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 4; i++) {
+        D_800ED4A0[i].unk00 = 0;
+        D_800ED4A0[i].unk04 = &D_800ED410[i][0];
+        node = &D_800ED410[i][0];
+        D_800ED410[i][0].item = &D_800ED320[i][0];
+        item = &D_800ED320[i][0];
+        D_800ED320[i][0].unk0C = NULL;
+        D_800ED320[i][0].unk10 = NULL;
+        prev = node;
+        for (j = 1; j != 3; j++) {
+            node++;
+            prev->next = node;
+            item++;
+            node->item = item;
+            item->unk0C = NULL;
+            item->unk10 = NULL;
+            node->prev = prev;
+            prev = node;
+        }
+        node->next = NULL;
+        D_800ED4A0[i].unk04->prev = node;
+    }
+    D_800ED4C0 = 1;
+    alGlobals = contChannelMap[0];
+    osCreateThread(&D_800ECD70, 100000000, func_800BAD0C, NULL, D_800ED320, 0x34);
+    D_800ECF58[0] = 0;
+    D_800ECF58[1] = 0xFEDCBA98;
+    osStartThread(&D_800ECD70);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB24C.s")
+#endif
 
 void func_800BB364(s32 arg0, s32 arg1, s32 arg2) {
     RumbleCmd3 cmd;

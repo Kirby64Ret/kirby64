@@ -7,6 +7,7 @@
 extern N_ALGlobals *n_alGlobals;
 extern N_ALSynth *n_syn;
 extern f32 D_800417A0;
+extern f32 D_800414C8;
 
 typedef struct {
     /* 0x00 */ u8   pad00[0x1C];
@@ -84,9 +85,13 @@ typedef struct N_ALMainBus_s {
 #define N_AL_AUX_R_OUT          2352
 #define N_AL_DIVIDED            368
 #define N_FIXED_SAMPLE          184
+#define N_AL_DECODER_IN         368
 #define N_AL_TEMP_0             0
 #define N_AL_TEMP_1             368
 #define N_AL_TEMP_2             736
+#define ADPCMFSIZE              16
+#define LFSAMPLES               4
+#define MIN(a,b) (((a)<(b))?(a):(b))
 #define ADPCMFBYTES             9
 #define ADPCMVSIZE              8
 
@@ -420,7 +425,55 @@ void func_80024748(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80024750.s")
 
+/* 47/49, but the residue is ONE scheduling decision: the ROM emits `beql` with
+ * `lw $a3, 0x18($a2)` (the else arm's first load) hoisted into the delay slot
+ * and recomputes `$a0 + track*4` in both arms; IDO emits `beqz`, duplicates the
+ * `sll` instead and fills the slot with the shared `addu`.  Everything after is
+ * the same instructions one slot out.  Swept: inverted condition, `!= 0`,
+ * `> 0`, early return with no else, post-increment dereferences, and an extra
+ * pointer local.  Verbatim upstream libreultra/src/audio/cseq.c __getTrackByte;
+ * the ALCSeq field offsets are confirmed exact by the listing. */
+#ifdef MIPS_TO_C
+u8 func_80025758(ALCSeq *seq, u32 track) {
+    u8 theByte;
+
+    if (seq->curBULen[track]) {
+        theByte = *seq->curBUPtr[track];
+        seq->curBUPtr[track]++;
+        seq->curBULen[track]--;
+    } else {
+        theByte = *seq->curLoc[track];
+        seq->curLoc[track]++;
+        if (theByte == AL_CMIDI_BLOCK_CODE) {
+            u8 loBackUp, hiBackUp, theLen, nextByte;
+            u32 backup;
+
+            nextByte = *seq->curLoc[track];
+            seq->curLoc[track]++;
+            if (nextByte != AL_CMIDI_BLOCK_CODE) {
+                hiBackUp = nextByte;
+                loBackUp = *seq->curLoc[track];
+                seq->curLoc[track]++;
+                theLen = *seq->curLoc[track];
+                seq->curLoc[track]++;
+                backup = (u32) hiBackUp;
+                backup = backup << 8;
+                backup += loBackUp;
+                seq->curBUPtr[track] = seq->curLoc[track] - (backup + 4);
+                seq->curBULen[track] = (u32) theLen;
+
+                theByte = *seq->curBUPtr[track];
+                seq->curBUPtr[track]++;
+                seq->curBULen[track]--;
+            }
+        }
+    }
+
+    return theByte;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80025758.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002581C.s")
 
@@ -584,7 +637,27 @@ ALMicroTime func_800261B0(ALEventQueue *evtq, N_ALEvent *evt) {
     return delta;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026260.s")
+void func_80026260(ALEventQueue *evtq, N_ALEventListItem *items, s32 itemCount) {
+    s32 i;
+    ALLink *ln;
+    ALLink *to;
+
+    evtq->eventCount = 0;
+    evtq->allocList.next = 0;
+    evtq->allocList.prev = 0;
+    evtq->freeList.next = 0;
+    evtq->freeList.prev = 0;
+
+    for (i = 0; i < itemCount; i++) {
+        ln = (ALLink *) &items[i];
+        to = &evtq->freeList;
+        ln->next = to->next;
+        ln->prev = to;
+        if (to->next)
+            to->next->prev = ln;
+        to->next = ln;
+    }
+}
 
 extern u16 D_8003FB1C;
 
@@ -640,9 +713,177 @@ void func_800263F0(KCSeqp *seqp) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026A10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026B2C.s")
+/* IPA-BLOCKED.  Verbatim upstream libreultra/src/libnaudio/n_load.c
+ * n_alAdpcmPull; the instruction stream lines up but the frame is 0xA0 against
+ * the ROM's 0xB0 and `f` lands in $s0 where the ROM uses $s7.  The reason is
+ * the callee: _decodeChunk is func_80026A10, which reads its arguments from
+ * $s0/$s1/$s2/$s3/$s5 (ujoin custom convention), so this caller has to reserve
+ * the low saved registers and spell the call in a way o32 cannot.  Same class
+ * as func_8002581C/__readVarLen. */
+#ifdef MIPS_TO_C
+Acmd *func_80026B2C(N_PVoice *filter, s16 *outp, s32 outCount, Acmd *p) {
+    Acmd *func_80026898();
+    Acmd *ptr = p;
+    s16 inp;
+    s32 tsam;
+    s32 nframes;
+    s32 nbytes;
+    s32 overFlow;
+    s32 startZero;
+    s32 nOver;
+    s32 nSam;
+    s32 op;
+    s32 nLeft;
+    s32 bEnd;
+    s32 decoded = 0;
+    s32 looped = 0;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026FA8.s")
+    N_PVoice *f = filter;
+
+    if (outCount == 0)
+        return ptr;
+
+    inp = N_AL_DECODER_IN;
+
+    aLoadADPCM(ptr++, f->dc_bookSize,
+               K0_TO_PHYS(f->dc_table->waveInfo.adpcmWave.book->book));
+
+    looped = (outCount + f->dc_sample > f->dc_loop.end) && (f->dc_loop.count != 0);
+
+    if (looped)
+        nSam = f->dc_loop.end - f->dc_sample;
+    else
+        nSam = outCount;
+
+    if (f->dc_lastsam)
+        nLeft = ADPCMFSIZE - f->dc_lastsam;
+    else
+        nLeft = 0;
+    tsam = nSam - nLeft;
+    if (tsam < 0) tsam = 0;
+
+    nframes = (tsam + ADPCMFSIZE - 1) >> LFSAMPLES;
+    nbytes = nframes * ADPCMFBYTES;
+
+    if (looped) {
+        ptr = func_80026898(ptr, f, tsam, nbytes, *outp, inp, f->dc_first);
+
+        if (f->dc_lastsam)
+            *outp += (f->dc_lastsam << 1);
+        else
+            *outp += (ADPCMFSIZE << 1);
+
+        f->dc_lastsam = f->dc_loop.start & 0xf;
+        f->dc_memin = (s32) f->dc_table->base + ADPCMFBYTES *
+            ((s32) (f->dc_loop.start >> LFSAMPLES) + 1);
+        f->dc_sample = f->dc_loop.start;
+
+        bEnd = *outp;
+        while (outCount > nSam) {
+
+            outCount -= nSam;
+
+            op = (bEnd + ((nframes + 1) << (LFSAMPLES + 1)) + 16) & ~0x1f;
+
+            bEnd += (nSam << 1);
+
+            if ((f->dc_loop.count != -1) && (f->dc_loop.count != 0))
+                f->dc_loop.count--;
+
+            nSam = MIN(outCount, f->dc_loop.end - f->dc_loop.start);
+            tsam = nSam - ADPCMFSIZE + f->dc_lastsam;
+            if (tsam < 0) tsam = 0;
+            nframes = (tsam + ADPCMFSIZE - 1) >> LFSAMPLES;
+            nbytes = nframes * ADPCMFBYTES;
+            ptr = func_80026898(ptr, f, tsam, nbytes, op, inp, f->dc_first | A_LOOP);
+
+            aDMEMMove(ptr++, op + (f->dc_lastsam << 1), bEnd, nSam << 1);
+        }
+
+        f->dc_lastsam = (outCount + f->dc_lastsam) & 0xf;
+        f->dc_sample += outCount;
+        f->dc_memin += ADPCMFBYTES * nframes;
+        return ptr;
+    }
+
+    nSam = nframes << LFSAMPLES;
+
+    overFlow = f->dc_memin + nbytes - ((s32) f->dc_table->base + f->dc_table->len);
+    if (overFlow < 0)
+        overFlow = 0;
+    nOver = (overFlow / ADPCMFBYTES) << LFSAMPLES;
+    if (nOver > nSam + nLeft)
+        nOver = nSam + nLeft;
+
+    nbytes -= overFlow;
+
+    if ((nOver - (nOver & 0xf)) < outCount) {
+        decoded = 1;
+        ptr = func_80026898(ptr, f, nSam - nOver, nbytes, *outp, inp, f->dc_first);
+
+        if (f->dc_lastsam)
+            *outp += (f->dc_lastsam << 1);
+        else
+            *outp += (ADPCMFSIZE << 1);
+
+        f->dc_lastsam = (outCount + f->dc_lastsam) & 0xf;
+        f->dc_sample += outCount;
+        f->dc_memin += ADPCMFBYTES * nframes;
+    } else {
+        f->dc_lastsam = 0;
+        f->dc_memin += ADPCMFBYTES * nframes;
+    }
+
+    if (nOver) {
+        f->dc_lastsam = 0;
+        if (decoded)
+            startZero = (nLeft + nSam - nOver) << 1;
+        else
+            startZero = 0;
+        aClearBuffer(ptr++, startZero + *outp, nOver << 1);
+    }
+
+    return ptr;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026B2C.s")
+#endif
+
+Acmd *func_80026FA8(N_PVoice *e, s16 *outp, Acmd *p) {
+    Acmd *func_80026B2C(N_PVoice *filter, s16 *outp, s32 outCount, Acmd *p);
+    Acmd *ptr = p;
+    s16 inp;
+    s32 inCount;
+    s32 incr;
+    f32 finCount;
+
+    inp = N_AL_DECODER_IN;
+
+    if (e->rs_upitch) {
+
+        ptr = func_80026B2C(e, &inp, N_FIXED_SAMPLE, p);
+        aDMEMMove(ptr++, inp, *outp, N_FIXED_SAMPLE << 1);
+
+    } else {
+
+        if (e->rs_ratio > D_800414C8) e->rs_ratio = D_800414C8;
+
+        e->rs_ratio = (s32) (e->rs_ratio * UNITY_PITCH);
+        e->rs_ratio = e->rs_ratio / UNITY_PITCH;
+
+        finCount = e->rs_delta + (e->rs_ratio * (f32) N_FIXED_SAMPLE);
+        inCount = (s32) finCount;
+        e->rs_delta = finCount - (f32) inCount;
+
+        ptr = func_80026B2C(e, &inp, inCount, p);
+
+        incr = (s32) (e->rs_ratio * UNITY_PITCH);
+        n_aResample(ptr++, osVirtualToPhysical(e->rs_state), e->rs_first, incr, inp, 0);
+        e->rs_first = 0;
+    }
+
+    return ptr;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002714C.s")
 
@@ -1188,7 +1429,27 @@ void n_alInit(N_ALGlobals *g, ALSynConfig *c) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002A1C4.s")
+void func_8002A1C4(ALLowPass *lp) {
+    s32 i, temp;
+    s16 fc;
+    f64 ffc, fcoef;
+
+    temp = lp->fc * 16384.0f;
+    fc = temp >> 15;
+    lp->fgain = 16384.0f - fc;
+
+    lp->first = 1;
+    for (i = 0; i < 8; i++)
+        lp->fcvec.fccoef[i] = 0;
+
+    lp->fcvec.fccoef[i++] = fc;
+    fcoef = ffc = (f64) fc / 16384.0;
+
+    for (; i < 16; i++) {
+        fcoef *= ffc;
+        lp->fcvec.fccoef[i] = (s16) (fcoef * 16384.0);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002A290.s")
 

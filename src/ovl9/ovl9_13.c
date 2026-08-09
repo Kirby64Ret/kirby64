@@ -1585,7 +1585,56 @@ void func_8020EAD4_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020EB60_ovl9.s")
 
+/* 3 diffs, all scheduling: the register binding is exact ($f20 = DC18,
+   $f22 = DC14, $f24 = DC10) but the ROM emits the three lwc1 in REVERSE
+   declaration order (DC10, DC14, ..., DC18) with the `addiu $s0` between the
+   last two, while IDO emits them in source order. Register number and load
+   position are locked together in IDO -- reversing the assignments (cba)
+   moves the registers too (6 diffs). Swept: declaration initializers, comma
+   operator, dead 0.0f pre-assignments, the constants inlined at the call
+   (26), `const f32` externs, one array extern with [0]/[1]/[2] (24), an
+   explicit `s32 *p = &D_800D6B54` local in three positions (77), and calling
+   with the arguments permuted to compensate (6).
+   Same phenomenon as func_801ED7D0_ovl10 and func_801FDB28_ovl9. */
+#ifdef MIPS_TO_C
+extern s32 D_800D6B54;
+extern f32 D_8021DC10_ovl9;
+extern f32 D_8021DC14_ovl9;
+extern f32 D_8021DC18_ovl9;
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
+void procMainStub(struct GObj *);
+void func_800B74B8(s32);
+void func_801A3280_ovl7(void);
+s32 func_800B30BC(f32, f32, f32);
+void func_8020FD34_ovl9(void);
+
+void func_8020ED74_ovl9(struct GObj *arg0) {
+    f32 a;
+    f32 b;
+    f32 c;
+
+    D_800DEDD0[omCurrentObj->objId] = 0;
+    D_800DEF90[omCurrentObj->objId] = func_800B74B8;
+    D_800DF150[omCurrentObj->objId] = 0;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    func_800AFBB4(0, omCurrentObj);
+    func_8019BB58_ovl7();
+    func_801A3280_ovl7();
+    ohSleep(random_soft_s32_range(0x3C));
+    a = D_8021DC18_ovl9;
+    b = D_8021DC14_ovl9;
+    c = D_8021DC10_ovl9;
+    while (1) {
+        if ((func_800B30BC(a, b, c) != 0) && (D_800D6B54 == 0)) {
+            func_8020FD34_ovl9();
+        }
+        ohSleep(random_soft_s32_range(0x1E) + 0x78);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020ED74_ovl9.s")
+#endif
 
 void func_8020EEBC_ovl9(struct GObj *arg0) {
     f32 temp;

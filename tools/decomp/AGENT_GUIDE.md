@@ -1606,10 +1606,28 @@ arguments from registers o32 cannot produce:
 * `func_80026460` reads a pointer from `$a0` AND a float from `$f12`
   simultaneously.
 
-## libn_audio.c is NOT padding-limited
+## libn_audio.c: the workable pool is about a dozen, not 44
 
-44 of its 47 remaining pragmas classify `clean` (pad 0) -- the vein is wide
-open. libn_audio_2.c is the padded one, 13 of 22.
+An earlier version of this section said "44 of 47 pragmas classify clean, the
+vein is wide open", and that was repeated into an agent brief. The padding
+claim is true and the conclusion does not follow: **the jump-table ban applies
+here.** kirby64.yaml has no dotted `.rodata, main/libn_audio` -- its rodata is
+`[0x41DC0, rodata, mainseg.1]`, unmigrated -- so any listing containing
+`jlabel` cannot become C.
+
+Nine remaining pragmas contain one, and they are the BIGGEST functions in the
+two files: func_80024750 (1026 instructions), func_800285F8 (649),
+func_8002B810 (525), func_80023E80 (490), func_8002901C (425), func_8002C044
+(402), n_alEnvmixerPull (401), func_8002A508 (256), func_8002A290 (149).
+
+With those, the 10 proven IPA-blocked, and the benign-pad set removed, the
+genuinely open pool is about a dozen: Kirby's own note/channel management
+around 0x80023794-0x80023D5C, plus alAudioFrame, n_alSynNew and func_800296C0.
+
+`alAudioFrame` deserves its own note: `__n_nextSampleTime` is inlined TWICE
+(loop init and loop increment) with no `jal`. Without ujoin the only route is
+writing the helper body out by hand at both sites -- reachable in principle,
+but a duplicate-the-block job rather than a transcription.
 
 Seven functions across both files verify MATCH at -O3 and are blocked ONLY by
 the inter-object 16-byte alignment described earlier: `alCSPSetSeq`,
@@ -1893,3 +1911,50 @@ home-slot OFFSETS ($a1 to 0x0, $a3 to 0x8, $a2 to 0xC). Those are the source
 parameter positions of `_getVol(ivol, samples, ratem, ratel)` while the
 registers are permuted -- ujoin shuffled the calling convention. Home-slot
 offsets that do not match register positions are the IPA signature.
+
+
+## Screen for IPA blocks BEFORE decompiling: tools/decomp/ipascan.py
+
+The n_audio TUs were built at -O3 WITH ujoin, which gives static callees custom
+calling conventions. A function that reads a saved or temp register before
+writing it -- or takes $f12/$f14 alongside $a0/$a1 -- cannot be spelled in C at
+any optimisation level, and neither can any CALLER that has to set those
+registers up.
+
+`ipascan.py <listings>` flags them from the entry live-in set. Legal live-ins
+are $a0-$a3, plus $f12/$f14 only when $a0/$a1 are not also live-in. Running it
+first is far cheaper than transcribing a function and then discovering the
+frame is 16 bytes off.
+
+Two subtleties the obvious implementation gets wrong: a prologue
+`sw $sN, off($sp)` is a SAVE, not a use; and a `jal` must clobber
+$v0/$a*/$t*/$f0-19 BEFORE the "no register operands" early-out.
+
+Newly proven IPA-blocked in libn_audio.c beyond the earlier list:
+func_8002649C ($s6), func_80026A10 = `_decodeChunk` ($s0-$s5), func_8002714C
+($s0,$s3), func_800285F8 ($t0,$s2), func_80026898 = `_getRate` ($a0/$a1 AND
+$f12/$f14). And func_80026B2C = `n_alAdpcmPull` is poisoned BY ITS CALLEE: the
+upstream transcription lines up instruction for instruction, but the frame is
+0xA0 against 0xB0 and `f` lands in $s0 where the ROM uses $s7, because
+$s0-$s5 are reserved to pass arguments to func_80026A10.
+
+## The N-audio ABI macros are already in the tree
+
+`libreultra/src/libnaudio/n_abi.h` has `n_aLoadBuffer`, `n_aLoadADPCM`,
+`n_aPoleFilter`, `n_aResample` -- copy them into the TU beside the
+`n_aSaveBuffer`/`n_aInterleave` it already carries. That one step unblocked the
+entire reverb family (five functions, 184 instructions, seven of eight
+first-compile from upstream). Adding 36 lines left all 37 previously-matched
+functions in the file at 0 diff, so line shifts there are safe.
+
+Related: **`1.0 - delta` must be `1.0f - delta`.** Upstream writes the double
+literal, which emits `cvt.d.s`/`sub.d`/`cvt.s.d`. That was the only diff in a
+131-instruction function that was otherwise exact.
+
+## Scan a whole file by blanking EVERY pragma
+
+Better than the every-other-one trick: replace ALL `#pragma GLOBAL_ASM` lines
+with blank lines, preserving the line count since IDO is line-number sensitive.
+verify.py then compiles the file directly instead of through asm-processor, so
+`--all` runs in seconds and every guarded draft can be measured in one pass --
+and it sidesteps the `libn_audio.a` garbage-collection link trap completely.

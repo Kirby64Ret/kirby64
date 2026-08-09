@@ -1692,7 +1692,33 @@ void func_801EC37C_ovl10(GObj *arg0) {
     func_801EC3C8_ovl10(arg0);
 }
 
+/* Instruction-for-instruction EXACT; the only residue is the dead epilogue
+   after the infinite loop, where the ROM has four alignment nops and IDO has
+   none. This is the 32-byte dead-epilogue rule used as a TU-boundary PROBE:
+   the ROM's `lw $ra` sits at rom 0x1DD210, i.e. offset 0x8D30 from the yaml's
+   ovl10_3 start (0x1D44E0), which is 0x10 mod 32 -- so ovl10_3's real second
+   translation unit (the "hidden split in ovl10_3" the yaml already flags)
+   must begin at a rom offset congruent to 16 mod 32. Candidates below this
+   function are 0x1D6CD0, 0x1D7450, 0x1D7D70, 0x1D84D0, 0x1D8A30, 0x1D9070,
+   0x1DB230, 0x1DB670, 0x1DBE30, 0x1DC9D0, 0x1DCE90 and 0x1DD010. No source
+   form fixes this; the yaml split has to be corrected first. */
+#ifdef MIPS_TO_C
+extern FUNCLIST D_801F45E4_ovl10;
+void func_801EC4CC_ovl10(struct GObj *);
+
+void func_801EC3C8_ovl10(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    while (1) {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+        ent->unk8C = ent->unk88->unk14;
+        D_800DF150[omCurrentObj->objId] = func_801EC4CC_ovl10;
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0xF, &D_801F45E4_ovl10);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EC3C8_ovl10.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EC4CC_ovl10.s")
 
