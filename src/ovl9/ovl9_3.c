@@ -34,7 +34,14 @@ void func_801DCB84_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DCBAC_ovl9.s")
+extern FUNCLIST D_8021BD94_ovl9;
+
+void func_801DCBAC_ovl9(GObj *arg0) {
+    utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 9, &D_8021BD94_ovl9);
+    if (0.0f != D_800EAC20[omCurrentObj->objId]) {
+        D_800EAC20[omCurrentObj->objId] = (D_800E8AE0[omCurrentObj->objId] & 1) ? 0.5f : 1.0f;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DCC60_ovl9.s")
 

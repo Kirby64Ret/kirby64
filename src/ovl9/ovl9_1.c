@@ -169,9 +169,20 @@ void func_801D3248_ovl9(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D32B8_ovl9.s")
+void func_801D32B8_ovl9(GObj *arg0) {
+    D_800E3C90[omCurrentObj->objId] = ABSF((D_800E8AE0[omCurrentObj->objId] & 1) ? 4.0f : 16.0f);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D336C_ovl9.s")
+void func_800AECC0(f32);
+void func_800AED20(f32);
+
+void func_801D336C_ovl9(GObj *arg0) {
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 2;
+        func_800AECC0(gameTicksPerDraw * 0.5f);
+        func_800AED20(gameTicksPerDraw * 0.5f);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D3414_ovl9.s")
 
@@ -313,7 +324,20 @@ void func_801D60B0_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D6100_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D6244_ovl9.s")
+u32 eneCheckNearPlayer(f32);
+void func_8019F3B0_ovl7(void);
+
+void func_801D6244_ovl9(GObj *arg0) {
+    if (D_800E98E0[omCurrentObj->objId] <= 0) {
+        if (eneCheckNearPlayer(25600.0f) != 0) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+        }
+    }
+    if (D_800E98E0[omCurrentObj->objId] > 0) {
+        D_800E98E0[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId] - 1;
+    }
+    func_8019F3B0_ovl7();
+}
 
 void func_801D62F0_ovl9(GObj *arg0) {
 }
@@ -469,7 +493,14 @@ void func_801D8218_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D8260_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D8478_ovl9.s")
+void func_801D8478_ovl9(GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    ohSleep(0x14);
+    while (D_800E98E0[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D8520_ovl9.s")
 

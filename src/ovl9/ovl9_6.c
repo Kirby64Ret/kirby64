@@ -81,7 +81,41 @@ void func_801EB8E8_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EB98C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EBB28_ovl9.s")
+struct Ovl9AnimCmd2 {
+    u8 filler0[8];
+    s32 unk8;
+};
+
+struct Ovl9AnimObj2 {
+    u8 filler0[0x24];
+    struct Ovl9AnimCmd2 *unk24;
+};
+
+void func_80111550(u32);
+struct Ovl9AnimObj2 *func_80111C88(s32 *, u32);
+void func_80111ECC(struct Ovl9AnimObj2 *);
+s32 func_80110150(void *);
+
+s32 func_801EBB28_ovl9(s32 arg0, void *arg1) {
+    struct Sub800E1B50_Unk88 *sp0;
+    struct UnkStruct800E1B50 *temp;
+    struct Ovl9AnimObj2 *temp_v0;
+
+    temp = D_800E1B50[omCurrentObj->objId];
+    sp0 = temp->unk88;
+    if (sp0 == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    temp_v0 = func_80111C88(temp->unk8C, omCurrentObj->objId);
+    if (temp_v0 != NULL) {
+        if (arg0 != 0) {
+            temp_v0->unk24->unk8 = arg0;
+        }
+        func_80111ECC(temp_v0);
+    }
+    return func_80110150(arg1);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EBBC8_ovl9.s")
 
@@ -224,18 +258,31 @@ void func_801EFDAC_ovl9(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EFE1C_ovl9.s")
 
 #ifdef MIPS_TO_C
-void func_801EFF24_ovl9(void) {
+void func_801EFF24_ovl9(GObj *arg0) {
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z -= D_8021D8AC_ovl9;
     if (D_800E9E20[omCurrentObj->objId] > 0) {
         D_800E9E20[omCurrentObj->objId]--;
     }
     if (D_800E9E20[omCurrentObj->objId] <= 0) {
-        func_801A0D74_ovl7();
+        func_801A0D74_ovl7(arg0);
     }
     func_8019F3B0_ovl7();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EFF24_ovl9.s")
+extern f32 D_8021D8AC_ovl9;
+void func_801A0D74_ovl7();
+void func_8019F3B0_ovl7(void);
+
+void func_801EFF24_ovl9(GObj *arg0) {
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z - D_8021D8AC_ovl9;
+    if (D_800E9E20[omCurrentObj->objId] > 0) {
+        D_800E9E20[omCurrentObj->objId] = D_800E9E20[omCurrentObj->objId] - 1;
+    }
+    if (D_800E9E20[omCurrentObj->objId] <= 0) {
+        func_801A0D74_ovl7(arg0);
+    }
+    func_8019F3B0_ovl7();
+}
 #endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EFFCC_ovl9.s")
