@@ -284,6 +284,7 @@ void func_800B2340(Vector *, struct DObj *);
 void func_801A0D74_ovl7();
 void func_8019F410_ovl7(struct DObj *);
 
+// 24 diffs.
 void func_801DBC38_ovl9(GObj *arg0) {
     Vector sp2C;
     struct Sub800E1B50_Unk84 *temp;

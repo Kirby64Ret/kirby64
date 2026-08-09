@@ -7,6 +7,23 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
+extern f32 D_801CE274_ovl7;
+extern s32 D_801CA35C_ovl7[], D_801CA380_ovl7[];
+extern void *D_801CB388_ovl7;
+extern f32 D_800EA6E0[];
+extern s32 D_800E0D50[], D_800E98E0[], D_800E9C60[];
+extern s32 D_8012E860;
+void func_801A3938(void *);
+void func_800A22D4(void *);
+void func_800A7870(void *, void *);
+void func_800BB468(s32, s32);
+void func_800B19F4(s32, u32);
+void func_800A7F74(u32, u32, u16, f32, f32, f32);
+void func_8019D958_ovl7(u16);
+void play_sound(s32);
+void ohSleep(s32);
+void func_801B0258_ovl7(GObj *);
+
 void func_800B3520(void);
 void func_801A0D50_ovl7(void *);
 void func_801AF398_ovl7(GObj *);
@@ -140,7 +157,29 @@ void func_801AFFFC_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AFFFC_ovl7.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801B00BC_ovl7.s")
+void func_801B00BC_ovl7(GObj *arg0) {
+    s32 sp34;
+    s16 sp32;
+    struct UnkStruct800E1B50 *temp = D_800E1B50[omCurrentObj->objId];
+
+    temp->unk8C = &D_801CA35C_ovl7;
+    temp->unk90 = (u32) &D_801CA380_ovl7;
+    func_801A3938(&D_801CB388_ovl7);
+    func_800A22D4((void *) D_800E98E0[omCurrentObj->objId]);
+    sp34 = (s32) D_800E9AA0[omCurrentObj->objId];
+    sp32 = D_800E9C60[omCurrentObj->objId];
+    func_800A7870(&sp34, &sp32);
+    func_800BB468(6, 0x10);
+    play_sound(0x20);
+    D_800EA6E0[omCurrentObj->objId] = D_801CE274_ovl7;
+    func_800A7F74(1, 1, 0x44, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
+    D_800E0D50[omCurrentObj->objId] = -1;
+    D_800DF150[omCurrentObj->objId] = func_801B0258_ovl7;
+    func_800B19F4(0x74, omCurrentObj->objId);
+    ohSleep(0xE);
+    D_8012E860 = 0;
+    func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801B0258_ovl7.s")
 

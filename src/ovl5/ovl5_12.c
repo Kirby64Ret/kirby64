@@ -45,9 +45,72 @@ void func_80182414_ovl5(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_801824B0_ovl5.s")
+#include "main/contpad.h"
+#include "ovl1/game.h"
+void play_sound(s32);
+extern u32 D_800D6B68;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_801825E8_ovl5.s")
+void func_801824B0_ovl5(GObj *arg0) {
+    if (D_8018EE00_ovl5 != 0) {
+        return;
+    }
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        D_800E98E0[omCurrentObj->objId]--;
+        return;
+    }
+    if (D_800D6B6C == 0) {
+        if (gPlayerControllers[0].buttonPressed & 0x9000) {
+            play_sound(0xED);
+            D_8018EE00_ovl5 = 1;
+            D_800D6B68 = gGameState;
+            gGameState = 0x21;
+            return;
+        }
+        if (gPlayerControllers[0].buttonPressed & 0x4000) {
+            play_sound(0x2B);
+            D_8018EE00_ovl5 = 1;
+            D_800D6B68 = gGameState;
+            gGameState = 0xA;
+        }
+        return;
+    }
+    if (gPlayerControllers[0].buttonPressed & 0xD000) {
+        play_sound(0xED);
+        D_8018EE00_ovl5 = 1;
+        D_800D6B68 = gGameState;
+        gGameState = 0xA;
+        D_800D6B6C = 0;
+    }
+}
+
+#include "SPObj.h"
+extern struct UnkStruct8015C740 D_8018A410_ovl5;
+extern struct UnkStruct8015C740 D_8018A430_ovl5;
+extern struct UnkStruct8015C740 D_8018A450_ovl5;
+extern struct UnkStruct8015C740 D_8018A470_ovl5;
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+SPObj *func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
+void func_800AD1A0(void);
+
+void func_801825E8_ovl5(GObj *arg0) {
+    SPObj *spobj;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    if (D_800D6B6C == 0) {
+        func_8015C740_ovl5(arg0, &D_8018A410_ovl5);
+        spobj = func_8015C740_ovl5(arg0, &D_8018A410_ovl5);
+        spobj->xOffset = 160.0f;
+        spobj->yOffset = 10.0f;
+        spobj->unk5A |= 1;
+        spobj->unkBA |= 1;
+        func_8015C740_ovl5(arg0, &D_8018A430_ovl5);
+        func_8015C740_ovl5(arg0, &D_8018A470_ovl5);
+        func_8015C740_ovl5(arg0, &D_8018A450_ovl5);
+    }
+    curObjSleepForever();
+}
 
 void func_80182700_ovl5(GObj *arg0) {
     switch (D_800D6B6C) {
@@ -76,8 +139,8 @@ void func_80182700_ovl5(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182804_ovl5.s")
 
 #ifdef MIPS_TO_C
-/* 3 diffs: IDO schedules the second lwc1 one slot early; the ROM emits it
-   after both addiu of the hoisted array bases. Otherwise exact. */
+/* 3 diffs: the hoisted `lwc1 $f20, D_8018DE24_ovl5` must sit AFTER both
+   `addiu` of the hoisted array bases; no source/format form moves it. */
 void func_8018293C_ovl5(GObj *arg0) {
     f32 inc;
     f32 wrap;

@@ -592,7 +592,22 @@ void func_80174B7C_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801760FC_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801762E0_ovl3.s")
+#include <PR/gbi.h>
+#include "main/gtl.h"
+extern u8 D_80198825_ovl3;
+
+void func_801762E0_ovl3(struct GObj *arg0) {
+    Gfx *gfx = gDisplayListHeads[0];
+
+    gDPPipeSync(gfx++);
+    gDPSetRenderMode(gfx++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
+    gDPSetPrimColor(gfx++, 0, 0, 0, 0, 0, D_80198825_ovl3);
+    gDPSetCombineMode(gfx++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+    gDPFillRectangle(gfx++, 10, 10, 310, 230);
+    gDPPipeSync(gfx++);
+    gDPSetRenderMode(gfx++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
+    gDisplayListHeads[0] = gfx;
+}
 
 void func_80176398_ovl3(void) {
     GObj *obj = HS64_omMakeGObj(2, NULL, 0x19, 0x80000000);

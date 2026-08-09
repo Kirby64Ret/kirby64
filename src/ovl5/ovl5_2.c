@@ -222,7 +222,31 @@ f32 func_80161298_ovl5(s32 arg0, s32 arg1) {
     return D_80186950_ovl5[arg0] * 0.5f + D_80186950_ovl5[arg1] * 0.5f;
 }
 
+extern f32 D_800EA6E0[];
+
+#ifdef MIPS_TO_C
+/* 8/60: the two 8-byte struct locals sit 4 bytes high (frame-layout anomaly,
+   swept both directions) and the two index addu are emitted in the other order. */
+s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
+    Unk8Bytes sp2C;
+    Unk8Bytes sp24;
+    f32 r;
+    f32 a;
+    f32 b;
+
+    sp2C = D_8018E1E8_ovl5[arg0];
+    sp24 = D_8018E1E8_ovl5[arg1];
+    r = func_80161298_ovl5(sp2C.unk0, sp24.unk0);
+    a = D_800EA6E0[D_8018E030_ovl5[arg0]];
+    b = D_800EA6E0[D_8018E030_ovl5[arg1]];
+    if ((a < b ? -(a - b) : (a - b)) <= r) {
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801612D0_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801613C0_ovl5.s")
 
@@ -428,17 +452,20 @@ typedef struct Unk10Bytes {
     u32 unkC;
 } Unk10Bytes;
 
-#include "unk_structs/D_800D7178.h"
+extern Unk10Bytes D_800D7178[];
 extern u8 D_8018E224_ovl5[];
 s32 func_80164914_ovl5(s32);
 
 #ifdef MIPS_TO_C
-/* ROM also keeps a dead D_8018E224_ovl5 induction pointer in $s2 */
+/* 4 diffs: ROM stores before both induction increments; we sink the sw into
+   the branch delay slot. The empty `if` reproduces the dead $s2 induction. */
 void func_801649CC_ovl5(void) {
     s32 i;
 
     for (i = 0; i < 4; i++) {
         D_800D7178[i].unkC = func_80164914_ovl5(i);
+        if (D_8018E224_ovl5[i] != 0) {
+        }
     }
 }
 #else

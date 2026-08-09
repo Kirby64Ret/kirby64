@@ -4,6 +4,9 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/util.h"
 
+extern s32 D_801F4D48_ovl10[];
+extern f32 D_801F4D30_ovl10[];
+
 extern FUNCLIST D_801F4290_ovl10;
 
 void func_801A0D74_ovl7();
@@ -355,7 +358,14 @@ void func_801DFBFC_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DFCC0_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DFE64_ovl10.s")
+void func_801DFE64_ovl10(void) {
+    D_801F4D48_ovl10[0] = D_801F4D48_ovl10[3] = D_800EBDA0[D_800E0D50[omCurrentObj->objId]];
+    D_801F4D48_ovl10[1] = D_801F4D48_ovl10[4] = D_800E0D50[omCurrentObj->objId];
+    D_801F4D48_ovl10[2] = D_801F4D48_ovl10[5] = D_800EBF60[D_800E0D50[omCurrentObj->objId]];
+    D_801F4D30_ovl10[0] = D_801F4D30_ovl10[2] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]] - 20.0f;
+    D_801F4D30_ovl10[4] = (D_801F4D30_ovl10[1] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]]) - 40.0f;
+    D_801F4D30_ovl10[3] = D_801F4D30_ovl10[5] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]] - 60.0f;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DFF88_ovl10.s")
 

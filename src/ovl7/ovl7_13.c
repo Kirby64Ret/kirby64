@@ -7,6 +7,11 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
+extern struct Sub800E1B50_Unk98 D_801CCBC8_ovl7;
+extern f32 D_800E64D0[], D_800E6690[], D_800E6850[], D_800E6A10[];
+extern f32 D_800E3210[], D_800E3750[], D_800E3C90[];
+void ohSleep(s32);
+
 void func_8019B424_ovl7(void);
 void eneTurnCommon(s32);
 s32 func_8019A9AC_ovl7(f32, f32);
@@ -295,7 +300,21 @@ void func_801BADD8_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801BAFB0_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801BB0C4_ovl7.s")
+void func_801BB0C4_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *temp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    temp->unk98 = &D_801CCBC8_ovl7;
+    func_800A9EA4(0x1012B);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 2.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 2.0f;
+    D_800E3210[omCurrentObj->objId] = 6.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3C90[omCurrentObj->objId] = 6.0f;
+    ohSleep(5);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 void func_801BB1EC_ovl7(void) {
     func_801A0D74_ovl7();

@@ -13,6 +13,7 @@ import re, glob, os, subprocess, sys, json
 
 REPO = '/home/user/kirby64_decomp'
 SCRATCH = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRATCH)      # chdir below would otherwise hide padtrap.py
 os.chdir(REPO)
 
 CFLAGS = ('-c -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed '
@@ -165,18 +166,14 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
         # while this check happily reports MATCH, because the function's own
         # instructions are all correct. Four such traps were found sitting in
         # ovl9 drafts, every one of them reporting MATCH.
-        _t = open(listing).read()
-        _i = _t.rfind('\n.size ')
-        if _i >= 0:
-            _tail = _t[_i + 1:]
-            _tail = _tail[_tail.find('\n') + 1:]
-            _pad = len(re.findall(r'^\s*/\*.*\*/\s*\S', _tail, re.M))
-            if _pad:
-                return None, (f'{func}: PADDING TRAP -- its listing has {_pad} '
-                              f'word(s) after the last .size (the TU\'s alignment '
-                              f'padding). It can NEVER be C: converting it shortens '
-                              f'the TU and shifts the segment, even though the '
-                              f'instructions themselves are right.')
+        import padtrap
+        _kind, _pad = padtrap.classify(listing, func)
+        if _kind == 'trap':
+            return None, (f'{func}: PADDING TRAP -- its listing has {_pad} '
+                          f'non-zero word(s) after its own .size (the TU\'s '
+                          f'alignment padding). It can NEVER be C: converting it '
+                          f'shortens the TU and shifts the segment, even though the '
+                          f'instructions themselves are right.')
     if listing is None:
         return None, f'{func}: no asm.old listing (unverifiable — was decompiled in src.old)'
     twords, ttexts = target_words(listing)

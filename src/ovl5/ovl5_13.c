@@ -148,9 +148,49 @@ void func_801840F0_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185608_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801857C4_ovl5.s")
+extern struct UnkStruct8015C740 D_8018AB20_ovl5;
+extern struct UnkStruct8015C740 D_8018AB40_ovl5;
+extern struct UnkStruct8015C740 D_8018AB60_ovl5;
+extern struct UnkStruct8015C740 D_8018AB80_ovl5;
+void func_801857C4_ovl5(GObj *arg0) {
+    s32 prev = D_8018EE44_ovl5 + 1;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_8018590C_ovl5.s")
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    while (1) {
+        if (prev != D_8018EE44_ovl5) {
+            prev = D_8018EE44_ovl5;
+            func_800ACBDC(arg0);
+            if ((prev == 9) || (prev == 0xA) || (prev == 0xB)) {
+                func_8015C740_ovl5(arg0, &D_8018AB20_ovl5);
+            } else {
+                func_8015C740_ovl5(arg0, &D_8018AB40_ovl5);
+            }
+        }
+        ohSleep(1);
+    }
+}
+
+void func_8018590C_ovl5(GObj *arg0) {
+    s32 prev = D_8018EE44_ovl5 + 1;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    while (1) {
+        if (prev != D_8018EE44_ovl5) {
+            prev = D_8018EE44_ovl5;
+            func_800ACBDC(arg0);
+            if ((prev == 0xC) || (prev == 0xD) || (prev == 0xE)) {
+                func_8015C740_ovl5(arg0, &D_8018AB60_ovl5);
+            } else {
+                func_8015C740_ovl5(arg0, &D_8018AB80_ovl5);
+            }
+        }
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185A4C_ovl5.s")
 

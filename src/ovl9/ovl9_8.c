@@ -752,19 +752,19 @@ void func_801FB468_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
+// 50 diffs: offset by one instruction at entry -- the ROM loads omCurrentObj
+// with lui+lw while IDO materialises its address first.
 void func_801FB528_ovl9(void) {
-    s32 sp1C = D_800E9AA0[omCurrentObj->objId].as_s32;
+    s32 t = D_800E9AA0[omCurrentObj->objId].as_s32;
+    s32 r;
     s32 v;
-    s32 n;
 
-    v = random_soft_s32_range(2);
-    v = (v != 0) ? v : -1;
-    n = v + sp1C;
-    if (n >= 8) {
+    r = random_soft_s32_range(2);
+    v = ((r != 0) ? r : -1) + t;
+    if (v >= 8) {
         D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
     } else {
-        v = (n >= 0) ? n : 7;
-        D_800E9AA0[omCurrentObj->objId].as_s32 = v;
+        D_800E9AA0[omCurrentObj->objId].as_s32 = (v >= 0) ? v : 7;
     }
 }
 #else

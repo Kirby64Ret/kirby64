@@ -319,6 +319,7 @@ extern s32 D_801C8568;
 /* 2 diffs: ROM keeps the objId index in $v1, this form puts it in $v0 and the
    shift result in $v1.  Declaration order / extra locals do not move it. */
 #ifdef MIPS_TO_C
+// 5 diffs: objId<<2 is in $v0, the ROM uses $v1.
 void func_801E06C0_ovl9(GObj *arg0) {
     s32 id;
 

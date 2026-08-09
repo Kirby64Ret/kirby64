@@ -256,7 +256,38 @@ void func_8017C61C_ovl5(void) {
     D_800E98E0[request_track_3(0xA, 0, 0x70)] = 0xA;
 }
 
+extern s32 func_800AEA64(s32, s32, s32);
+
+#ifdef MIPS_TO_C
+/* 9/68: exact except $s5/$s6 are swapped between the D_800E98E0 and
+   D_800E9AA0 bases (saved-register allocation slot offset). */
+void func_8017C6C8_ovl5(void) {
+    s32 i;
+    s32 j;
+    s32 t;
+
+    D_800E98E0[func_800AEA64(0xA, 0, 0x70)] = 6;
+    for (i = 0; i < 4; i++) {
+        j = 0;
+        do {
+            t = request_track_general(0xA, 0, 0x70);
+            D_800E98E0[t] = 5;
+            ((s32 *) D_800E9AA0)[t] = i;
+            D_800E9C60[t] = j;
+            j++;
+        } while (j != 4);
+    }
+    i = 0;
+    do {
+        t = request_track_3(0xA, 0, 0x70);
+        D_800E98E0[t] = 4;
+        ((s32 *) D_800E9AA0)[t] = i;
+        i++;
+    } while (i != 4);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017C6C8_ovl5.s")
+#endif
 
 void func_8017C7D8_ovl5(void) {
     D_800E98E0[request_track_3(0xA, 0, 0x70)] = 0xB;

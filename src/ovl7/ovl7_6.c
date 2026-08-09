@@ -18,6 +18,21 @@ struct Ovl7Unk94 {
 };
 
 
+extern f32 D_801CE1DC_ovl7;
+extern s32 D_800E0D50[];
+extern f32 D_800E17D0[], D_800E6A10[];
+
+void procMainStub(struct GObj *);
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+
+void func_800AF27C(void);
+void play_sound(s32);
+void func_800FD570(s32, s32, f32, f32, f32);
+
+void func_800AA018(s32);
+void func_800AA864(s32, s32);
+void func_800B1900(u16);
+
 void func_800A9864(s32, s32, s32);
 void func_800AF408(void);
 void func_800AECC0(f32);
@@ -28,13 +43,73 @@ extern f32 D_801CE1E8_ovl7;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD0E8_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD2EC_ovl7.s")
+void func_801AD2EC_ovl7(GObj *arg0) {
+    func_800A9864(0x100D7, 0x1869F, 0x10);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    func_800AA018(0x10610);
+    func_800AA018(0x10611);
+    func_800AF27C();
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD4A8_ovl7.s")
+void func_801AD4A8_ovl7(GObj *arg0) {
+    func_800A9864(0x100DB, 0x1869F, 0x10);
+    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    func_800AA018(0x1061B);
+    func_800AA864(0x1061A, 1);
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD63C_ovl7.s")
+void func_801AD63C_ovl7(GObj *arg0) {
+    func_800A9864(0x1003D, 0x1869F, 0x10);
+    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    func_800AA864(0x101A8, 1);
+    func_800FD570(0, 0, 0.0f, 0.0f, 0.0f);
+    play_sound(0x159);
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD7E8_ovl7.s")
+void func_801AD7E8_ovl7(GObj *arg0) {
+    func_800A9864(0x100E0, 0x1869F, 0x10);
+    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    func_800AA018(0x10627);
+    func_800AA018(0x10628);
+    func_800AF27C();
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD980_ovl7.s")
 
@@ -42,9 +117,40 @@ extern f32 D_801CE1E8_ovl7;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801ADE10_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801ADF58_ovl7.s")
+void func_801ADF58_ovl7(GObj *arg0) {
+    func_800A9864(0x100C2, 0x1869F, 0x10);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]] + (D_800E6A10[D_800E0D50[omCurrentObj->objId]] * D_801CE1DC_ovl7);
+    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    func_800AA018(0x105E9);
+    func_800AF27C();
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE154_ovl7.s")
+void func_801AE154_ovl7(GObj *arg0) {
+    func_800A9864(0x100C2, 0x1869F, 0x10);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    func_800AA018(0x105EA);
+    func_800AF27C();
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 extern f32 D_801CE1E0_ovl7;
 void func_800B5064(s32);

@@ -953,6 +953,7 @@ void func_8020C2EC_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
+// 24 diffs.
 void func_8020C378_ovl9(void) {
     f32 sp1C;
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -1719,7 +1720,22 @@ void func_8020FC14_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020FC68_ovl9.s")
+extern void utilGetTransformSRT(Vector *, struct DObj *);
+extern void func_800A7F74(s32, s32, s32, f32, f32, f32);
+
+void func_8020FC68_ovl9(struct GObj *arg0) {
+    Vector sp2C;
+    struct DObj *sp28;
+
+    sp28 = D_800DFBD0[omCurrentObj->objId][3];
+
+    D_800E9C60[omCurrentObj->objId] = D_800E9C60[omCurrentObj->objId] + 1;
+    if (D_800E9C60[omCurrentObj->objId] >= 0xA) {
+        D_800E9C60[omCurrentObj->objId] = random_soft_s32_range(2);
+        utilGetTransformSRT(&sp2C, sp28);
+        func_800A7F74(3, 2, 0xC5, sp2C.x, sp2C.y, sp2C.z);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020FD34_ovl9.s")
 

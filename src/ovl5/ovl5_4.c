@@ -204,7 +204,21 @@ s32 func_80167898_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168804_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168928_ovl5.s")
+s32 func_80168928_ovl5(s32 arg0, s32 arg1, f32 arg2) {
+    Vector sp1C;
+
+    func_801659DC_ovl5(&sp1C, arg0);
+    switch (arg1) {
+        case 0:
+            return arg2 <= sp1C.z;
+        case 1:
+            return sp1C.z <= arg2;
+        case 2:
+            return arg2 <= sp1C.x;
+        case 3:
+            return sp1C.x <= arg2;
+    }
+}
 
 s32 func_80168A04_ovl5(s32 arg0, s32 arg1) {
     s32 temp = ABS(arg0 - arg1);
@@ -317,7 +331,18 @@ void func_8016C208_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C28C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C410_ovl5.s")
+void func_8016C410_ovl5(GObj *arg0) {
+    Vector sp24;
+    Vector unused; /* load-bearing: places sp24 at 0x24 and sizes the frame */
+
+    func_800B2340(&sp24, D_800DFBD0[D_8018E268_ovl5[D_800E98E0[omCurrentObj->objId]]][4],
+                  D_8018E268_ovl5[D_800E98E0[omCurrentObj->objId]]);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp24.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = sp24.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp24.z;
+    gEntitiesAngleYArray[omCurrentObj->objId] =
+        gEntitiesAngleYArray[D_8018E268_ovl5[D_800E98E0[omCurrentObj->objId]]];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C508_ovl5.s")
 

@@ -8,6 +8,13 @@
 #include "ovl1/ovl1_7.h"
 
 #include "main/object_helpers.h"
+extern s32 D_800D7010[];
+void func_800B74D8();
+void func_801BF390_ovl7(GObj *);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void curObjSleepForever(void);
+
 void func_800B3520(void);
 void func_801A3E80_ovl7(GObj *);
 void func_801C0610_ovl7();
@@ -108,7 +115,23 @@ void func_800B6684(GObj *);
 void func_800AF9B8(s32, s32);
 void func_800B6684(GObj *);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_17/func_801BF220_ovl7.s")
+void func_801BF220_ovl7(GObj *arg0) {
+    D_800E0650[omCurrentObj->objId] = &D_800D7010[18];
+    D_800DEF90[omCurrentObj->objId] = &func_800B74D8;
+    D_800DF150[omCurrentObj->objId] = &func_801BF390_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E7B20[omCurrentObj->objId] = 0.0f;
+    D_800E7EA0[omCurrentObj->objId] = 0;
+    D_800E7CE0[omCurrentObj->objId] = D_800E7EA0[omCurrentObj->objId];
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E8AE0[omCurrentObj->objId] = D_800E8920[omCurrentObj->objId];
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    gEntitiesScaleXArray[omCurrentObj->objId] = 1.0f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 1.0f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 1.0f;
+    curObjSleepForever();
+}
 
 void func_801BF390_ovl7(GObj *arg0) {
     D_800E17D0[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];

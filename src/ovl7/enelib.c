@@ -15,6 +15,16 @@
 
 #include "enelib.h"
 
+typedef struct EneCurve {
+    Vector unk0;
+    Vector unkC;
+    Vector unk18;
+    f32 unk24;
+    f32 unk28;
+    s32 unk2C;
+} EneCurve;
+
+
 extern u8 D_800D6C68[];
 void func_800A22D4(void *);
 void func_800A2300(GObj *);
@@ -2852,38 +2862,24 @@ void func_8019EEE4_ovl7(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019EEE4_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
+void func_8019F000_ovl7(void *arg0, f32 *arg1, s32 arg2, f32 arg3) {
+    EneCurve sp20;
 
-void func_8019F000_ovl7(void *arg0, void *arg1, s32 arg2, f32 arg3) {
-    s32 sp4C;
-    f32 sp44;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp28;
-    f32 sp24;
-    f32 sp20;
-
-    sp20 = gEntitiesNextPosXArray[omCurrentObj->objId];
-    sp24 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    sp28 = gEntitiesNextPosZArray[omCurrentObj->objId];
-    sp2C.unk0 = arg0->unk8;
-    sp2C.unk4 = arg0->unkC;
-    sp2C.unk8 = arg0->unk10;
-    sp2C += arg1->unk0;
-    sp30 += arg1->unk4;
-    sp4C = arg2;
-    sp44 = arg3;
-    sp34 += arg1->unk8;
-    func_8019EC5C_ovl7(arg3, &sp20);
-    D_800E3050[omCurrentObj->objId] = sp38;
-    D_800E33D0[omCurrentObj->objId] = sp3C;
-    D_800E3210[omCurrentObj->objId] = sp40;
-    D_800E3750[omCurrentObj->objId] = sp44;
+    sp20.unk0.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp20.unk0.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp20.unk0.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    sp20.unkC = *(Vector *) ((u8 *) arg0 + 8);
+    sp20.unkC.x += arg1[0];
+    sp20.unkC.y += arg1[1];
+    sp20.unkC.z += arg1[2];
+    sp20.unk2C = arg2;
+    sp20.unk24 = arg3;
+    func_8019EC5C_ovl7(&sp20);
+    D_800E3050[omCurrentObj->objId] = sp20.unk18.x;
+    D_800E33D0[omCurrentObj->objId] = sp20.unk18.y;
+    D_800E3210[omCurrentObj->objId] = sp20.unk18.z;
+    D_800E3750[omCurrentObj->objId] = sp20.unk24;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019F000_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 void func_8019F130_ovl7(void) {

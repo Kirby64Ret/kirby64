@@ -20,6 +20,8 @@ Usage: check_layout.py [ovlN ...]     (default: all segments with C files)
 import re, os, sys, glob, subprocess
 
 REPO = '/home/user/kirby64_decomp'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import padtrap
 os.chdir(REPO)
 
 def seg_vram():
@@ -61,25 +63,22 @@ def named_addr(sym):
     return _named.get(sym)
 
 def padded_listings():
-    """{func: owning_cfile} for listings with content after .size."""
+    """{func: owning_cfile} for listings carrying REAL post-.size padding.
+
+    See padtrap.py for why "any word after the last .size" is the wrong test:
+    it mistakes a whole function body for padding when the only .size belongs
+    to a leading .late_rodata block, and it flags all-nop tails that the
+    assembler's own zero fill reproduces exactly.
+    """
     bad = {}
     for f in glob.glob('asm/nonmatchings/**/*.s', recursive=True):
-        try:
-            txt = open(f).read()
-        except Exception:
+        func = os.path.basename(f)[:-2]
+        kind, _ = padtrap.classify(f, func)
+        if kind != 'trap':
             continue
-        # use the LAST .size: a leading .late_rodata block has its own .size,
-        # and anchoring on the first one misreads the entire function body as
-        # post-.size padding (false positives reported by an agent).
-        i = txt.rfind('\n.size ')
-        if i < 0:
-            continue
-        tail = txt[i + 1:]
-        tail = tail[tail.find('\n') + 1:]
-        if re.search(r'^\s*/\*.*\*/\s*\S', tail, re.M):
-            parts = f.split('/')          # asm/nonmatchings/<seg>/<file>/<func>.s
-            if len(parts) >= 5:
-                bad[os.path.basename(f)[:-2]] = f'src/{parts[2]}/{parts[3]}.c'
+        parts = f.split('/')              # asm/nonmatchings/<seg>/<file>/<func>.s
+        if len(parts) >= 5:
+            bad[func] = f'src/{parts[2]}/{parts[3]}.c'
     return bad
 
 def main():
