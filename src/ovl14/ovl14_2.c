@@ -99,7 +99,15 @@ void func_801E1CE0_ovl14(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E1CE8_ovl14.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E2028_ovl14.s")
+void func_801E2028_ovl14(void) {
+    s32 temp;
+
+    temp = (&D_800D7098.unk0)[D_800EC2E0[omCurrentObj->objId].as_s32];
+    if (temp != 0) {
+        D_800E98E0[temp] = 1;
+    }
+    func_800FB914(1);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E208C_ovl14.s")
 

@@ -452,3 +452,69 @@ were a single 16-64 byte shift each.
 Applying several files and checking once cannot attribute the failure. Three
 files at once gave 13 defects with no way to tell which file caused them;
 one file per relink found it immediately. This has cost work twice.
+
+## Look for EXISTING SOURCE before decompiling anything
+
+This has out-yielded every other technique. Check, in order:
+
+  src.old/<seg>/            an older split of this same game. src.old/ovl9/
+                            maps 1:1 onto four of the new ovl9 TUs and gave
+                            68 functions, nearly all first-compile. Its TU
+                            boundaries sit 8 bytes earlier and every callee
+                            has been renamed -- take symbol names from the
+                            LISTING, not from the old source.
+  libreultra/src/           the real libultra/n_audio sources are in-tree.
+                            libnaudio/*.c ports near-verbatim.
+  /workspace/vetritheretri/ssb-decomp-re   same HAL engine
+  /workspace/ethteck/pokemonsnap           same HAL engine
+
+## Type-split constants (needed constantly in ovl9)
+
+`arr[i] = 1;` next to `if (other[i] == 1)` makes IDO CSE both into one
+register; the ROM often keeps two. Fork it with a type-split store:
+    *(u32 *) &gEntityFuncListIDArray[i] = 1;
+    D_800E9AA0[i].as_u32 = 1;
+Closed 6 functions in ovl9 alone, and took another from 76 diffs to 13.
+
+## Line-number sensitivity is a LEVER, not only a hazard
+
+Two ovl9 functions differed only in the scheduling order of two `li`
+constants; collapsing an if/else onto ONE PHYSICAL LINE fixed both. Those
+one-liners are load-bearing -- do not reformat them.
+
+## Argument passing, read from the delay slot
+
+  `sw $a0` IN the jal delay slot   -> callee takes NO arguments (the store is
+                                      the parameter home slot filling the slot)
+  `sw $a0` before the call, `nop`  -> the argument IS passed
+This distinguishes `f()` from `f(arg0)` reliably.
+
+## Caveats on rules already in this guide
+
+- "IDO reverses the outermost float +" is NOT universal. It holds for `a + b`
+  where one side is an array load, but a 3-term sum of squares needed the
+  natural left-to-right form. Try both.
+- The extern-vs-literal rodata rule is PER FUNCTION, not per file. Measured
+  per file, one bad function inflates the TU and makes the whole approach look
+  broken. 27 of 33 constants across five segments took the plain extern.
+  Constant used once -> plain extern. Used several times -> a local f32
+  assigned IMMEDIATELY BEFORE FIRST USE, after any intervening call;
+  initialising at the declaration moves the load to function entry and changes
+  frame size (one function: 68 diffs at the declaration, 0 when moved).
+- IDO assigns FP registers strictly in order of first ASSIGNMENT. Declaration
+  order has no effect (verified across all 6 permutations of one function).
+
+## A listing can span TWO functions
+
+If there is no symbol at the second function's address, splat merges it into
+the previous listing. asm/nonmatchings/ovl4/ovl4_4/func_80158120_ovl4.s is
+0x70 and contains func_80158120 (26 instructions) PLUS the empty
+func_80158188 (2). So "verify.py says N instructions short" can mean the
+listing covers more than one function -- check before restoring a pragma.
+check_layout.py is the arbiter.
+
+## m2c is a reading aid, not an automation target
+
+A generate->apply->verify->revert driver over 33 ovl9 pragmas produced ZERO
+matches (union/struct type inference failures, then register allocation).
+Hand-decompiling from the listing was ~10x more productive.

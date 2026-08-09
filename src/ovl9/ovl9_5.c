@@ -77,7 +77,17 @@ void func_801E5C8C_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E5D2C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E5DE0_ovl9.s")
+void func_8019B2C0_ovl7(s32);
+void func_801A0D74_ovl7();
+
+void func_801E5DE0_ovl9(void) {
+    f32 temp;
+
+    func_801A0D74_ovl7();
+    func_8019B2C0_ovl7(1);
+    temp = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x;
+    D_800DFBD0[omCurrentObj->objId][1]->pos.v.y = ((temp < 0.0f) ? -temp : temp) * 10.0f;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E5E70_ovl9.s")
 

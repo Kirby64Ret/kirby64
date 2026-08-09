@@ -7,6 +7,10 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
+void func_800B33F4(void);
+void func_801B35CC_ovl7(GObj *, s32, f32);
+void func_800AF27C(void);
+
 extern s32 D_801C8158_ovl7[];
 void func_800B3520(void);
 void func_800AECC0(f32);
@@ -152,7 +156,20 @@ void func_801B33E8_ovl7(GObj *arg0) {
     D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B3444_ovl7.s")
+void func_801B3444_ovl7(GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E9C60[omCurrentObj->objId] = 0x5A;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    func_800AA018(0x10099);
+    D_800DF310[omCurrentObj->objId] = func_801B35CC_ovl7;
+    func_800AF27C();
+    if ((D_800E7880[omCurrentObj->objId] == 0) || (D_800E7880[omCurrentObj->objId] == 1)) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    }
+}
 
 void func_801B3540_ovl7(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk8C = D_801C81A0_ovl7;

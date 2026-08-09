@@ -8,6 +8,12 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
+void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
+extern struct GObjProcess *gEntityGObjProcessArray[];
+s32 func_801117BC(void *, u32);
+void func_80111C4C(s32);
+void func_801ACF84_ovl7(GObj *);
+
 struct Ovl7AnimCmd {
     u8 filler0[8];
     s32 unk8;
@@ -54,6 +60,7 @@ void func_8019F3F0_ovl7(void) {
     func_8019F590_ovl7(0);
 }
 
+#ifdef MIPS_TO_C
 s32 func_8019F410_ovl7(s32 arg0) {
     struct UnkStruct800E1B50 *ent;
     struct Ovl7AnimObj *anim;
@@ -73,6 +80,9 @@ s32 func_8019F410_ovl7(s32 arg0) {
     func_80111ECC(anim);
     return func_8019F650_ovl7();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019F410_ovl7.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019F4D0_ovl7.s")
 
@@ -93,6 +103,7 @@ void func_801A03B4_ovl7(void) {
     func_801A04B8_ovl7();
 }
 
+#ifdef MIPS_TO_C
 void func_801A03E4_ovl7(s32 arg0) {
     struct UnkStruct800E1B50 *ent;
     struct Ovl7AnimObj *anim;
@@ -105,6 +116,9 @@ void func_801A03E4_ovl7(s32 arg0) {
     func_80111ECC(anim);
     func_801A04B8_ovl7();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A03E4_ovl7.s")
+#endif
 
 struct Ovl7AnimObj *func_801A0464_ovl7(void) {
     struct UnkStruct800E1B50 *ent;
@@ -116,7 +130,29 @@ struct Ovl7AnimObj *func_801A0464_ovl7(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A04B8_ovl7.s")
 
+#ifdef MIPS_TO_C
+s32 func_801A07C4_ovl7(void) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    if (ent->unk90 == 0) {
+        return 0;
+    }
+    if (D_800E83E0[omCurrentObj->objId] != 0) {
+        if (D_800E7730[omCurrentObj->objId] == 4) {
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
+        }
+        return 1;
+    }
+    if (ent->unk3D == 0) {
+        func_80111C4C(func_801117BC(ent->unk90, omCurrentObj->objId));
+        return 0;
+    }
+    ent->unk3D = ent->unk3D - 1;
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A07C4_ovl7.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A0880_ovl7.s")
 
