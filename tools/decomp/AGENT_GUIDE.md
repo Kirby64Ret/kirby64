@@ -1788,3 +1788,108 @@ nothing to fix.
 But a tool that un-guards "the first `#ifdef MIPS_TO_C`" will produce garbage
 in those files. The wave-7 nesting warning applies to READING as well as
 writing.
+
+# Wave 9: the scheduling blocker, cracked
+
+## `volatile` stops IDO hoisting an induction bump
+
+This was recorded as "the best-value unsolved question in the tree" and it
+blocked seven functions with identical residue. It is solved.
+
+In the framebuffer-clear loop, casting BOTH stores to `vu16` makes IDO keep the
+`addiu $v1, $v1, 8` before the last store, exactly where the ROM has it.
+Without it IDO hoists the bump to the top of the 4x-unrolled body and rebases
+all four displacements -- the 8-diff residue.
+
+Proved on `func_8017CC3C_ovl5`, then applied verbatim to `func_801802A8_ovl5`,
+`func_801822AC_ovl5`, `func_80182FE8_ovl5` and `func_80185EEC_ovl5` -- all
+byte-exact. **`func_800BDF2C` (ovl1_13, 4/35) and `func_800AE048`
+(ovl1/sprite, 4/39) are the same family and should close with the same two
+casts.** They are unclaimed.
+
+What was ruled out on the way, so nobody repeats it: `-Wo,-loopunroll` at 0/2/8/16
+and `-Olimit` all make it worse or change the unroll; and source form is
+completely inert -- do/while, for, `!=` vs `<`, pointer walk, hand-unrolling,
+two induction variables, byte bias, nesting. The bump position is invariant to
+everything except volatile.
+
+The lever is NARROW. It did not move the analogous store/bump swap in
+`func_801649CC_ovl5`, and it costs the whole loop there (25/26). It also did
+not move load scheduling in `func_8018293C_ovl5`.
+
+## More wave-9 levers
+
+**Hoisting the FIRST call result of a `arr[f(...)] = k;` run into an explicit
+local moves a shared constant one slot earlier.** `func_8017783C_ovl5` sat at
+2/116 for a whole wave because `7` -- both the first store value and the loop
+bound, CSE'd into `$s2` -- was materialised one instruction late.
+`t = request_track_3(...); D_800E98E0[t] = 7;` for that one statement matched.
+
+**`goto` into a TRAILING return block reproduces the ROM's redundant `b` to the
+next instruction.** `func_80155F0C_ovl3`, 7/77 -> MATCH with
+`if (...) { ...; goto ret0; } ... return 1; ret0: return 0;`. An explicit
+`else`, a `ret` local and `goto` at the other end all failed.
+
+**A callee's non-void return type also rotates ARGUMENT registers, not just
+temps.** `func_801E8DD8_ovl16` had the array base in `$a1` where the ROM had
+`$a2`; `s32 func_800A9864(s32,s32,s32);` instead of `void` matched it.
+
+**A narrow parameter type can be honoured with casts at the call sites instead
+of in the prototype.** `func_801EF3B0_ovl16` needs an `s32` second parameter,
+but widening the prototype broke four already-matched callers. Keeping the
+definition `s32` and writing `(s8) x` at all four call sites matched with zero
+other functions changed. The K&R workaround (prototype `s8`, definition `s32`)
+verifies but CC_CHECK rejects it -- do not use it.
+
+**Chained assignment can fix a FRAME SIZE difference, not just a shared load.**
+`func_801AF104_ovl7` was 67/105 with the frame 8 bytes short; the chained form
+matched with no pad locals at all. The earlier note that it "needs 8 more bytes
+of dead locals" was a symptom of an extra FP temp, not a separate problem.
+
+**`tmp = tmp - k;` as its own statement vs `(tmp - k)` inside the return
+expression decides whether IDO reuses the source FP register.** `func_80028080`
+5/35 -> MATCH; the `ABSF()` macro form was worse.
+
+## Drafts that do not compile under gcc must use MIPS_TO_C, never NON_MATCHING
+
+`CC_CHECK` in the Makefile is `gcc -fsyntax-only ... -DNON_MATCHING`, so every
+`#ifdef NON_MATCHING` draft has to compile under gcc. `libn_audio.c`'s
+`func_80023990` draft referenced `KAudioMgr.unk38`, which does not exist; the
+file sat committed and broken, surviving only because its object was never
+rebuilt, and broke the ROM build for the whole fleet the moment anyone touched
+that file.
+
+`MIPS_TO_C` is not defined by CC_CHECK, so park non-compiling drafts there.
+
+## Sweeping IN PLACE is visible to other agents' builds
+
+The `+16` flagged on `src/ovl16/ovl16.c` mid-wave was neither a padding trap
+nor a live non-match. It was a sibling agent's `mk.sh` compiling the file while
+it transiently held a 3-instruction-longer sweep variant. The source on disk
+always compiled to 0x142E0.
+
+Sweep on a temp copy. A good pattern: compile the variant as `.ab_tmp.c`
+BESIDE the real file -- GNU make's `wildcard` never matches leading-dot files,
+so a concurrent `mk.sh` cannot pick it up. That is also strictly stronger than
+`verify.py --all` for files like ovl16.c where 94 already-matched functions
+have no listing and `--all` cannot see them at all.
+
+## Two traps in the headers
+
+`include/track_arrays.h` uses the include guard `OVL1_6_H`, the same as
+`src.old/ovl1/ovl1_6.h`. In any TU that includes `ovl1/ovl1_6.h` first (e.g.
+`src/ovl5/ovl5_12.c`) track_arrays.h is SILENTLY SKIPPED, so `D_800E9AA0` is
+`struct EntityThing800E9AA0 *[]` there and needs `((s32 *) D_800E9AA0)[i]`.
+
+`n_alSavePull` is a merged-empty-function trap that `padtrap` classifies
+`clean`: its 19-word listing ends in an extra dead `jr $ra; nop` BEFORE
+`.size`, so converting it shortens the TU by 8. Same shape as ovl4's
+`func_80158120`.
+
+## More proven-IPA floors in main
+
+`func_80027610` is upstream `_getVol` verbatim at 3/24, and all three diffs are
+home-slot OFFSETS ($a1 to 0x0, $a3 to 0x8, $a2 to 0xC). Those are the source
+parameter positions of `_getVol(ivol, samples, ratem, ratel)` while the
+registers are permuted -- ujoin shuffled the calling convention. Home-slot
+offsets that do not match register positions are the IPA signature.

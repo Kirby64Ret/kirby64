@@ -1343,7 +1343,40 @@ void func_802002F4_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
+/* 8/91 diffs: pure $f0/$f2 swap between the hoisted constant and the
+   gEntitiesAngleZArray element.  `f32 lim = D_8021D9E4_ovl9;` as a DECLARATION
+   INITIALIZER is load-bearing -- it moves the load to function entry where the
+   ROM has it and took this from 30 to 8.  Swept with no further effect: lim as
+   a first statement instead, lim declared in all three positions, an extra
+   dead f32 ahead of it, reversed compare operand order, and a second local for
+   D_8021D9E8_ovl9 (70). */
+#ifdef MIPS_TO_C
+extern f32 D_8021D9E4_ovl9;
+extern f32 D_8021D9E8_ovl9;
+
+void func_8020034C_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct DObj *d = arg0->data.dobj->firstChild;
+    f32 lim = D_8021D9E4_ovl9;
+
+    ent->unk2C = D_800E5F90[omCurrentObj->objId];
+    ent->unk28 = D_800E6BD0[omCurrentObj->objId];
+    ent->unk4 = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_800EB160[omCurrentObj->objId] = gEntitiesAngleZArray[omCurrentObj->objId];
+    if (gEntitiesAngleZArray[omCurrentObj->objId] < lim) {
+        D_800E6A10[omCurrentObj->objId] = -1.0f;
+    }
+    if (lim <= gEntitiesAngleZArray[omCurrentObj->objId]) {
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
+        gEntitiesAngleZArray[omCurrentObj->objId] = -gEntitiesAngleZArray[omCurrentObj->objId];
+    }
+    gEntitiesAngleZArray[omCurrentObj->objId] -= D_8021D9E8_ovl9;
+    d->angle.v.x = gEntitiesAngleZArray[omCurrentObj->objId];
+    gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_8020034C_ovl9.s")
+#endif
 
 void func_802004B8_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;

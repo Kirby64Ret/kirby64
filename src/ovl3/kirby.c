@@ -974,7 +974,43 @@ void func_8017B78C_ovl3(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017B8F4_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BD68_ovl3.s")
+extern s32 func_800AF230(void);
+extern s32 D_800E9720[];
+
+void func_8017BD68_ovl3(GObj *arg0) {
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk3C = 0;
+    gKirbyState.unk7 = 0;
+    func_8011CF58();
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    D_800DDFD0[omCurrentObj->objId] = 0x25;
+    D_800E9720[omCurrentObj->objId] = 0;
+    func_80120A28();
+    func_801632B8_ovl3(1);
+    func_800AFA54(D_800DFA10[omCurrentObj->objId]);
+    func_801230E8(0x20019, 0x2001A, 0);
+    while (1) {
+        if (gKirbyState.unk17 != 0) {
+            break;
+        }
+        if (D_800E9720[omCurrentObj->objId] >= 4) {
+            if (!(gKirbyController.buttonHeld & 0x4000)) {
+                break;
+            }
+            if (func_800AF230() != 0) {
+                break;
+            }
+        }
+        D_800E9720[omCurrentObj->objId]++;
+        ohSleep(1);
+    }
+    gKirbyState.unk3C = gKirbyState.unk3C + 1;
+    func_801230E8(0x2001B, 0x2001C, 1);
+    gKirbyState.abilityInUse = 0;
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
+
 
 void func_8017BEF4_ovl3(s32 arg0) {
     func_80153984_ovl3();

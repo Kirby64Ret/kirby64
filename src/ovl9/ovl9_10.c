@@ -906,8 +906,13 @@ void func_802050E4_ovl9(struct Ovl9_10AnimInfo *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802051D4_ovl9.s")
 
 #ifdef MIPS_TO_C
-// 11 diffs: structurally exact, but the ROM keeps objId<<2 in $v0 and `a` in
-// $v1 while IDO swaps them. Declaration order/count has no effect.
+// 11/30 diffs: structurally exact, but the ROM keeps objId<<2 in $v0 and `a`
+// in $v1 while IDO swaps them. Declaration order/count has no effect; also
+// swept with no improvement: a `struct DObj **arr` base local plus inline
+// indices (23) or plus two locals (14), swapped declaration order (13),
+// inlining both element expressions (30), and assignment statements instead
+// of initializers (11). No call in the function, so the callee-return-type
+// lever does not apply.
 void func_802052E8_ovl9(void) {
     struct DObj *a = D_800DFBD0[omCurrentObj->objId][3];
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][4];

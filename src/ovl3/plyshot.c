@@ -471,10 +471,14 @@ void func_80164058_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80164320_ovl3.s")
 
 #ifdef MIPS_TO_C
-/* 69/111: logic decoded, but IDO keeps omCurrentObj->objId in $s0 (saving
-   and restoring it) where the ROM re-reads it, and puts `h` in a register
-   instead of spilling it to 0x1C($sp). Tried s32 vs f32** for h and an
-   explicit id local. */
+/* 69/111: logic decoded and every instruction lines up -- the whole diff is a
+   one-instruction shift from the extra `sw $s0, 0x18($sp)`. The ROM uses NO
+   callee-saved register at all: it spills `h` to 0x1C($sp) and re-reads
+   omCurrentObj->objId. IDO instead parks objId then `h` in $s0.
+   Swept: s32 vs f32** for h, `volatile` on the pointer and on the pointee,
+   leading and trailing pad locals, an explicit id local. Prototype knobs on
+   func_80152070_ovl3/func_80155D50_ovl3/func_80111A04 all collide with the
+   file's later declarations and do not compile. */
 extern char D_801912EC_ovl3[];
 extern f32 D_80193C64_ovl3[][4];
 extern f32 D_80198700_ovl3[][4];

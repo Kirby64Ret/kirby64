@@ -3648,8 +3648,8 @@ void func_8010924C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 }
 
 #ifdef MIPS_TO_C
-// Near match (19/123 insns): only an f16/f18 register-parity difference from
-// the `(sp2C.z - sp20.z) * BD00.unk18` multiply onward.
+// 19/123: f16/f18 parity from the `(sp2C.z - sp20.z) * BD00.unk18` multiply on.
+// Swept all 8 operand/addend orders and 7 named-temp splits; 19 is the floor.
 void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     struct Normal *sp4C;
     f32 sp48;

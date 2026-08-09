@@ -27,7 +27,11 @@ void ohSleep(s32);
 
 #ifdef MIPS_TO_C
 // 98/140 diffs: structure is right, but $v0/$v1 are swapped between the
-// omCurrentObj pointer and the objId value throughout.
+// omCurrentObj pointer and the objId value throughout. Swept with ZERO effect:
+// s32 return type on func_800AA018, ohSleep and func_800B7790 (each applied
+// file-wide, --all stayed at 0 diff), `void ohSleep(u8)`, hoisting
+// omCurrentObj into a local, and writing `ent` as an assignment instead of a
+// declaration initializer (102).
 void func_801EF790_ovl10(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 

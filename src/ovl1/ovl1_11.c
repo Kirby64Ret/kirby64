@@ -101,7 +101,8 @@ void func_800BB6B0(GObj *gobj);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_11/func_800BB6B0.s")
 #endif
 
-
+// 7/131 (6 real): ROM keeps the omMakeGObj result in $v0 and dobj in $v0; we get $s0/$v1.
+#ifdef NON_MATCHING
 extern struct {
     u32 unk0;
     u32 unk4;
@@ -150,6 +151,6 @@ Vector *func_800BB98C(s32 arg0, s32 arg1) {
         return &dobj->scale.v;
     }
 }
-
-
-
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_11/func_800BB98C.s")
+#endif

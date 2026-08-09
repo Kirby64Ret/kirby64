@@ -69,7 +69,38 @@ extern Unk16Bytes D_80185FB0_ovl5;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015D62C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015D864_ovl5.s")
+extern void *D_801867AC_ovl5[][2];
+extern void *D_8018664C_ovl5[][2];
+extern void *D_8018662C_ovl5[];
+void func_800AA608(void *, void *, f32, void *, f32);
+void func_8015E850_ovl5(GObj *);
+
+void func_8015D864_ovl5(GObj *arg0, s32 arg1) {
+    Unk8Bytes sp30 = D_8018E1E8_ovl5[arg1];
+    s32 pad0;
+    s32 pad1;
+
+    D_800DF150[omCurrentObj->objId] = NULL;
+    if (D_8018E1E0_ovl5[arg1] != 0) {
+        s32 t = request_track_general(6, 0, 0x70);
+
+        D_800E98E0[t] = 5;
+        ((s32 *) D_800E9AA0)[t] = arg1;
+    }
+    D_8018E1E0_ovl5[arg1] = 0;
+    func_800AA018(D_801867AC_ovl5[sp30.unk0][0]);
+    func_800AA018(D_801867AC_ovl5[sp30.unk0][1]);
+    func_800AF27C();
+    func_800AA608(D_800DE350[omCurrentObj->objId]->data.dobj->firstChild, D_8018664C_ovl5[sp30.unk0][0],
+                  0.0f, D_8018662C_ovl5[sp30.unk0], 6.0f);
+    func_800AA018(D_8018664C_ovl5[sp30.unk0][0]);
+    if (D_8018664C_ovl5[sp30.unk0][1] != NULL) {
+        func_800AA018(D_8018664C_ovl5[sp30.unk0][1]);
+    }
+    D_800EA520[omCurrentObj->objId] = 0;
+    D_800DF150[omCurrentObj->objId] = func_8015E850_ovl5;
+}
+
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015DA24_ovl5.s")
 

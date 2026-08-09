@@ -30,7 +30,22 @@
 PC_BUILD  := build/pc
 PC_CC     := gcc
 PC_ARCH   := -m64 -fno-pie
-PC_DEFS   := -D_LANGUAGE_C -DTARGET_N64 -DPORT -DF3DEX_GBI_2 -DAVOID_UB
+# -DNON_MATCHING is deliberate, and it was briefly removed for the wrong
+# reason. It activates the guarded drafts in ~25 files: attempts that are not
+# byte-exact and were guarded so the MATCHING build would not use them.
+#
+# The port is not the matching build. docs/PC_PORT_ARCHITECTURE.md states the
+# rule -- behaviour accuracy takes precedence over byte-for-byte fidelity in
+# the port, while the N64 build stays byte-exact -- and a working non-matching
+# implementation is strictly better here than a weak abort-on-call stub.
+# Removing it cost the port scThreadMain, whose only C form is a draft, and the
+# scheduler thread died on a stub instead of running.
+#
+# It was removed because one draft did not compile (func_80023990 in
+# libn_audio.c referenced KAudioMgr fields that do not exist). That was one bad
+# draft, not a reason to discard the mechanism; it has since been fixed and all
+# 151 files compile with the define.
+PC_DEFS   := -D_LANGUAGE_C -DTARGET_N64 -DPORT -DF3DEX_GBI_2 -DAVOID_UB -DNON_MATCHING
 PC_INC    := -Iinclude -Iinclude/libc -Ilibreultra/include/2.0I -Ibuild \
              -Ibuild/include -Ibuild/assets -Isrc -Isrc.old -I.
 PC_CFLAGS := $(PC_ARCH) -std=gnu90 -fsigned-char -g -O1 -w $(PC_DEFS) $(PC_INC)

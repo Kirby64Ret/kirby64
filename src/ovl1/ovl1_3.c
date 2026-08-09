@@ -197,8 +197,8 @@ void *func_800A840C(u32 arg0, s32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-// Nearly matching: only remaining diff is a one-slot temp-register rotation
-// (target uses t7/t8/t9, this compiles to t6/t7/t8; addr in a1 either way).
+// 4/10, one-slot temp rotation (t7/t8/t9 vs t6/t7/t8). Swept: 24 source forms
+// (temps, decl order/count, K&R, 2 params, void ret, ptr local, mask spelling).
 u32 func_800A84F0(s32 arg0) {
     u32 temp_v0;
     u32 size;

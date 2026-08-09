@@ -40,8 +40,8 @@ struct C954Arg2 {
 
 #define G_CC_PRIM_RGBA PRIMITIVE, 0, TEXEL0, 0, PRIMITIVE, 0, TEXEL0, 0
 
-// Nearly matching (10/22): only a one-slot temp-register rotation - the target
-// burns two virtual registers per s16 store, this shape only burns one.
+// 12/22: the target burns TWO virtual registers per s16 store (t7/t9/t1/t3/t5),
+// this burns one. Swept casts, shifts, s16 args, 1 and 4 explicit temps: no move.
 #ifdef MIPS_TO_C
 void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
     D_800D4E64 = arg0 * 4;
