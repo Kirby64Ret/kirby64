@@ -1,0 +1,34 @@
+--- before
++++ after
+@@ -2277,11 +2277,13 @@
+ void func_801D281C_ovl8(s32 arg0)
+ {
+   s32 temp;
++  s32 new_var;
+   s32 track;
+   func_800A9864(0x100E4, 0x1869F, 0x10);
+   D_800DEF90[omCurrentObj->objId] = func_801D1E58_ovl8;
+   D_800DDA90[omCurrentObj->objId] = 0x25;
+   func_800AA018(0x10638);
++ if (1) { } if (1) { }
+   while (1)
+   {
+     switch (D_800E9C60[D_800E0D50[omCurrentObj->objId]])
+@@ -2294,12 +2296,16 @@
+ 
+       case 0x10636:
+ 
++      if ((omCurrentObj->objId && omCurrentObj->objId) && omCurrentObj->objId)
++      {
++      }
+       case 0x10639:
+ 
+       case 0x1063A:
+ 
+       case 0x1063B:
+-        func_800A9EA4(D_800E9C60[D_800E0D50[omCurrentObj->objId]]);
++        new_var = D_800E9C60[D_800E0D50[omCurrentObj->objId]];
++        func_800A9EA4(new_var);
+         break;
+ 
+       default:

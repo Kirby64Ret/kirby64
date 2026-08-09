@@ -10,14 +10,14 @@
 s32 func_800F98EC(s32, f32);
 
 s32 func_801AC9D0_ovl7(void);
-s32 func_801ACC34_ovl7(void);
+s32 func_801ACC34_ovl7();
 void func_800B1900(u16);
 s32 func_801A0D74_ovl7(void);
 void func_801A03B4_ovl7(void);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5_2/func_801AC9D0_ovl7.s")
 
-s32 func_801ACC34_ovl7(void) {
+s32 func_801ACC34_ovl7() {
     s32 temp;
 
     temp = func_801AC9D0_ovl7();
@@ -30,26 +30,22 @@ s32 func_801ACC34_ovl7(void) {
     return temp;
 }
 
-#ifdef MIPS_TO_C
-s32 func_801ACCA0_ovl7(f32 arg0, f32 arg1, f32 arg2, f32 arg3) {
+s32 func_801ACCA0_ovl7(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
     s32 idx;
     f32 *p;
 
-    idx = func_801ACC34_ovl7();
+    idx = func_801ACC34_ovl7(arg0, arg1);
     if (idx == 0) {
         return 0;
     }
     p = &gEntitiesNextPosYArray[idx];
     *p = *p + arg3;
     if (func_800F98EC(idx, D_800E6A10[omCurrentObj->objId] * arg2) != 0) {
-        func_800B1900(idx & 0xFFFF);
+        func_800B1900(idx);
         return 0;
     }
     return idx;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5_2/func_801ACCA0_ovl7.s")
-#endif
 
 s32 func_801ACD48_ovl7(void) {
     s32 temp;
@@ -62,7 +58,28 @@ s32 func_801ACD48_ovl7(void) {
     return temp;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5_2/func_801ACD90_ovl7.s")
+s32 func_801ACD90_ovl7(s32 arg0, s32 arg1, Vector *arg2) {
+    s32 idx;
+    f32 *px;
+    f32 *py;
+    f32 *pz;
+
+    idx = func_801ACC34_ovl7(arg0, arg1);
+    if (idx == 0) {
+        return 0;
+    }
+    D_800E8E60[idx] = 1;
+    px = &gEntitiesNextPosXArray[idx];
+    *px = *px + arg2->x;
+    py = &gEntitiesNextPosYArray[idx];
+    *py = *py + arg2->y;
+    pz = &gEntitiesNextPosZArray[idx];
+    *pz = *pz + arg2->z;
+    gEntitiesPosXArray[idx] = *px;
+    gEntitiesPosYArray[idx] = *py;
+    gEntitiesPosZArray[idx] = *pz;
+    return idx;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5_2/func_801ACE60_ovl7.s")
 

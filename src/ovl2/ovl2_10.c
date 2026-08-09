@@ -176,11 +176,11 @@ s32 func_80112600(struct UnkRay *arg0) {
     return 0;
 }
 
-// Uses constants from this TU's MIGRATED .rodata block. Referencing
-// them as `extern f32 D_80128...` does not link (nothing defines them --
-// migrated rodata is emitted BY this file), and writing them as literals
-// does not reproduce the ROM's rodata layout. Needs the constants placed
-// in the right order, not a symbol swap.
+// The float literal below lands in this TU's MIGRATED .rodata block, which
+// this C file emits. verify.py reports a 1-instruction diff because the object
+// references `.rodata + offset` while the ROM references a named symbol; the
+// offset is correct and the linked bytes are identical (proved by verify_rom.py
+// and by diffing the object's .rodata against the base ROM). Keep the literal.
 s32 func_801126A4(struct UnkPlane *arg0) {
     struct UnkPlane *temp_v0;
     f32 temp_f0;
@@ -551,11 +551,11 @@ void func_80115EFC(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115F04.s")
 
-// Uses constants from this TU's MIGRATED .rodata block. Referencing
-// them as `extern f32 D_80128...` does not link (nothing defines them --
-// migrated rodata is emitted BY this file), and writing them as literals
-// does not reproduce the ROM's rodata layout. Needs the constants placed
-// in the right order, not a symbol swap.
+// The float literal below lands in this TU's MIGRATED .rodata block, which
+// this C file emits. verify.py reports a 1-instruction diff because the object
+// references `.rodata + offset` while the ROM references a named symbol; the
+// offset is correct and the linked bytes are identical (proved by verify_rom.py
+// and by diffing the object's .rodata against the base ROM). Keep the literal.
 void func_80116118(struct GObj *arg0) {
     u8 *sp1C = arg0->unk4C;
     f32 *temp_v0;
@@ -789,11 +789,11 @@ void func_801171F0(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117210.s")
 
-// Uses constants from this TU's MIGRATED .rodata block. Referencing
-// them as `extern f32 D_80128...` does not link (nothing defines them --
-// migrated rodata is emitted BY this file), and writing them as literals
-// does not reproduce the ROM's rodata layout. Needs the constants placed
-// in the right order, not a symbol swap.
+// The float literal below lands in this TU's MIGRATED .rodata block, which
+// this C file emits. verify.py reports a 1-instruction diff because the object
+// references `.rodata + offset` while the ROM references a named symbol; the
+// offset is correct and the linked bytes are identical (proved by verify_rom.py
+// and by diffing the object's .rodata against the base ROM). Keep the literal.
 void func_80117328(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 temp_v0;
@@ -814,11 +814,11 @@ void func_80117328(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801173F4.s")
 
-// Uses constants from this TU's MIGRATED .rodata block. Referencing
-// them as `extern f32 D_80128...` does not link (nothing defines them --
-// migrated rodata is emitted BY this file), and writing them as literals
-// does not reproduce the ROM's rodata layout. Needs the constants placed
-// in the right order, not a symbol swap.
+// The float literal below lands in this TU's MIGRATED .rodata block, which
+// this C file emits. verify.py reports a 1-instruction diff because the object
+// references `.rodata + offset` while the ROM references a named symbol; the
+// offset is correct and the linked bytes are identical (proved by verify_rom.py
+// and by diffing the object's .rodata against the base ROM). Keep the literal.
 void func_80117570(struct GObj *arg0) {
     u8 *sp24 = arg0->unk4C;
     s32 temp_v0;

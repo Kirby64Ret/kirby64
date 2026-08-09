@@ -7,6 +7,12 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
+void eneTurnCommon(s32);
+s32 func_8019A7E8_ovl7(f32);
+void func_801A3280_ovl7(void);
+void func_801BE588_ovl7(GObj *);
+void func_800A9760(s32);
+
 struct Sub800E1B50_Unk34 *func_800A8100(s32, s32, s32, void *);
 void func_801BDBDC_ovl7(GObj *);
 void func_801BE1A8_ovl7(GObj *);
@@ -22,7 +28,7 @@ void func_801BD88C_ovl7(GObj *);
 void func_801BF1F4_ovl7(GObj *);
 
 void func_801A0880_ovl7(void);
-void func_801BE490_ovl7(void);
+void func_801BE490_ovl7();
 
 extern FUNCLIST D_801CD8B0_ovl7;
 extern FUNCLIST D_801CD8B8_ovl7;
@@ -149,7 +155,20 @@ void func_801BE450_ovl7(void) {
     func_801BE490_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BE490_ovl7.s")
+void func_801BE490_ovl7(arg0)
+GObj *arg0;
+{
+    func_801A3280_ovl7();
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A9760(0x100D2);
+    D_800DF150[omCurrentObj->objId] = func_801BE588_ovl7;
+    D_800EA6E0[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+    D_800EAA60[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId];
+    func_800AA018(0x10602);
+    func_800AA018(0x10603);
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BE588_ovl7.s")
 
@@ -161,7 +180,26 @@ void func_801BE740_ovl7(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BE79C_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BEE54_ovl7.s")
+void func_801BEE54_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent;
+    s32 state;
+
+    state = D_800E98E0[omCurrentObj->objId];
+    ent = D_800E1B50[omCurrentObj->objId];
+
+    if (state == 1) {
+        func_801BEF18_ovl7();
+        eneTurnCommon(2);
+        if (ent->unk3C == 0) {
+            if (func_8019A7E8_ovl7(30.0f) != 0) {
+                D_800E98E0[omCurrentObj->objId] = 2;
+            }
+        }
+    } else if (state == 2) {
+        func_801BEF18_ovl7();
+        eneTurnCommon(2);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BEF18_ovl7.s")
 

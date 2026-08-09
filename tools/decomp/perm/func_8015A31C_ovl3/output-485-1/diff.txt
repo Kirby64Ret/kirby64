@@ -1,0 +1,26 @@
+--- before
++++ after
+@@ -2441,7 +2441,7 @@
+ extern f32 D_80196F68_ovl3;
+ extern f32 D_80196F6C_ovl3;
+ extern void func_80153984_ovl3(void);
+-extern s32 D_800BE4FC;
++extern unsigned int D_800BE4FC;
+ extern s32 D_800BE500;
+ extern s32 D_800BE504;
+ extern s32 D_800BE508;
+@@ -2537,11 +2537,11 @@
+     {
+       D_800BE52C = D_800BE500;
+       D_800BE530 = D_800BE504;
+-      D_800BE534 = D_800BE508 + 1;
++      D_800BE534 = (((((((D_800BE508 & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) + 1;
+       D_800BE538 = 0;
+       D_800BE4FC = 1;
+-      D_800BE4F8 = 2;
+-      gKirbyState.unk30 = 0;
++ D_800BE4F8 = 2; gKirbyState.unk30 = 0;
++ do { } while (0);
+     }
+       break;
+ 

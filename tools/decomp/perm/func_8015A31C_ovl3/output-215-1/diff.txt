@@ -1,0 +1,25 @@
+--- before
++++ after
+@@ -2527,6 +2527,7 @@
+     {
+       D_800E6690[omCurrentObj->objId] = 0.0f;
+       D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
++ goto dummy_label_697891; dummy_label_697891: ;
+       D_800E6850[omCurrentObj->objId] = D_80196FB8_ovl3;
+       gKirbyState.unk44 = 2;
+     }
+@@ -2539,12 +2540,12 @@
+       D_800BE530 = D_800BE504;
+       D_800BE534 = D_800BE508 + 1;
+       D_800BE538 = 0;
++      D_800BE4F8 = 2;
+       D_800BE4FC = 1;
+-      D_800BE4F8 = 2;
+-      gKirbyState.unk30 = 0;
+     }
+       break;
+ 
++    gKirbyState.unk30 = 0;
+   }
+ 
+ }

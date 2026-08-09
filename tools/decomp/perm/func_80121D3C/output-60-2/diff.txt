@@ -1,0 +1,29 @@
+--- before
++++ after
+@@ -3504,6 +3504,7 @@
+ s32 func_80121C90(void);
+ void func_80121D3C(void)
+ {
++  u32 new_var;
+   GObj *temp_v0;
+   s32 var_v1;
+   if (gKirbyState.unk9 & 1)
+@@ -3511,7 +3512,7 @@
+     var_v1 = (s16) gKirbyState.unk6A;
+     if (var_v1 != 0)
+     {
+-      gKirbyState.unk6A = var_v1 - 1;
++      gKirbyState.unk6A = ((s16) gKirbyState.unk6A) - 1;
+       if (((s16) gKirbyState.unk6A) == 0)
+       {
+         gKirbyState.unk68 = 0;
+@@ -3543,7 +3544,8 @@
+       gKirbyState.unk6C = (u32) temp_v0;
+       ((struct UnkPos4C *) temp_v0->unk4C)->unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
+       ((struct UnkPos4C *) temp_v0->unk4C)->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId] + 20.0f;
+-      ((struct UnkPos4C *) temp_v0->unk4C)->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
++      new_var = omCurrentObj->objId;
++      ((struct UnkPos4C *) temp_v0->unk4C)->unkC = gEntitiesNextPosZArray[new_var];
+     }
+   }
+ }

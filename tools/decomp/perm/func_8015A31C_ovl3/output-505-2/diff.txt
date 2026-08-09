@@ -1,0 +1,12 @@
+--- before
++++ after
+@@ -2533,6 +2533,9 @@
+       break;
+ 
+     case 2:
++      if ((omCurrentObj && omCurrentObj) && omCurrentObj)
++    {
++    }
+       if (gKirbyState.unk30 != 0)
+     {
+       D_800BE52C = D_800BE500;

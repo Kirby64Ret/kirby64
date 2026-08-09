@@ -1,0 +1,10 @@
+--- before
++++ after
+@@ -2527,6 +2527,7 @@
+     {
+       D_800E6690[omCurrentObj->objId] = 0.0f;
+       D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
++      D_800BE4FC = 1;
+       D_800E6850[omCurrentObj->objId] = D_80196FB8_ovl3;
+       gKirbyState.unk44 = 2;
+     }

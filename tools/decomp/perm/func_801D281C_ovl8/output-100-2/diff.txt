@@ -1,0 +1,15 @@
+--- before
++++ after
+@@ -2299,9 +2299,11 @@
+       case 0x1063A:
+ 
+       case 0x1063B:
+-        func_800A9EA4(D_800E9C60[D_800E0D50[omCurrentObj->objId]]);
++        temp = D_800E9C60[D_800E0D50[omCurrentObj->objId]];
++        func_800A9EA4(temp);
+         break;
+ 
++ ;
+       default:
+         func_800B1900(omCurrentObj->objId);
+         break;

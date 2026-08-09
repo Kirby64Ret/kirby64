@@ -1,0 +1,13 @@
+--- before
++++ after
+@@ -2541,9 +2541,9 @@
+       D_800BE538 = 0;
+       D_800BE4FC = 1;
+       D_800BE4F8 = 2;
++      break;
+       gKirbyState.unk30 = 0;
+     }
+-      break;
+ 
+   }
+ 

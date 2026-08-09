@@ -11,6 +11,23 @@
 #include "main/object_helpers.h"
 void func_801A6434_ovl7(void);
 
+void func_800A4B34(Vector *, struct DObj *);
+#include "unk_structs/D_800DE350.h"
+
+struct Ovl7Unk94 {
+    u8 filler0[0xC];
+    s32 unkC;
+    s32 unk10;
+    f32 unk14;
+    s32 unk18;
+    u32 unk1C;
+};
+
+
+void func_801A3CA8_ovl7(void);
+void func_800AF408(void);
+void func_800AED20(f32);
+void func_800A9F98(s32, f32);
 extern f32 D_800EC9E4;
 
 void func_801A0B10_ovl7(void);
@@ -74,7 +91,21 @@ void func_801A56A0_ovl7(GObj *arg0) {
     D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
 }
 
+#ifdef MIPS_TO_C
+void func_801A56C8_ovl7(void) {
+    Vector sp20;
+
+    sp20.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp20.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp20.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    func_800A4B34(&sp20, D_800DE350[D_800E0D50[omCurrentObj->objId]]->data.dobj->firstChild);
+    D_800E2090[omCurrentObj->objId] = sp20.x;
+    D_800E2250[omCurrentObj->objId] = sp20.y;
+    D_800E2410[omCurrentObj->objId] = sp20.z;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A56C8_ovl7.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A57A8_ovl7.s")
 
@@ -82,7 +113,21 @@ void func_801A56A0_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A5FF4_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A630C_ovl7.s")
+void func_801A630C_ovl7(void) {
+    f32 x;
+    f32 y;
+    f32 z;
+
+    x = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    y = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
+    z = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
+    x = x / 10.0f;
+    y = y / 10.0f;
+    z = z / 10.0f;
+    D_800E3050[omCurrentObj->objId] = x;
+    D_800E3210[omCurrentObj->objId] = y;
+    D_800E33D0[omCurrentObj->objId] = z;
+}
 
 void func_801A63BC_ovl7(GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = NULL;
@@ -95,7 +140,23 @@ void func_801A63BC_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A6434_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A6610_ovl7.s")
+void func_801A6610_ovl7(void) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl7Unk94 *p;
+
+    func_801A3CA8_ovl7();
+    p = (struct Ovl7Unk94 *) ent->unk94;
+    if (p->unkC != -1) {
+        func_800AECC0(p->unk14);
+        func_800AED20(((struct Ovl7Unk94 *) ent->unk94)->unk14);
+        func_800A9F98(((struct Ovl7Unk94 *) ent->unk94)->unkC, 1.0f);
+        if (((struct Ovl7Unk94 *) ent->unk94)->unk10 != -1) {
+            func_800A9F98(((struct Ovl7Unk94 *) ent->unk94)->unk10, 1.0f);
+        }
+    } else {
+        func_800AF408();
+    }
+}
 
 s32 func_801A66B4_ovl7(void) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];

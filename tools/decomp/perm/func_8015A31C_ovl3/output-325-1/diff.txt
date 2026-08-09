@@ -1,0 +1,17 @@
+--- before
++++ after
+@@ -2533,12 +2533,12 @@
+       break;
+ 
+     case 2:
+-      if (gKirbyState.unk30 != 0)
++      if (gKirbyState.unk30 != (gKirbyState.unk30 * 0))
+     {
+       D_800BE52C = D_800BE500;
+       D_800BE530 = D_800BE504;
+       D_800BE534 = D_800BE508 + 1;
+-      D_800BE538 = 0;
++      D_800BE538 = (D_800E5F90[omCurrentObj->objId] == 5) * 0;
+       D_800BE4FC = 1;
+       D_800BE4F8 = 2;
+       gKirbyState.unk30 = 0;
