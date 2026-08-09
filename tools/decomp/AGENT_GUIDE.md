@@ -1151,3 +1151,44 @@ src.old/ovl13/ovl13.c has "definitions" for 29 of 30 pragmas and only 2
 compile (`? *sp38;`, `temp_v0[23]` on an s32, undefined symbols). Spot-check
 before budgeting time: src.old/ovl14/ovl14.c (19/21) and
 src.old/ovl12/code_1EB520.c (16/18) are the same shape.
+
+
+## THE FRAME ANOMALY: closed form and reachability test
+
+This blocker has produced contradictory advice all session -- "stop on sight",
+then "remove locals", then "add locals", then "sweep 1..9". All of those were
+partial. The actual rule, measured:
+
+    IDO:  frame = align8(base_IDO + L)
+    ROM:  frame = align8(base_IDO - 4 + L)
+
+where L is the total size of declared locals, packed at the TOP of the frame.
+IDO's local-block base sits 4 bytes above the ROM's.
+
+CONSEQUENCE -- the anomaly CANCELS exactly when
+
+    L mod 8 == 4
+
+and is UNREACHABLE otherwise. Adding or removing locals cycles the offset
+between two values and never lands on the ROM's.
+
+So before touching a function with this signature, compute L:
+  - L mod 8 == 4  -> reachable; a leading dead scalar (or removing one) will
+                     close it. Note the shift is 4 bytes, not 8.
+  - otherwise     -> UNREACHABLE. Do not sweep. Guard it and move on.
+
+Verified on the func_801EEED4 / func_801EEF4C / func_801EEE44_ovl10 triple:
+EED4 has L = 0x24 (0x24 mod 8 == 4) and closed with one leading `s32 pad;`;
+EEF4C and EEE44 have L = 0x20 and are unreachable by any local count. Also
+consistent with func_800AAF34 (closed by removing), func_801E14B0_ovl17
+(closed by adding) and func_8021992C_ovl9 (swept 0x14..0x24, never lands).
+
+A 30-second arithmetic check replaces a nine-value sweep, and tells you in
+advance which functions are worth attempting.
+
+## A shared return-0 block means `||`, not two `if`s
+
+`bc1t` to a common block followed by `bc1fl` to continue is the `||`
+signature. Two separate `if (...) return 0;` produce `bc1fl` skips instead.
+One function went 43/54 -> MATCH on that change alone, and the same shape then
+gave two more first-compile, one of them 102 instructions.
