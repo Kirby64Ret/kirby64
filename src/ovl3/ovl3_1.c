@@ -194,22 +194,31 @@ void func_8015439C_ovl3(f32 *arg0) {
     dst[6] = D_800E17D0[omCurrentObj->objId];
 }
 
+#ifdef MIPS_TO_C
+/* 19/29. The named extern D_8012E948 (datatodo.txt) DOES work -- it closed
+   func_8015439C / func_8015449C / func_80154578, which store 7-8 slots each.
+   Here there is only ONE store through the address, and IDO folds a
+   single-use constant address into `lui $at; sw ..., %lo(sym)($at)` instead
+   of materialising it into a register the way the ROM does. Reading the slot
+   back to force a second use materialises it but costs the reload (25/30). */
 s32 func_80154428_ovl3(f32 *arg0) {
     extern f32 D_8012E948[];
     f32 *dst = D_8012E948;
     f32 **temp;
 
     temp = D_800E0490[omCurrentObj->objId];
-    if (temp != NULL) {
-        *(f32 **) &dst[7] = temp[0];
-        if (*(f32 **) &dst[7] != NULL) {
-            func_8015439C_ovl3(arg0);
-            func_8011BF4C(dst, 0);
-            return 0;
-        }
+    if (temp == NULL) {
+        return 0;
     }
-    return 0;
+    if ((*(f32 **) &dst[7] = temp[0]) == NULL) {
+        return 0;
+    }
+    func_8015439C_ovl3(arg0);
+    func_8011BF4C(dst, 0);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80154428_ovl3.s")
+#endif
 
 void func_8015449C_ovl3(void *arg0, s32 arg1) {
     extern f32 D_8012E948[];
