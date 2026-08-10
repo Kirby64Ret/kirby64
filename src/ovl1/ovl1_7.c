@@ -389,7 +389,7 @@ void func_800AF7A0(u32 df_idx) {
     u32 *tmp;
 
     if (df_idx == 99999) {
-        tmp = gSegment4StartArray[omCurrentObj->objId];
+        tmp = gEntityGeoDataArray[omCurrentObj->objId];
         df_idx = tmp[2];
     }
     omCurrentObj->onDraw = gDrawFuncList[df_idx];

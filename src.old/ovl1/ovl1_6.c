@@ -48,7 +48,7 @@ void initTrack(s32 track) {
     D_800DEF90[track] = NULL;
     D_800DF150[track] = NULL;
 
-    gSegment4StartArray[track] = (void *) (D_800DF690[track] = D_800DF850[track] = -1);
+    gEntityGeoDataArray[track] = (void *) (D_800DF690[track] = D_800DF850[track] = -1);
 
     D_800E02D0[track] = D_800DFF50[track] = D_800E0110[track] = -1 + 1 - 1;
 

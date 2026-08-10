@@ -317,7 +317,7 @@ void func_800AB0CC(s32 arg0) {
 // GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800AB0CC.s")
 
 s32 func_800AB0F4(struct GObj *arg0) {
-    u32* v1 = gSegment4StartArray[arg0->objId];
+    u32* v1 = gEntityGeoDataArray[arg0->objId];
     return v1[2];
 }
 
@@ -332,36 +332,36 @@ void func_800AB118(s32 arg0) {
 extern Gfx* gDisplayListHeads[];
 
 void func_800AB120(struct GObj *arg0) {
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[arg0->objId]);
     renderDrawGObjList0();
 }
 
 void func_800AB174(struct GObj *arg0) {
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 0x04, gSegment4StartArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 0x04, gEntityGeoDataArray[arg0->objId]);
     renderDrawObject_TypeC();
 }
 
 void func_800AB1F0(struct GObj *arg0) {
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[arg0->objId]);
     renderDrawGObjWithDObjTypeE(arg0);
 }
 
 void func_800AB244(struct GObj *arg0) {
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 0x04, gSegment4StartArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 0x04, gEntityGeoDataArray[arg0->objId]);
     renderDrawObject_TypeG();
 }
 
 void func_800AB2C0(struct GObj *arg0) {
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId])
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[arg0->objId])
     renderDrawDObjFromGObj();
 }
 
 
 void func_800AB314(struct GObj *arg0) {
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 0x04, gSegment4StartArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 0x04, gEntityGeoDataArray[arg0->objId]);
     renderDrawObject_TypeD(arg0);
 }
 
@@ -374,13 +374,13 @@ void func_800AB398(s32 arg0) {
 }
 
 void func_800AB3A0(struct GObj *arg0) {
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[arg0->objId]);
     func_8001585C();
 }
 
 void func_800AB3F4(struct GObj *arg0) {
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[arg0->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 0x04, gSegment4StartArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[arg0->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 0x04, gEntityGeoDataArray[arg0->objId]);
     func_80015BCC();
 }
 

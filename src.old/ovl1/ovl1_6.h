@@ -36,7 +36,7 @@ extern union {
     u32 as_u32;
     u32 *as_u32p;
 } D_800DF690[];
-extern u32 *gSegment4StartArray[];
+extern u32 *gEntityGeoDataArray[];
 
 // i think this is an array of pairs (2-length arrays) of pointers but cba to figure out syntax
 extern struct DObj **D_800DFBD0[];

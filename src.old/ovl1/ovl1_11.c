@@ -28,7 +28,7 @@ void func_800BB6B0(struct GObj *arg0) {
 
     gDPPipeSync(gDisplayListHeads[0]++);
     gSPClearGeometryMode(gDisplayListHeads[0]++, G_ZBUFFER);
-    gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[tmp_2]);
+    gSPSegment(gDisplayListHeads[0]++, 0x04, gEntityGeoDataArray[tmp_2]);
     gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);
 
     switch (func_800AB0F4(arg0)) {
@@ -43,7 +43,7 @@ void func_800BB6B0(struct GObj *arg0) {
         case 26:
             gDPPipeSync(gDisplayListHeads[1]++);
             gSPClearGeometryMode(gDisplayListHeads[1]++, G_ZBUFFER);
-            gSPSegment(gDisplayListHeads[1]++, 0x04, gSegment4StartArray[tmp_2]);
+            gSPSegment(gDisplayListHeads[1]++, 0x04, gEntityGeoDataArray[tmp_2]);
             gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
 
             // possibly draws something?
@@ -56,7 +56,7 @@ void func_800BB6B0(struct GObj *arg0) {
         case 28: case 30:
             gDPPipeSync(gDisplayListHeads[1]++);
             gSPClearGeometryMode(gDisplayListHeads[1]++, G_ZBUFFER);
-            gSPSegment(gDisplayListHeads[1]++, 0x04, gSegment4StartArray[tmp_2]);
+            gSPSegment(gDisplayListHeads[1]++, 0x04, gEntityGeoDataArray[tmp_2]);
             gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
 
             func_80015BCC_ovl1(arg0);

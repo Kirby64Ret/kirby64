@@ -215,7 +215,7 @@ void func_800AF7A0(s32 arg0) {
     u32 *tmp;
 
     if (arg0 == 0x0001869F) {
-        tmp = gSegment4StartArray[omCurrentObj->objId];
+        tmp = gEntityGeoDataArray[omCurrentObj->objId];
         arg0 = tmp[2];
     }
     omCurrentObj->unk2C = gDrawFuncList[arg0];

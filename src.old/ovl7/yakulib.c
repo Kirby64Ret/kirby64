@@ -16,7 +16,7 @@ extern f32 D_800E17D0[];
 extern f32 D_800E6A10[];
 extern u32 D_800E1D10[];
 
-extern u32 gSegment4StartArray[];
+extern u32 gEntityGeoDataArray[];
 
 extern Gfx* gDisplayListHeads[4];
 
@@ -274,7 +274,7 @@ void func_801BC978_ovl7(s32 *arg0) {
         temp_a2 = D_800E0650[temp_v0];
         switch (func_800AB0F4(arg0) - 6) {
             case 13:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[temp_v0]);
                 if (temp_a2 != NULL) {
                     gSPSetLights1(gDisplayListHeads[0]++, (*temp_a2));
                 }
@@ -282,7 +282,7 @@ void func_801BC978_ovl7(s32 *arg0) {
                 gSPSetLights1(gDisplayListHeads[0]++, D_800BE548);
                 break;
             case 15:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[temp_v0]);
                 if (temp_a2 != NULL) {
                     gSPSetLights1(gDisplayListHeads[0]++, (*temp_a2));
                 }
@@ -290,7 +290,7 @@ void func_801BC978_ovl7(s32 *arg0) {
                 gSPSetLights1(gDisplayListHeads[0]++, D_800BE548);
                 break;
             default:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[temp_v0]);
                 if (temp_a2 != NULL) {
                     gSPSetLights1(gDisplayListHeads[0]++, (*temp_a2));
                 }
@@ -299,7 +299,7 @@ void func_801BC978_ovl7(s32 *arg0) {
                 break;
             case 21:
             case 23:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[temp_v0]);
                 if (temp_a2 != NULL) {
                     gSPSetLights1(gDisplayListHeads[0]++, (*temp_a2));
                 }
@@ -308,8 +308,8 @@ void func_801BC978_ovl7(s32 *arg0) {
                 gSPSetLights1(gDisplayListHeads[0]++, D_800BE548);
                 break;
             case 14:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[temp_v0]);
-                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[temp_v0]);
                 if (temp_a2 != NULL) {
                     gSPSetLights1(gDisplayListHeads[0]++, (*temp_a2));
                     gSPSetLights1(gDisplayListHeads[1]++, (*temp_a2));
@@ -319,8 +319,8 @@ void func_801BC978_ovl7(s32 *arg0) {
                 gSPSetLights1(gDisplayListHeads[1]++, D_800BE548);
                 break;
             case 16:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[temp_v0]);
-                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[temp_v0]);
                 if (temp_a2 != NULL) {
                     gSPSetLights1(gDisplayListHeads[0]++, (*temp_a2));
                     gSPSetLights1(gDisplayListHeads[1]++, (*temp_a2));
@@ -332,8 +332,8 @@ void func_801BC978_ovl7(s32 *arg0) {
                 break;
             case 18:
             case 20:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[temp_v0]);
-                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[temp_v0]);
                 if (temp_a2 != 0) {
                     gSPSetLights1(gDisplayListHeads[0]++, (*temp_a2));
                     gSPSetLights1(gDisplayListHeads[1]++, (*temp_a2));
@@ -345,8 +345,8 @@ void func_801BC978_ovl7(s32 *arg0) {
                 break;
             case 22:
             case 24:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[temp_v0]);
-                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[temp_v0]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[temp_v0]);
                 if (temp_a2 != 0) {
                     gSPSetLights1(gDisplayListHeads[0]++, (*temp_a2));
                     gSPSetLights1(gDisplayListHeads[1]++, (*temp_a2));

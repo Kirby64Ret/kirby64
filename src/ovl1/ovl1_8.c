@@ -74,7 +74,7 @@ void func_800B3838(void) {
 
 void func_800B3A6C(void) {
     Vector vec;
-    struct GeometryBlockHeader *header = gSegment4StartArray[D_800E0D50[omCurrentObj->objId]];
+    struct GeometryBlockHeader *header = gEntityGeoDataArray[D_800E0D50[omCurrentObj->objId]];
 
     if (header->lenLayout >= D_800E0F10[omCurrentObj->objId]) {
         func_800B2340(&vec,
@@ -118,7 +118,7 @@ void func_800B3CEC(void) {
     Vector posVec;
     Vector angleVec;
     
-    struct GeometryBlockHeader *header = gSegment4StartArray[D_800E0D50[omCurrentObj->objId]];
+    struct GeometryBlockHeader *header = gEntityGeoDataArray[D_800E0D50[omCurrentObj->objId]];
 
     if (header->lenLayout >= D_800E0F10[omCurrentObj->objId]) {
         func_800B2340(&posVec,

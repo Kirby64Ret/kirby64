@@ -3604,7 +3604,7 @@ void func_80123354(GObj *g) {
     if (!(D_800DD8D0[g->objId] & 0x40)) {
         switch (func_800AB0F4()) {
             case 19:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);
                 gSPNumLights(gDisplayListHeads[0]++, 1);
                 gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
@@ -3616,7 +3616,7 @@ void func_80123354(GObj *g) {
                 gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
                 return;
             case 21:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);
                 gSPNumLights(gDisplayListHeads[0]++, 1);
                 gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
@@ -3629,7 +3629,7 @@ void func_80123354(GObj *g) {
                 return;
             case 23:
             case 25:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);
                 gSPNumLights(gDisplayListHeads[0]++, 1);
                 gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
@@ -3642,7 +3642,7 @@ void func_80123354(GObj *g) {
                 return;
             case 27:
             case 29:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);
                 gSPNumLights(gDisplayListHeads[0]++, 1);
                 gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
@@ -3654,8 +3654,8 @@ void func_80123354(GObj *g) {
                 gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
                 return;
             case 20:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);
                 gSPNumLights(gDisplayListHeads[0]++, 1);
                 gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
@@ -3672,8 +3672,8 @@ void func_80123354(GObj *g) {
                 gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
                 break;
             case 22:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);
                 gSPNumLights(gDisplayListHeads[0]++, 1);
                 gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
@@ -3690,8 +3690,8 @@ void func_80123354(GObj *g) {
                 gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
             case 24:
             case 26:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);
                 gSPNumLights(gDisplayListHeads[0]++, 1);
                 gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
@@ -3710,8 +3710,8 @@ void func_80123354(GObj *g) {
                 break;
             case 28:
             case 30:
-                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
+                gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);
                 gSPNumLights(gDisplayListHeads[0]++, 1);
                 gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);

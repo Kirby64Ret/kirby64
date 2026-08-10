@@ -78,7 +78,7 @@ void func_800F6E30(s32 arg0) {
     var_s1 = 0;
     var_s2 = 0;
     var_v1 = *omCurrentObj * 4;
-    var_v0 = *(&gSegment4StartArray + var_v1);
+    var_v0 = *(&gEntityGeoDataArray + var_v1);
     temp_a0 = var_v0->unk14;
     if (temp_a0 != 0) {
         var_s3 = 0;
@@ -129,7 +129,7 @@ void func_800F6E30(s32 arg0) {
                 var_s3 += 1;
                 var_s4 += 4;
                 var_v1 = *omCurrentObj * 4;
-                var_v0 = *(&gSegment4StartArray + var_v1);
+                var_v0 = *(&gEntityGeoDataArray + var_v1);
             } while (var_s3 < var_v0->unk14);
         }
     }
@@ -148,7 +148,7 @@ void func_800F716C(GObj *gobj) {
         gSPFogPosition(gDisplayListHeads[0]++, 920, 1000);
         gSPFogPosition(gDisplayListHeads[1]++, 920, 1000);
     }
-    gDrawFuncList[gSegment4StartArray[gobj->objId][2]](gobj);
+    gDrawFuncList[gEntityGeoDataArray[gobj->objId][2]](gobj);
 }
 
 #ifdef MIPS_TO_C
@@ -173,7 +173,7 @@ void func_800F72B0(s32 arg0) {
     func_800AF980(8);
     func_800A9864(D_801290D8->unk4, 0x26, 0x10);
     temp_v1 = *omCurrentObj * 4;
-    var_a1 = *(&gSegment4StartArray + temp_v1);
+    var_a1 = *(&gEntityGeoDataArray + temp_v1);
     temp_t5 = var_a1->unk8;
     switch (temp_t5) {
         case 17:
@@ -185,7 +185,7 @@ void func_800F72B0(s32 arg0) {
             break;
         default:
             func_800A2550(*(&D_800DFA10 + temp_v1), var_a1);
-            var_a1 = *(&gSegment4StartArray + (*omCurrentObj * 4));
+            var_a1 = *(&gEntityGeoDataArray + (*omCurrentObj * 4));
             break;
     }
     temp_v0 = var_a1->unk14;
@@ -193,7 +193,7 @@ void func_800F72B0(s32 arg0) {
         if (temp_v0 != 1) {
             if (temp_v0 == 2) {
                 func_800AA018(var_a1->unk18->unk4, var_a1);
-                var_a1 = *(&gSegment4StartArray + (*omCurrentObj * 4));
+                var_a1 = *(&gEntityGeoDataArray + (*omCurrentObj * 4));
                 goto block_7;
             }
         } else {

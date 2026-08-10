@@ -1,6 +1,7 @@
 #include <PR/gbi.h>
 #include "common.h"
 #include "ovl1/ovl1_6.h"
+#include "ovl1/ovl1_7.h"
 #include "GObj.h"
 #include "main/gtl.h"
 
@@ -596,16 +597,14 @@ void func_800A8D64(u32 arg0, s32 arg1) {
             (*temp_s0)[temp_v1] = NULL;
             var_s0 = temp_s1->unkC;
             var_v1 = *var_s0;
-            if (var_v1 != 0) {
-                do {
-                    temp_a1 = (&D_800D0104)[var_v1 >> 0x10][var_v1 & 0xFFFF];
-                    if ((temp_a1 != NULL) && (func_800A8578(temp_a1 | 3, temp_a1) == 0)) {
-                        temp_v0 = var_s0->unk0;
-                        (&D_800D0104)[temp_v0 >> 0x10][temp_v0 & 0xFFFF] = NULL;
-                    }
-                    var_v1 = var_s0->unk4;
-                    var_s0 += 4;
-                } while (var_v1 != 0);
+            while (var_v1 != 0) {
+                temp_a1 = (&D_800D0104)[var_v1 >> 0x10][var_v1 & 0xFFFF];
+                if ((temp_a1 != NULL) && (func_800A8578(temp_a1 | 3, temp_a1) == 0)) {
+                    temp_v0 = var_s0->unk0;
+                    (&D_800D0104)[temp_v0 >> 0x10][temp_v0 & 0xFFFF] = NULL;
+                }
+                var_v1 = var_s0->unk4;
+                var_s0 += 4;
             }
         }
     }
@@ -695,18 +694,18 @@ void func_800A8EC0(u32 arg0) {
     temp_a2 = &D_800D00C4[arg0 >> 0x10][arg0 & 0xFFFF];
     var_v0_4 = *temp_a2;
     if (var_v0_4 != NULL) {
-        var_at = &gSegment4StartArray[temp_v1->objId];
+        var_at = &gEntityGeoDataArray[temp_v1->objId];
     } else {
         sp18 = temp_a2;
         var_v0_4 = func_800A9250(arg0, 3, temp_a2, arg0);
         *temp_a2 = var_v0_4;
-        var_at = &gSegment4StartArray[omCurrentObj->objId];
+        var_at = &gEntityGeoDataArray[omCurrentObj->objId];
     }
     *var_at = var_v0_4;
     func_800A9D64(temp_v1->objId);
     func_800A99E4(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
-    func_800A9648(gSegment4StartArray[omCurrentObj->objId]);
+    func_800A9648(gEntityGeoDataArray[omCurrentObj->objId]);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8EC0.s")
@@ -769,13 +768,13 @@ void func_800A9088(u32 arg0) {
     temp_a0 = *temp_a2;
     if (temp_a0 != NULL) {
         sp1C = temp_a0;
-        gSegment4StartArray[temp_v1->objId] = temp_a0;
+        gEntityGeoDataArray[temp_v1->objId] = temp_a0;
     } else {
         sp20 = temp_a2;
         temp_v0 = func_800A9250(arg0, 3, temp_a2, arg0);
         *temp_a2 = temp_v0;
         sp1C = temp_v0;
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0;
+        gEntityGeoDataArray[omCurrentObj->objId] = temp_v0;
     }
     func_800A9D64(temp_v1->objId);
     func_800AF9B8(sp1C->unkA, 0x10);
@@ -946,8 +945,8 @@ void *func_800A9250(u32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9250.s")
 #endif
 
+// https://decomp.me/scratch/LTply
 #ifdef MIPS_TO_C
-
 void *func_800A94F4(s32 arg0) {
     s32 sp2C;
     void *sp24;
@@ -1026,27 +1025,24 @@ loop_4:
 #endif
 
 #ifdef MIPS_TO_C
+// https://decomp.me/scratch/aHCLi
+struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header) {
+    u32* layout = header->layout;
+    u32* texScroll = header->texScroll;
 
-void *func_800A9648(void *arg0) {
-    u32 *temp_a1_2;
-    u32 *temp_a3;
-    u32 temp_a0;
-    u32 temp_a1;
-    u32 temp_a3_2;
-
-    temp_a1 = arg0->unk8;
-    switch (temp_a1) {                              /* irregular */
+    switch (header->layoutMode) {
         case 0x11:
         case 0x12:
         case 0x13:
         case 0x14:
         case 0x15:
         case 0x16:
-            temp_a0 = arg0->unk0;
-            D_800DFA10[omCurrentObj->objId] = temp_a0;
-            temp_a3 = arg0->unk4;
-            D_800DFD90[omCurrentObj->objId] = temp_a3;
-            func_800AF618(temp_a0, temp_a3, D_800DFBD0[omCurrentObj->objId], temp_a3);
+            layout = header->layout;
+            D_800DFA10[omCurrentObj->objId] = layout;
+            texScroll = header->texScroll;
+            D_800DFD90[omCurrentObj->objId] = texScroll;
+            // Replacing layout with D_800DFA10[omCurrentObj->objId] fixes setup/cleanup :think:
+            func_800AF618(layout, texScroll, D_800DFBD0[omCurrentObj->objId]);
             break;
         case 0x17:
         case 0x18:
@@ -1056,14 +1052,19 @@ void *func_800A9648(void *arg0) {
         case 0x1C:
         case 0x1D:
         case 0x1E:
-            temp_a3_2 = arg0->unk0;
-            D_800DFA10[omCurrentObj->objId] = temp_a3_2;
-            temp_a1_2 = arg0->unk4;
-            D_800DFD90[omCurrentObj->objId] = temp_a1_2;
-            func_800AF4BC(temp_a3_2, temp_a1_2, D_800DFBD0[omCurrentObj->objId], temp_a3_2);
+            layout = header->layout;
+            D_800DFA10[omCurrentObj->objId] = layout;
+            texScroll = header->texScroll;
+            D_800DFD90[omCurrentObj->objId] = texScroll;
+            func_800AF4BC(layout, texScroll, D_800DFBD0[omCurrentObj->objId]);
+            break;
+        // weird switch cases that werent decompiled automatically
+        case 0x1F:
+        case 999:
             break;
     }
-    return arg0;
+    
+    return header;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9648.s")
@@ -1081,18 +1082,18 @@ void func_800A9760(u32 arg0) {
     temp_a2 = &D_800D00C4[arg0 >> 0x10][arg0 & 0xFFFF];
     temp_v0 = *temp_a2;
     if (temp_v0 != NULL) {
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0;
+        gEntityGeoDataArray[omCurrentObj->objId] = temp_v0;
         func_800A8564(*temp_a2, 1, temp_a2);
     } else {
         sp1C = temp_a2;
         temp_v0_2 = func_800A9250(3, temp_a2);
         *temp_a2 = temp_v0_2;
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0_2;
+        gEntityGeoDataArray[omCurrentObj->objId] = temp_v0_2;
     }
     func_800A9D64(omCurrentObj->objId);
     func_800A99E4(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
-    func_800A9648(gSegment4StartArray[omCurrentObj->objId]);
+    func_800A9648(gEntityGeoDataArray[omCurrentObj->objId]);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9760.s")
@@ -1114,14 +1115,14 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
     temp_t0 = *temp_a3;
     if (temp_t0 != NULL) {
         sp1C = temp_t0;
-        gSegment4StartArray[omCurrentObj->objId] = temp_t0;
+        gEntityGeoDataArray[omCurrentObj->objId] = temp_t0;
         func_800A8564(*temp_a3, 1, temp_a3);
     } else {
         sp18 = temp_a3;
         temp_v0 = func_800A9250(3, temp_a3);
         *temp_a3 = temp_v0;
         sp1C = temp_v0;
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0;
+        gEntityGeoDataArray[omCurrentObj->objId] = temp_v0;
     }
     func_800A9D64(omCurrentObj->objId);
     var_f6 = arg1;
@@ -1159,7 +1160,7 @@ void func_800A99E4(s32 track) {
 void func_800A9A2C(s32 arg0) {
     s32 temp_v1;
 
-    temp_v1 = gSegment4StartArray[arg0]->unk1C;
+    temp_v1 = gEntityGeoDataArray[arg0]->unk1C;
     if (temp_v1 == 0) {
         D_800DFBD0[omCurrentObj->objId] = -1;
         return;
@@ -1243,11 +1244,11 @@ s32 func_800A9B48(s32 arg0) {
     return temp_a2;
 }
 #else
+s32 func_800A9B48(s32 arg0);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9B48.s")
 #endif
 
 #ifdef MIPS_TO_C
-
 s32 func_800A9C78(s32 arg0, s32 arg1) {
     s32 sp2C;
     void *sp24;
@@ -1290,6 +1291,7 @@ s32 func_800A9C78(s32 arg0, s32 arg1) {
     return temp_a3;
 }
 #else
+s32 func_800A9C78(s32 arg0, s32 arg1);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9C78.s")
 #endif
 
@@ -1298,38 +1300,31 @@ void func_800A9D64(s32 track) {
         func_800A8578(D_800DF690[track].as_u32 | 2, D_800DF690[track].as_u32);
         D_800DF690[track].as_u32 = -1;
     }
-    if (D_800DF850[track] != -1) {
-        func_800A8578(D_800DF850[track] | 2, D_800DF850[track]);
-        D_800DF850[track] = -1;
+    if (D_800DF850[track].as_u32 != -1) {
+        func_800A8578(D_800DF850[track].as_u32 | 2, D_800DF850[track].as_u32);
+        D_800DF850[track].as_u32 = -1;
     }
 }
 
+// TODO: arg1 is a real float EXCEPT down the func_800A9B48 path?????
 #ifdef MIPS_TO_C
-
-void func_800A9DE4(s32 arg0, f32 arg1) {
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    if ((arg0 != D_800DFF50[temp_v0]) && (arg0 != D_800E0110[temp_v0])) {
+void func_800A9DE4(s32 file, f32 arg1) {
+    if ((file != D_800DFF50[omCurrentObj->objId]) && (file != D_800E0110[omCurrentObj->objId])) {
         if (func_800A9B48(arg1) != 0) {
-            func_800AEEB4(arg1, *D_800DF850[omCurrentObj->objId], arg1);
-            return;
+            func_800AEEB4(*D_800DF850[omCurrentObj->objId].as_u32p, arg1);
+        } else {
+            func_800AEE20(*D_800DF690[omCurrentObj->objId].as_u32p, arg1);
         }
-        func_800AEE20(arg1, *D_800DF690[omCurrentObj->objId].as_u32, arg1);
     }
 }
 #else
+void func_800A9DE4(s32 file, f32 arg1);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9DE4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800A9EA4(void) {
-    func_800A9DE4(0);
+void func_800A9EA4(s32 file) {
+    func_800A9DE4(file, 0.0f);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9EA4.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1463,7 +1458,7 @@ s32 func_800AA368(void *arg0) {
     if (arg0->unk74 == -3.4028235e38f) {
         temp_a1 = omCurrentObj->objId;
         temp_v1 = D_800DFA10[temp_a1];
-        gSegment4StartArray[temp_a1] = temp_v1;
+        gEntityGeoDataArray[temp_a1] = temp_v1;
         D_800DFA10[omCurrentObj->objId] = temp_v1->unk0;
         D_800DFD90[omCurrentObj->objId] = temp_v1->unk4;
         return 1;
@@ -1487,7 +1482,7 @@ loop_1:
     }
     temp_a0 = omCurrentObj->objId;
     temp_v0 = D_800DFA10[temp_a0];
-    gSegment4StartArray[temp_a0] = temp_v0;
+    gEntityGeoDataArray[temp_a0] = temp_v0;
     D_800DFA10[omCurrentObj->objId] = temp_v0->unk0;
     D_800DFD90[omCurrentObj->objId] = temp_v0->unk4;
 }
@@ -1543,13 +1538,13 @@ void func_800AA608(DObj *dobj, s32 arg1, f32 arg2, u32 model, f32 arg4) {
     D_800E02D0[omCurrentObj->objId] = model;
     if (*modelPtr != NULL) {
         u32 *tmp = *modelPtr;
-        gSegment4StartArray[omCurrentObj->objId] = tmp;
+        gEntityGeoDataArray[omCurrentObj->objId] = tmp;
         tmpPtr = tmp;
         func_800A8564(*new_var, 1);
     } else {
         u32 *result = func_800A9250(model, 3);
         *modelPtr = result;
-        gSegment4StartArray[omCurrentObj->objId] = result;
+        gEntityGeoDataArray[omCurrentObj->objId] = result;
         tmpPtr = result;
     }
     D_800DFA10[omCurrentObj->objId] = tmpPtr[0];
@@ -1606,7 +1601,7 @@ void func_800AA864(s32 arg0, u32 arg1) {
 s32 func_800AA888(u32 model) {
     u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
 
-    if (gSegment4StartArray[omCurrentObj->objId] == *modelPtr) {
+    if (gEntityGeoDataArray[omCurrentObj->objId] == *modelPtr) {
         return 1;
     } else {
         return 0;
@@ -1617,7 +1612,7 @@ s32 func_800AA888(u32 model) {
 s32 func_800AA8E4(s32 track, u32 model) {
     u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
 
-    if (gSegment4StartArray[track] == *modelPtr) {
+    if (gEntityGeoDataArray[track] == *modelPtr) {
         return 1;
     } else {
         return 0;
@@ -1911,7 +1906,7 @@ void func_800AB0CC(s32 arg0) {
 #endif
 
 s32 func_800AB0F4(GObj *g) {
-    u32 **buf = gSegment4StartArray[g->objId];
+    u32 **buf = gEntityGeoDataArray[g->objId];
 
     return buf[2];
 }
@@ -1925,35 +1920,35 @@ void func_800AB118(GObj *g) {
 }
 
 void func_800AB120(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
     renderDrawGObjList0(g);
 }
 
 void func_800AB174(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
     renderDrawObject_TypeC(g);
 }
 
 void func_800AB1F0(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
     renderDrawGObjWithDObjTypeE(g);
 }
 
 void func_800AB244(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
     renderDrawObject_TypeG(g);
 }
 
 void func_800AB2C0(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
     renderDrawDObjFromGObj(g);
 }
 
 void func_800AB314(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
     renderDrawObject_TypeD(g);
 }
 
@@ -1966,13 +1961,13 @@ void func_800AB398(GObj *g) {
 }
 
 void func_800AB3A0(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
     func_8001585C(g);
 }
 
 void func_800AB3F4(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[g->objId]);
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
     func_80015BCC(g);
 }
 

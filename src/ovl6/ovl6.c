@@ -251,7 +251,7 @@ void func_8015170C_ovl6(s32 *arg0) {
     temp_v0_2 = gDisplayListHeads.unk0;
     gDisplayListHeads.unk0 = temp_v0_2 + 8;
     temp_v0_2->unk0 = 0xDB060010;
-    temp_v0_2->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+    temp_v0_2->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
     temp_v0_3 = gDisplayListHeads.unk0;
     gDisplayListHeads.unk0 = temp_v0_3 + 8;
     temp_v0_3->unk4 = 0x18;
@@ -287,7 +287,7 @@ void func_8015170C_ovl6(s32 *arg0) {
             temp_v0_8 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_8 + 8;
             temp_v0_8->unk0 = 0xDB060010;
-            temp_v0_8->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+            temp_v0_8->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
             temp_v0_9 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_9 + 8;
             temp_v0_9->unk4 = 0x18;
@@ -311,7 +311,7 @@ void func_8015170C_ovl6(s32 *arg0) {
             temp_v0_13 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_13 + 8;
             temp_v0_13->unk0 = 0xDB060010;
-            temp_v0_13->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+            temp_v0_13->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
             temp_v0_14 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_14 + 8;
             temp_v0_14->unk4 = 0x18;
@@ -364,7 +364,7 @@ void func_8015198C_ovl6(s32 *arg0) {
     temp_v0_2 = gDisplayListHeads.unk0;
     gDisplayListHeads.unk0 = temp_v0_2 + 8;
     temp_v0_2->unk0 = 0xDB060010;
-    temp_v0_2->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+    temp_v0_2->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
     temp_v0_3 = gDisplayListHeads.unk0;
     gDisplayListHeads.unk0 = temp_v0_3 + 8;
     temp_v0_3->unk4 = 0x18;
@@ -404,7 +404,7 @@ void func_8015198C_ovl6(s32 *arg0) {
             temp_v0_9 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_9 + 8;
             temp_v0_9->unk0 = 0xDB060010;
-            temp_v0_9->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+            temp_v0_9->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
             temp_v0_10 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_10 + 8;
             temp_v0_10->unk4 = 0x18;
@@ -432,7 +432,7 @@ void func_8015198C_ovl6(s32 *arg0) {
             temp_v0_15 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_15 + 8;
             temp_v0_15->unk0 = 0xDB060010;
-            temp_v0_15->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+            temp_v0_15->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
             temp_v0_16 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_16 + 8;
             temp_v0_16->unk4 = 0x18;
@@ -540,7 +540,7 @@ void func_80151E60_ovl6(s32 *arg0, s32 arg1) {
     temp_v0->unk4 = 0;
     temp_v0_2 = gDisplayListHeads.unk0;
     gDisplayListHeads.unk0 = temp_v0_2 + 8;
-    temp_t3 = (*arg0 * 4) + &gSegment4StartArray;
+    temp_t3 = (*arg0 * 4) + &gEntityGeoDataArray;
     temp_v0_2->unk0 = 0xDB060010;
     temp_v0_2->unk4 = *temp_t3;
     temp_v0_3 = gDisplayListHeads.unk0;
@@ -689,7 +689,7 @@ void func_80152138_ovl6(s32 *arg0, void *arg1) {
     temp_v0->unk4 = 0;
     temp_v0_2 = gDisplayListHeads.unk0;
     gDisplayListHeads.unk0 = temp_v0_2 + 8;
-    temp_t4 = (*arg0 * 4) + &gSegment4StartArray;
+    temp_t4 = (*arg0 * 4) + &gEntityGeoDataArray;
     temp_v0_2->unk0 = 0xDB060010;
     temp_v0_2->unk4 = *temp_t4;
     temp_v0_3 = gDisplayListHeads.unk0;
@@ -858,7 +858,7 @@ void func_801524C8_ovl6(s32 *arg0) {
     temp_v0_2 = gDisplayListHeads.unk0;
     gDisplayListHeads.unk0 = temp_v0_2 + 8;
     temp_v0_2->unk0 = 0xDB060010;
-    temp_v0_2->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+    temp_v0_2->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
     temp_v0_3 = gDisplayListHeads.unk0;
     gDisplayListHeads.unk0 = temp_v0_3 + 8;
     temp_v0_3->unk4 = 0x10000;
@@ -903,7 +903,7 @@ void func_801524C8_ovl6(s32 *arg0) {
             temp_v0_10 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_10 + 8;
             temp_v0_10->unk0 = 0xDB060010;
-            temp_v0_10->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+            temp_v0_10->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
             temp_v0_11 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_11 + 8;
             temp_v0_11->unk4 = 0x10000;
@@ -953,7 +953,7 @@ block_6:
             temp_v0_20 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_20 + 8;
             temp_v0_20->unk0 = 0xDB060010;
-            temp_v0_20->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
+            temp_v0_20->unk4 = *(&gEntityGeoDataArray + (*arg0 * 4));
             temp_v0_21 = gDisplayListHeads.unk4;
             gDisplayListHeads.unk4 = temp_v0_21 + 8;
             temp_v0_21->unk4 = 0x10000;
@@ -1210,12 +1210,12 @@ void func_80152EA8_ovl6(void) {
     temp_v1 = *(&D_800D00C4 + ((temp_a0 >> 0x10) * 4)) + ((temp_a0 & 0xFFFF) * 4);
     temp_a2 = *temp_v1;
     if (temp_a2 != 0) {
-        *(&gSegment4StartArray + (*temp_t9 * 4)) = temp_a2;
+        *(&gEntityGeoDataArray + (*temp_t9 * 4)) = temp_a2;
         func_800A8564(*temp_v1, 1, temp_a2, &omCurrentObj);
     } else {
-        *(&gSegment4StartArray + (*omCurrentObj * 4)) = func_800A9250(temp_a0, 3, temp_a2, &omCurrentObj);
+        *(&gEntityGeoDataArray + (*omCurrentObj * 4)) = func_800A9250(temp_a0, 3, temp_a2, &omCurrentObj);
     }
-    temp_v0 = *(&gSegment4StartArray + (*omCurrentObj * 4));
+    temp_v0 = *(&gEntityGeoDataArray + (*omCurrentObj * 4));
     temp_t3 = temp_v0->unk8;
     switch (temp_t3) {
         case 17:

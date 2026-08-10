@@ -68,7 +68,7 @@ void func_800F716C(struct GObj *arg0) {
         gSPFogPosition(gDisplayListHeads[0]++, 920, 1000);
         gSPFogPosition(gDisplayListHeads[1]++, 920, 1000);
     }
-    gDrawFuncList[gSegment4StartArray[arg0->objId][2]](arg0);
+    gDrawFuncList[gEntityGeoDataArray[arg0->objId][2]](arg0);
 }
 
 extern u32 D_800D7010;
