@@ -13,7 +13,7 @@ extern void func_800B4B9C(s32);
 void func_801D1648_ovl8(void);
 void func_801D1A64_ovl8(void);
 extern void func_800B5A7C(void);
-extern void func_800F8E6C(struct GObj *, f32 *);
+extern void func_800F8E6C(struct GObj *);
 void func_801D0FB0_ovl8(struct GObj *);
 void func_801D12A4_ovl8(void);
 void func_801D1334_ovl8(void);
@@ -134,7 +134,27 @@ void func_801D17F4_ovl8(void) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D184C_ovl8.s")
+void func_800B26D8(Vector *, struct DObj *, u32);
+void func_800B3234(f32, f32, f32);
+
+void func_801D184C_ovl8(struct GObj *arg0) {
+    s32 t;
+    Vector sp28;
+    struct DObj *d;
+
+    t = D_800E0D50[omCurrentObj->objId] * 4;
+    d = (*(struct GObj **) ((u8 *) D_800DE350 + t))->data.dobj->firstChild;
+    if (D_800EA520[omCurrentObj->objId] != 0) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = *(f32 *) ((u8 *) gEntitiesNextPosXArray + t);
+        gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+        gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+        func_800B26D8(&sp28, d, D_800E0D50[omCurrentObj->objId]);
+        gEntitiesAngleXArray[omCurrentObj->objId] = sp28.x;
+        gEntitiesAngleYArray[omCurrentObj->objId] = sp28.y;
+        gEntitiesAngleZArray[omCurrentObj->objId] = sp28.z;
+        func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
+    }
+}
 
 void func_801D19B8_ovl8(struct GObj *arg0) {
     gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
@@ -142,7 +162,16 @@ void func_801D19B8_ovl8(struct GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D1A64_ovl8.s")
+void func_801D1A64_ovl8(void) {
+    func_800B5A7C();
+    D_800E64D0[omCurrentObj->objId] += D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId];
+    func_800F8E6C(D_800DE350[omCurrentObj->objId]);
+    D_800E64D0[omCurrentObj->objId] -= D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId];
+    func_801D12A4_ovl8();
+    gEntitiesNextPosXArray[omCurrentObj->objId] += D_800E2090[omCurrentObj->objId];
+    gEntitiesNextPosYArray[omCurrentObj->objId] += D_800E3210[omCurrentObj->objId];
+    gEntitiesNextPosZArray[omCurrentObj->objId] += D_800E2410[omCurrentObj->objId];
+}
 
 void func_801D1BB0_ovl8(void) {
     func_801D1A64_ovl8();

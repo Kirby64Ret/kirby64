@@ -167,7 +167,42 @@ s32 func_801561DC_ovl4(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_8015632C_ovl4.s")
 
+/* 2/63: instruction-for-instruction exact including the seven nops of IDO's
+ * 32-byte dead-epilogue padding; only the frame is 0x40 against the ROM's 0x38.
+ * The ROM has one word of compiler temp above the saved regs (read once at
+ * 0x34($sp), uninitialised), IDO reserves two. Adding `s32 sp34; v = sp34;`
+ * DOES give frame 0x38 but costs 12 saved-register-naming diffs
+ * (ROM s0=cur s1=prev s2=arg0 s3=v, IDO s0=cur s1=v s2=prev s3=arg0) and all
+ * six declaration permutations of the three locals were inert. Dead locals of
+ * every type/position are eliminated here, so the frame cannot be shrunk that
+ * way. */
+#ifdef MIPS_TO_C
+void func_8015632C_ovl4(s32);
+void func_800ACBDC(GObj *);
+
+void func_80156560_ovl4(GObj *arg0) {
+    s32 prev;
+    s32 cur;
+    s32 v;
+
+    prev = func_801561DC_ovl4() + 0x20;
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
+    while (1) {
+        cur = func_801561DC_ovl4();
+        if (cur != prev) {
+            prev = cur;
+            func_800ACBDC(arg0);
+            v = func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) cur);
+        }
+        func_8015632C_ovl4(v);
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80156560_ovl4.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_8015665C_ovl4.s")
 

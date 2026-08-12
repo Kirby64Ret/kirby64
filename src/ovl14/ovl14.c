@@ -587,3 +587,16 @@ void func_801DFC30_ovl14(GObj *arg0) {
 void func_801DFD7C_ovl14(GObj *arg0) {
 
 }
+
+// The 28 zero bytes at 0x801DFD84..0x801DFDA0 are this TU's trailing padding.
+// GNU as pads a section's SIZE only to 16, so the last 16 of them do not come
+// back on their own -- measured: dropping this pragma leaves ovl14.o at 0x4BB0
+// and breaks the ROM. They belong to ovl14.o, NOT to ovl14_2: splat named them
+// func_801DFD90_ovl14 and put that listing at the head of ovl14_2, which left
+// every dead epilogue in that file 16 bytes out of phase and cost four
+// functions the `.align 5` nops IDO emits after an infinite loop.
+// kirby64.yaml starts ovl14/ovl14_2 at 0x202990 to match. The label lands 12
+// bytes low (the 0x4BA4->0x4BB0 gap is section padding C cannot emit before a
+// following pragma); every byte is zero either way and nothing references the
+// symbol, so check_layout's note on it is a label position, not a defect.
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801DFD90_ovl14.s")

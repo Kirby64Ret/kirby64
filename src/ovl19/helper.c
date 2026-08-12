@@ -388,36 +388,32 @@ void func_8021FF90_ovl19(GObj *g) {
 }
 
 // Struct definition rabbit hole
-#ifdef MIPS_TO_C
-void func_80220138_ovl19(s32 arg0) {
-    extern s32 D_801964E8;
-    s32 *sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp28;
-    f32 sp24;
-    f32 sp20;
-    u32 temp_v1;
+struct Ovl19Sp20 {
+    Vector a;
+    Vector b;
+    f32 c;
+    void *d;
+};
 
-    omCurrentObj->objId = omCurrentObj->objId;
+void func_80220138_ovl19(GObj *arg0) {
+    extern s32 func_8011BF4C(void *, void *);
+    extern void func_80155ED8_ovl3(void);
+    extern s32 D_801964E8;
+    struct Ovl19Sp20 sp20;
+
     if (D_800E9AA0[omCurrentObj->objId] != NULL) {
-        sp2C = gEntitiesNextPosXArray[omCurrentObj->objId];
-        sp20 = sp2C;
-        sp24 = gEntitiesNextPosYArray[omCurrentObj->objId] + 240.0f;
-        sp34 = gEntitiesNextPosZArray[omCurrentObj->objId];
-        sp28 = sp34;
-        sp3C = &D_801964E8;
-        sp38 = 1.5707964f;
-        sp30 = gEntitiesNextPosYArray[omCurrentObj->objId] + 239.0f;
-        func_8011BF4C(&sp20, &func_80155ED8_ovl3);
+        sp20.b.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        sp20.a.x = sp20.b.x;
+        sp20.a.y = gEntitiesNextPosYArray[omCurrentObj->objId] + 240.0f;
+        sp20.b.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        sp20.a.z = sp20.b.z;
+        sp20.b.y = gEntitiesNextPosYArray[omCurrentObj->objId] + 239.0f;
+        sp20.d = &D_801964E8;
+        sp20.c = 1.5707964f;
+        func_8011BF4C(&sp20, func_80155ED8_ovl3);
         D_800E9AA0[omCurrentObj->objId] = NULL;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220138_ovl19.s")
-#endif
 
 void func_8022023C_ovl19(GObj *arg0) {
     static FUNCLIST D_8022F0A4_ovl19 = {
@@ -466,7 +462,42 @@ void func_802209A0_ovl19(GObj *arg0) {
 }
 
     // the same rabbit hole as func_80220280_ovl19
-    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209E4_ovl19.s")
+    /* 10/87: every instruction and every constant is right; the ROM parks the
+ * materialised address of D_800D71F8 in $v1 (reusing it for omCurrentObj
+ * afterwards) where IDO takes $t8, which then rotates t8/t9/t0 by one for the
+ * rest of the body. Swept: `*(vs32 *) &SYM`, `vs32 *p` in both declaration
+ * positions, plain `s32 *p` (68), a read-back second use (66), and file-scope
+ * `void` prototypes for the three implicitly-declared callees -- 10 in every
+ * case. */
+#ifdef MIPS_TO_C
+void func_802209E4_ovl19(GObj *arg0) {
+    extern s32 D_800D6F10;
+    extern u32 D_800D71F8;
+    extern void func_801230E8(s32, s32, s32);
+    s32 temp;
+
+    func_8021E184_ovl19();
+    if (D_800D6E64 == 0) {
+        (&D_800D6F10)[2] = random_soft_s32_range(3);
+        D_800D6E64 = 1;
+    }
+    temp = func_8021E2D0_ovl19(4, 2);
+    *(vs32 *) &D_800D71F8 = temp;
+    D_800EC2E0[temp].as_s32 = (&D_800D6F10)[2];
+    func_8021E2D0_ovl19(4, 3);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 80.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = -80.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x2006F, 0x1869F, 0x10);
+    func_801230E8(0x203D5, 0x203D6, 1);
+    curObjSleepForever();
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209E4_ovl19.s")
+#endif
 
     // the same rabbit hole as func_80220280_ovl19
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
@@ -553,7 +584,17 @@ u32 D_8022F108_ovl19[] = {
     0x0002007E, 0x000203FD,
 };
 // the same rabbit hole as func_80220280_ovl19
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221480_ovl19.s")
+extern s32 D_800D6F10;
+
+void func_80221480_ovl19(GObj *arg0) {
+    func_8021E184_ovl19();
+    gEntitiesNextPosXArray[omCurrentObj->objId] = (&D_8022F0F8_ovl19.x)[D_800EC2E0[omCurrentObj->objId].as_s32];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 110.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = -100.0f;
+    func_800A9864(*(u32 *) ((u8 *) &D_8022F104_ovl19 + (&D_800D6F10)[D_800EC2E0[omCurrentObj->objId].as_s32 + 2] * 8), 0x1869F, 0x10);
+    func_800AA018(*(u32 *) ((u8 *) D_8022F108_ovl19 + (&D_800D6F10)[D_800EC2E0[omCurrentObj->objId].as_s32 + 2] * 8));
+    curObjSleepForever();
+}
 
 void func_8022159C_ovl19(GObj *g) {
     D_800DEF90[omCurrentObj->objId] = NULL;
