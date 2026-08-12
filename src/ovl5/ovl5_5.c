@@ -422,7 +422,22 @@ void func_80175E98_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175F50_ovl5.s")
 
+#ifdef NON_MATCHING
+/* 2 diffs, and the single physical line is load-bearing (expanded over three
+   lines it is 4): IDO fills the post-`jal` slot with `addiu $s0,$s0,1` and
+   sinks `sw $v0` to `-4($s1)`, where the ROM stores at `0xC($s1)` first. The
+   empty `if` reproduces the ROM's dead $s2 induction over D_8018ECA8_ovl5.
+   Clone twins with the identical residue: func_801649CC_ovl5,
+   func_8016CB14_ovl5. */
+void func_80176108_ovl5(void) {
+    extern s32 D_800D7178[];
+    s32 i;
+
+    for (i = 0; i < 4; i++) { D_800D7178[(i * 4) + 3] = func_80171768_ovl5(i); if (D_8018ECA8_ovl5[i] != 0) {} }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176108_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176170_ovl5.s")
 

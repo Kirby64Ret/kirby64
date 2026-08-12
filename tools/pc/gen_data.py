@@ -206,6 +206,106 @@ def render(sym, section, entries, refs):
     return '', ''
 
 
+def is_pointer_block(entries):
+    """A block that renders as `void *sym[]` -- all .word, at least one a ref."""
+    entries = [e for e in entries if e[0] != 'incbin']
+    if not entries:
+        return False
+    return ({k for k, _ in entries} == {'word'}
+            and any(_is_ref(v) for _, v in entries))
+
+
+def render_pointer_run(run, refs):
+    """One C array for a run of adjacent pointer blocks, plus interior aliases.
+
+    WHY ADJACENT POINTER BLOCKS MUST BE MERGED AT LP64.
+    ---------------------------------------------------
+    splat puts a `dlabel` wherever anything in the ROM refers to an address, so
+    a single array in the source can arrive here as several blocks. In
+    asm/data/ovl1/ovl1_2.data.s one ten-element pointer table is three of them:
+
+        dlabel D_800BF8F0   .word D_800D7990          <- 1 entry
+        dlabel D_800BF8F4   .word D_800D7994          <- 1 entry
+        dlabel D_800BF8F8   .word D_800D7998 ... x8   <- 8 entries
+
+    On the N64 that does not matter: the labels are addresses in one contiguous
+    run of 4-byte words, so `D_800BF8F0[i]` for i in 0..9 reads all three.
+    Emitting them as three separate C objects breaks that at ANY pointer width,
+    and LP64 makes it worse -- the elements are 8 bytes here, so even the
+    offsets between the labels are no longer the ROM's.
+
+    src/ovl1/ovl1_2.c:46 is the loop that found it:
+
+        for (i = 0; i < 10; i++) {  ...  *D_800BF8F0[i] = 0;  }
+
+    D_800BF8F0[2] read the padding after a one-element object, got NULL, and
+    the port died storing through it -- during scene setup, several frames into
+    a boot that had just started working.
+
+    So a run of adjacent pointer blocks becomes ONE array, and every label
+    after the first becomes a symbol at its offset inside it. C cannot name a
+    location inside an array, so the aliases are `.set`, which is the same
+    mechanism tools/pc/gen_defsyms.py already uses for interior symbols with no
+    block of their own.
+
+    Only runs of PURE POINTER blocks are merged. A neighbouring scalar block is
+    left alone: its elements are still their natural width, so merging it in
+    would change what every index means.
+    """
+    base = run[0][0]
+    section = run[0][1]
+    const = 'const ' if section == '.rodata' else ''
+    body, fwds, aliases = [], [], []
+    offset = 0
+
+    for idx, (sym, _sec, entries) in enumerate(run):
+        entries = [e for e in entries if e[0] != 'incbin']
+        if idx > 0:
+            fwds.append(f'extern {const}void *{sym}[];\n')
+            # `.set A, B + n` defines A inside B's section at that offset --
+            # a real symbol the linker resolves, not a C-level alias.
+            aliases.append('__asm__("   .globl ' + sym + '\\n"\n'
+                           '        "   .set ' + sym + ', ' + base +
+                           ' + ' + str(offset) + '\\n");\n')
+        for k, v in entries:
+            if not _is_ref(v):
+                body.append(f'(void *)(u32)({v})')
+            elif re.fullmatch(r'\w+', v):
+                refs.add(v)
+                body.append(f'&{v}')
+            else:                                   # `sym + 0x10`
+                m = re.match(r'(\w+)\s*([+-])\s*(\S+)', v)
+                if m:
+                    refs.add(m.group(1))
+                    body.append(f'(void *)((u8 *)&{m.group(1)} '
+                                f'{m.group(2)} ({m.group(3)}))')
+                else:
+                    body.append('(void *)0')
+            offset += 8
+
+    fwd = f'extern {const}void *{base}[];\n' + ''.join(fwds)
+    definition = (f'{const}void *{c_ident(base)}[] = {{\n    '
+                  + ',\n    '.join(body) + '\n};\n' + ''.join(aliases))
+    return fwd, definition
+
+
+def group_blocks(blocks):
+    """[(kind, [block, ...])] -- adjacent pointer blocks collected into runs."""
+    groups, i = [], 0
+    while i < len(blocks):
+        if is_pointer_block(blocks[i][2]):
+            j = i + 1
+            while (j < len(blocks) and blocks[j][1] == blocks[i][1]
+                   and is_pointer_block(blocks[j][2])):
+                j += 1
+            groups.append(('ptrrun', blocks[i:j]))
+            i = j
+        else:
+            groups.append(('single', blocks[i:i + 1]))
+            i += 1
+    return groups
+
+
 def main():
     outdir = 'build/pc/data'
     if '-o' in sys.argv:

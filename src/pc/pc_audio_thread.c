@@ -87,6 +87,93 @@ extern s32 auSettingsUpdated;
  * work to skip -- but the moment auThreadMain is decompiled this whole file
  * goes away, and until then no audio-state bug found here should be trusted.
  */
+/* AND IT MUST GIVE auBGMPlayers[] SOMETHING TO POINT AT.
+ *
+ * auCreatePlayers -- still a #pragma, 0x548 bytes of n_alInit, n_alCSPNew and
+ * heap carving -- is what fills that array in. Without it both entries are
+ * NULL, and the first thing the game does after the rumble thread replies is
+ *
+ *     game.c:161  auSetBGMVolume(0, 0x7800)
+ *     audio.c:612 alCSPSetVol(auBGMPlayers[0], vol)
+ *     libn_audio_2.c:788  n_alEvtqPostEvent(&((N_CSPlayer *) seqp)->evtq, ...)
+ *
+ * which dereferences 0x50 and takes SIGSEGV inside the audio library, five
+ * frames from anything that looks like a port problem.
+ *
+ * A zeroed block is enough, and that is not luck -- it is how the library is
+ * written. n_alEvtqPostEvent's first act is `item = evtq->freeList.next; if
+ * (!item) return;`, so an empty event queue swallows every event instead of
+ * corrupting anything, and the rest of the BGM API is posts and field reads.
+ * So the whole audio API becomes inert rather than fatal, which is the honest
+ * state of audio in this port anyway.
+ *
+ * Sized far larger than N_ALCSPlayer needs (~0xB0) on purpose: nothing here
+ * knows which of the several player structs the game will cast this to, and a
+ * stand-in that is merely generous cannot be the thing that walks off the end.
+ * u64 elements so the alignment is right for any member. */
+static u64 sBgmPlayerStorage[2][0x400 / sizeof(u64)];
+
+extern void *auBGMPlayers[2];
+
+/* THE SAME PROBLEM, FOR THE REST OF auCreatePlayers' OUTPUT.
+ *
+ * auCreatePlayers does not only build the players; it carves a set of
+ * per-sound and per-BGM-player arrays out of auHeap and leaves the game
+ * holding POINTERS to them. Every one of those pointers is NULL in this build,
+ * and the game indexes them without checking -- `auBGMPlayerStatus[playerId] =
+ * 1` in auStopSong is a store through NULL, reached from play_music on the
+ * game thread's first trip into ovl4.
+ *
+ * These get static storage instead of heap storage. The array LENGTHS are the
+ * one thing that matters: they are set by auCurrentSettings.numSounds, which
+ * this stand-in cannot compute, so each is sized past any plausible value
+ * rather than exactly. Over-allocating a stand-in is free; under-allocating it
+ * is a heap smash that would look like a decompilation bug.
+ *
+ * Deliberately NOT filled in: auSeqBank, auSeqFile, auSoundPlayer, auSFXPlayer
+ * and auBGMSequences. Those are content, not scratch -- code tests them for
+ * NULL and takes the "no audio loaded" path, which is the truth here. Handing
+ * out a zeroed block instead would send the game down the "audio is ready"
+ * path into data that is not there. */
+#define PC_AU_MAX_SOUNDS 256
+
+static u8 sSoundPriority[PC_AU_MAX_SOUNDS];
+static u8 sSoundIdleCounter[PC_AU_MAX_SOUNDS];
+static f32 sSoundPitch[PC_AU_MAX_SOUNDS];
+static u16 sSoundVolume[PC_AU_MAX_SOUNDS];
+static u8 sSoundPan[PC_AU_MAX_SOUNDS];
+static u8 sSoundReverbAmt[PC_AU_MAX_SOUNDS];
+static u8 sBgmPlayerStatus[8];
+static s32 sBgmSongId[8];
+static u8 sBgmSeqData[2][0x4000];
+
+extern u8 *auSoundPriority;
+extern u8 *auSoundIdleCounter;
+extern f32 *auSoundPitch;
+extern u16 *auSoundVolume;
+extern u8 *auSoundPan;
+extern u8 *auSoundReverbAmt;
+extern u8 *auBGMPlayerStatus;
+extern s32 *auBGMSongId;
+extern u8 *auBGMSeqData[2];
+
+static void pc_au_stand_in_state(void) {
+    auBGMPlayers[0] = &sBgmPlayerStorage[0][0];
+    auBGMPlayers[1] = &sBgmPlayerStorage[1][0];
+
+    auSoundPriority = sSoundPriority;
+    auSoundIdleCounter = sSoundIdleCounter;
+    auSoundPitch = sSoundPitch;
+    auSoundVolume = sSoundVolume;
+    auSoundPan = sSoundPan;
+    auSoundReverbAmt = sSoundReverbAmt;
+
+    auBGMPlayerStatus = sBgmPlayerStatus;
+    auBGMSongId = sBgmSongId;
+    auBGMSeqData[0] = sBgmSeqData[0];
+    auBGMSeqData[1] = sBgmSeqData[1];
+}
+
 static OSMesgQueue sTickMQ;
 static OSMesg sTickMsg[8];
 static SCClient sClient;
@@ -97,6 +184,9 @@ void auThreadMain(void *arg) {
     (void)arg;
 
     auInit();
+
+    /* Before the osSendMesg below, which is what releases thread5_game. */
+    pc_au_stand_in_state();
 
     /* The argument values are the ROM's own, read off the listing:
        addiu $a1, $zero, 1 and or $a2, $zero, $zero. */

@@ -1364,7 +1364,47 @@ void func_801F6E50_ovl9(GObj *arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F6F08_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CBE24;
+extern f32 D_8021D928_ovl9;
+void func_800A9EA4(s32);
+void func_800AA7D0(s32, f32, u32);
+void func_800AA864(s32, s32);
+
+void func_801F6F08_ovl9(GObj *arg0) {
+    s32 pad0;
+    struct DObj *d = D_800DFBD0[omCurrentObj->objId][4];
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9FE0[omCurrentObj->objId].as_s32 = 0;
+    D_800EA1A0[omCurrentObj->objId] = 0;
+    D_800EA360[omCurrentObj->objId] = 0x57;
+    tmp->unk98 = &D_801CBE24;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_8021D928_ovl9;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    func_800A9EA4(0x10065);
+    D_800DF310[omCurrentObj->objId] = (void *) &func_801F6E50_ovl9;
+    while (D_800E9FE0[omCurrentObj->objId].as_s32 == 0) {
+        ohSleep(1);
+        D_800EA360[omCurrentObj->objId]--;
+        if (D_800EA360[omCurrentObj->objId] == 0) {
+            D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
+            if (D_800DE350[D_800EA1A0[omCurrentObj->objId]] != 0) {
+                D_800E9FE0[D_800EA1A0[omCurrentObj->objId]].as_s32 = 1;
+            }
+        }
+    }
+    func_800AECC0(gameTicksPerDraw);
+    d->flags = 0;
+    func_800AA7D0(0x10065, 85.0f, 1);
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+    func_800AA864(0x10067, 2);
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 2;
+    curObjSleepForever();
+}
 
 extern struct GObjProcess *gEntityGObjProcessArray[];
 void func_801F6A9C_ovl9(struct GObj *);
@@ -1462,7 +1502,7 @@ void func_801F7664_ovl9(GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CBE6C;
-void func_800AA7D0(s32, f32, s32);
+void func_800AA7D0(s32, f32, u32);
 
 void func_801F766C_ovl9(GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];

@@ -214,7 +214,27 @@ void func_801D9A54_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D9D1C_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801D9EE0_ovl9.s")
+extern u32 eneCheckNearPlayer(f32);
+
+void func_801D9EE0_ovl9(struct GObj *arg0) {
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB884;
+    func_800A9EA4(0x1017C);
+    D_800E0490[omCurrentObj->objId] = &D_801CAA84;
+    func_801A2ADC_ovl7(&D_801CAA84);
+    func_800B3520();
+    if (D_800E98E0[omCurrentObj->objId] < 0) {
+        D_800E98E0[omCurrentObj->objId] = 0;
+    }
+    while (D_800E98E0[omCurrentObj->objId]--) {
+        ohSleep(1);
+    }
+    while (eneCheckNearPlayer(57600.0f) == 0) {
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DA054_ovl9.s")
 
@@ -270,7 +290,27 @@ void func_801DA7A0_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8021BCB0_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DA7E8_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CB8CC;
+
+void func_801DA7E8_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB8CC;
+    func_800A9EA4(0x10197);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B3520();
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    if (D_800E98E0[omCurrentObj->objId] <= 0) {
+        D_800E98E0[omCurrentObj->objId] = 0;
+    }
+    while (D_800E98E0[omCurrentObj->objId]--) {
+        ohSleep(1);
+    }
+    while (240.0f < D_800E6F50[omCurrentObj->objId].originOffset) {
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+}
 
 void func_801A0D74_ovl7();
 void eneTurnCommon(s32);

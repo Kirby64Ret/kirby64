@@ -115,6 +115,39 @@ void func_800053B4(u16 arg0, u16 arg1) {
 }
 
 void gtlSetupHeap(void *start, u32 size) {
+#ifdef PORT
+    /* THE PORT CANNOT USE THE GAME'S OWN HEAP ADDRESS. Both call sites route
+     * through here, so this is the only place that needs to know.
+     *
+     * On N64 the caller computes heapBase = &D_8018EE60 and heapSize =
+     * (u8 *) gFrameBuffer - heapBase, which is about 2.5 MB of RDRAM lying on
+     * top of the VRAM of overlays that are not resident. That is deliberate
+     * and it is safe there because an unloaded overlay's RAM is free.
+     *
+     * Here it is neither. D_8018EE60 resolves to D_8018EE58_ovl5 + 8, a live
+     * object in this binary's .bss, every overlay is permanently resident, and
+     * the arithmetic yields 0x0D3A28 rather than 2.5 MB. The first
+     * gtlCreateScene therefore ran `bzero(0x65d958, 866856)` straight across
+     * 823 KB of translated data -- among other things contEventMQ, whose
+     * msgCount and msg went to garbage, so the next contSendEvent stored
+     * through a NULL msg[] and the port died in osSendMesg with a backtrace
+     * that pointed at the controller code and nothing at the heap.
+     *
+     * A dedicated arena fixes both halves at once: it is memory that belongs
+     * to us, and it is bigger than the N64's, so nothing that fits on hardware
+     * can overflow it here (mlAlloc's overflow path is fatal_printf followed
+     * by `while (1);`, which in a cooperative scheduler is a hang, not a
+     * message).
+     *
+     * The audio heap at audio.c:465 is the same shape of problem and is NOT
+     * fixed: auCreatePlayers is still a #pragma, so auHeap is never set up and
+     * nothing allocates from it. It has to be dealt with when audio lands.
+     *
+     * Nothing below this #endif changes, so the ROM build is byte-identical. */
+    extern void pc_gtl_arena(void **startInOut, u32 *sizeInOut);
+
+    pc_gtl_arena(&start, &size);
+#endif
     mlSetup(&gDynamicBuffer2, 0x10000, start, size);
 }
 

@@ -521,22 +521,22 @@ extern Unk10Bytes D_800D7178[];
 extern u8 D_8018E224_ovl5[];
 s32 func_80164914_ovl5(s32);
 
-#ifdef MIPS_TO_C
-/* 4 diffs: ROM stores before both induction increments; we sink the sw into
-   the branch delay slot. The empty `if` reproduces the dead $s2 induction.
-   Swept: for/while/do-while, != vs <, pointer inductions, dead-local read,
-   volatile on either array (the vu16 lever that closed the fb-clear family
-   does NOT apply here -- it costs the whole loop), statement order, temp
-   local, self-assignment, `continue`, unused local. Clone twins with the
-   identical residue: func_8016CB14_ovl5, func_80176108_ovl5. */
+#ifdef NON_MATCHING
+/* 2 diffs, and the single physical line is load-bearing: with the loop body
+   expanded over three lines it is 4. The remaining residue is that IDO fills
+   the post-`jal` slot with `addiu $s0,$s0,1` and sinks `sw $v0` to `-4($s1)`,
+   where the ROM stores at `0xC($s1)` first. The empty `if` reproduces the dead
+   $s2 induction.
+   Swept without effect at 2: for/while/do-while, != vs <, pointer inductions,
+   `u32 i`, two counters, temp local for the call result, s32/volatile stores,
+   volatile on either array, `if` before/after, extra dead locals, 0-13 leading
+   blank lines. Pointer-induction forms are much WORSE (25/26).
+   Clone twins with the identical residue: func_8016CB14_ovl5,
+   func_80176108_ovl5. */
 void func_801649CC_ovl5(void) {
     s32 i;
 
-    for (i = 0; i < 4; i++) {
-        D_800D7178[i].unkC = func_80164914_ovl5(i);
-        if (D_8018E224_ovl5[i] != 0) {
-        }
-    }
+    for (i = 0; i < 4; i++) { D_800D7178[i].unkC = func_80164914_ovl5(i); if (D_8018E224_ovl5[i] != 0) {} }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801649CC_ovl5.s")

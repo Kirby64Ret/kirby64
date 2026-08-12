@@ -421,7 +421,37 @@ void func_80211560_ovl9(void) {
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = D_800EA6E0[omCurrentObj->objId];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_8021161C_ovl9.s")
+extern void func_800B1900(u16);
+extern const char D_8021DCB0_ovl9[];
+
+void func_8021161C_ovl9(s32 arg0) {
+    s32 track;
+
+    track = request_track_general(0x17, 0x1E, 0x50);
+    if ((track >= 0x3C) || (track == -1)) {
+        utilPrintf(D_8021DCB0_ovl9, track);
+        func_800B1900(track);
+        return;
+    }
+    gEntityFuncListIDArray[track] = gEntityFuncListIDArray[omCurrentObj->objId];
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = D_800E7730[omCurrentObj->objId];
+    D_800E77A0[track] = D_800E77A0[omCurrentObj->objId];
+    D_800E7880[track] = arg0;
+    D_800E5F90[track] =
+    D_800E6150[track] = D_800E5F90[omCurrentObj->objId];
+    D_800E6BD0[track] =
+    D_800E6D90[track] = D_800E6BD0[omCurrentObj->objId];
+    D_800E6A10[track] = D_800E6A10[omCurrentObj->objId];
+    gEntitiesNextPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesPosXArray[track] = gEntitiesPosXArray[omCurrentObj->objId];
+    gEntitiesNextPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesPosYArray[track] = gEntitiesPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    gEntitiesPosZArray[track] = gEntitiesPosZArray[omCurrentObj->objId];
+    D_800E98E0[track] = 1;
+    gEntitiesAngleZArray[track] = gEntitiesAngleZArray[omCurrentObj->objId];
+}
 
 extern f32 D_8021DD50_ovl9;
 extern FUNCLIST D_8021CB68_ovl9;
