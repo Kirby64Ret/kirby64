@@ -501,9 +501,31 @@ void func_801ECB58_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801ECEB4_ovl9.s")
+void func_801ECEB4_ovl9(GObj *arg0) {
+    s32 i;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801ED018_ovl9.s")
+    D_800E9C60[omCurrentObj->objId] = 1;
+    for (i = 0x1E; i != 0x3C; i++) {
+        if ((D_800DD710[i] != -1) && (i != omCurrentObj->objId) && (D_800E7730[i] == 0) &&
+            ((D_800E77A0[i] == 0x42) || (D_800E77A0[i] == 0x4B) || (D_800E77A0[i] == 0x4C)) &&
+            (D_800E7880[i] == 1)) {
+            D_800E9C60[omCurrentObj->objId] = 0;
+        }
+    }
+}
+
+s32 func_801ED018_ovl9(s32 arg0) {
+    s32 i;
+
+    for (i = 0x1E; i != 0x3C; i++) {
+        if ((i != omCurrentObj->objId) && (D_800DD710[i] != -1) && (D_800E7730[i] == 0) &&
+            ((D_800E77A0[i] == 0x42) || (D_800E77A0[i] == 0x4B) || (D_800E77A0[i] == 0x4C)) &&
+            (D_800E7880[i] == arg0)) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 void func_800B7514(s32);

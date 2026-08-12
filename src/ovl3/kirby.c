@@ -2236,9 +2236,131 @@ void func_8017BEF4_ovl3(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BF34_ovl3.s")
+#ifdef NON_MATCHING
+extern void func_801693C4_ovl3(s32);
+extern s32 func_801210B4(void);
+extern void func_8011DC5C(void);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017C1FC_ovl3.s")
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 31/178 insns. Draft kept. */
+void func_8017BF34_ovl3(GObj *arg0) {
+    if (gKirbyState.abilityInUse == 0) {
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk7 = 0;
+        gKirbyState.unk7C = 0.0f;
+        gKirbyState.unk80 = gKirbyState.unk7C;
+        gKirbyState.unkA = 0;
+        if (D_800E8AE0[omCurrentObj->objId] & 6) {
+            gKirbyState.unk16 = 0x14;
+        } else {
+            gKirbyState.unk16 = 0xA;
+        }
+        func_8011CF58();
+        gKirbyState.abilityInUse = gKirbyState.ability;
+        D_800DDFD0[omCurrentObj->objId] = 0x26;
+        D_800E0490[omCurrentObj->objId] = D_801926E8_ovl3;
+        gKirbyState.unk15C = (u32) D_80190358_ovl3;
+        gKirbyState.unk154 = 2;
+        func_80120A28();
+        gKirbyState.unk78 = -D_800E6A10[omCurrentObj->objId];
+        func_801693C4_ovl3(6);
+        func_8011DC04(0x56);
+        gKirbyState.unk3C = 0;
+        gKirbyState.unk44 = 0;
+        func_801230E8(0x20077, 0x20078, 1);
+        if (gKirbyController.buttonHeld & 0x300) {
+            gKirbyState.unk44 = gKirbyState.unk3C = 2;
+        } else {
+            gKirbyState.unk44 = gKirbyState.unk3C = 1;
+        }
+    }
+    switch (gKirbyState.unk44) {
+    case 1:
+        func_801230E8(0x20079, 0x2007A, 1);
+        curObjSleepForever();
+    case 2:
+        if (func_801210B4() == 1) {
+            D_800E6690[omCurrentObj->objId] = 0.25f;
+            D_800E6850[omCurrentObj->objId] = 2.0f;
+        } else {
+            D_800E6690[omCurrentObj->objId] = -0.25f;
+            D_800E6850[omCurrentObj->objId] = 2.0f;
+        }
+        func_801230E8(0x20085, 0x20086, 0);
+        curObjSleepForever();
+    case 3:
+    default:
+        func_8011DC5C();
+        gKirbyState.abilityInUse = 0;
+        gKirbyState.unk78 = D_800E6A10[omCurrentObj->objId];
+        func_801230E8(0x2007B, 0x2007C, 1);
+        gKirbyState.unk30 = gKirbyState.unk30 + 1;
+        curObjSleepForever();
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BF34_ovl3.s")
+#endif
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BF34_ovl3.s")
+#endif
+
+extern void func_80120CCC(f32, f32);
+extern f32 D_80197608_ovl3;
+extern f32 D_8019760C_ovl3;
+
+void func_8017C1FC_ovl3(s32 arg0) {
+    func_80153984_ovl3();
+    func_8011CF58();
+    func_801217B8();
+    if (gKirbyState.unk44 == 3) {
+        if (gKirbyState.unk30 != 0) {
+            func_8011D67C();
+        }
+    } else if (gKirbyState.unk17 != 0) {
+        gKirbyState.unk44 = 3;
+    } else {
+        switch (gKirbyState.unk44) {
+        case 1:
+            if (gKirbyController.buttonHeld & 0x300) {
+                gKirbyState.unk44 = 2;
+            } else if (gKirbyState.unk16 == 0) {
+                if (!(gKirbyController.buttonHeld & 0x4000)) {
+                    gKirbyState.unk44 = 3;
+                } else if (gKirbyState.unkA == 4) {
+                    gKirbyState.unk44 = 3;
+                }
+            } else if (!(gKirbyController.buttonHeld & 0x4000)) {
+                gKirbyState.unkA = 4;
+            }
+            break;
+        case 2:
+            if (0.0f == D_800E64D0[omCurrentObj->objId]) {
+                gKirbyState.unk44 = 1;
+            } else if (gKirbyState.unk16 == 0) {
+                if (!(gKirbyController.buttonHeld & 0x4000)) {
+                    gKirbyState.unk44 = 3;
+                } else if (gKirbyState.unkA == 4) {
+                    gKirbyState.unk44 = 3;
+                }
+            } else if (!(gKirbyController.buttonHeld & 0x4000)) {
+                gKirbyState.unkA = 4;
+            }
+            func_8011ED68();
+            break;
+        default:
+            if (!(gKirbyController.buttonHeld & 0x4000)) {
+                gKirbyState.unkA = 4;
+            }
+            break;
+        }
+    }
+    func_80120CCC(D_80197608_ovl3, D_8019760C_ovl3);
+    if (gKirbyState.unk44 != gKirbyState.unk3C) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8016C510_ovl3);
+        gKirbyState.unk3C = gKirbyState.unk44;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017C418_ovl3.s")
 

@@ -265,9 +265,35 @@ void func_800B9104(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B91B8.s")
+/* Left live by a lane mid-work, at 29/29 insns. Draft kept. */
+void func_800B91B8(void) {
+    u32 *p;
+    u32 *end;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B922C.s")
+    SAVE_U32(0x1B0) = SAVE_CHECKSUM_MAGIC;
+    SAVE_U32(0x118) = SAVE_CHECKSUM_MAGIC;
+    p = D_800ECB10;
+    end = D_800ECB10 + 38;
+    while (p != end) {
+        *p = 0;
+        p++;
+    }
+    SAVE_U16(0x164) = 3;
+}
+
+/* Left live by a lane mid-work, at 32/34 insns. Draft kept. */
+u32 func_800B922C(void) {
+    u32 sum;
+    s32 i;
+
+    SAVE_U32(0x1B0) = SAVE_CHECKSUM_MAGIC;
+    SAVE_U32(0x118) = SAVE_CHECKSUM_MAGIC;
+    sum = SAVE_CHECKSUM_MAGIC;
+    for (i = 0; i != 38; i++) {
+        sum += D_800ECB10[i];
+    }
+    return sum;
+}
 
 void func_800B92B4(void) {
     D_800ECBAC = func_800B922C();

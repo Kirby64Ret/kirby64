@@ -559,16 +559,15 @@ void func_8015632C_ovl4(SPObj *);
 void func_800ACBDC(GObj *);
 
 void func_80156560_ovl4(GObj *arg0) {
-    s32 prev;
-    s32 cur;
     s32 v;
+    s32 prev;
 
     prev = func_801561DC_ovl4() + 0x20;
     D_800DEF90[omCurrentObj->objId] = NULL;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
     while (1) {
-        cur = func_801561DC_ovl4();
+        s32 cur = func_801561DC_ovl4();
         if (cur != prev) {
             prev = cur;
             func_800ACBDC(arg0);

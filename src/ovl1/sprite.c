@@ -148,11 +148,10 @@ void func_800AC700(uObjBg *bg, struct C954Arg2 *arg1) {
     bg->s.imageYorig = 0;
 }
 
-// Draft, 14/35: v0/v1 and the stores are right; IDO schedules the ~mask/and
-// pair ten slots later than the ROM. Swept 90 statement permutations, both
-// index forms and extra locals; its twin func_800AC700 closed on a store
-// permutation but this one does not move.
-#ifdef NON_MATCHING
+// The chained `paddingX = paddingY = 0` and putting `imageAdrs = 0` AFTER
+// imageStride are both load-bearing: they are what schedules the ~mask/and pair
+// where the ROM has it. Separate padding stores cost 14 diffs, imageAdrs before
+// imageStride costs 3.
 void func_800AC794(uObjSprite *sp, struct C954Arg2 *arg1) {
     s32 tmemW = (arg1->width + D_800D4E60[arg1->unk1]) & ~D_800D4E60[arg1->unk1];
 
@@ -160,18 +159,14 @@ void func_800AC794(uObjSprite *sp, struct C954Arg2 *arg1) {
     sp->s.scaleW = sp->s.scaleH = 0x400;
     sp->s.imageW = arg1->width * 0x20;
     sp->s.imageH = arg1->height * 0x20;
-    sp->s.paddingY = 0;
-    sp->s.paddingX = 0;
-    sp->s.imageAdrs = 0;
+    sp->s.paddingX = sp->s.paddingY = 0;
     sp->s.imageStride = GS_PIX2TMEM(tmemW, arg1->unk1);
+    sp->s.imageAdrs = 0;
     sp->s.imageFmt = arg1->unk0;
     sp->s.imageSiz = arg1->unk1;
     sp->s.imagePal = 0;
     sp->s.imageFlags = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC794.s")
-#endif
 void func_800AC820(uObjTxtr *tx, struct C954Arg2 *arg1) {
     s32 tmemW = (arg1->width + D_800D4E60[arg1->unk1]) & ~D_800D4E60[arg1->unk1];
 
@@ -203,11 +198,15 @@ void func_800AC924(uObjMtx *mtx) {
     mtx->m.BaseScaleX = mtx->m.BaseScaleY = FTOFIX16(1.0f);
 }
 
-#ifdef NON_MATCHING
+// SPObj is double-buffered: the 0x60-byte RSP command block at 0x40 has a second
+// copy at 0xA0 and spobj->unk12 selects which one the CPU rewrites. SPObj.h
+// declares unk40/unkA0 as pointers, so the block copy at the end of
+// func_800AC954 is spelled through this local type instead. Its size is what
+// makes IDO emit the ROM's 3-words-per-pass loop.
+struct SPObjBlk { u32 w[0x18]; };
+
 SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
     SPObj* sprite;
-    void* var_a0;
-    void* var_v1;
     SPObj* gobj_4C;
 
     sprite = pop_spobj();
@@ -216,20 +215,24 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
     }
     gobj_4C = gobj->unk4C;
     if (gobj_4C != NULL) {
-        SPObj *tail = gobj_4C; /* 800AC9A0..800AC9C0 walks to the LAST node */
-        while (tail->unk8 != 0) {
-            tail = (SPObj *) (uintptr_t) tail->unk8;
+        SPObj *tail = gobj_4C;
+        SPObj *next = (SPObj *) tail->unk8;
+
+        if (next != NULL) {
+            do {
+                tail = next;
+                next = (SPObj *) tail->unk8;
+            } while (next != NULL);
         }
-        tail->unk8 = (u32) (uintptr_t) sprite;
-        sprite->unkC = (u32) (uintptr_t) tail;
+        tail->unk8 = (u32) sprite;
+        sprite->unkC = (u32) tail;
     } else {
         gobj->unk4C = sprite;
         sprite->unkC = 0;
     }
     sprite->unk8 = 0;
-    /* offset 4: `sw $a3, 0x4($v0)` at 800AC9DC. u32, not a pointer --
-   widening it would move every field after it under LP64. The port
-   keeps all game objects in low memory, so the cast is lossless. */
+    /* offset 4 is u32, not a pointer -- widening it would move every field
+       after it under LP64. */
     sprite->unk4 = (u32) (uintptr_t) gobj;
     sprite->unk10 = (u8) kind;
     sprite->unk11 = 0;
@@ -242,7 +245,7 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
     sprite->envColorRed =
     sprite->envColorGreen =
     sprite->envColorBlue =
-    sprite->envColorAlpha = 0xFF;
+    sprite->envColorAlpha = 0;
     sprite->width = arg2->width;
     sprite->height = arg2->height;
     sprite->xOffset = sprite->yOffset = 0.0f;
@@ -278,30 +281,9 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
             func_800AC924((uObjMtx* ) &sprite->unk88);
             break;
     }
-    /* The ROM's tail (800ACB38..800ACB60) is DECODED now, and it is not the
-     * pointer copy m2c produced. Two cursors start at the SPObj base and step
-     * by 0xC; each pass reads +0x40/+0x44/+0x48 and writes +0xA0/+0xA4/+0xA8,
-     * stopping when the first cursor reaches base+0x60. That is 8 passes x 0xC
-     * = a straight 0x60-byte copy of the RSP command block at 0x40 to its
-     * second copy at 0xA0 -- SPObj is double-buffered so the CPU never rewrites
-     * the block the RSP is reading, and spobj->unk12 selects the copy.
-     *
-     * The port cannot host the second copy. SPObj.h names only the first one,
-     * and under LP64 a 0x60-byte block anchored at unkA0 would run past the
-     * 0x100 allocation stride func_800AE048 uses. func_800AD1A0 therefore
-     * addresses the FIRST copy unconditionally (see its comment), so nothing
-     * in the port ever reads bytes 0xA0..0x100 and seeding them is a no-op.
-     *
-     * The previous stand-in here ran `*sprite->unkA0 = *sprite->unk40;` under a
-     * NULL guard. Those two members are not pointers -- 0x40 is the uObjBg this
-     * function has just filled in -- so the guard passes on live data and the
-     * copy dereferences image dimensions as an address. It has not fired yet
-     * only because unkA0 happens to be zero in a fresh arena. Removed. */
+    *(struct SPObjBlk *) ((u8 *) sprite + 0xA0) = *(struct SPObjBlk *) ((u8 *) sprite + 0x40);
     return sprite;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC954.s")
-#endif
 
 void func_800ACB7C(SPObj *sp) {
     GObj *gobj;

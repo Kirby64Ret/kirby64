@@ -1530,6 +1530,20 @@ void func_80154C38_ovl6(s32 arg0) {
  * the two branch scopes (adds 8, frame 0x30); `register` on p/end (ignored).
  * Next idea if anyone picks this up: find a loop spelling that keeps the
  * hoisted bound but names neither pointer. */
+/* 24/63. The whole residue follows from the frame: the ROM is 0x20, IDO gives
+ * 0x28. Measured 2026-08: IDO's locals base here is 0x1C and the frame is
+ * align8(0x1C + 4*N) for N DECLARED locals -- N=1 gives 0x20 with the slot at
+ * 0x1C (the ROM's exact layout), N=2 and N=3 both give 0x28, N=5 gives 0x30.
+ * So the ROM has exactly ONE declared local, the fb0 spilled across
+ * viApplyScreenSettings, and BOTH loop pointers are compiler temps there.
+ * Everything tried that removes p/end as named locals makes IDO recompute the
+ * loop bound instead (63 insns -> 70): fb0 inlined at all five use sites; p
+ * walked as fb0 itself; p/end declared in the two branch scopes, with and
+ * without initialisers (adds 8, frame 0x30); `register` (ignored).
+ * NOTE: the block-scope trick that closed func_80156560_ovl4 (a loop-body local
+ * with an initialiser gets NO frame slot) does NOT apply here -- measured, a
+ * local declared in an if/else branch body still costs a full slot. Whatever
+ * spelling wins here has to keep the bound hoisted and name neither pointer. */
 #ifdef NON_MATCHING
 void func_80154C64_ovl6(void) {
     extern u16 gFrameBuffer[];

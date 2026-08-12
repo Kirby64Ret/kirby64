@@ -1874,12 +1874,16 @@ void func_800FB9B4(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB9B4.s")
 #endif
 
-void func_800FBA78(void) {
+/* The empty parameter list is load-bearing: func_800FC804 passes its own arg0
+ * to every one of these and the ROM reloads it into $a0 before the jump table.
+ * The definitions take no parameter, so K&R `()` is what lets the call sites
+ * pass it; `(void)` costs func_800FC804 that one `lw $a0, 0x18($sp)`. */
+void func_800FBA78() {
     func_801DC98C_ovl17();
 }
 
 
-void func_800FBA98(void) {
+void func_800FBA98() {
     D_80129150 = D_801291B0;
     D_80129270 = D_801292F0;
     func_800FA438(D_80129138, &D_801291B0);
@@ -1932,7 +1936,7 @@ void func_800FBBB8(void) {
 #endif
 
 
-void func_800FBDE8(void) {
+void func_800FBDE8() {
     func_800FBBB8();
     func_800FA2D4(&D_80129210, &D_801292B0);
 }
@@ -2095,7 +2099,7 @@ s32 func_800FC164(struct Ovl2CamState *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC164.s")
 #endif
-void func_800FC3D8(void) {
+void func_800FC3D8() {
     D_80129150 = D_801291B0;
     D_80129270 = D_801292F0;
     func_800FA438(D_80129138, &D_801291B0);
@@ -2110,7 +2114,7 @@ void func_800FC3D8(void) {
 }
 
 
-void func_800FC500(void) {
+void func_800FC500() {
     func_800FBBB8();
     if (func_800FC164(&D_80129210) != 0) {
         D_800D7088 = 0xB;
@@ -2138,7 +2142,7 @@ void func_800FC53C(void) {
 
 #ifdef MIPS_TO_C
 
-void func_800FC62C(void) {
+void func_800FC62C() {
     void *sp1C;
     f32 temp_f0;
     f32 temp_f2;
@@ -2186,18 +2190,12 @@ void func_800FC62C(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC62C.s")
 #endif
 
-#ifdef MIPS_TO_C
+extern u32 D_800D708C;
+extern s32 D_800D7B68;
 
 void func_800FC804(s32 arg0) {
-    s32 *temp_v0;
-    s32 temp_t1;
-    s32 var_t0;
-    u32 temp_t7;
-    void *temp_v0_2;
-
     func_800FB9B4();
-    temp_t7 = D_800D7088 & 0xFF;
-    switch (temp_t7) {
+    switch (D_800D7088 & 0xFF) {
         case 2:
             func_800FBA98(arg0);
             break;
@@ -2211,32 +2209,11 @@ void func_800FC804(s32 arg0) {
             func_800FBDE8(arg0);
             break;
         case 6:
-            temp_v0 = &D_800D7088 + 4;
-            if (M2C_ERROR(/* cfc1 */) & 0x78) {
-                if (!(M2C_ERROR(/* cfc1 */) & 0x78)) {
-                    var_t0 = (gameTicksPerDraw - 2.1474836e9f) | 0x80000000;
-                } else {
-                    goto block_9;
-                }
-            } else {
-                var_t0 = gameTicksPerDraw;
-                if (var_t0 < 0) {
-block_9:
-                    var_t0 = -1;
-                }
+            D_800D708C -= (u32) gameTicksPerDraw;
+            if ((s32) D_800D708C >= 0) {
+                D_800D799C->data.cam->viewMtx.lookAt.at.y += D_800E3210[0];
             }
-            temp_t1 = *temp_v0 - var_t0;
-            *temp_v0 = temp_t1;
-            if (temp_t1 >= 0) {
-                temp_v0_2 = D_800D799C->data;
-                temp_v0_2->unk4C = temp_v0_2->unk4C + *D_800E3210;
-            }
-            D_800D7B38.unk0 = D_800D7B20.unk0;
-            D_800D7B38.unk4 = D_800D7B20.unk4;
-            D_800D7B38.unkC = D_800D7B20.unkC;
-            D_800D7B38.unk8 = D_800D7B20.unk8;
-            D_800D7B38.unk10 = D_800D7B20.unk10;
-            D_800D7B38.unk14 = D_800D7B20.unk14;
+            D_800D7B38 = D_800D7B20;
             break;
         case 13:
             func_800FC62C(arg0);
@@ -2247,9 +2224,10 @@ block_9:
         default:
             animUpdateCameraAnimation(arg0);
             break;
+        case 0:
+        case 1:
+        case 5:
+            break;
     }
     D_800D7B68 = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC804.s")
-#endif

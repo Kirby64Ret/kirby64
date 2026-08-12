@@ -55,12 +55,20 @@ void func_800F61A0(void) {
 void func_800F629C(void) {
 }
 
-#ifdef MIPS_TO_C
+extern s32 D_800BE4F8;
+extern s32 D_800D6B24;
+extern s32 D_800D6F3C;
+extern s32 D_800D6F38;
+extern s32 D_800D6B58;
+extern u16 D_800D6F42;
+void auFunc80020C88(void);
+s32 func_800F8560(void);
+void func_800BB98C(s32, s32);
+void func_8011CFE0(void);
+void func_800A74D8(void);
 
-void func_800F62A4(s32 arg0) {
-    s32 *temp_v0;
-    s32 temp_t2;
-    s32 var_v0;
+void func_800F62A4(UNUSED s32 arg0) {
+    s32 mask;
 
     switch (D_800BE4F8) {
         case 2:
@@ -92,7 +100,7 @@ void func_800F62A4(s32 arg0) {
             }
             break;
         case 6:
-            if (D_800D6B54[1]-- == 0) {
+            if (--D_800D6B58 == 0) {
                 func_8011CFE0();
                 func_800A74D8();
                 utilSetRectColorFullScreen(0, 0, 0);
@@ -101,26 +109,24 @@ void func_800F62A4(s32 arg0) {
             break;
         case 1:
             if (D_800D6F3C >= 2) {
-                var_v0 = (D_800D6F3C == 4) ? 0x1000 : 0x9000;
-
-                if ((*(&D_800D6F3C + 6) & var_v0) && (D_800D6B24 == 0)) {
+                if (D_800D6F3C == 4) {
+                    mask = 0x1000;
+                } else {
+                    mask = 0x9000;
+                }
+                if ((D_800D6F42 & mask) && (D_800D6B24 == 0)) {
                     D_800BE4F8 = 0;
                     utilSetRectColorFullScreen(0, 0, 0);
                     utilSpawnRect(0, 0x40, 2);
-block_22:
                     D_800D6F38 = 0;
                 }
             }
             break;
         case 0:
-            goto block_22;
-        default:
-            return;
+            D_800D6F38 = 0;
+            break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2/func_800F62A4.s")
-#endif
 
 #ifdef MIPS_TO_C
 

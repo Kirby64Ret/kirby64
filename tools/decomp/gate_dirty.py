@@ -126,6 +126,24 @@ def reguard(path, fn, residue):
         print(f'      no listing found for {fn} -- re-guard by hand')
         return False
 
+    # A LISTING CAN COVER MORE THAN ONE FUNCTION, and blindly activating it is
+    # how this tool broke a segment. asm/.../func_80158120_ovl4.s also contains
+    # func_80158188_ovl4; guarding the first put a pragma over BOTH while the
+    # second was still live in C, so the TU came out 32 bytes long and the
+    # whole image with it. I then spent an hour localising a displacement my
+    # own --fix had created, and it cascaded: the next function in the file
+    # went red and got guarded too.
+    #
+    # If the listing defines any symbol other than this function, refuse. The
+    # correct fix in that case is usually that verify.py's DIFF is a false
+    # positive from the extra function's instructions, not a live draft.
+    others = [g for g in re.findall(r'^glabel\s+(\w+)', open(s, errors='replace').read(), re.M)
+              if g != fn]
+    if others:
+        print(f'      {fn}: its listing also defines {" ".join(others)} -- '
+              f'refusing, the pragma would cover them too')
+        return False
+
     lines.insert(end + 1, f'#else\n#pragma GLOBAL_ASM("{s}")\n#endif')
     lines.insert(start, '#ifdef NON_MATCHING\n'
                         f'/* Left live by a lane mid-work, at {residue} insns. Draft kept. */')

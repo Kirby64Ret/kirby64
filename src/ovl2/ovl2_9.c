@@ -16,6 +16,42 @@ extern s32 D_8012D588;
 extern s32 D_8012D58C;
 extern s32 D_8012D918;
 extern u32 D_8012D924;
+extern u16 D_8012E828;
+
+struct UnkStruct8011145C_A {
+    s32 unk0;
+    u16 unk4;
+    u8 pad6[6];
+    u8 unkC;
+    u8 padD[3];
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+};
+
+struct UnkStruct80110438_C {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 pad4[4];
+    s32 unk8;
+    s32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+};
+
+struct UnkStruct8011145C_B {
+    s32 unk0;
+    f32 unk4;
+    u8 unk8;
+    u8 unk9;
+    u8 padA[2];
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+};
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110150.s")
 
@@ -30,7 +66,69 @@ s32 func_801103C4(s32 arg0) {
     return -1;
 }
 
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 12/108 insns. Draft kept. */
+void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
+                   struct UnkStruct80110438_C *arg2) {
+    s32 idx;
+    s32 id;
+
+    id = arg1->unk0;
+    idx = arg0->unk0;
+    if (arg1->unk10 & 0x40000000) {
+        return;
+    }
+    if (idx == -1) {
+        arg2->unk2 = 2;
+        arg2->unk3 = arg1->unkC;
+        arg2->unk8 = arg1->unk14;
+        return;
+    }
+    if (id != -1) {
+        if ((arg0->unk10 & 0x80000000) || (D_800E7CE0[idx] != 0)) {
+            arg2->unk2 = 0;
+            return;
+        }
+    }
+    if (arg0->unk10 & 1) {
+        arg2->unk2 = 6;
+    } else if (arg0->unk10 & 0x20000000) {
+        arg2->unk2 = 2;
+    }
+    if (arg2->unk2 != 0) {
+        if (arg0->unk10 & 0x10000000) {
+            arg2->unk2 = 0;
+        }
+        return;
+    }
+    if ((D_8012E828 == 1) || (D_8012E828 == 2)) {
+        arg2->unk2 = 1;
+        D_800E7B20[idx] = 0.0f;
+        return;
+    }
+    arg2->unk3 = arg1->unkC;
+    if (!(arg0->unk10 & 0x08000000)) {
+        D_800E7B20[idx] -= arg1->unk4;
+    }
+    if (D_800E7B20[idx] <= 0.0f) {
+        arg2->unk2 = 1;
+        D_800E7B20[idx] = 0.0f;
+        return;
+    }
+    arg2->unk2 = 2;
+    if (!(arg0->unk10 & 0x08000000)) {
+        if (D_800DD710[idx] == 0x17) {
+            D_800E7CE0[idx] = 0xF;
+        } else {
+            D_800E7CE0[idx] = 0x2D;
+        }
+    } else {
+        D_800E7CE0[idx] = 0;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110438.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_801105E8.s")
 
@@ -38,26 +136,54 @@ s32 func_801103C4(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110CCC.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110E94.s")
+void func_80110E94(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1) {
+    s32 idx;
+    s32 id;
+    s32 flags;
+
+    idx = arg1->unk0;
+    id = arg0->unk0;
+    if (!(arg0->unk4 & 6)) {
+        if (idx != -1) {
+            flags = arg0->unk14;
+            if (!(flags & 0x40000000)) {
+                if (!(arg1->unk10 & 0x80000000)) {
+                    if (arg1->unkC == 0xA) {
+                        if (D_800DD710[id] != 0x17) {
+                            D_800E83E0[idx] = 6;
+                            return;
+                        }
+                    }
+                    switch (arg1->unk9) {
+                    case 1:
+                        if ((flags & 1) || (flags & 0x80000000)) {
+                            D_800E83E0[idx] = 6;
+                            return;
+                        }
+                        break;
+                    case 2:
+                        if ((flags & 2) || (flags & 0x80000000)) {
+                            D_800E83E0[idx] = 6;
+                            return;
+                        }
+                        break;
+                    case 3:
+                        if ((flags & 4) || (flags & 0x80000000)) {
+                            D_800E83E0[idx] = 6;
+                            return;
+                        }
+                        break;
+                    }
+                    D_800E83E0[idx] = (arg0->unkC << 16) + 2;
+                }
+            }
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110FD4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80111184.s")
-
-struct UnkStruct8011145C_A {
-    u8 pad0[4];
-    u16 unk4;
-    u8 pad6[6];
-    u8 unkC;
-    u8 padD[11];
-    s32 unk18;
-};
-
-struct UnkStruct8011145C_B {
-    s32 unk0;
-    u8 pad4[12];
-    s32 unk10;
-};
 
 // The bit tests are load-bearing: `x & 0x80000000` in a boolean context gives
 // IDO's `sll rd, rt, 0` + `bltz` pair, while `x >= 0` gives a bare `bltz`; and
