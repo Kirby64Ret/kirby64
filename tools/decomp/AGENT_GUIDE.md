@@ -690,7 +690,49 @@ and +0xA0, and `*(s32 *)((u8 *) &D_8012E7E8 + 8) = 0;` is what the ROM wants
 where the listing says `%lo(D_8012E7E8 + 0x8)`. Always check the MAP before
 concluding a symbol is missing.
 
+## splat leaves STALE listings behind when a subsegment moves
+
+Adding a subsegment to kirby64.yaml and re-running `splat split` writes the new
+directory but does NOT delete the copies in the old one. After the ovl10_3
+split, all 48 moved functions existed twice -- byte-identical files in
+`asm/nonmatchings/ovl10/ovl10_3/` and `.../ovl10_3b/` -- so a grep for a
+function found two listings and the directory counts looked as if nothing had
+moved. 71 such files were removed across the two ovl10 splits.
+
+After ANY splat run that moves listings: for every file present in the new
+location, `cmp` it against the old copy and delete the old one if identical.
+`tools/pc/gen_data.py` reporting "N stale listing(s) skipped" is the same
+disease showing up downstream.
+
+## A recorded diff count is NOT a floor you can reproduce
+
+Comments in the tree say things like "1 diff, immovable". Re-measure before
+you believe them. `func_80164320_ovl3` is recorded at 1 diff and the draft
+actually in the file measures **58**; `func_8015A31C_ovl3` is recorded at 4 and
+measures **75**. Those floors were reached with variants nobody saved.
+
+So: a recorded number tells you what was once achieved, not what you will
+measure, and a function annotated "3 diffs" may be a long way from it. When YOU
+reach a good floor, **save the variant in the file** -- guarded -- rather than
+only writing the number in a comment. A number without its variant is not a
+result, it is a rumour.
+
 ## More levers
+
+**OPERAND ORDER on arithmetic is a first-class knob, not a tiebreak.** Both
+util.c matrix functions closed on nothing else: every `t + (a*x + b*y + c*z)`
+had to be written `(a*x + b*y + c*z) + t` (28/52 and 18/151 -> MATCH). The
+float-multiply form of the same rule: when BOTH operands of a `*` are computed,
+the outermost `*` reverses relative to source; a `*` with a LITERAL operand
+stays in source order. Both forms can appear one line apart in the same
+function -- `sinf(k)*15.0f*arr[i]` had to become `arr[i] * (sinf(k)*15.0f)`
+while the `-cosf(k)*15.0f` on the next line was already right.
+
+**LOOP FORM: `while (p < END)` emits a pre-test the ROM does not have.**
+Rewriting a pointer clear as `do { *p = 0; p++; } while (p < END);` took
+func_800A78D0 from 25/95 to 7. Check the top of the ROM's loop before writing
+the loop.
+
 
 **Branch POLARITY is a real knob, and it is the cheapest 3-diff fix there is.**
 `if (x != 0) { A } else { B }` and `if (x == 0) { B } else { A }` are the same
@@ -2033,6 +2075,29 @@ zero negative evidence, and the negative evidence, once collected, is total.
 The signature identifies functions where the ROM used a byte bias; it does not
 identify functions where writing one will reproduce the ROM's allocation.
 
+A second agent then measured it independently in ovl3/ovl5/ovl1 and the
+detector is now RETIRED, not merely retracted:
+
+  * The regex fires on **263 of 451 listings, 58%**. A candidate list built
+    from it is a list of everything; it ranks nothing.
+  * Of 12 measurable candidates, **zero had the symptom in their actual diff**.
+    Seven had no `sll` in the diff at all; the other five had ordinary
+    rotations (`sll $t9,$t8` vs `sll $t8,$t7`), never an in-place-vs-fresh
+    pair. The listing carrying the instruction says nothing about whether YOUR
+    COMPILE got it wrong.
+  * Decisively: **the inline bias form is a compile-time no-op.**
+    `*(T *)((u8 *) SYM + omCurrentObj->objId * 4)` produces bytes IDENTICAL to
+    `SYM[omCurrentObj->objId]` -- proved on func_80169718_ovl3, 29 rewritten
+    sites over 224 instructions, byte-identical object. So every gain the lever
+    ever produced came from the LOCAL variant, and the local is what destroys
+    these functions (2 -> 58, 5 -> 87, 6 -> 95, 8 -> 216, 12 -> 222).
+
+**SWEEP ON THE DIFF, NEVER ON A LISTING REGEX.** That is the transferable rule.
+Where the bias form did close functions in ovl11/17/18, the residue was
+visibly a shift-register mismatch in the diff. Any detector that keys off the
+ROM's instructions rather than off YOUR compile's disagreement with them is
+measuring the wrong thing.
+
 Treat this as the worked example of the failure mode: a lever's hit rate is not
 knowable from its successes. Measure a new lever on 20+ functions before it
 goes in this file as sweepable.
@@ -2090,9 +2155,23 @@ callee that had no prototype in the TU at all. That direction is the original
 implicit-declaration lever and it still works; it is also cheap, because the
 compiler tells you which callees are undeclared.
 
-So: add prototypes for undeclared callees, always. Flipping the return type of
-an already-declared callee is a per-function long shot, not a sweep. The two
-successes above stand as instances, not as a rate.
+A second agent swept it exhaustively in ovl3/ovl5/ovl1 -- every callee of every
+draft, one flip at a time, each run compared against a control that inserts a
+dummy declaration at the same line so a line shift is not mistaken for the
+flip. 51 drafts, 163 draft-callee pairs, **80 applicable flips, 0 closures**
+(76 inert, 4 worse). 83 pairs were not applicable at all, and the reason is the
+useful part: **46 of them are declared in a shared HEADER**, where the return
+type is not a per-TU knob at all.
+
+But the same sweep closed func_800A78D0 (7/92 -> MATCH) by flipping
+`void func_8009B550(s32,s32);` -> `s32` -- a prototype **that function itself
+introduces**. That is the shape of the real rule:
+
+**When you author a bare pragma's prototypes yourself, every one of those
+return types is a free register-allocation knob. Sweep those, and only those.**
+Header-declared callees cannot be flipped, and already-declared in-file callees
+measured 0 in 76 attempts. Add prototypes for undeclared callees always; that
+half still fires.
 
 ## Hidden translation-unit splits in ovl10 -- ovl10_3 DONE, ovl10_5 outstanding
 
@@ -2257,3 +2336,101 @@ reads it. This emptied `src/ovl2/ovl2_2.c` -- 1013 lines to 0 -- mid-session.
 
 Compute the new text into a variable, assert it non-empty, and only then open
 for write. Recovery: `git show HEAD:<path> > <path>`.
+
+# The two mandated mechanical sweeps, MEASURED at scale (ovl3/ovl5/ovl1)
+
+Both sweeps were run over every measurable guarded draft in ovl3, ovl5 and
+ovl1 (56 drafts that compile and produce a diff count; `src/ovl1/save_file.c`
+excluded). Here are the numbers, because two waves of agents were killed before
+reporting them.
+
+## Sweep 1 -- `sll $vN, $vN, 2` byte-bias: 0 for 12. RETIRE THE DETECTOR.
+
+* **The regex detector is not selective.** 263 of the 451 remaining pragmas in
+  ovl3/ovl5/ovl1 contain an in-place `sll $vN,$vN,2` somewhere in their
+  listing. A filter that fires on 58% of all listings cannot rank anything.
+* **12 measurable drafts carried it. NONE of them actually presented the
+  symptom.** The lever is for "the ROM shifts in place, your compile uses a
+  fresh register". Checking every baseline diff for a `sll` mismatch: 7 of the
+  12 had no `sll` in their diff at all, and the other 5 had ordinary register
+  rotations, never an in-place-vs-fresh pair. The listing carrying the
+  instruction says nothing about whether your compile got it wrong.
+* **The inline bias form is a NO-OP.** `*(T *)((u8 *) SYM + omCurrentObj->objId
+  * 4)` compiles to bytes IDENTICAL to `SYM[omCurrentObj->objId]`. Proved
+  directly on `func_80169718_ovl3`: 29 sites rewritten, 224 instructions,
+  byte-identical object. All 12 candidates were unchanged to the instruction.
+* **Any form with a bias LOCAL is much worse**, because the local CSEs the
+  objId read the ROM re-does. Hoisted to the top of the function: 2->58, 5->87,
+  6->95, 8->216, 12->222. Re-materialised per statement: 2->40, 3->57, 6->44,
+  12->189. Applied to only the first statement: still 12 worse, 1 unchanged.
+
+So the earlier note's own caveat ("it is not universal") understates it: on
+these three segments the transform never helped and usually destroyed the
+function. Where it DID close functions (ovl11/ovl17/ovl18) the residue was
+visibly a shift-register mismatch. **Read the diff for that mismatch before
+applying it; do not sweep on the listing regex.**
+
+## Sweep 2 -- callee return-type flip: 0 for 80 mechanically, but the lever IS real
+
+Every callee of every draft, both directions, one flip at a time, each run
+compared against a CONTROL variant that inserts a dummy declaration at the same
+line so line-number shifts are not mistaken for the flip's effect:
+
+    drafts swept                     51
+    draft x callee pairs            163
+      not applicable                 83
+      applicable and measured        80
+        CLOSED                        0
+        improved, not closed          0
+        inert (identical diff)       76
+        worse                         4
+
+Breakdown of what was measured: 36 implicit->void, 40 void->s32, 4
+nonvoid->void. Breakdown of the 83 that could not be tried: **46 because the
+callee is declared in a shared HEADER**, so a TU-local redeclaration is a hard
+IDO error and the knob simply does not exist for that callee; 37 because the
+flip does not compile (return value used, or an incompatible redeclaration).
+
+Conditioned on the lever's stated precondition -- a residue that is PURELY a
+register rotation -- only 4 of the 51 drafts qualify (`func_80164130_ovl3`,
+`func_800A84F0`, `func_8017C6C8_ovl5`, `func_800B158C`), and of those two have
+no callee at all and two have only header-declared callees. The mechanical
+sweep therefore had ~zero opportunity, which is the real finding: **in
+ovl3/ovl5/ovl1 the callee return type is usually not a per-TU knob, because the
+prototype lives in a header.**
+
+**Where it IS a knob it still closes functions.** `func_800A78D0`
+(ovl1/ovl1_2_2.c, 92 instructions) was decoded to a pure `$v0`/`$v1` swap on
+the two pointers of a clear loop -- 7/92, immovable under declaration order,
+declaration count, compare-operand order, `while` vs `do/while` and index vs
+pointer walk. Flipping ONE prototype the function itself introduces,
+`void func_8009B550(s32, s32);` -> `s32`, matched it with no other change.
+
+So the rule to carry forward is not "sweep every callee" but: **when you author
+a bare pragma's prototypes yourself, the return type of every one of them is a
+free register-allocation knob. Sweep those, not the header-declared ones.**
+
+## Other results from the same pass
+
+**`f32 m[4][3]` is the matrix type in ovl1/util.c**, and IDO reverses the
+outermost float `+` in these: `func_800A6208` and `func_800A62D8` both matched
+FIRST COMPILE once every `t + (a*x + b*y + c*z)` was written
+`(a*x + b*y + c*z) + t`; the natural order gave 28/52 and 18/151. The
+translation row uses `((..)+(..)+(..)) + a[3][c]`, the rotation rows
+`((a0*b0)+(a1*b1)) + (a2*b2)`.
+
+**A `while (p < END)` pointer clear emits a pre-test; the ROM's has none.**
+`do { *p = 0; p++; } while (p < END);` took `func_800A78D0` from 25/95 to 7/92.
+The `for` form and `*p++ = 0` are equivalent; only do/while removes the guard.
+
+**A 4x-unrolled clear loop's end pointer can be spelled from EITHER symbol.**
+`for (i = 0; i < 8; i++) A[i] = 0;` emits `%hi(A)` + `addiu +0x20` where the ROM
+has `%hi/%lo(B)` for the adjacent symbol B = A+0x20. Those link to the same
+word; verify.py reports it as a diff and verify_rom.py does not.
+
+**Confirmed floors, re-litigated and unmoved this wave:** `func_800AE048`
+(2/39, ovl1/sprite.c -- the `sltu`/`sw` schedule swap survived `volatile` on
+the store, `p + 1` vs byte bias, chained assignment, `!=` vs `<`, increment
+position and a `(u32)` cast on the bound); `func_801720D8_ovl5` (2/61, frame
+0x30 vs 0x28 with the spill slots right, or frame right and every spill 4 low --
+the two states do not meet); `func_80164130_ovl3` (3/124).
