@@ -84,3 +84,6 @@ scratchpad/
 # mk.sh stores a sha1 beside each object so a source restored with an older
 # mtime still forces a rebuild. Build metadata, not source.
 *.srchash
+
+# decomp-permuter is a third-party clone, not our source. SESSION_SETUP.sh fetches it.
+tools/decomp/decomp-permuter/
