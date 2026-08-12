@@ -817,6 +817,17 @@ reach a good floor, **save the variant in the file** -- guarded -- rather than
 only writing the number in a comment. A number without its variant is not a
 result, it is a rumour.
 
+## Dead end: `T x[1]` does not hide an address-taken local
+
+The "every named local gets a word" rule makes an address-taken struct local
+expensive, and the obvious escape is to declare it `T x[1]` and pass `x`
+instead of `&x`, so that no `&` appears in the source. **It does not work.**
+IDO's "a neighbour is address-taken" analysis is unchanged: four orderings,
+byte-identical output to the `&x` form. Recorded so nobody spends the idea
+twice -- it was the best remaining idea for `func_801DC8E4_ovl16` and
+`func_801DC990_ovl16`, which are jointly blocked on spelling a third value
+without a named local.
+
 ## More levers
 
 **OPERAND ORDER on arithmetic is a first-class knob, not a tiebreak.** Both
@@ -1357,6 +1368,35 @@ non-zero word, or a full 16-byte block, is the real trap.
 Do not hand-roll this scan. Call `padtrap.classify(listing_path, func)`; it
 returns `('trap'|'benign'|'clean', n_words)`. Of the pragmas remaining, 32 are
 traps and 69 are benign tails that are ordinary decompilation work.
+
+### `benign` means "not provably a trap". It does NOT mean safe.
+
+The derivation above -- ".text is 16-byte aligned, so a 1-3 nop tail is put
+straight back" -- **only holds for a function at the END of its translation
+unit.** IDO 16-aligns the SECTION START, not every function inside the object.
+In the middle of a TU nothing re-aligns, and the missing words are simply
+missing.
+
+Measured, at the cost of a broken ROM: `func_801DF5B8_ovl11` classifies
+`('benign', 2)` and its draft verifies MATCH under verify.py. Converting it
+produced sha1 `0974440ec374465ee18767293575a65771571006`, and
+`check_layout ovl11` reported `func_801DF650_ovl11 at +0x4468, expected +0x4470
+(drift -8)` -- exactly the two words padtrap called harmless.
+
+**`check_tu_size.py` reported 0 problems on that same broken build.** The TU's
+total size was preserved and only its interior shifted, so the cheap gate this
+guide recommends at step 2 STRUCTURALLY CANNOT SEE THIS CLASS. Only
+`check_layout <seg>` catches it.
+
+So: **the arbiter for any benign-pad conversion is a full build plus
+`check_layout <seg>`, and check_tu_size cannot substitute for it.** Budget one
+build per benign-pad function you convert, and convert them one at a time --
+batching them means a drift tells you nothing about which one caused it.
+
+This is the same phenomenon as the libn_audio note earlier in this file
+("benign-pad is not a blocker is only true where nothing 16-byte-aligned
+follows"). That note reads as audio-specific and it is not: it applies to any
+function that is not last in its object, which is most of them.
 
 ## K&R definitions solve the home-slot problem -- but only with 2+ parameters
 

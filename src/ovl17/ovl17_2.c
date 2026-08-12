@@ -151,7 +151,6 @@ void func_801DE104_ovl17(struct GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
 /* Byte-exact as written, but ovl17's rodata is an unmigrated asm blob, so the
  * float literals below make IDO emit a second copy into this TU's .rodata
  * and the segment grows. Referencing D_801E55E8/F0/F4/F8_ovl17 instead
@@ -178,9 +177,6 @@ void func_801DE214_ovl17(struct GObj *arg0) {
     D_800EA520[omCurrentObj->objId] = 0x3C;
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DE214_ovl17.s")
-#endif
 
 void func_801DE3D4_ovl17(struct GObj *arg0) {
     struct DObj *temp_v0;
@@ -239,7 +235,6 @@ void func_801DE850_ovl17(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef NON_MATCHING
 /* Byte-exact as written, but ovl17's rodata is an unmigrated asm blob, so the
  * float literals below make IDO emit a second copy into this TU's .rodata
  * and the segment grows. Referencing D_801E55E8/F0/F4/F8_ovl17 instead
@@ -260,9 +255,6 @@ void func_801DE9A8_ovl17(struct GObj *arg0) {
     func_801DEA5C_ovl17();
     func_801E073C_ovl17();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DE9A8_ovl17.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DEA5C_ovl17.s")
 

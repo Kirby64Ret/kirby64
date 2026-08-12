@@ -72,3 +72,5 @@ kirby64.cfg
 # the real file -- GNU make's wildcard never matches those, so a concurrent
 # build cannot pick them up. They are scratch, never deliverables.
 src/**/.*.c
+cand.json
+*.ab_tmp.c

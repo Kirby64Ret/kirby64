@@ -348,7 +348,6 @@ u32 func_801DB400_ovl16(void) {
     return phi_v1;
 }
 
-#ifdef NON_MATCHING
 /* The 9999.0f/0.09f/0.2f comparisons below are byte-exact as written, but
  * this segment's rodata is an unmigrated asm blob: IDO emits a SECOND copy
  * of each literal into the TU's .rodata and the whole segment grows.
@@ -373,9 +372,6 @@ void func_801DB528_ovl16(s32 arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DB528_ovl16.s")
-#endif
 
 s32 func_801DB698_ovl16(s32 arg0) {
     s32 ret;
@@ -1008,7 +1004,6 @@ void func_801E1E84_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = D_801EF914_ovl16[D_800D7098.unk8];
 }
 
-#ifdef NON_MATCHING
 /* The 9999.0f/0.09f/0.2f comparisons below are byte-exact as written, but
  * this segment's rodata is an unmigrated asm blob: IDO emits a SECOND copy
  * of each literal into the TU's .rodata and the whole segment grows.
@@ -1029,9 +1024,6 @@ s32 func_801E1F40_ovl16(void) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E1F40_ovl16.s")
-#endif
 
 void func_801E20D8_ovl16(s32 arg0) {
 
@@ -1443,7 +1435,6 @@ void func_801E6BD4_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = D_801EF9F8_ovl16[D_800D7098.unk8];
 }
 
-#ifdef NON_MATCHING
 /* The 9999.0f/0.09f/0.2f comparisons below are byte-exact as written, but
  * this segment's rodata is an unmigrated asm blob: IDO emits a SECOND copy
  * of each literal into the TU's .rodata and the whole segment grows.
@@ -1463,9 +1454,6 @@ s32 func_801E6C90_ovl16(void) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E6C90_ovl16.s")
-#endif
 
 void func_801E6E0C_ovl16(s32 arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0x17;
