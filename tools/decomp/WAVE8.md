@@ -274,6 +274,45 @@ Only once both TUs agree on every shared symbol is the move itself safe.
 Payoff is 14 jump-table functions at ~1.3 compiles each, the cheapest tier
 left, so it is worth doing properly.
 
+## HUNT CLONE FAMILIES — the highest-yield method found in this wave
+
+Two ovl16 functions closed on the FIRST COMPILE, ~480 instructions together,
+at a point where the rest of the fleet was averaging one closure per ~400k
+tokens against register-allocation floors. They were not easier functions —
+198 and 285 instructions each. They were **clones of an already-matched
+function in the same file**.
+
+The unit was a pure angle-advance body repeated per object index and
+component, whose full decode was already written out in the file's own
+matched `func_801DD25C_ovl16`:
+
+    o += K;                                  /* or -= */
+    while (o >  6.283185482f) { o -= 6.283185482f; }
+    while (o < -6.283185482f) { o += 6.283185482f; }
+
+with the object subscript read off the `lw` displacement (0x8→[2], 0xC→[3],
+0x10→[4], 0x14→[5]) and the component off the field displacement (0x30→.x,
+0x34→.y, 0x38→.z). No register-allocation work at all.
+
+**So the first move in any file should be: does an already-matched function
+here have the same shape as a pragma?** Instruction count is a poor proxy for
+difficulty; provenance is a good one. A 285-instruction clone is cheaper than
+a 90-instruction original. LANE_BRIEF has always said "seeding is the biggest
+cost lever" — this is that principle at scale, and it outperformed every
+other method tried tonight.
+
+### Tail-screen bug — anchor on the LAST `.size`
+
+The padding-trap screen must anchor on the **last** `.size` in the listing.
+Anchoring on the first matches the migrated `.late_rodata` block at the head
+of a listing and produces a false positive, i.e. it reports a padding trap on
+a perfectly convertible function. Functions may have been wrongly skipped
+tonight on this; re-screen before believing any recorded skip.
+
+(This is the same class of bug padtrap.py's docstring records from an earlier
+wave — `rfind('.size')` anchoring on a leading `.late_rodata` block. It came
+back in a hand-written screen.)
+
 ## LINE PACKING — real, but narrower than first reported
 
 **What it does:** an `if`/`else` chain whose arms sit on ONE source line

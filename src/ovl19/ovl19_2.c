@@ -472,7 +472,9 @@ void func_8022703C_ovl19(s32 arg0) {
     }
 }
 
-void func_802271A8_ovl19(GObj *arg0) {
+void func_802271A8_ovl19(void) {
+    s32 pad0;
+    s32 pad1;
     Vector sp44;
     Vector sp38;
     struct CollisionTriangle *sp34;
@@ -482,10 +484,10 @@ void func_802271A8_ovl19(GObj *arg0) {
     pp = D_800E0490[omCurrentObj->objId];
     py = pp[1];
     sp44.x = gEntitiesPosXArray[omCurrentObj->objId];
-    sp44.y = gEntitiesPosYArray[omCurrentObj->objId] + *py;
+    sp44.y = *py + gEntitiesPosYArray[omCurrentObj->objId];
     sp44.z = gEntitiesPosZArray[omCurrentObj->objId];
     sp38.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-    sp38.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *py;
+    sp38.y = *py + gEntitiesNextPosYArray[omCurrentObj->objId];
     sp38.z = gEntitiesNextPosZArray[omCurrentObj->objId];
     sp34 = D_8012BCC0;
     if (func_80104AB4(&sp44, &sp38, 1, 0x13, &sp34) != 0) {
