@@ -629,20 +629,26 @@ void func_801DD3A8_ovl12(GObj *arg0) {
     curObjSleepForever();
 }
 
-// awful
+/* FACTORY: 28/66, register-shaped: ROM holds the literal 1 in $a0 and the
+   D_800D7098 base in $a1; IDO gives the base $a0 and re-materialises the 1
+   into $at at each compare.  Structure, lengths and all three branches are
+   the ROM's.  Yoda compare order and addend swap tried. */
 #ifdef NON_MATCHING
 void func_801DD400_ovl12(GObj *arg0) {
+    s32 temp = gEntityFuncListIDArray[omCurrentObj->objId] + D_800E9560[omCurrentObj->objId];
+
     if ((D_800D7098.unk8 == 1) || (D_800D7098.unk10 == 0)) {
-        D_800E9560[omCurrentObj->objId]++;
-        gEntityFuncListIDArray[omCurrentObj->objId] += D_800E9560[omCurrentObj->objId];
+        D_800E9560[omCurrentObj->objId] += 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = temp;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCFE4_ovl12);
-    }
-    else if (D_800D7098.unk10 == 0) {
-        func_801DCDFC_ovl12();
-    }
-    else if ((D_800D7098.unkC == 1) && ((u32)D_800E9AA0[omCurrentObj->objId] == 1)) {
-        func_801DCCC4_ovl12();
-        func_801DCD70_ovl12();
+    } else {
+        if (D_800D7098.unk10 == 0) {
+            func_801DCDFC_ovl12();
+        }
+        if ((D_800D7098.unkC == 1) && ((s32) D_800E9AA0[omCurrentObj->objId] == 1)) {
+            func_801DCCC4_ovl12();
+            func_801DCD70_ovl12();
+        }
     }
 }
 #else

@@ -2329,7 +2329,6 @@ s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
         sp50 = 8;
     }
-    sp30 = (Vector *) arg0->scale;
     sp6C.y = arg0->kirbyHeight[1];
     sp60.y = arg0->kirbyFootPos[1] + sp30->z;
     if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) &&
@@ -4456,53 +4455,47 @@ s32 func_8010B238(struct PositionState *arg0) {
     return ret;
 }
 
+/* FACTORY: 103/126, frame+all stack offsets exact; residue is IDO folding arg0+0x10 into lw offsets
+   where the ROM CSEs it into a register spilled at 0x30. Same residue in B480/B67C/B860/105284/1063F0. */
 #ifdef MIPS_TO_C
 
-s32 func_8010B284(void *arg0) {
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    void *sp30;
-    void *temp_v1;
+s32 func_8010B284(struct PositionState *arg0) {
+    f32 sp5C;
+    f32 sp58;
+    Vector sp4C;
+    Vector sp40;
+    Vector sp34;
 
     func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
-    sp34 = 0.0f;
-    sp3C = 0.0f;
-    sp38 = -1.0f;
-    temp_v1 = arg0 + 0x10;
-    sp4C = arg0->unk4;
-    sp50 = arg0->unk8 + temp_v1->unk8;
-    sp30 = temp_v1;
-    sp54 = arg0->unkC;
-    sp44 = sp50 - 0.13f;
-    sp40 = sp4C;
-    sp48 = sp54;
+    sp34.x = 0.0f;
+    sp34.z = 0.0f;
+    sp34.y = -1.0f;
+    sp4C.x = arg0->kirbyFootPos[0];
+    sp4C.y = arg0->scale[2] + arg0->kirbyFootPos[1];
+    sp4C.z = arg0->kirbyFootPos[2];
+    sp40.y = sp4C.y - 0.13f;
+    sp40.x = sp4C.x;
+    sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x1000;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x1000;
         return 1;
     }
-    sp4C = arg0->unk4 + D_8012BD00.unk4;
-    sp50 = arg0->unk8 + sp30->unk4;
-    sp40 = sp4C;
-    sp54 = arg0->unkC + D_8012BD00.unk8;
-    sp48 = sp54;
+    sp4C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp4C.y = arg0->scale[1] + arg0->kirbyFootPos[1];
+    sp40.x = sp4C.x;
+    sp4C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x4000;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x4000;
         return 1;
     }
-    sp4C = arg0->unk4 + D_8012BD00.unkC;
-    sp54 = arg0->unkC + D_8012BD00.unk10;
-    sp40 = sp4C;
-    sp48 = sp54;
+    sp4C.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp4C.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp40.x = sp4C.x;
+    sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x2000;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x2000;
         return 1;
     }
     return 0;
@@ -4566,50 +4559,44 @@ s32 func_8010B480(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010B480.s")
 #endif
 
+
+/* FACTORY: 92/120, ROM CSEs $v0 = arg0+0x10 and spills it at 0x30; IDO folds it into lw offsets. Frame/offsets already exact. */
 #ifdef MIPS_TO_C
 
-s32 func_8010B67C(void *arg0) {
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    Vector *sp30;
-    f32 *temp_v0;
+s32 func_8010B67C(struct PositionState *arg0) {
+    f32 sp5C;
+    f32 sp58;
+    Vector sp4C;
+    Vector sp40;
+    Vector sp34;
 
     func_80105218(&D_8012BCA0);
     func_8010C608(arg0);
-    sp34 = D_8012BD00.unk14;
-    sp38 = 0.0f;
-    sp3C = D_8012BD00.unk18;
-    temp_v0 = arg0 + 0x10;
-    sp4C = arg0->unk4;
-    sp50 = arg0->unk8 + *temp_v0;
-    sp40 = sp4C + D_8012BD00.unk4;
-    sp54 = arg0->unkC;
-    sp30 = temp_v0;
-    sp48 = sp54 + D_8012BD00.unk8;
-    sp44 = sp50;
+    sp34.x = BD00.unk14;
+    sp34.y = 0.0f;
+    sp34.z = BD00.unk18;
+    sp4C.x = arg0->kirbyFootPos[0];
+    sp4C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp40.x = sp4C.x + BD00.unk4;
+    sp4C.z = arg0->kirbyFootPos[2];
+    sp40.z = sp4C.z + BD00.unk8;
+    sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 8;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 8;
         return 1;
     }
-    sp4C += D_8012BD00.unkC;
-    sp54 += D_8012BD00.unk10;
-    sp50 = arg0->unk8 + sp30->unk8;
-    sp44 = sp50;
+    sp4C.x = sp4C.x + BD00.unkC;
+    sp4C.z = sp4C.z + BD00.unk10;
+    sp4C.y = arg0->scale[2] + arg0->kirbyFootPos[1];
+    sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x20;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x20;
         return 1;
     }
-    sp44 = arg0->unk8 + sp30->unk4;
-    sp50 = sp44;
+    sp40.y = arg0->scale[1] + arg0->kirbyFootPos[1];
+    sp4C.y = sp40.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x10;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x10;
         return 1;
     }
     return 0;

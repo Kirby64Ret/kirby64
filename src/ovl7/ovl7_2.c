@@ -256,7 +256,56 @@ void func_8019F9D0_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019FDE8_ovl7.s")
 
+/* FACTORY: 2/92, spill slot 0x18 vs the ROM's 0x1C.  Decidable +8 frame
+   anomaly, NOT a source shape: measured n=6 locals -> frame 0x38 / spill 0x18,
+   n=7 -> frame 0x40 / spill 0x1C, i.e. our IDO computes align8(0x1C + 4n + 4)
+   where the ROM computes align8(0x18 + 4n + 4).  The ROM has n=7 (spill 0x1C,
+   frame 0x38); that total is 0 mod 8, so no local arrangement reaches it.
+   Everything else -- all 92 instructions, both branch-likelies, every register
+   -- is exact. */
+#ifdef NON_MATCHING
+s32 func_801A0244_ovl7(s32 arg0) {
+    s32 func_8011E1E8(s32, s32);
+    s32 func_801BC27C_ovl7(s32, s32);
+    extern s32 D_800E0D50[];
+    s32 pad;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    s32 *slot;
+    s32 theirs = 0;
+    s32 mine = 0;
+    s32 ret;
+
+    if (D_800E7730[arg0] == 6) {
+        if ((D_800E77A0[arg0] >= 8) && (D_800E77A0[arg0] < 0x24)) {
+            return -1;
+        }
+    }
+    slot = &D_800E0D50[arg0];
+    if (*slot != 0) {
+        return -1;
+    }
+    if ((ent->unk88 != NULL) && (ent->unk88->unkC != NULL) && (ent->unk88->unkC->unk0 != NULL)) {
+        mine = ent->unk88->unkC->unk0->unk1C->unk4;
+    }
+    if ((mine != 0) && (slot >= &D_800E0D50[0xE]) && (slot < &D_800E0D50[0x3C])) {
+        if ((D_800E1B50[arg0] != NULL) && (D_800E1B50[arg0]->unk88 != NULL) &&
+            (D_800E1B50[arg0]->unk88->unkC != NULL) &&
+            (D_800E1B50[arg0]->unk88->unkC->unk0 != NULL)) {
+            theirs = D_800E1B50[arg0]->unk88->unkC->unk0->unk1C->unk4;
+        }
+        if (theirs != 0) {
+            ret = func_801BC27C_ovl7(func_8011E1E8(mine, theirs), 1);
+            if (ret != 0) {
+                D_800E83E0[arg0] = 0x12;
+                return ret;
+            }
+        }
+    }
+    return -1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A0244_ovl7.s")
+#endif
 
 void func_801A03B4_ovl7(void) {
     func_80111ECC(func_801A0464_ovl7());

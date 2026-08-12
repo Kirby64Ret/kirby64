@@ -278,7 +278,56 @@ void func_801B1130_ovl7(GObj *arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
+/* FACTORY: 67/139, ONE DISPLACEMENT.  Instruction count, every opcode, every
+   memory reference and both loop tests are the ROM's; the whole residue is that
+   IDO emits the parameter home store `sw $a0, 0x30($sp)` at index 8 (function
+   entry) where the ROM has it at index 36, in the delay slot of the first jal.
+   Indices 8..35 are therefore the ROM's stream shifted one slot, with the temp
+   register file rotated one slot with it.  The store position is a
+   whole-function homing decision, not a statement order: moving the
+   `arg0->data.dobj->firstChild` read to be the last statement before the call
+   (so $a0's last use abuts the jal) left it at index 8 unchanged.  Pure
+   statement-permutation residue -- hand this to the permuter. */
+#ifdef NON_MATCHING
+extern struct Sub800E1B50_Unk98 D_801CD2F4_ovl7;
+void func_801B152C_ovl7(void);
+
+void func_801B1300_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *sp2C = D_800E1B50[omCurrentObj->objId];
+    DObj *sp28;
+    s32 i;
+
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    sp28 = arg0->data.dobj->firstChild;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    D_800EC2E0[omCurrentObj->objId].as_s32 = 0;
+    i = 0x3C;
+    func_801ABBA0_ovl7();
+    func_801A2558_ovl7(&D_801CAF50_ovl7);
+    D_800DEF90[omCurrentObj->objId] = func_800B6FD8;
+    D_800DF150[omCurrentObj->objId] = &func_801B152C_ovl7;
+    sp2C->unk48 = 0;
+    sp2C->unk98 = &D_801CD2F4_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    sp28->angle.v.z = -D_800E6A10[omCurrentObj->objId] * 1.570796371f;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA018(0x10197);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    while ((D_800EC2E0[omCurrentObj->objId].as_s32 == 0) && (i != 0)) {
+        ohSleep(1);
+        i--;
+    }
+    if (i != 0) {
+        ohSleep(0xF);
+    }
+    func_801AC11C_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B1300_ovl7.s")
+#endif
 
 void func_801B152C_ovl7(void) {
     if (D_800E83E0[omCurrentObj->objId] != 0) {

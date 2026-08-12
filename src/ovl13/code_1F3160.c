@@ -630,7 +630,60 @@ void func_801E185C_ovl13(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 11;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801E19AC_ovl13.s")
+void func_801E19AC_ovl13(GObj *arg0) {
+    f32 temp;
+
+    if (D_800E64D0[omCurrentObj->objId] != 0.0f) {
+        D_800EAC20[omCurrentObj->objId] =
+            3.1415927f / ((D_800E64D0[omCurrentObj->objId] > 0.0f) ? 180.0f : -180.0f);
+    }
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y += D_800EAC20[omCurrentObj->objId];
+    if (D_800DFBD0[omCurrentObj->objId][1]->angle.v.y > 3.926991f) {
+        D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = 3.926991f;
+    }
+    if (D_800DFBD0[omCurrentObj->objId][1]->angle.v.y < 2.3561945f) {
+        D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = 2.3561945f;
+    }
+    if (D_800E6690[omCurrentObj->objId] < 0.0f) {
+        if (D_800E64D0[omCurrentObj->objId] <= -4.0f) {
+            D_800E6690[omCurrentObj->objId] = ABS(D_800E6690[omCurrentObj->objId]);
+        }
+    } else if (D_800E64D0[omCurrentObj->objId] >= 4.0f) {
+        D_800E6690[omCurrentObj->objId] = -ABS(D_800E6690[omCurrentObj->objId]);
+    }
+    if (D_800E9E20[omCurrentObj->objId] > 0) {
+        D_800E9E20[omCurrentObj->objId] -= 1;
+    }
+    if (D_800E9E20[omCurrentObj->objId] <= 0) {
+        D_800E3750[omCurrentObj->objId] = D_801E5B58_ovl13[random_soft_s32_range(8)];
+        D_800E9E20[omCurrentObj->objId] = random_soft_s32_range(0x1F) + 15;
+    }
+    if (gEntitiesNextPosYArray[D_800EBBE0[omCurrentObj->objId]] + 40.0f <
+        gEntitiesNextPosYArray[omCurrentObj->objId]) {
+        D_800E3750[omCurrentObj->objId] = -ABS(D_800E3750[omCurrentObj->objId]);
+    } else if (gEntitiesNextPosYArray[omCurrentObj->objId] <
+               gEntitiesNextPosYArray[D_800EBBE0[omCurrentObj->objId]] - 80.0f) {
+        D_800E3750[omCurrentObj->objId] = ABS(D_800E3750[omCurrentObj->objId]);
+    }
+    temp = func_8019DA70_ovl7(D_800E0D50[omCurrentObj->objId]);
+    if (ABS(temp) > 120.0f) {
+        if (temp > 0.0f) {
+            D_800E6690[omCurrentObj->objId] = ABS(D_800E6690[omCurrentObj->objId]);
+        } else {
+            D_800E6690[omCurrentObj->objId] = -ABS(D_800E6690[omCurrentObj->objId]);
+        }
+    }
+    func_801E3A84_ovl13(
+        D_800DFBD0[omCurrentObj->objId][23],
+        D_800DFBD0[omCurrentObj->objId][4],
+        D_800DFBD0[omCurrentObj->objId][6]
+    );
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0xE;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DB2D8_ovl13);
+    }
+    func_801E3958_ovl13(arg0);
+}
 
 void func_801E1ED8_ovl13(GObj *arg0) {
     f32 *temp_v1;
@@ -755,7 +808,60 @@ void func_801E28A8_ovl13(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xA;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801E29E0_ovl13.s")
+void func_801E29E0_ovl13(GObj *arg0) {
+    f32 temp;
+
+    if (D_800E64D0[omCurrentObj->objId] != 0.0f) {
+        D_800EAC20[omCurrentObj->objId] =
+            3.1415927f / ((D_800E64D0[omCurrentObj->objId] > 0.0f) ? 180.0f : -180.0f);
+    }
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y += D_800EAC20[omCurrentObj->objId];
+    if (D_800DFBD0[omCurrentObj->objId][1]->angle.v.y > 3.926991f) {
+        D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = 3.926991f;
+    }
+    if (D_800DFBD0[omCurrentObj->objId][1]->angle.v.y < 2.3561945f) {
+        D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = 2.3561945f;
+    }
+    if (D_800E6690[omCurrentObj->objId] < 0.0f) {
+        if (D_800E64D0[omCurrentObj->objId] <= -4.0f) {
+            D_800E6690[omCurrentObj->objId] = ABS(D_800E6690[omCurrentObj->objId]);
+        }
+    } else if (D_800E64D0[omCurrentObj->objId] >= 4.0f) {
+        D_800E6690[omCurrentObj->objId] = -ABS(D_800E6690[omCurrentObj->objId]);
+    }
+    if (D_800E9E20[omCurrentObj->objId] > 0) {
+        D_800E9E20[omCurrentObj->objId] -= 1;
+    }
+    if (D_800E9E20[omCurrentObj->objId] <= 0) {
+        D_800E3750[omCurrentObj->objId] = D_801E5B58_ovl13[random_soft_s32_range(8)];
+        D_800E9E20[omCurrentObj->objId] = random_soft_s32_range(0x1F) + 15;
+    }
+    if (gEntitiesNextPosYArray[D_800EBBE0[omCurrentObj->objId]] + 40.0f <
+        gEntitiesNextPosYArray[omCurrentObj->objId]) {
+        D_800E3750[omCurrentObj->objId] = -ABS(D_800E3750[omCurrentObj->objId]);
+    } else if (gEntitiesNextPosYArray[omCurrentObj->objId] <
+               gEntitiesNextPosYArray[D_800EBBE0[omCurrentObj->objId]] - 80.0f) {
+        D_800E3750[omCurrentObj->objId] = ABS(D_800E3750[omCurrentObj->objId]);
+    }
+    temp = func_8019DA70_ovl7(D_800E0D50[omCurrentObj->objId]);
+    if (ABS(temp) > 120.0f) {
+        if (temp > 0.0f) {
+            D_800E6690[omCurrentObj->objId] = ABS(D_800E6690[omCurrentObj->objId]);
+        } else {
+            D_800E6690[omCurrentObj->objId] = -ABS(D_800E6690[omCurrentObj->objId]);
+        }
+    }
+    func_801E3A84_ovl13(
+        D_800DFBD0[omCurrentObj->objId][23],
+        D_800DFBD0[omCurrentObj->objId][4],
+        D_800DFBD0[omCurrentObj->objId][6]
+    );
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0xE;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DB2D8_ovl13);
+    }
+    func_801E3958_ovl13(arg0);
+}
 
 extern s32 func_801BA32C_ovl7(void);
 void func_801E2F0C_ovl13(s32 arg0, s32 arg1, f32 arg2) {

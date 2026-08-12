@@ -912,7 +912,67 @@ void func_801E8EC8_ovl9(GObj *arg0) {
     func_8019F3F0_ovl7();
 }
 
+/* FACTORY: 1/201 -- first 101 instructions byte-exact, frame 0x40 and all
+   three stack slots (0x20/0x2C/0x34) exact via the five pad locals.  Residue
+   is ONE extra late_rodata constant: IDO emits 1.5707964f twice in the
+   ABSF(ang) compare where the ROM emits it once, shifting everything from
+   [102] on by one.  Everything after the shift re-syncs. */
+#ifdef NON_MATCHING
+extern f32 sqrtf(f32);
+extern f32 atan2f(f32, f32);
+
+void func_801E8F74_ovl9(struct GObj *arg0) {
+    f32 pad0;
+    f32 pad1;
+    f32 dy;
+    f32 pad2;
+    f32 dz;
+    f32 pad3;
+    f32 pad4;
+    f32 dist;
+    f32 dx;
+    f32 ang;
+
+    if (D_800E6F50[omCurrentObj->objId].originOffset < 320.0f) {
+        dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+        dy = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
+        dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
+        dist = sqrtf((dx * dx) + (dz * dz));
+        ang = atan2f(dx, dz) - D_800E17D0[omCurrentObj->objId];
+        while (3.1415927f <= ang) {
+            ang = ang - 6.2831855f;
+        }
+        while (ang <= -3.1415927f) {
+            ang = ang + 6.2831855f;
+        }
+        if (1.5707964f < ABSF(ang)) {
+            dist = -dist;
+        }
+        ang = atan2f(dist, dy) - D_800EAA60[omCurrentObj->objId];
+        while (3.1415927f <= ang) {
+            ang = ang - 6.2831855f;
+        }
+        while (ang <= -3.1415927f) {
+            ang = ang + 6.2831855f;
+        }
+        if (ang + 0.039269909f < D_800EA6E0[omCurrentObj->objId]) {
+            D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] - 0.039269909f;
+            if (D_800EA6E0[omCurrentObj->objId] < -1.5707964f) {
+                D_800EA6E0[omCurrentObj->objId] = -1.5707964f;
+            }
+        } else if (D_800EA6E0[omCurrentObj->objId] < ang - 0.039269909f) {
+            D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + 0.039269909f;
+            if (1.5707964f < D_800EA6E0[omCurrentObj->objId]) {
+                D_800EA6E0[omCurrentObj->objId] = 1.5707964f;
+            }
+        }
+    }
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_800EA6E0[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId] + D_800EA6E0[omCurrentObj->objId];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8F74_ovl9.s")
+#endif
 
 void func_801E92DC_ovl9(void);
 
