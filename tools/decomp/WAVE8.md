@@ -159,6 +159,49 @@ paths are stale — every tool lives in `tools/decomp/` now.
    `funcstodo.txt` stating the measured blocker. The user decides their fate.
    Do not silently unguard, do not fake a match, do not redefine "done".
 
+## Checkpoint protocol (rewritten 2026-08-12 after it failed in practice)
+
+"Gate every 30-45 minutes and commit" does not work with seven lanes on one
+shared working tree, and the first attempt cost an hour with NOTHING
+committed. The tree is essentially never green at an arbitrary instant: a
+lane rewrites a .c in place, compiles, and restores it, so an unannounced
+build lands inside somebody's edit window. Twice the manager diagnosed a
+break that the responsible lane had already fixed or replaced with a
+different one.
+
+**The working protocol is: drain, then gate.** Message every lane to finish
+its current edit, guarantee its files compile with all non-matching work
+guarded, and reply PAUSED. Gate the stationary tree once, commit, push,
+then resume. Lanes hand back clean trees when asked directly; six of seven
+did so within minutes.
+
+Corollary: a lane completing or reporting IS a checkpoint window. Prefer
+those to arbitrary timers.
+
+## verify.py MATCH does not mean the ROM is safe
+
+Measured twice today, both times on functions verify.py called MATCH:
+
+  * `check_tu_size.py` found the TU 16 and 64 bytes SHORT while every
+    function in it verified. verify.py checks a function's own instructions;
+    it cannot see what the translation unit emits around them. A short TU
+    shifts every segment after it -- one 32-byte growth in ovl14 made 6.6
+    MILLION words appear to differ.
+  * `padtrap.py` classified both listings 'benign'/'clean', disagreeing with
+    check_tu_size. When the two disagree, **check_tu_size wins** -- it is
+    measuring the linked result, padtrap is predicting from the listing.
+
+So the per-function check is necessary and not sufficient. The gate order
+that actually catches things:
+
+    mk.sh -> sha1        the arbiter; everything else is diagnosis
+    check_tu_size.py     catches shifts that verify.py structurally cannot
+    rom_diff.py --shift  tells you WHICH subsegment, in seconds
+    verify_rom.py        per-function truth, but refuses on a stale ELF
+
+A ROM that is byte-exact is the only evidence that counts. A file full of
+MATCHes is not.
+
 ## Standing prohibitions (full list, for lane prompts)
 
 No port work. No tool writing. No yaml edits (manager-owned). No git
