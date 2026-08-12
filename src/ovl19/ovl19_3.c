@@ -1509,6 +1509,8 @@ void func_8022E198_ovl19(GObj *g) {
 }
 
 /*LANE_BEGIN*/
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 32/150 insns. Draft kept. */
 void func_8022E224_ovl19(GObj *g) {
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B4954;
@@ -1519,8 +1521,7 @@ void func_8022E224_ovl19(GObj *g) {
     D_800E6BD0[omCurrentObj->objId] = *D_800E6BD0 + 0.37f;
     D_800E17D0[omCurrentObj->objId] = *gEntitiesAngleYArray;
     gEntitiesAngleYArray[omCurrentObj->objId] = *gEntitiesAngleYArray;
-    D_8022FAB0_ovl19 = func_800FF144();
-    if (D_8022FAB0_ovl19 != NULL) {
+    if ((D_8022FAB0_ovl19 = func_800FF144()) != NULL) {
         D_8022FAB0_ovl19->unk10 = 18.0f;
         D_8022FAB0_ovl19->unk14 = 20.0f;
         D_8022FAB0_ovl19->unk18 = -240.0f;
@@ -1537,6 +1538,9 @@ void func_8022E224_ovl19(GObj *g) {
     D_800E9720[omCurrentObj->objId] = 0x2D;
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022E224_ovl19.s")
+#endif
 
 /*LANE_END*/
 void func_8022E47C_ovl19(GObj *g) {

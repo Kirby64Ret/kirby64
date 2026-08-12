@@ -343,17 +343,18 @@ void func_800ACC30(s16 *arg0, s16 *arg1, SPObj *spobj) {
 void func_800ACC68(s16 *arg0, s16 *arg1, SPObj *spobj) {
     f32 scale;
     f32 mag;
+
     scale = spobj->xScale;
     mag = (scale < 0.0f) ? -scale : scale;
     if (mag < 0.03125f) {
-        *arg0 = 0x8000;
+        *(u16 *) arg0 = 0x8000;
     } else {
         *arg0 = (u32) (1024.0f / scale);
     }
     scale = spobj->yScale;
     mag = (scale < 0.0f) ? -scale : scale;
     if (mag < 0.03125f) {
-        *arg1 = 0x8000;
+        *(u16 *) arg1 = 0x8000;
     } else {
         *arg1 = (u32) (1024.0f / scale);
     }

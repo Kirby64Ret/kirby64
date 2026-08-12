@@ -544,8 +544,6 @@ extern void func_80169430_ovl3(s32, s32, s32, s32);
 extern s32 D_801D9E34;
 extern s32 D_801D9DC8;
 
-#ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 4/30 insns. Draft kept. */
 /* BLOCKED by the +8 frame anomaly, decided not swept. Every instruction is
  * correct; the only residue is the frame constant and the four sp offsets that
  * follow from it. The ROM is frame 0x38 with the struct at 0x18, i.e. locals
@@ -573,8 +571,8 @@ GObj *arg0;
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DEC34_ovl14.s")
 #endif
 
+/* Same +8 frame block as func_801DEC34_ovl14 above; 2/30. */
 #ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 2/30 insns. Draft kept. */
 s32 func_801DECAC_ovl14(arg0)
 GObj *arg0;
 {
@@ -588,9 +586,6 @@ GObj *arg0;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DECAC_ovl14.s")
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DECAC_ovl14.s")
 #endif

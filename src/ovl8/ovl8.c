@@ -3,6 +3,7 @@
 #include "GObj.h"
 #include "main/math.h"
 #include "ovl1/ovl1_6.h"
+#include "unk_structs/D_800D7098.h"
 
 extern void func_800B5C28(void);
 extern void func_800B5FBC(struct GObj *);
@@ -113,7 +114,25 @@ void func_801D12A4_ovl8(void) {
     D_800E2250[omCurrentObj->objId] = 0.0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D1334_ovl8.s")
+void func_801D1334_ovl8(void) {
+    extern struct UnkStruct800D7098 D_800D7098;
+
+    func_800B5A7C();
+    D_800E64D0[omCurrentObj->objId] += D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId];
+    func_800F8E6C(D_800DE350[omCurrentObj->objId]);
+    D_800E64D0[omCurrentObj->objId] -= D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId];
+    if ((D_800E98E0[omCurrentObj->objId] != 0) && (D_800D7098.unk10 != 0)) {
+        D_800E3210[omCurrentObj->objId] = D_800E3210[D_800D7098.unk0];
+    } else if (D_800E9C60[omCurrentObj->objId] == 0) {
+        D_800E3210[omCurrentObj->objId] = 0.0f;
+    }
+    func_801D12A4_ovl8();
+    gEntitiesNextPosXArray[omCurrentObj->objId] += D_800E2090[omCurrentObj->objId];
+    D_800EA6E0[omCurrentObj->objId] += D_800EA8A0[omCurrentObj->objId];
+    gEntitiesNextPosYArray[omCurrentObj->objId] += D_800E3210[omCurrentObj->objId] + D_800EA6E0[omCurrentObj->objId];
+    gEntitiesNextPosZArray[omCurrentObj->objId] += D_800E2410[omCurrentObj->objId];
+}
+
 
 void func_801D152C_ovl8(void) {
     func_801D1334_ovl8();
