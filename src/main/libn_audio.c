@@ -249,33 +249,35 @@ extern KChan *D_80097920;
  * either or both call sites, chained store, K&R definition, s32 return, a third
  * parameter, dead locals leading and trailing, volatile on the owner and next
  * loads, three if/else line collapses, and a blank line before the loop. */
-#ifdef NON_MATCHING
-void func_80023384(KChan *chan, u8 arg1) {
-    KChan *note;
-    KChan *next;
+void func_80023384(KChan *chan, u8 arg1)
+{
+  KChan *note;
+  KChan *next;
+  if (arg1 >= 0x80)
+  {
+    arg1 = 0x7F;
+  }
+  chan->unk30 = arg1;
+  if (chan->unk28 != ((void *) 0))
+  {
+    chan->unk28->unk3C = arg1 & 0xFFFF;
+  }
+  note = D_80097920;
+  while (note != ((void *) 0))
+  {
+    next = note->next;
+    if (note->owner == chan)
+    {
+      note->unk30 = arg1;
+      if (note->unk28 != ((void *) 0))
+      {
+        note->unk28->unk3C = arg1;
+      }
+    }
+    note = next;
+  }
 
-    if (arg1 >= 0x80) {
-        arg1 = 0x7F;
-    }
-    chan->unk30 = arg1;
-    if (chan->unk28 != NULL) {
-        chan->unk28->unk3C = arg1;
-    }
-    note = D_80097920;
-    while (note != NULL) {
-        next = note->next;
-        if (note->owner == chan) {
-            note->unk30 = arg1;
-            if (note->unk28 != NULL) {
-                note->unk28->unk3C = arg1;
-            }
-        }
-        note = next;
-    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023384.s")
-#endif
 
 /* Twin of func_80023384; same 2/28 register rotation, same swept floor. */
 #ifdef NON_MATCHING
