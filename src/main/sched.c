@@ -980,7 +980,22 @@ void scAddTask(SCTaskInfo *task) {
 // `lui $a0, %hi(D_80048BA8)` per path.
 #ifdef NON_MATCHING
 void scThreadMain(void *arg) {
-    u32 mesg;
+    /* `u32 mesg` in the original, and on the N64 that is right: OSMesg is a
+     * 32-bit void* there, so the queue slot and the local are the same width.
+     *
+     * On LP64 they are not. osRecvMesg writes a full 8-byte OSMesg through the
+     * pointer it is handed, so a u32 local takes an 8-byte store into a 4-byte
+     * object -- it smashes whatever the compiler put next to it on the stack,
+     * and the value read back is only the low half of the message. The queue
+     * carries real SCTaskInfo pointers as well as the small tags 1/2/3/99, so
+     * the lost half is a live pointer: the first task dispatched crashed in
+     * scAddTask on 0xf5a7af40, the bottom 32 bits of a heap address.
+     *
+     * This body is inside #ifdef NON_MATCHING and so exists only in the port
+     * -- the matching build assembles scThreadMain.s -- which is why the fix
+     * is unguarded here. The same bug in matched code needs a PORT guard; see
+     * gtlSwitchContext in gtl.c. */
+    OSMesg mesg;
 
     scClientList = NULL;
 
@@ -1032,9 +1047,9 @@ void scThreadMain(void *arg) {
     osSendMesg(&gThreadInitializedMQ, (OSMesg)1, OS_MESG_NOBLOCK);
 
     while (1) {
-        osRecvMesg(&scTaskMQ, (OSMesg)&mesg, OS_MESG_BLOCK);
+        osRecvMesg(&scTaskMQ, &mesg, OS_MESG_BLOCK);
 
-        switch (mesg) {
+        switch ((s32) (intptr_t) mesg) {
             case 1:
                 scHandleVRetrace();
                 break;
