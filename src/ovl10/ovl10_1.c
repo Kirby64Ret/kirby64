@@ -39,9 +39,7 @@ extern s32 D_800D6B6C[];
 void func_8019D958_ovl7(u16);
 void func_801DBDB8_ovl10(GObj *);
 
-#ifdef MIPS_TO_C
-/* 8 regalloc diffs: ROM uses $v0/$v1 for the D_800D6E40/D_800D6E18 addresses,
-   IDO picks $v1/$a1. */
+extern void func_8019BB58_ovl7();
 void func_801DBC00_ovl10(s32 arg0) {
     if (func_800B9DF8(2) && D_800D6B6C[1] == 0) {
         func_8019BB58_ovl7();
@@ -55,9 +53,6 @@ void func_801DBC00_ovl10(s32 arg0) {
     while (1)
         utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x14, &D_801F4240_ovl10[0]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DBC00_ovl10.s")
-#endif
 
 void func_801DBD38_ovl10(struct GObj *arg0) {
     while (1) {
