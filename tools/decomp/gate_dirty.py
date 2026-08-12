@@ -156,9 +156,27 @@ def reguard(path, fn, residue):
     # under iteration" into "wrong only if the file changes inside this call".
     r = subprocess.run([sys.executable, 'tools/decomp/verify.py', path, '--all'],
                        capture_output=True, text=True)
-    still = re.search(rf'^{re.escape(fn)}: DIFF (\d+)/', r.stdout + r.stderr, re.M)
+    out2 = r.stdout + r.stderr
+    still = re.search(rf'^{re.escape(fn)}: DIFF (\d+)/', out2, re.M)
     if not still:
-        print(f'      {fn} verifies clean now -- NOT guarding, it was a stale reading')
+        # ABSENCE OF A DIFF LINE IS NOT PROOF OF A MATCH. verify.py says
+        # nothing about a function it could not pair with a listing, and this
+        # check read that silence as "clean now" and refused to guard --
+        # including for func_80168804_ovl5, which rom_diff had just located by
+        # address as the cause of 18 differing words. A file can carry 16
+        # unverifiable functions and one of them can be the fault.
+        if re.search(rf'^{re.escape(fn)}: (MATCH|OK)', out2, re.M):
+            print(f'      {fn} verifies MATCH now -- not guarding, stale reading')
+        else:
+            print(f'      {fn} is UNVERIFIABLE, not clean -- verify.py cannot '
+                  f'pair it, so it cannot clear it. Guarding anyway.')
+            lines.insert(end + 1, f'#else\n#pragma GLOBAL_ASM("{s}")\n#endif')
+            lines.insert(start, '#ifdef NON_MATCHING\n'
+                                f'/* Left live by a lane mid-work, at {residue}. '
+                                f'Draft kept. */')
+            open(path, 'w').write('\n'.join(lines))
+            print(f'      re-guarded {fn} ({residue})')
+            return True
         return False
     residue = f'{still.group(1)}/{residue.split("/")[1]}'
 
@@ -190,6 +208,20 @@ def main():
         diffs = re.findall(r'^(\w+): DIFF (\d+)/(\d+)', out, re.M)
         m = re.search(r'(\d+) match, (\d+) diff', out)
         n = int(m.group(2)) if m else (1 if diffs else 0)
+
+        # "0 diff" WITH "0 match" MEANS ZERO CHECKS RAN, NOT THAT THE FILE IS
+        # CORRECT. verify.py says so itself, and this gate ignored it: it
+        # passed src/ovl5/ovl5_4.c as ok while the linked ROM had 18 differing
+        # words in exactly that subsegment. Every function in the file was
+        # unverifiable -- usually because the objects are stale or the
+        # listings could not be paired -- so the gate was reporting the absence
+        # of evidence as evidence of absence.
+        if m and int(m.group(1)) == 0 and n == 0:
+            print(f'UNKNOWN {f}  0 checks ran -- verify.py could not pair any '
+                  f'function. Rebuild and re-run; do not read this as clean.')
+            bad.append((f, []))
+            continue
+
         if n:
             bad.append((f, diffs))
             print(f'RED   {f}')
