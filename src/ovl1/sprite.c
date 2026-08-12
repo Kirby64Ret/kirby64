@@ -219,12 +219,12 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
     }
     gobj_4C = gobj->unk4C;
     if (gobj_4C != NULL) {
-        SPObj *next = gobj_4C->unk8;
-        while (next != NULL) {
-            next = next->unk8;
+        SPObj *tail = gobj_4C; /* 800AC9A0..800AC9C0 walks to the LAST node */
+        while (tail->unk8 != 0) {
+            tail = (SPObj *) (uintptr_t) tail->unk8;
         }
-        next->unk8 = sprite;
-        sprite->unkC = next;
+        tail->unk8 = (u32) (uintptr_t) sprite;
+        sprite->unkC = (u32) (uintptr_t) tail;
     } else {
         gobj->unk4C = sprite;
         sprite->unkC = 0;
@@ -281,23 +281,25 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
             func_800AC924((uObjMtx* ) &sprite->unk88);
             break;
     }
-    /* PORT STAND-IN, NOT A DECOMPILATION.
+    /* The ROM's tail (800ACB38..800ACB60) is DECODED now, and it is not the
+     * pointer copy m2c produced. Two cursors start at the SPObj base and step
+     * by 0xC; each pass reads +0x40/+0x44/+0x48 and writes +0xA0/+0xA4/+0xA8,
+     * stopping when the first cursor reaches base+0x60. That is 8 passes x 0xC
+     * = a straight 0x60-byte copy of the RSP command block at 0x40 to its
+     * second copy at 0xA0 -- SPObj is double-buffered so the CPU never rewrites
+     * the block the RSP is reading, and spobj->unk12 selects the copy.
      *
-     * m2c rendered the tail as `*sprite->unkA0 = *sprite->unk40;`, a struct
-     * copy through two pointers. The ROM does something else: a LOOP that
-     * strides both cursors by 0xC and copies 0x38/0x3C/0x40 into 0x94/0x98/
-     * 0x9C (800ACB40..800ACB60), i.e. an in-struct block copy, not a
-     * dereference of the two pointer members.
+     * The port cannot host the second copy. SPObj.h names only the first one,
+     * and under LP64 a 0x60-byte block anchored at unkA0 would run past the
+     * 0x100 allocation stride func_800AE048 uses. func_800AD1A0 therefore
+     * addresses the FIRST copy unconditionally (see its comment), so nothing
+     * in the port ever reads bytes 0xA0..0x100 and seeding them is a no-op.
      *
-     * Taken literally the m2c form dereferences unkA0, which this `kind` never
-     * initialises, and the port segfaulted here immediately after
-     * func_800AC954 stopped being a stub. Guarded so the port runs; the block
-     * copy itself is NOT reproduced, so anything that reads the 0x94..0x9C
-     * region will see uninitialised data. Decompiling this loop properly is
-     * the fix -- this only stops it crashing. */
-    if (sprite->unkA0 != NULL && sprite->unk40 != NULL) {
-        *sprite->unkA0 = *sprite->unk40;
-    }
+     * The previous stand-in here ran `*sprite->unkA0 = *sprite->unk40;` under a
+     * NULL guard. Those two members are not pointers -- 0x40 is the uObjBg this
+     * function has just filled in -- so the guard passes on live data and the
+     * copy dereferences image dimensions as an address. It has not fired yet
+     * only because unkA0 happens to be zero in a fresh arena. Removed. */
     return sprite;
 }
 #else

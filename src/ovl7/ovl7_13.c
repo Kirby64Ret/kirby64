@@ -104,7 +104,7 @@ void func_800B74B8(s32);
 void func_8019BB58_ovl7(void);
 void func_801A3280_ovl7(void);
 s32 func_800B30BC(f32, f32, f32);
-void func_801BA32C_ovl7(void);
+s32 func_801BA32C_ovl7(void);
 extern s32 D_800D6B54;
 extern f32 D_801CE3AC_ovl7, D_801CE3B0_ovl7, D_801CE3B4_ovl7;
 
