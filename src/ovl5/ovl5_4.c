@@ -778,7 +778,7 @@ void func_8016FA8C_ovl5(Gfx **g) {
 // is the framebuffer-clear form proved byte-exact on func_8017CC3C_ovl5 (the
 // vu16 casts are what stop IDO hoisting the D_803D6900 induction bump); it is
 // kept live for the PC port, which builds with NON_MATCHING.
-#ifdef NON_MATCHING
+
 #include "main/vi.h"
 #include "main/gtl.h"
 
@@ -806,7 +806,7 @@ void func_8016FAB0_ovl5(void) {
     } while (i != 320 * 240);
     gtlCreateScene(&D_80186ACC_ovl5);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016FAB0_ovl5.s")
-#endif
+
+
+
 

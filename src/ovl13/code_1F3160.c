@@ -11,13 +11,13 @@
 
 #include "ovl13.h"
 
-extern f32 D_801E5CDC_ovl13;
-extern f32 D_801E5D78_ovl13;
-extern f32 D_801E5D7C_ovl13;
-extern f32 D_801E5D80_ovl13;
-extern f32 D_801E5D84_ovl13;
-extern f32 D_801E5D88_ovl13;
-extern f32 D_801E5D8C_ovl13;
+/* D_801E5CDC_ovl13 = -0.1f : now emitted by this TU */
+/* D_801E5D78_ovl13 = -1.5707964f : now emitted by this TU */
+/* D_801E5D7C_ovl13 = 3.1415927f : now emitted by this TU */
+/* D_801E5D80_ovl13 = -0.1f : now emitted by this TU */
+/* D_801E5D84_ovl13 = 3.1415927f : now emitted by this TU */
+/* D_801E5D88_ovl13 = -1.5707964f : now emitted by this TU */
+/* D_801E5D8C_ovl13 = -0.1f : now emitted by this TU */
 extern void func_800AA154(s32); /* void is load-bearing: implicit int reserves $v0 */
 void func_801DB1E0_ovl13(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk39 = -1;
@@ -46,15 +46,14 @@ void func_801DB358_ovl13(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DC788_ovl13.s")
 
-#ifdef NON_MATCHING
 /* 10/93: the whole loop body is exact. The residue is the coupled-FP floor:
  * the ROM defines $f22 (D_801E5CD4) first and $f20 (D_801E5CD8) second while
  * using $f20 first in the loop; IDO always gives the first-assigned local the
  * LOWER register, so no assignment/declaration order reaches it. Swept: both
  * assignment orders, both declaration orders, declaration initializers,
  * inline externs, and statement placement around `ret = -1`. */
-extern f32 D_801E5CD4_ovl13;
-extern f32 D_801E5CD8_ovl13;
+/* D_801E5CD4_ovl13: literal */
+/* D_801E5CD8_ovl13: literal */
 extern void func_801A4C0C_ovl7(struct GObj *);
 
 s32 func_801DC8CC_ovl13(GObj *arg0) {
@@ -63,8 +62,8 @@ s32 func_801DC8CC_ovl13(GObj *arg0) {
     f32 hi;
     f32 lo;
 
-    lo = D_801E5CD8_ovl13;
-    hi = D_801E5CD4_ovl13;
+    lo = 0.200000003f;
+    hi = 9999.0f;
     ret = -1;
     for (i = 0x1E; i != 0x3C; i++) {
         if ((D_800DD710[i] != -1) && (D_800E7730[i] == 0) && (lo < D_800E7B20[i]) && (D_800E7B20[i] < hi)) {
@@ -79,9 +78,6 @@ s32 func_801DC8CC_ovl13(GObj *arg0) {
     }
     return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DC8CC_ovl13.s")
-#endif
 
 s32 func_801DCA40_ovl13(s32 arg0) {
     switch (D_800E77A0[arg0]) {
@@ -332,7 +328,7 @@ void func_801DDC58_ovl13(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D93A8_ovl8;
     D_800E0490[omCurrentObj->objId] = &D_801DAAF0_ovl8;
     func_801A2ADC_ovl7(&D_801DAAF0_ovl8);
-    c = D_801E5CDC_ovl13;
+    c = -0.1f;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAD8C_ovl8;
     D_800E6690[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId] * c;
     D_800E3750[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] * c;
@@ -467,8 +463,8 @@ void func_801E135C_ovl13(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAE1C_ovl8;
     func_800B33F4();
     D_800DFBD0[omCurrentObj->objId][1]->pos.v.z = 0.0f;
-    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_801E5D78_ovl13;
-    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = D_801E5D7C_ovl13;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = -1.5707964f;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = 3.1415927f;
     D_800DFBD0[omCurrentObj->objId][2]->angle.v.z = 0.0f;
     func_800A9F98(0x10412, 3.0f);
     func_800AA018(0x10426);
@@ -480,7 +476,7 @@ void func_801E135C_ovl13(GObj *arg0) {
     }
     func_800AF27C();
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.0f;
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E5D80_ovl13;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.1f;
     gEntityFuncListIDArray[omCurrentObj->objId] = 10;
 }
 
@@ -507,10 +503,10 @@ void func_801E1680_ovl13(GObj *arg0) {
     }
     D_800EAC20[omCurrentObj->objId] = 0.0f;
     D_800DFBD0[omCurrentObj->objId][1]->pos.v.z = D_800EAC20[omCurrentObj->objId];
-    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = D_801E5D84_ovl13;
-    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_801E5D88_ovl13;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = 3.1415927f;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = -1.5707964f;
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.0f;
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E5D8C_ovl13;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.1f;
     gEntityFuncListIDArray[omCurrentObj->objId] = 10;
 }
 
@@ -642,14 +638,9 @@ void func_801E3778_ovl13(GObj *arg0) {
     func_801E3958_ovl13(arg0);
 }
 
-#ifdef NON_MATCHING
-/* 7/92: instruction-for-instruction exact apart from the two saved-FP loads.
- * IDO allocates $f20 to whichever local is assigned FIRST and schedules that
- * local's load first; the ROM has D_801E5DEC in $f22 yet loads it first, so
- * register choice and load order are coupled and unreachable from source. */
 extern void func_801A3E80_ovl7(GObj *);
-extern f32 D_801E5DEC_ovl13;
-extern f32 D_801E5DF0_ovl13;
+/* 9999.0f, 0.09000000358f: literals, this TU owns its .rodata */
+
 void func_801E37E8_ovl13(GObj *arg0) {
     s32 i;
     s32 m;
@@ -657,8 +648,8 @@ void func_801E37E8_ovl13(GObj *arg0) {
     f32 temp_f22;
 
     m = -1;
-    temp_f20 = D_801E5DF0_ovl13;
-    temp_f22 = D_801E5DEC_ovl13;
+    temp_f20 = 0.09000000358f;
+    temp_f22 = 9999.0f;
 
     for (i = 14; i != 0x3C; i++) {
         if ((D_800DD710[i] != m) && ((D_800E7730[i] == 0) || (D_800E7730[i] == 4)) &&
@@ -669,9 +660,6 @@ void func_801E37E8_ovl13(GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801E37E8_ovl13.s")
-#endif
 
 void func_801E3958_ovl13(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] += 1;

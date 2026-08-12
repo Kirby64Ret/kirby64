@@ -553,7 +553,50 @@ void func_801DFB28_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
+/* 127/172 -> 1/172. The `1` stored to D_800E8920 has to be type-split from the
+ * one the ROM parks in $s6 (u32 works, s8/u8 do not). The single residue is
+ * `ohSleep(1)`: the ROM passes $s6 (`or $a0, $s6, $zero`), which needs
+ * `void ohSleep(s32);` -- and THAT regresses func_801DD2A4_ovl9 above, which is
+ * already matched and needs the u8 form's fresh `addiu $a0, $zero, 1`. Two
+ * functions in one TU want opposite ohSleep prototypes and IDO rejects a mixed
+ * redeclaration, so this cannot be converted without breaking a neighbour.
+ * Swept on func_801DD2A4 under the s32 form: (u32) on the compare, u8/u32/s8
+ * type-splits of the store, do/while, casts on the argument -- all inert or
+ * much worse. */
+#ifdef NON_MATCHING
+extern s32 D_801C8520_ovl7;
+
+void func_801DFB50_ovl9(struct GObj *arg0) {
+    f32 v;
+
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8520_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB980;
+    D_800E1B50[omCurrentObj->objId]->unk94 = &D_801C35C4_ovl7;
+    *(u32 *) &D_800E8920[omCurrentObj->objId] = 1;
+    func_800AECC0(0);
+    func_800AED20(0);
+    func_800B33F4();
+    func_800AA018(0x101AE);
+    while (gEntityFuncListIDArray[omCurrentObj->objId] == 1) {
+        if (ABSF((gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]) < 160.0f) {
+            v = ABSF(func_8019DA50_ovl7());
+            if (320.0f < v) {
+                D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+                gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+            } else if (v < 240.0f) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 7;
+            }
+        } else {
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+            gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DFB50_ovl9.s")
+#endif
 
 s32 func_801A0D74_ovl7();
 void func_8019F3B0_ovl7(void);
@@ -567,7 +610,32 @@ void func_801DFE00_ovl9(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DFE74_ovl9.s")
+extern struct Sub800E1B50_Unk94 D_801C3608;
+
+void func_801DFE74_ovl9(struct GObj *arg0) {
+    f32 v;
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8568;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB980;
+    D_800E1B50[omCurrentObj->objId]->unk94 = &D_801C3608;
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800AECC0(0);
+    func_800AED20(0);
+    func_800B33F4();
+    func_800AA018(0x101AC);
+    while (gEntityFuncListIDArray[omCurrentObj->objId] == 2) {
+        if (ABSF((gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]) < 160.0f) {
+            v = ABSF(func_8019DA50_ovl7());
+            if (320.0f < v) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+            } else if (240.0f < v) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+            }
+        }
+        ohSleep(1);
+    }
+}
 
 extern s32 D_801C8520_ovl7;
 extern s32 D_801CB980;

@@ -255,7 +255,64 @@ void func_80161EC0_ovl3(s32 arg0, f32 arg1, f32 arg2) {
     func_800F8E6C(omCurrentObj);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80162000_ovl3.s")
+typedef struct Unk80162000 {
+    u8 pad0[4];
+    u8 unk4;
+    u8 pad5[3];
+    s32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    f32 unk1C;
+    f32 unk20;
+    f32 unk24;
+} Unk80162000;
+
+typedef struct Unk80162000Hdr {
+    u8 pad0[0x1C];
+    s32 unk1C;
+    Unk80162000 *unk20;
+} Unk80162000Hdr;
+
+s32 func_80162000_ovl3(char *arg0, s32 arg1, f32 arg2) {
+    Unk80162000 *p;
+    Unk80162000Hdr *hdr;
+    s32 i;
+
+    if (arg2 == 0.0f) {
+        return 0;
+    }
+    hdr = (Unk80162000Hdr *) func_801117BC(arg0, omCurrentObj->objId);
+    i = 0;
+    p = hdr->unk20;
+    for (; i < hdr->unk1C; i++) {
+        if (arg2 != 1.0f) {
+            switch (p->unk4) {
+            case 1:
+                p->unk18 = p->unk18 * arg2;
+                break;
+            case 2:
+                p->unkC = p->unkC * arg2;
+                p->unk10 = p->unk10 * arg2;
+                p->unk14 = p->unk14 * arg2;
+                p->unk18 = p->unk18 * arg2;
+                p->unk1C = p->unk1C * arg2;
+                p->unk20 = p->unk20 * arg2;
+                p->unk24 = p->unk24 * arg2;
+                break;
+            }
+        }
+        if (p->unk8 == 0) {
+            if (arg1 != 0) {
+                p->unk8 = arg1;
+            }
+        }
+        p++;
+    }
+    func_80111C4C((s32) hdr);
+    return (s32) hdr;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80162150_ovl3.s")
 
@@ -811,7 +868,43 @@ void func_80166588_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80166768_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80166BB4_ovl3.s")
+extern f32 D_801971A0_ovl3;
+void func_80166E2C_ovl3(s32);
+
+void func_80166BB4_ovl3(s32 arg0) {
+    f32 temp;
+
+    temp = D_801971A0_ovl3;
+    D_800EA520[omCurrentObj->objId] = 0;
+    D_800DF150[omCurrentObj->objId] = func_80166E2C_ovl3;
+    gEntitiesScaleXArray[omCurrentObj->objId] = temp;
+    gEntitiesScaleYArray[omCurrentObj->objId] = temp;
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp;
+    if (D_800EC2E0[omCurrentObj->objId].as_s32 == 0) {
+        D_800E0650[omCurrentObj->objId] = 1;
+        func_800AECC0(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+        func_800AED20(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+        D_800E0F10[omCurrentObj->objId] = 2;
+        func_800A9864(0x20052, 0x22, 0x10);
+        func_800AA154(0x202B9);
+        D_800EA520[omCurrentObj->objId] =
+            func_800A8100(1, 1, 0x24, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][2]);
+        func_800AA018(0x202BA);
+        while (gKirbyState.unk44 == 0) {
+            ohSleep(1);
+        }
+        func_800A22D4(D_800EA520[omCurrentObj->objId]);
+        D_800EA520[omCurrentObj->objId] = 0;
+        if (gKirbyState.unk44 == 5) {
+            func_800AA154(0x202BB);
+        }
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    } else {
+        D_800E0F10[omCurrentObj->objId] = 8;
+        func_800A9864(0x20053, 0x22, 0x10);
+        curObjSleepForever();
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80166E2C_ovl3.s")
 
@@ -1016,11 +1109,108 @@ void func_80167CCC_ovl3(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80167D04_ovl3.s")
+extern f32 D_801971B4_ovl3;
+extern f32 D_801971B8_ovl3;
+extern f32 D_800D7238;
+extern void func_800BB468(s32, s32);
+void func_80167F54_ovl3(s32);
+
+void func_80167D04_ovl3(s32 arg0) {
+    s32 sp2C;
+    s32 sp28;
+
+    D_800DF150[omCurrentObj->objId] = func_80167F54_ovl3;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9FE0[omCurrentObj->objId].as_ptr = &sp28;
+    sp28 = 0;
+    switch (D_800EC2E0[omCurrentObj->objId].as_s32) {
+    case 0:
+        D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
+        func_800A9864(0x20043, 0x22, 0x10);
+        func_800AA018(0x20295);
+        curObjSleepForever();
+    case 1:
+        D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
+        func_800A77E8(0x4E, &sp28, &sp2C);
+        func_800A9864(0x20058, 0x22, 0x10);
+        func_800AA018(0x202C5);
+        curObjSleepForever();
+    case 2:
+        D_800EA6E0[omCurrentObj->objId] = D_801971B4_ovl3;
+        D_800DEF90[omCurrentObj->objId] = func_800B5064;
+        D_800E0F10[omCurrentObj->objId] = 2;
+        D_800D7238 = D_800EC660[omCurrentObj->objId] * D_801971B8_ovl3;
+        gEntitiesScaleXArray[omCurrentObj->objId] = D_800D7238;
+        gEntitiesScaleYArray[omCurrentObj->objId] = D_800D7238;
+        gEntitiesScaleZArray[omCurrentObj->objId] = D_800D7238;
+        func_800BB468(6, 0x10);
+        play_sound(0x4F);
+        func_800A9864(0x20059, 0x22, 0x10);
+        func_801230E8(0x202C7, 0x202C8, 1);
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+        break;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80167F54_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80168408_ovl3.s")
+typedef struct Unk80168408 {
+    u8 pad0[4];
+    u8 unk4;
+    u8 pad5[3];
+    s32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    f32 unk1C;
+    f32 unk20;
+    f32 unk24;
+} Unk80168408;
+
+typedef struct Unk80168408Hdr {
+    u8 pad0[0x1C];
+    s32 unk1C;
+    Unk80168408 *unk20;
+} Unk80168408Hdr;
+
+s32 func_80168408_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    Unk80168408Hdr *hdr;
+    Unk80168408 *p;
+    s32 i;
+
+    if (arg2 == 0.0f) {
+        return 0;
+    }
+    hdr = (Unk80168408Hdr *) func_80111A04(arg0, omCurrentObj->objId);
+    i = 0;
+    p = hdr->unk20;
+    for (; i < hdr->unk1C; i++) {
+        if (arg2 != 1.0f) {
+            switch (p->unk4) {
+            case 1:
+                p->unk18 = p->unk18 * arg2;
+                break;
+            case 2:
+                p->unkC = p->unkC * arg2;
+                p->unk10 = p->unk10 * arg2;
+                p->unk14 = p->unk14 * arg2;
+                p->unk18 = p->unk18 * arg2;
+                p->unk1C = p->unk1C * arg2;
+                p->unk20 = p->unk20 * arg2;
+                p->unk24 = p->unk24 * arg2;
+                break;
+            }
+        }
+        if (p->unk8 == 0) {
+            if (arg1 != 0) {
+                p->unk8 = arg1;
+            }
+        }
+        p++;
+    }
+    return (s32) hdr;
+}
 
 s32 func_8016854C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     s32 temp = func_80168408_ovl3(arg0, arg1, arg2);

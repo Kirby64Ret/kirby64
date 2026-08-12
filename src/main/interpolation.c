@@ -317,10 +317,9 @@ void mtxGetInterpolatedPosition(Vector *arg0, s32 *arg1, f32 arg2) {
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit
-#ifdef NON_MATCHING
+
 void func_8001E344(Vector *arg0, InterpDesc *arg1, f32 arg2) {
     func_8001DDE0(arg0, arg1, func_8001E104(arg1, arg2));
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/interpolation/func_8001E344.s")
-#endif
+
+

@@ -928,5 +928,24 @@ void func_801FB8B8_ovl9(struct GObj *arg0) {
     }
 }
 
+/* PADDING TRAP -- padtrap.classify() = ('trap', 7). Converting this shortens
+ * ovl9_8.c's .text by 32 bytes (check_tu_size: 0x3350 vs 0x3370) and breaks
+ * the ROM link. The body below is correct; it can never be C. */
+#ifdef NON_MATCHING
+void func_801FB9DC_ovl9(struct GObj *arg0) {
+    s32 temp;
+    s32 rand;
+
+    temp = D_800E9AA0[omCurrentObj->objId].as_s32;
+    rand = random_soft_s32_range(3);
+    if (temp - rand - 3 >= 0) {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = temp - rand - 3;
+    } else {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = temp - rand + 5;
+    }
+    func_801FB614_ovl9();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB9DC_ovl9.s")
+#endif
 

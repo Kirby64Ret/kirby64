@@ -19,7 +19,7 @@ typedef struct Unk80196C74 {
 extern Unk80196C74 D_80196C74_ovl3;
 
 extern s32 func_80151E94_ovl3(void *);
-extern void func_80153984_ovl3(void);
+extern s32 func_80153984_ovl3(void);
 extern s32 func_801217B8(void);
 extern s32 func_80121658(void);
 extern void func_8011D67C(void);
@@ -118,7 +118,54 @@ void func_8016C510_ovl3(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016D3A8_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016D81C_ovl3.s")
+typedef struct Unk80196C54 {
+    u8 unk0[8];
+} Unk80196C54;
+
+extern Unk80196C54 D_80196C54_ovl3;
+
+void func_8016D81C_ovl3(GObj *arg0) {
+    Unk80196C54 sp20 = D_80196C54_ovl3;
+    void func_800AECC0(f32);
+    void func_800AED20(f32);
+    s32 func_801210FC(void);
+    void func_801219C8(void);
+
+    func_80153984_ovl3();
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        func_800AECC0(2.0f);
+        func_800AED20(2.0f);
+    } else {
+        func_800AECC0(3.0f);
+        func_800AED20(3.0f);
+    }
+    if (func_80151E94_ovl3(&sp20) == 0) {
+        func_801219C8();
+        if (!(gKirbyState.isTurning & 1)) {
+            if (func_801210FC() == 0) {
+                if (!(gKirbyController.buttonHeld & 0x300)) {
+                    if (D_800E9720[omCurrentObj->objId] < 0xA) {
+                        D_800E9720[omCurrentObj->objId] = D_800E9720[omCurrentObj->objId] + 1;
+                    }
+                }
+            } else if (gKirbyController.buttonHeld & 0x300) {
+                if ((D_800E9720[omCurrentObj->objId] > 0) && (D_800E9720[omCurrentObj->objId] < 7)) {
+                    gKirbyState.unk38 = arg0->animTimer * 0.5f;
+                    if (25.0f <= gKirbyState.unk38) {
+                        gKirbyState.unk38 = gKirbyState.unk38 - 25.0f;
+                    }
+                    set_kirby_action_1(2, 4);
+                } else {
+                    D_800E9720[omCurrentObj->objId] = 0;
+                }
+            }
+        } else {
+            gKirbyState.unk44 = 0;
+            D_800E9720[omCurrentObj->objId] = 0;
+        }
+    }
+    func_8011ED68();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016DA14_ovl3.s")
 
@@ -245,7 +292,70 @@ void func_80170794_ovl3(GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef NON_MATCHING
+/* 3/97: instruction-for-instruction exact; the shared 0.0f constant lands in
+   $f14 where the ROM uses $f0 (the three c.eq.s/c.lt.s operands). Swept: `||`
+   vs two early returns, nesting instead of returns, a named `zero` local,
+   swapping the two guards, integer/double zero spellings, and dropping the
+   change_kirby_hp prototype (77 diffs). The integer `0` in `temp < 0` IS
+   load-bearing -- it forks the second zero the ROM materialises separately. */
+extern f32 gKirbyHp;
+
+void func_801708A0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    f32 temp;
+    s32 flags;
+    void change_kirby_hp(f32);
+    void change_kirby_lives(s32);
+    void func_80121F14(void);
+    void func_8011E190(void);
+    void func_800BB468(s32, s32);
+
+    if (arg1 != 0) {
+        return;
+    }
+    if (arg2 == 0.0f) {
+        return;
+    }
+    temp = *(f32 *) &gKirbyState.unk84;
+    if (temp != 0.0f) {
+        if (temp < 0) {
+            if (1.0f <= gKirbyHp + temp) {
+                change_kirby_hp(temp);
+            } else {
+                change_kirby_hp(-(gKirbyHp - 1.0f));
+            }
+            play_sound(0xDA);
+        } else {
+            change_kirby_hp(temp);
+        }
+        *(f32 *) &gKirbyState.unk84 = 0.0f;
+    }
+    flags = gKirbyState.unk8C;
+    if (flags & 0xFFFF) {
+        if (flags & 1) {
+            play_sound(0xCA);
+            func_80121F14();
+        } else if (flags & 2) {
+            play_sound(0xCB);
+        }
+    } else if (gKirbyState.unk88 != 0) {
+        play_sound(1);
+        change_kirby_lives(gKirbyState.unk88);
+        gKirbyState.unk88 = 0;
+    } else if (gKirbyState.unk8 != 0) {
+        play_sound(0xCA);
+    }
+    func_8011E190();
+    play_sound(0xE8);
+    gKirbyState.unk4 = 0;
+    gKirbyState.unk8 = 0;
+    gKirbyState.numberInhaled = 0;
+    gKirbyState.unkD = 7;
+    func_800BB468(0xB, 0xA);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801708A0_ovl3.s")
+#endif
 
 void func_80170A24_ovl3(s32 arg0) {
     func_80153984_ovl3();
@@ -263,7 +373,61 @@ void func_80170A24_ovl3(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80170AC4_ovl3.s")
+extern f32 *D_80192720_ovl3[];
+extern u8 D_801903E0_ovl3[];
+extern f32 D_801973AC_ovl3;
+
+void func_80170AC4_ovl3(s32 arg0) {
+    f32 val;
+    f32 step;
+    void func_800AECC0(f32);
+    void func_800AED20(f32);
+
+    switch (gKirbyState.unk44) {
+    case 0:
+        gKirbyState.unkA = 0;
+        gKirbyState.unk4C = 0;
+        func_8011CF58();
+        D_800DDFD0[omCurrentObj->objId] = 0xB;
+        D_800E0490[omCurrentObj->objId] = D_80192720_ovl3;
+        gKirbyState.unk15C = (u32) D_801903E0_ovl3;
+        D_800E3750[omCurrentObj->objId] = 0.0f;
+        D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+        func_800AFA54(D_800DFA10[omCurrentObj->objId]);
+        func_801230E8(0x20093, 0x20094, 1);
+        if ((s32) gKirbyState.floatTimer < 0x3C) {
+            gKirbyState.unk44 = 2;
+            goto case2;
+        }
+        gKirbyState.unk44 = 1;
+    case 1:
+        play_sound(0xE0);
+        gKirbyState.unk2C = 3;
+        D_800E3210[omCurrentObj->objId] = 8.0f;
+        D_800E3750[omCurrentObj->objId] = -1.0f;
+        D_800E3C90[omCurrentObj->objId] = 8.0f;
+        func_801230E8(0x20095, 0x20096, 1);
+        D_800E3750[omCurrentObj->objId] = -0.125f;
+        D_800E3C90[omCurrentObj->objId] = 2.0f;
+        func_801230E8(0x20097, 0x20098, 0);
+        break;
+    case 2:
+    case2:
+        D_800E3210[omCurrentObj->objId] = 0.0f;
+        D_800E3750[omCurrentObj->objId] = -0.125f;
+        D_800E3C90[omCurrentObj->objId] = 2.0f;
+        func_801230E8(0x20099, 0x2009A, 0);
+        val = 2.0f;
+        step = D_801973AC_ovl3;
+        while (1) {
+            func_800AECC0(val);
+            func_800AED20(val);
+            val = val + step;
+            ohSleep(1);
+        }
+    }
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80170D88_ovl3.s")
 
@@ -275,7 +439,39 @@ void func_80170A24_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80172234_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801727D8_ovl3.s")
+extern f32 D_8019741C_ovl3;
+extern f32 D_80197420_ovl3;
+extern f32 D_80197424_ovl3;
+
+void func_801727D8_ovl3(s32 arg0) {
+    *(s32 *) ((u8 *) &D_8012E7E8 + 8) = 0;
+    func_8011CF58();
+    D_800DDFD0[omCurrentObj->objId] = 0xE;
+    D_800E3750[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_8019741C_ovl3;
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        if (ABSF(D_800E64D0[omCurrentObj->objId]) < 1.0f) {
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 1.0f;
+        }
+        D_800E3210[omCurrentObj->objId] = 6.0f;
+        D_800E3750[omCurrentObj->objId] = D_80197420_ovl3;
+        D_800E3C90[omCurrentObj->objId] = 6.0f;
+    } else {
+        if (ABSF(D_800E64D0[omCurrentObj->objId]) < 3.0f) {
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.0f;
+            D_800E6850[omCurrentObj->objId] = 3.0f;
+        }
+        D_800E3210[omCurrentObj->objId] = 9.0f;
+        D_800E3750[omCurrentObj->objId] = D_80197424_ovl3;
+        D_800E3C90[omCurrentObj->objId] = 17.0f;
+    }
+    play_sound(0xEA);
+    func_801230E8(0x200B3, 0x200B4, 1);
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
 
 void func_80172A3C_ovl3(s32 arg0) {
     s32 sp1C = D_80196C98_ovl3;
@@ -299,7 +495,50 @@ void func_80172A3C_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801736BC_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80173AF4_ovl3.s")
+typedef struct Unk80196C9C {
+    u16 unk0;
+} Unk80196C9C;
+
+extern Unk80196C9C D_80196C9C_ovl3;
+extern s32 D_8012E7FC;
+extern u8 D_801930CC_ovl3[];
+extern u8 D_801910AC_ovl3[];
+extern f32 D_80197430_ovl3;
+
+void func_80173AF4_ovl3(s32 arg0) {
+    Unk80196C9C sp1C = D_80196C9C_ovl3;
+    s32 func_8016854C_ovl3(s32, s32, f32);
+    void func_8011E0E8(void);
+
+    if ((*(s32 *) ((u8 *) &D_8012E7E8 + 8) == 0) && (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 0) &&
+        (D_800E8920[omCurrentObj->objId] != 0)) {
+        func_8015449C_ovl3(D_801930CC_ovl3, 0);
+    }
+    func_80153984_ovl3();
+    if (func_80151E94_ovl3(&sp1C) != 0) {
+        func_8011E0E8();
+    }
+    if (*(s32 *) ((u8 *) &D_8012E7E8 + 8) == 0) {
+        if (*(s32 *) ((u8 *) &D_8012E7FC + 8) != 0) {
+            return;
+        }
+        if (D_800E8920[omCurrentObj->objId] == 0) {
+            return;
+        }
+        func_8016854C_ovl3((s32) D_801910AC_ovl3, (s32) D_800DFBD0[omCurrentObj->objId][7], 1.0f);
+        return;
+    }
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_80197430_ovl3;
+    if (gKirbyController.buttonHeld & 0x400) {
+        set_kirby_action_1(9, 0xE);
+    } else if (D_800E8920[omCurrentObj->objId] != 0) {
+        set_kirby_action_1(0, 1);
+    } else {
+        set_kirby_action_1(6, 6);
+    }
+}
 
 void func_80173CB4_ovl3(s32 arg0) {
     gKirbyState.unk30 = 0;
@@ -914,7 +1153,44 @@ void func_80178728_ovl3(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017883C_ovl3.s")
+extern Unk80196C9C D_80196D74_ovl3;
+
+void func_8017883C_ovl3(s32 arg0) {
+    Unk80196C9C sp24 = D_80196D74_ovl3;
+
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_80153984_ovl3();
+    if (gKirbyState.unkB == 1) {
+        return;
+    }
+    if (gKirbyState.unkB == 2) {
+        return;
+    }
+    if (func_80151E94_ovl3(&sp24) != 0) {
+        return;
+    }
+    if (gKirbyState.unkB9 == 0) {
+        if (!(gKirbyState.isTurning & 1)) {
+            if (func_80121194() != 0) {
+                gKirbyState.isTurning |= 1;
+            }
+        }
+    }
+    if ((gKirbyState.unk17 != 0) || (gKirbyState.unkB == 4) || (gKirbyState.unkB == 3)) {
+        set_kirby_action_1(6, 6);
+        return;
+    }
+    if (gKirbyController.buttonHeld & 0x300) {
+        D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * gKirbyState.unkBC;
+        if (gKirbyState.unkC0 < 0.0f) {
+            D_800E6850[omCurrentObj->objId] = -gKirbyState.unkC0;
+        } else {
+            D_800E6850[omCurrentObj->objId] = gKirbyState.unkC0;
+        }
+    } else {
+        D_800E6850[omCurrentObj->objId] = 0.0f;
+    }
+}
 
 void func_801789D8_ovl3(GObj *arg0) {
     func_8011CF58();

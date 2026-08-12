@@ -37,12 +37,20 @@ def expected(section='.rodata'):
         subs = []
         for sm in re.finditer(r'- \[(0x[0-9A-Fa-f]+)(?:, (\S+?), ([\w/.]+))?\]', blk):
             subs.append((int(sm.group(1), 16), sm.group(2), sm.group(3)))
+        # A block's size ends at the NEXT subsegment of any shape, including the
+        # 4- and 5-field `lib` entries the pattern above cannot parse. Without
+        # them main/libn_audio_2 measured 0x550 instead of its true 0x240.
+        bounds = sorted({int(a, 16)
+                         for a in re.findall(r'- \[(0x[0-9A-Fa-f]+)[,\]]', blk)})
         subs.sort(key=lambda x: x[0])
-        for i, (off, kind, name) in enumerate(subs):
-            if kind != section or not name or i + 1 >= len(subs):
+        for off, kind, name in subs:
+            if kind != section or not name:
+                continue
+            nxt = next((b for b in bounds if b > off), None)
+            if nxt is None:
                 continue
             seg, file = name.split('/')
-            out[f'src/{seg}/{file}.c'] = subs[i + 1][0] - off
+            out[f'src/{seg}/{file}.c'] = nxt - off
     return out
 
 

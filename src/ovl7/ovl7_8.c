@@ -78,7 +78,28 @@ void func_800B6FD8(GObj *);
 
 void func_800B6FD8(GObj *);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B0550_ovl7.s")
+void func_801B0550_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
+    s32 func_801ACC34_ovl7(s32, s32);
+    extern f32 D_801CE280_ovl7, D_801CE284_ovl7, D_801CE288_ovl7;
+
+    if (arg1 == 0) {
+        if ((s32) arg2 == 1) {
+            D_800EBBE0[omCurrentObj->objId] = func_801ACC34_ovl7(3, 1);
+            if (D_800EBBE0[omCurrentObj->objId] != 0) {
+                D_800EC660[D_800EBBE0[omCurrentObj->objId]] = D_801CE280_ovl7;
+            }
+            D_800EBDA0[omCurrentObj->objId] = func_801ACC34_ovl7(3, 1);
+            if (D_800EBDA0[omCurrentObj->objId] != 0) {
+                D_800EC660[D_800EBDA0[omCurrentObj->objId]] = D_801CE284_ovl7;
+            }
+            D_800EBF60[omCurrentObj->objId] = func_801ACC34_ovl7(3, 1);
+            if (D_800EBF60[omCurrentObj->objId] != 0) {
+                D_800EC660[D_800EBF60[omCurrentObj->objId]] = D_801CE288_ovl7;
+            }
+            play_sound(0xA7);
+        }
+    }
+}
 
 void func_801B069C_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -317,7 +338,45 @@ void func_801B184C_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B187C_ovl7.s")
+void func_801B187C_ovl7(GObj *arg0) {
+    s32 func_801ACC34_ovl7(s32, s32);
+    struct UnkStruct800E1B50 *sp5C;
+    struct DObj *sp58;
+    struct DObj *sp54;
+    struct DObj *sp50;
+    Vector sp44;
+    Vector sp38;
+    Vector sp2C;
+    s32 temp;
+
+    sp5C = D_800E1B50[omCurrentObj->objId];
+    sp58 = D_800DFBD0[omCurrentObj->objId][4];
+    sp54 = D_800DFBD0[omCurrentObj->objId][3];
+    sp50 = D_800DFBD0[omCurrentObj->objId][2];
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    func_801ABBA0_ovl7();
+    func_800B2340(&sp44, sp58, omCurrentObj->objId);
+    func_800B2340(&sp38, sp54, omCurrentObj->objId);
+    func_800B2340(&sp2C, sp50, omCurrentObj->objId);
+    temp = func_801ACC34_ovl7(0x44, 0);
+    if (temp != 0) {
+        D_800E0D50[temp] = 0;
+        gEntitiesNextPosYArray[temp] = sp44.y;
+    }
+    temp = func_801ACC34_ovl7(0x44, 1);
+    if (temp != 0) {
+        D_800E0D50[temp] = 0;
+        gEntitiesNextPosYArray[temp] = sp38.y;
+    }
+    temp = func_801ACC34_ovl7(0x44, 2);
+    if (temp != 0) {
+        D_800E0D50[temp] = 0;
+        gEntitiesNextPosYArray[temp] = sp2C.y;
+    }
+    sp5C->unk40 = 1;
+    func_801A3E80_ovl7(arg0);
+}
 
 void func_801B19F8_ovl7(GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B6FD8;

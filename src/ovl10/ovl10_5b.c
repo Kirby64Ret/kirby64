@@ -193,7 +193,7 @@ s32 func_801F19DC_ovl10(s32 arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1A24_ovl10.s")
 
-extern f32 D_801F4CA8_ovl10;
+/* D_801F4CA8_ovl10 = 0.2f : now emitted by this TU */
 extern s32 D_801F4908_ovl10[];
 extern s32 D_801F4914_ovl10[];
 void func_800A9864(s32, s32, s32);
@@ -203,9 +203,9 @@ void func_801F1CA0_ovl10(GObj *arg0, s32 arg1) {
     s32 idx = arg1 + 1;
 
     func_800A9864(D_801F4908_ovl10[arg1], 0x2C, 0x10);
-    gEntitiesScaleXArray[omCurrentObj->objId] = D_801F4CA8_ovl10;
-    gEntitiesScaleYArray[omCurrentObj->objId] = D_801F4CA8_ovl10;
-    gEntitiesScaleZArray[omCurrentObj->objId] = D_801F4CA8_ovl10;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800AA018(D_801F4914_ovl10[idx]);
     func_801F1554_ovl10(arg0, arg1);
     curObjSleepForever();
@@ -235,8 +235,8 @@ s32 func_801F1D60_ovl10(Vector vec, s32 count, f32 dist) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1D60_ovl10.s")
 #endif
 extern u32 D_801F4D60_ovl10;
-extern f32 D_801F4CAC_ovl10;
-extern f32 D_801F4CB0_ovl10;
+/* D_801F4CAC_ovl10 = 3.1415927f : now emitted by this TU */
+/* D_801F4CB0_ovl10 = 3.1415927f : now emitted by this TU */
 extern s32 random_soft_s32_range(s32);
 extern f32 cosf(f32);
 extern f32 sinf(f32);
@@ -250,9 +250,9 @@ Vector *func_801F1E48_ovl10(Vector *arg0) {
     func_800B2340(&sp34, D_800DFBD0[D_801F4D60_ovl10][5], D_801F4D60_ovl10);
     sp24 = (f32) random_soft_s32_range(7) * 20.0f + 50.0f;
     sp20 = (f32) random_soft_s32_range(0x13) * 5.0f - 45.0f;
-    sp28.x = cosf(sp20 * D_801F4CAC_ovl10 / 180.0f) * sp24 + sp34.x;
+    sp28.x = cosf(sp20 * 3.1415927f / 180.0f) * sp24 + sp34.x;
     sp28.y = sp34.y + 20.0f;
-    sp28.z = -sinf(sp20 * D_801F4CB0_ovl10 / 180.0f) * sp24 + sp34.z;
+    sp28.z = -sinf(sp20 * 3.1415927f / 180.0f) * sp24 + sp34.z;
     *arg0 = sp28;
     return arg0;
 }

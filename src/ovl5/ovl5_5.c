@@ -21,8 +21,8 @@ extern s32 D_8018E468_ovl5[];
 extern s32 D_80187C34_ovl5[][2];
 s32 func_80171538_ovl5(s32);
 extern s32 D_8018E478_ovl5[][82];
-extern const char D_8018D7AC_ovl5[];
-extern const char D_8018D798_ovl5[];
+/* D_8018D7AC_ovl5 is this TU's own .rodata now; the literal is at its use */
+/* D_8018D798_ovl5 likewise */
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 void func_80175F50_ovl5(GObj *);
 extern u8 D_80187898_ovl5[];
@@ -267,7 +267,7 @@ Vector func_80172B98_ovl5(s32 arg1, s32 arg2) {
     sp1C.y = gEntitiesNextPosYArray[D_8018E478_ovl5[arg1][arg2]];
     sp1C.z = gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]];
     if (sp1C.z == 0.0f) {
-        utilPrintf(D_8018D798_ovl5);
+        utilPrintf("Bad nextStep poxZ\n");
     }
     return sp1C;
 }
@@ -334,7 +334,7 @@ s32 func_80173778_ovl5(s32 arg0) {
     for (i = 0x51; i >= 0; i--, p--) {
         if (*p != 0) {
             if (i < D_8018E998_ovl5[arg0]) {
-                utilPrintf(D_8018D7AC_ovl5, i);
+                utilPrintf("Bad LastStep...%d\n", i);
             }
             return i;
         }

@@ -460,7 +460,48 @@ void func_80159EA0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_80159EF0_ovl3.s")
+extern f32 D_80196FA4_ovl3;
+extern f32 D_80196FA8_ovl3;
+extern f32 D_80196FAC_ovl3;
+extern f32 D_80196FB0_ovl3;
+
+void func_80159EF0_ovl3(s32 arg0) {
+    f32 sp24[3];
+    void func_80152348_ovl3(f32);
+    s32 func_800B2340(f32 *, struct DObj *, s32);
+
+    if (D_800E8060[D_800E0D50[omCurrentObj->objId]] == 0) {
+        func_80153984_ovl3();
+        gEntitiesNextPosZArray[omCurrentObj->objId] = 0;
+        if (D_80196FA4_ovl3 <= D_800E6BD0[omCurrentObj->objId]) {
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = D_80196FA8_ovl3;
+            D_800E8060[D_800E0D50[omCurrentObj->objId]] = 1;
+        }
+        func_800FF200(D_8012E944);
+        return;
+    }
+    if (gKirbyState.unk30 != 0) {
+        D_800DDA90[omCurrentObj->objId] = 0x23;
+        func_8011CF58();
+        set_kirby_action_1(0, 1);
+        func_80152348_ovl3(20.0f);
+        gKirbyState.unk17 = 0;
+        gKirbyState.abilityState = 0;
+        gKirbyState.unk24 = 0;
+        gKirbyState.unk68 = 0;
+        D_800E0D50[omCurrentObj->objId] = -1;
+        D_800E8760[omCurrentObj->objId] = 0;
+    } else {
+        gEntitiesNextPosYArray[omCurrentObj->objId] =
+            gEntitiesNextPosYArray[omCurrentObj->objId] - D_80196FAC_ovl3;
+    }
+    func_800B2340(sp24, D_800DFBD0[omCurrentObj->objId][1], 0xFFFF);
+    ((f32 *) D_8012E944)[1] = sp24[0];
+    ((f32 *) D_8012E944)[2] = gEntitiesNextPosYArray[omCurrentObj->objId] + D_80196FB0_ovl3;
+    ((f32 *) D_8012E944)[3] = sp24[2];
+}
 
 extern void func_800A9760(s32);
 

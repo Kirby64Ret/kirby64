@@ -601,10 +601,9 @@ void func_800BB510(s32 arg0) {
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit
-#ifdef NON_MATCHING
+
 void func_800BB53C(s32 arg0, s32 arg1) {
     func_800BB3C0(contChannelMap[arg0], arg1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB53C.s")
-#endif
+
+

@@ -18,7 +18,7 @@
 
 #include "ovl15.h"
 
-extern f32 D_801E6920_ovl15;
+/* D_801E6920_ovl15 = 65535.0f : now emitted by this TU */
 void func_801E6074_ovl15(void);
 
 void func_801E5E10_ovl15(struct GObj *arg0) {
@@ -38,7 +38,7 @@ void func_801E5E10_ovl15(struct GObj *arg0) {
     if ((D_800E8AE0[D_800E0D50[omCurrentObj->objId]] & 6) != 0) { D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 1.75f; D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.25f; D_800E6850[omCurrentObj->objId] = 7.0f; } else { D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.5f; D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.5f; D_800E6850[omCurrentObj->objId] = 14.0f; }
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801E6920_ovl15;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801AC364_ovl7(arg0);
 }
@@ -63,7 +63,7 @@ void func_801E6074_ovl15(void) {
     func_80111C4C(func_801117BC(&D_801CA738_ovl7, omCurrentObj->objId));
 }
 
-extern f32 D_801E6924_ovl15;
+/* D_801E6924_ovl15 = 65535.0f : now emitted by this TU */
 void func_801E6374_ovl15(struct GObj *);
 
 void func_801E613C_ovl15(struct GObj *arg0) {
@@ -87,7 +87,7 @@ void func_801E613C_ovl15(struct GObj *arg0) {
     }
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801E6924_ovl15;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801AC364_ovl7(arg0);
 }

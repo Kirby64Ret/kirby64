@@ -154,7 +154,29 @@ void func_801B287C_ovl7(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B294C_ovl7.s")
+void func_801B294C_ovl7(GObj *arg0) {
+    extern f32 D_800E9020[];
+    extern s32 D_800E83E0[];
+    extern f32 D_801CE2E0_ovl7, D_801CE2E4_ovl7, D_801CE2E8_ovl7;
+    f32 t;
+
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    if (D_800E9020[omCurrentObj->objId] != 0.0f) {
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+            t = D_801CE2E0_ovl7;
+        } else {
+            t = D_801CE2E4_ovl7;
+        }
+        D_800E9020[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + t;
+        if ((D_800E9020[omCurrentObj->objId] < 0 ? -D_800E9020[omCurrentObj->objId] : D_800E9020[omCurrentObj->objId]) < D_801CE2E8_ovl7) {
+            D_800E9020[omCurrentObj->objId] = 0.0f;
+        }
+    }
+    func_8019F3B0_ovl7();
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        func_800FD570(0, 3, 0.0f, 0.0f, 0.0f);
+    }
+}
 
 void func_801B2A94_ovl7(GObj *arg0) {
     func_800FD570(0, 3, 0.0f, 0.0f, 0.0f);
@@ -204,7 +226,28 @@ void func_801B2D90_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2DD8_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2FB0_ovl7.s")
+void func_801B2FB0_ovl7(GObj *arg0) {
+    if (D_800E7880[omCurrentObj->objId] != 1) {
+        D_800E9C60[omCurrentObj->objId] = D_800E9C60[omCurrentObj->objId] - 1;
+        if (D_800E9C60[omCurrentObj->objId] <= 0) {
+            D_800E9C60[omCurrentObj->objId] = 0;
+        }
+        if (D_800E9C60[omCurrentObj->objId] == 0) {
+            if (gEntitiesNextPosYArray[omCurrentObj->objId] < (gEntitiesNextPosYArray[0] + 20.0f)) {
+                if (D_800E6F50[omCurrentObj->objId].originOffset < 160.0f) {
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+                    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B2C78_ovl7);
+                }
+            }
+        }
+        D_800E8920[omCurrentObj->objId] = 0;
+        if (D_800E9E20[omCurrentObj->objId] > 0) {
+            D_800E9E20[omCurrentObj->objId] = D_800E9E20[omCurrentObj->objId] - 1;
+            func_801A0D74_ovl7(arg0);
+        }
+        func_8019F3B0_ovl7();
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B3110_ovl7.s")
 

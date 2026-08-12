@@ -699,7 +699,62 @@ void func_801C1A90_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_17/func_801C1BB8_ovl7.s")
 
+/* 63/79: the instruction SEQUENCE is right end to end (including the folded
+ * -0x40/-0x3C displacements, which need the `q[-8]` spelling -- `[idx - 8]`
+ * materialises `addiu -64` instead) and the residue is a whole-function
+ * register rotation: ROM t0/t2/t4 for &omCurrentObj/&D_800DFBD0/&D_801CD978
+ * and a0/a2/a3 for the q base, the DObj and the MObj, IDO a3/t0/t2 and
+ * v0/t6/a0. The function contains no call, so the callee-return-type lever
+ * does not apply. Swept: obj/q/pa/i2 declaration presence, an explicit DObj
+ * local (63, best), inlining q (68), and pa/pb inline vs local. */
+#ifdef NON_MATCHING
+struct Unk801CD938 {
+    s32 unk0;
+    s32 unk4;
+};
+
+void func_801C1E08_ovl7(void) {
+    extern struct Unk801CD938 D_801CD978_ovl7[];
+    struct UnkStruct8004A7C4_3C_80 *obj;
+    struct DObj *dobj;
+    struct Unk801CD938 *q;
+    u8 *pa;
+    s32 i2;
+
+    q = &D_801CD978_ovl7[D_800E77A0[omCurrentObj->objId]];
+    dobj = D_800DFBD0[omCurrentObj->objId][3];
+    obj = (struct UnkStruct8004A7C4_3C_80 *) dobj->mobjList;
+    pa = &D_801CD914_ovl7[q[-8].unk0 * 4];
+    i2 = q[-8].unk4;
+    if (obj != NULL) {
+        obj->unk58 = pa[0];
+        obj->unk59 = pa[1];
+        obj->unk5A = pa[2];
+        obj = obj->unk0;
+        if (obj != NULL) {
+            obj->unk58 = D_801CD914_ovl7[i2 * 4];
+            obj->unk59 = D_801CD914_ovl7[(i2 * 4) + 1];
+            obj->unk5A = D_801CD914_ovl7[(i2 * 4) + 2];
+        }
+    }
+    dobj = D_800DFBD0[omCurrentObj->objId][1];
+    obj = (struct UnkStruct8004A7C4_3C_80 *) dobj->mobjList;
+    if (obj != NULL) {
+        obj->unk58 = pa[0];
+        obj->unk59 = pa[1];
+        obj->unk5A = pa[2];
+    }
+    dobj = D_800DFBD0[omCurrentObj->objId][2];
+    obj = (struct UnkStruct8004A7C4_3C_80 *) dobj->mobjList;
+    if (obj != NULL) {
+        obj->unk58 = D_801CD914_ovl7[i2 * 4];
+        obj->unk59 = D_801CD914_ovl7[(i2 * 4) + 1];
+        obj->unk5A = D_801CD914_ovl7[(i2 * 4) + 2];
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_17/func_801C1E08_ovl7.s")
+#endif
 
 void func_801C1F44_ovl7(GObj *arg0) {
     func_800AF9B8(0x2B, 0x10);

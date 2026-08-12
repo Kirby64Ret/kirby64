@@ -111,9 +111,59 @@ void func_801A470C_ovl7(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4C0C_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4DFC_ovl7.s")
+struct TrackPosition7 {
+    s32 unk0;
+    f32 unk4;
+};
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4F70_ovl7.s")
+void func_801A4DFC_ovl7(GObj *arg0) {
+    s32 func_8019A900_ovl7(struct TrackPosition7 *);
+    void func_801A4F70_ovl7(void);
+    s32 pad;
+    struct TrackPosition7 sp34;
+
+    D_800DF150[omCurrentObj->objId] = func_801A4F70_ovl7;
+    D_800DDA90[omCurrentObj->objId] = 0x23;
+    D_800EC2E0[omCurrentObj->objId].as_s32 = 0;
+    D_800E83E0[omCurrentObj->objId] = 0;
+    play_sound(0xC2);
+    func_8019A900_ovl7(&sp34);
+    D_800E64D0[omCurrentObj->objId] = (f32) sp34.unk0 * -10.0f;
+    D_800E9720[omCurrentObj->objId] = 0x3C;
+    while ((D_800EC2E0[omCurrentObj->objId].as_s32 == 0) && (D_800E9720[omCurrentObj->objId] != 0)) {
+        ohSleep(1);
+        D_800E9720[omCurrentObj->objId] -= 1;
+    }
+    D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
+}
+
+struct UnkStruct800D7118_7 {
+    u8 pad0[0x3C];
+    s32 unk3C;
+};
+
+void func_801A4F70_ovl7(void) {
+    extern struct UnkStruct800D7118_7 D_800D7118;
+    extern void *D_801CA884_ovl7[];
+    s32 func_801117BC(void *, u32);
+    void func_80111C4C(s32);
+
+    if (D_800EC9E4 != 0.0f) {
+        D_800E3210[omCurrentObj->objId] = -D_800EC9E4;
+    }
+    if (D_800E83E0[omCurrentObj->objId] != 0) {
+        D_800E9720[omCurrentObj->objId] = 1;
+    } else {
+        func_801A0D74_ovl7();
+        D_800E8920[omCurrentObj->objId] = 0;
+        D_800EC2E0[omCurrentObj->objId].as_u32 = (D_8012BCA0 >> 0x13) & 0x1FF;
+        D_800EC2E0[omCurrentObj->objId].as_s32 |= D_800E6310[omCurrentObj->objId];
+        func_80111C4C(func_801117BC(D_801CA884_ovl7, omCurrentObj->objId));
+        if (D_800D7118.unk3C == 0) {
+            D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
+        }
+    }
+}
 
 #ifdef NON_MATCHING
 /* 9/95: every store and every address computation is exact; only the FP
@@ -260,7 +310,41 @@ void func_801A6958_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A69B0_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A6C10_ovl7.s")
+void func_801A6C10_ovl7(GObj *arg0) {
+    void func_801A6DD0_ovl7();
+    void func_800A22D4(void *);
+    void func_800A2300(struct GObj *);
+    void func_801A3D6C_ovl7(void);
+    extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
+    extern f32 D_801CE00C_ovl7, D_801CE010_ovl7;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    D_800DF150[omCurrentObj->objId] = func_801A6DD0_ovl7;
+    ent->unk48 = 0;
+    ent->unk98 = &D_801CB470_ovl7;
+    if (ent->unk34 != 0) {
+        func_800A22D4(ent->unk34);
+    }
+    func_800A2300(arg0);
+    ent->unk34 = 0;
+    func_801A3D6C_ovl7();
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_801CE00C_ovl7;
+    D_800E3210[omCurrentObj->objId] = -3.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3C90[omCurrentObj->objId] = 3.0f;
+    ohSleep(3);
+    D_800E3750[omCurrentObj->objId] = D_801CE010_ovl7;
+    ohSleep(0xC);
+    func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
+    if (ent->unk94->unk1C != 0x80000000) {
+        play_sound(ent->unk94->unk1C);
+    }
+    ent->unk40 = 1;
+    func_801A3E80_ovl7(arg0);
+}
 
 void func_801A6DD0_ovl7(void) {
     func_801A0D74_ovl7();

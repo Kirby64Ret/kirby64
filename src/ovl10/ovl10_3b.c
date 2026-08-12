@@ -35,7 +35,7 @@ void func_8019EC5C_ovl7(void *);
 
 void func_801A3E80_ovl7(GObj *);
 void func_800FD570(s32, s32, f32, f32, f32);
-extern f32 D_801F4B44_ovl10;
+/* D_801F4B44_ovl10 = 0.4f : now emitted by this TU */
 
 extern FUNCLIST D_801F44B4_ovl10;
 extern FUNCLIST D_801F4510_ovl10;
@@ -92,7 +92,7 @@ struct Ovl10AnimInfo {
 };
 
 extern s32 D_801F3F28_ovl10;
-extern f32 D_801F4B50_ovl10;
+/* D_801F4B50_ovl10 = 2.4f : now emitted by this TU */
 extern f32 D_801F4B84_ovl10;
 s32 func_801E9ACC_ovl10(void);
 s32 func_8019A9AC_ovl7(f32, f32);
@@ -113,7 +113,7 @@ s32 func_800B9DF8(s32);
 void func_8019BB58_ovl7(void);
 void func_8019D958_ovl7(u16);
 
-extern const char D_801F4A80_ovl10[];
+/* D_801F4A80_ovl10 = "reqAdoPathLimTrk  Request Error!![mbss2.cc]\n" : now emitted by this TU */
 
 void func_800A7F74(u32, u32, u16, f32, f32, f32);
 void func_800B79F4();
@@ -123,13 +123,13 @@ void func_801EF15C_ovl10(s32);
 void func_801EF218_ovl10(s32);
 void func_800AF27C(void);
 void func_801ED7D0_ovl10(GObj *);
-extern f32 D_801F4BD4_ovl10;
-extern f32 D_801F4BD8_ovl10;
+/* D_801F4BD4_ovl10 = 0.03333f : now emitted by this TU */
+/* D_801F4BD8_ovl10 = 65535.0f : now emitted by this TU */
 
-extern f32 D_801F4BE0_ovl10;
-extern f32 D_801F4BE4_ovl10;
-extern f32 D_801F4BE8_ovl10;
-extern f32 D_801F4BDC_ovl10;
+/* D_801F4BE0_ovl10 = -1.8f : now emitted by this TU */
+/* D_801F4BE4_ovl10 = 0.022499999f : now emitted by this TU */
+/* D_801F4BE8_ovl10 = 65535.0f : now emitted by this TU */
+/* D_801F4BDC_ovl10 = 65535.0f : now emitted by this TU */
 extern struct Sub800E1B50_Unk98 D_801F4190_ovl10;
 extern s32 D_801F3C7C_ovl10;
 
@@ -137,14 +137,14 @@ extern struct Sub800E1B50_Unk98 D_801F4148_ovl10;
 
 extern struct Sub800E1B50_Unk98 D_801CB494_ovl7;
 extern u32 D_801F449C_ovl10;
-extern const char D_801F4AB0_ovl10[];
+/* D_801F4AB0_ovl10 = "Error: Don't S-Point\n" : now emitted by this TU */
 void func_801E3E04_ovl10(struct GObj *);
 void func_801E3A64_ovl10(void);
 void *func_800FCE50(void);
 
 void func_801E3BE4_ovl10(struct GObj *);
 
-extern const char D_801F4AC8_ovl10[];
+/* D_801F4AC8_ovl10 = "reqAdoPicEneTrk  Request Error!![mbss2.cc]\n" : now emitted by this TU */
 
 void func_801E409C_ovl10(void);
 
@@ -156,7 +156,7 @@ void func_801E5CF0_ovl10(f32);
 
 s32 func_8019A900_ovl7(s32 *);
 
-extern f32 D_801F4B2C_ovl10;
+/* D_801F4B2C_ovl10 = 65535.0f : now emitted by this TU */
 
 #ifdef NON_MATCHING
 // 23/41 diffs (was 32). Two levers found: reading arg0[0]/arg0[2] into locals
@@ -177,7 +177,7 @@ void func_800FF0C4(void *);
 extern Unk4Bytes D_801F4508_ovl10;
 extern Unk4Bytes D_801F450C_ovl10;
 
-extern f32 D_801F4B48_ovl10;
+/* D_801F4B48_ovl10 = 65535.0f : now emitted by this TU */
 
 typedef struct Unk801E63E4 {
     f32 unk0;
@@ -240,7 +240,7 @@ void func_801E8AF8_ovl10(struct GObj *);
 
 void func_801E8988_ovl10(struct GObj *);
 
-extern f32 D_801F4B4C_ovl10;
+/* D_801F4B4C_ovl10 = 2.4f : now emitted by this TU */
 
 extern struct Sub800E1B50_Unk98 D_801F4124_ovl10;
 extern s32 D_801F35A8_ovl10;
@@ -249,13 +249,13 @@ void func_801E932C_ovl10(struct GObj *);
 extern void func_800BC1FC(s32);
 void func_801E91B0_ovl10(struct GObj *);
 
-extern f32 D_801F4B60_ovl10;
-extern f32 D_801F4B64_ovl10;
+/* D_801F4B60_ovl10 = 0.006666667f : now emitted by this TU */
+/* D_801F4B64_ovl10 = 6.2831855f : now emitted by this TU */
 extern f32 D_800EAA60[];
 extern f32 D_800EAC20[];
 void func_801EA4C0_ovl10(void);
 
-extern f32 D_801F4B6C_ovl10;
+/* D_801F4B6C_ovl10 = 65535.0f : now emitted by this TU */
 
 void func_801E91B0_ovl10(struct GObj *);
 
@@ -588,10 +588,10 @@ void func_801EE050_ovl10(GObj *arg0) {
     sp1C->unk98 = &D_801F4148_ovl10;
     func_800AA018(0x1026E);
     func_800AA018(0x1026F);
-    D_800E6690[omCurrentObj->objId] = -D_800E64D0[omCurrentObj->objId] * D_801F4BD4_ovl10;
+    D_800E6690[omCurrentObj->objId] = -D_800E64D0[omCurrentObj->objId] * 0.03333f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801F4BD8_ovl10;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     play_sound(0x1F2);
     func_800FB914(1);
     ohSleep(5);
@@ -628,7 +628,7 @@ void func_801EE24C_ovl10(GObj *arg0) {
     D_800E6850[omCurrentObj->objId] = 10.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801F4BDC_ovl10;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     play_sound(0x1EA);
     curObjSleepForever();
 }
@@ -644,11 +644,11 @@ void func_801EE410_ovl10(GObj *arg0) {
     sp1C->unk98 = &D_801F4148_ovl10;
     func_800AA018(0x10274);
     func_800AA018(0x10275);
-    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801F4BE0_ovl10;
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801F4BE4_ovl10;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -1.8f;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.022499999f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801F4BE8_ovl10;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     play_sound(0x1EB);
     func_800FB914(1);
     func_801EF15C_ovl10(3);

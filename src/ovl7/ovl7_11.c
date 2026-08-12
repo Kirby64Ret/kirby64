@@ -29,7 +29,7 @@ extern FUNCLIST D_801CD718_ovl7;
 void func_8019B424_ovl7(struct GObj *);
 void eneTurnCommon(s32);
 void func_8019F3B0_ovl7(void);
-s32 func_801A0D74_ovl7(void);
+s32 func_801A0D74_ovl7();
 void func_801A3280_ovl7(void);
 void func_801B76CC_ovl7(GObj *);
 s32 func_8019A7E8_ovl7(f32);
@@ -82,7 +82,7 @@ extern FUNCLIST D_801CD70C_ovl7;
 extern FUNCLIST D_801CD718_ovl7;
 extern FUNCLIST D_801CD71C_ovl7;
 void func_800AECC0(f32);
-s32 func_801A0D74_ovl7(void);
+s32 func_801A0D74_ovl7();
 void eneTurnCommon(s32);
 void func_8019F3B0_ovl7(void);
 void func_8019D2FC_ovl7(f32, s32);
@@ -91,7 +91,7 @@ void func_800B6B8C(GObj *);
 
 
 void func_800AECC0(f32);
-s32 func_801A0D74_ovl7(void);
+s32 func_801A0D74_ovl7();
 void eneTurnCommon(s32);
 void func_8019F3B0_ovl7(void);
 void func_8019D2FC_ovl7(f32, s32);
@@ -139,7 +139,34 @@ void func_801B4DF8_ovl7(struct GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_801CD628_ovl7);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B4F60_ovl7.s")
+void func_801B4F60_ovl7(struct GObj *arg0) {
+    extern u32 D_8012BCA0;
+    extern FUNCLIST D_801CD638_ovl7;
+    void func_801A3E80_ovl7(struct GObj *);
+    struct UnkStruct800E1B50 *ent;
+    s32 r;
+    f32 temp;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    r = 0;
+    temp = gEntitiesNextPosYArray[omCurrentObj->objId];
+    if (D_800E9C60[omCurrentObj->objId] == 0) {
+        r = func_801A0D74_ovl7(arg0);
+    }
+    gEntitiesNextPosYArray[omCurrentObj->objId] = temp;
+    if (D_800E7880[omCurrentObj->objId] == 1) {
+        if (((D_8012BCA0 >> 0x13) & 0xFFF) != 0) {
+            ent->unk40 = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        }
+    }
+    if (r == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, &D_801CD638_ovl7);
+    }
+    if (D_800E9C60[omCurrentObj->objId] == 0) {
+        func_8019F3B0_ovl7();
+    }
+}
 
 void func_801B50B8_ovl7(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;

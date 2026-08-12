@@ -10,16 +10,16 @@
 #include "unk_structs/D_800D7098.h"
 #include "ovl2/ovl2_8.h"
 
-extern f32 D_801E30B4_ovl14;
-extern f32 D_801E30B8_ovl14;
-extern f32 D_801E30BC_ovl14;
+/* D_801E30B4_ovl14 = 0.30967742f : now emitted by this TU */
+/* D_801E30B8_ovl14 = 3.096774f : now emitted by this TU */
+/* D_801E30BC_ovl14 = -0.30967742f : now emitted by this TU */
 
 extern u32 D_801CB470;
 extern s32 D_800D7154;
 
 /* The segment's rodata is an unmigrated asm block, so the format string must
    be referenced as a data symbol; writing the literal emits a second copy. */
-extern const char D_801E2FE8_ovl14[];
+/* D_801E2FE8_ovl14 = "enemy req over 18. Track Num:%d\n" : now emitted by this TU */
 
 void func_801DB1E0_ovl14(GObj *arg0) {
     func_8019BB58_ovl7();
@@ -174,7 +174,7 @@ s32 func_801DC954_ovl14(void) {
 
     track = request_track_general(0x19, 0x1E, 0x50);
     if ((track >= 0x3C) || (track == -1)) {
-        utilPrintf(D_801E2FE8_ovl14, track);
+        utilPrintf("enemy req over 18. Track Num:%d\n", track);
         func_800B1900(track);
         return -1;
     }
@@ -572,12 +572,12 @@ void func_801DFC28_ovl14(GObj *arg0) {
 
 void func_801DFC30_ovl14(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 1;
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E30B4_ovl14;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.30967742f;
     ohSleep(0xA);
     D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E30B8_ovl14;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.096774f;
     ohSleep(0x122);
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801E30BC_ovl14;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.30967742f;
     ohSleep(0xA);
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];

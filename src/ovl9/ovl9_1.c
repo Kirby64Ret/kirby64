@@ -1142,5 +1142,12 @@ void func_801D8C80_ovl9(GObj *arg0) {
 void func_801D8D44_ovl9(GObj *arg0) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D8D4C_ovl9.s")
+/* The 6 nop words after this listing's `.size` are NOT part of the function:
+ * IDO's assembler pads .text to 16 bytes, and the remaining 16 are the LINKER
+ * aligning ovl9_2.o's .text to 32 (its object carries `.align 5` from a dead
+ * epilogue). They are declared as a `pad` subsegment in kirby64.yaml. */
+void func_801D8D4C_ovl9(GObj *arg0) {
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleYArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
+}
 

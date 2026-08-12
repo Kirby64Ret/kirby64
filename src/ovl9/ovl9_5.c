@@ -1123,5 +1123,13 @@ void func_801EA9A0_ovl9(s32 arg0) {
 
 
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EAB4C_ovl9.s")
+void func_801EAB4C_ovl9(GObj *arg0) {
+    switch (D_800E7880[omCurrentObj->objId]) {
+    case 0:
+        func_8019F3F0_ovl7();
+        break;
+    case 1:
+        break;
+    }
+}
 

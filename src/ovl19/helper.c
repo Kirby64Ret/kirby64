@@ -572,7 +572,34 @@ void func_80220F48_ovl19(GObj *arg0) {
 }
 
 // the same rabbit hole as func_80220280_ovl19
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220F8C_ovl19.s")
+void func_80220F8C_ovl19(GObj *arg0) {
+    extern s32 D_800D6F18;
+    extern void func_801230E8(s32, s32, s32);
+    void func_80221108_ovl19(struct GObj *, s32, f32);
+
+    func_8021E184_ovl19();
+    D_800E98E0[omCurrentObj->objId] = 0;
+    if (D_800D6E64 == 0) {
+        (&D_800D6F18)[0] = random_soft_s32_range(7);
+        do {
+            (&D_800D6F18)[1] = random_soft_s32_range(7);
+        } while ((&D_800D6F18)[0] == (&D_800D6F18)[1]);
+        do {
+            (&D_800D6F18)[2] = random_soft_s32_range(7);
+        } while (((&D_800D6F18)[0] == (&D_800D6F18)[2]) || ((&D_800D6F18)[1] == (&D_800D6F18)[2]));
+        D_800D6E64 = 1;
+    }
+    func_8021E2D0_ovl19(5, 3);
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x2006F, 0x1869F, 0x10);
+    func_801230E8(0x203D1, 0x203D2, 0);
+    D_800DF310[omCurrentObj->objId] = func_80221108_ovl19;
+    func_800AF27C();
+    func_801230E8(0x203D3, 0x203D4, 0);
+    curObjSleepForever();
+}
 
 extern u32 D_800D71F8;
 /* 11/38 and structurally exact.  The `vs32` cast is what makes IDO materialise

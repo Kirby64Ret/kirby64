@@ -392,7 +392,49 @@ void func_80182658_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_801831EC_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80183428_ovl3.s")
+extern struct GObjProcess *gEntityGObjProcessArray[];
+extern u8 D_80191950_ovl3[];
+void func_8016C510_ovl3(s32);
+void assign_new_process_entry(struct GObjProcess *, void *);
+s32 func_8016854C_ovl3(s32, s32, f32);
+extern void func_80121658(void);
+extern void func_8011DC5C(void);
+
+void func_80183428_ovl3(s32 arg0) {
+    s32 flag;
+
+    flag = 0;
+    func_80153984_ovl3();
+    func_8011CF58();
+    func_80121658();
+    if (gKirbyState.unk44 != 2) {
+        if (gKirbyState.unk17 != 0) {
+            flag = 1;
+        } else if (gKirbyState.unk16 == 0) {
+            if (gKirbyController.buttonPressed & 0x4000) {
+                flag = 1;
+            } else if (gKirbyState.unkA == 4) {
+                flag = 1;
+            }
+        } else if (gKirbyController.buttonPressed & 0x4000) {
+            gKirbyState.unkA = 4;
+        }
+    }
+    if (flag != 0) {
+        if (gKirbyState.unk44 != 2) {
+            gKirbyState.unk44 = 2;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8016C510_ovl3);
+        }
+    }
+    if (gKirbyState.unk30 != 0) {
+        func_8011DC5C();
+        func_8011E0E8();
+        gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
+        func_8011D67C();
+    } else if (gKirbyState.unk3C != 0) {
+        func_8016854C_ovl3((s32) D_80191950_ovl3, (s32) D_800DFBD0[omCurrentObj->objId][1], 1.0f);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_801835AC_ovl3.s")
 

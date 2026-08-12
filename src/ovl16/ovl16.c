@@ -624,12 +624,14 @@ void func_801DCA84_ovl16(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-// 67/116 diffs. Instruction count is exact and the whole prologue matches.
-// Residue: IDO CONSTANT-FOLDS the 3..6 loop after unrolling it (our compile
-// emits eight stores with literal indices) while the ROM keeps `i` live in $v1
-// and does the four `bne $v1, 6/5/4` compares. for/do-while, `<7`/`!=7`/`<=6`
-// were all swept and all fold. Also: the four `3` constants are separate
-// `addiu` in the ROM and one shared register here.
+// 67/116 -> 32/116. The six hand-written stores were WRONG: D_801F0144/0148
+// are D_801F0140[1]/[2] and D_801F0124/0128 are D_801F0120[1]/[2], so the
+// whole thing is ONE loop `for (i = 0; i < 7; i++)`. IDO constant-folds the
+// first three iterations (giving the ROM's separate `addiu` per store, which
+// is why they looked un-CSE-able) and 4x-unrolls i=3..6 with `i` live in $v1 --
+// exactly the ROM's shape. Residue is now a pure ONE-SLOT TEMP ROTATION over
+// 16 instructions (ROM t5/t6/t7, ours t4/t5/t6). Swept with no effect: return
+// type flips on all five callees, an extra dead local, do/while, `!=7`.
 // What IS settled and should be kept:
 //   * D_801F0144/0124/0148/0128_ovl16 are their OWN bss symbols (see
 //     asm/data/ovl16/ovl16.bss.s); spelling them as D_801F0140_ovl16[1] etc.
@@ -661,13 +663,7 @@ void func_801DCBF8_ovl16(s32 arg0) {
     func_800AED20(0.0f);
     func_800A9864(0x10080, 0x23, 0x10);
     func_800AA018(0x104DC);
-    D_801F0140_ovl16[0] = 0;
-    D_801F0120_ovl16[0] = 3;
-    D_801F0144_ovl16 = 1;
-    D_801F0124_ovl16 = 3;
-    D_801F0148_ovl16 = 2;
-    D_801F0128_ovl16 = 3;
-    for (i = 3; i < 7; i++) {
+    for (i = 0; i < 7; i++) {
         D_801F0140_ovl16[i] = i;
         if (i == 6) {
             D_801F0120_ovl16[i] = 2;

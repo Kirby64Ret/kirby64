@@ -12,7 +12,7 @@
 extern s32 D_800D6B24;
 extern s32 D_800D71E8[];
 extern s32 D_8015C720_ovl4;
-extern f32 D_8015C670_ovl4;
+/* D_8015C670_ovl4 (0.008726646f) is emitted by this TU now */
 extern f32 D_8015C674_ovl4;
 extern Gfx D_8015C3E0_ovl4[];
 
@@ -61,7 +61,7 @@ void func_80159B68_ovl4(GObj *arg0) {
     func_800AAF34(0x10, 0x300AF, 0.0f);
     func_800A71A0(0x10);
     gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
-    D_800EA6E0[omCurrentObj->objId] = D_8015C670_ovl4;
+    D_800EA6E0[omCurrentObj->objId] = 0.008726646f;
     func_800A9864(0x300B7, 0x1869F, 0x10);
     D_8015C720_ovl4 = 2;
     ohSleep(0x1E);

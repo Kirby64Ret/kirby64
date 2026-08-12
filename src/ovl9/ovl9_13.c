@@ -194,7 +194,7 @@ void func_8020C918_ovl9(void);
 extern s32 D_801CC790;
 extern s32 D_801CC76C;
 /* D_8021DB7C_ovl9: literal, this TU owns its .rodata */
-extern f32 D_8021DB84_ovl9;
+/* D_8021DB84_ovl9: literal */
 extern s32 random_soft_s32_range(s32);
 void func_8020B350_ovl9(s32, s32, f32);
 void func_8020B19C_ovl9(struct GObj *);
@@ -543,7 +543,6 @@ void func_8020ACEC_ovl9(s32 arg0) {
 
 }
 
-#ifdef NON_MATCHING
 void func_8020ACF4_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
     s32 i;
@@ -552,9 +551,8 @@ void func_8020ACF4_ovl9(struct GObj *arg0) {
     tmp->unk98 = &D_801CC76C;
     D_800DDFD0[omCurrentObj->objId] = 2;
     func_800AA018(0x1003D);
-    i = 0;
-    v = D_8021DB84_ovl9;
-    for (; i < D_800E9AA0[omCurrentObj->objId].as_s32; i++) {
+    v = 65535.0f;
+    for (i = 0; i < D_800E9AA0[omCurrentObj->objId].as_s32; i++) {
         D_800E64D0[omCurrentObj->objId] = 0.0f;
         D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.375f;
         D_800E6850[omCurrentObj->objId] = 3.0f;
@@ -568,9 +566,6 @@ void func_8020ACF4_ovl9(struct GObj *arg0) {
     }
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020ACF4_ovl9.s")
-#endif
 void func_8020AF0C_ovl9(struct GObj *arg0) {
     if (D_800E8920[omCurrentObj->objId] == 0) {
         D_800E6690[omCurrentObj->objId] = 0.0f;

@@ -6,8 +6,8 @@
 
 extern N_ALGlobals *n_alGlobals;
 extern N_ALSynth *n_syn;
-extern f32 D_800417A0;
-extern f32 D_800414C8;
+/* D_800417A0 = 1e+06f : now emitted by this TU */
+/* D_800414C8 = 1.99996f : now emitted by this TU */
 
 typedef struct {
     /* 0x00 */ u8  pad00[0x28];
@@ -1085,7 +1085,7 @@ Acmd *func_80026FA8(N_PVoice *e, s16 *outp, Acmd *p) {
 
     } else {
 
-        if (e->rs_ratio > D_800414C8) e->rs_ratio = D_800414C8;
+        if (e->rs_ratio > 1.99996f) e->rs_ratio = 1.99996f;
 
         e->rs_ratio = (s32) (e->rs_ratio * UNITY_PITCH);
         e->rs_ratio = e->rs_ratio / UNITY_PITCH;
@@ -1539,7 +1539,7 @@ void func_80029834(void) {
 }
 
 s32 _n_timeToSamples(s32 micros) {
-    f32 tmp = ((f32) micros) * n_syn->outputRate / D_800417A0 + 0.5f;
+    f32 tmp = ((f32) micros) * n_syn->outputRate / 1e+06f + 0.5f;
 
     return (s32) tmp & ~0xf;
 }

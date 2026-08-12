@@ -397,18 +397,23 @@ out:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FEBC_ovl18.s")
 
 #ifdef NON_MATCHING
-/* 5/46: instruction schedule is exact. The ROM numbers the three FP temps in
- * SCHEDULE order (constant $f4, mtc1 $f6, cvt $f8); IDO numbers them in
- * source-tree order and puts the constant last. All six operand orders of the
- * multiply and the add compile identically -- IDO canonicalises them -- and an
- * implicit conversion, a named f32 local and a store-then-reload of unk4 are
- * all worse. */
+/* 5/46 -> 1/46. Splitting `(f32) temp` into its OWN f32 local (`ft`), and
+ * nothing else, fixes the FP temp numbering: the cvt then lands in $f8 with the
+ * constant in $f4 and the product in $f10, exactly the ROM's schedule order.
+ * The single residue is the outermost `add.s` operand ORDER: the ROM has
+ * `add.s $f18, $f16, $f10` (accumulator first) and IDO canonicalises to
+ * product-first regardless of how the source is written -- `a + b`, `b + a`,
+ * a named local for either side, a named sum local and a redundant (f32) cast
+ * all compile to the same instruction. This is the same canonicalisation the
+ * guide records for commutative FP operands; the register assignment is right,
+ * only the order is not. */
 extern f32 D_8022BB90_ovl18;
 
 void func_8021FF80_ovl18(void) {
     struct UnkStruct800E1B50 *p;
     s32 v;
     s32 temp;
+    f32 ft;
 
     p = D_800E1B50[omCurrentObj->objId];
     if (p->unk3D == 0x17) {
@@ -420,7 +425,8 @@ void func_8021FF80_ovl18(void) {
         v = *(s32 *) &D_800D7098.unk4;
     }
     temp = D_800D7098.unk8 + v;
-    gEntitiesAngleXArray[omCurrentObj->objId] = D_800D70D8.unkC + (D_8022BB90_ovl18 * (f32) temp);
+    ft = (f32) temp;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_800D70D8.unkC + (D_8022BB90_ovl18 * ft);
     D_800D7098.unk4 = temp;
 }
 #else

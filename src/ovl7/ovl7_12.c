@@ -26,7 +26,7 @@ void func_801B7E80_ovl7(GObj *);
 extern s32 D_800E8AE0[];
 void func_800AECC0(f32);
 void func_800AED20(f32);
-void func_800AA018(s32);
+void func_800AA018();
 void ohSleep(s32);
 
 extern f32 D_801CE378_ovl7;
@@ -55,7 +55,7 @@ extern f32 gameTicksPerDraw;
 extern f32 D_800EC660[], D_800EC820[], D_800E64D0[], D_800E6690[], D_800E6850[], D_800E6A10[];
 void func_800AECC0(f32);
 void func_800AED20(f32);
-void func_800AA018(s32);
+void func_800AA018();
 void ohSleep(s32);
 void func_801ABBA0_ovl7(void);
 void func_801B8238_ovl7(void);
@@ -88,7 +88,40 @@ void func_800B6FD8(GObj *);
 
 void func_800B6FD8(GObj *);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B79B0_ovl7.s")
+void func_801B79B0_ovl7(GObj *arg0) {
+    extern f32 D_801CE360_ovl7, D_801CE364_ovl7;
+    extern s32 D_800EA520[];
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct SubSub800E1B50_Unk88_UnkC *c = ent->unk88->unkC;
+    struct SubSub800E1B50_Unk88_UnkC_Unk4 *r = c->unk4;
+
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    func_801ABBA0_ovl7();
+    D_800DF150[omCurrentObj->objId] = func_801AC908_ovl7;
+    ent->unk48 = func_8010C274;
+    ent->unk98 = &D_801CB56C_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    if (r->unk4 != -1) {
+        func_800AA018(r->unk4);
+    }
+    if (r->unk8 != -1) {
+        func_800AA018(r->unk8);
+    }
+    arg0->onAnimate = (void *) D_800EA520[omCurrentObj->objId];
+    arg0->data.dobj->firstChild->angle.v.x = D_801CE360_ovl7;
+    D_800E64D0[omCurrentObj->objId] =
+        D_800E6A10[omCurrentObj->objId] * (ABSF(D_800E64D0[D_800E0D50[omCurrentObj->objId]]) + 3.5f);
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.5f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801CE364_ovl7;
+    ohSleep(0x3C);
+    func_801AC364_ovl7(arg0);
+}
 
 #ifdef NON_MATCHING
 // 65/147 diffs and one instruction short: everything up to the if matches;

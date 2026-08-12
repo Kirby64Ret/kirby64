@@ -41,9 +41,9 @@ void func_801E2EF0_ovl10(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-extern f32 D_801F4A40_ovl10;
-extern f32 D_801F4A44_ovl10;
-extern f32 D_801F4A48_ovl10;
+/* D_801F4A40_ovl10 = -0.8f : now emitted by this TU */
+/* D_801F4A44_ovl10 = -0.4f : now emitted by this TU */
+/* D_801F4A48_ovl10 = 65535.0f : now emitted by this TU */
 extern struct Sub800E1B50_Unk98 D_801F41B4_ovl10;
 extern void func_800B6A2C(s32);
 extern void func_801ACF84_ovl7(struct GObj *);
@@ -60,7 +60,7 @@ void func_801E2F68_ovl10(GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.0f;
     D_800E3210[omCurrentObj->objId] = 8.0f;
-    D_800E3750[omCurrentObj->objId] = D_801F4A40_ovl10;
+    D_800E3750[omCurrentObj->objId] = -0.8f;
     D_800E3C90[omCurrentObj->objId] = 8.0f;
     ohSleep(3);
     D_800E98E0[omCurrentObj->objId] = 1;
@@ -70,7 +70,7 @@ void func_801E2F68_ovl10(GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] + D_800E6A10[omCurrentObj->objId];
     D_800E3210[omCurrentObj->objId] = 4.0f;
-    D_800E3750[omCurrentObj->objId] = D_801F4A44_ovl10;
+    D_800E3750[omCurrentObj->objId] = -0.4f;
     D_800E3C90[omCurrentObj->objId] = 4.0f;
     while (D_800E8920[omCurrentObj->objId] == 0) {
         ohSleep(1);
@@ -78,7 +78,7 @@ void func_801E2F68_ovl10(GObj *arg0) {
     func_800B33F4();
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_801F4A48_ovl10;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801ACF84_ovl7(arg0);
 }

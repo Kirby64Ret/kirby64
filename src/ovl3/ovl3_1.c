@@ -95,7 +95,39 @@ s32 func_8015229C_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80152348_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80152828_ovl3.s")
+s32 func_80152828_ovl3(f32 *arg0, f32 *arg1) {
+    s32 ret;
+    extern u8 D_8012BCA0[];
+    s32 func_80109E44(f32 *);
+    s32 func_8010B11C(f32 *);
+    void func_80105238(f32 *, u8 *);
+
+    arg1[1] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg1[2] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg1[3] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg1[4] = arg0[0];
+    arg1[5] = arg0[0] + arg0[1];
+    arg1[6] = arg0[0] + arg0[2];
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        arg1[7] = arg0[3];
+        arg1[8] = arg0[4];
+    } else {
+        arg1[7] = arg0[4];
+        arg1[8] = arg0[3];
+    }
+    if (gKirbyState.isTurning & 1) {
+        arg1[9] = gKirbyState.unk7C;
+    } else {
+        arg1[9] = D_800E17D0[omCurrentObj->objId];
+    }
+    if (D_800E8920[omCurrentObj->objId] == 0) {
+        ret = func_80109E44(arg1);
+    } else {
+        ret = func_8010B11C(arg1);
+    }
+    func_80105238(arg1, D_8012BCA0);
+    return ret;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801529C0_ovl3.s")
 

@@ -694,7 +694,49 @@ void func_80115618(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115618.s")
 #endif
+/* 17/87, the same residue func_80115618 above has: idx is in $v1 and the
+ * &omCurrentObj materialisation is exact, but IDO hoists `lui %hi(D_800DE350)`
+ * ahead of the branch where the ROM hoists `lui %hi(D_80126CD0)` and keeps
+ * D_800DE350's after the `lw 0x4C(arg0)`, which also parks `obj` in $v0 instead
+ * of the ROM's $t1. Swept: all four statement orders inside the `if`, the
+ * `u8 *p` local vs the inline `((struct Unk4C *) arg0->unk4C)->unk3` cast (22 vs
+ * 17 -- the inline form is what puts idx in $v1), a chained
+ * `omCurrentObj = obj = ...`, dropping `obj` entirely (22), and all seven
+ * declaration orders (completely inert). */
+#ifdef NON_MATCHING
+void func_8011572C(struct GObj *arg0, u32 arg1) {
+    struct Unk80124E14 *sp1C = &D_80124E14[D_800E77A0[arg0->objId]];
+    struct Unk80126CD0 *g;
+    s32 temp_a0;
+    u16 idx;
+    struct GObj *obj;
+
+    arg0->onAnimate = NULL;
+    func_800AF980(0x17);
+    func_800A9864(sp1C->unk4, 0x1869F, 0x10);
+    func_800A9F98(sp1C->unk8, arg1);
+    temp_a0 = sp1C->unkC;
+    if (temp_a0 != 0) {
+        func_800A9F98(temp_a0, arg1);
+    }
+    D_800DEF90[omCurrentObj->objId] = sp1C->unk10;
+    idx = sp1C->unk1A;
+    if (idx != 0) {
+        g = &D_80126CD0[idx];
+        obj = D_800DE350[((struct Unk4C *) arg0->unk4C)->unk3];
+        omCurrentObj = obj;
+        obj->onAnimate = NULL;
+        func_800A9F98(g->unk4, arg1);
+        temp_a0 = g->unk8;
+        if (temp_a0 != 0) {
+            func_800A9F98(temp_a0, arg1);
+        }
+        omCurrentObj = arg0;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011572C.s")
+#endif
 
 void func_80115888(struct GObj *arg0) {
     u32 temp_v1;

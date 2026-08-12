@@ -173,7 +173,38 @@ void func_801AF9F8_ovl7(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AFAB0_ovl7.s")
+void func_801AFAB0_ovl7(GObj *arg0) {
+    void func_8019B164_ovl7(void);
+    extern f32 D_801CE254_ovl7, D_801CE258_ovl7;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    ent->unk98 = &D_801CD360_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_8019B164_ovl7();
+    play_sound(0x22);
+    D_800E6A10[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -1.0f;
+    if (D_800E8AE0[omCurrentObj->objId] & 1) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 2.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 2.0f;
+        D_800E3210[omCurrentObj->objId] = 8.0f;
+        D_800E3750[omCurrentObj->objId] = D_801CE254_ovl7;
+        D_800E3C90[omCurrentObj->objId] = 8.0f;
+    } else {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 4.0f;
+        D_800E3210[omCurrentObj->objId] = 10.0f;
+        D_800E3750[omCurrentObj->objId] = D_801CE258_ovl7;
+        D_800E3C90[omCurrentObj->objId] = 10.0f;
+    }
+    if (gEntitiesNextPosYArray[omCurrentObj->objId] < gEntitiesNextPosYArray[0]) {
+        D_800E3210[omCurrentObj->objId] = -D_800E3210[omCurrentObj->objId] * 0.5f;
+        D_800E3750[omCurrentObj->objId] = -D_800E3750[omCurrentObj->objId];
+    }
+    curObjSleepForever();
+}
 
 void func_801AFD28_ovl7(GObj *arg0) {
     if (D_800E3210[omCurrentObj->objId] < 0.0f) {
@@ -273,7 +304,79 @@ void func_801B00BC_ovl7(GObj *arg0) {
     func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801B0258_ovl7.s")
+struct Ovl7_7_AnimSub {
+    u8 filler0[0x18];
+    f32 unk18;
+};
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801B03FC_ovl7.s")
+struct Ovl7_7_AnimObj {
+    u8 filler0[0x20];
+    struct Ovl7_7_AnimSub *unk20;
+};
+
+void func_801B0258_ovl7(GObj *arg0) {
+    void func_801B03FC_ovl7(void);
+    s32 func_801A36CC(void *);
+    struct Ovl7_7_AnimObj *func_80111A04(void *, s32);
+    void func_80111C4C(struct Ovl7_7_AnimObj *);
+    extern u8 D_8012E7C5;
+    extern f32 D_801CB208_ovl7[][4], D_801D0AB0_ovl7[][4];
+    extern f32 D_801CE278_ovl7;
+    struct Ovl7_7_AnimObj *p;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    u8 i;
+
+    if (D_8012E7C5 != 0xE) {
+        func_801B03FC_ovl7();
+    }
+    p = func_80111A04(ent->unk90, omCurrentObj->objId);
+    p->unk20->unk18 *= D_800EA6E0[omCurrentObj->objId];
+    func_80111C4C(p);
+    for (i = 0; i < 0x18; i++) {
+        D_801D0AB0_ovl7[i][0] = D_801CB208_ovl7[i][0] * D_800EA6E0[omCurrentObj->objId];
+        D_801D0AB0_ovl7[i][1] = D_801CB208_ovl7[i][1] * D_800EA6E0[omCurrentObj->objId];
+        D_801D0AB0_ovl7[i][2] = D_801CB208_ovl7[i][2] * D_800EA6E0[omCurrentObj->objId];
+        D_801D0AB0_ovl7[i][3] = D_801CB208_ovl7[i][3] * D_800EA6E0[omCurrentObj->objId];
+    }
+    func_801A36CC(0);
+    if (D_800EA6E0[omCurrentObj->objId] < 1.0f) {
+        D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + D_801CE278_ovl7;
+    }
+}
+
+struct Ovl7_7_AnimSub2 {
+    u8 filler0[0x18];
+    f32 unk18;
+};
+
+struct Ovl7_7_AnimObj2 {
+    u8 filler0[0x24];
+    struct Ovl7_7_AnimSub2 *unk24;
+};
+
+void func_801B03FC_ovl7(void) {
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl7_7_AnimObj2 *p;
+    struct Ovl7AnimInfo sp28;
+
+    func_80111550((void *) omCurrentObj->objId);
+    p = (struct Ovl7_7_AnimObj2 *) func_80111C88(ent->unk8C, omCurrentObj->objId);
+    p->unk24->unk18 *= D_800EA6E0[omCurrentObj->objId];
+    func_80111ECC(p);
+    if (func_80110B00(&sp28) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp28.unk2;
+        ent->unk43 = sp28.unk3;
+    } else if (func_80110FD4(&sp28) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp28.unk2;
+        ent->unk43 = sp28.unk3;
+    } else if (func_80110150(&sp28) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp28.unk2;
+        ent->unk43 = sp28.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+    }
+}
 
