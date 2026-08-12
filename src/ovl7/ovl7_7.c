@@ -90,8 +90,6 @@ s32 func_80110150(void *);
 
 #ifdef NON_MATCHING
 /* 5/111 insns */
-#ifdef NON_MATCHING
-/* 5/111 */
 void func_801AEE04_ovl7(void) {
     s32 func_801A0880_ovl7(void);
     struct Ovl7_7_AnimObj *func_801117BC(void *, u32);
@@ -134,9 +132,6 @@ void func_801AEE04_ovl7(void) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEE04_ovl7.s")
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEE04_ovl7.s")
 #endif
