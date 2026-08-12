@@ -44,7 +44,30 @@ void func_801DB358_ovl13(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DB870_ovl13.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DC788_ovl13.s")
+void func_801DC788_ovl13(GObj *arg0) {
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId]++;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] %= 180;
+    switch (D_800E98E0[D_800E0D50[omCurrentObj->objId]]) {
+        case 0:
+        case 1:
+            func_801A0D74_ovl7(arg0);
+            break;
+        case 4:
+            D_800DFBD0[D_801290D0][2]->pos.v.y -= D_800EA6E0[omCurrentObj->objId];
+            if (D_800DFBD0[D_801290D0][2]->pos.v.y < -960.0f) {
+                D_800DFBD0[D_801290D0][2]->pos.v.y += 480.0f;
+            }
+            break;
+        case 5:
+            D_800E98E0[D_800E0D50[omCurrentObj->objId]] = 6;
+            break;
+        case 2:
+        case 3:
+        case 6:
+        case 7:
+            break;
+    }
+}
 
 /* 10/93: the whole loop body is exact. The residue is the coupled-FP floor:
  * the ROM defines $f22 (D_801E5CD4) first and $f20 (D_801E5CD8) second while

@@ -428,8 +428,60 @@ void func_8022023C_ovl19(GObj *arg0) {
 
 // Pit of Doom
 // {
-    // "struct offset vs absolute access" rabbit hole
+/* 22/119: the first 52 instructions -- both random_soft_s32_range rejection
+ * loops, the D_800E0650/D_800DF150 stores and the whole D_800D6E64 guard --
+ * are exact, registers included. The residue is a pure temp-register rotation
+ * that starts at the first `sll $vN, 2`: after `addiu $t6,$zero,1` the ROM's
+ * next temp is $t0 (it skips t7/t8/t9) where IDO takes $t8 (skipping only t7),
+ * and the two sequences never re-sync. No instruction, constant or order
+ * differs. Swept: one temp local vs three, `*(vs32 *) &D_800D71F8` vs a plain
+ * assignment (byte-identical here -- with THREE stores to the symbol IDO
+ * materialises the address into $s0 on its own, so the vs32 hack that
+ * func_80221108_ovl19 needs is not needed at this use count), and a
+ * `for (i = 0; i < 3; i++)` loop for the three groups (NOT unrolled by IDO --
+ * 113/118, it emits a real loop with four saved registers). */
+#ifdef MIPS_TO_C
+void func_80220280_ovl19(GObj *arg0) {
+    extern s32 D_8022FAB8_ovl19[];
+    extern s32 D_800D6F18;
+    extern u32 D_800D71F8;
+    extern void func_801230E8(s32, s32, s32);
+    void func_8022045C_ovl19(struct GObj *);
+    s32 temp;
+
+    func_8021E184_ovl19();
+    D_800E0650[omCurrentObj->objId] = D_8022FAB8_ovl19;
+    D_800DF150[omCurrentObj->objId] = func_8022045C_ovl19;
+    if (D_800D6E64 == 0) {
+        (&D_800D6F18)[0] = random_soft_s32_range(7);
+        do {
+            (&D_800D6F18)[1] = random_soft_s32_range(7);
+        } while ((&D_800D6F18)[0] == (&D_800D6F18)[1]);
+        do {
+            (&D_800D6F18)[2] = random_soft_s32_range(7);
+        } while (((&D_800D6F18)[0] == (&D_800D6F18)[2]) || ((&D_800D6F18)[1] == (&D_800D6F18)[2]));
+        D_800D6E64 = 1;
+    }
+    temp = func_8021E2D0_ovl19(3, 2);
+    D_800D71F8 = temp;
+    D_800EC2E0[temp].as_s32 = 0;
+    temp = func_8021E2D0_ovl19(3, 2);
+    D_800D71F8 = temp;
+    D_800EC2E0[temp].as_s32 = 1;
+    temp = func_8021E2D0_ovl19(3, 2);
+    D_800D71F8 = temp;
+    D_800EC2E0[temp].as_s32 = 2;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 140.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x2006F, 0x27, 0x10);
+    func_801230E8(0x203D5, 0x203D6, 1);
+    curObjSleepForever();
+}
+#else
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220280_ovl19.s")
+#endif
 
     // having to define a struct thats only ever accessed here and the above function
 /* 19/60: every instruction is right and the first half's registers are exact

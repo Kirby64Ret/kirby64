@@ -19,7 +19,45 @@ void func_8010E6F0(Vector *arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010E740.s")
 
+#ifdef MIPS_TO_C
+/* 25/76 diffs. Structure is instruction-for-instruction exact; the whole
+ * residue is one FP register swap: IDO puts arg2->x in $f0 and -r in $f18,
+ * the ROM puts arg2->x in $f18 and -r in $f0. The register SET is identical.
+ * Swept: (r,dx) decl/assign order, (dx,r), (x,r,dx) [best, this one],
+ * (r,x,dx), and reloading arg2->x at the tail instead of reusing x.
+ * Requires the file-scope prototype and UnkEA20.unk18 to become f32/Vector*,
+ * which was A/B'd and leaves func_8010EA20 matching. */
+s32 func_8010E8F0(Vector *arg0, f32 arg1, Vector *arg2, f32 arg3, Vector *arg4) {
+    f32 x = arg2->x;
+    f32 r = arg1 + arg3;
+    f32 dx = arg0->x - x;
+    f32 dy;
+    f32 dz;
+
+    if ((r < dx) || (dx < -r)) {
+        return 0;
+    }
+    dy = arg0->y - arg2->y;
+    if ((r < dy) || (dy < -r)) {
+        return 0;
+    }
+    dz = arg0->z - arg2->z;
+    if ((r < dz) || (dz < -r)) {
+        return 0;
+    }
+    if (dx * dx + dy * dy + dz * dz <= r * r) {
+        if (arg4 != NULL) {
+            arg4->x = dx * 0.5f + x;
+            arg4->y = dy * 0.5f + arg2->y;
+            arg4->z = dz * 0.5f + arg2->z;
+        }
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010E8F0.s")
+#endif
 
 s32 func_8010EA20(struct UnkEA20 *arg0, struct UnkEA20 *arg1, s32 arg2) {
     return func_8010E8F0(&arg0->unkC, arg0->unk18, &arg1->unkC, arg1->unk18, arg2);

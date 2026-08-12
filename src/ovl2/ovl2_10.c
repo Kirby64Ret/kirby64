@@ -1030,7 +1030,60 @@ void func_80115EFC(s32 arg0) {
 
 }
 
+#ifdef NON_MATCHING
+/* LEFT UN-GUARDED BY A LANE THAT DIED MID-WORK, at 80/133 insns. */
+void func_80115F04(s32 arg0) {
+    void func_80116118(struct GObj *);
+    u8 *sp6C = ((struct GObj *) arg0)->unk4C;
+    Vector sp58;
+    Vector sp4C;
+    f32 sp48;
+    f32 sp44;
+    f32 sp40;
+    f32 sp3C;
+    f32 sp38;
+    f32 cy;
+    f32 acc;
+    f32 ang;
+    s32 id = ((struct GObj *) arg0)->objId;
+
+    sp48 = gEntitiesAngleXArray[id];
+    sp44 = gEntitiesAngleYArray[id];
+    sp40 = sinf(sp48);
+    sp3C = cosf(sp48);
+    sp38 = sinf(sp44);
+    cy = cosf(sp44);
+    sp58.x = sp3C * sp38;
+    sp58.y = -sp40;
+    sp58.z = sp3C * cy;
+    func_8011E31C(&sp4C);
+    acc = ((sp58.z * (sp4C.z - gEntitiesNextPosZArray[id])) +
+           ((sp58.x * (sp4C.x - gEntitiesNextPosXArray[id])) +
+            (sp58.y * (sp4C.y - gEntitiesNextPosYArray[id])))) * 0.00001f + D_800EA6E0[id];
+    if (0.006f < acc) {
+        acc = 0.006f;
+    } else if (acc < -0.006f) {
+        acc = -0.006f;
+    }
+    ang = ((struct GObj *) arg0)->data.dobj->angle.v.x + acc;
+    if (0.4363f < ABSF(ang)) {
+        acc = 0.0f;
+        if (0.0f < ang) {
+            ang = 0.4363f;
+        } else {
+            ang = -0.4363f;
+        }
+    }
+    D_800EA6E0[id] = acc;
+    ((struct GObj *) arg0)->data.dobj->angle.v.x = ang;
+    if (func_8011E244() != *sp6C) {
+        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80116118;
+    }
+    func_80112B4C((struct GObj *) arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115F04.s")
+#endif
 
 // The float literal below lands in this TU's MIGRATED .rodata block, which
 // this C file emits. verify.py reports a 1-instruction diff because the object
@@ -1533,7 +1586,34 @@ void func_80117904(s32 arg0) {
     gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117AB4.s")
+void func_80117AB4(struct GObj *arg0) {
+    f32 step;
+
+    while (1) {
+        while (gEntitiesNextPosXArray[omCurrentObj->objId] < gEntitiesNextPosXArray[D_800D7098[13]] + 800.0f) {
+            ohSleep(1);
+        }
+        D_800E3750[omCurrentObj->objId] = -0.5f;
+        D_800E3C90[omCurrentObj->objId] = 20.0f;
+        step = D_80126DFC[random_soft_s32_range(7)];
+        while (-2000.0f < gEntitiesNextPosYArray[omCurrentObj->objId]) {
+            gEntitiesAngleXArray[omCurrentObj->objId] += step;
+            ohSleep(1);
+        }
+        D_800E3750[omCurrentObj->objId] = 0.0f;
+        D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+        D_800E3C90[omCurrentObj->objId] = 65535.0f;
+        if (gEntitiesNextPosXArray[omCurrentObj->objId] - 2000.0f < -7000.0f) {
+            break;
+        }
+        gEntitiesNextPosXArray[omCurrentObj->objId] -= 2000.0f;
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+        gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] += 7000.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = -5000.0f;
+    omEndProcess(0);
+}
 
 void func_80117D70(struct GObj *arg0) {
     func_80117834(arg0);
@@ -1590,7 +1670,23 @@ void func_80117F00(struct GObj *arg0) {
     func_80117AB4(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117F28.s")
+void func_80117F28(struct GObj *arg0) {
+    func_80117834(arg0);
+    while (D_800D7098[2] == 0) {
+        ohSleep(1);
+    }
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E3C90[omCurrentObj->objId] = 20.0f;
+    while (-1000.0f < gEntitiesNextPosYArray[omCurrentObj->objId]) {
+        ohSleep(1);
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    gEntitiesNextPosXArray[omCurrentObj->objId] += 7000.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = -5000.0f;
+    omEndProcess(0);
+}
 
 void func_801180B8(struct GObj *arg0) {
     func_80117834(arg0);

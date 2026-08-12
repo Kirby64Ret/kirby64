@@ -4,7 +4,7 @@ void func_801DB2D8_ovl13(GObj *);
 void func_801DB358_ovl13(GObj *);
 void func_801DB3A0_ovl13(GObj *);
 void func_801DB870_ovl13(GObj *);
-void func_801DC788_ovl13(void);
+void func_801DC788_ovl13(GObj *arg0);
 void func_801DCB28_ovl13(GObj *);
 void func_801DCC7C_ovl13(GObj *);
 void func_801DCDA8_ovl13(GObj *);
