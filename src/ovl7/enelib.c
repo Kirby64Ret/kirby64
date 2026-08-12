@@ -343,8 +343,9 @@ void func_80198DBC_ovl7(void) {
 // in $v0 (ours lands in $v1 + one extra move after the tail lhu), and after the
 // func_801C06FC_ovl7 call target re-reads omCurrentObj with a folded lui+lw
 // (fresh single-use web) while ours re-materializes the shared addiu base web.
-// Tried: val type variants, separate tail var, assignment-in-condition,
-// register hint, declaration order, expression-only case 6, idx reassignment.
+// Tried: val type variants (s32/u32/s16/s8/u8/int), separate tail var,
+// assignment-in-condition, register hint, all five-local declaration orders,
+// expression-only case 6, idx reassignment.
 void func_80199084_ovl7(void) {
     u32 idx;
     u32 kind;
@@ -431,12 +432,11 @@ void func_801992F0_ovl7(void) {
     }
 }
 
-#ifdef NON_MATCHING
 void func_80199384_ovl7(void) {
     UnkStruct800E1B50 *ent;
     u32 id;
     u32 cb;
-    u16 w;
+    s32 w;
 
     id = omCurrentObj->objId;
     ent = D_800E1B50[id];
@@ -492,9 +492,7 @@ void func_80199384_ovl7(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199384_ovl7.s")
-#endif
+
 void func_80199568_ovl7(void) {
     if (D_800E8E60[omCurrentObj->objId] == 0) {
         func_80198CA8_ovl7();

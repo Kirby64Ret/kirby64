@@ -36,7 +36,7 @@ void func_800A7F74(s32, s32, s32, f32, f32, f32);
 s32 func_801A0D74_ovl7(void);
 extern u32 D_8012BCA0;
 extern void *D_801CA28C_ovl7[], *D_801CA2B0_ovl7[], *D_801CA2F4_ovl7[], *D_801CA318_ovl7[];
-extern f32 D_801CDFC0_ovl7; /* D_801CDFB8_ovl7 = 9999.0f : now emitted by this TU */
+/* D_801CDFB8_ovl7 = 9999.0f, D_801CDFC0_ovl7 = 65535.0f : now emitted by this TU */
 void func_801A522C_ovl7(GObj *);
 void func_801A6610_ovl7(void);
 void func_801A4414_ovl7(GObj *);
@@ -165,16 +165,10 @@ void func_801A4F70_ovl7(void) {
     }
 }
 
-#ifdef NON_MATCHING
-/* 9/95: every store and every address computation is exact; only the FP
- * register NAMES differ -- ROM has 0.0 in $f12, D_801CDFC0_ovl7 in $f14 and
- * the D_800E3E50 read-back in $f2, IDO gives $f14/$f2/$f12. Swept: separate
- * locals for the zero and the constant in both declaration orders, assigning
- * each immediately before first use, inlining the constant, and an extra
- * named temp for either read-back group (40-91 diffs each). The chained
- * assignments themselves took this from 84 to 9 and are load-bearing. */
+/* The chained assignments are load-bearing: separate statements are 84 diffs
+ * off. */
 void func_801A50B0_ovl7(GObj *arg0) {
-    f32 c = D_801CDFC0_ovl7;
+    f32 c = 65535.0f;
 
     D_800DF150[omCurrentObj->objId] = func_801A522C_ovl7;
     D_800E6690[omCurrentObj->objId] = 0.0f;
@@ -189,9 +183,6 @@ void func_801A50B0_ovl7(GObj *arg0) {
     ohSleep(0xA);
     func_801A4414_ovl7(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A50B0_ovl7.s")
-#endif
 void func_801A522C_ovl7(GObj *arg0) {
     if (D_800EC9E4 != 0.0f) {
         D_800E3210[omCurrentObj->objId] = -D_800EC9E4;
@@ -282,7 +273,68 @@ s32 func_801A66B4_ovl7(void) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A66FC_ovl7.s")
+s32 func_801A66FC_ovl7(void) {
+    void func_801A2558_ovl7(u32);
+    extern u8 D_800E7730[];
+    extern u32 D_801CA9F8_ovl7[];
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    u8 ret;
+    s32 pad0;
+    s32 pad1;
+    u32 sel;
+    struct Sub800E1B50_Unk84 *sub;
+
+    ret = ent->unk43;
+    sel = ret;
+    sub = ent->unk84;
+    if (ret >= 13) {
+        ret = 0;
+        sel = 0;
+    }
+    if ((D_800E7730[omCurrentObj->objId] == 0) && (sub == NULL)) {
+        if (ent->unk88->unk10 != 0) {
+            func_801A2558_ovl7(ent->unk88->unk10);
+        } else {
+            func_801A2558_ovl7(&D_801CA9F8_ovl7);
+        }
+    }
+    if ((sel == 1) && (ent->unk3E == 2) && (ent->unk3F == 6)) {
+        ret = 7;
+    } else {
+        switch (sel) {
+        case 0:
+        case 1:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            ret = 0;
+            break;
+        case 2:
+            ret = 1;
+            break;
+        case 3:
+            ret = 2;
+            break;
+        case 4:
+            ret = 3;
+            break;
+        case 9:
+            ret = 4;
+            break;
+        case 10:
+            ret = 5;
+            break;
+        case 11:
+            ret = 6;
+            break;
+        case 12:
+            ret = 8;
+            break;
+        }
+    }
+    return ret;
+}
 
 void func_801A6850_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -308,20 +360,12 @@ void func_801A6958_ovl7(GObj *arg0) {
     func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
 }
 
-/* 16/152: instruction-for-instruction correct with the frame and the constant
-   load position exact; the residue is FP register naming only (ROM assigns
-   $f12 to the shared 0.0f and $f14 to D_801CE008_ovl7, IDO assigns $f14 and
-   $f2 -- one slot along the same sequence), plus the $a0/$a1 move before
-   func_800A22D4. Swept: constant as a local at four positions, an f32 local
-   for gameTicksPerDraw, double-literal zeros, chained vs separate stores. */
-#ifdef NON_MATCHING
 void func_801A69B0_ovl7(GObj *arg0) {
-    void func_800A22D4(void *);
+    void func_800A22D4(u32);
     void func_800A2300(struct GObj *);
     void func_800B6474(s32);
     extern f32 gameTicksPerDraw;
     extern FUNCLIST D_801C2994_ovl7;
-    extern f32 D_801CE008_ovl7;
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
     s32 v = ent->unk44;
     f32 c;
@@ -333,7 +377,7 @@ void func_801A69B0_ovl7(GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B6474;
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
-    c = D_801CE008_ovl7;
+    c = 65535.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = c;
@@ -359,13 +403,10 @@ void func_801A69B0_ovl7(GObj *arg0) {
     }
     func_801A3E80_ovl7(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A69B0_ovl7.s")
-#endif
 
 void func_801A6C10_ovl7(GObj *arg0) {
     void func_801A6DD0_ovl7();
-    void func_800A22D4(void *);
+    void func_800A22D4(u32);
     void func_800A2300(struct GObj *);
     void func_801A3D6C_ovl7(void);
     extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
@@ -403,5 +444,47 @@ void func_801A6DD0_ovl7(void) {
     func_801A0D74_ovl7();
 }
 
+/* MATCHES (126 insns, byte-exact) but must stay guarded: it is the LAST
+   function in ovl7_4's `c` subsegment, so converting it hands 16 bytes of SGI
+   linker fill back to the assembler and the TU comes out 0x3170 against a yaml
+   span of 0x3180.  The recipe (AGENT_GUIDE "THE MID-TU PADDING TRAP CLASS IS
+   NOT A TRAP") needs `- [0x14D060, pad]` in kirby64.yaml after the ovl7_4 `c`
+   line plus `. += 0x10;` before ovl7_5's (.text) in kirby.ld, applied together.
+   PAD = 0x10. */
+#ifdef NON_MATCHING
+void func_801A6DF0_ovl7(GObj *arg0) {
+    void func_8019B7D8_ovl7(void);
+    void func_800A22D4(u32);
+    void func_800A2300(struct GObj *);
+    extern f32 gameTicksPerDraw;
+
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    f32 c;
+
+    func_8019B7D8_ovl7();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    c = 65535.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    arg0->onAnimate = NULL;
+    D_800DF310[omCurrentObj->objId] = 0;
+    if (ent->unk34 != 0) {
+        func_800A22D4(ent->unk34);
+    }
+    func_800A2300(arg0);
+    ent->unk34 = 0;
+    func_800FD570(0, 6, 0.0f, 0.0f, 0.0f);
+    play_sound(0x92);
+    func_801A41D4_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A6DF0_ovl7.s")
+#endif
 

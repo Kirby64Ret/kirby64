@@ -625,7 +625,28 @@ void func_801C1288_ovl7(GObj *arg0) {
         ohSleep(0x1E);
         break;
     }
+    /* THE ARGUMENT IS FOR IDO AND THE GUARD IS FOR CC_CHECK.
+     *
+     * func_801C0610_ovl7 is defined at file scope as (void), and the ROM
+     * calls it here with $a0 already loaded -- passing arg0 is what makes IDO
+     * emit that, and it is why this function matches. K&R C allows it and the
+     * block-scope `extern void func_801C0610_ovl7();` above is the usual way
+     * of saying so.
+     *
+     * gcc does not accept it, and a block-scope declaration cannot override a
+     * definition gcc has already seen: CC_CHECK fails the whole build with
+     * "too many arguments to function". The same call earlier in this file
+     * compiles only because it precedes the definition.
+     *
+     * NON_MATCHING is defined by CC_CHECK and by Makefile.pc, and by neither
+     * the ROM build -- so gcc sees the prototype-correct call, IDO sees the
+     * one that matches, and the port calls a no-argument function with no
+     * arguments, which is also correct. */
+#ifdef NON_MATCHING
+    func_801C0610_ovl7();
+#else
     func_801C0610_ovl7(arg0);
+#endif
 }
 
 void func_801C1398_ovl7(GObj *arg0) {
