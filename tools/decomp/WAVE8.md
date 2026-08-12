@@ -381,6 +381,30 @@ too broadly and went out to six lanes before it was falsified. The guide's
 own standing warning applies to everything in this file: **a recorded lever
 is a measurement, not a law, and several have been falsified by one compile.**
 
+## NEVER SCRIPT A REPLACEMENT OF A FUNCTION DEFINITION
+
+Three incidents in one night, by three different agents including the
+manager, all from the same root cause: a regex or anchor-based edit that
+matched more, or less, than the function it was aimed at.
+
+  * a file-wide `sed` of a prototype hit three ALREADY-MATCHED functions and
+    grew the TU by 16 bytes;
+  * `factory.py`'s first splice used `#ifdef NON_MATCHING .*? #pragma(<func>)`
+    with re.DOTALL, anchored on the FIRST guard in the file, and deleted four
+    unrelated functions out of ovl5_5.c -- the link failed with undefined
+    references to functions that no longer existed;
+  * an anchor-based body replace matched a FORWARD DECLARATION instead of the
+    definition and deleted the matched function func_801AB174_ovl7.
+
+All three were caught (two by the link, one by a failed compile) and none
+reached a commit. That is the gate working, not luck -- but the cost was
+several build cycles each.
+
+**Rule: edit one function at a time, by hand, and never with a pattern that
+can span an unknown region.** If a change must be applied to N functions,
+apply it N times. When a restore is needed, do not trust it: dump the
+function's instruction words and compare against the committed object.
+
 ## MANAGER RULE: never guard a function a lane still has open
 
 Learned the hard way 2026-08-12. To unblock a gate I guarded
