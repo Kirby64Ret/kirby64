@@ -223,7 +223,7 @@ void func_801AC364_ovl7(s32 arg0) {
     s32 idx;
 
     func_801AC1F4_ovl7();
-    idx = func_801693C4_ovl7(5);
+    idx = func_801693C4(5);
     if (idx != -1) {
         gEntitiesNextPosXArray[idx] = gEntitiesNextPosXArray[omCurrentObj->objId];
         gEntitiesNextPosYArray[idx] = gEntitiesNextPosYArray[omCurrentObj->objId];
