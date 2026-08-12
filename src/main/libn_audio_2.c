@@ -378,6 +378,13 @@ void func_8002B4B4(KSeqPlayer *seqp, void *arg1) {
     }
 }
 
+/* 12/30 at -O3 (13 with the single-expression `|` chain).  The residue is
+ * the register-REUSE phenomenon: the ROM recycles $t6/$t7 for the byte
+ * assembly where IDO keeps allocating fresh temps, and the outermost
+ * `mul.s` operand order is inert to source order in both directions.
+ * Swept: `|` vs `+` vs `*` scaling, all three byte orders, nested vs flat
+ * or-chain, a `target` local, dropping `tevt`, inverting the if, and
+ * dropping `ftempo`. */
 #ifdef NON_MATCHING
 void func_8002B524(N_ALEvent *event, KSeqp *seqp) {
     ALTempoEvent *tevt = &event->msg.tempo;
@@ -386,10 +393,9 @@ void func_8002B524(N_ALEvent *event, KSeqp *seqp) {
 
     if (event->msg.tempo.status == AL_MIDI_Meta) {
         if (event->msg.tempo.type == AL_MIDI_META_TEMPO) {
-            tempo =
-                (tevt->byte1 << 16) |
-                (tevt->byte2 <<  8) |
-                (tevt->byte3 <<  0);
+            tempo = tevt->byte2 << 8;
+            tempo |= tevt->byte1 << 16;
+            tempo |= tevt->byte3;
             ftempo = (f32)tempo;
             if (seqp->target) {
                 seqp->uspt = (s32)(ftempo * seqp->target->qnpt);
@@ -555,6 +561,14 @@ s32 alSeqGetTicks(ALSeq *seq) {
 void func_8002C9F4(void) {
 }
 
+/* Upstream __readVarLen, 4/21 at -O3.  Every instruction is right; the ROM's
+ * loop RECYCLES $t6/$t7 (dead since before the loop) for the two `andi`s where
+ * IDO carries on to $t0/$t1 -- a free-list ordering difference in the register
+ * allocator, not a source shape.  17 variants swept, all 4 or worse: operand
+ * order, `|` vs `+`, `*128` vs `<<7`, split shift/add, a `hi` local, u32/u8
+ * types, a separate loop variable, while(1)+break, if/else, goto-loop, nested
+ * block, pointer local, explicit increments, early return, and a volatile
+ * pointer read. */
 #ifdef MIPS_TO_C
 s32 func_8002C9FC(ALSeq *seq) {
     s32 value;
@@ -575,6 +589,10 @@ s32 func_8002C9FC(ALSeq *seq) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C9FC.s")
 #endif
 
+/* IPA-BLOCKED, and ipascan cannot see this shape: the ROM moves `seq` and
+ * `event` into $a2/$a3 and keeps them live ACROSS the jal to func_8002C9FC,
+ * so that callee must preserve two caller-saved registers -- a ujoin custom
+ * convention.  o32 has to home them on the stack instead (97/100). */
 #ifdef MIPS_TO_C
 void alSeqNextEvent(ALSeq *seq, ALEvent *event) {
     u8 status;

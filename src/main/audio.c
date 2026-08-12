@@ -775,14 +775,13 @@ s32 func_80020EB4(void) {
     return auRestarting | auSettingsUpdated;
 }
 
-// last function in this translation unit: its listing carries the
-// TU's trailing alignment padding, which C does not emit
-#ifdef NON_MATCHING
+// Last function in this translation unit. Its listing carries two trailing
+// zero words, but they are .text's own 16-byte alignment fill at the END of
+// the TU, so the assembler puts them straight back: measured .text stays
+// 0x2B80 with zero layout drift. (A tail like this in the MIDDLE of a TU is
+// a real trap -- nothing re-aligns there.)
 void func_80020ECC(void) {
     osRecvMesg(&gThreadInitializedMQ, 0, 0);
     auSettingsUpdated = 1;
     osRecvMesg(&gThreadInitializedMQ, 0, 1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio/func_80020ECC.s")
-#endif

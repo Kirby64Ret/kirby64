@@ -199,7 +199,15 @@ typedef struct KChan {
 
 extern KChan *D_80097920;
 
-/* 2/28 diffs, and only the one-slot temp-register rotation: the ROM puts note->owner in $t7 where IDO picks $t6.  Swept comparison operand order, a local for chan->unk28, dead locals of both classes, a chained assignment and s32/u8 parameter forms -- none move it. */
+/* 2/28 diffs at -O3, and only the one-slot temp-register rotation: the ROM puts
+ * note->owner in $t7 where IDO picks $t6, and $t6 is unused in the ROM -- one
+ * source temp was created and eliminated before the loop.  36 variants swept
+ * across four passes, ALL 2: for/while/do-while, owner and unk28 locals of both
+ * struct types, comparison operand order, ternary and `> 0x7F` clamp forms, a
+ * u8/s32 local copy of the parameter, the inlined-helper parameter-copy shape at
+ * either or both call sites, chained store, K&R definition, s32 return, a third
+ * parameter, dead locals leading and trailing, volatile on the owner and next
+ * loads, three if/else line collapses, and a blank line before the loop. */
 #ifdef NON_MATCHING
 void func_80023384(KChan *chan, u8 arg1) {
     KChan *note;
@@ -228,7 +236,7 @@ void func_80023384(KChan *chan, u8 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023384.s")
 #endif
 
-/* Twin of func_80023384; same 2/28 register rotation. */
+/* Twin of func_80023384; same 2/28 register rotation, same swept floor. */
 #ifdef NON_MATCHING
 void func_800233F4(KChan *chan, u8 arg1) {
     KChan *note;
@@ -351,7 +359,66 @@ void func_80023990(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023990.s")
 #endif
 
+/* 27/47 at -O3, instruction sequence EXACT -- every opcode, operand shape and
+ * displacement matches and only the register numbers differ, rotated one slot
+ * DOWN this time (ROM $t0/$a1/$a2/$a0 -> IDO $a3/$a0/$a1/$v0), i.e. the ROM
+ * reserves one more register at the bottom than IDO does.  The usual cure for
+ * "temps UP a slot" is a non-void callee, but the only callee here is
+ * osSetIntMask, which is already non-void and header-declared.  Swept with no
+ * effect: all 72 declaration permutations that put a pointer first, one and two
+ * leading dead scalars, a leading dead pointer, `for` vs `while`, dropping the
+ * `next` and `voice` locals, assignment order of node/prev, and an s32 return
+ * (29). */
+#ifdef MIPS_TO_C
+typedef struct KToneA28 {
+    /* 0x00 */ struct KToneA28 *next;
+    /* 0x04 */ void  *unk04;
+    /* 0x08 */ u8    pad08[0x8];
+    /* 0x10 */ s16   unk10;
+    /* 0x12 */ u8    pad12[0x14];
+    /* 0x26 */ s16   unk26;
+    /* 0x28 */ KNote *unk28;
+} KToneA28;
+
+/* KAudioMgr also needs `void *unk38` at 0x38 (pad2C shrinks to 0xC). */
+void func_80023A28(KToneA28 *arg0) {
+    KToneA28 *node;
+    KToneA28 *next;
+    KToneA28 *prev;
+    KNote *voice;
+    OSIntMask mask;
+
+    mask = osSetIntMask(OS_IM_NONE);
+    prev = NULL;
+    node = D_800978E0.unk40;
+    while (node != NULL) {
+        next = node->next;
+        if ((node == arg0) || (arg0 == node->unk04)) {
+            voice = node->unk28;
+            node->unk10 = 0;
+            node->unk26 = 0;
+            if (voice != NULL) {
+                voice->unk28 = 0;
+                voice->unk2A = 2;
+                voice->unk48 = 0;
+            }
+            if (prev == NULL) {
+                D_800978E0.unk40 = node->next;
+            } else {
+                prev->next = node->next;
+            }
+            node->next = D_800978E0.unk38;
+            D_800978E0.unk38 = node;
+        } else {
+            prev = node;
+        }
+        node = next;
+    }
+    osSetIntMask(mask);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023A28.s")
+#endif
 
 void func_80023AE4(void *arg0) {
     OSIntMask mask = osSetIntMask(OS_IM_NONE);
@@ -378,7 +445,86 @@ call:
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D00.s")
 
+/* 31/53 at -O3, and the instruction SEQUENCE is exact: every opcode, operand
+ * shape and displacement matches and only the register numbers differ, rotated
+ * one slot up ($a1/$a2/$a3 -> $a3/$t0/$t1).  The cause is one extra
+ * `move $v0, $aN` at the join of the id retry: the ROM produces both arms of
+ * `id = ++D_800978E0.unk48;` directly in $v0, IDO produces them in $a1 and
+ * copies.  Swept without effect: all six declaration orders, id as
+ * u16/s16/s32/u32 and as no variable at all, goto-into-label vs if/else vs
+ * ternary vs a retry loop, leading/trailing pad locals, K&R definition, four
+ * return types, and typing the KAudioMgr free-list fields.  The unk2B store
+ * POSITION is load-bearing and was found by sweeping all 14 slots
+ * (36/34/34/34/33/26/26/25/22/25/26/35/35/36) -- slot 8 is the one below. */
+#ifdef MIPS_TO_C
+typedef struct KNoteFull {
+    /* 0x00 */ struct KNoteFull *next;
+    /* 0x04 */ u8  pad04[0x1C];
+    /* 0x20 */ void *unk20;
+    /* 0x24 */ void *unk24;
+    /* 0x28 */ s16 unk28;
+    /* 0x2A */ u8  unk2A;
+    /* 0x2B */ u8  unk2B;
+    /* 0x2C */ s16 unk2C;
+    /* 0x2E */ u8  pad2E[2];
+    /* 0x30 */ s16 unk30;
+    /* 0x32 */ u8  unk32;
+    /* 0x33 */ u8  pad33[1];
+    /* 0x34 */ u8  unk34;
+    /* 0x35 */ u8  pad35[1];
+    /* 0x36 */ u8  unk36;
+    /* 0x37 */ u8  pad37[1];
+    /* 0x38 */ u8  unk38;
+    /* 0x39 */ u8  pad39[1];
+    /* 0x3A */ u8  unk3A;
+    /* 0x3B */ u8  pad3B[1];
+    /* 0x3C */ u8  unk3C;
+    /* 0x3D */ u8  pad3D[7];
+    /* 0x44 */ s32 unk44;
+    /* 0x48 */ s16 unk48;
+} KNoteFull;
+
+/* KAudioMgr also needs `void *unk34` at 0x34, `void *unk3C` at 0x3C,
+ * `u16 unk48` at 0x48 and `u8 unk4C` at 0x4C. */
+s32 func_80023D5C(void *arg0) {
+    KNoteFull *note;
+    OSIntMask mask;
+    u16 id;
+
+    mask = osSetIntMask(OS_IM_NONE);
+    note = D_800978E0.unk34;
+    if (note != NULL) {
+        D_800978E0.unk34 = note->next;
+        note->next = D_800978E0.unk3C;
+        D_800978E0.unk3C = note;
+
+        note->unk28 = 1;
+        note->unk20 = arg0;
+        note->unk24 = arg0;
+        note->unk2A = 3;
+        note->unk32 = 0x7F;
+        note->unk34 = 0x40;
+        note->unk36 = 0;
+        note->unk2C = 0;
+        note->unk2B = D_800978E0.unk4C;
+        note->unk44 = 0;
+        note->unk30 = 0;
+        note->unk38 = 0xFF;
+        note->unk3A = 0x40;
+        note->unk3C = 0;
+
+        id = ++D_800978E0.unk48;
+        if (id == 0) {
+            id = ++D_800978E0.unk48;
+        }
+        note->unk48 = id;
+    }
+    osSetIntMask(mask);
+    return (s32) note;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D5C.s")
+#endif
 
 s32 func_80023E30(u16 arg0) {
     if (arg0 < D_800978E0.unk2A) {
@@ -1221,7 +1367,98 @@ Acmd *func_80028318(s32 sampleOffset, Acmd *p) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002901C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800296C0.s")
+typedef struct KVoiceSt {
+    /* 0x00 */ struct KVoiceSt *next;
+    /* 0x04 */ u8 pad04[0x34];
+} KVoiceSt;
+
+/* Kirby's channel state is 0x18, not the SDK's ALChanState. */
+typedef struct {
+    /* 0x00 */ u8 pad00[0x18];
+} KChanSt;
+
+typedef struct {
+    /* 0x00 */ ALPlayer      node;
+    /* 0x14 */ N_ALSynth    *drvr;
+    /* 0x18 */ void         *target;
+    /* 0x1C */ ALMicroTime   curTime;
+    /* 0x20 */ void         *bank;
+    /* 0x24 */ void         *unk24;
+    /* 0x28 */ void         *unk28;
+    /* 0x2C */ s32           uspt;
+    /* 0x30 */ s32           nextDelta;
+    /* 0x34 */ s32           state;
+    /* 0x38 */ u16           chanMask;
+    /* 0x3A */ s16           vol;
+    /* 0x3C */ u8            maxChannels;
+    /* 0x3D */ u8            debugFlags;
+    /* 0x3E */ u8            pad3E[2];
+    /* 0x40 */ N_ALEvent     nextEvent;
+    /* 0x50 */ ALEventQueue  evtq;
+    /* 0x64 */ ALMicroTime   frameTime;
+    /* 0x68 */ KChanSt      *chanState;
+    /* 0x6C */ KVoiceSt     *vAllocHead;
+    /* 0x70 */ KVoiceSt     *vAllocTail;
+    /* 0x74 */ KVoiceSt     *vFreeList;
+    /* 0x78 */ u8            pad78[4];
+    /* 0x7C */ ALOscInit     initOsc;
+    /* 0x80 */ ALOscUpdate   updateOsc;
+    /* 0x84 */ ALOscStop     stopOsc;
+} KCSeqpNew;
+
+void func_8002C790(void *);
+ALMicroTime func_8002901C(void *);
+
+void func_800296C0(KCSeqpNew *seqp, ALSeqpConfig *c) {
+    s32 i;
+    N_ALEventListItem *items;
+    KVoiceSt *vs;
+    KVoiceSt *voices;
+
+    ALHeap *hp = c->heap;
+
+    seqp->bank = 0;
+    seqp->unk24 = 0;
+    seqp->unk28 = 0;
+    seqp->target = NULL;
+    seqp->drvr = n_syn;
+    seqp->chanMask = 0xff;
+    seqp->uspt = 488;
+    seqp->nextDelta = 0;
+    seqp->state = AL_STOPPED;
+    seqp->vol = 0x7FFF;
+    seqp->debugFlags = c->debugFlags;
+    seqp->frameTime = AL_USEC_PER_FRAME;
+    seqp->curTime = 0;
+    seqp->initOsc = c->initOsc;
+    seqp->updateOsc = c->updateOsc;
+    seqp->stopOsc = c->stopOsc;
+
+    seqp->nextEvent.type = AL_SEQP_API_EVT;
+
+    seqp->maxChannels = c->maxChannels;
+    seqp->chanState = alHeapDBAlloc(0, 0, hp, c->maxChannels, sizeof(KChanSt));
+    func_8002C790(seqp);
+
+    voices = alHeapDBAlloc(0, 0, hp, c->maxVoices, sizeof(KVoiceSt));
+    seqp->vFreeList = 0;
+    for (i = 0; i < c->maxVoices; i++) {
+        vs = &voices[i];
+        vs->next = seqp->vFreeList;
+        seqp->vFreeList = vs;
+    }
+
+    seqp->vAllocHead = 0;
+    seqp->vAllocTail = 0;
+
+    items = alHeapDBAlloc(0, 0, hp, c->maxEvents, sizeof(N_ALEventListItem));
+    func_80026260(&seqp->evtq, items, c->maxEvents);
+
+    seqp->node.next = NULL;
+    seqp->node.handler = func_8002901C;
+    seqp->node.clientData = seqp;
+    n_alSynAddSeqPlayer(&seqp->node);
+}
 
 void func_80029834(void) {
 }
