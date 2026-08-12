@@ -10,6 +10,28 @@ extern f32 D_800417A0;
 extern f32 D_800414C8;
 
 typedef struct {
+    /* 0x00 */ u8  pad00[0x28];
+    /* 0x28 */ s16 unk28;
+    /* 0x2A */ u8  unk2A;
+    /* 0x2B */ u8  pad2B[0x1D];
+    /* 0x48 */ s16 unk48;
+    /* 0x4A */ u8  pad4A[0x3A];
+    /* 0x84 */ s32 unk84;
+} KNote;
+
+typedef struct KTone {
+    /* 0x00 */ struct KTone *next;
+    /* 0x04 */ u8    pad04[0x8];
+    /* 0x0C */ KNote *unk0C;
+    /* 0x10 */ s16   unk10;
+    /* 0x12 */ u8    pad12[0x14];
+    /* 0x26 */ s16   unk26;
+    /* 0x28 */ KNote *unk28;
+    /* 0x2A */ u8    unk2A;
+    /* 0x2B */ u8    pad2B[1];
+} KTone;
+
+typedef struct {
     /* 0x00 */ u8   pad00[0x1C];
     /* 0x1C */ void **unk1C;
     /* 0x20 */ void **unk20;
@@ -18,8 +40,11 @@ typedef struct {
     /* 0x2A */ u16  unk2A;
     /* 0x2C */ u8   pad2C[0xC];
     /* 0x38 */ void *unk38;
-    /* 0x3C */ u8   pad3C[4];
-    /* 0x40 */ void *unk40;
+    /* 0x3C */ struct KTone *unk3C;
+    /* 0x40 */ struct KTone *unk40;
+    /* 0x44 */ u8   pad44[0x18];
+    /* 0x5C */ struct KTone *unk5C;
+    /* 0x60 */ struct KTone *unk60;
 } KAudioMgr;
 
 extern KAudioMgr D_800978E0;
@@ -293,17 +318,73 @@ void func_80023464(KChan *chan, u8 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800234F4.s")
 
+/* Splices the two "pending" tone lists onto the two live ones, under an
+ * interrupt mask. Decompiled from the listing for the PC PORT, which aborted
+ * here: it was the boot path's blocking stub once func_80023990 went live.
+ *
+ * Both halves are the same shape -- walk to the tail of the pending list, link
+ * the live list onto it, then make the pending list the live one and clear the
+ * pending head. The first half additionally marks every tone whose unk2A tag
+ * is 1: its KNote gets unk84 = 1.
+ *
+ * The `while (tone->next != NULL)` walks are written with the tail-tracking
+ * variable the ROM keeps in $v1, because the ROM tests the CURRENT node's tag
+ * after the walk ends -- reading it from the last node, not the NULL.
+ *
+ * NON_MATCHING: not yet byte-exact, but semantically read off the listing
+ * instruction by instruction. The ROM build assembles the pragma below. */
+#ifdef NON_MATCHING
+void func_80023794(void) {
+    KAudioMgr *mgr = &D_800978E0;
+    KTone *tone;
+    KTone *next;
+    KNote *voice;
+    s32 mask;
+
+    mask = osSetIntMask(OS_IM_NONE);
+
+    tone = mgr->unk5C;
+    if (tone != NULL) {
+        next = tone->next;
+        while (next != NULL) {
+            if (tone->unk2A == 1) {
+                voice = tone->unk0C;
+                if (voice != NULL) {
+                    voice->unk84 = 1;
+                }
+            }
+            tone = next;
+            next = next->next;
+        }
+        if (tone->unk2A == 1) {
+            voice = tone->unk0C;
+            if (voice != NULL) {
+                voice->unk84 = 1;
+            }
+        }
+        tone->next = mgr->unk3C;
+        mgr->unk3C = mgr->unk5C;
+        mgr->unk5C = NULL;
+    }
+
+    tone = mgr->unk60;
+    if (tone != NULL) {
+        while (tone->next != NULL) {
+            tone = tone->next;
+        }
+        tone->next = mgr->unk40;
+        mgr->unk40 = mgr->unk60;
+        mgr->unk60 = NULL;
+    }
+
+    osSetIntMask(mask);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023794.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023884.s")
 
-typedef struct {
-    /* 0x00 */ u8  pad00[0x28];
-    /* 0x28 */ s16 unk28;
-    /* 0x2A */ u8  unk2A;
-    /* 0x2B */ u8  pad2B[0x1D];
-    /* 0x48 */ s16 unk48;
-} KNote;
 
 void func_8002397C(KNote *arg0) {
     arg0->unk28 = 0;
@@ -316,14 +397,6 @@ void func_8002397C(KNote *arg0) {
  * where IDO picks $a1/$a0/$v0.  Every instruction is otherwise in the right
  * place.  Swept leading dummy scalars and all four declaration orders. */
 #ifdef NON_MATCHING
-typedef struct KTone {
-    /* 0x00 */ struct KTone *next;
-    /* 0x04 */ u8    pad04[0xC];
-    /* 0x10 */ s16   unk10;
-    /* 0x12 */ u8    pad12[0x14];
-    /* 0x26 */ s16   unk26;
-    /* 0x28 */ KNote *unk28;
-} KTone;
 
 /* KAudioMgr needs `KTone *unk38` at 0x38 and `KTone *unk40` at 0x40. */
 void func_80023990(void) {
