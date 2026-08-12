@@ -637,9 +637,102 @@ void func_801EE5A8_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801EE990_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801EEB30_ovl10.s")
+s32 func_80110B00(void *);
+s32 func_80110FD4(void *);
+extern f32 D_800D6E5C;
+void func_800BC11C(f32);
 
+s32 func_801EEB30_ovl10(void) {
+    struct Ovl10AnimInfo sp40;
+    struct UnkStruct800E1B50 *temp_s0;
+    s32 t = -1;
+
+    temp_s0 = D_800E1B50[omCurrentObj->objId];
+    if (temp_s0->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550((void *) omCurrentObj->objId);
+    func_80111ECC(func_80111C88(temp_s0->unk8C, omCurrentObj->objId));
+    if (func_80110B00(&sp40) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp40.unk2;
+        temp_s0->unk43 = sp40.unk3;
+        temp_s0->unk3A = sp40.unkC;
+    } else if (func_80110FD4(&sp40) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp40.unk2;
+        temp_s0->unk43 = sp40.unk3;
+        temp_s0->unk3A = sp40.unkC;
+    } else if (func_80110150(&sp40) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp40.unk2;
+        temp_s0->unk43 = sp40.unk3;
+        temp_s0->unk3A = sp40.unkC;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        temp_s0->unk43 = 0;
+        temp_s0->unk3A = t;
+    }
+    if (D_800D6E5C != 0.0f) {
+        func_800BC11C(D_800E7B20[omCurrentObj->objId]);
+    }
+    switch (D_800E83E0[omCurrentObj->objId]) {
+        case 1:
+            gEntityFuncListIDArray[omCurrentObj->objId] = 0xE;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801EC3C8_ovl10);
+            return 1;
+        case 2:
+            D_800E9E20[omCurrentObj->objId] = D_800E7CE0[omCurrentObj->objId];
+            play_sound(0x28);
+            return 1;
+        case 7:
+        case 8:
+        case 9:
+            if (D_800DE350[(s8) temp_s0->unk3A] != NULL) {
+                D_800E7CE0[omCurrentObj->objId] = 0x14;
+                func_800FD570(0, 9,
+                              (gEntitiesNextPosXArray[(s8) temp_s0->unk3A] -
+                               gEntitiesNextPosXArray[omCurrentObj->objId]) *
+                                  0.6f,
+                              (gEntitiesNextPosYArray[(s8) temp_s0->unk3A] -
+                               gEntitiesNextPosYArray[omCurrentObj->objId]) *
+                                  0.6f,
+                              (gEntitiesNextPosZArray[(s8) temp_s0->unk3A] -
+                               gEntitiesNextPosZArray[omCurrentObj->objId]) *
+                                  0.6f);
+                D_800E8760[(s8) temp_s0->unk3A] = 1;
+            }
+            return 0;
+    }
+    return 0;
+}
+
+extern s32 D_801F3EE0_ovl10;
+
+#ifdef NON_MATCHING
+// 7/36: every instruction is correct; only the frame is 8 bytes too big and
+// the struct sits at 0x20 instead of 0x18. This is the documented
+// "IDO reserves 4 bytes below the local block" anomaly -- IDO computes
+// align8(0x1C + sizeof locals), the ROM align8(0x18 + sizeof locals) -- and
+// with locals of exactly 0x20 the two differ by 8. It is the same blocker as
+// func_801EEF4C_ovl10 below. (Note the sibling func_801EEED4_ovl10 matches
+// only because its `s32 pad` makes locals 0x24, where the two formulas agree;
+// this function has no such local in the ROM, so no source form can close it.)
+// Swept: pad locals before/after the struct (1-2), && vs nested if, and
+// splitting the nested func_80111ECC(func_80111C88(...)) into two statements.
+s32 func_801EEE44_ovl10(GObj *arg0) {
+    struct Ovl10AnimInfo sp18;
+
+    func_80111550((void *) omCurrentObj->objId);
+    func_80111ECC(func_80111C88(&D_801F3EE0_ovl10, omCurrentObj->objId));
+    if (func_80110150(&sp18) != 0) {
+        if (D_800E8920[sp18.unkC] == 1) {
+            func_80169430_ovl3(sp18.unkC, sp18.unk0, sp18.unk1, 3);
+            return 1;
+        }
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801EEE44_ovl10.s")
+#endif
 
 s32 func_801EEED4_ovl10(GObj *arg0) {
     s32 pad;

@@ -214,7 +214,38 @@ s32 func_80170584_ovl5(s32 arg0, s32 arg1) {
     return 1;
 }
 
+#ifdef NON_MATCHING
+/* 48/75: the loop body is instruction-for-instruction correct, but $s0 and $s1
+   are swapped -- the ROM puts the loop counter in $s0 and the strength-reduced
+   D_8018E478_ovl5 pointer in $s1, this C gets the opposite -- and the early
+   `return 0x29A` comes out as bnez/nop/b/li instead of the ROM's single beql
+   with the constant in the delay slot (2 instructions long). Swept: all three
+   declaration orders, a dead scalar, and an explicit `s32 *p` walked with
+   `i--, p--` (that one hoists the address computation above the bltz: 71). */
+s32 func_8017068C_ovl5(s32 arg0, s32 arg1) {
+    s32 i;
+    s32 temp;
+
+    for (i = arg1; i >= 0; i--) {
+        if (D_8018E478_ovl5[arg0][i] == 0) {
+            return 0x29A;
+        }
+        if (func_8016FF88_ovl5(func_80172B10_ovl5(arg0, i)) != 0) {
+            temp = D_800EA520[D_8018E478_ovl5[arg0][i]];
+            if (temp != 0x29A) {
+                if (arg1 == D_800E9E20[temp] + i) {
+                    if (D_800EA1A0[temp] == 0) {
+                        return temp;
+                    }
+                }
+            }
+        }
+    }
+    return 0x29A;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017068C_ovl5.s")
+#endif
 
 s32 func_801707B0_ovl5(s32 arg0) {
     Vector2 sp18;

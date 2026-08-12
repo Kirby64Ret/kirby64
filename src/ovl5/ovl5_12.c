@@ -160,7 +160,40 @@ void func_80182700_ovl5(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182804_ovl5.s")
+typedef struct Unk2Ptrs {
+    void *unk0;
+    void *unk4;
+} Unk2Ptrs;
+
+extern void *D_8018A4DC_ovl5[];
+extern Unk2Ptrs D_8018A4EC_ovl5[];
+extern Unk2Ptrs D_8018A50C_ovl5[];
+
+void func_80182804_ovl5(GObj *arg0, s32 arg1) {
+    f32 inc;
+    f32 wrap;
+
+    func_800A9864(D_8018A4DC_ovl5[arg1], 0x1869F, 0x10);
+    switch (D_800D6B6C) {
+        case 1:
+            func_800AA018(D_8018A50C_ovl5[arg1].unk0);
+            func_800AA018(D_8018A50C_ovl5[arg1].unk4);
+            break;
+        case 2:
+            func_800AA018(D_8018A4EC_ovl5[arg1].unk0);
+            func_800AA018(D_8018A4EC_ovl5[arg1].unk4);
+            break;
+    }
+    inc = 0.008726646f;
+    wrap = 6.2831855f;
+    while (1) {
+        gEntitiesAngleYArray[omCurrentObj->objId] += inc;
+        if (wrap <= gEntitiesAngleYArray[omCurrentObj->objId]) {
+            gEntitiesAngleYArray[omCurrentObj->objId] -= wrap;
+        }
+        ohSleep(1);
+    }
+}
 
 void func_8018293C_ovl5(GObj *arg0) {
     f32 inc;

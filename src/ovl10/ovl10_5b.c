@@ -319,7 +319,42 @@ void func_801F2770_ovl10(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F28AC_ovl10.s")
+void func_801F1A24_ovl10(GObj *, s32, s32);
+void func_801F2098_ovl10(GObj *, s32);
+void func_801F25FC_ovl10(GObj *, s32);
+
+void func_801F28AC_ovl10(GObj *arg0) {
+    s32 kind = D_800E98E0[omCurrentObj->objId];
+
+    switch (kind) {
+        case 0:
+        case 1:
+        case 2:
+            func_801F1A24_ovl10(arg0, kind, D_800E9AA0[omCurrentObj->objId].as_s32);
+            break;
+        case 3:
+        case 4:
+        case 5:
+            func_801F1CA0_ovl10(arg0, kind - 3);
+            break;
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 0xA:
+        case 0xB:
+        case 0xC:
+            func_801F2098_ovl10(arg0, kind - 6);
+            break;
+        case 0xD:
+            func_801F25FC_ovl10(arg0, D_800E9AA0[omCurrentObj->objId].as_s32);
+            break;
+        case 0xE:
+            func_801F2770_ovl10(arg0);
+            break;
+    }
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F2964_ovl10.s")
 

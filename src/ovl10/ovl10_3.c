@@ -665,7 +665,14 @@ void func_801E6444_ovl10(GObj *arg0) {
 
 #ifdef NON_MATCHING
 // 8 diffs: only the register holding `var` (ROM $a1, IDO $a0) and the
-// consequent delay-slot fill differ.
+// consequent delay-slot fill differ. Swept with no effect (10 variants):
+// dropping the `id` local, both declaration orders, `id = var = 0;` and
+// `s32 id = 0;` chained/forked temps, `u32 var`, an extra dead scalar,
+// if/else instead of the initialiser, inverted branch polarity, a temp for
+// the D_800E9C60 test, `void f()` vs `void f(void)`, and giving the function
+// a `GObj *arg0` parameter (that one adds the $a0 home-slot store: 40 diffs).
+// Same shape and same residue as func_801E6E84/801E7760/801E8184/801E8AF8
+// and func_801E932C_ovl10.
 void func_801E6564_ovl10(void) {
     s32 id;
     s32 var = 0;

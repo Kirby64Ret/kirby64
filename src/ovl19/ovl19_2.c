@@ -636,7 +636,66 @@ void func_802284EC_ovl19(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 112/186: the instruction COUNT is exact and the body is fully decoded (every
+   store, constant, call and argument verified against the listing).  The whole
+   residual diff cascades from one register-allocation choice: the ROM puts
+   &omCurrentObj in $s1 and &D_8022FAB0_ovl19 in $s0, we get them the other way
+   round, and every later temp rotates with them.  Measured stages, so the next
+   lane does not repeat them:
+     - without the func_800A7F74 prototype in scope the three f32 arguments are
+       K&R-promoted to DOUBLE, which alone costs 16 bytes of outgoing-arg frame
+       (0x38 vs 0x28) and 4 instructions.  The block-scope prototype below is
+       load-bearing.
+     - `D_8022FAB0_ovl19->unk10 = 20.0f; D_8022FAB0_ovl19->unk14 = 20.0f;`
+       forks the constant into TWO mtc1 where the ROM shares one $f0; routing
+       only the FIRST store through the local (`tmp->unk10`) shares it and took
+       159 -> 112.  A chained `unk14 = unk10 = 20.0f` instead emits a lwc1
+       read-back and does not help.
+   Still to try: forcing the $s0/$s1 order (guide's one-slot rotation entry). */
+void func_8022858C_ovl19(GObj *arg0) {
+    void func_80228874_ovl19(GObj *);
+    struct UnkStruct8022FAB0 *func_800FF144(void);
+    void func_800A7F74(u32, u32, u16, f32, f32, f32);
+    struct UnkStruct8022FAB0 *tmp;
+
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_8022FAB0_ovl19 = tmp = func_800FF144();
+    if (tmp != NULL) {
+        tmp->unk10 = 20.0f;
+        D_8022FAB0_ovl19->unk14 = 20.0f;
+        D_8022FAB0_ovl19->unk18 = -240.0f;
+        D_8022FAB0_ovl19->unk21 = 1;
+    }
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800DF150[omCurrentObj->objId] = func_80228874_ovl19;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x20007, 0x22, 0x10);
+    D_800E5F90[omCurrentObj->objId] = 5;
+    D_800E6D90[omCurrentObj->objId] = 0.4f;
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+    func_800F8E6C(arg0);
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EC660[0];
+    gEntitiesAngleYArray[omCurrentObj->objId] = 1.570796371f;
+    func_801230E8(0x200F3, 0x200F4, 0);
+    ohSleep(0x3E);
+    func_800A7F74(2, 1, 0x62, gEntitiesNextPosXArray[omCurrentObj->objId],
+                  gEntitiesNextPosYArray[omCurrentObj->objId] + 20.0f,
+                  gEntitiesNextPosZArray[omCurrentObj->objId]);
+    func_800FF1CC(D_8022FAB0_ovl19);
+    func_800B1900(omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_8022858C_ovl19.s")
+#endif
 
 void func_80228874_ovl19(GObj *arg0) {
     func_800FF200(D_8022FAB0_ovl19);

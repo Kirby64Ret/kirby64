@@ -229,7 +229,45 @@ void func_8017ABA4_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B018_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B230_ovl5.s")
+#include "main/contpad.h"
+
+void func_8017A3E4_ovl5(void);
+void func_8017A71C_ovl5(s32);
+void func_8017ABC8_ovl5(void);
+void func_8017AD54_ovl5(void);
+
+void func_8017B230_ovl5(GObj *arg0) {
+    s32 var = ((s32 *) D_800E9AA0)[omCurrentObj->objId];
+
+    if (D_8018ED00_ovl5 != 0) {
+        return;
+    }
+    if (!(gPlayerControllers[var].buttonHeld & 0xF00)) {
+        D_800E98E0[omCurrentObj->objId] = 0;
+    }
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        D_800E98E0[omCurrentObj->objId]--;
+        return;
+    }
+    if (var == 0) {
+        switch (D_8018ED04_ovl5) {
+            case 0:
+                func_8017A3E4_ovl5();
+                break;
+            case 1:
+                func_8017A71C_ovl5(var);
+                break;
+            case 2:
+                func_8017ABC8_ovl5();
+                break;
+            case 3:
+                func_8017AD54_ovl5();
+                break;
+        }
+    } else if (D_8018ED04_ovl5 == 1) {
+        func_8017A71C_ovl5(var);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B35C_ovl5.s")
 
