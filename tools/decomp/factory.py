@@ -116,21 +116,41 @@ def splice(cfile, func, body):
     Returns the original file text so the caller can restore it. The guard is
     removed entirely: a function that is byte-exact belongs unguarded, and
     leaving a stale #ifdef around it is how nested guards happened in Wave 8.
+
+    LINE-ANCHORED ON PURPOSE. The first version of this matched
+    `#ifdef NON_MATCHING .*? #pragma GLOBAL_ASM("<func>.s")` with re.DOTALL,
+    which anchors on the FIRST guard in the file and swallows every guarded
+    function between there and the target. It silently deleted four unrelated
+    functions out of ovl5_5.c and the link failed with undefined references to
+    them. Never span an unknown region to find a pragma: find the pragma line,
+    then expand outward only while the lines are that function's own guard.
     """
-    text = open(cfile, errors='replace').read()
-    pat = re.compile(
-        r'#ifdef (?:NON_MATCHING|MIPS_TO_C)\b.*?'
-        r'#pragma GLOBAL_ASM\("[^"]*/' + re.escape(func) + r'\.s"\)\s*\n#endif\n',
-        re.S)
-    new, n = pat.subn(body + '\n', text)
-    if n == 0:
-        # No guard: a bare pragma. Replace the pragma line itself.
-        pat2 = re.compile(r'#pragma GLOBAL_ASM\("[^"]*/' + re.escape(func) + r'\.s"\)\n')
-        new, n = pat2.subn(body + '\n', text)
-    if n == 0:
+    lines = open(cfile, errors='replace').read().split('\n')
+    pat = re.compile(r'#pragma GLOBAL_ASM\("[^"]*/' + re.escape(func) + r'\.s"\)')
+    idx = next((i for i, l in enumerate(lines) if pat.search(l)), None)
+    if idx is None:
         return None
-    open(cfile, 'w').write(new)
-    return text
+
+    start, end = idx, idx                      # the pragma line alone
+    # Expand DOWN over an #endif that closes this pragma's guard.
+    if idx + 1 < len(lines) and lines[idx + 1].strip() == '#endif':
+        # Expand UP: #else, then the draft body, then the #ifdef that opened
+        # it -- refusing to cross another pragma or a nested #endif.
+        j = idx - 1
+        if j >= 0 and lines[j].strip() == '#else':
+            k = j - 1
+            while k >= 0:
+                s = lines[k].strip()
+                if s.startswith('#ifdef ') and ('NON_MATCHING' in s or 'MIPS_TO_C' in s):
+                    start, end = k, idx + 1
+                    break
+                if s.startswith('#endif') or 'GLOBAL_ASM' in s:
+                    break                      # ran into a neighbour: leave it alone
+                k -= 1
+
+    new = lines[:start] + body.split('\n') + lines[end + 1:]
+    open(cfile, 'w').write('\n'.join(new))
+    return '\n'.join(lines)
 
 
 def gate():
