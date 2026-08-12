@@ -680,7 +680,54 @@ void func_801E8484_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
+/* 35/125 diffs (from 109 with the type-splits below).  Residue: the ROM
+   materialises the constant 1 THREE times (addiu $t6/$t3/$t3) for the
+   D_800DDFD0, D_800E8920 and D_800E9AA0 stores; IDO has only TWO constant
+   classes to fork with (s32 and u32), so whichever pair shares a class gets
+   hoisted into $s1 and every temp below it rotates one slot.  Measured: all
+   27 combinations of {plain, (u32) cast, 1U} across the three stores, and all
+   19 combinations that include a vs32 cast -- `1U` and `vs32` are both
+   byte-identical to the plain form, so no third class exists.  Loop form
+   (while >0 / while != 0 / for / do-while) is inert. */
+#ifdef MIPS_TO_C
+extern f32 D_8021D090_ovl9;
+extern s32 random_soft_s32_range(s32);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+
+void func_801E85CC_ovl9(struct GObj *arg0) {
+    s32 i;
+
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBBC0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    *(u32 *) &D_800E8920[omCurrentObj->objId] = 1;
+    D_800E4C50[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021D090_ovl9;
+    D_800E9C60[omCurrentObj->objId] = -1;
+    D_800E9E20[omCurrentObj->objId] = random_soft_s32_range(3) + 2;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    func_800AA018(0x10218);
+    func_800AA018(0x10217);
+    func_800AF27C();
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 1;
+    i = random_soft_s32_range(3) + 2;
+    while (i != 0) {
+        play_sound(0x15D);
+        func_800AA018(0x10213);
+        func_800AF27C();
+        i--;
+    }
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    func_800AA018(0x10216);
+    func_800AA018(0x10215);
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E85CC_ovl9.s")
+#endif
 
 extern s32 D_801C8880_ovl7[];
 extern s32 D_801C88C8[];

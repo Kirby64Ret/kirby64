@@ -159,7 +159,27 @@ void func_801DDD44_ovl9(GObj *arg0) {
     D_800EB160[omCurrentObj->objId] = 0.0f;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DDDD0_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CB71C;
+extern f32 D_8021BDB8_ovl9[];
+void func_800AECC0(f32);
+void func_800AED20(f32);
+
+void func_801DDDD0_ovl9(struct GObj *arg0) {
+    D_800E76C0[omCurrentObj->objId] = 0xFF;
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB71C;
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    while (D_800E8920[omCurrentObj->objId] == 1) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (D_8021BDB8_ovl9[D_800E7880[omCurrentObj->objId]] * D_800EAC20[omCurrentObj->objId]);
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DDF9C_ovl9.s")
 
@@ -216,7 +236,26 @@ void func_801DF220_ovl9(GObj *arg0) {
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (D_8021BDB8_ovl9[D_800E7880[omCurrentObj->objId]] * D_800EAC20[omCurrentObj->objId]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DF29C_ovl9.s")
+extern struct GObjProcess *gEntityGObjProcessArray[];
+void func_800FB914(s32);
+
+void func_801DF29C_ovl9(struct GObj *arg0) {
+    if (gEntitiesPosYArray[omCurrentObj->objId] == gEntitiesNextPosYArray[omCurrentObj->objId]) {
+        func_800FB914(1);
+        play_sound(0x268);
+        D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+        gEntityFuncListIDArray[omCurrentObj->objId] = 6;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCA78_ovl9);
+    } else if (gEntitiesNextPosYArray[omCurrentObj->objId] < gEntitiesPosYArray[omCurrentObj->objId]) {
+        D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+        gEntityFuncListIDArray[omCurrentObj->objId] = 6;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCA78_ovl9);
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 6;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCA78_ovl9);
+        D_800EAC20[omCurrentObj->objId] = 0.0f;
+    }
+}
 
 void func_800B33F4(void);
 
@@ -265,7 +304,7 @@ struct Ovl9AnimObj2 {
     struct Ovl9AnimCmd2 *unk24;
 };
 
-void func_80111550(u32);
+void func_80111550(s32);
 struct Ovl9AnimObj2 *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl9AnimObj2 *);
 s32 func_80110150(void *);
@@ -523,19 +562,14 @@ void func_801E078C_ovl9(GObj *arg0, s32 arg1, f32 arg2) {
     }
 }
 
-/* 3 diffs, and the identical residue to its twin func_801D7064_ovl9 (ovl9_1.c):
-   the ROM keeps omCurrentObj->objId in $v0 while IDO parks it in $a1, so the
-   `or $a0, $v0, $zero` before func_80111550 differs too. Swept: every
-   declaration order, id inlined at both uses, a declaration initializer for
-   temp, u32/(u32)-cast id, a leading dead scalar, `goto` to a shared return-0
-   block (64), and s32/void/K&R/(void *) prototypes for func_80111550,
-   func_801D7330_ovl9 and func_8019F650_ovl7 on the twin. The value's live
-   range spans two `return 0` blocks that set $v0, which is what makes IDO
-   skip $v0; nothing in the source reaches it. */
-#ifdef MIPS_TO_C
-struct Ovl9Unk8C3 {
-    u32 unk0;
-    u32 unk4;
+struct Ovl9AnimHdrSub3 {
+    u8 filler0[4];
+    s32 unk4;
+};
+
+struct Ovl9AnimHdr3 {
+    u8 filler0[8];
+    struct Ovl9AnimHdrSub3 *unk8;
 };
 
 struct Ovl9AnimInfo3 {
@@ -552,38 +586,33 @@ s32 func_80110B00(struct Ovl9AnimInfo3 *);
 
 s32 func_801E07DC_ovl9(s32 arg0) {
     struct Ovl9AnimInfo3 sp30;
-    struct UnkStruct800E1B50 *temp;
+    struct UnkStruct800E1B50 *ent;
     struct Ovl9AnimObj2 *anim;
-    struct Ovl9Unk8C3 *p;
-    s32 id;
+    struct Ovl9AnimHdrSub3 *hdr;
 
-    id = omCurrentObj->objId;
-    temp = D_800E1B50[id];
-    if (temp == NULL) {
+    ent = D_800E1B50[omCurrentObj->objId];
+    if (ent == NULL) {
         return 0;
     }
-    if (temp->unk8C == NULL) {
+    if (ent->unk8C == NULL) {
         return 0;
     }
-    func_80111550(id);
-    anim = func_80111C88(temp->unk8C, omCurrentObj->objId);
-    p = (struct Ovl9Unk8C3 *) temp->unk8C[2];
-    if ((p->unk4 == 0) && (arg0 != 0)) {
+    func_80111550(omCurrentObj->objId);
+    anim = func_80111C88(ent->unk8C, omCurrentObj->objId);
+    hdr = ((struct Ovl9AnimHdr3 *) ent->unk8C)->unk8;
+    if ((hdr->unk4 == 0) && (arg0 != 0)) {
         anim->unk24->unk8 = arg0;
     }
     func_80111ECC(anim);
     if (func_80110B00(&sp30) != 0) {
         D_800E83E0[omCurrentObj->objId] = sp30.unk2;
-        temp->unk43 = sp30.unk3;
+        ent->unk43 = sp30.unk3;
     } else {
         D_800E83E0[omCurrentObj->objId] = 0;
-        temp->unk43 = 0;
+        ent->unk43 = 0;
     }
     return D_800E83E0[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801E07DC_ovl9.s")
-#endif
 
 extern void func_800B6FD8(s32);
 extern void func_801A0D50_ovl7(void *);

@@ -917,7 +917,16 @@ void func_801FB6D0_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB744_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB8B8_ovl9.s")
+void func_801FB614_ovl9(void);
+void func_801FB744_ovl9(void);
+
+void func_801FB8B8_ovl9(struct GObj *arg0) {
+    if ((ABSF(D_800E64D0[omCurrentObj->objId]) < 0.0625f) && (ABSF(D_800E3210[omCurrentObj->objId]) < 0.0625f)) {
+        func_801FB744_ovl9();
+    } else if ((1.5f <= ABSF(D_800E64D0[omCurrentObj->objId])) || (1.5f <= ABSF(D_800E3210[omCurrentObj->objId]))) {
+        func_801FB614_ovl9();
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB9DC_ovl9.s")
 

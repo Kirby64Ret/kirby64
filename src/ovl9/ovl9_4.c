@@ -225,7 +225,32 @@ void func_801E2970_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 1, &D_8021BEA0_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E29B8_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CBA34;
+void func_800B33F4(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void ohSleep(s32);
+s32 eneCheckNearPlayer(f32);
+
+void func_801E29B8_ovl9(struct GObj *arg0) {
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBA34;
+    func_800B33F4();
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    func_800A9EA4(0x101B7);
+    ohSleep(0x1E);
+    while (1) {
+        if (eneCheckNearPlayer(25600.0f) != 0) {
+            if ((-10.0f < ((gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId])) && (((gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]) < 120.0f)) {
+                break;
+            }
+        }
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+}
 
 void func_801A0D74_ovl7();
 s32 func_8019F3B0_ovl7(void);
@@ -279,7 +304,28 @@ void func_801E2C68_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E2D34_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E2F5C_ovl9.s")
+extern s32 D_801CBA58;
+extern f32 D_8021CFC0_ovl9;
+void func_800B33F4(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void ohSleep(s32);
+
+void func_801E2F5C_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBA58;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    func_800B33F4();
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_8021CFC0_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    while (D_800E8920[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+}
 
 extern struct Sub800E1B50_Unk98 D_801CBA34;
 void func_800B33F4(void);

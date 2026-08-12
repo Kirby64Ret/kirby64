@@ -470,20 +470,27 @@ void func_800A36C0(void) {
     gGameState = 0x17;
 }
 
-#ifdef MIPS_TO_C
+/* game_tick, 154/653 (was 619).  LIVE under NON_MATCHING: the PC port runs this.
+ * Structure, both jump tables, the saved-register map
+ * ($s2=1 $s5=2 $s4=10 $s7=12, addresses in $s0/$s1/$s3/$s6/$fp) and the body
+ * LENGTH (640 insns) are exact.  Residue: a uniform one-slot $t rotation, plus
+ * the dead epilogue -- and the epilogue is NOT a source problem.  IDO 32-byte
+ * aligns the unreachable epilogue after `while (1)` from the object's .text
+ * base at COMPILE time, when func_800A34C8 above is still a pragma contributing
+ * 0 bytes; game_tick compiles at 0xCC4 instead of its true 0xEBC, so it pads 28
+ * bytes where the ROM pads 4.  Converting func_800A34C8 is what unblocks it.
+ * Load-bearing: gGameState is declared u32 but shares constant registers with
+ * s32 globals, so every access is `*(s32 *) &gGameState` (worth ~90 diffs);
+ * D_800BE53C moves with lwc1/swc1, so it needs the (f32 *) cast or IDO emits a
+ * whole FCSR conversion; `(s32) saveCurrentWorld < 7` for slti not sltiu;
+ * switch2's `default:` written LAST (IDO lays bodies out in source order); and
+ * `D_800D6B9C = D_800BE504 = D_800BE508 = 0;` as ONE chain, which is what
+ * materialises both addresses instead of folding them (worth 180 diffs).
+ * Swept at 154 with no effect: temp declaration order/type/count, 9 separate
+ * temps, arg0 as scratch, pad locals, and non-void returns on six callees. */
+#ifdef NON_MATCHING
 void game_tick(s32 arg0) {
-    s32 temp_t0;
-    s32 temp_t0_2;
-    s32 temp_t1;
-    s32 temp_t1_2;
-    s32 temp_t2;
-    s32 temp_t3;
-    s32 temp_t6;
-    s32 temp_t6_2;
-    s32 temp_t7;
-    s32 temp_t9;
-    s32 temp_v0;
-    s32 temp_v1;
+    s32 temp;
 
     func_800BE320(&D_800D7288);
     func_800A2B9C();
@@ -492,95 +499,93 @@ void game_tick(s32 arg0) {
     func_800A2C80();
     func_800A3058();
     while (1) {
-
         func_800A2C80();
-        switch (gGameState) {                           /* switch 1 */
-            default:                                            /* switch 1 */
+        switch (*(s32 *) &gGameState) {
+            default:
                 continue;
-            case 1:                                     /* switch 1 */
+            case 1:
                 utilLoadOverlay(2);
                 func_80151CEC_ovl4(0);
-                gGameState = 2;
+                *(s32 *) &gGameState = 2;
                 continue;
-            case 2:                                     /* switch 1 */
+            case 2:
                 if (D_800D6B74 == 1) {
                     utilLoadOverlay(4);
-                    func_80154D60_ovl6(0, 1);
+                    func_80154D60_ovl6(0, (u32) 1);
                 }
-                gGameState = 3;
+                *(s32 *) &gGameState = 3;
                 D_800D6B60 = 3;
                 continue;
-            case 3:                                     /* switch 1 */
+            case 3:
                 utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
-                    gGameState = 4;
+                    *(s32 *) &gGameState = 4;
                 } else {
                     func_800A3228();
-                    temp_t2 = gGameState;
-                    gGameState = 0xA;
-                    D_800D6B68 = temp_t2;
+                    temp = *(s32 *) &gGameState;
+                    *(s32 *) &gGameState = 0xA;
+                    D_800D6B68 = temp;
                 }
                 continue;
-            case 4:                                     /* switch 1 */
+            case 4:
                 func_800A3150(5);
-                gGameState = 5;
+                *(s32 *) &gGameState = 5;
                 D_800D6B60 = 5;
                 continue;
-            case 5:                                     /* switch 1 */
+            case 5:
                 utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
-                    gGameState = 6;
+                    *(s32 *) &gGameState = 6;
                 } else {
                     func_800A3228();
-                    temp_t6 = gGameState;
-                    gGameState = 0xA;
-                    D_800D6B68 = temp_t6;
+                    temp = *(s32 *) &gGameState;
+                    *(s32 *) &gGameState = 0xA;
+                    D_800D6B68 = temp;
                 }
                 continue;
-            case 6:                                     /* switch 1 */
+            case 6:
                 func_800A3150(6);
-                gGameState = 7;
+                *(s32 *) &gGameState = 7;
                 D_800D6B60 = 7;
                 continue;
-            case 7:                                     /* switch 1 */
+            case 7:
                 utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
-                    gGameState = 8;
+                    *(s32 *) &gGameState = 8;
                 } else {
                     func_800A3228();
-                    temp_t0 = gGameState;
-                    gGameState = 0xA;
-                    D_800D6B68 = temp_t0;
+                    temp = *(s32 *) &gGameState;
+                    *(s32 *) &gGameState = 0xA;
+                    D_800D6B68 = temp;
                 }
                 continue;
-            case 8:                                     /* switch 1 */
+            case 8:
                 func_800A3150(3);
-                gGameState = 9;
-                D_800D6B60 = 9;
+                D_800D6B60 = *(s32 *) &gGameState = 9;
                 continue;
-            case 9:                                     /* switch 1 */
+            case 9:
                 utilLoadOverlay(2);
                 if (func_80151CEC_ovl4(1) == 2) {
                     D_800D6B74 = 1;
-                    gGameState = 2;
+                    *(s32 *) &gGameState = 2;
                 } else {
                     func_800A3228();
-                    temp_t3 = gGameState;
-                    gGameState = 0xA;
-                    D_800D6B68 = temp_t3;
+                    temp = *(s32 *) &gGameState;
+                    *(s32 *) &gGameState = 0xA;
+                    D_800D6B68 = temp;
                 }
                 continue;
-            case 10:                                    /* switch 1 */
+            case 10:
                 load_menu_overlays();
                 func_800A2CE4();
                 func_800B87E0();
                 func_80158048_ovl4();
                 func_800B8AD4(saveCurrentFileNum);
-                if (gGameState == 0xB) {
+                if (*(s32 *) &gGameState == 0xB) {
                     func_800A3408();
                 }
                 continue;
-            case 11:                                    /* switch 1 */
+            case 11:
                 if (saveCheckCutsceneWatched(1) == 0) {
                     utilLoadOverlay(4);
                     saveSetCutsceneWatched(1, saveCurrentFileNum);
@@ -591,198 +596,191 @@ void game_tick(s32 arg0) {
                 func_800A2D5C();
                 func_80159A54_ovl4();
                 if (D_800D6B78 != 0) {
-                    temp_t6_2 = gGameState;
-                    gGameState = 0xA;
-                    D_800D6B68 = temp_t6_2;
+                    temp = *(s32 *) &gGameState;
+                    *(s32 *) &gGameState = 0xA;
+                    D_800D6B68 = temp;
                 } else {
                     D_800BE500 = D_800D6B98;
                     if (D_800BE500 == 6) {
                         D_800BE504 = D_800D6B9C;
                         func_800A2D68();
-                        gGameState = 0xF;
+                        *(s32 *) &gGameState = 0xF;
                     } else {
-                        gGameState = 0xC;
+                        *(s32 *) &gGameState = 0xC;
                         D_800D6B84 = 1;
                     }
                 }
                 continue;
-            case 12:                                    /* switch 1 */
+            case 12:
                 load_menu_overlays();
                 func_800A2D68();
                 func_8015531C_ovl4();
                 if (D_800D6B78 == 0) {
-                    D_800BE530 = D_800D6B9C;
-                    D_800BE504 = D_800D6B9C;
-                    gGameState = 0xF;
+                    D_800BE504 = D_800BE530 = D_800D6B9C;
+                    *(s32 *) &gGameState = 0xF;
                 } else {
-                    gGameState = 0xB;
+                    *(s32 *) &gGameState = 0xB;
                 }
                 D_800D6F38 = 0;
                 continue;
-            case 14:                                    /* switch 1 */
-                gGameState = 0xF;
+            case 14:
+                *(s32 *) &gGameState = 0xF;
                 continue;
-            case 15:                                    /* switch 1 */
+            case 15:
                 func_800A30E8();
                 D_800D6F3C = 0;
                 func_800A2E98();
                 func_800F6AD4(0);
-                switch (D_800BE4F8) {                   /* switch 2 */
-                    case 6:                             /* switch 2 */
-                        gGameState = 0x11;
-                        temp_t1 = gKirbyLives - 1;
-                        gKirbyLives = temp_t1;
-                        if (temp_t1 > 0) {
-                            temp_v0 = func_800F8560();
-                            switch (temp_v0) {          /* switch 4; irregular */
-                                case 2:                 /* switch 4 */
+                switch (D_800BE4F8) {
+                    case 6:
+                        *(s32 *) &gGameState = 0x11;
+                        gKirbyLives = gKirbyLives - 1;
+                        if (gKirbyLives > 0) {
+                            switch (func_800F8560()) {
+                                case 2:
                                     gKirbyHp = 6.0f;
                                     D_800D6E54 = 0;
                                     func_800A74D8();
-                                    gGameState = 0xC;
+                                    *(s32 *) &gGameState = 0xC;
                                     D_800D6B84 = 0;
                                     break;
-                                default:                /* switch 4 */
-                                case 9:                 /* switch 4 */
+                                default:
+                                case 9:
                                     gKirbyHp = 6.0f;
                                     D_800D6E54 = 0;
                                     D_800BE4FC = D_800BE518;
-                                    D_800BE534 = D_800BE51C;
-                                    D_800BE508 = D_800BE51C;
-                                    D_800BE538 = D_800BE520;
-                                    D_800BE50C = D_800BE520;
-                                    D_800BE53C = D_800BE524;
-                                    D_800BE510 = D_800BE53C;
-                                    gGameState = 0xF;
+                                    D_800BE508 = D_800BE534 = D_800BE51C;
+                                    D_800BE50C = D_800BE538 = D_800BE520;
+                                    *(f32 *) &D_800BE53C = D_800BE524;
+                                    D_800BE510 = *(f32 *) &D_800BE53C;
+                                    *(s32 *) &gGameState = 0xF;
                                     break;
                             }
                         }
                         func_800A74D8();
                         break;
-                    case 2:                             /* switch 2 */
+                    case 2:
                         auFunc80020C88();
                         func_800A3230();
                         break;
-                    case 3:                             /* switch 2 */
-                        temp_v1 = D_800D6B9C + 1;
-                        if ((saveCurrentLevel == temp_v1) && (saveCurrentWorld == (D_800D6B98 + 1))) {
-                            D_800D6B9C = temp_v1;
-                            saveCurrentLevel += 1;
+                    case 3:
+                        temp = D_800D6B9C + 1;
+                        if (saveCurrentLevel == temp && saveCurrentWorld == D_800D6B98 + 1) {
+                            D_800D6B9C = temp;
+                            saveCurrentLevel = saveCurrentLevel + 1;
                             func_800B9C50(saveCurrentFileNum);
                             D_800D6B80 = 1;
                         }
                         func_800A74D8();
                         if (func_800F8560() != 9) {
-                            gGameState = 0xC;
+                            *(s32 *) &gGameState = 0xC;
                             D_800D6B84 = 0;
                         } else {
-                            gGameState = 0xB;
+                            *(s32 *) &gGameState = 0xB;
                             D_800D6B84 = 0;
                         }
                         break;
-                    case 4:                             /* switch 2 */
-                        switch (D_800BE500) {           /* switch 3 */
-                            case 0:                     /* switch 3 */
-                            case 1:                     /* switch 3 */
-                            case 2:                     /* switch 3 */
-                            case 3:                     /* switch 3 */
-                            case 4:                     /* switch 3 */
-                                if ((saveCurrentWorld == (D_800D6B98 + 1)) && (saveCurrentWorld < 7)) {
-                                    saveCurrentWorld += 1;
-                                    saveCurrentLevel = 1;
+                    case 4:
+                        switch (D_800BE500) {
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                            case 4:
+                                if (saveCurrentWorld == D_800D6B98 + 1 && (s32) saveCurrentWorld < 7) {
+                                    saveCurrentWorld = saveCurrentWorld + 1;
+                                    *(s32 *) &saveCurrentLevel = 1;
                                     D_800D6B7C = 1;
                                     func_800B9C50(saveCurrentFileNum);
                                 }
                                 func_800A74D8();
                                 func_800A336C();
                                 if (D_800D6B7C != 0) {
-                                    gGameState = 0xB;
+                                    *(s32 *) &gGameState = 0xB;
                                 } else {
-                                    gGameState = 0xC;
+                                    *(s32 *) &gGameState = 0xC;
                                 }
                                 break;
-                            case 5:                     /* switch 3 */
+                            case 5:
                                 func_800A74D8();
                                 if (utilTamperCheck() == 0) {
-                                    gGameState = 0xB;
+                                    *(s32 *) &gGameState = 0xB;
                                 } else {
-                                    if ((saveCurrentWorld == (D_800D6B98 + 1)) && (saveCurrentWorld < 7)) {
-                                        saveCurrentWorld += 1;
-                                        saveCurrentLevel = 1;
+                                    if (saveCurrentWorld == D_800D6B98 + 1 && (s32) saveCurrentWorld < 7) {
+                                        saveCurrentWorld = saveCurrentWorld + 1;
+                                        *(s32 *) &saveCurrentLevel = 1;
                                         func_800B9D60(saveCurrentFileNum, 5);
                                     }
                                     func_800B9C50(saveCurrentFileNum);
-                                    gGameState = 0x12;
-                                    if (savePercentComplete == 0x64) {
-                                        gGameState = 0xC;
+                                    *(s32 *) &gGameState = 0x12;
+                                    if (savePercentComplete == 100) {
+                                        *(s32 *) &gGameState = 0xC;
                                         if (saveCheckCutsceneWatched(0xD) == 0) {
                                             D_800BE500 = 6;
                                             D_800D6B98 = 6;
-                                            D_800BE508 = 0;
-                                            D_800BE504 = 0;
-                                            D_800D6B9C = 0;
+                                            D_800D6B9C = D_800BE504 = D_800BE508 = 0;
                                             utilLoadOverlay(4);
                                             saveSetCutsceneWatched(0xD, saveCurrentFileNum);
                                             func_800B9C50(saveCurrentFileNum);
                                             func_80154D60_ovl6(0xD, 2);
                                             func_800A2D68();
                                             func_800A2E98();
-                                            gGameState = 0xF;
+                                            *(s32 *) &gGameState = 0xF;
                                         }
                                     }
                                 }
                                 break;
                         }
                         break;
-                    case 7:                             /* switch 2 */
-                        if ((saveCurrentWorld == (D_800D6B98 + 1)) && (saveCurrentWorld < 8)) {
+                    case 7:
+                        if (saveCurrentWorld == D_800D6B98 + 1 && (s32) saveCurrentWorld < 8) {
                             saveCurrentWorld = 8;
-                            saveCurrentLevel = 1;
+                            *(s32 *) &saveCurrentLevel = 1;
                             func_800B9D60(saveCurrentFileNum, 6);
                         }
                         func_800A74D8();
-                        gGameState = 0x13;
+                        *(s32 *) &gGameState = 0x13;
                         break;
-                    case 0:                             /* switch 2 */
+                    case 0:
                         func_800A74D8();
                         if (D_800BE500 != 6) {
-                            gGameState = 0xC;
+                            *(s32 *) &gGameState = 0xC;
                         } else {
-                            gGameState = 0xB;
+                            *(s32 *) &gGameState = 0xB;
                         }
                         D_800D6B84 = 0;
                         break;
-                    default:                            /* switch 2 */
-                        gGameState = 1;
+                    default:
+                        *(s32 *) &gGameState = 1;
                         break;
                 }
                 func_800B9C50(saveCurrentFileNum);
                 continue;
-            case 16:                                    /* switch 1 */
-            case 17:                                    /* switch 1 */
+            case 16:
+            case 17:
                 load_menu_overlays();
                 func_80159EFC_ovl4();
-                gGameState = 1;
+                *(s32 *) &gGameState = 1;
                 continue;
-            case 21:                                    /* switch 1 */
+            case 21:
                 utilLoadOverlay(4);
                 func_80154D60_ovl6(D_800D71E8, 0x15);
-                temp_t7 = gGameState;
-                gGameState = 0x17;
-                D_800D6B68 = temp_t7;
+                temp = *(s32 *) &gGameState;
+                *(s32 *) &gGameState = 0x17;
+                D_800D6B68 = temp;
                 continue;
-            case 34:                                    /* switch 1 */
+            case 34:
                 func_800A36C0();
                 continue;
-            case 18:                                    /* switch 1 */
+            case 18:
                 utilLoadOverlay(4);
                 saveSetCutsceneWatched(0x11, saveCurrentFileNum);
                 saveSetCutsceneWatched(0x13, saveCurrentFileNum);
                 func_800B9C50(saveCurrentFileNum);
                 func_80154D60_ovl6(0xE, 2);
-                gGameState = 1;
+                *(s32 *) &gGameState = 1;
                 continue;
-            case 19:                                    /* switch 1 */
+            case 19:
                 utilLoadOverlay(4);
                 saveSetCutsceneWatched(0xD, saveCurrentFileNum);
                 saveSetCutsceneWatched(0x11, saveCurrentFileNum);
@@ -791,63 +789,65 @@ void game_tick(s32 arg0) {
                 saveSetCutsceneWatched(0x10, saveCurrentFileNum);
                 func_800B9C50(saveCurrentFileNum);
                 func_80154D60_ovl6(0xF, 0xA);
-                gGameState = 1;
+                *(s32 *) &gGameState = 1;
                 continue;
-            case 33:                                    /* switch 1 */
+            case 33:
                 func_800A34C8();
                 continue;
-            case 27:                                    /* switch 1 */
+            case 27:
                 load_menu_overlays();
                 func_8017F594_ovl5();
                 continue;
-            case 28:                                    /* switch 1 */
+            case 28:
                 load_menu_overlays();
                 func_8017CC3C_ovl5();
                 continue;
-            case 25:                                    /* switch 1 */
+            case 25:
                 load_menu_overlays();
                 func_801822AC_ovl5();
-                temp_t0_2 = gGameState;
-                gGameState = 0xA;
-                D_800D6B68 = temp_t0_2;
+                temp = *(s32 *) &gGameState;
+                *(s32 *) &gGameState = 0xA;
+                D_800D6B68 = temp;
                 continue;
-            case 23:                                    /* switch 1 */
+            case 23:
                 load_menu_overlays();
                 func_801802A8_ovl5();
                 continue;
-            case 22:                                    /* switch 1 */
+            case 22:
                 load_menu_overlays();
                 func_8017ECA4_ovl5();
-                temp_t9 = gGameState;
-                gGameState = 0xA;
-                D_800D6B68 = temp_t9;
+                temp = *(s32 *) &gGameState;
+                *(s32 *) &gGameState = 0xA;
+                D_800D6B68 = temp;
                 continue;
-            case 26:                                    /* switch 1 */
+            case 26:
                 load_menu_overlays();
                 func_80182FE8_ovl5();
                 continue;
-            case 24:                                    /* switch 1 */
+            case 24:
                 load_menu_overlays();
                 func_80185EEC_ovl5();
-                temp_t1_2 = gGameState;
-                gGameState = 0xA;
-                D_800D6B68 = temp_t1_2;
+                temp = *(s32 *) &gGameState;
+                *(s32 *) &gGameState = 0xA;
+                D_800D6B68 = temp;
                 continue;
-            case 29:                                    /* switch 1 */
+            case 29:
                 load_menu_overlays();
                 func_80177A30_ovl5();
                 continue;
-            case 30:                                    /* switch 1 */
+            case 30:
                 load_menu_overlays();
                 func_8016FAB0_ovl5();
                 continue;
-            case 31:                                    /* switch 1 */
+            case 31:
                 load_menu_overlays();
                 func_80165370_ovl5();
                 continue;
+            case 32:
+                load_menu_overlays();
+                func_80179D48_ovl5();
+                continue;
         }
-        load_menu_overlays();
-        func_80179D48_ovl5();
     }
 }
 #else

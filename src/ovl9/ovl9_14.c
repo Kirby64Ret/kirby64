@@ -500,7 +500,27 @@ void func_80211B1C_ovl9(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80211B1C_ovl9.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80211BF0_ovl9.s")
+void func_80211BF0_ovl9(struct GObj *arg0) {
+    extern s32 D_801CCA60;
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    tmp->unk98 = &D_801CCA60;
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800A9EA4(0x100EA);
+    func_800A9EA4(0x100EB);
+    while (D_800E98E0[omCurrentObj->objId] > 0) {
+        D_800E98E0[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId] - 1;
+        func_800AF27C();
+    }
+    while (1) {
+        if (func_8019A9AC_ovl7(240.0f, 240.0f) == 3) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+            break;
+        }
+        func_800AF27C();
+    }
+}
 
 void func_80211D34_ovl9(s32 arg0) {
 

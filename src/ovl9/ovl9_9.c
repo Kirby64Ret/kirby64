@@ -888,7 +888,29 @@ void func_801FE6F4_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FE7E0_ovl9.s")
+void func_801FD788_ovl9(s32, s32, f32);
+
+void func_801FE7E0_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    while (tmp->unk3C != 0) {
+        ohSleep(1);
+    }
+    func_800AA864(0x10126, 1);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 6.5f;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.25f;
+    D_800E9E20[omCurrentObj->objId] = 1;
+    func_800AA018(0x10124);
+    D_800DF310[omCurrentObj->objId] = func_801FD788_ovl9;
+    func_800AF27C();
+    D_800E9E20[omCurrentObj->objId] = 2;
+    ohSleep(0x1E);
+    func_800AA864(0x10123, 1);
+    D_800E9E20[omCurrentObj->objId] = 3;
+    curObjSleepForever();
+}
 
 extern f32 D_8021D9CC_ovl9;
 
@@ -911,7 +933,30 @@ void func_801FE97C_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FEAAC_ovl9.s")
+extern s32 D_801CC2A4;
+extern f32 D_8021D9D0_ovl9;
+void func_801FDAE0_ovl9(s32, s32, f32);
+
+void func_801FEAAC_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    tmp->unk98 = &D_801CC2A4;
+    D_800E8920[omCurrentObj->objId] = 0;
+    while (tmp->unk3C != 0) {
+        ohSleep(1);
+    }
+    D_800E3210[omCurrentObj->objId] = 14.0f;
+    D_800E3750[omCurrentObj->objId] = -0.75f;
+    D_800E3C90[omCurrentObj->objId] = D_8021D9D0_ovl9;
+    func_800AA018(0x10126);
+    D_800DF310[omCurrentObj->objId] = func_801FDAE0_ovl9;
+    func_800AF27C();
+    D_800E9E20[omCurrentObj->objId] = 1;
+    func_800AA018(0x10124);
+    curObjSleepForever();
+}
 
 void func_801FEC1C_ovl9(struct GObj *arg0) {
     if (D_800E3210[omCurrentObj->objId] < 0.0f) {
@@ -1674,7 +1719,48 @@ void func_8020165C_ovl9(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
+/* 54/82 diffs, fully decoded; two independent residues remain.
+   (a) The two 0.0f arguments must be `addiu $aN, $zero, 0` and the FP zero for
+       the sp34.z/sp34.y stores must be a SEPARATE `mtc1 $zero, $f0` emitted
+       AFTER the call.  IDO CSEs them and derives the arguments with mfc1,
+       which offsets the whole function by one instruction.  Swept without
+       effect: 0.0f / 0.0 / (f32)0 / integer 0 in every combination of argument
+       and store position, a chained store, a volatile store, and hoisting the
+       stores above the call.
+   (b) The wrap needs `r = r + 1; r = (r < 3) ? r : 0;` written so that the
+       `addiu $v1, $v0, 1` stays INSIDE the fallthrough block; both the folded
+       `(r + 1 < 3) ? r + 1 : 0` and the split form move it.
+   NOTE: this draft also requires the file-scope prototype at the top of this
+   file to become `extern s32 func_801ACCA0_ovl7(s32, s32, f32, f32);`. */
+#ifdef MIPS_TO_C
+extern s32 random_soft_s32_range(s32);
+extern f32 D_8021C7A4_ovl9[];
+
+void func_802016A8_ovl9(void) {
+    Vector sp34;
+    s32 pad0;
+    s32 r;
+    s32 id;
+
+    id = func_801ACCA0_ovl7(0x15, 0, 0.0f, 0.0f);
+    if (id != 0) {
+        sp34.z = 0.0;
+        sp34.y = 0.0;
+        sp34.x = D_800E6A10[omCurrentObj->objId];
+        r = random_soft_s32_range(3);
+        if (r == D_800E98E0[omCurrentObj->objId]) {
+            r = (r + 1 < 3) ? r + 1 : 0;
+        }
+        D_800E98E0[omCurrentObj->objId] = r;
+        lbvector_Rotate(&sp34, 4, D_800E6A10[omCurrentObj->objId] * D_8021C7A4_ovl9[D_800E98E0[omCurrentObj->objId]]);
+        D_800E64D0[id] = sp34.x * 10.0f;
+        D_800E3210[id] = sp34.y * 10.0f;
+        D_800E3750[id] = sp34.y * -1.5f;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_802016A8_ovl9.s")
+#endif
 
 IN_FILE void func_8020165C_ovl9(s32, s32, f32);
 void func_802017F0_ovl9(struct GObj *arg0) {
