@@ -1539,50 +1539,52 @@ void func_80154464_ovl6(void) {
     func_80154628_ovl6();
 }
 
-#ifdef MIPS_TO_C
+/* 87/89 but structurally instruction-for-instruction: the residue is one
+ * saved-register assignment (the ROM shares s1 between &D_8015A564 and
+ * &D_8015A7C0, IDO allocates six saved regs instead of five, shifting every
+ * s-number). Semantics verified against the listing token by token. */
+#ifdef NON_MATCHING
+void func_801544E8_ovl6(GObj *gobj) {
+    s32 func_80154284_ovl6(void);
+    UnkStruct8015A560_ovl6 *p;
+    u32 c;
 
-void func_801544E8_ovl6(s32 arg0) {
-    s32 *temp_t0;
-    s32 temp_v0;
-    u16 *var_v1;
-    u8 temp_v0_2;
-
-    var_v1 = D_8015A560_ovl6;
-    if (var_v1->unk2 == 0x22) {
-        if ((*D_8015A564_ovl6 != 0) && (func_80154284_ovl6() != 0)) {
-            temp_t0 = D_8015A564_ovl6 + 4;
-            D_8015A564_ovl6 = temp_t0;
-            if (*temp_t0 != 0) {
-                func_80154464_ovl6();
-                var_v1 = D_8015A560_ovl6;
-                goto block_6;
-            }
+    p = D_8015A560_ovl6;
+    if (p->unk2 == 0x22) {
+        if (*D_8015A564_ovl6 == NULL) {
+            return;
+        }
+        if (func_80154284_ovl6() == 0) {
+            return;
+        }
+        D_8015A564_ovl6++;
+        if (*D_8015A564_ovl6 != NULL) {
+            func_80154464_ovl6();
+            p = D_8015A560_ovl6;
+        } else {
             func_800067B8();
+            return;
+        }
+    }
+    if (D_8015A568_ovl6 == p->unk0) {
+        c = p->unk2;
+        while (c != 0x22) {
+            D_80154DC0_ovl6[c]();
+            p = D_8015A560_ovl6 + 1;
+            D_8015A560_ovl6 = p;
+            if ((p->unk2 == 0x22) && (D_8015A7C0_ovl6 != NULL)) {
+                p = D_8015A7C0_ovl6 + 1;
+                D_8015A560_ovl6 = p;
+                D_8015A7C0_ovl6 = NULL;
+            }
+            if (D_8015A568_ovl6 != p->unk0) {
+                goto inc;
+            }
+            c = p->unk2;
         }
     } else {
-block_6:
-        temp_v0 = D_8015A568_ovl6;
-        if (temp_v0 == var_v1->unk0) {
-loop_8:
-            temp_v0_2 = var_v1->unk2;
-            if (temp_v0_2 != 0x22) {
-                *(&D_80154DC0_ovl6 + (temp_v0_2 * 4))();
-                var_v1 = D_8015A560_ovl6 + 8;
-                D_8015A560_ovl6 = var_v1;
-                if ((var_v1->unk2 == 0x22) && (D_8015A7C0_ovl6 != 0)) {
-                    var_v1 = D_8015A7C0_ovl6 + 8;
-                    D_8015A560_ovl6 = var_v1;
-                    D_8015A7C0_ovl6 = 0;
-                }
-                if (D_8015A568_ovl6 != *var_v1) {
-                    goto block_13;
-                }
-                goto loop_8;
-            }
-        } else {
-block_13:
-            D_8015A568_ovl6 = temp_v0 + 1;
-        }
+inc:
+        D_8015A568_ovl6 += 1;
     }
 }
 #else

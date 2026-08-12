@@ -318,91 +318,50 @@ s32 func_800A86C8(s32 arg0, s32 *arg1, s32 *arg2) {
     return total;
 }
 
-#ifdef MIPS_TO_C
-
+/* NON_MATCHING draft at 130/134. It was left UNGUARDED, which put the ROM
+ * at b3dcd30e and drifted ovl1_3 by +8 -- the exact failure verify.py --all
+ * reports as "1 diff" while check_tu_size stays silent.
+ *
+ * Guarded NON_MATCHING rather than MIPS_TO_C on purpose: it compiles, so the
+ * PC port executes it, and this function is the port boot path's current
+ * blocking stub. The ROM assembles the pragma below. */
+#ifdef NON_MATCHING
 s32 func_800A8724(s32 arg0) {
-    ? *var_s3;
-    ? *var_s4;
-    s32 *var_s0;
-    s32 *var_s2;
-    s32 temp_a2;
-    s32 temp_s5;
-    s32 temp_t9;
-    s32 temp_v0;
-    s32 temp_v0_2;
-    s32 var_a0;
-    s32 var_a3;
-    s32 var_s6;
-    s32 var_v0;
-    s32 var_v0_2;
-    u32 *var_a1;
-    u32 *var_a2;
-    u32 var_s1;
-    u32 var_v1;
+    struct CacheLine *func_800A840C(u32, s32);
+    s32 count;
+    s32 i;
+    s32 j;
+    u32 k;
+    u32 before;
+    u32 *sizes;
 
-    var_s6 = 0;
+    count = 0;
     func_800A82C0();
-    var_a1 = &D_800D0124;
-    var_a2 = &D_800D00E4;
-    var_a3 = 0;
-    do {
-        var_v1 = 0;
-        if (*var_a2 != 0) {
-            var_v0 = 0;
-            do {
-                var_v1 += 1;
-                *(*(var_a3 + &D_800D00C4) + var_v0) = 0;
-                var_v0 += 4;
-            } while (var_v1 < *var_a2);
-            var_v1 = 0;
+    for (i = 0; i < 8; i++) {
+        for (j = 0; j < D_800D00E4[i]; j++) {
+            D_800D00C4[i][j] = NULL;
         }
-        var_a2 += 4;
-        var_v0_2 = 0;
-        if (*var_a1 != 0) {
-            do {
-                var_v1 += 1;
-                *(*(var_a3 + &D_800D0104) + var_v0_2) = 0;
-                var_v0_2 += 4;
-            } while (var_v1 < *var_a1);
+        for (j = 0; j < D_800D0124[i]; j++) {
+            D_800D0104[i][j] = NULL;
         }
-        var_a1 += 4;
-        var_a3 += 4;
-    } while (var_a1 < &D_800D0144);
-    var_s4 = &D_800D7BE0;
-    var_s3 = &D_800D7BC0;
-    var_s2 = (arg0 * 0x10) + &D_800C4654;
-    var_a0 = D_800D7BB8;
-    var_s0 = &D_800D7BD0;
-    var_s1 = 0;
-    do {
-        temp_a2 = *var_s2;
-        *var_s0 = 0;
-        temp_s5 = var_a0;
-        if (temp_a2 != 0) {
-            if (temp_a2 == -1) {
-                temp_v0 = func_800A840C(var_a0, var_s1, temp_a2);
-                *var_s0 = temp_v0;
-                if (temp_v0 == 0) {
-                    var_s6 += 1;
-                }
+    }
+    sizes = (u32 *)&D_800C4654[arg0];
+    for (k = 0; k < 4; k++) {
+        before = D_800D7BB8;
+        D_800D7BD0[k] = NULL;
+        if (sizes[k] != 0) {
+            if (sizes[k] == -1) {
+                D_800D7BD0[k] = func_800A840C(D_800D7BB8, k);
             } else {
-                temp_v0_2 = func_800A840C(temp_a2, var_s1, temp_a2);
-                *var_s0 = temp_v0_2;
-                if (temp_v0_2 == 0) {
-                    var_s6 += 1;
-                }
+                D_800D7BD0[k] = func_800A840C(sizes[k], k);
             }
-            var_a0 = D_800D7BB8;
+            if (D_800D7BD0[k] == NULL) {
+                count++;
+            }
         }
-        temp_t9 = *var_s0;
-        var_s1 += 1;
-        var_s0 += 4;
-        var_s2 += 4;
-        var_s3 += 4;
-        var_s4 += 4;
-        var_s4->unk-4 = temp_s5 - var_a0;
-        var_s3->unk-4 = temp_t9;
-    } while (var_s1 < 4);
+        D_800D7BE0[k] = before - D_800D7BB8;
+        D_800D7BC0[k] = D_800D7BD0[k];
+    }
     D_800D6E78 = 0;
     D_800D6E68 = 0;
     D_800D6E7C = 0;
@@ -411,7 +370,7 @@ s32 func_800A8724(s32 arg0) {
     D_800D6E70 = 0;
     D_800D6E84 = 0;
     D_800D6E74 = 0;
-    return var_s6;
+    return count;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8724.s")

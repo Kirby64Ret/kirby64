@@ -964,7 +964,45 @@ void func_8021817C_ovl9(struct GObj *arg0) {
     func_802180D8_ovl9(arg0);
 }
 
+/* 36 diffs, all downstream of the frame: the ROM frame is 0x20 (tmp spilled
+   at 0x18, the f32 call result at 0x1C) so the source has only ONE named local
+   besides tmp. Dropping the d0/d1/d2 and u locals reaches frame 0x20 but then
+   every pointer sits one register slot low (71 diffs); callee return-type flips
+   on eneTurnCommon2 and func_8019F410_ovl7 are inert. */
+#ifdef NON_MATCHING
+extern f32 D_801CA9E8;
+extern FUNCLIST D_8021CDAC_ovl9;
+void eneTurnCommon2(s32);
+void func_8019F410_ovl7(struct DObj *);
+
+void func_80218248_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct Sub800E1B50_Unk84 *u = tmp->unk84;
+    struct DObj *d0;
+    struct DObj *d1;
+    struct DObj *d2;
+    f32 t;
+
+    if (u != NULL) {
+        d0 = arg0->data.dobj->firstChild;
+        d1 = d0->firstChild;
+        d2 = d1->firstChild;
+        *(f32 *) &u->unk14 = ((d1->pos.v.y + d2->pos.v.y) + d0->pos.v.y) + D_801CA9E8;
+        *(f32 *) &u->unk10 = *(f32 *) &u->unk14 * 0.5f;
+    }
+    t = func_801A0D74_ovl7();
+    eneTurnCommon2(6);
+    if (tmp->unk3C != 0) {
+        D_800E98E0[omCurrentObj->objId] = 0;
+    }
+    if (t == 0.0f) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021CDAC_ovl9);
+    }
+    func_8019F410_ovl7(arg0->data.dobj->firstChild->firstChild->firstChild);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80218248_ovl9.s")
+#endif
 
 extern s32 D_801CCEE0;
 extern f32 D_8021DE68_ovl9;
