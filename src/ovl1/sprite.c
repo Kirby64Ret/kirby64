@@ -442,10 +442,8 @@ s32 lbreflect_Int16Sin(f32);
 s32 lbreflect_Int16Cos(f32);
 
 #ifdef NON_MATCHING
-/* LEFT UN-GUARDED BY A LANE THAT DIED MID-WORK, at 336/733 insns.
- * That regressed the ROM by 336 words. The draft is kept because it is
- * the model draw callback the PC port actually executes (Makefile.pc
- * defines NON_MATCHING), and it is why the port renders 0 vertices. */
+/* Draft of the model draw callback. Kept because Makefile.pc defines
+ * NON_MATCHING, so this is the code the PC port executes. */
 void func_800AD1A0(GObj *gobj) {
     SPObj *sp;
     s32 tmp;

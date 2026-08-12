@@ -555,7 +555,6 @@ void func_8011C4E8(s32 arg0, void *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C4E8.s")
 #endif
 
-#ifdef NON_MATCHING
 void func_8011C720(s32 arg0) {
     u16 *temp_v1;
 
@@ -597,9 +596,7 @@ void func_8011C720(s32 arg0) {
     }
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C720.s")
-#endif
+
 void func_8011C838(void) {
     u32 track = request_track_general(0x12, 0, 1);
     GObj *g = D_800DE350[track];

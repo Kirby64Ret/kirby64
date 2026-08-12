@@ -565,6 +565,7 @@ void func_801DFB28_ovl9(void) {
  * much worse. */
 #ifdef NON_MATCHING
 extern s32 D_801C8520_ovl7;
+void ohSleep();
 
 void func_801DFB50_ovl9(struct GObj *arg0) {
     f32 v;

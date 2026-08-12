@@ -76,3 +76,7 @@ cand.json
 *.ab_tmp.c
 kirby64.eep
 port/o2r/*.o2r
+
+# Lane progress notes: written by background agents every few closures so a
+# lane that dies still delivers what it had. Working notes, not deliverables.
+scratchpad/
