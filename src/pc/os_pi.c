@@ -327,11 +327,19 @@ static s32 do_transfer(OSPiHandle *h, s32 dir, u32 devAddr, void *ram,
      * write to lives below that. Refusing the whole range turns "the allocator
      * upstream is not implemented yet" into a traced skip instead of a SIGSEGV
      * inside libc, which is the difference between a diagnosis and a hunt. */
+     *
+     * It returns SUCCESS, like the other two skips, and that is deliberate.
+     * Reporting -1 here looks honest and is worse: src/main/dma.c treats a
+     * failed osEPiStartDma as `fatal_printf("dma pi full ...")`, which calls
+     * faultWaitButton, which spins on crash_screen_sleep waiting for a button
+     * that a headless run will never see -- at gtl process priority 250, above
+     * everything else. The port then sat there forever with the VI ticking
+     * happily, which is a far more confusing state than a skipped read. */
     if ((const char *)ram < __executable_start) {
         pc_trace(PC_TR_DMA,
                  "[dma] SKIP unmapped destination: rom %08x -> %p (%u bytes)\n",
                  devAddr, ram, size);
-        return -1;
+        return 0;
     }
 
     /* Split 2: the guard that needs no table. */

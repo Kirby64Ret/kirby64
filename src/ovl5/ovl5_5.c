@@ -459,7 +459,59 @@ void func_80175E98_ovl5(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* Faithful, not byte-exact (104/110). Structurally correct; the residue is
+   that the ROM keeps EIGHT saved registers -- it strength-reduces
+   D_8018E998_ovl5[i] into an $s4 byte-offset induction and hoists
+   &D_80187CA4_ovl5 into $s7 -- where this C uses seven and re-shifts the index
+   each iteration, so every save slot moves 4 bytes. Explicit pointer and
+   byte-bias inductions both make it worse (103, 99). */
+extern f32 D_80187CA4_ovl5[];
+extern f32 D_8018DC70_ovl5;
+extern u8 D_8018E450_ovl5;
+s32 func_801716E0_ovl5(s32);
+s32 func_80171868_ovl5(void);
+
+void func_80175F50_ovl5(GObj *arg0) {
+    f32 *p;
+    f32 *q;
+    s32 v;
+    s32 i;
+    f32 lim;
+
+    lim = D_8018DC70_ovl5;
+    p = D_8018EB48_ovl5;
+    for (i = 0; i != 4; i++) {
+        if ((D_8018E478_ovl5[i][0x51] == 0) ||
+            !((*p + gEntitiesNextPosZArray[D_8018E478_ovl5[i][0x51]]) <= lim)) {
+            q = &D_80187CA4_ovl5[func_801716E0_ovl5(i)];
+            if (D_8018E998_ovl5[i] == 0) {
+                v = 0;
+            } else {
+                v = (s32) *q;
+            }
+            if (*p < (f32) v) {
+                *p = *p + 12.0f;
+                if ((f32) v < *p) {
+                    *p = (f32) v;
+                }
+            }
+            if ((f32) v < *p) {
+                *p = *p - 12.0f;
+                if (*p < (f32) v) {
+                    *p = (f32) v;
+                }
+            }
+        }
+        p++;
+    }
+    if ((D_8018E450_ovl5 == 0) && (func_80171868_ovl5() != 0)) {
+        D_8018E450_ovl5 = 0x5A;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175F50_ovl5.s")
+#endif
 
 #ifdef NON_MATCHING
 /* 2 diffs, and the single physical line is load-bearing (expanded over three
