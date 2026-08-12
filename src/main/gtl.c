@@ -458,20 +458,71 @@ void func_80005CC0(s32 isL3DEX2, Gfx *glistp) {
     }
 }
 
+#ifdef PORT
+/* A REAL gsSPLoadUcodeL IS MEANINGLESS TO FAST3D, AND WORSE THAN MEANINGLESS.
+ *
+ * On hardware the command hands the RSP two DRAM addresses (text and data) and
+ * a size. Fast3D has no RSP to load anything into; instead it reuses the same
+ * opcode as a *selector*, and reads the low 24 bits of w0 as a UcodeHandlers
+ * enum:
+ *
+ *     if (opcode == F3DEX2_G_LOAD_UCODE)
+ *         gfx_set_ucode_handler((UcodeHandlers)(cmd->words.w0 & 0xFFFFFF));
+ *
+ * Feed it the hardware form and those low bits are gsSPLoadUcodeL's size
+ * field, SP_UCODE_DATA_SIZE - 1 == 0x7FF == 2047. That is past the end of the
+ * handler table, so from the next command onwards EVERY opcode falls into the
+ * "invalid ucode: 2047" arm and nothing is drawn -- which is exactly what this
+ * port printed thousands of times per frame before this branch existed.
+ *
+ * The enum values are duplicated rather than included: fast/ucodehandlers.h is
+ * a C++-side header of an out-of-tree dependency, and game code including it
+ * would tie the ROM sources to the renderer's checkout. They are part of the
+ * display-list wire format, so they are as stable as the opcode itself.
+ *
+ * L3DEX2 collapses onto F3DEX2 on purpose. L3DEX2 is F3DEX2 plus the line
+ * primitives, and Fast3D's f3dex2 handler table already contains G_LINE3D --
+ * there is no separate table to select. */
+#define PC_UCODE_F3DEX2 4 /* ucode_f3dex2 */
+#define PC_UCODE_S2DEX  5 /* ucode_s2dex  */
+
+static void pc_emit_load_ucode(Gfx **dlist, u32 sel) {
+    Gfx *g = (*dlist)++;
+
+    /* 0xDD is F3DEX2's G_LOAD_UCODE. Written as a literal because the value
+     * Fast3D compares against is F3DEX2_G_LOAD_UCODE regardless of which ucode
+     * is currently selected -- the switch command is outside the tables. */
+    g->words.w0 = 0xDD000000u | sel;
+    g->words.w1 = 0;
+}
+#endif
+
 void gtlLoadUcode(Gfx **dlist, u32 kind) {
     s32 loadedSpriteUcode = 0;
-    switch (kind) { 
+    switch (kind) {
         case 0:
             // F3DEX2
+#ifdef PORT
+            pc_emit_load_ucode(dlist, PC_UCODE_F3DEX2);
+#else
             gSPLoadUcodeL((*dlist)++, gspF3DEX2_fifo);
+#endif
             break;
         case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
             // L3DEX2
+#ifdef PORT
+            pc_emit_load_ucode(dlist, PC_UCODE_F3DEX2);
+#else
             gSPLoadUcodeL((*dlist)++, gspL3DEX2_fifo);
+#endif
             break;
         case 9: case 10:
             // S2DEX2
+#ifdef PORT
+            pc_emit_load_ucode(dlist, PC_UCODE_S2DEX);
+#else
             gSPLoadUcodeL((*dlist)++, gspS2DEX2_fifo);
+#endif
             loadedSpriteUcode = 1;
             break;
         case 11: case 12: case 13: case 14: case 15: default:

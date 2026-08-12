@@ -161,6 +161,27 @@ static std::shared_ptr<LUS::ControlDeck> sControlDeck;
 static bool sInitTried;
 static bool sInitOk;
 
+/* THE PAD BUFFER BELONGS TO THE CALLER, NOT TO THE CONTROL DECK.
+ *
+ * LUS::ControlDeck::GetPads() returns mPads, and mPads is only ever assigned
+ * inside WriteToOSContPad(pad) -- it is a cached copy of whatever pointer the
+ * game last handed in, not storage the deck owns. Asking for the pads before
+ * ever writing to them therefore returns nullptr forever, which is exactly
+ * the loop this backend was stuck in: GetPads() -> nullptr -> skip the write
+ * -> GetPads() still nullptr. Every port reported "no controller", the game's
+ * boot check in func_800A3058 found contChannelMap all -1, and it entered
+ * scene 4 -- the "no controllers connected" error screen -- instead of the
+ * title sequence.
+ *
+ * The buffer lives here. WriteToPad() fills it; GetPads() is not used at all. */
+static OSContPad sLusPads[MAXCONTROLLERS];
+
+/* ControlDeck::Init() takes a pointer to the game's connected-port bitmask and
+ * ORs in bit 0 unconditionally (a keyboard is always a valid port 1 device).
+ * The port keeps its own byte because src/pc/os_cont.c derives OSContStatus
+ * from PCPad.present rather than from a bitmask. */
+static uint8_t sControllerBits;
+
 static int sFramesDrawn;
 static int sTasksThisFrame;
 static bool sMultiTaskFrame;
@@ -286,12 +307,6 @@ static bool lus_init(void) {
         auto resourceManager = std::make_shared<Ship::ResourceManager>(threadPool);
         sContext->GetChildren().Add(resourceManager);
 
-        /* Ship::ControlDeck is abstract (WriteToPad is pure virtual).
-         * LUS::ControlDeck is the concrete N64 one, and it is what turns
-         * host gamepads into OSContPad. */
-        sControlDeck = std::make_shared<LUS::ControlDeck>(nullptr, cvars);
-        sContext->GetChildren().Add(sControlDeck);
-
         /* THE CRASH HANDLER IS OPT-IN, and that is a considered choice.
          *
          * Ship::CrashHandler installs sigaction handlers for SIGINT and
@@ -312,8 +327,24 @@ static bool lus_init(void) {
         auto console = std::make_shared<Ship::Console>();
         sContext->GetChildren().Add(console);
 
-        sWindow = std::make_shared<Fast::Fast3dWindow>(config, cvars, sControlDeck);
+        /* THE WINDOW COMES FIRST, AND THE CYCLE IS BROKEN ON ITS SIDE.
+         *
+         * Fast3dWindow wants a ControlDeck and ControlDeck wants a Window, so
+         * one of the two has to be constructed without its partner. Only the
+         * Window can be: Fast3dWindow::GetControlDeck() falls back to
+         * `context->GetChildren().GetFirst<Ship::ControlDeck>()` when the
+         * injected pointer is null, whereas ControlDeck::GetWindow() just
+         * throws "ControlDeck requires Window dependency". So the Window is
+         * built with a null deck and finds it through the context later, and
+         * the deck gets the real Window handed to it. */
+        sWindow = std::make_shared<Fast::Fast3dWindow>(config, cvars, nullptr);
         sContext->GetChildren().Add(sWindow);
+
+        /* Ship::ControlDeck is abstract (WriteToPad is pure virtual).
+         * LUS::ControlDeck is the concrete N64 one, and it is what turns
+         * host gamepads into OSContPad. */
+        sControlDeck = std::make_shared<LUS::ControlDeck>(sWindow, cvars);
+        sContext->GetChildren().Add(sControlDeck);
 
         auto audio = std::make_shared<Ship::Audio>(Ship::AudioSettings{}, config);
         sContext->GetChildren().Add(audio);
@@ -346,6 +377,19 @@ static bool lus_init(void) {
         sWindow->Init();
         fileDrop->Init();
         audio->Init();
+
+        /* Init() must come after sWindow->Init(): ControlDeck::GetWindow()
+         * throws unless the Window reports IsInitialized(), and Init() calls
+         * it while constructing the WheelHandler. Skipping Init() is not a
+         * quiet degradation either -- WriteToOSContPad() calls
+         * GetWheelHandler(), which throws std::runtime_error when the handler
+         * was never built, so an uninitialised deck cannot be polled at all.
+         *
+         * Init() is also what loads saved mappings from Config and installs
+         * the default keyboard/mouse/gamepad bindings for port 1 when the
+         * config has none, which is what makes a fresh checkout playable
+         * without the user opening the binding UI first. */
+        sControlDeck->Init(&sControllerBits);
 
         /* The C bridge functions (AudioPlayerPlayFrame, GfxSetNativeDimensions,
          * WindowIsRunning...) resolve through these cached pointers. The
@@ -539,26 +583,24 @@ void pcb_input_poll(PCPad* pads, int n) {
     /* ControlDeck already produces N64 pad state -- turning modern gamepads
      * into CONT_* bits and an 80-unit stick is the entire reason it exists --
      * so this is a field copy and src/pc/os_cont.c never learns where the bits
-     * came from. */
-    /* WriteToPad refreshes the deck's own buffer from the mapped devices; it
-     * is the call a LUS main loop makes once per frame. Here the game asks
-     * whenever osContStartReadData runs, which is the same cadence. */
-    OSContPad* src = sControlDeck->GetPads();
-    if (src != nullptr) {
-        sControlDeck->WriteToPad(src);
-    }
-    if (src == nullptr) {
-        return;
-    }
+     * came from.
+     *
+     * WriteToPad refreshes sLusPads from the mapped devices; it is the call a
+     * LUS main loop makes once per frame. Here the game asks whenever
+     * osContStartReadData runs, which is the same cadence. It pumps SDL events
+     * itself, so no extra poll is needed around it. */
+    sControlDeck->WriteToPad(sLusPads);
+
     for (i = 0; i < n && i < MAXCONTROLLERS; i++) {
-        pads[i].button = src[i].button;
-        pads[i].stick_x = src[i].stick_x;
-        pads[i].stick_y = src[i].stick_y;
+        pads[i].button = sLusPads[i].button;
+        pads[i].stick_x = sLusPads[i].stick_x;
+        pads[i].stick_y = sLusPads[i].stick_y;
         /* LUS has no "is a controller physically plugged in" concept that
-         * matches the SI bus: a keyboard is always a valid port 1 device.
+         * matches the SI bus: a keyboard is always a valid port 1 device, and
+         * ControlDeck::Init() says so by setting bit 0 of sControllerBits.
          * Reporting port 1 present keeps src/main/contpad.c on its normal
          * path rather than its no-controller path. */
-        pads[i].present = (i == 0) ? 1 : 0;
+        pads[i].present = (sControllerBits & (1u << i)) ? 1 : 0;
     }
 }
 
