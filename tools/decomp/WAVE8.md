@@ -274,6 +274,29 @@ Only once both TUs agree on every shared symbol is the move itself safe.
 Payoff is 14 jump-table functions at ~1.3 compiles each, the cheapest tier
 left, so it is worth doing properly.
 
+## LINE PACKING — real, but narrower than first reported
+
+**What it does:** an `if`/`else` chain whose arms sit on ONE source line
+schedules its two ADDRESS COMPUTATIONS in the opposite order to the same
+chain spread over several lines. It closed func_801DF790_ovl15 (2/142) and
+func_801E0380_ovl15 (5/138) outright, changing nothing else.
+
+**What it does NOT do — measured, 1 compile each, both negative:** it does
+not change which REGISTER a correctly-ordered computation lands in.
+func_800BBDC4 (7/103) and func_800A8100 (24/76) were both packed — the
+second is exactly the two-competing-address-computations shape the lever
+describes — and neither moved by a single instruction.
+
+**So the screen is:** use it when the residue is the ORDER two address
+computations issue in. Do not use it on a `$v0`/`$v1` or `$a2`/`$a3`
+assignment residue where the order is already right; that is the
+register-allocation floor and line packing has no purchase on it.
+
+Recorded this precisely because the first version of this entry was written
+too broadly and went out to six lanes before it was falsified. The guide's
+own standing warning applies to everything in this file: **a recorded lever
+is a measurement, not a law, and several have been falsified by one compile.**
+
 ## MANAGER RULE: never guard a function a lane still has open
 
 Learned the hard way 2026-08-12. To unblock a gate I guarded

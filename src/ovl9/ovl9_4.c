@@ -337,7 +337,29 @@ void func_801E2C68_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E2D34_ovl9.s")
+void func_801E2D34_ovl9(struct GObj *arg0) {
+    extern struct Sub800E1B50_Unk98 D_801CBA7C;
+    extern void func_800AA018(s32);
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBA7C;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    func_800AA018((1.0f == D_800E6A10[omCurrentObj->objId]) ? 0x101B6 : 0x101B4);
+    ohSleep(1);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.0f;
+    do {
+        func_800AF27C();
+        if ((D_800E98E0[omCurrentObj->objId] & 1) == 0) {
+            D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+            func_800AA018((1.0f == D_800E6A10[omCurrentObj->objId]) ? 0x101B6 : 0x101B4);
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.0f;
+        }
+        D_800E98E0[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId] - 1;
+    } while (D_800E98E0[omCurrentObj->objId] > 0);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+}
 
 extern s32 D_801CBA58;
 /* D_8021CFC0_ovl9: literal, this TU owns its .rodata */
@@ -378,7 +400,28 @@ void func_801E309C_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E3134_ovl9.s")
+void func_801E3134_ovl9(struct GObj *arg0) {
+    extern f32 gameTicksPerDraw;
+    extern void play_sound(s32);
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBA58;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    while (1) {
+        D_800E8920[omCurrentObj->objId] = 0;
+        func_800A9EA4((1.0f == D_800E6A10[omCurrentObj->objId]) ? 0x101B6 : 0x101B4);
+        D_800E3210[omCurrentObj->objId] = 10.39999962f;
+        D_800E3750[omCurrentObj->objId] = -0.6499999762f;
+        D_800E3C90[omCurrentObj->objId] = 10.39999962f;
+        play_sound(0x166);
+        while (D_800E8920[omCurrentObj->objId] == 0) {
+            ohSleep(1);
+        }
+        D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+    }
+}
 
 void func_801E333C_ovl9(struct GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId] - (((D_800E98E0[omCurrentObj->objId] & 1) == 0) ? 1 : 2);

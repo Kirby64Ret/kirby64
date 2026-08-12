@@ -474,7 +474,36 @@ void func_8022703C_ovl19(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_802271A8_ovl19.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_802273A0_ovl19.s")
+void func_802273A0_ovl19(GObj *arg0) {
+    extern f32 *D_80192F9C[];
+    extern s32 D_8022F500_ovl19[];
+    extern void func_800AA018(s32);
+    extern void func_800A9864(s32, s32, s32);
+    extern void func_80154648_ovl3(s32, s32 *, s32 *);
+    void func_8022759C_ovl19(GObj *);
+
+    D_800DEF90[omCurrentObj->objId] = func_800B5094;
+    D_800DF150[omCurrentObj->objId] = func_8022759C_ovl19;
+    D_800E6A10[omCurrentObj->objId] = D_800E6A10[0];
+    D_800E83E0[omCurrentObj->objId] = 0;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    D_800E0490[omCurrentObj->objId] = D_80192F9C;
+    func_80154648_ovl3(0, &D_8022FAF0_ovl19, &D_8022FAD0_ovl19);
+    D_800E0F10[omCurrentObj->objId] = D_8022F500_ovl19[D_800E8220[omCurrentObj->objId]];
+    func_800A9864(0x20060, 0x20, 0x10);
+    while (1) {
+        if (D_800EC2E0[omCurrentObj->objId].as_s32 != -1) {
+            if (D_800EC4A0[omCurrentObj->objId] != 0) {
+                func_800AA018(D_800EC4A0[omCurrentObj->objId]);
+            }
+            func_800AA018(D_800EC2E0[omCurrentObj->objId].as_s32);
+            D_800EC2E0[omCurrentObj->objId].as_s32 = -1;
+        }
+        ohSleep(1);
+    }
+}
 
 void func_8022759C_ovl19(GObj *gobj) {
     Vector vec;
