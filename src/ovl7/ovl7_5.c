@@ -1705,63 +1705,69 @@ void func_801AA914_ovl7(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AA914_ovl7.s")
 #endif
 // m2c draft, measured 200/221 diffs
+/* FACTORY: 185/219.  ONE FAMILY OF THREE -- func_801AAAF8_ovl7 / func_801AB2F4_ovl7 /
+   func_801AB884_ovl7 share a call skeleton and a body; one fix closes all three.
+   Rewritten from the m2c draft by deleting every objId cache local and writing
+   `omCurrentObj->objId` inline: m2c's `temp_vN = omCurrentObj->objId` keeps the
+   UNSHIFTED objId alive beside objId*4, so IDO emits an extra `move` and splits
+   every index across two registers, where the ROM does `lw $v0,0($tN)` then
+   `sll $v0,$v0,2` in place.  Inlining took the three from 200/219, 152/175 and
+   179/199 to 185/219, 138/174 and 165/199 with the same edit.
+   Also gone: m2c's comma-expression guard `(t = D_800E77A0[i], t <= 0) || t >=
+   0x2C`, now two plain reads that IDO CSEs into the ROM's single `lhu`.
+   Remaining residue is ONE delay slot, shared by all three: at the
+   func_801C0588_ovl7 guard the ROM emits `beqz $at, .L; nop` and ours emits
+   `beqzl $at, .L; sll $vN, $aN, 2` -- IDO does partial-redundancy elimination
+   on the next block's objId*4 along the short-circuit path that skips the call,
+   which the ROM does not, and everything after is that one slot shifted with
+   the temp file rotated one slot with it.  Three shapes were spent on it
+   (pointer local per block, distinct pointer local per block, plain inline);
+   plain inline is the best of the three and is what is left here.  Permuter
+   food -- and worth running on only ONE of the three. */
 #ifdef NON_MATCHING
 void func_801AAAF8_ovl7(s32 arg0) {
     f32 *var_at;
     f32 var_f0;
     s32 *temp_v0_4;
     s32 temp_v1_2;
-    u16 temp_v1;
-    u16 temp_v1_3;
     u16 temp_v1_4;
-    u16 temp_v1_5;
-    u32 temp_a2;
-    u32 temp_a2_2;
-    u32 temp_a2_3;
-    u32 temp_v0;
-    u32 temp_v0_2;
     u8 temp_v0_3;
 
-    temp_a2 = omCurrentObj->objId;
-    if ((D_800E7730[temp_a2] != 6) || (temp_v1 = D_800E77A0[temp_a2], (temp_v1 <= 0)) || (temp_v1 >= 0x2C) || (func_801C0588_ovl7(temp_a2) == 0)) {
-        temp_v0 = omCurrentObj->objId;
-        temp_v1_2 = D_800E83E0[temp_v0];
-        if ((temp_v1_2 != 0) || (D_800E8760[temp_v0] != 0)) {
+    if ((D_800E7730[omCurrentObj->objId] != 6) || (D_800E77A0[omCurrentObj->objId] <= 0) || (D_800E77A0[omCurrentObj->objId] >= 0x2C) || (func_801C0588_ovl7(omCurrentObj->objId) == 0)) {
+        temp_v1_2 = D_800E83E0[omCurrentObj->objId];
+        if ((temp_v1_2 != 0) || (D_800E8760[omCurrentObj->objId] != 0)) {
             if (temp_v1_2 == 0x12) {
-                assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AC33C_ovl7);
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC33C_ovl7);
                 return;
             }
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AC11C_ovl7);
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC11C_ovl7);
             return;
         }
         func_801AB008_ovl7();
-        temp_v0_2 = omCurrentObj->objId;
-        if (D_800E8AE0[temp_v0_2] & 1) {
+        if (D_800E8AE0[omCurrentObj->objId] & 1) {
             var_f0 = 7.0f;
-            D_800E64D0[temp_v0_2] = D_800E6A10[temp_v0_2] * 7.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 7.0f;
             D_800E6690[omCurrentObj->objId] = 0.0f;
             var_at = &D_800E6850[omCurrentObj->objId];
         } else {
             var_f0 = 14.0f;
-            D_800E64D0[temp_v0_2] = D_800E6A10[temp_v0_2] * 14.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
             D_800E6690[omCurrentObj->objId] = 0.0f;
             var_at = &D_800E6850[omCurrentObj->objId];
         }
         *var_at = var_f0;
-        temp_a2_2 = omCurrentObj->objId;
-        temp_v0_3 = D_800E7730[temp_a2_2];
-        if ((temp_v0_3 == 6) && (temp_v1_3 = D_800E77A0[temp_a2_2], ((temp_v1_3 < 8) == 0)) && (temp_v1_3 < 0x2C)) {
+        temp_v0_3 = D_800E7730[omCurrentObj->objId];
+        if ((temp_v0_3 == 6) && (D_800E77A0[omCurrentObj->objId] >= 8) && (D_800E77A0[omCurrentObj->objId] < 0x2C)) {
             func_801A3938(&D_801CB0F8_ovl7);
             func_801A36CC(&func_801A3864_ovl7);
             func_801A0D74_ovl7(arg0);
-            temp_a2_3 = omCurrentObj->objId;
-            temp_v1_4 = D_800E77A0[temp_a2_3];
+            temp_v1_4 = D_800E77A0[omCurrentObj->objId];
             if ((temp_v1_4 >= 8) && (temp_v1_4 < 0x24)) {
-                func_80111C4C(func_801117BC(&D_801D0A38_ovl7, temp_a2_3, temp_a2_3));
+                func_80111C4C(func_801117BC(&D_801D0A38_ovl7, omCurrentObj->objId, omCurrentObj->objId));
             } else {
-                func_80111C4C(func_801117BC(&D_801CA7DC_ovl7, temp_a2_3, temp_a2_3));
+                func_80111C4C(func_801117BC(&D_801CA7DC_ovl7, omCurrentObj->objId, omCurrentObj->objId));
             }
-        } else if ((temp_v0_3 == 6) && (temp_v1_5 = D_800E77A0[temp_a2_2], (temp_v1_5 > 0)) && (temp_v1_5 < 8)) {
+        } else if ((temp_v0_3 == 6) && (D_800E77A0[omCurrentObj->objId] > 0) && (D_800E77A0[omCurrentObj->objId] < 8)) {
             if (func_801A0D74_ovl7(arg0) != 0) {
                 func_801A3938(&D_801CB008_ovl7);
                 func_801A36CC(&func_801A3864_ovl7);
@@ -1883,49 +1889,57 @@ void func_801AB174_ovl7(GObj *gobj) {
     func_801AAE60_ovl7();
     func_801AC11C_ovl7(gobj);
 }
-
 // m2c draft, measured 152/175 diffs
+/* FACTORY: 138/174.  ONE FAMILY OF THREE -- func_801AAAF8_ovl7 / func_801AB2F4_ovl7 /
+   func_801AB884_ovl7 share a call skeleton and a body; one fix closes all three.
+   Rewritten from the m2c draft by deleting every objId cache local and writing
+   `omCurrentObj->objId` inline: m2c's `temp_vN = omCurrentObj->objId` keeps the
+   UNSHIFTED objId alive beside objId*4, so IDO emits an extra `move` and splits
+   every index across two registers, where the ROM does `lw $v0,0($tN)` then
+   `sll $v0,$v0,2` in place.  Inlining took the three from 200/219, 152/175 and
+   179/199 to 185/219, 138/174 and 165/199 with the same edit.
+   Also gone: m2c's comma-expression guard `(t = D_800E77A0[i], t <= 0) || t >=
+   0x2C`, now two plain reads that IDO CSEs into the ROM's single `lhu`.
+   Remaining residue is ONE delay slot, shared by all three: at the
+   func_801C0588_ovl7 guard the ROM emits `beqz $at, .L; nop` and ours emits
+   `beqzl $at, .L; sll $vN, $aN, 2` -- IDO does partial-redundancy elimination
+   on the next block's objId*4 along the short-circuit path that skips the call,
+   which the ROM does not, and everything after is that one slot shifted with
+   the temp file rotated one slot with it.  Three shapes were spent on it
+   (pointer local per block, distinct pointer local per block, plain inline);
+   plain inline is the best of the three and is what is left here.  Permuter
+   food -- and worth running on only ONE of the three. */
 #ifdef NON_MATCHING
 void func_801AB2F4_ovl7(GObj *arg0) {
     f32 *var_at;
     f32 var_f0;
     s32 *temp_v0_5;
     s32 temp_v1_2;
-    u16 temp_v1;
-    u16 temp_v1_3;
-    u32 temp_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
 
-    temp_v0 = omCurrentObj->objId;
-    if ((D_800E7730[temp_v0] != 6) || (temp_v1 = D_800E77A0[temp_v0], (temp_v1 <= 0)) || (temp_v1 >= 0x2C) || (func_801C0588_ovl7() == 0)) {
-        temp_v0_2 = omCurrentObj->objId;
-        temp_v1_2 = D_800E83E0[temp_v0_2];
-        if ((temp_v1_2 != 0) || (D_800E8760[temp_v0_2] != 0)) {
+    if ((D_800E7730[omCurrentObj->objId] != 6) || (D_800E77A0[omCurrentObj->objId] <= 0) || (D_800E77A0[omCurrentObj->objId] >= 0x2C) || (func_801C0588_ovl7() == 0)) {
+        temp_v1_2 = D_800E83E0[omCurrentObj->objId];
+        if ((temp_v1_2 != 0) || (D_800E8760[omCurrentObj->objId] != 0)) {
             if (temp_v1_2 == 0x12) {
-                assign_new_process_entry(gEntityGObjProcessArray[temp_v0_2], &func_801AC33C_ovl7);
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC33C_ovl7);
                 return;
             }
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0_2], &func_801AC11C_ovl7);
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC11C_ovl7);
             return;
         }
         func_801AB008_ovl7();
-        temp_v0_3 = omCurrentObj->objId;
-        if (D_800E8AE0[temp_v0_3] & 1) {
+        if (D_800E8AE0[omCurrentObj->objId] & 1) {
             var_f0 = 7.0f;
-            D_800E64D0[temp_v0_3] = D_800E6A10[temp_v0_3] * 7.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 7.0f;
             D_800E6690[omCurrentObj->objId] = 0.0f;
             var_at = &D_800E6850[omCurrentObj->objId];
         } else {
             var_f0 = 14.0f;
-            D_800E64D0[temp_v0_3] = D_800E6A10[temp_v0_3] * 14.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
             D_800E6690[omCurrentObj->objId] = 0.0f;
             var_at = &D_800E6850[omCurrentObj->objId];
         }
         *var_at = var_f0;
-        temp_v0_4 = omCurrentObj->objId;
-        if ((D_800E7730[temp_v0_4] == 6) && (temp_v1_3 = D_800E77A0[temp_v0_4], ((temp_v1_3 < 8) == 0)) && (temp_v1_3 < 0x2C)) {
+        if ((D_800E7730[omCurrentObj->objId] == 6) && (D_800E77A0[omCurrentObj->objId] >= 8) && (D_800E77A0[omCurrentObj->objId] < 0x2C)) {
             func_801A3938(&D_801CB134_ovl7);
             func_801A36CC(&func_801A3864_ovl7);
             func_801A0D74_ovl7(arg0);
@@ -2007,69 +2021,73 @@ void func_801AB5A4_ovl7(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB5A4_ovl7.s")
 #endif
 // m2c draft, measured 179/200 diffs
+/* FACTORY: 165/199.  ONE FAMILY OF THREE -- func_801AAAF8_ovl7 / func_801AB2F4_ovl7 /
+   func_801AB884_ovl7 share a call skeleton and a body; one fix closes all three.
+   Rewritten from the m2c draft by deleting every objId cache local and writing
+   `omCurrentObj->objId` inline: m2c's `temp_vN = omCurrentObj->objId` keeps the
+   UNSHIFTED objId alive beside objId*4, so IDO emits an extra `move` and splits
+   every index across two registers, where the ROM does `lw $v0,0($tN)` then
+   `sll $v0,$v0,2` in place.  Inlining took the three from 200/219, 152/175 and
+   179/199 to 185/219, 138/174 and 165/199 with the same edit.
+   Also gone: m2c's comma-expression guard `(t = D_800E77A0[i], t <= 0) || t >=
+   0x2C`, now two plain reads that IDO CSEs into the ROM's single `lhu`.
+   Remaining residue is ONE delay slot, shared by all three: at the
+   func_801C0588_ovl7 guard the ROM emits `beqz $at, .L; nop` and ours emits
+   `beqzl $at, .L; sll $vN, $aN, 2` -- IDO does partial-redundancy elimination
+   on the next block's objId*4 along the short-circuit path that skips the call,
+   which the ROM does not, and everything after is that one slot shifted with
+   the temp file rotated one slot with it.  Three shapes were spent on it
+   (pointer local per block, distinct pointer local per block, plain inline);
+   plain inline is the best of the three and is what is left here.  Permuter
+   food -- and worth running on only ONE of the three. */
 #ifdef NON_MATCHING
 void func_801AB884_ovl7(s32 arg0) {
     f32 *var_at;
     f32 var_f0;
     s32 temp_v0;
-    u16 temp_v1;
-    u16 temp_v1_4;
     u16 temp_v1_5;
-    u16 temp_v1_6;
-    u32 temp_a2;
-    u32 temp_a2_2;
-    u32 temp_a2_3;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
     u8 temp_a0;
 
-    temp_a2 = omCurrentObj->objId;
-    if ((D_800E7730[temp_a2] != 6) || (temp_v1 = D_800E77A0[temp_a2], (temp_v1 <= 0)) || (temp_v1 >= 0x2C) || (func_801C0588_ovl7(temp_a2) == 0)) {
-        temp_v1_2 = omCurrentObj->objId;
-        temp_v0 = D_800E83E0[temp_v1_2];
-        if ((temp_v0 != 0) || (D_800E8760[temp_v1_2] != 0)) {
+    if ((D_800E7730[omCurrentObj->objId] != 6) || (D_800E77A0[omCurrentObj->objId] <= 0) || (D_800E77A0[omCurrentObj->objId] >= 0x2C) || (func_801C0588_ovl7(omCurrentObj->objId) == 0)) {
+        temp_v0 = D_800E83E0[omCurrentObj->objId];
+        if ((temp_v0 != 0) || (D_800E8760[omCurrentObj->objId] != 0)) {
             if (temp_v0 == 0x12) {
-                assign_new_process_entry(gEntityGObjProcessArray[temp_v1_2], &func_801AC33C_ovl7);
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC33C_ovl7);
                 return;
             }
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v1_2], &func_801AC11C_ovl7);
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC11C_ovl7);
             return;
         }
         func_801AB008_ovl7();
-        temp_v1_3 = omCurrentObj->objId;
-        if (D_800E8AE0[temp_v1_3] & 1) {
+        if (D_800E8AE0[omCurrentObj->objId] & 1) {
             var_f0 = 7.0f;
-            D_800E3210[temp_v1_3] = 7.0f;
+            D_800E3210[omCurrentObj->objId] = 7.0f;
             D_800E3750[omCurrentObj->objId] = 0.0f;
             var_at = &D_800E3C90[omCurrentObj->objId];
         } else {
             var_f0 = 14.0f;
-            D_800E3210[temp_v1_3] = 14.0f;
+            D_800E3210[omCurrentObj->objId] = 14.0f;
             D_800E3750[omCurrentObj->objId] = 0.0f;
             var_at = &D_800E3C90[omCurrentObj->objId];
         }
         *var_at = var_f0;
-        temp_a2_2 = omCurrentObj->objId;
-        temp_a0 = D_800E7730[temp_a2_2];
+        temp_a0 = D_800E7730[omCurrentObj->objId];
         if (temp_a0 == 6) {
-            temp_v1_4 = D_800E77A0[temp_a2_2];
-            if ((temp_v1_4 >= 8) && (temp_v1_4 < 0x2C)) {
+            if ((D_800E77A0[omCurrentObj->objId] >= 8) && (D_800E77A0[omCurrentObj->objId] < 0x2C)) {
                 func_801A3938(&D_801CB170_ovl7);
                 func_801A36CC(&func_801A3864_ovl7);
                 func_801A0D74_ovl7(arg0);
-                temp_a2_3 = omCurrentObj->objId;
-                temp_v1_5 = D_800E77A0[temp_a2_3];
+                temp_v1_5 = D_800E77A0[omCurrentObj->objId];
                 if ((temp_v1_5 >= 8) && (temp_v1_5 < 0x24)) {
-                    func_80111C4C(func_801117BC(&D_801D0A38_ovl7, temp_a2_3, temp_a2_3));
+                    func_80111C4C(func_801117BC(&D_801D0A38_ovl7, omCurrentObj->objId, omCurrentObj->objId));
                     return;
                 }
-                func_80111C4C(func_801117BC(&D_801CA7DC_ovl7, temp_a2_3, temp_a2_3));
+                func_80111C4C(func_801117BC(&D_801CA7DC_ovl7, omCurrentObj->objId, omCurrentObj->objId));
                 return;
             }
         }
         if (temp_a0 == 6) {
-            temp_v1_6 = D_800E77A0[temp_a2_2];
-            if ((temp_v1_6 > 0) && (temp_v1_6 < 8)) {
+            if ((D_800E77A0[omCurrentObj->objId] > 0) && (D_800E77A0[omCurrentObj->objId] < 8)) {
                 if (func_801A0D74_ovl7(arg0) != 0) {
                     func_801A3938(&D_801CB080_ovl7);
                     func_801A36CC(&func_801A3864_ovl7);

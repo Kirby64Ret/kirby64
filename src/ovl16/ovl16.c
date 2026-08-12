@@ -237,12 +237,12 @@ extern s32 D_801EF7F4_ovl16[];
 extern s32 D_801EF810_ovl16[];
 extern s32 D_801EF82C_ovl16[];
 extern s32 D_801EF848_ovl16[];
-extern s32 D_801EF870_ovl16[];
-extern s32 D_801EF87C_ovl16;
-extern s32 D_801EF8C4_ovl16[];
-extern s32 D_801EF8CC_ovl16;
-extern s32 D_801EF8DC_ovl16[];
-extern s32 D_801EF8FC_ovl16[];
+extern f32 D_801EF870_ovl16[];
+extern s32 D_801EF87C_ovl16[][3];
+extern f32 D_801EF8C4_ovl16[];
+extern s32 D_801EF8CC_ovl16[][2];
+extern f32 D_801EF8DC_ovl16[];
+extern f32 D_801EF8FC_ovl16[];
 extern s32 D_801EF938_ovl16;
 extern s32 D_801EF93C_ovl16[];
 extern s32 D_801EF95C_ovl16;
@@ -1437,7 +1437,73 @@ void func_801DFEC8_ovl16(void) {
     }
 }
 
+/* FACTORY: 2/299.  Only two words differ: the pair of identical
+   `addu $t, $s7, $s0` that precompute the store address for the two arms
+   of the if/else is emitted in the opposite order (ROM does the else arm
+   first).  The arm order is locked by the bc1fl polarity, so no source
+   spelling reaches it.  Everything else is byte-exact. */
+#ifdef NON_MATCHING
+void func_801DFF40_ovl16(s32 arg0) {
+    void func_800AF27C(void);
+    s32 i;
+    s32 r;
+    s32 t;
+
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    r = random_soft_s32_range(6);
+    for (i = 0; i < 3; i++) {
+        D_800EA6E0[omCurrentObj->objId] = 0.0f;
+        while (5.0f < ((gEntitiesNextPosXArray[omCurrentObj->objId] < D_801EF870_ovl16[D_801EF87C_ovl16[r][i]])
+                        ? -(gEntitiesNextPosXArray[omCurrentObj->objId] - D_801EF870_ovl16[D_801EF87C_ovl16[r][i]])
+                        :  (gEntitiesNextPosXArray[omCurrentObj->objId] - D_801EF870_ovl16[D_801EF87C_ovl16[r][i]]))) {
+            func_800A9EA4(0x10489);
+            func_800A9EA4(0x10488);
+            if (D_801EF870_ovl16[D_801EF87C_ovl16[r][i]] < gEntitiesNextPosXArray[omCurrentObj->objId]) {
+                D_800E3050[omCurrentObj->objId] = -5.0f;
+            } else {
+                D_800E3050[omCurrentObj->objId] = 5.0f;
+            }
+            ohSleep(1);
+        }
+        D_800E3590[omCurrentObj->objId] = 0.0f;
+        D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+        D_800E3AD0[omCurrentObj->objId] = 65535.0f;
+        func_800A8100(6, 2, 6, D_800DFBD0[omCurrentObj->objId][10]);
+        ohSleep(0xD);
+        D_800E9E20[omCurrentObj->objId] = 0;
+        D_800EA6E0[omCurrentObj->objId] = 10.0f;
+        play_sound(0x1AB);
+        func_800AA018(0x10479);
+        func_800AA154(0x10478);
+        func_800AA018(0x1047B);
+        func_800AA018(0x1047A);
+        while (D_800E9E20[omCurrentObj->objId] != 3) {
+            ohSleep(1);
+        }
+        ohSleep(0x1E);
+        play_sound(0x1AA);
+        t = func_801ACC34_ovl7(0x30, 0);
+        D_800E8E60[t] = 1;
+        gEntitiesNextPosYArray[t] =
+            gEntitiesNextPosYArray[omCurrentObj->objId] + D_800DFBD0[omCurrentObj->objId][5]->pos.v.y;
+        t = func_801ACC34_ovl7(0x30, 2);
+        D_800E8E60[t] = 1;
+        gEntitiesNextPosYArray[t] =
+            gEntitiesNextPosYArray[omCurrentObj->objId] + D_800DFBD0[omCurrentObj->objId][9]->pos.v.y;
+        D_800EA6E0[omCurrentObj->objId] = -10.0f;
+        while (D_800E9E20[omCurrentObj->objId] != 0) {
+            ohSleep(1);
+        }
+        D_800EA6E0[omCurrentObj->objId] = 0.0f;
+        func_800AF27C();
+        func_800AA018(0x1047D);
+        func_800AA154(0x1047C);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 7;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DFF40_ovl16.s")
+#endif
 
 void func_801E03EC_ovl16(s32 arg0) {
     extern s32 D_801D95C4;
@@ -1504,7 +1570,73 @@ void func_801E07A8_ovl16(void) {
     }
 }
 
+/* FACTORY: 2/298.  Only two words differ: the pair of identical
+   `addu $t, $s7, $s0` that precompute the store address for the two arms
+   of the if/else is emitted in the opposite order (ROM does the else arm
+   first).  The arm order is locked by the bc1fl polarity, so no source
+   spelling reaches it.  Everything else is byte-exact. */
+#ifdef NON_MATCHING
+void func_801E0820_ovl16(s32 arg0) {
+    void func_800AF27C(void);
+    s32 i;
+    s32 r;
+    s32 t;
+
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    r = random_soft_s32_range(2);
+    for (i = 0; i < 2; i++) {
+        D_800EA6E0[omCurrentObj->objId] = 0.0f;
+        while (5.0f < ((gEntitiesNextPosYArray[omCurrentObj->objId] < D_801EF8C4_ovl16[D_801EF8CC_ovl16[r][i]])
+                        ? -(gEntitiesNextPosYArray[omCurrentObj->objId] - D_801EF8C4_ovl16[D_801EF8CC_ovl16[r][i]])
+                        :  (gEntitiesNextPosYArray[omCurrentObj->objId] - D_801EF8C4_ovl16[D_801EF8CC_ovl16[r][i]]))) {
+            func_800A9EA4(0x10489);
+            func_800A9EA4(0x10488);
+            if (D_801EF8C4_ovl16[D_801EF8CC_ovl16[r][i]] < gEntitiesNextPosYArray[omCurrentObj->objId]) {
+                D_800E3210[omCurrentObj->objId] = -5.0f;
+            } else {
+                D_800E3210[omCurrentObj->objId] = 5.0f;
+            }
+            ohSleep(1);
+        }
+        D_800E3750[omCurrentObj->objId] = 0.0f;
+        D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+        D_800E3C90[omCurrentObj->objId] = 65535.0f;
+        func_800A8100(6, 2, 6, D_800DFBD0[omCurrentObj->objId][10]);
+        ohSleep(0xD);
+        D_800E9E20[omCurrentObj->objId] = 0;
+        D_800EA6E0[omCurrentObj->objId] = 10.0f;
+        play_sound(0x1AB);
+        func_800AA018(0x10473);
+        func_800AA154(0x10472);
+        func_800AA018(0x10475);
+        func_800AA018(0x10474);
+        while (D_800E9E20[omCurrentObj->objId] != 0xC) {
+            ohSleep(1);
+        }
+        ohSleep(0x1E);
+        play_sound(0x1AA);
+        t = func_801ACC34_ovl7(0x30, 1);
+        D_800E8E60[t] = 1;
+        gEntitiesNextPosXArray[t] =
+            gEntitiesNextPosXArray[omCurrentObj->objId] + D_800DFBD0[omCurrentObj->objId][7]->pos.v.x;
+        t = func_801ACC34_ovl7(0x30, 3);
+        D_800E8E60[t] = 1;
+        gEntitiesNextPosXArray[t] =
+            gEntitiesNextPosXArray[omCurrentObj->objId] + D_800DFBD0[omCurrentObj->objId][3]->pos.v.x;
+        D_800EA6E0[omCurrentObj->objId] = -10.0f;
+        while (D_800E9E20[omCurrentObj->objId] != 0) {
+            ohSleep(1);
+        }
+        D_800EA6E0[omCurrentObj->objId] = 0.0f;
+        func_800AF27C();
+        func_800AA018(0x10477);
+        func_800AA154(0x10476);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 7;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E0820_ovl16.s")
+#endif
 
 void func_801E0CC8_ovl16(s32 arg0) {
     extern s32 D_801D95C4;
@@ -1538,7 +1670,70 @@ void func_801E0CC8_ovl16(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E0F04_ovl16.s")
+void func_801E0F04_ovl16(s32 arg0) {
+    void func_800AF27C(void);
+    s32 r;
+    s32 t;
+
+    D_800DDFD0[omCurrentObj->objId] = 5;
+    r = random_soft_s32_range(0x23);
+    while (r == D_800D7098.unk20) {
+        r = random_soft_s32_range(0x23);
+    }
+    D_800D7098.unk20 = r;
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    func_800A9EA4(0x10489);
+    func_800A9EA4(0x10488);
+    D_800E3050[omCurrentObj->objId] =
+        (D_801EF8DC_ovl16[r % 7] - gEntitiesNextPosXArray[omCurrentObj->objId]) / 30.0f;
+    D_800E3210[omCurrentObj->objId] =
+        (D_801EF8FC_ovl16[r / 7] - gEntitiesNextPosYArray[omCurrentObj->objId]) / 30.0f;
+    ohSleep(0x1E);
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] =
+        D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
+    func_800A8100(6, 2, 6, D_800DFBD0[omCurrentObj->objId][10]);
+    ohSleep(0xD);
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800EA6E0[omCurrentObj->objId] = 10.0f;
+    play_sound(0x1AB);
+    func_800AA018(0x1047F);
+    func_800AA154(0x1047E);
+    func_800AA018(0x10481);
+    func_800AA018(0x10480);
+    while (D_800E9E20[omCurrentObj->objId] != 0xF) {
+        ohSleep(1);
+    }
+    ohSleep(0x1E);
+    play_sound(0x1AA);
+    t = func_801ACC34_ovl7(0x30, 0);
+    D_800E8E60[t] = 1;
+    gEntitiesNextPosYArray[t] =
+        gEntitiesNextPosYArray[omCurrentObj->objId] + D_800DFBD0[omCurrentObj->objId][5]->pos.v.y;
+    t = func_801ACC34_ovl7(0x30, 1);
+    D_800E8E60[t] = 1;
+    gEntitiesNextPosXArray[t] =
+        gEntitiesNextPosXArray[omCurrentObj->objId] + D_800DFBD0[omCurrentObj->objId][7]->pos.v.x;
+    t = func_801ACC34_ovl7(0x30, 2);
+    D_800E8E60[t] = 1;
+    gEntitiesNextPosYArray[t] =
+        gEntitiesNextPosYArray[omCurrentObj->objId] + D_800DFBD0[omCurrentObj->objId][9]->pos.v.y;
+    t = func_801ACC34_ovl7(0x30, 3);
+    D_800E8E60[t] = 1;
+    gEntitiesNextPosXArray[t] =
+        gEntitiesNextPosXArray[omCurrentObj->objId] + D_800DFBD0[omCurrentObj->objId][3]->pos.v.x;
+    D_800EA6E0[omCurrentObj->objId] = -10.0f;
+    while (D_800E9E20[omCurrentObj->objId] != 0) {
+        ohSleep(1);
+    }
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    func_800AF27C();
+    func_800AA018(0x10483);
+    func_800AA154(0x10482);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 7;
+}
 
 void func_801E141C_ovl16(s32 arg0) {
     extern s32 D_801D95C4;

@@ -2206,93 +2206,69 @@ block_22:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801058B8.s")
 #endif
 
+/* FACTORY: 51/203, frame + every stack offset + all control flow exact. Residue is a systematic
+   $f4<->$f10 role swap from the first mul.s of the case-0 dot product onward: the ROM emits
+   mul.s $f6,$f10,$f4 where IDO gives mul.s $f6,$f4,$f10. Invariant to source operand order
+   (flipping both multiplies changed nothing) -- the documented mul.s parity floor. */
 #ifdef MIPS_TO_C
 
-void func_801060C4(void *arg0, void *arg1) {
-    s32 sp9C;
-    s32 sp98;
-    f32 sp94;
-    f32 sp90;
-    f32 sp8C;
-    f32 sp80;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
+void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    struct Normal *sp9C;
+    struct CollisionTriangle *sp98;
+    Vector sp8C;
+    Vector sp80;
+    Vector sp74;
     s32 sp70;
     f32 sp6C;
     f32 sp68;
     f32 sp64;
     f32 sp60;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    struct Normal *n;
-    f32 temp_f4;
-    f32 temp_f6;
-    s32 temp_v0;
+    Vector sp54;
+    Vector sp48;
 
-    sp8C = arg0->unk4 + D_8012BD00.unk4;
-    sp90 = arg0->unk8 + arg0->unk10;
-    sp94 = arg0->unkC + D_8012BD00.unk8;
-    sp9C = arg1->unk24;
-    sp98 = arg1->unk20;
-    sp70 = arg1->unk1C;
-    temp_v0 = func_801058B8(&D_8012BD34, &sp8C, arg1->unk24, 0xBF800000, &sp80, &sp6C, &sp9C, &sp98, &sp70);
-    switch (temp_v0) {                              /* irregular */
-        case 0:
-            if ((((sp8C - sp80) * D_8012BD00.unk14) + ((sp94 - sp88) * D_8012BD00.unk18)) < 0.0f) {
-                arg1->unk0 = (((arg1->unk0 >> 0x13) & 0xFFF8) * 8) | (arg1->unk0 & 7);
-                return;
-            }
-            sp74.unk0 = sp80.unk0;
-            sp74.unk4 = sp80.unk4;
-            sp74.unk8 = sp80.unk8;
-            arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xFFF8) | 1) * 8) | (arg1->unk0 & 7);
-        default:
-block_11:
-            arg1->unk24 = sp9C;
-            arg1->unk20 = sp98;
-            arg1->unk1C = sp70;
-            arg0->unk4 = sp74 - D_8012BD00.unk24;
-            arg0->unk8 = sp78 - arg0->unk10;
-            arg0->unkC = sp7C - D_8012BD00.unk28;
+    sp8C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp8C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp8C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp9C = arg1->rec[2].norm;
+    sp98 = arg1->rec[2].tri;
+    sp70 = arg1->rec[2].type;
+    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[2].norm, 0xBF800000, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
+    case 0:
+        if ((((sp8C.z - sp80.z) * BD00.unk18) + ((sp8C.x - sp80.x) * BD00.unk14)) < 0.0f) {
+            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
             return;
-        case 1:
-            sp74.unk0 = sp80.unk0;
-            sp74.unk4 = sp80.unk4;
-            sp74.unk8 = sp80.unk8;
-            arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xFFF8) | 1) * 8) | (arg1->unk0 & 7);
-            goto block_11;
-        case 2:
-            temp_f14 = sp8C - D_8012BD00.unk34;
-            temp_f16 = sp90 - D_8012BD00.unk38;
-            sp60 = temp_f14;
-            temp_f18 = sp94 - D_8012BD00.unk3C;
-            sp64 = temp_f16;
-            sp68 = temp_f18;
-            temp_f2 = sp6C / sqrtf((temp_f14 * temp_f14) + (temp_f16 * temp_f16) + (temp_f18 * temp_f18));
-            sp6C = temp_f2;
-            temp_f6 = (temp_f14 * temp_f2) + sp80;
-            sp74 = temp_f6;
-            temp_f12 = (temp_f16 * temp_f2) + sp84;
-            temp_f4 = (temp_f18 * temp_f2) + sp88;
-            sp4C = temp_f12;
-            sp78 = temp_f12;
-            sp7C = temp_f4;
-            sp48 = temp_f6 + D_8012BD00.unk14;
-            sp50 = temp_f4 + D_8012BD00.unk18;
-            if ((func_801057C4(temp_f12, temp_f14, sp9C, &sp74, &sp48, &sp54) != 0) && ((((sp74 - sp54) * D_8012BD00.unk14) + ((sp7C - sp5C) * D_8012BD00.unk18)) > 0.0f)) {
-                sp74 = sp54;
-                sp7C = sp5C;
-            }
-            goto block_11;
+        }
+        sp74 = sp80;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
+        break;
+    case 1:
+        sp74 = sp80;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
+        break;
+    case 2:
+        sp60 = sp8C.x - BD00.unk34;
+        sp64 = sp8C.y - BD00.unk38;
+        sp68 = sp8C.z - BD00.unk3C;
+        sp6C = sp6C / sqrtf((sp60 * sp60) + (sp64 * sp64) + (sp68 * sp68));
+        sp74.x = (sp60 * sp6C) + sp80.x;
+        sp74.y = (sp64 * sp6C) + sp80.y;
+        sp48.y = sp74.y;
+        sp74.z = (sp68 * sp6C) + sp80.z;
+        sp48.x = BD00.unk14 + sp74.x;
+        sp48.z = BD00.unk18 + sp74.z;
+        if ((func_801057C4(sp9C, &sp74, &sp48, &sp54) != 0) &&
+            ((((sp74.z - sp54.z) * BD00.unk18) + ((sp74.x - sp54.x) * BD00.unk14)) > 0.0f)) {
+            sp74.x = sp54.x;
+            sp74.z = sp54.z;
+        }
+        break;
     }
+    arg1->rec[2].norm = sp9C;
+    arg1->rec[2].tri = sp98;
+    arg1->rec[2].type = sp70;
+    arg0->kirbyFootPos[0] = sp74.x - BD00.unk24;
+    arg0->kirbyFootPos[1] = sp74.y - arg0->scale[0];
+    arg0->kirbyFootPos[2] = sp74.z - BD00.unk28;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801060C4.s")
@@ -2410,93 +2386,69 @@ s32 func_80106834(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     return 0;
 }
 
+/* FACTORY: 51/203, frame + every stack offset + all control flow exact. Residue is a systematic
+   $f4<->$f10 role swap from the first mul.s of the case-0 dot product onward: the ROM emits
+   mul.s $f6,$f10,$f4 where IDO gives mul.s $f6,$f4,$f10. Invariant to source operand order
+   (flipping both multiplies changed nothing) -- the documented mul.s parity floor. */
 #ifdef MIPS_TO_C
 
-void func_80106930(void *arg0, void *arg1) {
-    s32 sp9C;
-    s32 sp98;
-    f32 sp94;
-    f32 sp90;
-    f32 sp8C;
-    f32 sp80;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
+s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    struct Normal *sp9C;
+    struct CollisionTriangle *sp98;
+    Vector sp8C;
+    Vector sp80;
+    Vector sp74;
     s32 sp70;
     f32 sp6C;
     f32 sp68;
     f32 sp64;
     f32 sp60;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f2;
-    struct Normal *n;
-    f32 temp_f4;
-    f32 temp_f6;
-    s32 temp_v0;
+    Vector sp54;
+    Vector sp48;
 
-    sp8C = arg0->unk4 + D_8012BD00.unkC;
-    sp90 = arg0->unk8 + arg0->unk10;
-    sp94 = arg0->unkC + D_8012BD00.unk10;
-    sp9C = arg1->unk30;
-    sp98 = arg1->unk2C;
-    sp70 = arg1->unk28;
-    temp_v0 = func_801058B8(&D_8012BD34, &sp8C, arg1->unk30, 0x3F800000, &sp80, &sp6C, &sp9C, &sp98, &sp70);
-    switch (temp_v0) {                              /* irregular */
-        case 0:
-            if ((((sp8C - sp80) * D_8012BD00.unk1C) + ((sp94 - sp88) * D_8012BD00.unk20)) < 0.0f) {
-                arg1->unk0 = (((arg1->unk0 >> 0x13) & 0xFFC7) * 8) | (arg1->unk0 & 7);
-                return;
-            }
-            sp74.unk0 = sp80.unk0;
-            sp74.unk4 = sp80.unk4;
-            sp74.unk8 = sp80.unk8;
-            arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xFFC7) | 8) * 8) | (arg1->unk0 & 7);
-        default:
-block_11:
-            arg1->unk30 = sp9C;
-            arg1->unk2C = sp98;
-            arg1->unk28 = sp70;
-            arg0->unk4 = sp74 - D_8012BD00.unk2C;
-            arg0->unk8 = sp78 - arg0->unk10;
-            arg0->unkC = sp7C - D_8012BD00.unk30;
+    sp8C.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp8C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp8C.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp9C = arg1->rec[3].norm;
+    sp98 = arg1->rec[3].tri;
+    sp70 = arg1->rec[3].type;
+    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[3].norm, 0x3F800000, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
+    case 0:
+        if ((((sp8C.z - sp80.z) * BD00.unk20) + ((sp8C.x - sp80.x) * BD00.unk1C)) < 0.0f) {
+            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
             return;
-        case 1:
-            sp74.unk0 = sp80.unk0;
-            sp74.unk4 = sp80.unk4;
-            sp74.unk8 = sp80.unk8;
-            arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xFFC7) | 8) * 8) | (arg1->unk0 & 7);
-            goto block_11;
-        case 2:
-            temp_f14 = sp8C - D_8012BD00.unk34;
-            temp_f16 = sp90 - D_8012BD00.unk38;
-            sp60 = temp_f14;
-            temp_f18 = sp94 - D_8012BD00.unk3C;
-            sp64 = temp_f16;
-            sp68 = temp_f18;
-            temp_f2 = sp6C / sqrtf((temp_f14 * temp_f14) + (temp_f16 * temp_f16) + (temp_f18 * temp_f18));
-            sp6C = temp_f2;
-            temp_f6 = (temp_f14 * temp_f2) + sp80;
-            sp74 = temp_f6;
-            temp_f12 = (temp_f16 * temp_f2) + sp84;
-            temp_f4 = (temp_f18 * temp_f2) + sp88;
-            sp4C = temp_f12;
-            sp78 = temp_f12;
-            sp7C = temp_f4;
-            sp48 = temp_f6 + D_8012BD00.unk1C;
-            sp50 = temp_f4 + D_8012BD00.unk20;
-            if ((func_801057C4(temp_f12, temp_f14, sp9C, &sp74, &sp48, &sp54) != 0) && ((((sp74 - sp54) * D_8012BD00.unk1C) + ((sp7C - sp5C) * D_8012BD00.unk20)) > 0.0f)) {
-                sp74 = sp54;
-                sp7C = sp5C;
-            }
-            goto block_11;
+        }
+        sp74 = sp80;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
+        break;
+    case 1:
+        sp74 = sp80;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
+        break;
+    case 2:
+        sp60 = sp8C.x - BD00.unk34;
+        sp64 = sp8C.y - BD00.unk38;
+        sp68 = sp8C.z - BD00.unk3C;
+        sp6C = sp6C / sqrtf((sp60 * sp60) + (sp64 * sp64) + (sp68 * sp68));
+        sp74.x = (sp60 * sp6C) + sp80.x;
+        sp74.y = (sp64 * sp6C) + sp80.y;
+        sp48.y = sp74.y;
+        sp74.z = (sp68 * sp6C) + sp80.z;
+        sp48.x = BD00.unk1C + sp74.x;
+        sp48.z = BD00.unk20 + sp74.z;
+        if ((func_801057C4(sp9C, &sp74, &sp48, &sp54) != 0) &&
+            ((((sp74.z - sp54.z) * BD00.unk20) + ((sp74.x - sp54.x) * BD00.unk1C)) > 0.0f)) {
+            sp74.x = sp54.x;
+            sp74.z = sp54.z;
+        }
+        break;
     }
+    arg1->rec[3].norm = sp9C;
+    arg1->rec[3].tri = sp98;
+    arg1->rec[3].type = sp70;
+    arg0->kirbyFootPos[0] = sp74.x - BD00.unk2C;
+    arg0->kirbyFootPos[1] = sp74.y - arg0->scale[0];
+    arg0->kirbyFootPos[2] = sp74.z - BD00.unk30;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80106930.s")
@@ -5106,171 +5058,127 @@ s32 func_8010CABC(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010CABC.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-s32 func_8010CE44(void *arg0, f32 arg1) {
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
+s32 func_8010CE44(struct PositionState *arg0, f32 arg1) {
+    Vector sp64;
+    Vector sp58;
+    Vector sp4C;
+    Vector sp40;
+    struct Normal *sp3C;
     s32 sp38;
-    f32 temp_f8;
-    s32 var_v1;
 
-    func_80104FB8();
-    sp58 = arg0->unk4 + D_8012BD00.unk4;
-    sp5C = arg0->unk8 + arg0->unk10;
-    temp_f8 = arg0->unkC + D_8012BD00.unk8;
-    sp60 = temp_f8;
-    sp4C = (D_8012BD00.unk14 * arg1) + sp58;
-    sp54 = (D_8012BD00.unk18 * arg1) + temp_f8;
-    sp40 = D_8012BD00.unk14;
-    sp48 = D_8012BD00.unk18;
-    sp50 = sp5C;
-    sp44 = 0.0f;
-    if (func_8010423C(arg1, &sp58, &sp4C, &sp40, 0, &sp64, 0, 0, 0) != 0) {
-        arg0->unk4 = sp64 - D_8012BD00.unk24;
-        arg0->unkC = sp6C - D_8012BD00.unk28;
+    func_80104FB8(arg0);
+    sp58.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp58.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp58.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp4C.x = (BD00.unk14 * arg1) + sp58.x;
+    sp4C.y = sp58.y;
+    sp4C.z = (BD00.unk18 * arg1) + sp58.z;
+    sp40.x = BD00.unk14;
+    sp40.z = BD00.unk18;
+    sp40.y = 0.0f;
+    if (func_8010423C(&sp58, &sp4C, &sp40, 0, &sp64, 0, 0, 0) != 0) {
+        arg0->kirbyFootPos[0] = sp64.x - BD00.unk24;
+        arg0->kirbyFootPos[2] = sp64.z - BD00.unk28;
         return 1;
     }
     sp38 = 0;
-    sp5C = arg0->unk8 + arg0->unk14;
-    sp50 = sp5C;
-    if (func_8010423C((bitwise f32) &sp58, &sp4C, &sp40, NULL, 0, &sp3C, 0, 0) != 0) {
-        goto block_5;
+    sp58.y = arg0->scale[1] + arg0->kirbyFootPos[1];
+    sp4C.y = sp58.y;
+    if (func_8010423C(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
+        sp38 = 1;
+    } else {
+        sp58.y = arg0->scale[2] + arg0->kirbyFootPos[1];
+        sp4C.y = sp58.y;
+        if (func_8010423C(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
+            sp38 = 1;
+        }
     }
-    sp5C = arg0->unk8 + arg0->unk18;
-    sp50 = sp5C;
-    var_v1 = sp38;
-    if (func_8010423C((bitwise f32) &sp58, &sp4C, &sp40, NULL, 0, &sp3C, 0, 0) != 0) {
-block_5:
-        var_v1 = 1;
-    }
-    if (var_v1 != 0) {
-        sp5C = arg0->unk8 + arg0->unk10;
-        sp50 = sp5C;
+    if (sp38 != 0) {
+        sp58.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+        sp4C.y = sp58.y;
         if (func_801057C4(sp3C, &sp58, &sp4C, &sp64) != 0) {
-            if (sp4C < sp58) {
-                if ((sp58 < sp64) || (sp64 < sp4C)) {
-                    goto block_23;
+            if (sp4C.x < sp58.x) {
+                if ((sp58.x < sp64.x) || (sp64.x < sp4C.x)) {
+                    return 0;
                 }
-                goto block_15;
+            } else if ((sp64.x < sp58.x) || (sp4C.x < sp64.x)) {
+                return 0;
             }
-            if ((sp64 < sp58) || (sp4C < sp64)) {
-                goto block_23;
-            }
-block_15:
-            if (sp54 < sp60) {
-                if ((sp60 < sp6C) || (sp6C < sp54)) {
-                    goto block_23;
+            if (sp4C.z < sp58.z) {
+                if ((sp58.z < sp64.z) || (sp64.z < sp4C.z)) {
+                    return 0;
                 }
-                goto block_22;
+            } else if ((sp64.z < sp58.z) || (sp4C.z < sp64.z)) {
+                return 0;
             }
-            if ((sp6C < sp60) || (sp54 < sp6C)) {
-                goto block_23;
-            }
-block_22:
-            arg0->unk4 = sp64 - D_8012BD00.unk24;
-            arg0->unkC = sp6C - D_8012BD00.unk28;
+            arg0->kirbyFootPos[0] = sp64.x - BD00.unk24;
+            arg0->kirbyFootPos[2] = sp64.z - BD00.unk28;
             return 1;
         }
     }
-block_23:
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010CE44.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-s32 func_8010D138(void *arg0, f32 arg1) {
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
+s32 func_8010D138(struct PositionState *arg0, f32 arg1) {
+    Vector sp64;
+    Vector sp58;
+    Vector sp4C;
+    Vector sp40;
+    struct Normal *sp3C;
     s32 sp38;
-    f32 temp_f8;
-    s32 var_v1;
 
-    func_80104FB8();
-    sp58 = arg0->unk4 + D_8012BD00.unkC;
-    sp5C = arg0->unk8 + arg0->unk10;
-    temp_f8 = arg0->unkC + D_8012BD00.unk10;
-    sp60 = temp_f8;
-    sp4C = (D_8012BD00.unk1C * arg1) + sp58;
-    sp54 = (D_8012BD00.unk20 * arg1) + temp_f8;
-    sp40 = D_8012BD00.unk1C;
-    sp48 = D_8012BD00.unk20;
-    sp50 = sp5C;
-    sp44 = 0.0f;
-    if (func_8010423C(arg1, &sp58, &sp4C, &sp40, 0, &sp64, 0, 0, 0) != 0) {
-        arg0->unk4 = sp64 - D_8012BD00.unk2C;
-        arg0->unkC = sp6C - D_8012BD00.unk30;
+    func_80104FB8(arg0);
+    sp58.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp58.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp58.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp4C.x = (BD00.unk1C * arg1) + sp58.x;
+    sp4C.y = sp58.y;
+    sp4C.z = (BD00.unk20 * arg1) + sp58.z;
+    sp40.x = BD00.unk1C;
+    sp40.z = BD00.unk20;
+    sp40.y = 0.0f;
+    if (func_8010423C(&sp58, &sp4C, &sp40, 0, &sp64, 0, 0, 0) != 0) {
+        arg0->kirbyFootPos[0] = sp64.x - BD00.unk2C;
+        arg0->kirbyFootPos[2] = sp64.z - BD00.unk30;
         return 1;
     }
     sp38 = 0;
-    sp5C = arg0->unk8 + arg0->unk14;
-    sp50 = sp5C;
-    if (func_8010423C((bitwise f32) &sp58, &sp4C, &sp40, NULL, 0, &sp3C, 0, 0) != 0) {
-        goto block_5;
+    sp58.y = arg0->scale[1] + arg0->kirbyFootPos[1];
+    sp4C.y = sp58.y;
+    if (func_8010423C(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
+        sp38 = 1;
+    } else {
+        sp58.y = arg0->scale[2] + arg0->kirbyFootPos[1];
+        sp4C.y = sp58.y;
+        if (func_8010423C(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
+            sp38 = 1;
+        }
     }
-    sp5C = arg0->unk8 + arg0->unk18;
-    sp50 = sp5C;
-    var_v1 = sp38;
-    if (func_8010423C((bitwise f32) &sp58, &sp4C, &sp40, NULL, 0, &sp3C, 0, 0) != 0) {
-block_5:
-        var_v1 = 1;
-    }
-    if (var_v1 != 0) {
-        sp5C = arg0->unk8 + arg0->unk10;
-        sp50 = sp5C;
+    if (sp38 != 0) {
+        sp58.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+        sp4C.y = sp58.y;
         if (func_801057C4(sp3C, &sp58, &sp4C, &sp64) != 0) {
-            if (sp4C < sp58) {
-                if ((sp58 < sp64) || (sp64 < sp4C)) {
-                    goto block_23;
+            if (sp4C.x < sp58.x) {
+                if ((sp58.x < sp64.x) || (sp64.x < sp4C.x)) {
+                    return 0;
                 }
-                goto block_15;
+            } else if ((sp64.x < sp58.x) || (sp4C.x < sp64.x)) {
+                return 0;
             }
-            if ((sp64 < sp58) || (sp4C < sp64)) {
-                goto block_23;
-            }
-block_15:
-            if (sp54 < sp60) {
-                if ((sp60 < sp6C) || (sp6C < sp54)) {
-                    goto block_23;
+            if (sp4C.z < sp58.z) {
+                if ((sp58.z < sp64.z) || (sp64.z < sp4C.z)) {
+                    return 0;
                 }
-                goto block_22;
+            } else if ((sp64.z < sp58.z) || (sp4C.z < sp64.z)) {
+                return 0;
             }
-            if ((sp6C < sp60) || (sp54 < sp6C)) {
-                goto block_23;
-            }
-block_22:
-            arg0->unk4 = sp64 - D_8012BD00.unk2C;
-            arg0->unkC = sp6C - D_8012BD00.unk30;
+            arg0->kirbyFootPos[0] = sp64.x - BD00.unk2C;
+            arg0->kirbyFootPos[2] = sp64.z - BD00.unk30;
             return 1;
         }
     }
-block_23:
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010D138.s")
-#endif
 
 /* FACTORY: 69/142, frame+stack offsets exact; residue is IDO CSEing &sp3C into $v1 and spilling it
    at 0x30 where the ROM recomputes `addiu $tN,$sp,0x3C` per block, which rotates $v1/$t0 and the top-block

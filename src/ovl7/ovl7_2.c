@@ -252,7 +252,104 @@ void func_8019F9D0_ovl7(GObj *arg0) {
     func_801A0C70_ovl7();
 }
 
+/* FACTORY: 223/223, but that is ONE MISSING INSTRUCTION, not 223 wrong ones.
+   Ported verbatim from func_8019F650_ovl7's draft above: the two listings are
+   byte-identical apart from the labels and the swap of func_80110FD4 <->
+   func_80110150 in the second and third else-if arms (diffed instruction by
+   instruction, that is the ONLY difference in 223 instructions).  So this
+   inherits its twin's single residue exactly -- the ROM materialises
+   &omCurrentObj (lui + addiu into $a2, then lw 0($a2)) and IDO folds it to
+   lui + lw %lo -- and every instruction after index 1 is the ROM's, shifted one
+   slot.  Whatever closes func_8019F650_ovl7 closes this with the same edit.
+   Do not re-derive it: the twin's guard lists the four sweeps already paid for.
+   The struct is a block-scope copy of Ovl7_2_AnimInfoA on purpose, so both
+   guards can be active at once without a redeclaration. */
+#ifdef NON_MATCHING
+s32 func_8019FA68_ovl7(void) {
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    s32 func_801A0244_ovl7(s32);
+    void func_8019EBCC_ovl7(struct GObj *);
+    void func_801A3BA4_ovl7(void);
+    void func_801A7000_ovl7(struct GObj *);
+    void func_801A3E80_ovl7(struct GObj *);
+    extern s32 D_800E83E0[], D_800E8220[], D_800E0D50[];
+    s32 pad;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl7_2_AnimInfoB {
+        u8 unk0;
+        u8 unk1;
+        u8 unk2;
+        u8 unk3;
+        u8 filler4[8];
+        s32 unkC;
+        u8 filler10[0xC];
+    };
+    struct Ovl7_2_AnimInfoB sp24;
+
+    if (func_80110B00(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        ent->unk43 = sp24.unk3;
+        ent->unk3E = sp24.unk0;
+        ent->unk3F = sp24.unk1;
+        ent->unk3A = sp24.unkC;
+    } else if (func_80110FD4(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        ent->unk43 = sp24.unk3;
+        ent->unk3E = sp24.unk0;
+        ent->unk3F = sp24.unk1;
+        ent->unk3A = sp24.unkC;
+    } else if (func_80110150(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        ent->unk43 = sp24.unk3;
+        ent->unk3E = sp24.unk0;
+        ent->unk3F = sp24.unk1;
+        ent->unk3A = sp24.unkC;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+        ent->unk3A = -1;
+    }
+    switch (D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+        if (func_801A0244_ovl7(sp24.unkC) != -1) {
+            D_800E83E0[omCurrentObj->objId] = 0x12;
+            play_sound(0xF4);
+            ent->unk94 = 0;
+            ent->unk40 = 1;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        return 1;
+    case 2:
+        func_8019EBCC_ovl7(D_800DE350[omCurrentObj->objId]);
+        func_801A3BA4_ovl7();
+        return 1;
+    case 3:
+        D_800E8220[omCurrentObj->objId] = 0;
+        if (sp24.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = sp24.unkC;
+        }
+        gKirbyState.numberInhaling += 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return 1;
+    case 4:
+        if (gKirbyState.unk4 != 0) {
+            return 0;
+        }
+        D_800E8220[omCurrentObj->objId] = 1;
+        gKirbyState.unk4 = 2;
+        if (sp24.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = sp24.unkC;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019FA68_ovl7.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019FDE8_ovl7.s")
 
