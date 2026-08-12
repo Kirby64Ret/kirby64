@@ -551,7 +551,71 @@ void func_801DE5CC_ovl10(GObj *arg0) {
     }
 }
 
+void func_800FB914(s32);
+s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
+
+#ifdef NON_MATCHING
+/* 199/282: v0/v1 rotated from the prologue on. */
+void func_801DE650_ovl10(GObj *arg0) {
+    f32 t;
+
+    func_800AECC0(gameTicksPerDraw + gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw + gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 7;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A18_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800AA018(0x102C9);
+    func_800AA018(0x102C8);
+    if ((gEntitiesNextPosYArray[0] + 20.0f) < (gEntitiesNextPosYArray[omCurrentObj->objId] + 40.0f)) {
+        t = -((gEntitiesNextPosYArray[0] + 20.0f) - (gEntitiesNextPosYArray[omCurrentObj->objId] + 40.0f));
+    } else {
+        t = (gEntitiesNextPosYArray[0] + 20.0f) - (gEntitiesNextPosYArray[omCurrentObj->objId] + 40.0f);
+    }
+    if (240.0f < t) {
+        t = 240.0f;
+    }
+    if (t < 80.0f) {
+        t = 80.0f;
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 30.0f * (t / 240.0f);
+    D_800E3750[omCurrentObj->objId] = -2.0f * (t / 240.0f);
+    D_800E3C90[omCurrentObj->objId] = 30.0f;
+    while (0.0f < D_800E3210[omCurrentObj->objId]) {
+        ohSleep(1);
+    }
+    play_sound(0x1D9);
+    func_800AA018(0x102CB);
+    func_800AA154(0x102CA);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA018(0x102CD);
+    func_800AA018(0x102CC);
+    while (D_800E8920[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    func_801DBF70_ovl10(5, 0.0f);
+    func_800FB914(2);
+    play_sound(0x1D6);
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3590[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E33D0[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3210[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_801ACCA0_ovl7(6, (1.0f == D_800E6A10[omCurrentObj->objId]) ? 1 : 0, 80.0f, 15.0f);
+    func_800AA018(0x102CF);
+    func_800AA154(0x102CE);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DE650_ovl10.s")
+#endif
 
 struct Ovl10AnimInfo1 {
     u8 unk0;
@@ -653,7 +717,93 @@ void func_801DFE64_ovl10(void) {
     D_801F4D30_ovl10[3] = D_801F4D30_ovl10[5] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]] - 60.0f;
 }
 
+extern s32 D_801F3AA8_ovl10;
+
+#ifdef NON_MATCHING
+/* 47/273: one-slot temp rotation, ROM $a0 where this uses $a1. */
+void func_801DFF88_ovl10(GObj *arg0) {
+    s32 pad0;
+    s32 pad1;
+    s32 sp74;
+    s32 i;
+    f32 v;
+    f32 d;
+
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0xB;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3AA8_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+    func_800B33F4();
+    func_800AA018(0x10307);
+    func_800AA018(0x10306);
+    D_800EA520[omCurrentObj->objId] = 0;
+    while (D_800EA520[omCurrentObj->objId] < 2) {
+        if (func_8019A900_ovl7(&sp74) != 0) {
+            v = sp74;
+        } else {
+            v = func_8019B608_ovl7(0);
+        }
+        if (v != D_800E6A10[omCurrentObj->objId]) {
+            D_800E9020[omCurrentObj->objId] = 0.0f;
+            for (i = 0; i != 5; i++) {
+                if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+                    d = -0.3141592741f;
+                } else {
+                    d = 0.3141592741f;
+                }
+                D_800E9020[omCurrentObj->objId] += d;
+                ohSleep(1);
+            }
+            D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+            D_800E9020[omCurrentObj->objId] = -D_800E9020[omCurrentObj->objId];
+            do {
+                if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+                    d = 0.3141592741f;
+                } else {
+                    d = -0.3141592741f;
+                }
+                D_800E9020[omCurrentObj->objId] += d;
+                ohSleep(1);
+                i--;
+            } while (i != 0);
+            D_800E9020[omCurrentObj->objId] = 0.0f;
+        }
+        ohSleep(1);
+        func_800AF27C();
+        D_800EA520[omCurrentObj->objId] += 1;
+    }
+    switch (D_800E98E0[omCurrentObj->objId]) {
+    case 0:
+        D_800E98E0[omCurrentObj->objId] = 1;
+        break;
+    case 1:
+        if (random_soft_s32_range(3) == 0) {
+            D_800E98E0[omCurrentObj->objId] = 0;
+        } else {
+            D_800E98E0[omCurrentObj->objId] = 2;
+        }
+        break;
+    case 2:
+        if (random_soft_s32_range(3) == 0) {
+            D_800E98E0[omCurrentObj->objId] = 0;
+        } else {
+            D_800E98E0[omCurrentObj->objId] = 3;
+        }
+        break;
+    case 3:
+        D_800E98E0[omCurrentObj->objId] = 0;
+        break;
+    }
+    if (D_800E98E0[omCurrentObj->objId] == 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0xC;
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0xD;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DFF88_ovl10.s")
+#endif
 
 void func_801E03CC_ovl10(void) {
     D_800E8920[omCurrentObj->objId] = 0;
@@ -751,7 +901,55 @@ void func_801E0E78_ovl10(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E100C_ovl10.s")
+extern s32 D_801F3AA8_ovl10;
+extern struct Sub800E1B50_Unk98 D_801F40DC_ovl10;
+f32 func_801E13A0_ovl10(GObj *);
+f32 sinf(f32);
+f32 cosf(f32);
+
+void func_801E100C_ovl10(GObj *arg0) {
+    f32 a;
+
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0xD;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3AA8_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F40DC_ovl10;
+    func_800B33F4();
+    D_800EA520[omCurrentObj->objId] = 0;
+    func_800AA018(0x102EB);
+    func_800AA154(0x102EA);
+    func_800AA018(0x102ED);
+    func_800AA154(0x102EC);
+    if ((gEntitiesNextPosYArray[omCurrentObj->objId] + 40.0f) < (gEntitiesNextPosYArray[0] + 20.0f)) {
+        D_800E9E20[omCurrentObj->objId] = 1;
+    } else {
+        D_800E9E20[omCurrentObj->objId] = 0;
+    }
+    a = func_801E13A0_ovl10(arg0);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (sinf((a < 0.0f) ? -a : a) * 4.0f);
+    D_800E3210[omCurrentObj->objId] = cosf((a < 0.0f) ? -a : a) * 4.0f;
+    func_800AA018(0x102EF);
+    func_800AA018(0x102EE);
+    D_800EA520[omCurrentObj->objId] = 0x64;
+    while (D_800EA520[omCurrentObj->objId] < 0x78) {
+        ohSleep(5);
+        play_sound(0x1DC);
+        func_800AF27C();
+        if (D_800EA520[omCurrentObj->objId] >= 0x68) {
+            D_800E3210[omCurrentObj->objId] = 0;
+            D_800E3750[omCurrentObj->objId] = 0;
+            D_800E3C90[omCurrentObj->objId] = 0;
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.0f;
+        }
+        D_800EA520[omCurrentObj->objId] += 1;
+    }
+    D_800EA520[omCurrentObj->objId] = 1000;
+    func_800B33F4();
+    func_800AA018(0x102F7);
+    func_800AA154(0x102F6);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E13A0_ovl10.s")
 
@@ -822,7 +1020,80 @@ void func_801E1880_ovl10(GObj *arg0) {
     D_800EA520[omCurrentObj->objId] = 0x3E8;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E18A8_ovl10.s")
+extern s32 D_801F3A84_ovl10;
+f32 func_800F9828(s32, s32);
+void func_800A7F74(u32, u32, u32, f32, f32, f32);
+
+void func_801E18A8_ovl10(GObj *arg0) {
+    f32 v;
+    f32 t;
+    f32 d;
+    s32 i;
+
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0xE;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A84_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+    func_800B33F4();
+    if (D_800EA360[omCurrentObj->objId] != 0) {
+        func_800A1F30((void *) D_800EA360[omCurrentObj->objId]);
+        D_800EA360[omCurrentObj->objId] = 0;
+    }
+    while (D_800E98E0[D_800EC120[omCurrentObj->objId]] == 0) {
+        ohSleep(1);
+    }
+    func_800AA018(0x102F1);
+    func_800AA154(0x102F0);
+    v = func_800F9828(omCurrentObj->objId, D_800E0D50[omCurrentObj->objId]);
+    if (v == 9999.0f) {
+        t = func_8019B608_ovl7(D_800E0D50[omCurrentObj->objId]);
+    } else {
+        t = (0.0f < v) ? 1.0f : -1.0f;
+    }
+    if (t != D_800E6A10[omCurrentObj->objId]) {
+        func_800AECC0(0.0f);
+        func_800AED20(0.0f);
+        D_800E9020[omCurrentObj->objId] = 0.0f;
+        for (i = 0; i != 5; i++) {
+            if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+                d = -0.3141592741f;
+            } else {
+                d = 0.3141592741f;
+            }
+            D_800E9020[omCurrentObj->objId] += d;
+            ohSleep(1);
+        }
+        D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+        D_800E9020[omCurrentObj->objId] = -D_800E9020[omCurrentObj->objId];
+        do {
+            if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+                d = 0.3141592741f;
+            } else {
+                d = -0.3141592741f;
+            }
+            D_800E9020[omCurrentObj->objId] += d;
+            ohSleep(1);
+            i--;
+        } while (i != 0);
+        D_800E9020[omCurrentObj->objId] = 0.0f;
+        func_800AECC0(gameTicksPerDraw);
+        func_800AED20(gameTicksPerDraw);
+    }
+    func_800AA018(0x102F3);
+    func_800AA018(0x102F2);
+    ohSleep(5);
+    func_800A7F74(6, 2, (1.0f == D_800E6A10[omCurrentObj->objId]) ? 0xC : 0xE,
+                  gEntitiesNextPosXArray[omCurrentObj->objId],
+                  gEntitiesNextPosYArray[omCurrentObj->objId],
+                  gEntitiesNextPosZArray[omCurrentObj->objId]);
+    play_sound(0x1D8);
+    D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
+    func_800AF27C();
+    func_800AA018(0x102F5);
+    func_800AA154(0x102F4);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
+}
 
 void func_801E1D3C_ovl10(void) {
     D_800E8920[omCurrentObj->objId] = 0;
@@ -835,7 +1106,6 @@ void func_801E1D3C_ovl10(void) {
 }
 
 extern s32 D_801F3AA8_ovl10;
-s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
 
 void func_801E1DD0_ovl10(GObj *arg0) {
     func_800AECC0(gameTicksPerDraw);

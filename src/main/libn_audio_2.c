@@ -535,7 +535,20 @@ void func_8002C790(KSeqPlayer *seqp) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C80C.s")
 
+#ifdef NON_MATCHING
+/* Correct as C, and verify.py calls it MATCH -- but it is a PADDING TRAP and
+   must stay a pragma. Its listing carries 3 nops after `.size`, and it is the
+   LAST function in this TU, so nothing after it forces the alignment back:
+   converting it leaves libn_audio_2.o 16 bytes short and shifts every segment
+   after it. padtrap.py classifies the tail 'benign' because the rule assumes a
+   following function in the same section; measured twice against
+   check_tu_size.py, which is the tool that sees the linked result. */
+void func_8002C990(N_ALVoice *voice, s16 priority) {
+    voice->priority = priority;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C990.s")
+#endif
 
 typedef struct {
     u8                  unk00[0x3A];

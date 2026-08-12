@@ -15,7 +15,8 @@ typedef struct Ovl1Emitter {
 typedef struct Ovl1Generator {
     /* 0x00 */ u8 pad0[0x14];
     /* 0x14 */ Vector pos;
-    /* 0x20 */ u8 pad20[0x2C];
+    /* 0x20 */ u8 pad20[0x28];
+    /* 0x48 */ struct DObj *unk48;
     /* 0x4C */ Ovl1Emitter *xf;
 } Ovl1Generator;
 
@@ -312,7 +313,51 @@ Ovl1Generator *func_800A802C(s32 arg0, s32 arg1, s32 arg2, Vector *arg3, Vector 
     return NULL;
 }
 
+#ifdef NON_MATCHING
+Ovl1Generator *func_800A8100(s32 arg0, s32 arg1, s32 arg2, struct DObj *arg3) {
+    extern f32 gEntitiesNextPosXArray[];
+    extern f32 gEntitiesNextPosYArray[];
+    extern f32 gEntitiesNextPosZArray[];
+    s32 func_800B2340(Vector *, struct DObj *, u32);
+    Ovl1Generator *gen;
+    s32 id;
+    Vector sp24;
+
+    if ((D_800D6FB8->flags & (0x10000 << arg1)) == 0) {
+        gen = func_800A19EC((arg1 * 8) | arg0, arg2);
+        if (gen != NULL) {
+            if (arg3 == NULL) {
+                id = omCurrentObj->objId;
+            } else {
+                id = arg3->gobj->objId;
+            }
+            if (gen->xf != NULL) {
+                if (arg3 == NULL) {
+                    gen->xf->unk4.x = gEntitiesNextPosXArray[id];
+                    gen->xf->unk4.y = gEntitiesNextPosYArray[id];
+                    gen->xf->unk4.z = gEntitiesNextPosZArray[id];
+                } else {
+                    func_800B2340(&sp24, arg3, id);
+                    gen->xf->unk4.x = sp24.x;
+                    gen->xf->unk4.y = sp24.y;
+                    gen->xf->unk4.z = sp24.z;
+                }
+            } else {
+                if (arg3 == NULL) {
+                    arg3 = omCurrentObj->data.dobj;
+                }
+                gen->unk48 = arg3;
+            }
+            return gen;
+        } else {
+            return NULL;
+        }
+    }
+    return NULL;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2_2/func_800A8100.s")
+#endif
 
 Ovl1Generator *func_800A8234(s32 arg0, s32 arg1, s32 arg2) {
     Ovl1Generator *gen;

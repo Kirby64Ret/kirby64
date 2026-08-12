@@ -88,9 +88,76 @@ void func_801E3244_ovl10(void) {
     func_801A03B4_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_2/func_801E326C_ovl10.s")
+void func_801E3748_ovl10(void);
+extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
+f32 func_801E3450_ovl10(GObj *);
+f32 func_801E3614_ovl10(GObj *);
+f32 sinf(f32);
+f32 cosf(f32);
 
+void func_801E326C_ovl10(GObj *arg0) {
+    s32 pad0;
+    s32 pad1;
+    f32 a;
+
+    D_800DF150[omCurrentObj->objId] = func_801E3748_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A9864(0x1008C, 0x23, 0x10);
+    func_800B33F4();
+    a = func_801E3450_ovl10(arg0);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (sinf((a < 0.0f) ? -a : a) * 6.0f);
+    D_800E3210[omCurrentObj->objId] = cosf((a < 0.0f) ? -a : a) * 6.0f;
+    ohSleep(0x1E);
+    func_800B33F4();
+    ohSleep(0xA);
+    a = func_801E3614_ovl10(arg0);
+    D_800E64D0[omCurrentObj->objId] = sinf(a) * 6.0f;
+    D_800E3210[omCurrentObj->objId] = cosf(a) * 6.0f;
+    ohSleep(0x1E);
+    func_801ACF84_ovl7(arg0);
+}
+
+f32 func_8019DA50_ovl7(void);
+
+#ifdef NON_MATCHING
+extern f32 atan2f(f32, f32);
+f32 func_801E3450_ovl10(GObj *arg0) {
+    f32 a;
+    f32 t;
+    f32 r;
+
+    a = func_8019DA50_ovl7();
+    t = a;
+    if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+        if (t < 0.0f) {
+            t = -t;
+        }
+    } else {
+        if (t < 0.0f) {
+            t = -t;
+        }
+        t = -t;
+    }
+    r = atan2f(t, (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]);
+    if (2.19911491870880127 < ((r < 0.0f) ? -r : r)) {
+        if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+            r = 2.19911491870880127;
+        } else {
+            r = -2.19911491870880127;
+        }
+    } else if (((r < 0.0f) ? -r : r) < 0.942477822303771973) {
+        if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+            r = 0.942477822303771973;
+        } else {
+            r = -0.942477822303771973;
+        }
+    }
+    return r;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_2/func_801E3450_ovl10.s")
+#endif
 
 extern f32 atan2f(f32, f32);
 extern f32 sqrtf(f32);

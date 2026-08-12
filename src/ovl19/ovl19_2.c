@@ -594,7 +594,61 @@ void func_80227C88_ovl19(void) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 1 diff, and it grows this TU by 16 bytes. Guarded by the manager: it was
+   left un-guarded and non-matching, which shifts every segment after it. */
+/* 12/123, structurally complete; residue is the likely-branch transform on the
+ * collisionParameter test (ROM bnel + duplicated store, IDO bnez + nop) and the
+ * return-0 block ordering that follows. */
+s32 func_80227D4C_ovl19(void) {
+    Vector sp44;
+    Vector sp38;
+    struct CollisionTriangle *sp34;
+    f32 *py;
+    f32 **pp;
+    s32 temp;
+
+    if (gKirbyState.rightCollisionNext != 0) {
+        if (gKirbyState.unk44 != 4) {
+            gKirbyState.unk44 = 4;
+            return 1;
+        }
+    }
+    if (func_80227B20_ovl19() != 0) {
+        if (D_800D6B54 == 0) {
+            gKirbyState.unk44 = 4;
+            return 1;
+        }
+    }
+    pp = D_800E0490[omCurrentObj->objId];
+    py = pp[1];
+    sp44.x = gEntitiesPosXArray[omCurrentObj->objId];
+    sp44.y = *py + gEntitiesPosYArray[omCurrentObj->objId];
+    sp44.z = gEntitiesPosZArray[omCurrentObj->objId];
+    sp38.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp38.y = *py + gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp38.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    sp34 = D_8012BCC0;
+    if (func_80104AB4(&sp44, &sp38, 1, 0xE, &sp34) != 0) {
+        if (sp34->collisionParameter == 0) {
+            temp = func_8021EE88_ovl19(NULL);
+            if (temp != -1) {
+                D_800E0D50[temp] = 1;
+                D_800E0F10[temp] = 2;
+                D_800EBBE0[temp] = omCurrentObj->objId;
+                D_800E9FE0[omCurrentObj->objId].as_s32 = temp;
+            }
+            goto done;
+        }
+        gKirbyState.unk44 = 7;
+        return 1;
+    }
+done:
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_80227D4C_ovl19.s")
+#endif
 
 void func_80227F38_ovl19(void) {
     struct Ovl19F548 *temp_v0;
