@@ -278,7 +278,36 @@ struct DObj *func_8017B9F4_ovl5(s32 arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017BA34_ovl5.s")
 
+/* Faithful, not byte-exact (69/109). Frame, saved-register set and the whole
+   prologue are exact; the residue is that the ROM gives $f20 to the hoisted
+   D_8018DD24_ovl5 and $f22 to 180.0f while IDO assigns them the other way,
+   which shifts every later slot. Swept: explicit 4x unrolling (121 insns,
+   worse), a named local for 180.0f in both orders, operand order, and
+   inlining the extern (98). */
+#ifdef NON_MATCHING
+extern u32 D_801891D0_ovl5;
+extern s32 D_801891D4_ovl5;
+extern f32 D_8018DD24_ovl5;
+void func_800A9864(u32, s32, s32);
+
+void func_8017BED8_ovl5(GObj *arg0) {
+    s32 i;
+    f32 v;
+
+    D_8018ED3C_ovl5 = omCurrentObj->objId;
+    func_800A9864(D_801891D0_ovl5, 0x1869F, 0x10);
+    v = D_8018DD24_ovl5;
+    while (D_8018ED04_ovl5 == 1) {
+        for (i = 0; i < 4; i++) {
+            D_800DFBD0[omCurrentObj->objId][(&D_801891D4_ovl5)[i]]->angle.v.y = D_8018ED40_ovl5[i] * v / 180.0f;
+        }
+        ohSleep(1);
+    }
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017BED8_ovl5.s")
+#endif
 
 #include "SPObj.h"
 extern Unk16Ptrs D_80188908_ovl5;

@@ -78,7 +78,62 @@ void func_800AD1A0(GObj *);
 void procMainStub(struct GObj *);
 s32 func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
 
+/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
+ * this to C cannot link, so the pragma has to stay. The body below is for
+ * NON_MATCHING builds. */
+#ifdef NON_MATCHING
+void func_801553C0_ovl4(GObj *arg0) {
+    void func_801555F4_ovl4(GObj *);
+    void func_80156160_ovl4(GObj *);
+    void func_801567BC_ovl4(GObj *, s32);
+    void func_80156C4C_ovl4(GObj *, s32);
+    void func_801569F0_ovl4(GObj *, s32);
+    void func_80157028_ovl4(GObj *, s32);
+    void func_801572E4_ovl4(GObj *, s32);
+    void func_80157610_ovl4(GObj *, s32);
+    void func_80157840_ovl4(GObj *, s32);
+    void func_80156560_ovl4(GObj *);
+    void func_8015665C_ovl4(GObj *);
+
+    switch (D_800E9AA0[omCurrentObj->objId].as_s32) {
+        case 0:
+            func_801555F4_ovl4(arg0);
+            break;
+        case 1:
+            func_80156160_ovl4(arg0);
+            break;
+        case 2:
+            func_801567BC_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 3:
+            func_80156C4C_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 4:
+            func_801569F0_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 8:
+            func_80157028_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 9:
+            func_801572E4_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 11:
+            func_80157610_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 16:
+            func_80157840_ovl4(arg0, saveCurrentFileNum);
+            break;
+        case 17:
+            func_80156560_ovl4(arg0);
+            break;
+        case 18:
+            func_8015665C_ovl4(arg0);
+            break;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801553C0_ovl4.s")
+#endif
 
 s32 func_801554F0_ovl4(void) {
     s32 ret = 0;
@@ -675,7 +730,27 @@ s32 func_80157250_ovl4(void) {
     return 4;
 }
 
+/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
+ * this to C cannot link (the surviving blob still references .L8015xxxx), so
+ * the pragma has to stay. The body below is for NON_MATCHING builds. */
+#ifdef NON_MATCHING
+s32 func_80157258_ovl4(s32 arg0, s32 arg1) {
+    switch (arg1) {
+        case 0:
+        case 1:
+        case 2:
+        case 5:
+            return 1;
+        case 3:
+            return ((u8 *) &D_800ECA08[arg0])[0x13];
+        case 4:
+            return ((u8 *) &D_800ECA08[arg0])[0x14];
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157258_ovl4.s")
+#endif
 
 extern Unk6Words D_8015AA30_ovl4;
 extern Unk6Words D_8015AA48_ovl4;
@@ -838,7 +913,54 @@ void func_80157840_ovl4(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157840_ovl4.s")
 #endif
 
+/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
+ * this to C cannot link, so the pragma has to stay. The body below is for
+ * NON_MATCHING builds. */
+#ifdef NON_MATCHING
+void func_80157B1C_ovl4(void) {
+    extern s32 D_800D6B68;
+
+    D_8015C6D8_ovl4 = 0;
+    switch (D_800D6B68) {
+        case 0x16:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 5;
+            break;
+        case 0x17:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 2;
+            break;
+        case 0x18:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 1;
+            break;
+        case 0x19:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 3;
+            break;
+        case 0x1A:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 4;
+            break;
+        case 0x1B:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 0;
+            break;
+        default:
+            D_8015C6D4_ovl4 = 0;
+            D_8015C6DC_ovl4 = 0;
+            break;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157B1C_ovl4.s")
+#endif
 
 void func_80157C38_ovl4(void) {
     D_800EC9FC = saveCurrentFileNum;

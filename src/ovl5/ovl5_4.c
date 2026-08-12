@@ -58,7 +58,48 @@ Vector *func_801659DC_ovl5(Vector *, s32);
 #include "main/contpad.h"
 #include "ovl1/game.h"
 
+/* Faithful, not byte-exact (4/146). Every instruction and the frame are
+   exact; IDO emits the `ldc1 $f20, %lo(D_8018D6C0_ovl5)` before the three
+   scale-array `addiu`s where the ROM emits it after them. Swept: the local
+   double's declaration position and initialiser form, one-line loop body,
+   operand order, an (f64) cast, volatile, a pad local and hoisting the
+   assignment above the preceding loop (14). */
+#ifdef NON_MATCHING
+extern s32 D_8018736C_ovl5[];
+extern u8 D_8018E298_ovl5;
+extern f64 D_8018D6C0_ovl5;
+extern f32 D_8018D6C8_ovl5;
+void func_800A9F98(s32, f32);
+void func_800AFBB4(s32, GObj *);
+
+void func_801668E0_ovl5(GObj *arg0) {
+    s32 i;
+    f64 v;
+
+    func_800A9F98(D_8018736C_ovl5[D_8018E298_ovl5], 5.0f);
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -12.0f;
+    D_800E3C90[omCurrentObj->objId] = 75.0f;
+    for (i = 0; i < 0x3C; i++) {
+        ohSleep(1);
+    }
+    v = D_8018D6C0_ovl5;
+    for (i = 0xA; i >= 0; i--) {
+        gEntitiesScaleZArray[omCurrentObj->objId] = gEntitiesScaleYArray[omCurrentObj->objId] =
+            gEntitiesScaleXArray[omCurrentObj->objId] = i * v;
+        ohSleep(1);
+    }
+    func_800AFBB4(0, omCurrentObj);
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = D_8018D6C8_ovl5;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_801668E0_ovl5.s")
+#endif
 
 typedef union Unk10Bytes {
     struct UnkStruct8015C740 *unk0[4];

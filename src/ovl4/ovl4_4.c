@@ -106,7 +106,38 @@ s32 func_80158120_ovl4(void) {
 void func_80158188_ovl4(void) {
 }
 
+/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
+ * this to C cannot link, so the pragma has to stay. The body below is for
+ * NON_MATCHING builds. */
+#ifdef NON_MATCHING
+void func_80158190_ovl4(GObj *arg0) {
+    void func_801593A4_ovl4(GObj *);
+
+    switch (D_800E98E0[omCurrentObj->objId]) {
+        case 0:
+            func_80158224_ovl4(arg0);
+            break;
+        case 1:
+            func_80159160_ovl4(arg0);
+            break;
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            func_801588F4_ovl4(arg0, D_800E98E0[omCurrentObj->objId] - 2);
+            break;
+        case 9:
+            func_801593A4_ovl4(arg0);
+            break;
+    }
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80158190_ovl4.s")
+#endif
 
 void func_80158224_ovl4(GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = NULL;
@@ -211,7 +242,43 @@ s32 func_8015874C_ovl4(void) {
     return 6;
 }
 
+/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
+ * this to C cannot link, so the pragma has to stay. The body below is for
+ * NON_MATCHING builds. The ROM leaves the out-of-range case reading an
+ * uninitialised stack word; NULL is the deterministic equivalent. */
+#ifdef NON_MATCHING
+struct DObj *func_801587CC_ovl4(u32 arg0) {
+    struct DObj **p = (struct DObj **) D_800DFBD0[D_8015C714_ovl4];
+    struct DObj *ret = NULL;
+
+    switch (arg0) {
+        case 0:
+            ret = p[0x6C / 4];
+            break;
+        case 1:
+            ret = p[0x58 / 4];
+            break;
+        case 2:
+            ret = p[0x74 / 4];
+            break;
+        case 3:
+            ret = p[0x1C / 4];
+            break;
+        case 4:
+            ret = p[0x18 / 4];
+            break;
+        case 5:
+            ret = p[0x70 / 4];
+            break;
+        case 6:
+            ret = p[0x3C / 4];
+            break;
+    }
+    return ret;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_801587CC_ovl4.s")
+#endif
 
 void func_801588F4_ovl4(GObj *arg0, s32 arg1) {
     s32 unused;
@@ -314,7 +381,76 @@ void func_80158CFC_ovl4(GObj *arg0) {
     }
 }
 
+/* 6/163: semantically complete. Residue is the stack slot of the f32 temp
+ * (ROM 0x24, IDO 0x20 -- the local block anchors one word lower) and the FP
+ * register pairing of the `== 0.0f` compare (ROM materialises 0.0 into $f16
+ * first, IDO loads the temp there). Swept: 0..3 dead scalars in every position
+ * around the f32, f32 vs s32 pads, both compare operand orders, the empty-then
+ * polarity form. */
+#ifdef NON_MATCHING
+extern f32 D_8015C3BC_ovl4[];
+extern f32 D_8015C384_ovl4[];
+extern s32 saveCurrentFileNum;
+void func_800B3070(s32, f32);
+void func_800B9C50(s32);
+void animUpdateModelTreeAnimation(GObj *);
+
+void func_80158E98_ovl4(s32 arg0, s32 arg1, s32 arg2) {
+    f32 sp24;
+    s32 pad0;
+    s32 pad1;
+    s32 v;
+    s32 i;
+
+    if (D_8015C71C_ovl4 == 1) {
+        if (arg2 == 2) {
+            v = D_8015C3A0_ovl4[arg0];
+        } else {
+            v = D_8015C3BC_ovl4[arg0];
+        }
+    } else {
+        if (arg2 == 2) {
+            v = D_8015C368_ovl4[arg0];
+        } else {
+            v = D_8015C384_ovl4[arg0];
+        }
+    }
+    if (D_8015C71C_ovl4 == 1) {
+        sp24 = v;
+        func_800A9F98(0x30012, sp24);
+    } else {
+        sp24 = v;
+        func_800A9F98(0x30014, sp24);
+    }
+    if (0.0f == sp24) {
+        animUpdateModelTreeAnimation(D_800DE350[omCurrentObj->objId]);
+    }
+    func_800AECC0(2.0f);
+    func_800AED20(2.0f);
+    func_800B3070(0x10, 2.0f);
+    func_800B2F54(0x10, D_8015C360_ovl4[D_8015C71C_ovl4], sp24);
+    func_800A71A0(0x10);
+    if ((D_8015C71C_ovl4 == 1)
+     && ((((arg0 == 5) || (arg0 == 6)) && (arg2 == 2)) || (((arg0 == 0) || (arg0 == 6)) && (arg2 == 1)))) {
+        for (i = 0; i != 0x23; i++) {
+            func_800A71A0(0x10);
+            ohSleep(1);
+        }
+    } else {
+        for (i = 0; i != 0x19; i++) {
+            func_800A71A0(0x10);
+            ohSleep(1);
+        }
+    }
+    D_800E9C60[D_8015C718_ovl4] = 0;
+    D_800D6B98 = D_800E9E20[D_8015C718_ovl4];
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    func_800B9C50(saveCurrentFileNum);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80158E98_ovl4.s")
+#endif
 
 f32 func_80159124_ovl4(s32 arg0) {
     if (D_8015C71C_ovl4 == 1) {

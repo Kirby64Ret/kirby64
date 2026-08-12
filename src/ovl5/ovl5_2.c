@@ -372,7 +372,25 @@ f32 func_8016142C_ovl5(s32 arg0) {
     return (D_800EA6E0[D_8018E030_ovl5[arg0]] - gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) * 0.5f;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161470_ovl5.s")
+void func_80161470_ovl5(s32 arg0, s32 arg1) {
+    D_800EA520[D_8018E030_ovl5[arg0]] = 4;
+    D_800EA520[D_8018E030_ovl5[arg1]] = 5;
+    if (gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]] < gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) {
+        D_800EA6E0[D_8018E030_ovl5[arg0]] =
+            gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] - D_80186950_ovl5[D_8018E1E8_ovl5[arg1].unk0];
+        D_800EA6E0[D_8018E030_ovl5[arg1]] =
+            gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]] + D_80186950_ovl5[D_8018E1E8_ovl5[arg0].unk0];
+    } else {
+        D_800EA6E0[D_8018E030_ovl5[arg0]] =
+            gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] + D_80186950_ovl5[D_8018E1E8_ovl5[arg1].unk0];
+        D_800EA6E0[D_8018E030_ovl5[arg1]] =
+            gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]] - D_80186950_ovl5[D_8018E1E8_ovl5[arg0].unk0];
+    }
+    D_800EAA60[D_8018E030_ovl5[arg0]] =
+        (D_800EA6E0[D_8018E030_ovl5[arg0]] - gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) / 10.0f;
+    D_800EAA60[D_8018E030_ovl5[arg1]] =
+        (D_800EA6E0[D_8018E030_ovl5[arg1]] - gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]]) / 10.0f;
+}
 
 void func_801615D8_ovl5(s32 arg0, f32 arg1) {
     D_800EA520[D_8018E030_ovl5[arg0]] = 7;
@@ -602,7 +620,37 @@ void func_80162C68_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80163CC0_ovl5.s")
 
+/* Faithful, not byte-exact (16/76). Frame, locals and every instruction are
+   right; the residue is the one-slot temp rotation -- the ROM parks the
+   D_800E98E0 value in $a2 and shifts D_8018E030's load in place in $v0,
+   this C takes $t7/$t8 and every later temp follows. Swept: 16 declaration
+   and statement orders, five callee-prototype forms, and the parameter-as-
+   scratch form (71). */
+#ifdef NON_MATCHING
+struct UnkStruct8015C9B4;
+struct UnkStruct8015C9B4 *func_800A6F40(s32);
+void func_8015C9B4_ovl5(struct UnkStruct8015C9B4 *, Vector *, f32 *, f32 *);
+
+void func_80164174_ovl5(GObj *arg0) {
+    s32 t;
+    SPObj *sp;
+    f32 x;
+    f32 y;
+    Vector pos;
+
+    t = D_8018E030_ovl5[D_800E98E0[omCurrentObj->objId]];
+    sp = D_800E9AA0[omCurrentObj->objId].as_ptr;
+    pos.x = gEntitiesNextPosXArray[t];
+    pos.y = gEntitiesNextPosYArray[t];
+    pos.z = gEntitiesNextPosZArray[t];
+    func_8015C9B4_ovl5(func_800A6F40(0x10), &pos, &x, &y);
+    sp->xOffset = (x * 150.0f + 160.0f) - sp->width * 0.5f;
+    ((SPObj *) sp->unk8)->xOffset = sp->xOffset + 8.0f;
+    ((SPObj *) ((SPObj *) sp->unk8)->unk8)->xOffset = sp->xOffset + 15.0f;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164174_ovl5.s")
+#endif
 
 void func_801642A4_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk28Words sp20 = D_80185FF8_ovl5;
