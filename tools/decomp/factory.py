@@ -1,0 +1,222 @@
+#!/usr/bin/env python3
+"""The Factory: unattended permuter harvest, byte-exact-or-revert.
+
+WHY THIS EXISTS
+
+Wave 8 spent roughly 300,000 tokens per closed function, and almost all of it
+went into compile->diff->tweak loops: an agent looking at a residue and paying
+for another guess. decomp-permuter runs that identical search at ~48 variants
+per second on CPU and costs nothing. The division of labour that follows is:
+
+    tokens  -> semantics (what does this function DO, which symbol, which type)
+    CPU     -> search    (which arrangement of that meaning IDO reproduces)
+
+permute_queue.py already does the search half and drops winning sources in
+tools/decomp/perm/_wins/<func>/. Nothing consumed them. This does.
+
+THE SAFETY ARGUMENT, which is the whole point
+
+This process commits to a shared branch with no human watching, so the only
+acceptable design is one where a wrong answer CANNOT be committed. The commit
+condition is not "verify.py said MATCH" -- Wave 8 caught three separate
+functions where verify.py said MATCH and the ROM still broke (a TU that
+silently shrank 16 bytes, a wrong string literal that shifted .rodata, a
+padding trap). The commit condition is:
+
+    the fully linked ROM's sha1 equals the base ROM's sha1
+
+plus the structural checks, and anything short of that is reverted before the
+next candidate is tried. A byte-exact ROM cannot be wrong: every instruction
+and every constant is at the address the original had.
+
+WHAT IT DOES NOT DO
+
+It does not invent drafts. The permuter mutates an existing arrangement; it
+cannot supply meaning that is not already there. Functions blocked on
+register-allocation floors stay blocked, and this loop will grind them
+forever without closing them -- that is expected and is why agents still
+matter. It also pastes the permuter's PREPROCESSED source, which is correct
+but ugly (expanded typedefs, no comments). Correctness first; a later pass can
+prettify without touching the ROM.
+
+Usage:  factory.py            harvest forever
+        factory.py --once     one pass over pending wins, then exit
+"""
+import glob
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+REPO = '/home/user/kirby64_decomp'
+TOOLS = os.path.join(REPO, 'tools', 'decomp')
+WINS = os.path.join(TOOLS, 'perm', '_wins')
+DONE = os.path.join(TOOLS, 'perm', '_harvested')
+PY = os.path.join(REPO, '.venv', 'bin', 'python3')
+BASE_SHA1 = '6cea2d46b929a3bb347b060a77fccc83526fb855'
+BRANCH = 'claude/kirbyy64-decomp-eval-plan-4gxjjk'
+
+os.chdir(REPO)
+
+
+def log(msg):
+    line = f'[{time.strftime("%H:%M:%S")}] factory: {msg}'
+    print(line, flush=True)
+
+
+def sh(cmd, timeout=1800):
+    return subprocess.run(cmd, shell=True, capture_output=True, text=True,
+                          timeout=timeout)
+
+
+def find_owner(func):
+    """Which .c file carries this function's guarded draft or pragma."""
+    for cf in glob.glob('src/**/*.c', recursive=True):
+        text = open(cf, errors='replace').read()
+        if re.search(r'GLOBAL_ASM\("[^"]*/' + re.escape(func) + r'\.s"\)', text):
+            return cf
+    return None
+
+
+def extract_function(src_path, func):
+    """Pull `func`'s definition out of a permuter output source."""
+    text = open(src_path, errors='replace').read()
+    m = re.search(r'^[A-Za-z_][\w \t\*]*\b' + re.escape(func) + r'\s*\([^;]*?\)\s*\{',
+                  text, re.M)
+    if not m:
+        return None
+    i, depth = m.end() - 1, 0
+    while i < len(text):
+        if text[i] == '{':
+            depth += 1
+        elif text[i] == '}':
+            depth -= 1
+            if depth == 0:
+                return text[m.start():i + 1]
+        i += 1
+    return None
+
+
+def splice(cfile, func, body):
+    """Replace the function's guarded block with the winning plain C.
+
+    Returns the original file text so the caller can restore it. The guard is
+    removed entirely: a function that is byte-exact belongs unguarded, and
+    leaving a stale #ifdef around it is how nested guards happened in Wave 8.
+    """
+    text = open(cfile, errors='replace').read()
+    pat = re.compile(
+        r'#ifdef (?:NON_MATCHING|MIPS_TO_C)\b.*?'
+        r'#pragma GLOBAL_ASM\("[^"]*/' + re.escape(func) + r'\.s"\)\s*\n#endif\n',
+        re.S)
+    new, n = pat.subn(body + '\n', text)
+    if n == 0:
+        # No guard: a bare pragma. Replace the pragma line itself.
+        pat2 = re.compile(r'#pragma GLOBAL_ASM\("[^"]*/' + re.escape(func) + r'\.s"\)\n')
+        new, n = pat2.subn(body + '\n', text)
+    if n == 0:
+        return None
+    open(cfile, 'w').write(new)
+    return text
+
+
+def gate():
+    """The arbiter. A byte-exact linked ROM, or nothing."""
+    r = sh(f'bash {TOOLS}/mk.sh')
+    if 'error:' in r.stdout or 'error:' in r.stderr:
+        return False, 'compile error'
+    if 'kirby.us.z64: OK' not in r.stdout:
+        return False, 'link/sha1 failed'
+    got = sh('sha1sum build/kirby.us.z64').stdout.split()[0]
+    if got != BASE_SHA1:
+        return False, f'sha1 {got[:12]} != base'
+    for tool, ok in (('check_tu_size.py', '-- 0 translation'),
+                     ('check_sections.py', None),
+                     ('check_rodata_bytes.py', '0 problem(s)')):
+        out = sh(f'{PY} {TOOLS}/{tool}').stdout
+        if ok and ok not in out:
+            return False, f'{tool}: {out.strip().splitlines()[-1][:60]}'
+    out = sh(f'{PY} {TOOLS}/verify_rom.py').stdout
+    if '0 are REAL defects' not in out:
+        return False, 'verify_rom: real defects'
+    return True, 'green'
+
+
+def metrics():
+    n = len(set(re.findall(r'#pragma GLOBAL_ASM\("([^"]+)"\)',
+                           ''.join(open(f, errors='replace').read()
+                                   for f in glob.glob('src/**/*.c', recursive=True)))))
+    n -= sum(1 for f in glob.glob('asm_manual/**/*.s', recursive=True))
+    out = sh(f'{PY} {TOOLS}/verify_rom.py').stdout
+    m = re.search(r'^TOTAL\s+(\d+)', out, re.M)
+    e = int(m.group(1)) if m else 0
+    pct = 100.0 * e / (e + n) if (e + n) else 100.0
+    g = sh('timeout 400 make -f Makefile.pc gap').stdout
+    mg = re.search(r'un-decompiled functions\s+(\d+)', g)
+    owed = int(mg.group(1)) if mg else 0
+    port = 100.0 * (1 - owed / 510.0)
+    return pct, n, port, owed
+
+
+def harvest(func):
+    d = os.path.join(WINS, func)
+    srcs = sorted(glob.glob(os.path.join(d, '**', 'source.c'), recursive=True)) \
+        or sorted(glob.glob(os.path.join(d, '*.c')))
+    if not srcs:
+        return False, 'no source in win dir'
+    body = extract_function(srcs[-1], func)
+    if not body:
+        return False, 'could not extract function'
+    cfile = find_owner(func)
+    if not cfile:
+        return False, 'no owning .c (already closed?)'
+
+    original = splice(cfile, func, body)
+    if original is None:
+        return False, 'no pragma to replace'
+
+    ok, why = gate()
+    if not ok:
+        open(cfile, 'w').write(original)
+        sh(f'bash {TOOLS}/mk.sh')          # restore objects to the good state
+        return False, why
+
+    pct, n, port, owed = metrics()
+    msg = (f'factory: {func} | decomp {pct:.1f}% ({n} pragmas left) | '
+           f'port {port:.1f}% ({owed} funcs owed)\n\n'
+           f'Closed by decomp-permuter and harvested unattended. Committed only\n'
+           f'because the fully linked ROM is byte-exact against the base\n'
+           f'({BASE_SHA1}) with 0 TU-size problems, clean .rodata bytes and no\n'
+           f'real defects from verify_rom.py. Source is the permuter\'s\n'
+           f'preprocessed form -- correct, not pretty.\n')
+    subprocess.run(['git', 'add', cfile], capture_output=True, text=True)
+    subprocess.run(['git', 'commit', '-q', '-m', msg], capture_output=True, text=True)
+    subprocess.run(['git', 'push', '-q', '-u', 'origin', BRANCH],
+                   capture_output=True, text=True)
+    return True, f'committed ({n} left)'
+
+
+def main():
+    os.makedirs(DONE, exist_ok=True)
+    once = '--once' in sys.argv
+    while True:
+        pending = [os.path.basename(p) for p in sorted(glob.glob(os.path.join(WINS, '*')))
+                   if os.path.isdir(p)]
+        for func in pending:
+            log(f'harvesting {func}')
+            try:
+                ok, why = harvest(func)
+            except Exception as e:                      # never die on one bad win
+                ok, why = False, f'exception: {e}'
+            log(f'{"COMMITTED" if ok else "rejected"} {func}: {why}')
+            shutil.move(os.path.join(WINS, func),
+                        os.path.join(DONE, f'{func}.{int(time.time())}'))
+        if once:
+            return
+        time.sleep(60)
+
+
+if __name__ == '__main__':
+    main()
