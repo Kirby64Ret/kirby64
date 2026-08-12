@@ -1,5 +1,6 @@
 #include "common.h"
 #include "track_arrays.h"
+#include "GObj.h"
 
 struct UnkEA20 {
     /* 0x00 */ char pad0[0xC];
@@ -20,6 +21,22 @@ struct Unk8010E5B0Arg3 {
     struct Unk8010E5B0Node **unk8;
     f32 (*unkC)[4][3];
 };
+
+struct Unk8010E740 {
+    u8 unk0;
+    u8 pad1[3];
+    u8 unk4;
+    u8 pad5[3];
+    s32 unk8;
+    Vector unkC;
+    Vector unk18;
+};
+
+extern s32 D_8012D0C0;
+extern s32 D_8012D580;
+extern struct Unk8010E5B0Arg3 D_80124990;
+extern struct Unk8010E5B0Arg3 D_801249A0;
+extern struct Unk8010E5B0Arg3 D_801249B0;
 
 void func_800A5D88(void *, void *);
 void func_800A5F94(s32, void *);
@@ -63,7 +80,68 @@ void func_8010E6F0(Vector *arg0, s32 arg1) {
     arg0->z += gEntitiesNextPosZArray[arg1];
 }
 
+#ifdef NON_MATCHING
+void func_8010E740(struct Unk8010E740 *arg0, s32 arg1) {
+    struct Unk8010E5B0Arg3 *q;
+    struct Unk8010E5B0Node *node;
+    s32 v;
+
+    v = arg0->unk8;
+    if (v == -1) {
+        switch (arg0->unk4) {
+        case 0:
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        }
+    } else if (arg0->unk8 == -2) {
+        switch (arg0->unk4) {
+        case 0:
+            func_8010E6F0(&arg0->unkC, arg1);
+            break;
+        case 1:
+            func_8010E6F0(&arg0->unkC, arg1);
+            break;
+        case 2:
+            func_8010E6F0(&arg0->unkC, arg1);
+            func_8010E6F0(&arg0->unk18, arg1);
+            break;
+        }
+    } else {
+        node = (struct Unk8010E5B0Node *) v;
+        if (arg0->unk8 == -3) {
+            node = D_800DE350[arg1]->data.ptr;
+        }
+        if (arg1 == D_8012D0C0) {
+            q = &D_801249A0;
+        } else {
+            if (arg1 == D_8012D580) {
+                q = &D_801249B0;
+            } else {
+                q = &D_80124990;
+            }
+            q->unk0 = 0;
+        }
+        switch (arg0->unk4) {
+        case 0:
+            func_8010E5B0(&arg0->unkC, node, arg1, q);
+            break;
+        case 1:
+            func_8010E5B0(&arg0->unkC, node, arg1, q);
+            break;
+        case 2:
+            func_8010E5B0(&arg0->unkC, node, arg1, q);
+            func_8010E5B0(&arg0->unk18, node, arg1, q);
+            break;
+        }
+    }
+    arg0->unk0 = 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010E740.s")
+#endif
 
 #ifdef MIPS_TO_C
 /* 25/76 diffs. Structure is instruction-for-instruction exact; the whole
