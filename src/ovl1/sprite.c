@@ -44,9 +44,13 @@ struct C954Arg2 {
 // this burns one. Swept casts, shifts, s16 args, 1 and 4 explicit temps: no move.
 #ifdef NON_MATCHING
 void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
-    D_800D4E64 = arg0 * 4;
+    s16 t;
+
+    t = arg0;
+    D_800D4E64 = t * 4;
     D_800D4E68 = arg1 * 4;
-    D_800D4E6C = arg2 * 4;
+    t = arg2;
+    D_800D4E6C = t * 4;
     D_800D4E70 = arg3 * 4;
     if (arg4 != 0) {
         D_800D4E74 = 1;
@@ -339,19 +343,15 @@ void func_800ACC30(s16 *arg0, s16 *arg1, SPObj *spobj) {
     *arg1 = spobj->yOffset * 4.0f;
 }
 
-#ifdef NON_MATCHING
+// The one-line `do { ... } while (0)` is LOAD-BEARING (permuter result, applied
+// verbatim): it splits the basic block so the 1024.0f `lui` is materialised
+// before the 0x8000 `ori`. The `(u16 *)` casts are what make 0x8000 an `ori`
+// rather than a sign-extending `addiu`.
 void func_800ACC68(s16 *arg0, s16 *arg1, SPObj *spobj) {
     f32 scale;
     f32 mag;
 
-    scale = spobj->xScale;
-    mag = (scale < 0.0f) ? -scale : scale;
-    if (mag < 0.03125f) {
-        *(u16 *) arg0 = 0x8000;
-    } else {
-        *arg0 = (u32) (1024.0f / scale);
-    }
-    scale = spobj->yScale;
+    do { scale = spobj->xScale; mag = (scale < 0.0f) ? -scale : scale; if (mag < 0.03125f) { *(u16 *) arg0 = 0x8000; } else { *arg0 = (u32) (1024.0f / scale); } scale = spobj->yScale; } while (0);
     mag = (scale < 0.0f) ? -scale : scale;
     if (mag < 0.03125f) {
         *(u16 *) arg1 = 0x8000;
@@ -359,9 +359,6 @@ void func_800ACC68(s16 *arg0, s16 *arg1, SPObj *spobj) {
         *arg1 = (u32) (1024.0f / scale);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ACC68.s")
-#endif
 
 s32 func_800ACE1C(u8 arg0, u16 *tlut) {
     if (arg0 == 2) {

@@ -984,7 +984,63 @@ void func_801E72B8_ovl10(GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef NON_MATCHING
+/* 31/112 (the ROM is 111): fully decoded and every call, constant and branch
+   is right. Two residues. (1) The ROM's local block is Vector@0x3C, f32@0x48,
+   an 8-byte hole, struct@0x54 -- `f32 pad[2]` between the struct and `sp48`
+   gets the frame to 0x60 but not the hole's position. (2) The ROM COPIES
+   sp54.unk4 into its own slot (`lwc1 0x58 / swc1 0x48`) and re-reads that
+   across the two calls, where IDO re-reads the struct field directly, which
+   is the one extra instruction. A local `struct Ovl10TrackPos` plus an
+   `(s32 *)` cast at the func_8019A900_ovl7 call is needed because this file's
+   prototype for it is `s32 func_8019A900_ovl7(s32 *)`; two separate s32/f32
+   locals instead of the struct measure 101. */
+f32 eneGetPlayerHeight(void);
+f32 atan2f(f32, f32);
+struct Ovl10TrackPos {
+    s32 unk0;
+    f32 unk4;
+};
+
+void func_801E7424_ovl10(GObj *arg0) {
+    struct Ovl10TrackPos sp54;
+    f32 pad[2];
+    f32 sp48;
+    Vector sp3C;
+
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        func_8019A900_ovl7((s32 *) &sp54);
+        sp48 = sp54.unk4;
+        sp3C.x = 0.4f;
+        sp3C.y = 0.0f;
+        sp3C.z = 0.0f;
+        lbvector_Rotate(&sp3C, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], sp48));
+        D_800E6690[omCurrentObj->objId] = sp3C.x;
+        D_800E3750[omCurrentObj->objId] = sp3C.y;
+        if (sp54.unk0 != D_800E6A10[omCurrentObj->objId]) {
+            f32 v = D_800E64D0[omCurrentObj->objId];
+            f32 a;
+
+            if (v < 0.0f) {
+                a = -v;
+            } else {
+                a = v;
+            }
+            if (a < 1.0f) {
+                D_800E64D0[omCurrentObj->objId] = -v * D_800E6A10[omCurrentObj->objId];
+                D_800E6690[omCurrentObj->objId] = -D_800E6690[omCurrentObj->objId] * D_800E6A10[omCurrentObj->objId];
+                if (D_800E6850[omCurrentObj->objId] < 0.0f) {
+                    D_800E6850[omCurrentObj->objId] = -D_800E6850[omCurrentObj->objId];
+                } else {
+                    D_800E6850[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId];
+                }
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E7424_ovl10.s")
+#endif
 
 void func_801E75E4_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4540_ovl10);

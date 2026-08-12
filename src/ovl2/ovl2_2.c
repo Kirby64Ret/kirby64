@@ -285,6 +285,9 @@ void func_800F7404(s32 arg0) {
 //     so only the absolute form (u8 *) 0x800D6D10 costs 2 instructions.
 //   * `dst++; dst[-1] = val;` gives the ROM's `addiu $a2,4` + `sw -0x4($a2)`
 //     in the delay slot; `*dst++ = val;` puts the bump in the delay slot.
+//   * Re-tested this wave: dead primes that would consume a $t temp
+//     (dst = D_800D6D10[0] in three positions) are eliminated before register
+//     allocation and are completely inert -- the one-slot offset does not move.
 extern u8 D_800D6C94[];
 
 void func_800F7484(s32 arg0) {
@@ -312,10 +315,6 @@ void func_800F7484(s32 arg0) {
         dst[-1] = val;
     } while (src != (u8 *) 0x800D6D10);
 }
-
-
-
-
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7484.s")
 #endif

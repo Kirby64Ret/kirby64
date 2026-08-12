@@ -114,6 +114,12 @@ void func_801D12A4_ovl8(void) {
     D_800E2250[omCurrentObj->objId] = 0.0;
 }
 
+/* 50/128, and instructions 0..32 are byte-identical. The whole residue starts
+ * at the D_800E3210 copy in the first arm: the ROM materialises &D_800E3210 into
+ * a base register ($t4) and addresses BOTH sides off it, IDO emits two separate
+ * `lui $at` + %lo pairs. Same instruction count either way; the base register
+ * shifts every temp number from that point on (and back to insn 33). */
+#ifdef NON_MATCHING
 void func_801D1334_ovl8(void) {
     extern struct UnkStruct800D7098 D_800D7098;
 
@@ -132,6 +138,9 @@ void func_801D1334_ovl8(void) {
     gEntitiesNextPosYArray[omCurrentObj->objId] += D_800E3210[omCurrentObj->objId] + D_800EA6E0[omCurrentObj->objId];
     gEntitiesNextPosZArray[omCurrentObj->objId] += D_800E2410[omCurrentObj->objId];
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D1334_ovl8.s")
+#endif
 
 
 void func_801D152C_ovl8(void) {

@@ -698,7 +698,28 @@ void func_801DFB00_ovl14(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, D_801E2F1C_ovl14);
 }
 
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 63/65 insns. Draft kept. */
+void func_801DFB48_ovl14(arg0)
+GObj *arg0;
+{
+    extern void func_801129AC(void);
+    extern void func_800FA414(s32);
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    func_801129AC();
+    func_800FA414(2);
+    D_80129138 = omCurrentObj->objId;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    while (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 1) {
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DFB48_ovl14.s")
+#endif
+
 
 void func_801DFC28_ovl14(GObj *arg0) {
 

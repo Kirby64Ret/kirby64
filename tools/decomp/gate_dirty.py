@@ -30,6 +30,8 @@ Never commit it as live code.
 Usage:
     gate_dirty.py            check every dirty .c file
     gate_dirty.py --fix      re-guard whatever is red, keeping the draft
+    gate_dirty.py --since R  check everything touched since revision R
+    gate_dirty.py --all      check the whole tree (slow, but complete)
     gate_dirty.py --staged   check what is staged instead
     gate_dirty.py -q         only print the verdict
 """
@@ -39,15 +41,37 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 os.chdir(REPO)
 
 
-def dirty(staged):
-    cmd = 'git diff --cached --name-only' if staged else 'git status --porcelain'
+def dirty(staged, since=None):
+    """Files to check.
+
+    Default is what git reports as changed. THAT IS NOT ENOUGH ON ITS OWN, and
+    the gap is worth spelling out because I walked into it twice: a file that
+    was already COMMITTED with a live non-matching function is clean in git and
+    therefore invisible here. src/ovl19/ovl19_3.c sat committed with a function
+    live at 32/150, and src/ovl8/ovl8.c at 50/128 -- the second one grew its TU
+    by 16 bytes and pushed the whole ROM image 16 bytes long. Only a full link
+    found either.
+
+    So `--since <rev>` widens the net to everything touched since a known-green
+    commit, and `--all` checks the whole tree. Use --since after any period
+    where commits went out without a link behind them.
+    """
+    if '--all' in sys.argv:
+        cmd = 'git ls-files src/*/*.c src/*.c'
+    elif since:
+        cmd = f'git diff --name-only {since}'
+    elif staged:
+        cmd = 'git diff --cached --name-only'
+    else:
+        cmd = 'git status --porcelain'
     out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
+    porcelain = cmd.startswith('git status')
     files = []
     for line in out.split('\n'):
         line = line.strip()
         if not line:
             continue
-        p = line if staged else line[2:].strip()
+        p = line[2:].strip() if porcelain else line
         # Deleted files have nothing to verify; untracked ones are not yet
         # part of the build.
         if p.endswith('.c') and p.startswith('src/') and os.path.exists(p):
@@ -113,8 +137,11 @@ def reguard(path, fn, residue):
 def main():
     staged = '--staged' in sys.argv
     fix = '--fix' in sys.argv
+    since = None
+    if '--since' in sys.argv:
+        since = sys.argv[sys.argv.index('--since') + 1]
     quiet = '-q' in sys.argv
-    files = dirty(staged)
+    files = dirty(staged, since)
     if not files:
         print('-- no dirty C files --')
         return 0

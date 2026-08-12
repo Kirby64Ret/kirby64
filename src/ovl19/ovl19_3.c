@@ -1508,9 +1508,14 @@ void func_8022E198_ovl19(GObj *g) {
     (&D_8022FAB0_ovl19)[1]->unkC = sp1C.z;
 }
 
-/*LANE_BEGIN*/
+/* 32/150, instruction count exact and the first 77 instructions byte-identical.
+ * Residue: from the `if (D_8022FAB0_ovl19 ...)` body onward the whole $t file
+ * is rotated one slot (ROM t0/t2/t1/t3, IDO t7/t0/t2/t1) and that rotation
+ * carries to the end of the function.  Swept: `!= NULL` vs truthiness vs
+ * assignment-inside-the-condition (all three inert), statement order in the
+ * if-body (fixed by the ROM's store order).  Same register-file-offset family
+ * as func_800F7404 in ovl2_2.c. */
 #ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 32/150 insns. Draft kept. */
 void func_8022E224_ovl19(GObj *g) {
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B4954;
@@ -1521,7 +1526,8 @@ void func_8022E224_ovl19(GObj *g) {
     D_800E6BD0[omCurrentObj->objId] = *D_800E6BD0 + 0.37f;
     D_800E17D0[omCurrentObj->objId] = *gEntitiesAngleYArray;
     gEntitiesAngleYArray[omCurrentObj->objId] = *gEntitiesAngleYArray;
-    if ((D_8022FAB0_ovl19 = func_800FF144()) != NULL) {
+    D_8022FAB0_ovl19 = func_800FF144();
+    if (D_8022FAB0_ovl19 != NULL) {
         D_8022FAB0_ovl19->unk10 = 18.0f;
         D_8022FAB0_ovl19->unk14 = 20.0f;
         D_8022FAB0_ovl19->unk18 = -240.0f;
@@ -1541,8 +1547,6 @@ void func_8022E224_ovl19(GObj *g) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022E224_ovl19.s")
 #endif
-
-/*LANE_END*/
 void func_8022E47C_ovl19(GObj *g) {
     Vector vec;
 

@@ -393,7 +393,41 @@ done:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017AEE8_ovl5.s")
 #endif
 
+#ifdef NON_MATCHING
+/* 10/134: same length, same frame, same saved-register set, and the four
+   trailing nops after the infinite loop come out of this C by themselves.
+   The residue is the $v0/$v1 rotation of the `omCurrentObj->objId << 2` index
+   temp inside the loop (ROM $v0, IDO $v1) -- the named blocker. Swept: the
+   `&&` split into nested ifs (10). */
+void func_8017B230_ovl5(GObj *);
+s32 func_8017AEE8_ovl5(s32, s32, f32, s32);
+
+void func_8017B018_ovl5(GObj *arg0, s32 arg1) {
+    D_8018ED90_ovl5[arg1] = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0xA;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = arg1;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800EA1A0[omCurrentObj->objId] = 0;
+    ohSleep(0xA);
+    D_800DF150[omCurrentObj->objId] = func_8017B230_ovl5;
+    while (1) {
+        if (D_8018ED04_ovl5 == 1 && D_800E9C60[omCurrentObj->objId] != 0) {
+            while (func_8017AEE8_ovl5(arg1, D_800E9C60[omCurrentObj->objId], D_800EA6E0[omCurrentObj->objId],
+                                      D_800E9FE0[omCurrentObj->objId].as_s32) == 0) {
+                ohSleep(1);
+            }
+            D_800E9C60[omCurrentObj->objId] = 0;
+            if ((&D_8018ED38_ovl5)[arg1] == 1) {
+                D_800EA1A0[omCurrentObj->objId] = 1;
+            }
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B018_ovl5.s")
+#endif
 
 #include "main/contpad.h"
 

@@ -839,7 +839,75 @@ void func_80221108_ovl19(struct GObj *arg0, s32 arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221108_ovl19.s")
 #endif
 // the same rabbit hole as func_80220280_ovl19
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")
+/*LANE_BEGIN*/
+s32 func_800FCD14();
+void func_802211A0_ovl19(GObj *arg0) {
+    s32 *p = (s32 *)((u32)&D_800D6F18);
+    Vector pos;
+    Vector angle;
+    Vector scale;
+    GObj *o;
+    s32 id;
+    s32 v;
+
+    {
+        D_800DEF90[omCurrentObj->objId] = NULL;
+        setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+        D_800E98E0[omCurrentObj->objId] = 3;
+        p[4] = 0;
+        p[3] = -1;
+        func_800F8E6C(arg0);
+        while (1) {
+            o = omCurrentObj;
+            id = o->objId;
+            if (D_800E98E0[id] != 0) {
+                v = p[3];
+                if (-1 != v) {
+                    if (v == p[0]) {
+                        p[4] |= 1;
+                    } else if (v == p[1]) {
+                        p[4] |= 2;
+                    } else if (v == p[2]) {
+                        p[4] |= 4;
+                    }
+                    p[3] = -1;
+                    D_800E98E0[o->objId] -= 1;
+                    if (D_800E98E0[o->objId] == 0) {
+                        if (p[4] == 7) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                func_800B1900((u16) id);
+            }
+            ohSleep(1);
+        }
+        gEntitiesNextPosYArray[o->objId] = 160.0f;
+        if (D_800D6E30[D_800BE508] == 0) {
+            play_sound(0x112);
+            func_800A7F74(3, 0, 0xCE, gEntitiesNextPosXArray[omCurrentObj->objId],
+                          gEntitiesNextPosYArray[omCurrentObj->objId],
+                          gEntitiesNextPosZArray[omCurrentObj->objId]);
+            ohSleep(0x12);
+            pos.x = 0.0f;
+            pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            pos.z = 0.0f;
+            angle.x = 0.0f;
+            angle.y = 0.0f;
+            angle.z = 0.0f;
+            scale.x = 1.0f;
+            scale.y = 1.0f;
+            scale.z = 1.0f;
+            play_sound(0x1FC);
+            func_800FCD14(0xFF, D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId],
+                          3, 7, 2, 0, 0, 0x35, &pos, &angle, &scale);
+        }
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
+
+/*LANE_END*/
 
 Vector D_8022F0F8_ovl19 = {-100, 0, 100};
 
