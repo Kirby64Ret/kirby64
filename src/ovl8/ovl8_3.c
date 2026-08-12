@@ -263,4 +263,41 @@ void func_801D4440_ovl8(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_3/func_801D447C_ovl8.s")
+void func_801D447C_ovl8(arg0)
+struct GObj *arg0;
+{
+    extern void func_8019BB58_ovl7(void);
+    extern void func_800AFBB4(s32, struct GObj *);
+    extern void play_music(s32, s32);
+    extern void auSetBGMVolume(s32, s32);
+    extern void func_800F6C40(s32, s32);
+    extern s32 D_800D6B54;
+    extern s32 D_800BE4F8;
+    extern s32 D_800BE508;
+
+    func_8019BB58_ovl7();
+    D_800DEDD0[omCurrentObj->objId] = NULL;
+    D_800DF150[omCurrentObj->objId] = NULL;
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    func_800AFBB4(0, omCurrentObj);
+    if (D_800D6B54 == 0) {
+        play_music(0, 0x99999999);
+        auSetBGMVolume(0, 0x7800);
+    }
+    switch (D_800E7880[omCurrentObj->objId]) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            ohSleep(0x5A);
+            if (D_800BE4F8 == 1) {
+                func_800F6C40(D_800BE508 + 1, 0);
+            }
+            break;
+    }
+    curObjSleepForever();
+}
+

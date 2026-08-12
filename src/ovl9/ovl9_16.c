@@ -341,8 +341,13 @@ void func_80219924_ovl9(s32 arg0) {
 
 }
 
-/* Frame-layout anomaly: instruction-identical, but IDO reserves 4 bytes below
-   the local block that the ROM does not (frame 0x40 vs 0x38). */
+/* Frame-layout anomaly, DECIDED -- do not re-attempt. IDO lays the frame out as
+   align8(0x1C + sizeof locals), the ROM as align8(0x18 + sizeof locals), and the
+   local block sits at (frame - sizeof locals). Here sizeof(struct Ovl9AnimInfo)
+   is 0x20, so IDO gives frame 0x40 / local at 0x20 and the ROM has 0x38 / 0x18.
+   A match needs (sizeof locals) == 4 (mod 8); 0x20 is 0 (mod 8), and no struct
+   size reproduces BOTH the 0x38 frame and the 0x18 local base (0x1C gives frame
+   0x38 with the local at 0x1C, 0x24 gives frame 0x40). 4 diffs, all frame. */
 #ifdef NON_MATCHING
 void func_8021992C_ovl9(struct GObj *arg0) {
     struct Ovl9AnimInfo sp18;

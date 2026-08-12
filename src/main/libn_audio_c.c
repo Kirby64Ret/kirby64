@@ -224,7 +224,9 @@ s32 _allocatePVoice(N_PVoice **pvoice, s16 priority) {
     return stolen;
 }
 
-#ifdef NON_MATCHING
+/* upstream libnaudio/n_synallocvoice.c n_alSynAllocVoice.  The one deviation
+ * from upstream is that the ROM null-checks the FIRST __n_allocParam too (the
+ * ramp-down update), where upstream only has an ALFailIf under _DEBUG. */
 s32 n_alSynAllocVoice(N_ALVoice *voice, ALVoiceConfig *vc) {
     N_PVoice *pvoice = 0;
     ALFilter *f;
@@ -250,12 +252,14 @@ s32 n_alSynAllocVoice(N_ALVoice *voice, ALVoiceConfig *vc) {
             voice->pvoice = pvoice;
 
             update = __n_allocParam();
-            update->delta = n_syn->paramSamples;
-            update->type = AL_FILTER_SET_VOLUME;
-            update->data.i = 0;
-            update->moredata.i = pvoice->offset - 64;
+            if (update) {
+                update->delta = n_syn->paramSamples;
+                update->type = AL_FILTER_SET_VOLUME;
+                update->data.i = 0;
+                update->moredata.i = pvoice->offset - 64;
 
-            n_alEnvmixerParam(voice->pvoice, AL_FILTER_ADD_UPDATE, update);
+                n_alEnvmixerParam(voice->pvoice, AL_FILTER_ADD_UPDATE, update);
+            }
 
             update = __n_allocParam();
             if (update) {
@@ -274,6 +278,3 @@ s32 n_alSynAllocVoice(N_ALVoice *voice, ALVoiceConfig *vc) {
 
     return (pvoice != 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_c/n_alSynAllocVoice.s")
-#endif

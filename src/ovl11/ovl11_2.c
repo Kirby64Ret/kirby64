@@ -164,6 +164,16 @@ void func_801DF650_ovl11(struct GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
+/* 5/28: a one-slot rotation of the v0/v1/a0 triple. ROM: $v0 = scaled index
+   (the sll overwrites the raw objId in place), $v1 = &D_800E98E0[id],
+   $a1 = the loaded value. IDO: $v0 = raw objId, $v1 = scaled index,
+   $a0 = pointer. Measured: INLINING omCurrentObj->objId at both uses is what
+   makes the sll write in place (11/28, and the whole triple is then rotated one
+   slot the other way, $v1/$v0/$a0 against the ROM's $v0/$v1/$a1); dropping the
+   pointer local costs 10/28; integer declaration order is inert here in both
+   the pointer and the inlined form. The two halves of the fix are reachable
+   separately but not together -- what is missing is one more source-level
+   temporary in the inlined form. */
 void func_801DF728_ovl11(void) {
     s32 *temp_v1;
     s32 temp_a1;
@@ -333,6 +343,16 @@ void func_801DFEA8_ovl11(void) {
 }
 
 #ifdef NON_MATCHING
+/* 2/44: the y-difference sub lands in $f0 where the ROM uses $f14; everything
+   else, including the $f2/$f12 assignments, is exact. IDO's FP pool order here
+   is measured to be f2, f12, f14 with $f0 reused for the first range that dies.
+   Swept (each one compile): a clean 3-local rewrite (17/45, one insn too many),
+   dropping the `temp_f14 = temp_f14` self-assign (still 2), dropping the
+   `temp_f14 = zd; temp_f2 = temp_f14;` two-step (8/44 -- every FP reg shifts one
+   slot DOWN, which is what identifies the pool order), chaining that two-step
+   (still 2), and giving the y-diff its own two-step (4/44 -- that DOES put the
+   y-diff in $f14 but then the z-diff takes $f0). The two constraints trade
+   against each other; an extra live range spanning the y-diff is what is needed. */
 s32 func_801E00B8_ovl11(s32 arg0)
 {
   f32 temp_f12;

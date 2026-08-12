@@ -396,22 +396,16 @@ void func_80151E10_ovl6(s32 arg0) {
     func_80151CD0_ovl6(arg0, &sp1C);
 }
 
-#ifdef NON_MATCHING
 void func_80151E60_ovl6(GObj *arg0, Lights1 *arg1) {
-    u32 **seg;
-    Light *light;
     u32 id;
 
     id = arg0->objId;
     gDPPipeSync(gDisplayListHeads[0]++);
-    seg = &gSegment4StartArray[id];
-    gSPSegment(gDisplayListHeads[0]++, 4, *seg);
+    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
     gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-    light = &arg1->l[0];
-    gSPLight(gDisplayListHeads[0]++, light, 1);
+    gSPLight(gDisplayListHeads[0]++, &arg1->l[0], 1);
     gSPLight(gDisplayListHeads[0]++, arg1, 2);
-    id = func_800AB0F4(arg0);
-    switch (id) {
+    switch (func_800AB0F4(arg0)) {
         case 19:
         case 21:
         case 23:
@@ -427,9 +421,9 @@ void func_80151E60_ovl6(GObj *arg0, Lights1 *arg1) {
         case 24:
         case 26:
             gDPPipeSync(gDisplayListHeads[1]++);
-            gSPSegment(gDisplayListHeads[1]++, 4, *seg);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
             gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-            gSPLight(gDisplayListHeads[1]++, light, 1);
+            gSPLight(gDisplayListHeads[1]++, &arg1->l[0], 1);
             gSPLight(gDisplayListHeads[1]++, arg1, 2);
             renderDrawObject_TypeD(arg0);
             gDPPipeSync(gDisplayListHeads[1]++);
@@ -438,9 +432,9 @@ void func_80151E60_ovl6(GObj *arg0, Lights1 *arg1) {
         case 28:
         case 30:
             gDPPipeSync(gDisplayListHeads[1]++);
-            gSPSegment(gDisplayListHeads[1]++, 4, *seg);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
             gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-            gSPLight(gDisplayListHeads[1]++, light, 1);
+            gSPLight(gDisplayListHeads[1]++, &arg1->l[0], 1);
             gSPLight(gDisplayListHeads[1]++, arg1, 2);
             func_80015BCC(arg0);
             gDPPipeSync(gDisplayListHeads[1]++);
@@ -450,30 +444,17 @@ void func_80151E60_ovl6(GObj *arg0, Lights1 *arg1) {
     gDPPipeSync(gDisplayListHeads[0]++);
     gSPLight(gDisplayListHeads[0]++, &D_8015A670_ovl6->l[0], 1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151E60_ovl6.s")
-#endif
-/* 22/228: instruction-for-instruction exact except one register-class
- * allocation cluster (the ROM keeps the seg pointer in t4 spilled at 0x30 and
- * the DB020000 constant in $ra; IDO picks a2/0x94). Same residue family as
- * func_80151E60_ovl6 above. Swept: id/seg locals in all orders, inline forms. */
-#ifdef NON_MATCHING
 void func_80152138_ovl6(GObj *arg0, Lights1 *arg1) {
-    u32 **seg;
-    Light *light;
     u32 id;
 
     id = arg0->objId;
     gDPPipeSync(gDisplayListHeads[0]++);
-    seg = &gSegment4StartArray[id];
-    gSPSegment(gDisplayListHeads[0]++, 4, *seg);
+    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
     gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-    light = &arg1->l[0];
-    gSPLight(gDisplayListHeads[0]++, light, 1);
+    gSPLight(gDisplayListHeads[0]++, &arg1->l[0], 1);
     gSPLight(gDisplayListHeads[0]++, arg1, 2);
     gDPSetEnvColor(gDisplayListHeads[0]++, arg1->l[0].l.col[0], arg1->l[0].l.col[1], arg1->l[0].l.col[2], 0xFF);
-    id = func_800AB0F4(arg0);
-    switch (id) {
+    switch (func_800AB0F4(arg0)) {
         case 19:
         case 21:
         case 23:
@@ -489,9 +470,9 @@ void func_80152138_ovl6(GObj *arg0, Lights1 *arg1) {
         case 24:
         case 26:
             gDPPipeSync(gDisplayListHeads[1]++);
-            gSPSegment(gDisplayListHeads[1]++, 4, *seg);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
             gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-            gSPLight(gDisplayListHeads[1]++, light, 1);
+            gSPLight(gDisplayListHeads[1]++, &arg1->l[0], 1);
             gSPLight(gDisplayListHeads[1]++, arg1, 2);
             gDPSetEnvColor(gDisplayListHeads[1]++, arg1->l[0].l.col[0], arg1->l[0].l.col[1], arg1->l[0].l.col[2], 0xFF);
             renderDrawObject_TypeD(arg0);
@@ -501,9 +482,9 @@ void func_80152138_ovl6(GObj *arg0, Lights1 *arg1) {
         case 28:
         case 30:
             gDPPipeSync(gDisplayListHeads[1]++);
-            gSPSegment(gDisplayListHeads[1]++, 4, *seg);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
             gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-            gSPLight(gDisplayListHeads[1]++, light, 1);
+            gSPLight(gDisplayListHeads[1]++, &arg1->l[0], 1);
             gSPLight(gDisplayListHeads[1]++, arg1, 2);
             gDPSetEnvColor(gDisplayListHeads[1]++, arg1->l[0].l.col[0], arg1->l[0].l.col[1], arg1->l[0].l.col[2], 0xFF);
             func_80015BCC(arg0);
@@ -514,9 +495,6 @@ void func_80152138_ovl6(GObj *arg0, Lights1 *arg1) {
     gDPPipeSync(gDisplayListHeads[0]++);
     gSPLight(gDisplayListHeads[0]++, &D_8015A670_ovl6->l[0], 1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152138_ovl6.s")
-#endif
 
 void func_801524C8_ovl6(GObj *arg0) {
     gDPPipeSync(gDisplayListHeads[0]++);
@@ -1305,11 +1283,15 @@ inc:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801544E8_ovl6.s")
 #endif
 
+/* 20/27, and the whole residue is ONE redundant `lui $at`. IDO's unroll peels
+ * the same 2 elements as the ROM and addresses them the same way
+ * (%lo(arr)($at) / %lo(arr+4)($at)); the ROM's scheduler leaves the two peeled
+ * stores ADJACENT so the second reuses the first's $at, while IDO hoists the
+ * first store into the slot after its own lui and re-materialises $at for the
+ * second. Measured 2026-08: for/while loop form, s32/u32 counter, and a manual
+ * 2-element peel (which switches IDO to a materialised base register in $a0 and
+ * is further away) all give the identical 20/27. Scheduling, not source shape. */
 #ifdef NON_MATCHING
-// close but not matching: target has a single lui $at with both peeled stores
-// (arr[0]/arr[1]) scheduled after the loop setup; IDO's unroll peel always
-// emits lui+sw for arr[0] immediately, then a second lui for arr[1]
-// (confirmed in isolation with the project's exact cc/flags)
 void func_80154628_ovl6(void) {
     s32 i;
 
@@ -1326,6 +1308,7 @@ void func_80154628_ovl6(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154628_ovl6.s")
 #endif
+
 void func_80154690_ovl6(void) {
     gameSetUpdateRate(1.0f);
     func_80154628_ovl6();
@@ -1535,6 +1518,18 @@ void func_80154C38_ovl6(s32 arg0) {
  * (ROM parks the CSE'd fb0/D_803DA800 temps in t6/t7/t0, IDO picks v1/a2/a3)
  * plus the frame that follows from it. Swept: named-local vs inline CSE,
  * declaration order, flat vs [][320] extern types. */
+/* 24/63. The whole residue follows from the frame: the ROM is 0x20, IDO gives
+ * 0x28. Measured 2026-08 that IDO's frame here is exactly
+ * align8(0x1C + 4 * <number of DECLARED locals>) -- 2 locals and 3 locals both
+ * give 0x28, 5 locals give 0x30 -- so the ROM's 0x20 needs ONE declared local,
+ * and the ROM's single stack slot (0x1C, holding fb0 across the
+ * viApplyScreenSettings call) is that local. Both loop pointers are therefore
+ * compiler temps in the ROM, and every spelling tried that removes p and/or end
+ * as named locals makes IDO recompute the bound instead (63 insns -> 70):
+ * fb0 inlined at all five use sites; p walked as fb0 itself; p/end declared in
+ * the two branch scopes (adds 8, frame 0x30); `register` on p/end (ignored).
+ * Next idea if anyone picks this up: find a loop spelling that keeps the
+ * hoisted bound but names neither pointer. */
 #ifdef NON_MATCHING
 void func_80154C64_ovl6(void) {
     extern u16 gFrameBuffer[];

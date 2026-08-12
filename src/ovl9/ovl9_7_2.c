@@ -921,6 +921,9 @@ void func_800A9EA4(s32);
    an explicit f32 temp for the read-back (11/70), dropping the parameter
    (65/69 -- the parameter and its home slot are required). */
 #ifdef NON_MATCHING
+/* 7/70: pure $a2/$a3 swap. The ROM parks the shared u32 `1` in $a3 and the
+   hoisted D_800E6690 base in $a2; IDO assigns them the other way round. Every
+   other instruction matches. This is the named argument-register rotation. */
 void func_801F58A0_ovl9(struct GObj *arg0) {
     *(u32 *) &D_800E9C60[omCurrentObj->objId] = 1;
     D_800E9E20[omCurrentObj->objId] = 0;

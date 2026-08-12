@@ -31,6 +31,20 @@ typedef struct KTone {
     /* 0x2B */ u8    pad2B[1];
 } KTone;
 
+/* The same nodes seen through their BYTE fields: KTone's `unk28` pointer covers
+ * 0x28..0x2B, so the two flag bytes at 0x2A/0x2B cannot be spelled in that
+ * struct at all. */
+typedef struct KToneB {
+    /* 0x00 */ struct KToneB *next;
+    /* 0x04 */ u8    pad04[0x8];
+    /* 0x0C */ KNote *unk0C;
+    /* 0x10 */ u8    pad10[0xF];
+    /* 0x1F */ u8    unk1F;
+    /* 0x20 */ u8    pad20[0xA];
+    /* 0x2A */ u8    unk2A;
+    /* 0x2B */ u8    unk2B;
+} KToneB;
+
 typedef struct {
     /* 0x00 */ u8   pad00[0x1C];
     /* 0x1C */ void **unk1C;
@@ -383,7 +397,70 @@ void func_80023794(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023794.s")
 #endif
 
+/* 23/62 at -O3 and the instruction COUNT and SEQUENCE are exact: both sweep
+ * loops, both unlink shapes and the branch-likely duplicates all line up, and
+ * the whole residue is that the ROM puts `prev` in $a0 and the saved
+ * `node->next` temp in $a1 while IDO swaps the two (and in the second loop
+ * swaps $v0/$v1 with them).  Same class as func_80023990/func_80023A28 above.
+ * Swept with no movement: all six declaration orders (x2 arm orders -- arm
+ * order IS worth 2, `if (prev != NULL)` first is the ROM's polarity),
+ * while/for, assigning `node` before or after `prev`, and a cur/node
+ * restructure (58, much worse). */
+#ifdef NON_MATCHING
+void func_80023884(void) {
+    KToneB *node;
+    KToneB *next;
+    KToneB *prev;
+    OSIntMask mask;
+
+    mask = osSetIntMask(OS_IM_NONE);
+
+    prev = NULL;
+    node = (KToneB *) D_800978E0.unk3C;
+    while (node != NULL) {
+        next = node->next;
+        if (node->unk2B & 0x80) {
+            if (prev != NULL) {
+                prev->next = node->next;
+            } else {
+                D_800978E0.unk3C = (KTone *) node->next;
+            }
+            if (node->unk2A == 1) {
+                if (node->unk0C != NULL) {
+                    node->unk0C->unk84 = 0;
+                }
+            }
+            node->next = (KToneB *) D_800978E0.unk5C;
+            D_800978E0.unk5C = (KTone *) node;
+        } else {
+            prev = node;
+        }
+        node = next;
+    }
+
+    prev = NULL;
+    node = (KToneB *) D_800978E0.unk40;
+    while (node != NULL) {
+        next = node->next;
+        if (node->unk1F & 0x80) {
+            if (prev != NULL) {
+                prev->next = node->next;
+            } else {
+                D_800978E0.unk40 = (KTone *) node->next;
+            }
+            node->next = (KToneB *) D_800978E0.unk60;
+            D_800978E0.unk60 = (KTone *) node;
+        } else {
+            prev = node;
+        }
+        node = next;
+    }
+
+    osSetIntMask(mask);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023884.s")
+#endif
 
 
 void func_8002397C(KNote *arg0) {
@@ -701,7 +778,37 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNew.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNewMarker.s")
+void alCSeqNewMarker(ALCSeq *seq, ALCSeqMarker *m, u32 ticks)
+{
+    ALEvent     evt;
+    ALCSeq      tempSeq;
+    s32         i;
+
+
+    alCSeqNew(&tempSeq, (u8*)seq->base);
+
+    do {
+        m->validTracks    = tempSeq.validTracks;
+        m->lastTicks      = tempSeq.lastTicks;
+        m->lastDeltaTicks = tempSeq.lastDeltaTicks;
+
+        for(i=0;i<16;i++)
+        {
+            m->curLoc[i]        = tempSeq.curLoc[i];
+            m->curBUPtr[i]      = tempSeq.curBUPtr[i];
+            m->curBULen[i]      = tempSeq.curBULen[i];
+            m->lastStatus[i]    = tempSeq.lastStatus[i];
+            m->evtDeltaTicks[i] = tempSeq.evtDeltaTicks[i];
+        }
+
+        alCSeqNextEvent(&tempSeq, &evt);
+
+        if (evt.type == AL_SEQ_END_EVT)
+            break;
+
+    } while (tempSeq.lastTicks < ticks);
+
+}
 
 char __alCSeqNextDelta(ALCSeq *seq, s32 *pDeltaTicks)
 {
@@ -923,7 +1030,26 @@ void func_800263F0(KCSeqp *seqp) {
     }
 }
 
+/* 1/14 at -O3 and ABI-BLOCKED, not a source defect.  Verbatim upstream
+ * libnaudio/n_csplayer.c __n_setUsptFromTempo, and every instruction lines up
+ * one slot late: our only extra word is the entry `mtc1 $a1, $f12`.  The ROM
+ * takes `seqp` in $a0 and `tempo` ALREADY IN $f12, which o32 cannot express --
+ * a float in argument slot 1 behind an integer slot 0 is passed in $a1, so the
+ * move is mandatory.  __n_setUsptFromTempo is `static` upstream and IDO's ujoin
+ * gives static callees a custom convention; ujoin is missing from
+ * tools/ido-7.1recomp, which is the same blocker as func_8002581C/__readVarLen
+ * (args in $t2/$t3).  No source spelling reaches it. */
+#ifdef NON_MATCHING
+void func_80026460(KCSeqp *seqp, f32 tempo) {
+    if (seqp->target) {
+        seqp->uspt = (s32) ((f32) tempo * seqp->target->qnpt);
+    } else {
+        seqp->uspt = 488;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026460.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002649C.s")
 
@@ -1759,7 +1885,48 @@ void func_8002A1C4(ALLowPass *lp) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002A290.s")
+/* upstream libnaudio/n_reverb.c n_alFxParamHdl.  RANGE (2.0) has to be spelled
+ * as the INTEGER 2: `x * 2.0f` is strength-reduced by IDO to `add.s $f,$f,$f`
+ * (and `x * 2.0` to `add.d`), while `2 * x` materialises 2.0f with lui/mtc1 and
+ * gives the ROM's `mul.s`. */
+s32 func_8002A290(void *filter, s32 paramID, void *param) {
+    ALFx *f = (ALFx *) filter;
+    s32 p = (paramID - 2) % 8;
+    s32 s = (paramID - 2) / 8;
+    s32 val = *(s32 *) param;
+
+    switch (p) {
+        case 0:
+            f->delay[s].input = (u32) val & 0xFFFFFFF8;
+            break;
+        case 1:
+            f->delay[s].output = (u32) val & 0xFFFFFFF8;
+            break;
+        case 3:
+            f->delay[s].ffcoef = (s16) val;
+            break;
+        case 2:
+            f->delay[s].fbcoef = (s16) val;
+            break;
+        case 4:
+            f->delay[s].gain = (s16) val;
+            break;
+        case 5:
+            f->delay[s].rsinc = (2 * (((f32) val) / 1000)) / n_syn->outputRate;
+            break;
+        case 6:
+            f->delay[s].rsgain =
+                (((f32) val) / 173123.404906676f) * (f->delay[s].output - f->delay[s].input);
+            break;
+        case 7:
+            if (f->delay[s].lp) {
+                f->delay[s].lp->fc = (s16) val;
+                func_8002A1C4(f->delay[s].lp);
+            }
+            break;
+    }
+    return 0;
+}
 
 s32 func_8002A4E4(N_PVoice *filter, s32 paramID, void *param) {
     n_alLoadParam(filter, paramID, param);

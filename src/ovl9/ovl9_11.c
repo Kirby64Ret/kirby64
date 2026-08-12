@@ -47,6 +47,12 @@ extern void func_800B7B64(void);
 #ifdef NON_MATCHING
 extern FUNCLIST D_8021C8D8_ovl9;
 
+/* 7/79: a one-slot rotation of the argument registers -- ROM keeps `tmp` in
+   $a2 and &D_800E6A10[objId] in $a1, IDO uses $a1 and $a0. Every other
+   instruction, including the scheduling, is exact. Measured: an explicit
+   `f32 *p = &D_800E6A10[objId]; *p = -*p;` is 79/81 and dropping the `tmp`
+   local entirely is 77/80, so both of the obvious temp-count changes are far
+   worse -- the extra source temporary the rotation wants is somewhere else. */
 void func_80207374_ovl9(void) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 

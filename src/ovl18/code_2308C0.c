@@ -339,66 +339,75 @@ void func_8021FD48_ovl18(void) {
     }
 }
 
-/* 45/57 and one instruction short.  The `goto out` shape below is what
- * reproduces the ROM's two likely-branch exits out of the ABS()/sign test;
- * the residue is a $v0/$v1 swap (ROM keeps omCurrentObj in $v1 and the
- * D_800E1B50 entry in $v0) plus one missing instruction.  Swept: an explicit
- * `struct GObj *obj` local, inline omCurrentObj at every use, and if/else vs
- * goto for the negate path. */
+/* 45/57 -> 40/54.  Two fixes over the previous draft, both proved on the
+ * siblings in this file: this TU's .rodata is MIGRATED, so the constant has to
+ * be the LITERAL 0.17453294f (an `extern f32 D_8022BB8C_ovl18` would not even
+ * link), and the ROM's two likely-branch exits out of the sign test are ONE
+ * `if (old >= 0 || temp > 0)` -- two separate `if ... goto out` statements do
+ * not put `addu $a1, $a0, $v0` in either delay slot.
+ * What is left is a whole-function register rotation: the ROM keeps
+ * &D_800D7098 in $a2 and temp/ABS(temp) in $v0/$a0, IDO uses $a3 and $a0/$v0,
+ * and IDO hoists the `lw objId` into the two likely-branch delay slots where
+ * the ROM loads it once in the tail.  Swept at 40-47: an explicit
+ * `struct GObj *obj` local (47), `old = -D_800D7098.unk8` vs a reload-then-
+ * negate local, the product inline vs folded into `ft` first. */
 #ifdef NON_MATCHING
-extern f32 D_8022BB8C_ovl18;
-
 void func_8021FDF4_ovl18(void) {
     struct UnkStruct800E1B50 *ent;
-    struct GObj *obj;
     s32 temp;
     s32 old;
     s32 sum;
+    f32 ft;
 
-    obj = omCurrentObj;
-    ent = D_800E1B50[obj->objId];
+    ent = D_800E1B50[omCurrentObj->objId];
     if (ent->unk3D == 0x17) {
         D_800D7098.unk8 = 1;
     }
-    temp = *(s32 *) &D_800D7098.unk4;
+    temp = D_800D7098.unk4;
     if (ABS(temp) < 3) {
         old = D_800D7098.unk8;
-        if (old >= 0) {
-            sum = old + temp;
-            goto out;
-        }
-        if (temp > 0) {
+        if (old >= 0 || temp > 0) {
             sum = old + temp;
             goto out;
         }
     }
-    old = D_800D7098.unk8;
-    temp = *(s32 *) &D_800D7098.unk4;
-    old = -old;
+    old = -D_800D7098.unk8;
     D_800D7098.unk8 = old;
-    sum = old + temp;
+    sum = old + *(s32 *) &D_800D7098.unk4;
 out:
-    gEntitiesAngleXArray[obj->objId] = D_800D70D8.unkC + (D_8022BB8C_ovl18 * sum);
+    ft = (f32) sum;
+    ft = 0.17453294f * ft;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_800D70D8.unkC + ft;
     *(s32 *) &D_800D7098.unk4 = sum;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FDF4_ovl18.s")
 #endif
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FEBC_ovl18.s")
+void func_8021FEBC_ovl18(void) {
+    struct UnkStruct800E1B50 *p;
+    s32 v;
+    s32 temp;
+    f32 ft;
 
-#ifdef NON_MATCHING
-/* 5/46 -> 1/46. Splitting `(f32) temp` into its OWN f32 local (`ft`), and
- * nothing else, fixes the FP temp numbering: the cvt then lands in $f8 with the
- * constant in $f4 and the product in $f10, exactly the ROM's schedule order.
- * The single residue is the outermost `add.s` operand ORDER: the ROM has
- * `add.s $f18, $f16, $f10` (accumulator first) and IDO canonicalises to
- * product-first regardless of how the source is written -- `a + b`, `b + a`,
- * a named local for either side, a named sum local and a redundant (f32) cast
- * all compile to the same instruction. This is the same canonicalisation the
- * guide records for commutative FP operands; the register assignment is right,
- * only the order is not. */
-extern f32 D_8022BB90_ovl18;
+    p = D_800E1B50[omCurrentObj->objId];
+    if (p->unk3D == 7) {
+        D_800D7098.unk8 = 1;
+    }
+    v = D_800D7098.unk4;
+    if (ABS(v) >= 2) {
+        D_800D7098.unk8 = -D_800D7098.unk8;
+        v = *(s32 *) &D_800D7098.unk4;
+    }
+    temp = D_800D7098.unk8 + v;
+    ft = (f32) temp;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800D70D8.unk1C * 3.0f * ft + D_800D70D8.unk4;
+    D_800D7098.unk4 = temp;
+}
 
+/* Folding the product back into `ft` before the add is load-bearing: with the
+ * product written inline IDO canonicalises the outermost `add.s` to
+ * product-first whatever the source order, and only a separate assignment
+ * statement gives the ROM's `add.s $f18, $f16, $f10`. */
 void func_8021FF80_ovl18(void) {
     struct UnkStruct800E1B50 *p;
     s32 v;
@@ -416,14 +425,64 @@ void func_8021FF80_ovl18(void) {
     }
     temp = D_800D7098.unk8 + v;
     ft = (f32) temp;
-    gEntitiesAngleXArray[omCurrentObj->objId] = D_800D70D8.unkC + (D_8022BB90_ovl18 * ft);
+    ft = 0.20943952f * ft;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_800D70D8.unkC + ft;
     D_800D7098.unk4 = temp;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FF80_ovl18.s")
-#endif
 
+/* 67/86, new draft.  Structurally right: both halves are the ABS()/sign-flip
+ * idiom of func_8021FC40/func_8021FEBC above, the Y half with the ROM's
+ * `if (old >= 0 || temp > 0)` pair of likely branches and the Z half with the
+ * plain `bnel` form.  Two things are already forced and must stay: the two
+ * stores of 1 share ONE constant register only if unk18/unk10 are written
+ * through the same type (they are declared s32/u32), and reusing ONE local for
+ * both ABS(v) and `old` is what makes the ROM's single $a0 hold both.
+ * The residue is a whole-function register rotation of exactly one slot: the
+ * ROM has v in $v0 / abs+old in $a0 / sum in $a1, IDO has $a0 / $a1 / $a2,
+ * because IDO materialises the constant 1 AFTER the `lbu unk3D` (so it takes
+ * the just-freed $v0) where the ROM materialises it before (so it takes $t9).
+ * Downstream of that IDO fills the two likely-branch delay slots with the
+ * hoisted `lw objId` where the ROM fills them with the 1.25f `lui`.
+ * Swept: sharing the constant as s32/u32/both-cast/chained, a separate `old`
+ * vs one reused temp, goto vs nested if for the negate path. */
+#ifdef NON_MATCHING
+void func_80220038_ovl18(void) {
+    struct UnkStruct800E1B50 *ent;
+    s32 v;
+    s32 old;
+    s32 sum;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    if (ent->unk3D == 0x17) {
+        D_800D7098.unk18 = *(s32 *) &D_800D7098.unk10 = 1;
+    }
+    v = D_800D7098.unkC;
+    old = ABS(v);
+    if (old < 6) {
+        old = D_800D7098.unk10;
+        if (old >= 0 || v > 0) {
+            goto skip;
+        }
+    }
+    old = -D_800D7098.unk10;
+    D_800D7098.unk10 = old;
+    v = *(s32 *) &D_800D7098.unkC;
+skip:
+    sum = old + v;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800D70D8.unk1C * 1.25f * (f32) sum + D_800D70D8.unk4;
+    D_800D7098.unkC = sum;
+    v = D_800D7098.unk14;
+    if (ABS(v) >= 6) {
+        D_800D7098.unk18 = -D_800D7098.unk18;
+        v = *(s32 *) &D_800D7098.unk14;
+    }
+    sum = D_800D7098.unk18 + v;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_800D70D8.unk20 * 0.69999999f * (f32) sum + D_800D70D8.unk8;
+    D_800D7098.unk14 = sum;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_80220038_ovl18.s")
+#endif
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit

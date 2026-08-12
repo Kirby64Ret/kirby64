@@ -106,12 +106,11 @@ s32 func_80158120_ovl4(void) {
 void func_80158188_ovl4(void) {
 }
 
-/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
- * this to C cannot link, so the pragma has to stay. The body below is for
- * NON_MATCHING builds. */
-#ifdef NON_MATCHING
 void func_80158190_ovl4(GObj *arg0) {
     void func_801593A4_ovl4(GObj *);
+    void func_80158224_ovl4(GObj *);
+    void func_80159160_ovl4(GObj *);
+    void func_801588F4_ovl4(GObj *, s32);
 
     switch (D_800E98E0[omCurrentObj->objId]) {
         case 0:
@@ -135,9 +134,6 @@ void func_80158190_ovl4(GObj *arg0) {
     }
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80158190_ovl4.s")
-#endif
 
 void func_80158224_ovl4(GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = NULL;
@@ -242,43 +238,36 @@ s32 func_8015874C_ovl4(void) {
     return 6;
 }
 
-/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
- * this to C cannot link, so the pragma has to stay. The body below is for
- * NON_MATCHING builds. The ROM leaves the out-of-range case reading an
- * uninitialised stack word; NULL is the deterministic equivalent. */
-#ifdef NON_MATCHING
+/* The out-of-range case returns an uninitialised stack word; that is what the
+ * ROM does. */
 struct DObj *func_801587CC_ovl4(u32 arg0) {
-    struct DObj **p = (struct DObj **) D_800DFBD0[D_8015C714_ovl4];
-    struct DObj *ret = NULL;
+    struct DObj *ret;
 
     switch (arg0) {
         case 0:
-            ret = p[0x6C / 4];
+            ret = D_800DFBD0[D_8015C714_ovl4][0x6C / 4];
             break;
         case 1:
-            ret = p[0x58 / 4];
+            ret = D_800DFBD0[D_8015C714_ovl4][0x58 / 4];
             break;
         case 2:
-            ret = p[0x74 / 4];
+            ret = D_800DFBD0[D_8015C714_ovl4][0x74 / 4];
             break;
         case 3:
-            ret = p[0x1C / 4];
+            ret = D_800DFBD0[D_8015C714_ovl4][0x1C / 4];
             break;
         case 4:
-            ret = p[0x18 / 4];
+            ret = D_800DFBD0[D_8015C714_ovl4][0x18 / 4];
             break;
         case 5:
-            ret = p[0x70 / 4];
+            ret = D_800DFBD0[D_8015C714_ovl4][0x70 / 4];
             break;
         case 6:
-            ret = p[0x3C / 4];
+            ret = D_800DFBD0[D_8015C714_ovl4][0x3C / 4];
             break;
     }
     return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_801587CC_ovl4.s")
-#endif
 
 void func_801588F4_ovl4(GObj *arg0, s32 arg1) {
     s32 unused;

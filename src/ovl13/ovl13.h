@@ -82,7 +82,13 @@ extern s32 func_80110FD4(struct Ovl13AnimInfo *);
 extern void func_80111550(s32);
 extern struct Ovl13AnimObj *func_80111C88(void *, s32);
 extern void func_80111ECC(struct Ovl13AnimObj *);
-extern s32 func_8019E0E8_ovl7(s32, s32);
+/* (u32, u32) is LOAD-BEARING, not a guess: func_801DB3A0_ovl13 passes literal
+   1/2/3/4 to this while holding the same values as s32 in callee-saved
+   registers for its `==` comparisons. IDO keeps one constant register per
+   type, so an s32 prototype makes it reuse the saved copies (5 diffs) and a
+   u32 one makes it materialise the arguments fresh, as the ROM does.
+   The definition in ovl7/enelib.c is (s32, s32); declarations are per-TU. */
+extern s32 func_8019E0E8_ovl7(u32, u32);
 extern void func_800BC11C(f32);
 
 // externs

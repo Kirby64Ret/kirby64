@@ -105,6 +105,7 @@ extern s32 D_800D6F34;
 extern s32 D_800D6F38;
 extern s32 D_800BE4F8;
 extern u32 D_800D7088[];
+extern u16 D_800D6FB0;
 extern u16 D_800D6FB2;
 extern u16 D_800D6F58[];
 extern s32 D_801926E8;
@@ -556,11 +557,8 @@ void func_8011C4E8(s32 arg0, void *arg1) {
 #endif
 
 void func_8011C720(s32 arg0) {
-    u16 *temp_v1;
-
     D_800D6FB2 = 0;
-    temp_v1 = &D_800D6F58[0x2C];
-    *temp_v1 = 0;
+    D_800D6FB0 = 0;
     D_8012E7E8 = 0;
     switch (func_800F8560()) {
         case 0:
@@ -574,19 +572,19 @@ void func_8011C720(s32 arg0) {
             break;
         case 4:
             play_sound(SOUND_TAKI1);
-            *temp_v1 = 0x102;
+            D_800D6FB0 = 0x102;
             func_8016BF60_ovl3(arg0);
             break;
         case 5:
-            *temp_v1 = 0x101;
+            D_800D6FB0 = 0x101;
             func_8016BF60_ovl3(arg0);
             break;
         case 6:
-            *temp_v1 = 0x100;
+            D_800D6FB0 = 0x100;
             func_8016BF60_ovl3(arg0);
             break;
         case 8:
-            *temp_v1 = 0x200;
+            D_800D6FB0 = 0x200;
             func_8016BF60_ovl3(arg0);
             break;
         case 9:

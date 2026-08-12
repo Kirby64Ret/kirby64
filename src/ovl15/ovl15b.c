@@ -193,7 +193,7 @@ void func_801E5080_ovl15();
 void func_801E531C_ovl15();
 void func_801E56CC_ovl15();
 void func_801E5C34_ovl15();
-void func_801E5D54_ovl15();
+void func_801E5D54_ovl15(s32, f32);
 
 void func_801E2F60_ovl15(struct GObj *arg0) {
     func_801A3280_ovl7();
@@ -295,4 +295,27 @@ void func_801E5C34_ovl15(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15b/func_801E5C34_ovl15.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15b/func_801E5D54_ovl15.s")
+struct Unk80111C88 *func_801A0464_ovl7(void);
+void func_801A04B8_ovl7(void);
+
+/* `t` is load-bearing: without a named local for sp1C->unk8C[2] IDO swaps the
+ * two link registers ($v1 and $t1). It costs no frame word -- only sp1C is
+ * live across the call and gets one. */
+void func_801E5D54_ovl15(s32 arg0, f32 arg1) {
+    struct UnkStruct800E1B50 *sp1C;
+    struct Unk80111C88 *temp_v0;
+    f32 temp;
+    s32 *t;
+
+    sp1C = D_800E1B50[omCurrentObj->objId];
+    temp_v0 = func_801A0464_ovl7();
+    t = (s32 *) sp1C->unk8C[2];
+    if (t[1] == 0 && arg0 != 0) {
+        temp_v0->unk24->unk8 = arg0;
+        temp = 40.0f * arg1 - 10.0f;
+        temp_v0->unk24->unk10 = temp;
+        temp_v0->unk24->unk1C = -temp;
+    }
+    func_80111ECC(temp_v0);
+    func_801A04B8_ovl7();
+}

@@ -520,8 +520,80 @@ void func_8022045C_ovl19(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022045C_ovl19.s")
 #endif
 
-    // another struct def
-    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022054C_ovl19.s")
+/*LANE_BEGIN*/
+extern s32 D_800D6F18;
+extern u8 D_800D6E30[];
+extern u32 D_800BE508;
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+void procMainStub(struct GObjProcess *);
+void play_sound(s32);
+void func_800F8E6C(GObj *);
+void func_800A7F74(s32, s32, s32, f32, f32, f32);
+s32 func_800FCD14(u32, u8, f32, u8, u8, u8, u8, u8, s16, Vector *, Vector *, Vector *);
+
+void func_8022054C_ovl19(GObj *arg0) {
+    s32 *p = (s32 *)((u32)&D_800D6F18);
+    Vector scale;
+    Vector angle;
+    Vector pos;
+    s32 id;
+    s32 v;
+
+    if (p[7] == 0) {
+        p[7] = 1;
+        D_800DEF90[omCurrentObj->objId] = NULL;
+        setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+        D_800E98E0[omCurrentObj->objId] = 3;
+        p[4] = 0;
+        p[3] = -1;
+        func_800F8E6C(arg0);
+        while (1) {
+            id = omCurrentObj->objId;
+            if (D_800E98E0[id] != 0) {
+                v = p[3];
+                if (v != -1) {
+                    if (p[0] == v) {
+                        p[4] |= 1;
+                    } else if (p[1] == v) {
+                        p[4] |= 2;
+                    } else if (p[2] == v) {
+                        p[4] |= 4;
+                    }
+                    p[3] = -1;
+                    D_800E98E0[omCurrentObj->objId] -= 1;
+                    if (D_800E98E0[omCurrentObj->objId] == 0) {
+                        if (p[4] == 7) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                func_800B1900((u16) id);
+            }
+            ohSleep(1);
+        }
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 60.0f;
+        if (D_800D6E30[D_800BE508] == 0) {
+            play_sound(0x112);
+            func_800A7F74(3, 0, 0xCE, 300.0f, gEntitiesNextPosYArray[omCurrentObj->objId], 0.0f);
+            ohSleep(0x12);
+            pos.x = 0.0f;
+            pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            pos.z = 0.0f;
+            angle.x = 0.0f;
+            angle.y = 0.0f;
+            angle.z = 0.0f;
+            scale.x = 1.0f;
+            scale.y = 1.0f;
+            scale.z = 1.0f;
+            play_sound(0x1FC);
+            func_800FCD14(0xFF, 3, 0.5f, 3, 7, 2, 0, 0, 0x13, &pos, &angle, &scale);
+        }
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
+
+/*LANE_END*/
 
 f32 D_8022F0B0_ovl19[] = {-112, 0, 110};
 u32 D_8022F0BC_ovl19[] = {
@@ -533,8 +605,32 @@ u32 D_8022F0BC_ovl19[] = {
     0x00020072,
     0x00020078,
 };
-    // the same rabbit hole as func_80220280_ovl19, plus a triple nested loop
-    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220814_ovl19.s")
+extern s32 D_800D6F18;
+
+void func_80220814_ovl19(GObj *arg0) {
+    func_8021E184_ovl19();
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_8022F0B0_ovl19[D_800EC2E0[omCurrentObj->objId].as_s32];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 70.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = -199.0f;
+    func_800A9864(D_8022F0BC_ovl19[(&D_800D6F18)[D_800EC2E0[omCurrentObj->objId].as_s32]], 0x1869F, 0x10);
+    while (1) {
+        func_800AA018(0x203E3);
+        while (1) {
+            if ((gKirbyState.abilityInUse == 0x1F) && (D_800E98E0[0] < 3)) {
+                func_800AA018(0x203E2);
+                while (1) {
+                    if ((gKirbyState.abilityInUse == 0) || (D_800E98E0[0] >= 3)) {
+                        break;
+                    }
+                    ohSleep(1);
+                }
+                break;
+            }
+            ohSleep(1);
+        }
+    }
+}
+
 
 void func_802209A0_ovl19(GObj *arg0) {
     static FUNCLIST D_8022F0D8_ovl19 = {
@@ -584,8 +680,55 @@ void func_802209E4_ovl19(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209E4_ovl19.s")
 #endif
-    // the same rabbit hole as func_80220280_ovl19
-    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
+void play_sound(s32);
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+void procMainStub(struct GObjProcess *);
+extern u8 D_800D6E30[];
+extern u32 D_800BE508;
+extern s32 D_800D6F18;
+s32 func_800AB490(s32);
+void func_800F8E6C(GObj *);
+void func_800A7F74(s32, s32, s32, f32, f32, f32);
+s32 func_800FCD14(u32, u8, f32, u8, u8, u8, u8, u8, s16, Vector *, Vector *, Vector *);
+
+void func_80220B40_ovl19(GObj *arg0) {
+    Vector pos;
+    Vector angle;
+    Vector scale;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 200.0f;
+    D_800E6BD0[omCurrentObj->objId] = 0.5f;
+    ohSleep(2);
+    while (1) {
+        if (func_800AB490(D_800D6F18) != 0) {
+            break;
+        }
+        ohSleep(1);
+    }
+    func_800F8E6C(arg0);
+    if (D_800D6E30[D_800BE508] == 0) {
+        play_sound(0x112);
+        func_800A7F74(3, 0, 0xCE, gEntitiesNextPosXArray[omCurrentObj->objId],
+                      gEntitiesNextPosYArray[omCurrentObj->objId],
+                      gEntitiesNextPosZArray[omCurrentObj->objId]);
+        ohSleep(0x12);
+        pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        pos.x = 0.0f;
+        pos.z = 0.0f;
+        angle.x = 0.0f;
+        angle.y = 0.0f;
+        angle.z = 0.0f;
+        scale.z = 1.0f;
+        scale.y = 1.0f;
+        scale.x = 1.0f;
+        play_sound(0x1FC);
+        func_800FCD14(0xFF, D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId],
+                      3, 7, 2, 0, 0, 0x28, &pos, &angle, &scale);
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
 
     // currently flying blind filling out DObj->unk80 so I won't bother
 void func_80220D54_ovl19(GObj *arg0) {

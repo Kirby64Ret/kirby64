@@ -533,7 +533,16 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
  * sp20 and sp1C (sp1C spilled at 0x1C, BELOW the struct); the anim-object
  * pointer never gets a stack word here. Swept all six declaration orders, a
  * nested block for temp_v0 and a re-call; L is 0x28 (mod 8 == 0) so the frame
- * arithmetic cannot reach 0x40 while three locals are declared. */
+ * arithmetic cannot reach 0x40 while three locals are declared.
+ * Re-swept: the anim pointer as a SECOND parameter so it homes in the arg area
+ * instead of the local area (41/43 -- IDO emits the extra `sw $a1, 0x44($sp)`
+ * home store), both pointers inside a nested block (10/43), the entry local
+ * retyped s32 with casts at both uses (10/43), and the entry inlined at both
+ * uses so IDO would CSE it into a spill temp (43/46 -- IDO will not hoist the
+ * load above `jal func_80111550`, so the entry HAS to be a source variable).
+ * align8(0x1C + L) = 0x40 needs L in {0x20, 0x24}: with sizeof sp20 == 0x20
+ * that is the struct plus AT MOST one 4-byte local, and the function needs the
+ * entry, the anim pointer and the struct all live at once. */
 s32 func_801DC8E4_ovl16(s32 arg0) {
     struct UnkStruct800E1B50 *sp1C;
     struct Ovl16AnimObj *temp_v0;

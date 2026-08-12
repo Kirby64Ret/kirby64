@@ -78,10 +78,6 @@ void func_800AD1A0(GObj *);
 void procMainStub(struct GObj *);
 s32 func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
 
-/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
- * this to C cannot link, so the pragma has to stay. The body below is for
- * NON_MATCHING builds. */
-#ifdef NON_MATCHING
 void func_801553C0_ovl4(GObj *arg0) {
     void func_801555F4_ovl4(GObj *);
     void func_80156160_ovl4(GObj *);
@@ -105,11 +101,11 @@ void func_801553C0_ovl4(GObj *arg0) {
         case 2:
             func_801567BC_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
             break;
-        case 3:
-            func_80156C4C_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
-            break;
         case 4:
             func_801569F0_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 3:
+            func_80156C4C_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
             break;
         case 8:
             func_80157028_ovl4(arg0, D_800E9C60[omCurrentObj->objId]);
@@ -131,9 +127,6 @@ void func_801553C0_ovl4(GObj *arg0) {
             break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801553C0_ovl4.s")
-#endif
 
 s32 func_801554F0_ovl4(void) {
     s32 ret = 0;
@@ -224,15 +217,12 @@ void func_801555F4_ovl4(GObj *arg0) {
     }
 }
 
-/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
- * this to C cannot link, so the pragma has to stay. The body below is for
- * NON_MATCHING builds. */
-#ifdef NON_MATCHING
 void func_80155890_ovl4(GObj *arg0) {
     extern u32 gGameState;
     extern s32 D_800D6B68;
     extern u32 D_800D6B60;
     void init_save_file_maybe(s32);
+    void play_sound(s32);
     s32 v;
 
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -286,13 +276,14 @@ void func_80155890_ovl4(GObj *arg0) {
         }
     }
     switch (v) {
-        case -2:
+        case 1:
             play_sound(0x113);
             D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
-            if (D_8015C6D4_ovl4 == 2) {
-                D_8015C6D4_ovl4 = 0;
+            D_8015C6D4_ovl4 = 0;
+            if (saveCurrentFileNum == 2) {
+                saveCurrentFileNum = 0;
             } else {
-                D_8015C6D4_ovl4 = D_8015C6D4_ovl4 + 1;
+                saveCurrentFileNum = saveCurrentFileNum + 1;
             }
             break;
         case -1:
@@ -305,18 +296,6 @@ void func_80155890_ovl4(GObj *arg0) {
                 saveCurrentFileNum = saveCurrentFileNum - 1;
             }
             break;
-        case 0:
-            break;
-        case 1:
-            play_sound(0x113);
-            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
-            D_8015C6D4_ovl4 = 0;
-            if (saveCurrentFileNum == 2) {
-                saveCurrentFileNum = 0;
-            } else {
-                saveCurrentFileNum = saveCurrentFileNum + 1;
-            }
-            break;
         case 2:
             play_sound(0x113);
             D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
@@ -326,21 +305,29 @@ void func_80155890_ovl4(GObj *arg0) {
                 D_8015C6D4_ovl4 = D_8015C6D4_ovl4 - 1;
             }
             break;
+        case -2:
+            play_sound(0x113);
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+            if (D_8015C6D4_ovl4 == 2) {
+                D_8015C6D4_ovl4 = 0;
+            } else {
+                D_8015C6D4_ovl4 = D_8015C6D4_ovl4 + 1;
+            }
+            break;
+        case 0:
+            break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80155890_ovl4.s")
-#endif
 
-/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
- * this to C cannot link, so the pragma has to stay. The body below is for
- * NON_MATCHING builds. */
-#ifdef NON_MATCHING
 void func_80155C00_ovl4(GObj *arg0) {
     extern u32 gGameState;
     extern s32 D_800D6B68;
     extern s32 D_800D6B6C;
-    extern u8 D_800D7178[];
+    extern s32 D_800D71C0;
+    extern s32 D_800D71C4;
+    extern s32 D_800D71C8;
+    extern s32 D_800D71CC;
+    void play_sound(s32);
     s32 v;
 
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -352,28 +339,28 @@ void func_80155C00_ovl4(GObj *arg0) {
         D_8015C6D8_ovl4 = 1;
         D_800D6B68 = gGameState;
         switch (D_8015C6E0_ovl4) {
-            case 0:
-                gGameState = 0x1B;
-                *(s32 *) (D_800D7178 + 0x48) = 0;
-                *(s32 *) (D_800D7178 + 0x4C) = 0;
-                *(s32 *) (D_800D7178 + 0x50) = 0;
-                *(s32 *) (D_800D7178 + 0x54) = 0;
-                break;
-            case 1:
-                gGameState = 0x18;
-                break;
-            case 2:
-                gGameState = 0x17;
+            case 5:
+                gGameState = 0x16;
                 break;
             case 3:
                 gGameState = 0x19;
+                break;
+            case 0:
+                gGameState = 0x1B;
+                D_800D71C0 = 0;
+                D_800D71C4 = 0;
+                D_800D71C8 = 0;
+                D_800D71CC = 0;
                 break;
             case 4:
                 gGameState = 0x1A;
                 D_800D6B6C = 0;
                 break;
-            case 5:
-                gGameState = 0x16;
+            case 2:
+                gGameState = 0x17;
+                break;
+            case 1:
+                gGameState = 0x18;
                 break;
         }
         return;
@@ -385,33 +372,33 @@ void func_80155C00_ovl4(GObj *arg0) {
         return;
     }
     v = func_801554F0_ovl4();
-    if (v == -2) {
-        play_sound(0x113);
-        D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
-        do {
-            if (D_8015C6E0_ovl4 == 5) {
-                D_8015C6E0_ovl4 = 0;
-            } else {
-                D_8015C6E0_ovl4 = D_8015C6E0_ovl4 + 1;
-            }
-        } while (func_80157258_ovl4(saveCurrentFileNum, D_8015C6E0_ovl4) == 0);
-        return;
-    }
-    if (v == 2) {
-        play_sound(0x113);
-        D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
-        do {
-            if (D_8015C6E0_ovl4 != 0) {
-                D_8015C6E0_ovl4 = D_8015C6E0_ovl4 - 1;
-            } else {
-                D_8015C6E0_ovl4 = 5;
-            }
-        } while (func_80157258_ovl4(saveCurrentFileNum, D_8015C6E0_ovl4) == 0);
+    switch (v) {
+        case 2:
+            play_sound(0x113);
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+            do {
+                if (D_8015C6E0_ovl4 == 0) {
+                    D_8015C6E0_ovl4 = 5;
+                } else {
+                    D_8015C6E0_ovl4 = D_8015C6E0_ovl4 - 1;
+                }
+            } while (func_80157258_ovl4(saveCurrentFileNum, D_8015C6E0_ovl4) == 0);
+            break;
+        case -2:
+            play_sound(0x113);
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+            do {
+                if (D_8015C6E0_ovl4 == 5) {
+                    D_8015C6E0_ovl4 = 0;
+                } else {
+                    D_8015C6E0_ovl4 = D_8015C6E0_ovl4 + 1;
+                }
+            } while (func_80157258_ovl4(saveCurrentFileNum, D_8015C6E0_ovl4) == 0);
+            break;
+        case 0:
+            break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80155C00_ovl4.s")
-#endif
 
 void play_sound(s32);
 
@@ -915,27 +902,22 @@ s32 func_80157250_ovl4(void) {
     return 4;
 }
 
-/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
- * this to C cannot link (the surviving blob still references .L8015xxxx), so
- * the pragma has to stay. The body below is for NON_MATCHING builds. */
-#ifdef NON_MATCHING
 s32 func_80157258_ovl4(s32 arg0, s32 arg1) {
     switch (arg1) {
-        case 0:
-        case 1:
-        case 2:
         case 5:
+            return 1;
+        case 0:
+            return 1;
+        case 1:
+            return 1;
+        case 2:
             return 1;
         case 3:
             return ((u8 *) &D_800ECA08[arg0])[0x13];
         case 4:
             return ((u8 *) &D_800ECA08[arg0])[0x14];
     }
-    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157258_ovl4.s")
-#endif
 
 extern Unk6Words D_8015AA30_ovl4;
 extern Unk6Words D_8015AA48_ovl4;
@@ -1098,10 +1080,6 @@ void func_80157840_ovl4(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157840_ovl4.s")
 #endif
 
-/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
- * this to C cannot link, so the pragma has to stay. The body below is for
- * NON_MATCHING builds. */
-#ifdef NON_MATCHING
 void func_80157B1C_ovl4(void) {
     extern s32 D_800D6B68;
 
@@ -1111,6 +1089,21 @@ void func_80157B1C_ovl4(void) {
             D_8015C6D4_ovl4 = 1;
             D_8015C6DC_ovl4 = 1;
             D_8015C6E0_ovl4 = 5;
+            break;
+        case 0x19:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 3;
+            break;
+        case 0x1B:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 0;
+            break;
+        case 0x1A:
+            D_8015C6D4_ovl4 = 1;
+            D_8015C6DC_ovl4 = 1;
+            D_8015C6E0_ovl4 = 4;
             break;
         case 0x17:
             D_8015C6D4_ovl4 = 1;
@@ -1122,30 +1115,12 @@ void func_80157B1C_ovl4(void) {
             D_8015C6DC_ovl4 = 1;
             D_8015C6E0_ovl4 = 1;
             break;
-        case 0x19:
-            D_8015C6D4_ovl4 = 1;
-            D_8015C6DC_ovl4 = 1;
-            D_8015C6E0_ovl4 = 3;
-            break;
-        case 0x1A:
-            D_8015C6D4_ovl4 = 1;
-            D_8015C6DC_ovl4 = 1;
-            D_8015C6E0_ovl4 = 4;
-            break;
-        case 0x1B:
-            D_8015C6D4_ovl4 = 1;
-            D_8015C6DC_ovl4 = 1;
-            D_8015C6E0_ovl4 = 0;
-            break;
         default:
             D_8015C6D4_ovl4 = 0;
             D_8015C6DC_ovl4 = 0;
             break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157B1C_ovl4.s")
-#endif
 
 void func_80157C38_ovl4(void) {
     D_800EC9FC = saveCurrentFileNum;

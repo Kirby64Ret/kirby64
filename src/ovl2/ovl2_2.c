@@ -169,21 +169,33 @@ void func_800F7258(s32 arg0) {
     func_800A5404(&D_800D7010[0x30], &D_80124000[0]);
 }
 
-#ifdef MIPS_TO_C
-void func_800F72B0(s32 arg0) {
-    s32 temp_t5;
-    s32 temp_v0;
-    s32 temp_v1;
-    void *var_a1;
+/* 2/85 diffs, structurally exact.  Residue: the ROM loads objId straight into
+ * $v1 and shifts in place (lw $v1,0($t4); sll $v1,$v1,2); IDO loads into $v0 and
+ * shifts into $v1, i.e. `idx` and the scaled-index temp fail to coalesce.
+ * Measured: `seg` lands in $a1 only when it is passed as a SECOND argument to
+ * func_800A2550/func_800AA018 (IDO argument-register targeting) -- that alone
+ * took 16 diffs to 4.  A named `idx` then took 4 to 2.  Swept without moving it:
+ * decl order (all 6), u32 vs s32 for idx/temp, switch-through-temp, second
+ * dispatch as a switch, seg inlined, byte-offset idx, GObj* local for
+ * omCurrentObj, capturing func_800A9864's return into temp, `temp = 0` pad. */
+#ifdef NON_MATCHING
+extern u32 D_800DFA10[];
+void func_800B491C(GObj *);
+void func_800A2550(void *, void *);
+void func_800AA018(s32, void *);
 
-    setProcessMain(*(&gEntityGObjProcessArray5 + (*omCurrentObj * 4)), &procMainStub);
-    *(&D_800DEF90 + (*omCurrentObj * 4)) = &func_800B491C;
+void func_800F72B0(UNUSED s32 arg0) {
+    u32 *seg;
+    s32 temp;
+    s32 idx;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = func_800B491C;
     func_800AF980(8);
-    func_800A9864(D_801290D8->unk4, 0x26, 0x10);
-    temp_v1 = *omCurrentObj * 4;
-    var_a1 = *(&gSegment4StartArray + temp_v1);
-    temp_t5 = var_a1->unk8;
-    switch (temp_t5) {
+    func_800A9864(((u32 *)D_801290D8)[1], 0x26, 0x10);
+    idx = omCurrentObj->objId;
+    seg = gSegment4StartArray[idx];
+    switch (seg[2]) {
         case 17:
         case 18:
         case 19:
@@ -192,23 +204,23 @@ void func_800F72B0(s32 arg0) {
         case 22:
             break;
         default:
-            func_800A2550(*(&D_800DFA10 + temp_v1), var_a1);
-            var_a1 = *(&gSegment4StartArray + (*omCurrentObj * 4));
+            func_800A2550((void *)D_800DFA10[idx], seg);
+            seg = gSegment4StartArray[omCurrentObj->objId];
             break;
     }
-    temp_v0 = var_a1->unk14;
-    if (temp_v0 != 0) {
-        if (temp_v0 != 1) {
-            if (temp_v0 == 2) {
-                func_800AA018(var_a1->unk18->unk4, var_a1);
-                var_a1 = *(&gSegment4StartArray + (*omCurrentObj * 4));
-                goto block_7;
+    temp = seg[5];
+    if (temp != 0) {
+        if (temp != 1) {
+            if (temp == 2) {
+                func_800AA018(((u32 *)seg[6])[1], seg);
+                seg = gSegment4StartArray[omCurrentObj->objId];
+            } else {
+                goto end;
             }
-        } else {
-block_7:
-            func_800AA018(*var_a1->unk18, var_a1);
         }
+        func_800AA018(((u32 *)seg[6])[0], seg);
     }
+end:
     curObjSleepForever();
 }
 #else

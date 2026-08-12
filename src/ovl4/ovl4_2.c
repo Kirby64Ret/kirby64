@@ -17,7 +17,7 @@ extern u8 D_800D6BE0[];
 extern s32 D_8015C69C_ovl4;
 
 extern void func_80151E20_ovl4();
-extern void func_80154DDC_ovl4(void);
+extern void func_80154DDC_ovl4();
 
 extern s32 D_800D6B24;
 extern s32 D_800D6B98;
@@ -528,10 +528,9 @@ void func_80154DA0_ovl4(struct GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
 }
 
-/* Jump table (jtbl_8015C520_ovl4) in ovl4's unmigrated rodata, so the pragma
- * must stay for the ROM build; the C body below is for NON_MATCHING builds. */
-#ifdef NON_MATCHING
-void func_80154DDC_ovl4(void) {
+void func_80154DDC_ovl4(arg0)
+GObj *arg0;
+{
     void func_80153AEC_ovl4(void);
     void func_801533A8_ovl4(s32);
     void func_80152E38_ovl4(s32);
@@ -542,11 +541,9 @@ void func_80154DDC_ovl4(void) {
     void func_800A9864(void *, s32, s32);
     extern void *D_8015A8A0_ovl4[];
     extern Unk8015A8F8 D_8015A8B8_ovl4[];
-    extern f32 D_8015C560_ovl4;
     extern s32 D_800D6B80;
     extern s32 D_800D6B9C;
     u32 v;
-    Unk8015A8F8 *p;
 
     v = ((u32 *) D_800E9AA0)[omCurrentObj->objId];
     switch (v) {
@@ -570,19 +567,21 @@ void func_80154DDC_ovl4(void) {
         case 12:
             func_8015306C_ovl4();
             break;
+        case 15:
+            func_80153C78_ovl4();
+            break;
         case 13:
             func_801543C8_ovl4();
             break;
         case 14:
             func_801548BC_ovl4();
             break;
-        case 15:
-            func_80153C78_ovl4();
+        case 0:
             break;
     }
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_8015C560_ovl4;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
     gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
     gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
@@ -590,12 +589,11 @@ void func_80154DDC_ovl4(void) {
     D_800E98E0[omCurrentObj->objId] = D_800D6B9C;
     ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
     func_800A9864(D_8015A8A0_ovl4[D_800D6B98], 0x1869F, 0x10);
-    p = &D_8015A8B8_ovl4[D_800D6B98];
-    if (p->unk0 != 0) {
-        func_800AA018(p->unk0);
+    if (D_8015A8B8_ovl4[D_800D6B98].unk0 != 0) {
+        func_800AA018(D_8015A8B8_ovl4[D_800D6B98].unk0);
     }
-    if (p->unk4 != 0) {
-        func_800AA018(p->unk4);
+    if (D_8015A8B8_ovl4[D_800D6B98].unk4 != 0) {
+        func_800AA018(D_8015A8B8_ovl4[D_800D6B98].unk4);
     }
     if (D_800D6B80 != 0) {
         ohSleep(0x14);
@@ -609,9 +607,6 @@ void func_80154DDC_ovl4(void) {
     }
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154DDC_ovl4.s")
-#endif
 
 void func_801550D4_ovl4(void) {
     D_8015C690_ovl4 = 2;

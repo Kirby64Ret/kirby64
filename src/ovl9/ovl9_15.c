@@ -574,9 +574,13 @@ s32 func_8021679C_ovl9(f32 arg0) {
 extern f32 sqrtf(f32);
 
 #ifdef MIPS_TO_C
-// 3 diffs: exact except that the ROM schedules the Y[objId] load one slot
-// earlier than the two Z loads. Swept all 6 declaration orders and several
-// expression groupings; this is the closest reachable form.
+// 3/42: exact except that the ROM schedules the Y[objId] load ahead of the two
+// Z loads (ROM Y[obj],Z[obj],Z[0]; IDO Z[obj],Z[0],Y[obj]). Registers, subs,
+// muls, adds and the epilogue are all identical -- it is purely the order of
+// three lwc1. Swept all 6 declaration orders, several expression groupings, a
+// named local for the sqrtf argument (still 3), and statement order dx,dz,dy
+// (22/42 -- confirms the ROM's source order really is dz,dx,dy, since that is
+// what reproduces the %hi/%lo and addu order exactly).
 s32 func_8021679C_ovl9(f32 arg0) {
     f32 dz = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0];
     f32 dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0];

@@ -135,18 +135,18 @@ extern s32 D_801CB788;
 void func_800B33F4(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
-void ohSleep(u8);
+void ohSleep(s32);
 
 void func_801DD2A4_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 2;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB788;
     func_800B33F4();
-    D_800E8920[omCurrentObj->objId] = 1;
+    *(u32 *) &D_800E8920[omCurrentObj->objId] = 1;
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
     D_800EB160[omCurrentObj->objId] = 0.0f;
-    while (D_800E8920[omCurrentObj->objId] == 1) {
+    while (*(u32 *) &D_800E8920[omCurrentObj->objId] == 1) {
         ohSleep(1);
     }
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
@@ -263,9 +263,13 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DE280_ovl9.s")
 
-/* 4 diffs: the ROM materialises %hi(D_800E8AE0) before %hi(D_800EAC20);
-   IDO emits them the other way round. Swept: ternary, if/else polarity,
-   declaration order, `& 1` vs `!= 0`. */
+/* 4/130: the ROM materialises %hi(D_800E8AE0) before %hi(D_800EAC20); IDO emits
+   them the other way round. Swept: ternary, declaration order, `& 1` vs `!= 0`,
+   and collapsing the inner if/else onto one physical line (all inert, still 4).
+   Measured datum for whoever picks this up: flipping the outer test to
+   `!= 0` DOES fix the %hi order, but costs 15/130 because the ROM's `bnez`
+   requires the `== 0` polarity. So the two constraints are in tension and the
+   answer is not a polarity change. */
 #ifdef NON_MATCHING
 s32 func_801A0D74_ovl7();
 f32 func_800F8824(Vector *, f32);
@@ -520,7 +524,7 @@ void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800B33F4(void);
 void func_800AA018(s32);
-void ohSleep(u8);
+void ohSleep(s32);
 
 void func_801DF900_ovl9(struct GObj *arg0) {
     f32 v;
@@ -553,19 +557,18 @@ void func_801DFB28_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-/* 127/172 -> 1/172. The `1` stored to D_800E8920 has to be type-split from the
- * one the ROM parks in $s6 (u32 works, s8/u8 do not). The single residue is
- * `ohSleep(1)`: the ROM passes $s6 (`or $a0, $s6, $zero`), which needs
- * `void ohSleep(s32);` -- and THAT regresses func_801DD2A4_ovl9 above, which is
- * already matched and needs the u8 form's fresh `addiu $a0, $zero, 1`. Two
- * functions in one TU want opposite ohSleep prototypes and IDO rejects a mixed
- * redeclaration, so this cannot be converted without breaking a neighbour.
- * Swept on func_801DD2A4 under the s32 form: (u32) on the compare, u8/u32/s8
- * type-splits of the store, do/while, casts on the argument -- all inert or
- * much worse. */
-#ifdef NON_MATCHING
+/* CLOSED. This TU's ohSleep prototype is `s32`, not `u8`: the ROM passes the
+ * shared s32 constant here (`or $a0, $s6, $zero`). The earlier claim that
+ * func_801DD2A4_ovl9 needs the u8 form was wrong -- what it needs is for its
+ * own `1` to be a DIFFERENT type from ohSleep's, which the `*(u32 *)` split on
+ * D_800E8920 gives. Both the store and the loop compare must take the split.
+ * The `1` stored to D_800E8920 here is type-split for the same reason.
+ * ohSleep's parameter type is load-bearing for four functions in this file:
+ * do not narrow it back.
+ * (was 127/172 -> 1/172 -> MATCH)
+ */
 extern s32 D_801C8520_ovl7;
-void ohSleep();
+void ohSleep(s32);
 
 void func_801DFB50_ovl9(struct GObj *arg0) {
     f32 v;
@@ -595,9 +598,6 @@ void func_801DFB50_ovl9(struct GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DFB50_ovl9.s")
-#endif
 
 s32 func_801A0D74_ovl7();
 void func_8019F3B0_ovl7(void);
@@ -645,7 +645,7 @@ extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 extern void func_800B33F4(void);
 extern void func_800AA018(s32);
-extern void ohSleep(u8);
+extern void ohSleep(s32);
 extern void func_800AF27C(void);
 void func_801E078C_ovl9(GObj *, s32, f32);
 

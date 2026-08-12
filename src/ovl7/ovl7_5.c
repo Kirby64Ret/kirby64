@@ -798,6 +798,17 @@ block_168:
 // 2 diffs: the compiler spill slot is 0x18($sp), the ROM's is 0x1C. Frame size
 // already matches; declaration order, dummy scalars, dummy arrays/structs and
 // expression reshaping were all swept without moving it.
+// Re-measured: a local that gets a stack HOME does move the spill to 0x1C --
+// s32[1], u8[1], u8[4], s16[2] and struct{s32} all do it -- but every one of
+// them also grows the frame 0x30 -> 0x38, and the step is 8 bytes for any size
+// from 1 to 4, so the memory-local area is rounded to 8 and no 4-byte local can
+// buy the slot for free. Scalars in registers do not count toward the frame at
+// all (3 scalars and 4 scalars both give 0x30), so the 0x14 of slack above the
+// spill is not named-local space. Nesting the sqrtf call inside the
+// func_800A52F0 argument list (3 diffs) only reorders the reload of
+// omCurrentObj. The 0x18 slot in the ROM is therefore not a named local; it
+// looks like a second compiler temp slot or an 8-aligned temp area, neither of
+// which source shape reaches.
 s32 func_801A8BAC_ovl7(void) {
     f32 temp_f0;
     f32 temp_f2;
@@ -893,24 +904,38 @@ void func_801A8CDC_ovl7(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8CDC_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
+/* 32/155 diffs, all register naming, no structural difference: the ROM gives
+   $a0 to the switch-result variable and $v0 to the D_800E77A0 halfword; IDO
+   swaps the pair (var->$v0, halfword->$a0), which cascades into
+   temp_a1 $a1->$a0 and the omCurrentObj/index pair $a2/$a3 swapping.  Their
+   live ranges overlap so the choice is a symmetric colouring decision.
+   Swept over 8 variants: named vs inline index (in-place `sll` needs the
+   inline form), named `ent` variable (that is what moved $v0/$v1 into place,
+   72 -> 32), hoisting the `->unk4` load above the switch (68 -> ...),
+   comma-expression vs nested-if condition (32 -> 73, keep the comma form),
+   naming omCurrentObj, and reusing `arg0` as the result variable.  None of
+   them move the $v0/$a0 pair. */
+#ifdef NON_MATCHING
+extern s32 D_800D7090;
+void func_801AA914_ovl7(GObj *);
+void func_801A96C4_ovl7(GObj *);
 
-void func_801A8FFC_ovl7(s32 arg0) {
+void func_801A8FFC_ovl7(GObj *arg0) {
     f32 temp_f0;
-    s32 temp_a3_2;
     s32 var_a0;
+    struct UnkStruct800E1B50 *ent;
     struct SubSub800E1B50_Unk88_UnkC *temp_v0;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_a1;
-    u16 temp_v0_2;
+    struct SubSub800E1B50_Unk88_UnkC_Unk4 *temp_t0;
     u16 temp_v0_3;
-    u32 temp_a3;
+    u16 temp_v0_2;
     u32 temp_v1;
     u32 temp_v1_2;
 
-    temp_a3 = omCurrentObj->objId;
-    temp_a3_2 = temp_a3 * 4;
-    temp_v0 = D_800E1B50[temp_a3]->unk88->unkC;
+    ent = D_800E1B50[omCurrentObj->objId];
+    temp_v0 = ent->unk88->unkC;
     temp_a1 = temp_v0->unk0;
+    temp_t0 = temp_v0->unk4;
     switch (gKirbyState.unkD) {
         case 6:
             var_a0 = 1;
@@ -920,23 +945,25 @@ void func_801A8FFC_ovl7(s32 arg0) {
             break;
         case 1:
         case 2:
-            D_800EA6E0[temp_a3] = temp_v0->unk4->unk10;
-            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A96C4_ovl7, omCurrentObj, temp_a3_2);
+            D_800EA6E0[omCurrentObj->objId] = temp_t0->unk10;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A96C4_ovl7);
             return;
         case -3:
             var_a0 = 3;
             break;
         default:
             temp_f0 = temp_a1->unk10;
-            D_800EA6E0[temp_a3] = temp_f0;
+            D_800EA6E0[omCurrentObj->objId] = temp_f0;
             var_a0 = 0;
             gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
             gEntitiesScaleYArray[omCurrentObj->objId] = temp_f0;
             gEntitiesScaleXArray[omCurrentObj->objId] = temp_f0;
             break;
     }
-
-    if ((gKirbyState.numberInhaled >= 2) && ((temp_v1 = omCurrentObj->objId, (D_800E7730[temp_v1] != 6)) || (temp_v0_2 = D_800E77A0[temp_v1], ((temp_v0_2 < 8) != 0)) || (temp_v0_2 >= 0x2C) || (temp_v1 != D_800D7090))) {
+    if ((gKirbyState.numberInhaled >= 2) &&
+        ((temp_v1 = omCurrentObj->objId, D_800E7730[temp_v1] != 6) ||
+         (temp_v0_2 = D_800E77A0[temp_v1], temp_v0_2 < 8) || (temp_v0_2 >= 0x2C) ||
+         (temp_v1 != D_800D7090))) {
         var_a0 = 2;
     }
     if (var_a0 == 1) {
@@ -946,7 +973,7 @@ void func_801A8FFC_ovl7(s32 arg0) {
             if ((temp_v0_3 >= 8) && (temp_v0_3 < 0x2C)) {
                 gKirbyState.numberInhaled = 0;
                 if (gKirbyState.unk8 == 0) {
-                    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AA914_ovl7, omCurrentObj, temp_a3_2);
+                    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AA914_ovl7);
                     return;
                 }
             }
@@ -954,19 +981,14 @@ void func_801A8FFC_ovl7(s32 arg0) {
         if (gKirbyState.numberInhaled < 2) {
             gKirbyState.numberInhaled = 0;
             if (gKirbyState.unk8 == 0) {
-                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AA914_ovl7, omCurrentObj, temp_a3_2);
-                return;
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AA914_ovl7);
             }
         }
-    } else {
-        if (var_a0 == 2) {
-            func_8019D958_ovl7(omCurrentObj->unk2, temp_a1, omCurrentObj, temp_a3_2);
-        }
-        else if (var_a0 == 3) {
-            func_8019D958_ovl7(omCurrentObj->unk2, temp_a1, omCurrentObj, temp_a3_2);
-        }
+    } else if (var_a0 == 2) {
+        func_8019D958_ovl7((u16) omCurrentObj->objId);
+    } else if (var_a0 == 3) {
+        func_8019D958_ovl7((u16) omCurrentObj->objId);
     }
-    break;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8FFC_ovl7.s")
