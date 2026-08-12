@@ -598,8 +598,14 @@ segments:
     - [0x1CBF50, c, ovl10/ovl10]
     - [0x1CC970, c, ovl10/ovl10_1]
     - [0x1D3AB0, c, ovl10/ovl10_2]
-    # TODO: hidden split in ovl10_3
     - [0x1D44E0, c, ovl10/ovl10_3]
+    # Hidden TU split, confirmed 2026-08-12. func_801EC3C8_ovl10's dead
+    # epilogue is 32-byte aligned from its object's .text base, which only
+    # holds if a TU starts here. Corroborated by the rodata partition: the last
+    # ovl10_3_rd user is func_801EAB98_ovl10 (rom 0x1DB908), and the orphan
+    # block at 0x1E58F0 has exactly two users, func_801EBC60_ovl10 (0x1DC9D0)
+    # and func_801EBF2C_ovl10 (0x1DCC9C).
+    - [0x1DC9D0, c, ovl10/ovl10_3b]
     - [0x1E0160, c, ovl10/ovl10_4]
     - [0x1E0500, c, ovl10/ovl10_5]
     - [0x1E4160, data, ovl10/ovl10]
