@@ -698,8 +698,13 @@ void func_801DFB00_ovl14(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, D_801E2F1C_ovl14);
 }
 
+/* 63/65: structurally correct (same instruction count, same shapes); IDO uses
+ * FOUR saved registers where the ROM uses three. The ROM parks &omCurrentObj in
+ * $s0 and then REUSES $s0 for the constant 1 once the address is dead, keeping
+ * &D_800E0D50 in $s2 and &D_800E9C60 in $s1; IDO keeps &omCurrentObj live in its
+ * own register to the end and takes $s3 for the 1. Tried: rotated `while(cond)`
+ * and un-rotated `while(1){if(..)break;}` -- identical 63/65. */
 #ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 63/65 insns. Draft kept. */
 void func_801DFB48_ovl14(arg0)
 GObj *arg0;
 {
@@ -711,7 +716,10 @@ GObj *arg0;
     func_800FA414(2);
     D_80129138 = omCurrentObj->objId;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    while (D_800E9C60[D_800E0D50[omCurrentObj->objId]] != 1) {
+    while (1) {
+        if (D_800E9C60[D_800E0D50[omCurrentObj->objId]] == 1) {
+            break;
+        }
         ohSleep(1);
     }
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;

@@ -11,15 +11,21 @@
 extern Gfx D_80123E90[];
 void gameSetUpdateRate(f32);
 
-#ifdef MIPS_TO_C
+extern s32 D_800DD710[];
+extern s32 D_800DD84C;
+extern u32 D_800DDA90[];
+extern s32 D_800BE544;
+extern s32 D_800D7B68;
+void func_801114E0(void);
+void func_800F7578(void);
+void func_8000A498(GObj *, u8, s32);
 
 void func_800F61A0(void) {
-    s32 *temp_s0;
-    s32 *var_s3;
-    s32 temp_v0;
-    s32 var_s2;
-    void **temp_s1;
-    void *temp_a0;
+    s32 *p;
+    s32 i;
+    u32 *q;
+    GObj **g;
+    u32 v;
 
     func_801114E0();
     if (D_800BE544 <= 0) {
@@ -27,27 +33,24 @@ void func_800F61A0(void) {
         if (D_800D7B68 != 0) {
             func_800F7578();
         }
-        var_s3 = &D_800DD710;
-        var_s2 = 0;
-        do {
-            temp_s0 = &D_800DDA90 + var_s2;
-            if (*var_s3 != -1) {
-                temp_v0 = *temp_s0;
-                temp_s1 = D_800DE350 + var_s2;
-                if (temp_v0 & 0x38) {
-                    temp_a0 = *temp_s1;
-                    func_8000A498(temp_a0, temp_v0 & 7, temp_a0->unk10);
-                    *temp_s0 = (*temp_s1)->unkC;
+        for (i = 0, p = D_800DD710; ; ) {
+            q = (u32 *)((u8 *)D_800DDA90 + i);
+            if (*p != -1) {
+                v = *q;
+                g = (GObj **)((u8 *)D_800DE350 + i);
+                if (v & 0x38) {
+                    func_8000A498(*g, v & 7, (*g)->pri);
+                    *q = (*g)->link;
                 }
             }
-            var_s3 += 4;
-            var_s2 += 4;
-        } while (var_s3 != (&D_800DD710 + 0x13C));
+            p++;
+            i += 4;
+            if (p == &D_800DD84C) {
+                break;
+            }
+        }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2/func_800F61A0.s")
-#endif
 
 void func_800F629C(void) {
 }

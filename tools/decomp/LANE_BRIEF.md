@@ -1,5 +1,31 @@
 # Lane brief — read this before touching anything
 
+## RULE ZERO: CLOSE FUNCTIONS. DO NOT SURVEY.
+
+This overrides everything else in this file, and it exists because the last
+wave proved the cost. The lane that spent its budget re-measuring 22 existing
+drafts and writing careful notes closed **zero** functions in ~20 compiles. The
+lane that just ground through one file closed **twelve**, most on a single
+variant. Same brief, same tools, opposite output.
+
+So:
+
+- **Do not re-measure existing drafts to build a near-list.** If a draft has a
+  recorded number, believe it or ignore it — do not spend compiles confirming it.
+- **Do not write notes on functions you did not close.** A guarded draft with no
+  comment is fine. Analysis you are not acting on is waste.
+- **Do not survey, census, or rank.** Open a file, take the smallest untouched
+  pragma, write it, compile it. If it matches, take the next one.
+- **Three variants, then move on.** Not four. Guard it and go. Do not diagnose
+  why it failed.
+- **Do not report progress in prose.** One line per three closures in your
+  progress file, function names only.
+
+Your output is measured in functions closed, and nothing else counts. A lane
+that closes six functions and explains nothing beats a lane that closes one and
+explains everything.
+
+
 Everything here was measured tonight. Where it contradicts AGENT_GUIDE.md, this
 file is newer and wins; the guide's contradicted entries are listed at the end.
 

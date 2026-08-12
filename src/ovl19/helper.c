@@ -839,8 +839,18 @@ void func_80221108_ovl19(struct GObj *arg0, s32 arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221108_ovl19.s")
 #endif
 // the same rabbit hole as func_80220280_ovl19
-/*LANE_BEGIN*/
-s32 func_800FCD14();
+/* 75/184, instruction count exact.  This is a near-clone of func_8022054C_ovl19
+ * above (same D_800D6F18 state machine, same three-Vector func_800FCD14 call)
+ * and it is blocked the same way: frame 0x90 where the ROM has 0x80.
+ * Measured on both clones: the local block responds to local BYTES in 8-byte
+ * steps and does not respond to scalar locals at all (dropping `id`, dropping
+ * `o`, `Vector sp[3]` as one array, and all declaration orders leave 0x90).
+ * The gap between the saved-register area (ends 0x50 in both) and the start of
+ * the locals is 0x18 for IDO and 0x0C for the ROM; func_80220B40_ovl19 in this
+ * same file MATCHES with the identical three-Vector local set and a 4-byte gap,
+ * so the gap is not a function of the locals alone -- the two blocked clones
+ * are the ones that save six registers instead of three. */
+#ifdef NON_MATCHING
 void func_802211A0_ovl19(GObj *arg0) {
     s32 *p = (s32 *)((u32)&D_800D6F18);
     Vector pos;
@@ -906,8 +916,9 @@ void func_802211A0_ovl19(GObj *arg0) {
     }
     func_800B1900((u16) omCurrentObj->objId);
 }
-
-/*LANE_END*/
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")
+#endif
 
 Vector D_8022F0F8_ovl19 = {-100, 0, 100};
 

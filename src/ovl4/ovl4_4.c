@@ -87,6 +87,12 @@ void func_800B26D8(Vector *vec, struct DObj *node, u32 track);
 // function is the listing's 28. verify.py reports 1 diff for exactly
 // that reason and is wrong; check_layout.py and check_tu_size.py agree
 // with this split.
+// DO NOT GUARD THIS. verify.py's 1-diff here is the false positive described
+// above; guarding it activates a pragma whose listing ALSO contains
+// func_80158188_ovl4, which is defined in C below -- the TU then comes out
+// +32 bytes and check_tu_size.py fails. Measured 2026-08.
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 1/27 insns. Draft kept. */
 s32 func_80158120_ovl4(void) {
     s32 ret = 0;
 
@@ -102,6 +108,9 @@ s32 func_80158120_ovl4(void) {
     }
     return ret;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80158120_ovl4.s")
+#endif
 
 void func_80158188_ovl4(void) {
 }
@@ -269,6 +278,8 @@ struct DObj *func_801587CC_ovl4(u32 arg0) {
     return ret;
 }
 
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 13/264 insns. Draft kept. */
 void func_801588F4_ovl4(GObj *arg0, s32 arg1) {
     s32 unused;
     Vector posVec;
@@ -332,6 +343,9 @@ void func_801588F4_ovl4(GObj *arg0, s32 arg1) {
         ohSleep(1);
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_801588F4_ovl4.s")
+#endif
 
 typedef struct {
     /* 0x00 */ u32 unk0;

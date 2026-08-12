@@ -40,27 +40,20 @@ struct C954Arg2 {
 
 #define G_CC_PRIM_RGBA PRIMITIVE, 0, TEXEL0, 0, PRIMITIVE, 0, TEXEL0, 0
 
-// 12/22: the target burns TWO virtual registers per s16 store (t7/t9/t1/t3/t5),
-// this burns one. Swept casts, shifts, s16 args, 1 and 4 explicit temps: no move.
-#ifdef NON_MATCHING
+// The `(u16)` casts are LOAD-BEARING: the target burns TWO virtual registers per
+// s16 store (t7/t9/t1/t3/t5) and the uncast form burns one, so every temp came
+// out rotated. The cast forks the extra one. `u16` PARAMETERS do not work.
 void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
-    s16 t;
-
-    t = arg0;
-    D_800D4E64 = t * 4;
-    D_800D4E68 = arg1 * 4;
-    t = arg2;
-    D_800D4E6C = t * 4;
-    D_800D4E70 = arg3 * 4;
+    D_800D4E64 = (u16) arg0 * 4;
+    D_800D4E68 = (u16) arg1 * 4;
+    D_800D4E6C = (u16) arg2 * 4;
+    D_800D4E70 = (u16) arg3 * 4;
     if (arg4 != 0) {
         D_800D4E74 = 1;
         return;
     }
     D_800D4E74 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB680.s")
-#endif
 void func_800AB6D8(Gfx **gp, u32 arg1, s16 arg2, s16 arg3) {
     (*gp)->words.w0 = sTextureImageCommand;
     (*gp)->words.w1 = arg1;
@@ -460,9 +453,11 @@ void func_800ABB4C(Gfx **, uObjBg *);
 s32 lbreflect_Int16Sin(f32);
 s32 lbreflect_Int16Cos(f32);
 
-#ifdef NON_MATCHING
-/* Draft of the model draw callback. Kept because Makefile.pc defines
- * NON_MATCHING, so this is the code the PC port executes. */
+// The `(s16) (s32)` double cast on frameX/frameY in case 0 is LOAD-BEARING.
+// A 16-bit store of a computed value costs the target TWO virtual registers and
+// the single-cast form costs one, so case 0 advanced IDO's temp cursor by 6
+// instead of 16 and EVERY temp in the remaining 700 instructions came out
+// rotated by 6. Same lever as the `(u16)` casts in func_800AB680.
 void func_800AD1A0(GObj *gobj) {
     SPObj *sp;
     uObjBg *bg;
@@ -488,8 +483,8 @@ void func_800AD1A0(GObj *gobj) {
             switch (sp->unk10) {
                 case 0:
                     bg0 = &SPOBJ_GFX(sp)->b.bg;
-                    bg0->b.frameX = (s32) (sp->xOffset * 4.0f) & ~3;
-                    bg0->b.frameY = (s32) (sp->yOffset * 4.0f) & ~3;
+                    bg0->b.frameX = (s16) (s32) (sp->xOffset * 4.0f) & ~3;
+                    bg0->b.frameY = (s16) (s32) (sp->yOffset * 4.0f) & ~3;
                     bg0->b.imageX = (u32) (sp->unk34 * 32.0f);
                     bg0->b.imageY = (u32) (sp->unk38 * 32.0f);
                     break;
@@ -603,9 +598,6 @@ void func_800AD1A0(GObj *gobj) {
         sp = (SPObj *) sp->unk8;
     } while (sp != NULL);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AD1A0.s")
-#endif
 
 // Camera payload of the GObj this draw callback is registered on. sprite.c does
 // not include main/object_manager.h, so only the two fields this function reads

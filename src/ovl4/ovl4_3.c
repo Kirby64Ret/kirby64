@@ -555,7 +555,6 @@ void func_8015632C_ovl4(SPObj *arg0) {
  * six declaration permutations of the three locals were inert. Dead locals of
  * every type/position are eliminated here, so the frame cannot be shrunk that
  * way. */
-#ifdef NON_MATCHING
 void func_8015632C_ovl4(SPObj *);
 void func_800ACBDC(GObj *);
 
@@ -579,9 +578,6 @@ void func_80156560_ovl4(GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80156560_ovl4.s")
-#endif
 #include "SPObj.h"
 
 void func_8015665C_ovl4(GObj *arg0) {
