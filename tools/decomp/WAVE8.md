@@ -381,6 +381,28 @@ too broadly and went out to six lanes before it was falsified. The guide's
 own standing warning applies to everything in this file: **a recorded lever
 is a measurement, not a law, and several have been falsified by one compile.**
 
+## MANAGER RULE: NEVER BUILD WHILE A LANE IS LIVE
+
+Violated three times in one night, by me, each time under pressure to
+produce a commit. The failure is not a wasted build -- it is worse than
+that. A lane un-guards a function to measure it, which is legitimate and
+necessary; a build landing in that window compiles the un-guarded draft and
+leaves a NON-MATCHING OBJECT in build/. The source is correct afterwards and
+the object is wrong, and make will happily link it. mk.sh's source-hashing
+catches the common case, but not one where the source is restored to bytes
+it has already seen.
+
+It cost a stale ovl18 object that would have linked a red ROM, and it was
+found by the lane, not by me.
+
+**Gate only when every lane has confirmed PAUSED.** A checkpoint delayed by
+ten minutes costs nothing. A checkpoint that races a live lane produces a
+result you cannot trust in either direction: green may be stale, red may be
+someone's in-flight measurement rather than a defect.
+
+Corollary for lanes: with this rule in force, un-guarding a function for as
+long as a measurement takes is safe.
+
 ## NEVER SCRIPT A REPLACEMENT OF A FUNCTION DEFINITION
 
 Three incidents in one night, by three different agents including the
