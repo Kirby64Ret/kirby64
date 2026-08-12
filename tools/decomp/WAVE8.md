@@ -202,6 +202,41 @@ that actually catches things:
 A ROM that is byte-exact is the only evidence that counts. A file full of
 MATCHes is not.
 
+## The last structural lever: ovl3's kirby.c / ovl3_6.c re-split
+
+Measured 2026-08-12. Exactly **17** pragma functions in the whole tree are
+blocked by unmigrated .rodata, and **14 of them are in ovl3/ovl3_6** (the
+other 3: ovl5_4 x2, ovl5_3 x1). Jump-table functions are the cheapest tier in
+this project (~1.3 compiles per closure), so this one move is worth about as
+much as a full lane-cycle, and those 14 cannot be reached any other way.
+
+The blocker is the `# TODO: reassess split` on line 404 of kirby64.yaml, and
+the yaml's own comment already contains the diagnosis:
+
+    the kirby.c/ovl3_6.c file split at 0xDD9A0 is NOT the TU boundary. The
+    real one is near func_80179370_ovl3 [...] kirby.c's own object is only
+    0xF7D10..0xF7FB0, and the tail it shares with ovl3_6 stays an asm blob
+    until the C files are re-split.
+
+Confirmed by arithmetic: func_80179370_ovl3 is vram 0x80179370 =
+ROM **0xD9DB0** (0x80179370 - 0x80151100 + 0xB1B40), and it currently sits in
+`src/ovl3/kirby.c` (its pragma is at kirby.c:2469). The rodata object at
+0xF7FB0 serves func_80179370 (kirby.c) through func_8018F368 (ovl3_6) with no
+reset, so ONE rodata object spans TWO C files. No C file can emit that shape,
+which is why `[0xF7FB0, rodata, ovl3/kirby_2]` is still a raw blob.
+
+**The move:** re-split the C files at 0xD9DB0 instead of 0xDD9A0 — everything
+from func_80179370_ovl3 to the end of kirby.c moves into ovl3_6.c (or a new
+TU) — then change the yaml subsegment to `[0xD9DB0, c, ovl3/ovl3_6]` and turn
+`[0xF7FB0, rodata, ovl3/kirby_2]` into a migrated `.rodata` for that TU.
+
+**Execute ONLY with the ovl3 lane paused**, and single-threaded: it rewrites
+two files that lane owns, and `mk.sh` re-runs splat when the yaml changes,
+which regenerates asm/nonmatchings under every other lane's feet. Gate with
+check_tu_size + check_sections + check_rodata_bytes + verify_rom before
+committing; a mid-flight rodata migration once produced a ROM differing in
+3,741 regions and read exactly like catastrophic lane breakage.
+
 ## Standing prohibitions (full list, for lane prompts)
 
 No port work. No tool writing. No yaml edits (manager-owned). No git
