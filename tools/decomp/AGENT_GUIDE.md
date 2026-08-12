@@ -2679,3 +2679,145 @@ PLACE before believing a 1-2 diff residue.
 * `func_8011C87C` (ovl2/plylib) 16/21 -- register rotation with NO call in the
   function, so the callee-return-type lever cannot apply. `volatile`, a
   `gKirbyState` pointer local and a chained assignment are all inert.
+
+# Wave 11 (ovl11/12/13/16/17/18): what the ovl16 rodata migration actually bought
+
+## Jump tables in a migrated segment are ordinary work, and they close
+
+The migration of ovl16's rodata legalised seven jump-table functions that had
+been structurally impossible. **Six of the seven are now MATCHED**
+(`func_801DFAA0`, `func_801E788C`, `func_801DCDC8`, `func_801DD50C`,
+`func_801DE030`, plus the twins), the seventh (`func_801DED40`) is parked at a
+five-placement residue. That is a far better hit rate than the general pool, so
+**when a segment's rodata is migrated, work its `jlabel` functions first.**
+
+Three rules make the difference between 300 diffs and a match:
+
+**1. The case labels must be DENSE.** IDO only builds a jump table when the
+case values cover the range; with the four live cases of a 0..6 switch it emits
+a compare chain instead and every instruction after it shifts.  Write the dead
+cases out explicitly:
+
+    case 0: break;   case 3: break;   case 4: break;
+
+`func_801DFAA0_ovl16` went from 107/107 diffs to MATCH on that alone, and
+`func_801DED40_ovl16` from 333 to 319.
+
+**2. The BODY order follows SOURCE order, not the table order.** The jump table
+is emitted from the case VALUES, but the arms are laid out in the order you
+write them. Read the branch targets out of the table, sort the arms by target
+ADDRESS, and write them in that order. `func_801DD50C_ovl16`: 102 -> 16 diffs
+with no other change.
+
+**3. `for (i = 0; ...)` and `i = 0; do {...} while` are not interchangeable in
+the arm prologue.** The ROM schedules the two address `addiu`s before the
+counter's `move $s2, $zero`; the `do/while` form emits the move first. Same
+function: 16 -> 7 diffs on the loop form alone.
+
+## Unifying a constant's TYPE is as much a lever as forking it
+
+This guide documents type-SPLIT (fork one CSE'd constant into two) at length.
+The inverse closed three functions this wave and is not written down anywhere:
+**where the ROM hoists ONE constant into a saved register and your compile
+re-materialises it per use, the uses have different C types.**
+
+`func_801DCDC8_ovl16` uses `1` for `ohSleep(1)` (u32), `D_800E8E60[x] = 1`
+(u32) and `D_800E98E0[x] = 1` (s32). The ROM keeps all of them in `$s5`.
+Writing `*(u32 *) &D_800E98E0[...] = 1;` for the two s32 stores unified them
+and took the function from 219/293 to MATCH.
+
+Same lever, other direction, on `func_801DE030_ovl16`: reading the MultiType
+array as `.as_u32` instead of `((s32 *) ...)` unified the compares with
+`ohSleep`'s u32 and took 64 -> 1.  The last diff was `func_800AFBB4(1, obj)`
+whose prototype said `s32`; widening that ONE prototype to `u32` closed it and
+left all 17 verifiable functions in the file at 0 diff.
+
+And in `func_801DD50C_ovl16` the same shape needed a `(u32)` cast on ONE
+comparison in ONE switch arm (7 -> MATCH) -- the other arms wanted the plain
+s32 form. It is per-use, not per-file.
+
+## A wrong TU boundary: the second one, and it cost one yaml line
+
+`src/ovl17/ovl17_2.c` had the ovl14_2 disease and the guide already predicted
+it ("Confirmed independently on ovl17_2"). The fix is the documented one and it
+took ten minutes:
+
+  * `func_801DD8F0_ovl17` is a 4-byte `nop` listing carrying ELEVEN more nops
+    after its `.size` -- 48 bytes of ovl17.c's trailing alignment that splat
+    put at the head of ovl17_2.
+  * The real TU starts at `func_801DD920_ovl17` = 0x801DD920, which is
+    `0 mod 32`; the yaml's 0x801DD8F0 is `0x10 mod 32`.
+  * Move the pragma line to the END of ovl17.c, replace it in ovl17_2.c with a
+    same-line-count comment, and change `[0x228AE0, c, ovl17/ovl17_2]` to
+    `[0x228B10, ...]`.
+
+`func_801DDB8C_ovl17` (4 nops MISSING) and `func_801DDF6C_ovl17` (4 nops too
+MANY -- the same defect in the opposite direction, which is the confirmation)
+both matched immediately, and the ROM stayed byte-exact.
+
+**The residual `check_layout` note is expected**: it now reports
+`func_801DD8F0_ovl17 at +0x270C, expected +0x2710 (drift -4)`, exactly the
+cosmetic label-position artifact the ovl14_2 section describes. sha1,
+check_tu_size and check_sections are all clean.
+
+**How to find the next one cheaply:** the head listing of every `c` subsegment.
+If it is a handful of `nop`s, the TU base is splat's guess, not the compiler's.
+`ovl12/code_1EB520` has the same shape (8 nops at 0x801DB1E0) but that base is
+ALREADY `0 mod 32`, so moving it buys nothing -- check the congruence before
+touching the yaml.
+
+## verify.py reporting MATCH on a jump-table draft that CANNOT LINK
+
+`func_80225B44_ovl18` has a guarded draft that verify.py reports as
+`MATCH (46 insns)`. Converting it fails the LINK:
+
+    ovl18_2.rodata.o:(.rodata+0x24): undefined reference to `.L80225BD0_ovl18'
+
+ovl18's rodata is unmigrated, so the surviving asm blob still references the
+pragma's jump-table labels. **A MATCH verdict does not mean a function is
+convertible; the rodata model gates it separately**, and `rank_candidates.py`
+already knows this (it scores the function `None`). Check the ranker's verdict
+before trusting a draft scan.
+
+## Levers that closed functions this wave
+
+* **Collapsing an if/else onto ONE PHYSICAL LINE**, again. `func_801E03EC_ovl16`
+  was 2/143 with two `lui`s swapped and matched collapsed -- the same 2-diff
+  signature as func_801E5E10_ovl15. Try it on sight for a swapped-`lui` pair.
+* **A non-void return type on a prototype the function itself introduces.**
+  `s32 func_800B2340(Vector *, struct DObj *, s32);` at block scope took
+  `func_801ED07C_ovl16` from 12/133 to 4/133, and flipping the file-scope
+  `void func_801A03B4_ovl7(void);` to `s32` closed it. The second flip is a
+  shared prototype -- A/B the whole object (22 match / 0 diff) and then the ROM.
+* **Dropping a temp local and writing the expression inline** closed
+  `func_801DCF70_ovl11` (1/81 -> MATCH): with the local, `if (t == 4)` emitted
+  `bne $v1, $a3`; inline, IDO shares the constant register and emits the ROM's
+  `bne $a3, $v1`. A named `s32 four = 4;` sentinel local also worked; `4 == t`
+  did not.
+* **The straight-line entity-setup vein is still open in ovl16.** Four of five
+  attempts matched on the FIRST or SECOND compile (`func_801E7650`,
+  `func_801ECE64`, `func_801E03EC`, `func_801E0CC8`, `func_801DD964_ovl17`,
+  `func_801DDD38_ovl17`). Filter for `insns < 160 && branches <= 5` and read the
+  listing top to bottom.
+
+## Measured floors from this wave (swept; do not repeat the same sweep)
+
+* `func_801DC8E4_ovl16` -- the "third value without a named local" problem is
+  now bounded exactly. A SECOND PARAMETER reaches frame 0x40 and **every
+  interior offset exactly right**, leaving precisely ONE extra instruction: the
+  parameter home store `sw $a1, 0x44($sp)`. Prototyped, K&R and
+  `register`-qualified two-parameter forms all home it; disjoint inner blocks do
+  not share stack (IDO gives each named local its own word regardless). So the
+  function is one suppressed home-store from matching, and nothing in C
+  suppresses it.
+* `func_801DE40C_ovl17` 45/208 -- frame and every instruction exact; the ROM
+  holds omCurrentObj in `$v1` and objId*4 in `$a1`, IDO takes `$a1`/`$a2`. The
+  `u8 pad[16]` that fixes the frame IS load-bearing. Every callee is
+  header-declared, so no return-type knob exists.
+* `func_801DD184_ovl13` 4/137 and `func_801E37E8_ovl13` 7/92 -- confirmed the
+  coupled-FP and one-slot-rotation floors; symbol retyping, `volatile`, index
+  locals and all four assignment/declaration orders are inert.
+* `func_80221498_ovl18` 17/138 -- FP hoist ORDER: the ROM materialises the
+  extern-derived constant LAST of four and gives it `$f20`; moving the
+  assignment inside the loop (55), inlining the extern (109) and moving it
+  above the preceding call (80) are all worse than the base draft.

@@ -236,7 +236,65 @@ void func_801DE3D4_ovl17(struct GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 45/208, and the residue is ONE register rotation repeated: the ROM holds
+ * omCurrentObj in $v1 and objId*4 in $a1, IDO takes $a1 and $a2 -- every
+ * instruction is otherwise exact, including the frame.  The `u8 pad[16]` IS
+ * load-bearing: the ROM's frame is 0x68 with the Vector at 0x5C, and without
+ * the pad IDO gives 0x58/0x4C (48 -> 45 diffs).  Swept: 1-5 leading s32 pads,
+ * a leading unused scalar, temp declared first, no temp local at all (214),
+ * an explicit objId local (199), `x = x + 1` vs `x++`, and dropping the
+ * redundant block-scope func_801ACD90_ovl7 prototype.  No implicit-declaration
+ * or return-type lever exists here -- every callee is prototyped in a header,
+ * and the rotation needs temps one slot DOWN, which only freeing $v0 gives. */
+void func_801DE40C_ovl17(struct GObj *arg0) {
+    Vector sp5C;
+    u8 pad[16];
+    struct DObj *temp;
+
+    temp = D_800DFBD0[omCurrentObj->objId][31];
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    *(s32 *) &D_800E9AA0[omCurrentObj->objId] = 0;
+    func_800AA018(0x10501);
+    func_800AA608(arg0->data.dobj->firstChild, 0x10500, 4.0f, 0x10083, 4.0f);
+    func_800A9F98(0x10500, 4.0f);
+    D_800E93A0[omCurrentObj->objId] = 0x14;
+    ohSleep(8);
+    utilGetTransformSRT(&sp5C, temp);
+    func_801ACD90_ovl7(0x3D, 1, &sp5C);
+    play_sound(0x25E);
+    D_800E9560[omCurrentObj->objId] = 0;
+    while (D_800E9560[omCurrentObj->objId] < 2) {
+        ohSleep((random_soft_s32_range(0xA) * 7) + 7);
+        utilGetTransformSRT(&sp5C, temp);
+        func_801ACD90_ovl7(0x3D, 0, &sp5C);
+        play_sound(0x25E);
+        D_800E9560[omCurrentObj->objId]++;
+    }
+    D_800EA1A0[omCurrentObj->objId] = 9;
+    while (D_800EA1A0[omCurrentObj->objId] >= 6) {
+        D_800E9560[omCurrentObj->objId] = 0;
+        while (D_800E9560[omCurrentObj->objId] < 3) {
+            ohSleep((random_soft_s32_range(8) * 7) + 0xE);
+            utilGetTransformSRT(&sp5C, temp);
+            func_801ACD90_ovl7(0x3D, 0, &sp5C);
+            play_sound(0x25E);
+            D_800E9560[omCurrentObj->objId]++;
+        }
+        D_800EA1A0[omCurrentObj->objId]--;
+    }
+    D_800EA1A0[omCurrentObj->objId] = 0;
+    ohSleep(9);
+    D_800D7098.unk4 = 0;
+    ohSleep(1);
+    func_800AA018(0x10504);
+    D_800EA360[omCurrentObj->objId] = 0;
+    D_800EA520[omCurrentObj->objId] = 0x3C;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DE40C_ovl17.s")
+#endif
 
 void func_801DE74C_ovl17(struct GObj *arg0) {
     struct DObj *temp_v0;
