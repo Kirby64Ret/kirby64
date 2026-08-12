@@ -529,6 +529,8 @@ void func_801E28A0_ovl10(void) {
 struct Ovl10AnimCmd2 {
     u8 filler0[8];
     s32 unk8;
+    u8 fillerC[0x24];
+    s32 unk30;
 };
 
 struct Ovl10AnimObj2 {
@@ -562,5 +564,34 @@ s32 func_801E2BD8_ovl10(s32 arg0, void *arg1) {
     return func_80110150(arg1);
 }
 
+#ifdef NON_MATCHING
+/* BYTE-EXACT (43/43, objdump-verified against the listing) but PADDING-TRAPPED:
+   the listing carries a 7-nop tail after its own .size and this is the last
+   function of the `c` subsegment, so converting it shortens ovl10_1's .text by
+   16 bytes. Needs a `pad` subsegment in kirby64.yaml (`. += 0x10;`); un-guard
+   in the same change. */
+s32 func_801E2C78_ovl10(s32 arg0, void *arg1) {
+    struct Sub800E1B50_Unk88 *sp0;
+    struct UnkStruct800E1B50 *temp;
+    struct Ovl10AnimObj2 *temp_v0;
+
+    temp = D_800E1B50[omCurrentObj->objId];
+    sp0 = temp->unk88;
+    if (sp0 == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    temp_v0 = func_80111C88(temp->unk8C, omCurrentObj->objId);
+    if (temp_v0 != NULL) {
+        if (arg0 != 0) {
+            temp_v0->unk24->unk8 = arg0;
+            temp_v0->unk24->unk30 = arg0;
+        }
+        func_80111ECC(temp_v0);
+    }
+    return func_80110150(arg1);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E2C78_ovl10.s")
+#endif
 

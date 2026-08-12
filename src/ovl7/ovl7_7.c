@@ -89,7 +89,9 @@ s32 func_80110150(void *);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEA20_ovl7.s")
 
 #ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 5/111 insns. Draft kept. */
+/* 5/111 insns */
+#ifdef NON_MATCHING
+/* 5/111 */
 void func_801AEE04_ovl7(void) {
     s32 func_801A0880_ovl7(void);
     struct Ovl7_7_AnimObj *func_801117BC(void *, u32);
@@ -98,7 +100,7 @@ void func_801AEE04_ovl7(void) {
     extern s32 D_801CA910_ovl7[];
     extern s32 D_800E83E0[], D_800E9560[];
     extern struct GObjProcess *gEntityGObjProcessArray[];
-    void assign_new_process_entry();
+    void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
     s32 pad;
     s32 ret;
 
@@ -132,6 +134,9 @@ void func_801AEE04_ovl7(void) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEE04_ovl7.s")
+#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEE04_ovl7.s")
 #endif
