@@ -1279,9 +1279,81 @@ void func_801DED40_ovl16(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DED40_ovl16.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DF314_ovl16.s")
+void func_801DF314_ovl16(void) {
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x += 0.05235987902f;
+    while (D_800DFBD0[omCurrentObj->objId][2]->angle.v.x > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][2]->angle.v.x -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][2]->angle.v.x < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][2]->angle.v.x += 6.283185482f;
+    }
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.z -= 0.02617993951f;
+    while (D_800DFBD0[omCurrentObj->objId][2]->angle.v.z > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][2]->angle.v.z -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][2]->angle.v.z < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][2]->angle.v.z += 6.283185482f;
+    }
+    D_800DFBD0[omCurrentObj->objId][4]->angle.v.y += 0.02617993951f;
+    while (D_800DFBD0[omCurrentObj->objId][4]->angle.v.y > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][4]->angle.v.y -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][4]->angle.v.y < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][4]->angle.v.y += 6.283185482f;
+    }
+    D_800DFBD0[omCurrentObj->objId][5]->angle.v.y += 0.05235987902f;
+    while (D_800DFBD0[omCurrentObj->objId][5]->angle.v.y > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][5]->angle.v.y -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][5]->angle.v.y < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][5]->angle.v.y += 6.283185482f;
+    }
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DF62C_ovl16.s")
+void func_801DF62C_ovl16(void) {
+    D_800DFBD0[omCurrentObj->objId][3]->angle.v.x -= 0.2094395161f;
+    while (D_800DFBD0[omCurrentObj->objId][3]->angle.v.x > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][3]->angle.v.x -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][3]->angle.v.x < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][3]->angle.v.x += 6.283185482f;
+    }
+    D_800DFBD0[omCurrentObj->objId][3]->angle.v.y -= 0.4188790321f;
+    while (D_800DFBD0[omCurrentObj->objId][3]->angle.v.y > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][3]->angle.v.y -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][3]->angle.v.y < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][3]->angle.v.y += 6.283185482f;
+    }
+    D_800DFBD0[omCurrentObj->objId][3]->angle.v.z += 0.2094395161f;
+    while (D_800DFBD0[omCurrentObj->objId][3]->angle.v.z > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][3]->angle.v.z -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][3]->angle.v.z < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][3]->angle.v.z += 6.283185482f;
+    }
+    D_800DFBD0[omCurrentObj->objId][4]->angle.v.x += 0.2094395161f;
+    while (D_800DFBD0[omCurrentObj->objId][4]->angle.v.x > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][4]->angle.v.x -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][4]->angle.v.x < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][4]->angle.v.x += 6.283185482f;
+    }
+    D_800DFBD0[omCurrentObj->objId][4]->angle.v.y -= 0.4188790321f;
+    while (D_800DFBD0[omCurrentObj->objId][4]->angle.v.y > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][4]->angle.v.y -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][4]->angle.v.y < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][4]->angle.v.y += 6.283185482f;
+    }
+    D_800DFBD0[omCurrentObj->objId][4]->angle.v.z -= 0.2094395161f;
+    while (D_800DFBD0[omCurrentObj->objId][4]->angle.v.z > 6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][4]->angle.v.z -= 6.283185482f;
+    }
+    while (D_800DFBD0[omCurrentObj->objId][4]->angle.v.z < -6.283185482f) {
+        D_800DFBD0[omCurrentObj->objId][4]->angle.v.z += 6.283185482f;
+    }
+}
 
 void func_801DFAA0_ovl16(s32 arg0) {
     switch (D_800D7098.unk4) {

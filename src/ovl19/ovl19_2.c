@@ -472,14 +472,41 @@ void func_8022703C_ovl19(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_802271A8_ovl19.s")
+void func_802271A8_ovl19(GObj *arg0) {
+    Vector sp44;
+    Vector sp38;
+    struct CollisionTriangle *sp34;
+    f32 *py;
+    f32 **pp;
+
+    pp = D_800E0490[omCurrentObj->objId];
+    py = pp[1];
+    sp44.x = gEntitiesPosXArray[omCurrentObj->objId];
+    sp44.y = gEntitiesPosYArray[omCurrentObj->objId] + *py;
+    sp44.z = gEntitiesPosZArray[omCurrentObj->objId];
+    sp38.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp38.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *py;
+    sp38.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    sp34 = D_8012BCC0;
+    if (func_80104AB4(&sp44, &sp38, 1, 0x13, &sp34) != 0) {
+        gKirbyState.unk40 = sp34->collisionParameter * 0.1f;
+    }
+    if (D_800E8920[omCurrentObj->objId] != 0) {
+        D_800E6690[omCurrentObj->objId] = 0.2f;
+        if (gKirbyState.unk40 < 0.0f) {
+            D_800E6850[omCurrentObj->objId] = -gKirbyState.unk40;
+        } else {
+            D_800E6850[omCurrentObj->objId] = gKirbyState.unk40;
+        }
+    } else if (gKirbyState.unk44 != 1) {
+        D_800E6690[omCurrentObj->objId] = 0.025f;
+        D_800E6850[omCurrentObj->objId] = 0.0f;
+    }
+}
 
 void func_802273A0_ovl19(GObj *arg0) {
     extern f32 *D_80192F9C[];
     extern s32 D_8022F500_ovl19[];
-    extern void func_800AA018(s32);
-    extern void func_800A9864(s32, s32, s32);
-    extern void func_80154648_ovl3(s32, s32 *, s32 *);
     void func_8022759C_ovl19(GObj *);
 
     D_800DEF90[omCurrentObj->objId] = func_800B5094;
@@ -496,9 +523,9 @@ void func_802273A0_ovl19(GObj *arg0) {
     while (1) {
         if (D_800EC2E0[omCurrentObj->objId].as_s32 != -1) {
             if (D_800EC4A0[omCurrentObj->objId] != 0) {
-                func_800AA018(D_800EC4A0[omCurrentObj->objId]);
+                func_800AA018((void *) D_800EC4A0[omCurrentObj->objId]);
             }
-            func_800AA018(D_800EC2E0[omCurrentObj->objId].as_s32);
+            func_800AA018((void *) D_800EC2E0[omCurrentObj->objId].as_s32);
             D_800EC2E0[omCurrentObj->objId].as_s32 = -1;
         }
         ohSleep(1);
