@@ -99,14 +99,25 @@ def run_one(cf, fn, seconds, jobs):
         log(f'SKIP {fn}: setup failed -- {r.stderr.strip().splitlines()[-1] if r.stderr.strip() else "no output"}')
         return False
 
-    try:
-        p = subprocess.run(
+    # NOT --quiet: the score is only recoverable from permuter's progress
+    # output, and with it suppressed every entry logged best=None. Output goes
+    # to a file rather than a pipe -- permuter fans out to worker processes and
+    # a filled pipe buffer is a way to deadlock a run that has no other reason
+    # to stop.
+    logf = os.path.join(d, 'permuter.out')
+    t0 = time.time()
+    with open(logf, 'wb') as fh:
+        p = subprocess.Popen(
             [sys.executable, os.path.join(TOOLS, 'decomp-permuter', 'permuter.py'),
-             '-j', str(jobs), '--better-only', '--stop-on-zero', '--quiet', d],
-            capture_output=True, text=True, timeout=seconds)
-        out = p.stdout + p.stderr
-    except subprocess.TimeoutExpired as e:
-        out = (e.stdout or b'').decode('utf8', 'replace') + (e.stderr or b'').decode('utf8', 'replace')
+             '-j', str(jobs), '--better-only', '--stop-on-zero', d],
+            stdout=fh, stderr=subprocess.STDOUT)
+        try:
+            p.wait(timeout=seconds)
+        except subprocess.TimeoutExpired:
+            p.kill()
+            p.wait()
+    elapsed = time.time() - t0
+    out = open(logf, errors='replace').read().replace('\r', '\n')
 
     # permuter writes output-<pid>-<n>/ directories for every improvement and
     # names the score in its log; a zero score is the only thing worth waking
@@ -123,7 +134,14 @@ def run_one(cf, fn, seconds, jobs):
         log(f'*** MATCH {fn} ({cf}) -- source in {dst}')
         return True
 
-    log(f'    {fn:28s} best={best} improvements={len(hits)}')
+    # Elapsed time is logged because it is the only way to tell "permuted for
+    # the full budget and did not land" from "exited immediately", and those
+    # need opposite responses. An early exit is a broken permuter directory,
+    # not a hard function.
+    log(f'    {fn:28s} best={best} improvements={len(hits)} {elapsed:.0f}s')
+    if elapsed < seconds * 0.5 and best is None:
+        last = [l for l in out.split('\n') if l.strip()][-3:]
+        log(f'      exited early: {" | ".join(l.strip() for l in last)}')
     return False
 
 

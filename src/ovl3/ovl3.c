@@ -202,7 +202,6 @@ s32 func_80151B78_ovl3(void) {
     return 0;
 }
 
-/*<<<FC>>>*/
 extern s32 D_800E9560[];
 extern s32 D_8012E7E8;
 
@@ -216,21 +215,21 @@ s32 func_80151C78_ovl3(void) {
                     } else {
                         set_kirby_action_1(0, 1);
                     }
-                    return 0xE;
+                    break;
                 case 1:
                     if (gKirbyController.buttonHeld & 0x400) {
                         set_kirby_action_1(0xB, 0x10);
                     } else {
                         set_kirby_action_1(0, 1);
                     }
-                    return 0xE;
+                    break;
                 case 2:
                     if (gKirbyController.buttonHeld & 0x400) {
                         set_kirby_action_1(0x12, 0x12);
                     } else {
                         set_kirby_action_1(0, 1);
                     }
-                    return 0xE;
+                    break;
             }
             return 0xE;
         }
@@ -253,7 +252,5 @@ s32 func_80151C78_ovl3(void) {
     }
     return 0;
 }
-
-/*<<<EC>>>*/
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3/func_80151E94_ovl3.s")

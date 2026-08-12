@@ -3394,3 +3394,71 @@ Measure on a LEADING-DOT copy beside the real file (`.lever_<stem>.c`): make's
 will read that copy as UNMIGRATED, so register the path in `verify._migrated`
 before calling `verify.verify()` -- otherwise every own-.rodata reference comes
 back as a phantom diff and a real MATCH reads as 1-4 diffs.
+
+## Two idioms that closed 4 of 6 ovl3 conversions in wave 8 (measured at c3dff83)
+
+**A shared `return 0` exit is spelled with `&&`, not with early returns.**
+Where the ROM's early exits are all `beql/bnel/bc1fl <shared epilogue>` with
+`or $v0, $zero, $zero` IN THE DELAY SLOT, and there is exactly ONE
+`or $v0,$zero,$zero` block at the very end, the source is the file's
+`if (a && b && c) { ...; return N; } return 0;` shape -- NOT a run of
+`if (!a) return 0;` statements. The early-return spelling makes IDO invert each
+test and branch AROUND an inline `b epilogue; move v0,zero` pair, costing two
+instructions per exit. `func_80151288_ovl3` went 107/125 -> 58/111 on that
+rewrite alone, and 125 -> 111 instructions.
+
+The same rule inside a `switch`: `break` + ONE `return N` after the switch beats
+`return N` in every case. IDO fills each `break`'s delay slot with the shared
+block's `li $v0,N` and retargets the branch to the epilogue, which is exactly
+the ROM's N copies of `b <epilogue>; addiu $v0, N`. Writing `return N` per case
+emits those N copies AND leaves the post-switch block behind, one pair too many.
+`func_80151C78_ovl3`: 72/136 -> MATCH on nothing else.
+
+Cheapest remaining tiebreak once the shape is right: the guard that wraps a
+call result. `if (f() != 0) return N;` then straight-line code, versus
+`if (f() == 0) { straight-line }`, is a 3-instruction difference and the ROM
+tells you which -- read whether the branch jumps TO the epilogue or AROUND the
+body. `func_80151288_ovl3` closed 58 -> 0 on that one flip.
+
+**A DOUBLE literal forks IDO's shared float constant where an int 0 cannot.**
+The known "type-split ZERO" lever (int `0` vs `0.0f`) has a general form: any
+float constant written `2.0` instead of `2.0f` gets its own constant-table entry
+and its own `lui`, while compiling to the identical instruction. Use it when the
+ROM materialises the SAME 32-bit float twice and your C emits it once.
+`func_80170AC4_ovl3` needed `val = 2.0;` against two `= 2.0f` array stores;
+without it the last 2.0f was CSE'd into the callee-saved register the ROM
+reserves for the loop variable, and the residue was 47/177.
+
+That function is also the worked example of the migration cost: it MATCHED
+before ovl3's rodata was migrated and broke the moment its `extern f32
+D_801973AC_ovl3` became the literal `0.06666667f`, because a literal is CSE'd
+and an extern is not. Expect one such casualty per migrated file and budget for
+it in the same pass -- the substitution is mechanical, the re-match is not.
+
+**Caveat on the int-0 fork: it is all-or-nothing per function.** In
+`func_80171E00_ovl3` the ROM has two `mtc1 $zero` (one for a struct field, one
+shared by two array stores) and plain `0.0f` everywhere gives ONE. Every attempt
+to fork exactly one -- int `0` on the field, int `0` on the arrays, double `0.0`
+on either -- produced THREE. Left at 206/269; do not assume the lever is
+adjustable.
+
+## ovl3-specific corrections
+
+* The claim that `func_8018E164_ovl3` (ovl3_6) closes on writing `65535.0f` is
+  FALSE and was never possible: **ovl3_6.c has no `.rodata` subsegment.** The
+  yaml migration covers ovl3, ovl3_1, plydemo, plyshot (first half only),
+  ovl3_4 and kirby (0xF7D10..0xF7FB0 only); ovl3_6 and the kirby tail past
+  ~func_80179370 still reference the `kirby_2`/`plyshot_2` asm blobs and must
+  keep their externs. Its twin `func_80173EC0_ovl3` IS in the migrated kirby
+  range and did close on the literal, first try. Check `head -1` of the listing:
+  a migrated function's listing opens with `.section .late_rodata`.
+* Jump-table pragmas in the migrated ovl3 files are now ordinary work and are
+  the cheapest pool in the segment -- three of them matched first or second try
+  (`func_8016BC00_ovl3`, `func_8016A934_ovl3`, `func_80179130_ovl3`). The
+  jtbl arrives in the listing's `.late_rodata`; IDO re-emits it from the
+  `switch` and check_layout/check_tu_size confirm placement.
+* To make IDO emit a 17-entry table where only 8 values do anything, list
+  EVERY case from 0 to max explicitly and give the leftovers a shared `default:`
+  -- IDO sizes the table from min(case) to max(case), so grouping the leftovers
+  under `default:` alone yields a table of 1..14 and an `sltiu` of the wrong
+  bound.
