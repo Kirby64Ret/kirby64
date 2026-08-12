@@ -101,6 +101,7 @@ void pc_vi_init(void) {
 /* One field boundary. Everything the VI does that the game can observe
  * happens here and nowhere else. */
 static void retrace(void) {
+    pc_dbg_vi_retrace++;
     sRetraceCount++;
 
     /* The arm takes effect. Doing this BEFORE presenting matters: the buffer
@@ -156,13 +157,18 @@ void pc_vi_tick(void) {
     u64 now;
     int guard = 4;
 
+    pc_dbg_vi_call++;
     if (!sViStarted) {
+        pc_dbg_vi_nostart++;
         return;
     }
     now = pc_count64();
+    pc_dbg_now_lo = (unsigned long)now;
+    pc_dbg_next_lo = (unsigned long)sNextRetraceAt;
     /* Fire at most a few frames' worth per pump. A host hiccup should cost
      * dropped frames, not a burst that outruns the frame pipeline. */
     while (now >= sNextRetraceAt && guard-- > 0) {
+        pc_dbg_vi_loop++;
         sNextRetraceAt += retrace_period();
         retrace();
     }

@@ -257,6 +257,7 @@ void osInitialize(void) {
     done = 1;
 
     trace_from_env();
+    pc_dbg_init();
     install_quit_handler();
     pc_check_low_memory();
     pc_time_init();

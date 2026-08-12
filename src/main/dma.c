@@ -70,6 +70,28 @@ void dma_copy(OSPiHandle *handle, u32 physAddr, u32 vAddr, u32 size, u8 directio
 }
 
 void dma_overlay_load(struct Overlay *ovl) {
+#ifdef PORT
+    /* THE PORT NEVER PERFORMS AN OVERLAY LOAD, and the interception has to be
+     * here rather than inside osEPiStartDma, because the DMA is only three of
+     * this function's four steps. The fourth is `bzero(bssStart, bssEnd -
+     * bssStart)`, which is a direct write and never reaches the PI at all.
+     *
+     * gOverlayTable[1] is what proved it: its descriptor comes out of the
+     * converted data with bssStart = &D_801290D0 (a real port .bss address)
+     * and bssEnd = 0x8012eaf0 (an N64 VRAM address nothing relocated), so the
+     * bzero is a 2 GB memset from the middle of .bss and the port died in
+     * __memset_evex_unaligned_erms with dma.c:85 as the only clue.
+     *
+     * Zeroing that range would be wrong even if the bounds were consistent:
+     * every overlay is statically linked into this binary, and an overlay's
+     * "bss" here holds converted data the native build already owns. See the
+     * header of src/pc/pc_overlay.c. Expands to nothing outside the port. */
+    extern int pc_overlay_intercept_load(struct Overlay *ovl);
+
+    if (pc_overlay_intercept_load(ovl)) {
+        return;
+    }
+#endif
     if ((s32) ovl->textEnd - (s32) ovl->textStart != 0) {
         osInvalICache((void*)(s32) ovl->textStart, (s32) ovl->textEnd - (s32) ovl->textStart);
         osInvalDCache((void*)(s32) ovl->textStart, (s32) ovl->textEnd - (s32) ovl->textStart);

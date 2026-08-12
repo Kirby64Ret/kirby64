@@ -62,6 +62,8 @@
 #include <ultra64.h>
 #include <stddef.h>
 
+#include "types.h"
+
 #include "pc/pc_platform.h"
 
 /* The nine bounds. Emitted as assembly because C cannot place several
@@ -135,6 +137,41 @@ static void ensure_registry(void) {
      * are big-endian MIPS-relocated images of tables the native build has
      * already translated into build/pc/data. */
     register_span(ovl1_VRAM, ovl1_BSS_END, "ovl1");
+}
+
+/* --------------------------------------------------- the load interception
+ *
+ * src/main/dma.c's dma_overlay_load() calls this first under #ifdef PORT and
+ * returns immediately when it answers 1, which it always does.
+ *
+ * WHY THE WHOLE FUNCTION AND NOT JUST THE DMA. os_pi.c already refuses the
+ * cartridge copy, and that covers three of dma_overlay_load's four steps. The
+ * fourth is `bzero(bssStart, bssEnd - bssStart)`, which never goes near the PI
+ * -- and it is the one that killed the port. gOverlayTable[1]'s descriptor
+ * carries bssStart = &D_801290D0, a genuine port .bss address, and bssEnd =
+ * 0x8012eaf0, an N64 VRAM address that nothing relocated because no symbol
+ * covers it. Their difference is about 2 GB.
+ *
+ * Repairing the bounds would not help, because the bzero is not wanted either:
+ * an overlay's "bss" in this build is not scratch space, it is converted data
+ * that build/pc/data already initialised. Only ovl1 has a dedicated dummy span
+ * (above) where zeroing would be harmless, and skipping it there costs
+ * nothing.
+ *
+ * ONE DIVERGENCE, RECORDED. On the N64 reloading an overlay re-zeroes its bss,
+ * so an overlay's statics are fresh every time it is swapped in. Here every
+ * overlay is resident and keeps its state across loads. Nothing has needed
+ * that reset yet; if some overlay turns out to depend on it, this is the
+ * function that has to learn which spans are genuinely scratch. */
+int pc_overlay_intercept_load(struct Overlay *ovl) {
+    if (ovl == NULL) {
+        return 1;
+    }
+    pc_trace(PC_TR_DMA,
+             "[dma] SKIP overlay load: rom %p..%p -> ram %p, bss %p..%p\n",
+             ovl->startAddr, ovl->endAddr, ovl->RAMStart, ovl->bssStart,
+             ovl->bssEnd);
+    return 1;
 }
 
 int pc_overlay_covering(const void *ram, u32 size) {

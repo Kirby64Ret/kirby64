@@ -66,7 +66,7 @@ void func_800BAAE4(RumbleCont *arg0);
 s32 func_800BAB68(u8 *arg0, RumbleItem *arg1, s32 arg2);
 void func_800BA7A0(RumbleCont *arg0, RumbleItem *arg1, s32 arg2);
 void func_800BA90C(RumbleCont *arg0, RumbleItem *arg1);
-void func_800BAC0C(void);
+void func_800BAC0C(RumbleCmd3 *arg0);
 s32 func_800BAA64(RumbleItem *arg0);
 void func_800BAA04(RumbleCont *arg0, RumbleNode *arg1);
 
@@ -171,7 +171,71 @@ s32 func_800BAB68(u8 *arg0, RumbleItem *arg1, s32 arg2) {
     return 0;
 }
 
+/* The rumble command dispatcher: one switch over RumbleCmd::cmd, then the
+ * reply that releases whoever asked. Every caller reaches it through
+ * func_800BB028, which allocates a one-slot queue ON ITS OWN STACK, posts the
+ * command here and blocks on that queue -- so THE osSendMesg AT THE BOTTOM IS
+ * NOT OPTIONAL BOOKKEEPING, it is the only thing that ever wakes the caller.
+ *
+ * Decompiled because that is what was wedging the PC port. func_800BB028 is
+ * on the game thread's very first pass through game_tick (game.c:499 ->
+ * func_800A2C80 -> func_800BB3F0, command 3), the port's weak stub for this
+ * function logged and returned without replying, and the game thread then sat
+ * in osRecvMesg on a stack queue nothing would ever post to. Every other
+ * thread was correctly asleep, the scheduler kept ticking and the VI kept
+ * retracing at 60 Hz, so the process looked alive and drew nothing: gGameState
+ * stuck at 1 and gtlDrawnFrameCounter at 0 forever.
+ *
+ * NOT BYTE-EXACT YET, so it stays behind NON_MATCHING; the jump table is the
+ * shape below (cases 0..5 in table order 0,1,2,3,4,5 -> BAC48, BAC74, BAC60,
+ * BAC84, BACA8, BACB8) and case >= 5 falls through to the reply like the rest.
+ *
+ * ONE SIGNATURE CORRECTION comes with it. This was declared `void
+ * func_800BAC0C(void)` and called with no arguments from func_800BAD0C, but
+ * the listing reads its argument straight out of $a0 (`lw $t6, 0x0($a0)` at
+ * 800BAC20) and the call site loads the received message into $a0 immediately
+ * before branching to it (`lw $a0, 0x54($sp)` at 800BAD7C). It takes the
+ * command pointer. On MIPS the no-argument call happened to work because $a0
+ * still held the message from the preceding compare; on x86-64 it passes
+ * whatever was last in %rdi. Neither the declaration nor the corrected call
+ * site is compiled into the ROM -- func_800BAD0C's ROM path is the
+ * #pragma below -- so the matching build is untouched. */
+#ifdef NON_MATCHING
+void func_800BAC0C(RumbleCmd3 *arg0) {
+    s32 i;
+
+    switch (arg0->cmd) {
+        case 0:
+            func_800BB08C(arg0->arg0, arg0->arg1, arg0->arg2);
+            break;
+        case 1:
+            func_800BB12C(arg0->arg0);
+            break;
+        case 2:
+            func_800BB198(arg0->arg0, arg0->arg1);
+            break;
+        case 3:
+            for (i = 0; i != 4; i++) {
+                func_800BB12C(i);
+            }
+            break;
+        case 4:
+            D_800ED4C0 = 1;
+            break;
+        case 5:
+            D_800ED4C0 = 0;
+            for (i = 0; i != 4; i++) {
+                func_800BB12C(i);
+            }
+            break;
+    }
+    if (arg0->queue != NULL) {
+        osSendMesg(arg0->queue, (OSMesg) arg0->unk04, OS_MESG_BLOCK);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BAC0C.s")
+#endif
 
 /* The rumble-pak service thread. Decompiled for the PC PORT, which was
  * aborting here: until this landed it was the single undecompiled symbol a
@@ -207,7 +271,9 @@ void func_800BAD0C(void *arg) {
     while (1) {
         osRecvMesg(&D_800ED4C8, &msg, OS_MESG_BLOCK);
         if ((s32) (intptr_t) msg != 1) {
-            func_800BAC0C();
+            /* The message IS the command block -- see the signature note on
+             * func_800BAC0C. The ROM passes it in $a0 at 800BAD7C. */
+            func_800BAC0C((RumbleCmd3 *) msg);
             continue;
         }
         cont = D_800ED4A0;

@@ -211,11 +211,11 @@ void func_801E6168_ovl9(void) {
     }
 }
 
-#ifdef NON_MATCHING
 s32 func_8019A900_ovl7(s32 *);
 f32 func_8019B608_ovl7(s32);
 void func_800AA018(s32);
 void func_800AF27C(void);
+void ohSleep(s32);
 
 void func_801E6208_ovl9(GObj *arg0) {
     f32 phi_f2;
@@ -241,9 +241,6 @@ void func_801E6208_ovl9(GObj *arg0) {
     }
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E6208_ovl9.s")
-#endif
 extern s32 D_800BE4EC;
 void func_801E5D2C_ovl9(void);
 void func_801E5DE0_ovl9(void);

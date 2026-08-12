@@ -58,6 +58,30 @@ LIBC = re.compile(r'^(memcpy|memset|memmove|strlen|strcpy|bcopy|bzero|'
                   r'sinf|cosf|sqrtf|_GLOBAL_OFFSET_TABLE_|'
                   r'__stack_chk_fail_local)$')
 
+# Supplied by the LINKER, and this is a different failure mode from the libc
+# one: ld only defines these itself when nothing else does, and a weak stub
+# still counts as a definition. So stubbing them does not produce a duplicate
+# symbol -- it silently WINS, and the program gets a plausible-looking address
+# that means nothing.
+#
+# That is not hypothetical. src/pc/os_pi.c's "refuse a cartridge DMA that lands
+# in our own text" guard is `p >= __executable_start && p < _etext`, and with
+# both stubbed those two landed 21 bytes apart in the middle of the stub blob,
+# so the guard answered "no" to every address. The first overlay load past ovl1
+# then memcpy'd 200 KB of ROM over the port's read-only .text and took SIGSEGV
+# inside memcpy, three frames below anything that looked related.
+#
+# Anything ld would define on its own belongs here.
+LINKER_PROVIDED = frozenset((
+    '__executable_start', '__ehdr_start', '_etext', 'etext', '_edata', 'edata',
+    '_end', 'end', '__bss_start', '__bss_start__', '_bss_end__', '__bss_end__',
+    '__data_start', '__dso_handle', '_init', '_fini',
+    '__preinit_array_start', '__preinit_array_end',
+    '__init_array_start', '__init_array_end',
+    '__fini_array_start', '__fini_array_end',
+    '__start___libc_atexit', '__stop___libc_atexit',
+))
+
 
 def host_symbols():
     """Everything the host's C library actually defines.
@@ -105,7 +129,7 @@ def main():
     host = host_symbols()
     funcs, data = [], []
     for s in missing():
-        if LIBC.match(s) or s in host:
+        if LIBC.match(s) or s in host or s in LINKER_PROVIDED:
             continue
         if s.startswith('func_') or s in prag:
             funcs.append(s)

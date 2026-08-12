@@ -262,6 +262,7 @@ static int only_idle_runnable(void) {
 void pc_idle(void) {
     struct timespec ts;
 
+    pc_dbg_idle_call++;
     pc_pump_events();
     if (!only_idle_runnable()) {
         return;
@@ -292,6 +293,7 @@ static void dispatch(void) {
     PCThread *from = sCurCtx;
     PCThread *np;
 
+    pc_dbg_dispatch_call++;
     for (;;) {
         next = runnable_head();
         if (next != NULL && next->priority > OS_PRIORITY_IDLE) {
@@ -371,14 +373,22 @@ void pc_block_on(OSThread **queue) {
 void pc_pump_events(void) {
     static int reentrant;
 
+    pc_dbg_pump_call++;
     if (reentrant || !sSchedReady) {
+        if (reentrant) {
+            pc_dbg_pump_reent++;
+        } else {
+            pc_dbg_pump_nosched++;
+        }
         return;
     }
     /* osSetIntMask(OS_IM_NONE) means "nothing may run here". Honour it: the
      * audio library relies on it to keep its player list consistent. */
     if (!pc_ints_enabled()) {
+        pc_dbg_pump_intsoff++;
         return;
     }
+    pc_dbg_pump_body++;
     /* Checked here as well as in pc_idle because pc_idle is only reached when
      * NOTHING is runnable, and under a renderer the process can spend most of
      * its time inside pcb_gfx_run with the game's scheduler stopped behind it.
@@ -399,6 +409,7 @@ void pc_pump_events(void) {
     pc_sp_tick();
     pc_in_event_delivery = 0;
     reentrant = 0;
+    pc_dbg_pump_done++;
 }
 
 /* -------------------------------------------------------------- lifecycle */
@@ -620,6 +631,7 @@ void osSetThreadPri(OSThread *t, OSPri pri) {
 void osYieldThread(void) {
     OSThread *me = __osRunningThread;
 
+    pc_dbg_yield_call++;
     if (me == NULL) {
         return;
     }

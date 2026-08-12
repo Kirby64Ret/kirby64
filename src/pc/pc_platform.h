@@ -137,6 +137,13 @@ void pc_trace(unsigned bit, const char *fmt, ...);
 
 void pc_stub_notice(const char *file, int line, const char *what);
 
+/* Temporary hang instrumentation, src/pc/pc_dbg.c. KIRBY_PC_PUMPDBG=1. */
+void pc_dbg_init(void);
+extern unsigned long pc_dbg_pump_call, pc_dbg_pump_reent, pc_dbg_pump_nosched,
+    pc_dbg_pump_intsoff, pc_dbg_pump_body, pc_dbg_pump_done, pc_dbg_vi_call,
+    pc_dbg_vi_nostart, pc_dbg_vi_loop, pc_dbg_vi_retrace, pc_dbg_yield_call,
+    pc_dbg_dispatch_call, pc_dbg_idle_call, pc_dbg_now_lo, pc_dbg_next_lo;
+
 /* -------------------------------------------------------------------------
  * Display list tracing (src/pc/gfx_trace.c)
  * ------------------------------------------------------------------------- */

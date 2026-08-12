@@ -1044,7 +1044,37 @@ void func_801171F0(struct GObj *arg0) {
     func_801153B8(arg0);
 }
 
+#ifdef MIPS_TO_C
+/* 22/70: the whole body is decoded and every store is right. Two residues:
+   IDO emits `bc1fl` to the epilogue where the ROM has `bc1f` + `nop`, and the
+   scaled-index spill lands at 0x18($sp) against the ROM's 0x1C with the same
+   0x28 frame, i.e. a 4-byte hole above it. Swept: compare operand order,
+   early-return form, an empty `else`, `do {} while (0)` before the inner if,
+   a type-split store for 0xA, and leading/trailing pad locals (27 each).
+   The file-scope declaration of this function was widened from (s32) to
+   (struct GObj *) for the draft; --all stayed at 0 diff. */
+void func_80117210(struct GObj *arg0) {
+    extern f32 D_80128D2C;
+    void func_80117570(struct GObj *);
+    u8 *sp24 = arg0->unk4C;
+    s32 sp20 = arg0->objId;
+
+    func_800B4924(arg0);
+    if (D_800EA6E0[sp20] < gEntitiesNextPosYArray[sp20]) {
+        gEntitiesNextPosYArray[sp20] = D_800EA6E0[sp20];
+        D_800E3210[sp20] = D_800EA6E0[sp20] - gEntitiesPosYArray[sp20];
+        D_800E98E0[sp20] = 0xA;
+        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80117570;
+        if (func_8011E244() == *sp24) {
+            D_800E3750[sp20] = -0.5f;
+            D_800E3C90[sp20] = D_80128D2C;
+            D_800DEF90[omCurrentObj->objId] = func_801173F4;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117210.s")
+#endif
 
 // The float literal below lands in this TU's MIGRATED .rodata block, which
 // this C file emits. verify.py reports a 1-instruction diff because the object

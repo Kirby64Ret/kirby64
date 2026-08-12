@@ -57,7 +57,29 @@ void func_801ACFD0_ovl7(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x15, &D_801CD4D0_ovl7);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD0E8_ovl7.s")
+void func_801AD0E8_ovl7(GObj *arg0) {
+    func_800A9864(0x100D6, 0x1869F, 0x10);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    if (D_800EC2E0[omCurrentObj->objId].as_s32 == 0) {
+        func_800AA018(0x1060B);
+        func_800AF27C();
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    } else {
+        func_800AA018(0x1060D);
+        func_800AA018(0x1060E);
+        func_800AF27C();
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+}
 
 void func_801AD2EC_ovl7(GObj *arg0) {
     func_800A9864(0x100D7, 0x1869F, 0x10);

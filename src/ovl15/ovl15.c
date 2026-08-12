@@ -331,9 +331,69 @@ void func_801DD03C_ovl15(s32 arg0) {
     func_8019D958_ovl7(omCurrentObj->objId);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD208_ovl15.s")
+#ifdef MIPS_TO_C
+/* 29/68: frame 0x48, the Vector at 0x3C and every instruction are right; the
+   residue is a one-slot temp rotation -- the ROM parks the boolean in $a1 and
+   walks $t0/$t2/$t3/$t5, IDO refuses to touch $a1..$a3 and starts at $t1.
+   Load-bearing pieces found on the way: `struct GObj *obj = omCurrentObj;`
+   (without it IDO materialises &omCurrentObj because of the store through p),
+   the boolean written as its own local (`c = v >= 0x1A; if (c != 0)`) which is
+   what produces the ROM's slti+xori pair rather than slti+bnez, and the three
+   pad words that take the frame from 0x38 to 0x48. The callee-return-type
+   lever does not apply: both callees are declared void in shared headers. */
+void func_801DD208_ovl15(struct GObj *arg0) {
+    Vector sp3C;
+    Vector pad0;
+    s32 pad1;
+    s32 pad2;
+    s32 *p;
+    s32 v;
+    s32 c;
+    struct GObj *obj = omCurrentObj;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD318_ovl15.s")
+    p = &D_800E98E0[obj->objId];
+    v = *p;
+    *p = v + 1;
+    c = v >= 0x1A;
+    if (c != 0) {
+        utilGetTransformSRT(&sp3C, D_800DFBD0[D_800E0D50[obj->objId]][D_801E6500_ovl15[D_800E9C60[obj->objId]]]);
+        if (-60.0f < sp3C.z) {
+            obj = omCurrentObj;
+            gEntitiesNextPosXArray[obj->objId] = sp3C.x;
+            gEntitiesNextPosYArray[obj->objId] = 0.0f;
+            gEntitiesNextPosZArray[obj->objId] = 0.0f;
+            func_8019F3B0_ovl7();
+        }
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD208_ovl15.s")
+#endif
+
+void func_801DD318_ovl15(struct GObj *arg0) {
+    extern f32 D_801E6828_ovl15;
+
+    D_800D7098.unk14 = 0;
+    D_800D7098.unk10 = 0;
+    D_800D7098.unk24 = 0;
+    D_800D7098.unk4 = 0;
+    D_800EA520[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+    D_800EB320[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+    D_800EADE0[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_800EAFA0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_800EB160[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800D7118.unk3C = -1;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800E17D0[omCurrentObj->objId] = D_801E6828_ovl15;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 7200.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = -540.0f;
+    D_800D7098.unk20 = 0;
+    *(s32 *) &D_800D7098.unk1C = -1;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
+    func_800A9864(0x10066, 0x2A, 0x10);
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = D_801E6510_ovl15[random_soft_s32_range(4)];
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD4EC_ovl15.s")
 
@@ -406,7 +466,56 @@ void func_801DE71C_ovl15(struct GObj *arg0) {
     D_800DFBD0[omCurrentObj->objId][6]->angle.v.y = phi_f2;
 }
 
+#ifdef MIPS_TO_C
+/* 75/146, fully decoded: the frame, the Vector at 0x50 and the three
+   random_soft_s32_range slots at 0x5C/0x60/0x64 are all exact. The residue is
+   register pressure inside the loop: the ROM keeps THREE finished table
+   addresses in $s2/$s3/$s4 across utilGetTransformSRT and therefore has no
+   saved register left for gEntitiesNextPosXArray, while IDO keeps only the two
+   scaled indices and hoists that base. It also materialises the hi half of
+   D_801E6554_ovl15 TWICE where IDO shares one. Swept: explicit `s8 *` pointer
+   locals for the three addresses (94), `volatile` casts to fork the shared
+   base (inert in all three placements). Its twin func_801DFCF4_ovl15 has only
+   two table reads and matched. */
+void func_801DE7C8_ovl15(struct GObj *arg0) {
+    s32 i;
+    s32 e;
+    s32 sp64;
+    s32 sp60;
+    s32 sp5C;
+    Vector sp50;
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    func_800AA018(0x103C9);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+    D_800D7098.unk24 = 0;
+    ohSleep(0xA);
+    play_sound(0x251);
+    sp64 = random_soft_s32_range(0x18);
+    sp60 = random_soft_s32_range(0x18);
+    sp5C = random_soft_s32_range(0xE);
+    for (i = 0; i != 4; i++) {
+        e = func_801ACC34_ovl7(0x37, 0);
+        if (e != 0) {
+            D_800E8E60[e] = 1;
+            utilGetTransformSRT(&sp50, D_800DFBD0[omCurrentObj->objId][D_801E65EC_ovl15[i]]);
+            gEntitiesNextPosXArray[e] = sp50.x;
+            gEntitiesNextPosYArray[e] = sp50.y;
+            gEntitiesNextPosZArray[e] = sp50.z;
+            ((s32 *) D_800E9AA0)[e] = ((s8 *) D_801E6554_ovl15)[(sp64 * 4) + i];
+            D_800E9C60[e] = ((s8 *) D_801E6554_ovl15)[(sp60 * 4) + i];
+            D_800E9E20[e] = ((s8 *) D_801E65B4_ovl15)[(sp5C * 4) + i];
+        }
+    }
+    ohSleep(0xA);
+    D_800D7098.unk24 = 1;
+    play_sound(0x19A);
+    func_800AF27C();
+    func_800AA864(0x103CB, 0xD);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DE7C8_ovl15.s")
+#endif
 
 void func_801DEA10_ovl15(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -524,7 +633,40 @@ void func_801DFC10_ovl15(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DFCF4_ovl15.s")
+void func_801DFCF4_ovl15(struct GObj *arg0) {
+    s32 i;
+    s32 e;
+    s32 sp5C;
+    s32 sp58;
+    Vector sp4C;
+
+    D_800DDFD0[omCurrentObj->objId] = 8;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 9;
+    func_800AA018(0x103D5);
+    D_800D7098.unk24 = 0;
+    ohSleep(0xA);
+    play_sound(0x251);
+    sp5C = random_soft_s32_range(4);
+    sp58 = random_soft_s32_range(0xE);
+    for (i = 0; i != 4; i++) {
+        e = func_801ACC34_ovl7(0x37, 1);
+        if (e != 0) {
+            D_800E8E60[e] = 1;
+            utilGetTransformSRT(&sp4C, D_800DFBD0[omCurrentObj->objId][D_801E65EC_ovl15[i]]);
+            gEntitiesNextPosXArray[e] = sp4C.x;
+            gEntitiesNextPosYArray[e] = sp4C.y;
+            gEntitiesNextPosZArray[e] = sp4C.z;
+            ((s32 *) D_800E9AA0)[e] = i;
+            D_800E9C60[e] = ((s8 *) D_801E664C_ovl15)[(sp5C * 4) + i];
+            D_800E9E20[e] = ((s8 *) D_801E65B4_ovl15)[(sp58 * 4) + i];
+        }
+    }
+    ohSleep(0xA);
+    D_800D7098.unk24 = 1;
+    play_sound(0x19A);
+    func_800AF27C();
+    func_800AA864(0x103D7, 0xA);
+}
 
 void func_801DFF14_ovl15(struct GObj *arg0) {
     D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = D_800E3050[omCurrentObj->objId];
@@ -533,7 +675,45 @@ void func_801DFF14_ovl15(struct GObj *arg0) {
     func_801E1C20_ovl15((s32) arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E00C4_ovl15.s")
+void func_801E00C4_ovl15(GObj *arg0) {
+    extern f32 D_800E3050[], D_800E3210[], D_800E3590[], D_800E3750[], D_800E3AD0[], D_800E3C90[];
+    extern f32 D_800EA8A0[], D_800EAA60[];
+    extern s32 D_800E8920[], D_800EA360[];
+    extern f32 D_801E6868_ovl15, D_801E686C_ovl15, D_801E6870_ovl15, D_801E6874_ovl15, D_801E6878_ovl15;
+    f32 thr;
+
+    D_800DDFD0[omCurrentObj->objId] = 9;
+    D_800EA360[omCurrentObj->objId] = 1;
+    D_800D7098.unk14 = 0;
+    D_800D7098.unk4 = 0;
+    D_800E3050[omCurrentObj->objId] = -2.0f;
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_801E6868_ovl15;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800EAA60[omCurrentObj->objId] = ((f32 *) &D_80129210)[1];
+    D_800EA8A0[omCurrentObj->objId] = -1.0f;
+    play_sound(0x19C);
+    func_800AA154(0x103E1);
+    play_sound(0x19F);
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_801E686C_ovl15;
+    func_800AA018(0x103CB);
+    thr = D_801E6870_ovl15;
+    while (thr < gEntitiesNextPosXArray[omCurrentObj->objId]) {
+        ohSleep(1);
+    }
+    D_800D7098.unk8 = 1;
+    D_800E3590[omCurrentObj->objId] = D_801E6874_ovl15;
+    ohSleep(0x14);
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = D_801E6878_ovl15;
+    D_800EA360[omCurrentObj->objId] = 0;
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E0380_ovl15.s")
 

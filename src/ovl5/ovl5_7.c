@@ -446,7 +446,62 @@ void func_8017C890_ovl5(void) {
     }
 }
 
+#ifdef MIPS_TO_C
+extern s32 D_800D71C0;
+extern s32 D_800D71C4;
+extern s32 D_800D71C8;
+extern s32 D_800D71CC;
+
+void func_8017C938_ovl5(void) {
+    u8 *a;
+    s32 *b;
+    s32 *c;
+    u32 *p;
+    s32 count;
+
+    if (gGameState != 0x1B) {
+        a = &D_8018ED38_ovl5;
+        b = D_8018ED18_ovl5;
+        c = D_8018ED28_ovl5;
+        D_800D7178.unk0 = a[0];
+        D_800D7178.unk10 = a[1];
+        D_800D7178.unk20 = a[2];
+        D_800D7178.unk30 = a[3];
+        D_800D7178.unk4 = b[0];
+        D_800D7178.unk14 = b[1];
+        D_800D7178.unk24 = b[2];
+        D_800D7178.unk34 = b[3];
+        D_800D7178.unk8 = c[0];
+        D_800D7178.unk18 = c[1];
+        D_800D7178.unk28 = c[2];
+        D_800D7178.unk38 = c[3];
+        if (func_80179F20_ovl5()) {
+            D_800D7178.unk40 = D_8018ED10_ovl5;
+        } else {
+            D_800D7178.unk40 = D_8018ED0C_ovl5;
+        }
+        count = 0;
+        p = &D_800D7178.unk0;
+        do {
+            if (*p == 0) {
+                count++;
+            }
+            p += 4;
+        } while (p < &D_800D7178.unk40);
+        if (count != D_800D7178.unk68) {
+            D_800D71C0 = 0;
+            D_800D71C4 = 0;
+            D_800D71C8 = 0;
+            D_800D71CC = 0;
+        }
+        D_800D7178.unk68 = count;
+    }
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0, 0x10, 2);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017C938_ovl5.s")
+#endif
 
 extern s32 D_800D6B24;
 extern u8 D_8018ED00_ovl5;

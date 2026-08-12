@@ -175,7 +175,10 @@ static OSPiHandle sCartHandle;
 static OSPiHandle *sHandleList;
 static OSMesgQueue *sPiCmdQueue;
 
+static void check_image_guard(void);
+
 void pc_pi_init(void) {
+    check_image_guard();
     pc_rom_open();
     sram_load();
 }
@@ -239,15 +242,57 @@ OSMesgQueue *osPiGetCmdQueue(void) {
 
 /* ------------------------------------------------------- the image guard */
 
-/* Supplied by the linker in every ELF executable. */
+/* Supplied by the linker in every ELF executable. __data_start is the first
+ * byte of the WRITABLE image; everything from __executable_start up to it --
+ * .text, .rodata, .eh_frame and the rest -- is mapped read-only, so a DMA
+ * landing anywhere in that span cannot be performed at all, only refused.
+ *
+ * _etext alone is not enough, and the difference is not academic: the second
+ * overlay's descriptor resolves its RAMStart into .eh_frame (0x4c5bb9, past
+ * _etext at 0x4b974d and with no symbol on it), and a guard that stopped at
+ * _etext waved that straight through into a SIGSEGV. */
 extern char __executable_start[];
 extern char _etext[];
+extern char __data_start[];
 
 static int lands_in_own_image(const void *p, u32 size) {
     const char *a = (const char *)p;
     const char *b = a + size;
 
-    return b > __executable_start && a < _etext;
+    return b > __executable_start && a < __data_start;
+}
+
+/* PROVE THE GUARD IS WIRED TO THE REAL LINKER SYMBOLS, at startup, once.
+ *
+ * ld defines __executable_start and _etext only when nothing else does, and a
+ * WEAK definition counts as something else. tools/pc/gen_stubs.py used to emit
+ * weak abort stubs for both (they are undefined symbols in os_pi.o like any
+ * other), so the two ended up 21 bytes apart inside the stub blob and this
+ * guard answered "no" for every address in the program. The consequence was a
+ * SIGSEGV inside memcpy 200 ms into the run, with a backtrace pointing at
+ * dma_overlay_load and nothing pointing here.
+ *
+ * The generator no longer stubs them. This is the check that says so out loud
+ * if that ever regresses: the address of a function in this very file must
+ * land inside the range the guard is testing against. */
+static void check_image_guard(void) {
+    const char *self = (const char *)(const void *)&lands_in_own_image;
+
+    if (_etext > __executable_start && __data_start > _etext &&
+        lands_in_own_image(self, 1)) {
+        return;
+    }
+    fprintf(stderr,
+            "[pc] FATAL: the own-image DMA guard is not wired up.\n"
+            "     __executable_start=%p _etext=%p __data_start=%p, and this\n"
+            "     file's own code at %p is not inside that range. Something is\n"
+            "     defining those linker symbols -- check build/pc/stubs.c.\n"
+            "     Continuing would let an overlay DMA overwrite the port's\n"
+            "     own code.\n",
+            (void *)__executable_start, (void *)_etext, (void *)__data_start,
+            (const void *)self);
+    fflush(NULL);
+    abort();
 }
 
 /* ---------------------------------------------------------------- the DMA */
