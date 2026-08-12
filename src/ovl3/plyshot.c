@@ -130,6 +130,8 @@ void func_8015B060_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015C7F4_ovl3.s")
 
 extern char D_80190BF4_ovl3[];
+extern void func_80162150_ovl3();
+extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
 
 void func_8015CC84_ovl3(s32 arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];

@@ -2480,7 +2480,7 @@ void func_8019E128_ovl7(s32 *arg0) {
                 temp_s0_17->words.w0 = 0xDB060010;
                 temp_s0_17->words.w1 = gSegment4StartArray[*arg0];
                 temp_s2 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2 + 8;
+                gDisplayListHeads[1] = temp_s2 + 1;
                 temp_s2->words.w0 = 0xDB060010;
                 temp_s2->words.w1 = gSegment4StartArray[*arg0];
                 func_800AB174(arg0, 0xDB060010, gSegment4StartArray);
@@ -2497,15 +2497,15 @@ void func_8019E128_ovl7(s32 *arg0) {
                 temp_s0_20->words.w1 = &D_800BE548;
                 temp_s0_20->words.w0 = 0xDC08090A;
                 temp_s2_2 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_2 + 8;
+                gDisplayListHeads[1] = temp_s2_2 + 1;
                 temp_s2_2->words.w1 = 0x18;
                 temp_s2_2->words.w0 = 0xDB020000;
                 temp_s2_3 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_3 + 8;
+                gDisplayListHeads[1] = temp_s2_3 + 1;
                 temp_s2_3->words.w1 = &D_800BE550;
                 temp_s2_3->words.w0 = 0xDC08060A;
                 var_s2 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = var_s2 + 8;
+                gDisplayListHeads[1] = var_s2 + 1;
                 var_s2->words.w1 = &D_800BE548;
 block_11:
                 var_s2->words.w0 = 0xDC08090A;
@@ -2516,7 +2516,7 @@ block_11:
                 temp_s0_21->words.w0 = 0xDB060010;
                 temp_s0_21->words.w1 = gSegment4StartArray[*arg0];
                 temp_s2_4 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_4 + 8;
+                gDisplayListHeads[1] = temp_s2_4 + 1;
                 temp_s2_4->words.w0 = 0xDB060010;
                 temp_s2_4->words.w1 = gSegment4StartArray[*arg0];
                 func_800AB244(arg0, 0xDB060010, gSegment4StartArray);
@@ -2533,15 +2533,15 @@ block_11:
                 temp_s0_24->words.w1 = &D_800BE548;
                 temp_s0_24->words.w0 = 0xDC08090A;
                 temp_s2_5 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_5 + 8;
+                gDisplayListHeads[1] = temp_s2_5 + 1;
                 temp_s2_5->words.w1 = 0x18;
                 temp_s2_5->words.w0 = 0xDB020000;
                 temp_s2_6 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_6 + 8;
+                gDisplayListHeads[1] = temp_s2_6 + 1;
                 temp_s2_6->words.w1 = &D_800BE550;
                 temp_s2_6->words.w0 = 0xDC08060A;
                 var_s2 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = var_s2 + 8;
+                gDisplayListHeads[1] = var_s2 + 1;
                 var_s2->words.w1 = &D_800BE548;
                 goto block_11;
             case 24:
@@ -2551,7 +2551,7 @@ block_11:
                 temp_s0_25->words.w0 = 0xDB060010;
                 temp_s0_25->words.w1 = gSegment4StartArray[*arg0];
                 temp_s2_7 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_7 + 8;
+                gDisplayListHeads[1] = temp_s2_7 + 1;
                 temp_s2_7->words.w0 = 0xDB060010;
                 temp_s2_7->words.w1 = gSegment4StartArray[*arg0];
                 renderDrawObject_TypeD(arg0, 0xDB060010, gSegment4StartArray);
@@ -2568,15 +2568,15 @@ block_11:
                 temp_s0_28->words.w1 = &D_800BE548;
                 temp_s0_28->words.w0 = 0xDC08090A;
                 temp_s2_8 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_8 + 8;
+                gDisplayListHeads[1] = temp_s2_8 + 1;
                 temp_s2_8->words.w1 = 0x18;
                 temp_s2_8->words.w0 = 0xDB020000;
                 temp_s2_9 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_9 + 8;
+                gDisplayListHeads[1] = temp_s2_9 + 1;
                 temp_s2_9->words.w1 = &D_800BE550;
                 temp_s2_9->words.w0 = 0xDC08060A;
                 var_s2 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = var_s2 + 8;
+                gDisplayListHeads[1] = var_s2 + 1;
                 var_s2->words.w1 = &D_800BE548;
                 goto block_11;
             case 28:
@@ -2586,7 +2586,7 @@ block_11:
                 temp_s0_29->words.w0 = 0xDB060010;
                 temp_s0_29->words.w1 = gSegment4StartArray[*arg0];
                 temp_s2_10 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_10 + 8;
+                gDisplayListHeads[1] = temp_s2_10 + 1;
                 temp_s2_10->words.w0 = 0xDB060010;
                 temp_s2_10->words.w1 = gSegment4StartArray[*arg0];
                 func_80015BCC(arg0, 0xDB060010, gSegment4StartArray);
@@ -2603,20 +2603,20 @@ block_11:
                 temp_s0_32->words.w1 = &D_800BE548;
                 temp_s0_32->words.w0 = 0xDC08090A;
                 temp_s2_11 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_11 + 8;
+                gDisplayListHeads[1] = temp_s2_11 + 1;
                 temp_s2_11->words.w1 = 0x18;
                 temp_s2_11->words.w0 = 0xDB020000;
                 temp_s2_12 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = temp_s2_12 + 8;
+                gDisplayListHeads[1] = temp_s2_12 + 1;
                 temp_s2_12->words.w1 = &D_800BE550;
                 temp_s2_12->words.w0 = 0xDC08060A;
                 var_s2 = gDisplayListHeads[1];
-                gDisplayListHeads[1] = var_s2 + 8;
+                gDisplayListHeads[1] = var_s2 + 1;
                 var_s2->words.w1 = &D_800BE548;
                 goto block_11;
+            default:
+                break;
         }
-    } else {
-    default:
     }
 }
 #else
@@ -2677,15 +2677,15 @@ void func_8019E9F0_ovl7(void) {
         temp_v1_3->words.w1 = temp_t0;
         temp_v1_3->words.w0 = 0xDC08090A;
         temp_a1 = gDisplayListHeads[1];
-        gDisplayListHeads[1] = temp_a1 + 8;
+        gDisplayListHeads[1] = temp_a1 + 1;
         temp_a1->words.w1 = 0x18;
         temp_a1->words.w0 = 0xDB020000;
         temp_a1_2 = gDisplayListHeads[1];
-        gDisplayListHeads[1] = temp_a1_2 + 8;
+        gDisplayListHeads[1] = temp_a1_2 + 1;
         temp_a1_2->words.w1 = temp_t1;
         temp_a1_2->words.w0 = 0xDC08060A;
         temp_a1_3 = gDisplayListHeads[1];
-        gDisplayListHeads[1] = temp_a1_3 + 8;
+        gDisplayListHeads[1] = temp_a1_3 + 1;
         temp_a1_3->words.w1 = temp_t0;
         temp_a1_3->words.w0 = 0xDC08090A;
         func_8019E128_ovl7(temp_a1_3);
@@ -2702,15 +2702,15 @@ void func_8019E9F0_ovl7(void) {
         temp_v1_6->words.w0 = 0xDC08090A;
         temp_v1_6->words.w1 = &D_800BE548;
         temp_a1_4 = gDisplayListHeads[1];
-        gDisplayListHeads[1] = temp_a1_4 + 8;
+        gDisplayListHeads[1] = temp_a1_4 + 1;
         temp_a1_4->words.w1 = 0x18;
         temp_a1_4->words.w0 = 0xDB020000;
         temp_a1_5 = gDisplayListHeads[1];
-        gDisplayListHeads[1] = temp_a1_5 + 8;
+        gDisplayListHeads[1] = temp_a1_5 + 1;
         temp_a1_5->words.w1 = &D_800BE550;
         temp_a1_5->words.w0 = 0xDC08060A;
         temp_a1_6 = gDisplayListHeads[1];
-        gDisplayListHeads[1] = temp_a1_6 + 8;
+        gDisplayListHeads[1] = temp_a1_6 + 1;
         temp_a1_6->words.w1 = &D_800BE548;
         temp_a1_6->words.w0 = 0xDC08090A;
         return;
