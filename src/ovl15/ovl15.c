@@ -944,7 +944,43 @@ void func_801E0380_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E05A8_ovl15.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E0F44_ovl15.s")
+void func_801E0F44_ovl15(struct GObj *arg0) {
+    extern f32 D_800E3050[], D_800EA6E0[], D_800EA8A0[], D_800EAA60[];
+    extern s32 D_800EA360[];
+    s32 *p;
+
+    D_800D7098.unk0 = 0;
+    ((f32 *) &D_80129210)[1] = D_800EA8A0[omCurrentObj->objId] + ((f32 *) &D_80129210)[1];
+    if (D_800EAA60[omCurrentObj->objId] < ((f32 *) &D_80129210)[1]) {
+        ((f32 *) &D_80129210)[1] = D_800EAA60[omCurrentObj->objId];
+    }
+    if (((f32 *) &D_80129210)[1] < 70.0f) {
+        ((f32 *) &D_80129210)[1] = 70.0f;
+    }
+    if (D_800EA360[omCurrentObj->objId] != 0) { D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = D_800E3050[omCurrentObj->objId]; } else { D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = 0.0f; }
+    func_801E1E88_ovl15(arg0);
+    if (D_800DFF50[omCurrentObj->objId] == 0x103D7) {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D92AC;
+        func_801E19D0_ovl15((s32) D_800DFBD0[omCurrentObj->objId][4], (s32) D_800DFBD0[omCurrentObj->objId][22], 0);
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9120;
+        func_801E19D0_ovl15((s32) D_800DFBD0[omCurrentObj->objId][6], 0, 0);
+    } else {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8E98;
+        func_801E19D0_ovl15((s32) D_800DFBD0[omCurrentObj->objId][4], (s32) D_800DFBD0[omCurrentObj->objId][22], 0);
+        if (D_800DFF50[omCurrentObj->objId] == 0x103D3) {
+            D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D921C;
+            func_801E19D0_ovl15((s32) D_800DFBD0[omCurrentObj->objId][44], (s32) D_800DFBD0[omCurrentObj->objId][44], 0);
+            if (((u32) D_800BE4EC >> 3) == 0) {
+                p = &D_801E665C_ovl15;
+                do {
+                    func_800A8100(6, 2, 0xC, D_800DFBD0[omCurrentObj->objId][*p]);
+                    p++;
+                } while (p != D_801E6670_ovl15);
+            }
+        }
+    }
+}
+
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E1230_ovl15.s")
 

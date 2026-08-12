@@ -474,7 +474,7 @@ void func_8022703C_ovl19(s32 arg0) {
 
 void func_802271A8_ovl19(void) {
     s32 pad0;
-    s32 pad1;
+    f32 v;
     Vector sp44;
     Vector sp38;
     struct CollisionTriangle *sp34;
@@ -494,11 +494,12 @@ void func_802271A8_ovl19(void) {
         gKirbyState.unk40 = sp34->collisionParameter * 0.1f;
     }
     if (D_800E8920[omCurrentObj->objId] != 0) {
+        v = gKirbyState.unk40;
         D_800E6690[omCurrentObj->objId] = 0.2f;
-        if (gKirbyState.unk40 < 0.0f) {
-            D_800E6850[omCurrentObj->objId] = -gKirbyState.unk40;
+        if (v < 0.0f) {
+            D_800E6850[omCurrentObj->objId] = -v;
         } else {
-            D_800E6850[omCurrentObj->objId] = gKirbyState.unk40;
+            D_800E6850[omCurrentObj->objId] = v;
         }
     } else if (gKirbyState.unk44 != 1) {
         D_800E6690[omCurrentObj->objId] = 0.025f;
