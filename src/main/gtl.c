@@ -933,6 +933,35 @@ void func_80007328(BufferSetup *arg) {
     gtlStart(arg, NULL);
 }
 
+#ifdef PORT
+/* LP64 OBJECT STRIDES. The scene descriptors in the ROM carry the N64's
+ * sizeof for every pooled object, and object_manager.c builds its free lists
+ * by striding raw bytes: `gobj->next = (GObj *)((uintptr_t)gobj + objectSize)`.
+ * Under LP64 the native structs are LARGER (GObj 80 -> 136, DObj 136 -> 232,
+ * Camera 144 -> 200, MObj 168 -> 200), so consecutive nodes OVERLAP: each
+ * `next` write lands inside the previous node and the list truncates.
+ *
+ * Measured symptom before this fix: the GObj free pool was TWO entries long.
+ * HS64_GObjPop was entered four times and succeeded twice, and the third
+ * ohCreateCamera returned NULL, so request_job dereferenced a NULL gobj in
+ * HS64_GObjProcessLink. The crash pointed at object_manager.c:143 and the
+ * cause was in a scene table three call levels away.
+ *
+ * MAX, not sizeof. SObj is SMALLER natively than on the N64 (8 vs 88) because
+ * the port's struct is only partially declared, so a bare sizeof would
+ * UNDER-allocate and re-introduce the same overlap in the other direction.
+ * Taking the larger of the two is correct for both cases: it is always at
+ * least the native size, so nodes never overlap, and always at least the
+ * ROM's, so nothing that fits on hardware fails here.
+ *
+ * Both halves matter -- the malloc size AND the stride recorded in
+ * gtlCurrentScene -- because HS64_omInit reads the latter to walk the former.
+ *
+ * Nothing outside these #ifdefs changes, so the ROM build is byte-identical.
+ */
+#define PC_OM_SIZE(nat, rom) ((u32) ((sizeof(nat) > (u32) (rom)) ? sizeof(nat) : (u32) (rom)))
+#endif
+
 void gtlCreateScene(SceneSetup *scene) {
     gtlSetupHeap(scene->gtlSetup.heapBase, scene->gtlSetup.heapSize);
     gtlCurrentScene.threads = gtlMalloc(scene->threadCount * 0x1C0, 8);
@@ -947,26 +976,62 @@ void gtlCreateScene(SceneSetup *scene) {
     gtlCurrentScene.unk_14 = scene->unk4C;
     gtlCurrentScene.processes = gtlMalloc(scene->procCount * 0x24, 4);
     gtlCurrentScene.numProcesses = (s32) scene->procCount;
+#ifdef PORT
+    gtlCurrentScene.objects = gtlMalloc(PC_OM_SIZE(GObj, scene->objectSize) * scene->objCount, 8);
+#else
     gtlCurrentScene.objects = gtlMalloc(scene->objectSize * scene->objCount, 8);
+#endif
     gtlCurrentScene.numObjects = (s32) scene->objCount;
+#ifdef PORT
+    gtlCurrentScene.objectSize = (s32) PC_OM_SIZE(GObj, scene->objectSize);
+#else
     gtlCurrentScene.objectSize = (s32) scene->objectSize;
+#endif
     gtlCurrentScene.matrices = gtlMalloc(scene->mtxCount * 0x48, 8);
     gtlCurrentScene.numMatrices = (s32) scene->mtxCount;
     renderSetMatrixHandler(scene->mtxHandler);
     gtlCurrentScene.cleanupFn = scene->unk64;
     gtlCurrentScene.aobjs = gtlMalloc(scene->AObjCount * 0x24, 4);
     gtlCurrentScene.numAObjs = (s32) scene->AObjCount;
+#ifdef PORT
+    gtlCurrentScene.mobjs = gtlMalloc(scene->MObjCount * PC_OM_SIZE(MObj, 0xA8), 4);
+#else
     gtlCurrentScene.mobjs = gtlMalloc(scene->MObjCount * 0xA8, 4);
+#endif
     gtlCurrentScene.numMObjs = (s32) scene->MObjCount;
+#ifdef PORT
+    gtlCurrentScene.dobjs = gtlMalloc(PC_OM_SIZE(DObj, scene->omDobjSize) * scene->DObjCount, 8);
+#else
     gtlCurrentScene.dobjs = gtlMalloc(scene->omDobjSize * scene->DObjCount, 8);
+#endif
     gtlCurrentScene.numDObjs = (s32) scene->DObjCount;
+#ifdef PORT
+    gtlCurrentScene.dobjSize = (s32) PC_OM_SIZE(DObj, scene->omDobjSize);
+#else
     gtlCurrentScene.dobjSize = (s32) scene->omDobjSize;
+#endif
+#ifdef PORT
+    gtlCurrentScene.sobjs = gtlMalloc(PC_OM_SIZE(struct SObj, scene->omSobjSize) * scene->SobjCount, 8);
+#else
     gtlCurrentScene.sobjs = gtlMalloc(scene->omSobjSize * scene->SobjCount, 8);
+#endif
     gtlCurrentScene.numSObjs = (s32) scene->SobjCount;
+#ifdef PORT
+    gtlCurrentScene.sobjSize = (s32) PC_OM_SIZE(struct SObj, scene->omSobjSize);
+#else
     gtlCurrentScene.sobjSize = (s32) scene->omSobjSize;
+#endif
+#ifdef PORT
+    gtlCurrentScene.cameras = gtlMalloc(PC_OM_SIZE(Camera, scene->omCameraSize) * scene->CameraCount, 8);
+#else
     gtlCurrentScene.cameras = gtlMalloc(scene->omCameraSize * scene->CameraCount, 8);
+#endif
     gtlCurrentScene.numCameras = (s32) scene->CameraCount;
+#ifdef PORT
+    gtlCurrentScene.cameraSize = (s32) PC_OM_SIZE(Camera, scene->omCameraSize);
+#else
     gtlCurrentScene.cameraSize = (s32) scene->omCameraSize;
+#endif
     HS64_omInit(&gtlCurrentScene);
     gtlMainFuncTable.onUpdate = gtlUpdate;
     gtlMainFuncTable.onDraw = gtlDraw;
