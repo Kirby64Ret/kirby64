@@ -274,6 +274,50 @@ Only once both TUs agree on every shared symbol is the move itself safe.
 Payoff is 14 jump-table functions at ~1.3 compiles each, the cheapest tier
 left, so it is worth doing properly.
 
+## Floors measured 2026-08-12 — screen for these BEFORE spending variants
+
+Every one of these was paid for tonight. A function matching any of them is
+guarded on sight, with no variants attempted.
+
+**Padding traps — three distinct classes, and `padtrap.py` catches only some.**
+`verify.py` says MATCH on all of them; `check_tu_size.py` is what sees the
+damage. Screen the `.s` tail before starting:
+
+1. *Last function in its TU with nops past `.size`.* Nothing following forces
+   the alignment back, so converting leaves the object short. padtrap calls
+   these "benign" because its rule assumes a following function in the same
+   section. (func_8002C990, libn_audio_2 — cost a gate cycle.)
+2. *Ex-archive SUBALIGN(16) members.* The nops are 16-byte object alignment
+   left over from `libn_audio.a`, which IDO will not re-emit inside a single
+   TU. The "a following function forces re-alignment" rule does not hold here
+   even though another function does follow. (func_8002AE74.)
+3. *Trailing unnamed empty function.* The listing continues past `.size` with
+   a bare `jr $ra` / `nop` — a second, nameless function. Converting the named
+   one shortens the TU no matter how byte-exact it is, and verify.py
+   structurally cannot see it. (func_801613C0_ovl5 is byte-exact at 1/26 and
+   still unclosable; func_8017AD54_ovl5, func_8015CD00_ovl5 share the shape.)
+
+Related: a listing that continues into a SECOND `.section .text` past `.size`
+is two functions in one file — skip it (func_800BA7A0, ovl1_10).
+
+**Register-allocation floors.** Guard on the second variant, not the fourth:
+
+- *Whole-function callee-saved register permutation.* The frame, the saved
+  count and the structure are all the ROM's, and six registers are rotated.
+  Nothing at source level moves it.
+- *One-slot temp rotation* from a single instruction onward.
+- *`mul.s $f6,$f2` where the ROM has `$f2,$f6`* — invariant to source operand
+  order; hoisting the constant into a local swaps the `$f0`/`$f2` roles and
+  costs more.
+- *A CSE'd load landing in the neighbouring register* (`$v0` vs `$v1`,
+  `$a2` vs `$a3`) with an extra `move`. Sometimes closable, usually not — two
+  variants, then guard.
+
+**The +8 frame anomaly is decidable, not sweepable.** IDO computes
+`align8(0x1C + sizeof locals)`, the ROM computes `align8(0x18 + ...)`, so a
+function matches iff its locals total ≡ 4 (mod 8). Compute it. A function one
+instruction over after four shapes is almost always this.
+
 ## Standing prohibitions (full list, for lane prompts)
 
 No port work. No tool writing. No yaml edits (manager-owned). No git
