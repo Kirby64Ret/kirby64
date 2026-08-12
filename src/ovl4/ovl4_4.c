@@ -277,7 +277,42 @@ void func_801588F4_ovl4(GObj *arg0, s32 arg1) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80158CFC_ovl4.s")
+typedef struct {
+    /* 0x00 */ u32 unk0;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ f32 unk8;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+} Unk8015C740Node;
+
+void func_80158CFC_ovl4(GObj *arg0) {
+    Vector posVec;
+    Vector angleVec;
+    s32 v;
+    s32 unused;
+    GObj *g;
+
+    v = D_800E98E0[omCurrentObj->objId];
+    g = D_800E9AA0[omCurrentObj->objId].as_ptr;
+    func_800B2340(&posVec, func_801587CC_ovl4(v), D_8015C714_ovl4);
+    func_800B26D8(&angleVec, func_801587CC_ovl4(D_800E98E0[omCurrentObj->objId]), D_8015C714_ovl4);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = posVec.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = posVec.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = posVec.z;
+    gEntitiesAngleXArray[omCurrentObj->objId] = angleVec.x;
+    gEntitiesAngleYArray[omCurrentObj->objId] = angleVec.y;
+    gEntitiesAngleZArray[omCurrentObj->objId] = angleVec.z;
+    if (((v == 2) && (g != NULL)) || (v == 6)) {
+        ((Unk8015C740Node *) g->unk4C)->unk4 = posVec.x;
+        ((Unk8015C740Node *) g->unk4C)->unk8 = posVec.y;
+        ((Unk8015C740Node *) g->unk4C)->unkC = posVec.z;
+        ((Unk8015C740Node *) g->unk4C)->unk10 = angleVec.x;
+        ((Unk8015C740Node *) g->unk4C)->unk14 = angleVec.y;
+        ((Unk8015C740Node *) g->unk4C)->unk18 = angleVec.z;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_80158E98_ovl4.s")
 

@@ -192,7 +192,38 @@ SPObj *func_8017FBA4_ovl5(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017FC58_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017FD84_ovl5.s")
+extern f32 D_80189BE0_ovl5[];
+extern s32 D_8018EDD8_ovl5;
+void func_8017FC58_ovl5(GObj *, s32, f32);
+void func_800ACB7C(SPObj *);
+
+void func_8017FD84_ovl5(GObj *arg0) {
+    SPObj *cur;
+    SPObj *next;
+    s32 t;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_8018EDD8_ovl5 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    omLinkGObjDL(arg0, &func_800AD1A0, 0xE, 0x80000000, 0xE);
+    cur = func_8017FBA4_ovl5(arg0, D_8018EDD4_ovl5, D_80189BE0_ovl5[2], D_80189BE0_ovl5[3]);
+    while (1) {
+        if (D_800E98E0[omCurrentObj->objId] != 0) {
+            if (D_800E98E0[omCurrentObj->objId] == 1) {
+                next = func_8017FBA4_ovl5(arg0, D_8018EDD4_ovl5, D_80189BE0_ovl5[0], D_80189BE0_ovl5[1]);
+            } else if (D_800E98E0[omCurrentObj->objId] == 2) {
+                next = func_8017FBA4_ovl5(arg0, D_8018EDD4_ovl5, D_80189BE0_ovl5[4], D_80189BE0_ovl5[5]);
+            }
+            func_8017FC58_ovl5(arg0, D_800E98E0[omCurrentObj->objId],
+                               (D_800E9C60[D_8018EDDC_ovl5] >= 0xD) ? 4.0f : 2.0f);
+            func_800ACB7C(cur);
+            cur = next;
+            D_800E98E0[omCurrentObj->objId] = 0;
+        }
+        ohSleep(1);
+    }
+}
 
 void func_8017FFB8_ovl5(GObj *arg0) {
     SPObj *spobj;

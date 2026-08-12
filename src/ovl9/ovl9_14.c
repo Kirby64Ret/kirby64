@@ -1035,7 +1035,40 @@ void func_80213928_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80213930_ovl9.s")
+void func_800A9F98(s32, f32);
+void func_800AF314(void);
+void func_800AA2F0(s32, f32);
+void func_800BB468(s32, s32);
+void func_802142C4_ovl9(struct GObj *);
+extern s32 D_800BE500;
+extern s32 D_800BE504;
+extern s32 D_800BE508;
+
+void func_80213930_ovl9(struct GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    switch (D_800E98E0[omCurrentObj->objId]) {
+    case 0: func_800A9F98(0x1024F, 120.0f); break;
+    case 1: func_800A9F98(0x1024F, 15.0f); break;
+    case 2: func_800A9F98(0x1024F, 30.0f); break;
+    case 3: func_800A9F98(0x1024F, 45.0f); break;
+    case 4: func_800A9F98(0x1024F, 60.0f); break;
+    case 5: func_800A9F98(0x1024F, 75.0f); break;
+    case 6: func_800A9F98(0x1024F, 90.0f); break;
+    case 7: func_800A9F98(0x1024F, 105.0f); break;
+    }
+    func_800AF314();
+    func_800AA2F0(0x10250, 0.0f);
+    func_800AF27C();
+    if ((D_800BE500 == 4) && (D_800BE504 == 1) && (D_800BE508 == 0)) {
+        ohSleep(0x1E);
+    }
+    func_800AA018(0x10251);
+    func_802142C4_ovl9(D_800E98E0[omCurrentObj->objId]);
+    play_sound(0xD2);
+    func_800BB468(0xC, 0);
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 
 void func_80213B18_ovl9(s32 arg0) {
 

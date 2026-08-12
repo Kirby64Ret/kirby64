@@ -49,7 +49,250 @@ void func_801831E0_ovl5(GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef NON_MATCHING
+#include "main/contpad.h"
+void play_sound(s32);
+s32 func_80183C2C_ovl5(s32);
+void func_80183FA0_ovl5(void);
+void func_801840F0_ovl5(void);
+void func_801841C0_ovl5(s32);
+
+void func_80183270_ovl5(GObj *arg0) {
+    s32 *p;
+    s32 t;
+
+    if (D_8018EE10_ovl5 != 0) {
+        return;
+    }
+    p = &D_800E98E0[omCurrentObj->objId];
+    t = *p;
+    if (t != 0) {
+        *p = t - 1;
+        return;
+    }
+    if (gPlayerControllers[0].buttonPressed & 0x9000) {
+        switch (D_8018EE44_ovl5) {
+            case 9:
+            case 10:
+            case 11:
+                play_sound(0x26B);
+                if (D_8018EE18_ovl5 == 0) {
+                    D_8018EE18_ovl5 = 8;
+                } else {
+                    D_8018EE18_ovl5 -= 1;
+                }
+                func_80183FA0_ovl5();
+                func_801840F0_ovl5();
+                D_800E98E0[omCurrentObj->objId] = 7;
+                return;
+            case 12:
+            case 13:
+            case 14:
+                play_sound(0x26B);
+                if (D_8018EE18_ovl5 == 8) {
+                    D_8018EE18_ovl5 = 0;
+                } else {
+                    D_8018EE18_ovl5 += 1;
+                }
+                func_80183FA0_ovl5();
+                func_801840F0_ovl5();
+                D_800E98E0[omCurrentObj->objId] = 7;
+                return;
+            default:
+                if (func_80183C2C_ovl5((D_8018EE18_ovl5 * 9) + D_8018EE44_ovl5) != 0) {
+                    func_801841C0_ovl5((D_8018EE18_ovl5 * 9) + D_8018EE44_ovl5);
+                } else {
+                    play_sound(0x26A);
+                }
+                D_800E98E0[omCurrentObj->objId] = 4;
+                return;
+        }
+    }
+    if (gPlayerControllers[0].buttonPressed & 0x4000) {
+        if (D_8018EE48_ovl5 == 0x29A) {
+            play_sound(0x2B);
+            D_8018EE10_ovl5 = 1;
+            return;
+        }
+        play_sound(0x2C);
+        func_801840F0_ovl5();
+        return;
+    }
+    if ((gPlayerControllers[0].buttonHeld & 0xF00) || (gPlayerControllers[0].buttonHeld & 0x30)) {
+        D_800E9C60[omCurrentObj->objId] += 1;
+    } else {
+        ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+        D_800E9C60[omCurrentObj->objId] = 0;
+    }
+    p = &((s32 *) D_800E9AA0)[omCurrentObj->objId];
+    t = *p;
+    if (t != 0) {
+        *p = t - 1;
+        return;
+    }
+    if (gPlayerControllers[0].buttonHeld & 0x20) {
+        play_sound(0x26B);
+        if (D_8018EE18_ovl5 == 0) {
+            D_8018EE18_ovl5 = 8;
+        } else {
+            D_8018EE18_ovl5 -= 1;
+        }
+        func_80183FA0_ovl5();
+        func_801840F0_ovl5();
+        ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 7;
+        return;
+    }
+    if (gPlayerControllers[0].buttonHeld & 0x10) {
+        play_sound(0x26B);
+        if (D_8018EE18_ovl5 == 8) {
+            D_8018EE18_ovl5 = 0;
+        } else {
+            D_8018EE18_ovl5 += 1;
+        }
+        func_80183FA0_ovl5();
+        func_801840F0_ovl5();
+        ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 7;
+        return;
+    }
+    if (gPlayerControllers[0].buttonHeld & 0x200) {
+        switch (D_8018EE44_ovl5) {
+            case 0:
+            case 3:
+            case 6:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                switch (D_8018EE44_ovl5) {
+                    case 0:
+                        D_8018EE44_ovl5 = 9;
+                        break;
+                    case 3:
+                        D_8018EE44_ovl5 = 0xA;
+                        break;
+                    case 6:
+                        D_8018EE44_ovl5 = 0xB;
+                        break;
+                }
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+            case 12:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                D_8018EE44_ovl5 = 2;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+            case 13:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                D_8018EE44_ovl5 = 5;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+            case 14:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                D_8018EE44_ovl5 = 8;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+            case 9:
+            case 10:
+            case 11:
+                play_sound(0x26B);
+                if (D_8018EE18_ovl5 == 0) {
+                    D_8018EE18_ovl5 = 8;
+                } else {
+                    D_8018EE18_ovl5 -= 1;
+                }
+                func_80183FA0_ovl5();
+                func_801840F0_ovl5();
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 7;
+                return;
+            default:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                D_8018EE44_ovl5 -= 1;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+        }
+    }
+    if (gPlayerControllers[0].buttonHeld & 0x100) {
+        switch (D_8018EE44_ovl5) {
+            case 2:
+            case 5:
+            case 8:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                switch (D_8018EE44_ovl5) {
+                    case 2:
+                        D_8018EE44_ovl5 = 0xC;
+                        break;
+                    case 5:
+                        D_8018EE44_ovl5 = 0xD;
+                        break;
+                    case 8:
+                        D_8018EE44_ovl5 = 0xE;
+                        break;
+                }
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+            case 9:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                D_8018EE44_ovl5 = 0;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+            case 10:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                D_8018EE44_ovl5 = 3;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+            case 11:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                D_8018EE44_ovl5 = 6;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+            case 12:
+            case 13:
+            case 14:
+                play_sound(0x26B);
+                if (D_8018EE18_ovl5 == 8) {
+                    D_8018EE18_ovl5 = 0;
+                } else {
+                    D_8018EE18_ovl5 += 1;
+                }
+                func_80183FA0_ovl5();
+                func_801840F0_ovl5();
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 7;
+                return;
+            default:
+                play_sound(0x26B);
+                func_801840F0_ovl5();
+                D_8018EE44_ovl5 += 1;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+                return;
+        }
+    }
+    if (gPlayerControllers[0].buttonHeld & 0x800) {
+        if (((D_8018EE44_ovl5 >= 3) && (D_8018EE44_ovl5 < 6)) || ((D_8018EE44_ovl5 >= 6) && (D_8018EE44_ovl5 < 9))) {
+            play_sound(0x26B);
+            func_801840F0_ovl5();
+            D_8018EE44_ovl5 -= 3;
+        }
+        ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+        return;
+    }
+    if (gPlayerControllers[0].buttonHeld & 0x400) {
+        if (((D_8018EE44_ovl5 >= 0) && (D_8018EE44_ovl5 < 3)) || ((D_8018EE44_ovl5 >= 3) && (D_8018EE44_ovl5 < 6))) {
+            play_sound(0x26B);
+            func_801840F0_ovl5();
+            D_8018EE44_ovl5 += 3;
+        }
+        ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 4;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183270_ovl5.s")
+#endif
 
 void func_80183AFC_ovl5(GObj *arg0) {
     SPObj *spobj;

@@ -280,7 +280,38 @@ void func_8021FB18_ovl18(void) {
     func_800B1BF0(0, omCurrentObj->objId);
 }
 
+#ifdef NON_MATCHING
+/* 12/66: the integer half is exact. Residue is the FP allocation order --
+ * the ROM allocates the CSEd D_8022BB80_ovl18 load LAST ($f16) after both
+ * D_800D70D8 temps, IDO allocates it second. Swept: local vs inline extern,
+ * a named local for the (f32) conversion, a named local for unk18, and both
+ * multiply operand orders. The `*(s32 *) &D_800D7098.unk4` reload inside the
+ * if IS load-bearing -- the plain member read is CSEd away. */
+extern f32 D_8022BB80_ovl18;
+
+void func_8021FC40_ovl18(void) {
+    struct UnkStruct800E1B50 *p;
+    s32 v;
+    s32 temp;
+
+    p = D_800E1B50[omCurrentObj->objId];
+    if (p->unk3D == 0x17) {
+        D_800D7098.unk8 = 1;
+    }
+    v = D_800D7098.unk4;
+    if (ABS(v) >= 3) {
+        D_800D7098.unk8 = -D_800D7098.unk8;
+        v = *(s32 *) &D_800D7098.unk4;
+    }
+    temp = D_800D7098.unk8 + v;
+    gEntitiesScaleXArray[omCurrentObj->objId] = ((D_800D70D8.unk18 * D_8022BB80_ovl18) * (f32) temp) + D_800D70D8.unk18;
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_800D70D8.unk1C - ((D_800D70D8.unk1C * D_8022BB80_ovl18) * (f32) temp);
+    gEntitiesScaleZArray[omCurrentObj->objId] = ((D_800D70D8.unk20 * D_8022BB80_ovl18) * (f32) temp) + D_800D70D8.unk20;
+    D_800D7098.unk4 = temp;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FC40_ovl18.s")
+#endif
 
 extern f32 D_8022BB84_ovl18;
 extern f32 D_8022BB88_ovl18;
@@ -342,7 +373,36 @@ out:
 #endif
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FEBC_ovl18.s")
 
+#ifdef NON_MATCHING
+/* 5/46: instruction schedule is exact. The ROM numbers the three FP temps in
+ * SCHEDULE order (constant $f4, mtc1 $f6, cvt $f8); IDO numbers them in
+ * source-tree order and puts the constant last. All six operand orders of the
+ * multiply and the add compile identically -- IDO canonicalises them -- and an
+ * implicit conversion, a named f32 local and a store-then-reload of unk4 are
+ * all worse. */
+extern f32 D_8022BB90_ovl18;
+
+void func_8021FF80_ovl18(void) {
+    struct UnkStruct800E1B50 *p;
+    s32 v;
+    s32 temp;
+
+    p = D_800E1B50[omCurrentObj->objId];
+    if (p->unk3D == 0x17) {
+        D_800D7098.unk8 = 1;
+    }
+    v = D_800D7098.unk4;
+    if (ABS(v) >= 3) {
+        D_800D7098.unk8 = -D_800D7098.unk8;
+        v = *(s32 *) &D_800D7098.unk4;
+    }
+    temp = D_800D7098.unk8 + v;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_800D70D8.unkC + (D_8022BB90_ovl18 * (f32) temp);
+    D_800D7098.unk4 = temp;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FF80_ovl18.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_80220038_ovl18.s")
 

@@ -885,7 +885,40 @@ void func_801E9724_ovl9(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E979C_ovl9.s")
+s32 func_801ACC34_ovl7(s32, s32);
+void func_800AF27C(void);
+
+/* Dense case labels are load-bearing (IDO only builds the jump table when the
+   values cover the range), and `temp` is what puts the store in the beqz delay
+   slot -- a read-back of D_800EBBE0 there costs six instructions. */
+void func_801E979C_ovl9(struct GObj *arg0) {
+    s32 temp;
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C7FF0_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB6B0;
+    ohSleep(5);
+    func_800A9EA4(0x10020);
+    switch (D_800E7880[omCurrentObj->objId]) {
+    case 0: case 1: case 2: case 3: case 4: case 5:
+        temp = func_801ACC34_ovl7(0, 0);
+        D_800EBBE0[omCurrentObj->objId] = temp;
+        if (temp != 0) {
+            play_sound(0xA5);
+        }
+        break;
+    case 6: case 7: case 8: case 9: case 10: case 11:
+        temp = func_801ACC34_ovl7(0, 1);
+        D_800EBBE0[omCurrentObj->objId] = temp;
+        if (temp != 0) {
+            D_800E8E60[D_800EBBE0[omCurrentObj->objId]] = 1;
+            play_sound(0xA5);
+        }
+        break;
+    }
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 
 extern struct GObjProcess *gEntityGObjProcessArray[];
 void func_801E89B8_ovl9(struct GObj *);

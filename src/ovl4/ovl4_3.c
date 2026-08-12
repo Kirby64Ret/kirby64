@@ -381,14 +381,6 @@ void func_8015665C_ovl4(GObj *arg0) {
     }
 }
 
-/* 2/141: every instruction and register exact; the residue is the stack offset
- * of the 3-word local copy (ROM 0x54, IDO 0x60) -- IDO reserves 8 more bytes of
- * compiler temp below the local block. Measured: L=0x10 gives frame 0x70 base
- * 0x60, L=0x1C gives frame 0x78 base 0x5C; the ROM needs L=0x1C with base 0x54,
- * which no local count reaches. Swept: 12-byte and 3x4-byte pads above the copy,
- * a 6-word local with a cast copy, dropping/keeping each pointer local, an index
- * local, active vs implicit prototypes for func_800AFBB4/func_800ACBDC. */
-#ifdef NON_MATCHING
 typedef struct {
     u16 unk0;
     u16 unk2;
@@ -404,10 +396,10 @@ extern Unk3Words D_8015A9D4_ovl4;
 
 void func_801567BC_ovl4(GObj *arg0, s32 arg1) {
     SPObj *sp;
-    Unk3Words sp54 = D_8015A9D4_ovl4;
     s32 prev;
     s32 cur;
     s32 idx;
+    Unk3Words sp54 = D_8015A9D4_ovl4;
 
     prev = func_801555AC_ovl4(arg1) + 1;
     D_800DEF90[omCurrentObj->objId] = NULL;
@@ -441,9 +433,6 @@ void func_801567BC_ovl4(GObj *arg0, s32 arg1) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801567BC_ovl4.s")
-#endif
 
 typedef struct {
     u8 pad0[0x20];
@@ -688,11 +677,166 @@ s32 func_80157250_ovl4(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157258_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801572E4_ovl4.s")
+extern Unk6Words D_8015AA30_ovl4;
+extern Unk6Words D_8015AA48_ovl4;
+extern struct UnkStruct8015C740 D_8015B054_ovl4;
+extern Unk2Fs D_8015B074_ovl4[];
+extern Unk2Ss D_8015B3DC_ovl4[][3];
+extern Unk2Ss D_8015B46C_ovl4[][3];
+s32 func_80157258_ovl4(s32, s32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157610_ovl4.s")
+void func_801572E4_ovl4(GObj *arg0, s32 arg1) {
+    Unk6Words spC0 = D_8015AA30_ovl4;
+    Unk6Words spA8 = D_8015AA48_ovl4;
+    SPObj *sp;
+    s32 i;
+    s32 pad;
+    SPObj *dst1[6];
+    SPObj *dst2[6];
 
+    func_80157250_ovl4();
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015B054_ovl4);
+    sp->xOffset = D_8015B074_ovl4[arg1].unk0;
+    sp->yOffset = D_8015B074_ovl4[arg1].unk4;
+    for (i = 0; i < 6; i++) {
+        dst1[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) spC0.unk0[i]);
+        dst1[i]->xOffset = D_8015B3DC_ovl4[i][arg1].unk0;
+        dst1[i]->yOffset = D_8015B3DC_ovl4[i][arg1].unk4;
+        dst2[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) spA8.unk0[i]);
+        dst2[i]->xOffset = D_8015B46C_ovl4[i][arg1].unk0;
+        dst2[i]->yOffset = D_8015B46C_ovl4[i][arg1].unk4;
+    }
+    while (1) {
+        if ((arg1 == saveCurrentFileNum) && (D_8015C6DC_ovl4 == 1)) {
+            func_800AFBB4(1, omCurrentObj);
+            for (i = 0; i != 6; i++) {
+                if (func_80157258_ovl4(arg1, i) != 0) {
+                    dst1[i]->renderFlags &= ~8;
+                    dst2[i]->renderFlags &= ~8;
+                } else {
+                    dst1[i]->renderFlags |= 8;
+                    dst2[i]->renderFlags |= 8;
+                }
+            }
+        } else {
+            func_800AFBB4(0, omCurrentObj);
+        }
+        ohSleep(1);
+    }
+}
+
+extern struct UnkStruct8015C740 D_8015B5F4_ovl4;
+extern struct UnkStruct8015C740 D_8015B62C_ovl4;
+extern struct UnkStruct8015C740 D_8015B4FC_ovl4;
+extern struct UnkStruct8015C740 D_8015B54C_ovl4;
+extern Unk2Ss D_8015B614_ovl4[];
+extern Unk2Ss D_8015B64C_ovl4[];
+extern Unk2Ss D_8015B51C_ovl4[];
+extern Unk2Ss D_8015B56C_ovl4[];
+
+void func_80157610_ovl4(GObj *arg0, s32 arg1) {
+    SPObj *sp;
+    Unk2Ss *p;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015B5F4_ovl4);
+    sp->xOffset = D_8015B614_ovl4[arg1].unk0;
+    sp->yOffset = D_8015B614_ovl4[arg1].unk4;
+    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015B62C_ovl4);
+    sp->xOffset = D_8015B64C_ovl4[arg1].unk0;
+    sp->yOffset = D_8015B64C_ovl4[arg1].unk4;
+    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015B4FC_ovl4);
+    p = &D_8015B51C_ovl4[arg1];
+    sp->xOffset = p->unk0;
+    sp->yOffset = p->unk4;
+    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015B4FC_ovl4);
+    sp->xOffset = p[3].unk0;
+    sp->yOffset = p[3].unk4;
+    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015B54C_ovl4);
+    sp->xOffset = D_8015B56C_ovl4[arg1].unk0;
+    sp->yOffset = D_8015B56C_ovl4[arg1].unk4;
+    while (1) {
+        if ((arg1 == saveCurrentFileNum) && (D_8015C6DC_ovl4 == 2)) {
+            func_800AFBB4(1, omCurrentObj);
+        } else {
+            func_800AFBB4(0, omCurrentObj);
+        }
+        ohSleep(1);
+    }
+}
+
+/* 74/183: semantically complete and the frame/local layout is exact; the
+ * residue is a whole-function temp-register rotation seeded at the struct copy
+ * (the ROM materialises sp+0x6C twice -- once as the copy destination, once as
+ * the loop-end pointer in $fp -- IDO shares one register). Swept: with and
+ * without the end/q pointer locals, `(s32 *) &sp6C` and `end + 2` spellings,
+ * two dead scalars for the frame, declaration order of every local. */
+#ifdef NON_MATCHING
+extern Unk3Words D_8015AA60_ovl4;
+extern Unk2Ss D_8015B6C4_ovl4[];
+extern Unk2Ss D_8015B6FC_ovl4[];
+extern struct UnkStruct8015C740 D_8015B6DC_ovl4;
+void func_800B1900(s32);
+void func_800BB468(s32, s32);
+
+void func_80157840_ovl4(GObj *arg0, s32 arg1) {
+    Unk3Words sp6C = D_8015AA60_ovl4;
+    SPObj *sp;
+    s32 *p;
+    s32 *end;
+    Unk2Ss *q;
+    s32 i;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    q = &D_8015B6C4_ovl4[arg1];
+    p = &sp6C.unk0[2];
+    end = &sp6C.unk0[0];
+    do {
+        play_sound(0xD3);
+        sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) *p);
+        sp->xOffset = q->unk0;
+        sp->yOffset = q->unk4;
+        for (i = 0; i < 30; i++) {
+            if (D_800EA1A0[D_8015C6D0_ovl4] == 4) {
+                func_800ACBDC(arg0);
+                func_800B1900(((u16 *) omCurrentObj)[1]);
+            }
+            ohSleep(1);
+        }
+        func_800ACBDC(arg0);
+        p--;
+    } while (p >= end);
+    if (D_800EA1A0[D_8015C6D0_ovl4] == 4) {
+        func_800ACBDC(arg0);
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+    D_800EA1A0[D_8015C6D0_ovl4] = 3;
+    play_sound(0xE);
+    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015B6DC_ovl4);
+    sp->xOffset = D_8015B6FC_ovl4[arg1].unk0;
+    sp->yOffset = D_8015B6FC_ovl4[arg1].unk4;
+    func_800BB468(0, 0);
+    for (i = 0; i != 15; i++) {
+        sp->xOffset = sp->xOffset - 1.0f;
+        sp->yOffset = sp->yOffset - 1.0f;
+        ohSleep(1);
+        sp->xOffset = sp->xOffset + 1.0f;
+        sp->yOffset = sp->yOffset + 1.0f;
+        ohSleep(1);
+    }
+    func_800ACBDC(arg0);
+    D_800EA1A0[D_8015C6D0_ovl4] = 2;
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157840_ovl4.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157B1C_ovl4.s")
 

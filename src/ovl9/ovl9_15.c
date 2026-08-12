@@ -762,7 +762,60 @@ void func_80217328_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217330_ovl9.s")
+extern void func_800B67A8(struct GObj *);
+extern void func_800AED20(f32);
+extern s32 func_8010B480();
+extern s32 func_8010B67C();
+extern s32 func_8010B860();
+
+/* The block-scope prototypes are required: all three callees are defined LATER
+   in this TU. Case bodies are written in target-address order, and the dead
+   `case 0` keeps the jump table dense. */
+void func_80217330_ovl9(struct GObj *arg0) {
+    void func_802175C4_ovl9(void);
+    void func_80217634_ovl9(struct GObj *);
+    s32 func_80217EF0_ovl9(void);
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+
+    D_800DEF90[omCurrentObj->objId] = func_800B67A8;
+    func_800AECC0(2.0f);
+    func_800AED20(2.0f);
+    while (gEntitiesAngleZArray[omCurrentObj->objId] > 6.28318548f) {
+        gEntitiesAngleZArray[omCurrentObj->objId] -= 6.28318548f;
+    }
+    while (gEntitiesAngleZArray[omCurrentObj->objId] < 0.0f) {
+        gEntitiesAngleZArray[omCurrentObj->objId] += 6.28318548f;
+    }
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;
+    D_800DF150[omCurrentObj->objId] = func_802175C4_ovl9;
+    func_801A0D50_ovl7(func_80217634_ovl9);
+    switch (func_80217EF0_ovl9()) {
+    case 1:
+        tmp->unk48 = NULL;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+        break;
+    case 2:
+        tmp->unk48 = func_8010B480;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        break;
+    case 3:
+        D_800E6A10[omCurrentObj->objId] = -1.0f;
+        tmp->unk48 = func_8010B67C;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        break;
+    case 4:
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
+        tmp->unk48 = func_8010B860;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        break;
+    case 0:
+    default:
+        utilPrintf("glunk angle error\n");
+        break;
+    }
+    func_80217634_ovl9(arg0);
+}
 
 void func_802175C4_ovl9(void) {
     if ((f32) func_801A0D74_ovl7() == 0.0f) {

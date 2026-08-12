@@ -2838,3 +2838,149 @@ before trusting a draft scan.
   extern-derived constant LAST of four and gives it `$f20`; moving the
   assignment inside the loop (55), inlining the extern (109) and moving it
   above the preceding call (80) are all worse than the base draft.
+
+# Wave 12: ovl9's rodata is FULLY MIGRATED (all 17 subsegments), and how
+
+At commit 2f25dae every `rodata, ovl9/X_rd` subsegment in kirby64.yaml is a
+dotted `.rodata, ovl9/X`, ovl9's asm rodata blobs are gone, and the ROM is
+byte-exact. **ovl9 is now a literal-model segment: write float LITERALS and use
+`switch` freely.** The 14 jump-table pragmas that were structurally impossible
+are now ordinary work; four of them closed in the same wave.
+
+## The migration procedure, as it actually ran (17 blocks, one splat run)
+
+The boundary-finding section earlier in this guide describes work that ovl9 did
+NOT need: **kirby64.yaml already carried one `rodata` subsegment per C file with
+exact addresses.** Migration was a textual change of `rodata, ovl9/X_rd` to
+`.rodata, ovl9/X`, nothing more. Check for that before decoding %hi/%lo pairs --
+several segments are in the same shape.
+
+  1. `cp -a asm $S/bak` and run `splat split kirby64.yaml` with the yaml
+     UNCHANGED first. It must come back with 0 file differences and a
+     byte-identical `kirby.ld`; if not, stop, because you cannot tell your
+     change from splat's drift. It took 23 seconds and was idempotent.
+  2. Edit the yaml, re-run splat, and read `kirby.ld`. With ALL of a segment's
+     rodata migrated the section becomes exactly the `c` subsegment order, which
+     is address order -- the same shape ovl8 has. **A PARTIAL migration also
+     orders correctly** (measured with 2 of 19 and again with 4 of 19): splat's
+     auto-sibling insertion places the explicit `.rodata` entry at its yaml
+     position and pushes the later files' auto entries after it. The unmigrated
+     C objects emit nothing, so their empty entries are harmless.
+  3. Rewrite every C-owned symbol as a literal (below), then gate.
+
+## splat does NOT migrate rodata into the listing of a function already in C
+
+`do_c_func_detection` is on, so a symbol whose only referencing function is
+written in C is dropped from asm entirely -- it is neither in a blob nor in a
+listing. **That is correct and it is the whole cost of the migration:** the C
+file must now emit it. 127 symbols across 15 ovl9 files had to change from
+`extern f32 D_xxx;` to a literal in one edit. There is no intermediate state
+that links.
+
+Two mechanics that made this cheap and safe:
+
+* **Replace the `extern f32 D_xxx;` line with a comment on the SAME LINE, not
+  with nothing.** IDO is line-number sensitive and these files hold up to 131
+  already-matched functions. All 127 rewrites left every file at 0 diff.
+* Derive the literal from the ROM WORD, not from splat's printed value, and
+  take the shortest spelling that round-trips:
+  `struct.unpack('>I', struct.pack('>f', float(s)))[0] == word`.
+
+The rewrite is low-risk in practice because **the ROM was compiled from those
+literals in the first place** -- extern-to-literal moves toward the ROM. 133 of
+133 rewrites were inert.
+
+## The detector for the sticky refusal, and ovl9's two cases
+
+The guide already warns that `isMaybeConstVariable()` refuses multi-word float
+symbols and that one refusal silently drops every LATER symbol of the same
+function. ovl9 had both shapes and **splat printed no warning for either**:
+
+    D_8021CFD4_ovl9  three words of 3.14159274      -> refused
+    D_8021D88C_ovl9  two words, second one non-zero -> refused, and took
+                     D_8021D894/898/89C/8A0/8A4 with it
+
+Run this after every migration splat; it is 20 lines and it is the only thing
+that sees the failure:
+
+    for each symbol in the PRE-migration blob:
+        if it is defined in no listing under asm/nonmatchings/<seg>/<tu>/:
+            it must be owned by a function that is already C.
+            If its owner is still a #pragma, that is a REFUSAL.
+            If it has no owner at all, it is unmigratable.
+
+Fix in `tools/symbol_addrs.txt`; `segment:` is mandatory under exclusive_ram_id:
+
+    D_8021CFD4_ovl9 = 0x8021CFD4; // segment:ovl9 force_migration:True
+
+Note `jtbl_*` symbols show up as "no owner" in a naive reference scan because
+nothing names them in the text -- they are reached through the jump. Exclude
+them; spimdisasm migrates them correctly.
+
+## The cheap complete check for a migration: compare each object's .rodata to the ROM
+
+You do not need the link to know a migration is right. `objcopy -O binary
+--only-section=.rodata` each object and compare against the ROM at the block's
+own offset. All 19 ovl9 blocks came back byte-exact and the same size before the
+tree was linkable at all (two sibling lanes had it broken for an hour).
+
+Two things that look like defects and are not:
+* Jump-table words differ because they are unrelocated `.word .L8021xxxx` in the
+  object. Filter words whose ROM value has 0x80 in the top byte.
+* A block whose LAST symbol is a multi-word float with trailing zero words comes
+  out 8 bytes short: those words are the block's padding and SUBALIGN(16) in
+  kirby.ld puts them straight back. Check `align16(ours) == rom_size`.
+
+## What the migration was worth, measured
+
+The extern-vs-literal difference is not cosmetic, it is a SCHEDULING difference,
+and that is why it closed functions no source permutation reached:
+
+* `func_801FDB28_ovl9` 3/85 -> MATCH. Recorded as "the ROM emits the lwc1
+  BEFORE the objId load; declaration order and initializer form all swept".
+* `func_8020034C_ovl9` 8/91 -> MATCH, `func_80200810_ovl9` 6/62 -> MATCH --
+  both on the guide's own do-not-retry list.
+* `func_8020ED74_ovl9` 3/82 and its twin `func_80210154_ovl9` 3/82 -> MATCH.
+  Recorded floor: "the ROM emits the three callee-saved FP loads in REVERSE
+  order of first assignment and IDO emits them in assignment order... register
+  number and load position are locked together". They are not: with LITERALS
+  IDO emits `$f24, $f22, addiu $s0, $f20` exactly as the ROM does. An `extern
+  f32` is a memory operand and IDO schedules it differently from a constant.
+
+**So a recorded "FP load scheduling floor" in an unmigrated segment is very
+often just the rodata model.** Before sweeping such a function, test the literal
+form and read the instruction ORDER, ignoring the own-.rodata reference notes.
+
+## Jump tables in a freshly migrated segment: 4 for 4
+
+Same rules as ovl16 (dense case labels, arms in target-ADDRESS order), and they
+keep paying. `func_801E9724_ovl9` (12 dead cases), `func_80213930_ovl9` (8
+cases, each a `func_800A9F98(id, <f32>)`), `func_801E979C_ovl9` and
+`func_80217330_ovl9` all matched first or second compile at 30-165 instructions.
+
+Two specifics worth carrying:
+* `temp = f(); arr[i] = temp; if (temp != 0)` is what puts the store in the
+  `beqz` delay slot. Re-reading `arr[i]` for the test costs six instructions.
+* Block-scope prototypes are mandatory when a converted function sits ABOVE its
+  callees in the TU -- and IDO treats a block-scope `extern` as file-scope for
+  redeclaration, so a conflicting earlier `void f();` is a hard error, not a
+  shadow.
+
+## A callee return type that is NOT declared in the TU is still a knob
+
+`func_801E06C0_ovl9` was recorded at 2/51 with a note saying "the three callees
+are all declared at FILE scope earlier in the TU, so the callee-return-type
+lever cannot be applied". They were not -- they were seven separate BLOCK-scope
+`void func_801A0D74_ovl7();` declarations. Flipping all seven to `s32` (plus the
+byte-bias index form, because the diff was visibly an in-place `sll $v1,$v1,2`)
+matched it, and left the other 39 functions in the file at 0 diff. Grep for the
+declaration before believing a note about where it lives.
+
+## A harness copy named `.jb3_<stem>.c` reads as UNMIGRATED
+
+verify.py recognises a temp copy as `<migrated stem>.<anything>.c` in the same
+directory. A LEADING-dot name (which is what keeps make's wildcard off it) does
+not match that pattern, so every own-.rodata reference comes back as a phantom
+diff. Either subtract the `references own section` lines from the count, or
+re-measure the final variant in place -- `func_801FDB28_ovl9` measured 1/85 on
+the copy and MATCH in the file.
