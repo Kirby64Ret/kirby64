@@ -144,6 +144,24 @@ def reguard(path, fn, residue):
               f'refusing, the pragma would cover them too')
         return False
 
+    # RE-MEASURE IMMEDIATELY BEFORE EDITING. The verdict that got us here was
+    # sampled when the sweep began, and a lane that iterates by rewriting the
+    # .c in place moves the file underneath us. This tool re-guarded two
+    # functions that were BYTE-EXACT by the time it reached them, using diff
+    # counts taken from an intermediate variant its own harness had written --
+    # destroying finished work and costing that lane compiles to redo.
+    #
+    # A re-check does not close the race, it only narrows it: nothing here can
+    # hold a lock on a file another process owns. But it turns "usually wrong
+    # under iteration" into "wrong only if the file changes inside this call".
+    r = subprocess.run([sys.executable, 'tools/decomp/verify.py', path, '--all'],
+                       capture_output=True, text=True)
+    still = re.search(rf'^{re.escape(fn)}: DIFF (\d+)/', r.stdout + r.stderr, re.M)
+    if not still:
+        print(f'      {fn} verifies clean now -- NOT guarding, it was a stale reading')
+        return False
+    residue = f'{still.group(1)}/{residue.split("/")[1]}'
+
     lines.insert(end + 1, f'#else\n#pragma GLOBAL_ASM("{s}")\n#endif')
     lines.insert(start, '#ifdef NON_MATCHING\n'
                         f'/* Left live by a lane mid-work, at {residue} insns. Draft kept. */')

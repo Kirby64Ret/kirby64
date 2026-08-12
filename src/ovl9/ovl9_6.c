@@ -847,13 +847,14 @@ void func_8019F3B0_ovl7(void);
 void func_800A1F30(void *);
 
 #ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 41/116 insns. Draft kept. */
+/* 42/116: residue is arg0 living in $a3 where the ROM home-slots it to
+ * 0x20($sp); every other insn is the same shape one register over. */
 void func_801EF354_ovl9(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent;
     GObj *g;
+    struct UnkStruct800E1B50 *ent;
 
-    ent = D_800E1B50[omCurrentObj->objId];
     g = D_800E9AA0[omCurrentObj->objId].as_ptr;
+    ent = D_800E1B50[omCurrentObj->objId];
     if (g != NULL) {
         ((Unk801EF354Node *) g->unk4C)->unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
         ((Unk801EF354Node *) g->unk4C)->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];

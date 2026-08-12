@@ -265,12 +265,9 @@ void func_800B9104(void) {
     }
 }
 
-/* Left live by a lane mid-work, at 29/29 insns. Draft kept. */
-#ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 29/29 insns. Draft kept. */
 // Draft, 1 structural diff (28 vs 29 insns): everything lines up except the
 // zero-trip guard `beq end,start` the ROM emits before the unroll residual, plus
-// the resulting register rotation and the known -0x10-last store rotation.
+// the register rotation and -0x10-last store rotation that follow from it.
 #ifdef NON_MATCHING
 void func_800B91B8(void) {
     u32 *p;
@@ -289,13 +286,7 @@ void func_800B91B8(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B91B8.s")
 #endif
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B91B8.s")
-#endif
 
-/* Left live by a lane mid-work, at 32/34 insns. Draft kept. */
-#ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 32/34 insns. Draft kept. */
 // Draft, 1 structural diff (33 vs 34 insns): identical apart from the zero-trip
 // guard `beq end,start` the ROM emits before the unroll residual.
 #ifdef NON_MATCHING
@@ -315,9 +306,6 @@ u32 func_800B922C(void) {
     }
     return sum;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B922C.s")
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B922C.s")
 #endif
@@ -546,4 +534,42 @@ s32 saveSetCutsceneWatched(s32 scene, s32 fileNum) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800BA40C.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/saveForceCompleteFile.s")
+void init_save_file_maybe(s32);
+
+void saveForceCompleteFile(s32 fileNum) {
+    s32 i;
+
+    if ((gSaveBuffer1.files[fileNum].level == SAVE_INIT_MAGIC) || (gSaveBuffer1.files[fileNum].level >= 6)) {
+        init_save_file_maybe(fileNum);
+    }
+    if ((gSaveBuffer1.files[fileNum].world == 8) && (gSaveBuffer1.files[fileNum].level == 1)) {
+        return;
+    }
+    gSaveBuffer1.files[fileNum].world = 8;
+    gSaveBuffer1.files[fileNum].level = 1;
+    gSaveBuffer1.files[fileNum].data8 = 0;
+    gSaveBuffer1.files[fileNum].cutscenesWatched = -1;
+    gSaveBuffer1.files[fileNum].percentComplete = 0;
+    gSaveBuffer1.files[fileNum].soundSetting = 1;
+    for (i = 0; i < 6; i++) {
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] = 7;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] = 7;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] = 7;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] = 7;
+    }
+    ((u8 *) gSaveBuffer1.files[fileNum].shards)[23] = 0;
+    ((u8 *) gSaveBuffer1.files[fileNum].shards)[3] = 0;
+    for (i = 0; i < 8; i++) {
+        gSaveBuffer1.files[fileNum].data34[i] = 0;
+    }
+    for (i = 0; i < 7; i++) {
+        gSaveBuffer1.files[fileNum].data34[i] = 1;
+    }
+    for (i = 0; i < 21; i++) {
+        gSaveBuffer1.files[fileNum].enemyCard1E[i] = 0x55;
+    }
+    saveVerify(fileNum);
+    saveSetFileChecksum(fileNum);
+    func_80004D34(D_800D5150[fileNum * 2 + 1], &gSaveBuffer1.files[fileNum], 0x58);
+    func_80004D34(D_800D5150[fileNum * 2 + 7], &gSaveBuffer1.files[fileNum], 0x58);
+}

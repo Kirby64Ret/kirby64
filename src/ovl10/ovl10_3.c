@@ -984,7 +984,6 @@ void func_801E72B8_ovl10(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef NON_MATCHING
 /* 31/112 (the ROM is 111): fully decoded and every call, constant and branch
    is right. Two residues. (1) The ROM's local block is Vector@0x3C, f32@0x48,
    an 8-byte hole, struct@0x54 -- `f32 pad[2]` between the struct and `sp48`
@@ -1002,19 +1001,25 @@ struct Ovl10TrackPos {
     f32 unk4;
 };
 
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 31/112 insns. Draft kept. */
 void func_801E7424_ovl10(GObj *arg0) {
+    f32 lead[1];
     struct Ovl10TrackPos sp54;
     f32 pad[2];
     f32 sp48;
     Vector sp3C;
 
     if (D_800E9E20[omCurrentObj->objId] != 0) {
+        f32 ang;
+
         func_8019A900_ovl7((s32 *) &sp54);
         sp48 = sp54.unk4;
-        sp3C.x = 0.4f;
-        sp3C.y = 0.0f;
+        ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], sp48);
         sp3C.z = 0.0f;
-        lbvector_Rotate(&sp3C, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], sp48));
+        sp3C.y = 0.0f;
+        sp3C.x = 0.4f;
+        lbvector_Rotate(&sp3C, 4, ang);
         D_800E6690[omCurrentObj->objId] = sp3C.x;
         D_800E3750[omCurrentObj->objId] = sp3C.y;
         if (sp54.unk0 != D_800E6A10[omCurrentObj->objId]) {
@@ -1027,8 +1032,8 @@ void func_801E7424_ovl10(GObj *arg0) {
                 a = v;
             }
             if (a < 1.0f) {
-                D_800E64D0[omCurrentObj->objId] = -v * D_800E6A10[omCurrentObj->objId];
-                D_800E6690[omCurrentObj->objId] = -D_800E6690[omCurrentObj->objId] * D_800E6A10[omCurrentObj->objId];
+                D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -v;
+                D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -D_800E6690[omCurrentObj->objId];
                 if (D_800E6850[omCurrentObj->objId] < 0.0f) {
                     D_800E6850[omCurrentObj->objId] = -D_800E6850[omCurrentObj->objId];
                 } else {
@@ -1335,7 +1340,49 @@ void func_801E85B8_ovl10(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E871C_ovl10.s")
+void func_801E88E4_ovl10(s32 *);
+
+void func_801E871C_ovl10(GObj *arg0) {
+    f32 lead[1];
+    struct Ovl10TrackPos sp54;
+    f32 pad[2];
+    f32 sp48;
+    Vector sp3C;
+
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        f32 ang;
+
+        func_8019A900_ovl7((s32 *) &sp54);
+        func_801E88E4_ovl10((s32 *) &sp54);
+        sp48 = sp54.unk4;
+        ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], sp48);
+        sp3C.z = 0.0f;
+        sp3C.y = 0.0f;
+        sp3C.x = 0.4f;
+        lbvector_Rotate(&sp3C, 4, ang);
+        D_800E6690[omCurrentObj->objId] = sp3C.x;
+        D_800E3750[omCurrentObj->objId] = sp3C.y;
+        if (sp54.unk0 != D_800E6A10[omCurrentObj->objId]) {
+            f32 v = D_800E64D0[omCurrentObj->objId];
+            f32 a;
+
+            if (v < 0.0f) {
+                a = -v;
+            } else {
+                a = v;
+            }
+            if (a < 1.0f) {
+                D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -v;
+                D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -D_800E6690[omCurrentObj->objId];
+                if (D_800E6850[omCurrentObj->objId] < 0.0f) {
+                    D_800E6850[omCurrentObj->objId] = -D_800E6850[omCurrentObj->objId];
+                } else {
+                    D_800E6850[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId];
+                }
+            }
+        }
+    }
+}
 
 void func_801E88E4_ovl10(s32 *arg0) {
     struct DObj *dobj = D_800DFBD0[omCurrentObj->objId][3];

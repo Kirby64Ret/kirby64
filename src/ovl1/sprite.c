@@ -156,7 +156,243 @@ void func_800AB804(Gfx **pkt, u32 *imagePtr, s16 *imageRemain, s16 drawLines, s1
     }
 }
 
+#ifdef NON_MATCHING
+// DRAFT, 657/665. The instruction sequence lines up 1:1 with the ROM but is
+// offset by two: the ROM saves s0-s4 and uses $ra as a general register
+// (frame 0xE0), this saves s0-s2 (frame 0xD8), so every register differs.
+// Two more callee-saved live values are needed. Swept dead locals and
+// hoisting the inner-block declarations: no movement.
+// libreultra/src/gu/us2dex_emu.c `guS2DEmuBgRect1Cyc`, with Kirby's changes:
+// the scale guards, the cached imageSiz in D_800DD70A, and the imageSiz==3 case.
+extern s16 D_800D4E78[]; // TMEMSIZE[]
+extern s16 D_800D4E84[]; // TMEMMASK[]
+extern s16 D_800D4E8C[]; // TMEMSHIFT[]
+
+void func_800ABB4C(Gfx **pkt, uObjBg *bg) {
+    s16 frameX0, frameX1, framePtrY0, frameRemain;
+    s16 imageX0, imageY0, imageSliceW, imageW;
+    s32 imageYorig;
+    s16 scaleW, scaleH;
+
+    s16 imageSrcW, imageSrcH;
+    s16 tmemSliceLines, imageSliceLines;
+    s32 frameSliceLines, frameSliceCount;
+    u16 imageS, imageT;
+    u32 imagePtr;
+
+    s16 imageISliceL0, imageIY0;
+    s32 frameLSliceL0;
+
+    scaleW = bg->s.scaleW;
+    scaleH = bg->s.scaleH;
+    D_800DD70A = bg->s.imageSiz;
+    if (scaleW == 0) {
+        scaleW = 1;
+    }
+    if (scaleH == 0) {
+        scaleH = 1;
+    }
+
+    {
+        s16 pixX0, pixY0, pixX1, pixY1;
+        s16 frameY0, frameW, frameH;
+        s32 frameWmax, frameHmax;
+
+        frameWmax = ((((s32) bg->s.imageW << 10) / scaleW) - 1) & ~3;
+        frameHmax = ((((s32) bg->s.imageH << 10) / scaleH) - 1) & ~3;
+
+        frameW = bg->s.frameW;
+        frameH = bg->s.frameH;
+        frameX0 = bg->s.frameX;
+        frameY0 = bg->s.frameY;
+        if ((frameWmax = bg->s.frameW - frameWmax) < 0) frameWmax = 0;
+        if ((frameHmax = bg->s.frameH - frameHmax) < 0) frameHmax = 0;
+        frameW -= frameWmax;
+        frameH -= frameHmax;
+        if (bg->s.imageFlip & G_BG_FLAG_FLIPS) {
+            frameX0 += frameWmax;
+        }
+
+        pixX0 = D_800D4E64 - frameX0;
+        pixY0 = D_800D4E68 - frameY0;
+        pixX1 = frameW - D_800D4E6C + frameX0;
+        pixY1 = frameH - D_800D4E70 + frameY0;
+
+        if (pixX0 < 0) pixX0 = 0;
+        if (pixY0 < 0) pixY0 = 0;
+        if (pixX1 < 0) pixX1 = 0;
+        if (pixY1 < 0) pixY1 = 0;
+
+        frameW = frameW - (pixX0 + pixX1);
+        frameH = frameH - (pixY0 + pixY1);
+        frameX0 = frameX0 + pixX0;
+        frameY0 = frameY0 + pixY0;
+
+        if (frameW <= 0 || frameH <= 0) return;
+
+        frameX1 = frameX0 + frameW;
+        framePtrY0 = frameY0 >> 2;
+        frameRemain = frameH >> 2;
+
+        imageSrcW = bg->s.imageW << 3;
+        imageSrcH = bg->s.imageH << 3;
+
+        imageSliceW = (imageW = frameW * scaleW >> 7) + D_800D4E74 * 32;
+        if (bg->s.imageFlip & G_BG_FLAG_FLIPS) {
+            imageX0 = bg->s.imageX + (pixX1 * scaleW >> 7);
+        } else {
+            imageX0 = bg->s.imageX + (pixX0 * scaleW >> 7);
+        }
+        imageY0 = bg->s.imageY + (pixY0 * scaleH >> 7);
+        imageYorig = bg->s.imageYorig;
+
+        while (imageX0 >= imageSrcW) {
+            imageX0 -= imageSrcW;
+            imageY0 += 32;
+            imageYorig += 32;
+        }
+
+        while (imageY0 >= imageSrcH) {
+            imageY0 -= imageSrcH;
+            imageYorig -= imageSrcH;
+        }
+    }
+
+    D_800DD700 = (imageX0 + imageSliceW >= imageSrcW);
+    D_800DD708 = imageSrcH >> 5;
+
+    {
+        s16 tmemSize, tmemMask, tmemShift;
+        s32 imageNumSlice;
+        s32 imageSliceWmax;
+        s32 imageLYoffset, frameLYoffset;
+        s32 imageLHidden, frameLHidden;
+        s32 frameLYslice;
+
+        tmemSize = D_800D4E78[bg->s.imageFmt];
+        tmemMask = D_800D4E84[bg->s.imageSiz];
+        tmemShift = D_800D4E8C[bg->s.imageSiz];
+
+        if (D_800DD70A == 3) {
+            tmemSize = 0x1E0;
+            imageSliceWmax = 0x2800;
+        } else {
+            imageSliceWmax = (((s32) bg->s.frameW * (s32) scaleW) >> 7) + (D_800D4E74 << 5);
+            if (imageSliceWmax > imageSrcW) imageSliceWmax = imageSrcW;
+        }
+        D_800DD6FC = (imageSliceWmax + tmemMask) / tmemShift + 1;
+
+        tmemSliceLines = tmemSize / D_800DD6FC;
+        imageSliceLines = tmemSliceLines - D_800D4E74;
+        frameSliceLines = (imageSliceLines << 20) / scaleH;
+
+        imageLYoffset = ((s32) imageY0 - imageYorig) << 5;
+        if (imageLYoffset < 0) imageLYoffset -= (scaleH - 1);
+        frameLYoffset = imageLYoffset / scaleH;
+        frameLYoffset <<= 10;
+
+        if (frameLYoffset >= 0) {
+            imageNumSlice = frameLYoffset / frameSliceLines;
+        } else {
+            imageNumSlice = (frameLYoffset - frameSliceLines + 1) / frameSliceLines;
+        }
+
+        frameLYslice = (frameLSliceL0 = frameSliceLines * imageNumSlice) & ~1023;
+        frameLHidden = frameLYoffset - frameLYslice;
+        imageLHidden = (frameLHidden >> 10) * scaleH;
+
+        frameLSliceL0 = (frameLSliceL0 & 1023) + frameSliceLines - frameLHidden;
+
+        imageT = (imageLHidden >> 5) & 31;
+        imageLHidden >>= 10;
+        imageISliceL0 = imageSliceLines - imageLHidden;
+        imageIY0 = imageSliceLines * imageNumSlice + (imageYorig & ~31) / 32 + imageLHidden;
+        if (imageIY0 < 0) imageIY0 += (bg->s.imageH >> 2);
+        if (imageIY0 >= (bg->s.imageH >> 2)) imageIY0 -= (bg->s.imageH >> 2);
+        D_800DD704 = (u32) bg->s.imagePtr;
+        D_800DD6FE = (imageSrcW / tmemShift) << 3;
+        D_800DD702 = (imageX0 / tmemShift) << 3;
+        imagePtr = D_800DD704 + D_800DD6FE * imageIY0 + D_800DD702;
+
+        imageS = imageX0 & tmemMask;
+        if (bg->s.imageFlip & G_BG_FLAG_FLIPS) {
+            imageS = -(imageS + imageW);
+        }
+    }
+
+    sTextureImageCommand = 0xfd100000 + (D_800DD6FE >> 1) - 1;
+    sSetTileCommand = 0xf5100000 + (D_800DD6FC << 9);
+
+    (*pkt)->words.w0 = sSetTileCommand;
+    (*pkt)->words.w1 = 0x07000000;
+    (*pkt)++;
+    (*pkt)->words.w0 = sSetTileCommand;
+    ((u8 *) &((*pkt)->words.w0))[1] = (bg->s.imageFmt << 5) | (bg->s.imageSiz << 3);
+    (*pkt)->words.w1 = 0x0007c1f0 | (bg->s.imagePal << 20);
+    (*pkt)++;
+    (*pkt)->words.w0 = 0xf2000000;
+    (*pkt)->words.w1 = 0x00000000;
+    (*pkt)++;
+
+    {
+        s16 imageRemain;
+        s16 imageSliceH, frameSliceH;
+
+        imageRemain = D_800DD708 - imageIY0;
+        imageSliceH = imageISliceL0;
+        frameSliceCount = frameLSliceL0;
+
+        while (1) {
+            frameSliceH = frameSliceCount >> 10;
+            if (frameSliceH <= 0) {
+                imageRemain -= imageSliceH;
+                if (imageRemain > 0) {
+                    imagePtr += D_800DD6FE * imageSliceH;
+                } else {
+                    imagePtr = D_800DD704 - (imageRemain * D_800DD6FE) + D_800DD702;
+                    imageRemain += D_800DD708;
+                }
+            } else {
+                s16 framePtrY1;
+
+                frameSliceCount &= 1023;
+                if ((frameRemain -= frameSliceH) < 0) {
+                    frameSliceH += frameRemain;
+                    imageSliceH += ((frameRemain * scaleH) >> 10) + 1;
+                    if (imageSliceH > imageSliceLines) imageSliceH = imageSliceLines;
+                }
+                func_800AB804(pkt, &imagePtr, &imageRemain, imageSliceH, D_800D4E74);
+
+                framePtrY1 = framePtrY0 + frameSliceH;
+
+                (*pkt)->words.w0 = 0xe7000000;
+                (*pkt)++;
+
+                (*pkt)->words.w0 = 0xe4000000 | (frameX1 << 12) | (framePtrY1 << 2);
+                (*pkt)->words.w1 = (frameX0 << 12) | (framePtrY0 << 2);
+                (*pkt)++;
+                (*pkt)->words.w0 = G_RDPHALF_1 << 24;
+                (*pkt)->words.w1 = (imageS << 16) | imageT;
+                (*pkt)++;
+                (*pkt)->words.w0 = G_RDPHALF_2 << 24;
+                (*pkt)->words.w1 = (scaleW << 16) | scaleH;
+                (*pkt)++;
+
+                framePtrY0 = framePtrY1;
+
+                if (frameRemain <= 0) {
+                    return;
+                }
+            }
+            frameSliceCount += frameSliceLines;
+            imageSliceH = imageSliceLines;
+            imageT = 0;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ABB4C.s")
+#endif
 
 SPObj *pop_spobj(void) {
     SPObj *ret;

@@ -109,7 +109,60 @@ void func_801A470C_ovl7(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4754_ovl7.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4C0C_ovl7.s")
+struct Ovl7AnimInfo {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0x10];
+};
+
+void func_801A4C0C_ovl7(GObj *arg0) {
+    extern s32 D_8012E860;
+    void func_80111550(u32);
+    s32 *func_80111C88(void *, u32);
+    void func_80111ECC(s32 *);
+    s32 func_80110B00(struct Ovl7AnimInfo *);
+    s32 func_80110FD4(struct Ovl7AnimInfo *);
+    void func_80110150(struct Ovl7AnimInfo *);
+    extern struct UnkStruct800D7118_7 D_800D7118;
+    struct Ovl7AnimInfo sp2C;
+    struct UnkStruct800E1B50 *ent;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    if (D_800EC9E4 != 0.0f) {
+        D_800E3210[omCurrentObj->objId] = -D_800EC9E4;
+    }
+    if (D_800E8E60[omCurrentObj->objId] != 1) {
+        func_80111550(omCurrentObj->objId);
+        func_80111ECC(func_80111C88(ent->unk8C, omCurrentObj->objId));
+        if (D_800EA520[omCurrentObj->objId] == 1) {
+            if (func_80110B00(&sp2C) == 0) {
+                if (func_80110FD4(&sp2C) == 0) {
+                    func_80110150(&sp2C);
+                }
+            }
+        } else {
+            func_80110150(&sp2C);
+        }
+        if (sp2C.unk2 != 0) {
+            D_800EC4A0[omCurrentObj->objId] = 1;
+        }
+    }
+    if (D_800E8E60[omCurrentObj->objId] != 1) {
+        func_801A0D74_ovl7(arg0);
+        D_800E9E20[omCurrentObj->objId] = (D_8012BCA0 >> 19) & 0x1FF;
+    }
+    if (D_8012E860 == 0) {
+        D_800EA520[omCurrentObj->objId] = 1;
+    }
+    if (D_800D7118.unk3C == 0) {
+        D_800EC4A0[omCurrentObj->objId] = 1;
+        D_800E9720[omCurrentObj->objId] = 1;
+    }
+}
 
 struct TrackPosition7 {
     s32 unk0;
@@ -191,8 +244,6 @@ void func_801A522C_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A5274_ovl7.s")
 
-#ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 2/73 insns. Draft kept. */
 void func_801A557C_ovl7(void) {
     f32 dx;
     f32 dz;
@@ -211,9 +262,6 @@ void func_801A557C_ovl7(void) {
     }
     D_800EC2E0[omCurrentObj->objId].as_u32 = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A557C_ovl7.s")
-#endif
 
 void func_801A56A0_ovl7(GObj *arg0) {
     D_800EC2E0[omCurrentObj->objId].as_s32 = 1;

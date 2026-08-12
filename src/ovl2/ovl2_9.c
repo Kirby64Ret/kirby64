@@ -66,8 +66,6 @@ s32 func_801103C4(s32 arg0) {
     return -1;
 }
 
-#ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 12/108 insns. Draft kept. */
 void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
                    struct UnkStruct80110438_C *arg2) {
     s32 idx;
@@ -126,15 +124,86 @@ void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
         D_800E7CE0[idx] = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110438.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_801105E8.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110B00.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110CCC.s")
+void func_80110CCC(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
+                   struct UnkStruct80110438_C *arg2) {
+    s32 flags;
+    s32 idx;
+    s32 kind;
+
+    idx = arg0->unk0;
+    if (arg1->unk10 & 0x40000000) {
+        return;
+    }
+    if (idx == -1) {
+        arg2->unk2 = 2;
+        arg2->unk3 = arg1->unkC;
+        return;
+    }
+    flags = arg0->unk14;
+    if (flags & 0x80000000) {
+        return;
+    }
+    if (D_800E7CE0[idx] != 0) {
+        return;
+    }
+    kind = arg1->unk9;
+    switch (kind) {
+    case 1:
+        if (flags & 1) {
+            arg2->unk2 = 7;
+            if (arg0->unk14 & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    case 2:
+        if (flags & 2) {
+            arg2->unk2 = 8;
+            if (arg0->unk14 & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    case 3:
+        if (flags & 4) {
+            arg2->unk2 = 9;
+            if (arg0->unk14 & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    default:
+        utilPrintf("unknown player shot sub kind:%x\n", kind);
+        return;
+    }
+    arg2->unk3 = arg1->unkC;
+    if (!(arg0->unk14 & 0x08000000)) {
+        D_800E7B20[idx] -= arg1->unk4;
+    }
+    if (D_800E7B20[idx] <= 0.0f) {
+        arg2->unk2 = 1;
+        D_800E7B20[idx] = 0.0f;
+        return;
+    }
+    arg2->unk2 = 2;
+    if (!(arg0->unk14 & 0x08000000)) {
+        if (D_800DD710[idx] == 0x17) {
+            D_800E7CE0[idx] = 0xF;
+        } else {
+            D_800E7CE0[idx] = 0x2D;
+        }
+    } else {
+        D_800E7CE0[idx] = 0;
+    }
+}
 
 void func_80110E94(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1) {
     s32 idx;

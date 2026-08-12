@@ -193,7 +193,66 @@ void func_8016D81C_ovl3(GObj *arg0) {
     func_8011ED68();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016DA14_ovl3.s")
+extern void func_80122A80(void);
+extern void func_8012307C(s32, s32, f32, s32);
+
+void func_8016DA14_ovl3(GObj *arg0) {
+    f32 temp;
+    f32 temp2;
+
+    gKirbyState.unk7 = 1;
+    func_8011CF58();
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    func_80122A80();
+    while (1) {
+        switch (gKirbyState.unk4) {
+        case 0:
+            func_8012307C(0x2005D, 0x2005E, gKirbyState.unk38, 0);
+            break;
+        case 1:
+            func_8012307C(0x20175, 0x20176, gKirbyState.unk38, 0);
+            curObjSleepForever();
+        case 2:
+            func_8012307C(0x200CD, 0x200CE, gKirbyState.unk38, 0);
+            curObjSleepForever();
+        }
+        if (gKirbyState.unk4 != 0) {
+            break;
+        }
+        if (gKirbyState.unk44 != 0) {
+            break;
+        }
+        while (1) {
+            if ((!(gKirbyState.isTurning & 1) && (gKirbyState.unk44 == 0) && (1.0f == D_800E6A10[omCurrentObj->objId]) && (gKirbyState.rightCollisionNext & 1)) || ((-1.0f == D_800E6A10[omCurrentObj->objId]) && (gKirbyState.leftCollisionNext & 8))) {
+                temp = D_800E64D0[omCurrentObj->objId];
+                if (temp < 0.0f) {
+                    temp2 = -temp;
+                } else {
+                    temp2 = temp;
+                }
+                if (2.0f < temp2) {
+                    break;
+                }
+                gKirbyState.unk44 = 1;
+            }
+            ohSleep(1);
+        }
+        gKirbyState.unk44 = gKirbyState.unk44 + 1;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
+        switch (gKirbyState.unk4) {
+        case 0:
+            func_801230E8(0x200FF, 0x20100, 0);
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        }
+    }
+    curObjSleepForever();
+}
 
 void func_8016DD0C_ovl3(s32 arg0) {
     Unk80196C74 sp18 = D_80196C5C_ovl3;
