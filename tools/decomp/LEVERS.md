@@ -1,3 +1,22 @@
+## RULE ZERO: WORK BARE PRAGMAS. GUARDED DRAFTS BELONG TO THE CPU.
+
+Measured 2026-08-13. The tree holds **405 bare pragmas** (never attempted by
+anyone) and **515 guarded drafts**. Bare pragmas close at 68-89% historically.
+Guarded drafts are, almost by definition, the ones somebody already failed to
+close — and tonight they resolve to register-allocation floors again and again,
+at ~400,000 tokens per stint for zero closures.
+
+Meanwhile decomp-permuter closes an ORDER residue in 13 seconds for no tokens
+at all, and every guarded draft in the tree is already queued to it.
+
+So: **if a function has a guarded draft, it is not yours.** Leave it. Take a
+bare pragma. If your own attempt bottoms out on a register-shaped residue,
+guard it with a `/* FACTORY: n/total, residue */` note and move on — you have
+just converted it into CPU fuel, which is a success, not a failure.
+
+Bare pragmas by segment: ovl3 95, ovl5 59, ovl9 55, main 28, ovl15 22, ovl7 20,
+ovl16 19, ovl10 18, ovl2 17, ovl17 16, ovl14 14, ovl19 12.
+
 ## PROVEN LEVERS — write these in FROM THE START, do not rediscover them
 
 1. **Clone families are the highest-yield method in the project.** Before picking any target by size, look for a pragma whose `jal` skeleton matches an ALREADY-MATCHED function in the same file. Port the matched shape and adjust only subscripts/constants read off the `lw`/`add.s` displacements. Measured: 3 closures in 12 compiles; two 200-330 instruction functions on the FIRST compile. A 285-instruction clone is cheaper than a 90-instruction original. PROVENANCE BEATS SIZE.
@@ -7,6 +26,8 @@
 3. **ABS() (integer zero) instead of ABSF()** forks IDO's shared `mtc1 $zero`. Three closures from this one substitution; one went 230/330 straight to MATCH.
 
 4. **objId, a matched pair of levers.** Cache the POINTER in a local when IDO hoists `&omCurrentObj` into a held register. INLINE THE FIELD at each use when m2c has cached `objId` in a named local — m2c's `temp_vN = omCurrentObj->objId` is wrong by default here and splits every index across two registers.
+   **Scope correction, measured:** inline-the-field is NOT free and is not "delete index temporaries". It won ovl7_5 and ovl18, but on func_801E14B0_ovl17 dropping m2c's leading `u32 temp_v0` to inline the field cost 3 diffs (3/61 → 6/61) because that temp owns a frame slot. The lever is about who owns the SAVED/HELD register. A leading temp with a frame slot stays.
+   Related negative: **K&R definitions are not a parameter-register lever.** The prototyped form already emits the parameter home store, so K&R changed nothing on a one-slot argument rotation.
 
 5. **Branch polarity.** Where the ROM lays `return 0` as fallthrough and makes `return 1` the branch target (hoisting `addiu $v0,1` into the `bne` delay slot), test the EQUAL case first. m2c's `!=` form is wrong by default.
 
