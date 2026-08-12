@@ -138,7 +138,47 @@ void func_8010F964(f32 *arg0, f32 *arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010FC30.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_80110014.s")
+void func_80110014(Mtx *m, f32 dx, f32 dy, f32 dz, f32 sx, f32 sy, f32 sz) {
+    s32 e1, e2;
+
+    e1 = FTOFIX32(sx);
+    e2 = FTOFIX32(0.0f);
+    m->m[0][0] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[2][0] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(0.0f);
+    e2 = FTOFIX32(0.0f);
+    m->m[0][1] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[2][1] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(0.0f);
+    e2 = FTOFIX32(sy);
+    m->m[0][2] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[2][2] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(0.0f);
+    e2 = FTOFIX32(0.0f);
+    m->m[0][3] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[2][3] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(0.0f);
+    e2 = FTOFIX32(0.0f);
+    m->m[1][0] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[3][0] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(sz);
+    e2 = FTOFIX32(0.0f);
+    m->m[1][1] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[3][1] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e2 = FTOFIX32(dy);
+    e1 = FTOFIX32(dx);
+    m->m[1][2] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[3][2] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    m->m[1][3] = (FTOFIX32(dz) & 0xFFFF0000) | ((FTOFIX32(1.0f) >> 16) & 0xFFFF);
+    m->m[3][3] = ((FTOFIX32(dz) << 16) & 0xFFFF0000) | (FTOFIX32(1.0f) & 0xFFFF);
+}
 
 void func_80110130(void) {
 }
