@@ -518,77 +518,15 @@ void func_80152138_ovl6(GObj *arg0, Lights1 *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152138_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_801524C8_ovl6(s32 *arg0) {
-    s32 *temp_v0_10;
-    s32 *temp_v0_11;
-    s32 *temp_v0_12;
-    s32 *temp_v0_13;
-    s32 *temp_v0_14;
-    s32 *temp_v0_15;
-    s32 *temp_v0_16;
-    s32 *temp_v0_17;
-    s32 *temp_v0_18;
-    s32 *temp_v0_19;
-    s32 *temp_v0_20;
-    s32 *temp_v0_21;
-    s32 *temp_v0_22;
-    s32 *temp_v0_23;
-    s32 *temp_v0_24;
-    s32 *temp_v0_25;
-    s32 *temp_v0_26;
-    s32 *temp_v0_27;
-    s32 *temp_v0_28;
-    s32 *temp_v0_9;
-    s32 *var_v0;
-    s32 temp_a2;
-    s32 temp_a2_2;
-    s32 temp_a2_3;
-    s32 temp_v0_8;
-    void *temp_v0;
-    void *temp_v0_29;
-    void *temp_v0_2;
-    void *temp_v0_30;
-    void *temp_v0_31;
-    void *temp_v0_32;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v0_5;
-    void *temp_v0_6;
-    void *temp_v0_7;
-
-    temp_v0 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0 + 8;
-    temp_v0->unk0 = 0xE7000000;
-    temp_v0->unk4 = 0;
-    temp_v0_2 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_2 + 8;
-    temp_v0_2->unk0 = 0xDB060010;
-    temp_v0_2->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-    temp_v0_3 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_3 + 8;
-    temp_v0_3->unk4 = 0x10000;
-    temp_v0_3->unk0 = 0xD9FFFFFF;
-    temp_v0_4 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_4 + 8;
-    temp_v0_4->unk0 = 0xDB080000;
-    temp_a2 = D_8015A7B8_ovl6.unk2 - D_8015A7B8_ovl6.unk0;
-    temp_v0_4->unk4 = ((0x1F400 / temp_a2) << 0x10) | ((((D_8015A7B8_ovl6.unk0 * -0x100) + 0x1F400) / temp_a2) & 0xFFFF);
-    temp_v0_5 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_5 + 8;
-    temp_v0_5->unk4 = 0x100000;
-    temp_v0_5->unk0 = 0xE3000A01;
-    temp_v0_6 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_6 + 8;
-    temp_v0_6->unk4 = 0xC8112078;
-    temp_v0_6->unk0 = 0xE200001C;
-    temp_v0_7 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_7 + 8;
-    temp_v0_7->unk0 = 0xF8000000;
-    temp_v0_7->unk4 = (D_8015A7B8_ovl6.unk4 << 0x18) | (D_8015A7B8_ovl6.unk5 << 0x10) | (D_8015A7B8_ovl6.unk6 << 8) | 0xFF;
-    temp_v0_8 = func_800AB0F4(D_8015A7B8_ovl6.unk0, temp_a2, temp_v0);
-    switch (temp_v0_8) {
+void func_801524C8_ovl6(GObj *arg0) {
+    gDPPipeSync(gDisplayListHeads[0]++);
+    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+    gSPSetGeometryMode(gDisplayListHeads[0]++, G_FOG);
+    gSPFogPosition(gDisplayListHeads[0]++, D_8015A7B8_ovl6.unk0, D_8015A7B8_ovl6.unk2);
+    gDPSetCycleType(gDisplayListHeads[0]++, G_CYC_2CYCLE);
+    gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_FOG_SHADE_A, G_RM_AA_ZB_OPA_SURF2);
+    gDPSetFogColor(gDisplayListHeads[0]++, D_8015A7B8_ovl6.unk4, D_8015A7B8_ovl6.unk5, D_8015A7B8_ovl6.unk6, 255);
+    switch (func_800AB0F4(arg0)) {
         case 19:
         case 21:
         case 23:
@@ -603,123 +541,42 @@ void func_801524C8_ovl6(s32 *arg0) {
         case 22:
         case 24:
         case 26:
-            temp_v0_9 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_9 + 8;
-            temp_v0_9->unk4 = 0;
-            temp_v0_9->unk0 = 0xE7000000;
-            temp_v0_10 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_10 + 8;
-            temp_v0_10->unk0 = 0xDB060010;
-            temp_v0_10->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-            temp_v0_11 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_11 + 8;
-            temp_v0_11->unk4 = 0x10000;
-            temp_v0_11->unk0 = 0xD9FFFFFF;
-            temp_v0_12 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_12 + 8;
-            temp_v0_12->unk0 = 0xDB080000;
-            temp_a2_2 = D_8015A7B8_ovl6.unk2 - D_8015A7B8_ovl6.unk0;
-            temp_v0_12->unk4 = ((0x1F400 / temp_a2_2) << 0x10) | ((((D_8015A7B8_ovl6.unk0 * -0x100) + 0x1F400) / temp_a2_2) & 0xFFFF);
-            temp_v0_13 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_13 + 8;
-            temp_v0_13->unk4 = 0x100000;
-            temp_v0_13->unk0 = 0xE3000A01;
-            temp_v0_14 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_14 + 8;
-            temp_v0_14->unk4 = 0xC81049D8;
-            temp_v0_14->unk0 = 0xE200001C;
-            temp_v0_15 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_15 + 8;
-            temp_v0_15->unk0 = 0xF8000000;
-            temp_v0_15->unk4 = (D_8015A7B8_ovl6.unk4 << 0x18) | (D_8015A7B8_ovl6.unk5 << 0x10) | (D_8015A7B8_ovl6.unk6 << 8) | 0xFF;
-            renderDrawObject_TypeD(arg0, D_8015A7B8_ovl6.unk0, temp_a2_2, temp_v0_9);
-            temp_v0_16 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_16 + 8;
-            temp_v0_16->unk4 = 0;
-            temp_v0_16->unk0 = 0xE7000000;
-            temp_v0_17 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_17 + 8;
-            temp_v0_17->unk4 = 0;
-            temp_v0_17->unk0 = 0xD9FEFFFF;
-            temp_v0_18 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_18 + 8;
-            temp_v0_18->unk4 = 0;
-            temp_v0_18->unk0 = 0xE3000A01;
-            var_v0 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = var_v0 + 8;
-            var_v0->unk4 = 0x5049D8;
-block_6:
-            *var_v0 = 0xE200001C;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSetGeometryMode(gDisplayListHeads[1]++, G_FOG);
+            gSPFogPosition(gDisplayListHeads[1]++, D_8015A7B8_ovl6.unk0, D_8015A7B8_ovl6.unk2);
+            gDPSetCycleType(gDisplayListHeads[1]++, G_CYC_2CYCLE);
+            gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_FOG_SHADE_A, G_RM_AA_ZB_XLU_SURF2);
+            gDPSetFogColor(gDisplayListHeads[1]++, D_8015A7B8_ovl6.unk4, D_8015A7B8_ovl6.unk5,
+                           D_8015A7B8_ovl6.unk6, 255);
+            renderDrawObject_TypeD(arg0);
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPClearGeometryMode(gDisplayListHeads[1]++, G_FOG);
+            gDPSetCycleType(gDisplayListHeads[1]++, G_CYC_1CYCLE);
+            gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
             break;
         case 28:
         case 30:
-            temp_v0_19 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_19 + 8;
-            temp_v0_19->unk4 = 0;
-            temp_v0_19->unk0 = 0xE7000000;
-            temp_v0_20 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_20 + 8;
-            temp_v0_20->unk0 = 0xDB060010;
-            temp_v0_20->unk4 = *(&gSegment4StartArray + (*arg0 * 4));
-            temp_v0_21 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_21 + 8;
-            temp_v0_21->unk4 = 0x10000;
-            temp_v0_21->unk0 = 0xD9FFFFFF;
-            temp_v0_22 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_22 + 8;
-            temp_v0_22->unk0 = 0xDB080000;
-            temp_a2_3 = D_8015A7B8_ovl6.unk2 - D_8015A7B8_ovl6.unk0;
-            temp_v0_22->unk4 = ((0x1F400 / temp_a2_3) << 0x10) | ((((D_8015A7B8_ovl6.unk0 * -0x100) + 0x1F400) / temp_a2_3) & 0xFFFF);
-            temp_v0_23 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_23 + 8;
-            temp_v0_23->unk4 = 0x100000;
-            temp_v0_23->unk0 = 0xE3000A01;
-            temp_v0_24 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_24 + 8;
-            temp_v0_24->unk4 = 0xC81049D8;
-            temp_v0_24->unk0 = 0xE200001C;
-            temp_v0_25 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_25 + 8;
-            temp_v0_25->unk0 = 0xF8000000;
-            temp_v0_25->unk4 = (D_8015A7B8_ovl6.unk4 << 0x18) | (D_8015A7B8_ovl6.unk5 << 0x10) | (D_8015A7B8_ovl6.unk6 << 8) | 0xFF;
-            func_80015BCC(arg0, D_8015A7B8_ovl6.unk0, temp_a2_3, temp_v0_19);
-            temp_v0_26 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_26 + 8;
-            temp_v0_26->unk4 = 0;
-            temp_v0_26->unk0 = 0xE7000000;
-            temp_v0_27 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_27 + 8;
-            temp_v0_27->unk4 = 0;
-            temp_v0_27->unk0 = 0xD9FEFFFF;
-            temp_v0_28 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_28 + 8;
-            temp_v0_28->unk4 = 0;
-            temp_v0_28->unk0 = 0xE3000A01;
-            var_v0 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = var_v0 + 8;
-            var_v0->unk4 = 0x5049D8;
-            goto block_6;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSetGeometryMode(gDisplayListHeads[1]++, G_FOG);
+            gSPFogPosition(gDisplayListHeads[1]++, D_8015A7B8_ovl6.unk0, D_8015A7B8_ovl6.unk2);
+            gDPSetCycleType(gDisplayListHeads[1]++, G_CYC_2CYCLE);
+            gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_FOG_SHADE_A, G_RM_AA_ZB_XLU_SURF2);
+            gDPSetFogColor(gDisplayListHeads[1]++, D_8015A7B8_ovl6.unk4, D_8015A7B8_ovl6.unk5,
+                           D_8015A7B8_ovl6.unk6, 255);
+            func_80015BCC(arg0);
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPClearGeometryMode(gDisplayListHeads[1]++, G_FOG);
+            gDPSetCycleType(gDisplayListHeads[1]++, G_CYC_1CYCLE);
+            gDPSetRenderMode(gDisplayListHeads[1]++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
+            break;
     }
-    temp_v0_29 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_29 + 8;
-    temp_v0_29->unk4 = 0;
-    temp_v0_29->unk0 = 0xE7000000;
-    temp_v0_30 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_30 + 8;
-    temp_v0_30->unk4 = 0;
-    temp_v0_30->unk0 = 0xD9FEFFFF;
-    temp_v0_31 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_31 + 8;
-    temp_v0_31->unk4 = 0;
-    temp_v0_31->unk0 = 0xE3000A01;
-    temp_v0_32 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_32 + 8;
-    temp_v0_32->unk4 = 0x552078;
-    temp_v0_32->unk0 = 0xE200001C;
+    gDPPipeSync(gDisplayListHeads[0]++);
+    gSPClearGeometryMode(gDisplayListHeads[0]++, G_FOG);
+    gDPSetCycleType(gDisplayListHeads[0]++, G_CYC_1CYCLE);
+    gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801524C8_ovl6.s")
-#endif
 
 void func_80152B28_ovl6(GObj *arg0) {
     s32 sp1C;

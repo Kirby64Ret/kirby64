@@ -11,18 +11,18 @@ extern FUNCLIST D_8021C8D8_ovl9;
 extern FUNCLIST D_8021C8D0_ovl9;
 extern s32 D_801CC550;
 
-extern const f32 D_8021DAE4_ovl9;
+/* 65535.0f literals below: this TU owns its .rodata (migrated) */
 extern s32 D_801CC670;
 extern void func_800B6A2C(void);
 
-extern const f32 D_8021DAE8_ovl9;
+/* 65535.0f literals below: this TU owns its .rodata (migrated) */
 extern s32 D_801CC694;
 IN_FILE void func_80208E44_ovl9(struct GObj *this);
 IN_FILE void func_80208588_ovl9(s32 arg0);
 IN_FILE void func_80207DA4_ovl9(struct GObj *this);
 IN_FILE void func_80208604_ovl9(struct Normal *arg0);
 
-extern const f32 D_8021DAD4_ovl9;
+/* 65535.0f literals below: this TU owns its .rodata (migrated) */
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 
@@ -147,11 +147,7 @@ void func_8020786C_ovl9(struct GObj *this) {
 }
 
 extern s32 D_801CC574;
-extern const f32 D_8021DAC0_ovl9;
-/* 6 diffs: the ROM's source used the float LITERAL (65535.0f), which IDO keeps
-   in $f2; an extern reference to the unmigrated rodata symbol takes $f0.
-   Only a .rodata yaml migration for ovl9 can close this. */
-#ifdef NON_MATCHING
+
 void func_802078D8_ovl9(struct GObj *this) {
     f32 temp_f2;
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -159,7 +155,7 @@ void func_802078D8_ovl9(struct GObj *this) {
     tmp->unk98 = &D_801CC574;
     D_800DDFD0[omCurrentObj->objId] = 3;
     func_800A9EA4(0x101BF);
-    temp_f2 = D_8021DAC0_ovl9;
+    temp_f2 = 65535.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = temp_f2;
@@ -168,9 +164,7 @@ void func_802078D8_ovl9(struct GObj *this) {
     D_800E3C90[omCurrentObj->objId] = temp_f2;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_802078D8_ovl9.s")
-#endif
+
 void func_802079EC_ovl9(struct GObj *this) {
 }
 
@@ -197,25 +191,25 @@ void func_802079F4_ovl9(f32 arg0, u8 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_802079F4_ovl9.s")
 #endif
-extern const f32 D_8021DACC_ovl9;
+/* 65535.0f literals below: this TU owns its .rodata (migrated) */
 extern s32 D_801CC598;
 void func_80207B30_ovl9(struct GObj *this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800E3210[omCurrentObj->objId] = 0.0f;
     D_800E3750[omCurrentObj->objId] = -1.5f;
-    D_800E3C90[omCurrentObj->objId] = D_8021DACC_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     tmp->unk98 = &D_801CC598;
 }
 
-extern const f32 D_8021DAD0_ovl9;
+/* 65535.0f literals below: this TU owns its .rodata (migrated) */
 
 void func_80207BA8_ovl9(struct GObj *this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_8021DAD0_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     tmp->unk98 = &D_801CC550;
 }
 
@@ -274,7 +268,7 @@ void func_80207DEC_ovl9(struct GObj *this) {
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_8021DAD4_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     func_800A9EA4(0x101BD);
@@ -503,13 +497,8 @@ void func_802089F4_ovl9(struct GObj *this) {
     }
 }
 
-extern const f32 D_8021DAE0_ovl9;
 extern s32 D_801CC64C;
 
-/* 6 diffs: the ROM's source used the float LITERAL (65535.0f), which IDO keeps
-   in $f2; an extern reference to the unmigrated rodata symbol takes $f0.
-   Only a .rodata yaml migration for ovl9 can close this. */
-#ifdef NON_MATCHING
 void func_80208A58_ovl9(struct GObj *this) {
     f32 temp_f2;
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -517,7 +506,7 @@ void func_80208A58_ovl9(struct GObj *this) {
     tmp->unk98 = &D_801CC64C;
     D_800DDFD0[omCurrentObj->objId] = 4;
     func_800A9EA4(0x101FF);
-    temp_f2 = D_8021DAE0_ovl9;
+    temp_f2 = 65535.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = temp_f2;
@@ -527,9 +516,7 @@ void func_80208A58_ovl9(struct GObj *this) {
     func_80208E44_ovl9(this);
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_80208A58_ovl9.s")
-#endif
+
 void func_80208B78_ovl9(struct GObj *this) {
 }
 
@@ -546,7 +533,7 @@ void func_80208B80_ovl9(struct GObj *this) {
     func_800A9EA4(0x101FB);
     D_800E3210[omCurrentObj->objId] = 0.0f;
     D_800E3750[omCurrentObj->objId] = -1.5f;
-    D_800E3C90[omCurrentObj->objId] = D_8021DAE4_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     func_80208E44_ovl9(this);
     curObjSleepForever();
 }
@@ -563,7 +550,7 @@ void func_80208CD0_ovl9(struct GObj *this) {
     func_800A9EA4(0x000101F9);
     D_800E3210[omCurrentObj->objId] = 10.0f;
     D_800E3750[omCurrentObj->objId] = -1.5f;
-    D_800E3C90[omCurrentObj->objId] = D_8021DAE8_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     func_80208E44_ovl9(this);
     curObjSleepForever();
 }
@@ -572,14 +559,14 @@ void func_80208DC0_ovl9(struct GObj *this) {
 
 }
 
-extern const f32 D_8021DAEC_ovl9;
+/* 65535.0f literals below: this TU owns its .rodata (migrated) */
 
 void func_80208DC8_ovl9(struct GObj *this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_8021DAEC_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     tmp->unk98 = &D_801CC628;
 }
 

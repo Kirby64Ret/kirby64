@@ -15,7 +15,7 @@ extern u32 *D_800DFD90[];
 
 
 // In this file
-void func_800B1FD0(DObj *, u32, u32, u32, f32);
+void func_800B1FD0(DObj *, u32, f32, u32, f32);
 s32 func_800A9B48(s32);
 void func_800AA49C(DObj *, s32, f32, u32, f32);
 void func_800AACC8(s32 *, s32, s32, f32);
@@ -158,42 +158,36 @@ block_found:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8358.s")
 #endif
-#ifdef MIPS_TO_C
-
 void *func_800A840C(u32 arg0, s32 arg1) {
-    void *sp1C;
-    void *temp_a3;
-    void *temp_v0;
-    void *temp_v0_2;
+    struct CacheLine *sp1C;
+    struct CacheLine *temp_a3;
+    struct CacheLine *temp_v0_2;
 
-    if (*(&D_800D7BD0 + ((arg1 & 3) * 4)) != 0) {
+    if (D_800D7BD0[arg1 & 3] != NULL) {
         return NULL;
     }
     if (arg0 < 0x40) {
         return NULL;
     }
-    temp_v0 = func_800A8310();
-    if (temp_v0 == NULL) {
+    sp1C = (struct CacheLine *)func_800A8310(arg0);
+    if (sp1C == NULL) {
         return NULL;
     }
-    *(&D_800D7BD0 + (arg1 * 4)) = temp_v0;
-    temp_v0_2 = (temp_v0 + arg0) - 0x20;
-    temp_v0->unk0 = temp_v0_2;
-    temp_v0->unk4 = temp_v0_2;
-    temp_v0->unk8 = arg0 - 0x30;
-    temp_v0->unkC = 0;
-    temp_v0_2->unk4 = temp_v0;
-    temp_a3 = temp_v0->unk4;
+    D_800D7BD0[arg1] = sp1C;
+    temp_v0_2 = (struct CacheLine *)((u8 *)sp1C + arg0);
+    temp_v0_2 -= 2;
+    sp1C->unk0 = temp_v0_2;
+    sp1C->unk4 = temp_v0_2;
+    sp1C->unk8 = arg0 - 0x30;
+    sp1C->unkC = 0;
+    temp_v0_2->unk4 = sp1C;
+    temp_a3 = sp1C->unk4;
     temp_a3->unk0 = temp_a3->unk4;
-    temp_v0->unk4->unk8 = 0x10;
-    temp_v0->unk4->unkC = 0xFF000000;
-    sp1C = temp_v0;
-    memcpy(temp_v0->unk4 + 0x10, &D_800C4640, 0x10, temp_a3);
+    sp1C->unk4->unk8 = 0x10;
+    sp1C->unk4->unkC = 0xFF000000;
+    memcpy((u8 *)sp1C->unk4 + 0x10, D_800C4640, 0x10);
     return sp1C;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A840C.s")
-#endif
 
 #ifdef NON_MATCHING
 // 4/10, one-slot temp rotation (t7/t8/t9 vs t6/t7/t8). Swept: 24 source forms

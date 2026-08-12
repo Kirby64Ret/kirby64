@@ -953,14 +953,14 @@ void func_801DE790_ovl12(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 12/48: structurally exact; ROM rotates the pointer/value/sum triple one
- * register higher (a3/t0/a2 vs a3/a2/t0). */
+/* 11/48: structurally exact and the load order is now right; the residue is a
+ * pure one-slot rotation, ROM val/sum in $t0/$a2 against our $a2/$t0. */
 void func_801DE7E8_ovl12(GObj *arg0) {
     s32 temp;
     s32 val;
 
-    val = D_800E9560[omCurrentObj->objId];
-    temp = gEntityFuncListIDArray[omCurrentObj->objId] + val;
+
+    temp = (val = D_800E9560[omCurrentObj->objId]) + gEntityFuncListIDArray[omCurrentObj->objId];
     if ((D_800D7098.unk8 == 1) || (D_800D7098.unk10 == 0)) {
         D_800E9560[omCurrentObj->objId] = val + 1;
         gEntityFuncListIDArray[omCurrentObj->objId] = temp - 2;

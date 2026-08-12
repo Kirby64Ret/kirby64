@@ -219,7 +219,31 @@ void func_80156560_ovl4(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80156560_ovl4.s")
 #endif
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_8015665C_ovl4.s")
+#include "SPObj.h"
+
+void func_8015665C_ovl4(GObj *arg0) {
+    extern Unk3Words D_8015A9C8_ovl4;
+    SPObj *sp4C[3];
+    s32 i;
+    Unk3Words sp3C = D_8015A9C8_ovl4;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
+    for (i = 0; i < 3; i++) {
+        sp4C[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp3C.unk0[i]);
+    }
+    while (1) {
+        for (i = 0; i != 3; i++) {
+            if (i == saveCurrentFileNum) {
+                sp4C[i]->renderFlags |= 8;
+            } else {
+                sp4C[i]->renderFlags &= ~8;
+            }
+        }
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801567BC_ovl4.s")
 
@@ -246,7 +270,28 @@ ret7:
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80156C4C_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80156EB0_ovl4.s")
+typedef struct {
+    s32 unk0[10];
+} Unk10Words;
+
+extern Unk10Words D_8015AA08_ovl4;
+
+void func_80156EB0_ovl4(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
+    Unk10Words sp28 = D_8015AA08_ovl4;
+    SPObj *sp;
+
+    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28.unk0[arg1 / 100]);
+    sp->xOffset = arg2;
+    sp->yOffset = arg3;
+    arg2 += sp->width;
+    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28.unk0[(arg1 % 100) / 10]);
+    sp->xOffset = arg2;
+    sp->yOffset = arg3;
+    arg2 += sp->width;
+    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28.unk0[arg1 % 10]);
+    sp->xOffset = arg2;
+    sp->yOffset = arg3;
+}
 
 u8 func_80157004_ovl4(s32 arg0) {
     return D_800ECA08[arg0].unk10;
@@ -307,7 +352,43 @@ void func_80157CF0_ovl4(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157E04_ovl4.s")
+void func_80157E04_ovl4(void) {
+    void gameSetUpdateRate(f32);
+    extern s32 D_800D6B68;
+    extern s32 func_800AEA64(s32, s32, s32);
+    s32 i;
+
+    gameSetUpdateRate(2.0f);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
+    func_800AE048(0x100);
+    func_800AE0F0();
+    func_800A6E64();
+    func_800A8724(0);
+    func_800A6BC0(1);
+    func_80157B1C_ovl4();
+    if (D_800D6B68 != 0x16) {
+        func_800A74D8();
+        play_music(0, 0x26);
+    }
+    D_800E9AA0[func_800AEA64(1, 0, 0x70)].as_s32 = 0;
+    D_800E9AA0[request_track_3(1, 0, 0x70)].as_s32 = 1;
+    D_800E9AA0[request_track_3(1, 0, 0x70)].as_s32 = 0x11;
+    func_80157CF0_ovl4();
+    for (i = 0; i < 3; i++) {
+        s32 id = request_track_3(1, 0, 0x70);
+        D_800E9AA0[id].as_s32 = 9;
+        D_800E9C60[id] = i;
+    }
+    for (i = 0; i != 3; i++) {
+        s32 id = request_track_3(1, 0, 0x70);
+        D_800E9AA0[id].as_s32 = 0xB;
+        D_800E9C60[id] = i;
+    }
+    D_800E9AA0[request_track_3(1, 0, 0x70)].as_s32 = 0x12;
+    HS64_omMakeGObj(0, func_80157CB0_ovl4, 0x1A, 0x80000000);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
+}
 
 void func_80157FFC_ovl4(Gfx **gfxP) {
     gSPDisplayList((*gfxP)++, D_8015AA70_ovl4);

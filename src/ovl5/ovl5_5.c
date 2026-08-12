@@ -465,7 +465,35 @@ s32 func_80175BB0_ovl5(s32 arg0) {
     return (arg0 / 30) / 60;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175BD4_ovl5.s")
+void func_80175BD4_ovl5(s32 arg0, s32 arg1) {
+    extern f32 D_80187A18_ovl5[];
+    extern f32 D_80187A28_ovl5[];
+    extern f32 D_80187A38_ovl5[];
+    extern f32 D_80187A48_ovl5[];
+    extern f32 D_80187A58_ovl5[];
+    extern f32 D_80187A68_ovl5;
+    s32 pad;
+    s32 sp34;
+    s32 sp30;
+    s32 sp2C;
+    s32 temp;
+
+    temp = (s32) (200.0f + D_80187A68_ovl5);
+    if (D_8018E468_ovl5[arg1] >= 0x464F) {
+        sp2C = 0x63;
+        sp30 = 0x3B;
+        sp34 = 9;
+    } else {
+        sp2C = func_80175B70_ovl5(D_8018E468_ovl5[arg1]);
+        sp30 = func_80175B8C_ovl5(D_8018E468_ovl5[arg1]);
+        sp34 = func_80175BB0_ovl5(D_8018E468_ovl5[arg1]);
+    }
+    func_80175AD0_ovl5(arg0, sp2C % 10, (s32) (D_80187A18_ovl5[arg1] + 21.0f), temp);
+    func_80175AD0_ovl5(arg0, sp2C / 10, (s32) (D_80187A28_ovl5[arg1] + 21.0f), temp);
+    func_80175AD0_ovl5(arg0, sp30 % 10, (s32) (D_80187A38_ovl5[arg1] + 21.0f), temp);
+    func_80175AD0_ovl5(arg0, sp30 / 10, (s32) (D_80187A48_ovl5[arg1] + 21.0f), temp);
+    func_80175AD0_ovl5(arg0, sp34, (s32) (D_80187A58_ovl5[arg1] + 21.0f), temp);
+}
 
 void func_80175DBC_ovl5(GObj *arg0) {
     s32 i;
@@ -654,7 +682,83 @@ void func_80176EFC_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176F04_ovl5.s")
 
+/* Faithful, not byte-exact (25/166). The first 124 instructions -- both
+   struct-copy prologues, the clear loop and its 0x52-iteration inner loop --
+   are exact; the residue is confined to the second copy loop, where the ROM
+   keeps two inductions over D_8018EA00_ovl5 and materialises the +2 row bias
+   with `addiu $v1, $a3, 2` while IDO folds it into the store displacements. */
+#ifdef NON_MATCHING
+typedef struct Unk4Ptrs {
+    s32 *unk0[4];
+} Unk4Ptrs;
+
+typedef struct Unk4Ints {
+    s32 unk0[4];
+} Unk4Ints;
+
+typedef struct Unk52Row {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2[0x50];
+} Unk52Row;
+
+extern Unk4Ptrs D_8018745C_ovl5;
+extern Unk4Ptrs D_8018746C_ovl5;
+extern Unk4Ptrs D_8018747C_ovl5;
+extern Unk4Ints D_8018748C_ovl5;
+extern u8 D_8018E9A8_ovl5;
+extern u8 D_8018E9A9_ovl5;
+extern u8 D_8018E9AA_ovl5[];
+extern s32 D_8018ECA0_ovl5;
+extern u8 D_8018EB58_ovl5[];
+void func_801765EC_ovl5(void);
+
+void func_8017712C_ovl5(void) {
+    extern s32 D_800D7178[];
+    s32 i;
+    s32 j;
+    s32 temp;
+    Unk4Ptrs sp94 = D_8018745C_ovl5;
+    Unk4Ptrs sp84 = D_8018746C_ovl5;
+    Unk4Ptrs sp74 = D_8018747C_ovl5;
+    Unk4Ints sp64 = D_8018748C_ovl5;
+
+    temp = D_800D7178[0x10];
+    D_8018E450_ovl5 = 0;
+    D_8018ECD8_ovl5 = temp;
+    for (i = 0; i < 4; i++) {
+        D_8018E998_ovl5[i] = 0;
+        D_8018EB48_ovl5[i] = 0.0f;
+        D_8018E468_ovl5[i] = 0;
+        for (j = 0; j < 0x52; j++) {
+            D_8018E478_ovl5[i][j] = 0;
+            if (j == 0) {
+                D_8018EB58_ovl5[(i * 0x52) + j] = 1;
+            } else {
+                D_8018EB58_ovl5[(i * 0x52) + j] = 0;
+            }
+        }
+        ((s32 *) D_8018ECB8_ovl5)[i * 2] = *sp94.unk0[i];
+        ((s32 *) D_8018ECB8_ovl5)[(i * 2) + 1] = *sp84.unk0[i];
+        if (*sp74.unk0[i] == 1) {
+            D_8018ECA8_ovl5[i] = sp64.unk0[temp];
+        } else {
+            D_8018ECA8_ovl5[i] = 0;
+        }
+    }
+    func_801765EC_ovl5();
+    for (i = 0; i < 4; i++) {
+        ((Unk52Row *) D_8018EA00_ovl5)[i].unk0 = D_8018E9A8_ovl5;
+        ((Unk52Row *) D_8018EA00_ovl5)[i].unk1 = D_8018E9A9_ovl5;
+        for (j = 0; j < 0x50; j++) {
+            ((Unk52Row *) D_8018EA00_ovl5)[i].unk2[j] = D_8018E9AA_ovl5[j];
+        }
+    }
+    D_8018ECA0_ovl5 = 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017712C_ovl5.s")
+#endif
 
 void func_801773C4_ovl5(struct GObj *arg0) {
     if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (arg0->data.dobj != NULL)) {
