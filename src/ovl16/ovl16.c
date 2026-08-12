@@ -2252,6 +2252,11 @@ void func_801E7A38_ovl16(s32 arg0) {
     curObjSleepForever();
 }
 
+/* Unguarded non-matching draft at 129/197, committed by mistake in f563f41.
+ * It made ovl16's .text 32 bytes too long and broke the ROM at HEAD.
+ * Guarded NON_MATCHING: it compiles, so the PC port still executes it,
+ * while the ROM assembles the listing below. */
+#ifdef NON_MATCHING
 void func_801E7BD0_ovl16(struct GObj *arg0) {
     f32 lbvector_Normalize(Vector *);
     Vector *func_800195D8(Vector *, Vector *);
@@ -2288,6 +2293,9 @@ void func_801E7BD0_ovl16(struct GObj *arg0) {
     ohSleep(5);
     func_801AC11C_ovl7((s32) arg0);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E7BD0_ovl16.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E7EE0_ovl16.s")
 
