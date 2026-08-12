@@ -77,7 +77,32 @@ void func_801D4FE4_ovl8(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D5024_ovl8.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D560C_ovl8.s")
+void func_801D560C_ovl8(struct GObj *arg0) {
+    extern f32 gKirbyHp;
+    extern s32 change_kirby_hp(f32);
+    extern void play_sound(s32);
+    extern void func_8016BD24_ovl3(s32);
+    extern void func_801696F0_ovl3(struct GObj *);
+
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+    D_800E8920[omCurrentObj->objId] = 0;
+    switch (D_800E98E0[omCurrentObj->objId]) {
+    case 0:
+        break;
+    case 1:
+        break;
+    case 2:
+        break;
+    case 3:
+        change_kirby_hp(-1.0f);
+        if (0.0f < gKirbyHp) {
+            play_sound(0xD9);
+        }
+        func_8016BD24_ovl3(1);
+        break;
+    }
+    func_801696F0_ovl3(arg0);
+}
 
 void func_801D57E0_ovl8(void);
 

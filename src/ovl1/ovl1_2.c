@@ -118,8 +118,8 @@ s32 func_800A6BC0(u8 arg0) {
                 return -1;
             }
             cam = obj->data.ptr;
-            cam->unk80 = 4;
-            cam->unk24 = (right - left) / (top - bottom);
+            ((Camera *) cam)->flags = 4;
+            ((Camera *) cam)->perspMtx.persp.aspect = (right - left) / (top - bottom);
             break;
         case 11:
         case 13:
@@ -133,7 +133,7 @@ s32 func_800A6BC0(u8 arg0) {
         idx = (u32) (id - 10) >> 1;
         D_800D79B0[idx] = obj;
         D_800D79D8[idx] = cam;
-        func_80007C00((Vp *) &cam->unk8, left, bottom, right, top);
+        func_80007C00(&((Camera *) cam)->viewport, left, bottom, right, top);
         *D_800BF8F0[idx] = (s32) obj;
         if (id == 0x10) {
             func_8009BA68(D_800D79D8[3]);

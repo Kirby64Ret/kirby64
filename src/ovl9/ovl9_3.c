@@ -393,20 +393,19 @@ void func_801DF418_ovl9(GObj *arg0) {
 }
 
 /* 15 diffs, all one 3-way FP register permutation: the ROM binds 0.0f -> $f12,
-   D_8021CF94_ovl9 -> $f14 and the loop value -> $f2, IDO binds them
+   6.283185482f -> $f14 and the loop value -> $f2, IDO binds them
    $f14 / $f2 / $f12. Structure, branch shapes and every other instruction are
    exact. Swept: the extern referenced directly instead of a local (26), an
    explicit `f32 zero` local (68), the local hoisted above the `if` (69),
    both operand orders of the `!=` and of each loop test, and an explicit
    local for the loop value. */
-#ifdef NON_MATCHING
-extern f32 D_8021CF94_ovl9;
+/* 6.283185482f: literal */
 
 void func_801DF454_ovl9(struct GObj *arg0) {
     f32 k;
 
     if (0.0f != D_800E64D0[omCurrentObj->objId]) {
-        k = D_8021CF94_ovl9;
+        k = 6.283185482f;
         D_800EAFA0[omCurrentObj->objId] += D_800E64D0[omCurrentObj->objId] * D_800EADE0[omCurrentObj->objId];
         while (k <= D_800EAFA0[omCurrentObj->objId]) {
             D_800EAFA0[omCurrentObj->objId] -= k;
@@ -418,9 +417,6 @@ void func_801DF454_ovl9(struct GObj *arg0) {
     D_800DFBD0[omCurrentObj->objId][1]->angle.v.z = D_800EAFA0[omCurrentObj->objId];
     gEntitiesAngleXArray[omCurrentObj->objId] = D_800EB160[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DF454_ovl9.s")
-#endif
 struct Ovl9AnimCmd2 {
     u8 filler0[8];
     s32 unk8;

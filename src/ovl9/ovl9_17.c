@@ -58,13 +58,12 @@ void func_80219B1C_ovl9(struct GObj *this) {
     func_801ACF84_ovl7(this);
 }
 
-extern f32 D_8021DEC4_ovl9, D_8021DEC8_ovl9, D_8021DECC_ovl9, D_8021DED0_ovl9;
-extern f32 D_8021DED4_ovl9, D_8021DED8_ovl9;
+/* D_8021DEC4_ovl9 .. D_8021DED0_ovl9: literals */
+/* D_8021DED4_ovl9, D_8021DED8_ovl9: literals */
 
 /* 4 diffs: only the load order of D_8021DEC4_ovl9 vs D_800EC660 (registers
    $f0/$f2) differs; the no-local form gets the order right but swaps the
    registers. */
-#ifdef NON_MATCHING
 s32 func_80219CE8_ovl9(void) {
     f32 temp;
 
@@ -72,23 +71,20 @@ s32 func_80219CE8_ovl9(void) {
         return 0;
     }
     temp = D_800EC660[omCurrentObj->objId];
-    if (temp <= D_8021DEC4_ovl9 || D_8021DEC8_ovl9 <= temp) {
+    if (temp <= 1.483529806f || 4.799655437f <= temp) {
         return 1;
     }
-    if ((temp <= D_8021DECC_ovl9) && (D_8021DED0_ovl9 <= temp)) {
+    if ((temp <= 3.228859186f) && (3.054326296f <= temp)) {
         return 2;
     }
-    if ((temp <= D_8021DED4_ovl9) && (D_8021DEC4_ovl9 <= temp)) {
+    if ((temp <= 1.658062935f) && (1.483529806f <= temp)) {
         return 3;
     }
-    if ((temp <= D_8021DEC8_ovl9) && (D_8021DED8_ovl9 <= temp)) {
+    if ((temp <= 4.799655437f) && (4.625122547f <= temp)) {
         return 4;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_17/func_80219CE8_ovl9.s")
-#endif
 #ifdef NON_MATCHING
 void func_80219E0C_ovl9(s32 arg0, u32 halve) {
     f32 phi_f2;

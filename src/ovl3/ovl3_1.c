@@ -249,7 +249,41 @@ void func_80154578_ovl3(void *arg0, s32 arg1, f32 arg2) {
     func_8011BF4C(dst, arg1);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80154648_ovl3.s")
+void func_80154648_ovl3(s32 arg0, f32 *arg1, f32 *arg2) {
+    f32 *temp;
+    f32 **p;
+
+    func_80105180(arg1);
+    p = D_800E0490[omCurrentObj->objId];
+    temp = p[1];
+    arg1[1] = gEntitiesNextPosXArray[arg0];
+    arg1[2] = gEntitiesNextPosYArray[arg0] + 20.0f;
+    arg1[3] = gEntitiesNextPosZArray[arg0];
+    arg1[4] = temp[0];
+    arg1[5] = temp[0] + temp[1];
+    arg1[6] = temp[0] + temp[2];
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        arg1[7] = temp[3];
+        arg1[8] = temp[4];
+    } else {
+        arg1[7] = temp[4];
+        arg1[8] = temp[3];
+    }
+    arg1[9] = D_800E17D0[omCurrentObj->objId];
+    func_801051AC(arg1);
+    arg1[1] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg1[2] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg1[3] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E8AE0[omCurrentObj->objId] = D_800E8AE0[arg0] & 6;
+    if (arg2 != 0) {
+        arg2[0] = arg2[3] = gEntitiesNextPosXArray[arg0];
+        arg2[1] = arg2[4] = gEntitiesNextPosYArray[arg0];
+        arg2[2] = arg2[5] = gEntitiesNextPosZArray[arg0];
+        arg2[6] = 0.0f;
+        *(s32 *) &arg2[7] = 0;
+    }
+}
 
 void func_8015488C_ovl3(s32 arg0, f32 *arg1) {
     arg1[0] = arg1[3] = gEntitiesNextPosXArray[arg0];

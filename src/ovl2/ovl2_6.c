@@ -77,7 +77,39 @@ void func_800FF5E0(s32 arg0, f32 arg1, f32 arg2) {
     temp_v1->unk2C = temp_a1->unk14;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_6/func_800FF64C.s")
+void func_800FF64C(u32 arg0) {
+    extern u8 D_800D478C[];
+    struct UNK_D_8012BBF8_unk0 *temp_v1;
+    u8 *temp_a3;
+    u8 *temp_t1;
+    u16 temp_a1;
+    u32 i;
+
+    for (i = 0; i < *(vu32 *)&D_8012B9B0; i++) {
+        temp_a1 = D_8012B9B8[i].unk8;
+        if ((temp_a1 & 0xC0) == 0) {
+            continue;
+        }
+        if (arg0 != D_8012B9B8[i].unkA) {
+            continue;
+        }
+        temp_v1 = D_8012BBF8[i].unk0;
+        if (temp_v1 == NULL) {
+            continue;
+        }
+        temp_a3 = &D_800D478C[arg0 * 12];
+        temp_v1->unk14 = temp_a3[0];
+        temp_v1->unk15 = temp_a3[1];
+        temp_v1->unk16 = temp_a3[2];
+        temp_t1 = temp_a3 + 2;
+        if (temp_a1 & 0x40) {
+            temp_v1->unk18 = temp_t1[1];
+            temp_v1->unk19 = temp_t1[2];
+            temp_t1 += 3;
+            temp_v1->unk1A = temp_t1[0];
+        }
+    }
+}
 
 #define G_CC_UNK1 PRIMITIVE, 0, TEXEL0, 0, 0, 0, 0, TEXEL0
 #define G_CC_UNK2 0, 0, 0, PRIMITIVE, 0, 0, 0, TEXEL0

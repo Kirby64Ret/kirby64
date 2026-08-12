@@ -29,9 +29,9 @@ void func_80212AF8_ovl9(struct GObj *);
 void func_80212A70_ovl9(struct GObj *);
 
 extern void func_801A3E80_ovl7(struct GObj *);
-extern f32 D_8021DD3C_ovl9;
-extern f32 D_8021DD40_ovl9;
-extern f32 D_8021DD44_ovl9;
+/* D_8021DD3C_ovl9: literal */
+/* D_8021DD40_ovl9: literal */
+/* D_8021DD44_ovl9: literal */
 
 extern void func_801A0D50_ovl7(void *);
 void func_802128B8_ovl9(struct GObj *);
@@ -359,42 +359,19 @@ void func_802112F4_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_8021134C_ovl9.s")
 
-#ifdef NON_MATCHING
 void func_802114E4_ovl9(struct GObj *arg0) {
-    f32 lo = D_8021DD3C_ovl9;
-    f32 v = D_800EA6E0[omCurrentObj->objId];
-
-    if (v < lo) {
-        v = lo;
-    }
-    lo = D_8021DD40_ovl9;
-    if (lo < v) {
-        v = lo;
-    }
-    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = v - D_8021DD44_ovl9;
-}
-#else
-#ifdef NON_MATCHING
-// 8 diffs: schedule exact, but $f0/$f2 are swapped between `temp` and `lim`.
-// IDO assigns FP regs in order of first assignment and the load schedule
-// follows the same order, so the ROM's pairing is not reachable.
-void func_802114E4_ovl9(struct GObj *arg0) {
-    f32 lim = D_8021DD3C_ovl9;
+    f32 lim = 1.04719758f;
     f32 temp = D_800EA6E0[omCurrentObj->objId];
 
     if (temp < lim) {
         temp = lim;
     }
-    lim = D_8021DD40_ovl9;
+    lim = 2.094395161f;
     if (lim < temp) {
         temp = lim;
     }
-    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = temp - D_8021DD44_ovl9;
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = temp - 1.570796371f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_802114E4_ovl9.s")
-#endif
-#endif
 
 /* D_8021DD48_ovl9: literal, this TU owns its .rodata */
 /* D_8021DD4C_ovl9: literal, this TU owns its .rodata */

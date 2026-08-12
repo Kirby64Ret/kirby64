@@ -407,7 +407,63 @@ s32 func_800ACE88(SPObj *spobj, u8 colortype) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AD1A0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ADD14.s")
+// Camera payload of the GObj this draw callback is registered on. sprite.c does
+// not include main/object_manager.h, so only the two fields this function reads
+// are spelled out; the offsets are the real Camera's.
+struct SpriteDrawCamera {
+    /* 0x00 */ u8 unk00[0x8];
+    /* 0x08 */ Vp viewport;
+    /* 0x18 */ u8 unk18[0x68];
+    /* 0x80 */ u32 flags;
+};
+
+extern Gfx D_800D4E98[];
+extern u16 D_8004A444;
+extern s32 viCFBFmt;
+extern s32 gCurrScreenWidth;
+extern s32 gCurrScreenHeight;
+
+void gtlLoadUcode(Gfx **, u32);
+void func_80017E84(GObj *, s32);
+
+void func_800ADD14(GObj *camObj) {
+    struct SpriteDrawCamera *cam;
+    u32 savedUcode;
+    s32 ulx;
+    s32 uly;
+    s32 lrx;
+    s32 lry;
+
+    cam = camObj->data.ptr;
+    savedUcode = D_8004A444;
+    gtlLoadUcode(gDisplayListHeads, 0xA);
+    gSPDisplayList(gDisplayListHeads[0]++, D_800D4E98);
+
+    ulx = cam->viewport.vp.vtrans[0] / 4 - cam->viewport.vp.vscale[0] / 4;
+    uly = cam->viewport.vp.vtrans[1] / 4 - cam->viewport.vp.vscale[1] / 4;
+    lrx = cam->viewport.vp.vtrans[0] / 4 + cam->viewport.vp.vscale[0] / 4;
+    lry = cam->viewport.vp.vtrans[1] / 4 + cam->viewport.vp.vscale[1] / 4;
+
+    if (ulx < 10.0f * (gCurrScreenWidth / 320)) {
+        ulx = 10.0f * (gCurrScreenWidth / 320);
+    }
+    if (uly < 10.0f * (gCurrScreenHeight / 240)) {
+        uly = 10.0f * (gCurrScreenHeight / 240);
+    }
+    if (gCurrScreenWidth - 10.0f * (gCurrScreenWidth / 320) < lrx) {
+        lrx = gCurrScreenWidth - 10.0f * (gCurrScreenWidth / 320);
+    }
+    if (gCurrScreenHeight - 10.0f * (gCurrScreenHeight / 240) < lry) {
+        lry = gCurrScreenHeight - 10.0f * (gCurrScreenHeight / 240);
+    }
+
+    gDPSetScissor(gDisplayListHeads[0]++, G_SC_NON_INTERLACE, ulx, uly, lrx, lry);
+    func_800AB680(ulx, uly, lrx, lry, 1);
+    gDPPipeSync(gDisplayListHeads[0]++);
+    gDPSetColorImage(gDisplayListHeads[0]++, G_IM_FMT_RGBA, viCFBFmt, gCurrScreenWidth, 0x0F000000);
+    func_80017E84(camObj, (cam->flags & 8) ? 1 : 0);
+    gtlLoadUcode(gDisplayListHeads, savedUcode);
+}
 
 // Draft, 2/39: only the loop's `sltu $at` vs `sw $v0, 0($v1)` pair-swap is left.
 // Hoisting `i = 0;` ABOVE the zero-trip `if` was worth 2 diffs: it gives IDO a

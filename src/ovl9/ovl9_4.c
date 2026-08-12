@@ -521,18 +521,17 @@ void func_801E4CF8_ovl9(void) {
     func_801E4DC8_ovl9();
 }
 
-/* 13 diffs: pure $f2/$f12 role swap -- the ROM keeps D_8021D014_ovl9 in $f12
+/* 13 diffs: pure $f2/$f12 role swap -- the ROM keeps 6.283185482f in $f12
    and the re-read D_800EAFA0 value in $f2, IDO does the opposite. Swept: the
    position of the `k` assignment (top of function / before / after the store),
    both mul and add operand orders, `< 0` vs `< 0.0f`. */
-#ifdef NON_MATCHING
-extern f32 D_8021D014_ovl9;
+/* 6.283185482f: literal */
 
 void func_801E4DC8_ovl9(void) {
     f32 k;
 
     if (ABSF(D_800E64D0[omCurrentObj->objId]) > ABSF(D_800E6690[omCurrentObj->objId])) {
-        k = D_8021D014_ovl9;
+        k = 6.283185482f;
         D_800EAFA0[omCurrentObj->objId] = (D_800E64D0[omCurrentObj->objId] * D_800EADE0[omCurrentObj->objId]) + D_800EAFA0[omCurrentObj->objId];
         while (k <= D_800EAFA0[omCurrentObj->objId]) {
             D_800EAFA0[omCurrentObj->objId] = D_800EAFA0[omCurrentObj->objId] - k;
@@ -543,9 +542,6 @@ void func_801E4DC8_ovl9(void) {
     }
     D_800DFBD0[omCurrentObj->objId][1]->angle.v.z = D_800EAFA0[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E4DC8_ovl9.s")
-#endif
 
 f32 func_800F8824(Vector *, f32);
 

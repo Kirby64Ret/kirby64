@@ -724,8 +724,7 @@ void func_80217098_ovl9(struct GObj *arg0) {
    ($f20 holds the extern and $f22 the 0.0f, the ROM has it the other way).
    Swept: assignment order, declaration order and position, inline 0.0f,
    double 0.0 literal, chained assignment -- all 4. */
-#ifdef NON_MATCHING
-extern f32 D_8021DE2C_ovl9, D_8021DE30_ovl9;
+/* 65535.0f: literal */
 
 void func_80217158_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -735,10 +734,10 @@ void func_80217158_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 4;
     ent->unk98 = &D_801CCE2C;
     z = 0.0f;
-    temp = D_8021DE2C_ovl9;
+    temp = 65535.0f;
     while (1) {
         if (ent->unk3C == 0) {
-            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021DE30_ovl9;
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 1.799999952f;
             break;
         }
         D_800E6690[omCurrentObj->objId] = z;
@@ -755,9 +754,6 @@ void func_80217158_ovl9(struct GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217158_ovl9.s")
-#endif
 void func_80217328_ovl9(s32 arg0) {
 
 }

@@ -432,7 +432,41 @@ void func_8022023C_ovl19(GObj *arg0) {
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220280_ovl19.s")
 
     // having to define a struct thats only ever accessed here and the above function
-    #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022045C_ovl19.s")
+/* 19/60: every instruction is right and the first half's registers are exact
+ * (v0 = omCurrentObj, v1 = &D_800E98E0[objId], a0 = the loaded value). The
+ * residue is which dead register the tail reuses: ROM v1/t5/v0, IDO a0/t9/v1.
+ * Swept: a pointer local for the tail base in both declaration positions, an
+ * explicit temp for the read-back, a 4-byte struct-array spelling, s8/s32
+ * return types, and moving the 0x12 store/read-back to either end. */
+#ifdef NON_MATCHING
+void func_8022045C_ovl19(s32 arg0) {
+    extern s32 D_8012E860;
+    extern s8 D_8022FAB8_ovl19[];
+    u8 val;
+
+    if ((D_8012E860 == 0x1F) && (D_800E98E0[0] < 3)) {
+        if ((D_800E98E0[omCurrentObj->objId] & 0xFF) != 0x30) {
+            D_800E98E0[omCurrentObj->objId]++;
+            val = ((u8 *) D_800E98E0)[(omCurrentObj->objId * 4) + 3] + 0x30;
+        } else {
+            val = 0x60;
+        }
+    } else {
+        D_800E98E0[omCurrentObj->objId] = 0;
+        val = 0x30;
+    }
+    D_8022FAB8_ovl19[0x12] = 0x32;
+    D_8022FAB8_ovl19[0] = D_8022FAB8_ovl19[4] = val;
+    D_8022FAB8_ovl19[1] = D_8022FAB8_ovl19[5] = val;
+    D_8022FAB8_ovl19[2] = D_8022FAB8_ovl19[6] = val;
+    D_8022FAB8_ovl19[8] = D_8022FAB8_ovl19[0xC] = val;
+    D_8022FAB8_ovl19[9] = D_8022FAB8_ovl19[0xD] = val;
+    D_8022FAB8_ovl19[0xA] = D_8022FAB8_ovl19[0xE] = val;
+    D_8022FAB8_ovl19[0x10] = D_8022FAB8_ovl19[0x11] = D_8022FAB8_ovl19[0x12];
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022045C_ovl19.s")
+#endif
 
     // another struct def
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022054C_ovl19.s")

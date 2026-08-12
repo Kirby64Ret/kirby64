@@ -299,7 +299,36 @@ s32 func_80112828(struct UnkRay *arg0) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801128A4.s")
+s32 func_801128A4(struct UnkRay *arg0) {
+    s32 ret;
+    struct Unk8012D934 sp2C;
+
+    ret = 0;
+    D_8012D934 = &sp2C;
+    if (D_8012D930.unk0_80 || D_8012D930.unk0_40) {
+        func_80111F10();
+        if (D_8012D930.unk0_80) {
+            func_801123AC((struct Unk801123AC *) arg0);
+            func_80112000();
+            if (func_80112498(arg0) != 0) {
+                ret = func_8011253C(arg0);
+            }
+            if (func_80112600(arg0) != 0) {
+                ret = func_801126A4((struct UnkPlane *) arg0);
+            }
+        }
+        if (D_8012D930.unk0_40) {
+            func_801121E0();
+            if (func_80112768(arg0) != 0) {
+                ret |= func_801127D8(arg0);
+            }
+            if (func_80112828(arg0) != 0) {
+                ret |= 8;
+            }
+        }
+    }
+    return ret;
+}
 
 void func_801129AC(void) {
     D_8012D930.unk0_80 = 1;
