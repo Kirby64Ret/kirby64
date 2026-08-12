@@ -539,8 +539,8 @@ void func_801E5B08_ovl10(f32 *, u8, f32);
 
 void func_801E4D6C_ovl10(GObj *arg0) {
     struct UnkStruct800E1B50 *sp54 = D_800E1B50[omCurrentObj->objId];
-    Vector sp44;
     s32 n;
+    Vector sp44;
     f32 temp_f0;
 
     sp44 = D_801F44FC_ovl10;
