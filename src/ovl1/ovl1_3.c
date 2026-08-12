@@ -158,7 +158,7 @@ block_found:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8358.s")
 #endif
-void *func_800A840C(u32 arg0, s32 arg1) {
+struct CacheLine *func_800A840C(u32 arg0, s32 arg1) {
     struct CacheLine *sp1C;
     struct CacheLine *temp_a3;
     struct CacheLine *temp_v0_2;
