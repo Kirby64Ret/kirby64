@@ -1355,7 +1355,12 @@ and the ROM is byte-exact, which settles it. verify_rom.py is the arbiter.
 **Argument/temp register rotation.** `func_801E6564_ovl10` and its three twins
 (`6E84`/`8184`/`8AF8`, all 44 insns, 8 diffs, ROM `$a1` vs IDO `$a0`) survived
 if/else, ternary, separate assignment, `!var`, two locals and a cast
-parameter. `func_801DBC00_ovl10` and `func_801E932C_ovl10` are the same family.
+parameter. `func_801E932C_ovl10` is the same family.
+
+`func_801DBC00_ovl10` was listed here too and **it closed** (wave 13). A
+"confirmed floor" entry is a record of what has been swept, not a proof of
+impossibility -- if you have a lever the sweep did not try, the entry is not a
+reason to skip the function. It is only a reason not to repeat the same sweep.
 
 **FP register assignment and load scheduling are coupled and cannot be
 separated.** In `func_802114E4_ovl9` the variable assigned first gets both
@@ -1995,9 +2000,23 @@ It is not universal: on func_801DF728_ovl11 it fixes the shift register but
 moves the value out of `$a1`, and on func_801DC91C_ovl17 it fixes `$a2`/`$a1`
 but the loaded value then lands in `$a0` instead of `$v1`.
 
-197 remaining pragmas in ovl8/11/12/13/14/15/17/18/19 alone carry this
-signature, and the detector is a one-line regex over the listings. It is worth
-sweeping mechanically in every segment.
+**RETRACTED AS A LEVER, 2026-08-12. Do not sweep this.** The paragraph that
+stood here said 197 pragmas carry the signature and it was worth sweeping
+mechanically in every segment; I briefed the fleet that it was the
+highest-value work available anywhere in the tree. It was measured. A sweep of
+**32 functions carrying the signature, 223 source variants, closed 0.** 31 were
+inert or dramatically worse: 6 diffs -> 68, 7 -> 78, 17 -> 134, 22 -> 80.
+
+The three successes above are real -- they are recorded correctly and the bias
+form is still worth trying by hand on a function you are already deep in. What
+is false is the generalisation. Three hits promoted to a mechanical lever off
+zero negative evidence, and the negative evidence, once collected, is total.
+The signature identifies functions where the ROM used a byte bias; it does not
+identify functions where writing one will reproduce the ROM's allocation.
+
+Treat this as the worked example of the failure mode: a lever's hit rate is not
+knowable from its successes. Measure a new lever on 20+ functions before it
+goes in this file as sweepable.
 
 ## More levers
 
@@ -2038,19 +2057,32 @@ Fixed: the `#else` must be immediately above the pragma and the `#endif`
 immediately below, and it refuses if the region contains another guard or
 pragma. If you use the shared `scan.py`, it inherits the fix.
 
-## The callee-return-type lever fires on ALREADY-DECLARED callees too
+## The callee-return-type lever: only the MISSING-prototype half is sweepable
 
-The guide framed this as an implicit-declaration problem. It is not limited to
-that: flipping an existing `extern void f(s32);` to `extern s32 f(s32);` closed
+Flipping an existing `extern void f(s32);` to `extern s32 f(s32);` closed
 func_8020BC98_ovl9 (7 -> 0), and `void func_8019F3B0_ovl7(void)` -> `s32`
-closed func_801E51EC_ovl9 (15 -> 0). Both left their files at 0 diff.
+closed func_801E51EC_ovl9 (15 -> 0). On the strength of those two this guide
+said "try both directions on every callee of a draft, mechanically". Measured
+over 30 functions: **1 closed, 3.3%** -- and the breakdown is what matters.
 
-That makes it mechanically sweepable rather than a per-function insight: try
-both directions on every callee of a draft. Do that before hand-analysis.
+**All 76 flips of already-declared callees closed nothing.** The single closure
+came from the other half: ADDING `extern void func_8019BB58_ovl7();` for a
+callee that had no prototype in the TU at all. That direction is the original
+implicit-declaration lever and it still works; it is also cheap, because the
+compiler tells you which callees are undeclared.
 
-## Two hidden translation-unit splits in ovl10 -- known, deliberately not acted on
+So: add prototypes for undeclared callees, always. Flipping the return type of
+an already-declared callee is a per-function long shot, not a sweep. The two
+successes above stand as instances, not as a rate.
 
-`src/ovl10/ovl10_3.c` is two TUs in the ROM and kirby64.yaml does not know it.
+## Hidden translation-unit splits in ovl10 -- ovl10_3 DONE, ovl10_5 outstanding
+
+`src/ovl10/ovl10_3.c` was two TUs in the ROM and kirby64.yaml did not know it.
+**Fixed 2026-08-12**: kirby64.yaml now has `[0x1DC9D0, c, ovl10/ovl10_3b]`, the
+C file is split to match, and func_801EC3C8_ovl10 closed the moment its object
+boundary was right. The analysis below is kept because the same reasoning finds
+the remaining one.
+
 The mechanism is confirmed rather than inferred: compiling
 `void f(void){while(1){g();}}` with the project's IDO flags and `-S` shows IDO
 emitting a literal `.align 5` after the loop's `b`, so a dead epilogue is
@@ -2068,14 +2100,32 @@ Of the candidates in that gap only 0x1DBE30 and 0x1DC9D0 are congruent to
 func_801F2098_ovl10). A reachability scan validated every other TU base in both
 segments, so only these two are wrong.
 
-**It is not being acted on, and the reason is a judgement worth recording.**
-kirby.ld is generated and gitignored, so correcting this needs a splat run that
-regenerates listings tree-wide -- disruptive while several agents share the
-working tree. And the payoff was measured smaller than first briefed: exactly
-ONE dead-epilogue function in ovl10_3, not a class. The other 8-diff functions
-there are argument-register rotations and unrelated. Three functions is not
-worth risking a shared tree; this is a good task for a quiet moment with no
-agents running.
+**How to act on one (the ovl10_3 procedure, which worked).** kirby.ld and
+asm/ are both generated and gitignored, so the only tracked change is
+kirby64.yaml plus the C files -- but the splat run regenerates listings
+tree-wide, so it needs a quiet tree.
+
+  1. Confirm splat is idempotent first: run it with the yaml UNCHANGED and
+     check `build/kirby.ld` and every listing come back byte-identical. If they
+     do not, stop -- you cannot tell your change from splat's drift.
+  2. Falsify the split point before trusting it. Congruence mod 32 narrows the
+     candidates; the rodata partition picks one. Check BOTH: the last user of
+     the preceding rodata block must fall before your address and the orphan
+     block's users must all fall after it.
+  3. Edit kirby64.yaml, run splat, then check the boundary in the C file in
+     BOTH directions before cutting it: no pragma before the split may name a
+     listing that moved, and every already-matched function whose listing moved
+     must be defined after it. One-directional checks pass on a wrong split.
+  4. Carry the parent's declaration preamble into the new file by stripping
+     function bodies and pragmas from the head, then grep the result for
+     file-scope DEFINITIONS -- a duplicated definition is the one way this goes
+     wrong at link time.
+  5. Gate: mk.sh to the ROM sha1, check_tu_size, check_layout <seg>,
+     check_sections.
+
+Payoff is small and specific -- ONE dead-epilogue function in ovl10_3, not a
+class; the other 8-diff functions there are unrelated register rotations. Do it
+for the function you have already proved is instruction-exact, not on spec.
 
 # `volatile` is the general anti-CSE knob
 
