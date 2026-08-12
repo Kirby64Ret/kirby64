@@ -80,6 +80,40 @@
 // makes it easier to move all the prototypes and externs to the top of the file
 #define IN_FILE
 
+/* PC_SPIN_YIELD -- make a busy-wait yield, in the port only.
+ *
+ * The game has several loops of the form
+ *
+ *     do { } while (func_80020EB4() != 0);      // ovl1_2_2.c
+ *
+ * that poll a flag another thread clears and CALL NOTHING ELSE. On the N64
+ * that is fine: the audio thread is preempted in, clears the flag, and the
+ * spin ends. The port runs every N64 thread as a ucontext on one host thread,
+ * so a loop that never re-enters the OS never lets anything else run -- no
+ * pump, therefore no VI retrace, therefore no other thread, therefore the flag
+ * is never cleared. One non-yielding spin freezes the entire port.
+ *
+ * It presents as a hang with nothing obviously wrong: no missing symbol, no
+ * crash, gGameState stuck at its initial value and gtlDrawnFrameCounter at 0.
+ * The only way in is a backtrace of the live process.
+ *
+ * Expands to NOTHING outside the port, so the matching build is untouched.
+ * Inside it, pump first and then yield: the pump is what fires the retrace
+ * that makes another thread runnable, and yielding without it would just
+ * re-dispatch this same thread.
+ *
+ * This is only correct at a point where the N64 would also have switched --
+ * which a busy-wait is, by construction. Do not scatter it into loops that do
+ * real work.
+ */
+#ifdef PORT
+void pc_pump_events(void);
+void osYieldThread(void);
+#define PC_SPIN_YIELD() (pc_pump_events(), osYieldThread())
+#else
+#define PC_SPIN_YIELD()
+#endif
+
 /* OS_RECV_INDEX -- osRecvMesg into a 4-byte local, safely at LP64.
  *
  * osRecvMesg writes a full OSMesg through the pointer it is handed. On the N64

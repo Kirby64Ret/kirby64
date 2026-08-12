@@ -49,6 +49,7 @@ extern s16 D_800C0040[];
 
 void func_800A74B0(void) {
     do {
+        PC_SPIN_YIELD();
     } while (func_80020EB4() != 0);
 }
 
@@ -56,6 +57,7 @@ void func_800A74D8(void) {
     auFunc80020C88();
     play_music(0, 0x99999999);
     while (func_80020BB8(0) != 0) {
+        PC_SPIN_YIELD();
     }
     auSetBGMVolume(0, 0x7800);
     sMusicCount = D_800C0530[0] - 1;

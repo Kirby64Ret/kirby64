@@ -44,18 +44,56 @@
 
 #include "pc/pc_platform.h"
 
+#include "main/localsched.h"
+
 extern OSMesgQueue gThreadInitializedMQ;
 extern void auInit(void);
+extern s32 auRestarting;
+extern s32 auSettingsUpdated;
 
-/* Blocking here rather than spinning matters: os_thread.c runs every N64
-   thread as a ucontext on one host thread, so a spin would starve the
-   scheduler and nothing else would ever run. Waiting on a queue nothing ever
-   posts to parks this thread in the same way the real audio loop parks
-   waiting for its task to retire. */
-static OSMesgQueue sIdleMQ;
-static OSMesg sIdleMsg[1];
+/* IT MUST CONSUME auRestarting AND auSettingsUpdated, or the game deadlocks.
+ *
+ * This file used to park on a queue nothing posts to. That looked safe -- it
+ * yields, so the cooperative scheduler keeps running -- and it hung the port
+ * anyway, in a way worth writing down because the symptom pointed nowhere near
+ * the cause.
+ *
+ * The port reached no unimplemented symbol at all, and still never drew a
+ * frame: gGameState stuck at 1, gtlDrawnFrameCounter at 0, sRetraceCount at 0.
+ * Attaching to the live process gave the answer in one backtrace --
+ *
+ *     game_tick -> func_800A2B9C -> func_800A74B0   (ovl1_2_2.c:52)
+ *     do { } while (func_80020EB4() != 0);
+ *     audio.c: return auRestarting | auSettingsUpdated;
+ *
+ * -- a busy-wait with NO OS CALL IN THE LOOP. On the N64 the audio thread is
+ * preempted in and clears those flags. Here the game thread never re-enters
+ * the OS, so pc_pump_events() is never called, so no retrace ever fires, so
+ * nothing else runs. One non-yielding spin freezes the whole port.
+ *
+ * Both flags are only ever SET in decompiled C (audio.c 577, 757, 785).
+ * Nothing clears them, because the code that clears them is inside
+ * auThreadMain, which is still a #pragma. So this stand-in has to.
+ *
+ * It parks on a SCHEDULER CLIENT queue rather than a dead one, which is both a
+ * real yield and a once-per-retrace wakeup -- the same cadence the real audio
+ * loop runs at. A NOBLOCK spin would also work, because osRecvMesg pumps, but
+ * it would burn a core to do it.
+ *
+ * CLEARING THESE WITHOUT DOING THE WORK THEY SIGNAL IS A STAND-IN, NOT AN
+ * IMPLEMENTATION. auRestarting means "the audio heap is being rebuilt" and
+ * auSettingsUpdated means "re-read the settings"; the real thread does that
+ * work and then clears them. There is no audio in the port yet, so there is no
+ * work to skip -- but the moment auThreadMain is decompiled this whole file
+ * goes away, and until then no audio-state bug found here should be trusted.
+ */
+static OSMesgQueue sTickMQ;
+static OSMesg sTickMsg[8];
+static SCClient sClient;
 
 void auThreadMain(void *arg) {
+    OSMesg m;
+
     (void)arg;
 
     auInit();
@@ -64,9 +102,11 @@ void auThreadMain(void *arg) {
        addiu $a1, $zero, 1 and or $a2, $zero, $zero. */
     osSendMesg(&gThreadInitializedMQ, (OSMesg)1, OS_MESG_NOBLOCK);
 
-    osCreateMesgQueue(&sIdleMQ, sIdleMsg, 1);
+    osCreateMesgQueue(&sTickMQ, sTickMsg, 8);
+    scAddClient(&sClient, &sTickMQ, sTickMsg, 8);
     for (;;) {
-        OSMesg m;
-        osRecvMesg(&sIdleMQ, &m, OS_MESG_BLOCK);
+        osRecvMesg(&sTickMQ, &m, OS_MESG_BLOCK);
+        auRestarting = 0;
+        auSettingsUpdated = 0;
     }
 }
