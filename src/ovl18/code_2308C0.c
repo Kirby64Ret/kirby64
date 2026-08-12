@@ -103,7 +103,30 @@ s32 func_8021E4CC_ovl18(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E6E0_ovl18.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E858_ovl18.s")
+extern u8 D_8022BCF8_ovl18[][4];
+extern u8 D_8022BD18_ovl18[][4];
+extern u8 D_800E7650[];
+
+void func_8021E858_ovl18(UNUSED s32 arg0) {
+    s32 i;
+    s32 idx;
+    s32 n;
+    u8 *p;
+
+    idx = D_800E98E0[omCurrentObj->objId];
+    p = D_8022BCD8_ovl18[idx];
+    for (i = 0, n = 4; i != n; i++, p++) {
+        if (*p != 0) {
+            if (D_800E7650[*p] != D_8022BCF8_ovl18[idx][i]) {
+                if ((D_8022BD18_ovl18[idx][i] & 0x80) != 0) {
+                    D_800D6E58 -= 1.0f;
+                    func_800BC11C(D_800D6E58);
+                }
+                *p = 0;
+            }
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E978_ovl18.s")
 

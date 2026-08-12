@@ -224,9 +224,194 @@ void func_801555F4_ovl4(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80155890_ovl4.s")
+/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
+ * this to C cannot link, so the pragma has to stay. The body below is for
+ * NON_MATCHING builds. */
+#ifdef NON_MATCHING
+void func_80155890_ovl4(GObj *arg0) {
+    extern u32 gGameState;
+    extern s32 D_800D6B68;
+    extern u32 D_800D6B60;
+    void init_save_file_maybe(s32);
+    s32 v;
 
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        D_800E9E20[omCurrentObj->objId]--;
+        return;
+    }
+    if (gPlayerControllers[0].buttonPressed & 0x9000) {
+        if (func_801555AC_ovl4(saveCurrentFileNum) != 0) {
+            switch (D_8015C6D4_ovl4) {
+                case 0:
+                    play_sound(0xED);
+                    D_8015C6D8_ovl4 = 1;
+                    D_800D6B68 = gGameState;
+                    gGameState = 0xB;
+                    break;
+                case 1:
+                    play_sound(0xED);
+                    D_800E9C60[omCurrentObj->objId] = 1;
+                    D_8015C6DC_ovl4 = 1;
+                    D_8015C6E0_ovl4 = 0;
+                    break;
+                case 2:
+                    play_sound(0xED);
+                    D_800E9C60[omCurrentObj->objId] = 1;
+                    D_8015C6DC_ovl4 = 2;
+                    D_8015C6E4_ovl4 = 0;
+                    break;
+            }
+            return;
+        }
+        if (D_8015C6D4_ovl4 == 0) {
+            play_sound(0xED);
+            init_save_file_maybe(saveCurrentFileNum);
+        }
+        return;
+    }
+    if (gPlayerControllers[0].buttonPressed & 0x4000) {
+        play_sound(0x2B);
+        D_8015C6D8_ovl4 = 1;
+        D_800D6B68 = gGameState;
+        gGameState = D_800D6B60;
+        return;
+    }
+    v = func_801554F0_ovl4();
+    if (func_801555AC_ovl4(saveCurrentFileNum) == 0) {
+        if (v == 2) {
+            return;
+        }
+        if (v == -2) {
+            return;
+        }
+    }
+    switch (v) {
+        case -2:
+            play_sound(0x113);
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+            if (D_8015C6D4_ovl4 == 2) {
+                D_8015C6D4_ovl4 = 0;
+            } else {
+                D_8015C6D4_ovl4 = D_8015C6D4_ovl4 + 1;
+            }
+            break;
+        case -1:
+            play_sound(0x113);
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+            D_8015C6D4_ovl4 = 0;
+            if (saveCurrentFileNum == 0) {
+                saveCurrentFileNum = 2;
+            } else {
+                saveCurrentFileNum = saveCurrentFileNum - 1;
+            }
+            break;
+        case 0:
+            break;
+        case 1:
+            play_sound(0x113);
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+            D_8015C6D4_ovl4 = 0;
+            if (saveCurrentFileNum == 2) {
+                saveCurrentFileNum = 0;
+            } else {
+                saveCurrentFileNum = saveCurrentFileNum + 1;
+            }
+            break;
+        case 2:
+            play_sound(0x113);
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+            if (D_8015C6D4_ovl4 == 0) {
+                D_8015C6D4_ovl4 = 2;
+            } else {
+                D_8015C6D4_ovl4 = D_8015C6D4_ovl4 - 1;
+            }
+            break;
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80155890_ovl4.s")
+#endif
+
+/* Jump table in a TU whose rodata is an unmigrated asm subsegment: converting
+ * this to C cannot link, so the pragma has to stay. The body below is for
+ * NON_MATCHING builds. */
+#ifdef NON_MATCHING
+void func_80155C00_ovl4(GObj *arg0) {
+    extern u32 gGameState;
+    extern s32 D_800D6B68;
+    extern s32 D_800D6B6C;
+    extern u8 D_800D7178[];
+    s32 v;
+
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        D_800E9E20[omCurrentObj->objId]--;
+        return;
+    }
+    if (gPlayerControllers[0].buttonPressed & 0x9000) {
+        play_sound(0xED);
+        D_8015C6D8_ovl4 = 1;
+        D_800D6B68 = gGameState;
+        switch (D_8015C6E0_ovl4) {
+            case 0:
+                gGameState = 0x1B;
+                *(s32 *) (D_800D7178 + 0x48) = 0;
+                *(s32 *) (D_800D7178 + 0x4C) = 0;
+                *(s32 *) (D_800D7178 + 0x50) = 0;
+                *(s32 *) (D_800D7178 + 0x54) = 0;
+                break;
+            case 1:
+                gGameState = 0x18;
+                break;
+            case 2:
+                gGameState = 0x17;
+                break;
+            case 3:
+                gGameState = 0x19;
+                break;
+            case 4:
+                gGameState = 0x1A;
+                D_800D6B6C = 0;
+                break;
+            case 5:
+                gGameState = 0x16;
+                break;
+        }
+        return;
+    }
+    if (gPlayerControllers[0].buttonPressed & 0x4000) {
+        play_sound(0x2B);
+        D_8015C6DC_ovl4 = 0;
+        D_800E9C60[omCurrentObj->objId] = 1;
+        return;
+    }
+    v = func_801554F0_ovl4();
+    if (v == -2) {
+        play_sound(0x113);
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+        do {
+            if (D_8015C6E0_ovl4 == 5) {
+                D_8015C6E0_ovl4 = 0;
+            } else {
+                D_8015C6E0_ovl4 = D_8015C6E0_ovl4 + 1;
+            }
+        } while (func_80157258_ovl4(saveCurrentFileNum, D_8015C6E0_ovl4) == 0);
+        return;
+    }
+    if (v == 2) {
+        play_sound(0x113);
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+        do {
+            if (D_8015C6E0_ovl4 != 0) {
+                D_8015C6E0_ovl4 = D_8015C6E0_ovl4 - 1;
+            } else {
+                D_8015C6E0_ovl4 = 5;
+            }
+        } while (func_80157258_ovl4(saveCurrentFileNum, D_8015C6E0_ovl4) == 0);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80155C00_ovl4.s")
+#endif
 
 void play_sound(s32);
 

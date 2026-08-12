@@ -488,7 +488,125 @@ void func_80159160_ovl4(GObj *arg0) {
     curObjSleepForever();
 }
 
+/* 174/289: control flow and every branch target line up with the listing; the
+ * residue is a whole-function saved-register rotation (ROM s2=arg0 s3=&D_8015C718,
+ * IDO s1/s2) plus the local block sitting 0x10 higher (ROM frame 0x98 with the
+ * two 7-word copies at the BOTTOM, IDO 0x90 with them at the top). Swept:
+ * scalar locals declared before/after/around the two array copies, three dead
+ * pads, non-void return types on the prototypes this function introduces,
+ * peeled vs plain `for` for the alpha-clear walk. */
+#ifdef NON_MATCHING
+#include "SPObj.h"
+
+typedef struct {
+    s32 unk0[7];
+} Unk7Words;
+
+struct UnkStruct8015C740;
+extern Unk7Words D_8015BFF0_ovl4;
+extern Unk7Words D_8015C00C_ovl4;
+extern struct UnkStruct8015C740 D_8015C1E0_ovl4;
+extern struct UnkStruct8015C740 D_8015C200_ovl4;
+extern s32 D_8015C718_ovl4;
+extern s32 D_800D6B7C;
+SPObj *func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
+void func_800ACBDC(GObj *);
+void func_800AD1A0(GObj *);
+void procMainStub(GObj *);
+void omLinkGObjDL(GObj *, void (*)(GObj *), u8, s32, s32);
+
+void func_801593A4_ovl4(GObj *arg0) {
+    Unk7Words sp64 = D_8015BFF0_ovl4;
+    Unk7Words sp48 = D_8015C00C_ovl4;
+    SPObj *sp;
+    s32 cur;
+    s32 a;
+
+    cur = D_800E9E20[D_8015C718_ovl4];
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
+    func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp64.unk0[cur]);
+    func_8015C740_ovl5(arg0, &D_8015C1E0_ovl4);
+    func_8015C740_ovl5(arg0, &D_8015C200_ovl4);
+    func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp48.unk0[cur]);
+    if (D_800D6B7C != 0) {
+        for (sp = arg0->unk4C; sp != NULL; sp = (SPObj *) sp->unk8) {
+            sp->primColorAlpha = 0;
+        }
+        while ((D_800E9C60[D_8015C718_ovl4] != 0) || (D_800D6B7C != 0)) {
+            ohSleep(1);
+        }
+        sp = arg0->unk4C;
+        while (sp->primColorAlpha < 0xFF) {
+            if (cur != D_800E9E20[D_8015C718_ovl4]) {
+                break;
+            }
+            while (sp != NULL) {
+                a = sp->primColorAlpha + 0x1E;
+                if (a < 0x100) {
+                    sp->primColorAlpha = a;
+                } else {
+                    sp->primColorAlpha = 0xFF;
+                }
+                sp = (SPObj *) sp->unk8;
+            }
+            ohSleep(1);
+            sp = arg0->unk4C;
+        }
+    }
+    while (1) {
+        if (cur == D_800E9E20[D_8015C718_ovl4]) {
+            ohSleep(1);
+            continue;
+        }
+        sp = arg0->unk4C;
+        if (sp->primColorAlpha > 0) {
+            do {
+                while (sp != NULL) {
+                    a = sp->primColorAlpha - 0x28;
+                    if (a >= 0) {
+                        sp->primColorAlpha = a;
+                    } else {
+                        sp->primColorAlpha = 0;
+                    }
+                    sp = (SPObj *) sp->unk8;
+                }
+                ohSleep(1);
+                sp = arg0->unk4C;
+            } while (sp->primColorAlpha > 0);
+        }
+        cur = D_800E9E20[D_8015C718_ovl4];
+        func_800ACBDC(arg0);
+        func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp64.unk0[cur])->primColorAlpha = 0;
+        func_8015C740_ovl5(arg0, &D_8015C1E0_ovl4)->primColorAlpha = 0;
+        func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp48.unk0[cur])->primColorAlpha = 0;
+        func_8015C740_ovl5(arg0, &D_8015C200_ovl4)->primColorAlpha = 0;
+        while (D_800E9C60[D_8015C718_ovl4] != 0) {
+            ohSleep(1);
+        }
+        sp = arg0->unk4C;
+        while (sp->primColorAlpha < 0xFF) {
+            if (cur != D_800E9E20[D_8015C718_ovl4]) {
+                break;
+            }
+            while (sp != NULL) {
+                a = sp->primColorAlpha + 0x1E;
+                if (a < 0x100) {
+                    sp->primColorAlpha = a;
+                } else {
+                    sp->primColorAlpha = 0xFF;
+                }
+                sp = (SPObj *) sp->unk8;
+            }
+            ohSleep(1);
+            sp = arg0->unk4C;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_4/func_801593A4_ovl4.s")
+#endif
 
 void func_80159828_ovl4(void) {
     D_800D6B78 = 0;
