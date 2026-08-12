@@ -237,6 +237,43 @@ check_tu_size + check_sections + check_rodata_bytes + verify_rom before
 committing; a mid-flight rodata migration once produced a ROM differing in
 3,741 regions and read exactly like catastrophic lane breakage.
 
+### ATTEMPTED AND REVERTED 2026-08-12 — read this before trying again
+
+The mechanical part works and took ten minutes: cut kirby.c at the
+func_80179370_ovl3 pragma (15 functions, 450 lines: 9 pragmas + 6 matched C),
+paste at the head of ovl3_6.c's function region, retarget the yaml to
+`[0xD9DB0, c, ovl3/ovl3_6]` and `[0xF7FB0, .rodata, ovl3/ovl3_6]`.
+
+**What blocks it is not the move — it is that the two TUs independently
+declare the same symbols with incompatible types.** While they were separate
+translation units that was legal and invisible. Merged, every divergence is a
+hard error, and C requires ONE type per symbol per TU regardless of scope, so
+block-scoping a declaration does not resolve it. Found in six build cycles,
+and the list was still growing when this was reverted:
+
+  * 7 symbols declared in kirby.c that did not travel (D_801926E8_ovl3,
+    D_801928BC_ovl3, D_801975EC_ovl3, D_800DFA10, D_80190358_ovl3,
+    gEntityGObjProcessArray, func_8016C510_ovl3) — easy, add them.
+  * func_8016C510_ovl3: `void(GObj *)` in kirby.c vs `void(s32)` in ovl3_6.c.
+  * func_80121658: `s32(void)` vs `void(void)` — and the s32 side is needed by
+    a GUARDED draft while the void side is used by an ALREADY-MATCHED
+    function. Resolved with a function-pointer alias in the draft rather than
+    by changing the matched function's declaration.
+  * func_80120A28, ohSleep, and more behind them.
+
+**The trap:** the obvious fix each time is to change one declaration to match
+the other. Do not. Both files are full of already-matched functions, and a
+declaration change alters codegen for every function below it in the TU —
+that is the exact defect that shifted three TUs earlier the same night.
+
+**Correct sequencing when this is next attempted, and budget a session for
+it, not an hour:** FIRST reconcile the declarations while the files are still
+separate — for each conflicting symbol pick the type the ROM implies, change
+it in one file, and prove with verify_rom that no matched function moved.
+Only once both TUs agree on every shared symbol is the move itself safe.
+Payoff is 14 jump-table functions at ~1.3 compiles each, the cheapest tier
+left, so it is worth doing properly.
+
 ## Standing prohibitions (full list, for lane prompts)
 
 No port work. No tool writing. No yaml edits (manager-owned). No git
