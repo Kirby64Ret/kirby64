@@ -153,7 +153,11 @@ void func_801B3ACC_ovl7(GObj *arg0) {
 // thr/d, `x = x + k` vs `x += k`, and the callee-return-type lever on
 // func_801AC840_ovl7 in all four forms (void/s32/f32/f64) -- 8 in every case.
 // The return-type lever cannot reach it: the call is the LAST statement, so
-// nothing is live across it.
+// nothing is live across it. Wave 11 also ruled out giving the function a
+// `GObj *` parameter to push the omCurrentObj base off $a0 -- that buys the
+// $a1 but costs the parameter's home store, 38/40 either with or without an
+// f32 return type. func_80159C40_ovl4 (4/30, ovl4_5.c) is the same idiom and
+// carries the fuller sweep of the $f0/$f2 half.
 void func_801B3C54_ovl7(void) {
     f32 thr = D_801CE31C_ovl7;
     struct DObj *d = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;

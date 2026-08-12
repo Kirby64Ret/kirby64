@@ -74,6 +74,14 @@ void func_80159B68_ovl4(GObj *arg0) {
 // array element in $f0). Swept: local count and order, initializer vs separate
 // assignment, inlining either side, reversed compare -- all give 4 or 14 diffs.
 // This is the one-slot register-class residue, not a source-form problem.
+// Re-swept (wave 11), 18 variants, floor unmoved at 4: an f32 return type with
+// `return val;` costs a trailing mov.s (5) and without one is inert; a K&R
+// definition, a pointer local for the element, `+= -temp`, a `volatile` read
+// (8), a dead f32 local, `!(x < t)` (5) and reading the element into a named
+// local BEFORE the angle update (24, it moves the load) all fail. The ROM
+// assigns $f0 to the value loaded LAST, which IDO's order-of-first-assignment
+// rule cannot express while the constant is still read first.
+// func_801B3C54_ovl7 (8/40) is the same idiom with the same residue.
 void func_80159C40_ovl4(GObj *arg0) {
     f32 temp = D_8015C674_ovl4;
 

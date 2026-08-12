@@ -115,6 +115,35 @@ def host_symbols():
     return names
 
 
+def declared_objects():
+    """Names the sources declare as OBJECTS rather than functions.
+
+    The name-prefix heuristic below (D_, g, ovlN_) covers the symbols splat
+    invented names for, and misses every symbol the decompilation has since
+    given a real name to. `extern u8 *auSoundPriority;` starts with an 'a', so
+    it was being emitted as `void auSoundPriority(void) { ... }` -- a weak
+    FUNCTION, living in .text. The port then took SIGSEGV on the perfectly
+    ordinary `auSoundPriority = buf;`, because that is a store into read-only
+    code, and the crash names the assignment rather than the stub.
+
+    A prefix cannot answer this question; the declaration can, and the
+    declaration is right there in the headers. Anything declared `extern`
+    with no parentheses in the declarator is an object.
+    """
+    names = set()
+    decl = re.compile(r'\bextern\b(?![^;{}]*\()[^;{}]*;')
+    ident = re.compile(r'[A-Za-z_]\w*')
+    for pat in ('src/**/*.c', 'src/**/*.h', 'include/**/*.h'):
+        for path in glob.glob(pat, recursive=True):
+            try:
+                text = open(path, errors='replace').read()
+            except OSError:
+                continue
+            for m in decl.finditer(text):
+                names.update(ident.findall(m.group(0)))
+    return names
+
+
 def main():
     out = 'build/pc/stubs.c'
     if '-o' in sys.argv:
@@ -127,13 +156,18 @@ def main():
                                open(cf).read()))
 
     host = host_symbols()
+    objs = declared_objects()
     funcs, data = [], []
     for s in missing():
         if LIBC.match(s) or s in host or s in LINKER_PROVIDED:
             continue
+        # A GLOBAL_ASM pragma is proof it is a function, and it outranks
+        # everything else: an `extern` declaration of the same name elsewhere
+        # would be a prototype anyway.
         if s.startswith('func_') or s in prag:
             funcs.append(s)
-        elif s.startswith('D_') or s.startswith('g') or re.match(r'^ovl\d+_', s):
+        elif s in objs or s.startswith('D_') or s.startswith('g') \
+                or re.match(r'^ovl\d+_', s):
             data.append(s)
         else:
             funcs.append(s)

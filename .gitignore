@@ -75,3 +75,4 @@ src/**/.*.c
 cand.json
 *.ab_tmp.c
 kirby64.eep
+port/o2r/*.o2r
