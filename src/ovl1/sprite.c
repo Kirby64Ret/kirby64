@@ -42,17 +42,21 @@ struct C954Arg2 {
 
 // 12/22: the target burns TWO virtual registers per s16 store (t7/t9/t1/t3/t5),
 // this burns one. Swept casts, shifts, s16 args, 1 and 4 explicit temps: no move.
+#ifdef NON_MATCHING
 void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
-    *(&D_800D4E64) = arg0 * 4;
-    *(&D_800D4E68) = arg1 * 4;
-    *(&D_800D4E6C) = arg2 * 4;
-    *(&D_800D4E70) = arg3 * 4;
+    D_800D4E64 = arg0 * 4;
+    D_800D4E68 = arg1 * 4;
+    D_800D4E6C = arg2 * 4;
+    D_800D4E70 = arg3 * 4;
     if (arg4 != 0) {
         D_800D4E74 = 1;
         return;
     }
     D_800D4E74 = 0;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB680.s")
+#endif
 void func_800AB6D8(Gfx **gp, u32 arg1, s16 arg2, s16 arg3) {
     (*gp)->words.w0 = sTextureImageCommand;
     (*gp)->words.w1 = arg1;

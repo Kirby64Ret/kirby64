@@ -375,7 +375,47 @@ void func_802258EC_ovl18(UNUSED s32 arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+void func_80225958_ovl18(void) {
+    struct UnkStruct800E1B50 *sp3C;
+    Vector sp2C;
+    s32 r;
+    s32 t;
+    s32 *p;
+    s32 v;
+
+    sp3C = D_800E1B50[omCurrentObj->objId];
+    r = random_soft_s32_range(4);
+    t = r + 1;
+    v = r;
+    p = &D_800E93A0[omCurrentObj->objId];
+    if (r == *p) {
+        if (t < 4) {
+            v = t;
+        } else {
+            v = 0;
+        }
+    }
+    *p = v;
+    v = random_soft_s32_range(D_8022ACAC_ovl18[D_800E93A0[omCurrentObj->objId] * 4]) +
+        D_8022ACB0_ovl18[D_800E93A0[omCurrentObj->objId] * 4];
+    D_800E9560[omCurrentObj->objId] = v;
+    sp2C.z = 0.0f;
+    sp2C.y = 0.0f;
+    sp2C.x = -6.0f;
+    lbvector_Rotate(&sp2C, 4, (f32) v * 0.7853982f);
+    D_800E3050[omCurrentObj->objId] = sp2C.x;
+    D_800E3210[omCurrentObj->objId] = sp2C.y;
+    D_800E8920[omCurrentObj->objId] = 0;
+    gEntitiesNextPosXArray[omCurrentObj->objId] =
+        ((f32 *) D_8022ACA4_ovl18)[D_800E93A0[omCurrentObj->objId] * 4];
+    gEntitiesNextPosYArray[omCurrentObj->objId] =
+        ((f32 *) D_8022ACA4_ovl18)[D_800E93A0[omCurrentObj->objId] * 4 + 1];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp3C->unk8;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_236F20/func_80225958_ovl18.s")
+#endif
 
 void func_80225B44_ovl18(void) {
     D_800E6A10[omCurrentObj->objId] = -1.0f;

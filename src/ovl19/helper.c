@@ -521,7 +521,7 @@ void func_8022045C_ovl19(s32 arg0) {
 #endif
 
 /*LANE_BEGIN*/
-extern s32 D_800D6F18;
+extern s32 D_800D6F10;
 extern u8 D_800D6E30[];
 extern u32 D_800BE508;
 extern struct GObjProcess *gEntityGObjProcessArray5[];
@@ -532,10 +532,10 @@ void func_800A7F74(s32, s32, s32, f32, f32, f32);
 s32 func_800FCD14(u32, u8, f32, u8, u8, u8, u8, u8, s16, Vector *, Vector *, Vector *);
 
 void func_8022054C_ovl19(GObj *arg0) {
-    s32 *p = (s32 *)((u32)&D_800D6F18);
-    Vector scale;
-    Vector angle;
+    s32 *p = (s32 *)((u32)&D_800D6F10 + 8);
     Vector pos;
+    Vector angle;
+    Vector scale;
     GObj *o;
     s32 id;
     s32 v;

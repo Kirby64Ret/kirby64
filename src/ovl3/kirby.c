@@ -294,11 +294,9 @@ extern u8 D_801903E0_ovl3[];
 void func_8016EF5C_ovl3(GObj *arg0) {
     func_8011CF58();
     D_800DDFD0[omCurrentObj->objId] = 5;
-    if (gKirbyState.unk4 == 1) {
-        D_800E0490[omCurrentObj->objId] = D_80192704_ovl3;
-    } else {
-        D_800E0490[omCurrentObj->objId] = D_801926E8_ovl3;
-    }
+    /* the collapsed form of this if/else is load-bearing: expanded over five
+       lines IDO fills the branch delay slot with the other arm's lui (2/185) */
+    if (gKirbyState.unk4 == 1) { D_800E0490[omCurrentObj->objId] = D_80192704_ovl3; } else { D_800E0490[omCurrentObj->objId] = D_801926E8_ovl3; }
     if (gKirbyState.unk4 == 1) {
         gKirbyState.unk15C = (u32) D_801903E0_ovl3;
     } else {

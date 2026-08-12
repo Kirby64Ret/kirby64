@@ -170,6 +170,8 @@ struct Ovl14TrackPosition {
     f32 unk4;
 };
 
+#ifdef NON_MATCHING
+/* Left un-guarded by a lane mid-work, at 136/192 insns. Draft kept. */
 s32 func_801DC38C_ovl14(s32 arg0) {
     s32 track;
     struct Ovl14TrackPosition sp24;
@@ -186,26 +188,33 @@ s32 func_801DC38C_ovl14(s32 arg0) {
     D_800E7880[track] = 1;
     switch (arg0) {
         case 0:
-            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = -320.0f;
+            gEntitiesPosXArray[track] = -320.0f;
+            gEntitiesNextPosXArray[track] = -320.0f;
             break;
         case 1:
-            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = -160.0f;
+            gEntitiesPosXArray[track] = -160.0f;
+            gEntitiesNextPosXArray[track] = -160.0f;
             break;
         case 2:
-            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = 0.0f;
+            gEntitiesPosXArray[track] = 0.0f;
+            gEntitiesNextPosXArray[track] = 0.0f;
             break;
         case 3:
-            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = 160.0f;
+            gEntitiesPosXArray[track] = 160.0f;
+            gEntitiesNextPosXArray[track] = 160.0f;
             break;
         case 4:
-            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = 320.0f;
+            gEntitiesPosXArray[track] = 320.0f;
+            gEntitiesNextPosXArray[track] = 320.0f;
             break;
         default:
             while (1) {}
     }
-    gEntitiesNextPosYArray[track] = gEntitiesPosYArray[track] = 0.0f;
-    gEntitiesNextPosZArray[track] = gEntitiesPosZArray[track] = 0.0f;
     D_800E8E60[omCurrentObj->objId] = 0;
+    gEntitiesPosYArray[track] = 0.0f;
+    gEntitiesNextPosYArray[track] = 0.0f;
+    gEntitiesPosZArray[track] = 0.0f;
+    gEntitiesNextPosZArray[track] = 0.0f;
     sp24.unk0 = D_800E5F90[omCurrentObj->objId];
     sp24.unk4 = D_800E6BD0[omCurrentObj->objId];
     if (func_800F9888((s32 *) &sp24, gEntitiesNextPosXArray[track]) == 0) {
@@ -214,6 +223,9 @@ s32 func_801DC38C_ovl14(s32 arg0) {
     } else {
         D_800E5F90[track] = D_800E5F90[omCurrentObj->objId];
         D_800E6BD0[track] = D_800E6BD0[omCurrentObj->objId];
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DC38C_ovl14.s")
+#endif
     }
     D_800EC2E0[track].as_s32 = arg0;
     play_sound(0x191);
