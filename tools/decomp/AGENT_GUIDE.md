@@ -692,6 +692,25 @@ concluding a symbol is missing.
 
 ## More levers
 
+**Branch POLARITY is a real knob, and it is the cheapest 3-diff fix there is.**
+`if (x != 0) { A } else { B }` and `if (x == 0) { B } else { A }` are the same
+program and different codegen. Two ovl9 functions closed 3 -> 0 on nothing
+else (func_802125BC_ovl9, func_8021645C_ovl9). The tell is in the listing: the
+ROM has `bnel`/`bnez` where your compile has `beqzl`/`beqz`, and the two
+preloaded constants come out swapped. Read the ROM's branch mnemonic before
+you write the `if`; it costs nothing and it is right about a third of the time
+on small functions.
+
+**Block-scope prototypes are DIRECTIONAL.** `void ohSleep(s32);` inside a
+function body works when the TU's file-scope declaration of that symbol comes
+LATER in the file, and is a hard IDO error when it comes EARLIER -- the call
+site's implicit declaration is what collides. Same for data
+(`extern struct Foo D_801CCAF0;`). The rule: **declared later in the TU ->
+declare at block scope; declared earlier -> declare nothing.** This bites
+constantly, because inserting a converted function ABOVE its TU's existing
+declarations is the normal case when you work a pragma near the top of a file.
+
+
 - Type-split ZERO: where the ROM has two separate `mtc1 $zero`, one is an int
   0 and one a 0.0f -- write `arr[i] = 0;` for one. Took two functions from 31
   and 61 diffs to MATCH. Where the ROM SHARES one `mtc1 $zero`, both must be
