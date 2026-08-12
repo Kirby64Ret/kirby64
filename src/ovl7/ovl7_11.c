@@ -582,8 +582,8 @@ void func_801B6BDC_ovl7(GObj *arg0) {
     void func_801B6E28_ovl7(void);
     void func_801B6B88_ovl7(GObj *);
     void lbvector_Rotate(Vector *, s32, f32);
-    Vector sp20;
     f32 t1;
+    Vector sp20;
 
     D_800DEF90[omCurrentObj->objId] = func_800B78AC;
     D_800DF150[omCurrentObj->objId] = func_801B6E28_ovl7;
@@ -595,11 +595,11 @@ void func_801B6BDC_ovl7(GObj *arg0) {
     t1 = sp20.x * 13.0f;
     D_800E3050[omCurrentObj->objId] = t1;
     D_800E3590[omCurrentObj->objId] = sp20.x * -2.0f;
-    D_800E3AD0[omCurrentObj->objId] = ABSF(t1);
+    D_800E3AD0[omCurrentObj->objId] = (t1 < 0) ? -t1 : t1;
     t1 = sp20.z * 13.0f;
     D_800E33D0[omCurrentObj->objId] = t1;
     D_800E3910[omCurrentObj->objId] = sp20.z * -2.0f;
-    D_800E3E50[omCurrentObj->objId] = ABSF(t1);
+    D_800E3E50[omCurrentObj->objId] = (t1 < 0) ? -t1 : t1;
     D_800EA360[omCurrentObj->objId] = 1;
     D_800EA520[omCurrentObj->objId] = -1;
     if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {

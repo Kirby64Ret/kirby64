@@ -42,10 +42,10 @@ void func_8010E5B0(Vector *arg0, struct Unk8010E5B0Node *arg1, s32 arg2,
                 i--;
             }
             p = arg3->unkC[i];
-            if (arg1->unk14 == (struct Unk8010E5B0Node *) 1) {
-                func_800A5F94(arg2, p);
-            } else {
+            if (arg1->unk14 != (struct Unk8010E5B0Node *) 1) {
                 func_800A5D88(arg1, p);
+            } else {
+                func_800A5F94(arg2, p);
             }
             arg3->unk8[i] = arg1;
             arg3->unk0 = i + 1;

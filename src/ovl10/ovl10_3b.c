@@ -652,7 +652,10 @@ void func_801EDD24_ovl10(GObj *arg0) {
     }
     play_sound(0x1EE);
     D_800E9560[omCurrentObj->objId] = 1;
-    while (D_800E9560[omCurrentObj->objId] < 0x3C && D_800E98E0[0] < 3) {
+    while (D_800E9560[omCurrentObj->objId] < 0x3C) {
+        if (D_800E98E0[0] >= 3) {
+            break;
+        }
         ohSleep(1);
         D_800E9560[omCurrentObj->objId] += 1;
     }
