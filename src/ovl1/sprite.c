@@ -206,7 +206,7 @@ void func_800AC924(uObjMtx *mtx) {
     mtx->m.BaseScaleX = mtx->m.BaseScaleY = FTOFIX16(1.0f);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
     SPObj* sprite;
     void* var_a0;
@@ -230,7 +230,10 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
         sprite->unkC = 0;
     }
     sprite->unk8 = 0;
-    sprite->gobj = gobj;
+    /* offset 4: `sw $a3, 0x4($v0)` at 800AC9DC. u32, not a pointer --
+   widening it would move every field after it under LP64. The port
+   keeps all game objects in low memory, so the cast is lossless. */
+    sprite->unk4 = (u32) (uintptr_t) gobj;
     sprite->unk10 = (u8) kind;
     sprite->unk11 = 0;
     sprite->unk12 = 0;
@@ -247,22 +250,22 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
     sprite->height = arg2->height;
     sprite->xOffset = sprite->yOffset = 0.0f;
     sprite->unk30 = sprite->unk34 = sprite->unk38 = 0.0f;
-    sprite->unk28 = sprite->unk2C = 1.0f;
+    sprite->xScale = sprite->yScale = 1.0f;
     switch (kind) {
         case 0:
-            func_800AC688(&sprite->unk40, arg2, kind, gobj);
+            func_800AC688(&sprite->unk40, arg2);
             if (arg2->unk0 == 2) {
                 func_800AC8E0(&sprite->unk68, arg2);
             }
             break;
         case 1:
-            func_800AC700(&sprite->unk40, arg2, kind, gobj);
+            func_800AC700(&sprite->unk40, arg2);
             if (arg2->unk0 == 2) {
                 func_800AC8E0(&sprite->unk68, arg2);
             }
             break;
         case 2:
-            func_800AC794(&sprite->unk58, arg2, kind, gobj);
+            func_800AC794(&sprite->unk58, arg2);
             func_800AC820(&sprite->unk40, arg2);
             if (arg2->unk0 == 2) {
                 func_800AC8E0((struct SPObj_68** ) &sprite->unk70, arg2);
@@ -270,7 +273,7 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
             break;
         case 3:
         case 4:
-            func_800AC794(&sprite->unk58, arg2, kind, gobj);
+            func_800AC794(&sprite->unk58, arg2);
             func_800AC820(&sprite->unk40, arg2);
             if (arg2->unk0 == 2) {
                 func_800AC8E0((struct SPObj_68** ) &sprite->unk70, arg2);
@@ -278,7 +281,23 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
             func_800AC924((uObjMtx* ) &sprite->unk88);
             break;
     }
-    *sprite->unkA0 = *sprite->unk40;
+    /* PORT STAND-IN, NOT A DECOMPILATION.
+     *
+     * m2c rendered the tail as `*sprite->unkA0 = *sprite->unk40;`, a struct
+     * copy through two pointers. The ROM does something else: a LOOP that
+     * strides both cursors by 0xC and copies 0x38/0x3C/0x40 into 0x94/0x98/
+     * 0x9C (800ACB40..800ACB60), i.e. an in-struct block copy, not a
+     * dereference of the two pointer members.
+     *
+     * Taken literally the m2c form dereferences unkA0, which this `kind` never
+     * initialises, and the port segfaulted here immediately after
+     * func_800AC954 stopped being a stub. Guarded so the port runs; the block
+     * copy itself is NOT reproduced, so anything that reads the 0x94..0x9C
+     * region will see uninitialised data. Decompiling this loop properly is
+     * the fix -- this only stops it crashing. */
+    if (sprite->unkA0 != NULL && sprite->unk40 != NULL) {
+        *sprite->unkA0 = *sprite->unk40;
+    }
     return sprite;
 }
 #else
