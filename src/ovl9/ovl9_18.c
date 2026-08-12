@@ -424,7 +424,36 @@ void func_8021B848_ovl9(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_18/func_8021B8B0_ovl9.s")
+void func_8021B8B0_ovl9(struct GObj *arg0) {
+    s32 dir;
+    s32 pad;
+    Vector sp24;
+
+    if (D_800E93A0[omCurrentObj->objId] != -1) {
+        if (random_soft_s32_range(2) == 0) {
+            dir = D_800E93A0[omCurrentObj->objId] - 1;
+        } else {
+            dir = D_800E93A0[omCurrentObj->objId] + 1;
+        }
+        dir = (dir < 0) ? 7 : ((dir >= 8) ? 0 : dir);
+    } else {
+        dir = random_soft_s32_range(8);
+    }
+    sp24.y = -2.0f;
+    sp24.z = 0.0f;
+    sp24.x = 0.0f;
+    lbvector_Rotate(&sp24, 4, (f32) dir * 0.7853981853f);
+    D_800E64D0[omCurrentObj->objId] = sp24.x;
+    D_800E3210[omCurrentObj->objId] = sp24.y;
+    D_800E9720[omCurrentObj->objId] = 0x14;
+    if ((dir >= 0) && (dir < 4)) {
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
+    } else {
+        D_800E6A10[omCurrentObj->objId] = -1.0f;
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E93A0[omCurrentObj->objId] = dir;
+}
 
 void func_8021BA80_ovl9(s32 arg0) {
     func_801A2E64_ovl7();

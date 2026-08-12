@@ -110,7 +110,84 @@ void func_8017DAD8_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017DBB8_ovl3.s")
+extern f32 D_8019767C_ovl3;
+extern f32 D_80197680_ovl3;
+extern f32 D_80197684_ovl3;
+extern f32 D_80197688_ovl3;
+extern u8 D_80191508_ovl3[];
+extern u8 D_80193250_ovl3[];
+
+void func_8017DBB8_ovl3(s32 arg0) {
+    s32 flag;
+    Vector sp30;
+    s32 *p;
+    s32 func_80120CCC(f32, f32);
+    void func_800B2340(Vector *, s32, s32);
+    s32 func_800AA888(s32);
+    void func_8017DF60_ovl3(s32);
+    extern s32 D_8012E7E8;
+
+    func_80153984_ovl3();
+    func_8011CF58();
+    func_801217B8();
+    if (*(s32 *) ((u8 *) &D_8012E7E8 + 8) != 0) {
+        func_8011D67C();
+        return;
+    }
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        flag = func_80120CCC(D_8019767C_ovl3, D_80197680_ovl3);
+    } else {
+        flag = func_80120CCC(D_80197684_ovl3, D_80197688_ovl3);
+    }
+    if (gKirbyState.unk4C != 0) {
+        p = (s32 *) gKirbyState.unk4C;
+        func_800B2340(&sp30, D_800DFBD0[omCurrentObj->objId][10], 0xFFFF);
+        ((f32 *) p[0x13])[1] = sp30.x;
+        ((f32 *) p[0x13])[2] = sp30.y;
+        ((f32 *) p[0x13])[3] = sp30.z;
+    }
+    if (flag == 0) {
+        if (gKirbyState.unk44 == 0) {
+            if (gKirbyController.buttonHeld & 0x100) {
+                gKirbyState.unk44 = 1;
+            } else {
+                gKirbyState.unk44 = -1;
+            }
+        } else if (gKirbyState.unk44 == 1) {
+            if (gKirbyController.buttonHeld & 0x100) {
+                func_8017DF60_ovl3(1);
+            } else {
+                func_8017DF60_ovl3(0);
+            }
+            if (D_800EA6E0[omCurrentObj->objId] == 0.0f) {
+                if (gKirbyController.buttonHeld & 0x200) {
+                    *(s32 *) ((u8 *) &D_8012E7FC + 8) = -1;
+                }
+            }
+            D_800DFBD0[omCurrentObj->objId][7]->angle.v.y = D_800EA6E0[omCurrentObj->objId];
+            D_800DFBD0[omCurrentObj->objId][7]->angle.v.z = -D_800EA6E0[omCurrentObj->objId];
+            D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = D_800EA6E0[omCurrentObj->objId];
+        } else {
+            if (gKirbyController.buttonHeld & 0x200) {
+                func_8017DF60_ovl3(1);
+            } else {
+                func_8017DF60_ovl3(0);
+            }
+            if (D_800EA6E0[omCurrentObj->objId] == 0.0f) {
+                if (gKirbyController.buttonHeld & 0x100) {
+                    *(s32 *) ((u8 *) &D_8012E7FC + 8) = 1;
+                }
+            }
+            D_800DFBD0[omCurrentObj->objId][7]->angle.v.y = -D_800EA6E0[omCurrentObj->objId];
+            D_800DFBD0[omCurrentObj->objId][7]->angle.v.z = D_800EA6E0[omCurrentObj->objId];
+            D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = -D_800EA6E0[omCurrentObj->objId];
+        }
+    }
+    if (func_800AA888(0x20010) != 0) {
+        func_8015449C_ovl3(D_80193250_ovl3, 0);
+        func_80111C4C(func_80111A04(D_80191508_ovl3, omCurrentObj->objId));
+    }
+}
 
 extern f32 D_8019768C_ovl3;
 extern f32 D_80197690_ovl3;
@@ -266,7 +343,77 @@ void func_8017E284_ovl3(s32 arg0) {
 #endif
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017E54C_ovl3.s")
 
+#ifdef NON_MATCHING
+typedef struct Unk80198830 {
+    u8 pad0[8];
+    s16 unk8;
+    s16 unkA;
+} Unk80198830;
+
+extern Unk80198830 D_80198830_ovl3;
+extern f32 D_801976B8_ovl3;
+extern f32 D_801976BC_ovl3;
+extern f32 D_80196D98_ovl3[];
+
+void func_8017EA0C_ovl3(s32 arg0) {
+    s32 idx;
+    extern s32 D_8012E90C;
+    extern f32 D_800D7238;
+    void func_800AA864(s32, s32);
+
+    if (gKirbyState.abilityInUse == 0) {
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk4C = 0;
+        D_800EA6E0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId];
+        func_8011CF58();
+        gKirbyState.abilityInUse = gKirbyState.ability;
+        D_800DDFD0[omCurrentObj->objId] = 0x2C;
+        func_80122F08(0x20016);
+        *(s32 *) ((u8 *) &D_8012E90C + 8) = 2;
+    }
+    idx = func_801693C4_ovl3(8);
+    D_800EC2E0[idx].as_s32 = D_80198830_ovl3.unk8;
+    D_800E8920[omCurrentObj->objId] = 0;
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        D_800D7238 = D_801976B8_ovl3;
+    } else {
+        D_800D7238 = D_801976BC_ovl3;
+    }
+    if ((D_800E8AE0[omCurrentObj->objId] & 6) == 0) {
+        D_800E3210[omCurrentObj->objId] = D_80196D98_ovl3[D_80198830_ovl3.unk8];
+    } else {
+        D_800E3210[omCurrentObj->objId] = D_80196D98_ovl3[D_80198830_ovl3.unk8] * 0.5f;
+    }
+    D_800E3750[omCurrentObj->objId] = D_800D7238;
+    D_800E3C90[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 6) == 0) ? 16.0f : 8.0f);
+    if (D_80198830_ovl3.unk8 == 3) {
+        func_800BB468(0xB, 0xA);
+    } else if (D_80198830_ovl3.unk8 == 2) {
+        func_800BB468(6, 0x10);
+    } else if (D_80198830_ovl3.unk8 == 1) {
+        func_800BB468(0, 0);
+    }
+    D_800E9720[omCurrentObj->objId] = 0xA;
+    D_80198830_ovl3.unk8 = D_80198830_ovl3.unk8 - 1;
+    D_80198830_ovl3.unkA = 0xF;
+    if (D_80198830_ovl3.unk8 != 0) {
+        func_800AA864(0x201C5, 2);
+    } else {
+        D_80198830_ovl3.unkA = 0x14;
+        D_8012E80C[0] = func_800A8100(1, 1, 0x22, D_800DFBD0[omCurrentObj->objId][2]);
+        if (D_800E8AE0[omCurrentObj->objId] & 6) {
+            func_800AA864(0x201C5, 4);
+        } else {
+            func_800AA864(0x201C5, 8);
+        }
+        D_80198830_ovl3.unk8 = 3;
+    }
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017EA0C_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017EDDC_ovl3.s")
 
@@ -446,7 +593,7 @@ extern f32 D_80194B28_ovl3[][4];
 extern u8 D_80194C28_ovl3[];
 extern f32 D_80197744_ovl3;
 extern f32 D_80197748_ovl3;
-extern void func_80120CCC(f32, f32);
+extern s32 func_80120CCC(f32, f32);
 extern s32 func_80168408_ovl3(f32 *, void *, f32);
 extern s32 func_80152124_ovl3(f32 (*)[4], f32 (*)[4], u8, f32, f32, f32);
 
@@ -723,7 +870,7 @@ void func_80184538_ovl3(s32 arg0) {
 #endif
 extern f32 D_801977D4_ovl3;
 extern f32 D_801977D8_ovl3;
-void func_80120CCC(f32, f32);
+s32 func_80120CCC(f32, f32);
 
 void func_801848A4_ovl3(s32 arg0) {
     s32 kind;
@@ -1116,7 +1263,7 @@ extern f32 D_80197B64_ovl3;
 extern f32 D_801921FC_ovl3[];
 extern s32 D_80196DB4_ovl3[];
 extern u8 D_801963E4_ovl3[];
-extern void func_80120CCC(f32, f32);
+extern s32 func_80120CCC(f32, f32);
 extern s32 func_80168408_ovl3(f32 *, void *, f32);
 extern s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
 extern s32 func_801521F0_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);

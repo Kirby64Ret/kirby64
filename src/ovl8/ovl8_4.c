@@ -508,9 +508,12 @@ void func_801D6534_ovl8(struct GObj *);
 }
 
 
+/* 5/235: residue is one CSE register -- the ROM parks D_800E0D50[objId] in
+ * $a2 (also func_800B2340's 3rd argument register) and coalesces; IDO parks
+ * it in $a3 and shuffles with a `move $a2,$a3` on the default edge.
+ * Swept: named index local (before and after `d`), named funclist local,
+ * explicit `default:`, declaration order, hoisting `d` below the test. */
 #ifdef NON_MATCHING
-/* 5/235 and closing fast. Guarded by the manager only so the fleet could
-   commit; un-guard the moment verify.py prints MATCH. */
 void func_801D6534_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
     extern u32 D_8012BCA0;
@@ -579,9 +582,12 @@ void func_801D6534_ovl8(struct GObj *arg0) {
             func_8016BD24_ovl3(0);
         }
         break;
+    default:
+        break;
     }
     func_801696F0_ovl3(arg0);
 }
+
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D6534_ovl8.s")
 #endif

@@ -432,7 +432,42 @@ void func_801840F0_ovl5(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801841C0_ovl5.s")
+void func_801840F0_ovl5(void);
+
+void func_801841C0_ovl5(s32 arg0) {
+    s32 a;
+    s32 b;
+
+    if ((D_8018EE48_ovl5 != 0x29A) && (arg0 == D_800E98E0[D_8018EE48_ovl5])) {
+        play_sound(0x26B);
+        return;
+    }
+    play_sound(0xEE);
+    func_801840F0_ovl5();
+    a = request_track_3(0xF, 0, 0x70);
+    D_800E98E0[a] = 3;
+    D_800E9C60[a] = arg0;
+    a = request_track_general(0xF, 0, 0x70);
+    D_800E98E0[a] = 4;
+    D_800E9C60[a] = arg0;
+    D_800EA520[a] = 0x29A;
+    D_800EA360[a] = 0x29A;
+    if (arg0 == 2) {
+        b = request_track_general(0xF, 0, 0x70);
+        D_800E98E0[b] = 0xA;
+        D_800EA360[a] = b;
+        b = request_track_general(0xF, 0, 0x70);
+        D_800E98E0[b] = 9;
+        D_800EA520[a] = b;
+    } else if (arg0 == 8) {
+        b = request_track_general(0xF, 0, 0x70);
+        D_800E98E0[b] = 0xB;
+        D_800EA360[a] = b;
+        b = request_track_general(0xF, 0, 0x70);
+        D_800E98E0[b] = 0xC;
+        D_800EA520[a] = b;
+    }
+}
 
 #include "DObj.h"
 
@@ -585,7 +620,65 @@ void func_801843A0_ovl5(GObj *arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185150_ovl5.s")
 
+#ifdef NON_MATCHING
+/* 5/138: `idx` lands in $v0 where the ROM uses $v1, and its spill slot is
+   0x30 instead of 0x2C. */
+typedef struct Ovl5Entry34 {
+    u8 filler0[0x10];
+    u8 unk10;
+    u8 filler11[7];
+    struct UnkStruct8015C740 *unk18;
+    u8 filler1C[0x18];
+} Ovl5Entry34;
+
+extern struct UnkStruct8015C740 *D_8018A94C_ovl5[];
+extern struct UnkStruct8015C740 *D_8018C2D8_ovl5[];
+extern f32 D_8018C2C8_ovl5[];
+extern f32 D_8018C2D0_ovl5[];
+extern struct UnkStruct8015C740 D_8018A96C_ovl5;
+s32 func_80183BF4_ovl5(s32);
+void func_800BA40C(s32);
+void func_800B9C50(s32);
+
+void func_801853E0_ovl5(GObj *arg0, s32 arg1) {
+    SPObj *sp;
+    s32 idx;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_8018EE48_ovl5 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    if (D_800D6C10[arg1] == 1) {
+        D_800D6C10[arg1] = 2;
+        func_800BA40C(saveCurrentFileNum);
+        func_800B9C50(saveCurrentFileNum);
+    }
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    sp = func_8015C740_ovl5(arg0, &D_8018A96C_ovl5);
+    if (func_80183BF4_ovl5(arg1) != 0) {
+        *(s32 *) ((u8 *) sp + 0x6C) = D_8018EE58_ovl5;
+        *(s32 *) ((u8 *) sp + 0x78) = D_8018EE58_ovl5;
+        *(s32 *) ((u8 *) sp + 0xCC) = D_8018EE58_ovl5;
+        *(s32 *) ((u8 *) sp + 0xD8) = D_8018EE58_ovl5;
+    }
+    idx = arg1 + 1;
+    sp = func_8015C740_ovl5(arg0, D_8018C2D8_ovl5[idx % 10]);
+    sp->xOffset = D_8018C2C8_ovl5[0];
+    sp->yOffset = D_8018C2C8_ovl5[1];
+    if (idx >= 0xA) {
+        sp = func_8015C740_ovl5(arg0, D_8018C2D8_ovl5[idx / 10]);
+        sp->xOffset = D_8018C2D0_ovl5[0];
+        sp->yOffset = D_8018C2D0_ovl5[1];
+    }
+    if (((Ovl5Entry34 *) D_8018C30C_ovl5)[arg1].unk10 != 0) {
+        func_8015C740_ovl5(arg0, D_8018A94C_ovl5[((Ovl5Entry34 *) D_8018C30C_ovl5)[arg1].unk10]);
+    }
+    func_8015C740_ovl5(arg0, ((Ovl5Entry34 *) D_8018C30C_ovl5)[arg1].unk18);
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801853E0_ovl5.s")
+#endif
 
 typedef union Unk28Ptrs {
     struct UnkStruct8015C740 *unk0[10];

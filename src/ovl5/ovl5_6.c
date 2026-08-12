@@ -181,7 +181,71 @@ void func_80177D04_ovl5(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80177D04_ovl5.s")
 #endif
 
+#ifdef NON_MATCHING
+/* 78/144: frame 0x78 is right but the two local blocks sit 8 bytes high
+   (mod-8 locals rule), and s0/s3/s4 are permuted. */
+typedef union Unk3Floats {
+    f32 unk0[3];
+} Unk3Floats;
+
+typedef union Unk4Floats {
+    f32 unk0[4];
+} Unk4Floats;
+
+extern Unk3Floats D_801881C0_ovl5;
+extern Unk4Floats D_801881CC_ovl5;
+extern struct UnkStruct8015C740 D_801886E0_ovl5;
+extern struct UnkStruct8015C740 D_80188700_ovl5;
+extern struct UnkStruct8015C740 D_80188740_ovl5;
+extern struct UnkStruct8015C740 D_80188760_ovl5;
+extern Vector2 D_80188720_ovl5[];
+extern Vector2 D_80188780_ovl5[];
+
+void func_80177F20_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    s32 padA;
+    Unk3Floats sp60 = D_801881C0_ovl5;
+    s32 padB;
+    Unk4Floats sp4C = D_801881CC_ovl5;
+    SPObj *sp;
+    s32 i;
+    s32 n;
+
+    if (arg2 == 0x14) {
+        sp = func_8015C740_ovl5(arg0, &D_801886E0_ovl5);
+        sp->xOffset = D_80188720_ovl5[arg1].x;
+        sp->yOffset = D_80188720_ovl5[arg1].y;
+        sp = func_8015C740_ovl5(arg0, &D_80188700_ovl5);
+        sp->xOffset = D_80188720_ovl5[arg1].x;
+        sp->yOffset = D_80188720_ovl5[arg1].y;
+        while (1) {
+            sp->renderFlags &= ~8;
+            ohSleep(6);
+            sp->renderFlags |= 8;
+            ohSleep(6);
+        }
+    }
+    n = arg2 / 5;
+    i = 0;
+    if (n > 0) {
+        for (; i != n; i++) {
+            sp = func_8015C740_ovl5(arg0, &D_80188740_ovl5);
+            sp->xOffset = sp60.unk0[i] + D_80188780_ovl5[arg1].x;
+            sp->yOffset = D_80188780_ovl5[arg1].y + 11.0f;
+        }
+        i = 0;
+    }
+    n = arg2 % 5;
+    if (n > 0) {
+        for (; i != n; i++) {
+            sp = func_8015C740_ovl5(arg0, &D_80188760_ovl5);
+            sp->xOffset = sp4C.unk0[i] + D_80188780_ovl5[arg1].x;
+            sp->yOffset = D_80188780_ovl5[arg1].y + 0.0f;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80177F20_ovl5.s")
+#endif
 
 void func_80178140_ovl5(GObj *arg0) {
     SPObj *spobj;

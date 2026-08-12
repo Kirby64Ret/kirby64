@@ -15,8 +15,7 @@ typedef struct Ovl1Emitter {
 typedef struct Ovl1Generator {
     /* 0x00 */ u8 pad0[0x14];
     /* 0x14 */ Vector pos;
-    /* 0x20 */ u8 pad20[0x28];
-    /* 0x48 */ struct DObj *unk48;
+    /* 0x20 */ u8 pad20[0x2C];
     /* 0x4C */ Ovl1Emitter *xf;
 } Ovl1Generator;
 
@@ -222,7 +221,37 @@ void func_800A7ABC(s32 arg0) {
     }
 }
 
+// Draft, 45/149: structure, the u8->f32 unsigned-promotion sequences, the three
+// 255.0f clamps and the three f32->u32 conversion blocks all line up. Residue is
+// a known floor: `mul.s $f6,$f2` vs the ROM's `$f2,$f6` (INVARIANT to source
+// operand order; a local for the constant swaps the f0/f2 roles and is worse),
+// plus a one-slot temp rotation from the first `sll` onward ($t1 vs $t2).
+#ifdef NON_MATCHING
+void func_800A7BF4(s16 *dst, u8 *src) {
+    extern f32 D_800C4634;
+    f32 r;
+    f32 g;
+    f32 b;
+
+    r = (f32) src[8] * D_800C4634;
+    g = (f32) src[9] * D_800C4634;
+    b = (f32) src[10] * D_800C4634;
+    if (r > 255.0f) {
+        r = 255.0f;
+    }
+    if (g > 255.0f) {
+        g = 255.0f;
+    }
+    if (b > 255.0f) {
+        b = 255.0f;
+    }
+    dst[0] = (u32) r << 8;
+    dst[1] = (u32) g << 8;
+    dst[2] = (u32) b << 8;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2_2/func_800A7BF4.s")
+#endif
 
 void func_800A7E48(s32 arg0) {
     GObj *obj;
@@ -346,7 +375,7 @@ Ovl1Generator *func_800A8100(s32 arg0, s32 arg1, s32 arg2, struct DObj *arg3) {
                 if (arg3 == NULL) {
                     arg3 = omCurrentObj->data.dobj;
                 }
-                gen->unk48 = arg3;
+                *(struct DObj **) ((u8 *) gen + 0x48) = arg3;
             }
             return gen;
         } else {
