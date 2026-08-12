@@ -172,7 +172,54 @@ void func_800B8C08(void) {
     func_80004D34(0x23, D_800ECB10, 0xA0);
 }
 
+// Draft, 110/114: structurally complete (every store, constant, loop bound and
+// unroll factor lines up). The residue is one global allocation decision: the
+// ROM promotes NOTHING to a saved register -- it spills fileNum to its 0x38(sp)
+// home slot and the base/offset/pointer temps to 0x18..0x24 across the two
+// calls -- where IDO here keeps fileNum in $s0 and recomputes. The ROM also
+// computes fileNum*0x58 TWICE in the prologue (one base for the scalar field
+// stores, one for the loops); IDO CSEs it to one.
+#ifdef NON_MATCHING
+void init_save_file_maybe(s32 fileNum) {
+    void saveVerify(s32);
+    s32 i;
+
+    gSaveBuffer1.files[fileNum].world = 1;
+    gSaveBuffer1.files[fileNum].level = 1;
+    gSaveBuffer1.files[fileNum].data8 = 0;
+    gSaveBuffer1.files[fileNum].cutscenesWatched = 1;
+    gSaveBuffer1.files[fileNum].percentComplete = 0;
+    gSaveBuffer1.files[fileNum].soundSetting = 1;
+    gSaveBuffer1.files[fileNum].hudDisplay = 0;
+    gSaveBuffer1.files[fileNum].data13 = 0;
+    gSaveBuffer1.files[fileNum].data14 = 0;
+    gSaveBuffer1.files[fileNum].data15 = 0;
+    gSaveBuffer1.files[fileNum].data16 = 0;
+    gSaveBuffer1.files[fileNum].data17 = 0;
+    gSaveBuffer1.files[fileNum].hundredYardHopRecord = 1500;
+    gSaveBuffer1.files[fileNum].bumperCropBumpRecord = 10;
+    gSaveBuffer1.files[fileNum].checkerBoardChaseRecord = 2400;
+    for (i = 0; i < 6; i++) {
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] = 0;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] = 0;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] = 0;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] = 0;
+    }
+    for (i = 0; i < 8; i++) {
+        gSaveBuffer1.files[fileNum].data34[i] = 0;
+    }
+    for (i = 0; i < 22; i++) {
+        gSaveBuffer1.files[fileNum].enemyCard1E[i] = 0;
+    }
+    saveVerify(fileNum);
+    saveSetFileChecksum(fileNum);
+    func_80004D34(D_800D5150[fileNum * 2 + 1], &gSaveBuffer1.files[fileNum], 0x58);
+    func_80004D34(D_800D5150[fileNum * 2 + 7], &gSaveBuffer1.files[fileNum], 0x58);
+    gSaveBuffer2.files[fileNum] = gSaveBuffer1.files[fileNum];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/init_save_file_maybe.s")
+#endif
 
 // Draft, 4/77: only the 4x-unrolled fill body's store order is left -- the ROM
 // emits -0x10/-0xC/-0x8 then -0x4 in the delay slot, IDO rotates it to
@@ -439,7 +486,36 @@ void saveVerify(s32 fileNum) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/saveVerify.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B94FC.s")
+extern u8 D_800D6BE0[];
+extern u8 D_800D6BFE;
+
+void func_800B94FC(s32 fileNum) {
+    s32 i;
+    s32 j;
+
+    for (i = 0; i < 7; i++) {
+        for (j = 0; j < 7; j++) {
+            if (i >= gSaveBuffer1.files[fileNum].world) {
+                D_800D6BE0[i * 6 + j] = 0;
+            } else if (i + 1 == gSaveBuffer1.files[fileNum].world) {
+                if (j >= gSaveBuffer1.files[fileNum].level) {
+                    D_800D6BE0[i * 6 + j] = 0;
+                } else if (j + 1 == gSaveBuffer1.files[fileNum].level) {
+                    D_800D6BE0[i * 6 + j] = 1;
+                } else {
+                    D_800D6BE0[i * 6 + j] = 2;
+                }
+            } else {
+                D_800D6BE0[i * 6 + j] = 2;
+            }
+        }
+    }
+    if (gSaveBuffer1.files[fileNum].world >= 6) {
+        if (gSaveBuffer1.files[fileNum].percentComplete == 100) {
+            D_800D6BFE = 2;
+        }
+    }
+}
 
 // read_write_save_buf
 void func_800B96A0(s32 fileNum, SaveAction action);
@@ -528,11 +604,142 @@ s32 saveSetCutsceneWatched(s32 scene, s32 fileNum) {
     return saveCutscenesWatched;
 }
 
+// Draft, 6/169: structurally complete and byte-exact except (a) the constants
+// 1 and 81 land in $a3/$a2 where the ROM has $a2/$a3 (loop-bound materialisation
+// order; `i < 81` and `i != 81` behave identically), and (b) two FP operand
+// orders -- `c.eq.s $f2,$f4` vs the ROM's `$f4,$f2` and `add.s $f16,$f10,$f0`
+// vs `$f0,$f10`. Both FP orders are INVARIANT to source operand order (all four
+// spellings tried); the `fx` local is what fixed the `mul.s` order, and the
+// frame (0xA8, buffer at 0x3C) needs `f32 fx` declared AFTER the array.
+#ifdef NON_MATCHING
+extern f32 D_800D515C[];
+extern s32 random_soft_s32_range(s32);
+
+s32 func_800B9FE0(s32 fileNum) {
+    extern u8 D_800D6C10[];
+    s32 count;
+    s32 i;
+    f32 *p;
+    f32 fc;
+    s32 j;
+    s32 k;
+    u8 sp3C[81];
+    u8 tmp;
+    f32 fx;
+
+    count = 0;
+    for (i = 0; i < 81; i++) {
+        sp3C[i] = 0xFF;
+        if (D_800D6C10[i] != 0) {
+            continue;
+        }
+        if ((i == 0) || (i == 1)) {
+            if ((s32) saveCurrentWorld <= 0) {
+                continue;
+            }
+        }
+        if (i == 2) {
+            if ((s32) saveCurrentWorld < 2) {
+                continue;
+            }
+        }
+        if (i == 3) {
+            if ((s32) saveCurrentWorld < 3) {
+                continue;
+            }
+        }
+        if (i == 4) {
+            if ((s32) saveCurrentWorld < 4) {
+                continue;
+            }
+        }
+        if ((i == 5) || (i == 6)) {
+            if ((s32) saveCurrentWorld < 5) {
+                continue;
+            }
+        }
+        if (i == 7) {
+            if ((s32) saveCurrentWorld < 6) {
+                continue;
+            }
+        }
+        if (i == 8) {
+            if ((s32) saveCurrentWorld < 7) {
+                continue;
+            }
+        }
+        sp3C[count] = i;
+        count++;
+    }
+    if (count == 0) {
+        return 0;
+    }
+    p = D_800D515C;
+    while (1) {
+        if (count >= (s32) p[0]) {
+            break;
+        }
+        p += 2;
+    }
+    fc = count;
+    fx = p[1];
+    count = (s32) (fc * fx + fc);
+    if (0.0f != fx) {
+        count++;
+    }
+    for (i = 0; i != 22; i++) {
+        j = random_soft_s32_range(count);
+        k = random_soft_s32_range(count);
+        tmp = sp3C[j];
+        sp3C[j] = sp3C[k];
+        sp3C[k] = tmp;
+    }
+    i = sp3C[random_soft_s32_range(count)];
+    if (i == 0xFF) {
+        return 0;
+    }
+    D_800D6C10[i] = 1;
+    gSaveBuffer1.files[fileNum].enemyCard1E[i / 4] |= 1 << ((i % 4) * 2);
+    saveSetFileChecksum(fileNum);
+    func_800B891C(fileNum);
+    return i + 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9FE0.s")
+#endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800BA284.s")
+extern u8 D_800D6C10[];
 
+void func_800BA284(s32 fileNum) {
+    s32 i;
+
+    for (i = 0; i < 22; i++) {
+        D_800D6C10[i * 4] = gSaveBuffer1.files[fileNum].enemyCard1E[i] & 3;
+        D_800D6C10[i * 4 + 1] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 2) & 3;
+        D_800D6C10[i * 4 + 2] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 4) & 3;
+        D_800D6C10[i * 4 + 3] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 6) & 3;
+    }
+}
+
+// Draft, 96/110: the inverse of func_800BA284 and behaviourally complete. The
+// OR chain order is right (source order B|C|D|A reproduces the ROM's
+// ((A|B)|C)|D tree). Residue is purely prologue ordering: the ROM issues the
+// first D_800D6C13 load before the fileNum*0x58 index math, which rotates every
+// temp register. A `u8 val` temp gets the load-first order but costs the base
+// register ($a2/$v1 swap, 106).
+#ifdef NON_MATCHING
+void func_800BA40C(s32 fileNum) {
+    s32 i;
+
+    for (i = 0; i < 22; i++) {
+        gSaveBuffer1.files[fileNum].enemyCard1E[i] =
+            (D_800D6C10[i * 4] & 3) | ((D_800D6C10[i * 4 + 1] & 3) << 2) |
+            ((D_800D6C10[i * 4 + 2] & 3) << 4) | (D_800D6C10[i * 4 + 3] << 6);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800BA40C.s")
+#endif
 
 void init_save_file_maybe(s32);
 

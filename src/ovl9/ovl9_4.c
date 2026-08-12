@@ -684,4 +684,3 @@ s32 func_801E55C0_ovl9(s32 arg0, void *arg1) {
 }
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E5660_ovl9.s")
-

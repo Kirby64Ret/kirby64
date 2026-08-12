@@ -1224,7 +1224,41 @@ void func_801FF9DC_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FFAD0_ovl9.s")
+extern void func_8019C71C_ovl7(f32);
+extern void func_8019C6AC_ovl7(struct GObj *);
+void func_801FFC60_ovl9(void);
+void func_801FF860_ovl9(struct GObj *);
+
+void func_801FFAD0_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    Vector sp20;
+
+    if (0.0f == D_800E6690[omCurrentObj->objId]) {
+        if (tmp->unk3C == 0) {
+            func_8019C71C_ovl7(-0.25f);
+        } else {
+            sp20.x = 4.0f;
+            sp20.z = 4.0f;
+            sp20.y = 0.0;
+            func_8019C844_ovl7(&sp20);
+        }
+    } else {
+        func_801FFC60_ovl9();
+    }
+    if (tmp->unk3C == 0) {
+        if (func_8019A9AC_ovl7(240.0f, 640.0f) == 3) {
+            func_8019B424_ovl7(arg0);
+            if (tmp->unk3C != 0) {
+                func_8019C6AC_ovl7(arg0);
+            }
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FF860_ovl9);
+        }
+    }
+}
 
 void func_801FFC60_ovl9(void) {
     s32 unused;

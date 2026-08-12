@@ -99,9 +99,96 @@ s32 func_8021E4CC_ovl18(s32 arg0) {
     return phi_v1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E528_ovl18.s")
+struct Ovl18Cue {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 pad1[7];
+    /* 0x08 */ u16 unk8;
+    /* 0x0A */ u8 pad2[0x1A];
+}; /* 0x24 */
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E6E0_ovl18.s")
+struct Ovl18Row {
+    /* 0x00 */ u8 pad0[4];
+    /* 0x04 */ struct Ovl18Cue *unk4;
+    /* 0x08 */ u8 pad8[0x10];
+}; /* 0x18 */
+
+struct Ovl18Tbl {
+    /* 0x00 */ struct Ovl18Row *unk0;
+    /* 0x04 */ u8 pad4[0x18];
+}; /* 0x1C */
+
+extern struct Ovl18Tbl D_8022959C_ovl18[];
+extern s32 D_8022BC90_ovl18;
+extern u8 D_8022BCD0_ovl18[];
+
+void func_8021E528_ovl18(s32 arg0, s32 arg1, s32 arg2) {
+    extern u8 D_8022BCF8_ovl18[][4];
+    extern u8 D_8022BD18_ovl18[][4];
+    extern u8 D_800E7650[];
+    void ohSleep(s32);
+    s32 func_8021E050_ovl18(s32, s32, s32);
+    s32 n;
+    s32 i;
+    s32 ret;
+
+    ohSleep(D_8022959C_ovl18[D_8022BC90_ovl18].unk0[arg1].unk4[arg2].unk8);
+    if (D_8022BCD0_ovl18[arg1] != 1) {
+        while (1) {
+            if (func_8021E4CC_ovl18(arg1) != 0) {
+                break;
+            }
+            ohSleep(1);
+        }
+        for (i = 0, n = 4; i != n; i++) {
+            if (D_8022BCD8_ovl18[arg1][i] == 0) {
+                break;
+            }
+        }
+        ret = func_8021E050_ovl18(arg0, arg1, arg2);
+        D_8022BCD8_ovl18[arg1][i] = ret;
+        D_8022BCF8_ovl18[arg1][i] = D_800E7650[ret];
+        D_8022BD18_ovl18[arg1][i] = D_8022959C_ovl18[D_8022BC90_ovl18].unk0[arg1].unk4[arg2].unk0;
+        while (1) {
+            if (D_8022BCD8_ovl18[arg1][i] == 0) {
+                break;
+            }
+            if (D_800E7650[D_8022BCD8_ovl18[arg1][i]] != D_8022BCF8_ovl18[arg1][i]) {
+                break;
+            }
+            ohSleep(1);
+        }
+    }
+}
+
+void func_8021E6E0_ovl18(s32 arg0, s32 arg1, s32 arg2) {
+    extern u8 D_8022BCF8_ovl18[][4];
+    extern u8 D_8022BD18_ovl18[][4];
+    extern u8 D_800E7650[];
+    void ohSleep(s32);
+    s32 func_8021E050_ovl18(s32, s32, s32);
+    s32 n;
+    s32 i;
+    s32 ret;
+
+    ohSleep(D_8022959C_ovl18[D_8022BC90_ovl18].unk0[arg1].unk4[arg2].unk8);
+    if (D_8022BCD0_ovl18[arg1] != 1) {
+        while (1) {
+            if (func_8021E4CC_ovl18(arg1) != 0) {
+                break;
+            }
+            ohSleep(1);
+        }
+        for (i = 0, n = 4; i != n; i++) {
+            if (D_8022BCD8_ovl18[arg1][i] == 0) {
+                break;
+            }
+        }
+        ret = func_8021E050_ovl18(arg0, arg1, arg2);
+        D_8022BCD8_ovl18[arg1][i] = ret;
+        D_8022BCF8_ovl18[arg1][i] = D_800E7650[ret];
+        D_8022BD18_ovl18[arg1][i] = D_8022959C_ovl18[D_8022BC90_ovl18].unk0[arg1].unk4[arg2].unk0;
+    }
+}
 
 extern u8 D_8022BCF8_ovl18[][4];
 extern u8 D_8022BD18_ovl18[][4];

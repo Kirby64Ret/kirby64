@@ -62,7 +62,7 @@ void func_801DF514_ovl14(void);
 void func_801DF580_ovl14(f32 arg0);
 void func_801DF720_ovl14(void);
 void func_801DF75C_ovl14(f32 arg0);
-void func_801DF8FC_ovl14(void *arg0, s32 arg1);
+void func_801DF8FC_ovl14(s32 arg0, f32 arg1);
 void func_801DF9EC_ovl14(GObj *arg0);
 void func_801DFA5C_ovl14(GObj *arg0);
 void func_801DFB00_ovl14(GObj *arg0);

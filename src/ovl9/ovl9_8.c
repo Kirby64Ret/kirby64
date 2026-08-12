@@ -915,7 +915,35 @@ void func_801FB6D0_ovl9(void) {
     D_800E3750[omCurrentObj->objId] = -D_8021C5CC_ovl9[D_800E9AA0[omCurrentObj->objId].as_s32].unkC;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB744_ovl9.s")
+f32 func_800F951C(s32, f32, s32, f32);
+void func_801FB528_ovl9(void);
+void func_801FB5D4_ovl9(void);
+void func_801FB6D0_ovl9(void);
+
+void func_801FB744_ovl9(void) {
+    struct UnkStruct800E1B50 *temp;
+    f32 ang;
+    f32 dy;
+
+    temp = D_800E1B50[omCurrentObj->objId];
+    ang = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId],
+                        D_800E98E0[omCurrentObj->objId], D_800EA6E0[omCurrentObj->objId]);
+    if (ang == 9999.0f) {
+        utilPrintf("Error: FOURNINE!!/n");
+        return;
+    }
+    dy = temp->unk4 - gEntitiesNextPosYArray[omCurrentObj->objId];
+    if ((60.0f <= ABSF(ang)) || (60.0f <= ABSF(dy))) {
+        if (D_800E9C60[omCurrentObj->objId] == 0) {
+            func_801FB5D4_ovl9();
+        }
+        D_800E9C60[omCurrentObj->objId] = 1;
+    } else {
+        D_800E9C60[omCurrentObj->objId] = 0;
+        func_801FB528_ovl9();
+    }
+    func_801FB6D0_ovl9();
+}
 
 void func_801FB614_ovl9(void);
 void func_801FB744_ovl9(void);

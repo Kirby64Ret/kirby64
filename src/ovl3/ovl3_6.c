@@ -390,7 +390,52 @@ void func_80182658_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80182D9C_ovl3.s")
 
+extern s32 D_800D71F8;
+
+/* 39/143, structure exact; every diff is register naming: the ROM puts
+   omCurrentObj's value in $a1 and &D_800E9560 in $a0 (and omCurrentObj's
+   address in $s3 with &D_800E9AA0 in $s2); IDO swaps both pairs. */
+#ifdef NON_MATCHING
+void func_801831EC_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    s32 temp;
+    s32 rnd;
+
+    if (arg1 == 0) {
+        if (arg2 != 0.0f) {
+            temp = func_801ACCA0_ovl7(0x39, 0, 30.0f, 15.0f);
+            D_800E98E0[temp] = D_800E9560[omCurrentObj->objId];
+            switch (D_800E9560[omCurrentObj->objId]) {
+            case 2:
+                D_800E9C60[omCurrentObj->objId] = random_soft_s32_range(8);
+                D_800E9AA0[temp].as_s32 = D_800E9C60[omCurrentObj->objId];
+                D_800E9720[temp] = 0x78;
+                break;
+            case 1:
+                do {
+                    rnd = random_soft_s32_range(8);
+                    D_800D71F8 = rnd;
+                } while (rnd == D_800E9C60[omCurrentObj->objId]);
+                D_800E9AA0[omCurrentObj->objId].as_s32 = rnd;
+                D_800E9AA0[temp].as_s32 = D_800E9AA0[omCurrentObj->objId].as_s32;
+                D_800E9720[temp] = 0x5A;
+                break;
+            case 0:
+                do {
+                    rnd = random_soft_s32_range(8);
+                    D_800D71F8 = rnd;
+                } while ((rnd == D_800E9C60[omCurrentObj->objId]) || (rnd == D_800E9AA0[omCurrentObj->objId].as_s32));
+                D_800E98E0[omCurrentObj->objId] = rnd;
+                D_800E9AA0[temp].as_s32 = D_800E98E0[omCurrentObj->objId];
+                D_800E9720[temp] = 0x3C;
+                break;
+            }
+            play_sound(0x53);
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_801831EC_ovl3.s")
+#endif
 
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern u8 D_80191950_ovl3[];
@@ -887,17 +932,17 @@ void func_8018DFB4_ovl3(s32 arg0) {
     func_80154578_ovl3(D_801963E4_ovl3, 0, gEntitiesAngleYArray[omCurrentObj->objId] - D_80197B64_ovl3);
 }
 
-#ifdef NON_MATCHING
 /* 6/130: instruction-for-instruction exact; only $f0 and $f2 are swapped.
-   IDO gives $f0 to whichever float value is ASSIGNED first, so `temp` takes
-   it and the shared 0.0f constant gets $f2; the ROM is the other way round.
-   Moving the `temp =` statement later gives the constant $f0 but also sinks
-   the lwc1 out of the prologue (51 diffs) -- the register choice and the load
-   slot are coupled, as the guide records for func_802114E4_ovl9. */
+   IDO gives $f0 to the float value whose definition lands EARLIEST in the
+   scheduled stream (temp's lwc1 in the prologue); the ROM gives it to the
+   later-defined shared 0.0f. Swept in wave 8 on top of the earlier sweep:
+   dropping the local entirely (51 diffs -- the lwc1 sinks out of the
+   prologue), an explicit `f32 zero` local, and both declaration orders of
+   `zero`/`temp`; the register choice tracks the schedule, not the source. */
+#ifdef NON_MATCHING
 extern f32 D_80197B68_ovl3;
 extern f32 D_80198848_ovl3[];
 extern f32 D_80198858_ovl3[];
-extern void func_800AF27C(void);
 void func_8018E36C_ovl3(s32, s32, f32);
 
 void func_8018E164_ovl3(s32 arg0) {

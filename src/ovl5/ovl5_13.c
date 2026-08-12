@@ -587,7 +587,50 @@ void func_801843A0_ovl5(GObj *arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801853E0_ovl5.s")
 
+typedef union Unk28Ptrs {
+    struct UnkStruct8015C740 *unk0[10];
+} Unk28Ptrs;
+
+extern Unk28Ptrs D_8018A58C_ovl5;
+extern struct UnkStruct8015C740 D_8018AAF0_ovl5;
+extern f32 D_8018AB10_ovl5[];
+extern f32 D_8018AB18_ovl5[];
+void func_800ACB7C(SPObj *);
+
+#ifdef NON_MATCHING
+/* 2/111: the local block sits 4 bytes high (ROM array at 0x40, this at 0x44);
+   frame size is right. */
+void func_80185608_ovl5(GObj *arg0) {
+    s32 pad0;
+    Unk28Ptrs sp40 = D_8018A58C_ovl5;
+    SPObj *sp;
+    s32 idx;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    idx = D_8018EE18_ovl5;
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    sp = func_8015C740_ovl5(arg0, sp40.unk0[9]);
+    sp->xOffset = D_8018AB18_ovl5[0];
+    sp->yOffset = D_8018AB18_ovl5[1];
+    func_8015C740_ovl5(arg0, &D_8018AAF0_ovl5);
+    sp = func_8015C740_ovl5(arg0, sp40.unk0[idx + 1]);
+    sp->xOffset = D_8018AB10_ovl5[0];
+    sp->yOffset = D_8018AB10_ovl5[1];
+    while (1) {
+        if (idx != D_8018EE18_ovl5) {
+            idx = D_8018EE18_ovl5;
+            func_800ACB7C(sp);
+            sp = func_8015C740_ovl5(arg0, sp40.unk0[idx + 1]);
+            sp->xOffset = D_8018AB10_ovl5[0];
+            sp->yOffset = D_8018AB10_ovl5[1];
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185608_ovl5.s")
+#endif
 
 extern struct UnkStruct8015C740 D_8018AB20_ovl5;
 extern struct UnkStruct8015C740 D_8018AB40_ovl5;

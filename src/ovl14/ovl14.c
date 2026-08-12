@@ -91,25 +91,173 @@ void func_801DB7FC_ovl14(GObj *arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DB804_ovl14.s")
+void func_801DB804_ovl14(GObj *arg0) {
+    s32 r;
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800EBF60[omCurrentObj->objId] = 0;
+    D_800EBBE0[omCurrentObj->objId] = D_800EBDA0[omCurrentObj->objId] = D_800EBF60[omCurrentObj->objId];
+    func_800A9EA4(0x10438);
+    D_800EBBE0[omCurrentObj->objId] = func_801DC38C_ovl14(random_soft_s32_range(5));
+    if (D_800EBBE0[omCurrentObj->objId] != -1) {
+        ohSleep(0x14);
+        do {
+            r = random_soft_s32_range(5);
+        } while (r == D_800EC2E0[D_800EBBE0[omCurrentObj->objId]].as_s32);
+        D_800EBDA0[omCurrentObj->objId] = func_801DC38C_ovl14(r);
+        if (D_800EBDA0[omCurrentObj->objId] != -1) {
+            ohSleep(0x14);
+            do {
+                r = random_soft_s32_range(5);
+            } while ((r == D_800EC2E0[D_800EBBE0[omCurrentObj->objId]].as_s32) ||
+                     (r == D_800EC2E0[D_800EBDA0[omCurrentObj->objId]].as_s32));
+            D_800EBF60[omCurrentObj->objId] = func_801DC38C_ovl14(r);
+        }
+    }
+    func_801DC2A0_ovl14();
+}
 
 void func_801DB9F8_ovl14(GObj *arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DBA00_ovl14.s")
+extern void func_800AA608(s32, s32, f32, s32, f32);
+extern void func_800A9F98(s32, f32);
+
+void func_801DBA00_ovl14(void *arg0) {
+    s32 temp;
+    s32 sp20;
+
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    D_800EBDA0[omCurrentObj->objId] = 0;
+    D_800EBBE0[omCurrentObj->objId] = D_800EBDA0[omCurrentObj->objId];
+    func_800AA608(((GObj *) arg0)->data.dobj->firstChild, 0x10430, 6.0f, 0x1006B, 6.0f);
+    func_800A9F98(0x10430, 6.0f);
+    ohSleep(0x22);
+    play_sound(0x1AA);
+    func_800AF27C();
+    func_800AA018(0x10432);
+    temp = random_soft_s32_range(4);
+    if (temp == 3) {
+        temp = 1;
+    }
+    sp20 = random_soft_s32_range(2);
+    D_800EBBE0[omCurrentObj->objId] = func_801DC674_ovl14(0, temp);
+    if (D_800EBBE0[omCurrentObj->objId] != -1) {
+        D_800EC2E0[D_800EBBE0[omCurrentObj->objId]].as_s32 = 0;
+        D_800EC4A0[D_800EBBE0[omCurrentObj->objId]] = sp20;
+        temp += 2;
+        D_800EBDA0[omCurrentObj->objId] = func_801DC674_ovl14(0, temp);
+        if (D_800EBDA0[omCurrentObj->objId] != -1) {
+            D_800EC2E0[D_800EBDA0[omCurrentObj->objId]].as_s32 = 1;
+            D_800EC4A0[D_800EBDA0[omCurrentObj->objId]] = sp20 ^ 1;
+        }
+    }
+    ohSleep(0x14);
+    func_800A9EA4(0x10438);
+    ohSleep(0x32);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 
 void func_801DBC2C_ovl14(GObj *arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DBC34_ovl14.s")
+void func_801DBC34_ovl14(void *arg0) {
+    s32 r;
+
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    D_800EBF60[omCurrentObj->objId] = 0;
+    D_800EBBE0[omCurrentObj->objId] = D_800EBDA0[omCurrentObj->objId] = D_800EBF60[omCurrentObj->objId];
+    func_800AA608(((GObj *) arg0)->data.dobj->firstChild, 0x10430, 6.0f, 0x1006B, 6.0f);
+    func_800A9F98(0x10430, 6.0f);
+    ohSleep(0x22);
+    play_sound(0x1AA);
+    func_800AF27C();
+    func_800AA018(0x10432);
+    D_800EBBE0[omCurrentObj->objId] = func_801DC674_ovl14(1, random_soft_s32_range(4));
+    if (D_800EBBE0[omCurrentObj->objId] != -1) {
+        do {
+            r = random_soft_s32_range(4);
+        } while (r == D_800EC2E0[D_800EBBE0[omCurrentObj->objId]].as_s32);
+        D_800EBDA0[omCurrentObj->objId] = func_801DC674_ovl14(1, r);
+        if (D_800EBDA0[omCurrentObj->objId] != -1) {
+            do {
+                r = random_soft_s32_range(4);
+            } while ((r == D_800EC2E0[D_800EBBE0[omCurrentObj->objId]].as_s32) ||
+                     (r == D_800EC2E0[D_800EBDA0[omCurrentObj->objId]].as_s32));
+            D_800EBF60[omCurrentObj->objId] = func_801DC674_ovl14(1, r);
+            play_sound(0x18A);
+        }
+    }
+    ohSleep(0x14);
+    func_800A9EA4(0x10438);
+    ohSleep(0x3C);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 
 void func_801DBEA4_ovl14(GObj *arg0) {
 
 }
 
+#ifdef NON_MATCHING
+/* 36/196. Guarded by the manager: converted but not byte-exact, and it
+   grew ovl14.c by 32 bytes, shifting every segment after it. */
+void func_801DBEAC_ovl14(void *arg0) {
+    s32 r;
+    s32 i;
+
+    D_800DDFD0[omCurrentObj->objId] = 5;
+    D_800EBF60[omCurrentObj->objId] = 0;
+    D_800EBBE0[omCurrentObj->objId] = D_800EBDA0[omCurrentObj->objId] = D_800EBF60[omCurrentObj->objId];
+    func_800AA608(((GObj *) arg0)->data.dobj->firstChild, 0x10430, 6.0f, 0x1006B, 6.0f);
+    func_800A9F98(0x10430, 6.0f);
+    ohSleep(0x22);
+    play_sound(0x1AA);
+    func_800AF27C();
+    func_800AA018(0x10432);
+    r = random_soft_s32_range(4);
+    D_800EBBE0[omCurrentObj->objId] = func_801DC674_ovl14(2, r);
+    if (D_800EBBE0[omCurrentObj->objId] != -1) {
+        D_800EBBE0[omCurrentObj->objId] = r;
+        ohSleep(0x14);
+        func_800A9EA4(0x10438);
+        ohSleep(random_soft_s32_range(0x1E) + 0xA);
+        do {
+            r = random_soft_s32_range(4);
+        } while (r == D_800EBBE0[omCurrentObj->objId]);
+        D_800EBDA0[omCurrentObj->objId] = func_801DC674_ovl14(2, r);
+        if (D_800EBDA0[omCurrentObj->objId] != -1) {
+            D_800EBDA0[omCurrentObj->objId] = r;
+            ohSleep(random_soft_s32_range(0x1E) + 0x1E);
+            do {
+                r = random_soft_s32_range(4);
+            } while ((r == D_800EBBE0[omCurrentObj->objId]) || (r == D_800EBDA0[omCurrentObj->objId]));
+            D_800EBF60[omCurrentObj->objId] = func_801DC674_ovl14(2, r);
+            if (D_800EBDA0[omCurrentObj->objId] != -1) {
+                D_800EBF60[omCurrentObj->objId] = r;
+                ohSleep(random_soft_s32_range(0x1E) + 0x1E);
+                i = 0;
+                while (1) {
+                    if (i != D_800EBBE0[omCurrentObj->objId]) {
+                        if (i != D_800EBDA0[omCurrentObj->objId]) {
+                            if (i != D_800EBF60[omCurrentObj->objId]) {
+                                break;
+                            }
+                        }
+                    }
+                    i++;
+                }
+                func_801DC674_ovl14(2, i);
+            }
+        }
+    }
+    ohSleep(0x28);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DBEAC_ovl14.s")
+#endif
 
 void func_801DC1BC_ovl14(GObj *arg0) {
 
@@ -678,7 +826,43 @@ void func_801DF75C_ovl14(f32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DF8FC_ovl14.s")
+extern s32 func_800A9B48(s32);
+extern u32 D_800DF850[];
+
+void func_801DF8FC_ovl14(s32 arg0, f32 arg1) {
+    struct UnkStruct8004A7C4_3C_80 *mobj;
+    s32 *p;
+    s32 **list;
+    struct UnkStruct8004A7C4_3C *node;
+    s32 i;
+
+    if (func_800A9B48(arg0) != 0) {
+        list = *(s32 ***) D_800DF850[omCurrentObj->objId];
+        node = omCurrentObj->data.ptr;
+        for (i = 0; i < 10; i++) {
+            node = animModelTreeNextNode(node);
+        }
+        while (node != NULL) {
+            if (list != NULL) {
+                if (*list != NULL) {
+                    mobj = node->unk80;
+                    p = *list;
+                    if (mobj != NULL) {
+                        do {
+                            if (*p != 0) {
+                                animSetTextureAnimation(mobj, *p, arg1);
+                            }
+                            mobj = mobj->unk0;
+                            p++;
+                        } while (mobj != NULL);
+                    }
+                }
+                list++;
+            }
+            node = animModelTreeNextNode(node);
+        }
+    }
+}
 
 void func_801DF9EC_ovl14(GObj *arg0) {
     func_800B19F4(0x71, omCurrentObj->objId);

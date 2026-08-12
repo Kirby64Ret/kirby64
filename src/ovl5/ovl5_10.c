@@ -190,7 +190,48 @@ SPObj *func_8017FBA4_ovl5(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
     return sp;
 }
 
+#ifdef NON_MATCHING
+/* 18/75: s0/s1/s2 rotated (ROM s0=done, s1=arg1, s2=const 1) and the 0.0f
+   constant shares accum's register. */
+void func_8017FC58_ovl5(GObj *arg0, s32 arg1, f32 arg2) {
+    s32 done;
+    SPObj *sp;
+    f32 accum;
+    f32 delta;
+    f32 t;
+
+    done = 0;
+    accum = 0.0f;
+    do {
+        if (arg1 == 1) {
+            delta = arg2;
+        } else {
+            delta = -arg2;
+        }
+        t = (delta < 0.0f) ? -delta : delta;
+        if (12.0f < t + accum) {
+            t = 12.0f - accum;
+            done = 1;
+            if (arg1 == 1) {
+                delta = t;
+            } else {
+                delta = -t;
+            }
+        } else {
+            t = (delta < 0.0f) ? -delta : delta;
+            accum += t;
+        }
+        sp = (SPObj *) arg0->unk4C;
+        while (sp != NULL) {
+            sp->yOffset += delta;
+            sp = (SPObj *) sp->unk8;
+        }
+        ohSleep(1);
+    } while (done == 0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017FC58_ovl5.s")
+#endif
 
 extern f32 D_80189BE0_ovl5[];
 extern s32 D_8018EDD8_ovl5;

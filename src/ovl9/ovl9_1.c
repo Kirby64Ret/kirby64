@@ -1251,16 +1251,11 @@ f32 func_801D650C_ovl9(s32 arg0) {
 
 extern FUNCLIST D_8021BBF4_ovl9;
 
-#ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 10/32 insns. Draft kept. */
 void func_801D69D8_ovl9(struct GObj *arg0) {
     while (1) {
         utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_8021BBF4_ovl9);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D69D8_ovl9.s")
-#endif
 
 void func_801D6A58_ovl9(GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = 5;
