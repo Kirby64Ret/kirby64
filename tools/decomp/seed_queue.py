@@ -49,14 +49,56 @@ GUARD = re.compile(
     r'#pragma GLOBAL_ASM\("([^"]+)"\)', re.S)
 
 
+def padding_trap(sfile):
+    """True if the listing carries words after its own function's `.size`.
+
+    Such a function cannot be converted no matter how byte-exact the C gets:
+    C emits no trailing padding, so the TU shrinks and every segment after it
+    shifts. The permuter does not know that and will happily drive one to
+    score 0 -- it produced exactly that on func_8002C990 and func_8002D0D0,
+    both of which the ROM gate then rejected. That is CPU spent on something
+    that cannot ever be committed, so screen it out at the queue.
+
+    ANCHOR ON THE LAST `.size`. Anchoring on the first matches the migrated
+    `.late_rodata` block at the head of a listing and condemns a perfectly
+    convertible function -- a bug this project has now made twice.
+    """
+    try:
+        lines = open(sfile, errors='replace').read().split('\n')
+    except OSError:
+        return False
+    last = max((i for i, l in enumerate(lines) if l.strip().startswith('.size')),
+               default=None)
+    if last is None:
+        return False
+    return any(l.strip().startswith('/*') for l in lines[last + 1:])
+
+
 def drafts():
-    """(cfile, func) for every guarded draft in the tree."""
+    """(cfile, func) for every pragma that is worth permuting.
+
+    NO GUARD PAIRING. The first version matched
+    `#ifdef NON_MATCHING (.*?) #else #pragma(...)` to find guarded drafts, and
+    that mis-pairs: a `#ifdef NON_MATCHING` block whose `#else` is not followed
+    by a pragma lets the non-greedy span run on to the NEXT block's pragma,
+    swallowing the guard in between. It is the same span-an-unknown-region bug
+    that made factory.py delete four functions, and here it silently dropped
+    every padding trap from the screen.
+
+    There is no need to know whether a pragma has a draft. setup_permuter
+    generates one with m2c when none exists, so a bare pragma is valid fuel
+    too. Take every pragma, minus the ones that cannot be committed:
+      - padding traps (words after the function's own last `.size`);
+      - asm_manual/ listings, which ARE padding by construction.
+    """
     out = []
     for cf in sorted(glob.glob('src/**/*.c', recursive=True)):
         text = open(cf, errors='replace').read()
-        for m in GUARD.finditer(text):
-            fn = os.path.basename(m.group(2))[:-2]
-            out.append((cf, fn))
+        for m in re.finditer(r'#pragma GLOBAL_ASM\("([^"]+)"\)', text):
+            sfile = m.group(1)
+            if sfile.startswith('asm_manual/') or padding_trap(sfile):
+                continue
+            out.append((cf, os.path.basename(sfile)[:-2]))
     return out
 
 
