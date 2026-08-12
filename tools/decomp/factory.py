@@ -39,6 +39,17 @@ matter. It also pastes the permuter's PREPROCESSED source, which is correct
 but ugly (expanded typedefs, no comments). Correctness first; a later pass can
 prettify without touching the ROM.
 
+RUN IT ONLY WHILE THE LANES ARE PAUSED
+
+The gate builds the whole shared tree, so a lane with a file mid-edit fails
+it and the candidate is rejected for someone else's reason. Measured: six
+consecutive score-0 candidates rejected in ~6 seconds each while three lanes
+were live, and one of them (func_80176108_ovl5) verified MATCH the moment it
+was tried against a quiet tree. So the harvest runs at drain points, in the
+same window the manager uses to commit. A rejection while lanes are live
+means nothing and the candidate must be retried, which is why rejected wins
+are moved to _harvested/ rather than deleted.
+
 Usage:  factory.py            harvest forever
         factory.py --once     one pass over pending wins, then exit
 """
@@ -125,7 +136,11 @@ def splice(cfile, func, body):
 def gate():
     """The arbiter. A byte-exact linked ROM, or nothing."""
     r = sh(f'bash {TOOLS}/mk.sh')
-    if 'error:' in r.stdout or 'error:' in r.stderr:
+    # IDO writes `cfe: Error:` with a capital E and gcc writes `error:`.
+    # Grepping only for the lowercase form reported every IDO compile failure
+    # as a link failure, which sent the diagnosis in the wrong direction.
+    blob = r.stdout + r.stderr
+    if 'error:' in blob or 'cfe: Error' in blob:
         return False, 'compile error'
     if 'kirby.us.z64: OK' not in r.stdout:
         return False, 'link/sha1 failed'
