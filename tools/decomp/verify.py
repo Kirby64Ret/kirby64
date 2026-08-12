@@ -39,6 +39,29 @@ def symmap():
                 _sym[m.group(1)] = m.group(2).upper().lstrip('0').rjust(8, '0')
     return _sym
 
+_migrated = None
+def rodata_is_migrated(cfile):
+    """Does this C file's segment emit its OWN .rodata?
+
+    kirby64.yaml distinguishes two rodata models. A DOTTED entry --
+    `[0x7DCC0, .rodata, ovl1/game]` -- means src/ovl1/game.c emits its own
+    literals into its own .rodata section. An undotted `rodata` entry means the
+    constants stay in a shared asm data blob and every function must reference
+    them as extern symbols.
+
+    The distinction decides whether "our object references its own .rodata
+    where the ROM names a symbol" is a defect or the intended result, so the
+    check below cannot be right without it.
+    """
+    global _migrated
+    if _migrated is None:
+        _migrated = set()
+        for line in open('kirby64.yaml'):
+            m = re.search(r'\[\s*0x[0-9A-Fa-f]+\s*,\s*\.rodata\s*,\s*([\w/]+)\s*\]', line)
+            if m:
+                _migrated.add('src/' + m.group(1) + '.c')
+    return os.path.normpath(cfile) in _migrated
+
 def find_listing(func):
     # real splat output (post-ROM-extraction) is authoritative; a function with
     # no listing was already matched before this session (full-ROM sha1 covers it)
@@ -207,6 +230,7 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
         cur = cur[:-1]
     n = max(len(twords), len(cur))
     diffs = []
+    rodata_notes = []
     for i in range(n):
         tw = twords[i] if i < len(twords) else None
         cw, ctext, creloc = cur[i] if i < len(cur) else (None, '<missing>', None)
@@ -227,13 +251,33 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
             elif ta is not None and re.search(r'<\.(rodata|data|bss)\b', ctext):
                 # The ROM reaches a NAMED symbol; we reach our own section.
                 # objdump prints `<.rodata>` here, which does not resolve, so
-                # without this the check was skipped and the function passed --
-                # while IDO quietly emitted a duplicate copy of the constant
-                # into .rodata, growing the segment. That was the whole of the
-                # residual ROM difference. Write the constant as an extern
-                # reference to the real data symbol instead of a literal.
-                ok = False
-                ctext += '  [references own section, ROM references a symbol]'
+                # the comparison cannot be made from the immediate alone.
+                #
+                # WHETHER THIS IS A DEFECT DEPENDS ON THE SEGMENT'S RODATA
+                # MODEL, which is why this used to be wrong in both directions.
+                #
+                # UNMIGRATED segment: the constants live in a shared asm data
+                # blob, so emitting a literal makes IDO quietly write a
+                # DUPLICATE copy into .rodata and grow the segment. Before this
+                # check existed the function passed and that duplication was
+                # the whole of the residual ROM difference. Fix the source:
+                # reference the real data symbol as an extern instead.
+                #
+                # MIGRATED segment (a dotted `.rodata, seg/file` entry): the
+                # file owning its literals is the POINT of the migration, and
+                # the linked words are identical. Counting it as a diff makes
+                # every such function look broken -- 9 of them across ovl16 and
+                # ovl17 the day that migration landed -- and sends agents
+                # chasing a residue that is not there. Report it, do not count
+                # it; check_sections.py catches a genuine duplicate as an
+                # oversize, and verify_rom.py remains the arbiter.
+                note = '  [references own section, ROM references a symbol]'
+                if rodata_is_migrated(cfile):
+                    rodata_notes.append(f'  [{i:4}] {ctext}{note} -- OK, '
+                                        f'{cfile} owns its .rodata')
+                else:
+                    ok = False
+                    ctext += note
         if not ok:
             diffs.append(f'  [{i:4}] target={tw:08X} {ttexts[i]:45.45}' if tw is not None
                          else f'  [{i:4}] target=<none>' )
@@ -245,6 +289,10 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
                           f'emitted by this C -- if they are part of the function rather than '
                           f'segment alignment, it is {trimmed*4} bytes short and will shift '
                           f'later functions. Confirm with check_layout.py]')
+        if rodata_notes:
+            return True, (f'{func}: MATCH ({len(cur)} insns) '
+                          f'[{len(rodata_notes)} own-.rodata reference(s), not counted]\n'
+                          + '\n'.join(rodata_notes[:10]))
         return True, f'{func}: MATCH ({len(cur)} insns)'
     return False, f'{func}: DIFF {len(diffs)}/{n} insns\n' + '\n'.join(diffs[:40])
 
