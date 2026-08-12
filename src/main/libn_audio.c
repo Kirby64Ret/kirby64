@@ -280,33 +280,39 @@ void func_80023384(KChan *chan, u8 arg1)
 }
 
 /* Twin of func_80023384; same 2/28 register rotation, same swept floor. */
-#ifdef NON_MATCHING
-void func_800233F4(KChan *chan, u8 arg1) {
-    KChan *note;
-    KChan *next;
+void func_800233F4(KChan *chan, u8 arg1)
+{
+  KChanVoice *new_var;
+  KChan *note;
+  KChan *new_var2;
+  KChan *next;
+  new_var2 = chan;
+  if (arg1 >= 0x80)
+  {
+    arg1 = 0x7F;
+  }
+  new_var2->unk2F = arg1;
+  new_var = new_var2->unk28;
+  if (chan->unk28 != ((void *) 0))
+  {
+    new_var->unk3A = arg1;
+  }
+  note = D_80097920;
+  while (note != ((void *) 0))
+  {
+    next = note->next;
+    if (note->owner == new_var2)
+    {
+      note->unk2F = arg1;
+      if (note->unk28 != ((void *) 0))
+      {
+        note->unk28->unk3A = arg1;
+      }
+    }
+    note = next;
+  }
 
-    if (arg1 >= 0x80) {
-        arg1 = 0x7F;
-    }
-    chan->unk2F = arg1;
-    if (chan->unk28 != NULL) {
-        chan->unk28->unk3A = arg1;
-    }
-    note = D_80097920;
-    while (note != NULL) {
-        next = note->next;
-        if (note->owner == chan) {
-            note->unk2F = arg1;
-            if (note->unk28 != NULL) {
-                note->unk28->unk3A = arg1;
-            }
-        }
-        note = next;
-    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800233F4.s")
-#endif
 
 void func_80023464(KChan *chan, u8 arg1) {
     KChan *note;
