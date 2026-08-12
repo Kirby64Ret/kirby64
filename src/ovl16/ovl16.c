@@ -2749,7 +2749,47 @@ s32 func_801EB51C_ovl16(void) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801EB78C_ovl16.s")
+s32 func_801EB78C_ovl16(void) {
+    s32 func_801EBD8C_ovl16(s32);
+    f32 lbvector_Normalize(Vector *);
+    Vector *func_800195D8(Vector *, Vector *);
+    f32 dx;
+    f32 dy;
+    Vector sp44;
+    Vector sp38;
+    Vector sp2C;
+
+    if (D_800E9C60[omCurrentObj->objId] == 0) {
+    dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800D7098.unk34];
+    dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[D_800D7098.unk34];
+    if (sqrtf(dx * dx + dy * dy) < 44.0f) {
+        play_sound(0x1B1);
+        func_801EBD8C_ovl16(2);
+        sp38.x = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800D7098.unk34];
+        sp38.y = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[D_800D7098.unk34];
+        sp38.z = 0.0f;
+        lbvector_Normalize(&sp38);
+        sp2C.x = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesPosXArray[omCurrentObj->objId];
+        sp2C.y = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesPosYArray[omCurrentObj->objId];
+        sp2C.z = 0.0f;
+        lbvector_Normalize(&sp2C);
+        func_800195D8(&sp2C, &sp38);
+        D_800EA6E0[omCurrentObj->objId] = atan2f(-sp2C.x, sp2C.y);
+        while (D_800EA6E0[omCurrentObj->objId] > 6.283185482f) {
+            D_800EA6E0[omCurrentObj->objId] -= 6.283185482f;
+        }
+        while (D_800EA6E0[omCurrentObj->objId] < -6.283185482f) {
+            D_800EA6E0[omCurrentObj->objId] += 6.283185482f;
+        }
+        D_800E3050[omCurrentObj->objId] = sinf(D_800EA6E0[omCurrentObj->objId]) * -D_800EA8A0[omCurrentObj->objId];
+        D_800E3210[omCurrentObj->objId] = cosf(D_800EA6E0[omCurrentObj->objId]) * D_800EA8A0[omCurrentObj->objId];
+        D_800E9C60[omCurrentObj->objId] = 1;
+        return 1;
+    }
+    return 0;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801EBA98_ovl16.s")
 

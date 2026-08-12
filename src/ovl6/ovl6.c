@@ -1706,66 +1706,73 @@ void func_80154938_ovl6(void) {
     D_8015A688_ovl6 = NULL;
 }
 
-#ifdef MIPS_TO_C
-
+/* 8/53: every instruction and register exact; residue is two scheduling
+ * clusters (prev=cnt vs the beqz delay slot, and the savep-restore lbu/move
+ * order). Swept: u8-vs-u32 token type (u32 required), sentinel local for the
+ * 0x22 constant (required), n-temp (required), switch arms (required),
+ * branch polarity, duplicated prev-store, (u32) bias casts. */
+#ifdef NON_MATCHING
 s32 func_80154A40_ovl6(void) {
-    s32 var_a2;
-    s32 var_a3;
-    u32 temp_v0;
-    u32 var_a1;
-    u8 var_t0;
-    void *temp_t1;
-    void *var_a0;
-    void *var_v0;
-    void *var_v1;
+    UnkStruct8015A560_ovl6 *p;
+    UnkStruct8015A560_ovl6 *savep;
+    UnkStruct8015A560_ovl6 **q;
+    UnkStruct8015A560_ovl6 *n;
+    u32 max;
+    u32 prev;
+    u32 cnt;
+    u32 t;
+    u32 c;
+    u32 tok;
 
-    var_v0 = D_8015A560_ovl6;
-    var_v1 = D_8015A564_ovl6;
-    var_a0 = NULL;
-    var_a1 = 0;
-    var_a2 = 0;
-    var_a3 = 0;
-    var_t0 = var_v0->unk2;
-loop_1:
-    if (var_t0 != 0x22) {
-block_6:
-        switch (var_t0) {                           /* irregular */
-            case 34:
-                break;
-            case 24:
-            case 31:
-                var_a3 += 1;
-            default:
-block_13:
-                var_t0 = var_v0->unkA;
-                var_v0 += 8;
-                if ((var_t0 == 0x22) && (var_a0 != NULL)) {
-                    var_v0 = var_a0 + 8;
-                    var_t0 = var_v0->unk2;
-                    var_a0 = NULL;
-                }
-                break;
-            case 33:
-                var_a0 = var_v0;
-                var_v0 = var_v0->unk4 - 8;
-                goto block_13;
+    p = D_8015A560_ovl6;
+    q = D_8015A564_ovl6;
+    savep = NULL;
+    max = 0;
+    prev = 0;
+    cnt = 0;
+    c = p->unk2;
+    tok = 0x22;
+top:
+    if (tok == c) {
+        t = cnt + prev;
+        prev = cnt;
+        if (max < t) {
+            max = t;
         }
-        goto loop_1;
+        n = q[1];
+        q++;
+        cnt = 0;
+        if (n == NULL) {
+            goto ret;
+        }
+        p = n;
+        c = n->unk2;
+        goto dispatch;
     }
-    temp_v0 = var_a3 + var_a2;
-    var_a2 = var_a3;
-    if (var_a1 < temp_v0) {
-        var_a1 = temp_v0;
+dispatch:
+    if (tok == c) {
+        goto top;
     }
-    temp_t1 = var_v1->unk4;
-    var_v1 += 4;
-    var_a3 = 0;
-    var_v0 = temp_t1;
-    if (temp_t1 != NULL) {
-        var_t0 = temp_t1->unk2;
-        goto block_6;
+    switch (c) {
+        case 0x18:
+        case 0x1F:
+            cnt++;
+            break;
+        case 0x21:
+            savep = p;
+            p = (UnkStruct8015A560_ovl6 *) (p->unk4 - 8);
+            break;
     }
-    return var_a1 + 1;
+    c = p[1].unk2;
+    p++;
+    if ((tok == c) && (savep != NULL)) {
+        p = savep + 1;
+        c = ((volatile UnkStruct8015A560_ovl6 *) p)->unk2;
+        savep = NULL;
+    }
+    goto top;
+ret:
+    return max + 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154A40_ovl6.s")

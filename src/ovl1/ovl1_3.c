@@ -53,7 +53,7 @@ extern u32 D_800D7C10;
 
 extern struct CacheLine *D_800D7BC0[4];
 extern struct CacheLine *D_800D7BD0[4];
-extern struct CacheLine *D_800D7BE0[4];
+extern u32 D_800D7BE0[4];
 extern s32 D_800D7BF0[];
 extern s32 D_800D7C00[];
 
