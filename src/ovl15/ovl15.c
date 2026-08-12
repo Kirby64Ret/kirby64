@@ -315,7 +315,49 @@ void func_801DC310_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DC594_ovl15.s")
 
+#ifdef NON_MATCHING
+/* 10/107, and all ten are the same register: the ROM parks `temp` in $a2 --
+   the register the 3rd argument of the func_800A7F74 call below it wants --
+   while IDO puts it in $v0 and only claims $a2 for the argument. Swept:
+   s32-with-casts instead of a typed pointer (10), reusing one variable for
+   both temp and the 3:8 selector (34), and giving the selector its own local
+   (15). The first form above is the floor. */
+struct Ovl15Xform {
+    u8 filler0[4];
+    Vector pos;
+    Vector angle;
+};
+
+struct Ovl15XformOwner {
+    u8 filler0[0x4C];
+    struct Ovl15Xform *unk4C;
+};
+
+void func_801DC890_ovl15(struct GObj *arg0) {
+    struct Ovl15XformOwner *temp;
+
+    if (D_800E98E0[omCurrentObj->objId] == 1) {
+        temp = (struct Ovl15XformOwner *) D_800EA360[omCurrentObj->objId];
+        if (temp != NULL) {
+            temp->unk4C->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+            temp->unk4C->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            temp->unk4C->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+            temp->unk4C->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
+            temp->unk4C->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
+            temp->unk4C->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
+        }
+        if ((D_800EA1A0[omCurrentObj->objId]++ & 1) == 0) {
+            func_800A7F74(6, 2, D_800E6A10[omCurrentObj->objId] == 1.0f ? 3 : 8,
+                          gEntitiesNextPosXArray[omCurrentObj->objId],
+                          gEntitiesNextPosYArray[omCurrentObj->objId],
+                          gEntitiesNextPosZArray[omCurrentObj->objId]);
+        }
+        func_8019F3B0_ovl7();
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DC890_ovl15.s")
+#endif
 
 void func_801DCA3C_ovl15(struct GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B7560;
@@ -597,7 +639,46 @@ void func_801DF410_ovl15(struct GObj *arg0) {
     D_800D7118.unk3C = 0;
 }
 
+#ifdef NON_MATCHING
+/* 54/72, and blocked by a header type, not by codegen. Every access to
+   D_800E9AA0 here is a plain s32; ovl1_6.h declares it
+   `struct EntityThing800E9AA0 *D_800E9AA0[]`, so any spelling that gets an
+   s32 out of it -- (s32) on the element, ((s32 *) D_800E9AA0)[i], or
+   *(s32 *) &D_800E9AA0[i] -- makes IDO hoist the base address into a
+   register for the whole function, where the ROM folds %lo into each plain
+   read and only materialises the base in the two read-modify-write arms.
+   All three spellings measure 54. This needs `extern s32 D_800E9AA0[]` in
+   the TU, which collides with the header at file scope. */
+void func_801DF52C_ovl15(struct GObj *arg0) {
+    s32 temp;
+
+    D_800D7098.unk14 = 1;
+    temp = *(s32 *) &D_800E9AA0[omCurrentObj->objId];
+    switch (temp) {
+    case 0:
+    case 2:
+    case 4:
+        if (random_soft_s32_range(2) == 0) {
+            goto reroll;
+        }
+        (*(s32 *) &D_800E9AA0[omCurrentObj->objId])++;
+        temp = *(s32 *) &D_800E9AA0[omCurrentObj->objId];
+        break;
+    case 1:
+    case 3:
+    case 5:
+    reroll:
+        *(s32 *) &D_800E9AA0[omCurrentObj->objId] =
+            D_801E6614_ovl15[*(s32 *) &D_800E9AA0[omCurrentObj->objId] * 2 + random_soft_s32_range(2)];
+        temp = *(s32 *) &D_800E9AA0[omCurrentObj->objId];
+        break;
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = D_801E65FC_ovl15[temp];
+}
+
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DF52C_ovl15.s")
+#endif
 
 void func_801DF64C_ovl15(s32 arg0) {
     s32 i;
@@ -907,6 +988,33 @@ void func_801E35B8_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E56CC_ovl15.s")
 
+#ifdef NON_MATCHING
+/* 39/72. Structure and the signed-% correction are right; the residue is the
+   frame (0x40 vs 0x38) plus a one-slot integer rotation that follows from it.
+   `r` is load-bearing: without its own local IDO range-propagates `x % 2 != 0`
+   into a bare `andi` and drops the ROM's bgez/beqz/addiu -2 correction (52
+   diffs). But a named scalar costs 8 bytes of frame and the ROM's 0x38 has no
+   room for one, so the two requirements are in direct conflict. A `switch` on
+   the modulo does not force the value either (also 52). */
+void func_801E5C34_ovl15(struct GObj *arg0) {
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+    s32 r;
+    Vector sp2C;
+
+    D_800E9560[omCurrentObj->objId]++;
+    r = D_800E9560[omCurrentObj->objId] % 2;
+    if (r != 0) {
+        utilGetTransformSRT(&sp2C, D_800DFBD0[omCurrentObj->objId][5]);
+        func_800A7F74(6, 2, 0xB, sp2C.x, sp2C.y, sp2C.z);
+    }
+    func_801A03E4_ovl7(D_800DFBD0[omCurrentObj->objId][2]);
+    if (D_800D7118.unk3C == 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = -1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E5C34_ovl15.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E5D54_ovl15.s")
