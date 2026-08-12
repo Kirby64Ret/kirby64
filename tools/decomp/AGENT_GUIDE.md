@@ -762,6 +762,23 @@ location, `cmp` it against the old copy and delete the old one if identical.
 `tools/pc/gen_data.py` reporting "N stale listing(s) skipped" is the same
 disease showing up downstream.
 
+## State claims in briefs go stale while you read them -- carry the hash
+
+This tree changes continuously under six concurrent agents, and today's audit
+was nearly derailed by a brief whose central claim ("the port hangs, retraces
+never fire") had been true when written and was false by the time it was read
+-- the retraces measured healthy at 60 Hz and the real fault was elsewhere.
+The same day, a commit subject claimed "no stub at all" one frontier early.
+
+Two rules, both cheap:
+
+  * When you WRITE a handoff or report, stamp every "current state" claim
+    with the commit hash you measured it at (`git rev-parse --short HEAD`).
+    "X is true at abc1234" stays true forever; "X is true" rots.
+  * When you READ a brief, re-measure the load-bearing claims before spending
+    time on them. The measurement discipline that exists for the ROM
+    (verify_rom's stale-ELF refusal) applies to prose too.
+
 ## verify.py is not the arbiter, and it has lied in three ways
 
 verify.py compiles ONE translation unit and word-diffs it against the ROM's
