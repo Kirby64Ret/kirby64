@@ -232,23 +232,17 @@ void func_801E1118_ovl14(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E1198_ovl14.s")
 
-// 7/216: instruction-for-instruction exact; the ROM keeps 0.0f in $f0 and
-// D_801E30F0_ovl14 in $f2 and IDO swaps the pair. Swept: local vs inline for
-// each constant, both assignment orders, both declaration orders, a third
-// dead f32, and collapsing the two assignments onto one line -- 7 in every
-// case. The `- 40` integer literal IS load-bearing: it forks the second 40.0f
-// the ROM materialises separately from the two divisions' shared one.
-#ifdef NON_MATCHING
+// The `- 40` integer literal IS load-bearing: it forks the second 40.0f the
+// ROM materialises separately from the two divisions' shared one.
 void func_801E13C0_ovl14(GObj *arg0) {
     extern void func_801AE7E0_ovl7(s32);
     extern void func_800AA018(s32);
-    extern f32 D_801E30F0_ovl14, D_801E30F4_ovl14, D_801E30F8_ovl14;
     f32 c;
     f32 z;
 
     D_800DDFD0[omCurrentObj->objId] = 1;
     func_800AA018(0x10460);
-    c = D_801E30F0_ovl14;
+    c = 65535.0f;
     z = 0.0f;
     D_800E3590[omCurrentObj->objId] = z;
     D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
@@ -264,7 +258,7 @@ void func_801E13C0_ovl14(GObj *arg0) {
     D_800E3050[omCurrentObj->objId] = (D_800EA6E0[omCurrentObj->objId] - gEntitiesNextPosXArray[omCurrentObj->objId]) / 40.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801E30F4_ovl14;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E33D0[omCurrentObj->objId] = ((D_800EA8A0[omCurrentObj->objId] - 40) - gEntitiesNextPosZArray[omCurrentObj->objId]) / 40.0f;
     play_sound(0x18A);
     ohSleep(0x14);
@@ -274,14 +268,12 @@ void func_801E13C0_ovl14(GObj *arg0) {
     D_800E3910[omCurrentObj->objId] = 0.0f;
     D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
         D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-    D_800E3E50[omCurrentObj->objId] = D_801E30F8_ovl14;
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
     ohSleep(5);
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E13C0_ovl14.s")
-#endif
+
 void func_801E1720_ovl14(GObj *arg0) {
 
 }

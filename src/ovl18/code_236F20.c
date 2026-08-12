@@ -6,11 +6,11 @@
 #include "ovl18_5.h"
 
 extern f32 D_8022ACA4_ovl18[];
-extern f32 D_8022BC40_ovl18;
-extern f32 D_8022BC44_ovl18;
-extern f32 D_8022BC48_ovl18;
-extern f32 D_8022BC4C_ovl18;
-extern f32 D_8022BC50_ovl18;
+/* 65535.0f now emitted by this TU */
+/* 65535.0f now emitted by this TU */
+/* 65535.0f now emitted by this TU */
+/* 1.5707964f now emitted by this TU */
+/* 65535.0f now emitted by this TU */
 extern s32 D_8022ACAC_ovl18[];
 extern s32 D_8022ACB0_ovl18[];
 extern s32 D_8022A4E4_ovl18;
@@ -86,7 +86,7 @@ void func_80224790_ovl18(UNUSED s32 arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8022BC40_ovl18;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     func_800AA864(0x1003C, 2, &D_800E6690);
     D_800E9E20[omCurrentObj->objId] = 1;
     curObjSleepForever();
@@ -106,7 +106,7 @@ void func_802248D0_ovl18(UNUSED s32 arg0) {
     D_800DF310[omCurrentObj->objId] = &func_80224ABC_ovl18;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8022BC44_ovl18;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     play_sound(0xA1);
     func_800AF27C();
     D_800E9E20[omCurrentObj->objId] = 1;
@@ -169,7 +169,7 @@ void func_80224D04_ovl18(UNUSED s32 arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8022BC48_ovl18;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     func_800AA018(0x101DB, &D_800E6690);
     func_800AA864(0x101DA, 3);
     D_800E9E20[omCurrentObj->objId] = 1;
@@ -311,7 +311,7 @@ void func_802254C0_ovl18(UNUSED s32 arg0) {
 }
 
 void func_802255C0_ovl18(UNUSED s32 arg0) {
-    D_800E17D0[omCurrentObj->objId] = D_8022BC4C_ovl18;
+    D_800E17D0[omCurrentObj->objId] = 1.5707964f;
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8022AB80_ovl18[92]);
     if (D_800E9C60[omCurrentObj->objId] != 0) {
         func_8021F5CC_ovl18();
@@ -360,7 +360,7 @@ void func_802257A4_ovl18(UNUSED s32 arg0) {
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] =
         D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_8022BC50_ovl18;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     func_800AFBB4(0, omCurrentObj, D_800E3C90);
     ohSleep(0xF);

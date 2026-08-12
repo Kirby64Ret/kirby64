@@ -116,6 +116,17 @@ void osSpTaskStartGo(OSTask *task) {
          *     scheduler once per queued task with no bound.
          */
         if (pcb_has_renderer()) {
+            /* THE TASK NAMES ITS OWN UCODE, so ask it rather than assuming.
+             *
+             * gtlScheduleGfxTask copies gtlUcodeList[ucodeId] into the task,
+             * and that table has exactly three live entries -- F3DEX2 at 0,
+             * L3DEX2 at 8, S2DEX2 at 10 (every other slot is NULL and would
+             * have tripped its own fatal_printf). Comparing the text pointer
+             * against the S2DEX2 symbol is therefore an exhaustive test, and
+             * it keeps working however the game queues tasks, which a value
+             * recorded at schedule time would not. */
+            extern u8 gspS2DEX2_fifoTextStart;
+            pcb_gfx_set_ucode(task->t.ucode == (u64 *)&gspS2DEX2_fifoTextStart);
             pcb_gfx_run((const void *)task->t.data_ptr);
         }
 

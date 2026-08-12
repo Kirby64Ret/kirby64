@@ -124,13 +124,12 @@ void func_802095E8_ovl9(s32 arg0) {
 
 /* Listing carries the TU's trailing alignment padding after .size, so this must
    stay a pragma. */
-#ifdef NON_MATCHING
+
 void func_80209698_ovl9(void) {
     if (func_801A0D74_ovl7() != 0) {
         func_800A7F74(3, 2, 0, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
     }
     func_801A03B4_ovl7();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_12/func_80209698_ovl9.s")
-#endif
+
+

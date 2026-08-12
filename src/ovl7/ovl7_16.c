@@ -40,8 +40,8 @@ void func_800B6474(GObj *);
 
 // ovl7_16 ported from src.old
 void func_801BEF18_ovl7(void);
-extern f32 D_801CE5D4_ovl7;
-extern f32 D_801CE5D8_ovl7;
+/* D_801CE5D4_ovl7 = 0.666f : now emitted by this TU */
+/* D_801CE5D8_ovl7 = 0.666f : now emitted by this TU */
 void func_8019B424_ovl7(s32);
 f32 func_8019DA50_ovl7(f32);
 extern u8 D_800D6E30[];
@@ -382,12 +382,12 @@ void func_801BEF18_ovl7(void) {
     }
     temp_f0_2 = func_8019DA50_ovl7(temp_f12);
     if (temp_f0_2 < 37.5f) {
-        D_800E6850[omCurrentObj->objId] = ABSF(temp_f0_2 * D_801CE5D4_ovl7);
+        D_800E6850[omCurrentObj->objId] = ABSF(temp_f0_2 * 0.666f);
     } else {
         D_800E6850[omCurrentObj->objId] = 25.0f;
     }
     if (ABSF(temp_f12) < 37.5f) {
-        D_800E3C90[omCurrentObj->objId] = ABSF(temp_f12 * D_801CE5D8_ovl7);
+        D_800E3C90[omCurrentObj->objId] = ABSF(temp_f12 * 0.666f);
     } else {
         D_800E3C90[omCurrentObj->objId] = 25.0f;
     }

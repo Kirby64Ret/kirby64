@@ -28,12 +28,12 @@ extern YakuLibStruct D_801CA738_ovl7;
 extern void utilPrintf(const char *fmt, ...);
 
 extern s32 D_800D7090;
-extern f32 D_801CE578_ovl7;
-extern const char D_801CE4A0_ovl7[];
-extern const char D_801CE4C8_ovl7[];
-extern const char D_801CE4F4_ovl7[];
-extern const char D_801CE520_ovl7[];
-extern const char D_801CE54C_ovl7[];
+/* D_801CE578_ovl7 = 1.5707964f : now emitted by this TU */
+/* D_801CE4A0_ovl7 = "NmlBlock Request Error![yakulib.cc]\n" : now emitted by this TU */
+/* D_801CE4C8_ovl7 = "reqDumpStarTrk Request Error!![yakulib.cc]\n" : now emitted by this TU */
+/* D_801CE4F4_ovl7 = "reqMixStarTrk Request Error!![yakulib.cc]\n" : now emitted by this TU */
+/* D_801CE520_ovl7 = "reqStarShotTrk Request Error!![yakulib.cc]\n" : now emitted by this TU */
+/* D_801CE54C_ovl7 = "reqCrystal2Trk Request Error!![yakulib.cc]\n" : now emitted by this TU */
 
 extern f32 eneGetPlayerHeight(void);
 s32 request_track_general(s32, s32, s32);
@@ -53,7 +53,7 @@ s32 func_801BBE50_ovl7(s32 arg0, s32 arg1, u32 arg2) {
 
     idx = request_track_general(0x1F, 0x1E, 0x3C);
     if (idx == -1) {
-        utilPrintf(D_801CE4A0_ovl7);
+        utilPrintf("NmlBlock Request Error![yakulib.cc]\n");
         return -1;
     }
     D_800E0D50[idx] = arg2;
@@ -70,7 +70,7 @@ s32 func_801BBE50_ovl7(s32 arg0, s32 arg1, u32 arg2) {
     gEntitiesNextPosZArray[idx] = posVec.z;
     func_800A4DB8(&angleVec, arg0);
     gEntitiesAngleXArray[idx] = angleVec.x;
-    gEntitiesAngleYArray[idx] = angleVec.y + D_801CE578_ovl7;
+    gEntitiesAngleYArray[idx] = angleVec.y + 1.5707964f;
     gEntitiesAngleZArray[idx] = angleVec.z;
     D_800E17D0[idx] = D_800E17D0[arg2];
     D_800E6A10[idx] = D_800E6A10[arg2];
@@ -83,7 +83,7 @@ s32 func_801BBFE4_ovl7(s32 arg0) {
 
     idx = request_track_general(0x1F, 0x1E, 0x3C);
     if (idx == -1) {
-        utilPrintf(D_801CE4C8_ovl7);
+        utilPrintf("reqDumpStarTrk Request Error!![yakulib.cc]\n");
         return -1;
     }
     D_800E76C0[idx] = 0xFF;
@@ -125,7 +125,7 @@ s32 func_801BC27C_ovl7(s32 arg0, s32 arg1) {
 
     idx = request_track_general(0x1F, 0x1E, 0x3C);
     if (idx == -1) {
-        utilPrintf(D_801CE4F4_ovl7);
+        utilPrintf("reqMixStarTrk Request Error!![yakulib.cc]\n");
         return -1;
     }
     D_800E76C0[idx] = 0xFF;
@@ -169,7 +169,7 @@ s32 func_801BC580_ovl7(s32 arg0) {
 
     idx = request_track_general(0x1F, 0x1E, 0x3C);
     if (idx == -1) {
-        utilPrintf(D_801CE520_ovl7);
+        utilPrintf("reqStarShotTrk Request Error!![yakulib.cc]\n");
         return -1;
     }
     D_800E76C0[idx] = 0xFF;
@@ -206,7 +206,7 @@ s32 func_801BC794_ovl7(s32 arg0) {
 
     idx = request_track_general(0x1C, 0x1E, 0x3C);
     if (idx == -1) {
-        utilPrintf(D_801CE54C_ovl7);
+        utilPrintf("reqCrystal2Trk Request Error!![yakulib.cc]\n");
         return -1;
     }
     D_800E76C0[idx] = 0xFF;

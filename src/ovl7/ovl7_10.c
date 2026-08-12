@@ -32,14 +32,14 @@ void func_800AED20(f32);
 void func_800AA018(s32);
 void ohSleep(s32);
 void func_801ABBA0_ovl7(void);
-extern f32 D_801CE314_ovl7, D_801CE318_ovl7, D_801CE324_ovl7, D_801CE310_ovl7;
+/* 65535.0f = 65535.0f : now emitted by this TU */
 extern s32 D_800E0D50[];
 void func_80198880_ovl7(void *);
 extern s32 D_801C424C_ovl7[];
 void func_800B0F28(struct DObj *, s32, f32);
 void func_801B41BC_ovl7(void);
 extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
-extern f32 D_801CE328_ovl7, D_801CE330_ovl7;
+extern f32 D_801CE330_ovl7; extern f32 D_801CE328_ovl7; /* D_801CE328 stays in asm: 2-word float, forced */
 void func_800AA864(s32, u32);
 void func_800B6FD8(GObj *);
 extern f32 D_800E9020[];
@@ -71,7 +71,7 @@ void func_801B3670_ovl7(GObj *arg0) {
     func_800AA018(0x10011);
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (ABSF(D_800E64D0[D_800E0D50[omCurrentObj->objId]]) + 3.5f);
     D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.5f;
-    D_800E6850[omCurrentObj->objId] = D_801CE310_ovl7;
+    D_800E6850[omCurrentObj->objId] = 11.2f;
     ohSleep(0xA);
     D_800E3210[omCurrentObj->objId] = 0.0f;
     D_800E3750[omCurrentObj->objId] = 1.0f;
@@ -108,7 +108,7 @@ void func_801B38CC_ovl7(GObj *arg0) {
     D_800E6850[omCurrentObj->objId] = 14.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801CE314_ovl7;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801AC11C_ovl7(arg0);
 }
@@ -139,7 +139,7 @@ void func_801B3ACC_ovl7(GObj *arg0) {
     D_800E6850[omCurrentObj->objId] = 14.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801CE318_ovl7;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801AC11C_ovl7(arg0);
 }
@@ -190,7 +190,7 @@ void func_801B3CF4_ovl7(GObj *arg0) {
     D_800E6850[omCurrentObj->objId] = 14.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801CE324_ovl7;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801AC11C_ovl7(arg0);
 }
@@ -300,7 +300,7 @@ struct Ovl7AnimObj {
 };
 
 s32 func_801A37B8_ovl7(void *, struct DObj *);
-extern f32 D_801CE334_ovl7, D_801CE338_ovl7;
+/* -1.5707964f = -1.5707964f : now emitted by this TU */
 extern s32 D_801CB45C_ovl7[];
 extern s32 D_801C8BE0_ovl7[];
 void func_801B44FC_ovl7(GObj *arg0) {
@@ -313,10 +313,10 @@ void func_801B44FC_ovl7(GObj *arg0) {
     sp2C = D_800DFBD0[omCurrentObj->objId][4];
     sp28 = D_800DFBD0[omCurrentObj->objId][14];
     sp1C = D_800E17D0[omCurrentObj->objId];
-    D_800E17D0[omCurrentObj->objId] = D_801CE334_ovl7;
+    D_800E17D0[omCurrentObj->objId] = 1.5707964f;
     func_801A3938(D_801CB45C_ovl7);
     func_801A37B8_ovl7(func_801A3864_ovl7, sp2C);
-    D_800E17D0[omCurrentObj->objId] = D_801CE338_ovl7;
+    D_800E17D0[omCurrentObj->objId] = -1.5707964f;
     func_801A37B8_ovl7(func_801A3864_ovl7, sp28);
     D_800E17D0[omCurrentObj->objId] = sp1C;
     temp = (struct Ovl7AnimObj *) func_80111A04(D_801C8BE0_ovl7, omCurrentObj->objId);
@@ -342,7 +342,58 @@ void func_801B4664_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
     D_801D0A98_ovl7 = (s32) arg2;
 }
 
+/* The 144/159 is ONE MISPLACED INSTRUCTION, not 144 real ones: the frame
+   (0x38), all four local slots (ent 0x34, a 0x30, b 0x2C, i 0x28) and every
+   other instruction line up, but IDO emits the parameter home store
+   `sw $a0, 0x38($sp)` in the prologue while the ROM sinks it into the delay
+   slot of `jal func_801ABBA0_ovl7`, so the positional diff is shifted by one
+   from instruction 8 onward. Swept: initializer vs statement form for a/b,
+   their declaration order, and `i` as an initializer. */
+#ifdef NON_MATCHING
+void func_801B46C4_ovl7(GObj *arg0) {
+    void func_801A2558_ovl7(void *);
+    void func_801B4938_ovl7();
+    extern void *D_801CAF50_ovl7[];
+    extern struct Sub800E1B50_Unk98 D_801CD2F4_ovl7;
+    extern f32 D_801CE33C_ovl7;
+    extern s32 D_800E8920[];
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct DObj *a = arg0->data.dobj->firstChild;
+    struct DObj *b = D_800DFBD0[omCurrentObj->objId][5];
+    s32 i;
+
+    D_800EC660[omCurrentObj->objId] = 40.0f;
+    D_800EC820[omCurrentObj->objId] = 0.0f;
+    D_800EC2E0[omCurrentObj->objId].as_s32 = 0;
+    i = 0x3C;
+    func_801ABBA0_ovl7();
+    func_801A2558_ovl7(D_801CAF50_ovl7);
+    D_800DEF90[omCurrentObj->objId] = func_800B6FD8;
+    D_800DF150[omCurrentObj->objId] = func_801B4938_ovl7;
+    ent->unk48 = 0;
+    ent->unk98 = &D_801CD2F4_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    a->angle.v.z = -D_800E6A10[omCurrentObj->objId] * D_801CE33C_ovl7;
+    b->angle.v.z = -D_800E6A10[omCurrentObj->objId] * D_801CE33C_ovl7;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA018(0x10107);
+    func_800AA018(0x10106);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 14.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 14.0f;
+    while ((D_800EC2E0[omCurrentObj->objId].as_s32 == 0) && (i != 0)) {
+        ohSleep(1);
+        i--;
+    }
+    if (i != 0) {
+        ohSleep(0xF);
+    }
+    func_801AC11C_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B46C4_ovl7.s")
+#endif
 
 void func_801B4938_ovl7(void) {
     if (D_800E83E0[omCurrentObj->objId] != 0) {

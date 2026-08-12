@@ -336,16 +336,16 @@ void func_8021FC40_ovl18(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FC40_ovl18.s")
 #endif
 
-extern f32 D_8022BB84_ovl18;
-extern f32 D_8022BB88_ovl18;
+/* 0.20943952f now emitted by this TU */
+/* 0.20943952f now emitted by this TU */
 void func_8021FD48_ovl18(void) {
     D_800D7098.unk4 = D_800D7098.unk4 + 1;
     if (D_800E77A0[omCurrentObj->objId] == 0x56) {
         gEntitiesAngleXArray[omCurrentObj->objId] =
-            D_800D70D8.unkC - (*(s32 *) &D_800D7098.unk4 * D_8022BB84_ovl18);
+            D_800D70D8.unkC - (*(s32 *) &D_800D7098.unk4 * 0.20943952f);
     } else {
         gEntitiesAngleYArray[omCurrentObj->objId] =
-            (*(s32 *) &D_800D7098.unk4 * D_8022BB88_ovl18) + D_800D70D8.unk10;
+            (*(s32 *) &D_800D7098.unk4 * 0.20943952f) + D_800D70D8.unk10;
     }
 }
 
@@ -437,11 +437,10 @@ void func_8021FF80_ovl18(void) {
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit
-#ifdef NON_MATCHING
+
 void func_80220184_ovl18(void) {
     func_8021FF80_ovl18();
     func_80220038_ovl18();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_80220184_ovl18.s")
-#endif
+
+

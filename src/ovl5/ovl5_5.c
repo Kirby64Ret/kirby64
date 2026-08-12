@@ -21,8 +21,8 @@ extern s32 D_8018E468_ovl5[];
 extern s32 D_80187C34_ovl5[][2];
 s32 func_80171538_ovl5(s32);
 extern s32 D_8018E478_ovl5[][82];
-/* D_8018D7AC_ovl5 is this TU's own .rodata now; the literal is at its use */
-/* D_8018D798_ovl5 likewise */
+/* "Bad LastStep...%d\n" is this TU's own .rodata now; the literal is at its use */
+/* "Bad nextStep poxZ\n" likewise */
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 void func_80175F50_ovl5(GObj *);
 extern u8 D_80187898_ovl5[];
@@ -818,7 +818,7 @@ void func_80177A0C_ovl5(Gfx **g) {
 // is the framebuffer-clear form proved byte-exact on func_8017CC3C_ovl5 (the
 // vu16 casts are what stop IDO hoisting the D_803D6900 induction bump); it is
 // kept live for the PC port, which builds with NON_MATCHING.
-#ifdef NON_MATCHING
+
 #include "main/vi.h"
 #include "main/gtl.h"
 
@@ -847,7 +847,7 @@ void func_80177A30_ovl5(void) {
     } while (i != 320 * 240);
     gtlCreateScene(&D_801874EC_ovl5);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80177A30_ovl5.s")
-#endif
+
+
+
 

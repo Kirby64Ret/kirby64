@@ -478,53 +478,23 @@ void func_801ED6E4_ovl10(GObj *arg0) {
 void func_801ED7C8_ovl10(GObj *arg0) {
 }
 
-/* 2/88 diffs: only the two hoisted constants are in the wrong callee-saved FP
-   registers -- the ROM loads D_801F4BC4_ovl10 FIRST into $f22 and
-   D_801F4BC8_ovl10 second into $f20, while IDO couples "assigned first" to
-   both "loaded first" and "$f20".  Swept: both assignment orders, both
-   declaration orders, declaration initializers (74), an extra leading f32,
-   every operand order of the inner mul/add, and inlining either constant
-   (70/71).  Writing the loop as `if (...) { ... do {} while (...) }` rather
-   than `while` is load-bearing: it puts the two loads in the preheader after
-   the guard and took this from 59 to 15.
-   Wave 10 measured the coupling exactly: the callee-saved FP register follows
-   the ORDER OF THE TWO lwc1 IN THE PREHEADER, not the order of first
-   assignment -- `a = 0.0f; b = BC8; a = BC4;` still gives $f20 <- BC8.  The
-   ROM needs load order (BC4, BC8) with register order ($f22, $f20), i.e. the
-   reverse, which no source form reaches.  Additionally swept: comma operator
-   both ways, `b = (a = BC4, BC8)`, self-assignment after the pair, a dead
-   0.0f pre-assignment to either, `a = BC4 + (b - b)`, hoisting either
-   assignment above the `if`, both assignments inside the `do` body, and the
-   chained `a = b = BC8; a = BC4;` form.  Note `-(a * i + b)` (rather than
-   `-(b + a * i)`) is what gets `add.s $f6, $f20, $f4` operand-exact -- it
-   costs one diff here but is the correct outer-`+` order and matches the
-   rodata emission order BC4-before-BC8. */
-#ifdef MIPS_TO_C
-extern f32 D_801F4BC0_ovl10;
-extern f32 D_801F4BC4_ovl10;
-extern f32 D_801F4BC8_ovl10;
-extern f32 D_801F4BCC_ovl10;
-
 void func_801ED7D0_ovl10(struct GObj *arg0) {
     f32 a;
     f32 b;
 
-    D_800E4C50[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801F4BC0_ovl10;
+    D_800E4C50[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.5235988f;
     D_800E9560[omCurrentObj->objId] = 1;
     if (D_800E9560[omCurrentObj->objId] < 5) {
-        b = D_801F4BC8_ovl10;
-        a = D_801F4BC4_ovl10;
+        b = 0.5235988f;
+        a = 0.2617994f;
         do {
             D_800E4C50[omCurrentObj->objId] = -(b + a * (f32) D_800E9560[omCurrentObj->objId]) * D_800E6A10[omCurrentObj->objId];
             ohSleep(1);
             D_800E9560[omCurrentObj->objId]++;
         } while (D_800E9560[omCurrentObj->objId] < 5);
     }
-    D_800E4C50[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801F4BCC_ovl10;
+    D_800E4C50[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -1.5707964f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801ED7D0_ovl10.s")
-#endif
 void func_801ED930_ovl10(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
 

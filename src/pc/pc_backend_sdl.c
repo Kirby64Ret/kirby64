@@ -124,6 +124,11 @@ void pcb_frame_begin(void) {
 void pcb_frame_end(void) {
 }
 
+/* No interpreter to confuse -- there is no display list walk here at all. */
+void pcb_gfx_set_ucode(int s2dex) {
+    (void)s2dex;
+}
+
 void pcb_gfx_run(const void *displayList) {
     (void)displayList;
 }

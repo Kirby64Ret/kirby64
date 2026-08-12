@@ -11,13 +11,13 @@
 
 #include "ovl13.h"
 
-/* D_801E5CDC_ovl13 = -0.1f : now emitted by this TU */
-/* D_801E5D78_ovl13 = -1.5707964f : now emitted by this TU */
-/* D_801E5D7C_ovl13 = 3.1415927f : now emitted by this TU */
-/* D_801E5D80_ovl13 = -0.1f : now emitted by this TU */
-/* D_801E5D84_ovl13 = 3.1415927f : now emitted by this TU */
-/* D_801E5D88_ovl13 = -1.5707964f : now emitted by this TU */
-/* D_801E5D8C_ovl13 = -0.1f : now emitted by this TU */
+/* -0.1f = -0.1f : now emitted by this TU */
+/* -1.5707964f = -1.5707964f : now emitted by this TU */
+/* 3.1415927f = 3.1415927f : now emitted by this TU */
+/* -0.1f = -0.1f : now emitted by this TU */
+/* 3.1415927f = 3.1415927f : now emitted by this TU */
+/* -1.5707964f = -1.5707964f : now emitted by this TU */
+/* -0.1f = -0.1f : now emitted by this TU */
 extern void func_800AA154(s32); /* void is load-bearing: implicit int reserves $v0 */
 void func_801DB1E0_ovl13(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk39 = -1;

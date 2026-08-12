@@ -10,16 +10,16 @@
 #include "unk_structs/D_800D7098.h"
 #include "ovl2/ovl2_8.h"
 
-/* D_801E30B4_ovl14 = 0.30967742f : now emitted by this TU */
-/* D_801E30B8_ovl14 = 3.096774f : now emitted by this TU */
-/* D_801E30BC_ovl14 = -0.30967742f : now emitted by this TU */
+/* 0.30967742f = 0.30967742f : now emitted by this TU */
+/* 3.096774f = 3.096774f : now emitted by this TU */
+/* -0.30967742f = -0.30967742f : now emitted by this TU */
 
 extern u32 D_801CB470;
 extern s32 D_800D7154;
 
 /* The segment's rodata is an unmigrated asm block, so the format string must
    be referenced as a data symbol; writing the literal emits a second copy. */
-/* D_801E2FE8_ovl14 = "enemy req over 18. Track Num:%d\n" : now emitted by this TU */
+/* "enemy req over 18. Track Num:%d\n" = "enemy req over 18. Track Num:%d\n" : now emitted by this TU */
 
 void func_801DB1E0_ovl14(GObj *arg0) {
     func_8019BB58_ovl7();

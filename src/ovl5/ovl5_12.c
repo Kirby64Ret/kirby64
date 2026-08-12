@@ -12,10 +12,6 @@ extern Gfx D_8018A338_ovl5[];
 void func_80182B08_ovl5(void);
 extern void *D_8018A52C_ovl5;
 extern void *D_8018A4D8_ovl5;
-extern f32 D_8018DE20_ovl5;
-extern f32 D_8018DE24_ovl5;
-extern f32 D_8018DE28_ovl5;
-extern f32 D_8018DE2C_ovl5;
 void func_800A9864(void *, s32, s32);
 extern s32 D_8018EE04_ovl5;
 extern s32 D_800D6B6C;
@@ -138,18 +134,13 @@ void func_80182700_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182804_ovl5.s")
 
-/* 3 diffs: the hoisted `lwc1 $f20, D_8018DE24_ovl5` must sit AFTER both
-   `addiu` of the hoisted array bases; no source/format form moves it.
-   Re-swept wave 7: decl order, inline reads, statement order, one-line and
-   empty-block line-number tricks -- all 3. Clone twin: func_80182A1C_ovl5. */
-#ifdef NON_MATCHING
 void func_8018293C_ovl5(GObj *arg0) {
     f32 inc;
     f32 wrap;
 
     func_800A9864(D_8018A52C_ovl5, 0x1869F, 0x10);
-    inc = D_8018DE20_ovl5;
-    wrap = D_8018DE24_ovl5;
+    inc = 0.008726646f;
+    wrap = 6.2831855f;
     while (1) {
         gEntitiesAngleYArray[omCurrentObj->objId] += inc;
         if (wrap <= gEntitiesAngleYArray[omCurrentObj->objId]) {
@@ -158,19 +149,14 @@ void func_8018293C_ovl5(GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_8018293C_ovl5.s")
-#endif
-#ifdef NON_MATCHING
-/* 3 diffs: IDO schedules the second lwc1 one slot early; the ROM emits it
-   after both addiu of the hoisted array bases. Otherwise exact. */
+
 void func_80182A1C_ovl5(GObj *arg0) {
     f32 inc;
     f32 wrap;
 
     func_800A9864(D_8018A4D8_ovl5, 0x1869F, 0x10);
-    inc = D_8018DE28_ovl5;
-    wrap = D_8018DE2C_ovl5;
+    inc = 0.017453292f;
+    wrap = 6.2831855f;
     while (1) {
         gEntitiesAngleYArray[omCurrentObj->objId] += inc;
         if (wrap <= gEntitiesAngleYArray[omCurrentObj->objId]) {
@@ -179,9 +165,7 @@ void func_80182A1C_ovl5(GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182A1C_ovl5.s")
-#endif
+
 void func_80182AFC_ovl5(void) {
     D_8018EE00_ovl5 = 0;
 }

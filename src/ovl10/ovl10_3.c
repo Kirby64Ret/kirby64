@@ -21,7 +21,7 @@ void func_8019EC5C_ovl7(void *);
 
 void func_801A3E80_ovl7(GObj *);
 void func_800FD570(s32, s32, f32, f32, f32);
-/* D_801F4B44_ovl10 = 0.4f : now emitted by this TU */
+/* 0.4f = 0.4f : now emitted by this TU */
 
 
 extern FUNCLIST D_801F44B4_ovl10;
@@ -79,7 +79,7 @@ struct Ovl10AnimInfo {
 };
 
 extern s32 D_801F3F28_ovl10;
-/* D_801F4B50_ovl10 = 2.4f : now emitted by this TU */
+/* 2.4f = 2.4f : now emitted by this TU */
 /* D_801F4B84_ovl10 = 0.9f : now emitted by this TU */
 s32 func_801E9ACC_ovl10(void);
 s32 func_8019A9AC_ovl7(f32, f32);
@@ -117,7 +117,7 @@ void func_801E3770_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E3874_ovl10.s")
 
-/* D_801F4A80_ovl10 = "reqAdoPathLimTrk  Request Error!![mbss2.cc]\n" : now emitted by this TU */
+/* "reqAdoPathLimTrk  Request Error!![mbss2.cc]\n" = "reqAdoPathLimTrk  Request Error!![mbss2.cc]\n" : now emitted by this TU */
 
 void func_801E3A64_ovl10(void) {
     u32 pad;
@@ -157,13 +157,13 @@ void func_801EF15C_ovl10(s32);
 void func_801EF218_ovl10(s32);
 void func_800AF27C(void);
 void func_801ED7D0_ovl10(GObj *);
-/* D_801F4BD4_ovl10 = 0.03333f : now emitted by this TU */
-/* D_801F4BD8_ovl10 = 65535.0f : now emitted by this TU */
+/* 0.03333f = 0.03333f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
 
-/* D_801F4BE0_ovl10 = -1.8f : now emitted by this TU */
-/* D_801F4BE4_ovl10 = 0.022499999f : now emitted by this TU */
-/* D_801F4BE8_ovl10 = 65535.0f : now emitted by this TU */
-/* D_801F4BDC_ovl10 = 65535.0f : now emitted by this TU */
+/* -1.8f = -1.8f : now emitted by this TU */
+/* 0.022499999f = 0.022499999f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
 extern struct Sub800E1B50_Unk98 D_801F4190_ovl10;
 extern s32 D_801F3C7C_ovl10;
 
@@ -171,7 +171,7 @@ extern struct Sub800E1B50_Unk98 D_801F4148_ovl10;
 
 extern struct Sub800E1B50_Unk98 D_801CB494_ovl7;
 extern u32 D_801F449C_ovl10;
-/* D_801F4AB0_ovl10 = "Error: Don't S-Point\n" : now emitted by this TU */
+/* "Error: Don't S-Point\n" = "Error: Don't S-Point\n" : now emitted by this TU */
 void func_801E3E04_ovl10(struct GObj *);
 void func_801E3A64_ovl10(void);
 void *func_800FCE50(void);
@@ -221,7 +221,7 @@ void func_801E4030_ovl10(struct GObj *arg0) {
     }
 }
 
-/* D_801F4AC8_ovl10 = "reqAdoPicEneTrk  Request Error!![mbss2.cc]\n" : now emitted by this TU */
+/* "reqAdoPicEneTrk  Request Error!![mbss2.cc]\n" = "reqAdoPicEneTrk  Request Error!![mbss2.cc]\n" : now emitted by this TU */
 
 void func_801E409C_ovl10(void) {
     u32 pad[3];
@@ -451,7 +451,7 @@ void func_801E5364_ovl10(GObj *arg0) {
     curObjSleepForever();
 }
 
-/* D_801F4B2C_ovl10 = 65535.0f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
 
 void func_801E5468_ovl10(GObj *arg0) {
     if (D_800E6310[omCurrentObj->objId] != 0) {
@@ -625,7 +625,7 @@ void func_801E5F60_ovl10(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E6298_ovl10.s")
 
-/* D_801F4B48_ovl10 = 65535.0f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
 
 typedef struct Unk801E63E4 {
     f32 unk0;
@@ -1204,7 +1204,7 @@ void func_801E8F24_ovl10(struct GObj *arg0) {
     }
 }
 
-/* D_801F4B4C_ovl10 = 2.4f : now emitted by this TU */
+/* 2.4f = 2.4f : now emitted by this TU */
 
 void func_801E8F90_ovl10(GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -1382,8 +1382,8 @@ void func_801E9DCC_ovl10(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EA1E4_ovl10.s")
 
-/* D_801F4B60_ovl10 = 0.006666667f : now emitted by this TU */
-/* D_801F4B64_ovl10 = 6.2831855f : now emitted by this TU */
+/* 0.006666667f = 0.006666667f : now emitted by this TU */
+/* 6.2831855f = 6.2831855f : now emitted by this TU */
 extern f32 D_800EAA60[];
 extern f32 D_800EAC20[];
 void func_801EA4C0_ovl10(void);
@@ -1406,7 +1406,7 @@ void func_801EA364_ovl10(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EA4C0_ovl10.s")
 
-/* D_801F4B6C_ovl10 = 65535.0f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
 
 void func_801EA630_ovl10(GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;

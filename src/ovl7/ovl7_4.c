@@ -36,7 +36,7 @@ void func_800A7F74(s32, s32, s32, f32, f32, f32);
 s32 func_801A0D74_ovl7(void);
 extern u32 D_8012BCA0;
 extern void *D_801CA28C_ovl7[], *D_801CA2B0_ovl7[], *D_801CA2F4_ovl7[], *D_801CA318_ovl7[];
-extern f32 D_801CDFB4_ovl7, D_801CDFB8_ovl7, D_801CDFC0_ovl7;
+extern f32 D_801CDFC0_ovl7; /* D_801CDFB8_ovl7 = 9999.0f : now emitted by this TU */
 void func_801A522C_ovl7(GObj *);
 void func_801A6610_ovl7(void);
 void func_801A4414_ovl7(GObj *);
@@ -59,7 +59,7 @@ void func_801A41D4_ovl7(GObj *arg0) {
     ent->unk8C = &D_801CA28C_ovl7;
     ent->unk90 = &D_801CA2B0_ovl7;
     D_800E0D50[omCurrentObj->objId] = -1;
-    D_800E7B20[omCurrentObj->objId] = D_801CDFB4_ovl7;
+    D_800E7B20[omCurrentObj->objId] = 9999.0f;
     D_800DF150[omCurrentObj->objId] = func_801A42B8_ovl7;
     func_800B19F4(0x74, omCurrentObj->objId);
     func_8019BB58_ovl7();
@@ -78,7 +78,7 @@ void func_801A42D8_ovl7(GObj *arg0) {
     ent->unk8C = &D_801CA2F4_ovl7;
     ent->unk90 = &D_801CA318_ovl7;
     D_800E0D50[omCurrentObj->objId] = -1;
-    D_800E7B20[omCurrentObj->objId] = D_801CDFB8_ovl7;
+    D_800E7B20[omCurrentObj->objId] = 9999.0f;
     D_800DF150[omCurrentObj->objId] = func_801A42B8_ovl7;
     func_800B19F4(0x74, omCurrentObj->objId);
     func_8019BB58_ovl7();
@@ -308,7 +308,60 @@ void func_801A6958_ovl7(GObj *arg0) {
     func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
 }
 
+/* 16/152: instruction-for-instruction correct with the frame and the constant
+   load position exact; the residue is FP register naming only (ROM assigns
+   $f12 to the shared 0.0f and $f14 to D_801CE008_ovl7, IDO assigns $f14 and
+   $f2 -- one slot along the same sequence), plus the $a0/$a1 move before
+   func_800A22D4. Swept: constant as a local at four positions, an f32 local
+   for gameTicksPerDraw, double-literal zeros, chained vs separate stores. */
+#ifdef NON_MATCHING
+void func_801A69B0_ovl7(GObj *arg0) {
+    void func_800A22D4(void *);
+    void func_800A2300(struct GObj *);
+    void func_800B6474(s32);
+    extern f32 gameTicksPerDraw;
+    extern FUNCLIST D_801C2994_ovl7;
+    extern f32 D_801CE008_ovl7;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    s32 v = ent->unk44;
+    f32 c;
+
+    if (v == 0) {
+        v = 1;
+    }
+    D_800DF150[omCurrentObj->objId] = NULL;
+    D_800DEF90[omCurrentObj->objId] = func_800B6474;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    c = D_801CE008_ovl7;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    if (ent->unk34 != 0) {
+        func_800A22D4(ent->unk34);
+    }
+    func_800A2300(arg0);
+    ent->unk34 = 0;
+    if (v == 1) {
+        ent->unk43 = 1;
+    } else {
+        if (ent->unk94->unk1C != 0x80000000) {
+            play_sound(ent->unk94->unk1C);
+        }
+        gEntityFuncListIDArray[omCurrentObj->objId] = v - 1;
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_801C2994_ovl7);
+        ent->unk40 = 1;
+    }
+    func_801A3E80_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A69B0_ovl7.s")
+#endif
 
 void func_801A6C10_ovl7(GObj *arg0) {
     void func_801A6DD0_ovl7();
@@ -316,7 +369,7 @@ void func_801A6C10_ovl7(GObj *arg0) {
     void func_800A2300(struct GObj *);
     void func_801A3D6C_ovl7(void);
     extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
-    extern f32 D_801CE00C_ovl7, D_801CE010_ovl7;
+/* D_801CE010_ovl7 = 0.2f : now emitted by this TU */
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800E9020[omCurrentObj->objId] = 0.0f;
@@ -331,12 +384,12 @@ void func_801A6C10_ovl7(GObj *arg0) {
     func_801A3D6C_ovl7();
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_801CE00C_ovl7;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E3210[omCurrentObj->objId] = -3.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3C90[omCurrentObj->objId] = 3.0f;
     ohSleep(3);
-    D_800E3750[omCurrentObj->objId] = D_801CE010_ovl7;
+    D_800E3750[omCurrentObj->objId] = 0.2f;
     ohSleep(0xC);
     func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
     if (ent->unk94->unk1C != 0x80000000) {

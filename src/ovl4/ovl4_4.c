@@ -64,7 +64,7 @@ extern void func_800B4924(s32);
 extern void func_800A9F98(s32, f32);
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
-/* D_8015C668_ovl4 (65535.0f) is emitted by this TU now */
+/* 65535.0f (65535.0f) is emitted by this TU now */
 void func_8015986C_ovl4(GObj *arg0);
 s32 func_8015874C_ovl4(void);
 struct DObj *func_801587CC_ovl4(u32 arg0);
@@ -74,7 +74,7 @@ extern s32 D_8015C31C_ovl4;
 extern s32 D_8015C320_ovl4;
 extern s32 D_8015C324_ovl4;
 extern void *D_8015C328_ovl4[][2];
-/* D_8015C664_ovl4 (5.5e+02f) is emitted by this TU now */
+/* 5.5e+02f (5.5e+02f) is emitted by this TU now */
 extern void func_800A1F30(s32);
 extern s32 func_800A8234(s32, s32, s32);
 extern void func_800B1900(u16);

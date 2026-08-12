@@ -24,8 +24,8 @@ void func_800B1900(u16);
 s32 func_801A0D74_ovl7(void);
 void func_801A03B4_ovl7(void);
 
-extern const char D_801CE160_ovl7[];
-extern const char D_801CE17C_ovl7[];
+/* D_801CE160_ovl7 = "Enemy Shot Request Error!\n" : now emitted by this TU */
+/* D_801CE17C_ovl7 = "Enemy Shot Track Over!\n" : now emitted by this TU */
 extern f32 D_800E6D90[];
 s32 request_track_general(s32, s32, s32);
 
@@ -38,11 +38,11 @@ s32 arg1;
 
     idx = request_track_general(0x1A, 0xE, 0x1E);
     if (idx == -1) {
-        utilPrintf(D_801CE160_ovl7);
+        utilPrintf("Enemy Shot Request Error!\n");
         return 0;
     }
     if (idx >= 0x1E) {
-        utilPrintf(D_801CE17C_ovl7);
+        utilPrintf("Enemy Shot Track Over!\n");
         func_800B1900((u16) idx);
         return 0;
     }

@@ -381,7 +381,7 @@ void func_801B5C7C_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B5DEC_ovl7.s")
 
-extern f32 D_801CE348_ovl7;
+/* 65535.0f = 65535.0f : now emitted by this TU */
 
 void func_801B6020_ovl7(s32 arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -392,7 +392,7 @@ void func_801B6020_ovl7(s32 arg0) {
     ent->unk98 = &D_801CC064_ovl7;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801CE348_ovl7;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     func_800AA864(0x100C4, 2);
     D_800E9E20[omCurrentObj->objId] = 1;
     curObjSleepForever();

@@ -1158,3 +1158,8 @@ D_8021D88C_ovl9 = 0x8021D88C; // segment:ovl9 force_migration:True
 // rejects it and its owner func_801E0A90_ovl13 (still a #pragma) loses it
 // entirely. No splat warning fires.
 D_801E5D60_ovl13 = 0x801E5D60; // segment:ovl13 force_migration:True
+
+// ovl7: D_801CE328_ovl7 is two words of 65535.0f, so isMaybeConstVariable()
+// rejects it and func_801B3EC8_ovl7 (still a #pragma) loses it. Caught only by
+// comparing the built object's .rodata against the ROM -- no splat warning.
+D_801CE328_ovl7 = 0x801CE328; // segment:ovl7 force_migration:True

@@ -13,7 +13,6 @@ extern s32 D_800D6B24;
 extern s32 D_800D71E8[];
 extern s32 D_8015C720_ovl4;
 /* D_8015C670_ovl4 (0.008726646f) is emitted by this TU now */
-extern f32 D_8015C674_ovl4;
 extern Gfx D_8015C3E0_ovl4[];
 
 #include "main/vi.h"
@@ -69,30 +68,14 @@ void func_80159B68_ovl4(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef NON_MATCHING
-// 4/30 diffs: a pure $f0/$f2 swap (the ROM keeps the constant in $f2 and the
-// array element in $f0). Swept: local count and order, initializer vs separate
-// assignment, inlining either side, reversed compare -- all give 4 or 14 diffs.
-// This is the one-slot register-class residue, not a source-form problem.
-// Re-swept (wave 11), 18 variants, floor unmoved at 4: an f32 return type with
-// `return val;` costs a trailing mov.s (5) and without one is inert; a K&R
-// definition, a pointer local for the element, `+= -temp`, a `volatile` read
-// (8), a dead f32 local, `!(x < t)` (5) and reading the element into a named
-// local BEFORE the angle update (24, it moves the load) all fail. The ROM
-// assigns $f0 to the value loaded LAST, which IDO's order-of-first-assignment
-// rule cannot express while the constant is still read first.
-// func_801B3C54_ovl7 (8/40) is the same idiom with the same residue.
 void func_80159C40_ovl4(GObj *arg0) {
-    f32 temp = D_8015C674_ovl4;
+    f32 temp = 6.2831855f;
 
     gEntitiesAngleYArray[omCurrentObj->objId] += D_800EA6E0[omCurrentObj->objId];
     if (temp <= D_800E4C50[omCurrentObj->objId]) {
         D_800E4C50[omCurrentObj->objId] -= temp;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_5/func_80159C40_ovl4.s")
-#endif
 void func_80159CB8_ovl4(GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800DF150[omCurrentObj->objId] = func_80159D70_ovl4;

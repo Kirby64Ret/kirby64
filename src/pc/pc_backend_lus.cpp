@@ -134,6 +134,7 @@ void pcb_video_shutdown(void);
 int pcb_has_renderer(void);
 void pcb_frame_begin(void);
 void pcb_frame_end(void);
+void pcb_gfx_set_ucode(int s2dex);
 void pcb_gfx_run(const void* displayList);
 int pcb_alive(void);
 void pcb_pump(void);
@@ -373,6 +374,37 @@ static bool lus_init(void) {
             config->SetBool("Window.Fullscreen.Enabled", false);
         }
 
+        /* A PERSISTED WINDOW SIZE CAN BE CORRUPT, AND THE COST IS NOT COSMETIC.
+         *
+         * LUS saves the window geometry on exit and restores it on start. Ask
+         * a virtual display for fullscreen and SDL can answer with garbage;
+         * this port wrote Window 35856x33278 into kirby64.cfg that way, and
+         * every later start restored it. That is 1.2 gigapixels of
+         * framebuffer: the software rasteriser crawled (one display list
+         * interpreted in thirty seconds, against 250 through the null
+         * backend), and X_ShmPutImage then failed with BadValue because the
+         * image exceeded what the shared-memory extension will carry. It
+         * reads exactly like a broken renderer and the renderer is fine.
+         *
+         * A size outside these bounds is not a user preference, it is
+         * corruption -- no display is narrower than the N64's own 320x240 or
+         * wider than 8K -- so it is discarded rather than honoured. Fullscreen
+         * goes with it: whatever produced the bad geometry is the thing that
+         * would produce it again. */
+        {
+            const int w = config->GetInt("Window.Width", 640);
+            const int h = config->GetInt("Window.Height", 480);
+            if (w < 320 || w > 7680 || h < 240 || h > 4320) {
+                fprintf(stderr,
+                        "[lus] discarding corrupt saved window size %dx%d, "
+                        "using 640x480\n",
+                        w, h);
+                config->SetInt("Window.Width", 640);
+                config->SetInt("Window.Height", 480);
+                config->SetBool("Window.Fullscreen.Enabled", false);
+            }
+        }
+
         console->Init();
         sWindow->Init();
         fileDrop->Init();
@@ -516,6 +548,18 @@ void pcb_pump(void) {
 
 void pcb_frame_begin(void) {
     sTasksThisFrame = 0;
+}
+
+void pcb_gfx_set_ucode(int s2dex) {
+    if (!sInitOk) {
+        return;
+    }
+    /* gfx_set_target_ucode writes ucode_handler_index directly, which is the
+     * same variable G_LOAD_UCODE inside a display list writes. Setting it per
+     * task is what makes each task start from its own microcode the way the
+     * RSP does, instead of inheriting whatever the previous task's last
+     * gtlLoadUcode left behind. */
+    sWindow->SetRendererUCode(s2dex ? ucode_s2dex : ucode_f3dex2);
 }
 
 void pcb_gfx_run(const void* displayList) {

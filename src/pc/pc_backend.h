@@ -63,6 +63,21 @@ int pcb_has_renderer(void);
 void pcb_frame_begin(void);
 void pcb_frame_end(void);
 
+/* Select the microcode the NEXT display list is written in.
+ *
+ * On hardware every RSP task carries its own ucode and the RSP boots it before
+ * reading a single command, so a task's interpretation never inherits from the
+ * task before it. A software interpreter has one global selector and does
+ * inherit, which is a real difference and not a pedantic one: Kirby switches
+ * to S2DEX2 mid-frame to draw sprites, and if the next task starts while that
+ * is still selected, its very first commands are decoded against the sprite
+ * table. G_SETOTHERMODE_H/L and G_TRI1 are not in it, so the frame is dropped
+ * a command at a time with "Unhandled OP code ... for loaded ucode: 5".
+ *
+ * s2dex is 0 for F3DEX2/L3DEX2 and 1 for S2DEX2. Called once per task, before
+ * pcb_gfx_run. */
+void pcb_gfx_set_ucode(int s2dex);
+
 /* Hand an F3DEX2 display list to the renderer. Returns only once it has been
  * consumed, so the caller can then raise SP-done and DP-done in an order the
  * game's scheduler will accept. */

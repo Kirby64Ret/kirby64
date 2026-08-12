@@ -41,9 +41,9 @@ void func_801E2EF0_ovl10(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-/* D_801F4A40_ovl10 = -0.8f : now emitted by this TU */
-/* D_801F4A44_ovl10 = -0.4f : now emitted by this TU */
-/* D_801F4A48_ovl10 = 65535.0f : now emitted by this TU */
+/* -0.8f = -0.8f : now emitted by this TU */
+/* -0.4f = -0.4f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
 extern struct Sub800E1B50_Unk98 D_801F41B4_ovl10;
 extern void func_800B6A2C(s32);
 extern void func_801ACF84_ovl7(struct GObj *);
@@ -92,21 +92,6 @@ void func_801E3244_ovl10(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_2/func_801E3450_ovl10.s")
 
-/* 6 diffs, all in the SECOND normalisation loop: the ROM binds the addend
-   D_801F4A78_ovl10 to $f0 and the bound D_801F4A7C_ovl10 to $f12 (the same
-   role->register mapping the first loop gets, which does match), IDO binds
-   them the other way round. $f0 is also the return register, and the ROM's
-   `mov.s $f0, $f2` in the bc1fl delay slot overwrites the addend there --
-   that reuse is what puts the addend in $f0. Swept: `r < b` vs `b > r` vs
-   `!(b <= r)`, `if + do/while`, `r = k + r` vs `r += k`, and locals for the
-   addend alone, the bound alone and both in either assignment order (the
-   plain extern form is 9). Everything before the loop, including the
-   atan2f/sqrtf ternary, is exact. */
-#ifdef NON_MATCHING
-extern f32 D_801F4A70_ovl10;
-extern f32 D_801F4A74_ovl10;
-extern f32 D_801F4A78_ovl10;
-extern f32 D_801F4A7C_ovl10;
 extern f32 atan2f(f32, f32);
 extern f32 sqrtf(f32);
 
@@ -121,18 +106,15 @@ f32 func_801E3614_ovl10(struct GObj *arg0) {
     dy = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
     dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
     r = atan2f(dx, (dy < 0.0f) ? -sqrtf((dy * dy) + (dz * dz)) : sqrtf((dy * dy) + (dz * dz)));
-    while (D_801F4A70_ovl10 < r) {
-        r -= D_801F4A74_ovl10;
+    while (3.1415927f < r) {
+        r -= 6.2831855f;
     }
-    k = D_801F4A78_ovl10;
-    while (r < D_801F4A7C_ovl10) {
+    k = 6.2831855f;
+    while (r < -3.1415927f) {
         r += k;
     }
     return r;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_2/func_801E3614_ovl10.s")
-#endif
 void func_801E3748_ovl10(void) {
     func_801A0D74_ovl7();
     func_801A03B4_ovl7();

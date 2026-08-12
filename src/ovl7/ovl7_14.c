@@ -25,9 +25,9 @@ extern f32 D_800E3C90[];
 extern f32 D_800E9020[];
 extern void *(func_801AC840_ovl7)(void);
 extern s32 *D_801CB4DC_ovl7;
-extern f32 D_801CE490_ovl7;
+/* D_801CE490_ovl7 = 65535.0f : now emitted by this TU */
 
-extern f32 D_801CE494_ovl7;
+/* D_801CE494_ovl7 = 65535.0f : now emitted by this TU */
 extern void *D_801CB56C_ovl7[];
 extern void func_8010C274(void);
 void func_801BBE1C_ovl7(s32 arg0);
@@ -64,7 +64,7 @@ void func_801BBA54_ovl7(s32 arg0) {
     D_800E6850[omCurrentObj->objId] = 14.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801CE490_ovl7;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801AC11C_ovl7(arg0);
 }
@@ -95,7 +95,7 @@ void func_801BBBF4_ovl7(s32 arg0) {
     D_800E6850[omCurrentObj->objId] = 14.0f;
     D_800E3750[omCurrentObj->objId] = 0;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801CE494_ovl7;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801AC364_ovl7(arg0);
 }

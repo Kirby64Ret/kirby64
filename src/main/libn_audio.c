@@ -6,8 +6,8 @@
 
 extern N_ALGlobals *n_alGlobals;
 extern N_ALSynth *n_syn;
-/* D_800417A0 = 1e+06f : now emitted by this TU */
-/* D_800414C8 = 1.99996f : now emitted by this TU */
+/* 1e+06f = 1e+06f : now emitted by this TU */
+/* 1.99996f = 1.99996f : now emitted by this TU */
 
 typedef struct {
     /* 0x00 */ u8  pad00[0x28];

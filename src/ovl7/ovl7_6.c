@@ -18,7 +18,7 @@ struct Ovl7Unk94 {
 };
 
 
-extern f32 D_801CE1DC_ovl7;
+/* D_801CE1DC_ovl7 = -1.5707964f : now emitted by this TU */
 extern f32 D_800E10D0[], D_800E1290[], D_800E1450[];
 extern FUNCLIST D_801CD4D0_ovl7;
 void func_800B4924(s32);
@@ -44,7 +44,7 @@ void func_800AF408(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800A9F98(s32, f32);
-extern f32 D_801CE1E8_ovl7;
+/* D_801CE1E8_ovl7 = 0.34906587f : now emitted by this TU */
 void func_801ACFD0_ovl7(GObj *arg0) {
     if (D_800E8E60[omCurrentObj->objId] == 0) {
         D_800DEF90[omCurrentObj->objId] = func_800B4954;
@@ -189,7 +189,7 @@ void func_801ADC60_ovl7(GObj *arg0) {
 void func_801ADF58_ovl7(GObj *arg0) {
     func_800A9864(0x100C2, 0x1869F, 0x10);
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]] + (D_800E6A10[D_800E0D50[omCurrentObj->objId]] * D_801CE1DC_ovl7);
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]] + (D_800E6A10[D_800E0D50[omCurrentObj->objId]] * -1.5707964f);
     arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
     arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
     arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
@@ -221,7 +221,7 @@ void func_801AE154_ovl7(GObj *arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-extern f32 D_801CE1E0_ovl7;
+/* D_801CE1E0_ovl7 = 1.5707964f : now emitted by this TU */
 void func_800B5064(s32);
 void func_800AA018(s32);
 void func_800AF27C(void);
@@ -233,12 +233,12 @@ void func_801AE304_ovl7(s32 arg0) {
     D_800E0F10[omCurrentObj->objId] = 1;
     D_800DDA90[omCurrentObj->objId] = 0x25;
     func_800AA018(0x105FB);
-    gEntitiesAngleYArray[omCurrentObj->objId] += D_801CE1E0_ovl7;
+    gEntitiesAngleYArray[omCurrentObj->objId] += 1.5707964f;
     func_800AF27C();
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-extern f32 D_801CE1E4_ovl7;
+/* D_801CE1E4_ovl7 = 1.5707964f : now emitted by this TU */
 void func_800B8550(s32);
 void func_801AE4E4_ovl7(struct GObj *);
 void func_801AE52C_ovl7(void);
@@ -250,7 +250,7 @@ void func_801AE3DC_ovl7(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B8550;
     func_801AE52C_ovl7();
     func_801AE5D4_ovl7();
-    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_801CE1E4_ovl7;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 1.5707964f;
     ohSleep(0xC);
     func_800A7F74(3, 2, 0xEC, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
     play_sound(0x158);
@@ -258,7 +258,7 @@ void func_801AE3DC_ovl7(s32 arg0) {
 }
 
 void func_801AE4E4_ovl7(GObj *arg0) {
-    gEntitiesAngleYArray[omCurrentObj->objId] -= D_801CE1E8_ovl7 * D_800E6A10[omCurrentObj->objId];
+    gEntitiesAngleYArray[omCurrentObj->objId] -= 0.34906587f * D_800E6A10[omCurrentObj->objId];
 }
 
 void func_801AE52C_ovl7(void) {

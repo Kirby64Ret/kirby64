@@ -827,7 +827,7 @@ extern void func_801A0D50_ovl7(void *);
 extern void func_801A3E80_ovl7(struct GObj *);
 extern s32 D_801C7F84_ovl7;
 extern s32 D_801CB494_ovl7;
-void func_801E0A50_ovl9(struct GObj *);
+void func_801E0A50_ovl9(void);       
 void func_801E0908_ovl9(struct GObj *);
 
 void func_801E0908_ovl9(struct GObj *arg0) {
@@ -849,5 +849,9 @@ void func_801E0908_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801E0A50_ovl9.s")
+void func_801E0A50_ovl9(void) {
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801A0D74_ovl7();
+    func_8019F3B0_ovl7();
+}
 

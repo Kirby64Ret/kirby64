@@ -23,11 +23,11 @@ void func_801E1C20_ovl15(s32);
 void func_801E1E88_ovl15(struct GObj *);
 void func_801DF410_ovl15(struct GObj *);
 void func_801DDD74_ovl15(struct GObj *);
-/* D_801E684C_ovl15 = -6e+03f : now emitted by this TU */
-/* D_801E68A4_ovl15 = 65535.0f : now emitted by this TU */
-/* D_801E68A8_ovl15 = 3.1f : now emitted by this TU */
-/* D_801E68AC_ovl15 = 65535.0f : now emitted by this TU */
-/* D_801E68E8_ovl15 = 0.10471976f : now emitted by this TU */
+/* -6e+03f = -6e+03f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
+/* 3.1f = 3.1f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
+/* 0.10471976f = 0.10471976f : now emitted by this TU */
 extern s32 D_801E6544_ovl15[];
 extern s32 D_801E654C_ovl15[];
 extern s32 D_801D8C7C;
@@ -370,7 +370,7 @@ void func_801DD208_ovl15(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD208_ovl15.s")
 #endif
 void func_801DD318_ovl15(struct GObj *arg0) {
-/* D_801E6828_ovl15 = 1.5707964f : now emitted by this TU */
+/* 1.5707964f = 1.5707964f : now emitted by this TU */
 
     D_800D7098.unk14 = 0;
     D_800D7098.unk10 = 0;
@@ -677,7 +677,7 @@ void func_801E00C4_ovl15(GObj *arg0) {
     extern f32 D_800E3050[], D_800E3210[], D_800E3590[], D_800E3750[], D_800E3AD0[], D_800E3C90[];
     extern f32 D_800EA8A0[], D_800EAA60[];
     extern s32 D_800E8920[], D_800EA360[];
-/* D_801E6878_ovl15 = 65535.0f : now emitted by this TU */
+/* 65535.0f = 65535.0f : now emitted by this TU */
     f32 thr;
 
     D_800DDFD0[omCurrentObj->objId] = 9;

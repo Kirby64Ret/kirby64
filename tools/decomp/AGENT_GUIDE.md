@@ -2984,3 +2984,127 @@ not match that pattern, so every own-.rodata reference comes back as a phantom
 diff. Either subtract the `references own section` lines from the count, or
 re-measure the final variant in place -- `func_801FDB28_ovl9` measured 1/85 on
 the copy and MATCH in the file.
+
+# THE "MID-TU PADDING TRAP" CLASS IS NOT A TRAP -- measured, 12 converted
+
+Recorded at commit 23befa5+ (fleet live). `padtrap.classify()` returns
+`('trap', N)` for 22 pragmas and the guide called them permanently impossible:
+"the ROM's listing carries words after the `.size` that C cannot emit".
+
+**That reasoning is wrong about where the words come from, and the fix costs
+one yaml line per translation unit.**
+
+## What the words actually are
+
+Every one of the 22 tails is ALL NOPS, and every one of them ends at an address
+that is **0 mod 32**. Measured, per translation unit:
+
+* IDO emits a literal `.align 5` before the unreachable epilogue of any
+  `while (1)` function (already in this guide). That sets the object's `.text`
+  **section alignment to 32** -- `objdump -h` shows `2**5`.
+* **IDO's assembler pads `.text` to 16, never to 32.** Proved on a 5-function
+  toy TU: `.text` alignment `2**5`, last function ends at 0x88, section size
+  0x90. So the object does NOT carry the 32-byte tail.
+* The original SGI linker then placed the NEXT object's `.text` at its own
+  `sh_addralign`, i.e. at 32. **The missing words are LINKER FILL between two
+  objects, not content of either.**
+
+`build/kirby.ld` uses `SUBALIGN(16)` on every output section, which overrides
+input alignment, so our link puts the next object at 16 and the TU comes out
+16 (or 16k) bytes short. splat gave the fill to the last function's listing
+because it splits by symbol address range, and that is what made it look like
+the function's own bytes.
+
+Two independent confirmations that this is the real model, not a story:
+* Across all 153 `c` subsegments, **not one object with `.text` alignment
+  `2**5` has a subsegment base that is 16 mod 32.** 107 bases are 32-aligned,
+  46 are 16 mod 32, and the 46 all belong to objects at `2**4`.
+* The pad is always exactly `align32(end) - align16(end)`.
+
+## The fix: a `pad` subsegment. The project already uses it twice.
+
+splat renders `- [0x56f00, pad]` as `. += 0x10;` in kirby.ld, and ovl1 has
+carried two of these since before this session. So:
+
+  1. Convert the function normally and verify it MATCHes.
+  2. Compile the object and read `.text`: `PAD = yaml_span - text_size`
+     (it has always been 0x10 so far).
+  3. `kirby64.yaml`: insert `- [<tu_rom_start + text_size>, pad]` immediately
+     after that file's `c` line.
+  4. `kirby.ld` (generated, gitignored): insert `. += 0x<PAD>;` immediately
+     before the NEXT object's `(.text)` line in the same output section.
+     `make` does not regenerate kirby.ld, so this takes effect at once; the
+     yaml line is what makes it survive the next `splat split`.
+  5. Gate: ROM sha1, check_tu_size (it already understands bare `pad`
+     subsegments), check_sections, check_layout <seg>.
+
+**Steps 1 and 3-4 must be applied together in one edit.** Either half alone
+breaks the link for every other agent: the C without the pad is 16 short, the
+pad without the C is 16 long.
+
+## Converted this way, ROM byte-exact at sha1 6cea2d46b929a3bb347b060a77fccc83526fb855
+
+func_801D8D4C_ovl9 (ovl9_1), func_801EAB4C_ovl9 (ovl9_5),
+func_801E0A50_ovl9 (ovl9_3), func_80209698_ovl9 (ovl9_12),
+func_80165370_ovl5 (ovl5_2), func_8016FAB0_ovl5 (ovl5_4),
+func_80177A30_ovl5 (ovl5_5), func_80179D48_ovl5 (ovl5_6),
+func_8017ECA4_ovl5 (ovl5_8), func_8017F594_ovl5 (ovl5_9),
+func_800BB53C (ovl1_10), func_800BBF60 (ovl1_12),
+func_8001E344 (main/interpolation), func_8000385C (main/dma),
+func_80220184_ovl18 (code_2308C0), func_802266C8_ovl18 (code_2385A0).
+
+Twelve of the sixteen already had a guarded draft that had been correct all
+along; `func_8000385C` is 339 instructions and matched by simply un-guarding it.
+`func_80209698_ovl9` is the very function this guide used to PROVE the 16-byte
+cutoff ("tail of FOUR nops -- came up exactly 16 bytes short"). It was short by
+exactly the linker fill, and it is now plain C.
+
+`func_802244FC_ovl18` was un-guarded the same way and measured 7/26; it was
+re-guarded and is ordinary decompilation work, not a padding problem.
+
+## The three that are genuinely INTERIOR are wrong TU boundaries, not traps
+
+`func_801E7EE0_ovl16`, `func_801E27BC_ovl15` and `func_801DB1E0_ovl12` are
+followed, inside the SAME C file, by a function that is already plain C. Their
+nops therefore sit in the middle of one object -- and IDO emits nothing
+32-byte-aligned between two functions, so that alignment cannot be interior.
+Measured from each TU's own base:
+
+    ovl16/ovl16       func ends +0xCD24 (4 mod 32),  pad ends +0xCD40 (0 mod 32)
+    ovl15/ovl15       func ends +0x7D6C (12 mod 32), pad ends +0x7D80 (0 mod 32)
+    ovl12/code_1EB520 func ends +0x0004 (4 mod 32),  pad ends +0x0020 (0 mod 32)
+
+That is the guide's own dead-epilogue probe firing: **each of these `c`
+subsegments is two translation units.** The splits are at 0x801E7F20
+(func_801E7F20_ovl16), 0x801E2F60 (func_801E2F60_ovl15) and 0x801DB200
+(func_801DB200_ovl12). Fixing one is the documented ovl10_3 procedure (split
+the C file, add the `c` subsegment, add a `pad` for the residue) and it makes
+the preceding function ordinary work -- `func_801E7EE0_ovl16` is NINE
+instructions.
+
+Note `func_801DB1E0_ovl12` and `func_801DD8F0_ovl17` are not functions at all:
+they are 1-word nop symbols splat manufactured at a TU head out of the previous
+TU's fill. Nothing is gained by "converting" them.
+
+## What remains blocked, and it is NOT padding
+
+* `func_801FB9DC_ovl9` (ovl9_8) -- decoded exactly, 32/41, a whole-function
+  one-slot register rotation ($v1 vs $t9 on the pre-call load). Declaration
+  order, initializer-in-declaration, `(void)` vs `(GObj *)`, an explicit
+  difference local and a leading pad are all inert. Same residue as its
+  neighbour `func_801FB528_ovl9`.
+* `func_800A2550` (ovl1/ovl1) -- the existing draft does not compile
+  (`Selector requires struct/union pointer`, line 3805).
+* `func_801E0B38_ovl17` (ovl17_2, 108 insns) -- its listing also carries two
+  `.rodata` strings, so converting it must write them as literals in a migrated
+  TU as well.
+* `func_8016BD24_ovl3`, `saveForceCompleteFile`, `func_8020FD34_ovl9` -- no
+  draft; ordinary decompilation work of 130, 113 and 141 instructions.
+
+## Corollary for `padtrap.py`
+
+`classify()` still correctly identifies a listing whose bytes will disappear.
+What was wrong is the CONCLUSION printed next to it. A `trap` verdict on a
+function that is LAST in its `c` subsegment means "needs a pad subsegment",
+not "can never be C"; only an INTERIOR one means "the TU boundary is wrong".
+verify.py's message now says so.

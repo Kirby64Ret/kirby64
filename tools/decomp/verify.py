@@ -259,10 +259,14 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
         _kind, _pad = padtrap.classify(listing, func)
         if _kind == 'trap':
             return None, (f'{func}: PADDING TRAP -- its listing has {_pad} '
-                          f'non-zero word(s) after its own .size (the TU\'s '
-                          f'alignment padding). It can NEVER be C: converting it '
-                          f'shortens the TU and shifts the segment, even though the '
-                          f'instructions themselves are right.')
+                          f'word(s) after its own .size. Those are the LINKER\'s '
+                          f'32-byte alignment fill before the next object, not the '
+                          f'function\'s bytes, so converting it leaves the TU '
+                          f'16*k bytes short under kirby.ld\'s SUBALIGN(16). This '
+                          f'is FIXABLE: see "THE MID-TU PADDING TRAP CLASS IS NOT '
+                          f'A TRAP" in AGENT_GUIDE.md -- add a `pad` subsegment to '
+                          f'kirby64.yaml plus the matching `. += 0x10;` in '
+                          f'kirby.ld, in the SAME edit as the conversion.')
     if listing is None:
         return None, f'{func}: no asm.old listing (unverifiable — was decompiled in src.old)'
     twords, ttexts = target_words(listing)
