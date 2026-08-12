@@ -150,35 +150,37 @@ void func_80180FF8_ovl5(GObj *o) {
     }
 }
 
-#ifdef MIPS_TO_C
-void func_8018124C_ovl5(s32 arg0) {
-    struct EntityThing800E9AA0 *temp_v0;
+#ifdef NON_MATCHING
+extern u32 D_8018A108_ovl5;    // model ptr
+extern u32 D_8018A10C_ovl5[]; // model ptr array
 
+void func_8018124C_ovl5(GObj *arg0) {
     func_800A9864(D_8018A108_ovl5, 0x1869F, 0x10);
-loop_1:
-    if (D_8018EDE1_ovl5 == 1) {
-        temp_v0 = D_800E9AA0[D_8018EDEC_ovl5];
-        if (temp_v0 == NULL) {
-            if ((func_800AA934(D_8018A10C_ovl5.unk0) == 0) && (func_800AA934(D_8018A10C_ovl5.unk4) == 0)) {
-                func_800AECC0(2.0f);
-                func_800AED20(2.0f);
-                func_800AA018(D_8018A10C_ovl5.unk0);
-            } else if (func_800AA934(D_8018A10C_ovl5.unk4) == 1) {
-                func_800AECC0(0.0f);
-                func_800AED20(0.0f);
+    while (1) {
+        if (D_8018EDE1_ovl5 == 1) {
+            if (D_800E9AA0[D_8018EDEC_ovl5].as_s32 == 0) {
+                if ((func_800AA934(D_8018A10C_ovl5[0]) == 0) && (func_800AA934(D_8018A10C_ovl5[1]) == 0)) {
+                    func_800AECC0(2.0f);
+                    func_800AED20(2.0f);
+                    func_800AA018(D_8018A10C_ovl5[0]);
+                } else if (func_800AA934(D_8018A10C_ovl5[1]) == 1) {
+                    func_800AECC0(0.0f);
+                    func_800AED20(0.0f);
+                }
+            } else if ((D_800E9AA0[D_8018EDEC_ovl5].as_s32 == 1)) {
+                if ((D_800E09D0[omCurrentObj->objId] == 0.0f) || (func_800AA934(D_8018A10C_ovl5[1]) == 0)) {
+                    func_800AECC0(2.0f);
+                    func_800AED20(2.0f);
+                    func_800AA018(D_8018A10C_ovl5[1]);
+                }
             }
-        } else if ((temp_v0 == 1) && ((D_800E09D0[omCurrentObj->objId] == 0.0f) || (func_800AA934(D_8018A10C_ovl5.unk4) == 0))) {
+        } else if ((func_800AA934(D_8018A10C_ovl5[0]) == 1) || (func_800AA934(D_8018A10C_ovl5[1]) == 1)) {
             func_800AECC0(2.0f);
             func_800AED20(2.0f);
-            func_800AA018(D_8018A10C_ovl5.unk4);
+            func_800AA018(D_8018A10C_ovl5[2]);
         }
-    } else if ((func_800AA934(D_8018A10C_ovl5.unk0) == 1) || (func_800AA934(D_8018A10C_ovl5.unk4) == 1)) {
-        func_800AECC0(2.0f);
-        func_800AED20(2.0f);
-        func_800AA018(D_8018A10C_ovl5.unk8);
+        ohSleep(1);
     }
-    ohSleep(1);
-    goto loop_1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_11/func_8018124C_ovl5.s")

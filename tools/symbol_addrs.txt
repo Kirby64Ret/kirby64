@@ -1144,3 +1144,12 @@ D_800D6C90 = 0x800D6C90; // size:0x4
 // and refuses to migrate it, which then stops migration of every later symbol in
 // that function (D_801F0028..D_801F0040 too). Forcing it restores the block.
 D_801F001C_ovl16 = 0x801F001C; // segment:ovl16 force_migration:True
+
+// Same spimdisasm refusal in ovl9, found while migrating that segment's rodata.
+// D_8021CFD4_ovl9 is three words of 3.14159274 and D_8021D88C_ovl9 two words
+// with a non-zero second word, so isMaybeConstVariable() rejects both. The
+// D_8021D88C refusal additionally dropped every later rodata symbol of
+// func_801EF524_ovl9 (D_8021D894..D_8021D8A4). No splat warning fires for
+// either. `segment:` is required -- ovl9 has exclusive_ram_id.
+D_8021CFD4_ovl9 = 0x8021CFD4; // segment:ovl9 force_migration:True
+D_8021D88C_ovl9 = 0x8021D88C; // segment:ovl9 force_migration:True

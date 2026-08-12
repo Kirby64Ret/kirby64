@@ -124,13 +124,101 @@ s32 arg0;
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801555AC_ovl4.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801555F4_ovl4.s")
+extern s32 D_8015C6D0_ovl4;
+void func_80155890_ovl4(GObj *);
+void func_80155C00_ovl4(GObj *);
+
+void func_801555F4_ovl4(GObj *arg0) {
+    D_8015C6D0_ovl4 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 7;
+    D_800E9FE0[omCurrentObj->objId].as_s32 = 0;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DF150[omCurrentObj->objId] = func_80155890_ovl4;
+    if (D_8015C6DC_ovl4 == 1) {
+        ohSleep(1);
+        D_800DF150[omCurrentObj->objId] = NULL;
+        D_800DF150[omCurrentObj->objId] = func_80155C00_ovl4;
+    }
+    while (1) {
+        if (D_800E9C60[omCurrentObj->objId] != 0) {
+            D_800E9E20[omCurrentObj->objId] = 3;
+            switch (D_8015C6DC_ovl4) {
+                case 0:
+                    D_800DF150[omCurrentObj->objId] = NULL;
+                    D_800DF150[omCurrentObj->objId] = func_80155890_ovl4;
+                    break;
+                case 1:
+                    D_800DF150[omCurrentObj->objId] = NULL;
+                    D_800DF150[omCurrentObj->objId] = func_80155C00_ovl4;
+                    break;
+                case 2:
+                    D_800DF150[omCurrentObj->objId] = NULL;
+                    D_800DF150[omCurrentObj->objId] = func_80155E6C_ovl4;
+                    break;
+            }
+            D_800E9C60[omCurrentObj->objId] = 0;
+        }
+        if (D_8015C6D8_ovl4 != 0) {
+            D_800DF150[omCurrentObj->objId] = NULL;
+            curObjSleepForever();
+        }
+        ohSleep(1);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80155890_ovl4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80155C00_ovl4.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80155E6C_ovl4.s")
+void play_sound(s32);
+
+void func_80155E6C_ovl4(GObj *arg0) {
+    void func_80156054_ovl4(GObj *);
+
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        D_800E9E20[omCurrentObj->objId]--;
+        return;
+    }
+    if (gPlayerControllers[0].buttonPressed & 0x9000) {
+        switch (D_8015C6E4_ovl4) {
+            case 0:
+                play_sound(0xED);
+                D_8015C6DC_ovl4 = 0;
+                D_800E9C60[omCurrentObj->objId] = 1;
+                return;
+            case 1:
+                play_sound(0xED);
+                D_800EA1A0[omCurrentObj->objId] = 1;
+                D_800E9AA0[request_track_3(1, 0, 0x70)].as_s32 = 0x10;
+                D_800DF150[omCurrentObj->objId] = NULL;
+                D_800DF150[omCurrentObj->objId] = func_80156054_ovl4;
+                return;
+        }
+    }
+    if (gPlayerControllers[0].buttonPressed & 0x4000) {
+        play_sound(0x2B);
+        D_8015C6DC_ovl4 = 0;
+        D_800E9C60[omCurrentObj->objId] = 1;
+        return;
+    }
+    switch (func_801554F0_ovl4()) {
+        case -2:
+        case 2:
+            play_sound(0x113);
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+            if (D_8015C6E4_ovl4 == 0) {
+                D_8015C6E4_ovl4 = 1;
+            } else {
+                D_8015C6E4_ovl4 = 0;
+            }
+            break;
+        case 0:
+            break;
+    }
+}
 
 void func_80156054_ovl4(GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -181,7 +269,55 @@ s32 func_801561DC_ovl4(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_8015632C_ovl4.s")
+#include "SPObj.h"
+
+typedef struct {
+    f32 unk0;
+    f32 unk4;
+} Unk2Fs;
+
+typedef struct {
+    s32 unk0;
+    s32 unk4;
+} Unk2Ss;
+
+extern Unk2Fs D_8015AF6C_ovl4[];
+extern Unk2Fs D_8015B004_ovl4[];
+extern Unk2Fs D_8015B03C_ovl4[];
+extern Unk2Ss D_8015B34C_ovl4[][3];
+extern Unk2Ss D_8015B5C4_ovl4[][3];
+extern s32 D_8015C6E0_ovl4;
+
+void func_8015632C_ovl4(SPObj *arg0) {
+    switch (D_8015C6DC_ovl4) {
+        case 0:
+            if (func_801555AC_ovl4(saveCurrentFileNum) != 0) {
+                switch (D_8015C6D4_ovl4) {
+                    case 0:
+                        arg0->xOffset = D_8015AF6C_ovl4[saveCurrentFileNum].unk0;
+                        arg0->yOffset = D_8015AF6C_ovl4[saveCurrentFileNum].unk4;
+                        break;
+                    case 1:
+                        arg0->xOffset = D_8015B004_ovl4[saveCurrentFileNum].unk0;
+                        arg0->yOffset = D_8015B004_ovl4[saveCurrentFileNum].unk4;
+                        break;
+                    case 2:
+                        arg0->xOffset = D_8015B03C_ovl4[saveCurrentFileNum].unk0;
+                        arg0->yOffset = D_8015B03C_ovl4[saveCurrentFileNum].unk4;
+                        break;
+                }
+            }
+            break;
+        case 1:
+            arg0->xOffset = D_8015B34C_ovl4[D_8015C6E0_ovl4][saveCurrentFileNum].unk0;
+            arg0->yOffset = D_8015B34C_ovl4[D_8015C6E0_ovl4][saveCurrentFileNum].unk4;
+            break;
+        case 2:
+            arg0->xOffset = D_8015B5C4_ovl4[D_8015C6E4_ovl4][saveCurrentFileNum].unk0;
+            arg0->yOffset = D_8015B5C4_ovl4[D_8015C6E4_ovl4][saveCurrentFileNum].unk4;
+            break;
+    }
+}
 
 /* 2/63: instruction-for-instruction exact including the seven nops of IDO's
  * 32-byte dead-epilogue padding; only the frame is 0x40 against the ROM's 0x38.
@@ -193,7 +329,7 @@ s32 func_801561DC_ovl4(void) {
  * every type/position are eliminated here, so the frame cannot be shrunk that
  * way. */
 #ifdef NON_MATCHING
-void func_8015632C_ovl4(s32);
+void func_8015632C_ovl4(SPObj *);
 void func_800ACBDC(GObj *);
 
 void func_80156560_ovl4(GObj *arg0) {
@@ -212,7 +348,7 @@ void func_80156560_ovl4(GObj *arg0) {
             func_800ACBDC(arg0);
             v = func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) cur);
         }
-        func_8015632C_ovl4(v);
+        func_8015632C_ovl4((SPObj *) v);
         ohSleep(1);
     }
 }
@@ -245,9 +381,128 @@ void func_8015665C_ovl4(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801567BC_ovl4.s")
+/* 2/141: every instruction and register exact; the residue is the stack offset
+ * of the 3-word local copy (ROM 0x54, IDO 0x60) -- IDO reserves 8 more bytes of
+ * compiler temp below the local block. Measured: L=0x10 gives frame 0x70 base
+ * 0x60, L=0x1C gives frame 0x78 base 0x5C; the ROM needs L=0x1C with base 0x54,
+ * which no local count reaches. Swept: 12-byte and 3x4-byte pads above the copy,
+ * a 6-word local with a cast copy, dropping/keeping each pointer local, an index
+ * local, active vs implicit prototypes for func_800AFBB4/func_800ACBDC. */
+#ifdef NON_MATCHING
+typedef struct {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+} Unk3Hs;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801569F0_ovl4.s")
+extern Unk2Fs D_8015AC0C_ovl4[];
+extern Unk2Fs D_8015ABD4_ovl4[];
+extern Unk3Hs D_8015ABC8_ovl4[];
+extern struct UnkStruct8015C740 D_8015ABEC_ovl4;
+extern struct UnkStruct8015C740 D_8015ABA8_ovl4;
+extern Unk3Words D_8015A9D4_ovl4;
+
+void func_801567BC_ovl4(GObj *arg0, s32 arg1) {
+    SPObj *sp;
+    Unk3Words sp54 = D_8015A9D4_ovl4;
+    s32 prev;
+    s32 cur;
+    s32 idx;
+
+    prev = func_801555AC_ovl4(arg1) + 1;
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x16, 0x80000000, 0x16);
+    while (1) {
+        if ((arg1 != saveCurrentFileNum) || (D_8015C6DC_ovl4 == 0)) {
+            func_800AFBB4(1, omCurrentObj);
+            cur = func_801555AC_ovl4(arg1);
+            if (cur != prev) {
+                prev = cur;
+                func_800ACBDC(arg0);
+                sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015ABEC_ovl4);
+                sp->xOffset = D_8015AC0C_ovl4[arg1].unk0;
+                sp->yOffset = D_8015AC0C_ovl4[arg1].unk4;
+                if (cur != 0) {
+                    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015ABA8_ovl4);
+                    sp->xOffset = D_8015ABD4_ovl4[arg1].unk0;
+                    sp->yOffset = D_8015ABD4_ovl4[arg1].unk4;
+                } else {
+                    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp54.unk0[arg1]);
+                }
+            }
+            idx = arg1 == saveCurrentFileNum;
+            sp->primColorRed = D_8015ABC8_ovl4[idx].unk0;
+            sp->primColorGreen = D_8015ABC8_ovl4[idx].unk2;
+            sp->primColorBlue = D_8015ABC8_ovl4[idx].unk4;
+        } else {
+            func_800AFBB4(0, omCurrentObj);
+        }
+        ohSleep(1);
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801567BC_ovl4.s")
+#endif
+
+typedef struct {
+    u8 pad0[0x20];
+    /* 0x20 */ f32 xOffset;
+    /* 0x24 */ f32 yOffset;
+    u8 pad28[0x44];
+    /* 0x6C */ u32 unk6C;
+    u8 pad70[0x8];
+    /* 0x78 */ u32 unk78;
+    u8 pad7C[0x50];
+    /* 0xCC */ u32 unkCC;
+    u8 padD0[0x8];
+    /* 0xD8 */ u32 unkD8;
+} UnkSpObj8015AB70;
+
+extern Unk2Fs D_8015AB90_ovl4[];
+extern struct UnkStruct8015C740 D_8015AB70_ovl4;
+extern s32 D_8015C6F0_ovl4;
+u32 func_800A9AA8(s32, s32);
+
+void func_801569F0_ovl4(GObj *arg0, s32 arg1) {
+    UnkSpObj8015AB70 *sp;
+    u32 a;
+    u32 b;
+    u32 c;
+    u32 v;
+
+    D_8015C6F0_ovl4 = omCurrentObj->objId;
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x16, 0x80000000, 0x16);
+    sp = (UnkSpObj8015AB70 *) func_8015C740_ovl5(arg0, &D_8015AB70_ovl4);
+    b = func_800A9AA8(0x30001, 3);
+    a = sp->unk6C;
+    c = func_800A9AA8(0x30002, 3);
+    sp->xOffset = D_8015AB90_ovl4[arg1].unk0;
+    sp->yOffset = D_8015AB90_ovl4[arg1].unk4;
+    while (1) {
+        if ((arg1 != saveCurrentFileNum) || (D_8015C6DC_ovl4 == 0)) {
+            func_800AFBB4(1, omCurrentObj);
+            if (func_801555AC_ovl4(arg1) != 0) {
+                if (arg1 == saveCurrentFileNum) {
+                    v = a;
+                } else {
+                    v = b;
+                }
+            } else {
+                v = c;
+            }
+            sp->unk6C = v;
+            sp->unk78 = v;
+            sp->unkCC = v;
+            sp->unkD8 = v;
+        } else {
+            func_800AFBB4(0, omCurrentObj);
+        }
+        ohSleep(1);
+    }
+}
 
 s32 func_80156BAC_ovl4(s32 arg0) {
     u32 world;
@@ -268,7 +523,63 @@ ret7:
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80156C4C_ovl4.s")
+typedef struct {
+    s32 unk0[10];
+} Unk10Ws;
+
+typedef struct {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+} Unk3Hw;
+
+extern Unk10Ws D_8015A9E0_ovl4;
+extern Unk2Fs D_8015AF28_ovl4[];
+extern Unk3Hw D_8015AF40_ovl4[];
+extern s32 D_8015C6EC_ovl4;
+s32 func_80156BAC_ovl4(s32);
+
+void func_80156C4C_ovl4(GObj *arg0, s32 arg1) {
+    Unk10Ws sp60 = D_8015A9E0_ovl4;
+    SPObj *sp;
+    Unk2Fs *p;
+    s32 cur;
+    s32 idx;
+
+    D_8015C6EC_ovl4 = omCurrentObj->objId;
+    cur = func_80156BAC_ovl4(arg1);
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp60.unk0[cur]);
+    p = &D_8015AF28_ovl4[arg1];
+    sp->xOffset = p->unk0;
+    sp->yOffset = p->unk4;
+    while (1) {
+        if ((arg1 != saveCurrentFileNum) || (D_8015C6DC_ovl4 == 0)) {
+            func_800AFBB4(1, omCurrentObj);
+            if (func_801555AC_ovl4(arg1) != 0) {
+                func_800AFBB4(1, omCurrentObj);
+                if (func_80156BAC_ovl4(arg1) != cur) {
+                    cur = func_80156BAC_ovl4(arg1);
+                    func_800ACBDC(arg0);
+                    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp60.unk0[cur]);
+                    sp->xOffset = p->unk0;
+                    sp->yOffset = p->unk4;
+                }
+                idx = arg1 == saveCurrentFileNum;
+                sp->primColorRed = D_8015AF40_ovl4[idx].unk0;
+                sp->primColorGreen = D_8015AF40_ovl4[idx].unk2;
+                sp->primColorBlue = D_8015AF40_ovl4[idx].unk4;
+            } else {
+                func_800AFBB4(0, omCurrentObj);
+            }
+        } else {
+            func_800AFBB4(0, omCurrentObj);
+        }
+        ohSleep(1);
+    }
+}
 
 typedef struct {
     s32 unk0[10];
@@ -297,7 +608,79 @@ u8 func_80157004_ovl4(s32 arg0) {
     return D_800ECA08[arg0].unk10;
 }
 
+/* 1/138: instruction-for-instruction exact except the operand ORDER of one
+ * `beq $v0, $fp` (ROM) vs `beq $fp, $v0`. Swept: both compare operand orders,
+ * (u32)/(s32) casts, embedded assignment in the condition, goto into a shared
+ * block, empty-then/else, u8 types for either variable, declaration order of
+ * every local, sentinel local. All inert; the rest of the function is exact. */
+#ifdef NON_MATCHING
+typedef struct {
+    f32 unk0;
+    f32 unk4;
+} Unk2Floats;
+
+typedef struct {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+} Unk3Halfs;
+
+extern Unk2Floats D_8015ADC4_ovl4[];
+extern Unk3Halfs D_8015ADDC_ovl4[];
+extern s32 D_8015C6F8_ovl4[];
+
+void func_800AFBB4(s32, GObj *);
+void func_800ACBDC(GObj *);
+
+void func_80157028_ovl4(GObj *arg0, s32 arg1) {
+    Unk2Floats *p;
+    SPObj *sp;
+    Unk3Halfs *c;
+    s32 idx;
+    s32 t;
+    s32 v;
+
+    D_8015C6F8_ovl4[arg1] = omCurrentObj->objId;
+    v = func_80157004_ovl4(arg1);
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    p = &D_8015ADC4_ovl4[arg1];
+    func_80156EB0_ovl4(arg0, v, p->unk0, p->unk4);
+    while (1) {
+        if ((arg1 != saveCurrentFileNum) || (D_8015C6DC_ovl4 == 0)) {
+            func_800AFBB4(1, omCurrentObj);
+            if (func_801555AC_ovl4(arg1) != 0) {
+                func_800AFBB4(1, omCurrentObj);
+                t = func_80157004_ovl4(arg1);
+                if (t != v) {
+                    v = t;
+                    func_800ACBDC(arg0);
+                    func_80156EB0_ovl4(arg0, t, p->unk0, p->unk4);
+                }
+                if (func_801555AC_ovl4(arg1) != 0) {
+                    sp = arg0->unk4C;
+                    while (sp != NULL) {
+                        idx = arg1 == saveCurrentFileNum;
+                        c = &D_8015ADDC_ovl4[idx];
+                        sp->primColorRed = c->unk0;
+                        sp->primColorGreen = c->unk2;
+                        sp->primColorBlue = c->unk4;
+                        sp = (SPObj *) sp->unk8;
+                    }
+                }
+            } else {
+                func_800AFBB4(0, omCurrentObj);
+            }
+        } else {
+            func_800AFBB4(0, omCurrentObj);
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157028_ovl4.s")
+#endif
 
 s32 func_80157250_ovl4(void) {
     return 4;

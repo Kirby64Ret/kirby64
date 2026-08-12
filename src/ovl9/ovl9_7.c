@@ -110,7 +110,7 @@ void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800A9864(s32, s32, s32);
 void func_800AA018(s32);
-extern f32 D_8021D8D8_ovl9, D_8021D8DC_ovl9, D_8021D8E0_ovl9;
+/* +-0.5235988f: literals, this TU owns its .rodata */
 
 void func_801F2238_ovl9(struct GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = &func_800B6E84;
@@ -124,9 +124,9 @@ void func_801F2238_ovl9(struct GObj *arg0) {
     func_800A9864(0x100A3, 0x23, 0x10);
     func_800AA018(0x10563);
     func_800AA018(0x10562);
-    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_8021D8D8_ovl9;
-    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (sinf(D_8021D8DC_ovl9) * 15.0f);
-    D_800E3210[omCurrentObj->objId] = -cosf(D_8021D8E0_ovl9) * 15.0f;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = -0.5235988f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (sinf(0.5235988f) * 15.0f);
+    D_800E3210[omCurrentObj->objId] = -cosf(0.5235988f) * 15.0f;
     curObjSleepForever();
 }
 
@@ -139,7 +139,7 @@ void func_801F23E4_ovl9(void) {
 }
 
 extern s32 D_801C9B48_ovl7;
-extern f32 D_8021D8E4_ovl9;
+/* D_8021D8E4_ovl9: literal, this TU owns its .rodata */
 void func_801F24FC_ovl9(struct GObj *);
 void func_800B33F4(void);
 void func_800AECC0(f32);
@@ -156,7 +156,7 @@ void func_801F2428_ovl9(GObj *arg0) {
     func_800AED20(gameTicksPerDraw);
     func_800A9760(0x100A4);
     func_800A9F98(0x10564, 1.0f);
-    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_8021D8E4_ovl9;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = -0.5235988f;
     ohSleep(0xF);
     func_801A3E80_ovl7(arg0);
 }

@@ -95,7 +95,7 @@ void func_801D91A0_ovl9(void) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CB860;
-extern f32 D_8021CF30_ovl9;
+/* D_8021CF30_ovl9: literal, this TU owns its .rodata */
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800B3520(void);
@@ -108,15 +108,15 @@ void func_801D91C8_ovl9(struct GObj *arg0) {
     func_800AED20(gameTicksPerDraw);
     func_800B3520();
     D_800E3210[omCurrentObj->objId] = 0.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021CF30_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     func_800AA018(0x10121);
     curObjSleepForever();
 }
 
-extern f32 D_8021CF34_ovl9;
+/* D_8021CF34_ovl9: literal, this TU owns its .rodata */
 void func_801D94D4_ovl9(GObj *, s32, f32);
-extern f32 D_8021CF38_ovl9;
+/* D_8021CF38_ovl9: literal, this TU owns its .rodata */
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800B3520(void);
@@ -133,8 +133,8 @@ void func_801D92AC_ovl9(struct GObj *arg0) {
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB83C;
-    func_800AECC0(gameTicksPerDraw * D_8021CF34_ovl9);
-    func_800AED20(gameTicksPerDraw * D_8021CF38_ovl9);
+    func_800AECC0(gameTicksPerDraw * 1.4f);
+    func_800AED20(gameTicksPerDraw * 1.4f);
     func_800B3520();
     func_800AA154(0x1011C);
     func_800AA154(0x1011D);
@@ -254,7 +254,7 @@ void func_801D9A54_ovl9(void) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CB8A8;
-extern f32 D_8021CF3C_ovl9;
+/* D_8021CF3C_ovl9: literal, this TU owns its .rodata */
 extern f32 *D_801CAA84;
 void func_801A2ADC_ovl7(void *);
 void func_800A9EA4(s32);
@@ -274,7 +274,7 @@ void func_801D9A7C_ovl9(struct GObj *arg0) {
         func_800A9EA4(0x1016E);
         func_800B3520();
         D_800E3210[omCurrentObj->objId] = D_800EB160[omCurrentObj->objId];
-        D_800E3750[omCurrentObj->objId] = D_8021CF3C_ovl9;
+        D_800E3750[omCurrentObj->objId] = -0.65f;
         D_800E3C90[omCurrentObj->objId] = 10.0f;
         while (0.0f < D_800E3210[omCurrentObj->objId]) {
             ohSleep(1);
@@ -301,7 +301,7 @@ void func_801D9A7C_ovl9(struct GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CB8A8;
-extern f32 D_8021CF40_ovl9;
+/* D_8021CF40_ovl9: literal, this TU owns its .rodata */
 extern f32 *D_801CAA84;
 void func_801A2ADC_ovl7(void *);
 void func_800A9EA4(s32);
@@ -317,7 +317,7 @@ void func_801D9D1C_ovl9(struct GObj *arg0) {
     func_800A9EA4(0x1017C);
     func_800B3520();
     D_800E3210[omCurrentObj->objId] = 0.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021CF40_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     while (D_800E8920[omCurrentObj->objId] == 0) {
         ohSleep(1);
@@ -360,8 +360,8 @@ void func_801D9EE0_ovl9(struct GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CB8A8;
-extern f32 D_8021CF44_ovl9;
-extern f32 D_8021CF48_ovl9;
+/* D_8021CF44_ovl9: literal, this TU owns its .rodata */
+/* D_8021CF48_ovl9: literal, this TU owns its .rodata */
 extern f32 *D_801CAA84;
 f32 func_800F9828(s32, s32);
 extern f32 func_8019B608_ovl7(s32);
@@ -378,7 +378,7 @@ void func_801DA054_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB8A8;
     t = func_800F9828(omCurrentObj->objId, 0);
-    if (t == D_8021CF44_ovl9) {
+    if (t == 9999.0f) {
         D_800E6A10[omCurrentObj->objId] = func_8019B608_ovl7(0);
     } else if (t < 0.0f) {
         D_800E6A10[omCurrentObj->objId] = -1.0f;
@@ -391,7 +391,7 @@ void func_801DA054_ovl9(struct GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B3520();
     D_800E3210[omCurrentObj->objId] = 6.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021CF48_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     while (D_800E8920[omCurrentObj->objId] == 0) {
         ohSleep(1);
@@ -400,7 +400,7 @@ void func_801DA054_ovl9(struct GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CB8A8;
-extern f32 D_8021CF4C_ovl9;
+/* D_8021CF4C_ovl9: literal, this TU owns its .rodata */
 extern f32 *D_801CAA84;
 void func_801A2ADC_ovl7(void *);
 void func_800A9EA4(s32);
@@ -418,7 +418,7 @@ void func_801DA28C_ovl9(struct GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B3520();
     D_800E3210[omCurrentObj->objId] = 6.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021CF4C_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     while (0.0f < D_800E3210[omCurrentObj->objId]) {
         ohSleep(1);
@@ -546,7 +546,7 @@ void func_801DA9A8_ovl9(struct GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CB8F0;
-extern f32 D_8021CF50_ovl9;
+/* D_8021CF50_ovl9: literal, this TU owns its .rodata */
 void func_800A9EA4(s32);
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -561,7 +561,7 @@ void func_801DAB7C_ovl9(struct GObj *arg0) {
     func_800AED20(gameTicksPerDraw);
     func_800B3520();
     D_800E3210[omCurrentObj->objId] = 0.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021CF50_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     while (D_800E8920[omCurrentObj->objId] == 0) {
         ohSleep(1);
@@ -638,7 +638,7 @@ void func_801DAFE8_ovl9(void) {
 
 extern struct Sub800E1B50_Unk98 D_801CB8CC;
 extern struct Sub800E1B50_Unk98 D_801CB8F0;
-extern f32 D_8021CF54_ovl9;
+/* D_8021CF54_ovl9: literal, this TU owns its .rodata */
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800B3520(void);
@@ -663,7 +663,7 @@ void func_801DB018_ovl9(struct GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB8F0;
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E3210[omCurrentObj->objId] = 8.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021CF54_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.8f;
     D_800E3C90[omCurrentObj->objId] = 8.0f;
     func_800AA018((D_800E6A10[omCurrentObj->objId] == 1.0f) ? 0x10196 : 0x10194);
     while (D_800E8920[omCurrentObj->objId] == 0) {
@@ -986,8 +986,8 @@ void func_801DC06C_ovl9(struct GObj *arg0) {
 #endif
 
 extern s32 D_801CB95C;
-extern f32 D_8021CF58_ovl9;
-extern f32 D_8021CF5C_ovl9;
+/* D_8021CF58_ovl9: literal, this TU owns its .rodata */
+/* D_8021CF5C_ovl9: literal, this TU owns its .rodata */
 
 void func_801DC1F4_ovl9(struct GObj *arg0) {
     func_800AECC0(gameTicksPerDraw);
@@ -997,9 +997,9 @@ void func_801DC1F4_ovl9(struct GObj *arg0) {
     func_800A9EA4(0x1019B);
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8021CF58_ovl9;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E3210[omCurrentObj->objId] = 0.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021CF5C_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     curObjSleepForever();
 }

@@ -210,7 +210,35 @@ void func_80224E50_ovl18(UNUSED s32 arg0) {
     curObjSleepForever();
 }
 
+#ifdef NON_MATCHING
+/* 53/71: structure exact. The ROM keeps objId in $v0 and copies it into $a1 at
+ * BOTH func_80111C88 call sites; IDO coalesces the load straight into $a1, so
+ * we come out one `or $a1, $v0, $zero` short and the whole else-arm schedule
+ * shifts. Inert: every prototype form for func_80111C88, switch instead
+ * of if/else, parameter-as-scratch, inline vs hoisted objId. */
+void func_80224FCC_ovl18(s32 arg0) {
+    s32 sp28[8];
+
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        func_80111550(omCurrentObj->objId);
+        arg0 = omCurrentObj->objId;
+        if (D_800E98E0[arg0] == 1) {
+            func_80111ECC(func_80111C88(&D_8022A628_ovl18, arg0));
+        } else {
+            func_80111ECC(func_80111C88(&D_8022A5BC_ovl18, arg0));
+        }
+        if ((func_80110B00(&sp28) == 0) && (func_80110FD4(&sp28) == 0)) {
+            func_80110150(&sp28);
+        }
+    }
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_80224B54_ovl18);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_236F20/func_80224FCC_ovl18.s")
+#endif
 
 void func_802250EC_ovl18(UNUSED s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = &func_800B7138;

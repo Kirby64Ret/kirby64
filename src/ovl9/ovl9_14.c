@@ -16,8 +16,8 @@ void func_80210FEC_ovl9(struct GObj *);
 extern s32 func_8019B834_ovl7(void);
 
 extern void func_800B67A8(struct GObj *);
-extern f32 D_8021DD70_ovl9;
-extern f32 D_8021DD74_ovl9;
+/* D_8021DD70_ovl9: literal, this TU owns its .rodata */
+/* D_8021DD74_ovl9: literal, this TU owns its .rodata */
 extern FUNCLIST D_8021CC50_ovl9;
 void func_80214094_ovl9(void);
 
@@ -53,7 +53,7 @@ extern void func_800B3520(void);
 extern s32 D_801CB470_ovl7;
 void func_80211560_ovl9();
 
-extern f32 D_8021DD6C_ovl9;
+/* D_8021DD6C_ovl9: literal, this TU owns its .rodata */
 
 extern s32 func_801AE7E0_ovl7(s32);
 extern Controller_800D6FE8 gPlayerControllers[];
@@ -64,7 +64,7 @@ extern void func_801BB8EC_ovl7(void);
 
 extern s32 D_801CCB5C;
 extern s32 D_801CCA84;
-extern f32 D_8021DD54_ovl9;
+/* D_8021DD54_ovl9: literal, this TU owns its .rodata */
 
 extern FUNCLIST D_8021CB28_ovl9;
 extern FUNCLIST D_8021CB48_ovl9;
@@ -78,17 +78,9 @@ extern FUNCLIST D_8021CC84_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_8020FF80_ovl9.s")
 
-/* 3/82 diffs: registers and structure exact, but the ROM emits the three
-   callee-saved FP loads in REVERSE order of first assignment ($f24 first,
-   $f20 last) and IDO emits them in assignment order. Same 3-diff floor as its
-   twin func_8020ED74_ovl9. Swept: assignment order (both), declaration order,
-   chained assignment, splitting the first load above the others. */
-#ifdef NON_MATCHING
+/* The three constants must be LITERALS -- see the twin func_8020ED74_ovl9. */
 void func_80210154_ovl9(struct GObj *arg0) {
     extern s32 D_800D6B54;
-    extern f32 D_8021DCDC_ovl9;
-    extern f32 D_8021DCE0_ovl9;
-    extern f32 D_8021DCE4_ovl9;
     extern struct GObjProcess *gEntityGObjProcessArray5[];
     void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
     void procMainStub(struct GObj *);
@@ -109,9 +101,9 @@ void func_80210154_ovl9(struct GObj *arg0) {
     func_800AFBB4(0, omCurrentObj);
     func_801A3280_ovl7();
     ohSleep(random_soft_s32_range(0x3C));
-    a = D_8021DCE4_ovl9;
-    b = D_8021DCE0_ovl9;
-    c = D_8021DCDC_ovl9;
+    a = 1.2f;
+    b = 1.3f;
+    c = 1500.0f;
     while (1) {
         if ((func_800B30BC(a, b, c) != 0) && (D_800D6B54 == 0)) {
             func_8021161C_ovl9(5);
@@ -119,9 +111,7 @@ void func_80210154_ovl9(struct GObj *arg0) {
         ohSleep(random_soft_s32_range(0x1E) + 0x5A);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80210154_ovl9.s")
-#endif
+
 void func_802103D8_ovl9(GObj *);
 void func_80210354_ovl9(struct GObj *);
 
@@ -149,18 +139,18 @@ void func_802103D8_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, &D_8021CB28_ovl9);
 }
 
-extern f32 D_8021DCE8_ovl9;
-extern f32 D_8021DCEC_ovl9;
-extern f32 D_8021DCF0_ovl9;
-extern f32 D_8021DCF4_ovl9;
+/* D_8021DCE8_ovl9: literal, this TU owns its .rodata */
+/* D_8021DCEC_ovl9: literal, this TU owns its .rodata */
+/* D_8021DCF0_ovl9: literal, this TU owns its .rodata */
+/* D_8021DCF4_ovl9: literal, this TU owns its .rodata */
 
 void func_80210420_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     if ((D_800E7880[omCurrentObj->objId] == 5) &&
-        (((D_8021DCE8_ovl9 < D_800EA6E0[omCurrentObj->objId]) && (D_800EA6E0[omCurrentObj->objId] < D_8021DCEC_ovl9)) ||
-         ((D_8021DCF0_ovl9 < D_800EA6E0[omCurrentObj->objId]) && (D_800EA6E0[omCurrentObj->objId] < D_8021DCF4_ovl9)))) {
+        (((-0.017453292f < D_800EA6E0[omCurrentObj->objId]) && (D_800EA6E0[omCurrentObj->objId] < 0.017453292f)) ||
+         ((3.1241393f < D_800EA6E0[omCurrentObj->objId]) && (D_800EA6E0[omCurrentObj->objId] < 3.1590462f)))) {
         func_800AA018(0x10249);
     } else if (1.0f == D_800E6A10[omCurrentObj->objId]) {
         func_800AA018(0x10248);
@@ -406,30 +396,30 @@ void func_802114E4_ovl9(struct GObj *arg0) {
 #endif
 #endif
 
-extern f32 D_8021DD48_ovl9;
-extern f32 D_8021DD4C_ovl9;
+/* D_8021DD48_ovl9: literal, this TU owns its .rodata */
+/* D_8021DD4C_ovl9: literal, this TU owns its .rodata */
 extern void func_8021134C_ovl9(void);
 
 void func_80211560_ovl9(void) {
     func_8021134C_ovl9();
-    if (D_8021DD48_ovl9 < D_800EA6E0[omCurrentObj->objId]) {
-        D_800EA6E0[omCurrentObj->objId] = D_8021DD48_ovl9;
+    if (0.5235988f < D_800EA6E0[omCurrentObj->objId]) {
+        D_800EA6E0[omCurrentObj->objId] = 0.5235988f;
     }
-    if (D_800EA6E0[omCurrentObj->objId] < D_8021DD4C_ovl9) {
-        D_800EA6E0[omCurrentObj->objId] = D_8021DD4C_ovl9;
+    if (D_800EA6E0[omCurrentObj->objId] < -0.5235988f) {
+        D_800EA6E0[omCurrentObj->objId] = -0.5235988f;
     }
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = D_800EA6E0[omCurrentObj->objId];
 }
 
 extern void func_800B1900(u16);
-extern const char D_8021DCB0_ovl9[];
+/* the format string is a literal: this TU owns its .rodata */
 
 void func_8021161C_ovl9(s32 arg0) {
     s32 track;
 
     track = request_track_general(0x17, 0x1E, 0x50);
     if ((track >= 0x3C) || (track == -1)) {
-        utilPrintf(D_8021DCB0_ovl9, track);
+        utilPrintf("enemy req over 18. Track Num:%d\n", track);
         func_800B1900(track);
         return;
     }
@@ -453,11 +443,11 @@ void func_8021161C_ovl9(s32 arg0) {
     gEntitiesAngleZArray[track] = gEntitiesAngleZArray[omCurrentObj->objId];
 }
 
-extern f32 D_8021DD50_ovl9;
+/* D_8021DD50_ovl9: literal, this TU owns its .rodata */
 extern FUNCLIST D_8021CB68_ovl9;
 
 void func_80211874_ovl9(struct GObj *arg0) {
-    f32 lim = D_8021DD50_ovl9;
+    f32 lim = 6.2831855f;
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B67A8;
@@ -581,7 +571,7 @@ void func_80211DF0_ovl9(struct GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     func_800A9EA4(0x100EA);
     func_800A9EA4(0x100EB);
-    D_800E3750[omCurrentObj->objId] = D_8021DD54_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     curObjSleepForever();
 }
@@ -614,7 +604,7 @@ void func_80211FC0_ovl9(s32 arg0) {
 }
 
 extern s32 D_801CCACC;
-extern f32 D_8021DD58_ovl9;
+/* D_8021DD58_ovl9: literal, this TU owns its .rodata */
 
 void func_80211FC8_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -627,7 +617,7 @@ void func_80211FC8_ovl9(struct GObj *arg0) {
     func_800AA018(0x100E5);
     play_sound(0x21E);
     func_800AF27C();
-    D_800E3750[omCurrentObj->objId] = D_8021DD58_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     curObjSleepForever();
 }
@@ -733,8 +723,8 @@ void func_80212478_ovl9(s32 arg0) {
 }
 
 extern s32 D_801CCB14;
-extern f32 D_8021DD5C_ovl9;
-extern f32 D_8021DD60_ovl9;
+/* D_8021DD5C_ovl9: literal, this TU owns its .rodata */
+/* D_8021DD60_ovl9: literal, this TU owns its .rodata */
 
 void func_80212480_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -744,8 +734,8 @@ void func_80212480_ovl9(struct GObj *arg0) {
     func_800AA018(0x10164);
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8021DD5C_ovl9;
-    D_800E3750[omCurrentObj->objId] = D_8021DD60_ovl9;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     func_800AF27C();
     func_800AA018(0x10163);
@@ -758,7 +748,7 @@ void func_8021258C_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-extern f32 D_8021DD64_ovl9;
+/* D_8021DD64_ovl9: literal, this TU owns its .rodata */
 extern void func_800AFBB4(s32, struct GObj *);
 extern void func_801ACC34_ovl7(s32, s32);
 
@@ -781,7 +771,7 @@ void func_802125BC_ovl9(struct GObj *arg0) {
     }
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_8021DD64_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     while (1) {
         func_801ACC34_ovl7(0x23, 0);
         play_sound(0x169);
@@ -851,7 +841,7 @@ void func_80212AF8_ovl9(GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CCAF0;
-extern f32 D_8021DD68_ovl9;
+/* D_8021DD68_ovl9: literal, this TU owns its .rodata */
 
 void func_80212B40_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -871,7 +861,7 @@ void func_80212B40_ovl9(struct GObj *arg0) {
     }
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_8021DD68_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     curObjSleepForever();
 }
 
@@ -913,7 +903,7 @@ void func_80212DE4_ovl9(struct GObj *arg0) {
 
 void func_80212F0C_ovl9(void) {
     func_801A0D74_ovl7();
-    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x += D_8021DD6C_ovl9;
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x += 0.17453294f;
     func_8019F3B0_ovl7();
 }
 
@@ -936,8 +926,8 @@ void func_8021306C_ovl9(void) {
 
     func_801A0D74_ovl7();
     d = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
-    if (d->angle.v.x < D_8021DD70_ovl9) {
-        d->angle.v.x = d->angle.v.x + D_8021DD74_ovl9;
+    if (d->angle.v.x < 1.0471976f) {
+        d->angle.v.x = d->angle.v.x + 0.17453294f;
     } else {
         func_800A9EA4(0x10163);
     }
@@ -1270,7 +1260,7 @@ void func_80214888_ovl9(struct GObj *arg0) {
 }
 
 extern s32 D_801CCC34;
-extern f32 D_8021DDC4_ovl9;
+/* D_8021DDC4_ovl9: literal, this TU owns its .rodata */
 
 void func_80214938_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -1279,7 +1269,7 @@ void func_80214938_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 2;
     func_800AA018(0x101DA);
     func_800AA018(0x101DB);
-    D_800E3750[omCurrentObj->objId] = D_8021DDC4_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     curObjSleepForever();
 }

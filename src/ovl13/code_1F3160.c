@@ -18,7 +18,7 @@ extern f32 D_801E5D80_ovl13;
 extern f32 D_801E5D84_ovl13;
 extern f32 D_801E5D88_ovl13;
 extern f32 D_801E5D8C_ovl13;
-
+extern void func_800AA154(s32); /* void is load-bearing: implicit int reserves $v0 */
 void func_801DB1E0_ovl13(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk39 = -1;
     D_800DF150[omCurrentObj->objId] = func_801DB358_ovl13;
@@ -46,7 +46,42 @@ void func_801DB358_ovl13(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DC788_ovl13.s")
 
+#ifdef NON_MATCHING
+/* 10/93: the whole loop body is exact. The residue is the coupled-FP floor:
+ * the ROM defines $f22 (D_801E5CD4) first and $f20 (D_801E5CD8) second while
+ * using $f20 first in the loop; IDO always gives the first-assigned local the
+ * LOWER register, so no assignment/declaration order reaches it. Swept: both
+ * assignment orders, both declaration orders, declaration initializers,
+ * inline externs, and statement placement around `ret = -1`. */
+extern f32 D_801E5CD4_ovl13;
+extern f32 D_801E5CD8_ovl13;
+extern void func_801A4C0C_ovl7(struct GObj *);
+
+s32 func_801DC8CC_ovl13(GObj *arg0) {
+    s32 i;
+    s32 ret;
+    f32 hi;
+    f32 lo;
+
+    lo = D_801E5CD8_ovl13;
+    hi = D_801E5CD4_ovl13;
+    ret = -1;
+    for (i = 0x1E; i != 0x3C; i++) {
+        if ((D_800DD710[i] != -1) && (D_800E7730[i] == 0) && (lo < D_800E7B20[i]) && (D_800E7B20[i] < hi)) {
+            if (D_800E83E0[i] != 1) {
+                if (omCurrentObj->objId == D_800E0D50[i]) {
+                    ret = func_801DCA40_ovl13(i);
+                }
+            } else if ((void *) D_800DF150[i] == (void *) func_801A4C0C_ovl7) {
+                ret = func_801DCA40_ovl13(i);
+            }
+        }
+    }
+    return ret;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DC8CC_ovl13.s")
+#endif
 
 s32 func_801DCA40_ovl13(s32 arg0) {
     switch (D_800E77A0[arg0]) {
@@ -115,7 +150,38 @@ void func_801DCDA8_ovl13(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 8;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DCE9C_ovl13.s")
+extern s32 D_801D9384;
+extern f32 D_801DAB18;
+
+void func_801DCE9C_ovl13(GObj *arg0) {
+    f32 temp_f0;
+
+    func_8019BB58_ovl7();
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    func_800B19F4(0x71, omCurrentObj->objId);
+    func_800AFBB4(0, omCurrentObj);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800DEF90[omCurrentObj->objId] = func_800B6CF8;
+    D_800DDFD0[omCurrentObj->objId] = 0xD;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9384;
+    D_800E0490[omCurrentObj->objId] = &D_801DAB18;
+    func_801A2ADC_ovl7(&D_801DAB18);
+    D_800E1B50[omCurrentObj->objId]->unk98 = (struct Sub800E1B50_Unk98 *) &D_801DAE1C;
+    gEntitiesPosZArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesPosZArray[omCurrentObj->objId];
+    func_800B33F4();
+    while (D_800E98E0[D_800E0D50[D_800E0D50[omCurrentObj->objId]]] != 2) {
+        ohSleep(1);
+    }
+    temp_f0 = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    func_800F9974(&D_800E5F90[omCurrentObj->objId], &D_800E6BD0[omCurrentObj->objId], temp_f0);
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesPosYArray[omCurrentObj->objId] =
+        gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+    ohSleep(0x258);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    ohSleep(0x1E);
+    func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
+}
 
 void func_801DD148_ovl13(void) {
     D_800E8920[omCurrentObj->objId] = 1;
@@ -201,7 +267,33 @@ void func_801DD550_ovl13(GObj *arg0) {
     func_801E3958_ovl13(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DD614_ovl13.s")
+extern f32 D_801DADF8;
+extern void func_800AA864(s32, u32);
+
+void func_801DD614_ovl13(GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D93A8_ovl8;
+    D_800E0490[omCurrentObj->objId] = &D_801DAADC;
+    func_801A2ADC_ovl7(&D_801DAADC);
+    D_800E1B50[omCurrentObj->objId]->unk98 = (struct Sub800E1B50_Unk98 *) &D_801DADF8;
+    func_800B33F4();
+    D_800E3C90[omCurrentObj->objId] = 2.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -2.0f;
+    D_800E64D0[D_800EBBE0[omCurrentObj->objId]] = D_800E64D0[omCurrentObj->objId];
+    D_800EA360[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = D_800EA360[omCurrentObj->objId];
+    while (gEntityFuncListIDArray[omCurrentObj->objId] == 2) {
+        D_800EA360[omCurrentObj->objId] += 1;
+        D_800EA360[omCurrentObj->objId] = D_800EA360[omCurrentObj->objId] % 2;
+        if (D_800EA360[omCurrentObj->objId] != 0) {
+            func_800AA018(0x1041D);
+            D_800DF310[omCurrentObj->objId] = &func_801DDADC_ovl13;
+            func_800AF27C();
+        } else {
+            func_800AA864(0x1042A, 2);
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DD888_ovl13.s")
 
@@ -265,7 +357,40 @@ void func_801DDD90_ovl13(GObj *arg0) {
     func_801E3958_ovl13(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DDE54_ovl13.s")
+void func_801DDE54_ovl13(GObj *arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D93A8_ovl8;
+    D_800E0490[omCurrentObj->objId] = &D_801DAAF0_ovl8;
+    func_801A2ADC_ovl7(&D_801DAAF0_ovl8);
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAD8C_ovl8;
+    func_800B33F4();
+    func_800AA154(0x10423);
+    func_800AA864(0x10427, 2);
+    func_800AA154(0x10429);
+    switch (((s32 *) D_800E9AA0)[omCurrentObj->objId]) {
+    case 0:
+        if (random_soft_s32_range(2) == 0) {
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 1;
+        } else {
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 2;
+        }
+        break;
+    case 1:
+        ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 2;
+        break;
+    case 2:
+        if (random_soft_s32_range(2) == 0) {
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 3;
+        } else {
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+        }
+        break;
+    case 3:
+        ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+        break;
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = D_801E5B90_ovl13[((s32 *) D_800E9AA0)[omCurrentObj->objId]];
+}
 
 void func_801DE084_ovl13(GObj *arg0) {
     struct DObj **temp_v0;

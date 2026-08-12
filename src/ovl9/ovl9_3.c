@@ -10,7 +10,7 @@ extern FUNCLIST D_8021BE08_ovl9;
 extern FUNCLIST D_8021BD60_ovl9;
 extern FUNCLIST D_8021BD70_ovl9;
 extern s32 D_801C8080_ovl7;
-extern f32 D_8021CF60_ovl9;
+/* D_8021CF60_ovl9: literal, this TU owns its .rodata */
 void func_800B6B8C(s32);
 void func_801DCBAC_ovl9(struct GObj *);
 void func_801DCA78_ovl9(struct GObj *);
@@ -25,7 +25,7 @@ void func_801DC8C0_ovl9(struct GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
     func_801A0D50_ovl7(func_801DCA78_ovl9);
     D_800EAC20[omCurrentObj->objId] = 0.0f;
-    D_800EADE0[omCurrentObj->objId] = D_8021CF60_ovl9;
+    D_800EADE0[omCurrentObj->objId] = -0.041666668f;
     D_800EAFA0[omCurrentObj->objId] = 0.0f;
     D_800EB160[omCurrentObj->objId] = 0.0f;
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
@@ -154,7 +154,7 @@ void func_801DD2A4_ovl9(struct GObj *arg0) {
 
 extern s32 D_801C8080_ovl7;
 void func_801DCA78_ovl9(struct GObj *);
-void func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7();
 void func_8019F3F0_ovl7(void);
 void func_801DF454_ovl9(struct GObj *);
 f32 func_800F8824(Vector *, f32);
@@ -194,7 +194,7 @@ void func_801DD3CC_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DD598_ovl9.s")
 
-void func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7();
 void func_8019F3F0_ovl7(void);
 void func_801DF454_ovl9(GObj *);
 void func_801DDD44_ovl9(struct GObj *);
@@ -215,7 +215,7 @@ void func_801DD818_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DD8BC_ovl9.s")
 
-void func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7();
 void func_8019F3F0_ovl7(void);
 void func_801DF454_ovl9(GObj *);
 
@@ -267,7 +267,7 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
    IDO emits them the other way round. Swept: ternary, if/else polarity,
    declaration order, `& 1` vs `!= 0`. */
 #ifdef NON_MATCHING
-void func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7();
 f32 func_800F8824(Vector *, f32);
 void func_8019F3F0_ovl7(void);
 void func_801DF454_ovl9(GObj *);
@@ -317,7 +317,7 @@ void func_801DE60C_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DE814_ovl9.s")
 
-void func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7();
 void func_8019F3F0_ovl7(void);
 void func_801DF454_ovl9(GObj *);
 
@@ -549,7 +549,7 @@ void func_801DF900_ovl9(struct GObj *arg0) {
     }
 }
 
-void func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7();
 void func_8019F3B0_ovl7(void);
 
 void func_801DFB28_ovl9(void) {
@@ -559,7 +559,7 @@ void func_801DFB28_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DFB50_ovl9.s")
 
-void func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7();
 void func_8019F3B0_ovl7(void);
 s32 func_8019DD78_ovl7(s32, s32);
 
@@ -601,7 +601,7 @@ void func_801E00E0_ovl9(struct GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CB9A4;
-extern f32 D_8021CF98_ovl9;
+/* D_8021CF98_ovl9: literal, this TU owns its .rodata */
 
 void func_801E0228_ovl9(s32 arg0) {
 
@@ -614,7 +614,7 @@ void func_801E0228_ovl9(s32 arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B33F4();
     D_800E3210[omCurrentObj->objId] = 0.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021CF98_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
     D_800E3C90[omCurrentObj->objId] = 10.0f;
     func_800AA018(0x101AE);
     func_800AF27C();
@@ -678,38 +678,25 @@ void func_801E058C_ovl9(struct GObj *arg0) {
 extern s32 D_801C8520_ovl7;
 extern s32 D_801C8568;
 
-/* 2 diffs: ROM keeps the objId index in $v1, this form puts it in $v0 and the
-   shift result in $v1.  Declaration order / extra locals do not move it.
-   Wave 10 also swept: inline objId at every use (5), an `obj = omCurrentObj`
-   local (32 -- rotates every temp DOWN one and DOES put the id in $v1, so the
-   register class is reachable, just not in isolation), `(void)` definition with
-   a no-argument call, s32 return type, a declaration initializer, u32/u16 id,
-   a leading dead scalar, a leading pointer local, and a named local for the
-   func_8019DD78_ovl7 result declared both first and second.  The three callees
-   are all declared at FILE scope earlier in the TU, so the callee-return-type
-   lever cannot be applied here without breaking func_801DFB28_ovl9 /
-   func_801DFE00_ovl9. */
-#ifdef NON_MATCHING
-// 5 diffs: objId<<2 is in $v0, the ROM uses $v1.
+/* The byte-bias index and the `s32` return type on func_801A0D74_ovl7 are both
+   load-bearing: the ROM shifts objId in place in $v1, which needs the scaled
+   value to BE the variable and $v0 reserved by the callee's return value. */
 void func_801E06C0_ovl9(GObj *arg0) {
     s32 id;
 
     func_801A0D74_ovl7(arg0);
-    id = omCurrentObj->objId;
-    if (D_800E9C60[id] != 0) {
-        D_800E1B50[id]->unk8C = &D_801C8520_ovl7;
+    id = omCurrentObj->objId * 4;
+    if (*(s32 *) ((u8 *) D_800E9C60 + id) != 0) {
+        (*(struct UnkStruct800E1B50 **) ((u8 *) D_800E1B50 + id))->unk8C = &D_801C8520_ovl7;
         func_8019F3B0_ovl7();
         if (D_800E83E0[omCurrentObj->objId] != 0) {
             D_800EBBE0[omCurrentObj->objId] = func_8019DD78_ovl7(0xD, 1);
         }
     } else {
-        D_800E1B50[id]->unk8C = &D_801C8568;
+        (*(struct UnkStruct800E1B50 **) ((u8 *) D_800E1B50 + id))->unk8C = &D_801C8568;
         func_8019F3B0_ovl7();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801E06C0_ovl9.s")
-#endif
 void func_801ACC34_ovl7(s32, s32);
 
 void func_801E078C_ovl9(GObj *arg0, s32 arg1, f32 arg2) {

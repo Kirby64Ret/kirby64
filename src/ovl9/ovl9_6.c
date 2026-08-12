@@ -43,10 +43,10 @@ void func_801EAD38_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-extern f32 D_8021D1C0_ovl9;
+/* D_8021D1C0_ovl9: literal, this TU owns its .rodata */
 
 void func_801EAD84_ovl9(GObj *arg0) {
-    D_800DFBD0[omCurrentObj->objId][1]->angle.v.z = D_8021D1C0_ovl9;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.z = 3.1415927f;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
@@ -297,7 +297,7 @@ void func_801EBFE8_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EC0E0_ovl9.s")
 
 extern struct Sub800E1B50_Unk98 D_801CBC2C;
-extern f32 D_8021D1CC_ovl9;
+/* D_8021D1CC_ovl9: literal, this TU owns its .rodata */
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800A9F98(s32, f32);
@@ -310,7 +310,7 @@ void func_801EC314_ovl9(struct GObj *arg0) {
     func_800AED20(gameTicksPerDraw);
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8021D1CC_ovl9;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E3750[omCurrentObj->objId] = -1.0f;
     D_800E3C90[omCurrentObj->objId] = 14.0f;
@@ -498,7 +498,7 @@ void func_801EFDAC_ovl9(void) {
 }
 
 extern s32 D_801CBC74;
-extern f32 D_8021D8A8_ovl9;
+/* D_8021D8A8_ovl9: literal, this TU owns its .rodata */
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 
@@ -511,16 +511,16 @@ void func_801EFE1C_ovl9(struct GObj *arg0) {
     func_800AED20(gameTicksPerDraw);
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * ((sp1C == 0xB) ? 14.0f : D_8021D8A8_ovl9);
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * ((sp1C == 0xB) ? 14.0f : 15.400001f);
     curObjSleepForever();
 }
 
-extern f32 D_8021D8AC_ovl9;
+/* D_8021D8AC_ovl9: literal, this TU owns its .rodata */
 void func_801A0D74_ovl7();
 void func_8019F3B0_ovl7(void);
 
 void func_801EFF24_ovl9(GObj *arg0) {
-    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z - D_8021D8AC_ovl9;
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z - 0.05235988f;
     if (D_800E9E20[omCurrentObj->objId] > 0) {
         D_800E9E20[omCurrentObj->objId] = D_800E9E20[omCurrentObj->objId] - 1;
     }

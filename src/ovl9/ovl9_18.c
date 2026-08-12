@@ -251,8 +251,8 @@ void func_8021ACEC_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-extern f32 D_8021DEE0_ovl9;
-extern f32 D_8021DEE4_ovl9;
+/* D_8021DEE0_ovl9: literal, this TU owns its .rodata */
+/* D_8021DEE4_ovl9: literal, this TU owns its .rodata */
 extern s32 func_8019CE28_ovl7(void);
 s32 func_8019A7E8_ovl7(f32);
 
@@ -264,7 +264,7 @@ void func_8021AD88_ovl9(struct GObj *arg0) {
         D_800E33D0[omCurrentObj->objId] =
         D_800E3590[omCurrentObj->objId] =
         D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-        D_800E3E50[omCurrentObj->objId] = D_8021DEE0_ovl9;
+        D_800E3E50[omCurrentObj->objId] = 65535.0f;
         D_800E3AD0[omCurrentObj->objId] =
         D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
         gEntityFuncListIDArray[omCurrentObj->objId] = 1;
@@ -278,7 +278,7 @@ void func_8021AD88_ovl9(struct GObj *arg0) {
         D_800E33D0[omCurrentObj->objId] =
         D_800E3590[omCurrentObj->objId] =
         D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-        D_800E3E50[omCurrentObj->objId] = D_8021DEE4_ovl9;
+        D_800E3E50[omCurrentObj->objId] = 65535.0f;
         D_800E3AD0[omCurrentObj->objId] =
         D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
         gEntityFuncListIDArray[omCurrentObj->objId] = 2;
@@ -297,13 +297,13 @@ void func_8021B028_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-extern f32 D_8021DEE8_ovl9;
+/* D_8021DEE8_ovl9: literal, this TU owns its .rodata */
 void func_8021B0D0_ovl9(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
         D_800EA6E0[omCurrentObj->objId] = -D_800EA6E0[omCurrentObj->objId];
         D_800EA8A0[omCurrentObj->objId] = -D_800EA8A0[omCurrentObj->objId];
         D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
-        gEntitiesAngleYArray[omCurrentObj->objId] += D_8021DEE8_ovl9;
+        gEntitiesAngleYArray[omCurrentObj->objId] += 3.1415927f;
         func_8019CD68_ovl7();
         gEntityFuncListIDArray[omCurrentObj->objId] = 0;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8021ABB4_ovl9);
@@ -346,7 +346,7 @@ void func_8021B3A0_ovl9(struct GObj *arg0) {
     }
 }
 
-extern f32 D_8021DEEC_ovl9;
+/* D_8021DEEC_ovl9: literal, this TU owns its .rodata */
 void func_8021B424_ovl9(void) {
     Vector v;
 
@@ -358,7 +358,7 @@ void func_8021B424_ovl9(void) {
     D_800EA8A0[omCurrentObj->objId] = 2.0f * v.z;
     D_800E6A10[omCurrentObj->objId] =
         ((gEntitiesAngleYArray[omCurrentObj->objId] >= 0.0f)
-      && (gEntitiesAngleYArray[omCurrentObj->objId] < D_8021DEEC_ovl9)) ? 1.0f : -1.0f;
+      && (gEntitiesAngleYArray[omCurrentObj->objId] < 3.1415927f)) ? 1.0f : -1.0f;
 }
 
 void func_8021B528_ovl9(struct GObj *arg0) {

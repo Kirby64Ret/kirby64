@@ -11,7 +11,7 @@ extern void func_801ACF5C_ovl7(void);
 
 void func_8021A118_ovl9(struct GObj *);
 
-extern const f32 D_8021DEB0_ovl9;
+/* D_8021DEB0_ovl9: literal, this TU owns its .rodata */
 
 void func_802199E0_ovl9(struct GObj *this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -25,13 +25,13 @@ void func_802199E0_ovl9(struct GObj *this) {
         D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 6.0f;
         D_800E3210[omCurrentObj->objId] = 12.0f;
         D_800E3750[omCurrentObj->objId] = -1.0f;
-        D_800E3C90[omCurrentObj->objId] = D_8021DEB0_ovl9;
+        D_800E3C90[omCurrentObj->objId] = 21.8f;
     }
     ohSleep(0x3C);
     func_801ACF84_ovl7(this);
 }
 
-extern const f32 D_8021DEB4_ovl9, D_8021DEB8_ovl9, D_8021DEBC_ovl9, D_8021DEC0_ovl9;
+/* 9.6f / 21.8f / 7.2000003f: literals, this TU owns its .rodata */
 void func_80219B1C_ovl9(struct GObj *this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -43,15 +43,15 @@ void func_80219B1C_ovl9(struct GObj *this) {
     switch (D_800E98E0[omCurrentObj->objId]) {
         case 2:
             D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.5f;
-            D_800E3210[omCurrentObj->objId] = D_8021DEB4_ovl9;
+            D_800E3210[omCurrentObj->objId] = 9.6f;
             D_800E3750[omCurrentObj->objId] = -1.0f;
-            D_800E3C90[omCurrentObj->objId] = D_8021DEB8_ovl9;
+            D_800E3C90[omCurrentObj->objId] = 21.8f;
             break;
         case 3:
             D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.0f;
-            D_800E3210[omCurrentObj->objId] = D_8021DEBC_ovl9;
+            D_800E3210[omCurrentObj->objId] = 7.2000003f;
             D_800E3750[omCurrentObj->objId] = -1.0f;
-            D_800E3C90[omCurrentObj->objId] = D_8021DEC0_ovl9;
+            D_800E3C90[omCurrentObj->objId] = 21.8f;
             break;
     }
     ohSleep(0x3C);

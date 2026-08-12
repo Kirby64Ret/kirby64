@@ -13,13 +13,13 @@ extern s32 D_801CCF4C;
 extern s32 D_801CCF94;
 extern s32 D_801C98A0;
 extern s32 D_801CD000;
-extern f32 D_8021DE80_ovl9;
-extern f32 D_8021DE84_ovl9;
-extern f32 D_8021DE88_ovl9;
-extern f32 D_8021DE8C_ovl9;
-extern f32 D_8021DE9C_ovl9;
-extern f32 D_8021DEA0_ovl9;
-extern f32 D_8021DEA4_ovl9;
+/* D_8021DE80_ovl9: literal, this TU owns its .rodata */
+/* D_8021DE84_ovl9: literal, this TU owns its .rodata */
+/* D_8021DE88_ovl9: literal, this TU owns its .rodata */
+/* D_8021DE8C_ovl9: literal, this TU owns its .rodata */
+/* D_8021DE9C_ovl9: literal, this TU owns its .rodata */
+/* D_8021DEA0_ovl9: literal, this TU owns its .rodata */
+/* D_8021DEA4_ovl9: literal, this TU owns its .rodata */
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 extern void func_801A0D50_ovl7(void *);
@@ -35,9 +35,9 @@ extern void func_800AF27C(void);
 extern void func_800A9EA4(s32);
 extern s32 D_801CCF70;
 extern s32 D_801CCFB8;
-extern f32 D_8021DE90_ovl9;
-extern f32 D_8021DE94_ovl9;
-extern f32 D_8021DE98_ovl9;
+/* D_8021DE90_ovl9: literal, this TU owns its .rodata */
+/* D_8021DE94_ovl9: literal, this TU owns its .rodata */
+/* D_8021DE98_ovl9: literal, this TU owns its .rodata */
 extern void func_800AA154(s32);
 extern FUNCLIST D_8021CDC0_ovl9;
 extern FUNCLIST D_8021CDE0_ovl9;
@@ -63,15 +63,15 @@ extern s32 func_80110B00(struct Ovl9AnimInfo *);
 void func_802187C0_ovl9(s32 arg0) {
     if (D_800EA1A0[omCurrentObj->objId] < arg0 / 2) {
         if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-            D_800E9020[omCurrentObj->objId] -= D_8021DE80_ovl9 / (f32) arg0;
+            D_800E9020[omCurrentObj->objId] -= 3.1415927f / (f32) arg0;
         } else {
-            D_800E9020[omCurrentObj->objId] += D_8021DE84_ovl9 / (f32) arg0;
+            D_800E9020[omCurrentObj->objId] += 3.1415927f / (f32) arg0;
         }
     } else if (D_800EA1A0[omCurrentObj->objId] < arg0) {
         if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-            D_800E9020[omCurrentObj->objId] -= D_8021DE88_ovl9 / (f32) arg0;
+            D_800E9020[omCurrentObj->objId] -= 3.1415927f / (f32) arg0;
         } else {
-            D_800E9020[omCurrentObj->objId] += D_8021DE8C_ovl9 / (f32) arg0;
+            D_800E9020[omCurrentObj->objId] += 3.1415927f / (f32) arg0;
         }
     } else {
         D_800EA1A0[omCurrentObj->objId] = 0;
@@ -208,7 +208,7 @@ void func_80218FA0_ovl9(struct GObj *arg0) {
     func_800AECC0(3.0f);
     func_800AED20(3.0f);
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 4.0f;
-    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021DE90_ovl9;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.16666667f;
     D_800E6850[omCurrentObj->objId] = 4.0f;
     curObjSleepForever();
 }
@@ -290,7 +290,7 @@ void func_80219454_ovl9(struct GObj *arg0) {
 void func_80219590_ovl9(struct GObj *arg0) {
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8021DE94_ovl9;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     if (D_800EA520[omCurrentObj->objId] != 0) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 3;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80218B00_ovl9);
@@ -305,7 +305,7 @@ void func_80219654_ovl9(struct GObj *arg0) {
     D_800EA520[omCurrentObj->objId] = 0;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8021DE98_ovl9;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     func_800AA154(0x100A3);
     D_800EA520[omCurrentObj->objId] = 1;
     curObjSleepForever();
@@ -314,7 +314,7 @@ void func_80219654_ovl9(struct GObj *arg0) {
 void func_80219748_ovl9(struct GObj *arg0) {
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8021DE9C_ovl9;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     if (D_800EA520[omCurrentObj->objId] != 0) {
         D_800E98E0[omCurrentObj->objId] = 0x3C;
         gEntityFuncListIDArray[omCurrentObj->objId] = 1;
@@ -330,9 +330,9 @@ void func_80219824_ovl9(struct GObj *arg0) {
     tmp->unk98 = &D_801CD000;
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
-    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021DEA0_ovl9;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 1.8f;
     D_800E3210[omCurrentObj->objId] = 12.0f;
-    D_800E3750[omCurrentObj->objId] = D_8021DEA4_ovl9;
+    D_800E3750[omCurrentObj->objId] = -0.8f;
     D_800E3C90[omCurrentObj->objId] = 12.0f;
     curObjSleepForever();
 }

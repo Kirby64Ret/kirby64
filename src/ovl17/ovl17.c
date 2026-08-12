@@ -36,7 +36,14 @@ extern struct Ovl17CamPos D_800D7B20;
 extern Vector D_800D7B2C;
 extern struct Ovl17CamPos D_800D7B38;
 extern Vector D_801E4E60_ovl17;
+extern Vector D_801E4E6C_ovl17;
 extern s32 D_800D6B54;
+extern s32 D_800D6B58;
+extern s32 D_800BE4F8;
+extern void auFunc80020C88(void);
+extern void func_800A7EB4(void);
+extern void func_8011DA34(void);
+extern void play_music(s32, s32);
 extern f32 D_800D715C;
 extern f32 D_800D7160;
 extern f32 D_800D7164;
@@ -73,12 +80,75 @@ void func_801DC3F4_ovl17(void) {
     gEntitiesAngleZArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC460_ovl17.s")
+void func_801DC460_ovl17(struct GObj *arg0) {
+    D_800DF150[omCurrentObj->objId] = &func_801DC71C_ovl17;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    D_800DF310[omCurrentObj->objId] = NULL;
+    auFunc80020C88();
+    func_800A7EB4();
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_8011DA34();
+    play_sound(0xD8);
+    play_music(0, 5);
+    func_801DC724_ovl17();
+    D_800D6B58 = 0x400;
+    D_800D6B54 = 1;
+    D_800BE4F8 = 6;
+    func_800AA018(0x10684);
+    func_800AA018(0x10685);
+    func_800AF27C();
+    D_800E9560[omCurrentObj->objId] = 0;
+    while (D_800E9560[omCurrentObj->objId] <= 0) {
+        func_800AA018(0x10686);
+        func_800AA018(0x10687);
+        func_800AF27C();
+        D_800E9560[omCurrentObj->objId] += 1;
+    }
+    D_800D6B58 = 0x1E;
+    D_800D6B54 = 1;
+    D_800BE4F8 = 6;
+    curObjSleepForever();
+}
 
 void func_801DC71C_ovl17(struct GObj *arg0) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC724_ovl17.s")
+void func_801DC724_ovl17(void) {
+    Vector sp24;
+    f32 temp_f0;
+
+    sp24 = D_801E4E6C_ovl17;
+    lbvector_Normalize(&sp24);
+    lbvector_Rotate(&sp24, 1, D_800EA6E0[omCurrentObj->objId]);
+    lbvector_Rotate(&sp24, 2, D_800EA8A0[omCurrentObj->objId]);
+    lbvector_Rotate(&sp24, 4, D_800EAA60[omCurrentObj->objId]);
+    D_800E3590[omCurrentObj->objId] = sp24.x * 0.5f;
+    D_800E3750[omCurrentObj->objId] = sp24.y * 0.5f;
+    D_800E3910[omCurrentObj->objId] = sp24.z * 0.5f;
+    temp_f0 = sp24.x * 12.0f;
+    if (temp_f0 < 0.0f) {
+        D_800E3AD0[omCurrentObj->objId] = -temp_f0;
+    } else {
+        D_800E3AD0[omCurrentObj->objId] = temp_f0;
+    }
+    temp_f0 = sp24.y * 12.0f;
+    if (temp_f0 < 0.0f) {
+        D_800E3C90[omCurrentObj->objId] = -temp_f0;
+    } else {
+        D_800E3C90[omCurrentObj->objId] = temp_f0;
+    }
+    temp_f0 = sp24.z * 12.0f;
+    if (temp_f0 < 0.0f) {
+        D_800E3E50[omCurrentObj->objId] = -temp_f0;
+    } else {
+        D_800E3E50[omCurrentObj->objId] = temp_f0;
+    }
+}
 
 #ifdef NON_MATCHING
 /* 6 diffs (was 16): hoisting omCurrentObj into a local is what puts it in $v0.
