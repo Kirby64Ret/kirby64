@@ -175,6 +175,23 @@ void pc_vi_tick(void) {
     if (now >= sNextRetraceAt) {
         sNextRetraceAt = now + retrace_period();
     }
+    /* AND RESYNC IF THE DEADLINE IS IMPLAUSIBLY FAR AHEAD.
+     *
+     * The loop above only ever moves sNextRetraceAt forward, so a clock that
+     * jumps BACKWARDS leaves a deadline that no amount of waiting will reach,
+     * and the retrace simply stops -- silently, with every other guard in this
+     * file still reading healthy. That is precisely how the port hung: the
+     * clock was rebased by osSetTime (see the note in src/pc/os_time.c) and
+     * this function went quiet without a single early return being taken.
+     *
+     * The clock is fixed at the source, so this cannot fire today. It stays
+     * because a stopped VI is the most expensive failure this port has: it
+     * looks like a deadlock in the game, and nothing in a backtrace points
+     * here. One period of slack is enough to tell "a bit early" from "the
+     * clock moved". */
+    if (sNextRetraceAt > now + 2 * retrace_period()) {
+        sNextRetraceAt = now + retrace_period();
+    }
 }
 
 /* --------------------------------------------------------------- the API */

@@ -423,6 +423,13 @@ void crash_screen_sleep(s32 ms) {
     u64 cycles = ms * 1000LL * 3000LL / 64ULL;
     osSetTime(0);
     while (osGetTime() < cycles) {
+        /* A timed spin with no OS call in it. On N64 the timer interrupt
+         * preempts it; a cooperative scheduler has to be told. faultWaitButton
+         * calls this every iteration while it waits for a button, so without
+         * the yield the port stops servicing the VI for as long as the wait
+         * lasts -- which is forever if the button never comes. Expands to
+         * nothing outside the port; see include/macros.h. */
+        PC_SPIN_YIELD();
     }
 }
 

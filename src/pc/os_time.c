@@ -60,11 +60,35 @@ void pc_time_init(void) {
     sClockReady = 1;
 }
 
+/* THE FREE-RUNNING COUNTER, AND NOTHING MAY REBASE IT.
+ *
+ * osSetTime used to move this, and that single line of coupling stopped the
+ * port dead. src/main/fault.c's crash_screen_sleep() is
+ *
+ *     osSetTime(0);
+ *     while (osGetTime() < cycles) { }
+ *
+ * and faultWaitButton() calls it every iteration while it waits for a button.
+ * Each osSetTime(0) sent pc_count64() back to zero, so src/pc/os_vi.c's
+ * sNextRetraceAt -- computed from the value BEFORE the reset -- was suddenly
+ * far in the future, `now >= sNextRetraceAt` was false, and pc_vi_tick()
+ * stopped firing retraces. Not slowed: stopped, until the raw clock climbed
+ * back past it, at which point the next reset did it again. Measured at 46
+ * retraces in 20 seconds instead of 1200.
+ *
+ * On hardware the two are genuinely separate. osSetTime writes
+ * __osCurrentTime, a software time base; the count register keeps running
+ * regardless, and osGetCount reads the register. Reproducing that separation
+ * is both more faithful and what makes the VI immune to what the game does
+ * with its clock.
+ *
+ * So: pc_count64() and osGetCount() are the register. The bias belongs to
+ * osGetTime() alone, which is the only thing osSetTime is defined to affect. */
 u64 pc_count64(void) {
     if (!sClockReady) {
         pc_time_init();
     }
-    return raw_ticks() + sTimeBias;
+    return raw_ticks();
 }
 
 u32 osGetCount(void) {
@@ -72,7 +96,10 @@ u32 osGetCount(void) {
 }
 
 OSTime osGetTime(void) {
-    return (OSTime)pc_count64();
+    if (!sClockReady) {
+        pc_time_init();
+    }
+    return (OSTime)(raw_ticks() + sTimeBias);
 }
 
 void osSetTime(OSTime time) {

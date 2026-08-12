@@ -2411,7 +2411,7 @@ void func_801EACF4_ovl16(s32 arg0) {
 }
 
 void func_801EAF00_ovl16(struct GObj *arg0) {
-    void func_801EB29C_ovl16(void);
+    s32 func_801EB29C_ovl16(void);
     void func_801EF32C_ovl16(s32);
     void func_801E8D58_ovl16(s32);
     extern s32 D_801DA31C;
@@ -2462,9 +2462,73 @@ void func_801EB230_ovl16(s32 arg0) {
     D_800DFBD0[omCurrentObj->objId][1]->angle.v.z = D_800EA6E0[omCurrentObj->objId];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801EB29C_ovl16.s")
+s32 func_801EB29C_ovl16(void) {
+    s32 func_801EBD8C_ovl16(s32);
+    f32 temp;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801EB51C_ovl16.s")
+    if ((gEntitiesNextPosYArray[omCurrentObj->objId] > 280.0f) || (gEntitiesNextPosYArray[omCurrentObj->objId] < 0.0f) ||
+        (gEntitiesNextPosXArray[omCurrentObj->objId] < -280.0f) || (gEntitiesNextPosXArray[omCurrentObj->objId] > 280.0f)) {
+        func_801EBD8C_ovl16(1);
+        if (gEntitiesNextPosXArray[omCurrentObj->objId] < -280.0f) {
+            gEntitiesNextPosXArray[omCurrentObj->objId] += 560.0f;
+            gEntitiesPosXArray[omCurrentObj->objId] += 560.0f;
+        } else if (gEntitiesNextPosXArray[omCurrentObj->objId] > 280.0f) {
+            gEntitiesNextPosXArray[omCurrentObj->objId] -= 560.0f;
+            gEntitiesPosXArray[omCurrentObj->objId] -= 560.0f;
+        } else {
+            temp = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesPosXArray[omCurrentObj->objId];
+            gEntitiesNextPosXArray[omCurrentObj->objId] = -gEntitiesNextPosXArray[omCurrentObj->objId];
+            gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId] - temp;
+        }
+        if (gEntitiesNextPosYArray[omCurrentObj->objId] < 0.0f) {
+            gEntitiesNextPosYArray[omCurrentObj->objId] += 280.0f;
+            gEntitiesPosYArray[omCurrentObj->objId] += 280.0f;
+        } else if (gEntitiesNextPosYArray[omCurrentObj->objId] > 280.0f) {
+            gEntitiesNextPosYArray[omCurrentObj->objId] -= 280.0f;
+            gEntitiesPosYArray[omCurrentObj->objId] -= 280.0f;
+        } else {
+            temp = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesPosYArray[omCurrentObj->objId];
+            gEntitiesNextPosYArray[omCurrentObj->objId] = 140.0f - (gEntitiesNextPosYArray[omCurrentObj->objId] - 140.0f);
+            gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - temp;
+        }
+        D_800E9C60[omCurrentObj->objId] = 0;
+        return 1;
+    }
+    return 0;
+}
+
+s32 func_801EB51C_ovl16(void) {
+    f32 temp;
+
+    if ((gEntitiesNextPosYArray[omCurrentObj->objId] > 320.0f) || (gEntitiesNextPosYArray[omCurrentObj->objId] < -40.0f) ||
+        (gEntitiesNextPosXArray[omCurrentObj->objId] < -300.0f) || (gEntitiesNextPosXArray[omCurrentObj->objId] > 300.0f)) {
+        if (gEntitiesNextPosXArray[omCurrentObj->objId] < -300.0f) {
+            gEntitiesNextPosXArray[omCurrentObj->objId] += 600.0f;
+            gEntitiesPosXArray[omCurrentObj->objId] += 600.0f;
+        } else if (gEntitiesNextPosXArray[omCurrentObj->objId] > 300.0f) {
+            gEntitiesNextPosXArray[omCurrentObj->objId] -= 600.0f;
+            gEntitiesPosXArray[omCurrentObj->objId] -= 600.0f;
+        } else {
+            temp = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesPosXArray[omCurrentObj->objId];
+            gEntitiesNextPosXArray[omCurrentObj->objId] = -gEntitiesNextPosXArray[omCurrentObj->objId];
+            gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId] - temp;
+        }
+        if (gEntitiesNextPosYArray[omCurrentObj->objId] < -40.0f) {
+            gEntitiesNextPosYArray[omCurrentObj->objId] += 360.0f;
+            gEntitiesPosYArray[omCurrentObj->objId] += 360.0f;
+        } else if (gEntitiesNextPosYArray[omCurrentObj->objId] > 320.0f) {
+            gEntitiesNextPosYArray[omCurrentObj->objId] -= 360.0f;
+            gEntitiesPosYArray[omCurrentObj->objId] -= 360.0f;
+        } else {
+            temp = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesPosYArray[omCurrentObj->objId];
+            gEntitiesNextPosYArray[omCurrentObj->objId] = 180.0f - (gEntitiesNextPosYArray[omCurrentObj->objId] - 180.0f);
+            gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - temp;
+        }
+        D_800E9C60[omCurrentObj->objId] = 0;
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801EB78C_ovl16.s")
 
