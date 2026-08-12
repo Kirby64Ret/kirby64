@@ -80,3 +80,7 @@ port/o2r/*.o2r
 # Lane progress notes: written by background agents every few closures so a
 # lane that dies still delivers what it had. Working notes, not deliverables.
 scratchpad/
+
+# mk.sh stores a sha1 beside each object so a source restored with an older
+# mtime still forces a rebuild. Build metadata, not source.
+*.srchash

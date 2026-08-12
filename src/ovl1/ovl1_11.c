@@ -12,7 +12,7 @@
 #include "unk_structs/D_800DE350.h"
 
 extern GObj *D_800D6B24;
-extern u32 D_800D6B30;
+extern s16 D_800D6B30;
 extern u8 D_800D6B2B;
 
 extern void func_80018170(GObj *);
@@ -21,21 +21,26 @@ void func_800BB580(GObj *gobj) {
 
 }
 
-// many hidden unused saved registers
-#ifdef NON_MATCHING
 void func_800BB588(GObj *gobj) {
+    GObj *obj;
+    u16 id;
+    s32 objId;
+
+    objId = gobj->objId;
     while (1) {
-        if (D_800DD8D0[gobj->objId] & 0x40000000) {
-            D_800D6B30 ++;
+        if (D_800DD8D0[objId] & 0x40000000) {
+            obj = D_800D6B24;
+            D_800D6B30++;
             switch (D_800D6B2B) {
                 case 0:
                     D_800D6B24 = NULL;
-                    omGDeleteObj(D_800D6B24);
-                    func_800B1900(gobj->objId);
+                    id = objId;
+                    omGDeleteObj(obj);
+                    func_800B1900(id);
                     break;
                 case 2:
                     D_800D6B24 = NULL;
-                    func_800067B8(D_800D6B24);
+                    func_800067B8(obj);
                     break;
             }
         } else {
@@ -44,10 +49,6 @@ void func_800BB588(GObj *gobj) {
         ohSleep(1);
     }
 }
-#else
-void func_800BB588(GObj *gobj);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_11/func_800BB588.s")
-#endif
 
 #ifdef NON_MATCHING
 void func_800BB6B0(GObj *gobj) {

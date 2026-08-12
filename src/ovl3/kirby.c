@@ -278,7 +278,78 @@ void func_8016DD0C_ovl3(s32 arg0) {
     }
 }
 
+extern f32 func_80123144(f32);
+extern u8 D_801903E0_ovl3[];
+
+#ifdef NON_MATCHING
+/* 214/221: same instruction COUNT and same shape; this C hoists
+   &D_800E3210 into a third callee-saved register ($s1) where the ROM
+   re-materialises %hi/%lo at each of its four uses, so the frame is 8
+   bytes larger and everything renumbers. Swept: the (x & 6) == 6 flag as a
+   local vs inline (no change to the count). */
+void func_8016DDE8_ovl3(GObj *arg0) {
+    gKirbyState.unk30 = 0;
+    gKirbyState.isFullJump = 0;
+    gKirbyState.jumpHeight = 0;
+    func_8011CF58();
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    if (gKirbyState.unk4 == 1) {
+        gKirbyState.unk15C = (u32) D_801903E0_ovl3;
+    } else {
+        gKirbyState.unk15C = (u32) D_80190358_ovl3;
+    }
+    if ((D_800E8AE0[omCurrentObj->objId] & 6) == 6) {
+        play_sound(0x10B);
+        gKirbyState.unkCC = 4.0f;
+        D_800E3210[omCurrentObj->objId] = 8.5f;
+        D_800E3750[omCurrentObj->objId] = -0.4f;
+        D_800E3C90[omCurrentObj->objId] = 8.5f;
+    } else {
+        play_sound(0xF7);
+        gKirbyState.unkCC = 8.0f;
+        D_800E3210[omCurrentObj->objId] = func_80123144(17.0f);
+        D_800E3750[omCurrentObj->objId] = -0.9806650281f;
+        D_800E3C90[omCurrentObj->objId] = 16.0f;
+    }
+    D_800E83E0[omCurrentObj->objId] = 0;
+    D_800E8920[omCurrentObj->objId] = 0;
+    if (gKirbyState.previousAction == 0xB) {
+        func_800AA78C(0x2009F, 0x20007, 3.0f);
+    } else {
+        func_800AFA54(D_800DFA10[omCurrentObj->objId]);
+    }
+    switch (gKirbyState.unk4) {
+    case 0:
+        func_801230E8(0x2009F, 0x200A0, 0);
+        break;
+    case 1:
+        func_801230E8(0x2016D, 0x2016E, 0);
+        break;
+    case 2:
+        func_801230E8(0x200C7, 0x200C8, 0);
+        break;
+    }
+    while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
+        ohSleep(1);
+    }
+    gKirbyState.isFullJump = gKirbyState.isFullJump + 1;
+    switch (gKirbyState.unk4) {
+    case 0:
+        func_801230E8(0x200A1, 0x200A2, 1);
+        break;
+    case 1:
+        func_801230E8(0x2016F, 0x20170, 1);
+        break;
+    case 2:
+        func_801230E8(0x200C9, 0x200CA, 1);
+        break;
+    }
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016DDE8_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016E15C_ovl3.s")
 
@@ -441,7 +512,68 @@ void func_8016F7C8_ovl3(s32 arg0) {
     func_80151E94_ovl3(&sp18);
 }
 
+#ifdef NON_MATCHING
+/* 29/211: instruction-for-instruction exact; the ROM keeps the reloaded
+   omCurrentObj pointer in $v0 and the scaled index in $v1, this C swaps the
+   pair. Swept: local declared before/after the inner prototypes, block-scoped
+   local, and an s32 return on func_8011CF58 (which regressed two matched
+   functions). */
+void func_8016F80C_ovl3(GObj *arg0) {
+    s32 func_800AF230(void);
+    void func_800BB468(s32, s32);
+
+    D_800E83E0[omCurrentObj->objId] = 0;
+    func_8011CF58();
+    D_800DDFD0[omCurrentObj->objId] = 7;
+    D_800E0490[omCurrentObj->objId] = D_801926E8_ovl3;
+    gKirbyState.unk44 = 0;
+    func_801230E8(0x20021, 0x20022, 0);
+    while (func_800AF230() == 0) {
+        if (gKirbyState.unk44 == 2) {
+            goto done;
+        }
+        ohSleep(1);
+    }
+    gKirbyState.unk44 = 1;
+    func_801230E8(0x20023, 0x20024, 0);
+    while (gKirbyState.unk44 != 2) {
+        ohSleep(1);
+    }
+done:
+    if (D_800E8920[omCurrentObj->objId] != 0) {
+        s32 temp = func_801693C4_ovl3(1);
+        if (temp != -1) {
+            D_800EC660[temp] = 0;
+            D_800EC2E0[temp].as_s32 = 1;
+        }
+    }
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    func_800BB468(0xB, 0xA);
+    play_sound(0x110);
+    func_801230E8(0x20025, 0x20026, 0);
+    if (!(D_800E8AE0[omCurrentObj->objId] & 6)) {
+        ohSleep(4);
+        D_800E3210[omCurrentObj->objId] = 8.0f;
+        D_800E3750[omCurrentObj->objId] = -0.9806650281f;
+        D_800E3C90[omCurrentObj->objId] = 16.0f;
+    } else {
+        ohSleep(6);
+        D_800E3210[omCurrentObj->objId] = 3.0f;
+        D_800E3750[omCurrentObj->objId] = -0.25f;
+        D_800E3C90[omCurrentObj->objId] = 3.0f;
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    gKirbyState.unk44 = 3;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016F80C_ovl3.s")
+#endif
 
 typedef struct Unk80196C7C {
     u8 unk0[6];
@@ -618,18 +750,12 @@ void func_8016FFF8_ovl3(GObj *arg0) {
     }
 }
 
-extern u8 D_801903E0_ovl3[];
-
 void func_801702F0_ovl3(GObj *arg0) {
     gKirbyState.unk30 = 0;
     gKirbyState.unk7 = 0;
     func_8011CF58();
     D_800DDFD0[omCurrentObj->objId] = 9;
-    if (gKirbyState.unk68 != 3) {
-        gKirbyState.unk68 = 1;
-    } else {
-        gKirbyState.unk68 = 3;
-    }
+    if (gKirbyState.unk68 != 3) { gKirbyState.unk68 = 1; } else { gKirbyState.unk68 = 3; }
     if (gKirbyState.unk4 == 1) {
         gKirbyState.unk15C = (u32) D_801903E0_ovl3;
     } else {
@@ -1622,7 +1748,91 @@ void func_80176484_ovl3(void) {
     D_80198824_ovl3 = 0;
 }
 
+extern f32 gKirbyHp;
+extern s32 D_800D6B54;
+extern s32 D_800D6B58;
+extern s32 D_800BE4F8;
+extern void func_800B1870(struct GObj *);
+extern void auFunc80020C88(void);
+extern void func_800A7EB4(void);
+extern void func_8011DA34(void);
+extern void func_800BB498(void);
+extern void auSetBGMVolume(s32, s32);
+extern void play_music(s32, s32);
+void func_80176814_ovl3(s32);
+
+#ifdef NON_MATCHING
+/* 61/225: same instruction COUNT and same shape; the ROM puts 65535.0f in
+   $f12 and the shared mtc1-zero in $f2 (this C swaps them), and every $t
+   register from the -1 onward is one slot lower. Swept: integer 0 vs 0.0f
+   for the two shared zero stores. */
+void func_80176490_ovl3(GObj *arg0) {
+    void func_800AECC0(f32);
+    void func_800AED20(f32);
+    void func_800BB468(s32, s32);
+    extern s32 D_800D6F10;
+
+    gKirbyState.unk30 = 1;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DF150[omCurrentObj->objId] = func_80176814_ovl3;
+    func_80122FB0(0);
+    setProcessMain(gEntityGObjProcessArray4[omCurrentObj->objId], func_800B1870);
+    func_80122F08(0x20007);
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    gKirbyState.unk15C = 0;
+    D_800DF310[omCurrentObj->objId] = 0;
+    D_800D6F10 = 0;
+    gKirbyState.numberInhaled = 0;
+    gKirbyState.unk7 = 0;
+    gKirbyState.unk4 = 0;
+    gKirbyState.isInhaling = 0;
+    gKirbyState.isInhalingBlock = 0;
+    gKirbyState.numberInhaling = gKirbyState.numberInhaled;
+    D_800E8060[omCurrentObj->objId] = -1;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    gEntitiesAngleXArray[omCurrentObj->objId] = 0;
+    if (!(gKirbyState.isTurning & 1)) {
+        gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+    }
+    func_800FB914(0);
+    auFunc80020C88();
+    func_800A7EB4();
+    if ((gKirbyState.floorCollisionNext != 0) && (gKirbyState.ceilingCollisionNext != 0)) {
+        gKirbyState.unk30 = 0;
+    }
+    if ((0.0f == gKirbyHp) && !(0.0f == D_800E7B20[omCurrentObj->objId])) {
+        play_sound(0xDC);
+    } else if (gKirbyState.damageType >= 2) {
+        play_sound(0xD9);
+    } else {
+        play_sound(0xD8);
+    }
+    func_8011DA34();
+    auSetBGMVolume(0, 0x7800);
+    play_music(0, 5);
+    func_80176398_ovl3();
+    func_800BB498();
+    func_800BB468(2, 0);
+    D_800D6B58 = 0x400;
+    D_800D6B54 = 1;
+    D_800BE4F8 = 6;
+    func_801230E8(0x20065, 0x20066, 1);
+    D_800D6B58 = 0x5A;
+    D_800D6B54 = 1;
+    D_800BE4F8 = 6;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80176490_ovl3.s")
+#endif
 
 void func_80176814_ovl3(s32 arg0) {
     if (gKirbyState.unk30 != 0) {
@@ -2281,7 +2491,85 @@ void func_8017A2C0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017A390_ovl3.s")
 
+extern s32 func_800A8234(s32, s32, s32);
+extern void func_800AA018(s32);
+extern s32 func_801693C4_ovl3(s32);
+extern s32 func_801210B4(void);
+extern void func_8011DC5C(void);
+extern f32 D_801975C8_ovl3;
+extern f32 D_801975CC_ovl3;
+extern f32 D_801975D0_ovl3;
+extern f32 D_801975D4_ovl3;
+
+#ifdef NON_MATCHING
+/* 205/215: same instruction COUNT and same shape, but the ROM hoists three
+   loop-invariants this C does not -- the constant 1 into $s7 and
+   D_801975D0_ovl3 / 0.0f into $f22 / $f24 -- so the frame is 0x10 smaller
+   and everything renumbers. Swept: `while (unk17 == 0)` vs
+   `while (1) { if (unk17 != 0) break; }`. */
+void func_8017B068_ovl3(GObj *arg0) {
+    f32 temp;
+    void func_8011E0E8(void);
+
+    gKirbyState.unk44 = 0;
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk48 = 1;
+    gKirbyState.unk7 = 0;
+    func_8011CF58();
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    D_800DDFD0[omCurrentObj->objId] = 0x23;
+    func_80120A28();
+    D_800EAA60[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    D_800EA6E0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        D_800EAC20[omCurrentObj->objId] = D_801975C8_ovl3;
+    } else {
+        D_800EAC20[omCurrentObj->objId] = D_801975CC_ovl3;
+    }
+    func_80122F08(0x2000D);
+    gKirbyState.unk154 = 2;
+    gKirbyState.unk4C = func_800A8234(2, 1, 0x31);
+    gKirbyState.unk50 = func_800A8234(2, 1, 0x32);
+    func_8011DC04(0xBC);
+    func_800AA018(0x20192);
+    while (1) {
+        if (gKirbyState.unk17 != 0) {
+            break;
+        }
+        if (gKirbyState.unk44 == 0) {
+            if (!(gKirbyController.buttonHeld & 0x4000)) {
+                gKirbyState.unk44 = 1;
+            }
+            temp = D_800EA6E0[omCurrentObj->objId];
+        } else if (D_800E6A10[omCurrentObj->objId] == D_800EAA60[omCurrentObj->objId]) {
+            if (D_800EA8A0[omCurrentObj->objId] < D_800EAC20[omCurrentObj->objId]) {
+                break;
+            }
+            temp = D_800EA6E0[omCurrentObj->objId];
+        } else {
+            temp = D_800EA6E0[omCurrentObj->objId];
+            if ((temp <= D_801975D4_ovl3) && (D_801975D4_ovl3 <= D_800EA8A0[omCurrentObj->objId])) {
+                break;
+            }
+        }
+        D_800EA8A0[omCurrentObj->objId] = temp;
+        D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] - D_800EAC20[omCurrentObj->objId];
+        if (D_800EA6E0[omCurrentObj->objId] < 0.0f) {
+            D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + D_801975D0_ovl3;
+        }
+        D_800DFBD0[omCurrentObj->objId][1]->scale.v.x = D_800EA6E0[omCurrentObj->objId];
+        ohSleep(1);
+    }
+    func_8011E0E8();
+    func_8011DC5C();
+    gKirbyState.abilityInUse = 0;
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017B068_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017B3C4_ovl3.s")
 
@@ -2359,10 +2647,6 @@ void func_8017BEF4_ovl3(s32 arg0) {
         func_8011D67C();
     }
 }
-
-extern void func_801693C4_ovl3(s32);
-extern s32 func_801210B4(void);
-extern void func_8011DC5C(void);
 
 #ifdef NON_MATCHING
 /* Left live by a lane mid-work, at 31/178 insns. Draft kept. */

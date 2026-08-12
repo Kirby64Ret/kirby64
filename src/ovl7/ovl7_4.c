@@ -357,7 +357,60 @@ void func_801A5DE8_ovl7(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 46/198 */
+void func_801A5FF4_ovl7(GObj *arg0) {
+    extern s32 D_800D7118[];
+    void func_800B7790(GObj *);
+    void func_801A63BC_ovl7(GObj *);
+    void func_801A630C_ovl7(void);
+    struct UnkStruct800E1B50 *ent;
+    s32 idx;
+    s32 unk88;
+    s32 temp2;
+    s32 temp;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    idx = D_800D7118[0];
+    unk88 = (s32) ent->unk88;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_800AF408();
+    D_800E98E0[omCurrentObj->objId] = 0;
+    play_sound(0xC4);
+    if (D_800D7118[0] == 1) {
+        temp = D_800D7118[14] + 1;
+        if (temp >= 6) { D_800D7118[14] = 1; } else { D_800D7118[14] = temp; }
+    }
+    if (D_800D7118[0] == -1) {
+        D_800D7118[0] = 1;
+        idx = 1;
+        D_800E98E0[omCurrentObj->objId] = 1;
+        D_800D7118[14] = 1;
+    }
+    D_800D7118[idx] = D_800E77A0[omCurrentObj->objId];
+    D_800D7118[idx + 5] = unk88;
+    temp2 = D_800D7118[0] + 1;
+    if (temp2 >= 6) { D_800D7118[0] = 1; } else { D_800D7118[0] = temp2; }
+    D_800DEF90[omCurrentObj->objId] = func_800B7790;
+    *(s32 *) &D_800E8E60[omCurrentObj->objId] = 1;
+    func_801A630C_ovl7();
+    ohSleep(5);
+    D_800E33D0[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId];
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        func_801A63BC_ovl7(arg0);
+    }
+    ent->unk40 = 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A5FF4_ovl7.s")
+#endif
 
 void func_801A630C_ovl7(void) {
     f32 x;

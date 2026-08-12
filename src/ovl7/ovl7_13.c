@@ -53,7 +53,7 @@ void func_800AA018(s32);
 void func_800B3520(void);
 void func_800AF27C(void);
 void func_801A3E80_ovl7(GObj *);
-s32 func_801A0D74_ovl7(void);
+s32 func_801A0D74_ovl7();
 void func_801BB8EC_ovl7(void);
 void func_8019F3B0_ovl7(void);
 void func_800A2300(GObj *);
@@ -165,7 +165,54 @@ void func_801B9424_ovl7(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 66/132 */
+void func_801B9498_ovl7(GObj *arg0) {
+    extern s32 D_800BE4EC;
+    extern s32 D_800E9E20[];
+    extern FUNCLIST D_801CD754_ovl7;
+    void func_801051AC(struct Sub800E1B50_Unk84 *);
+    void func_801BA240_ovl7(GObj *);
+    void func_801B9E80_ovl7(GObj *);
+    f32 sp1C;
+    f32 sp18;
+
+    {
+    struct Sub800E1B50_Unk84 *sub = D_800E1B50[omCurrentObj->objId]->unk84;
+
+    if (D_800E9E20[omCurrentObj->objId] == 0) {
+        sp18 = D_800E6A10[omCurrentObj->objId];
+        if (D_800E64D0[omCurrentObj->objId] < 0.0f) {
+            D_800E6A10[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -1.0f;
+        }
+        if (D_800E9FE0[omCurrentObj->objId].as_s32 > 0) {
+            D_800E9FE0[omCurrentObj->objId].as_s32 -= 1;
+            if (sub != NULL) {
+                sub->unk4 = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+                sub->unk8 = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+                sub->unkC = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+                func_801051AC(sub);
+            }
+        } else {
+            sp1C = (f32) func_801A0D74_ovl7(arg0);
+        }
+        D_800E6A10[omCurrentObj->objId] = sp18;
+    } else {
+        sp1C = 0.0f;
+    }
+    }
+    func_801BA240_ovl7(arg0);
+    if (sp1C == 0.0f) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 6, &D_801CD754_ovl7);
+    }
+    func_801B9E80_ovl7(arg0);
+    if ((omCurrentObj->objId & 1) == (D_800BE4EC & 1)) {
+        func_8019F3B0_ovl7();
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B9498_ovl7.s")
+#endif
 
 void func_801B96A8_ovl7(GObj *arg0) {
     extern struct Sub800E1B50_Unk98 D_801CC988_ovl7;

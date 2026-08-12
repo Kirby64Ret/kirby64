@@ -2741,44 +2741,38 @@ void func_8019EC14_ovl7(GObj *gobj)
   }
 }
 
-#ifdef MIPS_TO_C
-void func_8019EC5C_ovl7(void *arg0) {
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f16;
-    f32 temp_f16_2;
-    f32 temp_f18;
+#ifdef NON_MATCHING
+/* 63/66 */
+void func_8019EC5C_ovl7(EneCurve *arg0) {
+    f32 f0;
+    f32 dy;
+    f32 fv;
+    f32 f18;
+    f32 t;
     f32 var_f14;
     f32 var_f2;
-    s32 temp_v0;
+    s32 n;
 
-    temp_v0 = arg0->unk2C;
-    temp_f0 = temp_v0 + 1;
-    temp_f12 = arg0->unk10 - arg0->unk4;
-    temp_f16 = temp_v0;
-    arg0->unk18 = (arg0->unkC - arg0->unk0) / temp_f16;
-    arg0->unk1C = (arg0->unk14 - arg0->unk8) / temp_f16;
-    temp_f18 = -arg0->unk24 * (temp_f0 * 0.5f);
-    if (temp_f12 < 0.0f) {
-        var_f2 = -temp_f12;
+    n = arg0->unk2C;
+    f0 = n + 1;
+    dy = arg0->unkC.y - arg0->unk0.y;
+    arg0->unk18.x = (arg0->unkC.x - arg0->unk0.x) / n;
+    arg0->unk18.y = (arg0->unkC.z - arg0->unk0.z) / n;
+    f18 = -arg0->unk24 * (f0 * 0.5f);
+    if (dy < 0.0f) { var_f2 = -dy; } else { var_f2 = dy; }
+    t = (var_f2 / f0) - f18;
+    if (dy <= 0.0f) {
+        var_f14 = t - f18;
     } else {
-        var_f2 = temp_f12;
+        var_f14 = t + (f18 + f18);
+        if (0.0f < var_f14) { var_f14 = -var_f14; }
     }
-    temp_f16_2 = (var_f2 / temp_f0) - temp_f18;
-    if (temp_f12 <= 0.0f) {
-        var_f14 = temp_f16_2 - temp_f18;
-    } else {
-        var_f14 = temp_f16_2 + (2.0f * temp_f18);
-        if (var_f14 > 0.0f) {
-            var_f14 = -var_f14;
-        }
-    }
-    arg0->unk20 = -var_f14;
-    if (temp_f12 > 0.0f) {
+    arg0->unk18.z = -var_f14;
+    if (0.0f < dy) {
         arg0->unk24 = arg0->unk24;
         return;
     }
-    arg0->unk24 = 2.0f * arg0->unk24;
+    arg0->unk24 = arg0->unk24 + arg0->unk24;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019EC5C_ovl7.s")

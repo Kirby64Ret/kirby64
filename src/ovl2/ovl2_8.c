@@ -9,7 +9,53 @@ struct UnkEA20 {
 
 s32 func_8010E8F0(Vector *, s32, Vector *, s32, s32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010E5B0.s")
+struct Unk8010E5B0Node {
+    u8 pad0[0x14];
+    struct Unk8010E5B0Node *unk14;
+};
+
+struct Unk8010E5B0Arg3 {
+    s32 unk0;
+    s32 unk4;
+    struct Unk8010E5B0Node **unk8;
+    f32 (*unkC)[4][3];
+};
+
+void func_800A5D88(void *, void *);
+void func_800A5F94(s32, void *);
+void func_800A6208(f32 (*)[3], Vector *);
+
+
+void func_8010E5B0(Vector *arg0, struct Unk8010E5B0Node *arg1, s32 arg2,
+                   struct Unk8010E5B0Arg3 *arg3) {
+    s32 i;
+    f32 (*p)[3];
+
+    do {
+        for (i = 0; i < arg3->unk0; i++) {
+            if (arg1 == arg3->unk8[i]) {
+                break;
+            }
+        }
+        if (i == arg3->unk0) {
+            if (i == arg3->unk4) {
+                i--;
+            }
+            p = arg3->unkC[i];
+            if (arg1->unk14 == (struct Unk8010E5B0Node *) 1) {
+                func_800A5F94(arg2, p);
+            } else {
+                func_800A5D88(arg1, p);
+            }
+            arg3->unk8[i] = arg1;
+            arg3->unk0 = i + 1;
+        } else {
+            p = arg3->unkC[i];
+        }
+        func_800A6208(p, arg0);
+        arg1 = arg1->unk14;
+    } while (arg1 != (struct Unk8010E5B0Node *) 1);
+}
 
 void func_8010E6F0(Vector *arg0, s32 arg1) {
     arg0->x += gEntitiesNextPosXArray[arg1];

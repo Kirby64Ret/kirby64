@@ -27,4 +27,42 @@ if [ kirby64.yaml -nt build/kirby.ld ] || [ ! -f build/kirby.ld ]; then
     flock /tmp/kirby_build.lock uv run splat split kirby64.yaml || exit 1
 fi
 
-exec flock /tmp/kirby_build.lock make "${@:--j8}"
+# DROP OBJECTS WHOSE SOURCE CHANGED CONTENT BUT NOT MTIME ORDER.
+#
+# make decides staleness by mtime, and that is wrong in this tree. Lanes
+# iterate by REWRITING a .c in place and restoring it afterwards, and a
+# restored file routinely ends up OLDER than the .o built from the variant. So
+# make keeps the variant's object and links it, and the ROM is wrong in a way
+# no source inspection can find -- the .c on disk is correct, verify.py agrees
+# it is correct, and the bytes in the ROM are from a file that no longer
+# exists.
+#
+# That is the single most repeated failure of the night. It produced a fully
+# evidenced, completely wrong diagnosis of an 8-byte displacement in ovl7; it
+# made check_tu_size report -32 on a file that had just been correctly
+# re-guarded; and it accounted for three separate "which lane broke the ROM"
+# investigations.
+#
+# Hash the source instead of trusting the clock. A stored hash beside each
+# object costs one sha1 per file per build and removes the whole class.
+for c in $(git ls-files 'src/*.c' 'src/*/*.c'); do
+    o="build/${c%.c}.o"
+    [ -f "$o" ] || continue
+    h=$(sha1sum "$c" | cut -c1-40)
+    if [ "$h" != "$(cat "$o.srchash" 2>/dev/null)" ]; then
+        rm -f "$o"
+    fi
+    printf '%s' "$h" > "$o.srchash.new"
+    mv -f "$o.srchash.new" "$o.srchash"
+done
+
+flock /tmp/kirby_build.lock make "${@:--j8}"
+rc=$?
+
+# Re-stamp: an object that was just rebuilt needs the hash of the source it was
+# actually built from, which is the file as it stands now.
+for c in $(git ls-files 'src/*.c' 'src/*/*.c'); do
+    o="build/${c%.c}.o"
+    [ -f "$o" ] && sha1sum "$c" | cut -c1-40 | tr -d '\n' > "$o.srchash"
+done
+exit $rc

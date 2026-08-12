@@ -72,6 +72,14 @@ void func_800BAA04(RumbleCont *arg0, RumbleNode *arg1);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BA7A0.s")
 
+// Draft, 13/62: structure and instruction count are exact. Residue is one
+// register: the ROM computes `ptr + 1` in case 3 into a fresh temp ($t6) and
+// every case-4 temp shifts up with it. Any spelling that gives case 3 its own
+// value (ptr+1 twice, a named local, chained assignment, store-forwarding)
+// makes IDO promote it to $a2 and pushes D_800D5238 to $a3 -- 27 diffs. The
+// `continue` in case 4 is load-bearing: without it the loop test is not
+// duplicated into both arms (43 diffs).
+#ifdef NON_MATCHING
 void func_800BA90C(RumbleCont *arg0, RumbleItem *arg1) {
     u16 *ptr;
 
@@ -108,6 +116,9 @@ void func_800BA90C(RumbleCont *arg0, RumbleItem *arg1) {
         }
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BA90C.s")
+#endif
 
 void func_800BAA04(RumbleCont *arg0, RumbleNode *arg1) {
     RumbleNode *tail;

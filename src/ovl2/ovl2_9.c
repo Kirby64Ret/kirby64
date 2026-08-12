@@ -19,7 +19,12 @@ extern u32 D_8012D924;
 extern u16 D_8012E828;
 extern s32 D_800E85A0[];
 
-struct Shape24 {
+struct ShapeHead {
+    s32 unk0;
+    s32 unk4;
+};
+
+struct ShapeBody {
     s32 unk0;
     s32 unk4;
     s32 unk8;
@@ -27,42 +32,38 @@ struct Shape24 {
     s32 unk10;
     s32 unk14;
     s32 unk18;
-    s32 unk1C;
-    s32 unk20;
+};
+
+struct Shape24 {
+    struct ShapeHead unk0;
+    struct ShapeBody unk8;
 };
 
 struct Shape28 {
     u8 unk0;
     u8 pad1[3];
+    struct ShapeHead unk4;
+    struct ShapeBody unkC;
+};
+
+struct EntryInfo {
+    s32 unk0;
     s32 unk4;
     s32 unk8;
     s32 unkC;
     s32 unk10;
-    s32 unk14;
-    s32 unk18;
-    s32 unk1C;
-    s32 unk20;
-    s32 unk24;
 };
 
 struct PlyEntry {
     struct Shape24 *unk0;
     s32 unk4;
     struct Shape24 *unk8;
-    s32 unkC;
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-    s32 unk1C;
+    struct EntryInfo unkC;
 };
 
 struct PlySlot {
     void *unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10;
-    s32 unk14;
+    struct EntryInfo unk4;
     struct Shape28 *unk18;
     s32 unk1C;
     struct Shape28 *unk20;
@@ -70,6 +71,36 @@ struct PlySlot {
 
 extern struct Shape28 D_8012D198[];
 extern struct PlySlot D_8012D590[];
+extern struct PlySlot D_8012D648[];
+extern struct PlySlot D_8012D7B0[];
+
+struct CollInfo {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+};
+
+struct CollSlot {
+    void *unk0;
+    struct CollInfo unk4;
+    struct Shape28 *unk1C;
+    s32 unk20;
+    struct Shape28 *unk24;
+};
+
+struct CollEntry {
+    struct Shape24 *unk0;
+    s32 unk4;
+    struct Shape24 *unk8;
+    struct CollInfo unkC;
+};
+
+extern struct Shape28 D_8012CF30[];
+extern struct CollSlot D_8012D0C8[];
+
 
 
 struct UnkStruct8011145C_A {
@@ -81,6 +112,7 @@ struct UnkStruct8011145C_A {
     s32 unk10;
     s32 unk14;
     s32 unk18;
+    u8 pad1C[12];
 };
 
 struct UnkStruct80110438_C {
@@ -106,9 +138,93 @@ struct UnkStruct8011145C_B {
     s32 unkC;
     s32 unk10;
     s32 unk14;
+    u8 pad18[12];
 };
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110150.s")
+s32 func_8010FC30(struct UnkStruct8011145C_B *, struct UnkStruct8011145C_A *, f32 *);
+void func_80110CCC(struct UnkStruct8011145C_A *, struct UnkStruct8011145C_B *, struct UnkStruct80110438_C *);
+void func_80110E94(struct UnkStruct8011145C_A *, struct UnkStruct8011145C_B *);
+void func_80111184(struct UnkStruct8011145C_A *, struct UnkStruct8011145C_B *, struct UnkStruct80110438_C *);
+void func_8011145C(struct UnkStruct8011145C_A *, struct UnkStruct8011145C_B *);
+void func_80110438(struct UnkStruct8011145C_A *, struct UnkStruct8011145C_B *, struct UnkStruct80110438_C *);
+void func_801105E8(struct UnkStruct8011145C_A *, struct UnkStruct8011145C_B *, f32 *);
+s32 func_801103C4(s32);
+
+extern u8 D_8012E7C5;
+extern f32 gKirbyHp;
+
+/* Left live by a lane mid-work, at 116/161 insns. Draft kept. */
+s32 func_80110150(struct UnkStruct80110438_C *arg0) {
+    struct UnkStruct8011145C_B *b;
+    struct UnkStruct8011145C_A *a;
+    s32 i;
+    s32 j;
+    s32 id;
+    s32 sp58[5];
+    f32 sp4C[3];
+    s32 sp40[3];
+
+    arg0->unk2 = 0;
+    arg0->unk3 = 0;
+    b = (struct UnkStruct8011145C_B *) D_8012D590;
+    for (i = 0; i < D_8012D584; i++) {
+        for (j = 0, a = (struct UnkStruct8011145C_A *) D_8012D0C8; j < D_8012D0C4; j++) {
+            if (func_8010FC30(b, a, sp4C) != 0) {
+                id = b->unk0;
+                if (a->unk4 & 1) {
+                    if (id == -1) {
+                        return 0;
+                    }
+                    if (id == 0) {
+                        if ((D_8012E7C5 == 0x15) || (func_801103C4(id) != 0) || (gKirbyHp == 0.0f)) {
+                            return 0;
+                        }
+                    }
+                    if (b->unk10 & 0x80000004) {
+                        arg0->unk3 = 0x11;
+                    } else {
+                        arg0->unk3 = 0x10;
+                    }
+                    arg0->unk0 = b->unk8;
+                    arg0->unk1 = b->unk9;
+                    arg0->unk8 = b->unk14;
+                    arg0->unkC = id;
+                    return 1;
+                }
+                if (a->unk4 & 6) {
+                    if (id == 0) {
+                        if (gKirbyHp == 0.0f) {
+                            return 0;
+                        }
+                    }
+                    arg0->unk2 = 5;
+                    arg0->unkC = id;
+                    arg0->unk10 = sp4C[0];
+                    arg0->unk14 = sp4C[1];
+                    arg0->unk18 = sp4C[2];
+                    return 1;
+                }
+                arg0->unk2 = 0;
+                func_80110438(a, b, arg0);
+                func_801105E8(a, b, sp4C);
+                if (arg0->unk2 != 0) {
+                    arg0->unk0 = b->unk8;
+                    arg0->unk1 = b->unk9;
+                    arg0->unk8 = b->unk14;
+                    arg0->unkC = id;
+                    arg0->unk10 = sp4C[0];
+                    arg0->unk14 = sp4C[1];
+                    arg0->unk18 = sp4C[2];
+                    return 1;
+                }
+                return 0;
+            }
+            a++;
+        }
+        b++;
+    }
+    return 0;
+}
 
 s32 func_801103C4(s32 arg0) {
     if ((arg0 != -1) && (arg0 < 4)) {
@@ -182,7 +298,59 @@ void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_801105E8.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110B00.s")
+s32 func_80110B00(struct UnkStruct80110438_C *arg0) {
+    struct UnkStruct8011145C_B *b;
+    struct UnkStruct8011145C_A *a;
+    s32 i;
+    s32 j;
+    s32 id;
+    s32 sp58[5];
+    f32 sp4C[3];
+    s32 sp40[3];
+
+    arg0->unk2 = 0;
+    arg0->unk3 = 0;
+    b = (struct UnkStruct8011145C_B *) D_8012D648;
+    for (i = 0; i < D_8012D588; i++) {
+        for (j = 0, a = (struct UnkStruct8011145C_A *) D_8012D0C8; j < D_8012D0C4; j++) {
+            if (func_8010FC30(b, a, sp4C) != 0) {
+                id = b->unk0;
+                if (a->unk4 & 1) {
+                    if (id != -1) {
+                        if (b->unk10 & 0x80000004) {
+                            arg0->unk3 = 0x11;
+                        } else {
+                            arg0->unk3 = 0x10;
+                        }
+                        arg0->unkC = id;
+                        arg0->unk0 = b->unk8;
+                        arg0->unk1 = b->unk9;
+                        arg0->unk8 = b->unk14;
+                        return 1;
+                    }
+                    return 0;
+                }
+                arg0->unk2 = 0;
+                func_80110CCC(a, b, arg0);
+                func_80110E94(a, b);
+                if (arg0->unk2 != 0) {
+                    arg0->unk0 = b->unk8;
+                    arg0->unk1 = b->unk9;
+                    arg0->unk8 = b->unk14;
+                    arg0->unk10 = sp4C[0];
+                    arg0->unk14 = sp4C[1];
+                    arg0->unk18 = sp4C[2];
+                    arg0->unkC = id;
+                    return 1;
+                }
+                return 0;
+            }
+            a++;
+        }
+        b++;
+    }
+    return 0;
+}
 
 void func_80110CCC(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
                    struct UnkStruct80110438_C *arg2) {
@@ -303,7 +471,53 @@ void func_80110E94(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80110FD4.s")
+/* Left live by a lane mid-work, at 1/108 insns. Draft kept. */
+s32 func_80110FD4(struct UnkStruct80110438_C *arg0) {
+    struct UnkStruct8011145C_B *b;
+    struct UnkStruct8011145C_A *a;
+    s32 i;
+    s32 j;
+    s32 id;
+    s32 t;
+    s32 sp58[4];
+    f32 sp4C[3];
+    s32 sp40[3];
+
+    arg0->unk2 = 0;
+    arg0->unk3 = 0;
+    b = (struct UnkStruct8011145C_B *) D_8012D7B0;
+    for (i = 0; i < D_8012D58C; i++) {
+        for (j = 0, a = (struct UnkStruct8011145C_A *) D_8012D0C8; j < D_8012D0C4; j++) {
+            if (func_8010FC30(b, a, sp4C) != 0) {
+                id = b->unk0;
+                if (a->unk4 & 1) {
+                    return 0;
+                }
+                arg0->unk2 = 0;
+                func_80111184(a, b, arg0);
+                func_8011145C(a, b);
+                if (arg0->unk2 != 0) {
+                    arg0->unk0 = b->unk8;
+                    arg0->unk1 = b->unk9;
+                    arg0->unk8 = b->unk14;
+                    arg0->unk10 = sp4C[0];
+                    arg0->unk14 = sp4C[1];
+                    arg0->unk18 = sp4C[2];
+                    if ((D_800E0D50[id] != -1) && (D_800DD710[D_800E0D50[id]] != -1)) {
+                        arg0->unkC = D_800E0D50[id];
+                    } else {
+                        arg0->unkC = id;
+                    }
+                    return 1;
+                }
+                return 0;
+            }
+            a++;
+        }
+        b++;
+    }
+    return 0;
+}
 
 void func_80111184(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
                    struct UnkStruct80110438_C *arg2) {
@@ -468,7 +682,6 @@ void func_80111550(s32 arg0) {
 }
 
 /* Left live by a lane mid-work, at 117/160 insns. Draft kept. */
-#ifdef NON_MATCHING
 /* Left live by a lane mid-work, at 117/160 insns. Draft kept. */
 struct PlySlot *func_80111574(struct PlyEntry *arg0, void *arg1) {
     struct PlySlot *e;
@@ -493,15 +706,12 @@ struct PlySlot *func_80111574(struct PlyEntry *arg0, void *arg1) {
     e = &D_8012D590[D_8012D584];
     e->unk0 = arg1;
     e->unk4 = arg0->unkC;
-    e->unk8 = arg0->unk10;
-    e->unkC = arg0->unk14;
-    e->unk10 = arg0->unk18;
-    e->unk14 = arg0->unk1C;
     if (arg0->unk0 != NULL) {
         e->unk18 = &D_8012D198[D_8012D190];
         D_8012D190++;
         e->unk18->unk0 = 0;
-        e->unk18->unk4 = arg0->unk0->unk0; e->unk18->unk8 = arg0->unk0->unk4; e->unk18->unkC = arg0->unk0->unk8; e->unk18->unk10 = arg0->unk0->unkC; e->unk18->unk14 = arg0->unk0->unk10; e->unk18->unk18 = arg0->unk0->unk14; e->unk18->unk1C = arg0->unk0->unk18; e->unk18->unk20 = arg0->unk0->unk1C; e->unk18->unk24 = arg0->unk0->unk20;
+        e->unk18->unk4 = arg0->unk0->unk0;
+        e->unk18->unkC = arg0->unk0->unk8;
     } else {
         e->unk18 = NULL;
     }
@@ -512,29 +722,113 @@ struct PlySlot *func_80111574(struct PlyEntry *arg0, void *arg1) {
     for (i = 0; i < e->unk1C; i++) {
         d->unk0 = 0;
         d->unk4 = s->unk0;
-        d->unk8 = s->unk4;
         d->unkC = s->unk8;
-        d->unk10 = s->unkC;
-        d->unk14 = s->unk10;
-        d->unk18 = s->unk14;
-        d->unk1C = s->unk18;
-        d->unk20 = s->unk1C;
-        d->unk24 = s->unk20;
-        d++;
         s++;
+        d++;
     }
     D_8012D190 += arg0->unk4;
     D_8012D584++;
     D_8012D924 = 0xFF800080;
     return e;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80111574.s")
-#endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_801117BC.s")
+struct PlySlot *func_801117BC(struct PlyEntry *arg0, void *arg1) {
+    struct PlySlot *e;
+    struct Shape28 *d;
+    struct Shape24 *s;
+    s32 i;
+    s32 n;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80111A04.s")
+    if (arg0->unk0 != NULL) {
+        n = 1;
+    } else {
+        n = 0;
+    }
+    if ((n + D_8012D190 + arg0->unk4) >= 0x1A) {
+        utilPrintf("Entry Error. PlySht Global Shape Buff Over!!\n");
+        while (1);
+    }
+    if (D_8012D588 == 0xA) {
+        utilPrintf("Entry Error. PlySht Buff Over!!\n");
+        while (1);
+    }
+    e = &D_8012D648[D_8012D588];
+    e->unk0 = arg1;
+    e->unk4 = arg0->unkC;
+    if (arg0->unk0 != NULL) {
+        e->unk18 = &D_8012D198[D_8012D190];
+        D_8012D190++;
+        e->unk18->unk0 = 0;
+        e->unk18->unk4 = arg0->unk0->unk0;
+        e->unk18->unkC = arg0->unk0->unk8;
+    } else {
+        e->unk18 = NULL;
+    }
+    e->unk1C = arg0->unk4;
+    e->unk20 = &D_8012D198[D_8012D190];
+    d = e->unk20;
+    s = arg0->unk8;
+    for (i = 0; i < e->unk1C; i++) {
+        d->unk0 = 0;
+        d->unk4 = s->unk0;
+        d->unkC = s->unk8;
+        s++;
+        d++;
+    }
+    D_8012D190 += arg0->unk4;
+    D_8012D588++;
+    D_8012D924 = 0xFFFF00A0;
+    return e;
+}
+
+struct PlySlot *func_80111A04(struct PlyEntry *arg0, void *arg1) {
+    struct PlySlot *e;
+    struct Shape28 *d;
+    struct Shape24 *s;
+    s32 i;
+    s32 n;
+
+    if (arg0->unk0 != NULL) {
+        n = 1;
+    } else {
+        n = 0;
+    }
+    if ((n + D_8012D190 + arg0->unk4) >= 0x1A) {
+        utilPrintf("Entry Error. PlyEff Global Shape Buff Over!!\n");
+        while (1);
+    }
+    if (D_8012D58C == 0xA) {
+        utilPrintf("Entry Error. PlyEff Buff Over!!\n");
+        while (1);
+    }
+    e = &D_8012D7B0[D_8012D58C];
+    e->unk0 = arg1;
+    e->unk4 = arg0->unkC;
+    if (arg0->unk0 != NULL) {
+        e->unk18 = &D_8012D198[D_8012D190];
+        D_8012D190++;
+        e->unk18->unk0 = 0;
+        e->unk18->unk4 = arg0->unk0->unk0;
+        e->unk18->unkC = arg0->unk0->unk8;
+    } else {
+        e->unk18 = NULL;
+    }
+    e->unk1C = arg0->unk4;
+    e->unk20 = &D_8012D198[D_8012D190];
+    d = e->unk20;
+    s = arg0->unk8;
+    for (i = 0; i < e->unk1C; i++) {
+        d->unk0 = 0;
+        d->unk4 = s->unk0;
+        d->unkC = s->unk8;
+        s++;
+        d++;
+    }
+    D_8012D190 += arg0->unk4;
+    D_8012D58C++;
+    D_8012D924 = 0x00FF0080;
+    return e;
+}
 
 void func_80111C4C(s32 *arg0) {
     if (arg0 != NULL) {
@@ -542,7 +836,54 @@ void func_80111C4C(s32 *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_80111C88.s")
+struct CollSlot *func_80111C88(struct CollEntry *arg0, void *arg1) {
+    struct CollSlot *e;
+    struct Shape28 *d;
+    struct Shape24 *s;
+    s32 i;
+    s32 n;
+
+    if (arg0->unk0 != NULL) {
+        n = 1;
+    } else {
+        n = 0;
+    }
+    if ((n + D_8012CF28 + arg0->unk4) >= 0xB) {
+        utilPrintf("Entry Error. CollEne Global Shape Buff Over!!\n");
+        while (1);
+    }
+    if (D_8012D0C4 == 5) {
+        utilPrintf("Entry Error. CollEne Buff Over!!\n");
+        while (1);
+    }
+    e = &D_8012D0C8[D_8012D0C4];
+    e->unk0 = arg1;
+    e->unk4 = arg0->unkC;
+    if (arg0->unk0 != NULL) {
+        e->unk1C = &D_8012CF30[D_8012CF28];
+        D_8012CF28++;
+        e->unk1C->unk0 = 0;
+        e->unk1C->unk4 = arg0->unk0->unk0;
+        e->unk1C->unkC = arg0->unk0->unk8;
+    } else {
+        e->unk1C = NULL;
+    }
+    e->unk20 = arg0->unk4;
+    e->unk24 = &D_8012CF30[D_8012CF28];
+    d = e->unk24;
+    s = arg0->unk8;
+    for (i = 0; i < e->unk20; i++) {
+        d->unk0 = 0;
+        d->unk4 = s->unk0;
+        d->unkC = s->unk8;
+        s++;
+        d++;
+    }
+    D_8012CF28 += e->unk20;
+    D_8012D0C4++;
+    D_8012D924 = 0x80FFFF80;
+    return e;
+}
 
 void func_80111ECC(s32 *arg0) {
     if (arg0 != NULL) {

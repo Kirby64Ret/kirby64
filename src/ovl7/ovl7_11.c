@@ -491,7 +491,28 @@ void func_801B65E8_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B6678_ovl7.s")
+void func_801B6678_ovl7(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    if (ent->unk3C == 0) {
+        if (ABSF(D_800E64D0[omCurrentObj->objId]) <= ABSF(D_800E6690[omCurrentObj->objId])) {
+            if (D_800EA520[omCurrentObj->objId] == -1) {
+                D_800E6690[omCurrentObj->objId] = 0;
+                D_800EA520[omCurrentObj->objId] = 0x34;
+                return;
+            }
+        }
+    }
+    if (D_800EA520[omCurrentObj->objId] == 0) {
+        D_800E6690[omCurrentObj->objId] = 0;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B63E4_ovl7);
+    } else if (D_800EA520[omCurrentObj->objId] != -1) {
+        D_800EA520[omCurrentObj->objId] -= 1;
+    }
+}
 
 void func_801B6810_ovl7(GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -556,7 +577,39 @@ void func_801B6B88_ovl7(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801CD700_ovl7);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B6BDC_ovl7.s")
+void func_801B6BDC_ovl7(GObj *arg0) {
+    void func_800B78AC(s32);
+    void func_801B6E28_ovl7(void);
+    void func_801B6B88_ovl7(GObj *);
+    void lbvector_Rotate(Vector *, s32, f32);
+    Vector sp20;
+    f32 t1;
+
+    D_800DEF90[omCurrentObj->objId] = func_800B78AC;
+    D_800DF150[omCurrentObj->objId] = func_801B6E28_ovl7;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    sp20.z = 1.0f;
+    sp20.y = 0.0f;
+    sp20.x = 0.0f;
+    lbvector_Rotate(&sp20, 2, gEntitiesAngleYArray[omCurrentObj->objId]);
+    t1 = sp20.x * 13.0f;
+    D_800E3050[omCurrentObj->objId] = t1;
+    D_800E3590[omCurrentObj->objId] = sp20.x * -2.0f;
+    D_800E3AD0[omCurrentObj->objId] = ABSF(t1);
+    t1 = sp20.z * 13.0f;
+    D_800E33D0[omCurrentObj->objId] = t1;
+    D_800E3910[omCurrentObj->objId] = sp20.z * -2.0f;
+    D_800E3E50[omCurrentObj->objId] = ABSF(t1);
+    D_800EA360[omCurrentObj->objId] = 1;
+    D_800EA520[omCurrentObj->objId] = -1;
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+    }
+    func_801A0D50_ovl7(func_801B6B88_ovl7);
+    utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801CD700_ovl7);
+}
 
 void func_801B6E28_ovl7(void) {
     if (func_801A0D74_ovl7() == 0) {
@@ -689,7 +742,34 @@ void func_801B772C_ovl7(GObj *arg0) {
 void func_801B7778_ovl7(GObj *arg0) {
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B7780_ovl7.s")
+void func_801B7780_ovl7(GObj *arg0) {
+    void func_800A9864(s32, s32, s32);
+    void func_801B793C_ovl7(void);
+    extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
+    struct UnkStruct800E1B50 *ent;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    D_800E98E0[omCurrentObj->objId] = 0x28;
+    D_800DF150[omCurrentObj->objId] = func_801B793C_ovl7;
+    ent->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A9864(0x10094, 0x23, 0x10);
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        func_800A9EA4(0x1053B);
+    } else {
+        func_800A9EA4(0x1053C);
+    }
+    if (D_800E7880[omCurrentObj->objId] == 0) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 5.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 5.0f;
+    } else {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 8.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 8.0f;
+    }
+    curObjSleepForever();
+}
 
 #ifdef NON_MATCHING
 // 7/28 diffs: only the D_800E98E0 value lands in $a0 where the ROM uses $a1.

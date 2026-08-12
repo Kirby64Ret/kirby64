@@ -321,6 +321,10 @@ s32 func_800A86C8(s32 arg0, s32 *arg1, s32 *arg2) {
  * blocking stub. The ROM assembles the pragma below. */
 #ifdef NON_MATCHING
 s32 func_800A8724(s32 arg0) {
+    /* D_800D6E68 is declared `u32 []` at file scope for the indexed read in
+     * func_800A8DE4; the ROM writes a single word here, so this function
+     * needs the scalar view. Block scope keeps it off every other user. */
+    extern u32 D_800D6E68;
     struct CacheLine *func_800A840C(u32, s32);
     s32 count;
     s32 i;
@@ -370,31 +374,28 @@ s32 func_800A8724(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8724.s")
 #endif
 
-#ifdef MIPS_TO_C
+s32 func_800A8934(u32 arg0, s32 arg1, s32 arg2, void *arg3) {
+    u32 *entry;
+    u32 *rom;
 
-s32 func_800A8934(u32 arg0, s32 arg1, s32 arg2, ? arg3) {
-    s32 var_a2;
-    void *temp_v0;
-    void *temp_v1;
-
-    temp_v1 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
-    temp_v0 = temp_v1->unk8 + ((arg0 & 0xFFFF) * 4);
+    entry = D_800D0184[arg0 >> 16]->imageBlockTable;
+    rom = D_800D0184[arg0 >> 16]->imageROMOffset;
+    arg0 &= 0xFFFF;
+    entry += arg0;
     if (arg2 == 0) {
-        var_a2 = (((temp_v0->unk4 - temp_v0->unk0) + 3) & 0xFFFFFC) - arg1;
-        if (var_a2 < 0x10) {
+        arg2 = entry[1] - entry[0];
+        arg2 += 3;
+        arg2 &= 0xFFFFFC;
+        arg2 -= arg1;
+        if (arg2 < 0x10) {
             return -1;
         }
-        goto block_4;
+    } else {
+        arg2 = (arg2 + 3) & 0xFFFFFC;
     }
-    var_a2 = (arg2 + 3) & 0xFFFFFC;
-block_4:
-    arg2 = var_a2;
-    dma_read(temp_v0->unk0 + temp_v1->unkC + arg1, arg3, var_a2);
+    dma_read(entry[0] + (u32)rom + arg1, arg3, arg2);
     return arg2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8934.s")
-#endif
 
 // Reusing `arg0` as the scratch for the masked index is load-bearing: a
 // declared local (in any position) puts the index in $t9 and rotates every
@@ -404,11 +405,9 @@ void *func_800A89E0(u32 arg0) {
     void *buf;
     u32 *entry;
     u32 *rom;
-    struct BankHeader *bank;
 
-    bank = D_800D0184[arg0 >> 16];
-    entry = bank->imageBlockTable;
-    rom = bank->imageROMOffset;
+    entry = D_800D0184[arg0 >> 16]->imageBlockTable;
+    rom = D_800D0184[arg0 >> 16]->imageROMOffset;
     arg0 &= 0xFFFF;
     entry += arg0;
     size = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
@@ -436,11 +435,9 @@ void *func_800A8B0C(u32 arg0, s32 arg1) {
     void *buf;
     u32 *entry;
     u32 *rom;
-    struct BankHeader *bank;
 
-    bank = D_800D0184[arg0 >> 16];
-    entry = bank->imageBlockTable;
-    rom = bank->imageROMOffset;
+    entry = D_800D0184[arg0 >> 16]->imageBlockTable;
+    rom = D_800D0184[arg0 >> 16]->imageROMOffset;
     arg0 &= 0xFFFF;
     entry += arg0;
     size = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
@@ -506,37 +503,35 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
 #endif
-#ifdef MIPS_TO_C
-
+// Draft, 60/62: shape and frame are right; the residue is that the ROM keeps
+// `slot` (&D_800D00C4[arg0>>16]) in $s0 across the func_800A8578 call and
+// reuses $s0 for `p` afterwards, where IDO leaves it in $v1 and spills it.
+// Swept: idx as a variable vs inline, block-scoped inner locals.
+#ifdef NON_MATCHING
 void func_800A8D64(u32 arg0, s32 arg1) {
-    s32 sp20;
-    s32 *temp_s0;
-    s32 temp_a1;
-    s32 temp_s1;
-    s32 temp_v1;
-    u32 *var_s0;
-    u32 temp_v0;
-    u32 var_v1;
+    u32 ***slot;
+    u32 *obj;
 
-    temp_s0 = ((arg0 >> 0x10) * 4) + &D_800D00C4;
-    temp_v1 = (arg0 & 0xFFFF) * 4;
-    temp_s1 = *(*temp_s0 + temp_v1);
-    if (temp_s1 != 0) {
-        sp20 = temp_v1;
-        if (func_800A8578(temp_s1 | arg1) == 0) {
-            *(*temp_s0 + temp_v1) = 0;
-            var_s0 = temp_s1->unkC;
-            var_v1 = *var_s0;
-            if (var_v1 != 0) {
-                do {
-                    temp_a1 = *(*(&D_800D0104 + ((var_v1 >> 0x10) * 4)) + ((var_v1 & 0xFFFF) * 4));
-                    if ((temp_a1 != 0) && (func_800A8578(temp_a1 | 3, temp_a1) == 0)) {
-                        temp_v0 = var_s0->unk0;
-                        *(*(&D_800D0104 + ((temp_v0 >> 0x10) * 4)) + ((temp_v0 & 0xFFFF) * 4)) = 0;
+    slot = &D_800D00C4[arg0 >> 16];
+    obj = (*slot)[arg0 & 0xFFFF];
+    if (obj != NULL) {
+        if (func_800A8578((s32)obj | arg1) == 0) {
+            u32 *p;
+            u32 id;
+            u32 id2;
+            struct BGHeader *entry;
+
+            (*slot)[arg0 & 0xFFFF] = NULL;
+            p = (u32 *)obj[3];
+            while ((id = *p) != 0) {
+                entry = D_800D0104[id >> 16][id & 0xFFFF];
+                if (entry != NULL) {
+                    if (func_800A8578((s32)entry | 3) == 0) {
+                        id2 = *p;
+                        D_800D0104[id2 >> 16][id2 & 0xFFFF] = NULL;
                     }
-                    var_v1 = var_s0->unk4;
-                    var_s0 += 4;
-                } while (var_v1 != 0);
+                }
+                p++;
             }
         }
     }
@@ -562,70 +557,62 @@ void func_800A8E54(u32 arg0, s32 arg1) {
     }
 }
 
-#ifdef MIPS_TO_C
-
+// Draft, 95/113: behaviourally complete and the instruction count matches.
+// Residue is a frame 0x10 short of the ROM's 0x30 plus a systematic v0/v1
+// swap in both leading loops (the ROM puts the walking pointer in $v0 and the
+// counter in $v1). m2c-shaped do/while loops with an explicit pointer local
+// are worse (111).
+#ifdef NON_MATCHING
 void func_800A8EC0(u32 arg0) {
-    u32 **sp18;
-    GObj *temp_v1;
-    s32 *var_v0_3;
-    s32 temp_t2;
-    s32 var_a1;
-    s32 var_v0_2;
-    s32 var_v1;
-    s32 var_v1_2;
-    u32 **temp_a2;
-    u32 **var_at;
-    u32 *temp_t1;
-    u32 *var_v0;
-    u32 *var_v0_4;
+    void func_800A8D64(u32, s32);
+    u32 *func_800A9250(u32, s32);
+    void func_800A99E4(s32);
+    void func_800A9A2C(s32);
+    void func_800A9D64(s32);
+    void *func_800A9648(u32 *);
+    u32 **slot;
+    u32 *ptr;
+    u32 *r;
+    s32 found;
+    s32 i;
+    s32 j;
+    s32 k;
 
-    var_a1 = -1;
-    var_v0 = &D_800D6E68;
-    var_v1 = 0;
-    do {
-        if (arg0 == *var_v0) {
-            var_a1 = var_v1;
+    found = -1;
+    for (i = 0; i < 3; i++) {
+        if (arg0 == (&D_800D6E68)[i]) {
+            found = i;
         }
-        var_v1 += 1;
-        var_v0 += 4;
-    } while (var_v1 < 3);
-    if (var_a1 != -1) {
-        var_v0_2 = 2;
-        var_v1_2 = 2;
-        do {
-            if (var_a1 != var_v1_2) {
-                temp_t1 = &(&D_800D6E68)[var_v0_2];
-                var_v0_2 -= 1;
-                *temp_t1 = (&D_800D6E68)[var_v1_2];
+    }
+    if (found != -1) {
+        j = 2;
+        for (k = 2; k >= 0; k--) {
+            if (found != k) {
+                (&D_800D6E68)[j] = (&D_800D6E68)[k];
+                j--;
             }
-            var_v1_2 -= 1;
-        } while (var_v1_2 >= 0);
-    } else {
-        if (D_800D6E68.unk8 != 0) {
-            func_800A8D64(D_800D6E68.unk8, 3, &D_800D6E68, arg0);
         }
-        var_v0_3 = &D_800D6E6C;
-        do {
-            temp_t2 = *var_v0_3;
-            var_v0_3 -= 4;
-            var_v0_3->unk8 = temp_t2;
-        } while (var_v0_3 >= &D_800D6E68);
-    }
-    D_800D6E68.unk0 = arg0;
-    temp_v1 = omCurrentObj;
-    D_800E02D0[temp_v1->objId] = arg0;
-    temp_a2 = *(&D_800D00C4 + ((arg0 >> 0x10) * 4)) + ((arg0 & 0xFFFF) * 4);
-    var_v0_4 = *temp_a2;
-    if (var_v0_4 != NULL) {
-        var_at = &gSegment4StartArray[temp_v1->objId];
     } else {
-        sp18 = temp_a2;
-        var_v0_4 = func_800A9250(arg0, 3, temp_a2, arg0);
-        *temp_a2 = var_v0_4;
-        var_at = &gSegment4StartArray[omCurrentObj->objId];
+        if ((&D_800D6E68)[2] != 0) {
+            func_800A8D64((&D_800D6E68)[2], 3);
+        }
+        r = &(&D_800D6E68)[1];
+        do {
+            r[1] = *r;
+            r--;
+        } while (r >= &D_800D6E68);
     }
-    *var_at = var_v0_4;
-    func_800A9D64(temp_v1->objId);
+    D_800D6E68 = arg0;
+    slot = &D_800D00C4[arg0 >> 16][arg0 & 0xFFFF];
+    D_800E02D0[omCurrentObj->objId] = arg0;
+    if (*slot != NULL) {
+        gSegment4StartArray[omCurrentObj->objId] = *slot;
+    } else {
+        ptr = func_800A9250(arg0, 3);
+        *slot = ptr;
+        gSegment4StartArray[omCurrentObj->objId] = ptr;
+    }
+    func_800A9D64(omCurrentObj->objId);
     func_800A99E4(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(gSegment4StartArray[omCurrentObj->objId]);
@@ -993,34 +980,30 @@ void *func_800A9648(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9648.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_800A9760(u32 arg0) {
-    u32 **sp1C;
-    u32 **temp_a2;
-    u32 *temp_v0;
-    u32 *temp_v0_2;
+    u32 *func_800A9250(u32, s32);
+    void func_800A99E4(s32);
+    void func_800A9A2C(s32);
+    void func_800A9D64(s32);
+    void *func_800A9648(u32 *);
+    u32 **slot;
+    u32 *ptr;
 
+    slot = &D_800D00C4[arg0 >> 16][arg0 & 0xFFFF];
     D_800E02D0[omCurrentObj->objId] = arg0;
-    temp_a2 = *(&D_800D00C4 + ((arg0 >> 0x10) * 4)) + ((arg0 & 0xFFFF) * 4);
-    temp_v0 = *temp_a2;
-    if (temp_v0 != NULL) {
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0;
-        func_800A8564(*temp_a2, 1, temp_a2);
+    if (*slot != NULL) {
+        gSegment4StartArray[omCurrentObj->objId] = *slot;
+        func_800A8564((struct CacheLine *)*slot, 1);
     } else {
-        sp1C = temp_a2;
-        temp_v0_2 = func_800A9250(3, temp_a2);
-        *temp_a2 = temp_v0_2;
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0_2;
+        ptr = func_800A9250(arg0, 3);
+        *slot = ptr;
+        gSegment4StartArray[omCurrentObj->objId] = ptr;
     }
     func_800A9D64(omCurrentObj->objId);
     func_800A99E4(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(gSegment4StartArray[omCurrentObj->objId]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9760.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1148,45 +1131,30 @@ s32 func_800A9B48(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9B48.s")
 #endif
-#ifdef MIPS_TO_C
-
+// Draft, 30/59: structure, frame (the two pads are load-bearing) and every
+// spill slot layout are right. Residue is the one-slot register rotation --
+// the ROM reuses $v0 for the loaded table entry and keeps the block pointer
+// in $a2/flag in $a3, where IDO reserves $v0 and shifts to $a3/$t0.
+#ifdef NON_MATCHING
 s32 func_800A9C78(s32 arg0, s32 arg1) {
-    s32 sp2C;
-    void *sp24;
-    s32 sp20;
-    u32 *sp1C;
+    s32 pad0;
+    struct AnimBlock *temp_v0;
+    s32 pad1;
     s32 temp_a3;
-    u32 *temp_a1;
-    u32 *temp_a1_2;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    void *temp_v0;
 
-    temp_v0 = func_800A94F4();
+    temp_v0 = (struct AnimBlock *)func_800A94F4(arg0);
     temp_a3 = temp_v0->unk4;
     if (temp_a3 != 0) {
-        temp_a1 = &D_800DF850[arg1];
-        temp_v0_2 = *temp_a1;
-        if (temp_v0_2 != -1) {
-            sp20 = arg1 * 4;
-            sp1C = temp_a1;
-            sp24 = temp_v0;
-            sp2C = temp_a3;
-            func_800A8578(temp_v0_2 | 2, temp_a1, temp_v0, temp_a3);
+        if (D_800DF850[arg1] != -1) {
+            func_800A8578(D_800DF850[arg1] | 2, D_800DF850[arg1]);
         }
-        *temp_a1 = temp_v0;
+        D_800DF850[arg1] = (u32)temp_v0;
         D_800E0110[arg1] = arg0;
     } else {
-        temp_a1_2 = &D_800DF690[arg1];
-        temp_v0_3 = *temp_a1_2;
-        if (temp_v0_3 != -1) {
-            sp20 = arg1 * 4;
-            sp1C = temp_a1_2;
-            sp24 = temp_v0;
-            sp2C = temp_a3;
-            func_800A8578(temp_v0_3 | 2, temp_a1_2, temp_v0, temp_a3);
+        if (D_800DF690[arg1].as_u32 != -1) {
+            func_800A8578(D_800DF690[arg1].as_u32 | 2, D_800DF690[arg1].as_u32);
         }
-        *temp_a1_2 = temp_v0;
+        D_800DF690[arg1].as_u32 = (u32)temp_v0;
         D_800DFF50[arg1] = arg0;
     }
     return temp_a3;
@@ -1361,6 +1329,12 @@ void func_800AA5C4(s32 arg0, u32 arg1, f32 arg2) {
 #ifdef NON_MATCHING
 // https://decomp.me/scratch/fS0Iu
 void func_800AA608(DObj *dobj, s32 arg1, f32 arg2, u32 model, f32 arg4) {
+    /* K&R, not a prototype: func_800A9250 is called with three arguments at
+     * line ~607 and FOUR at ~680, which no single prototype accepts. The
+     * file-scope declaration lives inside func_800A8DE4, so it is invisible
+     * here. */
+    extern u32 *func_800A9250();
+    u32 *func_800A9250(u32, s32);
     u32 *tmpPtr;
     u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
 
