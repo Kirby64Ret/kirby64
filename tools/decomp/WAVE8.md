@@ -274,6 +274,25 @@ Only once both TUs agree on every shared symbol is the move itself safe.
 Payoff is 14 jump-table functions at ~1.3 compiles each, the cheapest tier
 left, so it is worth doing properly.
 
+## MANAGER RULE: never guard a function a lane still has open
+
+Learned the hard way 2026-08-12. To unblock a gate I guarded
+`func_800B96A0` while the ovl1 lane was mid-edit on it. Its
+un-guard/test/re-guard cycle collided with my guard and produced **three
+stacked `#ifdef NON_MATCHING` and two `#else`/`#pragma`/`#endif` trios**
+around one function — the nested-guard failure mode, where the inner branch
+goes live and the ROM takes a draft. It surfaced as a compile error and the
+lane repaired it, but it could as easily have linked.
+
+So: the manager guards a function ONLY when the owning lane has confirmed
+`PAUSED`. If a gate is blocked by a lane that is still running, message the
+lane and let it guard its own function. The gate can wait a few minutes; a
+nested guard that links cannot be seen by verify.py.
+
+The same applies to any manager repair inside a lane's file. Every
+manager-side repair tonight that raced a live lane either had to be redone
+or made things worse; every one made against a paused lane was clean.
+
 ## Floors measured 2026-08-12 — screen for these BEFORE spending variants
 
 Every one of these was paid for tonight. A function matching any of them is

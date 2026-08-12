@@ -200,16 +200,16 @@ void init_save_file_maybe(s32 fileNum) {
     gSaveBuffer1.files[fileNum].bumperCropBumpRecord = 10;
     gSaveBuffer1.files[fileNum].checkerBoardChaseRecord = 2400;
     for (i = 0; i < 6; i++) {
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 0] = 0;
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 1] = 0;
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 2] = 0;
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 3] = 0;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] = 0;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] = 0;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] = 0;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] = 0;
     }
     for (i = 0; i < 8; i++) {
         gSaveBuffer1.files[fileNum].data34[i] = 0;
     }
     for (i = 0; i < 22; i++) {
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] = 0;
+        gSaveBuffer1.files[fileNum].enemyCard1E[i] = 0;
     }
     saveVerify(fileNum);
     saveSetFileChecksum(fileNum);
@@ -434,40 +434,40 @@ void saveVerify(s32 fileNum) {
         if (((u8 *) gSaveBuffer1.files[fileNum].data34)[i] != 0) {
             count += D_800BE5A8[i];
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 0] & 1) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] & 1) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 0] & 2) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] & 2) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 0] & 4) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] & 4) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 1] & 1) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] & 1) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 1] & 2) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] & 2) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 1] & 4) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] & 4) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 2] & 1) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] & 1) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 2] & 2) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] & 2) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 2] & 4) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] & 4) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 3] & 1) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] & 1) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 3] & 2) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] & 2) {
             count++;
         }
-        if (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 3] & 4) {
+        if (((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] & 4) {
             count++;
         }
         i++;
@@ -526,8 +526,6 @@ void func_800B96A0(s32 fileNum, SaveAction action);
 // if/else join, where IDO reuses the $v0 both branches leave it in -- the same
 // no-CSE divergence recorded on init_save_file_maybe. Everything after the join
 // is register-shifted by it.
-#ifdef NON_MATCHING
-#ifdef NON_MATCHING
 /* 206/364, in progress. Guarded by the manager so the fleet could commit;
    un-guard the moment verify.py prints MATCH. */
 #ifdef NON_MATCHING
@@ -573,66 +571,63 @@ void func_800B96A0(s32 fileNum, SaveAction action) {
     }
     for (i = 0; i < 6; i++) {
         if (action == SAVE_ACTION_LOAD) {
-            D_800D6BC8[i * 4 + 0] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 0];
+            D_800D6BC8[i * 4 + 0] = ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0];
         } else {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 0] = D_800D6BC8[i * 4 + 0];
+            ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] = D_800D6BC8[i * 4 + 0];
         }
         if (action == SAVE_ACTION_LOAD) {
-            D_800D6BC8[i * 4 + 1] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 1];
+            D_800D6BC8[i * 4 + 1] = ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1];
         } else {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 1] = D_800D6BC8[i * 4 + 1];
+            ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] = D_800D6BC8[i * 4 + 1];
         }
         if (action == SAVE_ACTION_LOAD) {
-            D_800D6BC8[i * 4 + 2] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 2];
+            D_800D6BC8[i * 4 + 2] = ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2];
         } else {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 2] = D_800D6BC8[i * 4 + 2];
+            ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] = D_800D6BC8[i * 4 + 2];
         }
         if (action == SAVE_ACTION_LOAD) {
-            D_800D6BC8[i * 4 + 3] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 3];
+            D_800D6BC8[i * 4 + 3] = ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3];
         } else {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 3] = D_800D6BC8[i * 4 + 3];
+            ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] = D_800D6BC8[i * 4 + 3];
         }
     }
     for (i = 0; i != 2; i++) {
         if (action == SAVE_ACTION_LOAD) {
-            D_800D6BC0[i * 4 + 0] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x44 + i * 4 + 0];
+            D_800D6BC0[i * 4 + 0] = gSaveBuffer1.files[fileNum].data34[i * 4 + 0];
         } else {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x44 + i * 4 + 0] = D_800D6BC0[i * 4 + 0];
+            gSaveBuffer1.files[fileNum].data34[i * 4 + 0] = D_800D6BC0[i * 4 + 0];
         }
         if (action == SAVE_ACTION_LOAD) {
-            D_800D6BC0[i * 4 + 1] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x44 + i * 4 + 1];
+            D_800D6BC0[i * 4 + 1] = gSaveBuffer1.files[fileNum].data34[i * 4 + 1];
         } else {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x44 + i * 4 + 1] = D_800D6BC0[i * 4 + 1];
+            gSaveBuffer1.files[fileNum].data34[i * 4 + 1] = D_800D6BC0[i * 4 + 1];
         }
         if (action == SAVE_ACTION_LOAD) {
-            D_800D6BC0[i * 4 + 2] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x44 + i * 4 + 2];
+            D_800D6BC0[i * 4 + 2] = gSaveBuffer1.files[fileNum].data34[i * 4 + 2];
         } else {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x44 + i * 4 + 2] = D_800D6BC0[i * 4 + 2];
+            gSaveBuffer1.files[fileNum].data34[i * 4 + 2] = D_800D6BC0[i * 4 + 2];
         }
         if (action == SAVE_ACTION_LOAD) {
-            D_800D6BC0[i * 4 + 3] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x44 + i * 4 + 3];
+            D_800D6BC0[i * 4 + 3] = gSaveBuffer1.files[fileNum].data34[i * 4 + 3];
         } else {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x44 + i * 4 + 3] = D_800D6BC0[i * 4 + 3];
+            gSaveBuffer1.files[fileNum].data34[i * 4 + 3] = D_800D6BC0[i * 4 + 3];
         }
     }
     if (action == SAVE_ACTION_LOAD) {
         for (i = 0; i < 22; i++) {
-            D_800D6C10[i * 4] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] & 3;
-            D_800D6C10[i * 4 + 1] = (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] >> 2) & 3;
-            D_800D6C10[i * 4 + 2] = (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] >> 4) & 3;
-            D_800D6C10[i * 4 + 3] = (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] >> 6) & 3;
+            D_800D6C10[i * 4] = gSaveBuffer1.files[fileNum].enemyCard1E[i] & 3;
+            D_800D6C10[i * 4 + 1] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 2) & 3;
+            D_800D6C10[i * 4 + 2] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 4) & 3;
+            D_800D6C10[i * 4 + 3] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 6) & 3;
         }
     } else {
         for (i = 0; i < 22; i++) {
-            ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] =
+            gSaveBuffer1.files[fileNum].enemyCard1E[i] =
                 (D_800D6C10[i * 4] & 3) | ((D_800D6C10[i * 4 + 1] & 3) << 2) |
                 ((D_800D6C10[i * 4 + 2] & 3) << 4) | (D_800D6C10[i * 4 + 3] << 6);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B96A0.s")
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B96A0.s")
 #endif
@@ -830,10 +825,10 @@ void func_800BA284(s32 fileNum) {
     s32 i;
 
     for (i = 0; i < 22; i++) {
-        D_800D6C10[i * 4] = ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] & 3;
-        D_800D6C10[i * 4 + 1] = (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] >> 2) & 3;
-        D_800D6C10[i * 4 + 2] = (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] >> 4) & 3;
-        D_800D6C10[i * 4 + 3] = (((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] >> 6) & 3;
+        D_800D6C10[i * 4] = gSaveBuffer1.files[fileNum].enemyCard1E[i] & 3;
+        D_800D6C10[i * 4 + 1] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 2) & 3;
+        D_800D6C10[i * 4 + 2] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 4) & 3;
+        D_800D6C10[i * 4 + 3] = (gSaveBuffer1.files[fileNum].enemyCard1E[i] >> 6) & 3;
     }
 }
 
@@ -848,7 +843,7 @@ void func_800BA40C(s32 fileNum) {
     s32 i;
 
     for (i = 0; i < 22; i++) {
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] =
+        gSaveBuffer1.files[fileNum].enemyCard1E[i] =
             (D_800D6C10[i * 4] & 3) | ((D_800D6C10[i * 4 + 1] & 3) << 2) |
             ((D_800D6C10[i * 4 + 2] & 3) << 4) | (D_800D6C10[i * 4 + 3] << 6);
     }
@@ -879,10 +874,10 @@ void saveForceCompleteFile(s32 fileNum) {
     gSaveBuffer1.files[fileNum].percentComplete = 0;
     gSaveBuffer1.files[fileNum].soundSetting = 1;
     for (i = 0; i < 6; i++) {
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 0] = 7;
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 1] = 7;
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 2] = 7;
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x4C + i * 4 + 3] = 7;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 0] = 7;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 1] = 7;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 2] = 7;
+        ((u8 *) gSaveBuffer1.files[fileNum].shards)[i * 4 + 3] = 7;
     }
     ((u8 *) gSaveBuffer1.files[fileNum].shards)[23] = 0;
     ((u8 *) gSaveBuffer1.files[fileNum].shards)[3] = 0;
@@ -893,7 +888,7 @@ void saveForceCompleteFile(s32 fileNum) {
         gSaveBuffer1.files[fileNum].data34[i] = 1;
     }
     for (i = 0; i < 21; i++) {
-        ((u8 *) &gSaveBuffer1)[fileNum * 0x58 + 0x2E + i] = 0x55;
+        gSaveBuffer1.files[fileNum].enemyCard1E[i] = 0x55;
     }
     saveVerify(fileNum);
     saveSetFileChecksum(fileNum);
