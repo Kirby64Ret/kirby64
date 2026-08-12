@@ -117,6 +117,13 @@ s32 func_801F111C_ovl10(void) {
    IDO canonicalises this add), a cast on either side, extra parens, a named
    local for the array element, `v +=`, `v = v +`, and the ternary form. */
 #ifdef NON_MATCHING
+/* 1/64 in place (scan.py's preprocessed copy scores it 4 -- believe the
+   in-file number). The single defect is the operand order of one add: the ROM
+   has `add.s $f10, $f0, $f8` ($f0 = v, $f8 = the D_800E17D0 load), IDO emits
+   the two the other way round. Swept, all identical or worse: both source
+   orders (IDO canonicalises this add), the ternary written inline, a named
+   local for the array element loaded before the if (36) and after it (18),
+   and `v = v + ...; store v;` (10). */
 void func_801F1454_ovl10(struct GObj *arg0) {
     f32 v;
 
@@ -210,29 +217,19 @@ void func_801F1CA0_ovl10(GObj *arg0, s32 arg1) {
     curObjSleepForever();
 }
 
-#ifdef NON_MATCHING
-// 15/58 diffs: loop and arithmetic exact; the two hoisted array bases take
-// $s3/$s4 the other way round and the prologue saves $s0 last.
 s32 func_801F1D60_ovl10(Vector vec, s32 count, f32 dist) {
     s32 i;
-    s32 *p;
 
-    if (count > 0) {
-        i = 0;
-        p = D_801F4D68_ovl10;
-        do {
-            if (sqrtf(((vec.z - gEntitiesNextPosZArray[*p]) * (vec.z - gEntitiesNextPosZArray[*p])) + ((vec.x - gEntitiesNextPosXArray[*p]) * (vec.x - gEntitiesNextPosXArray[*p]))) < dist) {
-                return 1;
-            }
-            i++;
-            p++;
-        } while (i != count);
+    for (i = 0; i < count; i++) {
+        if (sqrtf(((vec.x - gEntitiesNextPosXArray[D_801F4D68_ovl10[i]]) *
+                   (vec.x - gEntitiesNextPosXArray[D_801F4D68_ovl10[i]])) +
+                  ((vec.z - gEntitiesNextPosZArray[D_801F4D68_ovl10[i]]) *
+                   (vec.z - gEntitiesNextPosZArray[D_801F4D68_ovl10[i]]))) < dist) {
+            return 1;
+        }
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1D60_ovl10.s")
-#endif
 extern u32 D_801F4D60_ovl10;
 /* D_801F4CAC_ovl10 = 3.1415927f : now emitted by this TU */
 /* D_801F4CB0_ovl10 = 3.1415927f : now emitted by this TU */
