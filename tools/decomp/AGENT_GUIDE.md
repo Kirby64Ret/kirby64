@@ -690,6 +690,64 @@ and +0xA0, and `*(s32 *)((u8 *) &D_8012E7E8 + 8) = 0;` is what the ROM wants
 where the listing says `%lo(D_8012E7E8 + 0x8)`. Always check the MAP before
 concluding a symbol is missing.
 
+## Migrating a segment's rodata: how to find the boundaries, and the one silent failure
+
+Adding a dotted `.rodata, seg/file` entry converts a segment from the extern
+model to the literal model. It is worth more than any individual function,
+because it turns a whole class of structurally impossible pragmas -- every
+function with a jump table -- into ordinary work. ovl16 and ovl17 were migrated
+this way; the method below is the one that worked.
+
+**Finding the boundary, without guessing.** Decode the base ROM's own %hi/%lo
+pairs across the segment's text and map every rodata symbol to its referencing
+function. .data and .rodata are each emitted in SOURCE ORDER, so the boundary
+is the point where the referencing-function address RESETS to the top of the
+file. In ovl16 the addresses climb monotonically to the last function and then
+snap back; that snap is the .rodata start. With several C files in a segment,
+the block partitions by which TU each referencing function lives in.
+
+Two independent cross-checks, both of which caught a wrong candidate:
+
+  * Every boundary must be **16-byte aligned**, because kirby.ld uses
+    SUBALIGN(16). In ovl17 this eliminated 0x801E55E8 (8 mod 16) in favour of
+    0x801E55B0 outright -- the alternative could not have linked.
+  * The LAST block must end exactly at the segment's declared **bss vram**.
+
+**Pay the cost in the same commit.** After migration the asm data blob no
+longer defines those symbols, so every ALREADY-MATCHED function that referenced
+one as `extern` stops linking, and its constant must be rewritten as a literal.
+That was 38 functions for ovl16+ovl17. There is no intermediate state that
+links; do not split it across commits.
+
+**THE SILENT FAILURE: spimdisasm refuses to migrate some symbols, and the
+refusal is STICKY.** `SymbolRodata.isMaybeConstVariable()` returns True for any
+float symbol wider than one word whose later words are non-zero, and
+`shouldMigrate()` then refuses it under IDO's compiler profile. Worse,
+`_updateMigrableSymbolsSets` sets `lateRodataMigratedSomewhereElse` as soon as
+a referenced-but-unmigratable symbol appears after a migrated one -- so **ONE
+rejected symbol silently drops every LATER rodata symbol of that same
+function.** D_801F001C_ovl16 cost func_801E62C0_ovl16 its next eight, and
+splat's own "gap was detected in migrated rodata symbols" warning did NOT fire.
+
+Force it in `tools/symbol_addrs.txt`:
+
+    D_801F001C_ovl16 = 0x801F001C; // segment:ovl16 force_migration:True
+
+**`segment:` is load-bearing.** These overlays have `exclusive_ram_id`, so an
+unscoped symbol_addrs entry lands in the global context, never reaches the
+overlay's context, and is silently inert -- the line parses, splat runs, and
+nothing happens. No warning either way.
+
+**Detection recipe**, since the built-in warning cannot be relied on: take the
+pre-migration asm/data blob, list every symbol in the migrated range, and
+subtract the symbols now defined inside a listing whose function is still a
+pragma. What remains must be exactly the symbols owned by functions already in
+C. Anything else is a refusal.
+
+**A migration adds no `c` subsegment, so no listing changes location** and the
+stale-duplicate problem below cannot occur. Confirm with `diff -rq` over asm/:
+files should DIFFER, with none added or removed.
+
 ## splat leaves STALE listings behind when a subsegment moves
 
 Adding a subsegment to kirby64.yaml and re-running `splat split` writes the new
