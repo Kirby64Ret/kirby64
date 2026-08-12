@@ -145,8 +145,68 @@ def run_one(cf, fn, seconds, jobs):
     return False
 
 
+def scan(q, jobs):
+    """Print every draft's BASE score without permuting it.
+
+    permuter computes the base score in about a second -- it is one compile
+    and one diff -- and then spends the rest of its budget searching. A pass
+    that stops right after the base score therefore measures the whole tree in
+    minutes, and that measurement is the thing every lane currently spends
+    tokens re-deriving one function at a time.
+
+    Two things fall out of it that are worth more than the ranking itself:
+
+      score 0   the draft ALREADY MATCHES and is sitting behind a guard for
+                some other reason -- almost always a padding trap, which is a
+                solved class as of tonight. Two turned up in the first five
+                entries of the real queue.
+      low N     the tier where hand-work actually lands. Measured tonight:
+                drafts already under 20 diffs closed at 9 of 16, and drafts
+                above that at 2 of 20. Lanes should be spending their budget
+                on the first group and guarding the second.
+    """
+    # A SEPARATE DIRECTORY NAMESPACE, and this is not tidiness.
+    #
+    # Both modes build their working directory at perm/<function> and both
+    # rmtree it first, so running a scan while a permute pass is going deletes
+    # the directory the pass is standing in. Measured: the queue died with
+    # FileNotFoundError on its own permuter.out mid-function. They are meant to
+    # run together -- the scan is what tells you where to point the pass -- so
+    # they cannot share a namespace.
+    scandir = os.path.join(PERM, '_scan')
+    os.makedirs(scandir, exist_ok=True)
+
+    print(f'{"base":>6}  {"insns":>5}  function                       file')
+    for n, cf, fn in q:
+        d = os.path.join(scandir, fn)
+        shutil.rmtree(d, ignore_errors=True)
+        r = subprocess.run([sys.executable, os.path.join(TOOLS, 'setup_permuter.py'),
+                            cf, fn, scandir], capture_output=True, text=True)
+        if r.returncode != 0 or not os.path.isdir(d):
+            print(f'{"setup":>6}  {n:5d}  {fn:30s} {cf}', flush=True)
+            continue
+        logf = os.path.join(d, 'scan.out')
+        with open(logf, 'wb') as fh:
+            p = subprocess.Popen(
+                [sys.executable, os.path.join(TOOLS, 'decomp-permuter', 'permuter.py'),
+                 '-j', str(jobs), '--better-only', '--stop-on-zero', d],
+                stdout=fh, stderr=subprocess.STDOUT)
+            # 25s is generous for one compile plus one diff even on a cold
+            # cache; anything slower is a broken directory, not a slow one.
+            try:
+                p.wait(timeout=25)
+            except subprocess.TimeoutExpired:
+                p.kill()
+                p.wait()
+        out = open(logf, errors='replace').read().replace('\r', '\n')
+        m = re.search(r'base score = (\d+)', out)
+        print(f'{m.group(1) if m else "?":>6}  {n:5d}  {fn:30s} {cf}', flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument('--scan', action='store_true',
+                    help='measure every draft\'s base score and exit; do not permute')
     ap.add_argument('--seconds', type=int, default=300)
     ap.add_argument('--jobs', type=int, default=2)
     ap.add_argument('--max-insns', type=int, default=400)
@@ -159,6 +219,10 @@ def main():
         for n, cf, fn in q:
             print(f'{n:5d}  {fn:30s} {cf}')
         print(f'\n{len(q)} guarded drafts at or under {a.max_insns} instructions')
+        return
+
+    if a.scan:
+        scan(q, a.jobs)
         return
 
     log(f'=== queue: {len(q)} drafts, {a.seconds}s each, -j{a.jobs} ===')

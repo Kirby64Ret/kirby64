@@ -206,10 +206,51 @@ def obj_functions(obj):
         i += 1
     return funcs
 
+SECBASE = {}
+
+def load_secbase(cfile):
+    """vram base of this TU's own .text and .rodata, from the yaml subsegments.
+
+    A migrated-rodata TU emits ANONYMOUS references -- objdump prints
+    `<.rodata>` with the offset in the instruction's immediate, because the
+    relocation is against the section symbol rather than a named one. Without a
+    base address those cannot be compared at all, which left this tool with
+    only two bad options: count every one as a diff (making every migrated
+    function look broken -- 19 spurious diffs in one already-matched file), or
+    report and skip them (which is what it did, and which means a WRONG FLOAT
+    LITERAL still reports MATCH, since the value lives entirely in the low half
+    the LO16 comparison already declines to check).
+
+    Resolving the section base closes both. The offset is then an absolute
+    address and gets compared like any named symbol.
+    """
+    SECBASE.clear()
+    name = cfile[len('src/'):-2]
+    seg = name.split('/')[0]
+    y = open('kirby64.yaml').read()
+    m = re.search(r'- name: ' + re.escape(seg) + r'\n(.*?)(?=\n  - name: |\Z)',
+                  y, re.S)
+    if not m:
+        return
+    blk = m.group(1)
+    ms = re.search(r'start: (0x[0-9A-Fa-f]+)', blk)
+    mv = re.search(r'vram: (0x[0-9A-Fa-f]+)', blk)
+    if not (ms and mv):
+        return
+    start, vram = int(ms.group(1), 16), int(mv.group(1), 16)
+    for kind, sec in (('c', '.text'), (r'\.rodata', '.rodata')):
+        mm = re.search(r'- \[(0x[0-9A-Fa-f]+), ' + kind + r', ' +
+                       re.escape(name) + r'\]', blk)
+        if mm:
+            SECBASE[sec] = int(mm.group(1), 16) - start + vram
+
+
 def resolve_sym_expr(expr):
     """Resolve 'D_800D6B54 + 0x8' / 'func_80023464' / 'name+0x4' to an absolute
     address, or None if unknown. D_/func_ names encode their own address."""
     expr = expr.strip().replace(' ', '')
+    if expr in SECBASE:
+        return SECBASE[expr]
     m = re.match(r'([A-Za-z_]\w*)((?:[+-]0x[0-9A-Fa-f]+|[+-]\d+)?)$', expr)
     if not m:
         return None
@@ -247,6 +288,7 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
         # MATCH. Report it instead of giving a meaningless pass.
         return None, (f'{func}: STILL A PRAGMA -- not decompiled yet. A MATCH here '
                       f'would be circular (its bytes come from the .s file).')
+    load_secbase(cfile)
     listing = find_listing(func)
     if listing is not None:
         # A listing with words after its LAST .size carries the translation

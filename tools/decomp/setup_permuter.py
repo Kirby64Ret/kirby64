@@ -69,7 +69,13 @@ def unguard(text, func):
 
 def main():
     cfile, func = sys.argv[1], sys.argv[2]
-    outdir = f'{S}/perm/{func}'
+    # An optional third argument names the parent directory. permute_queue.py
+    # runs a base-score scan alongside a permute pass, and both rmtree their
+    # working directory before rebuilding it -- sharing perm/<func> means the
+    # scan deletes the directory the pass is standing in, which is exactly how
+    # a running queue died with FileNotFoundError on its own log file.
+    parent = sys.argv[3] if len(sys.argv) > 3 else f'{S}/perm'
+    outdir = f'{parent}/{func}'
     os.makedirs(outdir, exist_ok=True)
 
     text = open(cfile).read()
