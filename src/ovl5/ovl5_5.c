@@ -516,7 +516,19 @@ void func_80176EFC_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017712C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801773C4_ovl5.s")
+void func_801773C4_ovl5(struct GObj *arg0) {
+    if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (arg0->data.dobj != NULL)) {
+        arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId] + D_800E2410[omCurrentObj->objId];
+        arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+        arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+        arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+        arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+        arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+        arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80177524_ovl5.s")
 

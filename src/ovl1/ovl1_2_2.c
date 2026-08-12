@@ -144,7 +144,40 @@ void func_800A7870(SoundHandle **arg0, u16 *arg1) {
     *arg1 = 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2_2/func_800A78D0.s")
+extern s32 D_800D6A38[];
+extern s32 D_800D6AB8[];
+extern s32 D_800D6AD8[];
+GObj *func_8009B99C(s32);
+GObj *func_800A04B8(s32);
+void func_8009E834(void);
+void func_800A09AC(void);
+s32 func_8009B550(s32, s32);
+void func_800A7ABC(s32);
+
+void func_800A78D0(s32 arg0) {
+    GObj *obj;
+    s32 *p;
+
+    D_800D6FB4 = func_8009B99C(0x100);
+    D_800D6FB8 = func_800A04B8(0x40);
+    omGDeleteObj(D_800D6FB4);
+    omGDeleteObj(D_800D6FB8);
+    D_800D6FB4 = D_800D6FB8 = HS64_omMakeGObj(-7, 0, 0x18, 0);
+    omCreateProcess(D_800D6FB8, &func_8009E834, 1, 0);
+    omCreateProcess(D_800D6FB8, &func_800A09AC, 1, 0);
+    omCreateProcess(D_800D6FB8, &func_8009E834, 1, 0);
+    omCreateProcess(D_800D6FB8, &func_800A09AC, 1, 0);
+    obj = HS64_omMakeGObj(0, 0, 0x18, 0x80000000);
+    omLinkGObjDL(obj, &func_800A7ABC, 0x10, 0xC, -1);
+    obj->dlLinkBitMask = 0xF;
+    func_8009B550(0x10, 0xBC);
+    for (arg0 = 0; arg0 < 8; arg0++) {
+        D_800D6AB8[arg0] = 0;
+    }
+    for (arg0 = 0; arg0 < 8; arg0++) {
+        D_800D6A38[arg0] = 0;
+    }
+}
 
 void func_800A7A40(void) {
     func_800A7A70(1, 0x30007, 0x30008);
