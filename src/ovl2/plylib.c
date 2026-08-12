@@ -2661,7 +2661,7 @@ s32 func_801217B8(void) {
 }
 
 #ifdef MIPS_TO_C
-s32 func_80121828(f32 arg0, f32 arg1, ? arg2, f32 arg3) {
+s32 func_80121828(f32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     u32 temp_a0;
     u32 temp_a0_2;
 

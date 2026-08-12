@@ -276,7 +276,50 @@ s32 func_8016725C_ovl5(s32 arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80167374_ovl5.s")
 
+#ifdef NON_MATCHING
+// 52/145, one instruction short. Case bodies are already in the ROM's
+// 0,1,3,2 source order. Residue: each arm's `A && B` -- the ROM zeroes $v0
+// first and sets 1 only on the fully-taken path, then normalises 0/1 a
+// second time; IDO short-circuits with an optimistic `li $v0,1`.
+// `!= 0`, `? 1 : 0` and an explicit flag local all measure worse (56/78/102).
+s32 func_80165900_ovl5(s32);
+Vector *func_801659DC_ovl5(Vector *, s32);
+Vector *func_8016596C_ovl5(Vector *, s32);
+s32 func_80165AD0_ovl5(s32);
+s32 func_8016A61C_ovl5(s32, s32);
+
+s32 func_80167650_ovl5(s32 arg0) {
+    s32 a;
+    s32 w;
+    s32 b;
+    Vector sp30;
+    Vector sp24;
+
+    a = func_80165F1C_ovl5(arg0);
+    b = func_80165AD0_ovl5(arg0);
+    w = func_8016A61C_ovl5(a, b);
+    if (w != 0x29A) {
+        if (func_80165900_ovl5(w) != 0 || D_800E9C60[D_8018E2A0_ovl5[w]] != 0) {
+            return 0;
+        }
+    }
+    func_801659DC_ovl5(&sp30, arg0);
+    func_8016596C_ovl5(&sp24, a);
+    switch (b) {
+    case 0:
+        return (sp24.z + 150.0f) - 30.0f <= sp30.z && sp30.z <= sp24.z + 150.0f;
+    case 1:
+        return sp24.z - 150.0f <= sp30.z && sp30.z <= (sp24.z - 150.0f) + 30.0f;
+    case 3:
+        return sp24.x - 150.0f <= sp30.x && sp30.x <= (sp24.x - 150.0f) + 30.0f;
+    case 2:
+        return (sp24.x + 150.0f) - 30.0f <= sp30.x && sp30.x <= sp24.x + 150.0f;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80167650_ovl5.s")
+#endif
 
 s32 func_80167898_ovl5(s32 arg0) {
     s32 temp;
@@ -296,9 +339,80 @@ s32 func_80167898_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016792C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_801686E4_ovl5.s")
+extern u8 D_8018E3C4_ovl5;
+extern u8 D_8018E441_ovl5;
+void func_8016A2B8_ovl5(s32);
+s32 func_80167898_ovl5(s32);
+void func_801671E8_ovl5(s32);
+s32 func_80165AD0_ovl5(s32);
+void func_80167374_ovl5(s32, s32);
 
+void func_801686E4_ovl5(GObj *arg0) {
+    s32 t = ((s32 *) D_800E9AA0)[omCurrentObj->objId];
+
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        D_800E98E0[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId] - 1;
+        return;
+    }
+    if (D_8018E3C4_ovl5 != 0) {
+        return;
+    }
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        return;
+    }
+    if (D_8018E3C8_ovl5[t] != 0) {
+        func_8016A2B8_ovl5(t);
+        return;
+    }
+    if (gPlayerControllers[t].buttonPressed & 0x8000) {
+        D_800E9C60[omCurrentObj->objId] = 1;
+        return;
+    }
+    if (D_8018E441_ovl5 != 0 && (gPlayerControllers[t].buttonPressed & 0x4000)) {
+        D_800E9C60[omCurrentObj->objId] = 3;
+    }
+    if (func_80167898_ovl5(t) != 0) {
+        func_801671E8_ovl5(t);
+        func_80167374_ovl5(t, func_80165AD0_ovl5(t));
+    }
+}
+
+#ifdef NON_MATCHING
+// 4 diffs: `r` lands at 0x1C, the ROM puts it at 0x18 (one word of frame
+// padding between sp20 and r). Any extra local or pad grows the frame to 0x38.
+extern f32 D_8018D6F0_ovl5;
+extern char D_8018D61C_ovl5[];
+s32 func_8016A61C_ovl5(s32, s32);
+Vector *func_8016596C_ovl5(Vector *, s32);
+f32 random_soft_f32(void);
+s32 random_soft_s32_range(s32);
+
+f32 func_80168804_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    s32 v;
+    Vector sp20;
+    f32 r;
+
+    v = func_8016A61C_ovl5(arg1, arg2);
+    if (v == 0x29A) {
+        return D_8018D6F0_ovl5;
+    }
+    func_8016596C_ovl5(&sp20, v);
+    switch (arg2) {
+    case 0:
+    case 1:
+        r = random_soft_f32();
+        return (f32) random_soft_s32_range(2) * -1.0f * (r * 75.0f) + sp20.z;
+    case 2:
+    case 3:
+        r = random_soft_f32();
+        return (f32) random_soft_s32_range(2) * -1.0f * (r * 75.0f) + sp20.x;
+    default:
+        utilPrintf(D_8018D61C_ovl5, arg2);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168804_ovl5.s")
+#endif
 
 s32 func_80168928_ovl5(s32 arg0, s32 arg1, f32 arg2) {
     Vector sp1C;
@@ -437,7 +551,44 @@ void func_8016BEB0_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
 }
 
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016BFF0_ovl5.s")
+void func_8016C208_ovl5(GObj *);
+s32 func_800AF230(void);
+void func_800AF408(void);
+
+void func_8016BFF0_ovl5(GObj *arg0, s32 arg1) {
+    s32 t;
+    s32 i;
+    s32 pad[4];
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800DF150[omCurrentObj->objId] = func_8016C208_ovl5;
+    func_800A9864((void *) 0x300A9, 0x1869F, 0x10);
+    t = func_80165F1C_ovl5(arg1);
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = t;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_8018E2A0_ovl5[t]];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 20.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E2A0_ovl5[t]];
+    func_800AA018((void *) 0x3009B);
+    func_800AA018((void *) 0x3009C);
+    D_800E9C60[D_8018E2A0_ovl5[t]] = 1;
+    for (i = 0; i != 30; i++) {
+        if (D_8018E3C4_ovl5 != 0) {
+            curObjSleepForever();
+        }
+        ohSleep(1);
+    }
+    func_800AA018((void *) 0x3009D);
+    func_800AA018((void *) 0x3009E);
+    while (func_800AF230() == 0) {
+        if (D_8018E3C4_ovl5 != 0) {
+            func_800AF408();
+            curObjSleepForever();
+        }
+        ohSleep(1);
+    }
+    D_800E9C60[D_8018E2A0_ovl5[t]] = 0;
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 void func_8016C208_ovl5(GObj *arg0) {
     if (func_80165F1C_ovl5(D_800E98E0[omCurrentObj->objId]) != D_800E9AA0[omCurrentObj->objId].as_s32) {
@@ -446,7 +597,36 @@ void func_8016C208_ovl5(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C28C_ovl5.s")
+void func_8016C410_ovl5(GObj *);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800B1900(u16);
+
+void func_8016C28C_ovl5(GObj *arg0, s32 arg1) {
+    s32 n;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800DF150[omCurrentObj->objId] = func_8016C410_ovl5;
+    func_800A9864((void *) 0x300AA, 0x1869F, 0x10);
+    func_800AA018((void *) 0x3009F);
+    n = 0;
+    while (1 == D_800E9C60[D_8018E268_ovl5[arg1]]) {
+        if (n != 0) {
+            n--;
+            if (n == 0) {
+                func_800AECC0(2.0f);
+                func_800AED20(2.0f);
+            }
+        }
+        if (20.0f == arg0->animTimer) {
+            func_800AECC0(0.0f);
+            func_800AED20(0.0f);
+            n = 10;
+        }
+        ohSleep(1);
+    }
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 void func_8016C410_ovl5(GObj *arg0) {
     Vector sp24;
@@ -628,7 +808,64 @@ void func_8016E650_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     spobj->yOffset = arg3;
 }
 
+#ifdef NON_MATCHING
+// 88/120: the ROM keeps every value in a saved register (frame 0x48, no stack
+// locals, $fp = &D_8018E288_ovl5[arg1]); IDO spills that pointer and three
+// more, frame 0x68. An explicit `s32 *pv` local does not move it.
+extern s32 D_8018E288_ovl5[];
+extern struct UnkStruct8015C740 D_80186DC8_ovl5;
+extern f32 D_80186DE8_ovl5[];
+extern f32 D_80186E10_ovl5[];
+extern f32 D_80186C88_ovl5[][2];
+SPObj *func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
+void func_800ACBDC(GObj *);
+void func_800AD1A0(void);
+
+void func_8016E6F0_ovl5(GObj *arg0, s32 arg1) {
+    s32 *pv = &D_8018E288_ovl5[arg1];
+    s32 prev = *pv + 1;
+    f32 *base;
+    f32 *p;
+    f32 *end;
+    SPObj *sp;
+    s32 v;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DDA90[omCurrentObj->objId] = 0x24;
+    omLinkGObjDL(arg0, &func_800AD1A0, 10, 0x80000000, 10);
+    while (1) {
+        v = *pv;
+        if (prev != v) {
+            if (v == 0) {
+                func_800B1900(((u16 *) omCurrentObj)[1]);
+            }
+            prev = v;
+            base = D_80186C88_ovl5[arg1];
+            func_800ACBDC(arg0);
+            p = D_80186DE8_ovl5;
+            end = &D_80186DE8_ovl5[prev * 2];
+            do {
+                sp = func_8015C740_ovl5(arg0, &D_80186DC8_ovl5);
+                sp->xOffset = p[0] + base[0];
+                sp->yOffset = p[1] + base[1];
+                if (!(p < end)) {
+                    sp->primColorRed = 100;
+                    sp->primColorGreen = 100;
+                    sp->primColorBlue = 100;
+                    sp->envColorRed = 0;
+                    sp->envColorGreen = 0;
+                    sp->envColorBlue = 0;
+                }
+                p += 2;
+            } while (p != D_80186E10_ovl5);
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016E6F0_ovl5.s")
+#endif
 
 void func_8016E8D0_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
     s32 sp34;

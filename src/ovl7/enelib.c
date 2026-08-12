@@ -851,7 +851,7 @@ void func_8019A62C_ovl7(s32 arg0) {
             *temp_v1 = -*temp_v1;
             temp_v0_2 = &D_800E6A10[omCurrentObj->objId];
             *temp_v0_2 = -*temp_v0_2;
-            func_8019BC94_ovl7(0, &D_800E64D0[temp_v0], omCurrentObj, D_800E6A10);
+            func_8019BC94_ovl7();
             return;
         }
         *temp_a0 = 0.0f;
@@ -1498,7 +1498,7 @@ void eneTurnCommon(s32 arg0) {
             }
             *temp_v0_2 = var_f0_2 * D_800E6A10[temp_a1_3];
             temp_t0->unk3C = 0;
-            func_8019BC94_ovl7(0, temp_a0, temp_a1_3 * 4, var_a2, var_a3);
+            func_8019BC94_ovl7();
             return;
         }
         if ((var_a2 % 2) == 1) {
@@ -1565,7 +1565,7 @@ block_29:
         } else {
             *(D_800E9020 + var_a1) = 0.0f;
             temp_t0->unk3C = 0;
-            func_8019BC94_ovl7(temp_a0_2, var_a1, var_a2, D_800E9020);
+            func_8019BC94_ovl7();
         }
     }
 }
@@ -1632,7 +1632,7 @@ void eneTurnCommon2(s32 arg0) {
             }
             *temp_v0_2 = var_f2_2 * D_800E6A10[temp_a1_3];
             temp_a3->unk3C = 0;
-            func_8019BC94_ovl7(0, temp_a0, temp_a1_3 * 4, var_a2, temp_a3);
+            func_8019BC94_ovl7();
             return;
         }
         if ((var_a2 % 2) == 1) {
@@ -1682,7 +1682,7 @@ void eneTurnCommon2(s32 arg0) {
         } else {
             *(D_800E9020 + var_a1) = 0.0f;
             temp_a3->unk3C = 0;
-            func_8019BC94_ovl7(var_a0, var_a1, var_a2, temp_a3);
+            func_8019BC94_ovl7();
         }
     }
 }
@@ -1799,7 +1799,7 @@ void func_8019C9B0_ovl7(f32 arg0, u8 arg1) {
         if (temp_v0 == 1) {
             arg1 = var_a1;
             sp1C = temp_a2;
-            func_8019C79C_ovl7(&omCurrentObj, var_a1, temp_a2);
+            func_8019C79C_ovl7();
             var_a1 = arg1;
         }
         if (var_a1 != 1) {
@@ -2154,7 +2154,7 @@ block_19:
         } else {
             temp_a2->unk3C = 0;
             D_800E9020[omCurrentObj->objId] = 0.0f;
-            func_8019BC94_ovl7(temp_a2->unk3C, temp_a1, temp_a2, &omCurrentObj);
+            func_8019BC94_ovl7();
         }
     }
 }

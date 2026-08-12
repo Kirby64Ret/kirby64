@@ -1123,17 +1123,16 @@ void func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9FDC.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-f32 func_800FA1D4(void *arg0, ? arg1, s32 arg2) {
-    ? sp44;
+#ifdef NON_MATCHING
+f32 func_800FA1D4(struct Unk80129114_4_4 *arg0, Vector *arg1, s32 arg2) {
+    Vector sp44;
     f32 temp_f0;
     f32 var_f20;
     s16 temp_s4;
     s32 var_s0;
     s32 var_s1;
     s32 var_s3;
-    void *temp_t7;
+    Vector *temp_t7;
 
     temp_s4 = arg0->unk2;
     var_f20 = 1000000.0f;
@@ -1142,10 +1141,10 @@ f32 func_800FA1D4(void *arg0, ? arg1, s32 arg2) {
     if (temp_s4 > 0) {
         var_s0 = 0;
         do {
-            temp_t7 = arg0->unk8 + var_s0;
-            sp44.unk0 = temp_t7->unk0;
-            sp44.unk4 = temp_t7->unk4;
-            sp44.unk8 = temp_t7->unk8;
+            temp_t7 = (Vector *) ((u8 *) arg0->unk8 + var_s0);
+            sp44.x = temp_t7->x;
+            sp44.y = temp_t7->y;
+            sp44.z = temp_t7->z;
             temp_f0 = lbvector_DiffLen(arg1, &sp44);
             if (temp_f0 < var_f20) {
                 var_f20 = temp_f0;
@@ -1163,8 +1162,6 @@ f32 func_800FA1D4(void *arg0, ? arg1, s32 arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA1D4.s")
 #endif
-
-
 void func_800FA2D4(struct Ovl2CamState *arg0, struct Ovl2CamOut *arg1) {
     Camera *cam;
     f32 temp_f0;
