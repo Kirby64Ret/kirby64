@@ -29,14 +29,22 @@ def GetNonMatchingFunctions(files):
     functions = []
 
     for file in files:
+        # READ ONCE. The original called f.read() twice on the same handle;
+        # the second call returns "" because the file position is already at
+        # EOF, so UNTOUCHED_PATTERN -- the pattern that matches EVERY pragma,
+        # and therefore the one that does almost all the work -- ran against
+        # an empty string and never matched anything. Only the guarded drafts
+        # were ever counted: 460 pragmas seen out of 1,248 present.
         with open(file) as f:
-            functions += re.findall(NON_MATCHING_PATTERN, f.read(), re.DOTALL)
-            functions += re.findall(UNTOUCHED_PATTERN, f.read(), re.DOTALL)
+            text = f.read()
+        functions += re.findall(NON_MATCHING_PATTERN, text, re.DOTALL)
+        functions += re.findall(UNTOUCHED_PATTERN, text, re.DOTALL)
         if not args.matching:
-            with open(file) as f:
-                functions += re.findall(M2C_PATTERN, f.read(), re.DOTALL)
+            functions += re.findall(M2C_PATTERN, text, re.DOTALL)
 
-    return functions
+    # `in` is tested against this 1,248-entry collection once per scaffold
+    # file; a set keeps that from being 3,838 linear scans.
+    return set(functions)
 
 def ReadAllLines(fileName):
     lineList = list()
@@ -49,15 +57,43 @@ def GetFiles(path, ext):
     files = glob.glob(f"{path}/**/*{ext}", recursive=True)
     return files
 
-nonMatchingFunctions = GetNonMatchingFunctions(GetFiles("src", ".c")) if not args.matching else []
+# Built in BOTH modes. It used to be [] under --matching, which was coherent
+# with the old `not in` test and is nonsense under `in`: an empty set means no
+# function is behind a pragma, so --matching reported 99.8%.
+#
+# The two modes barely differ now, and that is correct rather than a
+# simplification lost. A function is either compiled from C or pulled in by
+# #pragma GLOBAL_ASM; for a MATCHING decomp those are the same question, since
+# a byte-exact ROM is the only thing that lets the pragma be removed. The flag
+# now only controls whether a MIPS_TO_C draft sitting beside a pragma counts
+# as progress toward "decompiled" -- it never counts toward "matched".
+nonMatchingFunctions = GetNonMatchingFunctions(GetFiles("src", ".c"))
 
 def GetNonMatchingSize(path):
+    """Bytes still compiled from assembly rather than from C.
+
+    THE TEST IS `in`, NOT `not in`, AND THAT IS A FIX.
+
+    Upstream deletes a function's .s file when the function lands, so every
+    file left under asm/nonmatchings is pending and the original `not in`
+    test -- "files on disk that no pragma references" -- caught only stale
+    leftovers.
+
+    This tree does not delete them. The scaffold was reconstructed whole from
+    asm.old so that the build works with any subset decompiled, which means
+    the unreferenced files are precisely the FINISHED ones. Under `not in`
+    the script counted every completed function as still outstanding and then
+    subtracted it from src, reporting 20% for a tree that was at 34%.
+
+    A .s file is included here if and only if a #pragma GLOBAL_ASM still
+    pulls it into the build -- which is the actual question being asked.
+    """
     size = 0
 
     asmFiles = GetFiles(path, ".s")
 
     for asmFilePath in asmFiles:
-        if asmFilePath not in nonMatchingFunctions:
+        if asmFilePath in nonMatchingFunctions:
             asmLines = ReadAllLines(asmFilePath)
 
             for asmLine in asmLines:
