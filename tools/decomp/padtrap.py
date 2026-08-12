@@ -44,6 +44,20 @@ kirby64.yaml (rendered `. += 0x10;`). See AGENT_GUIDE.md, section "THE
 'MID-TU PADDING TRAP' CLASS IS NOT A TRAP". Trap-and-last-in-subsegment =>
 needs a pad subsegment. Trap-and-interior => the `c` subsegment is really two
 translation units and the boundary is wrong.
+
+UPDATE 2 (wave 14): 'benign' is ALSO position-dependent, and for the same
+reason. The "a 1-3 nop tail is put straight back by the 16-byte alignment"
+derivation only holds for the LAST function of a translation unit; nothing
+re-aligns inside one IDO object, so an INTERIOR 1-3 nop tail marks an object
+boundary just as a 4+ word tail does. Read the verdict together with position:
+
+    last in `c` subsegment  + trap   -> add a `pad` subsegment
+    last in `c` subsegment  + benign -> genuinely harmless
+    interior                + either -> the `c` subsegment is two TUs; split it
+
+and when the residue is exactly align16(end) - end, splitting is the WHOLE fix:
+kirby.ld's SUBALIGN(16) emits the fill and a `pad` entry would double it.
+Twelve functions were converted this way in wave 14, PAD 0 for seven of them.
 """
 
 ALIGN_WORDS = 4          # .text aligns to 16 bytes; measured, see above.

@@ -1798,7 +1798,12 @@ void n_alSynAddSndPlayer(ALPlayer *client) {
     osSetIntMask(mask);
 }
 
-#ifdef NON_MATCHING
+/* The n_audio functions from here on were each their own object in
+ * libn_audio.a, so each ends 16-byte aligned and the ROM has nop fill between
+ * them. That fill is the LINKER's, not the function's, so the drafts below were
+ * condemned as unconvertible; one C file per object makes SUBALIGN(16) emit it.
+ * See src/main/libn_audio_2.h and kirby64.yaml. */
+
 void n_alSynAddPlayer(ALPlayer *client) {
     OSIntMask mask = osSetIntMask(OS_IM_NONE);
 
@@ -1809,108 +1814,3 @@ void n_alSynAddPlayer(ALPlayer *client) {
 
     osSetIntMask(mask);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSynAddPlayer.s")
-#endif
-#ifdef NON_MATCHING
-void n_alSynStopVoice(N_ALVoice *v) {
-    ALParam *update;
-    ALFilter *f;
-
-    if (v->pvoice) {
-
-        update = __n_allocParam();
-        if (update == 0)
-            return;
-
-        update->delta = n_syn->paramSamples + v->pvoice->offset;
-        update->type = AL_FILTER_STOP_VOICE;
-        update->next = 0;
-
-        n_alEnvmixerParam(v->pvoice, AL_FILTER_ADD_UPDATE, update);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSynStopVoice.s")
-#endif
-s32 _allocatePVoice(N_PVoice **pvoice, s16 priority) {
-    ALLink *dl;
-    N_PVoice *pv;
-    s32 stolen = 0;
-
-    if ((dl = n_syn->pLameList.next) != 0) {
-        *pvoice = (N_PVoice *) dl;
-        alUnlink(dl);
-        alLink(dl, &n_syn->pAllocList);
-    } else if ((dl = n_syn->pFreeList.next) != 0) {
-        *pvoice = (N_PVoice *) dl;
-        alUnlink(dl);
-        alLink(dl, &n_syn->pAllocList);
-    } else {
-        for (dl = n_syn->pAllocList.next; dl != 0; dl = dl->next) {
-            pv = (N_PVoice *) dl;
-
-            if ((pv->vvoice->priority <= priority) && (pv->offset == 0)) {
-                *pvoice = pv;
-                priority = pv->vvoice->priority;
-                stolen = 1;
-            }
-        }
-    }
-
-    return stolen;
-}
-
-#ifdef NON_MATCHING
-s32 n_alSynAllocVoice(N_ALVoice *voice, ALVoiceConfig *vc) {
-    N_PVoice *pvoice = 0;
-    ALFilter *f;
-    ALParam *update;
-    s32 stolen;
-
-    voice->priority = vc->priority;
-    voice->unityPitch = vc->unityPitch;
-    voice->table = 0;
-    voice->fxBus = vc->fxBus;
-    voice->state = AL_STOPPED;
-    voice->pvoice = 0;
-
-    stolen = _allocatePVoice(&pvoice, vc->priority);
-
-    if (pvoice) {
-        if (stolen) {
-
-            pvoice->offset = 512;
-            pvoice->vvoice->pvoice = 0;
-
-            pvoice->vvoice = voice;
-            voice->pvoice = pvoice;
-
-            update = __n_allocParam();
-            update->delta = n_syn->paramSamples;
-            update->type = AL_FILTER_SET_VOLUME;
-            update->data.i = 0;
-            update->moredata.i = pvoice->offset - 64;
-
-            n_alEnvmixerParam(voice->pvoice, AL_FILTER_ADD_UPDATE, update);
-
-            update = __n_allocParam();
-            if (update) {
-                update->delta = n_syn->paramSamples + pvoice->offset;
-                update->type = AL_FILTER_STOP_VOICE;
-                update->next = 0;
-                n_alEnvmixerParam(voice->pvoice, AL_FILTER_ADD_UPDATE, update);
-            }
-
-        } else {
-            pvoice->offset = 0;
-            pvoice->vvoice = voice;
-            voice->pvoice = pvoice;
-        }
-    }
-
-    return (pvoice != 0);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSynAllocVoice.s")
-#endif

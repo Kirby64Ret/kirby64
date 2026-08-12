@@ -62,9 +62,27 @@ segments:
     - [0x21B40, c, main/fault]
     - [0x23EB0, lib, libn_audio, n_cspsetpriority]
     - [0x23F00, lib, libn_audio, n_cspsetfxmix]
+    # Same story as libn_audio_2 below: n_alSynAddPlayer ends at 0x2B670 and
+    # n_alSynStopVoice at 0x2B6E0, each on a 16-byte boundary with nop fill --
+    # separate libn_audio.a objects. One `c` subsegment per object; the rodata
+    # all belongs to functions before 0x8002AA70, so it stays with libn_audio.
     - [0x23F60, c, main/libn_audio]
+    - [0x2B670, c, main/libn_audio_b]
+    - [0x2B6E0, c, main/libn_audio_c]
     - [0x2B910, lib, libn_audio, n_synsetpan]
+    # 0x2B990..0x2DE50 is a run of n_audio library objects. From alCSPSetSeq on,
+    # every function starts 16-byte aligned and the ROM has nop fill between
+    # them: that fill is the LINKER aligning the next .o, so as one C file the
+    # TU came out 40 bytes short and five matching drafts stayed guarded. One
+    # `c` subsegment per object makes SUBALIGN(16) emit the fill and they are
+    # all plain C now. No `pad` entry is needed -- each residue is exactly the
+    # 16-byte alignment.
     - [0x2B990, c, main/libn_audio_2]
+    - [0x2D9A0, c, main/libn_audio_2b]
+    - [0x2DA20, c, main/libn_audio_2c]
+    - [0x2DB00, c, main/libn_audio_2d]
+    - [0x2DB40, c, main/libn_audio_2e]
+    - [0x2DCA0, c, main/libn_audio_2f]
     - [0x2DE50, lib, libn_audio, n_synsetvol]
     - [0x2DEF0, lib, libultra_rom, sendmesg]
     - [0x2E040, lib, libultra_rom, stopthread]
@@ -519,6 +537,10 @@ segments:
     - [0x145420, c, ovl7/ovl7_2]
     - [0x146DC0, c, ovl7/ovl7_3]
     - [0x149EF0, c, ovl7/ovl7_4]
+    # func_801A6DF0_ovl7 is the last function of ovl7_4 and its listing carries
+    # the SGI linker's fill up to the next object's 32-byte alignment. `as`
+    # stops at 0x3170; the ROM's span is 0x3180.
+    - [0x14D060, pad]
     - [0x14D070, c, ovl7/ovl7_5]
     - [0x152A40, c, ovl7/ovl7_5_2]
     - [0x153040, c, ovl7/ovl7_6]
@@ -528,6 +550,9 @@ segments:
     - [0x1596E0, c, ovl7/ovl7_10]
     - [0x15ADC0, c, ovl7/ovl7_11]
     - [0x15DA20, c, ovl7/ovl7_12]
+    # Same for func_801B8DB8_ovl7, last function of ovl7_12: 0x1560 emitted
+    # against a span of 0x1570.
+    - [0x15EF80, pad]
     - [0x15EF90, c, ovl7/ovl7_13]
     - [0x161A40, c, ovl7/ovl7_14]
     - [0x161EC0, c, ovl7/yakulib]
@@ -716,7 +741,13 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x30
     subsegments:
+    # func_801DF5B8_ovl11 ends at +0x4468 from ovl11.c's base with two nops up
+    # to +0x4470. Nothing re-aligns inside one IDO object, so that is an object
+    # boundary: the `c` subsegment was two TUs, split at func_801DF650_ovl11.
+    # `as` pads TU1's .text to 16 and SUBALIGN(16) lands TU2 there, so the two
+    # words come back with no `pad` entry.
     - [0x1E5AA0, c, ovl11/ovl11]
+    - [0x1E9F10, c, ovl11/ovl11_2]
     - [0x1EB3C0, data, ovl11/ovl11]
     - [0x1EB520]
     - {type: bss, vram: 0x801E0C60, name: ovl11/ovl11}
@@ -795,7 +826,15 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
+    # ovl15.c was two translation units. func_801E27BC_ovl15 ends at +0x7D6C
+    # from the file's base with five nops up to +0x7D80 -- 32-byte alignment,
+    # which IDO never emits between two functions of one object. The .rodata
+    # agrees: two zero words at 0x801E68D8 pad TU1's block (ending in that
+    # function's own jtbl_801E68C4_ovl15) up to 0x801E68E0. `as` pads TU1's
+    # .text to 16 (0x20DAB0); the original linker put TU2 at 32, hence the pad.
     - [0x205D40, c, ovl15/ovl15]
+    - [0x20DAB0, pad]
+    - [0x20DAC0, c, ovl15/ovl15b]
     - [0x210970, c, ovl15/ovl15_2]
     - [0x210FB0, data, ovl15/ovl15]
     # .rodata starts at the reset: every symbol from 0x801E6450 climbs
@@ -806,6 +845,7 @@ segments:
     # func_801E5E10_ovl15, the first function of ovl15_2, and the last block
     # ends exactly at the declared bss vram 0x801E6930.
     - [0x2112F0, .rodata, ovl15/ovl15]
+    - [0x211440, .rodata, ovl15/ovl15b]
     - [0x211480, .rodata, ovl15/ovl15_2]
     - [0x211490]
     - {type: bss, vram: 0x801E6930, name: ovl15/ovl15}
@@ -819,13 +859,26 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x110
     subsegments:
+    # ovl16.c was two translation units. func_801E7EE0_ovl16 ends at +0xCD24
+    # from the file's base and its listing carries seven nops up to +0xCD40 --
+    # 32-byte alignment, which IDO never emits between two functions of one
+    # object, so the boundary is at func_801E7F20_ovl16. The ROM's .rodata
+    # agrees: three zero words at 0x801F0094 pad TU1's block to 0x801F00A0.
+    # `as` pads TU1's .text to 16 (0xCD30), the original linker put TU2 at 32,
+    # hence the 0x10 pad.
     - [0x211490, c, ovl16/ovl16]
+    - [0x21E1C0, pad]
+    - [0x21E1D0, c, ovl16/ovl16_2]
     - [0x225770, data, ovl16/ovl16]
     # .rodata starts where the referencing-function order RESETS: every symbol
     # from 0x225770 climbs monotonically to the file's last function and then
     # 0x2260A0 (vram 0x801EFDF0) snaps back to its first. 16-byte aligned, as
     # SUBALIGN(16) requires.
     - [0x2260A0, .rodata, ovl16/ovl16]
+    # ...and the same split in .rodata: 0x226350 (vram 0x801F00A0) is where the
+    # three zero words above end, and it is 16-byte aligned as SUBALIGN(16)
+    # requires.
+    - [0x226350, .rodata, ovl16/ovl16_2]
     - [0x2263D0]
     - {type: bss, vram: 0x801F0120, name: ovl16/ovl16}
 

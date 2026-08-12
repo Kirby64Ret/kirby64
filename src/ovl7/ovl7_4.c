@@ -444,14 +444,10 @@ void func_801A6DD0_ovl7(void) {
     func_801A0D74_ovl7();
 }
 
-/* MATCHES (126 insns, byte-exact) but must stay guarded: it is the LAST
-   function in ovl7_4's `c` subsegment, so converting it hands 16 bytes of SGI
-   linker fill back to the assembler and the TU comes out 0x3170 against a yaml
-   span of 0x3180.  The recipe (AGENT_GUIDE "THE MID-TU PADDING TRAP CLASS IS
-   NOT A TRAP") needs `- [0x14D060, pad]` in kirby64.yaml after the ovl7_4 `c`
-   line plus `. += 0x10;` before ovl7_5's (.text) in kirby.ld, applied together.
-   PAD = 0x10. */
-#ifdef NON_MATCHING
+/* Last function of ovl7_4: the 6 words after its `.size` are the SGI linker's
+   fill up to the next object's alignment, not instructions. `- [0x14D060, pad]`
+   in kirby64.yaml declares them (splat renders it `. += 0x10;`), so this is
+   plain C. */
 void func_801A6DF0_ovl7(GObj *arg0) {
     void func_8019B7D8_ovl7(void);
     void func_800A22D4(u32);
@@ -484,7 +480,4 @@ void func_801A6DF0_ovl7(GObj *arg0) {
     play_sound(0x92);
     func_801A41D4_ovl7(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A6DF0_ovl7.s")
-#endif
 

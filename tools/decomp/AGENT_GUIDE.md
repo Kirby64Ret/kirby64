@@ -3031,14 +3031,16 @@ carried two of these since before this session. So:
      (it has always been 0x10 so far).
   3. `kirby64.yaml`: insert `- [<tu_rom_start + text_size>, pad]` immediately
      after that file's `c` line.
-  4. `kirby.ld` (generated, gitignored): insert `. += 0x<PAD>;` immediately
-     before the NEXT object's `(.text)` line in the same output section.
-     `make` does not regenerate kirby.ld, so this takes effect at once; the
-     yaml line is what makes it survive the next `splat split`.
+  4. DO NOT hand-edit `kirby.ld` any more. `tools/decomp/mk.sh` re-runs
+     `splat split` whenever kirby64.yaml is newer than build/kirby.ld, so the
+     yaml line is the whole edit. (Step 4 used to say "insert `. += 0x<PAD>;`
+     into the generated script by hand". A stale kirby.ld left behind that way
+     produced a ROM differing from the base in 30 MB and read as catastrophic
+     breakage by another lane. Use mk.sh.)
   5. Gate: ROM sha1, check_tu_size (it already understands bare `pad`
      subsegments), check_sections, check_layout <seg>.
 
-**Steps 1 and 3-4 must be applied together in one edit.** Either half alone
+**Steps 1 and 3 must be applied together in one edit.** Either half alone
 breaks the link for every other agent: the C without the pad is 16 short, the
 pad without the C is 16 long.
 
@@ -3462,3 +3464,130 @@ adjustable.
   -- IDO sizes the table from min(case) to max(case), so grouping the leftovers
   under `default:` alone yields a table of 1..14 and an `sltiu` of the wrong
   bound.
+
+# Wave 14: the padding trap closed out -- 12 more functions, four hidden TU splits
+
+Measured at c3dff83 + this working tree; ROM sha1
+6cea2d46b929a3bb347b060a77fccc83526fb855 with main, ovl7, ovl11, ovl15 and
+ovl16 byte-identical to baserom. The `pad`-subsegment recipe above is right and
+still applies, but it turned out to be the *smaller* half of the class. Three
+corrections follow, each paid for with a build.
+
+## 1. An INTERIOR `benign` tail is an object boundary, not harmless
+
+`padtrap.classify()` calls a tail of 1-3 nops `benign` because `.text` is
+16-aligned and the alignment puts them straight back. **That derivation only
+holds for the LAST function of a translation unit.** Nothing re-aligns inside
+one IDO object, so a 1-3 nop tail on an INTERIOR function means the same thing
+a 4+ word tail does at the end: the next object starts there.
+
+So the two verdicts pair with position, not with each other:
+
+| | last in `c` subsegment | interior |
+|---|---|---|
+| `trap` (>=4 words, or non-zero) | needs a `pad` subsegment | wrong TU boundary |
+| `benign` (1-3 nops) | genuinely harmless | wrong TU boundary |
+
+The interior sweep is three lines on top of the trap sweep and it found nine
+more object boundaries. `func_801DF5B8_ovl11` is the one this guide already
+recorded as "measured, at the cost of a broken ROM" -- it is not a mystery, it
+is a TU split at `func_801DF650_ovl11`, and after the split the draft that had
+been sitting guarded is plain C with **no `pad` entry at all** (see #2).
+
+## 2. When the residue is exactly 16, SPLIT and add nothing
+
+`kirby.ld` uses `SUBALIGN(16)`, so the linker already 16-aligns every input
+section. Two cases, and they need different edits:
+
+* residue = `align32(end) - align16(end)` (the `.align 5` dead-epilogue case):
+  splitting is not enough, you still need `- [addr, pad]`.
+* residue = `align16(end) - end` (an ordinary object boundary, e.g. a run of
+  separate library objects): **splitting the `c` subsegment is the entire fix.**
+  SUBALIGN(16) emits the fill. Adding a `pad` here would double it.
+
+Measure, do not guess: `PAD = yaml_span - objdump .text size` after the split.
+Zero means you are in the second case.
+
+## 3. src/main/libn_audio*.c are runs of one-function libn_audio.a objects
+
+`main/libn_audio` (0x23F60) and `main/libn_audio_2` (0x2B990) are not two
+translation units, they are ~20. Each function in the tail of each file was its
+own `.o` in libn_audio.a, so each ends 16-byte aligned with nop fill, **inside**
+what the yaml called one `c` subsegment. Seven drafts sat guarded for this,
+their own comments blaming "the 16-byte library alignment" -- correct diagnosis,
+wrong conclusion. One `c` subsegment per object and all seven are plain C:
+
+    main/libn_audio    -> + libn_audio_b (0x2B670), libn_audio_c (0x2B6E0)
+    main/libn_audio_2  -> + libn_audio_2b..2f (0x2D9A0/0x2DA20/0x2DB00/
+                                               0x2DB40/0x2DCA0)
+
+PAD was 0 for every one of them. Shared declarations moved to
+`src/main/libn_audio_2.h` rather than being copied six times.
+
+**Also: those two files are compiled at -O3** (`N_AUDIO_O_FILES` routes them
+through `tools/decomp/cc_o3.py`). Three of the drafts carried the comment
+"Byte-exact at -O3; blocked by -O2's home store" -- written before the -O3 route
+existed and never retested. All three verified MATCH on the first try. **Any
+comment naming a compiler flag as the blocker is worth 30 seconds of retesting
+before it is worth a day of decompiling.**
+
+New files must be added to `N_AUDIO_O_FILES` in the Makefile or they silently
+compile at -O2 and the TU comes out wrong.
+
+## 4. The .rodata says where the TU boundary is, and it is free evidence
+
+For a segment with MIGRATED rodata, an object boundary shows up in the `.rodata`
+block as **zero words ending at a 16-byte-aligned address**, exactly the way it
+shows up in `.text`. That is the `as` alignment fill of the first object's
+`.rodata`. It gives you two things at once: independent confirmation that the
+`.text` boundary you found is real, and the address to split the `.rodata`
+subsegment at.
+
+    ovl16  .text  func_801E7EE0_ovl16 ends +0xCD24, 7 nops to +0xCD40
+           .rodata 3 zero words at 0x801F0094, block resumes 0x801F00A0
+    ovl15  .text  func_801E27BC_ovl15 ends +0x7D6C, 5 nops to +0x7D80
+           .rodata 2 zero words at 0x801E68D8, block resumes 0x801E68E0
+           (and the word before them is that function's own jtbl_801E68C4)
+
+Both splits landed byte-exact first try. To find which side of the split owns a
+rodata word without reading the source, parse the HI16/LO16 reloc pairs against
+`.rodata` out of `objdump -dr` on the object: the text offsets climb
+monotonically with the rodata offset, and the boundary is the last one below
+your `.text` split. Do not do this from a loose `lui`/`addiu` scan of the ROM --
+that picks up immediate constants and manufactures phantom "resets".
+
+## 5. The three "wrong TU boundaries", resolved
+
+* `func_801E7EE0_ovl16` -- split ovl16.c at `func_801E7F20_ovl16`
+  (`- [0x21E1D0, c, ovl16/ovl16_2]`, `- [0x21E1C0, pad]`, rodata at 0x226350).
+  The function is 9 instructions and is now C.
+* `func_801E27BC_ovl15` -- split ovl15.c at `func_801E2F60_ovl15`
+  (`- [0x20DAC0, c, ovl15/ovl15b]`, `- [0x20DAB0, pad]`, rodata at 0x211440).
+  No draft existed; it is now ordinary work (490 insns + a jump table) instead
+  of impossible, and padtrap now reads it `('benign', 1)`.
+* `func_801DB1E0_ovl12` -- **not a function.** Confirmed: its listing is one
+  `nop` at 0x1EB520, the first word of the overlay, followed by seven more.
+  Same for `func_801DD8F0_ovl17` (one nop at 0x228AE0 + eleven). Both are
+  symbols splat manufactured at a TU head out of fill. Nothing to convert;
+  `check_layout` reports drift on `func_801DD8F0_ovl17` and on
+  `func_801DFD90_ovl14` for the same reason, and the ROM sha1 overrules it.
+
+## 6. What is left of the class
+
+After this wave the tree has **14 `trap` pragmas (13 last-in-subsegment, 1
+interior)** and **9 interior `benign` ones**. Padding is no longer the blocker
+for any of them:
+
+* 10 of the 14 traps have no draft at all -- they are ordinary decompilation
+  work of 100-500 instructions (`func_800A2550`, `saveForceCompleteFile`,
+  `func_801E2C78_ovl10`, `func_801E0B38_ovl17`, `func_8016BD24_ovl3`,
+  `func_801D1E98_ovl8`, `func_8020FD34_ovl9`, `func_801E5660_ovl9`).
+* `func_802244FC_ovl18` (7/26) and `func_801FB9DC_ovl9` (32/41, register
+  rotation) have drafts that do NOT match; their residue is real.
+* the 9 interior `benign` ones are all inside the libn_audio runs and one in
+  ovl17, none has a draft, and each is one `c` subsegment away from being
+  ordinary work whenever someone writes one.
+
+**The correct summary of the whole class is now: zero functions in this tree are
+blocked by padding.** Every remaining one is blocked by not having been
+decompiled yet.

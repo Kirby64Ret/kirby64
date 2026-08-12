@@ -385,6 +385,33 @@ def main():
         outdir = sys.argv[sys.argv.index('-o') + 1]
     os.makedirs(outdir, exist_ok=True)
 
+    # PRUNE GENERATED FILES WHOSE LISTING NO LONGER EXISTS.
+    #
+    # This directory is generated but never emptied, so a subsegment RENAME
+    # leaves the old file behind and the port links both. The ovl3 rodata
+    # migration renamed asm/data/ovl3/F7A30 to ovl3/plyshot and split off
+    # ovl3/plyshot_2; the stale ovl3_F7A30.c stayed, and the link died on
+    # eleven "multiple definition of D_801971xx_ovl3" plus a duplicated jump
+    # table. Nothing in the error named F7A30 as stale -- it read as the
+    # migration having emitted a constant twice.
+    #
+    # A generated .c is live iff the .s it came from is still on disk. Its .o
+    # goes with it, or make links the object without ever regenerating it.
+    live = {p[len('asm/data/'):-2].replace('/', '_')
+            for p in glob.glob('asm/data/**/*.s', recursive=True)}
+    pruned = 0
+    for old in glob.glob(f'{outdir}/*.c'):
+        stem = os.path.basename(old)[:-2]
+        if stem not in live:
+            os.remove(old)
+            for ext in ('.o', '.d'):
+                p = old[:-2] + ext
+                if os.path.exists(p):
+                    os.remove(p)
+            pruned += 1
+    if pruned:
+        print(f'pruned {pruned} generated data file(s) whose listing is gone')
+
     # Anything already defined in C wins; emitting it again is a duplicate
     # symbol at link time.
     defined = set()

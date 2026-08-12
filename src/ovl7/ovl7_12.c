@@ -429,14 +429,9 @@ void func_801B8C60_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
-/* MATCHES (83 insns, byte-exact) but must stay guarded: it is the LAST function
-   in ovl7_12's `c` subsegment, so converting it hands 16 bytes of SGI linker
-   fill back to the assembler and the TU comes out 0x1560 against a yaml span of
-   0x1570.  Recipe (AGENT_GUIDE "THE MID-TU PADDING TRAP CLASS IS NOT A TRAP"):
-   `- [0x15EF80, pad]` in kirby64.yaml after the ovl7_12 `c` line plus
-   `. += 0x10;` before ovl7_13's (.text) in kirby.ld, applied together.
-   PAD = 0x10. */
-#ifdef NON_MATCHING
+/* Last function of ovl7_12: the 7 words after its `.size` are the SGI linker's
+   fill up to the next object's alignment, not instructions. `- [0x15EF80, pad]`
+   in kirby64.yaml declares them, so this is plain C. */
 void func_801B8DB8_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
 
@@ -453,7 +448,4 @@ void func_801B8DB8_ovl7(GObj *arg0) {
     D_800E3C90[omCurrentObj->objId] = 8.0f;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B8DB8_ovl7.s")
-#endif
 
