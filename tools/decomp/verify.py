@@ -28,6 +28,13 @@ OPT_OVERRIDES = {
     'src/ovl3/ovl3_1.c': '-O2 -Wo,-loopunroll',
 }
 
+# Files the Makefile builds with a compiler other than the plain cc driver.
+# Must track the Makefile's N_AUDIO_O_FILES rule.
+CC_OVERRIDES = {
+    'src/main/libn_audio.c':   'python3 tools/decomp/cc_o3.py',
+    'src/main/libn_audio_2.c': 'python3 tools/decomp/cc_o3.py',
+}
+
 _sym = None
 def symmap():
     global _sym
@@ -105,7 +112,17 @@ def compile_file(cfile):
     # n_audio was built at -O3, so main/libn_audio*.c cannot match at -O2 no
     # matter how good the source is. tools/decomp/cc_o3.py drives the four IDO
     # phases directly, which the cc driver cannot (ujoin is missing).
-    CC = os.environ.get('VERIFY_CC', 'tools/ido-7.1recomp/cc')
+    #
+    # This used to be a comment sitting above a line that read VERIFY_CC from
+    # the environment and did nothing else, so the note was true and the tool
+    # ignored it: anyone running `verify.py src/main/libn_audio.c` got -O2
+    # answers for an -O3 translation unit. 7 of libn_audio.c's already-matched
+    # functions reported a diff on a byte-exact ROM because of it, and any
+    # attempt on its 38 remaining pragmas -- the largest single pool in main --
+    # was being scored against the wrong compiler. The Makefile picks the
+    # compiler per file; so does this now. VERIFY_CC still overrides both.
+    CC = CC_OVERRIDES.get(cfile, 'tools/ido-7.1recomp/cc')
+    CC = os.environ.get('VERIFY_CC', CC)
     has_asm = 'GLOBAL_ASM' in open(cfile).read()
     if has_asm:
         # --asm-prelude must match the Makefile's. Without it, `jlabel` is not
@@ -246,8 +263,32 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
                     imm = cw & 0xFFFF
                     ca += imm - 0x10000 if imm >= 0x8000 else imm
                 if ta != ca:
-                    ok = False
-                    ctext += f'  [RELOC TARGET {ca:08X} != {ta:08X}]'
+                    # A LO16 relocation only determines the LOW 16 BITS of the
+                    # word. If those agree, the linked instruction is
+                    # byte-identical no matter what the high half does -- and
+                    # the high half is carried by the paired HI16, which this
+                    # loop deliberately does not check.
+                    #
+                    # Comparing full addresses here was therefore stricter than
+                    # the instruction encodes, and it reported 12 phantom diffs
+                    # on a byte-exact ROM: the same `%lo(D_803FC100)` against
+                    # our `D_803D6900 + 0x5800` in 12 files across ovl2, ovl4
+                    # and ovl5, all on functions verify_rom.py calls byte-exact.
+                    # The two addresses differ by 0x20000, which has nothing in
+                    # its low half, so both encode 0xC100.
+                    #
+                    # Reported rather than silently dropped, because a
+                    # coinciding low half CAN hide a genuinely wrong symbol.
+                    # verify_rom.py compares the LINKED ROM and is the arbiter
+                    # for that; this tool cannot be, since it never links.
+                    if creloc == 'R_MIPS_LO16' and (ta & 0xFFFF) == (ca & 0xFFFF):
+                        rodata_notes.append(
+                            f'  [{i:4}] {ctext}  [LO16 {ca:08X} vs {ta:08X}: '
+                            f'same low half, same linked word; high half is the '
+                            f'HI16\'s and is not checked here]')
+                    else:
+                        ok = False
+                        ctext += f'  [RELOC TARGET {ca:08X} != {ta:08X}]'
             elif ta is not None and re.search(r'<\.(rodata|data|bss)\b', ctext):
                 # The ROM reaches a NAMED symbol; we reach our own section.
                 # objdump prints `<.rodata>` here, which does not resolve, so
@@ -291,7 +332,7 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
                           f'later functions. Confirm with check_layout.py]')
         if rodata_notes:
             return True, (f'{func}: MATCH ({len(cur)} insns) '
-                          f'[{len(rodata_notes)} own-.rodata reference(s), not counted]\n'
+                          f'[{len(rodata_notes)} uncounted relocation note(s)]\n'
                           + '\n'.join(rodata_notes[:10]))
         return True, f'{func}: MATCH ({len(cur)} insns)'
     return False, f'{func}: DIFF {len(diffs)}/{n} insns\n' + '\n'.join(diffs[:40])
