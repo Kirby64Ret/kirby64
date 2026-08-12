@@ -62,6 +62,14 @@ if [ "$built" != "$EXPECTED" ]; then
     exit 1
 fi
 
+echo "== [6b/7] decomp-permuter (third-party; gitignored, so a fresh clone lacks it) =="
+if [ ! -f tools/decomp/decomp-permuter/permuter.py ]; then
+    rm -rf tools/decomp/decomp-permuter
+    git clone --depth 1 https://github.com/simonlindholm/decomp-permuter \
+        tools/decomp/decomp-permuter
+    uv pip install pycparser toml
+fi
+
 echo "== [7/7] SSB64 donor repo =="
 if [ ! -d /workspace/vetritheretri/ssb-decomp-re ]; then
     mkdir -p /workspace/vetritheretri
