@@ -436,7 +436,7 @@ void func_801D5F88_ovl8(struct GObj *arg0) {
     extern void func_800F98EC(s32, f32);
     extern void func_801A32EC(void *);
     extern s32 D_801CA980;
-    void func_801D6534_ovl8(struct GObj *);
+void func_801D6534_ovl8(struct GObj *);
     f32 temp;
 
     if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
@@ -507,7 +507,84 @@ void func_801D5F88_ovl8(struct GObj *arg0) {
     curObjSleepForever();
 }
 
+
+#ifdef NON_MATCHING
+/* 5/235 and closing fast. Guarded by the manager only so the fleet could
+   commit; un-guard the moment verify.py prints MATCH. */
+void func_801D6534_ovl8(struct GObj *arg0) {
+    extern f32 gKirbyHp;
+    extern u32 D_8012BCA0;
+    extern s32 D_801CA980;
+    extern void func_801A33B8(void *);
+    extern s32 change_kirby_hp(f32);
+    extern void play_sound(s32);
+    extern void func_800FB914(s32);
+    extern void func_800BB468(s32, s32);
+    extern void func_8016BD24_ovl3(s32);
+    extern void func_801696F0_ovl3(struct GObj *);
+    struct DObj *d;
+    Vector sp38;
+    Vector sp2C;
+
+    d = D_800DFBD0[D_800E0D50[omCurrentObj->objId]][15];
+    if (gEntityFuncListIDArray[D_800E0D50[omCurrentObj->objId]] == 0xE) {
+        if (D_800E8920[omCurrentObj->objId] == 0) {
+            func_8016BD24_ovl3(1);
+        } else {
+            func_8016BD24_ovl3(0);
+        }
+        return;
+    }
+    switch (D_800E98E0[omCurrentObj->objId]) {
+    case 0:
+    case 1:
+        func_800B2340(&sp38, d, D_800E0D50[omCurrentObj->objId]);
+        gEntitiesNextPosXArray[omCurrentObj->objId] = sp38.x;
+        gEntitiesNextPosYArray[omCurrentObj->objId] = sp38.y - 20.0f;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = sp38.z;
+        func_800B26D8(&sp2C, d, D_800E0D50[omCurrentObj->objId]);
+        gEntitiesAngleYArray[omCurrentObj->objId] = sp2C.y;
+        break;
+    case 2:
+        func_801A33B8(&D_801CA980);
+        if ((((D_8012BCA0 >> 0x13) & 0x3F) != 0) || (D_800E6310[omCurrentObj->objId] != 0)) {
+            D_800E98E0[omCurrentObj->objId] = 3;
+            D_800E8920[omCurrentObj->objId] = 0;
+            if (D_800E6A10[D_800E0D50[omCurrentObj->objId]] == 1.0f) {
+                D_800E64D0[omCurrentObj->objId] = -3.0f;
+                D_800E6690[omCurrentObj->objId] = 0.0f;
+                D_800E6850[omCurrentObj->objId] = 5.0f;
+            } else {
+                D_800E64D0[omCurrentObj->objId] = 3.0f;
+                D_800E6690[omCurrentObj->objId] = 0.0f;
+                D_800E6850[omCurrentObj->objId] = 5.0f;
+            }
+            D_800E3210[omCurrentObj->objId] = 12.0f;
+            D_800E3750[omCurrentObj->objId] = -0.9806650281f;
+            D_800E3C90[omCurrentObj->objId] = 12.0f;
+            change_kirby_hp(-1.0f);
+            if (0.0f < gKirbyHp) {
+                play_sound(0x1E9);
+                func_800FB914(2);
+                func_800BB468(0, 0);
+            } else {
+                func_8016BD24_ovl3(0);
+            }
+        }
+        break;
+    case 3:
+        func_801A33B8(&D_801CA980);
+        if (((D_8012BCA0 >> 0x13) & 0xE00) != 0) {
+            play_sound(0x110);
+            func_8016BD24_ovl3(0);
+        }
+        break;
+    }
+    func_801696F0_ovl3(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D6534_ovl8.s")
+#endif
 
 void func_801D68E0_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;

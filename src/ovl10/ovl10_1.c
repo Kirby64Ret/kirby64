@@ -706,7 +706,49 @@ void func_801DFBFC_ovl10(GObj *arg0) {
     func_801E28C8_ovl10(0);
 }
 
+s32 func_800AF230(void);
+
+#ifdef NON_MATCHING
+/* 74/105: s1/s2 swapped and `hit` in $a1 where the ROM uses $v0. */
+s32 func_801DFCC0_ovl10(void) {
+    s32 hit;
+    f32 v;
+    f32 d;
+
+    v = D_800E9020[omCurrentObj->objId];
+    while (v != 0.0f) {
+        if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+            d = 0.3141592741f;
+        } else {
+            d = -0.3141592741f;
+        }
+        D_800E9020[omCurrentObj->objId] += d;
+        if (0.0f < v) {
+            hit = 0;
+            if (D_800E9020[omCurrentObj->objId] <= 0.0f) {
+                hit = 1;
+            }
+        } else {
+            hit = 0;
+            if (0.0f <= D_800E9020[omCurrentObj->objId]) {
+                hit = 1;
+            }
+        }
+        if (hit != 0) {
+            D_800E9020[omCurrentObj->objId] = 0.0f;
+            v = D_800E9020[omCurrentObj->objId];
+        }
+        ohSleep(1);
+        if (func_800AF230() != 0) {
+            return 0;
+        }
+    }
+    func_800AF27C();
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DFCC0_ovl10.s")
+#endif
 
 void func_801DFE64_ovl10(void) {
     D_801F4D48_ovl10[0] = D_801F4D48_ovl10[3] = D_800EBDA0[D_800E0D50[omCurrentObj->objId]];

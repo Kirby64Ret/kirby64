@@ -16,7 +16,33 @@ extern FUNCLIST D_8021C45C_ovl9;
 extern FUNCLIST D_8021C488_ovl9;
 extern FUNCLIST D_8021C4C4_ovl9;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F29D0_ovl9.s")
+void func_801F29D0_ovl9(void) {
+    s32 v = D_800E9AA0[omCurrentObj->objId].as_s32;
+    f32 dir = D_800E6A10[omCurrentObj->objId];
+    s32 sum;
+
+    if (v != 0) {
+        sum = D_800E9C60[omCurrentObj->objId] + v;
+        if (sum < 0xB4) {
+            if (dir == 1.0f) {
+                D_800E9020[omCurrentObj->objId] -= ((f32) v * 3.141592741f) / 180.0f;
+            } else {
+                D_800E9020[omCurrentObj->objId] += ((f32) v * 3.141592741f) / 180.0f;
+            }
+        } else {
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+            D_800E9E20[omCurrentObj->objId] = 1;
+            if (dir == 1.0f) {
+                D_800E17D0[omCurrentObj->objId] += 3.141592741f;
+            } else {
+                D_800E17D0[omCurrentObj->objId] -= 3.141592741f;
+            }
+            D_800E9020[omCurrentObj->objId] = 0.0f;
+            D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+        }
+        D_800E9C60[omCurrentObj->objId] = sum;
+    }
+}
 
 void func_8019C844_ovl7(Vector *);
 

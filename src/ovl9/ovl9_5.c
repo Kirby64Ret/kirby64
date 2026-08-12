@@ -72,7 +72,39 @@ void func_801E5A74_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 11, &D_8021BF1C_ovl9);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E5ABC_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CBB0C;
+extern void func_800AECC0(f32);
+extern void func_800AED20(f32);
+extern void func_800B33F4(void);
+extern void func_800AA018(s32);
+extern void func_800AF27C(void);
+extern f32 func_8019DA50_ovl7(void);
+extern f32 gameTicksPerDraw;
+extern void ohSleep(s32);
+
+void func_801E5ABC_ovl9(struct GObj *arg0) {
+    f32 h;
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBB0C;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    D_800EA8A0[omCurrentObj->objId] = 0;
+    func_800AA018(0x101F7);
+    while (1) {
+        if (ABSF((gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]) < 240.0f) {
+            h = ABSF(func_8019DA50_ovl7());
+            if (h < 320.0f) {
+                break;
+            }
+        }
+        ohSleep(1);
+    }
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+}
 
 extern s32 D_800BE4EC;
 void func_801E5D2C_ovl9(void);

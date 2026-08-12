@@ -793,7 +793,18 @@ s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801612D0_ovl5.s")
 #endif
+#ifdef NON_MATCHING
+/* 1/26: byte-exact, but the listing carries an unnamed empty function
+   (jr $ra / nop) past this function's epilogue; converting shortens the TU. */
+s32 func_801613C0_ovl5(s32 arg0, s32 arg1) {
+    if (D_800EA6E0[D_8018E030_ovl5[arg0]] < D_800EA6E0[D_8018E030_ovl5[arg1]]) {
+        return arg0;
+    }
+    return arg1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801613C0_ovl5.s")
+#endif
 
 f32 func_8016142C_ovl5(s32 arg0) {
     return (D_800EA6E0[D_8018E030_ovl5[arg0]] - gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) * 0.5f;

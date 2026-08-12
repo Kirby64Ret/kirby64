@@ -1283,14 +1283,14 @@ inc:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801544E8_ovl6.s")
 #endif
 
-/* 20/27, and the whole residue is ONE redundant `lui $at`. IDO's unroll peels
- * the same 2 elements as the ROM and addresses them the same way
- * (%lo(arr)($at) / %lo(arr+4)($at)); the ROM's scheduler leaves the two peeled
- * stores ADJACENT so the second reuses the first's $at, while IDO hoists the
- * first store into the slot after its own lui and re-materialises $at for the
- * second. Measured 2026-08: for/while loop form, s32/u32 counter, and a manual
- * 2-element peel (which switches IDO to a materialised base register in $a0 and
- * is further away) all give the identical 20/27. Scheduling, not source shape. */
+/* 20/27: 27 insns vs the ROM's 26. IDO addresses the two peeled elements the
+ * ROM's way (%lo(A570)($at) / %lo(A574)($at)) but schedules the first store
+ * immediately after its own lui and re-materialises $at for the second.
+ * Re-swept 2026-08 fresh from the listing: explicit 2-element peel + 60-loop
+ * over D_8015A578_ovl6 (register base, 27), peel via the D_8015A574_ovl6
+ * scalar (lui/sw/lui/sw, 27), chained assignment (28), pointer loop bounded by
+ * &D_8015A668_ovl6 (36). All 27+; the shared $at needs the two stores adjacent
+ * in the schedule and nothing source-level moves them. */
 #ifdef NON_MATCHING
 void func_80154628_ovl6(void) {
     s32 i;

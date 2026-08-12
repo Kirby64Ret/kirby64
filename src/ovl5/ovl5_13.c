@@ -676,7 +676,43 @@ void func_8018590C_ovl5(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 34/113: callee-saved registers permuted (ROM s0/s1/s2/s3 where this uses
+   s1/s2/s3/s4). */
+extern struct UnkStruct8015C740 D_8018ABA0_ovl5;
+extern Vector2 D_8018A71C_ovl5[];
+extern f32 D_8018ABC0_ovl5[];
+void func_800AFBB4(s32, GObj *);
+
+void func_80185A4C_ovl5(GObj *arg0) {
+    SPObj *sp;
+    s32 prev;
+
+    prev = D_8018EE44_ovl5;
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, &func_800AD1A0, 0xE, 0x80000000, 0xE);
+    sp = func_8015C740_ovl5(arg0, &D_8018ABA0_ovl5);
+    sp->xOffset = D_8018ABC0_ovl5[0] + D_8018A71C_ovl5[prev].x;
+    sp->yOffset = D_8018ABC0_ovl5[1] + D_8018A71C_ovl5[prev].y;
+    while (1) {
+        if (prev != D_8018EE44_ovl5) {
+            prev = D_8018EE44_ovl5;
+            if ((prev == 9) || (prev == 0xA) || (prev == 0xB) || (prev == 0xC) || (prev == 0xD) ||
+                (prev == 0xE)) {
+                func_800AFBB4(0, omCurrentObj);
+            } else {
+                func_800AFBB4(1, omCurrentObj);
+                sp->xOffset = D_8018ABC0_ovl5[0] + D_8018A71C_ovl5[D_8018EE44_ovl5].x;
+                sp->yOffset = D_8018ABC0_ovl5[1] + D_8018A71C_ovl5[D_8018EE44_ovl5].y;
+            }
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185A4C_ovl5.s")
+#endif
 
 void func_80185C10_ovl5(void) {
     D_8018EE10_ovl5 = 0;

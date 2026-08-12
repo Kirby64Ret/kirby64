@@ -651,10 +651,11 @@ void func_8017485C_ovl5(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 118/120: same length and structure, whole-function register permutation. */
+/* 116/120: same length, whole-function register permutation. */
 void func_80174900_ovl5(s32 arg0, s32 arg1) {
     s32 i;
     s32 id;
+    u8 *q;
 
     for (i = 0; i < 4; i++) {
         if (i != arg0) {
@@ -663,12 +664,15 @@ void func_80174900_ovl5(s32 arg0, s32 arg1) {
                 if (D_800EA520[id] != 0x29A) {
                     D_800EA1A0[D_800EA520[id]] = 1;
                 }
-            } else if (D_8018EA00_ovl5[i * 82 + arg1] == 0xF) {
-                D_8018EA00_ovl5[i * 82 + arg1] = 2;
-            } else if (D_8018EA00_ovl5[i * 82 + arg1] == 0x10) {
-                D_8018EA00_ovl5[i * 82 + arg1] = 3;
-            } else if (D_8018EA00_ovl5[i * 82 + arg1] == 0x13) {
-                D_8018EA00_ovl5[i * 82 + arg1] = 0xA;
+            } else {
+                q = &D_8018EA00_ovl5[i * 82 + arg1];
+                if (*q == 0xF) {
+                    *q = 2;
+                } else if (*q == 0x10) {
+                    *q = 3;
+                } else if (*q == 0x13) {
+                    *q = 0xA;
+                }
             }
         }
     }

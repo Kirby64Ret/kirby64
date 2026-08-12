@@ -1123,45 +1123,45 @@ void func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9FDC.s")
 #endif
 
-#ifdef NON_MATCHING
 f32 func_800FA1D4(struct Unk80129114_4_4 *arg0, Vector *arg1, s32 arg2) {
-    Vector sp44;
-    f32 temp_f0;
-    f32 var_f20;
-    s16 temp_s4;
-    s32 var_s0;
-    s32 var_s1;
-    s32 var_s3;
-    Vector *temp_t7;
+    f32 lbvector_DiffLen(Vector *, Vector *);
+    f32 func_800F9FDC(void *, Vector *, s32, s32);
+    f32 best;
+    f32 d;
+    s32 idx;
+    s32 i;
+    s32 pad;
+    s16 n;
 
-    temp_s4 = arg0->unk2;
-    var_f20 = 1000000.0f;
-    var_s3 = -1;
-    var_s1 = 0;
-    if (temp_s4 > 0) {
-        var_s0 = 0;
-        do {
-            temp_t7 = (Vector *) ((u8 *) arg0->unk8 + var_s0);
-            sp44.x = temp_t7->x;
-            sp44.y = temp_t7->y;
-            sp44.z = temp_t7->z;
-            temp_f0 = lbvector_DiffLen(arg1, &sp44);
-            if (temp_f0 < var_f20) {
-                var_f20 = temp_f0;
-                var_s3 = var_s1;
-            }
-            var_s1 += 1;
-            var_s0 += 0xC;
-        } while (var_s1 != temp_s4);
+    n = arg0->unk2;
+    best = 1000000.0f;
+    idx = -1;
+    for (i = 0; i < n; i++) {
+        Vector sp44;
+
+        sp44 = *(Vector *) ((u8 *) arg0->unk8 + (i * 0xC));
+        d = lbvector_DiffLen(arg1, &sp44);
+        if (d < best) {
+            best = d;
+            idx = i;
+        }
     }
-    if (var_s3 != -1) {
-        return func_800F9FDC(arg0, arg1, var_s3, arg2);
+    if (idx != -1) {
+        return func_800F9FDC(arg0, arg1, idx, arg2);
     }
     return -1.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA1D4.s")
-#endif
+
+
+
+
+
+
+
+
+
+
+
 void func_800FA2D4(struct Ovl2CamState *arg0, struct Ovl2CamOut *arg1) {
     Camera *cam;
     f32 temp_f0;
