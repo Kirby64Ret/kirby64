@@ -354,7 +354,7 @@ s32 func_80171868_ovl5(void) {
 // Draft, 2/61: with THESE three locals every spill slot is exact (0x1C/20/24)
 // and only the frame differs, 0x30 vs 0x28. Re-measured 2026-08-12: dropping a
 // local fixes the frame but moves the spills (5-8 diffs). The states never meet.
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801720D8_ovl5(s32 arg0) {
     s32 pad;
     Unk801875F0 *p;
@@ -370,7 +370,6 @@ void func_801720D8_ovl5(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801720D8_ovl5.s")
 #endif
-
 /* Draft, 5/88: instruction-exact except the frame (0x28 vs ROM 0x20) and one
    `addu $t7, $v0, $t0` whose operands IDO emits swapped. The frame is the same
    +8 anomaly as its sibling func_801720D8_ovl5 above and never shrinks: swept
@@ -378,7 +377,7 @@ void func_801720D8_ovl5(s32 arg0) {
    pads, pointer vs index for both values -- every pad adds 8, nothing removes
    it. The addu survived operand swap, a temp local for the call result, an
    explicit (s32)(f32) cast and `/ 2.0f`. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801721CC_ovl5(s32 arg0) {
     s32 *q = &D_8018E998_ovl5[arg0];
     s32 temp = D_8018ECA8_ovl5[arg0];
@@ -399,7 +398,6 @@ void func_801721CC_ovl5(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801721CC_ovl5.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017232C_ovl5.s")
 
 u8 func_80172B10_ovl5(s32 arg0, s32 arg1) {

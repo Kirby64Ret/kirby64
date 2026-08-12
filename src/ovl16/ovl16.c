@@ -632,7 +632,7 @@ void func_801DCA84_ovl16(s32 arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 67/116 -> 32/116. The six hand-written stores were WRONG: D_801F0144/0148
 // are D_801F0140[1]/[2] and D_801F0124/0128 are D_801F0120[1]/[2], so the
 // whole thing is ONE loop `for (i = 0; i < 7; i++)`. IDO constant-folds the
@@ -685,7 +685,6 @@ void func_801DCBF8_ovl16(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DCBF8_ovl16.s")
 #endif
-
 void func_801DCDC8_ovl16(s32 arg0) {
     void func_8019B9B0_ovl7(void);
     void func_800AF27C(void);

@@ -573,7 +573,7 @@ s32 func_8021679C_ovl9(f32 arg0) {
 #else
 extern f32 sqrtf(f32);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 3/42: exact except that the ROM schedules the Y[objId] load ahead of the two
 // Z loads (ROM Y[obj],Z[obj],Z[0]; IDO Z[obj],Z[0],Y[obj]). Registers, subs,
 // muls, adds and the epilogue are all identical -- it is purely the order of

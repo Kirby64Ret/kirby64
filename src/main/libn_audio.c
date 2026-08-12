@@ -521,7 +521,7 @@ void func_80023990(void) {
  * leading dead scalars, a leading dead pointer, `for` vs `while`, dropping the
  * `next` and `voice` locals, assignment order of node/prev, and an s32 return
  * (29). */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 typedef struct KToneA28 {
     /* 0x00 */ struct KToneA28 *next;
     /* 0x04 */ void  *unk04;
@@ -571,7 +571,6 @@ void func_80023A28(KToneA28 *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023A28.s")
 #endif
-
 void func_80023AE4(void *arg0) {
     OSIntMask mask = osSetIntMask(OS_IM_NONE);
 

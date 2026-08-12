@@ -575,7 +575,7 @@ void func_801E97AC_ovl16(s32 arg0) {
  * see it, and verify.py --all on the file does not.
  * Guard restored so the ROM matches; the draft is preserved for
  * whoever picks it up. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // func_801E9858_ovl16: floored at 188/238. Structurally exact; single root cause:
 // the ROM keeps `other` UNSCALED in $s1 and re-emits `sll r,$s1,2` at both use
 // sites (before and after the call block); IDO folds other<<2 into one cached
@@ -1287,7 +1287,7 @@ void func_801ED400_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 36/125 (target 124). Structure, control flow and all four `func_800AA038`
  * calls are right. The unlock was reading the THIRD argument out of the
  * listing: `lw $a2, 0x2C($sp)` before each call is `idx`, not a live-range
@@ -1333,7 +1333,6 @@ void func_801ED444_ovl16(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801ED444_ovl16.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801ED634_ovl16.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801EDE50_ovl16.s")

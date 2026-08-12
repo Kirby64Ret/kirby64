@@ -205,7 +205,7 @@ void func_801E6E84_ovl10(struct GObj *);
 void func_80198880_ovl7(void *);
 void func_800A9760(s32);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 #else
 #endif
 
@@ -817,7 +817,6 @@ void func_801EDAA0_ovl10(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801EDAA0_ovl10.s")
 #endif
-
 void func_801EDD1C_ovl10(GObj *arg0) {
 }
 
