@@ -28,9 +28,20 @@ import permute_queue as pq
 
 # (diffs, cfile, func) -- every number measured by a lane and recorded in a
 # FACTORY note or a stint report. Ascending: closest first.
+# ORDER RESIDUES FIRST. Measured 2026-08-13: the permuter spent 600s each on
+# func_801E8F74_ovl9 and func_801E3FE4_ovl9 -- both labelled "1 diff" by a lane
+# -- and plateaued at 40 and 170 without closing. Those two are REGISTER
+# ALLOCATION residues, and random source mutation has no purchase on them.
+#
+# What it should be fed instead is a residue of instruction ORDER, which is
+# precisely what mutation reaches. The ovl16 pair below is the clearest case in
+# the tree: two identical `addu $t,$s7,$s0` emitted in the opposite order, arm
+# order locked by bc1fl polarity, 2 diffs out of 299, and a lane has proved no
+# source spelling reaches it.
 TARGETS = [
-    (1,   'src/ovl9/ovl9_5.c',        'func_801E8F74_ovl9'),
-    (1,   'src/ovl9/ovl9_4.c',        'func_801E3FE4_ovl9'),
+    (2,   'src/ovl16/ovl16.c',        'func_801DFF40_ovl16'),
+    (2,   'src/ovl16/ovl16.c',        'func_801E0820_ovl16'),
+    (9,   'src/ovl2/ovl2_7.c',        'func_8010D42C'),
     (1,   'src/ovl7/ovl7_2.c',        'func_8019F650_ovl7'),
     (2,   'src/ovl7/ovl7_2.c',        'func_801A0244_ovl7'),
     (5,   'src/ovl8/ovl8_4.c',        'func_801D6534_ovl8'),
