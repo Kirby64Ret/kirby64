@@ -13,6 +13,55 @@
 // ovl7_3
 extern void func_801A3864_ovl7(GObj *);
 
+// --- declarations used only by the guarded m2c drafts below ---
+struct Unk801D0A78 {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ s32 unk4;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+};
+extern struct Unk801D0A78 D_801D0A78_ovl7;
+extern s32 D_801D0AA4_ovl7;
+extern struct Entity *D_801290E0;
+extern u8 D_800D6C68[];
+extern u8 D_800D71E8;
+extern u32 D_8012BCA0;
+extern u8 D_801CA6F4_ovl7, D_801CA7DC_ovl7;
+extern u8 D_801CAF28_ovl7, D_801CAF3C_ovl7;
+extern u8 D_801CAFCC_ovl7, D_801CB008_ovl7, D_801CB080_ovl7;
+extern u8 D_801CB0F8_ovl7, D_801CB134_ovl7, D_801CB170_ovl7;
+extern u8 D_801CB4DC_ovl7, D_801CB590_ovl7, D_801CD240_ovl7;
+struct Sub800E1B50_Unk98;
+extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
+extern u8 D_801D0A38_ovl7, D_801D0A58_ovl7;
+void func_800B4954();
+void func_800B4D70();
+void func_800B4EBC();
+void func_800B799C();
+void func_801A8FFC_ovl7();
+extern s32 D_800D7090;
+void func_801ABBA0_ovl7();
+void func_801A9268_ovl7();
+void func_801A9FC4_ovl7();
+void func_801AA344_ovl7();
+void func_801AA600_ovl7();
+void func_801AA690_ovl7();
+void func_801AA78C_ovl7();
+void func_801AA850_ovl7();
+void func_801AAE60_ovl7();
+void func_801A9930_ovl7();
+void func_801A8CDC_ovl7();
+void func_801AA1D4_ovl7();
+void func_801AAAF8_ovl7();
+void func_801AB884_ovl7();
+void func_801AC33C_ovl7();
+void func_801AC448_ovl7();
+
+
 // ovl1_8
 extern void func_800B6474(GObj *);
 
@@ -22,14 +71,35 @@ struct AnimReq {
     f32 unk8;
 };
 
+struct EneScaleSet {
+    f32 unk0;
+    f32 unk4;
+    f32 unk8;
+    f32 unkC;
+    f32 unk10;
+};
+
 struct EneVtable {
-    u8 filler0[0x40];
-    void (*unk40)(GObj *);
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ u8 pad2[2];
+    /* 0x04 */ s32 unk4;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ u8 filler14[0x28];
+    /* 0x3C */ void (*unk3C)(s32, s32 *, s32 *, f32 *);
+    /* 0x40 */ void (*unk40)(GObj *);
+    /* 0x44 */ void *unk44;
 };
 
 struct EneInfo {
-    u8 filler0[0x14];
-    struct EneVtable *unk14;
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ struct Unk801D0A78 *unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ struct EneVtable *unk14;
 };
 
 struct EneAnimSetup {
@@ -102,8 +172,8 @@ void func_801A7000_ovl7(GObj *gobj) {
     utilFuncTableJump(D_800E8220[omCurrentObj->objId], 2, &D_801C29B0_ovl7);
 }
 
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 265/273 diffs
+#ifdef NON_MATCHING
 void func_801A7104_ovl7(s32 arg0) {
     s32 sp3C;
     struct SubSub800E1B50_Unk88_UnkC *sp34;
@@ -187,16 +257,15 @@ loop_3:
         ohSleep(1);
     }
     func_801A9268_ovl7();
-    *(&D_8012E860 + 0x1A) = 0;
+    *(s16 *) &D_8012E860[0x1A] = 0;
     func_801A8CDC_ovl7(arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A7104_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
-void func_801A7524_ovl7(s32 arg0) {
+// m2c draft, measured 1421/1441 diffs
+#ifdef NON_MATCHING
+void func_801A7524_ovl7(GObj *arg0) {
     s32 spB4;
     s32 spB0;
     f32 spA8;
@@ -297,7 +366,7 @@ void func_801A7524_ovl7(s32 arg0) {
     s32 var_v0_4;
     struct UnkStruct800E1B50 *temp_t8;
     u16 temp_v0;
-    u32 temp_a0_3;
+    struct EneScaleSet *temp_a0_3;
     u32 temp_v0_10;
     u32 temp_v0_11;
     u32 temp_v0_12;
@@ -539,12 +608,12 @@ block_83:
     gEntitiesAngleYArray[temp_v0_12] = D_800E4C50[temp_v0_12];
     temp_v0_13 = omCurrentObj->objId;
     gEntitiesAngleZArray[temp_v0_13] = D_800E4E10[temp_v0_13];
-    temp_a0_3 = sp88->unk88->unk10;
+    temp_a0_3 = (struct EneScaleSet *) sp88->unk88->unk10;
     if ((temp_a0_3 != 0) && (sp84 != NULL)) {
-        sp84->unk14 = (bitwise u32) (D_800E4FD0[omCurrentObj->objId] * 0.9f * temp_a0_3->unk4);
-        sp84->unk18 = (bitwise u32) (D_800E4FD0[omCurrentObj->objId] * 0.9f * sp88->unk88->unk10->unk8);
-        sp84->unk1C = D_800E4FD0[omCurrentObj->objId] * 0.8f * sp88->unk88->unk10->unkC;
-        sp84->unk20 = D_800E4FD0[omCurrentObj->objId] * 0.8f * sp88->unk88->unk10->unk10;
+        *(f32 *) &sp84->unk14 = D_800E4FD0[omCurrentObj->objId] * 0.9f * temp_a0_3->unk4;
+        *(f32 *) &sp84->unk18 = D_800E4FD0[omCurrentObj->objId] * 0.9f * ((struct EneScaleSet *) sp88->unk88->unk10)->unk8;
+        sp84->unk1C = D_800E4FD0[omCurrentObj->objId] * 0.8f * ((struct EneScaleSet *) sp88->unk88->unk10)->unkC;
+        sp84->unk20 = D_800E4FD0[omCurrentObj->objId] * 0.8f * ((struct EneScaleSet *) sp88->unk88->unk10)->unk10;
     }
     temp_v0_14 = omCurrentObj->objId;
     temp_f0_5 = gEntitiesNextPosXArray[temp_v0_14];
@@ -564,9 +633,9 @@ block_83:
     var_a1 = NULL;
     if (spB0 == 1) {
         D_80198820_ovl3 = 0.0f;
-        func_800FD570(temp_f12_3, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f);
+        func_800FD570(temp_f12_3, 0, 0.0f, 0.0f, 0.0f);
         play_sound(0x158);
-        func_8019D958_ovl7(omCurrentObj->unk2);
+        func_8019D958_ovl7(*(u16 *) ((u8 *) omCurrentObj + 2));
         return;
     }
     temp_a2 = omCurrentObj;
@@ -596,7 +665,7 @@ block_83:
             }
             if (var_f2_6 < 0.5f) {
                 temp_f0_7 = *(gEntitiesNextPosYArray + var_v0_4);
-                temp_f2_4 = (var_v0_4 + 0x800E0000)->unk2CD0;
+                temp_f2_4 = *(f32 *) ((u8 *) gEntitiesPosYArray + var_v0_4);
                 if (temp_f0_7 < temp_f2_4) {
                     var_f14 = -(temp_f0_7 - temp_f2_4);
                 } else {
@@ -604,7 +673,7 @@ block_83:
                 }
                 if (var_f14 < 0.5f) {
                     temp_f0_8 = *(gEntitiesNextPosZArray + var_v0_4);
-                    temp_f2_5 = (var_v0_4 + 0x800E0000)->unk2E90;
+                    temp_f2_5 = *(f32 *) ((u8 *) gEntitiesPosZArray + var_v0_4);
                     if (temp_f0_8 < temp_f2_5) {
                         var_f14_2 = -(temp_f0_8 - temp_f2_5);
                     } else {
@@ -627,13 +696,13 @@ block_83:
                         sp64 = sp70 - temp_f8;
                         sp68 = temp_f6 - temp_f4;
                         lbvector_Normalize(temp_f12_5, var_f14_2, &sp60, var_a1, temp_a2, var_a3);
-                        temp_f4_3 = gEntitiesNextPosYArray[omCurrentObj->objId] + (bitwise f32) sp84->unk14;
+                        temp_f4_3 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &sp84->unk14;
                         sp70 = temp_f4_3;
                         sp7C = temp_f4_3;
                         if (func_8010423C(&sp78, &sp6C, &sp60, 0, 0, 0, 0, 0) != 0) {
                             D_8012BCA0 = (((D_8012BCA0 >> 0x13) | 0x12) * 8) | (D_8012BCA0 & 7);
                         }
-                        temp_f6_2 = gEntitiesNextPosYArray[omCurrentObj->objId] + (bitwise f32) sp84->unk18;
+                        temp_f6_2 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &sp84->unk18;
                         sp70 = temp_f6_2;
                         sp7C = temp_f6_2;
                         if (func_8010423C(&sp78, &sp6C, &sp60, 0, 0, 0, 0, 0) != 0) {
@@ -793,7 +862,6 @@ block_168:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A7524_ovl7.s")
 #endif
-
 #ifdef NON_MATCHING
 // 2 diffs: the compiler spill slot is 0x18($sp), the ROM's is 0x1C. Frame size
 // already matches; declaration order, dummy scalars, dummy arrays/structs and
@@ -830,8 +898,8 @@ s32 func_801A8BAC_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8BAC_ovl7.s")
 #endif
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 171/205 diffs
+#ifdef NON_MATCHING
 void func_801A8CDC_ovl7(s32 arg0) {
     struct UnkStruct800E1B50 *sp2C;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp24;
@@ -896,14 +964,13 @@ void func_801A8CDC_ovl7(s32 arg0) {
     D_800E3AD0[omCurrentObj->objId] = temp_f14;
     D_800E8E60[omCurrentObj->objId] = 1;
     D_800E8220[omCurrentObj->objId] = 0;
-    *(&D_8012E860 + 0xC) = 0;
+    *(s32 *) &D_8012E860[0xC] = 0;
     func_800AF408(temp_f12, temp_f14, D_800EA6E0, omCurrentObj, D_800E5350, D_800E3910);
     curObjSleepForever();
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8CDC_ovl7.s")
 #endif
-
 /* 32/155 diffs, all register naming, no structural difference: the ROM gives
    $a0 to the switch-result variable and $v0 to the D_800E77A0 halfword; IDO
    swaps the pair (var->$v0, halfword->$a0), which cascades into
@@ -926,7 +993,7 @@ void func_801A8FFC_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent;
     struct SubSub800E1B50_Unk88_UnkC *temp_v0;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_a1;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *temp_t0;
+    struct EneAnimSetup *temp_t0;
     u16 temp_v0_3;
     u16 temp_v0_2;
     u32 temp_v1;
@@ -994,8 +1061,8 @@ void func_801A8FFC_ovl7(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8FFC_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 163/165 diffs
+#ifdef NON_MATCHING
 void func_801A9268_ovl7(void) {
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp18;
     struct SubSub800E1B50_Unk88_UnkC *temp_a1;
@@ -1015,7 +1082,7 @@ void func_801A9268_ovl7(void) {
     gKirbyState.numberInhaled += 1;
     if (temp_a2 != NULL) {
         var_a0 = temp_a2->unk1C;
-        if ((bitwise s32) var_a0->unk0 != 0) {
+        if (*(s32 *) &var_a0->unk0 != 0) {
             gKirbyState.unk8 += 1;
         }
     }
@@ -1050,20 +1117,19 @@ void func_801A9268_ovl7(void) {
     var_a0_2 = &D_800E76C0[omCurrentObj->objId];
     temp_a1_2 = *var_a0_2;
     if (temp_a1_2 < 0x40) {
-        temp_v1 = temp_a1_2 + (&D_800D6C68 + 0x28);
-        if ((D_801290E0 + (temp_a1_2 * 0x2C))->unk5 & 1) {
+        temp_v1 = temp_a1_2 + (D_800D6C68 + 0x28);
+        if (D_801290E0[temp_a1_2].unk5 & 1) {
             *temp_v1 &= 0x80;
             var_a0_2 = &D_800E76C0[omCurrentObj->objId];
         }
     }
     *var_a0_2 = 0xFF;
     func_8019BB58_ovl7(var_a0_2, temp_a1_2, temp_a2);
-    func_800A2300(*(&D_800DE350 + (omCurrentObj->objId * 4)));
+    func_800A2300(D_800DE350[omCurrentObj->objId]);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A9268_ovl7.s")
 #endif
-
 s32 func_801A94D8_ovl7(void) {
     struct UnkStruct800E1B50 *ent;
     struct SubSub800E1B50_Unk88_UnkC *temp_a0;
@@ -1110,9 +1176,9 @@ void func_801A9618_ovl7(GObj *gobj) {
     func_801A8CDC_ovl7(gobj);
 }
 
-#ifdef MIPS_TO_C
-
-void func_801A96C4_ovl7(s32 arg0) {
+// m2c draft, measured 138/157 diffs
+#ifdef NON_MATCHING
+void func_801A96C4_ovl7(GObj *arg0) {
     s32 sp44;
     s32 var_v1;
     s32 var_v1_2;
@@ -1121,14 +1187,14 @@ void func_801A96C4_ovl7(s32 arg0) {
     u32 temp_v0_3;
     u32 temp_v0_4;
     u8 temp_t2;
-    void *temp_a1;
+    struct EneInfo *temp_a1;
 
     temp_v0 = omCurrentObj->objId;
-    temp_a1 = D_800E1B50[temp_v0]->unk88->unkC->unk4->unk1C;
+    temp_a1 = ((struct EneAnimSetup *) D_800E1B50[temp_v0]->unk88->unkC->unk4)->unk1C;
     D_800DF150[temp_v0] = func_801A9930_ovl7;
     sp44 = temp_a1->unk14;
     func_801AA344_ovl7(temp_a1);
-    temp_t2 = *(&D_8012E860 + 0x18);
+    temp_t2 = D_8012E860[0x18];
     switch (temp_t2) {
         case 0:
         case 1:
@@ -1179,17 +1245,16 @@ loop_4:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A96C4_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 414/434 diffs
+#ifdef NON_MATCHING
 void func_801A9930_ovl7(s32 arg0) {
     struct SubSub800E1B50_Unk88_UnkC *sp30;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp2C;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *sp28;
+    struct EneAnimSetup *sp28;
     void *sp20;
     struct Sub800E1B50_Unk84 *sp1C;
-    ? (*temp_v0_9)(s32, s32 *, s32 *, f32 *);
-    ? *temp_a1;
+    void (*temp_v0_9)(s32, s32 *, s32 *, f32 *);
+    void *temp_a1;
     GObj *temp_t0;
     f32 *temp_v1_2;
     f32 *temp_v1_3;
@@ -1202,7 +1267,7 @@ void func_801A9930_ovl7(s32 arg0) {
     s8 temp_a0;
     struct SubSub800E1B50_Unk88_UnkC *temp_a2;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_t2;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *temp_t1;
+    struct EneAnimSetup *temp_t1;
     struct UnkStruct800E1B50 *temp_v1;
     u32 temp_v0;
     u32 temp_v0_10;
@@ -1214,8 +1279,8 @@ void func_801A9930_ovl7(s32 arg0) {
     u32 temp_v0_6;
     u32 temp_v0_7;
     u32 temp_v0_8;
-    void *temp_a3;
-    void *temp_t3;
+    struct EneInfo *temp_a3;
+    struct EneVtable *temp_t3;
 
     temp_t0 = omCurrentObj;
     temp_v0 = temp_t0->objId;
@@ -1230,10 +1295,10 @@ void func_801A9930_ovl7(s32 arg0) {
         gKirbyState.unkD = -2;
         temp_v0_2 = temp_t0->objId;
         if (D_800E83E0[temp_v0_2] == 0x12) {
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0_2], &func_801AC33C_ovl7, temp_a2, temp_a3);
+            assign_new_process_entry(gEntityGObjProcessArray[temp_v0_2], &func_801AC33C_ovl7);
             return;
         }
-        assign_new_process_entry(gEntityGObjProcessArray[temp_v0_2], &func_801AC448_ovl7, temp_a2, temp_a3);
+        assign_new_process_entry(gEntityGObjProcessArray[temp_v0_2], &func_801AC448_ovl7);
         return;
     }
     temp_a0 = gKirbyState.unkD;
@@ -1317,7 +1382,7 @@ block_17:
             }
             return;
         case 5:
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AA1D4_ovl7, temp_a2, temp_a3);
+            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AA1D4_ovl7);
             return;
         case 3:
             if (temp_t1->unk10 == gEntitiesScaleXArray[temp_v0]) {
@@ -1326,7 +1391,7 @@ block_17:
             goto block_17;
         case -1:
             sp30 = temp_a2;
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801A8CDC_ovl7, temp_a2, temp_a3);
+            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801A8CDC_ovl7);
             gKirbyState.currentInhale = temp_a2->unk0->unk1C->unk4;
             return;
         case 8:
@@ -1338,7 +1403,7 @@ block_17:
             }
             break;
         case -3:
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AC448_ovl7, temp_a2, temp_a3);
+            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AC448_ovl7);
             return;
         case 1:
             if (temp_t2->unk10 == gEntitiesScaleXArray[temp_v0]) {
@@ -1357,14 +1422,13 @@ block_17:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A9930_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 47/117 diffs
+#ifdef NON_MATCHING
 void func_801A9FC4_ovl7(s32 arg0) {
     s32 temp_s4;
     s32 temp_s5;
 
-    temp_s4 = D_800E1B50[omCurrentObj->objId]->unk88->unkC->unk4->unk1C->unk14;
+    temp_s4 = ((struct EneAnimSetup *) D_800E1B50[omCurrentObj->objId]->unk88->unkC->unk4)->unk1C->unk14;
     func_800AF408();
     func_800A9D64(omCurrentObj->objId);
     temp_s5 = temp_s4 + 0x20;
@@ -1399,7 +1463,6 @@ loop_1:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A9FC4_ovl7.s")
 #endif
-
 s32 func_801AA190_ovl7(void) {
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AB5A4_ovl7);
     return 1;
@@ -1448,19 +1511,19 @@ void func_801AA1D4_ovl7(GObj *gobj) {
 void func_801AA33C_ovl7(GObj *gobj) {
 }
 
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 186/188 diffs
+#ifdef NON_MATCHING
 void func_801AA344_ovl7(s32 arg0) {
     struct SubSub800E1B50_Unk88_UnkC *sp2C;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *sp28;
+    struct EneAnimSetup *sp28;
     s32 temp_v0_2;
     struct SubSub800E1B50_Unk88_UnkC *temp_v1;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *temp_a1;
+    struct EneAnimSetup *temp_a1;
     struct UnkStruct800E1B50 *temp_s1;
     u32 temp_v0;
-    void *temp_s0;
-    void *temp_s2;
-    void *temp_t3;
+    struct EneVtable *temp_s0;
+    struct EneInfo *temp_s2;
+    struct Unk801D0A78 *temp_t3;
 
     temp_v0 = omCurrentObj->objId;
     temp_s1 = D_800E1B50[temp_v0];
@@ -1525,7 +1588,6 @@ void func_801AA344_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AA344_ovl7.s")
 #endif
-
 void func_801AA600_ovl7(struct AnimReq *arg0) {
     if (arg0->unk0 != -1) {
         func_800A9EA4(arg0->unk0);
@@ -1599,9 +1661,9 @@ void func_801AA850_ovl7(struct AnimReqSet *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-
-void func_801AA914_ovl7(s32 arg0) {
+// m2c draft, measured 106/120 diffs
+#ifdef NON_MATCHING
+void func_801AA914_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *sp24;
     struct SubSub800E1B50_Unk88_UnkC *temp_a2;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_s0;
@@ -1618,7 +1680,7 @@ void func_801AA914_ovl7(s32 arg0) {
     func_800B19F4(0, temp_a1, temp_a2);
     D_800EC660[omCurrentObj->objId] = 0.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
-    func_801ABBA0_ovl7(arg0, omCurrentObj);
+    func_801ABBA0_ovl7(arg0);
     D_800DF150[omCurrentObj->objId] = func_801AAAF8_ovl7;
     temp_v1->unk48 = 0;
     temp_v1->unk98 = &D_801CB500_ovl7;
@@ -1642,9 +1704,8 @@ void func_801AA914_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AA914_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 200/221 diffs
+#ifdef NON_MATCHING
 void func_801AAAF8_ovl7(s32 arg0) {
     f32 *var_at;
     f32 var_f0;
@@ -1722,7 +1783,6 @@ void func_801AAAF8_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AAAF8_ovl7.s")
 #endif
-
 void func_801AAE60_ovl7(void) {
     if (D_800E8AE0[D_800E0D50[omCurrentObj->objId]] & 6) {
         D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 7.0f;
@@ -1795,7 +1855,6 @@ block_8:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB008_ovl7.s")
 #endif
-void func_801ABBA0_ovl7(void);
 s32 func_801AC6D0_ovl7(struct AnimTrack *);
 void func_801AB2F4_ovl7(GObj *);
 extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
@@ -1825,9 +1884,9 @@ void func_801AB174_ovl7(GObj *gobj) {
     func_801AC11C_ovl7(gobj);
 }
 
-#ifdef MIPS_TO_C
-
-void func_801AB2F4_ovl7(s32 arg0) {
+// m2c draft, measured 152/175 diffs
+#ifdef NON_MATCHING
+void func_801AB2F4_ovl7(GObj *arg0) {
     f32 *var_at;
     f32 var_f0;
     s32 *temp_v0_5;
@@ -1887,14 +1946,13 @@ void func_801AB2F4_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB2F4_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
-void func_801AB5A4_ovl7(s32 arg0) {
+// m2c draft, measured 163/184 diffs
+#ifdef NON_MATCHING
+void func_801AB5A4_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *sp24;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *sp1C;
+    struct EneAnimSetup *sp1C;
     struct SubSub800E1B50_Unk88_UnkC *temp_a3;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *temp_a2;
+    struct EneAnimSetup *temp_a2;
     struct UnkStruct800E1B50 *temp_a1;
     u32 temp_v1;
     u32 temp_v1_2;
@@ -1909,7 +1967,7 @@ void func_801AB5A4_ovl7(s32 arg0) {
     sp24 = temp_a1;
     sp1C = temp_a2;
     D_800EC820[omCurrentObj->objId] = 25.0f;
-    func_801ABBA0_ovl7(temp_a1, temp_a2, temp_a3);
+    func_801ABBA0_ovl7(temp_a1);
     D_800DF150[omCurrentObj->objId] = func_801AB884_ovl7;
     temp_a1->unk48 = 0;
     temp_a1->unk98 = &D_801CB4DC_ovl7;
@@ -1919,7 +1977,7 @@ void func_801AB5A4_ovl7(s32 arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     D_800EA6E0[omCurrentObj->objId] = 0.06981317f;
     D_800E4C50[omCurrentObj->objId] = 0.0f;
-    func_801AC6D0_ovl7(sp1C, temp_a1);
+    func_801AC6D0_ovl7(sp1C);
     gEntitiesScaleXArray[omCurrentObj->objId] = temp_a2->unk10;
     gEntitiesScaleYArray[omCurrentObj->objId] = temp_a2->unk10;
     gEntitiesScaleZArray[omCurrentObj->objId] = temp_a2->unk10;
@@ -1948,9 +2006,8 @@ void func_801AB5A4_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB5A4_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 179/200 diffs
+#ifdef NON_MATCHING
 void func_801AB884_ovl7(s32 arg0) {
     f32 *var_at;
     f32 var_f0;
@@ -2031,12 +2088,11 @@ void func_801AB884_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB884_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
-void func_801ABBA0_ovl7(s32 arg0) {
+// m2c draft, measured 349/365 diffs
+#ifdef NON_MATCHING
+void func_801ABBA0_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *sp24;
-    void *sp1C;
+    struct EneInfo *sp1C;
     GObj *temp_v1;
     f32 *temp_a0;
     f32 *temp_a0_2;
@@ -2067,7 +2123,7 @@ void func_801ABBA0_ovl7(s32 arg0) {
     temp_t6 = D_800E1B50[temp_v0];
     sp24 = temp_t6;
     D_800DEF90[temp_v0] = func_800B4954;
-    sp1C = temp_t6->unk88->unkC->unk4->unk1C;
+    sp1C = ((struct EneAnimSetup *) temp_t6->unk88->unkC->unk4)->unk1C;
     temp_v0_2 = omCurrentObj->objId;
     gEntitiesNextPosXArray[temp_v0_2] = gEntitiesNextPosXArray[D_800E0D50[temp_v0_2]];
     temp_v0_3 = omCurrentObj->objId;
@@ -2090,7 +2146,7 @@ void func_801ABBA0_ovl7(s32 arg0) {
     D_800DF310[omCurrentObj->objId] = NULL;
     temp_v0_9 = sp24->unk34;
     if (temp_v0_9 != NULL) {
-        func_800A22D4(temp_v0_9, D_800E0D50, D_800E5F90, D_800E6BD0);
+        func_800A22D4(temp_v0_9);
     }
     func_800A2300(arg0);
     sp24->unk34 = NULL;
@@ -2169,7 +2225,6 @@ block_17:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801ABBA0_ovl7.s")
 #endif
-
 void func_801AC11C_ovl7(GObj *gobj) {
     struct UnkStruct800E1B50 *temp_s0;
     u32 temp_a0;

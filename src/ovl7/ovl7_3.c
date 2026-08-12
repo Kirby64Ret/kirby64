@@ -9,6 +9,15 @@
 // ovl2 bss
 extern u32 D_8012BCA0;
 
+struct Ovl7ColRec {
+    /* 0x0 */ u32 unk0;
+    /* 0x4 */ s32 unk4;
+};
+extern struct Ovl7ColRec *D_8012BCE0[];
+void func_8010C274();
+void func_8010C184();
+void func_8010DC24();
+
 extern void func_8010B480(struct Sub800E1B50_Unk84 *);
 extern void func_8010B284(struct Sub800E1B50_Unk84 *);
 extern void func_8010B67C(struct Sub800E1B50_Unk84 *);
@@ -295,8 +304,8 @@ void func_801A187C_ovl7(void *arg0) {
     temp_v1 = var_t0->unk48;
     if ((&func_8010C274 != temp_v1) && (&func_8010C184 != temp_v1) && (func_8010B480 != temp_v1) && (func_8010B284 != temp_v1) && (func_8010B67C != temp_v1) && (func_8010B860 != temp_v1)) {
         if (D_800E8920[temp_a1->objId] == 1) {
-            var_t0->unk78 = D_8012BCA0.unkC;
-            var_t0->unk7C = D_8012BCA0.unk8;
+            var_t0->unk78 = (&D_8012BCA0)[3];
+            var_t0->unk7C = (&D_8012BCA0)[2];
         } else {
             var_t0->unk78 = 0;
             goto block_14;
@@ -309,25 +318,25 @@ block_14:
     temp_v1_2 = var_t0->unk48;
     if ((&func_8010C274 != temp_v1_2) && (&func_8010C184 != temp_v1_2) && (func_8010B480 != temp_v1_2) && (func_8010B284 != temp_v1_2) && (func_8010B67C != temp_v1_2) && (func_8010B860 != temp_v1_2)) {
         var_t0->unk44 = 0;
-        var_v1 = D_8012BCA0.unk0 >> 0x13;
+        var_v1 = D_8012BCA0 >> 0x13;
         if (var_v1 & 0xE00) {
             sp2C = var_t0;
-            var_t0->unk44 = func_8010DC24(D_8012BCA0.unk8, temp_a1);
-            var_v1 = D_8012BCA0.unk0 >> 0x13;
+            var_t0->unk44 = func_8010DC24((&D_8012BCA0)[2], temp_a1);
+            var_v1 = D_8012BCA0 >> 0x13;
         }
         if ((var_v1 & 7) && (var_t0->unk44 == 0)) {
             sp2C = var_t0;
-            var_t0->unk44 = func_8010DC24(D_8012BCA0.unk20);
-            var_v1 = D_8012BCA0.unk0 >> 0x13;
+            var_t0->unk44 = func_8010DC24((&D_8012BCA0)[8]);
+            var_v1 = D_8012BCA0 >> 0x13;
         }
         if ((var_v1 & 0x38) && (var_t0->unk44 == 0)) {
             sp2C = var_t0;
-            var_t0->unk44 = func_8010DC24(D_8012BCA0.unk2C);
-            var_v1 = D_8012BCA0.unk0 >> 0x13;
+            var_t0->unk44 = func_8010DC24((&D_8012BCA0)[11]);
+            var_v1 = D_8012BCA0 >> 0x13;
         }
         if ((var_v1 & 0x1C0) && (var_t0->unk44 == 0)) {
             sp2C = var_t0;
-            var_t0->unk44 = func_8010DC24(D_8012BCA0.unk14);
+            var_t0->unk44 = func_8010DC24((&D_8012BCA0)[5]);
         }
     }
 }
@@ -345,9 +354,9 @@ void func_801A1B6C_ovl7(void) {
     f32 sp5C;
     f32 sp58;
     f32 sp54;
-    s32 sp48;
+    Vector sp48;
     u32 sp40;
-    ? sp3C;
+    f32 sp3C;
     UnkStruct800E1B50 *sp38;
     struct Sub800E1B50_Unk84 *sp34;
     UnkStruct800E1B50 *temp_t0;
@@ -378,10 +387,10 @@ void func_801A1B6C_ovl7(void) {
     temp_v0 = temp_t0->unk42;
     switch (temp_v0) {                              /* irregular */
         case 0:
-            sp64 = gEntitiesNextPosYArray[omCurrentObj->objId] + (bitwise f32) temp_a2->unk14;
+            sp64 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &temp_a2->unk14;
             break;
         case 2:
-            sp64 = gEntitiesNextPosYArray[omCurrentObj->objId] + (bitwise f32) temp_a2->unk18;
+            sp64 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &temp_a2->unk18;
             break;
         default:
         case 1:
@@ -398,7 +407,7 @@ void func_801A1B6C_ovl7(void) {
         if (temp_v0_2 != 1) {
             if (temp_v0_2 != 2) {
                 if (temp_v0_2 == 3) {
-                    temp_v1_2 = *(&D_8012BCE0 + 8);
+                    temp_v1_2 = D_8012BCE0[2];
                     if (temp_v1_2->unk4 != 0) {
                         sp38->unk74 = temp_v1_2;
                         temp_v0_3 = &D_800E8AE0[omCurrentObj->objId];
@@ -409,7 +418,7 @@ void func_801A1B6C_ovl7(void) {
                 goto block_18;
             }
 block_13:
-            temp_v1_3 = *(&D_8012BCE0 + 4);
+            temp_v1_3 = D_8012BCE0[1];
             if (temp_v1_3->unk4 != 0) {
                 sp38->unk74 = temp_v1_3;
                 temp_v0_4 = &D_800E8AE0[omCurrentObj->objId];
@@ -418,8 +427,8 @@ block_13:
             goto block_15;
         }
 block_15:
-        if (D_8012BCE0->unk4 != 0) {
-            sp38->unk74 = D_8012BCE0;
+        if (D_8012BCE0[0]->unk4 != 0) {
+            sp38->unk74 = D_8012BCE0[0];
             temp_v0_5 = &D_800E8AE0[omCurrentObj->objId];
             *temp_v0_5 |= 1;
         }
@@ -445,12 +454,12 @@ block_18:
             temp_v0_9 = sp38->unk41;
             switch (temp_v0_9) {                    /* switch 1; irregular */
                 case 0:                             /* switch 1 */
-                    sp64 = gEntitiesNextPosYArray[temp_v1_4] + (bitwise f32) sp34->unk14;
-                    sp58 = gEntitiesPosYArray[omCurrentObj->objId] + (bitwise f32) sp34->unk14;
+                    sp64 = gEntitiesNextPosYArray[temp_v1_4] + *(f32 *) &sp34->unk14;
+                    sp58 = gEntitiesPosYArray[omCurrentObj->objId] + *(f32 *) &sp34->unk14;
                     break;
                 case 2:                             /* switch 1 */
-                    sp64 = gEntitiesNextPosYArray[temp_v1_4] + (bitwise f32) sp34->unk18;
-                    sp58 = gEntitiesPosYArray[omCurrentObj->objId] + (bitwise f32) sp34->unk18;
+                    sp64 = gEntitiesNextPosYArray[temp_v1_4] + *(f32 *) &sp34->unk18;
+                    sp58 = gEntitiesPosYArray[omCurrentObj->objId] + *(f32 *) &sp34->unk18;
                     break;
                 default:                            /* switch 1 */
                 case 1:                             /* switch 1 */
@@ -463,10 +472,10 @@ block_18:
             temp_a0_2 = sp38->unk74;
             if (temp_a0_2 != 0) {
                 if ((func_8010E048(temp_a0_2, 0x14, &sp54, &sp60, &sp3C, &sp48) != 0) && (sp38->unk38 == 0)) {
-                    func_801AE73C_ovl7(1, sp48, sp4C, sp50);
+                    func_801AE73C_ovl7(1, sp48.x, sp48.y, sp48.z);
                 }
             } else if ((sp40 != 0) && (func_8010E048(sp40, 0x14, &sp54, &sp60, &sp3C, &sp48) != 0) && (sp38->unk38 == 0)) {
-                func_801AE73C_ovl7(1, sp48, sp4C, sp50);
+                func_801AE73C_ovl7(1, sp48.x, sp48.y, sp48.z);
             }
         }
     }
@@ -502,14 +511,14 @@ void func_801A2068_ovl7(void) {
     temp_a1 = D_800E1B50[temp_v1]->unk84;
     if (D_800E8AE0[temp_v1] & 1) {
         sp2C = gEntitiesNextPosXArray[temp_v1];
-        sp30 = gEntitiesNextPosYArray[omCurrentObj->objId] + (bitwise f32) temp_a1->unk14;
+        sp30 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &temp_a1->unk14;
         sp34 = gEntitiesNextPosZArray[omCurrentObj->objId];
     } else if (D_800E8920[temp_v1] == 0) {
         sp2C = gEntitiesNextPosXArray[temp_v1];
-        sp30 = gEntitiesNextPosYArray[omCurrentObj->objId] + (bitwise f32) temp_a1->unk18;
+        sp30 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &temp_a1->unk18;
         sp34 = gEntitiesNextPosZArray[omCurrentObj->objId];
     } else {
-        sp30 = gEntitiesNextPosYArray[temp_v1] + (bitwise f32) temp_a1->unk18;
+        sp30 = gEntitiesNextPosYArray[temp_v1] + *(f32 *) &temp_a1->unk18;
         temp_v1_2 = omCurrentObj->objId;
         if (D_800E6A10[temp_v1_2] == 1.0f) {
             sp24 = temp_a1;
@@ -528,21 +537,21 @@ void func_801A2068_ovl7(void) {
         if (temp_v0 != 1) {
             if (temp_v0 != 2) {
                 if (temp_v0 == 3) {
-                    if ((*(&D_8012BCE0 + 8))->unk4 != 0) {
+                    if (D_8012BCE0[2]->unk4 != 0) {
                         var_a1 = 1;
                     }
                     goto block_13;
                 }
             } else {
 block_13:
-                if ((*(&D_8012BCE0 + 4))->unk4 != 0) {
+                if (D_8012BCE0[1]->unk4 != 0) {
                     var_a1 |= 1;
                 }
                 goto block_15;
             }
         } else {
 block_15:
-            if (D_8012BCE0->unk4 != 0) {
+            if (D_8012BCE0[0]->unk4 != 0) {
                 var_a1 |= 1;
             }
         }
@@ -734,7 +743,7 @@ block_35:
             if (temp_v0_4 != 1) {
                 if (temp_v0_4 != 2) {
                     if (temp_v0_4 == 3) {
-                        if ((*(&D_8012BCE0 + 8))->unk4 != 0) {
+                        if (D_8012BCE0[2]->unk4 != 0) {
                             D_800E8AE0[omCurrentObj->objId] = 1;
                         }
                         goto block_46;
@@ -742,13 +751,13 @@ block_35:
                     goto block_50;
                 }
 block_46:
-                if ((*(&D_8012BCE0 + 4))->unk4 != 0) {
+                if (D_8012BCE0[1]->unk4 != 0) {
                     D_800E8AE0[omCurrentObj->objId] = 1;
                 }
                 goto block_48;
             }
 block_48:
-            if (D_8012BCE0->unk4 != 0) {
+            if (D_8012BCE0[0]->unk4 != 0) {
                 D_800E8AE0[omCurrentObj->objId] = 1;
             }
         } else {
@@ -793,8 +802,8 @@ s32 func_801A2C78_ovl7(f32 arg0) {
     f32 sp58;
     f32 sp54;
     f32 sp50;
-    f32 sp44;
-    ? sp38;
+    Vector sp44;
+    f32 sp38;
     u32 sp28;
     GObj *temp_v1;
     f32 temp_f0;
@@ -822,13 +831,13 @@ s32 func_801A2C78_ovl7(f32 arg0) {
     temp_v1 = omCurrentObj;
     temp_a3 = temp_v1->objId;
     var_a0 = temp_a3 * 4;
-    if ((D_800E8E60[temp_a3] != 1) && ((temp_f0 = sp44 - gEntitiesNextPosXArray[temp_a3], temp_f2 = sp4C - gEntitiesNextPosZArray[temp_a3], (temp_f0 != 0.0f)) || (temp_f2 != 0.0f))) {
+    if ((D_800E8E60[temp_a3] != 1) && ((temp_f0 = sp44.x - gEntitiesNextPosXArray[temp_a3], temp_f2 = sp44.z - gEntitiesNextPosZArray[temp_a3], (temp_f0 != 0.0f)) || (temp_f2 != 0.0f))) {
         func_800F8728(arg0, 0, temp_a3, temp_f0, temp_f2, temp_a3);
         var_a0 = omCurrentObj->objId * 4;
     }
-    *(gEntitiesNextPosXArray + var_a0) = sp44;
-    gEntitiesNextPosYArray[temp_v1->objId] = sp48 - arg0;
-    gEntitiesNextPosZArray[temp_v1->objId] = sp4C;
+    *(gEntitiesNextPosXArray + var_a0) = sp44.x;
+    gEntitiesNextPosYArray[temp_v1->objId] = sp44.y - arg0;
+    gEntitiesNextPosZArray[temp_v1->objId] = sp44.z;
     return 1;
 }
 #else

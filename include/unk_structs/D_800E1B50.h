@@ -4,7 +4,8 @@
 // TODO: are any of these sub-structs supposed to be more well-known types?
 
 struct SubSub800E1B50_Unk88_UnkC_Unk0_Unk1C {
-    u8 filler0[8];
+    u8 filler0[4];
+    s32 unk4;
     f32 unk8;
 };
 
