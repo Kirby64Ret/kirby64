@@ -375,6 +375,14 @@ void func_802258EC_ovl18(UNUSED s32 arg0) {
     }
 }
 
+/* 113/125, new draft.  The control flow, the `if (t < 4) v = t; else v = 0;`
+ * arms and the Vector-on-the-stack call to lbvector_Rotate are all right; the
+ * residue is one global-caching decision that then rotates every temp: the ROM
+ * CSEs the VALUE of omCurrentObj into $a1 and reloads it with lui/lw after each
+ * call, while IDO materialises the ADDRESS &omCurrentObj once and pays a second
+ * `lw` at every one of the ten uses.  Swept: both polarities of the inner
+ * if/else (113 vs 115) and an explicit `struct GObj *obj = omCurrentObj;`
+ * local (120).  Anything that gets IDO to the value-CSE closes most of this. */
 #ifdef NON_MATCHING
 void func_80225958_ovl18(void) {
     struct UnkStruct800E1B50 *sp3C;

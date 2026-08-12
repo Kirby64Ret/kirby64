@@ -1508,7 +1508,7 @@ void func_8022E198_ovl19(GObj *g) {
     (&D_8022FAB0_ovl19)[1]->unkC = sp1C.z;
 }
 
-#ifdef NON_MATCHING
+/*LANE_BEGIN*/
 void func_8022E224_ovl19(GObj *g) {
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B4954;
@@ -1537,9 +1537,8 @@ void func_8022E224_ovl19(GObj *g) {
     D_800E9720[omCurrentObj->objId] = 0x2D;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022E224_ovl19.s")
-#endif
+
+/*LANE_END*/
 void func_8022E47C_ovl19(GObj *g) {
     Vector vec;
 

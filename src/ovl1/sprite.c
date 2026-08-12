@@ -339,7 +339,28 @@ void func_800ACC30(s16 *arg0, s16 *arg1, SPObj *spobj) {
     *arg1 = spobj->yOffset * 4.0f;
 }
 
+#ifdef NON_MATCHING
+void func_800ACC68(s16 *arg0, s16 *arg1, SPObj *spobj) {
+    f32 scale;
+    f32 mag;
+    scale = spobj->xScale;
+    mag = (scale < 0.0f) ? -scale : scale;
+    if (mag < 0.03125f) {
+        *arg0 = 0x8000;
+    } else {
+        *arg0 = (u32) (1024.0f / scale);
+    }
+    scale = spobj->yScale;
+    mag = (scale < 0.0f) ? -scale : scale;
+    if (mag < 0.03125f) {
+        *arg1 = 0x8000;
+    } else {
+        *arg1 = (u32) (1024.0f / scale);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ACC68.s")
+#endif
 
 s32 func_800ACE1C(u8 arg0, u16 *tlut) {
     if (arg0 == 2) {
@@ -646,34 +667,28 @@ void func_800ADD14(GObj *camObj) {
     gtlLoadUcode(gDisplayListHeads, savedUcode);
 }
 
-// Draft, 2/39: only the loop's `sltu $at` vs `sw $v0, 0($v1)` pair-swap is left.
-// Hoisting `i = 0;` ABOVE the zero-trip `if` was worth 2 diffs: it gives IDO a
-// delay-slot filler so the D_800DD6E0 store stays before the beqz. NOT the wave-9
-// volatile family -- there is no unrolled loop here. Swept: for(), chained store,
-// temp local, volatile store, condition-in-a-local, ptr arith, u32/s32 compare
-// casts, guard as `count != 1`, decl order -- all 2 or worse.
-#ifdef NON_MATCHING
+// The `q` pointer local and the `n ^ 0` are LOAD-BEARING (permuter result,
+// applied verbatim): `q` forks the extra source-level temp IDO needs to keep
+// the loop's `sltu` ahead of the `sw`, and the xor keeps the compare on `n`
+// from being folded back into the induction variable.
 void func_800AE048(u32 count) {
     SPObj *p;
     u32 i;
+    u32 n;
+    u8 *q;
 
     if (count == 0) {
         D_800DD6E0 = NULL;
     } else {
         p = gtlMalloc(count * 0x100, 8);
         D_800DD6E0 = p;
-        i = 0;
-        if (count - 1 != 0) {
-            do {
-                i++;
-                p->next = (SPObj *) ((u8 *) p + 0x100);
-                p = p->next;
-            } while (i < count - 1);
+        n = count - 1;
+        for (i = 0; i < (n ^ 0); i++) {
+            q = (u8 *) p;
+            p->next = (SPObj *) (q + 0x100);
+            p = p->next;
         }
         p->next = NULL;
     }
     D_800DD6E4 = D_800DD6E8 = D_800DD6EC = D_800DD6F0 = NULL;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AE048.s")
-#endif

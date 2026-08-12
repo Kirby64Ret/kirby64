@@ -170,8 +170,15 @@ struct Ovl14TrackPosition {
     f32 unk4;
 };
 
+/* 136/192, but the whole residue is ONE instruction repeated: IDO materialises
+ * the merge block's `mtc1 $zero, $f0` (for the Y/Z zero stores) into each of the
+ * five switch arms instead of once at the merge label, which costs 5 extra
+ * instructions and steals the branch delay slot the ROM fills with the arm's
+ * second `swc1`. Measured 2026-08: chained vs separate stores in the arms,
+ * chained vs separate for the Y/Z zeros, and moving the D_800E8E60 store above
+ * the Y/Z zeros ALL give exactly 136/192. Declaration order does matter and is
+ * already correct (`s32 track;` first puts track at 0x2C, sp24 at 0x24/0x28). */
 #ifdef NON_MATCHING
-/* Left un-guarded by a lane mid-work, at 136/192 insns. Draft kept. */
 s32 func_801DC38C_ovl14(s32 arg0) {
     s32 track;
     struct Ovl14TrackPosition sp24;
@@ -223,14 +230,14 @@ s32 func_801DC38C_ovl14(s32 arg0) {
     } else {
         D_800E5F90[track] = D_800E5F90[omCurrentObj->objId];
         D_800E6BD0[track] = D_800E6BD0[omCurrentObj->objId];
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DC38C_ovl14.s")
-#endif
     }
     D_800EC2E0[track].as_s32 = arg0;
     play_sound(0x191);
     return track;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DC38C_ovl14.s")
+#endif
 
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DC674_ovl14.s")
@@ -518,9 +525,75 @@ void func_801DE608_ovl14(GObj *arg0, f32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DE6C8_ovl14.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DEC34_ovl14.s")
+struct Ovl14AnimInfo {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0x10];
+};
 
+struct Ovl14AnimObj;
+extern void func_80111550(u32);
+extern struct Ovl14AnimObj *func_80111C88(s32 *, u32);
+extern void func_80111ECC(struct Ovl14AnimObj *);
+extern s32 func_80110150(struct Ovl14AnimInfo *);
+extern void func_80169430_ovl3(s32, s32, s32, s32);
+extern s32 D_801D9E34;
+extern s32 D_801D9DC8;
+
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 4/30 insns. Draft kept. */
+/* BLOCKED by the +8 frame anomaly, decided not swept. Every instruction is
+ * correct; the only residue is the frame constant and the four sp offsets that
+ * follow from it. The ROM is frame 0x38 with the struct at 0x18, i.e. locals
+ * base 0x18 and L = 0x20; IDO computes align8(0x1C + L) = 0x40 and puts the
+ * struct at 0x20. 0x20 mod 8 == 0, so this shape cannot match. Shrinking the
+ * struct to 0x1C does restore frame 0x38 but then the struct sits at 0x1C and
+ * all four offsets are +4 (measured 4/30 and 2/30). Nothing below 0x18 is
+ * available to absorb the difference -- $ra is at 0x14 and the outgoing-arg
+ * area is 0x00..0x0F. */
+#ifdef NON_MATCHING
+s32 func_801DEC34_ovl14(arg0)
+GObj *arg0;
+{
+    struct Ovl14AnimInfo sp18;
+
+    func_80111550(omCurrentObj->objId);
+    func_80111ECC(func_80111C88(&D_801D9E34, omCurrentObj->objId));
+    if (func_80110150(&sp18) != 0) {
+        func_80169430_ovl3(sp18.unkC, sp18.unk0, sp18.unk1, 0xF);
+        return 1;
+    }
+    return 0;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DEC34_ovl14.s")
+#endif
+
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 2/30 insns. Draft kept. */
+s32 func_801DECAC_ovl14(arg0)
+GObj *arg0;
+{
+    struct Ovl14AnimInfo sp18;
+
+    func_80111550(omCurrentObj->objId);
+    func_80111ECC(func_80111C88(&D_801D9DC8, omCurrentObj->objId));
+    if (func_80110150(&sp18) != 0) {
+        func_80169430_ovl3(sp18.unkC, 0, 0, 0x10);
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DECAC_ovl14.s")
+#endif
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DECAC_ovl14.s")
+#endif
 
 void func_801DED24_ovl14(void) {
     s32 temp;

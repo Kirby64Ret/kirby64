@@ -173,8 +173,23 @@ s32 func_8017A174_ovl5(s32 arg0, s32 arg1) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 2/101, and the two are a pure scheduling swap: the ROM emits
+   `addiu $fp,%lo(D_800E9C60)` before `addiu $s6,%lo(D_8018ED38_ovl5)` in the
+   loop preheader, IDO the other way round. Both registers, both %hi halves and
+   every other instruction are the ROM's.
+   Two levers were worth 87 of the original 89 diffs and are load-bearing:
+   the `u8 *p` walker (indexing `(&D_8018ED38_ovl5)[i]` costs three
+   instructions per iteration and loses the hoisted `1` in $s7), and putting
+   `d = x - y;` AFTER the func_8017A174_ovl5 if/else -- written before it, `d`
+   is live across the call and takes a saved register instead of the ROM's
+   delay-slot `subu $v1`.
+   Swept with no effect on the residue: p declared/initialised at every
+   position, `p++` in the for-header vs the body tail, a pointer local for
+   D_800E9C60 (that one grows the TU to 106), `1 ==` compare order and a named
+   `one` constant. */
 void func_8017A1CC_ovl5(void) {
-    u8 *p = &D_8018ED38_ovl5;
+    u8 *p;
     s32 i;
     s32 r;
     s32 x;
@@ -182,6 +197,7 @@ void func_8017A1CC_ovl5(void) {
     s32 d;
     s32 t;
 
+    p = &D_8018ED38_ovl5;
     for (i = 0; i != 4; i++, p++) {
         if (*p == 1) {
             r = random_soft_s32_range(4);
@@ -212,6 +228,9 @@ void func_8017A1CC_ovl5(void) {
         }
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017A1CC_ovl5.s")
+#endif
 
 void func_8017A360_ovl5(s32 arg0) {
     s32 i;
@@ -226,7 +245,40 @@ void func_8017A360_ovl5(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017A3E4_ovl5.s")
+#include "main/contpad.h"
+extern u32 D_800D6B68;
+void func_8017C6C8_ovl5(void);
+
+void func_8017A3E4_ovl5(void) {
+    if (gPlayerControllers[0].buttonPressed & 0x9000) {
+        play_sound(0xED);
+        D_8018ED04_ovl5 = 1;
+        func_8017A360_ovl5(D_8018ED08_ovl5);
+        func_8017C6C8_ovl5();
+        D_800E98E0[omCurrentObj->objId] = 4;
+    } else if (gPlayerControllers[0].buttonPressed & 0x4000) {
+        play_sound(0x2B);
+        D_800D6B68 = gGameState;
+        gGameState = 0x1B;
+        D_8018ED00_ovl5 = 1;
+    } else if ((gPlayerControllers[0].buttonHeld & 0x200) && D_8018EDA0_ovl5 != 1) {
+        play_sound(0x113);
+        if (D_8018ED08_ovl5 == 1) {
+            D_8018ED08_ovl5 = D_8018EDA0_ovl5;
+        } else {
+            D_8018ED08_ovl5 = D_8018ED08_ovl5 - 1;
+        }
+        D_800E98E0[omCurrentObj->objId] = 4;
+    } else if ((gPlayerControllers[0].buttonHeld & 0x100) && D_8018EDA0_ovl5 != 1) {
+        play_sound(0x113);
+        if (D_8018ED08_ovl5 == D_8018EDA0_ovl5) {
+            D_8018ED08_ovl5 = 1;
+        } else {
+            D_8018ED08_ovl5 = D_8018ED08_ovl5 + 1;
+        }
+        D_800E98E0[omCurrentObj->objId] = 4;
+    }
+}
 
 s32 func_8017A588_ovl5(void) {
     s32 i;
@@ -255,15 +307,91 @@ void func_8017AB80_ovl5(void) {
     func_8015CCA8_ovl5(D_800D7178.unk44);
 }
 
-void func_8017ABA4_ovl5(void) {
-    func_8015CCA8_ovl5(D_800D7178.unk44);
+s32 func_8017ABA4_ovl5(void) {
+    return func_8015CCA8_ovl5(D_800D7178.unk44);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017ABC8_ovl5.s")
+#include "main/contpad.h"
+void func_8017C6C8_ovl5(void);
+void func_8017ABC8_ovl5(void) {
+    if (gPlayerControllers[0].buttonPressed & 0x9000) {
+        play_sound(0xED);
+        func_80179F90_ovl5();
+        D_8018ED00_ovl5 = 1;
+        D_800E98E0[omCurrentObj->objId] = 4;
+    } else if (gPlayerControllers[0].buttonPressed & 0x4000) {
+        play_sound(0x2B);
+        D_8018ED04_ovl5 = 1;
+        func_8017C6C8_ovl5();
+        D_800E98E0[omCurrentObj->objId] = 4;
+    } else if (func_8017ABA4_ovl5() != 0) {
+        if (gPlayerControllers[0].buttonHeld & 0x200) {
+            play_sound(0x113);
+            D_8018ED0C_ovl5--;
+            if (D_8018ED0C_ovl5 < 0) {
+                D_8018ED0C_ovl5 = func_8017ABA4_ovl5();
+            }
+            D_800E98E0[omCurrentObj->objId] = 4;
+        } else if (gPlayerControllers[0].buttonHeld & 0x100) {
+            play_sound(0x113);
+            D_8018ED0C_ovl5++;
+            if (func_8017ABA4_ovl5() < D_8018ED0C_ovl5) {
+                D_8018ED0C_ovl5 = 0;
+            }
+            D_800E98E0[omCurrentObj->objId] = 4;
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017AD54_ovl5.s")
 
+#ifdef NON_MATCHING
+/* 2/76: fully decoded, same length, same registers -- the residue is one
+   scheduling swap of two independent address materialisations in the same
+   block (`addu $t7,$t7,$v0` vs `addiu $a0,%lo(D_80189224_ovl5)`); the ROM
+   emits the addu first. The `goto done` is the ROM's shape: with arg1 == 1 and
+   the first compare false, control falls into the block that RELOADS
+   (&D_80189224_ovl5)[D_8018ED18_ovl5[arg0]]. Swept: reversed compare operands
+   (2), an index temp (14). */
+s32 func_8017AEE8_ovl5(s32 arg0, s32 arg1, f32 arg2, s32 arg3) {
+    f32 delta;
+    f32 target;
+    f32 limit;
+
+    if (arg1 == 1) {
+        delta = -arg2;
+    } else {
+        delta = arg2;
+    }
+    D_8018ED40_ovl5[arg0] += delta;
+    if (arg1 == 1) {
+        target = (&D_80189224_ovl5)[D_8018ED18_ovl5[arg0]];
+        if ((&D_80189224_ovl5)[arg3] < target) {
+            limit = target - 360.0f;
+            goto done;
+        }
+    }
+    target = (&D_80189224_ovl5)[D_8018ED18_ovl5[arg0]];
+    if (arg1 == 2 && target < (&D_80189224_ovl5)[arg3]) {
+        limit = target + 360.0f;
+    } else {
+        limit = target;
+    }
+done:
+    if (arg1 == 1) {
+        if (D_8018ED40_ovl5[arg0] <= limit) {
+            D_8018ED40_ovl5[arg0] = target;
+            return 1;
+        }
+    } else if (limit <= D_8018ED40_ovl5[arg0]) {
+        D_8018ED40_ovl5[arg0] = target;
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017AEE8_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B018_ovl5.s")
 

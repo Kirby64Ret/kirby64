@@ -520,8 +520,22 @@ void func_8022045C_ovl19(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022045C_ovl19.s")
 #endif
 
-/*LANE_BEGIN*/
-extern s32 D_800D6F10;
+/* 47/178, instruction count exact and every block in the right place.
+ * Residue is (a) the frame: 0x90 vs the ROM's 0x80 with the three Vectors
+ * correctly ordered but sitting 12 bytes high, and (b) four `bne`/`beq`
+ * operand orders (the ROM puts the freshly-loaded p[n] in rs, IDO always puts
+ * $v0 there) plus the prologue schedule that follows from the frame.
+ * Measured: caching `GObj *o = omCurrentObj` per loop iteration and reusing
+ * `o->objId` for the post-loop gEntitiesNextPosYArray store is what takes it
+ * from 152 to 47 -- the ROM reuses the loop's last objId*4 in $a0.
+ * Frame swept: declaration order of the three Vectors (correct as written --
+ * it is what puts scale lowest), `Vector sp5C[3]` as one array, an added s32
+ * pad (+8), dropping a Vector (-8, so the step is 8 per 12 bytes), the p
+ * pointer inlined as a cast expression at every use (identical), and
+ * (u32)&D_800D6F10 + 8 instead of &D_800D6F18 (much worse).  Reversing the
+ * comparison operands in the source is inert. */
+#ifdef NON_MATCHING
+extern s32 D_800D6F18;
 extern u8 D_800D6E30[];
 extern u32 D_800BE508;
 extern struct GObjProcess *gEntityGObjProcessArray5[];
@@ -532,7 +546,7 @@ void func_800A7F74(s32, s32, s32, f32, f32, f32);
 s32 func_800FCD14(u32, u8, f32, u8, u8, u8, u8, u8, s16, Vector *, Vector *, Vector *);
 
 void func_8022054C_ovl19(GObj *arg0) {
-    s32 *p = (s32 *)((u32)&D_800D6F10 + 8);
+    s32 *p = (s32 *)((u32)&D_800D6F18);
     Vector pos;
     Vector angle;
     Vector scale;
@@ -594,8 +608,9 @@ void func_8022054C_ovl19(GObj *arg0) {
     }
     func_800B1900((u16) omCurrentObj->objId);
 }
-
-/*LANE_END*/
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8022054C_ovl19.s")
+#endif
 
 f32 D_8022F0B0_ovl19[] = {-112, 0, 110};
 u32 D_8022F0BC_ovl19[] = {
@@ -609,8 +624,6 @@ u32 D_8022F0BC_ovl19[] = {
 };
 extern s32 D_800D6F18;
 
-#ifdef NON_MATCHING
-/* Left un-guarded by a lane mid-work, at 13/104 insns. Draft kept. */
 void func_80220814_ovl19(GObj *arg0) {
     func_8021E184_ovl19();
     gEntitiesNextPosXArray[omCurrentObj->objId] = D_8022F0B0_ovl19[D_800EC2E0[omCurrentObj->objId].as_s32];
@@ -634,9 +647,6 @@ void func_80220814_ovl19(GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220814_ovl19.s")
-#endif
 
 
 void func_802209A0_ovl19(GObj *arg0) {

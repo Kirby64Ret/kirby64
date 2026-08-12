@@ -29,6 +29,7 @@ Never commit it as live code.
 
 Usage:
     gate_dirty.py            check every dirty .c file
+    gate_dirty.py --fix      re-guard whatever is red, keeping the draft
     gate_dirty.py --staged   check what is staged instead
     gate_dirty.py -q         only print the verdict
 """
@@ -54,8 +55,64 @@ def dirty(staged):
     return sorted(set(files))
 
 
+def listing_for(fn):
+    """The asm/nonmatchings path for a function, found on disk."""
+    for root, _, files in os.walk('asm/nonmatchings'):
+        if f'{fn}.s' in files:
+            return os.path.join(root, f'{fn}.s')
+    return None
+
+
+def reguard(path, fn, residue):
+    """Put one live function back behind #ifdef NON_MATCHING, draft intact.
+
+    Deliberately conservative: it finds the definition by matching a line that
+    starts at column 0, contains the name followed by `(`, and is not a
+    declaration; then takes the first `}` at column 0 after it as the end. That
+    is the shape every function in this tree has. If anything does not match,
+    it does nothing and says so, because a bad edit here is worse than a
+    manual one -- this runs on files other agents are writing.
+    """
+    src = open(path).read()
+    lines = src.split('\n')
+    start = None
+    for i, ln in enumerate(lines):
+        if re.match(rf'^[A-Za-z_].*\b{re.escape(fn)}\s*\(', ln) and ';' not in ln:
+            start = i
+            break
+    if start is None:
+        print(f'      cannot find the definition of {fn} -- re-guard by hand')
+        return False
+    end = None
+    for j in range(start + 1, len(lines)):
+        if lines[j].startswith('}'):
+            end = j
+            break
+    if end is None:
+        print(f'      cannot find the end of {fn} -- re-guard by hand')
+        return False
+    # Already guarded? Then the red is a real diff inside a live guard, not a
+    # missing one, and re-wrapping would nest guards.
+    for k in range(max(0, start - 6), start):
+        if lines[k].startswith('#ifdef NON_MATCHING') or lines[k].startswith('#ifdef MIPS_TO_C'):
+            print(f'      {fn} is already guarded -- red is inside the guard, look by hand')
+            return False
+    s = listing_for(fn)
+    if s is None:
+        print(f'      no listing found for {fn} -- re-guard by hand')
+        return False
+
+    lines.insert(end + 1, f'#else\n#pragma GLOBAL_ASM("{s}")\n#endif')
+    lines.insert(start, '#ifdef NON_MATCHING\n'
+                        f'/* Left live by a lane mid-work, at {residue} insns. Draft kept. */')
+    open(path, 'w').write('\n'.join(lines))
+    print(f'      re-guarded {fn} ({residue})')
+    return True
+
+
 def main():
     staged = '--staged' in sys.argv
+    fix = '--fix' in sys.argv
     quiet = '-q' in sys.argv
     files = dirty(staged)
     if not files:
@@ -73,8 +130,12 @@ def main():
         if n:
             bad.append((f, diffs))
             print(f'RED   {f}')
-            for fn, d, tot in diffs:
-                print(f'        {fn}  {d}/{tot} insns -- re-guard it or fix it')
+            # Later definitions first, so earlier line numbers stay valid.
+            for fn, d, tot in (reversed(diffs) if fix else diffs):
+                if fix:
+                    reguard(f, fn, f'{d}/{tot}')
+                else:
+                    print(f'        {fn}  {d}/{tot} insns -- re-guard it or fix it')
         elif not quiet:
             print(f'ok    {f}  ({m.group(1) if m else "?"} match)')
 

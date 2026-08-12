@@ -229,7 +229,9 @@ end:
 
 #ifdef NON_MATCHING
 // 13/32 diffs; the residue is ONLY the whole $t file allocated one slot low
-// (ROM t7/t8/t9/t1/t2/t3, IDO t6/t7/t8/t9/t1/t2). Everything else is exact.
+// (ROM t8/t7 then t9/t1/t2/t3, IDO t7/t6 then t8/t9/t1/t2 -- the bound is $t0
+// in both, and the relative order idx<sym is right; the whole pair just starts
+// one register low, so one $t temp is allocated before it in the ROM).
 // Two reusable levers got it here:
 //   * IDO hands out $v0/$v1/$a0..$a3 in order of FIRST ASSIGNMENT, so priming
 //     the locals before the loop in the ROM's register order (val, src, i,
@@ -237,8 +239,9 @@ end:
 //     are eliminated but the ordering survives (22 -> 13).
 //   * the ROM materialises D_800D6D10 TWICE; IDO CSEs one symbol, so the loop
 //     bound has to be spelled as something else. (u8 *) 0x800D6D10 is the only
-//     form that stays 2 instructions (a &sym[N] bound is recomputed inside the
-//     loop); it costs one `ori` where the ROM has `addiu`.
+//     form that stays 2 instructions; it costs one `ori` where the ROM has
+//     `addiu`.  Re-measured this wave: (u8 *) D_800D6D10 CSEs and costs 28,
+//     &D_800D6C94[0x7C] costs 17.  0x800D6D10 stays the best spelling.
 extern u8 D_800D6C94[];
 
 void func_800F7404(s32 arg0) {
