@@ -1258,6 +1258,32 @@ extern Gfx *D_8004ABAC;
 extern Gfx *D_8004ABB0;
 extern Gfx *D_8004ABB4;
 
+/* FLOOR 7/13, 13 variants measured 2026-08-12. The ROM is 11 instructions and
+   this is 13; the residue is entirely $at reuse. The ROM emits
+
+       lui $at,%hi(D_8004ABA8) / sw %lo(D_8004ABA8) / sw %lo(D_8004ABAC)
+       lui $at,%hi(D_8004ABB0) / sw %lo(D_8004ABB0) / sw %lo(D_8004ABB4)
+
+   -- two stores per lui, with the %lo folded into the store -- while IDO emits
+   a fresh lui per symbol. All four share %hi, so even one lui would do; the
+   ROM reloads after exactly two, which no source form here reproduces.
+
+   Swept, with the diff count each reached: 4 array elements D_8004ABA8[0..3]
+   (8/11 -- correct LENGTH, but IDO materialises the base with lui+addiu and
+   uses offsets 0/4/8/12, which is a different shape, not a near miss); two
+   2-element arrays (9/13); two 2-pointer structs (9/13); a 4-iteration loop
+   (7/13); and six chained-assignment groupings including the one that mirrors
+   the ROM's pairing exactly, `D_8004ABAC = D_8004ABA8[0] = D_8004ABB8;`
+   (8/14, 11/15, 14/15, 16/16, 16/16).
+
+   Note for whoever tries again: 2+ references to one array or struct make IDO
+   materialise the base, and a single reference makes it fold %lo. The ROM is
+   in neither state -- it folds %lo AND reuses the register -- so the answer is
+   probably not a declaration shape at all. `volatile` is the wrong direction
+   here; the guide's note is that it pushes TOWARDS materialisation.
+
+   D_8004ABAC, D_8004ABB0 and D_8004ABB4 are referenced by nothing else in the
+   tree, so their declarations are free to reshape. */
 #ifdef MIPS_TO_C
 void func_8001479C(void) {
     D_8004ABA0 = D_8004ABB8;
