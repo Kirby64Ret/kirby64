@@ -21,7 +21,92 @@ extern u8 D_8018E3C3_ovl5;
 extern f32 D_8018D6A8_ovl5;
 extern u8 D_8018E424_ovl5;
 
+void func_80166B28_ovl5(GObj *);
+void func_8016792C_ovl5(GObj *, s32);
+void func_8016CB7C_ovl5(GObj *);
+void func_8016B754_ovl5(GObj *, s32, s32, s32);
+void func_8016CFB0_ovl5(GObj *, s32);
+void func_8016E6F0_ovl5(GObj *, s32);
+void func_8016626C_ovl5(GObj *, s32);
+void func_8016BEB0_ovl5(GObj *, s32, s32);
+void func_8016BFF0_ovl5(GObj *, s32);
+void func_8016C28C_ovl5(GObj *, s32);
+void func_8016EAFC_ovl5(GObj *);
+void func_8016A774_ovl5(GObj *, s32);
+void func_8016C508_ovl5(GObj *, s32);
+void func_8016C974_ovl5(GObj *, s32);
+void func_8016EF78_ovl5(GObj *);
+void func_8016F2F0_ovl5(GObj *);
+void func_8016F40C_ovl5(GObj *);
+
+#ifdef NON_MATCHING
+/* 1/116: only the jump-table reference; this TU's rodata is not migrated, so
+   converting would emit a duplicate jtbl. */
+void func_80165440_ovl5(GObj *arg0) {
+    s32 kind = D_800E98E0[omCurrentObj->objId];
+
+    switch (kind) {
+        case 1:
+            func_80166B28_ovl5(arg0);
+            break;
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            func_8016792C_ovl5(arg0, kind - 2);
+            break;
+        case 6:
+            func_8016CB7C_ovl5(arg0);
+            break;
+        case 7:
+            func_8016B754_ovl5(arg0, D_800E9C60[omCurrentObj->objId], D_800E9E20[omCurrentObj->objId],
+                               D_800E9FE0[omCurrentObj->objId].as_s32);
+            break;
+        case 8:
+            func_8016CFB0_ovl5(arg0, D_800E9FE0[omCurrentObj->objId].as_s32);
+            break;
+        case 9:
+            func_8016E6F0_ovl5(arg0, D_800E9FE0[omCurrentObj->objId].as_s32);
+            break;
+        case 10:
+            func_8016626C_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32);
+            break;
+        case 11:
+            func_8016BEB0_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32,
+                               D_800E9FE0[omCurrentObj->objId].as_s32);
+            break;
+        case 12:
+            func_8016BFF0_ovl5(arg0, D_800E9FE0[omCurrentObj->objId].as_s32);
+            break;
+        case 13:
+            func_8016C28C_ovl5(arg0, D_800E9FE0[omCurrentObj->objId].as_s32);
+            break;
+        case 14:
+            func_8016EAFC_ovl5(arg0);
+            break;
+        case 15:
+            func_8016A774_ovl5(arg0, D_800EA1A0[omCurrentObj->objId]);
+            break;
+        case 16:
+            func_8016C508_ovl5(arg0, D_800E9FE0[omCurrentObj->objId].as_s32);
+            break;
+        case 17:
+            func_8016C974_ovl5(arg0, D_800E9FE0[omCurrentObj->objId].as_s32);
+            break;
+        case 0:
+            func_8016EF78_ovl5(arg0);
+            break;
+        case 18:
+            func_8016F2F0_ovl5(arg0);
+            break;
+        case 19:
+            func_8016F40C_ovl5(arg0);
+            break;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165440_ovl5.s")
+#endif
 
 void func_80165610_ovl5(void) {
     play_music(0, 0x19);
@@ -285,7 +370,62 @@ s32 func_80165FB8_ovl5(s32 arg0) {
     return 0x29A;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80166054_ovl5.s")
+s32 func_80166054_ovl5(Vector v) {
+    s32 i;
+
+    if (D_8018E425_ovl5 == 2) {
+        for (i = 0; i != 8; i++) {
+            if (func_80165E14_ovl5(i, v.x) != 0) {
+                break;
+            }
+        }
+        if ((i < 2) || (i >= 6)) {
+            return 0x29A;
+        }
+        for (; i < 0x40; i += 8) {
+            if (func_80165E98_ovl5(i, v.z) != 0) {
+                break;
+            }
+        }
+        if ((i / 8 < 2) || (i / 8 >= 6)) {
+            return 0x29A;
+        }
+        return i;
+    }
+    if (D_8018E424_ovl5 == 2) {
+        for (i = 0; i != 8; i++) {
+            if (func_80165E14_ovl5(i, v.x) != 0) {
+                break;
+            }
+        }
+        if ((i <= 0) || (i >= 7)) {
+            return 0x29A;
+        }
+        for (; i < 0x40; i += 8) {
+            if (func_80165E98_ovl5(i, v.z) != 0) {
+                break;
+            }
+        }
+        if ((i / 8 <= 0) || (i / 8 >= 7)) {
+            return 0x29A;
+        }
+        return i;
+    }
+    for (i = 0; i != 8; i++) {
+        if (func_80165E14_ovl5(i, v.x) != 0) {
+            break;
+        }
+    }
+    if (i == 8) {
+        return 0x29A;
+    }
+    for (; i < 0x40; i += 8) {
+        if (func_80165E98_ovl5(i, v.z) != 0) {
+            return i;
+        }
+    }
+    return 0x29A;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_8016626C_ovl5.s")
 

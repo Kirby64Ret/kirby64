@@ -2468,7 +2468,62 @@ s32 func_80179130_ovl3(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80179370_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017982C_ovl3.s")
+extern char D_801910F0_ovl3[];
+extern f32 D_800EC9E4;
+extern s32 D_800D6FAC;
+
+void func_8017982C_ovl3(s32 arg0) {
+    if (func_800AA888(0x20007) == 0) {
+        func_80153AD4_ovl3();
+        gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - D_800EC9E4;
+        D_800E8920[omCurrentObj->objId] = 0;
+    } else {
+        func_80153984_ovl3();
+        func_801217B8();
+    }
+    if (gKirbyState.unk30 != 0) {
+        func_8011D67C();
+        return;
+    }
+    if (gKirbyState.horizontalCollision != 0) {
+        D_800E64D0[omCurrentObj->objId] = 0.0;
+    }
+    if (gKirbyState.abilityInUse != 0) {
+        if (gKirbyController.buttonHeld & 0x300) {
+            if (((D_800E6A10[omCurrentObj->objId] == 1.0f) && (gKirbyController.buttonHeld & 0x100)) ||
+                ((D_800E6A10[omCurrentObj->objId] == -1.0f) && (gKirbyController.buttonHeld & 0x200))) {
+                D_800E6850[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 6) == 0) ? 10.5f : 5.25f);
+            } else {
+                D_800E6850[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 6) == 0) ? 6.5f : 3.25f);
+            }
+        } else {
+            D_800E6850[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 6) == 0) ? 8.5f : 4.25f);
+        }
+        func_80111C4C(func_80111A04(D_801910F0_ovl3, omCurrentObj->objId));
+        return;
+    }
+    if (D_800E8920[omCurrentObj->objId] != 0) {
+        if (gKirbyController.buttonHeld & 0x300) {
+            set_kirby_action_1(1, 3);
+        }
+        return;
+    }
+    if (D_800D6FAC != 0) {
+        return;
+    }
+    if ((gKirbyController.buttonPressed & 0x8000) == 0) {
+        return;
+    }
+    if (gKirbyState.floatTimer == 0) {
+        return;
+    }
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        set_kirby_action_1(0x17, 0x1B);
+    } else {
+        gKirbyState.unk44 = 0;
+        set_kirby_action_1(0xC, 9);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80179C28_ovl3.s")
 

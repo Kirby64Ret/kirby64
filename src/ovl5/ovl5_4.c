@@ -466,7 +466,102 @@ Unk2Bytes func_80168E34_ovl5(s32 arg1) {
     return sp4;
 }
 
+typedef union Unk2BytesU {
+    Unk2Bytes s;
+    struct {
+        u8 b0;
+        u8 b1;
+    } u;
+} Unk2BytesU;
+
+typedef struct Unk14Ent {
+    u8 unk0;
+    u8 filler1[0xF];
+    u8 unk10;
+    u8 unk11;
+    u8 filler12[2];
+} Unk14Ent;
+
+extern Unk14Ent D_8018E3D0_ovl5[];
+
+#ifdef NON_MATCHING
+/* 115/155. */
+void func_80168E84_ovl5(s32 arg0) {
+    Unk2BytesU sp4C;
+    Unk2BytesU sp48;
+    Unk14Ent *p;
+    s32 dx;
+    s32 dy;
+    s32 lim;
+
+    sp4C.s = func_80168E34_ovl5(func_80165F1C_ovl5(arg0));
+    p = &D_8018E3D0_ovl5[arg0];
+    if (func_80165F1C_ovl5(p->unk0) == 0x29A) {
+        p->unk10 = random_soft_s32_range(4);
+        p->unk11 = random_soft_s32_range(4);
+        return;
+    }
+    sp48.s = func_80168E34_ovl5(func_80165F1C_ovl5(p->unk0));
+    if ((sp48.u.b0 == sp4C.u.b0) && (sp48.u.b1 == sp4C.u.b1)) {
+        p->unk10 = random_soft_s32_range(4);
+        p->unk11 = random_soft_s32_range(4);
+        return;
+    }
+    dx = sp4C.u.b0 - sp48.u.b0;
+    dy = sp4C.u.b1 - sp48.u.b1;
+    if (((dx >= 0) ? dx : -dx) < ((dy >= 0) ? dy : -dy)) {
+        lim = (D_8018E425_ovl5 == 2) ? 2 : 3;
+        if (lim < ((dy >= 0) ? dy : -dy)) {
+            if (sp48.u.b0 < sp4C.u.b0) {
+                if (sp48.u.b1 < sp4C.u.b1) {
+                    p->unk10 = 3;
+                    p->unk11 = 1;
+                } else {
+                    p->unk10 = 3;
+                    p->unk11 = 0;
+                }
+            } else {
+                if (sp48.u.b1 < sp4C.u.b1) {
+                    p->unk10 = 2;
+                    p->unk11 = 1;
+                } else {
+                    p->unk10 = 2;
+                    p->unk11 = 0;
+                }
+            }
+        } else {
+            p->unk10 = random_soft_s32_range(4);
+            p->unk11 = random_soft_s32_range(4);
+        }
+    } else {
+        lim = (D_8018E425_ovl5 == 2) ? 2 : 3;
+        if (lim < ((dx >= 0) ? dx : -dx)) {
+            if (sp48.u.b1 < sp4C.u.b1) {
+                if (sp48.u.b0 < sp4C.u.b0) {
+                    p->unk10 = 1;
+                    p->unk11 = 3;
+                } else {
+                    p->unk10 = 1;
+                    p->unk11 = 2;
+                }
+            } else {
+                if (sp48.u.b0 < sp4C.u.b0) {
+                    p->unk10 = 0;
+                    p->unk11 = 3;
+                } else {
+                    p->unk10 = 0;
+                    p->unk11 = 2;
+                }
+            }
+        } else {
+            p->unk10 = random_soft_s32_range(4);
+            p->unk11 = random_soft_s32_range(4);
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168E84_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_801690F4_ovl5.s")
 

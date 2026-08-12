@@ -355,7 +355,48 @@ void func_801E2610_ovl14(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E2610_ovl14.s")
 #endif
 
+#ifdef NON_MATCHING
+/* 10/103: the parameter is homed where the ROM homes nothing, and IDO
+   materialises %hi(gEntityGObjProcessArray) above the branch where the ROM
+   materialises %hi(func_801A3E80_ovl7). */
+extern u32 D_8012BCA0;
+extern s32 D_801CA738_ovl7;
+extern s32 func_801117BC(s32 *, u32);
+extern void func_80111C4C(s32);
+
+void func_801E2834_ovl14(GObj *arg0) {
+    u32 temp;
+
+    if (D_800E83E0[omCurrentObj->objId] != 0) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        return;
+    }
+    func_801A0D74_ovl7();
+    temp = D_8012BCA0 >> 19;
+    if (temp != 0) {
+        if ((temp & 0xE00) != 0) {
+            func_800FB914(1);
+            play_sound(0x98);
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        return;
+    }
+    if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+        D_800E3C90[omCurrentObj->objId] = 5.0f;
+        if (0.0f < D_800E3210[omCurrentObj->objId]) {
+            D_800E3750[omCurrentObj->objId] = -0.4875f;
+        } else {
+            D_800E3750[omCurrentObj->objId] = -0.975f;
+        }
+    } else {
+        D_800E3750[omCurrentObj->objId] = -0.975f;
+        D_800E3C90[omCurrentObj->objId] = 10.0f;
+    }
+    func_80111C4C(func_801117BC(&D_801CA738_ovl7, omCurrentObj->objId));
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E2834_ovl14.s")
+#endif
 
 void func_801E29D0_ovl14(GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_801E2AD8_ovl14;
