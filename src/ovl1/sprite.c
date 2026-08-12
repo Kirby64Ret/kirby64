@@ -446,7 +446,6 @@ s32 lbreflect_Int16Cos(f32);
  * NON_MATCHING, so this is the code the PC port executes. */
 void func_800AD1A0(GObj *gobj) {
     SPObj *sp;
-    s32 tmp;
     uObjBg *bg;
     uObjBg *bg0;
     uObjSprite *obj;
@@ -522,8 +521,7 @@ void func_800AD1A0(GObj *gobj) {
                     func_800ACC30(&mtx->m.X, &mtx->m.Y, sp);
                     cs = (f32) (lbreflect_Int16Cos(sp->unk30) * 2);
                     sn = (f32) (lbreflect_Int16Sin(sp->unk30) * 2);
-                    tmp = sp->xScale * cs;
-                    mtx->m.A = tmp;
+                    mtx->m.A = sp->xScale * cs;
                     mtx->m.B = sp->yScale * sn;
                     mtx->m.C = -sn * sp->xScale;
                     mtx->m.D = sp->yScale * cs;

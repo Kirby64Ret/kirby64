@@ -873,6 +873,21 @@ void func_8019A7A8_ovl7(Unused GObj *gobj) {
 }
 
 #ifdef NON_MATCHING
+// 17/69. Residue is in two places and neither is register naming.
+// (1) insn 14: the ROM compares `c.eq.s $f4,$f0` (fs = the 9999.0f literal,
+//     ft = originOffset); IDO emits `c.eq.s $f0,$f4` for BOTH source orders --
+//     `9999.0f == temp_f0` and `temp_f0 == 9999.0f` compile byte-identically,
+//     so IDO canonicalises the operands of a commutative FP compare and source
+//     order cannot reach this one.
+// (2) the tail: the ROM writes the two `if`s un-rotated (`bc1f` + `nop` +
+//     `b` + a delay-slot assignment) where IDO folds them into `bc1fl`.
+//     Replacing the draft's `goto block_6` with a plain `return var_v1;` gets
+//     the ROM's two-separate-returns block layout but costs more than it buys
+//     (22/69): IDO then constant-propagates `var_v1 == 0` into
+//     `move $v0,$zero`, while the ROM keeps the live `or $v0,$v1,$zero`.
+//     So the ROM's `var_v1` is not provably 0 at that return in its source
+//     shape, and the goto form -- which shares the return -- is still the
+//     lower count. Keep the goto.
 s32 func_8019A7E8_ovl7(f32 arg0) {
     Vector sp34;
     Vector sp28;
@@ -2889,6 +2904,17 @@ void func_8019F000_ovl7(void *arg0, f32 *arg1, s32 arg2, f32 arg3) {
 }
 
 #ifdef NON_MATCHING
+// 20/47, re-measured: every diff is register naming, the instruction stream is
+// otherwise identical. The ROM puts objId in $v0, the D_800E7CE0 value in $a1
+// and the D_800E1B50 element in $t0; IDO swaps the first two ($a1/$v0) and
+// gives the element $a3. Swept: assigning the element before the value,
+// s32 vs u32 for the objId local, and dropping the objId local entirely so
+// `omCurrentObj->objId` is written inline at every use. That last one is the
+// ROM's real shape -- it is what produces the in-place `sll $v1,$v1,2` the ROM
+// has, where a named index local keeps the unscaled value alive in a second
+// register -- but it scores 23 because it rotates the whole allocation one
+// further. The named-index form is the lower count, the inline form is the
+// right shape; neither reaches the $v0/$a1 assignment.
 void func_8019F130_ovl7(void) {
     struct UnkStruct800E1B50 *temp_t0;
     s32 temp_a1;

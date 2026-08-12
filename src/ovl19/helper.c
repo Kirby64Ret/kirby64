@@ -536,6 +536,7 @@ void func_8022054C_ovl19(GObj *arg0) {
     Vector scale;
     Vector angle;
     Vector pos;
+    GObj *o;
     s32 id;
     s32 v;
 
@@ -548,20 +549,21 @@ void func_8022054C_ovl19(GObj *arg0) {
         p[3] = -1;
         func_800F8E6C(arg0);
         while (1) {
-            id = omCurrentObj->objId;
+            o = omCurrentObj;
+            id = o->objId;
             if (D_800E98E0[id] != 0) {
                 v = p[3];
-                if (v != -1) {
-                    if (p[0] == v) {
+                if (-1 != v) {
+                    if (v == p[0]) {
                         p[4] |= 1;
-                    } else if (p[1] == v) {
+                    } else if (v == p[1]) {
                         p[4] |= 2;
-                    } else if (p[2] == v) {
+                    } else if (v == p[2]) {
                         p[4] |= 4;
                     }
                     p[3] = -1;
-                    D_800E98E0[omCurrentObj->objId] -= 1;
-                    if (D_800E98E0[omCurrentObj->objId] == 0) {
+                    D_800E98E0[o->objId] -= 1;
+                    if (D_800E98E0[o->objId] == 0) {
                         if (p[4] == 7) {
                             break;
                         }
@@ -572,7 +574,7 @@ void func_8022054C_ovl19(GObj *arg0) {
             }
             ohSleep(1);
         }
-        gEntitiesNextPosYArray[omCurrentObj->objId] = 60.0f;
+        gEntitiesNextPosYArray[o->objId] = 60.0f;
         if (D_800D6E30[D_800BE508] == 0) {
             play_sound(0x112);
             func_800A7F74(3, 0, 0xCE, 300.0f, gEntitiesNextPosYArray[omCurrentObj->objId], 0.0f);
@@ -607,6 +609,8 @@ u32 D_8022F0BC_ovl19[] = {
 };
 extern s32 D_800D6F18;
 
+#ifdef NON_MATCHING
+/* Left un-guarded by a lane mid-work, at 13/104 insns. Draft kept. */
 void func_80220814_ovl19(GObj *arg0) {
     func_8021E184_ovl19();
     gEntitiesNextPosXArray[omCurrentObj->objId] = D_8022F0B0_ovl19[D_800EC2E0[omCurrentObj->objId].as_s32];
@@ -630,6 +634,9 @@ void func_80220814_ovl19(GObj *arg0) {
         }
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220814_ovl19.s")
+#endif
 
 
 void func_802209A0_ovl19(GObj *arg0) {

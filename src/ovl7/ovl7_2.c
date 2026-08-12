@@ -291,6 +291,14 @@ struct Ovl7AnimObj *func_801A0464_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A04B8_ovl7.s")
 
 #ifdef NON_MATCHING
+// 22/47, all register naming. ROM: objId $v1, ent $v0, objId*4 $a2,
+// ent->unk90 $a0, ent->unk3D $a1. IDO: objId $a1, ent $v1, objId*4 $v0,
+// unk90 $a2, unk3D $a0. The only non-naming-looking residue -- the ROM's
+// `sb $t9,0x3D($v0)` landing before `or $v0,$zero,$zero` while IDO emits them
+// in the other order -- is forced by the naming: the ROM's store uses $v0 as
+// its base so it cannot follow the zeroing of $v0. Swept: an explicit
+// `s32 id = omCurrentObj->objId` local used at every index (byte-identical
+// output to the inline form, 22/47 either way).
 s32 func_801A07C4_ovl7(void) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 

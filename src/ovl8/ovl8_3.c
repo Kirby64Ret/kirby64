@@ -274,6 +274,9 @@ struct GObj *arg0;
     extern s32 D_800D6B54;
     extern s32 D_800BE4F8;
     extern s32 D_800BE508;
+    extern struct GObjProcess *gEntityGObjProcessArray5[];
+    void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
+    void procMainStub(struct GObj *);
 
     func_8019BB58_ovl7();
     D_800DEDD0[omCurrentObj->objId] = NULL;
