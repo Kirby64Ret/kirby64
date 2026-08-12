@@ -282,12 +282,19 @@ void saveVerify(s32 fileNum);
    It compiles to exactly 136 instructions -- the same length as the ROM -- and
    every displacement, constant and branch shape lines up.  The residue (120
    "diffs", nearly all of it a shift) is register allocation plus one scheduling
-   choice: the ROM materialises `&gSaveBuffer1 + fileNum * 0x58` TWICE ($v0 for
-   the scalar fields, $a3 for the two byte arrays) and drives loop 1's `= 0`
-   store from an induction pointer while the `= 1` store uses base+index; IDO
-   uses one induction pointer for both.  It also gives $v0 to the struct base
-   and pushes `count`/`i` to $v1/$a1 where we get $v0/$v1, and there is no call
-   in the function so the callee-return-type lever does not apply.
+   choice.  MEASURED 2026-08-12, and the older description of this residue was
+   wrong: the draft is at **1 diff**, not a multi-instruction register spread.
+
+       [55] target  lw $a0, 0x10($v0)      (world, base in $v0)
+            current lw $v1, 0x10($a1)      (base in $a1)
+
+   Everything else in the function is byte-exact.  The ROM computes the base
+   ONCE (`addu $v0, $t6, $t7`) and then COPIES it (`or $a2, $v0, $zero`) rather
+   than recomputing, so this is not the "materialised twice" case it was filed
+   as.  There is no call in the function, so the callee-return-type lever does
+   not apply.
+   Swept without movement (2026-08-12): declaration order of count/i, assignment
+   order of count/i, and both together -- all four combinations stay at 1.
    Layout notes for whoever finishes this: File+0x34 is a u8[8] (not
    data34[4]+data38[4]) -- indices 0..4 are the world-unlocked flags written by
    loop 1, [5] and [6] are set together when world >= 8 and cleared when
@@ -298,8 +305,6 @@ void saveVerify(s32 fileNum);
    Swept: File * / u8 * pointer locals (they emit the `addiu +0x10` the ROM
    folds into displacements), declaration order of count/i, for vs do/while,
    and the uncast `.data34[i]` / `(u8 (*)[4])` array forms (137 insns, worse). */
-extern u8 D_800BE5A8[];
-
 extern u8 D_800BE5A8[];
 
 void saveVerify(s32 fileNum) {
