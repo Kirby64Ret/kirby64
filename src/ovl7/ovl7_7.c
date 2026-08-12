@@ -7,6 +7,17 @@
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
 
+/* Forward declaration at FILE scope, and it is load-bearing for CC_CHECK.
+ * struct Ovl7_7_AnimObj is defined further down this file, so a `struct
+ * Ovl7_7_AnimObj *` appearing in a BLOCK-SCOPE prototype above that point
+ * declares a brand-new incomplete type scoped to that prototype -- C's
+ * usual trap. The two block-scope declarations of func_80111C4C then refer
+ * to different types and gcc rejects the second as a conflict, breaking the
+ * build for every lane. IDO accepts it, so the ROM was never affected.
+ * A file-scope forward declaration makes both refer to the same type and
+ * emits nothing. */
+struct Ovl7_7_AnimObj;
+
 /* D_801CE274_ovl7 = 0.3f : now emitted by this TU */
 void func_800B6474(GObj *);
 extern FUNCLIST D_801CD590_ovl7;
@@ -27,7 +38,7 @@ void func_800A7F74(u32, u32, u16, f32, f32, f32);
 void func_8019D958_ovl7(u16);
 void play_sound(s32);
 void ohSleep(s32);
-void func_801B0258_ovl7(GObj *);
+void func_801B0258_ovl7(GObj *); struct Ovl7_7_AnimObj;
 
 void func_800B3520(void);
 void func_801A0D50_ovl7(void *);
@@ -77,7 +88,53 @@ s32 func_80110150(void *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEA20_ovl7.s")
 
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 5/111 insns. Draft kept. */
+void func_801AEE04_ovl7(void) {
+    s32 func_801A0880_ovl7(void);
+    struct Ovl7_7_AnimObj *func_801117BC(void *, u32);
+    void func_80111C4C(struct Ovl7_7_AnimObj *);
+    void func_801ACF84_ovl7(GObj *);
+    extern s32 D_801CA910_ovl7[];
+    extern s32 D_800E83E0[], D_800E9560[];
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+    void assign_new_process_entry();
+    s32 pad;
+    s32 ret;
+
+    ret = 0;
+    if (D_800E83E0[omCurrentObj->objId] != 0) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
+        return;
+    }
+    if (D_800E9C60[omCurrentObj->objId] == 0) {
+        func_801A0D74_ovl7();
+    }
+    if (D_800E9560[omCurrentObj->objId] <= 0) {
+        ret = func_801A0880_ovl7();
+    } else {
+        D_800E9560[omCurrentObj->objId] -= 1;
+    }
+    if (ret == 0) {
+        func_80111C4C(func_801117BC(&D_801CA910_ovl7, omCurrentObj->objId));
+    }
+    if (ret == 0) {
+        if ((D_800E8920[omCurrentObj->objId] == 1) || (D_800E9C60[omCurrentObj->objId] != 0)) {
+            if (D_800E9720[omCurrentObj->objId] <= 0) {
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
+            } else {
+                D_800E9720[omCurrentObj->objId] -= 1;
+            }
+        }
+    }
+    gEntitiesAngleYArray[omCurrentObj->objId] -= 0.104719758f;
+    if (D_800E8760[0] == 1) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEE04_ovl7.s")
+#endif
 
 void func_801AEFC0_ovl7(GObj *arg0) {
     func_800B3520();

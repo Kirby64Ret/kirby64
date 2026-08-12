@@ -379,7 +379,36 @@ void func_801B5C7C_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B5DEC_ovl7.s")
+void func_801B5DEC_ovl7(GObj *arg0) {
+    void func_801B57A0_ovl7(GObj *);
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    if ((D_800E8AE0[omCurrentObj->objId] & 2) != 0) {
+        play_sound(0x16C);
+    }
+    if (ABSF(D_800E3210[omCurrentObj->objId]) < 0.5f) {
+        D_800E3750[omCurrentObj->objId] = 0;
+        D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+        D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    }
+    if (ABSF(D_800E3210[omCurrentObj->objId]) < 1.5f) {
+        if (D_800E3750[omCurrentObj->objId] == 0.5f) {
+            D_800E9E20[omCurrentObj->objId] = 1;
+        }
+    }
+    if (gEntitiesNextPosYArray[omCurrentObj->objId] <= ent->unk4) {
+        if (D_800E9E20[omCurrentObj->objId] == 0) {
+            D_800E9E20[omCurrentObj->objId] = 1;
+            D_800E3750[omCurrentObj->objId] = 0;
+            D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+            D_800E3C90[omCurrentObj->objId] = 65535.0f;
+        }
+    }
+    if (D_800E9E20[omCurrentObj->objId] == 2) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B57A0_ovl7);
+    }
+}
 
 /* 65535.0f = 65535.0f : now emitted by this TU */
 
@@ -629,7 +658,38 @@ void func_801B6E88_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef NON_MATCHING
+/* 11/165 */
+void func_801B6F18_ovl7(GObj *arg0) {
+    void func_801B6B88_ovl7(GObj *);
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    if (ent->unk3C == 0) {
+        if (ABSF(D_800E3050[omCurrentObj->objId]) <= ABSF(D_800E3590[omCurrentObj->objId])) {
+            if (ABSF(D_800E33D0[omCurrentObj->objId]) <= ABSF(D_800E3910[omCurrentObj->objId])) {
+                if (D_800EA520[omCurrentObj->objId] == -1) {
+                    D_800E3910[omCurrentObj->objId] = 0;
+                    D_800E3590[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+                    D_800EA520[omCurrentObj->objId] = 0x2A;
+                    return;
+                }
+            }
+        }
+    }
+    if (D_800EA520[omCurrentObj->objId] == 0) {
+        D_800E3910[omCurrentObj->objId] = 0;
+        D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+        D_800E3E50[omCurrentObj->objId] = 65535.0f;
+        D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B6B88_ovl7);
+    } else if (D_800EA520[omCurrentObj->objId] != -1) {
+        D_800EA520[omCurrentObj->objId] -= 1;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B6F18_ovl7.s")
+#endif
 
 void func_801B71AC_ovl7(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
