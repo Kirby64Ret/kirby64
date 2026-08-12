@@ -63,6 +63,7 @@ extern Lights1 D_800BE550, D_800BE548;
 // somewhere in ovl7
 extern Lights1 D_801C27D8_ovl7, D_801C27D0_ovl7;
 extern u8 D_801C27E8_ovl7;
+extern u32 D_8012BCA0;
 
 // ent sub98 structs
 extern struct Sub800E1B50_Unk98 D_801CD288_ovl7;
@@ -583,9 +584,9 @@ void func_801999DC_ovl7(Unused GObj *gobj) {
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_8020C710_ovl9);
 }
 
-#ifdef MIPS_TO_C
-
-void func_80199A38_ovl7(s32 arg0) {
+// m2c draft, measured 198/205 diffs
+#ifdef NON_MATCHING
+void func_80199A38_ovl7(void) {
     UnkStruct800E1B50 *sp1C;
     GObj *temp_v1;
     UnkStruct800E1B50 *temp_a3;
@@ -610,7 +611,7 @@ void func_80199A38_ovl7(s32 arg0) {
             temp_a0 = temp_a3->unk78;
             if (temp_a0 != 0) {
                 sp1C = temp_a3;
-                var_f12 = func_800F8824(temp_a0, D_800E17D0[temp_v1->objId], temp_a2 * 4, temp_a3);
+                var_f12 = func_800F8824((Vector *) temp_a0, D_800E17D0[temp_v1->objId]);
             } else {
                 var_f12 = 0.0f;
             }
@@ -668,7 +669,6 @@ void func_80199A38_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199A38_ovl7.s")
 #endif
-
 void func_80199D50_ovl7(void) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -833,8 +833,8 @@ void func_8019A580_ovl7(Unused GObj *gobj) {
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
 }
 
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 69/70 diffs
+#ifdef NON_MATCHING
 void func_8019A62C_ovl7(s32 arg0) {
     f32 *temp_a0;
     f32 *temp_v0_2;
@@ -861,7 +861,6 @@ void func_8019A62C_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A62C_ovl7.s")
 #endif
-
 void func_8019A740_ovl7(Unused GObj *gobj) {
     gKirbyState.unkD = -2;
     gEntityFuncListIDArray[omCurrentObj->objId] = -1;
@@ -932,10 +931,10 @@ s32 func_8019A900_ovl7(struct TrackPosition *arg0) {
     return 1;
 }
 
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 36/72 diffs
+#ifdef NON_MATCHING
 s32 func_8019A9AC_ovl7(f32 arg0, f32 arg1) {
-    ? sp30;
+    struct TrackPosition sp30;
     s32 sp28;
     f32 temp_f0;
     f32 temp_f2;
@@ -963,11 +962,11 @@ block_6:
     if (arg1 != -1.0f) {
         sp28 = var_v1;
         var_v1 = sp28;
-        if (func_8019A900_ovl7(var_f12, &sp30) != 0) {
-            if (sp34 < 0.0f) {
-                var_f0 = -sp34;
+        if (func_8019A900_ovl7(&sp30) != 0) {
+            if (sp30.unk4 < 0.0f) {
+                var_f0 = -sp30.unk4;
             } else {
-                var_f0 = sp34;
+                var_f0 = sp30.unk4;
             }
             if (var_f0 <= (arg1 * 0.5f)) {
                 goto block_14;
@@ -982,9 +981,8 @@ block_14:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A9AC_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 89/100 diffs
+#ifdef NON_MATCHING
 f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
     f32 sp34;
     f32 sp30;
@@ -1008,7 +1006,7 @@ f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
     }
     sp2C = temp_f16;
     sp30 = temp_f2_2;
-    temp_f0 = func_800F9828(omCurrentObj->objId, 0, D_800E5F90);
+    temp_f0 = func_800F9828(omCurrentObj->objId, 0);
     sp34 = temp_f0;
     if (temp_f0 == 9999.0f) {
         *D_800E6BD0 = temp_f2_2;
@@ -1026,10 +1024,9 @@ f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AAD0_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
-s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, s32 arg2, ? arg3) {
+// m2c draft, measured 79/90 diffs
+#ifdef NON_MATCHING
+s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, s32 arg2, struct TrackPosition *arg3) {
     f32 *temp_v0;
     f32 *var_v0;
     f32 temp_f0;
@@ -1039,7 +1036,7 @@ s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, s32 arg2, ? arg3) {
     if (func_8019A900_ovl7(arg3) == 0) {
         return 0;
     }
-    temp_f0 = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], arg1, D_800EB320, arg2);
+    temp_f0 = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], arg1, arg2);
     if (temp_f0 == 0.0f) {
         return 0;
     }
@@ -1071,10 +1068,9 @@ s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, s32 arg2, ? arg3) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AC60_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
-s32 func_8019ADB4_ovl7(f32 arg0, ? arg1) {
+// m2c draft, measured 74/85 diffs
+#ifdef NON_MATCHING
+s32 func_8019ADB4_ovl7(f32 arg0, struct TrackPosition *arg1) {
     f32 *temp_v0;
     f32 *var_v0;
     f32 temp_f0;
@@ -1084,7 +1080,7 @@ s32 func_8019ADB4_ovl7(f32 arg0, ? arg1) {
     if (func_8019A900_ovl7(arg1) == 0) {
         return 0;
     }
-    temp_f0 = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], 0, D_800EB320, 0);
+    temp_f0 = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], 0, 0);
     if (temp_f0 == 0.0f) {
         return 0;
     }
@@ -1116,7 +1112,6 @@ s32 func_8019ADB4_ovl7(f32 arg0, ? arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019ADB4_ovl7.s")
 #endif
-
 #ifdef NON_MATCHING
 void func_8019AF00_ovl7(f32 arg0) {
     f32 angleSin = sinf(D_800EB320[omCurrentObj->objId]) * arg0;
@@ -1164,7 +1159,8 @@ s32 func_8019B260_ovl7(f32 offsetY) {
     return ((gEntitiesNextPosYArray[omCurrentObj->objId] + offsetY) < eneGetPlayerHeight()) ? 1 : -1;
 }
 
-#ifdef MIPS_TO_C
+// m2c draft, measured 63/70 diffs
+#ifdef NON_MATCHING
 void func_8019B2C0_ovl7(s32 arg0) {
     f32 var_f2;
     u32 temp_a2;
@@ -1177,15 +1173,15 @@ void func_8019B2C0_ovl7(s32 arg0) {
         if (D_800E8920[temp_v0] == 0) {
             var_f2 = 0.0f;
         } else {
-            var_f2 = func_800F8824(temp_a2, D_800E17D0[temp_v0], temp_a2, arg0);
+            var_f2 = func_800F8824((Vector *) temp_a2, D_800E17D0[temp_v0]);
         }
         switch (arg0) {                             /* irregular */
             case 1:
-                D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.x = -var_f2;
+                D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.v.x = -var_f2;
                 return;
             case 2:
                 temp_v0_2 = omCurrentObj->objId;
-                D_800DE350[temp_v0_2]->data.dobj->parent->angle.z = var_f2 * D_800E6A10[temp_v0_2];
+                D_800DE350[temp_v0_2]->data.dobj->parent->angle.v.z = var_f2 * D_800E6A10[temp_v0_2];
                 break;
         }
     }
@@ -1193,7 +1189,6 @@ void func_8019B2C0_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B2C0_ovl7.s")
 #endif
-
 void func_8019B3C8_ovl7(Unused GObj *gobj) {
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = 0.0f;
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 0.0f;
@@ -1437,8 +1432,8 @@ s32 func_8019BD38_ovl7(void) {
 
 
 // eneTurnCommon
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 296/296 diffs
+#ifdef NON_MATCHING
 void eneTurnCommon(s32 arg0) {
     UnkStruct800E1B50 *sp1C;
     UnkStruct800E1B50 *temp_t0;
@@ -1573,9 +1568,8 @@ block_29:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneTurnCommon.s")
 #endif
-
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 232/236 diffs
+#ifdef NON_MATCHING
 void eneTurnCommon2(s32 arg0) {
     UnkStruct800E1B50 *sp1C;
     UnkStruct800E1B50 *temp_a3;
@@ -1690,7 +1684,6 @@ void eneTurnCommon2(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneTurnCommon2.s")
 #endif
-
 void func_8019C6AC_ovl7(Unused GObj *gobj) {
     UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -1726,8 +1719,9 @@ void func_8019C79C_ovl7(void) {
     ent->unk2C = -1;
 }
 
-#ifdef MIPS_TO_C
-void func_8019C844_ovl7(void *arg0) {
+// m2c draft, measured 86/91 diffs
+#ifdef NON_MATCHING
+void func_8019C844_ovl7(Vector *arg0) {
     UnkStruct800E1B50 *temp_v0;
     f32 *temp_v0_2;
     f32 *temp_v0_3;
@@ -1739,15 +1733,15 @@ void func_8019C844_ovl7(void *arg0) {
     u32 temp_a1_3;
 
     temp_a1 = omCurrentObj->objId;
-    var_a1 = temp_a1 * 4;
+    var_a1 = temp_a1;
     temp_v0 = D_800E1B50[temp_a1];
     if (temp_v0->unk3C != 0) {
         temp_v0->unk3C = 0;
-        var_a1 = omCurrentObj->objId * 4;
+        var_a1 = omCurrentObj->objId;
     }
-    temp_v0_2 = var_a1 + D_800E17D0;
+    temp_v0_2 = D_800E17D0 + var_a1;
     if (*(D_800E6A10 + var_a1) == 1.0f) {
-        temp_v0_3 = var_a1 + D_800E17D0;
+        temp_v0_3 = D_800E17D0 + var_a1;
         *temp_v0_3 += 3.1415927f;
     } else {
         *temp_v0_2 -= 3.1415927f;
@@ -1756,10 +1750,10 @@ void func_8019C844_ovl7(void *arg0) {
     temp_v0_4 = &D_800E6A10[omCurrentObj->objId];
     *temp_v0_4 = -*temp_v0_4;
     temp_a1_2 = omCurrentObj->objId;
-    D_800E64D0[temp_a1_2] = D_800E6A10[temp_a1_2] * arg0->unk0;
+    D_800E64D0[temp_a1_2] = D_800E6A10[temp_a1_2] * arg0->x;
     temp_a1_3 = omCurrentObj->objId;
-    D_800E6690[temp_a1_3] = D_800E6A10[temp_a1_3] * arg0->unk4;
-    temp_f0 = arg0->unk8;
+    D_800E6690[temp_a1_3] = D_800E6A10[temp_a1_3] * arg0->y;
+    temp_f0 = arg0->z;
     if (temp_f0 < 0.0f) {
         D_800E6850[omCurrentObj->objId] = -temp_f0;
         return;
@@ -1769,9 +1763,8 @@ void func_8019C844_ovl7(void *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C844_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 211/220 diffs
+#ifdef NON_MATCHING
 void func_8019C9B0_ovl7(f32 arg0, u8 arg1) {
     UnkStruct800E1B50 *sp1C;
     UnkStruct800E1B50 *temp_a2;
@@ -1861,7 +1854,6 @@ block_21:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C9B0_ovl7.s")
 #endif
-
 void func_8019CD08_ovl7(f32 arg0) {
     UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
     f32 *tmp = &arg0;
@@ -1883,7 +1875,8 @@ void func_8019CD68_ovl7(void) {
     *(f32 *)&ent->unk14 = gEntitiesNextPosZArray[omCurrentObj->objId] + vec.z;
 }
 
-#ifdef MIPS_TO_C
+// m2c draft, measured 70/106 diffs
+#ifdef NON_MATCHING
 s32 func_8019CE28_ovl7(void) {
     UnkStruct800E1B50 *temp_v0;
     f32 temp_f0;
@@ -1898,8 +1891,8 @@ s32 func_8019CE28_ovl7(void) {
     temp_v1 = omCurrentObj->objId;
     var_a0 = 0;
     temp_v0 = D_800E1B50[temp_v1];
-    temp_f0 = gEntitiesNextPosXArray[temp_v1] - (bitwise f32) temp_v0->unkC;
-    temp_f2 = gEntitiesNextPosZArray[temp_v1] - (bitwise f32) temp_v0->unk14;
+    temp_f0 = gEntitiesNextPosXArray[temp_v1] - *(f32 *) &temp_v0->unkC;
+    temp_f2 = gEntitiesNextPosZArray[temp_v1] - *(f32 *) &temp_v0->unk14;
     if (D_800E6A10[temp_v1] == 1.0f) {
         if (!(temp_f0 >= 0.0f)) {
             if (temp_f0 < 0.0f) {
@@ -1959,9 +1952,9 @@ block_22:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019CE28_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-void func_8019CFD0_ovl7(void *arg0) {
+// m2c draft, measured 137/144 diffs
+#ifdef NON_MATCHING
+void func_8019CFD0_ovl7(Vector *arg0) {
     f32 sp30;
     f32 sp2C;
     f32 sp28;
@@ -1975,15 +1968,15 @@ void func_8019CFD0_ovl7(void *arg0) {
     u32 temp_v1;
 
     temp_v1 = omCurrentObj->objId;
-    var_v1 = temp_v1 * 4;
+    var_v1 = temp_v1;
     temp_a1 = D_800E1B50[temp_v1];
     if (temp_a1->unk3C != 0) {
         temp_a1->unk3C = 0;
-        var_v1 = omCurrentObj->objId * 4;
+        var_v1 = omCurrentObj->objId;
     }
-    temp_a0 = var_v1 + D_800E17D0;
+    temp_a0 = D_800E17D0 + var_v1;
     if (*(D_800E6A10 + var_v1) == 1.0f) {
-        temp_a0_2 = var_v1 + D_800E17D0;
+        temp_a0_2 = D_800E17D0 + var_v1;
         *temp_a0_2 += 3.1415927f;
     } else {
         *temp_a0 -= 3.1415927f;
@@ -1995,17 +1988,17 @@ void func_8019CFD0_ovl7(void *arg0) {
     sp2C = 0.0f;
     *temp_v1_2 = -*temp_v1_2;
     lbvector_Rotate(&sp28, 2, gEntitiesAngleYArray[omCurrentObj->objId]);
-    D_800E3050[omCurrentObj->objId] = arg0->unk0 * sp28;
-    D_800E3590[omCurrentObj->objId] = arg0->unk4 * sp28;
-    temp_f0 = arg0->unk8 * sp28;
+    D_800E3050[omCurrentObj->objId] = arg0->x * sp28;
+    D_800E3590[omCurrentObj->objId] = arg0->y * sp28;
+    temp_f0 = arg0->z * sp28;
     if (temp_f0 < 0.0f) {
         D_800E3AD0[omCurrentObj->objId] = -temp_f0;
     } else {
         D_800E3AD0[omCurrentObj->objId] = temp_f0;
     }
-    D_800E33D0[omCurrentObj->objId] = arg0->unk0 * sp30;
-    D_800E3910[omCurrentObj->objId] = arg0->unk4 * sp30;
-    temp_f0_2 = arg0->unk8 * sp30;
+    D_800E33D0[omCurrentObj->objId] = arg0->x * sp30;
+    D_800E3910[omCurrentObj->objId] = arg0->y * sp30;
+    temp_f0_2 = arg0->z * sp30;
     if (temp_f0_2 < 0.0f) {
         D_800E3E50[omCurrentObj->objId] = -temp_f0_2;
         return;
@@ -2015,7 +2008,6 @@ void func_8019CFD0_ovl7(void *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019CFD0_ovl7.s")
 #endif
-
 void func_8019D214_ovl7(void) {
     UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
     Vector vec;
@@ -2061,8 +2053,8 @@ void func_8019D2FC_ovl7(f32 arg0, u8 arg1) {
     }
 }
 
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 230/249 diffs
+#ifdef NON_MATCHING
 void func_8019D4D0_ovl7(f32 arg0, s32 arg1) {
     UnkStruct800E1B50 *temp_a2;
     f32 *temp_a0_2;
@@ -2162,7 +2154,6 @@ block_19:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D4D0_ovl7.s")
 #endif
-
 #ifdef NON_MATCHING
 // 20/46 diffs: body is right; ROM frame is 0x28 with the arg home slot
 // stored (sw $a0, 0x28($sp)) and temps at 0x20/0x24. K&R form, u16 param
@@ -2343,9 +2334,11 @@ s32 func_8019E0E8_ovl7(s32 arg0, s32 arg1) {
     return track;
 }
 
-#ifdef MIPS_TO_C
-
-void func_8019E128_ovl7(s32 *arg0) {
+// m2c draft, measured 462/462 diffs
+#ifdef NON_MATCHING
+void func_8019E128_ovl7(arg0)
+    s32 *arg0;
+{
     Gfx *temp_s0;
     Gfx *temp_s0_10;
     Gfx *temp_s0_11;
@@ -2622,7 +2615,6 @@ block_11:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019E128_ovl7.s")
 #endif
-
 void func_8019E860_ovl7(s32 *arg0) {
     gSPNumLights(gDisplayListHeads[0]++, 1);
     gSPLight(gDisplayListHeads[0]++, &D_801C27D8_ovl7, 1);
@@ -2639,8 +2631,8 @@ void func_8019E860_ovl7(s32 *arg0) {
     gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
 }
 
-#ifdef MIPS_TO_C
-
+// m2c draft, measured 114/118 diffs
+#ifdef NON_MATCHING
 void func_8019E9F0_ovl7(void) {
     s32 sp1C;
     Gfx *temp_a1;
@@ -2720,7 +2712,6 @@ void func_8019E9F0_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019E9F0_ovl7.s")
 #endif
-
 void func_8019EBCC_ovl7(Unused GObj *gobj) {
     UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -2779,8 +2770,9 @@ void func_8019EC5C_ovl7(EneCurve *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019EC5C_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_8019ED58_ovl7(void *arg0) {
+// m2c draft, measured 96/101 diffs
+#ifdef NON_MATCHING
+void func_8019ED58_ovl7(EneCurve *arg0) {
     f32 temp_f0;
     f32 temp_f12;
     f32 temp_f18;
@@ -2825,9 +2817,9 @@ void func_8019ED58_ovl7(void *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019ED58_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-void func_8019EEE4_ovl7(void *arg0) {
+// m2c draft, measured 39/71 diffs
+#ifdef NON_MATCHING
+void func_8019EEE4_ovl7(EneCurve *arg0) {
     f32 temp_f18;
     f32 temp_f20;
     f32 temp_f22;
@@ -2873,12 +2865,11 @@ void func_8019EEE4_ovl7(void *arg0) {
         } while (temp_f20 <= var_f0);
     }
     arg0->unk24 = arg0->unk24 / var_f14;
-    arg0->unk20 = (arg0->unk28 / var_f0) + (arg0->unk24 * (var_f0 * 0.5f));
+    arg0->unk18.z = (arg0->unk28 / var_f0) + (arg0->unk24 * (var_f0 * 0.5f));
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019EEE4_ovl7.s")
 #endif
-
 void func_8019F000_ovl7(void *arg0, f32 *arg1, s32 arg2, f32 arg3) {
     EneCurve sp20;
 
