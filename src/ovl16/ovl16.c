@@ -305,7 +305,7 @@ void func_801DB1E0_ovl16(s32 arg0) {
     func_801A0D50_ovl7(&func_801DB338_ovl16);
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E9020[omCurrentObj->objId] = 0.0f;
-    D_800E17D0[omCurrentObj->objId] = D_801EFDF0_ovl16;
+    D_800E17D0[omCurrentObj->objId] = 4.712389f;
     D_800E6A10[omCurrentObj->objId] = -1.0f;
     func_801A3280_ovl7();
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 9, &D_801EF4C0_ovl16[0]);
@@ -614,7 +614,7 @@ void func_801DCA84_ovl16(s32 arg0) {
     D_800DF150[omCurrentObj->objId] = NULL;
     func_800B33F4();
     D_800D7098.unk3C = 0;
-    D_800D70D8.unk3C = D_801EFDFC_ovl16;
+    D_800D70D8.unk3C = 0.000001f;
     D_800D70D8.unk30 = 0.0f;
     D_800D70D8.unk38 = 0.0f;
     D_800D70D8.unk34 = 160.0f;
@@ -1041,12 +1041,12 @@ void func_801E20D8_ovl16(s32 arg0) {
         play_sound(0x1B9);
     }
     D_800EA6E0[omCurrentObj->objId] = 1.0f;
-    D_800EA8A0[omCurrentObj->objId] = D_801EFF10_ovl16;
+    D_800EA8A0[omCurrentObj->objId] = 0.0375f;
     D_800E3210[omCurrentObj->objId] = -2.0f;
     D_800E3050[omCurrentObj->objId] = 4.0f;
-    D_800E3590[omCurrentObj->objId] = D_801EFF14_ovl16;
+    D_800E3590[omCurrentObj->objId] = -0.2f;
     ohSleep(0x23);
-    D_800E3750[omCurrentObj->objId] = D_801EFF18_ovl16;
+    D_800E3750[omCurrentObj->objId] = 0.4f;
     ohSleep(5);
     if (func_801E1F40_ovl16() != 0) {
         play_sound(0x1B9);
@@ -1054,7 +1054,7 @@ void func_801E20D8_ovl16(s32 arg0) {
     D_800EA6E0[omCurrentObj->objId] = 2.5f;
     D_800EA8A0[omCurrentObj->objId] = 0.0f;
     D_800E3050[omCurrentObj->objId] = -4.0f;
-    D_800E3590[omCurrentObj->objId] = D_801EFF1C_ovl16;
+    D_800E3590[omCurrentObj->objId] = 0.2f;
     ohSleep(5);
     D_800E3210[omCurrentObj->objId] = 2.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
@@ -1063,11 +1063,11 @@ void func_801E20D8_ovl16(s32 arg0) {
         play_sound(0x1B9);
     }
     D_800EA6E0[omCurrentObj->objId] = 2.5f;
-    D_800EA8A0[omCurrentObj->objId] = D_801EFF20_ovl16;
+    D_800EA8A0[omCurrentObj->objId] = -0.0375f;
     D_800E3050[omCurrentObj->objId] = 4.0f;
-    D_800E3590[omCurrentObj->objId] = D_801EFF24_ovl16;
+    D_800E3590[omCurrentObj->objId] = -0.2f;
     ohSleep(0x23);
-    D_800E3750[omCurrentObj->objId] = D_801EFF28_ovl16;
+    D_800E3750[omCurrentObj->objId] = -0.4f;
     ohSleep(5);
     if (func_801E1F40_ovl16() != 0) {
         play_sound(0x1B9);
@@ -1075,7 +1075,7 @@ void func_801E20D8_ovl16(s32 arg0) {
     D_800EA6E0[omCurrentObj->objId] = 1.0f;
     D_800EA8A0[omCurrentObj->objId] = 0.0f;
     D_800E3050[omCurrentObj->objId] = -4.0f;
-    D_800E3590[omCurrentObj->objId] = D_801EFF2C_ovl16;
+    D_800E3590[omCurrentObj->objId] = 0.2f;
     ohSleep(5);
     D_800E3210[omCurrentObj->objId] = -2.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
@@ -1084,11 +1084,11 @@ void func_801E20D8_ovl16(s32 arg0) {
         play_sound(0x1B9);
     }
     D_800EA6E0[omCurrentObj->objId] = 1.0f;
-    D_800EA8A0[omCurrentObj->objId] = D_801EFF30_ovl16;
+    D_800EA8A0[omCurrentObj->objId] = 0.0375f;
     D_800E3050[omCurrentObj->objId] = 4.0f;
-    D_800E3590[omCurrentObj->objId] = D_801EFF34_ovl16;
+    D_800E3590[omCurrentObj->objId] = -0.2f;
     ohSleep(0x23);
-    D_800E3750[omCurrentObj->objId] = D_801EFF38_ovl16;
+    D_800E3750[omCurrentObj->objId] = 0.4f;
     ohSleep(5);
     if (func_801E1F40_ovl16() != 0) {
         play_sound(0x1B9);
@@ -1096,7 +1096,7 @@ void func_801E20D8_ovl16(s32 arg0) {
     D_800EA6E0[omCurrentObj->objId] = 2.5f;
     D_800EA8A0[omCurrentObj->objId] = 0.0f;
     D_800E3050[omCurrentObj->objId] = -4.0f;
-    D_800E3590[omCurrentObj->objId] = D_801EFF3C_ovl16;
+    D_800E3590[omCurrentObj->objId] = 0.2f;
     ohSleep(5);
     D_800E3210[omCurrentObj->objId] = 2.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
@@ -1105,11 +1105,11 @@ void func_801E20D8_ovl16(s32 arg0) {
         play_sound(0x1B9);
     }
     D_800EA6E0[omCurrentObj->objId] = 2.5f;
-    D_800EA8A0[omCurrentObj->objId] = D_801EFF40_ovl16;
+    D_800EA8A0[omCurrentObj->objId] = -0.0375f;
     D_800E3050[omCurrentObj->objId] = 4.0f;
-    D_800E3590[omCurrentObj->objId] = D_801EFF44_ovl16;
+    D_800E3590[omCurrentObj->objId] = -0.2f;
     ohSleep(0x23);
-    D_800E3750[omCurrentObj->objId] = D_801EFF48_ovl16;
+    D_800E3750[omCurrentObj->objId] = -0.4f;
     ohSleep(5);
     if (func_801E1F40_ovl16() != 0) {
         play_sound(0x1B9);
@@ -1117,7 +1117,7 @@ void func_801E20D8_ovl16(s32 arg0) {
     D_800EA6E0[omCurrentObj->objId] = 1.0f;
     D_800EA8A0[omCurrentObj->objId] = 0.0f;
     D_800E3050[omCurrentObj->objId] = -4.0f;
-    D_800E3590[omCurrentObj->objId] = D_801EFF4C_ovl16;
+    D_800E3590[omCurrentObj->objId] = 0.2f;
     ohSleep(5);
     D_800E3210[omCurrentObj->objId] = -2.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
@@ -1183,7 +1183,7 @@ void func_801E2B08_ovl16(s32 arg0) {
     D_800E3590[omCurrentObj->objId] = temp_f0;
     D_800E3210[omCurrentObj->objId] = temp_f0;
     D_800E3050[omCurrentObj->objId] = temp_f0;
-    D_800E3C90[omCurrentObj->objId] = D_801EFF50_ovl16;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     D_800EA8A0[omCurrentObj->objId] = (D_800EA6E0[omCurrentObj->objId] - 1.0f) / -10.0f;
     ohSleep(0xA);
@@ -1263,7 +1263,7 @@ void func_801E33AC_ovl16(s32 arg0) {
     D_800E3590[omCurrentObj->objId] = temp_f0;
     D_800E3210[omCurrentObj->objId] = temp_f0;
     D_800E3050[omCurrentObj->objId] = temp_f0;
-    D_800E3C90[omCurrentObj->objId] = D_801EFF5C_ovl16;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xF;
 }
@@ -1362,7 +1362,7 @@ void func_801E58D8_ovl16(s32 arg0) {
     D_800E3590[omCurrentObj->objId] = temp_f0;
     D_800E3210[omCurrentObj->objId] = temp_f0;
     D_800E3050[omCurrentObj->objId] = temp_f0;
-    D_800E3C90[omCurrentObj->objId] = D_801EFFBC_ovl16;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     gEntityFuncListIDArray[omCurrentObj->objId] = 0x17;
 }
@@ -1421,7 +1421,7 @@ void func_801E6A84_ovl16(s32 arg0) {
     D_800E3590[omCurrentObj->objId] = temp_f0;
     D_800E3210[omCurrentObj->objId] = temp_f0;
     D_800E3050[omCurrentObj->objId] = temp_f0;
-    D_800E3C90[omCurrentObj->objId] = D_801F0044_ovl16;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     gEntityFuncListIDArray[omCurrentObj->objId] = 0x1B;
 }
@@ -1511,7 +1511,7 @@ void func_801E74E8_ovl16(s32 arg0) {
     D_800E3590[omCurrentObj->objId] = temp_f0;
     D_800E3210[omCurrentObj->objId] = temp_f0;
     D_800E3050[omCurrentObj->objId] = temp_f0;
-    D_800E3C90[omCurrentObj->objId] = D_801F0064_ovl16;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     gEntityFuncListIDArray[omCurrentObj->objId] = 0x1F;
 }

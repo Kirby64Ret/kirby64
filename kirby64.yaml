@@ -705,7 +705,7 @@ segments:
     bss_size: 0x10
     subsegments:
     - [0x1FDDD0, c, ovl14/ovl14]
-    - [0x202980, c, ovl14/ovl14_2]
+    - [0x202990, c, ovl14/ovl14_2]
     - [0x205A90, data, ovl14/ovl14]
     - [0x205d40]
     - {type: bss, vram: 0x801e3150, name: ovl14/ovl14}
@@ -736,6 +736,11 @@ segments:
     subsegments:
     - [0x211490, c, ovl16/ovl16]
     - [0x225770, data, ovl16/ovl16]
+    # .rodata starts where the referencing-function order RESETS: every symbol
+    # from 0x225770 climbs monotonically to the file's last function and then
+    # 0x2260A0 (vram 0x801EFDF0) snaps back to its first. 16-byte aligned, as
+    # SUBALIGN(16) requires.
+    - [0x2260A0, .rodata, ovl16/ovl16]
     - [0x2263D0]
     - {type: bss, vram: 0x801F0120, name: ovl16/ovl16}
 
@@ -752,6 +757,15 @@ segments:
     - [0x228AE0, c, ovl17/ovl17_2]
     - [0x22BEF0, c, ovl17/ovl17_3]
     - [0x230050, data, ovl17/ovl17]
+    # Same reset test as ovl16 puts .rodata at 0x230710 (vram 0x801E5520); the
+    # three-way split follows which TU each symbol's referencing function lives
+    # in. The TU1/TU2 cut is 0x2307A0 and not 0x2307D8 because the two strings
+    # at 0x801E55B0/0x801E55CC are referenced only from func_801E0B38_ovl17,
+    # which is in ovl17_2 -- and that is also the only cut of the two that is
+    # 16-byte aligned, which SUBALIGN(16) requires.
+    - [0x230710, .rodata, ovl17/ovl17]
+    - [0x2307A0, .rodata, ovl17/ovl17_2]
+    - [0x230870, .rodata, ovl17/ovl17_3]
     - [0x2308C0]
     - {type: bss, vram: 0x801e56d0, name: ovl17/ovl17}
 

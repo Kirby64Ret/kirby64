@@ -67,7 +67,19 @@ def scan(path, func):
         # every function that has an ordinary branch and disqualified two
         # thirds of the tree. The table is `.word .L8...` inside a rodata
         # section, or the jlabel macro.
-        'jlabel': 'jlabel' in txt or re.search(r'\.word\s+\.L', txt) is not None,
+        # A jump table looks DIFFERENT depending on the segment's rodata model,
+        # and testing only for the migrated form false-negatives everywhere
+        # else. In a MIGRATED file the table sits inside the listing, as the
+        # `jlabel` macro or `.word .L8...`. In an UNMIGRATED file the table
+        # lives in asm/data/<seg>/<file>.data.s as a `jtbl_8...` symbol and the
+        # listing only REFERENCES it -- the `jlabel` directive never appears
+        # and the branch targets are ordinary `.L8...` labels. Measured on the
+        # unmigrated segments: ovl16 7, ovl13 3, ovl18 2, ovl17/ovl11/ovl12 0
+        # listings carry a jump table, all of which the jlabel-only test
+        # reported as 0. Test for both forms and let score() decide.
+        'jlabel': ('jlabel' in txt
+                   or re.search(r'\.word\s+\.L', txt) is not None
+                   or re.search(r'\bjtbl_[0-9A-Fa-f]{6,8}', txt) is not None),
         'rodata': 'rodata' in txt,
         'float': len(FLOAT.findall(body)),
         'pad': padtrap.classify(path, func)[0],

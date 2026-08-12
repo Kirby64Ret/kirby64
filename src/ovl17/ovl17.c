@@ -120,7 +120,7 @@ void func_801DC98C_ovl17(void) {
         return;
     }
     if (D_800D7098.unk0 == 1) {
-        D_800D7168 += D_801E5558_ovl17;
+        D_800D7168 += 1.2f;
     }
     D_800D7B38 = D_800D7B20;
     func_801DCB44_ovl17(&sp2C);
@@ -151,8 +151,8 @@ void func_801DC98C_ovl17(void) {
 void func_801DCFD4_ovl17(Vector *arg0) {
     Vector sp1C;
 
-    sp1C.x = -D_801E56D0_ovl17 * D_801E5578_ovl17;
-    sp1C.y = -(D_801E56D4_ovl17 - D_800D7164) * D_801E5578_ovl17;
+    sp1C.x = -D_801E56D0_ovl17 * 0.8f;
+    sp1C.y = -(D_801E56D4_ovl17 - D_800D7164) * 0.8f;
     sp1C.z = D_800D716C;
     func_801DD09C_ovl17(&sp1C, arg0);
 }
@@ -161,7 +161,7 @@ void func_801DD040_ovl17(Vector *arg0) {
     Vector sp1C;
 
     sp1C.x = 0.0f;
-    sp1C.y = D_800D7164 + D_801E557C_ovl17;
+    sp1C.y = D_800D7164 + 10000.0f;
     sp1C.z = D_800D716C - D_800D7168;
     func_801DD09C_ovl17(&sp1C, arg0);
 }
@@ -190,7 +190,7 @@ void func_801DD17C_ovl17(void) {
     cam = D_800D799C->data.cam;
     D_800D7B38 = D_800D7B20;
     func_800A71A0(0x10);
-    s = D_801E5580_ovl17;
+    s = 0.2f;
     cam->viewMtx.lookAt.eye.x *= s;
     cam->viewMtx.lookAt.eye.y = (cam->viewMtx.lookAt.eye.y * s) + D_800D7164;
     cam->viewMtx.lookAt.eye.z *= s;
@@ -229,7 +229,7 @@ void func_801DD440_ovl17(struct GObj *arg0) {
 void func_801DD60C_ovl17(struct GObj *arg0) {
     f32 temp_f0;
 
-    temp_f0 = D_801E55A0_ovl17;
+    temp_f0 = 0.2f;
     D_800DEF90[omCurrentObj->objId] = &func_800B5094;
     D_800DDA90[omCurrentObj->objId] = 0x25;
     D_800E0F10[omCurrentObj->objId] = 0x19;
@@ -251,7 +251,7 @@ void func_800B4924(struct GObj *);
 void func_801DD704_ovl17(struct GObj *arg0) {
     f32 temp_f0;
 
-    temp_f0 = D_801E55A4_ovl17;
+    temp_f0 = 0.2f;
     D_800DEF90[omCurrentObj->objId] = &func_800B4924;
     gEntitiesScaleXArray[omCurrentObj->objId] = temp_f0;
     gEntitiesScaleYArray[omCurrentObj->objId] = temp_f0;

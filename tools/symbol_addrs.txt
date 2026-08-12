@@ -1138,3 +1138,9 @@ D_800D7168 = 0x800D7168; // size:0x4
 D_800D716C = 0x800D716C; // size:0x4
 D_800D7170 = 0x800D7170; // size:0x4
 D_800D6C90 = 0x800D6C90; // size:0x4
+
+// ovl16: this 12-byte float run is IDO rodata belonging to func_801E62C0_ovl16,
+// but spimdisasm classes a multi-word rodata symbol as a possible const variable
+// and refuses to migrate it, which then stops migration of every later symbol in
+// that function (D_801F0028..D_801F0040 too). Forcing it restores the block.
+D_801F001C_ovl16 = 0x801F001C; // segment:ovl16 force_migration:True

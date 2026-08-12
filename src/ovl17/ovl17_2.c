@@ -202,7 +202,7 @@ void func_801DE74C_ovl17(struct GObj *arg0) {
         temp_v0->flags = 0;
     }
     if (D_800E93A0[omCurrentObj->objId] > 0) {
-        func_801DF768_ovl17(-(D_800D7170 * D_801E55EC_ovl17) * 3.0f);
+        func_801DF768_ovl17(-(D_800D7170 * 1.8f) * 3.0f);
         D_800E93A0[omCurrentObj->objId] -= 1;
     }
     temp_a1 = D_800EA360[omCurrentObj->objId];
@@ -281,7 +281,7 @@ void func_801E069C_ovl17(void) {
             temp_v0->scale.v.y = 0.0f;
             return;
         }
-        temp_v0->scale.v.y = temp_a0 * D_801E567C_ovl17;
+        temp_v0->scale.v.y = temp_a0 * 0.1f;
     }
 }
 
