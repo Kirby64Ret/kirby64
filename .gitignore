@@ -74,3 +74,4 @@ kirby64.cfg
 src/**/.*.c
 cand.json
 *.ab_tmp.c
+kirby64.eep

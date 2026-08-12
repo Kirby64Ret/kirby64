@@ -77,7 +77,7 @@ extern s32 D_800D7098[];
 extern s32 D_8012D940;
 void func_80113F08(struct GObj *);
 extern void (*D_801249C0[])(struct GObj *);
-void func_80117210(s32);
+void func_80117210(struct GObj *);
 void func_80115F04(s32);
 void func_801173F4(s32);
 
@@ -324,7 +324,48 @@ void func_80112A0C(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112A40.s")
 
+#ifdef MIPS_TO_C
+/* 6/98: every instruction, register and spill slot (0x1C/0x20/0x24/0x28) is
+   exact; the frame is 0x48 against the ROM's 0x40, so only the two top slots
+   (the `pos` spill and arg0's home) differ. Six named locals give seven local
+   words -- five plus IDO's 4-byte anomaly -- where the ROM has five, and
+   L = 0x18 means `L mod 8 == 0`: unreachable by pad locals per the closed form.
+   Dropping any one local rotates the three pointer registers down a slot
+   (a2/a3/t0 for the ROM's a3/t0/t1): scl inlined 50, id inlined 113,
+   pos reused for both angle and scale 51, parameter-reuse for scl 23.
+   The declaration order pz,py,px WITH the chain written *px = *py = *pz is
+   load-bearing -- it is what puts D_800E3050 in $t8 and reverses the base
+   materialisation order; the other three combinations give 12-16. */
+void func_80112B4C(struct GObj *arg0) {
+    Vector *pos = &arg0->data.dobj->pos.v;
+    s32 id = arg0->objId;
+    f32 *pz = &D_800E33D0[id];
+    f32 *py = &D_800E3210[id];
+    f32 *px = &D_800E3050[id];
+    Vector *scl;
+
+    *px = *py = *pz = 0.0f;
+    func_800B4924(arg0);
+    *px = pos->x - gEntitiesPosXArray[id];
+    *py = pos->y - gEntitiesPosYArray[id];
+    *pz = pos->z - gEntitiesPosZArray[id];
+    gEntitiesNextPosXArray[id] = pos->x;
+    gEntitiesNextPosYArray[id] = pos->y;
+    gEntitiesNextPosZArray[id] = pos->z;
+    if (((u8 *) arg0->unk4C)[2] & 2) {
+        pos = &arg0->data.dobj->angle.v;
+        scl = &arg0->data.dobj->scale.v;
+        gEntitiesAngleXArray[id] = pos->x;
+        gEntitiesAngleYArray[id] = pos->y;
+        gEntitiesAngleZArray[id] = pos->z;
+        gEntitiesScaleXArray[id] = scl->x;
+        gEntitiesScaleYArray[id] = scl->y;
+        gEntitiesScaleZArray[id] = scl->z;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112B4C.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112CD4.s")
 

@@ -140,7 +140,7 @@ void func_800AA018(s32);
 void func_800AA154(s32);
 void func_800AECC0(f32);
 void func_800AED20(f32);
-void func_800AFBB4(s32, struct GObj *);
+void func_800AFBB4(u32, struct GObj *);
 void func_800B19F4(s32, u32);
 void func_800B33F4(void);
 void func_800B4924(struct GObj *);
@@ -231,8 +231,8 @@ extern s32 D_801EF758_ovl16[];
 extern s32 D_801EF760_ovl16[];
 extern s32 D_801EF780_ovl16[];
 extern s32 D_801EF7A0_ovl16[];
-extern s32 D_801EF7BC_ovl16;
-extern s32 D_801EF7D8_ovl16;
+extern s32 D_801EF7BC_ovl16[];
+extern s32 D_801EF7D8_ovl16[];
 extern s32 D_801EF7F4_ovl16[];
 extern s32 D_801EF810_ovl16[];
 extern s32 D_801EF82C_ovl16[];
@@ -789,7 +789,107 @@ void func_801DD4F8_ovl16(struct Ovl16MObj *arg0, struct Ovl16Color *arg1) {
     arg0->envColor = *arg1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DD50C_ovl16.s")
+void func_801DD50C_ovl16(s32 arg0) {
+    void func_800AEDD0(f32, s32);
+    void func_800AA038(s32, f32, s32);
+    extern struct Ovl16Color D_801EF6D0_ovl16;
+    extern struct Ovl16Color D_801EF6D4_ovl16;
+    extern struct Ovl16Color D_801EF6D8_ovl16;
+    extern struct Ovl16Color D_801EF6DC_ovl16;
+    extern struct Ovl16Color D_801EF6E0_ovl16;
+    extern struct Ovl16Color D_801EF6E4_ovl16;
+    extern struct Ovl16Color D_801EF6E8_ovl16;
+    extern struct Ovl16Color D_801EF6EC_ovl16;
+    s32 temp;
+    s32 i;
+    s32 x;
+
+    temp = D_800E0D50[omCurrentObj->objId];
+    func_8019BB58_ovl7();
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
+    D_800DF150[omCurrentObj->objId] = func_801DD9FC_ovl16;
+    play_sound(0x1A8);
+    switch (D_800D7098.unk4) {
+    case 0:
+        for (i = 0; i != 0x14; i++) {
+            x = D_800E0D50[omCurrentObj->objId] * 4;
+            if (*(u32 *) ((u8 *) gEntityFuncListIDArray + x) == 1) {
+                goto end;
+            }
+            ((struct Ovl16DObj *) (*(struct DObj ***) ((u8 *) D_800DFBD0 + x))[10])->mobjList->unk88 = 5.0f;
+            ohSleep(1);
+            x = D_800E0D50[omCurrentObj->objId] * 4;
+            if (*(u32 *) ((u8 *) gEntityFuncListIDArray + x) == 1) {
+                goto end;
+            }
+            ((struct Ovl16DObj *) (*(struct DObj ***) ((u8 *) D_800DFBD0 + x))[10])->mobjList->unk88 = 0.0f;
+            ohSleep(1);
+        }
+        break;
+    case 5:
+        for (i = 0; i != 0x14; i++) {
+            x = D_800E0D50[omCurrentObj->objId] * 4;
+            if (*(u32 *) ((u8 *) gEntityFuncListIDArray + x) == 1) {
+                goto end;
+            }
+            func_801DD4E4_ovl16(((struct Ovl16DObj *) (*(struct DObj ***) ((u8 *) D_800DFBD0 + x))[2])->mobjList, &D_801EF6D4_ovl16);
+            func_801DD4E4_ovl16(
+                ((struct Ovl16DObj *) D_800DFBD0[D_800E0D50[omCurrentObj->objId]][2])->mobjList->next,
+                &D_801EF6DC_ovl16);
+            func_801DD4E4_ovl16(
+                ((struct Ovl16DObj *) D_800DFBD0[D_800E0D50[omCurrentObj->objId]][3])->mobjList,
+                &D_801EF6E4_ovl16);
+            ohSleep(1);
+            x = D_800E0D50[omCurrentObj->objId] * 4;
+            if (*(u32 *) ((u8 *) gEntityFuncListIDArray + x) == 1) {
+                goto end;
+            }
+            func_801DD4E4_ovl16(((struct Ovl16DObj *) (*(struct DObj ***) ((u8 *) D_800DFBD0 + x))[2])->mobjList, &D_801EF6D0_ovl16);
+            func_801DD4E4_ovl16(
+                ((struct Ovl16DObj *) D_800DFBD0[D_800E0D50[omCurrentObj->objId]][2])->mobjList->next,
+                &D_801EF6D8_ovl16);
+            func_801DD4E4_ovl16(
+                ((struct Ovl16DObj *) D_800DFBD0[D_800E0D50[omCurrentObj->objId]][3])->mobjList,
+                &D_801EF6E0_ovl16);
+            ohSleep(1);
+        }
+        break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+        if ((u32) gEntityFuncListIDArray[D_800E0D50[omCurrentObj->objId]] == 1) {
+            goto end;
+        }
+        func_800AEDD0(gameTicksPerDraw, temp);
+        func_800AA038(D_801EF70C_ovl16[D_800D7098.unk4], 0.0f, temp);
+        ohSleep(0x28);
+        if ((u32) gEntityFuncListIDArray[D_800E0D50[omCurrentObj->objId]] == 1) {
+            goto end;
+        }
+        func_800AEDD0(((f32 *) D_801EF6F0_ovl16)[D_800D7098.unk4] * gameTicksPerDraw, temp);
+        break;
+    case 6:
+        for (i = 0; i != 0x14; i++) {
+            x = D_800E0D50[omCurrentObj->objId] * 4;
+            if (*(u32 *) ((u8 *) gEntityFuncListIDArray + x) == 1) {
+                goto end;
+            }
+            func_801DD4E4_ovl16(((struct Ovl16DObj *) (*(struct DObj ***) ((u8 *) D_800DFBD0 + x))[2])->mobjList, &D_801EF6EC_ovl16);
+            ohSleep(1);
+            x = D_800E0D50[omCurrentObj->objId] * 4;
+            if (*(u32 *) ((u8 *) gEntityFuncListIDArray + x) == 1) {
+                goto end;
+            }
+            func_801DD4E4_ovl16(((struct Ovl16DObj *) (*(struct DObj ***) ((u8 *) D_800DFBD0 + x))[2])->mobjList, &D_801EF6E8_ovl16);
+            ohSleep(1);
+        }
+        break;
+    }
+end:
+    ohSleep(5);
+    func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
+}
 
 void func_801DD9FC_ovl16(s32 arg0) {
     gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
@@ -826,7 +926,78 @@ void func_801DDEB0_ovl16(struct GObj *arg0) {
     func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DE030_ovl16.s")
+void func_801DE030_ovl16(s32 arg0) {
+    s32 other;
+    s32 temp;
+
+    other = D_800E0D50[omCurrentObj->objId];
+    func_8019BB58_ovl7();
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
+    D_800DF150[omCurrentObj->objId] = func_801DE524_ovl16;
+    D_800E17D0[omCurrentObj->objId] = D_800E17D0[other];
+    D_800E9020[omCurrentObj->objId] = D_800E9020[other];
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E6A10[omCurrentObj->objId] = D_800E6A10[other];
+    func_800B33F4();
+    switch (D_800E98E0[omCurrentObj->objId]) {
+    case 0:
+    case 2:
+    case 4:
+    case 6:
+        gEntitiesNextPosXArray[omCurrentObj->objId] =
+            ((f32 *) D_801EF760_ovl16)[D_800E98E0[omCurrentObj->objId]];
+        break;
+    case 1:
+        gEntitiesNextPosXArray[omCurrentObj->objId] = 280.0f - gEntitiesNextPosYArray[other];
+        break;
+    case 3:
+        gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosYArray[other];
+        break;
+    case 5:
+        gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f - gEntitiesNextPosYArray[other];
+        break;
+    case 7:
+        gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f - (280.0f - gEntitiesNextPosYArray[other]);
+        break;
+    }
+    gEntitiesNextPosYArray[omCurrentObj->objId] =
+        ((f32 *) D_801EF780_ovl16)[D_800E98E0[omCurrentObj->objId]];
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+    func_800A9864(0x100E8, 0x23, 0x10);
+    func_800AFBB4(0, omCurrentObj);
+    while (D_800D7098.unk10 != 0) {
+        switch (D_800E9FE0[omCurrentObj->objId].as_u32) {
+        case 0:
+            break;
+        case 1:
+            D_800EA6E0[omCurrentObj->objId] =
+                atan2f(gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[other],
+                       gEntitiesNextPosYArray[other] - gEntitiesNextPosYArray[omCurrentObj->objId]);
+            func_800AFBB4(1, omCurrentObj);
+            play_sound(0x1B0);
+            func_800AA018(0x1066F);
+            func_800AA154(0x1066E);
+            func_800AFBB4(0, omCurrentObj);
+            while ((D_800D7098.unk10 != 0) && (D_800E9FE0[omCurrentObj->objId].as_u32 == 1)) {
+                ohSleep(1);
+            }
+            break;
+        case 2:
+            temp = func_801ACC34_ovl7(0x33, 0);
+            if (temp != 0) {
+                D_800E8E60[temp] = 1;
+                D_800E0D50[temp] = omCurrentObj->objId;
+                D_800EA6E0[temp] = D_800EA6E0[omCurrentObj->objId];
+            }
+            while ((D_800D7098.unk10 != 0) && (D_800E9FE0[omCurrentObj->objId].as_u32 == 2)) {
+                ohSleep(1);
+            }
+            break;
+        }
+        ohSleep(1);
+    }
+    func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
+}
 
 void func_801DE524_ovl16(s32 arg0) {
     D_800DFBD0[omCurrentObj->objId][1]->angle.v.z = D_800EA6E0[omCurrentObj->objId];
@@ -933,7 +1104,156 @@ void func_801DECF4_ovl16(s32 arg0) {
     func_801DC314_ovl16(0, 0, 0);
 }
 
+#ifdef NON_MATCHING
+/* 318/373 but the residue is FIVE placement differences, not 318 distinct
+ * defects -- the whole tail (the two 15-iteration loops, the second jump
+ * table and the epilogue) aligns instruction for instruction once the shift
+ * is removed. What is left:
+ *   - IDO hoists `lui/addiu %hi/%lo(D_801F0140_ovl16)` above the first switch;
+ *     the ROM keeps the lui in the second beq's delay slot and the addiu in
+ *     each arm.
+ *   - the default arm's `D_800D7098.unk4 = t` store: ROM uses the absolute
+ *     `lui $at; sw %lo(D_800D7098+4)($at)` pair at a merge point, IDO folds it
+ *     into `sw 0x4($s3)` in a bnel delay slot (this is the 1 missing insn).
+ *   - three scheduling swaps (beqz/addu, nop/lwc1, sll/lui).
+ * Swept without effect: if/else-if instead of switch, do/while vs
+ * while vs if+do/while in the default arm, a `goto` to the store, a pointer
+ * local for the table, `*(u32 *)` type-split on the store, and reversed
+ * compare operands.  Dense case labels ARE required: with only the four live
+ * cases IDO emits a compare chain and no jump table (333 -> 319). */
+void func_801DED40_ovl16(s32 arg0) {
+    void func_800A9760(s32);
+    struct UnkStruct800E1B50 *temp;
+    s32 t;
+    s32 i;
+
+    temp = D_800E1B50[omCurrentObj->objId];
+    D_800D7098.unk34 = omCurrentObj->objId;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9438;
+    D_800D7098.unk14 = D_800D7098.unk4;
+    switch (D_800D7098.unkC) {
+    case 1:
+        D_800D7098.unk4 = D_801F0140_ovl16[0];
+        break;
+    case 2:
+        D_800D7098.unk4 = D_801F0140_ovl16[D_800D7098.unk4 == D_801F0140_ovl16[0]];
+        break;
+    default:
+        t = D_801F0140_ovl16[random_soft_s32_range(D_800D7098.unkC)];
+        if (D_800D7098.unk4 == t) {
+            do {
+                t = D_801F0140_ovl16[random_soft_s32_range(D_800D7098.unkC)];
+            } while (D_800D7098.unk4 == t);
+        }
+        D_800D7098.unk4 = t;
+        break;
+    }
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(((f32 *) D_801EF848_ovl16)[D_800D7098.unk4] * gameTicksPerDraw);
+    func_800A9760(D_801EF7A0_ovl16[D_800D7098.unk4]);
+    D_800E98E0[D_800EBBE0[omCurrentObj->objId]] = 2;
+    t = D_801EF7D8_ovl16[D_800D7098.unk4];
+    if (t != 0) {
+        if (((f32 *) D_801EF848_ovl16)[D_800D7098.unk4] != 0.0f) {
+            func_800AA018(t);
+        } else {
+            func_800A9F98(t, 2.0f);
+        }
+    }
+    func_800AA018(D_801EF7BC_ovl16[D_800D7098.unk4]);
+    switch (D_800D7098.unk4) {
+    case 0:
+        break;
+    case 1:
+        D_800D7098.unk10 = 1;
+        for (i = 0; i != 6; i++) {
+            t = func_801ACC34_ovl7(0x31, i & 1);
+            if (t != 0) {
+                D_800E8E60[t] = 1;
+                D_800E9C60[t] = i;
+            }
+        }
+        break;
+    case 2:
+        if (random_soft_s32_range(2) != 0) {
+            D_800EA8A0[omCurrentObj->objId] = 0.05235987902f;
+        } else {
+            D_800EA8A0[omCurrentObj->objId] = -0.05235987902f;
+        }
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    case 5:
+        D_800D7098.unk2C = 1;
+        func_8019E0A4_ovl7(5, 5);
+        D_800D7098.unk10 = 1;
+        t = func_801ACC34_ovl7(0x35, 0);
+        if (t != 0) {
+            D_800E8E60[t] = 1;
+            D_800E0D50[t] = omCurrentObj->objId;
+            D_800EC120[omCurrentObj->objId] = t;
+            ((s32 *) D_800E9AA0)[t] = 0;
+            D_800E98E0[omCurrentObj->objId] = 0;
+            D_800D7098.unk38 = 0;
+        }
+        break;
+    case 6:
+        if (random_soft_s32_range(2) != 0) {
+            D_800EA8A0[omCurrentObj->objId] = 0.05235987902f;
+        } else {
+            D_800EA8A0[omCurrentObj->objId] = -0.05235987902f;
+        }
+        D_800DFBD0[omCurrentObj->objId][3]->angle.v.z = D_800EA6E0[omCurrentObj->objId] =
+            (f32) (random_soft_s32_range(0xF) + 2) * 0.08726646751f;
+        D_800D7098.unk10 = 1;
+        for (i = 0; i != 4; i++) {
+            t = func_801ACC34_ovl7(0x36, 0);
+            if (t != 0) {
+                D_800E8E60[t] = 1;
+                D_800E0D50[t] = omCurrentObj->objId;
+                D_800E98E0[t] = i;
+            }
+        }
+        break;
+    }
+    for (i = 0; i < 0xF; i++) {
+        temp->unk80->unk10 -= ((f32 *) D_801EF810_ovl16)[D_800D7098.unk4];
+        ohSleep(1);
+    }
+    switch (D_800D7098.unk4) {
+    case 0:
+        play_sound(0x1AC);
+        break;
+    case 1:
+        break;
+    case 2:
+        play_sound(0x1A9);
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    case 5:
+        break;
+    case 6:
+        break;
+    }
+    i = 0;
+    do {
+        temp->unk80->unk10 -= ((f32 *) D_801EF810_ovl16)[D_800D7098.unk4];
+        ohSleep(1);
+        i++;
+    } while (i != 0xF);
+    temp->unk80->unk10 = ((f32 *) D_801EF82C_ovl16)[D_800D7098.unk4];
+    D_800E98E0[D_800EBBE0[omCurrentObj->objId]] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = D_801EF7F4_ovl16[D_800D7098.unk4];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DED40_ovl16.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DF314_ovl16.s")
 
