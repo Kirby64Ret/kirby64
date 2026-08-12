@@ -453,162 +453,66 @@ void func_80151E60_ovl6(GObj *arg0, Lights1 *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151E60_ovl6.s")
 #endif
-#ifdef MIPS_TO_C
+/* 22/228: instruction-for-instruction exact except one register-class
+ * allocation cluster (the ROM keeps the seg pointer in t4 spilled at 0x30 and
+ * the DB020000 constant in $ra; IDO picks a2/0x94). Same residue family as
+ * func_80151E60_ovl6 above. Swept: id/seg locals in all orders, inline forms. */
+#ifdef NON_MATCHING
+void func_80152138_ovl6(GObj *arg0, Lights1 *arg1) {
+    u32 **seg;
+    Light *light;
+    u32 id;
 
-void func_80152138_ovl6(s32 *arg0, void *arg1) {
-    s32 *sp30;
-    s32 sp2C;
-    s32 *temp_t4;
-    s32 temp_t5;
-    s32 temp_v0_7;
-    void *temp_v0;
-    void *temp_v0_10;
-    void *temp_v0_11;
-    void *temp_v0_12;
-    void *temp_v0_13;
-    void *temp_v0_14;
-    void *temp_v0_15;
-    void *temp_v0_16;
-    void *temp_v0_17;
-    void *temp_v0_18;
-    void *temp_v0_19;
-    void *temp_v0_20;
-    void *temp_v0_21;
-    void *temp_v0_22;
-    void *temp_v0_23;
-    void *temp_v0_24;
-    void *temp_v0_25;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v0_5;
-    void *temp_v0_6;
-    void *temp_v0_8;
-    void *temp_v0_9;
-
-    temp_v0 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0 + 8;
-    temp_v0->unk0 = 0xE7000000;
-    temp_v0->unk4 = 0;
-    temp_v0_2 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_2 + 8;
-    temp_t4 = (*arg0 * 4) + &gSegment4StartArray;
-    temp_v0_2->unk0 = 0xDB060010;
-    temp_v0_2->unk4 = *temp_t4;
-    temp_v0_3 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_3 + 8;
-    temp_v0_3->unk4 = 0x18;
-    temp_v0_3->unk0 = 0xDB020000;
-    temp_v0_4 = gDisplayListHeads.unk0;
-    temp_t5 = arg1 + 8;
-    gDisplayListHeads.unk0 = temp_v0_4 + 8;
-    temp_v0_4->unk4 = temp_t5;
-    temp_v0_4->unk0 = 0xDC08060A;
-    temp_v0_5 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_5 + 8;
-    temp_v0_5->unk4 = arg1;
-    temp_v0_5->unk0 = 0xDC08090A;
-    temp_v0_6 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_6 + 8;
-    temp_v0_6->unk0 = 0xFB000000;
-    temp_v0_6->unk4 = (arg1->unkA << 8) | (arg1->unk8 << 0x18) | (arg1->unk9 << 0x10) | 0xFF;
-    sp2C = temp_t5;
-    sp30 = temp_t4;
-    temp_v0_7 = func_800AB0F4();
-    switch (temp_v0_7) {
+    id = arg0->objId;
+    gDPPipeSync(gDisplayListHeads[0]++);
+    seg = &gSegment4StartArray[id];
+    gSPSegment(gDisplayListHeads[0]++, 4, *seg);
+    gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+    light = &arg1->l[0];
+    gSPLight(gDisplayListHeads[0]++, light, 1);
+    gSPLight(gDisplayListHeads[0]++, arg1, 2);
+    gDPSetEnvColor(gDisplayListHeads[0]++, arg1->l[0].l.col[0], arg1->l[0].l.col[1], arg1->l[0].l.col[2], 0xFF);
+    id = func_800AB0F4(arg0);
+    switch (id) {
         case 19:
         case 21:
         case 23:
         case 25:
-            renderDrawDObjFromGObj(arg0, arg1);
+            renderDrawDObjFromGObj(arg0);
             break;
         case 27:
         case 29:
-            func_8001585C(arg0, arg1);
+            func_8001585C(arg0);
             break;
         case 20:
         case 22:
         case 24:
         case 26:
-            temp_v0_8 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_8 + 8;
-            temp_v0_8->unk4 = 0;
-            temp_v0_8->unk0 = 0xE7000000;
-            temp_v0_9 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_9 + 8;
-            temp_v0_9->unk0 = 0xDB060010;
-            temp_v0_9->unk4 = *temp_t4;
-            temp_v0_10 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_10 + 8;
-            temp_v0_10->unk4 = 0x18;
-            temp_v0_10->unk0 = 0xDB020000;
-            temp_v0_11 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_11 + 8;
-            temp_v0_11->unk4 = temp_t5;
-            temp_v0_11->unk0 = 0xDC08060A;
-            temp_v0_12 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_12 + 8;
-            temp_v0_12->unk4 = arg1;
-            temp_v0_12->unk0 = 0xDC08090A;
-            temp_v0_13 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_13 + 8;
-            temp_v0_13->unk0 = 0xFB000000;
-            temp_v0_13->unk4 = (arg1->unkA << 8) | (arg1->unk8 << 0x18) | (arg1->unk9 << 0x10) | 0xFF;
-            renderDrawObject_TypeD(arg0, arg1);
-            temp_v0_14 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_14 + 8;
-            temp_v0_14->unk4 = 0;
-            temp_v0_14->unk0 = 0xE7000000;
-            temp_v0_15 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_15 + 8;
-            temp_v0_15->unk0 = 0xDC08060A;
-            temp_v0_15->unk4 = D_8015A670_ovl6 + 8;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, *seg);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, light, 1);
+            gSPLight(gDisplayListHeads[1]++, arg1, 2);
+            gDPSetEnvColor(gDisplayListHeads[1]++, arg1->l[0].l.col[0], arg1->l[0].l.col[1], arg1->l[0].l.col[2], 0xFF);
+            renderDrawObject_TypeD(arg0);
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPLight(gDisplayListHeads[1]++, &D_8015A670_ovl6->l[0], 1);
             break;
         case 28:
         case 30:
-            temp_v0_16 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_16 + 8;
-            temp_v0_16->unk4 = 0;
-            temp_v0_16->unk0 = 0xE7000000;
-            temp_v0_17 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_17 + 8;
-            temp_v0_17->unk0 = 0xDB060010;
-            temp_v0_17->unk4 = *temp_t4;
-            temp_v0_18 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_18 + 8;
-            temp_v0_18->unk4 = 0x18;
-            temp_v0_18->unk0 = 0xDB020000;
-            temp_v0_19 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_19 + 8;
-            temp_v0_19->unk4 = temp_t5;
-            temp_v0_19->unk0 = 0xDC08060A;
-            temp_v0_20 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_20 + 8;
-            temp_v0_20->unk4 = arg1;
-            temp_v0_20->unk0 = 0xDC08090A;
-            temp_v0_21 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_21 + 8;
-            temp_v0_21->unk0 = 0xFB000000;
-            temp_v0_21->unk4 = (arg1->unkA << 8) | (arg1->unk8 << 0x18) | (arg1->unk9 << 0x10) | 0xFF;
-            func_80015BCC(arg0, arg1);
-            temp_v0_22 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_22 + 8;
-            temp_v0_22->unk4 = 0;
-            temp_v0_22->unk0 = 0xE7000000;
-            temp_v0_23 = gDisplayListHeads.unk4;
-            gDisplayListHeads.unk4 = temp_v0_23 + 8;
-            temp_v0_23->unk0 = 0xDC08060A;
-            temp_v0_23->unk4 = D_8015A670_ovl6 + 8;
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPSegment(gDisplayListHeads[1]++, 4, *seg);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, light, 1);
+            gSPLight(gDisplayListHeads[1]++, arg1, 2);
+            gDPSetEnvColor(gDisplayListHeads[1]++, arg1->l[0].l.col[0], arg1->l[0].l.col[1], arg1->l[0].l.col[2], 0xFF);
+            func_80015BCC(arg0);
+            gDPPipeSync(gDisplayListHeads[1]++);
+            gSPLight(gDisplayListHeads[1]++, &D_8015A670_ovl6->l[0], 1);
             break;
     }
-    temp_v0_24 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_24 + 8;
-    temp_v0_24->unk4 = 0;
-    temp_v0_24->unk0 = 0xE7000000;
-    temp_v0_25 = gDisplayListHeads.unk0;
-    gDisplayListHeads.unk0 = temp_v0_25 + 8;
-    temp_v0_25->unk0 = 0xDC08060A;
-    temp_v0_25->unk4 = D_8015A670_ovl6 + 8;
+    gDPPipeSync(gDisplayListHeads[0]++);
+    gSPLight(gDisplayListHeads[0]++, &D_8015A670_ovl6->l[0], 1);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152138_ovl6.s")

@@ -847,12 +847,18 @@ void func_801DB930_ovl9(struct GObj *arg0) {
 /* 23 diffs, all one cause: the ROM's frame is 0x38 (Vector at sp+0x2C, the
    unk84 pointer spilled at sp+0x24) while IDO allocates 0x30. Dead scalar
    locals in every position are eliminated and never grow it. */
+/* 17 diffs (was 23): `s32 pad0;` between the Vector and the pointer local puts
+   the frame at 0x38 and the spill at 0x24, both exact. The residue is a pure
+   one-slot register rotation -- the ROM uses $v1/$a3/$t7/$t0 where IDO takes
+   $v0/$t7/$t8/$v1. Swept: all pad positions, declaration order, an implicit
+   func_800B2340, its s32 return type, extra DObj/objId/ent locals. */
 #ifdef NON_MATCHING
 extern void func_800B2340(Vector *, struct DObj *, u32);
 extern void func_8019F410_ovl7(struct DObj *);
 
 void func_801DBC38_ovl9(struct GObj *arg0) {
     Vector sp2C;
+    s32 pad0;
     struct Sub800E1B50_Unk84 *temp;
 
     temp = D_800E1B50[omCurrentObj->objId]->unk84;
