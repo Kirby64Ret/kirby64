@@ -762,6 +762,48 @@ location, `cmp` it against the old copy and delete the old one if identical.
 `tools/pc/gen_data.py` reporting "N stale listing(s) skipped" is the same
 disease showing up downstream.
 
+## verify.py is not the arbiter, and it has lied in three ways
+
+verify.py compiles ONE translation unit and word-diffs it against the ROM's
+disassembly. It never links. verify_rom.py compares the LINKED ROM and is the
+arbiter; when the two disagree, verify_rom is right. Three defects found by
+auditing all 151 game C files against a byte-exact ROM -- 20 functions were
+reporting a DIFF that could not possibly be real:
+
+**1. It compiled -O3 files at -O2.** main/libn_audio.c and libn_audio_2.c are
+built through tools/decomp/cc_o3.py, which drives IDO's four phases directly
+because the `cc` driver cannot do -O3 (ujoin is missing). verify.py had the
+comment explaining this sitting above a line that read VERIFY_CC from the
+environment and did nothing else. **60 of main's 75 pragmas were being scored
+against the wrong compiler**, which is the most likely explanation for main
+producing almost nothing across seven waves. Fixed, and the per-file settings
+are now PARSED FROM THE MAKEFILE so the two cannot drift apart again.
+
+**2. It compared full addresses on a LO16 relocation.** A LO16 only determines
+the low 16 bits of the word. The ROM's `%lo(D_803FC100)` against our
+`D_803D6900 + 0x5800` differ by 0x20000, which has nothing in its low half, so
+both encode 0xC100 and the linked word is identical. 12 files across ovl2,
+ovl4 and ovl5 each had one already-correct function reporting "DIFF 1/N".
+
+**3. It counted own-.rodata references as diffs regardless of rodata model.**
+See the migration section above. In a MIGRATED segment a file owning its
+literals is the point; in an unmigrated one it means a duplicate constant and a
+grown segment. It now distinguishes them.
+
+Both remaining cases are REPORTED and not counted, so the information is still
+there:
+
+    func_xxx: MATCH (n insns) [2 uncounted relocation note(s)]
+
+**What this means for you.** If you took a baseline diff count before today,
+RE-MEASURE IT. A "1 diff, immovable" note may be a function that was already
+finished, and a "clean" -O3 result may have been meaningless. And when
+verify.py and verify_rom.py disagree, do not try to satisfy verify.py.
+
+One known artifact remains, deliberately not papered over: func_80158120_ovl4
+reports 26 against 27 because the ROM listing ends with two `jr $ra; nop`
+pairs. ROM sha1, check_tu_size and verify_rom all say it is correct.
+
 ## A recorded diff count is NOT a floor you can reproduce
 
 Comments in the tree say things like "1 diff, immovable". Re-measure before
