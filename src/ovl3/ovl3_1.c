@@ -19,10 +19,10 @@ extern s32 func_801BBE50_ovl7(u8 *, void *, s32);
 extern void func_801529C0_ovl3(void);
 #include "ovl1/util.h"
 
-extern char D_80196E10_ovl3[];
-extern char D_80196E3C_ovl3[];
-extern char D_80196E68_ovl3[];
-extern char D_80196E94_ovl3[];
+/* D_80196E10_ovl3[] now emitted by this TU */
+/* D_80196E3C_ovl3[] now emitted by this TU */
+/* D_80196E68_ovl3[] now emitted by this TU */
+/* D_80196E94_ovl3[] now emitted by this TU */
 
 extern s32 func_80155C68_ovl3(s32, f32 *);
 
@@ -33,7 +33,7 @@ s32 func_80152070_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
     u8 i;
 
     if (arg2 >= 0x11) {
-        utilPrintf(D_80196E10_ovl3, 0x10);
+        utilPrintf("generate bg break line over. max line %d.\n", 0x10);
         return 0;
     }
     for (i = 0; i < arg2; i++) {
@@ -49,7 +49,7 @@ s32 func_80152124_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3, f32 ar
     u8 i;
 
     if (arg2 >= 0x11) {
-        utilPrintf(D_80196E3C_ovl3, 0x10);
+        utilPrintf("generate bg break line over. max line %d.\n", 0x10);
         return 0;
     }
     for (i = 0; i < arg2; i++) {
@@ -65,7 +65,7 @@ s32 func_801521F0_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
     u8 i;
 
     if (arg2 >= 0x11) {
-        utilPrintf(D_80196E68_ovl3, 0x10);
+        utilPrintf("generate bg break line over. max line %d.\n", 0x10);
         return 0;
     }
     for (i = 0; i < arg2; i++) {
@@ -81,7 +81,7 @@ s32 func_8015229C_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
     u8 i;
 
     if (arg2 >= 0x11) {
-        utilPrintf(D_80196E94_ovl3, 0x10);
+        utilPrintf("generate bg break line over. max line %d.\n", 0x10);
         return 0;
     }
     for (i = 0; i < arg2; i++) {
@@ -227,26 +227,31 @@ void func_8015439C_ovl3(f32 *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 19/29. The named extern D_8012E948 (datatodo.txt) DOES work -- it closed
-   func_8015439C / func_8015449C / func_80154578, which store 7-8 slots each.
-   Here there is only ONE store through the address, and IDO folds a
-   single-use constant address into `lui $at; sw ..., %lo(sym)($at)` instead
-   of materialising it into a register the way the ROM does. Reading the slot
-   back to force a second use materialises it but costs the reload (25/30). */
+/* 17/28 (was 19/29). Two residues, both measured in wave 8 after ovl3's rodata
+   migration:
+     1. IDO folds the single store through the constant address into
+        `lui $at; sw ..., %lo(sym+0x1C)($at)`; the ROM materialises the base
+        into $a2 with lui+addiu and stores at 0x1C($a2). Swept: D_8012E948 vs
+        &D_8012E944[1], a named dst local vs the symbol inline, and a struct
+        pointer.
+     2. the ROM hoists ONE `or $v0, $zero, $zero` above both early exits and
+        emits a duplicated `lw $ra` epilogue (29 insns); every `||`-merged
+        form comes out 28. The separate-if form (variant a) reaches the right
+        LENGTH at 19/29 -- if you attack this again, start from that one, not
+        from this body. Swept: `s32 ret = 0` at declaration and as a statement,
+        goto into a shared return block, trailing `return 0` vs falling off. */
 s32 func_80154428_ovl3(f32 *arg0) {
     extern f32 D_8012E948[];
     f32 *dst = D_8012E948;
     f32 **temp;
 
     temp = D_800E0490[omCurrentObj->objId];
-    if (temp == NULL) {
-        return 0;
-    }
-    if ((*(f32 **) &dst[7] = temp[0]) == NULL) {
+    if ((temp == NULL) || ((*(f32 **) &dst[7] = temp[0]) == NULL)) {
         return 0;
     }
     func_8015439C_ovl3(arg0);
     func_8011BF4C(dst, 0);
+    return 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80154428_ovl3.s")

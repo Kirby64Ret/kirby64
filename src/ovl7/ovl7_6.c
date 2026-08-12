@@ -7,6 +7,7 @@
 #include "unk_structs/D_800E1B50.h"
 
 #include "ovl1/track.h"
+#include "main/lbvector.h"
 
 struct Ovl7Unk94 {
     u8 filler0[0xC];
@@ -149,7 +150,49 @@ void func_801AD7E8_ovl7(GObj *arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD980_ovl7.s")
+void func_801AD980_ovl7(GObj *arg0) {
+    func_800A9864(0x100E1, 0x1869F, 0x10);
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    switch (D_800EC2E0[omCurrentObj->objId].as_s32) {
+    case 0:
+        gEntitiesAngleZArray[omCurrentObj->objId] = 1.5707964f;
+        break;
+    case 1:
+        gEntitiesAngleZArray[omCurrentObj->objId] = 0.7853982f;
+        break;
+    case 2:
+        gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;
+        break;
+    case 3:
+        gEntitiesAngleZArray[omCurrentObj->objId] = -0.7853982f;
+        break;
+    case 4:
+        gEntitiesAngleZArray[omCurrentObj->objId] = -1.5707964f;
+        break;
+    case 5:
+        gEntitiesAngleZArray[omCurrentObj->objId] = -2.3561945f;
+        break;
+    case 6:
+        gEntitiesAngleZArray[omCurrentObj->objId] = -3.1415927f;
+        break;
+    case 7:
+        gEntitiesAngleZArray[omCurrentObj->objId] = -3.9269907f;
+        break;
+    }
+    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
+    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
+    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
+    func_800AA018(0x1062B);
+    func_800AA018(0x1062C);
+    func_800AF27C();
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 #ifdef NON_MATCHING
 /* 38/108, fully decoded and every instruction is in the right place: the
@@ -279,7 +322,35 @@ void func_801AE52C_ovl7(void) {
     func_800AF408();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AE5D4_ovl7.s")
+void func_801AE5D4_ovl7(void) {
+    extern f32 D_800E64D0[], D_800E3210[], D_800E6690[], D_800E3750[];
+    extern s32 D_800E9C60[];
+    Vector sp3C;
+    Vector sp30;
+    Vector sp24;
+    f32 angle = 0.0f;
+
+    switch (D_800E9C60[omCurrentObj->objId]) {
+    case 3:
+        angle += 0.5235988f;
+    case 0:
+        angle += 0.5235988f;
+    case 2:
+        angle += 0.5235988f;
+    case 1:
+        angle += 0.5235988f;
+    case 4:
+        angle += 0.5235988f;
+    }
+    sp3C.y = sp3C.z = 0.0f;
+    sp3C.x = D_800E6A10[omCurrentObj->objId];
+    angle *= D_800E6A10[omCurrentObj->objId];
+    lbvector_Rotate(&sp3C, 4, angle);
+    D_800E64D0[omCurrentObj->objId] = sp3C.x * 20.0f;
+    D_800E3210[omCurrentObj->objId] = sp3C.y * 20.0f;
+    D_800E6690[omCurrentObj->objId] = sp3C.x * -1.5f;
+    D_800E3750[omCurrentObj->objId] = sp3C.y * -1.5f;
+}
 
 s32 func_801AE73C_ovl7(s32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     s32 idx;

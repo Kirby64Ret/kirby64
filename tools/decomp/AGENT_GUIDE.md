@@ -3108,3 +3108,289 @@ What was wrong is the CONCLUSION printed next to it. A `trap` verdict on a
 function that is LAST in its `c` subsegment means "needs a pad subsegment",
 not "can never be C"; only an INTERIOR one means "the TU boundary is wrong".
 verify.py's message now says so.
+
+# Wave 13: rodata migrated for ovl3(part), ovl4, ovl5(part), ovl7, ovl10, ovl13, ovl14, ovl15, ovl18(part) and main
+
+Measured at c8eaec3 + this working tree, ROM sha1 6cea2d46b929a3bb347b060a77fccc83526fb855.
+Jump-table pragmas sitting in a file whose rodata is NOT migrated went from
+**96 to 17** (ovl3_6.c 14, ovl5_4.c 2, ovl5_3.c 1). Every other `jlabel`
+pragma in the tree is now ordinary work.
+
+## The object rodata model, which is what finds the boundaries
+
+An IDO object emits its read-only data as **[.rodata: strings] then
+[.late_rodata: float constants and jump tables]**, and kirby.ld concatenates
+objects in order. So, walking a segment's rodata symbols in address order and
+tagging each with the address of its referencing function:
+
+  * the referencing address climbs monotonically inside each of the two runs;
+  * a **new object starts at the reset that lands on a STRING** (or on the
+    float run, when that object has no strings).
+
+Verified on ovl10_3, ovl14 and ovl17, and it is the only test that explains
+ovl5: its block at 0x8018D5F0 is three STRINGS referenced from ovl5_4
+functions sitting *before* a float run that starts at ovl5_3's first function.
+Two objects cannot interleave like that, so **ovl5_3 and ovl5_4 are one TU**
+and that block cannot be migrated per file. Same shape in ovl3/plyshot (two
+[string][float] cycles inside one C file) and in ovl3 kirby/ovl3_6.
+
+**Two [string][float] cycles inside one C file == a hidden TU split.** That is
+now the cheapest hidden-split detector in the tree; it found four.
+
+## Zero words in the MIDDLE of a block are an object boundary, not padding
+
+`ovl10/1E58F0` looked like 8 bytes of live float plus 8 dead words. It is 8
+bytes of live float plus **SUBALIGN(16) padding at an object boundary**: there
+is a hidden TU split inside ovl10_3b between func_801EBF2C (0x1DCC9C) and
+func_801EC6D8 (0x1DD448). One C object cannot emit a 16-aligned hole in the
+middle of its own .rodata, so that range has to stay an asm blob. Identical
+case in ovl18/code_2385A0 at 0x23E610 (D_8022BC74 is `-0.65, 0, 0`).
+
+Symptom, and the only way it shows: the object's .rodata is the right SIZE and
+every byte after the hole is shifted 8 low. `check_sections` cannot see it.
+
+## The blob's NAME is not evidence of its owner
+
+Four of the old `<file>_rd` blob names were wrong, and nothing had ever needed
+them to be right because a blob is just bytes:
+
+    ovl5_13_rd   0x135270  is ovl5_12's   (jtbl_8018DE00 -> func_80182360)
+    ovl10_4_rd   0x1E5900  is ovl10_3b's
+    ovl10/1E58F0 0x1E58F0  is ovl10_3b's, and is an object boundary
+    ovl7/filesplit 0x174380 is ovl7_10's
+
+Re-derive ownership before renaming a `rodata, X_rd` to `.rodata, X`.
+
+## The refusal detector: take ownership from the CURRENT listings
+
+The sticky-refusal recipe in the Wave 12 section is right, but the
+implementation detail matters: the "which function owns this symbol" scan must
+run over `asm/nonmatchings/<seg>/` **as it is now**, not over a backup that
+only contains `asm/data`. A detector fed an empty ownership map reports every
+missing symbol as NO-OWNER and prints "0 refusals" -- which is what happened on
+ovl7 and let `D_801CE328_ovl7` (two words of 65535.0f, owner
+func_801B3EC8_ovl7 still a pragma) through.
+
+**The arbiter is not the detector, it is the object-vs-ROM comparison.** Run it
+after every migration, over the whole tree, before believing anything:
+
+    objcopy -O binary --only-section=.rodata build/src/<seg>/<file>.o
+    compare against baserom at the subsegment's own offset,
+    ignoring words whose ROM value has 0x80 in the top byte (unrelocated jtbl),
+    accepting align16(len(ours)) == size.
+
+It caught the ovl7 refusal, both hidden TU splits and the ovl18 fold below.
+It needs no link, so it works while a sibling lane has the tree red.
+
+## IDO folds same-value float literals that SHARE A BRANCH
+
+`func_80220F68_ovl18` owns eight separate 3.14159274 slots
+(D_8022BBDC..D_8022BBF8). Written as eight literals IDO emits four and the
+block comes out 16 bytes short, so **ovl18/code_232B60 cannot be migrated**.
+
+The opposite is also true and is what makes migration work at all: IDO does
+NOT merge identical constants that do not share a branch. `func_801F1E48_ovl10`
+gets two separate 3.1415927f slots from two literals in two statements, and
+ovl3_1.c's four *identical strings* ("generate bg break line over. max line
+%d.\n", D_80196E10/E3C/E68/E94, one per function) come back byte-exact.
+
+So: same value + same branch => folded (blocker). Same value + different
+statement or different function => separate slots (fine).
+
+## extern -> literal is NOT always inert
+
+Wave 12 measured 133 of 133 rewrites inert. That is not a law.
+`func_80170AC4_ovl3` was a MATCHED C function using `extern f32 D_801973AC_ovl3`;
+with the literal it went to 47/177 (IDO CSEs 2.0f into $f22 where the ROM
+re-materialises it) and took 12563 words of ovl3 with it.
+
+**The cheap fix is to re-guard that one function as a `#pragma`.** Its constant
+then has a pragma owner again, so splat migrates the symbol back into the
+function's own listing and the object emits exactly the ROM's bytes. One
+function reverted, the whole segment green.
+
+Do it LINE-NEUTRALLY: the guarded draft is inactive, so you may reflow its body
+freely -- join three declaration lines to pay for the `#ifdef/#else/#endif` --
+and nothing below it in the file moves.
+
+## `extern f32 A, B;` -- strip only the migrated names
+
+A rewriter that replaces a whole declaration line kills the co-declared symbols
+that are still in asm. That broke five ovl7 files with "undeclared identifier"
+inside `#ifdef NON_MATCHING` drafts -- which DO get compiled, by the
+`gcc -fsyntax-only -DNON_MATCHING` CC_CHECK pass, so it breaks every lane's
+build, not just yours. Parse the declarator list and re-emit the survivors.
+
+## Re-run the rewriter after every build: other lanes clobber it
+
+Another lane held `src/ovl3/kirby.c` open across the migration and wrote its
+copy back, reverting all 18 literal rewrites; the next link failed on
+`undefined reference to D_801973A8_ovl3`. Make the rewriter idempotent (drive
+it from "symbol is defined nowhere in asm/") and re-run it right before the
+gate. Also make it skip lines that are already comments -- otherwise a second
+pass rewrites the symbol name inside the comment you left behind.
+
+## check_sections.py measured one block 0x310 too long
+
+Its subsegment regex only matched the 3-field `- [addr, kind, name]` form, so a
+block delimited by a 5-field `lib` entry took its size from the *next* parsable
+line. `main/libn_audio_2` read 0x550 instead of 0x240. Fixed: the size now ends
+at the next `- [0x...` of any shape.
+
+## What is left, and exactly why
+
+    ovl3_6.c   14 jtbl pragmas   kirby.c's TU does not end at 0xDD9A0. The block
+                                 at 0xF7FB0 opens with a string owned by
+                                 func_8017D430 (ovl3_6) and its float run then
+                                 climbs from func_80179370 -- which is in
+                                 kirby.c -- to func_8018F368 with no reset.
+                                 Fixing it means moving 0x80179370..0x8017CF60
+                                 out of kirby.c into ovl3_6.c and moving the
+                                 `c` subsegment with it.
+    ovl5_4.c    2                ovl5_3 + ovl5_4 are one TU (strings at
+    ovl5_3.c    1                0x8018D5F0 precede the float run at
+                                 0x8018D658). Same cure: merge the two C files.
+    ovl18/code_232B60            the eight-pi fold above. No jtbl pragma, so
+                                 nothing is lost by leaving it a blob.
+    ovl3/plyshot second half     hidden TU split at ~func_801634D4.
+    ovl10_3b first 16 bytes      hidden TU split at ~func_801EC6D8.
+    ovl18/code_2385A0 first 16   hidden TU split.
+
+# The extern-to-literal sweep, measured tree-wide (2026-08-12, at c8eaec3+)
+
+An `extern f32 D_xxxx;` in a C file whose `.rodata` is MIGRATED is a live bug,
+not a floor. An extern is a MEMORY OPERAND and IDO schedules it differently
+from an immediate literal -- different load placement, different FP register
+assignment, different interaction with the shared `mtc1 $zero`. The wave-12
+ovl9 section already said this; what follows is the same lever measured as a
+tree-wide sweep, with its real yield.
+
+## The worklist, and how to rebuild it
+
+The candidate is a GUARDED DRAFT, in a TU with a dotted `.rodata` entry, that
+references a symbol defined in its own listing's `.late_rodata`:
+
+  1. `verify.rodata_is_migrated(cfile)` for the TU set (125 files at the time).
+  2. Walk every `#ifdef MIPS_TO_C` / `#ifdef NON_MATCHING` block that contains a
+     `#pragma GLOBAL_ASM`, read that listing's `.section .late_rodata` dlabels
+     (skip `jtbl_*`), and keep the blocks whose body names one.
+  3. Rewrite each reference as a literal spelled from the ROM WORD -- the
+     shortest `%.Ng` that round-trips through `struct.pack('>f')`, with `.0`
+     appended if it came out integral (`65535f` is not C).
+
+That found **30 draft x own-rodata pairs** when it was first built, growing to
+**36** as two more segments were migrated by a sibling lane mid-session. Two checks worth keeping: there
+were ZERO cross-listing cases (a symbol owned by a sibling function's listing),
+and after the rewrite every touched TU's `.rodata` was byte-compared against
+the base ROM with `objcopy -O binary --only-section=.rodata` -- all exact apart
+from jump-table words, which are unrelocated in the object. **Do that compare.**
+verify.py masks the LO16, so a WRONG float literal still reports MATCH.
+
+## Yield: 11 of 36, 31% overall -- but 9 of 16 where the draft was already <= 20 diffs
+
+Not the 75% a first sample suggested; the yield is strongly conditioned on the
+draft already being close. The honest split:
+
+    closed outright        11      (9 of them from drafts at <= 20 diffs)
+    improved, not closed    6      (11->1, 12->3, 8->4, 16->7, 144->81, 69->63)
+    inert                  15      (identical diff count)
+    unmeasurable            4      (2 string symbols, 1 multi-word float,
+                                    1 draft that will not compile either way)
+
+Prioritise by the draft's EXISTING diff count. Among candidates at <= 20 diffs
+the rate is 9/16; above 20 it is 2/20, and both of those were 75/75 and 12/224
+where the whole residue happened to be constant handling.
+
+CLOSED (before -> after, all now plain C, ROM-checked):
+
+    func_8015A31C_ovl3   plydemo      75/75  -> MATCH
+    func_80159C40_ovl4   ovl4_5        4/30  -> MATCH
+    func_8018293C_ovl5   ovl5_12       3/56  -> MATCH
+    func_80182A1C_ovl5   ovl5_12       3/56  -> MATCH
+    func_801A50B0_ovl7   ovl7_4        9/95  -> MATCH
+    func_801B9150_ovl7   ovl7_13       3/83  -> MATCH
+    func_801E3614_ovl10  ovl10_2       6/77  -> MATCH
+    func_801ED7D0_ovl10  ovl10_3b      2/88  -> MATCH
+    func_801E13C0_ovl14  ovl14_2       7/216 -> MATCH
+    func_8021FC40_ovl18  code_2308C0  12/66  -> MATCH
+    func_8022629C_ovl18  code_2385A0   3/94  -> MATCH
+
+IMPROVED and saved as guarded drafts with the literal form in place:
+
+    func_801F1454_ovl10  ovl10_5b     11/64  -> 1/64   (one add.s operand order)
+    func_80169718_ovl3   ovl3_4       12/224 -> 3/224  (one chained-store $f0/$f2)
+    func_801A69B0_ovl7   ovl7_4       16/152 -> 7/152  (arg-register rotation left)
+    func_801B3C54_ovl7   ovl7_10       8/40  -> 4/40   (arg-register rotation left)
+
+## What the sweep FALSIFIES
+
+Every one of these was a written-down floor in this file or in a source
+comment, and every one of them was measured before its segment was migrated:
+
+* **`func_801B9150_ovl7` 3/83, "the coupled-FP floor"** -- wave 10 recorded
+  "the three `f32` locals get the right saved FP registers OR the right load
+  order, never both; all assignment orders swept". With literals it is exact.
+  The coupling was between the three MEMORY OPERANDS, not the locals.
+* **`func_80159C40_ovl4` 4/30, "the one-slot register-class residue, not a
+  source-form problem"** -- 18 variants recorded across two waves. Literal:
+  MATCH. Its idiom twin `func_801B3C54_ovl7` (also annotated as a confirmed
+  floor, with the ovl4 note cited as the fuller sweep) dropped 8 -> 4, losing
+  exactly the `$f0/$f2` half.
+* **`func_801A50B0_ovl7` 9/95, "only the FP register NAMES differ ... swept
+  constant as a local at four positions, inlining it, extra named temps"** --
+  MATCH on the literal alone.
+* **`func_8018293C_ovl5` / `func_80182A1C_ovl5` 3/56, "no source/format form
+  moves it; re-swept wave 7"** -- both MATCH.
+* **`func_801ED7D0_ovl10` 2/88, "the ROM needs load order (BC4, BC8) with
+  register order ($f22, $f20), i.e. the reverse, which no source form
+  reaches"** -- reachable; the reverse pairing is exactly what the literal form
+  emits.
+* **`func_8022629C_ovl18`**: its comment read "this TU's rodata is UNMIGRATED
+  so the two constants must be `extern f32`, not literals". That was true when
+  written and false when read -- the segment had been migrated in the
+  meantime. Stamp such claims with a commit hash (this guide already says so).
+* **`func_8015A31C_ovl3` 75/75** -- the "recorded floors are rumours" section
+  cites this function as measuring 75 against a recorded 4. Both numbers were
+  the extern model. It matches.
+
+Generalisation, and it is the transferable part: **a recorded floor whose
+residue is FP-register naming, FP load ORDER, or a shared `mtc1 $zero`, in a
+segment that has since been migrated, carries no information. Re-measure it
+before believing it.** Argument-register and `$v0/$v1` rotations are NOT in
+this class -- the sweep left all four of those untouched (see the residues
+above), and for them the callee-return-type lever is still the right tool.
+
+## Where the lever does nothing, and why that is predictable
+
+The 14 inert cases are inert for one of two reasons, both cheap to spot before
+you spend a compile:
+
+  * **The constant is used ONCE, stored straight to an array.** IDO emits
+    `lui $at; lwc1 %lo(...)` for the extern and `lui $at; lwc1 %lo(.rodata)`
+    for the literal -- the same two instructions in the same slots. Examples:
+    `func_801F58A0_ovl9` (7/70), `func_8021FF80_ovl18` (1/46),
+    `func_801E2610_ovl14` (9/137).
+  * **The draft is nowhere near matching anyway** (`func_8016253C_ovl5`
+    304/324, `func_801EF790_ovl10` 98/140). The rodata model is not what is
+    wrong with them.
+
+The lever pays where the constant is read into a LOCAL that then lives across
+a call or a loop, or where two constants must land in a specific pair of
+callee-saved FP registers. That is the same population the guide's "Where the
+ROM hoists a constant into a callee-saved $f2x across a call" note describes.
+
+## Two spellings that bite
+
+* `65535` round-trips as a float but `65535f` is not C. Append `.0` whenever
+  the shortest round-tripping spelling has no `.` or `e`.
+* A multi-word float symbol (later words non-zero) cannot become one literal;
+  skip it. `D_801CE328_ovl7` is one, and it is force-migrated in
+  symbol_addrs.txt precisely because spimdisasm refuses it.
+
+## Sweeping safely in a tree with six live lanes
+
+Measure on a LEADING-DOT copy beside the real file (`.lever_<stem>.c`): make's
+`wildcard` never matches it, so a sibling's `mk.sh` cannot compile it. verify.py
+will read that copy as UNMIGRATED, so register the path in `verify._migrated`
+before calling `verify.verify()` -- otherwise every own-.rodata reference comes
+back as a phantom diff and a real MATCH reads as 1-4 diffs.

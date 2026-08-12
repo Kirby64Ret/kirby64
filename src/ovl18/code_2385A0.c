@@ -195,23 +195,14 @@ void func_80226294_ovl18(UNUSED s32 arg0) {
 
 }
 
-/* 74/94 -> 3/94. Three levers, all needed: this TU's rodata is UNMIGRATED so
- * the two constants must be `extern f32`, not literals; the two `1` stores are
- * separate registers in the ROM so one has to be type-split; and the 65535
- * needs TWO local copies -- one local reloads per use (45 diffs), two locals
- * CSE into the single $f2 the ROM has. Residue: the shared `mtc1 $zero` lands
- * in $f14 where the ROM has $f0. Swept: zero as a local declared first/mid/
- * last, double 0.0, late assignment of either local, three copies, register,
- * and swapping which local feeds which store. */
-extern f32 D_8022BC84_ovl18;
-extern f32 D_8022BC88_ovl18;
-
-#ifdef NON_MATCHING
+/* The two `1` stores are separate registers in the ROM so one has to be
+ * type-split, and the 65535 needs TWO local copies -- one local reloads per
+ * use (45 diffs), two locals CSE into the single $f2 the ROM has. */
 void func_8022629C_ovl18(s32 arg0)
 {
   struct UnkStruct800E1B50 *temp_a1;
-  f32 big = D_8022BC84_ovl18;
-  f32 big2 = D_8022BC84_ovl18;
+  f32 big = 65535.0f;
+  f32 big2 = 65535.0f;
   temp_a1 = D_800E1B50[omCurrentObj->objId];
   D_800DDFD0[omCurrentObj->objId] = 1;
   temp_a1->unk98 = &D_8022AB38_ovl18;
@@ -222,15 +213,12 @@ void func_8022629C_ovl18(s32 arg0)
  D_800E3750[omCurrentObj->objId] = 0.0f; D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
   D_800E3C90[omCurrentObj->objId] = big2;
   func_800A9EA4(0x1002F);
-  if (D_800DE350[omCurrentObj->objId]->data.dobj->timeRemaining != D_8022BC88_ovl18)
+  if (D_800DE350[omCurrentObj->objId]->data.dobj->timeRemaining != -3.4028235e+38f)
   {
     func_800AF27C();
   }
   gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_8022629C_ovl18.s")
-#endif
 void func_80226414_ovl18(UNUSED s32 arg0) {
 
 }

@@ -303,15 +303,8 @@ void func_8021FB18_ovl18(void) {
     func_800B1BF0(0, omCurrentObj->objId);
 }
 
-#ifdef NON_MATCHING
-/* 12/66: the integer half is exact. Residue is the FP allocation order --
- * the ROM allocates the CSEd D_8022BB80_ovl18 load LAST ($f16) after both
- * D_800D70D8 temps, IDO allocates it second. Swept: local vs inline extern,
- * a named local for the (f32) conversion, a named local for unk18, and both
- * multiply operand orders. The `*(s32 *) &D_800D7098.unk4` reload inside the
- * if IS load-bearing -- the plain member read is CSEd away. */
-extern f32 D_8022BB80_ovl18;
-
+/* The `*(s32 *) &D_800D7098.unk4` reload inside the if IS load-bearing -- the
+ * plain member read is CSEd away. */
 void func_8021FC40_ovl18(void) {
     struct UnkStruct800E1B50 *p;
     s32 v;
@@ -327,14 +320,11 @@ void func_8021FC40_ovl18(void) {
         v = *(s32 *) &D_800D7098.unk4;
     }
     temp = D_800D7098.unk8 + v;
-    gEntitiesScaleXArray[omCurrentObj->objId] = ((D_800D70D8.unk18 * D_8022BB80_ovl18) * (f32) temp) + D_800D70D8.unk18;
-    gEntitiesScaleYArray[omCurrentObj->objId] = D_800D70D8.unk1C - ((D_800D70D8.unk1C * D_8022BB80_ovl18) * (f32) temp);
-    gEntitiesScaleZArray[omCurrentObj->objId] = ((D_800D70D8.unk20 * D_8022BB80_ovl18) * (f32) temp) + D_800D70D8.unk20;
+    gEntitiesScaleXArray[omCurrentObj->objId] = ((D_800D70D8.unk18 * 0.12f) * (f32) temp) + D_800D70D8.unk18;
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_800D70D8.unk1C - ((D_800D70D8.unk1C * 0.12f) * (f32) temp);
+    gEntitiesScaleZArray[omCurrentObj->objId] = ((D_800D70D8.unk20 * 0.12f) * (f32) temp) + D_800D70D8.unk20;
     D_800D7098.unk4 = temp;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FC40_ovl18.s")
-#endif
 
 /* 0.20943952f now emitted by this TU */
 /* 0.20943952f now emitted by this TU */

@@ -13,11 +13,11 @@ extern s32 func_80168408_ovl3(s32, s32, f32);
 #include "ovl1/track.h"
 #include "ovl1/util.h"
 
-extern char D_80197028_ovl3[];
+/* D_80197028_ovl3[] now emitted by this TU */
 
 extern void func_800A22D4(s32);
 extern s32 func_800A8100(s32, s32, s32, struct DObj *);
-extern char D_80196FF0_ovl3[];
+/* D_80196FF0_ovl3[] now emitted by this TU */
 extern f32 D_8019715C_ovl3;
 
 extern void func_800AECC0(f32);
@@ -64,7 +64,7 @@ extern void ohSleep(s32);
 extern f32 **D_80192B5C_ovl3;
 extern f32 D_80197F60_ovl3[][23];
 extern f32 D_801982F8_ovl3[][8];
-extern f32 D_80197050_ovl3;
+/* D_80197050_ovl3 now emitted by this TU */
 
 void func_8015ADF8_ovl3(s32 arg0) {
     f32 temp;
@@ -77,7 +77,7 @@ void func_8015ADF8_ovl3(s32 arg0) {
     func_80154648_ovl3(D_800E0D50[omCurrentObj->objId], D_80197F60_ovl3[omCurrentObj->objId - 4],
                        D_801982F8_ovl3[omCurrentObj->objId - 4]);
     play_sound(4);
-    temp = D_80197050_ovl3;
+    temp = 0.2f;
     gEntitiesScaleXArray[omCurrentObj->objId] = temp;
     gEntitiesScaleYArray[omCurrentObj->objId] = temp;
     gEntitiesScaleZArray[omCurrentObj->objId] = temp;
@@ -320,7 +320,7 @@ void func_801625B8_ovl3(f32 *arg0) {
     s32 temp = request_track_general(0x15, 0x3C, 0x50);
 
     if (temp == -1) {
-        utilPrintf(D_80196FF0_ovl3);
+        utilPrintf("Player Shot Water Ripple Request Error![plyshot.cc]\n");
         return;
     }
     gEntitiesNextPosXArray[temp] = arg0[0];
@@ -335,7 +335,7 @@ s32 func_801632B8_ovl3(s32 arg0) {
     s32 temp = request_track_general(0x14, 4, 0xE);
 
     if (temp == -1) {
-        utilPrintf(D_80197028_ovl3);
+        utilPrintf("Player Shot Request Error![plyshot.cc]\n");
     } else {
         gEntityFuncListIDArray[temp] = arg0;
     }

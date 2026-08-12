@@ -65,7 +65,7 @@ extern s32 D_800BE4EC;
 extern s32 D_800D6B54;
 extern s32 D_800D7088;
 extern s32 D_80129210;
-extern s32 D_801292B0;
+extern Vector D_801292B0;
 extern s32 D_801D7B60;
 extern s32 D_801D7BC4;
 extern s32 D_801D7C04;
@@ -221,7 +221,26 @@ void func_801DB378_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DB770_ovl15.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DBE20_ovl15.s")
+void func_801DBE20_ovl15(s32 arg0) {
+    switch (D_800D7098.unk3C) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+        break;
+    case 4:
+    case 5:
+    case 6:
+        D_801292B0.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        D_801292B0.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        D_801292B0.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        break;
+    case 7:
+    case 8:
+    case 9:
+        break;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DBEAC_ovl15.s")
 

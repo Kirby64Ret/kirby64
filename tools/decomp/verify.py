@@ -374,7 +374,7 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
                           f'[{len(rodata_notes)} uncounted relocation note(s)]\n'
                           + '\n'.join(rodata_notes[:10]))
         return True, f'{func}: MATCH ({len(cur)} insns)'
-    return False, f'{func}: DIFF {len(diffs)}/{n} insns\n' + '\n'.join(diffs[:40])
+    return False, f'{func}: DIFF {len(diffs)}/{n} insns\n' + '\n'.join(diffs[:int(__import__("os").environ.get("VERIFY_MAXDIFF","40"))])
 
 def main():
     cfile = sys.argv[1]

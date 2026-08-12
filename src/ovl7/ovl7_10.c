@@ -18,7 +18,7 @@ extern s32 D_801CB0BC_ovl7[];
 extern s32 D_801CA738_ovl7[];
 
 extern s32 D_801D0A98_ovl7;
-extern f32 D_801CE31C_ovl7, D_801CE320_ovl7;
+/* D_801CE31C_ovl7 = 6.2831855f, D_801CE320_ovl7 = 0.34906587f: literals now */
 void func_801AC840_ovl7(void);
 extern s32 D_801CB3D0_ovl7[];
 extern s32 D_801C8E64_ovl7[];
@@ -145,24 +145,21 @@ void func_801B3ACC_ovl7(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-// 8 diffs: instruction sequence is right; the omCurrentObj base lands in $a0
-// instead of $a1 and thr/angle get $f0/$f2 instead of $f2/$f0.
-// Both residues are the one-slot rotation and both want the register one
-// HIGHER. Swept: compare operand order, thr as an extern used twice, thr
-// assigned late, an explicit f32 for the angle load, declaration order of
-// thr/d, `x = x + k` vs `x += k`, and the callee-return-type lever on
-// func_801AC840_ovl7 in all four forms (void/s32/f32/f64) -- 8 in every case.
-// The return-type lever cannot reach it: the call is the LAST statement, so
-// nothing is live across it. Wave 11 also ruled out giving the function a
-// `GObj *` parameter to push the omCurrentObj base off $a0 -- that buys the
-// $a1 but costs the parameter's home store, 38/40 either with or without an
-// f32 return type. func_80159C40_ovl4 (4/30, ovl4_5.c) is the same idiom and
-// carries the fuller sweep of the $f0/$f2 half.
+// 4 diffs, was 8. ovl7_10's rodata is MIGRATED now and writing the two
+// constants as LITERALS closed the whole $f0/$f2 half of the residue -- the
+// same swap that closed its idiom twin func_80159C40_ovl4 (ovl4_5.c). What is
+// left is only the omCurrentObj base landing in $a0 where the ROM has $a1.
+// Swept for that half: compare operand order, thr assigned late, an explicit
+// f32 for the angle load, declaration order of thr/d, `x = x + k` vs `x += k`,
+// and the callee-return-type lever on func_801AC840_ovl7 in all four forms --
+// the call is the LAST statement, so nothing is live across it and the lever
+// cannot reach it. A `GObj *` parameter buys the $a1 and costs the parameter
+// home store (38/40).
 void func_801B3C54_ovl7(void) {
-    f32 thr = D_801CE31C_ovl7;
+    f32 thr = 6.2831855f;
     struct DObj *d = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
 
-    d->angle.v.x += D_801CE320_ovl7;
+    d->angle.v.x += 0.34906587f;
     d = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
     if (thr <= d->angle.v.x) {
         d->angle.v.x -= thr;

@@ -107,31 +107,30 @@ s32 func_801F111C_ovl10(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F11A8_ovl10.s")
 
-/* 11/64 diffs, all one shift: the ROM loads D_801F4CA0_ovl10 into $f12 right
-   after the if/else, ten instructions earlier than IDO schedules it.  Every
-   instruction is otherwise identical.  Swept with no improvement: a `lim`
-   local assigned at the declaration (29), before the if (29), after the store
-   (23) or declared first (29); both operand orders of the outer float `+`;
-   both operand orders of the 1.0f compare. */
+/* 1/64.  Was 11/64 with the three constants as `extern f32`; this TU's rodata
+   is MIGRATED, and writing them as literals fixed the load scheduling that the
+   earlier sweep (a `lim` local at four positions, both operand orders of the
+   outer `+` and of the 1.0f compare) could not move.
+   The remaining diff is the operand order of the one add: the ROM has
+   `add.s $f10, $f0, $f8` ($f0 = v, $f8 = the array load) and IDO emits the two
+   the other way round.  Swept since: both source orders (identical output --
+   IDO canonicalises this add), a cast on either side, extra parens, a named
+   local for the array element, `v +=`, `v = v +`, and the ternary form. */
 #ifdef NON_MATCHING
-extern f32 D_801F4C98_ovl10;
-extern f32 D_801F4C9C_ovl10;
-extern f32 D_801F4CA0_ovl10;
-
 void func_801F1454_ovl10(struct GObj *arg0) {
     f32 v;
 
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        v = D_801F4C98_ovl10;
+        v = -1.5707964f;
     } else {
-        v = D_801F4C9C_ovl10;
+        v = 1.5707964f;
     }
     gEntitiesAngleYArray[omCurrentObj->objId] = v + D_800E17D0[omCurrentObj->objId];
-    while (D_801F4CA0_ovl10 <= gEntitiesAngleYArray[omCurrentObj->objId]) {
-        gEntitiesAngleYArray[omCurrentObj->objId] -= D_801F4CA0_ovl10;
+    while (6.2831855f <= gEntitiesAngleYArray[omCurrentObj->objId]) {
+        gEntitiesAngleYArray[omCurrentObj->objId] -= 6.2831855f;
     }
     while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f) {
-        gEntitiesAngleYArray[omCurrentObj->objId] += D_801F4CA0_ovl10;
+        gEntitiesAngleYArray[omCurrentObj->objId] += 6.2831855f;
     }
 }
 #else

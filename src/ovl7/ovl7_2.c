@@ -358,4 +358,49 @@ s32 func_801A0B10_ovl7(void) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A0C70_ovl7.s")
+struct Ovl7_2_AnimInfoB {
+    u8 filler0[8];
+    s32 unk8;
+    u8 fillerC[0x14];
+};
+
+s32 func_801A0C70_ovl7(void) {
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    extern f32 D_800E7B20[];
+    s32 ret = 0;
+    f32 saved = D_800E7B20[omCurrentObj->objId];
+    struct Ovl7_2_AnimInfoB sp18;
+
+    if (func_80110B00(&sp18) != 0) {
+        ret = 1;
+    }
+    if (ret != 1) {
+        if (func_80110FD4(&sp18) != 0) {
+            switch (sp18.unk8) {
+            case 0:
+                break;
+            case 1:
+            case 2:
+            case 7:
+            case 8:
+            case 15:
+            case 16:
+            case 20:
+            case 21:
+            case 27:
+            case 35:
+                ret = 1;
+                break;
+            }
+        }
+    }
+    if (ret != 1) {
+        if (func_80110150(&sp18) != 0) {
+            ret = 1;
+        }
+    }
+    D_800E7B20[omCurrentObj->objId] = saved;
+    return ret;
+}
