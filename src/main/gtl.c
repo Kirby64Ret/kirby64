@@ -615,32 +615,13 @@ void gtlMergeDisps(void) {
     gtlCheckBuffers();
 }
 
-/* GTL_RECV_IDX: the same LP64 width bug scThreadMain hit, in matched code.
- *
- * `idx` is 4 bytes and osRecvMesg writes a full OSMesg through the pointer it
- * is given, which is 4 bytes on the N64 and 8 in the port. The N64 branch
- * below expands to the original expression character for character, so the
- * matching build is unaffected; the PORT branch receives into a full-width
- * OSMesg and narrows afterwards. Narrowing is safe HERE specifically because
- * this queue only ever carries context indices -- it is the width of the
- * store that is wrong, not the value. Do not copy this shape to a queue that
- * carries pointers; widen the local instead, as scThreadMain does. */
-#ifdef PORT
-#define GTL_RECV_IDX(blk) \
-    (osRecvMesg(&D_80049320, &idxMesg, (blk)) == -1 \
-        ? -1 : (idx = (s32) (intptr_t) idxMesg, 0))
-#else
-#define GTL_RECV_IDX(blk) osRecvMesg(&D_80049320, (OSMesg*) &idx, (blk))
-#endif
-
 s32 gtlSwitchContext(s32 block) {
     s32 idx;
     s32 i;
-#ifdef PORT
-    OSMesg idxMesg;
-#endif
 
-    while (GTL_RECV_IDX(OS_MESG_NOBLOCK) != -1) {
+    /* OS_RECV_INDEX, not a bare osRecvMesg: see include/macros.h. This queue
+       carries context indices, which is the precondition that macro needs. */
+    while (OS_RECV_INDEX(&D_80049320, idx, OS_MESG_NOBLOCK) != -1) {
         D_8004A458[idx] = 0;
     }
 
@@ -653,14 +634,13 @@ s32 gtlSwitchContext(s32 block) {
             }
         }
         if (!block) {
-            GTL_RECV_IDX(OS_MESG_BLOCK);
+            OS_RECV_INDEX(&D_80049320, idx, OS_MESG_BLOCK);
             D_8004A458[idx] = 0;
         }
     } while (!block);
 
     return 0;
 }
-#undef GTL_RECV_IDX
 
 void func_80006740(void) {
     struct SCTaskInfo task;

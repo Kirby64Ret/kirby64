@@ -80,4 +80,37 @@
 // makes it easier to move all the prototypes and externs to the top of the file
 #define IN_FILE
 
+/* OS_RECV_INDEX -- osRecvMesg into a 4-byte local, safely at LP64.
+ *
+ * osRecvMesg writes a full OSMesg through the pointer it is handed. On the N64
+ * OSMesg is a 32-bit void*, so receiving into an s32 and casting the address
+ * is exactly right, and the game does it. In the native port OSMesg is 8 bytes
+ * and the same code is an 8-byte store into a 4-byte object: it smashes the
+ * neighbouring stack slot and reads back only the low half. The port hit this
+ * as an immediate segfault in scAddTask on a truncated task pointer.
+ *
+ * The non-PORT branch expands to the original expression, so the matching
+ * build is unaffected. The PORT branch receives into a full-width OSMesg and
+ * narrows afterwards.
+ *
+ * NARROWING IS ONLY SAFE ON A QUEUE THAT CARRIES SMALL INTEGERS. Both current
+ * users qualify and it is checked at each: gtlSwitchContext's queue carries
+ * context indices, and contpad's D_80048E10 is posted only as `(OSMesg)i` for
+ * i in 0..3. For a queue that carries POINTERS -- scTaskMQ, for one -- do not
+ * use this; widen the local to OSMesg instead, as scThreadMain does.
+ */
+#ifdef PORT
+#define OS_RECV_INDEX(mq, var, blk)                                            \
+    ({                                                                         \
+        OSMesg _osri_m;                                                        \
+        s32 _osri_r = osRecvMesg((mq), &_osri_m, (blk));                       \
+        if (_osri_r != -1) {                                                   \
+            (var) = (s32) (intptr_t) _osri_m;                                  \
+        }                                                                      \
+        _osri_r;                                                               \
+    })
+#else
+#define OS_RECV_INDEX(mq, var, blk) osRecvMesg((mq), (OSMesg*) &(var), (blk))
+#endif
+
 #endif

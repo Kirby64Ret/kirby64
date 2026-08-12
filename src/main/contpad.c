@@ -299,7 +299,12 @@ void func_800046FC(s32 arg0, s32 arg1) {
         }
     }
     if (i == 4) {
-        osRecvMesg(&D_80048E10, (OSMesg *)&i, OS_MESG_BLOCK);
+        /* OS_RECV_INDEX, not a bare osRecvMesg: see include/macros.h.
+           `i` is 4 bytes and an OSMesg is 8 in the port, and `i` indexes
+           D_80048F60[] on the very next line. This queue is posted only
+           as `(OSMesg)i` for i in 0..3, which is what makes narrowing
+           safe here. */
+        OS_RECV_INDEX(&D_80048E10, i, OS_MESG_BLOCK);
     } else {
         D_80048F60[i].busy = 1;
     }
