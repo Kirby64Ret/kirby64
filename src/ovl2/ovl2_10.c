@@ -351,7 +351,31 @@ void func_80112A0C(void) {
     D_8012D930.unk0_80 = D_8012D930.unk0_40;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112A40.s")
+void func_80112A40(s32 arg0, Vector *arg1, Vector *arg2) {
+    void func_80112ED4(f32 arg0[4][4], Vector *arg1, Vector *arg2);
+    struct struct8011BA10_temp *temp;
+    Vector sp30;
+    Vector sp24;
+    s32 idx;
+
+    if (arg0 != 0x14) {
+        temp = &D_8012D948[arg0];
+        if (temp->unk2 & 2) {
+            func_80112ED4((f32 (*)[4]) &temp->unk18, &sp30, arg1);
+            func_80112ED4((f32 (*)[4]) &temp->unk58, &sp24, &sp30);
+            arg2->x = sp24.x - arg1->x;
+            arg2->y = sp24.y - arg1->y;
+            arg2->z = sp24.z - arg1->z;
+        } else {
+            idx = temp->unk1;
+            arg2->x = D_800E3050[idx];
+            arg2->y = D_800E3210[idx];
+            arg2->z = D_800E33D0[idx];
+        }
+    } else {
+        arg2->x = arg2->y = arg2->z = 0.0f;
+    }
+}
 
 #ifdef NON_MATCHING
 /* 6/98: every instruction, register and spill slot (0x1C/0x20/0x24/0x28) is
@@ -1625,7 +1649,32 @@ void func_80118D84(struct GObj *arg0, u32 arg1) {
     omEndProcess(NULL);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80118E44.s")
+void func_80118E44(struct GObj *arg0, u32 arg1) {
+    struct GObj *sp24;
+
+    func_80115618(arg0);
+    if (D_800D6E20[D_800BE508] != 0) {
+        sp24 = D_800DE350[((struct Unk4C *) arg0->unk4C)->unk3];
+        func_800AECC0(0.0f);
+        func_800AED20(0.0f);
+        omCurrentObj = sp24;
+        func_800AECC0(0.0f);
+        func_800AED20(0.0f);
+        omCurrentObj = arg0;
+    } else {
+        func_8011890C(arg0, arg1);
+        while (D_800D6E18 == 0) {
+            ohSleep(1);
+        }
+        func_800AECC0(gameTicksPerDraw);
+        func_800AED20(gameTicksPerDraw);
+        omCurrentObj = D_800DE350[((struct Unk4C *) arg0->unk4C)->unk3];
+        func_800AECC0(gameTicksPerDraw);
+        func_800AED20(gameTicksPerDraw);
+        omCurrentObj = arg0;
+    }
+    omEndProcess(NULL);
+}
 
 void func_80118F70(struct GObj *arg0) {
     ((u8 *)arg0->unk4C)[2] |= 2;

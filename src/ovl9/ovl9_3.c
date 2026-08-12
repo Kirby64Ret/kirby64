@@ -399,7 +399,7 @@ void func_801DF418_ovl9(GObj *arg0) {
    explicit `f32 zero` local (68), the local hoisted above the `if` (69),
    both operand orders of the `!=` and of each loop test, and an explicit
    local for the loop value. */
-/* 6.283185482f: literal */
+/* D_8021CF94_ovl9: literal */
 
 void func_801DF454_ovl9(struct GObj *arg0) {
     f32 k;

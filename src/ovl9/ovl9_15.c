@@ -216,7 +216,40 @@ void func_802156F8_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80215700_ovl9.s")
+void func_80215700_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    f32 z;
+    f32 temp;
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    ent->unk98 = &D_801CCCE8;
+    z = 0.0f;
+    temp = 65535.0f;
+    while (1) {
+        if (ent->unk3C == 0) {
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 1.200000048f;
+            break;
+        }
+        D_800E6690[omCurrentObj->objId] = z;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = temp;
+        ohSleep(1);
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 10.0f;
+    D_800E3750[omCurrentObj->objId] = -0.4600000083f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    func_800AA018(0x10004);
+    temp = 0.0;
+    while (temp <= D_800E3210[omCurrentObj->objId]) {
+        ohSleep(1);
+    }
+    func_800AA018(0x10002);
+    ohSleep(5);
+    func_800AECC0(z);
+    func_800AED20(z);
+    curObjSleepForever();
+}
 
 void func_80215928_ovl9(s32 arg0) {
 
@@ -720,11 +753,11 @@ void func_80217098_ovl9(struct GObj *arg0) {
     }
 }
 
-/* 4/116 diffs: structurally exact; only the callee-saved FP pair is swapped
-   ($f20 holds the extern and $f22 the 0.0f, the ROM has it the other way).
-   Swept: assignment order, declaration order and position, inline 0.0f,
-   double 0.0 literal, chained assignment -- all 4. */
-/* 65535.0f: literal */
+/* Was recorded as a 4/116 floor ("the callee-saved FP pair is swapped").
+   It was the rodata model: an extern f32 is a memory operand and IDO
+   schedules it differently from a constant. With the migrated-rodata
+   literals below the FP pair comes out in the ROM's order. */
+/* D_8021DE2C_ovl9, D_8021DE30_ovl9: literals */
 
 void func_80217158_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];

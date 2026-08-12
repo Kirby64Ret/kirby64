@@ -525,7 +525,7 @@ void func_801E4CF8_ovl9(void) {
    and the re-read D_800EAFA0 value in $f2, IDO does the opposite. Swept: the
    position of the `k` assignment (top of function / before / after the store),
    both mul and add operand orders, `< 0` vs `< 0.0f`. */
-/* 6.283185482f: literal */
+/* D_8021D014_ovl9: literal */
 
 void func_801E4DC8_ovl9(void) {
     f32 k;

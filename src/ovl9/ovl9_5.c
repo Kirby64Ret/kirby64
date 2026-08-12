@@ -351,13 +351,13 @@ void func_801E67A0_ovl9(void) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CBB78;
-/* 6.283185482f: literal */
-/* 3.141592741f: literal */
-/* -0.6499999762f: literal */
-/* 0.3f: literal */
-/* -0.1570796371f: literal */
-/* 0.5235987902f: literal */
-/* -0.5235987902f: literal */
+/* D_8021D034_ovl9: literal */
+/* D_8021D038_ovl9: literal */
+/* D_8021D03C_ovl9: literal */
+/* D_8021D040_ovl9: literal */
+/* D_8021D044_ovl9: literal */
+/* D_8021D048_ovl9: literal */
+/* D_8021D04C_ovl9: literal */
 
 void func_801E6840_ovl9(GObj *arg0) {
     f32 c40;

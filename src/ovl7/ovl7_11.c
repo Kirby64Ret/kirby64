@@ -476,7 +476,21 @@ void func_801B6810_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B68BC_ovl7.s")
+void func_801B68BC_ovl7(GObj *arg0) {
+    f32 temp;
+
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        D_800E64D0[omCurrentObj->objId] =
+            D_800E6A10[omCurrentObj->objId] * ((f32) D_800EA360[omCurrentObj->objId] * 13.0f);
+        D_800E6690[omCurrentObj->objId] =
+            D_800E6A10[omCurrentObj->objId] * ((f32) D_800EA360[omCurrentObj->objId] * -2.0f);
+        temp = (f32) D_800EA360[omCurrentObj->objId] * 13.0f;
+        D_800E6850[omCurrentObj->objId] = ABSF(temp);
+        func_80199F1C_ovl7(arg0);
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B63E4_ovl7);
+    }
+}
 
 extern struct Sub800E1B50_Unk98 D_801CC0D0_ovl7;
 void func_800B3520(void);

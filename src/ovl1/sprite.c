@@ -405,7 +405,192 @@ s32 func_800ACE88(SPObj *spobj, u8 colortype) {
     }
 }
 
+// The sprite draw callback: 733 instructions and two jump tables, transcribed
+// from the listing rather than matched, so the ROM keeps the pragma below.
+//
+// PORT STAND-IN, same class as the one at the end of func_800AC954. The N64
+// SPObj carries the RSP command block TWICE -- at 0x40 and at 0xA0 -- and
+// spobj->unk12 picks the copy, so the CPU never rewrites the block the RSP is
+// reading; func_800AC954 seeds the second copy from the first. SPObj.h names
+// only the first copy, and under the port's LP64 layout a second 0x60-byte
+// block does not fit inside the 0x100 allocation stride at all, so everything
+// here addresses the FIRST copy through the header's named fields (which is
+// also what func_800AC954 writes). unk12 is still toggled, because other
+// overlays read it; a software renderer has no RSP to race against, so the
+// single buffer is behaviourally equivalent.
+//
+// Pure-constant display-list words are written verbatim as the ROM does; the
+// pointer-carrying ones go through (uintptr_t) because Gfx words are pointer-
+// width in the port. Macro equivalents are named in the comments.
+#ifdef NON_MATCHING
+void func_800ACC68(s16 *, s16 *, SPObj *);
+void func_800ABB4C(Gfx **, void *);
+s32 lbreflect_Int16Sin(f32);
+s32 lbreflect_Int16Cos(f32);
+
+void func_800AD1A0(GObj *gobj) {
+    SPObj *sp;
+    uObjBg *bg;
+    uObjSprite *obj;
+    uObjMtx *mtx;
+    Gfx *g;
+    s32 loadedTlut;
+    f32 scale;
+    f32 mag;
+    f32 sn;
+    f32 cs;
+
+    loadedTlut = 0;
+    sp = gobj->unk4C;
+    if (sp == NULL) {
+        return;
+    }
+
+    do {
+        bg = (uObjBg *) &sp->unk40;
+        obj = (uObjSprite *) &sp->unk58;
+        mtx = (uObjMtx *) &sp->unk88;
+
+        if (sp->unk11 != 2) {
+            sp->unk12 ^= 1;
+            switch (sp->unk10) {
+                case 0:
+                    bg->b.frameX = (s16) ((s32) (sp->xOffset * 4.0f) & ~3);
+                    bg->b.frameY = (s16) ((s32) (sp->yOffset * 4.0f) & ~3);
+                    bg->b.imageX = (u16) (u32) (sp->unk34 * 32.0f);
+                    bg->b.imageY = (u16) (u32) (sp->unk38 * 32.0f);
+                    break;
+                case 1:
+                    func_800ACC30(&bg->s.frameX, &bg->s.frameY, sp);
+
+                    scale = sp->xScale;
+                    mag = (scale < 0.0f) ? -scale : scale;
+                    if (mag < 0.03125f) {
+                        bg->s.scaleW = 0x8000;
+                        if (!(sp->renderFlags & 4)) {
+                            bg->s.frameW = 0;
+                        }
+                    } else {
+                        bg->s.scaleW = (u16) (u32) (1024.0f / scale);
+                        if (!(sp->renderFlags & 4)) {
+                            bg->s.frameW = (u16) (u32) ((f32) sp->width * sp->xScale * 4.0f);
+                        }
+                    }
+
+                    scale = sp->yScale;
+                    mag = (scale < 0.0f) ? -scale : scale;
+                    if (mag < 0.03125f) {
+                        bg->s.scaleH = 0x8000;
+                        if (!(sp->renderFlags & 4)) {
+                            bg->s.frameH = 0;
+                        }
+                    } else {
+                        bg->s.scaleH = (u16) (u32) (1024.0f / scale);
+                        if (!(sp->renderFlags & 4)) {
+                            bg->s.frameH = (u16) (u32) ((f32) sp->height * sp->yScale * 4.0f);
+                        }
+                    }
+
+                    bg->s.imageX = (u16) (u32) (sp->unk34 * 32.0f);
+                    bg->s.imageY = (u16) (u32) (sp->unk38 * 32.0f);
+                    break;
+                case 2:
+                    func_800ACC30(&obj->s.objX, &obj->s.objY, sp);
+                    func_800ACC68((s16 *) &obj->s.scaleW, (s16 *) &obj->s.scaleH, sp);
+                    break;
+                case 3:
+                    func_800ACC30(&mtx->m.X, &mtx->m.Y, sp);
+                    func_800ACC68((s16 *) &mtx->m.BaseScaleX, (s16 *) &mtx->m.BaseScaleY, sp);
+                    break;
+                case 4:
+                    func_800ACC30(&mtx->m.X, &mtx->m.Y, sp);
+                    cs = (f32) (lbreflect_Int16Cos(sp->unk30) * 2);
+                    sn = (f32) (lbreflect_Int16Sin(sp->unk30) * 2);
+                    mtx->m.A = (s32) (sp->xScale * cs);
+                    mtx->m.B = (s32) (sp->yScale * sn);
+                    mtx->m.C = (s32) (-sn * sp->xScale);
+                    mtx->m.D = (s32) (sp->yScale * cs);
+                    break;
+            }
+            if (sp->unk11 == 1) {
+                sp->unk11 = 2;
+            }
+        }
+
+        if (!(sp->renderFlags & 8)) {
+            g = gDisplayListHeads[0]++;
+            g->words.w0 = 0xE7000000; // gDPPipeSync
+            g->words.w1 = 0;
+
+            switch (sp->unk10) {
+                case 0:
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0xE200001C; // gDPSetRenderMode(G_RM_NOOP, G_RM_NOOP2)
+                    g->words.w1 = 0;
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0xE3000A01; // gDPSetCycleType(G_CYC_COPY)
+                    g->words.w1 = 0x00200000;
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0xFCFFFFFF; // gDPSetCombine
+                    g->words.w1 = 0xFFFCF279;
+                    loadedTlut = func_800ACE1C(bg->b.imageFmt, (u16 *) &sp->unk68);
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0x0A000000; // gSPBgRectCopy(bg)
+                    g->words.w1 = (uintptr_t) bg;
+                    break;
+                case 1:
+                    func_800ACE88(sp, bg->s.imageFmt);
+                    loadedTlut = func_800ACE1C(bg->s.imageFmt, (u16 *) &sp->unk68);
+                    if (bg->s.imageFmt == 0 && bg->s.imageSiz == 3) {
+                        func_800ABB4C(gDisplayListHeads, bg);
+                    } else {
+                        g = gDisplayListHeads[0]++;
+                        g->words.w0 = 0x09000000; // gSPBgRect1Cyc(bg)
+                        g->words.w1 = (uintptr_t) bg;
+                    }
+                    break;
+                case 2:
+                    func_800ACE88(sp, obj->s.imageFmt);
+                    loadedTlut = func_800ACE1C(obj->s.imageFmt, (u16 *) &sp->unk70);
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0x0700002F; // gSPObjLoadTxRect(txsprite)
+                    g->words.w1 = (uintptr_t) bg;
+                    break;
+                case 3:
+                    func_800ACE88(sp, obj->s.imageFmt);
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0xDC070002; // gSPObjSubMatrix(&mtx->m.X)
+                    g->words.w1 = (uintptr_t) &mtx->m.X;
+                    loadedTlut = func_800ACE1C(obj->s.imageFmt, (u16 *) &sp->unk70);
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0x0800002F; // gSPObjLoadTxRectR(txsprite)
+                    g->words.w1 = (uintptr_t) bg;
+                    break;
+                case 4:
+                    func_800ACE88(sp, obj->s.imageFmt);
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0xDC170000; // gSPObjMatrix(mtx)
+                    g->words.w1 = (uintptr_t) mtx;
+                    loadedTlut = func_800ACE1C(obj->s.imageFmt, (u16 *) &sp->unk70);
+                    g = gDisplayListHeads[0]++;
+                    g->words.w0 = 0x0600002F; // gSPObjLoadTxSprite(txsprite)
+                    g->words.w1 = (uintptr_t) bg;
+                    break;
+            }
+
+            if (loadedTlut != 0) {
+                g = gDisplayListHeads[0]++;
+                g->words.w0 = 0xE3001001; // gDPSetTextureLUT(G_TT_NONE)
+                g->words.w1 = 0;
+            }
+        }
+
+        sp = (SPObj *) (uintptr_t) sp->unk8;
+    } while (sp != NULL);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AD1A0.s")
+#endif
 
 // Camera payload of the GObj this draw callback is registered on. sprite.c does
 // not include main/object_manager.h, so only the two fields this function reads

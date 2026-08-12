@@ -356,7 +356,53 @@ s32 func_80155664_ovl3(void) {
     return D_800E8920[omCurrentObj->objId];
 }
 
+#ifdef NON_MATCHING
+/* 22/88. Frame, stack layout, control flow and the FP block are all exact.
+   Residue is one register-allocation cluster: the ROM puts the D_800E0490
+   element in $a1 and its ->[1] deref in $a0, which frees $t8 and leaves every
+   later objId temp one slot lower (t8/t9/t0/t1 vs t9/t0/t1/t2). Swept: p as a
+   named local (in and out of the 4-scalar block), obj hoisted vs omCurrentObj
+   inline, ternary vs if/else vs pre-initialised temp, all four tail shapes. */
+s32 func_801556D8_ovl3(f32 arg0) {
+    s32 sp6C;
+    GObj *obj;
+    f32 temp;
+    s32 ret;
+    f32 sp54[3];
+    f32 sp48[3];
+    f32 sp3C[3];
+    s32 d0;
+    s32 d1;
+    s32 d2;
+    s32 func_80103EA0();
+
+    obj = omCurrentObj;
+    temp = (D_800E0490[obj->objId] != NULL) ? D_800E0490[obj->objId][1][0] : 0.0f;
+    sp3C[2] = 0.0f;
+    sp3C[0] = 0.0f;
+    sp48[0] = gEntitiesNextPosXArray[obj->objId];
+    sp54[0] = sp48[0];
+    sp48[2] = gEntitiesNextPosZArray[obj->objId];
+    sp54[2] = sp48[2];
+    sp54[1] = gEntitiesNextPosYArray[obj->objId] + temp;
+    sp3C[1] = 1.0f;
+    sp48[1] = sp54[1] + arg0;
+    sp6C = func_80103EA0(sp54, sp48, sp3C, 0, 0, 0, 0, 0);
+    sp3C[1] = -1.0f;
+    sp48[1] = sp54[1] - arg0;
+    if (func_80103EA0(sp54, sp48, sp3C, 0, 0, 0, 0, 0) != 0) {
+        ret = 1;
+    } else {
+        ret = 0;
+    }
+    if (sp6C != 0) {
+        ret |= 2;
+    }
+    return ret;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801556D8_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155838_ovl3.s")
 
