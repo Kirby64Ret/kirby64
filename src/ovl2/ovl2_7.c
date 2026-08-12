@@ -1930,7 +1930,7 @@ s32 func_801056C8(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     return 0;
 }
 
-#ifdef NON_MATCHING
+#if 1
 s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3) {
     Vector sp24;
     f32 sp20;
@@ -1958,7 +1958,7 @@ s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3)
     return 1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801057C4.s")
+/* #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801057C4.s") */
 #endif
 #ifdef MIPS_TO_C
 

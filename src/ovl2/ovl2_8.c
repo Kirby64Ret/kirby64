@@ -296,9 +296,186 @@ void func_8010F964(f32 *arg0, f32 *arg1) {
     arg0[2] = (arg1[8] + arg1[5]) * 0.5f;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010F9AC.s")
+struct UnkF9AC {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ char pad1[0x3];
+    /* 0x04 */ u8 unk4;
+    /* 0x05 */ char pad5[0x7];
+    /* 0x0C */ Vector unkC;
+    /* 0x18 */ Vector unk18;
+    /* 0x24 */ char pad24[0x4];
+};
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010FC30.s")
+s32 func_8010EA68(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
+s32 func_8010F140(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
+
+s32 func_8010F9AC(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
+    s32 ret;
+
+    switch (arg0->unk4) {
+    case 0:
+        switch (arg1->unk4) {
+        case 0:
+            return func_8010EE24((struct UnkEE24 *) arg0, (struct UnkEE24 *) arg1);
+        case 1:
+            return func_8010EEE8((struct UnkEE24 *) arg0, (struct UnkEE24 *) arg1);
+        case 2:
+            return func_8010EFA8((struct UnkEE24 *) arg0, (struct UnkEFA8 *) arg1);
+        }
+        break;
+    case 1:
+        switch (arg1->unk4) {
+        case 0:
+            return func_8010EEE8((struct UnkEE24 *) arg1, (struct UnkEE24 *) arg0);
+        case 1:
+            ret = func_8010EA20((struct UnkEA20 *) arg0, (struct UnkEA20 *) arg1, (s32) arg2);
+            if (ret != 0) {
+                arg2->unkC = arg0->unkC;
+                arg2->unk18 = arg1->unkC;
+            }
+            return ret;
+        case 2:
+            ret = func_8010EA68(arg0, arg1, arg2);
+            if (ret != 0) {
+                arg2->unkC = arg0->unkC;
+                func_8010F964((f32 *) &arg2->unk18, (f32 *) arg1);
+            }
+            return ret;
+        }
+        break;
+    case 2:
+        switch (arg1->unk4) {
+        case 0:
+            return func_8010EFA8((struct UnkEE24 *) arg1, (struct UnkEFA8 *) arg0);
+        case 1:
+            ret = func_8010EA68(arg1, arg0, arg2);
+            if (ret != 0) {
+                func_8010F964((f32 *) &arg2->unkC, (f32 *) arg0);
+                arg2->unk18 = arg1->unkC;
+            }
+            return ret;
+        case 2:
+            ret = func_8010F140(arg0, arg1, arg2);
+            if (ret != 0) {
+                func_8010F964((f32 *) &arg2->unkC, (f32 *) arg0);
+                func_8010F964((f32 *) &arg2->unk18, (f32 *) arg1);
+            }
+            return ret;
+        }
+        break;
+    }
+}
+
+struct UnkFC30A {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ char pad4[0x14];
+    /* 0x18 */ struct UnkF9AC *unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ struct UnkF9AC *unk20;
+};
+
+struct UnkFC30B {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ char pad4[0x18];
+    /* 0x1C */ struct UnkF9AC *unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ struct UnkF9AC *unk24;
+};
+
+/* The definition above takes `struct Unk8010E740 *`. This second, later
+ * declaration named a different tag, which gcc rejects outright and which
+ * broke the build for every lane; IDO accepted it, so the ROM was never
+ * affected. Both are pointers so the codegen at the call site is
+ * identical -- only the tag differed. */
+void func_8010E740(struct Unk8010E740 *, s32);
+
+s32 func_8010FC30(struct UnkFC30A *arg0, struct UnkFC30B *arg1, struct UnkF9AC *arg2) {
+    struct UnkF9AC *p;
+    struct UnkF9AC *q;
+    s32 i;
+    s32 j;
+
+    if (arg0->unk18 != NULL) {
+        if (arg1->unk1C != NULL) {
+            if (arg0->unk18->unk0 == 0) {
+                func_8010E740(arg0->unk18, arg0->unk0);
+            }
+            if (arg1->unk1C->unk0 == 0) {
+                func_8010E740(arg1->unk1C, arg1->unk0);
+            }
+            if (func_8010F9AC(arg0->unk18, arg1->unk1C, NULL) != 0) {
+                                for (i = 0, p = arg0->unk20; i < arg0->unk1C; i++, p++) {
+                    if (p->unk0 == 0) {
+                        func_8010E740(p, arg0->unk0);
+                    }
+                                        for (j = 0, q = arg1->unk24; j < arg1->unk20; j++, q++) {
+                        if (q->unk0 == 0) {
+                            func_8010E740(q, arg1->unk0);
+                        }
+                        if (func_8010F9AC(p, q, arg2) != 0) {
+                            return 1;
+                        }
+                    }
+                }
+            }
+        } else {
+            if (arg0->unk18->unk0 == 0) {
+                func_8010E740(arg0->unk18, arg0->unk0);
+            }
+                        for (j = 0, q = arg1->unk24; j < arg1->unk20; j++, q++) {
+                if (q->unk0 == 0) {
+                    func_8010E740(q, arg1->unk0);
+                }
+                if (func_8010F9AC(arg0->unk18, q, NULL) != 0) {
+                                        for (i = 0, p = arg0->unk20; i < arg0->unk1C; i++, p++) {
+                        if (p->unk0 == 0) {
+                            func_8010E740(p, arg0->unk0);
+                        }
+                        if (func_8010F9AC(p, q, arg2) != 0) {
+                            return 1;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        if (arg1->unk1C != NULL) {
+            if (arg1->unk1C->unk0 == 0) {
+                func_8010E740(arg1->unk1C, arg1->unk0);
+            }
+                        for (i = 0, p = arg0->unk20; i < arg0->unk1C; i++, p++) {
+                if (p->unk0 == 0) {
+                    func_8010E740(p, arg0->unk0);
+                }
+                if (func_8010F9AC(p, arg1->unk1C, NULL) != 0) {
+                                        for (j = 0, q = arg1->unk24; j < arg1->unk20; j++, q++) {
+                        if (q->unk0 == 0) {
+                            func_8010E740(q, arg1->unk0);
+                        }
+                        if (func_8010F9AC(p, q, arg2) != 0) {
+                            return 1;
+                        }
+                    }
+                }
+            }
+        } else {
+                        for (i = 0, p = arg0->unk20; i < arg0->unk1C; i++, p++) {
+                if (p->unk0 == 0) {
+                    func_8010E740(p, arg0->unk0);
+                }
+                                for (j = 0, q = arg1->unk24; j < arg1->unk20; j++, q++) {
+                    if (q->unk0 == 0) {
+                        func_8010E740(q, arg1->unk0);
+                    }
+                    if (func_8010F9AC(p, q, arg2) != 0) {
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
 
 void func_80110014(Mtx *m, f32 dx, f32 dy, f32 dz, f32 sx, f32 sy, f32 sz) {
     s32 e1, e2;

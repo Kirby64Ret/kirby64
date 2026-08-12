@@ -564,7 +564,6 @@ s32 func_801E2BD8_ovl10(s32 arg0, void *arg1) {
     return func_80110150(arg1);
 }
 
-#ifdef NON_MATCHING
 /* BYTE-EXACT (43/43, objdump-verified against the listing) but PADDING-TRAPPED:
    the listing carries a 7-nop tail after its own .size and this is the last
    function of the `c` subsegment, so converting it shortens ovl10_1's .text by
@@ -591,7 +590,4 @@ s32 func_801E2C78_ovl10(s32 arg0, void *arg1) {
     }
     return func_80110150(arg1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E2C78_ovl10.s")
-#endif
 

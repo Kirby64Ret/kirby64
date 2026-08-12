@@ -199,7 +199,45 @@ void func_80178140_ovl5(GObj *arg0) {
     curObjSleepForever();
 }
 
+void func_80177F20_ovl5(GObj *, s32, s32);
+void func_800B1900(u16);
+void func_800ACBDC(GObj *);
+
+#ifdef NON_MATCHING
+/* 81/102 (count is right, every call and branch is right). Residue is frame
+   and register assignment: the ROM keeps arg1*4 in $s0 and SPILLS the
+   `&((s32*)D_800D7178)[arg1]` pointer to 0x2C, giving frame 0x38; IDO keeps
+   the pointer in a saved register instead and the frame comes out 0x30.
+   Declaring the pointer as a local does not force the spill. */
+void func_80178220_ovl5(GObj *arg0, s32 arg1) {
+    s32 *p = &((s32 *) D_800D7178)[arg1];
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    if (p[18] == 0) {
+        func_800B1900(((u16 *) omCurrentObj)[1]);
+    }
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    if (D_800D7178[arg1].unkC == 0) {
+        func_80177F20_ovl5(arg0, arg1, p[18] - 1);
+    } else {
+        func_80177F20_ovl5(arg0, arg1, p[18]);
+    }
+    if (D_800D7178[arg1].unkC == 0) {
+        while (((s32 *) D_800E9AA0)[D_8018ECE4_ovl5] == 0) {
+            ohSleep(1);
+        }
+        func_800ACBDC(arg0);
+        play_sound(0x26C);
+        func_80177F20_ovl5(arg0, arg1, p[18]);
+        curObjSleepForever();
+    } else {
+        curObjSleepForever();
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178220_ovl5.s")
+#endif
 
 void func_801783B8_ovl5(GObj *arg0) {
     func_800A9864(D_80188894_ovl5, 0x1869F, 0x10);

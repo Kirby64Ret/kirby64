@@ -287,7 +287,38 @@ s32 func_801F2074_ovl10(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F2098_ovl10.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F25FC_ovl10.s")
+struct Ovl10Pair5b {
+    s32 unk0;
+    s32 unk4;
+};
+
+extern s32 D_801F4938_ovl10[];
+extern struct Ovl10Pair5b D_801F4948_ovl10[];
+void func_800A7A70(s32, s32, s32);
+void func_800AA2C8(s32, s32, s32);
+
+void func_801F25FC_ovl10(GObj *arg0, s32 arg1) {
+    Vector sp2C;
+    Vector sp20;
+
+    func_800A7A70(3, 0x30014, 0x30015);
+    func_800B2340(&sp2C, D_800DE350[0]->data.dobj, 0);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp2C.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = sp2C.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp2C.z;
+    func_800B26D8(&sp20, D_800DE350[0]->data.dobj, 0);
+    gEntitiesAngleXArray[omCurrentObj->objId] = sp20.x;
+    gEntitiesAngleYArray[omCurrentObj->objId] = sp20.y;
+    gEntitiesAngleZArray[omCurrentObj->objId] = sp20.z;
+    func_800AA2C8(D_801F4938_ovl10[arg1], 0x1869F, 0x10);
+    if ((arg1 + D_801F4948_ovl10)->unk0 != 0) {
+        func_800AA018((arg1 + D_801F4948_ovl10)->unk0);
+    }
+    if ((arg1 + D_801F4948_ovl10)->unk4 != 0) {
+        func_800AA018((arg1 + D_801F4948_ovl10)->unk4);
+    }
+    curObjSleepForever();
+}
 
 extern s32 D_801F4968_ovl10;
 extern s32 D_801F496C_ovl10;

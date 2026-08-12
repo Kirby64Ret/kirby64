@@ -479,10 +479,12 @@ extern void *D_80188B30_ovl5;
 void func_800ACB7C(SPObj *);
 
 #ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 7/129 insns. Draft kept. */
+/* 5/129: every instruction is right; the whole local block sits 8 bytes high
+   (sp48 at 0x50/sp44 at 0x4C where the ROM has 0x48/0x44) with the frame
+   already the ROM's 0x60. Leading `s32 pad0; s32 pad1;` grows the frame to
+   0x68 instead of moving the block down, so the residue is the fixed part of
+   IDO's frame base, not the local list. */
 void func_8017B35C_ovl5(GObj *arg0) {
-    s32 pad0;
-    s32 pad1;
     Unk16Ptrs sp48 = D_801888B0_ovl5;
     void *sp44;
     SPObj *sp;

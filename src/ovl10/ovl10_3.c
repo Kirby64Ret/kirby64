@@ -38,7 +38,7 @@ s32 func_801A0D74_ovl7();
 void func_8019B424_ovl7();
 void eneTurnCommon(s32);
 void func_8019D4D0_ovl7(f32, s32);
-void func_80199F1C_ovl7(void);
+void func_80199F1C_ovl7();
 void func_800AECC0(f32);
 s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
 void play_sound(s32);
@@ -532,7 +532,56 @@ void func_801E4C7C_ovl10(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E4D6C_ovl10.s")
+extern Vector D_801F44FC_ovl10;
+void func_800BC1FC(s32);
+void func_800FF0C4(void *);
+void func_801E5B08_ovl10(f32 *, u8, f32);
+
+void func_801E4D6C_ovl10(GObj *arg0) {
+    struct UnkStruct800E1B50 *sp54 = D_800E1B50[omCurrentObj->objId];
+    Vector sp44;
+    s32 n;
+    f32 temp_f0;
+
+    sp44 = D_801F44FC_ovl10;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E6A10[omCurrentObj->objId] = -1.0f;
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    D_800EA6E0[omCurrentObj->objId] = 1.0f;
+    n = 0x14;
+    func_800BC1FC((s32) D_800EA6E0[omCurrentObj->objId]);
+    func_800A9EA4(0x10321);
+    func_800AA864(0x10320, 1);
+    func_800A9EA4(0x10323);
+    func_800A9EA4(0x10322);
+    func_801E5B08_ovl10((f32 *) &sp44, 0x14, -0.4f);
+    while (D_800E9E20[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+        n--;
+    }
+    func_800A9EA4(0x10325);
+    func_800A9EA4(0x10324);
+    while ((D_800DD8D0[omCurrentObj->objId] & 0xC0000000) == 0) {
+        n--;
+        ohSleep(1);
+    }
+    func_800A9EA4(0x10327);
+    func_800A9EA4(0x10326);
+    ohSleep(n);
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] =
+    D_800E3210[omCurrentObj->objId] =
+    D_800E33D0[omCurrentObj->objId] =
+    D_800E3590[omCurrentObj->objId] =
+    D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    temp_f0 = D_800E3E50[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = temp_f0;
+    D_800E3AD0[omCurrentObj->objId] = temp_f0;
+    func_800FF0C4(sp54->unk80);
+    D_800E9E20[omCurrentObj->objId] = 2;
+    curObjSleepForever();
+}
 
 void func_801E50A4_ovl10(GObj *arg0) {
     if (0.0f != D_800E3750[omCurrentObj->objId]) {
@@ -916,7 +965,7 @@ void func_801E63FC_ovl10(GObj *arg0) {
 }
 
 extern s32 D_801F34D4_ovl10;
-void func_801E6564_ovl10(void);
+void func_801E6564_ovl10(struct GObj *);
 void func_80198880_ovl7(void *);
 void func_800A9760(s32);
 
@@ -935,35 +984,20 @@ void func_801E6444_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4510_ovl10);
 }
 
-#ifdef NON_MATCHING
-// 8 diffs: only the register holding `var` (ROM $a1, IDO $a0) and the
-// consequent delay-slot fill differ. Swept with no effect (10 variants):
-// dropping the `id` local, both declaration orders, `id = var = 0;` and
-// `s32 id = 0;` chained/forked temps, `u32 var`, an extra dead scalar,
-// if/else instead of the initialiser, inverted branch polarity, a temp for
-// the D_800E9C60 test, `void f()` vs `void f(void)`, and giving the function
-// a `GObj *arg0` parameter (that one adds the $a0 home-slot store: 40 diffs).
-// Same shape and same residue as func_801E6E84/801E7760/801E8184/801E8AF8
-// and func_801E932C_ovl10.
-void func_801E6564_ovl10(void) {
-    s32 id;
+void func_801E6564_ovl10(GObj *arg0) {
     s32 var = 0;
 
     if (D_800E9C60[omCurrentObj->objId] != 0) {
-        var = func_801A0D74_ovl7();
+        var = func_801A0D74_ovl7(arg0);
     }
     if (var == 0) {
-        id = D_800DDFD0[omCurrentObj->objId];
-        utilFuncTableJump(id, 3, &D_801F451C_ovl10);
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_801F451C_ovl10);
     }
     if (D_800E9C60[omCurrentObj->objId] != 0) {
         eneTurnCommon(6);
         func_801E6030_ovl10();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E6564_ovl10.s")
-#endif
 void func_801E6614_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -986,7 +1020,53 @@ void func_801E66E0_ovl10(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E679C_ovl10.s")
+void func_801E679C_ovl10(GObj *arg0) {
+    Unk801E63E4 sp58;
+    u8 sp57;
+    f32 sp48[3];
+    f32 temp_f0;
+
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    D_800E6A10[omCurrentObj->objId] = -1.0f;
+    func_800A9EA4(0x1034E);
+    func_800AA864(0x1034D, 2);
+    func_800A9EA4(0x10342);
+    func_800A9EA4(0x10341);
+    func_801E63E4_ovl10(&sp58);
+    D_800EA8A0[omCurrentObj->objId] = sp58.unk0;
+    sp57 = sp58.unk4;
+    sp48[0] = D_800EA8A0[omCurrentObj->objId];
+    sp48[1] = -20.0f;
+    sp48[2] = 0.0f;
+    func_801E5B08_ovl10(sp48, sp58.unk4, -0.4f);
+    while (D_800E9E20[omCurrentObj->objId] == 0) {
+        sp57--;
+        ohSleep(1);
+    }
+    func_800A9EA4(0x10344);
+    func_800A9EA4(0x10343);
+    while ((D_800DD8D0[omCurrentObj->objId] & 0xC0000000) == 0) {
+        sp57--;
+        ohSleep(1);
+    }
+    func_800A9EA4(0x10346);
+    func_800A9EA4(0x10345);
+    ohSleep(sp57);
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] =
+    D_800E3210[omCurrentObj->objId] =
+    D_800E33D0[omCurrentObj->objId] =
+    D_800E3590[omCurrentObj->objId] =
+    D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    temp_f0 = D_800E3E50[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = temp_f0;
+    D_800E3AD0[omCurrentObj->objId] = temp_f0;
+    D_800E9E20[omCurrentObj->objId] = 2;
+    curObjSleepForever();
+}
 
 void func_801E6AB4_ovl10(GObj *arg0) {
     if (0.0f != D_800E3750[omCurrentObj->objId]) {
@@ -1052,12 +1132,11 @@ void func_801E6D50_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4528_ovl10);
 }
 
-#ifdef MIPS_TO_C
-void func_801E6E84_ovl10(void) {
+void func_801E6E84_ovl10(GObj *arg0) {
     s32 var = 0;
 
     if (D_800E9C60[omCurrentObj->objId] != 0) {
-        var = func_801A0D74_ovl7();
+        var = func_801A0D74_ovl7(arg0);
     }
     if (var == 0) {
         utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_801F4534_ovl10);
@@ -1067,9 +1146,6 @@ void func_801E6E84_ovl10(void) {
         func_801E6030_ovl10();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E6E84_ovl10.s")
-#endif
 
 void func_801E6F34_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
@@ -1191,7 +1267,7 @@ void func_801E75E4_ovl10(GObj *arg0) {
 }
 
 extern s32 D_801F3564_ovl10;
-void func_801E7760_ovl10(void);
+void func_801E7760_ovl10(struct GObj *);
 
 void func_801E762C_ovl10(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
@@ -1209,27 +1285,19 @@ void func_801E762C_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4540_ovl10);
 }
 
-#ifdef NON_MATCHING
-// 8 diffs: only the register holding `temp` (ROM $a1, IDO $a0) and the
-// consequent scheduling of the utilFuncTableJump argument setup differ.
-void func_801E7760_ovl10(void) {
-    s32 id;
-    s32 temp = 0;
+void func_801E7760_ovl10(GObj *arg0) {
+    s32 var = 0;
 
     if (D_800E9C60[omCurrentObj->objId] != 0) {
-        temp = func_801A0D74_ovl7();
+        var = func_801A0D74_ovl7(arg0);
     }
-    if (temp == 0) {
-        id = D_800DDFD0[omCurrentObj->objId];
-        utilFuncTableJump(id, 3, &D_801F454C_ovl10);
+    if (var == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_801F454C_ovl10);
     }
     if (D_800E9C60[omCurrentObj->objId] != 0) {
         func_801E6030_ovl10();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E7760_ovl10.s")
-#endif
 void func_801E7808_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -1384,12 +1452,11 @@ void func_801E8050_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4558_ovl10);
 }
 
-#ifdef MIPS_TO_C
-void func_801E8184_ovl10(void) {
+void func_801E8184_ovl10(GObj *arg0) {
     s32 var = 0;
 
     if (D_800E9C60[omCurrentObj->objId] != 0) {
-        var = func_801A0D74_ovl7();
+        var = func_801A0D74_ovl7(arg0);
     }
     if (var == 0) {
         utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_801F4564_ovl10);
@@ -1399,9 +1466,6 @@ void func_801E8184_ovl10(void) {
         func_801E6030_ovl10();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E8184_ovl10.s")
-#endif
 
 void func_801E8234_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
@@ -1545,12 +1609,11 @@ void func_801E89D0_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4570_ovl10);
 }
 
-#ifdef MIPS_TO_C
-void func_801E8AF8_ovl10(void) {
+void func_801E8AF8_ovl10(GObj *arg0) {
     s32 var = 0;
 
     if (D_800E9C60[omCurrentObj->objId] != 0) {
-        var = func_801A0D74_ovl7();
+        var = func_801A0D74_ovl7(arg0);
     }
     if (var == 0) {
         utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_801F457C_ovl10);
@@ -1560,9 +1623,6 @@ void func_801E8AF8_ovl10(void) {
         func_801E6030_ovl10();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E8AF8_ovl10.s")
-#endif
 
 void func_801E8BA8_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
@@ -1683,7 +1743,25 @@ void func_801E91F8_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 6, &D_801F4588_ovl10);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E932C_ovl10.s")
+extern FUNCLIST D_801F45A0_ovl10;
+
+void func_801E932C_ovl10(GObj *arg0) {
+    s32 var = 0;
+
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        var = func_801A0D74_ovl7(arg0);
+    }
+    if (var == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 6, &D_801F45A0_ovl10);
+    }
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        if (D_800EA1A0[omCurrentObj->objId] != 0) {
+            func_801E5F60_ovl10();
+        }
+        eneTurnCommon(1);
+        func_801E6030_ovl10();
+    }
+}
 
 void func_801E93F8_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
@@ -2052,19 +2130,14 @@ void func_801EA7CC_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_801F45B8_ovl10);
 }
 
-#ifdef NON_MATCHING
-// 8 diffs, same floor as its twin func_801E7760_ovl10: `temp` lands in $a0
-// where the ROM uses $a1.
-void func_801EA900_ovl10(void) {
-    s32 id;
-    s32 temp = 0;
+void func_801EA900_ovl10(GObj *arg0) {
+    s32 var = 0;
 
     if (D_800E9C60[omCurrentObj->objId] != 0) {
-        temp = func_801A0D74_ovl7();
+        var = func_801A0D74_ovl7(arg0);
     }
-    if (temp == 0) {
-        id = D_800DDFD0[omCurrentObj->objId];
-        utilFuncTableJump(id, 5, &D_801F45CC_ovl10);
+    if (var == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 5, &D_801F45CC_ovl10);
     }
     if (D_800E9C60[omCurrentObj->objId] != 0) {
         if (D_800EA1A0[omCurrentObj->objId] != 0) {
@@ -2074,9 +2147,6 @@ void func_801EA900_ovl10(void) {
         func_801E6030_ovl10();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EA900_ovl10.s")
-#endif
 void func_801EA9CC_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -2205,7 +2275,47 @@ void func_801EB39C_ovl10(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EB408_ovl10.s")
+void func_801EB84C_ovl10(void);
+
+void func_801EB408_ovl10(GObj *arg0) {
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    if (D_800EAA60[omCurrentObj->objId] != D_800E6A10[omCurrentObj->objId]) {
+        func_80199F1C_ovl7(D_800DE350[omCurrentObj->objId]);
+    }
+    func_800A9EA4(0x10392);
+    func_800AA864(0x10391, 1);
+    ohSleep(8);
+    func_800A9EA4(0x1037E);
+    func_800AA864(0x1037D, 1);
+    ohSleep(8);
+    func_801EB84C_ovl10();
+    D_800E8920[omCurrentObj->objId] = 0;
+    play_sound(0x1D0);
+    func_800A9EA4(0x10380);
+    func_800A9EA4(0x1037F);
+    while (D_800E9E20[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    func_800A9EA4(0x10382);
+    func_800A9EA4(0x10381);
+    while (D_800E8920[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    func_800B3520();
+    play_sound(0x1CB);
+    func_800FB914(3);
+    func_800A7F74(6, 2, 0xB, gEntitiesNextPosXArray[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId] * -60.0f,
+                  gEntitiesNextPosYArray[omCurrentObj->objId] - 30.0f, gEntitiesNextPosZArray[omCurrentObj->objId]);
+    func_800A7F74(6, 2, 9, gEntitiesNextPosXArray[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId] * -60.0f,
+                  gEntitiesNextPosYArray[omCurrentObj->objId] - 30.0f, gEntitiesNextPosZArray[omCurrentObj->objId]);
+    func_800A9EA4(0x10386);
+    func_800AA864(0x10385, 1);
+    D_800E9E20[omCurrentObj->objId] = 2;
+    D_800EAA60[omCurrentObj->objId] = -D_800EAA60[omCurrentObj->objId];
+    curObjSleepForever();
+}
 
 void func_801EB744_ovl10(GObj *arg0) {
     if (2 == D_800E9E20[omCurrentObj->objId]) {

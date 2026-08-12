@@ -547,7 +547,36 @@ void func_801D5080_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D52F0_ovl9.s")
 
+/* D_8021CEAC_ovl9: literal, this TU owns its .rodata */
+extern f32 func_800F9828(s32, s32);
+extern f32 func_8019B608_ovl7(s32);
+
+#ifdef NON_MATCHING
+/* 23/96 */
+s32 func_801D56D0_ovl9(void) {
+    f32 dx;
+    f32 dz;
+    f32 dy;
+    f32 var_f12;
+    f32 a;
+    f32 b;
+    f32 dist;
+
+    dy = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
+    var_f12 = func_800F9828(omCurrentObj->objId, 0);
+    if (var_f12 == 9999.0f) {
+        dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+        dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
+        dist = sqrtf((dx * dx) + (dz * dz));
+        var_f12 = dist * func_8019B608_ovl7(0);
+    }
+    a = (var_f12 < 0.0f) ? -var_f12 : var_f12;
+    b = (dy < 0.0f) ? -dy : dy;
+    return (b <= a) ? ((0 <= var_f12) ? 3 : 2) : ((0 <= dy) ? 0 : 1);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D56D0_ovl9.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D5850_ovl9.s")
 
@@ -677,11 +706,16 @@ void func_801D64EC_ovl9(GObj *arg0) {
 
 extern FUNCLIST D_8021BBF4_ovl9;
 
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 10/32 insns. Draft kept. */
 void func_801D69D8_ovl9(struct GObj *arg0) {
     while (1) {
         utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_8021BBF4_ovl9);
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D69D8_ovl9.s")
+#endif
 
 void func_801D6A58_ovl9(GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = 5;

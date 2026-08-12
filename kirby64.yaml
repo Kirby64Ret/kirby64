@@ -672,6 +672,11 @@ segments:
     subsegments:
     - [0x1CBF50, c, ovl10/ovl10]
     - [0x1CC970, c, ovl10/ovl10_1]
+    # func_801E2C78_ovl10 is byte-exact but is the LAST function in this
+    # subsegment and its listing carries a 7-nop tail, so converting it
+    # shortens ovl10_1's .text by 16. Standard padding recipe: the residue
+    # is align32(end) - align16(end), which SUBALIGN(16) leaves behind.
+    - [0x1D3AA0, pad]
     - [0x1D3AB0, c, ovl10/ovl10_2]
     - [0x1D44E0, c, ovl10/ovl10_3]
     # Hidden TU split, confirmed 2026-08-12. func_801EC3C8_ovl10's dead
