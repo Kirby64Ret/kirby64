@@ -469,7 +469,60 @@ void func_8017B230_ovl5(GObj *arg0) {
     }
 }
 
+#include "SPObj.h"
+extern Unk16Ptrs D_801888B0_ovl5;
+extern void *D_80188A30_ovl5;
+extern void *D_80188AD0_ovl5;
+extern void *D_80188AF0_ovl5;
+extern void *D_80188B10_ovl5;
+extern void *D_80188B30_ovl5;
+void func_800ACB7C(SPObj *);
+
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 7/129 insns. Draft kept. */
+void func_8017B35C_ovl5(GObj *arg0) {
+    s32 pad0;
+    s32 pad1;
+    Unk16Ptrs sp48 = D_801888B0_ovl5;
+    void *sp44;
+    SPObj *sp;
+    s32 prev = D_8018ED04_ovl5;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x16, 0x80000000, 0x16);
+    func_8015C740_ovl5(arg0, &D_80188A30_ovl5);
+    sp = func_8015C740_ovl5(arg0, &D_80188A30_ovl5);
+    sp->xOffset = 160.0f;
+    sp->yOffset = 10.0f;
+    sp->unk5A |= 1;
+    sp->unkBA |= 1;
+    func_8015C740_ovl5(arg0, &D_80188AD0_ovl5);
+    switch (D_800D7178.unk44) {
+    case 0x1D:
+        sp44 = &D_80188AF0_ovl5;
+        break;
+    case 0x1E:
+        sp44 = &D_80188B30_ovl5;
+        break;
+    case 0x1F:
+        sp44 = &D_80188B10_ovl5;
+        break;
+    }
+    func_8015C740_ovl5(arg0, sp44);
+    sp = func_8015C740_ovl5(arg0, sp48.unk0[D_8018ED04_ovl5]);
+    while (1) {
+        if (prev != D_8018ED04_ovl5) {
+            prev = D_8018ED04_ovl5;
+            func_800ACB7C(sp);
+            sp = func_8015C740_ovl5(arg0, sp48.unk0[D_8018ED04_ovl5]);
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B35C_ovl5.s")
+#endif
 
 typedef union Unk20Ptrs {
     void *unk0[5];
