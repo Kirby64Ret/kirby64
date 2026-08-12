@@ -95,7 +95,20 @@ s32 func_80165AD0_ovl5(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165B84_ovl5.s")
+extern u8 D_8018E425_ovl5;
+
+s32 func_80165B84_ovl5(s32 arg0, s32 arg1) {
+    if (((arg1 == 0) && (arg0 >= 0x38) && (arg0 < 0x40)) || ((arg1 == 1) && (arg0 >= 0) && (arg0 < 8)) || ((arg1 == 3) && !(arg0 % 8)) || ((arg1 == 2) && !((arg0 + 1) % 8))) {
+        return 1;
+    }
+    if ((D_8018E424_ovl5 == 2) && (((arg1 == 0) && (arg0 >= 0x30) && (arg0 < 0x38)) || ((arg1 == 1) && (arg0 >= 8) && (arg0 < 0x10)) || ((arg1 == 3) && !((arg0 + 7) % 8)) || ((arg1 == 2) && !((arg0 + 2) % 8)))) {
+        return 1;
+    }
+    if ((D_8018E425_ovl5 == 2) && (((arg1 == 0) && (arg0 >= 0x28) && (arg0 < 0x30)) || ((arg1 == 1) && (arg0 >= 0x10) && (arg0 < 0x18)) || ((arg1 == 3) && !((arg0 + 6) % 8)) || ((arg1 == 2) && !((arg0 + 3) % 8)))) {
+        return 1;
+    }
+    return 0;
+}
 
 s32 func_80165D30_ovl5(s32 arg0) {
     s32 r;

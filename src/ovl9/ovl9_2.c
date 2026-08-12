@@ -586,7 +586,47 @@ void func_801DBF90_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 
+/* 4 diffs: pure $v0/$v1 swap on the objId<<2 index -- the ROM reserves $v0
+   for the func_801DC788_ovl9 result. Swept: explicit result local, leading pad,
+   early return, callee return-type flips. */
+#ifdef NON_MATCHING
+extern s32 D_801C83DC_ovl7;
+extern s32 D_801C84D8;
+extern s32 D_801C8448;
+void func_8019B4BC_ovl7(void);
+void func_801A0D74_ovl7();
+void eneTurnCommon(s32);
+void func_8019B2C0_ovl7(s32);
+void func_8019F3B0_ovl7(void);
+void func_8019F9D0_ovl7(struct DObj *);
+s32 func_801DC788_ovl9(s32);
+extern struct GObjProcess *gEntityGObjProcessArray[];
+void func_801DBE78_ovl9(struct GObj *);
+
+void func_801DC06C_ovl9(struct GObj *arg0) {
+    if (D_800E1B50[omCurrentObj->objId]->unk3C == 0) {
+        func_8019B4BC_ovl7();
+    }
+    func_801A0D74_ovl7(arg0);
+    eneTurnCommon(6);
+    func_8019B2C0_ovl7(1);
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C83DC_ovl7;
+    func_8019F3B0_ovl7();
+    if (D_800E83E0[omCurrentObj->objId] == 0) {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C84D8;
+        if (func_801DC788_ovl9((s32) D_800DFBD0[omCurrentObj->objId][1]) != 0) {
+            if (gEntityFuncListIDArray[omCurrentObj->objId] == 0) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DBE78_ovl9);
+            }
+        }
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8448;
+        func_8019F9D0_ovl7(D_800DFBD0[omCurrentObj->objId][2]);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DC06C_ovl9.s")
+#endif
 
 extern s32 D_801CB95C;
 extern f32 D_8021CF58_ovl9;

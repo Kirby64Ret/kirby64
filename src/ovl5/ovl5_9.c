@@ -42,7 +42,55 @@ void func_8017EDE0_ovl5(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_9/func_8017EE4C_ovl5.s")
+#include "main/contpad.h"
+
+void play_sound(s32);
+
+void func_8017EE4C_ovl5(GObj *arg0) {
+    s32 *p;
+
+    if (D_8018EDC0_ovl5 == 0) {
+        if (!(gPlayerControllers[0].buttonHeld & 0xF00)) {
+            D_800E98E0[omCurrentObj->objId] = 0;
+        }
+        p = &D_800E98E0[omCurrentObj->objId];
+        if (*p != 0) {
+            *p -= 1;
+            return;
+        }
+        if (gPlayerControllers[0].buttonPressed & 0x9000) {
+            play_sound(0xED);
+            D_800D6B68 = gGameState;
+            gGameState = 0x1C;
+            D_8018EDC0_ovl5 = 1;
+            return;
+        }
+        if (gPlayerControllers[0].buttonPressed & 0x4000) {
+            play_sound(0x2B);
+            D_800D6B68 = gGameState;
+            gGameState = 0xA;
+            D_8018EDC0_ovl5 = 1;
+            return;
+        }
+        if (gPlayerControllers[0].buttonHeld & 0x100) {
+            play_sound(0x113);
+            D_8018EDC4_ovl5 = D_8018EDC4_ovl5 + 1;
+            if (D_8018EDC4_ovl5 == 3) {
+                D_8018EDC4_ovl5 = 0;
+            }
+            D_800E98E0[omCurrentObj->objId] = 5;
+            return;
+        }
+        if (gPlayerControllers[0].buttonHeld & 0x200) {
+            play_sound(0x113);
+            D_8018EDC4_ovl5 = D_8018EDC4_ovl5 - 1;
+            if (D_8018EDC4_ovl5 < 0) {
+                D_8018EDC4_ovl5 = 2;
+            }
+            D_800E98E0[omCurrentObj->objId] = 5;
+        }
+    }
+}
 
 extern struct UnkStruct8015C740 D_80189680_ovl5;
 extern struct UnkStruct8015C740 D_801896A0_ovl5;

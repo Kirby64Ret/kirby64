@@ -106,7 +106,23 @@ s32 func_801554F0_ovl4(void) {
     return ret;
 }
 
+/* The listing carries a trailing unnamed empty function (extra jr $ra; nop,
+ * 8 bytes) before .size, so converting it would shorten the TU; the pragma
+ * must stay for the ROM build. The C body below is for NON_MATCHING builds.
+ * K&R definition: one call site passes no argument (the ROM passes $a0
+ * through). */
+#ifdef NON_MATCHING
+s32 func_801555AC_ovl4(arg0)
+s32 arg0;
+{
+    if ((u32) D_800ECA08[arg0].unk0 != 0x99999999U) {
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801555AC_ovl4.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801555F4_ovl4.s")
 

@@ -218,10 +218,22 @@ def main():
                 'void pc_stub_report(void) {\n'
                 '    fprintf(stderr, "\\n%d distinct unimplemented symbol(s) '
                 'reached\\n", pc_nseen);\n'
-                '}\n\n')
+                '}\n\n'
+                '/* RETURNING ZERO IS THE POINT, and it has to be written\n'
+                ' * down. A `void` stub leaves whatever happened to be in the\n'
+                ' * return register, so under KIRBY_PC_TRACE=1 the caller gets\n'
+                ' * garbage rather than nothing -- and a garbage POINTER is\n'
+                ' * indistinguishable from a real bug. The one that found this:\n'
+                ' * ovl1_3.c does `buf = (void *) func_800A8358(size | arg1);`\n'
+                ' * and then dma_read()s into buf. With a void stub buf came\n'
+                ' * back 0x1d and the port died inside memcpy, four frames\n'
+                ' * below a function whose name was already on the trace list.\n'
+                ' * A long return is zero in rax for every integer and pointer\n'
+                ' * caller. Float returns still read an untouched xmm0; nothing\n'
+                ' * portable fixes that, and no float has caused a fault yet. */\n')
         for s in funcs:
-            f.write(f'__attribute__((weak)) void {s}(void) '
-                    f'{{ pc_unimplemented("{s}"); }}\n')
+            f.write(f'__attribute__((weak)) long {s}(void) '
+                    f'{{ pc_unimplemented("{s}"); return 0; }}\n')
         f.write('\n')
         for s in data:
             f.write(f'__attribute__((weak)) unsigned char {s}[{DATA_PAD}];\n')

@@ -446,7 +446,24 @@ void func_8017C890_ovl5(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+/* Fully decoded and instruction-exact through the `unk40` store; the ONE
+   residue is the count loop's preheader, where IDO copy-propagates the
+   materialised `&D_800D7178` (in $a1, live across for the 0x40/0x68 accesses)
+   into $v0 as `move $v0,$a1`, while the ROM materialises `lui/addiu $v0`
+   afresh -- one instruction short, which shifts every later word and reads as
+   36/85.
+   The four separate `extern s32` at D_800D7178+0x48..0x54 are load-bearing:
+   only distinct named symbols emit the ROM's `lui $at; sw $zero,%lo(sym)($at)`
+   quartet, and they are what lets the `unk68` store fold into the `beql` delay
+   slot. They are defined in datatodo.txt.
+   Swept without effect on the preheader: every spelling of `p`'s initializer
+   (cast, integer cast, member+offset, end-16, `&*(vu32*)`), `u32`/`s32`/`vu32`/
+   entry-struct/`u8` pointer types, a named end variable, for/do-while/for(;;),
+   `register`, self-assignment, nested scope, declaration and assignment order,
+   a pointer local for the copy block, ternary vs if/else vs goto, and dead
+   locals. An absolute `(u32 *) 0x800D7178` initializer DOES reach 2/86 but
+   emits `ori` where the ROM has `addiu`, and hardcodes the address. */
 extern s32 D_800D71C0;
 extern s32 D_800D71C4;
 extern s32 D_800D71C8;

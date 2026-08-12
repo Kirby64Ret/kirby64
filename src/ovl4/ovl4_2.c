@@ -325,7 +325,35 @@ void func_801550EC_ovl4(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80155168_ovl4.s")
+void func_80155168_ovl4(void) {
+    void gameSetUpdateRate(f32);
+    void func_800A70C4(s32, f32, f32, f32, f32);
+    extern s32 D_8015A970_ovl4[];
+    s32 i;
+
+    gameSetUpdateRate(2.0f);
+    ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
+    func_800AE048(0x80);
+    func_800AE0F0();
+    func_800A6E64();
+    func_800A78D0(0);
+    func_800A8724(0);
+    func_800A7A40();
+    func_801550D4_ovl4();
+    func_800A6BC0(3);
+    func_800A70C4(0x10, 41.539f, 65535.0f, 200.0f, 16384.0f);
+    func_800B3070(0x10, 2.0f);
+    func_800B2F54(0x10, D_8015A954_ovl4[D_800D6B98], 0.0f);
+    func_800A71A0(0x10);
+    request_track_3(3, 0, 0x70);
+    for (i = 0; i != 0x10; i++) {
+        ((s32 *) D_800E9AA0)[request_track_general(4, 0, 0x70)] = i;
+    }
+    play_music(0, D_8015A970_ovl4[D_800D6B98]);
+    HS64_omMakeGObj(0, &func_801550EC_ovl4, 0x1A, 0x80000000);
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
+}
 
 void func_801552F8_ovl4(Gfx **gfxP) {
     gSPDisplayList((*gfxP)++, D_8015A790_ovl4);

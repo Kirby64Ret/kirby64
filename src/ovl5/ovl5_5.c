@@ -251,7 +251,46 @@ void func_80173564_ovl5(GObj *arg0) {
     D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[D_800E9C60[omCurrentObj->objId]];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801735A4_ovl5.s")
+void func_801735A4_ovl5(void) {
+    s32 t;
+    s32 t2;
+    s32 j;
+    u32 i;
+    s32 kind;
+    Vector sp48;
+
+    for (i = 0; i != 4; i++) {
+        for (j = 0; j != 0xC; j++) {
+            t = request_track_general(8, 0, 0x70);
+            D_800E98E0[t] = 2;
+            D_800E9AA0[t].as_u32 = i;
+            D_800E9C60[t] = j;
+            func_80172B38_ovl5(&sp48, i, j);
+            D_800EA6E0[t] = sp48.z;
+            kind = func_80172B10_ovl5(i, j);
+            if ((kind == 0xD) || (kind == 0xE)) {
+                t2 = request_track_general(8, 0, 0x70);
+                D_800E98E0[t2] = 0xB;
+                D_800E9AA0[t2].as_u32 = i;
+                D_800E9C60[t2] = j;
+                D_800EA520[t] = t2;
+            }
+            if (func_8016FF88_ovl5(kind) != 0) {
+                t2 = request_track_general(8, 0, 0x70);
+                D_800E98E0[t2] = 0xC;
+                D_800E9AA0[t2].as_u32 = i;
+                D_800E9C60[t2] = j;
+                D_800EA520[t] = t2;
+            }
+            if (func_80172C50_ovl5(j) != 0) {
+                t2 = request_track_general(8, 0, 0x70);
+                D_800E98E0[t2] = 0x10;
+                D_800E9AA0[t2].as_u32 = i;
+                D_800E9C60[t2] = j;
+            }
+        }
+    }
+}
 
 s32 func_80173778_ovl5(s32 arg0) {
     s32 i;

@@ -314,6 +314,26 @@ static s32 do_transfer(OSPiHandle *h, s32 dir, u32 devAddr, void *ram,
         return 0;
     }
 
+    /* Split 1b: a destination that cannot be host memory at all.
+     *
+     * ram == NULL alone is not enough, because dma_copy() SPLITS a transfer
+     * into 0x10000-byte chunks and advances the address between them: given a
+     * NULL buffer the first chunk is skipped here and the second arrives as
+     * 0x10000, which is still unmapped but no longer zero. That is exactly how
+     * the port died -- memcpy to 0x10000, with dma_read()'s caller three
+     * frames up holding a buffer that a stubbed allocator never allocated.
+     *
+     * This binary links -no-pie at 0x400000, so nothing the game can legally
+     * write to lives below that. Refusing the whole range turns "the allocator
+     * upstream is not implemented yet" into a traced skip instead of a SIGSEGV
+     * inside libc, which is the difference between a diagnosis and a hunt. */
+    if ((const char *)ram < __executable_start) {
+        pc_trace(PC_TR_DMA,
+                 "[dma] SKIP unmapped destination: rom %08x -> %p (%u bytes)\n",
+                 devAddr, ram, size);
+        return -1;
+    }
+
     /* Split 2: the guard that needs no table. */
     if (lands_in_own_image(ram, size)) {
         pc_trace(PC_TR_DMA,

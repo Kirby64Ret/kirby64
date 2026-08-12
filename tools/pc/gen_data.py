@@ -91,6 +91,69 @@ def _is_ref(val):
     return not SCALAR.fullmatch(val)
 
 
+# ---------------------------------------------------------------------------
+# Raw VRAM addresses sitting inside pointer tables.
+#
+# splat resolves a .word to a symbol NAME only when it can attribute it to a
+# segment it is currently disassembling. Cross-overlay references it cannot,
+# so a table of function pointers comes out half-named:
+#
+#     .word func_800BDD88          -> &func_800BDD88
+#     .word 0x80151338             -> (void *)(u32)(0x80151338)
+#
+# The second form is a plain integer here, and the port jumped to it: the
+# address is a gtl process entry, so osCreateThread got 0x80151338 as an entry
+# point and the trampoline called it. SIGSEGV at 0x80151338 with an empty
+# backtrace -- an N64 address executed as a host address.
+#
+# build/kirby.us.elf is the authority that closes this: it is the matching
+# build, so every symbol in it sits at its true N64 address. An exact hit
+# becomes `&name` and the host linker supplies the real address. Only EXACT
+# hits are rewritten -- a near miss is far more likely to be a number that
+# happens to look like an address than a pointer into the middle of something.
+# ---------------------------------------------------------------------------
+_VRAM_SYMS = None
+
+
+def vram_symbols():
+    """{n64_address: symbol} from the matching build, or {} if it is absent."""
+    global _VRAM_SYMS
+    if _VRAM_SYMS is not None:
+        return _VRAM_SYMS
+    _VRAM_SYMS = {}
+    elf = 'build/kirby.us.elf'
+    if not os.path.exists(elf):
+        return _VRAM_SYMS
+    import subprocess
+    out = subprocess.run(['nm', elf], capture_output=True, text=True).stdout
+    for line in out.split('\n'):
+        p = line.split()
+        if len(p) != 3 or p[1] in 'AaUuNnWwVv':
+            continue
+        name = p[2]
+        # `func_X.NON_MATCHING` and friends are build aliases, not names the
+        # port can link against; the plain name is at the same address.
+        if '.' in name:
+            continue
+        addr = int(p[0], 16)
+        # Keep the first name seen, so the result does not depend on nm's
+        # ordering between two symbols that genuinely share an address.
+        _VRAM_SYMS.setdefault(addr, name)
+    return _VRAM_SYMS
+
+
+def resolve_scalar_pointer(val):
+    """`&symbol` if this integer word is exactly a known VRAM symbol."""
+    try:
+        addr = int(val, 0)
+    except ValueError:
+        return None
+    if addr < 0x80000000 or addr > 0x807FFFFF:
+        return None
+    name = vram_symbols().get(addr)
+    return name
+
+
 def render(sym, section, entries, refs):
     """(forward_declaration, definition) for one data block.
 
@@ -178,7 +241,12 @@ def render(sym, section, entries, refs):
         body = []
         for k, v in entries:
             if not _is_ref(v):
-                body.append(f'(void *)(u32)({v})')
+                name = resolve_scalar_pointer(v)
+                if name:
+                    refs.add(name)
+                    body.append(f'&{name}')
+                else:
+                    body.append(f'(void *)(u32)({v})')
             elif re.fullmatch(r'\w+', v):
                 refs.add(v)
                 body.append(f'&{v}')
@@ -269,7 +337,12 @@ def render_pointer_run(run, refs):
                            ' + ' + str(offset) + '\\n");\n')
         for k, v in entries:
             if not _is_ref(v):
-                body.append(f'(void *)(u32)({v})')
+                name = resolve_scalar_pointer(v)
+                if name:
+                    refs.add(name)
+                    body.append(f'&{name}')
+                else:
+                    body.append(f'(void *)(u32)({v})')
             elif re.fullmatch(r'\w+', v):
                 refs.add(v)
                 body.append(f'&{v}')
@@ -334,25 +407,44 @@ def main():
         if not live:
             live = None
 
-    nfiles = nsyms = skipped = 0
+    nfiles = nsyms = skipped = nmerged = 0
     for path in sorted(glob.glob('asm/data/**/*.s', recursive=True)):
         if live is not None and path[len('asm/data/'):-2] not in live:
             skipped += 1
             continue
-        blocks = [b for b in parse(path) if b[0] not in defined]
+        # A block already defined in C is dropped, and it also BREAKS a run:
+        # its C definition has whatever size that source says, so the blocks
+        # around it are no longer known to be adjacent.
+        segments, seg = [], []
+        for b in parse(path):
+            if b[0] in defined:
+                if seg:
+                    segments.append(seg)
+                seg = []
+            else:
+                seg.append(b)
+        if seg:
+            segments.append(seg)
+        blocks = [b for s in segments for b in s]
         if not blocks:
             continue
+        groups = [g for s in segments for g in group_blocks(s)]
         rel = path[len('asm/data/'):-2].replace('/', '_')
         with open(f'{outdir}/{rel}.c', 'w') as f:
             f.write('/* GENERATED by tools/pc/gen_data.py -- do not edit.\n'
                     '   PC build only; the N64 build assembles the .s directly. */\n'
                     '#include "pc/pc_types.h"\n\n')
             refs, fwds, bodies = set(), [], []
-            for sym, section, entries in blocks:
-                fwd, body = render(sym, section, entries, refs)
+            for kind, run in groups:
+                if kind == 'ptrrun' and len(run) > 1:
+                    fwd, body = render_pointer_run(run, refs)
+                    nmerged += len(run) - 1
+                else:
+                    sym, section, entries = run[0]
+                    fwd, body = render(sym, section, entries, refs)
                 fwds.append(fwd)
                 bodies.append(body)
-                nsyms += 1
+                nsyms += len(run)
             # A block routinely points at a symbol defined LATER in the same
             # file, so every local symbol needs a forward declaration -- and it
             # must carry the SAME type as its definition, because `extern u8 X;`
@@ -366,7 +458,9 @@ def main():
             f.writelines(bodies)
         nfiles += 1
     print(f'{nsyms} data symbols -> {nfiles} C files in {outdir}'
-          + (f' ({skipped} stale listing(s) skipped)' if skipped else ''))
+          + (f' ({skipped} stale listing(s) skipped)' if skipped else '')
+          + (f', {nmerged} interior pointer labels aliased into their run'
+             if nmerged else ''))
 
 
 if __name__ == '__main__':
