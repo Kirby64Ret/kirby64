@@ -114,7 +114,52 @@ void func_801D4778_ovl8(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D4C1C_ovl8.s")
+void func_801D4C1C_ovl8(struct GObj *arg0) {
+    extern f32 gKirbyHp;
+    extern u32 D_8012BCA0;
+    extern s32 D_801CA980;
+    extern void func_801A33B8(void *);
+    extern s32 change_kirby_hp(f32);
+    extern void play_sound(s32);
+    extern void func_8016BD24_ovl3(s32);
+    extern void func_801696F0_ovl3(struct GObj *);
+
+    D_800E8920[omCurrentObj->objId] = 0;
+    switch (D_800E98E0[omCurrentObj->objId]) {
+    case 0:
+        break;
+    case 1:
+        break;
+    case 2:
+        if (D_800E6310[omCurrentObj->objId] != 0) {
+            D_800E98E0[omCurrentObj->objId] = 3;
+        } else {
+            func_801A33B8(&D_801CA980);
+            if (((D_8012BCA0 >> 0x13) & 0xFFF) != 0) {
+                D_800E98E0[omCurrentObj->objId] = 3;
+            }
+        }
+        break;
+    case 3:
+        func_801A33B8(&D_801CA980);
+        if (((D_8012BCA0 >> 0x13) & 0xE00) != 0) {
+            D_800E98E0[omCurrentObj->objId] = 4;
+        }
+        break;
+    case 4:
+        break;
+    case 5:
+        play_sound(0x110);
+        change_kirby_hp(-1.0f);
+        if (0.0f < gKirbyHp) {
+            play_sound(0xD9);
+        }
+        func_8016BD24_ovl3(1);
+        break;
+    }
+    func_801696F0_ovl3(arg0);
+}
+
 
 void func_801D4D88_ovl8(struct GObj *arg0) {
     extern void func_800A9760(s32);

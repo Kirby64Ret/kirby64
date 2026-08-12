@@ -1732,7 +1732,99 @@ Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSavePull.s")
 #endif
+/* 194/198 at -O3 and the instruction COUNT is EXACT.  Every block, branch,
+ * branch-likely duplicate and memory reference lines up; the entire residue is
+ * that IDO HOISTS LOOP-INVARIANT CONSTANTS out of the two loops where the ROM
+ * re-materialises them every iteration -- 0x7FFFFFFF (ROM: `lui $a1`/`ori`
+ * inside the loop, ours: a callee-saved register), 1e+06f and 0.5f (ROM:
+ * `lwc1 %lo(D_800417A4)` and `lui $at, 0x3F000000` inside the loop, ours:
+ * $f20/$f22, which also costs the two `sdc1` saves and 8 bytes of frame), -16,
+ * and `cmdList` (ROM re-reads its home slot 0x48($sp), ours keeps $s7).
+ *
+ * The cause is structural, not a source shape: the ROM's constants all come
+ * from __n_nextSampleTime and _n_timeToSamplesNoRound, which are `static` and
+ * were INLINED BY ujoin -- which runs AFTER uopt, so uopt never saw them inside
+ * a loop and never hoisted them.  tools/decomp/cc_o3.py has no ujoin, so the
+ * inlining has to be done in the source, and then uopt does see them and does
+ * hoist.  No spelling of the source can put the inlining after the optimiser.
+ *
+ * Worth keeping: making `client` a 1-ELEMENT ARRAY is required and worth 4
+ * instructions plus the whole $s3/n_syn reload pattern -- upstream passes
+ * `&client` to the helper, so after inlining the local is address-taken and
+ * every store through it invalidates IDO's cached `n_syn`.  A plain
+ * `ALPlayer *client` gets register-allocated and the reload pattern vanishes. */
+#ifdef NON_MATCHING
+/* upstream libnaudio/n_synthesizer.c n_alAudioFrame, with __n_nextSampleTime
+ * and _n_timeToSamplesNoRound hand-inlined -- the ROM inlines both (ujoin), and
+ * tools/decomp/cc_o3.py has no ujoin, so they have to be written out. */
+#define N_NEXT_SAMPLE_TIME()                                                    \
+    client[0] = 0;                                                                 \
+    delta = 0x7fffffff;                                                         \
+    if (n_syn->n_sndp)                                                          \
+        if ((temp = n_syn->n_sndp->samplesLeft - n_syn->curSamples) < delta) {  \
+            client[0] = n_syn->n_sndp;                                             \
+            delta = temp;                                                       \
+        }                                                                       \
+    if (n_syn->n_seqp1)                                                         \
+        if ((temp = n_syn->n_seqp1->samplesLeft - n_syn->curSamples) < delta) { \
+            client[0] = n_syn->n_seqp1;                                            \
+            delta = temp;                                                       \
+        }                                                                       \
+    if (n_syn->n_seqp2)                                                         \
+        if ((n_syn->n_seqp2->samplesLeft - n_syn->curSamples) < delta) {        \
+            client[0] = n_syn->n_seqp2;                                            \
+        }
+
+Acmd *alAudioFrame(Acmd *cmdList, s32 *cmdLen, s16 *outBuf, s32 outLen) {
+    ALPlayer *client[1];
+    ALMicroTime temp;
+    ALMicroTime delta;
+    Acmd *cmdlEnd = cmdList;
+    Acmd *cmdPtr;
+    s32 nOut;
+    s16 *lOutBuf = outBuf;
+
+    if (n_syn->head == 0) {
+        *cmdLen = 0;
+        return cmdList;
+    }
+
+    N_NEXT_SAMPLE_TIME();
+    n_syn->paramSamples = client[0]->samplesLeft;
+    while (n_syn->paramSamples - n_syn->curSamples < outLen) {
+        n_syn->paramSamples &= ~0xf;
+        client[0]->samplesLeft +=
+            (s32) (((f32) (*client[0]->handler)(client[0]) * n_syn->outputRate / 1e+06f) + 0.5f);
+        N_NEXT_SAMPLE_TIME();
+        n_syn->paramSamples = client[0]->samplesLeft;
+    }
+
+    n_syn->paramSamples &= ~0xf;
+
+    while (outLen > 0) {
+        nOut = MIN(n_syn->maxOutSamples, outLen);
+
+        cmdPtr = cmdlEnd;
+        n_syn->sv_dramout = (s32) lOutBuf;
+        cmdlEnd = n_alSavePull(n_syn->curSamples, cmdPtr);
+
+        outLen -= nOut;
+        lOutBuf += nOut << 1;
+        if (n_syn->curSamples < 0x7FFFFF47) {
+            n_syn->curSamples += nOut;
+        } else {
+            n_syn->curSamples = 0x80000090;
+        }
+    }
+    *cmdLen = (s32) (cmdlEnd - cmdList);
+
+    func_80029888();
+
+    return cmdlEnd;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alAudioFrame.s")
+#endif
 
 void alN_PVoiceNew(N_PVoice *mv, ALDMANew dmaNew, ALHeap *hp) {
     mv->dc_state = alHeapAlloc(hp, 1, sizeof(ADPCM_STATE));

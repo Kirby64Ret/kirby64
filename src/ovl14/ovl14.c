@@ -165,7 +165,61 @@ void func_801DC2A0_ovl14(void) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DC38C_ovl14.s")
+struct Ovl14TrackPosition {
+    s32 unk0;
+    f32 unk4;
+};
+
+s32 func_801DC38C_ovl14(s32 arg0) {
+    s32 track;
+    struct Ovl14TrackPosition sp24;
+
+    track = request_track_general(0x17, 0x1E, 0x50);
+    if ((track >= 0x3C) || (track == -1)) {
+        utilPrintf("enemy req over 18. Track Num:%d\n", track);
+        func_800B1900(track);
+        return -1;
+    }
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = 0;
+    D_800E77A0[track] = 0x3C;
+    D_800E7880[track] = 1;
+    switch (arg0) {
+        case 0:
+            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = -320.0f;
+            break;
+        case 1:
+            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = -160.0f;
+            break;
+        case 2:
+            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = 0.0f;
+            break;
+        case 3:
+            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = 160.0f;
+            break;
+        case 4:
+            gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = 320.0f;
+            break;
+        default:
+            while (1) {}
+    }
+    gEntitiesNextPosYArray[track] = gEntitiesPosYArray[track] = 0.0f;
+    gEntitiesNextPosZArray[track] = gEntitiesPosZArray[track] = 0.0f;
+    D_800E8E60[omCurrentObj->objId] = 0;
+    sp24.unk0 = D_800E5F90[omCurrentObj->objId];
+    sp24.unk4 = D_800E6BD0[omCurrentObj->objId];
+    if (func_800F9888((s32 *) &sp24, gEntitiesNextPosXArray[track]) == 0) {
+        D_800E5F90[track] = D_800E6150[track] = sp24.unk0;
+        D_800E6BD0[track] = D_800E6D90[track] = sp24.unk4;
+    } else {
+        D_800E5F90[track] = D_800E5F90[omCurrentObj->objId];
+        D_800E6BD0[track] = D_800E6BD0[omCurrentObj->objId];
+    }
+    D_800EC2E0[track].as_s32 = arg0;
+    play_sound(0x191);
+    return track;
+}
+
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DC674_ovl14.s")
 

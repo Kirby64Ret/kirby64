@@ -468,7 +468,53 @@ void func_801DD74C_ovl15(struct GObj *arg0) {
 void func_801DD7C0_ovl15(struct GObj *arg0) {
 }
 
+/* 65/98, new draft.  Every instruction and the whole control flow are right --
+ * the `while` (not do/while) is what gives the ROM's leading `bnel` plus the
+ * bottom `beq`, and the two `||` pairs give the four `beq $v1, $at` tests.  The
+ * residue is a PERMUTATION of the three callee-saved base registers: the ROM
+ * has $s0 = &omCurrentObj, $s1 = &D_801E6520_ovl15, $s2 = &D_800E9AA0, IDO
+ * hands them out in exact reverse order of first use ($s2/$s1/$s0), and the
+ * two compares come out with their operands swapped.  Swept: `p` assigned
+ * before vs after `v` both outside and inside the loop (72 -> 65), and both
+ * operand orders of the loop condition. */
+#ifdef NON_MATCHING
+void func_801DD7C8_ovl15(struct GObj *arg0) {
+    s32 r;
+    s32 v;
+    s32 *p;
+    s32 t;
+
+    r = random_soft_s32_range(9);
+    p = (s32 *) &D_800E9AA0[omCurrentObj->objId];
+    v = D_801E6520_ovl15[r];
+    while (D_801E6520_ovl15[*p] == v) {
+        r = random_soft_s32_range(9);
+        p = (s32 *) &D_800E9AA0[omCurrentObj->objId];
+        v = D_801E6520_ovl15[r];
+    }
+    if (v == 3 || v == 4) {
+        D_800D7098.unk4 = 0;
+        p = (s32 *) &D_800E9AA0[omCurrentObj->objId];
+    } else if (v == 5 || v == 6) {
+        t = *(s32 *) &D_800D7098.unk4 + 1;
+        D_800D7098.unk4 = t;
+        if (t >= 5) {
+            if (random_soft_s32_range(2) == 0) {
+                r = 2;
+            } else {
+                r = 0;
+            }
+            D_800D7098.unk4 = 0;
+        }
+        p = (s32 *) &D_800E9AA0[omCurrentObj->objId];
+    }
+    *p = r;
+    gEntityFuncListIDArray[omCurrentObj->objId] =
+        D_801E6520_ovl15[*(s32 *) &D_800E9AA0[omCurrentObj->objId]];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD7C8_ovl15.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD950_ovl15.s")
 

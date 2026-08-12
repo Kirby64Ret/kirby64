@@ -1519,7 +1519,52 @@ void func_801E9770_ovl10(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 46/129: structure, frame, saved-register set and every offset are the ROM's
+   (`s32 i = 0;` at declaration is worth 25 diffs over an `i = 0;` statement).
+   Residue: the hoisted base addresses land in a rotated set of saved registers
+   -- the ROM runs s1=&D_800E3750, s2=&omCurrentObj, s3=&D_800E3210,
+   s4=&D_800E3C90 where IDO puts &omCurrentObj last (s4) and shifts the arrays
+   down; and the post-loop `= 0.0f` reuses the loop's $f20 zero where the ROM
+   materialises a fresh `mtc1 $zero,$f4`. A named `f32 zero = 0.0f` local for
+   the loop compare does not fork the constant (still 46). */
+void func_801E980C_ovl10(GObj *arg0) {
+    s32 i = 0;
+    f32 temp;
+    f32 v;
+
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    func_800A9EA4(0x1036D);
+    func_800A9EA4(0x1036C);
+    D_800E3210[omCurrentObj->objId] = -4.5f;
+    D_800E3750[omCurrentObj->objId] = 0.5f;
+    D_800E3C90[omCurrentObj->objId] = 4.5f;
+
+    do {
+        ohSleep(1);
+        temp = D_800E3210[omCurrentObj->objId];
+        if (temp < 0.0f) {
+            v = -temp;
+        } else {
+            v = temp;
+        }
+        if (D_800E3C90[omCurrentObj->objId] <= v) {
+            i++;
+            D_800E3750[omCurrentObj->objId] = -D_800E3750[omCurrentObj->objId];
+        }
+    } while (i != 2);
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E980C_ovl10.s")
+#endif
 
 void func_801E9A10_ovl10(GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
