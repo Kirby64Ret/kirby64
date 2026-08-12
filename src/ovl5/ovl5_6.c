@@ -59,7 +59,62 @@ void func_800A9864(void *, s32, s32);
 void func_80177D04_ovl5(GObj *);
 
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80177B00_ovl5.s")
+void func_80177C64_ovl5(GObj *);
+void func_80178140_ovl5(GObj *);
+void func_80178220_ovl5(GObj *, s32);
+void func_801783B8_ovl5(GObj *);
+void func_80178450_ovl5(GObj *);
+void func_80178690_ovl5(GObj *, s32, s32, s32);
+void func_8017890C_ovl5(GObj *, s32, s32);
+void func_80178AAC_ovl5(GObj *, s32, s32);
+void func_80178BEC_ovl5(GObj *, s32);
+void func_80178CD0_ovl5(GObj *);
+void func_80178DB0_ovl5(GObj *);
+void func_80179264_ovl5(GObj *);
+
+void func_80177B00_ovl5(GObj *arg0) {
+    switch (D_800E98E0[omCurrentObj->objId]) {
+        case 0:
+            func_80177C64_ovl5(arg0);
+            break;
+        case 1:
+            func_80178140_ovl5(arg0);
+            break;
+        case 2:
+            func_801783B8_ovl5(arg0);
+            break;
+        case 3:
+            func_80178450_ovl5(arg0);
+            break;
+        case 4:
+            func_80178690_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId],
+                               D_800E9C60[omCurrentObj->objId], D_800E9E20[omCurrentObj->objId]);
+            break;
+        case 5:
+            func_8017890C_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId],
+                               D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 6:
+            func_80178AAC_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId],
+                               D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 7:
+            func_80178BEC_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId]);
+            break;
+        case 8:
+            func_80178CD0_ovl5(arg0);
+            break;
+        case 9:
+            func_80178DB0_ovl5(arg0);
+            break;
+        case 0xA:
+            func_80179264_ovl5(arg0);
+            break;
+        case 0xB:
+            func_80178220_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId]);
+            break;
+    }
+}
 
 void func_80177C64_ovl5(GObj *arg0) {
     D_8018ECE4_ovl5 = omCurrentObj->objId;

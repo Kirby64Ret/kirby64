@@ -34,7 +34,31 @@ void func_8017EAB0_ovl5(void);
 void auSetHighSoundQuality(void);
 void auSetLowSoundQuality(void);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_8/func_8017E180_ovl5.s")
+void func_8017E2A0_ovl5(GObj *);
+void func_8017E64C_ovl5(GObj *);
+void func_8017E754_ovl5(GObj *);
+void func_8017E85C_ovl5(GObj *);
+void func_8017E95C_ovl5(GObj *);
+
+void func_8017E180_ovl5(GObj *arg0) {
+    switch (D_800E98E0[omCurrentObj->objId]) {
+        case 0:
+            func_8017E2A0_ovl5(arg0);
+            break;
+        case 1:
+            func_8017E64C_ovl5(arg0);
+            break;
+        case 2:
+            func_8017E754_ovl5(arg0);
+            break;
+        case 3:
+            func_8017E85C_ovl5(arg0);
+            break;
+        case 4:
+            func_8017E95C_ovl5(arg0);
+            break;
+    }
+}
 
 void func_8017E21C_ovl5(s32 arg0) {
     saveSoundMode = arg0;

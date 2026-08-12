@@ -38,7 +38,64 @@ void func_800BA284(s32);
 #include "ovl1/track.h"
 
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801830A0_ovl5.s")
+void func_801831E0_ovl5(GObj *);
+void func_80183AFC_ovl5(GObj *);
+void func_80183C54_ovl5(GObj *, s32, s32);
+void func_801843A0_ovl5(GObj *, s32);
+void func_80184888_ovl5(GObj *);
+void func_80184BA0_ovl5(GObj *);
+void func_80184EC0_ovl5(GObj *);
+void func_80185150_ovl5(GObj *);
+void func_801853E0_ovl5(GObj *, s32);
+void func_80185608_ovl5(GObj *);
+void func_801857C4_ovl5(GObj *);
+void func_8018590C_ovl5(GObj *);
+void func_80185A4C_ovl5(GObj *);
+
+void func_801830A0_ovl5(GObj *arg0) {
+    switch (D_800E98E0[omCurrentObj->objId]) {
+        case 0:
+            func_801831E0_ovl5(arg0);
+            break;
+        case 1:
+            func_80183AFC_ovl5(arg0);
+            break;
+        case 2:
+            func_80183C54_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId],
+                               D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 5:
+            func_80185608_ovl5(arg0);
+            break;
+        case 6:
+            func_801857C4_ovl5(arg0);
+            break;
+        case 7:
+            func_8018590C_ovl5(arg0);
+            break;
+        case 8:
+            func_80185A4C_ovl5(arg0);
+            break;
+        case 3:
+            func_801853E0_ovl5(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 4:
+            func_801843A0_ovl5(arg0, D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 0xA:
+            func_80184888_ovl5(arg0);
+            break;
+        case 9:
+            func_80184BA0_ovl5(arg0);
+            break;
+        case 0xB:
+            func_80184EC0_ovl5(arg0);
+            break;
+        case 0xC:
+            func_80185150_ovl5(arg0);
+            break;
+    }
+}
 
 void func_801831E0_ovl5(GObj *arg0) {
     D_8018EE14_ovl5 = omCurrentObj->objId;
@@ -377,7 +434,148 @@ void func_801840F0_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801841C0_ovl5.s")
 
+#include "DObj.h"
+
+typedef struct Unk8018C30C {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ s32 unk4;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ void *unk14;
+    /* 0x18 */ void *unk18;
+    /* 0x1C */ f32 unk1C;
+    /* 0x20 */ f32 unk20;
+    /* 0x24 */ f32 unk24;
+    /* 0x28 */ f32 unk28;
+    /* 0x2C */ f32 unk2C;
+    /* 0x30 */ f32 unk30;
+} Unk8018C30C;
+
+extern Unk8018C30C D_8018C30C_ovl5[];
+extern Vector D_8018C300_ovl5;
+void func_800A9088(s32);
+void func_800A9F98(s32, f32);
+void func_800AA018(s32);
+void func_800AF27C(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800B1378(struct DObj *, s32, f32);
+
+#ifdef NON_MATCHING
+/* 30/314: instruction-for-instruction correct, and every stack offset is right.
+   The only defect is that IDO swaps the two callee-saved registers -- the ROM
+   holds arg0 in $s1 and the D_8018C30C_ovl5 record base in $s2, this C gets the
+   opposite. Swept with no effect on the pair: pointer local vs inline indexing,
+   the pointer assigned in the body instead of at its declaration, declaring it
+   first/last, a `GObj *obj = arg0;` copy, and 1-3 dead scalar locals (the dead
+   local is what fixes the frame in the inline form; with the pointer local the
+   frame is already 0x60). The chained store of unkC IS load-bearing: three
+   separate statements emit three lwc1 where the ROM has one. */
+void func_801843A0_ovl5(GObj *arg0, s32 arg1) {
+    Unk8018C30C *p = &D_8018C30C_ovl5[arg1];
+    f32 var;
+    s32 i;
+
+    D_8018EE4C_ovl5 = omCurrentObj->objId;
+    func_800A9088(p->unk0);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = p->unk28 + D_8018C300_ovl5.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = p->unk2C + D_8018C300_ovl5.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = p->unk30 + D_8018C300_ovl5.z;
+    if (arg1 == 8) {
+        if (p->unk4 != 0) {
+            func_800A9F98(p->unk4, 128.0f);
+        }
+        if (p->unk8 != 0) {
+            func_800A9F98(p->unk8, 128.0f);
+        }
+        D_800DFBD0[omCurrentObj->objId][0x1E]->scale.v.y = 0.0f;
+    } else {
+        if (p->unk4 != 0) {
+            func_800AA018(p->unk4);
+        }
+        if (p->unk8 != 0) {
+            func_800AA018(p->unk8);
+        }
+    }
+    arg0->onAnimate = func_800B1378;
+    gEntitiesAngleXArray[omCurrentObj->objId] = p->unk1C * 3.14159274f / 180.0f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = p->unk20 * 3.14159274f / 180.0f;
+    gEntitiesAngleZArray[omCurrentObj->objId] = p->unk24 * 3.14159274f / 180.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+    var = p->unkC / (f32) 4;
+    i = 0;
+    do {
+        gEntitiesScaleXArray[omCurrentObj->objId] += var;
+        gEntitiesScaleYArray[omCurrentObj->objId] += var;
+        gEntitiesScaleZArray[omCurrentObj->objId] += var;
+        ohSleep(1);
+        i++;
+    } while (i != 4);
+    gEntitiesScaleZArray[omCurrentObj->objId] = gEntitiesScaleYArray[omCurrentObj->objId] =
+        gEntitiesScaleXArray[omCurrentObj->objId] = p->unkC;
+    switch (arg1) {
+        case 2:
+            var = 0.0f;
+            while (1) {
+                gEntitiesAngleXArray[omCurrentObj->objId] = var * 3.14159274f / 180.0f;
+                var += 4.0f;
+                if (360.0f < var) {
+                    var -= 360.0f;
+                }
+                ohSleep(1);
+            }
+        case 7:
+        case 73:
+            var = 0.0f;
+            while (1) {
+                gEntitiesAngleYArray[omCurrentObj->objId] = var * 3.14159274f / 180.0f;
+                var += 4.0f;
+                if (360.0f < var) {
+                    var -= 360.0f;
+                }
+                ohSleep(1);
+            }
+        case 15:
+            while (1) {
+                func_800AA018(0x10028);
+                arg0->onAnimate = func_800B1378;
+                func_800AF27C();
+                func_800AA018(0x10022);
+                arg0->onAnimate = func_800B1378;
+                func_800AF27C();
+                func_800AA018(0x10023);
+                arg0->onAnimate = func_800B1378;
+                func_800AF27C();
+            }
+        case 16:
+            func_800AECC0(1.0f);
+            func_800AED20(1.0f);
+            break;
+        case 14:
+        case 21:
+        case 24:
+        case 32:
+        case 48:
+        case 70:
+            while (1) {
+                if (p->unk4 != 0) {
+                    func_800AA018(p->unk4);
+                }
+                if (p->unk8 != 0) {
+                    func_800AA018(p->unk8);
+                }
+                arg0->onAnimate = func_800B1378;
+                func_800AF27C();
+            }
+    }
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801843A0_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80184888_ovl5.s")
 

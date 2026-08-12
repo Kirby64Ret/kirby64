@@ -52,7 +52,56 @@ extern struct GObjProcess *gEntityGObjProcessArray5[];
 void func_800AD1A0(GObj *);
 void *func_8015C740_ovl5(GObj *, void *);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_80179E00_ovl5.s")
+void func_8017B018_ovl5(GObj *, s32);
+void func_8017B35C_ovl5(GObj *);
+void func_8017B560_ovl5(GObj *);
+void func_8017B6B4_ovl5(GObj *);
+void func_8017B848_ovl5(GObj *, s32);
+void func_8017BA34_ovl5(GObj *, s32, s32);
+void func_8017BED8_ovl5(GObj *);
+void func_8017C084_ovl5(GObj *);
+void func_8017C1FC_ovl5(GObj *);
+void func_8017C34C_ovl5(GObj *);
+void func_8017C4CC_ovl5(GObj *);
+
+void func_80179E00_ovl5(GObj *arg0) {
+    switch (D_800E98E0[omCurrentObj->objId]) {
+        case 0:
+            func_8017B018_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId]);
+            break;
+        case 3:
+            func_8017B35C_ovl5(arg0);
+            break;
+        case 4:
+            func_8017B848_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId]);
+            break;
+        case 5:
+            func_8017BA34_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId],
+                               D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 6:
+            func_8017BED8_ovl5(arg0);
+            break;
+        case 7:
+            func_8017C34C_ovl5(arg0);
+            break;
+        case 8:
+            func_8017C4CC_ovl5(arg0);
+            break;
+        case 9:
+            func_8017B560_ovl5(arg0);
+            break;
+        case 0xA:
+            func_8017B6B4_ovl5(arg0);
+            break;
+        case 0xB:
+            func_8017C084_ovl5(arg0);
+            break;
+        case 0xC:
+            func_8017C1FC_ovl5(arg0);
+            break;
+    }
+}
 
 s32 func_80179F20_ovl5(void) {
     if (D_8018ED38_ovl5 == 1) {

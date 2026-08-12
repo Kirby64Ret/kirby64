@@ -28,7 +28,35 @@ void func_800AA018(void *);
 void func_800AF27C(void);
 void func_801824B0_ovl5(GObj *);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182360_ovl5.s")
+void func_80182414_ovl5(GObj *);
+void func_801825E8_ovl5(GObj *);
+void func_80182700_ovl5(GObj *);
+void func_80182804_ovl5(GObj *, s32);
+void func_8018293C_ovl5(GObj *);
+void func_80182A1C_ovl5(GObj *);
+
+void func_80182360_ovl5(GObj *arg0) {
+    switch (D_800E98E0[omCurrentObj->objId]) {
+        case 0:
+            func_80182414_ovl5(arg0);
+            break;
+        case 1:
+            func_801825E8_ovl5(arg0);
+            break;
+        case 2:
+            func_80182700_ovl5(arg0);
+            break;
+        case 3:
+            func_80182804_ovl5(arg0, ((s32 *) D_800E9AA0)[omCurrentObj->objId]);
+            break;
+        case 4:
+            func_8018293C_ovl5(arg0);
+            break;
+        case 5:
+            func_80182A1C_ovl5(arg0);
+            break;
+    }
+}
 
 void func_80182414_ovl5(GObj *arg0) {
     D_8018EE04_ovl5 = omCurrentObj->objId;

@@ -216,11 +216,49 @@ s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8016050C_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160810_ovl5.s")
+s32 func_80160810_ovl5(s32 arg0) {
+    switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 9:
+        case 0xB:
+        case 0xC:
+        case 0xD:
+            return 0;
+    }
+    return 1;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160868_ovl5.s")
+s32 func_80160868_ovl5(s32 arg0) {
+    switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 6:
+        case 7:
+            return 1;
+    }
+    return 0;
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801608BC_ovl5.s")
+s32 func_801608BC_ovl5(s32 arg0) {
+    if (arg0 == 0xFF) {
+        return 0;
+    }
+    switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
+        case 2:
+        case 3:
+        case 6:
+        case 7:
+        case 0xA:
+        case 0xC:
+            return 1;
+    }
+    return 0;
+}
 
 s32 func_80160924_ovl5(s32 arg0) {
     s32 temp = D_800EA520[D_8018E030_ovl5[arg0]];
@@ -231,7 +269,20 @@ s32 func_80160924_ovl5(s32 arg0) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8016097C_ovl5.s")
+s32 func_8016097C_ovl5(s32 arg0) {
+    switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 6:
+        case 7:
+        case 0xC:
+            return 1;
+    }
+    return 0;
+}
 
 s32 func_801609D0_ovl5(s32 arg0) {
     s32 temp = D_800EA520[D_8018E030_ovl5[arg0]];

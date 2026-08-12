@@ -55,8 +55,8 @@ extern u8 D_8012D891[];
 
 struct Unk80126CD0 {
     u32 unk0;
-    u32 unk4;
-    u32 unk8;
+    s32 unk4;
+    s32 unk8;
 };
 
 extern struct Unk80126CD0 D_80126CD0[];
@@ -145,9 +145,95 @@ void func_80111F10(void) {
     m->unk0[3][3] = 1.0f;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112000.s")
+void func_80112000(void) {
+    Camera *cam;
+    struct Unk8012D934 *m;
+    struct UnkPlane *pl;
+    Vector *eye;
+    f32 ang;
+    f32 c;
+    f32 s;
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 inv;
+    f32 d;
+    s32 i;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801121E0.s")
+    cam = D_800D799C->data.cam;
+    ang = -(((cam->perspMtx.persp.fovy - 2.0f) * 0.5f * 3.141592741f) / 180.0f) * cam->perspMtx.persp.aspect;
+    m = D_8012D934;
+    c = -cosf(ang);
+    s = sinf(ang);
+    eye = &cam->viewMtx.lookAt.eye;
+    for (i = 0;; i++) {
+        nx = ((m->unk0[0][0] * c) + (m->unk0[2][0] * s)) + m->unk0[3][0];
+        ny = ((m->unk0[0][1] * c) + (m->unk0[2][1] * s)) + m->unk0[3][1];
+        nz = ((m->unk0[0][2] * c) + (m->unk0[2][2] * s)) + m->unk0[3][2];
+        inv = 1.0f / sqrtf(((nx * nx) + (ny * ny)) + (nz * nz));
+        nx *= inv;
+        ny *= inv;
+        nz *= inv;
+        pl = &D_8012D934->unk60[i];
+        d = -(((eye->x * nx) + (ny * eye->y)) + (nz * eye->z));
+        pl->unkC = d;
+        pl->unk0 = nx;
+        pl->unk4 = ny;
+        pl->unk8 = nz;
+        if (i == 1) {
+            break;
+        }
+        ang = -ang;
+        c = cosf(ang);
+        s = -sinf(ang);
+    }
+
+}
+
+void func_801121E0(void) {
+    Camera *cam;
+    struct Unk8012D934 *m;
+    struct UnkPlane *pl;
+    Vector *eye;
+    f32 ang;
+    f32 c;
+    f32 s;
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 inv;
+    f32 d;
+    s32 i;
+
+    cam = D_800D799C->data.cam;
+    ang = -((cam->perspMtx.persp.fovy * 0.5f * 3.141592741f) / 180.0f);
+    m = D_8012D934;
+    c = cosf(ang);
+    s = sinf(ang);
+    eye = &cam->viewMtx.lookAt.eye;
+    for (i = 0;; i++) {
+        nx = ((m->unk0[1][0] * c) + (m->unk0[2][0] * s)) + m->unk0[3][0];
+        ny = ((m->unk0[1][1] * c) + (m->unk0[2][1] * s)) + m->unk0[3][1];
+        nz = ((m->unk0[1][2] * c) + (m->unk0[2][2] * s)) + m->unk0[3][2];
+        inv = 1.0f / sqrtf(((nx * nx) + (ny * ny)) + (nz * nz));
+        nx *= inv;
+        ny *= inv;
+        nz *= inv;
+        pl = &D_8012D934->unk60[i];
+        d = -(((eye->x * nx) + (ny * eye->y)) + (nz * eye->z));
+        pl->unkC = d;
+        pl->unk0 = nx;
+        pl->unk4 = ny;
+        pl->unk8 = nz;
+        if (i == 1) {
+            break;
+        }
+        ang = -ang;
+        c = -cosf(ang);
+        s = -sinf(ang);
+    }
+
+}
 
 // Load-bearing: the `p = &arg0[1]` element-address local is what produces the
 // ROM's bare `addiu $v0, $v0, 0x10` base bias -- a `(u8 *)arg0 + 0x10` cast, a
@@ -419,7 +505,41 @@ void func_80112B4C(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112B4C.s")
 #endif
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112CD4.s")
+void func_80112CD4(s32 arg0, f32 arg1[4][4]) {
+    f32 sx;
+    f32 sy;
+    f32 sz;
+    f32 cx;
+    f32 cy;
+    f32 cz;
+    f32 ax;
+    f32 ay;
+    f32 az;
+
+    sx = sinf(gEntitiesAngleXArray[arg0]);
+    cx = cosf(gEntitiesAngleXArray[arg0]);
+    sy = sinf(gEntitiesAngleYArray[arg0]);
+    cy = cosf(gEntitiesAngleYArray[arg0]);
+    sz = sinf(gEntitiesAngleZArray[arg0]);
+    cz = cosf(gEntitiesAngleZArray[arg0]);
+    ax = gEntitiesScaleXArray[arg0];
+    ay = gEntitiesScaleYArray[arg0];
+    az = gEntitiesScaleZArray[arg0];
+    arg1[0][0] = cy * cz * ax;
+    arg1[0][1] = cy * sz * ax;
+    arg1[0][2] = -sy * ax;
+    arg1[1][0] = ((sx * sy * cz) - (cx * sz)) * ay;
+    arg1[1][1] = ((sx * sy * sz) + (cx * cz)) * ay;
+    arg1[1][2] = sx * cy * ay;
+    arg1[2][0] = ((cx * sy * cz) + (sx * sz)) * az;
+    arg1[2][1] = ((cx * sy * sz) - (sx * cz)) * az;
+    arg1[2][2] = cx * cy * az;
+    arg1[3][0] = gEntitiesNextPosXArray[arg0];
+    arg1[3][1] = gEntitiesNextPosYArray[arg0];
+    arg1[3][2] = gEntitiesNextPosZArray[arg0];
+    arg1[0][3] = arg1[1][3] = arg1[2][3] = 0.0f;
+    arg1[3][3] = 1.0f;
+}
 
 void func_80112ED4(f32 arg0[4][4], Vector *arg1, Vector *arg2) {
     f32 temp_f0 = arg2->x;
@@ -445,7 +565,42 @@ void func_80112F70(f32 arg0[4][4], f32 *arg1, s16 *arg2) {
 }
 
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80113028.s")
+void func_80113028(f32 arg0[4][4], f32 arg1[4][4]) {
+    f32 det;
+
+    arg0[0][0] = (arg1[1][1] * arg1[2][2]) - (arg1[1][2] * arg1[2][1]);
+    arg0[1][0] = (arg1[1][0] * arg1[2][2]) - (arg1[1][2] * arg1[2][0]);
+    arg0[2][0] = (arg1[1][0] * arg1[2][1]) - (arg1[1][1] * arg1[2][0]);
+    arg0[3][0] = ((arg1[3][0] * arg0[0][0]) - (arg1[3][1] * arg0[1][0])) + (arg1[3][2] * arg0[2][0]);
+    arg0[0][1] = (arg1[0][1] * arg1[2][2]) - (arg1[0][2] * arg1[2][1]);
+    arg0[1][1] = (arg1[0][0] * arg1[2][2]) - (arg1[0][2] * arg1[2][0]);
+    arg0[2][1] = (arg1[0][0] * arg1[2][1]) - (arg1[0][1] * arg1[2][0]);
+    arg0[3][1] = ((arg1[3][0] * arg0[0][1]) - (arg1[3][1] * arg0[1][1])) + (arg1[3][2] * arg0[2][1]);
+    arg0[0][2] = (arg1[0][1] * arg1[1][2]) - (arg1[0][2] * arg1[1][1]);
+    arg0[1][2] = (arg1[0][0] * arg1[1][2]) - (arg1[0][2] * arg1[1][0]);
+    arg0[2][2] = (arg1[0][0] * arg1[1][1]) - (arg1[0][1] * arg1[1][0]);
+    arg0[3][2] = ((arg1[3][0] * arg0[0][2]) - (arg1[3][1] * arg0[1][2])) + (arg1[3][2] * arg0[2][2]);
+    det = ((arg1[0][0] * arg0[0][0]) - (arg1[0][1] * arg0[1][0])) + (arg1[0][2] * arg0[2][0]);
+    arg0[1][0] = -arg0[1][0];
+    arg0[3][0] = -arg0[3][0];
+    arg0[0][1] = -arg0[0][1];
+    arg0[2][1] = -arg0[2][1];
+    arg0[1][2] = -arg0[1][2];
+    arg0[3][2] = -arg0[3][2];
+    det = 1.0f / det;
+    arg0[0][0] *= det;
+    arg0[1][0] *= det;
+    arg0[2][0] *= det;
+    arg0[3][0] *= det;
+    arg0[0][1] *= det;
+    arg0[1][1] *= det;
+    arg0[2][1] *= det;
+    arg0[3][1] *= det;
+    arg0[0][2] *= det;
+    arg0[1][2] *= det;
+    arg0[2][2] *= det;
+    arg0[3][2] *= det;
+}
 
 void func_80113300(struct GObj *arg0, s32 arg1) {
     struct DObj *var_v0;
@@ -751,7 +906,34 @@ void func_80115888(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011591C.s")
+void func_8011591C(struct GObj *arg0) {
+    u8 *sp2C = arg0->unk4C;
+    s32 sp28 = arg0->objId;
+    struct Unk80124E14 *sp24;
+    struct Unk80126CD0 *sp20;
+
+    D_800E33D0[sp28] = 0.0f;
+    D_800E3210[sp28] = 0.0f;
+    D_800E3050[sp28] = 0.0f;
+    if (func_8011E244() == *sp2C) {
+        if (D_800E98E0[sp28] != 0) {
+            sp24 = &D_80124E14[D_800E77A0[sp28]];
+            func_800AA018(sp24->unk8);
+            D_800DEF90[omCurrentObj->objId] = sp24->unk14;
+            if (sp24->unk1A != 0) {
+                sp20 = &D_80126CD0[sp24->unk1A];
+                omCurrentObj = D_800DE350[sp2C[3]];
+                func_800AA018(sp20->unk4);
+                if (sp20->unk8 != 0) {
+                    func_800AA018(sp20->unk8);
+                }
+                omCurrentObj = arg0;
+            }
+        }
+    } else {
+        D_800E98E0[sp28] = 1;
+    }
+}
 
 void func_80115A7C(struct GObj *arg0) {
     D_800E98E0[arg0->objId] = 0;
@@ -1192,7 +1374,48 @@ void func_80117328(struct GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* 10/95: every instruction, register and relative slot order is exact; only the
+   frame is 0x30 against the ROM's 0x28.  The three named locals occupy 12 bytes
+   in both, but IDO leaves a 4-byte hole below the spill temp AND another below
+   the local block (ROM: temp 0x18, locals 0x1C/0x20/0x24; ours: temp 0x1C,
+   locals 0x24/0x28/0x2C).  This is the frame-layout anomaly recorded in the
+   guide -- the block moves wholesale and never closes.  Swept: declaration
+   order (3 permutations), u32 vs s32 index, s32* vs u8* for unk4C, separated
+   declaration/assignment, block- vs file-scope extern for D_80126CF4, and
+   recomputing the sum instead of reloading gEntitiesNextPosYArray.
+   The parameter is spelled (s32) with casts so that this guarded draft agrees
+   with the file-scope declaration at the top of the file, which the two
+   D_800DEF90 address-taking sites depend on; measured identical (10/95) to the
+   (struct GObj *) spelling. */
+extern f32 D_80126CF4[];
+
+void func_801173F4(s32 arg0) {
+    u8 *sp24 = ((struct GObj *) arg0)->unk4C;
+    s32 sp20 = ((struct GObj *) arg0)->objId;
+    f32 sp1C = D_80126CF4[D_800E77A0[sp20]];
+
+    func_800B4924((struct GObj *) arg0);
+    if ((gEntitiesNextPosYArray[sp20] - D_800EA6E0[sp20]) < sp1C) {
+        gEntitiesNextPosYArray[sp20] = D_800EA6E0[sp20] + sp1C;
+        D_800E3210[sp20] = gEntitiesNextPosYArray[sp20] - gEntitiesPosYArray[sp20];
+        D_800E98E0[sp20] = 0xA;
+        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80117328;
+    } else {
+        if (D_800EA6E0[sp20] < gEntitiesNextPosYArray[sp20]) {
+            gEntitiesNextPosYArray[sp20] = D_800EA6E0[sp20];
+            D_800E3210[sp20] = D_800EA6E0[sp20] - gEntitiesPosYArray[sp20];
+        }
+        if (func_8011E244() != *sp24) {
+            D_800E3750[sp20] = 0.5f;
+            D_800E3C90[sp20] = 4.4f;
+            D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80117210;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801173F4.s")
+#endif
 
 // The float literal below lands in this TU's MIGRATED .rodata block, which
 // this C file emits. verify.py reports a 1-instruction diff because the object
@@ -1289,7 +1512,26 @@ void func_80117834(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117904.s")
+extern f32 D_80126DFC[];
+s32 random_soft_s32_range(s32);
+
+void func_80117904(s32 arg0) {
+    f32 step;
+
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E3C90[omCurrentObj->objId] = 20.0f;
+    step = D_80126DFC[random_soft_s32_range(7)];
+    while (-2000.0f < gEntitiesNextPosYArray[omCurrentObj->objId]) {
+        gEntitiesAngleXArray[omCurrentObj->objId] += step;
+        ohSleep(1);
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    gEntitiesNextPosXArray[omCurrentObj->objId] -= 2000.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117AB4.s")
 

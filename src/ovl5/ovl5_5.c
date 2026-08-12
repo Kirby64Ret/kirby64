@@ -47,7 +47,85 @@ extern Unk801875F0 D_801875F0_ovl5[];
 void play_sound(s32);
 s32 random_soft_s32_range(s32);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8016FB80_ovl5.s")
+void func_8016FD78_ovl5(GObj *);
+void func_80171950_ovl5(GObj *, s32);
+void func_80172C7C_ovl5(GObj *, s32, s32, f32);
+void func_80173A38_ovl5(GObj *, s32, s32);
+void func_80174044_ovl5(GObj *, s32);
+void func_80174368_ovl5(GObj *, s32);
+void func_8017462C_ovl5(GObj *, s32, s32);
+void func_80174AE0_ovl5(GObj *, s32, s32);
+void func_8017559C_ovl5(GObj *, s32, s32);
+void func_801758AC_ovl5(GObj *);
+void func_80175A28_ovl5(GObj *);
+void func_80175DBC_ovl5(GObj *);
+void func_80175E98_ovl5(GObj *);
+void func_80176170_ovl5(GObj *);
+void func_80176A80_ovl5(GObj *);
+void func_80176F04_ovl5(GObj *, s32);
+
+void func_8016FB80_ovl5(GObj *arg0) {
+    s32 kind = D_800E98E0[omCurrentObj->objId];
+
+    switch (kind) {
+        case 1:
+            func_8016FD78_ovl5(arg0);
+            break;
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            func_80171950_ovl5(arg0, kind - 3);
+            break;
+        case 7:
+            func_80175A28_ovl5(arg0);
+            break;
+        case 8:
+            func_80175DBC_ovl5(arg0);
+            break;
+        case 2:
+            func_80172C7C_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32,
+                               D_800E9C60[omCurrentObj->objId], D_800EA6E0[omCurrentObj->objId]);
+            break;
+        case 9:
+            func_80174044_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32);
+            break;
+        case 0xA:
+            func_80174368_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32);
+            break;
+        case 0xB:
+            func_8017462C_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32,
+                               D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 0xC:
+            func_80174AE0_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32,
+                               D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 0xD:
+            func_8017559C_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32,
+                               D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 0xE:
+            func_80175E98_ovl5(arg0);
+            break;
+        case 0xF:
+            func_801758AC_ovl5(arg0);
+            break;
+        case 0x10:
+            func_80173A38_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32,
+                               D_800E9C60[omCurrentObj->objId]);
+            break;
+        case 0x11:
+            func_80176A80_ovl5(arg0);
+            break;
+        case 0x12:
+            func_80176F04_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_s32);
+            break;
+        case 0:
+            func_80176170_ovl5(arg0);
+            break;
+    }
+}
 
 void func_8016FD54_ovl5(void) {
     play_music(0, 0x3E);
@@ -85,9 +163,56 @@ void func_8016FFE8_ovl5(s32 arg0, s32 arg1, f32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170098_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170464_ovl5.s")
+s32 func_80170464_ovl5(s32 arg0, s32 arg1) {
+    s32 id = D_8018E478_ovl5[arg0][arg1];
+    u8 kind = func_80172B10_ovl5(arg0, arg1);
+    f32 temp;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170584_ovl5.s")
+    switch (kind) {
+        case 0xC:
+            temp = D_800DE350[id]->animTimer + 24.0f;
+            if (172.0f < temp) {
+                temp -= 172.0f;
+            }
+            if (((0.0f <= temp) && (temp <= 88.0f)) || ((154.0f <= temp) && (temp <= 172.0f))) {
+                return 1;
+            }
+            return 0;
+        case 4:
+        case 5:
+        case 0xA:
+        case 0x13:
+        case 0x15:
+        case 0x16:
+        case 0x18:
+            return 0;
+    }
+    return 1;
+}
+
+s32 func_80170584_ovl5(s32 arg0, s32 arg1) {
+    u8 kind = func_80172B10_ovl5(arg0, arg1);
+    s32 id = D_8018E478_ovl5[arg0][arg1];
+    f32 temp;
+
+    switch (kind) {
+        case 0xC:
+            temp = D_800DE350[id]->animTimer;
+            if (((0.0f <= temp) && (temp <= 88.0f)) || ((154.0f <= temp) && (temp <= 172.0f))) {
+                return 1;
+            }
+            return 0;
+        case 4:
+        case 5:
+        case 0xA:
+        case 0x13:
+        case 0x15:
+        case 0x16:
+        case 0x18:
+            return 0;
+    }
+    return 1;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017068C_ovl5.s")
 
@@ -343,7 +468,81 @@ s32 func_80173778_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80173804_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80173A38_ovl5.s")
+void func_80173EBC_ovl5(GObj *);
+void func_801773C4_ovl5(struct GObj *);
+void func_800A9864(s32, s32, s32);
+void func_800B1900(u16);
+extern u8 D_8018ECD8_ovl5;
+
+void func_80173A38_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    s32 sp24;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = arg2;
+    D_800DF150[omCurrentObj->objId] = func_80173EBC_ovl5;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    switch (arg2) {
+        case 0:
+            sp24 = 0x30087;
+            break;
+        case 20:
+            sp24 = 0x30088;
+            break;
+        case 40:
+            sp24 = 0x30089;
+            break;
+        case 60:
+            sp24 = 0x3008A;
+            break;
+        case 81:
+            sp24 = 0x3008B;
+            break;
+        case 100:
+            sp24 = 0x3008C;
+            break;
+    }
+    func_800A9864(sp24, 0x1869F, 0x10);
+    switch (arg2) {
+        case 0:
+            gEntitiesNextPosXArray[omCurrentObj->objId] =
+                gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][arg2]] + 100.0f;
+            gEntitiesNextPosYArray[omCurrentObj->objId] =
+                gEntitiesNextPosYArray[D_8018E478_ovl5[arg1][arg2]] + 150.0f;
+            gEntitiesNextPosZArray[omCurrentObj->objId] =
+                gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]] - 350.0f;
+            break;
+        case 81:
+            gEntitiesNextPosXArray[omCurrentObj->objId] =
+                gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][arg2]] + 150.0f;
+            gEntitiesNextPosYArray[omCurrentObj->objId] =
+                gEntitiesNextPosYArray[D_8018E478_ovl5[arg1][arg2]] + 150.0f;
+            gEntitiesNextPosZArray[omCurrentObj->objId] =
+                gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]] + 300.0f;
+            break;
+        default:
+            if (D_8018ECD8_ovl5 == 3) {
+                gEntitiesNextPosXArray[omCurrentObj->objId] =
+                    gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][arg2]] + 100.0f;
+                gEntitiesNextPosYArray[omCurrentObj->objId] =
+                    gEntitiesNextPosYArray[D_8018E478_ovl5[arg1][arg2]];
+                gEntitiesNextPosZArray[omCurrentObj->objId] =
+                    gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]] + 280.0f;
+            } else {
+                gEntitiesNextPosXArray[omCurrentObj->objId] =
+                    gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][arg2]] + 100.0f;
+                gEntitiesNextPosYArray[omCurrentObj->objId] =
+                    gEntitiesNextPosYArray[D_8018E478_ovl5[arg1][arg2]] + 70.0f;
+                gEntitiesNextPosZArray[omCurrentObj->objId] =
+                    gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]] + 280.0f;
+            }
+            break;
+    }
+    omGMoveObjDL(arg0, arg0->dl_link, 0xA);
+    while (D_8018E478_ovl5[arg1][arg2] != 0) {
+        ohSleep(1);
+    }
+    func_800B1900(omCurrentObj->objId);
+}
 
 void func_80173EBC_ovl5(GObj *arg0) {
     switch (D_800E9AA0[omCurrentObj->objId].as_s32) {
@@ -774,7 +973,64 @@ void func_801773C4_ovl5(struct GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80177524_ovl5.s")
+#include "main/gtl.h"
+
+s32 func_800AB0F4(GObj *);
+void func_800AB120(GObj *);
+void func_800AB174(GObj *);
+void func_800AB1F0(GObj *);
+void func_800AB244(GObj *);
+void renderDrawDObjFromGObj(GObj *);
+void renderDrawObject_TypeD(GObj *);
+void func_8001585C(GObj *);
+void func_80015BCC(GObj *);
+
+void func_80177524_ovl5(GObj *arg0) {
+    gDPSetScissor(gDisplayListHeads[0]++, G_SC_NON_INTERLACE, 30, 10, 290, 230);
+    gDPSetScissor(gDisplayListHeads[1]++, G_SC_NON_INTERLACE, 30, 10, 290, 230);
+    switch (func_800AB0F4(arg0)) {
+        case 19:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            func_800AB120(arg0);
+            break;
+        case 21:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            func_800AB1F0(arg0);
+            break;
+        case 23:
+        case 25:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            renderDrawDObjFromGObj(arg0);
+            break;
+        case 27:
+        case 29:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            func_8001585C(arg0);
+            break;
+        case 20:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            func_800AB174(arg0);
+            break;
+        case 22:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            func_800AB244(arg0);
+            break;
+        case 24:
+        case 26:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            renderDrawObject_TypeD(arg0);
+            break;
+        case 28:
+        case 30:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            func_80015BCC(arg0);
+            break;
+    }
+}
 
 void gameSetUpdateRate(f32);
 void func_800AAF34(s32, s32, f32);
