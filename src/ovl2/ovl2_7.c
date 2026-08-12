@@ -144,6 +144,7 @@ void func_80101400(u16 arg0) {
     f32 temp_f18;
     f32 temp_f20;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f2_2;
     f32 var_f0;
     f32 var_f2;
@@ -680,6 +681,7 @@ s32 func_80102570(void *arg0, s32 *arg1, void *arg2, s32 arg3, struct CollisionT
     f32 temp_f28_5;
     f32 temp_f28_6;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f2_2;
     f32 temp_f2_3;
     f32 temp_f30;
@@ -1334,7 +1336,7 @@ void func_80103DE4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
 }
 
 
-void func_80103EA0(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
+s32 func_80103EA0(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
     s32 arg5, s32 arg6, s32 arg7) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
@@ -1346,7 +1348,7 @@ void func_80103EA0(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     newColState.unk34 = 0;
     newColState.unk38 = 0;
     newColState.unk3C = NULL;
-    func_80103B58(arg3, arg4, arg5, arg6, arg7);
+    return func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
 void func_80103F58(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
@@ -2014,6 +2016,7 @@ s32 func_801058B8(void *arg0, void *arg1, void *arg2, f32 arg3, void *arg4, f32 
     f32 temp_f24_2;
     f32 temp_f24_3;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f2_2;
     f32 temp_f2_3;
     f32 temp_f2_4;
@@ -2229,6 +2232,7 @@ void func_801060C4(void *arg0, void *arg1) {
     f32 temp_f16;
     f32 temp_f18;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f4;
     f32 temp_f6;
     s32 temp_v0;
@@ -2433,6 +2437,7 @@ void func_80106930(void *arg0, void *arg1) {
     f32 temp_f16;
     f32 temp_f18;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f4;
     f32 temp_f6;
     s32 temp_v0;
@@ -2738,6 +2743,7 @@ void func_801073C4(void *arg0, void *arg1) {
     f32 temp_f14;
     f32 temp_f16;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f2_2;
     f32 temp_f4;
     f32 temp_f6;
@@ -3124,6 +3130,7 @@ s32 func_80108078(void *arg0, void *arg1, void *arg2, f32 arg3, void *arg4, f32 
     f32 temp_f24_2;
     f32 temp_f24_3;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f2_2;
     f32 temp_f2_3;
     f32 temp_f2_4;
@@ -3356,6 +3363,7 @@ s32 func_80108858(void *arg0, void *arg1, void *arg2, f32 arg3) {
     f32 temp_f22;
     f32 temp_f24;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f2_2;
     f32 temp_f2_3;
     f32 temp_f2_4;
@@ -3524,6 +3532,7 @@ s32 func_80108E08(void *arg0, void *arg1) {
     f32 temp_f14;
     f32 temp_f16;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f2_2;
     f32 temp_f4;
     f32 temp_f8;
@@ -3653,6 +3662,7 @@ void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 sp48;
     f32 sp44;
     Vector sp38;
+    Vector pad;
     Vector sp2C;
     Vector sp20;
 
@@ -3919,90 +3929,82 @@ s32 func_80109F60(struct PositionState *arg0) {
     return ret;
 }
 
-#ifdef MIPS_TO_C
-
-void func_80109FAC(void *arg0, void *arg1) {
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp34;
-    f32 temp_f0;
+#ifdef NON_MATCHING
+void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    Vector sp4C;
+    Vector sp40;
+    Vector sp34;
     f32 temp_f12;
     f32 temp_f14;
+    f32 temp_f0;
     f32 temp_f2;
+    struct Normal *n;
 
-    if ((arg1->unk0 >> 0x13) & 1) {
-        arg0->unk4 = D_8012BD00.unk34 - D_8012BD00.unk24;
-        arg0->unk8 = D_8012BD00.unk38 - arg0->unk10;
-        arg0->unkC = D_8012BD00.unk3C - D_8012BD00.unk28;
+    if ((arg1->flags.w >> 0x13) & 1) {
+        arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk24;
+        arg0->kirbyFootPos[1] = BD00.unk38 - arg0->scale[0];
+        arg0->kirbyFootPos[2] = BD00.unk3C - BD00.unk28;
         return;
     }
-    sp4C = arg0->unk34;
-    sp50 = arg0->unk2C;
-    sp54 = arg0->unk38;
-    sp40 = arg0->unk4 + D_8012BD00.unk24;
-    sp44 = arg0->unk8 + arg0->unk10;
-    sp48 = arg0->unkC + D_8012BD00.unk28;
-    if (func_801057C4(arg1->unk24, &sp4C, &sp40, &sp34) != 0) {
-        temp_f12 = sp34 - sp4C;
-        temp_f14 = sp3C - sp54;
-        temp_f0 = sp40 - sp4C;
-        temp_f2 = sp48 - sp54;
+    n = arg1->rec[2].norm;
+    sp4C.x = arg0->kirbyGroundPath[0];
+    sp4C.y = arg0->kirbyHeadPos[1];
+    sp4C.z = arg0->kirbyGroundPath[1];
+    sp40.x = BD00.unk24 + arg0->kirbyFootPos[0];
+    sp40.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp40.z = BD00.unk28 + arg0->kirbyFootPos[2];
+    if (func_801057C4(n, &sp4C, &sp40, &sp34) != 0) {
+        temp_f0 = sp40.x - sp4C.x;
+        temp_f2 = sp40.z - sp4C.z;
+        temp_f12 = sp34.x - sp4C.x;
+        temp_f14 = sp34.z - sp4C.z;
         if (((temp_f12 * temp_f12) + (temp_f14 * temp_f14)) < ((temp_f0 * temp_f0) + (temp_f2 * temp_f2))) {
-            arg0->unk4 = sp34 - D_8012BD00.unk24;
-            arg0->unk8 = sp38 - arg0->unk10;
-            arg0->unkC = sp3C - D_8012BD00.unk28;
-            return;
+            arg0->kirbyFootPos[0] = sp34.x - BD00.unk24;
+            arg0->kirbyFootPos[1] = sp34.y - arg0->scale[0];
+            arg0->kirbyFootPos[2] = sp34.z - BD00.unk28;
+        } else {
+            arg1->flags.f.a &= ~7;
         }
-        arg1->unk0 = (((arg1->unk0 >> 0x13) & 0xFFF8) * 8) | (arg1->unk0 & 7);
     }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109FAC.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_8010A138(void *arg0, void *arg1) {
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp34;
-    f32 temp_f0;
+#ifdef NON_MATCHING
+void func_8010A138(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    Vector sp4C;
+    Vector sp40;
+    Vector sp34;
     f32 temp_f12;
     f32 temp_f14;
+    f32 temp_f0;
     f32 temp_f2;
 
-    if ((arg1->unk0 >> 0x13) & 8) {
-        arg0->unk4 = D_8012BD00.unk34 - D_8012BD00.unk2C;
-        arg0->unk8 = D_8012BD00.unk38 - arg0->unk10;
-        arg0->unkC = D_8012BD00.unk3C - D_8012BD00.unk30;
+    if ((arg1->flags.w >> 0x13) & 8) {
+        arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk2C;
+        arg0->kirbyFootPos[1] = BD00.unk38 - arg0->scale[0];
+        arg0->kirbyFootPos[2] = BD00.unk3C - BD00.unk30;
         return;
     }
-    sp4C = arg0->unk3C;
-    sp50 = arg0->unk2C;
-    sp54 = arg0->unk40;
-    sp40 = arg0->unk4 + D_8012BD00.unk2C;
-    sp44 = arg0->unk8 + arg0->unk10;
-    sp48 = arg0->unkC + D_8012BD00.unk30;
-    if (func_801057C4(arg1->unk30, &sp4C, &sp40, &sp34) != 0) {
-        temp_f12 = sp34 - sp4C;
-        temp_f14 = sp3C - sp54;
-        temp_f0 = sp40 - sp4C;
-        temp_f2 = sp48 - sp54;
+    sp4C.x = arg0->kirbyHeadPath[0];
+    sp4C.y = arg0->kirbyHeadPos[1];
+    sp4C.z = arg0->kirbyHeadPath[1];
+    sp40.x = BD00.unk2C + arg0->kirbyFootPos[0];
+    sp40.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp40.z = BD00.unk30 + arg0->kirbyFootPos[2];
+    if (func_801057C4(arg1->rec[3].norm, &sp4C, &sp40, &sp34) != 0) {
+        temp_f0 = sp40.x - sp4C.x;
+        temp_f2 = sp40.z - sp4C.z;
+        temp_f12 = sp34.x - sp4C.x;
+        temp_f14 = sp34.z - sp4C.z;
         if (((temp_f12 * temp_f12) + (temp_f14 * temp_f14)) < ((temp_f0 * temp_f0) + (temp_f2 * temp_f2))) {
-            arg0->unk4 = sp34 - D_8012BD00.unk2C;
-            arg0->unk8 = sp38 - arg0->unk10;
-            arg0->unkC = sp3C - D_8012BD00.unk30;
-            return;
+            arg0->kirbyFootPos[0] = sp34.x - BD00.unk2C;
+            arg0->kirbyFootPos[1] = sp34.y - arg0->scale[0];
+            arg0->kirbyFootPos[2] = sp34.z - BD00.unk30;
+        } else {
+            arg1->flags.f.a &= ~0x38;
         }
-        arg1->unk0 = (((arg1->unk0 >> 0x13) & 0xFFC7) * 8) | (arg1->unk0 & 7);
     }
 }
 #else
@@ -4286,6 +4288,7 @@ s32 func_8010AC1C(void *arg0, void *arg1) {
     f32 temp_f0;
     f32 temp_f0_2;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f4;
     f32 var_f12;
     f32 var_f14;
@@ -5441,14 +5444,14 @@ s32 func_8010D8A4(void *arg0) {
     sp58 = arg0->unkC + D_8012BD00.unk8;
     sp4C = sp58;
     sp48 = (arg0->unk8 + temp_v0->unk8) - 0.2f;
-    if ((func_80103EA0(&sp50, &sp44, &sp38, 0, 0, 0, &sp34, 0) != 0) && (func_80102324(sp34, 0, 0, 0) == 0)) {
+    if ((func_80103EA0((Vector *) sp50, &sp44, &sp38, 0, 0, 0, &sp34, 0) != 0) && (func_80102324(sp34, 0, 0, 0) == 0)) {
         return 0;
     }
     sp50 = arg0->unk4 + D_8012BD00.unkC;
     sp58 = arg0->unkC + D_8012BD00.unk10;
     sp44 = sp50;
     sp4C = sp58;
-    if ((func_80103EA0(&sp50, &sp44, &sp38, 0, 0, 0, &sp34, 0) != 0) && (func_80102324(sp34, 0, 0, 0) == 0)) {
+    if ((func_80103EA0((Vector *) sp50, &sp44, &sp38, 0, 0, 0, &sp34, 0) != 0) && (func_80102324(sp34, 0, 0, 0) == 0)) {
         return 0;
     }
     return 1;
@@ -5457,39 +5460,30 @@ s32 func_8010D8A4(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010D8A4.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+s32 func_8010DA28(struct PositionState *arg0) {
+    Vector sp50;
+    Vector sp44;
+    Vector sp38;
 
-s32 func_8010DA28(void *arg0) {
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    void *temp_v0;
-
-    func_80104FB8();
-    sp38 = 0.0f;
-    sp40 = 0.0f;
-    sp3C = 1.0f;
-    temp_v0 = arg0 + 0x10;
-    sp50 = arg0->unk4 + D_8012BD00.unk4;
-    sp54 = arg0->unk8 + temp_v0->unk8;
-    sp44 = sp50;
-    sp58 = arg0->unkC + D_8012BD00.unk8;
-    sp48 = arg0->unk8 + temp_v0->unk4;
-    sp4C = sp58;
-    if (func_80103EA0(&sp50, &sp44, &sp38, 0, 0, 0, 0, 0) != 0) {
+    func_80104FB8(arg0);
+    sp38.x = 0.0f;
+    sp38.z = 0.0f;
+    sp38.y = 1.0f;
+    sp50.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    sp50.y = arg0->kirbyFootPos[1] + arg0->scale[2];
+    sp44.x = sp50.x;
+    sp50.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    sp44.y = arg0->kirbyFootPos[1] + arg0->scale[1];
+    sp44.z = sp50.z;
+    if (func_80103EA0(&sp50, &sp44, (struct Normal *) &sp38, 0, 0, 0, 0, 0) != 0) {
         return 1;
     }
-    sp50 = arg0->unk4 + D_8012BD00.unkC;
-    sp58 = arg0->unkC + D_8012BD00.unk10;
-    sp44 = sp50;
-    sp4C = sp58;
-    if (func_80103EA0(&sp50, &sp44, &sp38, 0, 0, 0, 0, 0) != 0) {
+    sp50.x = arg0->kirbyFootPos[0] + BD00.unkC;
+    sp50.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    sp44.x = sp50.x;
+    sp44.z = sp50.z;
+    if (func_80103EA0(&sp50, &sp44, (struct Normal *) &sp38, 0, 0, 0, 0, 0) != 0) {
         return 1;
     }
     return 0;
@@ -5580,6 +5574,7 @@ void func_8010DDA4(void *arg0, s32 arg1) {
     f32 temp_f0;
     f32 temp_f0_2;
     f32 temp_f2;
+    struct Normal *n;
     f32 temp_f2_2;
     s32 var_a1;
     u16 temp_t1_2;
@@ -5697,6 +5692,7 @@ s32 func_8010E048(void *arg0, s32 arg1, void *arg2, void *arg3, void **arg4, voi
     f32 temp_f12;
     f32 temp_f14;
     f32 temp_f2;
+    struct Normal *n;
     s32 var_a0;
     s32 var_v1_2;
     u16 temp_v0;
@@ -5828,6 +5824,7 @@ void func_8010E324(s32 arg0, void *arg1) {
     f32 temp_f14;
     f32 temp_f18;
     f32 temp_f2;
+    struct Normal *n;
     s32 temp_t0;
     s32 temp_t0_2;
     void *temp_v0;

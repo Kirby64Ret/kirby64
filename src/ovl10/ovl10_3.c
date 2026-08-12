@@ -2174,7 +2174,64 @@ void func_801EAA98_ovl10(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EAB98_ovl10.s")
+void func_801DB1E0_ovl10(void);
+void func_800A9EC4(s32, f32, u16);
+
+void func_801EAB98_ovl10(GObj *arg0) {
+    Unk801E63E4 sp50;
+    u8 sp4F;
+    f32 sp40[3];
+    f32 temp_f0;
+
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E9FE0[omCurrentObj->objId].as_s32 = -1;
+    D_800E9560[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    D_800E6A10[omCurrentObj->objId] = -1.0f;
+    func_800A9EA4(0x1036F);
+    func_800AA864(0x1036E, 1);
+    func_800A9EA4(0x10396);
+    func_800AA864(0x10395, 2);
+    func_800A9EA4(0x1037E);
+    func_800AA864(0x1037D, 1);
+    func_800A9EA4(0x10380);
+    func_800A9EA4(0x1037F);
+    func_801E63E4_ovl10(&sp50);
+    D_800EA8A0[omCurrentObj->objId] = sp50.unk0;
+    sp4F = sp50.unk4;
+    sp40[0] = D_800EA8A0[omCurrentObj->objId];
+    sp40[1] = 0.0f;
+    sp40[2] = 0.0f;
+    func_801E5B08_ovl10(sp40, sp50.unk4, -0.4f);
+    while (D_800E9E20[omCurrentObj->objId] == 0) {
+        sp4F--;
+        ohSleep(1);
+    }
+    func_800A9EA4(0x10382);
+    func_800A9EA4(0x10381);
+    ohSleep(sp4F);
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] =
+    D_800E3210[omCurrentObj->objId] =
+    D_800E33D0[omCurrentObj->objId] =
+    D_800E3590[omCurrentObj->objId] =
+    D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    temp_f0 = D_800E3E50[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = temp_f0;
+    D_800E3AD0[omCurrentObj->objId] = temp_f0;
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800DEF90[omCurrentObj->objId] = func_801DB1E0_ovl10;
+    func_801E5CF0_ovl10(D_800EA8A0[omCurrentObj->objId]);
+    D_800EAA60[omCurrentObj->objId] = -1.0f;
+    play_sound(0x1CA);
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800A9EA4(0x10386);
+    func_800A9EC4(0x10385, 0.0f, 1);
+    D_800E9E20[omCurrentObj->objId] = 2;
+    curObjSleepForever();
+}
 
 void func_801EAF3C_ovl10(GObj *arg0) {
     if (0.0f != D_800E3750[omCurrentObj->objId]) {

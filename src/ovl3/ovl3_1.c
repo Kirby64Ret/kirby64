@@ -133,7 +133,42 @@ s32 func_80152828_ovl3(f32 *arg0, f32 *arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801530BC_ovl3.s")
 
+#ifdef NON_MATCHING
+void func_80153668_ovl3(void) {
+    f32 sp20[3];
+    register u16 count;
+    register u16 i;
+    extern u8 *D_8012BCA0_p[];
+    s32 func_8010DF9C(f32 *);
+
+    if (gKirbyState.unk140 != 0) {
+        return;
+    }
+    sp20[0] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp20[1] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp20[2] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    count = func_8010DF9C(sp20);
+    if (count != 0) {
+        for (i = 0; i < count; i++) {
+            if ((D_8012BCA0_p[i + 0x10][4] == 0) && (D_8012BCA0_p[i + 0x10][5] == 2)) {
+                gKirbyState.unk140 = 0x20001;
+            }
+        }
+    } else {
+        sp20[1] = gEntitiesNextPosYArray[omCurrentObj->objId] + 20.0f;
+        count = func_8010DF9C(sp20);
+        if (count != 0) {
+            for (i = 0; i < count; i++) {
+                if ((D_8012BCA0_p[i + 0x10][4] == 0) && (D_8012BCA0_p[i + 0x10][5] == 2)) {
+                    gKirbyState.unk140 = 0x20001;
+                }
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80153668_ovl3.s")
+#endif
 
 void func_80153808_ovl3(void) {
     if (gKirbyState.floorCollisionNext & 0xC00) {
