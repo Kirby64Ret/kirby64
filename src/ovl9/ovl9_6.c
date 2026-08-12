@@ -77,7 +77,41 @@ void func_801EB158_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EB4B0_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EB6BC_ovl9.s")
+extern s32 D_801C8784_ovl7[];
+extern s32 D_801C87CC[];
+extern s32 D_8021C0A4_ovl9[];
+void func_800B33F4(void);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800A9EA4(s32);
+void func_800A8100(s32, s32, s32, void *);
+void func_800AF27C(void);
+
+void func_801EB6BC_ovl9(GObj *arg0) {
+    void ohSleep(s32);
+    void play_sound(s32);
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8784_ovl7;
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800A9EA4(0x100DF);
+    ohSleep(4);
+    play_sound(0xA2);
+    ohSleep(5);
+    play_sound(0xA2);
+    ohSleep(0x1B);
+    play_sound(0x9E);
+    func_800A8100(3, 2, D_8021C0A4_ovl9[D_800E7880[omCurrentObj->objId]], arg0->data.ptr);
+    while (D_800E98E0[D_800EBBE0[omCurrentObj->objId]] == 0) {
+        ohSleep(1);
+    }
+    D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801C87CC;
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 5;
+}
 
 void func_8019F410_ovl7(struct DObj *);
 

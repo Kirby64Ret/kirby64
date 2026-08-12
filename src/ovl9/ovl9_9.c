@@ -1707,7 +1707,31 @@ void func_8020192C_ovl9(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_80201984_ovl9.s")
+void func_80201B98_ovl9(void);
+
+void func_80201984_ovl9(struct GObj *arg0) {
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800DEF90[omCurrentObj->objId] = func_800B6B8C;
+    if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+        func_800AA864(0x101A3, 1);
+    } else {
+        func_800AA864(0x101A5, 1);
+    }
+    func_800A9EA4(0x101A1);
+    D_800DF310[omCurrentObj->objId] = func_8020192C_ovl9;
+    func_800AF27C();
+    func_80201B98_ovl9();
+    if (1.0f == D_800E6A10[omCurrentObj->objId]) {
+        func_800AA864(0x101A2, 1);
+    } else {
+        func_800AA864(0x101A4, 1);
+    }
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
 
 void func_80200EAC_ovl9(struct GObj *);
 

@@ -430,7 +430,40 @@ void func_80216454_ovl9(s32 arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_8021645C_ovl9.s")
+extern s32 D_801CCD78;
+void func_80216ED0_ovl9(struct GObj *, s32, f32);
+
+void func_8021645C_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    ent->unk98 = &D_801CCD78;
+    if (D_800E7880[omCurrentObj->objId] == 2) {
+        func_800AA018(0x10044);
+        func_800AECC0(4.5f);
+        func_800AED20(4.5f);
+        D_800E98E0[omCurrentObj->objId] = 3;
+        D_800DF310[omCurrentObj->objId] = func_80216ED0_ovl9;
+        func_800AF27C();
+        func_800AA018(0x10044);
+        func_800AECC0(4.5f);
+        func_800AED20(4.5f);
+        D_800E98E0[omCurrentObj->objId] = 2;
+        D_800DF310[omCurrentObj->objId] = func_80216ED0_ovl9;
+        func_800AF27C();
+    }
+    func_800AA018(0x10044);
+    func_800AECC0(3.0f);
+    func_800AED20(3.0f);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800DF310[omCurrentObj->objId] = func_80216ED0_ovl9;
+    func_800AF27C();
+    if (D_800E8920[omCurrentObj->objId] == 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+    } else {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+    }
+}
 
 extern f32 D_8021DE20_ovl9;
 void func_8021664C_ovl9(struct GObj *arg0) {
@@ -661,7 +694,44 @@ void func_80217098_ovl9(struct GObj *arg0) {
     }
 }
 
+/* 4/116 diffs: structurally exact; only the callee-saved FP pair is swapped
+   ($f20 holds the extern and $f22 the 0.0f, the ROM has it the other way).
+   Swept: assignment order, declaration order and position, inline 0.0f,
+   double 0.0 literal, chained assignment -- all 4. */
+#ifdef MIPS_TO_C
+extern f32 D_8021DE2C_ovl9, D_8021DE30_ovl9;
+
+void func_80217158_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    f32 z;
+    f32 temp;
+
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    ent->unk98 = &D_801CCE2C;
+    z = 0.0f;
+    temp = D_8021DE2C_ovl9;
+    while (1) {
+        if (ent->unk3C == 0) {
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021DE30_ovl9;
+            break;
+        }
+        D_800E6690[omCurrentObj->objId] = z;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = temp;
+        ohSleep(1);
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 10.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    while (1) {
+        func_800AA154(0x10046);
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217158_ovl9.s")
+#endif
 
 void func_80217328_ovl9(s32 arg0) {
 

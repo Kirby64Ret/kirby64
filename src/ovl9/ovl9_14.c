@@ -78,7 +78,50 @@ extern FUNCLIST D_8021CC84_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_8020FF80_ovl9.s")
 
+/* 3/82 diffs: registers and structure exact, but the ROM emits the three
+   callee-saved FP loads in REVERSE order of first assignment ($f24 first,
+   $f20 last) and IDO emits them in assignment order. Same 3-diff floor as its
+   twin func_8020ED74_ovl9. Swept: assignment order (both), declaration order,
+   chained assignment, splitting the first load above the others. */
+#ifdef MIPS_TO_C
+void func_80210154_ovl9(struct GObj *arg0) {
+    extern s32 D_800D6B54;
+    extern f32 D_8021DCDC_ovl9;
+    extern f32 D_8021DCE0_ovl9;
+    extern f32 D_8021DCE4_ovl9;
+    extern struct GObjProcess *gEntityGObjProcessArray5[];
+    void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
+    void procMainStub(struct GObj *);
+    void func_800B74B8(s32);
+    void func_800AFBB4(s32, struct GObj *);
+    void func_801A3280_ovl7(void);
+    s32 func_800B30BC(f32, f32, f32);
+    void func_8021161C_ovl9(s32);
+    void ohSleep(s32);
+    f32 a;
+    f32 b;
+    f32 c;
+
+    D_800DEDD0[omCurrentObj->objId] = 0;
+    D_800DEF90[omCurrentObj->objId] = func_800B74B8;
+    D_800DF150[omCurrentObj->objId] = 0;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    func_800AFBB4(0, omCurrentObj);
+    func_801A3280_ovl7();
+    ohSleep(random_soft_s32_range(0x3C));
+    a = D_8021DCE4_ovl9;
+    b = D_8021DCE0_ovl9;
+    c = D_8021DCDC_ovl9;
+    while (1) {
+        if ((func_800B30BC(a, b, c) != 0) && (D_800D6B54 == 0)) {
+            func_8021161C_ovl9(5);
+        }
+        ohSleep(random_soft_s32_range(0x1E) + 0x5A);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80210154_ovl9.s")
+#endif
 
 void func_802103D8_ovl9(GObj *);
 void func_80210354_ovl9(struct GObj *);
@@ -667,7 +710,36 @@ void func_8021258C_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_802125BC_ovl9.s")
+extern f32 D_8021DD64_ovl9;
+extern void func_800AFBB4(s32, struct GObj *);
+extern void func_801ACC34_ovl7(s32, s32);
+
+void func_802125BC_ovl9(struct GObj *arg0) {
+    extern struct Sub800E1B50_Unk98 D_801CCAF0;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    ent->unk98 = &D_801CCAF0;
+    func_800AFBB4(1, omCurrentObj);
+    func_800AA018(0x10161);
+    if (D_800E7880[omCurrentObj->objId] == 0) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.5f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 3.5f;
+    } else {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 8.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 8.0f;
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_8021DD64_ovl9;
+    while (1) {
+        func_801ACC34_ovl7(0x23, 0);
+        play_sound(0x169);
+        ohSleep(random_soft_s32_range(0xA) + 0x23);
+    }
+}
 
 void func_80212790_ovl9(void) {
     func_801A0D74_ovl7();
