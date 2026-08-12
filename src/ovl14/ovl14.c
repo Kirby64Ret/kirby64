@@ -355,15 +355,6 @@ struct Ovl14TrackPosition {
     f32 unk4;
 };
 
-/* 136/192, but the whole residue is ONE instruction repeated: IDO materialises
- * the merge block's `mtc1 $zero, $f0` (for the Y/Z zero stores) into each of the
- * five switch arms instead of once at the merge label, which costs 5 extra
- * instructions and steals the branch delay slot the ROM fills with the arm's
- * second `swc1`. Measured 2026-08: chained vs separate stores in the arms,
- * chained vs separate for the Y/Z zeros, and moving the D_800E8E60 store above
- * the Y/Z zeros ALL give exactly 136/192. Declaration order does matter and is
- * already correct (`s32 track;` first puts track at 0x2C, sp24 at 0x24/0x28). */
-#ifdef NON_MATCHING
 s32 func_801DC38C_ovl14(s32 arg0) {
     s32 track;
     struct Ovl14TrackPosition sp24;
@@ -402,11 +393,11 @@ s32 func_801DC38C_ovl14(s32 arg0) {
         default:
             while (1) {}
     }
+    gEntitiesPosYArray[track] = 0.0;
+    gEntitiesNextPosYArray[track] = 0.0;
+    gEntitiesPosZArray[track] = 0.0;
+    gEntitiesNextPosZArray[track] = 0.0;
     D_800E8E60[omCurrentObj->objId] = 0;
-    gEntitiesPosYArray[track] = 0.0f;
-    gEntitiesNextPosYArray[track] = 0.0f;
-    gEntitiesPosZArray[track] = 0.0f;
-    gEntitiesNextPosZArray[track] = 0.0f;
     sp24.unk0 = D_800E5F90[omCurrentObj->objId];
     sp24.unk4 = D_800E6BD0[omCurrentObj->objId];
     if (func_800F9888((s32 *) &sp24, gEntitiesNextPosXArray[track]) == 0) {
@@ -420,12 +411,72 @@ s32 func_801DC38C_ovl14(s32 arg0) {
     play_sound(0x191);
     return track;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DC38C_ovl14.s")
-#endif
 
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DC674_ovl14.s")
+
+s32 func_801DC674_ovl14(s32 arg0, s32 arg1) {
+    s32 track;
+
+    track = request_track_general(0x1A, 0x1E, 0x50);
+    if ((track >= 0x3C) || (track == -1)) {
+        utilPrintf("enemy req over 18. Track Num:%d\n", track);
+        func_800B1900(track);
+        return -1;
+    }
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = 4;
+    D_800E77A0[track] = 0x2B;
+    D_800E7880[track] = arg0;
+    if (arg0 == 0) {
+        switch (arg1) {
+            case 0:
+                gEntitiesPosXArray[track] = -320.0f;
+                gEntitiesNextPosXArray[track] = -320.0f;
+                break;
+            case 1:
+                gEntitiesPosXArray[track] = -160.0f;
+                gEntitiesNextPosXArray[track] = -160.0f;
+                break;
+            case 2:
+                gEntitiesPosXArray[track] = 0.0f;
+                gEntitiesNextPosXArray[track] = 0.0f;
+                break;
+            case 3:
+                gEntitiesPosXArray[track] = 160.0f;
+                gEntitiesNextPosXArray[track] = 160.0f;
+                break;
+            case 4:
+                gEntitiesPosXArray[track] = 320.0f;
+                gEntitiesNextPosXArray[track] = 320.0f;
+                break;
+        }
+    } else {
+        switch (arg1) {
+            case 0:
+                gEntitiesPosXArray[track] = -240.0f;
+                gEntitiesNextPosXArray[track] = -240.0f;
+                break;
+            case 1:
+                gEntitiesPosXArray[track] = -80.0f;
+                gEntitiesNextPosXArray[track] = -80.0f;
+                break;
+            case 2:
+                gEntitiesPosXArray[track] = 80.0f;
+                gEntitiesNextPosXArray[track] = 80.0f;
+                break;
+            case 3:
+                gEntitiesPosXArray[track] = 240.0f;
+                gEntitiesNextPosXArray[track] = 240.0f;
+                break;
+        }
+    }
+    gEntitiesNextPosYArray[track] = gEntitiesPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[track] = gEntitiesPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800E8E60[track] = 1;
+    D_800EC2E0[track].as_s32 = arg1;
+    return track;
+}
+
 
 s32 func_801DC954_ovl14(void) {
     s32 track;
@@ -827,7 +878,40 @@ s32 func_801DEDE8_ovl14(void) {
     return track;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DF01C_ovl14.s")
+s32 func_801DF01C_ovl14(f32 arg0) {
+    s32 track;
+    s32 temp;
+    struct Ovl14TrackPosition sp30;
+
+    track = request_track_general(0x1A, 0xE, 0x50);
+    if ((track >= 0x1E) || (track == -1)) {
+        utilPrintf("eneshot req over 18. Track Num:%d\n", track);
+        func_800B1900(track);
+        return -1;
+    }
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = 4;
+    D_800E77A0[track] = 0x2C;
+    D_800E7880[track] = 0;
+    gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesNextPosYArray[track] = gEntitiesPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[track] = gEntitiesPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800E8E60[omCurrentObj->objId] = 0;
+    sp30.unk0 = D_800E5F90[omCurrentObj->objId];
+    sp30.unk4 = D_800E6BD0[omCurrentObj->objId];
+    temp = random_soft_s32_range(2);
+    if (func_800F9888((s32 *) &sp30, (f32) temp * 40.0f * arg0) == 0) {
+        D_800E5F90[track] = D_800E6150[track] = sp30.unk0;
+        D_800E6BD0[track] = D_800E6D90[track] = sp30.unk4;
+    } else {
+        D_800E5F90[track] = D_800E5F90[omCurrentObj->objId];
+        D_800E6BD0[track] = D_800E6BD0[omCurrentObj->objId];
+    }
+    D_800EC2E0[track].as_s32 = random_soft_s32_range(3);
+    D_800EC660[track] = arg0;
+    return track;
+}
+
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DF290_ovl14.s")
 
