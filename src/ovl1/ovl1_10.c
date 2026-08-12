@@ -1,5 +1,6 @@
 #include "common.h"
 #include "main/contpad.h"
+#include "main/localsched.h"
 
 typedef struct RumbleCmd {
     /* 0x00 */ s32 cmd;
@@ -61,6 +62,11 @@ extern u8 D_800D5274[];
 
 void func_800047B0(s32 arg0);
 void func_800BB028(RumbleCmd *arg0);
+void func_800BAAE4(RumbleCont *arg0);
+s32 func_800BAB68(u8 *arg0, RumbleItem *arg1, s32 arg2);
+void func_800BA7A0(RumbleCont *arg0, RumbleItem *arg1, s32 arg2);
+void func_800BA90C(RumbleCont *arg0, RumbleItem *arg1);
+void func_800BAC0C(void);
 s32 func_800BAA64(RumbleItem *arg0);
 void func_800BAA04(RumbleCont *arg0, RumbleNode *arg1);
 
@@ -167,7 +173,84 @@ s32 func_800BAB68(u8 *arg0, RumbleItem *arg1, s32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BAC0C.s")
 
+/* The rumble-pak service thread. Decompiled for the PC PORT, which was
+ * aborting here: until this landed it was the single undecompiled symbol a
+ * running port reached, with the whole game loop already live behind it.
+ *
+ * It is NOT byte-exact yet and sits behind NON_MATCHING deliberately. The
+ * residue is the dead epilogue after `while (1)`, which IDO 32-byte-aligns
+ * from the object's .text base -- the same mechanism blocking game_tick, and
+ * not something the source controls.
+ *
+ * Structure read straight off the listing: register the thread as a scheduler
+ * client, then block on D_800ED4C8 forever. Message 1 is the retrace tick and
+ * drives all four controllers; anything else is a command for func_800BAC0C.
+ * s2 walks D_800ED4A0 with stride 8 (sizeof(RumbleCont)) and s3 counts to
+ * s4 == 4, so the per-tick loop is exactly the four controller slots.
+ *
+ * Every early exit in the ROM increments s3 before reaching L800BAE48, so all
+ * of them are `continue` in the for-loop -- including the inner list walk
+ * falling out on a NULL next, which reaches the same increment by falling
+ * through L800BAE44. That is why the inner loop uses break rather than goto.
+ */
+#ifdef NON_MATCHING
+void func_800BAD0C(void *arg) {
+    SCClient client;
+    OSMesg msgs[8];
+    OSMesg msg;
+    RumbleCont *cont;
+    RumbleNode *node;
+    RumbleItem *item;
+    s32 i;
+
+    scAddClient(&client, &D_800ED4C8, msgs, 8);
+    while (1) {
+        osRecvMesg(&D_800ED4C8, &msg, OS_MESG_BLOCK);
+        if ((s32) (intptr_t) msg != 1) {
+            func_800BAC0C();
+            continue;
+        }
+        cont = D_800ED4A0;
+        for (i = 0; i != 4; i++, cont++) {
+            node = cont->unk04;
+            item = node->item;
+            if (item->unk10 == NULL) {
+                continue;
+            }
+            func_800BAAE4(cont);
+            node = cont->unk04;
+            item = node->item;
+            if (func_800BAB68(&cont->unk00, item, i) != 0) {
+                continue;
+            }
+            func_800BA7A0(cont, item, i);
+            item->unk02--;
+            if (item->unk08 > 0) {
+                item->unk08--;
+            }
+            node = node->next;
+            if (node == NULL) {
+                continue;
+            }
+            item = node->item;
+            while (item->unk10 != NULL) {
+                func_800BA90C(cont, item);
+                item->unk02--;
+                if (item->unk08 > 0) {
+                    item->unk08--;
+                }
+                node = node->next;
+                if (node == NULL) {
+                    break;
+                }
+                item = node->item;
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BAD0C.s")
+#endif
 
 #ifdef NON_MATCHING
 s32 func_800BAEB0(RumbleCont *arg0, s32 arg1, s32 arg2) {

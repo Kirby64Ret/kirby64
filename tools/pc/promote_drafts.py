@@ -48,7 +48,7 @@ Usage:
 Files that are dirty in git are SKIPPED unless --force: other agents edit this
 tree continuously and rewriting a file mid-edit destroys their work.
 """
-import os, re, subprocess, sys
+import glob, os, re, subprocess, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(REPO)
@@ -61,6 +61,8 @@ CC_CHECK = ('gcc -fsyntax-only -fsigned-char -m32 -D_LANGUAGE_C -D_FINALROM '
             '-DTARGET_N64 -DF3DEX_GBI_2 -nostdinc -Iinclude/libc -Iinclude '
             '-Ilibreultra/include/2.0I -Ibuild -Ibuild/include -Ibuild/assets '
             '-Isrc -Isrc.old -I. -std=gnu90 -w -DNON_MATCHING -DAVOID_UB')
+
+PORT_OWNS = set()
 
 PORT_CC = ('gcc -m64 -fno-pie -std=gnu90 -fsigned-char -O1 -fsyntax-only -w '
            '-D_LANGUAGE_C -DTARGET_N64 -DPORT -DF3DEX_GBI_2 -DAVOID_UB '
@@ -75,6 +77,32 @@ def compiles(path):
         if r.returncode != 0:
             return False, name
     return True, None
+
+
+def port_supplied():
+    """Functions src/pc/ defines itself. Promoting these breaks the link.
+
+    The platform layer is not only libultra: it also replaces game functions
+    that CANNOT be C on the host. func_800BE320/func_800BE374 are setjmp and
+    longjmp, hand-written in MIPS assembly in the ROM and in x86-64 System V
+    assembly in src/pc/pc_setjmp.c. A promoted MIPS-shaped draft of longjmp is
+    not merely wrong on x86-64, it is a duplicate definition and the link
+    fails outright -- which is how this was found.
+
+    Read from the built objects rather than a hand-kept list, so it cannot go
+    stale as the platform layer grows.
+    """
+    objs = glob.glob('build/pc/src/pc/*.o')
+    if not objs:
+        return set()
+    out = subprocess.run(['nm', '--defined-only'] + objs,
+                         capture_output=True, text=True).stdout
+    names = set()
+    for line in out.split('\n'):
+        parts = line.split()
+        if len(parts) == 3 and parts[1] in 'TtWw':
+            names.add(parts[2])
+    return names
 
 
 def promote(text, fn):
@@ -101,6 +129,12 @@ def main():
         only = sys.argv[sys.argv.index('--file') + 1]
 
     dirty = set() if force else dirty_files()
+    global PORT_OWNS
+    PORT_OWNS = port_supplied()
+    if not PORT_OWNS:
+        raise SystemExit('build/pc/src/pc/*.o missing -- run '
+                         '`make -f Makefile.pc objs` first, or this '
+                         'cannot know what the port supplies itself.')
     files = [only] if only else sorted(
         p for p in subprocess.run('git ls-files src/*/*.c', shell=True,
                                   capture_output=True, text=True).stdout.split()
@@ -112,6 +146,10 @@ def main():
             continue
         text = open(cf).read()
         names = [m.group('fn') for m in GUARD.finditer(text)]
+        blocked = [n for n in names if n in PORT_OWNS]
+        if blocked:
+            print(f'  {cf}: src/pc/ supplies {" ".join(blocked)} -- not promoted')
+            names = [n for n in names if n not in PORT_OWNS]
         if not names:
             continue
         if cf in dirty:

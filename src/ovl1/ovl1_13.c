@@ -922,7 +922,7 @@ s32 func_800BE320(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BE320.s")
 #endif
 
-#ifdef NON_MATCHING
+#ifdef MIPS_TO_C
 s32 func_800BE374(void *arg0, s32 arg1) {
     s32 var_v0;
 
