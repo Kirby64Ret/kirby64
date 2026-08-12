@@ -536,6 +536,10 @@ s32 saveSetCutsceneWatched(s32 scene, s32 fileNum) {
 
 void init_save_file_maybe(s32);
 
+// PADDING TRAP: this is the last function in the TU and its listing carries 6
+// words of linker fill past its own .size, so converting it shortens the TU.
+// Draft is behaviourally complete but must stay guarded.
+#ifdef NON_MATCHING
 void saveForceCompleteFile(s32 fileNum) {
     s32 i;
 
@@ -573,3 +577,6 @@ void saveForceCompleteFile(s32 fileNum) {
     func_80004D34(D_800D5150[fileNum * 2 + 1], &gSaveBuffer1.files[fileNum], 0x58);
     func_80004D34(D_800D5150[fileNum * 2 + 7], &gSaveBuffer1.files[fileNum], 0x58);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/saveForceCompleteFile.s")
+#endif

@@ -115,7 +115,50 @@ void func_801E3770_ovl10(GObj *arg0) {
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 9, &D_801F4400_ovl10);
 }
 
+s32 func_80110B00(struct Ovl10AnimInfo *);
+s32 func_80110FD4(struct Ovl10AnimInfo *);
+void func_8019EBCC_ovl7(struct GObj *);
+void func_801E5754_ovl10(struct GObj *);
+
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 3/124 insns. Draft kept. */
+s32 func_801E3874_ovl10(void) {
+    struct Ovl10AnimInfo sp38;
+    struct UnkStruct800E1B50 *temp_s0;
+    u32 temp_a0;
+
+    temp_a0 = omCurrentObj->objId;
+    temp_s0 = D_800E1B50[temp_a0];
+    if (temp_s0->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550((void *) temp_a0);
+    func_80111ECC(func_80111C88(temp_s0->unk8C, omCurrentObj->objId));
+    if (func_80110B00(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else if (func_80110FD4(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else if (func_80110150(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        temp_s0->unk43 = 0;
+    }
+    if (D_800E83E0[omCurrentObj->objId] == 1 || D_800E83E0[omCurrentObj->objId] == 2) {
+        D_800EA6E0[omCurrentObj->objId] -= 1.0f;
+        func_8019EBCC_ovl7(D_800DE350[omCurrentObj->objId]);
+        gEntityFuncListIDArray[omCurrentObj->objId] = 7;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801E5754_ovl10);
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E3874_ovl10.s")
+#endif
 
 /* "reqAdoPathLimTrk  Request Error!![mbss2.cc]\n" = "reqAdoPathLimTrk  Request Error!![mbss2.cc]\n" : now emitted by this TU */
 
@@ -316,7 +359,54 @@ void func_801E42E4_ovl10(GObj *arg0) {
     curObjSleepForever();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E4518_ovl10.s")
+struct Ovl10Curve4518 {
+    f32 x;
+    f32 y;
+};
+
+struct Ovl10Anim4518 {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    struct Ovl10Curve4518 *unk4;
+};
+
+void func_801E4518_ovl10(GObj *arg0) {
+    struct Ovl10Anim4518 *p = D_800E9FE0[omCurrentObj->objId].as_ptr;
+    struct Ovl10Curve4518 *c = p->unk4;
+    s32 n = p->unk1;
+    f32 z;
+
+    D_800E2410[omCurrentObj->objId] = 0.0f;
+    z = D_800E2410[omCurrentObj->objId];
+    D_800E2250[omCurrentObj->objId] = z;
+    D_800E2090[omCurrentObj->objId] = z;
+    if (D_800EA1A0[omCurrentObj->objId] >= 0) {
+        if (D_800E9720[omCurrentObj->objId] == 0) {
+            if (D_800EA1A0[omCurrentObj->objId] >= n) {
+                D_800EA1A0[omCurrentObj->objId] = -1;
+            } else {
+                D_800E9720[omCurrentObj->objId] = p->unk2;
+                D_800E2090[omCurrentObj->objId] = (D_800EA1A0[omCurrentObj->objId] + c)->x;
+                D_800E2250[omCurrentObj->objId] = (D_800EA1A0[omCurrentObj->objId] + c)->y;
+                D_800EA1A0[omCurrentObj->objId] += 1;
+            }
+        } else {
+            D_800E9720[omCurrentObj->objId] -= 1;
+        }
+    } else if (D_800E9E20[omCurrentObj->objId] != 0) {
+        if (((u32) D_800DD8D0[omCurrentObj->objId] >> 30) != 0) {
+            D_800E93A0[omCurrentObj->objId] -= 1;
+            if (D_800E93A0[omCurrentObj->objId] == 0) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+            } else {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+            }
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801E3BE4_ovl10);
+        }
+    }
+}
 
 void func_801E46FC_ovl10(GObj *arg0, s32 arg1, f32 arg2) {
     if (arg1 == 0 && (s32) arg2 == 2) {
@@ -984,16 +1074,6 @@ void func_801E72B8_ovl10(GObj *arg0) {
     curObjSleepForever();
 }
 
-/* 31/112 (the ROM is 111): fully decoded and every call, constant and branch
-   is right. Two residues. (1) The ROM's local block is Vector@0x3C, f32@0x48,
-   an 8-byte hole, struct@0x54 -- `f32 pad[2]` between the struct and `sp48`
-   gets the frame to 0x60 but not the hole's position. (2) The ROM COPIES
-   sp54.unk4 into its own slot (`lwc1 0x58 / swc1 0x48`) and re-reads that
-   across the two calls, where IDO re-reads the struct field directly, which
-   is the one extra instruction. A local `struct Ovl10TrackPos` plus an
-   `(s32 *)` cast at the func_8019A900_ovl7 call is needed because this file's
-   prototype for it is `s32 func_8019A900_ovl7(s32 *)`; two separate s32/f32
-   locals instead of the struct measure 101. */
 f32 eneGetPlayerHeight(void);
 f32 atan2f(f32, f32);
 struct Ovl10TrackPos {
@@ -1001,8 +1081,6 @@ struct Ovl10TrackPos {
     f32 unk4;
 };
 
-#ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 31/112 insns. Draft kept. */
 void func_801E7424_ovl10(GObj *arg0) {
     f32 lead[1];
     struct Ovl10TrackPos sp54;
@@ -1023,29 +1101,14 @@ void func_801E7424_ovl10(GObj *arg0) {
         D_800E6690[omCurrentObj->objId] = sp3C.x;
         D_800E3750[omCurrentObj->objId] = sp3C.y;
         if (sp54.unk0 != D_800E6A10[omCurrentObj->objId]) {
-            f32 v = D_800E64D0[omCurrentObj->objId];
-            f32 a;
-
-            if (v < 0.0f) {
-                a = -v;
-            } else {
-                a = v;
-            }
-            if (a < 1.0f) {
-                D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -v;
+            if ((D_800E64D0[omCurrentObj->objId] < 0 ? -D_800E64D0[omCurrentObj->objId] : D_800E64D0[omCurrentObj->objId]) < 1.0f) {
+                D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -D_800E64D0[omCurrentObj->objId];
                 D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -D_800E6690[omCurrentObj->objId];
-                if (D_800E6850[omCurrentObj->objId] < 0.0f) {
-                    D_800E6850[omCurrentObj->objId] = -D_800E6850[omCurrentObj->objId];
-                } else {
-                    D_800E6850[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId];
-                }
+                D_800E6850[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId] < 0 ? -D_800E6850[omCurrentObj->objId] : D_800E6850[omCurrentObj->objId];
             }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E7424_ovl10.s")
-#endif
 
 void func_801E75E4_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4540_ovl10);
@@ -1363,22 +1426,10 @@ void func_801E871C_ovl10(GObj *arg0) {
         D_800E6690[omCurrentObj->objId] = sp3C.x;
         D_800E3750[omCurrentObj->objId] = sp3C.y;
         if (sp54.unk0 != D_800E6A10[omCurrentObj->objId]) {
-            f32 v = D_800E64D0[omCurrentObj->objId];
-            f32 a;
-
-            if (v < 0.0f) {
-                a = -v;
-            } else {
-                a = v;
-            }
-            if (a < 1.0f) {
-                D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -v;
+            if ((D_800E64D0[omCurrentObj->objId] < 0 ? -D_800E64D0[omCurrentObj->objId] : D_800E64D0[omCurrentObj->objId]) < 1.0f) {
+                D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -D_800E64D0[omCurrentObj->objId];
                 D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -D_800E6690[omCurrentObj->objId];
-                if (D_800E6850[omCurrentObj->objId] < 0.0f) {
-                    D_800E6850[omCurrentObj->objId] = -D_800E6850[omCurrentObj->objId];
-                } else {
-                    D_800E6850[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId];
-                }
+                D_800E6850[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId] < 0 ? -D_800E6850[omCurrentObj->objId] : D_800E6850[omCurrentObj->objId];
             }
         }
     }

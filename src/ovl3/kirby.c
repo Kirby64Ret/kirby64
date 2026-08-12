@@ -196,6 +196,11 @@ void func_8016D81C_ovl3(GObj *arg0) {
 extern void func_80122A80(void);
 extern void func_8012307C(s32, s32, f32, s32);
 
+#ifdef NON_MATCHING
+/* 1/190: only `addiu $a2, $zero, 1` vs `move $a2, $s2` for the third argument
+   of the tail func_801230E8; the ROM does not reuse its hoisted constant-1
+   register there. Swept: (u32)1, 1L, and an unprototyped local declaration of
+   func_801230E8 -- none forks the constant node. */
 void func_8016DA14_ovl3(GObj *arg0) {
     f32 temp;
     f32 temp2;
@@ -238,12 +243,12 @@ void func_8016DA14_ovl3(GObj *arg0) {
             ohSleep(1);
         }
         gKirbyState.unk44 = gKirbyState.unk44 + 1;
-        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6690[omCurrentObj->objId] = 0;
         D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
         D_800E6850[omCurrentObj->objId] = 65535.0f;
         switch (gKirbyState.unk4) {
         case 0:
-            func_801230E8(0x200FF, 0x20100, 0);
+            func_801230E8(0x200FF, 0x20100, 1);
             break;
         case 1:
             break;
@@ -253,6 +258,9 @@ void func_8016DA14_ovl3(GObj *arg0) {
     }
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016DA14_ovl3.s")
+#endif
 
 void func_8016DD0C_ovl3(s32 arg0) {
     Unk80196C74 sp18 = D_80196C5C_ovl3;
@@ -610,7 +618,64 @@ void func_8016FFF8_ovl3(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801702F0_ovl3.s")
+extern u8 D_801903E0_ovl3[];
+
+void func_801702F0_ovl3(GObj *arg0) {
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk7 = 0;
+    func_8011CF58();
+    D_800DDFD0[omCurrentObj->objId] = 9;
+    if (gKirbyState.unk68 != 3) {
+        gKirbyState.unk68 = 1;
+    } else {
+        gKirbyState.unk68 = 3;
+    }
+    if (gKirbyState.unk4 == 1) {
+        gKirbyState.unk15C = (u32) D_801903E0_ovl3;
+    } else {
+        gKirbyState.unk15C = (u32) D_80190358_ovl3;
+    }
+    if (gKirbyState.ceilingCollisionNext != 0) {
+        play_sound(0xFF);
+        if ((gKirbyState.unk4 == 1) || (gKirbyState.previousAction == 9)) {
+            D_800E3210[omCurrentObj->objId] = 5.0f;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3C90[omCurrentObj->objId] = 5.0f;
+        } else {
+            D_800E3210[omCurrentObj->objId] = 3.6f;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3C90[omCurrentObj->objId] = 3.6f;
+        }
+        if (-1.0f == D_800E6A10[omCurrentObj->objId]) {
+            if (gKirbyState.unk4 == 1) {
+                func_801230E8(0x20177, 0x20178, 1);
+            } else {
+                func_801230E8(0x200F7, 0x200F8, 1);
+            }
+        } else {
+            if (gKirbyState.unk4 == 1) {
+                func_801230E8(0x20179, 0x2017A, 1);
+            } else {
+                func_801230E8(0x200FB, 0x200FC, 1);
+            }
+        }
+        D_800E3210[omCurrentObj->objId] = 0.0f;
+        D_800E3750[omCurrentObj->objId] = 0.0f;
+        D_800E3C90[omCurrentObj->objId] = 0.0f;
+    } else {
+        play_sound(0x101);
+        D_800E3210[omCurrentObj->objId] = -5.0f;
+        D_800E3750[omCurrentObj->objId] = 0.0f;
+        D_800E3C90[omCurrentObj->objId] = 5.0f;
+        if (-1.0f == D_800E6A10[omCurrentObj->objId]) {
+            func_801230E8(0x200F9, 0x200FA, 1);
+        } else {
+            func_801230E8(0x200FD, 0x200FE, 1);
+        }
+    }
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
 
 void func_80170638_ovl3(GObj *arg0) {
     if (gKirbyState.unk30 != 0) {

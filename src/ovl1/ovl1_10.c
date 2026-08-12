@@ -72,7 +72,42 @@ void func_800BAA04(RumbleCont *arg0, RumbleNode *arg1);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BA7A0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BA90C.s")
+void func_800BA90C(RumbleCont *arg0, RumbleItem *arg1) {
+    u16 *ptr;
+
+    while (arg1->unk02 == 0) {
+        ptr = arg1->unk10;
+        switch (*ptr >> 13) {
+            case 0:
+                arg1->unk10 = D_800D5238[arg1->unk00];
+                break;
+            case 1:
+                arg1->unk02 = *ptr & 0x1FFF;
+                arg1->unk10 = ptr + 1;
+                arg1->unk01 = 1;
+                break;
+            case 2:
+                arg1->unk02 = *ptr & 0x1FFF;
+                arg1->unk10 = ptr + 1;
+                arg1->unk01 = 0;
+                break;
+            case 3:
+                arg1->unk04 = *ptr & 0x1FFF;
+                ptr++;
+                arg1->unk10 = ptr;
+                arg1->unk0C = ptr;
+                break;
+            case 4:
+                arg1->unk04--;
+                if (arg1->unk04 != 0) {
+                    arg1->unk10 = arg1->unk0C;
+                    continue;
+                }
+                arg1->unk10 = arg1->unk10 + 1;
+                break;
+        }
+    }
+}
 
 void func_800BAA04(RumbleCont *arg0, RumbleNode *arg1) {
     RumbleNode *tail;
