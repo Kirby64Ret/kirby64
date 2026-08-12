@@ -127,7 +127,8 @@ counts symbols rather than weighting these three will be wrong.
 **timers — 2** `osGetCount` `osGetTime`
 **audio sink — 0 measured** `osAiSetFrequency` `osAiSetNextBuffer` were
 listed here from reading the headers, but never appeared in the gap output at
-all: their only caller is `auThreadMain`, which is still undecompiled. They are
+all: their only caller is `auThreadMain` (a pragma; the port runs the stand-in
+in `src/pc/pc_audio_thread.c` instead, which does not call them). They are
 implemented anyway.
 **other — 4** `osInitialize` `osAfterPreNMI` `osSetTime` `osTvType`
 

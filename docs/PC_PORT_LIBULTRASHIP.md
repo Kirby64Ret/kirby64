@@ -20,10 +20,16 @@ lists submitted through `osSpTaskLoad`/`osSpTaskStartGo` are executed by Fast3D
 and presented in an OpenGL window at the game's own 60 Hz. That path is proven
 end to end with a synthetic display list built from the game's own `<PR/gbi.h>`
 macros — 1198 frames in 20 s, colours matching the requested fill exactly when
-the framebuffer is read back. **The game itself does not reach it**, because
-`thread5_game` blocks waiting for the audio thread to report in and
-`auThreadMain` is still undecompiled. Audio and input are wired but unproven
-for the same reason.
+the framebuffer is read back.
+
+*(Updated 2026-08-12: the paragraph that stood here said the game never
+reaches the renderer because `thread5_game` blocks on the undecompiled
+`auThreadMain`. That was cured the same day by `src/pc/pc_audio_thread.c`, a
+stand-in that posts the init message and consumes the audio flags. The game
+now boots through the scheduler into `game_tick`; the current frontier is the
+audio-library call surface (`auSetBGMVolume` reaching null sequence players)
+and the boot-path stub set, tracked in the commit log. Audio itself is still
+absent — the stand-in is not an implementation.)*
 
 ## How LUS's main loop and the game's scheduler were reconciled
 
@@ -164,10 +170,12 @@ survives with two alternating threads and crashes with eight.
 
 ## What does not work
 
-* **The game never reaches the renderer.** `thread5_game` starts the audio
-  thread and blocks on `gThreadInitializedMQ`; `auThreadMain`'s weak stub
-  returns without posting. `gtlInit()` is never called. This is decompilation
-  work, not porting work, and it gates everything below.
+* **The game reaches the renderer as of 2026-08-12** — the stand-in
+  `src/pc/pc_audio_thread.c` posts the init message the real `auThreadMain`
+  would. What remains on this path is the audio-library call surface: the
+  first `au*` call dereferences the null sequence players that
+  `auCreatePlayers` (still a pragma) would have built. Guarding that surface
+  is porting work; implementing it is decompilation work.
 * **Audio is wired but never exercised.** `pcb_audio_queue` calls
   `AudioPlayerPlayFrame`; nothing calls it, because `osAiSetNextBuffer`'s only
   caller is `auThreadMain`. There is also a **known rate mismatch**: the N64 AI
