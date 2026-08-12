@@ -463,7 +463,35 @@ void func_801E5468_ovl10(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E552C_ovl10.s")
+
+
+void func_801E552C_ovl10(s32 arg0) {
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 6;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        func_800AA018(0x1033B);
+        func_800AA864(0x1033A, 1);
+        if (D_800E6310[omCurrentObj->objId] != 0) {
+            func_800AA018(0x1030B);
+            func_800AA864(0x1030A, 1);
+        }
+        func_800AA018(0x1031D);
+        func_800AA864(0x1031C, 1);
+    } else {
+        func_800AA018(0x1032B);
+        func_800AA864(0x1032A, 1);
+        if (D_800E6310[omCurrentObj->objId] != 0) {
+            func_800AA018(0x1030B);
+            func_800AA864(0x1030A, 1);
+        }
+        func_800AA018(0x1031F);
+        func_800AA864(0x1031E, 1);
+    }
+    D_800E9E20[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
+
+
 
 void func_801E56C4_ovl10(GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {

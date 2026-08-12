@@ -99,30 +99,19 @@ void func_801D1160_ovl8(void) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-/* 17/36.  The body is certainly this; the whole residue is FP register choice.
- * The ROM parks the SHARED 0.0f in $f12 (the first FP argument register) even
- * though this is a leaf with no calls, and materialises a SECOND `mtc1 $zero`
- * in $f4 for the D_800E2250 store.  Swept: both operand orders of each
- * `mul.s`, `-x` vs `0.0f - x`, a named `f32 zero` local, `0.0` (double) for the
- * D_800E2250 store, and named locals for the two subtractions -- 17 is the
- * floor of that sweep (the plain both-forward form is 23). Whatever puts a
- * constant in $f12 in a leaf function is the missing lever. */
-#ifdef MIPS_TO_C
+/* Load-bearing: the 0.0f must NOT be a named local -- as a bare literal it
+ * is a short-lived temp and lands in $f12, while `a` and `b` take $f0/$f2.
+ * The D_800E2250 store is a DOUBLE 0.0 so it forks the second `mtc1 $zero`. */
 void func_801D12A4_ovl8(void) {
-    f32 zero;
     f32 a;
     f32 b;
 
-    zero = 0.0f;
-    a = zero - gEntitiesNextPosXArray[omCurrentObj->objId];
-    b = zero - gEntitiesNextPosZArray[omCurrentObj->objId];
+    a = 0.0f - gEntitiesNextPosXArray[omCurrentObj->objId];
+    b = 0.0f - gEntitiesNextPosZArray[omCurrentObj->objId];
     D_800E2090[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId] * a;
     D_800E2410[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId] * b;
-    D_800E2250[omCurrentObj->objId] = 0.0f;
+    D_800E2250[omCurrentObj->objId] = 0.0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D12A4_ovl8.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D1334_ovl8.s")
 

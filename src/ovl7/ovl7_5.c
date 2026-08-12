@@ -1777,44 +1777,35 @@ block_8:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB008_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
+void func_801ABBA0_ovl7(void);
+s32 func_801AC6D0_ovl7(struct AnimTrack *);
+void func_801AB2F4_ovl7(GObj *);
+extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
 
-void func_801AB174_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp24;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *sp1C;
-    struct SubSub800E1B50_Unk88_UnkC *temp_a3;
-    struct SubSub800E1B50_Unk88_UnkC_Unk4 *temp_a2;
-    struct UnkStruct800E1B50 *temp_v1;
-    u32 temp_a1;
+void func_801AB174_ovl7(GObj *gobj) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct SubSub800E1B50_Unk88_UnkC *mid = ent->unk88->unkC;
+    struct SubSub800E1B50_Unk88_UnkC_Unk4 *temp = mid->unk4;
 
-    temp_a1 = omCurrentObj->objId;
-    temp_v1 = D_800E1B50[temp_a1];
-    temp_a3 = temp_v1->unk88->unkC;
-    temp_a2 = temp_a3->unk4;
-    D_800EC660[temp_a1] = 40.0f;
-    sp24 = temp_v1;
+    D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
-    sp1C = temp_a2;
-    func_801ABBA0_ovl7(temp_a1 * 4, temp_a2, temp_a3);
+    func_801ABBA0_ovl7();
     D_800DF150[omCurrentObj->objId] = func_801AB2F4_ovl7;
-    temp_v1->unk48 = 0;
-    temp_v1->unk98 = &D_801CB500_ovl7;
-    temp_v1->unk42 = 1;
-    temp_v1->unk38 = -1;
-    temp_v1->unk39 = -1;
+    ent->unk48 = 0;
+    ent->unk98 = &D_801CB500_ovl7;
+    ent->unk42 = 1;
+    *(s8 *) &ent->unk38 = -1;
+    ent->unk39 = -1;
     D_800E8920[omCurrentObj->objId] = 0;
     D_800EA6E0[omCurrentObj->objId] = 0.06981317f;
     D_800E4C50[omCurrentObj->objId] = 0.0f;
-    func_801AC6D0_ovl7(sp1C, -1);
-    gEntitiesScaleXArray[omCurrentObj->objId] = temp_a2->unk10;
-    gEntitiesScaleYArray[omCurrentObj->objId] = temp_a2->unk10;
-    gEntitiesScaleZArray[omCurrentObj->objId] = temp_a2->unk10;
+    func_801AC6D0_ovl7((struct AnimTrack *) temp);
+    gEntitiesScaleXArray[omCurrentObj->objId] = temp->unk10;
+    gEntitiesScaleYArray[omCurrentObj->objId] = temp->unk10;
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp->unk10;
     func_801AAE60_ovl7();
-    func_801AC11C_ovl7(arg0);
+    func_801AC11C_ovl7(gobj);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB174_ovl7.s")
-#endif
 
 #ifdef MIPS_TO_C
 

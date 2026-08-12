@@ -990,7 +990,46 @@ void func_801EA190_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA628_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA9A0_ovl9.s")
+s32 func_801ACC34_ovl7(s32, s32);
+
+
+void func_801EA9A0_ovl9(s32 arg0) {
+    s32 temp_v0_2;
+    s32 temp_v0_3;
+    u8 temp_v0;
+
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8958_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = (struct Sub800E1B50_Unk98 *) &D_801CB470_ovl7;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    ohSleep(5);
+    func_800AA018(0x1020F);
+    ohSleep(8);
+    temp_v0 = D_800E7880[omCurrentObj->objId];
+    switch (temp_v0) {                              /* irregular */
+    case 0:
+        temp_v0_2 = func_801ACC34_ovl7(0x26, 0);
+        D_800EBBE0[omCurrentObj->objId] = temp_v0_2;
+        if (temp_v0_2 != 0) {
+            play_sound(0xA5, D_800EBBE0);
+        }
+        break;
+    case 1:
+        temp_v0_3 = func_801ACC34_ovl7(0x26, 1);
+        D_800EBBE0[omCurrentObj->objId] = temp_v0_3;
+        if (temp_v0_3 != 0) {
+            D_800E8E60[D_800EBBE0[omCurrentObj->objId]] = 1;
+            play_sound(0xA5, D_800EBBE0);
+        }
+        break;
+    }
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
+
+
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EAB4C_ovl9.s")
 

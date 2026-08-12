@@ -212,7 +212,26 @@ void func_801671E8_ovl5(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016725C_ovl5.s")
+s32 func_8016725C_ovl5(s32 arg0, s32 arg1) {
+    f32 dist;
+    s32 pad[7];
+    Vector2 sp30;
+    Vector2 sp28;
+
+    if (D_800E9C60[D_8018E268_ovl5[arg1]] == 2) {
+        return 0;
+    }
+    dist = sqrtf((gEntitiesNextPosXArray[D_8018E268_ovl5[arg1]] - gEntitiesNextPosXArray[D_8018E268_ovl5[arg0]]) *
+                     (gEntitiesNextPosXArray[D_8018E268_ovl5[arg1]] - gEntitiesNextPosXArray[D_8018E268_ovl5[arg0]]) +
+                 (gEntitiesNextPosZArray[D_8018E268_ovl5[arg1]] - gEntitiesNextPosZArray[D_8018E268_ovl5[arg0]]) *
+                     (gEntitiesNextPosZArray[D_8018E268_ovl5[arg1]] - gEntitiesNextPosZArray[D_8018E268_ovl5[arg0]]));
+    sp28 = func_80166C68_ovl5(arg0);
+    sp30 = func_80166C68_ovl5(arg1);
+    if (dist <= D_801872FC_ovl5[*(s32 *) &sp28] + D_801872FC_ovl5[*(s32 *) &sp30]) {
+        return 1;
+    }
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80167374_ovl5.s")
 

@@ -403,7 +403,32 @@ void func_801E00E0_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801E0228_ovl9.s")
+extern struct Sub800E1B50_Unk98 D_801CB9A4;
+extern f32 D_8021CF98_ovl9;
+
+void func_801E0228_ovl9(s32 arg0) {
+
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8520_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB9A4;
+    D_800E1B50[omCurrentObj->objId]->unk94 = &D_801C35C4_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800B33F4();
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_8021CF98_ovl9;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    func_800AA018(0x101AE);
+    func_800AF27C();
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    while (gEntityFuncListIDArray[omCurrentObj->objId] == 5) {
+        ohSleep(1);
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 6;
+}
+
 
 void func_801E03E4_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;

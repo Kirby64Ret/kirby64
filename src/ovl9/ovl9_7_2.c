@@ -18,7 +18,40 @@ extern FUNCLIST D_8021C4C4_ovl9;
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F29D0_ovl9.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F2B80_ovl9.s")
+void func_8019C844_ovl7(Vector *);
+
+void func_801F2B80_ovl9(Vector *arg0) {
+    f32 temp_f0;
+    f32 temp_f0_2;
+    f32 temp_f0_3;
+    f32 var_f12;
+    f32 var_f2;
+    u32 temp_v0;
+
+    temp_v0 = omCurrentObj->objId * 4;
+    temp_f0 = *(f32 *) ((u8 *) D_800E64D0 + temp_v0);
+    if (temp_f0 < 0.0f) {
+        var_f12 = -temp_f0;
+    } else {
+        var_f12 = temp_f0;
+    }
+    temp_f0_2 = *(f32 *) ((u8 *) D_800E6690 + temp_v0);
+    if (temp_f0_2 < 0.0f) {
+        var_f2 = -temp_f0_2;
+    } else {
+        var_f2 = temp_f0_2;
+    }
+    if ((var_f12 < var_f2) && (func_8019C844_ovl7(arg0), (arg0->y != 0.0f))) {
+        D_800E64D0[omCurrentObj->objId] = arg0->x;
+        D_800E6690[omCurrentObj->objId] = arg0->y;
+        temp_f0_3 = arg0->z;
+        if (temp_f0_3 < 0.0f) {
+            D_800E6850[omCurrentObj->objId] = -temp_f0_3;
+            return;
+        }
+        D_800E6850[omCurrentObj->objId] = temp_f0_3;
+    }
+}
 
 extern FUNCLIST D_8021C3A0_ovl9;
 
