@@ -362,4 +362,6 @@ void func_801DD88C_ovl17(struct GObj *arg0) {
  * of ovl17_2. It has to assemble at the END of THIS translation unit, or
  * ovl17_2's .text base is 16 mod 32 and every dead epilogue in it is
  * misaligned (func_801DDB8C_ovl17, func_801DDF6C_ovl17). */
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DD8F0_ovl17.s")
+/* The listing lives in asm_manual/ (committed) because a fresh splat split of
+ * the current yaml no longer emits it, and asm/ is gitignored. */
+#pragma GLOBAL_ASM("asm_manual/ovl17/func_801DD8F0_ovl17.s")

@@ -762,4 +762,6 @@ void func_801DFD7C_ovl14(GObj *arg0) {
 // bytes low (the 0x4BA4->0x4BB0 gap is section padding C cannot emit before a
 // following pragma); every byte is zero either way and nothing references the
 // symbol, so check_layout's note on it is a label position, not a defect.
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801DFD90_ovl14.s")
+// The listing lives in asm_manual/ (committed) because a fresh splat split of
+// the current yaml no longer emits it, and asm/ is gitignored.
+#pragma GLOBAL_ASM("asm_manual/ovl14/func_801DFD90_ovl14.s")
