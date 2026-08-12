@@ -298,8 +298,53 @@ with the object subscript read off the `lw` displacement (0x8→[2], 0xC→[3],
 here have the same shape as a pragma?** Instruction count is a poor proxy for
 difficulty; provenance is a good one. A 285-instruction clone is cheaper than
 a 90-instruction original. LANE_BRIEF has always said "seeding is the biggest
-cost lever" — this is that principle at scale, and it outperformed every
-other method tried tonight.
+cost lever" — this is that principle at scale.
+
+It works: it also closed func_802271A8_ovl19, decoded off the already-matched
+func_80227690_ovl19 sitting directly below it in the same file.
+
+**But calibrate the size of the prize. Families are 2-3 functions, not veins.**
+The ovl16 case was written up here first as "a large free vein" and that was
+wrong — an over-generalisation from two data points, the second one tonight
+after line packing. The lane that found it then disproved it properly: it
+built a decoder (`scratchpad/dec.py`) that parses a listing's `.late_rodata`,
+tracks which FP register holds which constant, and emits the wrap C
+automatically, then ran it over every ovl16 listing containing
+`.float 6.283185482`. Eleven listings match that filter; only two are pure
+wrap bodies. The other nine interleave the wrap with unrelated work (one
+touches 8 global arrays, another 14, another wraps against `gameTicksPerDraw`
+instead of 2π). None of the 21 remaining bare ovl16 pragmas is in the cheap
+tier — the cheapest is 8 branches / 263 instructions / 14 calls, the median
+~20 branches, the largest 783 instructions with 42 branches.
+
+**Find families by grouping listings on their set of `jal` targets.** That
+found the one real family in ovl16 in a single pass: func_801DFF40 (300),
+func_801E0820 (299) and func_801E0F04 (327) share an identical call skeleton
+and near-identical size. All three are still asm, so there is no donor yet —
+whoever closes one gets the other two cheaply. Note `find_clones.py` reports
+0 here because it only matches against functions ALREADY IN C; skeleton
+grouping finds families where the whole family is still asm, which
+find_clones.py structurally cannot.
+
+### Levers found working the clone families
+
+- **`(void *)` cast at the CALL SITE on an implicitly-declared callee** forces
+  the ROM's `or $a0,$vN,$zero` where writing the value straight in loads it
+  into `$a0` directly. This is the `void f(u32)` → `void f(void *)` prototype
+  lever applied per call site instead of per declaration — which is the only
+  safe form when the callee is implicitly declared, because a block-scope
+  prototype leaks in IDO and would shift an already-matched neighbour.
+  Took func_802273A0_ovl19 from 12/127 to MATCH in two compiles.
+- **A named local for a value used in a compare AND in both arms** fixes a
+  delay-slot fill. IDO hoisting a store above the compare leaves nothing to
+  fill the `c.lt.s` hazard and emits `nop`s; reading the value into a local
+  first puts the compare operand ahead of the store and the store falls into
+  the branch shadow. 45 → 11 on func_802271A8_ovl19.
+- **Screen for `sw $a0` before writing the signature.** If the listing never
+  stores `$a0`, the ROM function takes NO parameter, and writing
+  `(GObj *arg0)` can cost the entire function (125/128 on one).
+- A uniform 4-byte frame displacement is usually one leading dead `s32`.
+  Two is 4 bytes too many — this is the mod-8 rule in its most common form.
 
 ### Tail-screen bug — anchor on the LAST `.size`
 

@@ -570,7 +570,41 @@ void func_801DDD74_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DDE90_ovl15.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DE234_ovl15.s")
+void func_801DE234_ovl15(struct GObj *arg0) {
+    extern f32 D_800E09D0[], D_800EAC20[];
+    struct Ovl15AnimInfo sp2C;
+    s32 c;
+
+    if ((100.0f <= D_800EAC20[omCurrentObj->objId]) && (D_800EAC20[omCurrentObj->objId] <= 410.0f)) {
+        c = D_800EBDA0[omCurrentObj->objId] == -1;
+        if (D_800EAC20[omCurrentObj->objId] < 124.0f) { if (c) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8B38; } else { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8ACC; } } else if (D_800EAC20[omCurrentObj->objId] < 360.0f) { if (c) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8B5C; } else { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8AF0; } } else { if (c) { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8B80; } else { D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8B14; } }
+        func_801E177C_ovl15(D_800DFBD0[omCurrentObj->objId][17], D_800DFBD0[omCurrentObj->objId][11], 0);
+        if (D_800E83E0[omCurrentObj->objId] == 1) {
+            if (gEntityFuncListIDArray[omCurrentObj->objId] != 7) {
+                func_801DDD74_ovl15(arg0);
+            }
+        } else if (D_800EAC20[omCurrentObj->objId] <= 124.0f) {
+            D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D8DC0;
+            if (func_801E1B98_ovl15((s32) D_800DFBD0[omCurrentObj->objId][17], &sp2C) != 0) {
+                func_80169430_ovl3(sp2C.unkC, sp2C.unk0, sp2C.unk1, 9);
+                D_800EBF60[omCurrentObj->objId] = 0;
+                D_800E9FE0[omCurrentObj->objId].as_s32 = 0;
+            } else if (func_801E1B98_ovl15((s32) D_800DFBD0[omCurrentObj->objId][11], &sp2C) != 0) {
+                func_80169430_ovl3(sp2C.unkC, sp2C.unk0, sp2C.unk1, 0xA);
+                D_800EBF60[omCurrentObj->objId] = 0;
+                D_800E9FE0[omCurrentObj->objId].as_s32 = 0;
+            }
+        }
+    }
+    if (124.0f < D_800EAC20[omCurrentObj->objId]) {
+        D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
+    }
+    if (256.0f < D_800EAC20[omCurrentObj->objId]) {
+        D_800E9FE0[omCurrentObj->objId].as_s32 = 2;
+    }
+    D_800EAC20[omCurrentObj->objId] += D_800E09D0[omCurrentObj->objId];
+}
+
 
 void func_801DE5DC_ovl15(s32 arg0) {
     s32 sp1C;
