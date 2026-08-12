@@ -1474,7 +1474,44 @@ void func_801E17E0_ovl16(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E18BC_ovl16.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E1C1C_ovl16.s")
+void func_801E1C1C_ovl16(s32 arg0) {
+    extern s32 D_801D95C4;
+    extern s32 D_801D9678;
+    extern s32 D_801D969C;
+
+    func_801DFDCC_ovl16();
+    func_801DFEC8_ovl16();
+    func_801E06AC_ovl16();
+    func_801E07A8_ovl16();
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801DB400_ovl16();
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9558;
+    func_801DC314_ovl16(0, 0, 0);
+    if ((10.0f < D_800DFBD0[omCurrentObj->objId][5]->pos.v.y) ||
+        (10.0f < D_800DFBD0[omCurrentObj->objId][7]->pos.v.x) ||
+        (D_800DFBD0[omCurrentObj->objId][9]->pos.v.y < -10.0f) ||
+        (D_800DFBD0[omCurrentObj->objId][3]->pos.v.x < -10.0f)) {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D95C4;
+        func_801DC6E4_ovl16((s32) D_800DFBD0[omCurrentObj->objId][0],
+                            (s32) D_800DFBD0[omCurrentObj->objId][0]);
+        switch (D_800D7098.unk8) {
+        case 0:
+            D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9678;
+            func_801DC83C_ovl16((s32) D_800DFBD0[omCurrentObj->objId][5],
+                                (s32) D_800DFBD0[omCurrentObj->objId][9]);
+            break;
+        case 2:
+            D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9678;
+            func_801DC83C_ovl16((s32) D_800DFBD0[omCurrentObj->objId][5],
+                                (s32) D_800DFBD0[omCurrentObj->objId][9]);
+        case 1:
+            D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D969C;
+            func_801DC83C_ovl16((s32) D_800DFBD0[omCurrentObj->objId][7],
+                                (s32) D_800DFBD0[omCurrentObj->objId][3]);
+            break;
+        }
+    }
+}
 
 void func_801E1E84_ovl16(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B7560;
