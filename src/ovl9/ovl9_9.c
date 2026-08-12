@@ -1063,7 +1063,7 @@ extern f32 D_8021D9D4_ovl9;
 /* 6 diffs: pure $f0/$f2 swap between the shared 0.0f and D_8021D9D4_ovl9.
    Swept: literal vs local for either constant, both statement orders, and
    declaration order. This is the coupled FP-register/load-scheduling floor. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801FF028_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
     f32 temp;

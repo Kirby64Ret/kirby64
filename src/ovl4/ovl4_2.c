@@ -16,7 +16,7 @@ extern s32 D_800BE560[];
 extern u8 D_800D6BE0[];
 extern s32 D_8015C69C_ovl4;
 
-extern void func_80151E20_ovl4(void);
+extern void func_80151E20_ovl4();
 extern void func_80154DDC_ovl4(void);
 
 extern s32 D_800D6B24;
@@ -27,6 +27,8 @@ extern s32 saveCheckCutsceneWatched(s32);
 extern GObj *D_800DE350[];
 
 s32 func_80152220_ovl4(s32 arg0, s32 arg1);
+void ohSleep(s32);
+void curObjSleepForever(void);
 s32 func_801532CC_ovl4(s32 arg0, s32 arg1);
 
 #include "main/vi.h"
@@ -46,7 +48,72 @@ void func_80151E00_ovl4(void) {
     func_80154DDC_ovl4();
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80151E20_ovl4.s")
+void func_80151E20_ovl4(arg0)
+GObj *arg0;
+{
+    s32 func_80152124_ovl4(void);
+    s32 func_80152268_ovl4(s32);
+    void func_80152A48_ovl4(void);
+    void func_801525E8_ovl4(struct GObj *);
+    void omLinkGObjDL(GObj *, void (*)(GObj *), u8, s32, s32);
+    void func_800AD1A0(struct GObj *);
+    u8 *func_8015C740_ovl5(struct GObj *, void *);
+    s32 func_800A9AA8(void *, s32);
+    extern u8 D_8015A868_ovl4[];
+    extern s32 D_8015C698_ovl4;
+    extern void *D_8015A888_ovl4[];
+    extern u8 D_800D6B84;
+    extern s32 D_800D6B80;
+    extern s32 D_800D6B9C;
+    u8 *sp;
+    s32 v;
+    s32 x;
+    s32 y;
+    f32 fy;
+
+    D_8015C69C_ovl4 = func_80152124_ovl4();
+    D_8015C698_ovl4 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 5;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    if (D_800D6B84 != 0) {
+        D_800E9FE0[omCurrentObj->objId].as_s32 = func_80152268_ovl4(D_800D6B98);
+    } else if (D_800D6B80 != 0) {
+        D_800E9FE0[omCurrentObj->objId].as_s32 = D_800D6B9C;
+    } else {
+        D_800E9FE0[omCurrentObj->objId].as_s32 = D_800D6B9C + 1;
+    }
+    D_800EA1A0[omCurrentObj->objId] = 0;
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    for (y = 0; y < 0x100; y += 0x40) {
+        fy = y;
+        for (x = 0; x != 0x13B; x += 0x3F) {
+            sp = func_8015C740_ovl5(arg0, D_8015A868_ovl4);
+            *(f32 *) (sp + 0x24) = fy;
+            *(f32 *) (sp + 0x20) = (f32) x;
+            if (D_800D6B98 > 0) {
+                v = func_800A9AA8(D_8015A888_ovl4[D_800D6B98], 3);
+                *(s32 *) (sp + 0x6C) = v;
+                *(s32 *) (sp + 0x78) = v;
+                *(s32 *) (sp + 0xCC) = v;
+                *(s32 *) (sp + 0xD8) = v;
+            }
+        }
+    }
+    D_800DF150[omCurrentObj->objId] = func_801525E8_ovl4;
+    while ((D_8015C690_ovl4 == 2) || (D_8015C690_ovl4 == 3)) {
+        if (D_800E9C60[omCurrentObj->objId] != 0) {
+            D_800DF150[omCurrentObj->objId] = NULL;
+            D_800E9E20[omCurrentObj->objId] = 1;
+            func_80152A48_ovl4();
+        }
+        ohSleep(1);
+    }
+    D_800DF150[omCurrentObj->objId] = NULL;
+    D_8015C690_ovl4 = 5;
+    curObjSleepForever();
+}
 
 s32 func_80152124_ovl4(void) {
     if (D_800D6B98 != 0) {
@@ -307,7 +374,90 @@ void func_80154DA0_ovl4(struct GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
 }
 
+/* Jump table (jtbl_8015C520_ovl4) in ovl4's unmigrated rodata, so the pragma
+ * must stay for the ROM build; the C body below is for NON_MATCHING builds. */
+#ifdef NON_MATCHING
+void func_80154DDC_ovl4(void) {
+    void func_80153AEC_ovl4(void);
+    void func_801533A8_ovl4(s32);
+    void func_80152E38_ovl4(s32);
+    void func_8015306C_ovl4(void);
+    void func_80153C78_ovl4(void);
+    void func_801543C8_ovl4(void);
+    void func_801548BC_ovl4(void);
+    void func_800A9864(void *, s32, s32);
+    extern void *D_8015A8A0_ovl4[];
+    extern Unk8015A8F8 D_8015A8B8_ovl4[];
+    extern f32 D_8015C560_ovl4;
+    extern s32 D_800D6B80;
+    extern s32 D_800D6B9C;
+    u32 v;
+    Unk8015A8F8 *p;
+
+    v = ((u32 *) D_800E9AA0)[omCurrentObj->objId];
+    switch (v) {
+        case 1:
+            func_80153AEC_ovl4();
+            break;
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            func_801533A8_ovl4(v - 2);
+            break;
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+            func_80152E38_ovl4(v - 8);
+            break;
+        case 12:
+            func_8015306C_ovl4();
+            break;
+        case 13:
+            func_801543C8_ovl4();
+            break;
+        case 14:
+            func_801548BC_ovl4();
+            break;
+        case 15:
+            func_80153C78_ovl4();
+            break;
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = D_8015C560_ovl4;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
+    D_8015C694_ovl4 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = D_800D6B9C;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+    func_800A9864(D_8015A8A0_ovl4[D_800D6B98], 0x1869F, 0x10);
+    p = &D_8015A8B8_ovl4[D_800D6B98];
+    if (p->unk0 != 0) {
+        func_800AA018(p->unk0);
+    }
+    if (p->unk4 != 0) {
+        func_800AA018(p->unk4);
+    }
+    if (D_800D6B80 != 0) {
+        ohSleep(0x14);
+        D_800D6B80 = 0;
+        ((s32 *) D_800E9AA0)[D_8015C698_ovl4] = 0x1F;
+        ohSleep(0xA);
+        ohSleep(0xF);
+        ohSleep(5);
+        D_800E9FE0[D_8015C698_ovl4].as_s32 = D_800D6B9C + 1;
+        D_800E98E0[D_8015C6A0_ovl4] = 1;
+    }
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154DDC_ovl4.s")
+#endif
 
 void func_801550D4_ovl4(void) {
     D_8015C690_ovl4 = 2;

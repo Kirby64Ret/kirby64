@@ -870,7 +870,7 @@ void func_801FB528_ovl9(void) {
 /* Whole-function register shift: the ROM materialises &omCurrentObj and
    &D_800E9AA0 only AFTER the random_soft_s32_range call, IDO hoists both above
    it, so every instruction is offset. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern s32 random_soft_s32_range(s32);
 
 void func_801FB528_ovl9(struct GObj *arg0) {

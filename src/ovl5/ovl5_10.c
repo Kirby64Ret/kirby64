@@ -59,7 +59,91 @@ void func_8017F6F8_ovl5(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* Faithful, not byte-exact (24/179): the ROM keeps `objId << 2` in $v1 and the
+   loaded counter in $a0 and materialises &gPlayerControllers later; this C
+   gets $a0/$v0 and hoists the controller base. An explicit objId local makes
+   it worse (29); declaration order is inert. */
+#include "main/contpad.h"
+extern s32 D_8018EDD8_ovl5;
+void play_sound(s32);
+void func_800A74D8(void);
+
+void func_8017F7B0_ovl5(GObj *arg0) {
+    s32 *p;
+    s32 t;
+    u32 kind;
+
+    if (D_8018EDD0_ovl5 == 0) {
+        p = &D_800E98E0[omCurrentObj->objId];
+        t = *p;
+        if (t != 0) {
+            *p = t - 1;
+            return;
+        }
+        if (gPlayerControllers[0].buttonPressed & 0x4000) {
+            play_sound(0x2B);
+            D_800D6B68 = gGameState;
+            gGameState = 0xA;
+            D_8018EDD0_ovl5 = 1;
+            return;
+        }
+        if (gPlayerControllers[0].buttonHeld & 0xC00) {
+            D_800E9C60[omCurrentObj->objId] += 1;
+        } else {
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+            D_800E9C60[omCurrentObj->objId] = 0;
+        }
+        if (D_800E98E0[D_8018EDD8_ovl5] == 0) {
+            p = &((s32 *) D_800E9AA0)[omCurrentObj->objId];
+            t = *p;
+            if (t != 0) {
+                *p = t - 1;
+                return;
+            }
+            if ((gPlayerControllers[0].buttonPressed & 0x9000) &&
+                (func_8017FB84_ovl5((&D_80189C98_ovl5)[D_8018EDD4_ovl5]) != 0)) {
+                play_sound(0xED);
+                D_800D6B68 = gGameState;
+                kind = (&D_80189C98_ovl5)[D_8018EDD4_ovl5];
+                if (kind == 0x10) {
+                    gGameState = 0x22;
+                } else {
+                    gGameState = 0x15;
+                }
+                D_800D7178.unk6C = D_8018EDD4_ovl5;
+                D_800D7178.unk70 = kind;
+                D_8018EDD0_ovl5 = 1;
+                func_800A74D8();
+                return;
+            }
+            if (gPlayerControllers[0].buttonHeld & 0x800) {
+                play_sound(0x113);
+                D_800E98E0[D_8018EDD8_ovl5] = 1;
+                if (D_8018EDD4_ovl5 == 0) {
+                    D_8018EDD4_ovl5 = 0x11;
+                } else {
+                    D_8018EDD4_ovl5 -= 1;
+                }
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 1;
+                return;
+            }
+            if (gPlayerControllers[0].buttonHeld & 0x400) {
+                play_sound(0x113);
+                D_800E98E0[D_8018EDD8_ovl5] = 2;
+                if (D_8018EDD4_ovl5 == 0x11) {
+                    D_8018EDD4_ovl5 = 0;
+                } else {
+                    D_8018EDD4_ovl5 += 1;
+                }
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 1;
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_10/func_8017F7B0_ovl5.s")
+#endif
 
 extern struct UnkStruct8015C740 D_80189940_ovl5;
 extern struct UnkStruct8015C740 D_80189960_ovl5;

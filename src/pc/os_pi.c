@@ -326,7 +326,7 @@ static s32 do_transfer(OSPiHandle *h, s32 dir, u32 devAddr, void *ram,
      * This binary links -no-pie at 0x400000, so nothing the game can legally
      * write to lives below that. Refusing the whole range turns "the allocator
      * upstream is not implemented yet" into a traced skip instead of a SIGSEGV
-     * inside libc, which is the difference between a diagnosis and a hunt. */
+     * inside libc, which is the difference between a diagnosis and a hunt.
      *
      * It returns SUCCESS, like the other two skips, and that is deliberate.
      * Reporting -1 here looks honest and is worse: src/main/dma.c treats a

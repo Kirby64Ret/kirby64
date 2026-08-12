@@ -191,7 +191,7 @@ void func_801E6564_ovl10(void);
 void func_80198880_ovl7(void *);
 void func_800A9760(s32);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 8 diffs: only the register holding `var` (ROM $a1, IDO $a0) and the
 // consequent delay-slot fill differ.
 #else

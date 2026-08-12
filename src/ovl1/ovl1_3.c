@@ -116,7 +116,7 @@ s32 func_800A8310(s32 arg0) {
     return D_800D7BB4 - arg0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // Correct structure; remaining diff is register allocation only (compiler
 // caches &D_800D7BD0[temp_v1] in a2, target keeps base + recomputes index).
 void *func_800A8358(s32 arg0) {
@@ -158,7 +158,6 @@ block_found:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8358.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 void *func_800A840C(u32 arg0, s32 arg1) {
@@ -196,7 +195,7 @@ void *func_800A840C(u32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A840C.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 4/10, one-slot temp rotation (t7/t8/t9 vs t6/t7/t8). Swept: 24 source forms
 // (temps, decl order/count, K&R, 2 params, void ret, ptr local, mask spelling).
 u32 func_800A84F0(s32 arg0) {
@@ -211,7 +210,6 @@ u32 func_800A84F0(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A84F0.s")
 #endif
-
 void *func_800A8518(struct CacheLine *arg0) {
     arg0 = (struct CacheLine *)((u8 *)arg0 - 0x10);
     arg0->unkC &= 0xFFFFFF;
@@ -235,7 +233,7 @@ void *func_800A8564(struct CacheLine *arg0, s32 arg1) {
     return arg0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // Nearly matching (28/52 insns identical incl. all structure); remaining diff
 // is a one-slot temp-register rotation in the free path (t8/t9/t0.. vs t7/t8/t9..).
 // K&R definition needed: callers pass 1-4 args for regalloc.
@@ -285,7 +283,6 @@ s32 arg0;
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8578.s")
 #endif
-
 s32 func_800A8648(void) {
     s32 ret;
     s32 i;
@@ -529,7 +526,7 @@ struct BGHeader *func_800A8C40(u32 arg0) {
     return (*temp_a2)[idx];
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 2/33 (was 9): reusing `arg0` as the scratch for the masked, doubled index --
 // the same lever that closed func_800A89E0/func_800A8B0C -- plus the two dead
 // pads for the ROM's 0x30 frame and 0x1C/0x20/0x2C spills. All 120 declaration
@@ -556,7 +553,6 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 void func_800A8D64(u32 arg0, s32 arg1) {
@@ -1161,7 +1157,7 @@ void *func_800A9AA8(u32 arg0, s32 arg1) {
     return buf;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_800A9B48(s32 arg0) {
     u32 *temp_v0;
     GObj *temp_v1;
@@ -1199,7 +1195,6 @@ s32 func_800A9B48(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9B48.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 s32 func_800A9C78(s32 arg0, s32 arg1) {

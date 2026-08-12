@@ -71,7 +71,60 @@ void func_80177C64_ovl5(GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef NON_MATCHING
+/* Faithful, not byte-exact (107/134): structure and every branch match, but
+   the ROM re-materialises &D_800E98E0[objId] into $v1 in a `bnel` delay slot
+   where this C recomputes the index, which shifts the block. */
+#include "main/contpad.h"
+
+void func_80177D04_ovl5(GObj *arg0) {
+    s32 *p;
+
+    if ((D_8018ECE0_ovl5 == 0) && (D_800E9AA0[omCurrentObj->objId].as_u32 != 0)) {
+        if (!(gPlayerControllers[0].buttonHeld & 0xF00)) {
+            D_800E98E0[omCurrentObj->objId] = 0;
+        }
+        p = &D_800E98E0[omCurrentObj->objId];
+        if (*p != 0) {
+            *p -= 1;
+            return;
+        }
+        if (D_800E9C60[omCurrentObj->objId] != 0) {
+            if (gPlayerControllers[0].buttonPressed & 0x9000) {
+                D_8018ECE0_ovl5 = 1;
+                return;
+            }
+            if (gPlayerControllers[0].buttonHeld & 0x800) {
+                play_sound(0x113);
+                if (D_8018ECF8_ovl5 == 0) {
+                    D_8018ECF8_ovl5 = 2;
+                } else {
+                    D_8018ECF8_ovl5 -= 1;
+                }
+                D_800E98E0[omCurrentObj->objId] = 4;
+                return;
+            }
+            if (gPlayerControllers[0].buttonHeld & 0x400) {
+                play_sound(0x113);
+                if (D_8018ECF8_ovl5 == 2) {
+                    D_8018ECF8_ovl5 = 0;
+                } else {
+                    D_8018ECF8_ovl5 += 1;
+                }
+                D_800E98E0[omCurrentObj->objId] = 4;
+            }
+        } else if (gPlayerControllers[0].buttonPressed & 0x9000) {
+            play_sound(0x113);
+            D_800E98E0[request_track_general(0x10, 0, 0x70)] = 8;
+            D_800E98E0[request_track_general(0x10, 0, 0x70)] = 9;
+            D_800E9C60[omCurrentObj->objId] = 1;
+            D_800E98E0[omCurrentObj->objId] = 4;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80177D04_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80177F20_ovl5.s")
 
@@ -285,7 +338,86 @@ s32 func_8017962C_ovl5(void) {
     return 0;
 }
 
+#ifdef NON_MATCHING
+/* Faithful, not byte-exact (160/196): the ROM walks D_800D7178 with a $s0
+   pointer induction and a separate $s1 byte offset; this C indexes, which
+   swaps $s0/$s1 and re-shifts the index each iteration. */
+extern u8 D_800D6BB9;
+extern u8 D_800D6BBA;
+extern u8 D_800D6BBB;
+extern u8 D_8018ECF9_ovl5;
+void func_800B9C50(s32);
+s32 func_8015CCA8_ovl5(s32);
+
+void func_801796D8_ovl5(void) {
+    s32 i;
+    s32 t;
+
+    D_8018ECE0_ovl5 = 0;
+    D_8018ECF9_ovl5 = 0;
+    D_8018ECF8_ovl5 = 0;
+    for (i = 0; i < 4; i++) {
+        if (D_800D7178[i].unkC == 0) {
+            if (((s32 *) D_800D7178)[18 + i] < 0x14) {
+                ((s32 *) D_800D7178)[18 + i] = ((s32 *) D_800D7178)[18 + i] + 1;
+            }
+        }
+        if (D_800D7178[i].unk0 == 0) {
+            switch (((s32 *) D_800D7178)[17]) {
+                case 29:
+                    t = ((s32 *) D_800D7178)[22 + i];
+                    if (t < (s32) gSaveBuffer1.files[saveCurrentFileNum].hundredYardHopRecord) {
+                        gSaveBuffer1.files[saveCurrentFileNum].hundredYardHopRecord = t;
+                        func_800B9C50(saveCurrentFileNum);
+                        D_8018ECF9_ovl5 = 1;
+                    }
+                    break;
+                case 31:
+                    t = ((s32 *) D_800D7178)[22 + i];
+                    if ((s32) gSaveBuffer1.files[saveCurrentFileNum].bumperCropBumpRecord < t) {
+                        gSaveBuffer1.files[saveCurrentFileNum].bumperCropBumpRecord = t;
+                        func_800B9C50(saveCurrentFileNum);
+                        D_8018ECF9_ovl5 = 1;
+                    }
+                    break;
+                case 30:
+                    t = ((s32 *) D_800D7178)[22 + i];
+                    if ((t < (s32) gSaveBuffer1.files[saveCurrentFileNum].checkerBoardChaseRecord) && (D_800D7178[i].unkC == 0)) {
+                        gSaveBuffer1.files[saveCurrentFileNum].checkerBoardChaseRecord = t;
+                        func_800B9C50(saveCurrentFileNum);
+                        D_8018ECF9_ovl5 = 1;
+                    }
+                    break;
+            }
+        }
+    }
+    switch (((s32 *) D_800D7178)[17]) {
+        case 29:
+            if ((func_8017962C_ovl5() != 0) && (func_801795BC_ovl5() != 0) && (((s32 *) D_800D7178)[16] < 3) &&
+                (func_8015CCA8_ovl5(0x1D) == ((s32 *) D_800D7178)[16])) {
+                D_800D6BB9 += 1;
+                func_800B9C50(saveCurrentFileNum);
+            }
+            break;
+        case 31:
+            if ((func_8017962C_ovl5() != 0) && (func_801795BC_ovl5() != 0) && (((s32 *) D_800D7178)[16] < 3) &&
+                (func_8015CCA8_ovl5(0x1F) == ((s32 *) D_800D7178)[16])) {
+                D_800D6BBA += 1;
+                func_800B9C50(saveCurrentFileNum);
+            }
+            break;
+        case 30:
+            if ((func_8017962C_ovl5() != 0) && (func_801795BC_ovl5() != 0) && (((s32 *) D_800D7178)[16] < 3) &&
+                (func_8015CCA8_ovl5(0x1E) == ((s32 *) D_800D7178)[16])) {
+                D_800D6BBB += 1;
+                func_800B9C50(saveCurrentFileNum);
+            }
+            break;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_801796D8_ovl5.s")
+#endif
 
 void func_801799D8_ovl5(void) {
     s32 i;

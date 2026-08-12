@@ -526,7 +526,7 @@ s32 func_8021679C_ovl9(f32 arg0) {
 #else
 extern f32 sqrtf(f32);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_8021679C_ovl9(f32 arg0) {
     f32 x = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0];
     f32 z = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0];

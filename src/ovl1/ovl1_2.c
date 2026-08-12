@@ -140,7 +140,7 @@ void func_800A71A0(u32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 28/50: every instruction correct but ONE missing -- the ROM emits a bare
 // "addiu $v1, $v1, 0x38" (base bias to &cam->viewMtx) before the last at-field
 // read and the eye copy.  Swept: plain member copies, OMLookAt */void */Vector *
@@ -167,7 +167,6 @@ void func_800A71E0(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2/func_800A71E0.s")
 #endif
-
 void func_800A72AC(GObj *arg0) {
     Camera *src;
     Camera *dst;

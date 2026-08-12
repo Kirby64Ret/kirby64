@@ -331,7 +331,7 @@ void func_801DD03C_ovl15(s32 arg0) {
     func_8019D958_ovl7(omCurrentObj->objId);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 29/68: frame 0x48, the Vector at 0x3C and every instruction are right; the
    residue is a one-slot temp rotation -- the ROM parks the boolean in $a1 and
    walks $t0/$t2/$t3/$t5, IDO refuses to touch $a1..$a3 and starts at $t1.
@@ -369,7 +369,6 @@ void func_801DD208_ovl15(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD208_ovl15.s")
 #endif
-
 void func_801DD318_ovl15(struct GObj *arg0) {
     extern f32 D_801E6828_ovl15;
 
@@ -466,7 +465,7 @@ void func_801DE71C_ovl15(struct GObj *arg0) {
     D_800DFBD0[omCurrentObj->objId][6]->angle.v.y = phi_f2;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 75/146, fully decoded: the frame, the Vector at 0x50 and the three
    random_soft_s32_range slots at 0x5C/0x60/0x64 are all exact. The residue is
    register pressure inside the loop: the ROM keeps THREE finished table
@@ -516,7 +515,6 @@ void func_801DE7C8_ovl15(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DE7C8_ovl15.s")
 #endif
-
 void func_801DEA10_ovl15(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
     func_800B33F4();

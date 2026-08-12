@@ -1808,44 +1808,44 @@ void func_80154C38_ovl6(s32 arg0) {
     D_8015A560_ovl6 = *D_8015A564_ovl6;
 }
 
-#ifdef MIPS_TO_C
-
+/* 24/63: semantically complete; residue is a pure register-class rotation
+ * (ROM parks the CSE'd fb0/D_803DA800 temps in t6/t7/t0, IDO picks v1/a2/a3)
+ * plus the frame that follows from it. Swept: named-local vs inline CSE,
+ * declaration order, flat vs [][320] extern types. */
+#ifdef NON_MATCHING
 void func_80154C64_ovl6(void) {
-    void *sp1C;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_t6;
-    void *var_v0;
-    void *var_v0_2;
+    extern u16 gFrameBuffer[];
+    extern u16 D_803DA800[];
+    extern u16 D_8012EB00[];
+    extern u8 D_8015A7D0;
+    extern void *D_80154E80_ovl6[];
+    extern s32 D_80154EAC_ovl6;
+    void viApplyScreenSettings(void *);
+    u16 *p;
+    u16 *end;
+    u16 *fb0;
 
-    temp_t6 = &gFrameBuffer + 0xFFFDA800;
-    gFrameBuffers.unk0 = temp_t6;
-    gFrameBuffers.unk4 = &gFrameBuffer;
-    gFrameBuffers.unk8 = &D_803DA800;
-    D_80154E80_ovl6.unk0 = temp_t6;
-    D_80154E80_ovl6.unk4 = &gFrameBuffer;
-    D_80154E80_ovl6.unk8 = &D_803DA800;
-    D_80154E80_ovl6.unkC = &D_8012EB00 - 0x1900;
-    sp1C = temp_t6;
-    viApplyScreenSettings(&D_80154E80_ovl6, &gFrameBuffer);
-    D_80154EAC_ovl6 = sp1C - &D_8015A7D0;
+    fb0 = (u16 *) ((u32) gFrameBuffer - 0x25800);
+    D_8015A678_ovl6[0] = fb0;
+    D_8015A678_ovl6[1] = gFrameBuffer;
+    D_8015A678_ovl6[2] = D_803DA800;
+    D_80154E80_ovl6[0] = fb0;
+    D_80154E80_ovl6[1] = gFrameBuffer;
+    D_80154E80_ovl6[2] = D_803DA800;
+    D_80154E80_ovl6[3] = (void *) ((u32) D_8012EB00 - 0x1900);
+    viApplyScreenSettings(&D_80154E80_ovl6);
+    D_80154EAC_ovl6 = (u32) fb0 - (u32) &D_8015A7D0;
     if (!(D_8015A68C_ovl6 & 8)) {
-        temp_a0 = sp1C + 0x6EF00;
-        var_v0 = sp1C;
-        if (sp1C < temp_a0) {
-            do {
-                var_v0 += 2;
-                var_v0->unk-2 = 1;
-            } while (var_v0 < temp_a0);
+        end = (u16 *) ((u32) fb0 + 0x6EF00);
+        p = fb0;
+        while (p < end) {
+            *p++ = 1;
         }
     } else {
-        temp_a0_2 = sp1C + 0x25800;
-        var_v0_2 = sp1C;
-        if (sp1C < temp_a0_2) {
-            do {
-                var_v0_2 += 2;
-                var_v0_2->unk-2 = 1;
-            } while (var_v0_2 < temp_a0_2);
+        end = (u16 *) ((u32) fb0 + 0x25800);
+        p = fb0;
+        while (p < end) {
+            *p++ = 1;
         }
     }
 }

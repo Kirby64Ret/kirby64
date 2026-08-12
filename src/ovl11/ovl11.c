@@ -661,7 +661,7 @@ void func_801DD160_ovl11(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801DD1CC_ovl11(struct GObj *arg0) {
     Vector sp24;
     f32 sp20;
@@ -682,7 +682,6 @@ void func_801DD1CC_ovl11(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DD1CC_ovl11.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DD270_ovl11.s")
 
 void func_801DD490_ovl11(struct GObj *arg0) {
@@ -1216,7 +1215,7 @@ void func_801DF548_ovl11(struct GObj *arg0) {
  * converting it shortens the TU by 8 and drifts func_801DF650_ovl11.
  * padtrap classifies it "benign" -- that rule is wrong here because a C
  * function follows it inside the same TU. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801DF5B8_ovl11(struct GObj *arg0) {
     UnkStruct800E1B50 *tmp;
     struct Sub800E1B50_Unk94 *temp;
@@ -1234,7 +1233,6 @@ void func_801DF5B8_ovl11(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF5B8_ovl11.s")
 #endif
-
 void func_801DF650_ovl11(struct GObj *arg0) {
     struct UnkStruct800E1B50 *temp_a3;
 
@@ -1248,7 +1246,7 @@ void func_801DF650_ovl11(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801DF728_ovl11(void) {
     s32 *temp_v1;
     s32 temp_a1;
@@ -1268,7 +1266,6 @@ void func_801DF728_ovl11(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DF728_ovl11.s")
 #endif
-
 void func_801DF798_ovl11(void) {
     f32 d;
     f32 a;
@@ -1346,7 +1343,7 @@ void func_801DFD3C_ovl11(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DFEA8_ovl11.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_801E00B8_ovl11(s32 arg0)
 {
   f32 temp_f12;
@@ -1372,7 +1369,6 @@ s32 func_801E00B8_ovl11(s32 arg0)
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801E00B8_ovl11.s")
 #endif
-
 void func_801E0168_ovl11(void)
 {
   struct GObj **var_s1;

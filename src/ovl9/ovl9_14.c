@@ -384,7 +384,7 @@ void func_802114E4_ovl9(struct GObj *arg0) {
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = v - D_8021DD44_ovl9;
 }
 #else
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 8 diffs: schedule exact, but $f0/$f2 are swapped between `temp` and `lim`.
 // IDO assigns FP regs in order of first assignment and the load schedule
 // follows the same order, so the ROM's pairing is not reachable.

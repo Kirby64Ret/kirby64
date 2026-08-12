@@ -16,7 +16,9 @@ typedef struct {
     /* 0x24 */ u8   pad24[4];
     /* 0x28 */ u16  unk28;
     /* 0x2A */ u16  unk2A;
-    /* 0x2C */ u8   pad2C[0x14];
+    /* 0x2C */ u8   pad2C[0xC];
+    /* 0x38 */ void *unk38;
+    /* 0x3C */ u8   pad3C[4];
     /* 0x40 */ void *unk40;
 } KAudioMgr;
 
@@ -313,7 +315,7 @@ void func_8002397C(KNote *arg0) {
  * holds &D_800978E0 in $a2, the constant 2 in $a1 and tone->unk28 in $a0
  * where IDO picks $a1/$a0/$v0.  Every instruction is otherwise in the right
  * place.  Swept leading dummy scalars and all four declaration orders. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 typedef struct KTone {
     /* 0x00 */ struct KTone *next;
     /* 0x04 */ u8    pad04[0xC];

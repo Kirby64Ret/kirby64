@@ -569,7 +569,7 @@ void func_8002C9F4(void) {
  * types, a separate loop variable, while(1)+break, if/else, goto-loop, nested
  * block, pointer local, explicit increments, early return, and a volatile
  * pointer read. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_8002C9FC(ALSeq *seq) {
     s32 value;
     s32 c;
@@ -588,12 +588,11 @@ s32 func_8002C9FC(ALSeq *seq) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C9FC.s")
 #endif
-
 /* IPA-BLOCKED, and ipascan cannot see this shape: the ROM moves `seq` and
  * `event` into $a2/$a3 and keeps them live ACROSS the jal to func_8002C9FC,
  * so that callee must preserve two caller-saved registers -- a ujoin custom
  * convention.  o32 has to home them on the stack instead (97/100). */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void alSeqNextEvent(ALSeq *seq, ALEvent *event) {
     u8 status;
     s32 deltaTicks;
@@ -646,7 +645,6 @@ void alSeqNextEvent(ALSeq *seq, ALEvent *event) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/alSeqNextEvent.s")
 #endif
-
 void alSeqNewMarker(ALSeq *seq, ALSeqMarker *m, u32 ticks) {
     ALEvent evt;
     u8 *savePtr, *lastPtr;

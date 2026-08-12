@@ -230,10 +230,44 @@ def main():
                 ' * below a function whose name was already on the trace list.\n'
                 ' * A long return is zero in rax for every integer and pointer\n'
                 ' * caller. Float returns still read an untouched xmm0; nothing\n'
-                ' * portable fixes that, and no float has caused a fault yet. */\n')
+                ' * portable fixes that, and no float has caused a fault yet. */\n'
+                '\n'
+                '/* KIRBY_PC_STUB_ARENA=1 -- return a POINTER instead of zero.\n'
+                ' *\n'
+                ' * Zero is the right default: it is predictable, and a NULL\n'
+                ' * that faults tells you a stub result was used as a pointer.\n'
+                ' * But several of the stubs on the startup path ARE allocators\n'
+                ' * (ovl1_3.c func_800A8358 is the asset-cache one), and a run\n'
+                ' * that stops at the first NULL deref cannot answer "would the\n'
+                ' * renderer draw anything if the assets were there".\n'
+                ' *\n'
+                ' * Under this variable every stub hands back a fresh slice of a\n'
+                ' * zeroed arena, so a caller that stores through the result\n'
+                ' * writes to memory that belongs to us. The data is nonsense\n'
+                ' * and so is anything computed from it -- this answers "how far\n'
+                ' * does control reach", nothing else. Never leave it on. */\n'
+                '#define PC_STUB_ARENA_SIZE (32u * 1024u * 1024u)\n'
+                '#define PC_STUB_SLICE      0x4000u\n'
+                'static unsigned char pc_stub_arena[PC_STUB_ARENA_SIZE];\n'
+                'static unsigned pc_stub_arena_top;\n'
+                'static int pc_stub_arena_on = -1;\n\n'
+                'static long pc_stub_value(void) {\n'
+                '    unsigned off;\n'
+                '    if (pc_stub_arena_on < 0)\n'
+                '        pc_stub_arena_on = getenv("KIRBY_PC_STUB_ARENA") != NULL;\n'
+                '    if (!pc_stub_arena_on)\n'
+                '        return 0;\n'
+                '    off = pc_stub_arena_top;\n'
+                '    pc_stub_arena_top += PC_STUB_SLICE;\n'
+                '    if (pc_stub_arena_top > PC_STUB_ARENA_SIZE) {\n'
+                '        pc_stub_arena_top = 0;\n'
+                '        off = 0;\n'
+                '    }\n'
+                '    return (long)(size_t)&pc_stub_arena[off];\n'
+                '}\n\n')
         for s in funcs:
             f.write(f'__attribute__((weak)) long {s}(void) '
-                    f'{{ pc_unimplemented("{s}"); return 0; }}\n')
+                    f'{{ pc_unimplemented("{s}"); return pc_stub_value(); }}\n')
         f.write('\n')
         for s in data:
             f.write(f'__attribute__((weak)) unsigned char {s}[{DATA_PAD}];\n')

@@ -324,7 +324,7 @@ void func_80112A0C(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112A40.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 6/98: every instruction, register and spill slot (0x1C/0x20/0x24/0x28) is
    exact; the frame is 0x48 against the ROM's 0x40, so only the two top slots
    (the `pos` spill and arg0's home) differ. Six named locals give seven local
@@ -366,7 +366,6 @@ void func_80112B4C(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112B4C.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112CD4.s")
 
 void func_80112ED4(f32 arg0[4][4], Vector *arg1, Vector *arg2) {
@@ -1044,7 +1043,7 @@ void func_801171F0(struct GObj *arg0) {
     func_801153B8(arg0);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 22/70: the whole body is decoded and every store is right. Two residues:
    IDO emits `bc1fl` to the epilogue where the ROM has `bc1f` + `nop`, and the
    scaled-index spill lands at 0x18($sp) against the ROM's 0x1C with the same
@@ -1075,7 +1074,6 @@ void func_80117210(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80117210.s")
 #endif
-
 // The float literal below lands in this TU's MIGRATED .rodata block, which
 // this C file emits. verify.py reports a 1-instruction diff because the object
 // references `.rodata + offset` while the ROM references a named symbol; the

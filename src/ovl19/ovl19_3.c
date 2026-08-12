@@ -836,7 +836,7 @@ void func_8022BC9C_ovl19(GObj *g) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8022BD44_ovl19(GObj *g) {
     gKirbyState.unk30 = 0;
     gKirbyState.unk3C = 0;

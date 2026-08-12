@@ -115,7 +115,41 @@ s32 func_80170820_ovl5(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017113C_ovl5.s")
 
+#ifdef NON_MATCHING
+/* Faithful, not byte-exact (105/106). The ROM parks all sixteen compare
+   constants in saved registers -- including $ra -- for a frame of 0x40; this
+   C needs one more register and 0x48, which shifts every save slot. */
+extern u8 D_8018EB58_ovl5[];
+extern u8 D_8018EA00_ovl5[];
+extern char D_8018D780_ovl5[];
+
+s32 func_80171538_ovl5(s32 arg0) {
+    s32 i;
+    u8 *p;
+    u8 v;
+
+    i = D_8018E998_ovl5[arg0];
+    if (i >= 0) {
+        p = &D_8018EB58_ovl5[(arg0 * 0x52) + i];
+        do {
+            if (*p != 0) {
+                v = D_8018EA00_ovl5[(arg0 * 0x52) + i];
+                if ((v != 4) && (v != 5) && (v != 6) && (v != 7) && (v != 8) && (v != 9) && (v != 0xA) &&
+                    (v != 0xB) && (v != 0xC) && (v != 0x11) && (v != 0x12) && (v != 0x13) && (v != 0x15) &&
+                    (v != 0x16) && (v != 0x17) && (v != 0x18)) {
+                    return i;
+                }
+            }
+            i--;
+            p--;
+        } while (i >= 0);
+    }
+    utilPrintf(D_8018D780_ovl5, arg0);
+    return i;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171538_ovl5.s")
+#endif
 
 s32 func_801716E0_ovl5(s32 arg0) {
     s32 i;

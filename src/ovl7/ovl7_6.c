@@ -151,7 +151,7 @@ void func_801AD7E8_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801AD980_ovl7.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 38/108, fully decoded and every instruction is in the right place: the
    residue is a whole-function one-slot register rotation -- the ROM has
    $s1 = &omCurrentObj / $s0 = &D_800E9AA0 and uses $v0 as an address register,
@@ -184,7 +184,6 @@ void func_801ADC60_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801ADC60_ovl7.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801ADE10_ovl7.s")
 
 void func_801ADF58_ovl7(GObj *arg0) {

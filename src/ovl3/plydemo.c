@@ -525,7 +525,7 @@ void func_8015A31C_ovl3(s32 arg0) {
     }
 }
 #else
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* Logic exact; 4 register/scheduling diffs (the 75/75 count is the resulting
    shift).  The ROM keeps &gKirbyState in $a0 and the switch value in $v0 with
    both constants materialised before the first beq; IDO puts the base in $v0,

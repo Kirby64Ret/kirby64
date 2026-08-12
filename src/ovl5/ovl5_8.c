@@ -62,7 +62,109 @@ void func_8017E2A0_ovl5(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* Faithful, not byte-exact (135/190): pure register rotation -- the ROM holds
+   omCurrentObj in $a1 and the loaded counter in $a0, this C gets $a2/$v1.
+   Note ovl5_8.c includes ovl1/ovl1_6.h before track_arrays.h, so the latter
+   is silently skipped by its OVL1_6_H guard and D_800E9AA0 is a pointer
+   array here -- the `(s32 *)` casts are required, not cosmetic. */
+#include "main/contpad.h"
+void play_sound(s32);
+void func_8017E21C_ovl5(s32);
+void func_8017E274_ovl5(s32);
+
+void func_8017E350_ovl5(GObj *arg0) {
+    s32 *p;
+    s32 t;
+
+    if (D_8018EDB0_ovl5 == 0) {
+        p = &D_800E98E0[omCurrentObj->objId];
+        t = *p;
+        if (t != 0) {
+            *p = t - 1;
+            return;
+        }
+        if (gPlayerControllers[0].buttonPressed & 0xD000) {
+            play_sound(0x2B);
+            D_8018EDB0_ovl5 = 1;
+            return;
+        }
+        if (gPlayerControllers[0].buttonHeld & 0xF00) {
+            D_800E9C60[omCurrentObj->objId] += 1;
+        } else {
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+            D_800E9C60[omCurrentObj->objId] = 0;
+        }
+        p = &((s32 *) D_800E9AA0)[omCurrentObj->objId];
+        t = *p;
+        if (t != 0) {
+            *p = t - 1;
+            return;
+        }
+        if (gPlayerControllers[0].buttonHeld & 0x800) {
+            play_sound(0x113);
+            if (D_8018EDB8_ovl5 == 0) {
+                D_8018EDB8_ovl5 = 1;
+            } else {
+                D_8018EDB8_ovl5 = 0;
+            }
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 5;
+            return;
+        }
+        if (gPlayerControllers[0].buttonHeld & 0x400) {
+            play_sound(0x113);
+            if (D_8018EDB8_ovl5 == 0) {
+                D_8018EDB8_ovl5 = 1;
+            } else {
+                D_8018EDB8_ovl5 = 0;
+            }
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 5;
+            return;
+        }
+        if (gPlayerControllers[0].buttonHeld & 0x100) {
+            play_sound(0x113);
+            if (D_8018EDB8_ovl5 == 0) {
+                if (D_8018EDB9_ovl5 == 1) {
+                    D_8018EDB9_ovl5 = 0;
+                } else {
+                    D_8018EDB9_ovl5 = 1;
+                }
+                func_8017E21C_ovl5(D_8018EDB9_ovl5);
+            } else {
+                if (D_8018EDBA_ovl5 == 4) {
+                    D_8018EDBA_ovl5 = 0;
+                } else {
+                    D_8018EDBA_ovl5 += 1;
+                }
+                func_8017E274_ovl5(D_8018EDBA_ovl5);
+            }
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 5;
+            return;
+        }
+        if (gPlayerControllers[0].buttonHeld & 0x200) {
+            play_sound(0x113);
+            if (D_8018EDB8_ovl5 == 0) {
+                if (D_8018EDB9_ovl5 == 1) {
+                    D_8018EDB9_ovl5 = 0;
+                } else {
+                    D_8018EDB9_ovl5 = 1;
+                }
+                func_8017E21C_ovl5(D_8018EDB9_ovl5);
+            } else {
+                if (D_8018EDBA_ovl5 == 0) {
+                    D_8018EDBA_ovl5 = 4;
+                } else {
+                    D_8018EDBA_ovl5 -= 1;
+                }
+                func_8017E274_ovl5(D_8018EDBA_ovl5);
+            }
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 5;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_8/func_8017E350_ovl5.s")
+#endif
 
 extern struct UnkStruct8015C740 D_80189348_ovl5;
 extern struct UnkStruct8015C740 D_80189368_ovl5;
