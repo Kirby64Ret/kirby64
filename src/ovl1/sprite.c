@@ -80,7 +80,81 @@ void func_800AB790(Gfx **gp, u32 arg1, s16 arg2, s16 arg3, s16 arg4) {
     func_800AB6D8(gp, arg1, arg2, arg4);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB804.s")
+// libreultra/src/gu/us2dex_emu.c `tmemLoad`. The file's statics live in bss:
+// D_800DD6FC tmemSliceWmax, D_800DD6FE imageSrcWsize, D_800DD700 flagSplit,
+// D_800DD702 imagePtrX0, D_800DD704 imageTop, D_800DD708 tmemSrcLines.
+extern u16 D_800DD6FC;
+extern u16 D_800DD6FE;
+extern s16 D_800DD700;
+extern u16 D_800DD702;
+extern u32 D_800DD704;
+extern s16 D_800DD708;
+
+void func_800AB804(Gfx **pkt, u32 *imagePtr, s16 *imageRemain, s16 drawLines, s16 flagBilerp) {
+    s16 loadLines = drawLines + flagBilerp;
+    s16 iLoadable = (*imageRemain) - D_800DD700;
+
+    if (iLoadable >= loadLines) {
+        func_800AB6D8(pkt, *imagePtr, loadLines, D_800DD6FC);
+        (*imagePtr) += D_800DD6FE * drawLines;
+        (*imageRemain) -= drawLines;
+    } else {
+        s16 SubSliceL2, SubSliceD2, SubSliceY2;
+        u32 imageTopSeg = D_800DD704 & 0xff000000;
+
+        SubSliceY2 = *imageRemain;
+        SubSliceL2 = loadLines - SubSliceY2;
+        SubSliceD2 = drawLines - SubSliceY2;
+
+        if (SubSliceL2 > 0) {
+            u32 imagePtr2;
+
+            imagePtr2 = D_800DD704 + D_800DD702;
+            if (SubSliceY2 & 1) {
+                imagePtr2 -= D_800DD6FE;
+                imagePtr2 = imageTopSeg | (imagePtr2 & 0x00ffffff);
+                SubSliceY2--;
+                SubSliceL2++;
+            }
+            func_800AB790(pkt, imagePtr2, SubSliceL2, SubSliceY2 * D_800DD6FC, D_800DD6FC);
+        }
+        if (D_800DD700) {
+            u32 imagePtr1A, imagePtr1B;
+            s16 SubSliceY1, SubSliceL1;
+            s16 tmemSH_A, tmemSH_B;
+
+            imagePtr1A = (*imagePtr) + iLoadable * D_800DD6FE;
+            imagePtr1B = D_800DD704;
+            SubSliceY1 = iLoadable;
+            if (SubSliceL1 = iLoadable & 1) {
+                imagePtr1A -= D_800DD6FE;
+                imagePtr1B -= D_800DD6FE;
+                imagePtr1B = imageTopSeg | (imagePtr1B & 0x00ffffff);
+                SubSliceY1--;
+            }
+            SubSliceL1++;
+            tmemSH_A = (D_800DD6FE - D_800DD702) >> 3;
+            tmemSH_B = D_800DD6FC - tmemSH_A;
+            func_800AB790(pkt, imagePtr1B, SubSliceL1, SubSliceY1 * D_800DD6FC + tmemSH_A, tmemSH_B);
+            func_800AB790(pkt, imagePtr1A, SubSliceL1, SubSliceY1 * D_800DD6FC, tmemSH_A);
+        }
+        if (iLoadable > 0) {
+            func_800AB790(pkt, *imagePtr, iLoadable, 0, D_800DD6FC);
+        } else {
+            (*pkt)->words.w0 = sSetTileCommand;
+            (*pkt)->words.w1 = 0x07000000;
+            (*pkt)++;
+        }
+
+        (*imageRemain) -= drawLines;
+        if ((*imageRemain) > 0) {
+            (*imagePtr) += D_800DD6FE * drawLines;
+        } else {
+            (*imageRemain) = D_800DD708 - SubSliceD2;
+            (*imagePtr) = D_800DD704 + SubSliceD2 * D_800DD6FE + D_800DD702;
+        }
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800ABB4C.s")
 

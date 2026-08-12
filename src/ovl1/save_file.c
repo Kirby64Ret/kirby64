@@ -266,6 +266,12 @@ void func_800B9104(void) {
 }
 
 /* Left live by a lane mid-work, at 29/29 insns. Draft kept. */
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 29/29 insns. Draft kept. */
+// Draft, 1 structural diff (28 vs 29 insns): everything lines up except the
+// zero-trip guard `beq end,start` the ROM emits before the unroll residual, plus
+// the resulting register rotation and the known -0x10-last store rotation.
+#ifdef NON_MATCHING
 void func_800B91B8(void) {
     u32 *p;
     u32 *end;
@@ -280,20 +286,41 @@ void func_800B91B8(void) {
     }
     SAVE_U16(0x164) = 3;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B91B8.s")
+#endif
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B91B8.s")
+#endif
 
 /* Left live by a lane mid-work, at 32/34 insns. Draft kept. */
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 32/34 insns. Draft kept. */
+// Draft, 1 structural diff (33 vs 34 insns): identical apart from the zero-trip
+// guard `beq end,start` the ROM emits before the unroll residual.
+#ifdef NON_MATCHING
 u32 func_800B922C(void) {
+    u32 *p;
+    u32 *end;
     u32 sum;
-    s32 i;
 
     SAVE_U32(0x1B0) = SAVE_CHECKSUM_MAGIC;
     SAVE_U32(0x118) = SAVE_CHECKSUM_MAGIC;
     sum = SAVE_CHECKSUM_MAGIC;
-    for (i = 0; i != 38; i++) {
-        sum += D_800ECB10[i];
+    p = D_800ECB10;
+    end = D_800ECB10 + 38;
+    while (p != end) {
+        sum += *p;
+        p++;
     }
     return sum;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B922C.s")
+#endif
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B922C.s")
+#endif
 
 void func_800B92B4(void) {
     D_800ECBAC = func_800B922C();

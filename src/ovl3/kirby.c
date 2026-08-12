@@ -2236,7 +2236,6 @@ void func_8017BEF4_ovl3(s32 arg0) {
     }
 }
 
-#ifdef NON_MATCHING
 extern void func_801693C4_ovl3(s32);
 extern s32 func_801210B4(void);
 extern void func_8011DC5C(void);
@@ -2298,9 +2297,6 @@ void func_8017BF34_ovl3(GObj *arg0) {
         curObjSleepForever();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BF34_ovl3.s")
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BF34_ovl3.s")
 #endif

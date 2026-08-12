@@ -832,7 +832,54 @@ void func_801EF07C_ovl9(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EF0C4_ovl9.s")
 
+typedef struct {
+    /* 0x00 */ u32 unk0;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ f32 unk8;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+} Unk801EF354Node;
+
+void func_801A0D74_ovl7();
+void func_8019F3B0_ovl7(void);
+void func_800A1F30(void *);
+
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 41/116 insns. Draft kept. */
+void func_801EF354_ovl9(GObj *arg0) {
+    struct UnkStruct800E1B50 *ent;
+    GObj *g;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    g = D_800E9AA0[omCurrentObj->objId].as_ptr;
+    if (g != NULL) {
+        ((Unk801EF354Node *) g->unk4C)->unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
+        ((Unk801EF354Node *) g->unk4C)->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
+        ((Unk801EF354Node *) g->unk4C)->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+        ((Unk801EF354Node *) g->unk4C)->unk10 = gEntitiesAngleXArray[omCurrentObj->objId];
+        ((Unk801EF354Node *) g->unk4C)->unk14 = gEntitiesAngleYArray[omCurrentObj->objId];
+        ((Unk801EF354Node *) g->unk4C)->unk18 = gEntitiesAngleZArray[omCurrentObj->objId];
+    }
+    if (D_800E9E20[omCurrentObj->objId] > 0) {
+        D_800E9E20[omCurrentObj->objId]--;
+    }
+    if (D_800E9E20[omCurrentObj->objId] <= 0) {
+        func_801A0D74_ovl7(arg0);
+    }
+    func_8019F3B0_ovl7();
+    if ((D_800E83E0[omCurrentObj->objId] == 1) || (D_800E83E0[omCurrentObj->objId] == 3)) {
+        if (D_800E9AA0[omCurrentObj->objId].as_ptr != NULL) {
+            func_800A1F30(D_800E9AA0[omCurrentObj->objId].as_ptr);
+            ent->unk34 = NULL;
+            D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EF354_ovl9.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EF524_ovl9.s")
 

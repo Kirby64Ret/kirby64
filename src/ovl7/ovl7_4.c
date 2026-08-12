@@ -191,6 +191,8 @@ void func_801A522C_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A5274_ovl7.s")
 
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 2/73 insns. Draft kept. */
 void func_801A557C_ovl7(void) {
     f32 dx;
     f32 dz;
@@ -199,8 +201,7 @@ void func_801A557C_ovl7(void) {
 
     if (D_800E8E60[omCurrentObj->objId] == 1) { return; }
     func_801A0D74_ovl7();
-    if (D_800E8920[omCurrentObj->objId] != 1) { return; }
-    if (D_800EC2E0[omCurrentObj->objId].as_s32 != 0) { return; }
+    if ((D_800E8920[omCurrentObj->objId] != 1) || (D_800EC2E0[omCurrentObj->objId].as_s32 != 0)) { return; }
     dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesPosXArray[omCurrentObj->objId];
     dz = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesPosZArray[omCurrentObj->objId];
     if (dx < 0.0f) { ax = -dx; } else { ax = dx; }
@@ -210,6 +211,9 @@ void func_801A557C_ovl7(void) {
     }
     D_800EC2E0[omCurrentObj->objId].as_u32 = 1;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A557C_ovl7.s")
+#endif
 
 void func_801A56A0_ovl7(GObj *arg0) {
     D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
