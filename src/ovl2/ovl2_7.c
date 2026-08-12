@@ -2210,6 +2210,13 @@ block_22:
    $f4<->$f10 role swap from the first mul.s of the case-0 dot product onward: the ROM emits
    mul.s $f6,$f10,$f4 where IDO gives mul.s $f6,$f4,$f10. Invariant to source operand order
    (flipping both multiplies changed nothing) -- the documented mul.s parity floor. */
+/* FACTORY: 51/203, frame + every stack offset + all control flow exact. Residue is a systematic
+   $f4<->$f10 role swap from the first mul.s of the case-0 dot product onward: the ROM emits
+   mul.s $f6,$f10,$f4 where IDO gives mul.s $f6,$f4,$f10, with identical register CONTENTS.
+   Measured negative here: (a) flipping both multiplies' source operand order - no change at all;
+   (b) reversing the sqrt sum's add chain (the last-evaluated-add lever) - 51 -> 55, worse.
+   Every add in this function already emits the ROM's operand order, so the add lever has no
+   purchase; named f32 temps are blocked because 3 of them cost +16 bytes of frame. */
 #ifdef MIPS_TO_C
 
 void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {

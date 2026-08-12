@@ -264,12 +264,26 @@ void saveSetFileChecksum(u32 file) {
     gSaveBuffer1.files[file].checksum = saveCalcFileChecksum(file);
 }
 
+/* FACTORY: 1/24, residue = the unroller's zero-trip guard `beq end,start`.
+   FAMILY FLOOR shared with func_800B91B8, func_800B922C and
+   saveCalcHeaderChecksum: in IDO the guard and the residual are ENTANGLED.
+   Same-symbol `end` (or `end = p + N`, which folds to it) yields the ROM's
+   constant residual `addiu $a0,$zero,0xC` and the ROM's $a1/$a2 allocation but
+   NO guard; a genuinely distinct `end` symbol yields the guard but replaces the
+   constant with the runtime `subu`/`andi 0xF` pair (7 diffs). No spelling gives
+   both. Everything else in this draft is byte-exact; the -0x10-last store
+   rotation is a consequence of the missing guard, not an independent diff.
+   Tried: &gSaveBuffer1.header.checksum, &D_800ECA04, and `end = p + 3`. */
 #ifdef NON_MATCHING
 void func_800B9008(void) {
-    s32 i;
+    u32 *p;
+    u32 *end;
 
-    for (i = 0; i < 3; i++) {
-        gSaveBuffer1.header.head[i] = 0;
+    p = gSaveBuffer1.header.head;
+    end = &gSaveBuffer1.header.checksum;
+    while (p != end) {
+        *p = 0;
+        p++;
     }
     gSaveBuffer1.header.head[0] = 0;
     gSaveBuffer1.header.head[1] = 0;
@@ -278,14 +292,21 @@ void func_800B9008(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9008.s")
 #endif
+
+/* FACTORY: 1/30, residue = the same zero-trip-guard family floor as
+   func_800B9008 above; see that comment for the entangled-lever measurement. */
 #ifdef NON_MATCHING
 u32 saveCalcHeaderChecksum(void) {
-    u32 *p = gSaveBuffer1.header.head;
-    u32 *end = &gSaveBuffer1.header.checksum;
-    u32 resultBuffer = SAVE_CHECKSUM_MAGIC;
+    u32 *p;
+    u32 *end;
+    u32 resultBuffer;
 
+    p = gSaveBuffer1.header.head;
+    end = &gSaveBuffer1.header.checksum;
+    resultBuffer = SAVE_CHECKSUM_MAGIC;
     while (p != end) {
-        resultBuffer += *p++;
+        resultBuffer += *p;
+        p++;
     }
     return resultBuffer;
 }

@@ -612,13 +612,169 @@ void func_801843A0_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801843A0_ovl5.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80184888_ovl5.s")
+extern Unk8018C30C D_8018D380_ovl5;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80184BA0_ovl5.s")
+void func_80184888_ovl5(GObj *arg0) {
+    s32 i;
+    f32 var;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80184EC0_ovl5.s")
+    func_800A9088(D_8018D380_ovl5.unk0);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_8018C300_ovl5.x + D_8018D380_ovl5.unk28;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_8018C300_ovl5.y + D_8018D380_ovl5.unk2C;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_8018C300_ovl5.z + D_8018D380_ovl5.unk30;
+    if (D_8018D380_ovl5.unk4 != 0) {
+        func_800AA018(D_8018D380_ovl5.unk4);
+    }
+    if (D_8018D380_ovl5.unk8 != 0) {
+        func_800AA018(D_8018D380_ovl5.unk8);
+    }
+    arg0->onAnimate = NULL;
+    D_800DF310[omCurrentObj->objId] = NULL;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_8018D380_ovl5.unk1C * 3.14159274f / 180.0f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D380_ovl5.unk20 * 3.14159274f / 180.0f;
+    gEntitiesAngleZArray[omCurrentObj->objId] = D_8018D380_ovl5.unk24 * 3.14159274f / 180.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+    var = D_8018D380_ovl5.unkC / (f32) 4;
+    for (i = 0; i != 4; i++) {
+        gEntitiesScaleXArray[omCurrentObj->objId] += var;
+        gEntitiesScaleYArray[omCurrentObj->objId] += var;
+        gEntitiesScaleZArray[omCurrentObj->objId] += var;
+        ohSleep(1);
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = D_8018D380_ovl5.unkC;
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_8018D380_ovl5.unkC;
+    gEntitiesScaleZArray[omCurrentObj->objId] = D_8018D380_ovl5.unkC;
+    var = 0.0f;
+    while (1) {
+        gEntitiesAngleYArray[omCurrentObj->objId] = var * 3.14159274f / 180.0f;
+        var += 4.0f;
+        if (360.0f < var) {
+            var -= 360.0f;
+        }
+        ohSleep(1);
+    }
+}
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185150_ovl5.s")
+extern Unk8018C30C D_8018D3B4_ovl5;
+
+void func_80184BA0_ovl5(GObj *arg0) {
+    s32 i;
+    f32 var;
+
+    func_800A9088(D_8018D3B4_ovl5.unk0);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_8018C300_ovl5.x + D_8018D3B4_ovl5.unk28;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_8018C300_ovl5.y + D_8018D3B4_ovl5.unk2C;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_8018C300_ovl5.z + D_8018D3B4_ovl5.unk30;
+    if (D_8018D3B4_ovl5.unk4 != 0) {
+        func_800AA018(D_8018D3B4_ovl5.unk4);
+    }
+    if (D_8018D3B4_ovl5.unk8 != 0) {
+        func_800AA018(D_8018D3B4_ovl5.unk8);
+    }
+    arg0->onAnimate = NULL;
+    D_800DF310[omCurrentObj->objId] = NULL;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_8018D3B4_ovl5.unk1C * 3.14159274f / 180.0f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D3B4_ovl5.unk20 * 3.14159274f / 180.0f;
+    gEntitiesAngleZArray[omCurrentObj->objId] = D_8018D3B4_ovl5.unk24 * 3.14159274f / 180.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+    var = D_8018D3B4_ovl5.unkC / (f32) 4;
+    for (i = 0; i != 4; i++) {
+        gEntitiesScaleXArray[omCurrentObj->objId] += var;
+        gEntitiesScaleYArray[omCurrentObj->objId] += var;
+        gEntitiesScaleZArray[omCurrentObj->objId] += var;
+        ohSleep(1);
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = D_8018D3B4_ovl5.unkC;
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_8018D3B4_ovl5.unkC;
+    gEntitiesScaleZArray[omCurrentObj->objId] = D_8018D3B4_ovl5.unkC;
+    var = 0.0f;
+    while (1) {
+        gEntitiesAngleZArray[omCurrentObj->objId] = var * 3.14159274f / 180.0f;
+        var += 4.0f;
+        if (360.0f < var) {
+            var -= 360.0f;
+        }
+        ohSleep(1);
+    }
+}
+
+extern Unk8018C30C D_8018D3E8_ovl5;
+
+void func_80184EC0_ovl5(GObj *arg0) {
+    s32 i;
+    f32 var;
+
+    func_800A9088(D_8018D3E8_ovl5.unk0);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_8018C300_ovl5.x + D_8018D3E8_ovl5.unk28;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_8018C300_ovl5.y + D_8018D3E8_ovl5.unk2C;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_8018C300_ovl5.z + D_8018D3E8_ovl5.unk30;
+    if (D_8018D3E8_ovl5.unk4 != 0) {
+        func_800AA018(D_8018D3E8_ovl5.unk4);
+    }
+    if (D_8018D3E8_ovl5.unk8 != 0) {
+        func_800AA018(D_8018D3E8_ovl5.unk8);
+    }
+    arg0->onAnimate = NULL;
+    D_800DF310[omCurrentObj->objId] = NULL;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_8018D3E8_ovl5.unk1C * 3.14159274f / 180.0f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D3E8_ovl5.unk20 * 3.14159274f / 180.0f;
+    gEntitiesAngleZArray[omCurrentObj->objId] = D_8018D3E8_ovl5.unk24 * 3.14159274f / 180.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+    var = D_8018D3E8_ovl5.unkC / (f32) 4;
+    for (i = 0; i != 4; i++) {
+        gEntitiesScaleXArray[omCurrentObj->objId] += var;
+        gEntitiesScaleYArray[omCurrentObj->objId] += var;
+        gEntitiesScaleZArray[omCurrentObj->objId] += var;
+        ohSleep(1);
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = D_8018D3E8_ovl5.unkC;
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_8018D3E8_ovl5.unkC;
+    gEntitiesScaleZArray[omCurrentObj->objId] = D_8018D3E8_ovl5.unkC;
+    curObjSleepForever();
+}
+
+extern Unk8018C30C D_8018D41C_ovl5;
+
+void func_80185150_ovl5(GObj *arg0) {
+    s32 i;
+    f32 var;
+
+    func_800A9088(D_8018D41C_ovl5.unk0);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_8018C300_ovl5.x + D_8018D41C_ovl5.unk28;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_8018C300_ovl5.y + D_8018D41C_ovl5.unk2C;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_8018C300_ovl5.z + D_8018D41C_ovl5.unk30;
+    if (D_8018D41C_ovl5.unk4 != 0) {
+        func_800AA018(D_8018D41C_ovl5.unk4);
+    }
+    if (D_8018D41C_ovl5.unk8 != 0) {
+        func_800AA018(D_8018D41C_ovl5.unk8);
+    }
+    arg0->onAnimate = NULL;
+    D_800DF310[omCurrentObj->objId] = NULL;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_8018D41C_ovl5.unk1C * 3.14159274f / 180.0f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D41C_ovl5.unk20 * 3.14159274f / 180.0f;
+    gEntitiesAngleZArray[omCurrentObj->objId] = D_8018D41C_ovl5.unk24 * 3.14159274f / 180.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+    var = D_8018D41C_ovl5.unkC / (f32) 4;
+    for (i = 0; i != 4; i++) {
+        gEntitiesScaleXArray[omCurrentObj->objId] += var;
+        gEntitiesScaleYArray[omCurrentObj->objId] += var;
+        gEntitiesScaleZArray[omCurrentObj->objId] += var;
+        ohSleep(1);
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = D_8018D41C_ovl5.unkC;
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_8018D41C_ovl5.unkC;
+    gEntitiesScaleZArray[omCurrentObj->objId] = D_8018D41C_ovl5.unkC;
+    curObjSleepForever();
+}
 
 #ifdef NON_MATCHING
 /* 5/138: `idx` lands in $v0 where the ROM uses $v1, and its spill slot is

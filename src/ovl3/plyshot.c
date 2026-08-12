@@ -471,7 +471,171 @@ void func_801625B8_ovl3(f32 *arg0) {
     gEntityFuncListIDArray[temp] = 3;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8016264C_ovl3.s")
+#include "main/gtl.h"
+#include "main/object_manager.h"
+
+extern Lights1 D_800BE548;
+extern Lights1 D_800BE550;
+
+s32 func_800AB0F4(GObj *);
+void func_800AB120(GObj *);
+void func_800AB174(GObj *);
+void func_800AB1F0(GObj *);
+void func_800AB244(GObj *);
+void renderDrawDObjFromGObj(GObj *);
+void renderDrawObject_TypeD(GObj *);
+void func_8001585C(GObj *);
+void func_80015BCC(GObj *);
+void func_800F90C0(s32, u8 *);
+
+void func_8016264C_ovl3(GObj *g) {
+    s32 id = g->objId;
+
+    if (!(D_800DD8D0[id] & 0x40)) {
+        switch (func_800AB0F4(g)) {
+            case 19:
+                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+                if (D_800E0650[id] != 0) {
+                    func_800F90C0(id, gDynamicBuffer1.top);
+                    gSPNumLights(gDisplayListHeads[0]++, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+                    gDynamicBuffer1.top += 0x18;
+                }
+                func_800AB120(g);
+                gSPNumLights(gDisplayListHeads[0]++, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+                break;
+            case 21:
+                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+                if (D_800E0650[id] != 0) {
+                    func_800F90C0(id, gDynamicBuffer1.top);
+                    gSPNumLights(gDisplayListHeads[0]++, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+                    gDynamicBuffer1.top += 0x18;
+                }
+                func_800AB1F0(g);
+                gSPNumLights(gDisplayListHeads[0]++, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+                break;
+            case 23:
+            case 25:
+                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+                if (D_800E0650[id] != 0) {
+                    func_800F90C0(id, gDynamicBuffer1.top);
+                    gSPNumLights(gDisplayListHeads[0]++, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+                    gDynamicBuffer1.top += 0x18;
+                }
+                renderDrawDObjFromGObj(g);
+                gSPNumLights(gDisplayListHeads[0]++, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+                break;
+            case 27:
+            case 29:
+                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+                if (D_800E0650[id] != 0) {
+                    func_800F90C0(id, gDynamicBuffer1.top);
+                    gSPNumLights(gDisplayListHeads[0]++, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+                    gDynamicBuffer1.top += 0x18;
+                }
+                func_8001585C(g);
+                gSPNumLights(gDisplayListHeads[0]++, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+                break;
+            case 20:
+                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
+                if (D_800E0650[id] != 0) {
+                    func_800F90C0(id, gDynamicBuffer1.top);
+                    gSPNumLights(gDisplayListHeads[0]++, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+                    gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top, 2);
+                    gDynamicBuffer1.top += 0x18;
+                }
+                func_800AB174(g);
+                gSPNumLights(gDisplayListHeads[0]++, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+                gSPNumLights(gDisplayListHeads[1]++, 1);
+                gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+                break;
+            case 22:
+                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
+                if (D_800E0650[id] != 0) {
+                    func_800F90C0(id, gDynamicBuffer1.top);
+                    gSPNumLights(gDisplayListHeads[0]++, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+                    gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top, 2);
+                    gDynamicBuffer1.top += 0x18;
+                }
+                func_800AB244(g);
+                gSPNumLights(gDisplayListHeads[0]++, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+                gSPNumLights(gDisplayListHeads[1]++, 1);
+                gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+                break;
+            case 24:
+            case 26:
+                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
+                if (D_800E0650[id] != 0) {
+                    func_800F90C0(id, gDynamicBuffer1.top);
+                    gSPNumLights(gDisplayListHeads[0]++, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+                    gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top, 2);
+                    gDynamicBuffer1.top += 0x18;
+                }
+                renderDrawObject_TypeD(g);
+                gSPNumLights(gDisplayListHeads[0]++, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+                gSPNumLights(gDisplayListHeads[1]++, 1);
+                gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+                break;
+            case 28:
+            case 30:
+                gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+                gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
+                if (D_800E0650[id] != 0) {
+                    func_800F90C0(id, gDynamicBuffer1.top);
+                    gSPNumLights(gDisplayListHeads[0]++, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+                    gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top + 8, 1);
+                    gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top, 2);
+                    gDynamicBuffer1.top += 0x18;
+                }
+                func_80015BCC(g);
+                gSPNumLights(gDisplayListHeads[0]++, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+                gSPNumLights(gDisplayListHeads[1]++, 1);
+                gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+                gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+                break;
+        }
+    }
+}
 
 s32 func_801632B8_ovl3(s32 arg0) {
     s32 temp = request_track_general(0x14, 4, 0xE);
@@ -786,15 +950,17 @@ extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
 
 void func_801644EC_ovl3(s32 arg0) {
     f32 **h;
+    s32 id;
 
     if (D_8012E860 != 0) {
-        if (D_800E98E0[omCurrentObj->objId] == 0) {
-            h = (f32 **) func_80111A04(D_801912EC_ovl3, omCurrentObj->objId);
+        id = omCurrentObj->objId;
+        if (D_800E98E0[id] == 0) {
+            h = (f32 **) func_80111A04(D_801912EC_ovl3, id);
             h[8][6] = 85.0f;
             gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];
             func_80152070_ovl3(D_80193C64_ovl3, D_80198700_ovl3, 0x10, 1.25f);
         } else {
-            h = (f32 **) func_80111A04(D_801912EC_ovl3, omCurrentObj->objId);
+            h = (f32 **) func_80111A04(D_801912EC_ovl3, id);
             h[8][6] = 45.0f;
             gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];
             func_80152070_ovl3(D_80193C64_ovl3, D_80198700_ovl3, 0x10, 0.7f);

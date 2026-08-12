@@ -796,14 +796,23 @@ void func_801DDCDC_ovl12(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef NON_MATCHING // awful
+/* FACTORY: 54/100, and it is ONE cause -- the same one that blocks its twin
+   func_801DD400_ovl12.  The ROM materialises the literal 1 into an allocatable
+   temp ($t2 here, $a0 in the twin) and compares constant-first; IDO puts it in
+   $at, which is not allocatable, so IDO has one more free temp and every
+   temp register in the function rotates one slot.  Structure, length (100),
+   all block boundaries and all branch shapes are the ROM's.  Levers already
+   spent: Yoda compare order, and binding the 1 to an s32 local (IDO folds it).
+   Whatever moves this moves BOTH functions. */
+#ifdef NON_MATCHING
 void func_801DDDA8_ovl12(GObj *arg0) {
+    s32 temp = gEntityFuncListIDArray[omCurrentObj->objId] + D_800E9560[omCurrentObj->objId];
+
     if ((D_800D7098.unk8 == 1) || (D_800D7098.unk10 == 0)) {
-        D_800E9560[omCurrentObj->objId]++;
-        gEntityFuncListIDArray[omCurrentObj->objId] += D_800E9560[omCurrentObj->objId] - 1;
+        D_800E9560[omCurrentObj->objId] += 1;
+        gEntityFuncListIDArray[omCurrentObj->objId] = temp - 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DD924_ovl12);
-    }
-    else {
+    } else {
         if (D_800E9E20[omCurrentObj->objId] != 0) {
             D_800E64D0[omCurrentObj->objId] = D_800E64D0[D_800D7098.unk1C];
             D_800E6690[omCurrentObj->objId] = D_800E6690[D_800D7098.unk1C];
@@ -813,7 +822,7 @@ void func_801DDDA8_ovl12(GObj *arg0) {
         if (D_800D7098.unk10 == 0) {
             func_801DCDFC_ovl12();
         }
-        if ((D_800D7098.unkC == 1) && ((s32)D_800E9AA0[omCurrentObj->objId] == 1)) {
+        if ((D_800D7098.unkC == 1) && ((s32) D_800E9AA0[omCurrentObj->objId] == 1)) {
             func_801DCCC4_ovl12();
             func_801DCD70_ovl12();
         }

@@ -86,7 +86,42 @@ void func_801E03E0_ovl14(GObj *arg0) {
 
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E03E8_ovl14.s")
+void func_801E03E8_ovl14(GObj *arg0) {
+    extern void func_801AE7E0_ovl7(s32);
+    extern void func_800AA018(s32);
+    f32 c;
+    f32 z;
+
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    func_800AA018(0x1045C);
+    if (D_800EC2E0[omCurrentObj->objId].as_s32 != 0) {
+        gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[omCurrentObj->objId] - 1.5707964f;
+    } else {
+        gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[omCurrentObj->objId] + 1.5707964f;
+    }
+    play_sound(0x18C);
+    if (D_800EC4A0[omCurrentObj->objId] != 0) {
+        ohSleep(0x1E);
+    }
+    func_800AA018(0x1045B);
+    func_800AECC0(1.0f);
+    c = 65535.0f;
+    z = 0.0f;
+    D_800E3590[omCurrentObj->objId] = z;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = c;
+    D_800E3210[omCurrentObj->objId] = 8.666667f;
+    D_800E33D0[omCurrentObj->objId] = z;
+    D_800E3910[omCurrentObj->objId] = z;
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E98E0[omCurrentObj->objId] = 1;
+    func_801AE7E0_ovl7(0xF);
+    D_800E9C60[omCurrentObj->objId] = 0x10634;
+    ohSleep(0x1E);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+}
 
 void func_801E0610_ovl14(GObj *arg0) {
 

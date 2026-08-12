@@ -154,19 +154,27 @@ s32 func_801554F0_ovl4(void) {
     return ret;
 }
 
-/* The listing carries a trailing unnamed empty function (extra jr $ra; nop,
+/* FACTORY: 1/17, and that one is the trap, not the code.
+ * The listing carries a trailing unnamed empty function (extra jr $ra; nop,
  * 8 bytes) before .size, so converting it would shorten the TU; the pragma
  * must stay for the ROM build. The C body below is for NON_MATCHING builds.
  * K&R definition: one call site passes no argument (the ROM passes $a0
- * through). */
+ * through).
+ * Every instruction this C emits is now byte-exact (was 4/17): the fix was
+ * BRANCH POLARITY. The ROM lays `return 0` out as the FALLTHROUGH and makes
+ * `return 1` the branch target, hoisting that block's `addiu $v0,1` into the
+ * bne delay slot, so the source must test the EQUAL case first --
+ * `if (x == 0x99999999U) return 0; return 1;` -- not the != form m2c produces.
+ * The residue is only the second, nameless `jr $ra; nop` inside this
+ * function's .size, which no C body can emit (WAVE8 floor class 3). */
 #ifdef NON_MATCHING
 s32 func_801555AC_ovl4(arg0)
 s32 arg0;
 {
-    if ((u32) D_800ECA08[arg0].unk0 != 0x99999999U) {
-        return 1;
+    if ((u32) D_800ECA08[arg0].unk0 == 0x99999999U) {
+        return 0;
     }
-    return 0;
+    return 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801555AC_ovl4.s")

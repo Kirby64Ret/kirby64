@@ -580,7 +580,63 @@ void func_80203A90_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
+/* FACTORY: 117/148, but the first 29 instructions and the whole block LAYOUT
+   are now the ROM's -- this corrects the note on its twin func_802031D4.
+   Two findings: (1) the arm order is what picks the layout, `if (x <= 0)
+   {small} else {big}` puts the small arm first and branches over it, which is
+   the ROM; (2) `sp38 = sp48;` belongs BEFORE the if here, which is the
+   opposite of what the twin needs -- the form really is per-function.
+   Sole residue: IDO emits `bgtzl` and pulls `mtc1 $zero,$f0` from the big
+   block into the delay slot where the ROM has a plain `bgtz` + `nop` with the
+   `lwc1 0x48($sp)` hoisted above the branch; everything after is shifted one.
+   Also tried: hoisting the atan2f result into an f32 local (118). */
+#ifdef NON_MATCHING
+/* D_8021DA60_ovl9: literal, this TU owns its .rodata */
+void func_80203BA8_ovl9(struct GObj *arg0) {
+    extern s32 func_8019A900_ovl7(s32 *);
+    extern f32 eneGetPlayerHeight(void);
+    extern void func_801A6DF0_ovl7(struct GObj *);
+    extern Vector *lbvector_Rotate(Vector *, s32, f32);
+    extern f32 atan2f(f32, f32);
+    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    f32 sp48;
+    s32 sp44;
+    s32 pad0;
+    s32 pad1;
+    f32 sp38;
+    Vector sp2C;
+
+    D_800E9720[omCurrentObj->objId] -= 1;
+    func_8019A900_ovl7(&sp44);
+    sp38 = sp48;
+    if (D_800E9720[omCurrentObj->objId] <= 0) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
+        D_800E9C60[omCurrentObj->objId] = 1;
+    } else {
+        sp2C.z = 0.0f;
+        sp2C.y = 0.0f;
+        sp2C.x = 0.4f;
+        lbvector_Rotate(&sp2C, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], sp38));
+        D_800E6690[omCurrentObj->objId] = sp2C.x;
+        D_800E3750[omCurrentObj->objId] = sp2C.y;
+        if (tmp->unk3C == 0) {
+            if ((f32) sp44 != D_800E6A10[omCurrentObj->objId]) {
+                if (ABSF(D_800E64D0[omCurrentObj->objId]) < 1.0f) {
+                    func_80199F1C_ovl7(arg0);
+                }
+            }
+        }
+        if (D_800E9AA0[omCurrentObj->objId].as_s32 == 2) {
+            if (D_800E6A10[omCurrentObj->objId] != D_800E6A10[0]) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_802033B0_ovl9);
+            }
+        }
+        }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80203BA8_ovl9.s")
+#endif
 
 void func_80203DFC_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 3;

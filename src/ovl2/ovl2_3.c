@@ -36,6 +36,8 @@ extern Vector D_800D7B2C;
 extern f32 D_80129370[6];
 extern f32 D_801292C8[6];
 extern f32 D_801293DC[6];
+extern f32 D_801293C0;
+extern f32 D_801293D0;
 s32 func_800FC03C(f32 *, f32 *, f32 *);
 
 f32 utilVec3Dist(Vector *v1, Vector *v2);
@@ -1764,59 +1766,49 @@ block_64:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB164.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 f32 func_800FB814(f32 arg0, f32 arg1, f32 arg2) {
     f32 var_f0;
-    f32 var_f0_2;
-    f32 var_f0_3;
-    f32 var_f12;
     f32 var_f2;
-    f32 var_f2_2;
 
     if (arg1 < arg0) {
+        var_f0 = -(arg1 - arg0);
         var_f2 = arg1 - arg0;
-        var_f0 = -var_f2;
     } else {
         var_f2 = arg1 - arg0;
         var_f0 = var_f2;
     }
     if (D_801293C0 < var_f0) {
         if (var_f2 > 0.0f) {
-            var_f12 = arg0 + arg2;
-            if (arg1 <= var_f12) {
-                goto block_9;
+            arg0 = arg0 + arg2;
+            if (arg1 <= arg0) {
+                arg0 = arg1;
             }
         } else {
-            var_f12 = arg0 - arg2;
-            if (var_f12 <= arg1) {
-                goto block_9;
+            arg0 = arg0 - arg2;
+            if (arg0 <= arg1) {
+                arg0 = arg1;
             }
         }
     } else {
-block_9:
-        var_f12 = arg1;
+        arg0 = arg1;
     }
-    if (arg1 < var_f12) {
-        var_f2_2 = arg1 - var_f12;
-        var_f0_2 = -var_f2_2;
+    if (arg1 < arg0) {
+        var_f0 = -(arg1 - arg0);
+        var_f2 = arg1 - arg0;
     } else {
-        var_f2_2 = arg1 - var_f12;
-        var_f0_2 = var_f2_2;
+        var_f2 = arg1 - arg0;
+        var_f0 = var_f2;
     }
-    if (D_801293D0 < var_f0_2) {
-        if (var_f2_2 > 0.0f) {
-            var_f0_3 = var_f2_2 - D_801293D0;
+    if (D_801293D0 < var_f0) {
+        if (var_f2 > 0.0f) {
+            var_f0 = var_f2 - D_801293D0;
         } else {
-            var_f0_3 = var_f2_2 + D_801293D0;
+            var_f0 = var_f2 + D_801293D0;
         }
-        var_f12 += var_f0_3;
+        arg0 += var_f0;
     }
-    return var_f12;
+    return arg0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB814.s")
-#endif
 
 
 s32 func_800FB914(s32 arg0) {
@@ -1837,19 +1829,22 @@ s32 func_800FB914(s32 arg0) {
     return 0;
 }
 
+/* FACTORY: 5/49, structure + registers exact. Residue is three commutative-operand parities that
+   are invariant to source order (retested both spellings, zero change): addu $a0,$v1,$t0 vs
+   $t0,$v1, and c.eq.s $f4,$f0 vs $f0,$f4 at both literal compares, plus the addu/sw schedule
+   swap at the 9999 arm. Dropping the counter local (D_801293FC += 2 inline) is what took this
+   from 21 to 5 -- it is what frees $a0 for var_a0; do not reintroduce a named temp. */
 #ifdef MIPS_TO_C
 
 void func_800FB9B4(void) {
     f32 *var_a0;
     f32 var_f0;
-    s32 temp_t8;
-    s32 temp_v1;
+    f32 *temp_v1;
 
     if (D_801293F8 != 0) {
-        temp_v1 = *(&D_801242B4 + (D_801293F8 * 4));
-        temp_t8 = D_801293FC + 2;
-        D_801293FC = temp_t8;
-        var_a0 = temp_v1 + (temp_t8 * 4);
+        temp_v1 = D_801242B4[D_801293F8];
+        D_801293FC += 2;
+        var_a0 = &temp_v1[D_801293FC];
         var_f0 = *var_a0;
         if (var_f0 == 8888.0f) {
             D_801293F8 = 0;
@@ -1859,12 +1854,12 @@ void func_800FB9B4(void) {
             return;
         }
         if (var_f0 == 9999.0f) {
-            var_a0 = temp_v1 + (0 * 4);
             D_801293FC = 0;
+            var_a0 = &temp_v1[D_801293FC];
             var_f0 = *var_a0;
         }
         D_80129400 = var_f0;
-        D_80129404 = var_a0->unk4;
+        D_80129404 = var_a0[1];
     }
 }
 #else
@@ -1999,13 +1994,18 @@ void func_800FBF18(s32 arg0) {
     D_80129210.unk5C = cam->unkA;
 }
 
+/* FACTORY: 20/74, length and control flow exact. Residue is one cyclic FP rotation seeded at the
+   *arg1 load (ROM temp_f2=$f2/temp_f14=$f14/temp_f12=$f12; IDO gives $f12/$f0/$f14) plus the
+   three c.eq.s operand orders. Retested literal-first spelling on all three compares: zero
+   change, so c.eq.s operand order is invariant like mul.s and addu. Hoisting
+   temp_f12 = *arg0 + 20000.0f ABOVE the *arg2 store is what took this from 51 to 20 (the store
+   may alias, so IDO cannot sink the load past it) -- keep that order. */
 #ifdef NON_MATCHING
 s32 func_800FC03C(f32 *arg0, f32 *arg1, f32 *arg2) {
     f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f14;
     f32 temp_f2;
-    f32 var_f12;
+    f32 temp_f14;
+    f32 temp_f12;
 
     temp_f0 = *arg2;
     if (temp_f0 == 9999.0f) {
@@ -2017,29 +2017,27 @@ s32 func_800FC03C(f32 *arg0, f32 *arg1, f32 *arg2) {
         return 1;
     }
     temp_f14 = temp_f2 + 20000.0f;
-    *arg2 = temp_f0 + D_801293F4;
     temp_f12 = *arg0 + 20000.0f;
-    if (*arg2 >= 20.0f) {
+    *arg2 = temp_f0 + D_801293F4;
+    if (20.0f <= *arg2) {
         *arg2 = 20.0f;
     }
     if (temp_f12 < temp_f14) {
-        var_f12 = temp_f12 + *arg2;
-        if (temp_f14 <= var_f12) {
+        temp_f12 += *arg2;
+        if (temp_f14 <= temp_f12) {
             *arg2 = 9999.0f;
             *arg0 = *arg1;
             return 1;
         }
-        /* Duplicate return node #12. Try simplifying control flow for better match */
-        *arg0 = var_f12 - 20000.0f;
-        return 0;
+    } else {
+        temp_f12 -= *arg2;
+        if (temp_f12 <= temp_f14) {
+            *arg2 = 9999.0f;
+            *arg0 = *arg1;
+            return 1;
+        }
     }
-    var_f12 = temp_f12 - *arg2;
-    if (var_f12 <= temp_f14) {
-        *arg2 = 9999.0f;
-        *arg0 = *arg1;
-        return 1;
-    }
-    *arg0 = var_f12 - 20000.0f;
+    *arg0 = temp_f12 - 20000.0f;
     return 0;
 }
 #else

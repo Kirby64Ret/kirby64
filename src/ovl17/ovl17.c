@@ -151,10 +151,17 @@ void func_801DC724_ovl17(void) {
 }
 
 #ifdef NON_MATCHING
-/* 6 diffs (was 16): hoisting omCurrentObj into a local is what puts it in $v0.
- * What is left is a one-slot rotation of the ARGUMENT registers -- the ROM
- * keeps $a0 reserved (base in $a2, element address in $a1) while IDO reuses
- * $a0 for the element address. */
+/* FACTORY: 6/28, one-slot rotation of the ARGUMENT registers, nothing else.
+ * 6 diffs (was 16): hoisting omCurrentObj into a local is what puts it in $v0.
+ * What is left is that the ROM keeps $a0 reserved (base in $a2, element address
+ * in $a1) while IDO reuses $a0 for the element address -- the same two values,
+ * the same order, one slot lower.  All 6 diffs are that pair renamed; every
+ * other instruction, both branch-likelies and the parameter home store are
+ * exact.  Two variants spent and BOTH measured 6/28 unchanged: a K&R definition
+ * (the lever that is load-bearing for parameter homing elsewhere in ovl17/ovl18
+ * does nothing here -- the home store is already emitted by the prototyped
+ * form), and an explicit `s32 *p = &D_800E7CE0[obj->objId]` pointer local for
+ * the element address.  Permuter food. */
 void func_801DC91C_ovl17(struct GObj *arg0) {
     struct GObj *obj;
     s32 temp_v1;

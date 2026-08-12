@@ -129,7 +129,20 @@ void func_8021F0A4_ovl19(GObj *arg0) {
     }
 }
 
-// regalloc
+/* FACTORY: 21/144, whole-function callee-saved PERMUTATION and nothing else.
+   Measured: every instruction, every loop shape (rotated / un-rotated / rotated),
+   the frame 0x28, the saved count (s0-s3) and all four held base pointers are
+   the ROM's.  The four bases map ROM -> ours as
+     &omCurrentObj   $s3 -> $s1
+     &D_800E0D50     $s2 -> $s3
+     &D_800E8060     $s1 -> $s2
+     &D_800E8920     $s0 -> $s0   (this one already agrees)
+   so the ROM numbers them DESCENDING in order of first materialisation and IDO
+   does not.  20 of the 21 diffs are that renaming propagated; the 21st is the
+   0.2f literal referencing this TU's own .late_rodata where the ROM names
+   D_8022F750_ovl19, which is expected for a migrated TU and is checked by
+   check_rodata_bytes.py, not here.  WAVE8 floor class "whole-function
+   callee-saved permutation" -- no variants spent, none are worth spending. */
 #ifdef NON_MATCHING
 void func_8021F174_ovl19(GObj *arg0) {
     func_8021DFD0_ovl19();

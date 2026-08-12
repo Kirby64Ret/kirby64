@@ -345,7 +345,86 @@ s32 func_8021F658_ovl18(void) {
     return sp20;
 }
 
+/* FACTORY: 135/152, one register-allocation choice, everything else exact.
+   Cross-segment clone of ovl7_2's func_8019F650_ovl7 / func_8019FA68_ovl7 --
+   same three func_80110B00/FD4/150 probes, same unk43/unk3E/unk3F/unk3A stores,
+   same D_800E83E0 switch -- and it was ported from that draft.  The frame
+   (0x50), the info struct at 0x2C and its 0x1C size are exact and needed the
+   leading `s32 pad;`, same as the donor.  The `&omCurrentObj` hoist the donor
+   cannot reach lands here for free off the inline-the-field lever: IDO puts the
+   address in a SAVED register exactly as the ROM does.
+   Residue: the ROM spends its one saved register on &omCurrentObj ($s0) and
+   SPILLS `ent` to 0x48($sp), re-storing it in every jal delay slot; ours keeps
+   `ent` in $s0 and pushes the address to $s1, so both saved-register names are
+   swapped and the spill/reload pairs are absent.  Two variants spent: inlining
+   `D_800E1B50[omCurrentObj->objId]->` at every use to demote `ent` to a
+   compiler temp (219/219 -- it stops the array load being CSEd at all and
+   costs 67 instructions), and declaring `ent` after the struct (141/152, moves
+   the struct to 0x30).  A user local wins a callee-saved register here and the
+   ROM's does not; that is not reachable from source shape.  Permuter food. */
+#ifdef NON_MATCHING
+struct Ovl18AnimInfoA {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0xC];
+};
+
+s32 func_8021F70C_ovl18(void) {
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    s32 func_801A0244_ovl7(s32);
+    void func_8019EBCC_ovl7(struct GObj *);
+    s32 pad;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl18AnimInfoA sp2C;
+
+    if (func_80110B00(&sp2C) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
+        ent->unk43 = sp2C.unk3;
+        ent->unk3E = sp2C.unk0;
+        ent->unk3F = sp2C.unk1;
+        ent->unk3A = sp2C.unkC;
+    } else if (func_80110FD4(&sp2C) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
+        ent->unk43 = sp2C.unk3;
+        ent->unk3E = sp2C.unk0;
+        ent->unk3F = sp2C.unk1;
+        ent->unk3A = sp2C.unkC;
+    } else if (func_80110150(&sp2C) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
+        ent->unk43 = sp2C.unk3;
+        ent->unk3E = sp2C.unk0;
+        ent->unk3F = sp2C.unk1;
+        ent->unk3A = sp2C.unkC;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+        ent->unk3A = -1;
+    }
+    switch (D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+        if (func_801A0244_ovl7(sp2C.unkC) != -1) {
+            D_800E83E0[omCurrentObj->objId] = 0x12;
+            play_sound(0xF4);
+            ent->unk94 = 0;
+            ent->unk40 = 1;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        return 1;
+    case 2:
+        func_8019EBCC_ovl7(D_800DE350[omCurrentObj->objId]);
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021F70C_ovl18.s")
+#endif
 
 void func_8021F970_ovl18(void) {
     struct UnkStruct800E1B50 *sp1C;

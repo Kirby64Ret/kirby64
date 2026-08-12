@@ -913,7 +913,44 @@ s32 func_801DF01C_ovl14(f32 arg0) {
 }
 
 
+#ifdef NON_MATCHING
+/* FACTORY: 8/161, frame temp slot 0x28 vs 0x24 + one-slot FP temp rotation */
+s32 func_801DF290_ovl14(void) {
+    s32 track;
+    s32 temp;
+    struct Ovl14TrackPosition sp30;
+
+    track = request_track_general(0x1A, 0xE, 0x50);
+    if ((track >= 0x1E) || (track == -1)) {
+        utilPrintf("eneshot req over 18. Track Num:%d\n", track);
+        func_800B1900(track);
+        return -1;
+    }
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = 4;
+    D_800E77A0[track] = 0x2D;
+    D_800E7880[track] = 0;
+    gEntitiesNextPosXArray[track] = gEntitiesPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesNextPosYArray[track] = gEntitiesPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId] + 360.0f;
+    gEntitiesNextPosZArray[track] = gEntitiesPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_800E8E60[omCurrentObj->objId] = 0;
+    sp30.unk0 = D_800E5F90[omCurrentObj->objId];
+    sp30.unk4 = D_800E6BD0[omCurrentObj->objId];
+    temp = random_soft_s32_range(0x10);
+    if (func_800F9888((s32 *) &sp30,
+                      D_800E6A10[omCurrentObj->objId] * ((f32) (temp - 1) * 40.0f)) == 0) {
+        D_800E5F90[track] = D_800E6150[track] = sp30.unk0;
+        D_800E6BD0[track] = D_800E6D90[track] = sp30.unk4;
+    } else {
+        D_800E5F90[track] = D_800E5F90[omCurrentObj->objId];
+        D_800E6BD0[track] = D_800E6BD0[omCurrentObj->objId];
+    }
+    D_800EC2E0[track].as_s32 = random_soft_s32_range(3);
+    return track;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DF290_ovl14.s")
+#endif
 
 void func_801DF514_ovl14(void) {
     s32 temp_v0;
