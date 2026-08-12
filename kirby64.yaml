@@ -608,6 +608,29 @@ segments:
     - [0x1DC9D0, c, ovl10/ovl10_3b]
     - [0x1E0160, c, ovl10/ovl10_4]
     - [0x1E0500, c, ovl10/ovl10_5]
+    # Hidden TU split, 2026-08-12. func_801F11A8_ovl10 and func_801F2098_ovl10
+    # both end in an infinite loop and both have a dead epilogue whose `lw $ra`
+    # sits at a rom offset == 16 mod 32 (0x1E21B0 and 0x1E3330). IDO emits a
+    # literal `.align 5` after such a loop, so those epilogues are 32-byte
+    # aligned from their object's .text base -- which cannot hold while the TU
+    # starts at 0x1E0500 (== 0 mod 32). One split satisfies both.
+    #
+    # Only two function starts in range are == 16 mod 32: 0x1E0A50 and
+    # 0x1E0D30. Unlike ovl10_3 the rodata does not discriminate -- ovl10_5_rd
+    # is consumed strictly monotonically across the whole span, which either
+    # split leaves consistent -- and there is no boundary zero-fill anywhere in
+    # the segment. The call graph does discriminate: func_801EFF98_ovl10
+    # (0x1E0D08) is called from 0x1E0720, 0x1E09C8 and 0x1E0C80 and from
+    # nothing else in the ROM or in any data table. Those callers straddle
+    # 0x1E0A50, so that split would make three intra-file calls cross a TU
+    # boundary into a symbol with no external users; 0x1E0D30 puts all four in
+    # the same TU, which is what a `static` helper looks like.
+    #
+    # The two candidates produce identical linked bytes and identical alignment
+    # for the two affected functions, so the ROM gate cannot tell them apart.
+    # Where they WOULD differ is a future rodata migration of ovl10_5: they
+    # disagree about exactly D_801F4C58 and D_801F4C5C.
+    - [0x1E0D30, c, ovl10/ovl10_5b]
     - [0x1E4160, data, ovl10/ovl10]
     - [0x1E5160, data, ovl10/ovl10_2]
     - [0x1E53E0, data, ovl10/ovl10_3]
