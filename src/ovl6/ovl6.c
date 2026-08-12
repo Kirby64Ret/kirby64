@@ -917,92 +917,73 @@ void func_80152DB8_ovl6(void) {
     omCurrentObj = sp2C;
 }
 
-#ifdef MIPS_TO_C
-
 void func_80152EA8_ovl6(void) {
-    s32 *sp1C;
-    s32 *temp_t9;
-    s32 *temp_v1;
-    s32 temp_a2;
-    s32 temp_t3;
-    u32 temp_a0;
-    void *temp_v0;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *temp_v1_2;
-    void *var_a0;
-    void *var_a2;
+    void *func_800A9250(u32, s32);
+    extern GObj *D_800DE350[];
+    GObj *saved;
+    u32 spec;
+    s32 *slot;
+    s32 val;
+    u32 *bank;
+    DObj *d;
+    u8 *src;
 
-    sp1C = omCurrentObj;
-    temp_a0 = D_8015A560_ovl6->unk4;
-    temp_t9 = *(&D_800DE350 + (D_8015A560_ovl6->unk3 * 4));
-    omCurrentObj = temp_t9;
-    temp_v1 = *(&D_800D00C4 + ((temp_a0 >> 0x10) * 4)) + ((temp_a0 & 0xFFFF) * 4);
-    temp_a2 = *temp_v1;
-    if (temp_a2 != 0) {
-        *(&gSegment4StartArray + (*temp_t9 * 4)) = temp_a2;
-        func_800A8564(*temp_v1, 1, temp_a2, &omCurrentObj);
+    saved = omCurrentObj;
+    spec = D_8015A560_ovl6->unk4;
+    omCurrentObj = D_800DE350[D_8015A560_ovl6->unk3];
+    slot = &((s32 **) &D_800D00C4)[spec >> 16][spec & 0xFFFF];
+    val = *slot;
+    if (val != 0) {
+        gSegment4StartArray[omCurrentObj->objId] = (u32 *) val;
+        func_800A8564(*slot, 1);
     } else {
-        *(&gSegment4StartArray + (*omCurrentObj * 4)) = func_800A9250(temp_a0, 3, temp_a2, &omCurrentObj);
+        gSegment4StartArray[omCurrentObj->objId] = func_800A9250(spec, 3);
     }
-    temp_v0 = *(&gSegment4StartArray + (*omCurrentObj * 4));
-    temp_t3 = temp_v0->unk8;
-    switch (temp_t3) {
-        case 17:
-        case 18:
-        case 19:
-        case 20:
-        case 21:
-        case 22:
-            omCurrentObj->unk3C->unk50 = temp_v0->unk0;
+    bank = gSegment4StartArray[omCurrentObj->objId];
+    switch (bank[2]) {
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x14:
+        case 0x15:
+        case 0x16:
+            omCurrentObj->data.dobj->data.data = (void *) bank[0];
             break;
-        case 23:
-        case 24:
-        case 25:
-        case 26:
-        case 27:
-        case 28:
-        case 29:
-        case 30:
-            var_a0 = omCurrentObj->unk3C;
-            var_a2 = temp_v0->unk0;
-            if (var_a0 != NULL) {
-                do {
-                    temp_v0_2 = var_a0->unk10;
-                    var_a0->unk50 = var_a2->unk4;
-                    if (temp_v0_2 != NULL) {
-                        var_a0 = temp_v0_2;
-                    } else {
-                        temp_v0_3 = var_a0->unk8;
-                        if (temp_v0_3 != NULL) {
-                            var_a0 = temp_v0_3;
-                        } else {
-loop_11:
-                            temp_v0_4 = var_a0->unk14;
-                            if (temp_v0_4 == 1) {
-                                var_a0 = NULL;
-                            } else {
-                                temp_v1_2 = temp_v0_4->unk8;
-                                if (temp_v1_2 != NULL) {
-                                    var_a0 = temp_v1_2;
-                                } else {
-                                    var_a0 = temp_v0_4;
-                                    goto loop_11;
-                                }
-                            }
+        case 0x17:
+        case 0x18:
+        case 0x19:
+        case 0x1A:
+        case 0x1B:
+        case 0x1C:
+        case 0x1D:
+        case 0x1E:
+            d = omCurrentObj->data.dobj;
+            src = (u8 *) bank[0];
+            while (d != NULL) {
+                d->data.data = *(void **) (src + 4);
+                if (d->firstChild != NULL) {
+                    d = d->firstChild;
+                } else if (d->next != NULL) {
+                    d = d->next;
+                } else {
+                    while (TRUE) {
+                        if ((u32) d->parent == 1) {
+                            d = NULL;
+                            break;
                         }
+                        if (d->parent->next != NULL) {
+                            d = d->parent->next;
+                            break;
+                        }
+                        d = d->parent;
                     }
-                    var_a2 += 0x2C;
-                } while (var_a0 != NULL);
+                }
+                src += 0x2C;
             }
             break;
     }
-    omCurrentObj = sp1C;
+    omCurrentObj = saved;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80152EA8_ovl6.s")
-#endif
 
 void func_80153040_ovl6(void) {
     D_8015A7A8_ovl6 = D_8015A7AC_ovl6 = D_8015A7B0_ovl6 = 0;
@@ -1470,55 +1451,27 @@ void func_80154258_ovl6(void) {
     D_8015A7B8_ovl6.unk2 = temp_t9 & 0xFFFF;
 }
 
-#ifdef MIPS_TO_C
-
 s32 func_80154284_ovl6(void) {
-    s32 *var_a0;
-    s32 temp_t6;
-    s32 var_v1;
+    extern GObj *D_800DE350[];
+    s32 i;
 
     if (D_8015A69C_ovl6 != 0) {
         return 0;
     }
     if (D_8015A698_ovl6 == 0) {
-        if ((D_800DE350 != 0) && (D_800DFF50 != -1) && ((D_800DD8D0 >> 0x1E) == 0)) {
-            return 0;
+        for (i = 0; i != 62; i++) {
+            if ((D_800DE350[i] != NULL) && (D_800DFF50[i] != -1) && ((D_800DD8D0[i] & 0xC0000000) == 0)) {
+                return 0;
+            }
         }
-        if ((*(&D_800DE350 + 4) != 0) && (*(&D_800DFF50 + 4) != -1) && !(*(&D_800DD8D0 + 4) & 0xC0000000)) {
-            return 0;
-        }
-        var_a0 = &D_800DE350 + 8;
-        var_v1 = 8;
-loop_12:
-        if ((var_a0->unk0 != 0) && (*(&D_800DFF50 + var_v1) != -1) && !(*(&D_800DD8D0 + var_v1) & 0xC0000000)) {
-            return 0;
-        }
-        if ((var_a0->unk4 != 0) && ((&D_800DFF50 + var_v1)->unk4 != -1) && !((&D_800DD8D0 + var_v1)->unk4 & 0xC0000000)) {
-            return 0;
-        }
-        if ((var_a0->unk8 != 0) && ((&D_800DFF50 + var_v1)->unk8 != -1) && !((&D_800DD8D0 + var_v1)->unk8 & 0xC0000000)) {
-            return 0;
-        }
-        temp_t6 = var_a0->unkC;
-        var_a0 += 0x10;
-        if ((temp_t6 != 0) && ((&D_800DFF50 + var_v1)->unkC != -1) && !((&D_800DD8D0 + var_v1)->unkC & 0xC0000000)) {
-            return 0;
-        }
-        var_v1 += 0x10;
-        if (var_a0 == (&D_800DE350 + 0xF8)) {
-            /* Duplicate return node #32. Try simplifying control flow for better match */
-            return 1;
-        }
-        goto loop_12;
+        goto ret1;
     }
     if (D_8015A698_ovl6 == 1) {
         return 0;
     }
+ret1:
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154284_ovl6.s")
-#endif
 
 void func_80154464_ovl6(void) {
     GObj **var_s1;
