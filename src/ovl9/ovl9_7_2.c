@@ -290,7 +290,7 @@ void func_8019C71C_ovl7(f32);
 void func_8019C844_ovl7(Vector *);
 void func_801F2B80_ovl9(Vector *);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801F3870_ovl9(GObj *arg0) {
     struct UnkStruct800E1B50 *tmp;
     Vector sp28;
@@ -324,7 +324,6 @@ void func_801F3870_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F3870_ovl9.s")
 #endif
-
 void func_801F399C_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_8021C3DC_ovl9);
 }
@@ -909,7 +908,7 @@ void func_800A9EA4(s32);
    (u32) cast on the call argument, `struct GObj *obj = omCurrentObj;` hoist,
    an explicit f32 temp for the read-back (11/70), dropping the parameter
    (65/69 -- the parameter and its home slot are required). */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801F58A0_ovl9(struct GObj *arg0) {
     *(u32 *) &D_800E9C60[omCurrentObj->objId] = 1;
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -928,7 +927,6 @@ void func_801F58A0_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F58A0_ovl9.s")
 #endif
-
 void func_801F52D4_ovl9(struct GObj *);
 
 void func_801F59B8_ovl9(struct GObj *arg0) {

@@ -90,7 +90,7 @@ void func_800B6FD8(GObj *);
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B79B0_ovl7.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 65/147 diffs and one instruction short: everything up to the if matches;
 // the ROM hoists the D_800E3750 base before the if and gets a beql whose
 // delay slot preloads 14.0f.
@@ -126,7 +126,6 @@ void func_801B7C30_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B7C30_ovl7.s")
 #endif
-
 void func_801B7E80_ovl7(GObj *arg0) {
     func_801BA240_ovl7();
     func_801AC908_ovl7(arg0);
@@ -276,7 +275,7 @@ void func_801B865C_ovl7(GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 24/50 (was 45/49). `*(vs32 *) &D_801D0A98_ovl7` is what makes IDO
 // MATERIALISE the symbol's address into a register (lui + addiu, then
 // lw/sw 0(reg)) three times, exactly as the ROM does; a plain
@@ -304,7 +303,6 @@ void func_801B8714_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B8714_ovl7.s")
 #endif
-
 void func_801B87DC_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
 

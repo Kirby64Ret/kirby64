@@ -543,7 +543,7 @@ void func_8020ACEC_ovl9(s32 arg0) {
 
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8020ACF4_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
     s32 i;
@@ -571,7 +571,6 @@ void func_8020ACF4_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020ACF4_ovl9.s")
 #endif
-
 void func_8020AF0C_ovl9(struct GObj *arg0) {
     if (D_800E8920[omCurrentObj->objId] == 0) {
         D_800E6690[omCurrentObj->objId] = 0.0f;
@@ -687,7 +686,7 @@ void func_8020B524_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8020B598_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 1;
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
@@ -709,7 +708,6 @@ void func_8020B598_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020B598_ovl9.s")
 #endif
-
 void func_8020B718_ovl9(struct GObj *arg0) {
     if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
         if (func_8019A9AC_ovl7(240.0f, 160.0f) == 3) {
@@ -948,7 +946,7 @@ void func_8020C2EC_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 24 diffs.
 void func_8020C378_ovl9(void) {
     f32 sp1C;
@@ -970,7 +968,6 @@ void func_8020C378_ovl9(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020C378_ovl9.s")
 #endif
-
 void func_8020C454_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -1661,7 +1658,7 @@ void func_8020EAD4_ovl9(struct GObj *arg0) {
    explicit `s32 *p = &D_800D6B54` local in three positions (77), and calling
    with the arguments permuted to compensate (6).
    Same phenomenon as func_801ED7D0_ovl10 and func_801FDB28_ovl9. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern s32 D_800D6B54;
 extern f32 D_8021DC10_ovl9;
 extern f32 D_8021DC14_ovl9;
@@ -1700,7 +1697,6 @@ void func_8020ED74_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020ED74_ovl9.s")
 #endif
-
 void func_8020EEBC_ovl9(struct GObj *arg0) {
     f32 temp;
 

@@ -176,7 +176,7 @@ s32 func_801561DC_ovl4(void) {
  * six declaration permutations of the three locals were inert. Dead locals of
  * every type/position are eliminated here, so the frame cannot be shrunk that
  * way. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8015632C_ovl4(s32);
 void func_800ACBDC(GObj *);
 
@@ -203,7 +203,6 @@ void func_80156560_ovl4(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80156560_ovl4.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_8015665C_ovl4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801567BC_ovl4.s")

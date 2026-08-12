@@ -469,7 +469,7 @@ void func_802209A0_ovl19(GObj *arg0) {
  * positions, plain `s32 *p` (68), a read-back second use (66), and file-scope
  * `void` prototypes for the three implicitly-declared callees -- 10 in every
  * case. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_802209E4_ovl19(GObj *arg0) {
     extern s32 D_800D6F10;
     extern u32 D_800D71F8;
@@ -498,7 +498,6 @@ void func_802209E4_ovl19(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802209E4_ovl19.s")
 #endif
-
     // the same rabbit hole as func_80220280_ovl19
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220B40_ovl19.s")
 
@@ -550,7 +549,7 @@ extern u32 D_800D71F8;
  * uses $t6 and $a1 with temps t7..t0.  Swept: pointer local (volatile and not),
  * struct-base and array spellings, && vs nested ifs, s32 vs GObj* first
  * parameter, one and two pad locals, a pointer local for D_800E98E0. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80221108_ovl19(struct GObj *arg0, s32 arg1, f32 arg2) {
     s32 temp;
 
@@ -566,7 +565,6 @@ void func_80221108_ovl19(struct GObj *arg0, s32 arg1, f32 arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80221108_ovl19.s")
 #endif
-
 // the same rabbit hole as func_80220280_ovl19
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_802211A0_ovl19.s")
 

@@ -340,7 +340,7 @@ void func_80173E40_ovl3(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 6/99: IDO swaps $f0/$f2 between the shared 0.0f and the D_80197434_ovl3
    load. Re-swept in wave 7 with no effect: statement order (4 positions), a
    named `zero` local with and without a declaration initializer, deriving the
@@ -375,7 +375,6 @@ void func_80173EC0_ovl3(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80173EC0_ovl3.s")
 #endif
-
 void func_8017404C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     s32 temp;
 

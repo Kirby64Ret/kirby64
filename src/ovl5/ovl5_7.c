@@ -23,7 +23,7 @@ extern u8 D_8018ED00_ovl5;
 extern s32 D_8018ED3C_ovl5;
 extern s32 D_801891E4_ovl5[][4];
 extern Gfx D_80188958_ovl5[];
-void func_8015CCA8_ovl5(s32);
+s32 func_8015CCA8_ovl5(s32);
 void func_8017C938_ovl5(void);
 extern u8 D_8018ED38_ovl5;
 extern u8 D_8018ED39_ovl5;
@@ -211,9 +211,66 @@ void func_8017B560_ovl5(GObj *arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B6B4_ovl5.s")
+extern Unk20Ptrs D_801888D4_ovl5;
+extern Unk16Ptrs D_801888E8_ovl5;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B848_ovl5.s")
+// `sp40.unk0[4 - prev]` is load-bearing: IDO folds the +0x10 into the base and
+// shares it with &sp50, giving the ROM's single `addiu $s3, $sp, 0x50` plus a
+// `negu`. The leading pad places the two locals at 0x50/0x40.
+void func_8017B6B4_ovl5(GObj *arg0) {
+    s32 pad0;
+    Unk20Ptrs sp50 = D_801888D4_ovl5;
+    Unk16Ptrs sp40 = D_801888E8_ovl5;
+    s32 prev = D_8018ED08_ovl5 + 1;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    while (D_8018ED04_ovl5 == 0) {
+        if (prev != D_8018ED08_ovl5) {
+            prev = D_8018ED08_ovl5;
+            func_800ACBDC(arg0);
+            func_8015C740_ovl5(arg0, sp50.unk0[prev]);
+            func_8015C740_ovl5(arg0, sp40.unk0[4 - prev]);
+        }
+        ohSleep(1);
+    }
+    func_800ACBDC(arg0);
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
+
+#include "SPObj.h"
+extern Unk16Ptrs D_801888F8_ovl5;
+extern struct UnkStruct8015C740 D_80188E10_ovl5;
+extern f32 D_80188E30_ovl5[][2];
+
+// sp50 must be declared LAST: the two scalars ahead of it place it at 0x50.
+void func_8017B848_ovl5(GObj *arg0, s32 arg1) {
+    s32 prev;
+    SPObj *spobj;
+    Unk16Ptrs sp50 = D_801888F8_ovl5;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    prev = (&D_8018ED38_ovl5)[arg1] + 1;
+    while (D_8018ED04_ovl5 == 1) {
+        if (prev != (&D_8018ED38_ovl5)[arg1]) {
+            func_800ACBDC(arg0);
+            prev = (&D_8018ED38_ovl5)[arg1];
+            if (prev == 0) {
+                func_8015C740_ovl5(arg0, sp50.unk0[arg1]);
+            } else {
+                spobj = (SPObj *) func_8015C740_ovl5(arg0, &D_80188E10_ovl5);
+                spobj->xOffset = D_80188E30_ovl5[arg1][0];
+                spobj->yOffset = D_80188E30_ovl5[arg1][1];
+            }
+        }
+        ohSleep(1);
+    }
+    func_800ACBDC(arg0);
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 struct DObj *func_8017B9F4_ovl5(s32 arg0, s32 arg1) {
     return D_800DFBD0[D_8018ED3C_ovl5][D_801891E4_ovl5[arg0][arg1]];
@@ -223,7 +280,35 @@ struct DObj *func_8017B9F4_ovl5(s32 arg0, s32 arg1) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017BED8_ovl5.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017C084_ovl5.s")
+#include "SPObj.h"
+extern Unk16Ptrs D_80188908_ovl5;
+extern struct UnkStruct8015C740 D_801890D0_ovl5;
+extern f32 D_801890F0_ovl5[][2];
+
+// The scalars and the single pad must precede sp48 to place it at 0x48.
+void func_8017C084_ovl5(GObj *arg0) {
+    s32 pad0;
+    s32 i;
+    s32 n;
+    SPObj *spobj;
+    Unk16Ptrs sp48 = D_80188908_ovl5;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    n = func_8015CCA8_ovl5(D_800D7178.unk44);
+    for (i = 0; i <= n; i++) {
+        spobj = (SPObj *) func_8015C740_ovl5(arg0, &D_801890D0_ovl5);
+        spobj->xOffset = D_801890F0_ovl5[i][0];
+        spobj->yOffset = D_801890F0_ovl5[i][1];
+        func_8015C740_ovl5(arg0, sp48.unk0[i]);
+    }
+    while (D_8018ED04_ovl5 == 2) {
+        ohSleep(1);
+    }
+    func_800ACBDC(arg0);
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 void func_8017C1FC_ovl5(GObj *arg0) {
     s32 pad0;
@@ -246,7 +331,33 @@ void func_8017C1FC_ovl5(GObj *arg0) {
     func_800B1900(omCurrentObj->objId);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017C34C_ovl5.s")
+extern Unk16Ptrs D_80188928_ovl5;
+extern Unk16Ptrs D_80188938_ovl5;
+
+// The two dead pads and the leading `i`/`n` are load-bearing: they place the
+// two copied 16-byte locals at 0x58/0x48 and size the frame at 0x78.
+void func_8017C34C_ovl5(GObj *arg0) {
+    s32 i;
+    s32 n;
+    s32 p0;
+    s32 p1;
+    Unk16Ptrs sp58 = D_80188928_ovl5;
+    Unk16Ptrs sp48 = D_80188938_ovl5;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+    n = func_8015CCA8_ovl5(D_800D7178.unk44);
+    for (i = 0; i <= n; i++) {
+        func_8015C740_ovl5(arg0, sp58.unk0[i]);
+        func_8015C740_ovl5(arg0, sp48.unk0[i]);
+    }
+    while (D_8018ED04_ovl5 == 3) {
+        ohSleep(1);
+    }
+    func_800ACBDC(arg0);
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
 
 void func_8017C4CC_ovl5(GObj *arg0) {
     s32 pad0;
@@ -284,9 +395,9 @@ void func_8017C61C_ovl5(void) {
 
 extern s32 func_800AEA64(s32, s32, s32);
 
-#ifdef MIPS_TO_C
-/* 9/68: exact except $s5/$s6 are swapped between the D_800E98E0 and
-   D_800E9AA0 bases (saved-register allocation slot offset). */
+/* The nested `for (j = 0; j != 4; j++)` is load-bearing: with the inner loop
+   written as a do/while the $s5/$s6 bases of D_800E98E0 and D_800E9AA0 come
+   out swapped (9 diffs). */
 void func_8017C6C8_ovl5(void) {
     s32 i;
     s32 j;
@@ -294,14 +405,12 @@ void func_8017C6C8_ovl5(void) {
 
     D_800E98E0[func_800AEA64(0xA, 0, 0x70)] = 6;
     for (i = 0; i < 4; i++) {
-        j = 0;
-        do {
+        for (j = 0; j != 4; j++) {
             t = request_track_general(0xA, 0, 0x70);
             D_800E98E0[t] = 5;
             ((s32 *) D_800E9AA0)[t] = i;
             D_800E9C60[t] = j;
-            j++;
-        } while (j != 4);
+        }
     }
     i = 0;
     do {
@@ -311,9 +420,6 @@ void func_8017C6C8_ovl5(void) {
         i++;
     } while (i != 4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017C6C8_ovl5.s")
-#endif
 
 void func_8017C7D8_ovl5(void) {
     D_800E98E0[request_track_3(0xA, 0, 0x70)] = 0xB;

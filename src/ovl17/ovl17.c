@@ -80,7 +80,7 @@ void func_801DC71C_ovl17(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC724_ovl17.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 6 diffs (was 16): hoisting omCurrentObj into a local is what puts it in $v0.
  * What is left is a one-slot rotation of the ARGUMENT registers -- the ROM
  * keeps $a0 reserved (base in $a2, element address in $a1) while IDO reuses
@@ -104,8 +104,6 @@ void func_801DC91C_ovl17(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC91C_ovl17.s")
 #endif
-
-
 void func_801DC98C_ovl17(void) {
     Vector sp2C;
     Camera *cam;

@@ -102,7 +102,7 @@ void func_801E3244_ovl10(void) {
    addend alone, the bound alone and both in either assignment order (the
    plain extern form is 9). Everything before the loop, including the
    atan2f/sqrtf ternary, is exact. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern f32 D_801F4A70_ovl10;
 extern f32 D_801F4A74_ovl10;
 extern f32 D_801F4A78_ovl10;
@@ -133,7 +133,6 @@ f32 func_801E3614_ovl10(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_2/func_801E3614_ovl10.s")
 #endif
-
 void func_801E3748_ovl10(void) {
     func_801A0D74_ovl7();
     func_801A03B4_ovl7();

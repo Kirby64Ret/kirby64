@@ -256,7 +256,7 @@ void func_800F7404(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7404.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 22/46 diffs. Body and instruction count are exact; the residue is the whole
 // $t register file allocated one slot low (ROM t7/t8/t9 where IDO takes
 // t6/t7/t8), the resulting prologue schedule, and one `ori` where the ROM has

@@ -115,7 +115,7 @@ void func_801A470C_ovl7(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4F70_ovl7.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 9/95: every store and every address computation is exact; only the FP
  * register NAMES differ -- ROM has 0.0 in $f12, D_801CDFC0_ovl7 in $f14 and
  * the D_800E3E50 read-back in $f2, IDO gives $f14/$f2/$f12. Swept: separate
@@ -156,7 +156,7 @@ void func_801A56A0_ovl7(GObj *arg0) {
     D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801A56C8_ovl7(void) {
     Vector sp20;
 
@@ -171,7 +171,6 @@ void func_801A56C8_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A56C8_ovl7.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A57A8_ovl7.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A5DE8_ovl7.s")

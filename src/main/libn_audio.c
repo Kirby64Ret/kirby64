@@ -433,7 +433,7 @@ void func_80024748(void) {
  * `> 0`, early return with no else, post-increment dereferences, and an extra
  * pointer local.  Verbatim upstream libreultra/src/audio/cseq.c __getTrackByte;
  * the ALCSeq field offsets are confirmed exact by the listing. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 u8 func_80025758(ALCSeq *seq, u32 track) {
     u8 theByte;
 
@@ -474,7 +474,6 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80025758.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002581C.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNextEvent.s")
@@ -720,7 +719,7 @@ void func_800263F0(KCSeqp *seqp) {
  * $s0/$s1/$s2/$s3/$s5 (ujoin custom convention), so this caller has to reserve
  * the low saved registers and spell the call in a way o32 cannot.  Same class
  * as func_8002581C/__readVarLen. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 Acmd *func_80026B2C(N_PVoice *filter, s16 *outp, s32 outCount, Acmd *p) {
     Acmd *func_80026898();
     Acmd *ptr = p;
@@ -848,7 +847,6 @@ Acmd *func_80026B2C(N_PVoice *filter, s16 *outp, s32 outCount, Acmd *p) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026B2C.s")
 #endif
-
 Acmd *func_80026FA8(N_PVoice *e, s16 *outp, Acmd *p) {
     Acmd *func_80026B2C(N_PVoice *filter, s16 *outp, s32 outCount, Acmd *p);
     Acmd *ptr = p;
@@ -1282,7 +1280,7 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
  * empty function at 0x800299F0 (`jr $ra; nop` past the epilogue), so a
  * conversion must define `void func_800299F0(void) {}` after it or the TU
  * comes out 8 bytes short. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
     Acmd *ptr = p;
 
@@ -1296,7 +1294,6 @@ Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSavePull.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alAudioFrame.s")
 
 void alN_PVoiceNew(N_PVoice *mv, ALDMANew dmaNew, ALHeap *hp) {
@@ -1334,7 +1331,7 @@ void alN_PVoiceNew(N_PVoice *mv, ALDMANew dmaNew, ALHeap *hp) {
     mv->em_ctrlTail = 0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void n_alSynNew(ALSynConfig *c) {
     s32 i;
     N_ALVoice *vv;
@@ -1410,7 +1407,6 @@ void n_alSynNew(ALSynConfig *c) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSynNew.s")
 #endif
-
 void n_alClose(N_ALGlobals *glob) {
     if (n_alGlobals) {
         n_alSynDelete();
@@ -1490,7 +1486,7 @@ void n_alSynAddSndPlayer(ALPlayer *client) {
     osSetIntMask(mask);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void n_alSynAddPlayer(ALPlayer *client) {
     OSIntMask mask = osSetIntMask(OS_IM_NONE);
 
@@ -1504,8 +1500,7 @@ void n_alSynAddPlayer(ALPlayer *client) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSynAddPlayer.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void n_alSynStopVoice(N_ALVoice *v) {
     ALParam *update;
     ALFilter *f;
@@ -1526,7 +1521,6 @@ void n_alSynStopVoice(N_ALVoice *v) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSynStopVoice.s")
 #endif
-
 s32 _allocatePVoice(N_PVoice **pvoice, s16 priority) {
     ALLink *dl;
     N_PVoice *pv;
@@ -1555,7 +1549,7 @@ s32 _allocatePVoice(N_PVoice **pvoice, s16 priority) {
     return stolen;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 n_alSynAllocVoice(N_ALVoice *voice, ALVoiceConfig *vc) {
     N_PVoice *pvoice = 0;
     ALFilter *f;
@@ -1608,4 +1602,3 @@ s32 n_alSynAllocVoice(N_ALVoice *voice, ALVoiceConfig *vc) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alSynAllocVoice.s")
 #endif
-

@@ -1930,7 +1930,7 @@ s32 func_801056C8(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3) {
     Vector sp24;
     f32 sp20;
@@ -1960,7 +1960,6 @@ s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3)
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801057C4.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 s32 func_801058B8(void *arg0, void *arg1, void *arg2, f32 arg3, void *arg4, f32 *arg5, void **arg6, s32 *arg7, s32 *arg8) {
@@ -2295,7 +2294,7 @@ block_11:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801060C4.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // Near match: first 53 insns identical; target keeps `&arg0->scale[0]` in a
 // pointer temp (sp30) that IDO here folds back into direct s0-relative loads.
 s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
@@ -2357,7 +2356,6 @@ s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801063F0.s")
 #endif
-
 s32 func_8010669C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp54;
     Vector sp48;
@@ -3647,7 +3645,7 @@ void func_8010924C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     arg1->flags.f.a = temp_v0 & 0xF1FF;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 19/123: f16/f18 parity from the `(sp2C.z - sp20.z) * BD00.unk18` multiply on.
 // Swept all 8 operand/addend orders and 7 named-temp splits; 19 is the floor.
 void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
@@ -3679,7 +3677,6 @@ void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109318.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 void func_80109504(void *arg0, void *arg1) {
@@ -4709,7 +4706,7 @@ s32 func_8010BB08(struct PositionState *arg0) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // Near match: only regalloc differs (s0/s1 swapped; target has arg0 in s0
 // and &D_8012BCA0 in s1 while keeping the flags loads folded through s1).
 s32 func_8010BBD4(struct PositionState *arg0) {
@@ -4740,7 +4737,6 @@ s32 func_8010BBD4(struct PositionState *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010BBD4.s")
 #endif
-
 s32 func_8010BD0C(struct PositionState *arg0) {
     D_8012BD44 = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
@@ -4810,7 +4806,7 @@ s32 func_8010BE7C(struct PositionState *arg0) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // Near match: differs only in scheduling around the second flags test
 // (target hoists the D_8012BD00 address into $v1 before the beqz, avoiding
 // a move; temp registers shift by one as a result).
@@ -4858,7 +4854,6 @@ s32 func_8010BFAC(struct PositionState *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010BFAC.s")
 #endif
-
 s32 func_8010C184(struct PositionState *arg0) {
     f32 sp4C;
     Vector sp40;

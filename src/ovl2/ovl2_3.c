@@ -352,7 +352,7 @@ s32 func_800F8B1C(s32 arg0) {
     return 1;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // close but not matching: stack layout and register allocation differ
 void func_800F8C70(s32 *arg0) {
     Vector spA;
@@ -404,7 +404,6 @@ void func_800F8C70(s32 *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F8C70.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 void func_800F8E6C(s32 *arg0) {
@@ -1999,8 +1998,7 @@ void func_800FBF18(s32 arg0) {
     D_80129210.unk5C = cam->unkA;
 }
 
-#ifdef MIPS_TO_C
-
+#ifdef NON_MATCHING
 s32 func_800FC03C(f32 *arg0, f32 *arg1, f32 *arg2) {
     f32 temp_f0;
     f32 temp_f12;
@@ -2046,9 +2044,7 @@ s32 func_800FC03C(f32 *arg0, f32 *arg1, f32 *arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC03C.s")
 #endif
-
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_800FC164(struct Ovl2CamState *arg0) {
     f32 sp30;
     f32 sp2C;
@@ -2099,8 +2095,6 @@ s32 func_800FC164(struct Ovl2CamState *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FC164.s")
 #endif
-
-
 void func_800FC3D8(void) {
     D_80129150 = D_801291B0;
     D_80129270 = D_801292F0;

@@ -555,7 +555,7 @@ void func_8011C4E8(s32 arg0, void *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C4E8.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8011C720(s32 arg0) {
     u16 *temp_v1;
 
@@ -600,7 +600,6 @@ void func_8011C720(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C720.s")
 #endif
-
 void func_8011C838(void) {
     u32 track = request_track_general(0x12, 0, 1);
     GObj *g = D_800DE350[track];
@@ -608,7 +607,7 @@ void func_8011C838(void) {
     g->onAnimate = func_8011D0FC;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 16 diffs, register naming only: the ROM keeps gKirbyState in $a1 and the
 // D_800D6F10+8 pointer in $a0; IDO starts one register lower ($a0/$v1).
 // Loop form, index type, pointer-walk form and declaration order were swept.
@@ -633,7 +632,6 @@ void func_8011C87C(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C87C.s")
 #endif
-
 void func_8011C8D0(void) {
     func_80105180(&gPositionState);
     D_800D6F34 = 0;
@@ -2394,7 +2392,7 @@ s32 func_80120BCC(void) {
     return ret;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_80120CCC(f32 arg0, f32 arg1) {
     f32 temp_f2;
 
@@ -2440,7 +2438,6 @@ s32 func_80120CCC(f32 arg0, f32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80120CCC.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 void func_80120E74(s32 arg0) {
@@ -2714,7 +2711,7 @@ void func_801219C8(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80121A04(void) {
     GObj *var_a0;
 
@@ -2760,7 +2757,6 @@ void func_80121A04(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121A04.s")
 #endif
-
 void func_80121BCC(s32 arg0) {
     if ((D_800E8AE0[omCurrentObj->objId] & 0x80) && (D_800E8AE0[omCurrentObj->objId] & 6)
         && ((gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesPosYArray[omCurrentObj->objId]) < -2.45f)) {
@@ -2792,7 +2788,7 @@ s32 func_80121C90(void) {
 }
 
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80121D3C(void) {
     GObj *temp_v0;
     s32 var_v1;
@@ -2833,7 +2829,6 @@ void func_80121D3C(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121D3C.s")
 #endif
-
 void func_80121F14(void) {
     if (!(gKirbyState.unk9 & 1)) {
         gKirbyState.unk9 |= 1;

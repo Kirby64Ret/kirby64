@@ -113,7 +113,7 @@ s32 func_801F111C_ovl10(void) {
    local assigned at the declaration (29), before the if (29), after the store
    (23) or declared first (29); both operand orders of the outer float `+`;
    both operand orders of the 1.0f compare. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern f32 D_801F4C98_ovl10;
 extern f32 D_801F4C9C_ovl10;
 extern f32 D_801F4CA0_ovl10;
@@ -137,7 +137,6 @@ void func_801F1454_ovl10(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1454_ovl10.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1554_ovl10.s")
 
 extern s32 D_800D6B98;
@@ -212,7 +211,7 @@ void func_801F1CA0_ovl10(GObj *arg0, s32 arg1) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 15/58 diffs: loop and arithmetic exact; the two hoisted array bases take
 // $s3/$s4 the other way round and the prologue saves $s0 last.
 s32 func_801F1D60_ovl10(Vector vec, s32 count, f32 dist) {
@@ -235,7 +234,6 @@ s32 func_801F1D60_ovl10(Vector vec, s32 count, f32 dist) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1D60_ovl10.s")
 #endif
-
 extern u32 D_801F4D60_ovl10;
 extern f32 D_801F4CAC_ovl10;
 extern f32 D_801F4CB0_ovl10;

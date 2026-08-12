@@ -148,7 +148,7 @@ void func_80198880_ovl7(struct Sub800E1B50_Unk88 *arg0) {
     func_801A3938(NULL);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // NEAR MISS (63/161 insns differ, count equal): remaining diffs are systemic:
 // target keeps arg0*4 in $a2 and &D_800E7730[arg0] in $v0 (ours swapped), and
 // target never hoists loads from D_800E7730/D_800E77A0 above stores through ent
@@ -240,7 +240,6 @@ struct Sub800E1B50_Unk88 *func_80198914_ovl7(s32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80198914_ovl7.s")
 #endif
-
 void func_80198B98_ovl7(void) {
     switch (D_800E7730[omCurrentObj->objId]) {
         case 1:
@@ -338,7 +337,7 @@ void func_80198DBC_ovl7(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // NEAR MISS (33/156, equal insn count, all semantic ops identical): remaining
 // diffs are pure register-allocation: target puts the case-6/tail u16 val web
 // in $v0 (ours lands in $v1 + one extra move after the tail lhu), and after the
@@ -412,7 +411,6 @@ void func_80199084_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199084_ovl7.s")
 #endif
-
 void func_801992F0_ovl7(void) {
     switch (D_800E7730[omCurrentObj->objId]) {
         case 0:
@@ -433,7 +431,7 @@ void func_801992F0_ovl7(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80199384_ovl7(void) {
     UnkStruct800E1B50 *ent;
     u32 id;
@@ -497,7 +495,6 @@ void func_80199384_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199384_ovl7.s")
 #endif
-
 void func_80199568_ovl7(void) {
     if (D_800E8E60[omCurrentObj->objId] == 0) {
         func_80198CA8_ovl7();
@@ -877,7 +874,7 @@ void func_8019A7A8_ovl7(Unused GObj *gobj) {
     func_800B3520();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_8019A7E8_ovl7(f32 arg0) {
     Vector sp34;
     Vector sp28;
@@ -910,8 +907,6 @@ block_6:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A7E8_ovl7.s")
 #endif
-
-
 s32 func_8019A900_ovl7(struct TrackPosition *arg0) {
     f32 temp_f0 = func_800F9828(omCurrentObj->objId, 0);
 
@@ -1273,8 +1268,7 @@ void func_8019B7D8_ovl7(void) {
     }
 }
 
-#ifdef MIPS_TO_C
-
+#ifdef NON_MATCHING
 s32 func_8019B834_ovl7(void) {
     f32 sp2C;
     f32 sp28;
@@ -1292,7 +1286,6 @@ s32 func_8019B834_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B834_ovl7.s")
 #endif
-
 s32 func_8019B918_ovl7(void) {
     Vector vec;
 
@@ -2156,7 +2149,7 @@ block_19:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D4D0_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 20/46 diffs: body is right; ROM frame is 0x28 with the arg home slot
 // stored (sw $a0, 0x28($sp)) and temps at 0x20/0x24. K&R form, u16 param
 // and inlining ent all fail to reproduce the home-slot store.
@@ -2188,7 +2181,6 @@ s32 arg0;
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D8A0.s")
 #endif
-
 struct EneSpawnEntry {
     /* 0x00 */ u8 pad0[5];
     /* 0x05 */ u8 unk5;
@@ -2197,7 +2189,7 @@ struct EneSpawnEntry {
 
 extern struct EneSpawnEntry *D_801290E0;
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8019D958_ovl7(s32 arg0) {
     UnkStruct800E1B50 *temp_v0;
     s32 temp_s0;
@@ -2228,7 +2220,6 @@ void func_8019D958_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019D958_ovl7.s")
 #endif
-
 f32 func_8019DA70_ovl7(s32 track);
 
 f32 func_8019DA50_ovl7(void) {
@@ -2899,7 +2890,7 @@ void func_8019F000_ovl7(void *arg0, f32 *arg1, s32 arg2, f32 arg3) {
     D_800E3750[omCurrentObj->objId] = sp20.unk24;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8019F130_ovl7(void) {
     struct UnkStruct800E1B50 *temp_t0;
     s32 temp_a1;
@@ -2927,7 +2918,6 @@ void func_8019F130_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019F130_ovl7.s")
 #endif
-
 void func_8019F1EC_ovl7(void) {
     if (gKirbyHp > 0.0f) {
         D_800BE544 = -9999;

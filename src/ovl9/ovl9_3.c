@@ -271,7 +271,7 @@ void func_801DF418_ovl9(GObj *arg0) {
    explicit `f32 zero` local (68), the local hoisted above the `if` (69),
    both operand orders of the `!=` and of each loop test, and an explicit
    local for the loop value. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern f32 D_8021CF94_ovl9;
 
 void func_801DF454_ovl9(struct GObj *arg0) {
@@ -293,7 +293,6 @@ void func_801DF454_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DF454_ovl9.s")
 #endif
-
 struct Ovl9AnimCmd2 {
     u8 filler0[8];
     s32 unk8;
@@ -531,7 +530,7 @@ extern s32 D_801C8568;
    are all declared at FILE scope earlier in the TU, so the callee-return-type
    lever cannot be applied here without breaking func_801DFB28_ovl9 /
    func_801DFE00_ovl9. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 5 diffs: objId<<2 is in $v0, the ROM uses $v1.
 void func_801E06C0_ovl9(GObj *arg0) {
     s32 id;
@@ -552,7 +551,6 @@ void func_801E06C0_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801E06C0_ovl9.s")
 #endif
-
 void func_801ACC34_ovl7(s32, s32);
 
 void func_801E078C_ovl9(GObj *arg0, s32 arg1, f32 arg2) {

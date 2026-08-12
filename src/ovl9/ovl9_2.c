@@ -456,7 +456,7 @@ void func_801DB8EC_ovl9(void) {
 /* 23 diffs, all one cause: the ROM's frame is 0x38 (Vector at sp+0x2C, the
    unk84 pointer spilled at sp+0x24) while IDO allocates 0x30. Dead scalar
    locals in every position are eliminated and never grow it. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern void func_800B2340(Vector *, struct DObj *, u32);
 extern void func_8019F410_ovl7(struct DObj *);
 
@@ -475,7 +475,6 @@ void func_801DBC38_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_2/func_801DBC38_ovl9.s")
 #endif
-
 void func_801DBCF0_ovl9(GObj *arg0) {
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
 }

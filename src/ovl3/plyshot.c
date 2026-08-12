@@ -456,7 +456,7 @@ void func_80164058_ovl3(s32 arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 3/124: everything matches except the scratch register IDO picks for the
    D_800E98E0 base -- the ROM materialises it in $t0 and loads the value into
    $a1, IDO uses $a1 for both.  Levers already applied to get here: `s32 kind`
@@ -512,8 +512,7 @@ void func_80164130_ovl3(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80164130_ovl3.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 1 real diff (the rest of the 58/119 is the resulting one-instruction shift):
    the ROM materialises gPlayerControllers TWICE -- `lui $v0; lhu %lo(...)` for
    the pre-loop read and a separate `lui/addiu $s0` base for the three reads
@@ -570,8 +569,7 @@ void func_80164320_ovl3(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80164320_ovl3.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 69/111: logic decoded and every instruction lines up -- the whole diff is a
    one-instruction shift from the extra `sw $s0, 0x18($sp)`. The ROM uses NO
    callee-saved register at all: it spills `h` to 0x1C($sp) and re-reads
@@ -613,7 +611,6 @@ void func_801644EC_ovl3(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801644EC_ovl3.s")
 #endif
-
 void func_801646A4_ovl3(s32 arg0) {
     void func_80164914_ovl3(s32);
     void func_800AF27C(void);

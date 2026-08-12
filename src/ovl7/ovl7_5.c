@@ -794,7 +794,7 @@ block_168:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A7524_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 2 diffs: the compiler spill slot is 0x18($sp), the ROM's is 0x1C. Frame size
 // already matches; declaration order, dummy scalars, dummy arrays/structs and
 // expression reshaping were all swept without moving it.
@@ -819,7 +819,6 @@ s32 func_801A8BAC_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8BAC_ovl7.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 void func_801A8CDC_ovl7(s32 arg0) {
@@ -1384,8 +1383,7 @@ s32 func_801AA190_ovl7(void) {
     return 1;
 }
 
-#ifdef MIPS_TO_C
-
+#ifdef NON_MATCHING
 void func_801AA1D4_ovl7(GObj *gobj) {
     struct UnkStruct800E1B50 *sp2C;
     struct EneAnimSetup *sp24;
@@ -1425,7 +1423,6 @@ void func_801AA1D4_ovl7(GObj *gobj) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AA1D4_ovl7.s")
 #endif
-
 void func_801AA33C_ovl7(GObj *gobj) {
 }
 
@@ -1724,7 +1721,7 @@ void func_801AAE60_ovl7(void) {
     ohSleep(0x3C);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801AB008_ovl7(void) {
     f32 *temp_a0;
     f32 *temp_a0_2;
@@ -1776,7 +1773,6 @@ block_8:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB008_ovl7.s")
 #endif
-
 void func_801ABBA0_ovl7(void);
 s32 func_801AC6D0_ovl7(struct AnimTrack *);
 void func_801AB2F4_ovl7(GObj *);

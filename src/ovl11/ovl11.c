@@ -622,14 +622,11 @@ void func_801DCE48_ovl11(struct GObj *arg0) {
  * constant 4 in the rs field and IDO puts it in rt.  Swept: `4 == t`, u32 t,
  * `t == 4U`, inlining the array read, a `switch`, an inverted if/else, and a
  * named `four` local.  The operand order of that one bne is the whole residue. */
-#ifdef MIPS_TO_C
 void func_801DCF70_ovl11(struct GObj *arg0) {
     extern f32 D_801E0C24_ovl11;
-    s32 t;
 
-    t = D_800E9E20[omCurrentObj->objId];
-    if (t != 0) {
-        if (t == 4) {
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        if (D_800E9E20[omCurrentObj->objId] == 4) {
             if ((s32) D_800E9AA0[omCurrentObj->objId] == 4) {
                 gEntityFuncListIDArray[omCurrentObj->objId] = 4;
                 assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DC258_ovl11);
@@ -645,9 +642,6 @@ void func_801DCF70_ovl11(struct GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DCF70_ovl11.s")
-#endif
 
 void func_801DD0B4_ovl11(struct GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;

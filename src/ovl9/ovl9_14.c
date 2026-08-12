@@ -83,7 +83,7 @@ extern FUNCLIST D_8021CC84_ovl9;
    $f20 last) and IDO emits them in assignment order. Same 3-diff floor as its
    twin func_8020ED74_ovl9. Swept: assignment order (both), declaration order,
    chained assignment, splitting the first load above the others. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80210154_ovl9(struct GObj *arg0) {
     extern s32 D_800D6B54;
     extern f32 D_8021DCDC_ovl9;
@@ -122,7 +122,6 @@ void func_80210154_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80210154_ovl9.s")
 #endif
-
 void func_802103D8_ovl9(GObj *);
 void func_80210354_ovl9(struct GObj *);
 
@@ -370,7 +369,7 @@ void func_802112F4_ovl9(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_8021134C_ovl9.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_802114E4_ovl9(struct GObj *arg0) {
     f32 lo = D_8021DD3C_ovl9;
     f32 v = D_800EA6E0[omCurrentObj->objId];
@@ -478,7 +477,7 @@ void func_802119F8_ovl9(struct GObj *arg0) {
 extern FUNCLIST D_8021CB88_ovl9;
 s32 func_8021217C_ovl9(void);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 13 diffs: structurally exact; every pointer local sits one register slot
 // earlier than the ROM's.
 void func_80211B1C_ovl9(void) {
@@ -499,7 +498,6 @@ void func_80211B1C_ovl9(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80211B1C_ovl9.s")
 #endif
-
 void func_80211BF0_ovl9(struct GObj *arg0) {
     extern s32 D_801CCA60;
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];

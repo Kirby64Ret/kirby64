@@ -84,7 +84,7 @@ struct UnkStruct8015C9B4 {
     f32 zUp;       // 0x5C
 };
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8015C9B4_ovl5(struct UnkStruct8015C9B4 *arg0, Vector *vec, f32 *outX, f32 *outY) {
     Mat4 dst;
     Mat4 persp;
@@ -127,7 +127,6 @@ void func_8015C9B4_ovl5(struct UnkStruct8015C9B4 *arg0, Vector *vec, f32 *outX, 
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_1/func_8015C9B4_ovl5.s")
 #endif
-
 void func_8015CB7C_ovl5(void) {
     if ((D_800D6B24 == 0) && (D_800D7178.unk74 == 0)) {
         if (gPlayerControllers[0].buttonPressed & START_BUTTON) {

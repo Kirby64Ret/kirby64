@@ -128,7 +128,7 @@ void func_80225EB8_ovl18(s32 arg0) {
 
 // near-match (94/97): identical instruction stream, but the ROM frame is 0x30
 // (8-byte hole at 0x24) and spills arg0 lazily in the jal delay slot.
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80225FA8_ovl18(struct GObj *arg0) {
     f32 sp2C;
     struct DObj *sp20;
@@ -166,8 +166,7 @@ void func_80225FA8_ovl18(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_80225FA8_ovl18.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8022612C_ovl18(UNUSED s32 arg0) {
     struct UnkStruct800E1B50 *sp2C = D_800E1B50[omCurrentObj->objId];
 
@@ -194,7 +193,6 @@ void func_8022612C_ovl18(UNUSED s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_8022612C_ovl18.s")
 #endif
-
 void func_80226294_ovl18(UNUSED s32 arg0) {
 
 }
@@ -202,7 +200,7 @@ void func_80226294_ovl18(UNUSED s32 arg0) {
 // This body compiles byte-identical to the ROM when it is the only function in
 // the TU (permuter score 0); in place IDO CSEs the two `1` constants into $a3
 // instead of rematerialising them, because 65535.0f lands at .rodata+8.
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8022629C_ovl18(s32 arg0)
 {
   struct UnkStruct800E1B50 *temp_a1;
@@ -225,7 +223,6 @@ void func_8022629C_ovl18(s32 arg0)
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2385A0/func_8022629C_ovl18.s")
 #endif
-
 void func_80226414_ovl18(UNUSED s32 arg0) {
 
 }
@@ -271,7 +268,7 @@ void func_802265FC_ovl18(UNUSED s32 arg0) {
 
 // Must stay a pragma: the listing carries 0x10 bytes of alignment padding after
 // its .size directive, which vanishes if this is compiled from C.
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_802266C8_ovl18(UNUSED s32 arg0) {
 
 }

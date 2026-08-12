@@ -493,7 +493,7 @@ void func_8015A144_ovl3(s32 arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 75/75: logic is right (switch gives the ROM's shared $v1=1/$a1=2 compare
    chain) but IDO emits the gKirbyState base into $v0 and defers the
    `sw $a0, 0($sp)` parameter home store, where the ROM homes $a0 first and

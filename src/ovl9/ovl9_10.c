@@ -415,7 +415,7 @@ void func_802030CC_ovl9(struct GObj *arg0) {
    the `lwc1 0x48($sp)` above the branch.  Swept with no effect: pad count 0-4,
    if/else vs early return vs goto, `!(x > 0)`, dropping the sp38 copy, an
    empty do-block before the branch. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern f32 D_8021DA54_ovl9;
 extern s32 func_8019A900_ovl7(s32 *);
 extern f32 eneGetPlayerHeight(void);
@@ -457,7 +457,6 @@ void func_802031D4_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802031D4_ovl9.s")
 #endif
-
 void func_802033B0_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C800_ovl9);
 }
@@ -888,7 +887,7 @@ struct Ovl9_10AnimInfo {
     u8 filler18[8];
 };
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 13 diffs: structurally exact; the ROM's pointer locals sit one register slot
 // later than IDO places them (see func_802052E8_ovl9).
 void func_802050E4_ovl9(struct Ovl9_10AnimInfo *arg0) {
@@ -907,7 +906,6 @@ void func_802050E4_ovl9(struct Ovl9_10AnimInfo *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802050E4_ovl9.s")
 #endif
-
 struct Ovl9_10AnimCmdA {
     u8 filler0[0x10];
     f32 unk10;
@@ -968,7 +966,7 @@ void func_802051D4_ovl9(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 11/30 diffs: structurally exact, but the ROM keeps objId<<2 in $v0 and `a`
 // in $v1 while IDO swaps them. Declaration order/count has no effect; also
 // swept with no improvement: a `struct DObj **arr` base local plus inline
@@ -986,8 +984,7 @@ void func_802052E8_ovl9(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802052E8_ovl9.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 20 diffs: structurally exact; the ROM keeps objId<<2 in $v0 and `a` in $v1
 // while IDO swaps them (same residue as func_802052E8_ovl9).
 void func_80205360_ovl9(void) {
@@ -1012,7 +1009,6 @@ void func_80205360_ovl9(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80205360_ovl9.s")
 #endif
-
 void func_802054B8_ovl9(struct GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B6B8C;
     if (D_800E7880[omCurrentObj->objId]) {

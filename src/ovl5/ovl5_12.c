@@ -142,7 +142,7 @@ void func_80182700_ovl5(GObj *arg0) {
    `addiu` of the hoisted array bases; no source/format form moves it.
    Re-swept wave 7: decl order, inline reads, statement order, one-line and
    empty-block line-number tricks -- all 3. Clone twin: func_80182A1C_ovl5. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8018293C_ovl5(GObj *arg0) {
     f32 inc;
     f32 wrap;
@@ -161,8 +161,7 @@ void func_8018293C_ovl5(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_8018293C_ovl5.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 3 diffs: IDO schedules the second lwc1 one slot early; the ROM emits it
    after both addiu of the hoisted array bases. Otherwise exact. */
 void func_80182A1C_ovl5(GObj *arg0) {
@@ -183,7 +182,6 @@ void func_80182A1C_ovl5(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_12/func_80182A1C_ovl5.s")
 #endif
-
 void func_80182AFC_ovl5(void) {
     D_8018EE00_ovl5 = 0;
 }

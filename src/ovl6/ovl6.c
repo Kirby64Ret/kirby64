@@ -396,7 +396,7 @@ void func_80151E10_ovl6(s32 arg0) {
     func_80151CD0_ovl6(arg0, &sp1C);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80151E60_ovl6(GObj *arg0, Lights1 *arg1) {
     u32 **seg;
     Light *light;
@@ -453,7 +453,6 @@ void func_80151E60_ovl6(GObj *arg0, Lights1 *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80151E60_ovl6.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 void func_80152138_ovl6(s32 *arg0, void *arg1) {
@@ -1590,7 +1589,7 @@ block_13:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801544E8_ovl6.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // close but not matching: target has a single lui $at with both peeled stores
 // (arr[0]/arr[1]) scheduled after the loop setup; IDO's unroll peel always
 // emits lui+sw for arr[0] immediately, then a second lui for arr[1]
@@ -1611,7 +1610,6 @@ void func_80154628_ovl6(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154628_ovl6.s")
 #endif
-
 void func_80154690_ovl6(void) {
     gameSetUpdateRate(1.0f);
     func_80154628_ovl6();

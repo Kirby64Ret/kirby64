@@ -301,7 +301,7 @@ void func_8021FD48_ovl18(void) {
  * D_800E1B50 entry in $v0) plus one missing instruction.  Swept: an explicit
  * `struct GObj *obj` local, inline omCurrentObj at every use, and if/else vs
  * goto for the negate path. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern f32 D_8022BB8C_ovl18;
 
 void func_8021FDF4_ovl18(void) {
@@ -340,7 +340,6 @@ out:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FDF4_ovl18.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FEBC_ovl18.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FF80_ovl18.s")
@@ -349,7 +348,7 @@ out:
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80220184_ovl18(void) {
     func_8021FF80_ovl18();
     func_80220038_ovl18();

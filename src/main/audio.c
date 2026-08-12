@@ -450,7 +450,7 @@ void auInit(void) {
 // https://decomp.me/scratch/CvKIB
 // Near-match draft (~92/338 insns differ, all in the auPublicSettings mirror
 // stores: target shares one lui/uses a base reg where this emits two luis).
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void auLoadAssets(void) {
     s32 j;
     ALBankFile *file;
@@ -555,7 +555,6 @@ void auLoadAssets(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auLoadAssets.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/main/audio/auCreatePlayers.s")
 
 // https://decomp.me/scratch/HNhjJ
@@ -778,7 +777,7 @@ s32 func_80020EB4(void) {
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80020ECC(void) {
     osRecvMesg(&gThreadInitializedMQ, 0, 0);
     auSettingsUpdated = 1;

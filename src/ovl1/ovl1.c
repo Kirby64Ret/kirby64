@@ -329,7 +329,7 @@ void func_8009BA68(s32 arg0) {
     D_800D6A10 = arg0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode, s32 lifetime, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z, f32 size, f32 gravity, f32 friction, u32 texture_flags, UnkGenerator *gn) {
     UnkParticle *new_pc;
     s32 val;
@@ -415,8 +415,7 @@ UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 tex
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BA74.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 UnkParticle *func_8009BC4C(UnkParticle *pc, s32 bank_id, s32 script_id) {
     UnkScript *script;
     s32 id = bank_id & 7;
@@ -436,8 +435,7 @@ UnkParticle *func_8009BC4C(UnkParticle *pc, s32 bank_id, s32 script_id) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BC4C.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 UnkParticle *func_8009BD3C(s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode, s32 lifetime, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z, f32 size, f32 gravity, f32 friction, u32 texture_flags, UnkGenerator *gn) {
     UnkParticle *pc = func_8009BA74(NULL, bank_id, flags, texture_id, bytecode, lifetime, pos_x, pos_y, pos_z,
                                     vel_x, vel_y, vel_z, size, gravity, friction, texture_flags, gn);
@@ -450,7 +448,6 @@ UnkParticle *func_8009BD3C(s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BD3C.s")
 #endif
-
 UnkParticle *func_8009BE04(s32 bank_id, s32 script_id) {
     UnkParticle *pc = func_8009BC4C(NULL, bank_id, script_id);
 
@@ -460,7 +457,7 @@ UnkParticle *func_8009BE04(s32 bank_id, s32 script_id) {
     return pc;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 UnkParticle *func_8009BE54(s32 bank_id, s32 script_id, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z) {
     UnkParticle *pc;
     UnkScript *script;
@@ -486,7 +483,6 @@ UnkParticle *func_8009BE54(s32 bank_id, s32 script_id, f32 pos_x, f32 pos_y, f32
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BE54.s")
 #endif
-
 UnkParticle *func_8009BF7C(s32 bank_id, s32 script_id) {
     return func_8009BC4C(NULL, bank_id, script_id);
 }

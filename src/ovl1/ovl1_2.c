@@ -34,7 +34,18 @@ extern f32 D_800D7AF0[];
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2/func_800A6BC0.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2/func_800A6E64.s")
+void func_800A6E64(void) {
+    extern s32 *D_800BF8F0[];
+    extern s32 D_800D7A00[];
+    s32 i;
+
+    for (i = 0; i < 10; i++) {
+        D_800D79B0[i] = NULL;
+        D_800D79D8[i] = NULL;
+        D_800D7A00[i] = 0;
+        *D_800BF8F0[i] = 0;
+    }
+}
 
 struct UnkStruct800D79D8 *func_800A6F40(u16 arg0) {
     return D_800D79D8[(u16)((arg0 - 10) >> 1)];

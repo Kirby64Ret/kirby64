@@ -144,7 +144,7 @@ void func_801B3ACC_ovl7(GObj *arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 8 diffs: instruction sequence is right; the omCurrentObj base lands in $a0
 // instead of $a1 and thr/angle get $f0/$f2 instead of $f2/$f0.
 // Both residues are the one-slot rotation and both want the register one
@@ -168,7 +168,6 @@ void func_801B3C54_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3C54_ovl7.s")
 #endif
-
 void func_801B3CF4_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -192,7 +191,7 @@ void func_801B3CF4_ovl7(GObj *arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 138/189 diffs but the same instruction count: the home-slot store of $a0
 // is scheduled first instead of mid-function and every temp is rotated one slot.
 void func_801B3EC8_ovl7(GObj *arg0) {
@@ -233,7 +232,6 @@ void func_801B3EC8_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3EC8_ovl7.s")
 #endif
-
 void func_801B41BC_ovl7(void) {
     if (D_800EC2E0[omCurrentObj->objId].as_s32 != 0) {
         func_801AC840_ovl7();

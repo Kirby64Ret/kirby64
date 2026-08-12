@@ -42,7 +42,7 @@ struct C954Arg2 {
 
 // 12/22: the target burns TWO virtual registers per s16 store (t7/t9/t1/t3/t5),
 // this burns one. Swept casts, shifts, s16 args, 1 and 4 explicit temps: no move.
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
     D_800D4E64 = arg0 * 4;
     D_800D4E68 = arg1 * 4;
@@ -57,7 +57,6 @@ void func_800AB680(s32 arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AB680.s")
 #endif
-
 void func_800AB6D8(Gfx **gp, u32 arg1, s16 arg2, s16 arg3) {
     (*gp)->words.w0 = sTextureImageCommand;
     (*gp)->words.w1 = arg1;
@@ -156,7 +155,7 @@ void func_800AC700(uObjBg *bg, struct C954Arg2 *arg1) {
 // pair ten slots later than the ROM. Swept 90 statement permutations, both
 // index forms and extra locals; its twin func_800AC700 closed on a store
 // permutation but this one does not move.
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800AC794(uObjSprite *sp, struct C954Arg2 *arg1) {
     s32 tmemW = (arg1->width + D_800D4E60[arg1->unk1]) & ~D_800D4E60[arg1->unk1];
 
@@ -176,7 +175,6 @@ void func_800AC794(uObjSprite *sp, struct C954Arg2 *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/sprite/func_800AC794.s")
 #endif
-
 void func_800AC820(uObjTxtr *tx, struct C954Arg2 *arg1) {
     s32 tmemW = (arg1->width + D_800D4E60[arg1->unk1]) & ~D_800D4E60[arg1->unk1];
 
@@ -398,7 +396,7 @@ s32 func_800ACE88(SPObj *spobj, u8 colortype) {
 // volatile family -- there is no unrolled loop here. Swept: for(), chained store,
 // temp local, volatile store, condition-in-a-local, ptr arith, u32/s32 compare
 // casts, guard as `count != 1`, decl order -- all 2 or worse.
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800AE048(u32 count) {
     SPObj *p;
     u32 i;

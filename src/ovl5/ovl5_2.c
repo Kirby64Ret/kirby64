@@ -189,7 +189,7 @@ s32 func_801609D0_ovl5(s32 arg0) {
     return 1;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* ROM listing has 8 bytes of trailing dead epilogue (jr ra; nop) this C
    cannot emit, so converting it would shorten the TU. */
 s32 func_80160A20_ovl5(s32 arg0) {
@@ -204,7 +204,6 @@ s32 func_80160A20_ovl5(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160A20_ovl5.s")
 #endif
-
 s32 func_80160A78_ovl5(s32 arg0) {
     Unk16Bytes sp8 = D_80185FB0_ovl5;
     s32 pad;
@@ -246,7 +245,7 @@ void func_80160D50_ovl5(GObj *arg0) {
 // word here because sp30/sp24 are address-taken, so no 5th local can buy $v0.
 // Also swept at that order: pointer arithmetic instead of &arr[i], a (u8 *)
 // byte bias, and reusing the parameter as the scratch (72).
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern s32 D_8018E040_ovl5[];
 extern s32 D_801868FC_ovl5;
 
@@ -272,7 +271,6 @@ void func_80161078_ovl5(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161078_ovl5.s")
 #endif
-
 void func_801611A8_ovl5(GObj *arg0, s32 arg1) {
     func_800A9864(D_80186900_ovl5, 0x1869F, 0x10);
     func_800AA018(D_80186908_ovl5);
@@ -292,7 +290,7 @@ f32 func_80161298_ovl5(s32 arg0, s32 arg1) {
 
 extern f32 D_800EA6E0[];
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 8/60: the two 8-byte struct locals sit 4 bytes high (frame-layout anomaly,
    swept both directions) and the two index addu are emitted in the other order. */
 s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
@@ -315,7 +313,6 @@ s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801612D0_ovl5.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801613C0_ovl5.s")
 
 f32 func_8016142C_ovl5(s32 arg0) {
@@ -389,7 +386,7 @@ s32 func_80161974_ovl5(void) {
 
 extern s32 D_8018E050_ovl5[];
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 2 diffs: the spilled pointer lands at 0x18($sp), the ROM uses 0x1C -- the
    known frame-layout anomaly, unaffected by local count/order. */
 f32 func_801619E0_ovl5(s32 arg0) {
@@ -544,7 +541,6 @@ void func_801649CC_ovl5(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801649CC_ovl5.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164A34_ovl5.s")
 
 void func_80164DB0_ovl5(void) {

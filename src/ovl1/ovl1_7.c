@@ -812,7 +812,7 @@ void func_800B113C(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800B1378(s32 arg0, s32 arg1, f32 arg2) {
     void (*cb)(s32, s32, f32);
 
@@ -832,7 +832,6 @@ void func_800B1378(s32 arg0, s32 arg1, f32 arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1378.s")
 #endif
-
 void procMainStub(GObj *arg0) {
 
 }
@@ -853,7 +852,7 @@ void procMainMove(GObj *gobj) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800B158C(GObj *gobj) {
     UnkStruct800B158C *gobj_4C = gobj->unk4C;
     u16 var_a0;
@@ -892,7 +891,6 @@ void func_800B158C(GObj *gobj) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B158C.s")
 #endif
-
 void func_800B175C(GObj *gobj) {
     if (!(D_800DD8D0[omCurrentObj->objId] & 0x40) && (gobj->data.ptr != NULL)) {
         func_8019BBEC_ovl7();

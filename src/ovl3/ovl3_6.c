@@ -193,7 +193,7 @@ void func_8017E1EC_ovl3(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 3/178: exact except that the ROM's scheduler sinks the `lim` load past the
    two loop-invariant base addiu's (gEntitiesAngleXArray, gKirbyController)
    and IDO emits it first. Swept: declaration order, one-line form, blank
@@ -264,7 +264,6 @@ void func_8017E284_ovl3(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017E284_ovl3.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017E54C_ovl3.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017EA0C_ovl3.s")
@@ -436,7 +435,7 @@ void func_80183E38_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80183FF4_ovl3.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 8/219: 6 of the 8 are the $f0/$f2 swap between the shared 0.0f and `temp`
    (see func_8018E164_ovl3); the other 2 are the scheduler putting `i = 0`
    before rather than after the &D_800EC2E0 addiu. Swept: statement order of
@@ -510,7 +509,6 @@ void func_80184538_ovl3(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80184538_ovl3.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_801848A4_ovl3.s")
 
 extern f32 *D_801926E8_ovl3[];
@@ -847,7 +845,7 @@ void func_8018DFB4_ovl3(s32 arg0) {
     func_80154578_ovl3(D_801963E4_ovl3, 0, gEntitiesAngleYArray[omCurrentObj->objId] - D_80197B64_ovl3);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 6/130: instruction-for-instruction exact; only $f0 and $f2 are swapped.
    IDO gives $f0 to whichever float value is ASSIGNED first, so `temp` takes
    it and the shared 0.0f constant gets $f2; the ROM is the other way round.
@@ -893,7 +891,6 @@ void func_8018E164_ovl3(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018E164_ovl3.s")
 #endif
-
 void func_8018E36C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     if (arg1 == 0) {
         if (arg2 != 0.0f) {

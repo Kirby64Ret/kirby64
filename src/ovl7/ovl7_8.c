@@ -152,7 +152,7 @@ void func_801B0A20_ovl7(GObj *arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 60/128 diffs: all stores are right; temps are rotated one register slot.
 void func_801B0C20_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent;
@@ -184,7 +184,6 @@ void func_801B0C20_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B0C20_ovl7.s")
 #endif
-
 void func_801B0E20_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
 

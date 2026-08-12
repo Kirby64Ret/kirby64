@@ -9,6 +9,45 @@ s32 alSeqGetTicks(ALSeq *seq);
 void func_8002C990(N_ALVoice *voice, s16 priority);
 void n_alEvtqPostEvent(ALEventQueue *evtq, N_ALEvent *evt, ALMicroTime delta);
 
+typedef struct {
+    /* 0x00 */ u8  pad00[0x88];
+    /* 0x88 */ s32 offset;
+} KPVoice;
+
+typedef struct KParam_s {
+    /* 0x00 */ struct KParam_s *next;
+    /* 0x04 */ s32 delta;
+    /* 0x08 */ s16 type;
+    /* 0x0C */ union {
+        f32 f;
+        s32 i;
+    } data;
+    /* 0x10 */ union {
+        f32 f;
+        s32 i;
+    } moredata;
+} KParam;
+
+KParam *__n_allocParam(void);
+s32 n_alEnvmixerParam(KPVoice *p, s32 paramID, void *param);
+
+typedef struct {
+    /* 0x00 */ struct KParam_s *next;
+    /* 0x04 */ s32 delta;
+    /* 0x08 */ s16 type;
+    /* 0x0A */ s16 unity;
+    /* 0x0C */ f32 pitch;
+    /* 0x10 */ s16 volume;
+    /* 0x12 */ u8  pan;
+    /* 0x13 */ u8  fxMix;
+    /* 0x14 */ s32 samples;
+    /* 0x18 */ void *wave;
+    /* 0x1C */ u8  unk1C;
+    /* 0x1D */ u8  unk1D;
+} KStartParam;
+
+s32 _n_timeToSamples(ALMicroTime t);
+
 /* Kirby's N_ALCSPlayer differs from the stock SDK layout; only evtq is used here. */
 typedef struct {
     u8                  unk00[0x50];
@@ -104,7 +143,38 @@ typedef struct {
     /* 0x74 */ KVoiceState *unk74;
 } KSeqPlayer;
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002AD90.s")
+void func_8002AD90(N_ALVoice *v, void *w, f32 pitch, s16 vol, u8 pan, u8 fxmix,
+                   ALMicroTime t, u8 arg7, u8 arg8) {
+    KStartParam *update;
+
+    if (v->pvoice) {
+        update = (KStartParam *) __n_allocParam();
+
+        if (fxmix < 0) {
+            fxmix = -fxmix;
+        }
+
+        if (update == 0) {
+            return;
+        }
+
+        update->delta = n_syn->paramSamples + ((KPVoice *) v->pvoice)->offset;
+        update->next = 0;
+        update->type = 0xD;
+
+        update->unity = v->unityPitch;
+        update->pan = pan;
+        update->volume = vol;
+        update->fxMix = fxmix;
+        update->unk1C = arg7;
+        update->unk1D = arg8;
+        update->pitch = pitch;
+        update->samples = _n_timeToSamples(t);
+        update->wave = w;
+
+        n_alEnvmixerParam((KPVoice *) v->pvoice, 3, update);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002AE74.s")
 
@@ -251,13 +321,12 @@ void func_8002B2E8(KSeqp *seqp, KVoice *voice, ALMicroTime deltaTime) {
     n_alEvtqPostEvent(&seqp->evtq, &evt, deltaTime);
 }
 
-#ifdef NON_MATCHING
-char func_8002B40C(KSeqp *seqp, KVoice *voice, ALMicroTime killTime) {
+u8 func_8002B40C(KSeqp *seqp, KVoice *voice, ALMicroTime killTime) {
     ALLink *thisNode;
     ALLink *nextNode;
     N_ALEventListItem *thisItem;
     ALMicroTime itemTime = 0;
-    char needsNoteKill = TRUE;
+    u8 needsNoteKill = TRUE;
 
     thisNode = seqp->evtq.allocList.next;
     while (thisNode != 0) {
@@ -284,9 +353,6 @@ char func_8002B40C(KSeqp *seqp, KVoice *voice, ALMicroTime killTime) {
 
     return needsNoteKill;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B40C.s")
-#endif
 
 void func_8002B4B4(KSeqPlayer *seqp, void *arg1) {
     KVoiceState *prev = NULL;
@@ -388,7 +454,33 @@ KVoiceState *func_8002B6A8(KSeqPlayer *seqp, u8 arg1, u8 arg2, u8 arg3) {
     return state;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B70C.s")
+/* Upstream __lookupSoundQuick. Indexing soundArray inline at both sites is
+ * load-bearing: an `ALSound *sound` local swaps $a2/$a3 (9 diffs). */
+ALSound *func_8002B70C(KSeqPlayer *seqp, u8 key, u8 vel, u8 chan) {
+    ALInstrument *inst = (ALInstrument *) seqp->chanState[chan].unk00;
+    s32 l = 1;
+    s32 r = inst->soundCount;
+    s32 i;
+    ALKeyMap *keymap;
+
+    while (r >= l) {
+        i = (l + r) / 2;
+
+        keymap = inst->soundArray[i - 1]->keyMap;
+
+        if ((key >= keymap->keyMin) && (key <= keymap->keyMax) &&
+            (vel >= keymap->velocityMin) && (vel <= keymap->velocityMax)) {
+            return inst->soundArray[i - 1];
+        } else if ((key < keymap->keyMin) ||
+                   ((vel < keymap->velocityMin) && (key <= keymap->keyMax))) {
+            r = i - 1;
+        } else {
+            l = i + 1;
+        }
+    }
+
+    return 0;
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B810.s")
 
@@ -611,24 +703,6 @@ void alCSPSetSeq(ALCSPlayer *seqp, ALCSeq *seq) {
 #endif
 
 #ifdef NON_MATCHING
-typedef struct {
-    /* 0x00 */ u8  pad00[0x88];
-    /* 0x88 */ s32 offset;
-} KPVoice;
-
-typedef struct KParam_s {
-    /* 0x00 */ struct KParam_s *next;
-    /* 0x04 */ s32 delta;
-    /* 0x08 */ s16 type;
-    /* 0x0C */ union {
-        f32 f;
-        s32 i;
-    } data;
-} KParam;
-
-KParam *__n_allocParam(void);
-s32 n_alEnvmixerParam(KPVoice *p, s32 paramID, void *param);
-
 /* MATCHES as C; blocked by the same 16-byte library alignment. */
 void n_alSynSetPitch(N_ALVoice *v, f32 pitch) {
     KParam *update;
@@ -699,7 +773,34 @@ void alCSPSetVol(ALCSPlayer *seqp, s16 vol) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/alCSPSetVol.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002CF40.s")
+/* The `< 0` tests on the u8 parameters are upstream n_alSynSetFXMix's; IDO does
+ * not fold them away and the ROM has the dead bgez/negu pair for each. */
+void func_8002CF40(N_ALVoice *v, u8 arg1, u8 arg2) {
+    KParam *update;
+
+    if (v->pvoice) {
+        update = __n_allocParam();
+        if (update == 0) {
+            return;
+        }
+
+        update->delta = n_syn->paramSamples + ((KPVoice *) v->pvoice)->offset;
+        update->type = 0x11;
+        if (arg1 < 0) {
+            update->data.i = -arg1;
+        } else {
+            update->data.i = arg1;
+        }
+        if (arg2 < 0) {
+            update->moredata.i = -arg2;
+        } else {
+            update->moredata.i = arg2;
+        }
+        update->next = 0;
+
+        n_alEnvmixerParam((KPVoice *) v->pvoice, 3, update);
+    }
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002CFE4.s")
 

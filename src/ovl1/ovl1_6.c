@@ -19,7 +19,7 @@ void func_800AE0F0(void) {
     D_800EC9E0 = 0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void initTrack(s32 track) {
     f32 lifeline, l2;
     s32 negOne;
@@ -162,7 +162,6 @@ void initTrack(s32 track) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/initTrack.s")
 #endif
-
 void func_800B0F28(void);
 void objSleepForever(struct GObj *arg0);
 s32 func_800B0D90(void *arg0);

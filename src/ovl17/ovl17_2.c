@@ -56,7 +56,7 @@ void func_801DD920_ovl17(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DD964_ovl17.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801DDB8C_ovl17(struct GObj *arg0) {
     while (1) {
         D_800DF150[omCurrentObj->objId] = func_801DDC40_ovl17;
@@ -66,7 +66,6 @@ void func_801DDB8C_ovl17(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DDB8C_ovl17.s")
 #endif
-
 void func_801DDC40_ovl17(struct GObj *arg0) {
     func_801DFABC_ovl17();
     func_801E069C_ovl17();
@@ -93,7 +92,7 @@ void func_801DDF24_ovl17(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801DDF6C_ovl17(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 1;
     func_800AA018(0x1050C);
@@ -118,7 +117,6 @@ void func_801DDF6C_ovl17(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DDF6C_ovl17.s")
 #endif
-
 void func_801DE104_ovl17(struct GObj *arg0) {
     struct DObj *sp1C;
 

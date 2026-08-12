@@ -131,7 +131,22 @@ s32 get_sound_id_from_index(s32 idx) {
     return sound_str_atoi(sSoundNames[idx]);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2_2/func_800A77E8.s")
+// Writing `*arg1` back out at every use rather than caching it in a local is
+// load-bearing: a local puts the pointer in $t7/$t9 where the ROM has $v1.
+void func_800A77E8(s32 arg0, SoundHandle **arg1, u16 *arg2) {
+    if (D_800C0040[arg0] >= 0) {
+        *arg1 = func_80023CB0((u16) D_800C0040[arg0]);
+        if (*arg1 != NULL) {
+            *arg2 = (*arg1)->unk26;
+        } else {
+            *arg2 = 0;
+        }
+    } else {
+        utilPrintf("Error: No Entry FGM Number: %d\n", arg0);
+        *arg1 = NULL;
+        *arg2 = 0;
+    }
+}
 
 void func_800A7870(SoundHandle **arg0, u16 *arg1) {
     SoundHandle *obj;

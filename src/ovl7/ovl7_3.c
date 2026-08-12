@@ -761,7 +761,7 @@ block_50:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2558_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
     u32 idx = omCurrentObj->objId;
     struct Sub800E1B50_Unk84 *sub84 = D_800E1B50[idx]->unk84;
@@ -784,7 +784,6 @@ void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2ADC_ovl7.s")
 #endif
-
 #ifdef MIPS_TO_C
 
 s32 func_801A2C78_ovl7(f32 arg0) {
@@ -836,8 +835,7 @@ s32 func_801A2C78_ovl7(f32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2C78_ovl7.s")
 #endif
 
-#ifdef MIPS_TO_C
-
+#ifdef NON_MATCHING
 void func_801A2E64_ovl7(s32 arg0) {
     f32 *temp_a1;
     s32 *temp_a0;
@@ -870,9 +868,7 @@ void func_801A2E64_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2E64_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
-
+#ifdef NON_MATCHING
 void func_801A3000_ovl7(s32 arg0) {
     f32 *temp_a1;
     s32 *temp_a0;
@@ -905,8 +901,7 @@ void func_801A3000_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3000_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801A3198_ovl7(void) {
     struct UnkStruct800E1B50 *temp_v0;
     struct CollisionTriangle *temp_a1;
@@ -933,7 +928,6 @@ void func_801A3198_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A3198_ovl7.s")
 #endif
-
 void func_801A3280_ovl7(void) {
     func_801A32A8_ovl7(omCurrentObj->objId);
 }

@@ -93,7 +93,7 @@ extern struct Sub800E1B50_Unk98 D_801CCBEC_ovl7;
    of the three loop-invariant constant loads differs (ROM loads AC,B0,B4 and
    assigns $f24,$f22,$f20; IDO emits them in assignment order). Assignment
    order fixes the registers but not the load order. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern void (*D_800DEDD0[])(struct GObj *);
 extern void (*D_800DEF90[])(s32);
 extern void (*D_800DF150[])(struct GObj *);
@@ -134,7 +134,6 @@ void func_801B9150_ovl7(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B9150_ovl7.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B929C_ovl7.s")
 
 void func_801B9424_ovl7(GObj *arg0) {

@@ -446,11 +446,9 @@ block_4:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8934.s")
 #endif
 
-#ifdef MIPS_TO_C
-// 9/39: structure exact; the ROM puts the masked index in the free argument
-// register $a1 and we get $t9, rotating every later temp by one slot. Swept
-// all 120 declaration orders x 2 statement orders, callee prototypes (void /
-// non-void / implicit), K&R and extra-parameter forms. Rotation floor.
+// Reusing `arg0` as the scratch for the masked index is load-bearing: a
+// declared local (in any position) puts the index in $t9 and rotates every
+// later temp one slot, where the ROM keeps it in the free argument register.
 void *func_800A89E0(u32 arg0) {
     s32 size;
     void *buf;
@@ -461,15 +459,13 @@ void *func_800A89E0(u32 arg0) {
     bank = D_800D0184[arg0 >> 16];
     entry = bank->imageBlockTable;
     rom = bank->imageROMOffset;
-    entry += arg0 & 0xFFFF;
+    arg0 &= 0xFFFF;
+    entry += arg0;
     size = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
     buf = (void *)func_800A84F0(size);
     dma_read(entry[0] + (u32)rom, buf, size & 0xFFFFFC);
     return buf;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A89E0.s")
-#endif
 struct BGHeader *func_800A8A7C(u32 arg0) {
     struct BGHeader ***temp_v1;
     s32 idx;
@@ -484,9 +480,7 @@ struct BGHeader *func_800A8A7C(u32 arg0) {
     return (*temp_v1)[idx];
 }
 
-#ifdef MIPS_TO_C
-// Nearly matching: same temp-register rotation as func_800A89E0 (target keeps
-// the masked index in the free argument register a2).
+// `arg0 &= 0xFFFF;` as the scratch is load-bearing -- see func_800A89E0.
 void *func_800A8B0C(u32 arg0, s32 arg1) {
     s32 size;
     void *buf;
@@ -497,15 +491,13 @@ void *func_800A8B0C(u32 arg0, s32 arg1) {
     bank = D_800D0184[arg0 >> 16];
     entry = bank->imageBlockTable;
     rom = bank->imageROMOffset;
-    entry += arg0 & 0xFFFF;
+    arg0 &= 0xFFFF;
+    entry += arg0;
     size = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
     buf = (void *)func_800A8358(size | arg1);
     dma_read(entry[0] + (u32)rom, buf, size & 0xFFFFFC);
     return buf;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8B0C.s")
-#endif
 
 struct BGHeader *func_800A8BAC(u32 arg0) {
     struct BGHeader ***temp_v1;
@@ -538,30 +530,13 @@ struct BGHeader *func_800A8C40(u32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-// Structure is right; IDO folds the `* 2` index into a single sll 3 where the
-// target keeps `sll 1` + `sll 2`, and the spill slots land in a different order.
-void *func_800A8CE0(u32 arg0, s32 arg1) {
-    s32 idx;
-    u32 *entry;
-    s32 size;
-    void *buf;
-
-    idx = (arg0 & 0xFFFF) * 2;
-    entry = &D_800D0184[arg0 >> 16]->geoBlockTable[idx];
-    size = (entry[1] - entry[0]) | arg1;
-    buf = (void *)func_800A8358(size);
-    dma_read(entry[0], buf, size & 0xFFFFFC);
-    return buf;
-}
-#else
-#ifdef MIPS_TO_C
-// 9/33: same family as func_800A89E0/func_800A8B0C. The five locals (two dead)
-// are needed for the ROM's frame 0x30 and its 0x1C/0x20/0x2C spill slots.
-// The `+` form of the doubling is what stops IDO folding the two shifts into
-// one `sll 3` -- `* 2`, `<< 1`, `2 *`, a separate index local, indexing the
-// table twice and &table[i] all collapse to sll 3 and score 24-25. Residue is
-// `addu` where the ROM has `sll 1`, plus the usual one-slot temp rotation
-// (ROM $v0/$a2 where we get $v1/$v0).
+// 2/33 (was 9): reusing `arg0` as the scratch for the masked, doubled index --
+// the same lever that closed func_800A89E0/func_800A8B0C -- plus the two dead
+// pads for the ROM's 0x30 frame and 0x1C/0x20/0x2C spills. All 120 declaration
+// permutations swept at this shape; the floor is 2. Residue: the ROM loads the
+// block table into $v0 and writes the element pointer to $v1, where IDO reuses
+// $v1 for both (`lw $v1` / `addu $v1,$v1,$t9`). An explicit `base` local for
+// the table makes it worse (3), as does any pad count other than two.
 void *func_800A8CE0(u32 arg0, s32 arg1) {
     s32 size;
     s32 pad0;
@@ -570,7 +545,9 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
     u32 *entry;
 
     entry = D_800D0184[arg0 >> 16]->geoBlockTable;
-    entry += (arg0 & 0xFFFF) + (arg0 & 0xFFFF);
+    arg0 &= 0xFFFF;
+    arg0 *= 2;
+    entry += arg0;
     size = (entry[1] - entry[0]) | arg1;
     buf = (void *)func_800A8358(size);
     dma_read(entry[0], buf, size & 0xFFFFFC);
@@ -578,7 +555,6 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
-#endif
 #endif
 
 #ifdef MIPS_TO_C
@@ -1166,34 +1142,24 @@ void func_800A9A2C(s32 arg0) {
     D_800DFBD0[omCurrentObj->objId] = (struct DObj **)func_800A8358((temp_v1 * 4) | 1);
 }
 
-#ifdef MIPS_TO_C
-
-s32 func_800A9AA8(u32 arg0, s32 arg1) {
-    s32 sp24;
-    s32 sp20;
-    void *sp1C;
-    s32 sp18;
-    s32 temp_a2;
+// `arg0 &= 0xFFFF;` as the scratch is load-bearing -- see func_800A89E0.
+void *func_800A9AA8(u32 arg0, s32 arg1) {
     s32 size;
-    s32 temp_v0;
-    void *temp_v0_2;
-    void *temp_v1;
+    void *buf;
+    u32 *entry;
+    u32 *rom;
+    struct BankHeader *bank;
 
-    temp_v0_2 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
-    temp_a2 = arg0 & 0xFFFF;
-    temp_v1 = temp_v0_2->unk18 + (temp_a2 * 4);
-    sp18 = temp_v0_2->unk1C;
-    size = ((temp_v1->unk4 - temp_v1->unk0) + 3) & 0xFFFFFC;
-    sp24 = size;
-    sp1C = temp_v1;
-    temp_v0 = func_800A8358(size | arg1, temp_a2, size);
-    sp20 = temp_v0;
-    dma_read(temp_v1->unk0 + sp18, temp_v0, size & 0xFFFFFC);
-    return temp_v0;
+    bank = D_800D0184[arg0 >> 16];
+    entry = bank->miscBlockTable;
+    rom = bank->miscROMOffset;
+    arg0 &= 0xFFFF;
+    entry += arg0;
+    size = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
+    buf = (void *)func_800A8358(size | arg1);
+    dma_read(entry[0] + (u32)rom, buf, size & 0xFFFFFC);
+    return buf;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9AA8.s")
-#endif
 
 #ifdef MIPS_TO_C
 s32 func_800A9B48(s32 arg0) {

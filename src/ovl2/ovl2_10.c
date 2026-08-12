@@ -559,7 +559,7 @@ void func_80115578(struct GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = temp_s0->unk10;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 19/69 diffs. The instruction multiset is exact; the residue is purely where
 // IDO schedules `lui %hi(D_800DE350)` (it hoists it above the D_800DEF90 store,
 // the ROM keeps it after the `lw 0x4C(arg0)`), which drags the surrounding
@@ -601,7 +601,6 @@ void func_80115618(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80115618.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_8011572C.s")
 
 void func_80115888(struct GObj *arg0) {
@@ -1337,7 +1336,7 @@ void func_80118618(struct GObj *arg0) {
     func_80115070(arg0);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 17/74: body is exact. Two residues, both structural.
  * (1) sp40 lands at 0x48, the ROM has it at 0x40. IDO's local-block base here
  *     is a constant 0x48 (frame = align8(0x48 + L)), so sp40 -- always the
@@ -1379,7 +1378,6 @@ void func_80118638(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80118638.s")
 #endif
-
 // The reassignment of temp (rather than a separate Vector *) is load-bearing:
 // it is what makes IDO emit the addiu that rebases the last store.
 void func_80118760(struct GObj *arg0) {

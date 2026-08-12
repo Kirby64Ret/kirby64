@@ -850,7 +850,7 @@ void func_801FB468_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 50 diffs: offset by one instruction at entry -- the ROM loads omCurrentObj
 // with lui+lw while IDO materialises its address first.
 void func_801FB528_ovl9(void) {

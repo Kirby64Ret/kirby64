@@ -552,7 +552,7 @@ void func_801B71AC_ovl7(GObj *arg0) {
    D_800E1B50 element lives in $a0 where the ROM uses $a1 (one-slot argument
    register rotation). Callee return types, prototypes and a dummy parameter
    were all swept. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern s32 D_800EA360[], D_800E9E20[], D_800E9C60[];
 void func_80199F1C_ovl7(void);
 void func_8019CFD0_ovl7(void *);
@@ -580,8 +580,7 @@ void func_801B726C_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B726C_ovl7.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 99/125 diffs: all stores are right; every base-address temp is rotated
 // one register (ROM $a2/$a3/$t0.., IDO $t0/$t1..) and $v0/$v1 are swapped.
 void func_801B73C0_ovl7(GObj *arg0) {
@@ -610,7 +609,6 @@ void func_801B73C0_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B73C0_ovl7.s")
 #endif
-
 void func_801B7590_ovl7(GObj *arg0) {
 }
 
@@ -652,7 +650,7 @@ void func_801B7778_ovl7(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B7780_ovl7.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 7/28 diffs: only the D_800E98E0 value lands in $a0 where the ROM uses $a1.
 void func_801B793C_ovl7(void) {
     if (D_800E98E0[omCurrentObj->objId] == 0) {
@@ -666,4 +664,3 @@ void func_801B793C_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B793C_ovl7.s")
 #endif
-

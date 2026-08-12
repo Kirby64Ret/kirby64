@@ -169,7 +169,7 @@ s32 func_800BAB68(u8 *arg0, RumbleItem *arg1, s32 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BAD0C.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_800BAEB0(RumbleCont *arg0, s32 arg1, s32 arg2) {
     RumbleNode *node;
     RumbleItem *item;
@@ -202,7 +202,6 @@ s32 func_800BAEB0(RumbleCont *arg0, s32 arg1, s32 arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BAEB0.s")
 #endif
-
 RumbleItem *func_800BAF50(RumbleCont *arg0, s32 arg1) {
     RumbleNode *head;
     RumbleNode *tail;
@@ -296,7 +295,7 @@ void func_800BB12C(s32 arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800BB198(s32 arg0, s32 arg1) {
     RumbleCont *cont;
     RumbleNode *head;
@@ -327,7 +326,6 @@ void func_800BB198(s32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB198.s")
 #endif
-
 // Draft, 8/70: correct and structurally exact. Residue is (a) the outer loop's
 // node/cont pointer bumps emitted in the opposite order, and (b) the trailing
 // 64-bit canary store: the ROM materialises 0xFEDCBA98 and a separate `li 0`
@@ -454,7 +452,7 @@ void func_800BB510(s32 arg0) {
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800BB53C(s32 arg0, s32 arg1) {
     func_800BB3C0(contChannelMap[arg0], arg1);
 }

@@ -64,7 +64,7 @@ extern f32 D_8021DED4_ovl9, D_8021DED8_ovl9;
 /* 4 diffs: only the load order of D_8021DEC4_ovl9 vs D_800EC660 (registers
    $f0/$f2) differs; the no-local form gets the order right but swaps the
    registers. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_80219CE8_ovl9(void) {
     f32 temp;
 
@@ -89,8 +89,7 @@ s32 func_80219CE8_ovl9(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_17/func_80219CE8_ovl9.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80219E0C_ovl9(s32 arg0, u32 halve) {
     f32 phi_f2;
 
@@ -118,7 +117,6 @@ void func_80219E0C_ovl9(s32 arg0, u32 halve) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_17/func_80219E0C_ovl9.s")
 #endif
-
 void func_80219F70_ovl9(s32 this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 

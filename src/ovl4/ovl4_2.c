@@ -204,7 +204,7 @@ void func_80152A48_ovl4(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // Only the register allocation differs: the ROM rematerialises the
 // D_8015A8F8_ovl4 base inside the loop while IDO keeps it in a saved
 // register for the whole function.
@@ -229,7 +229,6 @@ void func_80152B50_ovl4(GObj *arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152B50_ovl4.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152C34_ovl4.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152E38_ovl4.s")

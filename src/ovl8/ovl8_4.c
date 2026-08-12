@@ -20,7 +20,7 @@
  * call hoisted into an explicit f32 local vs inlined, and an extra dead f32.
  * `20.0f + Y[0]` (constant first) IS load-bearing -- the natural order costs
  * one more diff. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801D45B0_ovl8(struct GObj *arg0) {
     extern void func_800A9760(s32);
     extern void func_800B4954(struct GObj *);
@@ -55,7 +55,6 @@ void func_801D45B0_ovl8(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D45B0_ovl8.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D4778_ovl8.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D4C1C_ovl8.s")

@@ -306,7 +306,7 @@ void func_801DDAA0_ovl10(GObj *arg0) {
 extern s32 D_801F42F0_ovl10[];
 extern s32 random_soft_s32_range(s32);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* structurally exact, 27 pure regalloc diffs (ROM keeps `temp` in $a1) */
 void func_801DDAC8_ovl10(s32 arg0) {
     s32 temp;
@@ -321,7 +321,6 @@ void func_801DDAC8_ovl10(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DDAC8_ovl10.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DDB88_ovl10.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DDEB8_ovl10.s")

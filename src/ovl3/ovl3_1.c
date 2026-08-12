@@ -194,7 +194,7 @@ void func_8015439C_ovl3(f32 *arg0) {
     dst[6] = D_800E17D0[omCurrentObj->objId];
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 19/29. The named extern D_8012E948 (datatodo.txt) DOES work -- it closed
    func_8015439C / func_8015449C / func_80154578, which store 7-8 slots each.
    Here there is only ONE store through the address, and IDO folds a
@@ -219,7 +219,6 @@ s32 func_80154428_ovl3(f32 *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80154428_ovl3.s")
 #endif
-
 void func_8015449C_ovl3(void *arg0, s32 arg1) {
     extern f32 D_8012E948[];
     f32 *dst = D_8012E948;
@@ -335,7 +334,7 @@ s32 func_80155664_ovl3(void) {
    fused `(*(f32**)&dst[7] = p[0]) == NULL` vs a separate store, an extra local
    for p[0], declaration order and position of dst/p, dropping the (f32*)arg0
    cast, and a K&R prototype for func_8011BF4C. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_80155C68_ovl3(s32 arg0, f32 *arg1) {
     f32 *dst = (f32 *) arg0;
     f32 **p = D_800E0490[omCurrentObj->objId];
@@ -356,7 +355,6 @@ s32 func_80155C68_ovl3(s32 arg0, f32 *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155C68_ovl3.s")
 #endif
-
 void func_80155D50_ovl3(f32 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     arg0[0] = gEntitiesNextPosXArray[arg3];
     arg0[1] = gEntitiesNextPosYArray[arg3];

@@ -77,7 +77,7 @@ void func_801E3324_ovl17(Vector *);
 void func_801E109C_ovl17(struct GObj *);
 void func_801E15A4_ovl17();
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801E0D00_ovl17(struct GObj *arg0) {
     s32 sp3C;
     s32 sp38;
@@ -142,7 +142,6 @@ void func_801E0D00_ovl17(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E0D00_ovl17.s")
 #endif
-
 void func_801E109C_ovl17(struct GObj *arg0) {
     f32 temp_f0;
     f32 temp_f2;
@@ -213,7 +212,7 @@ void func_801E1424_ovl17(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 3 diffs: the objId must live in $v0 and be moved into $a0 in the jal delay
  * slot; IDO loads it straight into $a0 and leaves the slot empty. The leading
  * u32 temp_v0 declaration IS load-bearing -- it is what puts sp2C at 0x2C
@@ -245,7 +244,6 @@ s32 func_801E14B0_ovl17(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E14B0_ovl17.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E15A4_ovl17.s")
 
 void func_801E1890_ovl17(struct GObj *arg0) {

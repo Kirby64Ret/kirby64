@@ -111,7 +111,7 @@ void func_800BBC6C(void) {
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800BBF60(void) {
     switch (D_800D6F3C) {
         case 3:

@@ -513,7 +513,7 @@ void func_8022A8FC_ovl19(GObj *g) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8022A9E8_ovl19(GObj *g) {
     u8 cmd[] = {1, 9, 8, 7, 6, 15};
 
@@ -914,7 +914,6 @@ loop_5:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022BD44_ovl19.s")
 #endif
-
 void func_8022C140_ovl19(s32 arg0, s32 arg1, f32 arg2) {
     if ((arg1 == 0) && (arg2 != 0.0f) && (D_800E8920[omCurrentObj->objId] != 0)) {
         play_sound(0x4A);
@@ -958,7 +957,7 @@ void func_8022C1A4_ovl19(GObj *g) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8022C3BC_ovl19(GObj *g) {
     f32 var_f0;
     f32 var_f2;
@@ -1053,7 +1052,6 @@ void func_8022C3BC_ovl19(GObj *g) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022C3BC_ovl19.s")
 #endif
-
 void func_8022C90C_ovl19(GObj *g) {
     func_80153984_ovl3();
     if (func_80121828(-0.980665f, 16.0f, -0.980665f, 16.0f) != 0) {
@@ -1205,7 +1203,7 @@ void func_8022D13C_ovl19(GObj *g) {
     func_8011DAF8();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8022D19C_ovl19(GObj *g) {
     u32 temp_v0;
 
@@ -1237,7 +1235,6 @@ void func_8022D19C_ovl19(GObj *g) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022D19C_ovl19.s")
 #endif
-
 void func_8022D3A0_ovl19(GObj *g) {
     func_80153984_ovl3();
     D_800E64D0[omCurrentObj->objId] = 6.0f;
@@ -1511,7 +1508,7 @@ void func_8022E198_ovl19(GObj *g) {
     (&D_8022FAB0_ovl19)[1]->unkC = sp1C.z;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8022E224_ovl19(GObj *g) {
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B4954;
@@ -1543,7 +1540,6 @@ void func_8022E224_ovl19(GObj *g) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022E224_ovl19.s")
 #endif
-
 void func_8022E47C_ovl19(GObj *g) {
     Vector vec;
 

@@ -547,7 +547,7 @@ void func_801E5B08_ovl10(f32 *arg0, u8 arg1, f32 arg2) {
     D_800E3750[omCurrentObj->objId] = sp28.unk24;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 23/41 diffs (was 32). Two levers found: reading arg0[0]/arg0[2] into locals
 // first reproduces the ROM's FP allocation order, and quotient temps keep both
 // divisions before the first store (the store otherwise forces a reload of
@@ -569,7 +569,6 @@ void func_801E5C4C_ovl10(f32 *arg0, u8 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E5C4C_ovl10.s")
 #endif
-
 int func_800F98EC(u32, f32);
 void func_801A2558_ovl7(s32);
 void func_800FF0C4(void *);
@@ -664,7 +663,7 @@ void func_801E6444_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4510_ovl10);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 8 diffs: only the register holding `var` (ROM $a1, IDO $a0) and the
 // consequent delay-slot fill differ.
 void func_801E6564_ovl10(void) {
@@ -686,7 +685,6 @@ void func_801E6564_ovl10(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E6564_ovl10.s")
 #endif
-
 void func_801E6614_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -898,7 +896,7 @@ void func_801E762C_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_801F4540_ovl10);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 8 diffs: only the register holding `temp` (ROM $a1, IDO $a0) and the
 // consequent scheduling of the utilFuncTableJump argument setup differ.
 void func_801E7760_ovl10(void) {
@@ -919,7 +917,6 @@ void func_801E7760_ovl10(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E7760_ovl10.s")
 #endif
-
 void func_801E7808_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E9E20[omCurrentObj->objId] = 0;
@@ -1455,7 +1452,7 @@ void func_801EA7CC_ovl10(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, &D_801F45B8_ovl10);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 8 diffs, same floor as its twin func_801E7760_ovl10: `temp` lands in $a0
 // where the ROM uses $a1.
 void func_801EA900_ovl10(void) {
@@ -1480,7 +1477,6 @@ void func_801EA900_ovl10(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801EA900_ovl10.s")
 #endif
-
 void func_801EA9CC_ovl10(GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E9E20[omCurrentObj->objId] = 0;

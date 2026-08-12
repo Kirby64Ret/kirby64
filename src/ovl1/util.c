@@ -351,7 +351,7 @@ s32 func_800A4F48(void* arg0, Vector* vec, f32 arg2, f32 arg3) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_800A509C(void *arg0, Vector *vec, f32 arg2, f32 arg3, f32 arg4) {
     f32 x = vec->x;
     f32 y = vec->y;
@@ -381,7 +381,6 @@ s32 func_800A509C(void *arg0, Vector *vec, f32 arg2, f32 arg3, f32 arg4) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A509C.s")
 #endif
-
 void utilSetPlayerContPad(void) {
     if (!kirby_in_inactionable_state()) {
         gKirbyController.buttonHeld = gPlayerControllers[0].buttonHeld;
@@ -400,7 +399,7 @@ void utilSetPlayerContPad(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 f32 func_800A52F0(f32 arg0, f32 arg1) {
     f32 x = arg0;
     f32 angle;
@@ -459,7 +458,6 @@ f32 func_800A52F0(f32 arg0, f32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A52F0.s")
 #endif
-
 void func_800A5404(u8 *arg0, u8 *arg1) {
     arg0[0x0] = arg0[0x4] = arg1[0];
     arg0[0x1] = arg0[0x5] = arg1[1];

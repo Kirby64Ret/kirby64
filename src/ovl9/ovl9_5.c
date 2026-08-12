@@ -211,7 +211,7 @@ void func_801E6168_ovl9(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_8019A900_ovl7(s32 *);
 f32 func_8019B608_ovl7(s32);
 void func_800AA018(s32);
@@ -244,7 +244,6 @@ void func_801E6208_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E6208_ovl9.s")
 #endif
-
 extern s32 D_800BE4EC;
 void func_801E5D2C_ovl9(void);
 void func_801E5DE0_ovl9(void);
@@ -354,7 +353,7 @@ void func_801E67A0_ovl9(void) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern struct Sub800E1B50_Unk98 D_801CBB78;
 extern f32 D_8021D034_ovl9;
 extern f32 D_8021D038_ovl9;
@@ -426,7 +425,6 @@ void func_801E6840_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E6840_ovl9.s")
 #endif
-
 extern s32 D_800BE4EC;
 void func_801E6C98_ovl9(void);
 void func_8019F410_ovl7(struct DObj *);
@@ -689,7 +687,7 @@ void func_801E8484_ovl9(struct GObj *arg0) {
    19 combinations that include a vs32 cast -- `1U` and `vs32` are both
    byte-identical to the plain form, so no third class exists.  Loop form
    (while >0 / while != 0 / for / do-while) is inert. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern f32 D_8021D090_ovl9;
 extern s32 random_soft_s32_range(s32);
 void func_800AECC0(f32);
@@ -728,7 +726,6 @@ void func_801E85CC_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E85CC_ovl9.s")
 #endif
-
 extern s32 D_801C8880_ovl7[];
 extern s32 D_801C88C8[];
 void func_801A0D74_ovl7();
@@ -1005,7 +1002,7 @@ void func_801EA048_ovl9(struct GObj *arg0) {
 /* 22 diffs: the ROM sinks the `sw $a0` home-slot store into the delay slot of
    the func_801EA2F8_ovl9 call and keeps arg0 in $a0; IDO spills it in the
    prologue and reloads it in that delay slot instead. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801EA2F8_ovl9(struct GObj *);
 void func_801EA628_ovl9(void);
 void func_801A0D74_ovl7();
@@ -1032,7 +1029,6 @@ void func_801EA190_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA190_ovl9.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA2F8_ovl9.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA628_ovl9.s")

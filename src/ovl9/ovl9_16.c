@@ -343,7 +343,7 @@ void func_80219924_ovl9(s32 arg0) {
 
 /* Frame-layout anomaly: instruction-identical, but IDO reserves 4 bytes below
    the local block that the ROM does not (frame 0x40 vs 0x38). */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8021992C_ovl9(struct GObj *arg0) {
     struct Ovl9AnimInfo sp18;
 
@@ -354,7 +354,6 @@ void func_8021992C_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_16/func_8021992C_ovl9.s")
 #endif
-
 void func_80219980_ovl9(struct GObj *arg0) {
     func_8019D958_ovl7(omCurrentObj->objId);
 }

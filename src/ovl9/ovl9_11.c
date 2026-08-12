@@ -44,7 +44,7 @@ extern void func_800B7B64(void);
 /* 7 diffs: one-slot rotation -- the ROM holds D_800E1B50[objId] in $a2 and
    &D_800E6A10[objId] in $a1, IDO uses $a1/$a0. An explicit `f32 *p` local
    makes it far worse (79 diffs). */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern FUNCLIST D_8021C8D8_ovl9;
 
 void func_80207374_ovl9(void) {
@@ -68,8 +68,6 @@ void func_80207374_ovl9(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_80207374_ovl9.s")
 #endif
-
-
 extern FUNCLIST D_8021C8E8_ovl9;
 IN_FILE void func_802079F4_ovl9(f32, u8);
 
@@ -153,7 +151,7 @@ extern const f32 D_8021DAC0_ovl9;
 /* 6 diffs: the ROM's source used the float LITERAL (65535.0f), which IDO keeps
    in $f2; an extern reference to the unmigrated rodata symbol takes $f0.
    Only a .rodata yaml migration for ovl9 can close this. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_802078D8_ovl9(struct GObj *this) {
     f32 temp_f2;
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -173,12 +171,11 @@ void func_802078D8_ovl9(struct GObj *this) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_802078D8_ovl9.s")
 #endif
-
 void func_802079EC_ovl9(struct GObj *this) {
 }
 
 extern const f32 D_8021DAC4_ovl9, D_8021DAC8_ovl9;
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_802079F4_ovl9(f32 arg0, u8 arg1) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -200,7 +197,6 @@ void func_802079F4_ovl9(f32 arg0, u8 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_802079F4_ovl9.s")
 #endif
-
 extern const f32 D_8021DACC_ovl9;
 extern s32 D_801CC598;
 void func_80207B30_ovl9(struct GObj *this) {
@@ -420,7 +416,7 @@ void func_80208588_ovl9(s32 arg0) {
 }
 
 extern const f32 D_8021DAD8_ovl9, D_8021DADC_ovl9;
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80208604_ovl9(struct Normal *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -446,7 +442,6 @@ void func_80208604_ovl9(struct Normal *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_80208604_ovl9.s")
 #endif
-
 void func_80208758_ovl9(struct GObj *this) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -514,7 +509,7 @@ extern s32 D_801CC64C;
 /* 6 diffs: the ROM's source used the float LITERAL (65535.0f), which IDO keeps
    in $f2; an extern reference to the unmigrated rodata symbol takes $f0.
    Only a .rodata yaml migration for ovl9 can close this. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_80208A58_ovl9(struct GObj *this) {
     f32 temp_f2;
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -535,7 +530,6 @@ void func_80208A58_ovl9(struct GObj *this) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_80208A58_ovl9.s")
 #endif
-
 void func_80208B78_ovl9(struct GObj *this) {
 }
 

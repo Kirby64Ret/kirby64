@@ -1284,7 +1284,7 @@ extern Gfx *D_8004ABB4;
 
    D_8004ABAC, D_8004ABB0 and D_8004ABB4 are referenced by nothing else in the
    tree, so their declarations are free to reshape. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_8001479C(void) {
     D_8004ABA0 = D_8004ABB8;
     D_8004ABA8[0] = D_8004ABB8;
@@ -1295,7 +1295,6 @@ void func_8001479C(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_8001479C.s")
 #endif
-
 void renderDrawDObj_TypeD(DObj* dobj) {
     void* segaddr = NULL;
     s32 sp50;
@@ -2658,7 +2657,7 @@ void func_80018170(GObj *camObj)
     renderPostCameraDraw(cam);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 70/126 insns match; remaining diffs: i<4 loop test gets rewritten to i!=4 with 4
 // hoisted to $s7 (target keeps slti and puts 0xDF000000 in $fp instead), and
 // temp-1 address computation gets folded into the store offsets.
@@ -2729,4 +2728,3 @@ void func_800183BC(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/func_800183BC.s")
 #endif
-

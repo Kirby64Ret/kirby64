@@ -238,7 +238,7 @@ void func_801E1118_ovl14(GObj *arg0) {
 // dead f32, and collapsing the two assignments onto one line -- 7 in every
 // case. The `- 40` integer literal IS load-bearing: it forks the second 40.0f
 // the ROM materialises separately from the two divisions' shared one.
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801E13C0_ovl14(GObj *arg0) {
     extern void func_801AE7E0_ovl7(s32);
     extern void func_800AA018(s32);
@@ -282,7 +282,6 @@ void func_801E13C0_ovl14(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E13C0_ovl14.s")
 #endif
-
 void func_801E1720_ovl14(GObj *arg0) {
 
 }

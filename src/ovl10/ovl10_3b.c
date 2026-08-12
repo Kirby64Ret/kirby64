@@ -158,7 +158,7 @@ s32 func_8019A900_ovl7(s32 *);
 
 extern f32 D_801F4B2C_ovl10;
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 23/41 diffs (was 32). Two levers found: reading arg0[0]/arg0[2] into locals
 // first reproduces the ROM's FP allocation order, and quotient temps keep both
 // divisions before the first store (the store otherwise forces a reload of
@@ -525,7 +525,6 @@ void func_801ED7D0_ovl10(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801ED7D0_ovl10.s")
 #endif
-
 void func_801ED930_ovl10(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
 
@@ -685,7 +684,7 @@ s32 func_801EEED4_ovl10(GObj *arg0) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // Instruction-for-instruction correct; only the local block sits 8 bytes
 // high. IDO reserves an 8-byte temp area for the nested
 // func_80111ECC(func_80111C88(...)) call that the ROM does not; splitting
@@ -706,7 +705,6 @@ s32 func_801EEF4C_ovl10(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801EEF4C_ovl10.s")
 #endif
-
 void func_801EEFCC_ovl10(void) {
     s32 temp_a1;
 

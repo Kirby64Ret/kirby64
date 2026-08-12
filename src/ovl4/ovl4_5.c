@@ -69,7 +69,7 @@ void func_80159B68_ovl4(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 4/30 diffs: a pure $f0/$f2 swap (the ROM keeps the constant in $f2 and the
 // array element in $f0). Swept: local count and order, initializer vs separate
 // assignment, inlining either side, reversed compare -- all give 4 or 14 diffs.
@@ -85,7 +85,6 @@ void func_80159C40_ovl4(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_5/func_80159C40_ovl4.s")
 #endif
-
 void func_80159CB8_ovl4(GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800DF150[omCurrentObj->objId] = func_80159D70_ovl4;

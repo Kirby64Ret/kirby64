@@ -217,7 +217,7 @@ void saveSetFileChecksum(u32 file) {
     gSaveBuffer1.files[file].checksum = saveCalcFileChecksum(file);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_800B9008(void) {
     s32 i;
 
@@ -231,8 +231,7 @@ void func_800B9008(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9008.s")
 #endif
-
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 u32 saveCalcHeaderChecksum(void) {
     u32 *p = gSaveBuffer1.header.head;
     u32 *end = &gSaveBuffer1.header.checksum;
@@ -246,7 +245,6 @@ u32 saveCalcHeaderChecksum(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/saveCalcHeaderChecksum.s")
 #endif
-
 void saveSetHeaderChecksum(void) {
     gSaveBuffer1.header.checksum = saveCalcHeaderChecksum();
 }

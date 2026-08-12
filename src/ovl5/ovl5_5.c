@@ -161,9 +161,9 @@ s32 func_80171868_ovl5(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171E6C_ovl5.s")
 
-// Draft, 2/61 diffs: instruction-exact, frame 0x30 vs ROM 0x28. IDO packs the
-// three spill slots at the BOTTOM of the temp area (0x18/1C/20), the ROM at the
-// TOP (0x1C/20/24); any declared local grows the frame by 8 instead of shifting it.
+// Draft, 2/61: with THESE three locals every spill slot is exact (0x1C/20/24)
+// and only the frame differs, 0x30 vs 0x28. Re-measured 2026-08-12: dropping a
+// local fixes the frame but moves the spills (5-8 diffs). The states never meet.
 #ifdef MIPS_TO_C
 void func_801720D8_ovl5(s32 arg0) {
     s32 pad;

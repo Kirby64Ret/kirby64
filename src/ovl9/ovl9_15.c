@@ -483,7 +483,7 @@ void func_80216700_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_8021679C_ovl9(f32 arg0) {
     f32 dx;
     f32 dy;
@@ -698,7 +698,7 @@ void func_80217098_ovl9(struct GObj *arg0) {
    ($f20 holds the extern and $f22 the 0.0f, the ROM has it the other way).
    Swept: assignment order, declaration order and position, inline 0.0f,
    double 0.0 literal, chained assignment -- all 4. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern f32 D_8021DE2C_ovl9, D_8021DE30_ovl9;
 
 void func_80217158_ovl9(struct GObj *arg0) {
@@ -732,7 +732,6 @@ void func_80217158_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217158_ovl9.s")
 #endif
-
 void func_80217328_ovl9(s32 arg0) {
 
 }

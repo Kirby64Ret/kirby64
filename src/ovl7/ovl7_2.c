@@ -194,7 +194,7 @@ struct Ovl7AnimObj *func_801A0464_ovl7(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A04B8_ovl7.s")
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 s32 func_801A07C4_ovl7(void) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -217,7 +217,6 @@ s32 func_801A07C4_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A07C4_ovl7.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A0880_ovl7.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A0B10_ovl7.s")

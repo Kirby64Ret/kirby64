@@ -105,7 +105,7 @@ void func_801696F0_ovl3(s32 arg0) {
     func_800FF200(D_8012E944);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 12/224: instruction-for-instruction exact; only the FP register names
    differ. The ROM allocates $f12 to the shared 0.0f and $f14 to `temp`;
    IDO gives the 0.0f $f14 and `temp` $f2 whatever the statement order,
@@ -171,7 +171,6 @@ void func_80169718_ovl3(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_80169718_ovl3.s")
 #endif
-
 extern f32 gKirbyHp;
 extern void play_sound(s32);
 s32 change_kirby_hp(f32);
@@ -258,7 +257,7 @@ s32 func_800F9438(s32);
 s32 func_80104AB4(f32 *, f32 *, u16, u16, void *);
 void func_8010DC00(void *, void *);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 /* 116/161: one-slot temp-register rotation plus IDO CSEing the four separate
    mtc1 $zero the ROM materialises per compare. */
 s32 func_8016B74C_ovl3(void) {
@@ -313,7 +312,6 @@ s32 func_8016B74C_ovl3(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_8016B74C_ovl3.s")
 #endif
-
 extern f32 D_80197274_ovl3;
 void func_8016BB40_ovl3(s32);
 void func_800B4924(s32);

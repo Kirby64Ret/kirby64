@@ -600,7 +600,7 @@ void func_801C2134_ovl7(GObj *arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 18/57 diffs and one instruction short: the ROM re-reads omCurrentObj->objId
 // after the D_800E8920 store and keeps omCurrentObj in $a0, not $v1.
 void func_801C2264_ovl7(GObj *arg0) {
@@ -621,7 +621,6 @@ void func_801C2264_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_17/func_801C2264_ovl7.s")
 #endif
-
 void func_801C2348_ovl7(GObj *arg0) {
     s32 pad; // load-bearing: the ROM leaves 4 bytes at the top of the local block
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -647,7 +646,7 @@ void func_801C2348_ovl7(GObj *arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 22 diffs: the ROM keeps omCurrentObj in $v1 across the D_800E8920 store
 void func_801C2478_ovl7(GObj *arg0) {
     s32 *p;
@@ -675,7 +674,6 @@ void func_801C2478_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_17/func_801C2478_ovl7.s")
 #endif
-
 void func_801C258C_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *tmp = ent->unk88->unkC;

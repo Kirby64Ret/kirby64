@@ -202,7 +202,7 @@ void func_801AFF64_ovl7(GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 2 diffs: the Ovl7AnimInfo local lands at 0x30($sp), the ROM has it at 0x28.
 // The ROM reserves 8 bytes above it that no combination of dead locals or
 // struct resizing reproduces (they grow the frame instead).
@@ -225,7 +225,6 @@ void func_801AFFFC_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AFFFC_ovl7.s")
 #endif
-
 void func_801B00BC_ovl7(GObj *arg0) {
     s32 sp34;
     s16 sp32;

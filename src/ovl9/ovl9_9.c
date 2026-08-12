@@ -652,7 +652,7 @@ void func_801FDAE0_ovl9(s32 arg0, s32 arg1, f32 arg2) {
    omCurrentObj->objId load; IDO schedules the 4.0f mtc1 first. Registers and
    every other instruction are exact. Locals-as-initializer, plain-statement
    assignment and declaration order all swept with no effect. */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern s32 D_801CC238;
 extern f32 D_8021D9B0_ovl9;
 
@@ -679,7 +679,6 @@ void func_801FDB28_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FDB28_ovl9.s")
 #endif
-
 void func_801FDC7C_ovl9(s32 arg0) {
 
 }
@@ -1036,7 +1035,7 @@ void func_801FEFA4_ovl9(struct GObj *arg0) {
 
 extern s32 D_801CC2C8;
 extern f32 D_8021D9D4_ovl9;
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 void func_801FF028_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
     f32 zero;
@@ -1432,7 +1431,7 @@ void func_802002F4_ovl9(void) {
    a first statement instead, lim declared in all three positions, an extra
    dead f32 ahead of it, reversed compare operand order, and a second local for
    D_8021D9E8_ovl9 (70). */
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 extern f32 D_8021D9E4_ovl9;
 extern f32 D_8021D9E8_ovl9;
 
@@ -1459,7 +1458,6 @@ void func_8020034C_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_8020034C_ovl9.s")
 #endif
-
 void func_802004B8_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
     func_800A9EA4(0x10185);
@@ -1517,7 +1515,7 @@ void func_802006F0_ovl9(struct GObj *arg0) {
 
 extern f32 D_8021D9EC_ovl9;
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 6 diffs: $f12/$f14 are swapped between the 0.0f of ABSF and D_8021D9EC_ovl9.
 void func_80200810_ovl9(struct GObj *arg0) {
     if ((D_800E9E20[omCurrentObj->objId] != 0) &&
@@ -1532,7 +1530,6 @@ void func_80200810_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_80200810_ovl9.s")
 #endif
-
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_80200908_ovl9.s")
 
 void func_80200A88_ovl9(struct GObj *arg0) {

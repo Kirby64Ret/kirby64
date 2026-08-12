@@ -25,7 +25,7 @@ void func_801EF9B0_ovl10(GObj *);
 void func_800AA018(s32);
 void ohSleep(s32);
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
 // 98/140 diffs: structure is right, but $v0/$v1 are swapped between the
 // omCurrentObj pointer and the objId value throughout. Swept with ZERO effect:
 // s32 return type on func_800AA018, ohSleep and func_800B7790 (each applied
@@ -59,7 +59,6 @@ void func_801EF790_ovl10(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EF790_ovl10.s")
 #endif
-
 void func_801EF9B0_ovl10(GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         func_801A0880_ovl7();
