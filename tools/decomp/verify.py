@@ -21,19 +21,35 @@ CFLAGS = ('-c -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed '
           '-DF3DEX_GBI_2 -Iinclude -Ilibreultra/include/2.0I -Ibuild -Ibuild/include '
           '-Ibuild/assets -Isrc -Isrc.old -I. -mips2 -32 -woff 624,568')
 ASFLAGS = '-mtune=vr4300 -march=vr4300 --no-pad-sections -mabi=32 -mips3 -Ibuild -Iinclude'
-# per-file OPT_FLAGS overrides from the Makefile
-OPT_OVERRIDES = {
-    'src/ovl7/yakulib.c': '-O2 -Olimit 1000',
-    'src/ovl1/ovl1_5.c': '-O2',
-    'src/ovl3/ovl3_1.c': '-O2 -Wo,-loopunroll',
-}
+def _makefile_overrides():
+    """Per-file compiler settings, READ FROM THE MAKEFILE rather than copied.
 
-# Files the Makefile builds with a compiler other than the plain cc driver.
-# Must track the Makefile's N_AUDIO_O_FILES rule.
-CC_OVERRIDES = {
-    'src/main/libn_audio.c':   'python3 tools/decomp/cc_o3.py',
-    'src/main/libn_audio_2.c': 'python3 tools/decomp/cc_o3.py',
-}
+    These were duplicated here as literals, and the duplicate went stale: the
+    Makefile gives main/libn_audio*.c a -O3 compiler and this file did not, so
+    verify.py scored 60 pragmas -- the whole remaining pool in main -- against
+    the wrong compiler for months, and reported 7 phantom diffs on already
+    matched functions.
+
+    Parsing the Makefile means the two cannot disagree again. If a rule appears
+    that this parser does not understand, it is better to fail loudly here than
+    to silently verify against settings the ROM build does not use.
+    """
+    opt, cc = {}, {}
+    mk = open('Makefile').read()
+    for path, flags in re.findall(
+            r'^\$\(BUILD_DIR\)/(\S+)\.o:\s*OPT_FLAGS\s*=\s*(.+)$', mk, re.M):
+        opt[path + '.c'] = flags.strip()
+    # The N_AUDIO rule names its files in a variable, then overrides CC to route
+    # them through cc_o3.py. Match that shape specifically; anything else is
+    # reported rather than guessed at.
+    m = re.search(r'^N_AUDIO_O_FILES\s*:?=\s*(.+)$', mk, re.M)
+    if m and 'cc_o3.py' in mk:
+        for o in m.group(1).split():
+            f = o.replace('$(BUILD_DIR)/', '').replace('.o', '.c')
+            cc[f] = 'python3 tools/decomp/cc_o3.py'
+    return opt, cc
+
+OPT_OVERRIDES, CC_OVERRIDES = _makefile_overrides()
 
 _sym = None
 def symmap():
