@@ -83,7 +83,26 @@ def rodata_is_migrated(cfile):
             m = re.search(r'\[\s*0x[0-9A-Fa-f]+\s*,\s*\.rodata\s*,\s*([\w/]+)\s*\]', line)
             if m:
                 _migrated.add('src/' + m.group(1) + '.c')
-    return os.path.normpath(cfile) in _migrated
+    cf = os.path.normpath(cfile)
+    if cf in _migrated:
+        return True
+    # A SWEEP TEMP COPY must inherit the real file's status. Harnesses copy
+    # src/ovl19/helper.c to src/ovl19/helper.jb2_helper.c (or .ab_tmp.c) and
+    # verify that; keying purely off the path made the copy read as unmigrated,
+    # so every own-.rodata reference came back a phantom diff --
+    # func_80220138_ovl19 measured 1/65 on the copy and MATCH in place. That is
+    # exactly the false residue an agent then spends a wave chasing.
+    #
+    # A copy is recognised as `<migrated stem>.<anything>.c` in the same
+    # directory. Requiring the DOT is what keeps src/ovl1/ovl1_2.c from being
+    # treated as a copy of src/ovl1/ovl1.c.
+    d, base = os.path.split(cf)
+    stem = base[:-2] if base.endswith('.c') else base
+    for m in _migrated:
+        md, mbase = os.path.split(m)
+        if md == d and stem.startswith(mbase[:-2] + '.'):
+            return True
+    return False
 
 def find_listing(func):
     # real splat output (post-ROM-extraction) is authoritative; a function with
