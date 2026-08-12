@@ -844,66 +844,87 @@ s32 func_801A2C78_ovl7(f32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2C78_ovl7.s")
 #endif
 
+/* FACTORY: 50/103, whole-function temp-register rotation, and it is a TWIN of
+   func_801A3000_ovl7 below (identical call skeleton, identical body, unk18 vs
+   unk14 / &= ~1 vs |= 1 / += vs -= 0.1f / 0x1C0 vs 0xE00): whatever closes one
+   closes the other, both at 50 diffs.  Every instruction, branch, branch-likely
+   and memory reference is the ROM's; only the temp names differ -- the ROM
+   takes $v0/$v1 for the D_800E1B50->unk84 chain and $a3/$a2/$t0 for the three
+   held array bases, ours takes $t9/$t2 and $t0/$a3/$t1, one slot rotated, and
+   ours splits objId / objId*4 across two registers where the ROM shifts in
+   place.  Two variants spent on it: m2c per-use temporaries (58, and it moves
+   `obj` out of $v1) and an overlay-struct cast instead of *(f32 *)& (50,
+   inert).  Permuter food.
+   Two REAL bugs were fixed getting here and both are worth keeping: the call
+   needs an f32 prototype in scope (guarded, so the definition below does not
+   supply one -- without it IDO passes the field with `lw $a0`), and repeating
+   `omCurrentObj->objId` makes IDO hoist &omCurrentObj into a register, where
+   the ROM caches the POINTER once per block and re-reads ->objId; caching it
+   in a local took this function from 101/106 to 50/103. */
 #ifdef NON_MATCHING
+s32 func_801A2C78_ovl7(f32);
+
 void func_801A2E64_ovl7(s32 arg0) {
+    struct EneUnk84Float {
+        u8  pad0[0x14];
+        f32 unk14;
+        f32 unk18;
+    };
+    struct GObj *obj;
     f32 *temp_a1;
     s32 *temp_a0;
     u32 temp_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
 
-    if (func_801A2C78_ovl7(D_800E1B50[omCurrentObj->objId]->unk84->unk18) != 0) {
-        temp_a0 = &D_800E8AE0[omCurrentObj->objId];
+    if (func_801A2C78_ovl7(((struct EneUnk84Float *) D_800E1B50[omCurrentObj->objId]->unk84)->unk18) != 0) {
+        obj = omCurrentObj;
+        temp_a0 = &D_800E8AE0[obj->objId];
         *temp_a0 &= ~1;
-        D_800E8920[omCurrentObj->objId] = 0;
-        temp_a1 = &gEntitiesNextPosYArray[omCurrentObj->objId];
+        D_800E8920[obj->objId] = 0;
+        temp_a1 = &gEntitiesNextPosYArray[obj->objId];
         *temp_a1 += 0.1f;
-        temp_v0 = omCurrentObj->objId;
+        temp_v0 = obj->objId;
         if ((gEntitiesNextPosYArray[temp_v0] < gEntitiesPosYArray[temp_v0]) && (D_800E8AE0[temp_v0] & 2) && ((D_8012BCA0 >> 0x13) & 0x1C0)) {
             D_800E5F90[temp_v0] = D_800E6150[temp_v0];
-            temp_v0_2 = omCurrentObj->objId;
-            D_800E6BD0[temp_v0_2] = D_800E6D90[temp_v0_2];
-            temp_v0_3 = omCurrentObj->objId;
-            gEntitiesNextPosXArray[temp_v0_3] = gEntitiesPosXArray[temp_v0_3];
-            temp_v0_4 = omCurrentObj->objId;
-            gEntitiesNextPosYArray[temp_v0_4] = gEntitiesPosYArray[temp_v0_4];
-            temp_v0_5 = omCurrentObj->objId;
-            gEntitiesNextPosZArray[temp_v0_5] = gEntitiesPosZArray[temp_v0_5];
+            D_800E6BD0[obj->objId] = D_800E6D90[obj->objId];
+            gEntitiesNextPosXArray[obj->objId] = gEntitiesPosXArray[obj->objId];
+            gEntitiesNextPosYArray[obj->objId] = gEntitiesPosYArray[obj->objId];
+            gEntitiesNextPosZArray[obj->objId] = gEntitiesPosZArray[obj->objId];
         }
     }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2E64_ovl7.s")
 #endif
+/* FACTORY: 50/102.  Twin of func_801A2E64_ovl7 above -- same residue, same
+   fix; see that note. */
 #ifdef NON_MATCHING
+s32 func_801A2C78_ovl7(f32);
+
 void func_801A3000_ovl7(s32 arg0) {
+    struct EneUnk84Float {
+        u8  pad0[0x14];
+        f32 unk14;
+        f32 unk18;
+    };
+    struct GObj *obj;
     f32 *temp_a1;
     s32 *temp_a0;
     u32 temp_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
 
-    if (func_801A2C78_ovl7(D_800E1B50[omCurrentObj->objId]->unk84->unk14) != 0) {
-        temp_a0 = &D_800E8AE0[omCurrentObj->objId];
+    if (func_801A2C78_ovl7(((struct EneUnk84Float *) D_800E1B50[omCurrentObj->objId]->unk84)->unk14) != 0) {
+        obj = omCurrentObj;
+        temp_a0 = &D_800E8AE0[obj->objId];
         *temp_a0 |= 1;
-        D_800E8920[omCurrentObj->objId] = 0;
-        temp_a1 = &gEntitiesNextPosYArray[omCurrentObj->objId];
+        D_800E8920[obj->objId] = 0;
+        temp_a1 = &gEntitiesNextPosYArray[obj->objId];
         *temp_a1 -= 0.1f;
-        temp_v0 = omCurrentObj->objId;
+        temp_v0 = obj->objId;
         if ((gEntitiesPosYArray[temp_v0] < gEntitiesNextPosYArray[temp_v0]) && (D_800E8AE0[temp_v0] & 2) && ((D_8012BCA0 >> 0x13) & 0xE00)) {
             D_800E5F90[temp_v0] = D_800E6150[temp_v0];
-            temp_v0_2 = omCurrentObj->objId;
-            D_800E6BD0[temp_v0_2] = D_800E6D90[temp_v0_2];
-            temp_v0_3 = omCurrentObj->objId;
-            gEntitiesNextPosXArray[temp_v0_3] = gEntitiesPosXArray[temp_v0_3];
-            temp_v0_4 = omCurrentObj->objId;
-            gEntitiesNextPosYArray[temp_v0_4] = gEntitiesPosYArray[temp_v0_4];
-            temp_v0_5 = omCurrentObj->objId;
-            gEntitiesNextPosZArray[temp_v0_5] = gEntitiesPosZArray[temp_v0_5];
+            D_800E6BD0[obj->objId] = D_800E6D90[obj->objId];
+            gEntitiesNextPosXArray[obj->objId] = gEntitiesPosXArray[obj->objId];
+            gEntitiesNextPosYArray[obj->objId] = gEntitiesPosYArray[obj->objId];
+            gEntitiesNextPosZArray[obj->objId] = gEntitiesPosZArray[obj->objId];
         }
     }
 }

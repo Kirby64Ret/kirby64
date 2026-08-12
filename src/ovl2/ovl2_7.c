@@ -3686,41 +3686,38 @@ void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109318.s")
 #endif
+/* FACTORY: 44/123, ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
+   rec index for sp4C and for the 801057C4 call, BD00 offset pair, 0xFFF8/0xFFC7 mask,
+   |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
+   compare-block shape not yet tuned to the donor. */
 #ifdef MIPS_TO_C
 
-void func_80109504(void *arg0, void *arg1) {
-    void *sp4C;
+void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    struct Normal *sp4C;
+    f32 sp48;
     f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp20;
-    f32 temp_f0;
-    s16 var_t4;
-    void *temp_v0;
+    Vector sp38;
+    Vector pad;
+    Vector sp2C;
+    Vector sp20;
 
-    temp_v0 = arg1->unk18;
-    sp38 = arg0->unk4 + D_8012BD00.unkC;
-    sp3C = arg0->unk8 + arg0->unk10;
-    sp40 = arg0->unkC + D_8012BD00.unk10;
-    sp2C = arg0->unk4 + D_8012BD00.unk4;
-    sp34 = arg0->unkC + D_8012BD00.unk8;
-    temp_f0 = 1.0f / temp_v0->unk4;
-    sp30 = (temp_v0->unk0 * (sp38 - sp2C)) + (temp_v0->unk8 * (sp40 - sp34) * temp_f0) + sp3C;
-    sp44 = temp_f0;
-    func_801057C4(arg1->unk30, &sp2C, &sp38, &sp20);
-    if ((((sp38 - sp20) * D_8012BD00.unk1C) + ((sp40 - sp28) * D_8012BD00.unk20)) < 0.0f) {
-        var_t4 = (((arg1->unk0 >> 0x13) & 0xFFC7) * 8) | (arg1->unk0 & 7);
+    sp4C = arg1->rec[1].norm;
+    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp38.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp44 = 1.0f / sp4C->y;
+    sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + ((sp4C->z * (sp38.z - sp2C.z)) * sp44) + sp38.y;
+    func_801057C4(arg1->rec[3].norm, &sp2C, &sp38, &sp20);
+    if (((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C))) < 0.0f) {
+        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
     } else {
-        arg0->unk4 = sp20 - D_8012BD00.unk2C;
-        arg0->unkC = sp28 - D_8012BD00.unk30;
-        arg0->unk8 = ((-((sp4C->unk0 * arg0->unk4) + (sp4C->unk8 * arg0->unkC) + sp4C->unkC) * sp44) - arg0->unk14) - 0.1f;
-        var_t4 = ((((arg1->unk0 >> 0x13) & 0xFFC7) | 8) * 8) | (arg1->unk0 & 7);
+        arg0->kirbyFootPos[0] = sp20.x - BD00.unk2C;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.unk30;
+        arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[1]) - 0.1f;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
     }
-    arg1->unk0 = var_t4;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109504.s")
@@ -3737,81 +3734,75 @@ void func_801096F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     }
 }
 
+/* FACTORY: 48/123, ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
+   rec index for sp4C and for the 801057C4 call, BD00 offset pair, 0xFFF8/0xFFC7 mask,
+   |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
+   compare-block shape not yet tuned to the donor. */
 #ifdef MIPS_TO_C
 
-void func_80109784(void *arg0, void *arg1) {
-    void *sp4C;
+void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    struct Normal *sp4C;
+    f32 sp48;
     f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp20;
-    f32 temp_f0;
-    s16 var_t4;
-    void *temp_v0;
+    Vector sp38;
+    Vector pad;
+    Vector sp2C;
+    Vector sp20;
 
-    temp_v0 = arg1->unkC;
-    sp2C = arg0->unk4 + D_8012BD00.unk4;
-    sp30 = arg0->unk8 + arg0->unk10;
-    sp34 = arg0->unkC + D_8012BD00.unk8;
-    sp38 = arg0->unk4 + D_8012BD00.unkC;
-    sp40 = arg0->unkC + D_8012BD00.unk10;
-    temp_f0 = 1.0f / temp_v0->unk4;
-    sp3C = (temp_v0->unk0 * (sp2C - sp38)) + (temp_v0->unk8 * (sp34 - sp40) * temp_f0) + sp30;
-    sp44 = temp_f0;
-    func_801057C4(arg1->unk24, &sp2C, &sp38, &sp20);
-    if ((((sp2C - sp20) * D_8012BD00.unk14) + ((sp34 - sp28) * D_8012BD00.unk18)) < 0.0f) {
-        var_t4 = (((arg1->unk0 >> 0x13) & 0xFFF8) * 8) | (arg1->unk0 & 7);
+    sp4C = arg1->rec[0].norm;
+    sp2C.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp2C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp2C.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp38.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp38.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp44 = 1.0f / sp4C->y;
+    sp38.y = (sp4C->x * (sp2C.x - sp38.x)) + ((sp4C->z * (sp2C.z - sp38.z)) * sp44) + sp2C.y;
+    func_801057C4(arg1->rec[2].norm, &sp2C, &sp38, &sp20);
+    if (((((sp2C.z - sp20.z) * BD00.unk18) + ((sp2C.x - sp20.x) * BD00.unk14))) < 0.0f) {
+        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
     } else {
-        arg0->unk4 = sp20 - D_8012BD00.unk24;
-        arg0->unkC = sp28 - D_8012BD00.unk28;
-        arg0->unk8 = ((-((sp4C->unk0 * arg0->unk4) + (sp4C->unk8 * arg0->unkC) + sp4C->unkC) * sp44) - arg0->unk18) + 0.1f;
-        var_t4 = ((((arg1->unk0 >> 0x13) & 0xFFF8) | 1) * 8) | (arg1->unk0 & 7);
+        arg0->kirbyFootPos[0] = sp20.x - BD00.unk24;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.unk28;
+        arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[2]) + 0.1f;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
     }
-    arg1->unk0 = var_t4;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109784.s")
 #endif
 
+/* FACTORY: 44/123, ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
+   rec index for sp4C and for the 801057C4 call, BD00 offset pair, 0xFFF8/0xFFC7 mask,
+   |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
+   compare-block shape not yet tuned to the donor. */
 #ifdef MIPS_TO_C
 
-void func_80109970(void *arg0, void *arg1) {
-    void *sp4C;
+void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    struct Normal *sp4C;
+    f32 sp48;
     f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp20;
-    f32 temp_f0;
-    s16 var_t4;
-    void *temp_v0;
+    Vector sp38;
+    Vector pad;
+    Vector sp2C;
+    Vector sp20;
 
-    temp_v0 = arg1->unkC;
-    sp38 = arg0->unk4 + D_8012BD00.unkC;
-    sp3C = arg0->unk8 + arg0->unk10;
-    sp40 = arg0->unkC + D_8012BD00.unk10;
-    sp2C = arg0->unk4 + D_8012BD00.unk4;
-    sp34 = arg0->unkC + D_8012BD00.unk8;
-    temp_f0 = 1.0f / temp_v0->unk4;
-    sp30 = (temp_v0->unk0 * (sp38 - sp2C)) + (temp_v0->unk8 * (sp40 - sp34) * temp_f0) + sp3C;
-    sp44 = temp_f0;
-    func_801057C4(arg1->unk30, &sp2C, &sp38, &sp20);
-    if ((((sp38 - sp20) * D_8012BD00.unk1C) + ((sp40 - sp28) * D_8012BD00.unk20)) < 0.0f) {
-        var_t4 = (((arg1->unk0 >> 0x13) & 0xFFC7) * 8) | (arg1->unk0 & 7);
+    sp4C = arg1->rec[0].norm;
+    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp38.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp44 = 1.0f / sp4C->y;
+    sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + ((sp4C->z * (sp38.z - sp2C.z)) * sp44) + sp38.y;
+    func_801057C4(arg1->rec[3].norm, &sp2C, &sp38, &sp20);
+    if (((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C))) < 0.0f) {
+        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
     } else {
-        arg0->unk4 = sp20 - D_8012BD00.unk2C;
-        arg0->unkC = sp28 - D_8012BD00.unk30;
-        arg0->unk8 = ((-((sp4C->unk0 * arg0->unk4) + (sp4C->unk8 * arg0->unkC) + sp4C->unkC) * sp44) - arg0->unk18) + 0.1f;
-        var_t4 = ((((arg1->unk0 >> 0x13) & 0xFFC7) | 8) * 8) | (arg1->unk0 & 7);
+        arg0->kirbyFootPos[0] = sp20.x - BD00.unk2C;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.unk30;
+        arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[2]) + 0.1f;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
     }
-    arg1->unk0 = var_t4;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109970.s")
@@ -5281,59 +5272,54 @@ block_23:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010D138.s")
 #endif
 
+/* FACTORY: 69/142, frame+stack offsets exact; residue is IDO CSEing &sp3C into $v1 and spilling it
+   at 0x30 where the ROM recomputes `addiu $tN,$sp,0x3C` per block, which rotates $v1/$t0 and the top-block
+   f4/f6/f18 loads. goto form (not if/else) is required: it took this from 89 to 69. */
 #ifdef MIPS_TO_C
 
-s32 func_8010D42C(void *arg0, f32 arg1) {
-    ? sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    void *sp3C;
+s32 func_8010D42C(struct PositionState *arg0, f32 arg1) {
+    Vector sp64;
+    Vector sp58;
+    Vector sp4C;
+    Vector sp40;
+    struct Normal *sp3C;
     s32 sp38;
     f32 temp_f0;
-    s32 var_t0;
 
-    func_80104FB8();
-    sp58 = arg0->unk4;
-    sp5C = arg0->unk8 + arg0->unk14;
-    sp60 = arg0->unkC;
-    sp50 = sp5C + arg1;
-    sp40 = 0.0f;
-    sp48 = 0.0f;
-    sp4C = sp58;
-    sp54 = sp60;
-    sp44 = 1.0f;
-    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, &sp64, NULL, 0, 0) != 0) {
-        arg0->unk8 = (sp68 - arg0->unk14) - 0.1f;
+    func_80104FB8(arg0);
+    sp58.x = arg0->kirbyFootPos[0];
+    sp58.y = arg0->scale[1] + arg0->kirbyFootPos[1];
+    sp58.z = arg0->kirbyFootPos[2];
+    sp4C.y = sp58.y + arg1;
+    sp40.x = 0.0f;
+    sp40.z = 0.0f;
+    sp4C.x = sp58.x;
+    sp4C.z = sp58.z;
+    sp40.y = 1.0f;
+    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, &sp64, 0, 0, 0) != 0) {
+        arg0->kirbyFootPos[1] = (sp64.y - arg0->scale[1]) - 0.1f;
         return 1;
     }
-    sp58 = arg0->unk4 + D_8012BD00.unk4;
+    sp58.x = BD00.unk4 + arg0->kirbyFootPos[0];
     sp38 = 0;
-    sp60 = arg0->unkC + D_8012BD00.unk8;
-    sp4C = sp58;
-    sp54 = sp60;
-    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, NULL, &sp3C, 0, 0) != 0) {
+    sp58.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp4C.x = sp58.x;
+    sp4C.z = sp58.z;
+    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
         goto block_5;
     }
-    sp58 = arg0->unk4 + D_8012BD00.unkC;
-    sp60 = arg0->unkC + D_8012BD00.unk10;
-    sp4C = sp58;
-    sp54 = sp60;
-    var_t0 = sp38;
-    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, NULL, &sp3C, 0, 0) != 0) {
+    sp58.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp58.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp4C.x = sp58.x;
+    sp4C.z = sp58.z;
+    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
 block_5:
-        var_t0 = 1;
+        sp38 = 1;
     }
-    if (var_t0 != 0) {
-        temp_f0 = -((sp3C->unk0 * arg0->unk4) + (sp3C->unk8 * arg0->unkC) + sp3C->unkC) / sp3C->unk4;
-        if ((temp_f0 <= sp50) && (sp5C <= temp_f0)) {
-            arg0->unk8 = (temp_f0 - arg0->unk14) - 0.1f;
+    if (sp38 != 0) {
+        temp_f0 = -((sp3C->x * arg0->kirbyFootPos[0]) + (sp3C->z * arg0->kirbyFootPos[2]) + sp3C->originOffset) / sp3C->y;
+        if ((temp_f0 <= sp4C.y) && (sp58.y <= temp_f0)) {
+            arg0->kirbyFootPos[1] = (temp_f0 - arg0->scale[1]) - 0.1f;
             return 1;
         }
     }
@@ -5343,59 +5329,54 @@ block_5:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010D42C.s")
 #endif
 
+/* FACTORY: 69/142, frame+stack offsets exact; residue is IDO CSEing &sp3C into $v1 and spilling it
+   at 0x30 where the ROM recomputes `addiu $tN,$sp,0x3C` per block, which rotates $v1/$t0 and the top-block
+   f4/f6/f18 loads. goto form (not if/else) is required: it took this from 89 to 69. */
 #ifdef MIPS_TO_C
 
-s32 func_8010D668(void *arg0, f32 arg1) {
-    ? sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    void *sp3C;
+s32 func_8010D668(struct PositionState *arg0, f32 arg1) {
+    Vector sp64;
+    Vector sp58;
+    Vector sp4C;
+    Vector sp40;
+    struct Normal *sp3C;
     s32 sp38;
     f32 temp_f0;
-    s32 var_t0;
 
-    func_80104FB8();
-    sp58 = arg0->unk4;
-    sp5C = arg0->unk8 + arg0->unk18;
-    sp60 = arg0->unkC;
-    sp50 = sp5C - arg1;
-    sp40 = 0.0f;
-    sp48 = 0.0f;
-    sp4C = sp58;
-    sp54 = sp60;
-    sp44 = -1.0f;
-    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, &sp64, NULL, 0, 0) != 0) {
-        arg0->unk8 = (sp68 - arg0->unk18) + 0.1f;
+    func_80104FB8(arg0);
+    sp58.x = arg0->kirbyFootPos[0];
+    sp58.y = arg0->scale[2] + arg0->kirbyFootPos[1];
+    sp58.z = arg0->kirbyFootPos[2];
+    sp4C.y = sp58.y - arg1;
+    sp40.x = 0.0f;
+    sp40.z = 0.0f;
+    sp4C.x = sp58.x;
+    sp4C.z = sp58.z;
+    sp40.y = -1.0f;
+    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, &sp64, 0, 0, 0) != 0) {
+        arg0->kirbyFootPos[1] = (sp64.y - arg0->scale[2]) + 0.1f;
         return 1;
     }
-    sp58 = arg0->unk4 + D_8012BD00.unk4;
+    sp58.x = BD00.unk4 + arg0->kirbyFootPos[0];
     sp38 = 0;
-    sp60 = arg0->unkC + D_8012BD00.unk8;
-    sp4C = sp58;
-    sp54 = sp60;
-    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, NULL, &sp3C, 0, 0) != 0) {
+    sp58.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp4C.x = sp58.x;
+    sp4C.z = sp58.z;
+    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
         goto block_5;
     }
-    sp58 = arg0->unk4 + D_8012BD00.unkC;
-    sp60 = arg0->unkC + D_8012BD00.unk10;
-    sp4C = sp58;
-    sp54 = sp60;
-    var_t0 = sp38;
-    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, NULL, &sp3C, 0, 0) != 0) {
+    sp58.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp58.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp4C.x = sp58.x;
+    sp4C.z = sp58.z;
+    if (func_80103EA0(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
 block_5:
-        var_t0 = 1;
+        sp38 = 1;
     }
-    if (var_t0 != 0) {
-        temp_f0 = -((sp3C->unk0 * arg0->unk4) + (sp3C->unk8 * arg0->unkC) + sp3C->unkC) / sp3C->unk4;
-        if ((sp50 <= temp_f0) && (temp_f0 <= sp5C)) {
-            arg0->unk8 = (temp_f0 - arg0->unk18) + 0.1f;
+    if (sp38 != 0) {
+        temp_f0 = -((sp3C->x * arg0->kirbyFootPos[0]) + (sp3C->z * arg0->kirbyFootPos[2]) + sp3C->originOffset) / sp3C->y;
+        if ((sp4C.y <= temp_f0) && (temp_f0 <= sp58.y)) {
+            arg0->kirbyFootPos[1] = (temp_f0 - arg0->scale[2]) + 0.1f;
             return 1;
         }
     }

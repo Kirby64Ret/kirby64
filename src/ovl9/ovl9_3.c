@@ -261,7 +261,59 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DDF9C_ovl9.s")
 
+/* FACTORY: 27/227, callee-saved permutation.  Length, frame, both loops,
+   the div.s and every constant are the ROM's.  Residue is a one-slot cyclic
+   rotation of three base pointers -- ROM $s1=D_8021BDB8, $s2=D_800E7880,
+   $s3=D_800E64D0; IDO gives $s1=D_800E64D0, $s2=D_8021BDB8, $s3=D_800E7880
+   ($s4/$s5 are already right) -- plus the invariant mul.s operand swap on
+   `(f32)i * quotient`.  Two levers found and KEPT, both load-bearing:
+   (1) the divisor MUST be an f32 local assigned in each arm -- a literal
+   /32.0f is strength-reduced to a reciprocal multiply and loses the div.s;
+   (2) the five zero-stores are one reverse-order chained assignment
+   (D_800E3050 = ... = D_800E3910), which is what shares the single load.
+   Reordering the product to put the multiplies in ROM order measures 38. */
+#ifdef NON_MATCHING
+void func_801DE280_ovl9(struct GObj *arg0) {
+    s32 i;
+    f32 d;
+
+    D_800DDFD0[omCurrentObj->objId] = 6;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB788;
+    D_800E8920[omCurrentObj->objId] = 1;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    if (0.0f != D_800EAC20[omCurrentObj->objId]) {
+        D_800E3910[omCurrentObj->objId] = 0.0f;
+        D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+            D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+        D_800E3E50[omCurrentObj->objId] = 65535.0f;
+        D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+        if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
+            d = 32.0f;
+            for (i = 0x20; i != 0; i--) {
+                D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] *
+                    (i * (D_8021BDB8_ovl9[D_800E7880[omCurrentObj->objId]] * D_800EAC20[omCurrentObj->objId] / d));
+                ohSleep(1);
+            }
+        } else {
+            d = 16.0f;
+            for (i = 0x10; i != 0; i--) {
+                D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] *
+                    (i * (D_8021BDB8_ovl9[D_800E7880[omCurrentObj->objId]] * D_800EAC20[omCurrentObj->objId] / d));
+                ohSleep(1);
+            }
+        }
+        D_800EAC20[omCurrentObj->objId] = 0.0f;
+    }
+    func_800B33F4();
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DE280_ovl9.s")
+#endif
 
 /* 4/130: the ROM materialises %hi(D_800E8AE0) before %hi(D_800EAC20); IDO emits
    them the other way round. Swept: ternary, declaration order, `& 1` vs `!= 0`,

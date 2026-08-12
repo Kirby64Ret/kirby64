@@ -517,7 +517,30 @@ void func_801E3FB4_ovl9(void) {
     func_801E4DC8_ovl9();
 }
 
+/* FACTORY: 173/174 insns -- instructions [81..] onward (both ABSF ternary
+   blocks, ~90 insns) are byte-exact.  Residue is ONE instruction: the ROM
+   materialises the literal 1 twice (addiu $t9 for D_800DDFD0, addiu $t8 for
+   D_800E8920), IDO CSEs them into one register, which frees $a2 and rotates
+   the four array-base registers ($a2/$a3/$t0/$t1 -> $a3/$t0/$t1/$t2) one slot.
+   Tried: 1U to fork the constant node.  Pure permuter food. */
+#ifdef NON_MATCHING
+void func_801E3FE4_ovl9(struct GObj *arg0) {
+    D_800DEF90[omCurrentObj->objId] = func_800B6B8C;
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBAC4;
+    D_800E8920[omCurrentObj->objId] = 1;
+    D_800E3910[omCurrentObj->objId] = 0;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 1) != 0) ? 3.0f : 6.0f);
+    D_800E3C90[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 1) != 0) ? 5.0f : 10.0f);
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E3FE4_ovl9.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E429C_ovl9.s")
 
