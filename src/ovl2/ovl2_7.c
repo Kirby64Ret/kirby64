@@ -3929,16 +3929,15 @@ s32 func_80109F60(struct PositionState *arg0) {
     return ret;
 }
 
-#ifdef NON_MATCHING
 void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp4C;
     Vector sp40;
     Vector sp34;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f0;
-    f32 temp_f2;
     struct Normal *n;
+    f32 dax;
+    f32 daz;
+    f32 dbx;
+    f32 dbz;
 
     if ((arg1->flags.w >> 0x13) & 1) {
         arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk24;
@@ -3954,32 +3953,33 @@ void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp40.y = arg0->scale[0] + arg0->kirbyFootPos[1];
     sp40.z = BD00.unk28 + arg0->kirbyFootPos[2];
     if (func_801057C4(n, &sp4C, &sp40, &sp34) != 0) {
-        temp_f0 = sp40.x - sp4C.x;
-        temp_f2 = sp40.z - sp4C.z;
-        temp_f12 = sp34.x - sp4C.x;
-        temp_f14 = sp34.z - sp4C.z;
-        if (((temp_f12 * temp_f12) + (temp_f14 * temp_f14)) < ((temp_f0 * temp_f0) + (temp_f2 * temp_f2))) {
+        dbx = sp40.x - sp4C.x;
+        dbz = sp40.z - sp4C.z;
+        dax = sp34.x - sp4C.x;
+        daz = sp34.z - sp4C.z;
+        if (((dax * dax) + (daz * daz)) < ((dbx * dbx) + (dbz * dbz))) {
             arg0->kirbyFootPos[0] = sp34.x - BD00.unk24;
             arg0->kirbyFootPos[1] = sp34.y - arg0->scale[0];
             arg0->kirbyFootPos[2] = sp34.z - BD00.unk28;
         } else {
-            arg1->flags.f.a &= ~7;
+            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109FAC.s")
-#endif
 
-#ifdef NON_MATCHING
+
+
+
+
 void func_8010A138(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp4C;
     Vector sp40;
     Vector sp34;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f0;
-    f32 temp_f2;
+    struct Normal *n;
+    f32 dax;
+    f32 daz;
+    f32 dbx;
+    f32 dbz;
 
     if ((arg1->flags.w >> 0x13) & 8) {
         arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk2C;
@@ -3993,23 +3993,23 @@ void func_8010A138(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp40.x = BD00.unk2C + arg0->kirbyFootPos[0];
     sp40.y = arg0->scale[0] + arg0->kirbyFootPos[1];
     sp40.z = BD00.unk30 + arg0->kirbyFootPos[2];
-    if (func_801057C4(arg1->rec[3].norm, &sp4C, &sp40, &sp34) != 0) {
-        temp_f0 = sp40.x - sp4C.x;
-        temp_f2 = sp40.z - sp4C.z;
-        temp_f12 = sp34.x - sp4C.x;
-        temp_f14 = sp34.z - sp4C.z;
-        if (((temp_f12 * temp_f12) + (temp_f14 * temp_f14)) < ((temp_f0 * temp_f0) + (temp_f2 * temp_f2))) {
+    n = arg1->rec[3].norm;
+    if (func_801057C4(n, &sp4C, &sp40, &sp34) != 0) {
+        dbx = sp40.x - sp4C.x;
+        dbz = sp40.z - sp4C.z;
+        dax = sp34.x - sp4C.x;
+        daz = sp34.z - sp4C.z;
+        if (((dax * dax) + (daz * daz)) < ((dbx * dbx) + (dbz * dbz))) {
             arg0->kirbyFootPos[0] = sp34.x - BD00.unk2C;
             arg0->kirbyFootPos[1] = sp34.y - arg0->scale[0];
             arg0->kirbyFootPos[2] = sp34.z - BD00.unk30;
         } else {
-            arg1->flags.f.a &= ~0x38;
+            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010A138.s")
-#endif
+
+
 
 #ifdef MIPS_TO_C
 
