@@ -1,7 +1,0 @@
-glabel jtbl_800D691C
-.word L800BAC48
-.word L800BAC74
-.word L800BAC60
-.word L800BAC84
-.word L800BACA8
-.word L800BACB8
