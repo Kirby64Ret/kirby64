@@ -2768,6 +2768,17 @@ block_146:
     temp_s1_39->unk4 = 0;
     *arg2 = temp_s1_39 + 8;
 }
+#elif defined(PORT)
+/* PORT: still assembly on the matching build ("crazy large gfx function") and
+ * the m2c sketch above does not compile. It renders a GObj's sprite/background
+ * layers into the display list (*arg2). A no-op keeps the boot alive; the
+ * affected objects simply do not draw until this is matched or hand-ported.
+ * Owed for full visuals. */
+void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
+    (void)arg0;
+    (void)arg1;
+    (void)arg2;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009E8F4.s")
 #endif
@@ -3379,6 +3390,16 @@ block_105:
             }
         } while (var_s0 != NULL);
     }
+}
+#elif defined(PORT)
+/* PORT: still assembly on the matching build, and the m2c sketch above is not
+ * compilable. This is the per-frame particle-list updater (walks D_800D6AF0,
+ * recycles nodes onto D_800D6A08); the game registers it as a GObj process at
+ * scene start, so the weak abort stub fires on the first frame. A no-op keeps
+ * the boot alive at the cost of frozen/absent particles until the function is
+ * genuinely matched. */
+void func_800A09AC(void *arg0) {
+    (void)arg0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A09AC.s")

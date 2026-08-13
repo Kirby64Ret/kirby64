@@ -339,7 +339,13 @@ static bool lus_init(void) {
          * built with a null deck and finds it through the context later, and
          * the deck gets the real Window handed to it. */
         sWindow = std::make_shared<Fast::Fast3dWindow>(config, cvars, nullptr);
-        sContext->GetChildren().Add(sWindow);
+        /* Add as the BASE type. The children registry keys entries by the
+         * static type of the shared_ptr it is handed; Fast3dGui::Init finds
+         * its window with GetFirst<Ship::Window>(), so registering the
+         * derived Fast3dWindow type leaves that lookup empty and the first
+         * StartDraw dereferences null (seen as a SIGSEGV in
+         * Window::GetWindowBackend on the first real frame). */
+        sContext->GetChildren().Add(std::static_pointer_cast<Ship::Window>(sWindow));
 
         /* Ship::ControlDeck is abstract (WriteToPad is pure virtual).
          * LUS::ControlDeck is the concrete N64 one, and it is what turns
@@ -406,6 +412,9 @@ static bool lus_init(void) {
         }
 
         console->Init();
+        fprintf(stderr, "[dbg] before Window::Init: GetFirst<Window>=%p sWindow=%p gui=%p\n",
+                (void*)sContext->GetChildren().GetFirst<Ship::Window>().get(),
+                (void*)sWindow.get(), (void*)sWindow->GetGui().get());
         sWindow->Init();
         fileDrop->Init();
         audio->Init();
