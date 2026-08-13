@@ -490,6 +490,11 @@ struct BGHeader *func_800A8C40(u32 arg0) {
                             + (u32)(uintptr_t)raw;
         *(u32 *)(raw + 12) = (((u32)raw[12] << 24) | ((u32)raw[13] << 16) | ((u32)raw[14] << 8) | raw[15])
                              + (u32)(uintptr_t)raw;
+        {
+            extern void pc_bgload_debug(u32 id, const void *raw, const void *img, const void *pal);
+            pc_bgload_debug(arg0, raw, (void *)(uintptr_t)*(u32 *)(raw + 8),
+                            (void *)(uintptr_t)*(u32 *)(raw + 12));
+        }
     }
     return (*temp_a2)[idx];
 }
@@ -1180,6 +1185,36 @@ void *func_800A9648(void *arg0) {
     }
     return arg0;
 }
+#elif defined(PORT)
+/* PORT: still assembly on the matching build; the m2c sketch above is not
+ * compilable. Dispatch on the geo blob's layoutMode: store the layout
+ * pointer (header +0x00) and texScroll pointer (+0x04) -- both already
+ * native host pointers after func_800A9250's PORT relocation -- and hand
+ * them to the per-family setup. layoutMode (+0x08) is one of the header
+ * words the relocator leaves raw, so it is read big-endian here. */
+void *func_800A9648(u32 *arg0) {
+    void func_800AF4BC(void *, void *, void *);
+    void func_800AF618(void *, void *, void *);
+    const u8 *raw;
+    u32 mode;
+    void *layout;
+    void *texScroll;
+
+    raw = (const u8 *)&arg0[2];
+    mode = ((u32)raw[0] << 24) | ((u32)raw[1] << 16) | ((u32)raw[2] << 8) | raw[3];
+    layout = (void *)(uintptr_t)arg0[0];
+    texScroll = (void *)(uintptr_t)arg0[1];
+    if (mode >= 0x11 && mode <= 0x16) {
+        D_800DFA10[omCurrentObj->objId] = layout;
+        D_800DFD90[omCurrentObj->objId] = texScroll;
+        func_800AF618(layout, texScroll, D_800DFBD0[omCurrentObj->objId]);
+    } else if (mode >= 0x17 && mode <= 0x1E) {
+        D_800DFA10[omCurrentObj->objId] = layout;
+        D_800DFD90[omCurrentObj->objId] = texScroll;
+        func_800AF4BC(layout, texScroll, D_800DFBD0[omCurrentObj->objId]);
+    }
+    return arg0;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9648.s")
 #endif
@@ -1311,7 +1346,20 @@ void func_800A9A2C(s32 arg0) {
     s32 temp_v1;
 
     temp_v0 = gSegment4StartArray[arg0];
+#ifdef PORT
+    /* Word +0x1C of the geo blob (lenLayout / DObj-table count) is one of
+     * the fields the PORT relocator in func_800A9250 deliberately leaves
+     * raw, and the blob is big-endian ROM data on the host. Read natively
+     * this was ~0x2000000; *4 asked the cache allocator for 128MB and its
+     * eviction loop spun forever -- the measured "game stalls after 8
+     * frames" hang. */
+    {
+        const u8 *raw = (const u8 *)&temp_v0[7];
+        temp_v1 = (s32)(((u32)raw[0] << 24) | ((u32)raw[1] << 16) | ((u32)raw[2] << 8) | raw[3]);
+    }
+#else
     temp_v1 = temp_v0[7];
+#endif
     if (temp_v1 == 0) {
         D_800DFBD0[omCurrentObj->objId] = (struct DObj **)-1;
         return;

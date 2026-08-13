@@ -329,6 +329,22 @@ void func_800AF8F0(GObj *gobj, u8 link, u8 flags) {
 }
 
 void func_800AF920(s32 arg0) {
+#ifdef PORT
+    /* UnkStruct800B158C is a raw-offset ILP32 image of the N64 SPObj; under
+       the LP64 SPObj (8-byte `next` at 0) its unk13 lands inside unkC instead
+       of on renderFlags. Go through the real SPObj (sprite.h -> SPObj.h). */
+    SPObj *tmp = omCurrentObj->unk4C;
+
+    if (arg0 < 0) {
+        tmp->renderFlags = tmp->renderFlags ^ 8;
+        return;
+    }
+    if (arg0 != 0) {
+        tmp->renderFlags = tmp->renderFlags & 0xFFF7;
+        return;
+    }
+    tmp->renderFlags = tmp->renderFlags | 8;
+#else
     UnkStruct800B158C *tmp = omCurrentObj->unk4C;
 
     if (arg0 < 0) {
@@ -340,12 +356,20 @@ void func_800AF920(s32 arg0) {
         return;
     }
     tmp->unk13 = tmp->unk13 | 8;
+#endif
 }
 
 void func_800AF96C(s32 arg0) {
+#ifdef PORT
+    /* Same shear as func_800AF920: unk11 at raw 0x11 lands inside unkC. */
+    SPObj *tmp = omCurrentObj->unk4C;
+
+    tmp->unk11 = arg0;
+#else
     UnkStruct800B158C *tmp = omCurrentObj->unk4C;
 
     tmp->unk11 = arg0;
+#endif
 }
 
 void func_800AF980(s32 pri) {
@@ -853,6 +877,68 @@ void procMainMove(GObj *gobj) {
 }
 
 #ifdef NON_MATCHING
+#ifdef PORT
+/* PORT rewrite of the draft below. UnkStruct800B158C spells the N64 SPObj
+ * byte offsets with fixed-width fields, so under the LP64 SPObj every access
+ * shears: pos/scale (raw 0x20/0x28) land on width/height, xOffset and
+ * yOffset; unk5A (raw 0x5A) lands on bytes 2-3 of gfx[0].b.bg.imagePtr
+ * (LP64 0x58..0x60) and unkBA (raw 0xBA) lands on gfx[1].b.bg.imageW --
+ * which is exactly the boot-scene background corruption (imagePtr collapsing
+ * to its low 16 bits in one buffer, imageW=0 in the other). The N64 aliases
+ * resolve to, per kind:
+ *   pos.x/pos.y      -> xOffset/yOffset          (SPObj header)
+ *   scale.x/y/z      -> xScale/yScale/unk30      (SPObj header)
+ *   unk5A/unkBA      -> block+0x1A of gfx[0]/gfx[1]:
+ *                         kinds 0/1: b.bg imageFlip (the unk5A/unkBA aliases)
+ *                         kinds 2/3: t.ts.sprite scaleW (dead store on N64 --
+ *                                    func_800AD1A0 recomputes scaleW before
+ *                                    submission -- kept byte-faithful anyway)
+ *   unk6F/unkCF      -> block+0x2F = t.ts.sprite imageFlags
+ *   unk58/unkB8      -> block+0x18 = t.ts.sprite objX
+ *   unk60/unkC0      -> block+0x20 = t.ts.sprite objY */
+void func_800B158C(GObj *gobj) {
+    SPObj *sp = gobj->unk4C;
+    u16 var_a0;
+
+    if (sp != NULL) {
+        sp->xOffset = gEntitiesNextPosXArray[omCurrentObj->objId];
+        sp->yOffset = gEntitiesNextPosYArray[omCurrentObj->objId];
+        sp->xScale = gEntitiesScaleXArray[omCurrentObj->objId];
+        sp->yScale = gEntitiesScaleYArray[omCurrentObj->objId];
+        sp->unk30 = gEntitiesAngleZArray[omCurrentObj->objId];
+        var_a0 = 0;
+        switch (sp->unk10) {
+            case 0:
+            case 1:
+                if (D_800E10D0[omCurrentObj->objId] != 0.0f) {
+                    var_a0 = 1;
+                }
+                sp->unk5A = sp->unkBA = var_a0; /* gfx[0]/gfx[1] bg imageFlip */
+                break;
+            case 2:
+            case 3:
+                if (D_800E10D0[omCurrentObj->objId] != 0.0f) {
+                    var_a0 = 1;
+                }
+                sp->gfx[0].t.ts.sprite.s.scaleW = sp->gfx[1].t.ts.sprite.s.scaleW = var_a0;
+                break;
+            case 4:
+                if (D_800E10D0[omCurrentObj->objId] != 0.0f) {
+                    var_a0 = 1;
+                }
+                if (D_800E1290[omCurrentObj->objId] != 0.0f) {
+                    var_a0 |= 0x10;
+                }
+                sp->gfx[0].t.ts.sprite.s.imageFlags = sp->gfx[1].t.ts.sprite.s.imageFlags = var_a0;
+                sp->gfx[0].t.ts.sprite.s.objX = sp->gfx[1].t.ts.sprite.s.objX =
+                    gEntitiesAngleXArray[omCurrentObj->objId];
+                sp->gfx[0].t.ts.sprite.s.objY = sp->gfx[1].t.ts.sprite.s.objY =
+                    gEntitiesAngleYArray[omCurrentObj->objId];
+                break;
+        }
+    }
+}
+#else
 void func_800B158C(GObj *gobj) {
     UnkStruct800B158C *gobj_4C = gobj->unk4C;
     u16 var_a0;
@@ -888,6 +974,7 @@ void func_800B158C(GObj *gobj) {
         }
     }
 }
+#endif /* PORT */
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B158C.s")
 #endif

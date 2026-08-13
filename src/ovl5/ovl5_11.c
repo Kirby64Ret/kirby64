@@ -6,6 +6,18 @@
 #include "ovl1/ovl1_1.h"
 #include "ovl1/ovl1_2.h"
 #include "ovl1/ovl1_3.h"
+#ifdef PORT
+/* src.old/ovl1/ovl1_5.h carries a stale ILP32-era duplicate SPObj typedef.
+ * Under LP64 its pointer members inflate, so its unkBA alias lands at 0xDE
+ * -- 8 bytes past gfx[1].b.bg.s.imageFlip (0xD6), inside imageYorig -- while
+ * the real include/SPObj.h pins unk5A/unkBA to the imageFlip bytes of the
+ * two command blocks. Pre-claim the old header's include guard and use the
+ * real layout; the only other things this TU needs from ovl1_5.h is the
+ * func_800AD1A0 declaration, reproduced here. */
+#include "SPObj.h"
+#define OVL1_5_H
+void func_800AD1A0(void *);
+#endif
 #include "ovl1/ovl1_5.h"
 #include "track_arrays.h"
 #include "ovl1/ovl1_7.h"

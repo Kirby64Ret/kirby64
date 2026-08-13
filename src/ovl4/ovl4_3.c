@@ -684,7 +684,18 @@ extern s32 D_8015C6F0_ovl4;
 u32 func_800A9AA8(s32, s32);
 
 void func_801569F0_ovl4(GObj *arg0, s32 arg1) {
+#ifdef PORT
+    /* UnkSpObj8015AB70 spells the N64 SPObj byte offsets: 0x6C/0xCC are the
+       two RSP command blocks' tlut image pointers (block+0x2C), 0x78/0xD8
+       their state flags (block+0x38). Under the LP64 SPObj those raw offsets
+       land inside the gfx[0]/gfx[1] uObjBg fields instead (the real tlut
+       image/flag sit at 0x80/0x90 and 0xF0/0x100), so write through the
+       typed layout from SPObj.h. xOffset/yOffset (raw 0x20/0x24) shear too:
+       they land on width/height and xOffset. */
+    SPObj *sp;
+#else
     UnkSpObj8015AB70 *sp;
+#endif
     u32 a;
     u32 b;
     u32 c;
@@ -694,10 +705,17 @@ void func_801569F0_ovl4(GObj *arg0, s32 arg1) {
     D_800DEF90[omCurrentObj->objId] = NULL;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     omLinkGObjDL(arg0, func_800AD1A0, 0x16, 0x80000000, 0x16);
+#ifdef PORT
+    sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015AB70_ovl4);
+    b = func_800A9AA8(0x30001, 3);
+    a = (u32) (uintptr_t) sp->gfx[0].b.tlut.tlut.image;
+    c = func_800A9AA8(0x30002, 3);
+#else
     sp = (UnkSpObj8015AB70 *) func_8015C740_ovl5(arg0, &D_8015AB70_ovl4);
     b = func_800A9AA8(0x30001, 3);
     a = sp->unk6C;
     c = func_800A9AA8(0x30002, 3);
+#endif
     sp->xOffset = D_8015AB90_ovl4[arg1].unk0;
     sp->yOffset = D_8015AB90_ovl4[arg1].unk4;
     while (1) {
@@ -712,10 +730,17 @@ void func_801569F0_ovl4(GObj *arg0, s32 arg1) {
             } else {
                 v = c;
             }
+#ifdef PORT
+            sp->gfx[0].b.tlut.tlut.image = (u64 *) (uintptr_t) v;
+            sp->gfx[0].b.tlut.tlut.flag = v;
+            sp->gfx[1].b.tlut.tlut.image = (u64 *) (uintptr_t) v;
+            sp->gfx[1].b.tlut.tlut.flag = v;
+#else
             sp->unk6C = v;
             sp->unk78 = v;
             sp->unkCC = v;
             sp->unkD8 = v;
+#endif
         } else {
             func_800AFBB4(0, omCurrentObj);
         }

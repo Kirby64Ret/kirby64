@@ -1337,6 +1337,16 @@ void scThreadMain(void *arg) {
     while (1) {
         osRecvMesg(&scTaskMQ, &mesg, OS_MESG_BLOCK);
 
+#ifdef PORT
+        {
+            extern int pc_sched_debug_enabled(void);
+            static int schedDbgN = 0;
+            if (pc_sched_debug_enabled() && schedDbgN < 60) {
+                void pc_sched_debug_print(int msg, int n);
+                pc_sched_debug_print((s32)(intptr_t)mesg, schedDbgN++);
+            }
+        }
+#endif
         switch ((s32) (intptr_t) mesg) {
             case 1:
                 scHandleVRetrace();
