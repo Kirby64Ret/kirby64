@@ -550,6 +550,11 @@ void pcb_frame_begin(void) {
     sTasksThisFrame = 0;
 }
 
+extern "C" void pcb_gfx_set_native_ucodes(const void* f3dex2, const void* s2dex) {
+    Fast::gfx_native_ucode_f3dex2 = (uintptr_t)f3dex2;
+    Fast::gfx_native_ucode_s2dex = (uintptr_t)s2dex;
+}
+
 void pcb_gfx_set_ucode(int s2dex) {
     if (!sInitOk) {
         return;
@@ -559,6 +564,23 @@ void pcb_gfx_set_ucode(int s2dex) {
      * task is what makes each task start from its own microcode the way the
      * RSP does, instead of inheriting whatever the previous task's last
      * gtlLoadUcode left behind. */
+    /* DIAGNOSTIC 2026-08-13: Fast3D reported "Unhandled OP code: 0xE3, for
+     * loaded ucode: 5" (ucode_s2dex) on the first frame, i.e. it was
+     * interpreting an F3DEX2 display list with the S2DEX table. Log what each
+     * task actually asks for so the selection can be judged from evidence. */
+    static int sUcodeLogged = 0;
+    if (sUcodeLogged < 8) {
+        fprintf(stderr, "[lus] task ucode -> %s\n", s2dex ? "s2dex" : "f3dex2");
+        sUcodeLogged++;
+    }
+    /* This game ships real N64 display lists, so G_LOAD_UCODE inside them
+     * carries a ucode pointer rather than an OTR enum. Tell Fast3D to trust
+     * the per-task ucode we set here and ignore those in-list loads. */
+    {
+        Fast::gfx_native_ucode_mode = true;
+        /* Pointers are supplied by os_sp.c, which already declares these
+         * symbols with the game's own types. */
+    }
     sWindow->SetRendererUCode(s2dex ? ucode_s2dex : ucode_f3dex2);
 }
 

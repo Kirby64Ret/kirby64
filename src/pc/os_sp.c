@@ -1,3 +1,4 @@
+#include <stdio.h>
 /* RSP and RDP.
  *
  * =====================================================================
@@ -126,6 +127,19 @@ void osSpTaskStartGo(OSTask *task) {
              * it keeps working however the game queues tasks, which a value
              * recorded at schedule time would not. */
             extern u8 gspS2DEX2_fifoTextStart;
+            extern void pcb_gfx_set_native_ucodes(const void *, const void *);
+            /* The game switches ucode INSIDE a task with gSPLoadUcode, so the
+             * renderer needs both text pointers to resolve those loads. */
+            pcb_gfx_set_native_ucodes(gspF3DEX2_fifoTextStart, &gspS2DEX2_fifoTextStart);
+            {
+                static int n = 0;
+                if (n < 6) {
+                    fprintf(stderr, "[pc] task.ucode=%p f3dex2=%p s2dex=%p\n",
+                            (void *)task->t.ucode, (void *)gspF3DEX2_fifoTextStart,
+                            (void *)&gspS2DEX2_fifoTextStart);
+                    n++;
+                }
+            }
             pcb_gfx_set_ucode(task->t.ucode == (u64 *)&gspS2DEX2_fifoTextStart);
             pcb_gfx_run((const void *)task->t.data_ptr);
         }
