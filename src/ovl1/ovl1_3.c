@@ -853,6 +853,175 @@ void *func_800A9250(u32 arg0, s32 arg1) {
     }
     return temp_v0;
 }
+#elif defined(PORT)
+/* PORT: the geo/model bank entry loader + relocator, rewritten for the host
+ * from asm/nonmatchings/ovl1/ovl1_3/func_800A9250.s in the style of
+ * func_8009B768's PORT arm (ovl1.c).
+ *
+ * D_800D0184[bank] and its geoBlockTable are native host data on the PC
+ * build (regenerated as C initializers), so the table reads at the top are
+ * plain loads, exactly like the compiled func_800A8B0C. The blob dma_read()
+ * pulls in, however, is raw BIG-ENDIAN ROM data: every word this function
+ * inspects is decoded with pc_be32(), and every word it REWRITES becomes a
+ * native host value in place -- a real pointer (all game-visible allocations
+ * sit below 4 GiB, see pc_mmio.c, so a u32 slot holds one) or, for the image
+ * reference list slots, the decoded bank-id word. Words this function does
+ * not touch stay big-endian for their consumers to decode at their own read
+ * sites.
+ *
+ * Native after this returns:
+ *   header +0x00 (layout, always), +0x04 (texScroll, when nonzero),
+ *   +0x0C (imgRefs, when nonzero), +0x18 (animation refs, when +0x14 and the
+ *   word are both nonzero); every list slot and node word the walks below
+ *   rewrite (detailed at each walk).
+ * Still big-endian: everything else, including header +0x08 (layoutMode),
+ *   +0x14 (numAnimations), +0x1C (lenLayout), the 0x2C-stride layout node
+ *   type words, and all display list / vertex / texel payload.
+ *
+ * Return type is u32 * rather than void *: the block-scope declarations the
+ * callers in this file compile (func_800A8EC0/func_800A9760/func_800A9864/
+ * func_800AA608) all say u32 *, and a void * definition is a conflicting
+ * type to GCC. */
+
+static inline u32 pc_be32(u32 v) { return __builtin_bswap32(v); }
+
+/* Decoded read of the big-endian blob word at p. */
+static inline u32 geo_rd(const void *p) { return pc_be32(*(const u32 *)p); }
+/* In-place rewrite of a blob word with a native value/pointer. */
+static inline void geo_wr(void *p, u32 v) { *(u32 *)p = v; }
+
+u32 *func_800A9250(u32 arg0, s32 arg1) {
+    u32 *entry;
+    u8 *blob;
+    u8 *list;
+    u8 *mid;
+    u8 *node;
+    u8 *sub;
+    u8 *n;
+    s32 size;
+    u32 w;
+    u32 mw;
+    u32 sw;
+    u32 off;
+    u32 bank;
+
+    entry = D_800D0184[arg0 >> 16]->geoBlockTable;
+    entry += (arg0 & 0xFFFF) * 2;
+    size = (entry[1] - entry[0]) | arg1;
+    blob = func_800A8358(size);
+    dma_read(entry[0], blob, size & 0xFFFFFC);
+
+    /* +0xC: G_SETTIMG reference list -- stride 4, 0-terminated. Each slot
+     * holds a 24-bit offset to a node; the node's word +4 holds an image
+     * bank id. The slot is rewritten with that (decoded) bank id -- which is
+     * what func_800A8D64's compiled walk reads natively -- and the node's
+     * word +4 with the BGHeader pointer func_800A8BAC resolves it to. */
+    off = geo_rd(blob + 0xC) & 0xFFFFFF;
+    if (off != 0) {
+        list = blob + off;
+        geo_wr(blob + 0xC, (u32)(uintptr_t)list);
+        while ((w = geo_rd(list)) != 0) {
+            node = blob + (w & 0xFFFFFF);
+            bank = geo_rd(node + 4);
+            geo_wr(list, bank);
+            geo_wr(node + 4, (u32)(uintptr_t)func_800A8BAC(bank));
+            list += 4;
+        }
+    }
+
+    /* +0x4: texture scroll section -- lists nested two deep, each stride 4,
+     * terminated by 0x99999999, with 0 slots skipped (but still stepped
+     * over). Outer and middle slots become native pointers into the blob;
+     * each level-3 node hangs two bank-id lists off its words +0x4 and
+     * +0x2C (those words become native pointers to the lists, and each
+     * nonzero list slot becomes a native BGHeader pointer from
+     * func_800A8BAC, called with the full decoded bank-id word). */
+    off = geo_rd(blob + 4) & 0xFFFFFF;
+    if (off != 0) {
+        list = blob + off;
+        geo_wr(blob + 4, (u32)(uintptr_t)list);
+        while ((w = geo_rd(list)) != 0x99999999U) {
+            if (w != 0) {
+                mid = blob + (w & 0xFFFFFF);
+                geo_wr(list, (u32)(uintptr_t)mid);
+                while ((mw = geo_rd(mid)) != 0x99999999U) {
+                    if (mw != 0) {
+                        node = blob + (mw & 0xFFFFFF);
+                        geo_wr(mid, (u32)(uintptr_t)node);
+                        off = geo_rd(node + 4) & 0xFFFFFF;
+                        if (off != 0) {
+                            sub = blob + off;
+                            geo_wr(node + 4, (u32)(uintptr_t)sub);
+                            while ((sw = geo_rd(sub)) != 0x99999999U) {
+                                if (sw != 0) {
+                                    geo_wr(sub, (u32)(uintptr_t)func_800A8BAC(sw));
+                                }
+                                sub += 4;
+                            }
+                        }
+                        off = geo_rd(node + 0x2C) & 0xFFFFFF;
+                        if (off != 0) {
+                            sub = blob + off;
+                            geo_wr(node + 0x2C, (u32)(uintptr_t)sub);
+                            while ((sw = geo_rd(sub)) != 0x99999999U) {
+                                if (sw != 0) {
+                                    geo_wr(sub, (u32)(uintptr_t)func_800A8BAC(sw));
+                                }
+                                sub += 4;
+                            }
+                        }
+                    }
+                    mid += 4;
+                }
+            }
+            list += 4;
+        }
+    }
+
+    /* +0x0: layout section pointer. The asm relocates it unconditionally,
+     * so a 0 offset yields the blob base itself. */
+    w = geo_rd(blob + 0x0);
+    n = blob + (w & 0xFFFFFF);
+    geo_wr(blob + 0x0, (u32)(uintptr_t)n);
+
+    /* +0x18: animation refs pointer -- only when the count at +0x14 and the
+     * word itself are both nonzero. */
+    if (geo_rd(blob + 0x14) != 0) {
+        w = geo_rd(blob + 0x18);
+        if (w != 0) {
+            geo_wr(blob + 0x18, (u32)(uintptr_t)(blob + (w & 0xFFFFFF)));
+        }
+    }
+
+    /* +0x8: layout mode. For modes 0x18 and 0x1A..0x1E the layout section
+     * is an array of 0x2C-byte nodes ending at a node whose type word (+0)
+     * is 0x12: word +4 of every node before the terminator becomes a native
+     * pointer into the blob (0 stays 0, and the terminator node itself is
+     * not touched). All other modes leave the layout section alone. */
+    switch (geo_rd(blob + 8)) {
+    case 0x18:
+    case 0x1A:
+    case 0x1B:
+    case 0x1C:
+    case 0x1D:
+    case 0x1E:
+        if (geo_rd(n) != 0x12) {
+            for (;;) {
+                w = geo_rd(n + 4);
+                if (w != 0) {
+                    geo_wr(n + 4, (u32)(uintptr_t)(blob + (w & 0xFFFFFF)));
+                }
+                w = geo_rd(n + 0x2C);
+                n += 0x2C;
+                if (w == 0x12) {
+                    break;
+                }
+            }
+        }
+        break;
+    }
+    return (u32 *)blob;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9250.s")
 #endif
