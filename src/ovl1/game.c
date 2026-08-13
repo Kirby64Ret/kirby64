@@ -31,7 +31,6 @@ extern s32 D_800D6B9C;
 extern f32 gameTicksPerDraw, gameTicksPerDrawInv;
 
 extern s32 D_800D7288;
-extern s32 D_800D6B74;
 extern s32 D_800D6B60;
 extern u32 D_800D6B68;
 extern u32 D_800D6B78;

@@ -23,7 +23,8 @@
 extern s32 D_800D6B24;
 extern s32 D_8015C680_ovl4;
 extern Lights1 D_800BE548;
-extern u16 gFrameBuffer[3][320 * 230]; // TODO: why 230??
+extern u16 gFrameBuffer[3][320 * 240]; // TODO: why 230??
+extern u16 D_803FC100[3][320 * 230]; // TODO: why 230??
 extern u16 D_803DA800[][320]; // fb2
 extern void *D_8018EE60;
 
@@ -120,7 +121,6 @@ void func_80151990_ovl4(GObj *arg0);
 void func_80151A0C_ovl4(GObj *arg0);
 
 // send to ovl1 bss
-extern u32 D_800D6B74;
 extern s32 D_800D6B54[];
 extern s16 D_800D6B30;
 
@@ -362,7 +362,6 @@ void func_80151CC8_ovl4(Gfx **gp) {
     gSPDisplayList((*gp)++, &D_8015A018_ovl4);
 }
 
-// Matches on decomp.me but not locally???
 // https://decomp.me/scratch/qYkHm
 #ifdef NON_MATCHING
 s32 func_80151CEC_ovl4(s32 arg0) {
@@ -376,13 +375,13 @@ s32 func_80151CEC_ovl4(s32 arg0) {
     gameSetUpdateRate(2.0f);
     D_8015A048_ovl4.zBuffer = VI_ZBUFFER_START(320, 240, 0, 10, u16);
     viApplyScreenSettings(&D_8015A048_ovl4);
-    D_8015A064_ovl4.gtlSetup.heapSize = (u32)&gFrameBuffer - (u32)ovl5_VRAM_END;
+    D_8015A064_ovl4.gtlSetup.heapSize = (u32)&gFrameBuffer[0] - (u32)ovl5_VRAM_END;
 
     i = 0;
     do {
-        gFrameBuffer[0][i] = gFrameBuffer[1][i] = 1;
+        gFrameBuffer[0][i] = gFrameBuffer[0][(160 * 120) + i] = 1;
         i++;
-    } while (i < (320 * 240 * sizeof(u16)));
+    } while (i < (320 * 240));
 
     gtlCreateScene(&D_8015A064_ovl4);
     func_800BB3F0();
