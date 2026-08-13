@@ -29,20 +29,18 @@ extern "C" {
  *	Data structures for S2DEX microcode
  *===========================================================================*/
 
-/* PORT: these structures are WIRE FORMAT -- the RSP (and, on the PC port, the
- * Fast3D interpreter) reads them as packed N64 layout with 32-bit DRAM
- * addresses. Under LP64 a real `u64 *` field is 8 bytes and 8-aligned, which
- * inflates uObjBg 40->48 and uObjTxtr 24->32 and shifts every field after the
- * pointer; the renderer then reads imagePtr as two halves of neighbouring
- * fields (measured: imagePtr=0x7000000070000000). Keep the image words 32-bit
- * on the host; all host allocations sit below 4GB so the address round-trips. */
-#ifdef PORT
-typedef u32 uS2DImagePtr;
-#define US2D_IMAGE_CAST (u32)(uintptr_t)
-#else
+/* PORT NOTE: which layout these structs must have depends on the renderer
+ * fork consuming them. The JRickey/libultraship fork (BattleShip's, adopted
+ * for this port) reads S2DEX object structs in NATIVE host layout -- its
+ * F3DuObjBg/F3DuObjTxtr declare the image fields as real pointers (see
+ * lus_gbi.h) and take the struct address raw from w1. So under LP64 the
+ * image fields here stay true pointers and the structs are wider than the
+ * 40/24-byte N64 wire layout; game code and renderer agree because both are
+ * compiled LP64. (An earlier iteration against a different fork packed these
+ * to 32-bit wire words -- if the renderer is ever swapped again, this is the
+ * single decision point.) */
 typedef u64 *uS2DImagePtr;
 #define US2D_IMAGE_CAST (u64 *)
-#endif
 
 /*---------------------------------------------------------------------------*
  *	Background
