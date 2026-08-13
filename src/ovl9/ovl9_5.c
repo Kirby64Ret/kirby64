@@ -1024,7 +1024,11 @@ void func_801E8F74_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8F74_ovl9.s")
 #endif
 
-void func_801E92DC_ovl9(void);
+/* Empty parens, not (void): the guarded draft below defines this with an s32
+   parameter because the ROM homes an unused $a0, and a (void) prototype
+   forbids that. CC_CHECK compiles guarded drafts with -DNON_MATCHING, so the
+   two must agree even while the draft is inactive. */
+void func_801E92DC_ovl9();
 
 void func_801E9298_ovl9(void) {
     if (D_800E7880[omCurrentObj->objId] == 0xB) {
@@ -1032,7 +1036,78 @@ void func_801E9298_ovl9(void) {
     }
 }
 
+/* FACTORY: 11/219, frame-slot placement.  Body byte-exact; frame size 0x48 is
+   right but IDO puts the Vector at 0x3C with the atan2f spill below it at 0x38,
+   where the ROM has the Vector at 0x30 and the spill at 0x44.  The dead base
+   region below the locals is 0x20 here and 0x18 in the ROM; adding pads,
+   declaring the spill (f32 sp44), and f32 sp30[5] all grow the frame instead of
+   moving the base.  To un-guard, the file-scope prototype above must become
+   `void func_801E92DC_ovl9();` -- the ROM homes an unused $a0, so the
+   definition needs a parameter the `(void)` prototype forbids. */
+#ifdef NON_MATCHING
+void func_801E92DC_ovl9(s32 arg0) {
+    extern f32 sqrtf(f32);
+    extern f32 atan2f(f32, f32);
+    extern void func_800B2AD4(Vector *, s32, u32);
+    Vector sp30;
+    f32 pitch;
+    f32 yaw;
+    f32 diff;
+    f32 t;
+
+    sp30.x = gEntitiesNextPosXArray[0];
+    sp30.y = gEntitiesNextPosYArray[0] + 20.0f;
+    sp30.z = gEntitiesNextPosZArray[0];
+    func_800B2AD4(&sp30, 0, 0xFFFF);
+    pitch = atan2f(sqrtf((sp30.x * sp30.x) + (sp30.z * sp30.z)), sp30.y);
+    yaw = atan2f(sp30.x, sp30.z);
+    while (pitch >= 3.1415927f) {
+        pitch -= 3.1415927f;
+    }
+    while (pitch <= -3.1415927f) {
+        pitch += 3.1415927f;
+    }
+    if ((pitch + 0.039269909f) < D_800EA6E0[omCurrentObj->objId]) {
+        D_800EA6E0[omCurrentObj->objId] -= 0.039269909f;
+        if (D_800EA6E0[omCurrentObj->objId] < 0.0f) {
+            D_800EA6E0[omCurrentObj->objId] = 0.0f;
+        }
+    } else if (D_800EA6E0[omCurrentObj->objId] < (pitch - 0.039269909f)) {
+        D_800EA6E0[omCurrentObj->objId] += 0.039269909f;
+        if (D_800EA6E0[omCurrentObj->objId] > 1.5707964f) {
+            D_800EA6E0[omCurrentObj->objId] = 1.5707964f;
+        }
+    }
+    diff = yaw - D_800EAC20[omCurrentObj->objId];
+    t = (diff < 0) ? -diff : diff;
+    if (t > 3.1415927f) {
+        if (diff < 0.0f) {
+            diff = (yaw + 6.2831855f) - D_800EAC20[omCurrentObj->objId];
+        } else {
+            diff = yaw - (D_800EAC20[omCurrentObj->objId] + 6.2831855f);
+        }
+    }
+    t = (diff < 0) ? -diff : diff;
+    if (t > 0.039269909f) {
+        if (diff > 0.0f) {
+            t = 0.039269909f;
+        } else {
+            t = -0.039269909f;
+        }
+        D_800EAC20[omCurrentObj->objId] = D_800EAC20[omCurrentObj->objId] + t;
+        while (D_800EAC20[omCurrentObj->objId] > 6.2831855f) {
+            D_800EAC20[omCurrentObj->objId] -= 6.2831855f;
+        }
+        while (D_800EAC20[omCurrentObj->objId] < 0.0f) {
+            D_800EAC20[omCurrentObj->objId] += 6.2831855f;
+        }
+    }
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_800EA6E0[omCurrentObj->objId];
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = D_800EAC20[omCurrentObj->objId];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E92DC_ovl9.s")
+#endif
 
 extern s32 D_801C7FF0_ovl7;
 extern s32 D_801CB6D4;

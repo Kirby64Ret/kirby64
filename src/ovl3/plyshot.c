@@ -413,11 +413,163 @@ void func_8015E754_ovl3(s32 arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
+#ifdef NON_MATCHING
+/* FACTORY: 3/275, two stack-local displacements (sp+0x48/0x4C vs the ROM's
+   sp+0x4C/0x50) and the mul.s operand slot at insn 210. Structure, schedule,
+   frame size, every branch polarity and all register names are exact. The
+   local-offset residue is the decidable +8 frame anomaly: the offsets need a
+   locals total of 32 bytes but the frame only matches at 28, so no pad
+   spelling reaches both. Good permuter seed. */
+void func_8015E8E0_ovl3(s32 arg0) {
+    extern f32 **D_80192EB8_ovl3;
+    extern u8 D_8012E7C5[];
+    extern void func_800B4954(s32);
+    extern void func_8015ED2C_ovl3(s32);
+    extern void func_800A77E8(s32, s32 *, s32 *);
+    void curObjSleepForever(void);
+    f32 v;
+    s32 i;
+    s32 sp50;
+    s32 sp4C;
+    s32 pad[3];
+
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    D_800E9FE0[omCurrentObj->objId].as_s32 = 0;
+    D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId].as_s32 =
+        D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_s32;
+    func_80161CE0_ovl3(arg0);
+    func_80161EC0_ovl3(0, 0.0f, 20.0f);
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800DF150[omCurrentObj->objId] = func_8015ED2C_ovl3;
+    gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+    D_800E8760[omCurrentObj->objId] = 0;
+    D_800E0490[omCurrentObj->objId] = &D_80192EB8_ovl3;
+    D_800E8AE0[omCurrentObj->objId] = D_800E8AE0[D_800E0D50[omCurrentObj->objId]];
+    D_800E9E20[omCurrentObj->objId] = D_800E8920[omCurrentObj->objId] =
+        D_800E8920[D_800E0D50[omCurrentObj->objId]];
+    func_80154648_ovl3(D_800E0D50[omCurrentObj->objId], D_80197F60_ovl3[omCurrentObj->objId - 4],
+                       D_801982F8_ovl3[omCurrentObj->objId - 4]);
+    D_800E8060[omCurrentObj->objId] = 0;
+    if (D_800E8AE0[omCurrentObj->objId] & 4) {
+        D_8012E7C5[0x11] = 0x20;
+    } else {
+        D_8012E7C5[0x11] = 0x10;
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x2003B, 0x21, 0x10);
+    D_800EA360[omCurrentObj->objId] = (s32) &sp4C;
+    func_800A77E8(0x58, &sp4C, &sp50);
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    v = ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 16.0f : 8.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * v;
+    v = ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 16.0f : 8.0f;
+    if (v < 0) {
+        v = ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 16.0f : 8.0f;
+        D_800E6850[omCurrentObj->objId] = -v;
+    } else {
+        v = ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 16.0f : 8.0f;
+        D_800E6850[omCurrentObj->objId] = v;
+    }
+    func_801230E8(0x20283, 0x20284, 0);
+    for (i = 0; i < 15; i++) {
+        if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
+            break;
+        }
+        ohSleep(1);
+    }
+    D_800E98E0[omCurrentObj->objId] = 1;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015E8E0_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015ED2C_ovl3.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015F950_ovl3.s")
+typedef struct Unk801967CC {
+    f32 unk0;
+    f32 unk4;
+} Unk801967CC;
+
+typedef struct Unk80198538 {
+    s32 unk0;
+    s32 unk4;
+} Unk80198538;
+
+typedef struct Unk80198830 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+} Unk80198830;
+
+/* D_801970B4_ovl3 now emitted by this TU */
+
+void func_8015F950_ovl3(s32 arg0) {
+    extern Unk801967CC D_801967CC_ovl3[];
+    extern Unk80198538 D_80198538_ovl3;
+    extern Unk80198830 D_80198830_ovl3;
+    extern f32 **D_80192E80_ovl3;
+    extern f32 D_800D7238;
+    extern void func_800B4954(s32);
+    extern void func_8015FD58_ovl3(s32);
+    extern void func_800A77E8(s32, s32 *, s32 *);
+    void curObjSleepForever(void);
+    Unk80198538 sp30;
+    f32 temp;
+
+    func_80161CE0_ovl3(arg0);
+    func_80161EC0_ovl3(0, D_801967CC_ovl3[D_800EC2E0[omCurrentObj->objId].as_s32].unk0,
+                       D_801967CC_ovl3[D_800EC2E0[omCurrentObj->objId].as_s32].unk4);
+    D_800E0650[omCurrentObj->objId] = 1;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800DF150[omCurrentObj->objId] = func_8015FD58_ovl3;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800E0490[omCurrentObj->objId] = &D_80192E80_ovl3;
+    func_80154648_ovl3(D_800E0D50[omCurrentObj->objId], D_80197F60_ovl3[omCurrentObj->objId - 4],
+                       D_801982F8_ovl3[omCurrentObj->objId - 4]);
+    temp = 0.2f;
+    D_800E83E0[omCurrentObj->objId] = 0;
+    gEntitiesScaleXArray[omCurrentObj->objId] = temp;
+    gEntitiesScaleYArray[omCurrentObj->objId] = temp;
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp;
+    func_800A9864(0x2003D, 0x21, 0x10);
+    D_800E9720[omCurrentObj->objId] = 0x1E;
+    D_800E9560[omCurrentObj->objId] = 0;
+    if ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) {
+        D_800D7238 = 15.0f;
+    } else {
+        D_800D7238 = 7.5f;
+    }
+    D_800E64D0[omCurrentObj->objId] = cosf(D_800EC660[omCurrentObj->objId]) * D_800D7238;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    if (D_800D7238 < 0) {
+        D_800E6850[omCurrentObj->objId] = -D_800D7238;
+    } else {
+        D_800E6850[omCurrentObj->objId] = D_800D7238;
+    }
+    D_800E3210[omCurrentObj->objId] = sinf(D_800EC660[omCurrentObj->objId]) * D_800D7238;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    if (D_800D7238 < 0) {
+        D_800E3C90[omCurrentObj->objId] = -D_800D7238;
+    } else {
+        D_800E3C90[omCurrentObj->objId] = D_800D7238;
+    }
+    if (D_800EC2E0[omCurrentObj->objId].as_s32 == 0) {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 2;
+    } else {
+        D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    }
+    if (D_80198830_ovl3.unkC++ == 0) {
+        func_800A77E8(0x1E, &D_80198538_ovl3.unk0, &D_80198538_ovl3.unk4);
+    }
+    D_800EA360[omCurrentObj->objId] = (s32) &sp30;
+    sp30 = D_80198538_ovl3;
+    func_800AA018(0x20285);
+    curObjSleepForever();
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015FD58_ovl3.s")
 
