@@ -1541,7 +1541,6 @@ void func_80154C08_ovl6(void) {
     func_80153064_ovl6();
     func_800AC610();
 }
-
 #ifdef PORT
 /* PORT: byte-order fixup for the movie scripts.
  *
