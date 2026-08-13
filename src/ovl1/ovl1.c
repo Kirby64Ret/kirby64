@@ -147,6 +147,43 @@ typedef struct UnkScript {
     u8 bytecode[1];
 } UnkScript;
 
+#ifdef PORT
+/* PORT overlays for RAW ROM BANK DATA.
+ *
+ * These structs are laid over bytes DMA'd straight out of the cartridge, so
+ * every slot is a 32-BIT BIG-ENDIAN word. The N64 reads them natively; this
+ * host is little-endian LP64, so (a) every multi-byte field needs a swap and
+ * (b) a pointer member would be 8 bytes and walk the data at the wrong
+ * stride. Pointer slots are therefore declared u32 -- after relocation they
+ * hold NATIVE host addresses truncated to 32 bits, which is lossless because
+ * the whole image and arena live below 4 GB (pc_check_low_memory aborts at
+ * startup otherwise; see src/pc/pc_mmio.c). */
+typedef struct UnkScriptDesc {
+    s32 scripts_num;
+    u32 scripts[1];
+} UnkScriptDesc;
+
+typedef struct UnkTexture {
+    u32 count;
+    s32 fmt;
+    s32 siz;
+    s32 width;
+    s32 height;
+    u16 palettes_num;
+    u16 flags;
+    u32 data[1];
+} UnkTexture;
+
+typedef struct UnkTextureDesc {
+    s32 textures_num;
+    u32 textures[1];
+} UnkTextureDesc;
+
+static inline u32 pc_be32(u32 v) { return __builtin_bswap32(v); }
+static inline u16 pc_be16(u16 v) { return (u16)__builtin_bswap16(v); }
+/* Bank slots hold host addresses as u32 after relocation. */
+#define PC_BANKPTR(x) ((void *)(uintptr_t)(x))
+#else
 typedef struct UnkScriptDesc {
     s32 scripts_num;
     UnkScript *scripts[1];
@@ -167,6 +204,7 @@ typedef struct UnkTextureDesc {
     s32 textures_num;
     UnkTexture *textures[1];
 } UnkTextureDesc;
+#endif
 
 void *gtlMalloc(u32 size, u32 alignment);
 void func_8009E834(GObj *arg0);
@@ -259,6 +297,72 @@ void func_8009B72C(void *arg0, u8 arg1) {
     *(UnkEmitter **)((u8 *)arg0 + 0x4C) = func_8009B5E8(arg1, *(u16 *)((u8 *)arg0 + 4));
 }
 
+#ifdef PORT
+/* Bank relocation for the host. The N64 body below does this in place with
+ * native reads; here every header word is big-endian and every slot is 4
+ * bytes, so counts and offsets are swapped explicitly and the public tables
+ * D_800D6A78/D_800D6A98 are rebuilt as NATIVE pointer arrays in the gtl
+ * arena. Consumers of those tables then work unchanged. UnkTexture header
+ * fields are normalised to native IN PLACE (this function is their only
+ * producer); texel data itself stays N64 byte order, which is what Fast3D
+ * expects. UnkScript interiors are NOT touched here -- their consumers are
+ * the script interpreter's problem and will be converted at their own read
+ * sites. */
+void func_8009B768(s32 bank_id, UnkScriptDesc *script_desc, UnkTextureDesc *texture_desc) {
+    s32 i, j;
+    UnkScript **stbl;
+    UnkTexture **ttbl;
+    UnkTexture *tex;
+
+    if (bank_id >= 8) {
+        return;
+    }
+    script_desc->scripts_num = pc_be32(script_desc->scripts_num);
+    texture_desc->textures_num = pc_be32(texture_desc->textures_num);
+    D_800D6A38[bank_id] = script_desc->scripts_num;
+    D_800D6A58[bank_id] = texture_desc->textures_num;
+
+    stbl = gtlMalloc(D_800D6A38[bank_id] * sizeof(UnkScript *), 8);
+    for (i = 0; i < D_800D6A38[bank_id]; i++) {
+        stbl[i] = (UnkScript *)((u8 *)script_desc + pc_be32(script_desc->scripts[i]));
+    }
+    D_800D6A78[bank_id] = stbl;
+
+    ttbl = gtlMalloc(D_800D6A58[bank_id] * sizeof(UnkTexture *), 8);
+    for (i = 0; i < D_800D6A58[bank_id]; i++) {
+        ttbl[i] = (UnkTexture *)((u8 *)texture_desc + pc_be32(texture_desc->textures[i]));
+    }
+    D_800D6A98[bank_id] = ttbl;
+
+    for (i = 0; i < D_800D6A58[bank_id]; i++) {
+        tex = ttbl[i];
+        tex->count = pc_be32(tex->count);
+        tex->fmt = pc_be32(tex->fmt);
+        tex->siz = pc_be32(tex->siz);
+        tex->width = pc_be32(tex->width);
+        tex->height = pc_be32(tex->height);
+        tex->palettes_num = pc_be16(tex->palettes_num);
+        tex->flags = pc_be16(tex->flags);
+        for (j = 0; j < tex->count; j++) {
+            tex->data[j] = (u32)(uintptr_t)((u8 *)texture_desc + pc_be32(tex->data[j]));
+        }
+        if (tex->fmt == 2) {
+            if (tex->flags & 1) {
+                j = tex->count;
+                tex->data[j] = (u32)(uintptr_t)((u8 *)texture_desc + pc_be32(tex->data[j]));
+            } else if (tex->palettes_num != 0) {
+                for (j = tex->count; j < tex->count + tex->palettes_num; j++) {
+                    tex->data[j] = (u32)(uintptr_t)((u8 *)texture_desc + pc_be32(tex->data[j]));
+                }
+            } else {
+                for (j = tex->count; j < tex->count * 2; j++) {
+                    tex->data[j] = (u32)(uintptr_t)((u8 *)texture_desc + pc_be32(tex->data[j]));
+                }
+            }
+        }
+    }
+}
+#else
 void func_8009B768(s32 bank_id, UnkScriptDesc *script_desc, UnkTextureDesc *texture_desc) {
     s32 i, j;
 
@@ -297,6 +401,7 @@ void func_8009B768(s32 bank_id, UnkScriptDesc *script_desc, UnkTextureDesc *text
         }
     }
 }
+#endif /* PORT */
 
 GObj *func_8009B99C(s32 num) {
     s32 i;
