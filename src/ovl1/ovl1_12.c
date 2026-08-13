@@ -111,89 +111,102 @@ void func_800BBC6C(void) {
 // D_800ED4EC load in $v0 where the ROM has $v1 (7 words, all the same value).
 // Swept: idx local vs pure CSE, declaration order (first/last/none), s32 vs u16
 // flags, a separate decrement temp -- none move it.
-#ifdef NON_MATCHING
-void func_800BBDC4(void) {
-    extern u32 D_800BE4F8;
-    extern Controller_800D6FE8 gPlayerControllers[];
-    u16 flags;
-    u16 a;
-    u16 b;
-    u16 c;
-    u16 *p;
-
-    gPlayerControllers[0].buttonHeldLong = 0;
-    gPlayerControllers[0].buttonPressed = 0;
-    gPlayerControllers[0].buttonHeld = 0;
-    if (D_800ED4EC < 0) {
-        D_800BE4F8 = 2;
-        D_800D6F38 = 0;
-        return;
+void func_800BBDC4(void)
+{
+  int new_var;
+  extern u32 D_800BE4F8;
+  extern Controller_800D6FE8 gPlayerControllers[];
+  u16 flags;
+  u16 a;
+  u16 b;
+  unsigned int c;
+  u16 *p;
+  gPlayerControllers[0].buttonHeld = (gPlayerControllers[0].buttonPressed = (gPlayerControllers[0].buttonHeldLong = 0));
+  if (D_800ED4EC < 0)
+  {
+    D_800BE4F8 = 2;
+    D_800D6F38 = 0;
+    return;
+  }
+  D_800ED4F4 = D_800ED4F4 - 1;
+  if (((s32) D_800ED4F4) <= 0)
+  {
+    flags = *((u16 *) ((((u8 *) D_800ED4E0[0]) + (D_800ED4EC * 2)) + 0x100));
+    D_800ED4EC = D_800ED4EC + 1;
+    if (flags & 0xE000)
+    {
+      D_800ED4EC++;
     }
-    D_800ED4F4 = D_800ED4F4 - 1;
-    if ((s32) D_800ED4F4 <= 0) {
-        flags = *(u16 *) ((u8 *) D_800ED4E0[0] + D_800ED4EC * 2 + 0x100);
-        D_800ED4EC = D_800ED4EC + 1;
-        if (flags & 0xE000) {
-            D_800ED4EC++;
-        }
-        if (flags & 0x1C00) {
-            D_800ED4EC++;
-        }
-        if (flags & 0x380) {
-            D_800ED4EC++;
-        }
-        flags = *(u16 *) ((u8 *) D_800ED4E0[0] + D_800ED4EC * 2 + 0x100);
-        if (flags == 0xFFFF) {
-            D_800ED4EC = -1;
-            return;
-        }
-        D_800ED4F4 = flags & 0x7F;
+    if (flags & 0x1C00)
+    {
+      D_800ED4EC++;
     }
-    p = (u16 *) ((u8 *) D_800ED4E0[0] + D_800ED4EC * 2);
-    flags = p[0x80];
-    c = 0;
-    b = 0;
-    a = 0;
-    if (flags & 0x8000) {
-        a = p[0x81];
+    if (flags & 0x380)
+    {
+      D_800ED4EC++;
     }
-    if (flags & 0x4000) {
-        b = p[0x81];
+    flags = *((u16 *) ((((u8 *) D_800ED4E0[0]) + (D_800ED4EC * 2)) + 0x100));
+    if (flags == 0xFFFF)
+    {
+      D_800ED4EC = -1;
+      return;
     }
-    if (flags & 0x2000) {
-        c = p[0x81];
-    }
-    if (flags & 0x1000) {
-        a = p[0x82];
-    }
-    if (flags & 0x800) {
-        b = p[0x82];
-    }
-    if (flags & 0x400) {
-        c = p[0x82];
-    }
-    if (flags & 0x200) {
-        a = p[0x83];
-    }
-    if (flags & 0x100) {
-        b = p[0x83];
-    }
-    if (flags & 0x80) {
-        c = p[0x83];
-    }
-    gPlayerControllers[0].buttonHeld = a;
-    gPlayerControllers[0].buttonPressed = b;
-    gPlayerControllers[0].buttonHeldLong = c;
-    if (a & 0x80) {
-        gPlayerControllers[0].stickY = 0x40;
-    }
-    if (a & 0x40) {
-        gPlayerControllers[0].stickY = -0x40;
-    }
+    D_800ED4F4 = flags & 0x7F;
+  }
+  p = (u16 *) (((u8 *) D_800ED4E0[0]) + (D_800ED4EC * 2));
+  flags = p[0x80];
+  c = 0;
+  b = 0;
+  a = 0;
+  if (flags & 0x8000)
+  {
+    a = p[0x81];
+  }
+  if (flags & 0x4000)
+  {
+    b = p[0x81];
+  }
+  if (flags & 0x2000)
+  {
+    c = p[0x81];
+  }
+  if (flags & 0x1000)
+  {
+    a = p[0x82];
+  }
+  if (flags & 0x800)
+  {
+    b = p[0x82];
+  }
+  new_var = 0x82;
+  if (flags & 0x400)
+  {
+    c = p[new_var];
+  }
+  if (flags & 0x200)
+  {
+    a = p[0x83];
+  }
+  if (flags & 0x100)
+  {
+    b = p[0x83];
+  }
+  if (flags & 0x80)
+  {
+    c = p[0x83];
+  }
+  gPlayerControllers[0].buttonHeld = a;
+  gPlayerControllers[0].buttonPressed = b;
+  gPlayerControllers[0].buttonHeldLong = c;
+  if (a & 0x80)
+  {
+    gPlayerControllers[0].stickY = 0x40;
+  }
+  if (a & 0x40)
+  {
+    gPlayerControllers[0].stickY = -0x40;
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_12/func_800BBDC4.s")
-#endif
 
 // last function in this translation unit: its listing carries the
 // TU's trailing alignment padding, which C does not emit
