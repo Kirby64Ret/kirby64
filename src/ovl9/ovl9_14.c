@@ -1183,7 +1183,42 @@ void func_80213DCC_ovl9(s32 arg0) {
 
 }
 
+/* FACTORY: 16/114, first compile, residue not yet diagnosed.  Decode is
+   believed structurally right: outer do/while on D_800E9AA0 == 0, inner
+   `while (D_800E9560[objId] < 4)` with two `if (...) break;` on D_800E9AA0,
+   and the 1 / 0x1024F / 0x1024E / &D_800DF310 / func_80214304_ovl9 constants
+   all live in callee-saved registers as the ROM has them. */
+#ifdef NON_MATCHING
+void func_80214304_ovl9(s32, s32, f32);
+
+void func_80213DD4_ovl9(s32 arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    do {
+        if (D_800E7880[omCurrentObj->objId] == 1) {
+            func_800AA018(0x1024F);
+        } else {
+            func_800AA018(0x1024E);
+        }
+        D_800DF310[omCurrentObj->objId] = func_80214304_ovl9;
+        D_800E9560[omCurrentObj->objId] = 0;
+        while (D_800E9560[omCurrentObj->objId] < 4) {
+            if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
+                break;
+            }
+            ohSleep(8);
+            if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
+                break;
+            }
+            ohSleep(7);
+            D_800E9560[omCurrentObj->objId] += 1;
+        }
+    } while (D_800E9AA0[omCurrentObj->objId].as_s32 == 0);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80213DD4_ovl9.s")
+#endif
 
 void func_80213F9C_ovl9(struct GObj *arg0) {
     if (gPlayerControllers[0].buttonPressed & (A_BUTTON | B_BUTTON)) {

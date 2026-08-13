@@ -1079,7 +1079,114 @@ void func_8016EF44_ovl5(u8 *arg0, u16 *arg1) {
     arg0[0x1A] = arg1[5];
 }
 
+#ifdef NON_MATCHING
+/* FACTORY: 133/222, residue. Instruction count and structure are exact; the
+   whole callee-saved bank is permuted and one value spills: the ROM keeps the
+   last SPObj* in $s4 and &D_80187094_ovl5 in $s5, and materialises
+   &D_800D6B68 and the constant 3 inline via $at, so its frame is 0x48. IDO
+   hoists both of those into callee-saved regs instead and spills the SPObj*,
+   giving a 0x50 frame. Swept with no effect: a separate local for the first
+   func_8015C740_ovl5 result, declaration order (counter first vs last), and
+   --/++ instead of -1/+1 on D_8018E440_ovl5. Whole-function register
+   permutation -- permuter territory. Siblings func_80164A34_ovl5 (ovl5_2) and
+   func_80176170_ovl5 (ovl5_5) are near-clones of this shape. */
+extern u8 D_8018E440_ovl5;
+extern f32 D_8018D770_ovl5;
+extern f32 D_80187094_ovl5[][2];
+extern struct UnkStruct8015C740 D_80186F94_ovl5;
+extern struct UnkStruct8015C740 D_80186FB4_ovl5;
+extern struct UnkStruct8015C740 D_80186FD4_ovl5;
+extern struct UnkStruct8015C740 D_80186FF4_ovl5;
+extern struct UnkStruct8015C740 D_80187014_ovl5;
+extern struct UnkStruct8015C740 D_80187034_ovl5;
+extern struct UnkStruct8015C740 D_80187054_ovl5;
+extern struct UnkStruct8015C740 D_80187074_ovl5;
+void func_8016F730_ovl5(void);
+
+void func_8016EF78_ovl5(GObj *arg0) {
+    s32 counter;
+    SPObj *sp;
+    SPObj *tmp;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_8018E440_ovl5 = 0;
+    omLinkGObjDL(arg0, &func_800AD1A0, 0xA, 0x80000000, 0xA);
+    func_800BB3F0();
+    tmp = func_8015C740_ovl5(arg0, &D_80187014_ovl5);
+    tmp->xScale = 52.0f;
+    tmp->yScale = D_8018D770_ovl5;
+    func_8015C740_ovl5(arg0, &D_80186F94_ovl5);
+    func_8015C740_ovl5(arg0, &D_80186FB4_ovl5);
+    func_8015C740_ovl5(arg0, &D_80186FD4_ovl5);
+    func_8015C740_ovl5(arg0, &D_80186FF4_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187034_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187054_ovl5);
+    sp = func_8015C740_ovl5(arg0, &D_80187074_ovl5);
+    sp->xOffset = D_80187094_ovl5[D_8018E440_ovl5][0];
+    sp->yOffset = D_80187094_ovl5[D_8018E440_ovl5][1];
+    ohSleep(6);
+    counter = 5;
+    while (1) {
+        if (counter != 0) {
+            counter--;
+            if ((gPlayerControllers[0].buttonHeld & 0xF00) == 0) {
+                counter = 0;
+            }
+        } else {
+            if (gPlayerControllers[0].buttonPressed & 0x9000) {
+                ((s32 *) D_800D7178)[0x1E] = 1;
+                switch (D_8018E440_ovl5) {
+                    case 0:
+                        ((s32 *) D_800D7178)[0x1E] = 2;
+                        play_sound(0x113);
+                        func_800ACBDC(arg0);
+                        func_800B1900(omCurrentObj->objId);
+                        break;
+                    case 1:
+                        play_sound(0xED);
+                        gGameState = 0x1E;
+                        break;
+                    case 2:
+                        play_sound(0xED);
+                        D_800D6B68 = gGameState;
+                        gGameState = 0x1B;
+                        break;
+                    case 3:
+                        play_sound(0x2B);
+                        D_800D6B68 = gGameState;
+                        gGameState = 0xA;
+                        break;
+                }
+                func_8016F730_ovl5();
+                curObjSleepForever();
+            } else if (gPlayerControllers[0].buttonHeld & 0x800) {
+                play_sound(0x113);
+                counter = 5;
+                if (D_8018E440_ovl5 == 0) {
+                    D_8018E440_ovl5 = 3;
+                } else {
+                    D_8018E440_ovl5--;
+                }
+            } else if (gPlayerControllers[0].buttonHeld & 0x400) {
+                play_sound(0x113);
+                counter = 5;
+                if (D_8018E440_ovl5 == 3) {
+                    D_8018E440_ovl5 = 0;
+                } else {
+                    D_8018E440_ovl5++;
+                }
+            }
+            sp->xOffset = D_80187094_ovl5[D_8018E440_ovl5][0];
+            sp->yOffset = D_80187094_ovl5[D_8018E440_ovl5][1];
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016EF78_ovl5.s")
+#endif
+
 
 void func_8016F2F0_ovl5(GObj *arg0) {
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);

@@ -27,7 +27,7 @@ void func_801E13C0_ovl14(GObj *arg0);
 void func_801E1720_ovl14(GObj *arg0);
 void func_801E1728_ovl14(GObj *arg0);
 void func_801E1CE0_ovl14(GObj *arg0);
-void func_801E1CE8_ovl14(GObj *arg0);
+s32 func_801E1CE8_ovl14(void);
 void func_801E2028_ovl14(void);
 void func_801E208C_ovl14(GObj *arg0);
 void func_801E2378_ovl14(GObj *arg0);

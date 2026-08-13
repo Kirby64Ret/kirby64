@@ -251,7 +251,51 @@ void func_801DBE20_ovl15(s32 arg0) {
     }
 }
 
+/* UNMEASURED DRAFT -- transcribed from the listing, never compiled. Ported off
+   the matched func_801DD03C_ovl15 (same D_800DEF90/D_800DF150 + setProcessMain
+   + func_800B19F4 + func_800AFBB4 head). Three-arm selector is deliberate here:
+   unlike func_801DCB64_ovl15, the ROM really does emit all three tests, and the
+   last two arms converge on one store block. `track` is the hoisted index
+   (D_800E0D50[objId]); the ROM spills track*4 at 0x24($sp) and reuses it for
+   D_800EBDA0/D_800EA1A0, which is the hoisted-index lever. */
+#ifdef NON_MATCHING
+void func_801DBEAC_ovl15(s32 arg0) {
+    s32 track;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    D_800DF150[omCurrentObj->objId] = NULL;
+    track = D_800E0D50[omCurrentObj->objId];
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    func_800B19F4(0x7D, omCurrentObj->objId);
+    func_800AFBB4(0, omCurrentObj);
+    play_sound(0x198);
+    D_800E98E0[omCurrentObj->objId] = 2;
+    if ((s32) D_800D7098.unk3C < 4) {
+        if (D_800DFF50[track] == 0x103BD) {
+            D_800E9AA0[omCurrentObj->objId] = 0;
+        } else if (D_800DFF50[track] == 0x103BF) {
+            D_800E9AA0[omCurrentObj->objId] = 1;
+        } else if (D_800DFF50[track] == 0x103C1) {
+            D_800E9AA0[omCurrentObj->objId] = 2;
+        } else {
+            D_800E9AA0[omCurrentObj->objId] = 2;
+        }
+    } else {
+        D_800E9AA0[omCurrentObj->objId] = 3;
+    }
+    func_800AEDD0(gameTicksPerDraw);
+    func_800AA038(D_801E64F0_ovl15[(s32) D_800E9AA0[omCurrentObj->objId]], 0, track);
+    ohSleep(0x2A);
+    func_800AA038(0x103DD, 0, track);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800EBDA0[track] = -1;
+    D_800EA1A0[track] = 0;
+    ohSleep(2);
+    func_8019D958_ovl7((u16) omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DBEAC_ovl15.s")
+#endif
 
 void func_801DC0DC_ovl15(struct Ovl15DObj *arg0, struct Ovl15Color *arg1) {
     struct Ovl15MObj *mobj;
@@ -380,9 +424,116 @@ void func_801DCA3C_ovl15(struct GObj *arg0) {
     func_8019D958_ovl7((u16) omCurrentObj->objId);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DCB64_ovl15.s")
+/* FACTORY: 94/145, INSTRUCTION COUNT EXACT, whole-function callee-saved
+   permutation.  Fresh port of the matched func_801DC13C_ovl15 above (identical
+   head: the shared 0.0f through gEntitiesAngle{Z,Y,X} / D_800E9020 / D_800E17D0,
+   the two function-pointer stores, func_800A9864, and the
+   `if (cond) do { ohSleep(1); } while (cond);` tail).  Every instruction, both
+   branch-likelies, the frame 0x30, the six saved registers and the parameter
+   home store are the ROM's; only the saved-register NAMES rotate
+   (&omCurrentObj $s4->$s1, &D_800E0D50 $s2->$s3, &D_800DFF50 $s1->$s2) plus the
+   $v0/$v1 pair in the head swapping with them.
+   Worth keeping: the scale selector must be written with TWO arms, not three.
+   The ROM tests 0x103BD, 0x103BF and 0x103C1 and the third arm stores the same
+   1.5f as the default, so m2c's natural three-arm `else if (== 0x103C1)` form
+   reads correctly but emits FOUR extra instructions (149 vs 145); folding it
+   into the else gives the exact length, because IDO re-materialises $s0 for the
+   wait loop anyway and the ROM's third `beq` is the loop's test hoisted, not a
+   third assignment. */
+#ifdef NON_MATCHING
+void func_801DCB64_ovl15(s32 arg0) {
+    f32 temp_f0;
 
+    gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;
+    temp_f0 = gEntitiesAngleZArray[omCurrentObj->objId];
+    gEntitiesAngleYArray[omCurrentObj->objId] = temp_f0;
+    gEntitiesAngleXArray[omCurrentObj->objId] = temp_f0;
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    D_800E17D0[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId];
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    D_800DF150[omCurrentObj->objId] = func_801DCDA8_ovl15;
+    func_800A9864(0x100DA, 0x23, 0x10);
+    if ((D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x103BD) ||
+        (D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x103BF)) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 3.0f;
+    } else {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 1.5f;
+    }
+    func_800AFBB4(0, omCurrentObj);
+    if ((D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x103BD) ||
+        (D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x103BF) ||
+        (D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x103C1)) {
+        do {
+            ohSleep(1);
+        } while ((D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x103BD) ||
+                 (D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x103BF) ||
+                 (D_800DFF50[D_800E0D50[omCurrentObj->objId]] == 0x103C1));
+    }
+    func_8019D958_ovl7((u16) omCurrentObj->objId);
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DCB64_ovl15.s")
+#endif
+
+/* FACTORY: 21/165, FP register rotation + a 4-byte spill slot, everything else
+   exact.  Fresh port off the matched func_801DC310_ovl15 above (same
+   utilGetTransformSRT / D_800DFBD0[D_800E0D50[objId]][table[..]] shape).  Frame
+   0x58, both Vectors at 0x4C and 0x40, every branch and both FP compares are
+   the ROM's.
+   TWO THINGS HERE ARE WORTH REUSING, both measured, both large:
+   1. HOIST THE TABLE INDEX.  `D_800E7880[objId] - 7` used as a subscript in two
+      different tables must be a NAMED LOCAL.  Written inline, IDO folds the -7
+      into each load's displacement (`lw $t4, -28($t4)`) and recomputes; the ROM
+      does `addiu $v1,-7` then one `sll`, and spills that byte offset at
+      0x28($sp) to reuse for the second table.  This one edit took the function
+      from 154/166 to 33/165.
+   2. PAD LOCALS GO AT THE END OF THE DECLARATION LIST, not the front.  Two
+      leading `s32 pad` fixed the frame but left both Vectors 8 bytes low
+      (30/165); the same two pads declared LAST put them at 0x4C/0x40 (21/165).
+      Later declarations take the lower addresses, so trailing pads are what
+      push earlier locals up.
+   Residue: the compiler temp lands at 0x24($sp) where the ROM has 0x28, and a
+   third pad overshoots the frame to 0x60 (31/165) -- the +8 frame anomaly, a
+   4-byte offset that no local arrangement reaches.  The FP names rotate with it
+   ($f2/$f16/$f14 -> $f16/$f14/$f2).  Permuter food. */
+#ifdef NON_MATCHING
+void func_801DCDA8_ovl15(s32 arg0) {
+    Vector sp4C;
+    Vector sp40;
+    f32 span;
+    s32 idx;
+    s32 pad0;
+    s32 pad1;
+
+    idx = D_800E7880[omCurrentObj->objId] - 7;
+    utilGetTransformSRT(&sp4C, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][D_801E6500_ovl15[idx]]);
+    if (sp4C.z < -80.0f) {
+        func_800AFBB4(0, omCurrentObj);
+        return;
+    }
+    func_800AFBB4(1, omCurrentObj);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp4C.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 3.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = sp4C.z;
+    if (80.0f < gEntitiesNextPosZArray[omCurrentObj->objId]) {
+        gEntitiesNextPosZArray[omCurrentObj->objId] = 80.0f;
+    }
+    D_800DFBD0[omCurrentObj->objId][1]->pos.v.x = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][1]->pos.v.y = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][1]->pos.v.z = 0.0f;
+    utilGetTransformSRT(&sp40, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][(&D_801E6508_ovl15)[idx]]);
+    span = sp4C.z - sp40.z;
+    if (sp4C.z == sp40.z) {
+        span = 0.00001f;
+    }
+    span = (sp4C.z + 80.0f) / span;
+    D_800DFBD0[omCurrentObj->objId][2]->pos.v.x = (sp40.x - sp4C.x) * span;
+    D_800DFBD0[omCurrentObj->objId][2]->pos.v.y = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][2]->pos.v.z = (sp40.z - sp4C.z) * span;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DCDA8_ovl15.s")
+#endif
 
 void func_801DD03C_ovl15(s32 arg0) {
 

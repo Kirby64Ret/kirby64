@@ -1621,34 +1621,43 @@ block_217:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009C4E0.s")
 #endif
 
-#ifdef MIPS_TO_C
+/* FACTORY: 26/48. Behaviourally complete and the instruction count matches.
+   Two coupled residues: (a) the ROM holds &D_800D69C8 in $s6 and the 0x10 loop
+   bound in $s5, IDO reverses them (the array base is materialised first in the
+   ROM); (b) the ROM emits the `p = next` assignment TWICE around a branch-likely
+   (`bnel $v0,$t9` + a duplicated `or $s0,$v0`, then `b` + a third copy) and
+   re-tests $s0 at the bottom, where IDO collapses it to `bne`+nop and tests
+   $v0 (next) directly. The compare operand order IS already right -- with a
+   memory load on one side the asm order is the reverse of the source order
+   (measured on func_800A2440), hence `p->next == next`. Permuter fuel. */
+#ifdef NON_MATCHING
+void func_8009E834(GObj *arg0) {
+    UnkParticle *func_8009C4E0(UnkParticle *, UnkParticle *, s32);
+    UnkParticle *p;
+    UnkParticle *prev;
+    s32 i;
+    u32 flags;
+    UnkParticle *next;
 
-void func_8009E834(void *arg0) {
-    s32 *temp_v0;
-    s32 *var_s0;
-    s32 *var_s1;
-    s32 var_s2;
-    u32 var_s3;
-
-    var_s3 = arg0->unk44;
-    var_s2 = 0;
+    flags = arg0->flags;
+    i = 0;
     do {
-        if (!(var_s3 & 0x10000)) {
-            var_s0 = *(&D_800D69C8 + (var_s2 * 4));
-            var_s1 = NULL;
-            if (var_s0 != NULL) {
+        if (!(flags & 0x10000)) {
+            p = D_800D69C8[i];
+            prev = NULL;
+            if (p != NULL) {
                 do {
-                    temp_v0 = func_8009C4E0(var_s0, var_s1, var_s2);
-                    if (temp_v0 == *var_s0) {
-                        var_s1 = var_s0;
+                    next = func_8009C4E0(p, prev, i);
+                    if (p->next == next) {
+                        prev = p;
                     }
-                    var_s0 = temp_v0;
-                } while (var_s0 != NULL);
+                    p = next;
+                } while (p != NULL);
             }
         }
-        var_s2 += 1;
-        var_s3 = var_s3 >> 1;
-    } while (var_s2 != 0x10);
+        i++;
+        flags >>= 1;
+    } while (i != 0x10);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009E834.s")
@@ -3456,56 +3465,64 @@ void *func_800A19EC(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A19EC.s")
 #endif
 
-#ifdef MIPS_TO_C
+// The node type of the D_800D6A0C live list / D_800D6A08 free list -- 0x78
+// bytes, the size func_800A04B8 gtlMallocs. It is NOT UnkParticle (whose 0x14
+// is a u16 and whose 0x4C is a u8), so it gets its own tag.
+struct Ovl1PNode {
+    /* 0x00 */ struct Ovl1PNode *next;
+    /* 0x04 */ u8 pad4[5];
+    /* 0x09 */ u8 unk9;
+    /* 0x0A */ u8 padA[4];
+    /* 0x0E */ u16 unkE;
+    /* 0x10 */ s32 pad10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+    /* 0x1C */ f32 unk1C;
+    /* 0x20 */ s32 pad20[8];
+    /* 0x40 */ f32 unk40;
+    /* 0x44 */ s32 pad44;
+    /* 0x48 */ struct DObj *unk48;
+    /* 0x4C */ UnkEmitter *unk4C;
+    /* 0x50 */ s32 pad50;
+    /* 0x54 */ u16 unk54;
+};
 
-void func_800A1F30(void *arg0) {
-    ? *sp18;
-    ? *var_v0;
-    ? *var_v1;
-    void *temp_a1;
-    void *temp_a1_2;
+void func_800A1F30(struct Ovl1PNode *arg0) {
+    s32 pad0;
+    struct Ovl1PNode *p;
+    struct Ovl1PNode *prev;
 
-    var_v0 = D_800D6A0C;
-    var_v1 = NULL;
-    if (var_v0 != NULL) {
-loop_1:
-        if (var_v0 == arg0) {
-            if ((arg0->unk9 == 2) && (arg0->unk54 != 0)) {
-                arg0->unkE = 1;
-                arg0->unk40 = 0.0f;
+    p = (struct Ovl1PNode *) D_800D6A0C;
+    prev = NULL;
+    if (p != NULL) {
+        do {
+            if (p == arg0) {
+                if ((arg0->unk9 == 2) && (arg0->unk54 != 0)) {
+                    arg0->unkE = 1;
+                    arg0->unk40 = 0.0f;
+                    return;
+                }
+                if (prev == NULL) {
+                    D_800D6A0C = (struct Ovl1ParticleNode *) p->next;
+                } else {
+                    prev->next = p->next;
+                }
+                if (arg0->unk4C != NULL) {
+                    arg0->unk4C->unk2A--;
+                    if (arg0->unk4C->unk2A == 0) {
+                        func_8009B69C(arg0->unk4C);
+                    }
+                }
+                p->next = (struct Ovl1PNode *) D_800D6A08;
+                D_800D6A08 = (UnkParticle *) p;
+                D_800D6AE2--;
                 return;
             }
-            if (var_v1 == NULL) {
-                D_800D6A0C = *var_v0;
-            } else {
-                *var_v1 = *var_v0;
-            }
-            temp_a1 = arg0->unk4C;
-            if (temp_a1 != NULL) {
-                temp_a1->unk2A = temp_a1->unk2A - 1;
-                temp_a1_2 = arg0->unk4C;
-                if (temp_a1_2->unk2A == 0) {
-                    sp18 = var_v0;
-                    func_8009B69C(temp_a1_2, temp_a1_2);
-                }
-            }
-            *var_v0 = D_800D6A08;
-            D_800D6A08 = var_v0;
-            D_800D6AE2 -= 1;
-            return;
-        }
-        var_v1 = var_v0;
-        var_v0 = *var_v0;
-        if (var_v0 == NULL) {
-
-        } else {
-            goto loop_1;
-        }
+            prev = p;
+            p = p->next;
+        } while (p != NULL);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A1F30.s")
-#endif
 
 struct Ovl1ParticleNode {
     struct Ovl1ParticleNode *next;
@@ -3640,133 +3657,126 @@ void func_800A22D4(UnkA22A8 *arg0) {
     func_800A2080(arg0->unk4, arg0->unkA >> 3, arg0);
 }
 
-#ifdef MIPS_TO_C
+void func_800A2300(GObj *arg0) {
+    struct Ovl1PNode *p;
+    struct Ovl1PNode *next;
+    struct DObj *node;
 
-void func_800A2300(void *arg0) {
-    DObj *temp_v0;
-    DObj *var_s1;
-    void *temp_s0;
-    void *var_a0;
-
-    if (arg0->unkF == 1) {
-        var_s1 = arg0->unk3C;
-        if (var_s1 != NULL) {
+    if (arg0->kind == 1) {
+        node = arg0->data.dobj;
+        if (node != NULL) {
             do {
-                var_a0 = D_800D6A0C;
-                if (var_a0 != NULL) {
+                p = (struct Ovl1PNode *) D_800D6A0C;
+                if (p != NULL) {
                     do {
-                        temp_s0 = var_a0->unk0;
-                        if (var_s1 == var_a0->unk48) {
-                            func_800A1F30(var_a0);
+                        next = p->next;
+                        if (p->unk48 == node) {
+                            func_800A1F30(p);
                         }
-                        var_a0 = temp_s0;
-                    } while (temp_s0 != NULL);
+                        p = next;
+                    } while (next != NULL);
                 }
-                temp_v0 = animModelTreeNextNode(var_s1);
-                var_s1 = temp_v0;
-            } while (temp_v0 != NULL);
+                node = animModelTreeNextNode(node);
+            } while (node != NULL);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2300.s")
-#endif
 
-#ifdef MIPS_TO_C
-
+/* FACTORY: 17/45, residue = whole-loop $v0/$v1 swap. Structure, frame (0x10
+   with the $f20 save), both loop shapes, every displacement and both `bnel`
+   forms are byte-exact; the ROM keeps the walking node pointer in $v0 and the
+   D_800D69C8 array cursor in $v1, IDO reverses them, and the two `addiu %lo`
+   materialisations swap with it. This is the SAME floor already recorded on
+   func_800A8EC0 in ovl1_3.c ("the ROM puts the walking pointer in $v0 and the
+   counter in $v1"). Swept: both declaration orders of p/q. Permuter fuel. */
+#ifdef NON_MATCHING
 void func_800A238C(f32 arg0, f32 arg1, f32 arg2) {
-    void **var_v1;
-    void *var_v0;
-    void *var_v0_2;
+    UnkParticle *p;
+    UnkParticle **q;
+    struct Ovl1PNode *n;
 
-    var_v1 = &D_800D69C8;
+    q = D_800D69C8;
     do {
-        var_v0 = *var_v1;
-        var_v1 += 4;
-        if (var_v0 != NULL) {
+        p = *q;
+        q++;
+        if (p != NULL) {
             do {
-                var_v0->unk24 = var_v0->unk24 + arg0;
-                var_v0->unk28 = var_v0->unk28 + arg1;
-                var_v0->unk2C = var_v0->unk2C + arg2;
-                var_v0 = var_v0->unk0;
-            } while (var_v0 != NULL);
+                p->unk24 += arg0;
+                p->unk28 += arg1;
+                p->unk2C += arg2;
+                p = p->next;
+            } while (p != NULL);
         }
-    } while (var_v1 < &D_800D6A08);
-    var_v0_2 = D_800D6A0C;
-    if (var_v0_2 != NULL) {
+    } while (q < &D_800D6A08);
+    n = (struct Ovl1PNode *) D_800D6A0C;
+    if (n != NULL) {
         do {
-            var_v0_2->unk14 = var_v0_2->unk14 + arg0;
-            var_v0_2->unk18 = var_v0_2->unk18 + arg1;
-            var_v0_2->unk1C = var_v0_2->unk1C + arg2;
-            var_v0_2 = var_v0_2->unk0;
-        } while (var_v0_2 != NULL);
+            n->unk14 += arg0;
+            n->unk18 += arg1;
+            n->unk1C += arg2;
+            n = n->next;
+        } while (n != NULL);
     }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A238C.s")
 #endif
 
-#ifdef MIPS_TO_C
+// K&R definition with a u16 first parameter: the ROM's dead `sw $a0, 0x0($sp)`
+// home store plus the `andi $a0, $a0, 0xFFFF` truncation is IDO's K&R
+// promoted-short prologue.
+void func_800A2440(arg0, arg1)
+u16 arg0;
+s32 arg1;
+{
+    UnkParticle *p;
 
-void func_800A2440(s32 arg0, s32 arg1) {
-    s32 temp_a0;
-    void *var_v0;
-    void *var_v0_2;
-
-    var_v0 = *(&D_800D69C8 + (arg1 * 4));
-    temp_a0 = arg0 & 0xFFFF;
-    if (var_v0 != NULL) {
+    p = D_800D69C8[arg1];
+    if (p != NULL) {
         do {
-            if (temp_a0 == var_v0->unk4) {
-                var_v0->unk6 = var_v0->unk6 | 0x800;
+            if (p->unk4 == arg0) {
+                p->unk6 |= 0x800;
             }
-            var_v0 = var_v0->unk0;
-        } while (var_v0 != NULL);
+            p = p->next;
+        } while (p != NULL);
     }
-    var_v0_2 = D_800D6A0C;
-    if (var_v0_2 != NULL) {
+    p = (UnkParticle *) D_800D6A0C;
+    if (p != NULL) {
         do {
-            if (temp_a0 == var_v0_2->unk4) {
-                var_v0_2->unk6 = var_v0_2->unk6 | 0x800;
+            if (p->unk4 == arg0) {
+                p->unk6 |= 0x800;
             }
-            var_v0_2 = var_v0_2->unk0;
-        } while (var_v0_2 != NULL);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2440.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-void func_800A24C4(s32 arg0, s32 arg1) {
-    s32 temp_a0;
-    void *var_v0;
-    void *var_v0_2;
-
-    var_v0 = *(&D_800D69C8 + (arg1 * 4));
-    temp_a0 = arg0 & 0xFFFF;
-    if (var_v0 != NULL) {
-        do {
-            if (temp_a0 == var_v0->unk4) {
-                var_v0->unk6 = var_v0->unk6 & ~0x800;
-            }
-            var_v0 = var_v0->unk0;
-        } while (var_v0 != NULL);
-    }
-    var_v0_2 = D_800D6A0C;
-    if (var_v0_2 != NULL) {
-        do {
-            if (temp_a0 == var_v0_2->unk4) {
-                var_v0_2->unk6 = var_v0_2->unk6 & ~0x800;
-            }
-            var_v0_2 = var_v0_2->unk0;
-        } while (var_v0_2 != NULL);
+            p = p->next;
+        } while (p != NULL);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A24C4.s")
-#endif
+
+// Clone of func_800A2440; see the K&R note there.
+void func_800A24C4(arg0, arg1)
+u16 arg0;
+s32 arg1;
+{
+    UnkParticle *p;
+
+    p = D_800D69C8[arg1];
+    if (p != NULL) {
+        do {
+            if (p->unk4 == arg0) {
+                p->unk6 &= ~0x800;
+            }
+            p = p->next;
+        } while (p != NULL);
+    }
+    p = (UnkParticle *) D_800D6A0C;
+    if (p != NULL) {
+        do {
+            if (p->unk4 == arg0) {
+                p->unk6 &= ~0x800;
+            }
+            p = p->next;
+        } while (p != NULL);
+    }
+}
 
 #ifdef MIPS_TO_C
 

@@ -1224,7 +1224,57 @@ void func_801EA190_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA190_ovl9.s")
 #endif
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA2F8_ovl9.s")
+void func_801EA2F8_ovl9(struct GObj *arg0) {
+    extern f32 sqrtf(f32);
+    extern f32 atan2f(f32, f32);
+    f32 pad0;
+    f32 pad1;
+    f32 dy;
+    f32 pad2;
+    f32 dz;
+    f32 pad3;
+    f32 pad4;
+    f32 dist;
+    f32 dx;
+    f32 ang;
+
+    if (D_800E6F50[omCurrentObj->objId].originOffset < 480.0f) {
+        dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+        dy = ((gEntitiesNextPosYArray[0] + 20.0f) + 80.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
+        dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
+        dist = sqrtf((dx * dx) + (dz * dz));
+        ang = atan2f(dx, dz) - D_800E17D0[omCurrentObj->objId];
+        while (3.1415927f <= ang) {
+            ang = ang - 6.2831855f;
+        }
+        while (ang <= -3.1415927f) {
+            ang = ang + 6.2831855f;
+        }
+        if (1.5707964f < ABSF(ang)) {
+            dist = -dist;
+        }
+        ang = atan2f(dist, dy) - D_800EAA60[omCurrentObj->objId];
+        while (3.1415927f <= ang) {
+            ang = ang - 6.2831855f;
+        }
+        while (ang <= -3.1415927f) {
+            ang = ang + 6.2831855f;
+        }
+        if (ang + 0.039269909f < D_800EA6E0[omCurrentObj->objId]) {
+            D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] - 0.039269909f;
+            if (D_800EA6E0[omCurrentObj->objId] < -0.5235988f) {
+                D_800EA6E0[omCurrentObj->objId] = -0.5235988f;
+            }
+        } else if (D_800EA6E0[omCurrentObj->objId] < ang - 0.039269909f) {
+            D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + 0.039269909f;
+            if (0.5235988f < D_800EA6E0[omCurrentObj->objId]) {
+                D_800EA6E0[omCurrentObj->objId] = 0.5235988f;
+            }
+        }
+    }
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_800EA6E0[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId];
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA628_ovl9.s")
 

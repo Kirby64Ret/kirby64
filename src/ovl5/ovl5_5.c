@@ -634,7 +634,68 @@ void func_80173EBC_ovl5(GObj *arg0) {
     D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[D_800E98E0[omCurrentObj->objId]];
 }
 
+#ifdef NON_MATCHING
+/* FACTORY: 21/185, residue. Length, frame and control flow are exact. Two
+   known floors: (a) the value reloaded from the Vector2 at 0x28($sp) lands in
+   $v1 instead of the ROM's $v0 -- the CSE'd-load-in-the-neighbouring-register
+   floor -- which also swaps `addiu $a0, $sp, 0x28` past the `bne`; (b) one
+   one-slot rotation of `lui $at, %hi(gEntitiesNextPosYArray)` against the
+   D_8018E458_ovl5 index chain, the same window that blocks func_8017462C_ovl5.
+   Not swept further: both residues are on the LEVERS floor list. */
+extern s32 D_80187CDC_ovl5;
+extern s32 D_80187CE0_ovl5[];
+extern s32 D_80187CE4_ovl5;
+void func_80174328_ovl5(GObj *);
+
+void func_80174044_ovl5(GObj *arg0, s32 arg1) {
+    Vector2 sp28;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800DF150[omCurrentObj->objId] = func_80174328_ovl5;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    func_800A9864(D_80187CDC_ovl5, 0x1869F, 0x10);
+    func_800AA018(D_80187CE0_ovl5[0]);
+    if (D_80187CE4_ovl5 != 0) {
+        func_800AA018(D_80187CE4_ovl5);
+    }
+    if (D_8018ECD8_ovl5 == 3) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E458_ovl5[arg1]];
+    } else {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E458_ovl5[arg1]];
+    }
+    func_8016FF60_ovl5(&sp28, arg1);
+    if (*(s32 *) &sp28 == 1) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 1.5f;
+        gEntitiesScaleYArray[omCurrentObj->objId] = 1.5f;
+        gEntitiesScaleZArray[omCurrentObj->objId] = 1.5f;
+    }
+    func_8016FF60_ovl5(&sp28, arg1);
+    switch (*(s32 *) &sp28) {
+        case 0:
+        case 2:
+            play_sound(0xFC);
+            break;
+        case 1:
+            gEntitiesScaleXArray[omCurrentObj->objId] = 1.5f;
+            gEntitiesScaleYArray[omCurrentObj->objId] = 1.5f;
+            gEntitiesScaleZArray[omCurrentObj->objId] = 1.5f;
+            play_sound(0xF9);
+            break;
+        case 3:
+            play_sound(0xFA);
+            break;
+    }
+    func_800AF27C();
+    func_800B1900(omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80174044_ovl5.s")
+#endif
+
 
 void func_80174328_ovl5(GObj *arg0) {
     D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[D_800E98E0[omCurrentObj->objId]];
@@ -642,7 +703,55 @@ void func_80174328_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80174368_ovl5.s")
 
+#ifdef NON_MATCHING
+/* FACTORY: 4/140, residue. Two one-slot scheduling rotations, both in the
+   same window: the ROM interleaves the loop-invariant &D_8018E478_ovl5[arg1][arg2]
+   address chain one slot AHEAD of `lui $at, 0x4302` (the 130.0f constant) and
+   of `lui $at, %hi(gEntitiesNextPosYArray)`; IDO emits both luis one slot
+   early. Everything else, frame included, is exact. Swept with no effect:
+   `+ 0.0f` on the Z load (folded away, identical output) and swapping the Y/Z
+   statement order (37/140, much worse). One-slot temp rotation -- floor. */
+extern s32 D_80187CC8_ovl5;
+extern s32 D_80187CCC_ovl5;
+extern s32 D_80187CD0_ovl5;
+extern s32 D_80187CD4_ovl5[];
+void func_8017485C_ovl5(GObj *);
+void func_800AF27C(void);
+
+void func_8017462C_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = arg2;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800DF150[omCurrentObj->objId] = func_8017485C_ovl5;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    func_800A9864(D_80187CC8_ovl5, 0x1869F, 0x10);
+    func_800AA018(D_80187CCC_ovl5);
+    if (D_80187CD0_ovl5 != 0) {
+        func_800AA018(D_80187CD0_ovl5);
+    }
+    omGMoveObjDL(arg0, arg0->dl_link, 0xA);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 130.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]];
+    while (1) {
+        if (D_800E9C60[omCurrentObj->objId] != 0) {
+            func_800AA018(D_80187CD4_ovl5[0]);
+            if (D_80187CD4_ovl5[1] != 0) {
+                func_800AA018(D_80187CD4_ovl5[1]);
+            }
+            func_800AF27C();
+            func_800B1900(omCurrentObj->objId);
+        }
+        if (D_8018E478_ovl5[arg1][arg2] == 0) {
+            func_800B1900(omCurrentObj->objId);
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017462C_ovl5.s")
+#endif
+
 
 void func_8017485C_ovl5(GObj *arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] =
@@ -689,7 +798,36 @@ void func_80175518_ovl5(GObj *arg0) {
     D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[D_800E98E0[omCurrentObj->objId]];
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017559C_ovl5.s")
+extern s32 D_80187CDC_ovl5;
+extern s32 D_80187CE0_ovl5[];
+void func_80175808_ovl5(GObj *);
+
+void func_8017559C_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = arg2;
+    D_800DF150[omCurrentObj->objId] = func_80175808_ovl5;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    func_800A9864(D_80187CDC_ovl5, 0x1869F, 0x10);
+    func_800AA018(D_80187CE0_ovl5[0]);
+    if (D_80187CE0_ovl5[0] != 0) {
+        func_800AA018(D_80187CE0_ovl5[1]);
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.7f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.7f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.7f;
+    if (D_8018ECD8_ovl5 == 3) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][arg2]];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]];
+    } else {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][arg2]];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]];
+    }
+    play_sound(0xFB);
+    func_800AF27C();
+    func_800B1900(omCurrentObj->objId);
+}
 
 void func_80175808_ovl5(GObj *arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] =

@@ -34,7 +34,7 @@ struct Unk80124E14 {
     /* 0x0C */ s32 unkC;
     /* 0x10 */ void (*unk10)(s32);
     /* 0x14 */ void (*unk14)(s32);
-    /* 0x18 */ u16 unk18;
+    /* 0x18 */ s16 unk18;
     /* 0x1A */ u16 unk1A;
 };
 
@@ -702,7 +702,66 @@ s32 func_80114DBC(s32 arg0, s32 arg1) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80114E80.s")
+struct Unk80114E80Sub {
+    /* 0x00 */ u8 pad0[0x26];
+    /* 0x26 */ u16 unk26;
+};
+
+struct Unk80114E80 {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ u8 pad1;
+    /* 0x02 */ u8 unk2;
+    /* 0x03 */ u8 pad3[0x95];
+    /* 0x98 */ struct Unk80114E80Sub *unk98;
+    /* 0x9C */ u16 unk9C;
+};
+
+void func_800B0F28(struct DObj *, s32, f32);
+void func_800A77E8(s32, void *, void *);
+void func_80023A28(void *);
+void func_800BB468(u32, s32);
+
+void func_80114E80(struct DObj *arg0, s32 arg1, f32 arg2) {
+    struct GObj *gobj = arg0->gobj;
+    struct Unk80114E80 *p = gobj->unk4C;
+    s32 pad;
+    struct Unk80114E80 *q;
+    s16 temp;
+
+    func_800B0F28(arg0, arg1, arg2);
+    switch (arg1) {
+    case 0:
+        if (arg2 != 0.0f) {
+            if (p->unk98 == NULL) {
+                temp = D_80124E14[D_800E77A0[gobj->objId]].unk18;
+                if (temp != -1) {
+                    func_800A77E8(temp, &p->unk98, &p->unk9C);
+                }
+            }
+        } else {
+            if (p->unk98 != NULL) {
+                if (p->unk98->unk26 == p->unk9C) {
+                    func_80023A28(p->unk98);
+                }
+                p->unk98 = NULL;
+            }
+        }
+        break;
+    case 1:
+        if (arg2 != 0.0f) {
+            p->unk2 &= ~1;
+        } else {
+            p->unk2 |= 1;
+        }
+        break;
+    case 2:
+        q = gobj->unk4C;
+        if (func_8011E244() == q->unk0) {
+            func_800BB468((u32) arg2, 0);
+        }
+        break;
+    }
+}
 
 void func_80115070(struct GObj *arg0) {
     struct Unk80124E14 *temp_s0 = &D_80124E14[D_800E77A0[arg0->objId]];
