@@ -148,7 +148,29 @@ def splice(cfile, func, body):
                     break                      # ran into a neighbour: leave it alone
                 k -= 1
 
-    new = lines[:start] + body.split('\n') + lines[end + 1:]
+    # KEEP THE GUARD'S DECLARATIONS. The fleet rule is that any extern a
+    # guarded draft needs lives INSIDE the guard, so replacing the whole block
+    # with just the function body deletes them and the link dies on undefined
+    # references -- five permuter wins were rejected this way before the real
+    # error was read (`undefined reference to D_801F4C40_ovl10`). Carry every
+    # line of the guard body across except the old definition itself.
+    keep = []
+    if start < idx:                                # there was a guard block
+        depth, in_def = 0, False
+        for l in lines[start + 1:idx - 1]:         # guard body, minus #else
+            s = l.strip()
+            if not in_def and re.match(r'^[A-Za-z_].*\b' + re.escape(func) + r'\s*\(', s):
+                in_def = True
+            if in_def:
+                depth += l.count('{') - l.count('}')
+                if depth <= 0 and '}' in l:
+                    in_def = False
+                continue
+            if s.startswith('#'):                  # never carry nested directives
+                continue
+            keep.append(l)
+
+    new = lines[:start] + keep + body.split('\n') + lines[end + 1:]
     open(cfile, 'w').write('\n'.join(new))
     return '\n'.join(lines)
 
