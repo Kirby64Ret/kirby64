@@ -23,7 +23,7 @@
 extern s32 D_800D6B24;
 extern s32 D_8015C680_ovl4;
 extern Lights1 D_800BE548;
-extern u16 gFrameBuffer[3][320 * 240]; // TODO: why 230??
+extern u16 gFrameBuffer[3][320 * 230]; // TODO: why 230??
 extern u16 D_803FC100[3][320 * 230]; // TODO: why 230??
 extern u16 D_803DA800[][320]; // fb2
 extern void *D_8018EE60;
@@ -362,8 +362,6 @@ void func_80151CC8_ovl4(Gfx **gp) {
     gSPDisplayList((*gp)++, &D_8015A018_ovl4);
 }
 
-// https://decomp.me/scratch/qYkHm
-#ifdef NON_MATCHING
 s32 func_80151CEC_ovl4(s32 arg0) {
     u32 i;
 
@@ -379,7 +377,7 @@ s32 func_80151CEC_ovl4(s32 arg0) {
 
     i = 0;
     do {
-        gFrameBuffer[0][i] = gFrameBuffer[0][(160 * 120) + i] = 1;
+        gFrameBuffer[0][i] = gFrameBuffer[1][i] = 1;
         i++;
     } while (i < (320 * 240));
 
@@ -387,6 +385,3 @@ s32 func_80151CEC_ovl4(s32 arg0) {
     func_800BB3F0();
     return D_800D6B74;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_1/func_80151CEC_ovl4.s")
-#endif
