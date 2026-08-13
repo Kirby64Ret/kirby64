@@ -148,6 +148,106 @@ void func_800F6E30(s32 arg0) {
     *(&D_800DF310 + var_v1) = &func_800F6E0C;
     curObjSleepForever();
 }
+#elif defined(PORT)
+/* PORT: still assembly on the matching build; the m2c sketch above is not
+ * compilable. Behavioral port from
+ * asm/nonmatchings/ovl2/ovl2_2/func_800F6E30.s -- the menu/level scene
+ * setup process: parks the track's process-5 slot, loads the scene's geo
+ * blob (func_800A9864, already ported), places the scene's particle
+ * emitters from the layout's second node array (func_800A2550, PORT arm in
+ * ovl1.c), then walks the geo header's ANIMATION REFS section (+0x14 count
+ * at seg[5], +0x18 pointer at seg[6] -- both native after func_800A9250's
+ * PORT normalizer) loading every anim block: kind 0 -> model anim bank
+ * (D_800DF690 / overflow bank D_8012E7B0), kind 1 -> texture anim bank
+ * (D_800DF850 / overflow D_8012E7B4), kind 2 -> camera track + camera anim
+ * (func_800AAF34).
+ *
+ * LP64 notes: anim blocks come back WIDENED from func_800A94F4's PORT arm,
+ * so their kind word sits at byte +8 (u32 cell index 2) and their +0x00
+ * pointer is read through the low u32 half (the game arena lives below
+ * 4 GiB). D_8012E7B0/D_8012E7B4 are the two words plylib's
+ * DestructAnimBank reads; on this build they are separate 8-byte-capable
+ * bss slots, written as full host pointers. */
+
+void func_800F7258(s32);
+void func_800AF980(s32);
+void func_800B3070(s32, f32);
+void func_800A9864(u32, s32, s32);
+void func_800A2550(void *, void *);
+u32 *func_800A94F4(s32);
+void func_800AEE20(struct GObj *, f32);
+void func_800AEEB4(struct GObj *, f32);
+void func_800FA414(s32);
+void func_800AAF34(s32, s32, f32);
+void func_801129AC(void);
+void func_801129DC(void);
+extern f32 gameTicksPerDraw;
+extern u32 D_800DFA10[];
+extern s32 D_801290D0;
+extern s32 D_800D6E44;
+extern void *D_8012E7B0[];
+extern void *D_8012E7B4[];
+
+void func_800F6E30(UNUSED s32 arg0) {
+    u32 *seg;
+    u32 i;
+    s32 gotModel = 0;
+    s32 gotTexture = 0;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32))func_800F6E04;
+    func_800AF980(0x18);
+    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *))func_800F7258;
+    func_800A9864(((u32 *)D_801290D8)[0], 0x26, 0x10);
+    func_800A2550((void *)(uintptr_t)D_800DFA10[D_801290D0], NULL);
+    func_800B3070(0x10, gameTicksPerDraw);
+
+    seg = gSegment4StartArray[omCurrentObj->objId];
+    for (i = 0; i < seg[5]; i++) {
+        s32 id = ((s32 *)(uintptr_t)seg[6])[i];
+        u32 *blk = func_800A94F4(id);
+
+        switch (blk[2]) { /* widened kind word (byte +8) */
+            case 0:
+                if (gotModel == 0) {
+                    D_800DF690[omCurrentObj->objId] = (u32)(uintptr_t)blk;
+                    D_800DFF50[omCurrentObj->objId] = id;
+                    func_800AEE20((struct GObj *)(uintptr_t)*blk, 0.0f);
+                    D_8012E7B0[0] = NULL;
+                } else {
+                    D_8012E7B0[0] = blk;
+                }
+                gotModel++;
+                break;
+            case 1:
+                if (gotTexture == 0) {
+                    D_800DF850[omCurrentObj->objId] = (u32)(uintptr_t)blk;
+                    D_800E0110[omCurrentObj->objId] = id;
+                    func_800AEEB4((struct GObj *)(uintptr_t)*blk, 0.0f);
+                    D_8012E7B4[0] = NULL;
+                } else {
+                    D_8012E7B4[0] = blk;
+                }
+                gotTexture++;
+                break;
+            case 2:
+                func_800FA414(0x8000000D);
+                func_800AAF34(0x10, id, 0.0f);
+                func_801129AC();
+                func_801129DC();
+                if ((D_800BE500 == 1) && (D_800BE504 == 0)) {
+                    D_800D6E44 = 1;
+                }
+                if ((D_800BE500 == 3) && (D_800BE504 == 0)) {
+                    D_800D6E44 = 2;
+                }
+                break;
+        }
+        seg = gSegment4StartArray[omCurrentObj->objId];
+    }
+    D_800DF310[omCurrentObj->objId] = (void (*)(s32, s32, f32))func_800F6E0C;
+    curObjSleepForever();
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F6E30.s")
 #endif

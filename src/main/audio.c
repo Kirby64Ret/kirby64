@@ -589,6 +589,13 @@ void auStopBGM(void) {
 
 // NOTE: this used to store the interrupt mask
 u32 auPlaySong(s32 playerID, u32 songID) {
+#ifdef PORT
+    /* The audio init path never runs on the PC build yet, so auSeqFile is
+     * NULL; a song request is a safe no-op rather than a crash. */
+    if (auSeqFile == NULL) {
+        return -1;
+    }
+#endif
     if (songID < (u32)auSeqFile->seqCount) {
         auBGMPlayerStatus[playerID] = 1;
         auBGMSongId[playerID] = songID;

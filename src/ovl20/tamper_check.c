@@ -35,7 +35,13 @@ void tamper_check_ovl20(void) {
     osWritebackDCache(&D_80300170, 0xC0);
     osInvalICache(&D_80300170, 0xC0);
     gGameTampered = 0;
+#ifndef PORT
+    /* PORT: the check decodes and executes MIPS machine code in place,
+     * which cannot run on the host; calling the weak stub instead would
+     * either abort the run or flag the game as tampered. The port is not a
+     * tampered cartridge, so the flag simply stays 0. */
     if ((*func_80300170)() == 0) {
         gGameTampered = 1;
     }
+#endif
 }

@@ -49,7 +49,22 @@ void initTrack(s32 track) {
     D_800DEF90[track] = NULL;
     D_800DF150[track] = NULL;
 
+#ifdef PORT
+    /* LP64: the N64 line below does 8-byte pointer stores through two arrays
+     * whose entries the rest of the code treats as 4-byte u32 slots.
+     * Through D_800DF850 (u32[]) that clobbers the NEXT track's entry, and
+     * through D_800DF690's union it fills the slot's high half with
+     * 0xFFFFFFFF -- which every later `.as_u32p` deref picks up on top of a
+     * 32-bit block pointer stored via `.as_u32` (measured fault:
+     * as_u32p == 0xffffffff0150a0a8 in func_800A9F98). Store each slot at
+     * its own width; the union's high half stays zero, so 8-byte .as_u32p
+     * reads of a 32-bit game-arena pointer are exact. */
+    gSegment4StartArray[track] = (u32 *) -1;
+    D_800DF690[track].as_u32 = -1;
+    D_800DF850[track] = -1;
+#else
     gSegment4StartArray[track] = D_800DF690[track].as_u32p = *(u32 **) &D_800DF850[track] = (u32 *) -1;
+#endif
 
     *(u32 *) &D_800E02D0[track] = *(u32 *) &D_800DFF50[track] = *(u32 *) &D_800E0110[track] = -1;
 

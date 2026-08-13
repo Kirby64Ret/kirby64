@@ -38,12 +38,32 @@ void ohSleep(s32);
 extern GObj *D_800DE350[];
 
 // A node in the dynamic-buffer free-list allocator (see func_800A82C0 / func_800A8358).
+#ifdef PORT
+/* The asset cache's 0x10-byte IN-ARENA block header: { prev, next, size,
+ * refcount }. It must stay EXACTLY 16 bytes -- every function here reaches
+ * it as `data - 0x10`, and the allocator carves blocks with raw byte
+ * arithmetic. With native pointer members the LP64 struct grew to 24 bytes
+ * and unk8/unkC landed at +16/+20, i.e. INSIDE the cached data: every
+ * allocation stomped the blob's first 8 bytes and every refcount bump
+ * (func_800A8564) corrupted blob word +4 (measured: geo header texScroll
+ * 0x0156d3bc -> 0x0156d3bd on the ovl6 movie's cached-model rebind). The
+ * links are 32-bit slots holding host pointers -- the whole game arena
+ * lives below 4 GiB -- and CL() widens them back. */
+struct CacheLine {
+    u32 unk0;
+    u32 unk4;
+    u32 unk8;
+    u32 unkC;
+};
+#define CL(x) ((struct CacheLine *)(uintptr_t)(x))
+#else
 struct CacheLine {
     struct CacheLine *unk0;
     struct CacheLine *unk4;
     u32 unk8;
     u32 unkC;
 };
+#endif
 
 extern u32 D_800D7BB0;
 extern u32 D_800D7BB4;
@@ -116,7 +136,7 @@ s32 func_800A8310(s32 arg0) {
     return D_800D7BB4 - arg0;
 }
 
-#ifdef NON_MATCHING
+#if defined(NON_MATCHING) && !defined(PORT)
 // Correct structure; remaining diff is register allocation only (compiler
 // caches &D_800D7BD0[temp_v1] in a2, target keeps base + recomputes index).
 void *func_800A8358(s32 arg0) {
@@ -155,9 +175,82 @@ block_found:
     var_a1->unkC = 1;
     return (u8 *)var_a1 + 0x10;
 }
+#elif defined(PORT)
+/* Same function through the 16-byte PORT header (CL() widens the 32-bit
+ * link slots; pointer stores narrow with a cast). */
+void *func_800A8358(s32 arg0) {
+    s32 temp_v1;
+    struct CacheLine *var_a1;
+    u32 lim;
+    struct CacheLine *found;
+    struct CacheLine *temp_a2;
+
+    temp_v1 = arg0 & 3;
+    arg0 = ((arg0 - temp_v1) + 0xC) & ~0xF;
+    var_a1 = D_800D7BD0[temp_v1];
+    lim = arg0 + 0x10;
+loop_1:
+    if (var_a1->unkC != 0) {
+        goto advance;
+    }
+    if (var_a1->unk8 >= lim) {
+        goto block_found;
+    }
+advance:
+    var_a1 = CL(var_a1->unk4);
+    goto loop_1;
+block_found:
+    found = (struct CacheLine *)((u8 *)var_a1 + arg0);
+    temp_a2 = (struct CacheLine *)((u8 *)found + 0x10);
+    temp_a2->unk0 = (u32)(uintptr_t)var_a1;
+    temp_a2->unk4 = var_a1->unk4;
+    temp_a2->unkC = 0;
+    temp_a2->unk8 = (var_a1->unk8 - arg0) - 0x10;
+    var_a1->unk4 = (u32)(uintptr_t)temp_a2;
+    CL(temp_a2->unk4)->unk0 = (u32)(uintptr_t)temp_a2;
+    D_800D7BD0[temp_v1] = CL(CL(temp_a2->unk4)->unk0);
+    D_800D7BBC = var_a1;
+    var_a1->unk8 = arg0;
+    var_a1->unkC = 1;
+    return (u8 *)var_a1 + 0x10;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8358.s")
 #endif
+#ifdef PORT
+/* Region init through the 16-byte PORT header (see struct CacheLine): the
+ * `-= 2` is two 0x10 headers, and the link fields hold 32-bit arena
+ * pointers. */
+struct CacheLine *func_800A840C(u32 arg0, s32 arg1) {
+    struct CacheLine *sp1C;
+    struct CacheLine *temp_a3;
+    struct CacheLine *temp_v0_2;
+
+    if (D_800D7BD0[arg1 & 3] != NULL) {
+        return NULL;
+    }
+    if (arg0 < 0x40) {
+        return NULL;
+    }
+    sp1C = (struct CacheLine *)(uintptr_t)func_800A8310(arg0);
+    if (sp1C == NULL) {
+        return NULL;
+    }
+    D_800D7BD0[arg1] = sp1C;
+    temp_v0_2 = (struct CacheLine *)((u8 *)sp1C + arg0 - 0x20);
+    sp1C->unk0 = (u32)(uintptr_t)temp_v0_2;
+    sp1C->unk4 = (u32)(uintptr_t)temp_v0_2;
+    sp1C->unk8 = arg0 - 0x30;
+    sp1C->unkC = 0;
+    temp_v0_2->unk4 = (u32)(uintptr_t)sp1C;
+    temp_a3 = CL(sp1C->unk4);
+    temp_a3->unk0 = temp_a3->unk4;
+    CL(sp1C->unk4)->unk8 = 0x10;
+    CL(sp1C->unk4)->unkC = 0xFF000000;
+    memcpy((u8 *)CL(sp1C->unk4) + 0x10, D_800C4640, 0x10);
+    return sp1C;
+}
+#else
 struct CacheLine *func_800A840C(u32 arg0, s32 arg1) {
     struct CacheLine *sp1C;
     struct CacheLine *temp_a3;
@@ -188,6 +281,7 @@ struct CacheLine *func_800A840C(u32 arg0, s32 arg1) {
     memcpy((u8 *)sp1C->unk4 + 0x10, D_800C4640, 0x10);
     return sp1C;
 }
+#endif
 
 #ifdef NON_MATCHING
 // 4/10, one-slot temp rotation (t7/t8/t9 vs t6/t7/t8). Swept: 24 source forms
@@ -227,7 +321,7 @@ void *func_800A8564(struct CacheLine *arg0, s32 arg1) {
     return arg0;
 }
 
-#ifdef NON_MATCHING
+#if defined(NON_MATCHING) && !defined(PORT)
 // Nearly matching (28/52 insns identical incl. all structure); remaining diff
 // is a one-slot temp-register rotation in the free path (t8/t9/t0.. vs t7/t8/t9..).
 // K&R definition needed: callers pass 1-4 args for regalloc.
@@ -274,6 +368,53 @@ s32 arg0;
     }
     return 0;
 }
+#elif defined(PORT)
+/* Free/deref through the 16-byte PORT header; arena pointers fit the u32
+ * link slots, so only the derefs widen (CL). Semantics identical to the
+ * NON_MATCHING body above. */
+u32 func_800A8578(arg0)
+s32 arg0;
+{
+    struct CacheLine *temp_v1;
+    struct CacheLine *var_v0;
+    struct CacheLine *prev;
+    struct CacheLine *var_v1;
+    struct CacheLine **slot;
+    u32 temp_a1;
+    u32 temp_v0;
+
+    temp_v1 = (struct CacheLine *)(uintptr_t)(((u32)arg0 - 0x10) & ~3u);
+    temp_a1 = temp_v1->unkC;
+    var_v0 = temp_v1;
+    if ((temp_a1 & 0xFF000000) == 0x99000000) {
+        return 0x99000000;
+    }
+    if (temp_a1 >= 2) {
+        temp_v0 = temp_a1 - 1;
+        temp_v1->unkC = temp_v0;
+        return temp_v0;
+    }
+    prev = CL(temp_v1->unk0);
+    temp_v1->unkC = 0;
+    if (prev->unkC == 0) {
+        var_v0 = prev;
+    }
+    var_v1 = CL(var_v0->unk4);
+    slot = &D_800D7BD0[arg0 & 3];
+    if (var_v1->unkC == 0) {
+        do {
+            if (var_v1 == *slot) {
+                *slot = var_v0;
+                var_v1 = CL(var_v0->unk4);
+            }
+            var_v0->unk8 = var_v0->unk8 + var_v1->unk8 + 0x10;
+            CL(var_v1->unk4)->unk0 = (u32)(uintptr_t)var_v0;
+            var_v1 = CL(CL(var_v0->unk4)->unk4);
+            var_v0->unk4 = (u32)(uintptr_t)var_v1;
+        } while (var_v1->unkC == 0);
+    }
+    return 0;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8578.s")
 #endif
@@ -305,7 +446,11 @@ s32 func_800A86C8(s32 arg0, s32 *arg1, s32 *arg2) {
             count++;
             total = total + size + 0x10;
         }
+#ifdef PORT
+        cur = CL(cur->unk4); /* 32-bit link slot, see struct CacheLine */
+#else
         cur = cur->unk4;
+#endif
     } while (cur != start);
     *arg1 = total;
     *arg2 = count;
@@ -334,6 +479,32 @@ s32 func_800A8724(s32 arg0) {
     u32 *sizes;
 
     count = 0;
+#ifdef PORT
+    /* One-time repack of bank 3's image block table. The data generator
+     * emitted D_800C96D8 as a POINTER array (its entry 57 got symbolized as
+     * &D_3C3B0), which on LP64 gives it 8-byte slots -- but every reader
+     * (func_800A8B0C/func_800A8934/func_800A89E0) indexes it as dense u32
+     * ROM offsets. Reading half-slots produced a garbage 15 MB size and the
+     * cache allocator's free-list walk span forever (the measured "menu
+     * scene freezes with a black fade overlay" hang: main thread parked in
+     * func_800A8358 under func_80151338_ovl4). Compact the low halves in
+     * place (every table value is below 4 GiB) and restore entry 57 to its
+     * real ROM offset, which the symbolization destroyed. */
+    {
+        static int repacked = 0;
+        extern void *D_800C96D8[];
+        if (!repacked) {
+            u32 *dst = (u32 *)D_800C96D8;
+            u32 n = D_800D0124[3] + 1; /* entries = image count + 1 */
+            u32 t;
+            repacked = 1;
+            for (t = 0; t < n; t++) {
+                dst[t] = (u32)(uintptr_t)D_800C96D8[t];
+            }
+            dst[57] = 0x0003C3B0;
+        }
+    }
+#endif
     func_800A82C0();
     for (i = 0; i < 8; i++) {
         for (j = 0; j < D_800D00E4[i]; j++) {
@@ -1807,11 +1978,23 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
     gsw_put(&g, 0, (u32)(uintptr_t)n);
 
     /* +0x18: animation refs pointer -- only when the count at +0x14 and the
-     * word itself are both nonzero. */
+     * word itself are both nonzero. PORT extra: the section it points at is
+     * an array of numAnimations u32 anim-block ids, and its compiled
+     * consumers read it natively (func_800F6E30 walks all of them,
+     * func_800F72B0 reads [0]/[1] through seg[6]), so byte-swap the ids in
+     * place. gsw_w32 is bitmap-guarded, so nothing that another walk
+     * already made native can be double-swapped. */
     if (geo_rd(blob + 0x14) != 0) {
         w = geo_rd(blob + 0x18);
         if (w != 0) {
-            gsw_put(&g, 0x18, (u32)(uintptr_t)(blob + (w & 0xFFFFFF)));
+            u32 acnt = geo_rd(blob + 0x14);
+            u32 aoff = w & 0xFFFFFF;
+            gsw_put(&g, 0x18, (u32)(uintptr_t)(blob + aoff));
+            while (acnt != 0 && aoff + 4 <= g.size) {
+                gsw_w32(&g, aoff);
+                aoff += 4;
+                acnt--;
+            }
         }
     }
 
@@ -2047,6 +2230,124 @@ loop_4:
     }
     return sp24;
 }
+#elif defined(PORT)
+/* PORT: the ANIM BLOCK loader/relocator, written from
+ * asm/nonmatchings/ovl1/ovl1_3/func_800A94F4.s in the style of
+ * func_800A9250's PORT arm above (be32 reads of the raw ROM bytes, native
+ * pointer writes).
+ *
+ * The N64 function DMAs bank D_800D0184[id>>16]'s anim block (id&0xFFFF)
+ * in -- table at bank +0x10, one u32 ROM offset per entry, [i+1]-[i] is the
+ * size, dma source is entry + bank->animROMOffset -- and then walks the
+ * small relocation table in the header:
+ *   +0x00  offset -> becomes a pointer into the block (unconditionally)
+ *   +0x04  block kind (0 = model anims, 1 = texture anims, 2 = camera)
+ *   +0x08  relocation count N
+ *   +0x0C  N u32 slots; each slot holds an offset X. The slot is rewritten
+ *          to (base + X), and the word AT X is itself an offset that is
+ *          rewritten to a pointer the same way.
+ * Everything the reloc table does not touch is AnimCmd stream data: u32
+ * command words and f32 values, consumed via `union AnimCmd { u32 w; f32 f;
+ * void *ptr; }` -- including the jump/goto targets inside the streams,
+ * which the table DOES touch (raw ROM cannot hold a VA, so every ->ptr a
+ * consumer reads must appear in the table).
+ *
+ * The LP64 wrinkle: every consumer walks this data through AnimCmd (8
+ * bytes on the host: `ptr` is 64-bit and w/f alias its low half) and
+ * through AnimCmd** and AnimCmd*** pointer arrays (8-byte stride). So instead
+ * of relocating in place, this arm WIDENS the block: every 4-byte word of
+ * the original becomes one 8-byte cell (original offset X lives at 2*X),
+ * scalar words byte-swapped into the low half with a zero high half --
+ * which is exactly the u32 w / f32 f view little-endian AnimCmd expects --
+ * and every reloc-table word rewritten as a full native pointer to the
+ * widened offset of its target. All consumers then work unmodified:
+ *   - animSetModelTreeAnimation / func_800B21FC / func_800B2288 /
+ *     animGetTotalDuration walk AnimCmd** and AnimCmd*** arrays with host
+ *     stride, and the cells ARE host-stride;
+ *   - animProcessModelAnimation's `animList->w/.f` reads the low halves,
+ *     `animList->ptr` (ANIM_CMD_SET_ANIMATION/JUMP/13) reads relocated
+ *     cells that hold real host pointers;
+ *   - `*(u32 *)block` / `*(GObj **)block` header reads (func_800AAF34,
+ *     func_800A9DE4 and friends, plylib's DestructAnimBank) both see the
+ *     +0x00 pointer, because the whole game arena sits below 4 GiB;
+ *   - struct AnimBlock->unk4 reads land on byte +8 on LP64, which is where
+ *     the widened kind word lives (func_800A9C78 works unchanged;
+ *     func_800A9B48 indexes with a u32* and gets a one-line PORT fix).
+ * The doubled allocation comes from the same cache the N64 block used. */
+
+/* The in-repo libc shims (include/libc) don't declare these. */
+extern void *malloc(size_t);
+extern void *memset(void *, int, size_t);
+extern void pc_animload_debug(u32 id, u32 bytes, u32 kind, u32 relocs, const void *blk);
+
+u32 *func_800A94F4(s32 arg0) {
+    struct BankHeader *bank;
+    u32 *entry;
+    u32 rom;
+    u32 nbytes; /* packed payload bytes, as the N64 DMA'd them */
+    u32 nwords;
+    u8 *raw;    /* temporary big-endian copy straight off the cartridge */
+    u32 *cells; /* the widened block handed to the game */
+    u32 i;
+    u32 count;
+
+    bank = D_800D0184[(u32)arg0 >> 16];
+    entry = bank->animBlockTable + (arg0 & 0xFFFF);
+    rom = (u32)(uintptr_t)bank->animROMOffset;
+    nbytes = (entry[1] - entry[0]) & 0xFFFFFC;
+    nwords = nbytes >> 2;
+
+    cells = (u32 *)func_800A8358((s32)((nbytes * 2) | 2));
+    raw = malloc(nbytes < 0x10 ? 0x10 : nbytes);
+    if (raw == NULL) {
+        /* Cannot happen in practice; a zeroed header at least makes every
+         * consumer see "no anims" instead of reading junk. */
+        memset(cells, 0, nbytes * 2);
+        return cells;
+    }
+    dma_read(entry[0] + rom, raw, nbytes);
+
+    /* widen: cell i = native value of word i, high half zero */
+    for (i = 0; i < nwords; i++) {
+        cells[i * 2] = geo_rd(raw + i * 4);
+        cells[i * 2 + 1] = 0;
+    }
+
+    /* +0x00: unconditionally an offset -> pointer */
+    if (nwords != 0) {
+        u32 off = geo_rd(raw + 0);
+        if ((off & 3) == 0 && off < nbytes) {
+            *(u64 *)&cells[0] = (u64)(uintptr_t)((u8 *)cells + off * 2);
+        }
+    }
+
+    /* reloc table: N slots at +0x0C; slot -> pointer, *target -> pointer.
+     * Targets decode from the pristine BE copy, so a duplicated table
+     * entry stays idempotent instead of double-relocating. */
+    count = (nwords > 2) ? geo_rd(raw + 8) : 0;
+    for (i = 0; i < count; i++) {
+        u32 slot = 0xC + i * 4;
+        u32 off;
+        u32 tgt;
+        if (slot + 4 > nbytes) {
+            break;
+        }
+        off = geo_rd(raw + slot);
+        if ((off & 3) != 0 || off + 4 > nbytes) {
+            continue;
+        }
+        *(u64 *)&cells[slot / 2] = (u64)(uintptr_t)((u8 *)cells + off * 2);
+        tgt = geo_rd(raw + off);
+        if ((tgt & 3) == 0 && tgt < nbytes) {
+            *(u64 *)&cells[off / 2] = (u64)(uintptr_t)((u8 *)cells + tgt * 2);
+        }
+    }
+
+    pc_animload_debug((u32)arg0, nbytes, nwords > 1 ? cells[2] : 0, count, cells);
+
+    free(raw);
+    return cells;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A94F4.s")
 #endif
@@ -2259,7 +2560,17 @@ void func_800A9A2C(s32 arg0) {
         D_800DFBD0[omCurrentObj->objId] = (struct DObj **)-1;
         return;
     }
+#ifdef PORT
+    /* This table is filled as DObj* entries (func_8000F980/func_8000FB10's
+     * `*arg2++ = dobj`), which are 8 bytes on the LP64 host: sizing it at
+     * count*4 made every model bind overflow its cache block by count*4
+     * bytes and shred the neighboring free-list headers (measured: DObj
+     * pointers 0x14a8xxx sitting in a bin-1 CacheLine's size field). */
+    D_800DFBD0[omCurrentObj->objId] =
+        (struct DObj **)func_800A8358((s32)((temp_v1 * sizeof(struct DObj *)) | 1));
+#else
     D_800DFBD0[omCurrentObj->objId] = (struct DObj **)func_800A8358((temp_v1 * 4) | 1);
+#endif
 }
 
 // `arg0 &= 0xFFFF;` as the scratch is load-bearing -- see func_800A89E0.
@@ -2290,7 +2601,14 @@ s32 func_800A9B48(s32 arg0) {
     u32 temp_v0_2;
 
     temp_v0 = func_800A94F4(arg0);
+#ifdef PORT
+    /* The PORT loader returns a WIDENED block (8-byte cells, see the
+     * func_800A94F4 PORT arm): the kind word that lived at byte +4 lives at
+     * byte +8 (low half of cell 1). */
+    temp_a2 = temp_v0[2];
+#else
     temp_a2 = temp_v0[1];
+#endif
     if (temp_a2 != 0) {
         temp_v1 = omCurrentObj;
         var_a0 = &D_800DF850[temp_v1->objId];

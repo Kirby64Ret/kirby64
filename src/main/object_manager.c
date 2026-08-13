@@ -595,6 +595,20 @@ void omEndProcess(struct GObjProcess *proc) {
     void (*temp_v0_3)(struct ObjStack *);
 
     if ((proc == 0) || (proc == omCurrentProc)) {
+#ifdef PORT
+        /* PORT hardening: proc==NULL means "end the CURRENT process", which
+         * on the N64 is only ever reached from inside a process, so
+         * omCurrentProc is never NULL there. On the PC build a caller can
+         * legitimately hand in a NULL from a slot whose entity was never
+         * created (ovl6's sequencer does omEndProcess(
+         * gEntityGObjProcessArray[track]) for tracks whose setup is still
+         * stubbed), and omCurrentProc can be NULL at that point -- which
+         * dereferenced NULL below. Ending a process that does not exist is
+         * a no-op, not a crash. */
+        if (omCurrentProc == NULL) {
+            return;
+        }
+#endif
         D_8004A7D4 = 1;
         temp_v0_4 = omCurrentProc->kind;
         if (temp_v0_4 == 0 || temp_v0_4 == 2) {

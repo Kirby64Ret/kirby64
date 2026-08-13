@@ -837,6 +837,18 @@ void func_801532F4_ovl6(GObj *arg0) {
             }
             i = 0;
             if (var_v0->numMatrices != 0) {
+#ifdef PORT
+                /* The matching build reaches the DObj's matrices array as
+                 * raw word 22 off the struct base; LP64 field offsets moved,
+                 * so use the named field (same walk as func_80152D00_ovl6). */
+                do {
+                    mtx = var_v0->matrices[i];
+                    i++;
+                    if (mtx->kind == 0x1C) {
+                        mtx->unk05 = var_v1;
+                    }
+                } while (i < var_v0->numMatrices);
+#else
                 walk = (OMMtx **)var_v0;
                 do {
                     mtx = walk[22];
@@ -846,6 +858,7 @@ void func_801532F4_ovl6(GObj *arg0) {
                     }
                     walk++;
                 } while (i < var_v0->numMatrices);
+#endif
             }
             if (var_v0->firstChild != NULL) {
                 var_v0 = var_v0->firstChild;
@@ -1102,7 +1115,14 @@ void func_80153E1C_ovl6(s32 arg0) {
 }
 
 void func_80153F00_ovl6(void) {
+#ifdef PORT
+    /* The script blobs keep their SECOND word as the full N64 u32 value
+     * (see pc_ovl6_fix_scripts), so the N64's low-half ->drawRate read is
+     * unk4 & 0xFFFF here. */
+    gtlSetUpdateDrawRate(1, (u16)D_8015A560_ovl6->unk4);
+#else
     gtlSetUpdateDrawRate(1, D_8015A560_ovl6->drawRate);
+#endif
 }
 
 SPObj *func_80153F2C_ovl6(void) {
@@ -1522,8 +1542,87 @@ void func_80154C08_ovl6(void) {
     func_800AC610();
 }
 
+#ifdef PORT
+/* PORT: byte-order fixup for the movie scripts.
+ *
+ * The regenerated PC data (build/pc/data/ovl6_ovl6.data.c) emits the movie
+ * script blobs (D_80154F30_ovl6 & co.) as u32 words holding the N64 word
+ * VALUES. That is correct for every u32 field, but each script entry is
+ * really { u16 unk0; u8 unk2; u8 unk3; u32 unk4; }: on this little-endian
+ * host the struct reads pull unk0 from the LOW half and unk2/unk3 from the
+ * HIGH bytes of the first word, so every timestamp read 0, every opcode
+ * dispatched as byte 2 of the timestamp (usually op 0 -- which is why the
+ * sequencer looped func_80152DB8_ovl6 spawning actor track 0 forever and
+ * then crashed on track -1). This pass repacks each entry's FIRST word once
+ * so the natural little-endian struct reads yield the N64 field values;
+ * the second word stays as-is (it is consumed as a full u32 -- model ids,
+ * colors, frame counts; the ->drawRate half-word read has its own PORT
+ * read-site fix in func_80153F00_ovl6).
+ *
+ * D_80158E30_ovl6/D_80158E60_ovl6 are emitted as POINTER arrays instead
+ * (they embed a &script operand for op 0x21), which on LP64 gives them a
+ * 16-byte entry stride no struct walk here can read; they belong to the
+ * later movie compilations, not the boot intro, and are skipped (running
+ * one of those movies needs its own port pass).
+ *
+ * D_80154E48_ovl6 (the inline 2-entry script func_80153E1C_ovl6 runs) is
+ * emitted as raw N64 BYTES instead: its packed fields are already right on
+ * the host and only its u32 operand words need a swap; that is folded into
+ * the first call here. */
+extern void *D_80158E30_ovl6[];
+extern void *D_80158E60_ovl6[];
+
+static void pc_ovl6_fix_scripts(UnkStruct8015A560_ovl6 **list) {
+    static const void *seen[256];
+    static int nseen;
+    static int e48done;
+
+    if (!e48done) {
+        u32 *e48 = (u32 *)D_80154E48_ovl6;
+        e48done = 1;
+        e48[1] = __builtin_bswap32(e48[1]);
+        e48[3] = __builtin_bswap32(e48[3]);
+    }
+    for (; *list != NULL; list++) {
+        u32 *w = (u32 *)*list;
+        int i;
+        int already = 0;
+
+        if (w == (u32 *)D_80158E30_ovl6 || w == (u32 *)D_80158E60_ovl6) {
+            continue; /* pointer-stride blob, see above */
+        }
+        for (i = 0; i < nseen; i++) {
+            if (seen[i] == (void *)w) {
+                already = 1;
+                break;
+            }
+        }
+        if (already) {
+            continue;
+        }
+        if (nseen < (int)(sizeof(seen) / sizeof(seen[0]))) {
+            seen[nseen++] = (void *)w;
+        }
+        for (i = 0; i < 0x1000; i++, w += 2) {
+            u32 raw = w[0];
+            u32 op = (raw >> 8) & 0xFF;
+            w[0] = (raw >> 16) | ((raw & 0xFF00) << 8) | ((raw & 0xFF) << 24);
+            if (op == 0x22) {
+                break;
+            }
+        }
+    }
+}
+#endif /* PORT */
+
 void func_80154C38_ovl6(s32 arg0) {
     D_8015A564_ovl6 = D_8015A3B4_ovl6[arg0];
+#ifdef PORT
+    {
+        UnkStruct8015A560_ovl6 **q = D_8015A564_ovl6;
+        pc_ovl6_fix_scripts(q);
+    }
+#endif
     D_8015A560_ovl6 = *D_8015A564_ovl6;
 }
 

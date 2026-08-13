@@ -4188,6 +4188,19 @@ void *func_800A19EC(s32 arg0, s32 arg1) {
     }
     return temp_v0;
 }
+#elif defined(PORT)
+/* PORT: still assembly on the matching build and the m2c sketch above is
+ * not compilable; the particle/emitter object it would build also leans on
+ * script tables whose LP64 layout is still unresolved. Scene setup calls
+ * this per placed emitter (func_800A2550), so a weak abort stub would end
+ * the run on the first scene with emitters; a NULL return is the
+ * documented "emitter did not spawn" result every caller already checks
+ * for. Effects stay absent until this is genuinely ported. */
+void *func_800A19EC(s32 arg0, s32 arg1) {
+    (void)arg0;
+    (void)arg1;
+    return NULL;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A19EC.s")
 #endif
@@ -4589,6 +4602,167 @@ void func_800A2550(void *arg0) {
             var_s1_2 += 0x2C;
         } while (!(temp_t9 & 0x80000000));
     }
+}
+#elif defined(PORT)
+/* PORT: still assembly on the matching build; the m2c sketch above is not
+ * compilable. Behavioral port from
+ * asm/nonmatchings/ovl1/ovl1/func_800A2550.s -- the scene particle-emitter
+ * placer. arg0 is the geo blob's layout section (0x2C-stride nodes). It
+ * walks to the type-0x12 terminator; if the terminator's word +4 is
+ * nonzero, a SECOND 0x2C-stride array follows the terminator: each entry
+ * is { u32 id; pad; f32 pos[3]; f32 rot[3]; f32 scale[3] }, the last entry
+ * flagged by bit 31 of its id (and still processed). Each id spawns
+ * emitter (id>>16)&0xF / (id&0xFFFF) via func_800A19EC and transforms it
+ * by (entry SRT matrix) * (first-node SRT matrix): position from the
+ * translation row, velocity rotated through the 3x3, plus a per-kind
+ * extra (scale for most kinds, a point for kind 1, a 3x3 for kind 5).
+ *
+ * BYTE ORDER: the layout nodes themselves are native (func_800A9250's PORT
+ * normalizer swaps the node array through the terminator's TYPE word for
+ * layoutModes 0x17..0x1E, and this function is only reached for those
+ * modes -- func_800F72B0/func_800F6E30 skip it for 0x11..0x16). But the
+ * terminator's word +4 and the whole second array live PAST what the
+ * normalizer touched and are still raw big-endian, so every read of them
+ * here decodes explicitly (and nothing is swapped in place: the blob is
+ * shared/cached, and this function can run on it more than once).
+ *
+ * The emitter object layout mirrors struct Ovl1PNode's LP64 shape (the
+ * 8-byte `next` shifts the scalar block by +4; the two pointers at N64
+ * +0x48/+0x4C widen, putting the N64 +0x50.. block at +0x60). TODAY
+ * func_800A19EC is still a weak NULL stub on this build, so the transform
+ * body is exercised only once emitters exist; if kind-5 emitters ever
+ * spawn, the free-list node size (0x78 on the N64) must be re-checked
+ * against this widened layout. */
+
+struct Pc2550Obj {                       /* LP64 mirror of struct Ovl1PNode */
+    /* 0x00 */ void *next;
+    /* 0x08 */ u8 pad4[5];
+    /* 0x0D */ u8 unk9;                  /* emitter kind (N64 +0x09) */
+    /* 0x0E */ u8 padA[4];
+    /* 0x12 */ u16 unkE;
+    /* 0x14 */ s32 pad10;
+    /* 0x18 */ f32 unk14, unk18, unk1C;  /* position (N64 +0x14..) */
+    /* 0x24 */ f32 unk20, unk24, unk28;  /* velocity */
+    /* 0x30 */ f32 unk2C, unk30, unk34;
+    /* 0x3C */ f32 unk38, unk3C;         /* unk38 = size (N64 +0x38) */
+    /* 0x44 */ f32 unk40;
+    /* 0x48 */ s32 pad44;
+    /* 0x50 */ struct DObj *unk48;
+    /* 0x58 */ void *unk4C;
+    /* 0x60 */ f32 unk50, unk54, unk58;  /* N64 +0x50.. */
+    /* 0x6C */ f32 unk5C, unk60, unk64;
+    /* 0x78 */ f32 unk68, unk6C, unk70;
+    /* 0x84 */ s32 unk74;
+};
+
+void *func_800A19EC(s32, s32);
+void func_8001C2E4(f32 m[4][4], Vector translate, Vector rotate, Vector scale);
+void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 res[4][4]);
+
+static u32 pc2550_w(const void *p) {
+    return __builtin_bswap32(*(const u32 *)p);
+}
+static f32 pc2550_f(const void *p) {
+    union { u32 w; f32 f; } u;
+    u.w = pc2550_w(p);
+    return u.f;
+}
+static Vector pc2550_vec(const u8 *p) {
+    Vector v;
+    v.x = pc2550_f(p);
+    v.y = pc2550_f(p + 4);
+    v.z = pc2550_f(p + 8);
+    return v;
+}
+/* The layout nodes BEFORE and AT the terminator are native. */
+static Vector pc2550_vec_native(const u8 *p) {
+    Vector v;
+    v.x = ((const f32 *)p)[0];
+    v.y = ((const f32 *)p)[1];
+    v.z = ((const f32 *)p)[2];
+    return v;
+}
+
+void func_800A2550(void *arg0) {
+    u8 *first = arg0;
+    u8 *node = arg0;
+    u8 *ent;
+    f32 m1[4][4];
+    f32 m2[4][4];
+    struct Pc2550Obj *obj;
+    u32 id;
+
+    while (*(s32 *)node != 0x12) { /* native type words */
+        node += 0x2C;
+    }
+    if (pc2550_w(node + 4) == 0) { /* BE: past the normalizer's reach */
+        return;
+    }
+
+    func_8001C2E4(m1, pc2550_vec_native(first + 0x8),
+                  pc2550_vec_native(first + 0x14),
+                  pc2550_vec_native(first + 0x20));
+
+    ent = node + 0x2C;
+    do {
+        id = pc2550_w(ent);
+        obj = func_800A19EC((s32)((id >> 16) & 0xF), (s32)(id & 0xFFFF));
+        if (obj != NULL) {
+            f32 vx, vy, vz;
+
+            func_8001C2E4(m2, pc2550_vec(ent + 0x8), pc2550_vec(ent + 0x14),
+                          pc2550_vec(ent + 0x20));
+            guMtxCatF(m2, m1, m2);
+
+            obj->unk14 = m2[3][0];
+            obj->unk18 = m2[3][1];
+            obj->unk1C = m2[3][2];
+            vx = obj->unk20;
+            vy = obj->unk24;
+            vz = obj->unk28;
+            obj->unk20 = m2[0][0] * vx + m2[1][0] * vy + m2[2][0] * vz;
+            obj->unk24 = m2[0][1] * vx + m2[1][1] * vy + m2[2][1] * vz;
+            obj->unk28 = m2[0][2] * vx + m2[1][2] * vy + m2[2][2] * vz;
+
+            switch (obj->unk9) {
+                case 0:
+                case 2:
+                case 3:
+                case 4:
+                case 6:
+                case 7:
+                case 8:
+                    obj->unk38 *= sqrtf(m2[0][0] * m2[0][0] + m2[1][0] * m2[1][0] +
+                                        m2[2][0] * m2[2][0]);
+                    break;
+                case 1: {
+                    f32 px = obj->unk50;
+                    f32 py = obj->unk54;
+                    f32 pz = obj->unk58;
+                    obj->unk50 = m2[3][0] + (m2[0][0] * px + m2[1][0] * py + m2[2][0] * pz);
+                    obj->unk54 = m2[3][1] + (m2[0][1] * px + m2[1][1] * py + m2[2][1] * pz);
+                    obj->unk58 = m2[3][2] + (m2[0][2] * px + m2[1][2] * py + m2[2][2] * pz);
+                    break;
+                }
+                case 5: {
+                    f32 ax = obj->unk50;
+                    f32 ay = obj->unk60;
+                    f32 az = obj->unk70;
+                    obj->unk50 = m2[0][0] * ax;
+                    obj->unk54 = m2[1][0] * ay;
+                    obj->unk58 = m2[2][0] * az;
+                    obj->unk5C = m2[0][1] * ax;
+                    obj->unk60 = m2[1][1] * ay;
+                    obj->unk64 = m2[2][1] * az;
+                    obj->unk68 = m2[0][2] * ax;
+                    obj->unk6C = m2[1][2] * ay;
+                    obj->unk70 = m2[2][2] * az;
+                    break;
+                }
+            }
+        }
+        ent += 0x2C;
+    } while (!(id & 0x80000000));
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2550.s")

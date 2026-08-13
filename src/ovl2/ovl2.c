@@ -219,6 +219,15 @@ void func_800F64B0(void) {
     utilSetRectColorFullScreen(0, 0, 0);
     utilSpawnRect(0xFF, -0x10, 0);
 }
+#elif defined(PORT)
+/* PORT SCAFFOLD, NOT A PORT: this is the in-level/demo scene's postInit.
+ * The real body (m2c sketch above) needs func_800F78E4's level-config
+ * loader first (D_801290D8 stays NULL without it, and the music selection
+ * below dereferences it). Until that lands, a no-op keeps the attract
+ * cycle alive -- the demo scene ticks black instead of aborting the whole
+ * run through the weak stub. */
+void func_800F64B0(void) {
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2/func_800F64B0.s")
 #endif
@@ -269,6 +278,17 @@ void func_800F6830(void) {
     func_800F61A0();
     omUpdateAll();
     func_800F629C();
+}
+#elif defined(PORT)
+/* PORT SCAFFOLD, NOT A PORT: per-frame update of the in-level/demo scene
+ * (pairs with the func_800F64B0 scaffold above). With the setup scaffolded
+ * out, this scene owns no objects and the track/config globals it would
+ * read are stale from the previous scene (func_800F61A0's track walk
+ * dereferences D_800DE350 entries, and its func_800F7578 branch is still a
+ * weak stub), so the only safe per-frame body is nothing -- the measured
+ * behavior of the weak stub under KIRBY_PC_TRACE, which kept the attract
+ * cycle alive for minutes. */
+void func_800F6830(void) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2/func_800F6830.s")
