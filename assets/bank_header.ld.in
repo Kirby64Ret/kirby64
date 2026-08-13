@@ -115,14 +115,27 @@
     END_MISC(bank, index)
 
 #define FILLER(filetype, bank) \
-    BEGIN_SEG(bank_ ## bank ##_## filetype ## _filler, 0) {\
+    BEGIN_SEG(bank_ ## bank ##_## filetype ## _filler, 0) ALIGN(16) SUBALIGN(16){\
         BYTE(0x39);\
         BYTE(0x39);\
         BYTE(0x39);\
         BYTE(0x0A);\
-        FILL(0x00);\
     }\
     END_SEG(bank_ ## bank ##_## filetype ## _filler)
+
+#define match_DO_NOT_TOUCH() \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00); \
+    BYTE(0x00);
 
 
 /*#define FILLER(filetype, bank) \

@@ -1,13 +1,31 @@
 ../*
+
+# we do not need to lock these, just have the latest everything
+.python-version
+uv.lock
+
+# Python virtual environment
+.venv/
+
+# NEW Splat Things
+# asm/ tracks the per-function splat listings; build regenerates them but the
+# repo keeps them visible for review.
+undefined_syms_auto.txt
+undefined_funcs_auto.txt
+kirby.ld
+assets/boot.bin
+
 **/**/*.bin
 build/*
 tools/GeoFromBin*
 tools/level_settings/convert
 tools/img_getprop
 tools/rgb2c
+tools/armips_bin/*
 assets/*.bin
 assets/**/*.png
 assets/tools/__pycache__/*
+tools/splat_ext/__pycache__/*
 f3dex2/F3DEX2_2.04H/*
 *.z64
 textures/*
@@ -34,5 +52,37 @@ ctx.c
 # Use these for scratch work
 *.x
 strings/*
-# asm-differ .o file diffs
+# asm-differ and objdiff .o file diffs
 expected/*
+
+# Python bytecode, anywhere. The entries above are path-specific and miss
+# any new tools directory (tools/decomp/ was untracked because of this).
+**/__pycache__/
+*.pyc
+
+# decomp-permuter working directories (scratch output, not source)
+tools/decomp/perm/
+kirby64.cfg
+
+# Agents sweep source variants in temp copies named with a leading dot, beside
+# the real file -- GNU make's wildcard never matches those, so a concurrent
+# build cannot pick them up. They are scratch, never deliverables.
+src/**/.*.c
+cand.json
+*.ab_tmp.c
+kirby64.eep
+
+# Lane progress notes: written by background agents every few closures so a
+# lane that dies still delivers what it had. Working notes, not deliverables.
+scratchpad/
+
+# mk.sh stores a sha1 beside each object so a source restored with an older
+# mtime still forces a rebuild. Build metadata, not source.
+*.srchash
+
+# decomp-permuter is a third-party clone, not our source. SESSION_SETUP.sh fetches it.
+tools/decomp/decomp-permuter/
+
+# m2c is a third-party clone, not our source. SESSION_SETUP.sh fetches it.
+tools/decomp/m2c/
+

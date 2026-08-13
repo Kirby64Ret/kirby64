@@ -1,13 +1,13 @@
-extern s32 D_8022AA84;
-extern f32 D_8022BC40;
-extern f32 D_8022BC44;
-extern f32 D_8022BC48;
-extern f32 D_8022BC50;
-extern f32 D_8022BC4C;
-extern s32 D_8022AACC;
-extern s32 D_8022AAA8;
+extern s32 D_8022AA84_ovl18;
+extern f32 D_8022BC40_ovl18;
+extern f32 D_8022BC44_ovl18;
+extern f32 D_8022BC48_ovl18;
+extern f32 D_8022BC50_ovl18;
+extern f32 D_8022BC4C_ovl18;
+extern s32 D_8022AACC_ovl18;
+extern s32 D_8022AAA8_ovl18;
 
-extern s32 D_8022A628, D_8022A5BC;
+extern s32 D_8022A628_ovl18, D_8022A5BC_ovl18;
 
 
 extern f32 D_800E3AD0[];

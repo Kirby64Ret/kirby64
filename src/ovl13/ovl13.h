@@ -4,7 +4,7 @@ void func_801DB2D8_ovl13(GObj *);
 void func_801DB358_ovl13(GObj *);
 void func_801DB3A0_ovl13(GObj *);
 void func_801DB870_ovl13(GObj *);
-void func_801DC788_ovl13(void);
+void func_801DC788_ovl13(GObj *arg0);
 void func_801DCB28_ovl13(GObj *);
 void func_801DCC7C_ovl13(GObj *);
 void func_801DCDA8_ovl13(GObj *);
@@ -43,6 +43,53 @@ void func_801E3028_ovl13(GObj *);
 void func_801E35F4_ovl13(GObj *);
 void func_801E36D8_ovl13(GObj *);
 void func_801E3778_ovl13(GObj *);
+void func_801E37E8_ovl13(GObj *);
+void func_801E3958_ovl13(GObj *);
+s32 func_801E3A84_ovl13(s32, s32, s32);
+
+
+struct Ovl13AnimInfo {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0x10];
+};
+
+struct Ovl13AnimCmd {
+    u32 unk0;
+    u32 unk4;
+    s32 unk8;
+    u8 fillerC[0xC];
+    f32 unk18;
+    u8 filler1C[0x14];
+    s32 unk30;
+    u8 filler34[0x24];
+    s32 unk58;
+};
+
+struct Ovl13AnimObj {
+    u8 filler0[0x24];
+    struct Ovl13AnimCmd *unk24;
+};
+
+extern f32 D_800D6E5C;
+extern s32 func_80110150(struct Ovl13AnimInfo *);
+extern s32 func_80110B00(struct Ovl13AnimInfo *);
+extern s32 func_80110FD4(struct Ovl13AnimInfo *);
+extern void func_80111550(s32);
+extern struct Ovl13AnimObj *func_80111C88(void *, s32);
+extern void func_80111ECC(struct Ovl13AnimObj *);
+/* (u32, u32) is LOAD-BEARING, not a guess: func_801DB3A0_ovl13 passes literal
+   1/2/3/4 to this while holding the same values as s32 in callee-saved
+   registers for its `==` comparisons. IDO keeps one constant register per
+   type, so an s32 prototype makes it reuse the saved copies (5 diffs) and a
+   u32 one makes it materialise the arguments fresh, as the ROM does.
+   The definition in ovl7/enelib.c is (s32, s32); declarations are per-TU. */
+extern s32 func_8019E0E8_ovl7(u32, u32);
+extern void func_800BC11C(f32);
 
 // externs
 extern void func_800B1900(u16);
@@ -71,11 +118,28 @@ extern f32 D_801DAE1C_ovl8;
 extern f32 D_801DAB04_ovl8;
 extern s32 *D_801D93A8_ovl8, *D_801DAD8C_ovl8, D_801DAE40_ovl8;
 
+extern f32 D_801DAADC;
 extern s32 D_801D93CC;
 extern s32 D_801DAD8C;
 extern s32 D_800D7154;
 extern void func_800B17B8(GObj *);
 extern s32 D_801DAE18;
 extern s32 D_801DAE1C;
-extern void func_800B1434(s32 arg0);
+extern void procMainStub(s32 arg0);
 extern void func_800B7138(s32 arg0);
+
+// data (asm/data/ovl13/ovl13.data.s)
+extern void (*D_801E5A80_ovl13[6])(GObj *);
+extern void (*D_801E5A98_ovl13[0x10])(GObj *);
+extern void (*D_801E5AD8_ovl13[0xF])(GObj *);
+extern s32 D_801E5B14_ovl13[4];
+extern s32 D_801E5B24_ovl13[4];
+extern f32 D_801E5B34_ovl13[2];
+extern f32 D_801E5B3C_ovl13[7];
+extern f32 D_801E5B58_ovl13[8];
+extern s32 D_801E5B78_ovl13[6];
+extern s32 D_801E5B90_ovl13[4];
+extern f32 D_801E5BA0_ovl13[3];
+extern f32 D_801E5BAC_ovl13[3];
+extern f32 D_801E5BB8_ovl13[2];
+extern f32 D_801E5BC4_ovl13[];

@@ -71,5 +71,6 @@ OSPri osGetThreadPri(OSThread *thread);
 void osSetThreadPri(OSThread *thread, OSPri pri);
 void osStartThread(OSThread *thread);
 void osStopThread(OSThread *thread);
+void osDestroyThread(OSThread *thread);
 
 #endif

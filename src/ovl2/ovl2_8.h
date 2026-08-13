@@ -2,7 +2,7 @@
 #define OVL2_8_HEADER
 
 struct PositionState {
-/*0x0*/  u32    padding;
+/*0x0*/  u32    unk0;
 /*0x4*/  f32 	kirbyFootPos[3]; //Position of kirby at feet/back
 /*0x10*/ f32 	scale[3]; //this is prob for size of char (for dedede segments?)
 /*0x1c*/ f32 	faceAngle[3]; //Constat with mag, last member seems to be total H dist or something
@@ -16,6 +16,7 @@ struct PositionState {
 /*0x58*/ u32    VI_Timer; //the VI
 };
 
+// same size as a OMMtx...
 struct ModelNode{
 	struct ModelNode *next;
 	u8 renderMode;
@@ -23,41 +24,47 @@ struct ModelNode{
 };
 
 
-struct LayoutNode {
-	struct LayoutNode *next;
-	struct LayoutNode *unk4;
-	struct LayoutNode *sibling;
-	struct LayoutNode *unkC;
-	struct LayoutNode *parent; //usually same as Unk0_Node
-	struct LayoutNode *child; //is 1 when at end of models layout
-	struct ModelNode *unk18;
-	Vector /*0x1c*/ pos;
-	struct ModelNode *unk28;
-	u32 *unk2C;
-	Vector angle; /* 0x30 0x34 0x38 */
-	struct ModelNode *unk3C;
-	Vector scale; /* 0x40 0x44 0x48 */
-	u32 *unk4C;
-	u32 *Bank4_ptr; //probably only used upon load_
-	u8 unk54;
-	u8 unk55;
-	u8 unk56;
-	u8 unk57;
+// typedef struct DObj {
+// 	struct DObj *next;
+// 	struct DObj *unk4;
+// 	struct DObj *sibling;
+// 	struct DObj *unkC;
+// 	struct DObj *parent; //usually same as Unk0_Node
+// 	struct DObj *child; //is 1 when at end of models layout
 
-	// goes up to at least 0x80?
-	u32 unk58;
-    u32 unk5C;
-    u32 unk60;
-    u32 unk64;
-    u32 unk68;
-    u32 unk6C;
-    u32 unk70;
-    u32 unk74;
-    u32 unk78;
-    u32 unk7C;
-    // TODO: analyze/fill out struct
-    void *unk80;
-};
+// 	struct ModelNode *unk18;
+// 	Vector /*0x1c*/ pos;
+
+// 	struct ModelNode *unk28;
+// 	f32 unk2C;
+// 	Vector angle; /* 0x30 0x34 0x38 */
+
+// 	struct ModelNode *unk3C;
+// 	Vector scale; /* 0x40 0x44 0x48 */
+
+// 	u32 *unk4C;
+// 	u32 *model; //ptr to Bank4 model, probably only used upon load_
+// 	u8 unk54;
+// 	u8 unk55;
+// 	u8 unk56;
+// 	u8 unk57;
+
+// 	// goes up to at least 0x80?
+// 	u32 unk58;
+//     u32 unk5C;
+//     u32 unk60;
+//     u32 unk64;
+//     u32 unk68;
+//     u32 unk6C;
+//     u32 unk70;
+
+//     // suspiciously the same layout as a DObj...
+//     f32 unk74;
+//     u32 unk78;
+//     u32 unk7C;
+//     // TODO: analyze/fill out struct
+//     void *unk80;
+// } DObj;
 
 struct struct8011BA10_temp {
     u8 unk0;
@@ -130,6 +137,7 @@ extern u8 D_8012E9B8;
 void func_8012310C(s32 currentInhale);
 void set_kirby_action_1(s32 actionChange, s32 action);
 void set_kirby_action_2(s32 actionChange, u32 action);
+void func_801230E8(s32 arg0, s32 arg1, s32 arg2);
 
 extern struct {
     s16 unk0;
@@ -141,5 +149,6 @@ extern struct {
     u32 unkC;
     u32 unk10;
 } D_80198830;
+
 
 #endif

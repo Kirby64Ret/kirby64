@@ -45,7 +45,6 @@ def write_header(filetype, fil, bank):
 
 
 
-print("writing bank%s header..." % bank)
 with open(outfile, "w+") as f:
 	f.write(fheader % (bank, bank))
 

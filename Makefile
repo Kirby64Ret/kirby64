@@ -1,67 +1,69 @@
-# Makefile to rebuild Kirby 64 split image
+# New Makefile
 
 ################ Target Executable and Sources ###############
 
 # BUILD_DIR is location where all build artifacts are placed
-BUILD_DIR_BASE = build
+BUILD_DIR = build
 VERSION = us
-BUILD_DIR = $(BUILD_DIR_BASE)/$(VERSION)
 
 GRUCODE := F3DEX2_2.04H
-LOCAL_ARMIPS=tools/armips/build/armips
+LOCAL_ARMIPS=tools/armips_bin/armips
 
 VERBOSE := 1
 
-# check that either QEMU_IRIX is set or qemu-irix package installed
-ifndef QEMU_IRIX
-  QEMU_IRIX := $(shell which qemu-irix)
-  ifeq (, $(QEMU_IRIX))
-    $(error Please install qemu-irix package or set QEMU_IRIX env var to the full qemu-irix binary path)
-  endif
-endif
+GAME_ASSETS := $(BUILD_DIR)/assets/game_assets.o
 
 V := @
 ifeq (VERBOSE, 1)
 	V=
 endif
 
-##################### Compiler Options #######################
-# IRIX_ROOT := tools/ido5.3_compiler
-IRIX_ROOT := tools/ido7.1
-# CC        := $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
+PROGRESS := 0
+ifeq ($(PROGRESS), 1)
+	DEFS += -DGET_PROGRESS
+endif
+
+##################### Compiler #######################
 CC := tools/ido-7.1recomp/cc
 
-
-ifeq ($(shell type mips-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips-linux-gnu-
-else ifeq ($(shell type mips64-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips64-linux-gnu-
-else ifeq ($(shell type mips-n64-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips-n64-
+ifeq ($(shell type mips-linux-gnu-cpp >/dev/null 2>/dev/null; echo $$?), 0)
+	CROSS := mips-linux-gnu-
+else ifeq ($(shell type mips64-linux-gnu-cpp >/dev/null 2>/dev/null; echo $$?), 0)
+	CROSS := mips64-linux-gnu-
+else ifeq ($(shell type mips-n64-cpp >/dev/null 2>/dev/null; echo $$?), 0)
+	CROSS := mips-n64-
 else
-  CROSS := mips64-elf-
+	CROSS := mips64-elf-
+endif
+
+# Whether to output a .lst file containing the uopt pass
+#  Useful for figuring out register swaps
+USE_TRACING := 0
+ifeq ($(USE_TRACING),1)
+TRACING_FLAGS = -Wo,-l,$@.lst -Wo,-zdbug:7
 endif
 
 GCC := $(CROSS)gcc
 
 AS = $(CROSS)as
-# CC = $(CROSS)gcc
 CPP     := $(CROSS)cpp -P -Wno-trigraphs
 LD = $(CROSS)ld
 OBJDUMP = $(CROSS)objdump
 OBJCOPY = $(CROSS)objcopy
-PYTHON := python3
+PYTHON := uv run
 
 TEXTURES_DIR := textures
 
-# UNNAMED_SYMS := -T unnamed_syms.txt
+SYMBOL_HACKS := -T symbol_hacks.txt
 
-INCLUDE_FLAGS := -I$(BUILD_DIR)
+INCLUDE_FLAGS := -I$(BUILD_DIR) -Iinclude
 ASFLAGS = -mtune=vr4300 -march=vr4300 --no-pad-sections -mabi=32 -mips3 $(INCLUDE_FLAGS)
-# CFLAGS  = -Wall -O2 -mtune=vr4300 -march=vr4300 -G 0 -c -Wab,-r4300_mul
 LDFLAGS = --no-check-sections -mips3 --accept-unknown-input-arch \
-					-T $(BUILD_DIR)/$(LD_SCRIPT) -T libultra_unused.txt $(UNNAMED_SYMS) -T undefined_syms.txt -T rcp_syms.txt \
-					-Map $(BUILD_DIR)/$(TARGET).map
+					-T libultra_unused.txt $(SYMBOL_HACKS) -T rcp_syms.txt \
+					-Map $(BUILD_DIR)/$(TARGET).map \
+					-T funcstodo.txt \
+					-T datatodo.txt \
+					-T $(BUILD_DIR)/$(LD_SCRIPT)
 PRELIM_OBJCOPY_FLAGS = --pad-to=0x101000 --gap-fill=0x00
 OBJCOPY_FLAGS = --pad-to=0x2000000 --gap-fill=0xFF
 
@@ -71,11 +73,6 @@ OBJCOPY_FLAGS = --pad-to=0x2000000 --gap-fill=0xFF
 TOOLS_DIR = tools
 N64CRC = tools/n64crc
 N64GRAPHICS = $(TOOLS_DIR)/n64graphics
-EMULATOR = ~/Downloads/mupen64plus/mupen64plus-gui
-EMU_FLAGS = # --noosd --gfx mupen64plus-video-glide64mk2
-LOADER = loader64
-LOADER_FLAGS = -vwf
-FixPath = $(subst /,/,$1)
 
 ASSET_DIRS := $(wildcard assets/geo/bank_0/**) \
               $(wildcard assets/geo/bank_1/**) \
@@ -83,10 +80,9 @@ ASSET_DIRS := $(wildcard assets/geo/bank_0/**) \
               $(wildcard assets/geo/bank_7/**) \
               $(wildcard assets/geo/bank_3/**)
 
-ASM_DIRS := asm data $(wildcard asm/ovl*) asm/ovl0/lib \
-            asm/data asm/banks $(wildcard data/ovl*)
+ASM_DIRS := asm asm/data asm/data/main $(wildcard asm/data/ovl*) asm/main $(wildcard asm/*)
             
-SRC_DIRS := src $(wildcard src/ovl*) data $(wildcard data/ovl*)
+SRC_DIRS := src src/main src/os $(wildcard src/ovl*)
 
 BIN_DIRS := bin/geo bin/image bin/misc bin/anim
 
@@ -102,12 +98,12 @@ TEXTURES_DIR = textures
 
 MIPSISET := -mips2 -32
 
-GLOBAL_ASM_C_FILES != grep -rl 'GLOBAL_ASM(' $(wildcard src/*/*.c)
-GLOBAL_ASM_O_FILES = $(foreach file,$(GLOBAL_ASM_C_FILES),$(BUILD_DIR)/$(file:.c=.o))
 
 S_FILES := $(foreach dir,$(ASM_DIRS),$(wildcard $(dir)/*.s))
-# S_FILES += $(LEVEL_S_FILES)
 C_FILES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
+
+GLOBAL_ASM_C_FILES != grep -rl 'GLOBAL_ASM(' $(C_FILES)
+GLOBAL_ASM_O_FILES = $(foreach file,$(GLOBAL_ASM_C_FILES),$(BUILD_DIR)/$(file:.c=.o))
 
 MODEL_FILES := $(foreach dir,$(ASSET_DIRS),$(wildcard $(dir)/geo.bin))
 MODEL_C_FILES := $(foreach file,$(MODEL_FILES),$(file:.bin=.c))
@@ -125,9 +121,15 @@ UCODE_DATA_O_FILES := $(addprefix $(BUILD_DIR)/,$(UCODE_DATA_FILES:.data=.data.o
 
 BUILD_ASM_DIRS := $(foreach dir,$(ASM_DIRS),$(wildcard $(dir)/**/))
 
+SOUND_BINS := $(wildcard assets/sound/*.bin)
+MISC_SPLAT_BINS := $(wildcard assets/*.bin)
 # Object files
 O_FILES := $(foreach file,$(C_FILES),$(BUILD_DIR)/$(file:.c=.o)) \
-           $(foreach file,$(S_FILES),$(BUILD_DIR)/$(file:.s=.o))
+           $(foreach file,$(S_FILES),$(BUILD_DIR)/$(file:.s=.o)) \
+           $(BUILD_DIR)/assets/boot.o \
+           $(foreach file,$(SOUND_BINS),$(BUILD_DIR)/$(file:.bin=.o)) \
+           $(foreach file,$(MISC_SPLAT_BINS),$(BUILD_DIR)/$(file:.bin=.o))
+
 
 ASSET_O_FILES := $(foreach file,$(MODEL_C_FILES),$(BUILD_DIR)/$(file:.c=.o))
 
@@ -137,13 +139,16 @@ ACTOR_FILES := $(foreach file,$(DATA_FILES),$(BUILD_DIR)/$(file:.c=.o))
 
 
 # FLAGS
+SUPPRESS_WARNINGS := -woff 624,568
 OPT_FLAGS := -O2
-INCLUDE_CFLAGS := -I include -I $(BUILD_DIR) -I $(BUILD_DIR)/include -I $(BUILD_DIR)/assets -I src -I .
+DEFS += -D_LANGUAGE_C -D_FINALROM
+INCLUDE_CFLAGS := -I include -Ilibreultra/include/2.0I -I $(BUILD_DIR) -I $(BUILD_DIR)/include -I $(BUILD_DIR)/assets -I src -I .
 TARGET_CFLAGS := -nostdinc -I include/libc -DTARGET_N64 -DF3DEX_GBI_2
-CFLAGS = -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed $(OPT_FLAGS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) $(MIPSISET)
-GCC_CFLAGS = -Wall $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -fno-PIC -mno-abicalls -fno-zero-initialized-in-bss -fno-toplevel-reorder -Wno-missing-braces
+CFLAGS = -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed $(DEFS) $(OPT_FLAGS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) $(MIPSISET) $(SUPPRESS_WARNINGS)
+GCC_CFLAGS = -Wall $(DEFS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -fno-PIC -mno-abicalls -fno-zero-initialized-in-bss -fno-toplevel-reorder -Wno-missing-braces
 
-CC_CHECK := gcc -fsyntax-only -fsigned-char -m32 $(CC_CFLAGS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) -std=gnu90 -Wall -Wextra -Wno-format-security -Wno-main -DNON_MATCHING -DAVOID_UB $(VERSION_CFLAGS) $(GRUCODE_CFLAGS)
+CC_CHECK_SILENT_WARNINGS := -Wno-unused-value -Wno-format-security -Wno-main -Wno-sequence-point
+CC_CHECK := gcc -fsyntax-only -fsigned-char -m32 $(DEFS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) -std=gnu90 -Wall -Wextra $(CC_CHECK_SILENT_WARNINGS) -DNON_MATCHING -DAVOID_UB $(VERSION_CFLAGS) $(GRUCODE_CFLAGS)
 
 CC_TEST := gcc -Wall
 
@@ -153,7 +158,7 @@ CC_TEST := gcc -Wall
 NOEXTRACT ?= 0
 
 
-ALL_DIRS = $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(LEVEL_DIRS) $(ASSET_DIRS) $(SRC_DIRS) $(INCLUDE_DIRS) $(ASM_DIRS) $(TEXTURES_DIR)/raw $(TEXTURES_DIR)/standalone $(UCODE_DIRS))
+ALL_DIRS = $(BUILD_DIR) $(addprefix $(BUILD_DIR)/, assets/sound $(LEVEL_DIRS) $(ASSET_DIRS) $(SRC_DIRS) $(INCLUDE_DIRS) $(ASM_DIRS) $(TEXTURES_DIR)/raw $(TEXTURES_DIR)/standalone $(UCODE_DIRS))
 DUMMY != mkdir -p $(ALL_DIRS)
 
 # Checking if submodules exist
@@ -167,24 +172,12 @@ ifeq ($(DUMMY),FAIL)
   $(error Missing submodule f3dex2. Please run 'git submodule update --init')
 endif
 
-
-# hardcoded compiler for ml.c until i figure out why it's breaking recomp
-$(BUILD_DIR)/src/ovl0/memory_layer.o: CC = $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
-
 default: all
 
 TARGET = kirby.us
-LD_SCRIPT = $(TARGET).ld
-# TEXTURE_DIR = textures
-# RAW_TEXTURE_FILES := $(addprefix $(BUILD_DIR)/,$(patsubst %.png,%,$(wildcard $(TEXTURES_DIR)/raw/*.png)))
+LD_SCRIPT = kirby.ld
 
-$(BUILD_DIR)/data/kirby.066630.o: $(BUILD_DIR)/assets/assets.marker
-
-libreultra/build/2.0I/libultra_rom.a:
-	$(MAKE) -C libreultra -j4
-
-libreultra/build/2.0I/libn_audio.a:
-	$(MAKE) -C libreultra naudio -j4
+$(BUILD_DIR)/data/kirby.066630.o: $(GAME_ASSETS)
 
 all: $(BUILD_DIR)/$(TARGET).z64
 	@sha1sum -c $(TARGET).sha1
@@ -209,72 +202,58 @@ softclean:
 	rm -rf build/us/src/
 	rm -rf build/us/asm/
 
-# $(BUILD_DIR)/src/ovl0/ovl0_8.o: OPT_FLAGS += -framepointer
 $(BUILD_DIR)/src/ovl7/yakulib.o: OPT_FLAGS = -O2 -Olimit 1000
 $(BUILD_DIR)/src/ovl1/ovl1_5.o: OPT_FLAGS = -O2
 $(BUILD_DIR)/src/ovl3/ovl3_1.o: OPT_FLAGS = -O2 -Wo,-loopunroll
-# $(BUILD_DIR)/src/ovl7/yakulib.o: CC = $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
 
-# $(BUILD_DIR)/src/ovl1/save_file.o: OPT_FLAGS += -Wo,-loopunroll,0
-
-
-$(BUILD_DIR):
-	mkdir $(BUILD_DIR) $(addprefix $(BUILD_DIR)/,$(SRC_DIRS) $(ASM_DIRS))
-
-# assets/misc/%.s: assets/misc/%.bin
-# 	python3 tools/level_settings/helper.py $<
-
-$(BUILD_DIR)/libultra.a: libreultra/build/2.0I/libultra_rom.a
-	cp $< $@
+$(BUILD_DIR)/libultra_rom.a:
+	$(MAKE) -C libreultra BUILD_DIR=../$(BUILD_DIR) VERSION=
 	$(TOOLS_DIR)/patch_libultra_math $@
 
-$(BUILD_DIR)/libn_audio.a: libreultra/build/2.0I/libn_audio.a
-	cp $< $@
+$(BUILD_DIR)/libn_audio.a:
+	$(MAKE) -C libreultra naudio BUILD_DIR=../$(BUILD_DIR) VERSION=
 	$(TOOLS_DIR)/patch_libultra_math $@
 
-$(BUILD_DIR)/$(UCODE_BASE_DIR)/$(GRUCODE)/$(GRUCODE).%.o: f3dex2/$(GRUCODE)/$(GRUCODE).%
+$(BUILD_DIR)/$(UCODE_BASE_DIR)/$(GRUCODE)/$(GRUCODE).%.o: $(BUILD_DIR)/$(GRUCODE)/$(GRUCODE).%
 	$(OBJCOPY) -I binary -O elf32-big $< $@
 
+$(BUILD_DIR)/%.o: %.bin
+	@printf "    [BIN] $<\n"
+	$(V)$(LD) -r -b binary -o $@ $<
+
 $(BUILD_DIR)/%.o: %.s
-	$(CPP) $(GCC_CFLAGS) -o $(@:.o=.i) $<
-	$(AS) $(ASFLAGS) -o $@ $(@:.o=.i)
+	@printf "    [ASM] $<\n"
+	$(V)$(CPP) $(GCC_CFLAGS) -o $(@:.o=.i) $<
+	$(V)$(AS) $(ASFLAGS) -o $@ $(@:.o=.i)
 
 $(BUILD_DIR)/%.o: %.c
-	@$(CC_CHECK) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
-	$(CC) -c $(CFLAGS) -o $@ $<
+	@printf "    [CC] $<\n"
+	$(V)$(CC_CHECK) -Wno-unknown-pragmas -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
+	$(V)$(CC) -c $(CFLAGS) $(TRACING_FLAGS) -o $@ $<
 
 $(BUILD_DIR)/data/%.o: data/%.c
-# 	$(CC_TEST) -c $(INCLUDE_CFLAGS) -o $@ $<
 	$(GCC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
 
-# assets/geo/%.c: assets/geo/%.bin
-# 	python3 tools/decompile_geos.py $<
-
-# $(BUILD_DIR)/assets/geo/%.o: assets/geo/%.c
-# 	$(GCC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
-
-# $(BUILD_DIR)/assets/geo/%.o: assets/geo/%.s
-# 	$(AS) -c $(ASFLAGS) -o $@ $<
-
-$(BUILD_DIR)/assets/assets.marker:
+$(GAME_ASSETS): assets/assets.ld
 	$(MAKE) -C assets
 
-# $(BUILD_DIR)/assets/misc/%.o: assets/misc/%.s
-# 	$(AS) $(ASFLAGS) -o $@ $<
+# TODO: make this a real dependency
+DUMMY != $(MAKE) -C f3dex2 $(GRUCODE) PARENT_OUTPUT_DIR=../$(BUILD_DIR)/ ARMIPS=../$(LOCAL_ARMIPS)
 
 $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.c
+	@printf "    [CC] $<\n"
 	@$(CC_CHECK) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(V)$(CC) -c $(CFLAGS) $(TRACING_FLAGS) -o $@ $<
 
 $(BUILD_DIR)/$(UCODE_BASE_DIR)/%.o : $(UCODE_BASE_DIR)/%
 	$(OBJCOPY) -I binary -O elf32-big $< $@
 
-$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(UCODE_LD) rcp_syms.txt undefined_syms.txt unnamed_syms.txt $(BUILD_DIR)/assets/assets.marker
+$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(UCODE_LD) rcp_syms.txt unnamed_syms.txt $(GAME_ASSETS)
 	$(CPP) $(VERSION_CFLAGS) $(INCLUDE_CFLAGS) -MMD -MP -MT $@ -MF $@.d -o $@ $< \
 	-DBUILD_DIR=$(BUILD_DIR) -Umips
 
-$(BUILD_DIR)/$(TARGET).elf: $(O_FILES) $(BUILD_DIR)/$(LD_SCRIPT) $(BUILD_DIR)/libultra.a $(BUILD_DIR)/libn_audio.a $(UCODE_TEXT_O_FILES) $(UCODE_DATA_O_FILES)
-	$(V)$(LD) -L $(BUILD_DIR) $(LDFLAGS) -o $@ $(LIBS) -lultra -ln_audio
+$(BUILD_DIR)/$(TARGET).elf: $(GAME_ASSETS) $(O_FILES) $(BUILD_DIR)/$(LD_SCRIPT) $(BUILD_DIR)/libultra_rom.a $(BUILD_DIR)/libn_audio.a $(UCODE_TEXT_O_FILES) $(UCODE_DATA_O_FILES)
+	$(V)$(LD) -L $(BUILD_DIR) $(LDFLAGS) -o $@ $(LIBS) -ln_audio -lultra_rom
 
 # final z64 updates checksum
 $(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).elf
@@ -285,28 +264,45 @@ $(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).elf
 	@python3 tools/progress2.py -m
 
 
-$(GLOBAL_ASM_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py $(CC) -- $(AS) $(ASFLAGS) --
+# include/asmpp_prelude.inc is tools/asm-processor's own prelude.inc with one
+# change: `jlabel` is `.global`. Jump tables here live in a separate `rodata`
+# subsegment, so their `.word .L8...` entries reference the label from another
+# object and it has to be exported -- otherwise converting a jump-table
+# function to #pragma GLOBAL_ASM assembles fine but fails at link. Kept in
+# include/ rather than patched into the submodule so a fresh clone builds.
+ASMPP_PRELUDE := include/asmpp_prelude.inc
 
-test: $(BUILD_DIR)/$(TARGET).z64
-	$(EMULATOR) $(EMU_FLAGS) $<
+ifeq ($(PROGRESS), 0)
+$(GLOBAL_ASM_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py --asm-prelude $(ASMPP_PRELUDE) $(CC) -- $(AS) $(ASFLAGS) --
+endif
 
-test2: $(BUILD_DIR)/$(TARGET).z64
-	flatpak run --file-forwarding io.github.m64p.m64p @@ $< @@
-
-test-pj64: $(BUILD_DIR)/$(TARGET).z64
-	wine ~/Desktop/new64/Project64.exe $<
-
-load: $(BUILD_DIR)/$(TARGET).z64
-	$(LOADER) $(LOADER_FLAGS) $<
+# n_audio was built at -O3. tools/ido-7.1recomp/cc cannot do -O3 (ujoin is
+# missing from the recompiled toolchain), so tools/decomp/cc_o3.py drives the
+# four IDO phases directly with -O2 rewritten to -O3. These two objects, and
+# only these two, need it -- src/main/audio.c is game code and is -O2.
+# This assignment must come AFTER the GLOBAL_ASM_O_FILES one above: for the
+# same target the last target-specific assignment wins.
+N_AUDIO_O_FILES := $(BUILD_DIR)/src/main/libn_audio.o $(BUILD_DIR)/src/main/libn_audio_b.o $(BUILD_DIR)/src/main/libn_audio_c.o $(BUILD_DIR)/src/main/libn_audio_2.o $(BUILD_DIR)/src/main/libn_audio_2b.o $(BUILD_DIR)/src/main/libn_audio_2c.o $(BUILD_DIR)/src/main/libn_audio_2d.o $(BUILD_DIR)/src/main/libn_audio_2e.o $(BUILD_DIR)/src/main/libn_audio_2f.o
+$(N_AUDIO_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py --asm-prelude $(ASMPP_PRELUDE) $(PYTHON) tools/decomp/cc_o3.py -- $(AS) $(ASFLAGS) --
 
 setup:
-	$(MAKE) -C libreultra -j4
-	$(MAKE) -C libreultra naudio -j4
-	$(MAKE) -C tools -j4
-	$(MAKE) -C f3dex2 $(GRUCODE) PARENT_OUTPUT_DIR=../f3dex2/ ARMIPS=../$(LOCAL_ARMIPS)
+	$(MAKE) -C libreultra BUILD_DIR=../$(BUILD_DIR) VERSION=
+	$(MAKE) -C libreultra naudio BUILD_DIR=../$(BUILD_DIR) VERSION=
+	$(MAKE) -C tools
 	tools/extract_assets baserom.$(VERSION).z64
+	uv venv --clear
+	uv sync
+	uv run splat split kirby64.yaml
 
-.PHONY: all clean default diff test distclean
+split:
+	uv venv --clear
+	uv sync
+	uv run splat split kirby64.yaml
+
+.PHONY: all clean default diff test distclean split
+
+test: $(BUILD_DIR)/$(TARGET).z64
+	parallel-launcher $<
 
 # Remove built-in rules, to improve performance
 MAKEFLAGS += --no-builtin-rules

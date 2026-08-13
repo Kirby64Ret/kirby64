@@ -1,3 +1,14 @@
+#ifndef _SAVE_FILE_H
+#define _SAVE_FILE_H
+
+#define SAVE_CHECKSUM_MAGIC 0x97538642
+#define SAVE_INIT_MAGIC 0x99999999
+
+typedef enum {
+    SAVE_ACTION_LOAD = 0,
+    SAVE_ACTION_SAVE,
+} SaveAction;
+
 typedef struct {
 	/* 0x0; */  u32 world;
     /* 0x4; */  u32 level;
@@ -41,9 +52,25 @@ struct EEPHeader {
 struct EEPROM {
 	struct EEPHeader header;
 	File files[3]; // 0x10, 0x68, 0xC0
+	// gSaveBuffer2 - gSaveBuffer1 == 0x1B8, so the object extends 0xA0 past
+	// files[]. func_800B8700 copies the whole 0x1B8 and func_800B9104/91B8/922C
+	// reach 0x118/0x164/0x1B0/0x1B4. Contents not yet identified.
+	/* 0x118 */ u8 unk118[0xA0];
 };
 
 extern struct EEPROM gSaveBuffer1;
 extern struct EEPROM gSaveBuffer2;
+extern u32 saveCurrentLevel, saveCurrentWorld;
+extern s32 saveCurrentFileNum;
+extern u32 saveCurrentLevel;
+extern u32 saveCurrentWorld;
+extern s32 savePercentComplete;
+extern u32 saveCutscenesWatched;
 
-s32 check_cutscene_watched(s32 arg0);
+void saveSetHeaderChecksum(void);
+u32 saveCalcHeaderChecksum(void);
+s32 saveCheckCutsceneWatched(s32 arg0);
+s32 saveSetCutsceneWatched(s32 scene, s32 fileNum);
+void saveForceCompleteFile(s32 fileNum);
+
+#endif // _SAVE_FILE_H

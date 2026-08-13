@@ -1,0 +1,246 @@
+#!/usr/bin/env python3
+"""Verify every C file that is dirty in git, and name the ones that are red.
+
+WHY THIS EXISTS
+
+Three times tonight a lane un-guarded a draft to measure it, died or moved on
+before re-guarding, and left a non-matching function compiled into the ROM.
+Twice that reached a commit. It is the single most expensive failure mode in
+this project and none of the cheap gates see it:
+
+    verify.py <file>      sees it, but only if you already suspect the file
+    check_tu_size.py      clean -- the TU is the right size
+    check_sections.py     clean -- the sections are the right size
+    check_rodata_bytes.py clean -- the rodata is right
+    rom_diff.py           sees it, but needs a full link, and with eight lanes
+                          writing continuously the tree moves under the build,
+                          so a clean answer describes a snapshot that may no
+                          longer exist by the time you commit
+
+The answer is to check exactly the files that changed, immediately before
+committing them. That is fast because it is proportional to the diff, not to
+the tree, and it cannot be invalidated by a lane editing some other file.
+
+WHAT RED MEANS HERE
+
+A function that is written in C and is NOT byte-exact. Either re-guard it
+behind `#ifdef NON_MATCHING` with its measured residue recorded, or fix it.
+Never commit it as live code.
+
+Usage:
+    gate_dirty.py            check every dirty .c file
+    gate_dirty.py --fix      re-guard whatever is red, keeping the draft
+    gate_dirty.py --since R  check everything touched since revision R
+    gate_dirty.py --all      check the whole tree (slow, but complete)
+    gate_dirty.py --staged   check what is staged instead
+    gate_dirty.py -q         only print the verdict
+"""
+import re, subprocess, sys, os
+
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.chdir(REPO)
+
+
+def dirty(staged, since=None):
+    """Files to check.
+
+    Default is what git reports as changed. THAT IS NOT ENOUGH ON ITS OWN, and
+    the gap is worth spelling out because I walked into it twice: a file that
+    was already COMMITTED with a live non-matching function is clean in git and
+    therefore invisible here. src/ovl19/ovl19_3.c sat committed with a function
+    live at 32/150, and src/ovl8/ovl8.c at 50/128 -- the second one grew its TU
+    by 16 bytes and pushed the whole ROM image 16 bytes long. Only a full link
+    found either.
+
+    So `--since <rev>` widens the net to everything touched since a known-green
+    commit, and `--all` checks the whole tree. Use --since after any period
+    where commits went out without a link behind them.
+    """
+    if '--all' in sys.argv:
+        cmd = 'git ls-files src/*/*.c src/*.c'
+    elif since:
+        cmd = f'git diff --name-only {since}'
+    elif staged:
+        cmd = 'git diff --cached --name-only'
+    else:
+        cmd = 'git status --porcelain'
+    out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
+    porcelain = cmd.startswith('git status')
+    files = []
+    for line in out.split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+        p = line[2:].strip() if porcelain else line
+        # Deleted files have nothing to verify; untracked ones are not yet
+        # part of the build.
+        if p.endswith('.c') and p.startswith('src/') and os.path.exists(p):
+            files.append(p)
+    return sorted(set(files))
+
+
+def listing_for(fn):
+    """The asm/nonmatchings path for a function, found on disk."""
+    for root, _, files in os.walk('asm/nonmatchings'):
+        if f'{fn}.s' in files:
+            return os.path.join(root, f'{fn}.s')
+    return None
+
+
+def reguard(path, fn, residue):
+    """Put one live function back behind #ifdef NON_MATCHING, draft intact.
+
+    Deliberately conservative: it finds the definition by matching a line that
+    starts at column 0, contains the name followed by `(`, and is not a
+    declaration; then takes the first `}` at column 0 after it as the end. That
+    is the shape every function in this tree has. If anything does not match,
+    it does nothing and says so, because a bad edit here is worse than a
+    manual one -- this runs on files other agents are writing.
+    """
+    src = open(path).read()
+    lines = src.split('\n')
+    start = None
+    for i, ln in enumerate(lines):
+        if re.match(rf'^[A-Za-z_].*\b{re.escape(fn)}\s*\(', ln) and ';' not in ln:
+            start = i
+            break
+    if start is None:
+        print(f'      cannot find the definition of {fn} -- re-guard by hand')
+        return False
+    end = None
+    for j in range(start + 1, len(lines)):
+        if lines[j].startswith('}'):
+            end = j
+            break
+    if end is None:
+        print(f'      cannot find the end of {fn} -- re-guard by hand')
+        return False
+    # Already guarded? Then the red is a real diff inside a live guard, not a
+    # missing one, and re-wrapping would nest guards.
+    for k in range(max(0, start - 6), start):
+        if lines[k].startswith('#ifdef NON_MATCHING') or lines[k].startswith('#ifdef MIPS_TO_C'):
+            print(f'      {fn} is already guarded -- red is inside the guard, look by hand')
+            return False
+    s = listing_for(fn)
+    if s is None:
+        print(f'      no listing found for {fn} -- re-guard by hand')
+        return False
+
+    # A LISTING CAN COVER MORE THAN ONE FUNCTION, and blindly activating it is
+    # how this tool broke a segment. asm/.../func_80158120_ovl4.s also contains
+    # func_80158188_ovl4; guarding the first put a pragma over BOTH while the
+    # second was still live in C, so the TU came out 32 bytes long and the
+    # whole image with it. I then spent an hour localising a displacement my
+    # own --fix had created, and it cascaded: the next function in the file
+    # went red and got guarded too.
+    #
+    # If the listing defines any symbol other than this function, refuse. The
+    # correct fix in that case is usually that verify.py's DIFF is a false
+    # positive from the extra function's instructions, not a live draft.
+    others = [g for g in re.findall(r'^glabel\s+(\w+)', open(s, errors='replace').read(), re.M)
+              if g != fn]
+    if others:
+        print(f'      {fn}: its listing also defines {" ".join(others)} -- '
+              f'refusing, the pragma would cover them too')
+        return False
+
+    # RE-MEASURE IMMEDIATELY BEFORE EDITING. The verdict that got us here was
+    # sampled when the sweep began, and a lane that iterates by rewriting the
+    # .c in place moves the file underneath us. This tool re-guarded two
+    # functions that were BYTE-EXACT by the time it reached them, using diff
+    # counts taken from an intermediate variant its own harness had written --
+    # destroying finished work and costing that lane compiles to redo.
+    #
+    # A re-check does not close the race, it only narrows it: nothing here can
+    # hold a lock on a file another process owns. But it turns "usually wrong
+    # under iteration" into "wrong only if the file changes inside this call".
+    r = subprocess.run([sys.executable, 'tools/decomp/verify.py', path, '--all'],
+                       capture_output=True, text=True)
+    out2 = r.stdout + r.stderr
+    still = re.search(rf'^{re.escape(fn)}: DIFF (\d+)/', out2, re.M)
+    if not still:
+        # ABSENCE OF A DIFF LINE IS NOT PROOF OF A MATCH. verify.py says
+        # nothing about a function it could not pair with a listing, and this
+        # check read that silence as "clean now" and refused to guard --
+        # including for func_80168804_ovl5, which rom_diff had just located by
+        # address as the cause of 18 differing words. A file can carry 16
+        # unverifiable functions and one of them can be the fault.
+        if re.search(rf'^{re.escape(fn)}: (MATCH|OK)', out2, re.M):
+            print(f'      {fn} verifies MATCH now -- not guarding, stale reading')
+        else:
+            print(f'      {fn} is UNVERIFIABLE, not clean -- verify.py cannot '
+                  f'pair it, so it cannot clear it. Guarding anyway.')
+            lines.insert(end + 1, f'#else\n#pragma GLOBAL_ASM("{s}")\n#endif')
+            lines.insert(start, '#ifdef NON_MATCHING\n'
+                                f'/* Left live by a lane mid-work, at {residue}. '
+                                f'Draft kept. */')
+            open(path, 'w').write('\n'.join(lines))
+            print(f'      re-guarded {fn} ({residue})')
+            return True
+        return False
+    residue = f'{still.group(1)}/{residue.split("/")[1]}'
+
+    lines.insert(end + 1, f'#else\n#pragma GLOBAL_ASM("{s}")\n#endif')
+    lines.insert(start, '#ifdef NON_MATCHING\n'
+                        f'/* Left live by a lane mid-work, at {residue} insns. Draft kept. */')
+    open(path, 'w').write('\n'.join(lines))
+    print(f'      re-guarded {fn} ({residue})')
+    return True
+
+
+def main():
+    staged = '--staged' in sys.argv
+    fix = '--fix' in sys.argv
+    since = None
+    if '--since' in sys.argv:
+        since = sys.argv[sys.argv.index('--since') + 1]
+    quiet = '-q' in sys.argv
+    files = dirty(staged, since)
+    if not files:
+        print('-- no dirty C files --')
+        return 0
+
+    bad = []
+    for f in files:
+        r = subprocess.run([sys.executable, 'tools/decomp/verify.py', f, '--all'],
+                           capture_output=True, text=True)
+        out = r.stdout + r.stderr
+        diffs = re.findall(r'^(\w+): DIFF (\d+)/(\d+)', out, re.M)
+        m = re.search(r'(\d+) match, (\d+) diff', out)
+        n = int(m.group(2)) if m else (1 if diffs else 0)
+
+        # "0 diff" WITH "0 match" MEANS ZERO CHECKS RAN, NOT THAT THE FILE IS
+        # CORRECT. verify.py says so itself, and this gate ignored it: it
+        # passed src/ovl5/ovl5_4.c as ok while the linked ROM had 18 differing
+        # words in exactly that subsegment. Every function in the file was
+        # unverifiable -- usually because the objects are stale or the
+        # listings could not be paired -- so the gate was reporting the absence
+        # of evidence as evidence of absence.
+        if m and int(m.group(1)) == 0 and n == 0:
+            print(f'UNKNOWN {f}  0 checks ran -- verify.py could not pair any '
+                  f'function. Rebuild and re-run; do not read this as clean.')
+            bad.append((f, []))
+            continue
+
+        if n:
+            bad.append((f, diffs))
+            print(f'RED   {f}')
+            # Later definitions first, so earlier line numbers stay valid.
+            for fn, d, tot in (reversed(diffs) if fix else diffs):
+                if fix:
+                    reguard(f, fn, f'{d}/{tot}')
+                else:
+                    print(f'        {fn}  {d}/{tot} insns -- re-guard it or fix it')
+        elif not quiet:
+            print(f'ok    {f}  ({m.group(1) if m else "?"} match)')
+
+    print(f'-- {len(files)} dirty file(s), {len(bad)} red --')
+    if bad:
+        print('Do not commit these as live code. Put each back behind\n'
+              '`#ifdef NON_MATCHING` with its measured residue in a comment,\n'
+              'keeping the draft, and the ROM returns to green.')
+    return 1 if bad else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

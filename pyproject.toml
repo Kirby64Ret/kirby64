@@ -1,0 +1,10 @@
+[project]
+name = "kirby64"
+version = "0.1.0"
+description = "A work-in-progress decompilation of Kirby 64: The Crystal Shards, brought to you."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pyelftools>=0.32",
+    "splat64[mips]>=0.36.3",
+]

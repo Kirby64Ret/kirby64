@@ -1,0 +1,789 @@
+{
+  "build_base": true,
+  "build_target": false,
+  "watch_patterns": [
+    "*.c",
+    "*.h",
+    "*.s",
+    "*.S",
+    "*.asm",
+    "*.inc"
+  ],
+  "units": [
+    {
+      "name": "entry",
+      "target_path": "expected/asm/entry.o"
+    },
+    {
+      "name": "main/main",
+      "target_path": "expected/src/main/main.o",
+      "base_path": "build/src/main/main.o"
+    },
+    {
+      "name": "main/sched",
+      "target_path": "expected/src/main/sched.o",
+      "base_path": "build/src/main/sched.o"
+    },
+    {
+      "name": "main/dma",
+      "target_path": "expected/src/main/dma.o",
+      "base_path": "build/src/main/dma.o"
+    },
+    {
+      "name": "main/contpad",
+      "target_path": "expected/src/main/contpad.o",
+      "base_path": "build/src/main/contpad.o"
+    },
+    {
+      "name": "main/gtl",
+      "target_path": "expected/src/main/gtl.o",
+      "base_path": "build/src/main/gtl.o"
+    },
+    {
+      "name": "main/memory_layer",
+      "target_path": "expected/src/main/memory_layer.o",
+      "base_path": "build/src/main/memory_layer.o"
+    },
+    {
+      "name": "main/vi",
+      "target_path": "expected/src/main/vi.o",
+      "base_path": "build/src/main/vi.o"
+    },
+    {
+      "name": "main/rdp_reset",
+      "target_path": "expected/src/main/rdp_reset.o",
+      "base_path": "build/src/main/rdp_reset.o"
+    },
+    {
+      "name": "main/object_manager",
+      "target_path": "expected/src/main/object_manager.o",
+      "base_path": "build/src/main/object_manager.o"
+    },
+    {
+      "name": "main/object_helpers",
+      "target_path": "expected/src/main/object_helpers.o",
+      "base_path": "build/src/main/object_helpers.o"
+    },
+    {
+      "name": "main/code_CA90",
+      "target_path": "expected/src/main/code_CA90.o",
+      "base_path": "build/src/main/code_CA90.o"
+    },
+    {
+      "name": "main/code_11720",
+      "target_path": "expected/src/main/code_11720.o",
+      "base_path": "build/src/main/code_11720.o"
+    },
+    {
+      "name": "main/math",
+      "target_path": "expected/src/main/math.o",
+      "base_path": "build/src/main/math.o"
+    },
+    {
+      "name": "main/lbvector",
+      "target_path": "expected/src/main/lbvector.o",
+      "base_path": "build/src/main/lbvector.o"
+    },
+    {
+      "name": "main/lbmatrix",
+      "target_path": "expected/src/main/lbmatrix.o",
+      "base_path": "build/src/main/lbmatrix.o"
+    },
+    {
+      "name": "main/audio",
+      "target_path": "expected/src/main/audio.o",
+      "base_path": "build/src/main/audio.o"
+    },
+    {
+      "name": "main/fault",
+      "target_path": "expected/src/main/fault.o",
+      "base_path": "build/src/main/fault.o"
+    },
+    {
+      "name": "main/libn_audio",
+      "target_path": "expected/asm/main/libn_audio.o"
+    },
+    {
+      "name": "main/libn_audio_2",
+      "target_path": "expected/asm/main/libn_audio_2.o"
+    },
+    {
+      "name": "main/n_aspMain",
+      "target_path": "expected/asm/data/main/n_aspMain.o"
+    },
+    {
+      "name": "main/gspF3DEX2_fifo",
+      "target_path": "expected/asm/data/main/gspF3DEX2_fifo.data.o"
+    },
+    {
+      "name": "main/gspL3DEX2_fifo",
+      "target_path": "expected/asm/data/main/gspL3DEX2_fifo.data.o"
+    },
+    {
+      "name": "main/gspS2DEX2_fifo",
+      "target_path": "expected/asm/data/main/gspS2DEX2_fifo.data.o"
+    },
+    {
+      "name": "mainseg.2",
+      "target_path": "expected/asm/data/mainseg.2.data.o"
+    },
+    {
+      "name": "mainseg.2.0",
+      "target_path": "expected/asm/data/mainseg.2.0.data.o"
+    },
+    {
+      "name": "mainseg.2.1",
+      "target_path": "expected/asm/data/mainseg.2.1.data.o"
+    },
+    {
+      "name": "mainseg.2.2",
+      "target_path": "expected/asm/data/mainseg.2.2.data.o"
+    },
+    {
+      "name": "mainseg.4",
+      "target_path": "expected/asm/data/mainseg.4.data.o"
+    },
+    {
+      "name": "viModeNtscLan1MpalLan1",
+      "target_path": "expected/asm/data/viModeNtscLan1MpalLan1.data.o"
+    },
+    {
+      "name": "vimodes",
+      "target_path": "expected/asm/data/vimodes.data.o"
+    },
+    {
+      "name": "mainseg.0",
+      "target_path": "expected/asm/data/mainseg.0.rodata.o"
+    },
+    {
+      "name": "mainseg.0.1",
+      "target_path": "expected/asm/data/mainseg.0.1.rodata.o"
+    },
+    {
+      "name": "mainseg.1",
+      "target_path": "expected/asm/data/mainseg.1.rodata.o"
+    },
+    {
+      "name": "main/interruptVecs",
+      "target_path": "expected/asm/data/main/interruptVecs.rodata.o"
+    },
+    {
+      "name": "mainseg",
+      "target_path": "expected/asm/data/mainseg.bss.o"
+    },
+    {
+      "name": "mainseg.3",
+      "target_path": "expected/asm/data/mainseg.3.bss.o"
+    },
+    {
+      "name": "ovl1/ovl1",
+      "target_path": "expected/src/ovl1/ovl1.o",
+      "base_path": "build/src/ovl1/ovl1.o"
+    },
+    {
+      "name": "ovl1/game",
+      "target_path": "expected/src/ovl1/game.o",
+      "base_path": "build/src/ovl1/game.o"
+    },
+    {
+      "name": "ovl1/ovl1_1_2",
+      "target_path": "expected/src/ovl1/ovl1_1_2.o",
+      "base_path": "build/src/ovl1/ovl1_1_2.o"
+    },
+    {
+      "name": "ovl1/ovl1_2",
+      "target_path": "expected/src/ovl1/ovl1_2.o",
+      "base_path": "build/src/ovl1/ovl1_2.o"
+    },
+    {
+      "name": "ovl1/ovl1_2_2",
+      "target_path": "expected/src/ovl1/ovl1_2_2.o",
+      "base_path": "build/src/ovl1/ovl1_2_2.o"
+    },
+    {
+      "name": "ovl1/ovl1_3",
+      "target_path": "expected/src/ovl1/ovl1_3.o",
+      "base_path": "build/src/ovl1/ovl1_3.o"
+    },
+    {
+      "name": "ovl1/ovl1_4",
+      "target_path": "expected/src/ovl1/ovl1_4.o",
+      "base_path": "build/src/ovl1/ovl1_4.o"
+    },
+    {
+      "name": "ovl1/sprite",
+      "target_path": "expected/src/ovl1/sprite.o",
+      "base_path": "build/src/ovl1/sprite.o"
+    },
+    {
+      "name": "ovl1/ovl1_6",
+      "target_path": "expected/src/ovl1/ovl1_6.o",
+      "base_path": "build/src/ovl1/ovl1_6.o"
+    },
+    {
+      "name": "ovl1/ovl1_7",
+      "target_path": "expected/src/ovl1/ovl1_7.o",
+      "base_path": "build/src/ovl1/ovl1_7.o"
+    },
+    {
+      "name": "ovl1/ovl1_8",
+      "target_path": "expected/src/ovl1/ovl1_8.o",
+      "base_path": "build/src/ovl1/ovl1_8.o"
+    },
+    {
+      "name": "ovl1/save_file",
+      "target_path": "expected/src/ovl1/save_file.o",
+      "base_path": "build/src/ovl1/save_file.o"
+    },
+    {
+      "name": "ovl1/ovl1_10",
+      "target_path": "expected/src/ovl1/ovl1_10.o",
+      "base_path": "build/src/ovl1/ovl1_10.o"
+    },
+    {
+      "name": "ovl1/ovl1_11",
+      "target_path": "expected/src/ovl1/ovl1_11.o",
+      "base_path": "build/src/ovl1/ovl1_11.o"
+    },
+    {
+      "name": "ovl1/ovl1_12",
+      "target_path": "expected/src/ovl1/ovl1_12.o",
+      "base_path": "build/src/ovl1/ovl1_12.o"
+    },
+    {
+      "name": "ovl1/ovl1_13",
+      "target_path": "expected/src/ovl1/ovl1_13.o",
+      "base_path": "build/src/ovl1/ovl1_13.o"
+    },
+    {
+      "name": "ovl1/level_names",
+      "target_path": "expected/asm/data/ovl1/level_names.rodata.o"
+    },
+    {
+      "name": "ovl2/ovl2",
+      "target_path": "expected/src/ovl2/ovl2.o",
+      "base_path": "build/src/ovl2/ovl2.o"
+    },
+    {
+      "name": "ovl2/ovl2_2",
+      "target_path": "expected/src/ovl2/ovl2_2.o",
+      "base_path": "build/src/ovl2/ovl2_2.o"
+    },
+    {
+      "name": "ovl2/ovl2_3",
+      "target_path": "expected/src/ovl2/ovl2_3.o",
+      "base_path": "build/src/ovl2/ovl2_3.o"
+    },
+    {
+      "name": "ovl2/ovl2_4",
+      "target_path": "expected/src/ovl2/ovl2_4.o",
+      "base_path": "build/src/ovl2/ovl2_4.o"
+    },
+    {
+      "name": "ovl2/ovl2_5",
+      "target_path": "expected/src/ovl2/ovl2_5.o",
+      "base_path": "build/src/ovl2/ovl2_5.o"
+    },
+    {
+      "name": "ovl2/ovl2_6",
+      "target_path": "expected/src/ovl2/ovl2_6.o",
+      "base_path": "build/src/ovl2/ovl2_6.o"
+    },
+    {
+      "name": "ovl2/ovl2_7",
+      "target_path": "expected/src/ovl2/ovl2_7.o",
+      "base_path": "build/src/ovl2/ovl2_7.o"
+    },
+    {
+      "name": "ovl2/ovl2_8",
+      "target_path": "expected/src/ovl2/ovl2_8.o",
+      "base_path": "build/src/ovl2/ovl2_8.o"
+    },
+    {
+      "name": "ovl2/ovl2_9",
+      "target_path": "expected/src/ovl2/ovl2_9.o",
+      "base_path": "build/src/ovl2/ovl2_9.o"
+    },
+    {
+      "name": "ovl2/ovl2_10",
+      "target_path": "expected/src/ovl2/ovl2_10.o",
+      "base_path": "build/src/ovl2/ovl2_10.o"
+    },
+    {
+      "name": "ovl2/plylib",
+      "target_path": "expected/src/ovl2/plylib.o",
+      "base_path": "build/src/ovl2/plylib.o"
+    },
+    {
+      "name": "ovl3/ovl3",
+      "target_path": "expected/asm/ovl3/ovl3.o"
+    },
+    {
+      "name": "ovl3/ovl3_1",
+      "target_path": "expected/asm/ovl3/ovl3_1.o"
+    },
+    {
+      "name": "ovl3/plydemo",
+      "target_path": "expected/asm/ovl3/plydemo.o"
+    },
+    {
+      "name": "ovl3/plyshot",
+      "target_path": "expected/asm/ovl3/plyshot.o"
+    },
+    {
+      "name": "ovl3/ovl3_4",
+      "target_path": "expected/asm/ovl3/ovl3_4.o"
+    },
+    {
+      "name": "ovl3/kirby",
+      "target_path": "expected/asm/ovl3/kirby.o"
+    },
+    {
+      "name": "ovl3/ovl3_6",
+      "target_path": "expected/asm/ovl3/ovl3_6.o"
+    },
+    {
+      "name": "ovl3/F7A30",
+      "target_path": "expected/asm/data/ovl3/F7A30.rodata.o"
+    },
+    {
+      "name": "ovl3/F7D10",
+      "target_path": "expected/asm/data/ovl3/F7D10.rodata.o"
+    },
+    {
+      "name": "ovl4/ovl4_1",
+      "target_path": "expected/asm/ovl4/ovl4_1.o"
+    },
+    {
+      "name": "ovl4/ovl4_2",
+      "target_path": "expected/asm/ovl4/ovl4_2.o"
+    },
+    {
+      "name": "ovl4/ovl4_3",
+      "target_path": "expected/asm/ovl4/ovl4_3.o"
+    },
+    {
+      "name": "ovl4/ovl4_4",
+      "target_path": "expected/asm/ovl4/ovl4_4.o"
+    },
+    {
+      "name": "ovl4/ovl4_5",
+      "target_path": "expected/asm/ovl4/ovl4_5.o"
+    },
+    {
+      "name": "ovl4/ovl4",
+      "target_path": "expected/asm/data/ovl4/ovl4.data.o"
+    },
+    {
+      "name": "ovl5/ovl5_1",
+      "target_path": "expected/src/ovl5/ovl5_1.o",
+      "base_path": "build/src/ovl5/ovl5_1.o"
+    },
+    {
+      "name": "ovl5/ovl5_2",
+      "target_path": "expected/asm/ovl5/ovl5_2.o"
+    },
+    {
+      "name": "ovl5/ovl5_3",
+      "target_path": "expected/asm/ovl5/ovl5_3.o"
+    },
+    {
+      "name": "ovl5/ovl5_4",
+      "target_path": "expected/asm/ovl5/ovl5_4.o"
+    },
+    {
+      "name": "ovl5/ovl5_5",
+      "target_path": "expected/asm/ovl5/ovl5_5.o"
+    },
+    {
+      "name": "ovl5/ovl5_6",
+      "target_path": "expected/asm/ovl5/ovl5_6.o"
+    },
+    {
+      "name": "ovl5/ovl5_7",
+      "target_path": "expected/asm/ovl5/ovl5_7.o"
+    },
+    {
+      "name": "ovl5/ovl5_8",
+      "target_path": "expected/asm/ovl5/ovl5_8.o"
+    },
+    {
+      "name": "ovl5/ovl5_9",
+      "target_path": "expected/asm/ovl5/ovl5_9.o"
+    },
+    {
+      "name": "ovl5/ovl5_10",
+      "target_path": "expected/asm/ovl5/ovl5_10.o"
+    },
+    {
+      "name": "ovl5/ovl5_11",
+      "target_path": "expected/src/ovl5/ovl5_11.o",
+      "base_path": "build/src/ovl5/ovl5_11.o"
+    },
+    {
+      "name": "ovl5/ovl5_12",
+      "target_path": "expected/asm/ovl5/ovl5_12.o"
+    },
+    {
+      "name": "ovl5/ovl5_13",
+      "target_path": "expected/asm/ovl5/ovl5_13.o"
+    },
+    {
+      "name": "ovl5/ovl5",
+      "target_path": "expected/asm/data/ovl5/ovl5.data.o"
+    },
+    {
+      "name": "ovl6/ovl6",
+      "target_path": "expected/src/ovl6/ovl6.o",
+      "base_path": "build/src/ovl6/ovl6.o"
+    },
+    {
+      "name": "ovl7/ovl7_1",
+      "target_path": "expected/asm/ovl7/ovl7_1.o"
+    },
+    {
+      "name": "ovl7/ovl7_2",
+      "target_path": "expected/asm/ovl7/ovl7_2.o"
+    },
+    {
+      "name": "ovl7/ovl7_3",
+      "target_path": "expected/asm/ovl7/ovl7_3.o"
+    },
+    {
+      "name": "ovl7/ovl7_4",
+      "target_path": "expected/asm/ovl7/ovl7_4.o"
+    },
+    {
+      "name": "ovl7/ovl7_5",
+      "target_path": "expected/asm/ovl7/ovl7_5.o"
+    },
+    {
+      "name": "ovl7/ovl7_5_2",
+      "target_path": "expected/asm/ovl7/ovl7_5_2.o"
+    },
+    {
+      "name": "ovl7/ovl7_6",
+      "target_path": "expected/asm/ovl7/ovl7_6.o"
+    },
+    {
+      "name": "ovl7/ovl7_7",
+      "target_path": "expected/asm/ovl7/ovl7_7.o"
+    },
+    {
+      "name": "ovl7/ovl7_8",
+      "target_path": "expected/asm/ovl7/ovl7_8.o"
+    },
+    {
+      "name": "ovl7/ovl7_9",
+      "target_path": "expected/asm/ovl7/ovl7_9.o"
+    },
+    {
+      "name": "ovl7/ovl7_10",
+      "target_path": "expected/asm/ovl7/ovl7_10.o"
+    },
+    {
+      "name": "ovl7/ovl7_11",
+      "target_path": "expected/asm/ovl7/ovl7_11.o"
+    },
+    {
+      "name": "ovl7/ovl7_12",
+      "target_path": "expected/asm/ovl7/ovl7_12.o"
+    },
+    {
+      "name": "ovl7/ovl7_13",
+      "target_path": "expected/asm/ovl7/ovl7_13.o"
+    },
+    {
+      "name": "ovl7/ovl7_14",
+      "target_path": "expected/asm/ovl7/ovl7_14.o"
+    },
+    {
+      "name": "ovl7/yakulib",
+      "target_path": "expected/asm/ovl7/yakulib.o"
+    },
+    {
+      "name": "ovl7/ovl7_16",
+      "target_path": "expected/asm/ovl7/ovl7_16.o"
+    },
+    {
+      "name": "ovl7/ovl7_17",
+      "target_path": "expected/asm/ovl7/ovl7_17.o"
+    },
+    {
+      "name": "ovl7/ovl7",
+      "target_path": "expected/asm/data/ovl7/ovl7.data.o"
+    },
+    {
+      "name": "ovl7/filesplit",
+      "target_path": "expected/asm/data/ovl7/filesplit.rodata.o"
+    },
+    {
+      "name": "ovl8/ovl8",
+      "target_path": "expected/asm/ovl8/ovl8.o"
+    },
+    {
+      "name": "ovl8/eneeff",
+      "target_path": "expected/asm/ovl8/eneeff.o"
+    },
+    {
+      "name": "ovl8/ovl8_3",
+      "target_path": "expected/asm/ovl8/ovl8_3.o"
+    },
+    {
+      "name": "ovl8/ovl8_4",
+      "target_path": "expected/asm/ovl8/ovl8_4.o"
+    },
+    {
+      "name": "ovl9/ovl9_1",
+      "target_path": "expected/asm/ovl9/ovl9_1.o"
+    },
+    {
+      "name": "ovl9/ovl9_2",
+      "target_path": "expected/asm/ovl9/ovl9_2.o"
+    },
+    {
+      "name": "ovl9/ovl9_3",
+      "target_path": "expected/asm/ovl9/ovl9_3.o"
+    },
+    {
+      "name": "ovl9/ovl9_4",
+      "target_path": "expected/asm/ovl9/ovl9_4.o"
+    },
+    {
+      "name": "ovl9/ovl9_5",
+      "target_path": "expected/asm/ovl9/ovl9_5.o"
+    },
+    {
+      "name": "ovl9/ovl9_6",
+      "target_path": "expected/asm/ovl9/ovl9_6.o"
+    },
+    {
+      "name": "ovl9/ovl9_7",
+      "target_path": "expected/asm/ovl9/ovl9_7.o"
+    },
+    {
+      "name": "ovl9/ovl9_7_2",
+      "target_path": "expected/asm/ovl9/ovl9_7_2.o"
+    },
+    {
+      "name": "ovl9/ovl9_8",
+      "target_path": "expected/asm/ovl9/ovl9_8.o"
+    },
+    {
+      "name": "ovl9/ovl9_9",
+      "target_path": "expected/asm/ovl9/ovl9_9.o"
+    },
+    {
+      "name": "ovl9/ovl9_10",
+      "target_path": "expected/asm/ovl9/ovl9_10.o"
+    },
+    {
+      "name": "ovl9/ovl9_11",
+      "target_path": "expected/asm/ovl9/ovl9_11.o"
+    },
+    {
+      "name": "ovl9/ovl9_12",
+      "target_path": "expected/asm/ovl9/ovl9_12.o"
+    },
+    {
+      "name": "ovl9/ovl9_13",
+      "target_path": "expected/asm/ovl9/ovl9_13.o"
+    },
+    {
+      "name": "ovl9/ovl9_14",
+      "target_path": "expected/asm/ovl9/ovl9_14.o"
+    },
+    {
+      "name": "ovl9/ovl9_14_2",
+      "target_path": "expected/asm/ovl9/ovl9_14_2.o"
+    },
+    {
+      "name": "ovl9/ovl9_15",
+      "target_path": "expected/asm/ovl9/ovl9_15.o"
+    },
+    {
+      "name": "ovl9/ovl9_16",
+      "target_path": "expected/asm/ovl9/ovl9_16.o"
+    },
+    {
+      "name": "ovl9/ovl9_17",
+      "target_path": "expected/asm/ovl9/ovl9_17.o"
+    },
+    {
+      "name": "ovl9/ovl9_18",
+      "target_path": "expected/asm/ovl9/ovl9_18.o"
+    },
+    {
+      "name": "ovl9/ovl9",
+      "target_path": "expected/asm/data/ovl9/ovl9.data.o"
+    },
+    {
+      "name": "ovl10/ovl10",
+      "target_path": "expected/src/ovl10/ovl10.o",
+      "base_path": "build/src/ovl10/ovl10.o"
+    },
+    {
+      "name": "ovl10/ovl10_1",
+      "target_path": "expected/asm/ovl10/ovl10_1.o"
+    },
+    {
+      "name": "ovl10/ovl10_2",
+      "target_path": "expected/asm/ovl10/ovl10_2.o"
+    },
+    {
+      "name": "ovl10/ovl10_3",
+      "target_path": "expected/asm/ovl10/ovl10_3.o"
+    },
+    {
+      "name": "ovl10/ovl10_4",
+      "target_path": "expected/asm/ovl10/ovl10_4.o"
+    },
+    {
+      "name": "ovl10/ovl10_5",
+      "target_path": "expected/asm/ovl10/ovl10_5.o"
+    },
+    {
+      "name": "ovl10/1E58F0",
+      "target_path": "expected/asm/data/ovl10/1E58F0.rodata.o"
+    },
+    {
+      "name": "ovl11/ovl11",
+      "target_path": "expected/asm/ovl11/ovl11.o"
+    },
+    {
+      "name": "ovl12/code_1EB520",
+      "target_path": "expected/asm/ovl12/code_1EB520.o"
+    },
+    {
+      "name": "ovl12/code_1F18D0",
+      "target_path": "expected/asm/ovl12/code_1F18D0.o"
+    },
+    {
+      "name": "ovl12/ovl12",
+      "target_path": "expected/asm/data/ovl12/ovl12.data.o"
+    },
+    {
+      "name": "ovl13/code_1F3160",
+      "target_path": "expected/asm/ovl13/code_1F3160.o"
+    },
+    {
+      "name": "ovl13/code_1FBD40",
+      "target_path": "expected/asm/ovl13/code_1FBD40.o"
+    },
+    {
+      "name": "ovl13/code_1FC420",
+      "target_path": "expected/asm/ovl13/code_1FC420.o"
+    },
+    {
+      "name": "ovl13/ovl13",
+      "target_path": "expected/asm/data/ovl13/ovl13.data.o"
+    },
+    {
+      "name": "ovl14/ovl14",
+      "target_path": "expected/asm/ovl14/ovl14.o"
+    },
+    {
+      "name": "ovl14/ovl14_2",
+      "target_path": "expected/asm/ovl14/ovl14_2.o"
+    },
+    {
+      "name": "ovl15/ovl15",
+      "target_path": "expected/asm/ovl15/ovl15.o"
+    },
+    {
+      "name": "ovl15/ovl15_2",
+      "target_path": "expected/asm/ovl15/ovl15_2.o"
+    },
+    {
+      "name": "ovl16/ovl16",
+      "target_path": "expected/asm/ovl16/ovl16.o"
+    },
+    {
+      "name": "ovl17/ovl17",
+      "target_path": "expected/asm/ovl17/ovl17.o"
+    },
+    {
+      "name": "ovl17/ovl17_2",
+      "target_path": "expected/asm/ovl17/ovl17_2.o"
+    },
+    {
+      "name": "ovl17/ovl17_3",
+      "target_path": "expected/asm/ovl17/ovl17_3.o"
+    },
+    {
+      "name": "ovl18/code_2308C0",
+      "target_path": "expected/asm/ovl18/code_2308C0.o"
+    },
+    {
+      "name": "ovl18/code_232B60",
+      "target_path": "expected/asm/ovl18/code_232B60.o"
+    },
+    {
+      "name": "ovl18/code_234830",
+      "target_path": "expected/asm/ovl18/code_234830.o"
+    },
+    {
+      "name": "ovl18/code_234BC0",
+      "target_path": "expected/asm/ovl18/code_234BC0.o"
+    },
+    {
+      "name": "ovl18/code_236CC0",
+      "target_path": "expected/asm/ovl18/code_236CC0.o"
+    },
+    {
+      "name": "ovl18/code_236F20",
+      "target_path": "expected/asm/ovl18/code_236F20.o"
+    },
+    {
+      "name": "ovl18/code_2385A0",
+      "target_path": "expected/asm/ovl18/code_2385A0.o"
+    },
+    {
+      "name": "ovl18/code_239080",
+      "target_path": "expected/asm/ovl18/code_239080.o"
+    },
+    {
+      "name": "ovl18/ovl18",
+      "target_path": "expected/asm/data/ovl18/ovl18.data.o"
+    },
+    {
+      "name": "ovl19/helplib",
+      "target_path": "expected/src/ovl19/helplib.o",
+      "base_path": "build/src/ovl19/helplib.o"
+    },
+    {
+      "name": "ovl19/helpeff",
+      "target_path": "expected/src/ovl19/helpeff.o",
+      "base_path": "build/src/ovl19/helpeff.o"
+    },
+    {
+      "name": "ovl19/helper",
+      "target_path": "expected/src/ovl19/helper.o",
+      "base_path": "build/src/ovl19/helper.o"
+    },
+    {
+      "name": "ovl19/ovl19_2",
+      "target_path": "expected/src/ovl19/ovl19_2.o",
+      "base_path": "build/src/ovl19/ovl19_2.o"
+    },
+    {
+      "name": "ovl19/ovl19_3",
+      "target_path": "expected/src/ovl19/ovl19_3.o",
+      "base_path": "build/src/ovl19/ovl19_3.o"
+    },
+    {
+      "name": "ovl19/ovl19_4",
+      "target_path": "expected/src/ovl19/ovl19_4.o",
+      "base_path": "build/src/ovl19/ovl19_4.o"
+    },
+    {
+      "name": "ovl19/ovl19",
+      "target_path": "expected/asm/data/ovl19/ovl19.bss.o"
+    },
+    {
+      "name": "ovl20/tamper_check",
+      "target_path": "expected/src/ovl20/tamper_check.o",
+      "base_path": "build/src/ovl20/tamper_check.o"
+    }
+  ]
+}

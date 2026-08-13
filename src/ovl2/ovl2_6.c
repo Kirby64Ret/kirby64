@@ -1,9 +1,11 @@
+#include "common.h"
 #include "types.h"
 #include <macros.h>
 #include <ultra64.h>
 #include <PR/gs2dex.h>
-u32 func_80101920(Vector *a0, struct Normal *a1, Vector *a2, struct Normal *a3);
-u32 func_80101BA0(Vector *a0, struct Normal *a1, Vector *a2, struct Normal *a3);
+#include "PR/gbi.h"
+#include "ovl1/ovl1_5.h"
+#include "main/gtl.h"
 
 struct UNK_D_8012BBF8 {
     struct UNK_D_8012BBF8_unk0 *unk0;
@@ -52,6 +54,13 @@ struct UNK_D_8012BBF8_unk0 {
 
 extern struct UNK_D_8012BBF8 D_8012BBF8[10];
 extern struct UNK_D_8012B9B8 D_8012B9B8[];
+extern u32 D_8012B9B0;
+extern u32 D_80124740[];
+
+s32 HS64_omMakeGObj(s32, void *, s32, s32);
+void omCreateProcess(s32, void *, s32, s32);
+void *func_80100AC8(void *arg0);
+f32 func_80100EE4(s32 arg0);
 
 void func_800FF5E0(s32 arg0, f32 arg1, f32 arg2) {
     struct UNK_D_8012B9B8 *temp_a1;
@@ -68,36 +77,45 @@ void func_800FF5E0(s32 arg0, f32 arg1, f32 arg2) {
     temp_v1->unk2C = temp_a1->unk14;
 }
 
-extern u32 D_8012B9B0;
+void func_800FF64C(u32 arg0) {
+    extern u8 D_800D478C[];
+    struct UNK_D_8012BBF8_unk0 *temp_v1;
+    u8 *temp_a3;
+    u8 *temp_t1;
+    u16 temp_a1;
+    u32 i;
 
-struct UNK_D_800D478C {
-    u8 unk0;
-    u8 unk1;
-    u8 unk2;
-    u8 unk3;
-    u8 unk4;
-    u8 unk5;
-    u8 unk6;
-    u8 unk7;
-    u32 unk8;
-};
-
-extern struct UNK_D_800D478C D_800D478C[];
-
-// Almost matching
-GLOBAL_ASM("asm/non_matchings/ovl2_6/func_800FF64C.s")
-
-#include "PR/gbi.h"
-#include "ovl1/ovl1_5.h"
-extern Gfx *gDisplayListHeads[4];
-
+    for (i = 0; i < *(vu32 *)&D_8012B9B0; i++) {
+        temp_a1 = D_8012B9B8[i].unk8;
+        if ((temp_a1 & 0xC0) == 0) {
+            continue;
+        }
+        if (arg0 != D_8012B9B8[i].unkA) {
+            continue;
+        }
+        temp_v1 = D_8012BBF8[i].unk0;
+        if (temp_v1 == NULL) {
+            continue;
+        }
+        temp_a3 = &D_800D478C[arg0 * 12];
+        temp_v1->unk14 = temp_a3[0];
+        temp_v1->unk15 = temp_a3[1];
+        temp_v1->unk16 = temp_a3[2];
+        temp_t1 = temp_a3 + 2;
+        if (temp_a1 & 0x40) {
+            temp_v1->unk18 = temp_t1[1];
+            temp_v1->unk19 = temp_t1[2];
+            temp_t1 += 3;
+            temp_v1->unk1A = temp_t1[0];
+        }
+    }
+}
 
 #define G_CC_UNK1 PRIMITIVE, 0, TEXEL0, 0, 0, 0, 0, TEXEL0
 #define G_CC_UNK2 0, 0, 0, PRIMITIVE, 0, 0, 0, TEXEL0
 
 #define TRANSPARENT_SURFACE (1 << 1)
 
-// S2D code :o
 void func_800FF71C(struct UnkStruct800AC954 *arg0, u8 arg1, u8 arg2) {
     gDPPipeSync(gDisplayListHeads[0]++);
     gDPSetCycleType(gDisplayListHeads[0]++, G_CYC_1CYCLE)
@@ -144,14 +162,11 @@ void func_800FF71C(struct UnkStruct800AC954 *arg0, u8 arg1, u8 arg2) {
     gDPSetCombineMode(gDisplayListHeads[0]++, G_CC_DECALRGBA, G_CC_DECALRGBA);
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl2_6/func_800FF9B4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_6/func_800FF9B4.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl2_6/func_80100790.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_6/func_80100790.s")
 
-void *func_80100AC8(void *arg0);
-GLOBAL_ASM("asm/non_matchings/ovl2_6/func_80100AC8.s")
-
-extern u32 D_80124740[];
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_6/func_80100AC8.s")
 
 u32 func_80100DF8(s32 arg0) {
     u32 phi_v0;
@@ -167,25 +182,23 @@ u32 func_80100DF8(s32 arg0) {
 }
 
 void func_80100E50(u32 arg0) {
-    func_8000A180(arg0, &func_80100AC8, 0, 0);
+    HS64_omMakeGObj(arg0, &func_80100AC8, 0, 0);
 }
 
-extern f32 D_80128A2C, D_80128A30;
 u32 func_80100E7C(f32 arg0) {
     if (0.0f <= arg0) {
-        if (arg0 <= D_80128A2C) {
+        if (arg0 <= 1.570796371f) {
             return 0;
         }
         return 1;
     }
-    if (D_80128A30 <= arg0) {
+    if (-1.570796371f <= arg0) {
         return 3;
     }
     return 2;
 }
 
-f32 func_80100EE4(s32 arg0);
-GLOBAL_ASM("asm/non_matchings/ovl2_6/func_80100EE4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_6/func_80100EE4.s")
 
 void func_8010133C(void) {
     u32 i;
@@ -204,5 +217,5 @@ void func_8010137C(void) {
             func_80100E50(i);
         }
     }
-    func_80008A18(func_8000A180(0, 0, 0x1A, 0x80000000), &func_80100EE4, 1, 0);
+    omCreateProcess(HS64_omMakeGObj(0, 0, 0x1A, 0x80000000), &func_80100EE4, 1, 0);
 }

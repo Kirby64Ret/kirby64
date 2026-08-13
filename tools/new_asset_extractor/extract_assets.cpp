@@ -58,6 +58,26 @@ void init_baserom(char *s) {
     fseek(baserom, 0, SEEK_SET);
 }
 
+#ifdef CI_CD
+void extract_empty(string k, json &v) {
+#ifdef RELEASE
+    fmt::print("Extracting {}...\n", k);
+#endif
+    String _ = v["meta"]["size"];
+
+    int size = strtoul(_.c_str(), nullptr, 16);
+
+
+    FILE *f = fopen_mkdir((char *)k.c_str(), (char *)"wb+");
+
+    char *buf = (char *)calloc(size, sizeof(char));
+    fwrite(buf, 1, size, f);
+    fclose(f);
+
+    free(buf);
+}
+#endif // CI_CD
+
 void extract_bin(string k, json &v) {
 #ifdef RELEASE
     fmt::print("Extracting {}...\n", k);
@@ -253,6 +273,7 @@ int main(int argc, char **argv) {
         fmt::print("OR:    {} --clean\n", argv[0]);
         return 1;
     }
+
     init_baserom(argv[1]);
     fmt::print("baserom opened: {:X}{:X}{:X}{:X}\n",
         baserom_u8[0],
@@ -276,9 +297,6 @@ int main(int argc, char **argv) {
     json rest;
     i3 >> rest;
     i3.close();
-
-
-
 
     #pragma omp task
     for (auto& [key, value] : geo.items()) {

@@ -1,0 +1,17 @@
+nonmatching func_801DD8F0_ovl17, 0x30
+
+glabel func_801DD8F0_ovl17
+    /* 228AE0 801DD8F0 00000000 */  nop
+    /* 228AE4 801DD8F4 00000000 */  nop
+    /* 228AE8 801DD8F8 00000000 */  nop
+    /* 228AEC 801DD8FC 00000000 */  nop
+    /* 228AF0 801DD900 00000000 */  nop
+    /* 228AF4 801DD904 00000000 */  nop
+    /* 228AF8 801DD908 00000000 */  nop
+    /* 228AFC 801DD90C 00000000 */  nop
+    /* 228B00 801DD910 00000000 */  nop
+    /* 228B04 801DD914 00000000 */  nop
+    /* 228B08 801DD918 00000000 */  nop
+    /* 228B0C 801DD91C 00000000 */  nop
+endlabel func_801DD8F0_ovl17
+.size func_801DD8F0_ovl17, . - func_801DD8F0_ovl17

@@ -1,818 +1,526 @@
-// plyeff.cc - player effects?
+#include "common.h"
+#include "track_arrays.h"
+#include "GObj.h"
 
-#include <ultra64.h>
-#include <macros.h>
-#include "types.h"
-#include "ovl2_8.h"
-#include "ovl2_6.h"
-#include "sounds.h"
-#include "D_8004A7C4.h"
-#include "unk_structs/D_800DE350.h"
-#include "ovl1/ovl1_6.h"
-extern Controller_800D6FE8 gKirbyController;
-
-
-
-void *func_8011BA10(struct CollisionTriangle *tri, u32 arg1) {
-    u32 i;
-    struct DynGeo_List *destructGroups;
-    struct vCollisionHeader *vColHeader;
-    u16 *destrucIndex;
-    
-    if (arg1 != 20) {
-        vColHeader = D_8012D948[arg1].unk4;
-    } else {
-        vColHeader = D_8012940C.unk4;
-    }
-    
-    destructGroups = &vColHeader->header.Destructable_Groups[tri->collisionIndex];
-    
-    destrucIndex = &vColHeader->header.Destructable_Indices[destructGroups->Index_To_Dynamic_Geo_Group];
-    
-    for (i = 0; i < destructGroups->Num_Dynamic_Geo_Group_Members; i++) {
-        vColHeader->header.Triangles[*destrucIndex].normalType &= ~3;
-        destrucIndex++;
-    }
-}
-
-struct Struct800DFBD0 {
-    
-    u8 filler[0x54];
-    s8 unk54;
+struct UnkEA20 {
+    /* 0x00 */ char pad0[0xC];
+    /* 0x0C */ Vector unkC;
+    /* 0x18 */ s32 unk18;
 };
 
-extern u32 D_801290D0;
+s32 func_8010E8F0(Vector *, s32, Vector *, s32, s32);
+
+struct Unk8010E5B0Node {
+    u8 pad0[0x14];
+    struct Unk8010E5B0Node *unk14;
+};
+
+struct Unk8010E5B0Arg3 {
+    s32 unk0;
+    s32 unk4;
+    struct Unk8010E5B0Node **unk8;
+    f32 (*unkC)[4][3];
+};
+
+struct Unk8010E740 {
+    u8 unk0;
+    u8 pad1[3];
+    u8 unk4;
+    u8 pad5[3];
+    s32 unk8;
+    Vector unkC;
+    Vector unk18;
+};
+
+extern s32 D_8012D0C0;
+extern s32 D_8012D580;
+extern struct Unk8010E5B0Arg3 D_80124990;
+extern struct Unk8010E5B0Arg3 D_801249A0;
+extern struct Unk8010E5B0Arg3 D_801249B0;
+
+void func_800A5D88(void *, void *);
+void func_800A5F94(s32, void *);
+void func_800A6208(f32 (*)[3], Vector *);
 
 
-struct LayoutNode *func_8011BABC(struct CollisionTriangle *tri, u32 arg1) {
-    u32 i;
-    struct DynGeo_List *destructGroups;
-    struct vCollisionHeader *vColHeader;
-    u16 *destrucIndex;
-    u32 phi_a0;
+void func_8010E5B0(Vector *arg0, struct Unk8010E5B0Node *arg1, s32 arg2,
+                   struct Unk8010E5B0Arg3 *arg3) {
+    s32 i;
+    f32 (*p)[3];
 
-    if (arg1 != 20) {
-        vColHeader = D_8012D948[arg1].unk4;
-        phi_a0 = D_8012D948[arg1].unk1;
-    } else {
-        vColHeader = D_8012940C.unk4;
-        phi_a0 = D_801290D0;
-    }
-    
-    destructGroups = &vColHeader->header.Destructable_Groups[tri->collisionIndex];
-    
-    destrucIndex = &vColHeader->header.Destructable_Indices[destructGroups->Index_To_Dynamic_Geo_Group];
-    
-    for (i = 0; i < destructGroups->Num_Dynamic_Geo_Group_Members; i++) {
-        vColHeader->header.Triangles[*destrucIndex].normalType &= ~3;
-        destrucIndex++;
-    }
-
-    return D_800DFBD0[phi_a0][destructGroups->Unk_Index];
-}
-
-extern func_800A4794(Vec3f, struct LayoutNode *, struct vCollisionHeader *, struct DynGeo_List *);
-extern func_800FD754(s32 *, f32, f32, f32);
-extern func_800A4DB8(Vec3f, struct LayoutNode *);
-extern func_800A802C(s32 *, s32, s32, Vec3f, Vec3f);
-
-
-struct LayoutNode *func_8011BB98(struct CollisionTriangle *tri, u32 arg1) {
-    u32 i;
-    struct DynGeo_List *destructGroups;
-    struct LayoutNode *temp_s0;
-    struct vCollisionHeader *vColHeader;
-    u16 *destrucIndex;
-    u32 phi_t1;
-    Vec3f sp44;
-    Vec3f sp38;
-    Vec3f sp2C;
-
-    if (arg1 != 20) {
-        vColHeader = D_8012D948[arg1].unk4;
-        phi_t1 = D_8012D948[arg1].unk1;
-    } else {
-        vColHeader = D_8012940C.unk4;
-        phi_t1 = D_801290D0;
-    }
-    
-    destructGroups = &vColHeader->header.Destructable_Groups[tri->collisionIndex];
-    
-    destrucIndex = &vColHeader->header.Destructable_Indices[destructGroups->Index_To_Dynamic_Geo_Group];
-
-    for (i = 0; i < destructGroups->Num_Dynamic_Geo_Group_Members; i++) {
-        vColHeader->header.Triangles[*destrucIndex].normalType &= ~3;
-        destrucIndex++;
-    }
-
-    temp_s0 = D_800DFBD0[phi_t1][destructGroups->Unk_Index];
-    temp_s0->unk54 = 2;
-    
-    if (tri->collisionParameter == 0) {
-        func_800A4794(sp44, temp_s0, vColHeader, destructGroups);
-        func_800FD754(NULL, sp44[0], sp44[1], sp44[2]);
-    } else {
-        func_800A4794(sp38, temp_s0, vColHeader, destructGroups);
-        func_800A4DB8(sp2C, temp_s0);
-        func_800A802C(NULL, 3, 54, sp38, sp2C);
-    }
-    return temp_s0;
-}
-
-void func_8011BD08(struct CollisionTriangle *tri, u32 arg1) {
-    func_8011BB98(tri, arg1);
-    play_sound(SOUND_BGBRAKE1);
-}
-
-// start is the same as the above functions
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011BD30.s")
-
-extern u8 D_80126E20[];
-u32 func_8011BED0(u16 arg0, u16 arg1, u16 arg2) {
-    if ((arg0) == 9) {
-        if (arg1 == 0) {
-            return 1;
+    do {
+        for (i = 0; i < arg3->unk0; i++) {
+            if (arg1 == arg3->unk8[i]) {
+                break;
+            }
         }
-        if (arg1 == arg2 || ((arg1 < 8) && (D_80126E20[arg1] & D_80126E20[arg2]))) {
-            return 1;
+        if (i == arg3->unk0) {
+            if (i == arg3->unk4) {
+                i--;
+            }
+            p = arg3->unkC[i];
+            if (arg1->unk14 != (struct Unk8010E5B0Node *) 1) {
+                func_800A5D88(arg1, p);
+            } else {
+                func_800A5F94(arg2, p);
+            }
+            arg3->unk8[i] = arg1;
+            arg3->unk0 = i + 1;
+        } else {
+            p = arg3->unkC[i];
         }
+        func_800A6208(p, arg0);
+        arg1 = arg1->unk14;
+    } while (arg1 != (struct Unk8010E5B0Node *) 1);
+}
+
+void func_8010E6F0(Vector *arg0, s32 arg1) {
+    arg0->x += gEntitiesNextPosXArray[arg1];
+    arg0->y += gEntitiesNextPosYArray[arg1];
+    arg0->z += gEntitiesNextPosZArray[arg1];
+}
+
+#ifdef NON_MATCHING
+void func_8010E740(struct Unk8010E740 *arg0, s32 arg1) {
+    struct Unk8010E5B0Arg3 *q;
+    struct Unk8010E5B0Node *node;
+    s32 v;
+
+    v = arg0->unk8;
+    if (v == -1) {
+        switch (arg0->unk4) {
+        case 0:
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        }
+    } else if (arg0->unk8 == -2) {
+        switch (arg0->unk4) {
+        case 0:
+            func_8010E6F0(&arg0->unkC, arg1);
+            break;
+        case 1:
+            func_8010E6F0(&arg0->unkC, arg1);
+            break;
+        case 2:
+            func_8010E6F0(&arg0->unkC, arg1);
+            func_8010E6F0(&arg0->unk18, arg1);
+            break;
+        }
+    } else {
+        node = (struct Unk8010E5B0Node *) v;
+        if (arg0->unk8 == -3) {
+            node = D_800DE350[arg1]->data.ptr;
+        }
+        if (arg1 == D_8012D0C0) {
+            q = &D_801249A0;
+        } else {
+            if (arg1 == D_8012D580) {
+                q = &D_801249B0;
+            } else {
+                q = &D_80124990;
+            }
+            q->unk0 = 0;
+        }
+        switch (arg0->unk4) {
+        case 0:
+            func_8010E5B0(&arg0->unkC, node, arg1, q);
+            break;
+        case 1:
+            func_8010E5B0(&arg0->unkC, node, arg1, q);
+            break;
+        case 2:
+            func_8010E5B0(&arg0->unkC, node, arg1, q);
+            func_8010E5B0(&arg0->unk18, node, arg1, q);
+            break;
+        }
+    }
+    arg0->unk0 = 1;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010E740.s")
+#endif
+
+#ifdef MIPS_TO_C
+/* 25/76 diffs. Structure is instruction-for-instruction exact; the whole
+ * residue is one FP register swap: IDO puts arg2->x in $f0 and -r in $f18,
+ * the ROM puts arg2->x in $f18 and -r in $f0. The register SET is identical.
+ * Swept: (r,dx) decl/assign order, (dx,r), (x,r,dx) [best, this one],
+ * (r,x,dx), and reloading arg2->x at the tail instead of reusing x.
+ * Requires the file-scope prototype and UnkEA20.unk18 to become f32/Vector*,
+ * which was A/B'd and leaves func_8010EA20 matching. */
+s32 func_8010E8F0(Vector *arg0, f32 arg1, Vector *arg2, f32 arg3, Vector *arg4) {
+    f32 x = arg2->x;
+    f32 r = arg1 + arg3;
+    f32 dx = arg0->x - x;
+    f32 dy;
+    f32 dz;
+
+    if ((r < dx) || (dx < -r)) {
+        return 0;
+    }
+    dy = arg0->y - arg2->y;
+    if ((r < dy) || (dy < -r)) {
+        return 0;
+    }
+    dz = arg0->z - arg2->z;
+    if ((r < dz) || (dz < -r)) {
+        return 0;
+    }
+    if (dx * dx + dy * dy + dz * dz <= r * r) {
+        if (arg4 != NULL) {
+            arg4->x = dx * 0.5f + x;
+            arg4->y = dy * 0.5f + arg2->y;
+            arg4->z = dz * 0.5f + arg2->z;
+        }
+        return 1;
+    }
+    return 0;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010E8F0.s")
+#endif
+
+s32 func_8010EA20(struct UnkEA20 *arg0, struct UnkEA20 *arg1, s32 arg2) {
+    return func_8010E8F0(&arg0->unkC, arg0->unk18, &arg1->unkC, arg1->unk18, arg2);
+}
+
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010EA68.s")
+
+struct UnkEE24 {
+    /* 0x00 */ char pad0[0xC];
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+    /* 0x1C */ f32 unk1C;
+};
+
+s32 func_8010EE24(struct UnkEE24 *arg0, struct UnkEE24 *arg1) {
+    f32 rx = arg0->unk18 + arg1->unk18;
+    f32 dx = arg0->unkC - arg1->unkC;
+    f32 ry;
+    f32 dy;
+    f32 dz;
+
+    if ((rx < dx) || (dx < -rx)) {
+        return 0;
+    }
+    ry = arg0->unk1C + arg1->unk1C;
+    dy = arg0->unk10 - arg1->unk10;
+    if ((ry < dy) || (dy < -ry)) {
+        return 0;
+    }
+    dz = arg0->unk14 - arg1->unk14;
+    if ((rx < dz) || (dz < -rx)) {
         return 0;
     }
     return 1;
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011BF4C.s")
+s32 func_8010EEE8(struct UnkEE24 *arg0, struct UnkEE24 *arg1) {
+    f32 rx = arg0->unk18 + arg1->unk18;
+    f32 dx = arg0->unkC - arg1->unkC;
+    f32 ry;
+    f32 dy;
+    f32 dz;
 
-void func_8011C2A0(void *arg0) {
-    play_sound(11);
-    func_8011BA10(*(u32 *)((u32)arg0+0x84), 20); // todo: struct
+    if ((rx < dx) || (dx < -rx)) {
+        return 0;
+    }
+    ry = arg0->unk1C + arg1->unk18;
+    dy = arg0->unk10 - arg1->unk10;
+    if ((ry < dy) || (dy < -ry)) {
+        return 0;
+    }
+    dz = arg0->unk14 - arg1->unk14;
+    if ((rx < dz) || (dz < -rx)) {
+        return 0;
+    }
+    return 1;
 }
 
-void vec3_cross_product(Vector *v1, Vector *v2, Vector *dst) {
-    dst->x = (v1->y * v2->z) - (v1->z * v2->y);
-    dst->y = (v1->z * v2->x) - (v1->x * v2->z);
-    dst->z = (v1->x * v2->y) - (v1->y * v2->x);
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011C344.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011C4E8.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011C720.s")
-
-extern s32 D_8011D0FC; // probably part of a struct
-
-void func_8011C838(void) {
-    struct UnkStruct800DE350 *temp = D_800DE350[request_track_general(18, 0, 1)];
-    
-    temp->unk48 = &D_8011D0FC;
-}
-
-struct UnkStruct800D6F18 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
+struct UnkEFA8 {
+    /* 0x00 */ char pad0[0xC];
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ f32 unk18;
+    /* 0x1C */ f32 unk1C;
+    /* 0x20 */ f32 unk20;
+    /* 0x24 */ f32 unk24;
 };
 
-extern s32 D_800D6F10;
-extern struct UnkStruct800D6F18 D_800D6F18[2];
-//regalloc
-#ifdef NON_MATCHING
-void func_8011C87C(void) {
-    u32 i;
-    
-    gKirbyState.unk4 = 0;
-    gKirbyState.isHoldingEntity = 0;
-    gKirbyState.inhaledEntityData = 0;
-    gKirbyState.secondInhale = 0;
-    gKirbyState.firstInhale = 0;
-    gKirbyState.currentInhale = 0;
-    
-    for (i = 0; i < 2; i++) {
-        D_800D6F18[i].unk4 = 0;
-        D_800D6F18[i].unk8 = 0;
-        D_800D6F18[i].unkC = 0;
-        D_800D6F18[i].unk0 = 0;
-    }
+s32 func_8010EFA8(struct UnkEE24 *arg0, struct UnkEFA8 *arg1) {
+    f32 r = arg0->unk18 + arg1->unk24;
+    f32 r2;
 
-    D_800D6F10 = 0;
-}
-#else
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011C87C.s")
-#endif
-
-void func_8011C8D0(void) {
-    func_80105180(&gPositionState);
-    D_800D6F18[1].unkC = 0;
-}
-
-
-extern f32 D_80128E28;
-extern s32 D_800BE50C;
-extern f32 D_800BE510;
-extern f32 D_80128E24;
-extern s32 D_800B531C;
-extern s32 D_8011CFF4;
-extern s32 D_8012EADC;
-extern s32 D_8012EAE0;
-extern f32 gKirbyHp;
-extern s32 D_800D6E54;
-
-void func_800F88C8(s32, s32, f32);
-// some sort of init_kirby function?
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011C8F8.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011CCB8.s")
-
-void func_800AECC0(f32);
-void func_800AED20(f32);
-extern s32 D_800E8AE0[];
-
-
-void func_8011CF58(void) {
-    if (D_800E8AE0[D_8004A7C4->objId] & 6) {
-        func_800AECC0(1.0f);
-        func_800AED20(1.0f);
+    if (arg1->unkC < arg1->unk18) {
+        if ((arg0->unkC < arg1->unkC - r) || (arg1->unk18 + r < arg0->unkC)) {
+            return 0;
+        }
     } else {
-        func_800AECC0(2.0f);
-        func_800AED20(2.0f);
+        if ((arg0->unkC < arg1->unk18 - r) || (arg1->unkC + r < arg0->unkC)) {
+            return 0;
+        }
     }
+    r2 = arg0->unk1C + arg1->unk24;
+    if (arg1->unk10 < arg1->unk1C) {
+        if ((arg0->unk10 < arg1->unk10 - r2) || (arg1->unk1C + r2 < arg0->unk10)) {
+            return 0;
+        }
+    } else {
+        if ((arg0->unk10 < arg1->unk1C - r2) || (arg1->unk10 + r2 < arg0->unk10)) {
+            return 0;
+        }
+    }
+    if (arg1->unk14 < arg1->unk20) {
+        if ((arg0->unk14 < arg1->unk14 - r) || (arg1->unk20 + r < arg0->unk14)) {
+            return 0;
+        }
+    } else {
+        if ((arg0->unk14 < arg1->unk20 - r) || (arg1->unk14 + r < arg0->unk14)) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
-void func_8011CFE0(void) {
-    gKirbyState.unk4 = 0;
-    gKirbyState.numberInhaled = 0;
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_8/func_8010F140.s")
+
+void func_8010F964(f32 *arg0, f32 *arg1) {
+    arg0[0] = (arg1[6] + arg1[3]) * 0.5f;
+    arg0[1] = (arg1[7] + arg1[4]) * 0.5f;
+    arg0[2] = (arg1[8] + arg1[5]) * 0.5f;
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011CFF4.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011D0FC.s")
-
-struct UnkStruct801290D8 {
-    u8 filler[0x14];
-    u16 unk14;
+struct UnkF9AC {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ char pad1[0x3];
+    /* 0x04 */ u8 unk4;
+    /* 0x05 */ char pad5[0x7];
+    /* 0x0C */ Vector unkC;
+    /* 0x18 */ Vector unk18;
+    /* 0x24 */ char pad24[0x4];
 };
 
-extern u8 D_8012E7D7;
-extern s32 D_800D6B54, D_800D6B58, D_800BE4F8, D_800D708C;
-extern struct UnkStruct801290D8 *D_801290D8;
-s32 change_kirby_hp(f32);
+s32 func_8010EA68(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
+s32 func_8010F140(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
 
-void func_8011D40C(void) {
-    if (D_800D6B54 == 0) {
-        D_8012E7D7 = 1;
-        change_kirby_hp(-6.0f);
-        D_800D6B54 = 1;
-        D_800D6B58 = 0x96;
-        D_800BE4F8 = 6;
-        func_800FA414(6);
-        D_800D708C = D_801290D8->unk14;
-        func_80020998_ovl2(0, 0x7800);
-        play_music(0, 5);
-    }
-}
+s32 func_8010F9AC(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
+    s32 ret;
 
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011D4A4.s")
-
-extern s32 D_801926E8;
-extern s32 D_80190358;
-
-void func_8011D614(void) {
-    func_8011CF58();
-    func_800A9760(0x20007);
-    
-    D_800E0490[D_8004A7C4->objId] = &D_801926E8;
-
-    gKirbyState.unk15C = &D_80190358;
-    gKirbyState.unk154 = 2;
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011D67C.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011D858.s")
-
-extern f32 func_800F951C(s32 arg1,f32 arg2,s32 arg3,f32 arg4);
-f32 func_8011D9E0(s32 arg1, f32 arg2, s32 arg3, f32 arg4) {
-    f32 temp_f0;
-
-    temp_f0 = func_800F951C(arg1, arg2, arg3, arg4);
-    if (temp_f0 == D_80128EF8) {
-        return D_80128EFC;
-    }
-    return temp_f0;
-}
-
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011DA34.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011DAF8.s")
-
-void func_8011DC04(u32 arg0) {
-	func_800A77E8(arg0, &D_8012E818, &D_8012E81C);
-}
-
-void func_8011DC30(u32 arg0) {
-    func_800A77E8(arg0, &D_8012E820, &D_8012E824);
-}
-
-void func_8011DC5C(void) {
-    if (gKirbyState.unk58 != 0) {
-        func_800A7870(&gKirbyState.unk58, &gKirbyState.unk5C);
-    }
-    gKirbyState.unk58 = 0;
-    gKirbyState.unk5C = 0;
-    if (gKirbyState.unk60 != 0) {
-        func_800A7870(&gKirbyState.unk60, &gKirbyState.unk64);
-    }
-    gKirbyState.unk60 = 0;
-    gKirbyState.unk64 = 0;
-}
-
-void func_8011DCD0(void) {
-    if (gKirbyState.unk60 != 0) {
-        func_800A7870(&D_8012E820, &D_8012E824);
-    }
-    gKirbyState.unk60 = 0;
-    gKirbyState.unk64 = (u16)0;
-}
-
-void func_8011DD18(s32 arg0) {
-    if (gGameState != 0x21) {
-        if (arg0 != gKirbyState.ability) {
-            gKirbyState.ability = arg0;
-            func_8012310C(arg0);
+    switch (arg0->unk4) {
+    case 0:
+        switch (arg1->unk4) {
+        case 0:
+            return func_8010EE24((struct UnkEE24 *) arg0, (struct UnkEE24 *) arg1);
+        case 1:
+            return func_8010EEE8((struct UnkEE24 *) arg0, (struct UnkEE24 *) arg1);
+        case 2:
+            return func_8010EFA8((struct UnkEE24 *) arg0, (struct UnkEFA8 *) arg1);
         }
-    }
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011DD5C.s")
-
-void func_8011E0E8(void) {
-    if (gKirbyState.unk4C != 0) {
-        if (gKirbyState.unk48 == 0) {
-            func_800A22D4(gKirbyState.unk4C);
-        } else {
-            func_800A1F30(gKirbyState.unk4C);
+        break;
+    case 1:
+        switch (arg1->unk4) {
+        case 0:
+            return func_8010EEE8((struct UnkEE24 *) arg1, (struct UnkEE24 *) arg0);
+        case 1:
+            ret = func_8010EA20((struct UnkEA20 *) arg0, (struct UnkEA20 *) arg1, (s32) arg2);
+            if (ret != 0) {
+                arg2->unkC = arg0->unkC;
+                arg2->unk18 = arg1->unkC;
+            }
+            return ret;
+        case 2:
+            ret = func_8010EA68(arg0, arg1, arg2);
+            if (ret != 0) {
+                arg2->unkC = arg0->unkC;
+                func_8010F964((f32 *) &arg2->unk18, (f32 *) arg1);
+            }
+            return ret;
         }
-        gKirbyState.unk4C = 0;
-        gKirbyState.unk48 = 0;
-    }
-    if (gKirbyState.unk50 != 0) {
-        if (gKirbyState.unk48 == 0) {
-            func_800A22D4(gKirbyState.unk50);
-        } else {
-            func_800A1F30(gKirbyState.unk50);
+        break;
+    case 2:
+        switch (arg1->unk4) {
+        case 0:
+            return func_8010EFA8((struct UnkEE24 *) arg1, (struct UnkEFA8 *) arg0);
+        case 1:
+            ret = func_8010EA68(arg1, arg0, arg2);
+            if (ret != 0) {
+                func_8010F964((f32 *) &arg2->unkC, (f32 *) arg0);
+                arg2->unk18 = arg1->unkC;
+            }
+            return ret;
+        case 2:
+            ret = func_8010F140(arg0, arg1, arg2);
+            if (ret != 0) {
+                func_8010F964((f32 *) &arg2->unkC, (f32 *) arg0);
+                func_8010F964((f32 *) &arg2->unk18, (f32 *) arg1);
+            }
+            return ret;
         }
-        gKirbyState.unk50 = 0;
-        gKirbyState.unk48 = 0;
+        break;
     }
 }
 
-void func_8011E190(void) {
-	u32 temp_a0;
-	u32 temp_v0;
-	
-    if (gGameState != 0x21) {
-		temp_a0 = gKirbyState.currentInhale;
-		temp_v0 = gKirbyState.currentInhale;
-        if (temp_v0 != 0) {
-            gKirbyState.ability = (s32) gKirbyState.currentInhale;
-            func_8012310C(temp_a0);
-        }
-        gKirbyState.secondInhale = 0;
-        gKirbyState.firstInhale = 0;
-        gKirbyState.currentInhale = 0;
-    }
-}
-
-
-extern s32 D_80126EF8[][0x90 / 4];
-s32 func_8011E1E8(s32 arg0, s32 arg1) {
-    if (arg1 >= 8) {
-        return arg1;
-    }
-    if (arg0 >= 8) {
-        return arg0;
-    }
-    return D_80126EF8[arg0][arg1];
-}
-
-void func_8011E234(void) {
-    D_8012E922 = 0x14;
-}
-
-u8 func_8011E244(void) {
-    if (D_800E8920[0] == 1) {
-        return D_8012E9B8;
-    } else {
-		return 0x14;
-	}
-}
-
-u8 func_8011E270(void) {
-    if (D_8012E8C2 == 0x12 || D_8012E8C2 == 0x13) {
-        return 1;
-    }
-    return 0;
-}
-
-extern f32 D_80128F18;
-f32 func_8011E2A0(void) {
-    f32 temp_f2;
-
-    if ((gKirbyState.isTurning & 0x4000) == 0) {
-        temp_f2 = (f32)gKirbyState.unk114->unk10 * D_80128F18;
-        if (temp_f2 != 0.0f) {
-            return temp_f2 * D_80128F18;
-        }
-    }
-    return 0.0f;
-}
-
-void func_8011E31C(Vector *arg0) {
-    arg0->x = gPositionState.kirbyHeadPos[0];
-    arg0->y = gPositionState.kirbyHeight[1];
-    arg0->z = gPositionState.kirbyHeadPos[2];
-}
-
-s32 func_8011E340(void) {
-    if (gKirbyState.floorCollisionNext != 0) {
-        return gKirbyState.unk114;
-    } else {
-		return 0;
-	}
-}
-
-s32 func_8011E368(void) {
-    return D_800D6F10;
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011E374.s")
-
-void func_8011E438(void) {
-    gKirbyState.unk4 = 0;
-    gKirbyState.unk17 = 1;
-    gKirbyState.abilityInUse = 0;
-    set_kirby_action_2(0x48, 0x1C);
-    D_800E6850[0] = 0.0f;
-    D_800E64D0[0] = D_800E6690[0] = D_800E6850[0];
-    D_800E3210[0] = 0.0f;
-    D_800E3750[0] = D_80128F20;
-    D_800E3C90[0] = 16.0f;
-    gEntitiesScaleZArray[0] = D_80128F24;
-    gEntitiesScaleXArray[0] = gEntitiesScaleYArray[0] = gEntitiesScaleZArray[0];
-}
-
-void func_8011E4E4(u32 arg0) {
-    gKirbyState.unk17 = 1;
-    gKirbyState.unk18 = 1;
-    gKirbyState.abilityState = arg0;
-    gKirbyState.unk68 = 1;
-}
-
-void func_8011E504(void) {
-    gKirbyState.unk17 = 0;
-    gKirbyState.unk18 = 0;
-    gKirbyState.abilityState = 0;
-    gKirbyState.unk24 = 0;
-    gKirbyState.unk68 = 0;
-}
-
-void func_8011E524(void) {
-    if (gKirbyState.unk16C == 0) {
-        gKirbyState.unk16C = 1;
-    }
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011E548.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011E978.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011EBD4.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011ED68.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011F690.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8011FEF8.s")
-
-
-extern f32 D_80129068;
-void func_80120AF8(Vector *arg0);
-void func_80120A28(void) {
-    Vector sp24;
-    if ((D_800E8AE0[D_8004A7C4->objId] & 6) != 0) {
-        D_800E6690[D_8004A7C4->objId] = D_800E6A10[D_8004A7C4->objId] * D_80129068;
-        D_800E6850[D_8004A7C4->objId] = 0.0f;
-    } else {
-        func_80120AF8(&sp24);
-        D_800E6690[D_8004A7C4->objId] = D_800E6A10[D_8004A7C4->objId] * sp24.z;
-        D_800E6850[D_8004A7C4->objId] = 0.0f;
-    }
-}
-
-extern f32 D_80129070, D_8012906C;
-struct UnkStruct80128434 {
-    Vector unk0;
-    u32 unkC;
-    Vector unk10;
+struct UnkFC30A {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ char pad4[0x14];
+    /* 0x18 */ struct UnkF9AC *unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ struct UnkF9AC *unk20;
 };
 
-extern struct UnkStruct80128434 D_80128434[];
-void func_80120AF8(Vector *arg0) {
-    if (D_800E8920[D_8004A7C4->objId] == 0) {
-        if ((D_800E8AE0[D_8004A7C4->objId] & 6) != 0) {
-            arg0->z = D_8012906C;
-        } else {
-            arg0->z = D_80129070;
-        }
-        arg0->y = 1.0f;
-        arg0->x = 1.0f;
-        // return;
-    } else {
-    // * 0x1C
-        arg0->x = D_80128434[gKirbyState.unk10A].unk0.x;
-        arg0->y = D_80128434[gKirbyState.unk10A].unk0.y;
-        arg0->z = D_80128434[gKirbyState.unk10A].unk0.z;
-    }
-}
+struct UnkFC30B {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ char pad4[0x18];
+    /* 0x1C */ struct UnkF9AC *unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ struct UnkF9AC *unk24;
+};
 
+/* The definition above takes `struct Unk8010E740 *`. This second, later
+ * declaration named a different tag, which gcc rejects outright and which
+ * broke the build for every lane; IDO accepted it, so the ROM was never
+ * affected. Both are pointers so the codegen at the call site is
+ * identical -- only the tag differed. */
+void func_8010E740(struct Unk8010E740 *, s32);
 
-// some prototype meme (and the early return doesnt help)
-#ifdef NON_MATCHING
-extern u32 D_80128348[];
-u32 func_80120BCC(void) {
-    u32 phi_v1;
+s32 func_8010FC30(struct UnkFC30A *arg0, struct UnkFC30B *arg1, struct UnkF9AC *arg2) {
+    struct UnkF9AC *p;
+    struct UnkF9AC *q;
+    s32 i;
+    s32 j;
 
-    phi_v1 = 0;
-    if (gKirbyState.ability != 0) {
-        phi_v1 = 0;
-        if (gKirbyState.abilityInUse == 0) {
-            gKirbyState.hpAfterDamage = gKirbyHp;
-            if (gKirbyState.abilityDropTimer == 0) {
-                gKirbyState.abilityDropTimer = D_80128348[gKirbyState.hpAfterDamage] + 0x2D;
-                return;
+    if (arg0->unk18 != NULL) {
+        if (arg1->unk1C != NULL) {
+            if (arg0->unk18->unk0 == 0) {
+                func_8010E740(arg0->unk18, arg0->unk0);
             }
-            gKirbyState.droppedAbility = gKirbyState.ability;
-            gKirbyState.abilityDropTimer = 0;
-            gKirbyState.isTakingDamage = 1;
-            gKirbyState.ability = 0;
-            phi_v1 = 1;
-        }
-    }
-    return phi_v1;
-}
-#else
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80120BCC.s")
-#endif
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80120CCC.s")
-
-// take damage?
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80120E74.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_801210B4.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_801210FC.s")
-
-
-u32 func_80121194(void) {
-    if (D_8012E7D7 == 0
-        && ((D_800E6A10[D_8004A7C4->objId] == 1.0f && gKirbyController.buttonHeld & L_JPAD)
-        ||  (D_800E6A10[D_8004A7C4->objId] == -1.0f && gKirbyController.buttonHeld & R_JPAD))
-        ) {
-        return 1;
-    }
-    return 0;
-}
-
-u8 kirby_in_inactionable_state(void) {
-    if ((gKirbyState.unk17 != 0) && (gKirbyState.abilityState != 0)) {
-        return 3;
-    }
-    if (gKirbyState.abilityState != 0) {
-        return 2;
-    }
-    if (gKirbyState.unk17 != 0) {
-        return 1;
-    }
-    return 0;
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121284.s")
-
-extern const f32 D_80129074;
-extern s32 D_800E85A0[];
-void func_801212A4(void) {
-    Vector currPos;
-    Vector nextPos;
-
-    if (D_800D6B54 == 0) {
-        currPos.x = gEntitiesPosXArray[D_8004A7C4->objId];
-        currPos.y = gEntitiesPosYArray[D_8004A7C4->objId];
-        currPos.z = gEntitiesPosZArray[D_8004A7C4->objId];
-        nextPos.x = gEntitiesNextPosXArray[D_8004A7C4->objId];
-        nextPos.y = gEntitiesNextPosYArray[D_8004A7C4->objId];
-        nextPos.z = gEntitiesNextPosZArray[D_8004A7C4->objId];
-        if (func_8010474C(&currPos, &nextPos) != 0) {
-            if (D_800D6B54 == 0) {
-                func_8011D40C();
-                if (D_800E3210[D_8004A7C4->objId] > 0.0f) {
-                    D_800E3750[D_8004A7C4->objId] = 0.0f;
-                    D_800E3210[D_8004A7C4->objId] = D_800E3750[D_8004A7C4->objId];
-                    D_800E3C90[D_8004A7C4->objId] = D_80129074;
-                }
+            if (arg1->unk1C->unk0 == 0) {
+                func_8010E740(arg1->unk1C, arg1->unk0);
             }
-        } else {
-            if ((gKirbyState.ceilingCollisionNext != 0) && (gKirbyState.floorCollisionNext != 0) && (gKirbyState.action != 0x1D)
-                &&(gKirbyState.ceilingType != 4) && (gKirbyState.ceilingType != 5)
-            ) {
-                    change_kirby_hp(-6.0f);
-                    set_kirby_action_1(0x16, 0x17);
-            }
-            else if ((gKirbyState.rightCollisionNext != 0) && (gKirbyState.leftCollisionNext != 0) && (gKirbyState.unk104 != 2) && (gKirbyState.unk106 != 2)) {
-                change_kirby_hp(-6.0f);
-                set_kirby_action_1(0x16, 0x17);
-            }
-            else if ((gKirbyState.unk140 != 0)
-                && (D_800E7B20[D_8004A7C4->objId] != 0) && (D_800E7CE0[D_8004A7C4->objId] == 0)
-                    && (gKirbyState.action != 0x1D) && (gKirbyState.unk68 == 0) && (gKirbyState.action != 0x16)
-            ) {
-                if (change_kirby_hp(-1.0f) == 0) {
-                    set_kirby_action_1(0x16, 0x17);
-                } else {
-                    func_80120BCC();
-                    if (gKirbyState.unk140 & 0x40000) {
-                        D_800E85A0[D_8004A7C4->objId] = 1;
-                    } else if (gKirbyState.unk140 & 0x80000) {
-                        D_800E85A0[D_8004A7C4->objId] = -1;
+            if (func_8010F9AC(arg0->unk18, arg1->unk1C, NULL) != 0) {
+                                for (i = 0, p = arg0->unk20; i < arg0->unk1C; i++, p++) {
+                    if (p->unk0 == 0) {
+                        func_8010E740(p, arg0->unk0);
                     }
-                    gKirbyState.unk24 = 1;
-                    set_kirby_action_1(0x14, 0x16);
+                                        for (j = 0, q = arg1->unk24; j < arg1->unk20; j++, q++) {
+                        if (q->unk0 == 0) {
+                            func_8010E740(q, arg1->unk0);
+                        }
+                        if (func_8010F9AC(p, q, arg2) != 0) {
+                            return 1;
+                        }
+                    }
+                }
+            }
+        } else {
+            if (arg0->unk18->unk0 == 0) {
+                func_8010E740(arg0->unk18, arg0->unk0);
+            }
+                        for (j = 0, q = arg1->unk24; j < arg1->unk20; j++, q++) {
+                if (q->unk0 == 0) {
+                    func_8010E740(q, arg1->unk0);
+                }
+                if (func_8010F9AC(arg0->unk18, q, NULL) != 0) {
+                                        for (i = 0, p = arg0->unk20; i < arg0->unk1C; i++, p++) {
+                        if (p->unk0 == 0) {
+                            func_8010E740(p, arg0->unk0);
+                        }
+                        if (func_8010F9AC(p, q, arg2) != 0) {
+                            return 1;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        if (arg1->unk1C != NULL) {
+            if (arg1->unk1C->unk0 == 0) {
+                func_8010E740(arg1->unk1C, arg1->unk0);
+            }
+                        for (i = 0, p = arg0->unk20; i < arg0->unk1C; i++, p++) {
+                if (p->unk0 == 0) {
+                    func_8010E740(p, arg0->unk0);
+                }
+                if (func_8010F9AC(p, arg1->unk1C, NULL) != 0) {
+                                        for (j = 0, q = arg1->unk24; j < arg1->unk20; j++, q++) {
+                        if (q->unk0 == 0) {
+                            func_8010E740(q, arg1->unk0);
+                        }
+                        if (func_8010F9AC(p, q, arg2) != 0) {
+                            return 1;
+                        }
+                    }
+                }
+            }
+        } else {
+                        for (i = 0, p = arg0->unk20; i < arg0->unk1C; i++, p++) {
+                if (p->unk0 == 0) {
+                    func_8010E740(p, arg0->unk0);
+                }
+                                for (j = 0, q = arg1->unk24; j < arg1->unk20; j++, q++) {
+                    if (q->unk0 == 0) {
+                        func_8010E740(q, arg1->unk0);
+                    }
+                    if (func_8010F9AC(p, q, arg2) != 0) {
+                        return 1;
+                    }
                 }
             }
         }
     }
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_801215DC.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121658.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_801217B8.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121828.s")
-
-void func_801219C8(void) {
-    if (func_801215DC() == 2) {
-        gKirbyState.isTurning |= 1;
-    }
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121A04.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121BCC.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121C90.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121D3C.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121F14.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80121F50.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8012209C.s")
-
-u32 func_80122460(void) {
-    if ((gKirbyState.ceilingCollisionNext != 0) && (D_800E3210[D_8004A7C4->objId] > 0.0f)) {
-        if ((gKirbyState.ceilingType == 4) || (gKirbyState.ceilingType == 5)) {
-            if (func_8010D8A4(&gPositionState) != 0) {
-                return 1;
-            }
-        }
-    } else if ((gKirbyState.floorCollisionNext != 0)
-        && (D_800E3210[D_8004A7C4->objId] <= 0.0f)
-        && (gKirbyState.floorType == 4)
-        && (func_8010D8A4(&gPositionState) != 0)) {
-        
-        return 1;
-    }
     return 0;
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122558.s")
+void func_80110014(Mtx *m, f32 dx, f32 dy, f32 dz, f32 sx, f32 sy, f32 sz) {
+    s32 e1, e2;
 
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_801226FC.s")
+    e1 = FTOFIX32(sx);
+    e2 = FTOFIX32(0.0f);
+    m->m[0][0] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[2][0] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
 
-u8 func_801229D0(void) {
-    if (gPositionState.byteArray[2] != 0x14) {
-        D_8012E922 = (s16) gPositionState.byteArray[2];
-    }
-    else if (gPositionState.byteArray[3] != 0x14) {
-        D_8012E922 = (s16) gPositionState.byteArray[3];
-    }
+    e1 = FTOFIX32(0.0f);
+    e2 = FTOFIX32(0.0f);
+    m->m[0][1] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[2][1] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(0.0f);
+    e2 = FTOFIX32(sy);
+    m->m[0][2] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[2][2] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(0.0f);
+    e2 = FTOFIX32(0.0f);
+    m->m[0][3] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[2][3] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(0.0f);
+    e2 = FTOFIX32(0.0f);
+    m->m[1][0] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[3][0] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e1 = FTOFIX32(sz);
+    e2 = FTOFIX32(0.0f);
+    m->m[1][1] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[3][1] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    e2 = FTOFIX32(dy);
+    e1 = FTOFIX32(dx);
+    m->m[1][2] = (e1 & 0xFFFF0000) | ((e2 >> 16) & 0xFFFF);
+    m->m[3][2] = ((e1 << 16) & 0xFFFF0000) | (e2 & 0xFFFF);
+
+    m->m[1][3] = (FTOFIX32(dz) & 0xFFFF0000) | ((FTOFIX32(1.0f) >> 16) & 0xFFFF);
+    m->m[3][3] = ((FTOFIX32(dz) << 16) & 0xFFFF0000) | (FTOFIX32(1.0f) & 0xFFFF);
 }
 
-extern const char *D_80128DC0;
-extern s32 D_80128420[];
-extern s16 D_8012E894;
-void func_80122A10(s32 arg0) {
-    if ((D_8012E894 > 0) && (D_8012E894 < 5)) {
-        func_800A8100(0, 1, D_80128420[D_8012E894], arg0);
-        return;
-    }
-    // "plydmg ptcl kind over![plylib.cc] max: %x, kind: %x\n"
-    print_error_stub(&D_80128DC0, 5, D_8012E894);
+void func_80110130(void) {
 }
 
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122A80.s")
-
-
-
-
-extern s16 D_8012844C[][2];
-
-extern void func_800A7F74(u32 a, u32 b, u16 c, f32 d, f32 e, f32 f);
-
-#ifdef NON_MATCHING
-void func_80122B40(void) {
-    u16 phi_a2;
-
-    if (D_800E8AE0[D_8004A7C4->objId] & 7) {
-        if (D_800E8AE0[D_8004A7C4->objId] & 6)
-            phi_a2 = 19;
-        else
-            phi_a2 = 14;
-    } else {
-        // TODO: Fix some regalloc over here!
-        if (gKirbyState.vel[2] < -12.5f)
-            phi_a2 = D_8012844C[gKirbyState.unk10A * 7][1];
-        else
-            phi_a2 = D_8012844C[gKirbyState.unk10A * 7][0];
-    }
-    func_800A7F74(5, 1, phi_a2, gEntitiesNextPosXArray[D_8004A7C4->objId], gEntitiesNextPosYArray[D_8004A7C4->objId], gEntitiesNextPosZArray[D_8004A7C4->objId]);
+void func_80110138(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
-#else
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122B40.s")
-#endif
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122C30.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122CA0.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122CE8.s")
-
-void func_80122F08(u32 arg0) {
-    if (!(arg0 != 0x20007 && arg0 != 0x20008 && arg0 != 0x20009)) {
-        func_800A9760(arg0);
-    } else {
-        func_800A8EC0(arg0);
-    }
-    func_800AFA88(D_8004A7C4);
-}
-
-// set_kirby_action? Two of them?
-void set_kirby_action_1(s32 actionChange, s32 action) {
-    if (actionChange != 0xFFFF) {
-        gKirbyState.actionChange = actionChange;
-        gKirbyState.previousAction = gKirbyState.action;
-        gKirbyState.action = action;
-    }
-}
-
-void set_kirby_action_2(s32 actionChange, u32 action) {
-    gKirbyState.actionChange = actionChange;
-    gKirbyState.previousAction = gKirbyState.action;
-    gKirbyState.action = action;
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80122FB0.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80123004.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_8012307C.s")
-
-void func_8012307C(s32 arg0, s32 arg1, f32 arg2, s32 arg3);
-void func_801230E8(s32 arg0, s32 arg1, s32 arg2) {
-	func_8012307C(arg0, arg1, 0.0f, arg2);
-}
-
-void func_8012310C(s32 currentInhale) {
-    if (currentInhale != 0) {
-        play_sound(0x104);
-    }
-    func_800BC298(currentInhale);
-}
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80123144.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80123170.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_801231D8.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80123240.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_801232A8.s")
-
-GLOBAL_ASM("asm/non_matchings/ovl2_8/func_80123354.s")

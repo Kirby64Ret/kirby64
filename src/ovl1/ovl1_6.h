@@ -8,13 +8,16 @@
 #define MultiType union {u32 as_u32; u32 *as_u32p; s32 as_s32; s32 *as_s32p; void *as_ptr;}
 #define _MultiType(CustomType) union {u32 as_u32; s32 as_s32; void *as_ptr; CustomType *consume;}
 
-extern s32 D_800DD710[];
+extern u32 D_800DD710[]; // "JN number"
 extern s32 D_800DE190[];
 extern s32 D_800DDFD0[];
 extern s32 D_800DDE10[];
-extern s32 gEntityVtableIndexArray[];
+
+// 'List ID'
+extern s32 gEntityFuncListIDArray[];
+
 extern s32 D_800DD8D0[];
-extern s32 D_800E0810[];
+extern s32 gEntityRenderPriorityArray[];
 
 
 extern f32 D_800E0B90[];
@@ -26,14 +29,21 @@ extern s32 *D_800E0650[];
 extern s32 D_800E1ED0[];
 extern void (*D_800DEDD0[])(struct GObj *);
 extern void (*D_800DEF90[])(s32);
-extern void (*D_800DF150[])(s32);
+extern void (*D_800DF150[])(struct GObj *);
 extern void (*D_800DF310[])(s32, s32, f32);
 extern u32 D_800DF850[];
-extern u32 D_800DF690[];
+extern union {
+    u32 as_u32;
+    u32 *as_u32p;
+} D_800DF690[];
 extern u32 *gSegment4StartArray[];
 
 // i think this is an array of pairs (2-length arrays) of pointers but cba to figure out syntax
-extern struct LayoutNode **D_800DFBD0[];
+extern struct DObj **D_800DFBD0[];
+// oh no this is a union or something.....
+extern u32 D_800DFBD0_as_u32[];
+
+
 extern s32 D_800E0110[];
 extern s32 D_800DFF50[];
 extern s32 D_800E02D0[];
@@ -48,12 +58,14 @@ extern f32 gEntitiesPosXArray[];
 extern f32 gEntitiesNextPosZArray[];
 extern f32 gEntitiesNextPosYArray[];
 extern f32 gEntitiesNextPosXArray[];
-extern f32 D_800E3910[];
-extern f32 D_800E3750[];
 extern f32 D_800E3590[];
-extern f32 D_800E33D0[];
-extern f32 D_800E3210[];
-extern f32 D_800E3050[];
+extern f32 D_800E3750[];
+extern f32 D_800E3910[];
+
+extern f32 D_800E3050[]; // _not_ x speed?
+extern f32 D_800E3210[]; // y speed
+extern f32 D_800E33D0[]; // _not_ z speed?
+
 extern f32 D_800E3E50[];
 extern f32 D_800E3C90[];
 extern f32 D_800E3AD0[];
@@ -95,7 +107,7 @@ extern u16 D_800E77A0[];
 extern u8 D_800E7880[];
 extern u8 D_800E78F0[];
 extern f32 D_800E7B20[];
-extern u32 D_800E7CE0[];
+extern s32 D_800E7CE0[];
 extern s32 D_800EA520[];
 extern s32 D_800EA360[];
 extern s32 D_800EA1A0[];
@@ -152,13 +164,19 @@ extern s32 D_800E9720[];
 extern s32 D_800E9560[];
 extern s32 D_800E93A0[];
 
-extern f32 D_800D6B10;
+extern f32 gameTicksPerDraw;
 
+// only x/y seem to be updated, and originOffset actually tracks distance
 extern struct Normal D_800E6F50[];
+
+
+
 extern f32 D_800D66FC, D_800D66F8;
 
 extern u32 D_800E8060[];
 extern s32 D_800E8920[];
 extern s32 D_800E7EA0[];
+
+s32 func_800AEC70(s32 id, s32 minIndex, s32 maxIndex);
 
 #endif
