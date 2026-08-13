@@ -23,8 +23,7 @@ ifeq ($(PROGRESS), 1)
 	DEFS += -DGET_PROGRESS
 endif
 
-# IDO_PATH := tools/ido-7.1recomp/
-IDO_PATH := /home/faris/Devel/decomp.me/backend/compilers/n64/ido7.1/
+IDO_PATH := tools/ido-7.1recomp/
 
 ##################### Compiler #######################
 CC := $(IDO_PATH)cc
