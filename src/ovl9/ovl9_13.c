@@ -681,28 +681,33 @@ void func_8020B524_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
-void func_8020B598_ovl9(struct GObj *arg0) {
-    D_800DDFD0[omCurrentObj->objId] = 1;
-    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
-    do {
-        func_800AA018(0x10040);
-        ohSleep(0x13);
-        D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
-        D_800E9560[omCurrentObj->objId] = random_soft_s32_range(0x3C);
-        while (D_800E9560[omCurrentObj->objId] > 0) {
-            D_800E9560[omCurrentObj->objId] = D_800E9560[omCurrentObj->objId] - 1;
-            ohSleep(1);
-            if (func_8019A9AC_ovl7(640.0f, 640.0f) != 3) {
-                gEntityFuncListIDArray[omCurrentObj->objId] = 0;
-                D_800E9560[omCurrentObj->objId] = 0;
-            }
-        }
-    } while (gEntityFuncListIDArray[omCurrentObj->objId] == 1);
+void func_8020B598_ovl9(struct GObj *arg0)
+{
+  D_800DDFD0[omCurrentObj->objId] = 1;
+  D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+  if (omCurrentObj->objId)
+  {
+  }
+  do
+  {
+    func_800AA018(0x10040);
+    ohSleep(0x13);
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+    D_800E9560[omCurrentObj->objId] = random_soft_s32_range(0x3C);
+    while (D_800E9560[omCurrentObj->objId] > 0)
+    {
+      D_800E9560[omCurrentObj->objId] = D_800E9560[omCurrentObj->objId] - 1;
+      ohSleep(1);
+      if (func_8019A9AC_ovl7(640.0f, 640.0f) != 3)
+      {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+        D_800E9560[omCurrentObj->objId] = 0;
+      }
+    }
+
+  }
+  while (gEntityFuncListIDArray[omCurrentObj->objId] == 1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020B598_ovl9.s")
-#endif
 void func_8020B718_ovl9(struct GObj *arg0) {
     if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
         if (func_8019A9AC_ovl7(240.0f, 160.0f) == 3) {
