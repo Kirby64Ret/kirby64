@@ -974,7 +974,19 @@ void gtlLoadUcode(Gfx **, u32);
 void func_80017E84(GObj *, s32);
 
 void func_800ADD14(GObj *camObj) {
+#ifdef PORT
+    /* LP64: SpriteDrawCamera mirrors the CAMERA'S N64 BYTE OFFSETS (viewport
+     * at +0x08 after two 4-byte pointers, flags at +0x80). On the PC build
+     * pointers are 8 bytes, so the real Camera's viewport lives at +0x10 and
+     * everything the mirror reads is shifted 8 bytes into garbage -- the
+     * boot-screen bg camera then emits a scissor built from a stale pointer's
+     * bytes and the whole background is clipped away. GObj.h already includes
+     * main/object_manager.h, so the real Camera type is in scope; use it and
+     * let the compiler lay the fields out. */
+    Camera *cam;
+#else
     struct SpriteDrawCamera *cam;
+#endif
     u32 savedUcode;
     s32 ulx;
     s32 uly;
