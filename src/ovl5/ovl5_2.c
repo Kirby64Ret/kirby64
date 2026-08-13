@@ -376,7 +376,6 @@ s32 func_8015F5DC_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
-#ifdef NON_MATCHING
 // 2 diffs: the `sw $v1` spill of `p` and the `addiu $a0,0xA` swap places
 // around the second random_soft_s32_range call (delay-slot fill only).
 extern u8 D_8018691A_ovl5[];
@@ -385,35 +384,49 @@ void func_80160088_ovl5(s32);
 void func_80160120_ovl5(s32);
 void func_8016050C_ovl5(s32);
 
-void func_8015F67C_ovl5(s32 arg0) {
-    s32 sp2C = D_8018E224_ovl5[arg0];
-    u8 *p = &D_8018E228_ovl5[arg0 * 12];
-    s32 v0;
-
-    v0 = func_8015F4C4_ovl5(arg0, p[6]);
-    if (D_800EA520[omCurrentObj->objId] == 2 || D_800EA520[omCurrentObj->objId] == 3) {
-        if (v0 == 2) {
-            func_80160088_ovl5(arg0);
-        } else if ((v0 == 0 && p[7] != 0xFF) || (v0 == 1 && p[8] != 0xFF)) {
-            func_80160120_ovl5(arg0);
-        } else {
-            func_8016050C_ovl5(arg0);
-        }
-    } else {
-        if (random_soft_s32_range(0x10) < D_8018691A_ovl5[sp2C * 6]) {
-            p[4] = 4;
-        } else if (v0 == 0) {
-            p[4] = 1;
-        } else if (v0 == 1) {
-            p[4] = 2;
-        } else {
-            p[4] = 3; *(s32 *) p = random_soft_s32_range(0xA) + 5;
-        }
+void func_8015F67C_ovl5(s32 arg0)
+{
+  s32 sp2C = D_8018E224_ovl5[arg0];
+  u8 *p = &D_8018E228_ovl5[arg0 * 12];
+  s32 v0;
+  v0 = func_8015F4C4_ovl5(arg0, p[6]);
+  if ((D_800EA520[omCurrentObj->objId] == 2) || (D_800EA520[omCurrentObj->objId] == 3))
+  {
+    if (v0 == 2)
+    {
+      func_80160088_ovl5(arg0);
     }
+    else
+      if (((v0 == 0) && ((&D_8018E228_ovl5[arg0 * 12])[7] != 0xFF)) || ((v0 == 1) && ((&D_8018E228_ovl5[arg0 * 12])[8] != 0xFF)))
+    {
+      func_80160120_ovl5(arg0);
+    }
+    else
+    {
+      func_8016050C_ovl5(arg0);
+    }
+  }
+  else
+    if (random_soft_s32_range(0x10) < D_8018691A_ovl5[sp2C * 6])
+  {
+    (&D_8018E228_ovl5[arg0 * 12])[4] = 4;
+  }
+  else
+    if (v0 == 0)
+  {
+    (&D_8018E228_ovl5[arg0 * 12])[4] = 1;
+  }
+  else
+    if (v0 == 1)
+  {
+    (&D_8018E228_ovl5[arg0 * 12])[4] = 2;
+  }
+  else
+  {
+    p[4] = 3;
+    *((s32 *) p) = random_soft_s32_range(0xA) + 5;
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F67C_ovl5.s")
-#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F804_ovl5.s")
 

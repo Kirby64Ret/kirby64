@@ -1567,7 +1567,6 @@ void func_80117328(struct GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
 /* 10/95: every instruction, register and relative slot order is exact; only the
    frame is 0x30 against the ROM's 0x28.  The three named locals occupy 12 bytes
    in both, but IDO leaves a 4-byte hole below the spill temp AND another below
@@ -1583,11 +1582,12 @@ void func_80117328(struct GObj *arg0) {
    (struct GObj *) spelling. */
 extern f32 D_80126CF4[];
 
+#ifdef NON_MATCHING
+/* FACTORY: 10/95, left un-guarded when its lane was terminated. */
 void func_801173F4(s32 arg0) {
     u8 *sp24 = ((struct GObj *) arg0)->unk4C;
     s32 sp20 = ((struct GObj *) arg0)->objId;
     f32 sp1C = D_80126CF4[D_800E77A0[sp20]];
-
     func_800B4924((struct GObj *) arg0);
     if ((gEntitiesNextPosYArray[sp20] - D_800EA6E0[sp20]) < sp1C) {
         gEntitiesNextPosYArray[sp20] = D_800EA6E0[sp20] + sp1C;

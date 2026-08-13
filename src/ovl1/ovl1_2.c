@@ -32,7 +32,6 @@ extern f32 D_800D7AA0[];
 extern f32 D_800D7AC8[];
 extern f32 D_800D7AF0[];
 
-#ifdef NON_MATCHING
 // 13/169: every instruction correct except the register IDO picks for the
 // %hi(D_800BF918) address temp -- the ROM uses $v0 and IDO takes $s2, which
 // pulls the `sw $s2` prologue save 10 slots earlier and ripples through the
@@ -65,89 +64,114 @@ void func_80007C00(Vp *, f32, f32, f32, f32);
 void ohUpdateStub(GObj *);
 GObj *ohCreateCamera(s32, void (*)(GObj *), s32, s32, void (*)(GObj *), s32, s32, s32, s32, u8, void (*)(GObj *), s32, s32);
 
-s32 func_800A6BC0(u8 arg0) {
-    extern s32 *D_800BF8F0[];
-    s32 id;
-    GObj *obj;
-    struct UnkStruct800D79D8 *cam;
-    struct Ovl1CameraSetup *e;
-    s32 mask;
-    s32 idx;
-    f32 left;
-    f32 bottom;
-    f32 right;
-    f32 top;
-
-    D_800D7B68 = 0;
-    e = D_800BF918[arg0];
-    while (1) {
-        id = e->objId;
-        if (id == -1) {
-            break;
-        }
-        mask = e->dlLinkBitMask;
-        left = e->left;
-        bottom = e->bottom;
-        right = e->right;
-        top = e->top;
-        if (right < left) {
-            left = 10.0f;
-            right = 310.0f;
-        }
-        if (top < bottom) {
-            top = 230.0f;
-            bottom = 10.0f;
-        }
-        switch (id) {
-        case 10:
-        case 14:
-        case 18:
-        case 22:
-            obj = ohCreateCamera(id, ohUpdateStub, 0x19, 0x80000000, func_800ADD14, id, mask, -1, 1, 0, 0, 1, 0);
-            if (obj == NULL) {
-                return -1;
-            }
-            cam = obj->data.ptr;
-            break;
-        case 12:
-        case 16:
-        case 20:
-        case 24:
-            obj = ohCreateCamera(id, ohUpdateStub, 0x19, 0x80000000, func_80018170, id, mask, -1, 1, 0, 0, 1, 0);
-            if (obj == NULL) {
-                return -1;
-            }
-            cam = obj->data.ptr;
-            ((Camera *) cam)->flags = 4;
-            ((Camera *) cam)->perspMtx.persp.aspect = (right - left) / (top - bottom);
-            break;
-        case 11:
-        case 13:
-        case 15:
-        case 17:
-        case 19:
-        case 21:
-        case 23:
-            break;
-        }
-        idx = (u32) (id - 10) >> 1;
-        D_800D79B0[idx] = obj;
-        D_800D79D8[idx] = cam;
-        func_80007C00(&((Camera *) cam)->viewport, left, bottom, right, top);
-        *D_800BF8F0[idx] = (s32) obj;
-        if (id == 0x10) {
-            func_8009BA68(D_800D79D8[3]);
-        }
-        if (e->onCreated != 0) {
-            ((void (*)(void))(uintptr_t) e->onCreated)();
-        }
-        e++;
+s32 func_800A6BC0(u8 arg0)
+{
+  extern s32 *D_800BF8F0[];
+  s32 id;
+  GObj *obj;
+  struct UnkStruct800D79D8 *cam;
+  struct Ovl1CameraSetup *e;
+  s32 mask;
+  s32 idx;
+  f32 left;
+  struct Ovl1CameraSetup *new_var;
+  f32 bottom;
+  f32 right;
+  f32 top;
+  D_800D7B68 = 0;
+  new_var = D_800BF918[arg0];
+  e = new_var;
+  while (1)
+  {
+    id = e->objId;
+    if (id == (-1))
+    {
+      break;
     }
-    return 0;
+    mask = e->dlLinkBitMask;
+    left = e->left;
+    bottom = e->bottom;
+    right = e->right;
+    top = e->top;
+    if (right < left)
+    {
+      left = 10.0f;
+      right = 310.0f;
+    }
+    if (top < bottom)
+    {
+      top = 230.0f;
+      bottom = 10.0f;
+    }
+    switch (id)
+    {
+      case 10:
+
+      case 14:
+
+      case 18:
+
+      case 22:
+        obj = ohCreateCamera(id, ohUpdateStub, 0x19, 0x80000000, func_800ADD14, id, mask, -1, 1, 0, 0, 1, 0);
+        if (obj == ((void *) 0))
+      {
+        return -1;
+      }
+        cam = obj->data.ptr;
+        break;
+
+      case 12:
+
+      case 16:
+
+      case 20:
+
+      case 24:
+        obj = ohCreateCamera(id, ohUpdateStub, 0x19, 0x80000000, func_80018170, id, mask, -1, 1, 0, 0, 1, 0);
+        if (obj == ((void *) 0))
+      {
+        return -1;
+      }
+        cam = obj->data.ptr;
+        ((Camera *) cam)->flags = 4;
+        ((Camera *) cam)->perspMtx.persp.aspect = (right - left) / (top - bottom);
+        break;
+
+      case 11:
+
+      case 13:
+
+      case 15:
+
+      case 17:
+
+      case 19:
+
+      case 21:
+
+      case 23:
+        break;
+
+    }
+
+    idx = ((u32) (id - 10)) >> 1;
+    D_800D79B0[idx] = obj;
+    D_800D79D8[idx] = cam;
+    func_80007C00(&((Camera *) cam)->viewport, left, bottom, right, top);
+    *D_800BF8F0[idx] = (s32) obj;
+    if (id == 0x10)
+    {
+      func_8009BA68(D_800D79D8[3]);
+    }
+    if (e->onCreated != 0)
+    {
+      ((void (*)(void)) ((uintptr_t) e->onCreated))();
+    }
+    e++;
+  }
+
+  return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_2/func_800A6BC0.s")
-#endif
 
 void func_800A6E64(void) {
     extern s32 *D_800BF8F0[];
