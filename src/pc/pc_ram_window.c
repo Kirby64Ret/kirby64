@@ -127,7 +127,17 @@ __asm__(
  * One arena, reused by every scene, because that is what the game does: each
  * gtlCreateScene calls gtlSetupHeap again and starts allocating from the top.
  */
-#define PC_GTL_ARENA_SIZE (8u * 1024u * 1024u)
+/* 8 MB was the N64-sized guess and it is too small: gtlCreateScene asks for a
+ * single 10.5 MB block during ovl6's intro, mlAlloc reports "ml : alloc
+ * overflow #65536", and fatal_printf hands control to the crash screen --
+ * which then sits in faultWaitButton forever with cfb == NULL, i.e. a black
+ * window and a process at 70% CPU. That is exactly what this port did before
+ * this line changed.
+ *
+ * A host port has no reason to be bounded by the console's RAM budget, so give
+ * the arena room for the largest scene rather than the console's. 64 MB is
+ * still trivial on any machine that can run the renderer. */
+#define PC_GTL_ARENA_SIZE (64u * 1024u * 1024u)
 
 static u8 sGtlArena[PC_GTL_ARENA_SIZE];
 
