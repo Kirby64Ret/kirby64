@@ -931,7 +931,12 @@ void gtlStart(BufferSetup* setup, void (*postInitFunc)(void)) {
     struct DLBuffer dlBuffers[2][4];
 
     gtlNumContexts = setup->numContexts;
+#ifdef PORT
+    /* The generated word holds the u16 in its high half (big-endian source). */
+    gtlMainFuncTable.flags = GTL_FLAGS(setup->flags);
+#else
     gtlMainFuncTable.flags = setup->flags;
+#endif
     gtlMainFuncTable.onPrivUpdate = setup->onUpdate;
     gtlMainFuncTable.onPrivDraw = setup->onDraw;
 

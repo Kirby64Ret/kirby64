@@ -1425,6 +1425,22 @@ s32 func_80154A40_ovl6(void) {
 
     p = D_8015A560_ovl6;
     q = D_8015A564_ovl6;
+    /* PORT: this function is a #pragma GLOBAL_ASM on the matching build, so the
+     * body here is a non-matching DRAFT and is only ever compiled for the port.
+     * gtlStart's postInitFunc reaches it before anything has populated the
+     * script pointers -- both are BSS and still NULL -- and the draft walks
+     * them unconditionally, which segfaults. The measured max over an absent
+     * list is zero, so return that rather than inventing a traversal. */
+    if (p == NULL || q == NULL) {
+        return 0;
+    }
+    /* The draft's traversal is not trustworthy either: with the script lists
+     * populated it still runs past the end and faults at `p[1].unk2`. The real
+     * function is assembly and unverified C should not be trusted to walk a
+     * structure it may have mis-decompiled, so the port takes the safe answer
+     * until func_80154A40_ovl6 is genuinely matched. Its result feeds
+     * func_800AE048 as a count; zero requests nothing rather than garbage. */
+    return 0;
     savep = NULL;
     max = 0;
     prev = 0;
