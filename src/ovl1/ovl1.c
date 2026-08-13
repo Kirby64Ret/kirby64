@@ -2769,15 +2769,616 @@ block_146:
     *arg2 = temp_s1_39 + 8;
 }
 #elif defined(PORT)
-/* PORT: still assembly on the matching build ("crazy large gfx function") and
- * the m2c sketch above does not compile. It renders a GObj's sprite/background
- * layers into the display list (*arg2). A no-op keeps the boot alive; the
- * affected objects simply do not draw until this is matched or hand-ported.
- * Owed for full visuals. */
+/* PORT: hand-port of the ROM's 2D particle renderer (the m2c sketch above is
+ * the semantic reference; asm/nonmatchings/ovl1/ovl1/func_8009E8F4.s is the
+ * ground truth). For every live particle in the D_800D69C8 lists whose bank
+ * bit is set in the GObj's dlLinkBitMask, this projects the particle position
+ * through the camera (or through its emitter's cached matrix), culls against
+ * NDC, loads the frame's texture -- and CI palette -- out of the banks
+ * relocated by the PORT func_8009B768 (header fields and data[] slots are
+ * already native there; data[] holds host addresses as u32), and emits a raw
+ * RDP TEXRECT with prim-color / combiner / render-mode state tracking.
+ * Behavioural port, not codegen-matching. */
+
+void guOrthoF(f32 mf[4][4], f32 l, f32 r, f32 b, f32 t, f32 n, f32 f, f32 scale);
+void guLookAtF(f32 mf[4][4], f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt,
+               f32 xUp, f32 yUp, f32 zUp);
+void guLookAtF_2(f32 mf[4][4], f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt,
+                 f32 roll, f32 xUp, f32 yUp, f32 zUp);
+void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 res[4][4]);
+void HS64_PerspectiveF(f32 mf[4][4], u16 *perspNorm, f32 fovy, f32 aspect, f32 n, f32 f,
+                       f32 scale);
+void func_8001B28C(f32 mf[4][4], u16 *perspNorm, f32 fovy, f32 aspect, f32 n, f32 f,
+                   f32 scale);
+void func_8001C2E4(f32 m[4][4], Vector translate, Vector rotate, Vector scale);
+
+/* Per-bank prim/env color modulation table. On the PC bss it is a native
+ * pointer array (8 slots); a NULL slot means "no modulation". */
+extern void *D_800D6AB8[];
+
+/* UnkEmitter (top of this file) hides its two matrices and the two cached
+ * axis norms behind pad2C[0x88]. This mirror names those fields; it is
+ * layout-identical to UnkEmitter under LP64 (checked right below). N64
+ * offsets in comments. */
+typedef struct PortXfEmitter {
+    struct UnkEmitter *next;
+    f32 tx, ty, tz;       /* 0x04 translate */
+    f32 rx, ry, rz;       /* 0x10 rotate */
+    f32 sclX, sclY, sclZ; /* 0x1C scale */
+    u8 mtxState;          /* 0x28: !=2 rebuild each frame; 1 -> build once then 2 */
+    u8 frameStamp;        /* 0x29 compared against D_800BE3EC */
+    u16 refCount;         /* 0x2A */
+    f32 mtx[4][4];        /* 0x2C local transform */
+    f32 mtx2[4][4];       /* 0x6C local * (view*proj) */
+    f32 normX;            /* 0xAC column-0 norm of mtx2 */
+    f32 normY;            /* 0xB0 column-1 norm of mtx2 */
+    void (*unkB4)();      /* 0xB4 */
+    u16 unkB8;            /* 0xB8 */
+    u8 billboard;         /* 0xBA */
+} PortXfEmitter;
+typedef char port_xf_emitter_size_check[(sizeof(PortXfEmitter) == sizeof(UnkEmitter)) ? 1 : -1];
+typedef char port_xf_emitter_tail_check[
+    (__builtin_offsetof(PortXfEmitter, unkB4) == __builtin_offsetof(UnkEmitter, unkB4)) ? 1 : -1];
+
+/* Shape of the D_800D6AB8 entries: three u16 color multipliers (16.16-ish,
+ * 0x10000 = 1.0 after the >>16). */
+typedef struct PortColorMod {
+    u16 r, g, b;
+} PortColorMod;
+
+/* The ROM's power-of-two mask tables (jtbl_800D58B4/jtbl_800D5930): only
+ * exact powers of two in [2,256] get a mask, everything else gets 0. */
+static s32 port_dim_mask(s32 d) {
+    switch (d) {
+        case 0x002: return 1;
+        case 0x004: return 2;
+        case 0x008: return 3;
+        case 0x010: return 4;
+        case 0x020: return 5;
+        case 0x040: return 6;
+        case 0x080: return 7;
+        case 0x100: return 8;
+        default:    return 0;
+    }
+}
+
 void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
-    (void)arg0;
-    (void)arg1;
-    (void)arg2;
+    GObj *gobj = arg0;
+    Camera *cam = omCurrentCamera->data.cam;
+    Gfx *g = (Gfx *) *arg2;
+    f32 projF[4][4]; /* sp278: projection (or screen-inverse copy) */
+    f32 viewF[4][4]; /* sp2F8: view */
+    f32 vpF[4][4];   /* sp2B8: view * proj (or screen-inverse) */
+    f32 vsX, vsY, vsZ, vtX, vtY, vtZ;
+    f32 colNormX, colNormY; /* sp250 / sp24C */
+    s32 lastRenderMode = -1; /* sp340 */
+    s32 lastBlendAlpha = -1; /* sp33C */
+    s32 lastTlutMode = -1;   /* sp338 */
+    u32 lastImg = 0;         /* sp348 */
+    u32 lastPal = 0;         /* sp344 */
+    s32 i;
+
+    /* The N64 leaves whichever of proj/view no camera matrix writes as stack
+     * garbage; identity is the safe host equivalent. */
+    guMtxIdentF(projF);
+    guMtxIdentF(viewF);
+
+    for (i = 0; i < (s32) cam->mtxCount; i++) {
+        switch (cam->matrices[i]->kind) {
+            case 3:
+                HS64_PerspectiveF(projF, NULL, cam->perspMtx.persp.fovy,
+                                  cam->perspMtx.persp.aspect, cam->perspMtx.persp.near,
+                                  cam->perspMtx.persp.far, cam->perspMtx.persp.scale);
+                break;
+            case 4:
+                func_8001B28C(projF, NULL, cam->perspMtx.persp.fovy,
+                              cam->perspMtx.persp.aspect, cam->perspMtx.persp.near,
+                              cam->perspMtx.persp.far, cam->perspMtx.persp.scale);
+                break;
+            case 5:
+                guOrthoF(projF, cam->perspMtx.ortho.left, cam->perspMtx.ortho.right,
+                         cam->perspMtx.ortho.bottom, cam->perspMtx.ortho.top,
+                         cam->perspMtx.ortho.near, cam->perspMtx.ortho.far,
+                         cam->perspMtx.ortho.scale);
+                break;
+            case 6:
+            case 7:
+            case 12:
+            case 13:
+                guLookAtF(viewF, cam->viewMtx.lookAt.eye.x, cam->viewMtx.lookAt.eye.y,
+                          cam->viewMtx.lookAt.eye.z, cam->viewMtx.lookAt.at.x,
+                          cam->viewMtx.lookAt.at.y, cam->viewMtx.lookAt.at.z,
+                          cam->viewMtx.lookAt.up.x, cam->viewMtx.lookAt.up.y,
+                          cam->viewMtx.lookAt.up.z);
+                break;
+            case 8:
+            case 9:
+            case 14:
+            case 15:
+                guLookAtF_2(viewF, cam->viewMtx.lookAtRoll.xEye, cam->viewMtx.lookAtRoll.yEye,
+                            cam->viewMtx.lookAtRoll.zEye, cam->viewMtx.lookAtRoll.xAt,
+                            cam->viewMtx.lookAtRoll.yAt, cam->viewMtx.lookAtRoll.zAt,
+                            cam->viewMtx.lookAtRoll.roll, 0.0f, 1.0f, 0.0f);
+                break;
+            case 10:
+            case 11:
+            case 16:
+            case 17:
+                guLookAtF_2(viewF, cam->viewMtx.lookAtRoll.xEye, cam->viewMtx.lookAtRoll.yEye,
+                            cam->viewMtx.lookAtRoll.zEye, cam->viewMtx.lookAtRoll.xAt,
+                            cam->viewMtx.lookAtRoll.yAt, cam->viewMtx.lookAtRoll.zAt,
+                            cam->viewMtx.lookAtRoll.roll, 0.0f, 0.0f, 1.0f);
+                break;
+            default:
+                HS64_PerspectiveF(projF, NULL, cam->perspMtx.persp.fovy,
+                                  cam->perspMtx.persp.aspect, cam->perspMtx.persp.near,
+                                  cam->perspMtx.persp.far, cam->perspMtx.persp.scale);
+                guLookAtF(viewF, cam->viewMtx.lookAt.eye.x, cam->viewMtx.lookAt.eye.y,
+                          cam->viewMtx.lookAt.eye.z, cam->viewMtx.lookAt.at.x,
+                          cam->viewMtx.lookAt.at.y, cam->viewMtx.lookAt.at.z,
+                          cam->viewMtx.lookAt.up.x, cam->viewMtx.lookAt.up.y,
+                          cam->viewMtx.lookAt.up.z);
+                break;
+        }
+    }
+
+    vsX = cam->viewport.vp.vscale[0];
+    vsY = -cam->viewport.vp.vscale[1];
+    vsZ = cam->viewport.vp.vscale[2];
+    vtX = cam->viewport.vp.vtrans[0];
+    vtY = cam->viewport.vp.vtrans[1];
+    vtZ = cam->viewport.vp.vtrans[2];
+
+    if (cam->mtxCount != 0) {
+        guMtxCatF(viewF, projF, vpF);
+    } else {
+        s32 r, c;
+
+        /* No camera matrices: build the inverse of the viewport mapping so
+         * "world" coordinates are effectively screen coordinates. */
+        guMtxIdentF(vpF);
+        vpF[0][0] = 1.0f / vsX;
+        vpF[1][1] = 1.0f / vsY;
+        vpF[2][2] = -1.0f / vsZ;
+        vpF[3][0] = -vtX / vsX;
+        vpF[3][1] = -vtY / vsY;
+        vpF[3][2] = vtZ / vsZ;
+        for (r = 0; r < 4; r++) {
+            for (c = 0; c < 4; c++) {
+                projF[r][c] = vpF[r][c];
+            }
+        }
+    }
+
+    colNormX = sqrtf(vpF[0][0] * vpF[0][0] + vpF[1][0] * vpF[1][0] + vpF[2][0] * vpF[2][0]);
+    colNormY = sqrtf(vpF[0][1] * vpF[0][1] + vpF[1][1] * vpF[1][1] + vpF[2][1] * vpF[2][1]);
+
+    /* Header: pipe sync, point sampling, RDP state defaults. */
+    g->words.w0 = 0xE7000000; g->words.w1 = 0; g++;
+    g->words.w0 = 0xE3000C00; g->words.w1 = 0; g++;
+    g->words.w0 = 0xE2001D00; g->words.w1 = 4; g++;
+    g->words.w0 = 0xE3001801; g->words.w1 = (u8) D_800BE3E0; g++;
+    g->words.w0 = 0xE3001A01; g->words.w1 = (u8) D_800BE3E4; g++;
+
+    D_800BE3EC += 1;
+
+    for (i = 0; i < 16; i++) {
+        UnkParticle *p;
+
+        if (!(gobj->dlLinkBitMask & (1u << i))) {
+            continue;
+        }
+        for (p = D_800D69C8[i]; p != NULL; p = p->next) {
+            u32 flags;
+            f32 px, py, pz;
+            f32 normX, normY;
+            f32 cx, cy, cz, cw;
+            f32 invW, sprScale;
+            f32 scX, seX, scY, seY;
+            f32 xlF, xrF, ytF, ybF, zScr;
+            PortXfEmitter *em;
+            UnkTexture *tex;
+            s32 fmt, siz, tw, th;
+            u32 img, pal;
+            s32 dsdx, dtdy;
+            s32 cmS, maskS, cmT, maskT;
+
+            flags = p->unk6;
+            if (flags & 8) {
+                if (!(arg1 & 1)) {
+                    continue;
+                }
+            } else if (!(arg1 & 2)) {
+                continue;
+            }
+            if (p->unk44 == 0.0f) {
+                continue;
+            }
+
+            px = p->unk24;
+            py = p->unk28;
+            pz = p->unk2C;
+            em = (PortXfEmitter *) p->unk60;
+
+            if (em != NULL) {
+                if (D_800BE3EC != em->frameStamp) {
+                    if (em->mtxState != 2) {
+                        Vector tv, rv, sv;
+
+                        tv.x = em->tx; tv.y = em->ty; tv.z = em->tz;
+                        rv.x = em->rx; rv.y = em->ry; rv.z = em->rz;
+                        sv.x = em->sclX; sv.y = em->sclY; sv.z = em->sclZ;
+                        func_8001C2E4(em->mtx, tv, rv, sv);
+                    }
+                    if (em->mtxState == 1) {
+                        em->mtxState = 2;
+                    }
+                    guMtxCatF(em->mtx, vpF, em->mtx2);
+                    em->normX = sqrtf(em->mtx2[0][0] * em->mtx2[0][0] +
+                                      em->mtx2[1][0] * em->mtx2[1][0] +
+                                      em->mtx2[2][0] * em->mtx2[2][0]);
+                    em->normY = sqrtf(em->mtx2[0][1] * em->mtx2[0][1] +
+                                      em->mtx2[1][1] * em->mtx2[1][1] +
+                                      em->mtx2[2][1] * em->mtx2[2][1]);
+                    if (em->billboard != 0) {
+                        f32 lsx = sqrtf(em->mtx[0][0] * em->mtx[0][0] +
+                                        em->mtx[1][0] * em->mtx[1][0] +
+                                        em->mtx[2][0] * em->mtx[2][0]);
+                        f32 lsy = sqrtf(em->mtx[0][1] * em->mtx[0][1] +
+                                        em->mtx[1][1] * em->mtx[1][1] +
+                                        em->mtx[2][1] * em->mtx[2][1]);
+                        f32 lsz = sqrtf(em->mtx[0][2] * em->mtx[0][2] +
+                                        em->mtx[1][2] * em->mtx[1][2] +
+                                        em->mtx[2][2] * em->mtx[2][2]);
+
+                        em->mtx2[0][0] = projF[0][0] * lsx;
+                        em->mtx2[0][1] = 0.0f;
+                        em->mtx2[0][2] = 0.0f;
+                        em->mtx2[0][3] = 0.0f;
+                        em->mtx2[1][0] = 0.0f;
+                        em->mtx2[1][1] = projF[1][1] * lsy;
+                        em->mtx2[1][2] = 0.0f;
+                        em->mtx2[1][3] = 0.0f;
+                        em->mtx2[2][0] = 0.0f;
+                        em->mtx2[2][1] = 0.0f;
+                        em->mtx2[2][2] = projF[2][2] * lsz;
+                        em->mtx2[2][3] = projF[2][3] * lsz;
+                    }
+                    em->frameStamp = D_800BE3EC;
+                }
+                normX = em->normX;
+                normY = em->normY;
+                cx = em->mtx2[3][0] + (em->mtx2[0][0] * px + em->mtx2[1][0] * py + em->mtx2[2][0] * pz);
+                cy = em->mtx2[3][1] + (em->mtx2[0][1] * px + em->mtx2[1][1] * py + em->mtx2[2][1] * pz);
+                cz = em->mtx2[3][2] + (em->mtx2[0][2] * px + em->mtx2[1][2] * py + em->mtx2[2][2] * pz);
+                cw = em->mtx2[3][3] + (em->mtx2[0][3] * px + em->mtx2[1][3] * py + em->mtx2[2][3] * pz);
+            } else {
+                normX = colNormX;
+                normY = colNormY;
+                cx = vpF[3][0] + (vpF[0][0] * px + vpF[1][0] * py + vpF[2][0] * pz);
+                cy = vpF[3][1] + (vpF[0][1] * px + vpF[1][1] * py + vpF[2][1] * pz);
+                cz = vpF[3][2] + (vpF[0][2] * px + vpF[1][2] * py + vpF[2][2] * pz);
+                cw = vpF[3][3] + (vpF[0][3] * px + vpF[1][3] * py + vpF[2][3] * pz);
+            }
+
+            if (cw == 0.0f) {
+                continue;
+            }
+            invW = 1.0f / cw;
+            cx *= invW;
+            cy *= invW;
+            cz *= invW;
+            if (cx < -1.0f || cx > 1.0f || cy < -1.0f || cy > 1.0f || cz < -1.0f || cz > 1.0f) {
+                continue;
+            }
+
+            sprScale = invW * p->unk44;
+
+            /* Screen-space extents: center, center+half-extent, mirror. */
+            scX = cx * vsX + vtX;
+            seX = ((sprScale * normX) + cx) * vsX + vtX;
+            if (scX < seX) {
+                xlF = scX - (seX - scX);
+                xrF = seX;
+            } else {
+                xlF = seX;
+                xrF = scX - (seX - scX);
+            }
+            scY = cy * vsY + vtY;
+            seY = ((sprScale * normY) + cy) * vsY + vtY;
+            if (scY < seY) {
+                ytF = scY - (seY - scY);
+                ybF = seY;
+            } else {
+                ytF = seY;
+                ybF = scY - (seY - scY);
+            }
+            zScr = cz * vsZ + vtZ;
+
+            /* Texture bank lookup (tables normalised by PORT func_8009B768:
+             * header native, data[] slots are u32 host addresses). */
+            {
+                s32 bank = p->unk8 & 7;
+
+                tex = D_800D6A98[bank][p->unkA];
+                fmt = tex->fmt;
+                siz = tex->siz;
+                tw = tex->width;
+                th = tex->height;
+                img = tex->data[p->unkB];
+                pal = 0;
+                if (fmt == 2) {
+                    u32 cnt = tex->count;
+
+                    if (p->unkC != 0xFF) {
+                        pal = tex->data[cnt + p->unkC];
+                    } else if (flags & 0x10) {
+                        pal = tex->data[cnt];
+                    } else {
+                        pal = tex->data[cnt + p->unkB];
+                    }
+                }
+
+                dsdx = (s32) ((tw * 4096.0f) / (xrF - xlF));
+                dtdy = (s32) ((th * 4096.0f) / (ybF - ytF));
+
+                cmS = 2; /* G_TX_CLAMP */
+                maskS = 0;
+                if (flags & 0x20) {
+                    dsdx *= 2;
+                    cmS = 1; /* G_TX_MIRROR */
+                    maskS = port_dim_mask(tw);
+                }
+                cmT = 2;
+                maskT = 0;
+                if (flags & 0x40) {
+                    dtdy *= 2;
+                    cmT = 1;
+                    maskT = port_dim_mask(th);
+                }
+
+                /* CI: load the TLUT (tile 7, TMEM 0x100) when it changed, and
+                 * make sure the RGBA16 TLUT mode is on; off otherwise. */
+                if (fmt == 2) {
+                    if (pal != lastPal) {
+                        g->words.w0 = 0xFD100000; g->words.w1 = pal; g++;
+                        g->words.w0 = 0xE8000000; g->words.w1 = 0; g++;
+                        g->words.w0 = 0xF5000100; g->words.w1 = 0x07000000; g++;
+                        g->words.w0 = 0xE6000000; g->words.w1 = 0; g++;
+                        g->words.w0 = 0xF0000000; g->words.w1 = 0x073FC000; g++;
+                        g->words.w0 = 0xE7000000; g->words.w1 = 0; g++;
+                        lastPal = pal;
+                    }
+                    if (lastTlutMode != 1) {
+                        g->words.w0 = 0xE3001001; g->words.w1 = 0x8000; g++;
+                        lastTlutMode = 1;
+                    }
+                } else if (lastTlutMode != 0) {
+                    g->words.w0 = 0xE3001001; g->words.w1 = 0; g++;
+                    lastTlutMode = 0;
+                }
+
+                /* Texture load via LOADBLOCK through tile 7, render tile 0. */
+                if (img != lastImg) {
+                    if (siz >= 0 && siz <= 3) {
+                        u32 fmtBits = ((u32) fmt & 7) << 21;
+                        u32 tileBits = ((u32) (cmT & 3) << 18) | ((u32) (maskT & 0xF) << 14) |
+                                       ((u32) (cmS & 3) << 8) | ((u32) (maskS & 0xF) << 4);
+                        s32 texels = tw * th;
+                        u32 ldSiz, rdSiz;
+                        s32 lrs, wpr, line, evictThresh;
+
+                        switch (siz) {
+                            case 0: /* 4b, loaded as 16b */
+                                ldSiz = 0x100000;
+                                rdSiz = 0;
+                                lrs = ((texels + 3) >> 2) - 1;
+                                wpr = tw / 16;
+                                line = ((tw >> 1) + 7) >> 3;
+                                evictThresh = 0x1000;
+                                break;
+                            case 1: /* 8b, loaded as 16b */
+                                ldSiz = 0x100000;
+                                rdSiz = 0x80000;
+                                lrs = ((texels + 1) >> 1) - 1;
+                                wpr = tw / 8;
+                                line = (tw + 7) >> 3;
+                                evictThresh = 0x800;
+                                break;
+                            case 2: /* 16b */
+                                ldSiz = 0x100000;
+                                rdSiz = 0x100000;
+                                lrs = texels - 1;
+                                wpr = (tw * 2) / 8;
+                                line = ((tw * 2) + 7) >> 3;
+                                evictThresh = 0x400;
+                                break;
+                            default: /* 3: 32b */
+                                ldSiz = 0x180000;
+                                rdSiz = 0x180000;
+                                lrs = texels - 1;
+                                wpr = (tw * 4) / 8;
+                                line = ((tw * 2) + 7) >> 3;
+                                evictThresh = 0x200;
+                                break;
+                        }
+                        if (lrs >= 0x7FF) {
+                            lrs = 0x7FF;
+                        }
+                        if (wpr <= 0) {
+                            wpr = 1;
+                        }
+
+                        g->words.w0 = 0xFD000000 | fmtBits | ldSiz;
+                        g->words.w1 = img;
+                        g++;
+                        g->words.w0 = 0xF5000000 | fmtBits | ldSiz;
+                        g->words.w1 = 0x07000000 | tileBits;
+                        g++;
+                        g->words.w0 = 0xE6000000; g->words.w1 = 0; g++;
+                        g->words.w0 = 0xF3000000;
+                        g->words.w1 = 0x07000000 | ((u32) (lrs & 0xFFF) << 12) |
+                                      ((u32) ((wpr + 0x7FF) / wpr) & 0xFFF);
+                        g++;
+                        g->words.w0 = 0xE7000000; g->words.w1 = 0; g++;
+                        g->words.w0 = 0xF5000000 | fmtBits | rdSiz | ((u32) (line & 0x1FF) << 9);
+                        g->words.w1 = tileBits;
+                        g++;
+                        g->words.w0 = 0xF2000000;
+                        g->words.w1 = ((u32) (((tw - 1) * 4) & 0xFFF) << 12) |
+                                      (u32) (((th - 1) * 4) & 0xFFF);
+                        g++;
+
+                        /* Big loads spill into the TLUT half of TMEM. */
+                        if (texels >= evictThresh) {
+                            lastPal = 0;
+                        }
+                    }
+                    lastImg = img;
+                }
+
+                /* Prim color, optionally modulated per bank. */
+                {
+                    PortColorMod *cm = (PortColorMod *) D_800D6AB8[bank];
+
+                    if (cm != NULL) {
+                        s32 cr = (cm->r * p->unk4C) >> 16;
+                        s32 cg = (cm->g * p->unk4D) >> 16;
+                        s32 cb = (cm->b * p->unk4E) >> 16;
+
+                        if (cr >= 0x100) cr = 0xFF;
+                        if (cg >= 0x100) cg = 0xFF;
+                        if (cb >= 0x100) cb = 0xFF;
+                        g->words.w0 = 0xFA000000;
+                        g->words.w1 = ((u32) cr << 24) | ((u32) (cg & 0xFF) << 16) |
+                                      ((u32) (cb & 0xFF) << 8) | p->unk4F;
+                        g++;
+                    } else {
+                        g->words.w0 = 0xFA000000;
+                        g->words.w1 = ((u32) p->unk4C << 24) | ((u32) p->unk4D << 16) |
+                                      ((u32) p->unk4E << 8) | p->unk4F;
+                        g++;
+                    }
+
+                    /* Env color + combiner. */
+                    if (flags & 0x80) {
+                        if (cm != NULL) {
+                            s32 er = (cm->r * p->unk54) >> 16;
+                            s32 eg = (cm->g * p->unk55) >> 16;
+                            s32 eb = (cm->b * p->unk56) >> 16;
+
+                            if (er >= 0x100) er = 0xFF;
+                            if (eg >= 0x100) eg = 0xFF;
+                            if (eb >= 0x100) eb = 0xFF;
+                            g->words.w0 = 0xFB000000;
+                            g->words.w1 = ((u32) er << 24) | ((u32) (eg & 0xFF) << 16) |
+                                          ((u32) (eb & 0xFF) << 8) | p->unk57;
+                            g++;
+                        } else {
+                            g->words.w0 = 0xFB000000;
+                            g->words.w1 = ((u32) p->unk54 << 24) | ((u32) p->unk55 << 16) |
+                                          ((u32) p->unk56 << 8) | p->unk57;
+                            g++;
+                        }
+                        g->words.w0 = 0xFC30B261; g->words.w1 = 0x5566DB6D; g++;
+                    } else if (flags & 0x100) {
+                        g->words.w0 = 0xFC7096E1; g->words.w1 = 0xFF2FFFFF; g++;
+                    } else {
+                        g->words.w0 = 0xFC119623; g->words.w1 = 0xFF2FFFFF; g++;
+                    }
+                }
+
+                /* Blend color / render mode selector. */
+                {
+                    s32 mode;
+
+                    if (flags & 0x400) {
+                        mode = 3;
+                    } else {
+                        s32 bl = (flags & 0x200) ? p->unk57 : 8;
+
+                        mode = 1;
+                        if (lastBlendAlpha != bl) {
+                            g->words.w0 = 0xF9000000;
+                            g->words.w1 = (u32) bl & 0xFF;
+                            g++;
+                            lastBlendAlpha = bl;
+                        }
+                    }
+                    if (lastRenderMode != mode) {
+                        g->words.w0 = 0xE2001E01;
+                        g->words.w1 = (u32) mode;
+                        g++;
+                        lastRenderMode = mode;
+                    }
+                }
+
+                /* Prim depth + the 128-bit TEXRECT (E4 / E1 / F1). */
+                {
+                    s32 xrRaw = (s32) xrF;
+                    s32 ybRaw = (s32) ybF;
+                    s32 xlRaw = (s32) xlF;
+                    s32 ytRaw = (s32) ytF;
+                    s16 xrI = (s16) xrRaw;
+                    s16 ybI = (s16) ybRaw;
+                    s16 xlI = (s16) xlRaw;
+                    s16 ytI = (s16) ytRaw;
+                    s32 xrC = (xrI > 0) ? xrI : 0;
+                    s32 ybC = (ybI > 0) ? ybI : 0;
+                    s32 xlC = (xlI > 0) ? xlI : 0;
+                    s32 ytC = (ytI > 0) ? ytI : 0;
+                    s32 sOfs = 0;
+                    s32 tOfs = 0;
+
+                    g->words.w0 = 0xEE000000;
+                    g->words.w1 = (u32) (s32) (zScr * 32.0f) << 16;
+                    g++;
+
+                    /* Off-screen-left/top: advance S/T into the image. */
+                    if (xlI < 0) {
+                        s16 d = (s16) dsdx;
+                        s32 v = (xlI * d) >> 7;
+
+                        if (d < 0) {
+                            sOfs = (v > 0) ? v : 0;
+                        } else {
+                            sOfs = (v < 0) ? v : 0;
+                        }
+                    }
+                    if (ytRaw < 0) {
+                        s16 d = (s16) dtdy;
+                        s32 v = (ytI * d) >> 7;
+
+                        if (d < 0) {
+                            tOfs = (v > 0) ? v : 0;
+                        } else {
+                            tOfs = (v < 0) ? v : 0;
+                        }
+                    }
+
+                    g->words.w0 = 0xE4000000 | ((u32) (xrC & 0xFFF) << 12) | (u32) (ybC & 0xFFF);
+                    g->words.w1 = ((u32) (xlC & 0xFFF) << 12) | (u32) (ytC & 0xFFF);
+                    g++;
+                    g->words.w0 = 0xE1000000;
+                    g->words.w1 = ((u32) (-sOfs) << 16) | ((u32) (-tOfs) & 0xFFFF);
+                    g++;
+                    g->words.w0 = 0xF1000000;
+                    g->words.w1 = ((u32) dsdx << 16) | ((u32) dtdy & 0xFFFF);
+                    g++;
+                }
+            }
+        }
+    }
+
+    /* Footer: TLUT off, restore filter/state. */
+    if (lastTlutMode != 0) {
+        g->words.w0 = 0xE3001001; g->words.w1 = 0; g++;
+    }
+    g->words.w0 = 0xE3000C00; g->words.w1 = 0x80000; g++;
+    g->words.w0 = 0xE2001D00; g->words.w1 = 0; g++;
+    g->words.w0 = 0xE2001E01; g->words.w1 = 0; g++;
+
+    *arg2 = g;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009E8F4.s")
