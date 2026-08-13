@@ -1732,11 +1732,20 @@ void func_8000F510(GObj *obj, UnkE4E4Arg* arg1, DObj **arg2) {
 
     while (arg1->unk_00 != ARRAY_COUNT(sp44)) {
         trunc = arg1->unk_00 & 0xFFF;
+#ifdef PORT
+        /* unk04 is a u32-held native pointer on the host (anim.h). */
+        if (trunc != 0) {
+            dobj = sp44[trunc] = omDObjAddChild(sp44[trunc - 1], (void *)(uintptr_t)arg1->unk04);
+        } else {
+            dobj = sp44[0] = omGObjAddDObj(obj, (void *)(uintptr_t)arg1->unk04);
+        }
+#else
         if (trunc != 0) {
             dobj = sp44[trunc] = omDObjAddChild(sp44[trunc - 1], arg1->unk04);
         } else {
             dobj = sp44[0] = omGObjAddDObj(obj, arg1->unk04);
         }
+#endif
         if (arg1->unk_00 & 0xF000) {
             omDObjAppendMtx(dobj, (u32)MTX_TYPE_TRANSLATE, 0);
         }
@@ -1885,11 +1894,20 @@ void func_8000F980(GObj *obj, UnkE4E4Arg* arg1, DObj **arg2, u8 arg3, u8 arg4, u
 
     while (arg1->unk_00 != 18) {
         trunc = arg1->unk_00 & 0xFFF;
+#ifdef PORT
+        /* unk04 is a u32-held native pointer on the host (anim.h). */
+        if (trunc) {
+            dobj = sp54[trunc] = omDObjAddChild(sp54[trunc - 1], (void *)(uintptr_t)arg1->unk04);
+        } else {
+            dobj = sp54[0] = omGObjAddDObj(obj, (void *)(uintptr_t)arg1->unk04);
+        }
+#else
         if (trunc) {
             dobj = sp54[trunc] = omDObjAddChild(sp54[trunc - 1], arg1->unk04);
         } else {
             dobj = sp54[0] = omGObjAddDObj(obj, arg1->unk04);
         }
+#endif
 
         if (arg1->unk_00 & 0xF000) {
             func_8000F754(dobj, arg3, arg4, arg5, arg1->unk_00 & 0xF000);
@@ -1924,11 +1942,20 @@ void func_8000FB10(GObj *gobj, UnkE4E4Arg* arg1, TextureScroll*** arg2, DObj **a
 
     while (arg1->unk_00 != 18) {
         trunc = arg1->unk_00 & 0xFFF;
+#ifdef PORT
+        /* unk04 is a u32-held native pointer on the host (anim.h). */
+        if (trunc) {
+            dobj = sp5C[trunc] = omDObjAddChild(sp5C[trunc - 1], (void *)(uintptr_t)arg1->unk04);
+        } else {
+            dobj = sp5C[0] = omGObjAddDObj(gobj, (void *)(uintptr_t)arg1->unk04);
+        }
+#else
         if (trunc) {
             dobj = sp5C[trunc] = omDObjAddChild(sp5C[trunc - 1], arg1->unk04);
         } else {
             dobj = sp5C[0] = omGObjAddDObj(gobj, arg1->unk04);
         }
+#endif
         if (arg1->unk_00 & 0xF000) {
             func_8000F754(dobj, arg4, arg5, arg6, arg1->unk_00 & 0xF000);
         } else {
@@ -1939,6 +1966,24 @@ void func_8000FB10(GObj *gobj, UnkE4E4Arg* arg1, TextureScroll*** arg2, DObj **a
         dobj->scale.v = arg1->scale;
 
         if (arg2 != NULL) {
+#ifdef PORT
+            /* The geo blob's texScroll lists are 4-byte u32 slots holding
+             * native pointers (func_800A9250's PORT relocator); a
+             * TextureScroll ** walk would stride 8 on the LP64 host. The
+             * 0x99999999 guard is the relocator's list terminator -- the
+             * N64 walk relies on a 0 slot always preceding it. */
+            {
+                u32 *outer = (u32 *)arg2;
+                if (*outer != 0) {
+                    u32 *mids = (u32 *)(uintptr_t)*outer;
+                    while (*mids != 0 && *mids != 0x99999999U) {
+                        omDObjAddMObj(dobj, (TextureScroll *)(uintptr_t)*mids);
+                        mids++;
+                    }
+                }
+                arg2 = (TextureScroll ***)(outer + 1);
+            }
+#else
             if (*arg2 != NULL) {
                 csr = *arg2;
                 msub = *csr;
@@ -1949,6 +1994,7 @@ void func_8000FB10(GObj *gobj, UnkE4E4Arg* arg1, TextureScroll*** arg2, DObj **a
                 }
             }
             arg2++;
+#endif
         }
         if (arg3 != NULL) {
             *arg3 = dobj;
@@ -1966,6 +2012,20 @@ void func_8000FCE4(GObj *arg0, TextureScroll*** arg1) {
     dobj = arg0->data.dobj;
     while (dobj != NULL) {
         if (arg1 != NULL) {
+#ifdef PORT
+            /* Same u32-slot walk as func_8000FB10's PORT arm above. */
+            {
+                u32 *outer = (u32 *)arg1;
+                if (*outer != 0) {
+                    u32 *mids = (u32 *)(uintptr_t)*outer;
+                    while (*mids != 0 && *mids != 0x99999999U) {
+                        omDObjAddMObj(dobj, (TextureScroll *)(uintptr_t)*mids);
+                        mids++;
+                    }
+                }
+                arg1 = (TextureScroll ***)(outer + 1);
+            }
+#else
             if (*arg1 != NULL) {
                 csr = *arg1;
                 msub = *csr;
@@ -1976,6 +2036,7 @@ void func_8000FCE4(GObj *arg0, TextureScroll*** arg1) {
                 }
             }
             arg1++;
+#endif
         }
         dobj = animModelTreeNextNode(dobj);
     }

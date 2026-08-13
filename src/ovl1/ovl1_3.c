@@ -901,27 +901,64 @@ void *func_800A9250(u32 arg0, s32 arg1) {
  * D_800D0184[bank] and its geoBlockTable are native host data on the PC
  * build (regenerated as C initializers), so the table reads at the top are
  * plain loads, exactly like the compiled func_800A8B0C. The blob dma_read()
- * pulls in, however, is raw BIG-ENDIAN ROM data: every word this function
- * inspects is decoded with pc_be32(), and every word it REWRITES becomes a
- * native host value in place -- a real pointer (all game-visible allocations
- * sit below 4 GiB, see pc_mmio.c, so a u32 slot holds one) or, for the image
- * reference list slots, the decoded bank-id word. Words this function does
- * not touch stay big-endian for their consumers to decode at their own read
- * sites.
+ * pulls in, however, is raw BIG-ENDIAN ROM data. Beyond the N64 asm's
+ * pointer relocation, this arm makes the blob FULLY consumable by native
+ * game code and by the Fast3D interpreter:
  *
  * Native after this returns:
- *   header +0x00 (layout, always), +0x04 (texScroll, when nonzero),
- *   +0x0C (imgRefs, when nonzero), +0x18 (animation refs, when +0x14 and the
- *   word are both nonzero); every list slot and node word the walks below
- *   rewrite (detailed at each walk).
- * Still big-endian: everything else, including header +0x08 (layoutMode),
- *   +0x14 (numAnimations), +0x1C (lenLayout), the 0x2C-stride layout node
- *   type words, and all display list / vertex / texel payload.
+ *   - header +0x00 (layout ptr), +0x04 (texScroll ptr), +0x0C (imgRefs ptr,
+ *     when nonzero), +0x18 (anim refs ptr, when +0x14 and the word are both
+ *     nonzero): native host pointers, exactly like the N64 asm's relocation
+ *     (all game-visible allocations sit below 4 GiB, see pc_mmio.c, so a
+ *     u32 slot holds one);
+ *   - header +0x08 (layoutMode), +0x14 (numAnimations), +0x1C (lenLayout):
+ *     byte-swapped scalars, so the many compiled read sites
+ *     (func_800A9648/func_800A9864/func_800A9A2C below, func_800AB0F4,
+ *     func_800AF7A0, func_800F716C, ...) read them natively;
+ *   - for layoutModes 0x17..0x1E, the whole 0x2C-stride layout node array
+ *     through its 0x12-type terminator (struct UnkE4E4Arg, see
+ *     src/main/anim.h: s32 type/flags, u32 data ptr, 9 f32s), consumed
+ *     natively by anim.c's func_8000F980/func_8000FB10 walkers;
+ *   - every TextureScroll node the texScroll graph reaches (field-wise:
+ *     u16s/u32s/f32s swapped; ColorPacks and other byte fields untouched --
+ *     canonical byte order for colors is memory order r,g,b,a, and the two
+ *     .pack readers in render.c re-pack under PORT);
+ *   - the display lists (and the Vtx runs and G_MTX matrices they
+ *     reference) reachable from the per-mode payloads, walked conservatively
+ *     (validated first, one-shot via a visited bitmap, bounded, seg-4
+ *     references only). Gfx words become native u32 pairs, which is what
+ *     the Fast3D fork consumes; texel data referenced by G_SETTIMG stays in
+ *     N64 byte order, which is also what Fast3D expects.
+ *
+ * Still big-endian: header +0x10 (vtxRefs, no compiled consumer yet), the
+ * anim payload sections (+0x18's targets; the anim BLOCK loader
+ * func_800A94F4 and its consumers are a separate task), layout data of
+ * modes 0x11/0x12/0x16 (no compiled consumer / CPU-pointer-bearing TypeG
+ * data that cannot exist in raw ROM), and anything a validation pass
+ * rejected.
+ *
+ * Payload-per-mode map (derived from gDrawFuncList[mode] defaults plus
+ * func_800BB6B0's mode switch in ovl1_11.c, which agree):
+ *   0x13/0x15      display list directly at the layout pointer
+ *   0x14/0x16      DObjPayloadTypeC {s32 dlistID; Gfx *dl;} pairs at the
+ *                  layout pointer, terminated by dlistID == 4
+ *   0x17/0x19      per layout node: word +4 IS a segment-4 DL address
+ *                  (this is why the N64 asm does not relocate +4 for them)
+ *   0x18/0x1A      per layout node: word +4 -> TypeC pair array
+ *   0x1B/0x1D      per layout node: word +4 -> Gfx *[2] (before/after DLs)
+ *   0x1C/0x1E      per layout node: word +4 -> DObjPayloadTypeI
+ *                  {s32 dlistID; Gfx *before; Gfx *after;} triples,
+ *                  terminated by dlistID == 4
+ * Mode 0x15 is validated as a DL first and as a TypeE
+ * {f32 dist; Gfx *dl;} array second (the two dispatch tables disagree for
+ * it); whichever validates is swapped.
  *
  * Return type is u32 * rather than void *: the block-scope declarations the
  * callers in this file compile (func_800A8EC0/func_800A9760/func_800A9864/
  * func_800AA608) all say u32 *, and a void * definition is a conflicting
  * type to GCC. */
+
+#include <stdlib.h>
 
 static inline u32 pc_be32(u32 v) { return __builtin_bswap32(v); }
 
@@ -929,6 +966,734 @@ static inline u32 pc_be32(u32 v) { return __builtin_bswap32(v); }
 static inline u32 geo_rd(const void *p) { return pc_be32(*(const u32 *)p); }
 /* In-place rewrite of a blob word with a native value/pointer. */
 static inline void geo_wr(void *p, u32 v) { *(u32 *)p = v; }
+
+/* ---- swap-once machinery -------------------------------------------------
+ * One bit per 4-byte blob word: "this word already holds a native value".
+ * Set by the pointer-relocation writes and by every swap helper, so shared
+ * subtrees (a DL called from two nodes, a payload shared by two modes, the
+ * G_SETTIMG words the imgRefs pass already turned into BGHeader pointers)
+ * are never swapped twice and never mistaken for raw segment addresses.
+ * If the bitmap allocation ever failed, the helpers report everything as
+ * already-native and swap nothing: the blob stays BE (a deterministic wrong
+ * draw instead of silent corruption). */
+#define GSW_MAX_ENT 1024
+
+struct GeoSwap {
+    u8 *blob;
+    u32 size; /* usable payload bytes */
+    u8 *bm;
+    u8 *bmh;  /* second bitmap: "this word holds a rewritten HOST pointer" */
+    /* display-list entry points collected by the payload pass: the blob
+     * offset of the u32 slot the game reads (node word +4, payload dlist
+     * word, or header +0) and the blob offset of the packed DL it refers
+     * to. The widening pass rewrites each slot with a native widened-DL
+     * pointer. */
+    u32 ent_slot[GSW_MAX_ENT];
+    u32 ent_dl[GSW_MAX_ENT];
+    int ent_n;
+    int ent_overflow;
+};
+
+static int gsw_marked(struct GeoSwap *g, u32 off) {
+    if (g->bm == NULL) {
+        return 1;
+    }
+    return (g->bm[off >> 5] >> ((off >> 2) & 7)) & 1;
+}
+static void gsw_mark(struct GeoSwap *g, u32 off) {
+    if (g->bm != NULL) {
+        g->bm[off >> 5] |= (u8)(1u << ((off >> 2) & 7));
+    }
+}
+/* Native value of the word at off, whichever state it is in. */
+static u32 gsw_rd(struct GeoSwap *g, u32 off) {
+    u32 w = *(u32 *)(g->blob + off);
+    return gsw_marked(g, off) ? w : pc_be32(w);
+}
+/* Store a native value (the pointer-relocation writes). */
+static void gsw_put(struct GeoSwap *g, u32 off, u32 v) {
+    geo_wr(g->blob + off, v);
+    gsw_mark(g, off);
+    if (g->bmh != NULL) {
+        g->bmh[off >> 5] |= (u8)(1u << ((off >> 2) & 7));
+    }
+}
+/* Was this word rewritten to a host pointer (vs raw/byte-swapped data)? */
+static int gsw_hostptr(struct GeoSwap *g, u32 off) {
+    if (g->bmh == NULL) {
+        return 0;
+    }
+    return (g->bmh[off >> 5] >> ((off >> 2) & 7)) & 1;
+}
+/* Record a DL entry point for the widening pass. */
+static void gsw_entry(struct GeoSwap *g, u32 slot_off, u32 dl_off) {
+    if (g->ent_n >= GSW_MAX_ENT) {
+        g->ent_overflow = 1;
+        return;
+    }
+    g->ent_slot[g->ent_n] = slot_off;
+    g->ent_dl[g->ent_n] = dl_off;
+    g->ent_n++;
+}
+/* Byte-swap the whole word once; returns 1 when this call did the swap
+ * (i.e. the word really was raw big-endian data until now). */
+static int gsw_w32(struct GeoSwap *g, u32 off) {
+    if (gsw_marked(g, off)) {
+        return 0;
+    }
+    geo_wr(g->blob + off, pc_be32(*(u32 *)(g->blob + off)));
+    gsw_mark(g, off);
+    return 1;
+}
+/* Swap the two u16 halves of the word independently. */
+static int gsw_w16p(struct GeoSwap *g, u32 off) {
+    u8 *p;
+    u8 t;
+    if (gsw_marked(g, off)) {
+        return 0;
+    }
+    p = g->blob + off;
+    t = p[0]; p[0] = p[1]; p[1] = t;
+    t = p[2]; p[2] = p[3]; p[3] = t;
+    gsw_mark(g, off);
+    return 1;
+}
+/* Swap only the u16 in the first half; the trailing two bytes stay bytes. */
+static int gsw_w16hi(struct GeoSwap *g, u32 off) {
+    u8 *p;
+    u8 t;
+    if (gsw_marked(g, off)) {
+        return 0;
+    }
+    p = g->blob + off;
+    t = p[0]; p[0] = p[1]; p[1] = t;
+    gsw_mark(g, off);
+    return 1;
+}
+
+static int gsw_seg4(struct GeoSwap *g, u32 w, u32 need) {
+    return (w >> 24) == 4 && (w & 0xFFFFFF) + need <= g->size;
+}
+
+/* Field-wise swap of one TextureScroll node (0x78 bytes; the layout matches
+ * the PORT TextureScroll in include/geo_block_header.h). Words +0x04
+ * (textures) and +0x2C (palettes) were already turned into native pointers
+ * by the texScroll relocation walk, so the swap-once test skips them.
+ * primColor/envColor/blendColor/lightColor1/lightColor2 and the byte fields
+ * around minLOD keep memory byte order (r,g,b,a) -- byte readers all over
+ * the tree (renderLoadTextures, ovl6) depend on it; they are only marked so
+ * no later walk touches them. */
+static void gsw_texscroll(struct GeoSwap *g, u32 off) {
+    /* 0=mark only, 1=u32, 2=two u16s, 3=leading u16 only */
+    static const u8 kind[0x1E] = {
+        3, 0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 3, 2, 2,
+        1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    };
+    u32 i;
+
+    if (off + 0x78 > g->size) {
+        return;
+    }
+    for (i = 0; i < 0x1E; i++, off += 4) {
+        switch (kind[i]) {
+        case 1: gsw_w32(g, off); break;
+        case 2: gsw_w16p(g, off); break;
+        case 3: gsw_w16hi(g, off); break;
+        default: gsw_mark(g, off); break;
+        }
+    }
+}
+
+/* Read-only validation that a plausible F3DEX2 display list starts at off:
+ * every command byte must be one the ucode knows (0x00..0x0A or
+ * 0xD7..0xFF), ending at G_ENDDL or a no-push G_DL. Reads are
+ * bitmap-aware, so a partially processed list still validates. */
+static int gsw_dl_ok(struct GeoSwap *g, u32 off) {
+    u32 n;
+
+    if (off & 7) {
+        return 0;
+    }
+    if (gsw_marked(g, off)) {
+        return 1; /* an earlier walk already processed this list */
+    }
+    for (n = 0; n < 0x20000; n++) {
+        u32 w0, op;
+        if (off + 8 > g->size) {
+            return 0;
+        }
+        w0 = gsw_rd(g, off);
+        op = w0 >> 24;
+        if (op == 0xDF) {
+            return 1;
+        }
+        if (op == 0xDE && ((w0 >> 16) & 0xFF) != 0) {
+            return 1; /* branch list: this list ends here */
+        }
+        if (op > 0x0A && op < 0xD7) {
+            return 0;
+        }
+        off += 8;
+    }
+    return 0;
+}
+
+/* Vtx runs referenced by G_VTX: 16 bytes each -- three words of s16 pairs
+ * (ob[3], flag, tc[2]) and one word of u8 colors/normals that stays. */
+static void gsw_vtx(struct GeoSwap *g, u32 off, u32 n) {
+    while (n--) {
+        if (off + 0x10 > g->size) {
+            return;
+        }
+        gsw_w16p(g, off);
+        gsw_w16p(g, off + 4);
+        gsw_w16p(g, off + 8);
+        gsw_mark(g, off + 12);
+        off += 0x10;
+    }
+}
+
+/* Swap one display list in place: every Gfx becomes two native u32 words.
+ * Follows G_DL calls/branches and G_BRANCH_Z, swaps referenced Vtx runs and
+ * G_MTX matrices. Only words THIS pass swapped are interpreted as segment
+ * addresses (a previously rewritten word -- e.g. a G_SETTIMG whose w1 the
+ * imgRefs pass replaced with a BGHeader pointer -- is skipped by the
+ * swap-once test, which matters because host bss crosses 0x04000000 and a
+ * native pointer can look like a segment-4 address). */
+static void gsw_dl_walk(struct GeoSwap *g, u32 off, int depth) {
+    u32 half1 = 0;
+
+    if (depth > 24 || (off & 7)) {
+        return;
+    }
+    for (;;) {
+        u32 w0, w1, op;
+        int raw1;
+
+        if (off + 8 > g->size) {
+            return;
+        }
+        if (gsw_marked(g, off)) {
+            return; /* the rest of this list was already walked */
+        }
+        gsw_w32(g, off);
+        raw1 = gsw_w32(g, off + 4);
+        w0 = *(u32 *)(g->blob + off);
+        w1 = *(u32 *)(g->blob + off + 4);
+        op = w0 >> 24;
+        if (op == 0xDF) { /* G_ENDDL */
+            return;
+        }
+        if (op == 0xDE) { /* G_DL */
+            if (raw1 && gsw_seg4(g, w1, 8) && gsw_dl_ok(g, w1 & 0xFFFFFF)) {
+                gsw_dl_walk(g, w1 & 0xFFFFFF, depth + 1);
+            }
+            if (((w0 >> 16) & 0xFF) != 0) {
+                return; /* branch, not call */
+            }
+        } else if (op == 0x01) { /* G_VTX */
+            if (raw1 && gsw_seg4(g, w1, 0x10)) {
+                gsw_vtx(g, w1 & 0xFFFFFF, (w0 >> 12) & 0xFF);
+            }
+        } else if (op == 0xDA) { /* G_MTX: 64-byte fixed-point matrix */
+            if (raw1 && gsw_seg4(g, w1, 0x40)) {
+                u32 m = w1 & 0xFFFFFF;
+                u32 i;
+                for (i = 0; i < 0x40; i += 4) {
+                    gsw_w32(g, m + i);
+                }
+            }
+        } else if (op == 0xE1) { /* G_RDPHALF_1 carries G_BRANCH_Z's target */
+            half1 = w1;
+        } else if (op == 0x04) { /* G_BRANCH_Z */
+            if (gsw_seg4(g, half1, 8) && gsw_dl_ok(g, half1 & 0xFFFFFF)) {
+                gsw_dl_walk(g, half1 & 0xFFFFFF, depth + 1);
+            }
+        }
+        off += 8;
+    }
+}
+
+/* DObjPayloadTypeC pair array: {s32 dlistID; Gfx *dl;} until dlistID == 4.
+ * dlistID is CPU-read (renderDrawDObj_TypeC/_TypeD), dl goes to the
+ * interpreter as a segment-4 address. */
+static int gsw_typec_ok(struct GeoSwap *g, u32 off) {
+    u32 n;
+    for (n = 0; n < 512; n++) {
+        u32 id;
+        if (off + 4 > g->size) {
+            return 0;
+        }
+        id = gsw_rd(g, off);
+        if (id == 4) {
+            return 1;
+        }
+        if (id > 4) {
+            return 0;
+        }
+        if (off + 8 > g->size) {
+            return 0;
+        }
+        off += 8;
+    }
+    return 0;
+}
+static void gsw_typec(struct GeoSwap *g, u32 off, int depth) {
+    if (!gsw_typec_ok(g, off)) {
+        return;
+    }
+    for (;;) {
+        u32 id, w;
+        gsw_w32(g, off);
+        id = *(u32 *)(g->blob + off);
+        if (id >= 4) {
+            return;
+        }
+        if (gsw_w32(g, off + 4)) {
+            w = *(u32 *)(g->blob + off + 4);
+            if (gsw_seg4(g, w, 8) && gsw_dl_ok(g, w & 0xFFFFFF)) {
+                gsw_dl_walk(g, w & 0xFFFFFF, depth);
+                gsw_entry(g, off + 4, w & 0xFFFFFF);
+            }
+        }
+        off += 8;
+    }
+}
+
+/* DObjPayloadTypeI triple array: {s32 dlistID; Gfx *before; Gfx *after;}
+ * until dlistID == 4 (func_8001588C). */
+static int gsw_typei_ok(struct GeoSwap *g, u32 off) {
+    u32 n;
+    for (n = 0; n < 512; n++) {
+        u32 id;
+        if (off + 4 > g->size) {
+            return 0;
+        }
+        id = gsw_rd(g, off);
+        if (id == 4) {
+            return 1;
+        }
+        if (id > 4) {
+            return 0;
+        }
+        if (off + 12 > g->size) {
+            return 0;
+        }
+        off += 12;
+    }
+    return 0;
+}
+static void gsw_typei(struct GeoSwap *g, u32 off, int depth) {
+    u32 j;
+    if (!gsw_typei_ok(g, off)) {
+        return;
+    }
+    for (;;) {
+        u32 id, w;
+        gsw_w32(g, off);
+        id = *(u32 *)(g->blob + off);
+        if (id >= 4) {
+            return;
+        }
+        for (j = 4; j <= 8; j += 4) {
+            if (gsw_w32(g, off + j)) {
+                w = *(u32 *)(g->blob + off + j);
+                if (w != 0 && gsw_seg4(g, w, 8) && gsw_dl_ok(g, w & 0xFFFFFF)) {
+                    gsw_dl_walk(g, w & 0xFFFFFF, depth);
+                    gsw_entry(g, off + j, w & 0xFFFFFF);
+                }
+            }
+        }
+        off += 12;
+    }
+}
+
+/* Gfx *[2] payload (func_800156C4): two words, each 0 or a segment-4 DL. */
+static void gsw_dlpair(struct GeoSwap *g, u32 off, int depth) {
+    u32 i, w;
+    if (off + 8 > g->size) {
+        return;
+    }
+    for (i = 0; i < 2; i++) {
+        w = gsw_rd(g, off + i * 4);
+        if (w != 0 && !gsw_seg4(g, w, 8)) {
+            return;
+        }
+    }
+    for (i = 0; i < 2; i++) {
+        if (gsw_w32(g, off + i * 4)) {
+            w = *(u32 *)(g->blob + off + i * 4);
+            if (w != 0 && gsw_dl_ok(g, w & 0xFFFFFF)) {
+                gsw_dl_walk(g, w & 0xFFFFFF, depth);
+                gsw_entry(g, off + i * 4, w & 0xFFFFFF);
+            }
+        }
+    }
+}
+
+/* DObjPayloadTypeE array: {f32 drawDistance; Gfx *dl;}, last entry has
+ * drawDistance == 0 (the consumer loops while drawDistance > dist^2). */
+static void gsw_typee(struct GeoSwap *g, u32 off, int depth) {
+    u32 o = off;
+    u32 n;
+    for (n = 0; n < 64; n++) {
+        u32 dd, dl;
+        if (o + 8 > g->size) {
+            return;
+        }
+        dd = gsw_rd(g, o);
+        dl = gsw_rd(g, o + 4);
+        if (dl != 0 && !gsw_seg4(g, dl, 8)) {
+            return;
+        }
+        if (dd == 0) {
+            break;
+        }
+        /* must look like a positive, sanely sized f32 */
+        if ((dd >> 31) != 0 || (dd >> 23) < 0x60 || (dd >> 23) > 0x9F) {
+            return;
+        }
+        o += 8;
+    }
+    if (n >= 64) {
+        return;
+    }
+    for (;;) {
+        u32 dd, dl;
+        gsw_w32(g, off);
+        dd = *(u32 *)(g->blob + off);
+        if (gsw_w32(g, off + 4)) {
+            dl = *(u32 *)(g->blob + off + 4);
+            if (dl != 0 && gsw_dl_ok(g, dl & 0xFFFFFF)) {
+                gsw_dl_walk(g, dl & 0xFFFFFF, depth);
+                gsw_entry(g, off + 4, dl & 0xFFFFFF);
+            }
+        }
+        if (dd == 0) {
+            return;
+        }
+        off += 8;
+    }
+}
+
+/* ---- display-list widening ------------------------------------------------
+ * The Fast3D fork executes NATIVE F3DGfx commands: two uintptr_t words (16
+ * bytes on this LP64 host), while the blob stores packed 8-byte N64
+ * commands. The fork's packed-DL normalizer only fires for registered
+ * "reloc files" (pc_reloc_stubs.c registers none), so every packed DL the
+ * payload pass found is rebuilt here at load time into a native widened
+ * copy, and the u32 slot the game reads (layout node word +4, payload
+ * dlist word, or header +0) is rewritten to point at it:
+ *   - commands widen 1:1 (w0/w1 zero-extended), G_DL targets rewired to
+ *     their widened copies;
+ *   - G_VTX vertex runs and texture loads (G_SETTIMG + LOADBLOCK/LOADTILE/
+ *     LOADTLUT) are COPIED into memory above 4 GiB and the widened w1
+ *     rewritten to the copy, because the fork's low-VA guards
+ *     (gfx_vtx_addr_is_unresolved and the SETTIMG guard, interpreter.cpp)
+ *     treat every pointer below 4 GiB (vertices) / 256 MiB (textures) that
+ *     is not in a dlopen'd module as an unresolved N64 leftover and skip
+ *     the load -- and this port keeps ALL game-visible memory below 4 GiB;
+ *   - the widened command buffer itself is MAP_32BIT so the game's u32
+ *     slots can hold its address, which also lands it at 0x40000000+ where
+ *     no N64 segment number (all < 0x10) can mangle it in SegAddr.
+ * On any failure the entry slots are zeroed instead: a NULL glist makes
+ * every draw path skip the model -- a safe no-draw, never corruption. The
+ * buffers intentionally leak if the game's cache later evicts the blob
+ * (bounded by unique model loads; a reclamation hook can come later). */
+
+#include <sys/mman.h>
+
+#define GW_MAX_DLS 512
+#define GW_TEX_CAP 0x100000u
+
+struct GeoWiden {
+    struct GeoSwap *g;
+    u32 memo_off[GW_MAX_DLS];
+    uintptr_t memo_ptr[GW_MAX_DLS];
+    int memo_n;
+    int fail;
+    u32 cmds;      /* measured commands, incl. one safety terminator per DL */
+    u32 databytes; /* measured vertex + texel copy bytes */
+    u8 *cmdbuf;
+    u32 cmdcur;
+    u32 cmdmax; /* in 16-byte commands */
+    u8 *datbuf;
+    u32 datcur;
+    u32 datmax; /* bytes */
+};
+
+static int gw_memo_find(struct GeoWiden *w, u32 off, uintptr_t *out) {
+    int i;
+    for (i = 0; i < w->memo_n; i++) {
+        if (w->memo_off[i] == off) {
+            *out = w->memo_ptr[i];
+            return 1;
+        }
+    }
+    return 0;
+}
+static void gw_memo_add(struct GeoWiden *w, u32 off, uintptr_t p) {
+    if (w->memo_n >= GW_MAX_DLS) {
+        w->fail = 1;
+        return;
+    }
+    w->memo_off[w->memo_n] = off;
+    w->memo_ptr[w->memo_n] = p;
+    w->memo_n++;
+}
+
+/* Post-swap native read of a blob word. */
+static u32 gw_rd32(struct GeoSwap *g, u32 off) {
+    return *(u32 *)(g->blob + off);
+}
+
+/* One DL's own linear length in commands, up to and including its
+ * terminator (G_ENDDL or a no-push G_DL). abnormal = ran off the end. */
+static u32 gw_linear_len(struct GeoSwap *g, u32 off, int *abnormal) {
+    u32 n = 0;
+    *abnormal = 1;
+    while (off + 8 <= g->size && n < 0x20000) {
+        u32 w0 = gw_rd32(g, off);
+        u32 op = w0 >> 24;
+        n++;
+        if (op == 0xDF || (op == 0xDE && ((w0 >> 16) & 0xFF) != 0)) {
+            *abnormal = 0;
+            break;
+        }
+        off += 8;
+    }
+    return n;
+}
+
+/* Texel bytes moved by a LOADTLUT (0xF0) / LOADBLOCK (0xF3) / LOADTILE
+ * (0xF4) command, given the pending SETTIMG's siz. */
+static u32 gw_texbytes(u32 op, u32 w0, u32 w1, u32 siz) {
+    u32 t;
+    if (op == 0xF0) {
+        return (((w1 >> 14) & 0x3FF) + 1) * 2;
+    }
+    if (op == 0xF3) {
+        t = ((w1 >> 12) & 0xFFF) + 1;
+    } else {
+        u32 tw = (((w1 >> 12) & 0xFFF) >> 2) - (((w0 >> 12) & 0xFFF) >> 2) + 1;
+        u32 th = ((w1 & 0xFFF) >> 2) - ((w0 & 0xFFF) >> 2) + 1;
+        t = tw * th;
+    }
+    switch (siz) {
+    case 0: return (t + 1) >> 1;
+    case 1: return t;
+    case 2: return t * 2;
+    default: return t * 4;
+    }
+}
+
+/* Resolve the texel source behind a (post-swap) SETTIMG w1: either an
+ * imgRefs-patched host pointer (image bank block, low game arena --
+ * contiguous, trusted for len) or an in-blob segment-4 offset. */
+static const u8 *gw_timg_src(struct GeoSwap *g, u32 w1off, u32 w1, u32 len) {
+    if (gsw_hostptr(g, w1off)) {
+        return (const u8 *)(uintptr_t)w1;
+    }
+    if ((w1 >> 24) == 4 && (w1 & 0xFFFFFF) + len <= g->size) {
+        return g->blob + (w1 & 0xFFFFFF);
+    }
+    return NULL;
+}
+
+static void gw_measure(struct GeoWiden *w, u32 off, int depth) {
+    struct GeoSwap *g = w->g;
+    uintptr_t dummy;
+    int abnormal;
+    u32 len, i;
+    u32 pend_w1off = 0, pend_w1 = 0, pend_siz = 0;
+    int pend = 0;
+
+    if (w->fail || depth > 24) {
+        w->fail = 1;
+        return;
+    }
+    if (gw_memo_find(w, off, &dummy)) {
+        return;
+    }
+    gw_memo_add(w, off, 1);
+    len = gw_linear_len(g, off, &abnormal);
+    w->cmds += len + 1;
+    for (i = 0; i < len; i++) {
+        u32 w0 = gw_rd32(g, off + i * 8);
+        u32 w1 = gw_rd32(g, off + i * 8 + 4);
+        u32 op = w0 >> 24;
+        if (op == 0xDE) {
+            if (gsw_seg4(g, w1, 8) && gsw_dl_ok(g, w1 & 0xFFFFFF)) {
+                gw_measure(w, w1 & 0xFFFFFF, depth + 1);
+            }
+        } else if (op == 0x01) {
+            u32 nv = (w0 >> 12) & 0xFF;
+            if (gsw_seg4(g, w1, nv * 0x10)) {
+                w->databytes += nv * 0x10;
+            }
+        } else if (op == 0xFD) {
+            pend = 1;
+            pend_siz = (w0 >> 19) & 3;
+            pend_w1off = off + i * 8 + 4;
+            pend_w1 = w1;
+        } else if (op == 0xF0 || op == 0xF3 || op == 0xF4) {
+            if (pend) {
+                u32 bytes = gw_texbytes(op, w0, w1, pend_siz);
+                if (bytes <= GW_TEX_CAP && gw_timg_src(g, pend_w1off, pend_w1, bytes) != NULL) {
+                    w->databytes += bytes;
+                }
+                pend = 0;
+            }
+        }
+    }
+}
+
+static uintptr_t gw_emit(struct GeoWiden *w, u32 off, int depth) {
+    struct GeoSwap *g = w->g;
+    uintptr_t found;
+    int abnormal;
+    u32 len, i, base_idx;
+    u8 *base;
+    u64 *pend_slot = NULL;
+    u32 pend_w1off = 0, pend_w1 = 0, pend_siz = 0;
+
+    if (w->fail || depth > 24) {
+        w->fail = 1;
+        return 0;
+    }
+    if (gw_memo_find(w, off, &found)) {
+        return found;
+    }
+    len = gw_linear_len(g, off, &abnormal);
+    if (w->cmdcur + len + 1 > w->cmdmax) {
+        w->fail = 1;
+        return 0;
+    }
+    base_idx = w->cmdcur;
+    w->cmdcur += len + 1;
+    base = w->cmdbuf + (uintptr_t)base_idx * 16;
+    gw_memo_add(w, off, (uintptr_t)base);
+
+    for (i = 0; i < len; i++) {
+        u32 w0 = gw_rd32(g, off + i * 8);
+        u32 w1 = gw_rd32(g, off + i * 8 + 4);
+        u32 op = w0 >> 24;
+        u64 w0v = w0;
+        u64 w1v = w1;
+        u64 *slot = (u64 *)(base + (uintptr_t)i * 16);
+
+        if (op == 0xDE) {
+            uintptr_t child = 0;
+            if (gsw_seg4(g, w1, 8) && gsw_dl_ok(g, w1 & 0xFFFFFF)) {
+                child = gw_emit(w, w1 & 0xFFFFFF, depth + 1);
+            }
+            if (child != 0) {
+                w1v = child;
+            } else if (((w0 >> 16) & 0xFF) == 0) {
+                w0v = 0; /* G_SPNOOP */
+                w1v = 0;
+            } else {
+                w0v = 0xDF000000u; /* branch with no target: end here */
+                w1v = 0;
+            }
+        } else if (op == 0x01) {
+            u32 nv = (w0 >> 12) & 0xFF;
+            if (gsw_seg4(g, w1, nv * 0x10) && w->datcur + nv * 0x10 <= w->datmax) {
+                __builtin_memcpy(w->datbuf + w->datcur, g->blob + (w1 & 0xFFFFFF), nv * 0x10);
+                w1v = (uintptr_t)(w->datbuf + w->datcur);
+                w->datcur += nv * 0x10;
+            }
+        } else if (op == 0xFD) {
+            pend_slot = slot;
+            pend_siz = (w0 >> 19) & 3;
+            pend_w1off = off + i * 8 + 4;
+            pend_w1 = w1;
+        } else if (op == 0xF0 || op == 0xF3 || op == 0xF4) {
+            if (pend_slot != NULL) {
+                u32 bytes = gw_texbytes(op, w0, w1, pend_siz);
+                const u8 *src = (bytes <= GW_TEX_CAP) ? gw_timg_src(g, pend_w1off, pend_w1, bytes) : NULL;
+                if (src != NULL && w->datcur + bytes <= w->datmax) {
+                    __builtin_memcpy(w->datbuf + w->datcur, src, bytes);
+                    pend_slot[1] = (uintptr_t)(w->datbuf + w->datcur);
+                    w->datcur += bytes;
+                }
+                pend_slot = NULL;
+            }
+        }
+        slot[0] = w0v;
+        slot[1] = w1v;
+    }
+    /* Safety terminator: reached even when the source list ran off the
+     * blob without a G_ENDDL. */
+    {
+        u64 *slot = (u64 *)(base + (uintptr_t)len * 16);
+        slot[0] = 0xDF000000u;
+        slot[1] = 0;
+    }
+    return (uintptr_t)base;
+}
+
+static void gsw_widen_all(struct GeoSwap *g) {
+    struct GeoWiden w;
+    u32 cmdbytes, datbytes;
+    int i;
+
+    if (g->ent_n == 0) {
+        return;
+    }
+    if (g->bm == NULL || g->ent_overflow) {
+        goto fail;
+    }
+    w.g = g;
+    w.memo_n = 0;
+    w.fail = 0;
+    w.cmds = 0;
+    w.databytes = 0;
+    w.cmdbuf = NULL;
+    w.datbuf = NULL;
+    for (i = 0; i < g->ent_n; i++) {
+        gw_measure(&w, g->ent_dl[i], 0);
+    }
+    if (w.fail || w.cmds == 0) {
+        goto fail;
+    }
+    cmdbytes = (w.cmds * 16 + 0xFFFu) & ~0xFFFu;
+    w.cmdbuf = mmap(NULL, cmdbytes, PROT_READ | PROT_WRITE,
+                    MAP_PRIVATE | MAP_ANONYMOUS | MAP_32BIT, -1, 0);
+    if (w.cmdbuf == MAP_FAILED || (uintptr_t)w.cmdbuf + cmdbytes > 0xFFFFFFFFull) {
+        goto fail;
+    }
+    datbytes = (w.databytes + 0xFFFu) & ~0xFFFu;
+    if (datbytes != 0) {
+        /* must land ABOVE 4 GiB to pass the fork's low-VA guards */
+        w.datbuf = mmap((void *)(uintptr_t)0x200000000ull, datbytes,
+                        PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (w.datbuf == MAP_FAILED || (uintptr_t)w.datbuf < 0x100000000ull) {
+            if (w.datbuf != MAP_FAILED) {
+                munmap(w.datbuf, datbytes);
+            }
+            munmap(w.cmdbuf, cmdbytes);
+            goto fail;
+        }
+    }
+    w.cmdcur = 0;
+    w.cmdmax = w.cmds;
+    w.datcur = 0;
+    w.datmax = w.databytes;
+    w.memo_n = 0;
+    for (i = 0; i < g->ent_n; i++) {
+        uintptr_t p = gw_emit(&w, g->ent_dl[i], 0);
+        *(u32 *)(g->blob + g->ent_slot[i]) = w.fail ? 0 : (u32)p;
+    }
+    if (w.fail) {
+        goto fail;
+    }
+    return;
+fail:
+    for (i = 0; i < g->ent_n; i++) {
+        *(u32 *)(g->blob + g->ent_slot[i]) = 0;
+    }
+}
 
 u32 *func_800A9250(u32 arg0, s32 arg1) {
     u32 *entry;
@@ -944,12 +1709,21 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
     u32 sw;
     u32 off;
     u32 bank;
+    u32 mode;
+    struct GeoSwap g;
 
     entry = D_800D0184[arg0 >> 16]->geoBlockTable;
     entry += (arg0 & 0xFFFF) * 2;
     size = (entry[1] - entry[0]) | arg1;
     blob = func_800A8358(size);
     dma_read(entry[0], blob, size & 0xFFFFFC);
+
+    g.blob = blob;
+    g.size = (u32)(entry[1] - entry[0]) & 0xFFFFFC;
+    g.bm = calloc((g.size >> 5) + 2, 1);
+    g.bmh = calloc((g.size >> 5) + 2, 1);
+    g.ent_n = 0;
+    g.ent_overflow = 0;
 
     /* +0xC: G_SETTIMG reference list -- stride 4, 0-terminated. Each slot
      * holds a 24-bit offset to a node; the node's word +4 holds an image
@@ -959,12 +1733,12 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
     off = geo_rd(blob + 0xC) & 0xFFFFFF;
     if (off != 0) {
         list = blob + off;
-        geo_wr(blob + 0xC, (u32)(uintptr_t)list);
+        gsw_put(&g, 0xC, (u32)(uintptr_t)list);
         while ((w = geo_rd(list)) != 0) {
             node = blob + (w & 0xFFFFFF);
             bank = geo_rd(node + 4);
-            geo_wr(list, bank);
-            geo_wr(node + 4, (u32)(uintptr_t)func_800A8BAC(bank));
+            gsw_put(&g, (u32)(list - blob), bank);
+            gsw_put(&g, (u32)(node + 4 - blob), (u32)(uintptr_t)func_800A8BAC(bank));
             list += 4;
         }
     }
@@ -972,29 +1746,33 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
     /* +0x4: texture scroll section -- lists nested two deep, each stride 4,
      * terminated by 0x99999999, with 0 slots skipped (but still stepped
      * over). Outer and middle slots become native pointers into the blob;
-     * each level-3 node hangs two bank-id lists off its words +0x4 and
-     * +0x2C (those words become native pointers to the lists, and each
-     * nonzero list slot becomes a native BGHeader pointer from
-     * func_800A8BAC, called with the full decoded bank-id word). */
+     * each level-3 node is a TextureScroll whose scalar fields are swapped
+     * in place (gsw_texscroll) and whose two bank-id lists at words +0x4 /
+     * +0x2C become native pointers to the lists, each nonzero list slot
+     * becoming a native BGHeader pointer from func_800A8BAC (called with
+     * the full decoded bank-id word). */
     off = geo_rd(blob + 4) & 0xFFFFFF;
     if (off != 0) {
         list = blob + off;
-        geo_wr(blob + 4, (u32)(uintptr_t)list);
+        gsw_put(&g, 4, (u32)(uintptr_t)list);
         while ((w = geo_rd(list)) != 0x99999999U) {
             if (w != 0) {
                 mid = blob + (w & 0xFFFFFF);
-                geo_wr(list, (u32)(uintptr_t)mid);
+                gsw_put(&g, (u32)(list - blob), (u32)(uintptr_t)mid);
                 while ((mw = geo_rd(mid)) != 0x99999999U) {
                     if (mw != 0) {
                         node = blob + (mw & 0xFFFFFF);
-                        geo_wr(mid, (u32)(uintptr_t)node);
+                        gsw_put(&g, (u32)(mid - blob), (u32)(uintptr_t)node);
                         off = geo_rd(node + 4) & 0xFFFFFF;
                         if (off != 0) {
                             sub = blob + off;
-                            geo_wr(node + 4, (u32)(uintptr_t)sub);
+                            gsw_put(&g, (u32)(node + 4 - blob), (u32)(uintptr_t)sub);
                             while ((sw = geo_rd(sub)) != 0x99999999U) {
                                 if (sw != 0) {
-                                    geo_wr(sub, (u32)(uintptr_t)func_800A8BAC(sw));
+                                    gsw_put(&g, (u32)(sub - blob),
+                                            (u32)(uintptr_t)func_800A8BAC(sw));
+                                } else {
+                                    gsw_mark(&g, (u32)(sub - blob));
                                 }
                                 sub += 4;
                             }
@@ -1002,14 +1780,18 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
                         off = geo_rd(node + 0x2C) & 0xFFFFFF;
                         if (off != 0) {
                             sub = blob + off;
-                            geo_wr(node + 0x2C, (u32)(uintptr_t)sub);
+                            gsw_put(&g, (u32)(node + 0x2C - blob), (u32)(uintptr_t)sub);
                             while ((sw = geo_rd(sub)) != 0x99999999U) {
                                 if (sw != 0) {
-                                    geo_wr(sub, (u32)(uintptr_t)func_800A8BAC(sw));
+                                    gsw_put(&g, (u32)(sub - blob),
+                                            (u32)(uintptr_t)func_800A8BAC(sw));
+                                } else {
+                                    gsw_mark(&g, (u32)(sub - blob));
                                 }
                                 sub += 4;
                             }
                         }
+                        gsw_texscroll(&g, (u32)(node - blob));
                     }
                     mid += 4;
                 }
@@ -1022,23 +1804,24 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
      * so a 0 offset yields the blob base itself. */
     w = geo_rd(blob + 0x0);
     n = blob + (w & 0xFFFFFF);
-    geo_wr(blob + 0x0, (u32)(uintptr_t)n);
+    gsw_put(&g, 0, (u32)(uintptr_t)n);
 
     /* +0x18: animation refs pointer -- only when the count at +0x14 and the
      * word itself are both nonzero. */
     if (geo_rd(blob + 0x14) != 0) {
         w = geo_rd(blob + 0x18);
         if (w != 0) {
-            geo_wr(blob + 0x18, (u32)(uintptr_t)(blob + (w & 0xFFFFFF)));
+            gsw_put(&g, 0x18, (u32)(uintptr_t)(blob + (w & 0xFFFFFF)));
         }
     }
+
+    mode = geo_rd(blob + 8);
 
     /* +0x8: layout mode. For modes 0x18 and 0x1A..0x1E the layout section
      * is an array of 0x2C-byte nodes ending at a node whose type word (+0)
      * is 0x12: word +4 of every node before the terminator becomes a native
-     * pointer into the blob (0 stays 0, and the terminator node itself is
-     * not touched). All other modes leave the layout section alone. */
-    switch (geo_rd(blob + 8)) {
+     * pointer into the blob (0 stays 0), exactly like the N64 asm. */
+    switch (mode) {
     case 0x18:
     case 0x1A:
     case 0x1B:
@@ -1046,13 +1829,14 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
     case 0x1D:
     case 0x1E:
         if (geo_rd(n) != 0x12) {
+            u8 *nn = n;
             for (;;) {
-                w = geo_rd(n + 4);
+                w = geo_rd(nn + 4);
                 if (w != 0) {
-                    geo_wr(n + 4, (u32)(uintptr_t)(blob + (w & 0xFFFFFF)));
+                    gsw_put(&g, (u32)(nn + 4 - blob), (u32)(uintptr_t)(blob + (w & 0xFFFFFF)));
                 }
-                w = geo_rd(n + 0x2C);
-                n += 0x2C;
+                w = geo_rd(nn + 0x2C);
+                nn += 0x2C;
                 if (w == 0x12) {
                     break;
                 }
@@ -1060,6 +1844,128 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
         }
         break;
     }
+
+    /* PORT extra 1: byte-swap the layout node array itself for the modes
+     * whose consumers (func_800AF4BC -> func_8000F980/func_8000FB10) walk
+     * it natively as struct UnkE4E4Arg. Word +4 is skipped automatically by
+     * the swap-once test where the walk above already made it a pointer;
+     * for 0x17/0x19 it is swapped like any scalar (it holds a segment-4 DL
+     * address the DObj hands straight to the interpreter). Only the type
+     * word of the 0x12 terminator is touched -- the bytes after it belong
+     * to other sections. */
+    if (g.bm != NULL && mode >= 0x17 && mode <= 0x1E) {
+        off = (u32)(n - blob);
+        for (;;) {
+            u32 t;
+            u32 i;
+            if (off + 4 > g.size) {
+                break;
+            }
+            gsw_w32(&g, off);
+            t = *(u32 *)(blob + off);
+            if (t == 0x12) {
+                break;
+            }
+            if (off + 0x2C > g.size) {
+                break;
+            }
+            gsw_w32(&g, off + 4);
+            for (i = 8; i < 0x2C; i += 4) {
+                gsw_w32(&g, off + i);
+            }
+            off += 0x2C;
+        }
+    }
+
+    /* PORT extra 2: swap the draw payloads and display lists (map above). */
+    if (g.bm != NULL) {
+        switch (mode) {
+        case 0x13:
+        case 0x15:
+            off = (u32)(n - blob);
+            if (off < g.size && gsw_dl_ok(&g, off)) {
+                gsw_dl_walk(&g, off, 0);
+                gsw_entry(&g, 0, off); /* header +0 doubles as the DL slot */
+            } else if (mode == 0x15) {
+                gsw_typee(&g, off, 0);
+            }
+            break;
+        case 0x14:
+        case 0x16:
+            gsw_typec(&g, (u32)(n - blob), 0);
+            break;
+        case 0x17:
+        case 0x18:
+        case 0x19:
+        case 0x1A:
+        case 0x1B:
+        case 0x1C:
+        case 0x1D:
+        case 0x1E:
+            off = (u32)(n - blob);
+            for (;;) {
+                u32 t;
+                if (off + 4 > g.size) {
+                    break;
+                }
+                t = *(u32 *)(blob + off); /* native since extra 1 */
+                if (t == 0x12) {
+                    break;
+                }
+                if (off + 0x2C > g.size) {
+                    break;
+                }
+                w = *(u32 *)(blob + off + 4);
+                if (mode == 0x17 || mode == 0x19) {
+                    /* word +4 is itself a segment-4 DL address */
+                    if (gsw_seg4(&g, w, 8) && gsw_dl_ok(&g, w & 0xFFFFFF)) {
+                        gsw_dl_walk(&g, w & 0xFFFFFF, 0);
+                        gsw_entry(&g, off + 4, w & 0xFFFFFF);
+                    }
+                } else if (w != 0) {
+                    /* word +4 is a native pointer to an in-blob payload */
+                    u8 *p = (u8 *)(uintptr_t)w;
+                    if (p > blob && p < blob + g.size) {
+                        u32 poff = (u32)(p - blob);
+                        if (mode == 0x18 || mode == 0x1A) {
+                            gsw_typec(&g, poff, 0);
+                        } else if (mode == 0x1B || mode == 0x1D) {
+                            gsw_dlpair(&g, poff, 0);
+                        } else {
+                            gsw_typei(&g, poff, 0);
+                        }
+                    }
+                }
+                off += 0x2C;
+            }
+            break;
+        }
+
+        /* PORT extra 2b: widen every collected packed DL into native
+         * F3DGfx and rewire the slots the game reads (comment block above
+         * gsw_widen_all). */
+        gsw_widen_all(&g);
+    }
+
+    /* PORT extra 3: make the header scalars native for their compiled
+     * readers (layoutMode, numAnimations, lenLayout). +0x10 (vtxRefs) has
+     * no compiled consumer and stays BE. Unconditional (not via the
+     * swap-once helpers) so the read sites below stay correct even if the
+     * bitmap allocation failed and the deep swaps were skipped. */
+    geo_wr(blob + 0x8, mode);
+    geo_wr(blob + 0x14, geo_rd(blob + 0x14));
+    geo_wr(blob + 0x1C, geo_rd(blob + 0x1C));
+    gsw_mark(&g, 0x8);
+    gsw_mark(&g, 0x14);
+    gsw_mark(&g, 0x1C);
+
+    {
+        extern void pc_geoload_debug(u32 id, u32 mode, u32 size, const void *blob, u32 layoutOff);
+        pc_geoload_debug(arg0, mode, g.size, blob, (u32)(n - blob));
+    }
+
+    free(g.bm);
+    free(g.bmh);
     return (u32 *)blob;
 }
 #else
@@ -1190,18 +2096,16 @@ void *func_800A9648(void *arg0) {
  * compilable. Dispatch on the geo blob's layoutMode: store the layout
  * pointer (header +0x00) and texScroll pointer (+0x04) -- both already
  * native host pointers after func_800A9250's PORT relocation -- and hand
- * them to the per-family setup. layoutMode (+0x08) is one of the header
- * words the relocator leaves raw, so it is read big-endian here. */
+ * them to the per-family setup. layoutMode (+0x08) is byte-swapped in
+ * place by the relocator, so it is a plain native read here. */
 void *func_800A9648(u32 *arg0) {
     void func_800AF4BC(void *, void *, void *);
     void func_800AF618(void *, void *, void *);
-    const u8 *raw;
     u32 mode;
     void *layout;
     void *texScroll;
 
-    raw = (const u8 *)&arg0[2];
-    mode = ((u32)raw[0] << 24) | ((u32)raw[1] << 16) | ((u32)raw[2] << 8) | raw[3];
+    mode = arg0[2];
     layout = (void *)(uintptr_t)arg0[0];
     texScroll = (void *)(uintptr_t)arg0[1];
     if (mode >= 0x11 && mode <= 0x16) {
@@ -1293,8 +2197,8 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
 /* PORT: behavioral port from the asm listing, modeled on the matched sibling
  * func_800A9760 above -- identical bank-slot bind plus two sentinel-defaulted
  * animation args handed to func_800AF9B8. 99999 (D_800D5DD8) means "use the
- * default": arg1 falls back to the entry's word at +8, arg2 to 0x10. The bank
- * entry is raw ROM data, so that +8 word is read big-endian on the host. */
+ * default": arg1 falls back to the entry's word at +8 (layoutMode, made
+ * native in place by func_800A9250's PORT relocator), arg2 to 0x10. */
 void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
     u32 *func_800A9250(u32, s32);
     void func_800A99E4(s32);
@@ -1304,7 +2208,6 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
     void func_800AF9B8(u16, u8);
     u32 **slot;
     u32 *ptr;
-    const u8 *raw;
 
     slot = &D_800D00C4[arg0 >> 16][arg0 & 0xFFFF];
     D_800E02D0[omCurrentObj->objId] = arg0;
@@ -1319,8 +2222,7 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
     }
     func_800A9D64(omCurrentObj->objId);
     if ((u32)arg1 == 99999) {
-        raw = (const u8 *)ptr + 8;
-        arg1 = ((u32)raw[0] << 24) | ((u32)raw[1] << 16) | ((u32)raw[2] << 8) | raw[3];
+        arg1 = (s32)ptr[2];
     }
     if ((u32)arg2 == 99999) {
         arg2 = 0x10;
@@ -1346,20 +2248,13 @@ void func_800A9A2C(s32 arg0) {
     s32 temp_v1;
 
     temp_v0 = gSegment4StartArray[arg0];
-#ifdef PORT
-    /* Word +0x1C of the geo blob (lenLayout / DObj-table count) is one of
-     * the fields the PORT relocator in func_800A9250 deliberately leaves
-     * raw, and the blob is big-endian ROM data on the host. Read natively
-     * this was ~0x2000000; *4 asked the cache allocator for 128MB and its
-     * eviction loop spun forever -- the measured "game stalls after 8
-     * frames" hang. */
-    {
-        const u8 *raw = (const u8 *)&temp_v0[7];
-        temp_v1 = (s32)(((u32)raw[0] << 24) | ((u32)raw[1] << 16) | ((u32)raw[2] << 8) | raw[3]);
-    }
-#else
+    /* Word +0x1C of the geo blob (lenLayout / DObj-table count) is
+     * byte-swapped in place by func_800A9250's PORT relocator, so the
+     * native read below is right on the host too. (It used to be left
+     * big-endian: read natively it was ~0x2000000; *4 asked the cache
+     * allocator for 128MB and its eviction loop spun forever -- the
+     * measured "game stalls after 8 frames" hang.) */
     temp_v1 = temp_v0[7];
-#endif
     if (temp_v1 == 0) {
         D_800DFBD0[omCurrentObj->objId] = (struct DObj **)-1;
         return;

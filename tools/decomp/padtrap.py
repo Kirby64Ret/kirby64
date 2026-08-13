@@ -40,8 +40,8 @@ ending at an address 0 mod 32, and IDO's assembler pads .text only to 16 -- the
 rest is the LINKER aligning the NEXT object's .text to its sh_addralign of 32
 (which a `while (1)` function's `.align 5` sets). kirby.ld's SUBALIGN(16)
 overrides that, so the fill has to be declared as a `pad` subsegment in
-kirby64.yaml (rendered `. += 0x10;`). See AGENT_GUIDE.md, section "THE
-'MID-TU PADDING TRAP' CLASS IS NOT A TRAP". Trap-and-last-in-subsegment =>
+kirby64.yaml (rendered `. += 0x10;`). See LEVERS.md, section "PADDING
+TRAPS". Trap-and-last-in-subsegment =>
 needs a pad subsegment. Trap-and-interior => the `c` subsegment is really two
 translation units and the boundary is wrong.
 

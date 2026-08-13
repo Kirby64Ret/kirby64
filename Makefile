@@ -142,7 +142,7 @@ ACTOR_FILES := $(foreach file,$(DATA_FILES),$(BUILD_DIR)/$(file:.c=.o))
 SUPPRESS_WARNINGS := -woff 624,568
 OPT_FLAGS := -O2
 DEFS += -D_LANGUAGE_C -D_FINALROM
-INCLUDE_CFLAGS := -I include -Ilibreultra/include/2.0I -I $(BUILD_DIR) -I $(BUILD_DIR)/include -I $(BUILD_DIR)/assets -I src -Isrc.old -I .
+INCLUDE_CFLAGS := -I include -Ilibreultra/include/2.0I -I $(BUILD_DIR) -I $(BUILD_DIR)/include -I $(BUILD_DIR)/assets -I src -I .
 TARGET_CFLAGS := -nostdinc -I include/libc -DTARGET_N64 -DF3DEX_GBI_2
 CFLAGS = -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed $(DEFS) $(OPT_FLAGS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) $(MIPSISET) $(SUPPRESS_WARNINGS)
 GCC_CFLAGS = -Wall $(DEFS) $(TARGET_CFLAGS) $(INCLUDE_CFLAGS) -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -fno-PIC -mno-abicalls -fno-zero-initialized-in-bss -fno-toplevel-reorder -Wno-missing-braces

@@ -41,11 +41,20 @@ void guLookAtF(f32 mf[4][4], f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32
 void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
 
 // like DObjPayloadTypeC, but with a second display list drawn in front
+#ifdef PORT
+/* PORT: 4-byte-slot data walked in place; see DObjPayloadTypeC in DObj.h. */
+typedef struct {
+    /* 0x00 */ s32 dlistID;
+    /* 0x04 */ u32 dlistBefore;
+    /* 0x08 */ u32 dlistAfter;
+} DObjPayloadTypeI; // size = 0x0C on the host as well
+#else
 typedef struct {
     /* 0x00 */ s32 dlistID;
     /* 0x04 */ Gfx* dlistBefore;
     /* 0x08 */ Gfx* dlistAfter;
 } DObjPayloadTypeI; // size = 0x0C
+#endif
 
 void renderSetCameraScissors(s32 top, s32 bottom, s32 left, s32 right) {
     renderCameraScissorTop = top;
@@ -2056,7 +2065,14 @@ void renderLoadTextures(DObj *dobj, Gfx **dl_head)
 
         if (flags & 0x4)
         {
+#ifdef PORT
+            /* texture.palettes is a u32-held native pointer on the host
+             * (see the PORT TextureScroll in include/geo_block_header.h). */
+            gDPSetTextureImage(branch_dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1,
+                               ((u32 *)(uintptr_t)mobj->texture.palettes)[(s32)mobj->palIndex]);
+#else
             gDPSetTextureImage(branch_dl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, mobj->texture.palettes[(s32)mobj->palIndex]);
+#endif
 
             if (flags & (0x2 | 0x1))
             {
@@ -2084,11 +2100,22 @@ void renderLoadTextures(DObj *dobj, Gfx **dl_head)
         }
         if (flags & 0x1000)
         {
+#ifdef PORT
+            /* ColorPacks keep memory byte order r,g,b,a on the host (byte
+             * readers here and in ovl6 rely on it); .pack must still carry
+             * the N64 numeric r<<24|g<<16|b<<8|a, so re-pack. */
+            gSPLightColor(branch_dl++, LIGHT_1, __builtin_bswap32(mobj->texture.lightColor1.pack));
+#else
             gSPLightColor(branch_dl++, LIGHT_1, mobj->texture.lightColor1.pack);
+#endif
         }
         if (flags & 0x2000)
         {
+#ifdef PORT
+            gSPLightColor(branch_dl++, LIGHT_2, __builtin_bswap32(mobj->texture.lightColor2.pack));
+#else
             gSPLightColor(branch_dl++, LIGHT_2, mobj->texture.lightColor2.pack);
+#endif
         }
         if (flags & (0x200 | 0x10 | 0x8))
         {
@@ -2149,6 +2176,17 @@ void renderLoadTextures(DObj *dobj, Gfx **dl_head)
         {
             s32 block_siz = ((u8)mobj->texture.siz2 == G_IM_SIZ_32b) ? G_IM_SIZ_32b : G_IM_SIZ_16b;
 
+#ifdef PORT
+            /* texture.textures is a u32-held native pointer on the host. */
+            gDPSetTextureImage
+            (
+                branch_dl++,
+                (u8)mobj->texture.fmt2,
+                block_siz,
+                1,
+                ((u32 *)(uintptr_t)mobj->texture.textures)[mobj->texIndex2]
+            );
+#else
             gDPSetTextureImage
             (
                 branch_dl++,
@@ -2157,6 +2195,7 @@ void renderLoadTextures(DObj *dobj, Gfx **dl_head)
                 1,
                 mobj->texture.textures[mobj->texIndex2]
             );
+#endif
             if (flags & (0x10 | 0x1))
             {
                 gDPLoadSync(branch_dl++);
@@ -2216,6 +2255,16 @@ void renderLoadTextures(DObj *dobj, Gfx **dl_head)
         }
         if (flags & (0x10 | 0x1))
         {
+#ifdef PORT
+            gDPSetTextureImage
+            (
+                branch_dl++,
+                (u8)mobj->texture.fmt1,
+                (u8)mobj->texture.siz1,
+                1,
+                ((u32 *)(uintptr_t)mobj->texture.textures)[mobj->texIndex1]
+            );
+#else
             gDPSetTextureImage
             (
                 branch_dl++,
@@ -2224,6 +2273,7 @@ void renderLoadTextures(DObj *dobj, Gfx **dl_head)
                 1,
                 mobj->texture.textures[mobj->texIndex1]
             );
+#endif
         }
         if (flags & 0x20)
         {
@@ -2574,7 +2624,12 @@ void renderDrawGObjWithDObjTypeE(GObj* obj) {
 
 void renderDrawDObj_LevelOfDetail(DObj* dobj) {
     s32 ret;
+#ifdef PORT
+    /* 4-byte-slot pointer table; see the DObj.h PORT union comment. */
+    u32* lodList = dobj->data.lod;
+#else
     Gfx** lodList = dobj->data.lod;
+#endif
     UNUSED s32 temp;
 
     if (!(dobj->flags & 2)) {
@@ -2672,7 +2727,12 @@ void renderDrawObject_TypeG(GObj* obj) {
                 payload++;
             }
 
+#ifdef PORT
+            /* typeC is a u32-held native pointer on the host (DObj.h). */
+            renderDrawDObj_TypeC(dobj, (DObjPayloadTypeC *)(uintptr_t)payload->typeC);
+#else
             renderDrawDObj_TypeC(dobj, payload->typeC);
+#endif
         }
     }
 }
@@ -2680,7 +2740,12 @@ void renderDrawObject_TypeG(GObj* obj) {
 void func_8001503C(DObj* dobj) {
     void* segaddr = NULL;
     s32 ret;
+#ifdef PORT
+    /* 4-byte-slot pointer table; see the DObj.h PORT union comment. */
+    u32* payload;
+#else
     DObjPayloadTypeC** payload;
+#endif
     DObjPayloadTypeC* curPayload;
     Gfx* sp3C;
     s32 i;
@@ -2690,7 +2755,11 @@ void func_8001503C(DObj* dobj) {
         f32 sp30 = renderObjectScale;
         payload = dobj->data.typeH;
         if (payload != NULL) {
+#ifdef PORT
+            curPayload = (DObjPayloadTypeC *)(uintptr_t)payload[renderLevelOfDetail];
+#else
             curPayload = payload[renderLevelOfDetail];
+#endif
         }
 
         sp3C = D_8004ABA0;
@@ -2769,7 +2838,12 @@ void func_80015368(GObj* obj) {
                 renderLevelOfDetail++;
             }
 
+#ifdef PORT
+            /* typeC is a u32-held native pointer on the host (DObj.h). */
+            curPayload = (DObjPayloadTypeC *)(uintptr_t)payload->typeC;
+#else
             curPayload = payload->typeC;
+#endif
             sp30 = D_8004ABA0;
             ret = renderPrepareModelMatrix(&D_8004ABA0, dobj);
 
@@ -2826,7 +2900,13 @@ void func_800156C4(DObj* dobj) {
     UNUSED s32 pad;
     f32 sp24;
     UNUSED s32 pad2;
+#ifdef PORT
+    /* Gfx *[2] payload stored as two u32 slots in the blob (see the
+     * DObjPayloadTypeC PORT comment in DObj.h). */
+    u32* payload;
+#else
     Gfx** payload;
+#endif
 
     payload = dobj->data.data;
 
@@ -2946,8 +3026,14 @@ void func_80015BFC(DObj* dobj) {
     s32 ret;
     UNUSED s32 pad;
     f32 sp24;
+#ifdef PORT
+    /* Two levels of 4-byte-slot tables (see DObj.h PORT union comment). */
+    u32* payload;
+    u32* lodList;
+#else
     Gfx** payload;
     Gfx*** lodList;
+#endif
 
     lodList = dobj->data.data;
 
@@ -2955,7 +3041,11 @@ void func_80015BFC(DObj* dobj) {
         sp24 = renderObjectScale;
 
         if (lodList != NULL) {
+#ifdef PORT
+            payload = (u32 *)(uintptr_t)lodList[renderLevelOfDetail];
+#else
             payload = lodList[renderLevelOfDetail];
+#endif
         }
 
         if (lodList != NULL && payload[0] != NULL && !(dobj->flags & 1)) {
@@ -3043,14 +3133,23 @@ void func_80015F78(DObj* dobj) {
     DObjPayloadTypeI* payload;
     Gfx* sp3C;
     s32 i;
+#ifdef PORT
+    /* 4-byte-slot pointer table (see DObj.h PORT union comment). */
+    u32* lodLists;
+#else
     DObjPayloadTypeI** lodLists;
+#endif
 
     if (!(dobj->flags & 2)) {
         f32 sp30 = renderObjectScale;
 
         lodLists = dobj->data.data;
         if (lodLists != NULL) {
+#ifdef PORT
+            payload = (DObjPayloadTypeI *)(uintptr_t)lodLists[renderLevelOfDetail];
+#else
             payload = lodLists[renderLevelOfDetail];
+#endif
         }
 
         sp3C = D_8004ABA0;
@@ -3131,7 +3230,12 @@ void func_800162D8(GObj* obj) {
                 renderLevelOfDetail++;
             }
 
+#ifdef PORT
+            /* typeC is a u32-held native pointer on the host (DObj.h). */
+            curPayload = (DObjPayloadTypeC *)(uintptr_t)payload->typeC;
+#else
             curPayload = payload->typeC;
+#endif
             sp30 = D_8004ABA0;
             ret = renderPrepareModelMatrix(&D_8004ABA0, dobj);
 

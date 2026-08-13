@@ -18,12 +18,12 @@ os.chdir(REPO)
 
 CPP_FLAGS = ("-P -Wno-trigraphs -D_LANGUAGE_C -D_FINALROM -DTARGET_N64 -DF3DEX_GBI_2 "
              "-nostdinc -Iinclude/libc -Iinclude -Ilibreultra/include/2.0I -Ibuild "
-             "-Ibuild/include -Ibuild/assets -Isrc -Isrc.old -I. "
+             "-Ibuild/include -Ibuild/assets -Isrc -I. "
              "-D'__attribute__(x)=' -D'__asm__(x)='")
 IDO_FLAGS = ("-c -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed "
              "-D_LANGUAGE_C -D_FINALROM -O2 -nostdinc -Iinclude/libc -DTARGET_N64 "
              "-DF3DEX_GBI_2 -Iinclude -Ilibreultra/include/2.0I -Ibuild -Ibuild/include "
-             "-Ibuild/assets -Isrc -Isrc.old -I. -mips2 -32 -woff 624,568")
+             "-Ibuild/assets -Isrc -I. -mips2 -32 -woff 624,568")
 
 def unguard(text, func):
     """Turn the target function's `#ifdef <GUARD> body #else #pragma #endif`

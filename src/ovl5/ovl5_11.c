@@ -7,7 +7,7 @@
 #include "ovl1/ovl1_2.h"
 #include "ovl1/ovl1_3.h"
 #ifdef PORT
-/* src.old/ovl1/ovl1_5.h carries a stale ILP32-era duplicate SPObj typedef.
+/* src/ovl1/ovl1_5.h carries a stale ILP32-era duplicate SPObj typedef.
  * Under LP64 its pointer members inflate, so its unkBA alias lands at 0xDE
  * -- 8 bytes past gfx[1].b.bg.s.imageFlip (0xD6), inside imageYorig -- while
  * the real include/SPObj.h pins unk5A/unkBA to the imageFlip bytes of the

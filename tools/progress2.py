@@ -80,7 +80,7 @@ def GetNonMatchingSize(path):
     leftovers.
 
     This tree does not delete them. The scaffold was reconstructed whole from
-    asm.old so that the build works with any subset decompiled, which means
+    the original listings so that the build works with any subset decompiled, which means
     the unreferenced files are precisely the FINISHED ones. Under `not in`
     the script counted every completed function as still outstanding and then
     subtracted it from src, reporting 20% for a tree that was at 34%.

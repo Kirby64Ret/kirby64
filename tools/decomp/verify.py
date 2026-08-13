@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Verify that a decompiled function matches the ground-truth asm.old listing.
+"""Verify that a decompiled function matches its ground-truth splat listing.
 
 Usage: verify.py <c_file> <func_name> [func_name...]
        verify.py <c_file> --all        (verify every non-pragma function that has a listing)
 
 Works without the base ROM: target instruction words come from the
-`/* OFFSET VRAM WORD */` comments in asm.old/asm/non_matchings/**.
+`/* OFFSET VRAM WORD */` comments in asm/nonmatchings/**.
 Relocated fields (hi16/lo16/26-bit targets) are masked on both sides,
 same as asm-differ does.
 """
@@ -19,7 +19,7 @@ os.chdir(REPO)
 CFLAGS = ('-c -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed '
           '-D_LANGUAGE_C -D_FINALROM {opt} -nostdinc -Iinclude/libc -DTARGET_N64 '
           '-DF3DEX_GBI_2 -Iinclude -Ilibreultra/include/2.0I -Ibuild -Ibuild/include '
-          '-Ibuild/assets -Isrc -Isrc.old -I. -mips2 -32 -woff 624,568')
+          '-Ibuild/assets -Isrc -I. -mips2 -32 -woff 624,568')
 ASFLAGS = '-mtune=vr4300 -march=vr4300 --no-pad-sections -mabi=32 -mips3 -Ibuild -Iinclude'
 def _makefile_overrides():
     """Per-file compiler settings, READ FROM THE MAKEFILE rather than copied.
@@ -305,12 +305,12 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
                           f'32-byte alignment fill before the next object, not the '
                           f'function\'s bytes, so converting it leaves the TU '
                           f'16*k bytes short under kirby.ld\'s SUBALIGN(16). This '
-                          f'is FIXABLE: see "THE MID-TU PADDING TRAP CLASS IS NOT '
-                          f'A TRAP" in AGENT_GUIDE.md -- add a `pad` subsegment to '
+                          f'is FIXABLE: see "PADDING TRAPS" in LEVERS.md -- add '
+                          f'a `pad` subsegment to '
                           f'kirby64.yaml plus the matching `. += 0x10;` in '
                           f'kirby.ld, in the SAME edit as the conversion.')
     if listing is None:
-        return None, f'{func}: no asm.old listing (unverifiable — was decompiled in src.old)'
+        return None, f'{func}: no listing (unverifiable — matched before per-function listings existed; full-ROM sha1 covers it)'
     twords, ttexts = target_words(listing)
     if func not in objfuncs:
         return False, f'{func}: not found in compiled object'

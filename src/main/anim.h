@@ -110,6 +110,22 @@ typedef struct {
     /* 0x10 */ s32* ids;
 } AnimationHeader;
 
+#ifdef PORT
+/* PORT: these nodes are the geo blob's 0x2C-stride layout array, walked in
+ * place (func_8000F980/func_8000FB10/func_8000F054/... all do `arg++`). A
+ * void * member would make the struct 0x38 bytes on the LP64 host and shear
+ * every walk, so the pointer slot is held as u32 -- func_800A9250's PORT
+ * relocator stores a real native pointer there (everything the game can see
+ * lives below 4 GiB, see src/pc/pc_mmio.c), or a raw segment-4 display list
+ * word for layoutModes 0x17/0x19. Deref sites cast through uintptr_t. */
+typedef struct UnkE4E4Arg {
+    /* 0x00 */ s32 unk_00;
+    /* 0x04 */ u32 unk04;
+    /* 0x08 */ Vector position;
+    /* 0x14 */ Vector rotation;
+    /* 0x20 */ Vector scale;
+} UnkE4E4Arg; // size == 0x2C on the host as well
+#else
 typedef struct UnkE4E4Arg {
     /* 0x00 */ s32 unk_00;
     /* 0x04 */ void* unk04;
@@ -117,6 +133,7 @@ typedef struct UnkE4E4Arg {
     /* 0x14 */ Vector rotation;
     /* 0x20 */ Vector scale;
 } UnkE4E4Arg; // size == 0x2C
+#endif
 
 DObj* animModelTreeNextNode(DObj*);
 // void anim_func_8000FBC4(GObj* obj, struct UnkE4E4Arg* arg1, DObj** arg2);

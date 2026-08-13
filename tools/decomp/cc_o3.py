@@ -3,7 +3,7 @@
 
 The recompiled IDO cannot do this itself: `cc -O3` fails because `ujoin` is
 missing from tools/ido-7.1recomp (only as1, cc, cfe, ugen and uopt are there).
-An earlier note in AGENT_GUIDE.md concluded from that -- wrongly -- that -O3
+An earlier note concluded from that -- wrongly -- that -O3
 was both unavailable and pointless, on the reasoning that inlining lives in
 ujoin/umerge so without them -O3 would equal -O2. The first half was right, the
 second was not: `uopt -O3` optimises differently regardless of inlining.

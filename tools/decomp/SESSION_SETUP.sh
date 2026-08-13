@@ -1,5 +1,5 @@
 #!/bin/bash
-# Phase 0 of WAVE8.md: resurrect a fresh container to a verified-green tree.
+# Bring a fresh container to a verified-green tree.
 # Fail-loud and idempotent. CPU work, not token work — run it, read the last
 # line, move on. Requires baserom.us.z64 at the repo root (user-provided; it
 # is gitignored and must never be committed).

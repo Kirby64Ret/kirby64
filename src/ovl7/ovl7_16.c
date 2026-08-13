@@ -38,7 +38,6 @@ void func_800B67A8(GObj *);
 void func_800B6684(GObj *);
 void func_800B6474(GObj *);
 
-// ovl7_16 ported from src.old
 void func_801BEF18_ovl7(void);
 /* D_801CE5D4_ovl7 = 0.666f : now emitted by this TU */
 /* D_801CE5D8_ovl7 = 0.666f : now emitted by this TU */

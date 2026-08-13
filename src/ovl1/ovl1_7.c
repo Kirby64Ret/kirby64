@@ -269,6 +269,23 @@ void func_800AF618(void *arg0, TextureScroll ***arg1, DObj **arg2) {
     }
     while (node != NULL) {
         if (arg1 != NULL) {
+#ifdef PORT
+            /* The geo blob's texScroll lists are 4-byte u32 slots holding
+             * native pointers (func_800A9250's PORT relocator); a
+             * TextureScroll ** walk would stride 8 on the LP64 host. Same
+             * shape as func_8000FB10's PORT arm in src/main/anim.c. */
+            {
+                u32 *outer = (u32 *)arg1;
+                if (*outer != 0) {
+                    u32 *mids = (u32 *)(uintptr_t)*outer;
+                    while (*mids != 0 && *mids != 0x99999999U) {
+                        omDObjAddMObj(node, (TextureScroll *)(uintptr_t)*mids);
+                        mids++;
+                    }
+                }
+                arg1 = (TextureScroll ***)(outer + 1);
+            }
+#else
             if (*arg1 != NULL) {
                 mobjs = *arg1;
                 t = *mobjs;
@@ -279,6 +296,7 @@ void func_800AF618(void *arg0, TextureScroll ***arg1, DObj **arg2) {
                 }
             }
             arg1++;
+#endif
         }
         node = animModelTreeNextNode(node);
     }

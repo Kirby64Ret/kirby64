@@ -6,7 +6,7 @@ Each member is converted, verified on its own, and rolled back to its
 in the tree, so this is safe to run unattended -- unlike a bulk conversion,
 which can leave a segment silently short.
 
-Rollback matters here because of the dead-epilogue rule (see AGENT_GUIDE.md):
+Rollback matters here because of the dead-epilogue rule (see LEVERS.md):
 IDO aligns the unreachable epilogue after an infinite loop to 32 bytes, so
 whether a given copy needs trailing nops depends on where it sits relative to
 its translation unit's base address. Two copies of identical source therefore

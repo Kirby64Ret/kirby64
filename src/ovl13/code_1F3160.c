@@ -715,7 +715,7 @@ void func_801E1F1C_ovl13(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801E2034_ovl13.s")
 
-/* 149/157 -- a src.old m2c draft, retyped for the current DObj header
+/* 149/157 -- an early m2c draft, retyped for the current DObj header
    (its `unk34` is angle.v.y at 0x34 and `unk24` is pos.v.z at 0x24, and
    D_800DFBD0[i] is a DObj ** whose [1] is the DObj m2c called `->unk4`).
    Saved rather than discarded because the retyping is the tedious part.
