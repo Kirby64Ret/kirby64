@@ -491,6 +491,21 @@ void func_800AC820(uObjTxtr *tx, struct C954Arg2 *arg1) {
 }
 
 void func_800AC8E0(struct SPObj_68 *arg0, struct C954Arg2 *arg1) {
+#ifdef PORT
+    /* struct SPObj_68 is the ILP32 image of uObjTxtr's tlut view; under LP64
+       uObjTxtr has an 8-byte image pointer at +0x8, so write the real GBI
+       fields instead of the raw-offset image. */
+    uObjTxtr *tx = (uObjTxtr *) arg0;
+
+    tx->tlut.type = G_OBJLT_TLUT;
+    tx->tlut.image = (u64 *) (uintptr_t) arg1->unkC;
+    tx->tlut.phead = 0x100;
+    tx->tlut.pnum = (arg1->unk2 - 1) & 0xFF;
+    tx->tlut.zero = 0;
+    tx->tlut.sid = 0;
+    tx->tlut.flag = arg1->unkC;
+    tx->tlut.mask = -1;
+#else
     arg0->unk0 = 0x30;
     arg0->unk4 = arg1->unkC;
     arg0->unk8 = 0x100;
@@ -499,6 +514,7 @@ void func_800AC8E0(struct SPObj_68 *arg0, struct C954Arg2 *arg1) {
     arg0->unkE = 0;
     arg0->unk10 = arg1->unkC;
     arg0->unk14 = -1;
+#endif
 }
 
 void func_800AC924(uObjMtx *mtx) {
@@ -514,6 +530,34 @@ void func_800AC924(uObjMtx *mtx) {
 // func_800AC954 is spelled through this local type instead. Its size is what
 // makes IDO emit the ROM's 3-words-per-pass loop.
 struct SPObjBlk { u32 w[0x18]; };
+
+#ifdef PORT
+// Under LP64 the alias fields sheared off the block (see SPObj.h): the blocks
+// are real members now, so both the writers in func_800AC954 and the readers
+// below address them through the same typed layout.
+#define SPOBJ_GFX(sp) (&(sp)->gfx[(sp)->unk12])
+#else
+// The RSP command block SPObj carries twice, at 0x40 and at 0xA0; spobj->unk12
+// selects the copy so the CPU never rewrites the block the RSP is reading.
+typedef union SPObjGfx {
+    struct {
+        /* 0x00 */ uObjBg bg;
+        /* 0x28 */ uObjTxtr tlut;
+    } b;
+    struct {
+        /* 0x00 */ uObjTxSprite ts;
+        /* 0x30 */ uObjTxtr tlut;
+        /* 0x48 */ uObjMtx mtx;
+    } t;
+} SPObjGfx;
+
+typedef struct SPObjBufs {
+    /* 0x00 */ u8 head[0x40];
+    /* 0x40 */ SPObjGfx gfx[2];
+} SPObjBufs;
+
+#define SPOBJ_GFX(sp) (&((SPObjBufs *) (sp))->gfx[(sp)->unk12])
+#endif
 
 SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
     SPObj* sprite;
@@ -561,6 +605,45 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
     sprite->xOffset = sprite->yOffset = 0.0f;
     sprite->unk30 = sprite->unk34 = sprite->unk38 = 0.0f;
     sprite->xScale = sprite->yScale = 1.0f;
+#ifdef PORT
+    /* Route every block write through the typed layout the readers use
+       (SPOBJ_GFX); the raw N64 offsets in the #else are sheared under LP64. */
+    {
+        SPObjGfx *blk = &sprite->gfx[0];
+
+        switch (kind) {
+            case 0:
+                func_800AC688(&blk->b.bg, arg2);
+                if (arg2->unk0 == 2) {
+                    func_800AC8E0((struct SPObj_68 *) &blk->b.tlut, arg2);
+                }
+                break;
+            case 1:
+                func_800AC700(&blk->b.bg, arg2);
+                if (arg2->unk0 == 2) {
+                    func_800AC8E0((struct SPObj_68 *) &blk->b.tlut, arg2);
+                }
+                break;
+            case 2:
+                func_800AC794(&blk->t.ts.sprite, arg2);
+                func_800AC820(&blk->t.ts.txtr, arg2);
+                if (arg2->unk0 == 2) {
+                    func_800AC8E0((struct SPObj_68 *) &blk->t.tlut, arg2);
+                }
+                break;
+            case 3:
+            case 4:
+                func_800AC794(&blk->t.ts.sprite, arg2);
+                func_800AC820(&blk->t.ts.txtr, arg2);
+                if (arg2->unk0 == 2) {
+                    func_800AC8E0((struct SPObj_68 *) &blk->t.tlut, arg2);
+                }
+                func_800AC924(&blk->t.mtx);
+                break;
+        }
+    }
+    sprite->gfx[1] = sprite->gfx[0];
+#else
     switch (kind) {
         case 0:
             func_800AC688(&sprite->unk40, arg2);
@@ -592,6 +675,7 @@ SPObj* func_800AC954(GObj* gobj, u32 kind, struct C954Arg2 *arg2) {
             break;
     }
     *(struct SPObjBlk *) ((u8 *) sprite + 0xA0) = *(struct SPObjBlk *) ((u8 *) sprite + 0x40);
+#endif
     return sprite;
 }
 
@@ -710,27 +794,6 @@ s32 func_800ACE88(SPObj *spobj, u8 colortype) {
             break;
     }
 }
-
-// The RSP command block SPObj carries twice, at 0x40 and at 0xA0; spobj->unk12
-// selects the copy so the CPU never rewrites the block the RSP is reading.
-typedef union SPObjGfx {
-    struct {
-        /* 0x00 */ uObjBg bg;
-        /* 0x28 */ uObjTxtr tlut;
-    } b;
-    struct {
-        /* 0x00 */ uObjTxSprite ts;
-        /* 0x30 */ uObjTxtr tlut;
-        /* 0x48 */ uObjMtx mtx;
-    } t;
-} SPObjGfx;
-
-typedef struct SPObjBufs {
-    /* 0x00 */ u8 head[0x40];
-    /* 0x40 */ SPObjGfx gfx[2];
-} SPObjBufs;
-
-#define SPOBJ_GFX(sp) (&((SPObjBufs *) (sp))->gfx[(sp)->unk12])
 
 #define spDL(pkt, hi, lo)                                                      \
 {                                                                              \
@@ -949,6 +1012,17 @@ void func_800ADD14(GObj *camObj) {
     gtlLoadUcode(gDisplayListHeads, savedUcode);
 }
 
+// Pool slot stride. On the N64 an SPObj is 0xBC bytes rounded up to a 0x100
+// pool slot. Under LP64 the embedded gfx[2] blocks make sizeof(SPObj) 0x128
+// (> 0x100), so the port derives the stride from the real size (it is already
+// 8-aligned; SPObj.h asserts that) or the freelist would thread each SPObj's
+// buffers into the next slot.
+#ifdef PORT
+#define SPOBJ_POOL_STRIDE sizeof(SPObj)
+#else
+#define SPOBJ_POOL_STRIDE 0x100
+#endif
+
 // The `q` pointer local and the `n ^ 0` are LOAD-BEARING (permuter result,
 // applied verbatim): `q` forks the extra source-level temp IDO needs to keep
 // the loop's `sltu` ahead of the `sw`, and the xor keeps the compare on `n`
@@ -962,12 +1036,12 @@ void func_800AE048(u32 count) {
     if (count == 0) {
         D_800DD6E0 = NULL;
     } else {
-        p = gtlMalloc(count * 0x100, 8);
+        p = gtlMalloc(count * SPOBJ_POOL_STRIDE, 8);
         D_800DD6E0 = p;
         n = count - 1;
         for (i = 0; i < (n ^ 0); i++) {
             q = (u8 *) p;
-            p->next = (SPObj *) (q + 0x100);
+            p->next = (SPObj *) (q + SPOBJ_POOL_STRIDE);
             p = p->next;
         }
         p->next = NULL;

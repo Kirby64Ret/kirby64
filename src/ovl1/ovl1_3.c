@@ -460,6 +460,40 @@ struct BGHeader *func_800A8BAC(u32 arg0) {
     return (*temp_v1)[idx];
 }
 
+#ifdef PORT
+/* The dma'd image blob is raw big-endian ROM data on the host. The N64 body
+ * relocates imgOffset/palOffset with native word reads, which on the host adds
+ * the base to a byte-swapped offset and hands the S2DEX bg path a wild image
+ * pointer (measured: strncmp fault inside the renderer's signature probe).
+ * Decode the multi-byte header fields once at load; the u8 fields (fmt, siz,
+ * unk2) are single bytes and already correct. Texel/palette payload stays raw
+ * -- N64 texture formats are byte streams and the renderer expects them. */
+struct BGHeader *func_800A8C40(u32 arg0) {
+    struct BGHeader ***temp_a2;
+    s32 idx;
+    u8 *raw;
+    struct BGHeader *h;
+
+    temp_a2 = &D_800D0104[arg0 >> 16];
+    idx = arg0 & 0xFFFF;
+    if ((*temp_a2)[idx] == NULL) {
+        (*temp_a2)[idx] = (struct BGHeader *)func_800A8B0C(arg0, 3);
+        h = (*temp_a2)[idx];
+        raw = (u8 *)h;
+        /* BGHeader (ovl1_3.h) is opaque in this TU; the layout is
+         * fmt/siz/unk2 u8 at 0..2, width u16 at 4, height u16 at 6,
+         * imgOffset u32 at 8, palOffset u32 at 12. */
+        (void)h;
+        *(u16 *)(raw + 4) = (u16)((raw[4] << 8) | raw[5]);
+        *(u16 *)(raw + 6) = (u16)((raw[6] << 8) | raw[7]);
+        *(u32 *)(raw + 8) = (((u32)raw[8] << 24) | ((u32)raw[9] << 16) | ((u32)raw[10] << 8) | raw[11])
+                            + (u32)(uintptr_t)raw;
+        *(u32 *)(raw + 12) = (((u32)raw[12] << 24) | ((u32)raw[13] << 16) | ((u32)raw[14] << 8) | raw[15])
+                             + (u32)(uintptr_t)raw;
+    }
+    return (*temp_a2)[idx];
+}
+#else
 struct BGHeader *func_800A8C40(u32 arg0) {
     struct BGHeader ***temp_a2;
     s32 idx;
@@ -475,6 +509,7 @@ struct BGHeader *func_800A8C40(u32 arg0) {
     }
     return (*temp_a2)[idx];
 }
+#endif /* PORT */
 
 #ifdef NON_MATCHING
 // 2/33 (was 9): reusing `arg0` as the scratch for the masked, doubled index --
