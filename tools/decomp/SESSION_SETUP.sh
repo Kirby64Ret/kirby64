@@ -70,6 +70,12 @@ if [ ! -f tools/decomp/decomp-permuter/permuter.py ]; then
     uv pip install pycparser toml
 fi
 
+echo "== [6c/7] m2c (third-party; gitignored, so a fresh clone lacks it) =="
+if [ ! -f tools/decomp/m2c/m2c.py ]; then
+    rm -rf tools/decomp/m2c
+    git clone --depth 1 https://github.com/matt-kempster/m2c tools/decomp/m2c
+fi
+
 echo "== [7/7] SSB64 donor repo =="
 if [ ! -d /workspace/vetritheretri/ssb-decomp-re ]; then
     mkdir -p /workspace/vetritheretri
