@@ -98,4 +98,5 @@ src/pc/
 port/
 docs/PC_PORT_*.md
 kirby64.cfg.json
+halberd.cfg.json
 logs/
