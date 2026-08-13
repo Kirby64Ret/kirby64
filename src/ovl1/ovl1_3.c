@@ -1050,6 +1050,47 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(sp1C);
 }
+#elif defined(PORT)
+/* PORT: behavioral port from the asm listing, modeled on the matched sibling
+ * func_800A9760 above -- identical bank-slot bind plus two sentinel-defaulted
+ * animation args handed to func_800AF9B8. 99999 (D_800D5DD8) means "use the
+ * default": arg1 falls back to the entry's word at +8, arg2 to 0x10. The bank
+ * entry is raw ROM data, so that +8 word is read big-endian on the host. */
+void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
+    u32 *func_800A9250(u32, s32);
+    void func_800A99E4(s32);
+    void func_800A9A2C(s32);
+    void func_800A9D64(s32);
+    void *func_800A9648(u32 *);
+    void func_800AF9B8(u16, u8);
+    u32 **slot;
+    u32 *ptr;
+    const u8 *raw;
+
+    slot = &D_800D00C4[arg0 >> 16][arg0 & 0xFFFF];
+    D_800E02D0[omCurrentObj->objId] = arg0;
+    if (*slot != NULL) {
+        ptr = *slot;
+        gSegment4StartArray[omCurrentObj->objId] = ptr;
+        func_800A8564((struct CacheLine *)ptr, 1);
+    } else {
+        ptr = func_800A9250(arg0, 3);
+        *slot = ptr;
+        gSegment4StartArray[omCurrentObj->objId] = ptr;
+    }
+    func_800A9D64(omCurrentObj->objId);
+    if ((u32)arg1 == 99999) {
+        raw = (const u8 *)ptr + 8;
+        arg1 = ((u32)raw[0] << 24) | ((u32)raw[1] << 16) | ((u32)raw[2] << 8) | raw[3];
+    }
+    if ((u32)arg2 == 99999) {
+        arg2 = 0x10;
+    }
+    func_800AF9B8((u16)arg1, (u8)arg2);
+    func_800A99E4(omCurrentObj->objId);
+    func_800A9A2C(omCurrentObj->objId);
+    func_800A9648(ptr);
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9864.s")
 #endif
