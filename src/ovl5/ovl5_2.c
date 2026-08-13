@@ -251,43 +251,49 @@ void func_8015E850_ovl5(GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015ED9C_ovl5.s")
 
-#ifdef NON_MATCHING
 // 8 diffs: $s6/$s7 are swapped -- the ROM gives $s7 to the CSE'd
 // &D_8018E030_ovl5[arg0] base and $s6 to `dir`; IDO does the reverse.
-s32 func_8015F300_ovl5(s32 arg0, s32 arg1) {
-    s32 dir;
-    s32 count;
-    s32 i;
+s32 func_8015F300_ovl5(s32 arg0, s32 arg1)
+{
+  s32 dir;
+  s32 count;
+  f32 *new_var;
+  s32 i;
+  if (gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]] < gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]])
+  {
+    dir = 1;
+  }
+  else
+  {
+    dir = 0;
+  }
+  count = 0;
+  for (i = 0; i != 4; i++)
+  {
+    if (i == arg0)
+    {
+      continue;
+    }
+    if (dir != 0)
+    {
+      if (((gEntitiesNextPosXArray[D_8018E030_ovl5[i]] < gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) && (gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]] < gEntitiesNextPosXArray[D_8018E030_ovl5[i]])) || (func_8015F4C4_ovl5(i, arg1) == 2))
+      {
+ do { } while (0);
+        count++;
+      }
+    }
+    else
+    {
+      new_var = gEntitiesNextPosXArray;
+      if (((new_var[D_8018E030_ovl5[arg0]] < gEntitiesNextPosXArray[D_8018E030_ovl5[i]]) && (gEntitiesNextPosXArray[D_8018E030_ovl5[i]] < gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]])) || (func_8015F4C4_ovl5(i, arg1) == 2))
+      {
+        count++;
+      }
+    }
+  }
 
-    if (gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]] < gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) {
-        dir = 1;
-    } else {
-        dir = 0;
-    }
-    count = 0;
-    for (i = 0; i != 4; i++) {
-        if (i == arg0) {
-            continue;
-        }
-        if (dir != 0) {
-            if ((gEntitiesNextPosXArray[D_8018E030_ovl5[i]] < gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] &&
-                 gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]] < gEntitiesNextPosXArray[D_8018E030_ovl5[i]]) ||
-                func_8015F4C4_ovl5(i, arg1) == 2) {
-                count++;
-            }
-        } else {
-            if ((gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] < gEntitiesNextPosXArray[D_8018E030_ovl5[i]] &&
-                 gEntitiesNextPosXArray[D_8018E030_ovl5[i]] < gEntitiesNextPosXArray[D_8018E050_ovl5[arg1]]) ||
-                func_8015F4C4_ovl5(i, arg1) == 2) {
-                count++;
-            }
-        }
-    }
-    return count;
+  return count;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F300_ovl5.s")
-#endif
 
 s32 func_8015F4C4_ovl5(s32 arg0, s32 arg1) {
     f32 diff;
