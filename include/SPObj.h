@@ -55,15 +55,18 @@ struct SPObj_40_A0 {
  *   +0x30 uObjTxtr tlut (kind 2/3/4) gfx[i].t.tlut
  *   +0x48 uObjMtx       (kind 3/4)   gfx[i].t.mtx
  */
+/* With gs2dex.h's PORT wire-format image words (u32, not u64*), every member
+ * offset below matches the N64 block exactly and the whole union is the true
+ * 0x60-byte RSP command block. */
 typedef union SPObjGfx {
     struct {
-        uObjBg bg;        /* N64 +0x00, LP64 +0x00 */
-        uObjTxtr tlut;    /* N64 +0x28, LP64 +0x30 */
+        uObjBg bg;        /* +0x00 */
+        uObjTxtr tlut;    /* +0x28 */
     } b;
     struct {
-        uObjTxSprite ts;  /* txtr N64 +0x00/LP64 +0x00, sprite N64 +0x18/LP64 +0x20 */
-        uObjTxtr tlut;    /* N64 +0x30, LP64 +0x38 */
-        uObjMtx mtx;      /* N64 +0x48, LP64 +0x58 */
+        uObjTxSprite ts;  /* txtr +0x00, sprite +0x18 */
+        uObjTxtr tlut;    /* +0x30 */
+        uObjMtx mtx;      /* +0x48 */
     } t;
 } SPObjGfx;
 
@@ -107,7 +110,7 @@ typedef struct SPObj {
 
 /* Writers and readers must agree on the block layout, and the aliases must
  * land on the bytes the block writers write. */
-_Static_assert(sizeof(SPObjGfx) == 0x70, "SPObjGfx LP64 size");
+_Static_assert(sizeof(SPObjGfx) == 0x60, "SPObjGfx wire size");
 _Static_assert(__builtin_offsetof(SPObj, gfx) == 0x48, "gfx[0] offset");
 _Static_assert(__builtin_offsetof(SPObj, unk5A) ==
                __builtin_offsetof(SPObj, gfx[0].b.bg.s.imageFlip), "unk5A alias");

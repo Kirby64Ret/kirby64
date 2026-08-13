@@ -29,6 +29,21 @@ extern "C" {
  *	Data structures for S2DEX microcode
  *===========================================================================*/
 
+/* PORT: these structures are WIRE FORMAT -- the RSP (and, on the PC port, the
+ * Fast3D interpreter) reads them as packed N64 layout with 32-bit DRAM
+ * addresses. Under LP64 a real `u64 *` field is 8 bytes and 8-aligned, which
+ * inflates uObjBg 40->48 and uObjTxtr 24->32 and shifts every field after the
+ * pointer; the renderer then reads imagePtr as two halves of neighbouring
+ * fields (measured: imagePtr=0x7000000070000000). Keep the image words 32-bit
+ * on the host; all host allocations sit below 4GB so the address round-trips. */
+#ifdef PORT
+typedef u32 uS2DImagePtr;
+#define US2D_IMAGE_CAST (u32)(uintptr_t)
+#else
+typedef u64 *uS2DImagePtr;
+#define US2D_IMAGE_CAST (u64 *)
+#endif
+
 /*---------------------------------------------------------------------------*
  *	Background
  *---------------------------------------------------------------------------*/
@@ -50,7 +65,7 @@ typedef	struct	{
   s16	frameY;		/* upper-left position of transferred frame (s10.2) */
   u16	frameH;		/* height of transferred frame (u10.2) */
 
-  u64  *imagePtr;	/* texture source address on DRAM */
+  uS2DImagePtr imagePtr;	/* texture source address on DRAM */
   u16	imageLoad;	/* which to use, LoadBlock or  LoadTile */
   u8	imageFmt;	/* format of texel - G_IM_FMT_*  */
   u8	imageSiz;	/* size of texel - G_IM_SIZ_*   */
@@ -89,7 +104,7 @@ typedef	struct	{
   s16	frameY;		/* upper-left position of transferred frame (s10.2) */
   u16	frameH;		/* height of transferred frame (u10.2) */
 
-  u64  *imagePtr;	/* texture source address on DRAM */
+  uS2DImagePtr imagePtr;	/* texture source address on DRAM */
   u16	imageLoad;	/* Which to use, LoadBlock or LoadTile? */
   u8	imageFmt;	/* format of texel - G_IM_FMT_*  */
   u8	imageSiz;	/* size of texel - G_IM_SIZ_*  */
@@ -176,7 +191,7 @@ typedef union {
 
 typedef	struct	{
   u32	type;		/* G_OBJLT_TXTRBLOCK divided into types */
-  u64	*image;		/* texture source address on DRAM */
+  uS2DImagePtr image;		/* texture source address on DRAM */
   u16	tmem;		/* loaded TMEM word address (8byteWORD) */
   u16	tsize;		/* Texture size, Specified by macro GS_TB_TSIZE() */
   u16	tline;		/* width of Texture 1-line, Specified by macro GS_TB_TLINE() */
@@ -190,7 +205,7 @@ typedef	struct	{
 
 typedef	struct	{
   u32	type;		/* G_OBJLT_TXTRTILE divided into types */
-  u64	*image;		/* texture source address on DRAM */
+  uS2DImagePtr image;		/* texture source address on DRAM */
   u16	tmem;		/* loaded TMEM word address (8byteWORD)*/
   u16	twidth;		/* width of Texture (Specified by macro GS_TT_TWIDTH()) */
   u16	theight;	/* height of Texture (Specified by macro GS_TT_THEIGHT()) */
@@ -204,7 +219,7 @@ typedef	struct	{
 
 typedef	struct	{
   u32	type;		/* G_OBJLT_TLUT divided into types */
-  u64	*image;		/* texture source address on DRAM */
+  uS2DImagePtr image;		/* texture source address on DRAM */
   u16	phead;		/* pallet number of load header (Between 256 and 511) */
   u16	pnum;		/* loading pallet number -1 */
   u16   zero;		/* Assign 0 all the time */
