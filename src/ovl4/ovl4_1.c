@@ -1,5 +1,10 @@
 #include "common.h"
+#include "config.h"
 #include "GObj.h"
+#include "segments.h"
+#include "sounds.h"
+#include "track_arrays.h"
+
 #include "main/audio.h"
 #include "main/contpad.h"
 #include "main/gtl.h"
@@ -8,17 +13,15 @@
 #include "main/object_manager.h"
 #include "main/rdp_reset.h"
 #include "main/vi.h"
+
 #include "ovl1/game.h"
 #include "ovl1/save_file.h"
 #include "ovl1/ovl1_2_2.h"
-#include "ovl1/ovl1_6.h"
+#include "ovl1/track.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/ovl1_10.h"
 #include "ovl1/track.h"
 #include "ovl1/util.h"
-#include "sounds.h"
-
-#include "segments.h"
 
 extern s32 D_800D6B24;
 extern s32 D_8015C680_ovl4;
@@ -51,9 +54,9 @@ u32 D_80159FC0_ovl4[] = {
 };
 
 f32 D_80159FF4_ovl4[] = {
-    -60, 0, 60,
-    0, -60, 0,
-    0, 60, 0
+    -60, 0, 60, 0,
+    -60, 0, 0, 60,
+    0
 };
 
 Gfx D_8015A018_ovl4[] = {
@@ -170,17 +173,17 @@ void check_save_file_completion_cheat_code(Unused GObj *arg0) {
     }
 }
 
-void func_80151274_ovl4(void) {
-    f32 temp_f0;
-    s32 tmp;
+void titleSelectRandomEntityYaw(void) {
+    f32 modelScale;
+    s32 randomAngleSelect;
 
     gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
-    tmp = random_soft_u16();
-    temp_f0 = 0.2f;
-    gEntitiesAngleYArray[omCurrentObj->objId] = DTOR(D_80159FF4_ovl4[tmp & 7]);
-    gEntitiesScaleXArray[omCurrentObj->objId] = temp_f0;
-    gEntitiesScaleYArray[omCurrentObj->objId] = temp_f0;
-    gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
+    randomAngleSelect = random_soft_u16();
+    modelScale = 0.2f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = DTOR(D_80159FF4_ovl4[randomAngleSelect & 7]);
+    gEntitiesScaleXArray[omCurrentObj->objId] = modelScale;
+    gEntitiesScaleYArray[omCurrentObj->objId] = modelScale;
+    gEntitiesScaleZArray[omCurrentObj->objId] = modelScale;
 }
 
 void func_80151338_ovl4(GObj *arg0) {
@@ -232,7 +235,7 @@ void func_80151338_ovl4(GObj *arg0) {
             func_800A9864(0x20060, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = -150.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -90.0f;
-            func_80151274_ovl4();
+            titleSelectRandomEntityYaw();
             func_800AA018(0x202DB);
             func_800AA018(0x202DC);
             break;
@@ -240,7 +243,7 @@ void func_80151338_ovl4(GObj *arg0) {
             func_800A9864(0x2006F, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = -75.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -90.0f;
-            func_80151274_ovl4();
+            titleSelectRandomEntityYaw();
             func_800AA018(0x203D7);
             func_800AA018(0x203D8);
             break;
@@ -249,7 +252,7 @@ void func_80151338_ovl4(GObj *arg0) {
             func_800A9864(0x20007, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -90.0f;
-            func_80151274_ovl4();
+            titleSelectRandomEntityYaw();
             func_800AA018(0x2009B);
             func_800AA018(0x2009C);
             break;
@@ -257,7 +260,7 @@ void func_80151338_ovl4(GObj *arg0) {
             func_800A9864(0x2006B, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = 75.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -90.0f;
-            func_80151274_ovl4();
+            titleSelectRandomEntityYaw();
             func_800AA018(0x203B2);
             func_800AA018(0x203B3);
             break;
@@ -265,7 +268,7 @@ void func_80151338_ovl4(GObj *arg0) {
             func_800A9864(0x300C4, 0x1869F, 0x10);
             gEntitiesNextPosXArray[omCurrentObj->objId] = 150.0f;
             gEntitiesNextPosYArray[omCurrentObj->objId] = -60.0f;
-            func_80151274_ovl4();
+            titleSelectRandomEntityYaw();
             func_800AA018(0x301D9);
             break;
 
@@ -379,7 +382,7 @@ s32 func_80151CEC_ovl4(s32 arg0) {
     do {
         gFrameBuffer[0][i] = gFrameBuffer[1][i] = 1;
         i++;
-    } while (i < (320 * 240));
+    } while (i < (SCREEN_WIDTH * SCREEN_HEIGHT));
 
     gtlCreateScene(&D_8015A064_ovl4);
     func_800BB3F0();

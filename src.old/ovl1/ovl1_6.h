@@ -1,12 +1,24 @@
 #ifndef OVL1_6_H
 #define OVL1_6_H
 
+#include "GObj.h"
+#include "DObj.h"
+
 #include "ovl2/ovl2_6.h"
 #include "ovl19/ovl19_5.h"
 
 
-#define MultiType union {u32 as_u32; u32 *as_u32p; s32 as_s32; s32 *as_s32p; void *as_ptr;}
-#define _MultiType(CustomType) union {u32 as_u32; s32 as_s32; void *as_ptr; CustomType *consume;}
+typedef union {
+    u32 as_u32;
+    u32 *as_u32p;
+    s32 as_s32;
+    s32 *as_s32p;
+    void *as_ptr;
+    GObj *as_gobj;
+    GObj **as_gobjp;
+    DObj *as_dobj;
+    DObj **as_dobjp;
+} MultiType;
 
 extern u32 D_800DD710[]; // "JN number"
 extern s32 D_800DE190[];
@@ -31,20 +43,15 @@ extern void (*D_800DEDD0[])(struct GObj *);
 extern void (*D_800DEF90[])(s32);
 extern void (*D_800DF150[])(struct GObj *);
 extern void (*D_800DF310[])(s32, s32, f32);
-extern union {
-    u32 as_u32;
-    u32 *as_u32p;
-} D_800DF850[];
-extern union {
-    u32 as_u32;
-    u32 *as_u32p;
-} D_800DF690[];
+extern MultiType D_800DF850[];
+extern MultiType D_800DF690[];
 extern u32 *gEntityGeoDataArray[];
 
 // i think this is an array of pairs (2-length arrays) of pointers but cba to figure out syntax
 extern struct DObj **D_800DFBD0[];
 // oh no this is a union or something.....
 extern u32 D_800DFBD0_as_u32[];
+extern MultiType D_800DFBD0_as_multitype[];
 
 
 extern s32 D_800E0110[];

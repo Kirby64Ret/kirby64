@@ -1201,7 +1201,6 @@ s32 func_800A9AA8(u32 arg0, s32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-
 s32 func_800A9B48(s32 arg0) {
     s32 sp24;
     void *sp1C;
@@ -1346,27 +1345,17 @@ void func_800A9EC4(s32 arg0, f32 arg1, u16 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9EC4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800A9F98(f32 arg1) {
-    if (func_800A9B48() != 0) {
-        func_800AEEB4(*D_800DF850[omCurrentObj->objId], arg1);
-        return;
+void func_800A9F98(s32 file, f32 arg1) {
+    if (func_800A9B48(file) != 0) {
+        func_800AEEB4(*D_800DF850[omCurrentObj->objId].as_gobjp, arg1);
+    } else {
+        func_800AEE20(*D_800DF690[omCurrentObj->objId].as_gobjp, arg1);
     }
-    func_800AEE20(*D_800DF690[omCurrentObj->objId].as_u32, arg1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9F98.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800AA018(s32 arg0) {
-    func_800A9F98(0);
+void func_800AA018(s32 file) {
+    func_800A9F98(file, 0.0f);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA018.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1619,16 +1608,13 @@ s32 func_800AA8E4(s32 track, u32 model) {
     }
 }
 
-#ifdef MIPS_TO_C
 s32 func_800AA934(s32 arg0) {
     if (arg0 == D_800DFF50[omCurrentObj->objId]) {
         return 1;
+    } else {
+        return 0;
     }
-    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA934.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1672,7 +1658,6 @@ void func_800AA96C(s32 *arg0, u32 arg1, ? arg2, ? arg3, f32 arg4) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800AAB3C(s32 *arg0, ? arg3, f32 arg4) {
     DObj *temp_s0;
 

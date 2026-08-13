@@ -1,2 +1,3 @@
 D_800DFBD0_as_u32 = D_800DFBD0;
+D_800DFBD0_as_multitype = D_800DFBD0; /* TODO: make everything use the multitype */
 D_80300170 = 0x80300170;
