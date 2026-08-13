@@ -491,9 +491,18 @@ static void pc_emit_load_ucode(Gfx **dlist, u32 sel) {
 
     /* 0xDD is F3DEX2's G_LOAD_UCODE. Written as a literal because the value
      * Fast3D compares against is F3DEX2_G_LOAD_UCODE regardless of which ucode
-     * is currently selected -- the switch command is outside the tables. */
+     * is currently selected -- the switch command is outside the tables.
+     *
+     * In NATIVE mode the interpreter resolves the switch by matching w1
+     * against the ucode text pointers the host registered (the enum in w0 is
+     * ignored there; it is kept for the non-native OTR path). w1 == 0 matches
+     * nothing and the switch is silently dropped -- which left every S2DEX
+     * sprite list of a frame running under the F3DEX2 table, where 0x06/0x07
+     * opcodes read as G_TRI2/G_QUAD with pointer operands. Measured: 3795
+     * dropped switches in 30 seconds. */
     g->words.w0 = 0xDD000000u | sel;
-    g->words.w1 = 0;
+    g->words.w1 = (u32)(uintptr_t)(sel == PC_UCODE_S2DEX ? (void *)gspS2DEX2_fifoTextStart
+                                                         : (void *)gspF3DEX2_fifoTextStart);
 }
 #endif
 
