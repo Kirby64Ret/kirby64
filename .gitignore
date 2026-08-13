@@ -90,3 +90,10 @@ tools/decomp/decomp-permuter/
 
 # m2c is a third-party clone, not our source. SESSION_SETUP.sh fetches it.
 tools/decomp/m2c/
+
+# PC port lives in JR3DFUL/kirby64_port now
+Makefile.pc
+tools/pc/
+src/pc/
+port/
+docs/PC_PORT_*.md
