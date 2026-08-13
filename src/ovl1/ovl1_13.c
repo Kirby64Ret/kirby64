@@ -773,27 +773,18 @@ loop_4:
 // Split residue: for() fixes the ENTRY exactly but hoists the pointer bumps;
 // vu32 on both stores fixes the bumps but sinks the counter bump (8/35). The
 // two cures are incompatible here. Swept loop forms, casts, pads, unroll.
-#ifdef NON_MATCHING
 extern u32 D_800F5770[][0x40];
 extern u32 D_800F4D70[][0x40];
 extern s32 D_800D6F50;
 extern s32 D_800F4D14;
 
-void func_800BDF2C(void) {
-    s32 i;
-
-    i = 0;
-    do {
-        D_800F5770[D_800D6F50][i] = 0xFFFE7961;
-        D_800F4D70[D_800D6F50][i] = 0;
-        i++;
-    } while (i != 0x40);
-    func_800BDD98();
-    D_800F4D14 = 1;
+void func_800BDF2C(void)
+{
+  s32 i;
+ do { i = 0; do { D_800F5770[D_800D6F50][i] = 0xFFFE7961; D_800F4D70[D_800D6F50][i] = 0; i++; } while (i != 0x40); } while (0);
+  func_800BDD98();
+  D_800F4D14 = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDF2C.s")
-#endif
 void func_800BDFB8(s32 *arg0, s32 arg1, u32 arg2) {
     s32 i;
     for (i = 0; i < arg2; i++) {
