@@ -97,7 +97,31 @@ void viSetScreenParams(s32 width, s32 height, u32 flags) {
 }
 
 void viApplyScreenSettings(ScreenSettings* settings) {
+#ifdef PORT
+    /* PORT: every ScreenSettings the game passes here is a data-blob symbol
+     * the PC data generator emits as a WIDENED pointer array -- one 8-byte
+     * void* slot per N64 word (e.g. build/pc/data/ovl6_ovl6.data.c's
+     * D_80154E80_ovl6). The LP64 struct's pointer fields (cfb1..3, zBuffer,
+     * offsets 0/8/16/24) coincide with slots 0..3, so pointer reads AND the
+     * runtime pointer stores some scenes do first (ovl2's `.zBuffer = ...`)
+     * stay correct -- but screenWidth (offset 32) lands on slot 4's LOW half,
+     * screenHeight (offset 36) on slot 4's HIGH half (always 0), and flags
+     * (offset 40) on slot 5 (the real height). The zero height then poisons
+     * gCurrScreenHeight: renderInitCamera clamps every camera scissor's lry
+     * to gCurrScreenHeight - ... = 0, the scissor goes inverted-empty, and
+     * every 3D triangle in the game is scissored out (2D rect paths don't
+     * use the camera scissor, which is why the logos/title still drew).
+     * Read the widened slots directly instead. */
+    {
+        void** slots = (void**)settings;
+
+        viSetCFB(slots[0], slots[1], slots[2]);
+        gZBuffer = (u16*)slots[3];
+        viSetScreenParams((s32)(uintptr_t)slots[4], (s32)(uintptr_t)slots[5], (u32)(uintptr_t)slots[6]);
+    }
+#else
     viSetCFB(settings->cfb1, settings->cfb2, settings->cfb3);
     gZBuffer = settings->zBuffer;
     viSetScreenParams(settings->screenWidth, settings->screenHeight, settings->flags);
+#endif
 }

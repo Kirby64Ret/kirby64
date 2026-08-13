@@ -1102,6 +1102,32 @@ void animUpdateTextureAnimatedParams(MObj *mobj) {
                                 interp = 0x100;
                             }
 
+#ifdef PORT
+                            /* PORT: color tracks smuggle a packed RGBA word
+                             * through the f32 startVal/goalVal (bit-preserving
+                             * f32 copies from AnimCmd->f). The N64 code lerps
+                             * two channels at a time by planting bytes in a
+                             * big-endian ColorPack and letting the u32
+                             * multiply shift them into place; on the LE host
+                             * that arithmetic overflows and, since the anim
+                             * loader byte-swapped the word to native
+                             * 0xRRGGBBAA, the in-memory byte order is
+                             * A,B,G,R -- so index 3-i where the N64 read i,
+                             * and lerp each channel in plain arithmetic
+                             * (lerp256 >> 8 is exactly what the BE trick's
+                             * byte extraction computed). */
+                            {
+                                const u8* sb = (const u8*) &aobj->startVal;
+                                const u8* gb = (const u8*) &aobj->goalVal;
+
+                                color.color.r = (u8) ((((0x100 - interp) * sb[3]) + (interp * gb[3])) >> 8);
+                                color.color.g = (u8) ((((0x100 - interp) * sb[2]) + (interp * gb[2])) >> 8);
+                                color.color.b = (u8) ((((0x100 - interp) * sb[1]) + (interp * gb[1])) >> 8);
+                                color.color.a = (u8) ((((0x100 - interp) * sb[0]) + (interp * gb[0])) >> 8);
+                                (void) sp38;
+                                (void) sp34;
+                            }
+#else
                             sp34.pack = 0;
                             sp38.pack = 0;
 
@@ -1128,9 +1154,25 @@ void animUpdateTextureAnimatedParams(MObj *mobj) {
 
                             color.color.b = sp38.color.r;
                             color.color.a = sp38.color.b;
+#endif
                             break;
                         case 1:
+#ifdef PORT
+                            /* PORT: same A,B,G,R in-memory byte order as the
+                             * lerp above -- reverse into the ColorPack's
+                             * r,g,b,a memory layout the render.c byte readers
+                             * expect. */
+                            {
+                                const u8* pb = (const u8*) (aobj->Rduration <= aobj->timer ? &aobj->goalVal : &aobj->startVal);
+
+                                color.color.r = pb[3];
+                                color.color.g = pb[2];
+                                color.color.b = pb[1];
+                                color.color.a = pb[0];
+                            }
+#else
                             color = (aobj->Rduration <= aobj->timer ? *(ColorPack*) &aobj->goalVal : *(ColorPack*) &aobj->startVal);
+#endif
                             break;
                     }
 
