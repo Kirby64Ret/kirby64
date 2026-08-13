@@ -1,7 +1,7 @@
 #include "common.h"
 #include "types.h"
 #include "ovl1/ovl1_3.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl2/ovl2_3.h"
 #include "ovl2/ovl2_8.h"
@@ -216,7 +216,7 @@ void func_80229794_ovl19(GObj *g) {
         curObjSleepForever();
     }
     gKirbyState.unk3C = 0;
-    D_800E9AA0[omCurrentObj->objId] = gKirbyState.turnDirection;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = gKirbyState.turnDirection;
     gKirbyState.isTurning |= 2;
     while (1) {
         if (gKirbyState.unk150 == 2) {
@@ -268,11 +268,11 @@ void func_80229A54_ovl19(GObj *g) {
                 assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8022947C_ovl19);
             }
         } else {
-            if (D_800E9AA0[omCurrentObj->objId] == NULL) {
+            if (D_800E9AA0[omCurrentObj->objId].as_entity_thing == NULL) {
                 assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8022947C_ovl19);
             }
         }
-        D_800E9AA0[omCurrentObj->objId] = D_8012E7DC[1];
+        D_800E9AA0[omCurrentObj->objId].as_entity_thing = D_8012E7DC[1];
     } else if (gKirbyState.unk150 != D_800E98E0[omCurrentObj->objId]) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8022947C_ovl19);
     }
@@ -830,8 +830,8 @@ void func_8022B4C4_ovl19(GObj *gobj) {
         D_800DDFD0[omCurrentObj->objId] = 9;
         gKirbyState.unk3C = 0;
         gKirbyState.unk4C = 0;
-        D_800E9AA0[omCurrentObj->objId] = NULL;
-        D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId];
+        D_800E9AA0[omCurrentObj->objId].as_entity_thing = NULL;
+        D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId].as_u32;
         gobj->data.dobj->parent->angle.v.y = 0.0f;
         D_800E64D0[omCurrentObj->objId] =
         D_800E6690[omCurrentObj->objId] = 0;
@@ -851,7 +851,7 @@ void func_8022B4C4_ovl19(GObj *gobj) {
             func_800AA78C(0x20396, 0x20069, 6.0f);
             if (D_800E98E0[omCurrentObj->objId] == 0) {
                 D_800E98E0[omCurrentObj->objId] =
-                D_800E9AA0[omCurrentObj->objId] = 1;
+                D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
             }
             func_801230E8(0x20396, 0x20397, 0);
             break;

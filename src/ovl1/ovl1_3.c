@@ -1,6 +1,6 @@
 #include <PR/gbi.h>
 #include "common.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl1/ovl1_7.h"
 #include "GObj.h"
 #include "main/gtl.h"

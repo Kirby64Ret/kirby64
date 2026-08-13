@@ -2,7 +2,7 @@
 #include "GObj.h"
 #include "Player.h"
 
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl19_2.h"
 #include "unk_structs/D_8022FAB0.h"
 #include "ovl1/ovl1_7.h"

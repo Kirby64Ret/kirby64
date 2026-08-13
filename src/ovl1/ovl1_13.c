@@ -3,7 +3,7 @@
 #include "GObj.h"
 #include "SPObj.h"
 #include "Player.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "main/gtl.h"
 #include "main/math.h"
 #include "util.h"
@@ -351,7 +351,7 @@ loop_5:
 
 void draw_pause_bg(GObj *gobj) {
     Gfx* list = gDisplayListHeads[0];
-    if (D_800E9AA0[gobj->objId] != 0) {
+    if (D_800E9AA0[gobj->objId].as_entity_thing != NULL) {
         gDPPipeSync(list++);
         gDPSetCycleType(list++, G_CYC_1CYCLE);
         gDPSetRenderMode(list++, G_RM_OPA_SURF, CVG_DST_CLAMP | ZMODE_OPA | FORCE_BL | GBL_c2(G_BL_CLR_IN, G_BL_A_IN, G_BL_CLR_IN, G_BL_1MA));

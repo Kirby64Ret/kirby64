@@ -4,7 +4,7 @@
 #include "GObj.h"
 #include "main/object_manager.h"
 #include "main/gtl.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl2/ovl2_8.h"
 #include "ovl1_7.h"
 #include "main/rdp_reset.h"

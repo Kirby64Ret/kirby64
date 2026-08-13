@@ -2,7 +2,7 @@
 
 #include "GObj.h"
 #include "unk_structs/D_800E1B50.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "main/anim.h"
 
 // ovl2 bss

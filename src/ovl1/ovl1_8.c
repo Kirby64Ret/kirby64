@@ -1,5 +1,5 @@
 #include "common.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl2/ovl2_2.h"
 #include "GObj.h"
 #include "unk_structs/D_800E1B50.h"
@@ -1246,7 +1246,7 @@ void func_800B7B64(GObj *gobj) {
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E9020[omCurrentObj->objId] + D_800E17D0[omCurrentObj->objId];
 
-    if (D_800E9AA0[omCurrentObj->objId] == 0) {
+    if (D_800E9AA0[omCurrentObj->objId].as_u32 == 0) {
         gEntitiesAngleYArray[omCurrentObj->objId] += (D_800E6A10[omCurrentObj->objId] * (-M_PIF / 2));
     }
 

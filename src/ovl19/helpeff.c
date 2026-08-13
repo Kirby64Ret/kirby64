@@ -5,7 +5,7 @@
 
 #include "main/object_manager.h"
 #include "main/object_helpers.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/util.h"
 

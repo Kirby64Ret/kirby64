@@ -8,7 +8,7 @@
 // #include "main/object_manager.h"
 #include "GObj.h"
 #include "ovl0/ovl0_2.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "main/contpad.h"
 #include "main/dma.h"
 #include "main/gtl.h"

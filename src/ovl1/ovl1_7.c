@@ -1,6 +1,6 @@
 #include "common.h"
 #include "ovl1_3.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "GObj.h"
 #include "DObj.h"
 #include "ovl1_7.h"

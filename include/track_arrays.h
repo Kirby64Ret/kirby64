@@ -17,6 +17,7 @@ typedef union {
     GObj **as_gobjp;
     DObj *as_dobj;
     DObj **as_dobjp;
+    struct EntityThing800E9AA0 *as_entity_thing;
 } MultiType;
 
 extern s32 D_800DD710[]; // "JN number"
@@ -127,6 +128,7 @@ extern s32 D_800E9C60[];
 
 // this is also a union or void*
 extern MultiType D_800E9AA0[];
+
 extern s32 D_800E98E0[];
 extern f32 D_800EB320[];
 extern f32 D_800EB160[];

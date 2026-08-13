@@ -3,7 +3,7 @@
 #include "common.h"
 #include "types.h"
 #include "GObj.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl1/ovl1_7.h"
 #include "main/lbvector.h"
 #include "main/lbmatrix.h"

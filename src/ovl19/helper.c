@@ -6,7 +6,7 @@
 #include "types.h"
 
 #include "GObj.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl1/ovl1_1.h"
 #include "ovl1/util.h"
 #include "ovl2/ovl2_8.h"
@@ -179,7 +179,7 @@ void func_8021F3F8_ovl19(struct GObj *arg0) {
 
     func_8021E184_ovl19();
     D_800E98E0[omCurrentObj->objId] = 0;
-    D_800E9AA0[omCurrentObj->objId] = func_800FCE50();
+    D_800E9AA0[omCurrentObj->objId].as_u32 = func_800FCE50();
     temp_f0 = 0.2f;
     D_800DEF90[omCurrentObj->objId] = func_8021E894_ovl19;
     D_800DF150[omCurrentObj->objId] = func_8021F600_ovl19;
@@ -206,7 +206,7 @@ void func_8021F600_ovl19(GObj *arg0) {
     Vector sp2C, sp20;
 
     if ((D_800E98E0[omCurrentObj->objId] == 0) && (D_800D6E64 == 0)) {
-        struct EntityThing800E9AA0 *tmp = D_800E9AA0[omCurrentObj->objId];
+        struct EntityThing800E9AA0 *tmp = D_800E9AA0[omCurrentObj->objId].as_entity_thing;
 
         sp2C.x = gEntitiesNextPosXArray[0];
         sp2C.y = 0.0f;
@@ -267,7 +267,7 @@ extern f32 gKirbyHp;
 #ifdef NON_MATCHING
 void func_8021FA2C_ovl19(void) {
     Vector sp34;
-    struct EntityThing800E9AA0 *sp2C = D_800E9AA0[omCurrentObj->objId];
+    struct EntityThing800E9AA0 *sp2C = D_800E9AA0[omCurrentObj->objId].as_entity_thing;
     s32 temp_v0 = request_track_general(0x1C, 0x1E, 0x3C);
 
     if (temp_v0 >= 0x3C || temp_v0 == -1) {
@@ -366,7 +366,7 @@ void func_8021FE5C_ovl19(struct GObj *arg0) {
 }
 
 void func_8021FF90_ovl19(GObj *g) {
-    D_800E9AA0[omCurrentObj->objId] = NULL;
+    D_800E9AA0[omCurrentObj->objId].as_entity_thing = NULL;
     func_8021DFD0_ovl19();
     D_800DF150[omCurrentObj->objId] = func_80220138_ovl19;
     gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
@@ -379,7 +379,7 @@ void func_8021FF90_ovl19(GObj *g) {
     while (D_800E98E0[omCurrentObj->objId] == 0) {
         ohSleep(1);
     }
-    D_800E9AA0[omCurrentObj->objId] = 1;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
     func_801230E8(0x202ED, 0x202EE, 1);
     gKirbyState.unk17 = 0;
     gKirbyState.unk68 = 0;
@@ -402,7 +402,7 @@ void func_80220138_ovl19(s32 arg0) {
     u32 temp_v1;
 
     omCurrentObj->objId = omCurrentObj->objId;
-    if (D_800E9AA0[omCurrentObj->objId] != NULL) {
+    if (D_800E9AA0[omCurrentObj->objId].as_entity_thing != NULL) {
         sp2C = gEntitiesNextPosXArray[omCurrentObj->objId];
         sp20 = sp2C;
         sp24 = gEntitiesNextPosYArray[omCurrentObj->objId] + 240.0f;
@@ -412,7 +412,7 @@ void func_80220138_ovl19(s32 arg0) {
         sp38 = 1.5707964f;
         sp30 = gEntitiesNextPosYArray[omCurrentObj->objId] + 239.0f;
         func_8011BF4C(&sp20, &func_80155ED8_ovl3);
-        D_800E9AA0[omCurrentObj->objId] = NULL;
+        D_800E9AA0[omCurrentObj->objId].as_entity_thing = NULL;
     }
 }
 #else

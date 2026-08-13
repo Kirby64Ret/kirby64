@@ -3,7 +3,7 @@
 #include "GObj.h"
 #include "Player.h"
 #include "ovl1/util.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl1/ovl1_8.h"
 #include "ovl2/ovl2_3.h"

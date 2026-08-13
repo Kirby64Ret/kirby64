@@ -2,7 +2,7 @@
 #include <macros.h>
 #include "GObj.h"
 #include "main/math.h"
-#include "ovl1/ovl1_6.h"
+#include "track_arrays.h"
 #include "ovl1/ovl1_7.h"
 #include "ovl2/ovl2_8.h"
 #include "unk_structs/D_800DE350.h"
