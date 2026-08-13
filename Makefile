@@ -23,8 +23,11 @@ ifeq ($(PROGRESS), 1)
 	DEFS += -DGET_PROGRESS
 endif
 
+# IDO_PATH := tools/ido-7.1recomp/
+IDO_PATH := /home/faris/Devel/decomp.me/backend/compilers/n64/ido7.1/
+
 ##################### Compiler #######################
-CC := tools/ido-7.1recomp/cc
+CC := $(IDO_PATH)cc
 
 ifeq ($(shell type mips-linux-gnu-cpp >/dev/null 2>/dev/null; echo $$?), 0)
 	CROSS := mips-linux-gnu-

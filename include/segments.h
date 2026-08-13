@@ -38,6 +38,7 @@ EXTERN_OVERLAY(ovl20);
     extern u8 nm ## _ROM_START[];\
     extern u8 nm ## _ROM_END[];\
     extern u8 nm ## _VRAM[];\
+    extern u8 nm ## _VRAM_END[];\
     extern u8 nm ## _TEXT_START[];\
     extern u8 nm ## _TEXT_END[];\
     extern u8 nm ## _DATA_START[];\

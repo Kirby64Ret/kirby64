@@ -90,5 +90,6 @@ void gtlProcessDisps(void);
 void gtlReset(void);
 void gtlSetSegment0F(Gfx **);
 void gtlSetUpdateDrawRate(u16 updateRate, u16 drawRate);
+void gtlCreateScene(SceneSetup *scene);
 
 #endif // GTL_H

@@ -14,6 +14,11 @@ typedef struct {
     /* 0x18 */ u32 flags;
 } ScreenSettings; // size >= 0x18
 
+extern u16 D_8012EB00[]; // the zbuf data?
+
+#define VI_ZBUFFER_START(width, height, w_border, h_border, type) \
+((u16*) ((u32)D_8012EB00 - (((width * height) - ((width - w_border) * (height - h_border))) * sizeof(type))))
+
 extern u16* viZBuffer;
 extern u16* gZBuffer;
 extern s32 viCFBFmt;

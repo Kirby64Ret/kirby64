@@ -1,5 +1,6 @@
 #include "common.h"
 #include "GObj.h"
+#include "main/audio.h"
 #include "main/contpad.h"
 #include "main/gtl.h"
 #include "main/math.h"
@@ -12,16 +13,18 @@
 #include "ovl1/ovl1_2_2.h"
 #include "ovl1/ovl1_6.h"
 #include "ovl1/ovl1_7.h"
+#include "ovl1/ovl1_10.h"
 #include "ovl1/track.h"
 #include "ovl1/util.h"
 #include "sounds.h"
 
+#include "segments.h"
+
 extern s32 D_800D6B24;
 extern s32 D_8015C680_ovl4;
 extern Lights1 D_800BE548;
-extern u16 gFrameBuffer[][320];
+extern u16 gFrameBuffer[3][320 * 230]; // TODO: why 230??
 extern u16 D_803DA800[][320]; // fb2
-extern u16 D_8012EB00[][320]; // zbuf
 extern void *D_8018EE60;
 
 extern void func_800A73B0(void);
@@ -359,4 +362,32 @@ void func_80151CC8_ovl4(Gfx **gp) {
     gSPDisplayList((*gp)++, &D_8015A018_ovl4);
 }
 
+// Matches on decomp.me but not locally???
+// https://decomp.me/scratch/qYkHm
+#ifdef NON_MATCHING
+s32 func_80151CEC_ovl4(s32 arg0) {
+    u32 i;
+
+    D_800D6B54[2] = arg0;
+    D_800D6B74 = 1;
+    scRemovePostProcessFunc();
+    func_800A74D8();
+    auSetBGMVolume(0, 0x7800);
+    gameSetUpdateRate(2.0f);
+    D_8015A048_ovl4.zBuffer = VI_ZBUFFER_START(320, 240, 0, 10, u16);
+    viApplyScreenSettings(&D_8015A048_ovl4);
+    D_8015A064_ovl4.gtlSetup.heapSize = (u32)&gFrameBuffer - (u32)ovl5_VRAM_END;
+
+    i = 0;
+    do {
+        gFrameBuffer[0][i] = gFrameBuffer[1][i] = 1;
+        i++;
+    } while (i < (320 * 240 * sizeof(u16)));
+
+    gtlCreateScene(&D_8015A064_ovl4);
+    func_800BB3F0();
+    return D_800D6B74;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_1/func_80151CEC_ovl4.s")
+#endif
