@@ -87,3 +87,6 @@ scratchpad/
 
 # decomp-permuter is a third-party clone, not our source. SESSION_SETUP.sh fetches it.
 tools/decomp/decomp-permuter/
+
+# m2c is a third-party clone, not our source. SESSION_SETUP.sh fetches it.
+tools/decomp/m2c/
