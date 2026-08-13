@@ -59,7 +59,63 @@ typedef union Unk16Bytes {
 
 extern Unk16Bytes D_80185FB0_ovl5;
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_8015CD00_ovl5(GObj *arg0) {
+    s32 temp_t7;
+    u32 temp_v0;
+
+    temp_v0 = omCurrentObj->objId;
+    temp_t7 = D_800E98E0[temp_v0];
+    switch (temp_t7) {
+    case 1:
+        func_8015CE74_ovl5();
+        return;
+    case 11:
+        func_80162C68_ovl5(arg0);
+        return;
+    case 3:
+        func_80160AF8_ovl5(arg0, (s32) D_800E9AA0[temp_v0].as_u32);
+        return;
+    case 4:
+        func_80160E6C_ovl5(arg0, (s32) D_800E9AA0[temp_v0].as_u32);
+        return;
+    case 5:
+        func_801611A8_ovl5(arg0, (s32) D_800E9AA0[temp_v0].as_u32);
+        return;
+    case 2:
+        func_8015DFC8_ovl5(D_800E9AA0[temp_v0].as_u32);
+        return;
+    case 7:
+        func_80163CC0_ovl5(D_800E9AA0[temp_v0].as_u32);
+        return;
+    case 6:
+        func_80162CCC_ovl5(arg0);
+        return;
+    case 8:
+        func_80164490_ovl5();
+        return;
+    case 9:
+        func_8016179C_ovl5(arg0);
+        return;
+    case 10:
+        func_80161B4C_ovl5(D_800E9E20[temp_v0]);
+        return;
+    case 12:
+        func_80162B1C_ovl5(arg0, D_800EA6E0[temp_v0], D_800EA8A0[temp_v0], D_800EAA60[temp_v0]);
+        return;
+    case 0:
+        func_80164A34_ovl5();
+        /* fallthrough */
+    default:
+        return;
+    }
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015CD00_ovl5.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015CE74_ovl5.s")
 

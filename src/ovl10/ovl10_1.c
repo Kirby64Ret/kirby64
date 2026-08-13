@@ -993,7 +993,59 @@ void func_801E100C_ovl10(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+f32 atan2f(f32, f32);                               /* extern */
+f32 func_8019DA50_ovl7();                           /* extern */
+
+f32 func_801E13A0_ovl10(GObj *arg0) {
+    f32 temp_f0;
+    f32 var_f12;
+    f32 var_f2;
+    f32 var_f2_2;
+    f32 var_f2_3;
+    u32 temp_v0;
+
+    if (func_8019DA50_ovl7() < 0.0f) {
+        var_f2 = -func_8019DA50_ovl7();
+    } else {
+        var_f2 = func_8019DA50_ovl7();
+    }
+    temp_v0 = omCurrentObj->objId;
+    temp_f0 = atan2f(D_800E6A10[temp_v0] * var_f2, (*gEntitiesNextPosYArray + 20.0f) - (gEntitiesNextPosYArray[temp_v0] + 40.0f));
+    var_f12 = temp_f0;
+    if (temp_f0 < 0.0f) {
+        var_f2_2 = -temp_f0;
+    } else {
+        var_f2_2 = temp_f0;
+    }
+    if ((f64) var_f2_2 > 2.1991149187088013) {
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+            var_f12 = (f32) 2.1991149187088013;
+        } else {
+            var_f12 = (f32) -2.1991149187088013;
+        }
+    } else {
+        if (temp_f0 < 0.0f) {
+            var_f2_3 = -temp_f0;
+        } else {
+            var_f2_3 = temp_f0;
+        }
+        if ((f64) var_f2_3 < 0.942477822303772) {
+            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                var_f12 = (f32) 0.942477822303772;
+            } else {
+                var_f12 = (f32) -0.942477822303772;
+            }
+        }
+    }
+    return var_f12;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E13A0_ovl10.s")
+#endif
 
 extern s32 D_801F3AA8_ovl10;
 extern s32 D_801F3E98_ovl10;

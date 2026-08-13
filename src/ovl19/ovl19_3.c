@@ -567,7 +567,83 @@ void func_8022A9E8_ovl19(GObj *g) {
 u8 D_8022F67C_ovl19[] = {
     1, 9, 8, 7, 6, 15
 };
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern ? D_8022F67C_ovl19;
+
+void func_8022A9E8_ovl19(GObj *g) {
+    u8 sp28;
+    s32 *temp_a0;
+    s32 temp_a1;
+    s32 var_v0_2;
+    u32 temp_v0;
+    u32 temp_v0_2;
+    u32 temp_v0_3;
+    u32 var_v0;
+
+    sp28.unk0 = (s32) D_8022F67C_ovl19.unk0;
+    sp28.unk4 = (u16) D_8022F67C_ovl19.unk4;
+    func_80153984_ovl3();
+    if (func_80151E94_ovl3(&sp28) == 0) {
+        if (gKirbyController.buttonPressed & 0x8000) {
+            D_800E9560[omCurrentObj->objId] = 2;
+            var_v0 = omCurrentObj->objId;
+            goto block_5;
+        }
+        temp_v0 = omCurrentObj->objId;
+        var_v0_2 = temp_v0 * 4;
+        temp_a0 = &D_800E9560[temp_v0];
+        temp_a1 = *temp_a0;
+        if (temp_a1 != 0) {
+            *temp_a0 = temp_a1 - 1;
+            var_v0 = omCurrentObj->objId;
+block_5:
+            var_v0_2 = var_v0 * 4;
+        }
+        if (*(D_800E8920 + var_v0_2) != 0) {
+            *(D_800E3750 + var_v0_2) = 0.0f;
+            temp_v0_2 = omCurrentObj->objId;
+            D_800E3210[temp_v0_2] = D_800E3750[temp_v0_2];
+            D_800E3C90[omCurrentObj->objId] = 65535.0f;
+            play_sound(0x4C);
+            temp_v0_3 = omCurrentObj->objId;
+            if (D_800E9560[temp_v0_3] == 0) {
+                if (D_800E64D0[temp_v0_3] == 0.0f) {
+                    gKirbyState.unk7 = 0;
+                    set_kirby_action_1(7, 7);
+                } else {
+                    gKirbyState.unk44 = 0;
+                    if (gKirbyState.unk7 == 0) {
+                        func_80122B40(2, 7);
+                        set_kirby_action_1(1, 3);
+                    } else {
+                        gKirbyState.unk38 = 0.0f;
+                        set_kirby_action_1(2, 4);
+                    }
+                    func_80122FB0(1);
+                }
+            } else {
+                func_80122B40();
+                set_kirby_action_1(3, 5);
+            }
+        } else if (*(D_800E83E0 + var_v0_2) != 0) {
+            D_800EC2E0->as_u32 = 0x80000000;
+            gKirbyState.unk7 = 0;
+            D_800E3210[omCurrentObj->objId] = 8.0f;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3C90[omCurrentObj->objId] = 0.0f;
+            set_kirby_action_1(5, 5);
+        }
+    } else {
+        gKirbyState.unk7 = 0;
+    }
+    func_8011ED68();
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022A9E8_ovl19.s")
+#endif
 #endif
 
 void func_8022AC78_ovl19(GObj *g) {

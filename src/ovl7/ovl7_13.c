@@ -87,7 +87,76 @@ extern struct Sub800E1B50_Unk98 D_801CCBEC_ovl7;
 
 
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern void (*D_801CD730_ovl7)(GObj *);
+
+void func_801B8F20_ovl7(s32 arg0) {
+    f32 *temp_v0;
+    f32 *var_v0;
+    f32 temp_f12;
+    f32 var_f0;
+    s32 var_v1;
+    u32 temp_t0;
+    u32 temp_t0_2;
+    u32 temp_v1;
+    u32 temp_v1_2;
+    u32 temp_v1_3;
+    u32 temp_v1_4;
+    u8 temp_a0;
+
+    temp_v1 = omCurrentObj->objId;
+    D_800E8920[temp_v1] = 0;
+    D_800E1B50[temp_v1]->unk39 = -1;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    D_800EB320[omCurrentObj->objId] = 0.0f;
+    temp_t0 = omCurrentObj->objId;
+    temp_a0 = D_800E7880[temp_t0];
+    var_v1 = temp_t0 * 4;
+    if (((temp_a0 == 1) && (D_800E98E0[temp_t0] != 0)) || (var_v1 = temp_t0 * 4, (temp_a0 == 0))) {
+        var_v0 = gEntitiesAngleZArray + var_v1;
+        var_f0 = *var_v0;
+        if (var_f0 > 6.2831855f) {
+            do {
+                *var_v0 = var_f0 - 6.2831855f;
+                temp_v1_2 = omCurrentObj->objId;
+                var_v1 = temp_v1_2 * 4;
+                var_v0 = &gEntitiesAngleZArray[temp_v1_2];
+                var_f0 = *var_v0;
+            } while (var_f0 > 6.2831855f);
+        }
+        if (var_f0 < 0.0f) {
+            do {
+                *var_v0 = var_f0 + 6.2831855f;
+                temp_v1_3 = omCurrentObj->objId;
+                var_v1 = temp_v1_3 * 4;
+                var_v0 = &gEntitiesAngleZArray[temp_v1_3];
+                var_f0 = *var_v0;
+            } while (var_f0 < 0.0f);
+        }
+        temp_f12 = 6.2831855f - var_f0;
+        *(D_800EA6E0 + var_v1) = temp_f12;
+        D_800EB320[omCurrentObj->objId] = temp_f12;
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
+    } else {
+        D_800EA6E0[temp_t0] = 1.5707964f;
+        temp_v1_4 = omCurrentObj->objId;
+        D_800EB320[temp_v1_4] = D_800EA6E0[temp_v1_4];
+    }
+    temp_t0_2 = omCurrentObj->objId;
+    if (D_800E7880[temp_t0_2] != 0) {
+        gEntitiesAngleZArray[temp_t0_2] = 0.0f;
+        temp_v0 = &gEntitiesAngleZArray[omCurrentObj->objId];
+        *temp_v0 = *temp_v0;
+    }
+    D_800E9C60[omCurrentObj->objId] = 0;
+    utilFuncTableJump((u32) D_800E7880[omCurrentObj->objId], 3U, &D_801CD730_ovl7);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B8F20_ovl7.s")
+#endif
 
 /* 3 diffs: registers and every instruction are exact; only the emission order
    of the three loop-invariant constant loads differs (ROM loads AC,B0,B4 and
@@ -623,7 +692,85 @@ void func_801BB34C_ovl7(void) {
     func_8019F3B0_ovl7();
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801BB3D4_ovl7(s32 arg0) {
+    GObj *temp_v1;
+    f32 *temp_a0_2;
+    f32 *var_at;
+    f32 temp_f0;
+    f32 var_f0;
+    f32 var_f2;
+    f32 var_f2_2;
+    f32 var_f2_3;
+    u32 temp_a0;
+    u32 temp_v0;
+    u32 temp_v0_2;
+    u32 temp_v0_3;
+    u32 temp_v0_4;
+
+    temp_v0 = omCurrentObj->objId;
+    D_800DDFD0[temp_v0] = 5;
+    D_800E1B50[temp_v0]->unk98 = &D_801CCB80_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800AA018(0x1012B);
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = 0.0f;
+    temp_v1 = omCurrentObj;
+    temp_a0 = temp_v1->objId;
+    if (D_800E7880[temp_a0] == 2) {
+        var_f0 = 3.5f;
+        D_800E64D0[temp_a0] = D_800E6A10[temp_a0] * 3.5f;
+        D_800E6690[temp_v1->objId] = 0.0f;
+        var_at = &D_800E6850[temp_v1->objId];
+    } else {
+        var_f0 = 8.0f;
+        D_800E64D0[temp_a0] = D_800E6A10[temp_a0] * 8.0f;
+        D_800E6690[temp_v1->objId] = 0.0f;
+        var_at = &D_800E6850[temp_v1->objId];
+    }
+    *var_at = var_f0;
+    temp_a0_2 = &D_800E3210[temp_v1->objId];
+    *temp_a0_2 = -*temp_a0_2;
+    D_800E3750[temp_v1->objId] = -0.325f;
+    temp_v0_2 = temp_v1->objId;
+    temp_f0 = D_800E3210[temp_v0_2];
+    if (temp_f0 < 0.0f) {
+        var_f2 = -temp_f0;
+    } else {
+        var_f2 = temp_f0;
+    }
+    if (var_f2 < 0.0f) {
+        if (temp_f0 < 0.0f) {
+            var_f2_2 = -temp_f0;
+        } else {
+            var_f2_2 = temp_f0;
+        }
+        D_800E3C90[temp_v0_2] = -var_f2_2;
+    } else {
+        if (temp_f0 < 0.0f) {
+            var_f2_3 = -temp_f0;
+        } else {
+            var_f2_3 = temp_f0;
+        }
+        D_800E3C90[temp_v0_2] = var_f2_3;
+    }
+loop_15:
+    temp_v0_3 = temp_v1->objId;
+    if (!(D_800E3210[temp_v0_3] < 0.0f)) {
+        ohSleep(1);
+        goto loop_15;
+    }
+    D_800E3750[temp_v0_3] = 0.0f;
+    temp_v0_4 = temp_v1->objId;
+    D_800E3210[temp_v0_4] = D_800E3750[temp_v0_4];
+    D_800E3C90[temp_v1->objId] = 65535.0f;
+    curObjSleepForever();
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801BB3D4_ovl7.s")
+#endif
 
 void func_801BB69C_ovl7(void) {
     func_801A0D74_ovl7();

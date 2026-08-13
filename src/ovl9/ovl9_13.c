@@ -269,7 +269,112 @@ void func_80209918_ovl9(struct GObj *arg0) {
     func_8019F3B0_ovl7();
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_8020998C_ovl9(GObj *arg0) {
+    f32 *var_a1;
+    f32 temp_f2;
+    f32 var_f0;
+    f32 var_f12;
+    f32 var_f14;
+    u32 temp_v1;
+
+    temp_v1 = omCurrentObj->objId;
+    var_a1 = &D_800EA6E0[temp_v1];
+    temp_f2 = D_800EB320[temp_v1];
+    var_f0 = *var_a1;
+    if (var_f0 < temp_f2) {
+        var_f14 = var_f0 - temp_f2;
+        var_f12 = -var_f14;
+    } else {
+        var_f14 = var_f0 - temp_f2;
+        var_f12 = var_f14;
+    }
+    if (var_f12 < 3.1415927f) {
+        if (var_f14 > 0.13962634f) {
+            *var_a1 = var_f0 - 0.13962634f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 > 0.06981317f) {
+            *var_a1 = var_f0 - 0.06981317f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 >= 0.017453292f) {
+            *var_a1 = var_f0 - 0.017453292f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 < -0.13962634f) {
+            *var_a1 = var_f0 + 0.13962634f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 < -0.06981317f) {
+            *var_a1 = var_f0 + 0.06981317f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 <= -0.017453292f) {
+            *var_a1 = var_f0 + 0.017453292f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+    } else {
+        if (var_f14 > 0.13962634f) {
+            *var_a1 = var_f0 + 0.13962634f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 > 0.06981317f) {
+            *var_a1 = var_f0 + 0.06981317f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 >= 0.017453292f) {
+            *var_a1 = var_f0 + 0.017453292f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 < -0.13962634f) {
+            *var_a1 = var_f0 - 0.13962634f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 < -0.06981317f) {
+            *var_a1 = var_f0 - 0.06981317f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            goto block_28;
+        }
+        if (var_f14 <= -0.017453292f) {
+            *var_a1 = var_f0 - 0.017453292f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+block_28:
+            var_f0 = *var_a1;
+        }
+    }
+    if (var_f0 > 6.2831855f) {
+        do {
+            *var_a1 = var_f0 - 6.2831855f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            var_f0 = *var_a1;
+        } while (var_f0 > 6.2831855f);
+    }
+    if (var_f0 < 0.0f) {
+        do {
+            *var_a1 = var_f0 + 6.2831855f;
+            var_a1 = &D_800EA6E0[omCurrentObj->objId];
+            var_f0 = *var_a1;
+        } while (var_f0 < 0.0f);
+    }
+    arg0->data.dobj->firstChild->angle.v.x = var_f0;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020998C_ovl9.s")
+#endif
 
 void func_80209CEC_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -1645,7 +1750,73 @@ void func_8020EAD4_ovl9(struct GObj *arg0) {
     func_801A0C70_ovl7();
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern void (*D_8021CAC8_ovl9)(GObj *);
+
+void func_8020EB60_ovl9(s32 arg0) {
+    f32 *temp_v0_2;
+    f32 *var_v0;
+    f32 temp_f12;
+    f32 var_f0;
+    s32 var_v1;
+    u32 temp_t0;
+    u32 temp_t0_2;
+    u32 temp_v1;
+    u32 temp_v1_2;
+    u32 temp_v1_3;
+    u8 temp_v0;
+
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    D_800EB320[omCurrentObj->objId] = 0.0f;
+    temp_t0 = omCurrentObj->objId;
+    temp_v0 = D_800E7880[temp_t0];
+    var_v1 = temp_t0 * 4;
+    if (((temp_v0 == 1) && (D_800E98E0[temp_t0] != 0)) || (var_v1 = temp_t0 * 4, (temp_v0 == 0))) {
+        var_v0 = gEntitiesAngleZArray + var_v1;
+        var_f0 = *var_v0;
+        if (var_f0 > 6.2831855f) {
+            do {
+                *var_v0 = var_f0 - 6.2831855f;
+                temp_v1 = omCurrentObj->objId;
+                var_v1 = temp_v1 * 4;
+                var_v0 = &gEntitiesAngleZArray[temp_v1];
+                var_f0 = *var_v0;
+            } while (var_f0 > 6.2831855f);
+        }
+        if (var_f0 < 0.0f) {
+            do {
+                *var_v0 = var_f0 + 6.2831855f;
+                temp_v1_2 = omCurrentObj->objId;
+                var_v1 = temp_v1_2 * 4;
+                var_v0 = &gEntitiesAngleZArray[temp_v1_2];
+                var_f0 = *var_v0;
+            } while (var_f0 < 0.0f);
+        }
+        temp_f12 = 6.2831855f - var_f0;
+        *(D_800EA6E0 + var_v1) = temp_f12;
+        D_800EB320[omCurrentObj->objId] = temp_f12;
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
+    } else {
+        D_800EA6E0[temp_t0] = 1.5707964f;
+        temp_v1_3 = omCurrentObj->objId;
+        D_800EB320[temp_v1_3] = D_800EA6E0[temp_v1_3];
+    }
+    temp_t0_2 = omCurrentObj->objId;
+    if (D_800E7880[temp_t0_2] != 0) {
+        gEntitiesAngleZArray[temp_t0_2] = 0.0f;
+        temp_v0_2 = &gEntitiesAngleZArray[omCurrentObj->objId];
+        *temp_v0_2 = *temp_v0_2;
+    }
+    D_800E9C60[omCurrentObj->objId] = 8;
+    utilFuncTableJump((u32) D_800E7880[omCurrentObj->objId], 2U, &D_8021CAC8_ovl9);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020EB60_ovl9.s")
+#endif
 
 /* The three constants must be LITERALS: as extern references IDO emitted the
    three callee-saved FP loads in source order, where the ROM has $f24 first.

@@ -484,7 +484,82 @@ void func_801DC388_ovl11(void) {
     }
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801DC45C_ovl11(void) {
+    s32 *temp_a1;
+    s32 *var_a2_2;
+    s32 temp_a3;
+    s32 temp_v0;
+    s32 temp_v0_2;
+    s32 var_a2;
+    s32 var_v1;
+    u32 temp_v1;
+    u32 temp_v1_2;
+    u32 temp_v1_3;
+    u32 temp_v1_4;
+    u32 temp_v1_5;
+    u32 temp_v1_6;
+
+    temp_v1 = omCurrentObj->objId;
+    var_v1 = temp_v1 * 4;
+    temp_v0 = D_800EA520[temp_v1];
+    temp_a1 = &gEntityFuncListIDArray[temp_v1];
+    var_a2 = *temp_a1;
+    temp_a3 = var_a2;
+    switch (temp_v0) {                              /* switch 1; irregular */
+    case 0:                                         /* switch 1 */
+        if (temp_a3 != 1) {
+            *temp_a1 = 1;
+            temp_v1_2 = omCurrentObj->objId;
+            var_v1 = temp_v1_2 * 4;
+            var_a2_2 = &gEntityFuncListIDArray[temp_v1_2];
+block_15:
+            var_a2 = *var_a2_2;
+        }
+        break;
+    case 1:                                         /* switch 1 */
+        if (temp_a3 != 2) {
+            *temp_a1 = 2;
+            temp_v1_3 = omCurrentObj->objId;
+            var_v1 = temp_v1_3 * 4;
+            var_a2_2 = &gEntityFuncListIDArray[temp_v1_3];
+            goto block_15;
+        }
+        break;
+    case 2:                                         /* switch 1 */
+        temp_v0_2 = D_800E9560[temp_v1];
+        switch (temp_v0_2) {                        /* switch 2; irregular */
+        case 0:                                     /* switch 2 */
+            *temp_a1 = 7;
+            temp_v1_4 = omCurrentObj->objId;
+            var_v1 = temp_v1_4 * 4;
+            var_a2_2 = &gEntityFuncListIDArray[temp_v1_4];
+            goto block_15;
+        case 1:                                     /* switch 2 */
+            *temp_a1 = 5;
+            temp_v1_5 = omCurrentObj->objId;
+            var_v1 = temp_v1_5 * 4;
+            var_a2_2 = &gEntityFuncListIDArray[temp_v1_5];
+            goto block_15;
+        case 2:                                     /* switch 2 */
+            *temp_a1 = 3;
+            temp_v1_6 = omCurrentObj->objId;
+            var_v1 = temp_v1_6 * 4;
+            var_a2_2 = &gEntityFuncListIDArray[temp_v1_6];
+            goto block_15;
+        }
+        break;
+    }
+    if (temp_a3 != var_a2) {
+        assign_new_process_entry(*(gEntityGObjProcessArray + var_v1), func_801DC258_ovl11);
+    }
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DC45C_ovl11.s")
+#endif
 
 void func_801DC5B0_ovl11(void) {
     s32 pad[2];

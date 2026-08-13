@@ -501,4 +501,31 @@ void func_801E098C_ovl11(void) {
     func_801A03B4_ovl7();
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern f32 D_801E0C50_ovl11;
+extern f32 D_801E0C54_ovl11;
+
+void func_801E09C4_ovl11(s32 arg0) {
+    f32 *temp_v1;
+    u32 temp_v0;
+    u32 temp_v0_2;
+
+    D_800E8920[omCurrentObj->objId] = 0;
+    temp_v0 = omCurrentObj->objId;
+    if ((D_800E3050[temp_v0] == 0.0f) && (D_800E33D0[temp_v0] == 0.0f) && (D_800E3590[temp_v0] == 0.0f) && (D_800E3910[temp_v0] == 0.0f)) {
+        D_800E3750[temp_v0] = 0.0f;
+        temp_v0_2 = omCurrentObj->objId;
+        D_800E3210[temp_v0_2] = D_800E3750[temp_v0_2];
+        D_800E3C90[omCurrentObj->objId] = D_801E0C50_ovl11;
+        return;
+    }
+    temp_v1 = &D_800E3210[temp_v0];
+    *temp_v1 = -*temp_v1 * D_801E0C54_ovl11;
+    play_sound(0x1D9);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11_2/func_801E09C4_ovl11.s")
+#endif

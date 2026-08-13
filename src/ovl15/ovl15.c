@@ -226,9 +226,336 @@ void func_801DB378_ovl15(struct GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 0xC, D_801E64C0_ovl15);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DB400_ovl15.s")
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801DB400_ovl15(s32 arg0) {
+    s32 temp_v0;
+    s32 temp_v0_2;
+    u32 temp_a0;
+    u32 var_v1;
 
+    func_800B19F4(0x79, omCurrentObj->objId);
+    func_800AFBB4(0, omCurrentObj);
+    D_800DEF90[omCurrentObj->objId] = func_800B7790;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DF150[omCurrentObj->objId] = NULL;
+    func_800B33F4();
+    D_800D7098.unk3C = 0;
+    var_v1 = 0;
+    D_800D7098.unk2C = 0;
+    D_800D7098.unk28 = 0;
+    D_800D7098.unkC = 0;
+    D_800D7098.unk8 = 0;
+    D_800D7098.unk38 = omCurrentObj->objId;
+loop_1:
+    if (var_v1 < 0xAU) {
+loop_2:
+        switch (var_v1) {
+        case 0:
+            temp_v0 = func_8019E0A4_ovl7(4, 3);
+            D_800EBBE0[omCurrentObj->objId] = temp_v0;
+            D_800D7098.unk30 = (u32) temp_v0;
+            temp_v0_2 = func_8019E0A4_ovl7(4, 1);
+            D_800EC120[omCurrentObj->objId] = temp_v0_2;
+            D_800D7098.unk34 = (u32) temp_v0_2;
+            temp_a0 = omCurrentObj->objId;
+            D_800EBBE0[D_800EBBE0[temp_a0]] = D_800EC120[temp_a0];
+            var_v1 = D_800D7098.unk3C;
+            if (var_v1 == 0) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 0);
+            }
+            goto loop_1;
+        case 1:
+            if (var_v1 == 1) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 1);
+            }
+            goto loop_1;
+        case 2:
+            if (var_v1 == 2) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 2);
+            }
+            goto loop_1;
+        case 3:
+            if (var_v1 == 3) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 3);
+            }
+            goto loop_1;
+        case 4:
+            if (var_v1 == 4) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 4);
+            }
+            goto loop_1;
+        case 5:
+            if (var_v1 == 5) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 5);
+            }
+            goto loop_1;
+        case 6:
+            if (var_v1 == 6) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 6);
+            }
+            goto loop_1;
+        case 7:
+            if (var_v1 == 7) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 7);
+            }
+            goto loop_1;
+        case 8:
+            if (var_v1 == 8) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 8);
+            }
+            goto loop_1;
+        case 9:
+            if (var_v1 == 9) {
+                do {
+                    ohSleep(1);
+                    var_v1 = D_800D7098.unk3C;
+                } while (var_v1 == 9);
+                if (var_v1 < 0xAU) {
+                    goto loop_2;
+                }
+            } else {
+                goto loop_1;
+            }
+            break;
+        }
+    }
+    curObjSleepForever();
+    var_v1 = D_800D7098.unk3C;
+    goto loop_1;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DB400_ovl15.s")
+#endif
+
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801DB770_ovl15(s32 arg0) {
+    GObj *temp_v1;
+    s32 var_v0;
+    s32 var_v0_2;
+    s32 var_v0_3;
+    s32 var_v0_4;
+    u32 temp_v0;
+    u32 temp_v0_10;
+    u32 temp_v0_11;
+    u32 temp_v0_12;
+    u32 temp_v0_13;
+    u32 temp_v0_2;
+    u32 temp_v0_3;
+    u32 temp_v0_4;
+    u32 temp_v0_5;
+    u32 temp_v0_6;
+    u32 temp_v0_7;
+    u32 temp_v0_8;
+    u32 temp_v0_9;
+    u32 var_a0;
+
+    D_800E8E60[omCurrentObj->objId] = 0;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    func_800B19F4(0x71, omCurrentObj->objId);
+    func_800AFBB4(0, omCurrentObj);
+    func_801129AC();
+    func_801129DC();
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 20.0f;
+    D_800DEF90[omCurrentObj->objId] = func_800B7138;
+    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801DBE20_ovl15;
+    func_800B33F4();
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    var_a0 = D_800D7098.unk3C;
+loop_1:
+    if (var_a0 < 0xAU) {
+loop_2:
+        switch (var_a0) {
+        case 0:
+            if (var_a0 == 0) {
+                do {
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 0);
+            }
+            goto loop_1;
+        case 1:
+            temp_v1 = omCurrentObj;
+            D_800E64D0[temp_v1->objId] = -100.0f;
+            temp_v0 = temp_v1->objId;
+            var_v0 = temp_v0 * 4;
+            if (gEntitiesNextPosXArray[temp_v0] > 6900.0f) {
+                do {
+                    ohSleep(1);
+                    temp_v0_2 = omCurrentObj->objId;
+                    var_v0 = temp_v0_2 * 4;
+                } while (gEntitiesNextPosXArray[temp_v0_2] > 6900.0f);
+            }
+            *(D_800E64D0 + var_v0) = -10.0f;
+            temp_v0_3 = temp_v1->objId;
+            var_v0_2 = temp_v0_3 * 4;
+            if (gEntitiesNextPosXArray[temp_v0_3] > 6810.0f) {
+                do {
+                    ohSleep(1);
+                    temp_v0_4 = omCurrentObj->objId;
+                    var_v0_2 = temp_v0_4 * 4;
+                } while (gEntitiesNextPosXArray[temp_v0_4] > 6810.0f);
+            }
+            *(D_800E64D0 + var_v0_2) = -1.0f;
+            temp_v0_5 = temp_v1->objId;
+            var_v0_3 = temp_v0_5 * 4;
+            if (gEntitiesNextPosXArray[temp_v0_5] > 6801.0f) {
+                do {
+                    ohSleep(1);
+                    temp_v0_6 = omCurrentObj->objId;
+                    var_v0_3 = temp_v0_6 * 4;
+                } while (gEntitiesNextPosXArray[temp_v0_6] > 6801.0f);
+            }
+            *(D_800E64D0 + var_v0_3) = -0.1f;
+            temp_v0_7 = temp_v1->objId;
+            var_v0_4 = temp_v0_7 * 4;
+            if (gEntitiesNextPosXArray[temp_v0_7] > 6800.1f) {
+                do {
+                    ohSleep(1);
+                    temp_v0_8 = omCurrentObj->objId;
+                    var_v0_4 = temp_v0_8 * 4;
+                } while (gEntitiesNextPosXArray[temp_v0_8] > 6800.1f);
+            }
+            *(D_800E6690 + var_v0_4) = 0.0f;
+            temp_v0_9 = temp_v1->objId;
+            D_800E64D0[temp_v0_9] = D_800E6690[temp_v0_9];
+            D_800E6850[temp_v1->objId] = 65535.0f;
+            var_a0 = D_800D7098.unk3C;
+            if (var_a0 == 1) {
+                do {
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 1);
+            }
+            goto loop_1;
+        case 2:
+            if (var_a0 == 2) {
+                do {
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 2);
+            }
+            goto loop_1;
+        case 3:
+            D_800D7098.unkC = 1;
+            func_800FBF18(2);
+            func_800FBE1C();
+            D_801292B0.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+            D_801292B0.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            D_801292B0.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+            func_800FA414(4);
+            if (D_800D7088 != 0xB) {
+                do {
+                    ohSleep(1);
+                } while (D_800D7088 != 0xB);
+            }
+            D_800D7098.unk3C = 4;
+            var_a0 = 4;
+            goto loop_1;
+        case 4:
+            if (var_a0 == 4) {
+                do {
+                    temp_v0_10 = omCurrentObj->objId;
+                    D_800E64D0[temp_v0_10] = D_800EA6E0[D_800E0D50[temp_v0_10]];
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 4);
+            }
+            goto loop_1;
+        case 5:
+            if (var_a0 == 5) {
+                do {
+                    temp_v0_11 = omCurrentObj->objId;
+                    D_800E64D0[temp_v0_11] = D_800EA6E0[D_800E0D50[temp_v0_11]];
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 5);
+            }
+            goto loop_1;
+        case 6:
+            if (var_a0 == 6) {
+                do {
+                    temp_v0_12 = omCurrentObj->objId;
+                    D_800E64D0[temp_v0_12] = D_800EA6E0[D_800E0D50[temp_v0_12]];
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 6);
+            }
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            temp_v0_13 = omCurrentObj->objId;
+            D_800E64D0[temp_v0_13] = D_800E6690[temp_v0_13];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            goto loop_1;
+        case 7:
+            if (var_a0 == 7) {
+                do {
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 7);
+            }
+            goto loop_1;
+        case 8:
+            if (var_a0 == 8) {
+                do {
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 8);
+            }
+            goto loop_1;
+        case 9:
+            if (var_a0 == 9) {
+                do {
+                    ohSleep(1);
+                    var_a0 = D_800D7098.unk3C;
+                } while (var_a0 == 9);
+                if (var_a0 < 0xAU) {
+                    goto loop_2;
+                }
+            } else {
+                goto loop_1;
+            }
+            break;
+        }
+    }
+    curObjSleepForever();
+    var_a0 = D_800D7098.unk3C;
+    goto loop_1;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DB770_ovl15.s")
+#endif
 
 void func_801DBE20_ovl15(s32 arg0) {
     switch (D_800D7098.unk3C) {
@@ -615,7 +942,49 @@ void func_801DD318_ovl15(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801DD4EC_ovl15(s32 arg0) {
+    f32 *temp_v1;
+    u32 temp_v1_2;
+
+    func_800AED20(0.0f);
+    func_800AECC0(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    func_800B33F4();
+    func_800AA018(0x103CB);
+    func_800AA018(0x103DD);
+    D_800EBDA0[omCurrentObj->objId] = -1;
+    play_sound(0x19F);
+    temp_v1 = &gEntitiesNextPosYArray[omCurrentObj->objId];
+    *temp_v1 -= 1116.0f;
+    D_800E3210[omCurrentObj->objId] = 60.0f;
+    D_800E3750[omCurrentObj->objId] = -1.5f;
+    if (D_800E3210[omCurrentObj->objId] > 0.0f) {
+        do {
+            ohSleep(1);
+        } while (D_800E3210[omCurrentObj->objId] > 0.0f);
+    }
+    ohSleep(0xA);
+    D_800E3750[omCurrentObj->objId] = 0.5f;
+    ohSleep(0x28);
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    ohSleep(0xA);
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    temp_v1_2 = omCurrentObj->objId;
+    D_800E3210[temp_v1_2] = D_800E3750[temp_v1_2];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    ohSleep(0x1E);
+    func_800BC1FC((s32) D_800E7B20[omCurrentObj->objId]);
+    func_800AEFFC(2);
+    D_800D7098.unk3C = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD4EC_ovl15.s")
+#endif
 
 void func_801DD74C_ovl15(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -676,7 +1045,51 @@ void func_801DD7C8_ovl15(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD7C8_ovl15.s")
 #endif
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801DD950_ovl15(s32 arg0) {
+    GObj *temp_v1;
+
+    temp_v1 = omCurrentObj;
+    D_800DDFD0[temp_v1->objId] = 1;
+    gEntityFuncListIDArray[temp_v1->objId] = 1;
+    D_800EAC20[temp_v1->objId] = 0.0f;
+    switch (D_800D7098.unk20) {                     /* irregular */
+    case 0:
+        D_800E9C60[omCurrentObj->objId] = random_soft_s32_range(2);
+        D_800D7098.unk20 += 1;
+        D_800D7098.unk1C = (u32) D_800E9C60[omCurrentObj->objId];
+        break;
+    case 1:
+        if (random_soft_s32_range(4) == 0) {
+            D_800E9C60[omCurrentObj->objId] = (s32) D_800D7098.unk1C;
+        } else {
+            D_800E9C60[omCurrentObj->objId] = ~D_800D7098.unk1C & 1;
+        }
+        D_800D7098.unk20 += 1;
+        D_800D7098.unk1C = (u32) D_800E9C60[omCurrentObj->objId];
+        break;
+    default:
+    case 2:
+        D_800E9C60[temp_v1->objId] = ~D_800D7098.unk1C & 1;
+        D_800D7098.unk20 = 1;
+        D_800D7098.unk1C = (u32) D_800E9C60[temp_v1->objId];
+        break;
+    }
+    func_8019E0A4_ovl7(4, D_801E654C_ovl15[D_800E9C60[temp_v1->objId]]);
+    func_800AECC0(gameTicksPerDraw * 0.7f);
+    func_800AA018(D_801E6544_ovl15[D_800E9C60[omCurrentObj->objId]]);
+    ohSleep(0x2D);
+    play_sound(0x1A4);
+    func_8019E0A4_ovl7(4, 9);
+    func_800AF27C();
+    func_800AECC0(gameTicksPerDraw);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD950_ovl15.s")
+#endif
 
 void func_801DDBA8_ovl15(struct GObj *arg0) {
     s32 c;
@@ -719,7 +1132,70 @@ void func_801DDD74_ovl15(struct GObj *arg0) {
     D_800D7118.unk3C = 0;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801DDE90_ovl15(s32 arg0) {
+    f32 var_f0;
+    s32 var_s1;
+    s32 var_v0;
+    u32 temp_v0;
+    u32 temp_v0_2;
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+    D_800E9FE0[omCurrentObj->objId].as_u32 = -1U;
+    D_800EAC20[omCurrentObj->objId] = 0.0f;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    func_8019E0A4_ovl7(4, 7);
+    func_8019E0A4_ovl7(4, 8);
+    func_800AECC0(gameTicksPerDraw * 0.8f);
+    func_800AA018(0x103C1);
+    temp_v0 = omCurrentObj->objId;
+    var_v0 = temp_v0 * 4;
+    var_f0 = D_800EAC20[temp_v0];
+    if (var_f0 <= 254.0f) {
+        do {
+            if ((*(D_800E9E20 + var_v0) == 0) && (var_f0 > 70.0f)) {
+                play_sound(0x1A4);
+                D_800E9E20[omCurrentObj->objId] = 1;
+                var_f0 = D_800EAC20[omCurrentObj->objId];
+            }
+            if (var_f0 > 124.0f) {
+                func_800AECC0(gameTicksPerDraw);
+            }
+            ohSleep(1);
+            temp_v0_2 = omCurrentObj->objId;
+            var_v0 = temp_v0_2 * 4;
+            var_f0 = D_800EAC20[temp_v0_2];
+        } while (var_f0 <= 254.0f);
+    }
+    *(D_800E9E20 + var_v0) = 2;
+    play_sound(0x1A0);
+    func_800BB468(0, 0);
+    func_8019E0A4_ovl7(4, 6);
+    func_800FB914(2);
+    ohSleep(1);
+    var_s1 = 0;
+    do {
+        func_801ACCA0_ovl7(0x10, var_s1, 0, 0);
+        var_s1 += 1;
+        if (M2C_ERROR(/* Read from unset register $v0 */) != 0) {
+            D_800E8E60[M2C_ERROR(/* Read from unset register $v0 */)] = 1;
+            D_800E5F90[M2C_ERROR(/* Read from unset register $v0 */)] = D_800E5F90[D_800E0D50[omCurrentObj->objId]];
+            D_800E6BD0[M2C_ERROR(/* Read from unset register $v0 */)] = D_800E6BD0[D_800E0D50[omCurrentObj->objId]];
+            gEntitiesNextPosXArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+            gEntitiesNextPosYArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]] + 20.0f;
+            gEntitiesNextPosZArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+        }
+    } while (var_s1 != 2);
+    func_800AF27C();
+    func_800AECC0(gameTicksPerDraw);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DDE90_ovl15.s")
+#endif
 
 void func_801DE234_ovl15(struct GObj *arg0) {
     extern f32 D_800E09D0[], D_800EAC20[];
@@ -1167,7 +1643,73 @@ void func_801E0F44_ovl15(struct GObj *arg0) {
 }
 
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801E1230_ovl15(s32 arg0) {
+    GObj *temp_v1;
+    f32 temp_f10;
+    f32 temp_f6;
+    f32 var_f20;
+    u32 temp_a1;
+    u32 temp_v0;
+
+    D_800D7098.unk14 = 0;
+    D_800DDFD0[omCurrentObj->objId] = 0xB;
+    func_800B33F4();
+    temp_v1 = omCurrentObj;
+    D_800E9AA0[temp_v1->objId] = NULL;
+    D_800D7118.unk3C = 0;
+    D_800D7098.unk3C = 6;
+    if (D_800D6B54 == 0) {
+        func_8019F1EC_ovl7();
+    }
+    D_800E3210[temp_v1->objId] = 0.0f;
+    D_800E3750[temp_v1->objId] = -0.25f;
+    D_800E3050[temp_v1->objId] = -2.0f;
+    D_800E3590[temp_v1->objId] = 0.0f;
+    var_f20 = 1.0f;
+    D_800EA6E0[D_800E0D50[temp_v1->objId]] = -2.0f;
+    if (0.0f < 1.0f) {
+        do {
+            func_800AECC0(gameTicksPerDraw * var_f20);
+            ohSleep(1);
+            temp_f10 = -2.0f * var_f20;
+            var_f20 -= 0.02f;
+            D_800E3050[omCurrentObj->objId] = temp_f10;
+        } while (var_f20 > 0.0f);
+        var_f20 = 1.0f;
+    }
+    func_800AECC0(0.0f);
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    temp_v0 = omCurrentObj->objId;
+    D_800E3050[temp_v0] = D_800E3590[temp_v0];
+    D_800E3AD0[omCurrentObj->objId] = 65535.0f;
+    ohSleep(0x5A);
+    if (0.0f < 1.0f) {
+        do {
+            temp_f6 = -2.0f * var_f20;
+            var_f20 -= 0.02f;
+            D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = temp_f6;
+        } while (var_f20 > 0.0f);
+    }
+    D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = 0.0f;
+    func_801BC794_ovl7(4);
+    if (M2C_ERROR(/* Read from unset register $v0 */) != -1) {
+        temp_a1 = D_800D7098.unk34;
+        D_800E5F90[M2C_ERROR(/* Read from unset register $v0 */)] = D_800E5F90[temp_a1];
+        D_800E6BD0[M2C_ERROR(/* Read from unset register $v0 */)] = D_800E6BD0[temp_a1];
+        gEntitiesNextPosXArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosXArray[omCurrentObj->objId];
+        gEntitiesNextPosYArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosYArray[omCurrentObj->objId] + 200.0f;
+        gEntitiesNextPosZArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosZArray[omCurrentObj->objId];
+        D_800E8E60[M2C_ERROR(/* Read from unset register $v0 */)] = 1;
+    }
+    curObjSleepForever();
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E1230_ovl15.s")
+#endif
 
 void func_801E15B0_ovl15(s32 arg0) {
     if (gEntitiesNextPosYArray[omCurrentObj->objId] < -80.0f) {
@@ -1345,7 +1887,238 @@ void func_801E1E88_ovl15(struct GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801E1F34_ovl15(void) {
+    GObj *temp_a1;
+    f32 *var_v0;
+    f32 temp_f2;
+    f32 var_f0;
+    s32 temp_v0;
+    s32 var_v1;
+    s32 var_v1_2;
+    s32 var_v1_3;
+    s32 var_v1_4;
+    s32 var_v1_5;
+    u32 temp_v1;
+    u32 temp_v1_10;
+    u32 temp_v1_11;
+    u32 temp_v1_12;
+    u32 temp_v1_13;
+    u32 temp_v1_14;
+    u32 temp_v1_15;
+    u32 temp_v1_16;
+    u32 temp_v1_17;
+    u32 temp_v1_18;
+    u32 temp_v1_19;
+    u32 temp_v1_20;
+    u32 temp_v1_21;
+    u32 temp_v1_22;
+    u32 temp_v1_23;
+    u32 temp_v1_24;
+    u32 temp_v1_25;
+    u32 temp_v1_26;
+    u32 temp_v1_27;
+    u32 temp_v1_28;
+    u32 temp_v1_29;
+    u32 temp_v1_2;
+    u32 temp_v1_3;
+    u32 temp_v1_4;
+    u32 temp_v1_5;
+    u32 temp_v1_6;
+    u32 temp_v1_7;
+    u32 temp_v1_8;
+    u32 temp_v1_9;
+
+    D_800E8E60[omCurrentObj->objId] = 0;
+    temp_v1 = omCurrentObj->objId;
+    D_800EA520[temp_v1] = D_800E5F90[temp_v1];
+    temp_v1_2 = omCurrentObj->objId;
+    D_800EB320[temp_v1_2] = D_800E6BD0[temp_v1_2];
+    temp_v1_3 = omCurrentObj->objId;
+    D_800EADE0[temp_v1_3] = gEntitiesNextPosXArray[temp_v1_3];
+    temp_v1_4 = omCurrentObj->objId;
+    D_800EAFA0[temp_v1_4] = gEntitiesNextPosYArray[temp_v1_4];
+    temp_v1_5 = omCurrentObj->objId;
+    D_800EB160[temp_v1_5] = gEntitiesNextPosZArray[temp_v1_5];
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800E64D0[omCurrentObj->objId] = 0.001f;
+    func_800F8E6C(omCurrentObj);
+    func_800B33F4();
+    temp_v1_6 = omCurrentObj->objId;
+    var_v1 = temp_v1_6 * 4;
+    var_v0 = &D_800E17D0[temp_v1_6];
+    var_f0 = *var_v0;
+    if (var_f0 >= 6.2831855f) {
+        do {
+            *var_v0 = var_f0 - 6.2831855f;
+            temp_v1_7 = omCurrentObj->objId;
+            var_v1 = temp_v1_7 * 4;
+            var_v0 = &D_800E17D0[temp_v1_7];
+            var_f0 = *var_v0;
+        } while (var_f0 >= 6.2831855f);
+    }
+    if (var_f0 < 0.0f) {
+        do {
+            *var_v0 = var_f0 + 6.2831855f;
+            temp_v1_8 = omCurrentObj->objId;
+            var_v1 = temp_v1_8 * 4;
+            var_v0 = &D_800E17D0[temp_v1_8];
+            var_f0 = *var_v0;
+        } while (var_f0 < 0.0f);
+    }
+    temp_f2 = var_f0 + 1.5707964f;
+    *(gEntitiesAngleYArray + var_v1) = temp_f2;
+    D_800EA6E0[omCurrentObj->objId] = temp_f2;
+    temp_v1_9 = omCurrentObj->objId;
+    D_800EAA60[temp_v1_9] = (sinf(D_800EA6E0[omCurrentObj->objId]) * 540.0f) + gEntitiesNextPosXArray[temp_v1_9];
+    temp_v1_10 = omCurrentObj->objId;
+    D_800EAC20[temp_v1_10] = (cosf(D_800EA6E0[omCurrentObj->objId]) * 540.0f) + gEntitiesNextPosZArray[temp_v1_10];
+    D_800E8E60[omCurrentObj->objId] = 1;
+    D_800DF150[omCurrentObj->objId] = func_801E27BC_ovl15;
+    func_800AED20(0.0f);
+    func_800AECC0(gameTicksPerDraw);
+    func_800A9864(0x10066, 0x23, 0x10);
+    temp_a1 = omCurrentObj;
+    D_800EA360[temp_a1->objId] = 0;
+    var_v1_2 = temp_a1->objId * 4;
+loop_5:
+    *(D_800E8920 + var_v1_2) = 0;
+    D_800EA1A0[temp_a1->objId] = 0;
+    temp_v1_11 = temp_a1->objId;
+    var_v1_2 = temp_v1_11 * 4;
+    temp_v0 = D_800EA360[temp_v1_11];
+    if (temp_v0 == 0) {
+        D_800DEF90[temp_v1_11] = func_800B7560;
+        temp_v1_12 = temp_a1->objId;
+        gEntitiesNextPosXArray[temp_v1_12] = D_800EAA60[temp_v1_12];
+        temp_v1_13 = temp_a1->objId;
+        gEntitiesNextPosZArray[temp_v1_13] = D_800EAC20[temp_v1_13];
+        gEntitiesNextPosYArray[temp_a1->objId] = -200.0f;
+        D_800E9020[temp_a1->objId] = 0.0f;
+        D_800E17D0[temp_a1->objId] = 1.5707964f;
+        D_800E6A10[temp_a1->objId] = 1.0f;
+        temp_v1_14 = temp_a1->objId;
+        var_v1_2 = temp_v1_14 * 4;
+        if (D_800EA360[temp_v1_14] == 0) {
+            do {
+                *(D_800E9E20 + var_v1_2) = 0;
+                func_800AA018(D_801E6670_ovl15[D_800EA1A0[temp_a1->objId]]);
+                func_800AF230();
+                if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                    temp_v1_16 = omCurrentObj->objId;
+                    var_v1_3 = temp_v1_16 * 4;
+                    if (D_800EA360[temp_v1_16] == 0) {
+loop_12:
+                        if (*(D_800DFF50 + var_v1_3) == D_801E6670_ovl15[*(D_800EA1A0 + var_v1_3)]) {
+                            ohSleep(1);
+                            func_800AF230();
+                            if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                                temp_v1_17 = omCurrentObj->objId;
+                                var_v1_3 = temp_v1_17 * 4;
+                                if (D_800EA360[temp_v1_17] == 0) {
+                                    goto loop_12;
+                                }
+                            }
+                        }
+                    }
+                }
+                temp_v1_15 = omCurrentObj->objId;
+                var_v1_2 = temp_v1_15 * 4;
+            } while (D_800EA360[temp_v1_15] == 0);
+        }
+        goto loop_5;
+    }
+    if (temp_v0 == 1) {
+        D_800DEF90[temp_v1_11] = func_800B7560;
+        D_800E6A10[temp_a1->objId] = -1.0f;
+        temp_v1_18 = temp_a1->objId;
+        gEntitiesNextPosXArray[temp_v1_18] = D_800EADE0[temp_v1_18];
+        gEntitiesNextPosYArray[temp_a1->objId] = 0.0f;
+        temp_v1_19 = temp_a1->objId;
+        gEntitiesNextPosZArray[temp_v1_19] = D_800EB160[temp_v1_19];
+        D_800E9020[temp_a1->objId] = 0.0f;
+        D_800E17D0[temp_a1->objId] = 3.1415927f;
+        temp_v1_20 = temp_a1->objId;
+        var_v1_2 = temp_v1_20 * 4;
+        if (D_800EA360[temp_v1_20] == 1) {
+            do {
+                *(D_800E9E20 + var_v1_2) = 0;
+                func_800AA018(D_801E6680_ovl15[D_800EA1A0[temp_a1->objId]]);
+                func_800AF230();
+                if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                    temp_v1_22 = omCurrentObj->objId;
+                    var_v1_4 = temp_v1_22 * 4;
+                    if (D_800EA360[temp_v1_22] == 1) {
+loop_20:
+                        if (*(D_800DFF50 + var_v1_4) == D_801E6680_ovl15[*(D_800EA1A0 + var_v1_4)]) {
+                            ohSleep(1);
+                            func_800AF230();
+                            if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                                temp_v1_23 = omCurrentObj->objId;
+                                var_v1_4 = temp_v1_23 * 4;
+                                if (D_800EA360[temp_v1_23] == 1) {
+                                    goto loop_20;
+                                }
+                            }
+                        }
+                    }
+                }
+                temp_v1_21 = omCurrentObj->objId;
+                var_v1_2 = temp_v1_21 * 4;
+            } while (D_800EA360[temp_v1_21] == 1);
+        }
+        goto loop_5;
+    }
+    if (temp_v0 != 2) {
+        goto loop_5;
+    }
+    D_800DEF90[temp_v1_11] = func_800B7560;
+    D_800E6A10[temp_a1->objId] = -1.0f;
+    temp_v1_24 = temp_a1->objId;
+    gEntitiesNextPosXArray[temp_v1_24] = D_800EADE0[temp_v1_24];
+    gEntitiesNextPosYArray[temp_a1->objId] = 0.0f;
+    temp_v1_25 = temp_a1->objId;
+    gEntitiesNextPosZArray[temp_v1_25] = D_800EB160[temp_v1_25];
+    D_800E9020[temp_a1->objId] = 0.0f;
+    D_800E17D0[temp_a1->objId] = 3.1415927f;
+    temp_v1_26 = temp_a1->objId;
+    var_v1_2 = temp_v1_26 * 4;
+    if (D_800EA360[temp_v1_26] != 2) {
+        goto loop_5;
+    }
+    do {
+        *(D_800E9E20 + var_v1_2) = 0;
+        func_800AA018(D_801E6690_ovl15[D_800EA1A0[temp_a1->objId]]);
+        func_800AF230();
+        if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+            temp_v1_28 = omCurrentObj->objId;
+            var_v1_5 = temp_v1_28 * 4;
+            if (D_800EA360[temp_v1_28] == 2) {
+loop_28:
+                if (*(D_800DFF50 + var_v1_5) == D_801E6690_ovl15[*(D_800EA1A0 + var_v1_5)]) {
+                    ohSleep(1);
+                    func_800AF230();
+                    if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                        temp_v1_29 = omCurrentObj->objId;
+                        var_v1_5 = temp_v1_29 * 4;
+                        if (D_800EA360[temp_v1_29] == 2) {
+                            goto loop_28;
+                        }
+                    }
+                }
+            }
+        }
+        temp_v1_27 = omCurrentObj->objId;
+        var_v1_2 = temp_v1_27 * 4;
+    } while (D_800EA360[temp_v1_27] == 2);
+    goto loop_5;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E1F34_ovl15.s")
+#endif
 
 /* Last function of this translation unit: the five nops after its `.size` are
  * the linker aligning the NEXT object (src/ovl15/ovl15b.c) to 32, not

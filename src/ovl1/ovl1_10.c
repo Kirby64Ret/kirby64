@@ -70,7 +70,74 @@ void func_800BAC0C(RumbleCmd3 *arg0);
 s32 func_800BAA64(RumbleItem *arg0);
 void func_800BAA04(RumbleCont *arg0, RumbleNode *arg1);
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_800BA7A0(RumbleCont *arg0, RumbleItem *arg1, s32 arg2) {
+    u16 *temp_t0;
+    u16 *temp_v0;
+    u16 temp_t3;
+    u16 temp_v1;
+    u16 var_a3;
+    u32 temp_t6;
+
+    var_a3 = arg1->unk02;
+    if (var_a3 == 0) {
+        do {
+            temp_v0 = arg1->unk10;
+            temp_v1 = *temp_v0;
+            temp_t6 = temp_v1 >> 0xD;
+            switch (temp_t6) {
+            case 0:
+                var_a3 = arg1->unk02;
+                arg1->unk10 = D_800D5238[arg1->unk00];
+                break;
+            case 1:
+                arg1->unk02 = temp_v1 & 0x1FFF;
+                arg1->unk10 = temp_v0 + 2;
+                if (arg0->unk00 == 0) {
+                    contRumbleInit(arg2);
+                    func_800047B0(arg2);
+                    arg1->unk01 = 1;
+                    arg0->unk00 = 1;
+                }
+                var_a3 = arg1->unk02;
+                break;
+            case 2:
+                arg1->unk02 = temp_v1 & 0x1FFF;
+                arg1->unk10 = temp_v0 + 2;
+                if (arg0->unk00 != 0) {
+                    contRumbleStop(arg2);
+                    arg1->unk01 = 0;
+                    arg0->unk00 = 0;
+                }
+                var_a3 = arg1->unk02;
+                break;
+            case 3:
+                temp_t0 = temp_v0 + 2;
+                arg1->unk04 = temp_v1 & 0x1FFF;
+                arg1->unk10 = temp_t0;
+                arg1->unk0C = temp_t0;
+                var_a3 = arg1->unk02;
+                break;
+            case 4:
+                temp_t3 = arg1->unk04 - 1;
+                arg1->unk04 = temp_t3;
+                if (temp_t3 & 0xFFFF) {
+                    var_a3 = arg1->unk02;
+                    arg1->unk10 = arg1->unk0C;
+                } else {
+                    var_a3 = arg1->unk02;
+                    arg1->unk10 += 2;
+                }
+                break;
+            }
+        } while (var_a3 == 0);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BA7A0.s")
+#endif
 
 // Draft, 13/62: structure and instruction count are exact. Residue is one
 // register: the ROM computes `ptr + 1` in case 3 into a fresh temp ($t6) and

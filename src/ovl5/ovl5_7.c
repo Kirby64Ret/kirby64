@@ -301,7 +301,141 @@ void func_8017A670_ovl5(void) {
     }
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern s32 D_8018ED94_ovl5;
+
+void func_8017A71C_ovl5(s32 arg0) {
+    Controller_800D6FE8 *temp_v0_2;
+    s32 *temp_a0;
+    s32 *temp_a0_2;
+    s32 *temp_a0_3;
+    s32 *var_v0;
+    s32 temp_t9;
+    s32 temp_v0;
+    s32 temp_v1_3;
+    s32 temp_v1_4;
+    u16 temp_v1_2;
+    u32 temp_v1;
+
+    temp_v1 = omCurrentObj->objId;
+    if (D_800E9C60[temp_v1] == 0) {
+        if (arg0 == 0) {
+            temp_a0 = &D_800E9E20[temp_v1];
+            temp_v0 = *temp_a0;
+            if (temp_v0 != 0) {
+                *temp_a0 = temp_v0 - 1;
+                if (D_800E9E20[omCurrentObj->objId] == 0) {
+                    func_8017A670_ovl5();
+                    if (func_80179F20_ovl5() != 0) {
+                        D_8018ED04_ovl5 = 3;
+                        func_8017C834_ovl5();
+                    } else {
+                        D_8018ED04_ovl5 = 2;
+                        func_8017C7D8_ovl5();
+                    }
+                    D_800E98E0[omCurrentObj->objId] = 4;
+                }
+            } else {
+                if ((temp_v0 == 0) && (func_8017A588_ovl5() != 0)) {
+                    if (func_80179F20_ovl5() != 0) {
+                        func_8017A1CC_ovl5();
+                        func_8017A070_ovl5();
+                        D_800E9E20[omCurrentObj->objId] = 0x1E;
+                        return;
+                    }
+                    func_8017A070_ovl5();
+                    D_800E9E20[omCurrentObj->objId] = 0xA;
+                    return;
+                }
+                var_v0 = &D_8018ED94_ovl5;
+                if (*(&gPlayerControllers->buttonPressed + (arg0 * 0xA)) & 0x4000) {
+loop_15:
+                    temp_t9 = *var_v0;
+                    var_v0 += 4;
+                    if (D_800E9C60[temp_t9] == 0) {
+                        if (var_v0 == &D_8018EDA0_ovl5) {
+                            play_sound(0x2B);
+                            func_8017A670_ovl5();
+                            D_8018ED04_ovl5 = 0;
+                            func_8017C61C_ovl5();
+                            D_800E98E0[omCurrentObj->objId] = 4;
+                            return;
+                        }
+                        goto loop_15;
+                    }
+                } else {
+                    goto block_18;
+                }
+            }
+        } else {
+block_18:
+            temp_v0_2 = &gPlayerControllers[arg0];
+            if (D_800EA1A0[omCurrentObj->objId] == 0) {
+                if ((temp_v0_2->buttonPressed & 0x9000) && ((&D_8018ED38_ovl5)[arg0] == 0)) {
+                    play_sound(0xEE);
+                    D_800EA1A0[omCurrentObj->objId] = 1;
+                    return;
+                }
+                if ((&D_8018ED38_ovl5)[arg0] == 0) {
+                    temp_v1_2 = temp_v0_2->buttonHeld;
+                    if (temp_v1_2 & 0x100) {
+                        play_sound(0x114);
+                        temp_a0_2 = &D_8018ED18_ovl5[arg0];
+                        temp_v1_3 = *temp_a0_2;
+                        D_800E9FE0[omCurrentObj->objId].as_u32 = (u32) temp_v1_3;
+                        switch (temp_v1_3) {        /* switch 1; irregular */
+                        case 0:                     /* switch 1 */
+                            *temp_a0_2 = 1;
+                            break;
+                        case 1:                     /* switch 1 */
+                            *temp_a0_2 = 3;
+                            break;
+                        case 2:                     /* switch 1 */
+                            *temp_a0_2 = 0;
+                            break;
+                        case 3:                     /* switch 1 */
+                            *temp_a0_2 = 2;
+                            break;
+                        }
+                        D_800E98E0[omCurrentObj->objId] = 4;
+                        D_800E9C60[omCurrentObj->objId] = 1;
+                        D_800EA6E0[omCurrentObj->objId] = 8.0f;
+                        return;
+                    }
+                    if (temp_v1_2 & 0x200) {
+                        play_sound(0x114);
+                        temp_a0_3 = &D_8018ED18_ovl5[arg0];
+                        temp_v1_4 = *temp_a0_3;
+                        D_800E9FE0[omCurrentObj->objId].as_u32 = (u32) temp_v1_4;
+                        switch (temp_v1_4) {        /* switch 2; irregular */
+                        case 0:                     /* switch 2 */
+                            *temp_a0_3 = 2;
+                            break;
+                        case 1:                     /* switch 2 */
+                            *temp_a0_3 = 0;
+                            break;
+                        case 2:                     /* switch 2 */
+                            *temp_a0_3 = 3;
+                            break;
+                        case 3:                     /* switch 2 */
+                            *temp_a0_3 = 1;
+                            break;
+                        }
+                        D_800E98E0[omCurrentObj->objId] = 4;
+                        D_800E9C60[omCurrentObj->objId] = 2;
+                        D_800EA6E0[omCurrentObj->objId] = 8.0f;
+                    }
+                }
+            }
+        }
+    }
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017A71C_ovl5.s")
+#endif
 
 void func_8017AB80_ovl5(void) {
     func_8015CCA8_ovl5(D_800D7178.unk44);
@@ -343,7 +477,59 @@ void func_8017ABC8_ovl5(void) {
     }
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_8017AD54_ovl5(void) {
+    s32 *var_at;
+    s32 temp_t8;
+    u16 temp_v0;
+
+    temp_v0 = gPlayerControllers->buttonPressed;
+    if (temp_v0 & 0x9000) {
+        play_sound(0xED);
+        func_80179F90_ovl5();
+        D_8018ED00_ovl5 = 1;
+        var_at = &D_800E98E0[omCurrentObj->objId];
+        goto block_13;
+    }
+    if (temp_v0 & 0x4000) {
+        play_sound(0x2B);
+        D_8018ED04_ovl5 = 1;
+        func_8017C6C8_ovl5();
+        D_800E98E0[omCurrentObj->objId] = 4;
+        return;
+    }
+    func_8017AB80_ovl5();
+    if (M2C_ERROR(/* Read from unset register $v0 */) != 0) {
+        if (gPlayerControllers->buttonHeld & 0x200) {
+            play_sound(0x113);
+            temp_t8 = D_8018ED10_ovl5 - 1;
+            D_8018ED10_ovl5 = temp_t8;
+            if (temp_t8 < 0) {
+                func_8017AB80_ovl5();
+                D_8018ED10_ovl5 = M2C_ERROR(/* Read from unset register $v0 */);
+            }
+            D_800E98E0[omCurrentObj->objId] = 4;
+            return;
+        }
+        if (gPlayerControllers->buttonHeld & 0x100) {
+            play_sound(0x113);
+            D_8018ED10_ovl5 += 1;
+            func_8017AB80_ovl5();
+            if (M2C_ERROR(/* Read from unset register $v0 */) < D_8018ED10_ovl5) {
+                D_8018ED10_ovl5 = 0;
+            }
+            var_at = &D_800E98E0[omCurrentObj->objId];
+block_13:
+            *var_at = 4;
+        }
+    }
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017AD54_ovl5.s")
+#endif
 
 #ifdef NON_MATCHING
 /* 2/76: fully decoded, same length, same registers -- the residue is one

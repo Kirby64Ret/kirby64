@@ -220,7 +220,151 @@ void func_801DC98C_ovl17(void) {
     D_801E56F8_ovl17 = cam->viewMtx.lookAt.eye.z;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern f32 D_801E56D8_ovl17;
+extern f32 D_801E56DC_ovl17;
+extern f32 D_801E56E0_ovl17;
+extern f32 D_801E56E4_ovl17;
+extern f32 D_801E56E8_ovl17;
+extern f32 D_801E56EC_ovl17;
+extern u16 gPlayerControllers;
+
+void func_801DCB44_ovl17(Vector *arg0) {
+    f32 sp44;
+    f32 sp40;
+    f32 sp38;
+    f32 sp34;
+    f32 sp30;
+    f32 sp28;
+    f32 temp_f0;
+    f32 temp_f0_2;
+    f32 temp_f12;
+    f32 temp_f14;
+    f32 temp_f14_2;
+    f32 temp_f14_3;
+    f32 temp_f16;
+    f32 temp_f16_2;
+    f32 temp_f18;
+    f32 temp_f2;
+    f32 temp_f2_2;
+    f32 var_f12;
+    f32 var_f12_2;
+    f32 var_f12_3;
+    f32 var_f2;
+    f32 var_f6;
+    s32 temp_a1;
+    s32 var_v1;
+
+    temp_a1 = gPlayerControllers & 0x300;
+    if (temp_a1 != 0) {
+        D_801E56E8_ovl17 = 8.0f;
+        if (gPlayerControllers & 0x100) {
+            D_801E56D8_ovl17 = 210.0f;
+        } else {
+            D_801E56D8_ovl17 = -210.0f;
+        }
+        var_v1 = gPlayerControllers & 0xC00;
+        if (var_v1 != 0) {
+            var_f6 = D_801E56D8_ovl17 / 1.4142135f;
+            goto block_9;
+        }
+    } else if (D_801E56E8_ovl17 > 0.0f) {
+        var_v1 = gPlayerControllers & 0xC00;
+        D_801E56E8_ovl17 -= 1.0f;
+    } else {
+        var_f6 = 0.0f;
+        var_v1 = gPlayerControllers & 0xC00;
+block_9:
+        D_801E56D8_ovl17 = var_f6;
+    }
+    if (var_v1 != 0) {
+        D_801E56EC_ovl17 = 8.0f;
+        if (gPlayerControllers & 0x800) {
+            D_801E56DC_ovl17 = -200.0f + D_800D7164;
+        } else {
+            D_801E56DC_ovl17 = 100.0f + D_800D7164;
+        }
+        if (temp_a1 != 0) {
+            D_801E56DC_ovl17 /= 1.4142135f;
+        }
+    } else if (D_801E56EC_ovl17 > 0.0f) {
+        D_801E56EC_ovl17 -= 1.0f;
+    } else {
+        D_801E56DC_ovl17 = D_800D7164;
+    }
+    if (D_800D6B54 == 1) {
+        D_801E56D8_ovl17 = 0.0f;
+        D_801E56DC_ovl17 = D_800D7164;
+    }
+    temp_f2 = (D_801E56D8_ovl17 - D_801E56D0_ovl17) * 0.05f;
+    temp_f18 = (D_801E56DC_ovl17 - D_801E56D4_ovl17) * 0.05f;
+    sp44 = temp_f2;
+    sp40 = temp_f18;
+    temp_f12 = (temp_f2 * temp_f2) + (temp_f18 * temp_f18);
+    sp28 = temp_f12;
+    temp_f14 = temp_f2 * 0.5f;
+    temp_f16 = sqrtf(temp_f12) * 0.5f;
+    temp_f0 = sqrtf((temp_f14 * temp_f14) + (temp_f16 * temp_f16));
+    if (temp_f2 < 0.0f) {
+        var_f12 = -temp_f2;
+    } else {
+        var_f12 = temp_f2;
+    }
+    if (var_f12 > 0.0001f) {
+        D_801E56E0_ovl17 += temp_f2 * 0.1f;
+        var_f12_2 = D_801E56E0_ovl17;
+        if (temp_f0 < var_f12_2) {
+            D_801E56E0_ovl17 = temp_f0;
+            goto block_29;
+        }
+        temp_f14_2 = -temp_f0;
+        if (var_f12_2 < temp_f14_2) {
+            D_801E56E0_ovl17 = temp_f14_2;
+block_29:
+            var_f12_2 = D_801E56E0_ovl17;
+        }
+        D_801E56D0_ovl17 += var_f12_2;
+    } else {
+        D_801E56E0_ovl17 = 0.0f;
+        D_801E56D0_ovl17 = D_801E56D8_ovl17;
+    }
+    sp40 = temp_f18;
+    temp_f2_2 = temp_f18 * 0.5f;
+    temp_f16_2 = sqrtf(sp28) * 0.5f;
+    temp_f0_2 = sqrtf((temp_f2_2 * temp_f2_2) + (temp_f16_2 * temp_f16_2));
+    if (temp_f18 < 0.0f) {
+        var_f12_3 = -temp_f18;
+    } else {
+        var_f12_3 = temp_f18;
+    }
+    if (var_f12_3 > 0.0001f) {
+        D_801E56E4_ovl17 += temp_f18 * 0.1f;
+        var_f2 = D_801E56E4_ovl17;
+        if (temp_f0_2 < var_f2) {
+            D_801E56E4_ovl17 = temp_f0_2;
+            goto block_40;
+        }
+        temp_f14_3 = -temp_f0_2;
+        if (var_f2 < temp_f14_3) {
+            D_801E56E4_ovl17 = temp_f14_3;
+block_40:
+            var_f2 = D_801E56E4_ovl17;
+        }
+        D_801E56D4_ovl17 += var_f2;
+    } else {
+        D_801E56E4_ovl17 = 0.0f;
+        D_801E56D4_ovl17 = D_801E56DC_ovl17;
+    }
+    sp30 = D_801E56D0_ovl17;
+    sp34 = D_801E56D4_ovl17;
+    sp38 = D_800D716C - D_800D7168;
+    func_801DD09C_ovl17((Vector *) &sp30, arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DCB44_ovl17.s")
+#endif
 
 
 void func_801DCFD4_ovl17(Vector *arg0) {

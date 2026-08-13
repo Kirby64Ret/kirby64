@@ -898,4 +898,20 @@ s32 func_801E55C0_ovl9(s32 arg0, void *arg1) {
     return func_80110150(arg1);
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+s32 func_801E5660_ovl9(s32 arg0) {
+    f32 temp_f0;
+
+    if ((arg0 > 0) && (D_800DD710[arg0] != -1) && (D_800E7730[arg0] == 0) && (D_800E77A0[arg0] == 0x44)) {
+        temp_f0 = D_800E7B20[arg0];
+        if ((temp_f0 > 0.09f) && (temp_f0 < 9999.0f) && (D_800E83E0[arg0] != 1)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E5660_ovl9.s")
+#endif

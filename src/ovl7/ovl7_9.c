@@ -127,7 +127,72 @@ void func_801B2204_ovl7(GObj *arg0) {
     func_8019F3B0_ovl7();
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern f32 *D_801CAA0C_ovl7;
+extern struct Sub800E1B50_Unk98 D_801CB494_ovl7;
+
+void func_801B22D0_ovl7(s32 arg0) {
+    f32 *temp_v0_3;
+    f32 *temp_v1;
+    f32 *temp_v1_2;
+    f32 *temp_v1_3;
+    f32 var_f0;
+    f32 var_f0_2;
+    s32 var_s0;
+    u32 temp_v0;
+    u32 temp_v0_2;
+    u32 temp_v0_4;
+    u32 temp_v0_5;
+
+    D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)0x50;
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E0490[omCurrentObj->objId] = &D_801CAA0C_ovl7;
+    func_801A2ADC_ovl7(&D_801CAA0C_ovl7);
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB494_ovl7;
+    func_800B3520();
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    var_s0 = 0;
+    do {
+        temp_v0 = omCurrentObj->objId;
+        if (D_800E6A10[temp_v0] == 1.0f) {
+            var_f0 = -0.09817477f;
+        } else {
+            var_f0 = 0.09817477f;
+        }
+        temp_v1 = &D_800E9020[temp_v0];
+        *temp_v1 += var_f0;
+        temp_v0_2 = omCurrentObj->objId;
+        D_800E64D0[temp_v0_2] = D_800E6A10[temp_v0_2] * (1.6f + (-0.1f * (f32) var_s0));
+        ohSleep(1, omCurrentObj);
+        var_s0 += 1;
+    } while (var_s0 != 0x10);
+    temp_v0_3 = &D_800E6A10[omCurrentObj->objId];
+    *temp_v0_3 = -*temp_v0_3;
+    temp_v1_2 = &D_800E9020[omCurrentObj->objId];
+    *temp_v1_2 = -*temp_v1_2;
+    do {
+        temp_v0_4 = omCurrentObj->objId;
+        if (D_800E6A10[temp_v0_4] == 1.0f) {
+            var_f0_2 = 0.09817477f;
+        } else {
+            var_f0_2 = -0.09817477f;
+        }
+        temp_v1_3 = &D_800E9020[temp_v0_4];
+        *temp_v1_3 += var_f0_2;
+        temp_v0_5 = omCurrentObj->objId;
+        D_800E64D0[temp_v0_5] = D_800E6A10[temp_v0_5] * (1.6f - (0.1f * (f32) var_s0));
+        ohSleep(1, omCurrentObj);
+        var_s0 -= 1;
+    } while (var_s0 != 0);
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B22D0_ovl7.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2588_ovl7.s")
 
@@ -279,7 +344,66 @@ void func_801B2FB0_ovl7(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern struct Sub800E1B50_Unk98 D_801CB7D0_ovl7;
+
+void func_801B3110_ovl7(s32 arg0) {
+    GObj *temp_v1;
+    s32 var_v0;
+    s32 var_v0_2;
+    u32 temp_v0;
+    u32 temp_v0_2;
+    u32 temp_v0_3;
+    u32 temp_v0_4;
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB7D0_ovl7;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    func_800AA018(0x1009F);
+    temp_v1 = omCurrentObj;
+    D_800E3210[temp_v1->objId] = -0.4f;
+    D_800E3750[temp_v1->objId] = 0.0f;
+    D_800E3C90[temp_v1->objId] = 0.4f;
+    D_800E9AA0[temp_v1->objId] = (struct EntityThing800E9AA0 *)1;
+    temp_v0 = temp_v1->objId;
+    var_v0 = temp_v0 * 4;
+    if (D_800E9AA0[temp_v0] != NULL) {
+        do {
+            *(D_800E3210 + var_v0) = 1.05f;
+            D_800E3750[temp_v1->objId] = -0.05f;
+            D_800E3C90[temp_v1->objId] = 1.05f;
+            temp_v0_3 = temp_v1->objId;
+            var_v0_2 = temp_v0_3 * 4;
+            if (D_800E3210[temp_v0_3] > 0.0f) {
+loop_3:
+                if (*(D_800EA8A0 + var_v0_2) < *(gEntitiesNextPosYArray + var_v0_2)) {
+                    *(D_800E9AA0 + var_v0_2) = 0;
+                } else {
+                    ohSleep(1);
+                    temp_v0_4 = omCurrentObj->objId;
+                    var_v0_2 = temp_v0_4 * 4;
+                    if (D_800E3210[temp_v0_4] > 0.0f) {
+                        goto loop_3;
+                    }
+                }
+            }
+            func_800B33F4();
+            func_800AF27C();
+            temp_v0_2 = omCurrentObj->objId;
+            var_v0 = temp_v0_2 * 4;
+        } while (D_800E9AA0[temp_v0_2] != NULL);
+    }
+    *(gEntitiesNextPosYArray + var_v0) = *(D_800EA8A0 + var_v0);
+    gEntityFuncListIDArray[temp_v1->objId] = 0;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B3110_ovl7.s")
+#endif
 
 void func_801B338C_ovl7(GObj *arg0) {
     D_800EA6E0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];

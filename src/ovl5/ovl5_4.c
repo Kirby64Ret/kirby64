@@ -350,7 +350,97 @@ s32 func_8016725C_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+s32 func_80165FB8_ovl5(s32, f32 *, s32 *);          /* extern */
+extern f32 D_8018D6D8_ovl5;
+extern f32 D_8018D6DC_ovl5;
+extern f32 D_8018D6E0_ovl5;
+
+void func_80167374_ovl5(s32 arg0, s32 arg1) {
+    f32 sp44;
+    f32 sp40;
+    f32 sp3C;
+    s32 *sp2C;
+    f32 *temp_a2;
+    f32 *temp_v0;
+    f32 temp_f0;
+    f32 temp_f2;
+    s32 *temp_a3;
+    s32 temp_v0_2;
+    s32 temp_v1;
+    s32 temp_v1_2;
+    s32 temp_v1_3;
+    s32 var_s0;
+    u8 *var_s1;
+
+    temp_a3 = &D_8018E268_ovl5[arg0];
+    temp_v1 = *temp_a3;
+    temp_a2 = &gEntitiesNextPosXArray[temp_v1];
+    temp_v0 = &gEntitiesNextPosZArray[temp_v1];
+    temp_f2 = *temp_a2;
+    temp_f0 = *temp_v0;
+    sp3C = temp_f2;
+    sp40 = gEntitiesNextPosYArray[temp_v1];
+    sp44 = temp_f0;
+    switch (arg1) {                                 /* switch 1; irregular */
+    case 0:                                         /* switch 1 */
+        gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+        break;
+    case 1:                                         /* switch 1 */
+        gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6D8_ovl5;
+        break;
+    case 2:                                         /* switch 1 */
+        gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6DC_ovl5;
+        break;
+    case 3:                                         /* switch 1 */
+        gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6E0_ovl5;
+        break;
+    }
+    switch (arg1) {                                 /* switch 2; irregular */
+    case 1:                                         /* switch 2 */
+        *temp_v0 = temp_f0 - 25.0f;
+        break;
+    case 2:                                         /* switch 2 */
+        *temp_a2 = temp_f2 + 25.0f;
+        break;
+    case 0:                                         /* switch 2 */
+        *temp_v0 = temp_f0 + 25.0f;
+        break;
+    case 3:                                         /* switch 2 */
+        *temp_a2 = temp_f2 - 25.0f;
+        break;
+    }
+    sp2C = temp_a3;
+    temp_v0_2 = func_80165FB8_ovl5(arg0, temp_a2, temp_a3);
+    if ((temp_v0_2 != 0x29A) && ((func_80165900_ovl5(temp_v0_2) != 0) || (D_800E9C60[D_8018E2A0_ovl5[temp_v0_2]] != 0))) {
+        var_s1 = D_8018E3C0_ovl5;
+        var_s0 = 0;
+loop_22:
+        if ((*var_s1 != 0) && (arg0 != var_s0) && (func_8016725C_ovl5(arg0, var_s0) != 0)) {
+            temp_v1_2 = *sp2C;
+            gEntitiesNextPosXArray[temp_v1_2] = sp3C;
+            gEntitiesNextPosYArray[temp_v1_2] = sp40;
+            gEntitiesNextPosZArray[temp_v1_2] = sp44;
+            return;
+        }
+        var_s0 += 1;
+        var_s1 += 1;
+        if (var_s0 == 4) {
+            return;
+        }
+        goto loop_22;
+    }
+    temp_v1_3 = *sp2C;
+    gEntitiesNextPosXArray[temp_v1_3] = sp3C;
+    gEntitiesNextPosYArray[temp_v1_3] = sp40;
+    gEntitiesNextPosZArray[temp_v1_3] = sp44;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80167374_ovl5.s")
+#endif
 
 #ifdef NON_MATCHING
 // 52/145, one instruction short. Case bodies are already in the ROM's

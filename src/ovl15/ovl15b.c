@@ -260,11 +260,171 @@ void func_801E35B8_ovl15(struct GObj *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15b/func_801E48E4_ovl15.s")
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801E5080_ovl15(GObj *arg0) {
+    u32 temp_v1;
+    u32 temp_v1_2;
+
+    func_8019BA3C_ovl7();
+    D_800DEF90[omCurrentObj->objId] = func_800B7790;
+    D_800DF150[omCurrentObj->objId] = func_801E531C_ovl15;
+    D_800E8920[omCurrentObj->objId] = 0;
+    gEntitiesAngleYArray[omCurrentObj->objId] = -1.5707964f;
+    temp_v1 = omCurrentObj->objId;
+    D_800E17D0[temp_v1] = D_800E17D0[D_800E0D50[temp_v1]];
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    func_800B33F4();
+    func_800A9864(0x10092, 0x2A, 0x10);
+    func_800AA018(0x1053A);
+    D_800E3210[omCurrentObj->objId] = -10.0f;
+    if (gEntitiesNextPosYArray[omCurrentObj->objId] > 40.0f) {
+        do {
+            ohSleep(1);
+        } while (gEntitiesNextPosYArray[omCurrentObj->objId] > 40.0f);
+    }
+    play_sound(0x19B);
+    func_800AA018(0x10539);
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 40.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    temp_v1_2 = omCurrentObj->objId;
+    D_800E3210[temp_v1_2] = D_800E3750[temp_v1_2];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E3050[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = -0.5f;
+    D_800E3AD0[omCurrentObj->objId] = 16.0f;
+    func_800AF27C();
+    func_800AA018(0x10538);
+    ohSleep(0x4B);
+    D_800E1B50[omCurrentObj->objId]->unk94 = (struct Sub800E1B50_Unk94 *) &D_801D7BC4;
+    func_801ACF84_ovl7(arg0);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15b/func_801E5080_ovl15.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15b/func_801E531C_ovl15.s")
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801E56CC_ovl15(GObj *arg0) {
+    GObj *temp_v1;
+    GObj *temp_v1_2;
+    f32 *var_v0;
+    s32 *temp_v0;
+    s32 *temp_v0_2;
+    s32 temp_a0;
+    s32 temp_s1;
+    s32 var_a1;
+    s32 var_a1_2;
+    u32 temp_a1;
+    u32 temp_a1_2;
+    u32 temp_a1_3;
+    u32 temp_a1_4;
+    u32 temp_a1_5;
+    u32 temp_a1_6;
+    u32 temp_a1_7;
+    u32 temp_a1_8;
+    u32 temp_a1_9;
+
+    temp_s1 = D_800E0D50[omCurrentObj->objId];
+    func_8019BA3C_ovl7();
+    D_800DEF90[omCurrentObj->objId] = func_800B7790;
+    D_800DF150[omCurrentObj->objId] = func_801E5C34_ovl15;
+    func_80198880_ovl7(&D_801D7C04);
+    D_800E8920[omCurrentObj->objId] = 0;
+    gEntitiesAngleYArray[omCurrentObj->objId] = -1.5707964f;
+    temp_a1 = omCurrentObj->objId;
+    D_800E17D0[temp_a1] = D_800E17D0[D_800E0D50[temp_a1]];
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    func_800B33F4();
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_800EA6E0[temp_s1];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[temp_s1];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_800EAA60[temp_s1];
+    D_800E3050[omCurrentObj->objId] = D_800EAC20[temp_s1];
+    D_800E3590[omCurrentObj->objId] = D_800EADE0[temp_s1];
+    D_800E3210[omCurrentObj->objId] = D_800EAFA0[temp_s1];
+    D_800E0D50[omCurrentObj->objId] = (s32) D_800D7098.unk30;
+    func_800A9864(0x10092, 0x2A, 0x10);
+    func_800AA018(0x10537);
+    temp_v1 = omCurrentObj;
+    temp_a1_2 = temp_v1->objId;
+    var_v0 = &gEntitiesNextPosYArray[temp_a1_2];
+    if (*var_v0 > 40.0f) {
+        D_800E3590[temp_a1_2] = 0.0f;
+        temp_a1_3 = temp_v1->objId;
+        D_800E3050[temp_a1_3] = D_800E3590[temp_a1_3];
+        D_800E3AD0[temp_v1->objId] = 65535.0f;
+        D_800E3210[temp_v1->objId] = -10.0f;
+        var_v0 = &gEntitiesNextPosYArray[temp_v1->objId];
+        if (*var_v0 > 40.0f) {
+            do {
+                ohSleep(1);
+                var_v0 = &gEntitiesNextPosYArray[omCurrentObj->objId];
+            } while (*var_v0 > 40.0f);
+        }
+    }
+    *var_v0 = 40.0f;
+    D_800E3750[temp_v1->objId] = 0.0f;
+    temp_a1_4 = temp_v1->objId;
+    D_800E3210[temp_a1_4] = D_800E3750[temp_a1_4];
+    D_800E3C90[temp_v1->objId] = 65535.0f;
+    D_800E3590[temp_v1->objId] = -0.5f;
+    D_800E3AD0[temp_v1->objId] = 16.0f;
+    func_800A9EA4(0x10537, temp_a1_4 * 4, D_800E3750, D_800E3590);
+    temp_v1_2 = omCurrentObj;
+    D_800E98E0[temp_v1_2->objId] = 0x1E0;
+    temp_a1_5 = temp_v1_2->objId;
+    var_a1 = temp_a1_5 * 4;
+    if (D_800E98E0[temp_a1_5] > 0) {
+loop_4:
+        if (*(D_800E83E0 + var_a1) != 0xA) {
+            ohSleep(1);
+            temp_v0 = &D_800E98E0[omCurrentObj->objId];
+            *temp_v0 -= 1;
+            temp_a1_6 = omCurrentObj->objId;
+            var_a1 = temp_a1_6 * 4;
+            if (D_800E98E0[temp_a1_6] > 0) {
+                goto loop_4;
+            }
+        }
+    }
+    *(D_800E3590 + var_a1) = 0.0f;
+    temp_a1_7 = temp_v1_2->objId;
+    D_800E3050[temp_a1_7] = D_800E3590[temp_a1_7];
+    func_800A9EA4(0x10536, temp_a1_7 * 4);
+    temp_a1_8 = omCurrentObj->objId;
+    var_a1_2 = temp_a1_8 * 4;
+    if (D_800E98E0[temp_a1_8] > 0) {
+loop_7:
+        if (*(D_800E83E0 + var_a1_2) == 0xA) {
+            ohSleep(1);
+            temp_v0_2 = &D_800E98E0[omCurrentObj->objId];
+            *temp_v0_2 -= 1;
+            temp_a1_9 = omCurrentObj->objId;
+            var_a1_2 = temp_a1_9 * 4;
+            if (D_800E98E0[temp_a1_9] > 0) {
+                goto loop_7;
+            }
+        }
+    }
+    func_80198880_ovl7(&D_801D7C48, var_a1_2);
+    D_800E3590[omCurrentObj->objId] = -0.5f;
+    D_800E3AD0[omCurrentObj->objId] = 16.0f;
+    func_800A9EA4(0x10537);
+    temp_a0 = D_800E98E0[omCurrentObj->objId];
+    if (temp_a0 > 0) {
+        ohSleep(temp_a0);
+    }
+    func_801ACF84_ovl7(arg0);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15b/func_801E56CC_ovl15.s")
+#endif
 
 #ifdef NON_MATCHING
 /* 39/72. Structure and the signed-% correction are right; the residue is the

@@ -591,7 +591,29 @@ void func_80023AE4(void *arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023B34.s")
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+KChan *func_80023B34();                             /* extern */
+
+KChan *func_80023C48(s32 arg0) {
+    KChan *sp2C;
+    u32 sp24;
+    KChan *temp_v0;
+
+    sp24 = osSetIntMask(1U);
+    temp_v0 = func_80023B34();
+    if (temp_v0 != NULL) {
+        temp_v0->next = D_80097920;
+        D_80097920 = temp_v0;
+    }
+    sp2C = temp_v0;
+    osSetIntMask(sp24);
+    return sp2C;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023C48.s")
+#endif
 
 s32 func_80023CB0(u16 arg0) {
     if (arg0 < D_800978E0.unk28) {
@@ -602,7 +624,21 @@ call:
     return func_80023C48(D_800978E0.unk1C[arg0]);
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+KChan *func_80023D00(s32 arg0) {
+    s32 temp_a0;
+
+    temp_a0 = arg0 & 0xFFFF;
+    if (temp_a0 >= (s32) D_800978E0.unk28) {
+        return NULL;
+    }
+    return func_80023B34(temp_a0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D00.s")
+#endif
 
 /* 31/53 at -O3, and the instruction SEQUENCE is exact: every opcode, operand
  * shape and displacement matches and only the register numbers differ, rotated
@@ -779,7 +815,27 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80025758.s")
 #endif
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+u8 func_8002581C(void) {
+    u8 temp_v0;
+    u8 temp_v0_2;
+    u8 var_t1;
+
+    temp_v0 = func_80025758(M2C_ERROR(/* Read from unset register $t2 */), M2C_ERROR(/* Read from unset register $t3 */));
+    var_t1 = temp_v0;
+    if (temp_v0 & 0x80) {
+        do {
+            temp_v0_2 = func_80025758(M2C_ERROR(/* Read from unset register $t2 */), M2C_ERROR(/* Read from unset register $t3 */));
+            var_t1 = (M2C_ERROR(/* Read from unset register $t1 */) << 7) + (temp_v0_2 & 0x7F);
+        } while (temp_v0_2 & 0x80);
+    }
+    return var_t1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002581C.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNextEvent.s")
 
@@ -1352,7 +1408,30 @@ void func_800275C0(ALLink *ln) {
     to->next = ln;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+s16 func_80027610(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s32 temp_a0;
+    s32 temp_a0_2;
+    s32 temp_a2;
+    s32 temp_a3;
+
+    temp_a0_2 = arg0;
+    temp_a2 = arg2;
+    arg0 = arg1;
+    arg2 = arg3;
+    temp_a3 = arg3 << 0x10;
+    arg3 = temp_a2;
+    temp_a0 = temp_a0_2 >> 3;
+    if (temp_a0 == 0) {
+        return (s16) arg1;
+    }
+    return (s16) ((s16) arg1 + (((s32) ((temp_a2 & 0xFFFF) * temp_a0) >> 0x10) + ((temp_a3 >> 0x10) * temp_a0)));
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027610.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alEnvmixerPull.s")
 

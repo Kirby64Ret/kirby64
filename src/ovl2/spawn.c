@@ -125,7 +125,99 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 entID, u8 arg3, u8 arg4, u8 arg5, s16 
 s32 setUpDispose(s32 arg0, u8 bankID, u8 entID,
     u8 action, u8 respawnFlag, u8 unk5, s16 saveToEeprom,
     Vector *pos, Vector *angle, Vector *scale);
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+s32 request_track_general(?, ?, ?);                 /* extern */
+
+s32 setUpDispose(s32 arg0, u8 disType, u8 entID, u8 arg3, u8 arg4, u8 arg5, s16 save, Vector *pos, Vector *angle, f32 *scale) {
+    s32 sp1C;
+    ? var_a0;
+    f32 temp_f0;
+    s32 temp_v0;
+    s32 var_v1;
+    s32 var_v1_2;
+
+    sp1C = (s32) disType;
+    switch (disType) {
+    case 0:
+        if ((s32) entID >= 0x6B) {
+            return -1;
+        }
+        var_a0 = 0x17;
+block_20:
+        temp_v0 = request_track_general(var_a0, 0x1E, 0x3C);
+        if (temp_v0 == -1) {
+            return -1;
+        }
+        var_v1 = D_800D6E10 + 1;
+        D_800D6E10 = var_v1;
+        if (var_v1 >= 0x100) {
+            var_v1 = 1;
+            D_800D6E10 = 1;
+        }
+        D_800E7650[temp_v0] = (u8) var_v1;
+        D_800E76C0[temp_v0] = (u8) arg0;
+        D_800E7730[temp_v0] = disType;
+        D_800E77A0[temp_v0] = (u16) entID;
+        D_800E7880[temp_v0] = arg3;
+        D_800E78F0[temp_v0] = arg5;
+        if (arg4 & 2) {
+            var_v1_2 = temp_v0 * 4;
+            D_800E8AE0[temp_v0] = 2;
+        } else {
+            var_v1_2 = temp_v0 * 4;
+            D_800E8AE0[temp_v0] = 0;
+        }
+        *(gEntitiesNextPosXArray + var_v1_2) = pos->x;
+        *(gEntitiesNextPosYArray + var_v1_2) = pos->y;
+        *(gEntitiesNextPosZArray + var_v1_2) = pos->z;
+        *(gEntitiesAngleXArray + var_v1_2) = angle->x;
+        *(gEntitiesAngleYArray + var_v1_2) = angle->y;
+        *(gEntitiesAngleZArray + var_v1_2) = angle->z;
+        *(D_800E9020 + 0x1C0 + var_v1_2) = (s32) save;
+        temp_f0 = *scale;
+        *(gEntitiesScaleZArray + var_v1_2) = temp_f0;
+        *(gEntitiesScaleYArray + var_v1_2) = temp_f0;
+        *(gEntitiesScaleXArray + var_v1_2) = temp_f0;
+        return temp_v0;
+    case 1:
+        if ((s32) entID >= 3) {
+            return -1;
+        }
+        var_a0 = 0x18;
+        goto block_20;
+    case 2:
+        if ((s32) entID >= 7) {
+            return -1;
+        }
+        var_a0 = 0x19;
+        goto block_20;
+    case 3:
+        if ((s32) entID >= 0xE) {
+            return -1;
+        }
+        var_a0 = 0x1C;
+        goto block_20;
+    case 5:
+        return -1;
+    case 7:
+        if ((s32) entID >= 0xB) {
+            return -1;
+        }
+        var_a0 = 0x20;
+        goto block_20;
+    case 8:
+        var_a0 = 0x21;
+        goto block_20;
+    default:
+        utilPrintf("setUpDispose failed. DisType =%02d\n", sp1C);
+        return -1;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/spawn/setUpDispose.s")
+#endif
 #endif
 
 s32 func_800FCD14(u32 arg0, u8 node, f32 yScale, u8 bankID, u8 entID,

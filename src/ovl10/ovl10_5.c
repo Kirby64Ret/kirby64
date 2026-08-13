@@ -79,7 +79,48 @@ void func_801EFC58_ovl10(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801EFCE0_ovl10(s32 arg0) {
+    f32 temp_f0;
+    u32 temp_v1;
+    u32 temp_v1_2;
+    u32 temp_v1_3;
+    u32 temp_v1_4;
+    u32 temp_v1_5;
+
+    temp_v1 = omCurrentObj->objId;
+    D_800DEF90[temp_v1] = func_800B7790;
+    D_800E8E60[omCurrentObj->objId] = 1;
+    temp_v1_2 = omCurrentObj->objId;
+    D_800E6A10[temp_v1_2] = D_800E6A10[D_800E0D50[temp_v1_2]];
+    D_800E1B50[temp_v1]->unk8C = D_801CA04C_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801EF9B0_ovl10;
+    func_800AA018(0x105F9);
+    func_800AA018(0x105FA);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 11.8f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    temp_v1_3 = omCurrentObj->objId;
+    D_800E3050[temp_v1_3] = (D_800E6A10[temp_v1_3] * 100.0f) / 30.0f;
+    ohSleep(0x1E);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    temp_v1_4 = omCurrentObj->objId;
+    temp_f0 = D_800E3750[temp_v1_4];
+    D_800E3590[temp_v1_4] = temp_f0;
+    D_800E3210[omCurrentObj->objId] = temp_f0;
+    D_800E3050[omCurrentObj->objId] = temp_f0;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    temp_v1_5 = omCurrentObj->objId;
+    D_800E3AD0[temp_v1_5] = D_800E3C90[temp_v1_5];
+    curObjSleepForever();
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EFCE0_ovl10.s")
+#endif
 
 void func_801EFF10_ovl10(GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {

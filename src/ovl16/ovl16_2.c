@@ -1337,7 +1337,96 @@ void func_801ED444_ovl16(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801EDE50_ovl16.s")
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801EE558_ovl16(GObj *arg0) {
+    UnkStruct800E1B50 *sp44;
+    s32 *sp34;
+    s32 sp2C;
+    f32 *var_v0;
+    f32 var_f0;
+    s32 *temp_v0;
+    s32 temp_s0;
+    s32 var_v1;
+    u32 temp_v1;
+    u32 temp_v1_2;
+    u32 temp_v1_3;
+    u32 temp_v1_4;
+    u32 temp_v1_5;
+    u32 temp_v1_6;
+    u32 temp_v1_7;
+
+    temp_v1 = omCurrentObj->objId;
+    temp_s0 = D_800E9C60[temp_v1];
+    sp44 = D_800E1B50[temp_v1];
+    D_800E17D0[temp_v1] = D_800E17D0[D_800E0D50[temp_v1]];
+    temp_v1_2 = omCurrentObj->objId;
+    D_800E9020[temp_v1_2] = D_800E9020[D_800E0D50[temp_v1_2]];
+    D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)1;
+    D_800E9E20[omCurrentObj->objId] = 1;
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801EE970_ovl16;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    sp44->unk80->unk10 = 20.0f;
+    sp2C = temp_s0 * 4;
+    func_800A9864((&D_801EFDC0_ovl16)[temp_s0], 0x23, 0x10);
+    func_800AA154(*(&D_801EFDC8_ovl16 + sp2C));
+    temp_v1_3 = omCurrentObj->objId;
+    var_v1 = temp_v1_3 * 4;
+    var_v0 = &D_800EA6E0[temp_v1_3];
+    var_f0 = *var_v0;
+    if (var_f0 > 6.2831855f) {
+        do {
+            *var_v0 = var_f0 - 6.2831855f;
+            temp_v1_4 = omCurrentObj->objId;
+            var_v1 = temp_v1_4 * 4;
+            var_v0 = &D_800EA6E0[temp_v1_4];
+            var_f0 = *var_v0;
+        } while (var_f0 > 6.2831855f);
+    }
+    if (var_f0 < -6.2831855f) {
+        do {
+            *var_v0 = var_f0 + 6.2831855f;
+            temp_v1_5 = omCurrentObj->objId;
+            var_v1 = temp_v1_5 * 4;
+            var_v0 = &D_800EA6E0[temp_v1_5];
+            var_f0 = *var_v0;
+        } while (var_f0 < -6.2831855f);
+    }
+    *(D_800E9AA0 + var_v1) = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E3050[omCurrentObj->objId] = sinf(D_800EA6E0[omCurrentObj->objId]) * -4.0f;
+    D_800E3210[omCurrentObj->objId] = cosf(D_800EA6E0[omCurrentObj->objId]) * 4.0f;
+    func_800AA154(*(&D_801EFDD0_ovl16 + sp2C));
+    temp_v0 = sp2C + &D_801EFDD8_ovl16;
+    sp34 = temp_v0;
+    func_800AA018(*temp_v0);
+    if ((s32) D_800D7098.unk10 < 4) {
+        do {
+            ohSleep(1U);
+        } while ((s32) D_800D7098.unk10 < 4);
+    }
+    func_800B33F4();
+    if (sp34 != &D_801EFDD8_ovl16) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+        return;
+    }
+    temp_v1_6 = omCurrentObj->objId;
+    func_800A7F74(6, 2, 0x15, gEntitiesNextPosXArray[temp_v1_6], gEntitiesNextPosYArray[temp_v1_6], gEntitiesNextPosZArray[temp_v1_6]);
+    temp_v1_7 = omCurrentObj->objId;
+    func_800A7F74(6, 2, 0x16, gEntitiesNextPosXArray[temp_v1_7], gEntitiesNextPosYArray[temp_v1_7], gEntitiesNextPosZArray[temp_v1_7]);
+    sp44->unk40 = 1;
+    func_801A3E80_ovl7(arg0);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801EE558_ovl16.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801EE970_ovl16.s")
 

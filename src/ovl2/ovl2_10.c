@@ -651,7 +651,88 @@ void func_801149C0(struct GObj *arg0) {
     D_801249C0[D_800E77A0[arg0->objId]](arg0);
 }
 
+struct Unk80114A14Model {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ s32 unk4;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s32 unk28;
+};
+
+struct Unk80114A14Sub {
+    /* 0x0 */ u32 unk0;
+    /* 0x4 */ u32 unk4;
+    /* 0x8 */ u32 unk8;
+    /* 0xC */ u32 unkC;
+};
+
+struct Unk80114A14Elem {
+    /* 0x0 */ u16 unk0;
+    /* 0x2 */ u16 unk2;
+    /* 0x4 */ u16 unk4;
+    /* 0x6 */ u16 unk6;
+};
+
+void *func_800A8358(s32);
+void func_80114E80(struct DObj *, s32, f32);
+
+#ifdef NON_MATCHING
+/* Left un-guarded when the container killed this lane mid-stint. */
+s32 func_80114A14(struct Unk80114A14Model *m, s32 arg1, s32 arg2) {
+    struct struct8011BA10_temp *p = &D_8012D948[D_8012D940];
+    struct Unk80114A14Elem *e;
+    s32 ret;
+    u32 i;
+    u32 k;
+    u32 j;
+
+    m->unk0 = 1;
+    p->unk3 = arg2;
+    p->unk2 = 0;
+    p->unk98 = 0;
+    p->unk0 = D_8012D940;
+    ret = request_track_general(0x1D, 0x1E, 0x3C);
+    p->unk1 = ret;
+    D_800DE350[ret]->unk4C = p;
+    D_800DE350[ret]->onAnimate = func_80114E80;
+    p->unk4 = (struct vCollisionHeader *) m;
+    p->unk8 = m->unk14;
+    p->unkC = m->unkC;
+    m->unk14 = (s32) func_800A8358((m->unk18 * 0x10) | 3);
+    m->unkC = (s32) func_800A8358((m->unk10 * 0xC) | 3);
+    p->unk10 = (u32) func_800A8358(m->unk10 | 3);
+    for (i = 1; i < m->unk18; i++) {
+        ((struct Unk80114A14Sub *) m->unk14)[i] = ((struct Unk80114A14Sub *) p->unk8)[i];
+    }
+    p->unk14 = (u32) func_800A8358((m->unk18 * 4) | 3);
+    for (k = 1; k < m->unk18; k++) {
+        e = (struct Unk80114A14Elem *) m->unk24;
+        for (j = 1; j < m->unk28; j++) {
+            if (e[j].unk0 == k) {
+                break;
+            }
+        }
+        if (e[j].unk6 != 0) {
+            ((u32 *) p->unk14)[k] =
+                (*(u16 *) (((((u16 *) m->unk1C)[e[j].unk6] & 0x7FFF) * 0x14) + m->unk4) * 0xC) + m->unkC;
+        }
+    }
+    gEntitiesPosXArray[ret] = gEntitiesNextPosXArray[ret] = ((Vector *) arg1)->x;
+    gEntitiesPosYArray[ret] = gEntitiesNextPosYArray[ret] = ((Vector *) arg1)->y;
+    gEntitiesPosZArray[ret] = gEntitiesNextPosZArray[ret] = ((Vector *) arg1)->z;
+    func_80112CD4(ret, (f32 (*)[4]) &p->unk58);
+    D_8012D940++;
+    return ret;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80114A14.s")
+#endif
 
 void func_80114CCC(void) {
     func_80114974();
@@ -680,7 +761,7 @@ s32 func_80114D54(s32 arg0) {
 
 void *func_800A8358(s32);
 void func_800F8464(s32, void *);
-s32 func_80114A14(void *, s32, s32);
+s32 func_80114A14(struct Unk80114A14Model *, s32, s32);
 
 s32 func_80114DBC(s32 arg0, s32 arg1) {
     s32 val;

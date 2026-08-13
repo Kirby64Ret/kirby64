@@ -826,7 +826,1175 @@ s32 renderPrepareModelMatrix(Gfx** gfxPtr, DObj* dobj) {
 }
 #else
 s32 renderPrepareModelMatrix(Gfx **, DObj *);
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern u8 D_8003DCAB;
+
+s32 renderPrepareModelMatrix(Gfx **gfxPtr, DObj *dobj) {
+    Gfx *sp2D4;
+    s32 sp2CC;
+    u8 *sp2C0;
+    u8 *sp2BC;
+    u8 *sp2B8;
+    f32 sp1CC;
+    f32 sp190;
+    Mtx *sp78;
+    DObj *sp74;                                     /* compiler-managed */
+    GObj **temp_t4;
+    Gfx *temp_a0;
+    Gfx *temp_a0_10;
+    Gfx *temp_a0_2;
+    Gfx *temp_a0_3;
+    Gfx *temp_a0_4;
+    Gfx *temp_a0_5;
+    Gfx *temp_a0_6;
+    Gfx *temp_a0_7;
+    Gfx *temp_a0_8;
+    Gfx *temp_a0_9;
+    Gfx *temp_t1;
+    Gfx *temp_t1_10;
+    Gfx *temp_t1_11;
+    Gfx *temp_t1_12;
+    Gfx *temp_t1_13;
+    Gfx *temp_t1_14;
+    Gfx *temp_t1_2;
+    Gfx *temp_t1_3;
+    Gfx *temp_t1_4;
+    Gfx *temp_t1_5;
+    Gfx *temp_t1_6;
+    Gfx *temp_t1_7;
+    Gfx *temp_t1_8;
+    Gfx *temp_t1_9;
+    Gfx *temp_t2;
+    Gfx *temp_t2_10;
+    Gfx *temp_t2_11;
+    Gfx *temp_t2_12;
+    Gfx *temp_t2_13;
+    Gfx *temp_t2_14;
+    Gfx *temp_t2_2;
+    Gfx *temp_t2_3;
+    Gfx *temp_t2_4;
+    Gfx *temp_t2_5;
+    Gfx *temp_t2_6;
+    Gfx *temp_t2_7;
+    Gfx *temp_t2_8;
+    Gfx *temp_t2_9;
+    Gfx *temp_t3;
+    Gfx *temp_t3_10;
+    Gfx *temp_t3_11;
+    Gfx *temp_t3_12;
+    Gfx *temp_t3_13;
+    Gfx *temp_t3_14;
+    Gfx *temp_t3_2;
+    Gfx *temp_t3_3;
+    Gfx *temp_t3_4;
+    Gfx *temp_t3_5;
+    Gfx *temp_t3_6;
+    Gfx *temp_t3_7;
+    Gfx *temp_t3_8;
+    Gfx *temp_t3_9;
+    Gfx *temp_t4_10;
+    Gfx *temp_t4_11;
+    Gfx *temp_t4_12;
+    Gfx *temp_t4_13;
+    Gfx *temp_t4_2;
+    Gfx *temp_t4_3;
+    Gfx *temp_t4_4;
+    Gfx *temp_t4_5;
+    Gfx *temp_t4_6;
+    Gfx *temp_t4_7;
+    Gfx *temp_t4_8;
+    Gfx *temp_t4_9;
+    Gfx *temp_t5;
+    Gfx *temp_t5_10;
+    Gfx *temp_t5_11;
+    Gfx *temp_t5_12;
+    Gfx *temp_t5_13;
+    Gfx *temp_t5_2;
+    Gfx *temp_t5_3;
+    Gfx *temp_t5_4;
+    Gfx *temp_t5_5;
+    Gfx *temp_t5_6;
+    Gfx *temp_t5_7;
+    Gfx *temp_t5_8;
+    Gfx *temp_t5_9;
+    Gfx *temp_t6;
+    Gfx *temp_t6_10;
+    Gfx *temp_t6_11;
+    Gfx *temp_t6_12;
+    Gfx *temp_t6_13;
+    Gfx *temp_t6_2;
+    Gfx *temp_t6_3;
+    Gfx *temp_t6_4;
+    Gfx *temp_t6_5;
+    Gfx *temp_t6_6;
+    Gfx *temp_t6_7;
+    Gfx *temp_t6_8;
+    Gfx *temp_t6_9;
+    Gfx *temp_t7;
+    Gfx *temp_t7_10;
+    Gfx *temp_t7_11;
+    Gfx *temp_t7_12;
+    Gfx *temp_t7_13;
+    Gfx *temp_t7_14;
+    Gfx *temp_t7_2;
+    Gfx *temp_t7_3;
+    Gfx *temp_t7_4;
+    Gfx *temp_t7_5;
+    Gfx *temp_t7_6;
+    Gfx *temp_t7_7;
+    Gfx *temp_t7_8;
+    Gfx *temp_t7_9;
+    Gfx *temp_t8;
+    Gfx *temp_t8_10;
+    Gfx *temp_t8_11;
+    Gfx *temp_t8_12;
+    Gfx *temp_t8_13;
+    Gfx *temp_t8_14;
+    Gfx *temp_t8_15;
+    Gfx *temp_t8_2;
+    Gfx *temp_t8_3;
+    Gfx *temp_t8_4;
+    Gfx *temp_t8_5;
+    Gfx *temp_t8_6;
+    Gfx *temp_t8_7;
+    Gfx *temp_t8_8;
+    Gfx *temp_t8_9;
+    Gfx *temp_t9;
+    Gfx *temp_t9_10;
+    Gfx *temp_t9_11;
+    Gfx *temp_t9_12;
+    Gfx *temp_t9_13;
+    Gfx *temp_t9_2;
+    Gfx *temp_t9_3;
+    Gfx *temp_t9_4;
+    Gfx *temp_t9_5;
+    Gfx *temp_t9_6;
+    Gfx *temp_t9_7;
+    Gfx *temp_t9_8;
+    Gfx *temp_t9_9;
+    Mtx *temp_v0_3;
+    Mtx *var_s0;
+    OMMtx *temp_s2;
+    f32 temp_f0;
+    f32 temp_f0_2;
+    f32 temp_f12;
+    f32 temp_f12_2;
+    f32 temp_f12_3;
+    f32 temp_f12_4;
+    f32 temp_f12_5;
+    f32 temp_f12_6;
+    f32 temp_f14;
+    f32 temp_f14_2;
+    f32 temp_f16;
+    f32 temp_f16_2;
+    f32 temp_f18;
+    f32 temp_f18_2;
+    s32 (*var_a3)(Mtx *, DObj *, Gfx **, ?);
+    s32 (*var_a3_2)(Mtx *, DObj *, Gfx **, ?);
+    s32 var_a0;
+    s32 var_a0_2;
+    s32 var_a0_3;
+    s32 var_t3;
+    struct DObjDynamicStore *temp_v0;
+    struct DObjDynamicStore *var_a1;
+    u8 *var_fp;
+    u8 *var_v1;
+    u8 temp_v0_2;
+    u8 temp_v0_4;
+    u8 temp_v0_5;
+    u8 temp_v0_6;
+    u8 temp_v1;
+    void *var_a2;
+
+    sp2CC = 0;
+    sp2D4 = *gfxPtr;
+    temp_v0 = dobj->unk4C;
+    var_fp = sp2BC;
+    var_v1 = temp_v0->data;
+    if (temp_v0 != NULL) {
+        var_a0 = 0;
+        var_a1 = temp_v0;
+        do {
+            temp_v0_2 = var_a1->kinds[0];
+            var_a0 += 1;
+            switch (temp_v0_2) {                    /* switch 1; irregular */
+            case 0:                                 /* switch 1 */
+                break;
+            case 1:                                 /* switch 1 */
+                sp2C0 = var_v1;
+block_10:
+                var_v1 += 0x10;
+                break;
+            case 2:                                 /* switch 1 */
+                var_fp = var_v1;
+                var_v1 += 0x14;
+                break;
+            case 3:                                 /* switch 1 */
+                sp2B8 = var_v1;
+                goto block_10;
+            }
+            var_a1 += 1;
+        } while (var_a0 != 3);
+        sp2BC = var_fp;
+    }
+    if ((s32) dobj->numMatrices > 0) {
+        sp74 = dobj;
+        do {
+            temp_s2 = sp74->matrices[0];
+            temp_v0_3 = &temp_s2->unk08;
+            if (temp_s2 != NULL) {
+                temp_v1 = temp_s2->unk05;
+                var_s0 = temp_v0_3;
+                sp78 = temp_v0_3;
+                if (temp_v1 != 2) {
+                    if (temp_v1 == 4) {
+                        if (D_8003DCAB != dobj->gobj->lastDrawFrame) {
+                            temp_v0_3->m[0][0] = (s32) gDynamicBuffer1.top;
+                            var_s0 = (Mtx *) gDynamicBuffer1.top;
+                            gDynamicBuffer1.top = (u8 *) (var_s0 + 0x40);
+                            goto block_36;
+                        }
+                        temp_v0_4 = temp_s2->kind;
+                        switch (temp_v0_4) {        /* switch 2 */
+                        case 33:                    /* switch 2 */
+                        case 34:                    /* switch 2 */
+                        case 35:                    /* switch 2 */
+                        case 36:                    /* switch 2 */
+                        case 37:                    /* switch 2 */
+                        case 38:                    /* switch 2 */
+                        case 39:                    /* switch 2 */
+                        case 40:                    /* switch 2 */
+                        case 41:                    /* switch 2 */
+                        case 42:                    /* switch 2 */
+                        case 43:                    /* switch 2 */
+                        case 44:                    /* switch 2 */
+                        case 45:                    /* switch 2 */
+                        case 46:                    /* switch 2 */
+                        case 47:                    /* switch 2 */
+                        case 48:                    /* switch 2 */
+                        case 49:                    /* switch 2 */
+                        case 50:                    /* switch 2 */
+                            var_s0 = (Mtx *) gDynamicBuffer1.top;
+                            gDynamicBuffer1.top = (u8 *) (var_s0 + 0x40);
+                            goto block_36;
+                        default:                    /* switch 2 */
+                            if ((s32) temp_v0_4 >= 0x43) {
+                                var_s0 = (Mtx *) gDynamicBuffer1.top;
+                                gDynamicBuffer1.top = (u8 *) (var_s0 + 0x40);
+                                goto block_36;
+                            }
+                            var_s0 = (Mtx *) sp78->m[0][0];
+                            goto block_91;
+                        }
+                    } else {
+                        if ((s32) gtlCurrentContextID > 0) {
+                            var_s0 = (Mtx *) gDynamicBuffer1.top;
+                            gDynamicBuffer1.top = (u8 *) (var_s0 + 0x40);
+                            goto block_36;
+                        }
+                        if (D_8003DCAB == dobj->gobj->lastDrawFrame) {
+                            temp_v0_5 = temp_s2->kind;
+                            switch (temp_v0_5) {    /* switch 3 */
+                            case 33:                /* switch 3 */
+                            case 34:                /* switch 3 */
+                            case 35:                /* switch 3 */
+                            case 36:                /* switch 3 */
+                            case 37:                /* switch 3 */
+                            case 38:                /* switch 3 */
+                            case 39:                /* switch 3 */
+                            case 40:                /* switch 3 */
+                            case 41:                /* switch 3 */
+                            case 42:                /* switch 3 */
+                            case 43:                /* switch 3 */
+                            case 44:                /* switch 3 */
+                            case 45:                /* switch 3 */
+                            case 46:                /* switch 3 */
+                            case 47:                /* switch 3 */
+                            case 48:                /* switch 3 */
+                            case 49:                /* switch 3 */
+                            case 50:                /* switch 3 */
+                                var_s0 = (Mtx *) gDynamicBuffer1.top;
+                                gDynamicBuffer1.top = (u8 *) (var_s0 + 0x40);
+                                goto block_36;
+                            default:                /* switch 3 */
+                                if ((s32) temp_v0_5 >= 0x43) {
+                                    var_s0 = (Mtx *) gDynamicBuffer1.top;
+                                    gDynamicBuffer1.top = (u8 *) (var_s0 + 0x40);
+                                    goto block_36;
+                                }
+                                if (temp_v1 == 3) {
+                                    var_s0 = (Mtx *) D_8004A404;
+                                    D_8004A404 = (Gfx *) (var_s0 + 0x40);
+                                    goto block_36;
+                                }
+                                goto block_91;
+                            }
+                        } else {
+block_36:
+                            temp_v0_6 = temp_s2->kind;
+                            var_a0_2 = 0;
+                            switch (temp_v0_6) {    /* switch 4 */
+                            case 0x1:               /* switch 4 */
+block_91:
+                                if ((temp_s2->unk05 == 1) && (&temp_s2->unk08 == var_s0)) {
+                                    if ((temp_s2->kind == 0x1C) && (dobj->scale.v.x != 1.0f)) {
+                                        temp_s2->kind = 0x42;
+                                    }
+                                    temp_s2->unk05 = 2;
+                                }
+                                goto block_108;
+                            case 0x2:               /* switch 4 */
+                                goto block_91;
+                            case 0x12:              /* switch 4 */
+                                HS64_Translate(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z);
+block_90:
+                                goto block_91;
+                            case 0x13:              /* switch 4 */
+                                HS64_MtxRotateDegrees(var_s0, dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x14:              /* switch 4 */
+                                HS64_MtxRotateTranslateDegrees(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z, dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x15:              /* switch 4 */
+                                HS64_MtxRotateRPYDegrees(var_s0, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x16:              /* switch 4 */
+                                HS64_MtxRotateRPYTranslateDegrees(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x17:              /* switch 4 */
+                                HS64_MtxRotate(var_s0, dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x18:              /* switch 4 */
+                                HS64_MtxRotateTranslate(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z, dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x19:              /* switch 4 */
+                                HS64_MtxTransformRTS(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z, dobj->angle.a, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
+                                renderObjectScale *= dobj->scale.v.x;
+                                goto block_91;
+                            case 0x1A:              /* switch 4 */
+                                HS64_MtxRotateRPY(var_s0, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x1B:              /* switch 4 */
+                                HS64_MtxRotateRPYTranslate(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x1C:              /* switch 4 */
+                                HS64_MtxRotateTransformSRT_RPY(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
+                                renderObjectScale *= dobj->scale.v.x;
+                                goto block_91;
+                            case 0x1D:              /* switch 4 */
+                                HS64_MtxRotatePYR(var_s0, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x1E:              /* switch 4 */
+                                HS64_MtxRotatePYRTranslate(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z);
+                                goto block_90;
+                            case 0x1F:              /* switch 4 */
+                                HS64_MtxTransformRTS_PYR(var_s0, dobj->pos.v.x, dobj->pos.v.y, dobj->pos.v.z, dobj->angle.v.x, dobj->angle.v.y, dobj->angle.v.z, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
+                                renderObjectScale *= dobj->scale.v.x;
+                                goto block_91;
+                            case 0x20:              /* switch 4 */
+                                HS64_MtxScale(var_s0, dobj->scale.v.x, dobj->scale.v.y, dobj->scale.v.z);
+                                renderObjectScale *= dobj->scale.v.x;
+                                goto block_91;
+                            case 0x21:              /* switch 4 */
+                                func_80010EF8(var_s0, dobj, 0);
+                                goto block_90;
+                            case 0x22:              /* switch 4 */
+                                func_80010EF8(var_s0, dobj, 1);
+                                goto block_90;
+                            case 0x23:              /* switch 4 */
+                                func_80010B58(var_s0, dobj, 0);
+                                goto block_90;
+                            case 0x24:              /* switch 4 */
+                                func_80010B58(var_s0, dobj, 1);
+                                goto block_90;
+                            case 0x25:              /* switch 4 */
+                                func_8001103C(var_s0, dobj, 0);
+                                goto block_90;
+                            case 0x26:              /* switch 4 */
+                                func_8001103C(var_s0, dobj, 1);
+                                goto block_90;
+                            case 0x27:              /* switch 4 */
+                                func_80010D28(var_s0, dobj, 0);
+                                goto block_90;
+                            case 0x28:              /* switch 4 */
+                                func_80010D28(var_s0, dobj, 1);
+                                goto block_90;
+                            case 0x38:              /* switch 4 */
+                                HS64_Translate(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC);
+                                goto block_90;
+                            case 0x39:              /* switch 4 */
+                                HS64_MtxRotate(var_s0, sp2BC->unk4, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10);
+                                goto block_90;
+                            case 0x3A:              /* switch 4 */
+                                HS64_MtxRotateRPY(var_s0, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10);
+                                goto block_90;
+                            case 0x3B:              /* switch 4 */
+                                HS64_MtxScale(var_s0, sp2B8->unk4, sp2B8->unk8, sp2B8->unkC);
+                                renderObjectScale *= sp2B8->unk4;
+                                goto block_91;
+                            case 0x3C:              /* switch 4 */
+                                HS64_MtxRotateTranslate(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC, sp2BC->unk4, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10);
+                                goto block_90;
+                            case 0x3D:              /* switch 4 */
+                                HS64_MtxTransformRTS(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC, sp2BC->unk4, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10, sp2B8->unk4, sp2B8->unk8, sp2B8->unkC);
+                                renderObjectScale *= sp2B8->unk4;
+                                goto block_91;
+                            case 0x3E:              /* switch 4 */
+                                HS64_MtxRotateRPYTranslate(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10);
+                                goto block_90;
+                            case 0x3F:              /* switch 4 */
+                                HS64_MtxRotateTransformSRT_RPY(var_s0, sp2C0->unk4, sp2C0->unk8, sp2C0->unkC, sp2BC->unk8, sp2BC->unkC, sp2BC->unk10, sp2B8->unk4, sp2B8->unk8, sp2B8->unkC);
+                                renderObjectScale *= sp2B8->unk4;
+                                goto block_91;
+                            case 0x29:              /* switch 4 */
+                                temp_t7 = sp2D4;
+                                sp2D4 = temp_t7 + 8;
+                                temp_t7->words.w1 = 0;
+                                temp_t7->words.w0 = 0xD5000001;
+                                temp_t2 = sp2D4;
+                                sp2D4 = temp_t2 + 8;
+                                temp_t2->words.w0 = 0xDB000008;
+                                temp_t2->words.w1 = (u32) renderProjectionMtx->m[0][0];
+                                temp_t6 = sp2D4;
+                                sp2D4 = temp_t6 + 8;
+                                temp_t6->words.w0 = 0xDB00000C;
+                                temp_t6->words.w1 = (u32) renderProjectionMtx->m[0][1];
+                                temp_t1 = sp2D4;
+                                sp2D4 = temp_t1 + 8;
+                                temp_t1->words.w0 = 0xDB000010;
+                                temp_t1->words.w1 = (u32) renderProjectionMtx->m[0][2];
+                                temp_t7_2 = sp2D4;
+                                sp2D4 = temp_t7_2 + 8;
+                                temp_t7_2->words.w0 = 0xDB000014;
+                                temp_t7_2->words.w1 = (u32) renderProjectionMtx->m[0][3];
+                                temp_t3 = sp2D4;
+                                sp2D4 = temp_t3 + 8;
+                                temp_t3->words.w0 = 0xDB000000;
+                                temp_t3->words.w1 = (u32) renderProjectionMtx->m[1][0];
+                                temp_t8 = sp2D4;
+                                sp2D4 = temp_t8 + 8;
+                                temp_t8->words.w0 = 0xDB000004;
+                                temp_t8->words.w1 = (u32) renderProjectionMtx->m[1][1];
+                                temp_t5 = sp2D4;
+                                sp2D4 = temp_t5 + 8;
+                                temp_t5->words.w0 = 0xDB000028;
+                                temp_t5->words.w1 = (u32) renderProjectionMtx->m[2][0];
+                                temp_t9 = sp2D4;
+                                sp2D4 = temp_t9 + 8;
+                                temp_t9->words.w0 = 0xDB00002C;
+                                temp_t9->words.w1 = (u32) renderProjectionMtx->m[2][1];
+                                temp_t4_2 = sp2D4;
+                                sp2D4 = temp_t4_2 + 8;
+                                temp_t4_2->words.w0 = 0xDB000030;
+                                temp_t4_2->words.w1 = (u32) renderProjectionMtx->m[2][2];
+                                temp_t2_2 = sp2D4;
+                                sp2D4 = temp_t2_2 + 8;
+                                temp_t2_2->words.w0 = 0xDB000034;
+                                temp_t2_2->words.w1 = (u32) renderProjectionMtx->m[2][3];
+                                temp_a0 = sp2D4;
+                                sp2D4 = temp_a0 + 8;
+                                temp_a0->words.w0 = 0xDB000020;
+                                temp_a0->words.w1 = (u32) renderProjectionMtx->m[3][0];
+                                temp_t1_2 = sp2D4;
+                                sp2D4 = temp_t1_2 + 8;
+                                temp_t1_2->words.w0 = 0xDB000024;
+                                temp_t1_2->words.w1 = (u32) renderProjectionMtx->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            case 0x2A:              /* switch 4 */
+                                temp_t8_2 = sp2D4;
+                                sp2D4 = temp_t8_2 + 8;
+                                temp_t8_2->words.w1 = 0;
+                                temp_t8_2->words.w0 = 0xD5000001;
+                                temp_t1_3 = sp2D4;
+                                sp2D4 = temp_t1_3 + 8;
+                                temp_t1_3->words.w0 = 0xDB000000;
+                                temp_t1_3->words.w1 = (u32) renderProjectionMtx->m[0][0];
+                                temp_t7_3 = sp2D4;
+                                sp2D4 = temp_t7_3 + 8;
+                                temp_t7_3->words.w0 = 0xDB000004;
+                                temp_t7_3->words.w1 = (u32) renderProjectionMtx->m[0][1];
+                                temp_t3_2 = sp2D4;
+                                sp2D4 = temp_t3_2 + 8;
+                                temp_t3_2->words.w0 = 0xDB000008;
+                                temp_t3_2->words.w1 = (u32) renderProjectionMtx->m[0][2];
+                                temp_t8_3 = sp2D4;
+                                sp2D4 = temp_t8_3 + 8;
+                                temp_t8_3->words.w0 = 0xDB00000C;
+                                temp_t8_3->words.w1 = (u32) renderProjectionMtx->m[0][3];
+                                temp_t5_2 = sp2D4;
+                                sp2D4 = temp_t5_2 + 8;
+                                temp_t5_2->words.w0 = 0xDB000010;
+                                temp_t5_2->words.w1 = (u32) renderProjectionMtx->m[1][0];
+                                temp_t9_2 = sp2D4;
+                                sp2D4 = temp_t9_2 + 8;
+                                temp_t9_2->words.w0 = 0xDB000014;
+                                temp_t9_2->words.w1 = (u32) renderProjectionMtx->m[1][1];
+                                temp_t4_3 = sp2D4;
+                                sp2D4 = temp_t4_3 + 8;
+                                temp_t4_3->words.w0 = 0xDB000020;
+                                temp_t4_3->words.w1 = (u32) renderProjectionMtx->m[2][0];
+                                temp_t2_3 = sp2D4;
+                                sp2D4 = temp_t2_3 + 8;
+                                temp_t2_3->words.w0 = 0xDB000024;
+                                temp_t2_3->words.w1 = (u32) renderProjectionMtx->m[2][1];
+                                temp_t6_2 = sp2D4;
+                                sp2D4 = temp_t6_2 + 8;
+                                temp_t6_2->words.w0 = 0xDB000028;
+                                temp_t6_2->words.w1 = (u32) renderProjectionMtx->m[2][2];
+                                temp_t1_4 = sp2D4;
+                                sp2D4 = temp_t1_4 + 8;
+                                temp_t1_4->words.w0 = 0xDB00002C;
+                                temp_t1_4->words.w1 = (u32) renderProjectionMtx->m[2][3];
+                                temp_a0_2 = sp2D4;
+                                sp2D4 = temp_a0_2 + 8;
+                                temp_a0_2->words.w0 = 0xDB000030;
+                                temp_a0_2->words.w1 = (u32) renderProjectionMtx->m[3][0];
+                                temp_t3_3 = sp2D4;
+                                sp2D4 = temp_t3_3 + 8;
+                                temp_t3_3->words.w0 = 0xDB000034;
+                                temp_t3_3->words.w1 = (u32) renderProjectionMtx->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            case 0x2B:              /* switch 4 */
+                                temp_f18 = dobj->scale.v.y * renderObjectScale;
+                                renderObjectScale *= dobj->scale.v.x;
+                                renderMVPMatrixF[0][1] = 0.0f;
+                                renderMVPMatrixF[0][2] = 0.0f;
+                                renderMVPMatrixF[0][3] = 0.0f;
+                                renderMVPMatrixF[1][0] = 0.0f;
+                                renderMVPMatrixF[1][2] = 0.0f;
+                                renderMVPMatrixF[1][1] = renderPerspectiveMtxF[1][1] * temp_f18;
+                                renderMVPMatrixF[1][3] = 0.0f;
+                                renderMVPMatrixF[0][0] = renderPerspectiveMtxF[0][0] * renderObjectScale;
+                                renderMVPMatrixF[2][0] = 0.0f;
+                                renderMVPMatrixF[2][1] = 0.0f;
+                                renderMVPMatrixF[2][2] = renderPerspectiveMtxF[2][2] * renderObjectScale;
+                                renderMVPMatrixF[2][3] = renderPerspectiveMtxF[2][3] * renderObjectScale;
+                                HS64_MtxF2L(renderMVPMatrixF, var_s0);
+                                temp_t9_3 = sp2D4;
+                                sp2D4 = temp_t9_3 + 8;
+                                temp_t9_3->words.w1 = 0;
+                                temp_t9_3->words.w0 = 0xD5000001;
+                                temp_t3_4 = sp2D4;
+                                sp2D4 = temp_t3_4 + 8;
+                                temp_t3_4->words.w0 = 0xDB000008;
+                                temp_t3_4->words.w1 = (u32) var_s0->m[0][0];
+                                temp_t7_4 = sp2D4;
+                                sp2D4 = temp_t7_4 + 8;
+                                temp_t7_4->words.w0 = 0xDB00000C;
+                                temp_t7_4->words.w1 = (u32) var_s0->m[0][1];
+                                temp_t1_5 = sp2D4;
+                                sp2D4 = temp_t1_5 + 8;
+                                temp_t1_5->words.w0 = 0xDB000010;
+                                temp_t1_5->words.w1 = (u32) var_s0->m[0][2];
+                                temp_t6_3 = sp2D4;
+                                sp2D4 = temp_t6_3 + 8;
+                                temp_t6_3->words.w0 = 0xDB000014;
+                                temp_t6_3->words.w1 = (u32) var_s0->m[0][3];
+                                temp_t2_4 = sp2D4;
+                                sp2D4 = temp_t2_4 + 8;
+                                temp_t2_4->words.w0 = 0xDB000000;
+                                temp_t2_4->words.w1 = (u32) var_s0->m[1][0];
+                                temp_t4_4 = sp2D4;
+                                sp2D4 = temp_t4_4 + 8;
+                                temp_t4_4->words.w0 = 0xDB000004;
+                                temp_t4_4->words.w1 = (u32) var_s0->m[1][1];
+                                temp_t9_4 = sp2D4;
+                                sp2D4 = temp_t9_4 + 8;
+                                temp_t9_4->words.w0 = 0xDB000028;
+                                temp_t9_4->words.w1 = (u32) var_s0->m[2][0];
+                                temp_t5_3 = sp2D4;
+                                sp2D4 = temp_t5_3 + 8;
+                                temp_t5_3->words.w0 = 0xDB00002C;
+                                temp_t5_3->words.w1 = (u32) var_s0->m[2][1];
+                                temp_t8_4 = sp2D4;
+                                sp2D4 = temp_t8_4 + 8;
+                                temp_t8_4->words.w0 = 0xDB000030;
+                                temp_t8_4->words.w1 = (u32) var_s0->m[2][2];
+                                temp_t3_5 = sp2D4;
+                                sp2D4 = temp_t3_5 + 8;
+                                temp_t3_5->words.w0 = 0xDB000034;
+                                temp_t3_5->words.w1 = (u32) var_s0->m[2][3];
+                                temp_a0_3 = sp2D4;
+                                sp2D4 = temp_a0_3 + 8;
+                                temp_a0_3->words.w0 = 0xDB000020;
+                                temp_a0_3->words.w1 = (u32) var_s0->m[3][0];
+                                temp_t1_6 = sp2D4;
+                                sp2D4 = temp_t1_6 + 8;
+                                temp_t1_6->words.w0 = 0xDB000024;
+                                temp_t1_6->words.w1 = (u32) var_s0->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            case 0x2C:              /* switch 4 */
+                                temp_f18_2 = dobj->scale.v.y * renderObjectScale;
+                                renderObjectScale *= dobj->scale.v.x;
+                                renderMVPMatrixF[0][1] = 0.0f;
+                                renderMVPMatrixF[0][2] = 0.0f;
+                                renderMVPMatrixF[0][3] = 0.0f;
+                                renderMVPMatrixF[1][0] = 0.0f;
+                                renderMVPMatrixF[1][2] = 0.0f;
+                                renderMVPMatrixF[1][1] = renderPerspectiveMtxF[1][1] * temp_f18_2;
+                                renderMVPMatrixF[1][3] = 0.0f;
+                                renderMVPMatrixF[0][0] = renderPerspectiveMtxF[0][0] * renderObjectScale;
+                                renderMVPMatrixF[2][0] = 0.0f;
+                                renderMVPMatrixF[2][1] = 0.0f;
+                                renderMVPMatrixF[2][2] = renderPerspectiveMtxF[2][2] * renderObjectScale;
+                                renderMVPMatrixF[2][3] = renderPerspectiveMtxF[2][3] * renderObjectScale;
+                                HS64_MtxF2L(renderMVPMatrixF, var_s0);
+                                temp_t7_5 = sp2D4;
+                                sp2D4 = temp_t7_5 + 8;
+                                temp_t7_5->words.w1 = 0;
+                                temp_t7_5->words.w0 = 0xD5000001;
+                                temp_t2_5 = sp2D4;
+                                sp2D4 = temp_t2_5 + 8;
+                                temp_t2_5->words.w0 = 0xDB000000;
+                                temp_t2_5->words.w1 = (u32) var_s0->m[0][0];
+                                temp_t4_5 = sp2D4;
+                                sp2D4 = temp_t4_5 + 8;
+                                temp_t4_5->words.w0 = 0xDB000004;
+                                temp_t4_5->words.w1 = (u32) var_s0->m[0][1];
+                                temp_t9_5 = sp2D4;
+                                sp2D4 = temp_t9_5 + 8;
+                                temp_t9_5->words.w0 = 0xDB000008;
+                                temp_t9_5->words.w1 = (u32) var_s0->m[0][2];
+                                temp_t5_4 = sp2D4;
+                                sp2D4 = temp_t5_4 + 8;
+                                temp_t5_4->words.w0 = 0xDB00000C;
+                                temp_t5_4->words.w1 = (u32) var_s0->m[0][3];
+                                temp_t8_5 = sp2D4;
+                                sp2D4 = temp_t8_5 + 8;
+                                temp_t8_5->words.w0 = 0xDB000010;
+                                temp_t8_5->words.w1 = (u32) var_s0->m[1][0];
+                                temp_t3_6 = sp2D4;
+                                sp2D4 = temp_t3_6 + 8;
+                                temp_t3_6->words.w0 = 0xDB000014;
+                                temp_t3_6->words.w1 = (u32) var_s0->m[1][1];
+                                temp_t7_6 = sp2D4;
+                                sp2D4 = temp_t7_6 + 8;
+                                temp_t7_6->words.w0 = 0xDB000020;
+                                temp_t7_6->words.w1 = (u32) var_s0->m[2][0];
+                                temp_t1_7 = sp2D4;
+                                sp2D4 = temp_t1_7 + 8;
+                                temp_t1_7->words.w0 = 0xDB000024;
+                                temp_t1_7->words.w1 = (u32) var_s0->m[2][1];
+                                temp_t6_4 = sp2D4;
+                                sp2D4 = temp_t6_4 + 8;
+                                temp_t6_4->words.w0 = 0xDB000028;
+                                temp_t6_4->words.w1 = (u32) var_s0->m[2][2];
+                                temp_t2_6 = sp2D4;
+                                sp2D4 = temp_t2_6 + 8;
+                                temp_t2_6->words.w0 = 0xDB00002C;
+                                temp_t2_6->words.w1 = (u32) var_s0->m[2][3];
+                                temp_a0_4 = sp2D4;
+                                sp2D4 = temp_a0_4 + 8;
+                                temp_a0_4->words.w0 = 0xDB000030;
+                                temp_a0_4->words.w1 = (u32) var_s0->m[3][0];
+                                temp_t9_6 = sp2D4;
+                                sp2D4 = temp_t9_6 + 8;
+                                temp_t9_6->words.w0 = 0xDB000034;
+                                temp_t9_6->words.w1 = (u32) var_s0->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            case 0x2D:              /* switch 4 */
+                                sp1CC = sinf(dobj->angle.v.x);
+                                temp_f0 = cosf(dobj->angle.v.x);
+                                temp_f12 = dobj->scale.v.y * renderObjectScale;
+                                renderMVPMatrixF[0][2] = 0.0f;
+                                renderMVPMatrixF[1][2] = 0.0f;
+                                renderMVPMatrixF[0][3] = 0.0f;
+                                renderMVPMatrixF[1][3] = 0.0f;
+                                renderObjectScale *= dobj->scale.v.x;
+                                renderMVPMatrixF[2][0] = 0.0f;
+                                renderMVPMatrixF[2][1] = 0.0f;
+                                temp_f14 = renderPerspectiveMtxF[0][0] * renderObjectScale;
+                                temp_f16 = renderPerspectiveMtxF[1][1] * temp_f12;
+                                renderMVPMatrixF[0][0] = temp_f14 * temp_f0;
+                                renderMVPMatrixF[1][0] = temp_f14 * -sp1CC;
+                                renderMVPMatrixF[0][1] = temp_f16 * sp1CC;
+                                renderMVPMatrixF[1][1] = temp_f16 * temp_f0;
+                                renderMVPMatrixF[2][2] = renderPerspectiveMtxF[2][2] * renderObjectScale;
+                                renderMVPMatrixF[2][3] = renderPerspectiveMtxF[2][3] * renderObjectScale;
+                                HS64_MtxF2L(renderMVPMatrixF, var_s0);
+                                temp_t4_6 = sp2D4;
+                                sp2D4 = temp_t4_6 + 8;
+                                temp_t4_6->words.w1 = 0;
+                                temp_t4_6->words.w0 = 0xD5000001;
+                                temp_t8_6 = sp2D4;
+                                sp2D4 = temp_t8_6 + 8;
+                                temp_t8_6->words.w0 = 0xDB000000;
+                                temp_t8_6->words.w1 = (u32) var_s0->m[0][0];
+                                temp_t3_7 = sp2D4;
+                                sp2D4 = temp_t3_7 + 8;
+                                temp_t3_7->words.w0 = 0xDB000004;
+                                temp_t3_7->words.w1 = (u32) var_s0->m[0][1];
+                                temp_t7_7 = sp2D4;
+                                sp2D4 = temp_t7_7 + 8;
+                                temp_t7_7->words.w0 = 0xDB000008;
+                                temp_t7_7->words.w1 = (u32) var_s0->m[0][2];
+                                temp_t1_8 = sp2D4;
+                                sp2D4 = temp_t1_8 + 8;
+                                temp_t1_8->words.w0 = 0xDB00000C;
+                                temp_t1_8->words.w1 = (u32) var_s0->m[0][3];
+                                temp_t6_5 = sp2D4;
+                                sp2D4 = temp_t6_5 + 8;
+                                temp_t6_5->words.w0 = 0xDB000010;
+                                temp_t6_5->words.w1 = (u32) var_s0->m[1][0];
+                                temp_t2_7 = sp2D4;
+                                sp2D4 = temp_t2_7 + 8;
+                                temp_t2_7->words.w0 = 0xDB000014;
+                                temp_t2_7->words.w1 = (u32) var_s0->m[1][1];
+                                temp_t4_7 = sp2D4;
+                                sp2D4 = temp_t4_7 + 8;
+                                temp_t4_7->words.w0 = 0xDB000020;
+                                temp_t4_7->words.w1 = (u32) var_s0->m[2][0];
+                                temp_t9_7 = sp2D4;
+                                sp2D4 = temp_t9_7 + 8;
+                                temp_t9_7->words.w0 = 0xDB000024;
+                                temp_t9_7->words.w1 = (u32) var_s0->m[2][1];
+                                temp_t5_5 = sp2D4;
+                                sp2D4 = temp_t5_5 + 8;
+                                temp_t5_5->words.w0 = 0xDB000028;
+                                temp_t5_5->words.w1 = (u32) var_s0->m[2][2];
+                                temp_t8_7 = sp2D4;
+                                sp2D4 = temp_t8_7 + 8;
+                                temp_t8_7->words.w0 = 0xDB00002C;
+                                temp_t8_7->words.w1 = (u32) var_s0->m[2][3];
+                                temp_a0_5 = sp2D4;
+                                sp2D4 = temp_a0_5 + 8;
+                                temp_a0_5->words.w0 = 0xDB000030;
+                                temp_a0_5->words.w1 = (u32) var_s0->m[3][0];
+                                temp_t7_8 = sp2D4;
+                                sp2D4 = temp_t7_8 + 8;
+                                temp_t7_8->words.w0 = 0xDB000034;
+                                temp_t7_8->words.w1 = (u32) var_s0->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            case 0x2E:              /* switch 4 */
+                                sp190 = sinf(dobj->angle.v.z);
+                                temp_f0_2 = cosf(dobj->angle.v.z);
+                                temp_f12_2 = dobj->scale.v.y * renderObjectScale;
+                                renderMVPMatrixF[0][2] = 0.0f;
+                                renderMVPMatrixF[1][2] = 0.0f;
+                                renderMVPMatrixF[0][3] = 0.0f;
+                                renderMVPMatrixF[1][3] = 0.0f;
+                                renderObjectScale *= dobj->scale.v.x;
+                                renderMVPMatrixF[2][0] = 0.0f;
+                                renderMVPMatrixF[2][1] = 0.0f;
+                                temp_f14_2 = renderPerspectiveMtxF[0][0] * renderObjectScale;
+                                temp_f16_2 = renderPerspectiveMtxF[1][1] * temp_f12_2;
+                                renderMVPMatrixF[0][0] = temp_f14_2 * temp_f0_2;
+                                renderMVPMatrixF[1][0] = temp_f14_2 * -sp190;
+                                renderMVPMatrixF[0][1] = temp_f16_2 * sp190;
+                                renderMVPMatrixF[1][1] = temp_f16_2 * temp_f0_2;
+                                renderMVPMatrixF[2][2] = renderPerspectiveMtxF[2][2] * renderObjectScale;
+                                renderMVPMatrixF[2][3] = renderPerspectiveMtxF[2][3] * renderObjectScale;
+                                HS64_MtxF2L(renderMVPMatrixF, var_s0);
+                                temp_t3_8 = sp2D4;
+                                sp2D4 = temp_t3_8 + 8;
+                                temp_t3_8->words.w1 = 0;
+                                temp_t3_8->words.w0 = 0xD5000001;
+                                temp_t6_6 = sp2D4;
+                                sp2D4 = temp_t6_6 + 8;
+                                temp_t6_6->words.w0 = 0xDB000000;
+                                temp_t6_6->words.w1 = (u32) var_s0->m[0][0];
+                                temp_t2_8 = sp2D4;
+                                sp2D4 = temp_t2_8 + 8;
+                                temp_t2_8->words.w0 = 0xDB000004;
+                                temp_t2_8->words.w1 = (u32) var_s0->m[0][1];
+                                temp_t4_8 = sp2D4;
+                                sp2D4 = temp_t4_8 + 8;
+                                temp_t4_8->words.w0 = 0xDB000008;
+                                temp_t4_8->words.w1 = (u32) var_s0->m[0][2];
+                                temp_t9_8 = sp2D4;
+                                sp2D4 = temp_t9_8 + 8;
+                                temp_t9_8->words.w0 = 0xDB00000C;
+                                temp_t9_8->words.w1 = (u32) var_s0->m[0][3];
+                                temp_t5_6 = sp2D4;
+                                sp2D4 = temp_t5_6 + 8;
+                                temp_t5_6->words.w0 = 0xDB000010;
+                                temp_t5_6->words.w1 = (u32) var_s0->m[1][0];
+                                temp_t8_8 = sp2D4;
+                                sp2D4 = temp_t8_8 + 8;
+                                temp_t8_8->words.w0 = 0xDB000014;
+                                temp_t8_8->words.w1 = (u32) var_s0->m[1][1];
+                                temp_t3_9 = sp2D4;
+                                sp2D4 = temp_t3_9 + 8;
+                                temp_t3_9->words.w0 = 0xDB000020;
+                                temp_t3_9->words.w1 = (u32) var_s0->m[2][0];
+                                temp_t7_9 = sp2D4;
+                                sp2D4 = temp_t7_9 + 8;
+                                temp_t7_9->words.w0 = 0xDB000024;
+                                temp_t7_9->words.w1 = (u32) var_s0->m[2][1];
+                                temp_t1_9 = sp2D4;
+                                sp2D4 = temp_t1_9 + 8;
+                                temp_t1_9->words.w0 = 0xDB000028;
+                                temp_t1_9->words.w1 = (u32) var_s0->m[2][2];
+                                temp_t6_7 = sp2D4;
+                                sp2D4 = temp_t6_7 + 8;
+                                temp_t6_7->words.w0 = 0xDB00002C;
+                                temp_t6_7->words.w1 = (u32) var_s0->m[2][3];
+                                temp_a0_6 = sp2D4;
+                                sp2D4 = temp_a0_6 + 8;
+                                temp_a0_6->words.w0 = 0xDB000030;
+                                temp_a0_6->words.w1 = (u32) var_s0->m[3][0];
+                                temp_t4_9 = sp2D4;
+                                sp2D4 = temp_t4_9 + 8;
+                                temp_t4_9->words.w0 = 0xDB000034;
+                                temp_t4_9->words.w1 = (u32) var_s0->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            case 0x2F:              /* switch 4 */
+                                temp_f12_3 = dobj->scale.v.y * renderObjectScale;
+                                renderObjectScale *= dobj->scale.v.x;
+                                renderMVPMatrixF[0][0] = D_8004AB18[0][0] * renderObjectScale;
+                                renderMVPMatrixF[0][1] = D_8004AB18[0][1] * renderObjectScale;
+                                renderMVPMatrixF[0][2] = D_8004AB18[0][2] * renderObjectScale;
+                                renderMVPMatrixF[0][3] = D_8004AB18[0][3] * renderObjectScale;
+                                renderMVPMatrixF[1][0] = D_8004AB18[1][0] * temp_f12_3;
+                                renderMVPMatrixF[1][1] = D_8004AB18[1][1] * temp_f12_3;
+                                renderMVPMatrixF[1][2] = D_8004AB18[1][2] * temp_f12_3;
+                                renderMVPMatrixF[1][3] = D_8004AB18[1][3] * temp_f12_3;
+                                renderMVPMatrixF[2][0] = D_8004AB18[2][0] * renderObjectScale;
+                                renderMVPMatrixF[2][1] = D_8004AB18[2][1] * renderObjectScale;
+                                renderMVPMatrixF[2][2] = D_8004AB18[2][2] * renderObjectScale;
+                                renderMVPMatrixF[2][3] = D_8004AB18[2][3] * renderObjectScale;
+                                HS64_MtxF2L(renderMVPMatrixF, var_s0);
+                                temp_t2_9 = sp2D4;
+                                sp2D4 = temp_t2_9 + 8;
+                                temp_t2_9->words.w1 = 0;
+                                temp_t2_9->words.w0 = 0xD5000001;
+                                temp_t5_7 = sp2D4;
+                                sp2D4 = temp_t5_7 + 8;
+                                temp_t5_7->words.w0 = 0xDB000008;
+                                temp_t5_7->words.w1 = (u32) var_s0->m[0][0];
+                                temp_t8_9 = sp2D4;
+                                sp2D4 = temp_t8_9 + 8;
+                                temp_t8_9->words.w0 = 0xDB00000C;
+                                temp_t8_9->words.w1 = (u32) var_s0->m[0][1];
+                                temp_t3_10 = sp2D4;
+                                sp2D4 = temp_t3_10 + 8;
+                                temp_t3_10->words.w0 = 0xDB000010;
+                                temp_t3_10->words.w1 = (u32) var_s0->m[0][2];
+                                temp_t7_10 = sp2D4;
+                                sp2D4 = temp_t7_10 + 8;
+                                temp_t7_10->words.w0 = 0xDB000014;
+                                temp_t7_10->words.w1 = (u32) var_s0->m[0][3];
+                                temp_t1_10 = sp2D4;
+                                sp2D4 = temp_t1_10 + 8;
+                                temp_t1_10->words.w0 = 0xDB000000;
+                                temp_t1_10->words.w1 = (u32) var_s0->m[1][0];
+                                temp_t6_8 = sp2D4;
+                                sp2D4 = temp_t6_8 + 8;
+                                temp_t6_8->words.w0 = 0xDB000004;
+                                temp_t6_8->words.w1 = (u32) var_s0->m[1][1];
+                                temp_t2_10 = sp2D4;
+                                sp2D4 = temp_t2_10 + 8;
+                                temp_t2_10->words.w0 = 0xDB000028;
+                                temp_t2_10->words.w1 = (u32) var_s0->m[2][0];
+                                temp_t4_10 = sp2D4;
+                                sp2D4 = temp_t4_10 + 8;
+                                temp_t4_10->words.w0 = 0xDB00002C;
+                                temp_t4_10->words.w1 = (u32) var_s0->m[2][1];
+                                temp_t9_9 = sp2D4;
+                                sp2D4 = temp_t9_9 + 8;
+                                temp_t9_9->words.w0 = 0xDB000030;
+                                temp_t9_9->words.w1 = (u32) var_s0->m[2][2];
+                                temp_t5_8 = sp2D4;
+                                sp2D4 = temp_t5_8 + 8;
+                                temp_t5_8->words.w0 = 0xDB000034;
+                                temp_t5_8->words.w1 = (u32) var_s0->m[2][3];
+                                temp_a0_7 = sp2D4;
+                                sp2D4 = temp_a0_7 + 8;
+                                temp_a0_7->words.w0 = 0xDB000020;
+                                temp_a0_7->words.w1 = (u32) var_s0->m[3][0];
+                                temp_t3_11 = sp2D4;
+                                sp2D4 = temp_t3_11 + 8;
+                                temp_t3_11->words.w0 = 0xDB000024;
+                                temp_t3_11->words.w1 = (u32) var_s0->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            case 0x30:              /* switch 4 */
+                                temp_f12_4 = dobj->scale.v.y * renderObjectScale;
+                                renderObjectScale *= dobj->scale.v.x;
+                                renderMVPMatrixF[0][0] = D_8004AB18[0][0] * renderObjectScale;
+                                renderMVPMatrixF[0][1] = D_8004AB18[0][1] * renderObjectScale;
+                                renderMVPMatrixF[0][2] = D_8004AB18[0][2] * renderObjectScale;
+                                renderMVPMatrixF[0][3] = D_8004AB18[0][3] * renderObjectScale;
+                                renderMVPMatrixF[1][0] = D_8004AB18[1][0] * temp_f12_4;
+                                renderMVPMatrixF[1][1] = D_8004AB18[1][1] * temp_f12_4;
+                                renderMVPMatrixF[1][2] = D_8004AB18[1][2] * temp_f12_4;
+                                renderMVPMatrixF[1][3] = D_8004AB18[1][3] * temp_f12_4;
+                                renderMVPMatrixF[2][0] = D_8004AB18[2][0] * renderObjectScale;
+                                renderMVPMatrixF[2][1] = D_8004AB18[2][1] * renderObjectScale;
+                                renderMVPMatrixF[2][2] = D_8004AB18[2][2] * renderObjectScale;
+                                renderMVPMatrixF[2][3] = D_8004AB18[2][3] * renderObjectScale;
+                                HS64_MtxF2L(renderMVPMatrixF, var_s0);
+                                temp_t8_10 = sp2D4;
+                                sp2D4 = temp_t8_10 + 8;
+                                temp_t8_10->words.w1 = 0;
+                                temp_t8_10->words.w0 = 0xD5000001;
+                                temp_t1_11 = sp2D4;
+                                sp2D4 = temp_t1_11 + 8;
+                                temp_t1_11->words.w0 = 0xDB000000;
+                                temp_t1_11->words.w1 = (u32) var_s0->m[0][0];
+                                temp_t6_9 = sp2D4;
+                                sp2D4 = temp_t6_9 + 8;
+                                temp_t6_9->words.w0 = 0xDB000004;
+                                temp_t6_9->words.w1 = (u32) var_s0->m[0][1];
+                                temp_t2_11 = sp2D4;
+                                sp2D4 = temp_t2_11 + 8;
+                                temp_t2_11->words.w0 = 0xDB000008;
+                                temp_t2_11->words.w1 = (u32) var_s0->m[0][2];
+                                temp_t4_11 = sp2D4;
+                                sp2D4 = temp_t4_11 + 8;
+                                temp_t4_11->words.w0 = 0xDB00000C;
+                                temp_t4_11->words.w1 = (u32) var_s0->m[0][3];
+                                temp_t9_10 = sp2D4;
+                                sp2D4 = temp_t9_10 + 8;
+                                temp_t9_10->words.w0 = 0xDB000010;
+                                temp_t9_10->words.w1 = (u32) var_s0->m[1][0];
+                                temp_t5_9 = sp2D4;
+                                sp2D4 = temp_t5_9 + 8;
+                                temp_t5_9->words.w0 = 0xDB000014;
+                                temp_t5_9->words.w1 = (u32) var_s0->m[1][1];
+                                temp_t8_11 = sp2D4;
+                                sp2D4 = temp_t8_11 + 8;
+                                temp_t8_11->words.w0 = 0xDB000020;
+                                temp_t8_11->words.w1 = (u32) var_s0->m[2][0];
+                                temp_t3_12 = sp2D4;
+                                sp2D4 = temp_t3_12 + 8;
+                                temp_t3_12->words.w0 = 0xDB000024;
+                                temp_t3_12->words.w1 = (u32) var_s0->m[2][1];
+                                temp_t7_11 = sp2D4;
+                                sp2D4 = temp_t7_11 + 8;
+                                temp_t7_11->words.w0 = 0xDB000028;
+                                temp_t7_11->words.w1 = (u32) var_s0->m[2][2];
+                                temp_t1_12 = sp2D4;
+                                sp2D4 = temp_t1_12 + 8;
+                                temp_t1_12->words.w0 = 0xDB00002C;
+                                temp_t1_12->words.w1 = (u32) var_s0->m[2][3];
+                                temp_a0_8 = sp2D4;
+                                sp2D4 = temp_a0_8 + 8;
+                                temp_a0_8->words.w0 = 0xDB000030;
+                                temp_a0_8->words.w1 = (u32) var_s0->m[3][0];
+                                temp_t2_12 = sp2D4;
+                                sp2D4 = temp_t2_12 + 8;
+                                temp_t2_12->words.w0 = 0xDB000034;
+                                temp_t2_12->words.w1 = (u32) var_s0->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            case 0x31:              /* switch 4 */
+                                temp_f12_5 = dobj->scale.v.y * renderObjectScale;
+                                renderObjectScale *= dobj->scale.v.x;
+                                renderMVPMatrixF[0][0] = D_8004AB58[0][0] * renderObjectScale;
+                                renderMVPMatrixF[0][1] = D_8004AB58[0][1] * renderObjectScale;
+                                renderMVPMatrixF[0][2] = D_8004AB58[0][2] * renderObjectScale;
+                                renderMVPMatrixF[0][3] = D_8004AB58[0][3] * renderObjectScale;
+                                renderMVPMatrixF[1][0] = D_8004AB58[1][0] * temp_f12_5;
+                                renderMVPMatrixF[1][1] = D_8004AB58[1][1] * temp_f12_5;
+                                renderMVPMatrixF[1][2] = D_8004AB58[1][2] * temp_f12_5;
+                                renderMVPMatrixF[1][3] = D_8004AB58[1][3] * temp_f12_5;
+                                renderMVPMatrixF[2][0] = D_8004AB58[2][0] * renderObjectScale;
+                                renderMVPMatrixF[2][1] = D_8004AB58[2][1] * renderObjectScale;
+                                renderMVPMatrixF[2][2] = D_8004AB58[2][2] * renderObjectScale;
+                                renderMVPMatrixF[2][3] = D_8004AB58[2][3] * renderObjectScale;
+                                HS64_MtxF2L(renderMVPMatrixF, var_s0);
+                                temp_t6_10 = sp2D4;
+                                sp2D4 = temp_t6_10 + 8;
+                                temp_t6_10->words.w1 = 0;
+                                temp_t6_10->words.w0 = 0xD5000001;
+                                temp_t9_11 = sp2D4;
+                                sp2D4 = temp_t9_11 + 8;
+                                temp_t9_11->words.w0 = 0xDB000008;
+                                temp_t9_11->words.w1 = (u32) var_s0->m[0][0];
+                                temp_t5_10 = sp2D4;
+                                sp2D4 = temp_t5_10 + 8;
+                                temp_t5_10->words.w0 = 0xDB00000C;
+                                temp_t5_10->words.w1 = (u32) var_s0->m[0][1];
+                                temp_t8_12 = sp2D4;
+                                sp2D4 = temp_t8_12 + 8;
+                                temp_t8_12->words.w0 = 0xDB000010;
+                                temp_t8_12->words.w1 = (u32) var_s0->m[0][2];
+                                temp_t3_13 = sp2D4;
+                                sp2D4 = temp_t3_13 + 8;
+                                temp_t3_13->words.w0 = 0xDB000014;
+                                temp_t3_13->words.w1 = (u32) var_s0->m[0][3];
+                                temp_t7_12 = sp2D4;
+                                sp2D4 = temp_t7_12 + 8;
+                                temp_t7_12->words.w0 = 0xDB000000;
+                                temp_t7_12->words.w1 = (u32) var_s0->m[1][0];
+                                temp_t1_13 = sp2D4;
+                                sp2D4 = temp_t1_13 + 8;
+                                temp_t1_13->words.w0 = 0xDB000004;
+                                temp_t1_13->words.w1 = (u32) var_s0->m[1][1];
+                                temp_t6_11 = sp2D4;
+                                sp2D4 = temp_t6_11 + 8;
+                                temp_t6_11->words.w0 = 0xDB000028;
+                                temp_t6_11->words.w1 = (u32) var_s0->m[2][0];
+                                temp_t2_13 = sp2D4;
+                                sp2D4 = temp_t2_13 + 8;
+                                temp_t2_13->words.w0 = 0xDB00002C;
+                                temp_t2_13->words.w1 = (u32) var_s0->m[2][1];
+                                temp_t4_12 = sp2D4;
+                                sp2D4 = temp_t4_12 + 8;
+                                temp_t4_12->words.w0 = 0xDB000030;
+                                temp_t4_12->words.w1 = (u32) var_s0->m[2][2];
+                                temp_t9_12 = sp2D4;
+                                sp2D4 = temp_t9_12 + 8;
+                                temp_t9_12->words.w0 = 0xDB000034;
+                                temp_t9_12->words.w1 = (u32) var_s0->m[2][3];
+                                temp_a0_9 = sp2D4;
+                                sp2D4 = temp_a0_9 + 8;
+                                temp_a0_9->words.w0 = 0xDB000020;
+                                temp_a0_9->words.w1 = (u32) var_s0->m[3][0];
+                                temp_t8_13 = sp2D4;
+                                sp2D4 = temp_t8_13 + 8;
+                                temp_t8_13->words.w0 = 0xDB000024;
+                                temp_t8_13->words.w1 = (u32) var_s0->m[3][1];
+                                var_t3 = dobj->numMatrices * 4;
+                                goto block_116;
+                            case 0x32:              /* switch 4 */
+                                temp_f12_6 = dobj->scale.v.y * renderObjectScale;
+                                renderObjectScale *= dobj->scale.v.x;
+                                renderMVPMatrixF[0][0] = D_8004AB58[0][0] * renderObjectScale;
+                                renderMVPMatrixF[0][1] = D_8004AB58[0][1] * renderObjectScale;
+                                renderMVPMatrixF[0][2] = D_8004AB58[0][2] * renderObjectScale;
+                                renderMVPMatrixF[0][3] = D_8004AB58[0][3] * renderObjectScale;
+                                renderMVPMatrixF[1][0] = D_8004AB58[1][0] * temp_f12_6;
+                                renderMVPMatrixF[1][1] = D_8004AB58[1][1] * temp_f12_6;
+                                renderMVPMatrixF[1][2] = D_8004AB58[1][2] * temp_f12_6;
+                                renderMVPMatrixF[1][3] = D_8004AB58[1][3] * temp_f12_6;
+                                renderMVPMatrixF[2][0] = D_8004AB58[2][0] * renderObjectScale;
+                                renderMVPMatrixF[2][1] = D_8004AB58[2][1] * renderObjectScale;
+                                renderMVPMatrixF[2][2] = D_8004AB58[2][2] * renderObjectScale;
+                                renderMVPMatrixF[2][3] = D_8004AB58[2][3] * renderObjectScale;
+                                HS64_MtxF2L(renderMVPMatrixF, var_s0);
+                                temp_t5_11 = sp2D4;
+                                sp2D4 = temp_t5_11 + 8;
+                                temp_t5_11->words.w1 = 0;
+                                temp_t5_11->words.w0 = 0xD5000001;
+                                temp_t7_13 = sp2D4;
+                                sp2D4 = temp_t7_13 + 8;
+                                temp_t7_13->words.w0 = 0xDB000000;
+                                temp_t7_13->words.w1 = (u32) var_s0->m[0][0];
+                                temp_t1_14 = sp2D4;
+                                sp2D4 = temp_t1_14 + 8;
+                                temp_t1_14->words.w0 = 0xDB000004;
+                                temp_t1_14->words.w1 = (u32) var_s0->m[0][1];
+                                temp_t6_12 = sp2D4;
+                                sp2D4 = temp_t6_12 + 8;
+                                temp_t6_12->words.w0 = 0xDB000008;
+                                temp_t6_12->words.w1 = (u32) var_s0->m[0][2];
+                                temp_t2_14 = sp2D4;
+                                sp2D4 = temp_t2_14 + 8;
+                                temp_t2_14->words.w0 = 0xDB00000C;
+                                temp_t2_14->words.w1 = (u32) var_s0->m[0][3];
+                                temp_t4_13 = sp2D4;
+                                sp2D4 = temp_t4_13 + 8;
+                                temp_t4_13->words.w0 = 0xDB000010;
+                                temp_t4_13->words.w1 = (u32) var_s0->m[1][0];
+                                temp_t9_13 = sp2D4;
+                                sp2D4 = temp_t9_13 + 8;
+                                temp_t9_13->words.w0 = 0xDB000014;
+                                temp_t9_13->words.w1 = (u32) var_s0->m[1][1];
+                                temp_t5_12 = sp2D4;
+                                sp2D4 = temp_t5_12 + 8;
+                                temp_t5_12->words.w0 = 0xDB000020;
+                                temp_t5_12->words.w1 = (u32) var_s0->m[2][0];
+                                temp_t8_14 = sp2D4;
+                                sp2D4 = temp_t8_14 + 8;
+                                temp_t8_14->words.w0 = 0xDB000024;
+                                temp_t8_14->words.w1 = (u32) var_s0->m[2][1];
+                                temp_t3_14 = sp2D4;
+                                sp2D4 = temp_t3_14 + 8;
+                                temp_t3_14->words.w0 = 0xDB000028;
+                                temp_t3_14->words.w1 = (u32) var_s0->m[2][2];
+                                temp_t7_14 = sp2D4;
+                                sp2D4 = temp_t7_14 + 8;
+                                temp_t7_14->words.w0 = 0xDB00002C;
+                                temp_t7_14->words.w1 = (u32) var_s0->m[2][3];
+                                temp_a0_10 = sp2D4;
+                                sp2D4 = temp_a0_10 + 8;
+                                temp_a0_10->words.w0 = 0xDB000030;
+                                temp_a0_10->words.w1 = (u32) var_s0->m[3][0];
+                                temp_t6_13 = sp2D4;
+                                sp2D4 = temp_t6_13 + 8;
+                                temp_t6_13->words.w0 = 0xDB000034;
+                                temp_t6_13->words.w1 = (u32) var_s0->m[3][1];
+                                var_a2 = (dobj->numMatrices * 4) + dobj;
+                                break;
+                            default:                /* switch 4 */
+                                if (((s32) temp_v0_6 >= 0x43) && (renderMatrixHandler != NULL)) {
+                                    if (D_8003DCAB != dobj->gobj->lastDrawFrame) {
+                                        var_a3 = renderMatrixHandler[temp_v0_6].unk-218;
+                                    } else {
+                                        var_a3 = renderMatrixHandler[temp_v0_6].unk-214;
+                                    }
+                                    var_a0_2 = var_a3(var_s0, dobj, &sp2D4, var_a3);
+                                }
+                                if (var_a0_2 == 1) {
+                                    var_a2 = (dobj->numMatrices * 4) + dobj;
+                                } else {
+                                    goto block_90;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    var_a0_3 = 0;
+                    if (temp_s2->kind == 0x42) {
+                        renderObjectScale *= dobj->scale.v.x;
+                    }
+                    if (((s32) temp_s2->kind >= 0x43) && (renderMatrixHandler != NULL)) {
+                        if (D_8003DCAB != dobj->gobj->lastDrawFrame) {
+                            var_a3_2 = renderMatrixHandler[(s32) temp_s2->kind].unk-218;
+                        } else {
+                            var_a3_2 = renderMatrixHandler[(s32) temp_s2->kind].unk-214;
+                        }
+                        var_a0_3 = var_a3_2(sp78, dobj, &sp2D4, var_a3_2);
+                    }
+                    if (var_a0_3 == 1) {
+                        var_t3 = dobj->numMatrices * 4;
+                    } else {
+block_108:
+                        if (temp_s2->kind != 2) {
+                            temp_t8_15 = sp2D4;
+                            if ((sp2CC == 0) && ((temp_t5_13 = sp2D4, (dobj->parent == (DObj *)1)) || (dobj->next != NULL))) {
+                                sp2D4 = temp_t5_13 + 8;
+                                temp_t5_13->words.w0 = 0xDA380000;
+                                temp_t5_13->words.w1 = (u32) var_s0;
+                            } else {
+                                sp2D4 = temp_t8_15 + 8;
+                                temp_t8_15->words.w0 = 0xDA380001;
+                                temp_t8_15->words.w1 = (u32) var_s0;
+                            }
+                            sp2CC += 1;
+                        }
+                        goto block_115;
+                    }
+                    goto block_116;
+                }
+            } else {
+block_115:
+                var_t3 = dobj->numMatrices * 4;
+block_116:
+                var_a2 = var_t3 + dobj;
+            }
+            temp_t4 = &sp74->gobj;
+            sp74 = temp_t4;
+        } while ((u32) temp_t4 < (u32) var_a2);
+    }
+    *gfxPtr = sp2D4;
+    return sp2CC;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/render/renderPrepareModelMatrix.s")
+#endif
 #endif
 
 void renderLoadTextures(DObj *dobj, Gfx **dl_head)

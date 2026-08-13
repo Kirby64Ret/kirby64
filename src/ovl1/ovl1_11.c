@@ -99,7 +99,150 @@ void func_800BB6B0(GObj *gobj) {
 }
 #else
 void func_800BB6B0(GObj *gobj);
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+s32 func_800AB0F4();                                /* extern */
+
+void func_800BB6B0(GObj *gobj) {
+    u32 **sp2C;
+    Gfx *temp_v0;
+    Gfx *temp_v0_10;
+    Gfx *temp_v0_11;
+    Gfx *temp_v0_12;
+    Gfx *temp_v0_13;
+    Gfx *temp_v0_14;
+    Gfx *temp_v0_15;
+    Gfx *temp_v0_16;
+    Gfx *temp_v0_17;
+    Gfx *temp_v0_18;
+    Gfx *temp_v0_19;
+    Gfx *temp_v0_20;
+    Gfx *temp_v0_2;
+    Gfx *temp_v0_3;
+    Gfx *temp_v0_4;
+    Gfx *temp_v0_6;
+    Gfx *temp_v0_7;
+    Gfx *temp_v0_8;
+    Gfx *temp_v0_9;
+    Gfx *var_v0;
+    s32 temp_v0_5;
+    u32 **temp_t1;
+
+    temp_v0 = gDisplayListHeads->unk0;
+    gDisplayListHeads->unk0 = temp_v0 + 8;
+    temp_v0->words.w0 = 0xE7000000;
+    temp_v0->words.w1 = 0;
+    temp_v0_2 = gDisplayListHeads->unk0;
+    gDisplayListHeads->unk0 = temp_v0_2 + 8;
+    temp_v0_2->words.w1 = 0;
+    temp_v0_2->words.w0 = 0xD9FFFFFE;
+    temp_v0_3 = gDisplayListHeads->unk0;
+    gDisplayListHeads->unk0 = temp_v0_3 + 8;
+    temp_t1 = &gSegment4StartArray[gobj->objId];
+    temp_v0_3->words.w0 = 0xDB060010;
+    temp_v0_3->words.w1 = (u32) *temp_t1;
+    temp_v0_4 = gDisplayListHeads->unk0;
+    gDisplayListHeads->unk0 = temp_v0_4 + 8;
+    temp_v0_4->words.w1 = 0x552048;
+    temp_v0_4->words.w0 = 0xE200001C;
+    sp2C = temp_t1;
+    temp_v0_5 = func_800AB0F4();
+    switch (temp_v0_5) {
+    case 19:
+    case 21:
+    case 23:
+    case 25:
+        renderDrawDObjFromGObj(gobj);
+        break;
+    case 27:
+    case 29:
+        func_8001585C(gobj);
+        break;
+    case 20:
+    case 22:
+    case 24:
+    case 26:
+        temp_v0_6 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_6 + 8;
+        temp_v0_6->words.w1 = 0;
+        temp_v0_6->words.w0 = 0xE7000000;
+        temp_v0_7 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_7 + 8;
+        temp_v0_7->words.w1 = 0;
+        temp_v0_7->words.w0 = 0xD9FFFFFE;
+        temp_v0_8 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_8 + 8;
+        temp_v0_8->words.w0 = 0xDB060010;
+        temp_v0_8->words.w1 = (u32) *temp_t1;
+        temp_v0_9 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_9 + 8;
+        temp_v0_9->words.w1 = 0x5041C8;
+        temp_v0_9->words.w0 = 0xE200001C;
+        renderDrawObject_TypeD(gobj);
+        temp_v0_10 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_10 + 8;
+        temp_v0_10->words.w1 = 0;
+        temp_v0_10->words.w0 = 0xE7000000;
+        temp_v0_11 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_11 + 8;
+        temp_v0_11->words.w1 = 1;
+        temp_v0_11->words.w0 = 0xD9FFFFFF;
+        var_v0 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = var_v0 + 8;
+        var_v0->words.w1 = 0x5049D8;
+block_6:
+        var_v0->words.w0 = 0xE200001C;
+        break;
+    case 28:
+    case 30:
+        temp_v0_12 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_12 + 8;
+        temp_v0_12->words.w1 = 0;
+        temp_v0_12->words.w0 = 0xE7000000;
+        temp_v0_13 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_13 + 8;
+        temp_v0_13->words.w1 = 0;
+        temp_v0_13->words.w0 = 0xD9FFFFFE;
+        temp_v0_14 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_14 + 8;
+        temp_v0_14->words.w0 = 0xDB060010;
+        temp_v0_14->words.w1 = (u32) *temp_t1;
+        temp_v0_15 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_15 + 8;
+        temp_v0_15->words.w1 = 0x5041C8;
+        temp_v0_15->words.w0 = 0xE200001C;
+        func_80015BCC(gobj);
+        temp_v0_16 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_16 + 8;
+        temp_v0_16->words.w1 = 0;
+        temp_v0_16->words.w0 = 0xE7000000;
+        temp_v0_17 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = temp_v0_17 + 8;
+        temp_v0_17->words.w1 = 1;
+        temp_v0_17->words.w0 = 0xD9FFFFFF;
+        var_v0 = gDisplayListHeads[1];
+        gDisplayListHeads[1] = var_v0 + 8;
+        var_v0->words.w1 = 0x5049D8;
+        goto block_6;
+    }
+    temp_v0_18 = gDisplayListHeads->unk0;
+    gDisplayListHeads->unk0 = temp_v0_18 + 8;
+    temp_v0_18->words.w1 = 0;
+    temp_v0_18->words.w0 = 0xE7000000;
+    temp_v0_19 = gDisplayListHeads->unk0;
+    gDisplayListHeads->unk0 = temp_v0_19 + 8;
+    temp_v0_19->words.w1 = 1;
+    temp_v0_19->words.w0 = 0xD9FFFFFF;
+    temp_v0_20 = gDisplayListHeads->unk0;
+    gDisplayListHeads->unk0 = temp_v0_20 + 8;
+    temp_v0_20->words.w1 = 0x552078;
+    temp_v0_20->words.w0 = 0xE200001C;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_11/func_800BB6B0.s")
+#endif
 #endif
 
 // 7/131 (6 real): ROM keeps the omMakeGObj result in $v0 and dobj in $v0; we get $s0/$v1.

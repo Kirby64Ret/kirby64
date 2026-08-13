@@ -204,7 +204,126 @@ void func_801D1678_ovl9(GObj *arg0) {
     func_8019F3B0_ovl7();
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+extern struct Sub800E1B50_Unk98 D_801CB5D8;
+
+void func_801D1718_ovl9(GObj *arg0) {
+    DObj *temp_v0;
+    GObj *temp_a1;
+    f32 temp_f0;
+    f32 temp_f0_2;
+    f32 temp_f2;
+    f32 var_f12;
+    f32 var_f14;
+    s32 var_v1;
+    s32 var_v1_2;
+    u32 temp_a0;
+    u32 temp_a0_2;
+    u32 temp_v1;
+    u32 temp_v1_2;
+    u8 temp_v0_2;
+    u8 temp_v0_3;
+
+    temp_a1 = omCurrentObj;
+    temp_v1 = temp_a1->objId;
+    var_v1 = temp_v1 * 4;
+    if (D_800E9AA0[temp_v1].as_u32 == 0) {
+        func_801D0FF4_ovl9(arg0, 1);
+        var_v1 = omCurrentObj->objId * 4;
+    }
+    *(D_800DEF90 + var_v1) = func_800B6A2C;
+    D_800DDFD0[temp_a1->objId] = 2;
+    D_800E1B50[temp_a1->objId]->unk8C = &D_801C7F84_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB5D8;
+    func_800B3520();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800E8920[omCurrentObj->objId] = 1;
+    arg0->data.dobj->firstChild->angle.v.z = 0.0f;
+    temp_v0 = arg0->data.dobj->firstChild;
+    temp_f0 = temp_v0->angle.v.z;
+    temp_v0->angle.v.y = temp_f0;
+    arg0->data.dobj->firstChild->angle.v.x = temp_f0;
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 1;
+    func_800A9EA4(0x10010);
+    temp_v1_2 = omCurrentObj->objId;
+    D_800E64D0[temp_v1_2] = D_800E6A10[temp_v1_2];
+    do {
+        ohSleep(1);
+        temp_a0 = omCurrentObj->objId;
+        temp_v0_2 = D_800E7880[temp_a0];
+        var_v1_2 = temp_a0 * 4;
+        if (temp_v0_2 != 0) {
+            var_v1_2 = temp_a0 * 4;
+            if (temp_v0_2 != 1) {
+                var_v1_2 = temp_a0 * 4;
+                if (temp_v0_2 != 2) {
+                    var_v1_2 = temp_a0 * 4;
+                } else {
+                    if (gEntitiesPosYArray[temp_a0] != gEntitiesNextPosYArray[temp_a0]) {
+                        gEntityFuncListIDArray[temp_a0] = 3;
+                        goto block_15;
+                    }
+                    if (D_800E9C60[temp_a0] <= 0) {
+                        gEntityFuncListIDArray[temp_a0] = 2;
+                        goto block_15;
+                    }
+                }
+            } else if (D_800E9C60[temp_a0] <= 0) {
+                gEntityFuncListIDArray[temp_a0] = 2;
+                goto block_15;
+            }
+        } else if (gEntitiesPosYArray[temp_a0] != gEntitiesNextPosYArray[temp_a0]) {
+            gEntityFuncListIDArray[temp_a0] = 3;
+block_15:
+            var_v1_2 = omCurrentObj->objId * 4;
+        }
+        if (*(D_800E98E0 + var_v1_2) <= 0) {
+            if (func_8019DA50_ovl7() < 0.0f) {
+                var_f12 = -func_8019DA50_ovl7();
+            } else {
+                var_f12 = func_8019DA50_ovl7();
+            }
+            temp_a0_2 = omCurrentObj->objId;
+            var_v1_2 = temp_a0_2 * 4;
+            temp_f0_2 = *gEntitiesNextPosYArray + 20.0f;
+            temp_f2 = gEntitiesNextPosYArray[temp_a0_2];
+            if (temp_f0_2 < temp_f2) {
+                var_f14 = -(temp_f0_2 - temp_f2);
+            } else {
+                var_f14 = temp_f0_2 - temp_f2;
+            }
+            temp_v0_3 = D_800E7880[temp_a0_2];
+            switch (temp_v0_3) {                    /* irregular */
+            case 0:
+                if ((var_f12 < 160.0f) && (var_f14 < 120.0f)) {
+                    if (gEntitiesPosYArray[temp_a0_2] == temp_f2) {
+                        gEntityFuncListIDArray[temp_a0_2] = 7;
+                        goto block_38;
+                    }
+                } else if (((var_f12 > 240.0f) || (var_f14 > 120.0f)) && (gEntitiesPosYArray[temp_a0_2] == temp_f2)) {
+                    gEntityFuncListIDArray[temp_a0_2] = 0;
+block_38:
+                    var_v1_2 = omCurrentObj->objId * 4;
+                }
+                break;
+            case 1:
+                if ((var_f12 < 160.0f) && (var_f14 < 120.0f) && (gEntitiesPosYArray[temp_a0_2] == temp_f2)) {
+                    gEntityFuncListIDArray[temp_a0_2] = 7;
+                    goto block_38;
+                }
+                break;
+            }
+        }
+    } while (*(gEntityFuncListIDArray + var_v1_2) == 1);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D1718_ovl9.s")
+#endif
 
 void func_801A0D74_ovl7();
 void func_80199688_ovl7(struct GObj *);
@@ -805,7 +924,145 @@ void func_801D3E7C_ovl9(GObj *arg0) {
     func_801D4C50_ovl9();
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801D3EA4_ovl9(s32 arg0) {
+    GObj *temp_v1;
+    f32 temp_f0;
+    f32 temp_f0_2;
+    f32 var_f2;
+    f32 var_f2_2;
+    f32 var_f2_3;
+    f32 var_f2_4;
+    f32 var_f2_5;
+    f32 var_f2_6;
+    u32 temp_a1;
+    u32 temp_a1_2;
+    u32 temp_v0;
+    u32 temp_v0_10;
+    u32 temp_v0_11;
+    u32 temp_v0_12;
+    u32 temp_v0_13;
+    u32 temp_v0_14;
+    u32 temp_v0_15;
+    u32 temp_v0_16;
+    u32 temp_v0_2;
+    u32 temp_v0_3;
+    u32 temp_v0_4;
+    u32 temp_v0_5;
+    u32 temp_v0_6;
+    u32 temp_v0_7;
+    u32 temp_v0_8;
+    u32 temp_v0_9;
+    u8 temp_a0;
+    u8 temp_a0_2;
+
+    func_801A3280_ovl7();
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    func_800A9EA4(0x1001F);
+    temp_v1 = omCurrentObj;
+loop_1:
+    temp_a1 = temp_v1->objId;
+    temp_a0 = D_800E7880[temp_a1];
+    switch (temp_a0) {                              /* switch 1; irregular */
+    case 1:                                         /* switch 1 */
+        D_800E64D0[temp_a1] = D_800EADE0[temp_a1];
+        temp_v0 = temp_v1->objId;
+        D_800E6690[temp_v0] = D_800EAFA0[temp_v0];
+        temp_v0_2 = temp_v1->objId;
+        temp_f0 = D_800EADE0[temp_v0_2];
+        if (temp_f0 < 0.0f) {
+            var_f2 = -temp_f0;
+        } else {
+            var_f2 = temp_f0;
+        }
+        if (var_f2 < 0.0f) {
+            if (temp_f0 < 0.0f) {
+                var_f2_2 = -temp_f0;
+            } else {
+                var_f2_2 = temp_f0;
+            }
+            D_800E6850[temp_v0_2] = -var_f2_2;
+        } else {
+            if (temp_f0 < 0.0f) {
+                var_f2_3 = -temp_f0;
+            } else {
+                var_f2_3 = temp_f0;
+            }
+            D_800E6850[temp_v0_2] = var_f2_3;
+        }
+        break;
+    case 2:                                         /* switch 1 */
+        D_800E3210[temp_a1] = D_800EADE0[temp_a1];
+        temp_v0_3 = temp_v1->objId;
+        D_800E3750[temp_v0_3] = D_800EAFA0[temp_v0_3];
+        temp_v0_4 = temp_v1->objId;
+        temp_f0_2 = D_800EADE0[temp_v0_4];
+        if (temp_f0_2 < 0.0f) {
+            var_f2_4 = -temp_f0_2;
+        } else {
+            var_f2_4 = temp_f0_2;
+        }
+        if (var_f2_4 < 0.0f) {
+            if (temp_f0_2 < 0.0f) {
+                var_f2_5 = -temp_f0_2;
+            } else {
+                var_f2_5 = temp_f0_2;
+            }
+            D_800E3C90[temp_v0_4] = -var_f2_5;
+        } else {
+            if (temp_f0_2 < 0.0f) {
+                var_f2_6 = -temp_f0_2;
+            } else {
+                var_f2_6 = temp_f0_2;
+            }
+            D_800E3C90[temp_v0_4] = var_f2_6;
+        }
+        break;
+    }
+    ohSleep(0x3B);
+    temp_v0_5 = omCurrentObj->objId;
+    D_800E5F90[temp_v0_5] = D_800E98E0[temp_v0_5];
+    temp_v0_6 = omCurrentObj->objId;
+    D_800E6BD0[temp_v0_6] = D_800EA6E0[temp_v0_6];
+    temp_v0_7 = omCurrentObj->objId;
+    gEntitiesNextPosXArray[temp_v0_7] = D_800EA8A0[temp_v0_7];
+    temp_v0_8 = omCurrentObj->objId;
+    gEntitiesNextPosYArray[temp_v0_8] = D_800EAA60[temp_v0_8];
+    temp_v0_9 = omCurrentObj->objId;
+    gEntitiesNextPosZArray[temp_v0_9] = D_800EAC20[temp_v0_9];
+    temp_a1_2 = omCurrentObj->objId;
+    temp_a0_2 = D_800E7880[temp_a1_2];
+    switch (temp_a0_2) {                            /* switch 2; irregular */
+    case 1:                                         /* switch 2 */
+        D_800E64D0[temp_a1_2] = -D_800EADE0[temp_a1_2];
+        temp_v0_10 = omCurrentObj->objId;
+        D_800E6690[temp_v0_10] = -D_800EAFA0[temp_v0_10];
+        break;
+    case 2:                                         /* switch 2 */
+        D_800E3210[temp_a1_2] = -D_800EADE0[temp_a1_2];
+        temp_v0_11 = omCurrentObj->objId;
+        D_800E3750[temp_v0_11] = -D_800EAFA0[temp_v0_11];
+        break;
+    }
+    ohSleep(0x3B);
+    temp_v0_12 = omCurrentObj->objId;
+    D_800E5F90[temp_v0_12] = D_800E98E0[temp_v0_12];
+    temp_v0_13 = omCurrentObj->objId;
+    D_800E6BD0[temp_v0_13] = D_800EA6E0[temp_v0_13];
+    temp_v0_14 = omCurrentObj->objId;
+    gEntitiesNextPosXArray[temp_v0_14] = D_800EA8A0[temp_v0_14];
+    temp_v0_15 = omCurrentObj->objId;
+    gEntitiesNextPosYArray[temp_v0_15] = D_800EAA60[temp_v0_15];
+    temp_v0_16 = omCurrentObj->objId;
+    gEntitiesNextPosZArray[temp_v0_16] = D_800EAC20[temp_v0_16];
+    goto loop_1;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D3EA4_ovl9.s")
+#endif
 
 extern struct Sub800E1B50_Unk98 D_801CB68C;
 void func_800A9EA4(s32);
@@ -868,7 +1125,105 @@ void func_801D4594_ovl9(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D4594_ovl9.s")
 #endif
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_801D47D4_ovl9(s32 arg0) {
+    GObj *temp_s1;
+    f32 *temp_v0_2;
+    f32 *temp_v0_3;
+    f32 *temp_v0_4;
+    f32 *var_v0;
+    f32 temp_f0;
+    f32 temp_f24;
+    f32 temp_f26;
+    f32 temp_f28;
+    f32 temp_f30;
+    f32 var_f12;
+    s32 var_s0;
+    u32 temp_s0;
+    u32 temp_s0_2;
+    u32 temp_s0_3;
+    u32 temp_s0_4;
+    u32 temp_s0_5;
+    u32 temp_s0_6;
+    u32 temp_s0_7;
+    u32 temp_s0_8;
+    u32 temp_s0_9;
+    u32 temp_v0;
+    u8 temp_v1;
+
+    func_801A3280_ovl7();
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    func_800A9EA4(0x1001F);
+    temp_s1 = omCurrentObj;
+    D_800EAFA0[temp_s1->objId] = 0.0f;
+loop_1:
+    temp_s0 = omCurrentObj->objId;
+    temp_f30 = D_800EAFA0[temp_s0] * D_800EB160[temp_s0] * sinf(D_800EB320[temp_s1->objId]);
+    temp_v0 = omCurrentObj->objId;
+    var_s0 = temp_v0 * 4;
+    temp_v1 = D_800E7880[temp_v0];
+    temp_v0_2 = &D_800EB320[temp_v0];
+    temp_f28 = D_800EAFA0[temp_v0] * D_800EB160[temp_v0] * cosf(D_800EB320[temp_s0]);
+    if (temp_v1 != 5) {
+        temp_v0_3 = &D_800EB320[temp_v0];
+        if (temp_v1 != 6) {
+
+        } else {
+            *temp_v0_3 -= 0.05235988f;
+            goto block_6;
+        }
+    } else {
+        *temp_v0_2 += 0.05235988f;
+block_6:
+        var_s0 = omCurrentObj->objId * 4;
+    }
+    var_v0 = D_800EB320 + var_s0;
+    var_f12 = *var_v0;
+    if (var_f12 >= 6.2831855f) {
+        do {
+            *var_v0 = var_f12 - 6.2831855f;
+            var_v0 = &D_800EB320[omCurrentObj->objId];
+            var_f12 = *var_v0;
+        } while (var_f12 >= 6.2831855f);
+    }
+    if (var_f12 < 0.0f) {
+        do {
+            *var_v0 = var_f12 + 6.2831855f;
+            var_v0 = &D_800EB320[omCurrentObj->objId];
+            var_f12 = *var_v0;
+        } while (var_f12 < 0.0f);
+    }
+    temp_s0_2 = omCurrentObj->objId;
+    temp_f24 = D_800EAFA0[temp_s0_2] * D_800EB160[temp_s0_2] * sinf(var_f12);
+    temp_f0 = cosf(D_800EB320[temp_s0_2]);
+    temp_s0_3 = omCurrentObj->objId;
+    D_800E5F90[temp_s0_3] = D_800E98E0[temp_s0_3];
+    temp_s0_4 = omCurrentObj->objId;
+    D_800E6BD0[temp_s0_4] = D_800EA6E0[temp_s0_4];
+    temp_s0_5 = omCurrentObj->objId;
+    temp_f26 = D_800EAFA0[temp_s0_3] * D_800EB160[temp_s0_3] * temp_f0;
+    gEntitiesNextPosYArray[temp_s0_5] = D_800EAA60[temp_s0_5];
+    temp_s0_6 = omCurrentObj->objId;
+    func_800F9974(&D_800E5F90[temp_s0_6], &D_800E6BD0[temp_s0_6], temp_f30);
+    temp_v0_4 = &gEntitiesNextPosYArray[omCurrentObj->objId];
+    *temp_v0_4 += temp_f28;
+    temp_s0_7 = omCurrentObj->objId;
+    D_800E6150[temp_s0_7] = D_800E5F90[temp_s0_7];
+    temp_s0_8 = omCurrentObj->objId;
+    D_800E6D90[temp_s0_8] = D_800E6BD0[temp_s0_8];
+    temp_s0_9 = omCurrentObj->objId;
+    gEntitiesPosYArray[temp_s0_9] = gEntitiesNextPosYArray[temp_s0_9];
+    D_800E64D0[omCurrentObj->objId] = temp_f24 - temp_f30;
+    D_800E3210[omCurrentObj->objId] = temp_f26 - temp_f28;
+    ohSleep(1);
+    goto loop_1;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D47D4_ovl9.s")
+#endif
 
 /* D_8021CEA0_ovl9: literal, this TU owns its .rodata */
 void func_8019F3F0_ovl7(void);

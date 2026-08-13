@@ -1110,7 +1110,101 @@ u16 func_801769D8_ovl5(s32 arg0) {
     }
 }
 
+typedef union Unk12Colors {
+    u16 unk0[6];
+} Unk12Colors;
+
+typedef union Unk12Defs {
+    struct UnkStruct8015C740 *unk0[3];
+} Unk12Defs;
+
+extern Unk12Colors D_801873C8_ovl5;
+extern Unk12Colors D_801873D4_ovl5;
+extern Unk12Colors D_801873E0_ovl5;
+extern Unk12Colors D_801873EC_ovl5;
+extern Unk12Colors D_801873F8_ovl5;
+extern Unk12Defs D_80187404_ovl5;
+extern u8 D_80187B8C_ovl5[];
+extern u8 D_80187BAC_ovl5[];
+extern u8 D_80187798_ovl5[];
+extern f32 D_80187BCC_ovl5[2];
+extern s32 D_8018ECA0_ovl5;
+void func_800ACB7C(SPObj *);
+void func_8015C804_ovl5(SPObj *, f32, f32);
+void func_80176EC8_ovl5(u8 *, u16 *);
+
+#ifdef NON_MATCHING
+/* Left un-guarded when the container killed this lane mid-stint. */
+void func_80176A80_ovl5(GObj *arg0) {
+    s32 pad0;
+    s32 pad1;
+    Unk12Colors spA4 = D_801873C8_ovl5;
+    Unk12Colors sp98 = D_801873D4_ovl5;
+    Unk12Colors sp8C = D_801873E0_ovl5;
+    Unk12Colors sp80 = D_801873EC_ovl5;
+    Unk12Colors sp74 = D_801873F8_ovl5;
+    Unk12Defs sp68 = D_80187404_ovl5;
+    struct UnkStruct8015C740 **p;
+    SPObj *spobj;
+    f32 scale;
+    f32 step;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
+    func_8015C740_ovl5(arg0, D_80187B8C_ovl5);
+    func_8015C740_ovl5(arg0, D_80187BAC_ovl5);
+    func_8017685C_ovl5(arg0, func_801769D8_ovl5(0x1D), D_80187BCC_ovl5[0], D_80187BCC_ovl5[1]);
+    ohSleep(0xF);
+    for (p = &sp68.unk0[2]; p >= &sp68.unk0[0]; p--) {
+        spobj = (SPObj *) func_8015C740_ovl5(arg0, *p);
+        scale = 1.0f;
+        play_sound(0x111);
+        while (scale < 1.5f) {
+            spobj->yScale = scale;
+            spobj->xScale = scale;
+            func_8015C804_ovl5(spobj, (*p)->xOffset + (spobj->width / 2), (*p)->yOffset + (spobj->height / 2));
+            ohSleep(1);
+            scale += 0.25f;
+        }
+        if (1.0f < scale) {
+            step = (spobj->xScale - 1.0f) * 0.5f;
+            do {
+                spobj->yScale = scale;
+                spobj->xScale = scale;
+                func_8015C804_ovl5(spobj, (*p)->xOffset + (spobj->width / 2), (*p)->yOffset + (spobj->height / 2));
+                ohSleep(1);
+                scale -= step;
+            } while (1.0f < scale);
+        }
+        spobj->yScale = 1.0f;
+        spobj->xScale = 1.0f;
+        spobj->xOffset = (*p)->xOffset;
+        spobj->yOffset = (*p)->yOffset;
+        ohSleep(0x10);
+        spobj->renderFlags |= 8;
+        ohSleep(0xA);
+        spobj->renderFlags &= ~8;
+        func_800ACB7C(spobj);
+    }
+    spobj = (SPObj *) func_8015C740_ovl5(arg0, D_80187798_ovl5);
+    play_sound(0xB9);
+    func_8016FD54_ovl5();
+    D_8018ECA0_ovl5 = 0;
+    func_80176EC8_ovl5((u8 *) spobj, spA4.unk0);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) spobj, sp98.unk0);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) spobj, sp8C.unk0);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) spobj, sp80.unk0);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) spobj, sp74.unk0);
+    func_800ACBDC(arg0);
+    func_800B1900(omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176A80_ovl5.s")
+#endif
 
 void func_80176EC8_ovl5(u8 *arg0, u16 *arg1) {
     arg0[0x14] = arg1[0];

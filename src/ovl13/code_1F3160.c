@@ -955,4 +955,88 @@ void func_801E3958_ovl13(GObj *arg0) {
     }
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+s32 func_801E3A84_ovl13(s32 arg0, s32 arg1, s32 arg2) {
+    struct Ovl13AnimInfo sp38;
+    UnkStruct800E1B50 *sp30;
+    s32 *sp28;
+    UnkStruct800E1B50 *temp_t0;
+    s32 *var_t2;
+    s32 temp_a0;
+    s32 var_a3;
+    struct Ovl13AnimObj *temp_v0;
+    u32 temp_a3;
+    u32 temp_a3_2;
+    u32 var_v1;
+
+    var_v1 = omCurrentObj->objId;
+    temp_t0 = D_800E1B50[var_v1];
+    var_t2 = NULL;
+    if (temp_t0->unk88 == NULL) {
+        return 0;
+    }
+    temp_a0 = D_800EBDA0[var_v1];
+    if ((temp_a0 != -1) && (var_v1 == D_800E0D50[temp_a0]) && (D_800DD710[temp_a0] != -1U) && (D_800E98E0[temp_a0] != 0)) {
+        var_t2 = temp_t0->unk8C;
+        temp_t0->unk8C = &D_801D9384;
+        var_v1 = omCurrentObj->objId;
+    }
+    sp30 = temp_t0;
+    sp28 = var_t2;
+    func_80111550((s32) var_v1);
+    temp_v0 = func_80111C88(temp_t0->unk8C, (s32) omCurrentObj->objId);
+    if (temp_v0 != NULL) {
+        if (arg0 != 0) {
+            temp_v0->unk24->unk8 = arg0;
+        }
+        if (arg1 != 0) {
+            temp_v0->unk24->unk30 = arg1;
+        }
+        if (arg2 != 0) {
+            temp_v0->unk24->unk58 = arg2;
+        }
+        sp30 = temp_t0;
+        func_80111ECC(temp_v0);
+    }
+    sp30 = temp_t0;
+    if (func_80110150(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = (s32) sp38.unk2;
+        sp30->unk43 = sp38.unk3;
+    } else if (func_80110B00(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = (s32) sp38.unk2;
+        sp30->unk43 = sp38.unk3;
+    } else if (func_80110FD4(&sp38) != 0) {
+        if (sp38.unk2 == 0xA) {
+            D_800E83E0[omCurrentObj->objId] = 0;
+            goto block_24;
+        }
+        D_800E83E0[omCurrentObj->objId] = (s32) sp38.unk2;
+        sp30->unk43 = sp38.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+block_24:
+        sp30->unk43 = 0;
+    }
+    temp_a3 = omCurrentObj->objId;
+    var_a3 = temp_a3 * 4;
+    if (D_800E83E0[temp_a3] == 2) {
+        D_800EBDA0[omCurrentObj->objId] = func_8019E0E8_ovl7(2U, 2U);
+        temp_a3_2 = omCurrentObj->objId;
+        var_a3 = temp_a3_2 * 4;
+        if ((D_800EBDA0[temp_a3_2] != -1) && (D_800D6E5C != 0.0f)) {
+            func_800BC11C(D_800E7B20[temp_a3_2]);
+            var_a3 = omCurrentObj->objId * 4;
+        }
+    }
+    if (sp28 != NULL) {
+        (*(D_800E1B50 + var_a3))->unk8C = sp28;
+        var_a3 = omCurrentObj->objId * 4;
+    }
+    return *(D_800E83E0 + var_a3);
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801E3A84_ovl13.s")
+#endif

@@ -412,4 +412,39 @@ void func_801E0A74_ovl17(void) {
     D_800E8E60[temp_v0] = 1;
 }
 
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+s32 func_801E0B38_ovl17(s32 arg0, s32 arg1) {
+    s32 sp1C;
+    s32 temp_v0;
+
+    temp_v0 = request_track_general(0x1A, 0x1E, 0x3C);
+    if (temp_v0 == -1) {
+        utilPrintf("Akuma Joint Request Error!\n", temp_v0);
+        return 0;
+    }
+    if (temp_v0 >= 0x3C) {
+        sp1C = temp_v0;
+        utilPrintf("Akuma Joint Track Over!\n", temp_v0);
+        func_800B1900(temp_v0 & 0xFFFF);
+        return 0;
+    }
+    gEntityFuncListIDArray[temp_v0] = arg0;
+    D_800E76C0[temp_v0] = 0xFF;
+    D_800E7730[temp_v0] = 4;
+    D_800E77A0[temp_v0] = arg0 & 0xFF;
+    D_800E7880[temp_v0] = (u8) arg1;
+    gEntitiesNextPosXArray[temp_v0] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesPosXArray[temp_v0] = gEntitiesPosXArray[omCurrentObj->objId];
+    gEntitiesNextPosYArray[temp_v0] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesPosYArray[temp_v0] = gEntitiesPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[temp_v0] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    gEntitiesPosZArray[temp_v0] = gEntitiesPosZArray[omCurrentObj->objId];
+    D_800E8E60[temp_v0] = 1;
+    return temp_v0;
+}
+/* Warning: struct AnimCmd is not defined (only forward-declared) */
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801E0B38_ovl17.s")
+#endif

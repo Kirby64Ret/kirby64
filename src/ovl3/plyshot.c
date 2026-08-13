@@ -123,7 +123,80 @@ void func_8015B060_ovl3(s32 arg0) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015B75C_ovl3.s")
 
+#ifdef NON_MATCHING
+/* FACTORY: 117/266, whole-function temp-register rotation.
+   Instruction count, every opcode, every immediate, every branch target and
+   the whole schedule are exact from insn 0. The frame (0x38) and both stack
+   locals (sp30/sp34) are exact. From insn [21] onward the $t0-$t9 rotation is
+   offset by one slot -- the ROM keeps $t0 out of the address-computation pool
+   (it holds objId-4 there) and holds objId in $a3 across [40]-[59] where IDO
+   uses $v0. No structural defect remains; this is pure allocation. Ideal
+   permuter seed.
+   Swept: (1) named local for the reused objId-4 table index (lever 11) --
+   costs a stack slot, frame goes 0x38->0x40, rotation unchanged (123/266).
+   Decoded against the matched family exemplar func_8015ADF8_ovl3 in this TU;
+   note the ROM has NO `f32 temp` local here -- a declared f32 local takes a
+   frame slot and pushes the frame to 0x40, so the three 0.2f scale stores are
+   written as literals. */
+void func_8015BBE4_ovl3(s32 arg0) {
+    extern f32 **D_80192B94_ovl3;
+    extern void func_800B4954(s32);
+    extern void func_8015C00C_ovl3(s32);
+    extern void func_800A77E8(s32, s32 *, s32 *);
+    extern s32 func_800A8234(s32, s32, s32);
+    void curObjSleepForever(void);
+    s32 sp34;
+    s32 sp30;
+
+    func_80161CE0_ovl3(arg0);
+    func_80161EC0_ovl3(0, 0.0f, 20.0f);
+    D_800E0650[omCurrentObj->objId] = 1;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800DF150[omCurrentObj->objId] = func_8015C00C_ovl3;
+    D_800E0490[omCurrentObj->objId] = &D_80192B94_ovl3;
+    func_80154648_ovl3(D_800E0D50[omCurrentObj->objId], D_80197F60_ovl3[omCurrentObj->objId - 4],
+                       D_801982F8_ovl3[omCurrentObj->objId - 4]);
+    D_800E8920[omCurrentObj->objId] = D_800E8920[D_800E0D50[omCurrentObj->objId]];
+    D_800E8AE0[omCurrentObj->objId] = D_800E8AE0[D_800E0D50[omCurrentObj->objId]];
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x2002E, 0x21, 0x10);
+    func_800AA018(0x2027E);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9560[omCurrentObj->objId] = 0xA;
+    if (D_800E8AE0[omCurrentObj->objId] & 4) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 6.0f;
+        D_800E6850[omCurrentObj->objId] = 6.0f;
+    } else {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 10.0f;
+        D_800E6850[omCurrentObj->objId] = 10.0f;
+    }
+    D_800EA360[omCurrentObj->objId] = (s32) &sp30;
+    if (D_800E8920[omCurrentObj->objId] != 0) {
+        func_800A77E8(0x22D, &sp30, &sp34);
+        D_800EA520[omCurrentObj->objId] = func_800A8234(2, 1, 0x50);
+        D_800EB4E0[omCurrentObj->objId] = func_800A8234(1, 1, 0x51);
+    } else {
+        sp30 = 0;
+        D_800EB4E0[omCurrentObj->objId] = 0;
+        D_800EA520[omCurrentObj->objId] = D_800EB4E0[omCurrentObj->objId];
+    }
+    D_800E9720[omCurrentObj->objId] = 0;
+    while (D_800E9720[omCurrentObj->objId] < 30) {
+        if (D_800E6310[omCurrentObj->objId] != 0) {
+            D_800E64D0[omCurrentObj->objId] = -D_800E64D0[omCurrentObj->objId];
+            break;
+        }
+        ohSleep(1);
+        D_800E9720[omCurrentObj->objId]++;
+    }
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.5f;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015BBE4_ovl3.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015C00C_ovl3.s")
 

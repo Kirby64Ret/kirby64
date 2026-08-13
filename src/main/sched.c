@@ -536,7 +536,295 @@ void func_80000F78(u32 width, u32 height, u32 flags, s16 edgeOffsetLeft, s16 edg
 }
 #else
 void func_80000F78(u32 width, u32 height, s32 flags, s16 edgeOffsetLeft, s16 edgeOffsetRight, s16 edgeOffsetTop, s16 edgeOffsetBottom);
+#ifdef NON_MATCHING
+/* m2c draft, for the PORT only. Not byte-exact and not
+   claimed to be: the N64 build takes the pragma below. */
+void func_80000F78(u32 width, u32 height, u32 flags, s16 edgeOffsetLeft, s16 edgeOffsetRight, s16 edgeOffsetTop, s16 edgeOffsetBottom) {
+    u32 sp20;                                       /* compiler-managed */
+    s32 sp1C;
+    s32 sp14;
+    u32 sp0;
+    s16 temp_a1;
+    s16 temp_a2;
+    s32 temp_a3;
+    s32 temp_t7_3;
+    s32 temp_t7_4;
+    s32 temp_t7_5;
+    s32 temp_t8;
+    s32 temp_t8_2;
+    s32 temp_t9_3;
+    s32 var_a0;
+    s32 var_t2;
+    s32 var_v1;
+    s32 var_v1_3;
+    s32 var_v1_4;
+    s32 var_v1_5;
+    u32 temp_lo;
+    u32 temp_t4;
+    u32 temp_t6;
+    u32 temp_t7;
+    u32 temp_t7_2;
+    u32 temp_t9;
+    u32 temp_t9_2;
+    u32 var_t0;
+    u32 var_t1;
+    u32 var_t8;
+    u32 var_t9;
+    u32 var_v1_2;
+
+    if ((width >= 0x141U) || (var_t2 = 1, ((height < 0xF1U) == 0))) {
+        var_t2 = 0;
+    }
+    if (flags & 4) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 | 0x40);
+        gCurrentViMode.comRegs.ctrl |= 0x40;
+    }
+    if (flags & 8) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 & 0xFFBF);
+        gCurrentViMode.comRegs.ctrl &= ~0x40;
+    }
+    if (flags & 0x10) {
+        temp_t7 = gCurrentViMode.comRegs.ctrl & ~3;
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 & 0xFFDF);
+        gCurrentViMode.comRegs.ctrl = temp_t7;
+        gCurrentViMode.comRegs.ctrl = temp_t7 | 2;
+    }
+    if (flags & 0x20) {
+        temp_t7_2 = gCurrentViMode.comRegs.ctrl & ~3;
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 | 0x20);
+        gCurrentViMode.comRegs.ctrl = temp_t7_2;
+        gCurrentViMode.comRegs.ctrl = temp_t7_2 | 3;
+    }
+    if (flags & 0x40) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 | 0x10);
+        gCurrentViMode.comRegs.ctrl |= 8;
+    }
+    if (flags & 0x80) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 & 0xFFEF);
+        gCurrentViMode.comRegs.ctrl &= ~8;
+    }
+    if (flags & 0x1000) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 | 2);
+        gCurrentViMode.comRegs.ctrl |= 4;
+    }
+    if (flags & 0x2000) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 & 0xFFFD);
+        gCurrentViMode.comRegs.ctrl &= ~4;
+    }
+    if (flags & 0x4000) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 | 1);
+        gCurrentViMode.comRegs.ctrl |= 0x10000;
+    }
+    if (flags & 0x8000) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 & 0xFFFE);
+        gCurrentViMode.comRegs.ctrl &= 0xFFFEFFFF;
+    }
+    if (flags & 0x10000) {
+        D_80048C7C.unk1 = (u8) (D_80048C7C.unk1 | 0x80);
+        gCurrentViMode.comRegs.ctrl |= 0x10;
+    }
+    if (flags & 0x20000) {
+        D_80048C7C.unk1 = (u8) (D_80048C7C.unk1 & 0xFF7F);
+        gCurrentViMode.comRegs.ctrl &= ~0x10;
+    }
+    if (flags & 0x100) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 | 8);
+    }
+    if (flags & 0x200) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 & 0xFFF7);
+    }
+    if (flags & 0x400) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 | 4);
+    }
+    if (flags & 0x800) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 & 0xFFFB);
+    }
+    if (flags & 1) {
+        D_80048C7C.unk0 = (u8) ((D_80048C7C.unk0 & 0xFF7F) | 0x80);
+    }
+    if (flags & 2) {
+        D_80048C7C.unk0 = (u8) (D_80048C7C.unk0 & 0xFF7F);
+    }
+    gCurrentViMode.comRegs.ctrl &= ~0x300;
+    if (((u32) D_80048C7C.unk0 >> 0x1F) != 0) {
+        var_t1 = (u32) ((u32) D_80048C7C.unk0 << 5) >> 0x1F;
+        var_v1 = 0x100;
+        if (D_80048C7C.unk0 & 1) {
+            var_v1 = 0;
+        }
+        var_t0 = (u32) ((u32) D_80048C7C.unk0 * 4) >> 0x1F;
+        var_t9 = gCurrentViMode.comRegs.ctrl | var_v1;
+        goto block_47;
+    }
+    var_t1 = (u32) ((u32) D_80048C7C.unk0 << 5) >> 0x1F;
+    if ((var_t1 == 0) && (var_t0 = (u32) ((u32) D_80048C7C.unk0 * 4) >> 0x1F, (var_t0 == 1))) {
+        gCurrentViMode.comRegs.ctrl |= 0x300;
+    } else {
+        var_t0 = (u32) ((u32) D_80048C7C.unk0 * 4) >> 0x1F;
+        var_t9 = gCurrentViMode.comRegs.ctrl | 0x200;
+block_47:
+        gCurrentViMode.comRegs.ctrl = var_t9;
+    }
+    if (var_t2 != 0) {
+        if ((u32) D_80048C7C.unk0 & 0x40000000) {
+            var_a0 = 0;
+        } else {
+            var_a0 = 1;
+        }
+    } else {
+        var_a0 = 1;
+        if (var_t1 != 0) {
+            var_a0 = 0;
+        }
+    }
+    temp_a1 = edgeOffsetTop & 0xFFFE;
+    temp_a2 = edgeOffsetBottom & 0xFFFE;
+    temp_a3 = var_t2 == 0;
+    if ((temp_a3 != 0) && (var_a0 == 0)) {
+        sp14 = 2;
+    } else {
+        sp14 = 1;
+    }
+    if (var_t2 != 0) {
+        var_v1_2 = 1;
+    } else {
+        var_v1_2 = 2;
+    }
+    temp_t4 = height << 0xB;
+    temp_lo = ((u32) (temp_t4 / (u32) ((temp_a2 - temp_a1) + 0x1E0)) / var_v1_2) * sp14;
+    if ((temp_a3 != 0) && (var_a0 != 0)) {
+        var_v1_3 = 2;
+    } else {
+        var_v1_3 = 1;
+    }
+    gCurrentViMode.comRegs.width = var_v1_3 * width;
+    if (osTvType == 1) {
+        gCurrentViMode.comRegs.burst = 0x03E52239;
+        gCurrentViMode.comRegs.vSync = 0x20C;
+        gCurrentViMode.comRegs.hSync = 0xC15;
+        gCurrentViMode.comRegs.leap = 0x0C150C15;
+        gCurrentViMode.comRegs.hStart = 0x6C02EC;
+        gCurrentViMode.fldRegs[0].vStart = 0x2501FF;
+        gCurrentViMode.fldRegs[0].vBurst = 0xE0204;
+    }
+    if (osTvType == 0) {
+        gCurrentViMode.comRegs.burst = 0x0404233A;
+        gCurrentViMode.comRegs.vSync = 0x270;
+        gCurrentViMode.comRegs.hSync = 0x150C69;
+        gCurrentViMode.comRegs.leap = 0x0C6F0C6E;
+        gCurrentViMode.comRegs.hStart = 0x800300;
+        gCurrentViMode.fldRegs[0].vStart = 0x2F0269;
+        gCurrentViMode.fldRegs[0].vBurst = 0x9026B;
+    }
+    if (osTvType == 2) {
+        gCurrentViMode.comRegs.burst = 0x04651E39;
+        gCurrentViMode.comRegs.vSync = 0x20C;
+        gCurrentViMode.comRegs.hSync = 0xC10;
+        gCurrentViMode.comRegs.leap = 0x0C1C0C1C;
+        gCurrentViMode.comRegs.hStart = 0x6C02EC;
+        gCurrentViMode.fldRegs[0].vStart = 0x2501FF;
+        gCurrentViMode.fldRegs[0].vBurst = 0xE0204;
+    }
+    sp0 = gCurrentViMode.comRegs.hStart;
+    gCurrentViMode.fldRegs[1].vStart = gCurrentViMode.fldRegs[0].vStart;
+    temp_t9 = (u32) gCurrentViMode.comRegs.hStart >> 0x10;
+    sp20 = temp_t9;
+    sp1C = gCurrentViMode.comRegs.hStart & 0xFFFF;
+    temp_t8 = temp_t9 + edgeOffsetLeft;
+    sp20 = temp_t8;
+    if (temp_t8 < 0) {
+        sp20 = 0;
+    }
+    temp_t7_3 = sp1C + edgeOffsetRight;
+    sp1C = temp_t7_3;
+    if (temp_t7_3 < 0) {
+        sp1C = 0;
+    }
+    gCurrentViMode.comRegs.hStart = (sp20 << 0x10) | sp1C;
+    temp_t9_2 = (u32) gCurrentViMode.fldRegs[0].vStart >> 0x10;
+    sp0 = gCurrentViMode.fldRegs[0].vStart;
+    sp20 = temp_t9_2;
+    temp_t8_2 = temp_t9_2 + temp_a1;
+    sp1C = gCurrentViMode.fldRegs[0].vStart & 0xFFFF;
+    sp20 = temp_t8_2;
+    if (temp_t8_2 < 0) {
+        sp20 = 0;
+    }
+    temp_t7_4 = sp1C + temp_a2;
+    sp1C = temp_t7_4;
+    if (temp_t7_4 < 0) {
+        sp1C = 0;
+    }
+    gCurrentViMode.fldRegs[0].vStart = (sp20 << 0x10) | sp1C;
+    temp_t6 = (u32) gCurrentViMode.fldRegs[1].vStart >> 0x10;
+    sp0 = gCurrentViMode.fldRegs[1].vStart;
+    sp20 = temp_t6;
+    temp_t9_3 = temp_t6 + temp_a1;
+    sp1C = gCurrentViMode.fldRegs[1].vStart & 0xFFFF;
+    sp20 = temp_t9_3;
+    if (temp_t9_3 < 0) {
+        sp20 = 0;
+    }
+    temp_t7_5 = sp1C + temp_a2;
+    sp1C = temp_t7_5;
+    if (temp_t7_5 < 0) {
+        sp1C = 0;
+    }
+    gCurrentViMode.fldRegs[1].vStart = (sp20 << 0x10) | sp1C;
+    gCurrentViMode.fldRegs[1].vBurst = gCurrentViMode.fldRegs[0].vBurst;
+    if ((var_t2 != 0) && (var_a0 != 0)) {
+        gCurrentViMode.comRegs.vSync += 1;
+        if (osTvType == 2) {
+            gCurrentViMode.comRegs.hSync += 0x40001;
+        }
+        if (osTvType == 2) {
+            gCurrentViMode.comRegs.leap += 0xFFFCFFFE;
+        }
+    } else {
+        gCurrentViMode.fldRegs[0].vStart += 0xFFFDFFFE;
+        if (osTvType == 2) {
+            gCurrentViMode.fldRegs[0].vBurst += 0xFFFCFFFE;
+        }
+        if (osTvType == 0) {
+            gCurrentViMode.fldRegs[1].vBurst += 0x2FFFE;
+        }
+    }
+    gCurrentViMode.comRegs.vCurrent = 0;
+    var_v1_4 = 2;
+    gCurrentViMode.comRegs.xScale = (u32) (width << 0xA) / (u32) ((edgeOffsetRight - edgeOffsetLeft) + 0x280);
+    if (var_t0 == 0) {
+        var_v1_4 = 1;
+    }
+    var_v1_5 = 2;
+    gCurrentViMode.fldRegs[0].origin = var_v1_4 * width * 2;
+    if (var_t0 == 0) {
+        sp14 = 1;
+    } else {
+        sp14 = 2;
+    }
+    if (var_t2 != 0) {
+        var_v1_5 = 1;
+    }
+    gCurrentViMode.fldRegs[0].yScale = temp_lo;
+    gCurrentViMode.fldRegs[1].yScale = temp_lo;
+    gCurrentViMode.fldRegs[1].origin = var_v1_5 * width * 2 * sp14;
+    if (var_t1 != 0) {
+        if (temp_t4 < 0xB4000U) {
+            var_t8 = temp_lo + 0x01000000;
+            gCurrentViMode.fldRegs[0].yScale = temp_lo + 0x03000000;
+        } else {
+            var_t8 = gCurrentViMode.fldRegs[1].yScale + 0x02000000;
+            gCurrentViMode.fldRegs[0].yScale += 0x02000000;
+        }
+        gCurrentViMode.fldRegs[1].yScale = var_t8;
+    }
+    gCurrentViMode.fldRegs[0].vIntr = 2;
+    gCurrentViMode.fldRegs[1].vIntr = 2;
+    D_80048C48 = 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80000F78.s")
+#endif
 #endif
 
 void func_80001774(void *arg0) {
