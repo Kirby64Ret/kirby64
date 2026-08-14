@@ -398,14 +398,15 @@ segments:
     - [0xF9310, asm, ovl4/ovl4_2]
     - [0xFC8F0, asm, ovl4/ovl4_3]
     - [0xFF650, asm, ovl4/ovl4_4]
-    - [0x101030, asm, ovl4/ovl4_5]
+    - [0x101030, c, ovl4/ovl4_5]
     - [0x1014F0, .data, ovl4/ovl4_1]
     - [0x101620, data, ovl4/ovl4]
+    - [0x103910, .data, ovl4/ovl4_5]
     - [0x1039F0, .rodata, ovl4/ovl4_1]
     - [0x103A40, rodata, ovl4/ovl4_2]
     - [0x103AA0, rodata, ovl4/ovl4_3]
     - [0x103B50, rodata, ovl4/ovl4_4]
-    - [0x103BA0, rodata, ovl4/ovl4_5]
+    - [0x103BA0, .rodata, ovl4/ovl4_5]
     - [0x103BB0]
     - {type: bss, vram: 0x8015c680, name: ovl4/ovl4}
     

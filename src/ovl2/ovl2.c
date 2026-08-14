@@ -200,14 +200,12 @@ void func_800F64B0(void) {
     play_music(0, music);
     if (func_800F8560() == 2) {
         func_800BB98C(2, 0);
-        return;
-    }
-    if ((D_800BE508 == 0) && (D_800BE4FC == 0)) {
+    } else if ((D_800BE508 == 0) && (D_800BE4FC == 0)) {
         func_800BB98C(0, 0);
-        return;
+    } else {
+        utilSetRectColorFullScreen(0, 0, 0);
+        utilSpawnRect(0xFF, -0x10, 0);
     }
-    utilSetRectColorFullScreen(0, 0, 0);
-    utilSpawnRect(0xFF, -0x10, 0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2/func_800F64B0.s")
@@ -269,30 +267,22 @@ void func_800F6AB0(Gfx **glistp) {
 }
 
 #ifdef MIPS_TO_C
+extern ScreenSettings D_80123EC0;
+extern SceneSetup D_80123EDC, D_80123F68;
 
-void func_800F6AD4(s32 arg0, ? arg1) {
-    ? *var_a0;
-    ? *var_v1;
-    s32 temp_t0;
+void func_800F6AD4(s32 arg0) {
+    s32 i;
 
     *(&D_800D6B6C + 4) = arg0;
-    D_80123EC0.unkC = &D_8012EB00 - 0x1900;
-    viApplyScreenSettings(&D_80123EC0, arg0);
-    var_v1 = &D_803D6900;
-    var_a0 = &gFrameBuffer;
-    do {
-        var_a0->unk0 = 1;
-        var_v1->unk3F00 = 1;
-        var_a0->unk2 = 1;
-        var_v1->unk3F02 = 1;
-        var_a0->unk4 = 1;
-        var_v1->unk3F04 = 1;
-        var_a0->unk6 = 1;
-        var_v1 += 8;
-        var_v1->unk3EFE = 1;
-        var_a0 += 8;
-    } while (var_v1 != &D_803FC100);
-    D_80123EEC = D_80123F68.gtlSetup.heapSize = &gFrameBuffer - &ovl19_VRAM_END;
+    D_80123EC0.zBuffer = VI_ZBUFFER_START(320, 240, 0, 10, u16);
+    viApplyScreenSettings(&D_80123EC0);
+
+    for (i = 0; i < (SCREEN_WIDTH * SCREEN_HEIGHT); i++) {
+        gFrameBuffer[0][i] = gFrameBuffer[1][i] = GPACK_RGBA5551(0, 0, 0, 1);
+    }
+
+    D_80123EDC.gtlSetup.heapSize = &gFrameBuffer - &ovl19_VRAM_END;
+    D_80123F68.gtlSetup.heapSize = &gFrameBuffer - &ovl19_VRAM_END;
     *(&D_800D6F58 + 0x50) = 0;
     D_8012D920 = 0;
     *(&D_800D6F58 + 0x54) = 0;

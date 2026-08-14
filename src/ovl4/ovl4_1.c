@@ -67,7 +67,7 @@ Gfx D_8015A018_ovl4[] = {
 ScreenSettings D_8015A048_ovl4 = {
     gFrameBuffer, D_803DA800, NULL,
     D_8012EB00,
-    320, 240,
+    SCREEN_WIDTH, SCREEN_HEIGHT,
     0x00000299
 };
 
@@ -75,7 +75,7 @@ SceneSetup D_8015A064_ovl4 = {
     {
         0,
         omUpdateAll, func_800A73B0,
-        &D_8018EE60, 0,
+        ovl5_VRAM_END, 0,
         1,
         2,
         0x4000,
