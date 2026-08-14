@@ -1,7 +1,9 @@
 #include "common.h"
+#include "cfb.h"
 
 #include "GObj.h"
 #include "DObj.h"
+#include "ovl1/game.h"
 #include "ovl1/util.h"
 #include "main/object_helpers.h"
 #include "main/rdp_reset.h"
@@ -290,16 +292,14 @@ void func_800F6AD4(s32 arg0, ? arg1) {
         var_v1->unk3EFE = 1;
         var_a0 += 8;
     } while (var_v1 != &D_803FC100);
-    temp_t0 = &gFrameBuffer - &D_8022FB50;
-    D_80123F68.unk10 = temp_t0;
-    D_80123EEC = temp_t0;
+    D_80123EEC = D_80123F68.gtlSetup.heapSize = &gFrameBuffer - &ovl19_VRAM_END;
     *(&D_800D6F58 + 0x50) = 0;
     D_8012D920 = 0;
     *(&D_800D6F58 + 0x54) = 0;
     D_800D7B80 = 0;
     D_800D7B7C = 0;
     D_800D7B78 = 0;
-    gameSetUpdateRate(0x40000000, &D_800D7B7C, &D_803FC100);
+    gameSetUpdateRate(2.0f);
     if ((D_800BE500 == 6) && (D_800BE504 == 0) && (D_800BE534 == 2)) {
         gtlCreateScene(&D_80123F68);
     } else {

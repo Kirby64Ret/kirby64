@@ -4,6 +4,7 @@
 #include "segments.h"
 #include "sounds.h"
 #include "track_arrays.h"
+#include "cfb.h"
 
 #include "main/audio.h"
 #include "main/contpad.h"
@@ -26,9 +27,6 @@
 extern s32 D_800D6B24;
 extern s32 D_8015C680_ovl4;
 extern Lights1 D_800BE548;
-extern u16 gFrameBuffer[3][320 * 230]; // TODO: why 230??
-extern u16 D_803FC100[3][320 * 230]; // TODO: why 230??
-extern u16 D_803DA800[][320]; // fb2
 extern void *D_8018EE60;
 
 extern void func_800A73B0(void);
@@ -378,11 +376,9 @@ s32 func_80151CEC_ovl4(s32 arg0) {
     viApplyScreenSettings(&D_8015A048_ovl4);
     D_8015A064_ovl4.gtlSetup.heapSize = (u32)&gFrameBuffer[0] - (u32)ovl5_VRAM_END;
 
-    i = 0;
-    do {
-        gFrameBuffer[0][i] = gFrameBuffer[1][i] = 1;
-        i++;
-    } while (i < (SCREEN_WIDTH * SCREEN_HEIGHT));
+    for (i = 0; i < (SCREEN_WIDTH * SCREEN_HEIGHT); i++) {
+        gFrameBuffer[0][i] = gFrameBuffer[1][i] = GPACK_RGBA5551(0, 0, 0, 1);
+    }
 
     gtlCreateScene(&D_8015A064_ovl4);
     func_800BB3F0();

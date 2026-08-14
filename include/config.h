@@ -7,14 +7,20 @@
  */
 
 // Screen Size Defines
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240
+#define SCREEN_WIDTH (320)
+#define SCREEN_HEIGHT (240)
 
-// Border Height Define for NTSC Versions
-#ifndef VERSION_EU
-#define BORDER_HEIGHT 8
-#else
-#define BORDER_HEIGHT 1
-#endif
+// Screen Border Defines
+#define SCREEN_BORDER_HEIGHT (5)
+
+// Number of framebuffers
+#define NUM_CFBs (3)
+
+//---------------------------
+// DERIVED VALUES
+//---------------------------
+
+#define CFB_WIDTH (SCREEN_WIDTH)
+#define CFB_HEIGHT ((SCREEN_HEIGHT) - (SCREEN_BORDER_HEIGHT * 2))
 
 #endif

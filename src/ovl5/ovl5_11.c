@@ -1,16 +1,29 @@
 #include "common.h"
+#include "segments.h"
+#include "cfb.h"
 #include "buffers.h"
+#include "GObj.h"
+#include "track_arrays.h"
+
 #include "main/object_manager.h"
 #include "main/contpad.h"
-#include "GObj.h"
+#include "main/gtl.h"
+#include "main/vi.h"
+
 #include "ovl1/ovl1_1.h"
 #include "ovl1/ovl1_2.h"
+#include "ovl1/ovl1_2_2.h"
 #include "ovl1/ovl1_3.h"
 #include "ovl1/ovl1_5.h"
-#include "track_arrays.h"
 #include "ovl1/ovl1_7.h"
+
 #include "ovl2/ovl2_8.h"
+
 #include "ovl5/ovl5_11.h"
+
+// In this file for sure
+extern ScreenSettings D_80189D40_ovl5;
+extern SceneSetup D_80189D5C_ovl5;
 
 extern u8 D_8018A12C_ovl5[];
 extern s32 D_8018EDEC_ovl5; // track
@@ -408,5 +421,19 @@ void func_80182288_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_80189D10_ovl5);
 }
 
-// this fb clearing function again
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_11/func_801822AC_ovl5.s")
+void func_801822AC_ovl5(void) {
+    s32 i;
+
+    func_800A74D8();
+    D_80189D40_ovl5.zBuffer = VI_ZBUFFER_START(320, 240, 0, 10, u16);
+    viApplyScreenSettings(&D_80189D40_ovl5);
+
+    D_80189D5C_ovl5.gtlSetup.heapSize = (u32)&gFrameBuffer[0] - (u32)ovl5_VRAM_END;
+
+    for (i = 0; i < (SCREEN_WIDTH * SCREEN_HEIGHT); i++) {
+        gFrameBuffer[0][i] = GPACK_RGBA5551(0, 0, 0, 1);
+        gFrameBuffer[1][i] = GPACK_RGBA5551(0, 0, 0, 1);
+    }
+
+    gtlCreateScene(&D_80189D5C_ovl5);
+}
