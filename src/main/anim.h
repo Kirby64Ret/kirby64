@@ -30,20 +30,20 @@ enum AnimCommand {
     ANIM_CMD_SET_TARGET_RATE = 7,
     ANIM_CMD_SET_VALUE_ZERO_RATE_LAST = 8,
     ANIM_CMD_SET_VALUE_ZERO_RATE = 9,
-    ANIM_CMD_SET_VALUE_AFTER_LAST = 10,
-    ANIM_CMD_SET_VALUE_AFTER = 11,
-    ANIM_CMD_12 = 12,
-    ANIM_CMD_13 = 13,
-    ANIM_CMD_SET_ANIMATION = 14,
-    ANIM_CMD_SET_FLAGS = 15,
-    ANIM_CMD_16 = 16,
-    ANIM_CMD_17 = 17,
-    ANIM_CMD_SET_EXTRA_VALUE_AFTER_LAST = 18,
-    ANIM_CMD_SET_EXTRA_VALUE_AFTER = 19,
-    ANIM_CMD_SET_EXTRA_VALUE_LAST = 20,
-    ANIM_CMD_SET_EXTRA_VALUE = 21,
-    ANIM_CMD_22 = 22,
-    ANIM_CMD_SET_CLIP_PLANES = 23
+    ANIM_CMD_SET_VALUE_AFTER_LAST = 0x0A,
+    ANIM_CMD_SET_VALUE_AFTER = 0x0B,
+    ANIM_CMD_12 = 0x0C,
+    ANIM_CMD_13 = 0x0D,
+    ANIM_CMD_SET_ANIMATION = 0x0E,
+    ANIM_CMD_SET_FLAGS = 0x0F,
+    ANIM_CMD_16 = 0x10,
+    ANIM_CMD_17 = 0x11,
+    ANIM_CMD_SET_EXTRA_VALUE_AFTER_LAST = 0x12,
+    ANIM_CMD_SET_EXTRA_VALUE_AFTER = 0x13,
+    ANIM_CMD_SET_EXTRA_VALUE_LAST = 0x14,
+    ANIM_CMD_SET_EXTRA_VALUE = 0x15,
+    ANIM_CMD_22 = 0x16,
+    ANIM_CMD_SET_CLIP_PLANES = 0x17
 };
 
 enum AnimParam {
@@ -96,7 +96,14 @@ enum AnimParam {
     ANIM_PARAM_TEXTURE_EXTRA_MAX = 41
 };
 
+typedef struct {
+    u32 cmd : 7;
+    u32 bitmask : 10;
+    u32 other : 15;
+} AnimCommand;
+
 typedef union AnimCmd {
+    AnimCommand cmd;
     u32 w;
     f32 f;
     void* ptr;

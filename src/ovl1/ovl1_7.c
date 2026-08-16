@@ -1703,8 +1703,7 @@ void func_800B2AD4(Vector *vec, struct DObj *node, u32 track) {
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_800B2F54(GObj *arg0, ? arg2) {
+void func_800B2F54(int arg0, ? arg2) {
     animSetCameraAnimation(arg2, *(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)), arg2);
 }
 #else

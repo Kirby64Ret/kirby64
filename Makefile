@@ -236,6 +236,7 @@ $(BUILD_DIR)/%.o: %.c
 $(BUILD_DIR)/data/%.o: data/%.c
 	$(GCC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
 
+# TODO: Fix build system to allow building to /tmp
 $(GAME_ASSETS): assets/assets.ld
 	$(MAKE) -C assets
 

@@ -11,10 +11,8 @@
 extern u32 *scBeforeReset;
 
 // bss
-
-OSPiHandle *gRomHandle; // 0x80048CF0
-// 0x80048CF4?
-OSPiHandle gSRAMHandle; // 0x74 bytes
+OSPiHandle *gRomHandle;
+OSPiHandle gSRAMHandle;
 OSMesg dmaMesg;
 OSMesgQueue dmaMessageQ;
 void *dmaDevAddr;
@@ -23,8 +21,6 @@ u32 dmaLen;
 u8* D_80048D94;
 u32 D_80048D98;
 u32 D_80048D9C;
-
-// end bss, followed by ovl0_2.c
 
 void dmaInit(void) {
     osCreateMesgQueue(&dmaMessageQ, &dmaMesg, 1);

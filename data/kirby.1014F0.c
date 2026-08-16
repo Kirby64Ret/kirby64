@@ -1429,7 +1429,7 @@ u32 D_8015AB48 = 0x00000090;
 
 void* D_8015AB4C = &D_80157E04;
 
-struct UnkStruct8015C740 sFileSelectBackgroundImage = {
+struct SpriteFile sFileSelectBackgroundImage = {
 	BANK_INDEX(3, 2),
 	1,
 	10.0f,
@@ -1440,7 +1440,7 @@ struct UnkStruct8015C740 sFileSelectBackgroundImage = {
 };
 
 // bank 3 index 4 texture
-struct UnkStruct8015C740 sMenuLevelPercentImage = {
+struct SpriteFile sMenuLevelPercentImage = {
 	BANK_INDEX(3, 4),
 	1,
 	0.0f,
@@ -1462,7 +1462,7 @@ u32 D_8015ABA0 = 0x435A0000;
 
 u32 D_8015ABA4 = 0x42920000;
 
-struct UnkStruct8015C740 D_8015ABA8 = {
+struct SpriteFile D_8015ABA8 = {
 	BANK_INDEX(3, 3),
 	1,
 	0.0f,
@@ -1490,7 +1490,7 @@ u32 D_8015ABE4 = 0x435E0000;
 
 u32 D_8015ABE8 = 0x43040000;
 
-struct UnkStruct8015C740 D_8015ABEC = {
+struct SpriteFile D_8015ABEC = {
 	BANK_INDEX(3, 32),
 	1,
 	0.0f,
@@ -1512,7 +1512,7 @@ u32 D_8015AC1C = 0x435A0000;
 
 u32 D_8015AC20 = 0x43040000;
 
-struct UnkStruct8015C740 D_8015AC24 = {
+struct SpriteFile D_8015AC24 = {
 	BANK_INDEX(3, 26),
 	1,
 	39.0f,
@@ -1522,7 +1522,7 @@ struct UnkStruct8015C740 D_8015AC24 = {
 	(1 << 1),
 };
 
-struct UnkStruct8015C740 D_8015AC44 = {
+struct SpriteFile D_8015AC44 = {
 	BANK_INDEX(3, 27),
 	1,
 	129.0f,
@@ -1532,7 +1532,7 @@ struct UnkStruct8015C740 D_8015AC44 = {
 	(1 << 1),
 };
 
-struct UnkStruct8015C740 D_8015AC64 = {
+struct SpriteFile D_8015AC64 = {
 	BANK_INDEX(3, 28),
 	1,
 	219.0f,

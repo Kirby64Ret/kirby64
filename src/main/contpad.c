@@ -261,9 +261,15 @@ s32 *func_80004250(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004250.s")
 #endif
 
+void contSendEvent(ContEvent *);
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/contSendEvent.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_80004624.s")
+void func_80004624(void) {
+    ContEvent msg;
+
+    msg.type = CONT_EVENT_MESG;
+    contSendEvent(&msg);
+}
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/contpad/func_8000464C.s")
 

@@ -85,7 +85,7 @@ struct Entity {
 
 #define NO_COL 0x29A
 // some sort of image desciptor
-struct UnkStruct8015C740 {
+typedef struct SpriteFile {
     s32 image;
     s32 mode; // how func_800AC954 will handle the image
     f32 xOffset;
@@ -93,7 +93,7 @@ struct UnkStruct8015C740 {
     u16 primColor[3];
     u16 envColor[3];
     u8 flags;
-};
+} SpriteFile;
 
 typedef union ColorPack {
     struct {

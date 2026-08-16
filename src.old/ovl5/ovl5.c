@@ -12,7 +12,7 @@ struct UnkStruct800AC954 *func_800AC954(s32, s32, s32);
 
 extern const char D_8018D450_ovl5[];
 
-struct UnkStruct800AC954 *func_8015C740_ovl5(s32 arg0, struct UnkStruct8015C740 *arg1) {
+struct UnkStruct800AC954 *func_8015C740_ovl5(s32 arg0, struct SpriteFile *arg1) {
     struct UnkStruct800AC954 *temp_v0; 
 
     temp_v0 = func_800AC954(arg0, arg1->mode, func_800A8C40(arg1->image));

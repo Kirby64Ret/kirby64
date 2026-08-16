@@ -10,7 +10,7 @@
 
 extern u8 D_800D6BB9, D_800D6BBA, D_800D6BBB;
 
-SPObj *func_8015C740_ovl5(GObj *gobj, struct UnkStruct8015C740 *arg1) {
+SPObj *func_8015C740_ovl5(GObj *gobj, struct SpriteFile *arg1) {
     SPObj *sprite; 
 
     sprite = func_800AC954(gobj, arg1->mode, func_800A8C40(arg1->image));
