@@ -551,60 +551,38 @@ s32 func_80152220_ovl4(s32 arg0, u32 arg1) {
 void func_80152268_ovl4(s32 arg0) {
     s32 var_s0;
 
-    var_s0 = *(&D_800BE560 + (arg0 * 4)) - 1;
-    if (var_s0 >= 0) {
-loop_1:
+    var_s0 = D_800BE560[arg0] - 1;
+    while (var_s0 > 0) {
         if (func_80152220_ovl4(arg0, var_s0) != 0) {
             return;
         }
-        var_s0 -= 1;
-        if (var_s0 < 0) {
-
-        } else {
-            goto loop_1;
-        }
+        var_s0 --;
     }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152268_ovl4.s")
 #endif
 
-#ifdef MIPS_TO_C
 s32 func_801522D0_ovl4(f32 arg0) {
     if ((arg0 > -110.0f) && (arg0 < 110.0f)) {
         return 1;
+    } else {
+        return 0;
     }
-    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801522D0_ovl4.s")
-#endif
 
-#ifdef MIPS_TO_C
 s32 func_80152318_ovl4(f32 arg0) {
     if ((arg0 > -70.0f) && (arg0 < 90.0f)) {
         return 1;
+    } else {
+        return 0;
     }
-    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152318_ovl4.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void *func_80152360_ovl4(void *arg0) {
-    DObj *temp_t0;
-
-    temp_t0 = D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild;
-    arg0->unk0 = temp_t0->pos.v.x;
-    arg0->unk4 = temp_t0->pos.v.y;
-    arg0->unk8 = temp_t0->pos.v.z;
-    return arg0;
+Vector *func_80152360_ovl4(Vector *vec) {
+    *vec = D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v;
+    return vec;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80152360_ovl4.s")
-#endif
 
 #ifdef MIPS_TO_C
 

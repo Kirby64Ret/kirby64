@@ -4,6 +4,7 @@
 
 #include <PR/rcp.h>
 #include "common.h"
+#include "segments.h"
 #include "types.h"
 // #include "main/object_manager.h"
 #include "GObj.h"
@@ -38,9 +39,180 @@ extern u32 D_800BE4EC; // gameplay timer
     extern u32 utilRectBoundUlx, utilRectBoundUly, utilRectBoundLrx, utilRectBoundLry;
 // }
 
-extern u32 *D_800BE5CC; // n64piok
-extern u32 *D_800BE5C4; // ptport
-extern u32 *D_800BE5C8; // ptstat
+//=======================-
+//          DATA
+//=======================-
+
+u32 D_800BE550[] = {
+    0xFFFFFF00,
+    0xFFFFFF00,
+    0x323C2800,
+    0,
+};
+
+u32 D_800BE560[] = {
+    4, 5, 5, 5,
+    5, 4, 1, 8,
+    8, 4, 5, 6,
+    6, 5, 4, 4,
+    8, 8,
+};
+
+u8 D_800BE5A8[] = {
+    0x06, 0x06, 0x06, 0x06,
+    0x07, 0x01, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+};
+
+u32 D_800BE5C0 = 0;
+
+u32 *D_800BE5C4 = 0xBFF08004; // ptport
+u32 *D_800BE5C8 = 0xBFF08000; // ptstat
+u32 *D_800BE5CC = 0xA4600010; // n64piok
+
+struct Overlay D_800BE5D0[20] = {
+    OVERLAY(ovl1),
+    OVERLAY(ovl2),
+    OVERLAY(ovl4), // menu ovl4
+    OVERLAY(ovl5), // menu ovl5
+    {
+        (void*) 0x00135490,
+        (void*) 0x0013E8F0,
+        (void*) 0x80151100,
+        (void*) 0x80151100,
+        (void*) 0x80154DC0,
+        (void*) 0x80154DC0,
+        (void*) 0x8015A560,
+        (void*) 0x8015A560,
+        (void*) 0x8015A7D0,
+    },
+    OVERLAY(ovl3), // kirby code
+    {
+        (void*) 0x0013E8F0,
+        (void*) 0x00174740,
+        (void*) 0x80198880,
+        (void*) 0x80198880,
+        (void*) 0x801C27D0,
+        (void*) 0x801C27D0,
+        (void*) 0x801CE6D0,
+        (void*) 0x801CE6D0,
+        (void*) 0x801D0C60,
+    },
+    {
+        (void*) 0x00174740,
+        (void*) 0x0017ECB0,
+        (void*) 0x801D0C60,
+        (void*) 0x801D0C60,
+        (void*) 0x801D7880,
+        (void*) 0x801D7880,
+        (void*) 0x801DB1D0,
+        (void*) 0x801DB1D0,
+        (void*) 0x801DB1E0,
+    },
+    {
+        (void*) 0x0017ECB0,
+        (void*) 0x001CBF50,
+        (void*) 0x801D0C60,
+        (void*) 0x801D0C60,
+        (void*) 0x8021BAB0,
+        (void*) 0x8021BAB0,
+        (void*) 0x8021DF00,
+        (void*) 0x8021DF00,
+        (void*) 0x8021DF10,
+    },
+    { // Adeleine?
+        (void*) 0x001CBF50,
+        (void*) 0x001E5AA0,
+        (void*) 0x801DB1E0,
+        (void*) 0x801DB1E0,
+        (void*) 0x801F33F0,
+        (void*) 0x801F33F0,
+        (void*) 0x801F4D30,
+        (void*) 0x801F4D30,
+        (void*) 0x801F4DB0,
+    },
+    { // whispy woods
+        (void*) 0x001E5AA0,
+        (void*) 0x001EB520,
+        (void*) 0x801DB1E0,
+        (void*) 0x801DB1E0,
+        (void*) 0x801E0B00,
+        (void*) 0x801E0B00,
+        (void*) 0x801E0C60,
+        (void*) 0x801E0C60,
+        (void*) 0x801E0C90,
+    },
+    OVERLAY(ovl12),
+    OVERLAY(ovl13),
+    OVERLAY(ovl14),
+    { // HR-H/HR-E
+        (void*) 0x00205D40,
+        (void*) 0x00211490,
+        (void*) 0x801DB1E0,
+        (void*) 0x801DB1E0,
+        (void*) 0x801E6450,
+        (void*) 0x801E6450,
+        (void*) 0x801E6930,
+        (void*) 0x801E6930,
+        (void*) 0x801E6940,
+    },
+    { // Miracle Matter
+        (void*) 0x00211490,
+        (void*) 0x002263D0,
+        (void*) 0x801DB1E0,
+        (void*) 0x801DB1E0,
+        (void*) 0x801EF4C0,
+        (void*) 0x801EF4C0,
+        (void*) 0x801F0120,
+        (void*) 0x801F0120,
+        (void*) 0x801F0230,
+    },
+    { // Zero Two
+        (void*) 0x002263D0,
+        (void*) 0x002308C0,
+        (void*) 0x801DB1E0,
+        (void*) 0x801DB1E0,
+        (void*) 0x801E4E60,
+        (void*) 0x801E4E60,
+        (void*) 0x801E56D0,
+        (void*) 0x801E56D0,
+        (void*) 0x801E5740,
+    },
+    OVERLAY(ovl19),
+    OVERLAY(ovl18),
+    OVERLAY(ovl20), // tamper check
+};
+
+
+struct Overlay *gOverlayTable[] = {
+    &D_800BE5D0[ 0],
+    &D_800BE5D0[ 1],
+    &D_800BE5D0[ 2],
+    &D_800BE5D0[ 3],
+    &D_800BE5D0[ 4],
+    &D_800BE5D0[ 5],
+    &D_800BE5D0[ 6],
+    &D_800BE5D0[ 7],
+    &D_800BE5D0[ 8],
+    &D_800BE5D0[ 9],
+    &D_800BE5D0[10],
+    &D_800BE5D0[11],
+    &D_800BE5D0[12],
+    &D_800BE5D0[13],
+    &D_800BE5D0[14],
+    &D_800BE5D0[15],
+    &D_800BE5D0[16],
+    &D_800BE5D0[17],
+    &D_800BE5D0[18],
+    &D_800BE5D0[19],
+};
+
+f32 D_800BE8F0[] = {
+    #include "f32_sintable.h"
+};
 
 void utilPrintf(char* fmt, ...) {
 
@@ -721,79 +893,77 @@ void func_800A5B3C(void *arg0, s8 arg1, s8 arg2, s8 arg3, u8 arg4) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B3C.s")
 #endif
 
-#ifdef MIPS_TO_C
-
+// #ifdef MIPS_TO_C
 f32 func_800A5B64(f32 arg0) {
-    f32 var_f2;
-    s32 temp_v0;
+    f32 ret;
+    u16 temp_v0;
 
-    temp_v0 = (arg0 * 651.8986f) & 0xFFF & 0xFFFF;
+    temp_v0 = (s32) (arg0 * 651.8986f) & 0xFFF & 0xFFFF;
     if (temp_v0 & 0x400) {
-        var_f2 = *(&D_800BF8EC + -((temp_v0 & 0x3FF) * 4));
+        ret = D_800BE8F0[1023 - (temp_v0 & 0x3FF)];
     } else {
-        var_f2 = *(&D_800BE8F0 + ((temp_v0 & 0x3FF) * 4));
+        ret = D_800BE8F0[temp_v0 & 0x3FF];
     }
     if (temp_v0 & 0x800) {
-        return -var_f2;
+        return -ret;
+    } else {
+        return ret;
     }
-    return var_f2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B64.s")
-#endif
+// #else
+// #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5B64.s")
+// #endif
 
-#ifdef MIPS_TO_C
-
+// #ifdef MIPS_TO_C
 f32 func_800A5BDC(f32 arg0) {
-    f32 var_f2;
-    s32 temp_v0;
+    f32 ret;
+    u16 temp_v0;
 
-    temp_v0 = ((arg0 + 1.5707964f) * 651.8986f) & 0xFFF & 0xFFFF;
+    temp_v0 = (s32) ((arg0 + 1.5707964f) * 651.8986f) & 0xFFF & 0xFFFF;
     if (temp_v0 & 0x400) {
-        var_f2 = *(&D_800BF8EC + -((temp_v0 & 0x3FF) * 4));
+        ret = D_800BE8F0[1023 - (temp_v0 & 0x3FF)];
     } else {
-        var_f2 = *(&D_800BE8F0 + ((temp_v0 & 0x3FF) * 4));
+        ret = D_800BE8F0[temp_v0 & 0x3FF];
     }
     if (temp_v0 & 0x800) {
-        return -var_f2;
-    }
-    return var_f2;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5BDC.s")
-#endif
-
-#ifdef MIPS_TO_C
-
-f32 func_800A5C60(f32 arg0) {
-    f32 var_f12;
-    f32 var_f2;
-    s32 temp_a0;
-    s32 temp_v0;
-
-    temp_a0 = (arg0 * 651.8986f) & 0xFFF & 0xFFFF;
-    if (temp_a0 & 0x400) {
-        var_f2 = *(&D_800BF8EC + -((temp_a0 & 0x3FF) * 4));
+        return -ret;
     } else {
-        var_f2 = *(&D_800BE8F0 + ((temp_a0 & 0x3FF) * 4));
+        return ret;
+    }
+}
+// #else
+// #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5BDC.s")
+// #endif
+
+// #ifdef MIPS_TO_C
+f32 func_800A5C60(f32 arg0) {
+    f32 ret2;
+    f32 ret1;
+    u16 temp_a0;
+
+    temp_a0 = (s32) (arg0 * 651.8986f) & 0xFFF;
+    if (temp_a0 & 0x400) {
+        ret1 = D_800BE8F0[1023 - (temp_a0 & 0x3FF)];
+    } else {
+        ret1 = D_800BE8F0[temp_a0 & 0x3FF];
     }
     if (temp_a0 & 0x800) {
-        var_f2 = -var_f2;
+        ret1 = -ret1;
     }
-    temp_v0 = (temp_a0 + 0x400) & 0xFFF & 0xFFFF;
-    if (temp_v0 & 0x400) {
-        var_f12 = *(&D_800BF8EC + -((temp_v0 & 0x3FF) * 4));
+    temp_a0 = (temp_a0 + 0x400) & 0xFFF;
+    if (temp_a0 & 0x400) {
+        ret2 = D_800BE8F0[1023 - (temp_a0 & 0x3FF)];
     } else {
-        var_f12 = *(&D_800BE8F0 + ((temp_v0 & 0x3FF) * 4));
+        ret2 = D_800BE8F0[temp_a0 & 0x3FF];
     }
-    if (temp_v0 & 0x800) {
-        var_f12 = -var_f12;
+    if (temp_a0 & 0x800) {
+        ret2 = -ret2;
     }
-    return var_f2 / var_f12;
+    return ret1 / ret2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5C60.s")
-#endif
+// #else
+// #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A5C60.s")
+// #endif
 
 #ifdef MIPS_TO_C
 void func_800A5D24(void *arg0, void *arg1) {
