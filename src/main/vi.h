@@ -21,7 +21,7 @@ extern u16 D_8012EB00[]; // the zbuf data?
 
 extern u16* viZBuffer;
 extern u16* gZBuffer;
-extern s32 viCFBFmt;
+extern s32 viCFBPixelSize;
 extern s32 gCurrScreenWidth;
 extern s32 gCurrScreenHeight;
 

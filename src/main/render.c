@@ -2596,7 +2596,7 @@ void func_8001663C(void **arg0, void *arg1, s32 arg2) {
     temp_v1_2->unk0 = 0xE7000000;
     temp_v1_2->unk4 = 0;
     temp_v1_3->unk4 = 0x0F000000;
-    temp_v1_3->unk0 = ((viCFBFmt & 3) << 0x13) | 0xFF000000 | ((gCurrScreenWidth - 1) & 0xFFF);
+    temp_v1_3->unk0 = ((viCFBPixelSize & 3) << 0x13) | 0xFF000000 | ((gCurrScreenWidth - 1) & 0xFFF);
     temp_v1_4->unk0 = 0xE3000A01;
     temp_v1_4->unk4 = 0;
     if ((arg2 == 0) || (arg2 == 2)) {
@@ -2723,7 +2723,7 @@ void renderInitCamera(void **arg0, void *arg1, s32 arg2) {
     var_v1_2->unk4 = 0;
     temp_v1_7 = var_v1_2 + 8;
     temp_v1_7->unk4 = 0x0F000000;
-    temp_v1_7->unk0 = ((viCFBFmt & 3) << 0x13) | 0xFF000000 | ((gCurrScreenWidth - 1) & 0xFFF);
+    temp_v1_7->unk0 = ((viCFBPixelSize & 3) << 0x13) | 0xFF000000 | ((gCurrScreenWidth - 1) & 0xFFF);
     var_v1_3 = temp_v1_7 + 8;
     if (arg1->unk80 & 2) {
         var_v1_3->unk0 = 0xE3000A01;
@@ -2854,7 +2854,7 @@ void func_80016DE8(void **arg0, void *arg1, s32 arg2, void *arg3, s32 arg4, s32 
     var_v1->unk0 = 0xE7000000;
     var_v1->unk4 = 0;
     temp_v1_8 = var_v1 + 8;
-    temp_v1_8->unk0 = ((viCFBFmt & 3) << 0x13) | 0xFF000000 | ((arg4 - 1) & 0xFFF);
+    temp_v1_8->unk0 = ((viCFBPixelSize & 3) << 0x13) | 0xFF000000 | ((arg4 - 1) & 0xFFF);
     temp_v1_9 = temp_v1_8 + 8;
     temp_v1_8->unk4 = arg3;
     temp_v1_9->unk0 = 0xFE000000;

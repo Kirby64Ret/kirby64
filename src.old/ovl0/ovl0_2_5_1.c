@@ -8,7 +8,7 @@
 // bss
 
 u16 *gZBuffer; // 0x8004A500
-u32 viCFBFmt;
+u32 viCFBPixelSize;
 s32 gCurrScreenWidth; // 0x8004A508
 s32 gCurrScreenHeight; // 0x8004A50C
 u32 D_8004A510;
@@ -24,7 +24,7 @@ u32 func_800078F0(u32 color) {
     // Is this a GPACK_RGBA5551?
     u32 temp_v0 = ((((color >> 0x10) & 0xF800) | ((color >> 0xD) & 0x7C0)) | ((color >> 0xA) & 0x3E)) | ((color >> 7) & 1);
 
-    return (viCFBFmt == 3) ? color : (temp_v0 << 16) | temp_v0;
+    return (viCFBPixelSize == 3) ? color : (temp_v0 << 16) | temp_v0;
 }
 
 void func_80000980(void*);
@@ -50,10 +50,10 @@ GLOBAL_ASM("asm/non_matchings/ovl0/ovl0_2_5/func_80007944.s")
 void func_80007998(s32 arg0) {
     D_8004A510 |= arg0;
     if (arg0 & 0x20) {
-        viCFBFmt = 3;
+        viCFBPixelSize = 3;
     }
     if (arg0 & 0x10) {
-        viCFBFmt = 2;
+        viCFBPixelSize = 2;
     }
     viSettingsChanged = 1;
 }
@@ -103,7 +103,7 @@ void func_80007B38(s32 arg0, s32 arg1, u32 arg2) {
     struct InterruptMessageType4 msg;
 
     D_8004A510 = 0;
-    viCFBFmt = 2;
+    viCFBPixelSize = 2;
     func_80007998(arg2);
     func_800079E4(arg0);
     func_800079FC(arg1);

@@ -3,7 +3,7 @@
 #include "vi.h"
 
 u16 *gZBuffer; // 0x8004A500
-s32 viCFBFmt;
+s32 viCFBPixelSize;
 s32 gCurrScreenWidth; // 0x8004A508
 s32 gCurrScreenHeight; // 0x8004A50C
 u32 viFlags;
@@ -14,7 +14,7 @@ s16 viEdgeOffsetLeft, viEdgeOffsetRight, viEdgeOffsetTop, viEdgeOffsetBottom;
 u32 viPackRGBA(u32 color) {
     u32 temp_v0 = ((((color >> 0x10) & 0xF800) | ((color >> 0xD) & 0x7C0)) | ((color >> 0xA) & 0x3E)) | ((color >> 7) & 1);
 
-    return (viCFBFmt == 3) ? color : (temp_v0 << 16) | temp_v0;
+    return (viCFBPixelSize == G_IM_SIZ_32b) ? color : (temp_v0 << 16) | temp_v0;
 }
 
 void viSetCFB(void* fb1, void* fb2, void* fb3) {
@@ -33,10 +33,10 @@ void viSetFlags(s32 flags) {
     viFlags |= flags;
 
     if (flags & 0x20) {
-        viCFBFmt = 3;
+        viCFBPixelSize = G_IM_SIZ_32b;
     }
     if (flags & 0x10) {
-        viCFBFmt = 2;
+        viCFBPixelSize = G_IM_SIZ_16b;
     }
     viSettingsChanged = 1;
 }
@@ -86,7 +86,7 @@ void viSetScreenParams(s32 width, s32 height, u32 flags) {
     SCTaskVi task;
 
     viFlags = 0;
-    viCFBFmt = G_IM_SIZ_16b;
+    viCFBPixelSize = G_IM_SIZ_16b;
     viSetFlags(flags);
     viSetScreenWidth(width);
     viSetScreenHeight(height);

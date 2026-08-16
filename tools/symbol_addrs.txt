@@ -914,7 +914,7 @@ viSettingsChanged = 0x8004A514;
 viSetScreenWidth = 0x800079E4; // type:func
 viSetFlags = 0x80007998; // type:func
 viSetCFB = 0x80007944; // type:func
-viCFBFmt = 0x8004A504; 
+viCFBPixelSize = 0x8004A504; 
 viPackRGBA = 0x800078F0; // type:func
 
 

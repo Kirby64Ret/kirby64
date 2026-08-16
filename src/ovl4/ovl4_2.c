@@ -3,6 +3,9 @@
 #include "types.h"
 #include "cfb.h"
 #include "segments.h"
+#include "track_arrays.h"
+
+#include "lost_data.h"
 
 #include "GObj.h"
 #include "DObj.h"
@@ -11,10 +14,16 @@
 #include "main/anim.h"
 #include "main/contpad.h"
 #include "main/gtl.h"
+#include "main/object_helpers.h"
 #include "main/vi.h"
 
 #include "ovl1/game.h"
 #include "ovl1/ovl1_2.h"
+#include "ovl1/track.h"
+#include "ovl1/ovl1_7.h"
+#include "ovl1/util.h"
+
+#include "bss.h"
 
 // forward decl
 void func_801552F8_ovl4(Gfx **arg0);
@@ -922,11 +931,11 @@ void func_8015306C_ovl4(void) {
     Vector sp30;
 
     func_800B2340(&sp3C, D_800DFBD0[D_8015C694_ovl4][*(&D_8015A924_ovl4 + (D_800D6B98 * 4))], D_8015C694_ovl4);
-    gEntitiesNextPosXArray[omCurrentObj->objId] = (bitwise f32) sp3C;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = sp3C.x;
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp3C.y;
     gEntitiesNextPosZArray[omCurrentObj->objId] = sp3C.z;
     func_800B26D8(&sp30, D_800DFBD0[D_8015C694_ovl4][*(&D_8015A924_ovl4 + (D_800D6B98 * 4))], D_8015C694_ovl4);
-    gEntitiesAngleXArray[omCurrentObj->objId] = (bitwise f32) sp30;
+    gEntitiesAngleXArray[omCurrentObj->objId] = sp30.x;
     gEntitiesAngleYArray[omCurrentObj->objId] = sp30.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = sp30.z;
     func_800A9864(D_8015A918_ovl4, 0x1869F, 0x10);
@@ -1503,14 +1512,9 @@ loop_1:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801543C8_ovl4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80154880_ovl4(s32 arg0) {
+void func_80154880_ovl4(GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154880_ovl4.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1659,38 +1663,17 @@ loop_1:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801548BC_ovl4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_80154DA0_ovl4(s32 arg0) {
+void func_80154DA0_ovl4(GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154DA0_ovl4.s")
-#endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+void func_80154DDC_ovl4(GObj *arg0) {
+    u32 temp_a1 = D_800E9AA0[omCurrentObj->objId].as_u32;
 
-void func_80154DDC_ovl4(s32 arg0) {
-    GObj *temp_v0;
-    s32 *var_v0;
-    s32 temp_a0;
-    s32 temp_a0_2;
-    s32 var_v1;
-    struct EntityThing800E9AA0 *temp_a1;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 var_v1_2;
-
-    temp_v0 = omCurrentObj;
-    temp_v1 = temp_v0->objId;
-    var_v1 = temp_v1 * 4;
-    temp_a1 = D_800E9AA0[temp_v1];
     switch (temp_a1) {
         case 1:
             func_80153AEC_ovl4(temp_a1);
-            var_v1_2 = omCurrentObj->objId;
-block_9:
-            var_v1 = var_v1_2 * 4;
             break;
         case 2:
         case 3:
@@ -1698,58 +1681,47 @@ block_9:
         case 5:
         case 6:
         case 7:
-            func_801533A8_ovl4(temp_a1 - 2, temp_a1);
-            var_v1_2 = omCurrentObj->objId;
-            goto block_9;
+            func_801533A8_ovl4(temp_a1 - 2);
+            break;
         case 8:
         case 9:
         case 10:
         case 11:
-            func_80152E38_ovl4(temp_a1 - 8, temp_a1);
-            var_v1_2 = omCurrentObj->objId;
-            goto block_9;
+            func_80152E38_ovl4(temp_a1 - 8);
+            break;
         case 12:
             func_8015306C_ovl4(temp_a1);
-            var_v1_2 = omCurrentObj->objId;
-            goto block_9;
+            break;
         case 15:
             func_80153C78_ovl4(temp_a1);
-            var_v1_2 = omCurrentObj->objId;
-            goto block_9;
+            break;
         case 13:
             func_801543C8_ovl4(temp_a1);
-            var_v1_2 = omCurrentObj->objId;
-            goto block_9;
+            break;
         case 14:
             func_801548BC_ovl4(temp_a1);
-            var_v1_2 = omCurrentObj->objId;
-            goto block_9;
+            break;
     }
-    *(D_800E3750 + var_v1) = 0.0f;
-    temp_v1_2 = temp_v0->objId;
-    D_800E3210[temp_v1_2] = D_800E3750[temp_v1_2];
-    D_800E3C90[temp_v0->objId] = 65535.0f;
-    gEntitiesNextPosXArray[temp_v0->objId] = 0.0f;
-    gEntitiesNextPosYArray[temp_v0->objId] = 0.0f;
-    gEntitiesNextPosZArray[temp_v0->objId] = 0.0f;
-    D_8015C694_ovl4 = temp_v0->objId;
-    D_800E98E0[temp_v0->objId] = D_800D6B9C;
-    D_800E9AA0[temp_v0->objId] = NULL;
-    func_800A9864(*(&D_8015A8A0_ovl4 + (D_800D6B98 * 4)), 0x1869F, 0x10, D_800E3750);
-    var_v0 = (D_800D6B98 * 8) + &D_8015A8B8_ovl4;
-    temp_a0 = *var_v0;
-    if (temp_a0 != 0) {
-        func_800AA018(temp_a0);
-        var_v0 = (D_800D6B98 * 8) + &D_8015A8B8_ovl4;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
+    D_8015C694_ovl4 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = D_800D6B9C;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+    func_800A9864(D_8015A8A0_ovl4[D_800D6B98], 0x1869F, 0x10);
+    if (D_8015A8B8_ovl4[D_800D6B98][0] != 0) {
+        func_800AA018(D_8015A8B8_ovl4[D_800D6B98][0]);
     }
-    temp_a0_2 = var_v0->unk4;
-    if (temp_a0_2 != 0) {
-        func_800AA018(temp_a0_2);
+    if (D_8015A8B8_ovl4[D_800D6B98][1] != 0) {
+        func_800AA018(D_8015A8B8_ovl4[D_800D6B98][1]);
     }
     if (D_800D6B80 != 0) {
         ohSleep(0x14);
         D_800D6B80 = 0;
-        D_800E9AA0[D_8015C698_ovl4] = 0x1F;
+        D_800E9AA0[D_8015C698_ovl4].as_u32 = 0x1F;
         ohSleep(0xA);
         ohSleep(0xF);
         ohSleep(5);
@@ -1762,36 +1734,24 @@ block_9:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80154DDC_ovl4.s")
 #endif
 
-#ifdef MIPS_TO_C
-
 void func_801550D4_ovl4(void) {
     D_8015C690_ovl4 = 2;
     D_800D6B78 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801550D4_ovl4.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_801550EC_ovl4(s32 arg0) {
+void func_801550EC_ovl4(GObj *arg0) {
     if ((D_800D6B24 == 0) && (D_8015C690_ovl4 == 5)) {
         utilSetRectColorFullScreen(0, 0, 0);
         if (D_800D6B78 != 0) {
             utilSpawnRect(0, 0x10, 2);
-            return;
+        } else {
+            utilSpawnRect(0, 8, 2);
         }
-        utilSpawnRect(0, 8, 2);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801550EC_ovl4.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_80155168_ovl4(void) {
-    struct EntityThing800E9AA0 *var_s0;
+    u32 i;
 
     gameSetUpdateRate(2.0f);
     ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 1, 0);
@@ -1803,64 +1763,33 @@ void func_80155168_ovl4(void) {
     func_800A7A40();
     func_801550D4_ovl4();
     func_800A6BC0(3);
-    func_800A70C4(0x10, 0x422627F0, 0x477FFF00, 0x43480000, 16384.0f);
-    func_800B3070(0x10, 0x40000000);
-    func_800B2F54(0x10, *(&D_8015A954_ovl4 + (D_800D6B98 * 4)), 0);
+    func_800A70C4(0x10, 41.539f, 65535.0f, 200.0f, 16384.0f);
+    func_800B3070(0x10, 2.0f);
+    func_800B2F54(0x10, D_8015A954_ovl4[D_800D6B98], 0.0f);
     func_800A71A0(0x10);
     request_track_3(3, 0, 0x70);
-    var_s0 = NULL;
-    do {
-        D_800E9AA0[request_track_general(4, 0, 0x70)] = var_s0;
-        var_s0 += 1;
-    } while (var_s0 != 0x10);
-    play_music(0, *(&D_8015A970_ovl4 + (D_800D6B98 * 4)));
+    for (i = 0; i < 16; i++) {
+        D_800E9AA0[request_track_general(4, 0, 0x70)].as_u32 = i;
+    }
+    play_music(0, D_8015A970_ovl4[D_800D6B98]);
     HS64_omMakeGObj(0, func_801550EC_ovl4, 0x1A, 0x80000000);
     utilSetRectColorFullScreen(0, 0, 0);
     utilSpawnRect(0xFF, -0x10, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_80155168_ovl4.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_801552F8_ovl4(void **arg0) {
-    void *temp_v1;
-
-    temp_v1 = *arg0;
-    *arg0 = temp_v1 + 8;
-    temp_v1->unk0 = 0xDE000000;
-    temp_v1->unk4 = &D_8015A790_ovl4;
+void func_801552F8_ovl4(Gfx **glistp) {
+    gSPDisplayList((*glistp)++, D_8015A790_ovl4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_801552F8_ovl4.s")
-#endif
-
-#ifdef MIPS_TO_C
 
 void func_8015531C_ovl4(void) {
-    ? *var_v1;
-    u16 (*var_a0)[0x11F80];
+    u32 i;
 
-    D_8015A7C0_ovl4.zBuffer = D_8012EB00 - 0x1900;
+    D_8015A7C0_ovl4.zBuffer = VI_ZBUFFER_START(320, 240, 0, 10, u16);
     viApplyScreenSettings(&D_8015A7C0_ovl4);
-    D_8015A7DC_ovl4.gtlSetup.heapSize = gFrameBuffer - &D_8018EE60;
-    var_v1 = &D_803D6900;
-    var_a0 = gFrameBuffer;
-    do {
-        var_a0[0][0] = 1;
-        var_v1->unk3F00 = 1;
-        var_a0[0][1] = 1;
-        var_v1->unk3F02 = 1;
-        var_a0[0][2] = 1;
-        var_v1->unk3F04 = 1;
-        var_a0[0][3] = 1;
-        var_v1 += 8;
-        var_v1->unk3EFE = 1;
-        var_a0 += 8;
-    } while (var_v1 != &D_803FC100);
+    D_8015A7DC_ovl4.gtlSetup.heapSize = (u32)&gFrameBuffer[0] - (u32)ovl5_VRAM_END;
+    for (i = 0; i < (SCREEN_WIDTH * SCREEN_HEIGHT); i++) {
+        gFrameBuffer[0][i] = GPACK_RGBA5551(0, 0, 0, 1);
+        gFrameBuffer[1][i] = GPACK_RGBA5551(0, 0, 0, 1);
+    }
     gtlCreateScene(&D_8015A7DC_ovl4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_2/func_8015531C_ovl4.s")
-#endif

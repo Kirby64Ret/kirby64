@@ -1743,9 +1743,8 @@ loop:
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_800B3070(GObj *arg0, f32 arg1) {
-    (*(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)))->unk78 = arg1;
+void func_800B3070(int arg0, f32 arg1) {
+    D_800D79D8[((arg0 - 10) >> 1)]->unk78 = arg1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B3070.s")

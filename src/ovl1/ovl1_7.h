@@ -2,6 +2,7 @@
 #define OVL1_7_H
 
 #include "GObj.h"
+#include "main/anim.h"
 
 // GObjThreadStack?
 struct UnkStruct800B1EC8 {
@@ -116,5 +117,8 @@ void curObjSleepForever(void);
 
 void func_800AEE20(GObj *, f32);
 void func_800AEEB4(GObj *, f32);
+
+void func_800B3070(s32 arg0, f32 arg1);
+void func_800B2F54(s32, AnimCmd **, f32);
 
 #endif // OVL1_7_H
