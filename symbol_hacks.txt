@@ -1,3 +1,10 @@
 D_800DFBD0_as_u32 = D_800DFBD0;
 D_800DFBD0_as_multitype = D_800DFBD0; /* TODO: make everything use the multitype */
 D_80300170 = 0x80300170;
+
+
+/* audio settings, match auLoadAssets to remove */
+D_8003F394 = 0x8003F394;
+D_8003F39A = 0x8003F39A;
+D_8003F39C = 0x8003F39C;
+D_8003F390 = 0x8003F390;

@@ -100,4 +100,17 @@ extern u8 _data_4A0340SegmentRomEnd[];
 extern u8 _data_4A3B60SegmentRomEnd[];
 extern u8 _data_4AA8F0SegmentRomEnd[];
 
+#define SOUND_SEGMENT(name) \
+extern u8 sound_##name##_ROM_START[];\
+extern u8 sound_##name##_ROM_END[];
+
+SOUND_SEGMENT(sound_250320);
+SOUND_SEGMENT(ctl_2A8CB0);
+SOUND_SEGMENT(sound_2B1510);
+SOUND_SEGMENT(ctl_3E1400);
+SOUND_SEGMENT(sound_3E6BC0);
+SOUND_SEGMENT(sound_49F590);
+SOUND_SEGMENT(sound_4A0340);
+SOUND_SEGMENT(sound_4A3B60);
+
 #endif // SEGMENTS_H

@@ -6,10 +6,11 @@
 #include "audio.h"
 #include "fault.h"
 
+#include "segments.h"
+
 // mystery, seems to also be DMA
 extern OSMesgQueue D_80095E30;
 extern OSMesg D_80095E50[];
-extern s32 auDMACount;
 extern OSPiHandle *gRomHandle;
 extern OSMesgQueue auGameTickQueue;
 extern OSMesgQueue auSPTaskMQ;
@@ -19,6 +20,58 @@ extern OSMesg auSPTaskMessages[1];
 extern OSMesg auDMAMessages[50];
 
 extern u8 D_800964D3;
+
+s32 auSettingsUpdated = 0;
+s32 auDMACount = 0;
+s32 auSoundQuality = 1;
+s32 auCurrentFxType = 0;
+
+s32 auRestarting = 0;
+
+s32 auFrameCounter = 1;
+
+s16 auSampleCount[] = {
+    0x0000, 0x0000, 0x0000, 0x0000
+};
+
+AuSettings auPublicSettings = {
+    0x8004ADC0,
+    0x4B000,
+    32000,
+    0x10,
+    0x18,
+    0x40,
+    0x40,
+    8,
+    {0x18, 0},
+    0,
+    50,
+    20,
+    sound_ctl_3E1400_ROM_START,
+    sound_ctl_3E1400_ROM_END,
+    sound_sound_3E6BC0_ROM_START,
+    sound_ctl_2A8CB0_ROM_START,
+    sound_sound_2B1510_ROM_START,
+    sound_sound_2B1510_ROM_START,
+    sound_sound_250320_ROM_START,
+    0, 0x10, 8, 8,
+    0,
+    0,
+    NULL,
+    NULL,
+    0,
+    0,
+    0,
+    0,
+    sound_sound_49F590_ROM_START,
+    sound_sound_49F590_ROM_END,
+
+    sound_sound_4A0340_ROM_START,
+    sound_sound_4A0340_ROM_END,
+
+    sound_sound_4A3B60_ROM_START,
+    sound_sound_4A3B60_ROM_END,
+};
 
 static void _bnkfPatchBank(ALBank* bank, s32 offset, s32 table);
 static void _bnkfPatchInst(ALInstrument* i, s32 offset, s32 table);

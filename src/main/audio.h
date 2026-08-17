@@ -45,7 +45,10 @@ typedef struct {
     /* 0x24 */ s32 bank2End;
     /* 0x28 */ u8* table2Start;
     /* 0x2C */ s32 romSbkStart;
-    /* 0x30 */ u8 fxType; u8 pad31[3];
+    /* 0x30 */ u8 fxType;
+    u8 unk31;
+    u8 unk32;
+    u8 unk33;
     u32 unk34;
     u32 unk38;
     u32 *unk3C;

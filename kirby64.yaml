@@ -198,7 +198,7 @@ segments:
     - [0x3EB10, data, mainseg.2.0]
     - [0x3EB20, .data, main/math]
     - [0x3EF30, data, main/sintable] # this might as well stay transient
-    - [0x3FF30, data, main/audio]
+    - [0x3FF30, .data, main/audio]
     - [0x3FFC0, .data, main/fault]
     - [0x40480, data, mainseg.2.2]
     - [0x40730, lib, libultra_rom, exceptasm, .data]
