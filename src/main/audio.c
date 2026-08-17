@@ -51,7 +51,7 @@ AuSettings auPublicSettings = {
     sound_ctl_3E1400_ROM_END,
     sound_sound_3E6BC0_ROM_START,
     sound_ctl_2A8CB0_ROM_START,
-    sound_sound_2B1510_ROM_START,
+    sound_ctl_2A8CB0_ROM_END,
     sound_sound_2B1510_ROM_START,
     sound_sound_250320_ROM_START,
     0, 0x10, 8, 8,

@@ -38,13 +38,13 @@ typedef struct {
     /* 0x11 */ s8 unk_11;
     /* 0x12 */ s8 unk_12;
     /* 0x13 */ u8 unk_13;
-    /* 0x14 */ s32 bank1Start;
-    /* 0x18 */ s32 bank1End;
-    /* 0x1C */ u8* table1Start;
-    /* 0x20 */ s32 bank2Start;
-    /* 0x24 */ s32 bank2End;
-    /* 0x28 */ u8* table2Start;
-    /* 0x2C */ s32 romSbkStart;
+    /* 0x14 */ u8 *bank1Start;
+    /* 0x18 */ u8 *bank1End;
+    /* 0x1C */ u8 *table1Start;
+    /* 0x20 */ u8 *bank2Start;
+    /* 0x24 */ u8 *bank2End;
+    /* 0x28 */ u8 *table2Start;
+    /* 0x2C */ u8 *romSbkStart;
     /* 0x30 */ u8 fxType;
     u8 unk31;
     u8 unk32;
@@ -58,14 +58,14 @@ typedef struct {
     u16 unk4A;
     u32 unk4C;
 // 0x50/0xx54
-    u32 bank3Start;
-    u32 bank3End;
+    u8 *bank3Start;
+    u8 *bank3End;
 // 0x58/0x5C
-    u32 bank4Start;
-    u32 bank4End;
+    u8 *bank4Start;
+    u8 *bank4End;
 // 0x60/0x64
-    u32 bank5Start;
-    u32 bank5End;
+    u8 *bank5Start;
+    u8 *bank5End;
 } AuSettings;
 
 typedef struct {
