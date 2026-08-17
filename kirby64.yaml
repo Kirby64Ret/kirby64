@@ -306,6 +306,8 @@ segments:
     - [0x66640, data, ovl1/game]
     - [0x667A0, .data, ovl1/util]
     - [0x67B40, data, ovl1/ovl1_2]
+    - [0x6C8F0, .data, ovl1/filetable]
+    - [0x78314, data, ovl1/ovl1_2_late] # TODO: NOT ALIGNED! Find the REAL split
     - [0x7D8B0, .rodata, ovl1/ovl1]
     - [0x7DCC0, .rodata, ovl1/game]
     - [0x7DE80, .rodata, ovl1/util]

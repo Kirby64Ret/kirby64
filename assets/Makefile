@@ -138,9 +138,8 @@ $(BUILD_DIR)/assets.ld: assets.ld $(BANK_LINKSCRIPTS) bank_header.ld.in
 
 $(TARGET): $(BUILD_DIR)/assets.ld $(BANK_HEADERS)
 	@printf "    [Asset:LINK] $<\n"
-	$(V)$(CROSS)ld -L $(K64_BUILD_DIR) -T $< -o $(BUILD_DIR)/$(@F).elf
-	$(CROSS)objcopy $(MATCH_ASSETS) $(BUILD_DIR)/$(@F).elf $(BUILD_DIR)/$(@F).bin -O binary
-	$(CROSS)ld -r -b binary -o $@ $(BUILD_DIR)/$(@F).bin
+	$(V)$(CROSS)ld -r -L $(K64_BUILD_DIR) -T $< -o $(BUILD_DIR)/$(@F).elf
+	$(CROSS)objcopy $(MATCH_ASSETS) $(BUILD_DIR)/$(@F).elf $@ -O elf32-bigmips
 
 .PHONY: all clean default diff test distclean
 .SECONDARY:
