@@ -208,9 +208,7 @@ $(BUILD_DIR)/src/ovl7/yakulib.o: OPT_FLAGS = -O2 -Olimit 1000
 $(BUILD_DIR)/src/ovl1/ovl1_5.o: OPT_FLAGS = -O2
 $(BUILD_DIR)/src/ovl3/ovl3_1.o: OPT_FLAGS = -O2 -Wo,-loopunroll
 
-$(BUILD_DIR)/src/ovl1/filetable.o: CC = $(CROSS)gcc
-$(BUILD_DIR)/src/ovl1/filetable.o: CFLAGS = $(GCC_CFLAGS)
-$(BUILD_DIR)/src/ovl1/filetable.o: $(GAME_ASSETS)
+$(BUILD_DIR)/src/ovl1/filetable_stuff.o: $(GAME_ASSETS)
 
 $(BUILD_DIR)/libultra_rom.a:
 	$(MAKE) -C libreultra BUILD_DIR=../$(BUILD_DIR) VERSION=

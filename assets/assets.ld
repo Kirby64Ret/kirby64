@@ -32,6 +32,20 @@ SECTIONS
 
     #include "assets/bank7.ld"
 
+    .match 0 : AT(__romPos) {
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+        BYTE(0);
+    }
+
     /DISCARD/ :
     {
         *(*);

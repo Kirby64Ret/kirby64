@@ -8,3 +8,12 @@ D_8003F394 = 0x8003F394;
 D_8003F39A = 0x8003F39A;
 D_8003F39C = 0x8003F39C;
 D_8003F390 = 0x8003F390;
+
+/* match ovl1/func_800AB490 to remove */
+D_800D4D8D = D_800D4D8C + 1;
+
+/* match ovl1_13/func_800BDAA8.s to remove */
+D_800D55F9 = D_800D55F8 + 1;
+
+/* match save_file/func_800B8AD4.s to remove */
+D_800D5157 = D_800D5150 + 7;

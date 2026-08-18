@@ -138,8 +138,7 @@ $(BUILD_DIR)/assets.ld: assets.ld $(BANK_LINKSCRIPTS) bank_header.ld.in
 
 $(TARGET): $(BUILD_DIR)/assets.ld $(BANK_HEADERS)
 	@printf "    [Asset:LINK] $<\n"
-	$(V)$(CROSS)ld -r -L $(K64_BUILD_DIR) -T $< -o $(BUILD_DIR)/$(@F).elf
-	$(CROSS)objcopy $(MATCH_ASSETS) $(BUILD_DIR)/$(@F).elf $@ -O elf32-bigmips
+	$(V)$(CROSS)ld -r -L $(K64_BUILD_DIR) -T $< -o $@
 
 .PHONY: all clean default diff test distclean
 .SECONDARY:

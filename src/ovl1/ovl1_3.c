@@ -384,7 +384,7 @@ s32 func_800A8934(u32 arg0, s32 arg1, s32 arg2, ? arg3) {
     void *temp_v0;
     void *temp_v1;
 
-    temp_v1 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
+    temp_v1 = *(&gFileTable + ((arg0 >> 0x10) * 4));
     temp_v0 = temp_v1->unk8 + ((arg0 & 0xFFFF) * 4);
     if (arg2 == 0) {
         var_a2 = (((temp_v0->unk4 - temp_v0->unk0) + 3) & 0xFFFFFC) - arg1;
@@ -417,7 +417,7 @@ s32 func_800A89E0(u32 arg0) {
     void *temp_v0_2;
     void *temp_v1;
 
-    temp_v0_2 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
+    temp_v0_2 = *(&gFileTable + ((arg0 >> 0x10) * 4));
     temp_a1 = arg0 & 0xFFFF;
     temp_v1 = temp_v0_2->unk8 + (temp_a1 * 4);
     sp18 = temp_v0_2->unkC;
@@ -476,7 +476,7 @@ s32 func_800A8B0C(u32 arg0, s32 arg1) {
     void *temp_v0_2;
     void *temp_v1;
 
-    temp_v0_2 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
+    temp_v0_2 = *(&gFileTable + ((arg0 >> 0x10) * 4));
     temp_a2 = arg0 & 0xFFFF;
     temp_v1 = temp_v0_2->unk8 + (temp_a2 * 4);
     sp18 = temp_v0_2->unkC;
@@ -563,7 +563,7 @@ s32 func_800A8CE0(u32 arg0, s32 arg1) {
     void *temp_v1;
 
     temp_a2 = (arg0 & 0xFFFF) * 2;
-    temp_v1 = **(&D_800D0184 + ((arg0 >> 0x10) * 4)) + (temp_a2 * 4);
+    temp_v1 = **(&gFileTable + ((arg0 >> 0x10) * 4)) + (temp_a2 * 4);
     sp1C = temp_v1;
     temp_a0 = (temp_v1->unk4 - temp_v1->unk0) | arg1;
     sp2C = temp_a0;
@@ -823,7 +823,7 @@ void *func_800A9250(u32 arg0, s32 arg1) {
     void *temp_v1;
 
     temp_a2 = (arg0 & 0xFFFF) * 2;
-    temp_s0 = **(&D_800D0184 + ((arg0 >> 0x10) * 4)) + (temp_a2 * 4);
+    temp_s0 = **(&gFileTable + ((arg0 >> 0x10) * 4)) + (temp_a2 * 4);
     temp_s1 = (temp_s0->unk4 - temp_s0->unk0) | arg1;
     temp_v0 = func_800A8358(temp_s1, temp_a2);
     dma_read(temp_s0->unk0, temp_v0, temp_s1 & 0xFFFFFC);
@@ -969,7 +969,7 @@ void *func_800A94F4(s32 arg0) {
     void *temp_v0_2;
     void *temp_v1;
 
-    temp_v0 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
+    temp_v0 = *(&gFileTable + ((arg0 >> 0x10) * 4));
     temp_a1 = arg0 & 0xFFFF;
     temp_v1 = temp_v0->unk10 + (temp_a1 * 4);
     sp18 = temp_v0->unk14;
@@ -1184,7 +1184,7 @@ s32 func_800A9AA8(u32 arg0, s32 arg1) {
     void *temp_v0_2;
     void *temp_v1;
 
-    temp_v0_2 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
+    temp_v0_2 = *(&gFileTable + ((arg0 >> 0x10) * 4));
     temp_a2 = arg0 & 0xFFFF;
     temp_v1 = temp_v0_2->unk18 + (temp_a2 * 4);
     sp18 = temp_v0_2->unk1C;
