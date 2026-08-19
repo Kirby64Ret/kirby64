@@ -254,18 +254,21 @@ $(BUILD_DIR)/$(UCODE_BASE_DIR)/%.o : $(UCODE_BASE_DIR)/%
 	$(OBJCOPY) -I binary -O elf32-big $< $@
 
 $(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT) $(UCODE_LD) rcp_syms.txt unnamed_syms.txt $(GAME_ASSETS)
-	$(CPP) $(VERSION_CFLAGS) $(INCLUDE_CFLAGS) -MMD -MP -MT $@ -MF $@.d -o $@ $< \
+	@printf "    [LDSCRIPT] $<\n"
+	$(V)$(CPP) $(VERSION_CFLAGS) $(INCLUDE_CFLAGS) -MMD -MP -MT $@ -MF $@.d -o $@ $< \
 	-DBUILD_DIR=$(BUILD_DIR) -Umips
 
 $(BUILD_DIR)/$(TARGET).elf: $(GAME_ASSETS) $(O_FILES) $(BUILD_DIR)/$(LD_SCRIPT) $(BUILD_DIR)/libultra_rom.a $(BUILD_DIR)/libn_audio.a $(UCODE_TEXT_O_FILES) $(UCODE_DATA_O_FILES)
+	@printf "    [LINK] $@\n"
 	$(V)$(LD) -L $(BUILD_DIR) $(LDFLAGS) -o $@ $(LIBS) -ln_audio -lultra_rom
 
 # final z64 updates checksum
 $(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).elf
-	$(OBJCOPY) $< $(BUILD_DIR)/$(@F).bin -O binary $(PRELIM_OBJCOPY_FLAGS)
-	$(LD) -r -b binary -o $(BUILD_DIR)/$(@F).elf.1 $(BUILD_DIR)/$(@F).bin
-	$(OBJCOPY) $(BUILD_DIR)/$(@F).elf.1 $@ -O binary $(OBJCOPY_FLAGS)
-	$(N64CRC) $@
+	@printf "    [Z64] $@\n"
+	$(V)$(OBJCOPY) $< $(BUILD_DIR)/$(@F).bin -O binary $(PRELIM_OBJCOPY_FLAGS)
+	$(V)$(LD) -r -b binary -o $(BUILD_DIR)/$(@F).elf.1 $(BUILD_DIR)/$(@F).bin
+	$(V)$(OBJCOPY) $(BUILD_DIR)/$(@F).elf.1 $@ -O binary $(OBJCOPY_FLAGS)
+	$(V)$(N64CRC) $@
 	@python3 tools/progress2.py -m
 
 
