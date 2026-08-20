@@ -1,7 +1,26 @@
+#include <ultra64.h>
+#include <PR/gbi.h>
+#include <PR/gs2dex.h>
+
 #include "types.h"
 #include "segments.h"
 #include "stages.h"
-#include <PR/gs2dex.h>
+
+#include "GObj.h"
+
+#include "main/render.h"
+#include "ovl1/ovl1_3.h"
+#include "ovl1/ovl1_13.h"
+#include "ovl2/ovl2_2.h"
+#include "ovl2/ovl2_5.h"
+#include "ovl2/plylib.h"
+#include "ovl3/plyshot.h"
+#include "ovl5/ovl5_5.h"
+#include "ovl5/ovl5_7.h"
+#include "ovl7/enelib.h"
+#include "ovl7/yakulib.h"
+#include "ovl10/ovl10_5.h"
+#include "ovl18/code_2308C0.h"
 
 extern u32 D_800D7C50;
 extern u32 D_800D7C80;
@@ -11,14 +30,65 @@ extern u32 D_800D8570;
 extern u32 D_800D87D8;
 extern u32 D_800D87E0;
 extern u32 D_800D8C80;
-extern u32 D_800D8FD0;
-extern u32 D_800D9040;
-extern u32 D_800D9E70;
-extern u32 D_800DA298;
-extern u32 D_800DB2C0;
-extern u32 D_800DBDC8;
-extern u32 D_800DC2B0;
-extern u32 D_800DC538;
+extern struct BGHeader *D_800D8FD0;
+extern struct BGHeader *D_800D9040;
+extern struct BGHeader *D_800D9E70;
+extern struct BGHeader *D_800DA298;
+extern struct BGHeader *D_800DB2C0;
+extern struct BGHeader *D_800DBDC8;
+extern struct BGHeader *D_800DC2B0;
+extern struct BGHeader *D_800DC538;
+
+// TODO: move to their respective headers
+void func_80151338_ovl4();
+void func_801553C0_ovl4();
+void func_80158190_ovl4();
+void func_80151DE0_ovl4();
+void func_80151E00_ovl4();
+void func_80159B00_ovl4();
+void func_8015CD00_ovl5();
+void func_80165440_ovl5();
+void func_8016FB80_ovl5();
+void func_8017ED60_ovl5();
+void func_80179E00_ovl5();
+void func_80180360_ovl5();
+void func_8017F660_ovl5();
+void func_8017E180_ovl5();
+void func_80182360_ovl5();
+void func_801830A0_ovl5();
+void func_80177B00_ovl5();
+void func_80152CF8_ovl6();
+void func_8011C720();
+void func_8015AC90_ovl3();
+void func_80163320_ovl3();
+void func_8021EA40_ovl19();
+void func_800FCF0C();
+void func_800FCF58();
+void func_800FCFA4();
+void func_801ACE60_ovl7();
+void func_801ACFD0_ovl7();
+void func_800FCFF0();
+void func_801149C0();
+void func_80114CF4();
+void func_800FD03C();
+void func_800FD194();
+void func_8021F400_ovl18();
+void func_800FD330();
+void func_800FDE64();
+void func_800F6E30();
+void func_800F72B0();
+void func_800BCEEC();
+void func_800BCA5C();
+void func_800F6C98();
+void func_801F28AC_ovl10();
+void func_800BDD90();
+void func_800BB580();
+void func_80226FD8_ovl18();
+void func_8022677C_ovl18();
+void func_800BC328();
+void func_800BC4C0();
+void func_800BC664();
+void func_800BC800();
 
 //=================================
 //Include all the actual filetables
@@ -52,9 +122,9 @@ u32 D_800D00E4[] = {
     0x00000001,
     0x00000127,
     0x000000D3,
-}
+};
 
-u32 *D_800D0104[] = {
+struct BGHeader **D_800D0104[] = {
     &D_800D8FD0,
     &D_800D9040,
     &D_800D9E70,
@@ -355,58 +425,58 @@ struct StageArea D_800D01A4[0xD5] = {
 };
 
 struct StageArea *D_800D1F98[][12] = {
-	{
-		&D_800D01A4[0],
-		&D_800D01A4[6],
-		&D_800D01A4[14],
-		&D_800D01A4[25],
-	},
-	{
-		&D_800D01A4[27],
-		&D_800D01A4[34],
-		&D_800D01A4[42],
-		&D_800D01A4[52],
-		&D_800D01A4[62],
-	},
-	{
-		&D_800D01A4[64],
-		&D_800D01A4[72],
-		&D_800D01A4[80],
-		&D_800D01A4[89],
-		&D_800D01A4[97],
-	},
-	{
-		&D_800D01A4[99],
-		&D_800D01A4[107],
-		&D_800D01A4[116],
-		&D_800D01A4[123],
-		&D_800D01A4[132],
-	},
-	{
-		&D_800D01A4[134],
-		&D_800D01A4[142],
-		&D_800D01A4[150],
-		&D_800D01A4[160],
-		&D_800D01A4[169],
-	},
-	{
-		&D_800D01A4[171],
-		&D_800D01A4[176],
-		&D_800D01A4[184],
-		&D_800D01A4[197],
-	},
-	{
-		&D_800D01A4[199],
-		&D_800D01A4[203],
-		&D_800D01A4[206],
-		&D_800D01A4[208],
-	},
+    {
+        &D_800D01A4[0],
+        &D_800D01A4[6],
+        &D_800D01A4[14],
+        &D_800D01A4[25],
+    },
+    {
+        &D_800D01A4[27],
+        &D_800D01A4[34],
+        &D_800D01A4[42],
+        &D_800D01A4[52],
+        &D_800D01A4[62],
+    },
+    {
+        &D_800D01A4[64],
+        &D_800D01A4[72],
+        &D_800D01A4[80],
+        &D_800D01A4[89],
+        &D_800D01A4[97],
+    },
+    {
+        &D_800D01A4[99],
+        &D_800D01A4[107],
+        &D_800D01A4[116],
+        &D_800D01A4[123],
+        &D_800D01A4[132],
+    },
+    {
+        &D_800D01A4[134],
+        &D_800D01A4[142],
+        &D_800D01A4[150],
+        &D_800D01A4[160],
+        &D_800D01A4[169],
+    },
+    {
+        &D_800D01A4[171],
+        &D_800D01A4[176],
+        &D_800D01A4[184],
+        &D_800D01A4[197],
+    },
+    {
+        &D_800D01A4[199],
+        &D_800D01A4[203],
+        &D_800D01A4[206],
+        &D_800D01A4[208],
+    },
     {NULL, },
     {NULL, },
 };
 
 u32 D_800D2148[] = {
-    0x00070007;
+    0x00070007,
     0x00000016,
     0x004F0038,
     0xFF88FF88,
@@ -4716,7 +4786,7 @@ u32 *D_800D4668[] = {
     &D_800D45A8,
     &D_800D35E8,
     &D_800D3108,
-}
+};
 
 u32 D_800D478C = 0xB4B4B4FF;
 u32 D_800D4790 = 0xFFFF323C;
@@ -5638,7 +5708,7 @@ Gfx D_800D4E98[] = {
     gsSPEndDisplayList(),
 };
 
-void (*gDrawFuncList)(GObj *)[] = {
+void (*gDrawFuncList[])(GObj *) = {
     renderDrawGObjList0,
     renderDrawGObjList1,
     renderDrawGObjList2,
@@ -5685,8 +5755,8 @@ void (*gDrawFuncList)(GObj *)[] = {
     func_8019E9F0_ovl7,
     func_801F2964_ovl10,
     func_80177524_ovl5,
-    0x8017CCE0,
-    0x8017D6F8,
+    func_8017CCE0_ovl5,
+    func_8017D6F8_ovl5,
 };
 
 u32 D_800D4FD0 = 0x03000000;
@@ -5744,7 +5814,7 @@ u32 D_800D509C = func_800FCFA4;
 u32 D_800D50A0 = 0x04000000;
 u32 D_800D50A4 = func_801ACE60_ovl7;
 u32 D_800D50A8 = 0x03000000;
-u32 D_800D50AC = func_801ACFD0;
+u32 D_800D50AC = func_801ACFD0_ovl7;
 u32 D_800D50B0 = 0x05000000;
 u32 D_800D50B4 = func_800FCFF0;
 u32 D_800D50B8 = 0x01000000;
@@ -5784,120 +5854,76 @@ u32 D_800D513C = func_8022677C_ovl18;
 
 u8 D_800D5140[0x10] = "K4 Backup String";
 
-u32 D_800D5150 = 0x0002000D;
-
-u32 D_800D5154 = 0x00180082;
-
-u32 D_800D5158 = 0x008D0098;
+u8 D_800D5150[] = {0, 2, 0, 0xD, 0, 0x18, 0, 0x82, 0, 0x8D, 0, 0x98};
 
 f32 D_800D515C = 70.0f;
-
-u32 D_800D5160 = 0x00000000;
-
+f32 D_800D5160 = 0.0f;
 f32 D_800D5164 = 50.0f;
-
 f32 D_800D5168 = 0.05f;
-
 f32 D_800D516C = 40.0f;
-
 f32 D_800D5170 = 0.1f;
-
 f32 D_800D5174 = 30.0f;
-
 f32 D_800D5178 = 0.15f;
-
 f32 D_800D517C = 20.0f;
-
 f32 D_800D5180 = 0.3f;
-
 f32 D_800D5184 = 1.0f;
-
 f32 D_800D5188 = 0.5f;
-
 u32 D_800D518C = 0x00000000;
-
 u32 D_800D5190 = 0x00000000;
-
 u32 D_800D5194 = 0x00000000;
-
 u32 D_800D5198 = 0x00000000;
-
 u32 D_800D519C = 0x00000000;
 
-u32 D_800D51A0 = 0x200A4002;
 
+u32 D_800D51A0 = 0x200A4002;
 u32 D_800D51A4 = 0x00000000;
 
 u32 D_800D51A8 = 0x600F2002;
-
 u32 D_800D51AC = 0x40028000;
-
 u32 D_800D51B0 = 0x00000000;
 
 u32 D_800D51B4 = 0x601E2002;
-
 u32 D_800D51B8 = 0x40028000;
-
 u32 D_800D51BC = 0x00000000;
 
 u32 D_800D51C0 = 0x60062002;
-
 u32 D_800D51C4 = 0x40048000;
-
 u32 D_800D51C8 = 0x00000000;
 
 u32 D_800D51CC = 0x60032002;
-
 u32 D_800D51D0 = 0x40048000;
-
 u32 D_800D51D4 = 0x00000000;
 
 u32 D_800D51D8 = 0x601E2002;
-
 u32 D_800D51DC = 0x40048000;
-
 u32 D_800D51E0 = 0x00000000;
 
 u32 D_800D51E4 = 0x60042002;
-
 u32 D_800D51E8 = 0x40068000;
-
 u32 D_800D51EC = 0x00000000;
 
 u32 D_800D51F0 = 0x60022002;
-
 u32 D_800D51F4 = 0x40068000;
-
 u32 D_800D51F8 = 0x00000000;
 
 u32 D_800D51FC = 0x60082002;
-
 u32 D_800D5200 = 0x40068000;
-
 u32 D_800D5204 = 0x00000000;
 
 u32 D_800D5208 = 0x600F2002;
-
 u32 D_800D520C = 0x40068000;
-
 u32 D_800D5210 = 0x00000000;
 
 u32 D_800D5214 = 0x7F402002;
-
 u32 D_800D5218 = 0x40028000;
-
 u32 D_800D521C = 0x00000000;
 
 u32 D_800D5220 = 0x7F402002;
-
 u32 D_800D5224 = 0x40048000;
-
 u32 D_800D5228 = 0x00000000;
 
 u32 D_800D522C = 0x7F402002;
-
 u32 D_800D5230 = 0x40068000;
-
 u32 D_800D5234 = 0x00000000;
 
 u32 *D_800D5238[] = {
@@ -5916,7 +5942,7 @@ u32 *D_800D5238[] = {
     &D_800D51F0,
     &D_800D51FC,
     &D_800D5208,
-}
+};
 
 // u8[]
 u32 D_800D5274 = 0x090A0A0A;

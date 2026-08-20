@@ -30,7 +30,7 @@ struct BGHeader {
     u32 palOffset;
 };
 
-extern struct BGHeader ***D_800D0104;
+extern struct BGHeader **D_800D0104[];
 
 #define ALIGN100(x) (((u32)x + 0xFF) & ~(0x100))
 
@@ -48,5 +48,22 @@ void func_800AAF34(s32, s32, f32);
 //  They can't have casted every time right?
 void func_800A99E4(u16);
 void func_800A9D64(u16);
+
+// Draw Func List
+void func_800AB110(GObj *);
+void func_800AB118(GObj *);
+void func_800AB120(GObj *);
+void func_800AB174(GObj *);
+void func_800AB1F0(GObj *);
+void func_800AB244(GObj *);
+void func_800AB2C0(GObj *);
+void func_800AB314(GObj *);
+void func_800AB390(GObj *);
+void func_800AB398(GObj *);
+void func_800AB3A0(GObj *);
+void func_800AB3F4(GObj *);
+void func_800AB470(GObj *);
+void func_800AB478(GObj *);
+void func_800AB480(GObj *);
 
 #endif // OVL1_3_H

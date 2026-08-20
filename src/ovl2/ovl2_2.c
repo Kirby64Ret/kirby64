@@ -13,6 +13,8 @@
 
 #include "plylib.h"
 
+#include "ovl2_2.h"
+
 extern f32 gameTicksPerDrawInv;
 
 void func_800F6C40(s32 arg0, UNUSED s32 arg1) {

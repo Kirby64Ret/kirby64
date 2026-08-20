@@ -1,150 +1,101 @@
 #define START_GEO(bank, index) \
-    __romPos = ALIGN(__romPos, 16);\
-    bank_##bank##_index_##index##_geo = __romPos; \
-    bank_##bank##_index_##index##_geo_start = __romPos; \
-    .bank_##bank##_index_##index 0x04000000 : AT(__romPos) ALIGN(16) SUBALIGN(16)
+    . = ALIGN(16);\
+    bank_##bank##_index_##index##_geo_start = .;
 
 #define END_GEO(bank, index) \
-    bank_##bank##_index_##index##_geo_end = ALIGN(__romPos + SIZEOF(.bank_##bank##_index_##index), 16); \
-    __romPos += ALIGN(SIZEOF(.bank_##bank##_index_##index), 16);
+    bank_##bank##_index_##index##_geo_end = ALIGN(., 16);
 
 #define START_MISC(bank, index) \
-    bank_##bank##_index_##index##_misc_start = __romPos; \
-    .bank_##bank##_index_##index##_misc 0 : AT(__romPos) ALIGN(4)
+    bank_##bank##_index_##index##_misc_start = .;
 
 #define END_MISC(bank, index) \
-    bank_##bank##_index_##index##_misc_end = __romPos + SIZEOF(.bank_##bank##_index_##index##_misc); \
-    __romPos += SIZEOF(.bank_##bank##_index_##index##_misc); \
-    _bank_##bank##_misc_size += SIZEOF(.bank_##bank##_index_##index##_misc); \
-    _bank_##bank##_index_##index##_misc = _bank_##bank##_misc_size + SIZEOF(.bank_##bank##_index_##index##_misc);
+    bank_##bank##_index_##index##_misc_end = .; \
+    _bank_##bank##_misc_size += (bank_##bank##_index_##index##_misc_end - bank_##bank##_index_##index##_misc_start);
 
 #define START_IMG(bank, index) \
-    bank_##bank##_index_##index##_image_start = __romPos; \
-    .bank_##bank##_index_##index##_image 0 : AT(__romPos) ALIGN(4)
+    bank_##bank##_index_##index##_image_start = .;
 
 #define END_IMG(bank, index) \
-    bank_##bank##_index_##index##_image_end = __romPos + SIZEOF(.bank_##bank##_index_##index##_image); \
-    __romPos += SIZEOF(.bank_##bank##_index_##index##_image); \
-    _bank_##bank##_image_size += SIZEOF(.bank_##bank##_index_##index##_image); \
-    _bank_##bank##_index_##index##_image = _bank_##bank##_image_size + SIZEOF(.bank_##bank##_index_##index##_image);
+    bank_##bank##_index_##index##_image_end = .; \
+    _bank_##bank##_image_size += (bank_##bank##_index_##index##_image_end - bank_##bank##_index_##index##_image_start);
 
 #define START_ANIM(bank, index) \
-    bank_##bank##_index_##index##_anim_start = __romPos; \
-    .bank_##bank##_index_##index##_anim 0 : AT(__romPos) ALIGN(4)
+    bank_##bank##_index_##index##_anim_start = .;
 
 #define END_ANIM(bank, index) \
-    bank_##bank##_index_##index##_anim_end = __romPos + SIZEOF(.bank_##bank##_index_##index##_anim); \
-    __romPos += SIZEOF(.bank_##bank##_index_##index##_anim); \
-    _bank_##bank##_anim_size += SIZEOF(.bank_##bank##_index_##index##_anim); \
-    _bank_##bank##_index_##index##_anim = _bank_##bank##_anim_size + SIZEOF(.bank_##bank##_index_##index##_anim);
+    bank_##bank##_index_##index##_anim_end = .; \
+    _bank_##bank##_anim_size += (bank_##bank##_index_##index##_anim_end - bank_##bank##_index_##index##_anim_start);
 
 #define GEO_INIT(bank) \
-    __romPos = ALIGN(__romPos, 16);\
+    . = ALIGN(., 16);\
 
 #define IMAGES_INIT(bank) \
     _bank_##bank##_image_size = 0;\
-    bank_##bank##_index_1_image_start = __romPos;
+    bank_##bank##_index_1_image_start = .;
 
 #define ANIMS_INIT(bank) \
-    __romPos = ALIGN(__romPos, 16);\
+    . = ALIGN(., 16);\
     _bank_##bank##_anim_size = 0;\
-    bank_##bank##_index_1_anim_start = __romPos;
+    bank_##bank##_index_1_anim_start = .;
 
 #define MISC_INIT(bank) \
-    __romPos = ALIGN(__romPos, 16);\
+    . = ALIGN(., 16);\
     _bank_##bank##_misc_size = 0;\
-    bank_##bank##_index_1_misc_start = __romPos;
+    bank_##bank##_index_1_misc_start = .;
 
 #define GEO(bank, index) \
-    START_GEO(bank, index) {\
-        BUILD_DIR/assets/geo/bank_##bank/index/block.o(.data);\
-    }\
+    START_GEO(bank, index) \
+    BUILD_DIR/assets/geo/bank_##bank/index/block.o(.data);\
     END_GEO(bank, index)
 
 
 /* custom types */
 
 #define MODEL(bank, index) \
-    START_GEO(bank, index) {\
-        BUILD_DIR/assets/geo/bank_##bank/index/geo.o(.data*);\
-        . = ALIGN(16);\
-    }\
+    START_GEO(bank, index) \
+    BUILD_DIR/assets/geo/bank_##bank/index/geo.o(.data*);\
+    . = ALIGN(16);\
     END_GEO(bank, index)
 
 #define IMAGEBIN(bank, index) \
-    START_IMG(bank, index) {\
-        BUILD_DIR/assets/image/bank_##bank/index/block.o(.data*);\
-    }\
+    START_IMG(bank, index) \
+    BUILD_DIR/assets/image/bank_##bank/index/block.o(.data*);\
     END_IMG(bank, index)
 
 #define TEXTURE(bank, index, filename) \
-    START_IMG(bank, index) {\
-        filename(.data*);\
-    }\
+    START_IMG(bank, index) \
+    filename(.data*);\
     END_IMG(bank, index)
 
 #define ANIMATION(bank, index) \
-    START_ANIM(bank, index) {\
-        BUILD_DIR/assets/anim/bank_##bank/index/block.o(.data*);\
-    }\
+    START_ANIM(bank, index) \
+    BUILD_DIR/assets/anim/bank_##bank/index/block.o(.data*);\
     END_ANIM(bank, index)
 
 #define MISC(bank, index) \
-    START_MISC(bank, index) {\
-        BUILD_DIR/assets/misc/bank_##bank/index/block.o(.data*);\
-    }\
+    START_MISC(bank, index) \
+    BUILD_DIR/assets/misc/bank_##bank/index/block.o(.data*);\
     END_MISC(bank, index)
 
 #define MISC2(bank, index) \
-    START_MISC(bank, index) {\
-        BUILD_DIR/assets/misc/bank_##bank/index/misc.o(.data*);\
-    }\
+    START_MISC(bank, index) \
+    BUILD_DIR/assets/misc/bank_##bank/index/misc.o(.data*);\
     END_MISC(bank, index)
 
 #define MODEL(bank, index) \
-    START_GEO(bank, index) {\
-        BUILD_DIR/assets/geo/bank_##bank/index/geo.o(.data*);\
-        . = ALIGN(16);\
-    }\
+    START_GEO(bank, index) \
+    BUILD_DIR/assets/geo/bank_##bank/index/geo.o(.data*);\
+    . = ALIGN(16);\
     END_GEO(bank, index)
 
 #define LEVEL(bank, index, filename) \
-    START_MISC(bank, index) {\
-        BUILD_DIR/filename(.data*);\
-    }\
+    START_MISC(bank, index) \
+    BUILD_DIR/filename(.data*);\
     END_MISC(bank, index)
 
 #define FILLER(filetype, bank) \
-    BEGIN_SEG(bank_ ## bank ##_## filetype ## _filler, 0) ALIGN(16) SUBALIGN(16){\
-        BYTE(0x39);\
-        BYTE(0x39);\
-        BYTE(0x39);\
-        BYTE(0x0A);\
-    }\
-    END_SEG(bank_ ## bank ##_## filetype ## _filler)
-
-#define match_DO_NOT_TOUCH() \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00); \
-    BYTE(0x00);
-
-
-/*#define FILLER(filetype, bank) \
-    ._bank##bank##_##filetype##_patch 0 : AT(__romPos) \
-    { \
-        BYTE(0x39);\
-        BYTE(0x39);\
-        BYTE(0x39);\
-        BYTE(0x0A);\
-        . = ALIGN(16);\
-    }
-*/
+    BYTE(0x39);\
+    BYTE(0x39);\
+    BYTE(0x39);\
+    BYTE(0x0A);\
+    . = ALIGN(16);

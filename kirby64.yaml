@@ -306,13 +306,14 @@ segments:
     - [0x66640, data, ovl1/game]
     - [0x667A0, .data, ovl1/util]
     - [0x67B40, data, ovl1/ovl1_2]
+    - [0x6C8F0, .data, ovl1/filetable_stuff]
     - [0x7D8B0, .rodata, ovl1/ovl1]
     - [0x7DCC0, .rodata, ovl1/game]
     - [0x7DE80, .rodata, ovl1/util]
     - [0x7DEC0, .rodata, ovl1/ovl1_2]
     - [0x7DF10, .rodata, ovl1/ovl1_2_2]
     - [0x7DFB0, .rodata, ovl1/ovl1_3]
-    - [0x7E050, rodata, ovl1/level_names]
+    - [0x7E050, .rodata, ovl1/filetable_stuff]
     - [0x7E8D0, .rodata, ovl1/sprite]
     - [0x7E910, .rodata, ovl1/ovl1_6]
     - [0x7E950, .rodata, ovl1/ovl1_7]
@@ -799,6 +800,11 @@ segments:
   - [0x49F590, bin, sound/sound_49F590]
   - [0x4A0340, bin, sound/sound_4A0340]
   - [0x4A3B60, bin, sound/sound_4A3B60]
-  - { start: 0x4aa8f0, type: bin, name: game_assets, extract: False}
+  - {
+      start: 0x4aa8f0,
+      type: bin,
+      name: game_assets,
+      vram_symbol: __romPos
+    }
   - [0x1e8bb50, bin, pad]
   - [0x2000000]

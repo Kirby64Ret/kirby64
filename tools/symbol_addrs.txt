@@ -586,6 +586,7 @@ func_8017644C_ovl3=0x8017644C; // type:func
 func_80176484_ovl3=0x80176484; // type:func
 func_801693C4_ovl3=0x801693C4; // type:func
 D_80198830_ovl3=0x80198830;
+func_8016264C_ovl3=0x8016264C; // type:func
 
 func_80151CEC_ovl4=0x80151CEC; // type:func
 func_8015531C_ovl4=0x8015531C; // type:func
@@ -611,11 +612,13 @@ func_80154D60_ovl6=0x80154D60; // type:func
 func_801D1CAC_ovl8=0x801D1CAC; // type:func
 func_801D1E98_ovl8=0x801D1E98; // type:func
 
-func_801F0050_ovl10=0x801F0050; // type:func
 func_8020FC68_ovl9=0x8020FC68; // type:func
-func_80227308_ovl18=0x80227308; // type:func
+
+func_801F0050_ovl10=0x801F0050; // type:func
 
 func_801DC98C_ovl17=0x801DC98C; // type:func
+
+func_80227308_ovl18=0x80227308; // type:func
 
 viMgrMain=0x80038B00; // type:func
 __osMotorAccess=0x8002F040; // type:func
@@ -1127,3 +1130,47 @@ gOverlayTable = 0x800BE8A0;
 
 
 D_800D4FD0 = 0x800D4FD0; // type:s32
+
+// filetables
+gFileTable = 0x800D0184;
+bank_0_geo_table = 0x800c46a0;
+bank_0_image_table = 0x800c46f8;
+bank_0_anim_table = 0x800c476c;
+bank_0_misc_table = 0x800c47bc;
+bank_0_filetable = 0x800c47d4;
+bank_1_geo_table = 0x800c47f4;
+bank_1_image_table = 0x800c4f94;
+bank_1_anim_table = 0x800c5dc4;
+bank_1_misc_table = 0x800c7814;
+bank_1_filetable = 0x800c7824;
+bank_2_geo_table = 0x800c7844;
+bank_2_image_table = 0x800c7c4c;
+bank_2_anim_table = 0x800c8074;
+bank_2_misc_table = 0x800c9080;
+bank_2_filetable = 0x800c9090;
+bank_3_geo_table = 0x800c90b0;
+bank_3_image_table = 0x800c96d8;
+bank_3_anim_table = 0x800ca704;
+bank_3_misc_table = 0x800cae74;
+bank_3_filetable = 0x800caed0;
+bank_4_geo_table = 0x800caef0;
+bank_4_image_table = 0x800cb3c0;
+bank_4_anim_table = 0x800cbec8;
+bank_4_misc_table = 0x800cc784;
+bank_4_filetable = 0x800cc794;
+bank_5_geo_table = 0x800cc7b4;
+bank_5_image_table = 0x800cc7bc;
+bank_5_anim_table = 0x800ccca4;
+bank_5_misc_table = 0x800cccac;
+bank_5_filetable = 0x800cccb4;
+bank_6_geo_table = 0x800cccd4;
+bank_6_image_table = 0x800cd60c;
+bank_6_anim_table = 0x800cd898;
+bank_6_misc_table = 0x800cddc8;
+bank_6_filetable = 0x800ce220;
+bank_7_geo_table = 0x800ce240;
+bank_7_image_table = 0x800ce8d8;
+bank_7_anim_table = 0x800cfa80;
+bank_7_misc_table = 0x800cfce0;
+bank_7_filetable = 0x800d00a4;
+

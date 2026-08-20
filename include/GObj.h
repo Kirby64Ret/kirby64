@@ -1,7 +1,7 @@
 #ifndef GOBJ_H
 #define GOBJ_H
 #include "types.h"
-#include "main/object_manager.h"
+#include "main/object_manager.h" // TODO: REMOVE THIS DEPENDENCY
 #include "ovl2/ovl2_8.h"
 
 // same as D_800E1B50?

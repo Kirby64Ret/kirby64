@@ -1,6 +1,9 @@
 #ifndef _MAIN_4_H_
 #define _MAIN_4_H_
 
+struct GObj;
+struct DObj;
+
 struct UnkStruct8004A7F8 {
     /* 0x00 */ u8 drawFrame;
     /* 0x04 */ Gfx* glists[4];
@@ -92,5 +95,24 @@ void renderSetMatrixHandler(MatrixHandler *handler);
 
 // Unnamed functions
 void func_8001663C(Gfx **arg0, void *arg1, s32 arg2);
+
+// Draw Funcs
+void renderDrawGObjList0(struct GObj *);
+void renderDrawGObjList1(struct GObj *);
+void renderDrawGObjList2(struct GObj *);
+void renderDrawGObjList3(struct GObj *);
+void renderDrawDObjFromGObj(struct GObj *);
+void renderDrawObject_TypeC(struct GObj *);
+void renderDrawObject_TypeD(struct GObj *);
+void renderLoadTextures(struct DObj *, Gfx **);
+void renderDrawGObjWithDObjTypeE(struct GObj *);
+void renderDrawObject_LevelOfDetail(struct GObj *);
+void renderDrawObject_TypeG(struct GObj *);
+void func_80015368(struct GObj *);
+void func_8001585C(struct GObj *);
+void func_80015BCC(struct GObj *);
+void func_80015DC4(struct GObj *);
+void func_800162D8(struct GObj *);
+void func_80016634(struct GObj *);
 
 #endif // _MAIN_4_H_
