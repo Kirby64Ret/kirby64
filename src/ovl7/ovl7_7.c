@@ -86,7 +86,77 @@ s32 func_80110150(void *);
 
 
 
+#ifdef PORT
+/* Popped-star / dropped-pickup launch (ported from m2c): install the
+ * bounce driver func_801AEE04_ovl7 and knockback func_800B8630, stash
+ * the pickup kind (D_800E9AA0 carries a small integer here, not a
+ * pointer) into D_800E93A0, play its D_801CD530_ovl7 entry (the m2c
+ * `*4-p)*4` mush is index*12 into that 3-word table; func_800A9864
+ * takes 3 args), scale to 0.2 and launch -- softer in water (3.9 speed,
+ * kind-based 6.5/4.55/2.6 pop, -0.2925 gravity) than in air (6.0,
+ * 10/7/4, -0.45) -- then sleep forever. */
+void func_801AEA20_ovl7(GObj *arg0) {
+    void func_801AEE04_ovl7(void);
+    void func_800B8630(GObj *);
+    void func_800A9864(s32, s32, s32);
+    extern struct Sub800E1B50_Unk98 D_801CD33C_ovl7;
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    s32 kind;
+    s32 tone;
+
+    D_800DEF90[id] = (void (*)(s32)) func_800B8630;
+    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801AEE04_ovl7;
+    D_800DDA90[omCurrentObj->objId] = 0x23;
+    ent->unk98 = &D_801CD33C_ovl7;
+    kind = (s32) (uintptr_t) D_800E9AA0[omCurrentObj->objId];
+    D_800E93A0[omCurrentObj->objId] = kind;
+    D_800E9560[omCurrentObj->objId] = 0xA;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    func_800A9864(D_801CD530_ovl7[kind].unk0, 0x23, 0x10);
+    kind = (s32) (uintptr_t) D_800E9AA0[omCurrentObj->objId];
+    tone = D_801CD530_ovl7[kind].unk4;
+    if (tone != 0) {
+        func_800AA018(tone);
+        kind = (s32) (uintptr_t) D_800E9AA0[omCurrentObj->objId];
+    }
+    tone = D_801CD530_ovl7[kind].unk8;
+    if (tone != 0) {
+        func_800AA018(tone);
+    }
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
+    gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
+    id = omCurrentObj->objId;
+    if (D_800E8AE0[id] & 1) {
+        D_800E64D0[id] = D_800E6A10[id] * 3.8999999f;
+        D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.0f;
+        D_800E6850[omCurrentObj->objId] = 3.8999999f;
+        id = omCurrentObj->objId;
+        if (D_800E98E0[id] == 2) {
+            D_800E3210[id] = 6.5f;
+        } else {
+            D_800E3210[id] = (D_800E98E0[id] == 1) ? 4.5499997f : 2.6f;
+        }
+        D_800E3750[omCurrentObj->objId] = -0.2925f;
+    } else {
+        D_800E64D0[id] = D_800E6A10[id] * 6.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 6.0f;
+        id = omCurrentObj->objId;
+        if (D_800E98E0[id] == 2) {
+            D_800E3210[id] = 10.0f;
+        } else {
+            D_800E3210[id] = (D_800E98E0[id] == 1) ? 7.0f : 4.0f;
+        }
+        D_800E3750[omCurrentObj->objId] = -0.45f;
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEA20_ovl7.s")
+#endif
 
 #ifdef NON_MATCHING
 /* 5/111 insns */
@@ -190,7 +260,116 @@ void func_801AF314_ovl7(GObj *arg0) {
     }
 }
 
+#ifdef PORT
+/* Per-frame driver for the carried pickup/item star (ported from m2c).
+ * Off-screen: hand the sound handle back (func_800A7870), clear the
+ * handoff latch, free the sparkle generator and the track.  Otherwise run
+ * the collision pump, face the walk direction, slow the anim to realtime
+ * in water, and when idle dispatch the state FUNCLIST D_801CD5A4_ovl7;
+ * mirror the fade D_800EA6E0 onto sparkle DObj [2]'s scale.y, count it
+ * down (0.0055... = 1/180), die into func_801B00BC_ovl7 at zero; feed the
+ * generator's emitter with DObj [3]'s world position/rotation
+ * (func_800B2340/func_800B26D8 with the 0xFFFF pseudo-track); when the
+ * grab timer runs out fire func_801AFFFC_ovl7 and either re-enter state 1
+ * (grabbed) or step the idle script; a global grab (D_800E8760[0])
+ * releases the handle and dies into func_801ACF84_ovl7.  The generator
+ * node uses the LP64 layout from ovl1_2_2.c (emitter chain at +0x58). */
+void func_801AF398_ovl7(GObj *arg0) {
+    void eneTurnCommon(s32);
+    s32 func_801117BC(void *, u32);
+    void func_80111C4C(s32);
+    void func_8019B7D8_ovl7(void);
+    void func_8019D8A0(s32);
+    s32 func_801A0D74_ovl7();
+    s32 func_800B3234(f32, f32, f32);
+    void func_800B2340(Vector *, struct DObj *, s32);
+    void func_800B26D8(Vector *, struct DObj *, s32);
+    void func_801AFFFC_ovl7(void);
+    void func_801B00BC_ovl7(GObj *);
+    void func_801ACF84_ovl7(GObj *);
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+    void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
+    extern FUNCLIST D_801CD5A4_ovl7;
+    struct PcOvl7Emitter {
+        struct PcOvl7Emitter *next;
+        Vector unk4;
+        Vector unk10;
+    };
+    struct PcOvl7Generator {
+        u8 pad0[0x18];
+        Vector pos;
+        u8 pad24[0x58 - 0x24];
+        struct PcOvl7Emitter *xf;
+    };
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct PcOvl7Generator *gen = (struct PcOvl7Generator *) (uintptr_t) D_800E98E0[id];
+    void *handle;
+    u16 handleIdx;
+    Vector v;
+    s32 moved;
+
+    if (func_800B3234(gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]) != 0) {
+        handle = D_800E9AA0[omCurrentObj->objId];
+        handleIdx = (u16) D_800E9C60[omCurrentObj->objId];
+        func_800A7870(&handle, &handleIdx);
+        D_8012E860 = 0;
+        arg0->onAnimate = NULL;
+        func_800A22D4((void *) (uintptr_t) D_800E98E0[omCurrentObj->objId]);
+        func_8019B7D8_ovl7();
+        func_8019D8A0((u16) omCurrentObj->objId);
+        return;
+    }
+    moved = func_801A0D74_ovl7(arg0);
+    eneTurnCommon(1);
+    if (D_800E8AE0[omCurrentObj->objId] & 1) {
+        func_800AECC0(1.0f);
+        func_800AED20(1.0f);
+    } else {
+        func_800AECC0(gameTicksPerDraw);
+        func_800AED20(gameTicksPerDraw);
+    }
+    if (moved == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, D_801CD5A4_ovl7);
+    }
+    D_800DFBD0[omCurrentObj->objId][2]->scale.v.y = D_800EA6E0[omCurrentObj->objId];
+    if (D_800E83E0[omCurrentObj->objId] != 0) {
+        D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    }
+    D_800EA6E0[omCurrentObj->objId] -= 0.0055555557f;
+    if (D_800EA6E0[omCurrentObj->objId] <= 0.0f) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B00BC_ovl7);
+        return;
+    }
+    func_800B2340(&v, D_800DFBD0[omCurrentObj->objId][3], 0xFFFF);
+    gen->xf->unk4 = v;
+    func_800B26D8(&v, D_800DFBD0[omCurrentObj->objId][3], 0xFFFF);
+    gen->xf->unk10 = v;
+    if (D_800E9720[omCurrentObj->objId] == 0) {
+        func_801AFFFC_ovl7();
+        if (D_800E83E0[omCurrentObj->objId] == 1) {
+            D_800E83E0[omCurrentObj->objId] = 0;
+            D_800E7B20[omCurrentObj->objId] = 1.0f;
+            gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801AF314_ovl7);
+            return;
+        }
+        func_80111C4C(func_801117BC((void *) (uintptr_t) ent->unk90, omCurrentObj->objId));
+    } else {
+        D_800E9720[omCurrentObj->objId] -= 1;
+    }
+    if (D_800E8760[0] == 1) {
+        handle = D_800E9AA0[omCurrentObj->objId];
+        handleIdx = (u16) D_800E9C60[omCurrentObj->objId];
+        func_800A7870(&handle, &handleIdx);
+        D_8012E860 = 0;
+        func_800A22D4((void *) (uintptr_t) D_800E98E0[omCurrentObj->objId]);
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AF398_ovl7.s")
+#endif
 
 void func_801AF814_ovl7(GObj *arg0) {
 /* D_801CE248_ovl7 = -0.65f : now emitted by this TU */
