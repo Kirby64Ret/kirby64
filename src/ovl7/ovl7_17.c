@@ -379,7 +379,85 @@ void func_801C010C_ovl7(GObj *arg0) {
     }
 }
 
+#ifdef PORT
+/* Boss/miniboss anim-event pump, grabbable phase (ported from m2c): step
+ * the anim script and drain the pending event into D_800E83E0/unk43;
+ * event 1 with a zero payload re-enters state 1 via func_801BF598_ovl7,
+ * with a payload it attempts the power steal (func_801A0244_ovl7 takes
+ * just the payload -- m2c's extra args were leftover registers), else
+ * falls back to the idle driver func_801C0610_ovl7; event 3 is the
+ * inhale handoff. */
+void func_801C02D0_ovl7(void) {
+    void func_80111550(u32);
+    void *func_80111C88(void *, u32);
+    void func_80111ECC(void *);
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    s32 func_801A0244_ovl7(s32);
+    struct PcAnimInfo17A {
+        u8 unk0;
+        u8 unk1;
+        u8 unk2;
+        u8 unk3;
+        u8 filler4[8];
+        s32 unkC;
+        u8 filler10[0x10];
+    };
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct PcAnimInfo17A info;
+
+    if (ent->unk8C == NULL) {
+        return;
+    }
+    func_80111550(id);
+    func_80111ECC(func_80111C88(ent->unk8C, omCurrentObj->objId));
+    if (func_80110B00(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = info.unk3;
+    } else if (func_80110FD4(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = info.unk3;
+    } else {
+        if (func_80110150(&info) != 0) {
+            D_800E83E0[omCurrentObj->objId] = info.unk2;
+        } else {
+            D_800E83E0[omCurrentObj->objId] = 0;
+        }
+        ent->unk43 = 0;
+    }
+    id = omCurrentObj->objId;
+    switch (D_800E83E0[id]) {
+    case 1:
+        if (info.unkC == 0) {
+            gEntityFuncListIDArray[id] = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801BF598_ovl7);
+            return;
+        }
+        if (func_801A0244_ovl7(info.unkC) != -1) {
+            D_800E83E0[omCurrentObj->objId] = 0x12;
+            play_sound(0xF4);
+            ent->unk94 = NULL;
+            ent->unk40 = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+            return;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(GObj *)) func_801C0610_ovl7);
+        return;
+    case 3:
+        D_800E8220[id] = 0;
+        if (info.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = info.unkC;
+        }
+        gKirbyState.numberInhaling += 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_17/func_801C02D0_ovl7.s")
+#endif
 
 s32 func_801C0588_ovl7(void) {
     if (D_800D7090 != omCurrentObj->objId) {
@@ -778,7 +856,73 @@ void func_801C1A90_ovl7(GObj *arg0) {
     }
 }
 
+#ifdef PORT
+/* Second boss anim-event pump (ported from m2c): same drain as
+ * func_801C02D0_ovl7 but the 0150 branch keeps the event id, event 1 with
+ * zero payload re-enters state 1 via func_801C08E8_ovl7, a nonzero
+ * payload just falls back to the idle driver (no power steal), and
+ * event 3 hands off to the inhale. */
+void func_801C1BB8_ovl7(void) {
+    void func_80111550(u32);
+    void *func_80111C88(void *, u32);
+    void func_80111ECC(void *);
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    struct PcAnimInfo17B {
+        u8 unk0;
+        u8 unk1;
+        u8 unk2;
+        u8 unk3;
+        u8 filler4[8];
+        s32 unkC;
+        u8 filler10[0x10];
+    };
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct PcAnimInfo17B info;
+
+    if (ent->unk8C == NULL) {
+        return;
+    }
+    func_80111550(id);
+    func_80111ECC(func_80111C88(ent->unk8C, omCurrentObj->objId));
+    if (func_80110B00(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = info.unk3;
+    } else if (func_80110FD4(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = info.unk3;
+    } else if (func_80110150(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = 0;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+    }
+    id = omCurrentObj->objId;
+    switch (D_800E83E0[id]) {
+    case 1:
+        if (info.unkC == 0) {
+            gEntityFuncListIDArray[id] = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801C08E8_ovl7);
+            return;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[id], (void (*)(GObj *)) func_801C0610_ovl7);
+        return;
+    case 3:
+        D_800E8220[id] = 0;
+        if (info.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = info.unkC;
+        }
+        gKirbyState.numberInhaling += 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_17/func_801C1BB8_ovl7.s")
+#endif
 
 /* 63/79: the instruction SEQUENCE is right end to end (including the folded
  * -0x40/-0x3C displacements, which need the `q[-8]` spelling -- `[idx - 8]`

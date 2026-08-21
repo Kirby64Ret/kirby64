@@ -194,7 +194,59 @@ void func_801B22D0_ovl7(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B22D0_ovl7.s")
 #endif
 
+#ifdef PORT
+/* Idle facing coroutine (ported from m2c): forever, read the desired
+ * facing from the track path (func_8019A900_ovl7) or the player-relative
+ * fallback func_8019B608_ovl7(0); when it differs from D_800E6A10, lean
+ * D_800E9020 by pi/32 a frame for 16 frames, flip the facing and the
+ * lean, unwind for 16 frames, and zero the lean. */
+void func_801B2588_ovl7(GObj *arg0) {
+    s32 func_8019A900_ovl7(void *);
+    f32 func_8019B608_ovl7(s32);
+    void func_800A9EA4(s32);
+    extern f32 D_800E9020[];
+    extern f32 gameTicksPerDraw;
+    extern s32 D_800DDFD0[];
+    struct PcTrackPos9 {
+        s32 unk0;
+        f32 unk4;
+    } tp;
+    f32 want;
+    s32 i;
+
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    func_800B3520();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800A9EA4(0x10091);
+    while (1) {
+        if (func_8019A900_ovl7(&tp) != 0) {
+            want = tp.unk0;
+        } else {
+            want = func_8019B608_ovl7(0);
+        }
+        if (want != D_800E6A10[omCurrentObj->objId]) {
+            D_800E9020[omCurrentObj->objId] = 0.0f;
+            for (i = 0; i != 0x10; i++) {
+                D_800E9020[omCurrentObj->objId] +=
+                    (D_800E6A10[omCurrentObj->objId] == 1.0f) ? -0.09817477f : 0.09817477f;
+                ohSleep(1);
+            }
+            D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+            D_800E9020[omCurrentObj->objId] = -D_800E9020[omCurrentObj->objId];
+            for (; i != 0; i--) {
+                D_800E9020[omCurrentObj->objId] +=
+                    (D_800E6A10[omCurrentObj->objId] == 1.0f) ? 0.09817477f : -0.09817477f;
+                ohSleep(1);
+            }
+            D_800E9020[omCurrentObj->objId] = 0.0f;
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2588_ovl7.s")
+#endif
 
 void func_801B27D4_ovl7(GObj *arg0) {
     gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];

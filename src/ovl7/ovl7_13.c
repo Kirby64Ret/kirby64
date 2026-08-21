@@ -408,7 +408,59 @@ void func_801B9D40_ovl7(GObj *arg0) {
 void func_801B9E78_ovl7(GObj *arg0) {
 }
 
+#ifdef PORT
+/* Aim-angle chaser (ported from m2c): step D_800EA6E0 toward the target
+ * angle D_800EB320 with graded steps (8, 4, 1 degrees), going the short
+ * way around when |cur - target| < pi and the long way otherwise, wrap
+ * into [0, 2pi), and pose the model's root DObj X rotation to the angle
+ * minus pi/2. */
+void func_801B9E80_ovl7(GObj *arg0) {
+    u32 id = omCurrentObj->objId;
+    f32 cur = D_800EA6E0[id];
+    f32 diff = cur - D_800EB320[id];
+    f32 mag = (diff < 0.0f) ? -diff : diff;
+
+    if (mag < 3.1415927f) {
+        if (diff > 0.13962634f) {
+            cur -= 0.13962634f;
+        } else if (diff > 0.06981317f) {
+            cur -= 0.06981317f;
+        } else if (diff >= 0.017453292f) {
+            cur -= 0.017453292f;
+        } else if (diff < -0.13962634f) {
+            cur += 0.13962634f;
+        } else if (diff < -0.06981317f) {
+            cur += 0.06981317f;
+        } else if (diff <= -0.017453292f) {
+            cur += 0.017453292f;
+        }
+    } else {
+        if (diff > 0.13962634f) {
+            cur += 0.13962634f;
+        } else if (diff > 0.06981317f) {
+            cur += 0.06981317f;
+        } else if (diff >= 0.017453292f) {
+            cur += 0.017453292f;
+        } else if (diff < -0.13962634f) {
+            cur -= 0.13962634f;
+        } else if (diff < -0.06981317f) {
+            cur -= 0.06981317f;
+        } else if (diff <= -0.017453292f) {
+            cur -= 0.017453292f;
+        }
+    }
+    while (cur > 6.2831855f) {
+        cur -= 6.2831855f;
+    }
+    while (cur < 0.0f) {
+        cur += 6.2831855f;
+    }
+    D_800EA6E0[omCurrentObj->objId] = cur;
+    arg0->data.dobj->firstChild->angle.v.x = cur - 1.5707964f;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B9E80_ovl7.s")
+#endif
 
 void func_801BA1EC_ovl7(GObj *arg0) {
     if (D_800E0D50[omCurrentObj->objId] == 0) {

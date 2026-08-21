@@ -153,6 +153,96 @@ s32 func_801103C4(s32);
 extern u8 D_8012E7C5;
 extern f32 gKirbyHp;
 
+#ifdef PORT
+/* PORT copy of the ply-body vs enemy sweep below. The rows are HOST
+ * PlySlot/CollSlot slots (stride 56): id word at +0, 4 bytes pad, then the
+ * N64 info words at +8 -- each host word holds the N64 word VALUE natively,
+ * so a u16/u8 the N64 kept in a word's top half/byte is read from the
+ * arithmetic top (>> 16 / >> 24) -- and 8-byte pointers at 32/40/48. The
+ * N64-offset views under #else read padding for every field past +0 (the
+ * attack-class test a->unk4 & 1 was always false), so the slots are strided
+ * with the host types and the fields decoded by byte offset. Also folds in
+ * the sp4C[9] widen: func_8010F9AC's narrow-phase writes a 36-byte contact
+ * record (contact + both shape anchors); the N64 frame absorbed the spill. */
+s32 func_80110150(struct UnkStruct80110438_C *arg0) {
+    struct PlySlot *b;
+    struct CollSlot *a;
+    s32 i;
+    s32 j;
+    s32 id;
+    s32 sp58[5];
+    f32 sp4C[9];
+    s32 sp40[3];
+
+    arg0->unk2 = 0;
+    arg0->unk3 = 0;
+    b = D_8012D590;
+    for (i = 0; i < D_8012D584; i++) {
+        for (j = 0, a = D_8012D0C8; j < D_8012D0C4; j++) {
+            if (func_8010FC30((struct UnkStruct8011145C_B *) b, (struct UnkStruct8011145C_A *) a,
+                              sp4C) != 0) {
+                u8 *pa = (u8 *) a;
+                u8 *pb = (u8 *) b;
+                u32 a4 = *(u32 *) (pa + 8) >> 16; /* _A->unk4 (u16, N64 +4) */
+
+                id = *(s32 *) pb; /* _B->unk0 */
+                if (a4 & 1) {
+                    if (id == -1) {
+                        return 0;
+                    }
+                    if (id == 0) {
+                        if ((D_8012E7C5 == 0x15) || (func_801103C4(id) != 0) || (gKirbyHp == 0.0f)) {
+                            return 0;
+                        }
+                    }
+                    if (*(u32 *) (pb + 0x14) & 0x80000004) { /* _B->unk10 */
+                        arg0->unk3 = 0x11;
+                    } else {
+                        arg0->unk3 = 0x10;
+                    }
+                    arg0->unk0 = *(u32 *) (pb + 12) >> 24;          /* _B->unk8 */
+                    arg0->unk1 = (*(u32 *) (pb + 12) >> 16) & 0xFF; /* _B->unk9 */
+                    arg0->unk8 = *(s32 *) (pb + 0x18);              /* _B->unk14 */
+                    arg0->unkC = id;
+                    return 1;
+                }
+                if (a4 & 6) {
+                    if (id == 0) {
+                        if (gKirbyHp == 0.0f) {
+                            return 0;
+                        }
+                    }
+                    arg0->unk2 = 5;
+                    arg0->unkC = id;
+                    arg0->unk10 = sp4C[0];
+                    arg0->unk14 = sp4C[1];
+                    arg0->unk18 = sp4C[2];
+                    return 1;
+                }
+                arg0->unk2 = 0;
+                func_80110438((struct UnkStruct8011145C_A *) a, (struct UnkStruct8011145C_B *) b,
+                              arg0);
+                func_801105E8((struct UnkStruct8011145C_A *) a, (struct UnkStruct8011145C_B *) b,
+                              sp4C);
+                if (arg0->unk2 != 0) {
+                    arg0->unk0 = *(u32 *) (pb + 12) >> 24;          /* _B->unk8 */
+                    arg0->unk1 = (*(u32 *) (pb + 12) >> 16) & 0xFF; /* _B->unk9 */
+                    arg0->unk8 = *(s32 *) (pb + 0x18);              /* _B->unk14 */
+                    arg0->unkC = id;
+                    arg0->unk10 = sp4C[0];
+                    arg0->unk14 = sp4C[1];
+                    arg0->unk18 = sp4C[2];
+                    return 1;
+                }
+                return 0;
+            }
+            a++;
+        }
+        b++;
+    }
+    return 0;
+}
+#else
 /* Left live by a lane mid-work, at 116/161 insns. Draft kept. */
 s32 func_80110150(struct UnkStruct80110438_C *arg0) {
     struct UnkStruct8011145C_B *b;
@@ -161,13 +251,7 @@ s32 func_80110150(struct UnkStruct80110438_C *arg0) {
     s32 j;
     s32 id;
     s32 sp58[5];
-#ifdef PORT
-    /* func_8010F9AC's narrow-phase writes a 36-byte contact record
-     * (contact + both shape anchors); the N64 frame absorbed the spill. */
-    f32 sp4C[9];
-#else
     f32 sp4C[3];
-#endif
     s32 sp40[3];
 
     arg0->unk2 = 0;
@@ -231,6 +315,7 @@ s32 func_80110150(struct UnkStruct80110438_C *arg0) {
     }
     return 0;
 }
+#endif
 
 s32 func_801103C4(s32 arg0) {
     if ((arg0 != -1) && (arg0 < 4)) {
@@ -243,6 +328,72 @@ s32 func_801103C4(s32 arg0) {
     return -1;
 }
 
+#ifdef PORT
+/* PORT copy of the ply-body damage router below: arg0/arg1 are HOST
+ * CollSlot/PlySlot rows (id at +0, N64 info field K >= 4 at host K+4, with
+ * u16/u8 subfields in the arithmetic top of their word). Only the accessors
+ * change; the logic is the N64 body verbatim. */
+void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
+                   struct UnkStruct80110438_C *arg2) {
+    s32 idx;
+    s32 id;
+    u8 *pa = (u8 *) arg0;
+    u8 *pb = (u8 *) arg1;
+
+    id = *(s32 *) pb;  /* _B->unk0 */
+    idx = *(s32 *) pa; /* _A->unk0 */
+    if (*(u32 *) (pb + 0x14) & 0x40000000) { /* _B->unk10 */
+        return;
+    }
+    if (idx == -1) {
+        arg2->unk2 = 2;
+        arg2->unk3 = *(s32 *) (pb + 0x10); /* _B->unkC */
+        arg2->unk8 = *(s32 *) (pb + 0x18); /* _B->unk14 */
+        return;
+    }
+    if (id != -1) {
+        if ((*(u32 *) (pa + 0x14) & 0x80000000) || (D_800E7CE0[idx] != 0)) { /* _A->unk10 */
+            arg2->unk2 = 0;
+            return;
+        }
+    }
+    if (*(u32 *) (pa + 0x14) & 1) {
+        arg2->unk2 = 6;
+    } else if (*(u32 *) (pa + 0x14) & 0x20000000) {
+        arg2->unk2 = 2;
+    }
+    if (arg2->unk2 != 0) {
+        if (*(u32 *) (pa + 0x14) & 0x10000000) {
+            arg2->unk2 = 0;
+        }
+        return;
+    }
+    if ((D_8012E828 == 1) || (D_8012E828 == 2)) {
+        arg2->unk2 = 1;
+        D_800E7B20[idx] = 0.0f;
+        return;
+    }
+    arg2->unk3 = *(s32 *) (pb + 0x10); /* _B->unkC */
+    if (!(*(u32 *) (pa + 0x14) & 0x08000000)) {
+        D_800E7B20[idx] -= *(f32 *) (pb + 8); /* _B->unk4 */
+    }
+    if (D_800E7B20[idx] <= 0.0f) {
+        arg2->unk2 = 1;
+        D_800E7B20[idx] = 0.0f;
+        return;
+    }
+    arg2->unk2 = 2;
+    if (!(*(u32 *) (pa + 0x14) & 0x08000000)) {
+        if (D_800DD710[idx] == 0x17) {
+            D_800E7CE0[idx] = 0xF;
+        } else {
+            D_800E7CE0[idx] = 0x2D;
+        }
+    } else {
+        D_800E7CE0[idx] = 0;
+    }
+}
+#else
 void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
                    struct UnkStruct80110438_C *arg2) {
     s32 idx;
@@ -301,6 +452,7 @@ void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
         D_800E7CE0[idx] = 0;
     }
 }
+#endif
 
 #ifdef PORT
 /* Kirby-takes-a-hit resolver (from asm/nonmatchings/ovl2/ovl2_9/
@@ -435,6 +587,69 @@ finish:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_801105E8.s")
 #endif
 
+#ifdef PORT
+/* PORT copy of the ply-shot vs enemy sweep below, on HOST slot rows (see
+ * func_80110150's PORT note for the layout). Folds in the sp4C[9] widen for
+ * func_8010F9AC's 36-byte contact record. */
+s32 func_80110B00(struct UnkStruct80110438_C *arg0) {
+    struct PlySlot *b;
+    struct CollSlot *a;
+    s32 i;
+    s32 j;
+    s32 id;
+    s32 sp58[5];
+    f32 sp4C[9];
+    s32 sp40[3];
+
+    arg0->unk2 = 0;
+    arg0->unk3 = 0;
+    b = D_8012D648;
+    for (i = 0; i < D_8012D588; i++) {
+        for (j = 0, a = D_8012D0C8; j < D_8012D0C4; j++) {
+            if (func_8010FC30((struct UnkStruct8011145C_B *) b, (struct UnkStruct8011145C_A *) a,
+                              sp4C) != 0) {
+                u8 *pa = (u8 *) a;
+                u8 *pb = (u8 *) b;
+
+                id = *(s32 *) pb;                       /* _B->unk0 */
+                if ((*(u32 *) (pa + 8) >> 16) & 1) {    /* _A->unk4 */
+                    if (id != -1) {
+                        if (*(u32 *) (pb + 0x14) & 0x80000004) { /* _B->unk10 */
+                            arg0->unk3 = 0x11;
+                        } else {
+                            arg0->unk3 = 0x10;
+                        }
+                        arg0->unkC = id;
+                        arg0->unk0 = *(u32 *) (pb + 12) >> 24;          /* _B->unk8 */
+                        arg0->unk1 = (*(u32 *) (pb + 12) >> 16) & 0xFF; /* _B->unk9 */
+                        arg0->unk8 = *(s32 *) (pb + 0x18);              /* _B->unk14 */
+                        return 1;
+                    }
+                    return 0;
+                }
+                arg0->unk2 = 0;
+                func_80110CCC((struct UnkStruct8011145C_A *) a, (struct UnkStruct8011145C_B *) b,
+                              arg0);
+                func_80110E94((struct UnkStruct8011145C_A *) a, (struct UnkStruct8011145C_B *) b);
+                if (arg0->unk2 != 0) {
+                    arg0->unk0 = *(u32 *) (pb + 12) >> 24;          /* _B->unk8 */
+                    arg0->unk1 = (*(u32 *) (pb + 12) >> 16) & 0xFF; /* _B->unk9 */
+                    arg0->unk8 = *(s32 *) (pb + 0x18);              /* _B->unk14 */
+                    arg0->unk10 = sp4C[0];
+                    arg0->unk14 = sp4C[1];
+                    arg0->unk18 = sp4C[2];
+                    arg0->unkC = id;
+                    return 1;
+                }
+                return 0;
+            }
+            a++;
+        }
+        b++;
+    }
+    return 0;
+}
+#else
 s32 func_80110B00(struct UnkStruct80110438_C *arg0) {
     struct UnkStruct8011145C_B *b;
     struct UnkStruct8011145C_A *a;
@@ -442,13 +657,7 @@ s32 func_80110B00(struct UnkStruct80110438_C *arg0) {
     s32 j;
     s32 id;
     s32 sp58[5];
-#ifdef PORT
-    /* func_8010F9AC's narrow-phase writes a 36-byte contact record
-     * (contact + both shape anchors); the N64 frame absorbed the spill. */
-    f32 sp4C[9];
-#else
     f32 sp4C[3];
-#endif
     s32 sp40[3];
 
     arg0->unk2 = 0;
@@ -494,7 +703,90 @@ s32 func_80110B00(struct UnkStruct80110438_C *arg0) {
     }
     return 0;
 }
+#endif
 
+#ifdef PORT
+/* PORT copy of the ply-shot damage router below, on HOST slot rows (id at
+ * +0, N64 info field K >= 4 at host K+4, u16/u8 subfields in the arithmetic
+ * top of their word). Only the accessors change. */
+void func_80110CCC(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
+                   struct UnkStruct80110438_C *arg2) {
+    s32 flags;
+    s32 idx;
+    u8 *pa = (u8 *) arg0;
+    u8 *pb = (u8 *) arg1;
+    u32 b9;
+
+    idx = *(s32 *) pa; /* _A->unk0 */
+    if (*(u32 *) (pb + 0x14) & 0x40000000) { /* _B->unk10 */
+        return;
+    }
+    if (idx == -1) {
+        arg2->unk2 = 2;
+        arg2->unk3 = *(s32 *) (pb + 0x10); /* _B->unkC */
+        return;
+    }
+    flags = *(s32 *) (pa + 0x18); /* _A->unk14 */
+    if (flags & 0x80000000) {
+        return;
+    }
+    if (D_800E7CE0[idx] != 0) {
+        return;
+    }
+    b9 = (*(u32 *) (pb + 12) >> 16) & 0xFF; /* _B->unk9 */
+    switch (b9) {
+    case 1:
+        if (flags & 1) {
+            arg2->unk2 = 7;
+            if (*(s32 *) (pa + 0x18) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    case 2:
+        if (flags & 2) {
+            arg2->unk2 = 8;
+            if (*(s32 *) (pa + 0x18) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    case 3:
+        if (flags & 4) {
+            arg2->unk2 = 9;
+            if (*(s32 *) (pa + 0x18) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    default:
+        utilPrintf("unknown player shot sub kind:%x\n", b9);
+        return;
+    }
+    arg2->unk3 = *(s32 *) (pb + 0x10); /* _B->unkC */
+    if (!(*(s32 *) (pa + 0x18) & 0x08000000)) {
+        D_800E7B20[idx] -= *(f32 *) (pb + 8); /* _B->unk4 */
+    }
+    if (D_800E7B20[idx] <= 0.0f) {
+        arg2->unk2 = 1;
+        D_800E7B20[idx] = 0.0f;
+        return;
+    }
+    arg2->unk2 = 2;
+    if (!(*(s32 *) (pa + 0x18) & 0x08000000)) {
+        if (D_800DD710[idx] == 0x17) {
+            D_800E7CE0[idx] = 0xF;
+        } else {
+            D_800E7CE0[idx] = 0x2D;
+        }
+    } else {
+        D_800E7CE0[idx] = 0;
+    }
+}
+#else
 void func_80110CCC(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
                    struct UnkStruct80110438_C *arg2) {
     s32 flags;
@@ -568,7 +860,58 @@ void func_80110CCC(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
         D_800E7CE0[idx] = 0;
     }
 }
+#endif
 
+#ifdef PORT
+/* PORT copy of the enemy-reaction writer below, on HOST slot rows. The
+ * attack class byte is the top byte of the host word at +0x10 (N64 +0xC). */
+void func_80110E94(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1) {
+    s32 idx;
+    s32 id;
+    s32 flags;
+    u8 *pa = (u8 *) arg0;
+    u8 *pb = (u8 *) arg1;
+
+    idx = *(s32 *) pb; /* _B->unk0 */
+    id = *(s32 *) pa;  /* _A->unk0 */
+    if (!((*(u32 *) (pa + 8) >> 16) & 6)) { /* _A->unk4 */
+        if (idx != -1) {
+            flags = *(s32 *) (pa + 0x18); /* _A->unk14 */
+            if (!(flags & 0x40000000)) {
+                if (!(*(u32 *) (pb + 0x14) & 0x80000000)) { /* _B->unk10 */
+                    if (*(s32 *) (pb + 0x10) == 0xA) {      /* _B->unkC */
+                        if (D_800DD710[id] != 0x17) {
+                            D_800E83E0[idx] = 6;
+                            return;
+                        }
+                    }
+                    switch ((*(u32 *) (pb + 12) >> 16) & 0xFF) { /* _B->unk9 */
+                    case 1:
+                        if ((flags & 1) || (flags & 0x80000000)) {
+                            D_800E83E0[idx] = 6;
+                            return;
+                        }
+                        break;
+                    case 2:
+                        if ((flags & 2) || (flags & 0x80000000)) {
+                            D_800E83E0[idx] = 6;
+                            return;
+                        }
+                        break;
+                    case 3:
+                        if ((flags & 4) || (flags & 0x80000000)) {
+                            D_800E83E0[idx] = 6;
+                            return;
+                        }
+                        break;
+                    }
+                    D_800E83E0[idx] = ((*(u32 *) (pa + 0x10) >> 24) << 16) + 2; /* _A->unkC */
+                }
+            }
+        }
+    }
+}
+#else
 void func_80110E94(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1) {
     s32 idx;
     s32 id;
@@ -613,7 +956,64 @@ void func_80110E94(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
         }
     }
 }
+#endif
 
+#ifdef PORT
+/* PORT copy of the ply-effect vs enemy sweep below, on HOST slot rows (see
+ * func_80110150's PORT note for the layout). Folds in the sp4C[9] widen for
+ * func_8010F9AC's 36-byte contact record. */
+s32 func_80110FD4(struct UnkStruct80110438_C *arg0) {
+    struct PlySlot *b;
+    struct CollSlot *a;
+    s32 i;
+    s32 j;
+    s32 id;
+    s32 t;
+    s32 sp58[4];
+    f32 sp4C[9];
+    s32 sp40[3];
+
+    arg0->unk2 = 0;
+    arg0->unk3 = 0;
+    b = D_8012D7B0;
+    for (i = 0; i < D_8012D58C; i++) {
+        for (j = 0, a = D_8012D0C8; j < D_8012D0C4; j++) {
+            if (func_8010FC30((struct UnkStruct8011145C_B *) b, (struct UnkStruct8011145C_A *) a,
+                              sp4C) != 0) {
+                u8 *pa = (u8 *) a;
+                u8 *pb = (u8 *) b;
+
+                id = *(s32 *) pb;                    /* _B->unk0 */
+                if ((*(u32 *) (pa + 8) >> 16) & 1) { /* _A->unk4 */
+                    return 0;
+                }
+                arg0->unk2 = 0;
+                func_80111184((struct UnkStruct8011145C_A *) a, (struct UnkStruct8011145C_B *) b,
+                              arg0);
+                func_8011145C((struct UnkStruct8011145C_A *) a, (struct UnkStruct8011145C_B *) b);
+                if (arg0->unk2 != 0) {
+                    arg0->unk0 = *(u32 *) (pb + 12) >> 24;          /* _B->unk8 */
+                    arg0->unk1 = (*(u32 *) (pb + 12) >> 16) & 0xFF; /* _B->unk9 */
+                    arg0->unk8 = *(s32 *) (pb + 0x18);              /* _B->unk14 */
+                    arg0->unk10 = sp4C[0];
+                    arg0->unk14 = sp4C[1];
+                    arg0->unk18 = sp4C[2];
+                    if ((D_800E0D50[id] != -1) && (D_800DD710[D_800E0D50[id]] != -1)) {
+                        arg0->unkC = D_800E0D50[id];
+                    } else {
+                        arg0->unkC = id;
+                    }
+                    return 1;
+                }
+                return 0;
+            }
+            a++;
+        }
+        b++;
+    }
+    return 0;
+}
+#else
 /* Left live by a lane mid-work, at 1/108 insns. Draft kept. */
 s32 func_80110FD4(struct UnkStruct80110438_C *arg0) {
     struct UnkStruct8011145C_B *b;
@@ -623,13 +1023,7 @@ s32 func_80110FD4(struct UnkStruct80110438_C *arg0) {
     s32 id;
     s32 t;
     s32 sp58[4];
-#ifdef PORT
-    /* func_8010F9AC's narrow-phase writes a 36-byte contact record
-     * (contact + both shape anchors); the N64 frame absorbed the spill. */
-    f32 sp4C[9];
-#else
     f32 sp4C[3];
-#endif
     s32 sp40[3];
 
     arg0->unk2 = 0;
@@ -667,7 +1061,133 @@ s32 func_80110FD4(struct UnkStruct80110438_C *arg0) {
     }
     return 0;
 }
+#endif
 
+#ifdef PORT
+/* PORT copy of the ply-effect damage router below, on HOST slot rows (id at
+ * +0, N64 info field K >= 4 at host K+4, u16/u8 subfields in the arithmetic
+ * top of their word). Only the accessors change. */
+void func_80111184(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
+                   struct UnkStruct80110438_C *arg2) {
+    s32 flags;
+    s32 idx;
+    s32 id;
+    u8 *pa = (u8 *) arg0;
+    u8 *pb = (u8 *) arg1;
+    u32 b9;
+
+    id = *(s32 *) pb;  /* _B->unk0 */
+    idx = *(s32 *) pa; /* _A->unk0 */
+    if (*(u32 *) (pb + 0x14) & 0x40000000) { /* _B->unk10 */
+        return;
+    }
+    flags = *(s32 *) (pa + 0x1C); /* _A->unk18 */
+    if (flags & 0x80000000) {
+        return;
+    }
+    if (D_800E7CE0[idx] != 0) {
+        return;
+    }
+    if (idx == -1) {
+        arg2->unk2 = 2;
+        arg2->unk3 = *(s32 *) (pb + 0x10); /* _B->unkC */
+        return;
+    }
+    b9 = (*(u32 *) (pb + 12) >> 16) & 0xFF; /* _B->unk9 */
+    switch (b9) {
+    case 0:
+        return;
+    case 2:
+        if (flags & 2) {
+            arg2->unk2 = 0xA;
+            if (*(s32 *) (pa + 0x1C) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        if (id != -1) {
+            if (D_800E6A10[id] == 1.0f) {
+                D_800E85A0[idx] = -1;
+            } else {
+                D_800E85A0[idx] = 1;
+            }
+            arg2->unk2 = 3;
+            arg2->unk4 = 0;
+            return;
+        }
+        arg2->unk2 = 0;
+        utilPrintf("effect master inhale? trk:%x\n", id);
+        return;
+    case 1:
+        if (flags & 1) {
+            arg2->unk2 = 6;
+            if (*(s32 *) (pa + 0x1C) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    case 3:
+        if (flags & 8) {
+            arg2->unk2 = 0xC;
+            if (*(s32 *) (pa + 0x1C) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    case 4:
+        if (flags & 0x10) {
+            arg2->unk2 = 0xD;
+            if (*(s32 *) (pa + 0x1C) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    case 5:
+        if (flags & 0x20) {
+            arg2->unk2 = 0xE;
+            if (*(s32 *) (pa + 0x1C) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    case 6:
+        if (flags & 0x40) {
+            arg2->unk2 = 0xF;
+            if (*(s32 *) (pa + 0x1C) & 0x10000000) {
+                arg2->unk2 = 0;
+            }
+            return;
+        }
+        break;
+    default:
+        utilPrintf("unknown player effect sub kind:%x\n", b9);
+        return;
+    }
+    arg2->unk3 = *(s32 *) (pb + 0x10); /* _B->unkC */
+    if (!(*(s32 *) (pa + 0x1C) & 0x08000000)) {
+        D_800E7B20[idx] -= *(f32 *) (pb + 8); /* _B->unk4 */
+    }
+    if (D_800E7B20[idx] <= 0.0f) {
+        arg2->unk2 = 1;
+        D_800E7B20[idx] = 0.0f;
+        return;
+    }
+    arg2->unk2 = 2;
+    if (!(*(s32 *) (pa + 0x1C) & 0x08000000)) {
+        if (D_800DD710[idx] == 0x17) {
+            D_800E7CE0[idx] = 0xF;
+        } else {
+            D_800E7CE0[idx] = 0x2D;
+        }
+    } else {
+        D_800E7CE0[idx] = 0;
+    }
+}
+#else
 void func_80111184(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1,
                    struct UnkStruct80110438_C *arg2) {
     s32 flags;

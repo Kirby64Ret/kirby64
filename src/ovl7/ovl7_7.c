@@ -98,7 +98,9 @@ s32 func_80110150(void *);
 void func_801AEA20_ovl7(GObj *arg0) {
     void func_801AEE04_ovl7(void);
     void func_800B8630(GObj *);
-    void func_800A9864(s32, s32, s32);
+    /* func_800A9864(s32,s32,s32) is left implicit: plain code later in
+     * this file calls it without a prototype, and a typed declaration
+     * here would conflict with that implicit int() under gcc. */
     extern struct Sub800E1B50_Unk98 D_801CD33C_ovl7;
     u32 id = omCurrentObj->objId;
     struct UnkStruct800E1B50 *ent = D_800E1B50[id];
@@ -276,14 +278,11 @@ void func_801AF314_ovl7(GObj *arg0) {
  * node uses the LP64 layout from ovl1_2_2.c (emitter chain at +0x58). */
 void func_801AF398_ovl7(GObj *arg0) {
     void eneTurnCommon(s32);
-    s32 func_801117BC(void *, u32);
-    void func_80111C4C(s32);
+    struct Ovl7_7_AnimObj *func_801117BC(void *, u32);
+    void func_80111C4C(struct Ovl7_7_AnimObj *);
     void func_8019B7D8_ovl7(void);
     void func_8019D8A0(s32);
     s32 func_801A0D74_ovl7();
-    s32 func_800B3234(f32, f32, f32);
-    void func_800B2340(Vector *, struct DObj *, s32);
-    void func_800B26D8(Vector *, struct DObj *, s32);
     void func_801AFFFC_ovl7(void);
     void func_801B00BC_ovl7(GObj *);
     void func_801ACF84_ovl7(GObj *);
