@@ -4138,8 +4138,8 @@ s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     foot.x = arg0->kirbyFootPos[0];
     foot.y = arg0->kirbyFootPos[1] + arg0->scale[2];
     foot.z = arg0->kirbyFootPos[2];
-    if (func_801039E8(&head, &foot, &dir, 0, (s32) &D_8012BD34, (s32) &arg1->rec[0].norm,
-                      (s32) &arg1->rec[0].tri, (s32) &arg1->rec[0].type) != 0) {
+    if (pc_probe_39e8(&head, &foot, &dir, NULL, &D_8012BD34, &arg1->rec[0].norm,
+                      &arg1->rec[0].tri, (u32 *) &arg1->rec[0].type) != 0) {
         cls = 0x200;
         centerHit = 1;
         best = BD00.unk38;
@@ -4150,7 +4150,7 @@ s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     head.z = arg0->kirbyGroundPath[1];
     foot.x = arg0->kirbyFootPos[0] + BD00.unk4;
     foot.z = arg0->kirbyFootPos[2] + BD00.unk8;
-    if (func_801039E8(&head, &foot, &dir, 0, (s32) &hit, (s32) &n, (s32) &tri, (s32) &type) != 0) {
+    if (pc_probe_39e8(&head, &foot, &dir, NULL, &hit, &n, &tri, (u32 *) &type) != 0) {
         got = 0;
         if (cls == 0) {
             got = 1;
@@ -4175,7 +4175,7 @@ s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     head.z = arg0->kirbyHeadPath[1];
     foot.x = arg0->kirbyFootPos[0] + BD00.unkC;
     foot.z = arg0->kirbyFootPos[2] + BD00.unk10;
-    if (func_801039E8(&head, &foot, &dir, 0, (s32) &hit, (s32) &n, (s32) &tri, (s32) &type) != 0) {
+    if (pc_probe_39e8(&head, &foot, &dir, NULL, &hit, &n, &tri, (u32 *) &type) != 0) {
         got = 0;
         if (cls == 0) {
             got = 1;
@@ -7698,19 +7698,19 @@ s32 func_8010D668(struct PositionState *arg0, f32 arg1) {
     bot.x = top.x;
     bot.y = yBot;
     bot.z = top.z;
-    if (func_80103EA0(&top, &bot, &dir, NULL, (s32) &hit, 0, 0, 0) != 0) {
+    if (pc_probe_ea0(&top, &bot, &dir, NULL, &hit, NULL, NULL, NULL) != 0) {
         arg0->kirbyFootPos[1] = (hit.y - arg0->scale[2]) + 0.1f;
         return 1;
     }
     lateral = 0;
     top.x = bot.x = arg0->kirbyFootPos[0] + BD00.unk4;
     top.z = bot.z = arg0->kirbyFootPos[2] + BD00.unk8;
-    if (func_80103EA0(&top, &bot, &dir, NULL, 0, (s32) &n, 0, 0) != 0) {
+    if (pc_probe_ea0(&top, &bot, &dir, NULL, NULL, &n, NULL, NULL) != 0) {
         lateral = 1;
     } else {
         top.x = bot.x = arg0->kirbyFootPos[0] + BD00.unkC;
         top.z = bot.z = arg0->kirbyFootPos[2] + BD00.unk10;
-        if (func_80103EA0(&top, &bot, &dir, NULL, 0, (s32) &n, 0, 0) != 0) {
+        if (pc_probe_ea0(&top, &bot, &dir, NULL, NULL, &n, NULL, NULL) != 0) {
             lateral = 1;
         }
     }

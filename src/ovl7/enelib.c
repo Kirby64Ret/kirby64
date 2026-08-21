@@ -2358,6 +2358,14 @@ s32 reqChildEneTrk(u8 arg0, u8 arg1, u8 arg2) {
         return track;
     }
 }
+#ifdef PORT
+/* 0x8019DB7C IS reqChildEneTrk (tools/symbol_addrs.txt), but ovl9_13.c
+ * calls it by the raw address name, which until now only the weak stub
+ * satisfied.  Alias it so the call reaches the real function. */
+s32 func_8019DB7C_ovl7(u8 arg0, s32 arg1, s32 arg2) {
+    return reqChildEneTrk(arg0, arg1, arg2);
+}
+#endif
 
 s32 func_8019DD78_ovl7(u8 arg0, s32 arg1) {
     s32 track;

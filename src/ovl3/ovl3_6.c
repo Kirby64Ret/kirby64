@@ -60,8 +60,9 @@ extern void func_8015449C_ovl3(u8 *, s32);
 void func_8017CF60_ovl3(s32 arg0) {
     extern f32 *D_801928D8_ovl3[];
     extern u8 D_80190580_ovl3[];
-    void func_800AA018(s32);
-    void func_800AA154(s32);
+    /* func_800AA018/func_800AA154 stay implicitly declared: later PC-visible
+     * functions in this TU call them without a prototype, and gnu90 folds
+     * those to int(). */
     s32 func_800AF230(void);
     void func_8011E0E8(void);
     void func_80120A28(void);
@@ -185,12 +186,13 @@ done:
  *
  * Port notes: the shape header/record layout is plyshot.c's Unk80168408
  * pair (N64 offsets kept: count at header +0x1C, record array pointer at
- * +0x20, 0x28-stride records); func_80168408_ovl3 keeps its plyshot
- * (s32, s32, f32) spelling so both pointer args go through
- * (s32)(uintptr_t) like the plyshot PORT arms; D_80191424 is pair-indexed
+ * +0x20, 0x28-stride records); func_80168408_ovl3 keeps this file's
+ * (f32 *, void *, f32) spelling and its s32 result comes back through
+ * (uintptr_t) (static data sits below 4GB on this build, same deal as the
+ * plyshot arms' (s32)(uintptr_t) handles); D_80191424 is pair-indexed
  * (N64 stride 8 = two f32s); D_80194348 is a native pointer array on PC;
  * D_80197674/D_80197678 are 0.04f/65535.0f inlined; func_800AA888 takes
- * one u32 (m2c's &gKirbyState is a leftover register). */
+ * one s32 (m2c's &gKirbyState is a leftover register). */
 typedef struct PcO36Shape {
     u8 pad0[4];
     u8 unk4;
@@ -222,10 +224,10 @@ void func_8017D430_ovl3(void *arg0) {
     extern u8 D_80193DC0_ovl3[];
     extern void *D_80194348_ovl3[];
     extern char D_80197570_ovl3[];
-    extern s32 func_80168408_ovl3(s32, s32, f32);
+    extern s32 func_80168408_ovl3(f32 *, void *, f32);
     extern s32 func_801521F0_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
-    s32 func_800AA888(u32);
-    void utilPrintf(const char *, ...);
+    s32 func_800AA888(s32);
+    void utilPrintf(char *, ...);
     PcO36ShapeHdr *hdr;
     PcO36Shape *rec;
     s32 i;
@@ -243,8 +245,7 @@ void func_8017D430_ovl3(void *arg0) {
     if (*(s32 *) ((u8 *) &D_8012E7FC + 8) >= 0) {
         id = omCurrentObj->objId;
         hdr = (PcO36ShapeHdr *) (uintptr_t) func_80168408_ovl3(
-            (s32) (uintptr_t) D_8019139C_ovl3, (s32) (uintptr_t) D_800DFBD0[id][2],
-            D_800EA6E0[id]);
+            D_8019139C_ovl3, D_800DFBD0[id][2], D_800EA6E0[id]);
         if (hdr != NULL) {
             rec = hdr->unk20;
             for (i = 0; i < hdr->unk1C; i++, rec++) {
@@ -296,8 +297,7 @@ void func_8017D430_ovl3(void *arg0) {
             pair = &D_80191424_ovl3[frame * 2];
             if (pair[0] != 65535.0f) {
                 hdr = (PcO36ShapeHdr *) (uintptr_t) func_80168408_ovl3(
-                    (s32) (uintptr_t) D_80191404_ovl3, 0,
-                    D_800EA6E0[omCurrentObj->objId]);
+                    D_80191404_ovl3, NULL, D_800EA6E0[omCurrentObj->objId]);
                 hdr->unk20->unkC = 0.0f;
                 hdr->unk20->unk10 = 0.0f;
                 hdr->unk20->unk14 = pair[0];
@@ -616,7 +616,125 @@ void func_8017E284_ovl3(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017E284_ovl3.s")
 #endif
+#ifdef PORT
+/* PORT: the ability ride/jump per-tick handler (paired with the 0x2B
+ * coroutine above), from asm/nonmatchings/ovl3/ovl3_6/func_8017E54C_ovl3.s
+ * (via m2c). Services base motion (skipping input service while the state
+ * word unk44 is 1), levels the pitch and hands off when the coroutine has
+ * finished (unk30). While the ability is armed it releases the anim lock
+ * once DObj [3]'s flags byte reaches 2; otherwise it decays the windup
+ * pitch gKirbyState.unk40 back to zero. On the ground it kills the drive
+ * and resets unk44; then the jump machine: A (0x8000) pressed on the
+ * ground launches (unk44 = 1) -- a fully submerged launch (water bits
+ * == 6) plays 0x10B with an 8.5 fixed rise, a dry one plays 0xF7 with a
+ * func_80123144(17.0f)-scaled rise -- while airborne it flips to the
+ * descent state (unk44 = 2) at apex, on a ceiling hit, or once rising
+ * speed drops under the unkCC threshold (arming isFullJump). Airborne
+ * with upward speed and no full-jump flag it runs the variable-jump-
+ * height service func_8011EBD4, and always the gravity service
+ * func_8011ED68.
+ *
+ * Port notes: func_8011EBD4/func_8011ED68 are (void) and func_80123144 is
+ * f32(f32) with the float-bit literal 0x41880000 = 17.0f (m2c's
+ * &gKirbyState args are leftover registers); m2c's *(D_800E3210 + id*4)
+ * pointer math is plain D_800E3210[id]; the D_800E8920 value is re-read
+ * fresh at the tail (only this handler writes it in between, so the
+ * re-read equals m2c's threaded var_a0); D_801976A8 is 0.13089969754f
+ * (pi/24) -- kept as the rodata extern spelling the N64 arm above uses;
+ * D_801976AC is 65535.0f and D_801976B0/B4 are the 8.5f/17.0f rise pair
+ * inlined. */
+void func_8017E54C_ovl3(s32 arg0) {
+    extern f32 D_801976A8_ovl3;
+    void func_8011EBD4(void);
+    void func_8011ED68(void);
+    f32 func_80123144(f32);
+    void func_8011E0E8(void);
+    s32 id;
+
+    func_80153984_ovl3();
+    if (gKirbyState.unk44 != 1) {
+        func_801217B8();
+    }
+    if (gKirbyState.unk30 != 0) {
+        gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
+        func_8011D67C();
+        return;
+    }
+    if (gKirbyState.abilityInUse != 0) {
+        if (D_800DFBD0[omCurrentObj->objId][3]->flags == 2) {
+            func_8011E0E8();
+        }
+    } else if (gKirbyState.unk40 != 0.0f) {
+        gKirbyState.unk40 -= D_801976A8_ovl3;
+        if (gKirbyState.unk40 <= 0.0f) {
+            gKirbyState.unk40 = 0.0f;
+        }
+        gEntitiesAngleXArray[omCurrentObj->objId] = -gKirbyState.unk40;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E8920[id] != 0) {
+        D_800E6690[id] = 0.0f;
+        id = omCurrentObj->objId;
+        D_800E64D0[id] = D_800E6690[id];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
+        gKirbyState.unk44 = 0;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] != 0) {
+        if (D_800E8920[id] != 0) {
+            if (gKirbyState.isFullJump == 0) {
+                if (gKirbyController.buttonPressed & 0x8000) {
+                    gKirbyState.unk44 = 1;
+                    D_800E8920[omCurrentObj->objId] = 0;
+                    if ((D_800E8AE0[omCurrentObj->objId] & 6) == 6) {
+                        play_sound(0x10B);
+                        gKirbyState.unkCC = 4.0f;
+                        D_800E3210[omCurrentObj->objId] = 8.5f;
+                        D_800E3750[omCurrentObj->objId] = 8.5f;
+                        D_800E3C90[omCurrentObj->objId] = 8.5f;
+                    } else {
+                        play_sound(0xF7);
+                        gKirbyState.unkCC = 8.0f;
+                        D_800E3210[omCurrentObj->objId] = func_80123144(17.0f);
+                        D_800E3750[omCurrentObj->objId] = 17.0f;
+                        D_800E3C90[omCurrentObj->objId] = 16.0f;
+                    }
+                }
+            } else {
+                gKirbyState.isFullJump = 0;
+                gKirbyState.jumpHeight = 0;
+            }
+        } else {
+            f32 vel = D_800E3210[id];
+
+            if (vel > 0.0f) {
+                if ((vel < gKirbyState.unkCC) && (gKirbyState.isFullJump == 0)) {
+                    gKirbyState.isFullJump += 1;
+                    gKirbyState.unk44 = 2;
+                }
+                if (gKirbyState.ceilingCollisionNext != 0) {
+                    D_800E3210[omCurrentObj->objId] = 0.0f;
+                    gKirbyState.unk44 = 2;
+                }
+            } else if (gKirbyState.isFullJump != 0) {
+                gKirbyState.unk44 = 2;
+            }
+        }
+    } else if ((D_800E8920[id] != 0) && (gKirbyState.isFullJump != 0)) {
+        gKirbyState.isFullJump = 0;
+        gKirbyState.jumpHeight = 0;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E8920[id] == 0) {
+        if ((D_800E3210[id] > 0.0f) && (gKirbyState.isFullJump == 0)) {
+            func_8011EBD4();
+        }
+        func_8011ED68();
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017E54C_ovl3.s")
+#endif
 
 #ifdef NON_MATCHING
 typedef struct Unk80198830 {

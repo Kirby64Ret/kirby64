@@ -343,7 +343,175 @@ void func_801BE740_ovl7(void) {
     func_801BE490_ovl7();
 }
 
+#ifdef PORT
+/* Crystal-shard / prize collection sequence (ported from m2c).  Award the
+ * prize: kind 7 (shard) records the shard id from the annex of
+ * D_800E9020 (s32 words at +0x1C0, same idiom as func_801BF1F4 below)
+ * into the save (func_800B9CB4 takes 2 args; the "3e-45f" family in the
+ * m2c draft are the raw ints 2/5/8), kind 8 pays out by D_800EA520: an
+ * ability card, a life or 6 HP -- level-clear variants (unk7880 >= 6) set
+ * the exit flag D_8012E828.  A duplicate/paid prize (D_800EA520 != 0)
+ * parks the track and sleeps forever with the results byte
+ * D_8012E7C5[0xF] = 2.  A NEW shard runs the pickup jingle: recolor
+ * effect 0x32, the all-shards fanfare or the single-shard one (with the
+ * matching func_801AE7E0_ovl7 spawns), reposition to the model, wait for
+ * D_800E98E0 to hit 2, close out, and for clear kinds 6/7/8 advance the
+ * level-select state (func_800F6C40, 2 args) and save 2/5/8. */
+void func_801BE79C_ovl7(GObj *arg0) {
+    void func_801BEE54_ovl7(GObj *);
+    void func_800B7138(GObj *);
+    void func_800BB468(s32, s32);
+    void func_800B3520(void);
+    void func_800AF27C(void);
+    void func_8019B164_ovl7(void);
+    s32 func_801AE7E0_ovl7(s32);
+    void func_800F6C40(s32, s32);
+    void func_800B9CB4(s32, s32);
+    s32 saveCollectedAllShards(void);
+    void utilGetTransformSRT(Vector *, struct DObj *);
+    extern s32 saveCurrentFileNum;
+    extern u8 D_800D6BC0[];
+    extern s32 D_800BE500;
+    extern u8 D_8012E7C5[];
+    extern s16 D_8012E828;
+    extern f32 D_800E9020[];
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    Vector srt;
+    u16 kind;
+
+    D_800DEF90[id] = (void (*)(s32)) func_800B7138;
+    D_800DF150[omCurrentObj->objId] = func_801BEE54_ovl7;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 1.0f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 1.0f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 1.0f;
+    func_8019BB58_ovl7();
+    if (ent->unk34 != NULL) {
+        func_800A22D4((s32) (uintptr_t) ent->unk34);
+    }
+    func_800A2300(arg0);
+    ent->unk34 = NULL;
+    id = omCurrentObj->objId;
+    kind = D_800E77A0[id];
+    if (kind == 7) {
+        func_800B9CB4(saveCurrentFileNum, ((s32 *) &D_800E9020[0x70])[id]);
+        D_800D6E30[D_800BE508] += 1;
+        play_sound(0xCB);
+        func_800BB468(0xC, 0);
+    } else if (kind == 8) {
+        if ((s32) D_800E7880[id] < 6) {
+            switch (D_800EA520[id]) {
+            case 0:
+                D_800D6BC0[D_800BE500] = 1;
+                play_sound(0xCE);
+                func_800BB468(0xC, 0);
+                break;
+            case 1:
+                change_kirby_lives(1);
+                play_sound(1);
+                break;
+            case 2:
+                change_kirby_hp(6.0f);
+                play_sound(0xCA);
+                break;
+            }
+        } else {
+            play_sound(0xCB);
+            func_800BB468(0xC, 0);
+            D_8012E828 = 1;
+        }
+    }
+    id = omCurrentObj->objId;
+    if (D_800EA520[id] != 0) {
+        func_8019BB58_ovl7();
+        if (ent->unk34 != NULL) {
+            func_800A22D4((s32) (uintptr_t) ent->unk34);
+        }
+        func_800A2300(arg0);
+        ent->unk34 = NULL;
+        D_800DF150[omCurrentObj->objId] = NULL;
+        func_800B19F4(0x7D, omCurrentObj->objId);
+        ohSleep(0x1E);
+        D_8012E7C5[0xF] = 2;
+        curObjSleepForever();
+        id = omCurrentObj->objId;
+    }
+    D_800E98E0[id] = 0;
+    D_800E5F90[omCurrentObj->objId] = D_800E5F90[0];
+    D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[0];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];
+    func_800A9760(0x100C3);
+    func_800A8100(0, 2, 0x32, D_800DFBD0[omCurrentObj->objId][1]);
+    if (saveCollectedAllShards() != 0) {
+        func_800AA018(0x105EC);
+        func_801AE7E0_ovl7(0xB);
+        func_801AE7E0_ovl7(0xC);
+    } else {
+        func_800AA018(0x105EB);
+        func_801AE7E0_ovl7(0xA);
+    }
+    func_800B3520();
+    func_800AF27C();
+    D_800E98E0[omCurrentObj->objId] = 1;
+    if (ent->unk34 != NULL) {
+        func_800A22D4((s32) (uintptr_t) ent->unk34);
+    }
+    func_800A2300(arg0);
+    ent->unk34 = NULL;
+    utilGetTransformSRT(&srt, D_800DFBD0[omCurrentObj->objId][1]);
+    gEntitiesNextPosYArray[omCurrentObj->objId] = srt.y;
+    func_800A9760(0x100C4);
+    func_800AA018(0x105EE);
+    func_8019B164_ovl7();
+    func_800A8100(0, 2, 0x32, D_800DFBD0[omCurrentObj->objId][1]);
+    while (D_800E98E0[omCurrentObj->objId] != 2) {
+        ohSleep(1);
+    }
+    D_800E98E0[omCurrentObj->objId] = 2;
+    func_800AA018(0x105ED);
+    if (ent->unk34 != NULL) {
+        func_800A22D4((s32) (uintptr_t) ent->unk34);
+    }
+    func_800A2300(arg0);
+    ent->unk34 = NULL;
+    func_800AF27C();
+    D_800E98E0[omCurrentObj->objId] = 3;
+    func_800B3520();
+    D_800DF150[omCurrentObj->objId] = NULL;
+    func_800B19F4(0x7D, omCurrentObj->objId);
+    id = omCurrentObj->objId;
+    kind = D_800E77A0[id];
+    if (kind == 7) {
+        ohSleep(0xF);
+        id = omCurrentObj->objId;
+    } else if (kind == 8) {
+        switch (D_800E7880[id]) {
+        case 6:
+            func_800F6C40(D_800BE508 + 1, 0);
+            func_800B9CB4(saveCurrentFileNum, 2);
+            id = omCurrentObj->objId;
+            break;
+        case 7:
+            func_800F6C40(D_800BE508 + 1, 0);
+            func_800B9CB4(saveCurrentFileNum, 5);
+            id = omCurrentObj->objId;
+            break;
+        case 8:
+            func_800F6C40(D_800BE508 + 1, 0);
+            func_800B9CB4(saveCurrentFileNum, 8);
+            id = omCurrentObj->objId;
+            break;
+        default:
+            D_8012E7C5[0xF] = 2;
+            id = omCurrentObj->objId;
+            break;
+        }
+    }
+    func_8019D958_ovl7((u16) id);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_16/func_801BE79C_ovl7.s")
+#endif
 
 void func_801BEE54_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent;

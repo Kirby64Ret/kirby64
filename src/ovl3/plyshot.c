@@ -272,7 +272,106 @@ void func_8015B190_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015B190_ovl3.s")
 #endif
 
+#ifdef PORT
+/* PORT: service routine for the thrown rock installed by func_8015B190_ovl3
+ * above, from asm/nonmatchings/ovl3/plyshot/func_8015B75C_ovl3.s. While the
+ * rock is still carried (gKirbyState.unk3C==0 and the launch latch
+ * D_800E9AA0 clear) it dies when the throw action ends (action 0x15 or
+ * ability drop) and otherwise just re-seats the carry effect on hand DObj
+ * [3]. Once flying it pops off-screen (func_800B3158), faces the walk
+ * direction, counts down the D_800E9720 lifetime while running the ground
+ * probe func_80155424_ovl3, and keeps per-class speed/gravity/caps live
+ * (halved speed, gravity -0.4 and cap 8 under water unless surface bit 2 is
+ * set); ground contact, a hit record, the timer or a wall turns it into
+ * splinter track 5 with fgm 0xE, releasing the looping pair parked in
+ * D_800EA360 and the carry effect. The per-class lateral speeds are row [2]
+ * of the N64 table at D_80196720 (see the init's pc_rock_tbl note on the
+ * garbled data emission), spelled here as literals. */
+void func_8015B75C_ovl3(struct GObj *arg0) {
+    extern char D_80190B6C_ovl3[];
+    extern s32 func_800B3158(void);
+    extern void func_800B2340(Vector *, s32, s32);
+    extern void func_800B26D8(Vector *, s32, s32);
+    extern s32 func_801693C4_ovl3(s32);
+    extern void func_80162150_ovl3();
+    s32 func_80155424_ovl3();
+    static const f32 pc_rock_spd[3] = { 6.0f, 8.0f, 10.0f };
+    s32 id = omCurrentObj->objId;
+    struct PcPlyshotFx *fx;
+    Vector v;
+    s32 n;
+
+    if ((gKirbyState.unk3C == 0) && (D_800E9AA0[id].as_u32 == 0)) {
+        if ((gKirbyState.action == 0x15) || (gKirbyState.abilityInUse == 0)) {
+            func_800A22D4(D_800EA520[id]);
+            func_800B1900((u16) id);
+            return;
+        }
+        goto seat;
+    }
+    if (func_800B3158() == 0) {
+        goto release;
+    }
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    if (D_800E6310[id] == 0) {
+        s32 t = D_800E9720[id];
+
+        D_800E9720[id] = t - 1;
+        if (t != 0) {
+            if ((D_800E83E0[id] == 0) && (func_80155424_ovl3(D_80197F60_ovl3[id - 4]) == 0)
+                && (D_800E8920[id] == 0)) {
+                s32 flags = D_800E8AE0[id];
+                s32 wet = flags & 4;
+                f32 grav;
+                f32 spd;
+                f32 cap;
+
+                if ((wet != 0) && !(flags & 2)) {
+                    grav = -0.4f;
+                } else {
+                    grav = -0.980665f;
+                }
+                spd = wet ? pc_rock_spd[D_800E98E0[id]] * 0.5f : pc_rock_spd[D_800E98E0[id]];
+                cap = wet ? 8.0f : 16.0f;
+                D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+                D_800E3750[id] = grav;
+                D_800E3C90[id] = (cap < 0.0f) ? -cap : cap;
+                func_80162150_ovl3();
+                func_80111C4C(func_801117BC(D_80190B6C_ovl3, id));
+                goto seat;
+            }
+        }
+    }
+    play_sound(0xE);
+    n = func_801693C4_ovl3(5);
+    if (n != -1) {
+        gEntitiesNextPosXArray[n] = gEntitiesNextPosXArray[id];
+        gEntitiesNextPosYArray[n] = gEntitiesNextPosYArray[id];
+        gEntitiesNextPosZArray[n] = gEntitiesNextPosZArray[id];
+        D_800EA6E0[n] = D_800E17D0[id];
+        D_800EC2E0[n].as_u32 = 5;
+    }
+release:
+    pc_sndpair_release((void *) (uintptr_t) (u32) D_800EA360[id]);
+    func_800A22D4(D_800EA520[id]);
+    func_800B1900((u16) id);
+    return;
+
+seat:
+    /* Re-seat the carry effect block on hand DObj [3]'s world transform. */
+    fx = ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
+    func_800B2340(&v, (s32) (uintptr_t) D_800DFBD0[id][3], 0xFFFF);
+    fx->unk4 = v.x;
+    fx->unk8 = v.y;
+    fx->unkC = v.z;
+    func_800B26D8(&v, (s32) (uintptr_t) D_800DFBD0[id][3], 0xFFFF);
+    fx->unk10 = v.x;
+    fx->unk14 = v.y;
+    fx->unk18 = v.z;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015B75C_ovl3.s")
+#endif
 
 #ifdef NON_MATCHING
 /* FACTORY: 117/266, whole-function temp-register rotation.
@@ -663,7 +762,80 @@ void func_8015CF9C_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015CF9C_ovl3.s")
 #endif
 
+#ifdef PORT
+/* PORT: service routine for the lobbed throw installed by func_8015CF9C_ovl3
+ * above, from asm/nonmatchings/ovl3/plyshot/func_8015D3C8_ovl3.s. Before
+ * impact (D_800E98E0==0) it pops off-screen, faces the walk direction,
+ * pitches the model along its velocity (-atan2(vy,|vx|)), and while nothing
+ * has been hit re-seats the trail effect block from position+angles and
+ * steps the flight track; any contact (ground, hit record, shot collision
+ * or off-parent flag) freezes the motion and raises D_800E98E0=1, waking
+ * the sleeping init coroutine to run the burst. After impact it drives the
+ * burst: scales anim D_801915B4 and ring row D_801943A8 by trail DObj [1]'s
+ * scale.x and runs the impact hit record D_80194458. */
+void func_8015D3C8_ovl3(struct GObj *arg0) {
+    extern char D_80190C38_ovl3[];
+    extern s32 D_801915B4_ovl3[];
+    extern f32 D_801943A8_ovl3[][4];
+    extern f32 D_80198438_ovl3[];
+    extern s32 D_80194458_ovl3[];
+    extern s32 func_800B3158(void);
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern void func_80162150_ovl3();
+    s32 func_8016854C_ovl3(s32, s32, f32);
+    s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
+    f32 atan2f(f32, f32);
+    s32 id = omCurrentObj->objId;
+
+    if (D_800E98E0[id] != 0) {
+        f32 s = D_800DFBD0[id][1]->scale.v.x;
+
+        func_8016854C_ovl3((s32) (uintptr_t) D_801915B4_ovl3, 0, s);
+        func_80152070_ovl3(D_801943A8_ovl3, (f32 (*)[4]) D_80198438_ovl3, 0xB, s);
+        func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_80194458_ovl3, 0, id);
+        return;
+    }
+    if (func_800B3158() == 0) {
+        func_800A22D4(D_800EA520[id]);
+        func_800B1900((u16) id);
+        return;
+    }
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    {
+        f32 h = D_800E64D0[id];
+
+        if (h < 0.0f) {
+            h = -h;
+        }
+        gEntitiesAngleXArray[id] = -atan2f(D_800E3210[id], h);
+    }
+    if ((D_800E6310[id] == 0) && (D_800E83E0[id] == 0)
+        && (func_8015550C_ovl3(D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]) == 0)
+        && (D_800E8920[id] == 0)) {
+        struct PcPlyshotFx *fx = ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
+
+        fx->unk4 = gEntitiesNextPosXArray[id];
+        fx->unk8 = gEntitiesNextPosYArray[id];
+        fx->unkC = gEntitiesNextPosZArray[id];
+        fx->unk10 = gEntitiesAngleXArray[id];
+        fx->unk14 = gEntitiesAngleYArray[id];
+        fx->unk18 = gEntitiesAngleZArray[id];
+        func_80162150_ovl3();
+        func_80111C4C(func_801117BC(D_80190C38_ovl3, id));
+        return;
+    }
+    D_800E6690[id] = 0.0f;
+    D_800E64D0[id] = D_800E6690[id];
+    D_800E6850[id] = 65535.0f;
+    D_800E3750[id] = 0.0f;
+    D_800E3210[id] = D_800E3750[id];
+    D_800E3C90[id] = 65535.0f;
+    D_800E98E0[id] = 1;
+    func_800A22D4(D_800EA520[id]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015D3C8_ovl3.s")
+#endif
 
 #ifdef NON_MATCHING
 /* FACTORY: 43/273, first draft — NOT swept, one compile only.
@@ -1784,7 +1956,142 @@ void func_80161058_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80161058_ovl3.s")
 #endif
 
+#ifdef PORT
+/* PORT: service routine for the forward shot installed by func_80161058_ovl3
+ * above, from asm/nonmatchings/ovl3/plyshot/func_801614D8_ovl3.s. Same shape
+ * as the decompiled boomerang service func_8015C00C_ovl3 in this TU: bursts
+ * when the ability ends (fgm 0x159, particle 2/1/0x58) and pops on catch
+ * state gKirbyState.unk44==1 (both via func_800A22D4 here), otherwise runs
+ * the hit record D_80193834 and the shot collision pass, probes 25 units
+ * around the shot to keep the two type-0x11/0x12 water-trail effects and
+ * looping pair 0x34 alive only in water, steers back toward the parent at
+ * 10 (6 in water) once past the apex, re-arms the shared bubble throttle
+ * (D_80198830+4, spelled through the splinter cell D_80198834 per this
+ * build's data-emission convention), chains anim 0x20288 into 0x20289 when
+ * it finishes, and re-seats both effect blocks on the shot's position. */
+void func_801614D8_ovl3(struct GObj *arg0) {
+    extern u8 D_80198834_ovl3[];
+    extern char D_80190EC4_ovl3[];
+    extern s32 D_80193834_ovl3[];
+    extern s32 func_800A8234(s32, s32, s32);
+    extern void func_800A1F30(s32);
+    extern s32 func_800AA934(s32);
+    extern s32 func_80155664_ovl3(f32 *);
+    extern s32 func_80155838_ovl3(f32 *, f32, s32);
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern f32 func_800F9828(s32, s32);
+    f32 atan2f(f32, f32);
+    float sinf(float);
+    float cosf(float);
+    s32 id = omCurrentObj->objId;
+    u32 *sndpair = (u32 *) (uintptr_t) (u32) D_800EA360[id];
+    f32 probe[3];
+    s32 inWater;
+    f32 spd;
+
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    if (gKirbyState.abilityInUse == 0) {
+        play_sound(0x159);
+        func_800A7F74(2U, 1U, 0x58U, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
+                      gEntitiesNextPosZArray[id]);
+        if (sndpair != NULL && sndpair[0] != 0) {
+            pc_sndpair_release(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A22D4(D_800EA520[id]);
+            func_800A22D4(D_800EB4E0[id]);
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    if (gKirbyState.unk44 == 1) {
+        if (sndpair != NULL && sndpair[0] != 0) {
+            pc_sndpair_release(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A22D4(D_800EA520[id]);
+            func_800A22D4(D_800EB4E0[id]);
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_80193834_ovl3, 0, id);
+    func_80155664_ovl3(D_80197F60_ovl3[id - 4]);
+    D_800E8920[id] = 0;
+    probe[0] = gEntitiesNextPosXArray[id];
+    probe[1] = gEntitiesNextPosYArray[id];
+    probe[2] = gEntitiesNextPosZArray[id];
+    inWater = func_80155838_ovl3(probe, 25.0f, 6);
+    if (D_800E8AE0[id] & 4) {
+        func_800AECC0(1.0f);
+        func_800AED20(1.0f);
+        spd = 6.0f;
+    } else {
+        func_800AECC0(2.0f);
+        func_800AED20(2.0f);
+        spd = 10.0f;
+    }
+    if (D_800E98E0[id] != 0) {
+        f32 ang = atan2f((gEntitiesNextPosYArray[D_800E0D50[id]] - gEntitiesNextPosYArray[id]) + 20.0f,
+                         func_800F9828(id, D_800E0D50[id]));
+
+        D_800E3210[id] = sinf(ang) * spd;
+        D_800E3750[id] = 0.0f;
+        D_800E3C90[id] = (spd < 0.0f) ? -spd : spd;
+        D_800E64D0[id] = cosf(ang) * spd;
+        D_800E6690[id] = 0.0f;
+        D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+    } else {
+        D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+        if (((D_800E6A10[id] == 1.0f) && (D_800E64D0[id] < 0.0f))
+            || ((D_800E6A10[id] == -1.0f) && (D_800E64D0[id] > 0.0f))) {
+            D_800E98E0[id] = 1;
+        }
+    }
+    if (*(s32 *) D_80198834_ovl3 == 0) {
+        D_800E9560[id] -= 1;
+        if (D_800E9560[id] == 0) {
+            *(s32 *) D_80198834_ovl3 = 1;
+        }
+    }
+    if (func_800AA934(0x20288) != 0) {
+        func_800AA018(0x20289);
+    }
+    if (inWater == 0) {
+        if (sndpair != NULL && sndpair[0] != 0) {
+            pc_sndpair_release(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A1F30(D_800EA520[id]);
+            func_800A1F30(D_800EB4E0[id]);
+            D_800EB4E0[id] = 0;
+            D_800EA520[id] = D_800EB4E0[id];
+        }
+    } else {
+        if (sndpair != NULL && sndpair[0] == 0) {
+            pc_sndpair_start(0x34, sndpair);
+        }
+        if (D_800EA520[id] == 0) {
+            D_800EA520[id] = func_800A8234(2, 1, 0x11);
+            D_800EB4E0[id] = func_800A8234(2, 1, 0x12);
+        }
+    }
+    if (D_800EA520[id] != 0) {
+        struct PcPlyshotFx *fa = ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
+        struct PcPlyshotFx *fb = ((GObj *) (uintptr_t) (u32) D_800EB4E0[id])->unk4C;
+
+        fa->unk4 = gEntitiesNextPosXArray[id];
+        fa->unk8 = gEntitiesNextPosYArray[id];
+        fa->unkC = gEntitiesNextPosZArray[id];
+        fb->unk4 = gEntitiesNextPosXArray[id];
+        fb->unk8 = gEntitiesNextPosYArray[id];
+        fb->unkC = gEntitiesNextPosZArray[id];
+    }
+    func_80111C4C(func_801117BC(D_80190EC4_ovl3, id));
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801614D8_ovl3.s")
+#endif
 
 void func_80161CE0_ovl3(s32 arg0) {
     s32 id = D_800E0D50[omCurrentObj->objId];

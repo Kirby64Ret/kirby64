@@ -1646,6 +1646,11 @@ void func_801162F4(struct GObj *arg0) {
     omEndProcess(0);
 }
 
+#ifdef PORT
+/* PORT: prototype for the coroutine below; the N64 build leans on the
+ * implicit declaration at the four call sites that follow. */
+void func_80116508(struct GObj *arg0);
+#endif
 void func_80116438(struct GObj *arg0) {
     D_800D7098[0] = arg0->objId;
     func_801154F0(arg0);
@@ -1670,7 +1675,109 @@ void func_801164D4(struct GObj *arg0) {
     func_80116508(arg0);
 }
 
+#ifdef PORT
+/* PORT: shared hover coroutine for the four hand/boss pieces above, from
+ * asm/nonmatchings/ovl2/ovl2_10/func_80116508.s. Records the spawn height
+ * in D_800EA6E0 and bobs forever: picks an up/down drift of +/-0.25/frame
+ * at random, reverses when the piece strays 15 above or 10 below the
+ * anchor, and watches the command word D_800E98E0[objId]. Command 1 is a
+ * hop -- launch at 2.1333334*16 up under gravity -2.1333334 for 15 frames,
+ * freeze a frame, then fall from rest under gravity -0.9917355 for 22
+ * frames, freeze, clear the command and resume bobbing. Command 2 is the
+ * death drop -- descend at 8/frame for 10 frames, freeze, and sleep
+ * forever. The freeze writes zero the whole velocity/gravity delta block
+ * (D_800E3050..D_800E3910) and open the caps (D_800E3C90/D_800E3AD0/
+ * D_800E3E50 = 65535). */
+void func_80116508(struct GObj *arg0) {
+    s32 random_soft_s32_range(s32);
+    s32 id = arg0->objId;
+
+    D_800E98E0[id] = 0;
+    D_800EA6E0[id] = gEntitiesNextPosYArray[id];
+    while (TRUE) {
+        s32 cmd;
+
+        if (random_soft_s32_range(2) != 0) {
+            D_800E3210[id] = 0.25f;
+        } else {
+            D_800E3210[id] = -0.25f;
+        }
+        while ((cmd = D_800E98E0[id]) == 0) {
+            f32 d = gEntitiesNextPosYArray[id] - D_800EA6E0[id];
+
+            if (d >= 15.0f) {
+                D_800E3210[id] = -0.25f;
+            } else if (d <= -10.0f) {
+                D_800E3210[id] = 0.25f;
+            }
+            ohSleep(1);
+        }
+        if (cmd == 1) {
+            /* Hop: launch upward, freeze at the apex, then drop. */
+            D_800E3590[id] = 0.0f;
+            D_800E3050[id] = D_800E3590[id];
+            D_800E3AD0[id] = 65535.0f;
+            D_800E3210[id] = 2.1333334f * 16.0f;
+            D_800E3750[id] = -2.1333334f;
+            D_800E33D0[id] = 0.0f;
+            D_800E3910[id] = 0.0f;
+            D_800E3E50[id] = 65535.0f;
+            ohSleep(0xF);
+            D_800E3910[id] = 0.0f;
+            D_800E3750[id] = D_800E3910[id];
+            D_800E3590[id] = D_800E3910[id];
+            D_800E33D0[id] = D_800E3910[id];
+            D_800E3210[id] = D_800E3910[id];
+            D_800E3050[id] = D_800E3910[id];
+            D_800E3E50[id] = 65535.0f;
+            D_800E3C90[id] = D_800E3E50[id];
+            D_800E3AD0[id] = D_800E3E50[id];
+            ohSleep(1);
+            D_800E3590[id] = 0.0f;
+            D_800E3050[id] = D_800E3590[id];
+            D_800E3AD0[id] = 65535.0f;
+            D_800E3210[id] = 0.0f;
+            D_800E3750[id] = -0.9917355f;
+            D_800E33D0[id] = 0.0f;
+            D_800E3910[id] = 0.0f;
+            D_800E3E50[id] = 65535.0f;
+            ohSleep(0x16);
+            D_800E3910[id] = 0.0f;
+            D_800E3750[id] = D_800E3910[id];
+            D_800E3590[id] = D_800E3910[id];
+            D_800E33D0[id] = D_800E3910[id];
+            D_800E3210[id] = D_800E3910[id];
+            D_800E3050[id] = D_800E3910[id];
+            D_800E3E50[id] = 65535.0f;
+            D_800E3C90[id] = D_800E3E50[id];
+            D_800E3AD0[id] = D_800E3E50[id];
+            D_800E98E0[id] = 0;
+        } else if (cmd == 2) {
+            /* Death drop: descend, freeze, and never wake again. */
+            D_800E3590[id] = 0.0f;
+            D_800E3050[id] = D_800E3590[id];
+            D_800E3AD0[id] = 65535.0f;
+            D_800E3210[id] = -8.0f;
+            D_800E33D0[id] = 0.0f;
+            D_800E3910[id] = 0.0f;
+            D_800E3E50[id] = 65535.0f;
+            ohSleep(0xA);
+            D_800E3910[id] = 0.0f;
+            D_800E3750[id] = D_800E3910[id];
+            D_800E3590[id] = D_800E3910[id];
+            D_800E33D0[id] = D_800E3910[id];
+            D_800E3210[id] = D_800E3910[id];
+            D_800E3050[id] = D_800E3910[id];
+            D_800E3E50[id] = 65535.0f;
+            D_800E3C90[id] = D_800E3E50[id];
+            D_800E3AD0[id] = D_800E3E50[id];
+            curObjSleepForever();
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80116508.s")
+#endif
 
 void func_80116B68(struct GObj *arg0) {
     D_800D7098[0] = arg0->objId;
