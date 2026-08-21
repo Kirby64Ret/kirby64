@@ -1304,7 +1304,35 @@ void func_80111184(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
         D_800E7CE0[idx] = 0;
     }
 }
+#endif
 
+#ifdef PORT
+/* PORT copy of the effect-reaction writer below, on HOST slot rows. The
+ * IDO codegen notes on the #else arm do not bind here -- only the accessors
+ * change; the logic is kept verbatim. */
+void func_8011145C(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1) {
+    s32 idx;
+    s32 flags;
+    s32 sign;
+    u8 *pa = (u8 *) arg0;
+    u8 *pb = (u8 *) arg1;
+
+    idx = *(s32 *) pb; /* _B->unk0 */
+    if (!(*(u32 *) (pb + 0x14) & 0x80000000)) { /* _B->unk10 */
+        flags = *(s32 *) (pa + 0x1C);           /* _A->unk18 */
+        if (!(flags & 0x40000000)) {
+            sign = flags & 0x80000000;
+            if (!((*(u32 *) (pa + 8) >> 16) & 6)) { /* _A->unk4 */
+                if (sign || (flags & 0x78)) {
+                    D_800E83E0[idx] = 6;
+                } else {
+                    D_800E83E0[idx] = ((*(u32 *) (pa + 0x10) >> 24) << 16) + 2; /* _A->unkC */
+                }
+            }
+        }
+    }
+}
+#else
 // The bit tests are load-bearing: `x & 0x80000000` in a boolean context gives
 // IDO's `sll rd, rt, 0` + `bltz` pair, while `x >= 0` gives a bare `bltz`; and
 // `sign` has to be its own local so the mask lands in a register (`and`) rather
@@ -1329,6 +1357,7 @@ void func_8011145C(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
         }
     }
 }
+#endif
 
 void func_801114E0(void) {
     D_8012D580 = D_8012D0C0 = 0x50;

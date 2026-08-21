@@ -232,4 +232,109 @@ s32 func_801BC794_ovl7(s32 arg0) {
     return idx;
 }
 
+#ifdef PORT
+/* onDraw for the yaku (power-star) tracks (ported from m2c; twin of
+ * enelib's func_8019E128_ovl7 but with a per-track custom light pair in
+ * D_800E0650): unless hidden (D_800DD8D0 bit 6), set segment 0x10 to the
+ * track's geo block, push the track's Lights1 (gSPNumLights(1) +
+ * gSPLight x2 -- the raw 0xDB020000/0xDC08060A/0xDC08090A words the ROM
+ * writes), draw via the func_800AB0F4-selected renderer (all take just
+ * the GObj -- m2c's extra args were leftover registers), and restore the
+ * global lights D_800BE550/D_800BE548.  Odd kinds render into display
+ * list head 0 only, even kinds mirror into both heads. */
+static void pcYakuPushSeg(s32 head, u32 *seg) {
+    extern Gfx *gDisplayListHeads[4];
+    Gfx *g = gDisplayListHeads[head]++;
+
+    g->words.w0 = 0xDB060010;
+    g->words.w1 = (uintptr_t) seg;
+}
+
+static void pcYakuPushLights(s32 head, void *light, void *ambient) {
+    extern Gfx *gDisplayListHeads[4];
+    Gfx *g = gDisplayListHeads[head]++;
+
+    g->words.w0 = 0xDB020000;
+    g->words.w1 = 0x18;
+    g = gDisplayListHeads[head]++;
+    g->words.w0 = 0xDC08060A;
+    g->words.w1 = (uintptr_t) light;
+    g = gDisplayListHeads[head]++;
+    g->words.w0 = 0xDC08090A;
+    g->words.w1 = (uintptr_t) ambient;
+}
+
+void func_801BC978_ovl7(GObj *arg0) {
+    s32 func_800AB0F4(GObj *);
+    void func_800AB120(GObj *);
+    void func_800AB174(GObj *);
+    void func_800AB1F0(GObj *);
+    void func_800AB244(GObj *);
+    void func_800AB2C0(GObj *);
+    void func_800AB314(GObj *);
+    void func_800AB3A0(GObj *);
+    void func_800AB3F4(GObj *);
+    extern s32 D_800DD8D0[];
+    extern s32 *D_800E0650[];
+    extern u32 *gSegment4StartArray[];
+    extern Lights1 D_800BE550, D_800BE548;
+    s32 id = arg0->objId;
+    s32 *pair;
+    s32 kind;
+
+    if (D_800DD8D0[id] & 0x40) {
+        return;
+    }
+    pair = D_800E0650[id];
+    kind = func_800AB0F4(arg0);
+    switch (kind) {
+    case 19:
+    case 21:
+    case 23:
+    case 25:
+    case 27:
+    case 29:
+        pcYakuPushSeg(0, gSegment4StartArray[id]);
+        if (pair != NULL) {
+            pcYakuPushLights(0, (u8 *) pair + 8, pair);
+        }
+        if (kind == 19) {
+            func_800AB120(arg0);
+        } else if (kind == 21) {
+            func_800AB1F0(arg0);
+        } else if (kind == 23 || kind == 25) {
+            func_800AB2C0(arg0);
+        } else {
+            func_800AB3A0(arg0);
+        }
+        pcYakuPushLights(0, &D_800BE550, &D_800BE548);
+        return;
+    case 20:
+    case 22:
+    case 24:
+    case 26:
+    case 28:
+    case 30:
+        pcYakuPushSeg(0, gSegment4StartArray[id]);
+        pcYakuPushSeg(1, gSegment4StartArray[id]);
+        if (pair != NULL) {
+            pcYakuPushLights(0, (u8 *) pair + 8, pair);
+            pcYakuPushLights(1, (u8 *) pair + 8, pair);
+        }
+        if (kind == 20) {
+            func_800AB174(arg0);
+        } else if (kind == 22) {
+            func_800AB244(arg0);
+        } else if (kind == 24 || kind == 26) {
+            func_800AB314(arg0);
+        } else {
+            func_800AB3F4(arg0);
+        }
+        pcYakuPushLights(0, &D_800BE550, &D_800BE548);
+        pcYakuPushLights(1, &D_800BE550, &D_800BE548);
+        return;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/yakulib/func_801BC978_ovl7.s")
+#endif
