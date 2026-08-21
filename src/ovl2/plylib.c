@@ -2830,6 +2830,155 @@ block_53:
             return 0;
     }
 }
+#elif defined(PORT)
+/* Swim vertical-control state machine (draft above, completed). States in
+ * D_800E98E0: 1 neutral stroke, 2 ascending (C-up held), 3 descend-tap
+ * timer, 4 diving (C-down held), 5 surface pop, 6 handoff. Runs the water
+ * sweep (func_8010C734), transitions on the C buttons with the 7-frame tap
+ * window in D_800E9720, exits to land/dive-out actions when the matching
+ * collision class opens up, then applies the state's vertical velocity /
+ * gravity / cap. Returns the new state when it changed, else 0. */
+s32 func_8011F690(void) {
+    s32 func_8010C734(void *);
+    u32 func_80121194(void);
+    extern u8 D_8012BCA0[168];  /* whole PC block: src/pc/pc_bss_whole.c */
+    u32 id;
+    s32 st;
+    s32 locked;
+
+    if (gKirbyState.unk17 != 0) {
+        return 0;
+    }
+    id = omCurrentObj->objId;
+    D_800E9AA0[id] = (void *)(uintptr_t) D_800E98E0[id];
+    func_8010C734(&gPositionState);
+    id = omCurrentObj->objId;
+    st = D_800E98E0[id];
+    locked = *(u32 *) ((u8 *) D_800D6F58 + 0x54) != 0;
+    switch (st) {
+    case 1:
+        if (D_800E8920[id] != 0 && func_80121194() != 0) {
+            D_800E6690[id] = 0.0f;
+            D_800E64D0[id] = 0.0f;
+            D_800E6850[id] = 65535.0f;
+            set_kirby_action_1(0, 1);
+            return 0;
+        }
+        if (!locked) {
+            if (gKirbyController.buttonHeld & 0x800) {
+                D_800E98E0[id] = 2;
+            } else if (D_800E8920[id] == 0 && (gKirbyController.buttonHeld & 0x400)) {
+                D_800E98E0[id] = 3;
+            }
+        }
+        break;
+    case 2:
+        if (gKirbyState.ceilingCollisionNext == 0 &&
+            ((D_800E6A10[id] == 1.0f && !((*(u32 *) D_8012BCA0 >> 0x13) & 2)) ||
+             (D_800E6A10[id] == -1.0f && !((*(u32 *) D_8012BCA0 >> 0x13) & 0x10)))) {
+            if (func_80121194() != 0) {
+                set_kirby_action_1(3, 5);
+                return 0;
+            }
+            D_800E98E0[id] = 5;
+            break;
+        }
+        if (!locked) {
+            s32 up = gKirbyController.buttonHeld & 0x800;
+
+            if (up == 0 && D_800E9720[id] >= 7) {
+                D_800E9720[id] = 0;
+                D_800E98E0[id] = 1;
+            } else if (D_800E8920[id] == 0 && (gKirbyController.buttonHeld & 0x400)) {
+                D_800E9720[id] = 0;
+                D_800E98E0[id] = 3;
+            } else if (up != 0) {
+                if (D_800E9720[id] > 0 && D_800E9720[id] < 7) {
+                    D_800E9720[id] = 4;
+                }
+            } else {
+                D_800E9720[id] += 1;
+            }
+        } else {
+            D_800E98E0[id] = 1;
+        }
+        break;
+    case 3:
+        if (!locked) {
+            if (gKirbyController.buttonHeld & 0x800) {
+                D_800E9720[id] = 0;
+                D_800E98E0[id] = 2;
+            } else if (D_800E8920[id] != 0 || D_800E9720[id] >= 7) {
+                D_800E9720[id] = 0;
+                D_800E98E0[id] = 1;
+            } else if (gKirbyController.buttonHeld & 0x400) {
+                if (D_800E9720[id] > 0 && D_800E9720[id] < 7) {
+                    D_800E9720[id] = 0;
+                    D_800E98E0[id] = 4;
+                }
+            } else {
+                D_800E9720[id] += 1;
+            }
+        }
+        goto dive_exit_check;
+    case 4:
+        if (!locked) {
+            if (!(gKirbyController.buttonHeld & 0x400) || D_800E8920[id] != 0) {
+                D_800E98E0[id] = 1;
+                break;
+            }
+dive_exit_check:
+            if (gKirbyState.floorCollisionNext == 0 &&
+                ((D_800E6A10[id] == 1.0f && !((*(u32 *) D_8012BCA0 >> 0x13) & 4)) ||
+                 (D_800E6A10[id] == -1.0f && !((*(u32 *) D_8012BCA0 >> 0x13) & 0x20)))) {
+                set_kirby_action_1(6, 6);
+                return 0;
+            }
+        } else {
+            D_800E98E0[id] = 1;
+        }
+        break;
+    case 6:
+        func_8011D67C();
+        return 0;
+    default:
+        break;
+    }
+    st = D_800E98E0[id];
+    if (st == 1 || st == 5) {
+        func_8011CF58();
+    } else if (st != 4) {
+        if (gKirbyController.buttonHeld & 0xC00) {
+            f32 v;
+
+            if (gKirbyController.buttonHeld & 0x800) {
+                v = (D_800E8AE0[id] & 6) ? 2.5f : 5.0f;
+            } else {
+                v = (D_800E8AE0[id] & 6) ? -2.5f : -5.0f;
+            }
+            D_800E3210[id] = v;
+            D_800E3750[id] = 0.0f;
+            D_800E3C90[id] = (v < 0.0f) ? -v : v;
+        } else {
+            D_800E3750[id] = (D_800E3210[id] > 0.0f) ? -0.75f : 0.75f;
+            D_800E3C90[id] = 0.0f;
+        }
+        func_8011CF58();
+    } else {
+        f32 stroke = (D_800E8AE0[id] & 6) ? 1.5f : 3.0f;
+        f32 speed = (D_800E8AE0[id] & 6) ? 4.5f : 9.0f;
+
+        func_800AECC0(stroke);
+        func_800AED20(stroke);
+        D_800E3210[id] = -speed;
+        D_800E3750[id] = 0.0f;
+        D_800E3C90[id] = (speed < 0.0f) ? -speed : speed;
+    }
+    if (D_800E98E0[id] != (s32) (uintptr_t) D_800E9AA0[id]) {
+        return D_800E98E0[id];
+    }
+    return 0;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011F690.s")
 #endif
@@ -3015,6 +3164,194 @@ block_64:
         var_v0 = temp_a3_2;
     }
     return var_v0;
+}
+#elif defined(PORT)
+/* Swim control with the underwater turn (draft above, completed;
+ * func_8011F690's sibling). Same C-up/C-down state machine and vertical
+ * velocity application, but when the facing flips (func_801210FC) the
+ * PlyEntry handle parks in D_800EA360 and unk3C counts an 8-frame (16 in
+ * heavy water) yaw spin of the body DObj, after which facing, heading and
+ * the track offset flip (push scaled by the track segment's 1/unkC), the
+ * position re-interpolates onto the track, and the handle is restored. */
+s32 func_8011FEF8(void) {
+    s32 func_8010CABC(void *);
+    u32 func_80121194(void);
+    u32 func_801210FC(void);
+    extern u8 D_8012BCA0[168];
+    u32 id = omCurrentObj->objId;
+    s32 turn = gKirbyState.unk3C;
+    s32 st;
+    s32 locked;
+
+    if (turn == 0 && gKirbyState.unk17 == 0) {
+        D_800E9AA0[id] = (void *)(uintptr_t) D_800E98E0[id];
+        func_8010CABC(&gPositionState);
+        id = omCurrentObj->objId;
+        st = D_800E98E0[id];
+        locked = *(u32 *) ((u8 *) D_800D6F58 + 0x54) != 0;
+        switch (st) {
+        case 1:
+            if (D_800E8920[id] != 0 && gKirbyState.unk3C == 0 && func_80121194() != 0) {
+                D_800E98E0[id] = 5;
+            } else {
+                if (gKirbyState.unk3C == 0 && !(gKirbyController.buttonHeld & 0x300)) {
+                    gKirbyState.unk7 = 0;
+                }
+                if (!locked) {
+                    if (gKirbyController.buttonHeld & 0x800) {
+                        D_800E98E0[id] = 2;
+                    } else if (D_800E8920[id] == 0 && (gKirbyController.buttonHeld & 0x400)) {
+                        D_800E98E0[id] = 3;
+                    }
+                }
+            }
+            break;
+        case 2:
+            if (!locked) {
+                s32 up = gKirbyController.buttonHeld & 0x800;
+
+                if (up == 0 && D_800E9720[id] >= 7) {
+                    D_800E9720[id] = 0;
+                    D_800E98E0[id] = 1;
+                } else if (D_800E8920[id] == 0 && (gKirbyController.buttonHeld & 0x400)) {
+                    D_800E9720[id] = 0;
+                    D_800E98E0[id] = 3;
+                } else if (up != 0) {
+                    if (D_800E9720[id] > 0 && D_800E9720[id] < 7) {
+                        D_800E9720[id] = 4;
+                    }
+                } else {
+                    D_800E9720[id] += 1;
+                }
+            } else {
+                D_800E98E0[id] = 1;
+            }
+            break;
+        case 4:
+            if (!locked) {
+                if (!(gKirbyController.buttonHeld & 0x400) || D_800E8920[id] != 0) {
+                    D_800E98E0[id] = 1;
+                }
+            } else {
+                D_800E98E0[id] = 1;
+            }
+            break;
+        case 3:
+            if (!locked) {
+                if (gKirbyController.buttonHeld & 0x800) {
+                    D_800E9720[id] = 0;
+                    D_800E98E0[id] = 2;
+                } else if (D_800E8920[id] != 0 || D_800E9720[id] >= 7) {
+                    D_800E9720[id] = 0;
+                    D_800E98E0[id] = 1;
+                } else if (gKirbyController.buttonHeld & 0x400) {
+                    if (D_800E9720[id] > 0 && D_800E9720[id] < 7) {
+                        D_800E9720[id] = 0;
+                        D_800E98E0[id] = 4;
+                    }
+                } else {
+                    D_800E9720[id] += 1;
+                }
+            } else {
+                D_800E98E0[id] = 1;
+            }
+            break;
+        case 6:
+            if (gKirbyState.unk7 == 1) {
+                gKirbyState.unk44 = 0;
+                gKirbyState.isTurning |= 1;
+                gKirbyState.unk38 = 0.0f;
+                set_kirby_action_1(2, 4);
+                return 0;
+            }
+            set_kirby_action_1(0, 1);
+            return 0;
+        case 5:
+            return 0;
+        default:
+            break;
+        }
+        st = D_800E98E0[id];
+        if (st == 1 || st == 5) {
+            func_8011CF58();
+        } else if (st != 4) {
+            if (gKirbyController.buttonHeld & 0xC00) {
+                f32 v;
+
+                if (gKirbyController.buttonHeld & 0x800) {
+                    v = (D_800E8AE0[id] & 6) ? 2.5f : 5.0f;
+                } else {
+                    v = (D_800E8AE0[id] & 6) ? -2.5f : -5.0f;
+                }
+                D_800E3210[id] = v;
+                D_800E3750[id] = 0.0f;
+                D_800E3C90[id] = (v < 0.0f) ? -v : v;
+            } else {
+                D_800E3750[id] = (D_800E3210[id] > 0.0f) ? -0.75f : 0.75f;
+                D_800E3C90[id] = 0.0f;
+            }
+            func_8011CF58();
+        } else {
+            f32 stroke = (D_800E8AE0[id] & 6) ? 1.5f : 3.0f;
+            f32 speed = (D_800E8AE0[id] & 6) ? 4.5f : 9.0f;
+
+            func_800AECC0(stroke);
+            func_800AED20(stroke);
+            D_800E3210[id] = -speed;
+            D_800E3750[id] = 0.0f;
+            D_800E3C90[id] = (speed < 0.0f) ? -speed : speed;
+        }
+        turn = gKirbyState.unk3C;
+    }
+    if (turn == 0) {
+        id = omCurrentObj->objId;
+        if (D_800E98E0[id] == (s32) (uintptr_t) D_800E9AA0[id] && func_801210FC() != 0) {
+            D_800EA360[id] = (s32) gKirbyState.unk15C;
+            gKirbyState.unk15C = 0;
+            gKirbyState.unk3C += 1;
+        }
+    } else {
+        u32 oid = omCurrentObj->objId;
+        f32 step = (D_800E8AE0[oid] & 6) ? 0.19635f : 0.3927f;
+        s32 frames = (D_800E8AE0[oid] & 6) ? 0x10 : 8;
+
+        if (turn < frames) {
+            omCurrentObj->data.dobj->firstChild->angle.v.y -= step;
+            gKirbyState.unk3C += 1;
+        } else {
+            struct Unk80129114_4_4 *tp;
+            Vector p;
+            f32 push;
+
+            if ((D_800D7088[0] & 0x8000FFFF) != 3) {
+                func_800FBE1C();
+                func_800FA414(3);
+            }
+            omCurrentObj->data.dobj->firstChild->angle.v.y = 0.0f;
+            D_800E6A10[oid] = -D_800E6A10[oid];
+            D_800E17D0[oid] -= 3.1415927f;
+            gEntitiesAngleYArray[oid] = D_800E17D0[oid];
+            if (D_800D6FB2 == 2) {
+                push = (D_800E6A10[oid] == 1.0f) ? -7.6f : 7.6f;
+            } else {
+                push = (D_800E6A10[oid] == 1.0f) ? -4.12f : 4.12f;
+            }
+            tp = D_80129114->unk4[D_800E5F90[oid]].unk4;
+            D_800E6BD0[oid] += (1.0f / tp->unkC) * push;
+            func_800F8570(oid);
+            mtxGetInterpolatedPosition(&p, (s32 *) D_80129114->unk4[D_800E5F90[oid]].unk4,
+                                       D_800E6BD0[oid]);
+            gEntitiesNextPosXArray[oid] = p.x;
+            gEntitiesNextPosZArray[oid] = p.z;
+            gKirbyState.unk3C = 0;
+            gKirbyState.unk15C = (u32) D_800EA360[oid];
+        }
+    }
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] != (s32) (uintptr_t) D_800E9AA0[id]) {
+        return D_800E98E0[id];
+    }
+    return 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011FEF8.s")
@@ -3472,6 +3809,45 @@ s32 func_801217B8(void) {
 }
 
 #ifdef MIPS_TO_C
+s32 func_80121828(f32 arg0, f32 arg1, f32 arg2, f32 arg3) {
+    u32 temp_a0;
+    u32 temp_a0_2;
+
+    temp_a0 = omCurrentObj->objId;
+    if (D_800E8920[temp_a0] != 0) {
+        if (D_800E3210[temp_a0] != 0.0f) {
+            D_800E3750[temp_a0] = 0.0f;
+            temp_a0_2 = omCurrentObj->objId;
+            D_800E3210[temp_a0_2] = D_800E3750[temp_a0_2];
+            D_800E3C90[omCurrentObj->objId] = 65535.0f;
+            return 1;
+        }
+        /* Duplicate return node #12. Try simplifying control flow for better match */
+        return 0;
+    }
+    if (D_800E8AE0[temp_a0] & 6) {
+        if (arg3 != D_800E3C90[temp_a0]) {
+            D_800E3750[temp_a0] = -0.4f;
+            if (arg3 < 0.0f) {
+                D_800E3C90[omCurrentObj->objId] = -arg3;
+            } else {
+                D_800E3C90[omCurrentObj->objId] = arg3;
+            }
+        }
+    } else if (arg1 != D_800E3C90[temp_a0]) {
+        D_800E3750[temp_a0] = -0.980665f;
+        if (arg1 < 0.0f) {
+            D_800E3C90[omCurrentObj->objId] = -arg1;
+        } else {
+            D_800E3C90[omCurrentObj->objId] = arg1;
+        }
+    }
+    return 0;
+}
+#elif defined(PORT)
+/* Gravity/terminal-velocity select (draft above, asm-faithful): on
+ * landing zero the fall state and open the cap; otherwise pick the
+ * water or air gravity and cap by the matching argument. */
 s32 func_80121828(f32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     u32 temp_a0;
     u32 temp_a0_2;
@@ -4236,6 +4612,62 @@ block_18:
             } else {
                 goto loop_3;
             }
+        }
+    }
+}
+#elif defined(PORT)
+/* Water splash/ripple generator select (draft above, completed): at body
+ * height, find the first active water record the point is inside; if the
+ * point 120 above is also in an active volume the body is deep (splash
+ * 0x1E); otherwise the crossing height against this volume's surface picks
+ * ripple 0x3B (under 80) or 0x3A, with 0x1E when no surface plane is found
+ * and nothing at all within 40. Annex records read at the LP64 offsets
+ * (base+128 pointers, base+152 source ids). */
+void func_80122CE8(void) {
+    s32 func_8010DF9C(f32 *);
+    s32 func_8010E048(void *, s32, f32 *, f32 *, void *, f32 *);
+    extern u8 D_8012BCA0[168];
+    u32 id = omCurrentObj->objId;
+    f32 pos[3], raised[3], pt[3];
+    void *n;
+    s32 cnt, i;
+
+    pos[0] = gEntitiesNextPosXArray[id];
+    pos[1] = *D_800E0490[id][1] + gEntitiesNextPosYArray[id];
+    pos[2] = gEntitiesNextPosZArray[id];
+    cnt = func_8010DF9C(pos);
+    for (i = 0; i < cnt; i++) {
+        u8 *rec = *(u8 **) (D_8012BCA0 + 128 + (i * 8));
+
+        if (rec[4] == 1) {
+            s32 cnt2, j;
+
+            raised[0] = pos[0];
+            raised[1] = pos[1] + 120.0f;
+            raised[2] = pos[2];
+            cnt2 = func_8010DF9C(raised);
+            if (cnt2 != 0) {
+                for (j = 0; j < cnt2; j++) {
+                    u8 *r2 = *(u8 **) (D_8012BCA0 + 128 + (j * 8));
+
+                    if (r2[4] == 1) {
+                        func_800A7F74(5, 1, 0x1E, pos[0], pos[1], pos[2]);
+                        return;
+                    }
+                }
+                continue;
+            }
+            if (func_8010E048(rec, *(s32 *) (D_8012BCA0 + 152 + (i * 4)),
+                              pos, raised, &n, pt) != 0) {
+                f32 dy = pt[1] - pos[1];
+
+                if (!(dy < 40.0f)) {
+                    func_800A7F74(5, 1, (dy < 80.0f) ? 0x3B : 0x3A, pos[0], pos[1], pos[2]);
+                }
+            } else {
+                func_800A7F74(5, 1, 0x1E, pos[0], pos[1], pos[2]);
+            }
+            return;
         }
     }
 }
