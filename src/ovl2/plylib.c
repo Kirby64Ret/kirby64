@@ -428,6 +428,123 @@ block_18:
     }
     return spF8;
 }
+#elif defined(PORT)
+/* func_801045DC with pointer-true outs (records the already-hit filter
+ * halfwords before the cast). */
+static s32 pc_probe_45dc(Vector *a, Vector *b, u16 f2, u16 f4,
+                         struct CollisionTriangle **triOut, u32 *idxOut) {
+    extern struct CollisionState *gCollisionState;
+    extern u8 func_801024E8();
+    extern u8 func_8010203C();
+    extern s32 func_80103B58(f32 *, Vector *, struct Normal **, struct CollisionTriangle **, u32 *);
+    struct CollisionState newColState;
+
+    gCollisionState = &newColState;
+    newColState.currPos = *a;
+    newColState.nextPos = *b;
+    newColState.someNormal = NULL;
+    newColState.unk44 = func_801024E8;
+    newColState.unk40 = func_8010203C;
+    newColState.unk34 = NULL;
+    newColState.unk38 = NULL;
+    newColState.unk3C = NULL;
+    newColState.unk4A = f2;
+    newColState.unk4C = f4;
+    return func_80103B58(NULL, NULL, NULL, triOut, idxOut);
+}
+
+/* Melee sweep-cast walker (draft above, completed): arg0 is an f32[8]
+ * track record {curPos, nextPos, yaw, descriptor-address-as-u32} (both the
+ * ovl7 UnkOvl7Track PORT shape and plyshot's D_80198540_ovl3 rows). The
+ * descriptor is widened asset data: cell 0 packs {count : 8, pad : 8,
+ * filter2 : 16}, cell 1 {filter4 : 16, flags : 16}, cell 2 is the native
+ * pointer to the 4-f32 sweep entries. Each entry sweeps from the flagged
+ * base point (yaw-rotated offsets) toward the record's current position,
+ * cast in <=200-unit segments; the first hit is reported (callback or
+ * func_8011BD08) and the pass ends -- flag 1 restarts the scan from entry
+ * 0 until a full pass finds nothing (the filter halfwords stop re-hits).
+ * A callback returning nonzero also stops the flag-1 rescan. Returns the
+ * number of hits reported. */
+s32 func_8011BF4C(void *arg0, s32 (*arg1)(struct CollisionTriangle *, u32)) {
+    f32 *rec = arg0;
+    void **desc = (void **) (uintptr_t) *(u32 *) &rec[7];
+    struct CollisionTriangle *tri;
+    u32 idx;
+    f32 *list;
+    f32 cy, sy;
+    f32 base[3];
+    u32 w0, w1;
+    u16 f2, f4, flags;
+    u32 count, fp;
+    s32 hits = 0;
+
+    if (desc == NULL) {
+        return 0;
+    }
+    w0 = (u32) (uintptr_t) desc[0];
+    w1 = (u32) (uintptr_t) desc[1];
+    count = w0 >> 24;
+    f2 = (u16) (w0 & 0xFFFF);
+    f4 = (u16) (w1 >> 16);
+    flags = (u16) (w1 & 0xFFFF);
+    list = (f32 *) desc[2];
+    cy = cosf(rec[6]);
+    sy = sinf(rec[6]);
+    if (flags & 2) {
+        base[0] = rec[3];
+        base[1] = rec[4];
+        base[2] = rec[5];
+    } else {
+        base[0] = rec[0];
+        base[1] = rec[1];
+        base[2] = rec[2];
+    }
+restart:
+    for (fp = 0; fp < count; fp++) {
+        f32 *e = &list[fp * 4];
+        Vector cur, nxt;
+        f32 sx, sy2, sz, dx, dy, dz;
+        s32 steps, s0;
+
+        sx = (e[1] * sy) + base[0];
+        sy2 = e[0] + base[1];
+        sz = (e[1] * cy) + base[2];
+        dx = ((e[3] * sy) + rec[0]) - sx;
+        dy = (e[2] + rec[1]) - sy2;
+        dz = ((e[3] * cy) + rec[2]) - sz;
+        steps = (s32) (sqrtf((dx * dx) + (dy * dy) + (dz * dz)) / 200.0f) + 1;
+        if (steps == 0) {
+            continue;
+        }
+        cur.x = sx;
+        cur.y = sy2;
+        cur.z = sz;
+        for (s0 = 1; s0 <= steps; s0++) {
+            f32 t = (f32) s0 / (f32) steps;
+
+            nxt.x = (dx * t) + sx;
+            nxt.y = (dy * t) + sy2;
+            nxt.z = (dz * t) + sz;
+            if (pc_probe_45dc(&cur, &nxt, f2, f4, &tri, &idx) != 0) {
+                if (arg1 != NULL) {
+                    if (arg1(tri, idx) != 0) {
+                        fp = count;
+                    }
+                } else {
+                    func_8011BD08(tri, idx);
+                }
+                hits += 1;
+                goto wrap_check;
+            }
+            cur = nxt;
+        }
+    }
+wrap_check:
+    if ((flags & 1) && fp != count) {
+        goto restart;
+    }
+    return hits;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011BF4C.s")
 #endif

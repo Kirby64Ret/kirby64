@@ -302,7 +302,138 @@ void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
     }
 }
 
+#ifdef PORT
+/* Kirby-takes-a-hit resolver (from asm/nonmatchings/ovl2/ovl2_9/
+ * func_801105E8.s via m2c): decides the outcome word D_800E83E0 (0 ignore,
+ * 1 died, 6 blocked, (class << 16) + 2 hit) and the knockback direction
+ * D_800E85A0 from the attacker's record. The attacker slot arg0 / defender
+ * slot arg1 are HOST slots: the id word sits at +0 and the N64 info fields
+ * shift +4 (damage N64 +8 -> +12, class byte +0xC -> +0x10, flags +0x10 ->
+ * +0x14). arg2 is func_8010F9AC's 36-byte contact record; the attacker
+ * anchor is floats [6]/[8]. */
+void func_801105E8(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B *arg1, f32 *arg2) {
+    extern u8 D_800D6F58[];
+    extern s32 D_800E83E0[];
+    s32 change_kirby_hp(f32);
+    void func_8011DC5C(void);
+    s32 func_80120BCC(void);
+    f32 func_8011D9E0(s32, f32, s32, f32);
+    void set_kirby_action_2(s32, u32);
+    u8 *pa = (u8 *) arg0;
+    u8 *pb = (u8 *) arg1;
+    s32 id = *(s32 *) pa;
+    f32 dmg = *(f32 *) (pa + 12);
+    /* info words hold the N64 word values natively: the class byte is the
+     * TOP byte of the host word at +0x10 (N64 +0xC). This handler runs on
+     * Kirby's object (objId 0). */
+    u32 acls = *(u32 *) (pa + 0x10) >> 24;
+    u32 aflags = *(u32 *) (pa + 0x14);
+    u32 bflags = *(u32 *) (pb + 0x14);
+    u32 objId = 0;
+
+    if ((aflags & 0x40000000) || (gKirbyState.unk24 & 1)) {
+        D_800E83E0[0] = 0;
+        return;
+    }
+    if ((*(u32 *) (D_800D6F58 + 0x58) >> 8) & 1) {
+        D_800E83E0[objId] = 0;
+        return;
+    }
+    if (id != -1) {
+        if (gKirbyState.unk68 == 2) {
+            D_800E83E0[0] = 0;
+            return;
+        }
+        if (func_801103C4(0) != 0 || (bflags & 0x80000000)) {
+            if (D_800E7CE0[id] != 0 || (aflags & 0x80000000)) {
+                if (gKirbyState.action == 0x15 || gKirbyState.unk28 != 0) {
+                    D_800E83E0[0] = 0;
+                    return;
+                }
+                gKirbyState.unk24 = 1;
+                set_kirby_action_2(0x15, 0x16);
+                gKirbyState.isTurning &= ~7;
+                func_8011DC5C();
+                goto knock_dir;
+            }
+            D_800E83E0[0] = 0;
+            return;
+        }
+    }
+    if (dmg == 0.0f) {
+        gKirbyState.unk24 = 1;
+        set_kirby_action_2(0x15, 0x16);
+        gKirbyState.isTurning &= ~7;
+        func_8011DC5C();
+        play_sound(0x1E9);
+        goto knock_dir;
+    }
+    if (bflags & 1) {
+        D_800E83E0[0] = 6;
+        return;
+    }
+    func_8011DC5C();
+    if (change_kirby_hp(-dmg) == 0) {
+        if (gKirbyState.action != 0x15) {
+            D_800E83E0[0] = 1;
+            if (gKirbyState.unk28 == 0) {
+                set_kirby_action_2(0x16, 0x17);
+                goto finish;
+            }
+        } else {
+            D_800E83E0[0] = 0;
+            goto finish;
+        }
+        return;
+    }
+    if (gKirbyState.action == 0x15) {
+        D_800E83E0[0] = 0;
+        return;
+    }
+    gKirbyState.unk24 = 1;
+    D_800E83E0[0] = (acls << 0x10) + 2;
+    if (gKirbyState.unk28 != 0) {
+        return;
+    }
+    set_kirby_action_2(0x14, 0x16);
+    gKirbyState.isTurning &= ~7;
+    if (dmg != 0.0f) {
+        func_80120BCC();
+    }
+knock_dir:
+    {
+        s32 trk = (id == -1) ? -1 : D_800E5F90[id];
+
+        if (trk == -1) {
+            f32 s = sinf(D_800E17D0[0]);
+
+            if (((arg2[8] - gEntitiesNextPosZArray[0]) * cosf(D_800E17D0[0])) +
+                (s * (arg2[6] - gEntitiesNextPosXArray[0])) >= 0.0f) {
+                D_800E85A0[0] = (D_800E6A10[0] == 1.0f) ? -1 : 1;
+            } else {
+                D_800E85A0[0] = (D_800E6A10[0] == -1.0f) ? -1 : 1;
+            }
+        } else if (gKirbyState.unk170 == (u32) trk) {
+            D_800E85A0[0] = (D_800E6D90[0] < D_800E6BD0[id]) ? -1 : 1;
+        } else {
+            f32 d = func_8011D9E0(gKirbyState.unk170, D_800E6D90[0], trk, D_800E6BD0[id]);
+
+            if (d != 9999.0f) {
+                D_800E85A0[0] = (d > 0.0f) ? -1 : 1;
+            } else {
+                D_800E85A0[0] = (D_800E64D0[objId] > 0.0f) ? -1 : 1;
+            }
+        }
+    }
+finish:
+    if (gKirbyState.abilityInUse != 0x12) {
+        gKirbyState.abilityInUse = 0;
+    }
+    gKirbyState.isInhalingBlock = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_9/func_801105E8.s")
+#endif
 
 s32 func_80110B00(struct UnkStruct80110438_C *arg0) {
     struct UnkStruct8011145C_B *b;

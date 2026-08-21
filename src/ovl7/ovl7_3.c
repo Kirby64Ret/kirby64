@@ -45,6 +45,32 @@ extern s32 func_8010D668(struct Sub800E1B50_Unk84 *, f32);
 extern u32 D_801C2E84_ovl7[];
 extern u32 D_801F33FC[];
 extern u32 D_801D789C[];
+#ifdef PORT
+/* PC-side view of the collision result block D_8012BCA0, which
+ * src/pc/pc_bss_whole.c defines whole at the LP64 layout: flags word at
+ * +0, five {s32 type; tri; norm} 24-byte records at +8, water annex at
+ * +128 (the D_8012BCE0 alias).  The drafts' N64 word-index reads map as
+ * word[2]=rec[0].tri, word[3]=rec[0].norm, word[5]=rec[1].tri,
+ * word[8]=rec[2].tri, word[11]=rec[3].tri. */
+struct PcOvl7ColRec { s32 type; struct CollisionTriangle *tri; void *norm; };
+struct PcOvl7ColBlock {
+    u32 flagsw;
+    u32 pad_;
+    struct PcOvl7ColRec rec[5];
+    void *waterRec[3];
+    u32 waterSrc[3];
+};
+#define PC_COL ((struct PcOvl7ColBlock *) &D_8012BCA0)
+/* The annex entries point at struct WaterData; byte +4 is
+ * Water_Box_Active.  The N64 asm reads it with lbu too (the Ovl7ColRec
+ * ->unk4 word in the drafts is the C author's fiction), and this is the
+ * same read the func_801A2558_ovl7 arm below uses. */
+#define PC_WATER_ACTIVE(p) (((u8 *) (p))[4] != 0)
+extern s32 func_8010DF9C(void *);
+extern s32 func_8010E048(void *, s32, void *, void *, void *, void *);
+extern f32 func_800F8728(s32, f32, f32);
+extern s32 func_801AE73C_ovl7(s32, f32, f32, f32);
+#endif
 
 struct Ovl7TrackParams {
     u32 unk0;
@@ -62,6 +88,23 @@ struct Ovl7WarpStep {
 
 extern struct Ovl7WarpStep D_801C28B0_ovl7[];
 
+#ifdef PORT
+/* The hitbox-descriptor slot stays a u32 host-address cell so the record
+ * keeps the N64's f32[8]/32-byte shape -- func_8011BF4C also receives
+ * plyshot's D_80198540_ovl3[][8] records, which store the descriptor as a
+ * truncated s32 at word 7. A real pointer here would move the slot to
+ * LP64 offset 32 and split the two callers' layouts. */
+struct UnkOvl7Track {
+    f32 unk0;
+    f32 unk4;
+    f32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    u32 unk1C;
+};
+#else
 struct UnkOvl7Track {
     f32 unk0;
     f32 unk4;
@@ -72,6 +115,7 @@ struct UnkOvl7Track {
     f32 unk18;
     void *unk1C;
 };
+#endif
 
 extern struct Sub800E1B50_Unk84 D_801CE6D0_ovl7;
 extern struct Ovl7TrackParams D_801CE6E0_ovl7;
@@ -340,6 +384,68 @@ block_14:
         }
     }
 }
+#elif defined(PORT)
+/* Post-move fixup after the slot mover ran (draft above, completed):
+ * carry the entity to the slot's resolved position (routing the XZ delta
+ * through the moving-platform tracker func_800F8728 unless the entity is
+ * held), then -- for entities not using one of the six contact-tag movers
+ * as their unk48 hook -- latch the ground normal/triangle into
+ * unk78/unk7C while grounded, and re-derive the halt/conveyor code unk44
+ * via func_8010DC24 from whichever contact the flags word reports
+ * (ceiling 0xE00 -> rec[0], left wall 7 -> rec[2], right wall 0x38 ->
+ * rec[3], floor 0x1C0 -> rec[1]).  func_8010DC24 is declared void at the
+ * top of this file (N64 text), so it is called through a cast. */
+void func_801A187C_ovl7(void *arg0) {
+    struct PositionState *slot = arg0;
+    GObj *obj = omCurrentObj;
+    u32 id = obj->objId;
+    UnkStruct800E1B50 *rec = D_800E1B50[id];
+    void *hook = (void *) rec->unk48;
+    u32 fl;
+
+    if (D_800E8E60[id] != 1) {
+        f32 dx = slot->kirbyFootPos[0] - gEntitiesNextPosXArray[id];
+        f32 dz = slot->kirbyFootPos[2] - gEntitiesNextPosZArray[id];
+
+        if (dx != 0.0f || dz != 0.0f) {
+            func_800F8728(id, dx, dz);
+        }
+    }
+    gEntitiesNextPosXArray[obj->objId] = slot->kirbyFootPos[0];
+    gEntitiesNextPosYArray[obj->objId] = slot->kirbyFootPos[1];
+    gEntitiesNextPosZArray[obj->objId] = slot->kirbyFootPos[2];
+    if (hook != (void *) func_8010C274 && hook != (void *) func_8010C184
+     && hook != (void *) func_8010B480 && hook != (void *) func_8010B284
+     && hook != (void *) func_8010B67C && hook != (void *) func_8010B860
+     && D_800E8920[obj->objId] == 1) {
+        rec->unk78 = (u32) (uintptr_t) PC_COL->rec[0].norm;
+        rec->unk7C = (u32) (uintptr_t) PC_COL->rec[0].tri;
+    } else {
+        rec->unk78 = 0;
+        rec->unk7C = 0;
+    }
+    if (hook != (void *) func_8010C274 && hook != (void *) func_8010C184
+     && hook != (void *) func_8010B480 && hook != (void *) func_8010B284
+     && hook != (void *) func_8010B67C && hook != (void *) func_8010B860) {
+        rec->unk44 = 0;
+        fl = D_8012BCA0 >> 0x13;
+        if (fl & 0xE00) {
+            rec->unk44 = ((u16 (*)(struct CollisionTriangle *)) func_8010DC24)(PC_COL->rec[0].tri);
+            fl = D_8012BCA0 >> 0x13;
+        }
+        if ((fl & 7) && rec->unk44 == 0) {
+            rec->unk44 = ((u16 (*)(struct CollisionTriangle *)) func_8010DC24)(PC_COL->rec[2].tri);
+            fl = D_8012BCA0 >> 0x13;
+        }
+        if ((fl & 0x38) && rec->unk44 == 0) {
+            rec->unk44 = ((u16 (*)(struct CollisionTriangle *)) func_8010DC24)(PC_COL->rec[3].tri);
+            fl = D_8012BCA0 >> 0x13;
+        }
+        if ((fl & 0x1C0) && rec->unk44 == 0) {
+            rec->unk44 = ((u16 (*)(struct CollisionTriangle *)) func_8010DC24)(PC_COL->rec[1].tri);
+        }
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A187C_ovl7.s")
 #endif
@@ -487,6 +593,101 @@ block_18:
         func_801A239C_ovl7();
     }
 }
+#elif defined(PORT)
+/* Water-state tracker (draft above, completed): probe the entity's water
+ * sample point (next position, Y offset picked by unk42: 0 -> +unk14,
+ * 2 -> +unk18, else raw), latch the innermost ACTIVE water volume crossed
+ * into rec->unk74 and bit 0 of D_800E8AE0; bits 1/0x10 mark an enter/exit
+ * transition this frame, on which the old->new segment (unk41-offset) is
+ * intersected with the water surface to spawn the splash via
+ * func_801AE73C_ovl7 while unk38 (splash gate, s8: -1 disabled, must hit
+ * 0) allows; tick the gate and run the in-water bubble timer.  unk38 is
+ * read with lb on the N64 (the header says u8), hence the s8 casts. */
+void func_801A1B6C_ovl7(void) {
+    u32 id = omCurrentObj->objId;
+    UnkStruct800E1B50 *rec = D_800E1B50[id];
+    struct PositionState *slot = (struct PositionState *) rec->unk84;
+    s32 prev = D_800E8AE0[id];
+    void *savedWater = (void *) (uintptr_t) rec->unk74;
+    Vector newp;
+    Vector oldp;
+    Vector hit;
+    void *normOut;
+    s32 w;
+
+    newp.x = gEntitiesNextPosXArray[id];
+    switch (rec->unk42) {
+    case 0:
+        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->scale[1];
+        break;
+    case 2:
+        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->scale[2];
+        break;
+    default:
+        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        break;
+    }
+    newp.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    w = func_8010DF9C(&newp);
+    if (w == 1 || w == 2 || w == 3) {
+        if (w == 3 && PC_WATER_ACTIVE(D_8012BCE0[2])) {
+            rec->unk74 = (u32) (uintptr_t) D_8012BCE0[2];
+            D_800E8AE0[omCurrentObj->objId] |= 1;
+        }
+        if (w >= 2 && PC_WATER_ACTIVE(D_8012BCE0[1])) {
+            rec->unk74 = (u32) (uintptr_t) D_8012BCE0[1];
+            D_800E8AE0[omCurrentObj->objId] |= 1;
+        }
+        if (PC_WATER_ACTIVE(D_8012BCE0[0])) {
+            rec->unk74 = (u32) (uintptr_t) D_8012BCE0[0];
+            D_800E8AE0[omCurrentObj->objId] |= 1;
+        }
+    } else {
+        D_800E8AE0[omCurrentObj->objId] &= ~1;
+        rec->unk74 = 0;
+    }
+    if ((prev & 1) != (D_800E8AE0[omCurrentObj->objId] & 1)) {
+        D_800E8AE0[omCurrentObj->objId] |= 2;
+        D_800E8AE0[omCurrentObj->objId] |= 0x10;
+    } else {
+        D_800E8AE0[omCurrentObj->objId] &= ~2;
+        D_800E8AE0[omCurrentObj->objId] &= ~0x10;
+    }
+    if (((s8) rec->unk38 != -1) && (D_800E8AE0[omCurrentObj->objId] & 0x10)) {
+        switch (rec->unk41) {
+        case 0:
+            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->scale[1];
+            oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + slot->scale[1];
+            break;
+        case 2:
+            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->scale[2];
+            oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + slot->scale[2];
+            break;
+        default:
+            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            oldp.y = gEntitiesPosYArray[omCurrentObj->objId];
+            break;
+        }
+        oldp.x = gEntitiesPosXArray[omCurrentObj->objId];
+        oldp.z = gEntitiesPosZArray[omCurrentObj->objId];
+        if (rec->unk74 != 0) {
+            if ((func_8010E048((void *) (uintptr_t) rec->unk74, 0x14, &oldp, &newp, &normOut, &hit) != 0)
+             && ((s8) rec->unk38 == 0)) {
+                func_801AE73C_ovl7(1, hit.x, hit.y, hit.z);
+            }
+        } else if ((savedWater != NULL)
+                && (func_8010E048(savedWater, 0x14, &oldp, &newp, &normOut, &hit) != 0)
+                && ((s8) rec->unk38 == 0)) {
+            func_801AE73C_ovl7(1, hit.x, hit.y, hit.z);
+        }
+    }
+    if (((s8) rec->unk38 != -1) && ((s8) rec->unk38 > 0)) {
+        rec->unk38 = (s8) rec->unk38 - 1;
+    }
+    if (D_800E8AE0[omCurrentObj->objId] & 1) {
+        func_801A239C_ovl7();
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A1B6C_ovl7.s")
 #endif
@@ -571,6 +772,56 @@ block_15:
         return;
     }
     *temp_v0_2 = temp_v1_3 & ~4;
+}
+#elif defined(PORT)
+/* Secondary water probe feeding bit 2 of D_800E8AE0 (draft above,
+ * completed): pick a probe point -- head offset (+unk14) while in water,
+ * foot offset (+unk18) while grounded, else ahead of the entity along its
+ * facing (reach unk1C or unk20 by the D_800E6A10 facing sign) at the foot
+ * offset -- test it against the water volumes, and set bit 2 exactly when
+ * the probe's water state differs from the body's bit 0. */
+void func_801A2068_ovl7(void) {
+    u32 id = omCurrentObj->objId;
+    struct PositionState *slot = (struct PositionState *) D_800E1B50[id]->unk84;
+    Vector p;
+    s32 probeHit = 0;
+    s32 w;
+    s32 flags;
+
+    if (D_800E8AE0[id] & 1) {
+        p.x = gEntitiesNextPosXArray[id];
+        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->scale[1];
+        p.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    } else if (D_800E8920[id] == 0) {
+        p.x = gEntitiesNextPosXArray[id];
+        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->scale[2];
+        p.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    } else {
+        f32 reach = (D_800E6A10[omCurrentObj->objId] == 1.0f) ? slot->faceAngle[0]
+                                                              : slot->faceAngle[1];
+
+        p.y = gEntitiesNextPosYArray[id] + slot->scale[2];
+        p.x = (sinf(D_800E17D0[omCurrentObj->objId]) * reach) + gEntitiesNextPosXArray[omCurrentObj->objId];
+        p.z = (cosf(D_800E17D0[omCurrentObj->objId]) * reach) + gEntitiesNextPosZArray[omCurrentObj->objId];
+    }
+    w = func_8010DF9C(&p);
+    if (w == 1 || w == 2 || w == 3) {
+        if (w == 3 && PC_WATER_ACTIVE(D_8012BCE0[2])) {
+            probeHit = 1;
+        }
+        if (w >= 2 && PC_WATER_ACTIVE(D_8012BCE0[1])) {
+            probeHit = 1;
+        }
+        if (PC_WATER_ACTIVE(D_8012BCE0[0])) {
+            probeHit = 1;
+        }
+    }
+    flags = D_800E8AE0[omCurrentObj->objId];
+    if (flags & 1) {
+        D_800E8AE0[omCurrentObj->objId] = (probeHit != 0) ? (flags & ~4) : (flags | 4);
+    } else {
+        D_800E8AE0[omCurrentObj->objId] = (probeHit != 0) ? (flags | 4) : (flags & ~4);
+    }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2068_ovl7.s")
@@ -943,6 +1194,49 @@ s32 func_801A2C78_ovl7(f32 arg0) {
     *(gEntitiesNextPosXArray + var_a0) = sp44.x;
     gEntitiesNextPosYArray[temp_v1->objId] = sp44.y - arg0;
     gEntitiesNextPosZArray[temp_v1->objId] = sp44.z;
+    return 1;
+}
+#elif defined(PORT)
+/* Water-surface snap (draft above, completed): intersect the old->new
+ * segment, both endpoints raised by arg0, with the entity's current water
+ * volume (rec->unk74); when it crosses the surface, carry the entity
+ * (through the platform tracker unless held) to the crossing point and
+ * leave it arg0 below the surface.  Returns 1 on a snap.  The m2c call
+ * func_800F8728(arg0, 0, ...) carried phantom leftover registers -- the
+ * real call is (objId, dx, dz), see the asm's `or $a0, $a3, $zero`. */
+s32 func_801A2C78_ovl7(f32 arg0) {
+    u32 id = omCurrentObj->objId;
+    Vector newp;
+    Vector oldp;
+    Vector hit;
+    void *normOut;
+    void *water;
+
+    newp.x = gEntitiesNextPosXArray[id];
+    newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + arg0;
+    newp.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    oldp.x = gEntitiesPosXArray[omCurrentObj->objId];
+    oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + arg0;
+    oldp.z = gEntitiesPosZArray[omCurrentObj->objId];
+    water = (void *) (uintptr_t) D_800E1B50[id]->unk74;
+    if (water == NULL) {
+        return 0;
+    }
+    if (func_8010E048(water, 0x14, &oldp, &newp, &normOut, &hit) == 0) {
+        return 0;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E8E60[id] != 1) {
+        f32 dx = hit.x - gEntitiesNextPosXArray[id];
+        f32 dz = hit.z - gEntitiesNextPosZArray[id];
+
+        if (dx != 0.0f || dz != 0.0f) {
+            func_800F8728(id, dx, dz);
+        }
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = hit.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = hit.y - arg0;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = hit.z;
     return 1;
 }
 #else

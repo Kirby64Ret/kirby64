@@ -1032,7 +1032,243 @@ void func_8015E8E0_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015E8E0_ovl3.s")
 #endif
 
+#ifdef PORT
+/* PORT: the guided-missile service routine installed by func_8015E8E0_ovl3
+ * above (anim 0x2003B), from asm/nonmatchings/ovl3/plyshot/
+ * func_8015ED2C_ovl3.s. Death phase: 8 frames of burst anim (D_80191A84 /
+ * record D_80195270) then destroy. Live: grows the model on DObj [2] by
+ * +0.15/frame, reads the cancel inputs (B press, or unk17/queued cancel in
+ * D_800E8060), and while the ability holds runs its hit record
+ * (D_801936F0), the shot collision pass and a wall bounce (reversing on
+ * wall-class bits of the live collision flags with fgm 0x11F). It then
+ * draws the guide reticle: aims DObj [1] at the parent, scales the
+ * distance leg into D_80198438 with a pitch rotation of its last two
+ * floats, and runs anim D_80191AC8 plus the reticle record D_8019370C.
+ * With homing armed (D_800E98E0) and line-of-sight clear (func_8011D858;
+ * on block: rumble 9/0x1E and detonate) it steers up to D_801967C4[close]
+ * degrees per frame toward the parent at 16 (8 in water), bouncing off
+ * floors once (D_800E9E20 latch) and ceilings once (D_800E9FE0 latch).
+ * Detonation: mark the death phase, drop the ability, release the looping
+ * pair parked in D_800EA360, clear the draw hook, camera-shake and spawn
+ * particle 2/1/0x30 with fgm 0x59. */
+void func_8015ED2C_ovl3(s32 arg0) {
+    extern u8 D_8012BCA0[];
+    extern char D_80191A84_ovl3[];
+    extern char D_80190DD4_ovl3[];
+    extern char D_80191AC8_ovl3[];
+    extern s32 D_80192358_ovl3[];
+    extern s32 D_801936F0_ovl3[];
+    extern s32 D_8019370C_ovl3[];
+    extern s32 D_80195270_ovl3[];
+    extern f32 D_801936FC_ovl3[];
+    extern f32 D_801967C4_ovl3[];
+    extern f32 D_80198438_ovl3[];
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern s32 func_80155498_ovl3(f32 *);
+    extern void func_80154578_ovl3(void *, s32, f32);
+    extern s32 func_8011D858(void *, s32, f32);
+    extern f32 func_800F9828(s32, s32);
+    extern f32 lbvector_Angle(Vector *, Vector *);
+    extern Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
+    extern Vector *func_800191F8(Vector *, Vector *, f32);
+    extern void func_800AFBB4(s32, struct GObj *);
+    extern void func_800BB468(s32, s32);
+    s32 func_8016854C_ovl3(s32, s32, f32);
+    extern Controller_800D6FE8 gPlayerControllers[];
+    f32 atan2f(f32, f32);
+    float sinf(float);
+    float cosf(float);
+    float sqrtf(float);
+    s32 id = omCurrentObj->objId;
+    s32 parent = D_800E0D50[id];
+    s32 hits;
+    f32 dyAbs;
+    f32 hdist;
+    f32 hy;
+
+    if (D_800E9C60[id] != 0) {
+        s32 t = D_800E9560[id];
+
+        D_800E9560[id] = t - 1;
+        if (t != 0) {
+            func_80111C4C(func_801117BC(D_80191A84_ovl3, id));
+            func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_80195270_ovl3, 0, id);
+            return;
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    if (D_800EA6E0[id] != 1.0f) {
+        D_800EA6E0[id] += 0.15f;
+        if (D_800EA6E0[id] >= 1.0f) {
+            D_800EA6E0[id] = 1.0f;
+        }
+        D_800DFBD0[id][2]->scale.v.x = D_800EA6E0[id];
+        D_800DFBD0[id][2]->scale.v.y = D_800EA6E0[id];
+        D_800DFBD0[id][2]->scale.v.z = D_800EA6E0[id];
+    }
+    if (gKirbyState.unk17 != 0) {
+        gKirbyState.abilityInUse = 0;
+    } else if (gKirbyState.unk16 == 0) {
+        if (gPlayerControllers[0].buttonPressed & 0x4000) {
+            gKirbyState.abilityInUse = 0;
+        } else if (D_800E8060[id] != 0) {
+            gKirbyState.abilityInUse = 0;
+        }
+    } else if (gPlayerControllers[0].buttonPressed & 0x4000) {
+        D_800E8060[id] = 1;
+    }
+    if ((gKirbyState.abilityInUse != 0) && (D_800E8760[id] == 0)) {
+        gEntitiesAngleYArray[id] = D_800E17D0[id];
+        hits = func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_801936F0_ovl3, 0, id);
+        gEntitiesAngleYArray[id] = 0.0f;
+        D_800E8920[id] = 0;
+        func_80155498_ovl3(D_80197F60_ovl3[id - 4]);
+        if ((((u32) hits | ((*(u32 *) D_8012BCA0 >> 0x13) & 0x3F)) != 0) || (D_800E6310[id] != 0)) {
+            D_800E9AA0[id].as_u32 = 1;
+            D_800E64D0[id] = -D_800E64D0[id];
+            play_sound(0x11F);
+        }
+        func_80111C4C(func_801117BC(D_80190DD4_ovl3, id));
+        dyAbs = gEntitiesNextPosYArray[id] - gEntitiesNextPosYArray[parent];
+        if (dyAbs < 0.0f) {
+            dyAbs = -dyAbs;
+        }
+        hdist = func_800F9828(id, parent);
+        if (hdist == 9999.0f) {
+            goto detonate;
+        }
+        {
+            f32 hAbs = (hdist < 0.0f) ? -hdist : hdist;
+
+            if (!((hAbs < 600.0f) && (dyAbs < 480.0f))) {
+                goto detonate;
+            }
+        }
+        {
+            struct DObj *dobj = D_800DFBD0[id][1];
+            f32 dx = gEntitiesNextPosXArray[parent] - gEntitiesNextPosXArray[id];
+            f32 dz = gEntitiesNextPosZArray[parent] - gEntitiesNextPosZArray[id];
+            f32 sn;
+            f32 cs;
+            f32 v2;
+            f32 v3;
+            s32 k;
+
+            hy = (gEntitiesNextPosYArray[parent] + 20.0f) - gEntitiesNextPosYArray[id];
+            dobj->angle.v.y = atan2f(dx, dz) + 3.1415927f;
+            dobj->angle.v.x = atan2f(hy, sqrtf((dx * dx) + (dz * dz)));
+            dobj->angle.v.z = 0.0f;
+            dobj->scale.v.z = (sqrtf((dx * dx) + (hy * hy) + (dz * dz)) - 18.0f) / 120.0f;
+            func_8016854C_ovl3((s32) (uintptr_t) D_80191AC8_ovl3, (s32) (uintptr_t) dobj, 1.0f);
+            sn = sinf(dobj->angle.v.x);
+            cs = cosf(dobj->angle.v.x);
+            for (k = 0; k < 4; k++) {
+                D_80198438_ovl3[k] = D_801936FC_ovl3[k] * dobj->scale.v.z;
+            }
+            v2 = D_80198438_ovl3[2];
+            v3 = D_80198438_ovl3[3];
+            D_80198438_ovl3[2] = (v2 * cs) - (v3 * sn);
+            D_80198438_ovl3[3] = (v3 * cs) + (v2 * sn);
+            func_80154578_ovl3(D_8019370C_ovl3, 0, dobj->angle.v.y);
+        }
+        if (D_800E98E0[id] != 0) {
+            Vector va;
+            Vector vb;
+            Vector vc;
+            f32 ang;
+            f32 dir;
+            f32 lim;
+            f32 spd;
+            s32 close;
+
+            if (func_8011D858(D_80192358_ovl3, parent, 1.0f) != 0) {
+                func_800BB468(9, 0x1E);
+                goto detonate;
+            }
+            {
+                f32 hAbs = (hdist < 0.0f) ? -hdist : hdist;
+
+                close = (hAbs < 160.0f) ? 1 : 0;
+            }
+            va.x = D_800E64D0[id];
+            va.y = D_800E3210[id];
+            va.z = 0.0f;
+            vb.x = hdist;
+            vb.y = hy;
+            vb.z = 0.0f;
+            ang = lbvector_Angle(&va, &vb);
+            lim = D_801967C4_ovl3[close];
+            if (ang == 3.1415927f) {
+                if (D_800E64D0[id] > 0.0f) {
+                    dir = (lim * 3.1415927f) / 180.0f;
+                } else {
+                    dir = 3.1415927f - ((lim * 3.1415927f) / 180.0f);
+                }
+            } else {
+                if (ang < ((lim * 3.1415927f) / 180.0f)) {
+                    va = vb;
+                } else {
+                    vec3_normalized_cross_product(&va, &vb, &vc);
+                    func_800191F8(&va, &vc, (lim * 3.1415927f) / 180.0f);
+                }
+                dir = atan2f(va.y, va.x);
+            }
+            spd = (D_800E8AE0[id] & 4) ? 8.0f : 16.0f;
+            D_800E64D0[id] = cosf(dir) * spd;
+            D_800E6690[id] = 0.0f;
+            D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+            D_800E3210[id] = sinf(dir) * spd;
+            D_800E3750[id] = 0.0f;
+            D_800E3C90[id] = (spd < 0.0f) ? -spd : spd;
+            if (D_800E8920[id] != 0) {
+                if (D_800E9E20[id] == 0) {
+                    D_800E9E20[id] = D_800E8920[id];
+                    if (D_800E3210[id] != 0.0f) {
+                        if (D_800E3210[id] < 0.0f) {
+                            D_800E3210[id] = -D_800E3210[id];
+                        } else {
+                            D_800E3210[id] = 0.0f;
+                        }
+                        play_sound(0x11F);
+                        D_800E8920[id] = 0;
+                    }
+                }
+            } else {
+                if ((*(u32 *) D_8012BCA0 >> 0x13) & 0x1C0) {
+                    if (D_800E9FE0[id].as_u32 == 0) {
+                        D_800E9FE0[id].as_u32 = 1;
+                        if (D_800E3210[id] > 0.0f) {
+                            D_800E3210[id] = -D_800E3210[id];
+                        } else {
+                            D_800E3210[id] = 0.0f;
+                        }
+                        play_sound(0x11F);
+                        D_800E9E20[id] = D_800E8920[id];
+                    }
+                } else {
+                    D_800E9FE0[id].as_u32 = 0;
+                    D_800E9E20[id] = D_800E8920[id];
+                }
+            }
+        }
+        return;
+    }
+detonate:
+    D_800E9C60[id] = 1;
+    D_800E9560[id] = 8;
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    gKirbyState.abilityInUse = 0;
+    pc_sndpair_release((void *) (uintptr_t) (u32) D_800EA360[id]);
+    D_800DEF90[id] = NULL;
+    func_800AFBB4(0, omCurrentObj);
+    play_sound(0x59);
+    func_800A7F74(2U, 1U, 0x30U, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
+                  gEntitiesNextPosZArray[id]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015ED2C_ovl3.s")
+#endif
 
 typedef struct Unk801967CC {
     f32 unk0;

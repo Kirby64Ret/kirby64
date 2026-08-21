@@ -50,7 +50,89 @@ void func_8019BB58_ovl7(void);
 void func_8019D958_ovl7(u16);
 void ohSleep(s32);
 
+#ifdef PORT
+/* The enemy "return to idle" epilogue every FUNCLIST tail jumps to (ported
+ * from m2c): stop the anim driver, clear the velocity/accel banks, drop
+ * the attached effect object (func_800A22D4 takes just ent->unk34 -- m2c's
+ * extra args were leftover registers), then unless the entity is flagged
+ * done (unk40): either play the type-specific death effect
+ * (func_801A66B4_ovl7 types 6/7) or re-enter the enemy FUNCLIST at the
+ * state func_801A66FC_ovl7 derives and rebind the descriptor, play the
+ * death cry (unk1C != 0x80000000), and hand types 6/7 to their respawn
+ * setups; finally detach, become entity 0x7D, sleep 15 and free the
+ * track (func_8019D958_ovl7 takes the u16 low half of objId -- the ROM's
+ * lhu obj+2 is the big-endian half of the same word). */
+void func_801A3E80_ovl7(GObj *arg0) {
+    void func_800A22D4(u32); /* takes ent->unk34; u32 to agree with the N64
+                              * declarations later in this file (lossless:
+                              * the whole image lives below 4 GiB) */
+    void func_800A2300(struct GObj *);
+    void func_800AECC0(f32);
+    s32 func_801A66B4_ovl7(void);
+    s32 func_801A66FC_ovl7(void);
+    void func_801A41D4_ovl7(GObj *);
+    void func_801A42D8_ovl7(GObj *);
+    void func_80198880_ovl7(struct Sub800E1B50_Unk88 *);
+    void func_8019B7D8_ovl7(void);
+    extern f32 gameTicksPerDraw;
+    extern FUNCLIST D_801C2970_ovl7;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Sub800E1B50_Unk88 *desc = ent->unk88;
+    f32 c;
+
+    func_8019B7D8_ovl7();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DF150[omCurrentObj->objId] = NULL;
+    c = 65535.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    arg0->onAnimate = NULL;
+    D_800DF310[omCurrentObj->objId] = NULL;
+    if (ent->unk34 != NULL) {
+        func_800A22D4((u32) (uintptr_t) ent->unk34);
+    }
+    func_800A2300(arg0);
+    ent->unk34 = NULL;
+    if (ent->unk40 != 1) {
+        u32 snd;
+
+        if (func_801A66B4_ovl7() != 0) {
+            func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
+        } else {
+            gEntityFuncListIDArray[omCurrentObj->objId] = func_801A66FC_ovl7();
+            utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 9, D_801C2970_ovl7);
+            func_80198880_ovl7(desc);
+            D_800E7B20[omCurrentObj->objId] = 0.0f;
+        }
+        snd = ent->unk94->unk1C;
+        if ((snd != 0x80000000) && (ent->unk40 != 1)) {
+            play_sound(snd);
+        }
+        if (ent->unk94 != NULL) {
+            if (ent->unk94->unk18 == 6) {
+                func_801A41D4_ovl7(arg0);
+            }
+            if (ent->unk94->unk18 == 7) {
+                func_801A42D8_ovl7(arg0);
+            }
+        }
+    }
+    D_800DF150[omCurrentObj->objId] = NULL;
+    func_800B19F4(0x7D, omCurrentObj->objId);
+    func_8019BB58_ovl7();
+    ohSleep(0xF);
+    func_8019D958_ovl7((u16) omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A3E80_ovl7.s")
+#endif
 
 void func_801A41D4_ovl7(GObj *arg0) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
@@ -130,7 +212,77 @@ void func_801A470C_ovl7(void) {
     D_800EC2E0[omCurrentObj->objId].as_s32 = (D_8012BCA0 >> 19) & 0xFFF;
 }
 
+#ifdef PORT
+/* Enemy-card capture intro (ported from m2c): become a 0x24-class track
+ * driven per-frame by func_801A4C0C_ovl7, silence physics, play the
+ * capture cry, spawn the card holder track (func_801AE7E0_ovl7(7)) and
+ * scale to the descriptor's unk10; then wait -- held: until the holder's
+ * D_800E9AA0 token appears or its GObj dies; free: run the 0xB4-frame
+ * timer down (bailing on D_800EC4A0/D_800E9E20) and on timeout fire the
+ * struggle burst func_801A4DFC_ovl7 -- and finish with the 0x6F effect. */
+void func_801A4754_ovl7(GObj *arg0) {
+    void func_801A4C0C_ovl7(GObj *);
+    s32 func_801AE7E0_ovl7(s32);
+    void func_80198880_ovl7(struct Sub800E1B50_Unk88 *);
+    void func_801A4DFC_ovl7(GObj *);
+    extern struct Sub800E1B50_Unk88 D_801C5360_ovl7;
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct SubSub800E1B50_Unk88_UnkC_Unk0 *info = ent->unk88->unkC->unk0;
+    f32 c;
+
+    D_800DF150[id] = func_801A4C0C_ovl7;
+    D_800DDA90[omCurrentObj->objId] = 0x24;
+    ent->unk48 = NULL;
+    ent->unk98 = NULL;
+    D_800EC2E0[omCurrentObj->objId].as_u32 = 0;
+    D_800EC4A0[omCurrentObj->objId] = 0;
+    c = 65535.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_801A6610_ovl7();
+    func_800AF408();
+    D_800E9720[omCurrentObj->objId] = 0xB4;
+    D_800EA520[omCurrentObj->objId] = 0;
+    D_800E83E0[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = func_801AE7E0_ovl7(7);
+    gEntitiesScaleXArray[omCurrentObj->objId] = info->unk10;
+    gEntitiesScaleYArray[omCurrentObj->objId] = info->unk10;
+    gEntitiesScaleZArray[omCurrentObj->objId] = info->unk10;
+    func_80198880_ovl7(&D_801C5360_ovl7);
+    D_800E8920[omCurrentObj->objId] = 0;
+    play_sound(0xC1);
+    id = omCurrentObj->objId;
+    if (D_800E8E60[id] == 1) {
+        while ((D_800E9AA0[D_800E9C60[omCurrentObj->objId]] == NULL)
+            && (D_800DE350[D_800E9C60[omCurrentObj->objId]] != NULL)) {
+            ohSleep(1);
+        }
+    } else {
+        while ((D_800EC4A0[omCurrentObj->objId] == 0)
+            && (D_800E9720[omCurrentObj->objId] != 0)
+            && (D_800E9E20[omCurrentObj->objId] == 0)) {
+            ohSleep(1);
+            D_800E9720[omCurrentObj->objId] -= 1;
+        }
+        if ((D_800E9720[omCurrentObj->objId] != 0) && (D_800E9E20[omCurrentObj->objId] == 0)) {
+            func_801A4DFC_ovl7(arg0);
+        }
+    }
+    D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
+    id = omCurrentObj->objId;
+    func_800A7F74(3, 2, 0x6F, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4754_ovl7.s")
+#endif
 
 struct Ovl7AnimInfo {
     u8 unk0;
@@ -270,7 +422,60 @@ void func_801A522C_ovl7(GObj *arg0) {
     }
 }
 
+#ifdef PORT
+/* Thrown/spat launch state (ported from m2c): per-frame hook becomes the
+ * landed-check func_801A557C_ovl7, physics cleared, contact FUNCLIST
+ * D_801CD264_ovl7 installed, 10-frame timer; when not held, latch onto
+ * the player (D_800E0D50[id] = 0, knockback carrier func_800B83C8),
+ * snapshot the carry offset via func_801A56C8_ovl7 and wait until the
+ * throw resolves (D_800EC2E0), the timer runs out, or the ability ends;
+ * then restore the plain carrier func_800B74B8 and pop the type effect. */
+void func_801A5274_ovl7(GObj *arg0) {
+    void func_801A557C_ovl7(void);
+    void func_801A56C8_ovl7(void);
+    void func_800B83C8(GObj *);
+    void func_800B74B8(GObj *);
+    extern struct Sub800E1B50_Unk98 D_801CD264_ovl7;
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    f32 c;
+
+    D_800DF150[id] = (void (*)(GObj *)) func_801A557C_ovl7;
+    D_800DDA90[omCurrentObj->objId] = 0x23;
+    func_801A6610_ovl7();
+    c = 65535.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_800AF408();
+    ent->unk48 = NULL;
+    ent->unk98 = &D_801CD264_ovl7;
+    D_800EC2E0[omCurrentObj->objId].as_u32 = 0;
+    D_800E9720[omCurrentObj->objId] = 0xA;
+    play_sound(0x222);
+    id = omCurrentObj->objId;
+    if (D_800E8E60[id] != 1) {
+        D_800E0D50[id] = 0;
+        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B83C8;
+        func_801A56C8_ovl7();
+        while ((D_800EC2E0[omCurrentObj->objId].as_u32 == 0)
+            && (D_800E9720[omCurrentObj->objId] != 0)
+            && (gKirbyState.abilityInUse != 0)) {
+            ohSleep(1);
+            D_800E9720[omCurrentObj->objId] -= 1;
+        }
+    }
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B74B8;
+    func_801A43BC_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A5274_ovl7.s")
+#endif
 
 void func_801A557C_ovl7(void) {
     f32 dx;
@@ -310,7 +515,90 @@ void func_801A56C8_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A56C8_ovl7.s")
 #endif
+#ifdef PORT
+/* Enemy-card capture, thrown-upward variant (ported from m2c): same
+ * setup as func_801A4754_ovl7 but driven by func_801A5DE8_ovl7 with an
+ * 8.0 up / -0.5 gravity launch; when free it first rides the arc until
+ * |vel.y + D_800EC9E4| falls under |gravity| (or a hit lands), calls
+ * func_800B3520 (no args -- m2c's were leftover registers) and flags
+ * D_800E9FE0, then runs the same 0xB4 capture timer / struggle-burst
+ * tail; held tracks just wait for the holder.  Ends with the 0x6F pop. */
+void func_801A57A8_ovl7(GObj *arg0) {
+    void func_801A5DE8_ovl7(GObj *);
+    s32 func_801AE7E0_ovl7(s32);
+    void func_80198880_ovl7(struct Sub800E1B50_Unk88 *);
+    void func_801A4DFC_ovl7(GObj *);
+    void func_800B3520(void);
+    extern struct Sub800E1B50_Unk88 D_801C5360_ovl7;
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct SubSub800E1B50_Unk88_UnkC_Unk0 *info = ent->unk88->unkC->unk0;
+    f32 c;
+
+    D_800DF150[id] = func_801A5DE8_ovl7;
+    D_800DDA90[omCurrentObj->objId] = 0x24;
+    ent->unk48 = NULL;
+    ent->unk98 = NULL;
+    D_800EC2E0[omCurrentObj->objId].as_u32 = 0;
+    D_800EC4A0[omCurrentObj->objId] = 0;
+    c = 65535.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_801A6610_ovl7();
+    func_800AF408();
+    D_800E9720[omCurrentObj->objId] = 0xB4;
+    D_800EA520[omCurrentObj->objId] = 0;
+    D_800E83E0[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = func_801AE7E0_ovl7(7);
+    gEntitiesScaleXArray[omCurrentObj->objId] = info->unk10;
+    gEntitiesScaleYArray[omCurrentObj->objId] = info->unk10;
+    gEntitiesScaleZArray[omCurrentObj->objId] = info->unk10;
+    func_80198880_ovl7(&D_801C5360_ovl7);
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 8.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+    play_sound(0xC1);
+    id = omCurrentObj->objId;
+    if (D_800E8E60[id] == 1) {
+        while ((D_800E9AA0[D_800E9C60[omCurrentObj->objId]] == NULL)
+            && (D_800DE350[D_800E9C60[omCurrentObj->objId]] != NULL)) {
+            ohSleep(1);
+        }
+    } else {
+        while ((ABSF(D_800E3750[omCurrentObj->objId])
+                < ABSF(D_800E3210[omCurrentObj->objId] + D_800EC9E4))
+            && (D_800E9E20[omCurrentObj->objId] == 0)) {
+            ohSleep(1);
+        }
+        func_800B3520();
+        D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+        if (D_800E9E20[omCurrentObj->objId] == 0) {
+            while ((D_800EC4A0[omCurrentObj->objId] == 0)
+                && (D_800E9720[omCurrentObj->objId] != 0)
+                && (D_800E9E20[omCurrentObj->objId] == 0)) {
+                ohSleep(1);
+                D_800E9720[omCurrentObj->objId] -= 1;
+            }
+            if ((D_800E9720[omCurrentObj->objId] != 0) && (D_800E9E20[omCurrentObj->objId] == 0)) {
+                func_801A4DFC_ovl7(arg0);
+            }
+        }
+    }
+    D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
+    id = omCurrentObj->objId;
+    func_800A7F74(3, 2, 0x6F, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A57A8_ovl7.s")
+#endif
 
 void func_801A5DE8_ovl7(GObj *arg0) {
     extern s32 D_8012E860;
@@ -437,7 +725,53 @@ void func_801A63BC_ovl7(GObj *arg0) {
     func_801A6434_ovl7();
 }
 
+#ifdef PORT
+/* Release the stored enemy-card roster around the player (ported from
+ * m2c): starting at ring slot D_800D7118[14], walk up to 5 stored ids
+ * (slots 1..5 wrap), spawn a card track for each (func_801AE7E0_ovl7(0x14)),
+ * park it 20 above the player and copy the player's path/track state,
+ * stamping the id, its D_801C2E84_ovl7 token into D_800E9AA0, the ring
+ * position and the paired D_800D7118[i+5] word; then reset the whole
+ * 16-word roster to -1. */
+void func_801A6434_ovl7(void) {
+    s32 func_801AE7E0_ovl7(s32);
+    extern s32 D_800D7118[];
+    extern u32 D_801C2E84_ovl7[];
+    s32 slot = D_800D7118[14];
+    s32 count = 0;
+    s32 i;
+
+    while ((D_800D7118[slot] != -1) && (count != 5)) {
+        s32 t = func_801AE7E0_ovl7(0x14);
+
+        if (t != 0) {
+            s32 eneId = D_800D7118[slot];
+
+            gEntitiesNextPosXArray[t] = gEntitiesNextPosXArray[0];
+            gEntitiesNextPosYArray[t] = gEntitiesNextPosYArray[0] + 20.0f;
+            gEntitiesNextPosZArray[t] = gEntitiesNextPosZArray[0];
+            D_800E98E0[t] = eneId;
+            D_800E9AA0[t] = (struct EntityThing800E9AA0 *) (uintptr_t) D_801C2E84_ovl7[eneId];
+            D_800E9C60[t] = count;
+            D_800E9E20[t] = D_800D7118[slot + 5];
+            D_800E8E60[t] = 0;
+            D_800E5F90[t] = D_800E5F90[0];
+            D_800E6BD0[t] = D_800E6BD0[0];
+            D_800E6A10[t] = D_800E6A10[0];
+        }
+        count += 1;
+        slot += 1;
+        if (slot >= 6) {
+            slot = 1;
+        }
+    }
+    for (i = 0; i < 16; i++) {
+        D_800D7118[i] = -1;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A6434_ovl7.s")
+#endif
 
 void func_801A6610_ovl7(void) {
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
