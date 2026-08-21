@@ -240,6 +240,192 @@ typedef struct KChan {
 
 extern KChan *D_80097920;
 
+#ifdef PORT
+/* ============================= PORT-ONLY VIEW =============================
+ *
+ * The PC arms below need the COMPLETE layouts of Kirby's SFX engine
+ * structures, which the matching lane above only declares as partial views
+ * (KChan / KTone / KToneB / KNote / KAudioMgr, each spelling just the fields
+ * one function touches).  On N64 all views agree because a pointer is 4
+ * bytes; at LP64 the partial views drift apart.  The full structs below are
+ * HAND-PLACED so that the fields the ALREADY-COMPILED partial views touch on
+ * the hot path land at the same LP64 offsets:
+ *
+ *   KToneX: wait@24 (KTone.unk10), volume@42 (KChan.unk22), id@46
+ *   (KTone.unk26), note@48 (KChan.unk28/KTone.unk28), tag@56 (KTone.unk2A),
+ *   chanVol/panOverride/revOverride@58/59/60 (KChan.unk2E/2F/30).
+ *
+ *   KNoteX: chanVol/chanPan/chanFx@56/58/60 (KChanVoice.unk38/3A/3C -- the
+ *   per-sound volume/pan/reverb setters func_80023384/3F4/464 write these),
+ *   id@72 (KNote.unk48).
+ *
+ * KNOWN DIVERGENCE, deliberate: the pause/stop-all paths (func_80023794,
+ * func_80023884, func_80023990, func_80023A28, func_80024628) read a few
+ * note fields through N64-offset views that cannot be reconciled with each
+ * other at LP64 (e.g. KTone.unk2A lands at 56 while KToneB.unk2A lands at
+ * 50).  Those paths only run on pause/settings-change; the stray offsets
+ * land in N_ALVoice.clientPrivate, which the SFX path never reads, so the
+ * cost is a note that fades out by itself instead of being cut.  Fixing it
+ * needs a decomp-lane pass over the partial views, not a port hack.
+ *
+ * The KAudioMgr full view lives at the SAME LP64 offsets as the partial one
+ * for every field the compiled code touches; src/pc/pc_audio_bss.c defines
+ * the storage whole and static-asserts the shared offsets.
+ * ========================================================================= */
+#include <PR/n_libaudio.h>
+
+typedef struct KOscNode {
+    /* one LFO/envelope modulator on an SFX note (pool A, N64 0x24) */
+    struct KOscNode *next;
+    u8  id;                 /* slot selector (opcode operand) */
+    u8  type;               /* waveform 0..8 */
+    u8  dest;               /* destination selector */
+    u8  mod;                /* modifier: hi nibble op, lo nibble var slot */
+    f32 period;
+    f32 depth;
+    f32 base;
+    f32 phase;
+    f32 hold;               /* random-hold period (types 4/5/8) */
+    f32 prev;               /* previous random value (type 5) */
+    f32 value;              /* current random value */
+} KOscNode;
+
+typedef struct KNoteX {
+    /* one SFX voice (pool B, N64 0x4C) */
+    struct KNoteX *next;    /*  0 */
+    N_ALVoice voice;        /*  8..55 at LP64 */
+    u8  chanVol;            /* 56 == KChanVoice.unk38 */
+    u8  prevChanVol;        /* 57 */
+    u8  chanPan;            /* 58 == KChanVoice.unk3A */
+    u8  prevChanPan;        /* 59 */
+    u8  chanFx;             /* 60 == KChanVoice.unk3C */
+    u8  prevChanFx;         /* 61 */
+    u16 wait;               /* 62 (N64 0x28) */
+    u8  state;              /* 64 (N64 0x2A): 0 dead 1 playing 2 fading 3 start */
+    u8  priority;           /* 65 (N64 0x2B) */
+    s16 cents;              /* 66 (N64 0x2C) */
+    s16 prevCents;          /* 68 (N64 0x2E) */
+    s16 baseCents;          /* 70 (N64 0x30) */
+    u16 id;                 /* 72 == KNote.unk48 */
+    u8  vol, prevVol;       /* 74,75 (N64 0x32,0x33) */
+    u8  pan, prevPan;       /* 76,77 (N64 0x34,0x35) */
+    u8  fx, prevFx;         /* 78,79 (N64 0x36,0x37) */
+    u8 *pc;                 /* 80 (N64 0x20) */
+    u8 *loopPc;             /* 88 (N64 0x24) */
+    void *wave;             /* 96 (N64 0x40) ALWaveTable* */
+    KOscNode *oscList;      /* 104 (N64 0x44) */
+} KNoteX;
+
+typedef struct KToneX {
+    /* one SFX tone/channel (pool C, N64 0x34) */
+    struct KToneX *next;    /*  0 */
+    struct KToneX *owner;   /*  8 == KChan.owner */
+    u8 *pc;                 /* 16 (N64 0x08) */
+    u16 wait;               /* 24 == KTone.unk10 */
+    s16 dur[6];             /* 26..37 (N64 0x12..0x1D) */
+    s8  unk1E;              /* 38 (N64 0x1E) */
+    u8  priority;           /* 39 == KToneB.unk1F */
+    u8  tieMode;            /* 40 (N64 0x20) */
+    u8  pendingOff;         /* 41 (N64 0x21) */
+    u8  volume;             /* 42 == KChan.unk22 */
+    u8  pan;                /* 43 (N64 0x23) */
+    u16 program;            /* 44 (N64 0x24) */
+    u16 id;                 /* 46 == KTone.unk26 */
+    KNoteX *note;           /* 48 == KChan.unk28 / KTone.unk28 */
+    u8  tag;                /* 56 == KTone.unk2A */
+    u8  group;              /* 57 (N64 0x2B) */
+    u8  chanVol;            /* 58 == KChan.unk2E */
+    u8  panOverride;        /* 59 == KChan.unk2F (0x80 = none) */
+    u8  revOverride;        /* 60 == KChan.unk30 (0x80 = none) */
+    u8  reverb;             /* 61 (N64 0x2C) */
+    u8  groupSel;           /* 62 (N64 0x2D) */
+    u8  pad63[1];
+    u8 *loopPc;             /* 64 (N64 0x0C) */
+} KToneX;
+
+typedef struct {
+    /* Kirby's LFO-preset record, 16 bytes in the buf3 table (see the PORT
+     * arm of auLoadAssets in audio.c for the byte-order fixup). */
+    u8  type, dest, mod, speed;
+    f32 period;
+    f32 depth;
+    f32 base;
+} KLfoPreset;
+
+typedef struct {
+    /* KAudioMgr, complete.  LP64 offsets of the fields the partial view
+     * declares are IDENTICAL to the partial view's (asserted in
+     * src/pc/pc_audio_bss.c). */
+    ALPlayer  node;         /* 0x00..0x1F */
+    u8      **toneTable;    /* 0x20 == KAudioMgr.unk1C (buf5 offsets) */
+    u8      **sfxTable;     /* 0x28 == KAudioMgr.unk20 (buf4 offsets) */
+    u16       soundCount;   /* 0x30 (N64 unk14) */
+    u16       lfoCount;     /* 0x32 (N64 unk2C) */
+    u16       toneCount;    /* 0x34 == KAudioMgr.unk28 */
+    u16       sfxCount;     /* 0x36 == KAudioMgr.unk2A */
+    void     *soundArray;   /* 0x38 (N64 unk18) ALSound** */
+    KLfoPreset *lfoTable;   /* 0x40 (N64 unk24) */
+    KToneX   *freeTones;    /* 0x48 == KAudioMgr.unk38 */
+    KNoteX   *liveNotes;    /* 0x50 == KAudioMgr.unk3C == D_8009791C */
+    KToneX   *liveTones;    /* 0x58 == KAudioMgr.unk40 == D_80097920 */
+    s32       usecPerFrame; /* 0x60 (N64 unk44) */
+    u16       noteIdSeq;    /* 0x64 (N64 unk48) */
+    u16       toneIdSeq;    /* 0x66 (N64 unk4A) */
+    u8        defPriority;  /* 0x68 (N64 unk4C) */
+    u8        sfxMasterVol; /* 0x69 (N64 0x5A) == D_8009793A */
+    u16       durDefaults[6]; /* 0x6A..0x75 (N64 0x4E..0x59; never written) */
+    u8        pad76[2];
+    KToneX   *pendNotesB;   /* 0x78 == KAudioMgr.unk5C */
+    KToneX   *pendTonesC;   /* 0x80 == KAudioMgr.unk60 */
+    KNoteX   *freeNotes;    /* 0x88 (N64 unk34) */
+    KOscNode *freeOscs;     /* 0x90 (N64 unk30) */
+} KAudioMgrX;
+
+#define kMgr (*(KAudioMgrX *)&D_800978E0)
+
+extern u16 D_8003FA10[];        /* n_eqpower[0..126]; [127] is D_8003FB0E */
+extern u16 lbreflect_Int16SinTable[];
+extern u16 D_8003FB1C;          /* BGM channel enable mask */
+extern f32 D_8003FB18;          /* global tempo scale */
+extern s32 D_8003FB20, D_8003FB24;
+
+#ifndef K0_TO_PHYS
+/* libn_audio.c does not include <PR/R4300.h>; on PC "physical" is the host
+ * pointer (osVirtualToPhysical is identity, everything game-visible sits
+ * below 512MB thanks to -no-pie), so the kseg mask is an identity too. */
+#define K0_TO_PHYS(x) ((u32)(long)(x) & 0x1FFFFFFF)
+#endif
+
+static s16 pc_au_eqpower(s32 i) {
+    if (i <= 0) {
+        return (s16)D_8003FA10[0];
+    }
+    if (i >= 127) {
+        return 0;               /* n_eqpower[127] */
+    }
+    return (s16)D_8003FA10[i];
+}
+
+/* PORT prototypes for the arms defined at the bottom of this file. */
+KToneX *func_80023B34(u8 *pc);
+KNoteX *func_80023D5C(u8 *pc);
+void func_80023E80(KToneX *tone);
+void func_80024750(KNoteX *note);
+u32 func_8002581C(ALCSeq *seq, u32 track);
+u8 func_80025758(ALCSeq *seq, u32 track);
+Acmd *func_80026A10(Acmd *ptr, N_PVoice *f, s32 tsam, s32 nbytes, s32 outp,
+                    s32 inp, u32 flags);
+s16 func_80026898(f32 tgt, f32 vol, s32 count, u16 *ratel);
+Acmd *func_8002714C(N_PVoice *e, s16 *inp, s32 outCount, Acmd *p);
+void func_8002649C(void *seqp, N_ALEvent *evt);
+void func_800285F8(void *seqp, N_ALEvent *evt);
+ALMicroTime func_80026698(void *client);
+void func_8002A508(void *fx, ALSynConfig *c, ALHeap *hp);
+Acmd *func_80028318(s32 sampleOffset, Acmd *p);
+void func_8002AE74(N_ALVoice *v, void *w, f32 pitch, s16 vol, u8 pan, u8 fxmix,
+                   ALMicroTime t);
+#endif /* PORT */
+
 /* 2/28 diffs at -O3, and only the one-slot temp-register rotation: the ROM puts
  * note->owner in $t7 where IDO picks $t6, and $t6 is unused in the ROM -- one
  * source temp was created and eliminated before the loop.  36 variants swept
@@ -592,6 +778,7 @@ void func_80023AE4(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023B34.s")
 
 #ifdef NON_MATCHING
+#ifndef PORT
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
 KChan *func_80023B34();                             /* extern */
@@ -612,6 +799,21 @@ KChan *func_80023C48(s32 arg0) {
     return sp2C;
 }
 #else
+/* The ROM passes the tone-bytecode pointer to func_80023B34 in $s1 (ujoin
+ * custom convention); the earlier draft dropped the argument. */
+KToneX *func_80023C48(u8 *pc) {
+    OSIntMask mask = osSetIntMask(OS_IM_NONE);
+    KToneX *tone = func_80023B34(pc);
+
+    if (tone != NULL) {
+        tone->next = (KToneX *)D_80097920;
+        D_80097920 = (KChan *)tone;
+    }
+    osSetIntMask(mask);
+    return tone;
+}
+#endif
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023C48.s")
 #endif
 
@@ -625,6 +827,7 @@ call:
 }
 
 #ifdef NON_MATCHING
+#ifndef PORT
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
 KChan *func_80023D00(s32 arg0) {
@@ -636,6 +839,18 @@ KChan *func_80023D00(s32 arg0) {
     }
     return func_80023B34(temp_a0);
 }
+#else
+/* The draft passed the INDEX where the ROM loads the tone-bytecode pointer
+ * out of the table before the custom-convention call. */
+KToneX *func_80023D00(s32 arg0) {
+    s32 idx = arg0 & 0xFFFF;
+
+    if (idx >= (s32)kMgr.toneCount) {
+        return NULL;
+    }
+    return func_80023B34(kMgr.toneTable[idx]);
+}
+#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D00.s")
 #endif
@@ -816,6 +1031,7 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80025758.s")
 #endif
 #ifdef NON_MATCHING
+#ifndef PORT
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
 u8 func_8002581C(void) {
@@ -833,6 +1049,25 @@ u8 func_8002581C(void) {
     }
     return var_t1;
 }
+#else
+/* __readVarLen (upstream libreultra/src/audio/cseq.c): the ROM takes seq and
+ * track in $t2/$t3 (ujoin custom convention), which the m2c draft could not
+ * see; this is the same function with a callable signature. */
+u32 func_8002581C(ALCSeq *seq, u32 track) {
+    u32 value;
+    u32 c;
+
+    value = func_80025758(seq, track);
+    if (value & 0x80) {
+        value &= 0x7F;
+        do {
+            c = func_80025758(seq, track);
+            value = (value << 7) + (c & 0x7F);
+        } while (c & 0x80);
+    }
+    return value;
+}
+#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002581C.s")
 #endif
@@ -1129,6 +1364,14 @@ void func_80026460(KCSeqp *seqp, f32 tempo) {
  * $s0/$s1/$s2/$s3/$s5 (ujoin custom convention), so this caller has to reserve
  * the low saved registers and spell the call in a way o32 cannot.  Same class
  * as func_8002581C/__readVarLen. */
+#ifdef PORT
+/* The draft below mislabels its callee: the ROM's _decodeChunk is
+ * func_80026A10 (called with a ujoin custom convention the disassembler
+ * attributed to the wrong symbol).  func_80026898 is __n_getRate.  Redirect
+ * the name for the PORT build only; the argument list already matches
+ * _decodeChunk's. */
+#define func_80026898 func_80026A10
+#endif
 #ifdef NON_MATCHING
 Acmd *func_80026B2C(N_PVoice *filter, s16 *outp, s32 outCount, Acmd *p) {
     Acmd *func_80026898();
@@ -1256,6 +1499,9 @@ Acmd *func_80026B2C(N_PVoice *filter, s16 *outp, s32 outCount, Acmd *p) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026B2C.s")
+#endif
+#ifdef PORT
+#undef func_80026898
 #endif
 Acmd *func_80026FA8(N_PVoice *e, s16 *outp, Acmd *p) {
     Acmd *func_80026B2C(N_PVoice *filter, s16 *outp, s32 outCount, Acmd *p);

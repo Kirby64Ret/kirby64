@@ -380,6 +380,119 @@ loop_14:
     }
     func_800B1900(omCurrentObj->unk2);
 }
+#elif defined(PORT)
+/* The PAUSE screen process (draft above). Runs any pending per-track
+ * pause callback from D_800D55BC (native void*[] cells, gen_data resolved
+ * the function words to host symbols), picks the pause layout mode (0x21
+ * boss rush -> 2, level kind 9 -> 1, else 0), spawns the four pause child
+ * tracks mirroring that mode, fades in over the paused game, then polls
+ * controller 0: C-up/C-down (0x0800/0x0400) move the CONTINUE/QUIT cursor
+ * D_800E98E0, START or A (0x9000) commits. QUIT (cursor 1, not allowed in
+ * mode 1) fades to black and stops the song; CONTINUE fades back and
+ * unpauses. request_track_3 takes three args (ovl1_6.c definition); the
+ * N64 fourth register was dead. */
+void func_800BCA5C(void) {
+    extern void *D_800D55BC[];
+    extern Controller_800D6FE8 gPlayerControllers[];
+    extern u32 gGameState;
+    extern f32 gameTicksPerDrawInv;
+    extern s32 D_800D6B6C;
+    extern s32 D_800BE4F8;
+    extern s32 D_800BE544;
+    void func_800AF9B8(s32, s32);
+    s32 func_800F8560(void);
+    void auSetBGMVolumeSmooth(s32, u32, u32);
+    void auStopSong(s32);
+    void func_80023884(void);
+    void func_80023794(void);
+    void func_800B1900(u16);
+    u32 objId = omCurrentObj->objId;
+    u32 cb = D_800EC2E0[objId].as_u32;
+    s32 mode;
+    s32 i;
+    u16 btn;
+
+    if (cb != 0) {
+        ((void (*)(void)) D_800D55BC[cb])();
+    }
+    if (gGameState == 0x21) {
+        mode = 2;
+    } else if (func_800F8560() == 9) {
+        mode = 1;
+    } else {
+        mode = 0;
+    }
+    D_800E9E20[objId] = mode;
+    for (i = 1; i != 5; i++) {
+        s32 tr = request_track_3(0x27, 0x3C, 0x50);
+
+        D_800EC2E0[tr].as_u32 = i;
+        D_800E9E20[tr] = mode;
+    }
+    func_800AF9B8(0x28, 0xE);
+    D_800E98E0[objId] = 0;
+    D_800E9C60[objId] = 0;
+    D_800E9AA0[objId] = NULL;
+    utilSetRectBoundsAndColor(0xA, 0xA, 0x136, 0xB6, 0xF0, 0xD8, 0xA0);
+    utilSpawnRect(0, 0x10, 0);
+    auSetBGMVolumeSmooth(0, 0x5000, 0x10);
+    func_80023884();
+    play_sound(0xED);
+    while (D_800D6B24 != 0) {
+        ohSleep(1);
+    }
+    D_800E9AA0[objId] = (struct EntityThing800E9AA0 *) 1;
+    utilSpawnRect(0xFF, -0x10, 0);
+    while (D_800D6B24 != 0) {
+        ohSleep(1);
+    }
+    ohSleep((s32) (3.0f * gameTicksPerDrawInv));
+    while (1) {
+        btn = gPlayerControllers[0].buttonPressed;
+        if (btn & 0x9000) {
+            break;
+        }
+        if (btn & 0x800) {
+            play_sound(0x113);
+            D_800E98E0[objId] = 0;
+            btn = gPlayerControllers[0].buttonPressed;
+        }
+        if (btn & 0x400) {
+            play_sound(0x113);
+            D_800E98E0[objId] = 1;
+        }
+        ohSleep(1);
+    }
+    play_sound(0xED);
+    if (D_800E98E0[objId] == 1 && D_800E9E20[objId] != 1) {
+        if (gGameState == 0x21) {
+            D_800D6B6C = 1;
+        }
+        D_800BE4F8 = 0;
+        utilSetRectColorFullScreen(0, 0, 0);
+        utilSpawnRect(0, 0x20, 2);
+        auSetBGMVolumeSmooth(0, 0, 8);
+        while (D_800D6B24 != 0) {
+            ohSleep(1);
+        }
+        auStopSong(0);
+    } else {
+        utilSpawnRect(0, 0x10, 0);
+        while (D_800D6B24 != 0) {
+            ohSleep(1);
+        }
+        D_800E9AA0[objId] = NULL;
+        D_800E9C60[objId] = 1;
+        auSetBGMVolumeSmooth(0, 0x7800, 0x10);
+        func_80023794();
+        utilSpawnRect(0xFF, -0x10, 0);
+        while (D_800D6B24 != 0) {
+            ohSleep(1);
+        }
+        D_800BE544 = 0x8000;
+    }
+    func_800B1900((u16) objId);
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BCA5C.s")
 #endif

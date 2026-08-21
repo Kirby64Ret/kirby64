@@ -423,7 +423,35 @@ void func_801DD17C_ovl17(void) {
     D_800D7B2C = cam->viewMtx.lookAt.eye;
 }
 
+#ifdef PORT
+/* PORT: camera seat used while D_800D6B54 == 1 (boss intro hold), from
+ * asm/nonmatchings/ovl17/ovl17/func_801DD2B0_ovl17.s. The eye snaps to the
+ * cached func_801DC98C eye (D_801E56F0..F8), the look-at point eases 15%
+ * per frame toward Kirby's next position (entity slot 0), the up vector
+ * decays by 0.9 (a double-precision product on N64, kept as written), then
+ * the usual persp params and camera history stores. */
+void func_801DD2B0_ovl17(void) {
+    Camera *cam = D_800D799C->data.cam;
+
+    D_800D7B38 = D_800D7B20;
+    cam->viewMtx.lookAt.eye.x = D_801E56F0_ovl17;
+    cam->viewMtx.lookAt.eye.y = D_801E56F4_ovl17;
+    cam->viewMtx.lookAt.eye.z = D_801E56F8_ovl17;
+    cam->viewMtx.lookAt.at.x = (gEntitiesNextPosXArray[0] * 0.15f) + (cam->viewMtx.lookAt.at.x * 0.85f);
+    cam->viewMtx.lookAt.at.y = (gEntitiesNextPosYArray[0] * 0.15f) + (cam->viewMtx.lookAt.at.y * 0.85f);
+    cam->viewMtx.lookAt.at.z = (gEntitiesNextPosZArray[0] * 0.15f) + (cam->viewMtx.lookAt.at.z * 0.85f);
+    cam->viewMtx.lookAt.up.x = (f32) (cam->viewMtx.lookAt.up.x * 0.9);
+    cam->viewMtx.lookAt.up.y = (f32) (cam->viewMtx.lookAt.up.y * 0.9);
+    cam->viewMtx.lookAt.up.z = (f32) (cam->viewMtx.lookAt.up.z * 0.9);
+    cam->perspMtx.persp.fovy = D_800D7158[0];
+    cam->perspMtx.persp.near = D_800D715C;
+    cam->perspMtx.persp.far = D_800D7160;
+    D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
+    D_800D7B2C = cam->viewMtx.lookAt.eye;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DD2B0_ovl17.s")
+#endif
 
 void func_801DD440_ovl17(struct GObj *arg0) {
     func_800A9864(0x100EC, 0x23, 0x10);

@@ -1208,6 +1208,126 @@ block_43:
     var_v1 = temp_a3 + temp_a2_5;
     goto loop_30;
 }
+#elif defined(PORT)
+/* Track-position advance (draft above): move fraction *arg1 along node
+ * *arg0's segment by arg2*0.1 world units normalized by segment length,
+ * hopping across node links when the fraction leaves [0,1]. Native record
+ * facts (ovl2_2.c's loader): D_80129114->unk4 is a native
+ * struct Unk80129114_4 array; unk8 holds the raw 4-byte link records
+ * {role, flags, nextIndex, pad} as blob bytes; the N64 read the link
+ * count as the BE halfword covering unkC/unkD; unk4->unkC is the segment
+ * length, unk4->unk2 the point count. Backward hops take the first
+ * unflagged role-0 link (any other role blocks); forward hops scan the
+ * link list tail-first for an unflagged link whose role equals the last
+ * point index. The D_8012912C routing matrix gets the final say. */
+s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
+    extern s32 D_80129118;
+    extern u8 *D_8012912C;
+    struct Unk80129114_4 *recs = D_80129114->unk4;
+    s32 node = *arg0;
+    struct Unk80129114_4 *tp;
+    f32 t;
+    f32 len;
+    f32 want;
+    f32 frac = 0.0f;
+    s32 next = 0;
+
+    if (node < 0) {
+        return 0x270F;
+    }
+    t = *arg1;
+    if (t < 0.0f || t > 1.0f) {
+        return 0x270F;
+    }
+    tp = &recs[node];
+    len = tp->unk4->unkC;
+    want = t + (arg2 * 0.1f) / len;
+    if (tp->unkE != 0) { /* looping segment: wrap in place */
+        *arg1 = want;
+        if (want < 0.0f) {
+            *arg1 = 1.0f + want;
+        }
+        if (want > 1.0f) {
+            *arg1 = want - 1.0f;
+        }
+        return 0;
+    }
+    if (want >= 0.0f && want <= 1.0f) {
+        *arg1 = want;
+        return 0;
+    }
+    if (want < 0.0f) {
+        f32 rem = (arg2 * -0.1f) - (t * len);
+
+        for (;;) {
+            s32 cnt = (s16) ((tp->unkC << 8) | tp->unkD);
+            u8 *lnk;
+            s32 i = 0;
+            f32 len2;
+
+            if (cnt <= 0) {
+                return 1;
+            }
+            lnk = (u8 *) (uintptr_t) tp->unk8;
+            while (i < cnt && (lnk[0] != 0 || (lnk[1] & 0xF0))) {
+                if (lnk[0] != 0) {
+                    return 1;
+                }
+                i++;
+                lnk += 4;
+            }
+            if (i == cnt) {
+                return 1;
+            }
+            next = lnk[2];
+            len2 = recs[next].unk4->unkC;
+            if (rem <= len2) {
+                frac = (len2 - rem) / len2;
+                break;
+            }
+            rem -= len2;
+            tp = &recs[next];
+        }
+    } else {
+        f32 rem = (arg2 * 0.1f) - (len - t * len);
+
+        for (;;) {
+            s32 cnt = (s16) ((tp->unkC << 8) | tp->unkD);
+            u8 *lnk;
+            s32 last;
+            f32 len2;
+
+            if (cnt <= 0) {
+                return 1;
+            }
+            lnk = (u8 *) (uintptr_t) tp->unk8 + (cnt - 1) * 4;
+            last = tp->unk4->unk2 - 1;
+            for (;;) {
+                if (last != lnk[0]) {
+                    return 1;
+                }
+                if ((lnk[1] & 0xF0) == 0) {
+                    break;
+                }
+                lnk -= 4;
+            }
+            next = lnk[2];
+            len2 = recs[next].unk4->unkC;
+            if (rem <= len2) {
+                frac = rem / len2;
+                break;
+            }
+            rem -= len2;
+            tp = &recs[next];
+        }
+    }
+    if (D_8012912C[node * D_80129118 + next] == 0) {
+        return 1;
+    }
+    *arg0 = next;
+    *arg1 = frac;
+    return 0;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9974.s")
 #endif
@@ -2639,6 +2759,46 @@ void func_800FBBB8(void) {
     D_801292B0.unk28 = D_80129330.unk28;
     D_801292B0.unk2C = D_80129330.unk2C;
 }
+#elif defined(PORT)
+/* Free-look camera step (draft above): snapshot the live cam state and
+ * output block (D_80129150/D_80129270 saves; D_801292B0 is now a whole
+ * 0x3C-byte object, see src/pc/pc_bss_whole.c), aim a scratch output
+ * D_80129330 at the config's target raised by unk14, place the eye with
+ * the same yaw/pitch math as func_800FA608's PORT arm, then run the
+ * standard smoothing/publish pair and write the resolved eye/at fields
+ * back into the config. */
+void func_800FBBB8(void) {
+    extern struct Ovl2CamOut D_80129330;
+    Camera *cam = D_800D799C->data.cam;
+    Vector dir;
+    Vector diff;
+    Vector axis;
+
+    D_80129150 = D_80129210;
+    D_80129270 = D_801292B0;
+    D_80129330.unk0 = D_801292B0.unk0;
+    D_80129330.unk8 = D_801292B0.unk8;
+    D_80129330.unk4 = D_801292B0.unk4 + D_80129210.unk14;
+    dir.x = cosf((D_80129210.unk8 * 3.1415927f) / 180.0f);
+    dir.z = -sinf((D_80129210.unk8 * 3.1415927f) / 180.0f);
+    dir.y = 0.0f;
+    lbvector_Scale(&dir, -D_80129210.unkC);
+    lbvector_Add(&dir, (Vector *) &D_80129330.unk0);
+    lbvector_Diff(&diff, (Vector *) &D_80129330.unk0, &dir);
+    vec3_normalized_cross_product(&cam->viewMtx.lookAt.up, &diff, &axis);
+    func_800191F8(&diff, &axis, ((D_80129210.unk4 - 90.0f) * 3.1415927f) / 180.0f);
+    D_80129330.unkC = D_80129330.unk0 - diff.x;
+    D_80129330.unk10 = D_80129330.unk4 - diff.y;
+    D_80129330.unk14 = D_80129330.unk8 - diff.z;
+    func_800FA7EC(0, &D_80129210, &D_80129330);
+    func_800FA92C(0, &D_80129210, &D_80129330);
+    D_801292B0.unk18 = D_80129330.unk18;
+    D_801292B0.unk1C = D_80129330.unk1C;
+    D_801292B0.unk20 = D_80129330.unk20;
+    D_801292B0.unk24 = D_80129330.unk24;
+    D_801292B0.unk28 = D_80129330.unk28;
+    D_801292B0.unk2C = D_80129330.unk2C;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBBB8.s")
 #endif
@@ -2900,6 +3060,54 @@ void func_800FC62C() {
         temp_v0->unk40 = temp_v0->unk40 + (D_80129404 * temp_f0);
         D_800D7B20.unk10 = temp_v0->unk40;
         D_800D7B20.unk14 = temp_v0->unk44;
+    }
+}
+#elif defined(PORT)
+/* Camera animation + drift step (draft above; m2c typed the payload as a
+ * DObj, but the asm offsets 0x3C..0x50 are Camera.viewMtx.lookAt.eye/.at
+ * and 0x74 is Camera.timeRemaining -- decoded from the raw asm). Copies
+ * the live pair into the previous-frame slot, runs the camera anim, and
+ * while D_800D6B54 is clear applies the pan drift to eye/at (x/y only)
+ * and mirrors them into D_800D7B20. The six floats at D_800D7B38+0x18
+ * park the live pair across an anim (restored when timeRemaining hits
+ * the -FLT_MAX end marker). */
+void func_800FC62C(GObj *arg0) {
+    extern s32 D_800D6B54;
+    Camera *cam = D_800D799C->data.cam;
+    f32 *save = (f32 *) ((u8 *) &D_800D7B38 + 0x18);
+    f32 tf0, tf2;
+
+    D_800D7B38.unk0 = D_800D7B20.unk0;
+    D_800D7B38.unkC = D_800D7B20.unkC;
+    if (D_800D6B54 == 0) {
+        animUpdateCameraAnimation(arg0);
+        if (cam->timeRemaining == -3.4028235e38f) {
+            cam->viewMtx.lookAt.eye.x = save[0];
+            cam->viewMtx.lookAt.eye.y = save[1];
+            cam->viewMtx.lookAt.eye.z = save[2];
+            cam->viewMtx.lookAt.at.x = save[3];
+            cam->viewMtx.lookAt.at.y = save[4];
+            cam->viewMtx.lookAt.at.z = save[5];
+        } else {
+            save[0] = cam->viewMtx.lookAt.eye.x;
+            save[1] = cam->viewMtx.lookAt.eye.y;
+            save[2] = cam->viewMtx.lookAt.eye.z;
+            save[3] = cam->viewMtx.lookAt.at.x;
+            save[4] = cam->viewMtx.lookAt.at.y;
+            save[5] = cam->viewMtx.lookAt.at.z;
+        }
+        tf0 = *(s32 *) &D_8012940C * 0.01f;
+        tf2 = (f32) D_80129408 * 0.01f;
+        cam->viewMtx.lookAt.eye.x += D_80129400 * tf2;
+        D_800D7B20.unk0.x = cam->viewMtx.lookAt.eye.x;
+        cam->viewMtx.lookAt.eye.y += D_80129404 * tf2;
+        D_800D7B20.unk0.y = cam->viewMtx.lookAt.eye.y;
+        D_800D7B20.unk0.z = cam->viewMtx.lookAt.eye.z;
+        cam->viewMtx.lookAt.at.x += D_80129400 * tf0;
+        D_800D7B20.unkC.x = cam->viewMtx.lookAt.at.x;
+        cam->viewMtx.lookAt.at.y += D_80129404 * tf0;
+        D_800D7B20.unkC.y = cam->viewMtx.lookAt.at.y;
+        D_800D7B20.unkC.z = cam->viewMtx.lookAt.at.z;
     }
 }
 #else

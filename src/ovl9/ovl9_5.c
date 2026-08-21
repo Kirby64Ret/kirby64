@@ -606,7 +606,57 @@ void func_801E7320_ovl9(void) {
     }
 }
 
+#ifdef PORT
+extern struct Sub800E1B50_Unk98 D_801CBB9C;
+void play_sound();
+void func_800FB914(s32);
+void func_800AA018(s32);
+/* Hit-launch state: enter anim state 7 with the hit sound/flash,
+ * zero bone 1's X spin, play the facing-specific tumble animation,
+ * then reverse facing and launch backwards (6.0 for ground modes,
+ * 8.0 for flying modes) with gravity -0.65 and 10.0 terminal speed,
+ * into airborne state 6. */
+void func_801E73C4_ovl9(struct GObj *arg0) {
+    s32 anim;
+    u32 id;
+
+    D_800DDFD0[omCurrentObj->objId] = 7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBB9C;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = 0.0f;
+    func_800FB914(1);
+    play_sound(0x9A);
+    anim = 0x101F2;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        anim = 0x101F3;
+    }
+    func_800AA018(anim);
+    func_800AF27C();
+    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+    id = omCurrentObj->objId;
+    switch (D_800E7880[id]) {
+        case 0:
+        case 1:
+            D_800E64D0[id] = D_800E6A10[id] * 6.0f;
+            break;
+        case 2:
+        case 3:
+            D_800E64D0[id] = D_800E6A10[id] * 8.0f;
+            break;
+    }
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 6;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E73C4_ovl9.s")
+#endif
 
 extern s32 D_800BE4EC;
 void func_801A0D74_ovl7();
@@ -746,7 +796,56 @@ void func_801E7C88_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8021BF64_ovl9);
 }
 
+#ifdef PORT
+extern s32 D_801C8880_ovl7[];
+extern s32 D_801CBBC0;
+void func_800AA018(s32);
+/* Perch/rest state: enter anim state 0 with the perch hit tables,
+ * pitch the body -70deg times facing, queue the settle animations
+ * (0x10220 then 0x1021F) and clear the shot timer; mode 0 goes
+ * straight to state 1 (or despawn state 4 if the perch surface is
+ * within 200 units of the origin and the timer ran out), mode 1
+ * steps animation frames until the surface closes within 200 units
+ * (state 4) or something else changes the state. */
+void func_801E7CD0_ovl9(struct GObj *arg0) {
+    u32 id;
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8880_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBBC0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    id = omCurrentObj->objId;
+    D_800E4C50[id] = D_800E6A10[id] * -1.2217305f;
+    func_800AA018(0x10220);
+    func_800AA018(0x1021F);
+    D_800E9C60[omCurrentObj->objId] = -1;
+    id = omCurrentObj->objId;
+    switch (D_800E7880[id]) {
+        case 0:
+            gEntityFuncListIDArray[id] = 1;
+            id = omCurrentObj->objId;
+            if ((D_800E9E20[id] <= 0) && (D_800E6F50[id].originOffset < 200.0f)) {
+                gEntityFuncListIDArray[id] = 4;
+            }
+            break;
+        case 1:
+            do {
+                func_800AF27C();
+                id = omCurrentObj->objId;
+                if (D_800E6F50[id].originOffset < 200.0f) {
+                    gEntityFuncListIDArray[id] = 4;
+                    id = omCurrentObj->objId;
+                }
+            } while (gEntityFuncListIDArray[id] == 0);
+            break;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E7CD0_ovl9.s")
+#endif
 
 void func_801A0D74_ovl7();
 void func_8019F3B0_ovl7(void);
@@ -756,7 +855,78 @@ void func_801E7F0C_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
+#ifdef PORT
+extern f32 D_8021BF6C_ovl9[];
+extern f32 D_8021BF9C_ovl9[];
+extern s32 func_8019A900_ovl7(s32 *);
+extern f32 func_8019B608_ovl7(s32);
+extern s32 random_soft_s32_range(s32);
+void ohSleep(s32);
+/* Takeoff state: enter anim state 0 with the perch tables, queue the
+ * launch animations (0x1021A then 0x10219), pick a fresh random hop
+ * pattern 0..11 (rerolling the previous one), fly toward Kirby's
+ * side (rolls 9..11 flip away), and if that means turning around,
+ * ease the -70deg body pitch across 4 ticks (else just wait 4
+ * ticks); then load the pattern's launch speed (D_8021BF6C * facing)
+ * and climb rate (D_8021BF9C) and enter flight state 2. */
+void func_801E7F34_ovl9(struct GObj *arg0) {
+    s32 sp68;
+    f32 dir;
+    s32 roll;
+    u32 id;
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8880_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBBC0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800AA018(0x1021A);
+    func_800AA018(0x10219);
+    if (func_8019A900_ovl7(&sp68) != 0) {
+        dir = sp68;
+    } else {
+        dir = func_8019B608_ovl7(0);
+    }
+    roll = random_soft_s32_range(0xC);
+    while (roll == D_800E98E0[omCurrentObj->objId]) {
+        roll = random_soft_s32_range(0xC);
+    }
+    D_800E98E0[omCurrentObj->objId] = roll;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] >= 9) {
+        dir = -dir;
+    }
+    if (dir != D_800E6A10[id]) {
+        D_800E9FE0[id].as_u32 = 1;
+    } else {
+        D_800E9FE0[id].as_u32 = 0;
+    }
+    D_800E6A10[omCurrentObj->objId] = dir;
+    id = omCurrentObj->objId;
+    if (D_800E9FE0[id].as_u32 != 0) {
+        f32 step;
+
+        for (step = 3.0f; step >= 0.0f; step -= 1.0f) {
+            id = omCurrentObj->objId;
+            D_800E4C50[id] = (D_800E6A10[id] * -0.17453294f * step) + (-1.2217305f * D_800E6A10[id]);
+            ohSleep(1);
+        }
+        id = omCurrentObj->objId;
+    } else {
+        ohSleep(4);
+        id = omCurrentObj->objId;
+    }
+    D_800E64D0[id] = D_8021BF6C_ovl9[D_800E98E0[id]] * D_800E6A10[id];
+    id = omCurrentObj->objId;
+    D_800E3210[id] = D_8021BF9C_ovl9[D_800E98E0[id]];
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E7F34_ovl9.s")
+#endif
 
 extern s32 D_801C8880_ovl7[];
 extern struct Sub800E1B50_Unk98 D_801CBBE4;
@@ -909,7 +1079,52 @@ void func_801E8A38_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021C008_ovl9);
 }
 
+#ifdef PORT
+extern void func_800B6E84();
+extern f32 D_8021C014_ovl9[];
+/* Wall-mounted shooter init: install the static mover, face right,
+ * bank the spawn Z angle into D_800EAA60 and zero the visual angles;
+ * flat placements (spawn roll 0) count as grounded.  Aim the barrel
+ * bone (bone 2) to the per-mode pitch from D_8021C014, remember the
+ * combined rest angle in D_800EA8A0, zero the bone's Y/Z rotation
+ * and enter state 0. */
+void func_801E8A80_ovl9(struct GObj *arg0) {
+    u32 id;
+    f32 pitch;
+
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6E84;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    id = omCurrentObj->objId;
+    D_800EAA60[id] = gEntitiesAngleZArray[id];
+    gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;
+    id = omCurrentObj->objId;
+    gEntitiesAngleYArray[id] = gEntitiesAngleZArray[id];
+    gEntitiesAngleXArray[omCurrentObj->objId] = gEntitiesAngleYArray[id];
+    id = omCurrentObj->objId;
+    if (D_800EAA60[id] == 0.0f) {
+        D_800E98E0[id] = 1;
+    } else {
+        D_800E98E0[id] = 0;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] != 0) {
+        D_800E8920[id] = 1;
+    } else {
+        D_800E8920[id] = 0;
+    }
+    id = omCurrentObj->objId;
+    pitch = D_8021C014_ovl9[D_800E7880[id]];
+    D_800EA6E0[id] = pitch;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = pitch;
+    id = omCurrentObj->objId;
+    D_800EA8A0[id] = D_800EAA60[id] + pitch;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.z = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = D_800DFBD0[omCurrentObj->objId][2]->angle.v.z;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8A80_ovl9.s")
+#endif
 
 extern void func_800B7514(struct GObj *);
 extern f32 D_8021C014_ovl9[];
@@ -1401,7 +1616,78 @@ void func_801EA2F8_ovl9(struct GObj *arg0) {
     D_800EA8A0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId];
 }
 
+#ifdef PORT
+extern void func_800B2AD4(Vector *, s32, u32);
+extern float atan2f(float, float);
+/* Shooter aim tick: take a point 100 units above Kirby's feet (foot
+ * +20 +80), transform it into the turret frame via func_800B2AD4,
+ * derive the target pitch/yaw with atan2, and walk the tracked pitch
+ * D_800EA6E0 (clamped [0, 30deg]) and yaw D_800EAC20 (wrap-aware,
+ * renormalized to [0, 2pi)) toward it in pi/80 steps; write both onto
+ * bone 2's X/Y rotation. */
+void func_801EA628_ovl9(void) {
+    f32 sp30;
+    f32 sp34;
+    f32 sp38;
+    f32 pitch;
+    f32 yaw;
+    f32 d;
+    u32 id;
+
+    sp30 = gEntitiesNextPosXArray[0];
+    sp34 = gEntitiesNextPosYArray[0] + 20.0f + 80.0f;
+    sp38 = gEntitiesNextPosZArray[0];
+    func_800B2AD4((Vector *) &sp30, 0, 0xFFFF);
+    pitch = atan2f(sqrtf((sp30 * sp30) + (sp38 * sp38)), sp34);
+    yaw = atan2f(sp30, sp38);
+    while (pitch >= 3.1415927f) {
+        pitch -= 3.1415927f;
+    }
+    while (pitch <= -3.1415927f) {
+        pitch += 3.1415927f;
+    }
+    id = omCurrentObj->objId;
+    if ((pitch + 0.03926991f) < D_800EA6E0[id]) {
+        D_800EA6E0[id] -= 0.03926991f;
+        id = omCurrentObj->objId;
+        if (D_800EA6E0[id] < 0.0f) {
+            D_800EA6E0[id] = 0.0f;
+        }
+    } else if (D_800EA6E0[id] < (pitch - 0.03926991f)) {
+        D_800EA6E0[id] += 0.03926991f;
+        id = omCurrentObj->objId;
+        if (D_800EA6E0[id] > 0.5235988f) {
+            D_800EA6E0[id] = 0.5235988f;
+        }
+    }
+    id = omCurrentObj->objId;
+    d = yaw - D_800EAC20[id];
+    if (((d < 0.0f) ? -d : d) > 3.1415927f) {
+        if (d < 0.0f) {
+            d = (yaw + 6.2831855f) - D_800EAC20[id];
+        } else {
+            d = yaw - (D_800EAC20[id] + 6.2831855f);
+        }
+    }
+    if (((d < 0.0f) ? -d : d) > 0.03926991f) {
+        D_800EAC20[id] += (d > 0.0f) ? 0.03926991f : -0.03926991f;
+        id = omCurrentObj->objId;
+        while (D_800EAC20[id] > 6.2831855f) {
+            D_800EAC20[id] -= 6.2831855f;
+            id = omCurrentObj->objId;
+        }
+        while (D_800EAC20[id] < 0.0f) {
+            D_800EAC20[id] += 6.2831855f;
+            id = omCurrentObj->objId;
+        }
+    }
+    D_800DFBD0[id][2]->angle.v.x = D_800EA6E0[id];
+    id = omCurrentObj->objId;
+    D_800DFBD0[id][2]->angle.v.y = D_800EAC20[id];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA628_ovl9.s")
+#endif
 
 s32 func_801ACC34_ovl7(s32, s32);
 

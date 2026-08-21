@@ -503,7 +503,311 @@ s32 func_80167898_ovl5(s32 arg0) {
     return 0;
 }
 
+#ifdef PORT
+/* PORT-only prototypes and helpers for the arms below. Splat split several
+ * flat N64 tables into per-symbol C objects that the host compiler pads and
+ * aligns independently, so cross-symbol indexing does not land where it did
+ * on the console; these helpers re-derive the accesses per symbol:
+ *   - ovl5_4_idpair_ reads word i of the (idle,run) animation-id pair tables
+ *     split 1/7 (D_8018721C/D_80187220 and friends).
+ *   - ovl5_4_molepers_ reads byte i of the flat CPU-difficulty table split
+ *     as D_80187188/D_80187189/D_8018718D/D_8018718E (rows of 0xD bytes). */
+void play_sound(s32);
+s32 request_track_general(s32, s32, s32);
+void animUpdateModelTreeAnimation(GObj *);
+void animResetTextureAnimation(GObj *);
+s32 func_800AA934(void *);
+void func_800AA608(void *, void *, f32, void *, f32);
+Vector2 func_80166C68_ovl5(s32);
+s32 func_80166D48_ovl5(s32);
+s32 func_80166054_ovl5(Vector);
+s32 func_800BB4E4(s32, s32, s32);
+s32 func_80165AD0_ovl5(s32);
+s32 func_80165948_ovl5(s32);
+s32 func_8016A69C_ovl5(s32);
+s32 func_8016A6B0_ovl5(s32);
+void func_80167374_ovl5(s32, s32);
+s32 func_80168928_ovl5(s32, s32, f32);
+f32 func_80168804_ovl5(GObj *, s32, s32);
+void func_80168E84_ovl5(s32);
+s32 func_801690F4_ovl5(s32);
+u8 func_8016965C_ovl5(s32);
+s32 func_80169D90_ovl5(s32, s32);
+s32 func_80168B30_ovl5(s32);
+void func_801668E0_ovl5(GObj *);
+void func_8016689C_ovl5(GObj *);
+void func_801686E4_ovl5(GObj *);
+void func_80166F14_ovl5(s32);
+s32 func_80167650_ovl5(s32);
+s32 func_80167898_ovl5(s32);
+void func_801671E8_ovl5(s32);
+extern struct GObjProcess *gEntityGObjProcessArray[];
+extern s32 D_8018E264_ovl5;
+extern s32 D_8018E288_ovl5[];
+extern s32 D_8018E420_ovl5;
+extern u8 D_8018E3C4_ovl5;
+
+static u32 ovl5_4_idpair_(u32 *first, u32 *rest, s32 i) {
+    return (i == 0) ? first[0] : rest[i - 1];
+}
+
+static u8 ovl5_4_molepers_(s32 i) {
+    /* flat CPU-difficulty table, N64 base 0x80187184, rows of 0xD bytes */
+    extern u8 D_80187184_ovl5[];
+    extern u8 D_80187188_ovl5[];
+    extern u8 D_80187189_ovl5[];
+    extern u8 D_8018718D_ovl5[];
+    extern u8 D_8018718E_ovl5[];
+
+    if (i < 4) {
+        return D_80187184_ovl5[i];
+    }
+    if (i == 4) {
+        return D_80187188_ovl5[0];
+    }
+    if (i < 9) {
+        return D_80187189_ovl5[i - 5];
+    }
+    if (i == 9) {
+        return D_8018718D_ovl5[0];
+    }
+    return D_8018718E_ovl5[i - 10];
+}
+
+/* Racer entity main for mole-panic player arg1: registers the objId in
+ * D_8018E268_ovl5[arg1], spawns the character model, then services the
+ * command state in D_800E9C60[objId]: 0 idle/taunt poses, 1 round-start
+ * (spawns the per-player whack cursor track), 2 fell down a hole (drop,
+ * respawn or park forever when out of stock), 3 dizzy. */
+void func_8016792C_ovl5(GObj *arg0, u32 arg1) {
+    extern u32 D_801871FC_ovl5[];
+    extern u32 D_8018720C_ovl5[];
+    extern u32 D_8018721C_ovl5[];
+    extern u32 D_80187220_ovl5[];
+    extern u32 D_8018723C_ovl5[];
+    extern u32 D_80187240_ovl5[];
+    extern u32 D_8018725C_ovl5[];
+    extern u32 D_80187260_ovl5[];
+    extern u32 D_8018727C_ovl5[];
+    extern u32 D_80187280_ovl5[];
+    extern u32 D_8018729C_ovl5[];
+    extern u32 D_801872A0_ovl5[];
+    extern u32 D_801872BC_ovl5[];
+    extern u32 D_801872C0_ovl5[];
+    extern u32 D_801872DC_ovl5[];
+    extern u32 D_801872E0_ovl5[];
+    extern u8 D_8018E3D0_ovl5x[] __asm__("D_8018E3D0_ovl5");
+    Vector2 kf;
+    s32 kind;
+    s32 frame;
+    s32 i;
+    s32 t;
+    u32 id;
+
+#define PAIR792C_(first, rest, j) \
+    ((void *) (uintptr_t) ovl5_4_idpair_(first, rest, kind * 2 + (j)))
+    D_8018E268_ovl5[arg1] = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 5;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = arg1;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    if (D_8018E3C8_ovl5[arg1] != 0) {
+        *(s32 *) &D_8018E3D0_ovl5x[arg1 * 0x14 + 4] = 0;
+        D_8018E3D0_ovl5x[arg1 * 0x14 + 8] = 5;
+    }
+    kf = func_80166C68_ovl5(arg1);
+    kind = *(s32 *) &kf.x;
+    frame = *(s32 *) &kf.y;
+    func_800A9864((void *) (uintptr_t) D_801871FC_ovl5[kind], 0x1869F, 0x10);
+    func_800AECC0(1.0f);
+    func_800AED20(1.0f);
+    func_800A9F98((s32) D_8018720C_ovl5[kind], (f32) frame);
+    if (frame == 0) {
+        animUpdateModelTreeAnimation(arg0);
+    }
+    animResetTextureAnimation(arg0);
+    func_800AECC0(2.0f);
+    func_800AED20(2.0f);
+    if (kind == 1) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 0.85f;
+        gEntitiesScaleYArray[omCurrentObj->objId] = 0.85f;
+        gEntitiesScaleZArray[omCurrentObj->objId] = 0.85f;
+    }
+    func_800AA018(PAIR792C_(D_8018721C_ovl5, D_80187220_ovl5, 0));
+    if (ovl5_4_idpair_(D_8018721C_ovl5, D_80187220_ovl5, kind * 2 + 1) != 0) {
+        func_800AA018(PAIR792C_(D_8018721C_ovl5, D_80187220_ovl5, 1));
+    }
+    func_80166F14_ovl5(arg1);
+    D_800DF150[omCurrentObj->objId] = func_801686E4_ovl5;
+    while (1) {
+        if (D_8018E3C4_ovl5 != 0) {
+            gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+            if (func_800AA934(PAIR792C_(D_8018729C_ovl5, D_801872A0_ovl5, 0)) == 0) {
+                func_800AA608(arg0->data.dobj->firstChild, PAIR792C_(D_8018729C_ovl5, D_801872A0_ovl5, 0), 0.0f,
+                              (void *) (uintptr_t) D_801871FC_ovl5[kind], 4.0f);
+                func_800AA018(PAIR792C_(D_8018729C_ovl5, D_801872A0_ovl5, 0));
+                if (ovl5_4_idpair_(D_8018729C_ovl5, D_801872A0_ovl5, kind * 2 + 1) != 0) {
+                    func_800AA018(PAIR792C_(D_8018729C_ovl5, D_801872A0_ovl5, 1));
+                }
+            }
+            D_800DF150[omCurrentObj->objId] = NULL;
+        }
+        switch (D_800E9C60[omCurrentObj->objId]) {
+            case 0:
+                if (D_8018E3C4_ovl5 == 0) {
+                    if (func_80167650_ovl5(arg1) != 0) {
+                        if (func_800AA934(PAIR792C_(D_801872DC_ovl5, D_801872E0_ovl5, 0)) == 0) {
+                            func_800AA608(arg0->data.dobj->firstChild, PAIR792C_(D_801872DC_ovl5, D_801872E0_ovl5, 0),
+                                          0.0f, (void *) (uintptr_t) D_801871FC_ovl5[kind], 4.0f);
+                            func_800AA018(PAIR792C_(D_801872DC_ovl5, D_801872E0_ovl5, 0));
+                            if (ovl5_4_idpair_(D_801872DC_ovl5, D_801872E0_ovl5, kind * 2 + 1) != 0) {
+                                func_800AA018(PAIR792C_(D_801872DC_ovl5, D_801872E0_ovl5, 1));
+                            }
+                        }
+                    } else if ((func_80167898_ovl5(arg1) != 0) && (D_8018E3C4_ovl5 == 0)) {
+                        if (func_800AA934(PAIR792C_(D_8018723C_ovl5, D_80187240_ovl5, 0)) == 0) {
+                            func_800AA608(arg0->data.dobj->firstChild, PAIR792C_(D_8018723C_ovl5, D_80187240_ovl5, 0),
+                                          0.0f, (void *) (uintptr_t) D_801871FC_ovl5[kind], 4.0f);
+                            func_800AA018(PAIR792C_(D_8018723C_ovl5, D_80187240_ovl5, 0));
+                            if (ovl5_4_idpair_(D_8018723C_ovl5, D_80187240_ovl5, kind * 2 + 1) != 0) {
+                                func_800AA018(PAIR792C_(D_8018723C_ovl5, D_80187240_ovl5, 1));
+                            }
+                        }
+                    } else if (func_800AA934(PAIR792C_(D_8018721C_ovl5, D_80187220_ovl5, 0)) == 0) {
+                        func_800AA608(arg0->data.dobj->firstChild, PAIR792C_(D_8018721C_ovl5, D_80187220_ovl5, 0),
+                                      0.0f, (void *) (uintptr_t) D_801871FC_ovl5[kind], 4.0f);
+                        func_800AA018(PAIR792C_(D_8018721C_ovl5, D_80187220_ovl5, 0));
+                        if (ovl5_4_idpair_(D_8018721C_ovl5, D_80187220_ovl5, kind * 2 + 1) != 0) {
+                            func_800AA018(PAIR792C_(D_8018721C_ovl5, D_80187220_ovl5, 1));
+                        }
+                    }
+                }
+                break;
+            case 1:
+                if (D_8018E420_ovl5 != 0) {
+                    D_800E9C60[omCurrentObj->objId] = 0;
+                    D_800E98E0[omCurrentObj->objId] = 1;
+                } else {
+                    if (kind == 3) {
+                        t = request_track_general(7, 0, 0x70);
+                        D_800E98E0[t] = 0xD;
+                        D_800E9FE0[t].as_u32 = arg1;
+                    }
+                    func_800AA018(PAIR792C_(D_8018727C_ovl5, D_80187280_ovl5, 0));
+                    if (ovl5_4_idpair_(D_8018727C_ovl5, D_80187280_ovl5, kind * 2 + 1) != 0) {
+                        func_800AA018(PAIR792C_(D_8018727C_ovl5, D_80187280_ovl5, 1));
+                    }
+                    while ((arg0->animTimer < 20.0f) && (D_800E9C60[omCurrentObj->objId] != 2)) {
+                        ohSleep(1);
+                    }
+                    if (D_800E9C60[omCurrentObj->objId] != 2) {
+                        func_800AECC0(0.0f);
+                        func_800AED20(0.0f);
+                        t = request_track_general(7, 0, 0x70);
+                        D_800E98E0[t] = 7;
+                        D_800E9C60[t] = func_80165F1C_ovl5(arg1);
+                        D_800E9E20[t] = func_80165AD0_ovl5(arg1);
+                        D_800E9FE0[t].as_u32 = arg1;
+                        for (i = 0; (i < 0xA) && (D_800E9C60[omCurrentObj->objId] != 2);) {
+                            ohSleep(1);
+                            i += 1;
+                        }
+                        func_800AECC0(2.0f);
+                        func_800AED20(2.0f);
+                        if (D_800E9C60[omCurrentObj->objId] != 2) {
+                            while ((func_800AF230() == 0) && (D_800E9C60[omCurrentObj->objId] != 2)) {
+                                ohSleep(1);
+                            }
+                            if (D_800E9C60[omCurrentObj->objId] != 2) {
+                                func_800AA018(PAIR792C_(D_8018721C_ovl5, D_80187220_ovl5, 0));
+                                if (ovl5_4_idpair_(D_8018721C_ovl5, D_80187220_ovl5, kind * 2 + 1) != 0) {
+                                    func_800AA018(PAIR792C_(D_8018721C_ovl5, D_80187220_ovl5, 1));
+                                }
+                                D_800E9C60[omCurrentObj->objId] = 0;
+                                D_800E98E0[omCurrentObj->objId] = 1;
+                            }
+                        }
+                    }
+                }
+                break;
+            case 2:
+                play_sound(0x235);
+                if (D_8018E3C8_ovl5[arg1] == 0) {
+                    if (D_8018E288_ovl5[arg1] != 0) {
+                        func_800BB4E4(arg1, 4, 0x28);
+                    } else {
+                        func_800BB4E4(arg1, 1, 0x3C);
+                    }
+                }
+                func_800AA018(PAIR792C_(D_8018725C_ovl5, D_80187260_ovl5, 0));
+                if (ovl5_4_idpair_(D_8018725C_ovl5, D_80187260_ovl5, kind * 2 + 1) != 0) {
+                    func_800AA018(PAIR792C_(D_8018725C_ovl5, D_80187260_ovl5, 1));
+                }
+                D_800E3210[omCurrentObj->objId] = 0.0f;
+                D_800E3750[omCurrentObj->objId] = -5.0f;
+                D_800E3C90[omCurrentObj->objId] = 50.0f;
+                while (gEntitiesNextPosYArray[omCurrentObj->objId] > -2000.0f) {
+                    ohSleep(1);
+                }
+                t = request_track_general(7, 0, 0x70);
+                D_800E98E0[t] = 0x11;
+                D_800E9FE0[t].as_u32 = arg1;
+                if (D_8018E288_ovl5[arg1] == 0) {
+                    D_8018E3C0_ovl5[arg1] = 0;
+                    func_800AFBB4(0, omCurrentObj);
+                    D_800DF150[omCurrentObj->objId] = NULL;
+                    D_800E3750[omCurrentObj->objId] = 0.0f;
+                    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+                    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+                    curObjSleepForever();
+                }
+                D_800E3750[omCurrentObj->objId] = 0.0f;
+                D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+                D_800E3C90[omCurrentObj->objId] = 65535.0f;
+                func_800AFBB4(0, omCurrentObj);
+                ohSleep(0x14);
+                func_800AFBB4(1, omCurrentObj);
+                func_80166F14_ovl5(arg1);
+                func_801671E8_ovl5(arg1);
+                t = request_track_general(7, 0, 0x70);
+                D_800E98E0[t] = 0xC;
+                D_800E9FE0[t].as_u32 = arg1;
+                D_800E9C60[omCurrentObj->objId] = 0;
+                D_800E98E0[omCurrentObj->objId] = 1;
+                t = request_track_general(7, 0, 0x70);
+                D_800E98E0[t] = 0x10;
+                D_800E9FE0[t].as_u32 = arg1;
+                break;
+            case 3:
+                func_800AA018(PAIR792C_(D_801872BC_ovl5, D_801872C0_ovl5, 0));
+                id = ovl5_4_idpair_(D_801872BC_ovl5, D_801872C0_ovl5, kind * 2 + 1);
+                if (id != 0) {
+                    func_800AA018((void *) (uintptr_t) id);
+                }
+                t = request_track_general(7, 0, 0x70);
+                D_800E98E0[t] = 0xB;
+                D_800E9AA0[t].as_u32 = func_80165F1C_ovl5(arg1);
+                D_800E9FE0[t].as_u32 = arg1;
+                for (i = 0; ((f32) i < 30.0f) && (D_800E9C60[omCurrentObj->objId] != 2);) {
+                    ohSleep(1);
+                    i += 1;
+                }
+                if (D_800E9C60[omCurrentObj->objId] != 2) {
+                    for (i = 0; ((f32) i < 10.0f) && (D_800E9C60[omCurrentObj->objId] != 2);) {
+                        ohSleep(1);
+                        i += 1;
+                    }
+                    D_800E9C60[omCurrentObj->objId] = 0;
+                    D_800E98E0[omCurrentObj->objId] = 1;
+                }
+                break;
+        }
+        ohSleep(1);
+    }
+#undef PAIR792C_
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016792C_ovl5.s")
+#endif
 
 extern u8 D_8018E3C4_ovl5;
 extern u8 D_8018E441_ovl5;
@@ -617,7 +921,63 @@ s32 func_80168A44_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
+#ifdef PORT
+/* CPU chase step: scans the other living players; when one shares this
+ * CPU's column (func_80168A04) or row (func_80168A44), rolls the pursuit
+ * chance (target gets the row/column byte 1 -- byte 11 on the shrunk field
+ * -- everyone else byte 0) and arms the turn-toward action 7..10; a player
+ * on neither axis can trigger the arrived action 4 with byte 2/12. Returns
+ * 1 when an action was armed, else parks the planner in action 11. */
+s32 func_80168B30_ovl5(s32 arg0) {
+    extern u8 D_8018E3D0_ovl5y[] __asm__("D_8018E3D0_ovl5");
+    u8 *rec = &D_8018E3D0_ovl5y[arg0 * 0x14];
+    s32 mycell = func_80165F1C_ovl5(arg0);
+    s32 lvl = D_8018E3C8_ovl5[arg0];
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        s32 cell = func_80165F1C_ovl5(i);
+        u8 roll;
+
+        if ((i == arg0) || (D_8018E3C0_ovl5[i] == 0) || (cell == 0x29A)) {
+            continue;
+        }
+        if (func_80168A04_ovl5(mycell, cell) != 0) {
+            if (i == rec[0]) {
+                roll = ovl5_4_molepers_(lvl * 0xD + ((D_8018E425_ovl5 == 2) ? 0xB : 1));
+            } else {
+                roll = ovl5_4_molepers_(lvl * 0xD);
+            }
+            if (random_soft_s32_range(0x10) < roll) {
+                rec[8] = (cell < mycell) ? 8 : 7;
+                return 1;
+            }
+            continue;
+        }
+        if (func_80168A44_ovl5(mycell, cell) != 0) {
+            if (i == rec[0]) {
+                roll = ovl5_4_molepers_(lvl * 0xD + ((D_8018E425_ovl5 == 2) ? 0xB : 1));
+            } else {
+                roll = ovl5_4_molepers_(lvl * 0xD);
+            }
+            if (random_soft_s32_range(0x10) < roll) {
+                rec[8] = (mycell < cell) ? 9 : 0xA;
+                return 1;
+            }
+            continue;
+        }
+        roll = ovl5_4_molepers_(lvl * 0xD + ((D_8018E425_ovl5 == 2) ? 0xC : 2));
+        if (random_soft_s32_range(0x10) < roll) {
+            rec[8] = 4;
+            return 1;
+        }
+    }
+    rec[8] = 0xB;
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168B30_ovl5.s")
+#endif
 
 typedef struct Unk2Bytes {
     s8 unk0;
@@ -724,7 +1084,73 @@ void func_80168E84_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168E84_ovl5.s")
 #endif
 
+#ifdef PORT
+/* CPU route step chooser: prefers the two planned directions (record bytes
+ * +0x10/+0x11 from func_80168E84_ovl5), then any other direction, first
+ * toward cells whose mole is down, then up-mole cells, each gated on the
+ * difficulty roll (row byte 4); the fallback is a uniformly random
+ * direction. Stores the choice as the pending action and returns it. */
+s32 func_801690F4_ovl5(s32 arg0) {
+    extern u8 D_8018E3D0_ovl5z[] __asm__("D_8018E3D0_ovl5");
+    u8 *rec = &D_8018E3D0_ovl5z[arg0 * 0x14];
+    s32 cell = func_80165F1C_ovl5(arg0);
+    s32 lvl = D_8018E3C8_ovl5[arg0];
+    s32 d1 = rec[0x10];
+    s32 d2 = rec[0x11];
+    s32 c1;
+    s32 c2;
+    s32 i;
+    s32 t;
+
+    c1 = func_8016A61C_ovl5(cell, d1);
+    if ((c1 != 0x29A) && (func_80165948_ovl5(c1) == 0) &&
+        (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+        rec[8] = d1;
+        return d1;
+    }
+    c2 = func_8016A61C_ovl5(cell, d2);
+    if ((c2 != 0x29A) && (func_80165948_ovl5(c2) == 0) &&
+        (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+        rec[8] = d2;
+        return d2;
+    }
+    for (i = 0; i < 3; i++) {
+        if ((i != d1) && (i != d2)) {
+            t = func_8016A61C_ovl5(cell, i);
+            if ((t != 0x29A) && (func_80165948_ovl5(t) == 0) &&
+                (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+                rec[8] = i;
+                return i;
+            }
+        }
+    }
+    if ((c1 != 0x29A) && (func_80165948_ovl5(c1) == 1) &&
+        (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+        rec[8] = d1;
+        return d1;
+    }
+    if ((c2 != 0x29A) && (func_80165948_ovl5(c2) == 1) &&
+        (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+        rec[8] = d2;
+        return d2;
+    }
+    for (i = 0; i < 3; i++) {
+        if ((i != d1) && (i != d2)) {
+            t = func_8016A61C_ovl5(cell, i);
+            if ((t != 0x29A) && (func_80165948_ovl5(t) == 1) &&
+                (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+                rec[8] = i;
+                return i;
+            }
+        }
+    }
+    t = random_soft_s32_range(4);
+    rec[8] = t;
+    return t;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_801690F4_ovl5.s")
+#endif
 
 s32 func_801695C8_ovl5(void) {
     s32 count = 0;
@@ -738,11 +1164,246 @@ s32 func_801695C8_ovl5(void) {
     return count;
 }
 
+#ifdef PORT
+/* CPU target picker: lists the other living players and either returns a
+ * uniformly random one, or -- on a difficulty roll (row byte 10), when a
+ * human is still alive -- a random human player. (The ROM's nearest/most-
+ * stock/least-stock modes 0..2 are present in its jump table but
+ * unreachable: the selector only ever produces 3 or 4.) */
+u8 func_8016965C_ovl5(s32 arg0) {
+    s32 cand[4];
+    s32 hum[4];
+    s32 n = 0;
+    s32 m = 0;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if ((D_8018E3C0_ovl5[i] != 0) && (i != arg0)) {
+            cand[n] = i;
+            n += 1;
+        }
+    }
+    if ((random_soft_s32_range(0x10) < ovl5_4_molepers_(D_8018E3C8_ovl5[arg0] * 0xD + 10)) &&
+        (func_801695C8_ovl5() != 0)) {
+        for (i = 0; i < n; i++) {
+            if (D_8018E3C8_ovl5[cand[i]] == 0) {
+                hum[m] = cand[i];
+                m += 1;
+            }
+        }
+        if (m == 0) {
+            return cand[0];
+        }
+        return hum[random_soft_s32_range(m)];
+    }
+    return cand[random_soft_s32_range(n)];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016965C_ovl5.s")
+#endif
 
+#ifdef PORT
+/* Whack-a-neighbour reaction (rolled each odd frame the CPU stands on an
+ * up-mole): scans the four adjacent cells for a mole that is down (state 0)
+ * -- or, failing that, up (state 1) -- picks the nearest, computes the goal
+ * coordinate on that axis and arms the walk action toward it. */
+s32 func_80169D90_ovl5(s32 arg0, s32 arg1) {
+    extern u8 D_8018E3D0_ovl5x[] __asm__("D_8018E3D0_ovl5");
+    f32 sqrtf(f32);
+    Vector me;
+    Vector cp;
+    s32 cells[4];
+    s32 states[4];
+    s32 list[4];
+    f32 dist[4];
+    s32 n;
+    s32 best;
+    s32 dir;
+    f32 goal;
+    s32 i;
+
+    func_801659DC_ovl5(&me, arg0);
+    for (i = 0; i < 4; i++) {
+        cells[i] = func_8016A61C_ovl5(arg1, i);
+        if (cells[i] != 0x29A) {
+            states[i] = func_80165948_ovl5(cells[i]);
+        } else {
+            states[i] = 2;
+        }
+    }
+    n = 0;
+    for (i = 0; i < 4; i++) {
+        if (states[i] == 0) {
+            list[n] = i;
+            n += 1;
+        }
+    }
+    if (n == 0) {
+        for (i = 0; i < 4; i++) {
+            if (states[i] == 1) {
+                list[n] = i;
+                n += 1;
+            }
+        }
+        if (n == 0) {
+            return 0;
+        }
+    }
+    for (i = 0; i < n; i++) {
+        f32 dx;
+        f32 dz;
+
+        func_8016596C_ovl5(&cp, cells[list[i]]);
+        dx = cp.x - me.x;
+        dz = cp.z - me.z;
+        dist[i] = sqrtf((dx * dx) + (dz * dz));
+    }
+    best = 0;
+    for (i = 1; i < n; i++) {
+        if (dist[i] < dist[best]) {
+            best = i;
+        }
+    }
+    dir = list[best];
+    goal = func_80168804_ovl5((GObj *) omCurrentObj, arg1, dir);
+    if (goal == 99999.0f) {
+        return 0;
+    }
+    D_8018E3D0_ovl5x[arg0 * 0x14 + 8] = dir;
+    *(f32 *) &D_8018E3D0_ovl5x[arg0 * 0x14 + 0xC] = goal;
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80169D90_ovl5.s")
+#endif
 
+#ifdef PORT
+/* Per-tick CPU brain for mole player arg0 (record D_8018E3D0_ovl5[arg0],
+ * 0x14 bytes: +0 target, +4 wait timer, +8 action, +0xC goal coord, +0x10/11
+ * planned dirs): ticks the wait timer, rolls the whack chance from the
+ * difficulty rows, and steps the action machine (0-3 walk dir, 4 arrived,
+ * 6 whack, 7-10 turn-then-walk, 11 plan route, 12 pick goal coordinate).
+ *
+ * The ROM gates the walk cases on the garbage $v0 func_80167374_ovl5 leaves
+ * behind, which is 1 exactly when the step was reverted because it bumped
+ * another racer; the PORT recovers that signal by comparing the position
+ * before and after the call (a kept step always moves by +-25). */
+void func_8016A2B8_ovl5(s32 arg0) {
+    extern u8 D_8018E3D0_ovl5x[] __asm__("D_8018E3D0_ovl5");
+    u8 *rec = &D_8018E3D0_ovl5x[arg0 * 0x14];
+    s32 cell;
+    s32 lvl = D_8018E3C8_ovl5[arg0];
+    s32 dir;
+    s32 t;
+
+    cell = func_80165F1C_ovl5(arg0);
+    if (*(s32 *) (rec + 4) != 0) {
+        *(s32 *) (rec + 4) -= 1;
+    } else {
+        rec[0] = func_8016965C_ovl5(arg0);
+        if (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 9)) {
+            rec[8] = 5;
+            *(s32 *) (rec + 4) = random_soft_s32_range(0xA);
+        } else {
+            rec[8] = 6;
+        }
+    }
+    if (((D_8018E264_ovl5 % 2) != 0) && (func_80165948_ovl5(cell) == 1)) {
+        if (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 5)) {
+            func_80169D90_ovl5(arg0, cell);
+        }
+    }
+    while (1) {
+        switch (rec[8]) {
+            case 0:
+            case 1:
+            case 2:
+            case 3: {
+                s32 objId;
+                f32 ox;
+                f32 oz;
+                s32 blocked;
+
+                dir = rec[8];
+                objId = D_8018E268_ovl5[arg0];
+                ox = gEntitiesNextPosXArray[objId];
+                oz = gEntitiesNextPosZArray[objId];
+                func_80167374_ovl5(arg0, dir);
+                blocked = (gEntitiesNextPosXArray[objId] == ox) && (gEntitiesNextPosZArray[objId] == oz);
+                if (blocked) {
+                    if (func_80168928_ovl5(arg0, dir, *(f32 *) (rec + 0xC)) != 0) {
+                        *(s32 *) (rec + 4) = 0;
+                        return;
+                    }
+                    *(s32 *) (rec + 4) = 1;
+                    return;
+                }
+                *(s32 *) (rec + 4) = 0;
+                return;
+            }
+            case 4:
+                D_800E9C60[omCurrentObj->objId] = 1;
+                rec[8] = 0xB;
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 6:
+                func_80168B30_ovl5(arg0);
+                *(s32 *) (rec + 4) = 1;
+                continue;
+            case 7:
+                if (func_80165AD0_ovl5(arg0) == 0) {
+                    rec[8] = 4;
+                } else {
+                    func_80167374_ovl5(arg0, 0);
+                }
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 8:
+                if (func_80165AD0_ovl5(arg0) == 1) {
+                    rec[8] = 4;
+                } else {
+                    func_80167374_ovl5(arg0, 1);
+                }
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 9:
+                if (func_80165AD0_ovl5(arg0) == 2) {
+                    rec[8] = 4;
+                } else {
+                    func_80167374_ovl5(arg0, 2);
+                }
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 10:
+                if (func_80165AD0_ovl5(arg0) == 3) {
+                    rec[8] = 4;
+                } else {
+                    func_80167374_ovl5(arg0, 3);
+                }
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 11:
+                func_80168E84_ovl5(arg0);
+                rec[8] = 0xC;
+                *(s32 *) (rec + 4) = 1;
+                /* fallthrough into the 0xC dispatch */
+            case 12:
+                t = func_801690F4_ovl5(arg0);
+                *(f32 *) (rec + 0xC) = func_80168804_ovl5((GObj *) omCurrentObj, cell, t);
+                if (*(f32 *) (rec + 0xC) == 99999.0f) {
+                    *(s32 *) (rec + 4) = 0;
+                    return;
+                }
+                *(s32 *) (rec + 4) = 1;
+                continue;
+            default:
+                return;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016A2B8_ovl5.s")
+#endif
 
 s32 func_8016A61C_ovl5(s32 arg0, s32 arg1) {
     if (func_80165B84_ovl5(arg0) != 0) {
@@ -780,9 +1441,297 @@ s32 func_8016A6B0_ovl5(s32 arg0) {
     return 0;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016A774_ovl5.s")
+#ifdef PORT
+/* One leg of the field-shrink sweeper (helper for func_8016A774_ovl5):
+ * teleports the sweeper to grid cell `cell`, aims it (axis selects
+ * D_800E3050/x vs D_800E33D0/z, vel is +-140), whacks every mole cell it
+ * crosses (state 2 cells get the flat-mole proc, others the bonk proc),
+ * and returns when the sweeper leaves the grid; then zeroes the motion. */
+static void ovl5_4_sweep_leg_(s32 cell, s32 axis, f32 vel) {
+    Vector v;
+    s32 cur;
+    s32 t;
 
+    func_800B2340(&v, (struct DObj *) (uintptr_t) func_801658C4_ovl5(cell), D_8018E2A0_ovl5[cell]);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = v.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = v.z;
+    if (axis == 0) {
+        D_800E3050[omCurrentObj->objId] = vel;
+    } else {
+        D_800E33D0[omCurrentObj->objId] = vel;
+    }
+    t = D_8018E2A0_ovl5[cell];
+    if (D_800E98E0[t] == 2) {
+        assign_new_process_entry(gEntityGObjProcessArray[t], func_801668E0_ovl5);
+    } else {
+        D_800E98E0[t] = 1;
+        assign_new_process_entry(gEntityGObjProcessArray[t], func_8016689C_ovl5);
+        play_sound(0x10A);
+    }
+    cur = cell;
+    while (1) {
+        s32 hit;
+
+        v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        hit = func_80166054_ovl5(v);
+        if (hit == 0x29A) {
+            break;
+        }
+        if (hit != cur) {
+            t = D_8018E2A0_ovl5[hit];
+            if (D_800E98E0[t] == 2) {
+                assign_new_process_entry(gEntityGObjProcessArray[t], func_801668E0_ovl5);
+            } else {
+                D_800E98E0[t] = 1;
+                assign_new_process_entry(gEntityGObjProcessArray[t], func_8016689C_ovl5);
+                play_sound(0x10A);
+            }
+            cur = hit;
+        }
+        ohSleep(1);
+    }
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3590[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E33D0[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3210[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+}
+
+/* Field-shrink sweeper thread (arg1 = 0 first shrink to the 6x6 ring,
+ * arg1 = 1 second shrink to 4x4, gated 135 seconds after the first):
+ * sweeps the four sides of the outgoing ring, then flattens every cell of
+ * that ring (state 2), buries CPU corpses, and marks the new field size in
+ * D_8018E424/D_8018E425 before killing its own track. */
+void func_8016A774_ovl5(GObj *arg0, s32 arg1) {
+    extern s32 D_8018E43C_ovl5;
+    extern s32 D_8018E260_ovl5;
+    s32 i;
+    s32 a;
+    s32 b;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    if (arg1 == 0) {
+        D_8018E43C_ovl5 = D_8018E264_ovl5;
+    }
+    if (arg1 == 1) {
+        while ((f32) D_8018E264_ovl5 < ((f32) D_8018E43C_ovl5 + 135.0f)) {
+            ohSleep(1);
+        }
+    }
+    if (D_8018E260_ovl5 != 0) {
+        func_800B1900((u16) omCurrentObj->objId);
+    }
+    ovl5_4_sweep_leg_((arg1 == 0) ? 0 : 9, 0, 140.0f);
+    ovl5_4_sweep_leg_((arg1 == 0) ? 0xF : 0x16, 1, 140.0f);
+    ovl5_4_sweep_leg_((arg1 == 0) ? 0x3E : 0x35, 0, -140.0f);
+    ovl5_4_sweep_leg_((arg1 == 0) ? 0x30 : 0x29, 1, -140.0f);
+    ohSleep(0xB);
+    play_sound(0x108);
+    for (i = 0; i < 4; i++) {
+        if ((D_8018E3C8_ovl5[i] == 0) && (D_8018E288_ovl5[i] != 0)) {
+            func_800BB4E4(i, 6, 0x10);
+        }
+    }
+    a = (arg1 == 0) ? 0 : 9;
+    b = (arg1 == 0) ? 7 : 0xE;
+    for (i = a; i <= b; i += 1) {
+        D_800E98E0[D_8018E2A0_ovl5[i]] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[D_8018E2A0_ovl5[i]], func_801668E0_ovl5);
+    }
+    a = (arg1 == 0) ? 0xF : 0x16;
+    b = (arg1 == 0) ? 0x3F : 0x36;
+    for (i = a; i <= b; i += 8) {
+        D_800E98E0[D_8018E2A0_ovl5[i]] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[D_8018E2A0_ovl5[i]], func_801668E0_ovl5);
+    }
+    a = (arg1 == 0) ? 0x3E : 0x35;
+    b = (arg1 == 0) ? 0x38 : 0x31;
+    for (i = a; i >= b; i -= 1) {
+        D_800E98E0[D_8018E2A0_ovl5[i]] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[D_8018E2A0_ovl5[i]], func_801668E0_ovl5);
+    }
+    a = (arg1 == 0) ? 0x30 : 0x29;
+    b = (arg1 == 0) ? 8 : 0x11;
+    for (i = a; i >= b; i -= 8) {
+        D_800E98E0[D_8018E2A0_ovl5[i]] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray[D_8018E2A0_ovl5[i]], func_801668E0_ovl5);
+    }
+    if (arg1 == 0) {
+        D_8018E424_ovl5 = 2;
+    } else {
+        D_8018E425_ovl5 = 2;
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016A774_ovl5.s")
+#endif
+
+#ifdef PORT
+/* Rolling shockwave spawned when a mole is bonked hard: hops to the next
+ * grid cell in direction arg2 (0/1 along z, 2/3 along x) from cell arg1,
+ * skips off the board edge, then rides the grid retiming every mole it
+ * passes to the "popped" animation (state 1 + anim frame for difficulty
+ * arg3); each racer collision speeds it up and can bounce it back the way
+ * it came, and when it leaves the grid it parks and expires. */
+void func_8016B754_ovl5(GObj *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Vector v;
+    s32 dir = arg2;
+    s32 step;
+    s32 cell;
+    s32 cur;
+    s32 last;
+    s32 bounces = 0;
+    s32 i;
+    s32 t;
+
+    play_sound(0x107);
+    if (((s32 (*)(s32, s32)) func_80165B84_ovl5)(arg1, dir) != 0) {
+        func_800B1900((u16) omCurrentObj->objId);
+    }
+    switch (dir) {
+        case 0:
+            step = 8;
+            break;
+        case 1:
+            step = -8;
+            break;
+        case 2:
+            step = 1;
+            break;
+        case 3:
+            step = -1;
+            break;
+        default:
+            step = 1;
+            break;
+    }
+    cell = arg1 + step;
+    if (func_80166D48_ovl5(cell) != 0) {
+        func_800B1900((u16) omCurrentObj->objId);
+    }
+    func_800A9864((void *) 0x3009E, 0x1869F, 0x10);
+    func_800A9F98(0x3008D, (f32) func_8016A69C_ovl5(arg3));
+    animResetTextureAnimation(arg0);
+    func_800AA018((void *) 0x3008E);
+    func_800B2340(&v, (struct DObj *) (uintptr_t) func_801658C4_ovl5(cell), D_8018E2A0_ovl5[cell]);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = v.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = v.z;
+    switch (dir) {
+        case 0:
+            gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+            D_800E33D0[omCurrentObj->objId] = 120.0f;
+            break;
+        case 1:
+            gEntitiesAngleYArray[omCurrentObj->objId] = 3.141592741f;
+            D_800E33D0[omCurrentObj->objId] = -120.0f;
+            break;
+        case 3:
+            gEntitiesAngleYArray[omCurrentObj->objId] = 4.712388992f;
+            D_800E3050[omCurrentObj->objId] = -120.0f;
+            break;
+        case 2:
+            gEntitiesAngleYArray[omCurrentObj->objId] = 1.570796371f;
+            D_800E3050[omCurrentObj->objId] = 120.0f;
+            break;
+    }
+    cur = cell;
+    v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    t = func_80166054_ovl5(v);
+    if (t == 0x29A) {
+        func_800B1900((u16) omCurrentObj->objId);
+    }
+    last = t;
+    D_800E98E0[D_8018E2A0_ovl5[t]] = 1;
+    D_800E9AA0[D_8018E2A0_ovl5[t]].as_u32 = arg3;
+    while (1) {
+        s32 hit;
+
+        v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        hit = func_80166054_ovl5(v);
+        if (hit == 0x29A) {
+            break;
+        }
+        if (hit != last) {
+            if (func_8016A6B0_ovl5(hit) != 0) {
+                f32 mul;
+                s32 c;
+
+                bounces += 1;
+                mul = (bounces >= 3) ? 2.0f : (((f32) bounces * 0.5f) + 1.0f);
+                for (c = cur; c != (last + step); c += step) {
+                    D_800E98E0[D_8018E2A0_ovl5[c]] = 0;
+                }
+                switch (dir) {
+                    case 1:
+                        dir = 0;
+                        gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+                        step = 8;
+                        D_800E33D0[omCurrentObj->objId] = 120.0f * mul;
+                        break;
+                    case 0:
+                        gEntitiesAngleYArray[omCurrentObj->objId] = 3.141592741f;
+                        dir = 1;
+                        step = -8;
+                        D_800E33D0[omCurrentObj->objId] = -120.0f * mul;
+                        break;
+                    case 2:
+                        gEntitiesAngleYArray[omCurrentObj->objId] = 4.712388992f;
+                        dir = 3;
+                        step = -1;
+                        D_800E3050[omCurrentObj->objId] = -120.0f * mul;
+                        break;
+                    case 3:
+                        gEntitiesAngleYArray[omCurrentObj->objId] = 1.570796371f;
+                        dir = 2;
+                        step = 1;
+                        D_800E3050[omCurrentObj->objId] = 120.0f * mul;
+                        break;
+                }
+                last = hit;
+                cur = hit;
+            } else {
+                D_800E98E0[D_8018E2A0_ovl5[hit]] = 1;
+                D_800E9AA0[D_8018E2A0_ovl5[hit]].as_u32 = arg3;
+                last = hit;
+            }
+        }
+        ohSleep(1);
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    func_800AFBB4(0, omCurrentObj);
+    for (i = cur; i != (last + step); i += step) {
+        t = D_8018E2A0_ovl5[i];
+        if (D_800DE350[t]->animTimer != 0.0f) {
+            D_800E98E0[t] = 2;
+        }
+        {
+            s32 w;
+
+            for (w = 0; w < 5; w++) {
+                ohSleep(1);
+            }
+        }
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016B754_ovl5.s")
+#endif
 
 void func_800B1900(u16);
 
@@ -897,7 +1846,75 @@ void func_8016C410_ovl5(GObj *arg0) {
         gEntitiesAngleYArray[D_8018E268_ovl5[D_800E98E0[omCurrentObj->objId]]];
 }
 
+#ifdef PORT
+/* Popped-mole timer companion for player arg1: shows the mole-with-flag
+ * model at animation frame arg1, blink-counts while the round intro flag
+ * D_8018E420_ovl5 is up, then blinks for up to 59 frames or until the
+ * player's racer falls (state 2), killing its own track when done. */
+void func_8016C508_ovl5(GObj *arg0, s32 arg1) {
+    extern u32 D_8018737C_ovl5[];
+    extern u32 D_80187380_ovl5[];
+    void func_8016C8C0_ovl5(GObj *);
+    s32 i;
+    s32 n;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+    D_800DF150[omCurrentObj->objId] = func_8016C8C0_ovl5;
+    func_800A9864((void *) (uintptr_t) D_8018737C_ovl5[0], 0x1869F, 0x10);
+    func_800A9F98((s32) D_80187380_ovl5[0], (f32) arg1);
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    if (D_8018E420_ovl5 != 0) {
+        i = 0;
+        while (D_8018E420_ovl5 != 0) {
+            i += 1;
+            if ((i % 5) != 0) {
+                if (((i / 5) % 2) != 0) {
+                    func_800AFBB4(0, omCurrentObj);
+                } else {
+                    func_800AFBB4(1, omCurrentObj);
+                    if (D_8018E3C8_ovl5[arg1] != 0) {
+                        if (((i / 5) % 4) != 0) {
+                            func_800A9F98((s32) D_80187380_ovl5[0], (f32) arg1);
+                        } else {
+                            func_800A9F98((s32) D_80187380_ovl5[0], 4.0f);
+                        }
+                    }
+                }
+            }
+            ohSleep(1);
+        }
+        func_800B1900((u16) omCurrentObj->objId);
+    }
+    i = 0;
+    n = 0x3B;
+    if (D_800E9C60[D_8018E268_ovl5[arg1]] != 2) {
+        do {
+            i += 1;
+            if ((i % 5) != 0) {
+                if (((i / 5) % 2) != 0) {
+                    func_800AFBB4(0, omCurrentObj);
+                } else {
+                    func_800AFBB4(1, omCurrentObj);
+                    if (D_8018E3C8_ovl5[arg1] != 0) {
+                        if (((i / 5) % 4) != 0) {
+                            func_800A9F98((s32) D_80187380_ovl5[0], (f32) arg1);
+                        } else {
+                            func_800A9F98((s32) D_80187380_ovl5[0], 4.0f);
+                        }
+                    }
+                }
+            }
+            ohSleep(1);
+            n -= 1;
+        } while ((n != 0) && (D_800E9C60[D_8018E268_ovl5[arg1]] != 2));
+    }
+    func_800B1900((u16) omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016C508_ovl5.s")
+#endif
 
 void func_8016C8C0_ovl5(GObj *arg0) {
     s32 track;
@@ -1053,7 +2070,101 @@ void func_8016CC88_ovl5(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016CC88_ovl5.s")
 #endif
 
+#ifdef PORT
+/* Player name-tag HUD thread for mole player arg1: spawns the tag frame at
+ * D_80186C88_ovl5[arg1] tinted by the difficulty row (colors are stored as
+ * f32 in D_80186CA8/D_80186CF0) plus the name sprite from D_80186DB8, then
+ * alternates the tint while the player's racer is fallen (state 2), and
+ * greys the tag out for good when the player runs out of stock. */
+void func_8016CFB0_ovl5(GObj *arg0, s32 arg1) {
+    extern struct UnkStruct8015C740 D_80186C68_ovl5;
+    extern f32 D_80186C88x_ovl5[] __asm__("D_80186C88_ovl5");
+    extern f32 D_80186CA8_ovl5[];
+    extern f32 D_80186CF0_ovl5[];
+    extern void *D_80186DB8_ovl5[];
+    SPObj *tag;
+    s32 lvl;
+    s32 i;
+    s32 j;
+    s32 k;
+
+#define TAG_FLASH_() \
+    do { \
+        if ((j % 2) != 0) { \
+            tag->primColorRed = 0xFF; \
+            tag->primColorGreen = 0xFF; \
+            tag->primColorBlue = 0xFF; \
+            tag->envColorRed = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 0]; \
+            tag->envColorGreen = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 1]; \
+            tag->envColorBlue = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 2]; \
+        } else { \
+            tag->primColorRed = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 0]; \
+            tag->primColorGreen = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 1]; \
+            tag->primColorBlue = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 2]; \
+            tag->envColorRed = (u8) (u32) D_80186CF0_ovl5[lvl * 3 + 0]; \
+            tag->envColorGreen = (u8) (u32) D_80186CF0_ovl5[lvl * 3 + 1]; \
+            tag->envColorBlue = (u8) (u32) D_80186CF0_ovl5[lvl * 3 + 2]; \
+        } \
+    } while (0)
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DDA90[omCurrentObj->objId] = 0x24;
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
+    tag = func_8015C740_ovl5(arg0, &D_80186C68_ovl5);
+    tag->xOffset = D_80186C88x_ovl5[arg1 * 2];
+    tag->yOffset = D_80186C88x_ovl5[arg1 * 2 + 1];
+    lvl = func_8016A69C_ovl5(arg1);
+    tag->primColorRed = 0xFF;
+    tag->primColorGreen = 0xFF;
+    tag->primColorBlue = 0xFF;
+    tag->envColorRed = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 0];
+    tag->envColorGreen = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 1];
+    tag->envColorBlue = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 2];
+    func_8015C740_ovl5(arg0, D_80186DB8_ovl5[arg1]);
+    while (1) {
+        if (D_8018E288_ovl5[arg1] == 0) {
+            j = 0;
+            for (i = 0; i != 0xA; i++) {
+                TAG_FLASH_();
+                ohSleep(4);
+                j += 1;
+            }
+            tag->primColorRed = 0xC8;
+            tag->primColorGreen = 0xC8;
+            tag->primColorBlue = 0xC8;
+            tag->envColorRed = (u8) (u32) D_80186CA8_ovl5[15];
+            tag->envColorGreen = (u8) (u32) D_80186CA8_ovl5[16];
+            tag->envColorBlue = (u8) (u32) D_80186CA8_ovl5[17];
+            curObjSleepForever();
+        }
+        if (D_800E9C60[D_8018E268_ovl5[arg1]] == 2) {
+            j = 0;
+            do {
+                TAG_FLASH_();
+                ohSleep(4);
+                j += 1;
+            } while (D_800E9C60[D_8018E268_ovl5[arg1]] == 2);
+            k = 0;
+            do {
+                TAG_FLASH_();
+                ohSleep(4);
+                k += 1;
+                j += 1;
+            } while ((D_800E9C60[D_8018E268_ovl5[arg1]] != 2) && (k != 5));
+            tag->primColorRed = 0xFF;
+            tag->primColorGreen = 0xFF;
+            tag->primColorBlue = 0xFF;
+            tag->envColorRed = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 0];
+            tag->envColorGreen = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 1];
+            tag->envColorBlue = (u8) (u32) D_80186CA8_ovl5[lvl * 3 + 2];
+        }
+        ohSleep(1);
+    }
+#undef TAG_FLASH_
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016CFB0_ovl5.s")
+#endif
 
 void func_8016E650_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 #ifdef PORT
@@ -1401,7 +2512,56 @@ s32 func_8016F3E8_ovl5(s32 arg0) {
     return (arg0 / 30) / 60;
 }
 
+#ifdef PORT
+/* Round-clock HUD thread: redraws min / sec / frame digit sprites from
+ * D_8018E264_ovl5 every frame at the offsets in D_80187114..D_80187134,
+ * relative to the clock panel descriptor D_801870B4_ovl5 (capped at
+ * 9:59.99 once the count passes 0x464E). */
+void func_8016F40C_ovl5(GObj *arg0) {
+    extern f32 D_80187114_ovl5[];
+    extern f32 D_8018711C_ovl5[];
+    extern f32 D_80187124_ovl5[];
+    extern f32 D_8018712C_ovl5[];
+    extern f32 D_80187134_ovl5[];
+    s32 frames;
+    s32 secs;
+    s32 mins;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
+    while (1) {
+        func_800ACBDC(arg0);
+        if (D_8018E264_ovl5 >= 0x464F) {
+            frames = 0x63;
+            secs = 0x3B;
+            mins = 9;
+        } else {
+            frames = func_8016F3A8_ovl5(D_8018E264_ovl5);
+            secs = func_8016F3C4_ovl5(D_8018E264_ovl5);
+            mins = func_8016F3E8_ovl5(D_8018E264_ovl5);
+        }
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, frames % 10,
+                           (s32) (D_8018712C_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_8018712C_ovl5[1] + D_801870B4_ovl5.yOffset));
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, frames / 10,
+                           (s32) (D_80187134_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_80187134_ovl5[1] + D_801870B4_ovl5.yOffset));
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, secs % 10,
+                           (s32) (D_8018711C_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_8018711C_ovl5[1] + D_801870B4_ovl5.yOffset));
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, secs / 10,
+                           (s32) (D_80187124_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_80187124_ovl5[1] + D_801870B4_ovl5.yOffset));
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, mins,
+                           (s32) (D_80187114_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_80187114_ovl5[1] + D_801870B4_ovl5.yOffset));
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016F40C_ovl5.s")
+#endif
 
 void func_8016F730_ovl5(void) {
     func_800BB3F0();

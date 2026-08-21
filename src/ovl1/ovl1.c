@@ -4269,6 +4269,90 @@ block_23:
     arg1->unk4 = (spDC * sp6C) + ((spB8[1] * temp_f20) + (spCC * temp_f22));
     arg1->unk8 = (spE0 * sp6C) + ((spB8[2] * temp_f20) + (spD0 * temp_f22));
 }
+#elif defined(PORT)
+/* Accumulate the local transform of arg2's DObj chain (chain roots carry
+ * the sentinel parent == 1, same as the emitter-track walkers above):
+ * per node scale * rotation * translation from the DObj itself, then the
+ * optional DObjDynamicStore records in kinds[] order -- native record
+ * sizes, exactly as omDObjAddMtx walks them in object_manager.c. arg0
+ * gets the accumulated translation row; arg1 is transformed in place by
+ * the three column-normalized basis vectors (row-vector convention). */
+#include "main/lbmatrix.h"
+
+void func_800A0558(f32 *arg0, f32 *arg1, struct DObj *arg2) {
+    Mat4 acc;
+    Mat4 tmp;
+    struct DObj *node = arg2;
+    f32 vx, vy, vz;
+
+    guMtxIdentF(acc);
+    do {
+        if (node->scale.v.x != 1.0f || node->scale.v.y != 1.0f || node->scale.v.z != 1.0f) {
+            HS64_MkScaleMtxF(tmp, node->scale.v.x, node->scale.v.y, node->scale.v.z);
+            guMtxCatF(acc, tmp, acc);
+        }
+        if (node->angle.v.x != 0.0f || node->angle.v.y != 0.0f || node->angle.v.z != 0.0f) {
+            HS64_MkRotationMtxF(tmp, node->angle.v.x, node->angle.v.y, node->angle.v.z);
+            guMtxCatF(acc, tmp, acc);
+        }
+        if (node->pos.v.x != 0.0f || node->pos.v.y != 0.0f || node->pos.v.z != 0.0f) {
+            HS64_MkTranslateMtxF(tmp, node->pos.v.x, node->pos.v.y, node->pos.v.z);
+            guMtxCatF(acc, tmp, acc);
+        }
+        if (node->unk4C != NULL) {
+            uintptr_t csr = (uintptr_t) node->unk4C->data;
+            OMMtxFloat3 *translate = NULL;
+            OMMtxFloat4 *rotate = NULL;
+            OMMtxFloat3 *scale = NULL;
+            s32 i;
+
+            for (i = 0; i < 3; i++) {
+                switch (node->unk4C->kinds[i]) {
+                    case 0:
+                        break;
+                    case 1:
+                        translate = (OMMtxFloat3 *) csr;
+                        csr += sizeof(OMMtxFloat3);
+                        break;
+                    case 2:
+                        rotate = (OMMtxFloat4 *) csr;
+                        csr += sizeof(OMMtxFloat4);
+                        break;
+                    case 3:
+                        scale = (OMMtxFloat3 *) csr;
+                        csr += sizeof(OMMtxFloat3);
+                        break;
+                }
+            }
+            if (scale != NULL && (scale->v.x != 1.0f || scale->v.y != 1.0f || scale->v.z != 1.0f)) {
+                HS64_MkScaleMtxF(tmp, scale->v.x, scale->v.y, scale->v.z);
+                guMtxCatF(acc, tmp, acc);
+            }
+            if (rotate != NULL && (rotate->v.x != 0.0f || rotate->v.y != 0.0f || rotate->v.z != 0.0f)) {
+                HS64_MkRotationMtxF(tmp, rotate->v.x, rotate->v.y, rotate->v.z);
+                guMtxCatF(acc, tmp, acc);
+            }
+            if (translate != NULL && (translate->v.x != 0.0f || translate->v.y != 0.0f || translate->v.z != 0.0f)) {
+                HS64_MkTranslateMtxF(tmp, translate->v.x, translate->v.y, translate->v.z);
+                guMtxCatF(acc, tmp, acc);
+            }
+        }
+        node = node->parent;
+    } while (node != (struct DObj *) 1);
+
+    arg0[0] = acc[3][0];
+    arg0[1] = acc[3][1];
+    arg0[2] = acc[3][2];
+    vx = arg1[0];
+    vy = arg1[1];
+    vz = arg1[2];
+    guNormalize(&acc[0][0], &acc[1][0], &acc[2][0]);
+    guNormalize(&acc[0][1], &acc[1][1], &acc[2][1]);
+    guNormalize(&acc[0][2], &acc[1][2], &acc[2][2]);
+    arg1[0] = (acc[2][0] * vz) + ((acc[0][0] * vx) + (acc[1][0] * vy));
+    arg1[1] = (acc[2][1] * vz) + ((acc[0][1] * vx) + (acc[1][1] * vy));
+    arg1[2] = (acc[2][2] * vz) + ((acc[0][2] * vx) + (acc[1][2] * vy));
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A0558.s")
 #endif

@@ -536,6 +536,52 @@ void func_80220280_ovl19(GObj *arg0) {
     func_801230E8(0x203D5, 0x203D6, 1);
     curObjSleepForever();
 }
+#elif defined(PORT)
+/* PORT: behavioral port of the MIPS_TO_C draft above (verified against
+ * asm/nonmatchings/ovl19/helper/func_80220280_ovl19.s). Pit-of-Doom board
+ * setup: registers the per-entity script table D_8022FAB8_ovl19 (native
+ * pointer into the widened D_800E0650 cell) and the func_8022045C_ovl19
+ * per-frame hook, rolls three DISTINCT random digits 0..6 into the
+ * D_800D6F10+8/+0xC/+0x10 cells once per game (D_800D6E64 guard), spawns
+ * three tracks via func_8021E2D0_ovl19(3,2) tagging each with its index in
+ * D_800EC2E0, then places/scales the object and loads its geo + name call. */
+void func_80220280_ovl19(GObj *arg0) {
+    extern s8 D_8022FAB8_ovl19[];
+    extern s32 D_800D6F18;
+    extern u32 D_800D71F8;
+    void func_8022045C_ovl19(s32);
+    s32 temp;
+
+    func_8021E184_ovl19();
+    D_800E0650[omCurrentObj->objId] = (s32 *) D_8022FAB8_ovl19;
+    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_8022045C_ovl19;
+    if (D_800D6E64 == 0) {
+        (&D_800D6F18)[0] = random_soft_s32_range(7);
+        do {
+            (&D_800D6F18)[1] = random_soft_s32_range(7);
+        } while ((&D_800D6F18)[0] == (&D_800D6F18)[1]);
+        do {
+            (&D_800D6F18)[2] = random_soft_s32_range(7);
+        } while (((&D_800D6F18)[0] == (&D_800D6F18)[2]) || ((&D_800D6F18)[1] == (&D_800D6F18)[2]));
+        D_800D6E64 = 1;
+    }
+    temp = func_8021E2D0_ovl19(3, 2);
+    D_800D71F8 = temp;
+    D_800EC2E0[temp].as_s32 = 0;
+    temp = func_8021E2D0_ovl19(3, 2);
+    D_800D71F8 = temp;
+    D_800EC2E0[temp].as_s32 = 1;
+    temp = func_8021E2D0_ovl19(3, 2);
+    D_800D71F8 = temp;
+    D_800EC2E0[temp].as_s32 = 2;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 140.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x2006F, 0x27, 0x10);
+    func_801230E8(0x203D5, 0x203D6, 1);
+    curObjSleepForever();
+}
 #else
     #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_80220280_ovl19.s")
 #endif

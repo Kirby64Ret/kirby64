@@ -68,7 +68,38 @@ void func_801EF9B0_ovl10(GObj *arg0) {
     }
 }
 
+#ifdef PORT
+void func_801EFC58_ovl10(GObj *);
+
+/* Intro drop variant of func_801EF790: same setup (damage callback, shared
+ * ovl7 anim list, facing taken from the raw D_800E0D50 parent index), but
+ * with a 10.8 up / -0.3 gravity arc, X drift back toward the track origin
+ * over 60 ticks, and func_801EFC58 as the per-frame hit poll. */
+void func_801EFA38_ovl10(s32 arg0) {
+    D_800DEF90[omCurrentObj->objId] = func_800B7790;
+    D_800E8E60[omCurrentObj->objId] = 1;
+    D_800E6A10[omCurrentObj->objId] = D_800E0D50[omCurrentObj->objId];
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801CA04C_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801EFC58_ovl10;
+    func_800AA018(0x105F9);
+    func_800AA018(0x105FA);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 10.8f;
+    D_800E3750[omCurrentObj->objId] = -0.3f;
+    D_800E3050[omCurrentObj->objId] = -(gEntitiesNextPosXArray[omCurrentObj->objId] / 60.0f);
+    ohSleep(0x3C);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EFA38_ovl10.s")
+#endif
 
 void func_801EFC58_ovl10(GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {

@@ -1430,6 +1430,49 @@ void func_801A33B8(void *arg0) {
     *(gEntitiesNextPosYArray + var_v0_2) = D_801CE6D0_ovl7.unk8;
     func_80105238(&D_801CE6D0_ovl7, &D_8012BCA0);
 }
+#elif defined(PORT)
+/* Facing-aware variant of func_801A32EC above: prime the shared probe
+ * record with the entity's position and the caller's five params, mirror
+ * the near/far reach pair (unkC/unk10 hold f32 bits; the asm moves them
+ * with lwc1/swc1, so these are bit copies) by the D_800E6A10 facing sign,
+ * cast floor (airborne, func_80109F60) or ground-march (func_8010B238),
+ * carry the resolved XZ delta through func_800F8728, and publish the
+ * contact flags. */
+void func_801A33B8(struct Ovl7TrackParams *arg0) {
+    u32 id = omCurrentObj->objId;
+    f32 dx;
+    f32 dz;
+
+    D_801CE6D0_ovl7.unk4 = gEntitiesNextPosXArray[id];
+    D_801CE6D0_ovl7.unk8 = gEntitiesNextPosYArray[id];
+    D_801CE6D0_ovl7.unkC = gEntitiesNextPosZArray[id];
+    D_801CE6E0_ovl7 = *arg0;
+    if (D_800E6A10[id] == 1.0f) {
+        D_801CE6D0_ovl7.unk1C = *(f32 *) &arg0->unkC;
+    } else {
+        D_801CE6D0_ovl7.unk1C = *(f32 *) &arg0->unk10;
+    }
+    if (D_800E6A10[id] == 1.0f) {
+        D_801CE6D0_ovl7.unk20 = *(f32 *) &arg0->unk10;
+    } else {
+        D_801CE6D0_ovl7.unk20 = *(f32 *) &arg0->unkC;
+    }
+    D_801CE6D0_ovl7.unk24 = D_800E17D0[id];
+    if (D_800E8920[id] == 0) {
+        D_800E8920[id] = func_80109F60(&D_801CE6D0_ovl7);
+    } else {
+        D_800E8920[id] = func_8010B238(&D_801CE6D0_ovl7);
+    }
+    dx = D_801CE6D0_ovl7.unk4 - gEntitiesNextPosXArray[id];
+    dz = D_801CE6D0_ovl7.unkC - gEntitiesNextPosZArray[id];
+    if (dx != 0.0f || dz != 0.0f) {
+        func_800F8728(id, dx, dz);
+        gEntitiesNextPosXArray[id] = D_801CE6D0_ovl7.unk4;
+        gEntitiesNextPosZArray[id] = D_801CE6D0_ovl7.unkC;
+    }
+    gEntitiesNextPosYArray[id] = D_801CE6D0_ovl7.unk8;
+    func_80105238(&D_801CE6D0_ovl7, &D_8012BCA0);
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A33B8.s")
 #endif

@@ -907,6 +907,64 @@ void func_800A9088(u32 arg0) {
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(sp1C);
 }
+#elif defined(PORT)
+/* Bind animation bank arg0 with a 3-slot MRU (draft above, asm-verified):
+ * a re-referenced id is pulled to the front; a miss evicts the oldest
+ * (func_800A8D64 type 3) and shifts. The bank loads through the
+ * D_800D00C4 cache into gSegment4StartArray, then the sound bank in the
+ * header's halfword (low half of native word +8, N64 lhu +0xA) loads and
+ * the track anim starts. */
+void func_800A9088(u32 arg0) {
+    u32 *func_800A9250(u32, s32);
+    void func_800A9D64(s32);
+    void func_800A99E4(s32);
+    void func_800A9A2C(s32);
+    void *func_800A9648(u32 *);
+    u32 *ids = (u32 *) &D_800D6E78;
+    u32 **slot;
+    u32 *data;
+    u32 objId;
+    s32 k = -1;
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        if (ids[i] == arg0) {
+            k = i;
+        }
+    }
+    if (k != -1) {
+        s32 dst = 2;
+
+        for (i = 2; i >= 0; i--) {
+            if (i != k) {
+                ids[dst--] = ids[i];
+            }
+        }
+    } else {
+        if (ids[2] != 0) {
+            func_800A8D64(ids[2], 3);
+        }
+        ids[2] = ids[1];
+        ids[1] = ids[0];
+    }
+    ids[0] = arg0;
+    objId = omCurrentObj->objId;
+    D_800E02D0[objId] = arg0;
+    slot = &D_800D00C4[arg0 >> 0x10][arg0 & 0xFFFF];
+    if (*slot != NULL) {
+        data = *slot;
+        gSegment4StartArray[objId] = data;
+    } else {
+        data = func_800A9250(arg0, 3);
+        *slot = data;
+        gSegment4StartArray[omCurrentObj->objId] = data;
+    }
+    func_800A9D64(omCurrentObj->objId);
+    func_800AF9B8(*(u32 *) ((u8 *) data + 8) & 0xFFFF, 0x10);
+    func_800A99E4(omCurrentObj->objId);
+    func_800A9A2C(omCurrentObj->objId);
+    func_800A9648(data);
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9088.s")
 #endif
@@ -3029,6 +3087,43 @@ void func_800AA96C(s32 *arg0, u32 arg1, ? arg2, ? arg3, f32 arg4) {
         } while (var_s0 != -1);
     }
 }
+#elif defined(PORT)
+/* Selective anim start (draft above): bind bank arg1 through the
+ * D_800D00C4 cache exactly as func_800AA49C does, then start the anim only
+ * on the DObjs named by the -1-terminated index list arg0. Each index
+ * selects the node's DObj from D_800DFBD0, its cell of the anim-script
+ * table (widened 8-byte cells on PC, N64 stride 4) and its 0x2C-byte
+ * parameter record (native layout, stride unchanged). */
+void func_800AA96C(s32 *arg0, u32 arg1, s32 arg2, f32 arg3, f32 arg4) {
+    f32 func_8000EC98(DObj *, AnimCmd **, f32, UnkE4E4Arg *, s32, f32, ...);
+    u32 objId = omCurrentObj->objId;
+    u32 **slot;
+    uintptr_t scriptBase;
+    uintptr_t paramsBase;
+    s32 *list;
+    s32 idx;
+
+    D_800E02D0[objId] = arg1;
+    slot = &D_800D00C4[arg1 >> 0x10][arg1 & 0xFFFF];
+    if (*slot != NULL) {
+        D_800DFA10[objId] = (u32) (uintptr_t) *slot;
+        func_800A8564((struct CacheLine *) *slot, 1);
+    } else {
+        u32 *loaded = func_800A9250(arg1, 3);
+
+        *slot = loaded;
+        D_800DFA10[objId] = (u32) (uintptr_t) loaded;
+    }
+    func_800A9B48(arg2);
+    scriptBase = *(u32 *) (uintptr_t) D_800DF690[objId].as_u32;
+    paramsBase = *(u32 *) (uintptr_t) D_800DFA10[objId];
+    for (list = arg0, idx = *list; idx != -1; idx = *++list) {
+        func_8000EC98(D_800DFBD0[objId][idx],
+                      (AnimCmd **) (scriptBase + idx * 8), arg3,
+                      (UnkE4E4Arg *) (paramsBase + idx * 0x2C), 0, arg4,
+                      0.0f, 0.0f, 0.0f);
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA96C.s")
 #endif
@@ -3176,6 +3271,66 @@ void func_800AACC8(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
             var_v1 = var_s3->unk4;
             var_s3 += 4;
         } while (var_v1 != -1);
+    }
+}
+#elif defined(PORT)
+/* Selective model+texture anim start (draft above): clear every node's
+ * animCBReceiver, optionally bind texture bank arg2 and model bank arg1,
+ * then for each node index in the -1-terminated list arg0 hard-set that
+ * node's model anim (first anim'd node becomes the callback receiver) and
+ * its per-MObj texture anims. Both banks are func_800A94F4-widened blocks:
+ * the per-node tables step 8 bytes per N64 word, and each node's texture
+ * list holds one widened cell per MObj in the node's chain. */
+void func_800AACC8(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
+    u32 objId = omCurrentObj->objId;
+    DObj *node;
+    u8 *texTable = NULL;
+    uintptr_t scriptBase;
+    s32 *list;
+    s32 idx;
+    s8 first = 1;
+
+    for (node = omCurrentObj->data.dobj; node != NULL; node = animModelTreeNextNode(node)) {
+        node->animCBReceiver = 0;
+    }
+    if (arg2 != -1) {
+        func_800A9B48(arg2);
+        texTable = (u8 *) (uintptr_t) *(u32 *) (uintptr_t) D_800DF850[objId];
+    }
+    func_800A9B48(arg1);
+    scriptBase = *(u32 *) (uintptr_t) D_800DF690[objId].as_u32;
+    for (list = arg0, idx = *list; idx != -1; idx = *++list) {
+        DObj *dobj = D_800DFBD0[objId][idx];
+        AnimCmd *anim = *(AnimCmd **) (scriptBase + idx * 8);
+
+        if (anim != NULL) {
+            animSetModelAnimation(dobj, anim, arg3);
+            dobj->animCBReceiver = first;
+            dobj->gobj->animTimer = arg3;
+            D_800DF310[objId] = NULL;
+            first = 0;
+            D_800DD8D0[objId] &= 0x3FFFFFFF;
+        } else {
+            dobj->timeRemaining = -3.4028235e38f;
+            dobj->animCBReceiver = 0;
+        }
+        if (texTable != NULL) {
+            u8 *cell = (u8 *) *(void **) (texTable + idx * 8);
+
+            if (cell != NULL) {
+                struct MObj *mobj = dobj->mobjList;
+
+                while (mobj != NULL) {
+                    s32 cmd = *(s32 *) cell; /* low half of the widened cell */
+
+                    if (cmd != 0) {
+                        animSetTextureAnimation(mobj, cmd, arg3);
+                    }
+                    mobj = mobj->next;
+                    cell += 8;
+                }
+            }
+        }
     }
 }
 #else

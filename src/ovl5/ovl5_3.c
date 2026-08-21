@@ -427,7 +427,109 @@ s32 func_80166054_ovl5(Vector v) {
     return 0x29A;
 }
 
+#ifdef PORT
+/* Mole thread for hole arg1 (8x? grid, checkerboard parity picks one of two
+ * mole models per stage D_8018E298_ovl5): registers the objId, parks the
+ * mole at its hole, then services D_800E98E0[objId]: 0 rewind the idle
+ * animation, 1 retime it to func_8016A69C_ovl5's frame for the current
+ * difficulty, 2 play the bonked sequence (drop, shrink, respawn). */
+void func_8016626C_ovl5(GObj *arg0, s32 arg1) {
+    extern u32 D_8018733C_ovl5[];
+    extern u32 D_8018734C_ovl5[];
+    extern u32 D_8018735C_ovl5[];
+    s32 func_8016A69C_ovl5(s32);
+    void func_800AA018(void *);
+    void func_800A9864(void *, s32, s32);
+    s32 row = arg1 / 8;
+    s32 parity = ((row % 2) + arg1) % 2;
+    s32 i;
+
+    D_8018E2A0_ovl5[arg1] = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    if (parity != 0) {
+        func_800A9864((void *) (uintptr_t) D_8018735C_ovl5[D_8018E298_ovl5], 0x1869F, 0x10);
+        func_800AA018((void *) (uintptr_t) D_8018736C_ovl5[D_8018E298_ovl5]);
+    } else {
+        func_800A9864((void *) (uintptr_t) D_8018733C_ovl5[D_8018E298_ovl5], 0x1869F, 0x10);
+        func_800AA018((void *) (uintptr_t) D_8018734C_ovl5[D_8018E298_ovl5]);
+    }
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = ((f32) (arg1 % 8) * 300.0f) - 1050.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = ((f32) row * 300.0f) - 1050.0f;
+    while (D_8018E420_ovl5 != 0) {
+        ohSleep(1);
+    }
+    while (1) {
+        switch (D_800E98E0[omCurrentObj->objId]) {
+            case 0:
+                if (D_800DE350[omCurrentObj->objId]->animTimer != 0.0f) {
+                    if (parity != 0) {
+                        func_800AA018((void *) (uintptr_t) D_8018736C_ovl5[D_8018E298_ovl5]);
+                    } else {
+                        func_800AA018((void *) (uintptr_t) D_8018734C_ovl5[D_8018E298_ovl5]);
+                    }
+                }
+                break;
+            case 1:
+                if (D_800DE350[omCurrentObj->objId]->animTimer !=
+                    (f32) func_8016A69C_ovl5(D_800E9AA0[omCurrentObj->objId].as_s32)) {
+                    func_800AECC0(1.0f);
+                    func_800AED20(1.0f);
+                    if (parity != 0) {
+                        func_800A9F98(D_8018736C_ovl5[D_8018E298_ovl5],
+                                      (f32) func_8016A69C_ovl5(D_800E9AA0[omCurrentObj->objId].as_s32));
+                    } else {
+                        func_800A9F98((s32) D_8018734C_ovl5[D_8018E298_ovl5],
+                                      (f32) func_8016A69C_ovl5(D_800E9AA0[omCurrentObj->objId].as_s32));
+                    }
+                    func_800AECC0(0.0f);
+                    func_800AED20(0.0f);
+                }
+                break;
+            case 2:
+                play_sound(0xA);
+                D_800E3210[omCurrentObj->objId] = 0.0f;
+                D_800E3750[omCurrentObj->objId] = -12.0f;
+                D_800E3C90[omCurrentObj->objId] = 75.0f;
+                for (i = 0; i < 0x3C; i++) {
+                    ohSleep(1);
+                }
+                for (i = 0xA; i >= 0; i--) {
+                    f32 sc = (f32) ((f64) i * 0.1);
+
+                    gEntitiesScaleXArray[omCurrentObj->objId] = sc;
+                    gEntitiesScaleYArray[omCurrentObj->objId] = sc;
+                    gEntitiesScaleZArray[omCurrentObj->objId] = sc;
+                    ohSleep(1);
+                }
+                func_800AFBB4(0, omCurrentObj);
+                ohSleep(8);
+                D_800E3750[omCurrentObj->objId] = 0.0f;
+                D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+                D_800E3C90[omCurrentObj->objId] = 65535.0f;
+                gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+                gEntitiesScaleXArray[omCurrentObj->objId] = 1.0f;
+                gEntitiesScaleYArray[omCurrentObj->objId] = 1.0f;
+                gEntitiesScaleZArray[omCurrentObj->objId] = 1.0f;
+                func_800AFBB4(1, omCurrentObj);
+                if (parity != 0) {
+                    func_800AA018((void *) (uintptr_t) D_8018736C_ovl5[D_8018E298_ovl5]);
+                } else {
+                    func_800AA018((void *) (uintptr_t) D_8018734C_ovl5[D_8018E298_ovl5]);
+                }
+                D_800E98E0[omCurrentObj->objId] = 0;
+                break;
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_8016626C_ovl5.s")
+#endif
 
 void func_8016689C_ovl5(GObj *arg0) {
     func_800A9F98(D_8018736C_ovl5[D_8018E298_ovl5], 5.0f);

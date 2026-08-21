@@ -1882,7 +1882,59 @@ void func_8020F008_ovl9(struct GObj *arg0) {
     }
 }
 
+#ifdef PORT
+extern void func_801051AC(void *);
+extern FUNCLIST D_8021CAE4_ovl9;
+void func_8020FC68_ovl9(struct GObj *arg0);
+void func_8020F8A8_ovl9(GObj *);
+s32 func_801A0D74_ovl7();
+void func_8019F3B0_ovl7(void);
+/* Carried-critter per-frame hook: run the shared mover with facing
+ * temporarily made positive (matching the run direction), except
+ * while the grab counter D_800E9FE0 is live -- then drain it and
+ * instead pin the hitbox to the carrier's position through the
+ * carried-collision resolver func_801051AC.  Restore facing, run the
+ * squash/turn helper, dispatch the 5-entry anim-state table when the
+ * mover reported idle (the N64 reads an uninitialized flag on the
+ * carried path; the port skips the dispatch there), then the shared
+ * draw/epilogue pair. */
+void func_8020F078_ovl9(void) {
+    GObj *arg0 = omCurrentObj;
+    struct Sub800E1B50_Unk84 *hit;
+    f32 savedFacing;
+    s32 moved;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    hit = D_800E1B50[id]->unk84;
+    savedFacing = D_800E6A10[id];
+    if (D_800E64D0[id] < 0.0f) {
+        D_800E6A10[id] = savedFacing * -1.0f;
+        id = omCurrentObj->objId;
+    }
+    moved = 1;
+    if (D_800E9FE0[id].as_s32 > 0) {
+        D_800E9FE0[id].as_s32--;
+        if (hit != NULL) {
+            hit->unk4 = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+            hit->unk8 = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+            hit->unkC = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+            func_801051AC(hit);
+        }
+    } else {
+        moved = func_801A0D74_ovl7(arg0);
+    }
+    D_800E6A10[omCurrentObj->objId] = savedFacing;
+    func_8020FC68_ovl9(arg0);
+    if (moved == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 5, &D_8021CAE4_ovl9);
+    }
+    func_8020F8A8_ovl9(arg0);
+    func_8019F3B0_ovl7();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020F078_ovl9.s")
+#endif
 
 void func_8020F244_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
@@ -1996,7 +2048,53 @@ void func_8020F8A0_ovl9(s32 arg0) {
 
 }
 
+#ifdef PORT
+/* Turn-lean easer: walk the display heading D_800EA6E0 toward the
+ * target heading D_800EB320 by a speed tiered on the remaining gap
+ * (8, 4 or 1 degrees per tick), taking the short way around the
+ * circle (direction flips when the gap exceeds pi), renormalize to
+ * [0, 2pi), and pose the model root's X spin a quarter-turn back
+ * from it. */
+void func_8020F8A8_ovl9(GObj *arg0) {
+    u32 id;
+    f32 cur;
+    f32 d;
+    f32 ad;
+    f32 step;
+
+    id = omCurrentObj->objId;
+    cur = D_800EA6E0[id];
+    d = cur - D_800EB320[id];
+    ad = (d < 0.0f) ? -d : d;
+    step = 0.0f;
+    if (ad > 0.13962634f) {
+        step = 0.13962634f;
+    } else if (ad > 0.06981317f) {
+        step = 0.06981317f;
+    } else if (ad >= 0.017453292f) {
+        step = 0.017453292f;
+    }
+    if (step != 0.0f) {
+        if (ad < 3.1415927f) {
+            D_800EA6E0[id] = cur + ((d > 0.0f) ? -step : step);
+        } else {
+            D_800EA6E0[id] = cur + ((d > 0.0f) ? step : -step);
+        }
+        id = omCurrentObj->objId;
+    }
+    while (D_800EA6E0[id] > 6.2831855f) {
+        D_800EA6E0[id] -= 6.2831855f;
+        id = omCurrentObj->objId;
+    }
+    while (D_800EA6E0[id] < 0.0f) {
+        D_800EA6E0[id] += 6.2831855f;
+        id = omCurrentObj->objId;
+    }
+    arg0->data.dobj->firstChild->angle.v.x = D_800EA6E0[id] - 1.5707964f;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020F8A8_ovl9.s")
+#endif
 
 void func_8020FC14_ovl9(struct GObj *arg0) {
     if (D_800E0D50[omCurrentObj->objId] == 0) {
@@ -2023,5 +2121,43 @@ void func_8020FC68_ovl9(struct GObj *arg0) {
     }
 }
 
+#ifdef PORT
+extern s32 request_track_general(s32, s32, s32);
+extern void func_800B1900(u16);
+/* Clone spawner: request a fresh enemy track (kind 0x17); when the
+ * pool is exhausted (slot >= 60 or -1) log the "enemy req over 18"
+ * complaint and release it.  Otherwise stamp the clone as mode-1 of
+ * the same species -- copying this entity's state id, species words,
+ * rail binding (into both current and previous slots), full
+ * position/prev-position, roll angle -- and mark it live. */
+void func_8020FD34_ovl9(void) {
+    s32 track;
+
+    track = request_track_general(0x17, 0x1E, 0x50);
+    if ((track >= 0x3C) || (track == -1)) {
+        utilPrintf("enemy req over 18. Track Num:%d\n", track);
+        func_800B1900(track);
+        return;
+    }
+    gEntityFuncListIDArray[track] = gEntityFuncListIDArray[omCurrentObj->objId];
+    D_800E76C0[track] = 0xFF;
+    D_800E7730[track] = D_800E7730[omCurrentObj->objId];
+    D_800E77A0[track] = D_800E77A0[omCurrentObj->objId];
+    D_800E7880[track] = 1;
+    D_800E6150[track] = D_800E5F90[omCurrentObj->objId];
+    D_800E5F90[track] = D_800E6150[track];
+    D_800E6D90[track] = D_800E6BD0[omCurrentObj->objId];
+    D_800E6BD0[track] = D_800E6D90[track];
+    gEntitiesNextPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesPosXArray[track] = gEntitiesPosXArray[omCurrentObj->objId];
+    gEntitiesNextPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesPosYArray[track] = gEntitiesPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    gEntitiesPosZArray[track] = gEntitiesPosZArray[omCurrentObj->objId];
+    D_800E98E0[track] = 1;
+    gEntitiesAngleZArray[track] = gEntitiesAngleZArray[omCurrentObj->objId];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020FD34_ovl9.s")
+#endif
 
