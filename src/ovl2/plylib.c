@@ -131,7 +131,18 @@ void animSetModelAnimation(struct DObj *dobj, union AnimCmd *animList, f32 time)
 void animSetTextureAnimation(struct MObj *mobj, union AnimCmd *animList, f32 time);
 void func_8012307C(s32 arg0, s32 arg1, f32 arg2, s32 arg3);
 void func_80122F08(u32 arg0);
+#ifdef PORT
+/* The anim engine invokes GObj.onAnimate through a
+ * (struct DObj *, s32, f32) pointer (include/GObj.h, src/main/anim.c). On
+ * MIPS o32 a u32 and an f32 third parameter arrive in the same register, so
+ * the ROM declaration below is harmless there; on x86-64 the f32 travels in
+ * xmm0 while a u32 parameter would read a garbage integer register. The
+ * PORT definition therefore takes f32 and reinterprets the bits where the
+ * N64 code treated them as a raw word. */
+void func_8011D0FC(struct DObj *ln, s32 arg1, f32 arg2);
+#else
 void func_8011D0FC(struct DObj *ln, s32 arg1, u32 arg2);
+#endif
 
 void *func_8011BA10(struct CollisionTriangle *tri, u32 arg1) {
     u32 i;
@@ -735,6 +746,133 @@ void func_8011C8F8(void) {
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800E17D0[omCurrentObj->objId] = 1.5707964f;
 }
+#elif defined(PORT)
+/* PORT: plyInit, transcribed from asm/nonmatchings/ovl2/plylib/
+ * func_8011C8F8.s. The m2c sketch above misreads two stores the asm names
+ * directly: the word zeroed right after the func_80111534 call is
+ * D_800D6F10 (not "&D_800D6ED0 + 0x40"), and the second cleared per-track
+ * slot is D_800E7EA0 (the 0x70-entry array after D_800E7CE0, which the
+ * sketch spells as a cross-symbol byte offset). gKirbyState goes through
+ * struct Player -- the same layout every compiled reader on this build
+ * uses. The two D_80198830 stores are spelled against the split ovl3 bss
+ * symbols the PC data file emits (N64 +0x8 -> D_80198838_ovl3, +0x10 ->
+ * D_80198840_ovl3); ovl2_8.h's whole-struct view would overflow the 4-byte
+ * D_80198830_ovl3 placeholder and clobber its neighbours. On this build the
+ * function is reached through src/pc/pc_player_lite.c's stand-in for the
+ * un-ported ovl3 player init (func_8016BF60_ovl3), whose real body is what
+ * calls plyInit on the N64. */
+extern f32 gKirbyHp;
+extern s32 D_800BE50C;
+extern f32 D_800BE510;
+extern s32 D_800D6E54;
+extern s32 D_800D6F10;
+extern u8 D_80198838_ovl3[];
+extern u8 D_80198840_ovl3[];
+void func_80112A0C(void);
+void func_800F88C8(GObj *, s32, f32);
+void func_800B531C(s32);
+void func_8011CFF4(GObj *);
+
+void func_8011C8F8(void) {
+    u32 objId = omCurrentObj->objId;
+    u32 kind;
+
+    D_800DEF90[objId] = func_800B531C;
+    D_800DEDD0[objId] = func_8011CFF4;
+    gEntitiesScaleXArray[objId] = 0.2f;
+    gEntitiesScaleYArray[objId] = 0.2f;
+    gEntitiesScaleZArray[objId] = 0.2f;
+    func_80112A0C();
+    func_80111534(omCurrentObj->objId);
+    D_800D6F10 = 0;
+    D_8012EADC = 0;
+    D_8012EAE0 = NULL;
+    objId = omCurrentObj->objId;
+    D_800E7B20[objId] = gKirbyHp;
+    D_800E8920[objId] = 1;
+    D_800E8AE0[objId] = 0;
+    D_800E7CE0[objId] = 0;
+    D_800E7EA0[objId] = 0;
+    D_800E8060[objId] = 0;
+    D_800E8760[objId] = 0;
+    gKirbyState.actionChange = -1;
+    gKirbyState.action = 0;
+    gKirbyState.previousAction = 0;
+    if (gGameState == 0x21) {
+        gKirbyState.abilityInUse = 0;
+        gKirbyState.ability = 0;
+    } else {
+        gKirbyState.abilityInUse = 0;
+        gKirbyState.ability = D_800D6E54;
+    }
+    gKirbyState.unk7 = 0;
+    gKirbyState.unk24 = 0;
+    gKirbyState.unk9 = 0;
+    gKirbyState.isTurning = 0;
+    gKirbyState.unk30 = 0;
+    gKirbyState.unkA = 0;
+    gKirbyState.turnDirection = 0;
+    gKirbyState.unk8 = 0;
+    gKirbyState.unk14 = 0;
+    gKirbyState.unk150 = 0;
+    gKirbyState.unk153 = 0;
+    gKirbyState.unk15 = 0;
+    gKirbyState.unk88 = 0;
+    gKirbyState.unkD = -1;
+    gKirbyState.unkE = 0;
+    gKirbyState.unkA4 = 0;
+    gKirbyState.unk10 = 0;
+    gKirbyState.damageFlashTimer = -1;
+    gKirbyState.damageType = 0;
+    gKirbyState.unk48 = 0;
+    gKirbyState.unk50 = 0;
+    gKirbyState.unk4C = 0;
+    gKirbyState.unk6C = 0;
+    gKirbyState.unk54 = 0x80000000;
+    gKirbyState.unk60 = 0;
+    gKirbyState.unk58 = 0;
+    gKirbyState.unk64 = 0;
+    gKirbyState.unk5C = 0;
+    gKirbyState.unk68 = 0;
+    gKirbyState.unk6A = 0;
+    gKirbyState.isTakingDamage = 0;
+    gKirbyState.droppedAbility = 0;
+    gKirbyState.hpAfterDamage = 0;
+    gKirbyState.abilityDropTimer = 0;
+    gKirbyState.unk70 = 0;
+    gKirbyState.unk74 = 0;
+    gKirbyState.abilityState = 0;
+    gKirbyState.unk18 = 0;
+    gKirbyState.unk17 = 0;
+    gKirbyState.unkB = 0;
+    gKirbyState.unk15C = 0;
+    gKirbyState.unk154 = 0;
+    gKirbyState.isInhaling = 0;
+    gKirbyState.unkB8 = 0;
+    gKirbyState.unkBA = 0;
+    gKirbyState.unk158 = 1.0f;
+    kind = func_800F8560();
+    if ((kind != 0) && (kind != 0xA)) {
+        gKirbyState.unk4 = 0;
+        gKirbyState.numberInhaled = 0;
+    }
+    objId = omCurrentObj->objId;
+    gKirbyState.vel[0] = D_800E3050[objId];
+    gKirbyState.vel[1] = D_800E3210[objId];
+    gKirbyState.vel[2] = D_800E33D0[objId];
+    gKirbyState.unk168 = 0.0f;
+    gKirbyState.unk164 = gKirbyState.unk168;
+    gKirbyState.unk160 = 0;
+    gKirbyState.unk162 = 0x14;
+    gKirbyState.unk16C = 0;
+    *(s16 *)D_80198838_ovl3 = 3;
+    *(s32 *)D_80198840_ovl3 = -1;
+    D_800EC820[objId] = 0.0f;
+    D_800EC660[objId] = D_800EC820[objId];
+    func_800F88C8(D_800DE350[objId], D_800BE50C, D_800BE510);
+    D_800E6A10[objId] = 1.0f;
+    D_800E17D0[objId] = 1.5707964f;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011C8F8.s")
 #endif
@@ -854,11 +992,31 @@ void func_8011CFF4(GObj *gobj) {
     if (temp2 != -1) {
         gEntityFuncListIDArray[omCurrentObj->objId] = temp2;
         gKirbyState.actionChange = -1;
+#ifdef PORT
+        /* D_8022947C / D_8016C510 are the N64 ADDRESSES of the two action
+         * dispatchers, spelled as data because plylib cannot reference the
+         * overlays' symbols directly. On this build those data stubs are
+         * not code (jumping into them was the measured crash the moment the
+         * first action change fired), so bind the real functions. */
+        {
+            void func_8022947C_ovl19(s32);
+            void func_8016C510_ovl3(GObj *);
+
+            if (D_800D6FB2 == 2) {
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId],
+                                         (void (*)(struct GObj *)) func_8022947C_ovl19);
+            } else {
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId],
+                                         func_8016C510_ovl3);
+            }
+        }
+#else
         if (D_800D6FB2 == 2) {
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(struct GObj *))&D_8022947C);
         } else {
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(struct GObj *))&D_8016C510);
         }
+#endif
     }
 }
 
@@ -947,6 +1105,128 @@ void func_8011D0FC(struct DObj *arg0, s32 kind, int arg2) {
             break;
     }
 }
+#elif defined(PORT)
+/* PORT: Kirby's onAnimate grab-argument handler, from
+ * asm/nonmatchings/ovl2/plylib/func_8011D0FC.s, modeled on the compiled
+ * generic handler func_800B0F28 (src/ovl1/ovl1_7.c) which shares every
+ * branch shape. arg2 arrives as f32 (see the declaration at the top of the
+ * file); cases 12/13 reinterpret its bits like the ROM did.
+ *
+ * Case 12's ability-voice table is the 0x1C-stride record block at
+ * D_80128440: on PC the emitted objects D_80128444/D_80128446 hold only
+ * row 0's u16, and every later row lives inside the native-u16 blob
+ * D_8012844E (build/pc/data/ovl2_after_spawn.data.c). Row r's D_80128444
+ * column is blob cell r*14-5 and its D_80128446 column is r*14-4 (blob
+ * base 0x8012844E vs columns 0x80128444/6 + r*0x1C); the blob is a
+ * halfword-for-halfword image of the ROM, so u16 reads are exact.
+ *
+ * Case 13's generator objects come from func_800A19EC (ported in
+ * src/ovl1/ovl1.c). On the N64 their +0x48/+0x4C fields coincide with
+ * GObj's onAnimate/unk4C, which is why the ROM (and func_800B0F28's
+ * compiled PC code, which handles real GObjs) share the spelling; on LP64
+ * they do NOT -- the node's two pointers sit at +0x50/+0x58 (struct
+ * PcGenNode / Pc2550Obj in ovl1.c), so PcGenNodeRef mirrors just those two
+ * slots. PcOMMtxFloat3 is a local mirror of OMMtxFloat3 (include/DObj.h,
+ * not included by this TU): pointer then Vector, so the Vector sits at +8
+ * on LP64 -- the same shape as UnkEmitter's next pointer followed by its
+ * +4/+8/+C position floats, which is what the node's unk4C really is. */
+void func_8011D0FC(struct DObj *arg0, s32 arg1, f32 arg2) {
+    void *func_800A19EC(s32, s32);
+    void func_800BB468(u32, s32);
+    struct PcOMMtxFloat3 {
+        void *mtx;
+        Vector v;
+    };
+    struct PcGenNodeRef { /* generator node: N64 +0x48/+0x4C on LP64 */
+        u8 pad[80];
+        struct DObj *unk48;
+        void *unk4C;
+    };
+    union {
+        f32 f;
+        s32 w;
+    } bits;
+    Vector sp20;
+    struct PcGenNodeRef *gen;
+    s32 snd;
+    s32 idx;
+
+    switch (arg1) {
+    case 9:
+        func_800BB468((u32) arg2, 0);
+        return;
+    case 12:
+        bits.f = arg2;
+        snd = bits.w;
+        if (snd < 0) {
+            return;
+        }
+        if ((snd == 5) || (snd == 6) || (snd == 0x267)) {
+            s32 flags = D_800E8AE0[omCurrentObj->objId];
+
+            if (flags & 7) {
+                if (flags & 2) {
+                    play_sound(0x10C);
+                } else {
+                    play_sound(9);
+                }
+                return;
+            }
+            if (D_800D6FB2 == 2) {
+                if (gKirbyState.unk7 != 0) {
+                    play_sound(7);
+                } else {
+                    play_sound(8);
+                }
+                return;
+            }
+            {
+                u32 row = gKirbyState.unk10A;
+                const u16 *blob = (const u16 *) D_8012844E;
+                u16 voice;
+
+                if (gKirbyState.unk7 == 0) {
+                    voice = (row == 0) ? D_80128444[0][0] : blob[row * 14 - 5];
+                } else {
+                    voice = (row == 0) ? D_80128446[0][0] : blob[row * 14 - 4];
+                }
+                play_sound(voice);
+            }
+            return;
+        }
+        play_sound(snd);
+        return;
+    case 13:
+        bits.f = arg2;
+        idx = bits.w & 0xFFFF;
+        if (idx >= 0) {
+            gen = func_800A19EC(bits.w >> 0x10, idx);
+            if (gen != NULL) {
+                if (gen->unk4C != NULL) {
+                    func_800B2340(&sp20, arg0, 0xFFFF);
+                    ((struct PcOMMtxFloat3 *) gen->unk4C)->v.x = sp20.x;
+                    ((struct PcOMMtxFloat3 *) gen->unk4C)->v.y = sp20.y;
+                    ((struct PcOMMtxFloat3 *) gen->unk4C)->v.z = sp20.z;
+                    return;
+                }
+                gen->unk48 = arg0;
+                return;
+            }
+        }
+        break;
+    case -1:
+        D_800DD8D0[omCurrentObj->objId] |= 0x40000000;
+        return;
+    case -2:
+        D_800DD8D0[omCurrentObj->objId] |= 0x80000000;
+        return;
+    default:
+        if (D_800DF310[omCurrentObj->objId] != NULL) {
+            D_800DF310[omCurrentObj->objId]((s32) (uintptr_t) arg0, arg1, arg2);
+        }
+        break;
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D0FC.s")
 #endif
@@ -1006,6 +1286,92 @@ void *func_8011D4A4(f32 arg0) {
     sp18 = temp_v0;
     func_80111C4C(arg0, temp_v0, temp_v0);
     return sp18;
+}
+#elif defined(PORT)
+/* PORT: (re)register Kirby's body shapes -- func_80111574 (ovl2_9.c) copies
+ * the PlyEntry blob gKirbyState.unk15C points at into the global Shape28
+ * arena and hands back the slot; this walks the slot's shape list, scales
+ * the geometry by arg0 (Kirby's size factor, gKirbyState.unk158) unless it
+ * is exactly 1.0f -- a sphere (type 1) scales only its radius at 0x18, a
+ * capsule (type 2) scales all seven floats 0xC..0x24 -- and, when a shape's
+ * joint word is 0 and gKirbyState.unk154 names an override joint, binds the
+ * shape to DObj D_800DFBD0[objId][unk154]. Ends with the func_80111C4C
+ * debug hook (a no-op: func_80110138 is empty) and returns the slot.
+ *
+ * Provenance, verified: the blob this walks is NATIVE PC memory, not
+ * big-endian asset bytes. The shape list lives in the D_8012D198 arena
+ * (ovl2_9.c BSS), populated word-by-word by the compiled func_80111574 from
+ * the generated tables in build/pc/data/*.data.c (e.g. D_80190358_ovl3 /
+ * D_80190334_ovl3 for normal Kirby), which are emitted as native u32 words
+ * holding the N64 word VALUES. Float words and the joint word therefore
+ * read correctly through native types; the one N64-byte-order residue is
+ * the shape type, an N64 byte-0 read that sits in bits 24-31 of the head
+ * word (0x01000000 = sphere) -- decoded here with >> 24, the same
+ * convention as the func_8010F9AC/func_8010E740 PORT arms in ovl2_8.c and
+ * the word-shift rule of func_800F90C0's PORT arm. The joint store
+ * truncates a DObj* into the 32-bit unk8 slot; that is the file's
+ * established pointer-in-u32 idiom (gKirbyState.unk15C itself) and is
+ * lossless under -no-pie (src/pc/pc_mmio.c). The m2c draft above garbles
+ * only the func_80111C4C call (one argument, the slot) and the slot walk
+ * offsets, which on LP64 sit at 32/40/48 (see the host-slot views in
+ * ovl2_8.c). Return is the slot pointer (the N64 tail returns it in $v0);
+ * both external callers declare the function void and ignore it. */
+struct PcD4A4Shape {                /* Shape28 arena entry, 40 bytes */
+    u8 unk0;                        /* computed-this-frame flag (native) */
+    u8 pad1[3];
+    u32 unk4;                       /* N64 head word: type in bits 24-31 */
+    s32 unk8;                       /* joint: 0/-1/-2/-3 or truncated DObj* */
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    f32 unk1C;
+    f32 unk20;
+    f32 unk24;
+};
+struct PcD4A4Slot {                 /* host PlySlot (ovl2_9.c) on LP64 */
+    void *unk0;
+    s32 unk4[5];
+    struct PcD4A4Shape *unk18;
+    s32 unk1C;
+    struct PcD4A4Shape *unk20;
+};
+_Static_assert(sizeof(struct PcD4A4Shape) == 0x28, "shape stride");
+_Static_assert(sizeof(struct PcD4A4Slot) == 56, "host PlySlot size");
+_Static_assert(__builtin_offsetof(struct PcD4A4Slot, unk20) == 48, "shape list");
+
+void *func_8011D4A4(f32 arg0) {
+    void *func_80111574(void *, void *);
+    void func_80111C4C(s32 *);
+    struct PcD4A4Slot *slot;
+    struct PcD4A4Shape *sh;
+    s32 i;
+
+    slot = func_80111574((void *) (uintptr_t) gKirbyState.unk15C,
+                         (void *) (uintptr_t) omCurrentObj->objId);
+    for (i = 0, sh = slot->unk20; i < slot->unk1C; i++, sh++) {
+        if (arg0 != 1.0f) {
+            switch (sh->unk4 >> 24) {
+            case 1:
+                sh->unk18 *= arg0;
+                break;
+            case 2:
+                sh->unkC *= arg0;
+                sh->unk10 *= arg0;
+                sh->unk14 *= arg0;
+                sh->unk18 *= arg0;
+                sh->unk1C *= arg0;
+                sh->unk20 *= arg0;
+                sh->unk24 *= arg0;
+                break;
+            }
+        }
+        if ((sh->unk8 == 0) && (gKirbyState.unk154 != 0)) {
+            sh->unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][gKirbyState.unk154];
+        }
+    }
+    func_80111C4C((s32 *) slot);
+    return slot;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D4A4.s")
@@ -1290,6 +1656,109 @@ block_42:
         func_800BB468(var_f12, 0, 0xB, 0x3C, var_a2);
     }
 }
+#elif defined(PORT)
+/* PORT: conveyor/current push for Kirby's movement tick, from
+ * asm/nonmatchings/ovl2/plylib/func_8011DD5C.s (the m2c sketch above
+ * garbles the func_800BB468 call and drops the f32 nature of the second
+ * out-param, which ovl1_8's func_800B531C adds straight into the Y
+ * velocity). unk130/unk134/unk138/unk13C hold float bits in u32 fields, so
+ * they go through bit-punning locals. */
+void func_800BB468(u32, s32);
+
+void func_8011DD5C(f32 *arg0, f32 *arg1) {
+    union {
+        u32 w;
+        f32 f;
+    } bits;
+    f32 sinv;
+    f32 cosv;
+    f32 rate;
+    f32 a;
+    s32 pushed;
+    s32 objId;
+
+    if (gKirbyState.unkB != 0) {
+        *arg1 = 0.0f;
+        *arg0 = 0.0f;
+        gKirbyState.unk13C = 0;
+        gKirbyState.unk138 = gKirbyState.unk13C;
+        return;
+    }
+    if (gKirbyState.unk152 == 0) {
+        gKirbyState.unk13C = 0;
+        gKirbyState.unk153 = 0;
+        gKirbyState.unk138 = gKirbyState.unk13C;
+        if (gKirbyState.abilityInUse == 0x1B) {
+            *arg1 = 0.0f;
+            *arg0 = 0.0f;
+            return;
+        }
+        if (((gKirbyState.floorType == 0x12) || (gKirbyState.floorType == 0x13)) &&
+            !(gKirbyState.isTurning & 0x4000)) {
+            *arg1 = 0.0f;
+            if (gKirbyState.floorType == 0x13) {
+                *arg0 = (f32) gKirbyState.unk114->unk10 * 0.1f;
+                return;
+            }
+            *arg0 = -((f32) gKirbyState.unk114->unk10 * 0.1f);
+            return;
+        }
+        *arg1 = 0.0f;
+        *arg0 = 0.0f;
+        return;
+    }
+    if ((gKirbyState.abilityInUse == 2) || (gKirbyState.abilityInUse == 0xF) ||
+        (gKirbyState.abilityInUse == 0x14) || (gKirbyState.abilityInUse == 0x1B)) {
+        *arg1 = 0.0f;
+        *arg0 = 0.0f;
+        gKirbyState.unk13C = 0;
+        gKirbyState.unk138 = gKirbyState.unk13C;
+        return;
+    }
+    if ((gKirbyState.isTurning & 0x4000) || (gKirbyState.action == 0xA) ||
+        (gKirbyState.action == 0xB)) {
+        *arg1 = 0.0f;
+        *arg0 = 0.0f;
+        gKirbyState.unk13C = 0;
+        gKirbyState.unk138 = gKirbyState.unk13C;
+        return;
+    }
+    pushed = 0;
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        pushed = 1;
+    }
+    bits.w = gKirbyState.unk130;
+    sinv = sinf(bits.f);
+    a = (sinv < 0.0f) ? -sinv : sinv;
+    if (a < 0.00001f) {
+        sinv = 0.0f;
+    }
+    bits.w = gKirbyState.unk130;
+    cosv = cosf(bits.f);
+    a = (cosv < 0.0f) ? -cosv : cosv;
+    if (a < 0.00001f) {
+        cosv = 0.0f;
+    }
+    bits.w = gKirbyState.unk134;
+    rate = bits.f * 0.1f;
+    bits.f = rate * sinv;
+    gKirbyState.unk138 = bits.w;
+    bits.f = rate * cosv;
+    gKirbyState.unk13C = bits.w;
+    bits.w = gKirbyState.unk138;
+    *arg0 = bits.f;
+    bits.w = gKirbyState.unk13C;
+    *arg1 = bits.f;
+    objId = omCurrentObj->objId;
+    a = (cosv < 0.0f) ? -cosv : cosv;
+    if ((D_800E5C10[objId] > 0.0f) || (a >= 0.85f)) {
+        D_800E8920[objId] = 0;
+    }
+    if ((pushed == 0) && (gKirbyState.unk153 == 0)) {
+        gKirbyState.unk153 = 1;
+        func_800BB468(0xB, 0x3C);
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011DD5C.s")
 #endif
@@ -1536,6 +2005,100 @@ block_35:
             gEntitiesAngleYArray[temp_t0->objId] = gKirbyState.unk80;
         }
     }
+}
+#elif defined(PORT)
+/* PORT: Kirby's walking turn-around step, from
+ * asm/nonmatchings/ovl2/plylib/func_8011E548.s. Two respellings against the
+ * sketch above: the word it writes as `*(&D_800D6F58 + 0x54)` is the lw the
+ * ROM does at D_800D6FAC, the symbol the compiled readers (src/ovl2/ovl2.c,
+ * src/ovl3/kirby.c) already use on this build; and the track-tangent fetch
+ * goes through the NATIVE Unk80129114_4 records (ovl2_2.c's func_800F78E4
+ * arm), the same spelling as the matched sibling func_8011E374 above. The
+ * ROM zeroes the tangent's y AFTER func_8001E344 returns and compares it
+ * against {0, 0, facing}. */
+void func_8011E548(void) {
+    extern s32 D_800D6FAC;
+    u32 func_80121194(void);
+    Vector ref;
+    Vector tang;
+    f32 step;
+    f32 diff;
+    u32 objId;
+
+    if (gKirbyState.isTurning & 0x8000) {
+        return;
+    }
+    if (!(gKirbyState.isTurning & 1)) {
+        return;
+    }
+    objId = omCurrentObj->objId;
+    if (D_800E8AE0[objId] & 6) {
+        step = 0.3925f;
+    } else {
+        step = 0.5233333f;
+    }
+    if ((D_800D6FAC == 0) && (gKirbyState.abilityInUse == 0) && (gKirbyController.buttonPressed & 0x4000)) {
+        gKirbyState.unkA = 1;
+    }
+    if (gKirbyState.turnDirection == 0) {
+        D_800E6A10[objId] = -D_800E6A10[objId];
+        gKirbyState.turnDirection = (s32) D_800E6A10[objId];
+        gKirbyState.unk7C = D_800E17D0[objId] + 3.1415927f;
+        if (gKirbyState.unk7C >= 6.2831855f) {
+            gKirbyState.unk7C -= 6.2831855f;
+        }
+    } else if ((func_80121194() != 0) && (D_800D6FAC == 0)) {
+        D_800E6A10[objId] = -D_800E6A10[objId];
+        gKirbyState.turnDirection = (s32) D_800E6A10[objId];
+        func_8001E344(&tang, D_80129114->unk4[D_800E5F90[objId]].unk4, D_800E6BD0[objId]);
+        tang.y = 0.0f;
+        ref.x = 0.0f;
+        ref.y = 0.0f;
+        ref.z = D_800E6A10[objId];
+        gKirbyState.unk7C = vec3_abs_angle_diff(&ref, &tang);
+        if (gKirbyState.unk7C < 0.0f) {
+            gKirbyState.unk7C += 6.2831855f;
+        }
+    } else {
+        gKirbyState.unk7C = D_800E17D0[objId];
+    }
+    gKirbyState.unk80 = gEntitiesAngleYArray[objId];
+    if ((f32) gKirbyState.turnDirection == -1.0f) {
+        if (gKirbyState.unk80 < gKirbyState.unk7C) {
+            diff = (gKirbyState.unk80 + 6.2831855f) - gKirbyState.unk7C;
+        } else {
+            diff = gKirbyState.unk80 - gKirbyState.unk7C;
+        }
+        if ((diff - step) < step) {
+            goto snap;
+        }
+        gKirbyState.unk80 -= step;
+        if (gKirbyState.unk80 < 0.0f) {
+            gKirbyState.unk80 += 6.2831855f;
+        }
+        gEntitiesAngleYArray[objId] = gKirbyState.unk80;
+        return;
+    }
+    if (gKirbyState.unk7C < gKirbyState.unk80) {
+        diff = (gKirbyState.unk7C + 6.2831855f) - gKirbyState.unk80;
+    } else {
+        diff = gKirbyState.unk7C - gKirbyState.unk80;
+    }
+    if ((diff - step) < step) {
+        goto snap;
+    }
+    gKirbyState.unk80 += step;
+    if (gKirbyState.unk80 >= 6.2831855f) {
+        gKirbyState.unk80 -= 6.2831855f;
+    }
+    gEntitiesAngleYArray[objId] = gKirbyState.unk80;
+    return;
+snap:
+    gKirbyState.unk80 = gKirbyState.unk7C;
+    gKirbyState.turnDirection = 0;
+    D_800E17D0[objId] = gKirbyState.unk7C;
+    gEntitiesAngleYArray[objId] = D_800E17D0[objId];
+    gKirbyState.isTurning &= ~1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E548.s")
@@ -1893,6 +2456,127 @@ block_82:
         D_800E6850[omCurrentObj->objId] = 0.0f;
     case 3:                                         /* switch 2 */
     }
+}
+#elif defined(PORT)
+/* PORT: Kirby's horizontal walk-speed selector, from
+ * asm/nonmatchings/ovl2/plylib/func_8011ED68.s. func_80120AF8 fills a
+ * Vector of speed scalars (the sketch's sp2C/sp30/sp34 are v.x/v.y/v.z).
+ * `*(&D_800D6F58 + 0x54)` is D_800D6FAC as in the func_8011E548 arm.
+ * D_80128338 is the native f32 pair table {accel, speed} indexed by
+ * gKirbyState.unk7 (build/pc/data/ovl2_after_spawn.data.c). The inner
+ * D_800E98E0 switch (ability 20): case 3 returns, cases out of 2..7 share
+ * the 2/5 body (jtbl_80128FEC). */
+void func_8011ED68(void) {
+    extern s32 D_800D6FAC;
+    extern f32 D_80128338[];
+    Vector v;
+    f32 f2;
+    f32 f0;
+    s32 grounded;
+    u32 objId;
+
+    func_80120AF8(&v);
+    if ((gKirbyController.buttonHeld & 0x300) && (gKirbyState.unk17 == 0) && (D_800D6FAC == 0)) {
+        objId = omCurrentObj->objId;
+        grounded = D_800E8AE0[objId] & 6;
+        switch (gKirbyState.abilityInUse) {
+        case 2:
+        case 3:
+        case 6:
+        case 11:
+        case 33:
+            f2 = grounded ? 0.25f * v.y * 0.5f : 0.25f * v.y;
+            f0 = grounded ? 1.0f : 2.0f;
+            break;
+        case 20:
+            switch (D_800E98E0[objId]) {
+            case 3:
+                return;
+            case 4:
+            case 6:
+                f2 = grounded ? 0.125f : 0.25f;
+                f0 = grounded ? 1.0f : 2.0f;
+                break;
+            case 7:
+                f2 = grounded ? 0.8f : 1.6f;
+                f0 = grounded ? 3.0f : 6.0f;
+                break;
+            case 2:
+            case 5:
+            default:
+                f2 = grounded ? 0.25f * v.y * 0.5f : 0.25f * v.y;
+                f0 = grounded ? 1.0f : 2.0f;
+                break;
+            }
+            break;
+        case 15:
+            if (gKirbyState.unk38 == 1.0f) {
+                f2 = grounded ? 0.25f * v.y * 0.5f : 0.25f * v.y;
+                f0 = grounded ? 1.0f : 2.0f;
+            } else {
+                f2 = grounded ? 0.625f * v.y * 0.5f : 0.625f * v.y;
+                f0 = grounded ? 2.5f : 5.0f;
+            }
+            break;
+        case 32:
+            f2 = grounded ? 0.25f * v.y * 0.5f : 0.25f * v.y;
+            f0 = grounded ? 2.0f * v.x * 0.5f : 2.0f * v.x;
+            break;
+        case 23:
+        case 34:
+            f2 = grounded ? 0.8f * v.y * 0.5f : 0.8f * v.y;
+            f0 = grounded ? 6.0f * v.x * 0.5f : 6.0f * v.x;
+            break;
+        case 7:
+        case 31:
+            f2 = grounded ? 0.625f * v.y * 0.5f : 0.625f * v.y;
+            f0 = grounded ? 5.0f * v.x * 0.5f : 5.0f * v.x;
+            break;
+        case 0:
+            if (gKirbyState.action == 0x18) {
+                f2 = grounded ? 0.25f * v.y * 0.5f : 0.25f * v.y;
+                f0 = grounded ? 2.0f * v.x * 0.5f : 2.0f * v.x;
+                break;
+            }
+            /* fallthrough */
+        default:
+            if (D_800E8920[objId] != 0) {
+                if (grounded) {
+                    f2 = D_80128338[gKirbyState.unk7 * 2] * v.y * 0.5f;
+                    f0 = D_80128338[gKirbyState.unk7 * 2 + 1] * v.x * 0.5f;
+                } else {
+                    f2 = D_80128338[gKirbyState.unk7 * 2] * v.y;
+                    f0 = D_80128338[gKirbyState.unk7 * 2 + 1] * v.x;
+                }
+            } else {
+                if (grounded) {
+                    f2 = D_80128338[gKirbyState.unk7 * 2] * 0.5f;
+                    f0 = D_80128338[gKirbyState.unk7 * 2 + 1] * 0.5f;
+                } else {
+                    f2 = D_80128338[gKirbyState.unk7 * 2];
+                    f0 = D_80128338[gKirbyState.unk7 * 2 + 1];
+                }
+            }
+            break;
+        }
+        if (gKirbyController.buttonHeld & 0x100) {
+            D_800E6690[objId] = f2;
+        } else {
+            D_800E6690[objId] = -f2;
+        }
+        if (f0 < 0.0f) {
+            f0 = -f0;
+        }
+        D_800E6850[omCurrentObj->objId] = f0;
+        return;
+    }
+    objId = omCurrentObj->objId;
+    if ((D_800E8920[objId] != 0) && !(D_800E8AE0[objId] & 6)) {
+        D_800E6690[objId] = D_800E6A10[objId] * (v.z * 1.6f);
+    } else {
+        D_800E6690[objId] = D_800E6A10[objId] * v.z;
+    }
+    D_800E6850[omCurrentObj->objId] = 0.0f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011ED68.s")
@@ -2502,6 +3186,133 @@ block_14:
     }
     func_800A5404(&D_800D7010, (gKirbyState.damagePaletteIndex * 0x10) + temp_a2, temp_a2);
 }
+#elif defined(PORT)
+/* PORT: Kirby's damage-flash palette driver, from
+ * asm/nonmatchings/ovl2/plylib/func_80120E74.s.
+ *
+ * - The two addresses the ROM spells D_800D7010+0x48 / D_800D7B80+0x18 are
+ *   byte offsets inside the u8 color blocks the PC build keeps whole
+ *   (build/pc/data/ovl1_ovl1.bss.c), same N64 canonical byte order the
+ *   func_800F78E4 arm in ovl2_2.c establishes for this family.
+ * - The 0xC-stride damage table at D_801283E8 spans THREE emitted objects
+ *   on PC: D_801283E8 (2 native words), the WIDENED pointer block
+ *   D_801283F0 (12 cells, one 8-byte cell per N64 word, pointer cells
+ *   already host pointers), and D_80128420 (native words -- row 4's flash
+ *   length lands there). pc_dmg_row() re-derives each row from those
+ *   pieces; N64 row d = {pal @ 0x801283E8+d*12, count @ +4, flash @ +8}.
+ * - The palette records (D_80128388-family, 0x10 stride) and the
+ *   D_80128370 overlay records (0xC stride) are native u32 words holding
+ *   N64 word VALUES; func_800A5404/func_800A5468 read r,g,b BYTES, so the
+ *   words are decoded to canonical byte order into a scratch record first
+ *   (pc_be_words). The per-record hold time at +0xC is a word read and
+ *   comes straight from the native array.
+ * - The ROM resets when the PRE-decrement flash timer is 0 (sltiu in the
+ *   bne delay slot), not when the decremented value reaches 0 -- the m2c
+ *   sketch above is off by one there.
+ * - gKirbyState.unk10, when nonzero, holds an N64-address palette pointer
+ *   in a u32 field; valid to widen on this -no-pie build. */
+static void pc_be_words(u8 *dst, const u32 *src, s32 nwords) {
+    s32 i;
+
+    for (i = 0; i < nwords; i++) {
+        dst[4 * i + 0] = src[i] >> 24;
+        dst[4 * i + 1] = src[i] >> 16;
+        dst[4 * i + 2] = src[i] >> 8;
+        dst[4 * i + 3] = src[i];
+    }
+}
+
+static void pc_dmg_row(s32 d, u32 **pal, s32 *count, u32 *flash) {
+    extern u32 D_801283E8[];
+    extern void *D_801283F0[];
+    extern s32 D_80128420[];  /* s32 to match this file's later declaration */
+    uintptr_t *cells = (uintptr_t *) D_801283F0;
+
+    if (d == 0) {
+        *pal = (u32 *) (uintptr_t) D_801283E8[0];
+        *count = (s32) D_801283E8[1];
+        *flash = (u32) cells[0];
+    } else {
+        *pal = (u32 *) cells[3 * d - 2];
+        *count = (s32) (u32) cells[3 * d - 1];
+        *flash = (3 * d < 12) ? (u32) cells[3 * d] : (u32) D_80128420[3 * d - 12];
+    }
+}
+
+void func_80120E74(s32 arg0) {
+    void func_800F90C0(s32, u8 *);
+    void func_800A7BF4(s16 *, u8 *);
+    void func_800A5404(u8 *, u8 *);
+    void func_800A5468(u8 *, u8 *);
+    extern u8 D_800D7B80[];
+    extern s32 D_800BE4EC;
+    extern u32 D_80128370[];
+    u8 rec[12];
+    u32 *pal;
+    s32 count;
+    u32 flash;
+    s32 d;
+    s16 prev;
+
+    func_800F90C0(omCurrentObj->objId, (u8 *) &D_800D7010 + 0x48);
+    func_800A7BF4((s16 *) (D_800D7B80 + 0x18), (u8 *) &D_800D7010 + 0x48);
+    if ((s16) gKirbyState.damageFlashTimer == -1) {
+        if (gKirbyState.damageType == 0) {
+            u32 objId = omCurrentObj->objId;
+
+            if (D_800E7CE0[objId] == 0) {
+                if (gKirbyState.unk10 == 0) {
+                    func_800F90C0(objId, (u8 *) &D_800D7010);
+                } else {
+                    func_800A5404((u8 *) &D_800D7010, (u8 *) (uintptr_t) gKirbyState.unk10);
+                }
+            } else {
+                s32 sel = (D_800BE4EC & 2) ? 0 : 1;
+
+                pc_be_words(rec, &D_80128370[sel * 3], 3);
+                func_800A5468((u8 *) &D_800D7010, rec);
+            }
+            return;
+        }
+        gKirbyState.damageFlashTimer = -2;
+    }
+    if ((s16) gKirbyState.damageFlashTimer == -2) {
+        gKirbyState.damagePaletteIndex = 0xFFFF;
+        D_800E7CE0[omCurrentObj->objId] = 0;
+        gKirbyState.damagePaletteTimer = 1;
+        d = gKirbyState.damageType;
+        pc_dmg_row(d, &pal, &count, &flash);
+        gKirbyState.damageFlashTimer = flash;
+    } else {
+        prev = (s16) gKirbyState.damageFlashTimer;
+        gKirbyState.damageFlashTimer = prev - 1;
+        if (prev == 0) {
+            gKirbyState.damageType = 0;
+            gKirbyState.damageFlashTimer = -1;
+            return;
+        }
+    }
+    d = gKirbyState.damageType;
+    pc_dmg_row(d, &pal, &count, &flash);
+    if (count == -1) {
+        func_800F90C0(omCurrentObj->objId, (u8 *) &D_800D7010);
+        return;
+    }
+    gKirbyState.damagePaletteTimer = (s16) gKirbyState.damagePaletteTimer - 1;
+    if ((s16) gKirbyState.damagePaletteTimer == 0) {
+        s32 idx;
+
+        gKirbyState.damagePaletteIndex = gKirbyState.damagePaletteIndex + 1;
+        idx = gKirbyState.damagePaletteIndex;
+        if (idx == count) {
+            gKirbyState.damagePaletteIndex = 0;
+            idx = 0;
+        }
+        gKirbyState.damagePaletteTimer = pal[idx * 4 + 3];
+    }
+    pc_be_words(rec, pal + gKirbyState.damagePaletteIndex * 4, 3);
+    func_800A5404((u8 *) &D_800D7010, rec);
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80120E74.s")
 #endif
@@ -2953,6 +3764,99 @@ s32 func_8012209C(void) {
 block_33:
     return 1;
 }
+#elif defined(PORT)
+/* PORT: track-motion blocked-by-wall/floor probe, from
+ * asm/nonmatchings/ovl2/plylib/func_8012209C.s; the compiled ovl3 twin
+ * func_8016B74C_ovl3 (src/ovl3/ovl3_4.c) fixes the idioms: D_800E0490's
+ * per-track entry is a native pointer array (element [1] points at the f32
+ * body y-offset), and func_80104AB4's fifth argument receives the hit
+ * CollisionTriangle pointer (pointer-sized on PC; func_80104AB4 is declared
+ * void in ovl2_7.c but returns func_80103D80's result, the convention every
+ * compiled caller already relies on). Sets gKirbyState.unkB to the blocked
+ * direction: 4/3 = track forward/backward against a vertical wall, 1/2 =
+ * up/down against a horizontal face. */
+s32 func_8012209C(void) {
+    s32 func_800F9438(s32);
+    s32 func_80104AB4(Vector *, Vector *, u16, u16, void *);
+    void func_8010DC00(void *, void *);
+    Vector cur;
+    Vector next;
+    Vector nrm;
+    void *tri;
+    f32 yOff;
+    f32 diff;
+    u32 objId;
+
+    if (gKirbyState.unkB != 0) {
+        return 1;
+    }
+    if (func_800F9438(D_800E5F90[omCurrentObj->objId]) == 0) {
+        return 0;
+    }
+    objId = omCurrentObj->objId;
+    yOff = *D_800E0490[objId][1];
+    cur.x = gEntitiesPosXArray[objId];
+    cur.y = gEntitiesPosYArray[objId] + yOff;
+    cur.z = gEntitiesPosZArray[objId];
+    next.x = gEntitiesNextPosXArray[objId];
+    next.y = gEntitiesNextPosYArray[objId] + yOff;
+    next.z = gEntitiesNextPosZArray[objId];
+    diff = D_800E6BD0[objId] - D_800E6D90[objId];
+    tri = NULL;
+    if (diff != 0.0f) {
+        if (func_80104AB4(&cur, &next, 1, 8, &tri) != 0) {
+            func_8010DC00(tri, &nrm);
+            if (nrm.y == 0.0f) {
+                if (diff > 0.0f) {
+                    if ((gKirbyState.abilityInUse != 6) && (gKirbyState.abilityInUse != 0x1B) &&
+                        (gKirbyState.abilityInUse != 0x21)) {
+                        if (D_800E6A10[omCurrentObj->objId] == -1.0f) {
+                            if (!(gKirbyState.isTurning & 1)) {
+                                gKirbyState.isTurning |= 1;
+                            } else {
+                                gKirbyState.turnDirection = 0;
+                            }
+                        } else {
+                            gKirbyState.isTurning &= ~1;
+                        }
+                    }
+                    gKirbyState.unkB = 4;
+                } else {
+                    if ((gKirbyState.abilityInUse != 6) && (gKirbyState.abilityInUse != 0x1B) &&
+                        (gKirbyState.abilityInUse != 0x21)) {
+                        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                            if (!(gKirbyState.isTurning & 1)) {
+                                gKirbyState.isTurning |= 1;
+                            } else {
+                                gKirbyState.turnDirection = 0;
+                            }
+                        } else {
+                            gKirbyState.isTurning &= ~1;
+                        }
+                    }
+                    gKirbyState.unkB = 3;
+                }
+                return 1;
+            }
+        }
+    }
+    objId = omCurrentObj->objId;
+    diff = gEntitiesNextPosYArray[objId] - gEntitiesPosYArray[objId];
+    if (diff != 0.0f) {
+        if (func_80104AB4(&cur, &next, 1, 8, &tri) != 0) {
+            func_8010DC00(tri, &nrm);
+            if ((nrm.x == 0.0f) && (nrm.z == 0.0f)) {
+                if (diff > 0.0f) {
+                    gKirbyState.unkB = 1;
+                } else {
+                    gKirbyState.unkB = 2;
+                }
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8012209C.s")
 #endif
@@ -3004,6 +3908,53 @@ s32 func_80122558(void) {
         }
     }
 block_13:
+    return 0;
+}
+#elif defined(PORT)
+/* PORT: wall-grab probe (action 0xD), from
+ * asm/nonmatchings/ovl2/plylib/func_80122558.s. The ROM saves the whole
+ * 0x58-byte collision result block D_8012BCA0 around the probe and
+ * restores it afterwards; on PC that block is one 168-byte LP64 object
+ * (src/pc/pc_bss_whole.c), so the save/restore copies all of it.
+ * func_8010C734 takes only &gPositionState (the sketch's extra arguments
+ * are jump-table noise); its result flags live in the block's leading
+ * native u32. */
+s32 func_80122558(void) {
+    s32 func_8010C734(void *);
+    extern u8 D_8012BCA0[168];  /* whole PC block: src/pc/pc_bss_whole.c */
+    u8 saved[168];
+    s32 grab = 0;
+    f32 dir;
+
+    if (gKirbyState.unk15 != 0) {
+        return 0;
+    }
+    if (gKirbyState.unk4 != 0) {
+        return 0;
+    }
+    if (gKirbyState.isTurning & 5) {
+        return 0;
+    }
+    __builtin_memcpy(saved, D_8012BCA0, sizeof(saved));
+    dir = D_800E6A10[omCurrentObj->objId];
+    if (((dir == 1.0f) && (gKirbyState.rightCollisionNext != 0)) ||
+        ((dir == -1.0f) && (gKirbyState.leftCollisionNext != 0))) {
+        if (func_8010C734(&gPositionState) != 0) {
+            u32 flags = *(u32 *) D_8012BCA0 >> 0x13;
+
+            if (((flags & 7) == 7) || ((flags & 0x38) == 0x38)) {
+                grab = 1;
+            }
+        }
+    }
+    __builtin_memcpy(D_8012BCA0, saved, sizeof(saved));
+    if (grab) {
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk168 = 0.0f;
+        gKirbyState.unk164 = gKirbyState.unk168;
+        set_kirby_action_1(0xD, 0xA);
+        return 1;
+    }
     return 0;
 }
 #else
@@ -3064,6 +4015,72 @@ s32 func_801226FC(void) {
         }
     }
 block_16:
+    return 0;
+}
+#elif defined(PORT)
+/* PORT: ledge/step climb probe (action 0xE), from
+ * asm/nonmatchings/ovl2/plylib/func_801226FC.s. Same D_8012BCA0
+ * save/restore and flag test as the func_80122558 arm (func_8010CABC also
+ * takes only &gPositionState). On a hit it nudges track progress by a
+ * quarter-unit over the node length, re-clamps via func_800F8570 (one
+ * argument -- see the compiled func_800F8728 arm in ovl2_2.c; it can move
+ * Kirby to a NEIGHBORING node, so the footer is re-fetched afterwards like
+ * the ROM does), and snaps next-position X/Z onto the track. The footer
+ * records are the native Unk80129114_4 array (ovl2_2.c's func_800F78E4
+ * arm). */
+s32 func_801226FC(void) {
+    s32 func_8010CABC(void *);
+    void func_800F8570(s32);
+    void func_801229D0(void);
+    extern u8 D_8012BCA0[168];  /* whole PC block: src/pc/pc_bss_whole.c */
+    u8 saved[168];
+    struct Unk80129114_4_4 *footer;
+    Vector pos;
+    s32 climb = 0;
+    f32 dir;
+    f32 delta;
+    u32 objId;
+
+    if (gKirbyState.unk15 != 0) {
+        return 0;
+    }
+    if (gKirbyState.unk4 != 0) {
+        return 0;
+    }
+    if (gKirbyState.isTurning & 5) {
+        return 0;
+    }
+    __builtin_memcpy(saved, D_8012BCA0, sizeof(saved));
+    dir = D_800E6A10[omCurrentObj->objId];
+    if (((dir == 1.0f) && (gKirbyState.rightCollisionNext != 0)) ||
+        ((dir == -1.0f) && (gKirbyState.leftCollisionNext != 0))) {
+        if (func_8010CABC(&gPositionState) != 0) {
+            u32 flags = *(u32 *) D_8012BCA0 >> 0x13;
+
+            if (((flags & 7) == 7) || ((flags & 0x38) == 0x38)) {
+                climb = 1;
+            }
+        }
+    }
+    __builtin_memcpy(D_8012BCA0, saved, sizeof(saved));
+    if (climb) {
+        objId = omCurrentObj->objId;
+        delta = (D_800E6A10[objId] == 1.0f) ? -0.25f : 0.25f;
+        footer = D_80129114->unk4[D_800E5F90[objId]].unk4;
+        D_800E6BD0[objId] += (1.0f / footer->unkC) * delta;
+        func_800F8570(objId);
+        objId = omCurrentObj->objId;
+        footer = D_80129114->unk4[D_800E5F90[objId]].unk4;
+        mtxGetInterpolatedPosition(&pos, (s32 *) footer, D_800E6BD0[objId]);
+        gEntitiesNextPosXArray[objId] = pos.x;
+        gEntitiesNextPosZArray[objId] = pos.z;
+        gKirbyState.unk168 = 0.0f;
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk164 = gKirbyState.unk168;
+        set_kirby_action_1(0xE, 0xB);
+        func_801229D0();
+        return 1;
+    }
     return 0;
 }
 #else

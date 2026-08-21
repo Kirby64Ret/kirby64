@@ -24,10 +24,21 @@ struct Ovl7AnimHdrSub {
     s32 unk4;
 };
 
+#ifdef PORT
+/* The anim headers (D_801CA004_ovl7 family) are pointer-bearing data blocks,
+ * emitted widened on PC: one 8-byte cell per N64 word, pointers native. The
+ * N64 offsets shear (unk8 landed on cell 1, the constant 1, and got
+ * dereferenced); cells 0-1 are the two leading words, unk8 is cell 2. */
+struct Ovl7AnimHdr {
+    u8 filler0[16];
+    struct Ovl7AnimHdrSub *unk8;
+};
+#else
 struct Ovl7AnimHdr {
     u8 filler0[8];
     struct Ovl7AnimHdrSub *unk8;
 };
+#endif
 
 struct Ovl7AnimObj {
     u8 filler0[0x24];

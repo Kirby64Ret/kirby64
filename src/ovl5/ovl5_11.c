@@ -619,10 +619,21 @@ void func_801813FC_ovl5(GObj *arg0) {
 // struct copy + phantom stack
 SPObj *func_801815BC_ovl5(GObj *o, s32 arg1, f32 x, f32 y);
 SPObj *func_801815BC_ovl5(GObj *o, s32 arg1, f32 x, f32 y) {
+#ifdef PORT
+    /* D_80189CE8 is ten N64 pointer words; the PC data generator emits the
+       region as a native void*[] (8-byte slots), so the word-struct copy
+       reads pointer halves. Index the live table instead. */
+    void **sp20 = (void **) &D_80189CE8_ovl5;
+#else
     Unk28Words sp20 = *(Unk28Words *) &D_80189CE8_ovl5;
+#endif
     SPObj *spobj;
 
+#ifdef PORT
+    spobj = func_8015C740_ovl5(o, sp20[arg1]);
+#else
     spobj = func_8015C740_ovl5(o, sp20.unk0[arg1]);
+#endif
     spobj->xOffset = x;
     spobj->yOffset = y;
 }

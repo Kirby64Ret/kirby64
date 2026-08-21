@@ -6,6 +6,26 @@
 #include "ovl1_2.h"
 #include "ovl1_2_2.h"
 
+#ifdef PORT
+/* LP64 views of the generator/emitter nodes (struct PcGenNode / UnkEmitter
+ * in ovl1.c): the 8-byte next pointer shifts the position to +0x18 (+0x8 in
+ * the emitter) and the emitter pointer to +0x58. Writing through the N64
+ * offsets clobbered the node's bytecode slot (+0x14 on LP64) with pos.x --
+ * every particle spawned by that generator then dereferenced a garbage
+ * bytecode pointer. Offsets are locked by ovl1.c's pc_gennode_check. */
+typedef struct Ovl1Emitter {
+    /* 0x00 */ struct Ovl1Emitter *next;
+    /* 0x08 */ Vector unk4;
+    /* 0x14 */ Vector unk10;
+} Ovl1Emitter;
+
+typedef struct Ovl1Generator {
+    /* 0x00 */ u8 pad0[0x18];
+    /* 0x18 */ Vector pos;
+    /* 0x24 */ u8 pad24[0x58 - 0x24];
+    /* 0x58 */ Ovl1Emitter *xf;
+} Ovl1Generator;
+#else
 typedef struct Ovl1Emitter {
     /* 0x00 */ struct Ovl1Emitter *next;
     /* 0x04 */ Vector unk4;
@@ -18,6 +38,7 @@ typedef struct Ovl1Generator {
     /* 0x20 */ u8 pad20[0x2C];
     /* 0x4C */ Ovl1Emitter *xf;
 } Ovl1Generator;
+#endif
 
 typedef struct SoundHandle {
     char unk00[0x26];

@@ -119,6 +119,59 @@ void func_8015B060_ovl3(s32 arg0) {
     func_800B1900((u16) omCurrentObj->objId);
 }
 
+#ifdef PORT
+/* PORT: shared helpers for the plyshot PORT arms.
+ *
+ * The looping-sound state this file threads around is an N64 stack pair
+ * {SoundHandle *, u16 id} whose address is parked in D_800EA360 / D_800E9FE0
+ * as an s32. On the LP64 host func_800A77E8's 8-byte handle store into the
+ * pair's first (4-byte) slot leaves the id bytes overlapping the pointer's
+ * high half, so an 8-byte read back through the pair is never safe. All
+ * game-visible allocations sit below 4 GiB (src/pc/pc_mmio.c), so the LOW
+ * word alone identifies the handle: these helpers rebuild the handle from
+ * the low word and a local, and store back in a {low word, id} shape that
+ * round-trips. */
+static void pc_sndpair_release(void *base) {
+    extern void func_800A7870(void **, u16 *);
+    u32 *p = base;
+    void *h;
+    u16 sid;
+
+    if (p == NULL) {
+        return;
+    }
+    h = (void *) (uintptr_t) p[0];
+    sid = *(u16 *) (p + 1);
+    func_800A7870(&h, &sid);
+    p[0] = 0;
+    *(u16 *) (p + 1) = 0;
+}
+
+static void pc_sndpair_start(s32 fgm, void *base) {
+    extern void func_800A77E8(s32, s32 *, s32 *);
+    u32 *p = base;
+    void *h = NULL;
+    u16 sid = 0;
+
+    func_800A77E8(fgm, (s32 *) &h, (s32 *) &sid);
+    if (p != NULL) {
+        p[0] = (u32) (uintptr_t) h;
+        *(u16 *) (p + 1) = sid;
+    }
+}
+
+/* Effect-GObj parameter block hanging off GObj.unk4C (same shape as this
+ * file's Unk80167800): a kind word and up to six floats. */
+struct PcPlyshotFx {
+    u32 unk0;
+    f32 unk4;
+    f32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+};
+#endif
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015B190_ovl3.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015B75C_ovl3.s")
@@ -1109,7 +1162,100 @@ void func_801634D4_ovl3(s32 arg0) {
     curObjSleepForever();
 }
 
+#ifdef PORT
+/* PORT: per-frame service for the spit-spray cloud created by
+ * func_801634D4_ovl3 (anim 0x20041), from asm/nonmatchings/ovl3/plyshot/
+ * func_801636A4_ovl3.s. Ends the effect once Kirby leaves the spit action
+ * (gKirbyState.unk4 == 1 or action != 0x18); otherwise it sinks 5 units a
+ * frame, ramps the growth counter D_800E9720 toward 30, and on a
+ * water<->air transition of the parent swaps the looping sound pair
+ * (tables D_8019684C/D_80196858, stage picked from the growth counter) and
+ * the attached particle effect. The effect GObj's parameter block is
+ * re-seated over the parent each frame, the spray hit record is run against
+ * enemies with func_80155E58_ovl3 as the break callback -- one-shot gated
+ * by the byte at D_8012E860+0x11 -- and anim script D_80191044_ovl3 runs on
+ * the parent. The sound pair lives at the coroutine-stack address the init
+ * parked in D_800E9FE0 (as_ptr, so no truncation), accessed through the
+ * pc_sndpair_* helpers. */
+void func_801636A4_ovl3(s32 arg0) {
+    extern s32 D_8019684C_ovl3[];
+    extern s32 D_80196858_ovl3[];
+    extern s32 D_80193920_ovl3[];
+    extern char D_80191044_ovl3[];
+    extern s32 func_80111A04(char *, s32);
+    extern s32 func_80155E58_ovl3(void);
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern f32 D_80198540_ovl3[][8];
+    extern void func_800B26D8(Vector *, s32, s32);
+    extern s32 func_800A8234(s32, s32, s32);
+    s32 id = omCurrentObj->objId;
+    s32 parent = D_800E0D50[id];
+    void *pair = D_800E9FE0[id].as_ptr;
+    struct PcPlyshotFx *fx;
+    Vector sp44;
+
+    if ((gKirbyState.unk4 == 1) || (gKirbyState.action != 0x18)) {
+        pc_sndpair_release(pair);
+        func_800A22D4(D_800EA520[id]);
+        func_800B1900((u16) id);
+        return;
+    }
+    gEntitiesNextPosYArray[id] -= 5.0f;
+    if (D_800E9720[id] < 30) {
+        D_800E9720[id]++;
+    }
+    {
+        s32 parentWet = (D_800E8AE0[parent] & 6) ? 1 : 0;
+        s32 selfWet = (D_800E8AE0[id] & 6) ? 1 : 0;
+
+        D_800E8AE0[id] = D_800E8AE0[parent];
+        if (parentWet != selfWet) {
+            s32 wet = (D_800E8AE0[id] & 6) ? 1 : 0;
+            s32 stage = 5;
+
+            pc_sndpair_release(pair);
+            func_800A22D4(D_800EA520[id]);
+            D_800EA520[id] = func_800A8234(1, 1, D_8019684C_ovl3[wet * 2]);
+            if (D_800E98E0[id] == 0) {
+                s32 t = D_800E9720[id];
+
+                if (t < 3) {
+                    stage = 0;
+                } else if (t < 6) {
+                    stage = 1;
+                } else if (t < 12) {
+                    stage = 2;
+                } else if (t < 18) {
+                    stage = 3;
+                } else {
+                    stage = 4;
+                }
+                D_800E98E0[id] = 1;
+            } else {
+                D_800E98E0[id] = 0;
+            }
+            pc_sndpair_start(D_80196858_ovl3[stage * 2 + wet], pair);
+        }
+    }
+    fx = (struct PcPlyshotFx *) ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
+    fx->unk4 = gEntitiesNextPosXArray[parent];
+    fx->unk8 = gEntitiesNextPosYArray[parent] + 25.0f;
+    fx->unkC = gEntitiesNextPosZArray[parent];
+    func_800B26D8(&sp44, (s32) (uintptr_t) D_800DFBD0[parent][8], parent);
+    fx->unk10 = sp44.x;
+    fx->unk14 = sp44.y;
+    fx->unk18 = sp44.z;
+    if (((u8 *) &D_8012E860)[0x11] == 0) {
+        if (func_80155D50_ovl3(D_80198540_ovl3[id - 60], (s32) (uintptr_t) D_80193920_ovl3,
+                               (s32) (uintptr_t) func_80155E58_ovl3, parent) != 0) {
+            ((u8 *) &D_8012E860)[0x11] += 1;
+        }
+    }
+    func_80111C4C(func_80111A04(D_80191044_ovl3, D_800E0D50[id]));
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801636A4_ovl3.s")
+#endif
 
 extern f32 D_80197150_ovl3;
 extern f32 D_80197158_ovl3;
@@ -2231,7 +2377,102 @@ s32 func_8016854C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     return temp;
 }
 
+#ifdef PORT
+/* PORT: the second shot render dispatcher, from asm/nonmatchings/ovl3/
+ * plyshot/func_8016858C_ovl3.s (jump table jtbl_801971BC_ovl3). Identical in
+ * shape to func_8016264C_ovl3 above -- same render-kind cases 19..30, same
+ * segment-4 setup and dynamic-light block per display list head -- with one
+ * difference: when the object's level slot D_800E5F90 is -1 the dynamic
+ * light color is sampled from the PARENT track (D_800E0D50) instead of the
+ * object itself. */
+static void pc_shot_draw_lights_pre(GObj *g, s32 heads) {
+    s32 id = g->objId;
+
+    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+    if (heads > 1) {
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
+    }
+    if (D_800E0650[id] != 0) {
+        if (D_800E5F90[id] == -1) {
+            func_800F90C0(D_800E0D50[id], gDynamicBuffer1.top);
+        } else {
+            func_800F90C0(id, gDynamicBuffer1.top);
+        }
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+        gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+        if (heads > 1) {
+            gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top + 8, 1);
+            gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top, 2);
+        }
+        gDynamicBuffer1.top += 0x18;
+    }
+}
+
+static void pc_shot_draw_lights_post(s32 heads) {
+    gSPNumLights(gDisplayListHeads[0]++, 1);
+    gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+    gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+    if (heads > 1) {
+        gSPNumLights(gDisplayListHeads[1]++, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+    }
+}
+
+void func_8016858C_ovl3(GObj *g) {
+    if (!(D_800DD8D0[g->objId] & 0x40)) {
+        switch (func_800AB0F4(g)) {
+            case 19:
+                pc_shot_draw_lights_pre(g, 1);
+                func_800AB120(g);
+                pc_shot_draw_lights_post(1);
+                break;
+            case 21:
+                pc_shot_draw_lights_pre(g, 1);
+                func_800AB1F0(g);
+                pc_shot_draw_lights_post(1);
+                break;
+            case 23:
+            case 25:
+                pc_shot_draw_lights_pre(g, 1);
+                renderDrawDObjFromGObj(g);
+                pc_shot_draw_lights_post(1);
+                break;
+            case 27:
+            case 29:
+                pc_shot_draw_lights_pre(g, 1);
+                func_8001585C(g);
+                pc_shot_draw_lights_post(1);
+                break;
+            case 20:
+                pc_shot_draw_lights_pre(g, 2);
+                func_800AB174(g);
+                pc_shot_draw_lights_post(2);
+                break;
+            case 22:
+                pc_shot_draw_lights_pre(g, 2);
+                func_800AB244(g);
+                pc_shot_draw_lights_post(2);
+                break;
+            case 24:
+            case 26:
+                pc_shot_draw_lights_pre(g, 2);
+                renderDrawObject_TypeD(g);
+                pc_shot_draw_lights_post(2);
+                break;
+            case 28:
+            case 30:
+                pc_shot_draw_lights_pre(g, 2);
+                func_80015BCC(g);
+                pc_shot_draw_lights_post(2);
+                break;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8016858C_ovl3.s")
+#endif
 
 extern char D_80197120_ovl3[];
 

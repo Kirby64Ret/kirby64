@@ -1260,10 +1260,21 @@ void func_80164174_ovl5(GObj *arg0) {
 #endif
 
 void func_801642A4_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+#ifdef PORT
+    /* D_80185FF8 is ten N64 pointer words; the PC data generator emits the
+       region as part of a native void*[] (8-byte slots), so the word-struct
+       copy reads pointer halves. Index the live table instead. */
+    void **sp20 = (void **) &D_80185FF8_ovl5;
+#else
     Unk28Words sp20 = D_80185FF8_ovl5;
+#endif
     SPObj *spobj;
 
+#ifdef PORT
+    spobj = (SPObj *) func_8015C740_ovl5(arg0, sp20[arg1]);
+#else
     spobj = (SPObj *) func_8015C740_ovl5(arg0, sp20.unk0[arg1]);
+#endif
     spobj->xOffset = arg2;
     spobj->yOffset = arg3;
 }

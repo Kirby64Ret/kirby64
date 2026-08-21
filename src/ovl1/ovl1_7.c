@@ -1040,6 +1040,20 @@ void func_800B18B4(GObj *arg0) {
 void func_800B1900(u16 track) {
     GObj *gobj;
 
+#ifdef PORT
+    /* Dozens of callers across the overlays pass `((u16 *) omCurrentObj)[1]`,
+     * which on big-endian N64 is the LOW half of GObj.objId -- and tracks are
+     * indexed by objId (src/ovl1/ovl1_6.c stores D_800DE350[i] under the id it
+     * gives HS64_omMakeGObj). On a little-endian host the same expression
+     * reads the HIGH half, which is 0 for every real id, so those calls all
+     * arrive as track 0 and dereference an empty slot. Track 0 is never
+     * handed out, so a 0 here with a current object that owns its own slot is
+     * always that misread; recover the intended id. */
+    if (track == 0 && omCurrentObj != NULL &&
+        D_800DE350[(u16)omCurrentObj->objId] == omCurrentObj) {
+        track = (u16)omCurrentObj->objId;
+    }
+#endif
     gobj = D_800DE350[track];
     func_800A9D64(track);
     func_800A99E4(track);
@@ -1249,6 +1263,45 @@ void func_800B1FD0(GObj *arg0, s32 arg1, ? arg2, s32 arg3, f32 arg4) {
         } while (var_s0 != NULL);
     }
 }
+#elif defined(PORT)
+/* Subtree anim-set walker (draft above): walks the DObj tree from arg0,
+ * handing each node its slot of the anim-script table (N64 stride 4) and of
+ * the 0x2C-byte parameter records. On PC the script table is a widened
+ * void*[] -- one 8-byte cell per N64 word -- so that stride is 8; the
+ * parameter records are scalar structs at native layout, stride unchanged.
+ * Pointers arrive as u32 (the N64 signature); lossless under the -no-pie
+ * low-memory invariant. */
+void func_800B1FD0(GObj *arg0, u32 arg1, f32 arg2, u32 arg3, f32 arg4) {
+    DObj *root = omCurrentObj->data.dobj;
+    uintptr_t script = arg1;
+    uintptr_t params = arg3;
+    DObj *node;
+
+    if ((DObj *) arg0 != root) {
+        do {
+            if (script != 0) {
+                script += 8;
+            }
+            if (params != 0) {
+                params += 0x2C;
+            }
+            root = animModelTreeNextNode(root);
+        } while ((DObj *) arg0 != root);
+    }
+    node = root;
+    if (root != NULL) {
+        do {
+            func_8000EC98(node, script, arg2, params, 0, arg4, 0.0f, 0.0f, 0.0f);
+            node = func_800B1F70(node, root);
+            if (script != 0) {
+                script += 8;
+            }
+            if (params != 0) {
+                params += 0x2C;
+            }
+        } while (node != NULL);
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1FD0.s")
 #endif
@@ -1440,6 +1493,53 @@ void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
     } else {
         vec->x = atan2f(spA8, spB8);
         vec->z = atan2f(sp90[1], sp90[0]);
+    }
+    utilWrapRotation(vec);
+}
+#elif defined(PORT)
+/* Functional port; the weak stub aborted the world map's travel state the
+ * first time the port ever reached it. The asm walks the PARENT chain
+ * (lw 0x14 = DObj.parent; the sketch above calls that field `child`, an m2c
+ * naming artifact) and the loop processes each node then stops after the one
+ * whose parent is the sentinel 1 -- the same shape as the matched
+ * func_800B2928 below, with rotation in place of scale. The euler extraction
+ * mirrors the matched extractor in src/ovl1/util.c (asinf/atan2f rows). */
+void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
+    Mat4 finalMtx;
+    Mat4 tmpMtx;
+
+    if (track == 0xFFFF) {
+        track = omCurrentObj->objId;
+    }
+    if (node == NULL) {
+        node = omCurrentObj->data.dobj;
+    }
+    guMtxIdentF(finalMtx);
+    do {
+        if ((u32)(uintptr_t)node->parent != 1) {
+            if ((node->angle.v.x != 0.0f) || (node->angle.v.y != 0.0f) || (node->angle.v.z != 0.0f)) {
+                HS64_MkRotationMtxF(tmpMtx, node->angle.v.x, node->angle.v.y, node->angle.v.z);
+                guMtxCatF(finalMtx, tmpMtx, finalMtx);
+            }
+        } else {
+            if ((gEntitiesAngleXArray[track] != 0.0f) || (gEntitiesAngleYArray[track] != 0.0f) ||
+                (gEntitiesAngleZArray[track] != 0.0f)) {
+                HS64_MkRotationMtxF(tmpMtx, gEntitiesAngleXArray[track], gEntitiesAngleYArray[track],
+                                    gEntitiesAngleZArray[track]);
+                guMtxCatF(finalMtx, tmpMtx, finalMtx);
+            }
+        }
+        node = node->parent;
+    } while ((u32)(uintptr_t)node != 1);
+
+    vec->y = asinf(-finalMtx[0][2]);
+    if ((vec->y == 1.5707964f) || (vec->y == -1.5707964f)) {
+        vec->x = (vec->y == 1.5707964f) ? atan2f(finalMtx[1][0], finalMtx[1][1])
+                                        : atan2f(-finalMtx[1][0], finalMtx[1][1]);
+        vec->z = 0.0f;
+    } else {
+        vec->x = atan2f(finalMtx[1][2], finalMtx[2][2]);
+        vec->z = atan2f(finalMtx[0][1], finalMtx[0][0]);
     }
     utilWrapRotation(vec);
 }

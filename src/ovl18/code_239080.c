@@ -313,9 +313,22 @@ u32 func_80227308_ovl18(s32 arg0) {
     scRemovePostProcessFunc();
     auSetBGMVolume(0, 0x7800);
     gameSetUpdateRate(2.0f);
+#ifdef PORT
+    /* Both blobs come out of the generated data as 8-byte-per-N64-word cells
+     * (the widened layout viApplyScreenSettings' and gtlCreateScene's PORT
+     * arms read). The local 4-byte structs above would patch the zbuffer and
+     * heap size into the LOW HALF of cell 1/2 -- the heap-size write landed
+     * on the scene's onPrivDraw pointer and gtlDraw called the byte delta
+     * (pc = 0x186db0). Patch the real cells. */
+    ((uintptr_t *)&D_8022AE30_ovl18)[3] = (u32)((uintptr_t)&D_8012EB00 - 0x1900);
+    viApplyScreenSettings(&D_8022AE30_ovl18);
+    ((uintptr_t *)&D_8022AE4C_ovl18)[4] =
+        (u32)((u8 *)gFrameBuffer - (u8 *)&D_8022FB50);
+#else
     D_8022AE30_ovl18.zb = (u32)&D_8012EB00 - 0x1900;
     viApplyScreenSettings(&D_8022AE30_ovl18);
     D_8022AE4C_ovl18.unk10 = (u32)gFrameBuffer - (u32)&D_8022FB50;
+#endif
     zp = (vu16 *) D_803D6900;
     i = 0;
     do {

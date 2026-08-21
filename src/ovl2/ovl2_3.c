@@ -236,7 +236,14 @@ void func_800F88C8(GObj *g, s32 arg1, f32 arg2) {
 
     D_800E6150[objId] = arg1;
     D_800E5F90[objId] = arg1;
+#ifdef PORT
+    /* D_80129114->unk4 is a NATIVE record array on this build (built by
+     * func_800F78E4's PORT arm in ovl2_2.c); the 0x10 byte stride is the
+     * N64 record size, so index instead. */
+    sub4 = &D_80129114->unk4[arg1];
+#else
     sub4 = (struct Unk80129114_4 *) ((arg1 * 0x10) + (s32) D_80129114->unk4);
+#endif
     sub4_4 = sub4->unk4;
     if (arg2 <= 0.0f) {
         arg2 = 0.001f;
@@ -287,6 +294,82 @@ void func_800F8A24(s32 arg0) {
     }
 }
 
+#ifdef PORT
+/* PORT: same body, but through the NATIVE node records func_800F78E4's PORT
+ * arm builds (ovl2_2.c). TrackNodeHeader's LP64 layout does not match those
+ * records (its unk8 pointer widens to 8 bytes and pushes unkC/unkE), so the
+ * node accesses go through struct Unk80129114_4: the connection count is the
+ * big-endian s16 the record keeps as its two raw bytes (unkC<<8|unkD), the
+ * connection array pointer lives in the u32 unk8 slot (arena < 4 GiB), and
+ * the footer is the native descriptor whose LP64 TrackFooter view is
+ * asserted layout-identical in ovl2_2.c. */
+s32 func_800F8B1C(s32 arg0) {
+    s32 *nodePtr;
+    s32 cur;
+    struct Unk80129114_4 *node;
+    s32 n;
+    f32 *progressPtr;
+    f32 progress;
+    s32 dir;
+    s32 idx;
+    struct TrackConnection *conn;
+    f32 len;
+    f32 dist;
+    f32 nextLen;
+    f32 newProgress;
+
+    nodePtr = &D_800E5F90[arg0];
+    cur = *nodePtr;
+    node = &D_80129114->unk4[cur];
+    n = (s16)((node->unkC << 8) | node->unkD);
+    if (n == 0) {
+        return 0;
+    }
+    dir = 0;
+    progressPtr = &D_800E6BD0[arg0];
+    progress = *progressPtr;
+    idx = -1;
+    if (progress > 1.0f) {
+        dir = 1;
+    }
+    if (progress < 0.0f) {
+        dir = -1;
+    }
+    if (dir == 0) {
+        return 0;
+    }
+    conn = (struct TrackConnection *)(uintptr_t)node->unk8;
+    if (dir > 0) {
+        if ((n != 0) && (conn[n - 1].unk0 != 0)) {
+            idx = n - 1;
+        }
+    } else if (conn->unk0 == 0) {
+        idx = 0;
+    }
+    if (idx == -1) {
+        return 0;
+    }
+    len = ((struct TrackFooter *)node->unk4)->unkC;
+    if (dir > 0) {
+        dist = (progress * len) - len;
+    } else {
+        dist = progress * len;
+    }
+    n = conn[idx].unk2;
+    node = &D_80129114->unk4[n];
+    nextLen = ((struct TrackFooter *)node->unk4)->unkC;
+    if (dir > 0) {
+        newProgress = dist / nextLen;
+    } else {
+        newProgress = (nextLen + dist) / nextLen;
+    }
+    D_800E6150[arg0] = cur;
+    *nodePtr = n;
+    D_800E6D90[arg0] = newProgress;
+    *progressPtr = newProgress;
+    return 1;
+}
+#else
 s32 func_800F8B1C(s32 arg0) {
     s32 *nodePtr;
     s32 cur;
@@ -353,6 +436,7 @@ s32 func_800F8B1C(s32 arg0) {
     *progressPtr = newProgress;
     return 1;
 }
+#endif /* PORT */
 
 #ifdef NON_MATCHING
 // close but not matching: stack layout and register allocation differ
@@ -385,7 +469,12 @@ void func_800F8C70(s32 *arg0) {
     if (newNode == *nodePtr) {
         return;
     }
+#ifdef PORT
+    /* native records: index with the real stride (see func_800F8B1C) */
+    footer = (struct TrackFooter *) D_80129114->unk4[newNode].unk4;
+#else
     footer = ((struct TrackNodeHeader *) D_80129114->unk4)[newNode].unk4;
+#endif
     cell = hit->unk12;
     idx = cell;
     if (footer->unk0 != 0) {
@@ -472,6 +561,59 @@ void func_800F8E6C(s32 *arg0) {
         if (temp_f0_2 < 0.0f) {
             *temp_v0_2 += 6.2831855f;
         }
+    }
+}
+#elif defined(PORT)
+/* PORT: advance an entity along its track node, from asm/nonmatchings/ovl2/
+ * ovl2_3/func_800F8E6C.s (the m2c sketch above garbles the reload after the
+ * node hop and the tangent/heading tail). Node records are the NATIVE array
+ * func_800F78E4's PORT arm builds (see func_800F8B1C above), so the 0x10
+ * stride becomes an index and the footer pointer is the native TrackFooter.
+ * This is the per-frame seat: progress += (speed * 0.1) / node length, hop
+ * across the node boundary if it wrapped, then world X/Z from the footer
+ * interpolation and the heading angle from the track tangent. */
+void func_8001E344(Vector *, void *, f32);
+
+void func_800F8E6C(GObj *arg0) {
+    s32 objId = arg0->objId;
+    s32 node = D_800E5F90[objId];
+    struct TrackFooter *footer;
+    Vector pos;
+    Vector ref;
+    Vector tang;
+    f32 old;
+    f32 cur;
+    f32 ang;
+
+    if (node == -1) {
+        return;
+    }
+    footer = (struct TrackFooter *) D_80129114->unk4[node].unk4;
+    old = D_800E6BD0[objId];
+    D_800E6BD0[objId] = old + ((D_800E64D0[objId] * 0.1f) / footer->unkC);
+    cur = D_800E6BD0[objId];
+    if (old != cur) {
+        D_800E6D90[objId] = old;
+        func_800F8B1C(objId);
+        func_800F8A24(objId);
+        node = D_800E5F90[objId];
+        cur = D_800E6BD0[objId];
+    } else {
+        D_800E6D90[objId] = cur;
+    }
+    footer = (struct TrackFooter *) D_80129114->unk4[node].unk4;
+    mtxGetInterpolatedPosition(&pos, footer, cur);
+    gEntitiesNextPosXArray[objId] = pos.x;
+    gEntitiesNextPosZArray[objId] = pos.z;
+    ref.x = 0.0f;
+    ref.y = 0.0f;
+    ref.z = D_800E6A10[objId];
+    func_8001E344(&tang, footer, D_800E6BD0[objId]);
+    tang.y = 0.0f;
+    ang = vec3_abs_angle_diff(&ref, &tang);
+    D_800E17D0[objId] = ang;
+    if (ang < 0.0f) {
+        D_800E17D0[objId] += 6.2831855f;
     }
 }
 #else
@@ -594,6 +736,83 @@ block_9:
     sp3F = 0;
     func_800A5404(temp_f14_2, (bitwise void *) arg1, &sp34, var_a2_2, &sp3D);
 }
+#elif defined(PORT)
+/* PORT: blend two 12-byte D_800D478C color records and hand the result to
+ * func_800A5404, from asm/nonmatchings/ovl2/ovl2_3/func_800F90C0.s (the m2c
+ * sketch above garbles the byte loops and the call args). Record selection:
+ * a kirby node flagged 0x10 blends by the entity's next Y between the
+ * node's unk10/unk12 heights, clamping to record unk9 above and unkA below;
+ * otherwise the track parameter D_800E6BD0 picks unk9->unkA on the first
+ * half and unkA->unkB on the second. D_800D478C is emitted as native u32
+ * words on this build, so the N64 byte reads become word shifts ((w >> 24)
+ * is the N64 byte 0) -- same rule as func_800F6830's PORT arm -- and the
+ * blended record is built in N64 byte order because func_800A5404 reads
+ * r,g,b BYTES. Bytes 0-5 blend unsigned, 6-8 blend as signed offsets biased
+ * by +100 (ROM truncates each the same way: first loop through the u32
+ * convert, second through trunc.w.s), bytes 9-11 are zeroed. */
+static void pc_read_478c(u8 *dst, u32 idx) {
+    extern u32 D_800D478C[];
+    s32 j;
+
+    for (j = 0; j < 12; j++) {
+        dst[j] = (u8) (D_800D478C[idx * 3 + (j / 4)] >> (24 - 8 * (j % 4)));
+    }
+}
+
+void func_800F90C0(s32 arg0, u8 *arg1) {
+    void func_800A5404(u8 *, u8 *);
+    struct TrackKirbyNode *node =
+        (struct TrackKirbyNode *) D_80129114->unk4[D_800E5F90[arg0]].unk0;
+    u8 recA[12];
+    u8 recB[12];
+    u8 out[12];
+    u32 idxA, idxB;
+    f32 t;
+    s32 j;
+
+    if (node->unkE & 0x10) {
+        s16 y = (s16) gEntitiesNextPosYArray[arg0];
+
+        idxA = node->unk9;
+        idxB = node->unkA;
+        if (y >= node->unk10) {
+            pc_read_478c(recA, idxA);
+            func_800A5404(arg1, recA);
+            return;
+        }
+        if (node->unk12 >= y) {
+            pc_read_478c(recA, idxB);
+            func_800A5404(arg1, recA);
+            return;
+        }
+        t = (f32) (node->unk10 - y) / (f32) (node->unk10 - node->unk12);
+    } else {
+        f32 par = D_800E6BD0[arg0];
+
+        if (par <= 0.5f) {
+            idxA = node->unk9;
+            idxB = node->unkA;
+            t = 2.0f * par;
+        } else {
+            idxA = node->unkA;
+            idxB = node->unkB;
+            t = (par - 0.5f) * 2.0f;
+        }
+    }
+    pc_read_478c(recA, idxA);
+    pc_read_478c(recB, idxB);
+    for (j = 0; j < 6; j++) {
+        out[j] = (u8) (u32) (((f32) (recB[j] - recA[j]) * t) + (f32) recA[j]);
+    }
+    for (j = 6; j < 9; j++) {
+        s32 a = (s8) recA[j] + 100;
+        s32 b = (s8) recB[j] + 100;
+
+        out[j] = (u8) (s32) (((f32) a + ((f32) (b - a) * t)) - 100.0f);
+    }
+    out[9] = out[10] = out[11] = 0;
+    func_800A5404(arg1, out);
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F90C0.s")
 #endif
@@ -618,7 +837,12 @@ s32 func_800F9438(s32 arg0) {
     if (D_800BE4F8 != 1) {
         return 0;
     }
+#ifdef PORT
+    /* native records: index with the real stride (see func_800F8B1C) */
+    node = (struct TrackKirbyNode *) D_80129114->unk4[arg0].unk0;
+#else
     node = ((struct TrackNodeHeader *) D_80129114->unk4)[arg0].unk0;
+#endif
     if (!(node->unkE & 1)) {
         return 0;
     }
@@ -724,6 +948,77 @@ f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
         var_f2 = (temp_f2_2 + (((1.0f - arg1) * temp_f16) + (arg3 * temp_f0))) * 10.0f;
     }
     return var_f2;
+}
+#elif defined(PORT)
+/* PORT: signed track distance between two (node, progress) seats, from the
+ * m2c sketch above with the accesses respelled for this build: node records
+ * are the NATIVE array (index, not the 0x10 byte stride), the routing matrix
+ * D_8012912C is raw bytes in memory order and the per-route length table
+ * D_80129130 is native f32s (both published by func_800F78E4's PORT arm).
+ * The camera-distance logic itself is byte-for-byte the sketch. */
+extern u8 *D_8012912C;
+extern f32 *D_80129130;
+
+f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
+    struct Unk80129114_4 *recs;
+    f32 len0;
+    f32 len2;
+    u8 route;
+    f32 fwd;
+    f32 back;
+    f32 afwd;
+    f32 aback;
+
+    if (arg0 < 0) {
+        return 9999.0f;
+    }
+    if (arg2 < 0) {
+        return 9999.0f;
+    }
+    recs = D_80129114->unk4;
+    len0 = ((struct TrackFooter *) recs[arg0].unk4)->unkC;
+    if (arg0 == arg2) {
+        if (recs[arg0].unkE != 0) {
+            fwd = arg3 - arg1;
+            if (arg3 <= arg1) {
+                back = (1.0f - arg1) + arg3;
+            } else {
+                back = ((1.0f - arg3) + arg1) * -1.0f;
+            }
+            afwd = (fwd < 0.0f) ? -fwd : fwd;
+            aback = (back < 0.0f) ? -back : back;
+            if (afwd < aback) {
+                return fwd * 10.0f * len0;
+            }
+            return back * 10.0f * len0;
+        }
+        return (arg3 - arg1) * len0 * 10.0f;
+    }
+    route = D_8012912C[(arg0 * D_80129118) + arg2];
+    if (route == 0) {
+        return 9999.0f;
+    }
+    len2 = ((struct TrackFooter *) recs[arg2].unk4)->unkC;
+    if (*D_80129130 == 0.0f) {
+        u8 route2 = D_8012912C[(arg0 * D_80129118) + arg2 +
+                               (D_80129118 * D_80129118)];
+        fwd = (D_80129130[route & 0x7F] +
+               ((arg1 * len0) + ((1.0f - arg3) * len2))) * -10.0f;
+        back = (D_80129130[route2 & 0x7F] +
+                (((1.0f - arg1) * len0) + (arg3 * len2))) * 10.0f;
+        afwd = (fwd < 0.0f) ? -fwd : fwd;
+        aback = (back < 0.0f) ? -back : back;
+        if (afwd < aback) {
+            return fwd;
+        }
+        return back;
+    }
+    if (route & 0x80) {
+        return (D_80129130[route & 0x7F] +
+                ((arg1 * len0) + ((1.0f - arg3) * len2))) * -10.0f;
+    }
+    return (D_80129130[route & 0x7F] +
+            (((1.0f - arg1) * len0) + (arg3 * len2))) * 10.0f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F951C.s")
@@ -1025,6 +1320,73 @@ block_10:
     }
     return var_f20;
 }
+#elif defined(PORT)
+/* PORT: recursive nearest-point refinement on a track footer, from the m2c
+ * sketch above (which mangles the argument list -- the real one matches the
+ * call in func_800F9FDC below: footer, world point, seed param, window,
+ * wrap flag). Each step evaluates the seed and seed +/- half-window
+ * (wrapped into [0,1] on looping tracks, clamped otherwise), keeps the
+ * closest, and recurses with the halved window until it is below 2e-05.
+ * The footer is native on this build, so func_800F9C54 works unchanged. */
+f32 func_800F9C94(void *arg0, Vector *arg1, f32 arg2, f32 arg3, s32 arg4) {
+    f32 half;
+    f32 hi;
+    f32 lo;
+    f32 dBest;
+    f32 dHi;
+    f32 dLo;
+
+    if (arg3 > 2e-05) {
+        half = arg3 * 0.5f;
+        hi = arg2 + half;
+        lo = arg2 - half;
+        if (arg4 == 1) {
+            if (arg2 < 0.0f) {
+                arg2 += 1.0f;
+            } else if (arg2 > 1.0f) {
+                arg2 -= 1.0f;
+            }
+            if (hi < 0.0f) {
+                hi += 1.0f;
+            } else if (hi > 1.0f) {
+                hi -= 1.0f;
+            }
+            if (lo < 0.0f) {
+                lo += 1.0f;
+            } else if (lo > 1.0f) {
+                lo -= 1.0f;
+            }
+        } else {
+            if (arg2 < 0.0f) {
+                arg2 = 0.0f;
+            } else if (arg2 > 1.0f) {
+                arg2 = 1.0f;
+            }
+            if (hi < 0.0f) {
+                hi = 0.0f;
+            } else if (hi > 1.0f) {
+                hi = 1.0f;
+            }
+            if (lo < 0.0f) {
+                lo = 0.0f;
+            } else if (lo > 1.0f) {
+                lo = 1.0f;
+            }
+        }
+        dBest = func_800F9C54(arg0, arg2, arg1);
+        dHi = func_800F9C54(arg0, hi, arg1);
+        dLo = func_800F9C54(arg0, lo, arg1);
+        if (dHi < dBest) {
+            dBest = dHi;
+            arg2 = hi;
+        }
+        if (dLo < dBest) {
+            arg2 = lo;
+        }
+        arg2 = func_800F9C94(arg0, arg1, arg2, half, arg4);
+    }
+    return arg2;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9C94.s")
 #endif
@@ -1121,6 +1483,72 @@ void func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
     }
     func_800F9C94(var_f12, sp8C, arg0, arg1, var_f2_2, 0x3CA3D70A, arg3);
 }
+#elif defined(PORT)
+/* PORT: nearest track param around keyframe arg2 for world point arg1, from
+ * the m2c sketch above. The sketch's tail call drops the return value the
+ * asm actually forwards (func_800FA1D4 consumes it as the entity's initial
+ * progress), so this spells it out. The footer (arg0) and its keyframe
+ * table unk10 are native on this build. */
+f32 func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
+    struct TrackFooter *footer = arg0;
+    f32 *times = footer->unk10;
+    Vector pPrev;
+    Vector pCur;
+    Vector pNext;
+    Vector pA;
+    Vector pB;
+    Vector pC;
+    f32 tPrev;
+    f32 tCur;
+    f32 tNext;
+    f32 tA;
+    f32 tB;
+    f32 dA;
+    f32 dB;
+    f32 dC;
+    f32 best;
+    f32 dMin;
+    s16 n;
+
+    tCur = times[arg2];
+    if (arg2 == 0) {
+        tPrev = times[0];
+        tCur = tPrev + 0.002f;
+    } else {
+        tPrev = times[arg2 - 1];
+    }
+    n = footer->unk2;
+    if (arg2 >= (n - 1)) {
+        tNext = times[n - 1];
+        tCur = tNext - 0.002f;
+    } else {
+        tNext = times[arg2 + 1];
+    }
+    mtxGetInterpolatedPosition(&pPrev, footer, tPrev);
+    mtxGetInterpolatedPosition(&pCur, footer, tCur);
+    mtxGetInterpolatedPosition(&pNext, footer, tNext);
+    tA = (func_800F9F80(arg1, &pPrev, &pCur) * (tCur - tPrev)) + tPrev;
+    tB = (func_800F9F80(arg1, &pCur, &pNext) * (tNext - tCur)) + tCur;
+    tA = func_800F9F10(tA, arg3);
+    tB = func_800F9F10(tB, arg3);
+    mtxGetInterpolatedPosition(&pA, footer, tA);
+    mtxGetInterpolatedPosition(&pB, footer, tB);
+    mtxGetInterpolatedPosition(&pC, footer, tCur);
+    dA = utilVec3Dist(&pA, arg1);
+    dC = utilVec3Dist(&pC, arg1);
+    dB = utilVec3Dist(&pB, arg1);
+    if (dA < dB) {
+        best = tA;
+        dMin = dA;
+    } else {
+        best = tB;
+        dMin = dB;
+    }
+    if (dC < dMin) {
+        best = tCur;
+    }
+    return func_800F9C94(footer, arg1, best, 0.02f, arg3);
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9FDC.s")
 #endif
@@ -1198,7 +1626,23 @@ void func_800FA438(s32 arg0, struct Ovl2CamState *arg1) {
     f32 t;
 
     t = D_800E6BD0[arg0];
+#ifdef PORT
+    /* native records: index with the real stride (see func_800F8B1C).
+     * Until the player-spawn chain (func_800FF2C8 / ovl3 player init) is
+     * ported, nothing seats a track object on a node and D_800E5F90 entries
+     * are still -1 on the first camera tick; clamp to the track's first node
+     * so the camera stands somewhere real instead of dereferencing wild. */
+    {
+        s32 pcNode = D_800E5F90[arg0];
+
+        if (pcNode < 0 || (u32) pcNode >= D_80129114->unk0) {
+            pcNode = 0;
+        }
+        cam = &((struct TrackKirbyNode *) D_80129114->unk4[pcNode].unk0)->unk20;
+    }
+#else
     cam = &((struct TrackNodeHeader *) D_80129114->unk4)[D_800E5F90[arg0]].unk0->unk20;
+#endif
     arg1->unk0 = cam->unk0;
     arg1->unk2 = cam->unk1;
     arg1->unk4 = ((cam->unk24 - cam->unk20) * t) + cam->unk20;
@@ -1272,6 +1716,45 @@ void func_800FA608(s32 arg0, void *arg1, void *arg2) {
     arg2->unkC = arg2->unk0 - sp2C;
     arg2->unk10 = arg2->unk4 - sp30;
     arg2->unk14 = arg2->unk8 - sp34;
+}
+#elif defined(PORT)
+/* PORT: camera eye placement behind the target, from asm/nonmatchings/ovl2/
+ * ovl2_3/func_800FA608.s. The N64 byte pokes become their host accesses:
+ * the camera up vector is Camera.viewMtx.lookAt.up (N64 +0x54) and the
+ * track tangent comes from the NATIVE node records (see func_800F8B1C).
+ * Mode 0 aims along a fixed yaw, mode 1 along the track tangent rotated by
+ * the node's yaw offset; anything else keeps the previous direction (the
+ * ROM reads the uninitialized stack slot -- here `dir` simply stays
+ * whatever the compiler left, matching that don't-care). */
+void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
+    Camera *cam = D_800D799C->data.cam;
+    Vector dir;
+    Vector diff;
+    Vector axis;
+
+    dir.x = dir.y = dir.z = 0.0f;
+    switch (arg1->unk0) {
+        case 0:
+            dir.x = cosf((arg1->unk8 * 3.1415927f) / 180.0f);
+            dir.z = -sinf((arg1->unk8 * 3.1415927f) / 180.0f);
+            dir.y = 0.0f;
+            break;
+        case 1:
+            func_8001E344(&dir, D_80129114->unk4[D_800E5F90[arg0]].unk4,
+                          D_800E6BD0[arg0]);
+            dir.y = 0.0f;
+            lbvector_Normalize(&dir);
+            lbvector_Rotate(&dir, 2, (arg1->unk8 * 3.1415927f) / 180.0f);
+            break;
+    }
+    lbvector_Scale(&dir, -arg1->unkC);
+    lbvector_Add(&dir, (Vector *) &arg2->unk0);
+    lbvector_Diff(&diff, (Vector *) &arg2->unk0, &dir);
+    vec3_normalized_cross_product(&cam->viewMtx.lookAt.up, &diff, &axis);
+    func_800191F8(&diff, &axis, ((arg1->unk4 - 90.0f) * 3.1415927f) / 180.0f);
+    arg2->unkC = arg2->unk0 - diff.x;
+    arg2->unk10 = arg2->unk4 - diff.y;
+    arg2->unk14 = arg2->unk8 - diff.z;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA608.s")
@@ -1430,6 +1913,87 @@ void func_800FA92C(s32 arg0, void *arg1, void *arg2) {
         }
     }
 }
+#elif defined(PORT)
+/* PORT: camera eye yaw/pitch limiting, from asm/nonmatchings/ovl2/ovl2_3/
+ * func_800FA92C.s (the m2c sketch above mangles every vector-helper call).
+ * arg2->unk18..20 is the eye, +24..2C the look-at target; unk30/34/38 are
+ * the clamp flags func_800FA7EC set this tick. Yaw outside
+ * [unk40, unk44] and pitch outside [unk38, unk3C] are pulled back onto the
+ * limit by rotating the eye offset around the camera up vector (host
+ * Camera.viewMtx.lookAt.up, N64 +0x54). */
+void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
+    Camera *cam = D_800D799C->data.cam;
+    Vector d;
+    Vector axis;
+    s32 flags;
+    f32 ang;
+    f32 mag;
+
+    arg2->unk18 = arg2->unk0;
+    arg2->unk1C = arg2->unk4;
+    arg2->unk20 = arg2->unk8;
+    if (arg1->unk48 != 9999.0f) {
+        arg2->unk18 = arg1->unk48;
+    }
+    if (arg1->unk4C != 9999.0f) {
+        arg2->unk1C = arg1->unk4C + arg1->unk14;
+    }
+    if (arg1->unk50 != 9999.0f) {
+        arg2->unk20 = arg1->unk50;
+    }
+    if (arg1->unk1D != 0) {
+        if ((arg2->unk30 | arg2->unk38) != 0) {
+            flags = 0;
+            lbvector_Diff(&d, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+            ang = (atan2f(d.z, -d.x) / 3.1415927f) * 180.0f;
+            if (ang < 0.0f) {
+                ang += 360.0f;
+            }
+            if (ang < arg1->unk40) {
+                ang = arg1->unk40;
+                flags = 1;
+            }
+            if (arg1->unk44 < ang) {
+                ang = arg1->unk44;
+                flags |= 2;
+            }
+            if (flags != 0) {
+                mag = sqrtf((d.z * d.z) + (d.x * d.x));
+                d.x = -mag;
+                d.y = 0.0f;
+                d.z = 0.0f;
+                func_800191F8(&d, &cam->viewMtx.lookAt.up,
+                              (ang * 3.1415927f) / 180.0f);
+                lbvector_Add(&d, (Vector *) &arg2->unk24);
+                arg2->unk18 = d.x;
+                arg2->unk20 = d.z;
+            }
+        }
+    }
+    if ((arg1->unk1C != 0) && (arg2->unk34 != 0)) {
+        flags = 0;
+        lbvector_Diff(&d, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+        ang = 180.0f -
+              ((atan2f(sqrtf((d.z * d.z) + (d.x * d.x)), d.y) / 3.1415927f) *
+               180.0f);
+        if (ang < arg1->unk38) {
+            ang = arg1->unk38;
+            flags = 1;
+        }
+        if (arg1->unk3C < ang) {
+            ang = arg1->unk3C;
+            flags |= 2;
+        }
+        if (flags != 0) {
+            d.y = 0.0f;
+            vec3_normalized_cross_product(&cam->viewMtx.lookAt.up, &d, &axis);
+            func_800191F8(&d, &axis, ((ang - 90.0f) * 3.1415927f) / 180.0f);
+            arg2->unk18 = arg2->unk24 + d.x;
+            arg2->unk1C = arg2->unk28 - d.y;
+            arg2->unk20 = arg2->unk2C + d.z;
+        }
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA92C.s")
 #endif
@@ -1555,6 +2119,127 @@ block_31:
     }
     arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293D4, arg0);
     arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293D4, arg0);
+    if (arg2->unk28 == arg0->unk28) {
+        D_801293D8 += 1;
+    }
+}
+#elif defined(PORT)
+/* PORT: camera chase smoothing + manual L/R orbit, from asm/nonmatchings/
+ * ovl2/ovl2_3/func_800FAC74.s (the m2c sketch above mangles the vector
+ * calls and misses that D_801292E0 is an s32 compared via cvt.s.w). arg0
+ * is the smoothed output record, arg2 the raw target one; buttons 0x100/
+ * 0x200 drive the orbit offset D_801293AC with velocity D_801293BC. */
+extern Controller_800D6FE8 gPlayerControllers[];
+extern s32 D_801292E0;
+extern f32 D_801293AC;
+extern f32 D_801293B4;
+extern f32 D_801293BC;
+extern f32 D_801293C4;
+extern f32 D_801293CC;
+extern f32 D_801293D4;
+extern s32 D_801293D8;
+f32 func_800FB814(f32, f32, f32);
+
+void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
+    Camera *cam = D_800D799C->data.cam;
+    Vector d;
+    s32 v;
+    f32 step;
+    f32 ang;
+    f32 yaw;
+
+    if ((f32) D_801292E0 == 9999.0f) {
+        *arg0 = *arg2;
+    }
+    v = 0;
+    if (gPlayerControllers[0].buttonHeld & 0x100) {
+        v = 1;
+    }
+    if (gPlayerControllers[0].buttonHeld & 0x200) {
+        v -= 1;
+    }
+    if (D_800BE4F8 == 1) {
+        if ((v != 0) && (arg1->unk1E != 0)) {
+            step = D_801293C4;
+            if (v > 0) {
+                if (D_801293BC < 0.0f) {
+                    step *= D_801293CC;
+                }
+                D_801293BC += step;
+                if (D_801293B4 <= D_801293BC) {
+                    D_801293BC = D_801293B4;
+                }
+            } else {
+                if (D_801293BC > 0.0f) {
+                    step *= D_801293CC;
+                }
+                D_801293BC -= step;
+                if (D_801293BC <= -D_801293B4) {
+                    D_801293BC = -D_801293B4;
+                }
+            }
+            D_801293AC += D_801293BC;
+        } else if (D_801293AC > 0.0f) {
+            D_801293BC -= D_801293C4;
+            if (D_801293BC <= -1.0f) {
+                D_801293BC = -1.0f;
+            }
+            D_801293AC += D_801293BC;
+            if (D_801293AC <= 0.0f) {
+                D_801293AC = 0.0f;
+                D_801293BC = 0.0f;
+            }
+        } else if (D_801293AC < 0.0f) {
+            D_801293BC += D_801293C4;
+            if (D_801293BC >= 1.0f) {
+                D_801293BC = 1.0f;
+            }
+            D_801293AC += D_801293BC;
+            if (D_801293AC >= 0.0f) {
+                D_801293AC = 0.0f;
+                D_801293BC = 0.0f;
+            }
+        } else {
+            D_801293AC = 0.0f;
+            D_801293BC = 0.0f;
+        }
+    }
+    if (arg1->unk5C <= D_801293AC) {
+        D_801293AC = arg1->unk5C;
+    }
+    if (D_801293AC <= -arg1->unk5C) {
+        D_801293AC = -arg1->unk5C;
+    }
+    lbvector_Diff(&d, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+    ang = (atan2f(d.z, -d.x) / 3.1415927f) * 180.0f;
+    if (ang < 0.0f) {
+        ang += 360.0f;
+    }
+    yaw = ang + 90.0f;
+    if (360.0f <= yaw) {
+        yaw -= 360.0f;
+    }
+    d.x = -D_801293AC;
+    d.y = 0.0f;
+    d.z = 0.0f;
+    func_800191F8(&d, &cam->viewMtx.lookAt.up, (yaw * 3.1415927f) / 180.0f);
+    arg0->unk24 = arg2->unk24;
+    arg0->unk2C = arg2->unk2C;
+    arg0->unk18 = arg2->unk18 - d.x;
+    arg0->unk20 = arg2->unk20 - d.z;
+    if (arg1->unk1F != 0) {
+        D_801293D8 = 0;
+        arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293C0);
+        arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293C0);
+        return;
+    }
+    if (D_801293D8 != 0) {
+        arg0->unk28 = arg2->unk28;
+        arg0->unk1C = arg2->unk1C;
+        return;
+    }
+    arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293D4);
+    arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293D4);
     if (arg2->unk28 == arg0->unk28) {
         D_801293D8 += 1;
     }
@@ -1862,6 +2547,37 @@ void func_800FB9B4(void) {
         D_80129404 = var_a0[1];
     }
 }
+#elif defined(PORT)
+/* PORT: camera-shake playback tick -- the factory-guarded draft above,
+ * byte-for-byte. D_801242B4 is emitted as a native pointer array on this
+ * build and its shake tables are value-preserving u32 words, so reading
+ * them through f32* works unchanged (8888.0/9999.0 sentinels included). */
+void func_800FB9B4(void) {
+    f32 *var_a0;
+    f32 var_f0;
+    f32 *temp_v1;
+
+    if (D_801293F8 != 0) {
+        temp_v1 = D_801242B4[D_801293F8];
+        D_801293FC += 2;
+        var_a0 = &temp_v1[D_801293FC];
+        var_f0 = *var_a0;
+        if (var_f0 == 8888.0f) {
+            D_801293F8 = 0;
+            D_801293FC = -2;
+            D_80129404 = 0.0f;
+            D_80129400 = D_80129404;
+            return;
+        }
+        if (var_f0 == 9999.0f) {
+            D_801293FC = 0;
+            var_a0 = &temp_v1[D_801293FC];
+            var_f0 = *var_a0;
+        }
+        D_80129400 = var_f0;
+        D_80129404 = var_a0[1];
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB9B4.s")
 #endif
@@ -1961,7 +2677,12 @@ void func_800FBE1C(void) {
 void func_800FBF18(s32 arg0) {
     struct TrackCameraNode *cam;
 
+#ifdef PORT
+    /* native records: index with the real stride (see func_800F8B1C) */
+    cam = &((struct TrackKirbyNode *) D_80129114->unk4[arg0].unk0)->unk20;
+#else
     cam = &((struct TrackNodeHeader *) D_80129114->unk4)[arg0].unk0->unk20;
+#endif
     D_80129210.unk0 = cam->unk0;
     D_80129210.unk2 = cam->unk1;
     D_80129210.unk4 = cam->unk20;

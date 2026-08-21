@@ -765,6 +765,49 @@ loop_4:
     }
     func_800BDD08();
 }
+#elif defined(PORT)
+/* HUD frame service: on first-dirty either clears the HUD arena rows to the
+ * fill value (pause/transition path) or reloads the themed HUD texture bank,
+ * then draws lives/health/stars. Row geometry from the ROM draft above: 42
+ * rows of 0x280 bytes from D_800EDA10 (until &D_800F4324); per row two u16
+ * at +0x14 and the span +0x18..+0x1B0 get the fill halfword at D_800EDA60.
+ * Fixed counts here: the arena is one whole PC object (pc_bss_whole.c) and
+ * D_800F4324 is a separate one, so the end-pointer compare cannot be used. */
+void func_800BDE0C(s32 arg0) {
+    extern u16 D_800EDA10[], D_800EDA60[];
+    extern s32 D_800F4D14, D_800F6198, D_800D6F50;
+    extern u32 D_800D52FC[];
+    extern void *D_800D6F58;
+
+    D_800D6F58 = (void *) &D_800ED510;
+    if (D_800F4D14 != 0) {
+        if (D_800F6198 != 0) {
+            u16 fill = D_800EDA60[0];
+            s32 r, off;
+
+            func_800A8934(0x50002, 0x10, 0, &D_800ED510);
+            for (r = 0; r < 42; r++) {
+                u8 *row = (u8 *) D_800EDA10 + r * 0x280;
+
+                *(u16 *) (row + 0x14) = fill;
+                *(u16 *) (row + 0x16) = fill;
+                for (off = 0x18; off < 0x1B0; off += 2) {
+                    *(u16 *) (row + off) = fill;
+                }
+            }
+        } else {
+            D_800D6F50 = 0;
+            func_800A8934(D_800D52FC[saveHUDTheme], 0x10, 0, &D_800ED510);
+            func_800BDB18();
+        }
+        D_800F4D14 = 0;
+    }
+    if (D_800F6198 != 0) {
+        func_800BDD68();
+        return;
+    }
+    func_800BDD08();
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDE0C.s")
 #endif
@@ -879,6 +922,82 @@ loop_2:
     func_800BDF2C();
     func_800BDE0C(NULL);
     scSetPostProcessFunc(func_800BDE0C);
+    return sp18;
+}
+#elif defined(PORT)
+/* PORT: in-level HUD init, from asm/nonmatchings/ovl1/ovl1_13/
+ * func_800BE098.s. The N64 clears the ten 0x100-byte digit rows by walking
+ * a pointer from D_800F4D70 to D_800F5770 (cross-symbol arithmetic that
+ * does not survive this build's separate bss blocks); the compiled sibling
+ * func_800BDF2C above already spells those rows as [10][0x40] u32 arrays,
+ * so the same spelling is used here. The theme tables handed to
+ * func_800BDFB8 are value-preserving u32 words (native reads are right)
+ * and the D_800ED500 header's +8/+0xC words become truncated host pointers
+ * into D_800ED510, exactly like every other <4GiB static on this build. */
+s32 func_800BE098(void) {
+    extern s32 D_800F4D18;
+    extern s32 D_800F4D20[];
+    extern s32 D_800F4D48[];
+    extern s32 D_800F6170[];
+    extern s32 D_800D6EC4;
+    extern s32 D_800F6198;
+    extern s32 D_800D6F3C;
+    s32 request_track_3(s32, s32, s32);
+    s32 func_800AEA64(s32, s32, s32);
+    void scSetPostProcessFunc(void (*)(void *));
+    s32 sp18;
+    s32 i;
+    s32 j;
+
+    D_800F4D18 = 2;
+    for (i = 0; i < 10; i++) {
+        D_800F6170[i] = 0;
+        D_800F4D48[i] = 0;
+        D_800F4D20[i] = 0;
+        for (j = 0; j < 0x40; j++) {
+            D_800F5770[i][j] = 0xFFFE7961;
+            D_800F4D70[i][j] = 0;
+        }
+    }
+    sp18 = request_track_3(0x26, 0x4A, 0x50);
+    if (func_800F8560() != 9) {
+        func_800BDFB8(D_800D5310, saveHUDTheme * 10, 8);
+    } else {
+        D_800D6E54 = 0;
+        D_800D6E90 = 0;
+        func_800BDFB8(D_800D5310, saveHUDTheme * 10, 10);
+    }
+    func_800BDFB8(D_800D53DC, saveHUDTheme * 2, 2);
+    func_800BDFB8(D_800D5408, saveHUDTheme * 2, 2);
+    func_800BDFB8(D_800D5434, saveHUDTheme * 2, 2);
+    func_800BDFB8(D_800D5460, saveHUDTheme * 10, 10);
+    func_800A8934(0x50001, 0, 0x10, &D_800ED500);
+    /* func_800A8934 dma-reads the raw big-endian header; decode the
+     * multi-byte fields once, the way func_800A8C40's PORT arm does for BG
+     * headers, THEN relocate the image/palette offsets onto D_800ED510
+     * (host pointer, truncated -- statics sit below 4 GiB). */
+    {
+        u8 *raw = (u8 *) D_800ED500;
+        u32 img = ((u32) raw[8] << 24) | ((u32) raw[9] << 16) |
+                  ((u32) raw[10] << 8) | raw[11];
+        u32 pal = ((u32) raw[12] << 24) | ((u32) raw[13] << 16) |
+                  ((u32) raw[14] << 8) | raw[15];
+
+        *(u16 *) (raw + 4) = (u16) ((raw[4] << 8) | raw[5]);
+        *(u16 *) (raw + 6) = (u16) ((raw[6] << 8) | raw[7]);
+        D_800ED500[2] = img + (u32) (uintptr_t) D_800ED510;
+        D_800ED500[3] = pal + (u32) (uintptr_t) D_800ED510;
+    }
+    D_800F6198 = 0;
+    D_800D6EC4 = 0;
+    if ((D_800D6F3C == 4) || (D_800D6F3C == 3)) {
+        D_800F6198 = 1;
+        sp18 = func_800AEA64(0x2D, 0x4A, 0x50);
+        D_800E98E0[sp18] = 0;
+    }
+    func_800BDF2C();
+    func_800BDE0C(0);
+    scSetPostProcessFunc((void (*)(void *)) func_800BDE0C);
     return sp18;
 }
 #else

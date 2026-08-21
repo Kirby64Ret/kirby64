@@ -13,8 +13,17 @@ extern void func_8011BF4C(f32 *, s32);
 extern void func_8015439C_ovl3(f32 *);
 extern s32 func_80154428_ovl3(f32 *);
 extern void func_80154CFC_ovl3();
+#ifdef PORT
+/* On N64 the three shot collision passes below receive the shot's state
+ * buffer in $a0, threaded untouched through the void-declared wrappers;
+ * the PORT arms spell that hidden argument out, so the declarations must
+ * stay unprototyped here. */
+extern void func_801548DC_ovl3();
+extern void func_80155088_ovl3();
+#else
 extern void func_801548DC_ovl3(void);
 extern void func_80155088_ovl3(void);
+#endif
 extern s32 func_801BBE50_ovl7(u8 *, void *, s32);
 extern void func_801529C0_ovl3(void);
 #include "ovl1/util.h"
@@ -93,7 +102,125 @@ s32 func_8015229C_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
     return 1;
 }
 
+#ifdef PORT
+/* PORT: player landing snap. Clears the per-frame collision state on
+ * gKirbyState, seats gPositionState from the entity's next position and its
+ * spawn record, runs the ground pass (func_80109DD8, falling back to the
+ * ledge pass func_8010D668), re-derives track progress when the snap moved
+ * the player in X/Z, commits the snapped position, and refreshes the
+ * position-history block at D_8012E948.
+ *
+ * The spawn record: D_800E0490[objId] points into widened ovl3 data (one
+ * 8-byte cell per N64 word), and the float record pointer is CELL 1; the
+ * record itself is a native scalar float block. The ROM's tail also scans
+ * the collision result blocks to flag water surfaces into D_800E8AE0
+ * (value 7); that scan's block layout is draft-only so far, so the flag
+ * stays 0 here -- spawn-into-water reactions are the one deferred piece. */
+void func_80105180(struct PositionState *);
+void func_801051DC(struct PositionState *);
+void func_801051AC(struct PositionState *);
+s32 func_80109DD8(struct PositionState *);
+s32 func_8010D668(struct PositionState *);
+s32 func_8010DF9C(f32 *);
+f32 func_800F8728(s32, f32, f32);
+
+void func_80152348_ovl3(f32 arg0) {
+    extern struct PositionState gPositionState;
+    extern f32 D_800E6A10[];
+    extern f32 D_800E17D0[];
+    extern s32 D_800E8920[];
+    extern s32 D_800E8AE0[];
+    extern f32 D_8012E948[];
+    s32 id = omCurrentObj->objId;
+    f32 *fr = (f32 *) (uintptr_t) D_800E0490[id][1];
+    struct PositionState *st = &gPositionState;
+    f32 dx;
+    f32 dz;
+    s32 hits;
+    u32 wi;
+    f32 probe[3];
+
+    (void) arg0;
+    gKirbyState.unk13C = 0;
+    gKirbyState.unk138 = 0;
+    gKirbyState.unk134 = 0;
+    gKirbyState.ceilingCollisionNext = 0;
+    gKirbyState.floorCollisionNext = 0;
+    gKirbyState.rightCollisionNext = 0;
+    gKirbyState.leftCollisionNext = 0;
+    gKirbyState.levelCollisionFlags = 0;
+    gKirbyState.verticalCollision = 0;
+    gKirbyState.horizontalCollision = 0;
+    gKirbyState.ceilingType = 0;
+    gKirbyState.floorType = 0;
+    gKirbyState.unk104 = 0;
+    gKirbyState.unk106 = 0;
+    gKirbyState.unk108 = 0;
+    gKirbyState.unk10A = 0;
+    gKirbyState.unk10C = 0;
+    gKirbyState.unk140 = 0;
+    gKirbyState.unk152 = 0;
+    func_80105180(st);
+    st->kirbyFootPos[0] = gEntitiesNextPosXArray[id];
+    st->kirbyFootPos[1] = gEntitiesNextPosYArray[id];
+    st->kirbyFootPos[2] = gEntitiesNextPosZArray[id];
+    st->scale[0] = fr[0];
+    st->scale[1] = fr[1] + fr[0];
+    st->scale[2] = fr[2] + fr[0];
+    if (D_800E6A10[id] == 1.0f) {
+        st->faceAngle[0] = fr[3];
+        st->faceAngle[1] = fr[4];
+    } else {
+        st->faceAngle[0] = fr[4];
+        st->faceAngle[1] = fr[3];
+    }
+    st->faceAngle[2] = D_800E17D0[id];
+    func_801051DC(st);
+    D_800E8920[id] = func_80109DD8(st);
+    if (D_800E8920[id] == 0) {
+        D_800E8920[id] = func_8010D668(st);
+    }
+    dx = st->kirbyFootPos[0] - gEntitiesNextPosXArray[id];
+    dz = st->kirbyFootPos[2] - gEntitiesNextPosZArray[id];
+    if (dx != 0.0f || dz != 0.0f) {
+        func_800F8728(id, dx, dz);
+    }
+    gEntitiesNextPosXArray[id] = st->kirbyFootPos[0];
+    gEntitiesNextPosZArray[id] = st->kirbyFootPos[2];
+    gEntitiesNextPosYArray[id] = st->kirbyFootPos[1];
+    func_801051AC(st);
+    probe[0] = gEntitiesNextPosXArray[id];
+    probe[1] = gEntitiesNextPosYArray[id] - fr[0];
+    probe[2] = gEntitiesNextPosZArray[id];
+    hits = func_8010DF9C(probe);
+    D_800E8AE0[id] = 0;
+    /* Spawn-into-water: any active water volume under the spawn point sets
+     * the surface flag. The annex (filled by func_8010DDA4) lives at byte
+     * 128 of the result block; +4 in the record is Water_Box_Active. Both
+     * offsets are locked by static asserts in src/pc/pc_bss_whole.c. */
+    {
+        extern u8 D_8012BCA0[];
+
+        for (wi = 0; wi < (u32) hits && wi < 3; wi++) {
+            u8 *w = *(u8 **) (D_8012BCA0 + 128 + wi * 8);
+
+            if (w != NULL && w[4] == 1) {
+                D_800E8AE0[id] = 7;
+            }
+        }
+    }
+    D_8012E948[3] = gEntitiesNextPosXArray[id];
+    D_8012E948[0] = D_8012E948[3];
+    D_8012E948[4] = gEntitiesNextPosYArray[id];
+    D_8012E948[1] = D_8012E948[4];
+    D_8012E948[5] = gEntitiesNextPosZArray[id];
+    D_8012E948[2] = D_8012E948[5];
+    D_8012E948[6] = D_800E17D0[id];
+    D_8012E948[7] = 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80152348_ovl3.s")
+#endif
 
 s32 func_80152828_ovl3(f32 *arg0, f32 *arg1) {
     s32 ret;
@@ -129,9 +256,352 @@ s32 func_80152828_ovl3(f32 *arg0, f32 *arg1) {
     return ret;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801529C0_ovl3.s")
+#ifdef PORT
+/* PORT: the per-tick player collision commit, from asm/nonmatchings/ovl3/
+ * ovl3_1/func_801529C0_ovl3.s. Runs the movement pass through
+ * func_80152828_ovl3 above (which fills gPositionState and the collision
+ * result block D_8012BCA0), lets ovl2_10's trigger scan (func_801128A4)
+ * veto faces (zeroing the face's record and folding its class bit back into
+ * the flags word with the ROM's exact halfword idiom, as ovl2_7.c spells
+ * it), commits the resolved position to the entity track arrays, runs the
+ * ledge auto-grab probe when Kirby is falling, unpacks the flags word into
+ * gKirbyState's per-face collision state, and scans the four faces for a
+ * hazardous triangle class (func_8010DC24) into unk140.
+ *
+ * Port notes: D_8012BCA0 is viewed through an LP64 mirror of ovl2_7.c's
+ * struct UnkBCA0 (the whole object lives in src/pc/pc_bss_whole.c; the
+ * mirror below is offset-locked against the asserts there). The spawn
+ * record comes from the widened D_800E0490 table: cell 1 of the wrapper is
+ * the native float record, same spelling as func_80152348_ovl3's PORT arm.
+ * The ROM stores the face triangle/normal pointers into 32-bit Player
+ * fields; they are stored truncated via (u32)(uintptr_t) like the shadow
+ * slot in kirby.c (all game statics sit below 4 GiB), except the floor
+ * triangle at unk114 which Player.h already declares as a real pointer.
+ * The two halfword writes at Player +0x10C/+0x10E land in the u32 unk10C
+ * cell as sub-word stores, same treatment as the D_80198830 block. The
+ * ledge probe's out-vector goes through a static (not the stack): ovl2_7's
+ * func_80104B70 forwards it through an s32 parameter, which would shear a
+ * 64-bit stack address; its s32 result is the ROM's own $v0 pass-through
+ * from func_80103B58 (the C in ovl2_7.c declares it void). */
+struct PortColRec3 { s32 type; struct CollisionTriangle *tri; void *norm; };
+struct PortColBlock3 {
+#ifdef PORT
+    union { u32 w; struct { u16 hwpad_; u16 hw; }; } flags;  /* hw = top half, see ovl2_7.c */
+#else
+    union { u32 w; u16 hw; } flags;
+#endif
+    struct PortColRec3 rec[5];
+    void *waterRec[3];
+    u32 waterSrc[3];
+};
+s32 func_801128A4(struct PositionState *);
+void func_8011D40C(void);
+u16 func_8010DC24(struct CollisionTriangle *);
+s32 func_80104B70(f32 *, f32 *, s32, void *, s32, s32, s32);
+void func_801530BC_ovl3(f32 *);
+void func_80153668_ovl3(void);
+void func_80153808_ovl3(void);
+void func_801538C8_ovl3(void);
+extern s32 D_800D6E44;
 
+static Vector sPortLedgeProbeHit;
+
+void func_801529C0_ovl3(void) {
+    extern u8 D_8012BCA0[];
+    struct PortColBlock3 *cb = (struct PortColBlock3 *) D_8012BCA0;
+    f32 **rec;
+    f32 *fr;
+    s32 id;
+    s32 hits;
+    f32 dx;
+    f32 dz;
+    u32 f;
+    u32 ceilM;
+    u32 floorM;
+    u32 rightM;
+    u32 leftM;
+    u16 *hm = (u16 *) &gKirbyState.unk10C;
+    struct CollisionTriangle *tri;
+    u16 r;
+
+    id = omCurrentObj->objId;
+    rec = D_800E0490[id];
+    fr = rec[1];
+    D_800E8920[id] = func_80152828_ovl3(fr, (f32 *) &gPositionState);
+    hits = func_801128A4(&gPositionState);
+    dx = gPositionState.kirbyFootPos[0] - gEntitiesNextPosXArray[id];
+    dz = gPositionState.kirbyFootPos[2] - gEntitiesNextPosZArray[id];
+    if ((dx != 0.0f) || (dz != 0.0f)) {
+        func_800F8728(id, dx, dz);
+        gEntitiesNextPosXArray[id] = gPositionState.kirbyFootPos[0];
+        gEntitiesNextPosZArray[id] = gPositionState.kirbyFootPos[2];
+    }
+    if (hits != 0) {
+        if ((hits & 1) && (D_800D6E44 != 2)) {
+            cb->rec[2].tri = NULL;
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 1) * 8) | (cb->flags.hw & 7));
+        }
+        if ((hits & 2) && (D_800D6E44 != 4)) {
+            cb->rec[3].tri = NULL;
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 8) * 8) | (cb->flags.hw & 7));
+        }
+        if ((hits & 4) && (D_800D6E44 != 1)) {
+            cb->rec[1].tri = NULL;
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x40) * 8) | (cb->flags.hw & 7));
+        }
+        if (hits & 8) {
+            func_8011D40C();
+        }
+    }
+    gEntitiesNextPosYArray[id] = gPositionState.kirbyFootPos[1];
+    if (((D_800E8920[id] == 0) && (D_800E3210[id] <= 0.0f) && (D_800E64D0[id] != 0.0f) &&
+         (gKirbyState.abilityInUse == 0)) || (gKirbyState.abilityInUse == 0x12)) {
+        f32 reach;
+        f32 cur[3];
+        f32 nxt[3];
+
+        if (D_800E6A10[id] == 1.0f) {
+            reach = gPositionState.faceAngle[0];
+        } else {
+            reach = gPositionState.faceAngle[1];
+        }
+        cur[0] = nxt[0] = (sinf(gPositionState.faceAngle[2]) * reach) + gEntitiesNextPosXArray[id];
+        cur[2] = nxt[2] = (cosf(gPositionState.faceAngle[2]) * reach) + gEntitiesNextPosZArray[id];
+        nxt[1] = gEntitiesNextPosYArray[id] + fr[0] + fr[2];
+        cur[1] = gEntitiesNextPosYArray[id] + fr[0] + fr[1];
+        if (func_80104B70(cur, nxt, 0, &sPortLedgeProbeHit, 0, 0, 0) != 0) {
+            if ((sPortLedgeProbeHit.y - gEntitiesNextPosYArray[id]) < fr[0]) {
+                D_800E8920[id] = 1;
+                cb->rec[0].tri = NULL;
+                cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x200) * 8) | (cb->flags.hw & 7));
+                gEntitiesNextPosYArray[id] = sPortLedgeProbeHit.y;
+                gPositionState.kirbyFootPos[1] = gEntitiesNextPosYArray[id];
+            }
+        }
+    }
+    f = cb->flags.w >> 0x13;
+    ceilM = f & 0x1C0;
+    floorM = f & 0xE00;
+    rightM = f & 7;
+    leftM = f & 0x38;
+    gKirbyState.ceilingCollisionNext = ceilM;
+    gKirbyState.floorCollisionNext = floorM;
+    gKirbyState.rightCollisionNext = rightM;
+    gKirbyState.leftCollisionNext = leftM;
+    gKirbyState.verticalCollision = ceilM | floorM;
+    gKirbyState.horizontalCollision = rightM | leftM;
+    gKirbyState.levelCollisionFlags = ceilM | floorM | rightM | leftM;
+    tri = cb->rec[1].tri;
+    if ((tri != NULL) && (ceilM != 0)) {
+        gKirbyState.ceilingType = tri->collisionType;
+        gKirbyState.unk110 = (u32) (uintptr_t) tri;
+        gKirbyState.unk120 = (u32) (uintptr_t) cb->rec[1].norm;
+        gKirbyState.unk108 = tri->Halt_Movement;
+    } else {
+        gKirbyState.ceilingType = 0;
+        gKirbyState.unk108 = 0;
+    }
+    tri = cb->rec[0].tri;
+    if ((tri != NULL) && (floorM != 0)) {
+        gKirbyState.floorType = tri->collisionType;
+        gKirbyState.unk114 = (struct KirbyState_114 *) tri;
+        gKirbyState.unk124 = (u32) (uintptr_t) cb->rec[0].norm;
+        gKirbyState.unk10A = tri->Halt_Movement;
+    } else {
+        gKirbyState.floorType = 0;
+        gKirbyState.unk10A = 0;
+    }
+    tri = cb->rec[2].tri;
+    if ((tri != NULL) && (rightM != 0)) {
+        gKirbyState.unk104 = tri->collisionType;
+        gKirbyState.unk118 = (u32) (uintptr_t) tri;
+        gKirbyState.unk128 = (u32) (uintptr_t) cb->rec[2].norm;
+        hm[0] = tri->Halt_Movement;
+    } else {
+        gKirbyState.unk104 = 0;
+        hm[0] = 0;
+    }
+    tri = cb->rec[3].tri;
+    if ((tri != NULL) && (leftM != 0)) {
+        gKirbyState.unk106 = tri->collisionType;
+        gKirbyState.unk11C = (u32) (uintptr_t) tri;
+        gKirbyState.unk12C = (u32) (uintptr_t) cb->rec[3].norm;
+        hm[1] = tri->Halt_Movement;
+    } else {
+        gKirbyState.unk106 = 0;
+        hm[1] = 0;
+    }
+    if (rightM != 0) {
+        r = func_8010DC24(cb->rec[2].tri);
+        if (r != 0) {
+            gKirbyState.unk140 = (u32) r | 0x40000;
+            goto done;
+        }
+    }
+    if (gKirbyState.leftCollisionNext != 0) {
+        r = func_8010DC24(cb->rec[3].tri);
+        if (r != 0) {
+            gKirbyState.unk140 = (u32) r | 0x80000;
+            goto done;
+        }
+    }
+    if (gKirbyState.ceilingCollisionNext != 0) {
+        r = func_8010DC24(cb->rec[1].tri);
+        if (r != 0) {
+            gKirbyState.unk140 = (u32) r | 0x10000;
+            goto done;
+        }
+    }
+    if (gKirbyState.floorCollisionNext != 0) {
+        r = func_8010DC24(cb->rec[0].tri);
+        if (r != 0) {
+            gKirbyState.unk140 = (u32) r | 0x20000;
+            goto done;
+        }
+    }
+    if (gKirbyState.action != 0x16) {
+        gKirbyState.unk140 = 0;
+    }
+done:
+    func_801530BC_ovl3(fr);
+    func_80153668_ovl3();
+    func_80153808_ovl3();
+    func_801538C8_ovl3();
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801529C0_ovl3.s")
+#endif
+
+#ifdef PORT
+/* Swim-state watcher (via m2c): probes the water annex at foot, foot+h1 and
+ * foot+h1+h2, snapshotting the annex between probes (each func_8010DF9C
+ * call rewrites it), derives the in/entering/leaving state bits with the
+ * splash triggers, the water-flow push (direction * 22.5 degrees, speed as
+ * unsigned float), and the crossing velocity via func_8010E048 when only
+ * the foot is submerged. Annex offsets 128/152 are locked by the asserts in
+ * src/pc/pc_bss_whole.c; record fields are the native WaterData layout. */
+void func_801530BC_ovl3(f32 *h) {
+    extern u8 D_8012BCA0[];
+    extern s32 D_800E8AE0[];
+    s32 id = omCurrentObj->objId;
+    f32 probe[3];
+    f32 prev3[3];
+    f32 cur3[3];
+    f32 outN[24 / 4];
+    u8 *snap0rec[3], *snap1rec[3];
+    u32 snap0src[3], snap1src[3];
+    s32 idx0 = -1, idx1 = -1, idxIn = -1, idx2 = -1, chosen = -1;
+    u32 n, i;
+    s32 v;
+
+    probe[0] = gEntitiesNextPosXArray[id];
+    probe[1] = gEntitiesNextPosYArray[id];
+    probe[2] = gEntitiesNextPosZArray[id];
+    n = func_8010DF9C(probe);
+    for (i = 0; i < n && i < 3; i++) {
+        u8 *rec = *(u8 **) (D_8012BCA0 + 128 + i * 8);
+
+        if (rec != NULL && rec[4] == 1) {
+            idx0 = i;
+            for (n = 0; n < 3; n++) {
+                snap0rec[n] = *(u8 **) (D_8012BCA0 + 128 + n * 8);
+                snap0src[n] = *(u32 *) (D_8012BCA0 + 152 + n * 4);
+            }
+            break;
+        }
+    }
+    probe[1] = gEntitiesNextPosYArray[id] + h[0];
+    n = func_8010DF9C(probe);
+    for (i = 0; i < n && i < 3; i++) {
+        u8 *rec = *(u8 **) (D_8012BCA0 + 128 + i * 8);
+        u32 k;
+
+        if (rec == NULL) {
+            continue;
+        }
+        if (rec[4] == 1) {
+            idx1 = i;
+            idxIn = -1;
+            for (k = 0; k < 3; k++) {
+                snap1rec[k] = *(u8 **) (D_8012BCA0 + 128 + k * 8);
+                snap1src[k] = *(u32 *) (D_8012BCA0 + 152 + k * 4);
+            }
+            break;
+        }
+        if (rec[4] == 0 && idxIn == -1) {
+            idxIn = i;
+            for (k = 0; k < 3; k++) {
+                snap1rec[k] = *(u8 **) (D_8012BCA0 + 128 + k * 8);
+                snap1src[k] = *(u32 *) (D_8012BCA0 + 152 + k * 4);
+            }
+        }
+    }
+    probe[1] = gEntitiesNextPosYArray[id] + h[0] + h[1];
+    n = func_8010DF9C(probe);
+    for (i = 0; i < n && i < 3; i++) {
+        u8 *rec = *(u8 **) (D_8012BCA0 + 128 + i * 8);
+
+        if (rec != NULL && rec[4] == 1) {
+            idx2 = i;
+            break;
+        }
+    }
+    if (idx1 != -1 && snap1rec[idx1][5] == 1) {
+        chosen = idx1;
+    } else if (idxIn != -1 && snap1rec[idxIn][5] == 1) {
+        chosen = idxIn;
+    }
+    gKirbyState.unk152 = 0;
+    if (chosen != -1) {
+        u8 *rec = snap1rec[chosen];
+
+        if (rec[6] != 0) {
+            gKirbyState.unk152 = 1;
+            *(f32 *) &gKirbyState.unk134 = (f32) rec[7];
+            *(f32 *) &gKirbyState.unk130 = (f32) (rec[6] - 1) * 0.3926991f;
+        }
+    }
+    if (idx2 == -1 && idx1 == -1 && idx0 == -1) {
+        gKirbyState.unk14C = 0.0f;
+        gKirbyState.unk148 = 0.0f;
+        gKirbyState.unk144 = 0.0f;
+        D_800E8AE0[id] = 0;
+        return;
+    }
+    if (idx2 != -1 && idx1 != -1 && idx0 != -1) {
+        v = 7;
+        probe[0] = 0.0f;
+        probe[1] = 0.0f;
+        probe[2] = 0.0f;
+    } else {
+        if (idx2 == -1 && idx0 != -1) {
+            prev3[0] = gEntitiesPosXArray[id];
+            prev3[1] = gEntitiesNextPosYArray[id] + h[0] + h[1];
+            prev3[2] = gEntitiesPosZArray[id];
+            cur3[0] = gEntitiesNextPosXArray[id];
+            cur3[1] = gEntitiesNextPosYArray[id];
+            cur3[2] = gEntitiesNextPosZArray[id];
+            func_8010E048(snap0rec[idx0], snap0src[idx0], prev3, cur3, outN, probe);
+        }
+        v = (idx1 != -1) ? 3 : 1;
+    }
+    {
+        s32 was = D_800E8AE0[id] & 2;
+
+        if (was == 0 && (v & 2)) {
+            v |= 0xC0;
+        } else if (was != 0 && !(v & 2)) {
+            v |= 0xA0;
+        }
+    }
+    D_800E8AE0[id] = v;
+    gKirbyState.unk144 = probe[0];
+    gKirbyState.unk148 = probe[1];
+    gKirbyState.unk14C = probe[2];
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801530BC_ovl3.s")
+#endif
 
 #ifdef NON_MATCHING
 void func_80153668_ovl3(void) {
@@ -244,9 +714,218 @@ s32 func_80153AD4_ovl3(void) {
     return ret;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80153B98_ovl3.s")
+#ifdef PORT
+/* PORT: vertical-only collision pass (via m2c). Seats gPositionState from
+ * the entity track arrays and the spawn record, runs the vertical sweep
+ * (func_8010BBD4) and the result unpack (func_80105238), lets the ovl2_10
+ * trigger scan veto whole face groups (full 3-bit masks 7/0x38/0x1C0 here,
+ * with no record clearing, unlike func_801529C0_ovl3's per-bit form),
+ * commits the resolved position, unpacks only the vertical face state into
+ * gKirbyState (floor contact also grounds D_800E8920), scans ceiling then
+ * floor for hazardous triangle classes, and runs the swim watcher. */
+s32 func_8010BBD4(struct PositionState *);
+s32 func_8010BFAC(struct PositionState *);
+void func_80105238(f32 *, u8 *);
 
+s32 func_80153B98_ovl3(void) {
+    extern u8 D_8012BCA0[];
+    struct PortColBlock3 *cb = (struct PortColBlock3 *) D_8012BCA0;
+    struct PositionState *st = &gPositionState;
+    s32 id = omCurrentObj->objId;
+    f32 **rec = D_800E0490[id];
+    f32 *fr = rec[1];
+    s32 hits;
+    f32 dx;
+    f32 dz;
+    u32 f;
+    u32 ceilM;
+    u32 floorM;
+    struct CollisionTriangle *tri;
+    u16 r;
+
+    st->kirbyFootPos[0] = gEntitiesNextPosXArray[id];
+    st->kirbyFootPos[1] = gEntitiesNextPosYArray[id];
+    st->kirbyFootPos[2] = gEntitiesNextPosZArray[id];
+    st->scale[0] = fr[0];
+    st->scale[1] = fr[1] + fr[0];
+    st->scale[2] = fr[2] + fr[0];
+    if (D_800E6A10[id] == 1.0f) {
+        st->faceAngle[0] = fr[3];
+        st->faceAngle[1] = fr[4];
+    } else {
+        st->faceAngle[0] = fr[4];
+        st->faceAngle[1] = fr[3];
+    }
+    if (gKirbyState.isTurning & 1) {
+        st->faceAngle[2] = gKirbyState.unk7C;
+    } else {
+        st->faceAngle[2] = D_800E17D0[id];
+    }
+    func_8010BBD4(st);
+    func_80105238((f32 *) st, D_8012BCA0);
+    hits = func_801128A4(st);
+    if (hits != 0) {
+        dx = st->kirbyFootPos[0] - gEntitiesNextPosXArray[id];
+        dz = st->kirbyFootPos[2] - gEntitiesNextPosZArray[id];
+        if ((dx != 0.0f) || (dz != 0.0f)) {
+            func_800F8728(id, dx, dz);
+            gEntitiesNextPosXArray[id] = st->kirbyFootPos[0];
+            gEntitiesNextPosZArray[id] = st->kirbyFootPos[2];
+        }
+        if (hits & 1) {
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 7) * 8) | (cb->flags.hw & 7));
+        }
+        if (hits & 2) {
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x38) * 8) | (cb->flags.hw & 7));
+        }
+        if (hits & 4) {
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x1C0) * 8) | (cb->flags.hw & 7));
+        }
+        if (hits & 8) {
+            func_8011D40C();
+        }
+    }
+    gEntitiesNextPosYArray[id] = st->kirbyFootPos[1];
+    f = cb->flags.w >> 0x13;
+    ceilM = f & 0x1C0;
+    floorM = f & 0xE00;
+    gKirbyState.ceilingCollisionNext = ceilM;
+    gKirbyState.floorCollisionNext = floorM;
+    gKirbyState.verticalCollision = ceilM | floorM;
+    if (floorM != 0) {
+        D_800E8920[id] = 1;
+    }
+    tri = cb->rec[1].tri;
+    if ((tri != NULL) && (ceilM != 0)) {
+        gKirbyState.ceilingType = tri->collisionType;
+        gKirbyState.unk108 = tri->Halt_Movement;
+    } else {
+        gKirbyState.ceilingType = 0;
+        gKirbyState.unk108 = 0;
+    }
+    tri = cb->rec[0].tri;
+    if ((tri != NULL) && (floorM != 0)) {
+        gKirbyState.floorType = tri->collisionType;
+        gKirbyState.unk10A = tri->Halt_Movement;
+    } else {
+        gKirbyState.floorType = 0;
+        gKirbyState.unk10A = 0;
+    }
+    if ((ceilM != 0) && ((r = func_8010DC24(cb->rec[1].tri)) != 0)) {
+        gKirbyState.unk140 = (u32) r | 0x10000;
+    } else if ((gKirbyState.floorCollisionNext != 0) && ((r = func_8010DC24(cb->rec[0].tri)) != 0)) {
+        gKirbyState.unk140 = (u32) r | 0x20000;
+    } else if (gKirbyState.action != 0x16) {
+        gKirbyState.unk140 = 0;
+    }
+    func_801530BC_ovl3(fr);
+    return gKirbyState.verticalCollision;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80153B98_ovl3.s")
+#endif
+
+#ifdef PORT
+/* PORT: horizontal-only collision pass (via m2c). Mirror of
+ * func_80153B98_ovl3 for the side faces: runs the horizontal sweep
+ * (func_8010BFAC), commits any trigger-scan pushback unconditionally,
+ * applies the same full-mask face vetoes, unpacks right/left face state
+ * into gKirbyState (halfword pair at unk10C, the func_801529C0_ovl3
+ * spelling), scans right then left for hazard classes, and returns the
+ * horizontal contact mask. No ground flag, no swim watcher here. */
+s32 func_80153FC8_ovl3(void) {
+    extern u8 D_8012BCA0[];
+    struct PortColBlock3 *cb = (struct PortColBlock3 *) D_8012BCA0;
+    struct PositionState *st = &gPositionState;
+    s32 id = omCurrentObj->objId;
+    f32 **rec = D_800E0490[id];
+    f32 *fr = rec[1];
+    s32 hits;
+    f32 dx;
+    f32 dz;
+    u32 f;
+    u32 rightM;
+    u32 leftM;
+    u16 *hm = (u16 *) &gKirbyState.unk10C;
+    struct CollisionTriangle *tri;
+    u16 r;
+
+    st->kirbyFootPos[0] = gEntitiesNextPosXArray[id];
+    st->kirbyFootPos[1] = gEntitiesNextPosYArray[id];
+    st->kirbyFootPos[2] = gEntitiesNextPosZArray[id];
+    st->scale[0] = fr[0];
+    st->scale[1] = fr[1] + fr[0];
+    st->scale[2] = fr[2] + fr[0];
+    if (D_800E6A10[id] == 1.0f) {
+        st->faceAngle[0] = fr[3];
+        st->faceAngle[1] = fr[4];
+    } else {
+        st->faceAngle[0] = fr[4];
+        st->faceAngle[1] = fr[3];
+    }
+    if (gKirbyState.isTurning & 1) {
+        st->faceAngle[2] = gKirbyState.unk7C;
+    } else {
+        st->faceAngle[2] = D_800E17D0[id];
+    }
+    func_8010BFAC(st);
+    func_80105238((f32 *) st, D_8012BCA0);
+    hits = func_801128A4(st);
+    dx = st->kirbyFootPos[0] - gEntitiesNextPosXArray[id];
+    dz = st->kirbyFootPos[2] - gEntitiesNextPosZArray[id];
+    if ((dx != 0.0f) || (dz != 0.0f)) {
+        func_800F8728(id, dx, dz);
+        gEntitiesNextPosXArray[id] = st->kirbyFootPos[0];
+        gEntitiesNextPosZArray[id] = st->kirbyFootPos[2];
+    }
+    if (hits != 0) {
+        if (hits & 1) {
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 7) * 8) | (cb->flags.hw & 7));
+        }
+        if (hits & 2) {
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x38) * 8) | (cb->flags.hw & 7));
+        }
+        if (hits & 4) {
+            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x1C0) * 8) | (cb->flags.hw & 7));
+        }
+        if (hits & 8) {
+            func_8011D40C();
+        }
+    }
+    f = cb->flags.w >> 0x13;
+    rightM = f & 7;
+    leftM = f & 0x38;
+    gKirbyState.rightCollisionNext = rightM;
+    gKirbyState.leftCollisionNext = leftM;
+    gKirbyState.horizontalCollision = rightM | leftM;
+    tri = cb->rec[2].tri;
+    if ((tri != NULL) && (rightM != 0)) {
+        gKirbyState.unk104 = tri->collisionType;
+        hm[0] = tri->Halt_Movement;
+    } else {
+        gKirbyState.unk104 = 0;
+        hm[0] = 0;
+    }
+    tri = cb->rec[3].tri;
+    if ((tri != NULL) && (leftM != 0)) {
+        gKirbyState.unk106 = tri->collisionType;
+        hm[1] = tri->Halt_Movement;
+    } else {
+        gKirbyState.unk106 = 0;
+        hm[1] = 0;
+    }
+    if ((rightM != 0) && ((r = func_8010DC24(cb->rec[2].tri)) != 0)) {
+        gKirbyState.unk140 = (u32) r | 0x40000;
+    } else if ((gKirbyState.leftCollisionNext != 0) && ((r = func_8010DC24(cb->rec[3].tri)) != 0)) {
+        gKirbyState.unk140 = (u32) r | 0x80000;
+    } else if (gKirbyState.action != 0x16) {
+        gKirbyState.unk140 = 0;
+    }
+    return gKirbyState.horizontalCollision;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80153FC8_ovl3.s")
+#endif
 
 void func_8015439C_ovl3(f32 *arg0) {
     extern f32 D_8012E948[];
@@ -365,12 +1044,169 @@ void func_8015488C_ovl3(s32 arg0, f32 *arg1) {
     *(s32 *) &arg1[7] = 0;
 }
 
+#ifdef PORT
+/* PORT: the three shot/projectile collision passes (via m2c). On N64 each
+ * receives the shot's persistent state buffer (layout = PositionState;
+ * plyshot passes &D_80197F60_ovl3[...]) as a hidden $a0 threaded through
+ * void-declared wrappers; the PORT arms take it explicitly. All three seat
+ * the buffer from the entity track arrays and the spawn record, run their
+ * sweep, unpack into D_8012BCA0 via func_80105238, and finish with the
+ * shared water probe: shift the shot's water flag right once, then re-set
+ * bit 2 for every active water volume at foot height (annex spelling as in
+ * func_80152348_ovl3's arm). */
+s32 func_80109E44(f32 *);   /* match func_80152828_ovl3's block-scope spelling */
+s32 func_8010B11C(f32 *);
+s32 func_8010C274(struct PositionState *);
+
+static void portShotWaterScan(f32 h0) {
+    extern u8 D_8012BCA0[];
+    s32 id = omCurrentObj->objId;
+    f32 probe[3];
+    s32 hits;
+    u32 wi;
+
+    probe[0] = gEntitiesNextPosXArray[id];
+    probe[1] = gEntitiesNextPosYArray[id] + h0;
+    probe[2] = gEntitiesNextPosZArray[id];
+    hits = func_8010DF9C(probe);
+    D_800E8AE0[id] = (u32) D_800E8AE0[id] >> 1;
+    for (wi = 0; wi < (u32) hits && wi < 3; wi++) {
+        u8 *w = *(u8 **) (D_8012BCA0 + 128 + wi * 8);
+
+        if (w != NULL && w[4] == 1) {
+            D_800E8AE0[id] |= 4;
+        }
+    }
+}
+
+static void portShotSeatState(struct PositionState *st, f32 *fr) {
+    s32 id = omCurrentObj->objId;
+
+    st->kirbyFootPos[0] = gEntitiesNextPosXArray[id];
+    st->kirbyFootPos[1] = gEntitiesNextPosYArray[id];
+    st->kirbyFootPos[2] = gEntitiesNextPosZArray[id];
+    st->scale[0] = fr[0];
+    st->scale[1] = fr[1] + fr[0];
+    st->scale[2] = fr[2] + fr[0];
+    if (D_800E6A10[id] == 1.0f) {
+        st->faceAngle[0] = fr[3];
+        st->faceAngle[1] = fr[4];
+    } else {
+        st->faceAngle[0] = fr[4];
+        st->faceAngle[1] = fr[3];
+    }
+    st->faceAngle[2] = D_800E17D0[id];
+}
+
+/* Moving-shot pass: ground sweep when grounded flag clear, air sweep
+ * otherwise; commits the resolved position (with track-progress rederive
+ * on X/Z pushback) and rescans the water annex. */
+void func_801548DC_ovl3(struct PositionState *st) {
+    extern u8 D_8012BCA0[];
+    s32 id = omCurrentObj->objId;
+    f32 **rec = D_800E0490[id];
+    f32 *fr = rec[1];
+    s32 res;
+    f32 dx;
+    f32 dz;
+
+    portShotSeatState(st, fr);
+    if (D_800E8920[id] == 0) {
+        res = func_80109E44((f32 *) st);
+    } else {
+        res = func_8010B11C((f32 *) st);
+    }
+    func_80105238((f32 *) st, D_8012BCA0);
+    D_800E8920[id] = res;
+    dx = st->kirbyFootPos[0] - gEntitiesNextPosXArray[id];
+    dz = st->kirbyFootPos[2] - gEntitiesNextPosZArray[id];
+    if ((dx != 0.0f) || (dz != 0.0f)) {
+        func_800F8728(id, dx, dz);
+        gEntitiesNextPosXArray[id] = st->kirbyFootPos[0];
+        gEntitiesNextPosZArray[id] = st->kirbyFootPos[2];
+    }
+    gEntitiesNextPosYArray[id] = st->kirbyFootPos[1];
+    portShotWaterScan(fr[0]);
+}
+
+/* Contact sweep pass: runs func_8010C274's moving-contact cast and, on any
+ * face contact (flags top bits), commits the swept position and grounds
+ * the shot's contact flag. */
+void func_80154CFC_ovl3(struct PositionState *st) {
+    extern u8 D_8012BCA0[];
+    struct PortColBlock3 *cb = (struct PortColBlock3 *) D_8012BCA0;
+    s32 id = omCurrentObj->objId;
+    f32 **rec = D_800E0490[id];
+    f32 *fr = rec[1];
+
+    portShotSeatState(st, fr);
+    D_800E8920[id] = 0;
+    func_8010C274(st);
+    func_80105238((f32 *) st, D_8012BCA0);
+    if ((cb->flags.w >> 0x13) != 0) {
+        gEntitiesNextPosXArray[id] = st->kirbyFootPos[0];
+        gEntitiesNextPosYArray[id] = st->kirbyFootPos[1];
+        gEntitiesNextPosZArray[id] = st->kirbyFootPos[2];
+        D_800E8920[id] = 1;
+    }
+    portShotWaterScan(fr[0]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801548DC_ovl3.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80154CFC_ovl3.s")
+#endif
 
+#ifdef PORT
+/* Contact-test-only pass: same sweep as func_80154CFC_ovl3, but the shot's
+ * position is restored before the unpack, so a contact only raises
+ * D_800E8920 without moving the shot. */
+void func_80155088_ovl3(struct PositionState *st) {
+    extern u8 D_8012BCA0[];
+    struct PortColBlock3 *cb = (struct PortColBlock3 *) D_8012BCA0;
+    s32 id = omCurrentObj->objId;
+    f32 **rec = D_800E0490[id];
+    f32 *fr = rec[1];
+
+    portShotSeatState(st, fr);
+    D_800E8920[id] = 0;
+    func_8010C274(st);
+    st->kirbyFootPos[0] = gEntitiesNextPosXArray[id];
+    st->kirbyFootPos[1] = gEntitiesNextPosYArray[id];
+    st->kirbyFootPos[2] = gEntitiesNextPosZArray[id];
+    func_80105238((f32 *) st, D_8012BCA0);
+    if ((cb->flags.w >> 0x13) != 0) {
+        D_800E8920[id] = 1;
+    }
+    portShotWaterScan(fr[0]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155088_ovl3.s")
+#endif
 
+#ifdef PORT
+/* PORT: on N64 these wrappers leave $a0 untouched, so the shot state
+ * buffer their callers pass (plyshot's &D_80197F60_ovl3[...]) flows
+ * straight into the collision pass; in C that hidden argument has to be
+ * forwarded explicitly. */
+s32 func_80155424_ovl3(struct PositionState *arg0) {
+    if (D_800E0490[omCurrentObj->objId] == NULL) {
+        D_800E8920[omCurrentObj->objId] = 0;
+        return 0;
+    }
+    func_80154CFC_ovl3(arg0);
+    return D_800E8920[omCurrentObj->objId];
+}
+
+s32 func_80155498_ovl3(struct PositionState *arg0) {
+    if (D_800E0490[omCurrentObj->objId] == NULL) {
+        D_800E8920[omCurrentObj->objId] = 0;
+        return 0;
+    }
+    func_801548DC_ovl3(arg0);
+    return D_800E8920[omCurrentObj->objId];
+}
+#else
 s32 func_80155424_ovl3(void) {
     if (D_800E0490[omCurrentObj->objId] == NULL) {
         D_800E8920[omCurrentObj->objId] = 0;
@@ -388,7 +1224,25 @@ s32 func_80155498_ovl3(void) {
     func_801548DC_ovl3();
     return D_800E8920[omCurrentObj->objId];
 }
+#endif
 
+#ifdef PORT
+/* PORT: arg0 is the shot state buffer (a pointer the matched C narrows to
+ * s32 -- an LP64 shear), forwarded into the contact sweep. */
+s32 func_8015550C_ovl3(struct PositionState *arg0, s32 arg1) {
+    f32 sp20[4];
+
+    if (D_800E0490[omCurrentObj->objId] == NULL) {
+        D_800E8920[omCurrentObj->objId] = 0;
+        return 0;
+    }
+    sp20[0] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp20[1] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp20[2] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    func_80154CFC_ovl3(arg0);
+    return func_80155C68_ovl3(arg1, sp20);
+}
+#else
 s32 func_8015550C_ovl3(s32 arg0, s32 arg1) {
     f32 sp20[4];
 
@@ -402,7 +1256,36 @@ s32 func_8015550C_ovl3(s32 arg0, s32 arg1) {
     func_80154CFC_ovl3(arg0);
     return func_80155C68_ovl3(arg1, sp20);
 }
+#endif
 
+#ifdef PORT
+/* PORT: arg0 here is really the shot state buffer, not a GObj (hidden-$a0
+ * pass-through in the matched C). */
+s32 func_801555B0_ovl3(GObj *arg0, s32 arg1) {
+    s32 ret;
+    Vector sp20;
+
+    if (D_800E0490[omCurrentObj->objId] == NULL) {
+        D_800E8920[omCurrentObj->objId] = 0;
+        return 0;
+    }
+    sp20.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp20.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp20.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    ret = func_80155C68_ovl3(arg1, &sp20);
+    func_80154CFC_ovl3((struct PositionState *) arg0);
+    return ret;
+}
+
+s32 func_80155664_ovl3(struct PositionState *arg0) {
+    if (D_800E0490[omCurrentObj->objId] == NULL) {
+        D_800E8920[omCurrentObj->objId] = 0;
+        return 0;
+    }
+    func_80155088_ovl3(arg0);
+    return D_800E8920[omCurrentObj->objId];
+}
+#else
 s32 func_801555B0_ovl3(GObj *arg0, s32 arg1) {
     s32 ret;
     Vector sp20;
@@ -427,6 +1310,7 @@ s32 func_80155664_ovl3(void) {
     func_80155088_ovl3();
     return D_800E8920[omCurrentObj->objId];
 }
+#endif
 
 #ifdef NON_MATCHING
 /* 22/88. Frame, stack layout, control flow and the FP block are all exact.
@@ -476,7 +1360,102 @@ s32 func_801556D8_ovl3(f32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801556D8_ovl3.s")
 #endif
 
+#ifdef PORT
+/* PORT: directional clearance probe (via m2c). Casts line segments from
+ * arg0 out to distance arg1; mask bit 4 = horizontal pair along the track
+ * facing (D_800E17D0), bit 2 = vertical pair, bit 1 = single-sided (the
+ * sign of arg1 picks the side; a non-positive horizontal distance probes
+ * facing+90deg). Result bits: 8 forward/up-positive, 4 backward, 2 up, 1
+ * down. func_8010423C/func_80103EA0 are ovl2_7's segment casts (their s32
+ * result is the ROM's $v0 pass-through from func_80103B58, the
+ * func_80104B70 precedent above). */
+s32 func_8010423C(Vector *, Vector *, void *, void *, void *, void *, void *, void *);
+s32 func_80103EA0(Vector *, Vector *, void *, void *, s32, s32, s32, s32);
+
+s32 func_80155838_ovl3(Vector *arg0, f32 arg1, s32 arg2) {
+    extern f32 D_800E17D0[];
+    s32 mask = arg2 & 0xFF;
+    s32 res = 0;
+    Vector p2;
+    f32 n[4];
+    f32 c;
+
+    if (mask & 4) {
+        n[1] = 0.0f;
+        p2.y = arg0->y;
+        if (!(mask & 1)) {
+            n[0] = sinf(D_800E17D0[omCurrentObj->objId]);
+            c = cosf(D_800E17D0[omCurrentObj->objId]);
+            n[2] = c;
+            p2.x = arg0->x + (arg1 * n[0]);
+            p2.z = arg0->z + (arg1 * c);
+            if (func_8010423C(arg0, &p2, n, 0, 0, 0, 0, 0) != 0) {
+                res = 8;
+            }
+            n[0] = sinf(D_800E17D0[omCurrentObj->objId] + 3.1415927f);
+            c = cosf(D_800E17D0[omCurrentObj->objId] + 3.1415927f);
+            n[2] = c;
+            p2.x = arg0->x + (arg1 * n[0]);
+            p2.z = arg0->z + (arg1 * c);
+            if (func_8010423C(arg0, &p2, n, 0, 0, 0, 0, 0) != 0) {
+                res |= 4;
+            }
+        } else {
+            if (arg1 > 0.0f) {
+                n[0] = sinf(D_800E17D0[omCurrentObj->objId]);
+                c = cosf(D_800E17D0[omCurrentObj->objId]);
+            } else {
+                n[0] = sinf(D_800E17D0[omCurrentObj->objId] + 1.5707964f);
+                c = cosf(D_800E17D0[omCurrentObj->objId] + 1.5707964f);
+            }
+            n[2] = c;
+            p2.x = arg0->x + (arg1 * n[0]);
+            p2.z = arg0->z + (arg1 * n[2]);
+            if (func_8010423C(arg0, &p2, n, 0, 0, 0, 0, 0) != 0) {
+                res = 4;
+                if (arg1 > 0.0f) {
+                    res = 8;
+                }
+            }
+        }
+    }
+    if (mask & 2) {
+        n[2] = 0.0f;
+        n[0] = 0.0f;
+        p2.x = arg0->x;
+        p2.z = arg0->z;
+        if (!(mask & 1)) {
+            n[1] = 1.0f;
+            p2.y = arg0->y + arg1;
+            if (func_80103EA0(arg0, &p2, n, 0, 0, 0, 0, 0) != 0) {
+                res |= 2;
+            }
+            n[1] = -1.0f;
+            p2.y = arg0->y - arg1;
+            if (func_80103EA0(arg0, &p2, n, 0, 0, 0, 0, 0) != 0) {
+                res |= 1;
+            }
+        } else {
+            if (arg1 > 0.0f) {
+                n[1] = 1.0f;
+            } else {
+                n[1] = -1.0f;
+            }
+            p2.y = arg0->y + arg1;
+            if (func_80103EA0(arg0, &p2, n, 0, 0, 0, 0, 0) != 0) {
+                if (arg1 > 0.0f) {
+                    res |= 2;
+                } else {
+                    res |= 1;
+                }
+            }
+        }
+    }
+    return res;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_80155838_ovl3.s")
+#endif
 
 /* 47/58: the ROM hoists one `or $v0, $zero, $zero` above both early exits and
    keeps arg1 in $a1 until the last read; IDO instead relocates arg1 into $a3 at

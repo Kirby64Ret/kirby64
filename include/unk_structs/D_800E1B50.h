@@ -30,6 +30,28 @@ struct SubSub800E1B50_Unk88_UnkC {
     struct SubSub800E1B50_Unk88_UnkC_Unk4 *unk4;
 };
 
+#ifdef PORT
+/* Enemy descriptors are ROM data blocks; the PC data translation emits them
+ * as one 8-byte cell per N64 word (value in the low half, relocations as
+ * native pointers). Pad every 4-byte field to a full cell so the offsets
+ * land where the emission put them. */
+struct Sub800E1B50_Unk88 {
+    f32 unk0;
+    u32 pad0;
+    u32 unk4;
+    u32 pad4;
+    u32 unk8;
+    u32 pad8;
+    struct SubSub800E1B50_Unk88_UnkC *unkC;
+    u32 unk10;
+    u32 pad10;
+    s32 *unk14;
+    struct Sub800E1B50_Unk94 *unk18;
+    u32 unk1C;
+    u32 pad1C;
+    int (*unk20)(struct Sub800E1B50_Unk84 *);
+};
+#else
 struct Sub800E1B50_Unk88 {
     f32 unk0;
     u32 unk4;
@@ -41,6 +63,7 @@ struct Sub800E1B50_Unk88 {
     u32 unk1C;
     int (*unk20)(struct Sub800E1B50_Unk84 *);
 };
+#endif
 
 struct Sub800E1B50_Unk94 {
     s32 unk0;

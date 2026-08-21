@@ -185,6 +185,12 @@ void func_80155890_ovl4(GObj *);
 void func_80155C00_ovl4(GObj *);
 
 void func_801555F4_ovl4(GObj *arg0) {
+#ifdef PORT
+    {
+        extern void pc_fsel_debug(const char *, int, int, int);
+        pc_fsel_debug("cursor-init", omCurrentObj->objId, saveCurrentFileNum, D_8015C6DC_ovl4);
+    }
+#endif
     D_8015C6D0_ovl4 = omCurrentObj->objId;
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
@@ -237,6 +243,13 @@ void func_80155890_ovl4(GObj *arg0) {
         D_800E9E20[omCurrentObj->objId]--;
         return;
     }
+#ifdef PORT
+    if (gPlayerControllers[0].buttonPressed != 0) {
+        extern void pc_fsel_debug(const char *, int, int, int);
+        pc_fsel_debug("confirm-press", gPlayerControllers[0].buttonPressed,
+                      saveCurrentFileNum, func_801555AC_ovl4(saveCurrentFileNum));
+    }
+#endif
     if (gPlayerControllers[0].buttonPressed & 0x9000) {
         if (func_801555AC_ovl4(saveCurrentFileNum) != 0) {
             switch (D_8015C6D4_ovl4) {
@@ -486,21 +499,48 @@ void func_80156160_ovl4(GObj *arg0) {
 }
 
 s32 func_801561DC_ovl4(void) {
+#ifdef PORT
+    /* These regions are N64 pointer words; the PC data generator emits them
+       inside one native void*[] (8-byte slots), so the word-struct copies
+       read pointer halves. Index the live tables instead; the low-memory
+       image keeps every static in 32 bits, so the s32 return round-trips. */
+    void **sp4C = (void **) &D_8015A990_ovl4;
+    void **sp40 = (void **) &D_8015A99C_ovl4;
+    void **sp28 = (void **) &D_8015A9A8_ovl4;
+    void **sp20 = (void **) &D_8015A9C0_ovl4;
+#else
     Unk3Words sp4C = D_8015A990_ovl4;
     Unk3Words sp40 = D_8015A99C_ovl4;
     Unk6Words sp28 = D_8015A9A8_ovl4;
     Unk2Words sp20 = D_8015A9C0_ovl4;
+#endif
 
     switch (D_8015C6DC_ovl4) {
         case 0:
             if (func_801555AC_ovl4(saveCurrentFileNum) != 0) {
+#ifdef PORT
+                return (s32) (uintptr_t) sp40[D_8015C6D4_ovl4];
+#else
                 return sp40.unk0[D_8015C6D4_ovl4];
+#endif
             }
+#ifdef PORT
+            return (s32) (uintptr_t) sp4C[saveCurrentFileNum];
+#else
             return sp4C.unk0[saveCurrentFileNum];
+#endif
         case 1:
+#ifdef PORT
+            return (s32) (uintptr_t) sp28[D_8015C6E0_ovl4];
+#else
             return sp28.unk0[D_8015C6E0_ovl4];
+#endif
         case 2:
+#ifdef PORT
+            return (s32) (uintptr_t) sp20[D_8015C6E4_ovl4];
+#else
             return sp20.unk0[D_8015C6E4_ovl4];
+#endif
     }
 }
 
@@ -591,13 +631,24 @@ void func_8015665C_ovl4(GObj *arg0) {
     extern Unk3Words D_8015A9C8_ovl4;
     SPObj *sp4C[3];
     s32 i;
+#ifdef PORT
+    /* D_8015A9C8 is three N64 pointer words; the PC data generator emits the
+       region as part of a native void*[] (8-byte slots), so the word-struct
+       copy reads pointer halves. Index the live table instead. */
+    void **sp3C = (void **) &D_8015A9C8_ovl4;
+#else
     Unk3Words sp3C = D_8015A9C8_ovl4;
+#endif
 
     D_800DEF90[omCurrentObj->objId] = NULL;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
     for (i = 0; i < 3; i++) {
+#ifdef PORT
+        sp4C[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp3C[i]);
+#else
         sp4C[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp3C.unk0[i]);
+#endif
     }
     while (1) {
         for (i = 0; i != 3; i++) {
@@ -629,7 +680,14 @@ void func_801567BC_ovl4(GObj *arg0, s32 arg1) {
     s32 prev;
     s32 cur;
     s32 idx;
+#ifdef PORT
+    /* D_8015A9D4 is three N64 pointer words; the PC data generator emits the
+       region as part of a native void*[] (8-byte slots), so the word-struct
+       copy reads pointer halves. Index the live table instead. */
+    void **sp54 = (void **) &D_8015A9D4_ovl4;
+#else
     Unk3Words sp54 = D_8015A9D4_ovl4;
+#endif
 
     prev = func_801555AC_ovl4(arg1) + 1;
     D_800DEF90[omCurrentObj->objId] = NULL;
@@ -650,7 +708,11 @@ void func_801567BC_ovl4(GObj *arg0, s32 arg1) {
                     sp->xOffset = D_8015ABD4_ovl4[arg1].unk0;
                     sp->yOffset = D_8015ABD4_ovl4[arg1].unk4;
                 } else {
+#ifdef PORT
+                    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp54[arg1]);
+#else
                     sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp54.unk0[arg1]);
+#endif
                 }
             }
             idx = arg1 == saveCurrentFileNum;
@@ -784,7 +846,14 @@ extern s32 D_8015C6EC_ovl4;
 s32 func_80156BAC_ovl4(s32);
 
 void func_80156C4C_ovl4(GObj *arg0, s32 arg1) {
+#ifdef PORT
+    /* D_8015A9E0 is ten N64 pointer words; the PC data generator emits the
+       region as part of a native void*[] (8-byte slots), so the word-struct
+       copy reads pointer halves. Index the live table instead. */
+    void **sp60 = (void **) &D_8015A9E0_ovl4;
+#else
     Unk10Ws sp60 = D_8015A9E0_ovl4;
+#endif
     SPObj *sp;
     Unk2Fs *p;
     s32 cur;
@@ -795,7 +864,11 @@ void func_80156C4C_ovl4(GObj *arg0, s32 arg1) {
     D_800DEF90[omCurrentObj->objId] = NULL;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
+#ifdef PORT
+    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp60[cur]);
+#else
     sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp60.unk0[cur]);
+#endif
     p = &D_8015AF28_ovl4[arg1];
     sp->xOffset = p->unk0;
     sp->yOffset = p->unk4;
@@ -807,7 +880,11 @@ void func_80156C4C_ovl4(GObj *arg0, s32 arg1) {
                 if (func_80156BAC_ovl4(arg1) != cur) {
                     cur = func_80156BAC_ovl4(arg1);
                     func_800ACBDC(arg0);
+#ifdef PORT
+                    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp60[cur]);
+#else
                     sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp60.unk0[cur]);
+#endif
                     sp->xOffset = p->unk0;
                     sp->yOffset = p->unk4;
                 }
@@ -832,18 +909,37 @@ typedef struct {
 extern Unk10Words D_8015AA08_ovl4;
 
 void func_80156EB0_ovl4(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
+#ifdef PORT
+    /* D_8015AA08 is ten N64 pointer words; the PC data generator emits the
+       region as part of a native void*[] (8-byte slots), so the word-struct
+       copy reads pointer halves. Index the live table instead. */
+    void **sp28 = (void **) &D_8015AA08_ovl4;
+#else
     Unk10Words sp28 = D_8015AA08_ovl4;
+#endif
     SPObj *sp;
 
+#ifdef PORT
+    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28[arg1 / 100]);
+#else
     sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28.unk0[arg1 / 100]);
+#endif
     sp->xOffset = arg2;
     sp->yOffset = arg3;
     arg2 += sp->width;
+#ifdef PORT
+    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28[(arg1 % 100) / 10]);
+#else
     sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28.unk0[(arg1 % 100) / 10]);
+#endif
     sp->xOffset = arg2;
     sp->yOffset = arg3;
     arg2 += sp->width;
+#ifdef PORT
+    sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28[arg1 % 10]);
+#else
     sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp28.unk0[arg1 % 10]);
+#endif
     sp->xOffset = arg2;
     sp->yOffset = arg3;
 }
@@ -956,8 +1052,17 @@ extern Unk2Ss D_8015B46C_ovl4[][3];
 s32 func_80157258_ovl4(s32, s32);
 
 void func_801572E4_ovl4(GObj *arg0, s32 arg1) {
+#ifdef PORT
+    /* D_8015AA30/D_8015AA48 are six N64 pointer words each; the PC data
+       generator emits the region as part of a native void*[] (8-byte slots),
+       so the word-struct copies read pointer halves. Index the live tables
+       instead. */
+    void **spC0 = (void **) &D_8015AA30_ovl4;
+    void **spA8 = (void **) &D_8015AA48_ovl4;
+#else
     Unk6Words spC0 = D_8015AA30_ovl4;
     Unk6Words spA8 = D_8015AA48_ovl4;
+#endif
     SPObj *sp;
     s32 i;
     s32 pad;
@@ -972,10 +1077,18 @@ void func_801572E4_ovl4(GObj *arg0, s32 arg1) {
     sp->xOffset = D_8015B074_ovl4[arg1].unk0;
     sp->yOffset = D_8015B074_ovl4[arg1].unk4;
     for (i = 0; i < 6; i++) {
+#ifdef PORT
+        dst1[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) spC0[i]);
+#else
         dst1[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) spC0.unk0[i]);
+#endif
         dst1[i]->xOffset = D_8015B3DC_ovl4[i][arg1].unk0;
         dst1[i]->yOffset = D_8015B3DC_ovl4[i][arg1].unk4;
+#ifdef PORT
+        dst2[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) spA8[i]);
+#else
         dst2[i] = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) spA8.unk0[i]);
+#endif
         dst2[i]->xOffset = D_8015B46C_ovl4[i][arg1].unk0;
         dst2[i]->yOffset = D_8015B46C_ovl4[i][arg1].unk4;
     }
@@ -1054,10 +1167,20 @@ void func_800B1900(s32);
 void func_800BB468(s32, s32);
 
 void func_80157840_ovl4(GObj *arg0, s32 arg1) {
+#ifdef PORT
+    /* D_8015AA60 is three N64 pointer words; the PC data generator emits the
+       region as part of a native void*[] (8-byte slots), so the word-struct
+       copy reads pointer halves. Walk the live table instead. */
+    void **sp6C = (void **) &D_8015AA60_ovl4;
+    SPObj *sp;
+    void **p;
+    void **end;
+#else
     Unk3Words sp6C = D_8015AA60_ovl4;
     SPObj *sp;
     s32 *p;
     s32 *end;
+#endif
     Unk2Ss *q;
     s32 i;
 
@@ -1065,8 +1188,13 @@ void func_80157840_ovl4(GObj *arg0, s32 arg1) {
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     omLinkGObjDL(arg0, func_800AD1A0, 0x12, 0x80000000, 0x12);
     q = &D_8015B6C4_ovl4[arg1];
+#ifdef PORT
+    p = &sp6C[2];
+    end = &sp6C[0];
+#else
     p = &sp6C.unk0[2];
     end = &sp6C.unk0[0];
+#endif
     do {
         play_sound(0xD3);
         sp = (SPObj *) func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) *p);

@@ -108,9 +108,25 @@ void dma_overlay_load(struct Overlay *ovl) {
     }
 }
 
+#ifdef PORT
+/* dma_copy carries the destination through a u32, faithfully to the N64
+ * signature -- which truncates an LP64 heap pointer above 4 GiB before the
+ * PI ever sees it. The failure that found it: func_800A94F4's temporary
+ * big-endian buffer came from malloc, glibc served it from an mmap'd arena
+ * at 0x7f..., and pc_rom_read memcpy'd into the low 32 bits of that address.
+ * Every dma_read target is a cartridge read into host memory, so go to the
+ * cartridge image directly with the full pointer; the cache operations and
+ * 64 KB chunking dma_copy adds are no-ops on the PC PI anyway. */
+void dma_read(u32 physAddr, void *vAddr, u32 size) {
+    extern u32 pc_rom_read(u32 off, void *dst, u32 size);
+
+    pc_rom_read(physAddr, vAddr, size);
+}
+#else
 void dma_read(u32 physAddr, void *vAddr, u32 size) {
     dma_copy(gRomHandle, physAddr, (u32)vAddr, size, OS_READ);
 }
+#endif
 
 void dma_write(void *vAddr, u32 physAddr, u32 size) {
     dma_copy(gRomHandle, physAddr, (u32)vAddr, size, OS_WRITE);

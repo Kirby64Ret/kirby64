@@ -1133,6 +1133,44 @@ f32 eneGetPlayerHeight(void) {
     return ret;
 }
 
+#ifdef PORT
+/* PORT: func_8019A900_ovl7 stores a whole 8-byte struct TrackPosition
+ * through its pointer. The matching body below hands it &sp18 and relies on
+ * the N64 frame placing sp1C right above it; gcc on LP64 neither orders nor
+ * packs locals that way, so the unk4 store lands on the stack canary
+ * (caught as "stack smashing detected" on the level's first enemy tick).
+ * Same read, spelled with the real struct. */
+void func_8019B164_ovl7(void) {
+    struct TrackPosition sp18;
+
+    if (func_8019A900_ovl7(&sp18) != 0) {
+        D_800E6A10[omCurrentObj->objId] = sp18.unk0;
+    }
+    else if (random_soft_s32_range(2) != 0) {
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
+    } else {
+        D_800E6A10[omCurrentObj->objId] = -1.0f;
+    }
+}
+#else
+#ifdef PORT
+/* func_8019A900_ovl7 writes a full 8-byte TrackPosition through its arg; the
+ * draft below hands it a lone s32 and banks on the neighbouring stack slot,
+ * which the host's stack protector rightly calls a smash (first enemy spawn
+ * in level 1-1 aborted here). Give it the real struct. */
+void func_8019B164_ovl7(void) {
+    struct TrackPosition sp;
+
+    if (func_8019A900_ovl7(&sp) != 0) {
+        D_800E6A10[omCurrentObj->objId] = sp.unk0;
+    }
+    else if (random_soft_s32_range(2) != 0) {
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
+    } else {
+        D_800E6A10[omCurrentObj->objId] = -1.0f;
+    }
+}
+#else
 void func_8019B164_ovl7(void) {
     // TODO: struct
     f32 sp1C;
@@ -1147,6 +1185,8 @@ void func_8019B164_ovl7(void) {
         D_800E6A10[omCurrentObj->objId] = -1.0f;
     }
 }
+#endif
+#endif
 
 s32 eneCheckAboveBelowPlayer(void) {
     return (gEntitiesNextPosYArray[omCurrentObj->objId] < (gEntitiesNextPosYArray[0] + 20.0f)) ? 1 : -1;
@@ -1194,6 +1234,33 @@ void func_8019B3C8_ovl7(Unused GObj *gobj) {
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 0.0f;
 }
 
+#ifdef PORT
+/* PORT: same 4-byte-local landmine as func_8019B164_ovl7 above -- the
+ * callee stores 8 bytes, the matching bodies lend it a lone s32 and count
+ * on the N64 frame layout for the spill. Real struct locals instead. */
+void func_8019B424_ovl7(s32 arg0) {
+    UnkStruct800E1B50 *sp24;
+    struct TrackPosition sp1C;
+
+    sp24 = D_800E1B50[omCurrentObj->objId];
+    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C.unk0 != D_800E6A10[omCurrentObj->objId]) && (sp24->unk3C == 0)) {
+        func_80199F1C_ovl7(arg0);
+    }
+}
+
+void func_8019B4BC_ovl7(s32 arg0) {
+    UnkStruct800E1B50 *sp24;
+    struct TrackPosition sp1C;
+
+    sp24 = D_800E1B50[omCurrentObj->objId];
+    if (func_8019A900_ovl7(&sp1C) == 0) {
+        sp1C.unk0 = func_8019B608_ovl7(0);
+    }
+    if ((sp1C.unk0 != D_800E6A10[omCurrentObj->objId]) && (sp24->unk3C == 0)) {
+        func_80199F1C_ovl7(arg0);
+    }
+}
+#else
 void func_8019B424_ovl7(s32 arg0) {
     UnkStruct800E1B50 *sp24;
     f32 sp20;
@@ -1218,6 +1285,7 @@ void func_8019B4BC_ovl7(s32 arg0) {
         func_80199F1C_ovl7(arg0);
     }
 }
+#endif
 
 void func_8019B570_ovl7(Unused GObj *gobj) {
     func_800AFBB4(0, omCurrentObj);
@@ -1278,6 +1346,25 @@ void func_8019B7D8_ovl7(void) {
 }
 
 #ifdef NON_MATCHING
+#ifdef PORT
+/* PORT: same 4-byte-local landmine as func_8019B164_ovl7 -- and here the
+ * spilled unk4 would corrupt the live sp24/sp28/sp2C position vector that
+ * func_800A4F48 reads. Real struct local instead. */
+s32 func_8019B834_ovl7(void) {
+    f32 sp2C;
+    f32 sp28;
+    f32 sp24;
+    struct TrackPosition sp1C;
+
+    sp24 = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp28 = gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp2C = gEntitiesNextPosZArray[omCurrentObj->objId];
+    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C.unk0 != D_800E6A10[omCurrentObj->objId]) && (func_800A4F48(D_800D799C->data.ptr, &sp24, 1.075f, 1.075f) == 0)) {
+        return 1;
+    }
+    return 0;
+}
+#else
 s32 func_8019B834_ovl7(void) {
     f32 sp2C;
     f32 sp28;
@@ -1292,6 +1379,7 @@ s32 func_8019B834_ovl7(void) {
     }
     return 0;
 }
+#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B834_ovl7.s")
 #endif

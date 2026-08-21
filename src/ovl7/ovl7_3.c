@@ -766,6 +766,111 @@ block_50:
         }
     }
 }
+#elif defined(PORT)
+/* Per-frame enemy collision driver (draft above, completed): ensure the
+ * entity has a collision slot, pick the fall probe depth by movement kind
+ * (25.0 for walkers, 0 for flyers/fixed), run the mover, then when the
+ * entity collides with terrain (unk88->unk1C) and isn't held: ground test
+ * (custom unk48 hook or func_80109DD8), floor rescue at the probe depth
+ * when airborne (with the three axis-aligned wall rescues for kind 2),
+ * carry the entity to the resolved slot position, and finally flag water
+ * (D_800E8AE0) from the annex records the position crossed. */
+void func_801A2558_ovl7(s32 arg0) {
+    u32 objId = omCurrentObj->objId;
+    UnkStruct800E1B50 *rec = D_800E1B50[objId];
+    struct PositionState *slot = (struct PositionState *) rec->unk84;
+    f32 depth;
+    s32 w;
+
+    if (arg0 == 0) {
+        return;
+    }
+    switch (D_800E7730[objId]) {
+    case 1:
+    case 2:
+    case 3:
+        depth = 25.0f;
+        break;
+    case 4:
+    case 6:
+        depth = 0.0f;
+        break;
+    default:
+        depth = (D_800E0D50[objId] != 0) ? 25.0f : 0.0f;
+        break;
+    }
+    if (slot != NULL) {
+        func_80105180(slot);
+    } else {
+        slot = func_8010DCAC();
+        rec->unk84 = (struct Sub800E1B50_Unk84 *) slot;
+    }
+    func_801A2ADC_ovl7(arg0);
+    if (rec->unk88->unk1C != 0 && D_800E8E60[omCurrentObj->objId] == 0) {
+        func_801051DC(slot);
+        if (rec->unk48 != NULL) {
+            D_800E8920[omCurrentObj->objId] =
+                ((s32 (*)(void *)) rec->unk48)(slot);
+        } else {
+            D_800E8920[omCurrentObj->objId] = func_80109DD8(slot);
+        }
+        if (D_800E8920[omCurrentObj->objId] == 0) {
+            D_800E8920[omCurrentObj->objId] = func_8010D668(slot, depth);
+            if (rec->unk88->unk1C == 2) {
+                f32 az = gEntitiesAngleZArray[omCurrentObj->objId];
+
+                if (az >= 6.2831855f) {
+                    az -= 6.2831855f;
+                    gEntitiesAngleZArray[omCurrentObj->objId] = az;
+                } else if (az < 0.0f) {
+                    az += 6.2831855f;
+                    gEntitiesAngleZArray[omCurrentObj->objId] = az;
+                }
+                if (az > 1.553343f && az < 1.5882497f) {
+                    func_8010CE44(slot, 25.0f);
+                } else if (az > 3.1241393f && az < 3.1590462f) {
+                    func_8010D42C(slot, 25.0f);
+                } else if (az > 4.694936f && az < 4.7298427f) {
+                    func_8010D138(slot, 25.0f);
+                }
+            }
+        }
+        {
+            u32 id = omCurrentObj->objId;
+            f32 dx = slot->kirbyFootPos[0] - gEntitiesNextPosXArray[id];
+            f32 dz = slot->kirbyFootPos[2] - gEntitiesNextPosZArray[id];
+
+            if (dx != 0.0f || dz != 0.0f) {
+                func_800F8728(id, dx, dz);
+                gEntitiesNextPosXArray[omCurrentObj->objId] = slot->kirbyFootPos[0];
+                gEntitiesNextPosZArray[omCurrentObj->objId] = slot->kirbyFootPos[2];
+            }
+            gEntitiesNextPosYArray[omCurrentObj->objId] = slot->kirbyFootPos[1];
+        }
+    }
+    func_801051AC(slot);
+    {
+        Vector pos;
+
+        pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        w = func_8010DF9C(&pos);
+    }
+    if (w == 1 || w == 2 || w == 3) {
+        if (w == 3 && ((u8 *) D_8012BCE0[2])[4] != 0) {
+            D_800E8AE0[omCurrentObj->objId] = 1;
+        }
+        if (w >= 2 && ((u8 *) D_8012BCE0[1])[4] != 0) {
+            D_800E8AE0[omCurrentObj->objId] = 1;
+        }
+        if (((u8 *) D_8012BCE0[0])[4] != 0) {
+            D_800E8AE0[omCurrentObj->objId] = 1;
+        }
+    } else {
+        D_800E8AE0[omCurrentObj->objId] = 0;
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2558_ovl7.s")
 #endif

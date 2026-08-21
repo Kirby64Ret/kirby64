@@ -90,7 +90,124 @@ s32 func_80151288_ovl3(void) {
     return 0;
 }
 
+#ifdef PORT
+/* Action-9 input predicate (inhale / spit / use-ability trigger), via m2c
+ * with full context. D_800D6F58 is an undeclared 0x5A-byte global block
+ * (HUD/pause state); the +0x50/+0x54/+0x58 gates are read at their N64
+ * offsets -- nothing on PC writes them yet, so they read 0 (gates open). */
+s32 func_80151448_ovl3(void) {
+    extern s32 D_800E8920[];
+    s32 func_801772CC_ovl3(s32);
+    u32 gate50 = D_800D6F58.unk50;
+    u32 gate54 = D_800D6F58.unk54;
+    u32 gate58 = D_800D6F58.unk58;
+    u16 btn;
+
+    if ((gKirbyState.isTurning & 1) || gate54 != 0) {
+        gKirbyState.unkA4 = 0;
+        if (gKirbyController.buttonPressed & 0x4000) {
+            gKirbyState.unkA = 1;
+        }
+        return 0;
+    }
+    if (gKirbyState.unk17 != 0) {
+        return 0;
+    }
+    if (D_800D6FB2 == 2) {
+        if ((gKirbyController.buttonPressed & 0x4000) || gKirbyState.unkA == 1) {
+            gKirbyState.unkA = 0;
+            gKirbyState.unk7 = 0;
+            gKirbyState.unk30 = 0;
+            set_kirby_action_1(0x17, 0x1A);
+            return 9;
+        }
+        return 0;
+    }
+    if (gate54 == 0 && gate50 == 0 && gKirbyState.unk4 == 2) {
+        btn = gKirbyController.buttonPressed;
+        if (btn & 0x4000) {
+            set_kirby_action_1(0x1B, 0x19);
+            return 9;
+        }
+        if ((btn & 0x3F) || gKirbyState.unkA == 3) {
+            gKirbyState.unkA = 0;
+            set_kirby_action_1(0x13, 0x13);
+            return 9;
+        }
+    }
+    gKirbyState.unkA4 = 0;
+    btn = gKirbyController.buttonPressed;
+    if (gKirbyState.abilityInUse == 0 && gKirbyState.unk8 == 0
+        && (gate50 | gate54 | gate58) == 0) {
+        if (D_800E8920[omCurrentObj->objId] != 0) {
+            if (!(btn & 0x400) && (btn & 0x3F)) {
+                gKirbyState.unkA4 = 1;
+            }
+        } else if (btn & 0x3F) {
+            gKirbyState.unkA4 = 1;
+        }
+        if (gKirbyState.unkA4 != 0) {
+            gKirbyState.unkA4 = 0;
+            if (gKirbyState.unk4 == 1) {
+                gKirbyState.unk7 = 0;
+                set_kirby_action_1(0x11, 0x11);
+                return 9;
+            }
+            if (gKirbyState.unk4 == 0 && gKirbyState.ability != 0
+                && gKirbyState.action != 0xA && gKirbyState.action != 0xB) {
+                gKirbyState.unk7 = 0;
+                set_kirby_action_1(0x11, 0x11);
+                return 9;
+            }
+        }
+    }
+    if ((btn & 0x4000) || gKirbyState.unkA == 1) {
+        gKirbyState.unkA = 0;
+        if (gKirbyState.unk4 == 0) {
+            if (gKirbyState.ability != 0) {
+                if (gKirbyState.abilityInUse == 0
+                    && (gKirbyState.ability != 0xC || D_80198838_ovl3 != 0)) {
+                    s32 act = func_801772CC_ovl3((s32) gKirbyState.ability);
+
+                    if (act != 0xFFFF) {
+                        gKirbyState.unk30 = 0;
+                        gKirbyState.unk16 = 0;
+                        set_kirby_action_1(act, 0x1A);
+                        return 9;
+                    }
+                }
+                return 0;
+            }
+            gKirbyState.unk30 = 0;
+            gKirbyState.unk7 = 0;
+            set_kirby_action_1(0x18, 0x18);
+            return 9;
+        }
+        if (gKirbyState.unk4 == 1) {
+            set_kirby_action_1(0x1A, 0x19);
+            return 9;
+        }
+        return 0;
+    }
+    if (gKirbyState.unk4 == 1) {
+        if (D_800E8920[omCurrentObj->objId] != 0 && (btn & 0x400)) {
+            gKirbyState.unk30 = 0;
+            gKirbyState.unk7 = 0;
+            set_kirby_action_1(0xB, 0x10);
+            return 9;
+        }
+        return 0;
+    }
+    if (gKirbyState.unk4 == 2 && (btn & 0x400)) {
+        gKirbyState.unk7 = 0;
+        set_kirby_action_1(0x12, 0x12);
+        return 9;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3/func_80151448_ovl3.s")
+#endif
 
 s32 func_801517FC_ovl3(void) {
     if (func_80179130_ovl3() != 0) {
@@ -253,4 +370,105 @@ s32 func_80151C78_ovl3(void) {
     return 0;
 }
 
+#ifdef PORT
+/* PORT: the action-transition dispatcher, from asm/nonmatchings/ovl3/ovl3/
+ * func_80151E94_ovl3.s. Every player action tick hands it a small byte list
+ * of transition-predicate ids (0xF-terminated); it calls the compiled
+ * predicates above in order until one requests an action change, exactly
+ * the jump table's mapping (ids 1..9 are gated on gKirbyState.unk17, id 1's
+ * result is discarded like the ROM does, id 10 is a no-op). This is the
+ * input -> state-machine wiring: the predicates read gKirbyController and
+ * call set_kirby_action. */
+s32 func_80151E94_ovl3(void *arg0) {
+    s32 func_801517FC_ovl3(void);
+    s32 func_80151864_ovl3(void);
+    s32 func_80151938_ovl3(void);
+    s32 func_801518E0_ovl3(void);
+    s32 func_8015190C_ovl3(void);
+    s32 func_80151448_ovl3(void);
+    s32 func_801519D4_ovl3(void);
+    s32 func_80151100_ovl3(void);
+    s32 func_80151160_ovl3(void);
+    s32 func_80151288_ovl3(void);
+    s32 func_80151AF4_ovl3(void);
+    s32 func_80151B78_ovl3(void);
+    s32 func_80151C78_ovl3(void);
+    extern s32 D_800D6B54;
+    u8 *p = arg0;
+    s32 ret = 0;
+    u8 id;
+
+    if (D_800D6B54 != 0) {
+        return 0;
+    }
+    for (id = *p; id != 0xF; id = *(++p)) {
+        switch (id) {
+            case 1:
+                if (gKirbyState.unk17 == 0) {
+                    func_80151100_ovl3();
+                }
+                break;
+            case 2:
+                if (gKirbyState.unk17 == 0) {
+                    ret = func_80151160_ovl3();
+                }
+                break;
+            case 3:
+                if (gKirbyState.unk17 == 0) {
+                    ret = func_801517FC_ovl3();
+                }
+                break;
+            case 4:
+                if (gKirbyState.unk17 == 0) {
+                    ret = func_80151864_ovl3();
+                }
+                break;
+            case 5:
+                if (gKirbyState.unk17 == 0) {
+                    ret = func_80151288_ovl3();
+                }
+                break;
+            case 6:
+                if (gKirbyState.unk17 == 0) {
+                    ret = func_80151938_ovl3();
+                }
+                break;
+            case 7:
+                if (gKirbyState.unk17 == 0) {
+                    ret = func_8015190C_ovl3();
+                }
+                break;
+            case 8:
+                if (gKirbyState.unk17 == 0) {
+                    ret = func_801518E0_ovl3();
+                }
+                break;
+            case 9:
+                if (gKirbyState.unk17 == 0) {
+                    ret = func_80151448_ovl3();
+                }
+                break;
+            case 11:
+                ret = func_801519D4_ovl3();
+                break;
+            case 12:
+                ret = func_80151AF4_ovl3();
+                break;
+            case 13:
+                ret = func_80151B78_ovl3();
+                break;
+            case 14:
+                ret = func_80151C78_ovl3();
+                break;
+            default:
+                break;
+        }
+        if (ret != 0) {
+            return ret;
+        }
+    }
+    return ret;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3/func_80151E94_ovl3.s")
+#endif

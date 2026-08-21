@@ -19,6 +19,69 @@ extern s32 D_800D7B68;
 void func_801114E0(void);
 void func_800F7578(void);
 void func_8000A498(GObj *, u8, s32);
+#ifdef PORT
+/* PORT support for the in-level scene's postInit/update (arms below).
+ * object_manager.h supplies the host Camera/OMMtx layouts the real bodies
+ * poke; everything else is the usual local-extern set. Cross-symbol N64
+ * arithmetic that survives on this build:
+ *   - D_800D6B18 is a 12-byte block (PC bss 24); its +8 slot holds the scene
+ *     camera GObj*, written/read only by the two arms below, so it is stored
+ *     as a full host pointer at the same byte offset (bytes 8..15);
+ *   - D_800D6F3C's +4/+6/+8 u16s are written at their N64 byte offsets --
+ *     the compiled reader (func_800F62A4's D_800D6F42) reaches the same
+ *     bytes through the linker defsym D_800D6F42=D_800D6F3C+0x6;
+ *   - D_800D6B6C's +4 slot is read exactly the way the compiled
+ *     func_800F6AD4 writes it.
+ * D_800EC2E0 is a MultiType array (8-byte cells on LP64), so the N64's
+ * byte-offset store becomes a real index. */
+#include "main/object_manager.h"
+
+extern u16 D_800D6B30;
+extern u8 D_800D6B18[];
+extern s32 D_800BE500, D_800BE504, D_800BE508, D_800BE534, D_800BE4FC;
+extern u8 D_800D6E20[];
+extern s32 D_800D6B48;
+extern s32 D_800D6B6C;
+extern f32 gKirbyHp;
+extern s32 D_800BE4EC;
+extern u32 D_800D478C[];
+extern f32 D_800D6ED0[4][4];
+extern Controller_800D6FE8 gPlayerControllers[];
+union PcMulti { u32 as_u32; s32 as_s32; void *as_ptr; };
+extern union PcMulti D_800EC2E0[];
+
+struct UnkStruct801290D8_pc {
+    u8 filler[0xA];
+    u16 bgColor;  /* 0x0A */
+    u32 musicId;  /* 0x0C */
+};
+extern struct UnkStruct801290D8_pc *D_801290D8;
+
+void func_800AE048(u32);
+void func_800AE0F0(void);
+void func_800A6E64(void);
+void func_800A78D0(s32);
+s32 func_800A8724(s32);
+void func_800F8274(void);
+s32 func_800F8560(void); /* same prototype as the one below */
+void func_80114CCC(void);
+void func_8010DCDC(void);
+void func_800FF2C8(void);
+void func_8011C838(void);
+void func_800BE098(void);
+void func_800A6BC0(s32);
+s32 func_800B9DF8(s32);  /* takes ONE arg (save_file.c); the ROM's caller
+                          * leaves the music id in $a1, which it ignores */
+s32 play_music(s32, s32);
+void func_800BBF60(void);
+void func_800BB3F0(void);
+s32 func_800AEA64(s32, s32, s32);
+void guLookAtF(f32 mf[4][4], f32, f32, f32, f32, f32, f32, f32, f32, f32);
+void HS64_PerspectiveF(f32 mf[4][4], u16 *, f32, f32, f32, f32, f32);
+void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
+void utilPauseAllGObjs(void);
+void utilResumeAllGObjs(void);
+#endif /* PORT */
 
 void func_800F61A0(void) {
     s32 *p;
@@ -33,6 +96,31 @@ void func_800F61A0(void) {
         if (D_800D7B68 != 0) {
             func_800F7578();
         }
+#ifdef PORT
+        /* The matching loop is a byte-offset walk with two cross-symbol
+         * assumptions that do not survive this build: the bound
+         * `p == &D_800DD84C` compares against an interior label of
+         * D_800DD710's block ((0x800DD84C-0x800DD710)/4 = 79 slots) that is
+         * a SEPARATE weak stub here, so the walk would never terminate; and
+         * D_800DE350 is an array of host GObj pointers (8-byte slots -- see
+         * utilResumeAllGObjs), so `(u8 *)D_800DE350 + i` with i advancing 4
+         * per slot reads half-pointers. Same iteration, spelled with
+         * indices. */
+        {
+            s32 slot;
+            GObj *go;
+            for (slot = 0; slot < 79; slot++) {
+                if (D_800DD710[slot] != -1) {
+                    v = D_800DDA90[slot];
+                    if (v & 0x38) {
+                        go = D_800DE350[slot];
+                        func_8000A498(go, v & 7, go->pri);
+                        D_800DDA90[slot] = go->link;
+                    }
+                }
+            }
+        }
+#else
         for (i = 0, p = D_800DD710; ; ) {
             q = (u32 *)((u8 *)D_800DDA90 + i);
             if (*p != -1) {
@@ -49,6 +137,7 @@ void func_800F61A0(void) {
                 break;
             }
         }
+#endif
     }
 }
 
@@ -220,13 +309,99 @@ void func_800F64B0(void) {
     utilSpawnRect(0xFF, -0x10, 0);
 }
 #elif defined(PORT)
-/* PORT SCAFFOLD, NOT A PORT: this is the in-level/demo scene's postInit.
- * The real body (m2c sketch above) needs func_800F78E4's level-config
- * loader first (D_801290D8 stays NULL without it, and the music selection
- * below dereferences it). Until that lands, a no-op keeps the attract
- * cycle alive -- the demo scene ticks black instead of aborting the whole
- * run through the weak stub. */
+/* PORT: the in-level/demo scene's postInit, from asm/nonmatchings/ovl2/ovl2/
+ * func_800F64B0.s (the m2c sketch above misdecodes the camera accesses and
+ * the func_800B9DF8 arity). Camera pokes go through the host Camera/OMMtx
+ * structs instead of the N64 byte offsets (+8 viewport, +0x64/+0x68
+ * matrices, byte +4 kind); the scene camera GObj lives in the D_800D6B18
+ * block's +8 slot as a host pointer (see the PORT note at the top of this
+ * file). func_800F8274 -> func_800F78E4 (ovl2_2.c PORT arm) fills
+ * D_801290D8 before the music read. */
 void func_800F64B0(void) {
+    GObj *g;
+    Camera *cam;
+    s32 i;
+    s32 mus;
+
+    D_800D6B30 = 0;
+    g = ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF);
+    *(GObj **)(D_800D6B18 + 8) = g;
+    func_80007C00(&g->data.cam->viewport, 10.0f, 10.0f, 310.0f, 182.0f);
+    HS64_omMakeGObj(0, (void (*)(GObj *))func_800F62A4, 0x1A, 0x80000000);
+    func_800AE048(0x40);
+    func_800AE0F0();
+    func_800A6E64();
+    func_800A78D0(0);
+    if (((D_800BE500 == 6) && (D_800BE504 == 0) && (D_800BE534 == 2)) ||
+        ((D_800BE500 == 5) && (D_800BE504 == 3))) {
+        func_800A8724(2);
+    } else if ((D_800BE500 == 4) && (D_800BE504 == 3) && (D_800BE534 == 3) &&
+               (D_800BE508 != 0)) {
+        func_800A8724(3);
+    } else {
+        func_800A8724(0);
+    }
+    func_800F8274();
+    if (func_800F8560() != 9) {
+        func_80114CCC();
+        func_8010DCDC();
+        func_800FF2C8();
+    }
+    func_8011C838();
+    func_800BE098();
+    func_800A6BC0(5);
+    cam = D_800D799C->data.cam;
+    for (i = 0; i < 2; i++) {
+        OMMtx *m = cam->matrices[i];
+        if (m->kind == 6) {
+            m->kind = 12;
+            m = cam->matrices[i];
+        }
+        if (m->kind == 7) {
+            m->kind = 13;
+        }
+    }
+    mus = (s32)D_801290D8->musicId;
+    switch (mus) {
+        case 0x27:
+            if (func_800B9DF8(2) != 0) {
+                mus = 0xD;
+            }
+            break;
+        case 0x28:
+            if (func_800B9DF8(2) != 0) {
+                mus = 0x12;
+            }
+            break;
+        case 0x29:
+            if (func_800B9DF8(2) != 0) {
+                mus = 8;
+            }
+            break;
+        case 0x22:
+            if (D_800D6E20[D_800BE508] != 0) {
+                mus = D_800D6B48;
+            }
+            break;
+    }
+    D_800D6B48 = mus;
+    if (*(s32 *)((u8 *)&D_800D6B6C + 4) == 1) {
+        mus = (s32)D_801290D8->musicId;
+    }
+    if ((D_800D6F3C >= 3) && (D_800D6F3C != 4)) {
+        mus = 0;
+    }
+    play_music(0, mus);
+    if (func_800F8560() == 2) {
+        func_800BB98C(2, 0);
+        return;
+    }
+    if ((D_800BE508 == 0) && (D_800BE4FC == 0)) {
+        func_800BB98C(0, 0);
+        return;
+    }
+    utilSetRectColorFullScreen(0, 0, 0);
+    utilSpawnRect(0xFF, -0x10, 0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2/func_800F64B0.s")
@@ -280,15 +455,72 @@ void func_800F6830(void) {
     func_800F629C();
 }
 #elif defined(PORT)
-/* PORT SCAFFOLD, NOT A PORT: per-frame update of the in-level/demo scene
- * (pairs with the func_800F64B0 scaffold above). With the setup scaffolded
- * out, this scene owns no objects and the track/config globals it would
- * read are stale from the previous scene (func_800F61A0's track walk
- * dereferences D_800DE350 entries, and its func_800F7578 branch is still a
- * weak stub), so the only safe per-frame body is nothing -- the measured
- * behavior of the weak stub under KIRBY_PC_TRACE, which kept the attract
- * cycle alive for minutes. */
+/* PORT: per-frame update of the in-level/demo scene, from asm/nonmatchings/
+ * ovl2/ovl2/func_800F6830.s. The N64 byte pokes become their host struct
+ * accesses: the controller mirror u16s go to D_800D6F3C's +4/+6/+8 bytes
+ * (the defsym'd family func_800F62A4 reads back), the camera reads use the
+ * Camera struct, the scene camera GObj comes from D_800D6B18+8, and the
+ * bg-color bytes are re-derived from D_800D478C's value-preserving u32
+ * words ((w>>24)/(w>>16)/(w>>8) are the N64's byte 0/1/2 reads). The
+ * matrix D_800D6ED0 is the view*proj product func_800F7578's frustum test
+ * consumes later this same tick. */
 void func_800F6830(void) {
+    f32 look[4][4];
+    u16 perspNorm;
+    Camera *cam;
+    GObj *sceneCam;
+    u32 w;
+    u32 color;
+    s32 v;
+
+    *(u16 *)((u8 *)&D_800D6F3C + 4) = gPlayerControllers[0].buttonHeld;
+    *(u16 *)((u8 *)&D_800D6F3C + 6) = gPlayerControllers[0].buttonPressed;
+    *(u16 *)((u8 *)&D_800D6F3C + 8) = gPlayerControllers[0].buttonHeldLong;
+    if (D_800D7B68 != 0) {
+        cam = D_800D799C->data.cam;
+        guLookAtF(look,
+                  cam->viewMtx.lookAt.eye.x, cam->viewMtx.lookAt.eye.y,
+                  cam->viewMtx.lookAt.eye.z, cam->viewMtx.lookAt.at.x,
+                  cam->viewMtx.lookAt.at.y, cam->viewMtx.lookAt.at.z,
+                  cam->viewMtx.lookAt.up.x, cam->viewMtx.lookAt.up.y,
+                  cam->viewMtx.lookAt.up.z);
+        HS64_PerspectiveF(D_800D6ED0, &perspNorm,
+                          cam->perspMtx.persp.fovy, cam->perspMtx.persp.aspect,
+                          cam->perspMtx.persp.near, cam->perspMtx.persp.far,
+                          cam->perspMtx.persp.scale);
+        guMtxCatF(look, D_800D6ED0, D_800D6ED0);
+    }
+    w = D_800D478C[D_801290D8->bgColor * 3];
+    color = (((w >> 24) & 0xFF) << 24) | (((w >> 16) & 0xFF) << 16) |
+            (((w >> 8) & 0xFF) << 8) | 0xFF;
+    sceneCam = *(GObj **)(D_800D6B18 + 8);
+    sceneCam->data.cam->bgcolor = color;
+    D_800BE4EC += 1;
+    func_800BBF60();
+    v = D_800BE544;
+    if (v >= 0 && D_800BE4F8 == 1 && gKirbyHp != 0.0f) {
+        if (func_800F8560() != 3) {
+            if (v == 0) {
+                if (gPlayerControllers[0].buttonPressed & 0x1000) {
+                    func_800BB3F0();
+                    utilPauseAllGObjs();
+                    v = func_800AEA64(0x27, 0x4A, 0x70);
+                    D_800BE544 = v;
+                    D_800EC2E0[v].as_s32 = 0;
+                }
+            } else if (v & 0x8000) {
+                D_800BE544 = 0;
+                utilResumeAllGObjs();
+            }
+        }
+    } else if ((f32)v == -9999.0f) {
+        D_800BE544 = -9999;
+    } else if (v < 0) {
+        D_800BE544 = v + 1;
+    }
+    func_800F61A0();
+    omUpdateAll();
+    func_800F629C();
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2/func_800F6830.s")

@@ -29,6 +29,7 @@ extern "C" {
  *	Data structures for S2DEX microcode
  *===========================================================================*/
 
+#ifdef PORT
 /* PORT NOTE: which layout these structs must have depends on the renderer
  * fork consuming them. The JRickey/libultraship fork (BattleShip's, adopted
  * for this port) reads S2DEX object structs in NATIVE host layout -- its
@@ -39,6 +40,7 @@ extern "C" {
  * compiled LP64. (An earlier iteration against a different fork packed these
  * to 32-bit wire words -- if the renderer is ever swapped again, this is the
  * single decision point.) */
+#endif
 typedef u64 *uS2DImagePtr;
 #define US2D_IMAGE_CAST (u64 *)
 

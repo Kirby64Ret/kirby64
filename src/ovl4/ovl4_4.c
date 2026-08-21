@@ -509,8 +509,17 @@ void procMainStub(GObj *);
 void omLinkGObjDL(GObj *, void (*)(GObj *), u8, s32, s32);
 
 void func_801593A4_ovl4(GObj *arg0) {
+#ifdef PORT
+    /* D_8015BFF0/D_8015C00C are seven N64 pointer words each; the PC data
+       generator emits the region as one native void*[] (8-byte slots), so
+       the word-struct copies read pointer halves. Index the live tables
+       instead. */
+    void **sp64 = (void **) &D_8015BFF0_ovl4;
+    void **sp48 = (void **) &D_8015C00C_ovl4;
+#else
     Unk7Words sp64 = D_8015BFF0_ovl4;
     Unk7Words sp48 = D_8015C00C_ovl4;
+#endif
     SPObj *sp;
     s32 cur;
     s32 a;
@@ -519,10 +528,18 @@ void func_801593A4_ovl4(GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = NULL;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
+#ifdef PORT
+    func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp64[cur]);
+#else
     func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp64.unk0[cur]);
+#endif
     func_8015C740_ovl5(arg0, &D_8015C1E0_ovl4);
     func_8015C740_ovl5(arg0, &D_8015C200_ovl4);
+#ifdef PORT
+    func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp48[cur]);
+#else
     func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp48.unk0[cur]);
+#endif
     if (D_800D6B7C != 0) {
         for (sp = arg0->unk4C; sp != NULL; sp = (SPObj *) sp->unk8) {
             sp->primColorAlpha = 0;
@@ -571,9 +588,17 @@ void func_801593A4_ovl4(GObj *arg0) {
         }
         cur = D_800E9E20[D_8015C718_ovl4];
         func_800ACBDC(arg0);
+#ifdef PORT
+        func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp64[cur])->primColorAlpha = 0;
+#else
         func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp64.unk0[cur])->primColorAlpha = 0;
+#endif
         func_8015C740_ovl5(arg0, &D_8015C1E0_ovl4)->primColorAlpha = 0;
+#ifdef PORT
+        func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp48[cur])->primColorAlpha = 0;
+#else
         func_8015C740_ovl5(arg0, (struct UnkStruct8015C740 *) sp48.unk0[cur])->primColorAlpha = 0;
+#endif
         func_8015C740_ovl5(arg0, &D_8015C200_ovl4)->primColorAlpha = 0;
         while (D_800E9C60[D_8015C718_ovl4] != 0) {
             ohSleep(1);

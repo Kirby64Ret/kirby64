@@ -36,6 +36,62 @@ typedef struct UnkEmitter {
     u8 unkBA;
 } UnkEmitter;
 
+#ifdef PORT
+/* PORT: LP64 overlay of the generator node. The nodes themselves are the
+ * D_800D6A08/D_800D6A0C free/live-list nodes that func_800A04B8 sizes at
+ * PC_GENNODE_SIZE and func_800A19EC fills through struct PcGenNode (defined
+ * above func_800A09AC), so this typedef MUST land on that same LP64 shape:
+ * the 8-byte `next` shifts the scalar block by +4, `bytecode` stays a u32
+ * host address (below-4GB arena, like the bank tables) packing into the
+ * N64 +0x10 slot's gap, and the two widened pointers push the N64 +0x50
+ * union to +0x60. Left at its natural LP64 layout (8-byte `bytecode`
+ * pointer), every field from posX on would sit 4-8 bytes past where
+ * func_800A19EC wrote it, and func_8009BA74/func_8009BFD4 -- compiled from
+ * C in this build and handed these nodes through UnkParticle.unk5C /
+ * func_8009BD3C's gn -- would read gn->xf and gn->vars off target.
+ * Asserts pinning the shared offsets sit next to struct PcGenNode. */
+typedef struct UnkGenerator {
+    struct UnkGenerator *next;
+    u16 generator_id;
+    u16 flags;
+    u8 bank_id;
+    u8 kind;
+    u16 texture_id;
+    u16 particle_lifetime;
+    u16 generator_lifetime;
+    u32 bytecode;            /* host address as u32 (PcGenNode.unk10) */
+    f32 posX;
+    f32 posY;
+    f32 posZ;
+    f32 velX;
+    f32 velY;
+    f32 velZ;
+    f32 gravity;
+    f32 friction;
+    f32 size;
+    f32 unk38;
+    f32 unk3C;
+    f32 update_rate;
+    f32 frame;
+    void *dobj;
+    UnkEmitter *xf;
+    union {
+        struct {
+            f32 base;
+            f32 target;
+        } rotate;
+        struct {
+            f32 x;
+            f32 y;
+            f32 z;
+        } move;
+        struct {
+            f32 f;
+            u16 lifetime;
+        } vortex;
+    } vars;
+} UnkGenerator;
+#else
 typedef struct UnkGenerator {
     struct UnkGenerator *next;
     u16 generator_id;
@@ -77,6 +133,7 @@ typedef struct UnkGenerator {
         } vortex;
     } vars;
 } UnkGenerator;
+#endif
 
 typedef struct UnkParticle {
     struct UnkParticle *next;
@@ -148,6 +205,7 @@ typedef struct UnkScript {
 } UnkScript;
 
 #ifdef PORT
+#include <stdlib.h> /* realloc, for func_8009B768's host-side bank tables */
 /* PORT overlays for RAW ROM BANK DATA.
  *
  * These structs are laid over bytes DMA'd straight out of the cartridge, so
@@ -183,6 +241,10 @@ static inline u32 pc_be32(u32 v) { return __builtin_bswap32(v); }
 static inline u16 pc_be16(u16 v) { return (u16)__builtin_bswap16(v); }
 /* Bank slots hold host addresses as u32 after relocation. */
 #define PC_BANKPTR(x) ((void *)(uintptr_t)(x))
+/* LP64 size of the generator/emitter free-list node (N64: 0x78). The two
+ * widened pointers at N64 +0x48/+0x4C push the +0x50..+0x77 tail to
+ * +0x60..+0x87; struct PcGenNode (func_800A19EC's arm) asserts this. */
+#define PC_GENNODE_SIZE 0x88
 #else
 typedef struct UnkScriptDesc {
     s32 scripts_num;
@@ -294,7 +356,15 @@ void func_8009B6F0(UnkParticle *arg0, u8 arg1) {
 }
 
 void func_8009B72C(void *arg0, u8 arg1) {
+#ifdef PORT
+    /* arg0 is a generator node; on LP64 the emitter slot is +0x58 and the
+     * generator id +0x8 (struct PcGenNode below, locked by
+     * pc_gennode_check). The N64 +0x4C write landed across unk44 and the
+     * DObj pointer. */
+    *(UnkEmitter **)((u8 *)arg0 + 0x58) = func_8009B5E8(arg1, *(u16 *)((u8 *)arg0 + 8));
+#else
     *(UnkEmitter **)((u8 *)arg0 + 0x4C) = func_8009B5E8(arg1, *(u16 *)((u8 *)arg0 + 4));
+#endif
 }
 
 #ifdef PORT
@@ -307,8 +377,25 @@ void func_8009B72C(void *arg0, u8 arg1) {
  * producer); texel data itself stays N64 byte order, which is what Fast3D
  * expects. UnkScript interiors are NOT touched here -- their consumers are
  * the script interpreter's problem and will be converted at their own read
- * sites. */
+ * sites.
+ *
+ * THE TABLES MUST NOT COME FROM gtlMalloc. This function runs during asset-
+ * bank loading, i.e. AFTER func_800A8724 has seeded the asset-cache pools
+ * from gDynamicBuffer2.top..poolEnd (func_800A82C0 claims that span without
+ * advancing gDynamicBuffer2.top -- the last pool's size is -1, "everything
+ * left"). The N64 body below allocates NOTHING here (it relocates in place),
+ * so on hardware no gtlMalloc ever happens after the seed. The first version
+ * of this arm did gtlMalloc the two tables, and mlAlloc handed back the
+ * bytes the cache pools were built in: on the 1-1 level load six banks'
+ * tables landed exactly over pools 0/1/2 (pool 1's header at arena+0x2be3a0
+ * held texture-table entries when it crashed) and the first func_800A8358
+ * walk relinked through blob pointers and segfaulted. Host-side per-bank
+ * buffers have the same lifetime the tables need (rebuilt on every bank
+ * (re)load, contents stale only while the matching count is stale too) and
+ * zero interaction with the game heap. */
 void func_8009B768(s32 bank_id, UnkScriptDesc *script_desc, UnkTextureDesc *texture_desc) {
+    static UnkScript **sScriptTbl[8];
+    static UnkTexture **sTextureTbl[8];
     s32 i, j;
     UnkScript **stbl;
     UnkTexture **ttbl;
@@ -322,13 +409,15 @@ void func_8009B768(s32 bank_id, UnkScriptDesc *script_desc, UnkTextureDesc *text
     D_800D6A38[bank_id] = script_desc->scripts_num;
     D_800D6A58[bank_id] = texture_desc->textures_num;
 
-    stbl = gtlMalloc(D_800D6A38[bank_id] * sizeof(UnkScript *), 8);
+    stbl = sScriptTbl[bank_id] =
+        realloc(sScriptTbl[bank_id], (size_t)D_800D6A38[bank_id] * sizeof(UnkScript *));
     for (i = 0; i < D_800D6A38[bank_id]; i++) {
         stbl[i] = (UnkScript *)((u8 *)script_desc + pc_be32(script_desc->scripts[i]));
     }
     D_800D6A78[bank_id] = stbl;
 
-    ttbl = gtlMalloc(D_800D6A58[bank_id] * sizeof(UnkTexture *), 8);
+    ttbl = sTextureTbl[bank_id] =
+        realloc(sTextureTbl[bank_id], (size_t)D_800D6A58[bank_id] * sizeof(UnkTexture *));
     for (i = 0; i < D_800D6A58[bank_id]; i++) {
         ttbl[i] = (UnkTexture *)((u8 *)texture_desc + pc_be32(texture_desc->textures[i]));
     }
@@ -1721,6 +1810,641 @@ block_154:
     }
 block_217:
     return arg0->unk0;
+}
+#elif defined(PORT)
+/* PORT: the particle bytecode interpreter, hand-ported from
+ * asm/nonmatchings/ovl1/ovl1/func_8009C4E0.s. The m2c sketch above is close
+ * but re-derived against the raw asm because it garbles several regions:
+ *  - jtbl_800D5664 covers opcodes 0x80..0xFF; groups 0x80/0x88/0x90/0x98
+ *    dispatch on op&0xF8 (low 3 bits = xyz component flags) and 0xC0/0xD0
+ *    on op&0xF0 (low 4 bits = rgba channel flags) -- the sketch's dispatch
+ *    prologue is right but its `default:` placement is not.
+ *  - the 0xBA/0xBB/0xE0 colour-delta immediates are ALL read with lb
+ *    (SIGNED bytes, then <<1); the sketch types half of them unsigned.
+ *  - the sketch's `u32 -> f32 += 4294967296.0f` fix-ups come from lbu/lhu
+ *    loads (values 0..0xFFFF), so they can never fire and are dropped.
+ *  - 0xBC's `var_s1->unk-1` is simply the operand's second byte.
+ *  - the old draft's 3-arg func_8009C18C calls in 0xC0/0xD0 were phantom
+ *    arguments; the asm passes exactly (cursor, &duration).
+ *
+ * BYTE ORDER: pc->unk18 points at RAW BIG-ENDIAN ROM bytecode. Provenance
+ * verified: func_8009BC4C/func_8009BE54 pass UnkScript.bytecode out of the
+ * bank tables that the PORT func_8009B768 rebuilds (its header comment
+ * pins that UnkScript interiors keep cartridge byte order), and the
+ * generator path stores `(u8 *)script + 0x3C` into PcGenNode.unk10 in
+ * func_800A19EC's PORT arm before func_800A09AC feeds it to func_8009BD3C.
+ * None of it is gen_data-widened .data. So u8 opcodes are read directly,
+ * and the embedded u16/f32 immediates are decoded big-endian explicitly
+ * (the N64 reads even the f32s byte-wise via func_8009C154 -- no alignment
+ * of the cursor anywhere, which is replicated here). func_8009C18C is
+ * byte-oriented and endian-safe, so it is called as-is; func_8009C154 is
+ * NOT usable on a little-endian host (it reassembles the bytes in memory
+ * order), hence the local big-endian reader below.
+ *
+ * D_800D6A14/D_800D6A18 are the widened 4-byte-slot DObj tracking tables
+ * (host addresses as u32, stored by func_800A0480); adjacency of the two
+ * symbols is preserved by gen_data emitting them consecutively in
+ * ovl1_ovl1.bss.c. lbreflect_Int16SinTable is native u16[] on the host. */
+extern u16 lbreflect_Int16SinTable[];
+extern u32 D_800D6A18[];
+void *func_800A19EC(s32 arg0, s32 arg1);
+
+/* Read one big-endian f32 immediate from the bytecode stream. */
+static u8 *pc_c4e0_f32(u8 *csr, f32 *out) {
+    union { u32 w; f32 f; } v;
+    v.w = ((u32) csr[0] << 24) | ((u32) csr[1] << 16) | ((u32) csr[2] << 8) | (u32) csr[3];
+    *out = v.f;
+    return csr + 4;
+}
+
+/* sin via the shared 0x800-entry quarter-scaled table: index is the low 12
+ * bits of (angle * 651.8986), bit 0x800 selects the negative half; cos is
+ * sin(idx + 0x400). Values are 0..0x8000, scaled by 2^-15 by the caller. */
+static f32 pc_c4e0_sin(s32 idx) {
+    f32 v = (f32) lbreflect_Int16SinTable[idx & 0x7FF];
+    return (idx & 0x800) ? -v : v;
+}
+
+UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
+    f32 tmp;
+
+    if (pc->unk6 & 0x800) {
+        return pc->next;
+    }
+
+    if (pc->unk10 != 0) {
+        pc->unk10 -= 1;
+        if (pc->unk10 == 0) {
+            u8 *base = pc->unk18;
+            u8 *csr = base + pc->unk1C;
+            u16 wait;
+
+            for (;;) {
+                u8 op;
+                u32 sel;
+
+                op = *csr++;
+                wait = 0;
+
+                if (op < 0x80) {
+                    /* wait opcode: low 5 bits = frame count, 0x20 = extended
+                     * 13-bit count, 0x40 = inline texture-frame byte. */
+                    wait = op & 0x1F;
+                    if (op & 0x20) {
+                        wait = (u16) ((wait << 8) + *csr++);
+                    }
+                    if ((op & 0xC0) == 0x40) {
+                        pc->unkB = *csr++;
+                    }
+                } else {
+                    sel = op & 0xF8;
+                    if (sel >= 0x99) {
+                        u32 hi = op & 0xF0;
+                        sel = ((hi == 0xC0) || (hi == 0xD0)) ? hi : op;
+                    }
+                    switch (sel) {
+                    case 0x80: /* set position components */
+                        if (op & 1) { csr = pc_c4e0_f32(csr, &pc->unk24); }
+                        if (op & 2) { csr = pc_c4e0_f32(csr, &pc->unk28); }
+                        if (op & 4) { csr = pc_c4e0_f32(csr, &pc->unk2C); }
+                        break;
+                    case 0x88: /* add to position */
+                        if (op & 1) { csr = pc_c4e0_f32(csr, &tmp); pc->unk24 += tmp; }
+                        if (op & 2) { csr = pc_c4e0_f32(csr, &tmp); pc->unk28 += tmp; }
+                        if (op & 4) { csr = pc_c4e0_f32(csr, &tmp); pc->unk2C += tmp; }
+                        break;
+                    case 0x90: /* set velocity components */
+                        if (op & 1) { csr = pc_c4e0_f32(csr, &pc->unk30); }
+                        if (op & 2) { csr = pc_c4e0_f32(csr, &pc->unk34); }
+                        if (op & 4) { csr = pc_c4e0_f32(csr, &pc->unk38); }
+                        break;
+                    case 0x98: /* add to velocity */
+                        if (op & 1) { csr = pc_c4e0_f32(csr, &tmp); pc->unk30 += tmp; }
+                        if (op & 2) { csr = pc_c4e0_f32(csr, &tmp); pc->unk34 += tmp; }
+                        if (op & 4) { csr = pc_c4e0_f32(csr, &tmp); pc->unk38 += tmp; }
+                        break;
+                    case 0xA0: /* size ramp: duration + target */
+                        csr = func_8009C18C(csr, &pc->unk12);
+                        csr = pc_c4e0_f32(csr, &pc->unk48);
+                        if (pc->unk12 == 1) {
+                            pc->unk12 = 0;
+                            pc->unk44 = pc->unk48;
+                        }
+                        break;
+                    case 0xA1: /* set flags byte */
+                        pc->unk6 = *csr++;
+                        break;
+                    case 0xA2: /* set gravity (+flag 1 iff nonzero) */
+                        csr = pc_c4e0_f32(csr, &pc->unk3C);
+                        if (pc->unk3C == 0.0f) {
+                            pc->unk6 &= ~1;
+                        } else {
+                            pc->unk6 |= 1;
+                        }
+                        break;
+                    case 0xA3: /* set friction (+flag 2 iff != 1.0) */
+                        csr = pc_c4e0_f32(csr, &pc->unk40);
+                        if (pc->unk40 == 1.0f) {
+                            pc->unk6 &= ~2;
+                        } else {
+                            pc->unk6 |= 2;
+                        }
+                        break;
+                    case 0xA4: /* spawn child particle (inherits position) */
+                    {
+                        UnkParticle *child;
+                        s32 id = (csr[0] << 8) + csr[1];
+
+                        csr += 2;
+                        child = func_8009BC4C(pc, pc->unk8, id);
+                        if (child != NULL) {
+                            child->unk24 = pc->unk24;
+                            child->unk28 = pc->unk28;
+                            child->unk2C = pc->unk2C;
+                            child->unk4 = pc->unk4;
+                            child->unk5C = pc->unk5C;
+                            child->unk60 = pc->unk60;
+                            if (child->unk60 != NULL) {
+                                child->unk60->unk2A += 1;
+                            }
+                            func_8009C4E0(child, pc, pc->unk8 >> 3);
+                        }
+                        break;
+                    }
+                    case 0xA5: /* spawn generator at our position */
+                    {
+                        UnkGenerator *gen;
+                        s32 id = (csr[0] << 8) + csr[1];
+
+                        csr += 2;
+                        gen = (UnkGenerator *) func_800A19EC(pc->unk8, id);
+                        if (gen != NULL) {
+                            gen->posX = pc->unk24;
+                            gen->posY = pc->unk28;
+                            gen->posZ = pc->unk2C;
+                            gen->generator_id = pc->unk4;
+                            gen->xf = pc->unk60;
+                            if (gen->xf != NULL) {
+                                gen->xf->unk2A += 1;
+                            }
+                        }
+                        break;
+                    }
+                    case 0xA6: /* randomize remaining lifetime: lo + rand*range */
+                    {
+                        s32 lo = (csr[0] << 8) + csr[1];
+                        s32 range = (csr[2] << 8) + csr[3];
+
+                        csr += 4;
+                        pc->unk22 = (u16) ((s32) (random_f32() * (f32) range) + lo);
+                        break;
+                    }
+                    case 0xA7: /* percent-chance immediate death */
+                    {
+                        u8 chance = *csr++;
+
+                        if ((s32) chance >= (s32) (random_f32() * 100.0f)) {
+                            pc->unk22 = 1;
+                            goto halt;
+                        }
+                        break;
+                    }
+                    case 0xA8: /* jitter position by +/- range per axis */
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        pc->unk24 += (2.0f * tmp * random_f32()) - tmp;
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        pc->unk28 += (2.0f * tmp * random_f32()) - tmp;
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        pc->unk2C += (2.0f * tmp * random_f32()) - tmp;
+                        break;
+                    case 0xA9: /* random cone-scatter of velocity */
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        func_8009C1C8(pc, tmp);
+                        break;
+                    case 0xAA: /* spawn child, random script id in [lo, lo+range) */
+                    {
+                        UnkParticle *child;
+                        s32 lo = (csr[0] << 8) + csr[1];
+                        s32 range = (csr[2] << 8) + csr[3];
+
+                        csr += 4;
+                        child = func_8009BC4C(pc, pc->unk8, lo + (s32) ((f32) range * random_f32()));
+                        if (child != NULL) {
+                            child->unk24 = pc->unk24;
+                            child->unk28 = pc->unk28;
+                            child->unk2C = pc->unk2C;
+                            child->unk4 = pc->unk4;
+                            child->unk5C = pc->unk5C;
+                            child->unk60 = pc->unk60;
+                            if (child->unk60 != NULL) {
+                                child->unk60->unk2A += 1;
+                            }
+                            func_8009C4E0(child, pc, pc->unk8 >> 3);
+                        }
+                        break;
+                    }
+                    case 0xAB: /* scale velocity */
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        pc->unk30 *= tmp;
+                        pc->unk34 *= tmp;
+                        pc->unk38 *= tmp;
+                        break;
+                    case 0xAC: /* size ramp with random extra target */
+                        csr = func_8009C18C(csr, &pc->unk12);
+                        csr = pc_c4e0_f32(csr, &pc->unk48);
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        pc->unk48 += tmp * random_f32();
+                        if (pc->unk12 == 1) {
+                            pc->unk12 = 0;
+                            pc->unk44 = pc->unk48;
+                        }
+                        break;
+                    case 0xAD:
+                        pc->unk6 |= 0x80;
+                        break;
+                    case 0xAE:
+                        pc->unk6 &= ~0x60;
+                        break;
+                    case 0xAF:
+                        pc->unk6 = (pc->unk6 & ~0x40) | 0x20;
+                        break;
+                    case 0xB0:
+                        pc->unk6 = (pc->unk6 & ~0x20) | 0x40;
+                        break;
+                    case 0xB1:
+                        pc->unk6 |= 0x60;
+                        break;
+                    case 0xB2:
+                        pc->unk6 |= 0x200;
+                        break;
+                    case 0xB3:
+                        pc->unk6 &= ~0x400;
+                        break;
+                    case 0xB4:
+                        pc->unk6 |= 0x400;
+                        break;
+                    case 0xB5:
+                        pc->unk6 |= 0x100;
+                        break;
+                    case 0xB6:
+                        pc->unk6 &= ~0x100;
+                        break;
+                    case 0xB7: /* home velocity onto tracked DObj */
+                    {
+                        s32 idx = *csr++ + pc->unkD;
+
+                        func_8009C350(pc, (DObj *) PC_BANKPTR(D_800D6A14[idx]));
+                        break;
+                    }
+                    case 0xB8: /* accelerate toward tracked DObj */
+                    {
+                        s32 idx = csr[0] + pc->unkD;
+
+                        csr = pc_c4e0_f32(csr + 1, &tmp);
+                        func_8009C44C(pc, (DObj *) PC_BANKPTR(D_800D6A14[idx]), tmp);
+                        break;
+                    }
+                    case 0xB9: /* spawn child (inherits position AND velocity) */
+                    {
+                        UnkParticle *child;
+                        s32 id = (csr[0] << 8) + csr[1];
+
+                        csr += 2;
+                        child = func_8009BC4C(pc, pc->unk8, id);
+                        if (child != NULL) {
+                            child->unk24 = pc->unk24;
+                            child->unk28 = pc->unk28;
+                            child->unk2C = pc->unk2C;
+                            child->unk30 = pc->unk30;
+                            child->unk34 = pc->unk34;
+                            child->unk38 = pc->unk38;
+                            child->unk4 = pc->unk4;
+                            child->unk5C = pc->unk5C;
+                            child->unk60 = pc->unk60;
+                            if (child->unk60 != NULL) {
+                                child->unk60->unk2A += 1;
+                            }
+                            func_8009C4E0(child, pc, pc->unk8 >> 3);
+                        }
+                        break;
+                    }
+                    case 0xBA: /* random-walk target colour (signed deltas) */
+                    {
+                        s32 i;
+
+                        for (i = 0; i < 4; i++) {
+                            f32 d = (f32) ((s8) csr[i] * 2) * random_f32();
+                            (&pc->unk50)[i] = (u8) (s32) ((f32) (&pc->unk50)[i] + d);
+                        }
+                        csr += 4;
+                        if (pc->unk14 == 0) {
+                            pc->unk4C = pc->unk50;
+                            pc->unk4D = pc->unk51;
+                            pc->unk4E = pc->unk52;
+                            pc->unk4F = pc->unk53;
+                        }
+                        break;
+                    }
+                    case 0xBB: /* random-walk target env colour (signed deltas) */
+                    {
+                        s32 i;
+
+                        u8 *env = (u8 *) &pc->unk58;
+
+                        for (i = 0; i < 4; i++) {
+                            f32 d = (f32) ((s8) csr[i] * 2) * random_f32();
+                            env[i] = (u8) (s32) ((f32) env[i] + d);
+                        }
+                        csr += 4;
+                        if (pc->unk16 == 0) {
+                            pc->unk54 = env[0];
+                            pc->unk55 = env[1];
+                            pc->unk56 = env[2];
+                            pc->unk57 = env[3];
+                        }
+                        break;
+                    }
+                    case 0xBC: /* texture frame = byte0, + rand*byte1 */
+                        pc->unkB = csr[0];
+                        tmp = (f32) csr[1];
+                        tmp = tmp * random_f32();
+                        pc->unkB = (u8) (s32) ((f32) pc->unkB + tmp);
+                        csr += 2;
+                        break;
+                    case 0xBD: /* renormalize speed to base + rand*range */
+                    {
+                        f32 range;
+                        f32 mag;
+
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        csr = pc_c4e0_f32(csr, &range);
+                        tmp += range * random_f32();
+                        mag = sqrtf((pc->unk30 * pc->unk30) + (pc->unk34 * pc->unk34) + (pc->unk38 * pc->unk38));
+                        if (mag > 0.00001f) {
+                            tmp /= mag;
+                            pc->unk30 *= tmp;
+                            pc->unk34 *= tmp;
+                            pc->unk38 *= tmp;
+                        }
+                        break;
+                    }
+                    case 0xBE: /* per-axis velocity scale */
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        pc->unk30 *= tmp;
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        pc->unk34 *= tmp;
+                        csr = pc_c4e0_f32(csr, &tmp);
+                        pc->unk38 *= tmp;
+                        break;
+                    case 0xBF: /* drive tracked-DObj slot from our position */
+                        pc->unk6 = (u16) (pc->unk6 | 0x8000 | (((*csr++ + pc->unkD) - 1) << 0xC));
+                        break;
+                    case 0xC0: /* colour fade: duration + per-channel targets */
+                    {
+                        u8 *cur = &pc->unk4C;
+                        u8 *tgt = &pc->unk50;
+
+                        csr = func_8009C18C(csr, &pc->unk14);
+                        tgt[0] = cur[0];
+                        tgt[1] = cur[1];
+                        tgt[2] = cur[2];
+                        tgt[3] = cur[3];
+                        if (op & 1) { pc->unk50 = *csr++; }
+                        if (op & 2) { pc->unk51 = *csr++; }
+                        if (op & 4) { pc->unk52 = *csr++; }
+                        if (op & 8) { pc->unk53 = *csr++; }
+                        if (pc->unk14 == 1) {
+                            cur[0] = tgt[0];
+                            cur[1] = tgt[1];
+                            cur[2] = tgt[2];
+                            cur[3] = tgt[3];
+                            pc->unk14 = 0;
+                        }
+                        break;
+                    }
+                    case 0xD0: /* env colour fade: duration + per-channel targets */
+                    {
+                        u8 *cur = &pc->unk54;
+                        u8 *tgt = (u8 *) &pc->unk58;
+
+                        csr = func_8009C18C(csr, &pc->unk16);
+                        tgt[0] = cur[0];
+                        tgt[1] = cur[1];
+                        tgt[2] = cur[2];
+                        tgt[3] = cur[3];
+                        if (op & 1) { tgt[0] = *csr++; }
+                        if (op & 2) { tgt[1] = *csr++; }
+                        if (op & 4) { tgt[2] = *csr++; }
+                        if (op & 8) { tgt[3] = *csr++; }
+                        if (pc->unk16 == 1) {
+                            cur[0] = tgt[0];
+                            cur[1] = tgt[1];
+                            cur[2] = tgt[2];
+                            cur[3] = tgt[3];
+                            pc->unk16 = 0;
+                        }
+                        break;
+                    }
+                    case 0xE0: /* random-walk BOTH colour targets together */
+                    {
+                        s32 i;
+
+                        u8 *env = (u8 *) &pc->unk58;
+
+                        for (i = 0; i < 4; i++) {
+                            f32 d = random_f32() * (f32) ((s8) csr[i] * 2);
+                            (&pc->unk50)[i] = (u8) (s32) ((f32) (&pc->unk50)[i] + d);
+                            env[i] = (u8) (s32) ((f32) env[i] + d);
+                        }
+                        csr += 4;
+                        if (pc->unk14 == 0) {
+                            pc->unk4C = pc->unk50;
+                            pc->unk4D = pc->unk51;
+                            pc->unk4E = pc->unk52;
+                            pc->unk4F = pc->unk53;
+                        }
+                        if (pc->unk16 == 0) {
+                            pc->unk54 = env[0];
+                            pc->unk55 = env[1];
+                            pc->unk56 = env[2];
+                            pc->unk57 = env[3];
+                        }
+                        break;
+                    }
+                    case 0xE2:
+                        pc->unk6 |= 8;
+                        break;
+                    case 0xE3:
+                        pc->unkC = *csr++;
+                        break;
+                    case 0xFA: /* loop start, count byte */
+                        pc->unk9 = *csr++;
+                        pc->unk20 = (u16) (csr - base);
+                        break;
+                    case 0xFB: /* loop back while --count != 0 */
+                        pc->unk9 -= 1;
+                        if (pc->unk9 != 0) {
+                            csr = base + pc->unk20;
+                        }
+                        break;
+                    case 0xFC: /* set return point */
+                        pc->unk1E = (u16) (csr - base);
+                        break;
+                    case 0xFD: /* jump to return point */
+                        csr = base + pc->unk1E;
+                        break;
+                    case 0xFE:
+                    case 0xFF: /* end: die this frame */
+                        pc->unk22 = 1;
+                        goto halt;
+                    default:
+                        break;
+                    }
+                }
+
+                if (wait != 0) {
+                    break;
+                }
+            }
+halt:
+            pc->unk1C = (u16) (csr - base);
+            pc->unk10 = wait;
+        }
+    }
+
+    /* size interpolation toward unk48 over unk12 frames */
+    if (pc->unk12 != 0) {
+        pc->unk44 = pc->unk44 + ((pc->unk48 - pc->unk44) / (f32) pc->unk12);
+        pc->unk12 -= 1;
+    }
+    /* fixed-point colour fades (16.16 steps of 0x10000/frames) */
+    if (pc->unk14 != 0) {
+        s32 step = 0x10000 / pc->unk14;
+
+        pc->unk4C = (u8) (((pc->unk4C << 0x10) + ((pc->unk50 - pc->unk4C) * step)) >> 0x10);
+        pc->unk4D = (u8) (((pc->unk4D << 0x10) + ((pc->unk51 - pc->unk4D) * step)) >> 0x10);
+        pc->unk4E = (u8) (((pc->unk4E << 0x10) + ((pc->unk52 - pc->unk4E) * step)) >> 0x10);
+        pc->unk4F = (u8) (((pc->unk4F << 0x10) + ((pc->unk53 - pc->unk4F) * step)) >> 0x10);
+        pc->unk14 -= 1;
+    }
+    if (pc->unk16 != 0) {
+        s32 step = 0x10000 / pc->unk16;
+        u8 *env = (u8 *) &pc->unk58;
+
+        pc->unk54 = (u8) (((pc->unk54 << 0x10) + ((env[0] - pc->unk54) * step)) >> 0x10);
+        pc->unk55 = (u8) (((pc->unk55 << 0x10) + ((env[1] - pc->unk55) * step)) >> 0x10);
+        pc->unk56 = (u8) (((pc->unk56 << 0x10) + ((env[2] - pc->unk56) * step)) >> 0x10);
+        pc->unk57 = (u8) (((pc->unk57 << 0x10) + ((env[3] - pc->unk57) * step)) >> 0x10);
+        pc->unk16 -= 1;
+    }
+
+    /* lifetime countdown; on expiry unlink, drop refs and free */
+    pc->unk22 -= 1;
+    if (pc->unk22 == 0) {
+        UnkParticle *ret;
+        UnkGenerator *gn;
+
+        if (prev == NULL) {
+            D_800D69C8[bank] = pc->next;
+        } else {
+            prev->next = pc->next;
+        }
+        gn = pc->unk5C;
+        ret = pc->next;
+        if ((gn != NULL) && (pc->unk6 & 4) && (gn->kind == 2)) {
+            gn->vars.vortex.lifetime -= 1;
+        }
+        if (pc->unk60 != NULL) {
+            pc->unk60->unk2A -= 1;
+            if (pc->unk60->unk2A == 0) {
+                /* may run the emitter's callback, which can relink the
+                 * list head -- re-read it, exactly like the ROM does */
+                func_8009B69C(pc->unk60);
+                if (prev == NULL) {
+                    ret = D_800D69C8[bank];
+                }
+            }
+        }
+        pc->next = D_800D69C0;
+        D_800D69C0 = pc;
+        D_800D6AE0 -= 1;
+        return ret;
+    }
+
+    if (pc->unk6 & 4) {
+        /* vortex mode: cylindrical orbit around the owning generator.
+         * unk3C/unk40 are reused as Euler angles, unk30 as the orbit phase,
+         * unk34 as the radial scale, unk38 as the height along the axis. */
+        UnkGenerator *gn = pc->unk5C;
+        f32 sinA, cosA, sinB, cosB, sinT, cosT, sinP, cosP;
+        f32 r, t, h, fx, fz;
+        s32 idx;
+
+        idx = (s32) (pc->unk3C * 651.8986f) & 0xFFF;
+        sinA = pc_c4e0_sin(idx);
+        cosA = pc_c4e0_sin(idx + 0x400);
+        idx = (s32) (pc->unk40 * 651.8986f) & 0xFFF;
+        sinB = pc_c4e0_sin(idx);
+        cosB = pc_c4e0_sin(idx + 0x400);
+        cosA *= 0.000030517578f;
+        sinA *= 0.000030517578f;
+        cosB *= 0.000030517578f;
+        sinB *= 0.000030517578f;
+
+        pc->unk38 += gn->vars.rotate.base;
+
+        r = gn->unk38;
+        if (r < 0.0f) {
+            r = -r;
+        }
+        t = gn->unk3C;
+        if (t < 0.0f) {
+            t = -t;
+        }
+        idx = (s32) (t * 651.8986f) & 0xFFF;
+        sinT = pc_c4e0_sin(idx);
+        cosT = pc_c4e0_sin(idx + 0x400);
+
+        h = pc->unk38;
+        r = r + (h * (sinT / cosT));
+        r = r * pc->unk34;
+
+        pc->unk30 += gn->gravity;
+        idx = (s32) (pc->unk30 * 651.8986f) & 0xFFF;
+        sinP = pc_c4e0_sin(idx);
+        cosP = pc_c4e0_sin(idx + 0x400);
+
+        r = r * 0.000030517578f;
+        fx = r * cosP;
+        fz = r * sinP;
+        pc->unk24 = (fx * cosB) + (h * sinB) + gn->posX;
+        pc->unk28 = (-fx * sinA * sinB) + (fz * cosA) + (h * sinA * cosB) + gn->posY;
+        pc->unk2C = ((-fx * cosA * sinB) - (fz * sinA)) + (h * cosA * cosB) + gn->posZ;
+    } else {
+        if (pc->unk6 & 1) {
+            pc->unk34 -= pc->unk3C;
+        }
+        if (pc->unk6 & 2) {
+            pc->unk30 *= pc->unk40;
+            pc->unk34 *= pc->unk40;
+            pc->unk38 *= pc->unk40;
+        }
+        pc->unk24 += pc->unk30;
+        pc->unk28 += pc->unk34;
+        pc->unk2C += pc->unk38;
+    }
+
+    /* mirror our position into the tracked DObj selected by 0xBF */
+    if (pc->unk6 & 0x8000) {
+        DObj *dobj = (DObj *) PC_BANKPTR(D_800D6A18[(pc->unk6 & 0x7000) >> 0xC]);
+
+        if (dobj != NULL) {
+            dobj->pos.v.x = pc->unk24;
+            dobj->pos.v.y = pc->unk28;
+            dobj->pos.v.z = pc->unk2C;
+        }
+    }
+    return pc->next;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009C4E0.s")
@@ -3416,7 +4140,13 @@ GObj *func_800A04B8(s32 arg0) {
 
     D_800D6A08 = (UnkParticle *) (D_800D6A0C = NULL);
     for (i = arg0 - 1; i >= 0; i--) {
+#ifdef PORT
+        /* The LP64 node no longer fits the N64's 0x78 bytes (see
+         * PC_GENNODE_SIZE / struct PcGenNode at func_800A19EC). */
+        p = gtlMalloc(PC_GENNODE_SIZE, 8);
+#else
         p = gtlMalloc(0x78, 4);
+#endif
         if (p == NULL) {
             return NULL;
         }
@@ -3543,6 +4273,80 @@ block_23:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A0558.s")
 #endif
 
+#ifdef PORT
+/* PORT: the LP64 shape of the D_800D6A0C live / D_800D6A08 free generator
+ * nodes, shared by func_800A09AC (below), func_800A19EC and func_800A2080
+ * (their arms further down). Same widening rule struct Ovl1PNode and struct
+ * Pc2550Obj already use: the 8-byte `next` shifts the scalar block by +4,
+ * the two pointers at N64 +0x48/+0x4C widen to +0x50/+0x58, and the N64
+ * +0x50..+0x77 tail lands at +0x60..+0x87. func_800A04B8's PORT branch
+ * sizes the pool nodes at PC_GENNODE_SIZE so the widened tail fits. */
+#include "unk_structs/D_800D79D8.h" /* camera overlay: D_800D6A10's pointee */
+
+struct PcGenNode {
+    /* 0x00 */ struct PcGenNode *next;
+    /* 0x08 */ u16 unk4;                 /* generator id (func_800A194C) */
+    /* 0x0A */ u16 unk6;                 /* flags (N64 +0x06) */
+    /* 0x0C */ u8 unk8;
+    /* 0x0D */ u8 unk9;                  /* kind */
+    /* 0x0E */ u8 unkA;
+    /* 0x0F */ u8 unkB;                  /* texture id byte */
+    /* 0x10 */ u16 unkC;                 /* particle lifetime */
+    /* 0x12 */ u16 unkE;                 /* generator lifetime */
+    /* 0x14 */ u32 unk10;                /* bytecode, host address as u32 */
+    /* 0x18 */ f32 unk14, unk18, unk1C;  /* position (N64 +0x14..) */
+    /* 0x24 */ f32 unk20, unk24, unk28;  /* velocity */
+    /* 0x30 */ f32 unk2C, unk30, unk34;  /* gravity, friction, size */
+    /* 0x3C */ f32 unk38, unk3C;
+    /* 0x44 */ f32 unk40;                /* update rate */
+    /* 0x48 */ f32 unk44;                /* frame */
+    /* 0x50 */ struct DObj *unk48;
+    /* 0x58 */ UnkEmitter *unk4C;
+    /* 0x60 */ f32 unk50;
+    /* 0x64 */ union { f32 f; u16 hw; } unk54; /* kind 2 (vortex) stores the
+                                                * u16 -- Ovl1PNode.unk54 */
+    /* 0x68 */ f32 unk58, unk5C, unk60, unk64, unk68, unk6C, unk70;
+    /* 0x84 */ u16 unk74;                /* kind 5 sign flags */
+};
+typedef char pc_gennode_check[
+    (__builtin_offsetof(struct PcGenNode, unk4) == 8 &&
+     __builtin_offsetof(struct PcGenNode, unk9) == 13 &&
+     __builtin_offsetof(struct PcGenNode, unkE) == 18 &&
+     __builtin_offsetof(struct PcGenNode, unk14) == 24 &&
+     __builtin_offsetof(struct PcGenNode, unk40) == 68 &&
+     __builtin_offsetof(struct PcGenNode, unk48) == 80 &&
+     __builtin_offsetof(struct PcGenNode, unk4C) == 88 &&
+     __builtin_offsetof(struct PcGenNode, unk50) == 96 &&
+     __builtin_offsetof(struct PcGenNode, unk54) == 100 &&
+     __builtin_offsetof(struct PcGenNode, unk74) == 132 &&
+     sizeof(struct PcGenNode) == PC_GENNODE_SIZE) ? 1 : -1];
+/* The PORT UnkGenerator overlay (top of file) names these same nodes when
+ * they cross into func_8009BA74/func_8009BFD4 via func_8009BD3C's gn and
+ * UnkParticle.unk5C; both views must agree on every shared field. */
+typedef char pc_gennode_ungen_check[
+    (__builtin_offsetof(UnkGenerator, generator_id) ==
+         __builtin_offsetof(struct PcGenNode, unk4) &&
+     __builtin_offsetof(UnkGenerator, kind) ==
+         __builtin_offsetof(struct PcGenNode, unk9) &&
+     __builtin_offsetof(UnkGenerator, generator_lifetime) ==
+         __builtin_offsetof(struct PcGenNode, unkE) &&
+     __builtin_offsetof(UnkGenerator, bytecode) ==
+         __builtin_offsetof(struct PcGenNode, unk10) &&
+     __builtin_offsetof(UnkGenerator, update_rate) ==
+         __builtin_offsetof(struct PcGenNode, unk40) &&
+     __builtin_offsetof(UnkGenerator, dobj) ==
+         __builtin_offsetof(struct PcGenNode, unk48) &&
+     __builtin_offsetof(UnkGenerator, xf) ==
+         __builtin_offsetof(struct PcGenNode, unk4C) &&
+     __builtin_offsetof(UnkGenerator, vars) ==
+         __builtin_offsetof(struct PcGenNode, unk50) &&
+     __builtin_offsetof(UnkGenerator, vars.vortex.lifetime) ==
+         __builtin_offsetof(struct PcGenNode, unk54)) ? 1 : -1];
+
+extern struct Ovl1ParticleNode *D_800D6AF0;
+extern void (*D_800D6AD8)();
+void func_800A0558(f32 *, f32 *, struct DObj *);
+#endif /* PORT */
 #ifdef MIPS_TO_C
 
 void func_800A09AC(void *arg0) {
@@ -3993,14 +4797,370 @@ block_105:
     }
 }
 #elif defined(PORT)
-/* PORT: still assembly on the matching build, and the m2c sketch above is not
- * compilable. This is the per-frame particle-list updater (walks D_800D6AF0,
- * recycles nodes onto D_800D6A08); the game registers it as a GObj process at
- * scene start, so the weak abort stub fires on the first frame. A no-op keeps
- * the boot alive at the cost of frozen/absent particles until the function is
- * genuinely matched. */
+/* PORT: still assembly on the matching build; the m2c sketch above garbles
+ * the hot spots, so this is a behavioral port from asm/nonmatchings/ovl1/
+ * ovl1/func_800A09AC.s -- the per-frame generator updater the game registers
+ * as the -7 GObj's process. It walks the D_800D6A0C node list (struct
+ * PcGenNode above); per node it advances the frame accumulator by the update
+ * rate (negative rate = fixed step, positive = randomized), and while the
+ * accumulator holds a whole frame it emits one particle per kind via
+ * func_8009BD3C, then runs the generator-lifetime countdown, recycling dead
+ * nodes onto D_800D6A08 exactly the way func_800A1F30 does (kind-2 vortex
+ * generators with live particles are parked at lifetime 1 / rate 0 instead).
+ * D_800D6AF0 is the GLOBAL prev cursor, not a local: emissions can run
+ * particle bytecode that spawns generators, and func_800A194C pushes those
+ * on the list head and repairs this cursor so the unlink writes stay valid.
+ *
+ * Fixes over the sketch: the sweep-step divisors use the ROM's trunc.w.s,
+ * i.e. (f32)(s32)unk44, not unk44 itself; every func_8009BD3C call really
+ * passes (bank, flags, texture, bytecode, lifetime, pos, vel, size, gravity,
+ * friction, 0, node) -- the sketch's kind-0/1 calls shifted two junk args
+ * in front of that (its kind-2/5/8 calls were already aligned); and the
+ * cone/disk emission math (kinds 0/3/4/6/7) is re-derived from the asm's
+ * yaw/pitch basis: local (a,b,c) -> world via
+ *   X = a*cosP + c*sinP
+ *   Y = -a*sinY*sinP + b*cosY + c*sinY*cosP
+ *   Z = -a*cosY*sinP - b*sinY + c*cosY*cosP
+ * applied to (cosE*r, sinE*r, axial) for position and
+ * (cosE*sinS*speed, sinE*sinS*speed, cosS*speed) for velocity.
+ *
+ * unk8&1 aims the basis at the camera D_800D6A10 points to (set by
+ * func_8009BA68; s32 cell holds the host address, below-4GB arena), read
+ * through the canonical UnkStruct800D79D8 overlay (eye at unk3C/40/44).
+ * unk48 != NULL routes position/velocity through func_800A0558 first --
+ * still a weak stub on this build, so a DObj-attached generator will stop
+ * the run there and name it. */
 void func_800A09AC(void *arg0) {
-    (void)arg0;
+    GObj *gobj = arg0;
+    struct PcGenNode *gn;
+    struct PcGenNode *next;
+
+    gn = (struct PcGenNode *) D_800D6A0C;
+    D_800D6AF0 = NULL;
+    while (gn != NULL) {
+        f32 vel[3];
+        f32 angle = 0.0f; /* spE4: sweep angle, persists across emissions */
+        f32 step = 0.0f;  /* spC0: per-emission sweep increment */
+
+        /* Per-bank pause bits 16..31 on the process GObj, then the node's
+         * own pause flag. */
+        if (gobj->flags & (1u << (((gn->unkA >> 3) + 0x10) & 31))) {
+            D_800D6AF0 = (struct Ovl1ParticleNode *) gn;
+            gn = gn->next;
+            continue;
+        }
+        if (gn->unk6 & 0x800) {
+            D_800D6AF0 = (struct Ovl1ParticleNode *) gn;
+            gn = gn->next;
+            continue;
+        }
+
+        if (gn->unk40 < 0.0f) {
+            gn->unk44 -= gn->unk40;
+        } else {
+            gn->unk44 += random_f32() * gn->unk40;
+        }
+
+        if (gn->unk44 >= 1.0f) {
+            vel[0] = gn->unk20;
+            vel[1] = gn->unk24;
+            vel[2] = gn->unk28;
+            if (gn->unk48 != NULL) {
+                f32 out[3];
+
+                func_800A0558(out, vel, gn->unk48);
+                gn->unk14 = out[0];
+                gn->unk18 = out[1];
+                gn->unk1C = out[2];
+            }
+            if (gn->unk3C < 0.0f) {
+                /* Negative spread: sweep this frame's emissions across the
+                 * arc instead of randomizing each one. */
+                switch (gn->unk9) {
+                case 0:
+                case 3:
+                case 4:
+                case 6:
+                case 7:
+                    step = (gn->unk54.f - gn->unk50) / (f32)(s32)gn->unk44;
+                    angle = random_f32() * step + gn->unk50;
+                    break;
+                default:
+                    angle = random_f32() * 6.2831855f;
+                    step = 6.2831855f / (f32)(s32)gn->unk44;
+                    break;
+                }
+            }
+            do {
+                switch (gn->unk9) {
+                case 0: /* cone */
+                case 3: /* disk, sqrt-uniform, velocity scaled by radius */
+                case 4: /* disk, sqrt-uniform */
+                case 6: /* ring segment with axial spread */
+                case 7: /* ring segment */
+                {
+                    f32 dx, dy, dz, speed;
+                    f32 yaw, sinY, cosY, pitch, sinP, cosP;
+                    f32 amp, radial, spread, a, b, c, r;
+                    f32 sf, va, vb, vc;
+                    f32 px, py, pz, wx, wy, wz;
+
+                    if (gn->unk8 & 1) {
+                        struct UnkStruct800D79D8 *cam =
+                            (struct UnkStruct800D79D8 *)(uintptr_t)(u32)D_800D6A10;
+
+                        dx = cam->unk3C - gn->unk14;
+                        dy = cam->unk40 - gn->unk18;
+                        dz = cam->unk44 - gn->unk1C;
+                        speed = sqrtf(vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2]);
+                    } else {
+                        dx = vel[0];
+                        dy = vel[1];
+                        dz = vel[2];
+                        speed = sqrtf(dx * dx + dy * dy + dz * dz);
+                    }
+                    yaw = atan2f(dy, dz);
+                    sinY = sinf(yaw);
+                    cosY = cosf(yaw);
+                    pitch = atan2f(dx, dy * sinY + dz * cosY);
+                    sinP = sinf(pitch);
+                    cosP = cosf(pitch);
+                    if (gn->unk38 < 0.0f) {
+                        amp = 1.0f;
+                        radial = -gn->unk38;
+                    } else {
+                        amp = random_f32();
+                        if ((gn->unk9 == 3) || (gn->unk9 == 4)) {
+                            amp = sqrtf(amp);
+                        }
+                        radial = gn->unk38 * amp;
+                    }
+                    switch (gn->unk9) {
+                    case 6:
+                        if (gn->unk3C < 0.0f) {
+                            angle += step;
+                            spread = (1.5707964f - atan2f(gn->unk58, radial)) - gn->unk3C;
+                        } else {
+                            angle = random_f32() * (gn->unk54.f - gn->unk50) + gn->unk50;
+                            spread = (1.5707964f - atan2f(gn->unk58, radial)) + gn->unk3C;
+                        }
+                        break;
+                    case 7:
+                        if (gn->unk3C < 0.0f) {
+                            angle += step;
+                            spread = 1.5707964f - gn->unk3C;
+                        } else {
+                            angle = random_f32() * (gn->unk54.f - gn->unk50) + gn->unk50;
+                            spread = gn->unk3C + 1.5707964f;
+                        }
+                        break;
+                    default:
+                        if (gn->unk3C < 0.0f) {
+                            spread = -gn->unk3C;
+                            angle += step;
+                        } else {
+                            angle = random_f32() * (gn->unk54.f - gn->unk50) + gn->unk50;
+                            spread = amp * gn->unk3C;
+                        }
+                        break;
+                    }
+                    a = cosf(angle) * radial;
+                    b = sinf(angle) * radial;
+                    if ((gn->unk9 == 6) || (gn->unk9 == 7)) {
+                        r = random_f32();
+                        if (gn->unk9 == 6) {
+                            a *= 1.0f - r;
+                            b *= 1.0f - r;
+                        }
+                        c = r * gn->unk58;
+                    } else {
+                        c = 0.0f;
+                    }
+                    sf = sinf(spread) * speed;
+                    va = cosf(angle) * sf;
+                    vb = sinf(angle) * sf;
+                    vc = cosf(spread) * speed;
+                    px = a * cosP + c * sinP + gn->unk14;
+                    py = -a * sinY * sinP + b * cosY + c * sinY * cosP + gn->unk18;
+                    pz = -a * cosY * sinP - b * sinY + c * cosY * cosP + gn->unk1C;
+                    wx = va * cosP + vc * sinP;
+                    wy = -va * sinY * sinP + vb * cosY + vc * sinY * cosP;
+                    wz = -va * cosY * sinP - vb * sinY + vc * cosY * cosP;
+                    if (gn->unk9 == 3) {
+                        wx *= amp;
+                        wy *= amp;
+                        wz *= amp;
+                    }
+                    func_8009BD3C(gn->unkA, gn->unk6, gn->unkB,
+                                  (u8 *)(uintptr_t)gn->unk10, gn->unkC,
+                                  px, py, pz, wx, wy, wz,
+                                  gn->unk34, gn->unk2C, gn->unk30, 0,
+                                  (UnkGenerator *) gn);
+                    break;
+                }
+                case 1: /* line between unk14.. and unk50.. */
+                {
+                    f32 r1 = random_f32();
+
+                    func_8009BD3C(gn->unkA, gn->unk6, gn->unkB,
+                                  (u8 *)(uintptr_t)gn->unk10, gn->unkC,
+                                  gn->unk14 + r1 * (gn->unk50 - gn->unk14),
+                                  gn->unk18 + r1 * (gn->unk54.f - gn->unk18),
+                                  gn->unk1C + r1 * (gn->unk58 - gn->unk1C),
+                                  vel[0], vel[1], vel[2],
+                                  gn->unk34, gn->unk2C, gn->unk30, 0,
+                                  (UnkGenerator *) gn);
+                    break;
+                }
+                case 2: /* vortex: angles ride in the vel/gravity/friction
+                         * slots, flag 4 marks the particle as vortex-bound */
+                {
+                    f32 yaw2, pitch2, spd, amt;
+
+                    yaw2 = atan2f(vel[1], vel[2]);
+                    pitch2 = atan2f(vel[0], vel[1] * sinf(yaw2) + vel[2] * cosf(yaw2));
+                    spd = sqrtf(vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2]);
+                    if (gn->unk38 < 0.0f) {
+                        amt = 1.0f;
+                    } else {
+                        amt = random_f32();
+                    }
+                    if (gn->unk3C < 0.0f) {
+                        angle += step;
+                    } else {
+                        angle = random_f32() * 6.2831855f;
+                    }
+                    gn->unk50 = spd;
+                    if (func_8009BD3C(gn->unkA, gn->unk6 | 4, gn->unkB,
+                                      (u8 *)(uintptr_t)gn->unk10, gn->unkC,
+                                      0.0f, 0.0f, 0.0f, angle, amt, 0.0f,
+                                      gn->unk34, yaw2, pitch2, 0,
+                                      (UnkGenerator *) gn) != NULL) {
+                        gn->unk54.hw++;
+                    }
+                    break;
+                }
+                case 5: /* box: three axis vectors, each jittered, sign flags
+                         * in unk74 pin an axis to +/-0.5 */
+                {
+                    f32 px5 = gn->unk14;
+                    f32 py5 = gn->unk18;
+                    f32 pz5 = gn->unk1C;
+                    f32 t;
+
+                    if (gn->unk74 & 1) {
+                        t = (random_f32() > 0.5f) ? 0.5f : -0.5f;
+                    } else {
+                        t = random_f32() - 0.5f;
+                    }
+                    px5 += gn->unk50 * t;
+                    py5 += gn->unk54.f * t;
+                    pz5 += gn->unk58 * t;
+                    if (gn->unk74 & 2) {
+                        t = (random_f32() > 0.5f) ? 0.5f : -0.5f;
+                    } else {
+                        t = random_f32() - 0.5f;
+                    }
+                    px5 += gn->unk5C * t;
+                    py5 += gn->unk60 * t;
+                    pz5 += gn->unk64 * t;
+                    if (gn->unk74 & 4) {
+                        t = (random_f32() > 0.5f) ? 0.5f : -0.5f;
+                    } else {
+                        t = random_f32() - 0.5f;
+                    }
+                    func_8009BD3C(gn->unkA, gn->unk6, gn->unkB,
+                                  (u8 *)(uintptr_t)gn->unk10, gn->unkC,
+                                  px5 + gn->unk68 * t,
+                                  py5 + gn->unk6C * t,
+                                  pz5 + gn->unk70 * t,
+                                  vel[0], vel[1], vel[2],
+                                  gn->unk34, gn->unk2C, gn->unk30, 0,
+                                  (UnkGenerator *) gn);
+                    break;
+                }
+                case 8: /* sphere sector around the base direction */
+                {
+                    f32 sq = sqrtf(random_f32());
+                    f32 theta = random_f32() * 6.2831855f;
+                    f32 az, el, mag, ratio, ox, oy, oz;
+
+                    if (gn->unk60 == 0.0f) {
+                        az = random_f32() * 6.2831855f;
+                    } else {
+                        az = cosf(theta) * sq * gn->unk60 + gn->unk5C;
+                    }
+                    if (gn->unk58 == 0.0f) {
+                        el = (1.0f - sqrtf(random_f32())) * 1.5707964f;
+                        if (random_f32() < 0.5f) {
+                            el = -el;
+                        }
+                    } else {
+                        el = sinf(theta) * sq * gn->unk58 + gn->unk54.f;
+                    }
+                    mag = gn->unk38;
+                    if (mag < 0.0f) {
+                        mag = -mag;
+                        ratio = gn->unk50 / mag;
+                    } else {
+                        ratio = gn->unk50 / mag;
+                        mag *= random_f32();
+                    }
+                    angle = theta; /* the ROM parks theta in the spE4 slot */
+                    ox = cosf(el) * (mag * cosf(az));
+                    oy = sinf(el) * mag;
+                    oz = cosf(el) * (mag * sinf(az));
+                    func_8009BD3C(gn->unkA, gn->unk6, gn->unkB,
+                                  (u8 *)(uintptr_t)gn->unk10, gn->unkC,
+                                  gn->unk14 + ox, gn->unk18 + oy, gn->unk1C + oz,
+                                  ox * ratio, oy * ratio, oz * ratio,
+                                  gn->unk34, gn->unk2C, gn->unk30, 0,
+                                  (UnkGenerator *) gn);
+                    break;
+                }
+                default:
+                    if (D_800D6AD8 != NULL) {
+                        D_800D6AD8(gn, vel);
+                    }
+                    break;
+                }
+                gn->unk44 -= 1.0f;
+            } while (gn->unk44 >= 1.0f);
+        }
+
+        /* Generator lifetime; 0 means immortal. */
+        if (gn->unkE != 0) {
+            gn->unkE--;
+            if (gn->unkE == 0) {
+                if ((gn->unk9 == 2) && (gn->unk54.hw != 0)) {
+                    /* Vortex with live particles: park it (func_800A1F30
+                     * does the same). */
+                    gn->unkE = 1;
+                    gn->unk40 = 0.0f;
+                } else {
+                    next = gn->next;
+                    if (D_800D6AF0 == NULL) {
+                        D_800D6A0C = (struct Ovl1ParticleNode *) next;
+                    } else {
+                        ((struct PcGenNode *) D_800D6AF0)->next = next;
+                    }
+                    if (gn->unk4C != NULL) {
+                        gn->unk4C->unk2A--;
+                        if (gn->unk4C->unk2A == 0) {
+                            func_8009B69C(gn->unk4C);
+                        }
+                    }
+                    gn->next = (struct PcGenNode *) D_800D6A08;
+                    D_800D6A08 = (UnkParticle *) gn;
+                    D_800D6AE2--;
+                    gn = next;
+                    continue;
+                }
+            }
+        }
+        D_800D6AF0 = (struct Ovl1ParticleNode *) gn;
+        gn = gn->next;
+    }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A09AC.s")
@@ -4189,17 +5349,165 @@ void *func_800A19EC(s32 arg0, s32 arg1) {
     return temp_v0;
 }
 #elif defined(PORT)
-/* PORT: still assembly on the matching build and the m2c sketch above is
- * not compilable; the particle/emitter object it would build also leans on
- * script tables whose LP64 layout is still unresolved. Scene setup calls
- * this per placed emitter (func_800A2550), so a weak abort stub would end
- * the run on the first scene with emitters; a NULL return is the
- * documented "emitter did not spawn" result every caller already checks
- * for. Effects stay absent until this is genuinely ported. */
+/* PORT: the generator/emitter spawner, from asm/nonmatchings/ovl1/ovl1/
+ * func_800A19EC.s (the sketch above is close, but the asm fixes the call
+ * shapes -- func_800A194C takes nothing, the D_800D6ADC callback only gets
+ * the node in $a0 -- and the store widths: sh at +0x54 for kind 2, sh at
+ * +0x74 for kind 5's sign flags). Pops a node off the free list via
+ * func_800A194C and fills it from bank (arg0 & 7)'s script record arg1.
+ *
+ * Node layout: struct PcGenNode is the SAME LP64 shape struct Pc2550Obj
+ * (func_800A2550's arm below) and struct Ovl1PNode already use -- the
+ * 8-byte `next` shifts the scalar block by +4, the two pointers at N64
+ * +0x48/+0x4C widen, and the N64 +0x50..+0x77 tail lands at +0x60..+0x87.
+ * The asserts pin the shared offsets; func_800A04B8's PORT branch sizes
+ * the pool nodes at PC_GENNODE_SIZE so the widened tail fits.
+ *
+ * Data: D_800D6A38/D_800D6A78/D_800D6A98 are native tables and the
+ * UnkTexture header is normalized in place (func_8009B768's arm), but by
+ * that arm's contract UnkScript interiors stay RAW BIG-ENDIAN ("converted
+ * at their own read sites"), so every script field is decoded here. The
+ * bytecode address is kept as a u32 like the bank tables (arena below
+ * 4 GB). unk48 is NULLed by the ROM itself; unk4C is NULLed here because
+ * the N64 relied on func_800A194C's word clear at +0x4C, which on LP64
+ * covers only half the widened slot. Kind 8's pitch term multiplies
+ * position X (just zeroed) by velocity X instead of velX*velX -- ROM
+ * quirk, kept. (struct PcGenNode itself is defined above func_800A09AC,
+ * which walks the same nodes every frame.) */
+
+/* Raw big-endian UnkScript field reads (2/4-aligned inside the bank blob). */
+static u16 pc19ec_su16(const UnkScript *s, u32 off) {
+    u16 v;
+    __builtin_memcpy(&v, (const u8 *)s + off, 2);
+    return pc_be16(v);
+}
+static f32 pc19ec_sf32(const UnkScript *s, u32 off) {
+    union { u32 w; f32 f; } c;
+    __builtin_memcpy(&c.w, (const u8 *)s + off, 4);
+    c.w = pc_be32(c.w);
+    return c.f;
+}
+
 void *func_800A19EC(s32 arg0, s32 arg1) {
-    (void)arg0;
-    (void)arg1;
-    return NULL;
+    extern void (*D_800D6ADC)();
+    s32 bank = arg0 & 7;
+    struct PcGenNode *gn;
+    const UnkScript *script;
+    f32 s30, s34, s38;
+
+    if (bank >= 8) { /* dead check, kept from the ROM */
+        return NULL;
+    }
+    if (arg1 >= D_800D6A38[bank]) {
+        return NULL;
+    }
+    gn = (struct PcGenNode *) func_800A194C();
+    if (gn != NULL) {
+        script = D_800D6A78[bank][arg1];
+        gn->unkA = (u8) arg0;
+        gn->unk9 = (u8) pc19ec_su16(script, 0x00);   /* kind */
+        gn->unk6 = pc19ec_su16(script, 0x0A);        /* flags */
+        gn->unk8 = (u8) pc19ec_su16(script, 0x08);
+        gn->unkB = (u8) pc19ec_su16(script, 0x02);   /* texture id */
+        gn->unkC = pc19ec_su16(script, 0x06);        /* particle lifetime */
+        gn->unk14 = gn->unk18 = gn->unk1C = 0.0f;
+        gn->unkE = pc19ec_su16(script, 0x04);        /* generator lifetime */
+        gn->unk20 = pc19ec_sf32(script, 0x14);       /* velX */
+        gn->unk24 = pc19ec_sf32(script, 0x18);       /* velY */
+        gn->unk28 = pc19ec_sf32(script, 0x1C);       /* velZ */
+        gn->unk2C = pc19ec_sf32(script, 0x0C);       /* gravity */
+        gn->unk30 = pc19ec_sf32(script, 0x10);       /* friction */
+        gn->unk34 = pc19ec_sf32(script, 0x2C);       /* size */
+        gn->unk10 = (u32) (uintptr_t) ((const u8 *) script + 0x3C); /* bytecode */
+        gn->unk38 = pc19ec_sf32(script, 0x20);
+        gn->unk3C = pc19ec_sf32(script, 0x24);
+        gn->unk44 = 0.0f;
+        gn->unk40 = pc19ec_sf32(script, 0x28);
+        if (D_800D6A98[bank][pc19ec_su16(script, 0x02)]->flags != 0) {
+            gn->unk6 |= 0x10;
+        }
+        gn->unk48 = NULL;
+        gn->unk4C = NULL; /* N64: func_800A194C's word clear at +0x4C */
+        s30 = pc19ec_sf32(script, 0x30);
+        s34 = pc19ec_sf32(script, 0x34);
+        s38 = pc19ec_sf32(script, 0x38);
+        switch (gn->unk9) {
+        case 0:
+        case 3:
+        case 4:
+            if ((s30 == 0.0f) && (s34 == 0.0f)) {
+                gn->unk50 = 0.0f;
+                gn->unk54.f = 6.2831855f;
+            } else {
+                gn->unk50 = s30;
+                gn->unk54.f = s34;
+            }
+            break;
+        case 1:
+            gn->unk50 = s30;
+            gn->unk54.f = s34;
+            gn->unk58 = s38;
+            break;
+        case 2:
+            gn->unk54.hw = 0;
+            break;
+        case 6:
+        case 7:
+            if ((s30 == 0.0f) && (s34 == 0.0f)) {
+                gn->unk50 = 0.0f;
+                gn->unk54.f = 6.2831855f;
+            } else {
+                gn->unk50 = s30;
+                gn->unk54.f = s34;
+            }
+            gn->unk58 = s38;
+            break;
+        case 5:
+            gn->unk50 = s30;
+            gn->unk60 = s34;
+            gn->unk54.f = 0.0f;
+            gn->unk58 = 0.0f;
+            gn->unk5C = 0.0f;
+            gn->unk64 = 0.0f;
+            gn->unk68 = 0.0f;
+            gn->unk6C = 0.0f;
+            gn->unk74 = 0;
+            gn->unk70 = s38;
+            if (s30 < 0.0f) {
+                gn->unk74 = 1;
+            }
+            if (s34 < 0.0f) {
+                gn->unk74 |= 2;
+            }
+            if (s38 < 0.0f) {
+                gn->unk74 |= 4;
+            }
+            break;
+        case 8:
+            gn->unk50 = sqrtf((gn->unk20 * gn->unk20) + (gn->unk24 * gn->unk24)
+                              + (gn->unk28 * gn->unk28));
+            gn->unk54.f = atan2f(gn->unk24, sqrtf((gn->unk14 * gn->unk20)
+                                                  + (gn->unk28 * gn->unk28)));
+            gn->unk5C = atan2f(gn->unk28, gn->unk20);
+            gn->unk58 = s30;
+            gn->unk60 = s34;
+            break;
+        default:
+            if (D_800D6ADC != NULL) {
+                D_800D6ADC(gn);
+            }
+            break;
+        }
+        if (gn->unk8 & 2) {
+            UnkEmitter *xf = func_8009B5E8(0, gn->unk4);
+
+            gn->unk4C = xf;
+            if (xf != NULL) {
+                xf->unkBA = 1;
+            }
+        }
+    }
+    return gn;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A19EC.s")
@@ -4374,6 +5682,91 @@ block_29:
             }
             var_s0_2 = temp_v0_3;
         } while (temp_v0_3 != NULL);
+    }
+}
+#elif defined(PORT)
+/* PORT: from asm/nonmatchings/ovl1/ovl1/func_800A2080.s -- kill every
+ * particle in list D_800D69C8[arg1] and every generator on D_800D6A0C whose
+ * id (unk4) matches arg0's low 16 bits. The particle pass is func_8009BFD4's
+ * logic for a whole list (unlink, drop the vortex owner's live count, release
+ * the emitter ref, push onto D_800D69C0); the generator pass is func_800A1F30
+ * for a whole list, including its park-don't-free rule for kind-2 vortex
+ * generators that still own particles. Generators are walked through struct
+ * PcGenNode (func_800A09AC's block above); the particles' UnkGenerator view
+ * of the same nodes is layout-checked there. K&R definition on purpose:
+ * func_800A22A8/func_800A22D4 below pass a third argument the function
+ * never reads, so it must not expose a two-arg prototype (and the ROM's
+ * `andi $a0, 0xFFFF` + dead home store is the same IDO promoted-short
+ * prologue func_800A2440's note describes). */
+void func_800A2080(arg0, arg1)
+s32 arg0;
+s32 arg1;
+{
+    u32 id = arg0 & 0xFFFF;
+    UnkParticle *pc;
+    UnkParticle *prev_pc;
+    UnkParticle *next_pc;
+    struct PcGenNode *gnode;
+    struct PcGenNode *prev_gn;
+    struct PcGenNode *next_gn;
+
+    pc = D_800D69C8[arg1];
+    prev_pc = NULL;
+    while (pc != NULL) {
+        next_pc = pc->next;
+        if (id == pc->unk4) {
+            if (prev_pc == NULL) {
+                D_800D69C8[arg1] = next_pc;
+            } else {
+                prev_pc->next = next_pc;
+            }
+            if ((pc->unk5C != NULL) && (pc->unk6 & 4) && (pc->unk5C->kind == 2)) {
+                pc->unk5C->vars.vortex.lifetime--;
+            }
+            if (pc->unk60 != NULL) {
+                pc->unk60->unk2A--;
+                if (pc->unk60->unk2A == 0) {
+                    func_8009B69C(pc->unk60);
+                }
+            }
+            pc->next = D_800D69C0;
+            D_800D69C0 = pc;
+            D_800D6AE0--;
+        } else {
+            prev_pc = pc;
+        }
+        pc = next_pc;
+    }
+
+    gnode = (struct PcGenNode *) D_800D6A0C;
+    prev_gn = NULL;
+    while (gnode != NULL) {
+        next_gn = gnode->next;
+        if (id == gnode->unk4) {
+            if ((gnode->unk9 == 2) && (gnode->unk54.hw != 0)) {
+                gnode->unk40 = 0.0f;
+                gnode->unkE = 1;
+                prev_gn = gnode;
+            } else {
+                if (prev_gn == NULL) {
+                    D_800D6A0C = (struct Ovl1ParticleNode *) next_gn;
+                } else {
+                    prev_gn->next = next_gn;
+                }
+                if (gnode->unk4C != NULL) {
+                    gnode->unk4C->unk2A--;
+                    if (gnode->unk4C->unk2A == 0) {
+                        func_8009B69C(gnode->unk4C);
+                    }
+                }
+                gnode->next = (struct PcGenNode *) D_800D6A08;
+                D_800D6A08 = (UnkParticle *) gnode;
+                D_800D6AE2--;
+            }
+        } else {
+            prev_gn = gnode;
+        }
+        gnode = next_gn;
     }
 }
 #else
@@ -4628,11 +6021,10 @@ void func_800A2550(void *arg0) {
  *
  * The emitter object layout mirrors struct Ovl1PNode's LP64 shape (the
  * 8-byte `next` shifts the scalar block by +4; the two pointers at N64
- * +0x48/+0x4C widen, putting the N64 +0x50.. block at +0x60). TODAY
- * func_800A19EC is still a weak NULL stub on this build, so the transform
- * body is exercised only once emitters exist; if kind-5 emitters ever
- * spawn, the free-list node size (0x78 on the N64) must be re-checked
- * against this widened layout. */
+ * +0x48/+0x4C widen, putting the N64 +0x50.. block at +0x60) -- the same
+ * layout struct PcGenNode (func_800A19EC's arm above) pins with asserts.
+ * func_800A19EC is now ported, and func_800A04B8 sizes the free-list nodes
+ * at PC_GENNODE_SIZE so the widened kind-5 tail fits. */
 
 struct Pc2550Obj {                       /* LP64 mirror of struct Ovl1PNode */
     /* 0x00 */ void *next;

@@ -225,6 +225,31 @@ s32 request_job(s32 id, s32 minIndex, s32 max_index, void *arg3, void *userMain)
     }
 
     D_800DD710[i] = id;
+#ifdef PORT
+    /* D_800D4FD0 is part of a widened pointer-array emission (one 8-byte
+     * cell per N64 word): each row is {value-preserving u32 word, update
+     * callback pointer}. Reading it through the N64 byte-offset struct
+     * takes overlayIdx/flags from the wrong end of the little-endian cell
+     * -- flags came back 0, so the player's gEntityGObjProcessArray3/4
+     * were never created and the ovl3 player init dereferenced NULL. Read
+     * the row the widened way instead. */
+    {
+        void **pcRow = (void **) D_800D4FD0 + (id * 2);
+        u32 pcW0 = (u32) (uintptr_t) pcRow[0];
+
+        D_800DE350[i] = gobj =
+            HS64_omMakeGObj(i, func_800B0D24, (u8) ((pcW0 >> 24) + v0), 0);
+        gEntityGObjProcessArray[i] =
+            omCreateProcess(gobj, (void (*)(void)) pcRow[1], 0, 3);
+        gEntityGObjProcessArray2[i] = omCreateProcess(gobj, func_800B0D90, 1, 3);
+        if ((pcW0 >> 16) & 1) {
+            gEntityGObjProcessArray3[i] = omCreateProcess(gobj, objSleepForever, 0, 2);
+        }
+        if ((pcW0 >> 16) & 2) {
+            gEntityGObjProcessArray4[i] = omCreateProcess(gobj, func_800B1870, 1, 1);
+        }
+    }
+#else
     D_800DE350[i] = gobj = HS64_omMakeGObj(i, func_800B0D24, D_800D4FD0[id].overlayIdx + v0, 0);
     gEntityGObjProcessArray[i] = omCreateProcess(gobj, D_800D4FD0[id].updateFunc, 0, 3);
     gEntityGObjProcessArray2[i] = omCreateProcess(gobj, func_800B0D90, 1, 3);
@@ -234,6 +259,7 @@ s32 request_job(s32 id, s32 minIndex, s32 max_index, void *arg3, void *userMain)
     if (D_800D4FD0[id].flags & 2) {
         gEntityGObjProcessArray4[i] = omCreateProcess(gobj, func_800B1870, 1, 1);
     }
+#endif
     gEntityGObjProcessArray5[i] = omCreateProcess(gobj, userMain, 1, 0);
     D_800DD8D0[i] = 0;
     D_800DDA90[i] = gobj->link;

@@ -161,7 +161,13 @@ s32 func_80110150(struct UnkStruct80110438_C *arg0) {
     s32 j;
     s32 id;
     s32 sp58[5];
+#ifdef PORT
+    /* func_8010F9AC's narrow-phase writes a 36-byte contact record
+     * (contact + both shape anchors); the N64 frame absorbed the spill. */
+    f32 sp4C[9];
+#else
     f32 sp4C[3];
+#endif
     s32 sp40[3];
 
     arg0->unk2 = 0;
@@ -305,7 +311,13 @@ s32 func_80110B00(struct UnkStruct80110438_C *arg0) {
     s32 j;
     s32 id;
     s32 sp58[5];
+#ifdef PORT
+    /* func_8010F9AC's narrow-phase writes a 36-byte contact record
+     * (contact + both shape anchors); the N64 frame absorbed the spill. */
+    f32 sp4C[9];
+#else
     f32 sp4C[3];
+#endif
     s32 sp40[3];
 
     arg0->unk2 = 0;
@@ -480,7 +492,13 @@ s32 func_80110FD4(struct UnkStruct80110438_C *arg0) {
     s32 id;
     s32 t;
     s32 sp58[4];
+#ifdef PORT
+    /* func_8010F9AC's narrow-phase writes a 36-byte contact record
+     * (contact + both shape anchors); the N64 frame absorbed the spill. */
+    f32 sp4C[9];
+#else
     f32 sp4C[3];
+#endif
     s32 sp40[3];
 
     arg0->unk2 = 0;

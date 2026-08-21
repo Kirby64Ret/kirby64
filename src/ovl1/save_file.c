@@ -41,6 +41,24 @@ void func_800B8700(void) {
     if (saveCalcHeaderChecksum() != gSaveBuffer1.header.checksum) {
         func_800B9008();
     }
+#ifdef PORT
+    /* Sanitize every file record straight off the cartridge, before anything
+     * reads it. A record whose world/level are outside the game's range
+     * bricks the map screens later (they index tables with the raw value);
+     * real hardware never produces one, but early port builds wrote
+     * half-real records whose valid checksums made the poison durable, and
+     * the file-select exists test is not the same field the count below
+     * uses. Erasing is idempotent for genuinely empty (all-0x99) files --
+     * they are out of range by definition and get re-stamped clean. */
+    {
+        void func_800B8E00(s32);
+        for (i = 0; i < 3; i++) {
+            if (gSaveBuffer1.files[i].world - 1 >= 8 || gSaveBuffer1.files[i].level - 1 >= 9) {
+                func_800B8E00(i);
+            }
+        }
+    }
+#endif
     for (i = 0, count = 0; i < 3; i++) {
         if (gSaveBuffer1.files[i].level != SAVE_INIT_MAGIC) {
             count++;

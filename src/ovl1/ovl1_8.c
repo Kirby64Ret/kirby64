@@ -752,6 +752,162 @@ block_46:
     gKirbyState.unk160 = 0;
     gKirbyState.unk164 = gKirbyState.unk168;
 }
+#elif defined(PORT)
+/* PORT: Kirby's per-frame movement tick (registered by plyInit as the
+ * player GObj's motion callback), from asm/nonmatchings/ovl1/ovl1_8/
+ * func_800B531C.s -- the m2c sketch above garbles the D_800DE350 loads and
+ * the moving-platform tail. Flow: read input velocity (func_800B50C4 on
+ * the {speed, accel, cap} triple), add conveyor push (func_8011DD5C),
+ * damp the knockback terms, seat on the track (func_800F8E6C /
+ * func_800F8C70), integrate X/Y/Z, handle the death-pit floor at -10000,
+ * then apply the moving-platform delta (func_80112A40 / func_800F8728). */
+#include "Player.h"
+
+void func_800B531C(s32 arg0) {
+    void func_8011DD5C(f32 *, f32 *);
+    void func_8011D40C(void);
+    u8 func_8011E244(void);
+    void func_8011E31C(Vector *);
+    void func_80112A40(s32, Vector *, Vector *);
+    f32 func_800F8728(s32, f32, f32);
+    extern f32 D_800E5510[];
+    extern f32 D_800E5C10[];
+    extern s32 D_800D6B54;
+    extern f32 gKirbyHp;
+    Vector spd;      /* sp64: {forward speed, base accel, cap} */
+    Vector platIn;   /* sp3C */
+    Vector platOut;  /* sp30 */
+    f32 fwd = 0.0f;  /* sp58 */
+    f32 push;        /* sp54 */
+    f32 pushY;       /* sp50: float bits through DD5C's second out param */
+    f32 savedVelY;
+    f32 damp;
+    s32 objId;
+    s32 plat;
+
+    (void) arg0;
+    func_800B35F0();
+    objId = omCurrentObj->objId;
+    if (gKirbyState.unk18 == 0) {
+        gKirbyState.forwardVel = D_800E64D0[objId];
+        gKirbyState.vel[0] = D_800E3050[objId];
+        gKirbyState.vel[1] = D_800E3210[objId];
+        gKirbyState.vel[2] = D_800E33D0[objId];
+        spd.x = D_800E64D0[objId];
+        spd.y = D_800E6690[objId];
+        spd.z = D_800E6850[objId];
+        func_800B50C4(&spd);
+        fwd = spd.x + spd.y;
+    }
+    func_8011DD5C(&push, &pushY);
+    if (gKirbyState.unk18 != 0) {
+        D_800E6850[objId] = 0.0f;
+        D_800E6690[objId] = D_800E6850[objId];
+        fwd = 0.0f;
+        D_800E64D0[objId] = 0.0f;
+    } else if (D_800D6B54 == 0) {
+        D_800E64D0[objId] = D_800E5510[objId] + fwd + push;
+        if (gKirbyState.unk160 == 0) {
+            if (gKirbyState.unk164 != 0.0f) {
+                if (D_800E8920[objId] != 0) {
+                    gKirbyState.unk164 = 0.0f;
+                } else if ((gKirbyState.horizontalCollision != 0) &&
+                           (gKirbyState.unk104 != 2) &&
+                           (gKirbyState.unk106 != 2)) {
+                    gKirbyState.unk164 = 0.0f;
+                } else {
+                    damp = (gKirbyState.action == 9) ? 0.5f : 0.1f;
+                    if (gKirbyState.unk164 > 0.0f) {
+                        gKirbyState.unk164 -= damp;
+                        if (gKirbyState.unk164 < 0.0f) {
+                            gKirbyState.unk164 = 0.0f;
+                        }
+                    } else {
+                        gKirbyState.unk164 += damp;
+                        if (gKirbyState.unk164 > 0.0f) {
+                            gKirbyState.unk164 = 0.0f;
+                        }
+                    }
+                    D_800E64D0[objId] += gKirbyState.unk164;
+                }
+            }
+            if (gKirbyState.unk168 != 0.0f) {
+                if (gKirbyState.ceilingCollisionNext != 0) {
+                    gKirbyState.unk168 = 0.0f;
+                } else {
+                    damp = (gKirbyState.action == 9) ? 1.28f : 1.14f;
+                    if (gKirbyState.unk168 > 0.0f) {
+                        gKirbyState.unk168 -= damp;
+                        if (gKirbyState.unk168 < 0.0f) {
+                            gKirbyState.unk168 = 0.0f;
+                        }
+                    } else {
+                        gKirbyState.unk168 += damp;
+                        if (gKirbyState.unk168 > 0.0f) {
+                            gKirbyState.unk168 = 0.0f;
+                        }
+                    }
+                    gEntitiesNextPosYArray[objId] += gKirbyState.unk168;
+                }
+            }
+        }
+    }
+    objId = omCurrentObj->objId;
+    gKirbyState.unk170 = D_800E5F90[objId];
+    func_800F8E6C(D_800DE350[objId]);
+    func_800F8C70(D_800DE350[omCurrentObj->objId]);
+    D_800E64D0[objId] = fwd;
+    func_800B46F8();
+    objId = omCurrentObj->objId;
+    savedVelY = D_800E3210[objId];
+    if (D_800D6B54 == 0) {
+        D_800E3210[objId] = savedVelY + (D_800E5C10[objId] + pushY);
+    }
+    gEntitiesNextPosXArray[objId] += D_800E3050[objId];
+    gEntitiesNextPosYArray[objId] += D_800E3210[objId];
+    gEntitiesNextPosZArray[objId] += D_800E33D0[objId];
+    D_800E3210[objId] = savedVelY;
+    if (gEntitiesNextPosYArray[objId] < -10000.0f) {
+        D_800E3750[objId] = 0.0f;
+        D_800E3210[objId] = D_800E3750[objId];
+        D_800E3C90[objId] = 65535.0f;
+        func_8011D40C();
+        gEntitiesNextPosYArray[objId] = -10000.0f;
+    }
+    if (gKirbyHp != 0.0f) {
+        plat = 0x14;
+        if (gKirbyState.unk162 == 0x14) {
+            if (D_800E8920[objId] != 0) {
+                plat = func_8011E244();
+            }
+        } else {
+            plat = gKirbyState.unk162;
+        }
+        if (plat != 0x14) {
+            f32 knock;
+
+            func_8011E31C(&platIn);
+            func_80112A40(plat, &platIn, &platOut);
+            if ((platOut.x != 0.0f) || (platOut.z != 0.0f)) {
+                knock = func_800F8728(objId, platOut.x, platOut.z);
+            } else {
+                knock = 0.0f;
+            }
+            gEntitiesNextPosXArray[objId] += platOut.x;
+            gEntitiesNextPosYArray[objId] += platOut.y;
+            gKirbyState.unk160 = 1;
+            gKirbyState.unk164 = knock;
+            gKirbyState.unk168 = platOut.y;
+            gEntitiesNextPosZArray[objId] += platOut.z;
+            return;
+        }
+        gKirbyState.unk160 = 0;
+        return;
+    }
+    gKirbyState.unk168 = 0.0f;
+    gKirbyState.unk160 = 0;
+    gKirbyState.unk164 = gKirbyState.unk168;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_8/func_800B531C.s")
 #endif
@@ -876,6 +1032,36 @@ void func_800B6144(s32 arg0) {
             *temp_a0_2 += sp28;
             temp_a1 = &gEntitiesNextPosZArray[omCurrentObj->objId];
             *temp_a1 += sp2C;
+        }
+    }
+}
+#elif defined(PORT)
+/* Ride-the-platform step (draft above, completed): when the entity stands
+ * on a dynamic collider (slot byte != 0x14), fetch that collider's frame
+ * delta (func_80112A40) and carry the entity's next position with it,
+ * reporting the lateral part to func_800F8728 first. */
+void func_800B6144(s32 arg0) {
+    void func_80112A40(s32, Vector *, Vector *);
+    f32 func_800F8728(s32, f32, f32);
+    u32 objId = omCurrentObj->objId;
+    struct Sub800E1B50_Unk84 *rec = D_800E1B50[objId]->unk84;
+
+    if (D_800E8920[objId] != 0 && rec != NULL) {
+        u8 slot = rec->unk50;
+
+        if (slot != 0x14) {
+            Vector pos, delta;
+
+            pos.x = gEntitiesNextPosXArray[objId];
+            pos.y = gEntitiesNextPosYArray[objId];
+            pos.z = gEntitiesNextPosZArray[objId];
+            func_80112A40(slot, &pos, &delta);
+            if (delta.x != 0.0f || delta.z != 0.0f) {
+                func_800F8728(objId, delta.x, delta.z);
+            }
+            gEntitiesNextPosXArray[objId] += delta.x;
+            gEntitiesNextPosYArray[objId] += delta.y;
+            gEntitiesNextPosZArray[objId] += delta.z;
         }
     }
 }

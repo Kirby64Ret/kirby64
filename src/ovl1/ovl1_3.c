@@ -136,7 +136,8 @@ s32 func_800A8310(s32 arg0) {
     return D_800D7BB4 - arg0;
 }
 
-#if defined(NON_MATCHING) && !defined(PORT)
+#ifdef NON_MATCHING
+#ifndef PORT
 // Correct structure; remaining diff is register allocation only (compiler
 // caches &D_800D7BD0[temp_v1] in a2, target keeps base + recomputes index).
 void *func_800A8358(s32 arg0) {
@@ -175,7 +176,7 @@ block_found:
     var_a1->unkC = 1;
     return (u8 *)var_a1 + 0x10;
 }
-#elif defined(PORT)
+#else
 /* Same function through the 16-byte PORT header (CL() widens the 32-bit
  * link slots; pointer stores narrow with a cast). */
 void *func_800A8358(s32 arg0) {
@@ -214,6 +215,7 @@ block_found:
     var_a1->unkC = 1;
     return (u8 *)var_a1 + 0x10;
 }
+#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8358.s")
 #endif
@@ -321,7 +323,8 @@ void *func_800A8564(struct CacheLine *arg0, s32 arg1) {
     return arg0;
 }
 
-#if defined(NON_MATCHING) && !defined(PORT)
+#ifdef NON_MATCHING
+#ifndef PORT
 // Nearly matching (28/52 insns identical incl. all structure); remaining diff
 // is a one-slot temp-register rotation in the free path (t8/t9/t0.. vs t7/t8/t9..).
 // K&R definition needed: callers pass 1-4 args for regalloc.
@@ -368,7 +371,7 @@ s32 arg0;
     }
     return 0;
 }
-#elif defined(PORT)
+#else
 /* Free/deref through the 16-byte PORT header; arena pointers fit the u32
  * link slots, so only the derefs widen (CL). Semantics identical to the
  * NON_MATCHING body above. */
@@ -415,6 +418,7 @@ s32 arg0;
     }
     return 0;
 }
+#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8578.s")
 #endif
@@ -1374,9 +1378,9 @@ static void gsw_dl_walk(struct GeoSwap *g, u32 off, int depth) {
                     gsw_w32(g, m + i);
                 }
             }
-        } else if (op == 0xE1) { /* G_RDPHALF_1 carries G_BRANCH_Z's target */
+        } else if (op == 0xE1) { /* G_RDPHALF: may carry the next 0x04's DL target */
             half1 = w1;
-        } else if (op == 0x04) { /* G_BRANCH_Z */
+        } else if (op == 0x04) { /* G_SELECT_DL (S2DEX pair) / G_BRANCH_Z */
             if (gsw_seg4(g, half1, 8) && gsw_dl_ok(g, half1 & 0xFFFFFF)) {
                 gsw_dl_walk(g, half1 & 0xFFFFFF, depth + 1);
             }
@@ -1697,6 +1701,16 @@ static void gw_measure(struct GeoWiden *w, u32 off, int depth) {
             if (gsw_seg4(g, w1, 8) && gsw_dl_ok(g, w1 & 0xFFFFFF)) {
                 gw_measure(w, w1 & 0xFFFFFF, depth + 1);
             }
+        } else if (op == 0xE1) {
+            /* S2DEX gSPSelectDL pair: G_RDPHALF_0 (0xE1) carries a seg-4 DL
+             * target and the following G_SELECT_DL (0x04) branches to it
+             * (the fork's handlers take the branch unconditionally). Treat
+             * it exactly like a G_DL reference. An 0xE1 not followed by
+             * 0x04 is a texrect half and stays a plain copy. */
+            if (i + 1 < len && (gw_rd32(g, off + (i + 1) * 8) >> 24) == 0x04 &&
+                gsw_seg4(g, w1, 8) && gsw_dl_ok(g, w1 & 0xFFFFFF)) {
+                gw_measure(w, w1 & 0xFFFFFF, depth + 1);
+            }
         } else if (op == 0x01) {
             u32 nv = (w0 >> 12) & 0xFF;
             if (gsw_seg4(g, w1, nv * 0x10)) {
@@ -1727,6 +1741,7 @@ static uintptr_t gw_emit(struct GeoWiden *w, u32 off, int depth) {
     u8 *base;
     u64 *pend_slot = NULL;
     u32 pend_w1off = 0, pend_w1 = 0, pend_siz = 0;
+    int kill_next_04 = 0;
 
     if (w->fail || depth > 24) {
         w->fail = 1;
@@ -1766,6 +1781,33 @@ static uintptr_t gw_emit(struct GeoWiden *w, u32 off, int depth) {
             } else {
                 w0v = 0xDF000000u; /* branch with no target: end here */
                 w1v = 0;
+            }
+        } else if (op == 0xE1) {
+            /* S2DEX gSPSelectDL pair (see gw_measure): the fork's handler
+             * stashes this w1 verbatim and calls it when the following
+             * G_SELECT_DL (0x04) executes, so it must become the widened
+             * copy's host address. If the target cannot be widened, the
+             * whole pair is neutralized (E1 w1 = 0 and the 0x04 becomes a
+             * G_SPNOOP) so the interpreter never branches into raw packed
+             * data. An 0xE1 not followed by 0x04 (texrect half) copies
+             * through untouched. */
+            if (i + 1 < len && (gw_rd32(g, off + (i + 1) * 8) >> 24) == 0x04) {
+                uintptr_t child = 0;
+                if (gsw_seg4(g, w1, 8) && gsw_dl_ok(g, w1 & 0xFFFFFF)) {
+                    child = gw_emit(w, w1 & 0xFFFFFF, depth + 1);
+                }
+                if (child != 0) {
+                    w1v = child;
+                } else {
+                    w1v = 0;
+                    kill_next_04 = 1;
+                }
+            }
+        } else if (op == 0x04) {
+            if (kill_next_04) {
+                w0v = 0; /* G_SPNOOP */
+                w1v = 0;
+                kill_next_04 = 0;
             }
         } else if (op == 0x01) {
             u32 nv = (w0 >> 12) & 0xFF;
@@ -2823,6 +2865,32 @@ void func_800AA49C(s32 arg0, s32 arg1, s32 arg2, u32 arg3, f32 arg4) {
     func_800A9B48(arg1);
     temp_v1_2 = omCurrentObj->objId;
     func_800B1FD0(arg0, *D_800DF690[temp_v1_2], arg2, **(&D_800DFA10 + (temp_v1_2 * 4)), arg4);
+}
+#elif defined(PORT)
+/* Bind animation bank arg3 to the current object (draft above, completed):
+ * record the id and root DObj, fetch-or-load the bank through the
+ * D_800D00C4 cache (func_800A8564 ref / func_800A9250 load), then start
+ * the anim via the subtree walker. The u32 cells hold host addresses
+ * (below-4GB contract, same convention as the compiled reader above). */
+void func_800AA49C(DObj *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
+    u32 objId = omCurrentObj->objId;
+    u32 **slot;
+
+    D_800E02D0[objId] = arg3;
+    D_800DFD90[objId] = (u32 *) arg0;
+    slot = &D_800D00C4[arg3 >> 0x10][arg3 & 0xFFFF];
+    if (*slot != NULL) {
+        D_800DFA10[objId] = (u32) (uintptr_t) *slot;
+        func_800A8564((struct CacheLine *) *slot, 1);
+    } else {
+        u32 *loaded = func_800A9250(arg3, 3);
+
+        *slot = loaded;
+        D_800DFA10[objId] = (u32) (uintptr_t) loaded;
+    }
+    func_800A9B48(arg1);
+    func_800B1FD0(arg0, *(u32 *) (uintptr_t) D_800DF690[objId].as_u32, arg2,
+                  *(u32 *) (uintptr_t) D_800DFA10[objId], arg4);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA49C.s")

@@ -168,6 +168,19 @@ void func_800A2C80(void) {
 
 void func_800A2CE4(void) {
     saveCurrentFileNum = D_800EC9FC;
+#ifdef PORT
+    /* The config-block default for "last used file" is 3 = none
+     * (func_800B91B8's SAVE_U16(0x164) = 3). The N64 file select tolerates
+     * the out-of-range value through data adjacency (D_800ECA08[3] lands in
+     * the config block) that this port's separate bss objects do not
+     * reproduce: func_801555AC_ovl4(3) read garbage, called the empty file
+     * "existing", and the first A press started a game on an uninitialized
+     * file whose level-unlock flags were all zero. Park the cursor on file 1
+     * instead, which is what a fresh cartridge boot shows. */
+    if ((u32)saveCurrentFileNum > 2) {
+        saveCurrentFileNum = 0;
+    }
+#endif
     gKirbyLives = 3;
     gKirbyHp = 6.0f;
     D_800D6E54 = 0;

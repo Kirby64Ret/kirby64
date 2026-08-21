@@ -634,9 +634,341 @@ void func_80113300(struct GObj *arg0, s32 arg1) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801133C8.s")
+#ifdef PORT
+/* PORT: steady-state per-frame update of every dynamic-collision record,
+ * from asm/nonmatchings/ovl2/ovl2_10/func_801133C8.s. Same record walk,
+ * field map and vertex/plane retransform as func_80113F08 below (see its
+ * comment), with two differences: a translation-only record is refreshed
+ * only when its dirty flag is set (unk2 & 4) or the owning entity actually
+ * moved this frame (nonzero per-frame delta in D_800E3050/D_800E3210/
+ * D_800E33D0 -- the deltas func_80112B4C writes); and the process is not
+ * retargeted at the end -- func_80113F08 retargets itself HERE after the
+ * first frame, so this is the updater that keeps moving platforms
+ * animating. The ROM's translation-path plane loop copies the old D-term
+ * before overwriting it with the recomputed one; that dead store is
+ * dropped, as in F08's arm. */
+struct PcF08Model {
+    /* scalar mirror of Unk80114A14Model (defined further down this file) */
+    s32 unk0;
+    s32 unk4;  /* poly table, 0x14 stride, truncated host ptr */
+    s32 unk8;  /* poly count */
+    s32 unkC;  /* f32 point array (realloc'd), truncated host ptr */
+    s32 unk10; /* point count */
+    s32 unk14; /* plane table (realloc'd), 0x10 stride, truncated host ptr */
+    s32 unk18; /* plane count */
+};
 
+void func_8010DD8C(void);
+
+void func_801133C8(struct GObj *arg0) {
+    u32 i;
+    u32 g;
+    u32 k;
+    u32 c;
+
+    (void) arg0;
+    for (i = 0; i < (u32) D_8012D940; i++) {
+        struct struct8011BA10_temp *rec = &D_8012D948[i];
+        struct PcF08Model *m = (struct PcF08Model *) rec->unk4;
+        s32 slot = rec->unk1;
+        u8 *vflags = (u8 *) (uintptr_t) rec->unk10;
+        f32 *pts = (f32 *) (uintptr_t) m->unkC;
+        s16 *orig = (s16 *) (uintptr_t) rec->unkC;
+        u32 *ptrefs = (u32 *) (uintptr_t) rec->unk14;
+        f32 mn[3];
+        f32 mx[3];
+
+        if (rec->unk2 & 2) {
+            f32(*world)[4] = (f32(*)[4]) & rec->unk58;
+
+            for (k = 0; k < (u32) m->unk10; k++) {
+                vflags[k] = 0;
+            }
+            mn[0] = mn[1] = mn[2] = 30000.0f;
+            mx[0] = mx[1] = mx[2] = -30000.0f;
+            func_80113028((f32(*)[4]) & rec->unk18, world);
+            func_80112CD4(slot, world);
+            for (g = 1; g < (u32) m->unk8; g++) {
+                u16 *poly = (u16 *) (uintptr_t) (m->unk4 + (g * 0x14));
+
+                for (c = 0; c < 3; c++) {
+                    u32 vi = poly[c];
+
+                    if (vflags[vi] == 0) {
+                        f32 *out = &pts[vi * 3];
+
+                        func_80112F70(world, out, &orig[vi * 3]);
+                        vflags[vi] = 1;
+                        if (out[0] < mn[0]) {
+                            mn[0] = out[0];
+                        }
+                        if (out[1] < mn[1]) {
+                            mn[1] = out[1];
+                        }
+                        if (out[2] < mn[2]) {
+                            mn[2] = out[2];
+                        }
+                        if (mx[0] < out[0]) {
+                            mx[0] = out[0];
+                        }
+                        if (mx[1] < out[1]) {
+                            mx[1] = out[1];
+                        }
+                        if (mx[2] < out[2]) {
+                            mx[2] = out[2];
+                        }
+                    }
+                }
+            }
+            for (k = 1; k < (u32) m->unk18; k++) {
+                f32 *src = (f32 *) (uintptr_t) (rec->unk8 + (k * 0x10));
+                f32 *dst = (f32 *) (uintptr_t) (m->unk14 + (k * 0x10));
+                f32 *pt = (f32 *) (uintptr_t) ptrefs[k];
+                f32 x = src[0];
+                f32 y = src[1];
+                f32 z = src[2];
+
+                dst[0] = (world[0][0] * x) + (world[1][0] * y) +
+                         (world[2][0] * z);
+                dst[1] = (world[0][1] * x) + (world[1][1] * y) +
+                         (world[2][1] * z);
+                dst[2] = (world[0][2] * x) + (world[1][2] * y) +
+                         (world[2][2] * z);
+                dst[3] = -((dst[0] * pt[0]) + (dst[1] * pt[1]) +
+                           (dst[2] * pt[2]));
+            }
+        } else if ((rec->unk2 & 4) || (D_800E3050[slot] != 0.0f) ||
+                   (D_800E3210[slot] != 0.0f) || (D_800E33D0[slot] != 0.0f)) {
+            f32 px = gEntitiesNextPosXArray[slot];
+            f32 py = gEntitiesNextPosYArray[slot];
+            f32 pz = gEntitiesNextPosZArray[slot];
+
+            for (k = 0; k < (u32) m->unk10; k++) {
+                vflags[k] = 0;
+            }
+            mn[0] = mn[1] = mn[2] = 30000.0f;
+            mx[0] = mx[1] = mx[2] = -30000.0f;
+            for (g = 1; g < (u32) m->unk8; g++) {
+                u16 *poly = (u16 *) (uintptr_t) (m->unk4 + (g * 0x14));
+
+                for (c = 0; c < 3; c++) {
+                    u32 vi = poly[c];
+
+                    if (vflags[vi] == 0) {
+                        s16 *in = &orig[vi * 3];
+                        f32 *out = &pts[vi * 3];
+
+                        out[0] = (f32) in[0] + px;
+                        out[1] = (f32) in[1] + py;
+                        out[2] = (f32) in[2] + pz;
+                        vflags[vi] = 1;
+                        if (out[0] < mn[0]) {
+                            mn[0] = out[0];
+                        }
+                        if (out[1] < mn[1]) {
+                            mn[1] = out[1];
+                        }
+                        if (out[2] < mn[2]) {
+                            mn[2] = out[2];
+                        }
+                        if (mx[0] < out[0]) {
+                            mx[0] = out[0];
+                        }
+                        if (mx[1] < out[1]) {
+                            mx[1] = out[1];
+                        }
+                        if (mx[2] < out[2]) {
+                            mx[2] = out[2];
+                        }
+                    }
+                }
+            }
+            for (k = 1; k < (u32) m->unk18; k++) {
+                f32 *src = (f32 *) (uintptr_t) (rec->unk8 + (k * 0x10));
+                f32 *dst = (f32 *) (uintptr_t) (m->unk14 + (k * 0x10));
+                f32 *pt = (f32 *) (uintptr_t) ptrefs[k];
+
+                dst[0] = src[0];
+                dst[1] = src[1];
+                dst[2] = src[2];
+                dst[3] = -((src[0] * pt[0]) + (src[1] * pt[1]) +
+                           (src[2] * pt[2]));
+            }
+        } else {
+            /* Static record that has not moved this frame: the ROM skips
+             * the retransform AND the bounding-box store. */
+            continue;
+        }
+        rec->unkA0 = mn[0];
+        rec->unkA4 = mn[1];
+        rec->unkA8 = mn[2];
+        rec->unkAC = mx[0];
+        rec->unkB0 = mx[1];
+        rec->unkB4 = mx[2];
+    }
+    func_8010DD8C();
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801133C8.s")
+#endif
+
+#ifdef PORT
+/* PORT: first-frame refresh of every dynamic-collision record, from
+ * asm/nonmatchings/ovl2/ovl2_10/func_80113F08.s. For each D_8012D948
+ * record built by func_80114A14 it clears the per-vertex transform flags,
+ * rebuilds the world matrix (matrix-driven records) or takes the owning
+ * entity's position (translation-only ones), transforms every vertex the
+ * poly table references from the original s16 triples (rec->unkC) into the
+ * model's f32 point array (m->unkC), retransforms the plane normals and
+ * D-terms, and stores the world-space bounding box (unkA0..unkB4 -- the
+ * fields ovl2_7's compiled sweep tests read). The per-plane point
+ * pointers in rec->unk14 are the truncated host pointers func_80114A14's
+ * NON_MATCHING body stores, so they widen back through uintptr_t. The
+ * process then retargets itself at func_801133C8 (the steady-state
+ * updater, ported above). struct PcF08Model is defined in that block. */
+void func_80113F08(struct GObj *arg0) {
+    u32 i;
+    u32 g;
+    u32 k;
+    u32 c;
+
+    (void) arg0;
+    for (i = 0; i < (u32) D_8012D940; i++) {
+        struct struct8011BA10_temp *rec = &D_8012D948[i];
+        struct PcF08Model *m = (struct PcF08Model *) rec->unk4;
+        s32 slot = rec->unk1;
+        u8 *vflags = (u8 *) (uintptr_t) rec->unk10;
+        f32 *pts = (f32 *) (uintptr_t) m->unkC;
+        s16 *orig = (s16 *) (uintptr_t) rec->unkC;
+        u32 *ptrefs = (u32 *) (uintptr_t) rec->unk14;
+        f32 mn[3];
+        f32 mx[3];
+
+        for (k = 0; k < (u32) m->unk10; k++) {
+            vflags[k] = 0;
+        }
+        mn[0] = mn[1] = mn[2] = 30000.0f;
+        mx[0] = mx[1] = mx[2] = -30000.0f;
+        if (rec->unk2 & 2) {
+            f32(*world)[4] = (f32(*)[4]) & rec->unk58;
+
+            func_80113028((f32(*)[4]) & rec->unk18, world);
+            func_80112CD4(slot, world);
+            for (g = 1; g < (u32) m->unk8; g++) {
+                u16 *poly = (u16 *) (uintptr_t) (m->unk4 + (g * 0x14));
+
+                for (c = 0; c < 3; c++) {
+                    u32 vi = poly[c];
+
+                    if (vflags[vi] == 0) {
+                        f32 *out = &pts[vi * 3];
+
+                        func_80112F70(world, out, &orig[vi * 3]);
+                        vflags[vi] = 1;
+                        if (out[0] < mn[0]) {
+                            mn[0] = out[0];
+                        }
+                        if (out[1] < mn[1]) {
+                            mn[1] = out[1];
+                        }
+                        if (out[2] < mn[2]) {
+                            mn[2] = out[2];
+                        }
+                        if (mx[0] < out[0]) {
+                            mx[0] = out[0];
+                        }
+                        if (mx[1] < out[1]) {
+                            mx[1] = out[1];
+                        }
+                        if (mx[2] < out[2]) {
+                            mx[2] = out[2];
+                        }
+                    }
+                }
+            }
+            for (k = 1; k < (u32) m->unk18; k++) {
+                f32 *src = (f32 *) (uintptr_t) (rec->unk8 + (k * 0x10));
+                f32 *dst = (f32 *) (uintptr_t) (m->unk14 + (k * 0x10));
+                f32 *pt = (f32 *) (uintptr_t) ptrefs[k];
+                f32 x = src[0];
+                f32 y = src[1];
+                f32 z = src[2];
+
+                dst[0] = (world[0][0] * x) + (world[1][0] * y) +
+                         (world[2][0] * z);
+                dst[1] = (world[0][1] * x) + (world[1][1] * y) +
+                         (world[2][1] * z);
+                dst[2] = (world[0][2] * x) + (world[1][2] * y) +
+                         (world[2][2] * z);
+                dst[3] = -((dst[0] * pt[0]) + (dst[1] * pt[1]) +
+                           (dst[2] * pt[2]));
+            }
+        } else {
+            f32 px = gEntitiesNextPosXArray[slot];
+            f32 py = gEntitiesNextPosYArray[slot];
+            f32 pz = gEntitiesNextPosZArray[slot];
+
+            for (g = 1; g < (u32) m->unk8; g++) {
+                u16 *poly = (u16 *) (uintptr_t) (m->unk4 + (g * 0x14));
+
+                for (c = 0; c < 3; c++) {
+                    u32 vi = poly[c];
+
+                    if (vflags[vi] == 0) {
+                        s16 *in = &orig[vi * 3];
+                        f32 *out = &pts[vi * 3];
+
+                        out[0] = (f32) in[0] + px;
+                        out[1] = (f32) in[1] + py;
+                        out[2] = (f32) in[2] + pz;
+                        vflags[vi] = 1;
+                        if (out[0] < mn[0]) {
+                            mn[0] = out[0];
+                        }
+                        if (out[1] < mn[1]) {
+                            mn[1] = out[1];
+                        }
+                        if (out[2] < mn[2]) {
+                            mn[2] = out[2];
+                        }
+                        if (mx[0] < out[0]) {
+                            mx[0] = out[0];
+                        }
+                        if (mx[1] < out[1]) {
+                            mx[1] = out[1];
+                        }
+                        if (mx[2] < out[2]) {
+                            mx[2] = out[2];
+                        }
+                    }
+                }
+            }
+            for (k = 1; k < (u32) m->unk18; k++) {
+                f32 *src = (f32 *) (uintptr_t) (rec->unk8 + (k * 0x10));
+                f32 *dst = (f32 *) (uintptr_t) (m->unk14 + (k * 0x10));
+                f32 *pt = (f32 *) (uintptr_t) ptrefs[k];
+
+                dst[0] = src[0];
+                dst[1] = src[1];
+                dst[2] = src[2];
+                dst[3] = -((src[0] * pt[0]) + (src[1] * pt[1]) +
+                           (src[2] * pt[2]));
+            }
+        }
+        rec->unkA0 = mn[0];
+        rec->unkA4 = mn[1];
+        rec->unkA8 = mn[2];
+        rec->unkAC = mx[0];
+        rec->unkB0 = mx[1];
+        rec->unkB4 = mx[2];
+    }
+    func_8010DD8C();
+    omCurrentProc->entryPoint = func_801133C8;
+    omCurrentProc->payload.callback = func_801133C8;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80113F08.s")
+#endif
 
 void func_80114974(void) {
     struct GObj *sp1C;
@@ -768,6 +1100,18 @@ s32 func_80114DBC(s32 arg0, s32 arg1) {
     void *temp;
     struct Unk80124E14 *p;
 
+#ifdef PORT
+    /* PORT guard: the 0x115-record dispose-model table at D_80124E14
+     * (N64 stride 0x1C) reaches this build scattered across the split
+     * data symbols D_80124E14/D_80124E24/D_80124E2C/D_80124E2E, and
+     * struct Unk80124E14 widens to 0x28 on LP64 -- so this indexed read
+     * (and the ~20 other D_80124E14 readers in this file) lands on
+     * unrelated words. Reconstructing the table natively is the real fix;
+     * until then, report "no model" for every id: func_800FD088's bank-5
+     * scenery walk treats 0 as spawn-nothing and carries on. Level
+     * destructible props are absent; nothing else depends on this path. */
+    return 0;
+#endif
     if ((u32) arg0 < 0x115) {
         p = &D_80124E14[arg0];
         val = p->unk0;
