@@ -23,20 +23,26 @@ arm (`#ifdef PORT` or `#elif defined(PORT)`), possibly with an old
    NEVER copy the PORT arm's body — it contains LP64-isms (widened 8-byte anim
    cells, host struct offsets, pc_probe_* calls, uintptr_t) that are WRONG for
    the N64. The PORT arm is a semantics reference only.
-3. Place the draft guarded at the site, N64 spelling only:
+3. ITERATE UNGUARDED. verify.py compiles the file exactly as the matching
+   build does — a guarded draft is INVISIBLE to it ("unverifiable"). So while
+   iterating, the draft temporarily REPLACES the pragma (plain function, no
+   guard; externs/prototypes it needs go INSIDE the function body). Keep the
+   PORT arm's guard structure around it untouched aside from that swap.
+4. Verify: `python3 tools/decomp/verify.py src/<file>.c <func>` (from repo
+   root). Iterate with LEVERS levers. Time-box: if after ~6 focused compile
+   iterations the residue is register-shaped (regalloc/one-slot rotation/
+   callee-saved permutation), STOP and RE-GUARD into the exit shape:
      #ifdef MIPS_TO_C
-     <draft — all externs/prototypes it needs go INSIDE the function/guard>
+     /* FACTORY: <matched>/<total>, <residue kind> */
+     <draft>
      #elif defined(PORT)
      <the existing PORT arm, unchanged>
      #else
      #pragma GLOBAL_ASM(...)
      #endif
-4. Verify: `python3 tools/decomp/verify.py src/<file>.c <func>` (from repo
-   root). Iterate with LEVERS levers. Time-box: if after ~6 focused compile
-   iterations the residue is register-shaped (regalloc/one-slot rotation/
-   callee-saved permutation), STOP — leave the guarded draft with a comment
-   `/* FACTORY: <matched>/<total>, <residue kind> */` above the function and
-   move on. That is a success (permuter fuel), not a failure.
+   That is a success (permuter fuel), not a failure. NEVER leave a file at
+   handoff with an unguarded non-matching function — that silently corrupts
+   the ROM build.
 5. On MATCH (verify.py prints MATCH for the function):
    a. Screen the tail (LAST `.size` anchor; trailing nops = padding trap —
       if trapped, do NOT un-guard; keep the guarded MATCH with a
@@ -71,3 +77,18 @@ Per function: MATCHED (un-guarded, PORT arm deleted/kept-minimal) |
 FACTORY-QUEUED (score, residue kind) | PADDING-TRAPPED (MATCH, needs yaml pad)
 | BLOCKED (why). Plus: verify.py --all regression status per file, PC object
 build status per file.
+
+## Calibration from the first re-founded batch (fault.c, ovl4_2.c)
+
+- The common exit state is a draft with the EXACT target instruction count
+  whose only residue is a register-naming cascade (saved-reg role swaps,
+  neighbour-register CSE) and/or a +8/+16 frame delta. That is a GOOD seed —
+  seal it with the FACTORY note; the permuter exists for precisely this.
+- Levers that paid off: parameters mutated in place instead of var_s copies
+  (homes them in saved regs); m2c's goto/duplicated-delay-slot shapes kept
+  literally; scalars split around big stack structs to hit the ROM's struct
+  base (lever 12/13); block-scope prototypes must MATCH any earlier
+  block-scope declaration in the file (IDO treats them as file-scope).
+- verify.py needs the pragma line ABSENT while iterating (it classifies any
+  function whose pragma appears anywhere in the file text as unverifiable).
+  Park it as a comment, restore it when sealing.
