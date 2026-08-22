@@ -908,7 +908,130 @@ void func_80153C3C_ovl4(struct GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 379/385, exact insn count; whole-function saved-reg naming
+ * cascade (s1/s2, s6/s7 role swaps) + 16-byte frame delta. Structure and
+ * every operation verified against the asm. */
+void func_80153C78_ovl4(void) {
+    struct MapCurTbl { u32 w[6][2]; };
+    extern u32 D_8015A760_ovl4[];
+    void func_8015427C_ovl4(struct GObj *);
+    void func_800A9864(void *, s32, s32);
+    void func_800A9F98(s32, f32);
+    void func_800AF408(void);
+    void animUpdateModelTreeAnimation(struct GObj *);
+    f32 atan2f(f32, f32);
+    struct MapCurTbl sp98;
+    Vector sp8C;
+    Vector sp80;
+    DObj *var_v0;
+    f32 temp_f0;
+    f32 var_f12;
+    f32 var_f14;
+    f32 var_f20;
+    f32 var_f22;
+
+    sp98 = *(struct MapCurTbl *) D_8015A760_ovl4;
+    D_8015C6A0_ovl4 = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800DF150[omCurrentObj->objId] = func_8015427C_ovl4;
+    func_800A9864((void *) sp98.w[D_800D6B98][0], 0x1869F, 0x10);
+    func_800A9F98(sp98.w[D_800D6B98][1], (f32) D_800E9FE0[D_8015C698_ovl4].as_u32);
+    if (D_800E9FE0[D_8015C698_ovl4].as_u32 == 0) {
+        animUpdateModelTreeAnimation(D_800DE350[omCurrentObj->objId]);
+    }
+    func_800AF408();
+loop_3:
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        D_800E9AA0[D_8015C698_ovl4] = (struct EntityThing800E9AA0 *) 1;
+        var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+        sp8C.x = var_v0->pos.v.x;
+        sp8C.y = var_v0->pos.v.y;
+        sp8C.z = var_v0->pos.v.z;
+        func_800A9F98(sp98.w[D_800D6B98][1], (f32) D_800E9FE0[D_8015C698_ovl4].as_u32);
+        if (D_800E9FE0[D_8015C698_ovl4].as_u32 == 0) {
+            animUpdateModelTreeAnimation(D_800DE350[omCurrentObj->objId]);
+        }
+        var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+        sp80.x = var_v0->pos.v.x;
+        sp80.y = var_v0->pos.v.y;
+        sp80.z = var_v0->pos.v.z;
+        func_800AF408();
+        var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+        var_v0->pos.v.x = sp8C.x;
+        var_v0->pos.v.y = sp8C.y;
+        var_v0->pos.v.z = sp8C.z;
+        if (sp80.z < sp8C.z) {
+            var_f12 = -(sp80.z - sp8C.z);
+        } else {
+            var_f12 = sp80.z - sp8C.z;
+        }
+        if (sp80.x < sp8C.x) {
+            var_f14 = -(sp80.x - sp8C.x);
+        } else {
+            var_f14 = sp80.x - sp8C.x;
+        }
+        temp_f0 = atan2f(var_f12, var_f14);
+        if (sp8C.x < sp80.x) {
+            var_f22 = cosf(temp_f0) * 50.0f;
+        } else {
+            var_f22 = -(cosf(temp_f0) * 50.0f);
+        }
+        if (sp8C.z < sp80.z) {
+            var_f20 = sinf(temp_f0) * 50.0f;
+        } else {
+            var_f20 = -(sinf(temp_f0) * 50.0f);
+        }
+loop_18:
+        var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+        if (sp80.x != var_v0->pos.v.x) {
+            var_v0->pos.v.x += var_f22;
+            if (var_f22 > 0.0f) {
+                var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+                if (sp80.x < var_v0->pos.v.x) {
+                    var_v0->pos.v.x = sp80.x;
+                    var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+                }
+            } else {
+                var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+                if (var_v0->pos.v.x < sp80.x) {
+                    var_v0->pos.v.x = sp80.x;
+                    var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+                }
+            }
+        }
+        if (sp80.z != var_v0->pos.v.z) {
+            var_v0->pos.v.z += var_f20;
+            if (var_f20 > 0.0f) {
+                var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+                if (sp80.z < var_v0->pos.v.z) {
+                    var_v0->pos.v.z = sp80.z;
+                    var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+                }
+            } else {
+                var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+                if (var_v0->pos.v.z < sp80.z) {
+                    var_v0->pos.v.z = sp80.z;
+                    var_v0 = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
+                }
+            }
+        }
+        if (sp80.x != var_v0->pos.v.x) {
+block_33:
+            D_800E9AA0[D_8015C698_ovl4] = (struct EntityThing800E9AA0 *) 1;
+            ohSleep(1);
+            goto loop_18;
+        }
+        if (sp80.z != var_v0->pos.v.z) {
+            goto block_33;
+        }
+        D_800E98E0[omCurrentObj->objId] = 0;
+        goto loop_3;
+    }
+    ohSleep(1);
+    goto loop_3;
+}
+#elif defined(PORT)
 /* Functional port of the map-cursor glide proc (dispatch state 15). Ported
  * from the asm; no sketch existed. D_8015A760_ovl4 is a [6 planets]{art,img}
  * pair table of u32 track-descriptor ids (plain u32[] in the PC data, safe
@@ -1040,7 +1163,109 @@ f32 func_801542B8_ovl4(s32 arg0, s32 arg1) {
     return t;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 237/302, exact insn count; saved-reg naming cascade (s3/s4,
+ * s7/s8) + 16-byte frame delta. All operations verified against the asm. */
+void func_801543C8_ovl4(void) {
+    extern s32 D_8015A93C_ovl4;
+    extern u32 D_8015A940_ovl4[];
+    void func_80154880_ovl4(struct GObj *);
+    void func_800A9864(void *, s32, s32);
+    void func_800A9F98(s32, f32);
+    f32 func_801542B8_ovl4(s32, s32);
+    Vector sp7C;
+    GObj *temp_a1;
+    u32 vid;
+    s32 var_s7;
+    s32 var_a0;
+    u32 var_v0;
+    f32 var_f0;
+
+    var_s7 = 1;
+    D_800DF150[omCurrentObj->objId] = func_80154880_ovl4;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    func_800A9864((void *) D_8015A93C_ovl4, 0x1869F, 0x10);
+    temp_a1 = omCurrentObj;
+    var_v0 = D_800E9FE0[D_8015C698_ovl4].as_u32;
+    D_800E98E0[temp_a1->objId] = var_v0 + 1;
+    while (1) {
+        vid = temp_a1->objId;
+        var_a0 = D_800E98E0[vid];
+        if (var_a0 != var_v0) {
+            D_800E98E0[vid] = var_v0;
+            vid = temp_a1->objId;
+            var_a0 = D_800E98E0[vid];
+            if ((var_a0 == 0x29A) || (var_a0 == 0)) {
+                var_f0 = gEntitiesScaleXArray[vid];
+                if (var_f0 > 0.0f) {
+                    do {
+                        gEntitiesScaleXArray[vid] = var_f0 + -0.4f;
+                        gEntitiesScaleYArray[temp_a1->objId] += -0.4f;
+                        gEntitiesScaleZArray[temp_a1->objId] += -0.4f;
+                        if (gEntitiesScaleXArray[temp_a1->objId] < 0.0f) {
+                            gEntitiesScaleXArray[temp_a1->objId] = 0.0f;
+                            gEntitiesScaleYArray[temp_a1->objId] = 0.0f;
+                            gEntitiesScaleZArray[temp_a1->objId] = 0.0f;
+                        }
+                        ohSleep(1);
+                        vid = omCurrentObj->objId;
+                        var_f0 = gEntitiesScaleXArray[vid];
+                    } while (var_f0 > 0.0f);
+                    var_a0 = D_800E98E0[vid];
+                }
+            } else {
+                if (var_s7 != 0) {
+                    var_s7 = 0;
+                } else {
+                    play_sound(0x277);
+                    vid = omCurrentObj->objId;
+                    var_f0 = gEntitiesScaleXArray[vid];
+                    if (var_f0 > 0.0f) {
+                        do {
+                            gEntitiesScaleXArray[vid] = var_f0 + -0.4f;
+                            gEntitiesScaleYArray[omCurrentObj->objId] += -0.4f;
+                            gEntitiesScaleZArray[omCurrentObj->objId] += -0.4f;
+                            if (gEntitiesScaleXArray[omCurrentObj->objId] < 0.0f) {
+                                gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
+                                gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
+                                gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+                            }
+                            ohSleep(1);
+                            vid = omCurrentObj->objId;
+                            var_f0 = gEntitiesScaleXArray[vid];
+                        } while (var_f0 > 0.0f);
+                    }
+                }
+                func_800A9F98(D_8015A940_ovl4[1], func_801542B8_ovl4(D_800D6B98, D_800E98E0[vid] - 1));
+                func_80152444_ovl4(&sp7C, D_800D6B98, D_800E98E0[omCurrentObj->objId] - 1);
+                gEntitiesNextPosXArray[omCurrentObj->objId] = sp7C.x;
+                gEntitiesNextPosYArray[omCurrentObj->objId] = sp7C.y;
+                gEntitiesNextPosZArray[omCurrentObj->objId] = sp7C.z;
+                vid = omCurrentObj->objId;
+                var_a0 = D_800E98E0[vid];
+            }
+        }
+        if (var_a0 != 0x29A) {
+            if (var_a0 != 0) {
+                var_f0 = gEntitiesScaleXArray[vid];
+                if (var_f0 < 1.0f) {
+                    gEntitiesScaleXArray[vid] = var_f0 + 0.4f;
+                    gEntitiesScaleYArray[temp_a1->objId] += 0.4f;
+                    gEntitiesScaleZArray[temp_a1->objId] += 0.4f;
+                    if (gEntitiesScaleXArray[temp_a1->objId] > 1.0f) {
+                        gEntitiesScaleXArray[temp_a1->objId] = 1.0f;
+                        gEntitiesScaleYArray[temp_a1->objId] = 1.0f;
+                        gEntitiesScaleZArray[temp_a1->objId] = 1.0f;
+                    }
+                }
+            }
+        }
+        ohSleep(1);
+        var_v0 = D_800E9FE0[D_8015C698_ovl4].as_u32;
+    }
+}
+#elif defined(PORT)
 /* Functional port of the crystal-shard info panel proc (dispatch state 13).
  * Ported from the asm; no sketch existed. D_8015A93C_ovl4/D_8015A940_ovl4
  * are u32 track-descriptor ids in the PC data (safe on LP64). Role: shows
@@ -1139,7 +1364,112 @@ void func_80154880_ovl4(struct GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 298/313, exact insn count; same saved-reg naming cascade as its
+ * clone func_801543C8_ovl4 (s3/s4 swap, +16 frame). */
+void func_801548BC_ovl4(void) {
+    extern s32 D_8015A948_ovl4;
+    extern u32 D_8015A94C_ovl4[];
+    void func_80154DA0_ovl4(struct GObj *);
+    void func_800A9864(void *, s32, s32);
+    void func_800A9F98(s32, f32);
+    Vector sp7C;
+    GObj *temp_a1;
+    u32 vid;
+    s32 var_fp;
+    s32 var_a0;
+    u32 var_a2;
+    f32 var_f0;
+
+    var_fp = 1;
+    D_800DF150[omCurrentObj->objId] = func_80154DA0_ovl4;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    func_800A9864((void *) D_8015A948_ovl4, 0x1869F, 0x10);
+    temp_a1 = omCurrentObj;
+    var_a2 = D_800E9FE0[D_8015C698_ovl4].as_u32;
+    D_800E98E0[temp_a1->objId] = var_a2 + 1;
+    while (1) {
+        vid = temp_a1->objId;
+        var_a0 = D_800E98E0[vid];
+        if (var_a0 != var_a2) {
+            D_800E98E0[vid] = var_a2;
+            vid = temp_a1->objId;
+            var_a0 = D_800E98E0[vid];
+            if ((var_a0 == 0x29A) || (var_a0 == 0)) {
+                var_f0 = gEntitiesScaleXArray[vid];
+                if (var_f0 > 0.0f) {
+                    do {
+                        gEntitiesScaleXArray[vid] = var_f0 + -0.4f;
+                        gEntitiesScaleYArray[temp_a1->objId] += -0.4f;
+                        gEntitiesScaleZArray[temp_a1->objId] += -0.4f;
+                        if (gEntitiesScaleXArray[temp_a1->objId] < 0.0f) {
+                            gEntitiesScaleXArray[temp_a1->objId] = 0.0f;
+                            gEntitiesScaleYArray[temp_a1->objId] = 0.0f;
+                            gEntitiesScaleZArray[temp_a1->objId] = 0.0f;
+                        }
+                        ohSleep(1);
+                        vid = omCurrentObj->objId;
+                        var_f0 = gEntitiesScaleXArray[vid];
+                    } while (var_f0 > 0.0f);
+                    var_a0 = D_800E98E0[vid];
+                }
+            } else {
+                if (var_fp != 0) {
+                    var_fp = 0;
+                } else {
+                    play_sound(0x277);
+                    vid = omCurrentObj->objId;
+                    var_f0 = gEntitiesScaleXArray[vid];
+                    if (var_f0 > 0.0f) {
+                        do {
+                            gEntitiesScaleXArray[vid] = var_f0 + -0.4f;
+                            gEntitiesScaleYArray[omCurrentObj->objId] += -0.4f;
+                            gEntitiesScaleZArray[omCurrentObj->objId] += -0.4f;
+                            if (gEntitiesScaleXArray[omCurrentObj->objId] < 0.0f) {
+                                gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
+                                gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
+                                gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+                            }
+                            ohSleep(1);
+                            vid = omCurrentObj->objId;
+                            var_f0 = gEntitiesScaleXArray[vid];
+                        } while (var_f0 > 0.0f);
+                    }
+                }
+                if (func_801532CC_ovl4(D_800D6B98, D_800E98E0[vid] - 1) != 0) {
+                    func_800A9F98(D_8015A94C_ovl4[1], 0.0f);
+                } else {
+                    func_800A9F98(D_8015A94C_ovl4[1], (f32) D_800E98E0[omCurrentObj->objId]);
+                }
+                func_80152444_ovl4(&sp7C, D_800D6B98, D_800E98E0[omCurrentObj->objId] - 1);
+                gEntitiesNextPosXArray[omCurrentObj->objId] = sp7C.x;
+                gEntitiesNextPosYArray[omCurrentObj->objId] = sp7C.y;
+                gEntitiesNextPosZArray[omCurrentObj->objId] = sp7C.z;
+                vid = omCurrentObj->objId;
+                var_a0 = D_800E98E0[vid];
+            }
+        }
+        if (var_a0 != 0x29A) {
+            if (var_a0 != 0) {
+                var_f0 = gEntitiesScaleXArray[vid];
+                if (var_f0 < 1.0f) {
+                    gEntitiesScaleXArray[vid] = var_f0 + 0.4f;
+                    gEntitiesScaleYArray[temp_a1->objId] += 0.4f;
+                    gEntitiesScaleZArray[temp_a1->objId] += 0.4f;
+                    if (gEntitiesScaleXArray[temp_a1->objId] > 1.0f) {
+                        gEntitiesScaleXArray[temp_a1->objId] = 1.0f;
+                        gEntitiesScaleYArray[temp_a1->objId] = 1.0f;
+                        gEntitiesScaleZArray[temp_a1->objId] = 1.0f;
+                    }
+                }
+            }
+        }
+        ohSleep(1);
+        var_a2 = D_800E9FE0[D_8015C698_ovl4].as_u32;
+    }
+}
+#elif defined(PORT)
 /* Functional port of the level-number panel proc (dispatch state 14).
  * Ported from the asm; twin of func_801543C8_ovl4 (state 13) with the same
  * shrink/reseek/regrow skeleton, differing only in art (D_8015A948_ovl4 /
