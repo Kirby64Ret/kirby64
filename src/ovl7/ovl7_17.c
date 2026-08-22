@@ -9,7 +9,7 @@
 
 #include "main/object_helpers.h"
 extern s32 D_800D7010[];
-void func_800B74D8();
+void func_800B74D8(GObj *);
 void func_801BF390_ovl7(GObj *);
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -17,10 +17,18 @@ void curObjSleepForever(void);
 
 void func_800B3520(void);
 void func_801A3E80_ovl7(GObj *);
+/* K&R form is load-bearing here: see the long note at its NON_MATCHING/else
+ * call site in func_801C1288_ovl7 below -- the ROM calls this void(void)
+ * function with $a0 already loaded, and only a K&R declaration lets IDO
+ * accept `func_801C0610_ovl7(arg0)` there. */
 void func_801C0610_ovl7();
 extern struct GObjProcess *gEntityGObjProcessArray[];
 
 #include "Player.h"
+/* K&R form is load-bearing here: its real signature is
+ * void func_801C06C8_ovl7(GObj *), but its call site at line ~563 omits the
+ * arg -- the ROM relies on whatever GObj* is already sitting in $a0. An ANSI
+ * prototype breaks compilation with "too few arguments". */
 void func_801C06C8_ovl7();
 void func_800FD570(s32, s32, f32, f32, f32);
 void play_sound(s32);
@@ -35,7 +43,7 @@ extern s32 D_801D0A38_ovl7[];
 void func_801A3938(void *);
 void func_801A36CC(void *);
 void func_801A3864_ovl7(GObj *);
-s32 func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7(GObj *);
 s32 func_801117BC(void *, u32);
 void func_80111C4C(s32);
 void func_801AC11C_ovl7(GObj *);
@@ -69,7 +77,7 @@ void func_801ABBA0_ovl7(void);
 void func_801AAE60_ovl7(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
-void func_800AA018();
+void func_800AA018(s32);
 void func_801C2264_ovl7(GObj *);
 void func_801C2478_ovl7(GObj *);
 void func_801C26BC_ovl7(GObj *);

@@ -1016,11 +1016,19 @@ void func_8009C44C(UnkParticle *pc, DObj *dobj, f32 magnitude) {
 
 /* RE-FOUNDATION STATUS, func_8009C4E0 -- BLOCKED, not attempted as a draft.
  * 2394 instructions, the largest function in this overlay (the particle
- * bytecode interpreter). Same two blockers as func_8009E8F4 below: the m2c
- * sketch is `? *`-typed at the signature and `void *`-plus-`->unkNN`
- * throughout, so it neither compiles nor scores, and the real work is naming
- * the opcode records it walks before any matching attempt is meaningful.
- * The PORT arm is the asm-derived semantic reference for the opcode set. */
+ * bytecode interpreter).
+ *
+ * PREREQUISITE NOW MET: the opcode space it dispatches is enumerated as
+ * PARTICLE_OP_* (47 arms read off jtbl_800D5664, including the sub-0x80 wait
+ * encoding and the two masked groups), the flag word it manipulates is
+ * PARTICLE_FLAG_*, and UnkParticle / UnkGenerator / UnkScript are named and
+ * offset-locked. The PORT arm below now reads in those names and is the
+ * asm-derived semantic reference for every arm.
+ *
+ * The m2c sketch below remains unusable as a starting point -- `? *` at the
+ * signature, `void *` plus `->unkNN` throughout, so it neither compiles nor
+ * scores -- and the QUALITY BAR rules out pasting it. A draft should be
+ * written from the PORT arm plus the listing. */
 #ifdef MIPS_TO_C
 
 ? *func_8009C4E0(? *arg0, ? *arg1, s32 arg2) {
@@ -2662,24 +2670,23 @@ void func_8009E834(GObj *arg0) {
 /* RE-FOUNDATION STATUS, func_8009E8F4 -- BLOCKED, not attempted as a draft.
  * 1823 instructions (the 2D particle renderer: project, NDC-cull, load the
  * frame's texture and CI palette out of the D_800D6A98 banks, then emit a raw
- * RDP TEXRECT with prim-colour/combiner/render-mode tracking). Two reasons
- * this is not a time-boxed job, both concrete:
- *   1. The m2c sketch below does NOT compile and cannot be scored: it types
- *      every record as `void *` and then reads `->unkNN` off it -- 265 such
- *      references. Turning it into a draft means naming the particle, emitter
- *      and texture-header records first, which is the kind of type work the
- *      QUALITY BAR asks for and is worth doing on its own, before any
- *      matching attempt.
- *   2. At this size the first compile is worth nothing without those types:
- *      the frame alone is 0x350 with 12 saved registers and six saved FP
- *      pairs, so a mis-sized local block offsets the entire body.
- * What IS already solved and should be reused: the PORT arm below was
- * derived FROM this listing (not from the sketch) and documents the pipeline,
- * the bank/texture lookup, the power-of-two mask tables jtbl_800D58B4 /
- * jtbl_800D5930, and the emitter's cached mtx2/normX/normY path. The N64
- * spelling differs from it only in the usual places: 4-byte table strides,
- * s32 addresses, no pc_* helpers, and Gfx writes through the raw command
- * words rather than the host builder. */
+ * RDP TEXRECT with prim-colour/combiner/render-mode tracking).
+ *
+ * PREREQUISITE NOW MET: every record it touches is named and offset-locked --
+ * UnkParticle, UnkEmitter (mtx / mtx2 / normX / normY, previously hidden
+ * behind pad2C[0x88]), UnkTexture, and the PARTICLE_FLAG_* bits it dispatches
+ * on. The PORT arm below reads in those names and is the semantic reference:
+ * it was derived FROM this listing, and documents the pipeline, the
+ * bank/texture lookup, the power-of-two mask tables jtbl_800D58B4 /
+ * jtbl_800D5930 and the emitter's cached-matrix path.
+ *
+ * Still not a time-boxed matching job, and the m2c sketch below is still not
+ * the starting point: it types every record as `void *` and reads `->unkNN`
+ * off it, so it does not compile and cannot be scored, and the QUALITY BAR
+ * rules out pasting it. A draft should be written from the PORT arm plus the
+ * listing, in N64 spelling (4-byte table strides, s32 addresses, no pc_*
+ * helpers, Gfx writes through the raw command words). Expect the frame to be
+ * the hard part: 0x350 with 12 saved registers and six saved FP pairs. */
 #ifdef MIPS_TO_C
 void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
     s32 sp348;

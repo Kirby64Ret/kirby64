@@ -38,7 +38,130 @@ extern s32 D_8012E7FC;
 #include "unk_structs/D_800E1B50.h"
 extern void func_8015449C_ovl3(u8 *, s32);
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 27/308, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming, the goto done: label is a shared cleanup path, not a ladder) so it seals verbatim. Queued for the permuter. */
+/* PORT: the ability dash-attack coroutine (track action 0x28, model
+ * 0x20013), from asm/nonmatchings/ovl3/ovl3_6/func_8017CF60_ovl3.s (via
+ * m2c). Arms the ability, installs the 0x28 anim-pointer table and the
+ * D_80190580 PlyEntry handle, kills vertical motion, gives Kirby a 0.5
+ * forward drift with a 10.0 speed cap (5.0 in water), and one-shots anim
+ * 0x201B8. It then rides two func_800AF230-polled anim phases (0x201B8
+ * windup, then 0x201B9 with state word unk44 = 1) into a D_800E9720
+ * countdown (0x14 frames on land, 0xF in water); a scripted-control grab
+ * (unk17) at any point zeroes the drive and skips ahead. The exit path
+ * plays 0x201BA, releases the sound/ability locks, triples the leftover
+ * drift out of water, burns the ability charge via func_8011D614 and
+ * parks on the skid pair 0x20188/0x20189.
+ *
+ * Port notes: the ROM's redundant ABS ladder is just the positive dash
+ * speed; all four 65535.0f caps are the D_80197664..70 rodata cells
+ * inlined; func_800AA018/func_800AA154 take one s32 (m2c's extra float
+ * and GObj args are leftover registers); the second func_800AA018 arg is
+ * the float-bit garble 0x201B9. */
+void func_8017CF60_ovl3(s32 arg0) {
+    extern f32 *D_801928D8_ovl3[];
+    extern u8 D_80190580_ovl3[];
+    /* func_800AA018/func_800AA154 stay implicitly declared: later PC-visible
+     * functions in this TU call them without a prototype, and gnu90 folds
+     * those to int(). */
+    s32 func_800AF230(void);
+    void func_8011E0E8(void);
+    void func_80120A28(void);
+    void func_8011D614(void);
+    void ohSleep(s32);
+    void curObjSleepForever(void);
+    s32 id;
+    s32 pre;
+    f32 spd;
+
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk4C = 0;
+    gKirbyState.unk7 = 0;
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    func_8011CF58();
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    id = omCurrentObj->objId;
+    D_800DDFD0[id] = 0x28;
+    D_800E0490[id] = D_801928D8_ovl3;
+    gKirbyState.unk15C = (u32) (uintptr_t) D_80190580_ovl3;
+    gKirbyState.unk44 = 0;
+    func_8011DC04(0xAA);
+    func_80122F08(0x20013);
+    gKirbyState.unk154 = 2;
+    id = omCurrentObj->objId;
+    D_800E3750[id] = 0.0f;
+    D_800E3210[id] = D_800E3750[id];
+    D_800E3C90[id] = 65535.0f;
+    id = omCurrentObj->objId;
+    D_800E6690[id] = D_800E6A10[id] * 0.5f;
+    id = omCurrentObj->objId;
+    if (!(D_800E8AE0[id] & 6)) {
+        spd = 10.0f;
+    } else {
+        spd = 5.0f;
+    }
+    D_800E6850[id] = spd;
+    func_800AA018(0x201B8);
+    while (func_800AF230() == 0) {
+        if (gKirbyState.unk17 != 0) {
+            id = omCurrentObj->objId;
+            D_800E6690[id] = 0.0f;
+            D_800E64D0[id] = D_800E6690[id];
+            D_800E6850[id] = 65535.0f;
+            goto done;
+        }
+        ohSleep(1);
+    }
+    gKirbyState.unk44 = 1;
+    func_800AA018(0x201B9);
+    while (func_800AF230() == 0) {
+        if (gKirbyState.unk17 != 0) {
+            id = omCurrentObj->objId;
+            D_800E6690[id] = 0.0f;
+            D_800E64D0[id] = D_800E6690[id];
+            D_800E6850[id] = 65535.0f;
+            goto done;
+        }
+        ohSleep(1);
+    }
+    id = omCurrentObj->objId;
+    if (!(D_800E8AE0[id] & 6)) {
+        D_800E9720[id] = 0x14;
+    } else {
+        D_800E9720[id] = 0xF;
+    }
+    pre = D_800E9720[id];
+    D_800E9720[id] = pre - 1;
+    while (pre != 0) {
+        if (gKirbyState.unk17 != 0) {
+            id = omCurrentObj->objId;
+            D_800E6690[id] = 0.0f;
+            D_800E64D0[id] = D_800E6690[id];
+            D_800E6850[id] = 65535.0f;
+            break;
+        }
+        ohSleep(1);
+        id = omCurrentObj->objId;
+        pre = D_800E9720[id];
+        D_800E9720[id] = pre - 1;
+    }
+done:
+    gKirbyState.unk44 = -1;
+    func_800AA154(0x201BA);
+    func_8011DC5C();
+    func_8011E0E8();
+    gKirbyState.abilityInUse = 0;
+    func_80120A28();
+    id = omCurrentObj->objId;
+    if (!(D_800E8AE0[id] & 6)) {
+        D_800E6690[id] *= 3.0f;
+    }
+    func_8011D614();
+    func_801230E8(0x20188, 0x20189, 1);
+    gKirbyState.unk30 += 1;
+    curObjSleepForever();
+}
+#elif defined(PORT)
 /* PORT: the ability dash-attack coroutine (track action 0x28, model
  * 0x20013), from asm/nonmatchings/ovl3/ovl3_6/func_8017CF60_ovl3.s (via
  * m2c). Arms the ability, installs the 0x28 anim-pointer table and the
@@ -773,7 +896,124 @@ void func_8017E284_ovl3(s32 arg0)
   gKirbyState.unk30 += 1;
   curObjSleepForever();
 }
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 29/303, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming) so it seals verbatim. Queued for the permuter. */
+/* PORT: the ability ride/jump per-tick handler (paired with the 0x2B
+ * coroutine above), from asm/nonmatchings/ovl3/ovl3_6/func_8017E54C_ovl3.s
+ * (via m2c). Services base motion (skipping input service while the state
+ * word unk44 is 1), levels the pitch and hands off when the coroutine has
+ * finished (unk30). While the ability is armed it releases the anim lock
+ * once DObj [3]'s flags byte reaches 2; otherwise it decays the windup
+ * pitch gKirbyState.unk40 back to zero. On the ground it kills the drive
+ * and resets unk44; then the jump machine: A (0x8000) pressed on the
+ * ground launches (unk44 = 1) -- a fully submerged launch (water bits
+ * == 6) plays 0x10B with an 8.5 fixed rise, a dry one plays 0xF7 with a
+ * func_80123144(17.0f)-scaled rise -- while airborne it flips to the
+ * descent state (unk44 = 2) at apex, on a ceiling hit, or once rising
+ * speed drops under the unkCC threshold (arming isFullJump). Airborne
+ * with upward speed and no full-jump flag it runs the variable-jump-
+ * height service func_8011EBD4, and always the gravity service
+ * func_8011ED68.
+ *
+ * Port notes: func_8011EBD4/func_8011ED68 are (void) and func_80123144 is
+ * f32(f32) with the float-bit literal 0x41880000 = 17.0f (m2c's
+ * &gKirbyState args are leftover registers); m2c's *(D_800E3210 + id*4)
+ * pointer math is plain D_800E3210[id]; the D_800E8920 value is re-read
+ * fresh at the tail (only this handler writes it in between, so the
+ * re-read equals m2c's threaded var_a0); D_801976A8 is 0.13089969754f
+ * (pi/24) -- kept as the rodata extern spelling the N64 arm above uses;
+ * D_801976AC is 65535.0f and D_801976B0/B4 are the 8.5f/17.0f rise pair
+ * inlined. */
+void func_8017E54C_ovl3(s32 arg0) {
+    extern f32 D_801976A8_ovl3;
+    void func_8011EBD4(void);
+    void func_8011ED68(void);
+    f32 func_80123144(f32);
+    void func_8011E0E8(void);
+    s32 id;
+
+    func_80153984_ovl3();
+    if (gKirbyState.unk44 != 1) {
+        func_801217B8();
+    }
+    if (gKirbyState.unk30 != 0) {
+        gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
+        func_8011D67C();
+        return;
+    }
+    if (gKirbyState.abilityInUse != 0) {
+        if (D_800DFBD0[omCurrentObj->objId][3]->flags == 2) {
+            func_8011E0E8();
+        }
+    } else if (gKirbyState.unk40 != 0.0f) {
+        gKirbyState.unk40 -= D_801976A8_ovl3;
+        if (gKirbyState.unk40 <= 0.0f) {
+            gKirbyState.unk40 = 0.0f;
+        }
+        gEntitiesAngleXArray[omCurrentObj->objId] = -gKirbyState.unk40;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E8920[id] != 0) {
+        D_800E6690[id] = 0.0f;
+        id = omCurrentObj->objId;
+        D_800E64D0[id] = D_800E6690[id];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
+        gKirbyState.unk44 = 0;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] != 0) {
+        if (D_800E8920[id] != 0) {
+            if (gKirbyState.isFullJump == 0) {
+                if (gKirbyController.buttonPressed & 0x8000) {
+                    gKirbyState.unk44 = 1;
+                    D_800E8920[omCurrentObj->objId] = 0;
+                    if ((D_800E8AE0[omCurrentObj->objId] & 6) == 6) {
+                        play_sound(0x10B);
+                        gKirbyState.unkCC = 4.0f;
+                        D_800E3210[omCurrentObj->objId] = 8.5f;
+                        D_800E3750[omCurrentObj->objId] = 8.5f;
+                        D_800E3C90[omCurrentObj->objId] = 8.5f;
+                    } else {
+                        play_sound(0xF7);
+                        gKirbyState.unkCC = 8.0f;
+                        D_800E3210[omCurrentObj->objId] = func_80123144(17.0f);
+                        D_800E3750[omCurrentObj->objId] = 17.0f;
+                        D_800E3C90[omCurrentObj->objId] = 16.0f;
+                    }
+                }
+            } else {
+                gKirbyState.isFullJump = 0;
+                gKirbyState.jumpHeight = 0;
+            }
+        } else {
+            f32 vel = D_800E3210[id];
+
+            if (vel > 0.0f) {
+                if ((vel < gKirbyState.unkCC) && (gKirbyState.isFullJump == 0)) {
+                    gKirbyState.isFullJump += 1;
+                    gKirbyState.unk44 = 2;
+                }
+                if (gKirbyState.ceilingCollisionNext != 0) {
+                    D_800E3210[omCurrentObj->objId] = 0.0f;
+                    gKirbyState.unk44 = 2;
+                }
+            } else if (gKirbyState.isFullJump != 0) {
+                gKirbyState.unk44 = 2;
+            }
+        }
+    } else if ((D_800E8920[id] != 0) && (gKirbyState.isFullJump != 0)) {
+        gKirbyState.isFullJump = 0;
+        gKirbyState.jumpHeight = 0;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E8920[id] == 0) {
+        if ((D_800E3210[id] > 0.0f) && (gKirbyState.isFullJump == 0)) {
+            func_8011EBD4();
+        }
+        func_8011ED68();
+    }
+}
+#elif defined(PORT)
 /* PORT: the ability ride/jump per-tick handler (paired with the 0x2B
  * coroutine above), from asm/nonmatchings/ovl3/ovl3_6/func_8017E54C_ovl3.s
  * (via m2c). Services base motion (skipping input service while the state
@@ -2046,7 +2286,112 @@ void func_801810D0_ovl3(s32 arg0) {
     }
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 24/313, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming) so it seals verbatim. Queued for the permuter. */
+/* PORT: the burning-dash coroutine (track action 0x30, model 0x20014),
+ * from asm/nonmatchings/ovl3/ovl3_6/func_80181110_ovl3.s (via m2c).
+ * Clears the wall-bounce latch D_800E9AA0, kills vertical motion when
+ * grounded, plays 0xBB, stages the D_80190378 then D_80190670 PlyEntry
+ * handles around the 0x201BB/0x201BC pair, arms the ability with the
+ * D_8019297C anim table, spawns the 0x3E/0x3F flame effects on DObj
+ * [1]/[2] and the 0xC6 loop voice, then launches: |speed|*1.5 (min 5.0
+ * in water at |v|<=1.5, min 7.0 on land at |v|<=4.0) staged through the
+ * D_800D7238 scratch times the facing sign, with a 0.025*facing drift
+ * and a zero cap so friction burns it down. It then rides the dash
+ * until the track stops, a scripted grab lands, or B is pressed,
+ * re-boosting the drift by 1.2x under speed 4 (1.25x under 2 in water),
+ * and exits through the lock releases, the 0x24B stop sound, the
+ * charge burn func_8011D614 and the 0x201BD/0x201BE pair.
+ *
+ * Port notes: m2c's `&D_800D71E8 + 0x50` staging cell is the f32
+ * scratch D_800D7238; D_800DFBD0[...]->unk4/unk8 are DObj list entries
+ * [1]/[2]; D_80197718/1C/20 are 65535.0f / 0.025f / 1.2f inlined; the
+ * D_800E9AA0 cells are the MultiType union accessed .as_u32 (m2c's *4
+ * byte offsets would mis-stride the 8-byte PC cells). */
+void func_80181110_ovl3(s32 arg0) {
+    void func_8011D614(void);
+    extern f32 D_800D7238;
+    extern u8 D_80190378_ovl3[];
+    extern u8 D_80190670_ovl3[];
+    extern f32 *D_8019297C_ovl3[];
+    f32 lim;
+    f32 mul;
+    s32 id;
+
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+    gKirbyState.unk7 = 0;
+    gKirbyState.unk30 = D_800E9AA0[omCurrentObj->objId].as_u32;
+    func_8011CF58();
+    D_800DDFD0[omCurrentObj->objId] = 0x30;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    id = omCurrentObj->objId;
+    if (D_800E8920[id] != 0) {
+        D_800E3750[id] = 0.0f;
+        id = omCurrentObj->objId;
+        D_800E3210[id] = D_800E3750[id];
+        D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    }
+    play_sound(0xBB);
+    gKirbyState.unk15C = (u32) (uintptr_t) D_80190378_ovl3;
+    func_801230E8(0x201BB, 0x201BC, 1);
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    D_800E0490[omCurrentObj->objId] = D_8019297C_ovl3;
+    gKirbyState.unk15C = (u32) (uintptr_t) D_80190670_ovl3;
+    func_80122F08(0x20014);
+    gKirbyState.unk154 = 1;
+    gKirbyState.unk4C = func_800A8100(2, 1, 0x3E, D_800DFBD0[omCurrentObj->objId][1]);
+    gKirbyState.unk50 = func_800A8100(2, 1, 0x3F, D_800DFBD0[omCurrentObj->objId][2]);
+    func_8011DC04(0xC6);
+    id = omCurrentObj->objId;
+    if (D_800E8AE0[id] & 6) {
+        if (ABSF(D_800E64D0[id]) > 1.5f) {
+            D_800D7238 = ABSF(D_800E64D0[id] * 1.5f);
+        } else {
+            D_800D7238 = 5.0f;
+        }
+    } else {
+        if (ABSF(D_800E64D0[id]) > 4.0f) {
+            D_800D7238 = ABSF(D_800E64D0[id] * 1.5f);
+        } else {
+            D_800D7238 = 7.0f;
+        }
+    }
+    id = omCurrentObj->objId;
+    D_800E64D0[id] = D_800E6A10[id] * D_800D7238;
+    id = omCurrentObj->objId;
+    D_800E6690[id] = D_800E6A10[id] * 0.025f;
+    D_800E6850[omCurrentObj->objId] = 0.0f;
+    id = omCurrentObj->objId;
+    while (D_800E64D0[id] != 0.0f) {
+        if (gKirbyState.unk17 != 0) {
+            break;
+        }
+        if (gKirbyController.buttonPressed & 0x4000) {
+            break;
+        }
+        if (D_800E8AE0[id] & 6) {
+            lim = 2.0f;
+            mul = 1.25f;
+        } else {
+            lim = 4.0f;
+            mul = 1.2f;
+        }
+        if (ABSF(D_800E64D0[id]) < lim) {
+            D_800E6690[id] *= mul;
+        }
+        ohSleep(1);
+        id = omCurrentObj->objId;
+    }
+    func_8011DC5C();
+    func_8011E0E8();
+    play_sound(0x24B);
+    gKirbyState.abilityInUse = 0;
+    func_8011D614();
+    func_801230E8(0x201BD, 0x201BE, 1);
+    gKirbyState.unk30 += 1;
+    curObjSleepForever();
+}
+#elif defined(PORT)
 /* PORT: the burning-dash coroutine (track action 0x30, model 0x20014),
  * from asm/nonmatchings/ovl3/ovl3_6/func_80181110_ovl3.s (via m2c).
  * Clears the wall-bounce latch D_800E9AA0, kills vertical motion when
@@ -2154,7 +2499,7 @@ void func_80181110_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80181110_ovl3.s")
 #endif
 
-#ifdef PORT
+#if 1 /* TESTING */
 /* PORT: the burning-dash (action 0x30) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_801815F4_ovl3.s (via m2c). Latches
  * last tick's surface bits into D_800E98E0 before the alternate tick
@@ -2272,7 +2617,7 @@ void func_801815F4_ovl3(s32 arg0) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_801815F4_ovl3.s")
+/* TESTING pragma parked */
 #endif
 
 extern void func_800AF314(void);
@@ -3872,7 +4217,115 @@ void func_80184C64_ovl3(s32 arg0) {
     }
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 93/311, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming, the goto dispatch: label is a shared re-entry path, not a ladder) so it seals verbatim. Queued for the permuter. */
+/* PORT: the UFO-charge phase coroutine (track action 0x38), from
+ * asm/nonmatchings/ovl3/ovl3_6/func_80184CA4_ovl3.s (via m2c). First
+ * entry arms the ability, clears the 0xD MultiType latch, plays 0xBA
+ * with the 0x2008B/0x2008C intro pair, spawns the 0x24 charge effect
+ * on DObj [2] and queues the 0x2008D/0x2008E hold pair, then charges:
+ * 0x1E held-B ticks complete the transform (release/grab aborts to
+ * phase 5) -- setting the latch, the D_80190874 PlyEntry handle, the
+ * 0x27 effect, the D_80192A8C anim table, a 0x78 flight timer, the
+ * 0x52 loop voice, the 0x20091/0x20092 pair and the func_80185180_ovl3
+ * impact process, entering phase 1. Re-entries dispatch: 1/3 just
+ * park, 2 launches the jump (submerged 0x10B with a fixed 8.5 rise and
+ * -0.4 gravity, dry 0xF7 with a func_80123144(17)-scaled rise), rides
+ * to apex and flips to 3, 4 melts back to the plain tables, 5 cancels
+ * with the 0x2008F/0x20090 pair.
+ *
+ * Port notes: func_80123144 is f32(f32) with 0x41880000 = 17.0f;
+ * m2c's D_800DFBD0[...]->unk8 is DObj list entry [2]; the charge loop
+ * is the ROM's pre-test/post-increment spelling; unk15C takes
+ * (u32)(uintptr_t); func_80185180_ovl3 is forward-declared -- it is
+ * defined just below with exactly the D_800DF310 slot signature. */
+void func_80184CA4_ovl3(s32 arg0) {
+    void func_80185180_ovl3(s32, s32, f32);
+    f32 func_80123144(f32);
+    extern u8 D_80190874_ovl3[];
+    extern f32 *D_80192A8C_ovl3[];
+
+    if (gKirbyState.abilityInUse == 0) {
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk4C = 0;
+        gKirbyState.unk7 = 0;
+        func_8011CF58();
+        gKirbyState.abilityInUse = gKirbyState.ability;
+        D_800DDFD0[omCurrentObj->objId] = 0x38;
+        func_80120A28();
+        D_800EC2E0[func_801693C4_ovl3(0xD)].as_u32 = 0;
+        play_sound(0xBA);
+        gKirbyState.unk3C = 0;
+        gKirbyState.unk44 = 0;
+        func_801230E8(0x2008B, 0x2008C, 1);
+        gKirbyState.unk4C = func_800A8100(1, 1, 0x24, D_800DFBD0[omCurrentObj->objId][2]);
+        func_801230E8(0x2008D, 0x2008E, 0);
+        D_800E9720[omCurrentObj->objId] = 0;
+        while (D_800E9720[omCurrentObj->objId] < 0x1E) {
+            if (!(gKirbyController.buttonHeld & 0x4000) || (gKirbyState.unk17 != 0)) {
+                gKirbyState.unk3C = 5;
+                gKirbyState.unk44 = 5;
+                goto dispatch;
+            }
+            ohSleep(1);
+            D_800E9720[omCurrentObj->objId] += 1;
+        }
+        func_8011E0E8();
+        D_800EC2E0[func_801693C4_ovl3(0xD)].as_u32 = 1;
+        gKirbyState.unk15C = (u32) (uintptr_t) D_80190874_ovl3;
+        gKirbyState.unk4C = func_800A8100(1, 1, 0x27, D_800DFBD0[omCurrentObj->objId][2]);
+        D_800E0490[omCurrentObj->objId] = D_80192A8C_ovl3;
+        gKirbyState.unk3C = 1;
+        gKirbyState.unk44 = 1;
+        D_800E9720[omCurrentObj->objId] = 0x78;
+        func_8011DC04(0x52);
+        func_801230E8(0x20091, 0x20092, 0);
+        D_800DF310[omCurrentObj->objId] = func_80185180_ovl3;
+    }
+dispatch:
+    switch (gKirbyState.unk44) {
+        case 1:
+        case 3:
+            break;
+        case 2:
+            D_800E8920[omCurrentObj->objId] = 0;
+            if ((D_800E8AE0[omCurrentObj->objId] & 6) == 6) {
+                play_sound(0x10B);
+                gKirbyState.unkCC = 4.0f;
+                D_800E3210[omCurrentObj->objId] = 8.5f;
+                D_800E3750[omCurrentObj->objId] = -0.4f;
+                D_800E3C90[omCurrentObj->objId] = 8.5f;
+            } else {
+                play_sound(0xF7);
+                gKirbyState.unkCC = 8.0f;
+                D_800E3210[omCurrentObj->objId] = func_80123144(17.0f);
+                D_800E3750[omCurrentObj->objId] = -0.980665f;
+                D_800E3C90[omCurrentObj->objId] = 16.0f;
+            }
+            while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
+                ohSleep(1);
+            }
+            gKirbyState.unk44 = 3;
+            gKirbyState.isFullJump += 1;
+            break;
+        case 4:
+            func_8011DC5C();
+            func_8011E0E8();
+            gKirbyState.abilityInUse = 0;
+            D_800E0490[omCurrentObj->objId] = D_801926E8_ovl3;
+            gKirbyState.unk15C = (u32) (uintptr_t) D_80190358_ovl3;
+            gKirbyState.unk30 += 1;
+            break;
+        case 5:
+            func_8011E0E8();
+            gKirbyState.abilityInUse = 0;
+            func_801230E8(0x2008F, 0x20090, 1);
+            gKirbyState.unk30 += 1;
+            break;
+    }
+    curObjSleepForever();
+}
+#elif defined(PORT)
 /* PORT: the UFO-charge phase coroutine (track action 0x38), from
  * asm/nonmatchings/ovl3/ovl3_6/func_80184CA4_ovl3.s (via m2c). First
  * entry arms the ability, clears the 0xD MultiType latch, plays 0xBA

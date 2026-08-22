@@ -855,6 +855,58 @@ void func_8017113C_ovl5(s32 arg0, s32 arg1, s32 arg2) {
     func_800AA018(D_80187BF4_ovl5[arg1 * 2 + 1]);
     func_800AFBB4(1, omCurrentObj);
 }
+#elif defined(PORT)
+void func_8017113C_ovl5(s32 arg0, s32 arg1, s32 arg2) {
+    extern u32 D_80187BF4_ovl5[];
+    u8 kind = func_80172B10_ovl5(arg0, D_8018E998_ovl5[arg0]);
+    s32 i;
+    s32 t;
+
+    if (D_8018ECA8_ovl5[arg0] == 0) {
+        func_800BB4E4(arg0, 9, 0x1E);
+    }
+    if (func_8016FFC4_ovl5(kind) != 0) {
+        D_800E98E0[D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]]] = 1;
+    } else if (kind == 0xC) {
+        t = D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]];
+        if (D_800DE350[t]->animTimer >= 112.0f) {
+            D_800E9AA0[t].as_u32 = 1;
+        }
+    } else if ((kind == 8) || (kind == 9)) {
+        t = D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]];
+        if (D_800DE350[t]->animTimer >= 80.0f) {
+            D_800E9AA0[t].as_u32 = 1;
+        }
+    }
+    func_800AA018(D_80187C34_ovl5[arg1][0]);
+    func_800AA018(D_80187C34_ovl5[arg1][1]);
+    t = request_track_general(8, 0, 0x70);
+    D_800E98E0[t] = 9;
+    D_800E9AA0[t].as_u32 = arg0;
+    D_800E3210[omCurrentObj->objId] = -10.0f;
+    ohSleep(0x14);
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    func_800AFBB4(0, omCurrentObj);
+    for (i = 0; i < 0xF; i++) {
+        func_80170098_ovl5(arg0, ((f32) (D_8018E998_ovl5[arg0] - func_80170820_ovl5(arg0)) * 450.0f) / 15.0f);
+        ohSleep(1);
+    }
+    D_8018EB58_ovl5[(arg0 * 0x52) + D_8018E998_ovl5[arg0]] = 0;
+    t = func_80170820_ovl5(arg0);
+    D_8018E998_ovl5[arg0] = t;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E478_ovl5[arg0][t]];
+    if (func_8016FFC4_ovl5(func_80172B10_ovl5(arg0, t)) != 0) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    } else {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+    }
+    func_800AA018(D_80187BF4_ovl5[arg1 * 2]);
+    func_800AA018(D_80187BF4_ovl5[arg1 * 2 + 1]);
+    func_800AFBB4(1, omCurrentObj);
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017113C_ovl5.s")
+#endif
 
 #ifdef NON_MATCHING
 /* Faithful, not byte-exact (105/106). The ROM parks all sixteen compare
