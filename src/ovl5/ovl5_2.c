@@ -30,7 +30,7 @@ typedef union Unk28Words {
 } Unk28Words;
 
 extern Unk28Words D_80185FF8_ovl5;
-s32 func_8015C740_ovl5();
+SPObj *func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
 extern u8 D_8018E1E0_ovl5[];
 extern u8 D_8018E1E1_ovl5;
 extern void *D_80186900_ovl5;

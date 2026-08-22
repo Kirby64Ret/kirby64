@@ -62,7 +62,7 @@ void func_802211A0_ovl19(GObj *);
 void func_80221480_ovl19(GObj *);
 void func_8022159C_ovl19(GObj *);
 void func_80221750_ovl19(GObj *);
-void func_80221A74_ovl19();
+void func_80221A74_ovl19(void);
 void func_80221CA8_ovl19(GObj *);
 void func_80221E20_ovl19(GObj *);
 void func_80222108_ovl19(GObj *);

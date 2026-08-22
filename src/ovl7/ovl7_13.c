@@ -53,6 +53,11 @@ void func_800AA018(s32);
 void func_800B3520(void);
 void func_800AF27C(void);
 void func_801A3E80_ovl7(GObj *);
+/* K&R form is load-bearing here: its real signature is
+ * s32 func_801A0D74_ovl7(GObj *), but this file calls it with both 1 arg
+ * (line ~266) and 0 args elsewhere -- the ROM relies on whatever GObj*
+ * is already sitting in $a0 at the 0-arg sites. An ANSI prototype breaks
+ * compilation with "too few arguments". */
 s32 func_801A0D74_ovl7();
 void func_801BB8EC_ovl7(void);
 void func_8019F3B0_ovl7(void);

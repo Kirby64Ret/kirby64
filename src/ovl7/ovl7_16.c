@@ -28,6 +28,10 @@ void func_801BD88C_ovl7(GObj *);
 void func_801BF1F4_ovl7(GObj *);
 
 void func_801A0880_ovl7(void);
+/* K&R form is load-bearing here: its own K&R definition below takes
+ * GObj *arg0, but both call sites in this file (lines ~306, ~343) pass 0
+ * args -- the ROM relies on whatever GObj* is already sitting in $a0. An
+ * ANSI prototype breaks compilation with "too few arguments". */
 void func_801BE490_ovl7();
 
 extern FUNCLIST D_801CD8B0_ovl7;

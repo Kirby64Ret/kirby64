@@ -11,6 +11,10 @@ extern void func_800B3234(f32, f32, f32);
 extern void func_800B62AC(f32);
 extern void func_800B31B4(void);
 extern void func_800B4B9C(s32);
+/* K&R form is load-bearing here: its own K&R definition below takes
+ * struct GObj *arg0, but its call site at line ~212 passes 0 args -- the
+ * ROM relies on whatever GObj* is already sitting in $a0. An ANSI
+ * prototype breaks compilation with "too few arguments". */
 void func_801D1648_ovl8();
 void func_801D1A64_ovl8(void);
 extern void func_800B5A7C(void);

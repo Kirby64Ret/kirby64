@@ -9,6 +9,10 @@
 
 extern f32 D_800D70D8;
 
+/* K&R form is load-bearing here: its real signature is
+ * void func_800A9864(u32, u32, u32), but its call site at line ~55 passes
+ * 4 args -- the ROM ignores the extra value. An ANSI prototype breaks
+ * compilation with "too many arguments". */
 extern void func_800A9864();
 /* the pointer parameter here is load-bearing: with an s32 parameter IDO
  * coalesces the switch value straight into $a0 and drops the ROM's move. */

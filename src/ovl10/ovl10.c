@@ -8,7 +8,7 @@
 #include "unk_structs/D_800DE350.h"
 #include "buffers.h"
 
-extern void func_800B4B9C();
+extern void func_800B4B9C(GObj *);
 
 void func_801DB1E0_ovl10(void) {
     func_800B62AC();

@@ -71,7 +71,9 @@ void func_801583BC_ovl3(void);
 void func_80158410_ovl3(s32);
 void func_80157E38_ovl3(s32);
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: DIFF 320/336 insns; short=33 long=0.
+ * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 
 void func_80156050_ovl3(s32 arg0) {
     s32 func_800F8560(void);
@@ -176,7 +178,7 @@ void func_80156050_ovl3(s32 arg0) {
     }
     curObjSleepForever();
 }
-#else
+#elif defined(PORT)
 /* PORT: demo door-transition setup coroutine (via m2c). Marks the level's
  * door byte when leaving a boss intro (func_800F8560() == 10), clears the
  * inhale state, then keys off the door type (unkB): 1/2 seat vertical
@@ -287,6 +289,8 @@ void func_80156050_ovl3(s32 arg0) {
     }
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_80156050_ovl3.s")
 #endif
 
 void func_80156594_ovl3(s32 arg0) {
@@ -1277,7 +1281,9 @@ void func_80158EEC_ovl3(s32 arg0) {
     func_800FF200(D_8012E944);
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: DIFF 597/605 insns; short=78 long=0.
+ * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 
 void func_80159164_ovl3(s32 arg0) {
     extern void func_800B4954(GObj *);
@@ -1430,7 +1436,7 @@ void func_80159164_ovl3(s32 arg0) {
     gKirbyState.unk30 += 1;
     curObjSleepForever();
 }
-#else
+#elif defined(PORT)
 /* PORT: level-clear ride-out coroutine (via m2c). Seats the player, faces
  * the camera (isTurning), plays the character's idle then crouch charge,
  * waits for the animation to reach 0.54, jumps (12 up, -0.980665 gravity,
@@ -1593,6 +1599,8 @@ void func_80159164_ovl3(s32 arg0) {
     gKirbyState.unk30 += 1;
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_80159164_ovl3.s")
 #endif
 
 void func_80159ADC_ovl3(s32 arg0) {
@@ -1775,7 +1783,9 @@ void func_8015A31C_ovl3(s32 arg0) {
     }
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 265/312 and 30 instructions short. Register naming ($v0 vs $v1 on the held
+ * object pointer) plus a count gap; close the count first. */
 
 void func_8015A44C_ovl3(s32 arg0) {
     extern void func_8011E234(void);
@@ -1852,7 +1862,7 @@ void func_8015A44C_ovl3(s32 arg0) {
     gKirbyState.unk30 += 1;
     curObjSleepForever();
 }
-#else
+#elif defined(PORT)
 /* PORT: level-entry drop-in coroutine (via m2c). Seats the player fresh
  * (no track callback, zeroed turn/inhale state, camera reset via
  * func_8011E234, tick rates from gameTicksPerDraw), then lands: in water,
@@ -1935,6 +1945,8 @@ void func_8015A44C_ovl3(s32 arg0) {
     gKirbyState.unk30 += 1;
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_8015A44C_ovl3.s")
 #endif
 
 void func_8015A92C_ovl3(s32 arg0) {

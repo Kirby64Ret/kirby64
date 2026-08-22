@@ -102,6 +102,10 @@ void func_800BB6B0(GObj *gobj);
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
+/* K&R form is load-bearing here: its real signature is
+ * s32 func_800AB0F4(GObj *), but its call site at line ~60 passes 0 args
+ * -- the ROM relies on whatever GObj* is already sitting in $a0. An ANSI
+ * prototype breaks compilation with "too few arguments". */
 s32 func_800AB0F4();                                /* extern */
 
 void func_800BB6B0(GObj *gobj) {

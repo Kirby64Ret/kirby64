@@ -19,7 +19,7 @@ void func_80199F58_ovl7(GObj *);
 void func_800AA018(s32);
 void func_800AA154(s32);
 void func_800AA864(s32, u32);
-s32 func_801A0D74_ovl7();
+s32 func_801A0D74_ovl7(GObj *);
 
 void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
 extern struct GObjProcess *gEntityGObjProcessArray[];

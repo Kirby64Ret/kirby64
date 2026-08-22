@@ -47,6 +47,10 @@ struct Ovl7AnimObj {
 
 void func_80111550(void *);
 struct Ovl7AnimObj *func_80111C88(s32 *, u32);
+/* K&R form is load-bearing here: its real signature is
+ * void func_80111ECC(s32 *), but its call site at line ~656 passes 2 args
+ * -- the ROM ignores the extra value. An ANSI prototype breaks
+ * compilation with "too many arguments". */
 void func_80111ECC();
 
 s32 func_8019F410_ovl7(s32);

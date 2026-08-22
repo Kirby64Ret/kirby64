@@ -87,7 +87,7 @@ extern s32 func_801215DC(void);
 extern s32 func_8015449C_ovl3(void *, s32);
 extern void func_8016854C_ovl3(void *, struct DObj *, f32);
 extern void func_80155DF0_ovl3(void *, s32, Vector *, void *, s32);
-extern void func_80155F0C_ovl3();
+extern s32 func_80155F0C_ovl3(struct CollisionTriangle *);
 
 // ovl3 data
 extern u8 D_80196524;
