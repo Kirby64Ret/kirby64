@@ -543,53 +543,56 @@ void func_801DDAC8_ovl10(s32 arg0) {
 void func_800A1F30(void *);
 s32 func_800A8234(s32, s32, s32);
 
-#ifdef NON_MATCHING
 /* 49/204, all of them the same one-slot temp rotation: the ROM uses $a0 as a
    scratch where this uses $a1. */
-void func_801DDB88_ovl10(GObj *arg0) {
-    func_800AECC0(gameTicksPerDraw);
-    func_800AED20(gameTicksPerDraw);
-    D_800DDFD0[omCurrentObj->objId] = 5;
-    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A18_ovl10;
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
-    func_800B33F4();
-    if (D_800EA360[omCurrentObj->objId] != 0) {
-        func_800A1F30((void *) D_800EA360[omCurrentObj->objId]);
-        D_800EA360[omCurrentObj->objId] = 0;
+void func_801DDB88_ovl10(GObj *arg0)
+{
+  func_800AECC0(gameTicksPerDraw);
+  func_800AED20(gameTicksPerDraw);
+  D_800DDFD0[omCurrentObj->objId] = 5;
+  D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A18_ovl10;
+  D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+  func_800B33F4();
+  if (D_800EA360[omCurrentObj->objId] != 0)
+  {
+    func_800A1F30((void *) D_800EA360[omCurrentObj->objId]);
+    D_800EA360[omCurrentObj->objId] = 0;
+  }
+  D_800EA520[omCurrentObj->objId] = 0;
+  func_800AA018(0x102BF);
+  func_800AA154(0x102BE);
+  D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * ((f64) 2);
+  func_800AA018(0x102C1);
+  func_800AA018(0x102C0);
+  D_800EA360[omCurrentObj->objId] = func_800A8234(6, 2, 2);
+  play_sound(0x1DD);
+  D_800EA520[omCurrentObj->objId] = 0x64;
+  while (D_800EA520[omCurrentObj->objId] < 0x78)
+  {
+    if ((D_800EA520[omCurrentObj->objId] == 0x76) && (D_800EA360[omCurrentObj->objId] != 0))
+    {
+      func_800A1F30((void *) D_800EA360[omCurrentObj->objId]);
+      D_800EA360[omCurrentObj->objId] = 0;
     }
-    D_800EA520[omCurrentObj->objId] = 0;
-    func_800AA018(0x102BF);
-    func_800AA154(0x102BE);
-    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (f64) 2;
-    func_800AA018(0x102C1);
-    func_800AA018(0x102C0);
-    D_800EA360[omCurrentObj->objId] = func_800A8234(6, 2, 2);
-    play_sound(0x1DD);
-    D_800EA520[omCurrentObj->objId] = 0x64;
-    while (D_800EA520[omCurrentObj->objId] < 0x78) {
-        if ((D_800EA520[omCurrentObj->objId] == 0x76) && (D_800EA360[omCurrentObj->objId] != 0)) {
-            func_800A1F30((void *) D_800EA360[omCurrentObj->objId]);
-            D_800EA360[omCurrentObj->objId] = 0;
-        }
-        func_800AF27C();
-        D_800EA520[omCurrentObj->objId] += 1;
-    }
-    play_sound(0x1DF);
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = 65535.0f;
-    if (D_800EA360[omCurrentObj->objId] != 0) {
-        func_800A1F30((void *) D_800EA360[omCurrentObj->objId]);
-        D_800EA360[omCurrentObj->objId] = 0;
-    }
-    D_800EA520[omCurrentObj->objId] = 1000;
-    func_800AA018(0x102C7);
-    func_800AA154(0x102C6);
-    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+    func_800AF27C();
+ if (0) { }
+    D_800EA520[omCurrentObj->objId] += 1;
+  }
+
+  play_sound(0x1DF);
+  D_800E6690[omCurrentObj->objId] = 0.0f;
+  D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+  D_800E6850[omCurrentObj->objId] = 65535.0f;
+  if (D_800EA360[omCurrentObj->objId] != 0)
+  {
+    func_800A1F30((void *) D_800EA360[omCurrentObj->objId]);
+    D_800EA360[omCurrentObj->objId] = 0;
+  }
+  D_800EA520[omCurrentObj->objId] = 1000;
+  func_800AA018(0x102C7);
+  func_800AA154(0x102C6);
+  gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DDB88_ovl10.s")
-#endif
 
 struct Ovl10Xf {
     u32 unk0;
