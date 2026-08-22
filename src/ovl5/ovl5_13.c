@@ -497,7 +497,6 @@ void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800B1378(struct DObj *, s32, f32);
 
-#ifdef NON_MATCHING
 /* 30/314: instruction-for-instruction correct, and every stack offset is right.
    The only defect is that IDO swaps the two callee-saved registers -- the ROM
    holds arg0 in $s1 and the D_8018C30C_ovl5 record base in $s2, this C gets the
@@ -507,110 +506,143 @@ void func_800B1378(struct DObj *, s32, f32);
    local is what fixes the frame in the inline form; with the pointer local the
    frame is already 0x60). The chained store of unkC IS load-bearing: three
    separate statements emit three lwc1 where the ROM has one. */
-void func_801843A0_ovl5(GObj *arg0, s32 arg1) {
-    Unk8018C30C *p = &D_8018C30C_ovl5[arg1];
-    f32 var;
-    s32 i;
+void func_801843A0_ovl5(GObj *arg0, s32 arg1)
+{
+  Unk8018C30C *p = &D_8018C30C_ovl5[arg1];
+  f32 var;
+  s32 i;
+  D_8018EE4C_ovl5 = omCurrentObj->objId;
+  func_800A9088(p->unk0);
+  gEntitiesNextPosXArray[omCurrentObj->objId] = p->unk28 + D_8018C300_ovl5.x;
+  gEntitiesNextPosYArray[omCurrentObj->objId] = p->unk2C + D_8018C300_ovl5.y;
+  gEntitiesNextPosZArray[omCurrentObj->objId] = p->unk30 + D_8018C300_ovl5.z;
+  if (arg1 == 8)
+  {
+    if (p->unk4 != 0)
+    {
+      func_800A9F98(p->unk4, 128.0f);
+    }
+    if (p->unk8 != 0)
+    {
+      func_800A9F98(p->unk8, 128.0f);
+    }
+    D_800DFBD0[omCurrentObj->objId][0x1E]->scale.v.y = 0.0f;
+  }
+  else
+  {
+    if (p->unk4 != 0)
+    {
+      func_800AA018(p->unk4);
+    }
+    if (p->unk8 != 0)
+    {
+      func_800AA018(p->unk8);
+    }
+  }
+  arg0->onAnimate = func_800B1378;
+  gEntitiesAngleXArray[omCurrentObj->objId] = (p->unk1C * 3.14159274f) / 180.0f;
+  gEntitiesAngleYArray[omCurrentObj->objId] = (p->unk20 * 3.14159274f) / 180.0f;
+  gEntitiesAngleZArray[omCurrentObj->objId] = (p->unk24 * 3.14159274f) / 180.0f;
+  gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
+  gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
+  gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
+  var = p->unkC / ((f32) 4);
+  i = 0;
+  do
+  {
+    gEntitiesScaleXArray[omCurrentObj->objId] += var;
+    gEntitiesScaleYArray[omCurrentObj->objId] += var;
+    gEntitiesScaleZArray[omCurrentObj->objId] += var;
+    ohSleep(1);
+    i++;
+  }
+  while (i != 4);
+  gEntitiesScaleZArray[omCurrentObj->objId] = (gEntitiesScaleYArray[omCurrentObj->objId] = (gEntitiesScaleXArray[omCurrentObj->objId] = p->unkC));
+  switch (arg1)
+  {
+    case 2:
+      var = 0.0f;
+      while (1)
+    {
+      gEntitiesAngleXArray[omCurrentObj->objId] = (var * 3.14159274f) / 180.0f;
+      var += 4.0f;
+      if (360.0f < var)
+      {
+        var -= 360.0f;
+      }
+      ohSleep(1);
+    }
 
-    D_8018EE4C_ovl5 = omCurrentObj->objId;
-    func_800A9088(p->unk0);
-    gEntitiesNextPosXArray[omCurrentObj->objId] = p->unk28 + D_8018C300_ovl5.x;
-    gEntitiesNextPosYArray[omCurrentObj->objId] = p->unk2C + D_8018C300_ovl5.y;
-    gEntitiesNextPosZArray[omCurrentObj->objId] = p->unk30 + D_8018C300_ovl5.z;
-    if (arg1 == 8) {
-        if (p->unk4 != 0) {
-            func_800A9F98(p->unk4, 128.0f);
-        }
-        if (p->unk8 != 0) {
-            func_800A9F98(p->unk8, 128.0f);
-        }
-        D_800DFBD0[omCurrentObj->objId][0x1E]->scale.v.y = 0.0f;
-    } else {
-        if (p->unk4 != 0) {
-            func_800AA018(p->unk4);
-        }
-        if (p->unk8 != 0) {
-            func_800AA018(p->unk8);
-        }
+
+    case 7:
+
+    case 73:
+      var = 0.0f;
+      while (1)
+    {
+      gEntitiesAngleYArray[omCurrentObj->objId] = (var * 3.14159274f) / 180.0f;
+      var += 4.0f;
+      if (360.0f < var)
+      {
+        var -= 360.0f;
+      }
+      ohSleep(1);
     }
-    arg0->onAnimate = func_800B1378;
-    gEntitiesAngleXArray[omCurrentObj->objId] = p->unk1C * 3.14159274f / 180.0f;
-    gEntitiesAngleYArray[omCurrentObj->objId] = p->unk20 * 3.14159274f / 180.0f;
-    gEntitiesAngleZArray[omCurrentObj->objId] = p->unk24 * 3.14159274f / 180.0f;
-    gEntitiesScaleXArray[omCurrentObj->objId] = 0.0f;
-    gEntitiesScaleYArray[omCurrentObj->objId] = 0.0f;
-    gEntitiesScaleZArray[omCurrentObj->objId] = 0.0f;
-    var = p->unkC / (f32) 4;
-    i = 0;
-    do {
-        gEntitiesScaleXArray[omCurrentObj->objId] += var;
-        gEntitiesScaleYArray[omCurrentObj->objId] += var;
-        gEntitiesScaleZArray[omCurrentObj->objId] += var;
-        ohSleep(1);
-        i++;
-    } while (i != 4);
-    gEntitiesScaleZArray[omCurrentObj->objId] = gEntitiesScaleYArray[omCurrentObj->objId] =
-        gEntitiesScaleXArray[omCurrentObj->objId] = p->unkC;
-    switch (arg1) {
-        case 2:
-            var = 0.0f;
-            while (1) {
-                gEntitiesAngleXArray[omCurrentObj->objId] = var * 3.14159274f / 180.0f;
-                var += 4.0f;
-                if (360.0f < var) {
-                    var -= 360.0f;
-                }
-                ohSleep(1);
-            }
-        case 7:
-        case 73:
-            var = 0.0f;
-            while (1) {
-                gEntitiesAngleYArray[omCurrentObj->objId] = var * 3.14159274f / 180.0f;
-                var += 4.0f;
-                if (360.0f < var) {
-                    var -= 360.0f;
-                }
-                ohSleep(1);
-            }
-        case 15:
-            while (1) {
-                func_800AA018(0x10028);
-                arg0->onAnimate = func_800B1378;
-                func_800AF27C();
-                func_800AA018(0x10022);
-                arg0->onAnimate = func_800B1378;
-                func_800AF27C();
-                func_800AA018(0x10023);
-                arg0->onAnimate = func_800B1378;
-                func_800AF27C();
-            }
-        case 16:
-            func_800AECC0(1.0f);
-            func_800AED20(1.0f);
-            break;
-        case 14:
-        case 21:
-        case 24:
-        case 32:
-        case 48:
-        case 70:
-            while (1) {
-                if (p->unk4 != 0) {
-                    func_800AA018(p->unk4);
-                }
-                if (p->unk8 != 0) {
-                    func_800AA018(p->unk8);
-                }
-                arg0->onAnimate = func_800B1378;
-                func_800AF27C();
-            }
+
+
+    case 15:
+      while (1)
+    {
+      func_800AA018(0x10028);
+      arg0->onAnimate = func_800B1378;
+      func_800AF27C();
+      func_800AA018(0x10022);
+      arg0->onAnimate = func_800B1378;
+      func_800AF27C();
+      func_800AA018(0x10023);
+      arg0->onAnimate = func_800B1378;
+      func_800AF27C();
     }
-    curObjSleepForever();
+
+
+    case 16:
+      func_800AECC0(1.0f);
+      func_800AED20(1.0f);
+      break;
+
+    case 14:
+
+    case 21:
+
+    case 24:
+
+    case 32:
+
+    case 48:
+
+    case 70:
+      while (1)
+    {
+      if (p->unk4 != 0)
+      {
+        if (1)
+        {
+          func_800AA018(p->unk4);
+        }
+      }
+      if (p->unk8 != 0)
+      {
+        func_800AA018(p->unk8);
+      }
+      arg0->onAnimate = func_800B1378;
+      func_800AF27C();
+    }
+
+
+  }
+
+  curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_801843A0_ovl5.s")
-#endif
 
 extern Unk8018C30C D_8018D380_ovl5;
 
