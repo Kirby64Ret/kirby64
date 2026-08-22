@@ -1175,9 +1175,19 @@ void func_80171950_ovl5(GObj *arg0, s32 arg1) {
  * draw callback): mirrors the lane camera bias, and while idle either lets
  * the CPU driver (func_8017232C_ovl5) act or maps A to a 1-tile hop and B
  * to a 2-tile hop (1 tile on the final step), bumping the consumed-tile
- * counter D_8018E998_ovl5. */
+ * counter D_8018E998_ovl5.
+ *
+ * FACTORY: 0/168, UNCERTAIN -- PORT-seeded, time-boxed. Added a missing
+ * local `extern Controller_800D6FE8 gPlayerControllers[4]` (its real
+ * declaration in main/contpad.h is only reached through the shared
+ * PORT-prototype include at the top of this file, invisible here).
+ * Compiles, word count matches (168/168), residue extreme (168/168,
+ * full-body register/frame relabeling from word 0). Worth a fresh
+ * m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
 u16 func_80171E6C_ovl5(GObj *arg0) {
     u16 func_8017232C_ovl5(u32, s32, s32 *, u32);
+    extern Controller_800D6FE8 gPlayerControllers[4];
     u32 lane = D_800E9AA0[omCurrentObj->objId].as_u32;
     s32 step;
 

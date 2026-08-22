@@ -53,7 +53,7 @@ void func_8015AC90_ovl3(s32 arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[obj->objId], 0xC, D_801966F0_ovl3);
 }
 
-extern void func_80161CE0_ovl3();
+extern void func_80161CE0_ovl3(s32);
 extern void func_80161EC0_ovl3(s32, f32, f32);
 extern void func_800AA018(s32);
 extern void func_800B49F8(struct GObj *);
@@ -502,8 +502,8 @@ void func_8015B75C_ovl3(struct GObj *arg0) {
     extern void func_800B2340(Vector *, s32, s32);
     extern void func_800B26D8(Vector *, s32, s32);
     extern s32 func_801693C4_ovl3(s32);
-    extern void func_80162150_ovl3();
-    s32 func_80155424_ovl3();
+    extern void func_80162150_ovl3(void);
+    s32 func_80155424_ovl3(struct PositionState *);
     static const f32 pc_rock_spd[3] = { 6.0f, 8.0f, 10.0f };
     s32 id = omCurrentObj->objId;
     struct PcPlyshotFx *fx;
@@ -1094,7 +1094,7 @@ void func_8015C7F4_ovl3(s32 arg0) {
 #endif
 
 extern char D_80190BF4_ovl3[];
-extern void func_80162150_ovl3();
+extern void func_80162150_ovl3(void);
 extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
 
 void func_8015CC84_ovl3(s32 arg0) {
@@ -1290,7 +1290,7 @@ void func_8015D3C8_ovl3(struct GObj *arg0) {
     extern s32 D_80194458_ovl3[];
     extern s32 func_800B3158(void);
     extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern void func_80162150_ovl3();
+    extern void func_80162150_ovl3(void);
     s32 func_8016854C_ovl3(s32, s32, f32);
     s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
     f32 atan2f(f32, f32);
@@ -1362,7 +1362,7 @@ void func_8015D3C8_ovl3(struct GObj *arg0) {
     extern s32 D_80194458_ovl3[];
     extern s32 func_800B3158(void);
     extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern void func_80162150_ovl3();
+    extern void func_80162150_ovl3(void);
     s32 func_8016854C_ovl3(s32, s32, f32);
     s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
     f32 atan2f(f32, f32);
@@ -1817,7 +1817,7 @@ void func_8015E43C_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015E43C_ovl3.s")
 #endif
 
-extern void func_80162150_ovl3();
+extern void func_80162150_ovl3(void);
 extern s32 func_80162000_ovl3(char *, s32, f32);
 extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
 extern char D_80190D4C_ovl3[];

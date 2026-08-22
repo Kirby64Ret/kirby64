@@ -363,7 +363,207 @@ void func_801DE9A8_ovl17(struct GObj *arg0) {
     func_801E073C_ovl17();
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 29/835, frame 0x140 vs the ROM's 0x138.
+   One real lever landed here and is worth carrying to the other matrix
+   functions in this overlay: writing the two zero arguments of the first
+   HS64_MkRotationMtxF call as DOUBLE literals (0.0, not 0.0f) stops IDO
+   CSEing them with the later zero stores into a callee-saved $f20 -- that
+   removes an sdc1/ldc1 pair and 23 diffs (829 -> 806, LEVERS 7).  The ROM
+   re-materialises `mtc1 $zero` at each use, which is now what we do too.
+   Remaining: 8 bytes of locals we reserve and the ROM does not, which slides
+   the three matrices (ROM: sp+0xE0 and below) and renames the body. */
+/* PORT: per-frame boss orientation steering, from asm/nonmatchings/ovl17/
+ * ovl17_2/func_801DEA5C_ovl17.s. Builds the target basis (Kirby's rotation,
+ * entity slot 0, flipped pi about Y) and the boss's current basis, then runs
+ * three axis servos -- yaw (forward row2 toward the target's about the up
+ * row1, rate D_800EAC20), pitch (row2 toward the target's about the rebuilt
+ * right row0, rate D_800EADE0), roll (row1 toward the target's about row2,
+ * rate D_800EAFA0, 5x step) -- each with the same accelerate /
+ * counter-steer-1.8x / clamp shape (the clamp helper below). The basis is
+ * then re-orthonormalized and decomposed back into the D_800EA6E0/8A0/AA60
+ * Euler angles and the entity angle arrays. */
+f32 asinf(f32);
+f32 atan2f(f32, f32);
+Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
+
+/* remaining-angle brake, C-button speed base, symmetric clamp; returns the
+ * clamped rate (the asm repeats this block verbatim for all three axes) */
+static f32 pc_boss_steer_clamp(f32 *velp, f32 angle) {
+    f32 vel = *velp;
+    f32 mag = (vel < 0.0f) ? -vel : vel;
+    f32 lim;
+
+    if (D_801E5704_ovl17 < (angle - mag)) {
+        lim = D_801E5704_ovl17;
+    } else {
+        if ((gKirbyController.buttonHeld & 0xC00) && (gKirbyController.buttonHeld & 0x300)) {
+            lim = D_800D7170 / 1.4142135f;
+        } else {
+            lim = D_800D7170;
+        }
+        if (D_801E5704_ovl17 < lim) {
+            lim = D_801E5704_ovl17;
+        }
+    }
+    if (vel > lim) {
+        *velp = vel = lim;
+    } else if (vel < -lim) {
+        *velp = vel = -lim;
+    }
+    return vel;
+}
+
+void func_801DEA5C_ovl17(void) {
+    Mat4 cur;
+    Mat4 tmp;
+    Mat4 tgt;
+    Vector a;
+    Vector b;
+    Vector axis;
+    Vector cr;
+    Vector ang;
+    f32 angle;
+    f32 step;
+    f32 vel;
+    s32 objId;
+
+    guMtxIdentF(cur);
+    HS64_MkRotationMtxF(tmp, 0.0, 3.1415927f, 0.0);
+    guMtxCatF(cur, tmp, cur);
+    HS64_MkRotationMtxF(tmp, D_800EA6E0[0], D_800EA8A0[0], D_800EAA60[0]);
+    guMtxCatF(cur, tmp, tgt);
+    guMtxIdentF(cur);
+    objId = omCurrentObj->objId;
+    HS64_MkRotationMtxF(tmp, D_800EA6E0[objId], D_800EA8A0[objId], D_800EAA60[objId]);
+    guMtxCatF(cur, tmp, cur);
+
+    /* yaw: forward (row2) toward target forward, about up (row1) */
+    a.x = cur[2][0]; a.y = cur[2][1]; a.z = cur[2][2];
+    b.x = tgt[2][0]; b.y = tgt[2][1]; b.z = tgt[2][2];
+    axis.x = cur[1][0]; axis.y = cur[1][1]; axis.z = cur[1][2];
+    cr.x = cr.y = cr.z = 0.0f;
+    angle = lbvector_Angle(&a, &b);
+    step = 0.0f;
+    if (angle > 0.008726646f) {
+        vec3_normalized_cross_product(&a, &b, &cr);
+        if ((cr.x != 0.0f) || (cr.y != 0.0f) || (cr.z != 0.0f)) {
+            step = (lbvector_Angle(&axis, &cr) < 1.5707964f) ? D_801E5700_ovl17
+                                                             : -D_801E5700_ovl17;
+        }
+        vel = D_800EAC20[objId];
+    } else {
+        vel = D_800EAC20[objId];
+        if (((vel < 0.0f) ? -vel : vel) < D_801E5704_ovl17) {
+            D_800EAC20[objId] = 0.0f;
+            vel = 0.0f;
+        }
+    }
+    if (((vel > 0.0f) && (step < 0.0f)) || ((vel < 0.0f) && (step > 0.0f))) {
+        step *= 1.8f;
+    }
+    D_800EAC20[objId] = vel + step;
+    vel = pc_boss_steer_clamp(&D_800EAC20[objId], angle);
+    if ((vel > 0.0000017453292f) || (vel < -0.0000017453292f)) {
+        func_800191F8(&a, &axis, vel);
+        cur[2][0] = a.x; cur[2][1] = a.y; cur[2][2] = a.z;
+    } else {
+        step = 0.0f;
+    }
+
+    /* pitch: rebuild right row0 = row1 x row2, steer row2 about it */
+    a.x = cur[1][0]; a.y = cur[1][1]; a.z = cur[1][2];
+    b.x = cur[2][0]; b.y = cur[2][1]; b.z = cur[2][2];
+    vec3_normalized_cross_product(&a, &b, &cr);
+    axis = cr;
+    cur[0][0] = cr.x; cur[0][1] = cr.y; cur[0][2] = cr.z;
+    a.x = cur[2][0]; a.y = cur[2][1]; a.z = cur[2][2];
+    b.x = tgt[2][0]; b.y = tgt[2][1]; b.z = tgt[2][2];
+    cr.x = cr.y = cr.z = 0.0f;
+    angle = lbvector_Angle(&a, &b);
+    if (angle > 0.008726646f) {
+        vec3_normalized_cross_product(&a, &b, &cr);
+        if ((cr.x != 0.0f) || (cr.y != 0.0f) || (cr.z != 0.0f)) {
+            step = (lbvector_Angle(&axis, &cr) < 1.5707964f) ? D_801E5700_ovl17
+                                                             : -D_801E5700_ovl17;
+        }
+        /* cross == 0 keeps the previous step, as on N64 */
+    } else {
+        step = 0.0f;
+        D_800EADE0[objId] = 0.0f;
+    }
+    vel = D_800EADE0[objId];
+    if (((vel > 0.0f) && (step < 0.0f)) || ((vel < 0.0f) && (step > 0.0f))) {
+        step *= 1.8f;
+    }
+    D_800EADE0[objId] = vel + step;
+    vel = pc_boss_steer_clamp(&D_800EADE0[objId], angle);
+    if ((vel > 0.0000017453292f) || (vel < -0.0000017453292f)) {
+        func_800191F8(&a, &axis, vel);
+        cur[2][0] = a.x; cur[2][1] = a.y; cur[2][2] = a.z;
+    } else {
+        step = 0.0f;
+    }
+
+    /* roll: up (row1) toward target up, about forward (row2), 5x step */
+    a.x = cur[1][0]; a.y = cur[1][1]; a.z = cur[1][2];
+    b.x = tgt[1][0]; b.y = tgt[1][1]; b.z = tgt[1][2];
+    axis.x = cur[2][0]; axis.y = cur[2][1]; axis.z = cur[2][2];
+    cr.x = cr.y = cr.z = 0.0f;
+    angle = lbvector_Angle(&a, &b);
+    if (angle > 0.008726646f) {
+        vec3_normalized_cross_product(&a, &b, &cr);
+        if ((cr.x != 0.0f) || (cr.y != 0.0f) || (cr.z != 0.0f)) {
+            step = (lbvector_Angle(&axis, &cr) < 1.5707964f) ? D_801E5700_ovl17 * 5.0f
+                                                             : -D_801E5700_ovl17 * 5.0f;
+        }
+    } else {
+        step = 0.0f;
+        D_800EAFA0[objId] = 0.0f;
+    }
+    vel = D_800EAFA0[objId];
+    if (((vel > 0.0f) && (step < 0.0f)) || ((vel < 0.0f) && (step > 0.0f))) {
+        step *= 1.8f;
+    }
+    D_800EAFA0[objId] = vel + step;
+    vel = pc_boss_steer_clamp(&D_800EAFA0[objId], angle);
+    if ((vel > 0.0000017453292f) || (vel < -0.0000017453292f)) {
+        func_800191F8(&a, &axis, vel);
+        cur[1][0] = a.x; cur[1][1] = a.y; cur[1][2] = a.z;
+    }
+
+    /* re-orthonormalize: row0 = row1 x row2, then row1 = row2 x row0 */
+    a.x = cur[1][0]; a.y = cur[1][1]; a.z = cur[1][2];
+    b.x = cur[2][0]; b.y = cur[2][1]; b.z = cur[2][2];
+    vec3_normalized_cross_product(&a, &b, &cr);
+    b = cr;
+    cur[0][0] = cr.x; cur[0][1] = cr.y; cur[0][2] = cr.z;
+    a.x = cur[2][0]; a.y = cur[2][1]; a.z = cur[2][2];
+    vec3_normalized_cross_product(&a, &b, &cr);
+    cur[1][0] = cr.x; cur[1][1] = cr.y; cur[1][2] = cr.z;
+
+    /* Euler decomposition: pitch from -row0.z, gimbal-lock special-cased */
+    ang.y = asinf(-cur[0][2]);
+    if ((ang.y == 1.5707964f) || (ang.y == -1.5707964f)) {
+        if (ang.y == 1.5707964f) {
+            ang.x = atan2f(cur[1][0], cur[1][1]);
+        } else {
+            ang.x = atan2f(-cur[1][0], cur[1][1]);
+        }
+        ang.z = 0.0f;
+    } else {
+        ang.x = atan2f(cur[1][2], cur[2][2]);
+        ang.z = atan2f(cur[0][1], cur[0][0]);
+    }
+    utilWrapRotation(&ang);
+    D_800EA6E0[objId] = ang.x;
+    D_800EA8A0[objId] = ang.y;
+    D_800EAA60[objId] = ang.z;
+    gEntitiesAngleXArray[objId] = D_800EA6E0[objId];
+    gEntitiesAngleYArray[objId] = D_800EA8A0[objId];
+    gEntitiesAngleZArray[objId] = D_800EAA60[objId];
+}
+#elif defined(PORT)
 /* PORT: per-frame boss orientation steering, from asm/nonmatchings/ovl17/
  * ovl17_2/func_801DEA5C_ovl17.s. Builds the target basis (Kirby's rotation,
  * entity slot 0, flipped pi about Y) and the boss's current basis, then runs
@@ -684,7 +884,101 @@ void func_801DF768_ovl17(f32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DF768_ovl17.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 4/759, and the draft's shape is wrong in one specific way worth
+   fixing before any permuter time: the ROM runs this whole 759-instruction
+   function on a 0x18 frame whose ONLY stack slot is the $ra save at 0x14 --
+   every value stays in registers.  This draft holds six locals (dobjs,
+   objId, c, e, t, s), which forces a 0x40 frame and spills, and from there
+   the code layout diverges so far that the first dispatch branch is 0x2EF
+   words away in the ROM and 0xF1 here.
+   The fix is to stop holding dobjs and objId across the body -- re-read
+   D_800DFBD0[omCurrentObj->objId] at each group of stores the way the ROM
+   does -- rather than to nudge registers. */
+/* PORT: per-frame wing fold/steering-rate update, from asm/nonmatchings/
+ * ovl17/ovl17_2/func_801DFABC_ovl17.s. Each wing's DObj chain (left slots
+ * 5,6,8,9,0xB,0xC / right slots 0x10,0x11,0x13,0x14,0x16,0x17 in the host
+ * D_800DFBD0 DObj* table) gets scale.y/z from its flap counter D_800E9C60 /
+ * D_800E9E20: 1 = folded (0.01), 0 = idle (1.0), otherwise flared (1.5) and
+ * the counter ticks down (skipping 1). The steering step/limit pair
+ * D_801E5700/D_801E5704 rebuilds from D_800D7170 (0.45x while both wings
+ * are folded, 0.8x for one), and the rage timer D_800EA520 boosts both
+ * rates and the anim speed while it runs down. */
+void func_801DFABC_ovl17(void) {
+    struct DObj **dobjs;
+    s32 objId;
+    s32 c;
+    s32 e;
+    s32 t;
+    f32 s;
+
+    if (D_800D7098.unk0 == 2) {
+        return;
+    }
+    objId = omCurrentObj->objId;
+    dobjs = D_800DFBD0[objId];
+
+    c = D_800E9C60[objId];
+    s = (c == 1) ? 0.01f : (c == 0) ? 1.0f : 1.5f;
+    dobjs[5]->scale.v.y = s;   dobjs[5]->scale.v.z = s;
+    dobjs[6]->scale.v.y = s;   dobjs[6]->scale.v.z = s;
+    dobjs[8]->scale.v.y = s;   dobjs[8]->scale.v.z = s;
+    dobjs[9]->scale.v.y = s;   dobjs[9]->scale.v.z = s;
+    dobjs[0xB]->scale.v.y = s; dobjs[0xB]->scale.v.z = s;
+    dobjs[0xC]->scale.v.y = s; dobjs[0xC]->scale.v.z = s;
+    if ((c != 1) && (c != 0)) {
+        D_800E9C60[objId] = c - 1;
+        if (D_800E9C60[objId] == 1) {
+            D_800E9C60[objId] = 0;
+        }
+    }
+
+    e = D_800E9E20[objId];
+    s = (e == 1) ? 0.01f : (e == 0) ? 1.0f : 1.5f;
+    dobjs[0x10]->scale.v.y = s; dobjs[0x10]->scale.v.z = s;
+    dobjs[0x11]->scale.v.y = s; dobjs[0x11]->scale.v.z = s;
+    dobjs[0x13]->scale.v.y = s; dobjs[0x13]->scale.v.z = s;
+    dobjs[0x14]->scale.v.y = s; dobjs[0x14]->scale.v.z = s;
+    dobjs[0x16]->scale.v.y = s; dobjs[0x16]->scale.v.z = s;
+    dobjs[0x17]->scale.v.y = s; dobjs[0x17]->scale.v.z = s;
+    if ((e != 1) && (e != 0)) {
+        D_800E9E20[objId] = e - 1;
+        if (D_800E9E20[objId] == 1) {
+            D_800E9E20[objId] = 0;
+        }
+    }
+
+    c = D_800E9C60[objId];
+    e = D_800E9E20[objId];
+    if ((c != 1) && (e != 1)) {
+        D_801E5700_ovl17 = D_800D7170 * 0.09f;
+        D_801E5704_ovl17 = D_800D7170 * 1.8f;
+    } else if ((c == 1) && (e == 1)) {
+        D_801E5700_ovl17 = (D_800D7170 * 0.09f) * 0.45f;
+        D_801E5704_ovl17 = (D_800D7170 * 1.8f) * 0.45f;
+    } else {
+        D_801E5700_ovl17 = (D_800D7170 * 0.09f) * 0.8f;
+        D_801E5704_ovl17 = (D_800D7170 * 1.8f) * 0.8f;
+    }
+
+    c = gEntityFuncListIDArray[objId];
+    if ((c == 3) || (c == 4)) {
+        D_800EA520[objId] = 0;
+    }
+    t = D_800EA520[objId];
+    if ((t > 0) && ((D_800E9C60[objId] != 1) || (D_800E9E20[objId] != 1))) {
+        D_801E5700_ovl17 *= 1.0f + ((f32) t / 60.0f);
+        D_801E5704_ovl17 *= 1.0f + ((f32) D_800EA520[objId] / 60.0f);
+        func_800AECC0(((f32) D_800EA520[objId] / 30.0f) + 4.0f);
+        func_800AED20(((f32) D_800EA520[objId] / 30.0f) + 4.0f);
+        D_800EA520[objId] -= 1;
+        return;
+    }
+    func_800AECC0(2.0f);
+    func_800AED20(2.0f);
+    D_800EA520[objId] = 0;
+}
+#elif defined(PORT)
 /* PORT: per-frame wing fold/steering-rate update, from asm/nonmatchings/
  * ovl17/ovl17_2/func_801DFABC_ovl17.s. Each wing's DObj chain (left slots
  * 5,6,8,9,0xB,0xC / right slots 0x10,0x11,0x13,0x14,0x16,0x17 in the host
