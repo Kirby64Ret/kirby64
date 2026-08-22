@@ -314,3 +314,25 @@ candidate into a scratch copy of the TU outside src/ and score that --
 verify.py works fine on a copy (only load_secbase cares about the path, and it
 degrades silently for non-migrated-rodata TUs) -- and should guard any live
 edit with an mtime check that aborts if the file moved underneath it.
+
+## RENAMING A SHARED STRUCT: THE WHOLE-TREE PC BUILD IS PART OF THE JOB
+
+A struct in include/unk_structs/ is used by overlays you are not working on.
+Renaming its fields and only fixing your own overlay leaves the rest of the
+tree referencing names that no longer exist. Measured: the ovl9 naming pass
+renamed EnemyProbe/EnemyKindDesc fields and broke the PC build in ovl7_5.c,
+ovl7_13.c, ovl9_6.c, ovl9_13.c, ovl10_1.c and ovl10_3b.c.
+
+So after renaming any field of a shared struct:
+
+    make -f Makefile.pc -k -j4 2>&1 | grep -E "^src.*error"
+
+must be empty, tree-wide, before you hand back. The N64 side will NOT catch
+this: those call sites are in PORT arms.
+
+And when repairing such fallout, DO NOT run a file-wide regex on `->unkNN`.
+Other structs in the same file legitimately have a field of that name --
+a blanket rename of `->unk4` to `->posX` in ovl7_5.c hit AnimReq, AnimTrack,
+AnimReqSet, EneAnimSetup and EneInfo. Drive the repair off the compiler's own
+`file:line: 'struct X' has no member named 'Y'` output and edit only that
+line, iterating until the error count reaches zero.

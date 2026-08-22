@@ -623,10 +623,10 @@ block_83:
     gEntitiesAngleZArray[temp_v0_13] = D_800E4E10[temp_v0_13];
     temp_a0_3 = (struct EneScaleSet *) sp88->unk88->unk10;
     if ((temp_a0_3 != 0) && (sp84 != NULL)) {
-        *(f32 *) &sp84->unk14 = D_800E4FD0[omCurrentObj->objId] * 0.9f * temp_a0_3->unk4;
-        *(f32 *) &sp84->unk18 = D_800E4FD0[omCurrentObj->objId] * 0.9f * ((struct EneScaleSet *) sp88->unk88->unk10)->unk8;
-        sp84->unk1C = D_800E4FD0[omCurrentObj->objId] * 0.8f * ((struct EneScaleSet *) sp88->unk88->unk10)->unkC;
-        sp84->unk20 = D_800E4FD0[omCurrentObj->objId] * 0.8f * ((struct EneScaleSet *) sp88->unk88->unk10)->unk10;
+        *(f32 *) &sp84->headOffsetY = D_800E4FD0[omCurrentObj->objId] * 0.9f * temp_a0_3->unk4;
+        *(f32 *) &sp84->footOffsetY = D_800E4FD0[omCurrentObj->objId] * 0.9f * ((struct EneScaleSet *) sp88->unk88->unk10)->unk8;
+        sp84->forwardReachPos = D_800E4FD0[omCurrentObj->objId] * 0.8f * ((struct EneScaleSet *) sp88->unk88->unk10)->unkC;
+        sp84->forwardReachNeg = D_800E4FD0[omCurrentObj->objId] * 0.8f * ((struct EneScaleSet *) sp88->unk88->unk10)->unk10;
     }
     temp_v0_14 = omCurrentObj->objId;
     temp_f0_5 = gEntitiesNextPosXArray[temp_v0_14];
@@ -709,13 +709,13 @@ block_83:
                         sp64 = sp70 - temp_f8;
                         sp68 = temp_f6 - temp_f4;
                         lbvector_Normalize(temp_f12_5, var_f14_2, &sp60, var_a1, temp_a2, var_a3);
-                        temp_f4_3 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &sp84->unk14;
+                        temp_f4_3 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &sp84->headOffsetY;
                         sp70 = temp_f4_3;
                         sp7C = temp_f4_3;
                         if (func_8010423C(&sp78, &sp6C, &sp60, 0, 0, 0, 0, 0) != 0) {
                             D_8012BCA0 = (((D_8012BCA0 >> 0x13) | 0x12) * 8) | (D_8012BCA0 & 7);
                         }
-                        temp_f6_2 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &sp84->unk18;
+                        temp_f6_2 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &sp84->footOffsetY;
                         sp70 = temp_f6_2;
                         sp7C = temp_f6_2;
                         if (func_8010423C(&sp78, &sp6C, &sp60, 0, 0, 0, 0, 0) != 0) {
@@ -991,7 +991,7 @@ void func_801A8CDC_ovl7(s32 arg0) {
    live ranges overlap so the choice is a symmetric colouring decision.
    Swept over 8 variants: named vs inline index (in-place `sll` needs the
    inline form), named `ent` variable (that is what moved $v0/$v1 into place,
-   72 -> 32), hoisting the `->unk4` load above the switch (68 -> ...),
+   72 -> 32), hoisting the `->posX` load above the switch (68 -> ...),
    comma-expression vs nested-if condition (32 -> 73, keep the comma form),
    naming omCurrentObj, and reusing `arg0` as the result variable.  None of
    them move the $v0/$a0 pair. */
@@ -1388,9 +1388,9 @@ block_17:
                 return;
             }
             if (sp1C != NULL) {
-                sp1C->unk4 = gEntitiesNextPosXArray[temp_t0->objId];
-                sp1C->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
-                sp1C->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+                sp1C->posX = gEntitiesNextPosXArray[temp_t0->objId];
+                sp1C->posY = gEntitiesNextPosYArray[omCurrentObj->objId];
+                sp1C->posZ = gEntitiesNextPosZArray[omCurrentObj->objId];
                 func_801051AC(sp1C, D_800E0D50);
             }
             return;
@@ -2245,9 +2245,9 @@ block_17:
     D_800E2410[temp_v1->objId] = 0.0f;
     temp_a0_3 = sp24->unk84;
     if (temp_a0_3 != NULL) {
-        temp_a0_3->unk4 = gEntitiesNextPosXArray[temp_v1->objId];
-        temp_a0_3->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
-        temp_a0_3->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+        temp_a0_3->posX = gEntitiesNextPosXArray[temp_v1->objId];
+        temp_a0_3->posY = gEntitiesNextPosYArray[omCurrentObj->objId];
+        temp_a0_3->posZ = gEntitiesNextPosZArray[omCurrentObj->objId];
         func_801051AC(temp_a0_3, gEntitiesNextPosYArray);
     }
     gEntityFuncListIDArray[temp_v1->objId] = 0;

@@ -72,12 +72,19 @@ extern f32 func_800F8728(s32, f32, f32);
 extern s32 func_801AE73C_ovl7(s32, f32, f32, f32);
 #endif
 
+/* Track-following movement parameters, overlaid onto EnemyProbe.unk10
+ * (5-word block, see func_801A2ADC_ovl7/func_801A32EC below) and consumed
+ * directly by func_801A33B8. unkC/unk10 are read only through
+ * `*(f32 *) &arg0->unkNN` everywhere they appear -- confirmed f32 by this
+ * function's own PORT-arm comment ("unkC/unk10 hold f32 bits; the asm
+ * moves them with lwc1/swc1"). unk0/unk4/unk8 have no scalar read in this
+ * file (only whole-struct-copied); left u32. */
 struct Ovl7TrackParams {
     u32 unk0;
     u32 unk4;
     u32 unk8;
-    u32 unkC;
-    u32 unk10;
+    f32 unkC;
+    f32 unk10;
 };
 
 struct Ovl7WarpStep {
@@ -187,56 +194,56 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
         gEntitiesNextPosXArray[omCurrentObj->objId] = sp18.x;
         gEntitiesNextPosYArray[omCurrentObj->objId] = sp18.y;
         gEntitiesNextPosZArray[omCurrentObj->objId] = sp18.z;
-        if (functable->func20 != NULL) {
-            functable->func20(arg0);
+        if (functable->onHalt != NULL) {
+            functable->onHalt(arg0);
         }
-        if (functable->unk0[6] != -1) {
-            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[6];
+        if (functable->actionIds[6] != -1) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[6];
             func_80199628_ovl7(arg0);
         }
-        if ((functable->func20 == NULL) && (functable->unk0[6] == -1)) {
+        if ((functable->onHalt == NULL) && (functable->actionIds[6] == -1)) {
             func_80199688_ovl7(arg0);
         }
         return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
-    if ((ent->unk44 != 0) && ((functable->func20 != NULL) || (functable->unk0[6] != -1))) {
-        if (functable->func20 != NULL) {
-            functable->func20(arg0);
+    if ((ent->unk44 != 0) && ((functable->onHalt != NULL) || (functable->actionIds[6] != -1))) {
+        if (functable->onHalt != NULL) {
+            functable->onHalt(arg0);
         }
-        if (functable->unk0[6] != -1) {
-            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[6];
+        if (functable->actionIds[6] != -1) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[6];
             func_80199628_ovl7(arg0);
         }
         return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
-    if ((D_800E8AE0[omCurrentObj->objId] & 2) && ((functable->funcC != NULL) || (functable->unk0[1] != -1))) {
-        if (functable->funcC != NULL) {
-            functable->funcC(arg0);
+    if ((D_800E8AE0[omCurrentObj->objId] & 2) && ((functable->onBit1Change != NULL) || (functable->actionIds[1] != -1))) {
+        if (functable->onBit1Change != NULL) {
+            functable->onBit1Change(arg0);
         }
-        if (functable->unk0[1] != -1) {
-            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[1];
+        if (functable->actionIds[1] != -1) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[1];
             func_80199628_ovl7(arg0);
         }
         return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     if (D_800E8920[omCurrentObj->objId] == 1) { // check if this is needed
-        if ((D_800E8920[omCurrentObj->objId] == 0) && ((functable->func8 != NULL) || (functable->unk0[0] != -1))) {
-            if (functable->func8 != NULL) {
-                functable->func8(arg0);
+        if ((D_800E8920[omCurrentObj->objId] == 0) && ((functable->onGroundChange != NULL) || (functable->actionIds[0] != -1))) {
+            if (functable->onGroundChange != NULL) {
+                functable->onGroundChange(arg0);
             }
-            if (functable->unk0[0] != -1) {
-                gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[0];
+            if (functable->actionIds[0] != -1) {
+                gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[0];
                 func_80199628_ovl7(arg0);
             }
             return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
         }
     }
-    else if ((D_800E8920[omCurrentObj->objId] == 1) && ((functable->func8 != NULL) || (functable->unk0[0] != -1))) {
-        if (functable->func8 != NULL) {
-            functable->func8(arg0);
+    else if ((D_800E8920[omCurrentObj->objId] == 1) && ((functable->onGroundChange != NULL) || (functable->actionIds[0] != -1))) {
+        if (functable->onGroundChange != NULL) {
+            functable->onGroundChange(arg0);
         }
-        if (functable->unk0[0] != -1) {
-            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[0];
+        if (functable->actionIds[0] != -1) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[0];
             func_80199628_ovl7(arg0);
         }
         return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
@@ -244,13 +251,13 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
     if (((D_8012BCA0 >> 0x13) & 0x3F) ||
         ((D_800E6310[omCurrentObj->objId] != 0)
       && (D_800E64D0[omCurrentObj->objId] != 0.0f)
-      && ((functable->func10 != NULL) || (functable->unk0[2] != -1)))
+      && ((functable->onWallOrCarry != NULL) || (functable->actionIds[2] != -1)))
     ) {
-        if (functable->func10 != NULL) {
-            functable->func10(arg0);
+        if (functable->onWallOrCarry != NULL) {
+            functable->onWallOrCarry(arg0);
         }
-        if (functable->unk0[2] != -1) {
-            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[2];
+        if (functable->actionIds[2] != -1) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[2];
             func_80199628_ovl7(arg0);
             omCurrentObj->objId = omCurrentObj->objId * 4;
         }
@@ -265,34 +272,34 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
         &&  ((D_8012BCA0 >> 0x13) & 0x800)
         && !((D_8012BCA0 >> 0x13) & 0x200)
         && !((D_8012BCA0 >> 0x13) & 0x400))
-        && ((functable->func14 != NULL) || (functable->unk0[3] != -1))
+        && ((functable->onTurnBlocked != NULL) || (functable->actionIds[3] != -1))
     ) {
-        if (functable->func14 != NULL) {
-            functable->func14(arg0);
+        if (functable->onTurnBlocked != NULL) {
+            functable->onTurnBlocked(arg0);
         }
-        if (functable->unk0[3] != -1) {
-            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[3];
+        if (functable->actionIds[3] != -1) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[3];
             func_80199628_ovl7(arg0);
         }
         return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
     // else
-    if ((D_800E8920[omCurrentObj->objId] == 0) && (((D_8012BCA0 >> 0x13) & 0x1C0) != 0) && ((functable->func18 != NULL) || (functable->unk0[4] != -1))) {
-        if (functable->func18 != NULL) {
-            functable->func18(arg0);
+    if ((D_800E8920[omCurrentObj->objId] == 0) && (((D_8012BCA0 >> 0x13) & 0x1C0) != 0) && ((functable->onFloorRescue != NULL) || (functable->actionIds[4] != -1))) {
+        if (functable->onFloorRescue != NULL) {
+            functable->onFloorRescue(arg0);
         }
-        if (functable->unk0[4] != -1) {
-            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[4];
+        if (functable->actionIds[4] != -1) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[4];
             func_80199628_ovl7(arg0);
         }
         return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
     }
-    if ((D_800E8AE0[omCurrentObj->objId] & 4) && ((functable->func1C != NULL) || (functable->unk0[5] != -1))) {
-        if (functable->func1C != NULL) {
-            functable->func1C(arg0);
+    if ((D_800E8AE0[omCurrentObj->objId] & 4) && ((functable->onWaterChange != NULL) || (functable->actionIds[5] != -1))) {
+        if (functable->onWaterChange != NULL) {
+            functable->onWaterChange(arg0);
         }
-        if (functable->unk0[5] != -1) {
-            gEntityFuncListIDArray[omCurrentObj->objId] = functable->unk0[5];
+        if (functable->actionIds[5] != -1) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = functable->actionIds[5];
             func_80199628_ovl7(arg0);
         }
         return oldIdx != gEntityFuncListIDArray[omCurrentObj->objId];
@@ -1013,7 +1020,7 @@ void func_801A2558_ovl7(s32 arg0) {
         rec->unk84 = (struct EnemyProbe *) slot;
     }
     func_801A2ADC_ovl7(arg0);
-    if (rec->unk88->unk1C != 0 && D_800E8E60[omCurrentObj->objId] == 0) {
+    if (rec->unk88->terrainKind != 0 && D_800E8E60[omCurrentObj->objId] == 0) {
         func_801051DC(slot);
         if (rec->unk48 != NULL) {
             D_800E8920[omCurrentObj->objId] =
@@ -1023,7 +1030,7 @@ void func_801A2558_ovl7(s32 arg0) {
         }
         if (D_800E8920[omCurrentObj->objId] == 0) {
             D_800E8920[omCurrentObj->objId] = func_8010D668(slot, depth);
-            if (rec->unk88->unk1C == 2) {
+            if (rec->unk88->terrainKind == 2) {
                 f32 az = gEntitiesAngleZArray[omCurrentObj->objId];
 
                 if (az >= 6.2831855f) {
@@ -1331,11 +1338,11 @@ void func_801A32A8_ovl7(s32 arg0) {
 }
 
 void func_801A32EC(struct Ovl7TrackParams *arg0) {
-    D_801CE6D0_ovl7.unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
-    D_801CE6D0_ovl7.unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    D_801CE6D0_ovl7.unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_801CE6D0_ovl7.posX = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_801CE6D0_ovl7.posY = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_801CE6D0_ovl7.posZ = gEntitiesNextPosZArray[omCurrentObj->objId];
     D_801CE6E0_ovl7 = *arg0;
-    D_801CE6D0_ovl7.unk24 = D_800E17D0[omCurrentObj->objId];
+    D_801CE6D0_ovl7.facingAngle = D_800E17D0[omCurrentObj->objId];
     func_80105180(&D_801CE6D0_ovl7);
     func_801051AC(&D_801CE6D0_ovl7);
 }
@@ -1349,34 +1356,34 @@ void func_801A33B8(struct Ovl7TrackParams *arg0) {
     f32 dx;
     f32 dz;
 
-    D_801CE6D0_ovl7.unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
-    D_801CE6D0_ovl7.unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    D_801CE6D0_ovl7.unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+    D_801CE6D0_ovl7.posX = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_801CE6D0_ovl7.posY = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_801CE6D0_ovl7.posZ = gEntitiesNextPosZArray[omCurrentObj->objId];
     D_801CE6E0_ovl7 = *arg0;
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        D_801CE6D0_ovl7.unk1C = *(f32 *) &arg0->unkC;
+        D_801CE6D0_ovl7.forwardReachPos = arg0->unkC;
     } else {
-        D_801CE6D0_ovl7.unk1C = *(f32 *) &arg0->unk10;
+        D_801CE6D0_ovl7.forwardReachPos = arg0->unk10;
     }
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        D_801CE6D0_ovl7.unk20 = *(f32 *) &arg0->unk10;
+        D_801CE6D0_ovl7.forwardReachNeg = arg0->unk10;
     } else {
-        D_801CE6D0_ovl7.unk20 = *(f32 *) &arg0->unkC;
+        D_801CE6D0_ovl7.forwardReachNeg = arg0->unkC;
     }
-    D_801CE6D0_ovl7.unk24 = D_800E17D0[omCurrentObj->objId];
+    D_801CE6D0_ovl7.facingAngle = D_800E17D0[omCurrentObj->objId];
     if (D_800E8920[omCurrentObj->objId] == 0) {
         D_800E8920[omCurrentObj->objId] = func_80109F60(&D_801CE6D0_ovl7);
     } else {
         D_800E8920[omCurrentObj->objId] = func_8010B238(&D_801CE6D0_ovl7);
     }
-    dx = D_801CE6D0_ovl7.unk4 - gEntitiesNextPosXArray[omCurrentObj->objId];
-    dz = D_801CE6D0_ovl7.unkC - gEntitiesNextPosZArray[omCurrentObj->objId];
+    dx = D_801CE6D0_ovl7.posX - gEntitiesNextPosXArray[omCurrentObj->objId];
+    dz = D_801CE6D0_ovl7.posZ - gEntitiesNextPosZArray[omCurrentObj->objId];
     if ((dx != 0.0f) || (dz != 0.0f)) {
         func_800F8728(omCurrentObj->objId, dx, dz);
-        gEntitiesNextPosXArray[omCurrentObj->objId] = D_801CE6D0_ovl7.unk4;
-        gEntitiesNextPosZArray[omCurrentObj->objId] = D_801CE6D0_ovl7.unkC;
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_801CE6D0_ovl7.posX;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = D_801CE6D0_ovl7.posZ;
     }
-    gEntitiesNextPosYArray[omCurrentObj->objId] = D_801CE6D0_ovl7.unk8;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_801CE6D0_ovl7.posY;
     func_80105238(&D_801CE6D0_ovl7, &D_8012BCA0);
 }
 #elif defined(PORT)
@@ -1392,34 +1399,34 @@ void func_801A33B8(struct Ovl7TrackParams *arg0) {
     f32 dx;
     f32 dz;
 
-    D_801CE6D0_ovl7.unk4 = gEntitiesNextPosXArray[id];
-    D_801CE6D0_ovl7.unk8 = gEntitiesNextPosYArray[id];
-    D_801CE6D0_ovl7.unkC = gEntitiesNextPosZArray[id];
+    D_801CE6D0_ovl7.posX = gEntitiesNextPosXArray[id];
+    D_801CE6D0_ovl7.posY = gEntitiesNextPosYArray[id];
+    D_801CE6D0_ovl7.posZ = gEntitiesNextPosZArray[id];
     D_801CE6E0_ovl7 = *arg0;
     if (D_800E6A10[id] == 1.0f) {
-        D_801CE6D0_ovl7.unk1C = *(f32 *) &arg0->unkC;
+        D_801CE6D0_ovl7.forwardReachPos = arg0->unkC;
     } else {
-        D_801CE6D0_ovl7.unk1C = *(f32 *) &arg0->unk10;
+        D_801CE6D0_ovl7.forwardReachPos = arg0->unk10;
     }
     if (D_800E6A10[id] == 1.0f) {
-        D_801CE6D0_ovl7.unk20 = *(f32 *) &arg0->unk10;
+        D_801CE6D0_ovl7.forwardReachNeg = arg0->unk10;
     } else {
-        D_801CE6D0_ovl7.unk20 = *(f32 *) &arg0->unkC;
+        D_801CE6D0_ovl7.forwardReachNeg = arg0->unkC;
     }
-    D_801CE6D0_ovl7.unk24 = D_800E17D0[id];
+    D_801CE6D0_ovl7.facingAngle = D_800E17D0[id];
     if (D_800E8920[id] == 0) {
         D_800E8920[id] = func_80109F60(&D_801CE6D0_ovl7);
     } else {
         D_800E8920[id] = func_8010B238(&D_801CE6D0_ovl7);
     }
-    dx = D_801CE6D0_ovl7.unk4 - gEntitiesNextPosXArray[id];
-    dz = D_801CE6D0_ovl7.unkC - gEntitiesNextPosZArray[id];
+    dx = D_801CE6D0_ovl7.posX - gEntitiesNextPosXArray[id];
+    dz = D_801CE6D0_ovl7.posZ - gEntitiesNextPosZArray[id];
     if (dx != 0.0f || dz != 0.0f) {
         func_800F8728(id, dx, dz);
-        gEntitiesNextPosXArray[id] = D_801CE6D0_ovl7.unk4;
-        gEntitiesNextPosZArray[id] = D_801CE6D0_ovl7.unkC;
+        gEntitiesNextPosXArray[id] = D_801CE6D0_ovl7.posX;
+        gEntitiesNextPosZArray[id] = D_801CE6D0_ovl7.posZ;
     }
-    gEntitiesNextPosYArray[id] = D_801CE6D0_ovl7.unk8;
+    gEntitiesNextPosYArray[id] = D_801CE6D0_ovl7.posY;
     func_80105238(&D_801CE6D0_ovl7, &D_8012BCA0);
 }
 #else

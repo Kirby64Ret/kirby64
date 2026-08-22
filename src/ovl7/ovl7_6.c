@@ -329,7 +329,7 @@ void func_801AE52C_ovl7(void) {
     struct EnemyKindDesc *q;
 
     q = (struct EnemyKindDesc *) D_800E9E20[omCurrentObj->objId];
-    p = (struct Ovl7Unk94 *) q->unk18;
+    p = (struct Ovl7Unk94 *) q->animCue;
     func_800A9864(D_800E9AA0[omCurrentObj->objId], 0x1869F, 0x10);
     if (p->unkC != -1) {
         func_800AECC0(p->unk14);

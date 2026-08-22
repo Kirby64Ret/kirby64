@@ -262,9 +262,9 @@ void func_801B9498_ovl7(GObj *arg0) {
         if (D_800E9FE0[omCurrentObj->objId].as_s32 > 0) {
             D_800E9FE0[omCurrentObj->objId].as_s32 -= 1;
             if (sub != NULL) {
-                sub->unk4 = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
-                sub->unk8 = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
-                sub->unkC = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+                sub->posX = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+                sub->posY = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+                sub->posZ = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
                 func_801051AC(sub);
             }
         } else {

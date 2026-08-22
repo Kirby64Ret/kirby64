@@ -869,7 +869,7 @@ void func_801DBC38_ovl9(struct GObj *arg0) {
     temp = D_800E1B50[omCurrentObj->objId]->unk84;
     func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][2], omCurrentObj->objId);
     if (temp != NULL) {
-        *(f32 *) &temp->unk18 = sp2C.y - gEntitiesNextPosYArray[omCurrentObj->objId];
+        *(f32 *) &temp->footOffsetY = sp2C.y - gEntitiesNextPosYArray[omCurrentObj->objId];
     }
     func_801A0D74_ovl7(arg0);
     func_8019F410_ovl7(D_800DFBD0[omCurrentObj->objId][2]);

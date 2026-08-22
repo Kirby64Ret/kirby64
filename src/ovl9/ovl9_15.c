@@ -1222,8 +1222,8 @@ void func_80218248_ovl9(struct GObj *arg0) {
         d0 = arg0->data.dobj->firstChild;
         d1 = d0->firstChild;
         d2 = d1->firstChild;
-        *(f32 *) &u->unk14 = ((d1->pos.v.y + d2->pos.v.y) + d0->pos.v.y) + D_801CA9E8;
-        *(f32 *) &u->unk10 = *(f32 *) &u->unk14 * 0.5f;
+        *(f32 *) &u->headOffsetY = ((d1->pos.v.y + d2->pos.v.y) + d0->pos.v.y) + D_801CA9E8;
+        *(f32 *) &u->unk10 = *(f32 *) &u->headOffsetY * 0.5f;
     }
     t = func_801A0D74_ovl7();
     eneTurnCommon2(6);

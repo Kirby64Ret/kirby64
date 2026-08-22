@@ -1426,7 +1426,7 @@ void func_801DF50C_ovl10(s32 arg0) {
         D_800EA520[omCurrentObj->objId] += 1;
     }
     func_800AF27C();
-    D_800E7B20[omCurrentObj->objId] = ent->unk88->unk0;
+    D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     func_800BC1FC((s32) D_800E7B20[omCurrentObj->objId]);
     func_800AF27C();
     func_800AF27C();
@@ -1471,7 +1471,7 @@ void func_801DF50C_ovl10(s32 arg0) {
     D_800EA520[omCurrentObj->objId] = 0;
     pc_ovl10_descend(200.0f, 0, 0);
     func_800AF27C();
-    D_800E7B20[omCurrentObj->objId] = ent->unk88->unk0;
+    D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     func_800BC1FC((s32) D_800E7B20[omCurrentObj->objId]);
     func_800AF27C();
     func_800AF27C();

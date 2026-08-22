@@ -990,11 +990,11 @@ void func_801EDBEC_ovl9(struct GObj *arg0) {
             func_800A9760(D_8021C220_ovl9[idx]);
             break;
     }
-    ent->unk8C = ent->unk88->unk14;
-    ent->unk94 = ent->unk88->unk18;
+    ent->unk8C = ent->unk88->animTable;
+    ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
     func_801A2ADC_ovl7(ent->unk88->unk10);
-    D_800E7B20[omCurrentObj->objId] = ent->unk88->unk0;
+    D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     ent->unk80->unk10 = D_8021C244_ovl9[idx];
     ent->unk80->unk18 = -800.0f;
     D_800E3210[omCurrentObj->objId] = -4.0f;
@@ -1067,8 +1067,8 @@ void func_801EE064_ovl9(struct GObj *arg0) {
             func_800A9760(0x1005A);
             break;
     }
-    ent->unk8C = ent->unk88->unk14;
-    ent->unk94 = ent->unk88->unk18;
+    ent->unk8C = ent->unk88->animTable;
+    ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
     func_801A2ADC_ovl7(ent->unk88->unk10);
     ent->unk80->unk10 = 19.0f;
@@ -1130,11 +1130,11 @@ void func_801EE2E8_ovl9(struct GObj *arg0) {
             func_800A9760(0x10059);
             break;
     }
-    ent->unk8C = ent->unk88->unk14;
-    ent->unk94 = ent->unk88->unk18;
+    ent->unk8C = ent->unk88->animTable;
+    ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
     func_801A2ADC_ovl7(ent->unk88->unk10);
-    D_800E7B20[omCurrentObj->objId] = ent->unk88->unk0;
+    D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     ent->unk80->unk10 = 38.0f;
     ent->unk80->unk18 = -320.0f;
     D_800E98E0[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
@@ -1220,11 +1220,11 @@ void func_801EE728_ovl9(struct GObj *arg0) {
             func_800A9760(D_8021C220_ovl9[kind]);
             break;
     }
-    ent->unk8C = ent->unk88->unk14;
-    ent->unk94 = ent->unk88->unk18;
+    ent->unk8C = ent->unk88->animTable;
+    ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
     func_801A2ADC_ovl7(ent->unk88->unk10);
-    D_800E7B20[omCurrentObj->objId] = ent->unk88->unk0;
+    D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     ent->unk80->unk10 = D_8021C244_ovl9[kind];
     ent->unk80->unk18 = -640.0f;
     D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -1320,11 +1320,11 @@ void func_801EEC28_ovl9(struct GObj *arg0) {
             func_800A9760(D_8021C220_ovl9[idx]);
             break;
     }
-    ent->unk8C = ent->unk88->unk14;
-    ent->unk94 = ent->unk88->unk18;
+    ent->unk8C = ent->unk88->animTable;
+    ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
     func_801A2ADC_ovl7(ent->unk88->unk10);
-    D_800E7B20[omCurrentObj->objId] = ent->unk88->unk0;
+    D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     ent->unk80->unk10 = D_8021C244_ovl9[idx];
     ent->unk80->unk18 = -800.0f;
     D_800E3210[omCurrentObj->objId] = -4.0f;

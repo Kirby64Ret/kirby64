@@ -698,16 +698,16 @@ void func_801FA884_ovl9(struct GObj *arg0) {
         rec->unk48 = func_8010B480;
         rec->unk98 = &D_801CC01C;
         D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 3.1415927f;
-        ay = *(f32 *) &hit->unk14;
+        ay = *(f32 *) &hit->headOffsetY;
         if (ay < 0.0f) {
             ay = -ay;
         }
-        az = *(f32 *) &hit->unk18;
+        az = *(f32 *) &hit->footOffsetY;
         if (az < 0.0f) {
             az = -az;
         }
-        *(f32 *) &hit->unk14 = az;
-        *(f32 *) &hit->unk18 = -ay;
+        *(f32 *) &hit->headOffsetY = az;
+        *(f32 *) &hit->footOffsetY = -ay;
     } else {
         rec->unk48 = func_8010BA44;
         rec->unk98 = (struct EnemyEventTable *) &D_801CBFF8;
@@ -756,16 +756,16 @@ void func_801FA884_ovl9(struct GObj *arg0) {
         rec->unk48 = func_8010B480;
         rec->unk98 = &D_801CC01C;
         D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 3.1415927f;
-        ay = *(f32 *) &hit->unk14;
+        ay = *(f32 *) &hit->headOffsetY;
         if (ay < 0.0f) {
             ay = -ay;
         }
-        az = *(f32 *) &hit->unk18;
+        az = *(f32 *) &hit->footOffsetY;
         if (az < 0.0f) {
             az = -az;
         }
-        *(f32 *) &hit->unk14 = az;
-        *(f32 *) &hit->unk18 = -ay;
+        *(f32 *) &hit->headOffsetY = az;
+        *(f32 *) &hit->footOffsetY = -ay;
     } else {
         rec->unk48 = func_8010BA44;
         rec->unk98 = (struct EnemyEventTable *) &D_801CBFF8;

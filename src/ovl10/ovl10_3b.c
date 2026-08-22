@@ -426,7 +426,7 @@ void func_801EC3C8_ovl10(GObj *arg0) {
 
     while (1) {
         D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
-        ent->unk8C = ent->unk88->unk14;
+        ent->unk8C = ent->unk88->animTable;
         D_800DF150[omCurrentObj->objId] = func_801EC4CC_ovl10;
         utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0xF, &D_801F45E4_ovl10);
     }
