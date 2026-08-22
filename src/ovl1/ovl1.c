@@ -63,9 +63,10 @@ typedef struct UnkGenerator {
     struct UnkGenerator *next;
     u16 generator_id;
     u16 flags;
-    u8 bank_id;
+    u8 scriptFlags;          /* 1 = aim at camera, 2 = owns an emitter */
     u8 kind;
-    u16 texture_id;
+    u8 trackId;              /* func_8009BD3C's bank_id */
+    u8 textureIndex;         /* its texture_id */
     u16 particle_lifetime;
     u16 generator_lifetime;
     u32 bytecode;            /* host address as u32 (PcGenNode.unk10) */
@@ -78,8 +79,8 @@ typedef struct UnkGenerator {
     f32 gravity;
     f32 friction;
     f32 size;
-    f32 unk38;
-    f32 unk3C;
+    f32 radius;
+    f32 spread;
     f32 update_rate;
     f32 frame;
     void *dobj;
@@ -4570,7 +4571,7 @@ struct PcGenNode {
     /* 0x18 */ f32 unk14, unk18, unk1C;  /* position (N64 +0x14..) */
     /* 0x24 */ f32 unk20, unk24, unk28;  /* velocity */
     /* 0x30 */ f32 unk2C, unk30, unk34;  /* gravity, friction, size */
-    /* 0x3C */ f32 unk38, unk3C;
+    /* 0x3C */ f32 radius, spread;
     /* 0x44 */ f32 unk40;                /* update rate */
     /* 0x48 */ f32 unk44;                /* frame */
     /* 0x50 */ struct DObj *unk48;

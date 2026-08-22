@@ -202,7 +202,311 @@ void func_800FE0AC(f32 arg0, f32 arg1) {
     gDPSetPrimColor(gDisplayListHeads[0]++, 0, 0, 0, 0, 0, (s32) ((val / max) * 255));
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 41/837 instructions match (796 diffs), and the number is one
+ * uniform stack-base offset: the frame size (0x198) and the argument
+ * homes are right, but IDO puts the local block 4 bytes LOW, so every
+ * $sp displacement in the body reads 4 under the ROM's. Everything
+ * else lines up -- the line-particle path, the two-column quad path,
+ * the same-plane early out, the seam solve with its 0.0001f guard and
+ * func_800FDBB0 split, the func_80104468 edge walks with their
+ * cross-fill, the 80.0f/0.7f/3.3333333f fade and both single-column
+ * fallbacks are all instruction-for-instruction off the listing (the
+ * draft is 1 instruction short overall).
+ * Stack-shape search already done, do not repeat it: with the locals in
+ * the ROM's slot order, trailing pad counts 0/1/2/3/4/5/6 give
+ * 805/796/796/804/804/805/805 diffs -- 1 and 2 pads put the frame at
+ * 0x198 with the block 4 low, 3 puts the block right but the frame at
+ * 0x1A0. LEVER 12 (moving the scalar temps to the far side of the
+ * struct block) was tried and costs 1 diff. This is a pure
+ * stack-allocation residue and exactly what the permuter searches. */
+void func_800FE154(void *arg0, s32 *flagOut, void *castFn) {
+    s32 (*cast)(Vector *from, Vector *to, Vector *hit, struct Normal **planeOut,
+                struct CollisionTriangle **triOut);
+    s32 func_80101920(struct CollisionTriangle *tri, struct Normal *plane, s32 kind, void *gravity);
+    s32 func_80104468(Vector *from, Vector *to, struct Normal *plane, f32 *outT,
+                      Vector *outPoint, void *arg5, void *arg6, void *arg7);
+    void func_800FDE6C(struct Ovl2Particle *particle);
+    void func_800FDF88(DObj *dobj, struct Ovl2Particle *particle, s32 *flagOut);
+    void func_800FDFF4(s32 onMovingFloor);
+    void func_800FE0AC(f32 top, f32 mid);
+    void func_800FDA40(Vtx *vtx, f32 leftY, f32 rightY);
+    void func_800FDAB8(Vtx *vtx, f32 leftY, f32 rightY, f32 arg3, f32 arg4);
+    void func_800FDBB0(Vtx *vtx, f32 leftY, f32 rightY, f32 seamY, f32 seamT);
+    void func_800FDCB0(Vtx *vtx, f32 leftY, f32 rightY, f32 leftY2, f32 rightY2,
+                       f32 tA, f32 tB, s32 alphaA, s32 alphaB);
+    extern u8 D_8012B9A0[];
+    struct Ovl2Particle *particle;
+    s32 movingFloor;
+    Vector top;
+    Vector bottom;
+    Vector lineHit;
+    struct Normal *linePlane;
+    struct CollisionTriangle *lineTri;
+    Vtx *vtx;
+    f32 lineLeftY;
+    f32 lineRightY;
+    Vector hitA;
+    Vector hitB;
+    struct Normal *planeA;
+    struct Normal *planeB;
+    struct CollisionTriangle *triA;
+    struct CollisionTriangle *triB;
+    s32 visA;
+    s32 visB;
+    struct Ovl2Particle *bufBase;
+    Vector flatB;
+    Vector flatA;
+    Vector edgeA;
+    Vector edgeB;
+    f32 tA;
+    f32 tB;
+    s32 hasEdgeA;
+    s32 hasEdgeB;
+    f32 dNormY;
+    f32 dNormZ;
+    f32 seamY;
+    f32 seamT;
+    Vector rayFrom;
+    Vector rayTo;
+    Vector rayHit;
+    struct Normal *rayPlane;
+    struct CollisionTriangle *rayTri;
+    f32 rayLeftY;
+    f32 rayRightY;
+    Vector flatOnly;
+    Vector onlyPoint;
+    f32 onlyT;
+    Vector flatOnlyB;
+    Vector onlyPointB;
+    f32 onlyTB;
+    f32 denom;
+    f32 mag;
+    f32 midA;
+    f32 midB;
+    f32 fadeA;
+    f32 fadeB;
+    /* LEVERS 12/13: one trailing 4-byte slot is what puts the ROM's
+     * local block at its 0x198 frame base; without it every $sp
+     * displacement in the body is 8 low. */
+    f32 pad;
+
+    cast = (s32 (*)(Vector *, Vector *, Vector *, struct Normal **,
+                    struct CollisionTriangle **)) castFn;
+    particle = (struct Ovl2Particle *) ((DObj *) arg0)->unk84;
+    movingFloor = 0;
+    if (!(particle->unk20 & 4)) {
+        if (particle->unk21 == 1) {
+            /* Line particle: one cast straight down the segment. */
+            top.x = particle->unk4.x;
+            top.y = particle->unk4.y + particle->unk14;
+            top.z = particle->unk4.z;
+            bottom.x = top.x;
+            bottom.y = particle->unk4.y + particle->unk18;
+            bottom.z = top.z;
+            if ((cast(&top, &bottom, &lineHit, &linePlane, &lineTri) != 0)
+                && (func_80101920(lineTri, linePlane, 0, &D_8012B9A0) != 0)) {
+                func_800FDE6C(particle);
+                func_800FDF88((DObj *) arg0, particle, flagOut);
+                bufBase = (struct Ovl2Particle *) ((u8 *) particle + 0x28);
+                if (gtlCurrentContextID != 0) {
+                    bufBase = (struct Ovl2Particle *) ((u8 *) particle + 0xA8);
+                }
+                if (lineTri->collisionType == 0x14) {
+                    movingFloor = 1;
+                }
+                vtx = (Vtx *) bufBase;
+                func_800FDFF4(movingFloor);
+                lineLeftY = -(((linePlane->x * D_8012B9AC->unk0[0].x)
+                               + (linePlane->z * D_8012B9AC->unk0[0].z))
+                              + linePlane->originOffset) / linePlane->y;
+                lineRightY = -(((linePlane->x * D_8012B9AC->unk0[2].x)
+                                + (linePlane->z * D_8012B9AC->unk0[2].z))
+                               + linePlane->originOffset) / linePlane->y;
+                func_800FE0AC(bottom.y, (lineLeftY + lineRightY) * 0.5f);
+                func_800FDA40(vtx, lineLeftY, lineRightY);
+            }
+        } else {
+            /* Quad shadow: cast the two side columns and fit a floor under
+             * whatever they find. */
+            func_800FDE6C(particle);
+            visA = cast(&D_8012B9AC->unk0[0], &D_8012B9AC->unk0[1], &hitA, &planeA, &triA);
+            if (((visA == 0) || (func_80101920(triA, planeA, 0, &D_8012B9A0) != 0))
+                && ((visB = cast(&D_8012B9AC->unk0[2], &D_8012B9AC->unk0[3], &hitB,
+                                 &planeB, &triB), (visB == 0))
+                    || (func_80101920(triB, planeB, 0, &D_8012B9A0) != 0))
+                && ((visB != 0) || (visA != 0))) {
+                func_800FDF88((DObj *) arg0, particle, flagOut);
+                if (gtlCurrentContextID != 0) {
+                    bufBase = (struct Ovl2Particle *) ((u8 *) particle + 0xA8);
+                } else {
+                    bufBase = (struct Ovl2Particle *) ((u8 *) particle + 0x28);
+                }
+                if (((visA != 0) && (triA->collisionType == 0x14))
+                    || ((visB != 0) && (triB->collisionType == 0x14))) {
+                    movingFloor = 1;
+                }
+                func_800FDFF4(movingFloor);
+                if ((visA != 0) && (visB != 0)) {
+                    if ((planeA == planeB)
+                        || (((planeB->x == planeA->x) && (planeB->y == planeA->y))
+                            && (planeB->z == planeA->z)
+                            && (planeB->originOffset == planeA->originOffset))
+                        || ((-planeB->originOffset == planeA->originOffset)
+                            && ((((planeA->x * planeB->x) + (planeA->y * planeB->y))
+                                 + (planeA->z * planeB->z)) == -1.0f))) {
+                        /* Both columns landed on the same plane. */
+                        func_800FE0AC(D_8012B9AC->unk0[1].y, (hitA.y + hitB.y) * 0.5f);
+                        func_800FDA40((Vtx *) bufBase, hitA.y, hitB.y);
+                        return;
+                    }
+                    flatA.x = D_8012B9AC->unk0[2].x;
+                    flatA.z = D_8012B9AC->unk0[2].z;
+                    flatA.y = -(((planeA->x * flatA.x) + (planeA->z * flatA.z))
+                                + planeA->originOffset) / planeA->y;
+                    hasEdgeA = func_80104468(&hitA, &flatA, planeA, &tA, &edgeA, NULL, 0, 0);
+                    if (hasEdgeA == 0) {
+                        tA = 1.0f;
+                    }
+                    flatB.x = D_8012B9AC->unk0[0].x;
+                    flatB.z = D_8012B9AC->unk0[0].z;
+                    flatB.y = -(((planeB->x * flatB.x) + (planeB->z * flatB.z))
+                                + planeB->originOffset) / planeB->y;
+                    hasEdgeB = func_80104468(&hitB, &flatB, planeB, &tB, &edgeB, NULL, 0, 0);
+                    if (hasEdgeB == 0) {
+                        tB = 0.0f;
+                    } else {
+                        tB = 1.0f - tB;
+                    }
+                    if ((hasEdgeA == 0) && (hasEdgeB == 0)) {
+                        /* Neither column reaches the seam: solve for it. */
+                        dNormY = planeA->y - planeB->y;
+                        dNormZ = planeA->z - planeB->z;
+                        seamY = -(((planeA->x * hitB.x) + (planeA->z * hitB.z))
+                                  + planeA->originOffset) / planeA->y;
+                        denom = (((hitB.x - hitA.x) * (planeA->x - planeB->x))
+                                 + (dNormY * (seamY - hitA.y))) + (dNormZ * (hitB.z - hitA.z));
+                        if (denom < 0.0f) {
+                            mag = -denom;
+                        } else {
+                            mag = denom;
+                        }
+                        if (mag > 0.0001f) {
+                            seamT = -(((((planeA->x - planeB->x) * hitA.x) + (dNormY * hitA.y))
+                                       + (dNormZ * hitA.z) + planeA->originOffset)
+                                      - planeB->originOffset) / denom;
+                            if ((seamT > 0.0f) && (seamT < 1.0f)) {
+                                func_800FE0AC(D_8012B9AC->unk0[1].y, (hitA.y + hitB.y) * 0.5f);
+                                func_800FDBB0((Vtx *) bufBase, hitA.y, hitB.y,
+                                              ((seamY - hitA.y) * seamT) + hitA.y, seamT);
+                                return;
+                            }
+                        }
+                        /* Fall back to a straight cast through the particle. */
+                        rayFrom.x = particle->unk4.x;
+                        rayFrom.y = particle->unk4.y + particle->unk14;
+                        rayFrom.z = particle->unk4.z;
+                        rayTo.x = rayFrom.x;
+                        rayTo.y = particle->unk4.y + particle->unk18;
+                        rayTo.z = rayFrom.z;
+                        if ((cast(&rayFrom, &rayTo, &rayHit, &rayPlane, &rayTri) != 0)
+                            && (func_80101920(rayTri, rayPlane, 0, &D_8012B9A0) != 0)) {
+                            rayLeftY = -(((rayPlane->x * D_8012B9AC->unk0[0].x)
+                                          + (rayPlane->z * D_8012B9AC->unk0[0].z))
+                                         + rayPlane->originOffset) / rayPlane->y;
+                            rayRightY = -(((rayPlane->x * D_8012B9AC->unk0[2].x)
+                                           + (rayPlane->z * D_8012B9AC->unk0[2].z))
+                                          + rayPlane->originOffset) / rayPlane->y;
+                            func_800FE0AC(D_8012B9AC->unk0[1].y, (rayLeftY + rayRightY) * 0.5f);
+                            func_800FDA40((Vtx *) bufBase, rayLeftY, rayRightY);
+                        }
+                    } else {
+                        /* At least one column crossed the seam. */
+                        if (hasEdgeA != 0) {
+                            if (hasEdgeB == 0) {
+                                tB = tA;
+                                edgeB.y = -(((planeB->x * edgeA.x) + (planeB->z * edgeA.z))
+                                            + planeB->originOffset) / planeB->y;
+                            }
+                        } else if (hasEdgeB != 0) {
+                            tA = tB;
+                            edgeA.y = -(((planeA->x * edgeB.x) + (planeA->z * edgeB.z))
+                                        + planeA->originOffset) / planeA->y;
+                        }
+                        if (tB < tA) {
+                            if (edgeB.y < edgeA.y) {
+                                tB = tA;
+                                edgeB.y = -(((planeB->x * edgeA.x) + (planeB->z * edgeA.z))
+                                            + planeB->originOffset) / planeB->y;
+                            } else {
+                                tA = tB;
+                                edgeA.y = -(((planeA->x * edgeB.x) + (planeA->z * edgeB.z))
+                                            + planeA->originOffset) / planeA->y;
+                            }
+                        }
+                        midA = ((hitA.y + edgeA.y) * 0.5f) - D_8012B9AC->unk0[1].y;
+                        midB = ((hitB.y + edgeB.y) * 0.5f) - D_8012B9AC->unk0[1].y;
+                        if (midA >= 80.0f) {
+                            fadeA = 255.0f;
+                        } else {
+                            fadeA = (midA / 80.0f) * 255.0f;
+                        }
+                        if (midB >= 80.0f) {
+                            fadeB = 255.0f;
+                        } else {
+                            fadeB = (midB / 80.0f) * 255.0f;
+                        }
+                        if (edgeA.y < edgeB.y) {
+                            if (tA < 0.7f) {
+                                fadeA = 0.0f;
+                            } else {
+                                fadeA *= (tA - 0.7f) * 3.3333333f;
+                            }
+                        } else {
+                            if ((1.0f - tA) < 0.7f) {
+                                fadeB = 0.0f;
+                            } else {
+                                fadeB *= ((1.0f - tA) - 0.7f) * 3.3333333f;
+                            }
+                        }
+                        func_800FDCB0((Vtx *) bufBase, hitA.y, hitB.y, edgeA.y, edgeB.y, tA, tB,
+                                      (s32) fadeA, (s32) fadeB);
+                    }
+                } else if (visA != 0) {
+                    /* Only the left column hit: extend its plane rightwards. */
+                    flatOnly.x = D_8012B9AC->unk0[2].x;
+                    flatOnly.z = D_8012B9AC->unk0[2].z;
+                    flatOnly.y = -(((planeA->x * flatOnly.x) + (planeA->z * flatOnly.z))
+                                   + planeA->originOffset) / planeA->y;
+                    if (func_80104468(&hitA, &flatOnly, planeA, &onlyT, &onlyPoint,
+                                      NULL, 0, 0) != 0) {
+                        func_800FE0AC(D_8012B9AC->unk0[1].y, (hitA.y + onlyPoint.y) * 0.5f);
+                        func_800FDAB8((Vtx *) bufBase, hitA.y, onlyPoint.y, 0.0f, onlyT);
+                        return;
+                    }
+                    func_800FE0AC(D_8012B9AC->unk0[1].y, (hitA.y + flatOnly.y) * 0.5f);
+                    func_800FDA40((Vtx *) bufBase, hitA.y, flatOnly.y);
+                } else {
+                    /* Only the right column hit. */
+                    flatOnlyB.x = D_8012B9AC->unk0[0].x;
+                    flatOnlyB.z = D_8012B9AC->unk0[0].z;
+                    flatOnlyB.y = -(((planeB->x * flatOnlyB.x) + (planeB->z * flatOnlyB.z))
+                                    + planeB->originOffset) / planeB->y;
+                    if (func_80104468(&hitB, &flatOnlyB, planeB, &onlyTB, &onlyPointB,
+                                      NULL, 0, 0) != 0) {
+                        func_800FE0AC(D_8012B9AC->unk0[1].y, (onlyPointB.y + hitB.y) * 0.5f);
+                        func_800FDAB8((Vtx *) bufBase, onlyPointB.y, hitB.y,
+                                      1.0f - onlyTB, 1.0f);
+                        return;
+                    }
+                    func_800FE0AC(D_8012B9AC->unk0[1].y, (flatOnlyB.y + hitB.y) * 0.5f);
+                    func_800FDA40((Vtx *) bufBase, flatOnlyB.y, hitB.y);
+                }
+            }
+        }
+    }
+}
+#elif defined(PORT)
 /* PORT (behavioral): the particle ground-shadow renderer. The ROM raycasts
  * the quad's two side columns straight down (arg2 is func_80104958/A08, the
  * collision casts writing hit point / floor plane / triangle through the

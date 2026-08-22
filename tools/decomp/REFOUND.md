@@ -228,3 +228,24 @@ Do NOT attempt this while lanes are running.
   casts rather than touch the header. Fix needs the whole-tree protocol:
   record every file's match count, change the four fields, rebuild, re-verify
   every TU that reads them, check_tu_size, then the sha1 gate.
+
+## GATE GAP: verify.py is blind in a file with zero matched functions
+
+A file whose functions are all pragmas/guarded has nothing for verify.py to
+score, so it reports "0 checks" and a declaration change there can shift
+codegen invisibly. Measured twice in the K&R->ANSI pass, including one that
+looked completely inert (`func_800B2340(Vector*, struct DObj*, u32)`:
+matching arity, visible types, zero risk signals) yet renamed $a2->$v0
+across ~80 instructions of an UNRELATED caller in the same TU.
+
+So for any declaration/type change, the per-file gate is a byte diff of the
+translation unit, not verify.py:
+
+    objdump -d -j .text build/verify/src/<path>.o  >  /tmp/after.txt
+    objdump -d -j .text build/src/<path>.o         >  /tmp/before.txt
+    diff /tmp/before.txt /tmp/after.txt        # must be empty
+
+`build/` is the manager's last full build (the known-good baseline) and
+`build/verify/` is what verify.py just compiled. Note `build/` lags live
+edits, which is also why check_tu_size can report a stale size for a file a
+lane is actively editing -- confirm against build/verify/ before believing it.

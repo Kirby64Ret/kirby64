@@ -688,12 +688,13 @@ void func_801F1454_ovl10(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1454_ovl10.s")
 #endif
-#ifdef MIPS_TO_C
+#ifndef PORT
 
 /* Snaps this track's position and angles onto mount node 1/2/3 of the
  * D_801F4D60 wheel object, picked by arg1 (0..2); other values are a no-op.
  * D_800DFBD0 rows are native DObj** on the PC build. */
 void func_801F1554_ovl10(GObj *arg0, s32 arg1) {
+    void func_800A9864(s32, s32, s32);
     extern u32 D_801F4D60_ovl10;
 
     Vector pos;
@@ -713,7 +714,7 @@ void func_801F1554_ovl10(GObj *arg0, s32 arg1) {
     default:
         return;
     }
-    func_800B2340(&sp6C, arg0->data.dobj, 0xFFFF);
+    func_800B2340(&pos, node, D_801F4D60_ovl10);
     gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
     gEntitiesNextPosYArray[omCurrentObj->objId] = pos.y;
     gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
@@ -722,7 +723,7 @@ void func_801F1554_ovl10(GObj *arg0, s32 arg1) {
     gEntitiesAngleYArray[omCurrentObj->objId] = ang.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = ang.z;
 }
-#elif defined(PORT)
+#else
 extern u32 D_801F4D60_ovl10;
 
 /* Snaps this track's position and angles onto mount node 1/2/3 of the
@@ -755,8 +756,6 @@ void func_801F1554_ovl10(GObj *arg0, s32 arg1) {
     gEntitiesAngleYArray[omCurrentObj->objId] = ang.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = ang.z;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1554_ovl10.s")
 #endif
 
 extern s32 D_800D6B98;
@@ -811,7 +810,7 @@ s32 func_801F19DC_ovl10(s32 arg0, s32 arg1) {
     return D_800D6BE0[arg0 * 6 + arg1] & 3;
 }
 
-#ifdef MIPS_TO_C
+#ifndef PORT
 
 /* Wheel-item setup for the walking prizes (arg2 = 1 waddle dee, 2 adeleine,
  * 3 king dedede; other kinds skip the model swap): stops the track's music
@@ -867,7 +866,7 @@ void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
     func_801F0014_ovl10(particle);
     curObjSleepForever();
 }
-#elif defined(PORT)
+#else
 extern void func_800B1900(u16);
 extern s32 random_soft_s32_range(s32);
 extern u32 D_801F48F4_ovl10[];
@@ -922,8 +921,6 @@ void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
     func_801F0014_ovl10(particle);
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1A24_ovl10.s")
 #endif
 
 /* D_801F4CA8_ovl10 = 0.2f : now emitted by this TU */
