@@ -1328,7 +1328,22 @@ static void pc_ovl10_descend(f32 hold, s32 waypoint, s32 restEachStep) {
 /* State 0xA (phase-2 intro): plays the transformation anim set, unwinds any
  * pending turn, swaps to the phase-2 enemy descriptor D_801F344C (new anim
  * bank + HP refill from its unk0), floats down to the parent's height with
- * the shared descent loop, then rerolls the attack pattern seeds. */
+ * the shared descent loop, then rerolls the attack pattern seeds.
+ *
+ * FACTORY: 370/444, UNCERTAIN -- fresh derivation, time-boxed. The
+ * PORT arm calls the shared pc_ovl10_descend(200.0f, 0, 0) helper; the
+ * ROM inlines that loop in full at every one of its three call sites
+ * (same finding as func_801E0460_ovl10), so this draft hand-expands it
+ * for waypoint=0 (track/height come from the parent's own track
+ * D_800E0D50, not the D_801F4D48/D_801F4D30 waypoint table) and
+ * restEachStep=0 (so the loop's per-step func_800AF27C() call is
+ * compiled out entirely, unlike func_801E0460_ovl10 where it always
+ * fires). Local declarations only (D_801F3A84_ovl10 plus the descent
+ * tables and func_800F9828's prototype), same safe technique as
+ * func_801E0460_ovl10 -- no file-scope changes. Compiles, word count
+ * matches (444/444), residue moderate-to-high (370/444). Worth a
+ * fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
 void func_801DF50C_ovl10(s32 arg0) {
     void func_801DFE64_ovl10(void);
     s32 func_801DFCC0_ovl10(void);
@@ -1337,6 +1352,7 @@ void func_801DF50C_ovl10(s32 arg0) {
     extern f32 D_801F4338_ovl10[];
     extern f32 D_801F4364_ovl10[];
     extern f32 D_801F4390_ovl10[];
+    extern s32 D_801F3A84_ovl10;
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
     s32 track;
     f32 ty;
@@ -1419,6 +1435,54 @@ void func_801DF50C_ovl10(s32 arg0) {
     D_800E9C60[omCurrentObj->objId] = random_soft_s32_range(6);
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
 }
+#elif defined(PORT)
+void func_801DF50C_ovl10(s32 arg0) {
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+
+    func_801DFE64_ovl10();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0xA;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A84_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+    func_800B33F4();
+    func_800A9760(0x1005D);
+    func_800AA018(0x10305);
+    func_800AA018(0x10304);
+    if (D_800E9020[omCurrentObj->objId] != 0.0f) {
+        func_801DFCC0_ovl10();
+    } else {
+        func_800AF27C();
+    }
+    func_800AA018(0x10307);
+    func_800AA018(0x10306);
+    if (D_800E9020[omCurrentObj->objId] != 0.0f) {
+        func_801DFCC0_ovl10();
+    } else {
+        func_800AF27C();
+    }
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    func_80198880_ovl7(D_801F344C_ovl10);
+    func_801A2ADC_ovl7(ent->unk88->unk10);
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A84_ovl10;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800EA520[omCurrentObj->objId] = 0;
+    pc_ovl10_descend(200.0f, 0, 0);
+    func_800AF27C();
+    D_800E7B20[omCurrentObj->objId] = ent->unk88->unk0;
+    func_800BC1FC((s32) D_800E7B20[omCurrentObj->objId]);
+    func_800AF27C();
+    func_800AF27C();
+    D_800E98E0[omCurrentObj->objId] = random_soft_s32_range(4);
+    D_800E9AA0[omCurrentObj->objId].as_s32 = random_soft_s32_range(4);
+    D_800E9C60[omCurrentObj->objId] = random_soft_s32_range(6);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DF50C_ovl10.s")
+#endif
 
 void func_801DFBFC_ovl10(GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId]++ >= 0x79) {
