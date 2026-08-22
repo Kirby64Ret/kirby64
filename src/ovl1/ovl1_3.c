@@ -9,7 +9,7 @@
 extern u32 **D_800D00C4[];
 
 // not in this file?
-extern u32 D_800DFA10[];
+extern u32 *D_800DFA10[];
 extern u32 *D_800DFD90[];
 
 
@@ -1024,8 +1024,6 @@ loop_4:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A94F4.s")
 #endif
 
-#ifdef MIPS_TO_C
-// https://decomp.me/scratch/aHCLi
 struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header) {
     u32* layout = header->layout;
     u32* texScroll = header->texScroll;
@@ -1037,12 +1035,7 @@ struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header) {
         case 0x14:
         case 0x15:
         case 0x16:
-            layout = header->layout;
-            D_800DFA10[omCurrentObj->objId] = layout;
-            texScroll = header->texScroll;
-            D_800DFD90[omCurrentObj->objId] = texScroll;
-            // Replacing layout with D_800DFA10[omCurrentObj->objId] fixes setup/cleanup :think:
-            func_800AF618(layout, texScroll, D_800DFBD0[omCurrentObj->objId]);
+            func_800AF618(D_800DFA10[omCurrentObj->objId] = header->layout, D_800DFD90[omCurrentObj->objId] = header->texScroll, D_800DFBD0[omCurrentObj->objId]);
             break;
         case 0x17:
         case 0x18:
@@ -1052,13 +1045,8 @@ struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header) {
         case 0x1C:
         case 0x1D:
         case 0x1E:
-            layout = header->layout;
-            D_800DFA10[omCurrentObj->objId] = layout;
-            texScroll = header->texScroll;
-            D_800DFD90[omCurrentObj->objId] = texScroll;
-            func_800AF4BC(layout, texScroll, D_800DFBD0[omCurrentObj->objId]);
+            func_800AF4BC(D_800DFA10[omCurrentObj->objId] = header->layout, D_800DFD90[omCurrentObj->objId] = header->texScroll, D_800DFBD0[omCurrentObj->objId]);
             break;
-        // weird switch cases that werent decompiled automatically
         case 0x1F:
         case 999:
             break;
@@ -1066,9 +1054,6 @@ struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header) {
     
     return header;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9648.s")
-#endif
 
 #ifdef MIPS_TO_C
 

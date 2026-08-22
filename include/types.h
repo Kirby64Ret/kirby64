@@ -117,7 +117,7 @@ struct BankHeader {
 struct GeometryBlockHeader {
     /*0x00*/ u32 *layout;         // segment-offset pointer to the LAYOUT section
     /*0x04*/ u32 *texScroll;      // segment-offset pointer to the TEXTURE SCROLL section
-    /*0x08*/ int  layoutMode;     // interpretation mode of the LAYOUT section
+    /*0x08*/ u32  layoutMode;     // interpretation mode of the LAYOUT section
     /*0x0C*/ u32 *imgRefs;        // segment-offset pointer to the G_SETTIMG REFERENCES section
     /*0x10*/ u32 *vtxRefs;        // segment-offset pointer to the G_VTX REFERENCES section
     /*0x14*/ int  numAnimations;  // defines length of the ANIMARION REFS section

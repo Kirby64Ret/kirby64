@@ -185,7 +185,7 @@ typedef struct GObj {
     /* 0x44 */ u32 flags;
     // grab arguments
     /* 0x48 */ void (*onAnimate)(struct DObj *, s32, f32);
-    /* 0x4C */ void *unk4C;
+    /* 0x4C */ void *unk4C; // TODO: union
 } GObj;
 // size: 0x50
 extern struct GObj *omCurrentObj, *omCurrentDrawObj;

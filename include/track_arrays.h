@@ -30,8 +30,8 @@ extern s32 D_800DD8D0[];
 extern s32 gEntityRenderPriorityArray[];
 
 
-extern f32 D_800E0B90[];
-extern f32 D_800E09D0[];
+extern f32 gEntityTextureAnimationSpeedArray[];
+extern f32 gEntityModelAnimationSpeedArray[];
 extern s32 D_800E0F10[];
 extern s32 D_800E0D50[];
 extern f32 **D_800E0490[];
@@ -181,5 +181,7 @@ extern f32 D_800D66FC, D_800D66F8;
 extern u32 D_800E8060[];
 extern s32 D_800E8920[];
 extern s32 D_800E7EA0[];
+
+extern s32 D_800E91E0[];
 
 #endif

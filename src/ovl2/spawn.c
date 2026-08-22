@@ -108,7 +108,7 @@ s32 setUpDispose(s32 arg0, u8 disType, u8 entID, u8 arg3, u8 arg4, u8 arg5, s16 
     gEntitiesAngleXArray[track] = angle->x;
     gEntitiesAngleYArray[track] = angle->y;
     gEntitiesAngleZArray[track] = angle->z;
-    ((s32*)D_800E9020)[112 + track] = save;
+    D_800E91E0[track] = save;
     tmpscale = *scale;
     gEntitiesScaleZArray[track] = tmpscale;
     gEntitiesScaleYArray[track] = tmpscale;

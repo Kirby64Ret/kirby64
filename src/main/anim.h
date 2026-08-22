@@ -127,7 +127,9 @@ typedef struct UnkE4E4Arg {
 
 DObj* animModelTreeNextNode(DObj*);
 // void anim_func_8000FBC4(GObj* obj, struct UnkE4E4Arg* arg1, DObj** arg2);
+void animSetModelAnimation(DObj *dobj, AnimCmd *animList, f32 time);
 void animSetModelAnimationSpeed(GObj* obj, f32 speed);
+void animSetTextureAnimation(MObj *mobj, AnimCmd *animList, f32 time);
 void animSetTextureAnimationSpeed(GObj* obj, f32 speed);
 void animSetModelTreeAnimation(GObj* obj, AnimCmd** animLists, f32 skipFrames);
 void animSetModelTreeTextureAnimation(GObj* obj, AnimCmd*** textureAnimLists, f32 skipFrames);

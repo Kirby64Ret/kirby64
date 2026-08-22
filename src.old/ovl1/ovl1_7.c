@@ -14,35 +14,35 @@ void func_800AFA88(struct GObj *);
 void func_8000BEF4_ovl1(struct GObj *, f32);
 
 void func_800AECC0(f32 arg0) {
-    if (arg0 != D_800E09D0[omCurrentObj->objId]) {
-        D_800E09D0[omCurrentObj->objId] = arg0;
-        func_8000BEF4_ovl1(omCurrentObj, D_800E09D0[omCurrentObj->objId]);
+    if (arg0 != gEntityModelAnimationSpeedArray[omCurrentObj->objId]) {
+        gEntityModelAnimationSpeedArray[omCurrentObj->objId] = arg0;
+        func_8000BEF4_ovl1(omCurrentObj, gEntityModelAnimationSpeedArray[omCurrentObj->objId]);
     }
 }
 
 extern void func_8000BFA0_ovl1(struct GObj *, f32);
 
 void func_800AED20(f32 arg0) {
-    if (arg0 != D_800E0B90[omCurrentObj->objId]) {
-        D_800E0B90[omCurrentObj->objId] = arg0;
-        func_8000BFA0_ovl1(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
+    if (arg0 != gEntityTextureAnimationSpeedArray[omCurrentObj->objId]) {
+        gEntityTextureAnimationSpeedArray[omCurrentObj->objId] = arg0;
+        func_8000BFA0_ovl1(omCurrentObj, gEntityTextureAnimationSpeedArray[omCurrentObj->objId]);
     }
 }
 
 void func_800AED80(f32 arg0, s32 arg1) {
-    if (arg0 != D_800E09D0[arg1]) {
+    if (arg0 != gEntityModelAnimationSpeedArray[arg1]) {
         struct UnkStruct800DE350 *tmp = D_800DE350[arg1];
 
-        D_800E09D0[arg1] = arg0;
+        gEntityModelAnimationSpeedArray[arg1] = arg0;
         func_8000BEF4_ovl1(tmp, arg0);
     }
 }
 
 void func_800AEDD0(f32 arg0, s32 arg1) {
-    if (arg0 != D_800E0B90[arg1]) {
+    if (arg0 != gEntityTextureAnimationSpeedArray[arg1]) {
         struct UnkStruct800DE350 *tmp = D_800DE350[arg1];
 
-        D_800E0B90[arg1] = arg0;
+        gEntityTextureAnimationSpeedArray[arg1] = arg0;
         func_8000BFA0_ovl1(tmp, arg0);
     }
 }
@@ -133,7 +133,7 @@ u32 func_800AF0F4(void) {
     if (D_800D6708 == sp20->unk98) {
         D_800DD8D0[omCurrentObj->objId] |= 0x20000000;
     } else {
-        if (sp20->unkA0 < D_800E0B90[omCurrentObj->objId]) {
+        if (sp20->unkA0 < gEntityTextureAnimationSpeedArray[omCurrentObj->objId]) {
             if (D_800DD8D0[omCurrentObj->objId] * 4 >= 0) {
                 return 0;
             }
@@ -186,16 +186,16 @@ void func_800AF4BC(s32 arg0, s32 arg1, s32 arg2) {
     }
     if (arg1 == 0) {
         func_8000F980_ovl1(omCurrentObj, arg0, arg2, 0x1C, 0, 0);
-        temp_f0 = D_800E09D0[omCurrentObj->objId];
+        temp_f0 = gEntityModelAnimationSpeedArray[omCurrentObj->objId];
         if (omCurrentObj->unk3C->unk78 != temp_f0) {
             func_8000BEF4_ovl1(omCurrentObj, temp_f0);
         }
     } else {
         func_8000FB10_ovl1(omCurrentObj, arg0, arg1, arg2, 0x1C, 0, 0);
-        temp_f0_2 = D_800E09D0[omCurrentObj->objId];
+        temp_f0_2 = gEntityModelAnimationSpeedArray[omCurrentObj->objId];
         if (omCurrentObj->unk3C->unk78 != temp_f0_2) {
             func_8000BEF4_ovl1(omCurrentObj, temp_f0_2);
-            func_8000BFA0_ovl1(omCurrentObj, D_800E0B90[omCurrentObj->objId]);
+            func_8000BFA0_ovl1(omCurrentObj, gEntityTextureAnimationSpeedArray[omCurrentObj->objId]);
         }
     }
     if (sp30 != 0) {

@@ -1174,3 +1174,5 @@ bank_7_anim_table = 0x800cfa80;
 bank_7_misc_table = 0x800cfce0;
 bank_7_filetable = 0x800d00a4;
 
+D_800E91E0 = 0x800E91E0;
+

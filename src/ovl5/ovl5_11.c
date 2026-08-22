@@ -176,7 +176,7 @@ loop_1:
                 func_800AECC0(0.0f);
                 func_800AED20(0.0f);
             }
-        } else if ((temp_v0 == 1) && ((D_800E09D0[omCurrentObj->objId] == 0.0f) || (func_800AA934(D_8018A10C_ovl5.unk4) == 0))) {
+        } else if ((temp_v0 == 1) && ((gEntityModelAnimationSpeedArray[omCurrentObj->objId] == 0.0f) || (func_800AA934(D_8018A10C_ovl5.unk4) == 0))) {
             func_800AECC0(2.0f);
             func_800AED20(2.0f);
             func_800AA018(D_8018A10C_ovl5.unk4);
@@ -207,7 +207,7 @@ void func_801813FC_ovl5(GObj *arg0) {
                     func_800AED20(0.0f);
                 }
             } else if ((D_800E9AA0[D_8018EDEC_ovl5].as_s32 == 1)) {
-                if ((D_800E09D0[omCurrentObj->objId] == 0.0f) || (func_800AA934(D_8018A11C_ovl5[1]) == 0)) {
+                if ((gEntityModelAnimationSpeedArray[omCurrentObj->objId] == 0.0f) || (func_800AA934(D_8018A11C_ovl5[1]) == 0)) {
                     func_800AECC0(2.0f);
                     func_800AED20(2.0f);
                     func_800AA018(D_8018A11C_ovl5[1]);
