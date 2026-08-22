@@ -154,56 +154,49 @@ extern OSThread *(*gCrashScreenFramebuffer)(); // TODO: callback not framebuf
 
 
 #ifdef MIPS_TO_C
+/* FACTORY: ~7/321 structural (insn count exact both attempts), residue is
+ * whole-function allocation: ROM homes arg0/arg1 into s0/s1 and keeps all
+ * cursors in temp regs; every spelling tried lands over- or under-saved. */
 
-void func_80020F40(s32 arg0, s32 arg1, s32 arg2, ? arg3) {
-    ? *var_v1;
-    Gfx *temp_a3;
-    Gfx *temp_a3_2;
-    Gfx *temp_a3_3;
+void func_80020F40(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    extern s32 gCurrScreenHeight;
+    extern void *D_80096520;
+    u32 *var_a0;
+    u32 *var_v1;
     Gfx *var_v0;
-    s32 *temp_a1;
-    s32 temp_t8;
     s32 var_a2;
-    void *temp_v1;
-    void *var_a0;
 
     if ((arg2 >= 0) && (arg2 < 0x11)) {
-        temp_a1 = (arg2 << 5) + &D_8003F440;
+        var_a0 = D_8003F440[arg2];
         var_v0 = *gDisplayListHeads;
-        if (*temp_a1 == 0) {
-
-        } else {
-            temp_a3 = var_v0;
-            var_v0 += 8;
-            temp_a3->words.w0 = (((((D_8003F3C8 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | 0xF6000000 | (((((arg1 + D_8003F3CC) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
-            temp_a3->words.w1 = (((((D_8003F3C0 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | (((((arg1 + D_8003F3C4) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+        if (var_a0[0] != 0) {
+            var_v0->words.w0 = (((((D_8003F3C8 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | 0xF6000000 | (((((arg1 + D_8003F3CC) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+            var_v0->words.w1 = (((((D_8003F3C0 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | (((((arg1 + D_8003F3C4) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+            var_v0 += 1;
         }
-        var_a0 = temp_a1 + 4;
-        var_v1 = &D_8003F3D0;
+        var_a0 += 1;
+        var_v1 = &D_8003F3D0[0][0];
         var_a2 = 1;
         do {
             var_a2 += 2;
-            if (var_a0->unk0 != 0) {
-                temp_a3_2 = var_v0;
-                var_v0 += 8;
-                temp_a3_2->words.w0 = (((((var_v1->unk8 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | 0xF6000000 | (((((arg1 + var_v1->unkC) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
-                temp_a3_2->words.w1 = (((((var_v1->unk0 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | (((((arg1 + var_v1->unk4) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+            if (var_a0[0] != 0) {
+                var_v0->words.w0 = (((((var_v1[2] + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | 0xF6000000 | (((((arg1 + var_v1[3]) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+                var_v0->words.w1 = (((((var_v1[0] + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | (((((arg1 + var_v1[1]) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+                var_v0 += 1;
             }
-            temp_t8 = var_a0->unk4;
-            var_a0 = var_a0 + 4 + 4;
-            temp_v1 = var_v1 + 0x10;
-            if (temp_t8 != 0) {
-                temp_a3_3 = var_v0;
-                var_v0 += 8;
-                temp_a3_3->words.w0 = (((((temp_v1->unk8 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | 0xF6000000 | (((((arg1 + temp_v1->unkC) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
-                temp_a3_3->words.w1 = (((((temp_v1->unk0 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | (((((arg1 + temp_v1->unk4) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+            if (var_a0[1] != 0) {
+                var_v0->words.w0 = (((((var_v1[6] + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | 0xF6000000 | (((((arg1 + var_v1[7]) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+                var_v0->words.w1 = (((((var_v1[4] + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | (((((arg1 + var_v1[5]) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+                var_v0 += 1;
             }
-            var_v1 = temp_v1 + 0x10;
+            var_a0 += 2;
+            var_v1 += 8;
         } while (var_a2 != 7);
         D_80096520 = var_v1;
         *gDisplayListHeads = var_v0;
     }
 }
+
 #elif defined(PORT)
 /* Crash-screen seven-segment glyph blitter (draft above): glyph arg2
  * (0..0xF digits, 0x10 minus) selects an 8-word on/off mask row in
@@ -252,47 +245,41 @@ void func_80020F40(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 #endif
 
 #ifdef MIPS_TO_C
+/* FACTORY: 76/107, callee-saved role permutation (arg0/const-10 in s4/s2
+ * swapped vs ROM) plus its branch-offset cascade; structure verified. */
 
-void func_80021444(s32 arg0, ? arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    s32 temp_a3;
-    s32 var_s0;
-    s32 var_s1;
-    s32 var_s3;
-    s32 var_s4;
+void func_80021444(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
     s32 var_s6;
+    s32 temp_a3;
 
-    var_s1 = arg2;
-    var_s3 = arg3;
     var_s6 = 0;
     if (arg3 > 0) {
-        var_s0 = arg4;
-        if (var_s3 < ((gCurrScreenWidth - arg0) / 7)) {
-            var_s4 = (arg0 + (var_s3 * 7)) - 7;
-            if (var_s1 < 0) {
-                var_s1 = -var_s1;
+        if (arg3 < (gCurrScreenWidth - arg0) / 7) {
+            arg0 = ((arg3 * 7) + arg0) - 7;
+            if (arg2 < 0) {
+                arg2 = -arg2;
                 var_s6 = 1;
             }
-            if (var_s0 <= 0) {
-                var_s0 = -1;
+            if (arg4 <= 0) {
+                arg4 = -1;
             }
-            if (var_s6 < var_s3) {
+            if (var_s6 < arg3) {
 loop_7:
-                temp_a3 = var_s0 == 0;
-                var_s0 -= 1;
-                func_80020F40(var_s4, arg1, (var_s1 % 10) & 0xF, temp_a3);
-                var_s1 = var_s1 / 10;
-                var_s3 -= 1;
-                if ((arg5 != 0) && (var_s1 == 0) && (var_s0 < 0)) {
-                    var_s4 -= 7;
+                func_80020F40(arg0, arg1, (arg2 % 10) & 0xF, arg4 == 0);
+                arg4 -= 1;
+                arg2 = arg2 / 10;
+                arg3 -= 1;
+                if ((arg5 != 0) && (arg2 == 0) && (arg4 < 0)) {
+                    arg0 -= 7;
                 } else {
-                    var_s4 -= 7;
-                    if (var_s6 < var_s3) {
+                    arg0 -= 7;
+                    if (var_s6 < arg3) {
                         goto loop_7;
                     }
                 }
             }
             if (var_s6 != 0) {
-                func_80020F40(var_s4, arg1, 0x10, 0);
+                func_80020F40(arg0, arg1, 0x10, 0);
             }
         }
     }
