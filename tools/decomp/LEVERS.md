@@ -190,3 +190,27 @@ Anchor on the **LAST** `.size` in the listing (anchoring on the first matches a 
     third use took func_80105284 from 117/171 to 10/171 in one edit, and the
     same shape was worth 92/120 -> 69 on func_8010B67C. func_8010D8A4 has only
     two such reads and did NOT hold, which is the negative control.
+
+## MEASURED IN THE RE-FOUNDATION WAVE (ovl2-remainder lane, 18 seeds)
+
+30. **A three-way dispatch must be a `switch`, not an if/else chain.**
+    137 -> 2 diffs on func_800F6E30. And **the switch value's width matters**:
+    widening an `lbu` result to u32 let IDO share the constants 1/2 across two
+    switches (func_800F8078, 62 -> 16).
+
+31. **To stop IDO folding a global address into `%lo(sym+n)($at)`, force it
+    through a register**: `*(T *)(u32)&sym[n] = v` emits lui/addiu/sw 0(reg).
+    Worth 187 diffs on func_800F64B0.
+
+32. **Three global stores near each other need three DIFFERENT base symbols**
+    or IDO CSEs the address into one register (func_800F6830, 9 diffs).
+
+33. **Evaluation order of two symbol reads is inverted relative to source
+    order** (func_800F8728, 7 diffs). Companion to lever 2 (float add) and
+    lever 14 (compare operands).
+
+34. **A struct copy needs a named local**, or IDO reloads the source instead
+    of reusing the ROM's shared stack temp (func_800FF2C8).
+
+35. **Ternary vs if/else changes the order `-1`/`1` are materialised in**
+    (func_801105E8, 5 diffs).
