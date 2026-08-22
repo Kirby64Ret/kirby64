@@ -309,13 +309,30 @@ void func_8010E740(struct Unk8010E740 *arg0, s32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-/* 25/76 diffs. Structure is instruction-for-instruction exact; the whole
- * residue is one FP register swap: IDO puts arg2->x in $f0 and -r in $f18,
- * the ROM puts arg2->x in $f18 and -r in $f0. The register SET is identical.
- * Swept: (r,dx) decl/assign order, (dx,r), (x,r,dx) [best, this one],
- * (r,x,dx), and reloading arg2->x at the tail instead of reusing x.
- * Requires the file-scope prototype and UnkEA20.unk18 to become f32/Vector*,
- * which was A/B'd and leaves func_8010EA20 matching. */
+/* FACTORY: 25/76, near-miss. Structure is instruction-for-instruction
+ * exact; the whole residue is one FP register swap: IDO puts arg2->x in
+ * $f0 and -r in $f18, the ROM puts arg2->x in $f18 and -r in $f0. The
+ * register SET is identical. Swept: (r,dx) decl/assign order, (dx,r),
+ * (x,r,dx) [best, this one], (r,x,dx), and reloading arg2->x at the
+ * tail instead of reusing x.
+ *
+ * This draft's f32 parameters do NOT compile against the current
+ * file-scope prototype (`s32 func_8010E8F0(Vector *, s32, Vector *,
+ * s32, s32);` at the top of this file, under the N64 arm) -- confirmed
+ * by re-testing 2026-08-22: unguarding this draft as-is against that
+ * prototype fails with "Incompatible type for the function parameter".
+ * A prior pass apparently retyped the prototype to f32/Vector* and
+ * confirmed func_8010EA20 still matched, per the note this comment used
+ * to carry, but the prototype is s32 again now -- so that A/B result is
+ * NOT the live state and should be re-verified, not trusted, before
+ * anyone retypes it again. REFOUND.md's standing note for this function
+ * suggests the safer alternative: an old-style K&R *definition* with
+ * float parameters, LEAVING the s32 prototype alone (the promotion
+ * rules differ from an ANSI redeclaration) -- untried this pass. Either
+ * route needs the GATE GAP protocol (this file has zero verify.py-
+ * visible matches, so an objdump byte-diff against build/, not
+ * verify.py, is the only real gate) and is left for the next pass;
+ * parked here as a genuine near-miss draft in the meantime. */
 s32 func_8010E8F0(Vector *arg0, f32 arg1, Vector *arg2, f32 arg3, Vector *arg4) {
     f32 x = arg2->x;
     f32 r = arg1 + arg3;

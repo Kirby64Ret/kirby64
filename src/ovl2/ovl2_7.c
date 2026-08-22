@@ -193,14 +193,14 @@ void func_80101400(u32 arg0) {
     for (;;) {
         temp_t2 = &var_t1->header.Triangle_Norm_Cells[var_s0];
         temp_a0 = &var_t1->header.Triangle_Normals[temp_t2->index];
-        if ((gCollisionState->unk34 == temp_a0) ||
-            ((gCollisionState->unk34 != NULL) &&
-             (((gCollisionState->unk34->x == temp_a0->x) && (gCollisionState->unk34->y == temp_a0->y) &&
-               (gCollisionState->unk34->z == temp_a0->z) &&
-               (gCollisionState->unk34->originOffset == temp_a0->originOffset)) ||
-              ((gCollisionState->unk34->originOffset == -temp_a0->originOffset) &&
-               (((gCollisionState->unk34->x * temp_a0->x) + (gCollisionState->unk34->y * temp_a0->y) +
-                 (gCollisionState->unk34->z * temp_a0->z)) == -1.0f))))) {
+        if ((gCollisionState->passThruPlane == temp_a0) ||
+            ((gCollisionState->passThruPlane != NULL) &&
+             (((gCollisionState->passThruPlane->x == temp_a0->x) && (gCollisionState->passThruPlane->y == temp_a0->y) &&
+               (gCollisionState->passThruPlane->z == temp_a0->z) &&
+               (gCollisionState->passThruPlane->originOffset == temp_a0->originOffset)) ||
+              ((gCollisionState->passThruPlane->originOffset == -temp_a0->originOffset) &&
+               (((gCollisionState->passThruPlane->x * temp_a0->x) + (gCollisionState->passThruPlane->y * temp_a0->y) +
+                 (gCollisionState->passThruPlane->z * temp_a0->z)) == -1.0f))))) {
             temp_a0_2 = temp_t2->part1;
             temp_v0 = temp_t2->part2;
             if (temp_a0_2 != 0) {
@@ -239,14 +239,14 @@ void func_80101400(u32 arg0) {
                 var_v0 = 1;
             }
             if ((var_a1_2 != var_a3_2) || (var_v1_2 != var_v0)) {
-                temp_v0_2 = gCollisionState->unk38;
+                temp_v0_2 = gCollisionState->ignorePlane;
                 if ((temp_v0_2 != temp_a0) &&
                     ((temp_v0_2 == NULL) ||
                      (((temp_v0_2->x != temp_f2_2) || (temp_v0_2->y != temp_f12) || (temp_v0_2->z != temp_f14) ||
                        (temp_v0_2->originOffset != temp_f16)) &&
                       ((temp_v0_2->originOffset != -temp_f16) ||
                        (((temp_v0_2->x * temp_f2_2) + (temp_v0_2->y * temp_f12) + (temp_v0_2->z * temp_f14)) != -1.0f))))) {
-                    if (gCollisionState->unk44(temp_a0, var_a1_2) != 0) {
+                    if (gCollisionState->acceptPlane(temp_a0, var_a1_2) != 0) {
                         temp_v0_4 = &gCollisionState->unk4[gCollisionState->numCells];
                         temp_f0_3 = (temp_a0->x * gCollisionState->deltaPos.x) + (temp_a0->y * gCollisionState->deltaPos.y) +
                                     (temp_a0->z * gCollisionState->deltaPos.z);
@@ -314,12 +314,12 @@ void func_80101400(u32 arg0) {
 /* The BSP cell walker (draft above, completed) -- the function that feeds
  * func_80103004 its candidate crossing cells, i.e. the root of ALL static
  * mesh collision. Walks the Triangle_Norm_Cells binary tree from the root
- * cell in arg0: a cell whose plane matches unk34 (same or anti-parallel
- * normal) is descended through both children without testing; otherwise the
- * currPos->nextPos segment is classified against the plane and a sign
- * change (or an endpoint moving onto the plane) appends {projection, cell}
- * to gCollisionState->unk4 when the plane differs from unk38 and the unk44
- * side filter accepts. Descent visits part1 for the positive side, part2
+ * cell in arg0: a cell whose plane matches passThruPlane (same or
+ * anti-parallel normal) is descended through both children without
+ * testing; otherwise the currPos->nextPos segment is classified against
+ * the plane and a sign change (or an endpoint moving onto the plane)
+ * appends {projection, cell} to gCollisionState->unk4 when the plane
+ * differs from ignorePlane and the acceptPlane side filter accepts. Descent visits part1 for the positive side, part2
  * for the non-positive side, both (via an explicit stack) when the segment
  * straddles. */
 void func_80101400(u32 arg0) {
@@ -334,7 +334,7 @@ void func_80101400(u32 arg0) {
     for (;;) {
         struct bgmaprecord *cell = &cells[cur];
         struct Normal *n = &norms[cell->index];
-        struct Normal *skip = cs->unk34;
+        struct Normal *skip = cs->passThruPlane;
         u16 next = 0;
         u16 other = 0;
         s32 matched;
@@ -361,7 +361,7 @@ void func_80101400(u32 arg0) {
             s32 nz1 = d1 != 0.0f;
 
             if (pos0 != pos1 || nz0 != nz1) {
-                struct Normal *skip2 = cs->unk38;
+                struct Normal *skip2 = cs->ignorePlane;
                 s32 dup;
 
                 dup = skip2 == n;
@@ -374,7 +374,7 @@ void func_80101400(u32 arg0) {
                         dup = 1;
                     }
                 }
-                if (!dup && cs->unk44(n, pos0) != 0) {
+                if (!dup && cs->acceptPlane(n, pos0) != 0) {
                     struct ColStateUnk4 *slot = &cs->unk4[cs->numCells];
                     f32 dot = (n->x * cs->deltaPos.x) + (n->y * cs->deltaPos.y) + (n->z * cs->deltaPos.z);
                     f32 mag = (dot < 0.0f) ? -dot : dot;
@@ -579,11 +579,11 @@ u8 func_8010203C(struct CollisionTriangle *arg0, struct Normal *arg1,
     u32 code = arg0->normalType;
 
     if (code & DOUBLE_SIDED_NORMAL) {
-        if (arg0->collisionType == gCollisionState->unk4A) {
+        if (arg0->collisionType == gCollisionState->wantColType) {
             if (func_8011BED0(
-                gCollisionState->unk4A,
+                gCollisionState->wantColType,
                 arg0->collisionParameter,
-                gCollisionState->unk4C,
+                gCollisionState->breakKey,
                 arg2
             ) != 0) {
                 if (code & FORWARD_NORMAL) {
@@ -631,7 +631,7 @@ void func_801021FC(struct CollisionTriangle *arg0, u32 arg1, u32 arg2, u32 arg3)
 u8 func_8010221C(struct CollisionTriangle *arg0, struct Normal *arg1, struct Normal *arg2, u32 arg3) {
     u32 code = arg0->normalType;
 
-    if ((code & NON_SOLID) && (arg0->Halt_Movement == gCollisionState->unk48) && (arg0->collisionType == gCollisionState->unk4A)) {
+    if ((code & NON_SOLID) && (arg0->Halt_Movement == gCollisionState->wantHaltMovement) && (arg0->collisionType == gCollisionState->wantColType)) {
         if (code & FORWARD_NORMAL) {
             if (arg2) {
                 if (0.0f < VEC_DOT(arg1, arg2)) {
@@ -1123,17 +1123,17 @@ u32 func_80103004(f32 *MAXLRP, Vector *arg1, struct Normal **arg2, struct Collis
                     sp68.x = (gCollisionState->deltaPos.x * LEVEL) + gCollisionState->currPos.x;
                     sp68.y = (gCollisionState->deltaPos.y * LEVEL) + gCollisionState->currPos.y;
                     sp68.z = (gCollisionState->deltaPos.z * LEVEL) + gCollisionState->currPos.z;
-                    temp_s2 = func_80102570(N, &sp88, &sp68, gCollisionState->unk3C, &sp78);
+                    temp_s2 = func_80102570(N, &sp88, &sp68, gCollisionState->ignoreTri, &sp78);
                     if (sp78 != 0) {
-                        if (gCollisionState->unk40(sp78, N, &gCollisionState->deltaPos, gCollisionState->someNormal) != 0) {
+                        if (gCollisionState->acceptTri(sp78, N, &gCollisionState->deltaPos, gCollisionState->someNormal) != 0) {
                             sp94 = cell;
                             sp90 = sp78;
                             maxlevel = LEVEL;
                         } else if (temp_s2 != 0) {
                             sp88++;
-                            func_80102570(N, &sp88, &sp68, gCollisionState->unk3C, &sp78);
+                            func_80102570(N, &sp88, &sp68, gCollisionState->ignoreTri, &sp78);
                             if (sp78 != 0) {
-                                if (gCollisionState->unk40(sp78, N, &gCollisionState->deltaPos, gCollisionState->someNormal) != 0) {
+                                if (gCollisionState->acceptTri(sp78, N, &gCollisionState->deltaPos, gCollisionState->someNormal) != 0) {
                                     sp94 = cell;
                                     sp90 = sp78;
                                     maxlevel = LEVEL;
@@ -1224,7 +1224,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     f32 var_f12;
     s32 temp_v0;
 
-    if (BD00.unk40 != BD00.unk44) {
+    if (BD00.acceptTri != BD00.acceptPlane) {
         sp9C = gCollisionState->currPos;
         spAC = 1.1f;
         gCollisionState->unk30 = D_80129410;
@@ -1316,7 +1316,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
 }
 #elif defined(PORT)
 /* Moving-aware raycast core (draft above, completed): like func_80103B58,
- * but when the world-motion stamps differ (BD00.unk40 != unk44) each active
+ * but when the world-motion stamps differ (BD00.acceptTri != unk44) each active
  * dynamic collider gets per-cast motion compensation -- the segment origin
  * is shifted by the collider's frame delta (its matrix pair for rotating
  * colliders, the per-slot translation deltas otherwise) and the segment
@@ -1329,7 +1329,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     void func_80112ED4(f32 mtx[4][4], Vector *out, Vector *in);
     u32 i;
 
-    if (BD00.unk40 != BD00.unk44) {
+    if (BD00.acceptTri != BD00.acceptPlane) {
         Vector cur = gCollisionState->currPos;
         Vector hit;
         f32 tAcc = 1.1f;
@@ -1432,12 +1432,12 @@ s32 func_80103930(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
-    newColState.unk3C = NULL;
+    newColState.ignoreTri = NULL;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_801024E8;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
+    newColState.acceptPlane = func_801024E8;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1447,12 +1447,12 @@ s32 func_801039E8(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
-    newColState.unk3C = NULL;
+    newColState.ignoreTri = NULL;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1461,12 +1461,12 @@ void func_80103AA0(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s3
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
-    newColState.unk3C = NULL;
+    newColState.ignoreTri = NULL;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1518,12 +1518,12 @@ void func_80103CC8(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
-    newColState.unk3C = NULL;
+    newColState.ignoreTri = NULL;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_801024E8;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
+    newColState.acceptPlane = func_801024E8;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1547,11 +1547,11 @@ void func_80103DE4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk3C = NULL;
-    newColState.unk44 = &func_801024E8;
-    newColState.unk40 = &func_80101920;
-    newColState.unk34 = arg2;
-    newColState.unk38 = arg3;
+    newColState.ignoreTri = NULL;
+    newColState.acceptPlane = &func_801024E8;
+    newColState.acceptTri = &func_80101920;
+    newColState.passThruPlane = arg2;
+    newColState.ignorePlane = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
@@ -1563,11 +1563,11 @@ s32 func_80103EA0(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = 0;
-    newColState.unk38 = 0;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = 0;
+    newColState.ignorePlane = 0;
+    newColState.ignoreTri = NULL;
     return func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1578,11 +1578,11 @@ void func_80103F58(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101BA0;
-    newColState.unk34 = 0;
-    newColState.unk38 = 0;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101BA0;
+    newColState.passThruPlane = 0;
+    newColState.ignorePlane = 0;
+    newColState.ignoreTri = NULL;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1595,11 +1595,11 @@ void func_80104010(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101920;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
-    newColState.unk34 = arg3;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101920;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
+    newColState.passThruPlane = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
@@ -1610,11 +1610,11 @@ void func_801040CC(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101D50;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = arg2;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101D50;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = arg2;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1625,11 +1625,11 @@ void func_80104184(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101E14;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = arg2;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101E14;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = arg2;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1640,11 +1640,11 @@ s32 func_8010423C(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 *arg3, Ve
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1655,11 +1655,11 @@ void func_801042F4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = arg2;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk3C = NULL;
-    newColState.unk38 = arg3;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignoreTri = NULL;
+    newColState.ignorePlane = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
@@ -1670,11 +1670,11 @@ void func_801043B0(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_80101E14;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = arg2;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_80101E14;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = arg2;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1685,11 +1685,11 @@ void func_80104468(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s3
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_80101DA8;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
-    newColState.unk34 = arg2;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_80101DA8;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
+    newColState.passThruPlane = arg2;
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
@@ -1700,11 +1700,11 @@ void func_80104520(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801024E8;
-    newColState.unk40 = func_80101DA8;
-    newColState.unk3C = NULL;
-    newColState.unk34 = arg2;
-    newColState.unk38 = arg3;
+    newColState.acceptPlane = func_801024E8;
+    newColState.acceptTri = func_80101DA8;
+    newColState.ignoreTri = NULL;
+    newColState.passThruPlane = arg2;
+    newColState.ignorePlane = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
@@ -1715,13 +1715,13 @@ void func_801045DC(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, s32 arg4, s32
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801024E8;
-    newColState.unk40 = func_8010203C;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
-    newColState.unk4A = arg2;
-    newColState.unk4C = arg3;
+    newColState.acceptPlane = func_801024E8;
+    newColState.acceptTri = func_8010203C;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
+    newColState.wantColType = arg2;
+    newColState.breakKey = arg3;
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
@@ -1732,11 +1732,11 @@ void func_801046A0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32
     sp18.currPos = *arg0;
     sp18.nextPos = *arg1;
     sp18.someNormal = NULL;
-    sp18.unk3C = NULL;
-    sp18.unk44 = func_801023FC;
-    sp18.unk40 = func_80101E5C;
-    sp18.unk34 = NULL;
-    sp18.unk38 = NULL;
+    sp18.ignoreTri = NULL;
+    sp18.acceptPlane = func_801023FC;
+    sp18.acceptTri = func_80101E5C;
+    sp18.passThruPlane = NULL;
+    sp18.ignorePlane = NULL;
     func_80103D80(arg2, arg3, arg4, arg5);
 }
 
@@ -1747,11 +1747,11 @@ void func_8010474C(Vector *arg0, Vector *arg1) {
     sp18.currPos = *arg0;
     sp18.nextPos = *arg1;
     sp18.someNormal = NULL;
-    sp18.unk3C = NULL;
-    sp18.unk44 = func_80102364;
-    sp18.unk40 = func_80101F4C;
-    sp18.unk34 = NULL;
-    sp18.unk38 = NULL;
+    sp18.ignoreTri = NULL;
+    sp18.acceptPlane = func_80102364;
+    sp18.acceptTri = func_80101F4C;
+    sp18.passThruPlane = NULL;
+    sp18.ignorePlane = NULL;
     func_80103D80(0, 0, 0, 0);
 }
 
@@ -1762,11 +1762,11 @@ void func_801047F0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_8010217C;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_8010217C;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     func_80103B58(arg2, arg3, arg4, arg5, arg6);
 }
 
@@ -1777,11 +1777,11 @@ void func_801048A4(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_801021BC;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_801021BC;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     func_80103B58(arg2, arg3, arg4, arg5, arg6);
 }
 
@@ -1792,11 +1792,11 @@ void func_80104958(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4) {
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_801021FC;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_801021FC;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     func_80103B58(0, arg2, arg3, arg4, 0);
 }
 
@@ -1807,11 +1807,11 @@ void func_80104A08(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4) {
     sp18.currPos = *arg0;
     sp18.nextPos = *arg1;
     sp18.someNormal = NULL;
-    sp18.unk44 = func_80102364;
-    sp18.unk40 = func_801021FC;
-    sp18.unk34 = NULL;
-    sp18.unk38 = NULL;
-    sp18.unk3C = NULL;
+    sp18.acceptPlane = func_80102364;
+    sp18.acceptTri = func_801021FC;
+    sp18.passThruPlane = NULL;
+    sp18.ignorePlane = NULL;
+    sp18.ignoreTri = NULL;
     func_80103D80(0, arg2, arg3, arg4);
 }
 
@@ -1822,13 +1822,13 @@ void func_80104AB4(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, s32 arg4) {
     sp18.currPos = *arg0;
     sp18.nextPos = *arg1;
     sp18.someNormal = NULL;
-    sp18.unk3C = NULL;
-    sp18.unk44 = func_801024E8;
-    sp18.unk40 = func_8010221C;
-    sp18.unk34 = NULL;
-    sp18.unk38 = NULL;
-    sp18.unk48 = arg2;
-    sp18.unk4A = arg3;
+    sp18.ignoreTri = NULL;
+    sp18.acceptPlane = func_801024E8;
+    sp18.acceptTri = func_8010221C;
+    sp18.passThruPlane = NULL;
+    sp18.ignorePlane = NULL;
+    sp18.wantHaltMovement = arg2;
+    sp18.wantColType = arg3;
     func_80103D80(0, 0, 0, arg4);
 }
 
@@ -1839,11 +1839,11 @@ void func_80104B70(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32
     newColState.currPos = *arg0;
     newColState.nextPos = *arg1;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80102324;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80102324;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     func_80103B58(arg2, arg3, arg4, arg5, arg6);
 }
 
@@ -1857,11 +1857,11 @@ u8 func_80104C24(Vector *cPos, Vector *nPos) {
     colState.currPos = *cPos;
     colState.nextPos = *nPos;
     colState.someNormal = NULL;
-    colState.unk3C = NULL;
-    colState.unk44 = &func_801024E8;
-    colState.unk40 = &func_80101D50;
-    colState.unk34 = NULL;
-    colState.unk38 = NULL;
+    colState.ignoreTri = NULL;
+    colState.acceptPlane = &func_801024E8;
+    colState.acceptTri = &func_80101D50;
+    colState.passThruPlane = NULL;
+    colState.ignorePlane = NULL;
     if (func_80103D80(NULL, NULL, &sp7C, &sp78) != 0) {
         VECPTR_SUB(sp1C, nPos, cPos);
         if (func_80101920(sp78, sp7C, (struct Normal *) &sp1C, 0) == 0) {
@@ -1950,12 +1950,12 @@ static s32 pc_probe_aa0(Vector *a, Vector *b, struct Normal *norm, f32 *tOut, Ve
     gCollisionState = &newColState;
     newColState.currPos = *a;
     newColState.nextPos = *b;
-    newColState.unk3C = NULL;
+    newColState.ignoreTri = NULL;
     newColState.someNormal = norm;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
     return func_80103528(tOut, hitOut, nOut, triOut, idxOut);
 }
 
@@ -1966,11 +1966,11 @@ static s32 pc_probe_43b0(Vector *a, Vector *b, struct CollisionTriangle *skipTri
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_80101E14;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = (u32 (*)(void)) skipTri;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_80101E14;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = (u32 (*)(void)) skipTri;
     return func_80103B58(NULL, NULL, NULL, NULL, NULL);
 }
 
@@ -1981,11 +1981,11 @@ static s32 pc_probe_4010(Vector *a, Vector *b, struct Normal *along, struct Coll
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101920;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
-    newColState.unk34 = along;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101920;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
+    newColState.passThruPlane = along;
     return func_80103B58(NULL, NULL, NULL, triOut, NULL);
 }
 
@@ -1996,11 +1996,11 @@ static s32 pc_probe_4184(Vector *a, Vector *b, struct CollisionTriangle *skipTri
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101E14;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = (u32 (*)(void)) skipTri;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101E14;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = (u32 (*)(void)) skipTri;
     return func_80103B58(NULL, NULL, NULL, NULL, NULL);
 }
 
@@ -2853,9 +2853,9 @@ void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
         break;
     case 2:
-        sp60 = sp8C.x - BD00.unk34;
-        sp64 = sp8C.y - BD00.unk38;
-        sp68 = sp8C.z - BD00.unk3C;
+        sp60 = sp8C.x - BD00.passThruPlane;
+        sp64 = sp8C.y - BD00.ignorePlane;
+        sp68 = sp8C.z - BD00.ignoreTri;
         sp6C = sp6C / sqrtf((sp60 * sp60) + (sp64 * sp64) + (sp68 * sp68));
         sp74.x = (sp60 * sp6C) + sp80.x;
         sp74.y = (sp64 * sp6C) + sp80.y;
@@ -2884,7 +2884,7 @@ s32 func_801058B8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
 /* Forward wall snap resolver (draft above, completed): re-anchor rec[2]
  * through func_801058B8's wall march (-1.0 side). r=0 keeps the walked
  * point only when it lies ahead of the facing; r=2 extrapolates along the
- * BD00.unk34 motion stamp and lets func_801057C4 clip the point back to
+ * BD00.passThruPlane motion stamp and lets func_801057C4 clip the point back to
  * the wall plane. Kirby's feet are pulled to the resolved point minus the
  * forward bias. */
 void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
@@ -2909,9 +2909,9 @@ void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     } else if (r == 1) {
         arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFF8) | 1) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = probe.x - BD00.unk34;
-        f32 dy = probe.y - BD00.unk38;
-        f32 dz = probe.z - BD00.unk3C;
+        f32 dx = probe.x - BD00.passThruPlane;
+        f32 dy = probe.y - BD00.ignorePlane;
+        f32 dz = probe.z - BD00.ignoreTri;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         Vector far, clip;
 
@@ -3104,9 +3104,9 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
         break;
     case 2:
-        sp60 = sp8C.x - BD00.unk34;
-        sp64 = sp8C.y - BD00.unk38;
-        sp68 = sp8C.z - BD00.unk3C;
+        sp60 = sp8C.x - BD00.passThruPlane;
+        sp64 = sp8C.y - BD00.ignorePlane;
+        sp68 = sp8C.z - BD00.ignoreTri;
         sp6C = sp6C / sqrtf((sp60 * sp60) + (sp64 * sp64) + (sp68 * sp68));
         sp74.x = (sp60 * sp6C) + sp80.x;
         sp74.y = (sp64 * sp6C) + sp80.y;
@@ -3155,9 +3155,9 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     } else if (r == 1) {
         arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFC7) | 8) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = probe.x - BD00.unk34;
-        f32 dy = probe.y - BD00.unk38;
-        f32 dz = probe.z - BD00.unk3C;
+        f32 dx = probe.x - BD00.passThruPlane;
+        f32 dy = probe.y - BD00.ignorePlane;
+        f32 dz = probe.z - BD00.ignoreTri;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         Vector far, clip;
 
@@ -3224,7 +3224,7 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     if (func_801039E8(&sp80, &sp74, &sp68, 0, &D_8012BD34, &arg1->rec[1].norm, &arg1->rec[1].tri,
                       &arg1->rec[1].type) != 0) {
         sp4C = 0x40;
-        sp44 = BD00.unk38;
+        sp44 = BD00.ignorePlane;
     }
     sp80.x = arg0->kirbyGroundPath[0];
     sp80.z = arg0->kirbyGroundPath[1];
@@ -3302,12 +3302,12 @@ static s32 pc_probe_39e8(Vector *a, Vector *b, struct Normal *norm, f32 *tOut, V
     gCollisionState = &newColState;
     newColState.currPos = *a;
     newColState.nextPos = *b;
-    newColState.unk3C = NULL;
+    newColState.ignoreTri = NULL;
     newColState.someNormal = norm;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
     return func_80103528(tOut, hitOut, nOut, triOut, idxOut);
 }
 
@@ -3338,7 +3338,7 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     if (pc_probe_39e8(&start, &end, &dir, NULL, &D_8012BD34, &arg1->rec[1].norm,
                       &arg1->rec[1].tri, (u32 *) &arg1->rec[1].type) != 0) {
         cls = 0x40;
-        bestY = BD00.unk38;
+        bestY = BD00.ignorePlane;
     }
     start.x = arg0->kirbyGroundPath[0];
     start.z = arg0->kirbyGroundPath[1];
@@ -3552,7 +3552,7 @@ s32 func_801072E0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
  * sp80 is a COPY of the spA4 start vector whose .y alone is lowered to the plane
  * height when the 0x40 flag is clear; the switch on func_80108078 has cases 0/1/2
  * sharing one tail that writes rec[1] back and drops the feet by scale[1]+0.1f;
- * case 2 re-projects along the BD00.unk34 motion stamp and picks the 0x80/0x100
+ * case 2 re-projects along the BD00.passThruPlane motion stamp and picks the 0x80/0x100
  * class by which side of the facing basis the slide lands on. -1.0f goes in the
  * integer $a3. Residue is placement: ROM saves s0/s1/ra at 0x2C-0x34 with locals
  * 0x38-0xB4 in a 0xB8 frame; the draft needs 0xC8, keeps only one callee-saved
@@ -3606,9 +3606,9 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40;
         break;
     case 2:
-        sp68.x = spA4.x - BD00.unk34;
-        sp68.y = spA4.y - BD00.unk38;
-        sp68.z = spA4.z - BD00.unk3C;
+        sp68.x = spA4.x - BD00.passThruPlane;
+        sp68.y = spA4.y - BD00.ignorePlane;
+        sp68.z = spA4.z - BD00.ignoreTri;
         sp78 = sp78 / sqrtf((sp68.x * sp68.x) + (sp68.y * sp68.y) + (sp68.z * sp68.z));
         sp38 = sp98.x;
         sp8C.x = (sp68.x * sp78) + sp98.x;
@@ -3652,7 +3652,7 @@ s32 func_80108078(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
 /* Floor snap resolver (draft above, completed): re-anchor the recorded
  * floor (rec[1]) through func_80108078's downward walk from D_8012BD34.
  * r=0/1 keep or adopt the walked point (class 0x40); r=2 extrapolates
- * along the motion since the BD00.unk34 stamp, re-plants on the plane and
+ * along the motion since the BD00.passThruPlane stamp, re-plants on the plane and
  * classes the step 0x100/0x80 by facing when within the lateral bias;
  * otherwise the floor classes are cleared and Kirby's feet are left alone. */
 void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
@@ -3684,9 +3684,9 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     } else if (r == 1) {
         arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = arg0->kirbyFootPos[0] - BD00.unk34;
-        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[1]) - BD00.unk38;
-        f32 dz = arg0->kirbyFootPos[2] - BD00.unk3C;
+        f32 dx = arg0->kirbyFootPos[0] - BD00.passThruPlane;
+        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[1]) - BD00.ignorePlane;
+        f32 dz = arg0->kirbyFootPos[2] - BD00.ignoreTri;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         f32 py;
 
@@ -3735,9 +3735,9 @@ void func_801077D4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
     temp_v0 = arg1->flags.w >> 0x13;
     if (temp_v0 & 0x40) {
-        arg0->kirbyFootPos[0] = BD00.unk34;
-        arg0->kirbyFootPos[1] = (BD00.unk38 - arg0->scale[1]) - 0.1f;
-        arg0->kirbyFootPos[2] = BD00.unk3C;
+        arg0->kirbyFootPos[0] = BD00.passThruPlane;
+        arg0->kirbyFootPos[1] = (BD00.ignorePlane - arg0->scale[1]) - 0.1f;
+        arg0->kirbyFootPos[2] = BD00.ignoreTri;
         return;
     }
     temp_v1 = arg1->rec[1].norm;
@@ -3963,11 +3963,11 @@ static s32 pc_probe_f58(Vector *a, Vector *b, struct Normal *dir2,
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101D50;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = dir2;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101D50;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = dir2;
     return func_80103B58(tOut, hitOut, nOut, triOut, (u32 *) typeOut);
 }
 
@@ -3994,7 +3994,7 @@ s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
                       &arg1->rec[0].tri, (u32 *) &arg1->rec[0].type) != 0) {
         cls = 0x200;
         centerHit = 1;
-        best = BD00.unk38;
+        best = BD00.ignorePlane;
     } else {
         centerHit = 0;
     }
@@ -4700,11 +4700,11 @@ static s32 pc_probe_4520(Vector *a, Vector *b, struct Normal *excl34, struct Nor
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801024E8;
-    newColState.unk40 = func_80101DA8;
-    newColState.unk3C = NULL;
-    newColState.unk34 = excl34;
-    newColState.unk38 = excl38;
+    newColState.acceptPlane = func_801024E8;
+    newColState.acceptTri = func_80101DA8;
+    newColState.ignoreTri = NULL;
+    newColState.passThruPlane = excl34;
+    newColState.ignorePlane = excl38;
     return func_80103B58(tOut, hitOut, nOut, triOut, idxOut);
 }
 
@@ -4716,11 +4716,11 @@ static s32 pc_probe_423c(Vector *a, Vector *b, struct Normal *norm, f32 *tOut, V
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = norm;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     return func_80103B58(tOut, hitOut, nOut, triOut, idxOut);
 }
 
@@ -4732,11 +4732,11 @@ static s32 pc_probe_ea0(Vector *a, Vector *b, struct Normal *norm, f32 *tOut, Ve
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = norm;
-    newColState.unk44 = func_80102364;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_80102364;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     return func_80103B58(tOut, hitOut, nOut, triOut, idxOut);
 }
 
@@ -4901,9 +4901,9 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200;
         break;
     case 2:
-        sp64.x = spA4.x - BD00.unk34;
-        sp64.y = spA4.y - BD00.unk38;
-        sp64.z = spA4.z - BD00.unk3C;
+        sp64.x = spA4.x - BD00.passThruPlane;
+        sp64.y = spA4.y - BD00.ignorePlane;
+        sp64.z = spA4.z - BD00.ignoreTri;
         sp74 = sp74 / sqrtf((sp64.x * sp64.x) + (sp64.y * sp64.y) + (sp64.z * sp64.z));
         sp8C.x = (sp64.x * sp74) + sp98.x;
         sp8C.y = (sp64.y * sp74) + sp98.y;
@@ -4979,9 +4979,9 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     } else if (r == 1) {
         arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = arg0->kirbyFootPos[0] - BD00.unk34;
-        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[2]) - BD00.unk38;
-        f32 dz = arg0->kirbyFootPos[2] - BD00.unk3C;
+        f32 dx = arg0->kirbyFootPos[0] - BD00.passThruPlane;
+        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[2]) - BD00.ignorePlane;
+        f32 dz = arg0->kirbyFootPos[2] - BD00.ignoreTri;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         f32 py;
 
@@ -5036,9 +5036,9 @@ void func_8010924C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
     temp_v0 = arg1->flags.w >> 0x13;
     if (temp_v0 & 0x200) {
-        arg0->kirbyFootPos[0] = BD00.unk34;
-        arg0->kirbyFootPos[1] = (BD00.unk38 - arg0->scale[2]) + 0.1f;
-        arg0->kirbyFootPos[2] = BD00.unk3C;
+        arg0->kirbyFootPos[0] = BD00.passThruPlane;
+        arg0->kirbyFootPos[1] = (BD00.ignorePlane - arg0->scale[2]) + 0.1f;
+        arg0->kirbyFootPos[2] = BD00.ignoreTri;
         return;
     }
     temp_v1 = arg1->rec[0].norm;
@@ -5445,9 +5445,9 @@ void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 dbz;
 
     if ((arg1->flags.w >> 0x13) & 1) {
-        arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk24;
-        arg0->kirbyFootPos[1] = BD00.unk38 - arg0->scale[0];
-        arg0->kirbyFootPos[2] = BD00.unk3C - BD00.unk28;
+        arg0->kirbyFootPos[0] = BD00.passThruPlane - BD00.unk24;
+        arg0->kirbyFootPos[1] = BD00.ignorePlane - arg0->scale[0];
+        arg0->kirbyFootPos[2] = BD00.ignoreTri - BD00.unk28;
         return;
     }
     n = arg1->rec[2].norm;
@@ -5487,9 +5487,9 @@ void func_8010A138(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 dbz;
 
     if ((arg1->flags.w >> 0x13) & 8) {
-        arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk2C;
-        arg0->kirbyFootPos[1] = BD00.unk38 - arg0->scale[0];
-        arg0->kirbyFootPos[2] = BD00.unk3C - BD00.unk30;
+        arg0->kirbyFootPos[0] = BD00.passThruPlane - BD00.unk2C;
+        arg0->kirbyFootPos[1] = BD00.ignorePlane - arg0->scale[0];
+        arg0->kirbyFootPos[2] = BD00.ignoreTri - BD00.unk30;
         return;
     }
     sp4C.x = arg0->kirbyHeadPath[0];
@@ -5756,7 +5756,7 @@ s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     if (pc_probe_39e8(&start, &end, &dir, NULL, &D_8012BD34, &arg1->rec[0].norm,
                       &arg1->rec[0].tri, (u32 *) &arg1->rec[0].type) != 0) {
         cls = 0x200;
-        best = BD00.unk38;
+        best = BD00.ignorePlane;
     }
     start.x = arg0->kirbyGroundPath[0];
     start.z = arg0->kirbyGroundPath[1];
@@ -6608,7 +6608,7 @@ s32 func_8010BBD4(struct PositionState *arg0) {
     u32 var_v1;
 
     BD00.unk0_80 = 1;
-    BD00.unk44 = arg0->VI_Timer;
+    BD00.acceptPlane = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
     if (func_80106C5C(arg0, &D_8012BCA0) != 0) {
@@ -6626,7 +6626,7 @@ s32 func_8010BBD4(struct PositionState *arg0) {
         D_8012BCA0.flags.f.a = (D_8012BCA4[-1] >> 0x13) & 0xFE3F;
     }
     BD00.unk0_80 = 0;
-    arg0->VI_Timer = BD00.unk40;
+    arg0->VI_Timer = BD00.acceptTri;
     return 0;
 }
 #else
@@ -6710,7 +6710,7 @@ s32 func_8010BFAC(struct PositionState *arg0) {
     u32 temp_v1;
 
     BD00.unk0_80 = 1;
-    BD00.unk44 = arg0->VI_Timer;
+    BD00.acceptPlane = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
     if (func_80105284(arg0, &D_8012BCA0) != 0) {
@@ -6743,7 +6743,7 @@ s32 func_8010BFAC(struct PositionState *arg0) {
         D_8012BCA0.flags.f.a = (D_8012BCA0.flags.w >> 0x13) & 0xFFC7;
     }
     BD00.unk0_80 = 0;
-    arg0->VI_Timer = BD00.unk40;
+    arg0->VI_Timer = BD00.acceptTri;
     return 0;
 }
 #else
@@ -6858,12 +6858,12 @@ static s32 pc_probe_3930(Vector *a, Vector *b, struct Normal *norm, f32 *tOut, V
     gCollisionState = &newColState;
     newColState.currPos = *a;
     newColState.nextPos = *b;
-    newColState.unk3C = NULL;
+    newColState.ignoreTri = NULL;
     newColState.someNormal = norm;
-    newColState.unk44 = func_801024E8;
-    newColState.unk40 = func_80101920;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
+    newColState.acceptPlane = func_801024E8;
+    newColState.acceptTri = func_80101920;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
     return func_80103528(tOut, hitOut, nOut, triOut, idxOut);
 }
 
@@ -6877,7 +6877,7 @@ s32 func_8010C274(struct PositionState *arg0) {
     f32 bestT = 1.1f;
     f32 t;
 
-    BD00.unk44 = arg0->VI_Timer;
+    BD00.acceptPlane = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
     D_8012BCA0.rec[0].tri = NULL;
     D_8012BCA0.rec[1].tri = NULL;
@@ -6932,7 +6932,7 @@ s32 func_8010C274(struct PositionState *arg0) {
         arg0->kirbyFootPos[1] = best.y;
         arg0->kirbyFootPos[2] = best.z;
     }
-    arg0->VI_Timer = BD00.unk40;
+    arg0->VI_Timer = BD00.acceptTri;
     return 0;
 }
 #else
@@ -7100,11 +7100,11 @@ static s32 pc_probe_47f0(Vector *a, Vector *b, f32 *tOut, Vector *hitOut,
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_8010217C;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_8010217C;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     return func_80103B58(tOut, hitOut, nOut, triOut, (u32 *) typeOut);
 }
 
@@ -7217,11 +7217,11 @@ static s32 pc_probe_48a4(Vector *a, Vector *b, f32 *tOut, Vector *hitOut,
     newColState.currPos = *a;
     newColState.nextPos = *b;
     newColState.someNormal = NULL;
-    newColState.unk44 = func_801023FC;
-    newColState.unk40 = func_801021BC;
-    newColState.unk34 = NULL;
-    newColState.unk38 = NULL;
-    newColState.unk3C = NULL;
+    newColState.acceptPlane = func_801023FC;
+    newColState.acceptTri = func_801021BC;
+    newColState.passThruPlane = NULL;
+    newColState.ignorePlane = NULL;
+    newColState.ignoreTri = NULL;
     return func_80103B58(tOut, hitOut, nOut, triOut, (u32 *) typeOut);
 }
 
@@ -7786,7 +7786,7 @@ struct PositionState *func_8010DCAC(void) {
 void func_8010DCDC(void) {
     s32 i;
 
-    BD00.unk40 = 0;
+    BD00.acceptTri = 0;
     BD00.unk0_80 = 0;
     D_8012BD4C = D_8012BD50;
     for (i = 0; i < 31; i++) {
@@ -7796,7 +7796,7 @@ void func_8010DCDC(void) {
 }
 
 void func_8010DD8C(void) {
-    BD00.unk40++;
+    BD00.acceptTri++;
 }
 
 #ifdef MIPS_TO_C

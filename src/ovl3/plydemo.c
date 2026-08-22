@@ -338,9 +338,13 @@ err:
     utilPrintf("not door type!:%d   [plydemo.cc]\n", gKirbyState.unkB);
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 984/991; 185 instructions short. Needs its own in-body prototype
+ * `void func_80122CA0(s32, s32, f32);` -- plydemo.c keeps that one in a PORT-only
+ * block, so nothing declares it for the N64 build. Close the count first. */
 
 void func_801567B8_ovl3(s32 arg0) {
+    void func_80122CA0(s32, s32, f32);
     extern void func_800AECC0(f32);
     extern void func_800AED20(f32);
     extern void func_800F8E6C(GObj *);
@@ -560,7 +564,7 @@ void func_801567B8_ovl3(s32 arg0) {
     }
     curObjSleepForever();
 }
-#else
+#elif defined(PORT)
 /* PORT: demo door-exit coroutine (via m2c). Forces the door-exit action
  * (0x1E), points unk15C at the character's demo track table, then keys off
  * the door type: 1 = drop/rise out (water doors swim up via the stroke
@@ -792,6 +796,8 @@ void func_801567B8_ovl3(s32 arg0) {
     }
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plydemo/func_801567B8_ovl3.s")
 #endif
 
 void func_80157738_ovl3(s32 arg0) {

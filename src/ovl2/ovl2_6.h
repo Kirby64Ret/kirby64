@@ -302,39 +302,85 @@ struct Kirby_Node
 // Entity List
 // The entity list is an array of structs which spawn objects as kirby gets in range. It is terminated by an 0x99999999 marker. See Entity IDs for more info. This section is optional and if a not pointed to in the main header will not be used.
 
+// One accepted plane crossing along the query segment. The BSP walk in
+// func_80101B18 appends these; the triangle pass then visits them in order.
 struct ColStateUnk4 {
-    u16 cell;
-    f32 projection; // how far kirby is from the plane
-    // u16 unk6;
+/*0x0*/    u16 cell;        // index into CollisionHeader.Triangle_Norm_Cells
+/*0x4*/    f32 projection;  // fraction along currPos->nextPos of the crossing
 };
 
-
-
+// The active collision query. Exactly one is live at a time: every entry point
+// in ovl2_7.c builds one on its own stack, points gCollisionState at it, and
+// calls the shared core (func_80103528 / func_80103B58).
+//
+// Field meanings below are read off ovl2_7.c's use of each one, and agree with
+// what the PORT arms already assumed. Offsets are the N64 layout and must not
+// move -- the static assert at the bottom locks them.
 struct CollisionState {
-    s32 numCells;
+/*0x00*/   s32 numCells;                 // accepted crossings in unk4
 
-    struct ColStateUnk4 *unk4; // valid hits for normal cells
+/*0x04*/   struct ColStateUnk4 *unk4;    // the accepted crossings
 
-    /* 0x08 */ Vector currPos;
+/*0x08*/   Vector currPos;               // segment start
+/*0x14*/   Vector nextPos;               // segment end
+/*0x20*/   Vector deltaPos;              // nextPos - currPos
 
-    /* 0x14 */ Vector nextPos;
+           // Reference plane for the side tests in the acceptPlane callbacks
+           // (func_801023FC and friends compare refPlane->y against the
+           // candidate plane's y to pick a facing). NULL means "no preference".
+/*0x2C*/   struct Normal *someNormal;
 
-    /* 0x20 */ Vector deltaPos;
+/*0x30*/   struct vCollisionHeader *unk30;   // the level's collision data
 
-    /* 0x2C */ struct Normal *someNormal;
+           // A plane the query is already sitting on. When a BSP node's plane
+           // is geometrically THIS plane -- identical, or anti-parallel with
+           // the negated offset -- the walk descends into both children
+           // instead of testing the segment against it, so the plane the
+           // caller already stands on cannot report a degenerate crossing.
+/*0x34*/   struct Normal *passThruPlane;
 
-    struct vCollisionHeader *unk30;
+           // A plane whose crossings are dropped. Same geometric test as
+           // passThruPlane, but applied to the RESULT rather than the walk.
+/*0x38*/   struct Normal *ignorePlane;
 
-    struct Normal *unk34;
-    struct Normal *unk38;
-    u32 (*unk3C)(void);
-    u8 (*unk40)(struct CollisionTriangle *a0, struct Normal *a1, struct Normal *a2, struct Normal *a3);
-    u8 (*unk44)(struct Normal *a0, s32 arg1);
-    u16 unk48;
-    u16 unk4A;
-    u16 unk4C;
-    u16 unk4E;
+           // A single triangle to skip in the per-triangle pass
+           // (func_80102570 compares each candidate against it).
+           // NOTE: this was declared `u32 (*)(void)`, which is why callers in
+           // ovl2_7.c had to cast a triangle pointer through a function
+           // pointer type to store one. It has always been a triangle.
+/*0x3C*/   struct CollisionTriangle *ignoreTri;
+
+           // Accept this triangle hit? (triangle, its plane, the motion
+           // delta, someNormal). Selects solid/non-solid/breakable behaviour.
+/*0x40*/   u8 (*acceptTri)(struct CollisionTriangle *tri, struct Normal *plane, struct Normal *delta, struct Normal *ref);
+
+           // Accept this plane crossing? (plane, which side the start is on)
+/*0x44*/   u8 (*acceptPlane)(struct Normal *plane, s32 startsInFront);
+
+           // Classification filters applied by the acceptTri callbacks:
+           // a triangle only qualifies when its Halt_Movement equals
+           // wantHaltMovement and its collisionType equals wantColType.
+/*0x48*/   u16 wantHaltMovement;
+/*0x4A*/   u16 wantColType;
+
+           // The caller's break capability, matched against a breakable
+           // triangle's collisionParameter by func_8011BED0.
+/*0x4C*/   u16 breakKey;
+
+/*0x4E*/   u16 unk4E;
 };
+
+#ifndef PORT
+// IDO accepts a negative array size (warning 654 only) but rejects a negative
+// BITFIELD WIDTH, so this is the form that actually locks the N64 layout.
+// The PORT build widens every pointer and pins its own shape, hence the guard.
+struct ColStateLayoutAssert {
+    int _collision_state_size : (sizeof(struct CollisionState) == 0x50) ? 1 : -1;
+    int _col_state_hit_size   : (sizeof(struct ColStateUnk4) == 0x8) ? 1 : -1;
+    int _normal_size          : (sizeof(struct Normal) == 0x10) ? 1 : -1;
+    int _col_triangle_size    : (sizeof(struct CollisionTriangle) == 0x14) ? 1 : -1;
+};
+#endif
 
 
 #define FORWARD_NORMAL      (1 << 0)

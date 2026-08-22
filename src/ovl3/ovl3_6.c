@@ -1783,7 +1783,8 @@ void func_8017F8B8_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 27/931, whole-function callee-saved permutation (same floor class documented across this cluster; same shape as kirby.c's func_8017A390_ovl3 twin). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming, the phase_check: label is the ROM's genuine shared exit) so it seals verbatim. Queued for the permuter. */
+/* FACTORY: DIFF 904/931 insns; short=30 long=0.
+ * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 /* PORT: the mini-stone-form (action 0x2D) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_8017F988_ovl3.s (via m2c with the
  * jtbl_801976D8 jump table) -- the ovl3_6 twin of kirby.c's ported stone
@@ -6808,7 +6809,8 @@ void func_80186A20_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 68/1128, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming; the per-phase switch-with-fallthrough, including the dead post-phase-4/10 tails, mirrors the ROM's literal layout) so it seals verbatim. Queued for the permuter. */
+/* FACTORY: DIFF 1060/1128 insns; short=17 long=0.
+ * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 /* PORT: the animal-friend flight/swim phase coroutine (track action
  * 0x3D, models 0x20021 -> 0x20020), from asm/nonmatchings/ovl3/ovl3_6/
  * func_80186E30_ovl3.s (via m2c). First entry arms the ability, clears
@@ -7602,7 +7604,12 @@ void func_80188184_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 55/1462, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming); adds a local PcO36Shape/PcO36Slot typedef pair (needed under mips_to_c mode -- func_80183A1C_ovl3's copy above is PORT-arm-only) then seals. Queued for the permuter. */
+/* NOT DRAFTED FOR N64 YET. The host arm this would come from is written against
+ * PcO36Slot / PcO36Shape -- PC-only struct views this file defines for its PORT
+ * arms -- and against `(s32)(uintptr_t)` casts, so it does not compile in the N64
+ * build. Needs a from-asm draft that names the real record type behind
+ * func_80111A04 instead of the host view. Everything else in this file is
+ * seeded; this is the one left. */
 /* PORT: the animal-friend ride (action 0x3D) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_80188238_ovl3.s (via m2c). Mirrors
  * the surface bits into D_800E9FE0 and the hover flag unk150 into
@@ -7648,26 +7655,6 @@ void func_80188184_ovl3(s32 arg0, s32 arg1, f32 arg2) {
  * func_8011DCD0 / func_8011EBD4 / func_8011ED68 are void-arg on PC;
  * func_800B26D8 is (Vector *, struct DObj *, u32); the stun test is a
  * full-word read masked 0xFFFF (endian-safe). */
-typedef struct PcO36Shape {
-    u8 pad0[4];
-    u8 unk4;
-    u8 pad5[3];
-    s32 unk8;
-    f32 unkC;
-    f32 unk10;
-    f32 unk14;
-    f32 unk18;
-    f32 unk1C;
-    f32 unk20;
-    f32 unk24;
-} PcO36Shape;
-
-typedef struct PcO36Slot {
-    u8 pad0[40];
-    s32 unk1C;
-    PcO36Shape *unk20;
-} PcO36Slot;
-
 void func_80188238_ovl3(GObj *arg0) {
     s32 func_80121C90(void);
     s32 func_80121194(void);
@@ -8709,7 +8696,8 @@ void func_80188238_ovl3(GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 118/1565, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming, the per-kind switch mirrors the ROM's dispatch structure) so it seals verbatim. Queued for the permuter. */
+/* FACTORY: DIFF 1447/1565 insns; short=0 long=0.
+ * Draft derived from the host arm with its shims/LP64-isms removed; instruction count is EXACT, so the residue is allocation only -- good permuter seed. */
 /* PORT: the mixed-copy transform coroutine (track action 0x3E), from
  * asm/nonmatchings/ovl3/ovl3_6/func_80189914_ovl3.s (via m2c). First
  * entry arms the ability with a water-scaled 0x26/0x4C drop timer,
@@ -11407,7 +11395,8 @@ void func_8018D460_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 45/576, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming, the case 6 fallthrough into case 3 is the ROM's genuine shared draw path) so it seals verbatim. Queued for the permuter. */
+/* FACTORY: DIFF 531/576 insns; short=3 long=0.
+ * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 /* PORT: the dash-runner (action 0x3F) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_8018D4C8_ovl3.s (via m2c). Runs the
  * tick prologue and the landing service (skipped in the jump phase 4);
@@ -12030,7 +12019,8 @@ void func_8018E3B0_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 90/811, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming, the per-phase switch-with-fallthrough mirrors the ROM's literal phase-park layout) so it seals verbatim. Queued for the permuter. */
+/* FACTORY: DIFF 721/811 insns; short=16 long=0.
+ * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 /* PORT: the bare-back ride flight/swim phase coroutine (track action
  * 0x42, plain model 0x20007), from asm/nonmatchings/ovl3/ovl3_6/
  * func_8018E608_ovl3.s (via m2c) -- the model-less sibling of
@@ -12575,7 +12565,8 @@ void func_8018F2B4_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 46/1001, whole-function callee-saved permutation (same floor class documented across this cluster; model-less sibling of func_80188238_ovl3). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming) so it seals verbatim. Queued for the permuter. */
+/* FACTORY: DIFF 955/1001 insns; short=23 long=0.
+ * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 /* PORT: the bare-back ride (action 0x42) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_8018F368_ovl3.s (via m2c) -- the
  * model-less sibling of func_80188238_ovl3. Latches the surface bits
