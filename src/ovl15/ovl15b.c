@@ -305,7 +305,7 @@ void func_801E5080_ovl15(GObj *arg0) {
     func_800AF27C();
     func_800AA018(0x10538);
     ohSleep(0x4B);
-    D_800E1B50[omCurrentObj->objId]->unk94 = (struct Sub800E1B50_Unk94 *) &D_801D7BC4;
+    D_800E1B50[omCurrentObj->objId]->unk94 = (struct EnemyAnimCue *) &D_801D7BC4;
     func_801ACF84_ovl7(arg0);
 }
 /* Warning: struct AnimCmd is not defined (only forward-declared) */
@@ -470,7 +470,7 @@ void func_801A04B8_ovl7(void);
  * two link registers ($v1 and $t1). It costs no frame word -- only sp1C is
  * live across the call and gets one. */
 void func_801E5D54_ovl15(s32 arg0, f32 arg1) {
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
     struct Unk80111C88 *temp_v0;
     f32 temp;
     s32 *t;

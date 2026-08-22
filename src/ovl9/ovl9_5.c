@@ -72,7 +72,7 @@ void func_801E5A74_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 11, &D_8021BF1C_ovl9);
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBB0C;
+extern struct EnemyEventTable D_801CBB0C;
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 extern void func_800B33F4(void);
@@ -207,7 +207,7 @@ void func_801E5FC4_ovl9(void) {
     }
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBB0C;
+extern struct EnemyEventTable D_801CBB0C;
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800B33F4(void);
@@ -301,7 +301,7 @@ void func_801E6394_ovl9(void) {
     }
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBB54;
+extern struct EnemyEventTable D_801CBB54;
 void func_800AFBB4(s32, struct GObj *);
 
 void func_801E6434_ovl9(GObj *arg0) {
@@ -388,7 +388,7 @@ void func_801E67A0_ovl9(void) {
     }
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBB78;
+extern struct EnemyEventTable D_801CBB78;
 /* D_8021D034_ovl9: literal */
 /* D_8021D038_ovl9: literal */
 /* D_8021D03C_ovl9: literal */
@@ -568,7 +568,7 @@ void func_801E7060_ovl9(void) {
     D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800EA8A0[omCurrentObj->objId];
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBB54;
+extern struct EnemyEventTable D_801CBB54;
 /* D_8021D068_ovl9: literal, this TU owns its .rodata */
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -617,7 +617,7 @@ void func_801E7320_ovl9(void) {
    holds the D_800E6A10 base in $a2 where ours uses $a3, and from the first
    float compare on we run one instruction shorter than the ROM inside the
    facing branch, so the bc1f displacements differ by one. */
-extern struct Sub800E1B50_Unk98 D_801CBB9C;
+extern struct EnemyEventTable D_801CBB9C;
 void func_800FB914(s32);
 void func_800AA018(s32);
 /* Hit-launch state: enter anim state 7 with the hit sound/flash,
@@ -664,7 +664,7 @@ void func_801E73C4_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 6;
 }
 #elif defined(PORT)
-extern struct Sub800E1B50_Unk98 D_801CBB9C;
+extern struct EnemyEventTable D_801CBB9C;
 void play_sound();
 void func_800FB914(s32);
 void func_800AA018(s32);
@@ -1111,7 +1111,7 @@ void func_801E7F34_ovl9(struct GObj *arg0) {
 #endif
 
 extern s32 D_801C8880_ovl7[];
-extern struct Sub800E1B50_Unk98 D_801CBBE4;
+extern struct EnemyEventTable D_801CBBE4;
 
 void func_801E8290_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -1231,7 +1231,7 @@ void func_801E8A38_ovl9(struct GObj *);
 void func_801E89B8_ovl9(struct GObj *);
 
 void func_801E8860_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     tmp->unk39 = -1;
     D_800DF150[omCurrentObj->objId] = func_801E8A38_ovl9;
@@ -1673,7 +1673,7 @@ void func_8019BB58_ovl7(void);
 void func_801A3280_ovl7(void);
 
 void func_801E9AA0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk39 = -1;
     D_800E98E0[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
@@ -2000,7 +2000,7 @@ void func_801EA9A0_ovl9(s32 arg0) {
 
     D_800DDFD0[omCurrentObj->objId] = 1;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8958_ovl7;
-    D_800E1B50[omCurrentObj->objId]->unk98 = (struct Sub800E1B50_Unk98 *) &D_801CB470_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = (struct EnemyEventTable *) &D_801CB470_ovl7;
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     func_800B33F4();

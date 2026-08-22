@@ -20,7 +20,7 @@ void func_802094DC_ovl9(struct GObj *);
 void func_802091B4_ovl9(struct GObj *);
 
 void func_80209030_ovl9(struct GObj *this) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800E98E0[omCurrentObj->objId] = 0x5A;
     D_800E9C60[omCurrentObj->objId] = D_800E0D50[omCurrentObj->objId];
@@ -39,7 +39,7 @@ void func_80209030_ovl9(struct GObj *this) {
 }
 
 void func_802091B4_ovl9(struct GObj *this) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     if (D_800E9FE0[omCurrentObj->objId].as_s32 != 0) {
         tmp->unk40 = 1;
@@ -74,7 +74,7 @@ void func_8020933C_ovl9(struct GObj *this) {
 }
 
 void func_8020938C_ovl9(s32 arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800E98E0[omCurrentObj->objId] = 0x3C;
     D_800DF150[omCurrentObj->objId] = func_802094DC_ovl9;
@@ -101,7 +101,7 @@ void func_802094DC_ovl9(struct GObj *this) {
 }
 
 void func_8020954C_ovl9(struct GObj *this) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801ACF5C_ovl7;
     tmp->unk98 = &D_801CB4DC_ovl7;
@@ -112,7 +112,7 @@ void func_8020954C_ovl9(struct GObj *this) {
 }
 
 void func_802095E8_ovl9(s32 arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_80209698_ovl9;
     tmp->unk98 = &D_801CB4DC_ovl7;

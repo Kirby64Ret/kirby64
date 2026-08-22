@@ -1040,7 +1040,7 @@ void func_800B6144(s32 arg0) {
     Vector pos;
     Vector delta;
     u32 objId;
-    struct Sub800E1B50_Unk84 *rec;
+    struct EnemyProbe *rec;
     u8 kind;
 
     objId = omCurrentObj->objId;
@@ -1071,7 +1071,7 @@ void func_800B6144(s32 arg0) {
     void func_80112A40(s32, Vector *, Vector *);
     f32 func_800F8728(s32, f32, f32);
     u32 objId = omCurrentObj->objId;
-    struct Sub800E1B50_Unk84 *rec = D_800E1B50[objId]->unk84;
+    struct EnemyProbe *rec = D_800E1B50[objId]->unk84;
 
     if (D_800E8920[objId] != 0 && rec != NULL) {
         u8 slot = rec->unk50;

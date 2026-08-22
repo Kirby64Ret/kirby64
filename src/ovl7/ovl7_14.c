@@ -49,7 +49,7 @@ void func_801BB9D0_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
 }
 
 void func_801BBA54_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -70,7 +70,7 @@ void func_801BBA54_ovl7(s32 arg0) {
 }
 
 void func_801BBBF4_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *temp_a1 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_a1 = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *temp_a2 = temp_a1->unk88->unkC;
     struct SubSub800E1B50_Unk88_UnkC_Unk4 *sp1C = temp_a2->unk4;
 

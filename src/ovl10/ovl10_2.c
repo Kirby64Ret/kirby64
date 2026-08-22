@@ -44,7 +44,7 @@ void func_801E2EF0_ovl10(GObj *arg0) {
 /* -0.8f = -0.8f : now emitted by this TU */
 /* -0.4f = -0.4f : now emitted by this TU */
 /* 65535.0f = 65535.0f : now emitted by this TU */
-extern struct Sub800E1B50_Unk98 D_801F41B4_ovl10;
+extern struct EnemyEventTable D_801F41B4_ovl10;
 extern void func_800B6A2C(s32);
 extern void func_801ACF84_ovl7(struct GObj *);
 void func_801E3244_ovl10(void);
@@ -89,7 +89,7 @@ void func_801E3244_ovl10(void) {
 }
 
 void func_801E3748_ovl10(void);
-extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
+extern struct EnemyEventTable D_801CB4DC_ovl7;
 f32 func_801E3450_ovl10(GObj *);
 f32 func_801E3614_ovl10(GObj *);
 f32 sinf(f32);

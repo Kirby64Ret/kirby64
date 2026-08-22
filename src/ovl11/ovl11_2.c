@@ -87,11 +87,11 @@ extern void func_801A0D50_ovl7(void *);
 extern void func_801BC794_ovl7(s32);
 extern void func_801D0E3C_ovl8(void);
 extern u8 D_801D79E8[];
-extern struct Sub800E1B50_Unk98 D_801DAF18;
+extern struct EnemyEventTable D_801DAF18;
 extern u8 D_801D7A2C[];
-extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
-extern struct Sub800E1B50_Unk98 D_801DAF84;
-extern struct Sub800E1B50_Unk98 D_801DAFCC;
+extern struct EnemyEventTable D_801CB4DC_ovl7;
+extern struct EnemyEventTable D_801DAF84;
+extern struct EnemyEventTable D_801DAFCC;
 extern void func_8019B9B0_ovl7(void);
 extern f32 eneGetPlayerHeight(void);
 extern void func_800A9864(s32, s32, s32, void *);
@@ -151,7 +151,7 @@ s32 func_801E00B8_ovl11(s32);
 void func_801E024C_ovl11(void);
 
 void func_801DF650_ovl11(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_a3;
+    struct EnemyRecord *temp_a3;
 
     temp_a3 = D_800E1B50[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = func_801DF728_ovl11;
@@ -223,7 +223,7 @@ void func_801DF89C_ovl11(struct GObj *arg0) {
     s32 pad;
     Vector sp38;
     s32 pad2[4];
-    struct UnkStruct800E1B50 *temp_a3;
+    struct EnemyRecord *temp_a3;
 
     temp_a3 = D_800E1B50[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = func_801DFA9C_ovl11;
@@ -269,7 +269,7 @@ void func_801DFB44_ovl11(struct GObj *arg0) {
     s32 pad;
     Vector sp40;
     s32 pad2[8];
-    struct UnkStruct800E1B50 *temp_a3;
+    struct EnemyRecord *temp_a3;
 
     temp_a3 = D_800E1B50[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = func_801E024C_ovl11;
@@ -406,14 +406,14 @@ void func_801E028C_ovl11(struct GObj *arg0) {
     }
 }
 
-extern struct Sub800E1B50_Unk98 D_801DAFA8;
+extern struct EnemyEventTable D_801DAFA8;
 void func_801E098C_ovl11(void);
 
 void func_801E03A4_ovl11(struct GObj *arg0) {
     s32 pad;
     Vector sp38;
     s32 pad2[4];
-    struct UnkStruct800E1B50 *temp_a3 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_a3 = D_800E1B50[omCurrentObj->objId];
 
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800DF150[omCurrentObj->objId] = func_801E098C_ovl11;

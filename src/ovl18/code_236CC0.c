@@ -19,7 +19,7 @@ void func_801ACF84_ovl7(void);
 void func_802244FC_ovl18(void);
 
 void func_80224320_ovl18(UNUSED s32 arg0) {
-    struct UnkStruct800E1B50 *temp_a3 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_a3 = D_800E1B50[omCurrentObj->objId];
 
     D_800E98E0[omCurrentObj->objId] = 0x3C;
     gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleXArray[D_800E0D50[omCurrentObj->objId]];

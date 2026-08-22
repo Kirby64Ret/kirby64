@@ -183,7 +183,7 @@ extern struct UnkStruct800D7118 D_800D7118;
 void func_800A7F74(s32, s32, s32, f32, f32, f32);
 
 extern f32 gameTicksPerDraw;
-extern struct Sub800E1B50_Unk98 D_801DAEF4;
+extern struct EnemyEventTable D_801DAEF4;
 extern s32 D_801EF914_ovl16[];
 extern s32 D_801EF920_ovl16[];
 extern s32 D_801EF92C_ovl16[];
@@ -310,7 +310,7 @@ f32 atan2f(f32, f32);
 
 void func_801E7F20_ovl16(struct GObj *arg0) {
     extern s32 D_801DA268;
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
     s32 flags;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -354,7 +354,7 @@ void func_801E7F20_ovl16(struct GObj *arg0) {
 }
 
 void func_801E820C_ovl16(s32 arg0) {
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
     s32 temp_v0;
     s8 temp_a0;
 
@@ -399,7 +399,7 @@ void func_801E8424_ovl16(s32 arg0) {
 }
 
 void func_801E8490_ovl16(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
     D_800DEF90[omCurrentObj->objId] = func_800B7560;
@@ -443,7 +443,7 @@ void func_801E86F4_ovl16(f32 arg0) {
     extern s32 D_801D7D58;
     extern s32 D_801D7D9C;
     extern s32 D_801DA2B0;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct DObj *d;
     Vector mount;
     s32 other;
@@ -514,7 +514,7 @@ void func_801E86F4_ovl16(f32 arg0) {
     extern s32 D_801D7D58;
     extern s32 D_801D7D9C;
     extern s32 D_801DA2B0;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct DObj *d;
     Vector mount;
     s32 other;
@@ -864,7 +864,7 @@ void func_801EA070_ovl16(struct GObj *arg0) {
 }
 
 void func_801EA344_ovl16(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = func_801EA568_ovl16;
@@ -907,7 +907,7 @@ void func_801EA568_ovl16(struct GObj *arg0) {
     s32 func_801EBA98_ovl16(void);
     void func_801EF32C_ovl16(s32);
     extern s32 D_801DA31C;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct DObj *d;
     s32 t;
     s8 a;
@@ -1012,7 +1012,7 @@ void func_801EA568_ovl16(struct GObj *arg0) {
     s32 func_801EBA98_ovl16(void);
     void func_801EF32C_ovl16(s32);
     extern s32 D_801DA31C;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct DObj *d;
     s32 t;
     s8 a;
@@ -1161,7 +1161,7 @@ void func_801EAF00_ovl16(struct GObj *arg0) {
 }
 
 void func_801EB17C_ovl16(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
     D_800DEF90[omCurrentObj->objId] = func_800B7560;
@@ -1357,7 +1357,7 @@ s32 func_801EBD8C_ovl16(s32 arg0) {
 extern s32 D_801DA364;
 
 void func_801EBFA8_ovl16(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
     struct GObj *temp_v1;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -1393,7 +1393,7 @@ void func_801EBFA8_ovl16(struct GObj *arg0) {
 }
 
 void func_801EC1D8_ovl16(s32 arg0) {
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
     s32 temp_v0_3;
     s8 temp_a0;
 
@@ -1540,7 +1540,7 @@ void func_801EC4B4_ovl16(s32 arg0) {
 void func_801EC7E4_ovl16(s32 arg0) {
     extern s32 D_801DA3AC;
     s32 func_800B2340(Vector *, struct DObj *, s32);
-    struct UnkStruct800E1B50 *sp3C;
+    struct EnemyRecord *sp3C;
     Vector sp30;
 
     sp3C = D_800E1B50[omCurrentObj->objId];
@@ -1585,7 +1585,7 @@ void func_801EC7E4_ovl16(s32 arg0) {
 }
 
 void func_801ECA4C_ovl16(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
     sp1C->unk80->unk10 = 15.0f;
@@ -1601,7 +1601,7 @@ void func_801ECA4C_ovl16(s32 arg0) {
 }
 
 void func_801ECB88_ovl16(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
     s32 temp_v0;
     s8 temp_a0;
 
@@ -1651,7 +1651,7 @@ void func_801ECDF8_ovl16(s32 arg0) {
 void func_801ECE64_ovl16(struct GObj *arg0) {
     void func_800B7790(struct GObj *);
     void func_801ED07C_ovl16(struct GObj *);
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
     s32 other;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -1686,7 +1686,7 @@ void func_801ECE64_ovl16(struct GObj *arg0) {
 void func_801ED07C_ovl16(struct GObj *arg0) {
     extern s32 D_801DA43C;
     s32 func_800B2340(Vector *, struct DObj *, s32);
-    struct UnkStruct800E1B50 *sp;
+    struct EnemyRecord *sp;
     Vector sp30;
     s32 t;
 
@@ -1806,7 +1806,7 @@ void func_801ED444_ovl16(s32 arg0) {
  * which side it burst on), and run the burst anim before expiring. */
 void func_801ED634_ovl16(struct GObj *arg0) {
     extern s32 D_801DA484;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 i;
     s32 t1;
     s32 t2;
@@ -1915,7 +1915,7 @@ void func_801ED634_ovl16(struct GObj *arg0) {
  * which side it burst on), and run the burst anim before expiring. */
 void func_801ED634_ovl16(struct GObj *arg0) {
     extern s32 D_801DA484;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 i;
     s32 t1;
     s32 t2;
@@ -2024,7 +2024,7 @@ void func_801ED634_ovl16(struct GObj *arg0) {
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
 void func_801EE558_ovl16(GObj *arg0) {
-    UnkStruct800E1B50 *sp44;
+    EnemyRecord *sp44;
     s32 *sp34;
     s32 sp2C;
     f32 *var_v0;
@@ -2128,7 +2128,7 @@ void func_801EE970_ovl16(s32 arg0) {
     Vector *func_800195D8(Vector *, Vector *);
     extern s32 D_801DA4F0;
     extern s32 D_801DA514;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     Vector mount;
     Vector v1;
     Vector v2;
@@ -2215,7 +2215,7 @@ void func_801EE970_ovl16(s32 arg0) {
     Vector *func_800195D8(Vector *, Vector *);
     extern s32 D_801DA4F0;
     extern s32 D_801DA514;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     Vector mount;
     Vector v1;
     Vector v2;
@@ -2293,7 +2293,7 @@ void func_801EE970_ovl16(s32 arg0) {
 #endif
 
 void func_801EEF34_ovl16(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp2C;
+    struct EnemyRecord *sp2C;
 
     sp2C = D_800E1B50[omCurrentObj->objId];
     D_800DEF90[omCurrentObj->objId] = func_800B7560;
@@ -2315,7 +2315,7 @@ void func_801EEF34_ovl16(struct GObj *arg0) {
 }
 
 void func_801EF080_ovl16(s32 arg0) {
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
     s32 temp_v0;
     s8 temp_a0;
 

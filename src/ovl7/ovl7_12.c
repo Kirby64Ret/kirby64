@@ -20,7 +20,7 @@ void func_801B84B4_ovl7(void);
 
 void func_801AC364_ovl7(GObj *);
 void func_801B8068_ovl7(GObj *);
-extern struct Sub800E1B50_Unk98 D_801CB56C_ovl7;
+extern struct EnemyEventTable D_801CB56C_ovl7;
 extern f32 D_801CE368_ovl7; /* D_801CE36C_ovl7 = 65535.0f : now emitted by this TU */
 void func_801B7E80_ovl7(GObj *);
 extern s32 D_800E8AE0[];
@@ -99,7 +99,7 @@ void func_800B6FD8(GObj *);
 void func_801B79B0_ovl7(GObj *arg0) {
 /* D_801CE364_ovl7 = 65535.0f : now emitted by this TU */
     extern s32 D_800EA520[];
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *c = ent->unk88->unkC;
     struct SubSub800E1B50_Unk88_UnkC_Unk4 *r = c->unk4;
 
@@ -136,7 +136,7 @@ void func_801B79B0_ovl7(GObj *arg0) {
 // the ROM hoists the D_800E3750 base before the if and gets a beql whose
 // delay slot preloads 14.0f.
 void func_801B7C30_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -173,7 +173,7 @@ void func_801B7E80_ovl7(GObj *arg0) {
 }
 
 void func_801B7EA8_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -202,7 +202,7 @@ void func_801B8068_ovl7(GObj *arg0) {
 }
 
 void func_801B8090_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -241,7 +241,7 @@ void func_801B8238_ovl7(void) {
 }
 
 void func_801B8300_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -302,7 +302,7 @@ void func_801B857C_ovl7(struct Sub800E1B50_Unk34 *arg0) {
 }
 
 void func_801B865C_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (D_801D0A98_ovl7 != 0) {
         if (D_801D0A9C_ovl7 == 0) {
@@ -327,7 +327,7 @@ void func_801B865C_ovl7(GObj *arg0) {
 // Swept: `&&` vs nested ifs for the ent->unk34 test, an explicit local for
 // ent->unk34, and both declaration orders.
 void func_801B8714_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if ((*(vs32 *) &D_801D0A98_ovl7) == 0) {
         if ((s32) arg2 != 0) {
@@ -345,7 +345,7 @@ void func_801B8714_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B8714_ovl7.s")
 #endif
 void func_801B87DC_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -369,7 +369,7 @@ void func_801B87DC_ovl7(GObj *arg0) {
 }
 
 void func_801B89AC_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     func_800B3520();
@@ -385,7 +385,7 @@ void func_801B89AC_ovl7(GObj *arg0) {
 }
 
 void func_801B8AD4_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp4C;
+    struct EnemyRecord *sp4C;
     struct DObj *sp48;
     struct DObj *sp44;
     Vector sp38;
@@ -420,7 +420,7 @@ void func_801B8C00_ovl7(GObj *arg0) {
 }
 
 void func_801B8C60_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = &func_801AC840_ovl7;
     func_800A9864(0x1000D, 0x23, 0x10);
@@ -441,7 +441,7 @@ void func_801B8C60_ovl7(GObj *arg0) {
    fill up to the next object's alignment, not instructions. `- [0x15EF80, pad]`
    in kirby64.yaml declares them, so this is plain C. */
 void func_801B8DB8_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = &func_801AC840_ovl7;
     func_800A9864(0x1000E, 0x23, 0x10);

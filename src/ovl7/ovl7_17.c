@@ -218,7 +218,7 @@ void func_801BF770_ovl7(GObj *arg0) {
 /* D_801CE5EC_ovl7 = 0.8f : now emitted by this TU */
     extern void *D_801CD090_ovl7[];
     void func_800A9EA4(s32);
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     ent->unk98 = &D_801CD090_ovl7;
@@ -270,7 +270,7 @@ void func_801BF99C_ovl7(GObj *arg0) {
 void func_801BFB68_ovl7(GObj *arg0) {
     extern s32 D_800DDFD0[], D_800E8920[], D_800E9E20[];
     extern f32 D_800E3210[], D_800E3750[], D_800E3C90[];
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     f32 vel;
 
     *(u32 *) &D_800DDFD0[omCurrentObj->objId] = 1;
@@ -324,7 +324,7 @@ void func_801BFDF0_ovl7(GObj *arg0) {
 
 void func_801BFF30_ovl7(GObj *arg0) {
     extern void *D_801CD0FC_ovl7[];
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 2;
     ent->unk98 = &D_801CD0FC_ovl7;
@@ -357,7 +357,7 @@ void func_801C0040_ovl7(GObj *arg0) {
 }
 
 void func_801C0048_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 3;
     ent->unk98 = &D_801CD120_ovl7;
@@ -429,7 +429,7 @@ void func_801C02D0_ovl7(void) {
         u8 filler10[0x10];
     };
     u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct EnemyRecord *ent = D_800E1B50[id];
     struct Ovl7_17_AnimInfoA info;
 
     if (ent->unk8C == NULL) {
@@ -504,7 +504,7 @@ void func_801C02D0_ovl7(void) {
         u8 filler10[0x10];
     };
     u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct EnemyRecord *ent = D_800E1B50[id];
     struct PcAnimInfo17A info;
 
     if (ent->unk8C == NULL) {
@@ -574,7 +574,7 @@ s32 func_801C05E0_ovl7(void) {
 }
 
 void func_801C0610_ovl7(void) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     func_801C06C8_ovl7();
     func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
@@ -667,7 +667,7 @@ void func_801C0AB0_ovl7(GObj *arg0) {
 /* D_801CE658_ovl7 = 0.8f : now emitted by this TU */
     extern void *D_801CD144_ovl7[];
     void func_800A9EA4(s32);
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     ent->unk98 = &D_801CD144_ovl7;
@@ -720,7 +720,7 @@ void func_801C0CF4_ovl7(GObj *arg0) {
 void func_801C0EC0_ovl7(GObj *arg0) {
     extern s32 D_800DDFD0[], D_800E8920[], D_800E9E20[];
     extern f32 D_800E3210[], D_800E3750[], D_800E3C90[];
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     f32 vel;
 
     *(u32 *) &D_800DDFD0[omCurrentObj->objId] = 1;
@@ -775,7 +775,7 @@ void func_801C1148_ovl7(GObj *arg0) {
 void func_801C1288_ovl7(GObj *arg0) {
     extern void func_801C0610_ovl7();
     extern void *D_801CD168_ovl7[];
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 2;
     ent->unk98 = &D_801CD168_ovl7;
@@ -830,7 +830,7 @@ void func_801C1398_ovl7(GObj *arg0) {
 }
 
 void func_801C13A0_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 3;
     ent->unk98 = &D_801CD18C_ovl7;
@@ -911,7 +911,7 @@ void func_801C1830_ovl7(GObj *arg0) {
 /* D_801CE6C8_ovl7 = 0.8f : now emitted by this TU */
     extern void *D_801CD1F8_ovl7[];
     void func_800A9EA4(s32);
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     ent->unk98 = &D_801CD1F8_ovl7;
@@ -982,7 +982,7 @@ void func_801C1BB8_ovl7(void) {
         u8 filler10[0x10];
     };
     u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct EnemyRecord *ent = D_800E1B50[id];
     struct Ovl7_17_AnimInfoB info;
 
     if (ent->unk8C == NULL) {
@@ -1045,7 +1045,7 @@ void func_801C1BB8_ovl7(void) {
         u8 filler10[0x10];
     };
     u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct EnemyRecord *ent = D_800E1B50[id];
     struct PcAnimInfo17B info;
 
     if (ent->unk8C == NULL) {
@@ -1181,7 +1181,7 @@ void func_801C212C_ovl7(GObj *arg0) {
 }
 
 void func_801C2134_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *tmp = ent->unk88->unkC;
     struct SubSub800E1B50_Unk88_UnkC_Unk4 *sub = tmp->unk4;
 
@@ -1227,7 +1227,7 @@ void func_801C2264_ovl7(GObj *arg0) {
 }
 void func_801C2348_ovl7(GObj *arg0) {
     s32 pad; // load-bearing: the ROM leaves 4 bytes at the top of the local block
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *tmp = ent->unk88->unkC;
     struct SubSub800E1B50_Unk88_UnkC_Unk4 *sub = tmp->unk4;
 
@@ -1277,7 +1277,7 @@ void func_801C2478_ovl7(GObj *arg0) {
     }
 }
 void func_801C258C_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *tmp = ent->unk88->unkC;
     struct SubSub800E1B50_Unk88_UnkC_Unk4 *sub = tmp->unk4;
 

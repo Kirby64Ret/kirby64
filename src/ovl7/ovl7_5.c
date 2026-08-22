@@ -35,8 +35,8 @@ extern u8 D_801CAF28_ovl7, D_801CAF3C_ovl7;
 extern u8 D_801CAFCC_ovl7, D_801CB008_ovl7, D_801CB080_ovl7;
 extern u8 D_801CB0F8_ovl7, D_801CB134_ovl7, D_801CB170_ovl7;
 extern u8 D_801CB4DC_ovl7, D_801CB590_ovl7, D_801CD240_ovl7;
-struct Sub800E1B50_Unk98;
-extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
+struct EnemyEventTable;
+extern struct EnemyEventTable D_801CB500_ovl7;
 extern u8 D_801D0A38_ovl7, D_801D0A58_ovl7;
 void func_800B4954(GObj *);
 void func_800B4D70(GObj *);
@@ -201,7 +201,7 @@ void func_801A7104_ovl7(s32 arg0) {
     f32 temp_f2;
     struct Sub800E1B50_Unk34 *temp_a1_2;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_a3;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     u32 temp_a1;
     u32 temp_v0;
     u32 temp_v0_2;
@@ -285,8 +285,8 @@ void func_801A7524_ovl7(GObj *arg0) {
     f32 sp94;
     f32 sp90;
     f32 sp8C;
-    struct UnkStruct800E1B50 *sp88;
-    struct Sub800E1B50_Unk84 *sp84;
+    struct EnemyRecord *sp88;
+    struct EnemyProbe *sp84;
     f32 sp80;
     f32 sp7C;
     f32 sp78;
@@ -377,7 +377,7 @@ void func_801A7524_ovl7(GObj *arg0) {
     s32 var_v0_2;
     s32 var_v0_3;
     s32 var_v0_4;
-    struct UnkStruct800E1B50 *temp_t8;
+    struct EnemyRecord *temp_t8;
     u16 temp_v0;
     struct EneScaleSet *temp_a0_3;
     u32 temp_v0_10;
@@ -914,14 +914,14 @@ s32 func_801A8BAC_ovl7(void) {
 // m2c draft, measured 171/205 diffs
 #ifdef NON_MATCHING
 void func_801A8CDC_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp2C;
+    struct EnemyRecord *sp2C;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp24;
     f32 temp_f0;
     f32 temp_f12;
     f32 temp_f14;
     f32 temp_f2;
     struct Sub800E1B50_Unk34 *temp_v0_2;
-    struct UnkStruct800E1B50 *temp_a2;
+    struct EnemyRecord *temp_a2;
     u32 temp_v0;
     u32 temp_v0_3;
     u32 temp_v0_4;
@@ -1003,7 +1003,7 @@ void func_801A96C4_ovl7(GObj *);
 void func_801A8FFC_ovl7(GObj *arg0) {
     f32 temp_f0;
     s32 var_a0;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct SubSub800E1B50_Unk88_UnkC *temp_v0;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_a1;
     struct EneAnimSetup *temp_t0;
@@ -1080,7 +1080,7 @@ void func_801A9268_ovl7(void) {
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp18;
     struct SubSub800E1B50_Unk88_UnkC *temp_a1;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_a2;
-    struct UnkStruct800E1B50 *var_a0;
+    struct EnemyRecord *var_a0;
     u32 temp_t2;
     u32 temp_t7;
     u32 temp_t9;
@@ -1144,7 +1144,7 @@ void func_801A9268_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A9268_ovl7.s")
 #endif
 s32 func_801A94D8_ovl7(void) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct SubSub800E1B50_Unk88_UnkC *temp_a0;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_a1;
     struct SubSub800E1B50_Unk88_UnkC_Unk0_Unk1C *temp_a2;
@@ -1265,7 +1265,7 @@ void func_801A9930_ovl7(s32 arg0) {
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp2C;
     struct EneAnimSetup *sp28;
     void *sp20;
-    struct Sub800E1B50_Unk84 *sp1C;
+    struct EnemyProbe *sp1C;
     void (*temp_v0_9)(s32, s32 *, s32 *, f32 *);
     void *temp_a1;
     GObj *temp_t0;
@@ -1281,7 +1281,7 @@ void func_801A9930_ovl7(s32 arg0) {
     struct SubSub800E1B50_Unk88_UnkC *temp_a2;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_t2;
     struct EneAnimSetup *temp_t1;
-    struct UnkStruct800E1B50 *temp_v1;
+    struct EnemyRecord *temp_v1;
     u32 temp_v0;
     u32 temp_v0_10;
     u32 temp_v0_11;
@@ -1483,7 +1483,7 @@ s32 func_801AA190_ovl7(void) {
 
 #ifdef NON_MATCHING
 void func_801AA1D4_ovl7(GObj *gobj) {
-    struct UnkStruct800E1B50 *sp2C;
+    struct EnemyRecord *sp2C;
     struct EneAnimSetup *sp24;
     struct EneVtable *sp1C;
     struct SubSub800E1B50_Unk88_UnkC *temp_v1;
@@ -1532,7 +1532,7 @@ void func_801AA344_ovl7(s32 arg0) {
     s32 temp_v0_2;
     struct SubSub800E1B50_Unk88_UnkC *temp_v1;
     struct EneAnimSetup *temp_a1;
-    struct UnkStruct800E1B50 *temp_s1;
+    struct EnemyRecord *temp_s1;
     u32 temp_v0;
     struct EneVtable *temp_s0;
     struct EneInfo *temp_s2;
@@ -1677,10 +1677,10 @@ void func_801AA850_ovl7(struct AnimReqSet *arg0) {
 // m2c draft, measured 106/120 diffs
 #ifdef NON_MATCHING
 void func_801AA914_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
     struct SubSub800E1B50_Unk88_UnkC *temp_a2;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_s0;
-    struct UnkStruct800E1B50 *temp_v1;
+    struct EnemyRecord *temp_v1;
     u16 temp_v1_2;
     u32 temp_a1;
     u32 temp_v0;
@@ -1876,10 +1876,10 @@ block_8:
 #endif
 s32 func_801AC6D0_ovl7(struct AnimTrack *);
 void func_801AB2F4_ovl7(GObj *);
-extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
+extern struct EnemyEventTable D_801CB500_ovl7;
 
 void func_801AB174_ovl7(GObj *gobj) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *mid = ent->unk88->unkC;
     struct SubSub800E1B50_Unk88_UnkC_Unk4 *temp = mid->unk4;
 
@@ -1976,11 +1976,11 @@ void func_801AB2F4_ovl7(GObj *arg0) {
 // m2c draft, measured 163/184 diffs
 #ifdef NON_MATCHING
 void func_801AB5A4_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
     struct EneAnimSetup *sp1C;
     struct SubSub800E1B50_Unk88_UnkC *temp_a3;
     struct EneAnimSetup *temp_a2;
-    struct UnkStruct800E1B50 *temp_a1;
+    struct EnemyRecord *temp_a1;
     u32 temp_v1;
     u32 temp_v1_2;
     u32 temp_v1_3;
@@ -2122,7 +2122,7 @@ void func_801AB884_ovl7(s32 arg0) {
 // m2c draft, measured 349/365 diffs
 #ifdef NON_MATCHING
 void func_801ABBA0_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
     struct EneInfo *sp1C;
     GObj *temp_v1;
     f32 *temp_a0;
@@ -2132,8 +2132,8 @@ void func_801ABBA0_ovl7(GObj *arg0) {
     s32 temp_v0_11;
     s32 var_v0;
     struct Sub800E1B50_Unk34 *temp_v0_9;
-    struct Sub800E1B50_Unk84 *temp_a0_3;
-    struct UnkStruct800E1B50 *temp_t6;
+    struct EnemyProbe *temp_a0_3;
+    struct EnemyRecord *temp_t6;
     u16 temp_a1;
     u16 temp_a1_2;
     u16 temp_a1_3;
@@ -2257,7 +2257,7 @@ block_17:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801ABBA0_ovl7.s")
 #endif
 void func_801AC11C_ovl7(GObj *gobj) {
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
     u32 temp_a0;
     u32 var_v1;
 
@@ -2284,7 +2284,7 @@ void func_801AC11C_ovl7(GObj *gobj) {
 }
 
 void func_801AC1F4_ovl7(GObj *gobj) {
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
     struct Sub800E1B50_Unk34 *temp_v0;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
@@ -2335,7 +2335,7 @@ void func_801AC364_ovl7(GObj *gobj) {
 }
 
 void func_801AC448_ovl7(GObj *gobj) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
     func_801AC1F4_ovl7(gobj);

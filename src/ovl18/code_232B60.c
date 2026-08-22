@@ -218,7 +218,7 @@ void utilPrintf(char *fmt, ...);
 void func_8019BC94_ovl7(void);
 
 void func_80220F68_ovl18(s32 arg0) {
-    UnkStruct800E1B50 *temp_t0;
+    EnemyRecord *temp_t0;
     f32 var_f0;
     s32 temp_a0;
     s32 var_v0;
@@ -286,7 +286,7 @@ void func_802212E8_ovl18(s32 arg0) {
 
 
 void func_80221330_ovl18(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
     func_8021F4A0_ovl18();
     sp1C->unk98 = &D_8022A988_ovl18;
     D_800DF150[omCurrentObj->objId] = &func_80221440_ovl18;

@@ -81,7 +81,7 @@ void func_802187C0_ovl9(s32 arg0) {
 }
 
 void func_80218930_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     if (tmp->unk3C == 0) {
         tmp->unk3C = 1;
@@ -124,7 +124,7 @@ void func_80218B00_ovl9(struct GObj *arg0) {
 }
 
 void func_80218B9C_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     tmp->unk98 = &D_801CCF4C;
@@ -138,7 +138,7 @@ void func_80218C20_ovl9(s32 arg0) {
 }
 
 void func_80218C28_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     s32 sp30;
 
     tmp->unk98 = &D_801CCF70;
@@ -165,7 +165,7 @@ void func_80218C28_ovl9(struct GObj *arg0) {
 }
 
 void func_80218DFC_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         D_800E98E0[omCurrentObj->objId]--;
@@ -181,7 +181,7 @@ void func_80218DFC_ovl9(struct GObj *arg0) {
 }
 
 void func_80218EC4_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 2;
     tmp->unk98 = &D_801CCF94;
@@ -198,7 +198,7 @@ void func_80218F98_ovl9(s32 arg0) {
 }
 
 void func_80218FA0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     tmp->unk98 = &D_801CCFB8;
     D_800EA360[omCurrentObj->objId] = 4;
@@ -214,7 +214,7 @@ void func_80218FA0_ovl9(struct GObj *arg0) {
 }
 
 void func_802190D8_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     s32 state;
 
     if (tmp->unk3C == 0) {
@@ -248,7 +248,7 @@ void func_802190D8_ovl9(struct GObj *arg0) {
 }
 
 void func_80219388_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 6;
     tmp->unk98 = &D_801CCFDC;
@@ -264,7 +264,7 @@ void func_8021944C_ovl9(s32 arg0) {
 }
 
 void func_80219454_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     s32 sp28;
 
     D_800DDFD0[omCurrentObj->objId] = 4;
@@ -298,7 +298,7 @@ void func_80219590_ovl9(struct GObj *arg0) {
 }
 
 void func_80219654_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 5;
     tmp->unk98 = &D_801CCF70;
@@ -323,7 +323,7 @@ void func_80219748_ovl9(struct GObj *arg0) {
 }
 
 void func_80219824_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800E8920[omCurrentObj->objId] = 0;
     D_800DDFD0[omCurrentObj->objId] = 7;

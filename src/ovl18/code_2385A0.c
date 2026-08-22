@@ -84,7 +84,7 @@ void func_8022647C_ovl18(s32 arg0);
 void func_802265A4_ovl18(void);
 
 void func_80225C00_ovl18(s32 arg0) {
-    struct UnkStruct800E1B50 *temp_v0;
+    struct EnemyRecord *temp_v0;
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = &func_801ACF5C_ovl7;
@@ -132,7 +132,7 @@ void func_80225EB8_ovl18(s32 arg0) {
 void func_80225FA8_ovl18(struct GObj *arg0) {
     f32 sp2C;
     struct DObj *sp20;
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
     struct DObj *temp_v0;
     struct DObj *temp_v1;
     struct Unk2385A0_24 *temp_v0_2;
@@ -169,7 +169,7 @@ void func_80225FA8_ovl18(struct GObj *arg0) {
 /* D_8022BC80_ovl18 now emitted by this TU */
 
 void func_8022612C_ovl18(UNUSED s32 arg0) {
-    struct UnkStruct800E1B50 *sp2C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp2C = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     sp2C->unk98 = &D_8022AAF0_ovl18;
@@ -200,7 +200,7 @@ void func_80226294_ovl18(UNUSED s32 arg0) {
  * use (45 diffs), two locals CSE into the single $f2 the ROM has. */
 void func_8022629C_ovl18(s32 arg0)
 {
-  struct UnkStruct800E1B50 *temp_a1;
+  struct EnemyRecord *temp_a1;
   f32 big = 65535.0f;
   f32 big2 = 65535.0f;
   temp_a1 = D_800E1B50[omCurrentObj->objId];
@@ -250,7 +250,7 @@ void func_802265A4_ovl18(void) {
 }
 
 void func_802265FC_ovl18(UNUSED s32 arg0) {
-    struct UnkStruct800E1B50 *temp_v0;
+    struct EnemyRecord *temp_v0;
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
     temp_v0->unk98 = &D_8022AB5C_ovl18;

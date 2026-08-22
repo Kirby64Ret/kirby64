@@ -7,7 +7,7 @@
 #include "ovl1/ovl1_7.h"
 #include "unk_structs/D_800E1B50.h"
 
-extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
+extern struct EnemyEventTable D_801CB470_ovl7;
 /* D_801F4C20_ovl10 = -0.8f : now emitted by this TU */
 /* D_801F4C24_ovl10 = 0.65f : now emitted by this TU */
 /* D_801F4C28_ovl10 = 0.8f : now emitted by this TU */
@@ -24,7 +24,7 @@ extern void func_801ACF84_ovl7(struct GObj *);
 void func_801EF760_ovl10(void);
 
 void func_801EF3F0_ovl10(struct GObj *this) {
-    struct UnkStruct800E1B50 *temp_s0 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_s0 = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = &func_801EF760_ovl10;
     func_800A9864(0x1008D, 0x23, 0x10);

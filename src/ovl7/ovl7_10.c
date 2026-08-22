@@ -38,7 +38,7 @@ void func_80198880_ovl7(void *);
 extern s32 D_801C424C_ovl7[];
 void func_800B0F28(struct DObj *, s32, f32);
 void func_801B41BC_ovl7(void);
-extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
+extern struct EnemyEventTable D_801CB500_ovl7;
 extern f32 D_801CE330_ovl7; extern f32 D_801CE328_ovl7; /* D_801CE328 stays in asm: 2-word float, forced */
 void func_800AA864(s32, u32);
 void func_800B6FD8(GObj *);
@@ -57,7 +57,7 @@ s32 func_80111A04(void *, u32);
 void func_80111C4C(s32);
 
 void func_801B3670_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -91,7 +91,7 @@ void func_801B3888_ovl7(GObj *arg0) {
 }
 
 void func_801B38CC_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -125,7 +125,7 @@ void func_801B3A74_ovl7(GObj *arg0) {
 }
 
 void func_801B3ACC_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -170,7 +170,7 @@ void func_801B3C54_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3C54_ovl7.s")
 #endif
 void func_801B3CF4_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -196,7 +196,7 @@ void func_801B3CF4_ovl7(GObj *arg0) {
 // 138/189 diffs but the same instruction count: the home-slot store of $a0
 // is scheduled first instead of mid-function and every temp is rotated one slot.
 void func_801B3EC8_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     arg0->onAnimate = func_800B0F28;
     D_800EC660[omCurrentObj->objId] = 40.0f;
@@ -240,7 +240,7 @@ void func_801B41BC_ovl7(void) {
 }
 
 void func_801B4200_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     func_800B3520();
@@ -256,7 +256,7 @@ void func_801B4200_ovl7(GObj *arg0) {
 }
 
 void func_801B4328_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -351,10 +351,10 @@ void func_801B46C4_ovl7(GObj *arg0) {
     void func_801A2558_ovl7(void *);
     void func_801B4938_ovl7();
     extern void *D_801CAF50_ovl7[];
-    extern struct Sub800E1B50_Unk98 D_801CD2F4_ovl7;
+    extern struct EnemyEventTable D_801CD2F4_ovl7;
     extern f32 D_801CE33C_ovl7;
     extern s32 D_800E8920[];
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct DObj *a = arg0->data.dobj->firstChild;
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][5];
     s32 i;
@@ -409,7 +409,7 @@ void func_801B4938_ovl7(void) {
 }
 
 void func_801B4A00_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -436,7 +436,7 @@ void func_801B4A00_ovl7(GObj *arg0) {
 }
 
 void func_801B4C20_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     func_800B3520();

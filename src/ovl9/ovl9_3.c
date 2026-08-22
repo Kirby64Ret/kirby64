@@ -17,7 +17,7 @@ void func_801DCA78_ovl9(struct GObj *);
 void func_801A0D50_ovl7(void *);
 
 void func_801DC8C0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk39 = -1;
     D_800DEF90[omCurrentObj->objId] = func_800B6B8C;
@@ -72,7 +72,7 @@ void func_801DCBAC_ovl9(GObj *arg0) {
 }
 
 extern s32 D_801C8080_ovl7;
-extern struct Sub800E1B50_Unk98 D_801CB764;
+extern struct EnemyEventTable D_801CB764;
 void func_800B33F4(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -127,7 +127,7 @@ void func_801DCE44_ovl9(GObj *arg0) {
 void func_800AA018(s32);
 void ohSleep(s32);
 extern f32 func_8019DA50_ovl7(void);
-extern struct Sub800E1B50_Unk98 D_801CB764;
+extern struct EnemyEventTable D_801CB764;
 /* Ambush spawn state: play the pop-in animation (0x10049) with
  * physics frozen, gate the reveal on the spawn mode (mode 1: wait
  * until Kirby's lateral offset func_8019DA50 changes sign, then 15
@@ -217,7 +217,7 @@ void func_801DCE6C_ovl9(struct GObj *arg0) {
 void func_800AA018(s32);
 void ohSleep(s32);
 extern f32 func_8019DA50_ovl7(void);
-extern struct Sub800E1B50_Unk98 D_801CB764;
+extern struct EnemyEventTable D_801CB764;
 /* Ambush spawn state: play the pop-in animation (0x10049) with
  * physics frozen, gate the reveal on the spawn mode (mode 1: wait
  * until Kirby's lateral offset func_8019DA50 changes sign, then 15
@@ -351,7 +351,7 @@ void play_sound(s32);
 extern struct GObjProcess *gEntityGObjProcessArray[];
 
 void func_801DD3CC_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     Vector *v;
     f32 t;
 
@@ -385,7 +385,7 @@ void func_801DD3CC_ovl9(struct GObj *arg0) {
 /* FACTORY: 18/164, saved-register permutation.  The ROM keeps &omCurrentObj
    in $s0 and starts its save block at 0x30; ours picks $s4 and a deeper
    block, which renames the rest.  Body order and schedule agree. */
-extern struct Sub800E1B50_Unk98 D_801CB740;
+extern struct EnemyEventTable D_801CB740;
 extern f32 D_8021BDB8_ovl9[];
 /* Knockback/launch state: go fully opaque, clear the pause counter,
  * enter anim state 4 with physics frozen and the ovl7 hit table, keep
@@ -426,7 +426,7 @@ void func_801DD598_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[id] = 5;
 }
 #elif defined(PORT)
-extern struct Sub800E1B50_Unk98 D_801CB740;
+extern struct EnemyEventTable D_801CB740;
 extern f32 D_8021BDB8_ovl9[];
 /* Knockback/launch state: go fully opaque, clear the pause counter,
  * enter anim state 4 with physics frozen and the ovl7 hit table, keep
@@ -669,7 +669,7 @@ void func_801DDD44_ovl9(GObj *arg0) {
     D_800EB160[omCurrentObj->objId] = 0.0f;
 }
 
-extern struct Sub800E1B50_Unk98 D_801CB71C;
+extern struct EnemyEventTable D_801CB71C;
 extern f32 D_8021BDB8_ovl9[];
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -932,7 +932,7 @@ void func_801DCA78_ovl9(struct GObj *);
 extern struct GObjProcess *gEntityGObjProcessArray[];
 
 void func_801DE60C_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     f32 t;
     f32 v;
 
@@ -990,7 +990,7 @@ void func_801DE814_ovl9(s32 arg0) {
     D_800E76C0[omCurrentObj->objId] = 0xFF;
     D_800DDFD0[omCurrentObj->objId] = 7;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
-    D_800E1B50[omCurrentObj->objId]->unk98 = (struct Sub800E1B50_Unk98 *) &D_801CB788;
+    D_800E1B50[omCurrentObj->objId]->unk98 = (struct EnemyEventTable *) &D_801CB788;
     D_800E8920[omCurrentObj->objId] = 1;
     D_800EB160[omCurrentObj->objId] = 0.0f;
     func_800AECC0(0.0f);
@@ -1075,7 +1075,7 @@ void func_801DEBF4_ovl9(s32 arg0) {
     D_800E76C0[omCurrentObj->objId] = 0xFF;
     D_800DDFD0[omCurrentObj->objId] = 8;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
-    D_800E1B50[omCurrentObj->objId]->unk98 = (struct Sub800E1B50_Unk98 *) &D_801CB788;
+    D_800E1B50[omCurrentObj->objId]->unk98 = (struct EnemyEventTable *) &D_801CB788;
     D_800E8920[omCurrentObj->objId] = 0;
     D_800EB160[omCurrentObj->objId] = 0.0f;
     func_800AECC0(0.0f);
@@ -1166,7 +1166,7 @@ void func_801DF154_ovl9(GObj *arg0) {
 f32 func_800F8824(Vector *, f32);
 
 f32 func_801DF1B0_ovl9(void) {
-    UnkStruct800E1B50 *p;
+    EnemyRecord *p;
     Vector *v;
     f32 temp;
 
@@ -1257,8 +1257,8 @@ void func_80111ECC(struct Ovl9AnimObj2 *);
 s32 func_80110150(void *);
 
 s32 func_801DF588_ovl9(s32 arg0, void *arg1) {
-    struct Sub800E1B50_Unk88 *sp0;
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyKindDesc *sp0;
+    struct EnemyRecord *temp;
     struct Ovl9AnimObj2 *temp_v0;
 
     temp = D_800E1B50[omCurrentObj->objId];
@@ -1338,7 +1338,7 @@ void func_801DF8B8_ovl9(GObj *arg0) {
 
 extern s32 D_801C8568;
 extern s32 D_801CB980;
-extern struct Sub800E1B50_Unk94 D_801C35C4_ovl7;
+extern struct EnemyAnimCue D_801C35C4_ovl7;
 f32 func_8019DA50_ovl7(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -1431,7 +1431,7 @@ void func_801DFE00_ovl9(void) {
     }
 }
 
-extern struct Sub800E1B50_Unk94 D_801C3608;
+extern struct EnemyAnimCue D_801C3608;
 
 void func_801DFE74_ovl9(struct GObj *arg0) {
     f32 v;
@@ -1460,7 +1460,7 @@ void func_801DFE74_ovl9(struct GObj *arg0) {
 
 extern s32 D_801C8520_ovl7;
 extern s32 D_801CB980;
-extern struct Sub800E1B50_Unk94 D_801C35C4_ovl7;
+extern struct EnemyAnimCue D_801C35C4_ovl7;
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 extern void func_800B33F4(void);
@@ -1484,7 +1484,7 @@ void func_801E00E0_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
 
-extern struct Sub800E1B50_Unk98 D_801CB9A4;
+extern struct EnemyEventTable D_801CB9A4;
 /* D_8021CF98_ovl9: literal, this TU owns its .rodata */
 
 void func_801E0228_ovl9(s32 arg0) {
@@ -1571,13 +1571,13 @@ void func_801E06C0_ovl9(GObj *arg0) {
     func_801A0D74_ovl7(arg0);
     id = omCurrentObj->objId * 4;
     if (*(s32 *) ((u8 *) D_800E9C60 + id) != 0) {
-        (*(struct UnkStruct800E1B50 **) ((u8 *) D_800E1B50 + id))->unk8C = &D_801C8520_ovl7;
+        (*(struct EnemyRecord **) ((u8 *) D_800E1B50 + id))->unk8C = &D_801C8520_ovl7;
         func_8019F3B0_ovl7();
         if (D_800E83E0[omCurrentObj->objId] != 0) {
             D_800EBBE0[omCurrentObj->objId] = func_8019DD78_ovl7(0xD, 1);
         }
     } else {
-        (*(struct UnkStruct800E1B50 **) ((u8 *) D_800E1B50 + id))->unk8C = &D_801C8568;
+        (*(struct EnemyRecord **) ((u8 *) D_800E1B50 + id))->unk8C = &D_801C8568;
         func_8019F3B0_ovl7();
     }
 }
@@ -1614,7 +1614,7 @@ s32 func_80110B00(struct Ovl9AnimInfo3 *);
 
 s32 func_801E07DC_ovl9(s32 arg0) {
     struct Ovl9AnimInfo3 sp30;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct Ovl9AnimObj2 *anim;
     struct Ovl9AnimHdrSub3 *hdr;
 
@@ -1651,7 +1651,7 @@ void func_801E0A50_ovl9(void);
 void func_801E0908_ovl9(struct GObj *);
 
 void func_801E0908_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B6FD8;
     D_800DF150[omCurrentObj->objId] = func_801E0A50_ovl9;

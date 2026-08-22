@@ -69,7 +69,7 @@ void func_802245E0_ovl18(UNUSED s32 arg0) {
 }
 
 void func_80224628_ovl18(UNUSED s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     func_8021F4A0_ovl18();
     sp1C->unk98 = &D_8022AA84_ovl18;
@@ -152,7 +152,7 @@ void func_80224B54_ovl18(UNUSED s32 arg0) {
 }
 
 void func_80224B9C_ovl18(UNUSED s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     func_8021F4A0_ovl18();
     sp1C->unk98 = &D_8022AAA8_ovl18;
@@ -257,7 +257,7 @@ void func_8022514C_ovl18(UNUSED s32 arg0) {
 }
 
 void func_80225194_ovl18(UNUSED s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     func_8021F4A0_ovl18();
     sp1C->unk98 = &D_8022AACC_ovl18;
@@ -392,7 +392,7 @@ void func_802258EC_ovl18(UNUSED s32 arg0) {
  * local (120).  Anything that gets IDO to the value-CSE closes most of this. */
 #ifdef NON_MATCHING
 void func_80225958_ovl18(void) {
-    struct UnkStruct800E1B50 *sp3C;
+    struct EnemyRecord *sp3C;
     Vector sp2C;
     s32 r;
     s32 t;

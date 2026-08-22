@@ -105,7 +105,7 @@ void func_801E426C_ovl13(GObj *arg0) {
 s32 func_801E4424_ovl13(f32 arg0) {
     struct Ovl13AnimObj *temp_v0;
     struct Ovl13AnimCmd *temp_v1;
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     if (tmp->unk8C == NULL) {
         return 0;

@@ -11,7 +11,7 @@
 /* FACTORY: 24/315, frame 0x68 vs the ROM's 0x70 (8 bytes short, arg0 homed
    at 0x68 instead of 0x70) plus the $v0/$v1 pair the objId lands in.  The
    save set, body order and schedule are the ROM's. */
-extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
+extern struct EnemyEventTable D_801CB4DC_ovl7;
 void func_801ACF5C_ovl7(GObj *);
 extern void func_800A9864(s32, s32, s32);
 extern void func_8019D958_ovl7(u16);
@@ -30,7 +30,7 @@ void ohSleep(s32);
  * tick, splash, then cruise at 8.  Both variants live 60 ticks and
  * finish through the shared ovl7 projectile epilogue. */
 void func_801F0060_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     s32 parent;
     u32 id;
 
@@ -96,7 +96,7 @@ void func_801F0060_ovl9(GObj *arg0) {
     func_801ACF84_ovl7(arg0);
 }
 #elif defined(PORT)
-extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
+extern struct EnemyEventTable D_801CB4DC_ovl7;
 void func_801ACF5C_ovl7(GObj *);
 extern void func_800A9864(s32, s32, s32);
 extern void func_8019D958_ovl7(u16);
@@ -115,7 +115,7 @@ void ohSleep(s32);
  * tick, splash, then cruise at 8.  Both variants live 60 ticks and
  * finish through the shared ovl7 projectile epilogue. */
 void func_801F0060_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     s32 parent;
     u32 id;
 
@@ -205,7 +205,7 @@ extern void func_800B33F4(void);
  * of it), arm the hit flag and expire after 60 ticks through the
  * shared epilogue. */
 void func_801F0548_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     s32 src;
     s32 idx;
     u32 id;
@@ -279,7 +279,7 @@ extern void func_800B33F4(void);
  * of it), arm the hit flag and expire after 60 ticks through the
  * shared epilogue. */
 void func_801F0548_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     s32 src;
     s32 idx;
     u32 id;
@@ -396,7 +396,7 @@ extern void func_801A3E80_ovl7(GObj *);
  * PORT: the generator handle lives in rec->unk34 (a real pointer);
  * D_800E98E0 keeps only the N64's nonzero flag for the draw hook. */
 void func_801F0ABC_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     struct PcEneCurve curve;
     void *gen;
     u32 id;
@@ -472,7 +472,7 @@ extern void func_801A3E80_ovl7(GObj *);
  * PORT: the generator handle lives in rec->unk34 (a real pointer);
  * D_800E98E0 keeps only the N64's nonzero flag for the draw hook. */
 void func_801F0ABC_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     struct PcEneCurve curve;
     void *gen;
     u32 id;
@@ -560,7 +560,7 @@ extern s32 D_800E83E0[];
  * PORT: the generator handle lives in rec->unk34; D_800E98E0 keeps
  * only the nonzero flag (see func_801F0ABC). */
 void func_801F0DFC_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *rec = D_800E1B50[omCurrentObj->objId];
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         struct PcOvl1Generator *gen = (struct PcOvl1Generator *) rec->unk34;
 
@@ -613,7 +613,7 @@ extern s32 D_800E83E0[];
  * PORT: the generator handle lives in rec->unk34; D_800E98E0 keeps
  * only the nonzero flag (see func_801F0ABC). */
 void func_801F0DFC_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     u32 id;
 
     id = omCurrentObj->objId;
@@ -654,7 +654,7 @@ void func_801F0DFC_ovl9(GObj *arg0) {
 #ifdef MIPS_TO_C
 /* FACTORY: 188/220, the closest of the ovl9_7 group.  Residue is register
    naming only; no structural or scheduling difference. */
-extern struct Sub800E1B50_Unk98 D_801CD048;
+extern struct EnemyEventTable D_801CD048;
 extern f32 D_8021C320_ovl9[];
 extern f32 D_8021C330_ovl9[];
 extern f32 D_8021C340_ovl9[];
@@ -715,7 +715,7 @@ void func_801F1044_ovl9(GObj *arg0) {
     func_801ACF84_ovl7(arg0);
 }
 #elif defined(PORT)
-extern struct Sub800E1B50_Unk98 D_801CD048;
+extern struct EnemyEventTable D_801CD048;
 extern f32 D_8021C320_ovl9[];
 extern f32 D_8021C330_ovl9[];
 extern f32 D_8021C340_ovl9[];
@@ -809,7 +809,7 @@ void func_801A04B8_ovl7(void);
 
 s32 func_801F1440_ovl9(f32 arg0) {
     struct Ovl9AnimObj *temp;
-    UnkStruct800E1B50 *p;
+    EnemyRecord *p;
 
     p = D_800E1B50[omCurrentObj->objId];
     if (p->unk8C == NULL) {
@@ -826,8 +826,8 @@ s32 func_801F1440_ovl9(f32 arg0) {
    claimed to be: the N64 build takes the pragma below. */
 void func_800B6A2C(s32);                            /* extern */
 void func_801ACF5C_ovl7(GObj *);                    /* extern */
-extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
-extern struct Sub800E1B50_Unk98 D_801CD024;
+extern struct EnemyEventTable D_801CB470_ovl7;
+extern struct EnemyEventTable D_801CD024;
 
 void func_801F14B8_ovl9(s32 arg0) {
     GObj *temp_v0_2;
@@ -906,7 +906,7 @@ extern void func_801A3E80_ovl7(GObj *);
  * ticks, coast 24 ticks frozen, thaw for 5, then disarm, play the
  * annex despawn cue and die through the ovl7 kill path. */
 void func_801F1784_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     f32 ang;
     u32 id;
 
@@ -981,7 +981,7 @@ extern void func_801A3E80_ovl7(GObj *);
  * ticks, coast 24 ticks frozen, thaw for 5, then disarm, play the
  * annex despawn cue and die through the ovl7 kill path. */
 void func_801F1784_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     f32 ang;
     u32 id;
 
@@ -1065,7 +1065,7 @@ extern void func_800A4DB8(Vector *, DObj *);
  * position (manhattan-normalized), bursts at 36 and cruises at 11.5.
  * Lives 60 ticks, shared epilogue. */
 void func_801F1C90_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     s32 parent;
     u32 id;
 
@@ -1146,7 +1146,7 @@ extern void func_800A4DB8(Vector *, DObj *);
  * position (manhattan-normalized), bursts at 36 and cruises at 11.5.
  * Lives 60 ticks, shared epilogue. */
 void func_801F1C90_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     s32 parent;
     u32 id;
 
@@ -1224,7 +1224,7 @@ void func_801F1C90_ovl9(GObj *arg0) {
 extern void func_800B6E84(struct GObj *);
 void func_801F23E4_ovl9(void);
 extern s32 D_801C9B48_ovl7;
-extern struct Sub800E1B50_Unk98 D_801CD06C;
+extern struct EnemyEventTable D_801CD06C;
 void func_800B33F4(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -1306,7 +1306,7 @@ void func_801F2910_ovl9(void);
  * then cruises at 24 for 40 ticks before the shared epilogue.
  * Releases the parent's shot slot first when the parent is gone. */
 void func_801F2584_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     Vector sp44;
     s32 parent;
     f32 dx;
@@ -1363,7 +1363,7 @@ void func_801F2910_ovl9(void);
  * then cruises at 24 for 40 ticks before the shared epilogue.
  * Releases the parent's shot slot first when the parent is gone. */
 void func_801F2584_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     Vector sp44;
     s32 parent;
     f32 dx;

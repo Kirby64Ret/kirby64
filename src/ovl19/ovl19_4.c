@@ -80,7 +80,7 @@ void func_8022E798_ovl19(GObj *arg0) {
 
 void func_8022E954_ovl19(GObj *arg0) {
     Vector sp24;
-    struct UnkStruct800E1B50 *sp20;
+    struct EnemyRecord *sp20;
 
     sp20 = D_800E1B50[omCurrentObj->objId];
     func_800AECC0(gameTicksPerDraw);

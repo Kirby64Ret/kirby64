@@ -55,10 +55,10 @@ void func_800AED20(f32);
 void func_801A3E80_ovl7(GObj *);
 extern f32 gameTicksPerDraw;
 extern void *D_801C33C4_ovl7, *D_801C3408_ovl7;
-extern struct Sub800E1B50_Unk98 D_801CB56C_ovl7;
+extern struct EnemyEventTable D_801CB56C_ovl7;
 
 void func_801B1784_ovl7(void);
-extern struct Sub800E1B50_Unk98 D_801CD318_ovl7;
+extern struct EnemyEventTable D_801CD318_ovl7;
 extern void *D_801CAF50_ovl7;
 /* D_801CE2AC_ovl7 = 65535.0f : now emitted by this TU */
 
@@ -67,7 +67,7 @@ void func_801AC364_ovl7(GObj *);
 /* D_801CE2A0_ovl7 = 65535.0f : now emitted by this TU */
 
 /* D_801CE2A4_ovl7 = 65535.0f : now emitted by this TU */
-extern struct Sub800E1B50_Unk98 D_801CD2D0_ovl7;
+extern struct EnemyEventTable D_801CD2D0_ovl7;
 void func_800B0F28(struct DObj *, s32, f32);
 
 void func_801AC840_ovl7(void);
@@ -102,7 +102,7 @@ void func_801B0550_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
 }
 
 void func_801B069C_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -127,7 +127,7 @@ void func_801B069C_ovl7(GObj *arg0) {
 }
 
 void func_801B0880_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -148,7 +148,7 @@ void func_801B0880_ovl7(s32 arg0) {
 }
 
 void func_801B0A20_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -176,7 +176,7 @@ void func_801B0A20_ovl7(GObj *arg0) {
 #ifdef NON_MATCHING
 // 60/128 diffs: all stores are right; temps are rotated one register slot.
 void func_801B0C20_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct DObj *d;
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
@@ -206,7 +206,7 @@ void func_801B0C20_ovl7(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_8/func_801B0C20_ovl7.s")
 #endif
 void func_801B0E20_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -229,7 +229,7 @@ void func_801B0E20_ovl7(GObj *arg0) {
 }
 
 void func_801B0FCC_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
     func_800B3520();
@@ -254,7 +254,7 @@ void func_801B10EC_ovl7(void) {
 }
 
 void func_801B1130_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -289,11 +289,11 @@ void func_801B1130_ovl7(GObj *arg0) {
    (so $a0's last use abuts the jal) left it at index 8 unchanged.  Pure
    statement-permutation residue -- hand this to the permuter. */
 #ifdef NON_MATCHING
-extern struct Sub800E1B50_Unk98 D_801CD2F4_ovl7;
+extern struct EnemyEventTable D_801CD2F4_ovl7;
 void func_801B152C_ovl7(void);
 
 void func_801B1300_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp2C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp2C = D_800E1B50[omCurrentObj->objId];
     DObj *sp28;
     s32 i;
 
@@ -346,7 +346,7 @@ void func_801B152C_ovl7(void) {
 }
 
 void func_801B15F4_ovl7(void) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -389,7 +389,7 @@ void func_801B184C_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
 
 void func_801B187C_ovl7(GObj *arg0) {
     s32 func_801ACC34_ovl7(s32, s32);
-    struct UnkStruct800E1B50 *sp5C;
+    struct EnemyRecord *sp5C;
     struct DObj *sp58;
     struct DObj *sp54;
     struct DObj *sp50;
@@ -433,7 +433,7 @@ void func_801B19F8_ovl7(GObj *arg0) {
 }
 
 void func_801B1A58_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
     func_800A9864(0x10030, 0x23, 0x10);
@@ -451,7 +451,7 @@ void func_801B1A58_ovl7(GObj *arg0) {
 }
 
 void func_801B1BB0_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
     func_800A9864(0x1002F, 0x23, 0x10);
@@ -469,7 +469,7 @@ void func_801B1BB0_ovl7(GObj *arg0) {
 }
 
 void func_801B1D08_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
     func_800A9864(0x1002E, 0x23, 0x10);

@@ -80,11 +80,11 @@ extern void func_801A0D50_ovl7(void *);
 extern void func_801BC794_ovl7(s32);
 extern void func_801D0E3C_ovl8(void);
 extern u8 D_801D79E8[];
-extern struct Sub800E1B50_Unk98 D_801DAF18;
+extern struct EnemyEventTable D_801DAF18;
 extern u8 D_801D7A2C[];
-extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
-extern struct Sub800E1B50_Unk98 D_801DAF84;
-extern struct Sub800E1B50_Unk98 D_801DAFCC;
+extern struct EnemyEventTable D_801CB4DC_ovl7;
+extern struct EnemyEventTable D_801DAF84;
+extern struct EnemyEventTable D_801DAFCC;
 extern void func_8019B9B0_ovl7(void);
 extern f32 eneGetPlayerHeight(void);
 extern void func_800A9864(s32, s32, s32, void *);
@@ -144,7 +144,7 @@ s32 func_801E00B8_ovl11(s32);
 void func_801E024C_ovl11(void);
 
 void func_801DB1E0_ovl11(struct GObj *this) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     this->onAnimate = func_800B113C;
     D_800DEF90[omCurrentObj->objId] = func_801D0D44_ovl8;
@@ -565,7 +565,7 @@ void func_801DC5B0_ovl11(void) {
     s32 pad[2];
     struct DObj *sp1C;
     struct DObj *sp18;
-    struct UnkStruct800E1B50 *temp_v0;
+    struct EnemyRecord *temp_v0;
     struct DObj **temp_a2;
     struct GObj *temp_a0;
 
@@ -590,7 +590,7 @@ void func_801DC674_ovl11(void) {
     struct DObj *sp24;
     struct DObj *sp20;
     struct DObj **temp_v1;
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
 
     temp_v1 = D_800DFBD0[omCurrentObj->objId];
     temp_s0 = D_800E1B50[omCurrentObj->objId];
@@ -933,8 +933,8 @@ void func_801DD9C8_ovl11(struct GObj *arg0) {
 }
 
 void func_801DDA4C_ovl11(struct GObj *arg0) {
-    UnkStruct800E1B50 *tmp;
-    struct Sub800E1B50_Unk94 *temp;
+    EnemyRecord *tmp;
+    struct EnemyAnimCue *temp;
     s32 s;
 
     tmp = D_800E1B50[omCurrentObj->objId];
@@ -967,7 +967,7 @@ void func_801DDB9C_ovl11(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DDBA4_ovl11.s")
 
 void func_801DDD80_ovl11(void) {
-    struct UnkStruct800E1B50 *temp_v0;
+    struct EnemyRecord *temp_v0;
     struct GObj *temp_a0;
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
@@ -981,7 +981,7 @@ void func_801DDD80_ovl11(void) {
 }
 
 void func_801DDE08_ovl11(void) {
-    UnkStruct800E1B50 *tmp;
+    EnemyRecord *tmp;
     struct GObj *obj;
 
     tmp = D_800E1B50[omCurrentObj->objId];
@@ -1007,7 +1007,7 @@ void func_801DDEC0_ovl11(struct GObj *arg0) {
 }
 
 void func_801DDF08_ovl11(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_t6;
+    struct EnemyRecord *temp_t6;
 
     temp_t6 = D_800E1B50[omCurrentObj->objId];
     D_800DEF90[omCurrentObj->objId] = func_801D0E3C_ovl8;
@@ -1080,7 +1080,7 @@ void func_801DE258_ovl11(void) {
 }
 
 void func_801DE33C_ovl11(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyRecord *temp;
 
     temp = D_800E1B50[omCurrentObj->objId];
     D_800E9C60[omCurrentObj->objId] = 1;
@@ -1098,7 +1098,7 @@ void func_801DE33C_ovl11(struct GObj *arg0) {
 }
 
 void func_801DE454_ovl11(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyRecord *temp;
     s32 *p;
     s32 t;
 
@@ -1173,7 +1173,7 @@ void func_801DE7BC_ovl11(struct GObj *arg0) {
 }
 
 void func_801DE8D0_ovl11(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyRecord *temp;
 
     temp = D_800E1B50[omCurrentObj->objId];
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -1209,7 +1209,7 @@ void func_801DEA1C_ovl11(struct GObj *arg0) {
 }
 
 void func_801DEAE8_ovl11(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_v1;
+    struct EnemyRecord *temp_v1;
 
     temp_v1 = D_800E1B50[omCurrentObj->objId];
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -1220,8 +1220,8 @@ void func_801DEAE8_ovl11(struct GObj *arg0) {
 }
 
 void func_801DEB78_ovl11(struct GObj *arg0) {
-    UnkStruct800E1B50 *tmp;
-    struct Sub800E1B50_Unk94 *temp;
+    EnemyRecord *tmp;
+    struct EnemyAnimCue *temp;
 
     tmp = D_800E1B50[omCurrentObj->objId];
     tmp->unk40 = 1;
@@ -1237,7 +1237,7 @@ void func_801DEB78_ovl11(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DEC08_ovl11.s")
 
 void func_801DEE50_ovl11(void) {
-    struct UnkStruct800E1B50 *temp_v0;
+    struct EnemyRecord *temp_v0;
     struct GObj *temp_a0;
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
@@ -1250,7 +1250,7 @@ void func_801DEE50_ovl11(void) {
 }
 
 void func_801DEED0_ovl11(void) {
-    UnkStruct800E1B50 *tmp;
+    EnemyRecord *tmp;
     struct GObj *obj;
 
     tmp = D_800E1B50[omCurrentObj->objId];
@@ -1277,7 +1277,7 @@ void func_801DEF9C_ovl11(struct GObj *arg0) {
 }
 
 void func_801DEFE4_ovl11(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
     D_800DEF90[omCurrentObj->objId] = func_801D1094_ovl8;
@@ -1387,8 +1387,8 @@ void func_801DF548_ovl11(struct GObj *arg0) {
 /* Last function of this translation unit: the two nops after its `.size` are
  * the next object's 16-byte alignment, not instructions. See ovl11_2.c. */
 void func_801DF5B8_ovl11(struct GObj *arg0) {
-    UnkStruct800E1B50 *tmp;
-    struct Sub800E1B50_Unk94 *temp;
+    EnemyRecord *tmp;
+    struct EnemyAnimCue *temp;
 
     tmp = D_800E1B50[omCurrentObj->objId];
     tmp->unk40 = 1;

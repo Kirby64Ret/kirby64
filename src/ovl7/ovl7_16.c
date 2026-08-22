@@ -74,11 +74,11 @@ void func_800B6684(GObj *);
 void func_800B6474(GObj *);
 
 void func_801BD510_ovl7(void *arg0) {
-    struct UnkStruct800E1B50 *temp_t8;
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *temp_t8;
+    struct EnemyRecord *sp1C;
     struct SubSub800E1B50_Unk88_UnkC *temp_a0;
     struct SubSub800E1B50_Unk88_UnkC_Unk0_Unk1C *temp_a0_2;
-    struct Sub800E1B50_Unk88 *temp_v0;
+    struct EnemyKindDesc *temp_v0;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_v0_2;
 
     temp_t8 = D_800E1B50[omCurrentObj->objId];
@@ -193,7 +193,7 @@ void func_801BDADC_ovl7(GObj *arg0) {
 }
 
 void func_801BDB50_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801BDBDC_ovl7;
     func_800AA018(0x105F0);
@@ -208,7 +208,7 @@ void func_801BDBDC_ovl7(GObj *arg0) {
 
 void func_801BDBFC_ovl7(void) {
     Vector v1, v2, v3, v4;
-    struct UnkStruct800E1B50 *temp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp = D_800E1B50[omCurrentObj->objId];
 
     if ((D_800E8E60[omCurrentObj->objId] != 0) || (D_800E5F90[omCurrentObj->objId] == -1)) {
         temp->unk40 = 1;
@@ -263,7 +263,7 @@ void func_801BE068_ovl7(GObj *arg0) {
 }
 
 void func_801BE10C_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct DObj *dobj = D_800DFBD0[omCurrentObj->objId][1];
 
     D_800DF150[omCurrentObj->objId] = func_801BE1A8_ovl7;
@@ -382,7 +382,7 @@ void func_801BE79C_ovl7(GObj *arg0) {
     extern s16 D_8012E828;
     extern f32 D_800E9020[];
     u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct EnemyRecord *ent = D_800E1B50[id];
     Vector srt;
     u16 kind;
 
@@ -548,7 +548,7 @@ void func_801BE79C_ovl7(GObj *arg0) {
     extern s16 D_8012E828;
     extern f32 D_800E9020[];
     u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct EnemyRecord *ent = D_800E1B50[id];
     Vector srt;
     u16 kind;
 
@@ -686,7 +686,7 @@ void func_801BE79C_ovl7(GObj *arg0) {
 #endif
 
 void func_801BEE54_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 state;
 
     state = D_800E98E0[omCurrentObj->objId];

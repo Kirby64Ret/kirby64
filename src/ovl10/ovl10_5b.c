@@ -527,7 +527,7 @@ void func_801F11A8_ovl10(GObj *arg0) {
     void func_801F1454_ovl10(struct GObj *);
     extern u32 D_801F4670_ovl10[];
 
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 i;
     s32 t;
 
@@ -600,7 +600,7 @@ extern u32 D_801F4670_ovl10[];
  * 0x42C80000 / 0x40000000 passed to the f32 camera params are float bits:
  * 100.0f and 2.0f. */
 void func_801F11A8_ovl10(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 i;
     s32 t;
 

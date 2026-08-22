@@ -22,7 +22,7 @@
 void func_801E6074_ovl15(void);
 
 void func_801E5E10_ovl15(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
@@ -67,7 +67,7 @@ void func_801E6074_ovl15(void) {
 void func_801E6374_ovl15(struct GObj *);
 
 void func_801E613C_ovl15(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp1C = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;

@@ -164,7 +164,7 @@ void func_801ACF5C_ovl7(void) {
 }
 
 void func_801ACF84_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk43 = 1;
     func_801A3E80_ovl7(arg0);

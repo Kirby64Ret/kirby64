@@ -66,8 +66,8 @@ extern u8 D_801C27E8_ovl7;
 extern u32 D_8012BCA0;
 
 // ent sub98 structs
-extern struct Sub800E1B50_Unk98 D_801CD288_ovl7;
-extern struct Sub800E1B50_Unk98 D_801CD2AC_ovl7;
+extern struct EnemyEventTable D_801CD288_ovl7;
+extern struct EnemyEventTable D_801CD2AC_ovl7;
 
 // ovl7_5
 void func_801AC364_ovl7(GObj *);
@@ -106,14 +106,14 @@ extern u32 D_801C3068_ovl7[];
 extern s32 D_800D7090;
 
 // enemy setup tables
-extern struct UnkStruct800E1B50 D_801CE790_ovl7[];
-extern struct Sub800E1B50_Unk88 *D_801F33F0_ovl10[];
-extern struct Sub800E1B50_Unk88 *D_801D7880_ovl8[];
-extern struct Sub800E1B50_Unk88 *D_801C2B6C_ovl7[];
+extern struct EnemyRecord D_801CE790_ovl7[];
+extern struct EnemyKindDesc *D_801F33F0_ovl10[];
+extern struct EnemyKindDesc *D_801D7880_ovl8[];
+extern struct EnemyKindDesc *D_801C2B6C_ovl7[];
 extern u32 D_801C2C84_ovl7[];
-extern struct Sub800E1B50_Unk88 *D_801C2D9C_ovl7[];
-extern struct Sub800E1B50_Unk88 *D_801C2DD4_ovl7[];
-extern struct Sub800E1B50_Unk88 *D_801C29C0_ovl7[];
+extern struct EnemyKindDesc *D_801C2D9C_ovl7[];
+extern struct EnemyKindDesc *D_801C2DD4_ovl7[];
+extern struct EnemyKindDesc *D_801C29C0_ovl7[];
 
 // object_helpers
 void ohSleep(s32);
@@ -132,17 +132,17 @@ void func_8019C79C_ovl7(void);
 void func_8019CD68_ovl7(void);
 
 
-void func_80198880_ovl7(struct Sub800E1B50_Unk88 *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+void func_80198880_ovl7(struct EnemyKindDesc *arg0) {
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     s32 temp;
 
     ent->unk88 = arg0;
-    ent->unk94 = arg0->unk18;
-    ent->unk8C = arg0->unk14;
+    ent->unk94 = arg0->animCue;
+    ent->unk8C = arg0->animTable;
     ent->unk98 = 0;
     ent->unk9C = NULL;
-    ent->unk48 = arg0->unk20;
-    D_800E7B20[omCurrentObj->objId] = arg0->unk0;
+    ent->unk48 = arg0->probeHook;
+    D_800E7B20[omCurrentObj->objId] = arg0->rangeGate;
     temp = arg0->unk10;
     if (temp != 0) {
         func_801A2558_ovl7(temp);
@@ -159,8 +159,8 @@ void func_80198880_ovl7(struct Sub800E1B50_Unk88 *arg0) {
 // K&R decl, signature type variants, unused 3rd arg (homes to stack - wrong).
 // Constants: target uses TWO regs holding 1 (unk42/unk41 via late $a0,
 // unk38 via $t2 hoisted into beqz delay slot) - could not reproduce split.
-struct Sub800E1B50_Unk88 *func_80198914_ovl7(s32 arg0, s32 arg1) {
-    struct UnkStruct800E1B50 *ent;
+struct EnemyKindDesc *func_80198914_ovl7(s32 arg0, s32 arg1) {
+    struct EnemyRecord *ent;
     u8 *kind;
 
     kind = &D_800E7730[arg0];
@@ -191,9 +191,9 @@ struct Sub800E1B50_Unk88 *func_80198914_ovl7(s32 arg0, s32 arg1) {
             break;
     }
     if (ent->unk88 != NULL) {
-        ent->unk94 = ent->unk88->unk18;
-        ent->unk8C = ent->unk88->unk14;
-        ent->unk48 = ent->unk88->unk20;
+        ent->unk94 = ent->unk88->animCue;
+        ent->unk8C = ent->unk88->animTable;
+        ent->unk48 = ent->unk88->probeHook;
     } else {
         ent->unk94 = NULL;
         ent->unk8C = NULL;
@@ -290,15 +290,15 @@ void func_80198DB4_ovl7(void) {
 }
 
 void func_80198DBC_ovl7(void) {
-    struct Sub800E1B50_Unk88 *cfg;
-    struct UnkStruct800E1B50 *ent;
-    struct Sub800E1B50_Unk84 *sub;
+    struct EnemyKindDesc *cfg;
+    struct EnemyRecord *ent;
+    struct EnemyProbe *sub;
 
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E7CE0[omCurrentObj->objId] = D_800E7EA0[omCurrentObj->objId] = D_800E8920[omCurrentObj->objId];
     cfg = func_80198914_ovl7((s32) omCurrentObj->objId, omCurrentObj->objId - 0xE);
     if (cfg != NULL) {
-        D_800E7B20[omCurrentObj->objId] = cfg->unk0;
+        D_800E7B20[omCurrentObj->objId] = cfg->rangeGate;
         if (cfg->unk10 != 0) {
             func_801A2558_ovl7(cfg->unk10);
             ent = D_800E1B50[omCurrentObj->objId];
@@ -307,11 +307,11 @@ void func_80198DBC_ovl7(void) {
                 && (((D_800E0D50[omCurrentObj->objId] != -1) && (D_800DD710[D_800E0D50[omCurrentObj->objId]] == 0x17))
                     || (D_800DD710[D_800E0D50[omCurrentObj->objId]] == 0x12))
                 && (sub != NULL)) {
-                sub->unk4 = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
-                sub->unk8 = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
-                sub->unkC = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+                sub->posX = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+                sub->posY = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+                sub->posZ = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
                 if (D_800E0D50[omCurrentObj->objId] == 0) {
-                    sub->unk8 += 20.0f;
+                    sub->posY += 20.0f;
                 }
                 func_801051AC(sub);
             }
@@ -435,7 +435,7 @@ void func_801992F0_ovl7(void) {
 }
 
 void func_80199384_ovl7(void) {
-    UnkStruct800E1B50 *ent;
+    EnemyRecord *ent;
     u32 id;
     u32 cb;
     s32 w;
@@ -444,7 +444,7 @@ void func_80199384_ovl7(void) {
     ent = D_800E1B50[id];
     if (ent != NULL) {
         if (ent->unk88 != NULL) {
-            cb = ent->unk88->unk4;
+            cb = (u32) ent->unk88->onHit;
             if (cb != -1) {
                 if (cb != 0) {
                     ((void (*)(GObj *)) cb)(D_800DE350[id]);
@@ -513,7 +513,7 @@ void func_80199568_ovl7(void) {
 }
 
 s32 func_80199628_ovl7(Unused GObj *gobj) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk9C != NULL) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], ent->unk9C);
@@ -523,7 +523,7 @@ s32 func_80199628_ovl7(Unused GObj *gobj) {
 }
 
 void func_80199688_ovl7(Unused GObj *gobj) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800E83E0[omCurrentObj->objId] = 1;
     if (ent->unk44 == 0) {
@@ -534,7 +534,7 @@ void func_80199688_ovl7(Unused GObj *gobj) {
 }
 
 void func_80199724_ovl7(Unused GObj *gobj) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800E83E0[omCurrentObj->objId] = 1;
     if (ent->unk44 == 0) {
@@ -545,7 +545,7 @@ void func_80199724_ovl7(Unused GObj *gobj) {
 }
 
 void func_801997C0_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800E83E0[omCurrentObj->objId] = 1;
     if (ent->unk44 == 0) {
@@ -556,7 +556,7 @@ void func_801997C0_ovl7(s32 arg0) {
 }
 
 void func_8019985C_ovl7(Unused GObj *gobj) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     func_800FB914(1);
     D_800E83E0[omCurrentObj->objId] = 1;
@@ -568,7 +568,7 @@ void func_8019985C_ovl7(Unused GObj *gobj) {
 }
 
 void func_80199918_ovl7(Unused GObj *gobj) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk40 = 1;
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A3E80_ovl7);
@@ -587,9 +587,9 @@ void func_801999DC_ovl7(Unused GObj *gobj) {
 // m2c draft, measured 198/205 diffs
 #ifdef NON_MATCHING
 void func_80199A38_ovl7(void) {
-    UnkStruct800E1B50 *sp1C;
+    EnemyRecord *sp1C;
     GObj *temp_v1;
-    UnkStruct800E1B50 *temp_a3;
+    EnemyRecord *temp_a3;
     f32 *temp_v0_2;
     f32 *temp_v0_3;
     f32 var_f0;
@@ -670,7 +670,7 @@ void func_80199A38_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199A38_ovl7.s")
 #endif
 void func_80199D50_ovl7(void) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (!(D_800E8AE0[omCurrentObj->objId] & 1)) {
         D_800E8920[omCurrentObj->objId] = 0;
@@ -684,7 +684,7 @@ void func_80199D50_ovl7(void) {
 }
 
 void func_80199E14_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk98 = &D_801CD2AC_ovl7;
     D_800E3210[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
@@ -692,7 +692,7 @@ void func_80199E14_ovl7(s32 arg0) {
 }
 
 void func_80199E90_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk98 = &D_801CD288_ovl7;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = 0.0f;
@@ -700,7 +700,7 @@ void func_80199E90_ovl7(s32 arg0) {
 }
 
 void func_80199F1C_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk3C == 0) {
         ent->unk3C = 1;
@@ -1239,7 +1239,7 @@ void func_8019B3C8_ovl7(Unused GObj *gobj) {
  * callee stores 8 bytes, the matching bodies lend it a lone s32 and count
  * on the N64 frame layout for the spill. Real struct locals instead. */
 void func_8019B424_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *sp24;
+    EnemyRecord *sp24;
     struct TrackPosition sp1C;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -1249,7 +1249,7 @@ void func_8019B424_ovl7(s32 arg0) {
 }
 
 void func_8019B4BC_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *sp24;
+    EnemyRecord *sp24;
     struct TrackPosition sp1C;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -1262,7 +1262,7 @@ void func_8019B4BC_ovl7(s32 arg0) {
 }
 #else
 void func_8019B424_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *sp24;
+    EnemyRecord *sp24;
     f32 sp20;
     s32 sp1C;
 
@@ -1273,7 +1273,7 @@ void func_8019B424_ovl7(s32 arg0) {
 }
 
 void func_8019B4BC_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *sp24;
+    EnemyRecord *sp24;
     f32 sp20;
     s32 sp1C;
 
@@ -1329,15 +1329,15 @@ s32 eneCheckNearPlayer(f32 distanceSq) {
 }
 
 void func_8019B7D8_ovl7(void) {
-    UnkStruct800E1B50 *temp_v0;
-    struct Sub800E1B50_Unk88 *temp_v1;
+    EnemyRecord *temp_v0;
+    struct EnemyKindDesc *temp_v1;
     void (*temp_v0_2)(void);
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
     if (temp_v0 != NULL) {
         temp_v1 = temp_v0->unk88;
         if (temp_v1 != NULL) {
-            temp_v0_2 = (void (*)(void)) temp_v1->unk8;
+            temp_v0_2 = (void (*)(void)) temp_v1->onTouch;
             if (temp_v0_2 != NULL) {
                 temp_v0_2();
             }
@@ -1397,7 +1397,7 @@ s32 func_8019B918_ovl7(void) {
 }
 
 void func_8019B9B0_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk80 = func_800FF144();
     if (ent->unk80 != NULL) {
@@ -1410,7 +1410,7 @@ void func_8019B9B0_ovl7(void) {
 }
 
 void func_8019BA3C_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk80 = func_800FF144();
     if (ent->unk80 != NULL) {
@@ -1423,7 +1423,7 @@ void func_8019BA3C_ovl7(void) {
 }
 
 void func_8019BAC8_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk80 = func_800FF144();
     if (ent->unk80 != NULL) {
@@ -1436,7 +1436,7 @@ void func_8019BAC8_ovl7(void) {
 }
 
 void func_8019BB58_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk80 != NULL) {
         func_800FF1CC(ent->unk80);
@@ -1445,7 +1445,7 @@ void func_8019BB58_ovl7(void) {
 }
 
 void func_8019BBA8_ovl7(s32 track) {
-    UnkStruct800E1B50 *ent = D_800E1B50[track];
+    EnemyRecord *ent = D_800E1B50[track];
 
     if (ent->unk80 != NULL) {
         func_800FF1CC(ent->unk80);
@@ -1454,7 +1454,7 @@ void func_8019BBA8_ovl7(s32 track) {
 }
 
 void func_8019BBEC_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk80 != NULL) {
         func_800FF200(ent->unk80);
@@ -1462,7 +1462,7 @@ void func_8019BBEC_ovl7(void) {
 }
 
 void func_8019BC34_ovl7(f32 arg0) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     f32 *tmp = &arg0;
     f32 two = 2.0f;
 
@@ -1472,7 +1472,7 @@ void func_8019BC34_ovl7(f32 arg0) {
 }
 
 void func_8019BC94_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct TrackPosition sp24;
     f32 speed = D_800E6A10[omCurrentObj->objId] * ent->unk1C;
 
@@ -1487,7 +1487,7 @@ void func_8019BC94_ovl7(void) {
 }
 
 s32 func_8019BD38_ovl7(void) {
-    UnkStruct800E1B50 *temp_v1 = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *temp_v1 = D_800E1B50[omCurrentObj->objId];
     s32 var_t0 = 0;
     u32 temp_a2 = temp_v1->unk2C;
     u32 temp_a0;
@@ -1523,8 +1523,8 @@ s32 func_8019BD38_ovl7(void) {
 // m2c draft, measured 296/296 diffs
 #ifdef NON_MATCHING
 void eneTurnCommon(s32 arg0) {
-    UnkStruct800E1B50 *sp1C;
-    UnkStruct800E1B50 *temp_t0;
+    EnemyRecord *sp1C;
+    EnemyRecord *temp_t0;
     f32 *temp_a0;
     f32 *temp_a0_3;
     f32 *temp_a0_4;
@@ -1659,8 +1659,8 @@ block_29:
 // m2c draft, measured 232/236 diffs
 #ifdef NON_MATCHING
 void eneTurnCommon2(s32 arg0) {
-    UnkStruct800E1B50 *sp1C;
-    UnkStruct800E1B50 *temp_a3;
+    EnemyRecord *sp1C;
+    EnemyRecord *temp_a3;
     f32 *temp_a0;
     f32 *temp_a0_2;
     f32 *temp_a0_3;
@@ -1773,7 +1773,7 @@ void eneTurnCommon2(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/eneTurnCommon2.s")
 #endif
 void func_8019C6AC_ovl7(Unused GObj *gobj) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk3C == 0) {
         ent->unk3C = 1;
@@ -1783,7 +1783,7 @@ void func_8019C6AC_ovl7(Unused GObj *gobj) {
 }
 
 void func_8019C71C_ovl7(f32 arg0) {
-    UnkStruct800E1B50 *sp1C;
+    EnemyRecord *sp1C;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
     if (func_8019BD38_ovl7() != 0) {
@@ -1793,7 +1793,7 @@ void func_8019C71C_ovl7(f32 arg0) {
 }
 
 void func_8019C79C_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct TrackPosition sp24;
     f32 speed = -D_800E6A10[omCurrentObj->objId] * ent->unk1C;
 
@@ -1810,7 +1810,7 @@ void func_8019C79C_ovl7(void) {
 // m2c draft, measured 86/91 diffs
 #ifdef NON_MATCHING
 void func_8019C844_ovl7(Vector *arg0) {
-    UnkStruct800E1B50 *temp_v0;
+    EnemyRecord *temp_v0;
     f32 *temp_v0_2;
     f32 *temp_v0_3;
     f32 *temp_v0_4;
@@ -1854,8 +1854,8 @@ void func_8019C844_ovl7(Vector *arg0) {
 // m2c draft, measured 211/220 diffs
 #ifdef NON_MATCHING
 void func_8019C9B0_ovl7(f32 arg0, u8 arg1) {
-    UnkStruct800E1B50 *sp1C;
-    UnkStruct800E1B50 *temp_a2;
+    EnemyRecord *sp1C;
+    EnemyRecord *temp_a2;
     f32 *temp_v0_10;
     f32 *temp_v0_3;
     f32 *temp_v0_4;
@@ -1943,7 +1943,7 @@ block_21:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C9B0_ovl7.s")
 #endif
 void func_8019CD08_ovl7(f32 arg0) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     f32 *tmp = &arg0;
     f32 two = 2.0f;
 
@@ -1953,7 +1953,7 @@ void func_8019CD08_ovl7(f32 arg0) {
 }
 
 void func_8019CD68_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     Vector vec;
 
     vec.x = vec.y = 0.0f;
@@ -1966,7 +1966,7 @@ void func_8019CD68_ovl7(void) {
 // m2c draft, measured 70/106 diffs
 #ifdef NON_MATCHING
 s32 func_8019CE28_ovl7(void) {
-    UnkStruct800E1B50 *temp_v0;
+    EnemyRecord *temp_v0;
     f32 temp_f0;
     f32 temp_f2;
     f32 var_f0;
@@ -2046,7 +2046,7 @@ void func_8019CFD0_ovl7(Vector *arg0) {
     f32 sp30;
     f32 sp2C;
     f32 sp28;
-    UnkStruct800E1B50 *temp_a1;
+    EnemyRecord *temp_a1;
     f32 *temp_a0;
     f32 *temp_a0_2;
     f32 *temp_v1_2;
@@ -2097,7 +2097,7 @@ void func_8019CFD0_ovl7(Vector *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019CFD0_ovl7.s")
 #endif
 void func_8019D214_ovl7(void) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     Vector vec;
     f32 angle = gEntitiesAngleYArray[omCurrentObj->objId] * -D_800E6A10[omCurrentObj->objId];
 
@@ -2110,7 +2110,7 @@ void func_8019D214_ovl7(void) {
 }
 
 void func_8019D2FC_ovl7(f32 arg0, u8 arg1) {
-    UnkStruct800E1B50 *temp_a0;
+    EnemyRecord *temp_a0;
     u8 temp_v0;
 
     temp_a0 = D_800E1B50[omCurrentObj->objId];
@@ -2144,7 +2144,7 @@ void func_8019D2FC_ovl7(f32 arg0, u8 arg1) {
 // m2c draft, measured 230/249 diffs
 #ifdef NON_MATCHING
 void func_8019D4D0_ovl7(f32 arg0, s32 arg1) {
-    UnkStruct800E1B50 *temp_a2;
+    EnemyRecord *temp_a2;
     f32 *temp_a0_2;
     f32 *temp_a0_3;
     f32 *temp_a0_4;
@@ -2257,7 +2257,7 @@ block_19:
 void func_8019D8A0(arg0)
 s32 arg0;
 {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[(u16) arg0];
+    struct EnemyRecord *ent = D_800E1B50[(u16) arg0];
 
     if (ent->unk34 != NULL) {
         func_800A22D4(ent->unk34);
@@ -2284,7 +2284,7 @@ extern struct EneSpawnEntry *D_801290E0;
 
 #ifdef NON_MATCHING
 void func_8019D958_ovl7(s32 arg0) {
-    UnkStruct800E1B50 *temp_v0;
+    EnemyRecord *temp_v0;
     s32 temp_s0;
     struct Sub800E1B50_Unk34 *temp_a1;
     u8 *temp_v0_2;
@@ -2813,7 +2813,7 @@ void func_8019E9F0_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019E9F0_ovl7.s")
 #endif
 void func_8019EBCC_ovl7(Unused GObj *gobj) {
-    UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk3B == -1) {
         ent->unk3B = gEntityFuncListIDArray[omCurrentObj->objId];
@@ -2823,7 +2823,7 @@ void func_8019EBCC_ovl7(Unused GObj *gobj) {
 void func_8019EC14_ovl7(GObj *gobj)
 {
   s8 temp_a0;
-  struct UnkStruct800E1B50 *temp_v0;
+  struct EnemyRecord *temp_v0;
   temp_v0 = D_800E1B50[omCurrentObj->objId];
   temp_a0 = temp_v0->unk3B;
   if (temp_v0->unk3B != (-1))
@@ -3002,7 +3002,7 @@ void func_8019F000_ovl7(void *arg0, f32 *arg1, s32 arg2, f32 arg3) {
 // further. The named-index form is the lower count, the inline form is the
 // right shape; neither reaches the $v0/$a1 assignment.
 void func_8019F130_ovl7(void) {
-    struct UnkStruct800E1B50 *temp_t0;
+    struct EnemyRecord *temp_t0;
     s32 temp_a1;
     u32 temp_v0;
     u16 temp_v0_2;

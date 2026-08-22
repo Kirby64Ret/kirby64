@@ -292,7 +292,7 @@ void func_8021F4A0_ovl18(void) {
 }
 
 void func_8021F4E8_ovl18(void) {
-    struct UnkStruct800E1B50 *temp_a0;
+    struct EnemyRecord *temp_a0;
 
     temp_a0 = D_800E1B50[omCurrentObj->objId];
     if (D_800E83E0[omCurrentObj->objId] == 2 || D_800E83E0[omCurrentObj->objId] == 1) {
@@ -309,7 +309,7 @@ void func_8021F4E8_ovl18(void) {
 }
 
 s32 func_8021F5CC_ovl18(void) {
-    struct UnkStruct800E1B50 *temp_v0;
+    struct EnemyRecord *temp_v0;
 
     temp_v0 = D_800E1B50[omCurrentObj->objId];
     if (temp_v0 == NULL) {
@@ -324,7 +324,7 @@ s32 func_8021F5CC_ovl18(void) {
 }
 
 s32 func_8021F658_ovl18(void) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
     s32 sp20;
     s32 sp1C;
 
@@ -380,7 +380,7 @@ s32 func_8021F70C_ovl18(void) {
     s32 func_801A0244_ovl7(s32);
     void func_8019EBCC_ovl7(struct GObj *);
     s32 pad;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl18AnimInfoA sp2C;
 
     if (func_80110B00(&sp2C) != 0) {
@@ -427,7 +427,7 @@ s32 func_8021F70C_ovl18(void) {
 #endif
 
 void func_8021F970_ovl18(void) {
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
     s32 sp18;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
@@ -472,7 +472,7 @@ void func_8021FB18_ovl18(void) {
 /* The `*(s32 *) &D_800D7098.unk4` reload inside the if IS load-bearing -- the
  * plain member read is CSEd away. */
 void func_8021FC40_ovl18(void) {
-    struct UnkStruct800E1B50 *p;
+    struct EnemyRecord *p;
     s32 v;
     s32 temp;
 
@@ -519,7 +519,7 @@ void func_8021FD48_ovl18(void) {
  * negate local, the product inline vs folded into `ft` first. */
 #ifdef NON_MATCHING
 void func_8021FDF4_ovl18(void) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 temp;
     s32 old;
     s32 sum;
@@ -550,7 +550,7 @@ out:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021FDF4_ovl18.s")
 #endif
 void func_8021FEBC_ovl18(void) {
-    struct UnkStruct800E1B50 *p;
+    struct EnemyRecord *p;
     s32 v;
     s32 temp;
     f32 ft;
@@ -575,7 +575,7 @@ void func_8021FEBC_ovl18(void) {
  * product-first whatever the source order, and only a separate assignment
  * statement gives the ROM's `add.s $f18, $f16, $f10`. */
 void func_8021FF80_ovl18(void) {
-    struct UnkStruct800E1B50 *p;
+    struct EnemyRecord *p;
     s32 v;
     s32 temp;
     f32 ft;
@@ -613,7 +613,7 @@ void func_8021FF80_ovl18(void) {
  * vs one reused temp, goto vs nested if for the negate path. */
 #ifdef NON_MATCHING
 void func_80220038_ovl18(void) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 v;
     s32 old;
     s32 sum;

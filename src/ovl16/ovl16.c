@@ -172,7 +172,7 @@ extern struct UnkStruct800D7118 D_800D7118;
 void func_800A7F74(s32, s32, s32, f32, f32, f32);
 
 extern f32 gameTicksPerDraw;
-extern struct Sub800E1B50_Unk98 D_801DAEF4;
+extern struct EnemyEventTable D_801DAEF4;
 extern s32 D_801EF914_ovl16[];
 extern s32 D_801EF920_ovl16[];
 extern s32 D_801EF92C_ovl16[];
@@ -433,7 +433,7 @@ s32 func_801DB698_ovl16(s32 arg0) {
     return ret;
 }
 
-void func_801DBA54_ovl16(struct UnkStruct800E1B50 *arg0, struct Ovl16AnimInfo *arg1) {
+void func_801DBA54_ovl16(struct EnemyRecord *arg0, struct Ovl16AnimInfo *arg1) {
     D_800E83E0[omCurrentObj->objId] = arg1->unk2;
     arg0->unk43 = arg1->unk3;
     arg0->unk3E = arg1->unk0;
@@ -444,7 +444,7 @@ void func_801DBA54_ovl16(struct UnkStruct800E1B50 *arg0, struct Ovl16AnimInfo *a
 s32 func_801DBA98_ovl16(s32 arg0, s32 arg1, s32 arg2) {
     struct Ovl16AnimInfo sp38;
     u8 sp30[8];
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
     struct Ovl16AnimObj *temp_v0;
     u32 temp_a0;
     s32 t = -1;
@@ -483,7 +483,7 @@ s32 func_801DBA98_ovl16(s32 arg0, s32 arg1, s32 arg2) {
    claimed to be: the N64 build takes the pragma below. */
 s32 func_801DBBCC_ovl16(s32 arg0, s32 arg1, s32 arg2) {
     struct Ovl16AnimInfo sp40;
-    UnkStruct800E1B50 *sp34;
+    EnemyRecord *sp34;
     s32 sp30;
     s32 sp2C;
     GObj *var_a0;
@@ -683,7 +683,7 @@ block_59:
    claimed to be: the N64 build takes the pragma below. */
 void func_801DC314_ovl16(s32 arg0, s32 arg1, s32 arg2) {
     struct Ovl16AnimInfo sp38;
-    UnkStruct800E1B50 *sp2C;
+    EnemyRecord *sp2C;
     s32 temp_v0_2;
     s32 temp_v0_3;
     s32 temp_v1;
@@ -784,7 +784,7 @@ s32 func_801DC6E4_ovl16(s32 arg0, s32 arg1) {
 
     sp1C = D_800E1B50[omCurrentObj->objId];
     func_80111550(omCurrentObj->objId);
-    sp1C = func_80111C88(((struct UnkStruct800E1B50 *) sp1C)->unk8C, omCurrentObj->objId);
+    sp1C = func_80111C88(((struct EnemyRecord *) sp1C)->unk8C, omCurrentObj->objId);
     if (sp1C != NULL) {
         if (arg0 != 0) {
             ((struct Ovl16AnimObj *) sp1C)->unk24->unk8 = arg0;
@@ -809,7 +809,7 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
 
     sp1C = D_800E1B50[omCurrentObj->objId];
     func_80111550(omCurrentObj->objId);
-    sp1C = func_80111C88(((struct UnkStruct800E1B50 *) sp1C)->unk8C, omCurrentObj->objId);
+    sp1C = func_80111C88(((struct EnemyRecord *) sp1C)->unk8C, omCurrentObj->objId);
     if (sp1C != NULL) {
         if (arg0 != 0) {
             ((struct Ovl16AnimObj *) sp1C)->unk24->unk8 = arg0;
@@ -840,7 +840,7 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
  * that is the struct plus AT MOST one 4-byte local, and the function needs the
  * entry, the anim pointer and the struct all live at once. */
 s32 func_801DC8E4_ovl16(s32 arg0) {
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
     struct Ovl16AnimObj *temp_v0;
     struct Ovl16AnimInfo sp20;
 
@@ -884,7 +884,7 @@ s32 func_801DC990_ovl16(struct Ovl16AnimCmd *arg0, struct Ovl16AnimCmd *arg1) {
 
     sp1C = D_800E1B50[omCurrentObj->objId];
     func_80111550(omCurrentObj->objId);
-    sp1C = func_80111C88(((struct UnkStruct800E1B50 *) sp1C)->unk8C, omCurrentObj->objId);
+    sp1C = func_80111C88(((struct EnemyRecord *) sp1C)->unk8C, omCurrentObj->objId);
     if (sp1C != NULL) {
         if ((arg0 != NULL) && (arg1 != NULL)) {
             ((struct Ovl16AnimObj *) sp1C)->unk24->unk8 = (s32) arg0;
@@ -952,7 +952,7 @@ extern s32 D_801F0144_ovl16;
 extern s32 D_801F0148_ovl16;
 
 void func_801DCBF8_ovl16(s32 arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 i;
 
     ent = D_800E1B50[omCurrentObj->objId];
@@ -986,7 +986,7 @@ void func_801DCDC8_ovl16(s32 arg0) {
     void func_800AF27C(void);
     s32 func_801BC794_ovl7(s32);
     void func_800AA0C4(s32, f32);
-    struct UnkStruct800E1B50 *sp5C;
+    struct EnemyRecord *sp5C;
     s32 temp;
 
     sp5C = D_800E1B50[omCurrentObj->objId];
@@ -1528,7 +1528,7 @@ void func_801DECF4_ovl16(s32 arg0) {
  * cases IDO emits a compare chain and no jump table (333 -> 319). */
 void func_801DED40_ovl16(s32 arg0) {
     void func_800A9760(s32);
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyRecord *temp;
     s32 t;
     s32 i;
 
@@ -3049,7 +3049,7 @@ void func_801E3CF0_ovl16(s32 arg0) {
 static void pc_ovl16_anim_stretch(struct DObj *arg0, struct DObj *arg1) {
     struct Ovl16AnimInfo info;
     struct Ovl16AnimObj *ao;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
 
     ent = D_800E1B50[omCurrentObj->objId];
     func_80111550(omCurrentObj->objId);
@@ -4586,7 +4586,7 @@ void func_801E75DC_ovl16(s32 arg0) {
 }
 
 void func_801E7650_ovl16(s32 arg0) {
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyRecord *temp;
     s32 i;
 
     temp = D_800E1B50[omCurrentObj->objId];

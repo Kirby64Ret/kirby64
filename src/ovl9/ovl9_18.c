@@ -26,7 +26,7 @@ void func_8021B680_ovl9(void);
 void func_8021B8B0_ovl9(struct GObj *);
 
 void func_8021A1A0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B67A8;
     tmp->unk98 = &D_801CB470_ovl7;
@@ -192,7 +192,7 @@ s32 func_80110150(struct Ovl9AnimInfo18 *);
 s32 func_80110FD4(struct Ovl9AnimInfo18 *);
 
 void func_8021A9F0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyRecord *temp;
     s32 pad;
     struct Ovl9AnimInfo18 sp28;
 
@@ -372,7 +372,7 @@ void func_8021B58C_ovl9(struct GObj *arg0) {
 }
 
 void func_8021B5D4_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_v0 = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_8021B680_ovl9;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;

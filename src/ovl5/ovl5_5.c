@@ -3325,39 +3325,56 @@ void func_80176EFC_ovl5(void) {
 
 /* Finish-flash for lane arg1: plays the win (1st place) or lose jingle,
  * spawns the "GOAL" sprite at D_801877D8_ovl5[arg1] and steps its prim/env
- * colors through the five ramps at D_80187410_ovl5 (u16 triples emitted as
- * big-endian words; unpack word-wise before handing to func_80176EC8).
+ * colors through the five colour sets at D_80187410_ovl5.
  *
- * FACTORY: 136/137, UNCERTAIN -- PORT-seeded, time-boxed. No source
- * bugs found; compiles as-is. Word count matches (137/137), residue
- * extreme (136/137) -- broad register/frame relabeling from word 0.
- * Worth a fresh m2c pass before feeding to the permuter. */
+ * FACTORY: 5/138, residue.  Length, frame (0x78), every stack offset and
+ * the whole control flow are the ROM's; the only residue is a one-step
+ * rotation of the temp registers in the D_801877D8_ovl5 address
+ * computation (the ROM takes $t7/$t9/$t8 where this takes $t8/$t0/$t9).
+ *
+ * This is a from-scratch derivation off the listing, NOT the PORT arm --
+ * that arm describes a different function and should not be diffed
+ * against:
+ *   - there is no runtime unpack loop and no `u32 *srcs[5]`.  This is a
+ *     direct clone of func_80176A80_ovl5 above: the ROM copies whole
+ *     12-byte Unk12Colors globals into locals (lw/sw triples, no shifts)
+ *     exactly as that sibling does, then passes each local's unk0.
+ *   - there is a SIXTH copy the PORT arm has no trace of: 16 bytes from
+ *     D_8018744C_ovl5 (four struct UnkStruct8015C740 pointers) into
+ *     sp+0x24, which this function never reads.  It is dead in the ROM --
+ *     the sibling uses its equivalent (Unk12Defs sp68) in a loop and this
+ *     clone dropped the loop but kept the local.  Omitting it loses four
+ *     instructions, so it has to stay.
+ *   - stack layout is fixed by declaration order: SPObj *sp (sp+0x74) is
+ *     declared FIRST, then a 4-byte hole at sp+0x70 that IDO reserves and
+ *     never writes, then the six aggregates descending 0x64/0x58/0x4C/
+ *     0x40/0x34/0x24.  Declaring sp last costs 16 words of diff, and
+ *     dropping the hole costs 16 more.
+ * Unk16Defs is declared inside the body on purpose: the file-scope
+ * Unk12Colors/Unk12Defs typedefs above are reused as-is and nothing at
+ * file scope is moved or added. */
 #ifdef MIPS_TO_C
 void func_80176F04_ovl5(GObj *arg0, s32 arg1) {
-    extern u32 D_80187410_ovl5[];
-    extern u32 D_8018741C_ovl5[];
-    extern u32 D_80187428_ovl5[];
-    extern u32 D_80187434_ovl5[];
-    extern u32 D_80187440_ovl5[];
+    typedef union Unk16Defs {
+        struct UnkStruct8015C740 *unk0[4];
+    } Unk16Defs;
+    extern Unk12Colors D_80187410_ovl5;
+    extern Unk12Colors D_8018741C_ovl5;
+    extern Unk12Colors D_80187428_ovl5;
+    extern Unk12Colors D_80187434_ovl5;
+    extern Unk12Colors D_80187440_ovl5;
+    extern Unk16Defs D_8018744C_ovl5;
     extern struct UnkStruct8015C740 D_801877B8_ovl5;
     extern f32 D_801877D8_ovl5[];
-    u16 ramp[5][6];
-    u32 *srcs[5];
     SPObj *sp;
-    s32 i;
-    s32 j;
+    s32 pad;
+    Unk12Colors sp64 = D_80187410_ovl5;
+    Unk12Colors sp58 = D_8018741C_ovl5;
+    Unk12Colors sp4C = D_80187428_ovl5;
+    Unk12Colors sp40 = D_80187434_ovl5;
+    Unk12Colors sp34 = D_80187440_ovl5;
+    Unk16Defs sp24 = D_8018744C_ovl5;
 
-    srcs[0] = D_80187410_ovl5;
-    srcs[1] = D_8018741C_ovl5;
-    srcs[2] = D_80187428_ovl5;
-    srcs[3] = D_80187434_ovl5;
-    srcs[4] = D_80187440_ovl5;
-    for (i = 0; i < 5; i++) {
-        for (j = 0; j < 3; j++) {
-            ramp[i][j * 2] = (u16) (srcs[i][j] >> 16);
-            ramp[i][j * 2 + 1] = (u16) srcs[i][j];
-        }
-    }
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     D_800DEF90[omCurrentObj->objId] = NULL;
     omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
@@ -3369,15 +3386,15 @@ void func_80176F04_ovl5(GObj *arg0, s32 arg1) {
     sp = func_8015C740_ovl5(arg0, &D_801877B8_ovl5);
     sp->xOffset = D_801877D8_ovl5[arg1 * 2];
     sp->yOffset = D_801877D8_ovl5[arg1 * 2 + 1];
-    func_80176EC8_ovl5((u8 *) sp, ramp[0]);
+    func_80176EC8_ovl5((u8 *) sp, sp64.unk0);
     ohSleep(2);
-    func_80176EC8_ovl5((u8 *) sp, ramp[1]);
+    func_80176EC8_ovl5((u8 *) sp, sp58.unk0);
     ohSleep(2);
-    func_80176EC8_ovl5((u8 *) sp, ramp[2]);
+    func_80176EC8_ovl5((u8 *) sp, sp4C.unk0);
     ohSleep(2);
-    func_80176EC8_ovl5((u8 *) sp, ramp[3]);
+    func_80176EC8_ovl5((u8 *) sp, sp40.unk0);
     ohSleep(2);
-    func_80176EC8_ovl5((u8 *) sp, ramp[4]);
+    func_80176EC8_ovl5((u8 *) sp, sp34.unk0);
     curObjSleepForever();
 }
 #elif defined(PORT)

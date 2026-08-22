@@ -13,7 +13,7 @@
 #include "ovl13_2.h"
 
 void func_801E44A0_ovl13(GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_v0 = D_800E1B50[omCurrentObj->objId];
 
     temp_v0->unk80->unk18 = -800.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B6E84;
@@ -117,7 +117,7 @@ void func_801E4CC4_ovl13(GObj *arg0) {
 }
 
 void func_801E4D38_ovl13(GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_v0 = D_800E1B50[omCurrentObj->objId];
 
     temp_v0->unk80->unk18 = -800.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B6E84;
@@ -185,7 +185,7 @@ void func_801E51FC_ovl13(GObj *arg0) {
 }
 
 void func_801E52B4_ovl13(GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_v0 = D_800E1B50[omCurrentObj->objId];
 
     temp_v0->unk80->unk18 = -800.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B6FD8;

@@ -45,12 +45,22 @@ extern void play_sound(s32);
 extern void func_800AA018(s32);
 extern void func_800AF27C(void);
 
+/* K&R form is load-bearing here: its real signature is
+ * s32 func_80213FDC_ovl9(struct GObj *), but both call sites in this file
+ * (line ~1273, ~1362) omit the arg -- the ROM relies on whatever GObj* is
+ * already sitting in $a0. An ANSI prototype breaks compilation with "too
+ * few arguments". */
 s32 func_80213FDC_ovl9();
 void func_80213708_ovl9(struct GObj *);
 void func_80213B94_ovl9(struct GObj *);
 
 extern void func_800B3520(void);
 extern s32 D_801CB470_ovl7;
+/* K&R form is load-bearing here: its own definition below takes no
+ * parameters (void func_80211560_ovl9(void)), but its call site at line
+ * ~315 passes an arg0 anyway -- the ROM leaves it unread and the callee
+ * never touches $a0. An ANSI (void) prototype breaks compilation with
+ * "too many arguments" at that call site. */
 void func_80211560_ovl9();
 
 /* D_8021DD6C_ovl9: literal, this TU owns its .rodata */
@@ -58,6 +68,10 @@ void func_80211560_ovl9();
 extern s32 func_801AE7E0_ovl7(s32);
 extern Controller_800D6FE8 gPlayerControllers[];
 
+/* K&R form is load-bearing here: its real signature is
+ * s32 func_801A0D74_ovl7(GObj *), but its one call site in this file omits
+ * the arg -- the ROM relies on whatever GObj* is already sitting in $a0.
+ * An ANSI prototype breaks compilation with "too few arguments". */
 extern s32 func_801A0D74_ovl7();
 extern void func_8019F3B0_ovl7(void);
 extern void func_801BB8EC_ovl7(void);
@@ -172,7 +186,7 @@ void func_802103D8_ovl9(GObj *arg0) {
 /* D_8021DCF4_ovl9: literal, this TU owns its .rodata */
 
 void func_80210420_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     if ((D_800E7880[omCurrentObj->objId] == 5) &&
@@ -194,7 +208,9 @@ void func_80210568_ovl9(s32 arg0) {
 
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 6/178, $s0/$s1 transposition for &omCurrentObj, everything below
+   it renamed to follow.  Frame, saved set and schedule are the ROM's. */
 extern s32 D_801CCA3C;
 void ohSleep(s32);
 /* Leap state: enter anim state 1 with the leap hit annex, play the
@@ -210,7 +226,59 @@ void func_80210570_ovl9(struct GObj *arg0) {
 
     id = omCurrentObj->objId;
     D_800DDFD0[id] = 1;
-    D_800E1B50[id]->unk98 = (struct Sub800E1B50_Unk98 *) &D_801CCA3C;
+    D_800E1B50[id]->unk98 = (struct EnemyEventTable *) &D_801CCA3C;
+    id = omCurrentObj->objId;
+    mode = D_800E7880[id];
+    if ((mode == 1) || (mode == 3)) {
+        if (D_800E6A10[id] == 1.0f) {
+            func_800AA018(0x1023C);
+        } else {
+            func_800AA018(0x1023B);
+        }
+        D_800E3210[omCurrentObj->objId] = 11.0f;
+        D_800E3750[omCurrentObj->objId] = -0.52f;
+        D_800E3C90[omCurrentObj->objId] = 10.0f;
+    } else {
+        if (D_800E6A10[id] == 1.0f) {
+            func_800AA018(0x1023C);
+        } else {
+            func_800AA018(0x1023B);
+        }
+        D_800E3210[omCurrentObj->objId] = -11.0f;
+        D_800E3750[omCurrentObj->objId] = 0.52f;
+        D_800E3C90[omCurrentObj->objId] = 10.0f;
+    }
+    id = omCurrentObj->objId;
+    D_800E64D0[id] = D_800E6A10[id] * 3.0f;
+    play_sound(0x221);
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 5;
+    id = omCurrentObj->objId;
+    mode = D_800E7880[id];
+    if ((mode == 1) || (mode == 3)) {
+        D_800EA6E0[id] = -0.5235988f;
+    } else {
+        D_800EA6E0[id] = 0.5235988f;
+    }
+    ohSleep(0x96);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
+#elif defined(PORT)
+extern s32 D_801CCA3C;
+void ohSleep(s32);
+/* Leap state: enter anim state 1 with the leap hit annex, play the
+ * facing-specific jump animation, and hop -- floor variants (modes
+ * 1/3) spring up at 11 with -0.52 gravity, ceiling variants drop at
+ * -11 with +0.52, both capped at 10 -- while running forward at 3x
+ * facing.  Sets the 5-tick contact grace counter and the pitch lean
+ * (-30deg floor / +30deg ceiling), rides the arc for 150 ticks, then
+ * returns to state 0. */
+void func_80210570_ovl9(struct GObj *arg0) {
+    u32 id;
+    u8 mode;
+
+    id = omCurrentObj->objId;
+    D_800DDFD0[id] = 1;
+    D_800E1B50[id]->unk98 = (struct EnemyEventTable *) &D_801CCA3C;
     id = omCurrentObj->objId;
     mode = D_800E7880[id];
     if ((mode == 1) || (mode == 3)) {
@@ -247,7 +315,7 @@ void func_80210570_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80210570_ovl9.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_802130F4_ovl9.s")
 #endif
 
 void func_80210800_ovl9(struct GObj *arg0) {
@@ -278,7 +346,7 @@ extern s32 func_8019A9AC_ovl7(f32, f32);
 void func_8021090C_ovl9(struct GObj *arg0) {
     s32 unused;
     s32 sp20;
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     if (tmp->unk3C == 0) {
         if (func_8019A900_ovl7(&sp20) != 0) {
@@ -311,7 +379,7 @@ extern s32 func_8019A900_ovl7(s32 *);
 void func_80210AB4_ovl9(struct GObj *arg0) {
     s32 unused;
     s32 sp20;
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     if (tmp->unk3C == 0) {
         if (func_8019A900_ovl7(&sp20) != 0) {
@@ -357,7 +425,7 @@ void func_80210CA0_ovl9(struct GObj *arg0) {
 void func_80210D48_ovl9(struct GObj *arg0) {
     s32 unused;
     s32 sp20;
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     if (tmp->unk3C == 0) {
         if (func_8019A900_ovl7(&sp20) != 0) {
@@ -429,7 +497,7 @@ extern s32 D_801CCA3C;
 void func_802114E4_ovl9(struct GObj *);
 
 void func_802110C0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     f32 a;
     void ohSleep(s32);
 
@@ -511,6 +579,11 @@ void func_802114E4_ovl9(struct GObj *arg0) {
 
 /* D_8021DD48_ovl9: literal, this TU owns its .rodata */
 /* D_8021DD4C_ovl9: literal, this TU owns its .rodata */
+/* K&R form is load-bearing here: its real signature is
+ * void func_8021134C_ovl9(struct GObj *) (see its definition above), but its
+ * call site right below omits the arg -- the ROM relies on whatever GObj* is
+ * already sitting in $a0. An ANSI prototype breaks compilation with "too few
+ * arguments". */
 extern void func_8021134C_ovl9();
 
 void func_80211560_ovl9(void) {
@@ -561,7 +634,7 @@ extern FUNCLIST D_8021CB68_ovl9;
 
 void func_80211874_ovl9(struct GObj *arg0) {
     f32 lim = 6.2831855f;
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B67A8;
     *(s8 *) &tmp->unk38 = -1;
@@ -583,14 +656,14 @@ void func_80211984_ovl9(struct GObj *arg0) {
     }
 }
 
-extern s32 func_8010B480(struct Sub800E1B50_Unk84 *);
-extern void func_8010D42C(struct Sub800E1B50_Unk84 *, f32);
+extern s32 func_8010B480(struct EnemyProbe *);
+extern void func_8010D42C(struct EnemyProbe *, f32);
 void func_80211B1C_ovl9(void);
 void func_80211984_ovl9(struct GObj *);
 
 void func_802119F8_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
-    struct Sub800E1B50_Unk84 *u = tmp->unk84;
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyProbe *u = tmp->unk84;
 
     D_800DF150[omCurrentObj->objId] = func_80211B1C_ovl9;
     func_801A0D50_ovl7(func_80211984_ovl9);
@@ -616,8 +689,8 @@ s32 func_8021217C_ovl9(void);
 void func_80211B1C_ovl9(void) {
     struct DObj *a = D_800DFBD0[omCurrentObj->objId][3];
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][2];
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
-    struct Sub800E1B50_Unk84 *u = tmp->unk84;
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyProbe *u = tmp->unk84;
 
     if (gEntityFuncListIDArray[omCurrentObj->objId] != 3) {
         *(f32 *) &u->unk14 = a->pos.v.y * 0.5f;
@@ -633,7 +706,7 @@ void func_80211B1C_ovl9(void) {
 #endif
 void func_80211BF0_ovl9(struct GObj *arg0) {
     extern s32 D_801CCA60;
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     tmp->unk98 = &D_801CCA60;
@@ -659,7 +732,7 @@ void func_80211D34_ovl9(s32 arg0) {
 
 extern s32 D_801CCA60;
 void func_80211D3C_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 1;
     tmp->unk98 = &D_801CCA60;
@@ -676,7 +749,7 @@ void func_80211DE8_ovl9(s32 arg0) {
 }
 
 void func_80211DF0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 2;
     tmp->unk48 = NULL;
@@ -693,12 +766,12 @@ void func_80211EC0_ovl9(s32 arg0) {
 
 }
 
-extern struct Sub800E1B50_Unk98 D_801CCAA8;
+extern struct EnemyEventTable D_801CCAA8;
 extern void func_800AF408(void);
 extern void ohSleep(s32);
 
 void func_80211EC8_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 3;
     tmp->unk98 = &D_801CCAA8;
@@ -720,7 +793,7 @@ extern s32 D_801CCACC;
 /* D_8021DD58_ovl9: literal, this TU owns its .rodata */
 
 void func_80211FC8_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 4;
     tmp->unk48 = NULL;
@@ -740,7 +813,7 @@ void func_802120A8_ovl9(s32 arg0) {
 }
 
 void func_802120B0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 5;
     tmp->unk98 = &D_801CCA60;
@@ -774,7 +847,7 @@ extern void func_80111ECC(void *);
 s32 func_8019F650_ovl7(void);
 
 s32 func_8021217C_ovl9(void) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl9_14AnimObj *anim;
     struct DObj *sp1C = D_800DFBD0[omCurrentObj->objId][3];
     struct DObj *sp18 = D_800DFBD0[omCurrentObj->objId][2];
@@ -821,7 +894,7 @@ void func_802123B8_ovl9(GObj *arg0) {
 }
 
 void func_80212400_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     func_800AA018(0x10166);
@@ -840,7 +913,7 @@ extern s32 D_801CCB14;
 /* D_8021DD60_ovl9: literal, this TU owns its .rodata */
 
 void func_80212480_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 1;
     tmp->unk98 = &D_801CCB14;
@@ -866,8 +939,8 @@ extern void func_800AFBB4(s32, struct GObj *);
 extern void func_801ACC34_ovl7(s32, s32);
 
 void func_802125BC_ovl9(struct GObj *arg0) {
-    extern struct Sub800E1B50_Unk98 D_801CCAF0;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    extern struct EnemyEventTable D_801CCAF0;
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 2;
     ent->unk98 = &D_801CCAF0;
@@ -917,7 +990,7 @@ void func_802128B8_ovl9(GObj *arg0) {
 }
 
 void func_80212900_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 3;
     tmp->unk98 = &D_801CB470_ovl7;
@@ -953,11 +1026,11 @@ void func_80212AF8_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 6, &D_8021CC00_ovl9);
 }
 
-extern struct Sub800E1B50_Unk98 D_801CCAF0;
+extern struct EnemyEventTable D_801CCAF0;
 /* D_8021DD68_ovl9: literal, this TU owns its .rodata */
 
 void func_80212B40_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 2;
     ent->unk98 = &D_801CCAF0;
@@ -999,7 +1072,7 @@ extern s32 D_801CCB38;
 extern void ohSleep(s32);
 
 void func_80212DE4_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 3;
     tmp->unk98 = &D_801CCB38;
@@ -1021,7 +1094,7 @@ void func_80212F0C_ovl9(void) {
 }
 
 void func_80212F68_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 4;
     tmp->unk98 = &D_801CCB5C;
@@ -1047,8 +1120,51 @@ void func_8021306C_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-#ifdef PORT
-extern struct Sub800E1B50_Unk98 D_801CCAF0;
+#ifdef MIPS_TO_C
+/* FACTORY: 103/164, one register choice: the ROM materialises &omCurrentObj
+   in $a2, ours in $v0.  Control flow, frame and stack slots match. */
+extern struct EnemyEventTable D_801CCAF0;
+/* Bounce-away death: enter anim state 5 with the KO annex, play the
+ * tumble animation with the body straightened, launch backwards (3.5
+ * for mode 2, 8.0 otherwise) with the vertical speed reflected and
+ * -0.325 gravity (terminal speed = |initial|), ride up until the arc
+ * tips over, then freeze all vertical motion and sleep forever. */
+void func_802130F4_ovl9(struct GObj *arg0) {
+    u32 id;
+
+    id = omCurrentObj->objId;
+    D_800DDFD0[id] = 5;
+    D_800E1B50[id]->unk98 = &D_801CCAF0;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800AA018(0x10161);
+    D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = 0.0f;
+    id = omCurrentObj->objId;
+    if (D_800E7880[id] == 2) {
+        D_800E64D0[id] = D_800E6A10[id] * 3.5f;
+        D_800E6690[id] = 0.0f;
+        D_800E6850[id] = 3.5f;
+    } else {
+        D_800E64D0[id] = D_800E6A10[id] * 8.0f;
+        D_800E6690[id] = 0.0f;
+        D_800E6850[id] = 8.0f;
+    }
+    D_800E3210[id] = -D_800E3210[id];
+    D_800E3750[id] = -0.325f;
+    id = omCurrentObj->objId;
+    D_800E3C90[id] = (D_800E3210[id] < 0.0f) ? -D_800E3210[id] : D_800E3210[id];
+    id = omCurrentObj->objId;
+    while (!(D_800E3210[id] < 0.0f)) {
+        ohSleep(1);
+        id = omCurrentObj->objId;
+    }
+    D_800E3750[id] = 0.0f;
+    id = omCurrentObj->objId;
+    D_800E3210[id] = D_800E3750[id];
+    D_800E3C90[id] = 65535.0f;
+    curObjSleepForever();
+}
+#elif defined(PORT)
+extern struct EnemyEventTable D_801CCAF0;
 /* Bounce-away death: enter anim state 5 with the KO annex, play the
  * tumble animation with the body straightened, launch backwards (3.5
  * for mode 2, 8.0 otherwise) with the vertical speed reflected and
@@ -1089,7 +1205,7 @@ void func_802130F4_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_802130F4_ovl9.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80210570_ovl9.s")
 #endif
 
 void func_802133BC_ovl9(void) {
@@ -1117,7 +1233,7 @@ void func_802134D8_ovl9(GObj *arg0) {
 }
 
 void func_80213520_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 6;
     tmp->unk98 = &D_801CB470_ovl7;
@@ -1403,8 +1519,8 @@ void func_80214304_ovl9(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-IN_FILE void func_802144F8_ovl9();
-IN_FILE void func_80214480_ovl9();
+IN_FILE void func_802144F8_ovl9(void);
+IN_FILE void func_80214480_ovl9(struct GObj *);
 void func_802143B8_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_802144F8_ovl9;
     func_801A0D50_ovl7(func_80214480_ovl9);
@@ -1441,7 +1557,7 @@ extern s32 D_801CCC10;
 extern void ohSleep(s32);
 
 void func_80214578_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     tmp->unk98 = &D_801CCC10;
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -1459,7 +1575,7 @@ extern s32 func_8019A9AC_ovl7(f32, f32);
 void func_80214480_ovl9(struct GObj *);
 
 void func_80214640_ovl9(void) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     func_8019B424_ovl7();
     if (D_800E98E0[omCurrentObj->objId] != 0) {
@@ -1476,7 +1592,7 @@ extern s32 D_801CCC10;
 extern void func_800AEFFC(s32);
 
 void func_80214708_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     tmp->unk98 = &D_801CCC10;
     D_800DDFD0[omCurrentObj->objId] = 1;
@@ -1522,7 +1638,7 @@ extern s32 D_801CCC34;
 /* D_8021DDC4_ovl9: literal, this TU owns its .rodata */
 
 void func_80214938_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     tmp->unk98 = &D_801CCC34;
     D_800DDFD0[omCurrentObj->objId] = 2;

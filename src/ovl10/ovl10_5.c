@@ -33,7 +33,7 @@ void ohSleep(s32);
 // omCurrentObj into a local, and writing `ent` as an assignment instead of a
 // declaration initializer (102).
 void func_801EF790_ovl10(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B7790;
     D_800E8E60[omCurrentObj->objId] = 1;

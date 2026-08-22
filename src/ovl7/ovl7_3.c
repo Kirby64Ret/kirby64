@@ -18,14 +18,14 @@ void func_8010C274(struct PositionState *);
 void func_8010C184(struct PositionState *);
 void func_8010DC24();
 
-extern void func_8010B480(struct Sub800E1B50_Unk84 *);
-extern void func_8010B284(struct Sub800E1B50_Unk84 *);
-extern void func_8010B67C(struct Sub800E1B50_Unk84 *);
-extern void func_8010B860(struct Sub800E1B50_Unk84 *);
+extern void func_8010B480(struct EnemyProbe *);
+extern void func_8010B284(struct EnemyProbe *);
+extern void func_8010B67C(struct EnemyProbe *);
+extern void func_8010B860(struct EnemyProbe *);
 
-extern void func_8010DC8C(struct Sub800E1B50_Unk84 *);
-extern void func_80105180(struct Sub800E1B50_Unk84 *);
-extern void func_801051AC(struct Sub800E1B50_Unk84 *);
+extern void func_8010DC8C(struct EnemyProbe *);
+extern void func_80105180(struct EnemyProbe *);
+extern void func_801051AC(struct EnemyProbe *);
 extern void func_800B1BF0(s32, s32);
 extern struct DObj *func_8011BABC();
 extern s32 func_8011BF4C(void *, void *);
@@ -40,7 +40,7 @@ extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 extern void func_800AA018(s32);
 extern void func_800AF408(void);
-extern s32 func_8010D668(struct Sub800E1B50_Unk84 *, f32);
+extern s32 func_8010D668(struct EnemyProbe *, f32);
 
 extern u32 D_801C2E84_ovl7[];
 extern u32 D_801F33FC[];
@@ -117,7 +117,7 @@ struct UnkOvl7Track {
 };
 #endif
 
-extern struct Sub800E1B50_Unk84 D_801CE6D0_ovl7;
+extern struct EnemyProbe D_801CE6D0_ovl7;
 extern struct Ovl7TrackParams D_801CE6E0_ovl7;
 extern struct UnkOvl7Track D_801CE730_ovl7;
 extern struct UnkOvl7Track D_801D0450_ovl7[];
@@ -130,7 +130,7 @@ void func_801A3A14_ovl7(s32 arg0);
 void func_801A3B40_ovl7(void);
 
 void func_801A0D50_ovl7(void (*cb)(GObj *)) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk9C = cb;
 }
@@ -140,9 +140,9 @@ void func_801A0D50_ovl7(void (*cb)(GObj *)) {
 s32 func_801A0D74_ovl7(GObj *arg0) {
     s32 oldIdx;
     Vector sp18;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
-    struct Sub800E1B50_Unk98 *functable = ent->unk98;
-    struct Sub800E1B50_Unk84 *ent_sub84 = ent->unk84;
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyEventTable *functable = ent->unk98;
+    struct EnemyProbe *ent_sub84 = ent->unk84;
 
     if (ent_sub84 == NULL) {
         return 0;
@@ -303,18 +303,18 @@ s32 func_801A0D74_ovl7(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A0D74_ovl7.s")
 #endif
 
-void func_801A1724_ovl7(struct Sub800E1B50_Unk84 *sub84) {
-    sub84->unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
-    sub84->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    sub84->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+void func_801A1724_ovl7(struct EnemyProbe *sub84) {
+    sub84->posX = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sub84->posY = gEntitiesNextPosYArray[omCurrentObj->objId];
+    sub84->posZ = gEntitiesNextPosZArray[omCurrentObj->objId];
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        sub84->unk1C = ABSF(sub84->unk1C);
-        sub84->unk20 = (sub84->unk20) < 0.0f ? -(-(sub84->unk20)) : -(sub84->unk20);
+        sub84->forwardReachPos = ABSF(sub84->forwardReachPos);
+        sub84->forwardReachNeg = (sub84->forwardReachNeg) < 0.0f ? -(-(sub84->forwardReachNeg)) : -(sub84->forwardReachNeg);
     } else {
-        sub84->unk1C = (sub84->unk1C) < 0.0f ? -(-(sub84->unk1C)) : -(sub84->unk1C);
-        sub84->unk20 = ABSF(sub84->unk20);
+        sub84->forwardReachPos = (sub84->forwardReachPos) < 0.0f ? -(-(sub84->forwardReachPos)) : -(sub84->forwardReachPos);
+        sub84->forwardReachNeg = ABSF(sub84->forwardReachNeg);
     }
-    sub84->unk24 = D_800E17D0[omCurrentObj->objId];
+    sub84->facingAngle = D_800E17D0[omCurrentObj->objId];
 }
 
 /* FACTORY: 69/187, frame-size + spill-placement residue.  All control flow is
@@ -336,11 +336,11 @@ void func_801A1724_ovl7(struct Sub800E1B50_Unk84 *sub84) {
    func_8010DC24 is called through a (u32 (*)(u32)) cast because its
    file-scope declaration is `void func_8010DC24()` and must not be changed. */
 #ifdef MIPS_TO_C
-void func_801A187C_ovl7(struct Sub800E1B50_Unk84 *arg0) {
+void func_801A187C_ovl7(struct EnemyProbe *arg0) {
     void func_800F8728(s32, f32, f32);
     extern u32 D_800E8E60[];
     u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *rec = D_800E1B50[id];
+    struct EnemyRecord *rec = D_800E1B50[id];
     u32 fl;
 
     if (D_800E8E60[id] != 1) {
@@ -401,7 +401,7 @@ void func_801A187C_ovl7(void *arg0) {
     struct PositionState *slot = arg0;
     GObj *obj = omCurrentObj;
     u32 id = obj->objId;
-    UnkStruct800E1B50 *rec = D_800E1B50[id];
+    EnemyRecord *rec = D_800E1B50[id];
     void *hook = (void *) rec->unk48;
     u32 fl;
 
@@ -485,8 +485,8 @@ void func_801A1B6C_ovl7(void) {
     Vector hit;
     u32 water;
     f32 norm;
-    struct UnkStruct800E1B50 *rec;
-    struct Sub800E1B50_Unk84 *slot;
+    struct EnemyRecord *rec;
+    struct EnemyProbe *slot;
     s32 pad0;
     s32 pad1;
 
@@ -587,7 +587,7 @@ void func_801A1B6C_ovl7(void) {
  * read with lb on the N64 (the header says u8), hence the s8 casts. */
 void func_801A1B6C_ovl7(void) {
     u32 id = omCurrentObj->objId;
-    UnkStruct800E1B50 *rec = D_800E1B50[id];
+    EnemyRecord *rec = D_800E1B50[id];
     struct PositionState *slot = (struct PositionState *) rec->unk84;
     s32 prev = D_800E8AE0[id];
     void *savedWater = (void *) (uintptr_t) rec->unk74;
@@ -698,7 +698,7 @@ void func_801A2068_ovl7(void) {
     extern s32 D_800E8AE0[];
     s32 probeHit;
     Vector p;
-    struct Sub800E1B50_Unk84 *slot = D_800E1B50[omCurrentObj->objId]->unk84;
+    struct EnemyProbe *slot = D_800E1B50[omCurrentObj->objId]->unk84;
     s32 *flags;
 
     if (D_800E8AE0[omCurrentObj->objId] & 1) {
@@ -807,7 +807,7 @@ void func_801A2068_ovl7(void) {
 #endif
 
 void func_801A239C_ovl7(void) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     u32 idx;
 
     if (ent->unk39 != -1) {
@@ -824,7 +824,7 @@ void func_801A239C_ovl7(void) {
     }
 }
 
-void func_801A248C_ovl7(struct Sub800E1B50_Unk84 *arg0, f32 arg1) {
+void func_801A248C_ovl7(struct EnemyProbe *arg0, f32 arg1) {
     if (arg0 != NULL) {
         if (func_8010D668(arg0, arg1) != 0) {
             gEntitiesNextPosXArray[omCurrentObj->objId] = arg0->unk4;
@@ -843,7 +843,7 @@ void func_801A248C_ovl7(struct Sub800E1B50_Unk84 *arg0, f32 arg1) {
    spelling is not LP64-clean: it reads the terrain-kind byte as
    ((u8 *) rec->unk88)[0x1C] (the ROM uses lbu there while the shared header
    declares unk1C as u32, which must not be retyped at file scope) and it
-   names the slot position through Sub800E1B50_Unk84 unk4/unk8/unkC, which the
+   names the slot position through EnemyProbe unk4/unk8/unkC, which the
    PC build lays out differently.  Three edits carried it from 345/353 to
    MATCH: (1) the D_800E7730 switch needs explicit `case 0:` and `case 5:` so
    the jump table is unbiased (IDO otherwise emits addiu -1 / sltiu 6);
@@ -853,21 +853,21 @@ void func_801A248C_ovl7(struct Sub800E1B50_Unk84 *arg0, f32 arg1) {
    tests zero FIRST and shares one clear-store tail. */
 #ifndef PORT
 void func_801A2558_ovl7(s32 arg0) {
-    struct Sub800E1B50_Unk84 *func_8010DCAC(void);
+    struct EnemyProbe *func_8010DCAC(void);
     void func_801A2ADC_ovl7(s32);
-    void func_801051DC(struct Sub800E1B50_Unk84 *);
-    s32 func_80109DD8(struct Sub800E1B50_Unk84 *);
-    void func_8010CE44(struct Sub800E1B50_Unk84 *, f32);
-    void func_8010D42C(struct Sub800E1B50_Unk84 *, f32);
-    void func_8010D138(struct Sub800E1B50_Unk84 *, f32);
+    void func_801051DC(struct EnemyProbe *);
+    s32 func_80109DD8(struct EnemyProbe *);
+    void func_8010CE44(struct EnemyProbe *, f32);
+    void func_8010D42C(struct EnemyProbe *, f32);
+    void func_8010D138(struct EnemyProbe *, f32);
     s32 func_8010DF9C(void *);
     void func_800F8728(s32, f32, f32);
     extern s32 D_800E8AE0[];
     extern u8 D_800E7730[];
     f32 reach;
     Vector p;
-    struct UnkStruct800E1B50 *rec;
-    struct Sub800E1B50_Unk84 *slot;
+    struct EnemyRecord *rec;
+    struct EnemyProbe *slot;
     f32 dx;
     f32 dz;
     s32 w;
@@ -937,14 +937,14 @@ void func_801A2558_ovl7(s32 arg0) {
                 }
             }
         }
-        dx = slot->unk4 - gEntitiesNextPosXArray[omCurrentObj->objId];
-        dz = slot->unkC - gEntitiesNextPosZArray[omCurrentObj->objId];
+        dx = slot->posX - gEntitiesNextPosXArray[omCurrentObj->objId];
+        dz = slot->posZ - gEntitiesNextPosZArray[omCurrentObj->objId];
         if ((dx != 0.0f) || (dz != 0.0f)) {
             func_800F8728(omCurrentObj->objId, dx, dz);
-            gEntitiesNextPosXArray[omCurrentObj->objId] = slot->unk4;
-            gEntitiesNextPosZArray[omCurrentObj->objId] = slot->unkC;
+            gEntitiesNextPosXArray[omCurrentObj->objId] = slot->posX;
+            gEntitiesNextPosZArray[omCurrentObj->objId] = slot->posZ;
         }
-        gEntitiesNextPosYArray[omCurrentObj->objId] = slot->unk8;
+        gEntitiesNextPosYArray[omCurrentObj->objId] = slot->posY;
     }
     func_801051AC(slot);
     p.x = gEntitiesNextPosXArray[omCurrentObj->objId];
@@ -984,7 +984,7 @@ clear:
  * (D_800E8AE0) from the annex records the position crossed. */
 void func_801A2558_ovl7(s32 arg0) {
     u32 objId = omCurrentObj->objId;
-    UnkStruct800E1B50 *rec = D_800E1B50[objId];
+    EnemyRecord *rec = D_800E1B50[objId];
     struct PositionState *slot = (struct PositionState *) rec->unk84;
     f32 depth;
     s32 w;
@@ -1010,7 +1010,7 @@ void func_801A2558_ovl7(s32 arg0) {
         func_80105180(slot);
     } else {
         slot = func_8010DCAC();
-        rec->unk84 = (struct Sub800E1B50_Unk84 *) slot;
+        rec->unk84 = (struct EnemyProbe *) slot;
     }
     func_801A2ADC_ovl7(arg0);
     if (rec->unk88->unk1C != 0 && D_800E8E60[omCurrentObj->objId] == 0) {
@@ -1083,7 +1083,7 @@ void func_801A2558_ovl7(s32 arg0) {
 #ifdef NON_MATCHING
 void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
     u32 idx = omCurrentObj->objId;
-    struct Sub800E1B50_Unk84 *sub84 = D_800E1B50[idx]->unk84;
+    struct EnemyProbe *sub84 = D_800E1B50[idx]->unk84;
 
     if (sub84 != NULL) {
         sub84->unk4 = gEntitiesNextPosXArray[idx];
@@ -1122,7 +1122,7 @@ s32 func_801A2C78_ovl7(f32 arg0) {
     Vector oldp;
     Vector hit;
     Vector norm;
-    struct UnkStruct800E1B50 *rec;
+    struct EnemyRecord *rec;
     s32 pad0;
     s32 pad1;
     u32 water;
@@ -1292,7 +1292,7 @@ void func_801A3000_ovl7(s32 arg0) {
 #endif
 #ifdef NON_MATCHING
 void func_801A3198_ovl7(void) {
-    struct UnkStruct800E1B50 *temp_v0;
+    struct EnemyRecord *temp_v0;
     struct CollisionTriangle *temp_a1;
     f32 *temp_v0_2;
     f32 var_f6;
@@ -1322,7 +1322,7 @@ void func_801A3280_ovl7(void) {
 }
 
 void func_801A32A8_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[arg0];
+    struct EnemyRecord *ent = D_800E1B50[arg0];
 
     if (ent->unk84 != NULL) {
         func_8010DC8C(ent->unk84);
@@ -1342,9 +1342,9 @@ void func_801A32EC(struct Ovl7TrackParams *arg0) {
 
 #ifndef PORT /* WIP iterating, re-guard at exit */
 void func_801A33B8(struct Ovl7TrackParams *arg0) {
-    s32 func_80109F60(struct Sub800E1B50_Unk84 *);
-    s32 func_8010B238(struct Sub800E1B50_Unk84 *);
-    void func_80105238(struct Sub800E1B50_Unk84 *, void *);
+    s32 func_80109F60(struct EnemyProbe *);
+    s32 func_8010B238(struct EnemyProbe *);
+    void func_80105238(struct EnemyProbe *, void *);
     void func_800F8728(s32, f32, f32);
     f32 dx;
     f32 dz;
@@ -1517,7 +1517,7 @@ void func_801A3938(void *arg0) {
 }
 
 void func_801A3980_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     func_800B1BF0(0, omCurrentObj->objId);
     gEntitiesNextPosXArray[omCurrentObj->objId] = ent->unk4C;
@@ -1526,7 +1526,7 @@ void func_801A3980_ovl7(GObj *arg0) {
 }
 
 void func_801A3A14_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl7WarpStep *step;
     s32 idx = (0xF - ent->unk3D) & 0xFF;
 
@@ -1540,7 +1540,7 @@ void func_801A3A14_ovl7(s32 arg0) {
 }
 
 void func_801A3AE0_ovl7(GObj *gobj) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk3D -= 1;
     if (ent->unk3D == 0) {
@@ -1558,7 +1558,7 @@ void func_801A3B40_ovl7(void) {
 }
 
 void func_801A3BA4_ovl7(void) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (D_800E83E0[omCurrentObj->objId] == 2) {
         ent->unk3D = 0xF;
@@ -1598,7 +1598,7 @@ void func_801A3CA8_ovl7(void) {
 }
 
 void func_801A3D6C_ovl7(void) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     func_801A3CA8_ovl7();
     if (ent->unk94->unk0 != -1) {
@@ -1614,7 +1614,7 @@ void func_801A3D6C_ovl7(void) {
 }
 
 void func_801A3E0C_ovl7(GObj *gobj) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     ent->unk3D -= 1;
     if (ent->unk3D == 0) {

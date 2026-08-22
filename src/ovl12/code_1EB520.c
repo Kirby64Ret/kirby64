@@ -39,7 +39,7 @@ extern void (*D_801E2CC4_ovl12[10])(struct GObj *);
 
 
 void func_801DB200_ovl12(GObj *obj) {
-    struct UnkStruct800E1B50 *v0 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *v0 = D_800E1B50[omCurrentObj->objId];
     obj->onAnimate = func_800B113C;
     D_800DEF90[omCurrentObj->objId] = func_801D152C_ovl8;
     func_800FF0A8(v0->unk80);
@@ -491,7 +491,7 @@ void func_801DC8CC_ovl12(void) {
 
 // https://decomp.me/scratch/J5YmU
 void func_801DC930_ovl12(void) {
-    struct UnkStruct800E1B50 *temp_v0 =  D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_v0 =  D_800E1B50[omCurrentObj->objId];
     f32 x = 0.0f - temp_v0->unk0;
     f32 z = 0.0f - temp_v0->unk8;
 
@@ -587,7 +587,7 @@ void func_801DCDFC_ovl12(void) {
 }
 
 void func_801DCE6C_ovl12(f32 arg0) {
-    struct UnkStruct800E1B50 *sp24 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *sp24 = D_800E1B50[omCurrentObj->objId];
     Vector sp18; // vec
     
 
@@ -1069,7 +1069,7 @@ void func_801DEAF4_ovl12(GObj *arg0) {
 // double-assign memes
 #ifdef NON_MATCHING
 void func_801DEB1C_ovl12(void) {
-    struct UnkStruct800E1B50 *temp_a1 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_a1 = D_800E1B50[omCurrentObj->objId];
     f32 sp30;
     Vector sp18;
 
@@ -1302,7 +1302,7 @@ void func_801DF5F0_ovl12(struct Ovl12AnimInfo *arg0) {
 ? func_801DF758_ovl12(void) {
     ? sp38;
     s32 temp_v0_2;
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
     u32 temp_v0;
 
     temp_v0 = omCurrentObj->objId;
@@ -1367,7 +1367,7 @@ void func_801DF910_ovl12(void *arg0) {
     struct Ovl12MObj *mobj;
     struct Ovl12Color *env;
     s32 idx;
-    struct UnkStruct800E1B50 *ptr = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ptr = D_800E1B50[omCurrentObj->objId];
 
     idx = (ptr->unk6C + (D_800EA360[omCurrentObj->objId] * 3)) - 3;
     if (D_800EA520[omCurrentObj->objId] == 0) {
@@ -1386,7 +1386,7 @@ void func_801DF910_ovl12(void *arg0) {
 }
 
 void func_801DF9DC_ovl12(void) {
-    struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_v0 = D_800E1B50[omCurrentObj->objId];
     GObj *obj = ((GObj*)D_800DE350[omCurrentObj->objId]);
     struct DObj *child = obj->data.dobj->firstChild;
 
@@ -1400,7 +1400,7 @@ void func_801DF9DC_ovl12(void) {
 }
 
 void func_801DFA7C_ovl12(void) {
-    struct UnkStruct800E1B50 *temp_v0 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_v0 = D_800E1B50[omCurrentObj->objId];
     GObj *obj = ((GObj*)D_800DE350[omCurrentObj->objId]);
     struct DObj *temp_a1 = obj->data.dobj->firstChild;
 
@@ -1487,7 +1487,7 @@ void func_801DFFA8_ovl12(GObj *arg0) {
 }
 
 void func_801DFFF0_ovl12(GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_a1 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp_a1 = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801E00D8_ovl12;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
@@ -1783,8 +1783,8 @@ void func_801E123C_ovl12(GObj *arg0) {
 
 #ifdef NON_MATCHING
 void func_801E12D0_ovl12(GObj *arg0) {
-    struct UnkStruct800E1B50 *sp34 = D_800E1B50[omCurrentObj->objId];
-    struct Sub800E1B50_Unk94 *var_v0_2;
+    struct EnemyRecord *sp34 = D_800E1B50[omCurrentObj->objId];
+    struct EnemyAnimCue *var_v0_2;
 
     D_800DDFD0[omCurrentObj->objId] = 9;
     func_8019BB58_ovl7();

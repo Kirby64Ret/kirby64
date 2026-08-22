@@ -97,7 +97,7 @@ void func_801B20BC_ovl7(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_801CD5EC_ovl7);
 }
 
-extern struct Sub800E1B50_Unk98 D_801CB7AC_ovl7;
+extern struct EnemyEventTable D_801CB7AC_ovl7;
 extern f32 *D_801CAA48_ovl7;
 /* D_801CE2C0_ovl7 = 1.6f : now emitted by this TU */
 void func_801A2ADC_ovl7(f32 **);
@@ -131,7 +131,7 @@ void func_801B2204_ovl7(GObj *arg0) {
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
 extern f32 *D_801CAA0C_ovl7;
-extern struct Sub800E1B50_Unk98 D_801CB494_ovl7;
+extern struct EnemyEventTable D_801CB494_ovl7;
 
 void func_801B22D0_ovl7(s32 arg0) {
     f32 *temp_v0_3;
@@ -302,7 +302,7 @@ void func_801B2A94_ovl7(GObj *arg0) {
 }
 
 void func_801B2AE0_ovl7(GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B6FD8;
     D_800DF150[omCurrentObj->objId] = func_801B2D90_ovl7;
@@ -345,7 +345,7 @@ void func_801B2D90_ovl7(GObj *arg0) {
 /* 15/118 */
 void func_801B2DD8_ovl7(GObj *arg0) {
     s32 func_800AF230();
-    extern struct Sub800E1B50_Unk98 D_801CB7D0_ovl7;
+    extern struct EnemyEventTable D_801CB7D0_ovl7;
     extern f32 D_800E3210[], D_800E3750[], D_800E3C90[];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -399,7 +399,7 @@ void func_801B2FB0_ovl7(GObj *arg0) {
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
-extern struct Sub800E1B50_Unk98 D_801CB7D0_ovl7;
+extern struct EnemyEventTable D_801CB7D0_ovl7;
 
 void func_801B3110_ovl7(s32 arg0) {
     GObj *temp_v1;

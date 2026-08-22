@@ -168,7 +168,7 @@ void func_800FD874(s32, f32, f32, f32, f32, f32, f32);
 void func_800AF408(void);
 
 void func_801E1170_ovl17(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_s1;
+    struct EnemyRecord *temp_s1;
     u32 temp_a0;
 
     temp_s1 = D_800E1B50[omCurrentObj->objId];
@@ -201,7 +201,7 @@ void func_801E1170_ovl17(struct GObj *arg0) {
 }
 
 void func_801E1424_ovl17(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_a0;
+    struct EnemyRecord *temp_a0;
     s32 temp_v1;
 
     temp_v1 = D_800E9560[omCurrentObj->objId];
@@ -220,7 +220,7 @@ void func_801E1424_ovl17(struct GObj *arg0) {
 s32 func_801E14B0_ovl17(void) {
     u32 temp_v0;
     struct Ovl17AnimInfo sp2C;
-    struct UnkStruct800E1B50 *temp_s0;
+    struct EnemyRecord *temp_s0;
 
     temp_v0 = omCurrentObj->objId;
     temp_s0 = D_800E1B50[temp_v0];
@@ -279,7 +279,7 @@ void func_801E15A4_ovl17(struct GObj *arg0) {
     void func_801E328C_ovl17(Vector *);
     void func_801E1890_ovl17(struct GObj *);
     extern f32 D_801E5430_ovl17[];
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     Vector dir;
     s32 skip[3];
     s32 i;
@@ -337,7 +337,7 @@ void func_801E15A4_ovl17(struct GObj *arg0) {
     void func_801E328C_ovl17(Vector *);
     void func_801E1890_ovl17(struct GObj *);
     extern f32 D_801E5430_ovl17[];
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     Vector dir;
     s32 skip[3];
     s32 i;
@@ -502,7 +502,7 @@ void func_801E1CB4_ovl17(struct GObj *arg0) {
     void func_801E23E0_ovl17(void);
     void func_801E343C_ovl17(Vector *);
     void func_801E2170_ovl17(struct GObj *);
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct PcOvl17Gen *gen;
     Vector dir;
     s32 objId;
@@ -586,7 +586,7 @@ void func_801E1CB4_ovl17(struct GObj *arg0) {
     void func_801E23E0_ovl17(void);
     void func_801E343C_ovl17(Vector *);
     void func_801E2170_ovl17(struct GObj *);
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct PcOvl17Gen *gen;
     Vector dir;
     s32 objId;
@@ -645,7 +645,7 @@ void func_801E1CB4_ovl17(struct GObj *arg0) {
 #endif
 
 void func_801E2170_ovl17(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *temp_v1;
+    struct EnemyRecord *temp_v1;
 
     temp_v1 = D_800E1B50[omCurrentObj->objId];
     if (gEntityFuncListIDArray[D_800E0D50[omCurrentObj->objId]] == 4) {
@@ -658,7 +658,7 @@ void func_801E2170_ovl17(struct GObj *arg0) {
 
 s32 func_801E220C_ovl17(void) {
     u8 sp4C[4];
-    struct UnkStruct800E1B50 *sp48;
+    struct EnemyRecord *sp48;
     struct Ovl17AnimInfo sp28;
     s32 temp_v1;
 
@@ -683,7 +683,7 @@ s32 func_801E220C_ovl17(void) {
 }
 
 void func_801E2320_ovl17(void) {
-    struct UnkStruct800E1B50 *sp24;
+    struct EnemyRecord *sp24;
     u32 temp_a0;
 
     sp24 = D_800E1B50[omCurrentObj->objId];
@@ -1056,7 +1056,7 @@ void func_801E3024_ovl17(struct GObj *arg0) {
 
 s32 func_801E30BC_ovl17(void) {
     u8 sp4C[4];
-    struct UnkStruct800E1B50 *sp48;
+    struct EnemyRecord *sp48;
     struct Ovl17AnimInfo sp28;
     s32 temp_a0;
 
@@ -1154,7 +1154,7 @@ void func_801E36AC_ovl17(struct GObj *arg0) {
 
 s32 func_801E373C_ovl17(void) {
     u8 sp4C[4];
-    struct UnkStruct800E1B50 *sp48;
+    struct EnemyRecord *sp48;
     struct Ovl17AnimInfo sp28;
     s32 temp_a0;
 
@@ -1229,7 +1229,7 @@ void func_801E3990_ovl17(struct GObj *arg0) {
  * counter to 3 (flare) and sparks effect 6/3/2 on one random DObj of each
  * of the parent wing's three segment pairs; otherwise clears the counter. */
 void func_801E3A20_ovl17(void) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct DObj **pd;
     struct Ovl17AnimInfo sp2C;
     s32 objId;
@@ -1300,7 +1300,7 @@ void func_801E3A20_ovl17(void) {
  * counter to 3 (flare) and sparks effect 6/3/2 on one random DObj of each
  * of the parent wing's three segment pairs; otherwise clears the counter. */
 void func_801E3A20_ovl17(void) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct DObj **pd;
     struct Ovl17AnimInfo sp2C;
     s32 objId;
@@ -1441,7 +1441,7 @@ void func_801E4480_ovl17(struct GObj *arg0) {
 
 s32 func_801E4488_ovl17(void) {
     u8 sp4C[4];
-    struct UnkStruct800E1B50 *sp48;
+    struct EnemyRecord *sp48;
     struct Ovl17AnimInfo sp28;
     s32 temp_a0;
 

@@ -648,7 +648,7 @@ void func_8017DAD8_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     if (arg1 == 0) {
         if (arg2 != 0.0f) {
             idx = func_801632B8_ovl3(3);
-            D_800E1B50[idx + 0x70] = (struct UnkStruct800E1B50 *) arg0;
+            D_800E1B50[idx + 0x70] = (struct EnemyRecord *) arg0;
             do {
                 rnd = random_soft_s32_range(5);
             } while (rnd == gKirbyState.unk3C);
@@ -878,7 +878,7 @@ void func_8017E284_ovl3(s32 arg0)
     {
       idx = func_801632B8_ovl3(4);
       new_var = 0x70;
-      D_800E1B50[idx + new_var] = (struct UnkStruct800E1B50 *) D_800DFBD0[omCurrentObj->objId][4];
+      D_800E1B50[idx + new_var] = (struct EnemyRecord *) D_800DFBD0[omCurrentObj->objId][4];
       D_800EC660[idx] = gKirbyState.unk40;
       play_sound(0xB5);
       play_sound(0xB6);
@@ -6558,7 +6558,7 @@ void func_80186750_ovl3(s32 arg0) {
  * phase re-trigger.
  *
  * Port notes: m2c's `var_s0` scan cursor is the track index 0xE..0x3B
- * (its UnkStruct800E1B50* type is a ctx artifact) stepped one
+ * (its EnemyRecord* type is a ctx artifact) stepped one
  * D_800DD710 cell at a time; `(D_800E1B50 + 0x1C0)[i]` is the byte
  * offset spelled D_800E1B50[i + 0x70] like the file's N64 arms, the
  * track index stored through (uintptr_t); func_8011D858 is
@@ -6628,7 +6628,7 @@ void func_80186A20_ovl3(s32 arg0) {
                         && (func_8019F234_ovl7(i) == 0)) {
                         idx = func_801693C4_ovl3(0x11);
                         D_800E1B50[idx + 0x70] =
-                            (struct UnkStruct800E1B50 *) (uintptr_t) i;
+                            (struct EnemyRecord *) (uintptr_t) i;
                         D_800EC2E0[idx].as_u32 = 2;
                         D_800EC660[idx] = gKirbyState.unk40;
                         D_800E98E0[omCurrentObj->objId] += 1;
@@ -6692,7 +6692,7 @@ void func_80186A20_ovl3(s32 arg0) {
  * phase re-trigger.
  *
  * Port notes: m2c's `var_s0` scan cursor is the track index 0xE..0x3B
- * (its UnkStruct800E1B50* type is a ctx artifact) stepped one
+ * (its EnemyRecord* type is a ctx artifact) stepped one
  * D_800DD710 cell at a time; `(D_800E1B50 + 0x1C0)[i]` is the byte
  * offset spelled D_800E1B50[i + 0x70] like the file's N64 arms, the
  * track index stored through (uintptr_t); func_8011D858 is
@@ -6762,7 +6762,7 @@ void func_80186A20_ovl3(s32 arg0) {
                         && (func_8019F234_ovl7(i) == 0)) {
                         idx = func_801693C4_ovl3(0x11);
                         D_800E1B50[idx + 0x70] =
-                            (struct UnkStruct800E1B50 *) (uintptr_t) i;
+                            (struct EnemyRecord *) (uintptr_t) i;
                         D_800EC2E0[idx].as_u32 = 2;
                         D_800EC660[idx] = gKirbyState.unk40;
                         D_800E98E0[omCurrentObj->objId] += 1;
@@ -7569,7 +7569,7 @@ void func_80188078_ovl3(s32 arg0, s32 arg1, f32 arg2) {
             temp = func_801632B8_ovl3(9);
             D_800E98E0[temp] = gKirbyState.unk58;
             D_800E9AA0[temp].as_s32 = gKirbyState.unk5C;
-            D_800E1B50[temp + 0x70] = (struct UnkStruct800E1B50 *) D_800DFBD0[omCurrentObj->objId][0xE];
+            D_800E1B50[temp + 0x70] = (struct EnemyRecord *) D_800DFBD0[omCurrentObj->objId][0xE];
             gKirbyState.unk58 = 0;
             gKirbyState.unk5C = 0;
             D_800DFBD0[omCurrentObj->objId][0xE]->flags = 2;

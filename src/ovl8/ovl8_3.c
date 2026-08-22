@@ -35,7 +35,7 @@ void func_801D2B90_ovl8(void) {
     void func_801D447C_ovl8();
     struct Sub800E1B50_Unk34 *func_800A8100(s32, s32, s32, struct DObj *);
     void func_800A9760(s32);
-    struct UnkStruct800E1B50 *sp1C;
+    struct EnemyRecord *sp1C;
     struct DObj *sp18;
 
     sp1C = D_800E1B50[omCurrentObj->objId];

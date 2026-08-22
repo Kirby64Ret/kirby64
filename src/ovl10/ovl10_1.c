@@ -12,7 +12,7 @@ extern FUNCLIST D_801F4290_ovl10;
 void func_801A0D74_ovl7();
 f32 func_801DD760_ovl10(void);
 extern s32 D_800DDFD0[], D_800EA360[];
-extern struct Sub800E1B50_Unk98 D_801F4094_ovl10;
+extern struct EnemyEventTable D_801F4094_ovl10;
 void func_800AECC0(f32);
 void func_800AED20(f32);
 extern f32 gameTicksPerDraw;
@@ -109,8 +109,8 @@ s32 func_801DBF70_ovl10(s32 arg0, f32 arg1) {
 
 extern f32 *D_801F3F94_ovl10;
 extern f32 *D_801F3FA8_ovl10;
-extern struct Sub800E1B50_Unk98 D_801F4070_ovl10;
-extern struct Sub800E1B50_Unk98 D_801F4094_ovl10;
+extern struct EnemyEventTable D_801F4070_ovl10;
+extern struct EnemyEventTable D_801F4094_ovl10;
 void func_801A0D50_ovl7(void *);
 void func_801A2ADC_ovl7();
 void func_801A3280_ovl7(void);
@@ -373,7 +373,7 @@ extern void func_800B68AC(s32);
 void func_800A9864(s32, s32, s32);
 
 void func_801DCCB8_ovl10(s32 arg0) {
-    struct UnkStruct800E1B50 *temp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *temp = D_800E1B50[omCurrentObj->objId];
 
     temp->unk80->unk10 = 40.0f;
     func_800A9864(0x1005C, 0x23, 0x10);
@@ -498,7 +498,7 @@ void func_801DD2CC_ovl10(GObj *arg0) {
     }
 }
 
-extern struct Sub800E1B50_Unk98 D_801F40B8_ovl10;
+extern struct EnemyEventTable D_801F40B8_ovl10;
 
 void func_801DD390_ovl10(GObj *arg0) {
     func_800AECC0(gameTicksPerDraw);
@@ -1353,7 +1353,7 @@ void func_801DF50C_ovl10(s32 arg0) {
     extern f32 D_801F4364_ovl10[];
     extern f32 D_801F4390_ovl10[];
     extern s32 D_801F3A84_ovl10;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     s32 track;
     f32 ty;
     f32 v;
@@ -1437,7 +1437,7 @@ void func_801DF50C_ovl10(s32 arg0) {
 }
 #elif defined(PORT)
 void func_801DF50C_ovl10(s32 arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     func_801DFE64_ovl10();
     func_800AECC0(gameTicksPerDraw);
@@ -1886,7 +1886,7 @@ void func_801E0E78_ovl10(GObj *arg0) {
 }
 
 extern s32 D_801F3AA8_ovl10;
-extern struct Sub800E1B50_Unk98 D_801F40DC_ovl10;
+extern struct EnemyEventTable D_801F40DC_ovl10;
 f32 func_801E13A0_ovl10(GObj *);
 f32 sinf(f32);
 f32 cosf(f32);
@@ -2181,15 +2181,106 @@ void func_801E1FD8_ovl10(void) {
     }
 }
 
-/* NOT MEASURABLE YET -- same blocker as func_801E0460_ovl10 (see its note): the
- * descent tables and func_800F9828 are declared only inside this file's PORT
- * block, and hoisting them to file scope was measured to move func_801E2C78_ovl10
- * and grow .text 0x7130 -> 0x7170, so it was reverted. Coordinator-sized.
- * Decode that is ready to use once unblocked: the descent loop is INLINE in this
- * caller (the host build factors it into pc_ovl10_descend), and it goes through
- * ABSF(), which expands its argument THREE times -- so each abs of a
- * func_800F9828 call really is three calls, matching the three in the listing. */
-#ifdef PORT
+/* State 0x10 (phase-2 defeat): boss-clear fanfare and HP-bar refill from the
+ * descriptor's max-HP word (unk10 holds a pointer to the f32), unwinds any
+ * pending turn, sinks to the parent's height with the shared descent loop,
+ * drops to the ground, and moves on to state 0x13.
+ *
+ * FACTORY: 370/430, UNCERTAIN -- fresh derivation, time-boxed. Same
+ * fix and shape as func_801DF50C_ovl10: the PORT arm's
+ * pc_ovl10_descend(100.0f, 0, 0) is hand-inlined for waypoint=0/
+ * restEachStep=0, and its two file-scope-only prototypes
+ * (D_801F3ACC_ovl10, func_800FD570) plus the descent tables and
+ * func_800F9828 are declared LOCALLY inside this function body rather
+ * than hoisted to file scope (the hoist was independently measured
+ * unsafe for this TU -- see func_801E0460_ovl10's note). Compiles,
+ * word count matches (430/430), residue moderate-to-high (370/430).
+ * Worth a fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_801E206C_ovl10(s32 arg0) {
+    extern s32 D_801F3ACC_ovl10;
+    u32 func_800FD570(s32, u32, f32, f32, f32);
+    s32 func_801DFCC0_ovl10(void);
+    f32 func_800F9828(s32, s32);
+    extern f32 D_801F4338_ovl10[];
+    extern f32 D_801F4364_ovl10[];
+    extern f32 D_801F4390_ovl10[];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
+    s32 track;
+    f32 ty;
+    f32 v;
+
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0x10;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3ACC_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+    func_800B33F4();
+    play_sound(0x2A);
+    func_800BB468(3, 0);
+    func_800FD570(0, 1, 0.0f, *(f32 *) (uintptr_t) ent->unk88->unk10, 0.0f);
+    func_800AA018(0x10306);
+    func_800AA018(0x10307);
+    if (D_800E9020[omCurrentObj->objId] != 0.0f) {
+        func_801DFCC0_ovl10();
+    } else {
+        func_800AF27C();
+    }
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800EA520[omCurrentObj->objId] = 0;
+    /* shared phase-2 descent loop, inlined (waypoint=0, hold=100.0f,
+     * restEachStep=0 -- see func_801DF50C_ovl10's FACTORY note) */
+    while (D_800EA520[omCurrentObj->objId] < 0xA) {
+        D_800E6850[omCurrentObj->objId] = ABSF(D_801F4338_ovl10[D_800EA520[omCurrentObj->objId]]);
+        D_800E3C90[omCurrentObj->objId] = ABSF(D_801F4338_ovl10[D_800EA520[omCurrentObj->objId]]);
+        D_800EA8A0[omCurrentObj->objId] = 100.0f;
+        D_800EA6E0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+        while ((D_800EA520[omCurrentObj->objId] < 0xB) &&
+               ((D_801F4390_ovl10[D_800EA520[omCurrentObj->objId]] < D_800EA6E0[omCurrentObj->objId]) ||
+                (D_801F4390_ovl10[D_800EA520[omCurrentObj->objId]] <
+                 D_800EA8A0[omCurrentObj->objId]))) {
+            track = D_800E0D50[omCurrentObj->objId];
+            ty = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+            D_800EA6E0[omCurrentObj->objId] = ABSF(func_800F9828(omCurrentObj->objId, track));
+            v = func_800F9828(omCurrentObj->objId, track);
+            if (0.0f < v) {
+                D_800E6690[omCurrentObj->objId] =
+                    -D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            } else {
+                D_800E6690[omCurrentObj->objId] =
+                    D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            }
+            D_800EA8A0[omCurrentObj->objId] =
+                ABSF(gEntitiesNextPosYArray[omCurrentObj->objId] - ty);
+            if (gEntitiesNextPosYArray[omCurrentObj->objId] < ty) {
+                D_800E3750[omCurrentObj->objId] =
+                    -D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            } else {
+                D_800E3750[omCurrentObj->objId] =
+                    D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            }
+            ohSleep(1);
+        }
+        D_800EA520[omCurrentObj->objId] += 1;
+    }
+    func_800AF27C();
+    func_800B33F4();
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    D_800E3C90[omCurrentObj->objId] = 30.0f;
+    while (D_800E8920[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    func_800AF27C();
+    D_800E98E0[omCurrentObj->objId] = -1;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = -1;
+    D_800E9C60[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0x13;
+}
+#elif defined(PORT)
 extern s32 D_801F3ACC_ovl10;
 u32 func_800FD570(s32, u32, f32, f32, f32);
 
@@ -2198,7 +2289,7 @@ u32 func_800FD570(s32, u32, f32, f32, f32);
  * pending turn, sinks to the parent's height with the shared descent loop,
  * drops to the ground, and moves on to state 0x13. */
 void func_801E206C_ovl10(s32 arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
@@ -2293,7 +2384,7 @@ s32 func_801E28C8_ovl10(s32 arg0) {
     void func_800BC11C(f32);
     extern f32 D_800D6E5C;
 
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct Ovl10AnimObj2 *slot;
     struct {
         u8 unk0;
@@ -2378,7 +2469,7 @@ extern f32 D_800D6E5C;
  * The registered CollSlot is a HOST slot: its last Shape28* sits at byte 48
  * (N64 0x24), and the anim id word at +8 inside the shape is native. */
 s32 func_801E28C8_ovl10(s32 arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct Ovl10AnimObj2 *slot;
     struct {
         u8 unk0;
@@ -2466,8 +2557,8 @@ void func_80111ECC(struct Ovl10AnimObj2 *);
 s32 func_80110150(void *);
 
 s32 func_801E2BD8_ovl10(s32 arg0, void *arg1) {
-    struct Sub800E1B50_Unk88 *sp0;
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyKindDesc *sp0;
+    struct EnemyRecord *temp;
     struct Ovl10AnimObj2 *temp_v0;
 
     temp = D_800E1B50[omCurrentObj->objId];
@@ -2492,8 +2583,8 @@ s32 func_801E2BD8_ovl10(s32 arg0, void *arg1) {
    16 bytes. Needs a `pad` subsegment in kirby64.yaml (`. += 0x10;`); un-guard
    in the same change. */
 s32 func_801E2C78_ovl10(s32 arg0, void *arg1) {
-    struct Sub800E1B50_Unk88 *sp0;
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyKindDesc *sp0;
+    struct EnemyRecord *temp;
     struct Ovl10AnimObj2 *temp_v0;
 
     temp = D_800E1B50[omCurrentObj->objId];

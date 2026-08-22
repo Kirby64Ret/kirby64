@@ -19,7 +19,7 @@ extern s32 D_801CB4DC_ovl7;
 /* D_8021DDE0_ovl9: literal, this TU owns its .rodata */
 
 void func_80214A00_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801ACF5C_ovl7;
     tmp->unk98 = &D_801CB4DC_ovl7;
@@ -35,7 +35,7 @@ void func_80214A00_ovl9(struct GObj *arg0) {
 }
 
 void func_80214B2C_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B78AC;
     D_800DF150[omCurrentObj->objId] = func_801ACF5C_ovl7;
@@ -54,7 +54,7 @@ void func_80214B2C_ovl9(struct GObj *arg0) {
 }
 
 void func_80214C9C_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B78AC;
     D_800DF150[omCurrentObj->objId] = func_801ACF5C_ovl7;

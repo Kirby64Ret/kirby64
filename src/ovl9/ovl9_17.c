@@ -14,7 +14,7 @@ void func_8021A118_ovl9(struct GObj *);
 /* D_8021DEB0_ovl9: literal, this TU owns its .rodata */
 
 void func_802199E0_ovl9(struct GObj *this) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801ACF5C_ovl7;
     tmp->unk98 = &D_801CB548;
@@ -33,7 +33,7 @@ void func_802199E0_ovl9(struct GObj *this) {
 
 /* 9.6f / 21.8f / 7.2000003f: literals, this TU owns its .rodata */
 void func_80219B1C_ovl9(struct GObj *this) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DF150[omCurrentObj->objId] = func_801ACF5C_ovl7;
     tmp->unk98 = &D_801CB4DC_ovl7;
@@ -114,7 +114,7 @@ void func_80219E0C_ovl9(s32 arg0, u32 halve) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_17/func_80219E0C_ovl9.s")
 #endif
 void func_80219F70_ovl9(s32 this) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800E9FE0[omCurrentObj->objId].as_s32 = 0;
     D_800DF150[omCurrentObj->objId] = func_8021A118_ovl9;

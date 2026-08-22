@@ -7,47 +7,154 @@
 extern struct CollisionState *gCollisionState;
 extern u32 D_8012BD00;
 
-struct UnkBD00 {
-    /* 0x00 */ u8 unk0_80 : 1;
+/* The collision query scratch block (D_8012BD00). Splat split it into per-word
+ * symbols, so this file reaches most of it through the BD00 macro but still
+ * spells three fields by their own names: D_8012BD34 is `hit` (a Vector),
+ * D_8012BD40 is `tick` and D_8012BD44 is `callerTick`.
+ *
+ * Everything from +0x04 to +0x30 is set once per resolve by func_80104FB8 out
+ * of PositionState.faceAngle -- [0] and [1] are signed body radii, [2] is the
+ * yaw -- and then read by every probe in the file as its cast basis. */
+struct ColQuery {
+    /* Raised for the whole of a full resolve (func_8010BBD4 and its siblings
+     * bracket their body with 1 ... 0) and cleared by func_8010DCDC at init.
+     * Nothing in the tree ever reads it. */
+    /* 0x00 */ u8 busy : 1;
     /* 0x00 */ u8 unk0_rest : 7;
     /* 0x01 */ u8 unk1;
     /* 0x02 */ u8 pad2[2];
-    /* 0x04 */ f32 unk4;
-    /* 0x08 */ f32 unk8;
-    /* 0x0C */ f32 unkC;
-    /* 0x10 */ f32 unk10;
-    /* 0x14 */ f32 unk14;
-    /* 0x18 */ f32 unk18;
-    /* 0x1C */ f32 unk1C;
-    /* 0x20 */ f32 unk20;
-    /* 0x24 */ f32 unk24;
-    /* 0x28 */ f32 unk28;
-    /* 0x2C */ f32 unk2C;
-    /* 0x30 */ f32 unk30;
-    /* 0x34 */ f32 unk34;
-    /* 0x38 */ f32 unk38;
-    /* 0x3C */ f32 unk3C;
-    /* 0x40 */ s32 unk40;
-    /* 0x44 */ s32 unk44;
+
+    /* Foot-column offset from Kirby's origin: faceAngle[0] * (sin, cos) of the
+     * yaw. Probes that start at PositionState.kirbyGroundPath add this pair,
+     * and their hits are the *_FOOT class bits. */
+    /* 0x04 */ f32 footOffX;
+    /* 0x08 */ f32 footOffZ;
+
+    /* Head-column offset: faceAngle[1] * (sin, cos). Paired with
+     * kirbyHeadPath and the *_HEAD class bits. */
+    /* 0x0C */ f32 headOffX;
+    /* 0x10 */ f32 headOffZ;
+
+    /* Unit forward direction in the XZ plane, signed so that it points the
+     * same way as the foot offset (func_80104FB8 negates both when
+     * faceAngle[0] <= 0). This is the `dir` every wall cast uses. */
+    /* 0x14 */ f32 fwdX;
+    /* 0x18 */ f32 fwdZ;
+
+    /* The negation of the above, used by the back-wall casts. */
+    /* 0x1C */ f32 backX;
+    /* 0x20 */ f32 backZ;
+
+    /* The two column offsets pushed a further 0.1 along their own direction,
+     * so a snap lands just clear of the plane instead of exactly on it. */
+    /* 0x24 */ f32 footPushX;
+    /* 0x28 */ f32 footPushZ;
+    /* 0x2C */ f32 headPushX;
+    /* 0x30 */ f32 headPushZ;
+
+    /* The winning contact point of the last accepted probe -- the same object
+     * this file also writes as the Vector D_8012BD34. The snap resolvers read
+     * it back to re-plant kirbyFootPos. */
+    /* 0x34 */ f32 hitX;
+    /* 0x38 */ f32 hitY;
+    /* 0x3C */ f32 hitZ;
+
+    /* Global collision tick: zeroed by func_8010DCDC, bumped once per frame by
+     * func_8010DD8C. Also spelled D_8012BD40. */
+    /* 0x40 */ s32 tick;
+
+    /* The tick the PositionState being resolved was last collided on: each
+     * entry point copies PositionState.VI_Timer in here and copies `tick` back
+     * out on the way home. `tick != callerTick` is how the dynamic-collider
+     * pass knows this object has not been walked yet this frame.
+     * Also spelled D_8012BD44. */
+    /* 0x44 */ s32 callerTick;
 };
 
-#define BD00 (*(struct UnkBD00 *) &D_8012BD00)
+#ifndef PORT
+struct ColQueryLayoutAssert {
+    int _col_query_size : (sizeof(struct ColQuery) == 0x48) ? 1 : -1;
+};
+#endif
 
+#define BD00 (*(struct ColQuery *) &D_8012BD00)
+
+/* One resolved contact: the surface Kirby is touching in one direction, the
+ * triangle that produced it and that triangle's plane. `type` is the winning
+ * triangle's collisionType (COL_TYPE_*); func_80105218 parks 0x14 in it as the
+ * "nothing here" value and func_80105238 copies all five out to
+ * PositionState.byteArray, which is why that array reads 0x1414141414 when
+ * Kirby is in open air. */
 struct ColRecord {
     /* 0x0 */ s32 type;
     /* 0x4 */ struct CollisionTriangle *tri;
     /* 0x8 */ struct Normal *norm;
 };
 
-struct UnkBCA0 {
+/* Slots in CollisionResult.rec[]. Each slot owns its own 3-bit group in the
+ * flags field and its own family of resolvers in this file; the mapping below
+ * is read off which mask each resolver clears and which class bit it sets:
+ *
+ *   slot 0  clears 0xF1FF, sets 0x200/0x400/0x800  (func_80107F94/8010924C/8010AC1C)
+ *   slot 1  clears 0xFE3F, sets 0x040/0x080/0x100  (func_801072E0/801077D4/80107074)
+ *   slot 2  clears 0xFFF8, sets 0x001/0x002/0x004  (func_80105530/801060C4/80109FAC)
+ *   slot 3  clears 0xFFC7, sets 0x008/0x010/0x020  (func_8010669C/8010A138)
+ *
+ * Slot 0 is the FLOOR: its group bit 0x200 lands at word bit 0x10000000, the
+ * value ovl2_8.h documents as PositionState.collisionFlags "grounded", and its
+ * resolver casts straight down (dir 0,-1,0) and re-plants kirbyFootPos ABOVE
+ * the plane (+0.1f). Slot 1 is the CEILING: same shape but it pushes Kirby
+ * BELOW the plane (-0.1f). Slots 2 and 3 are the two walls; plylib.c gates a
+ * turn on group-2 bit 0x2 when facing +1.0f and on the mirrored group-3 bit
+ * 0x10 when facing -1.0f, so 2 is the wall Kirby faces and 3 the one behind.
+ * Slot 4 is never resolved in this file -- func_80105218 clears it and
+ * func_80105238 copies it out, nothing else touches it. */
+#define COL_FLOOR       0
+#define COL_CEILING     1
+#define COL_WALL_FRONT  2
+#define COL_WALL_BACK   3
+#define COL_SLOT_4      4
+
+/* Bits of CollisionResult.flags.f.hits (word bits 19-31, hence the `>> 0x13`
+ * at every reader and the `* 8` at every halfword writer). Three per slot:
+ * the CENTER cast, then the two body-corner casts. In the floor resolver
+ * func_801078A0 the center cast runs at Kirby's own x/z, the *_FOOT cast at
+ * the kirbyGroundPath column (BD00 offset unk4/unk8) and the *_HEAD cast at
+ * the kirbyHeadPath column (unkC/unk10); in the wall resolver func_80105284
+ * the same three bits come from casts started at kirbyHeadPos[1], then
+ * kirbyHeight[1] (feet) and kirbyHeight[0] (head). */
+#define COLF_WALL_F         0x001
+#define COLF_WALL_F_HEAD    0x002
+#define COLF_WALL_F_FOOT    0x004
+#define COLF_WALL_B         0x008
+#define COLF_WALL_B_HEAD    0x010
+#define COLF_WALL_B_FOOT    0x020
+#define COLF_CEIL           0x040
+#define COLF_CEIL_HEAD      0x080
+#define COLF_CEIL_FOOT      0x100
+#define COLF_FLOOR          0x200
+#define COLF_FLOOR_HEAD     0x400
+#define COLF_FLOOR_FOOT     0x800
+
+#define COLF_WALL_F_ANY     0x007
+#define COLF_WALL_B_ANY     0x038
+#define COLF_WALL_ANY       0x03F
+#define COLF_CEIL_ANY       0x1C0
+#define COLF_FLOOR_ANY      0xE00
+
+/* The collision result block (D_8012BCA0), formerly spelled UnkBCA0 -- other
+ * overlays' comments still use that name. One global: every resolver in this
+ * file takes a pointer to it, and func_80105238 publishes it into
+ * PositionState. */
+struct CollisionResult {
     /* 0x00 */ union {
         u32 w;
 #ifdef PORT
         /* Little-endian: the N64's flag halfword and bitfields live in the
          * TOP of the word. The anonymous struct makes .hw alias the upper
          * u16 (what every `(hw & 7)` / halfword-store site means), and the
-         * reversed bitfield order puts a at bits 19-31 and b at 16-18 --
-         * the bits every `w >> 0x13` reader expects. Without this, writers
+         * reversed bitfield order puts hits at bits 19-31 and unk3 at 16-18
+         * -- the bits every `w >> 0x13` reader expects. Without this, writers
          * and readers touched disjoint bits and all class checks read 0. */
         struct {
             u16 hwpad_;
@@ -55,18 +162,26 @@ struct UnkBCA0 {
         };
         struct {
             u32 rest : 16;
-            u32 b : 3;
-            u32 a : 13;
+            u32 unk3 : 3;
+            u32 hits : 13;
         } f;
 #else
         u16 hw;
         struct {
-            u32 a : 13;
-            u32 b : 3;
+            /* Word bits 19-31: the COLF_* contact bits. Twelve are used;
+             * the thirteenth is never set anywhere in this overlay. */
+            u32 hits : 13;
+            /* Word bits 16-18. Every writer in this file preserves these
+             * (`| (flags.hw & 7)`) and none of them sets one, so whatever
+             * owns them lives outside ovl2_7.c. */
+            u32 unk3 : 3;
+            /* Word bits 0-15. Never read or written. */
             u32 rest : 16;
         } f;
 #endif
     } flags;
+    /* One contact per direction: rec[COL_FLOOR], rec[COL_CEILING],
+     * rec[COL_WALL_FRONT], rec[COL_WALL_BACK], rec[COL_SLOT_4]. */
     /* 0x04 */ struct ColRecord rec[5];
 #ifdef PORT
     /* The water annex the C never declared: the ROM stores up to 3 water-
@@ -78,7 +193,16 @@ struct UnkBCA0 {
 #endif
 };
 
-extern struct UnkBCA0 D_8012BCA0;
+#ifndef PORT
+/* IDO accepts a negative array size (warning 654 only) but rejects a negative
+ * BITFIELD WIDTH, so this is the form that actually locks the N64 layout. */
+struct ColResultLayoutAssert {
+    int _col_record_size    : (sizeof(struct ColRecord) == 0xC) ? 1 : -1;
+    int _col_result_size    : (sizeof(struct CollisionResult) == 0x40) ? 1 : -1;
+};
+#endif
+
+extern struct CollisionResult D_8012BCA0;
 extern u32 D_8012BCA4[];
 extern s32 D_8012BCA8[];
 extern struct CollisionTriangle *D_8012BCB4;
@@ -108,37 +232,37 @@ u32 func_8011BED0(u16, u16, u16, struct Normal *);
 void func_80101400(u32 numFloorNorms);
 void func_8010DB64(struct CollisionTriangle *arg0, s32 arg1, Vector *arg2);
 void func_8010DDA4(void *arg0, s32 arg1);
-s32 func_80109BF0(struct PositionState *arg0, struct UnkBCA0 *arg1, s32 arg2);
-s32 func_8010AEF0(struct PositionState *arg0, struct UnkBCA0 *arg1, s32 arg2);
+s32 func_80109BF0(struct PositionState *arg0, struct CollisionResult *arg1, s32 arg2);
+s32 func_8010AEF0(struct PositionState *arg0, struct CollisionResult *arg1, s32 arg2);
 void func_80104FB8(struct PositionState *arg0);
 s32 func_80104D2C(Vector *arg0, Vector *arg1, Vector *arg2, f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, s32 *arg7);
 s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3);
-s32 func_80105530(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_801056C8(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_8010669C(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_80106834(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_801072E0(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_801077D4(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_80107F94(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_8010924C(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_8010A138(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_80107074(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_80109B5C(struct PositionState *arg0, struct UnkBCA0 *arg1);
-void func_801096F0(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1);
-s32 func_8010AC1C(struct PositionState *arg0, struct UnkBCA0 *arg1);
+s32 func_80105530(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_801056C8(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_801063F0(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_8010669C(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_80106834(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_80106930(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_80106C5C(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_801072E0(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_801077D4(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_80107F94(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_801078A0(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_8010924C(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_80109318(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_80109504(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_80109784(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_80109970(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_80109FAC(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_8010A138(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_801060C4(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_801073C4(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_80107074(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_80108E08(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_80109B5C(struct PositionState *arg0, struct CollisionResult *arg1);
+void func_801096F0(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_8010A2C4(struct PositionState *arg0, struct CollisionResult *arg1);
+s32 func_8010AC1C(struct PositionState *arg0, struct CollisionResult *arg1);
 s32 func_8010AEE0(s32 arg0, s32 arg1);
 
 extern u32 D_8012BD44;
@@ -989,7 +1113,7 @@ s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, struct Collision
  * *arg4 gets the triangle; return 1 with *arg1 = the hit index so the
  * caller can resume past it, or 0 when the hit closed the list. Vertices
  * and cells were byte-swapped native at level load (ovl2_2.c). */
-s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, u32 (*arg3)(void), struct CollisionTriangle **arg4) {
+s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, struct CollisionTriangle *arg3, struct CollisionTriangle **arg4) {
     struct vCollisionHeader *vh = gCollisionState->unk30;
     struct CollisionTriangle *tris = vh->header.Triangles;
     u16 *cells = vh->header.Triangle_Cells;
@@ -1017,7 +1141,7 @@ s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, u32 (*arg3)(void
         u16 entry = cells[i];
         struct CollisionTriangle *tri = &tris[entry & 0x7FFF];
 
-        if (tri != (struct CollisionTriangle *) arg3) {
+        if (tri != arg3) {
             f32 e0, e1, e2;
 
             if (vh->usingFloatVertices != 0) {
@@ -1078,7 +1202,7 @@ extern s32 func_80102570(
     struct Normal *,
     s32 *,
     Vector *,
-    u32 (*)(void),
+    struct CollisionTriangle *,
     struct CollisionTriangle **
 );
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80102570.s")
@@ -1224,7 +1348,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     f32 var_f12;
     s32 temp_v0;
 
-    if (BD00.unk40 != BD00.unk44) {
+    if (BD00.tick != BD00.callerTick) {
         sp9C = gCollisionState->currPos;
         spAC = 1.1f;
         gCollisionState->unk30 = D_80129410;
@@ -1316,7 +1440,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
 }
 #elif defined(PORT)
 /* Moving-aware raycast core (draft above, completed): like func_80103B58,
- * but when the world-motion stamps differ (BD00.unk40 != unk44) each active
+ * but when the world-motion stamps differ (BD00.tick != unk44) each active
  * dynamic collider gets per-cast motion compensation -- the segment origin
  * is shifted by the collider's frame delta (its matrix pair for rotating
  * colliders, the per-slot translation deltas otherwise) and the segment
@@ -1329,7 +1453,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     void func_80112ED4(f32 mtx[4][4], Vector *out, Vector *in);
     u32 i;
 
-    if (BD00.unk40 != BD00.unk44) {
+    if (BD00.tick != BD00.callerTick) {
         Vector cur = gCollisionState->currPos;
         Vector hit;
         f32 tAcc = 1.1f;
@@ -1970,7 +2094,7 @@ static s32 pc_probe_43b0(Vector *a, Vector *b, struct CollisionTriangle *skipTri
     newColState.acceptTri = func_80101E14;
     newColState.passThruPlane = NULL;
     newColState.ignorePlane = NULL;
-    newColState.ignoreTri = (u32 (*)(void)) skipTri;
+    newColState.ignoreTri = skipTri;
     return func_80103B58(NULL, NULL, NULL, NULL, NULL);
 }
 
@@ -2000,7 +2124,7 @@ static s32 pc_probe_4184(Vector *a, Vector *b, struct CollisionTriangle *skipTri
     newColState.acceptTri = func_80101E14;
     newColState.passThruPlane = NULL;
     newColState.ignorePlane = NULL;
-    newColState.ignoreTri = (u32 (*)(void)) skipTri;
+    newColState.ignoreTri = skipTri;
     return func_80103B58(NULL, NULL, NULL, NULL, NULL);
 }
 
@@ -2089,17 +2213,17 @@ void func_80104FB8(struct PositionState *arg0) {
     D_8012BD10 = temp_v0[4] * sp1C;
     if (temp_v0[3] > 0.0f) {
         D_8012BD14 = temp_f0;
-        BD00.unk18 = sp1C;
+        BD00.fwdZ = sp1C;
     } else {
         D_8012BD14 = -temp_f0;
-        BD00.unk18 = -sp1C;
+        BD00.fwdZ = -sp1C;
     }
-    BD00.unk1C = -BD00.unk14;
-    BD00.unk20 = -BD00.unk18;
-    BD00.unk24 = (BD00.unk14 * 0.1f) + BD00.unk4;
-    BD00.unk28 = (BD00.unk18 * 0.1f) + BD00.unk8;
-    BD00.unk2C = (BD00.unk1C * 0.1f) + BD00.unkC;
-    BD00.unk30 = (BD00.unk20 * 0.1f) + BD00.unk10;
+    BD00.backX = -BD00.fwdX;
+    BD00.backZ = -BD00.fwdZ;
+    BD00.footPushX = (BD00.fwdX * 0.1f) + BD00.footOffX;
+    BD00.footPushZ = (BD00.fwdZ * 0.1f) + BD00.footOffZ;
+    BD00.headPushX = (BD00.backX * 0.1f) + BD00.headOffX;
+    BD00.headPushZ = (BD00.backZ * 0.1f) + BD00.headOffZ;
 }
 #elif defined(PORT)
 /* Probe-basis setup from the facing angle: the BD00 direction basis
@@ -2110,23 +2234,23 @@ void func_80104FB8(struct PositionState *arg0) {
     f32 c = cosf(arg0->faceAngle[2]);
     f32 sn = sinf(arg0->faceAngle[2]);
 
-    BD00.unk4 = arg0->faceAngle[0] * sn;
-    BD00.unk8 = arg0->faceAngle[0] * c;
-    BD00.unkC = arg0->faceAngle[1] * sn;
-    BD00.unk10 = arg0->faceAngle[1] * c;
+    BD00.footOffX = arg0->faceAngle[0] * sn;
+    BD00.footOffZ = arg0->faceAngle[0] * c;
+    BD00.headOffX = arg0->faceAngle[1] * sn;
+    BD00.headOffZ = arg0->faceAngle[1] * c;
     if (arg0->faceAngle[0] > 0.0f) {
-        BD00.unk14 = sn;
-        BD00.unk18 = c;
+        BD00.fwdX = sn;
+        BD00.fwdZ = c;
     } else {
-        BD00.unk14 = -sn;
-        BD00.unk18 = -c;
+        BD00.fwdX = -sn;
+        BD00.fwdZ = -c;
     }
-    BD00.unk1C = -BD00.unk14;
-    BD00.unk20 = -BD00.unk18;
-    BD00.unk24 = (BD00.unk14 * 0.1f) + BD00.unk4;
-    BD00.unk28 = (BD00.unk18 * 0.1f) + BD00.unk8;
-    BD00.unk2C = (BD00.unk1C * 0.1f) + BD00.unkC;
-    BD00.unk30 = (BD00.unk20 * 0.1f) + BD00.unk10;
+    BD00.backX = -BD00.fwdX;
+    BD00.backZ = -BD00.fwdZ;
+    BD00.footPushX = (BD00.fwdX * 0.1f) + BD00.footOffX;
+    BD00.footPushZ = (BD00.fwdZ * 0.1f) + BD00.footOffZ;
+    BD00.headPushX = (BD00.backX * 0.1f) + BD00.headOffX;
+    BD00.headPushZ = (BD00.backZ * 0.1f) + BD00.headOffZ;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104FB8.s")
@@ -2141,10 +2265,10 @@ void func_801050E0(struct PositionState *arg0) {
     arg0->kirbyHeight[0] = arg0->scale[1] + arg0->kirbyFootPos[1];
     arg0->kirbyHeight[1] = arg0->scale[2] + arg0->kirbyFootPos[1];
     func_80104FB8(arg0);
-    temp_v0[3] = BD00.unk4 + temp_v0[0];
-    temp_v0[4] = BD00.unk8 + temp_v0[2];
-    temp_v0[5] = BD00.unkC + temp_v0[0];
-    temp_v0[6] = BD00.unk10 + temp_v0[2];
+    temp_v0[3] = BD00.footOffX + temp_v0[0];
+    temp_v0[4] = BD00.footOffZ + temp_v0[2];
+    temp_v0[5] = BD00.headOffX + temp_v0[0];
+    temp_v0[6] = BD00.headOffZ + temp_v0[2];
 }
 
 void func_80105180(struct PositionState *arg0) {
@@ -2168,22 +2292,22 @@ void func_801051DC(struct PositionState *arg0) {
     arg0->kirbyHeadPos[2] = arg0->kirbyGroundPath[1] = arg0->kirbyHeadPath[1] = arg0->kirbyFootPos[2];
 }
 
-void func_80105218(struct UnkBCA0 *arg0) {
+void func_80105218(struct CollisionResult *arg0) {
     arg0->flags.w = 0;
-    arg0->rec[4].type = 0x14;
-    arg0->rec[0].type = 0x14;
-    arg0->rec[1].type = 0x14;
-    arg0->rec[3].type = 0x14;
-    arg0->rec[2].type = 0x14;
+    arg0->rec[COL_SLOT_4].type = 0x14;
+    arg0->rec[COL_FLOOR].type = 0x14;
+    arg0->rec[COL_CEILING].type = 0x14;
+    arg0->rec[COL_WALL_BACK].type = 0x14;
+    arg0->rec[COL_WALL_FRONT].type = 0x14;
 }
 
-void func_80105238(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_80105238(struct PositionState *arg0, struct CollisionResult *arg1) {
     arg0->collisionFlags = arg1->flags.w;
-    arg0->byteArray[2] = arg1->rec[2].type;
-    arg0->byteArray[3] = arg1->rec[3].type;
-    arg0->byteArray[1] = arg1->rec[1].type;
-    arg0->byteArray[0] = arg1->rec[0].type;
-    arg0->byteArray[4] = arg1->rec[4].type;
+    arg0->byteArray[2] = arg1->rec[COL_WALL_FRONT].type;
+    arg0->byteArray[3] = arg1->rec[COL_WALL_BACK].type;
+    arg0->byteArray[1] = arg1->rec[COL_CEILING].type;
+    arg0->byteArray[0] = arg1->rec[COL_FLOOR].type;
+    arg0->byteArray[4] = arg1->rec[COL_SLOT_4].type;
     func_801050E0(arg0);
 }
 
@@ -2195,7 +2319,7 @@ void func_80105238(struct PositionState *arg0, struct UnkBCA0 *arg1) {
  * 117/171 to 10/171 because ROM $t0 holds it and every &local address then lands
  * in $t1-$t4. Also: sp50 is the flag local (not a spilled temp), and both BD00
  * adds are written BD00-first. Residue: the last 6 words rotate t2/t4/t5 -> t3/t5/t6. */
-s32 func_80105284(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80105284(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 *temp_t0;
     f32 sp78;
     Vector sp6C;
@@ -2210,45 +2334,45 @@ s32 func_80105284(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
     temp_t0 = arg0->scale;
     sp78 = 1.1f;
-    sp54.x = BD00.unk14;
+    sp54.x = BD00.fwdX;
     sp54.y = 0.0f;
-    sp54.z = BD00.unk18;
+    sp54.z = BD00.fwdZ;
     sp6C.x = arg0->kirbyGroundPath[0];
     sp6C.y = arg0->kirbyHeadPos[1];
     sp6C.z = arg0->kirbyGroundPath[1];
-    sp60.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp60.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp60.y = temp_t0[0] + arg0->kirbyFootPos[1];
-    sp60.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp60.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp50 = 0;
-    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, &arg1->rec[2].norm,
-                      &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
-        sp50 = 1;
+    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, &arg1->rec[COL_WALL_FRONT].norm,
+                      &arg1->rec[COL_WALL_FRONT].tri, &arg1->rec[COL_WALL_FRONT].type) != 0) {
+        sp50 = COLF_WALL_F;
     }
     sp6C.y = arg0->kirbyHeight[1];
     sp60.y = temp_t0[2] + arg0->kirbyFootPos[1];
     if (func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) {
-        if ((sp50 == 0) || ((sp3C != arg1->rec[2].norm) && (sp4C < sp78))) {
+        if ((sp50 == 0) || ((sp3C != arg1->rec[COL_WALL_FRONT].norm) && (sp4C < sp78))) {
             D_8012BD34 = sp40;
-            sp50 = 4;
-            arg1->rec[2].norm = sp3C;
-            arg1->rec[2].tri = sp38;
-            arg1->rec[2].type = sp34;
+            sp50 = COLF_WALL_F_FOOT;
+            arg1->rec[COL_WALL_FRONT].norm = sp3C;
+            arg1->rec[COL_WALL_FRONT].tri = sp38;
+            arg1->rec[COL_WALL_FRONT].type = sp34;
             sp78 = sp4C;
         }
     }
     sp6C.y = arg0->kirbyHeight[0];
     sp60.y = temp_t0[1] + arg0->kirbyFootPos[1];
     if (func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) {
-        if ((sp50 == 0) || ((sp3C != arg1->rec[2].norm) && (sp4C < sp78))) {
+        if ((sp50 == 0) || ((sp3C != arg1->rec[COL_WALL_FRONT].norm) && (sp4C < sp78))) {
             D_8012BD34 = sp40;
-            sp50 = 2;
-            arg1->rec[2].norm = sp3C;
-            arg1->rec[2].tri = sp38;
-            arg1->rec[2].type = sp34;
+            sp50 = COLF_WALL_F_HEAD;
+            arg1->rec[COL_WALL_FRONT].norm = sp3C;
+            arg1->rec[COL_WALL_FRONT].tri = sp38;
+            arg1->rec[COL_WALL_FRONT].type = sp34;
         }
     }
     if (sp50 != 0) {
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) | sp50;
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) | sp50;
         return 1;
     }
     return 0;
@@ -2256,9 +2380,9 @@ s32 func_80105284(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #elif defined(PORT)
 /* Forward wall probe (draft above, completed): three verified segment casts
  * (func_80104D2C) along the BD00 forward basis at ground-path, upper and
- * mid heights, keeping the best hit in rec[2] / D_8012BD34 and folding the
+ * mid heights, keeping the best hit in rec[COL_WALL_FRONT] / D_8012BD34 and folding the
  * winning class (1 / 4 / 2) into the flags word. */
-s32 func_80105284(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80105284(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector start, end, hit;
     struct Normal dir;
     struct Normal *n;
@@ -2268,39 +2392,39 @@ s32 func_80105284(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 t;
     s32 cls = 0;
 
-    dir.x = BD00.unk14;
+    dir.x = BD00.fwdX;
     dir.y = 0.0f;
-    dir.z = BD00.unk18;
+    dir.z = BD00.fwdZ;
     start.x = arg0->kirbyGroundPath[0];
     start.y = arg0->kirbyHeadPos[1];
     start.z = arg0->kirbyGroundPath[1];
-    end.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    end.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     end.y = arg0->kirbyFootPos[1] + arg0->scale[0];
-    end.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    end.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     if (func_80104D2C(&start, &end, (Vector *) &dir, &best, &D_8012BD34,
-                      &arg1->rec[2].norm, &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
-        cls = 1;
+                      &arg1->rec[COL_WALL_FRONT].norm, &arg1->rec[COL_WALL_FRONT].tri, &arg1->rec[COL_WALL_FRONT].type) != 0) {
+        cls = COLF_WALL_F;
     }
     start.y = arg0->kirbyHeight[1];
     end.y = arg0->kirbyFootPos[1] + arg0->scale[2];
     if (func_80104D2C(&start, &end, (Vector *) &dir, &t, &hit, &n, &tri, &type) != 0 &&
-        (cls == 0 || (n != arg1->rec[2].norm && t < best))) {
+        (cls == 0 || (n != arg1->rec[COL_WALL_FRONT].norm && t < best))) {
         D_8012BD34 = hit;
-        cls = 4;
-        arg1->rec[2].norm = n;
-        arg1->rec[2].tri = tri;
-        arg1->rec[2].type = type;
+        cls = COLF_WALL_F_FOOT;
+        arg1->rec[COL_WALL_FRONT].norm = n;
+        arg1->rec[COL_WALL_FRONT].tri = tri;
+        arg1->rec[COL_WALL_FRONT].type = type;
         best = t;
     }
     start.y = arg0->kirbyHeight[0];
     end.y = arg0->kirbyFootPos[1] + arg0->scale[1];
     if (func_80104D2C(&start, &end, (Vector *) &dir, &t, &hit, &n, &tri, &type) != 0 &&
-        (cls == 0 || (n != arg1->rec[2].norm && t < best))) {
+        (cls == 0 || (n != arg1->rec[COL_WALL_FRONT].norm && t < best))) {
         D_8012BD34 = hit;
-        cls = 2;
-        arg1->rec[2].norm = n;
-        arg1->rec[2].tri = tri;
-        arg1->rec[2].type = type;
+        cls = COLF_WALL_F_HEAD;
+        arg1->rec[COL_WALL_FRONT].norm = n;
+        arg1->rec[COL_WALL_FRONT].tri = tri;
+        arg1->rec[COL_WALL_FRONT].type = type;
     }
     if (cls != 0) {
         arg1->flags.hw = (((arg1->flags.w >> 0x13) | cls) * 8) | (arg1->flags.hw & 7);
@@ -2312,28 +2436,28 @@ s32 func_80105284(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80105284.s")
 #endif
 
-s32 func_80105530(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80105530(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector sp54;
     Vector sp48;
     Vector sp3C;
 
-    if (!((arg1->flags.w >> 0x13) & 7)) {
-        sp3C.x = BD00.unk14;
+    if (!((arg1->flags.w >> 0x13) & COLF_WALL_F_ANY)) {
+        sp3C.x = BD00.fwdX;
         sp3C.y = 0.0f;
-        sp3C.z = BD00.unk18;
-        sp54.x = BD00.unkC + arg0->kirbyFootPos[0];
+        sp3C.z = BD00.fwdZ;
+        sp54.x = BD00.headOffX + arg0->kirbyFootPos[0];
         sp54.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-        sp54.z = BD00.unk10 + arg0->kirbyFootPos[2];
-        sp48.x = BD00.unk4 + arg0->kirbyFootPos[0];
+        sp54.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+        sp48.x = BD00.footOffX + arg0->kirbyFootPos[0];
         sp48.y = sp54.y;
-        sp48.z = BD00.unk8 + arg0->kirbyFootPos[2];
-        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[2].norm, &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
-            arg1->flags.f.a |= 1;
+        sp48.z = BD00.footOffZ + arg0->kirbyFootPos[2];
+        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[COL_WALL_FRONT].norm, &arg1->rec[COL_WALL_FRONT].tri, &arg1->rec[COL_WALL_FRONT].type) != 0) {
+            arg1->flags.f.hits |= COLF_WALL_F;
             return 1;
         }
-        sp48.x = BD00.unk24 + arg0->kirbyFootPos[0];
-        sp48.z = BD00.unk28 + arg0->kirbyFootPos[2];
-        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[2].norm, &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
+        sp48.x = BD00.footPushX + arg0->kirbyFootPos[0];
+        sp48.z = BD00.footPushZ + arg0->kirbyFootPos[2];
+        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[COL_WALL_FRONT].norm, &arg1->rec[COL_WALL_FRONT].tri, &arg1->rec[COL_WALL_FRONT].type) != 0) {
             return 1;
         }
     }
@@ -2341,7 +2465,7 @@ s32 func_80105530(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 }
 
 
-s32 func_801056C8(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_801056C8(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 sp54;
     Vector sp48;
     Vector sp3C;
@@ -2350,14 +2474,14 @@ s32 func_801056C8(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp48.x = arg0->kirbyGroundPath[0];
     sp48.y = arg0->kirbyHeadPos[1];
     sp48.z = arg0->kirbyGroundPath[1];
-    sp3C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp3C.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp3C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp3C.z = BD00.unk8 + arg0->kirbyFootPos[2];
-    sp30.x = BD00.unk14;
+    sp3C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
+    sp30.x = BD00.fwdX;
     sp30.y = 0.0f;
-    sp30.z = BD00.unk18;
-    if (func_80104D2C(&sp48, &sp3C, &sp30, 0, &D_8012BD34, &arg1->rec[2].norm, &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
-        arg1->flags.f.a |= 1;
+    sp30.z = BD00.fwdZ;
+    if (func_80104D2C(&sp48, &sp3C, &sp30, 0, &D_8012BD34, &arg1->rec[COL_WALL_FRONT].norm, &arg1->rec[COL_WALL_FRONT].tri, &arg1->rec[COL_WALL_FRONT].type) != 0) {
+        arg1->flags.f.hits |= COLF_WALL_F;
         return 1;
     }
     return 0;
@@ -2491,9 +2615,9 @@ s32 func_801058B8(void *arg0, void *arg1, void *arg2, f32 arg3, void *arg4, f32 
     sp140.unk8 = arg1->unk8;
     sp110 = 0;
 loop_3:
-    sp104 = sp140 + D_8012BD00.unk14;
+    sp104 = sp140 + D_8012BD00.fwdX;
     sp108 = sp144;
-    sp10C = sp148 + D_8012BD00.unk18;
+    sp10C = sp148 + D_8012BD00.fwdZ;
     if (func_801057C4(var_s1, &sp104, &sp140, &sp134) != 0) {
         sp148 = sp13C;
         sp140 = sp134;
@@ -2529,8 +2653,8 @@ loop_3:
             temp_f0_6 = sqrtf((temp_f0_5 * temp_f0_5) + (temp_f24_2 * temp_f24_2) + (temp_f22_2 * temp_f22_2));
             spE4 = sp150;
             temp_f2_3 = 10.0f / temp_f0_6;
-            temp_f12_2 = D_8012BD00.unk14 * arg3;
-            temp_f14_2 = D_8012BD00.unk18 * arg3;
+            temp_f12_2 = D_8012BD00.fwdX * arg3;
+            temp_f14_2 = D_8012BD00.fwdZ * arg3;
             spE0 = temp_f12_2 + sp14C;
             spE8 = temp_f14_2 + sp154;
             spD4 = (temp_f0_5 * temp_f2_3) + sp140 + temp_f12_2;
@@ -2563,7 +2687,7 @@ block_22:
             } else {
                 var_f0 = -10.0f;
             }
-            spC0 = (D_8012BD00.unk14 * var_f0) + sp134;
+            spC0 = (D_8012BD00.fwdX * var_f0) + sp134;
             if (temp_f24_2 > 0.0f) {
                 var_f2_3 = 1.0f;
             } else {
@@ -2572,10 +2696,10 @@ block_22:
             temp_f14_3 = var_f2_3 + sp138;
             spB8 = temp_f14_3;
             spC4 = temp_f14_3;
-            spC8 = (D_8012BD00.unk18 * var_f0) + sp13C;
-            spB4 = (D_8012BD00.unk1C * var_f0) + sp134;
+            spC8 = (D_8012BD00.fwdZ * var_f0) + sp13C;
+            spB4 = (D_8012BD00.backX * var_f0) + sp134;
             spAC = 0;
-            spBC = (D_8012BD00.unk20 * var_f0) + sp13C;
+            spBC = (D_8012BD00.backZ * var_f0) + sp13C;
             var_v1 = spAC;
             if (func_8010423C(&spC0, &spB4, 0, 0, 0, &spEC, 0, 0) != 0) {
                 temp_f0_8 = (spEC->unk0 * sp134) + (spEC->unk4 * sp138) + (spEC->unk8 * sp13C) + spEC->unkC;
@@ -2683,9 +2807,9 @@ s32 func_801058B8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
     for (;;) {
         f32 d;
 
-        far.x = target.x + BD00.unk14;
+        far.x = target.x + BD00.fwdX;
         far.y = target.y;
-        far.z = target.z + BD00.unk18;
+        far.z = target.z + BD00.fwdZ;
         if (func_801057C4(s1, &far, &target, &hitP) != 0) {
             target.x = hitP.x;
             target.z = hitP.z;
@@ -2726,8 +2850,8 @@ s32 func_801058B8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
             f32 ddy = target.y - cur.y;
             f32 ddz = target.z - cur.z;
             f32 s = 10.0f / sqrtf((ddx * ddx) + (ddy * ddy) + (ddz * ddz));
-            f32 ox = BD00.unk14 * arg3;
-            f32 oz = BD00.unk18 * arg3;
+            f32 ox = BD00.fwdX * arg3;
+            f32 oz = BD00.fwdZ * arg3;
             f32 lift, dyUnit;
             s32 found = 0;
 
@@ -2749,12 +2873,12 @@ s32 func_801058B8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
             }
             lift = (arg3 > 0.0f) ? 10.0f : -10.0f;
             dyUnit = (ddy > 0.0f) ? 1.0f : -1.0f;
-            front.x = (BD00.unk14 * lift) + hitP.x;
+            front.x = (BD00.fwdX * lift) + hitP.x;
             front.y = hitP.y + dyUnit;
-            front.z = (BD00.unk18 * lift) + hitP.z;
-            back.x = (BD00.unk1C * lift) + hitP.x;
+            front.z = (BD00.fwdZ * lift) + hitP.z;
+            back.x = (BD00.backX * lift) + hitP.x;
             back.y = front.y;
-            back.z = (BD00.unk20 * lift) + hitP.z;
+            back.z = (BD00.backZ * lift) + hitP.z;
             if (pc_probe_423c(&front, &back, NULL, NULL, NULL, &n2, NULL, NULL) != 0) {
                 f32 e = (n2->x * hitP.x) + (n2->y * hitP.y) + (n2->z * hitP.z) + n2->originOffset;
 
@@ -2817,7 +2941,7 @@ s32 func_801058B8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
  * BD00-first while both dot products are written z-term-first -- restoring that
  * order took it from 67/203 to 51/203. Remainder is which of $f4/$f10 each load
  * and sub lands in; mul.s operand order is invariant, so no spelling reaches it. */
-void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_801060C4(struct PositionState *arg0, struct CollisionResult *arg1) {
     s32 func_801058B8(Vector *, Vector *, struct Normal *, f32, Vector *, f32 *, struct Normal **,
                       struct CollisionTriangle **, s32 *);
     struct Normal *sp9C;
@@ -2833,106 +2957,106 @@ void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp54;
     Vector sp48;
 
-    sp8C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp8C.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp8C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp8C.z = BD00.unk8 + arg0->kirbyFootPos[2];
-    sp9C = arg1->rec[2].norm;
-    sp98 = arg1->rec[2].tri;
-    sp70 = arg1->rec[2].type;
-    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[2].norm, -1.0f, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
+    sp8C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
+    sp9C = arg1->rec[COL_WALL_FRONT].norm;
+    sp98 = arg1->rec[COL_WALL_FRONT].tri;
+    sp70 = arg1->rec[COL_WALL_FRONT].type;
+    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[COL_WALL_FRONT].norm, -1.0f, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
     case 0:
-        if ((((sp8C.z - sp80.z) * BD00.unk18) + ((sp8C.x - sp80.x) * BD00.unk14)) < 0.0f) {
-            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
+        if ((((sp8C.z - sp80.z) * BD00.fwdZ) + ((sp8C.x - sp80.x) * BD00.fwdX)) < 0.0f) {
+            arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFF8;
             return;
         }
         sp74 = sp80;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFF8) | COLF_WALL_F;
         break;
     case 1:
         sp74 = sp80;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFF8) | COLF_WALL_F;
         break;
     case 2:
-        sp60 = sp8C.x - BD00.unk34;
-        sp64 = sp8C.y - BD00.unk38;
-        sp68 = sp8C.z - BD00.unk3C;
+        sp60 = sp8C.x - BD00.hitX;
+        sp64 = sp8C.y - BD00.hitY;
+        sp68 = sp8C.z - BD00.hitZ;
         sp6C = sp6C / sqrtf((sp60 * sp60) + (sp64 * sp64) + (sp68 * sp68));
         sp74.x = (sp60 * sp6C) + sp80.x;
         sp74.y = (sp64 * sp6C) + sp80.y;
         sp48.y = sp74.y;
         sp74.z = (sp68 * sp6C) + sp80.z;
-        sp48.x = BD00.unk14 + sp74.x;
-        sp48.z = BD00.unk18 + sp74.z;
+        sp48.x = BD00.fwdX + sp74.x;
+        sp48.z = BD00.fwdZ + sp74.z;
         if ((func_801057C4(sp9C, &sp74, &sp48, &sp54) != 0) &&
-            ((((sp74.z - sp54.z) * BD00.unk18) + ((sp74.x - sp54.x) * BD00.unk14)) > 0.0f)) {
+            ((((sp74.z - sp54.z) * BD00.fwdZ) + ((sp74.x - sp54.x) * BD00.fwdX)) > 0.0f)) {
             sp74.x = sp54.x;
             sp74.z = sp54.z;
         }
         break;
     }
-    arg1->rec[2].norm = sp9C;
-    arg1->rec[2].tri = sp98;
-    arg1->rec[2].type = sp70;
-    arg0->kirbyFootPos[0] = sp74.x - BD00.unk24;
+    arg1->rec[COL_WALL_FRONT].norm = sp9C;
+    arg1->rec[COL_WALL_FRONT].tri = sp98;
+    arg1->rec[COL_WALL_FRONT].type = sp70;
+    arg0->kirbyFootPos[0] = sp74.x - BD00.footPushX;
     arg0->kirbyFootPos[1] = sp74.y - arg0->scale[0];
-    arg0->kirbyFootPos[2] = sp74.z - BD00.unk28;
+    arg0->kirbyFootPos[2] = sp74.z - BD00.footPushZ;
 }
 #elif defined(PORT)
 s32 func_801058B8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vector *arg4,
                   f32 *arg5, struct Normal **arg6, struct CollisionTriangle **arg7, s32 *arg8);
 
-/* Forward wall snap resolver (draft above, completed): re-anchor rec[2]
+/* Forward wall snap resolver (draft above, completed): re-anchor rec[COL_WALL_FRONT]
  * through func_801058B8's wall march (-1.0 side). r=0 keeps the walked
  * point only when it lies ahead of the facing; r=2 extrapolates along the
- * BD00.unk34 motion stamp and lets func_801057C4 clip the point back to
+ * BD00.hitX motion stamp and lets func_801057C4 clip the point back to
  * the wall plane. Kirby's feet are pulled to the resolved point minus the
  * forward bias. */
-void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
-    struct Normal *n = arg1->rec[2].norm;
-    struct CollisionTriangle *tri = arg1->rec[2].tri;
-    s32 type = arg1->rec[2].type;
+void func_801060C4(struct PositionState *arg0, struct CollisionResult *arg1) {
+    struct Normal *n = arg1->rec[COL_WALL_FRONT].norm;
+    struct CollisionTriangle *tri = arg1->rec[COL_WALL_FRONT].tri;
+    s32 type = arg1->rec[COL_WALL_FRONT].type;
     Vector probe, out, fin;
     f32 dist;
     s32 r;
 
-    probe.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    probe.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     probe.y = arg0->kirbyFootPos[1] + arg0->scale[0];
-    probe.z = arg0->kirbyFootPos[2] + BD00.unk8;
-    r = func_801058B8(&D_8012BD34, &probe, arg1->rec[2].norm, -1.0f, &out, &dist, &n, &tri, &type);
+    probe.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
+    r = func_801058B8(&D_8012BD34, &probe, arg1->rec[COL_WALL_FRONT].norm, -1.0f, &out, &dist, &n, &tri, &type);
     fin = out;
     if (r == 0) {
-        if (((probe.x - out.x) * BD00.unk14) + ((probe.z - out.z) * BD00.unk18) < 0.0f) {
+        if (((probe.x - out.x) * BD00.fwdX) + ((probe.z - out.z) * BD00.fwdZ) < 0.0f) {
             arg1->flags.hw = (((arg1->flags.w >> 0x13) & 0xFFF8) * 8) | (arg1->flags.hw & 7);
             return;
         }
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFF8) | 1) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFF8) | COLF_WALL_F) * 8) | (arg1->flags.hw & 7);
     } else if (r == 1) {
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFF8) | 1) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFF8) | COLF_WALL_F) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = probe.x - BD00.unk34;
-        f32 dy = probe.y - BD00.unk38;
-        f32 dz = probe.z - BD00.unk3C;
+        f32 dx = probe.x - BD00.hitX;
+        f32 dy = probe.y - BD00.hitY;
+        f32 dz = probe.z - BD00.hitZ;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         Vector far, clip;
 
         fin.x = (dx * s) + out.x;
         fin.y = (dy * s) + out.y;
         fin.z = (dz * s) + out.z;
-        far.x = fin.x + BD00.unk14;
+        far.x = fin.x + BD00.fwdX;
         far.y = fin.y;
-        far.z = fin.z + BD00.unk18;
+        far.z = fin.z + BD00.fwdZ;
         if (func_801057C4(n, &fin, &far, &clip) != 0 &&
-            ((fin.x - clip.x) * BD00.unk14) + ((fin.z - clip.z) * BD00.unk18) > 0.0f) {
+            ((fin.x - clip.x) * BD00.fwdX) + ((fin.z - clip.z) * BD00.fwdZ) > 0.0f) {
             fin.x = clip.x;
             fin.z = clip.z;
         }
     }
-    arg1->rec[2].norm = n;
-    arg1->rec[2].tri = tri;
-    arg1->rec[2].type = type;
-    arg0->kirbyFootPos[0] = fin.x - BD00.unk24;
+    arg1->rec[COL_WALL_FRONT].norm = n;
+    arg1->rec[COL_WALL_FRONT].tri = tri;
+    arg1->rec[COL_WALL_FRONT].type = type;
+    arg0->kirbyFootPos[0] = fin.x - BD00.footPushX;
     arg0->kirbyFootPos[1] = fin.y - arg0->scale[0];
-    arg0->kirbyFootPos[2] = fin.z - BD00.unk28;
+    arg0->kirbyFootPos[2] = fin.z - BD00.footPushZ;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801060C4.s")
@@ -2941,7 +3065,7 @@ void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #ifdef NON_MATCHING
 // Near match: first 53 insns identical; target keeps `&arg0->scale[0]` in a
 // pointer temp (sp30) that IDO here folds back into direct s0-relative loads.
-s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_801063F0(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 sp7C;
     f32 sp78;
     Vector sp6C;
@@ -2962,42 +3086,42 @@ s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
      * that IDO's folding made harmless on N64 and the PC crashes on. */
     sp30 = (Vector *) &arg0->scale[0];
 #endif
-    sp54.x = BD00.unk1C;
+    sp54.x = BD00.backX;
     sp54.y = 0.0f;
-    sp54.z = BD00.unk20;
+    sp54.z = BD00.backZ;
     sp6C.x = arg0->kirbyHeadPath[0];
     sp6C.y = arg0->kirbyHeadPos[1];
     sp6C.z = arg0->kirbyHeadPath[1];
-    sp60.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp60.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp60.y = arg0->scale[0] + arg0->kirbyFootPos[1];
     sp50 = 0;
-    sp60.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
-        sp50 = 8;
+    sp60.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, &arg1->rec[COL_WALL_BACK].norm, &arg1->rec[COL_WALL_BACK].tri, &arg1->rec[COL_WALL_BACK].type) != 0) {
+        sp50 = COLF_WALL_B;
     }
     sp6C.y = arg0->kirbyHeight[1];
     sp60.y = arg0->kirbyFootPos[1] + sp30->z;
     if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) &&
-            ((sp50 == 0) || ((sp3C != arg1->rec[3].norm) && (sp4C < sp78)))) {
+            ((sp50 == 0) || ((sp3C != arg1->rec[COL_WALL_BACK].norm) && (sp4C < sp78)))) {
         D_8012BD34 = sp40;
-        sp50 = 0x20;
-        arg1->rec[3].norm = sp3C;
-        arg1->rec[3].tri = sp38;
-        arg1->rec[3].type = sp34;
+        sp50 = COLF_WALL_B_FOOT;
+        arg1->rec[COL_WALL_BACK].norm = sp3C;
+        arg1->rec[COL_WALL_BACK].tri = sp38;
+        arg1->rec[COL_WALL_BACK].type = sp34;
         sp78 = sp4C;
     }
     sp6C.y = arg0->kirbyHeight[0];
     sp60.y = arg0->kirbyFootPos[1] + sp30->y;
     if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) &&
-            ((sp50 == 0) || ((sp3C != arg1->rec[3].norm) && (sp4C < sp78)))) {
+            ((sp50 == 0) || ((sp3C != arg1->rec[COL_WALL_BACK].norm) && (sp4C < sp78)))) {
         D_8012BD34 = sp40;
-        sp50 = 0x10;
-        arg1->rec[3].norm = sp3C;
-        arg1->rec[3].tri = sp38;
-        arg1->rec[3].type = sp34;
+        sp50 = COLF_WALL_B_HEAD;
+        arg1->rec[COL_WALL_BACK].norm = sp3C;
+        arg1->rec[COL_WALL_BACK].tri = sp38;
+        arg1->rec[COL_WALL_BACK].type = sp34;
     }
     if (sp50 != 0) {
-        arg1->flags.f.a |= sp50;
+        arg1->flags.f.hits |= sp50;
         return 1;
     }
     return 0;
@@ -3005,35 +3129,35 @@ s32 func_801063F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801063F0.s")
 #endif
-s32 func_8010669C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_8010669C(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector sp54;
     Vector sp48;
     Vector sp3C;
 
-    if (!((arg1->flags.w >> 0x13) & 0x38)) {
-        sp3C.x = BD00.unk1C;
+    if (!((arg1->flags.w >> 0x13) & COLF_WALL_B_ANY)) {
+        sp3C.x = BD00.backX;
         sp3C.y = 0.0f;
-        sp3C.z = BD00.unk20;
-        sp54.x = BD00.unk4 + arg0->kirbyFootPos[0];
+        sp3C.z = BD00.backZ;
+        sp54.x = BD00.footOffX + arg0->kirbyFootPos[0];
         sp54.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-        sp54.z = BD00.unk8 + arg0->kirbyFootPos[2];
-        sp48.x = BD00.unkC + arg0->kirbyFootPos[0];
+        sp54.z = BD00.footOffZ + arg0->kirbyFootPos[2];
+        sp48.x = BD00.headOffX + arg0->kirbyFootPos[0];
         sp48.y = sp54.y;
-        sp48.z = BD00.unk10 + arg0->kirbyFootPos[2];
-        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
-            arg1->flags.f.a |= 8;
+        sp48.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[COL_WALL_BACK].norm, &arg1->rec[COL_WALL_BACK].tri, &arg1->rec[COL_WALL_BACK].type) != 0) {
+            arg1->flags.f.hits |= COLF_WALL_B;
             return 1;
         }
-        sp48.x = BD00.unk2C + arg0->kirbyFootPos[0];
-        sp48.z = BD00.unk30 + arg0->kirbyFootPos[2];
-        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
+        sp48.x = BD00.headPushX + arg0->kirbyFootPos[0];
+        sp48.z = BD00.headPushZ + arg0->kirbyFootPos[2];
+        if (func_8010423C(&sp54, &sp48, &sp3C, 0, &D_8012BD34, &arg1->rec[COL_WALL_BACK].norm, &arg1->rec[COL_WALL_BACK].tri, &arg1->rec[COL_WALL_BACK].type) != 0) {
             return 1;
         }
     }
     return 0;
 }
 
-s32 func_80106834(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80106834(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 sp5C;
     f32 sp58;
     Vector sp4C;
@@ -3043,14 +3167,14 @@ s32 func_80106834(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp4C.x = arg0->kirbyHeadPath[0];
     sp4C.y = arg0->kirbyHeadPos[1];
     sp4C.z = arg0->kirbyHeadPath[1];
-    sp40.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp40.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp40.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp40.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp34.x = BD00.unk1C;
+    sp40.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    sp34.x = BD00.backX;
     sp34.y = 0.0f;
-    sp34.z = BD00.unk20;
-    if (func_80104D2C(&sp4C, &sp40, &sp34, &sp58, &D_8012BD34, &arg1->rec[3].norm, &arg1->rec[3].tri, &arg1->rec[3].type) != 0) {
-        arg1->flags.f.a |= 8;
+    sp34.z = BD00.backZ;
+    if (func_80104D2C(&sp4C, &sp40, &sp34, &sp58, &D_8012BD34, &arg1->rec[COL_WALL_BACK].norm, &arg1->rec[COL_WALL_BACK].tri, &arg1->rec[COL_WALL_BACK].type) != 0) {
+        arg1->flags.f.hits |= COLF_WALL_B;
         return 1;
     }
     return 0;
@@ -3062,13 +3186,13 @@ s32 func_80106834(struct PositionState *arg0, struct UnkBCA0 *arg1) {
    (flipping both multiplies changed nothing) -- the documented mul.s parity floor. */
 #ifdef MIPS_TO_C
 /* FACTORY: 51/203 -- an EXACT CLONE of func_801060C4 (the two listings differ only
- * in the substitution table: rec[2]->rec[3], BD00 unk4/8/14/18/24/28 -> unkC/10/
+ * in the substitution table: rec[COL_WALL_FRONT]->rec[COL_WALL_BACK], BD00 unk4/8/14/18/24/28 -> unkC/10/
  * 1C/20/2C/30, -1.0f -> 1.0f, mask 0xFFF8|1 -> 0xFFC7|8). Ported from that draft
  * and it reproduces the identical residue, which confirms the shape is right:
  * the same systematic $f4 <-> $f10 rotation. Swapping the mul factor order was
  * measured here and made it WORSE (51 -> 58), reconfirming LEVERS mul.s
  * invariance. Note this one is s32 at file scope but sets no $v0. */
-s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80106930(struct PositionState *arg0, struct CollisionResult *arg1) {
     s32 func_801058B8(Vector *, Vector *, struct Normal *, f32, Vector *, f32 *, struct Normal **,
                       struct CollisionTriangle **, s32 *);
     struct Normal *sp9C;
@@ -3084,102 +3208,102 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp54;
     Vector sp48;
 
-    sp8C.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp8C.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp8C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp8C.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp9C = arg1->rec[3].norm;
-    sp98 = arg1->rec[3].tri;
-    sp70 = arg1->rec[3].type;
-    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[3].norm, 1.0f, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
+    sp8C.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    sp9C = arg1->rec[COL_WALL_BACK].norm;
+    sp98 = arg1->rec[COL_WALL_BACK].tri;
+    sp70 = arg1->rec[COL_WALL_BACK].type;
+    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[COL_WALL_BACK].norm, 1.0f, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
     case 0:
-        if ((((sp8C.z - sp80.z) * BD00.unk20) + ((sp8C.x - sp80.x) * BD00.unk1C)) < 0.0f) {
-            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
+        if ((((sp8C.z - sp80.z) * BD00.backZ) + ((sp8C.x - sp80.x) * BD00.backX)) < 0.0f) {
+            arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFC7;
             return;
         }
         sp74 = sp80;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFC7) | COLF_WALL_B;
         break;
     case 1:
         sp74 = sp80;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFC7) | COLF_WALL_B;
         break;
     case 2:
-        sp60 = sp8C.x - BD00.unk34;
-        sp64 = sp8C.y - BD00.unk38;
-        sp68 = sp8C.z - BD00.unk3C;
+        sp60 = sp8C.x - BD00.hitX;
+        sp64 = sp8C.y - BD00.hitY;
+        sp68 = sp8C.z - BD00.hitZ;
         sp6C = sp6C / sqrtf((sp60 * sp60) + (sp64 * sp64) + (sp68 * sp68));
         sp74.x = (sp60 * sp6C) + sp80.x;
         sp74.y = (sp64 * sp6C) + sp80.y;
         sp48.y = sp74.y;
         sp74.z = (sp68 * sp6C) + sp80.z;
-        sp48.x = BD00.unk1C + sp74.x;
-        sp48.z = BD00.unk20 + sp74.z;
+        sp48.x = BD00.backX + sp74.x;
+        sp48.z = BD00.backZ + sp74.z;
         if ((func_801057C4(sp9C, &sp74, &sp48, &sp54) != 0) &&
-            ((((sp74.z - sp54.z) * BD00.unk20) + ((sp74.x - sp54.x) * BD00.unk1C)) > 0.0f)) {
+            ((((sp74.z - sp54.z) * BD00.backZ) + ((sp74.x - sp54.x) * BD00.backX)) > 0.0f)) {
             sp74.x = sp54.x;
             sp74.z = sp54.z;
         }
         break;
     }
-    arg1->rec[3].norm = sp9C;
-    arg1->rec[3].tri = sp98;
-    arg1->rec[3].type = sp70;
-    arg0->kirbyFootPos[0] = sp74.x - BD00.unk2C;
+    arg1->rec[COL_WALL_BACK].norm = sp9C;
+    arg1->rec[COL_WALL_BACK].tri = sp98;
+    arg1->rec[COL_WALL_BACK].type = sp70;
+    arg0->kirbyFootPos[0] = sp74.x - BD00.headPushX;
     arg0->kirbyFootPos[1] = sp74.y - arg0->scale[0];
-    arg0->kirbyFootPos[2] = sp74.z - BD00.unk30;
+    arg0->kirbyFootPos[2] = sp74.z - BD00.headPushZ;
 }
 #elif defined(PORT)
-/* Back wall snap resolver -- func_801060C4's mirror on rec[3]: the
- * BD00.unkC/unk10 probe offsets, +1.0 march side, unk1C/unk20 facing,
+/* Back wall snap resolver -- func_801060C4's mirror on rec[COL_WALL_BACK]: the
+ * BD00.headOffX/unk10 probe offsets, +1.0 march side, unk1C/unk20 facing,
  * mask 0xFFC7 / class 8, unk2C/unk30 bias. Returns the march result
  * (case 2: func_801057C4's result), as the N64 code did. */
-s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
-    struct Normal *n = arg1->rec[3].norm;
-    struct CollisionTriangle *tri = arg1->rec[3].tri;
-    s32 type = arg1->rec[3].type;
+s32 func_80106930(struct PositionState *arg0, struct CollisionResult *arg1) {
+    struct Normal *n = arg1->rec[COL_WALL_BACK].norm;
+    struct CollisionTriangle *tri = arg1->rec[COL_WALL_BACK].tri;
+    s32 type = arg1->rec[COL_WALL_BACK].type;
     Vector probe, out, fin;
     f32 dist;
     s32 r;
 
-    probe.x = arg0->kirbyFootPos[0] + BD00.unkC;
+    probe.x = arg0->kirbyFootPos[0] + BD00.headOffX;
     probe.y = arg0->kirbyFootPos[1] + arg0->scale[0];
-    probe.z = arg0->kirbyFootPos[2] + BD00.unk10;
-    r = func_801058B8(&D_8012BD34, &probe, arg1->rec[3].norm, 1.0f, &out, &dist, &n, &tri, &type);
+    probe.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
+    r = func_801058B8(&D_8012BD34, &probe, arg1->rec[COL_WALL_BACK].norm, 1.0f, &out, &dist, &n, &tri, &type);
     fin = out;
     if (r == 0) {
-        if (((probe.x - out.x) * BD00.unk1C) + ((probe.z - out.z) * BD00.unk20) < 0.0f) {
+        if (((probe.x - out.x) * BD00.backX) + ((probe.z - out.z) * BD00.backZ) < 0.0f) {
             arg1->flags.hw = (((arg1->flags.w >> 0x13) & 0xFFC7) * 8) | (arg1->flags.hw & 7);
             return r;
         }
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFC7) | 8) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFC7) | COLF_WALL_B) * 8) | (arg1->flags.hw & 7);
     } else if (r == 1) {
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFC7) | 8) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFC7) | COLF_WALL_B) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = probe.x - BD00.unk34;
-        f32 dy = probe.y - BD00.unk38;
-        f32 dz = probe.z - BD00.unk3C;
+        f32 dx = probe.x - BD00.hitX;
+        f32 dy = probe.y - BD00.hitY;
+        f32 dz = probe.z - BD00.hitZ;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         Vector far, clip;
 
         fin.x = (dx * s) + out.x;
         fin.y = (dy * s) + out.y;
         fin.z = (dz * s) + out.z;
-        far.x = fin.x + BD00.unk1C;
+        far.x = fin.x + BD00.backX;
         far.y = fin.y;
-        far.z = fin.z + BD00.unk20;
+        far.z = fin.z + BD00.backZ;
         r = func_801057C4(n, &fin, &far, &clip);
         if (r != 0 &&
-            ((fin.x - clip.x) * BD00.unk1C) + ((fin.z - clip.z) * BD00.unk20) > 0.0f) {
+            ((fin.x - clip.x) * BD00.backX) + ((fin.z - clip.z) * BD00.backZ) > 0.0f) {
             fin.x = clip.x;
             fin.z = clip.z;
         }
     }
-    arg1->rec[3].norm = n;
-    arg1->rec[3].tri = tri;
-    arg1->rec[3].type = type;
-    arg0->kirbyFootPos[0] = fin.x - BD00.unk2C;
+    arg1->rec[COL_WALL_BACK].norm = n;
+    arg1->rec[COL_WALL_BACK].tri = tri;
+    arg1->rec[COL_WALL_BACK].type = type;
+    arg0->kirbyFootPos[0] = fin.x - BD00.headPushX;
     arg0->kirbyFootPos[1] = fin.y - arg0->scale[0];
-    arg0->kirbyFootPos[2] = fin.z - BD00.unk30;
+    arg0->kirbyFootPos[2] = fin.z - BD00.headPushZ;
     return r;
 }
 #else
@@ -3189,7 +3313,7 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #ifdef MIPS_TO_C
 /* FACTORY: 243/273, frame/slot-position residue. Control flow, all three
  * func_801039E8 calls, both func_80108858 calls (-1.0f in the INTEGER $a3) and
- * the rec[1] plumbing are all correct; the four Vectors and the scalar set match
+ * the rec[COL_CEILING] plumbing are all correct; the four Vectors and the scalar set match
  * the ROM byte count (76B). What differs is placement: ROM lays locals 0x3C-0x88
  * in a 0x90 frame with a dead word at 0x48 and 0x8C; the draft needs 0x98 and
  * spills ~16B more, so every sp-relative word differs. Measured and rejected:
@@ -3197,7 +3321,7 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
  * dropping them entirely, and block-scoping temp_a2 (no change). This is the
  * decidable-frame class of LEVERS 9/12/13 but no declaration order tried reaches
  * base 0x3C -- pads do not help because IDO eliminates unreferenced locals. */
-s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80106C5C(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector sp80;
     Vector sp74;
     Vector sp68;
@@ -3221,25 +3345,25 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp74.y = arg0->kirbyFootPos[1] + arg0->scale[1];
     sp4C = 0;
     sp74.z = arg0->kirbyFootPos[2];
-    if (func_801039E8(&sp80, &sp74, &sp68, 0, &D_8012BD34, &arg1->rec[1].norm, &arg1->rec[1].tri,
-                      &arg1->rec[1].type) != 0) {
-        sp4C = 0x40;
-        sp44 = BD00.unk38;
+    if (func_801039E8(&sp80, &sp74, &sp68, 0, &D_8012BD34, &arg1->rec[COL_CEILING].norm, &arg1->rec[COL_CEILING].tri,
+                      &arg1->rec[COL_CEILING].type) != 0) {
+        sp4C = COLF_CEIL;
+        sp44 = BD00.hitY;
     }
     sp80.x = arg0->kirbyGroundPath[0];
     sp80.z = arg0->kirbyGroundPath[1];
-    sp74.x = arg0->kirbyFootPos[0] + BD00.unk4;
-    sp74.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    sp74.x = arg0->kirbyFootPos[0] + BD00.footOffX;
+    sp74.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     if (func_801039E8(&sp80, &sp74, &sp68, 0, &sp5C, &sp58, &sp54, &sp50) != 0) {
         sp40 = 0;
         if (sp4C == 0) {
             sp40 = 1;
-            sp3C = -((sp58->x * (sp5C.x - BD00.unk4)) + (sp58->z * (sp5C.z - BD00.unk8)) +
+            sp3C = -((sp58->x * (sp5C.x - BD00.footOffX)) + (sp58->z * (sp5C.z - BD00.footOffZ)) +
                      sp58->originOffset) / sp58->y;
         } else {
-            struct Normal *temp_a2 = arg1->rec[1].norm;
+            struct Normal *temp_a2 = arg1->rec[COL_CEILING].norm;
             if (sp58 != temp_a2) {
-                sp3C = -((sp58->x * (sp5C.x - BD00.unk4)) + (sp58->z * (sp5C.z - BD00.unk8)) +
+                sp3C = -((sp58->x * (sp5C.x - BD00.footOffX)) + (sp58->z * (sp5C.z - BD00.footOffZ)) +
                          sp58->originOffset) / sp58->y;
                 if (sp3C < sp44) {
                                     if (func_80108858(&D_8012BD34, &sp5C, temp_a2, -1.0f) != 0) {
@@ -3250,25 +3374,25 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         }
         if (sp40 != 0) {
             D_8012BD34 = sp5C;
-            sp4C = 0x100;
-            arg1->rec[1].norm = sp58;
-            arg1->rec[1].tri = sp54;
-            arg1->rec[1].type = sp50;
+            sp4C = COLF_CEIL_FOOT;
+            arg1->rec[COL_CEILING].norm = sp58;
+            arg1->rec[COL_CEILING].tri = sp54;
+            arg1->rec[COL_CEILING].type = sp50;
             sp44 = sp3C;
         }
     }
     sp80.x = arg0->kirbyHeadPath[0];
     sp80.z = arg0->kirbyHeadPath[1];
-    sp74.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    sp74.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    sp74.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    sp74.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     if (func_801039E8(&sp80, &sp74, &sp68, 0, &sp5C, &sp58, &sp54, &sp50) != 0) {
         sp40 = 0;
         if (sp4C == 0) {
             sp40 = 1;
         } else {
-            struct Normal *temp_a2 = arg1->rec[1].norm;
+            struct Normal *temp_a2 = arg1->rec[COL_CEILING].norm;
             if ((sp58 != temp_a2) &&
-                ((-((sp58->x * (sp5C.x - BD00.unkC)) + (sp58->z * (sp5C.z - BD00.unk10)) +
+                ((-((sp58->x * (sp5C.x - BD00.headOffX)) + (sp58->z * (sp5C.z - BD00.headOffZ)) +
                     sp58->originOffset) / sp58->y) < sp44)) {
                             if (func_80108858(&D_8012BD34, &sp5C, temp_a2, -1.0f) != 0) {
                     sp40 = 1;
@@ -3277,16 +3401,16 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         }
         if (sp40 != 0) {
             D_8012BD34 = sp5C;
-            sp4C = 0x80;
-            arg1->rec[1].norm = sp58;
-            arg1->rec[1].tri = sp54;
-            arg1->rec[1].type = sp50;
+            sp4C = COLF_CEIL_HEAD;
+            arg1->rec[COL_CEILING].norm = sp58;
+            arg1->rec[COL_CEILING].tri = sp54;
+            arg1->rec[COL_CEILING].type = sp50;
         }
     }
     var_v0 = 0;
     if (sp4C != 0) {
         var_v0 = 1;
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) | sp4C;
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) | sp4C;
     }
     return var_v0;
 }
@@ -3315,8 +3439,8 @@ static s32 pc_probe_39e8(Vector *a, Vector *b, struct Normal *norm, f32 *tOut, V
  * (class 0x40), then two lateral casts along the BD00 basis at the ground
  * and head path points (0x100 / 0x80), each accepted over the incumbent
  * only when its plane sits lower at the cast point and func_80108858
- * agrees; the winner lands in rec[1] / D_8012BD34 and the flags word. */
-s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+ * agrees; the winner lands in rec[COL_CEILING] / D_8012BD34 and the flags word. */
+s32 func_80106C5C(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector start, end, hit;
     struct Normal dir;
     struct Normal *n;
@@ -3335,55 +3459,55 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     end.x = arg0->kirbyFootPos[0];
     end.y = arg0->kirbyFootPos[1] + arg0->scale[1];
     end.z = arg0->kirbyFootPos[2];
-    if (pc_probe_39e8(&start, &end, &dir, NULL, &D_8012BD34, &arg1->rec[1].norm,
-                      &arg1->rec[1].tri, (u32 *) &arg1->rec[1].type) != 0) {
-        cls = 0x40;
-        bestY = BD00.unk38;
+    if (pc_probe_39e8(&start, &end, &dir, NULL, &D_8012BD34, &arg1->rec[COL_CEILING].norm,
+                      &arg1->rec[COL_CEILING].tri, (u32 *) &arg1->rec[COL_CEILING].type) != 0) {
+        cls = COLF_CEIL;
+        bestY = BD00.hitY;
     }
     start.x = arg0->kirbyGroundPath[0];
     start.z = arg0->kirbyGroundPath[1];
-    end.x = arg0->kirbyFootPos[0] + BD00.unk4;
-    end.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    end.x = arg0->kirbyFootPos[0] + BD00.footOffX;
+    end.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     if (pc_probe_39e8(&start, &end, &dir, NULL, &hit, &n, &tri, &type) != 0) {
         s32 accept = 0;
 
         if (cls == 0) {
             accept = 1;
-            planeY = -((n->x * (hit.x - BD00.unk4)) + (n->z * (hit.z - BD00.unk8)) + n->originOffset) / n->y;
-        } else if (n != arg1->rec[1].norm) {
-            planeY = -((n->x * (hit.x - BD00.unk4)) + (n->z * (hit.z - BD00.unk8)) + n->originOffset) / n->y;
+            planeY = -((n->x * (hit.x - BD00.footOffX)) + (n->z * (hit.z - BD00.footOffZ)) + n->originOffset) / n->y;
+        } else if (n != arg1->rec[COL_CEILING].norm) {
+            planeY = -((n->x * (hit.x - BD00.footOffX)) + (n->z * (hit.z - BD00.footOffZ)) + n->originOffset) / n->y;
             if (planeY < bestY) {
-                accept = func_80108858(&D_8012BD34, &hit, arg1->rec[1].norm, -1.0f) != 0;
+                accept = func_80108858(&D_8012BD34, &hit, arg1->rec[COL_CEILING].norm, -1.0f) != 0;
             }
         }
         if (accept) {
             D_8012BD34 = hit;
-            cls = 0x100;
-            arg1->rec[1].norm = n;
-            arg1->rec[1].tri = tri;
-            arg1->rec[1].type = type;
+            cls = COLF_CEIL_FOOT;
+            arg1->rec[COL_CEILING].norm = n;
+            arg1->rec[COL_CEILING].tri = tri;
+            arg1->rec[COL_CEILING].type = type;
             bestY = planeY;
         }
     }
     start.x = arg0->kirbyHeadPath[0];
     start.z = arg0->kirbyHeadPath[1];
-    end.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    end.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    end.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    end.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     if (pc_probe_39e8(&start, &end, &dir, NULL, &hit, &n, &tri, &type) != 0) {
         s32 accept = 0;
 
         if (cls == 0) {
             accept = 1;
-        } else if (n != arg1->rec[1].norm &&
-                   -((n->x * (hit.x - BD00.unkC)) + (n->z * (hit.z - BD00.unk10)) + n->originOffset) / n->y < bestY) {
-            accept = func_80108858(&D_8012BD34, &hit, arg1->rec[1].norm, -1.0f) != 0;
+        } else if (n != arg1->rec[COL_CEILING].norm &&
+                   -((n->x * (hit.x - BD00.headOffX)) + (n->z * (hit.z - BD00.headOffZ)) + n->originOffset) / n->y < bestY) {
+            accept = func_80108858(&D_8012BD34, &hit, arg1->rec[COL_CEILING].norm, -1.0f) != 0;
         }
         if (accept) {
             D_8012BD34 = hit;
-            cls = 0x80;
-            arg1->rec[1].norm = n;
-            arg1->rec[1].tri = tri;
-            arg1->rec[1].type = type;
+            cls = COLF_CEIL_HEAD;
+            arg1->rec[COL_CEILING].norm = n;
+            arg1->rec[COL_CEILING].tri = tri;
+            arg1->rec[COL_CEILING].type = type;
         }
     }
     if (cls != 0) {
@@ -3423,33 +3547,33 @@ s32 func_80107074(void *arg0, void *arg1) {
     s32 var_v1;
     s32 var_v1_2;
 
-    if (!((arg1->unk0 >> 0x13) & 0x1C0)) {
+    if (!((arg1->unk0 >> 0x13) & COLF_CEIL_ANY)) {
         sp58 = 0.0f;
         sp60 = 0.0f;
         sp5C = 1.0f;
-        sp70 = arg0->unk4 + D_8012BD00.unk4;
+        sp70 = arg0->unk4 + D_8012BD00.footOffX;
         sp74 = arg0->unk8 + arg0->unk18;
         sp64 = sp70;
-        sp78 = arg0->unkC + D_8012BD00.unk8;
+        sp78 = arg0->unkC + D_8012BD00.footOffZ;
         sp3C = 0;
         sp68 = arg0->unk8 + arg0->unk14;
         sp6C = sp78;
         var_v1 = sp3C;
         if (func_80103F58(&sp70, &sp64, &sp58, 0, &D_8012BD34, &sp48, arg1 + 0x14, arg1 + 0x10) != 0) {
-            var_v1 = 0x100;
+            var_v1 = COLF_CEIL_FOOT;
             arg1->unk18 = sp48;
             sp38 = -((sp48->unk0 * arg0->unk28) + (sp48->unk8 * arg0->unk30) + sp48->unkC) / sp48->unk4;
         }
-        sp70 = arg0->unk4 + D_8012BD00.unkC;
+        sp70 = arg0->unk4 + D_8012BD00.headOffX;
         sp3C = var_v1;
-        sp78 = arg0->unkC + D_8012BD00.unk10;
+        sp78 = arg0->unkC + D_8012BD00.headOffZ;
         sp64 = sp70;
         sp6C = sp78;
         var_v1_2 = sp3C;
         if ((func_80103F58(&sp70, &sp64, &sp58, 0, &sp4C, &sp48, &sp44, &sp40) != 0) && ((var_v1_2 == 0) || ((-((sp48->unk0 * arg0->unk28) + (sp48->unk8 * arg0->unk30) + sp48->unkC) / sp48->unk4) < sp38))) {
             D_8012BD34.unk0 = sp4C.unk0;
             D_8012BD34.unk4 = sp4C.unk4;
-            var_v1_2 = 0x80;
+            var_v1_2 = COLF_CEIL_HEAD;
             D_8012BD34.unk8 = sp4C.unk8;
             arg1->unk18 = sp48;
             arg1->unk14 = sp44;
@@ -3473,7 +3597,7 @@ static s32 pc_probe_f58(Vector *a, Vector *b, struct Normal *dir2,
  * floor is recorded yet, two short vertical casts at the BD00 lateral
  * offsets (classes 0x100 / 0x80); the second replaces the first only when
  * its plane evaluates lower under the head. */
-s32 func_80107074(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80107074(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector start, end, hit;
     struct Normal dir;
     struct Normal *n;
@@ -3482,36 +3606,36 @@ s32 func_80107074(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 bestY = 0.0f;
     s32 cls = 0;
 
-    if ((arg1->flags.w >> 0x13) & 0x1C0) {
+    if ((arg1->flags.w >> 0x13) & COLF_CEIL_ANY) {
         return 0;
     }
     dir.x = 0.0f;
     dir.y = 1.0f;
     dir.z = 0.0f;
-    start.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    start.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     start.y = arg0->kirbyFootPos[1] + arg0->scale[2];
-    start.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    start.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     end.x = start.x;
     end.y = arg0->kirbyFootPos[1] + arg0->scale[1];
     end.z = start.z;
     if (pc_probe_f58(&start, &end, &dir, NULL, &D_8012BD34, &n,
-                     &arg1->rec[1].tri, &arg1->rec[1].type) != 0) {
-        cls = 0x100;
-        arg1->rec[1].norm = n;
+                     &arg1->rec[COL_CEILING].tri, &arg1->rec[COL_CEILING].type) != 0) {
+        cls = COLF_CEIL_FOOT;
+        arg1->rec[COL_CEILING].norm = n;
         bestY = -((n->x * arg0->kirbyHeadPos[0]) + (n->z * arg0->kirbyHeadPos[2]) + n->originOffset) / n->y;
     }
-    start.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    start.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    start.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    start.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     end.x = start.x;
     end.z = start.z;
     if (pc_probe_f58(&start, &end, &dir, NULL, &hit, &n, &tri, &type) != 0 &&
         (cls == 0 ||
          -((n->x * arg0->kirbyHeadPos[0]) + (n->z * arg0->kirbyHeadPos[2]) + n->originOffset) / n->y < bestY)) {
         D_8012BD34 = hit;
-        cls = 0x80;
-        arg1->rec[1].norm = n;
-        arg1->rec[1].tri = tri;
-        arg1->rec[1].type = type;
+        cls = COLF_CEIL_HEAD;
+        arg1->rec[COL_CEILING].norm = n;
+        arg1->rec[COL_CEILING].tri = tri;
+        arg1->rec[COL_CEILING].type = type;
     }
     if (cls != 0) {
         arg1->flags.hw = (((arg1->flags.w >> 0x13) | cls) * 8) | (arg1->flags.hw & 7);
@@ -3523,7 +3647,7 @@ s32 func_80107074(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80107074.s")
 #endif
 
-s32 func_801072E0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_801072E0(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 sp5C;
     f32 sp58;
     Vector sp4C;
@@ -3540,8 +3664,8 @@ s32 func_801072E0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp34.x = 0.0f;
     sp34.z = 0.0f;
     sp34.y = 1.0f;
-    if (func_801039E8(&sp4C, &sp40, &sp34, &sp58, &D_8012BD34, &arg1->rec[1].norm, &arg1->rec[1].tri, &arg1->rec[1].type) != 0) {
-        arg1->flags.f.a |= 0x40;
+    if (func_801039E8(&sp4C, &sp40, &sp34, &sp58, &D_8012BD34, &arg1->rec[COL_CEILING].norm, &arg1->rec[COL_CEILING].tri, &arg1->rec[COL_CEILING].type) != 0) {
+        arg1->flags.f.hits |= COLF_CEIL;
         return 1;
     }
     return 0;
@@ -3551,14 +3675,14 @@ s32 func_801072E0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 /* FACTORY: 258/264, frame-position residue. The decode is complete and recorded:
  * sp80 is a COPY of the spA4 start vector whose .y alone is lowered to the plane
  * height when the 0x40 flag is clear; the switch on func_80108078 has cases 0/1/2
- * sharing one tail that writes rec[1] back and drops the feet by scale[1]+0.1f;
- * case 2 re-projects along the BD00.unk34 motion stamp and picks the 0x80/0x100
+ * sharing one tail that writes rec[COL_CEILING] back and drops the feet by scale[1]+0.1f;
+ * case 2 re-projects along the BD00.hitX motion stamp and picks the 0x80/0x100
  * class by which side of the facing basis the slide lands on. -1.0f goes in the
  * integer $a3. Residue is placement: ROM saves s0/s1/ra at 0x2C-0x34 with locals
  * 0x38-0xB4 in a 0xB8 frame; the draft needs 0xC8, keeps only one callee-saved
  * register and spills into 0x24/0x28. Measured: collapsing the 12 m2c f32 temps
  * onto the real stack locals took it 264 -> 258 and the frame 0xF0 -> 0xC8. */
-void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_801073C4(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *spB4;
     struct CollisionTriangle *spB0;
     Vector spA4;
@@ -3578,10 +3702,10 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 var_f14;
     s32 var_v1;
 
-    temp_t4 = arg1->rec[1].norm;
+    temp_t4 = arg1->rec[COL_CEILING].norm;
     spB4 = temp_t4;
-    spB0 = arg1->rec[1].tri;
-    sp7C = arg1->rec[1].type;
+    spB0 = arg1->rec[COL_CEILING].tri;
+    sp7C = arg1->rec[COL_CEILING].type;
     spA4.x = arg0->kirbyFootPos[0];
     spA4.y = arg0->kirbyFootPos[1] + arg0->scale[1];
     spA4.z = arg0->kirbyFootPos[2];
@@ -3592,23 +3716,23 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             sp80.y = temp_f0;
         }
     }
-    switch (func_80108078(&D_8012BD34, &sp80, arg1->rec[1].norm, -1.0f, &sp98, &sp78, &spB4, &spB0, &sp7C)) {
+    switch (func_80108078(&D_8012BD34, &sp80, arg1->rec[COL_CEILING].norm, -1.0f, &sp98, &sp78, &spB4, &spB0, &sp7C)) {
     case 0:
         if (spA4.y < sp98.y) {
-            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFE3F;
+            arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFE3F;
             return;
         }
         sp8C = sp98;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFE3F) | COLF_CEIL;
         break;
     case 1:
         sp8C = sp98;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFE3F) | COLF_CEIL;
         break;
     case 2:
-        sp68.x = spA4.x - BD00.unk34;
-        sp68.y = spA4.y - BD00.unk38;
-        sp68.z = spA4.z - BD00.unk3C;
+        sp68.x = spA4.x - BD00.hitX;
+        sp68.y = spA4.y - BD00.hitY;
+        sp68.z = spA4.z - BD00.hitZ;
         sp78 = sp78 / sqrtf((sp68.x * sp68.x) + (sp68.y * sp68.y) + (sp68.z * sp68.z));
         sp38 = sp98.x;
         sp8C.x = (sp68.x * sp78) + sp98.x;
@@ -3619,28 +3743,28 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         if (temp_f12 <= sp3C) {
             temp_f2 = sp8C.z - sp98.z;
             sp8C.y = temp_f12;
-            var_v1 = 0x100;
+            var_v1 = COLF_CEIL_FOOT;
             temp_f0 = sp8C.x - sp38;
-            if (((temp_f0 * BD00.unk14) + (temp_f2 * BD00.unk18)) >= 0.0f) {
-                var_f12 = BD00.unk2C;
-                var_f14 = BD00.unk30;
-                var_v1 = 0x80;
+            if (((temp_f0 * BD00.fwdX) + (temp_f2 * BD00.fwdZ)) >= 0.0f) {
+                var_f12 = BD00.headPushX;
+                var_f14 = BD00.headPushZ;
+                var_v1 = COLF_CEIL_HEAD;
             } else {
-                var_f12 = BD00.unk24;
-                var_f14 = BD00.unk28;
+                var_f12 = BD00.footPushX;
+                var_f14 = BD00.footPushZ;
             }
             if (((temp_f0 * temp_f0) + (temp_f2 * temp_f2)) <=
                 ((var_f12 * var_f12) + (var_f14 * var_f14))) {
-                arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFE3F) | var_v1;
+                arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFE3F) | var_v1;
             }
             break;
         }
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFE3F;
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFE3F;
         return;
     }
-    arg1->rec[1].norm = spB4;
-    arg1->rec[1].tri = spB0;
-    arg1->rec[1].type = sp7C;
+    arg1->rec[COL_CEILING].norm = spB4;
+    arg1->rec[COL_CEILING].tri = spB0;
+    arg1->rec[COL_CEILING].type = sp7C;
     arg0->kirbyFootPos[0] = sp8C.x;
     arg0->kirbyFootPos[1] = (sp8C.y - arg0->scale[1]) - 0.1f;
     arg0->kirbyFootPos[2] = sp8C.z;
@@ -3650,15 +3774,15 @@ s32 func_80108078(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
                   f32 *arg5, struct Normal **arg6, struct CollisionTriangle **arg7, s32 *arg8);
 
 /* Floor snap resolver (draft above, completed): re-anchor the recorded
- * floor (rec[1]) through func_80108078's downward walk from D_8012BD34.
+ * floor (rec[COL_CEILING]) through func_80108078's downward walk from D_8012BD34.
  * r=0/1 keep or adopt the walked point (class 0x40); r=2 extrapolates
- * along the motion since the BD00.unk34 stamp, re-plants on the plane and
+ * along the motion since the BD00.hitX stamp, re-plants on the plane and
  * classes the step 0x100/0x80 by facing when within the lateral bias;
  * otherwise the floor classes are cleared and Kirby's feet are left alone. */
-void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
-    struct Normal *n = arg1->rec[1].norm;
-    struct CollisionTriangle *tri = arg1->rec[1].tri;
-    s32 type = arg1->rec[1].type;
+void func_801073C4(struct PositionState *arg0, struct CollisionResult *arg1) {
+    struct Normal *n = arg1->rec[COL_CEILING].norm;
+    struct CollisionTriangle *tri = arg1->rec[COL_CEILING].tri;
+    s32 type = arg1->rec[COL_CEILING].type;
     Vector probe, out, fin;
     f32 dist;
     s32 r;
@@ -3673,20 +3797,20 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             probe.y = py;
         }
     }
-    r = func_80108078(&D_8012BD34, &probe, arg1->rec[1].norm, -1.0f, &out, &dist, &n, &tri, &type);
+    r = func_80108078(&D_8012BD34, &probe, arg1->rec[COL_CEILING].norm, -1.0f, &out, &dist, &n, &tri, &type);
     fin = out;
     if (r == 0) {
         if (arg0->kirbyFootPos[1] + arg0->scale[1] < out.y) {
             arg1->flags.hw = (((arg1->flags.w >> 0x13) & 0xFE3F) * 8) | (arg1->flags.hw & 7);
             return;
         }
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFE3F) | COLF_CEIL) * 8) | (arg1->flags.hw & 7);
     } else if (r == 1) {
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFE3F) | COLF_CEIL) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = arg0->kirbyFootPos[0] - BD00.unk34;
-        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[1]) - BD00.unk38;
-        f32 dz = arg0->kirbyFootPos[2] - BD00.unk3C;
+        f32 dx = arg0->kirbyFootPos[0] - BD00.hitX;
+        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[1]) - BD00.hitY;
+        f32 dz = arg0->kirbyFootPos[2] - BD00.hitZ;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         f32 py;
 
@@ -3698,16 +3822,16 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             f32 sx = fin.x - out.x;
             f32 sz = fin.z - out.z;
             f32 bx, bz;
-            s32 cls = 0x100;
+            s32 cls = COLF_CEIL_FOOT;
 
             fin.y = py;
-            if ((sx * BD00.unk14) + (sz * BD00.unk18) >= 0.0f) {
-                bx = BD00.unk2C;
-                bz = BD00.unk30;
-                cls = 0x80;
+            if ((sx * BD00.fwdX) + (sz * BD00.fwdZ) >= 0.0f) {
+                bx = BD00.headPushX;
+                bz = BD00.headPushZ;
+                cls = COLF_CEIL_HEAD;
             } else {
-                bx = BD00.unk24;
-                bz = BD00.unk28;
+                bx = BD00.footPushX;
+                bz = BD00.footPushZ;
             }
             if ((sx * sx) + (sz * sz) <= (bx * bx) + (bz * bz)) {
                 arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFE3F) | cls) * 8) | (arg1->flags.hw & 7);
@@ -3717,9 +3841,9 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             return;
         }
     }
-    arg1->rec[1].norm = n;
-    arg1->rec[1].tri = tri;
-    arg1->rec[1].type = type;
+    arg1->rec[COL_CEILING].norm = n;
+    arg1->rec[COL_CEILING].tri = tri;
+    arg1->rec[COL_CEILING].type = type;
     arg0->kirbyFootPos[0] = fin.x;
     arg0->kirbyFootPos[1] = (fin.y - arg0->scale[1]) - 0.1f;
     arg0->kirbyFootPos[2] = fin.z;
@@ -3728,25 +3852,25 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801073C4.s")
 #endif
 
-void func_801077D4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_801077D4(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 temp_f0;
     u32 temp_v0;
     struct Normal *temp_v1;
 
     temp_v0 = arg1->flags.w >> 0x13;
     if (temp_v0 & 0x40) {
-        arg0->kirbyFootPos[0] = BD00.unk34;
-        arg0->kirbyFootPos[1] = (BD00.unk38 - arg0->scale[1]) - 0.1f;
-        arg0->kirbyFootPos[2] = BD00.unk3C;
+        arg0->kirbyFootPos[0] = BD00.hitX;
+        arg0->kirbyFootPos[1] = (BD00.hitY - arg0->scale[1]) - 0.1f;
+        arg0->kirbyFootPos[2] = BD00.hitZ;
         return;
     }
-    temp_v1 = arg1->rec[1].norm;
+    temp_v1 = arg1->rec[COL_CEILING].norm;
     temp_f0 = (-((temp_v1->x * arg0->kirbyFootPos[0]) + (temp_v1->z * arg0->kirbyFootPos[2]) + temp_v1->originOffset) / temp_v1->y) - arg0->scale[1];
     if (temp_f0 < arg0->kirbyFootPos[1]) {
         arg0->kirbyFootPos[1] = temp_f0 - 0.1f;
         return;
     }
-    arg1->flags.f.a = temp_v0 & 0xFE3F;
+    arg1->flags.f.hits = temp_v0 & 0xFE3F;
 }
 
 #ifdef MIPS_TO_C
@@ -3805,27 +3929,27 @@ s32 func_801078A0(void *arg0, void *arg1) {
     sp8C = arg0->unkC;
     var_t1 = sp5C;
     if (func_801039E8(&sp90, &sp84, &sp78, 0, &D_8012BD34, arg1 + 0xC, arg1 + 8, arg1 + 4) != 0) {
-        var_t1 = 0x200;
+        var_t1 = COLF_FLOOR;
         sp58 = 1;
-        sp54 = D_8012BD00.unk38;
+        sp54 = D_8012BD00.hitY;
     } else {
         sp58 = 0;
     }
     sp90 = arg0->unk34;
     sp98 = arg0->unk38;
-    sp84 = arg0->unk4 + D_8012BD00.unk4;
+    sp84 = arg0->unk4 + D_8012BD00.footOffX;
     sp5C = var_t1;
-    sp8C = arg0->unkC + D_8012BD00.unk8;
+    sp8C = arg0->unkC + D_8012BD00.footOffZ;
     var_t1_2 = sp5C;
     if (func_801039E8(&sp90, &sp84, &sp78, 0, &sp6C, &sp68, &sp64, &sp60) != 0) {
         var_t0 = 0;
         if (var_t1_2 == 0) {
             var_t0 = 1;
-            sp4C = -((sp68->unk0 * (sp6C - D_8012BD00.unk4)) + (sp68->unk8 * (sp74 - D_8012BD00.unk8)) + sp68->unkC) / sp68->unk4;
+            sp4C = -((sp68->unk0 * (sp6C - D_8012BD00.footOffX)) + (sp68->unk8 * (sp74 - D_8012BD00.footOffZ)) + sp68->unkC) / sp68->unk4;
         } else {
             temp_a2 = arg1->unkC;
             if (sp68 != temp_a2) {
-                temp_f10 = -((sp68->unk0 * (sp6C - D_8012BD00.unk4)) + (sp68->unk8 * (sp74 - D_8012BD00.unk8)) + sp68->unkC) / sp68->unk4;
+                temp_f10 = -((sp68->unk0 * (sp6C - D_8012BD00.footOffX)) + (sp68->unk8 * (sp74 - D_8012BD00.footOffZ)) + sp68->unkC) / sp68->unk4;
                 sp4C = temp_f10;
                 if (sp54 < temp_f10) {
                     sp50 = 0;
@@ -3840,7 +3964,7 @@ s32 func_801078A0(void *arg0, void *arg1) {
         if (var_t0 != 0) {
             D_8012BD34.unk0 = sp6C.unk0;
             D_8012BD34.unk4 = sp6C.unk4;
-            var_t1_2 = 0x800;
+            var_t1_2 = COLF_FLOOR_FOOT;
             D_8012BD34.unk8 = sp6C.unk8;
             arg1->unkC = sp68;
             arg1->unk8 = sp64;
@@ -3850,19 +3974,19 @@ s32 func_801078A0(void *arg0, void *arg1) {
     }
     sp90 = arg0->unk3C;
     sp98 = arg0->unk40;
-    sp84 = arg0->unk4 + D_8012BD00.unkC;
+    sp84 = arg0->unk4 + D_8012BD00.headOffX;
     sp5C = var_t1_2;
-    sp8C = arg0->unkC + D_8012BD00.unk10;
+    sp8C = arg0->unkC + D_8012BD00.headOffZ;
     var_t1_3 = sp5C;
     if (func_801039E8(&sp90, &sp84, &sp78, 0, &sp6C, &sp68, &sp64, &sp60) != 0) {
         var_t0_2 = 0;
         if (var_t1_3 == 0) {
             var_t0_2 = 1;
-            sp44 = -((sp68->unk0 * (sp6C - D_8012BD00.unkC)) + (sp68->unk8 * (sp74 - D_8012BD00.unk10)) + sp68->unkC) / sp68->unk4;
+            sp44 = -((sp68->unk0 * (sp6C - D_8012BD00.headOffX)) + (sp68->unk8 * (sp74 - D_8012BD00.headOffZ)) + sp68->unkC) / sp68->unk4;
         } else {
             temp_a2_2 = arg1->unkC;
             if (sp68 != temp_a2_2) {
-                temp_f18 = -((sp68->unk0 * (sp6C - D_8012BD00.unkC)) + (sp68->unk8 * (sp74 - D_8012BD00.unk10)) + sp68->unkC) / sp68->unk4;
+                temp_f18 = -((sp68->unk0 * (sp6C - D_8012BD00.headOffX)) + (sp68->unk8 * (sp74 - D_8012BD00.headOffZ)) + sp68->unkC) / sp68->unk4;
                 sp44 = temp_f18;
                 if (sp54 < temp_f18) {
                     sp48 = 0;
@@ -3877,7 +4001,7 @@ s32 func_801078A0(void *arg0, void *arg1) {
         if (var_t0_2 != 0) {
             D_8012BD34.unk0 = sp6C.unk0;
             D_8012BD34.unk4 = sp6C.unk4;
-            var_t1_3 = 0x400;
+            var_t1_3 = COLF_FLOOR_HEAD;
             D_8012BD34.unk8 = sp6C.unk8;
             arg1->unkC = sp68;
             arg1->unk8 = sp64;
@@ -3887,10 +4011,10 @@ s32 func_801078A0(void *arg0, void *arg1) {
     }
     if (sp58 == 0) {
         temp_v0 = arg0 + 0x10;
-        sp90 = arg0->unk4 + D_8012BD00.unk4;
+        sp90 = arg0->unk4 + D_8012BD00.footOffX;
         sp94 = arg0->unk8 + temp_v0->unk4;
         sp84 = sp90;
-        sp98 = arg0->unkC + D_8012BD00.unk8;
+        sp98 = arg0->unkC + D_8012BD00.footOffZ;
         sp5C = var_t1_3;
         sp88 = arg0->unk8 + temp_v0->unk8;
         sp8C = sp98;
@@ -3907,16 +4031,16 @@ block_27:
             if (var_v0_2 != 0) {
                 D_8012BD34.unk0 = sp6C.unk0;
                 D_8012BD34.unk4 = sp6C.unk4;
-                var_t1_4 = 0x800;
+                var_t1_4 = COLF_FLOOR_FOOT;
                 D_8012BD34.unk8 = sp6C.unk8;
                 arg1->unkC = sp68;
                 arg1->unk8 = sp64;
                 arg1->unk4 = sp60;
             }
         }
-        sp90 = arg0->unk4 + D_8012BD00.unkC;
+        sp90 = arg0->unk4 + D_8012BD00.headOffX;
         sp5C = var_t1_4;
-        sp98 = arg0->unkC + D_8012BD00.unk10;
+        sp98 = arg0->unkC + D_8012BD00.headOffZ;
         sp84 = sp90;
         sp8C = sp98;
         var_t1_3 = sp5C;
@@ -3932,7 +4056,7 @@ block_35:
             if (var_v0_3 != 0) {
                 D_8012BD34.unk0 = sp6C.unk0;
                 D_8012BD34.unk4 = sp6C.unk4;
-                var_t1_3 = 0x400;
+                var_t1_3 = COLF_FLOOR_HEAD;
                 D_8012BD34.unk8 = sp6C.unk8;
                 arg1->unkC = sp68;
                 arg1->unk8 = sp64;
@@ -3951,7 +4075,7 @@ block_35:
 /* Ceiling/head probe pass (draft above, via m2c): four upward probes (center,
  * two lateral offsets from the BD00 direction basis, and when the center
  * missed, two short foot-height probes), keeping the nearest ceiling in
- * rec[0] and D_8012BD34, then folding the hit class into the flags word. */
+ * rec[COL_FLOOR] and D_8012BD34, then folding the hit class into the flags word. */
 /* func_80103F58's C is void: the N64 return was its tail call's $v0. This
  * wrapper is its body with the func_80103B58 result kept. */
 static s32 pc_probe_f58(Vector *a, Vector *b, struct Normal *dir2,
@@ -3971,7 +4095,7 @@ static s32 pc_probe_f58(Vector *a, Vector *b, struct Normal *dir2,
     return func_80103B58(tOut, hitOut, nOut, triOut, (u32 *) typeOut);
 }
 
-s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_801078A0(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector head, foot, dir, hit;
     struct Normal *n;
     struct CollisionTriangle *tri;
@@ -3990,93 +4114,93 @@ s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     foot.x = arg0->kirbyFootPos[0];
     foot.y = arg0->kirbyFootPos[1] + arg0->scale[2];
     foot.z = arg0->kirbyFootPos[2];
-    if (pc_probe_39e8(&head, &foot, &dir, NULL, &D_8012BD34, &arg1->rec[0].norm,
-                      &arg1->rec[0].tri, (u32 *) &arg1->rec[0].type) != 0) {
-        cls = 0x200;
+    if (pc_probe_39e8(&head, &foot, &dir, NULL, &D_8012BD34, &arg1->rec[COL_FLOOR].norm,
+                      &arg1->rec[COL_FLOOR].tri, (u32 *) &arg1->rec[COL_FLOOR].type) != 0) {
+        cls = COLF_FLOOR;
         centerHit = 1;
-        best = BD00.unk38;
+        best = BD00.hitY;
     } else {
         centerHit = 0;
     }
     head.x = arg0->kirbyGroundPath[0];
     head.z = arg0->kirbyGroundPath[1];
-    foot.x = arg0->kirbyFootPos[0] + BD00.unk4;
-    foot.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    foot.x = arg0->kirbyFootPos[0] + BD00.footOffX;
+    foot.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     if (pc_probe_39e8(&head, &foot, &dir, NULL, &hit, &n, &tri, (u32 *) &type) != 0) {
         got = 0;
         if (cls == 0) {
             got = 1;
-            best = -((n->x * (hit.x - BD00.unk4)) + (n->z * (hit.z - BD00.unk8)) + n->originOffset) / n->y;
-        } else if (n != arg1->rec[0].norm) {
-            f32 t = -((n->x * (hit.x - BD00.unk4)) + (n->z * (hit.z - BD00.unk8)) + n->originOffset) / n->y;
+            best = -((n->x * (hit.x - BD00.footOffX)) + (n->z * (hit.z - BD00.footOffZ)) + n->originOffset) / n->y;
+        } else if (n != arg1->rec[COL_FLOOR].norm) {
+            f32 t = -((n->x * (hit.x - BD00.footOffX)) + (n->z * (hit.z - BD00.footOffZ)) + n->originOffset) / n->y;
 
             if (best < t) {
                 best = t;
-                got = func_80108858(&D_8012BD34, &hit, arg1->rec[0].norm, 1.0f) != 0;
+                got = func_80108858(&D_8012BD34, &hit, arg1->rec[COL_FLOOR].norm, 1.0f) != 0;
             }
         }
         if (got) {
             D_8012BD34 = hit;
-            cls = 0x800;
-            arg1->rec[0].norm = n;
-            arg1->rec[0].tri = tri;
-            arg1->rec[0].type = type;
+            cls = COLF_FLOOR_FOOT;
+            arg1->rec[COL_FLOOR].norm = n;
+            arg1->rec[COL_FLOOR].tri = tri;
+            arg1->rec[COL_FLOOR].type = type;
         }
     }
     head.x = arg0->kirbyHeadPath[0];
     head.z = arg0->kirbyHeadPath[1];
-    foot.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    foot.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    foot.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    foot.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     if (pc_probe_39e8(&head, &foot, &dir, NULL, &hit, &n, &tri, (u32 *) &type) != 0) {
         got = 0;
         if (cls == 0) {
             got = 1;
-            best = -((n->x * (hit.x - BD00.unkC)) + (n->z * (hit.z - BD00.unk10)) + n->originOffset) / n->y;
-        } else if (n != arg1->rec[0].norm) {
-            f32 t = -((n->x * (hit.x - BD00.unkC)) + (n->z * (hit.z - BD00.unk10)) + n->originOffset) / n->y;
+            best = -((n->x * (hit.x - BD00.headOffX)) + (n->z * (hit.z - BD00.headOffZ)) + n->originOffset) / n->y;
+        } else if (n != arg1->rec[COL_FLOOR].norm) {
+            f32 t = -((n->x * (hit.x - BD00.headOffX)) + (n->z * (hit.z - BD00.headOffZ)) + n->originOffset) / n->y;
 
             if (best < t) {
                 best = t;
-                got = func_80108858(&D_8012BD34, &hit, arg1->rec[0].norm, 1.0f) != 0;
+                got = func_80108858(&D_8012BD34, &hit, arg1->rec[COL_FLOOR].norm, 1.0f) != 0;
             }
         }
         if (got) {
             D_8012BD34 = hit;
-            cls = 0x400;
-            arg1->rec[0].norm = n;
-            arg1->rec[0].tri = tri;
-            arg1->rec[0].type = type;
+            cls = COLF_FLOOR_HEAD;
+            arg1->rec[COL_FLOOR].norm = n;
+            arg1->rec[COL_FLOOR].tri = tri;
+            arg1->rec[COL_FLOOR].type = type;
         }
     }
     if (centerHit == 0) {
-        head.x = foot.x = arg0->kirbyFootPos[0] + BD00.unk4;
+        head.x = foot.x = arg0->kirbyFootPos[0] + BD00.footOffX;
         head.y = arg0->kirbyFootPos[1] + arg0->scale[1];
         foot.y = arg0->kirbyFootPos[1] + arg0->scale[2];
-        head.z = foot.z = arg0->kirbyFootPos[2] + BD00.unk8;
+        head.z = foot.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
         if (pc_probe_f58(&head, &foot, &dir, NULL, &hit, &n, &tri, &type) != 0) {
             got = cls == 0
-                || (n != arg1->rec[0].norm
+                || (n != arg1->rec[COL_FLOOR].norm
                     && best < -((n->x * arg0->kirbyHeadPos[0]) + (n->z * arg0->kirbyHeadPos[2]) + n->originOffset) / n->y);
             if (got) {
                 D_8012BD34 = hit;
-                cls = 0x800;
-                arg1->rec[0].norm = n;
-                arg1->rec[0].tri = tri;
-                arg1->rec[0].type = type;
+                cls = COLF_FLOOR_FOOT;
+                arg1->rec[COL_FLOOR].norm = n;
+                arg1->rec[COL_FLOOR].tri = tri;
+                arg1->rec[COL_FLOOR].type = type;
             }
         }
-        head.x = foot.x = arg0->kirbyFootPos[0] + BD00.unkC;
-        head.z = foot.z = arg0->kirbyFootPos[2] + BD00.unk10;
+        head.x = foot.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+        head.z = foot.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
         if (pc_probe_f58(&head, &foot, &dir, NULL, &hit, &n, &tri, &type) != 0) {
             got = cls == 0
-                || (n != arg1->rec[0].norm
+                || (n != arg1->rec[COL_FLOOR].norm
                     && best < -((n->x * arg0->kirbyHeadPos[0]) + (n->z * arg0->kirbyHeadPos[2]) + n->originOffset) / n->y);
             if (got) {
                 D_8012BD34 = hit;
-                cls = 0x400;
-                arg1->rec[0].norm = n;
-                arg1->rec[0].tri = tri;
-                arg1->rec[0].type = type;
+                cls = COLF_FLOOR_HEAD;
+                arg1->rec[COL_FLOOR].norm = n;
+                arg1->rec[COL_FLOOR].tri = tri;
+                arg1->rec[COL_FLOOR].type = type;
             }
         }
     }
@@ -4090,7 +4214,7 @@ s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801078A0.s")
 #endif
 
-s32 func_80107F94(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80107F94(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 sp5C;
     f32 sp58;
     Vector sp4C;
@@ -4107,8 +4231,8 @@ s32 func_80107F94(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp34.x = 0.0f;
     sp34.z = 0.0f;
     sp34.y = -1.0f;
-    if (func_801039E8(&sp4C, &sp40, &sp34, &sp58, &D_8012BD34, &arg1->rec[0].norm, &arg1->rec[0].tri, &arg1->rec[0].type) != 0) {
-        arg1->flags.f.a |= 0x200;
+    if (func_801039E8(&sp4C, &sp40, &sp34, &sp58, &D_8012BD34, &arg1->rec[COL_FLOOR].norm, &arg1->rec[COL_FLOOR].tri, &arg1->rec[COL_FLOOR].type) != 0) {
+        arg1->flags.f.hits |= COLF_FLOOR;
         return 1;
     }
     return 0;
@@ -4841,7 +4965,7 @@ s32 func_80108858(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 272/272, same frame class as func_801073C4 -- these two are the
- * ceiling/floor pair of one routine (rec[0] vs rec[1], scale[2] vs scale[1],
+ * ceiling/floor pair of one routine (rec[COL_FLOOR] vs rec[COL_CEILING], scale[2] vs scale[1],
  * +0.1f vs -0.1f, 1.0f vs -1.0f in the integer $a3, mask 0xF1FF|0x200|0x400|0x800
  * vs 0xFE3F|0x40|0x80|0x100; this one also returns sp78 and zeroes it when the
  * slide overshoots the step limit). The decode is complete. The blocker is shared
@@ -4850,7 +4974,7 @@ s32 func_80108858(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3) {
  * keeps only ONE saved register and needs 0xC8-0xD8. Measured and rejected:
  * splitting the unaddressed Vectors into m2c-style scalars (270 -> worse frame),
  * hoisting var_t0 out of the switch arms (no change). Fix both together. */
-s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_80108E08(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *spB4;
     struct CollisionTriangle *spB0;
     Vector spA4;
@@ -4872,9 +4996,9 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     s32 var_v1;
     s32 var_t0;
 
-    spB4 = arg1->rec[0].norm;
-    spB0 = arg1->rec[0].tri;
-    sp7C = arg1->rec[0].type;
+    spB4 = arg1->rec[COL_FLOOR].norm;
+    spB0 = arg1->rec[COL_FLOOR].tri;
+    sp7C = arg1->rec[COL_FLOOR].type;
     spA4.x = arg0->kirbyFootPos[0];
     spA4.y = arg0->kirbyFootPos[1] + arg0->scale[2];
     spA4.z = arg0->kirbyFootPos[2];
@@ -4887,23 +5011,23 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     }
     sp78 = 1;
     var_t0 = sp78;
-    switch (func_80108078(&D_8012BD34, &sp80, arg1->rec[0].norm, 1.0f, &sp98, &sp74, &spB4, &spB0, &sp7C)) {
+    switch (func_80108078(&D_8012BD34, &sp80, arg1->rec[COL_FLOOR].norm, 1.0f, &sp98, &sp74, &spB4, &spB0, &sp7C)) {
     case 0:
         if (sp98.y < spA4.y) {
-            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xF1FF;
+            arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xF1FF;
             return 0;
         }
         sp8C = sp98;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xF1FF) | COLF_FLOOR;
         break;
     case 1:
         sp8C = sp98;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xF1FF) | COLF_FLOOR;
         break;
     case 2:
-        sp64.x = spA4.x - BD00.unk34;
-        sp64.y = spA4.y - BD00.unk38;
-        sp64.z = spA4.z - BD00.unk3C;
+        sp64.x = spA4.x - BD00.hitX;
+        sp64.y = spA4.y - BD00.hitY;
+        sp64.z = spA4.z - BD00.hitZ;
         sp74 = sp74 / sqrtf((sp64.x * sp64.x) + (sp64.y * sp64.y) + (sp64.z * sp64.z));
         sp8C.x = (sp64.x * sp74) + sp98.x;
         sp8C.y = (sp64.y * sp74) + sp98.y;
@@ -4915,44 +5039,44 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             temp_f0_2 = sp8C.x - sp38;
             sp8C.y = temp_f12;
             temp_f2_2 = sp8C.z - sp98.z;
-            var_v1 = 0x800;
-            if (((temp_f0_2 * BD00.unk14) + (temp_f2_2 * BD00.unk18)) >= 0.0f) {
-                var_f12 = BD00.unk2C;
-                var_f14 = BD00.unk30;
-                var_v1 = 0x400;
+            var_v1 = COLF_FLOOR_FOOT;
+            if (((temp_f0_2 * BD00.fwdX) + (temp_f2_2 * BD00.fwdZ)) >= 0.0f) {
+                var_f12 = BD00.headPushX;
+                var_f14 = BD00.headPushZ;
+                var_v1 = COLF_FLOOR_HEAD;
             } else {
-                var_f12 = BD00.unk24;
-                var_f14 = BD00.unk28;
+                var_f12 = BD00.footPushX;
+                var_f14 = BD00.footPushZ;
             }
             if (((var_f12 * var_f12) + (var_f14 * var_f14)) <
                 ((temp_f0_2 * temp_f0_2) + (temp_f2_2 * temp_f2_2))) {
                 var_t0 = 0;
             } else {
-                arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | var_v1;
+                arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xF1FF) | var_v1;
             }
             break;
         }
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xF1FF;
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xF1FF;
         return 0;
     default:
         break;
     }
-    arg1->rec[0].norm = spB4;
-    arg1->rec[0].tri = spB0;
-    arg1->rec[0].type = sp7C;
+    arg1->rec[COL_FLOOR].norm = spB4;
+    arg1->rec[COL_FLOOR].tri = spB0;
+    arg1->rec[COL_FLOOR].type = sp7C;
     arg0->kirbyFootPos[0] = sp8C.x;
     arg0->kirbyFootPos[1] = (sp8C.y - arg0->scale[2]) + 0.1f;
     arg0->kirbyFootPos[2] = sp8C.z;
     return var_t0;
 }
 #elif defined(PORT)
-/* Ceiling snap resolver -- func_801073C4's mirror on rec[0]: upward walk
+/* Ceiling snap resolver -- func_801073C4's mirror on rec[COL_FLOOR]: upward walk
  * (+1.0), head height (scale[2], +0.1 bias), classes 0x200/0x400/0x800,
  * mask 0xF1FF. Returns 0 when the ceiling anchor was dropped. */
-s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
-    struct Normal *n = arg1->rec[0].norm;
-    struct CollisionTriangle *tri = arg1->rec[0].tri;
-    s32 type = arg1->rec[0].type;
+s32 func_80108E08(struct PositionState *arg0, struct CollisionResult *arg1) {
+    struct Normal *n = arg1->rec[COL_FLOOR].norm;
+    struct CollisionTriangle *tri = arg1->rec[COL_FLOOR].tri;
+    s32 type = arg1->rec[COL_FLOOR].type;
     Vector probe, out, fin;
     f32 dist;
     s32 ret = 1;
@@ -4968,20 +5092,20 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             probe.y = py;
         }
     }
-    r = func_80108078(&D_8012BD34, &probe, arg1->rec[0].norm, 1.0f, &out, &dist, &n, &tri, &type);
+    r = func_80108078(&D_8012BD34, &probe, arg1->rec[COL_FLOOR].norm, 1.0f, &out, &dist, &n, &tri, &type);
     fin = out;
     if (r == 0) {
         if (out.y < arg0->kirbyFootPos[1] + arg0->scale[2]) {
             arg1->flags.hw = (((arg1->flags.w >> 0x13) & 0xF1FF) * 8) | (arg1->flags.hw & 7);
             return 0;
         }
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | COLF_FLOOR) * 8) | (arg1->flags.hw & 7);
     } else if (r == 1) {
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | COLF_FLOOR) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = arg0->kirbyFootPos[0] - BD00.unk34;
-        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[2]) - BD00.unk38;
-        f32 dz = arg0->kirbyFootPos[2] - BD00.unk3C;
+        f32 dx = arg0->kirbyFootPos[0] - BD00.hitX;
+        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[2]) - BD00.hitY;
+        f32 dz = arg0->kirbyFootPos[2] - BD00.hitZ;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         f32 py;
 
@@ -4993,16 +5117,16 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             f32 sx = fin.x - out.x;
             f32 sz = fin.z - out.z;
             f32 bx, bz;
-            s32 cls = 0x800;
+            s32 cls = COLF_FLOOR_FOOT;
 
             fin.y = py;
-            if ((sx * BD00.unk14) + (sz * BD00.unk18) >= 0.0f) {
-                bx = BD00.unk2C;
-                bz = BD00.unk30;
-                cls = 0x400;
+            if ((sx * BD00.fwdX) + (sz * BD00.fwdZ) >= 0.0f) {
+                bx = BD00.headPushX;
+                bz = BD00.headPushZ;
+                cls = COLF_FLOOR_HEAD;
             } else {
-                bx = BD00.unk24;
-                bz = BD00.unk28;
+                bx = BD00.footPushX;
+                bz = BD00.footPushZ;
             }
             if ((bx * bx) + (bz * bz) < (sx * sx) + (sz * sz)) {
                 ret = 0;
@@ -5014,9 +5138,9 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             return 0;
         }
     }
-    arg1->rec[0].norm = n;
-    arg1->rec[0].tri = tri;
-    arg1->rec[0].type = type;
+    arg1->rec[COL_FLOOR].norm = n;
+    arg1->rec[COL_FLOOR].tri = tri;
+    arg1->rec[COL_FLOOR].type = type;
     arg0->kirbyFootPos[0] = fin.x;
     arg0->kirbyFootPos[1] = (fin.y - arg0->scale[2]) + 0.1f;
     arg0->kirbyFootPos[2] = fin.z;
@@ -5029,31 +5153,31 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 void func_80109240(s32 arg0, s32 arg1) {
 }
 
-void func_8010924C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_8010924C(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 temp_f0;
     u32 temp_v0;
     struct Normal *temp_v1;
 
     temp_v0 = arg1->flags.w >> 0x13;
     if (temp_v0 & 0x200) {
-        arg0->kirbyFootPos[0] = BD00.unk34;
-        arg0->kirbyFootPos[1] = (BD00.unk38 - arg0->scale[2]) + 0.1f;
-        arg0->kirbyFootPos[2] = BD00.unk3C;
+        arg0->kirbyFootPos[0] = BD00.hitX;
+        arg0->kirbyFootPos[1] = (BD00.hitY - arg0->scale[2]) + 0.1f;
+        arg0->kirbyFootPos[2] = BD00.hitZ;
         return;
     }
-    temp_v1 = arg1->rec[0].norm;
+    temp_v1 = arg1->rec[COL_FLOOR].norm;
     temp_f0 = (-((temp_v1->x * arg0->kirbyFootPos[0]) + (temp_v1->z * arg0->kirbyFootPos[2]) + temp_v1->originOffset) / temp_v1->y) - arg0->scale[2];
     if (arg0->kirbyFootPos[1] < temp_f0) {
         arg0->kirbyFootPos[1] = temp_f0 + 0.1f;
         return;
     }
-    arg1->flags.f.a = temp_v0 & 0xF1FF;
+    arg1->flags.f.hits = temp_v0 & 0xF1FF;
 }
 
 #ifdef NON_MATCHING
-// 19/123: f16/f18 parity from the `(sp2C.z - sp20.z) * BD00.unk18` multiply on.
+// 19/123: f16/f18 parity from the `(sp2C.z - sp20.z) * BD00.fwdZ` multiply on.
 // Swept all 8 operand/addend orders and 7 named-temp splits; 19 is the floor.
-void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_80109318(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
@@ -5062,22 +5186,22 @@ void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp2C;
     Vector sp20;
 
-    sp4C = arg1->rec[1].norm;
-    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp4C = arg1->rec[COL_CEILING].norm;
+    sp2C.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp2C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
-    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
-    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp2C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
+    sp38.x = BD00.headOffX + arg0->kirbyFootPos[0];
+    sp38.z = BD00.headOffZ + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
     sp38.y = (sp4C->x * (sp2C.x - sp38.x)) + ((sp4C->z * (sp2C.z - sp38.z)) * sp44) + sp2C.y;
-    func_801057C4(arg1->rec[2].norm, &sp2C, &sp38, &sp20);
-    if ((((sp2C.z - sp20.z) * BD00.unk18) + ((sp2C.x - sp20.x) * BD00.unk14)) < 0.0f) {
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
+    func_801057C4(arg1->rec[COL_WALL_FRONT].norm, &sp2C, &sp38, &sp20);
+    if ((((sp2C.z - sp20.z) * BD00.fwdZ) + ((sp2C.x - sp20.x) * BD00.fwdX)) < 0.0f) {
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFF8;
     } else {
-        arg0->kirbyFootPos[0] = sp20.x - BD00.unk24;
-        arg0->kirbyFootPos[2] = sp20.z - BD00.unk28;
+        arg0->kirbyFootPos[0] = sp20.x - BD00.footPushX;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.footPushZ;
         arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[1]) - 0.1f;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFF8) | COLF_WALL_F;
     }
 }
 #else
@@ -5094,7 +5218,7 @@ void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
  * unused SCALAR among used locals, unlike an unused array), worth 41/123 -> 24/123;
  * (2) the facing dot product must be written z-term FIRST, 24 -> 19. Note the y
  * solve really does scale only the z term: `x*dx + z*dz*inv + sp38.y`. */
-void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_80109504(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
@@ -5102,30 +5226,30 @@ void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp2C;
     Vector sp20;
 
-    sp4C = arg1->rec[1].norm;
-    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp4C = arg1->rec[COL_CEILING].norm;
+    sp38.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp38.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
-    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp38.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    sp2C.x = BD00.footOffX + arg0->kirbyFootPos[0];
+    sp2C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
     sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + (sp4C->z * (sp38.z - sp2C.z) * sp44) + sp38.y;
-    func_801057C4(arg1->rec[3].norm, &sp2C, &sp38, &sp20);
-    if ((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C)) < 0.0f) {
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
+    func_801057C4(arg1->rec[COL_WALL_BACK].norm, &sp2C, &sp38, &sp20);
+    if ((((sp38.z - sp20.z) * BD00.backZ) + ((sp38.x - sp20.x) * BD00.backX)) < 0.0f) {
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFC7;
     } else {
-        arg0->kirbyFootPos[0] = sp20.x - BD00.unk2C;
-        arg0->kirbyFootPos[2] = sp20.z - BD00.unk30;
+        arg0->kirbyFootPos[0] = sp20.x - BD00.headPushX;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.headPushZ;
         arg0->kirbyFootPos[1] =
             ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) +
                 sp4C->originOffset) * sp44) - arg0->scale[1]) - 0.1f;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFC7) | COLF_WALL_B;
     }
 }
 #elif defined(PORT)
 /* Draft above is asm-faithful (verified against m2c); under the PORT
- * flags union the .f.a writes land on bits 19-31 as the readers expect. */
-void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+ * flags union the .f.hits writes land on bits 19-31 as the readers expect. */
+void func_80109504(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
@@ -5134,30 +5258,30 @@ void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp2C;
     Vector sp20;
 
-    sp4C = arg1->rec[1].norm;
-    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp4C = arg1->rec[COL_CEILING].norm;
+    sp38.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp38.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
-    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp38.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    sp2C.x = BD00.footOffX + arg0->kirbyFootPos[0];
+    sp2C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
     sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + ((sp4C->z * (sp38.z - sp2C.z)) * sp44) + sp38.y;
-    func_801057C4(arg1->rec[3].norm, &sp2C, &sp38, &sp20);
-    if (((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C))) < 0.0f) {
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
+    func_801057C4(arg1->rec[COL_WALL_BACK].norm, &sp2C, &sp38, &sp20);
+    if (((((sp38.z - sp20.z) * BD00.backZ) + ((sp38.x - sp20.x) * BD00.backX))) < 0.0f) {
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFC7;
     } else {
-        arg0->kirbyFootPos[0] = sp20.x - BD00.unk2C;
-        arg0->kirbyFootPos[2] = sp20.z - BD00.unk30;
+        arg0->kirbyFootPos[0] = sp20.x - BD00.headPushX;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.headPushZ;
         arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[1]) - 0.1f;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFC7) | COLF_WALL_B;
     }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109504.s")
 #endif
 
-void func_801096F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
-    if ((arg1->flags.w >> 0x13) & 0x1C0) {
+void func_801096F0(struct PositionState *arg0, struct CollisionResult *arg1) {
+    if ((arg1->flags.w >> 0x13) & COLF_CEIL_ANY) {
 #ifdef PORT
         /* N64 called func_80105284 with $a0/$a1 still holding this
          * function's args; pass them explicitly. */
@@ -5180,12 +5304,12 @@ void func_801096F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #ifdef MIPS_TO_C
 /* FACTORY: 19/123, $f16 <-> $f18 rotation only -- IDENTICAL residue to func_80109504
  * and func_80109970, which confirms the shape. This is the mirror of func_80109504:
- * sp4C is rec[0].norm, the clip plane is rec[2].norm, scale[2] at the end, mask
+ * sp4C is rec[COL_FLOOR].norm, the clip plane is rec[COL_WALL_FRONT].norm, scale[2] at the end, mask
  * 0xFFF8|1, and BD00 unk4/8 <-> unkC/10, unk1C/20 -> unk14/18, unk2C/30 -> unk24/28.
  * NOTE the trap: the two probe vectors trade STACK SLOTS (the scale[0] head probe
  * moves to 0x2C and the .y-solved one to 0x38) but func_801057C4 is still called
  * a1=0x2C, a2=0x38 -- so the argument order does NOT swap with them. */
-void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_80109784(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
@@ -5193,30 +5317,30 @@ void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp2C;
     Vector sp20;
 
-    sp4C = arg1->rec[0].norm;
-    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp4C = arg1->rec[COL_FLOOR].norm;
+    sp2C.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp2C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
-    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
-    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp2C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
+    sp38.x = BD00.headOffX + arg0->kirbyFootPos[0];
+    sp38.z = BD00.headOffZ + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
     sp38.y = (sp4C->x * (sp2C.x - sp38.x)) + (sp4C->z * (sp2C.z - sp38.z) * sp44) + sp2C.y;
-    func_801057C4(arg1->rec[2].norm, &sp2C, &sp38, &sp20);
-    if ((((sp2C.z - sp20.z) * BD00.unk18) + ((sp2C.x - sp20.x) * BD00.unk14)) < 0.0f) {
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
+    func_801057C4(arg1->rec[COL_WALL_FRONT].norm, &sp2C, &sp38, &sp20);
+    if ((((sp2C.z - sp20.z) * BD00.fwdZ) + ((sp2C.x - sp20.x) * BD00.fwdX)) < 0.0f) {
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFF8;
     } else {
-        arg0->kirbyFootPos[0] = sp20.x - BD00.unk24;
-        arg0->kirbyFootPos[2] = sp20.z - BD00.unk28;
+        arg0->kirbyFootPos[0] = sp20.x - BD00.footPushX;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.footPushZ;
         arg0->kirbyFootPos[1] =
             ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) +
                 sp4C->originOffset) * sp44) - arg0->scale[2]) - 0.1f;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFF8) | COLF_WALL_F;
     }
 }
 #elif defined(PORT)
 /* Draft above is asm-faithful (verified against m2c); under the PORT
- * flags union the .f.a writes land on bits 19-31 as the readers expect. */
-void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+ * flags union the .f.hits writes land on bits 19-31 as the readers expect. */
+void func_80109784(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
@@ -5225,22 +5349,22 @@ void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp2C;
     Vector sp20;
 
-    sp4C = arg1->rec[0].norm;
-    sp2C.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp4C = arg1->rec[COL_FLOOR].norm;
+    sp2C.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp2C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp2C.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp38.x = BD00.unk4 + arg0->kirbyFootPos[0];
-    sp38.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp2C.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    sp38.x = BD00.footOffX + arg0->kirbyFootPos[0];
+    sp38.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
     sp38.y = (sp4C->x * (sp2C.x - sp38.x)) + ((sp4C->z * (sp2C.z - sp38.z)) * sp44) + sp2C.y;
-    func_801057C4(arg1->rec[2].norm, &sp2C, &sp38, &sp20);
-    if (((((sp2C.z - sp20.z) * BD00.unk18) + ((sp2C.x - sp20.x) * BD00.unk14))) < 0.0f) {
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
+    func_801057C4(arg1->rec[COL_WALL_FRONT].norm, &sp2C, &sp38, &sp20);
+    if (((((sp2C.z - sp20.z) * BD00.fwdZ) + ((sp2C.x - sp20.x) * BD00.fwdX))) < 0.0f) {
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFF8;
     } else {
-        arg0->kirbyFootPos[0] = sp20.x - BD00.unk24;
-        arg0->kirbyFootPos[2] = sp20.z - BD00.unk28;
+        arg0->kirbyFootPos[0] = sp20.x - BD00.footPushX;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.footPushZ;
         arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[2]) + 0.1f;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFF8) | COLF_WALL_F;
     }
 }
 #else
@@ -5254,9 +5378,9 @@ void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 #ifdef MIPS_TO_C
 /* FACTORY: 19/123, $f16 <-> $f18 rotation only -- IDENTICAL residue to func_80109504.
  * Cheapest clone of the three: func_80109504 with exactly two substitutions, sp4C
- * taken from rec[0].norm instead of rec[1].norm and scale[2] instead of scale[1].
+ * taken from rec[COL_FLOOR].norm instead of rec[COL_CEILING].norm and scale[2] instead of scale[1].
  * Everything else -- stack layout, BD00 fields, mask 0xFFC7|8 -- is unchanged. */
-void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_80109970(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
@@ -5264,30 +5388,30 @@ void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp2C;
     Vector sp20;
 
-    sp4C = arg1->rec[0].norm;
-    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp4C = arg1->rec[COL_FLOOR].norm;
+    sp38.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp38.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
-    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp38.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    sp2C.x = BD00.footOffX + arg0->kirbyFootPos[0];
+    sp2C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
     sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + (sp4C->z * (sp38.z - sp2C.z) * sp44) + sp38.y;
-    func_801057C4(arg1->rec[3].norm, &sp2C, &sp38, &sp20);
-    if ((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C)) < 0.0f) {
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
+    func_801057C4(arg1->rec[COL_WALL_BACK].norm, &sp2C, &sp38, &sp20);
+    if ((((sp38.z - sp20.z) * BD00.backZ) + ((sp38.x - sp20.x) * BD00.backX)) < 0.0f) {
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFC7;
     } else {
-        arg0->kirbyFootPos[0] = sp20.x - BD00.unk2C;
-        arg0->kirbyFootPos[2] = sp20.z - BD00.unk30;
+        arg0->kirbyFootPos[0] = sp20.x - BD00.headPushX;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.headPushZ;
         arg0->kirbyFootPos[1] =
             ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) +
                 sp4C->originOffset) * sp44) - arg0->scale[2]) - 0.1f;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFC7) | COLF_WALL_B;
     }
 }
 #elif defined(PORT)
 /* Draft above is asm-faithful (verified against m2c); under the PORT
- * flags union the .f.a writes land on bits 19-31 as the readers expect. */
-void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+ * flags union the .f.hits writes land on bits 19-31 as the readers expect. */
+void func_80109970(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
@@ -5296,30 +5420,30 @@ void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     Vector sp2C;
     Vector sp20;
 
-    sp4C = arg1->rec[0].norm;
-    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp4C = arg1->rec[COL_FLOOR].norm;
+    sp38.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp38.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
-    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp38.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    sp2C.x = BD00.footOffX + arg0->kirbyFootPos[0];
+    sp2C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
     sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + ((sp4C->z * (sp38.z - sp2C.z)) * sp44) + sp38.y;
-    func_801057C4(arg1->rec[3].norm, &sp2C, &sp38, &sp20);
-    if (((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C))) < 0.0f) {
-        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
+    func_801057C4(arg1->rec[COL_WALL_BACK].norm, &sp2C, &sp38, &sp20);
+    if (((((sp38.z - sp20.z) * BD00.backZ) + ((sp38.x - sp20.x) * BD00.backX))) < 0.0f) {
+        arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFC7;
     } else {
-        arg0->kirbyFootPos[0] = sp20.x - BD00.unk2C;
-        arg0->kirbyFootPos[2] = sp20.z - BD00.unk30;
+        arg0->kirbyFootPos[0] = sp20.x - BD00.headPushX;
+        arg0->kirbyFootPos[2] = sp20.z - BD00.headPushZ;
         arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[2]) + 0.1f;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xFFC7) | COLF_WALL_B;
     }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109970.s")
 #endif
 
-void func_80109B5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
-    if ((arg1->flags.w >> 0x13) & 0xE00) {
+void func_80109B5C(struct PositionState *arg0, struct CollisionResult *arg1) {
+    if ((arg1->flags.w >> 0x13) & COLF_FLOOR_ANY) {
 #ifdef PORT
         /* N64 register-passthrough call, as above. */
         if ((func_80105284(arg0, arg1) != 0) || (func_80105530(arg0, arg1) != 0)) {
@@ -5334,7 +5458,7 @@ void func_80109B5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     }
 }
 
-s32 func_80109BF0(struct PositionState *arg0, struct UnkBCA0 *arg1, s32 arg2) {
+s32 func_80109BF0(struct PositionState *arg0, struct CollisionResult *arg1, s32 arg2) {
     s32 sp24;
     u32 var_v1;
 
@@ -5371,13 +5495,13 @@ s32 func_80109BF0(struct PositionState *arg0, struct UnkBCA0 *arg1, s32 arg2) {
     }
     var_v1 = arg1->flags.w >> 0x13;
     if (var_v1 != 0) {
-        if ((var_v1 & 0xE00) && (arg1->rec[0].type != 0x14)) {
+        if ((var_v1 & COLF_FLOOR_ANY) && (arg1->rec[COL_FLOOR].type != 0x14)) {
             func_80106C5C(arg0, arg1);
         }
-        if ((var_v1 & 7) && (arg1->rec[2].type != 0x14)) {
+        if ((var_v1 & COLF_WALL_F_ANY) && (arg1->rec[COL_WALL_FRONT].type != 0x14)) {
             func_801063F0(arg0, arg1);
         }
-        if ((var_v1 & 0x38) && (arg1->rec[3].type != 0x14)) {
+        if ((var_v1 & COLF_WALL_B_ANY) && (arg1->rec[COL_WALL_BACK].type != 0x14)) {
             func_80105284(arg0, arg1);
         }
     }
@@ -5404,23 +5528,23 @@ s32 func_80109E44(struct PositionState *arg0) {
     s32 temp_a0;
     u32 var_v1;
 
-    BD00.unk0_80 = 1;
+    BD00.busy = 1;
     temp_a0 = func_80109BF0(arg0, &D_8012BCA0, 8);
-    BD00.unk0_80 = 0;
+    BD00.busy = 0;
     var_v1 = D_8012BCA0.flags.w >> 0x13;
-    if ((var_v1 & 7) && (D_8012BCA0.rec[2].tri->normalType & 4)) {
+    if ((var_v1 & COLF_WALL_F_ANY) && (D_8012BCA0.rec[COL_WALL_FRONT].tri->normalType & 4)) {
         var_v1 &= 0xFFF8;
-        D_8012BCA0.flags.f.a = var_v1;
+        D_8012BCA0.flags.f.hits = var_v1;
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
-    if ((var_v1 & 0x38) && (D_8012BCA0.rec[3].tri->normalType & 4)) {
+    if ((var_v1 & COLF_WALL_B_ANY) && (D_8012BCA0.rec[COL_WALL_BACK].tri->normalType & 4)) {
         var_v1 &= 0xFFC7;
-        D_8012BCA0.flags.f.a = var_v1;
+        D_8012BCA0.flags.f.hits = var_v1;
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
-    if ((var_v1 & 0x1C0) && (D_8012BCA0.rec[1].tri->normalType & 4)) {
+    if ((var_v1 & COLF_CEIL_ANY) && (D_8012BCA0.rec[COL_CEILING].tri->normalType & 4)) {
         var_v1 &= 0xFE3F;
-        D_8012BCA0.flags.f.a = var_v1;
+        D_8012BCA0.flags.f.hits = var_v1;
     }
     return temp_a0;
 }
@@ -5428,13 +5552,13 @@ s32 func_80109E44(struct PositionState *arg0) {
 s32 func_80109F60(struct PositionState *arg0) {
     s32 ret;
 
-    BD00.unk0_80 = 1;
+    BD00.busy = 1;
     ret = func_80109BF0(arg0, &D_8012BCA0, 8);
-    BD00.unk0_80 = 0;
+    BD00.busy = 0;
     return ret;
 }
 
-void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_80109FAC(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector sp4C;
     Vector sp40;
     Vector sp34;
@@ -5445,29 +5569,29 @@ void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 dbz;
 
     if ((arg1->flags.w >> 0x13) & 1) {
-        arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk24;
-        arg0->kirbyFootPos[1] = BD00.unk38 - arg0->scale[0];
-        arg0->kirbyFootPos[2] = BD00.unk3C - BD00.unk28;
+        arg0->kirbyFootPos[0] = BD00.hitX - BD00.footPushX;
+        arg0->kirbyFootPos[1] = BD00.hitY - arg0->scale[0];
+        arg0->kirbyFootPos[2] = BD00.hitZ - BD00.footPushZ;
         return;
     }
-    n = arg1->rec[2].norm;
+    n = arg1->rec[COL_WALL_FRONT].norm;
     sp4C.x = arg0->kirbyGroundPath[0];
     sp4C.y = arg0->kirbyHeadPos[1];
     sp4C.z = arg0->kirbyGroundPath[1];
-    sp40.x = BD00.unk24 + arg0->kirbyFootPos[0];
+    sp40.x = BD00.footPushX + arg0->kirbyFootPos[0];
     sp40.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp40.z = BD00.unk28 + arg0->kirbyFootPos[2];
+    sp40.z = BD00.footPushZ + arg0->kirbyFootPos[2];
     if (func_801057C4(n, &sp4C, &sp40, &sp34) != 0) {
         dbx = sp40.x - sp4C.x;
         dbz = sp40.z - sp4C.z;
         dax = sp34.x - sp4C.x;
         daz = sp34.z - sp4C.z;
         if (((dax * dax) + (daz * daz)) < ((dbx * dbx) + (dbz * dbz))) {
-            arg0->kirbyFootPos[0] = sp34.x - BD00.unk24;
+            arg0->kirbyFootPos[0] = sp34.x - BD00.footPushX;
             arg0->kirbyFootPos[1] = sp34.y - arg0->scale[0];
-            arg0->kirbyFootPos[2] = sp34.z - BD00.unk28;
+            arg0->kirbyFootPos[2] = sp34.z - BD00.footPushZ;
         } else {
-            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
+            arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFF8;
         }
     }
 }
@@ -5476,7 +5600,7 @@ void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
 
 
-void func_8010A138(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+void func_8010A138(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector sp4C;
     Vector sp40;
     Vector sp34;
@@ -5487,29 +5611,29 @@ void func_8010A138(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 dbz;
 
     if ((arg1->flags.w >> 0x13) & 8) {
-        arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk2C;
-        arg0->kirbyFootPos[1] = BD00.unk38 - arg0->scale[0];
-        arg0->kirbyFootPos[2] = BD00.unk3C - BD00.unk30;
+        arg0->kirbyFootPos[0] = BD00.hitX - BD00.headPushX;
+        arg0->kirbyFootPos[1] = BD00.hitY - arg0->scale[0];
+        arg0->kirbyFootPos[2] = BD00.hitZ - BD00.headPushZ;
         return;
     }
     sp4C.x = arg0->kirbyHeadPath[0];
     sp4C.y = arg0->kirbyHeadPos[1];
     sp4C.z = arg0->kirbyHeadPath[1];
-    sp40.x = BD00.unk2C + arg0->kirbyFootPos[0];
+    sp40.x = BD00.headPushX + arg0->kirbyFootPos[0];
     sp40.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp40.z = BD00.unk30 + arg0->kirbyFootPos[2];
-    n = arg1->rec[3].norm;
+    sp40.z = BD00.headPushZ + arg0->kirbyFootPos[2];
+    n = arg1->rec[COL_WALL_BACK].norm;
     if (func_801057C4(n, &sp4C, &sp40, &sp34) != 0) {
         dbx = sp40.x - sp4C.x;
         dbz = sp40.z - sp4C.z;
         dax = sp34.x - sp4C.x;
         daz = sp34.z - sp4C.z;
         if (((dax * dax) + (daz * daz)) < ((dbx * dbx) + (dbz * dbz))) {
-            arg0->kirbyFootPos[0] = sp34.x - BD00.unk2C;
+            arg0->kirbyFootPos[0] = sp34.x - BD00.headPushX;
             arg0->kirbyFootPos[1] = sp34.y - arg0->scale[0];
-            arg0->kirbyFootPos[2] = sp34.z - BD00.unk30;
+            arg0->kirbyFootPos[2] = sp34.z - BD00.headPushZ;
         } else {
-            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
+            arg1->flags.f.hits = (arg1->flags.w >> 0x13) & 0xFFC7;
         }
     }
 }
@@ -5573,8 +5697,8 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
     sp84 = -1.0f;
     var_t1 = sp58;
     if (func_801039E8(&sp98, &sp8C, &sp80, 0, &D_8012BD34, arg1 + 0xC, arg1 + 8, arg1 + 4) != 0) {
-        var_t1 = 0x200;
-        sp54 = D_8012BD00.unk38;
+        var_t1 = COLF_FLOOR;
+        sp54 = D_8012BD00.hitY;
     }
     sp98 = arg0->unk34;
     spA0 = arg0->unk38;
@@ -5586,11 +5710,11 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
         var_t0 = 0;
         if (var_t1_2 == 0) {
             var_t0 = 1;
-            sp4C = -((sp64->unk0 * (sp74 - D_8012BD00.unk4)) + (sp64->unk8 * (sp7C - D_8012BD00.unk8)) + sp64->unkC) / sp64->unk4;
+            sp4C = -((sp64->unk0 * (sp74 - D_8012BD00.footOffX)) + (sp64->unk8 * (sp7C - D_8012BD00.footOffZ)) + sp64->unkC) / sp64->unk4;
         } else {
             temp_a2 = arg1->unkC;
             if (sp64 != temp_a2) {
-                temp_f10 = -((sp64->unk0 * (sp74 - D_8012BD00.unk4)) + (sp64->unk8 * (sp7C - D_8012BD00.unk8)) + sp64->unkC) / sp64->unk4;
+                temp_f10 = -((sp64->unk0 * (sp74 - D_8012BD00.footOffX)) + (sp64->unk8 * (sp7C - D_8012BD00.footOffZ)) + sp64->unkC) / sp64->unk4;
                 sp4C = temp_f10;
                 if (sp54 < temp_f10) {
                     sp50 = 0;
@@ -5605,7 +5729,7 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
         if (var_t0 != 0) {
             D_8012BD34.unk0 = sp74.unk0;
             D_8012BD34.unk4 = sp74.unk4;
-            var_t1_2 = 0x800;
+            var_t1_2 = COLF_FLOOR_FOOT;
             D_8012BD34.unk8 = sp74.unk8;
             arg1->unkC = sp64;
             arg1->unk8 = sp60;
@@ -5623,11 +5747,11 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
         var_t0_2 = 0;
         if (var_t1_3 == 0) {
             var_t0_2 = 1;
-            sp44 = -((sp64->unk0 * (sp74 - D_8012BD00.unkC)) + (sp64->unk8 * (sp7C - D_8012BD00.unk10)) + sp64->unkC) / sp64->unk4;
+            sp44 = -((sp64->unk0 * (sp74 - D_8012BD00.headOffX)) + (sp64->unk8 * (sp7C - D_8012BD00.headOffZ)) + sp64->unkC) / sp64->unk4;
         } else {
             temp_a2_2 = arg1->unkC;
             if (sp64 != temp_a2_2) {
-                temp_f18 = -((sp64->unk0 * (sp74 - D_8012BD00.unkC)) + (sp64->unk8 * (sp7C - D_8012BD00.unk10)) + sp64->unkC) / sp64->unk4;
+                temp_f18 = -((sp64->unk0 * (sp74 - D_8012BD00.headOffX)) + (sp64->unk8 * (sp7C - D_8012BD00.headOffZ)) + sp64->unkC) / sp64->unk4;
                 sp44 = temp_f18;
                 if (sp54 < temp_f18) {
                     sp48 = 0;
@@ -5642,7 +5766,7 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
         if (var_t0_2 != 0) {
             D_8012BD34.unk0 = sp74.unk0;
             D_8012BD34.unk4 = sp74.unk4;
-            var_t1_3 = 0x400;
+            var_t1_3 = COLF_FLOOR_HEAD;
             D_8012BD34.unk8 = sp74.unk8;
             arg1->unkC = sp64;
             arg1->unk8 = sp60;
@@ -5651,10 +5775,10 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
         }
     }
     temp_v0 = arg0 + 0x10;
-    sp98 = arg0->unk4 + D_8012BD00.unk4;
+    sp98 = arg0->unk4 + D_8012BD00.footOffX;
     sp9C = arg0->unk8 + temp_v0->unk4;
     sp8C = sp98;
-    spA0 = arg0->unkC + D_8012BD00.unk8;
+    spA0 = arg0->unkC + D_8012BD00.footOffZ;
     sp58 = var_t1_3;
     sp90 = arg0->unk8 + temp_v0->unk8;
     sp94 = spA0;
@@ -5663,11 +5787,11 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
         var_t0_3 = 0;
         if (var_t1_4 == 0) {
             var_t0_3 = 1;
-            sp3C = -((sp64->unk0 * (sp74 - D_8012BD00.unk4)) + (sp64->unk8 * (sp7C - D_8012BD00.unk8)) + sp64->unkC) / sp64->unk4;
+            sp3C = -((sp64->unk0 * (sp74 - D_8012BD00.footOffX)) + (sp64->unk8 * (sp7C - D_8012BD00.footOffZ)) + sp64->unkC) / sp64->unk4;
         } else {
             temp_a2_3 = arg1->unkC;
             if (sp64 != temp_a2_3) {
-                temp_f4 = -((sp64->unk0 * (sp74 - D_8012BD00.unk4)) + (sp64->unk8 * (sp7C - D_8012BD00.unk8)) + sp64->unkC) / sp64->unk4;
+                temp_f4 = -((sp64->unk0 * (sp74 - D_8012BD00.footOffX)) + (sp64->unk8 * (sp7C - D_8012BD00.footOffZ)) + sp64->unkC) / sp64->unk4;
                 sp3C = temp_f4;
                 if (sp54 < temp_f4) {
                     sp40 = 0;
@@ -5682,7 +5806,7 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
         if (var_t0_3 != 0) {
             D_8012BD34.unk0 = sp74.unk0;
             D_8012BD34.unk4 = sp74.unk4;
-            var_t1_4 = 0x800;
+            var_t1_4 = COLF_FLOOR_FOOT;
             D_8012BD34.unk8 = sp74.unk8;
             arg1->unkC = sp64;
             arg1->unk8 = sp60;
@@ -5690,9 +5814,9 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
             sp54 = sp3C;
         }
     }
-    sp98 = arg0->unk4 + D_8012BD00.unkC;
+    sp98 = arg0->unk4 + D_8012BD00.headOffX;
     sp58 = var_t1_4;
-    spA0 = arg0->unkC + D_8012BD00.unk10;
+    spA0 = arg0->unkC + D_8012BD00.headOffZ;
     sp8C = sp98;
     sp94 = spA0;
     var_t1_5 = sp58;
@@ -5702,7 +5826,7 @@ s32 func_8010A2C4(void *arg0, void *arg1) {
             goto block_35;
         }
         temp_a2_4 = arg1->unkC;
-        if ((sp64 != temp_a2_4) && (sp54 < (-((sp64->unk0 * (sp74 - D_8012BD00.unkC)) + (sp64->unk8 * (sp7C - D_8012BD00.unk10)) + sp64->unkC) / sp64->unk4))) {
+        if ((sp64 != temp_a2_4) && (sp54 < (-((sp64->unk0 * (sp74 - D_8012BD00.headOffX)) + (sp64->unk8 * (sp7C - D_8012BD00.headOffZ)) + sp64->unkC) / sp64->unk4))) {
             var_t1_5 = sp58;
             if (func_80108858(&D_8012BD34, &sp74, temp_a2_4, 0x3F800000) != 0) {
 block_35:
@@ -5712,7 +5836,7 @@ block_35:
         if (var_s1 != 0) {
             D_8012BD34.unk0 = sp74.unk0;
             D_8012BD34.unk4 = sp74.unk4;
-            var_t1_5 = 0x400;
+            var_t1_5 = COLF_FLOOR_HEAD;
             D_8012BD34.unk8 = sp74.unk8;
             arg1->unkC = sp64;
             arg1->unk8 = sp60;
@@ -5730,10 +5854,10 @@ block_35:
 /* Moving-platform ceiling sweep (draft above, completed): endpoints are
  * shifted by the tracked collider's frame delta (func_80112A40 on
  * byteArray[0]); three downward-normal casts at head/ground-path/head-path
- * plus two vertical foot probes update rec[0], each accepted over the
+ * plus two vertical foot probes update rec[COL_FLOOR], each accepted over the
  * incumbent only when its plane sits higher and func_80108858 (+1.0)
  * agrees. Classes 0x200/0x800/0x400 OR into the flags word unmasked. */
-s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_8010A2C4(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector start, end, hit, delta;
     struct Normal dir;
     struct Normal *n;
@@ -5753,10 +5877,10 @@ s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     dir.x = 0.0f;
     dir.y = -1.0f;
     dir.z = 0.0f;
-    if (pc_probe_39e8(&start, &end, &dir, NULL, &D_8012BD34, &arg1->rec[0].norm,
-                      &arg1->rec[0].tri, (u32 *) &arg1->rec[0].type) != 0) {
-        cls = 0x200;
-        best = BD00.unk38;
+    if (pc_probe_39e8(&start, &end, &dir, NULL, &D_8012BD34, &arg1->rec[COL_FLOOR].norm,
+                      &arg1->rec[COL_FLOOR].tri, (u32 *) &arg1->rec[COL_FLOOR].type) != 0) {
+        cls = COLF_FLOOR;
+        best = BD00.hitY;
     }
     start.x = arg0->kirbyGroundPath[0];
     start.z = arg0->kirbyGroundPath[1];
@@ -5767,19 +5891,19 @@ s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
         if (cls == 0) {
             accept = 1;
-            planeY = -((n->x * (hit.x - BD00.unk4)) + (n->z * (hit.z - BD00.unk8)) + n->originOffset) / n->y;
-        } else if (n != arg1->rec[0].norm) {
-            planeY = -((n->x * (hit.x - BD00.unk4)) + (n->z * (hit.z - BD00.unk8)) + n->originOffset) / n->y;
+            planeY = -((n->x * (hit.x - BD00.footOffX)) + (n->z * (hit.z - BD00.footOffZ)) + n->originOffset) / n->y;
+        } else if (n != arg1->rec[COL_FLOOR].norm) {
+            planeY = -((n->x * (hit.x - BD00.footOffX)) + (n->z * (hit.z - BD00.footOffZ)) + n->originOffset) / n->y;
             if (best < planeY) {
-                accept = func_80108858(&D_8012BD34, &hit, arg1->rec[0].norm, 1.0f) != 0;
+                accept = func_80108858(&D_8012BD34, &hit, arg1->rec[COL_FLOOR].norm, 1.0f) != 0;
             }
         }
         if (accept) {
             D_8012BD34 = hit;
-            cls = 0x800;
-            arg1->rec[0].norm = n;
-            arg1->rec[0].tri = tri;
-            arg1->rec[0].type = type;
+            cls = COLF_FLOOR_FOOT;
+            arg1->rec[COL_FLOOR].norm = n;
+            arg1->rec[COL_FLOOR].tri = tri;
+            arg1->rec[COL_FLOOR].type = type;
             best = planeY;
         }
     }
@@ -5792,25 +5916,25 @@ s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
         if (cls == 0) {
             accept = 1;
-            planeY = -((n->x * (hit.x - BD00.unkC)) + (n->z * (hit.z - BD00.unk10)) + n->originOffset) / n->y;
-        } else if (n != arg1->rec[0].norm) {
-            planeY = -((n->x * (hit.x - BD00.unkC)) + (n->z * (hit.z - BD00.unk10)) + n->originOffset) / n->y;
+            planeY = -((n->x * (hit.x - BD00.headOffX)) + (n->z * (hit.z - BD00.headOffZ)) + n->originOffset) / n->y;
+        } else if (n != arg1->rec[COL_FLOOR].norm) {
+            planeY = -((n->x * (hit.x - BD00.headOffX)) + (n->z * (hit.z - BD00.headOffZ)) + n->originOffset) / n->y;
             if (best < planeY) {
-                accept = func_80108858(&D_8012BD34, &hit, arg1->rec[0].norm, 1.0f) != 0;
+                accept = func_80108858(&D_8012BD34, &hit, arg1->rec[COL_FLOOR].norm, 1.0f) != 0;
             }
         }
         if (accept) {
             D_8012BD34 = hit;
-            cls = 0x400;
-            arg1->rec[0].norm = n;
-            arg1->rec[0].tri = tri;
-            arg1->rec[0].type = type;
+            cls = COLF_FLOOR_HEAD;
+            arg1->rec[COL_FLOOR].norm = n;
+            arg1->rec[COL_FLOOR].tri = tri;
+            arg1->rec[COL_FLOOR].type = type;
             best = planeY;
         }
     }
-    start.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    start.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     start.y = arg0->kirbyFootPos[1] + arg0->scale[1];
-    start.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    start.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     end.x = start.x;
     end.y = arg0->kirbyFootPos[1] + arg0->scale[2];
     end.z = start.z;
@@ -5819,24 +5943,24 @@ s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
         if (cls == 0) {
             accept = 1;
-            planeY = -((n->x * (hit.x - BD00.unk4)) + (n->z * (hit.z - BD00.unk8)) + n->originOffset) / n->y;
-        } else if (n != arg1->rec[0].norm) {
-            planeY = -((n->x * (hit.x - BD00.unk4)) + (n->z * (hit.z - BD00.unk8)) + n->originOffset) / n->y;
+            planeY = -((n->x * (hit.x - BD00.footOffX)) + (n->z * (hit.z - BD00.footOffZ)) + n->originOffset) / n->y;
+        } else if (n != arg1->rec[COL_FLOOR].norm) {
+            planeY = -((n->x * (hit.x - BD00.footOffX)) + (n->z * (hit.z - BD00.footOffZ)) + n->originOffset) / n->y;
             if (best < planeY) {
-                accept = func_80108858(&D_8012BD34, &hit, arg1->rec[0].norm, 1.0f) != 0;
+                accept = func_80108858(&D_8012BD34, &hit, arg1->rec[COL_FLOOR].norm, 1.0f) != 0;
             }
         }
         if (accept) {
             D_8012BD34 = hit;
-            cls = 0x800;
-            arg1->rec[0].norm = n;
-            arg1->rec[0].tri = tri;
-            arg1->rec[0].type = type;
+            cls = COLF_FLOOR_FOOT;
+            arg1->rec[COL_FLOOR].norm = n;
+            arg1->rec[COL_FLOOR].tri = tri;
+            arg1->rec[COL_FLOOR].type = type;
             best = planeY;
         }
     }
-    start.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    start.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    start.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    start.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     end.x = start.x;
     end.z = start.z;
     if (pc_probe_ea0(&start, &end, &dir, NULL, &hit, &n, &tri, &type) != 0) {
@@ -5844,16 +5968,16 @@ s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
         if (cls == 0) {
             accept = 1;
-        } else if (n != arg1->rec[0].norm &&
-                   best < -((n->x * (hit.x - BD00.unkC)) + (n->z * (hit.z - BD00.unk10)) + n->originOffset) / n->y) {
-            accept = func_80108858(&D_8012BD34, &hit, arg1->rec[0].norm, 1.0f) != 0;
+        } else if (n != arg1->rec[COL_FLOOR].norm &&
+                   best < -((n->x * (hit.x - BD00.headOffX)) + (n->z * (hit.z - BD00.headOffZ)) + n->originOffset) / n->y) {
+            accept = func_80108858(&D_8012BD34, &hit, arg1->rec[COL_FLOOR].norm, 1.0f) != 0;
         }
         if (accept) {
             D_8012BD34 = hit;
-            cls = 0x400;
-            arg1->rec[0].norm = n;
-            arg1->rec[0].tri = tri;
-            arg1->rec[0].type = type;
+            cls = COLF_FLOOR_HEAD;
+            arg1->rec[COL_FLOOR].norm = n;
+            arg1->rec[COL_FLOOR].tri = tri;
+            arg1->rec[COL_FLOOR].type = type;
         }
     }
     if (cls != 0) {
@@ -5891,16 +6015,16 @@ s32 func_8010AA80(void *arg0, ? arg1) {
     if (func_80103EA0(&sp48, &sp3C, &sp30, 0, 0, 0, 0, 0) != 0) {
         return 1;
     }
-    sp48 = arg0->unk4 + D_8012BD00.unk4;
+    sp48 = arg0->unk4 + D_8012BD00.footOffX;
     sp4C = arg0->unk8 + arg0->unk14;
     sp3C = sp48;
-    sp50 = arg0->unkC + D_8012BD00.unk8;
+    sp50 = arg0->unkC + D_8012BD00.footOffZ;
     sp44 = sp50;
     if (func_80103EA0(&sp48, &sp3C, &sp30, 0, 0, 0, 0, 0) != 0) {
         return 1;
     }
-    sp48 = arg0->unk4 + D_8012BD00.unkC;
-    sp50 = arg0->unkC + D_8012BD00.unk10;
+    sp48 = arg0->unk4 + D_8012BD00.headOffX;
+    sp50 = arg0->unkC + D_8012BD00.headOffZ;
     sp3C = sp48;
     sp44 = sp50;
     if (func_80103EA0(&sp48, &sp3C, &sp30, 0, 0, 0, 0, 0) != 0) {
@@ -5925,12 +6049,12 @@ s32 func_8010AA80(void *arg0, ? arg1) {
  * point and re-plants only its y on the walked plane, classing 0x800/0x400 by facing
  * and returning 0 when the slide exceeds the raw BD00 probe offsets. */
 /* Moving-platform ceiling snap: the platform-sweep counterpart of func_80108E08.
- * A walk from D_8012BD34 up through rec[0]'s plane either lands cleanly (r 0 or 1,
+ * A walk from D_8012BD34 up through rec[COL_FLOOR]'s plane either lands cleanly (r 0 or 1,
  * class 0x200) or clips (r 2), in which case the probe point is kept and only its
  * y is re-planted on the walked plane; the 0x800/0x400 class then says which side
  * of the facing basis the slide went, and a slide longer than the raw BD00 probe
  * offsets reports failure. */
-s32 func_8010AC1C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+s32 func_8010AC1C(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *hitNorm;
     struct CollisionTriangle *hitTri;
     Vector probe;
@@ -5945,9 +6069,9 @@ s32 func_8010AC1C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 limitZ;
     s32 cls;
 
-    hitNorm = arg1->rec[0].norm;
-    hitTri = arg1->rec[0].tri;
-    hitType = arg1->rec[0].type;
+    hitNorm = arg1->rec[COL_FLOOR].norm;
+    hitTri = arg1->rec[COL_FLOOR].tri;
+    hitType = arg1->rec[COL_FLOOR].type;
     probe.x = arg0->kirbyFootPos[0];
     probe.y = arg0->kirbyFootPos[1] + arg0->scale[2];
     probe.z = arg0->kirbyFootPos[2];
@@ -5960,40 +6084,40 @@ s32 func_8010AC1C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         }
     }
     ret = 1;
-    switch (func_80108078(&D_8012BD34, &probe, arg1->rec[0].norm, 1.0f, &walked, &dist, &hitNorm,
+    switch (func_80108078(&D_8012BD34, &probe, arg1->rec[COL_FLOOR].norm, 1.0f, &walked, &dist, &hitNorm,
                           &hitTri, &hitType)) {
     case 0:
     case 1:
         result = walked;
-        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200;
+        arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xF1FF) | COLF_FLOOR;
         break;
     case 2:
         result.x = probe.x;
-        cls = 0x800;
+        cls = COLF_FLOOR_FOOT;
         result.y = probe.y;
         result.z = probe.z;
         slideX = result.x - walked.x;
         slideZ = result.z - walked.z;
         result.y = -((hitNorm->x * result.x) + (hitNorm->z * result.z) + hitNorm->originOffset) /
                    hitNorm->y;
-        if (((slideX * BD00.unk14) + (slideZ * BD00.unk18)) >= 0.0f) {
-            limitX = BD00.unkC;
-            limitZ = BD00.unk10;
-            cls = 0x400;
+        if (((slideX * BD00.fwdX) + (slideZ * BD00.fwdZ)) >= 0.0f) {
+            limitX = BD00.headOffX;
+            limitZ = BD00.headOffZ;
+            cls = COLF_FLOOR_HEAD;
         } else {
-            limitX = BD00.unk4;
-            limitZ = BD00.unk8;
+            limitX = BD00.footOffX;
+            limitZ = BD00.footOffZ;
         }
         if (((limitX * limitX) + (limitZ * limitZ)) < ((slideX * slideX) + (slideZ * slideZ))) {
             ret = 0;
         } else {
-            arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | cls;
+            arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xF1FF) | cls;
         }
         break;
     }
-    arg1->rec[0].norm = hitNorm;
-    arg1->rec[0].tri = hitTri;
-    arg1->rec[0].type = hitType;
+    arg1->rec[COL_FLOOR].norm = hitNorm;
+    arg1->rec[COL_FLOOR].tri = hitTri;
+    arg1->rec[COL_FLOOR].type = hitType;
     arg0->kirbyFootPos[0] = result.x;
     arg0->kirbyFootPos[1] = (result.y - arg0->scale[2]) + 0.1f;
     arg0->kirbyFootPos[2] = result.z;
@@ -6004,11 +6128,11 @@ s32 func_8010AC1C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
  * func_80108E08 but for the platform sweep -- r=0 and r=1 both adopt the
  * walked point (class 0x200); r=2 keeps the probe point, re-planting its y
  * on the walked plane, classing 0x800/0x400 by facing against the raw
- * BD00.unk4/unkC offsets, and reporting 0 when the step exceeded them. */
-s32 func_8010AC1C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
-    struct Normal *n = arg1->rec[0].norm;
-    struct CollisionTriangle *tri = arg1->rec[0].tri;
-    s32 type = arg1->rec[0].type;
+ * BD00.footOffX/unkC offsets, and reporting 0 when the step exceeded them. */
+s32 func_8010AC1C(struct PositionState *arg0, struct CollisionResult *arg1) {
+    struct Normal *n = arg1->rec[COL_FLOOR].norm;
+    struct CollisionTriangle *tri = arg1->rec[COL_FLOOR].tri;
+    s32 type = arg1->rec[COL_FLOOR].type;
     Vector probe, out, fin;
     f32 dist;
     f32 py = 0.0f;
@@ -6025,26 +6149,26 @@ s32 func_8010AC1C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             probe.y = e;
         }
     }
-    r = func_80108078(&D_8012BD34, &probe, arg1->rec[0].norm, 1.0f, &out, &dist, &n, &tri, &type);
+    r = func_80108078(&D_8012BD34, &probe, arg1->rec[COL_FLOOR].norm, 1.0f, &out, &dist, &n, &tri, &type);
     fin = out;
     py = out.y;
     if (r == 0 || r == 1) {
-        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200) * 8) | (arg1->flags.hw & 7);
+        arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | COLF_FLOOR) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
         f32 sx, sz, bx, bz;
-        s32 cls = 0x800;
+        s32 cls = COLF_FLOOR_FOOT;
 
         fin = probe;
         sx = fin.x - out.x;
         sz = fin.z - out.z;
         py = -((n->x * fin.x) + (n->z * fin.z) + n->originOffset) / n->y;
-        if ((sx * BD00.unk14) + (sz * BD00.unk18) >= 0.0f) {
-            bx = BD00.unkC;
-            bz = BD00.unk10;
-            cls = 0x400;
+        if ((sx * BD00.fwdX) + (sz * BD00.fwdZ) >= 0.0f) {
+            bx = BD00.headOffX;
+            bz = BD00.headOffZ;
+            cls = COLF_FLOOR_HEAD;
         } else {
-            bx = BD00.unk4;
-            bz = BD00.unk8;
+            bx = BD00.footOffX;
+            bz = BD00.footOffZ;
         }
         if ((bx * bx) + (bz * bz) < (sx * sx) + (sz * sz)) {
             ret = 0;
@@ -6052,9 +6176,9 @@ s32 func_8010AC1C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
             arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | cls) * 8) | (arg1->flags.hw & 7);
         }
     }
-    arg1->rec[0].norm = n;
-    arg1->rec[0].tri = tri;
-    arg1->rec[0].type = type;
+    arg1->rec[COL_FLOOR].norm = n;
+    arg1->rec[COL_FLOOR].tri = tri;
+    arg1->rec[COL_FLOOR].type = type;
     arg0->kirbyFootPos[0] = fin.x;
     arg0->kirbyFootPos[1] = (py - arg0->scale[2]) + 0.1f;
     arg0->kirbyFootPos[2] = fin.z;
@@ -6068,7 +6192,7 @@ s32 func_8010AEE0(s32 arg0, s32 arg1) {
     return 0;
 }
 
-s32 func_8010AEF0(struct PositionState *arg0, struct UnkBCA0 *arg1, s32 arg2) {
+s32 func_8010AEF0(struct PositionState *arg0, struct CollisionResult *arg1, s32 arg2) {
     s32 sp84;
     struct PositionState sp28;
     u32 sp24;
@@ -6098,15 +6222,15 @@ s32 func_8010AEF0(struct PositionState *arg0, struct UnkBCA0 *arg1, s32 arg2) {
         func_80109FAC(arg0, arg1);
     }
     sp24 = arg1->flags.w >> 0x13;
-    if ((func_80106C5C(arg0, arg1) != 0) && !(sp24 & 0xE00)) {
+    if ((func_80106C5C(arg0, arg1) != 0) && !(sp24 & COLF_FLOOR_ANY)) {
         func_801073C4(arg0, arg1);
         func_801096F0(arg0, arg1);
     }
     if (sp24 != 0) {
-        if ((sp24 & 0x38) && (arg1->rec[3].type != 0x14)) {
+        if ((sp24 & COLF_WALL_B_ANY) && (arg1->rec[COL_WALL_BACK].type != 0x14)) {
             func_80105284(arg0, arg1);
         }
-        if ((sp24 & 7) && (arg1->rec[2].type != 0x14)) {
+        if ((sp24 & COLF_WALL_F_ANY) && (arg1->rec[COL_WALL_FRONT].type != 0x14)) {
             func_801063F0(arg0, arg1);
         }
     }
@@ -6133,23 +6257,23 @@ s32 func_8010B11C(struct PositionState *arg0) {
     s32 temp_a0;
     u32 var_v1;
 
-    BD00.unk0_80 = 1;
+    BD00.busy = 1;
     temp_a0 = func_8010AEF0(arg0, &D_8012BCA0, 8);
-    BD00.unk0_80 = 0;
+    BD00.busy = 0;
     var_v1 = D_8012BCA0.flags.w >> 0x13;
-    if ((var_v1 & 7) && (D_8012BCA0.rec[2].tri->normalType & 4)) {
+    if ((var_v1 & COLF_WALL_F_ANY) && (D_8012BCA0.rec[COL_WALL_FRONT].tri->normalType & 4)) {
         var_v1 &= 0xFFF8;
-        D_8012BCA0.flags.f.a = var_v1;
+        D_8012BCA0.flags.f.hits = var_v1;
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
-    if ((var_v1 & 0x38) && (D_8012BCA0.rec[3].tri->normalType & 4)) {
+    if ((var_v1 & COLF_WALL_B_ANY) && (D_8012BCA0.rec[COL_WALL_BACK].tri->normalType & 4)) {
         var_v1 &= 0xFFC7;
-        D_8012BCA0.flags.f.a = var_v1;
+        D_8012BCA0.flags.f.hits = var_v1;
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
-    if ((var_v1 & 0x1C0) && (D_8012BCA0.rec[1].tri->normalType & 4)) {
+    if ((var_v1 & COLF_CEIL_ANY) && (D_8012BCA0.rec[COL_CEILING].tri->normalType & 4)) {
         var_v1 &= 0xFE3F;
-        D_8012BCA0.flags.f.a = var_v1;
+        D_8012BCA0.flags.f.hits = var_v1;
     }
     return temp_a0;
 }
@@ -6157,9 +6281,9 @@ s32 func_8010B11C(struct PositionState *arg0) {
 s32 func_8010B238(struct PositionState *arg0) {
     s32 ret;
 
-    BD00.unk0_80 = 1;
+    BD00.busy = 1;
     ret = func_8010AEF0(arg0, &D_8012BCA0, 8);
-    BD00.unk0_80 = 0;
+    BD00.busy = 0;
     return ret;
 }
 
@@ -6195,17 +6319,17 @@ s32 func_8010B284(struct PositionState *arg0) {
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x1000;
         return 1;
     }
-    sp4C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp4C.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp4C.y = temp_v0[1] + arg0->kirbyFootPos[1];
     sp40.x = sp4C.x;
-    sp4C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp4C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x4000;
         return 1;
     }
-    sp4C.x = BD00.unkC + arg0->kirbyFootPos[0];
-    sp4C.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp4C.x = BD00.headOffX + arg0->kirbyFootPos[0];
+    sp4C.z = BD00.headOffZ + arg0->kirbyFootPos[2];
     sp40.x = sp4C.x;
     sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
@@ -6243,10 +6367,10 @@ s32 func_8010B284(struct PositionState *arg0) {
 #endif
         return 1;
     }
-    sp4C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp4C.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp4C.y = arg0->scale[1] + arg0->kirbyFootPos[1];
     sp40.x = sp4C.x;
-    sp4C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp4C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
 #ifdef PORT
@@ -6256,8 +6380,8 @@ s32 func_8010B284(struct PositionState *arg0) {
 #endif
         return 1;
     }
-    sp4C.x = BD00.unkC + arg0->kirbyFootPos[0];
-    sp4C.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp4C.x = BD00.headOffX + arg0->kirbyFootPos[0];
+    sp4C.z = BD00.headOffZ + arg0->kirbyFootPos[2];
     sp40.x = sp4C.x;
     sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
@@ -6302,17 +6426,17 @@ s32 func_8010B480(struct PositionState *arg0) {
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x200;
         return 1;
     }
-    sp4C.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp4C.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp4C.y = temp_v0[2] + arg0->kirbyFootPos[1];
     sp40.x = sp4C.x;
-    sp4C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp4C.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x800;
         return 1;
     }
-    sp4C.x = BD00.unkC + arg0->kirbyFootPos[0];
-    sp4C.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp4C.x = BD00.headOffX + arg0->kirbyFootPos[0];
+    sp4C.z = BD00.headOffZ + arg0->kirbyFootPos[2];
     sp40.x = sp4C.x;
     sp40.z = sp4C.z;
     if (func_80103EA0(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
@@ -6344,17 +6468,17 @@ s32 func_8010B480(struct PositionState *arg0) {
         D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x200;
         return 1;
     }
-    a.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    a.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     a.y = arg0->kirbyFootPos[1] + arg0->scale[2];
-    a.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    a.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     b.x = a.x;
     b.z = a.z;
     if (pc_probe_ea0(&a, &b, &dir, NULL, NULL, NULL, NULL, NULL) != 0) {
         D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x800;
         return 1;
     }
-    a.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    a.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    a.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    a.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     b.x = a.x;
     b.z = a.z;
     if (pc_probe_ea0(&a, &b, &dir, NULL, NULL, NULL, NULL, NULL) != 0) {
@@ -6387,21 +6511,21 @@ s32 func_8010B67C(struct PositionState *arg0) {
     temp_v0 = arg0->scale;
     func_80105218(&D_8012BCA0);
     func_8010C608(arg0);
-    sp34.x = BD00.unk14;
+    sp34.x = BD00.fwdX;
     sp34.y = 0.0f;
-    sp34.z = BD00.unk18;
+    sp34.z = BD00.fwdZ;
     sp4C.x = arg0->kirbyFootPos[0];
     sp4C.y = temp_v0[0] + arg0->kirbyFootPos[1];
-    sp40.x = sp4C.x + BD00.unk4;
+    sp40.x = sp4C.x + BD00.footOffX;
     sp4C.z = arg0->kirbyFootPos[2];
-    sp40.z = sp4C.z + BD00.unk8;
+    sp40.z = sp4C.z + BD00.footOffZ;
     sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 8;
         return 1;
     }
-    sp4C.x = sp4C.x + BD00.unkC;
-    sp4C.z = sp4C.z + BD00.unk10;
+    sp4C.x = sp4C.x + BD00.headOffX;
+    sp4C.z = sp4C.z + BD00.headOffZ;
     sp4C.y = temp_v0[2] + arg0->kirbyFootPos[1];
     sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
@@ -6428,14 +6552,14 @@ s32 func_8010B67C(struct PositionState *arg0) {
 
     func_80105218(&D_8012BCA0);
     func_8010C608(arg0);
-    sp34.x = BD00.unk14;
+    sp34.x = BD00.fwdX;
     sp34.y = 0.0f;
-    sp34.z = BD00.unk18;
+    sp34.z = BD00.fwdZ;
     sp4C.x = arg0->kirbyFootPos[0];
     sp4C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp40.x = sp4C.x + BD00.unk4;
+    sp40.x = sp4C.x + BD00.footOffX;
     sp4C.z = arg0->kirbyFootPos[2];
-    sp40.z = sp4C.z + BD00.unk8;
+    sp40.z = sp4C.z + BD00.footOffZ;
     sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
 #ifdef PORT
@@ -6445,8 +6569,8 @@ s32 func_8010B67C(struct PositionState *arg0) {
 #endif
         return 1;
     }
-    sp4C.x = sp4C.x + BD00.unkC;
-    sp4C.z = sp4C.z + BD00.unk10;
+    sp4C.x = sp4C.x + BD00.headOffX;
+    sp4C.z = sp4C.z + BD00.headOffZ;
     sp4C.y = arg0->scale[2] + arg0->kirbyFootPos[1];
     sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
@@ -6488,21 +6612,21 @@ s32 func_8010B860(struct PositionState *arg0) {
     temp_v0 = arg0->scale;
     func_80105218(&D_8012BCA0);
     func_8010C608(arg0);
-    sp34.x = BD00.unk1C;
+    sp34.x = BD00.backX;
     sp34.y = 0.0f;
-    sp34.z = BD00.unk20;
+    sp34.z = BD00.backZ;
     sp4C.x = arg0->kirbyFootPos[0];
     sp4C.y = temp_v0[0] + arg0->kirbyFootPos[1];
-    sp40.x = sp4C.x + BD00.unkC;
+    sp40.x = sp4C.x + BD00.headOffX;
     sp4C.z = arg0->kirbyFootPos[2];
-    sp40.z = sp4C.z + BD00.unk10;
+    sp40.z = sp4C.z + BD00.headOffZ;
     sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x40;
         return 1;
     }
-    sp4C.x = sp4C.x + BD00.unk4;
-    sp4C.z = sp4C.z + BD00.unk8;
+    sp4C.x = sp4C.x + BD00.footOffX;
+    sp4C.z = sp4C.z + BD00.footOffZ;
     sp4C.y = temp_v0[2] + arg0->kirbyFootPos[1];
     sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
@@ -6529,21 +6653,21 @@ s32 func_8010B860(struct PositionState *arg0) {
 
     func_80105218(&D_8012BCA0);
     func_8010C608(arg0);
-    dir.x = BD00.unk1C;
+    dir.x = BD00.backX;
     dir.y = 0.0f;
-    dir.z = BD00.unk20;
+    dir.z = BD00.backZ;
     a.x = arg0->kirbyFootPos[0];
     a.y = arg0->kirbyFootPos[1] + arg0->scale[0];
     a.z = arg0->kirbyFootPos[2];
-    b.x = a.x + BD00.unkC;
+    b.x = a.x + BD00.headOffX;
     b.y = a.y;
-    b.z = a.z + BD00.unk10;
+    b.z = a.z + BD00.headOffZ;
     if (func_8010423C(&a, &b, &dir, NULL, NULL, NULL, NULL, NULL) != 0) {
         D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x40;
         return 1;
     }
-    a.x += BD00.unk4;
-    a.z += BD00.unk8;
+    a.x += BD00.footOffX;
+    a.z += BD00.footOffZ;
     a.y = arg0->kirbyFootPos[1] + arg0->scale[2];
     b.y = a.y;
     if (func_8010423C(&a, &b, &dir, NULL, NULL, NULL, NULL, NULL) != 0) {
@@ -6607,8 +6731,8 @@ s32 func_8010BB08(struct PositionState *arg0) {
 s32 func_8010BBD4(struct PositionState *arg0) {
     u32 var_v1;
 
-    BD00.unk0_80 = 1;
-    BD00.unk44 = arg0->VI_Timer;
+    BD00.busy = 1;
+    BD00.callerTick = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
     if (func_80106C5C(arg0, &D_8012BCA0) != 0) {
@@ -6623,10 +6747,10 @@ s32 func_8010BBD4(struct PositionState *arg0) {
         var_v1 = D_8012BCA0.flags.w >> 0x13;
     }
     if ((var_v1 & 0x1C0) && (D_8012BCB4->normalType & 4)) {
-        D_8012BCA0.flags.f.a = (D_8012BCA4[-1] >> 0x13) & 0xFE3F;
+        D_8012BCA0.flags.f.hits = (D_8012BCA4[-1] >> 0x13) & 0xFE3F;
     }
-    BD00.unk0_80 = 0;
-    arg0->VI_Timer = BD00.unk40;
+    BD00.busy = 0;
+    arg0->VI_Timer = BD00.tick;
     return 0;
 }
 #else
@@ -6709,8 +6833,8 @@ s32 func_8010BFAC(struct PositionState *arg0) {
     u32 pad;
     u32 temp_v1;
 
-    BD00.unk0_80 = 1;
-    BD00.unk44 = arg0->VI_Timer;
+    BD00.busy = 1;
+    BD00.callerTick = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
     if (func_80105284(arg0, &D_8012BCA0) != 0) {
@@ -6736,14 +6860,14 @@ s32 func_8010BFAC(struct PositionState *arg0) {
     }
     temp_v1 = D_8012BCA0.flags.w >> 0x13;
     if ((temp_v1 & 7) && (D_8012BCC0->normalType & 4)) {
-        D_8012BCA0.flags.f.a = temp_v1 & 0xFFF8;
+        D_8012BCA0.flags.f.hits = temp_v1 & 0xFFF8;
         temp_v1 = D_8012BCA0.flags.w >> 0x13;
     }
     if ((temp_v1 & 0x38) && (D_8012BCCC->normalType & 4)) {
-        D_8012BCA0.flags.f.a = (D_8012BCA0.flags.w >> 0x13) & 0xFFC7;
+        D_8012BCA0.flags.f.hits = (D_8012BCA0.flags.w >> 0x13) & 0xFFC7;
     }
-    BD00.unk0_80 = 0;
-    arg0->VI_Timer = BD00.unk40;
+    BD00.busy = 0;
+    arg0->VI_Timer = BD00.tick;
     return 0;
 }
 #else
@@ -6791,7 +6915,7 @@ s32 func_8010C274(void *arg0) {
     f32 sp44;
 
     sp78 = 1.1f;
-    D_8012BD00.unk44 = arg0->unk58;
+    D_8012BD00.callerTick = arg0->unk58;
     func_80105218(&D_8012BCA0);
     D_8012BCA8 = 0;
     D_8012BCB4 = 0;
@@ -6801,52 +6925,52 @@ s32 func_8010C274(void *arg0) {
     sp68 = arg0->unk34;
     sp6C = arg0->unk48;
     sp70 = arg0->unk38;
-    sp5C = arg0->unk4 + D_8012BD00.unk4;
+    sp5C = arg0->unk4 + D_8012BD00.footOffX;
     sp60 = arg0->unk8 + arg0->unk18;
-    sp64 = arg0->unkC + D_8012BD00.unk8;
+    sp64 = arg0->unkC + D_8012BD00.footOffZ;
     if (func_80103930(&sp68, &sp5C, 0, &sp78, &sp50, 0, 0, 0) != 0) {
         D_8012BCA0 = (D_8012BCA0 & 7) | 0x4020;
-        sp50 -= D_8012BD00.unk4;
+        sp50 -= D_8012BD00.footOffX;
         sp54 -= arg0->unk18;
-        sp58 -= D_8012BD00.unk8;
+        sp58 -= D_8012BD00.footOffZ;
     }
     sp68 = arg0->unk3C;
     sp70 = arg0->unk40;
-    sp5C = arg0->unk4 + D_8012BD00.unkC;
-    sp64 = arg0->unkC + D_8012BD00.unk10;
+    sp5C = arg0->unk4 + D_8012BD00.headOffX;
+    sp64 = arg0->unkC + D_8012BD00.headOffZ;
     if ((func_80103930(&sp68, &sp5C, 0, &sp74, &sp44, 0, 0, 0) != 0) && (sp74 < sp78)) {
         D_8012BCA0 = (D_8012BCA0 & 7) | 0x2100;
-        sp50 = sp44 - D_8012BD00.unkC;
+        sp50 = sp44 - D_8012BD00.headOffX;
         sp54 = sp48 - arg0->unk18;
         sp78 = sp74;
-        sp58 = sp4C - D_8012BD00.unk10;
+        sp58 = sp4C - D_8012BD00.headOffZ;
     }
     sp6C = arg0->unk44;
     sp60 = arg0->unk8 + arg0->unk14;
     if ((func_80103930(&sp68, &sp5C, 0, &sp74, &sp44, 0, 0, 0) != 0) && (sp74 < sp78)) {
         D_8012BCA0 = (D_8012BCA0 & 7) | 0x480;
-        sp50 = sp44 - D_8012BD00.unkC;
+        sp50 = sp44 - D_8012BD00.headOffX;
         sp54 = sp48 - arg0->unk14;
         sp78 = sp74;
-        sp58 = sp4C - D_8012BD00.unk10;
+        sp58 = sp4C - D_8012BD00.headOffZ;
     }
     sp68 = arg0->unk34;
     sp70 = arg0->unk38;
-    sp5C = arg0->unk4 + D_8012BD00.unk4;
-    sp64 = arg0->unkC + D_8012BD00.unk8;
+    sp5C = arg0->unk4 + D_8012BD00.footOffX;
+    sp64 = arg0->unkC + D_8012BD00.footOffZ;
     if ((func_80103930(&sp68, &sp5C, 0, &sp74, &sp44, 0, 0, 0) != 0) && (sp74 < sp78)) {
         D_8012BCA0 = (D_8012BCA0 & 7) | 0x810;
-        sp50 = sp44 - D_8012BD00.unk4;
+        sp50 = sp44 - D_8012BD00.footOffX;
         sp54 = sp48 - arg0->unk14;
         sp78 = sp74;
-        sp58 = sp4C - D_8012BD00.unk8;
+        sp58 = sp4C - D_8012BD00.footOffZ;
     }
     if ((D_8012BCA0 >> 0x13) != 0) {
         arg0->unk4 = sp50.unk0;
         arg0->unk8 = sp50.unk4;
         arg0->unkC = sp50.unk8;
     }
-    arg0->unk58 = D_8012BD00.unk40;
+    arg0->unk58 = D_8012BD00.tick;
     return 0;
 }
 #elif defined(PORT)
@@ -6877,54 +7001,54 @@ s32 func_8010C274(struct PositionState *arg0) {
     f32 bestT = 1.1f;
     f32 t;
 
-    BD00.unk44 = arg0->VI_Timer;
+    BD00.callerTick = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
-    D_8012BCA0.rec[0].tri = NULL;
-    D_8012BCA0.rec[1].tri = NULL;
-    D_8012BCA0.rec[3].tri = NULL;
-    D_8012BCA0.rec[2].tri = NULL;
+    D_8012BCA0.rec[COL_FLOOR].tri = NULL;
+    D_8012BCA0.rec[COL_CEILING].tri = NULL;
+    D_8012BCA0.rec[COL_WALL_BACK].tri = NULL;
+    D_8012BCA0.rec[COL_WALL_FRONT].tri = NULL;
     func_80104FB8(arg0);
     start.x = arg0->kirbyGroundPath[0];
     start.y = arg0->kirbyHeight[1];
     start.z = arg0->kirbyGroundPath[1];
-    end.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    end.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     end.y = arg0->kirbyFootPos[1] + arg0->scale[2];
-    end.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    end.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     if (pc_probe_3930(&start, &end, NULL, &bestT, &hit, NULL, NULL, NULL) != 0) {
         D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x4020;
-        best.x = hit.x - BD00.unk4;
+        best.x = hit.x - BD00.footOffX;
         best.y = hit.y - arg0->scale[2];
-        best.z = hit.z - BD00.unk8;
+        best.z = hit.z - BD00.footOffZ;
     }
     start.x = arg0->kirbyHeadPath[0];
     start.z = arg0->kirbyHeadPath[1];
-    end.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    end.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    end.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    end.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     if (pc_probe_3930(&start, &end, NULL, &t, &hit, NULL, NULL, NULL) != 0 && t < bestT) {
         D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x2100;
-        best.x = hit.x - BD00.unkC;
+        best.x = hit.x - BD00.headOffX;
         best.y = hit.y - arg0->scale[2];
-        best.z = hit.z - BD00.unk10;
+        best.z = hit.z - BD00.headOffZ;
         bestT = t;
     }
     start.y = arg0->kirbyHeight[0];
     end.y = arg0->kirbyFootPos[1] + arg0->scale[1];
     if (pc_probe_3930(&start, &end, NULL, &t, &hit, NULL, NULL, NULL) != 0 && t < bestT) {
         D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x480;
-        best.x = hit.x - BD00.unkC;
+        best.x = hit.x - BD00.headOffX;
         best.y = hit.y - arg0->scale[1];
-        best.z = hit.z - BD00.unk10;
+        best.z = hit.z - BD00.headOffZ;
         bestT = t;
     }
     start.x = arg0->kirbyGroundPath[0];
     start.z = arg0->kirbyGroundPath[1];
-    end.x = arg0->kirbyFootPos[0] + BD00.unk4;
-    end.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    end.x = arg0->kirbyFootPos[0] + BD00.footOffX;
+    end.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     if (pc_probe_3930(&start, &end, NULL, &t, &hit, NULL, NULL, NULL) != 0 && t < bestT) {
         D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x810;
-        best.x = hit.x - BD00.unk4;
+        best.x = hit.x - BD00.footOffX;
         best.y = hit.y - arg0->scale[1];
-        best.z = hit.z - BD00.unk8;
+        best.z = hit.z - BD00.footOffZ;
         bestT = t;
     }
     if ((D_8012BCA0.flags.w >> 0x13) != 0) {
@@ -6932,7 +7056,7 @@ s32 func_8010C274(struct PositionState *arg0) {
         arg0->kirbyFootPos[1] = best.y;
         arg0->kirbyFootPos[2] = best.z;
     }
-    arg0->VI_Timer = BD00.unk40;
+    arg0->VI_Timer = BD00.tick;
     return 0;
 }
 #else
@@ -6943,9 +7067,10 @@ s32 func_8010C274(struct PositionState *arg0) {
 /* FACTORY: 66/75, load-CSE residue. Frame is exactly right (0x38) once the m2c
  * "locals" sp2C/sp24/sp20/sp1C are DELETED -- they are IDO's own spill slots for
  * var_f16/var_f14/var_v1 across cosf/sinf, and declaring them too cost 16 bytes
- * and four extra stores. Unlike func_80104FB8, this function stores BD00.unk4-10
- * through the &D_8012BD00 base, so BD00.unkN is right here and only the unk14
- * WRITE needs the separate D_8012BD14 extern. Residue: the ROM loads the same
+ * and four extra stores. Unlike func_80104FB8, this function stores the four
+ * column offsets (+0x04..+0x10) through the &D_8012BD00 base, so the BD00 macro
+ * is right here and only the fwdX (+0x14) WRITE needs the separate D_8012BD14
+ * extern. Residue: the ROM loads the same
  * word twice -- 0x1C($a0) for the sign test and 0xC($v1) for the value after
  * rebasing to arg0->scale -- and IDO CSEs them into one. Measured and rejected:
  * a distinct struct view over arg0->scale, and assigning var_v1 in both arms;
@@ -6974,19 +7099,19 @@ void func_8010C608(struct PositionState *arg0) {
     }
     sp2C = cosf(arg0->faceAngle[2]);
     temp_f0_2 = sinf(arg0->faceAngle[2]);
-    BD00.unk4 = var_f16 * temp_f0_2;
-    BD00.unk8 = var_f16 * sp2C;
-    BD00.unkC = var_f14 * temp_f0_2;
-    BD00.unk10 = var_f14 * sp2C;
+    BD00.footOffX = var_f16 * temp_f0_2;
+    BD00.footOffZ = var_f16 * sp2C;
+    BD00.headOffX = var_f14 * temp_f0_2;
+    BD00.headOffZ = var_f14 * sp2C;
     if (var_v1[3] > 0.0f) {
         D_8012BD14 = temp_f0_2;
-        BD00.unk18 = sp2C;
+        BD00.fwdZ = sp2C;
     } else {
         D_8012BD14 = -temp_f0_2;
-        BD00.unk18 = -sp2C;
+        BD00.fwdZ = -sp2C;
     }
-    BD00.unk1C = -BD00.unk14;
-    BD00.unk20 = -BD00.unk18;
+    BD00.backX = -BD00.fwdX;
+    BD00.backZ = -BD00.fwdZ;
 }
 #elif defined(PORT)
 /* Lateral probe basis with the 0.13 widening bias (draft above, named
@@ -6997,19 +7122,19 @@ void func_8010C608(struct PositionState *arg0) {
     f32 f0 = arg0->faceAngle[0] + (arg0->faceAngle[0] < 0.0f ? -0.13f : 0.13f);
     f32 f1 = arg0->faceAngle[1] + (arg0->faceAngle[1] < 0.0f ? -0.13f : 0.13f);
 
-    BD00.unk4 = f0 * sn;
-    BD00.unk8 = f0 * c;
-    BD00.unkC = f1 * sn;
-    BD00.unk10 = f1 * c;
+    BD00.footOffX = f0 * sn;
+    BD00.footOffZ = f0 * c;
+    BD00.headOffX = f1 * sn;
+    BD00.headOffZ = f1 * c;
     if (arg0->faceAngle[0] > 0.0f) {
-        BD00.unk14 = sn;
-        BD00.unk18 = c;
+        BD00.fwdX = sn;
+        BD00.fwdZ = c;
     } else {
-        BD00.unk14 = -sn;
-        BD00.unk18 = -c;
+        BD00.fwdX = -sn;
+        BD00.fwdZ = -c;
     }
-    BD00.unk1C = -BD00.unk14;
-    BD00.unk20 = -BD00.unk18;
+    BD00.backX = -BD00.fwdX;
+    BD00.backZ = -BD00.fwdZ;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010C608.s")
@@ -7039,8 +7164,8 @@ s32 func_8010C734(void *arg0) {
     sp4C = arg0->unk4;
     sp50 = arg0->unk8 + temp_s2->unk0;
     sp54 = arg0->unkC;
-    sp40 = sp4C + D_8012BD00.unk4;
-    sp48 = sp54 + D_8012BD00.unk8;
+    sp40 = sp4C + D_8012BD00.footOffX;
+    sp48 = sp54 + D_8012BD00.footOffZ;
     sp44 = sp50;
     if (func_801047F0(&sp4C, &sp40, 0, 0, &D_8012BCC4, &D_8012BCC0, &D_8012BCBC) != 0) {
         D_8012BCA0 = (((D_8012BCA0 >> 0x13) | 1) * 8) | (D_8012BCA0 & 7);
@@ -7057,8 +7182,8 @@ s32 func_8010C734(void *arg0) {
     }
     sp50 = arg0->unk8 + temp_s2->unk0;
     sp44 = sp50;
-    sp40 = arg0->unk4 + D_8012BD00.unkC;
-    sp48 = arg0->unkC + D_8012BD00.unk10;
+    sp40 = arg0->unk4 + D_8012BD00.headOffX;
+    sp48 = arg0->unkC + D_8012BD00.headOffZ;
     if (func_801047F0(&sp4C, &sp40, 0, 0, &D_8012BCD0, &D_8012BCCC, &D_8012BCC8) != 0) {
         D_8012BCA0 = (((D_8012BCA0 >> 0x13) | 8) * 8) | (D_8012BCA0 & 7);
     }
@@ -7073,7 +7198,7 @@ s32 func_8010C734(void *arg0) {
         D_8012BCA0 = (((D_8012BCA0 >> 0x13) | 0x10) * 8) | (D_8012BCA0 & 7);
     }
     var_v0 = 0;
-    if ((D_8012BCA0 >> 0x13) & 0x3F) {
+    if ((D_8012BCA0 >> 0x13) & COLF_WALL_ANY) {
         var_v0 = 1;
     }
     return var_v0;
@@ -7084,8 +7209,8 @@ s32 func_8010C734(void *arg0) {
  * func_8010C608 refreshes the BD00 direction basis, probe from the foot
  * X/Z at three heights (scale[0], scale[2], scale[1] -- ROM order) toward
  * the primary offset (BD00 +4/+8, bits 1/4/2) and the secondary offset
- * (BD00 +C/+10, bits 8/0x20/0x10), recording each hit in rec[2] resp.
- * rec[3] of D_8012BCA0 and folding the bit into the flags word with the
+ * (BD00 +C/+10, bits 8/0x20/0x10), recording each hit in rec[COL_WALL_FRONT] resp.
+ * rec[COL_WALL_BACK] of D_8012BCA0 and folding the bit into the flags word with the
  * ROM's halfword store (sh keeps flags.f.rest). Returns 1 when any of the
  * six bits landed. */
 /* func_801047F0's C is void: the N64 return was its tail call's $v0. This
@@ -7121,8 +7246,8 @@ s32 func_8010C734(struct PositionState *arg0) {
 
         a.x = arg0->kirbyFootPos[0];
         a.z = arg0->kirbyFootPos[2];
-        b.x = a.x + (pass == 0 ? BD00.unk4 : BD00.unkC);
-        b.z = a.z + (pass == 0 ? BD00.unk8 : BD00.unk10);
+        b.x = a.x + (pass == 0 ? BD00.footOffX : BD00.headOffX);
+        b.z = a.z + (pass == 0 ? BD00.footOffZ : BD00.headOffZ);
         for (k = 0; k < 3; k++) {
             a.y = arg0->kirbyFootPos[1] + arg0->scale[heightIdx[k]];
             b.y = a.y;
@@ -7132,7 +7257,7 @@ s32 func_8010C734(struct PositionState *arg0) {
             }
         }
     }
-    return ((D_8012BCA0.flags.w >> 0x13) & 0x3F) ? 1 : 0;
+    return ((D_8012BCA0.flags.w >> 0x13) & COLF_WALL_ANY) ? 1 : 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010C734.s")
@@ -7162,8 +7287,8 @@ s32 func_8010CABC(void *arg0) {
     sp4C = arg0->unk4;
     sp50 = arg0->unk8 + temp_s2->unk0;
     sp54 = arg0->unkC;
-    sp40 = sp4C + D_8012BD00.unk4;
-    sp48 = sp54 + D_8012BD00.unk8;
+    sp40 = sp4C + D_8012BD00.footOffX;
+    sp48 = sp54 + D_8012BD00.footOffZ;
     sp44 = sp50;
     if (func_801048A4(&sp4C, &sp40, 0, 0, &D_8012BCC4, &D_8012BCC0, &D_8012BCBC) != 0) {
         D_8012BCA0 = (((D_8012BCA0 >> 0x13) | 1) * 8) | (D_8012BCA0 & 7);
@@ -7180,8 +7305,8 @@ s32 func_8010CABC(void *arg0) {
     }
     sp50 = arg0->unk8 + temp_s2->unk0;
     sp44 = sp50;
-    sp40 = arg0->unk4 + D_8012BD00.unkC;
-    sp48 = arg0->unkC + D_8012BD00.unk10;
+    sp40 = arg0->unk4 + D_8012BD00.headOffX;
+    sp48 = arg0->unkC + D_8012BD00.headOffZ;
     if (func_801048A4(&sp4C, &sp40, 0, 0, &D_8012BCD0, &D_8012BCCC, &D_8012BCC8) != 0) {
         D_8012BCA0 = (((D_8012BCA0 >> 0x13) | 8) * 8) | (D_8012BCA0 & 7);
     }
@@ -7196,7 +7321,7 @@ s32 func_8010CABC(void *arg0) {
         D_8012BCA0 = (((D_8012BCA0 >> 0x13) | 0x10) * 8) | (D_8012BCA0 & 7);
     }
     var_v0 = 0;
-    if ((D_8012BCA0 >> 0x13) & 0x3F) {
+    if ((D_8012BCA0 >> 0x13) & COLF_WALL_ANY) {
         var_v0 = 1;
     }
     return var_v0;
@@ -7238,8 +7363,8 @@ s32 func_8010CABC(struct PositionState *arg0) {
 
         a.x = arg0->kirbyFootPos[0];
         a.z = arg0->kirbyFootPos[2];
-        b.x = a.x + (pass == 0 ? BD00.unk4 : BD00.unkC);
-        b.z = a.z + (pass == 0 ? BD00.unk8 : BD00.unk10);
+        b.x = a.x + (pass == 0 ? BD00.footOffX : BD00.headOffX);
+        b.z = a.z + (pass == 0 ? BD00.footOffZ : BD00.headOffZ);
         for (k = 0; k < 3; k++) {
             a.y = arg0->kirbyFootPos[1] + arg0->scale[heightIdx[k]];
             b.y = a.y;
@@ -7249,7 +7374,7 @@ s32 func_8010CABC(struct PositionState *arg0) {
             }
         }
     }
-    return ((D_8012BCA0.flags.w >> 0x13) & 0x3F) ? 1 : 0;
+    return ((D_8012BCA0.flags.w >> 0x13) & COLF_WALL_ANY) ? 1 : 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010CABC.s")
@@ -7264,18 +7389,18 @@ s32 func_8010CE44(struct PositionState *arg0, f32 arg1) {
     s32 sp38;
 
     func_80104FB8(arg0);
-    sp58.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp58.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp58.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp58.z = BD00.unk8 + arg0->kirbyFootPos[2];
-    sp4C.x = (BD00.unk14 * arg1) + sp58.x;
+    sp58.z = BD00.footOffZ + arg0->kirbyFootPos[2];
+    sp4C.x = (BD00.fwdX * arg1) + sp58.x;
     sp4C.y = sp58.y;
-    sp4C.z = (BD00.unk18 * arg1) + sp58.z;
-    sp40.x = BD00.unk14;
-    sp40.z = BD00.unk18;
+    sp4C.z = (BD00.fwdZ * arg1) + sp58.z;
+    sp40.x = BD00.fwdX;
+    sp40.z = BD00.fwdZ;
     sp40.y = 0.0f;
     if (func_8010423C(&sp58, &sp4C, &sp40, 0, &sp64, 0, 0, 0) != 0) {
-        arg0->kirbyFootPos[0] = sp64.x - BD00.unk24;
-        arg0->kirbyFootPos[2] = sp64.z - BD00.unk28;
+        arg0->kirbyFootPos[0] = sp64.x - BD00.footPushX;
+        arg0->kirbyFootPos[2] = sp64.z - BD00.footPushZ;
         return 1;
     }
     sp38 = 0;
@@ -7308,8 +7433,8 @@ s32 func_8010CE44(struct PositionState *arg0, f32 arg1) {
             } else if ((sp64.z < sp58.z) || (sp4C.z < sp64.z)) {
                 return 0;
             }
-            arg0->kirbyFootPos[0] = sp64.x - BD00.unk24;
-            arg0->kirbyFootPos[2] = sp64.z - BD00.unk28;
+            arg0->kirbyFootPos[0] = sp64.x - BD00.footPushX;
+            arg0->kirbyFootPos[2] = sp64.z - BD00.footPushZ;
             return 1;
         }
     }
@@ -7325,18 +7450,18 @@ s32 func_8010D138(struct PositionState *arg0, f32 arg1) {
     s32 sp38;
 
     func_80104FB8(arg0);
-    sp58.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp58.x = BD00.headOffX + arg0->kirbyFootPos[0];
     sp58.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp58.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp4C.x = (BD00.unk1C * arg1) + sp58.x;
+    sp58.z = BD00.headOffZ + arg0->kirbyFootPos[2];
+    sp4C.x = (BD00.backX * arg1) + sp58.x;
     sp4C.y = sp58.y;
-    sp4C.z = (BD00.unk20 * arg1) + sp58.z;
-    sp40.x = BD00.unk1C;
-    sp40.z = BD00.unk20;
+    sp4C.z = (BD00.backZ * arg1) + sp58.z;
+    sp40.x = BD00.backX;
+    sp40.z = BD00.backZ;
     sp40.y = 0.0f;
     if (func_8010423C(&sp58, &sp4C, &sp40, 0, &sp64, 0, 0, 0) != 0) {
-        arg0->kirbyFootPos[0] = sp64.x - BD00.unk2C;
-        arg0->kirbyFootPos[2] = sp64.z - BD00.unk30;
+        arg0->kirbyFootPos[0] = sp64.x - BD00.headPushX;
+        arg0->kirbyFootPos[2] = sp64.z - BD00.headPushZ;
         return 1;
     }
     sp38 = 0;
@@ -7369,8 +7494,8 @@ s32 func_8010D138(struct PositionState *arg0, f32 arg1) {
             } else if ((sp64.z < sp58.z) || (sp4C.z < sp64.z)) {
                 return 0;
             }
-            arg0->kirbyFootPos[0] = sp64.x - BD00.unk2C;
-            arg0->kirbyFootPos[2] = sp64.z - BD00.unk30;
+            arg0->kirbyFootPos[0] = sp64.x - BD00.headPushX;
+            arg0->kirbyFootPos[2] = sp64.z - BD00.headPushZ;
             return 1;
         }
     }
@@ -7411,16 +7536,16 @@ s32 func_8010D42C(struct PositionState *arg0, f32 arg1) {
         arg0->kirbyFootPos[1] = (sp64.y - arg0->scale[1]) - 0.1f;
         return 1;
     }
-    sp58.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp58.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp38 = 0;
-    sp58.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp58.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp4C.x = sp58.x;
     sp4C.z = sp58.z;
     if (func_80103EA0(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
         goto block_5;
     }
-    sp58.x = BD00.unkC + arg0->kirbyFootPos[0];
-    sp58.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp58.x = BD00.headOffX + arg0->kirbyFootPos[0];
+    sp58.z = BD00.headOffZ + arg0->kirbyFootPos[2];
     sp4C.x = sp58.x;
     sp4C.z = sp58.z;
     if (func_80103EA0(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
@@ -7465,15 +7590,15 @@ s32 func_8010D42C(struct PositionState *arg0, f32 arg1) {
         return 1;
     }
     got = 0;
-    a.x = arg0->kirbyFootPos[0] + BD00.unk4;
-    a.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    a.x = arg0->kirbyFootPos[0] + BD00.footOffX;
+    a.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     b.x = a.x;
     b.z = a.z;
     if (pc_probe_ea0(&a, &b, &dir, NULL, NULL, &n, NULL, NULL) != 0) {
         got = 1;
     } else {
-        a.x = arg0->kirbyFootPos[0] + BD00.unkC;
-        a.z = arg0->kirbyFootPos[2] + BD00.unk10;
+        a.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+        a.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
         b.x = a.x;
         b.z = a.z;
         if (pc_probe_ea0(&a, &b, &dir, NULL, NULL, &n, NULL, NULL) != 0) {
@@ -7527,16 +7652,16 @@ s32 func_8010D668(struct PositionState *arg0, f32 arg1) {
         arg0->kirbyFootPos[1] = (sp64.y - arg0->scale[2]) + 0.1f;
         return 1;
     }
-    sp58.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp58.x = BD00.footOffX + arg0->kirbyFootPos[0];
     sp38 = 0;
-    sp58.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp58.z = BD00.footOffZ + arg0->kirbyFootPos[2];
     sp4C.x = sp58.x;
     sp4C.z = sp58.z;
     if (func_80103EA0(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
         goto block_5;
     }
-    sp58.x = BD00.unkC + arg0->kirbyFootPos[0];
-    sp58.z = BD00.unk10 + arg0->kirbyFootPos[2];
+    sp58.x = BD00.headOffX + arg0->kirbyFootPos[0];
+    sp58.z = BD00.headOffZ + arg0->kirbyFootPos[2];
     sp4C.x = sp58.x;
     sp4C.z = sp58.z;
     if (func_80103EA0(&sp58, &sp4C, &sp40, 0, 0, &sp3C, 0, 0) != 0) {
@@ -7583,15 +7708,15 @@ s32 func_8010D668(struct PositionState *arg0, f32 arg1) {
         return 1;
     }
     got = 0;
-    a.x = arg0->kirbyFootPos[0] + BD00.unk4;
-    a.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    a.x = arg0->kirbyFootPos[0] + BD00.footOffX;
+    a.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     b.x = a.x;
     b.z = a.z;
     if (pc_probe_ea0(&a, &b, &dir, NULL, NULL, &n, NULL, NULL) != 0) {
         got = 1;
     } else {
-        a.x = arg0->kirbyFootPos[0] + BD00.unkC;
-        a.z = arg0->kirbyFootPos[2] + BD00.unk10;
+        a.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+        a.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
         b.x = a.x;
         b.z = a.z;
         if (pc_probe_ea0(&a, &b, &dir, NULL, NULL, &n, NULL, NULL) != 0) {
@@ -7633,18 +7758,18 @@ s32 func_8010D8A4(struct PositionState *arg0) {
     sp38.z = 0.0f;
     sp38.y = -1.0f;
     temp_v0 = arg0->scale;
-    sp50.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    sp50.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     sp50.y = arg0->kirbyFootPos[1] + temp_v0[1];
     sp44.x = sp50.x;
-    sp50.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    sp50.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     sp44.z = sp50.z;
     sp44.y = (arg0->kirbyFootPos[1] + temp_v0[2]) - 0.2f;
     if ((func_80103EA0(&sp50, &sp44, &sp38, 0, 0, 0, &sp34, 0) != 0) &&
         (func_80102324(sp34, 0, 0, 0) == 0)) {
         return 0;
     }
-    sp50.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    sp50.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    sp50.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    sp50.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     sp44.x = sp50.x;
     sp44.z = sp50.z;
     if ((func_80103EA0(&sp50, &sp44, &sp38, 0, 0, 0, &sp34, 0) != 0) &&
@@ -7667,9 +7792,9 @@ s32 func_8010D8A4(struct PositionState *arg0) {
     dir.x = 0.0f;
     dir.y = -1.0f;
     dir.z = 0.0f;
-    a.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    a.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     a.y = arg0->kirbyFootPos[1] + arg0->scale[1];
-    a.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    a.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     b.x = a.x;
     b.y = (arg0->kirbyFootPos[1] + arg0->scale[2]) - 0.2f;
     b.z = a.z;
@@ -7677,8 +7802,8 @@ s32 func_8010D8A4(struct PositionState *arg0) {
         func_80102324(tri, NULL, NULL, NULL) == 0) {
         return 0;
     }
-    a.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    a.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    a.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    a.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     b.x = a.x;
     b.z = a.z;
     if (pc_probe_ea0(&a, &b, &dir, NULL, NULL, NULL, &tri, NULL) != 0 &&
@@ -7701,17 +7826,17 @@ s32 func_8010DA28(struct PositionState *arg0) {
     sp38.x = 0.0f;
     sp38.z = 0.0f;
     sp38.y = 1.0f;
-    sp50.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    sp50.x = arg0->kirbyFootPos[0] + BD00.footOffX;
     sp50.y = arg0->kirbyFootPos[1] + arg0->scale[2];
     sp44.x = sp50.x;
-    sp50.z = arg0->kirbyFootPos[2] + BD00.unk8;
+    sp50.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
     sp44.y = arg0->kirbyFootPos[1] + arg0->scale[1];
     sp44.z = sp50.z;
     if (func_80103EA0(&sp50, &sp44, (struct Normal *) &sp38, 0, 0, 0, 0, 0) != 0) {
         return 1;
     }
-    sp50.x = arg0->kirbyFootPos[0] + BD00.unkC;
-    sp50.z = arg0->kirbyFootPos[2] + BD00.unk10;
+    sp50.x = arg0->kirbyFootPos[0] + BD00.headOffX;
+    sp50.z = arg0->kirbyFootPos[2] + BD00.headOffZ;
     sp44.x = sp50.x;
     sp44.z = sp50.z;
     if (func_80103EA0(&sp50, &sp44, (struct Normal *) &sp38, 0, 0, 0, 0, 0) != 0) {
@@ -7786,8 +7911,8 @@ struct PositionState *func_8010DCAC(void) {
 void func_8010DCDC(void) {
     s32 i;
 
-    BD00.unk40 = 0;
-    BD00.unk0_80 = 0;
+    BD00.tick = 0;
+    BD00.busy = 0;
     D_8012BD4C = D_8012BD50;
     for (i = 0; i < 31; i++) {
         D_8012BD50[i].unk0 = (u32) &D_8012BD50[i + 1];
@@ -7796,7 +7921,7 @@ void func_8010DCDC(void) {
 }
 
 void func_8010DD8C(void) {
-    BD00.unk40++;
+    BD00.tick++;
 }
 
 #ifdef MIPS_TO_C
@@ -7809,7 +7934,7 @@ void func_8010DD8C(void) {
  * against Water_Normals, appending the record and its source id (0x14 = static mesh,
  * otherwise the dynamic collider index) to the result block's water annex. That annex
  * is the three record pointers at &D_8012BCA0+0x40 and three ids at +0x4C, just past
- * rec[5]; struct UnkBCA0 does not declare them on the N64 side and adding them would
+ * rec[5]; struct CollisionResult does not declare them on the N64 side and adding them would
  * be a file-scope change, so the draft views them through a local WaterAnnex struct
  * instead of doing pointer arithmetic at each store. arg0 likewise stays `void *`
  * because the file-scope declaration says so; it is bound once to a typed `pos`. */
@@ -7818,10 +7943,10 @@ void func_8010DD8C(void) {
 void func_8010DDA4(void *arg0, s32 sourceId) {
     Vector *pos = arg0;
     /* The result block's water annex: the ROM writes three record pointers at
-     * +0x40 and their three source ids at +0x4C, just past struct UnkBCA0's
+     * +0x40 and their three source ids at +0x4C, just past struct CollisionResult's
      * rec[5]. Viewed through a local struct so the two arrays stay typed. */
     struct WaterAnnex {
-        struct WaterData *rec[3];
+        struct WaterData *rec[COL_WALL_BACK];
         s32 src[3];
     };
     struct WaterAnnex *annex = (struct WaterAnnex *) ((u8 *) &D_8012BCA0 + 0x40);

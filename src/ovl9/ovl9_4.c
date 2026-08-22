@@ -23,7 +23,7 @@ void func_801E0CC4_ovl9(struct GObj *);
 void func_801E0BF8_ovl9(struct GObj *);
 
 void func_801E0AA0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
         gEntityFuncListIDArray[omCurrentObj->objId] = -1;
@@ -76,7 +76,7 @@ void func_801E0D0C_ovl9(struct GObj *arg0) {
 }
 
 extern f32 **D_801CAAAC;
-extern struct Sub800E1B50_Unk98 D_801CB9C8;
+extern struct EnemyEventTable D_801CB9C8;
 
 void func_801E0E24_ovl9(struct GObj *arg0) {
     void func_800A9EA4(s32);
@@ -187,7 +187,7 @@ void func_801E1590_ovl9(struct GObj *arg0) {
 }
 
 extern f32 **D_801CAAC0;
-extern struct Sub800E1B50_Unk98 D_801CB9EC;
+extern struct EnemyEventTable D_801CB9EC;
 
 void func_801E16A8_ovl9(struct GObj *arg0) {
     void func_800A9EA4(s32);
@@ -598,7 +598,7 @@ void func_801E2970_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 1, &D_8021BEA0_ovl9);
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBA34;
+extern struct EnemyEventTable D_801CBA34;
 void func_800B33F4(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -656,7 +656,7 @@ void func_801E2B2C_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBA34;
+extern struct EnemyEventTable D_801CBA34;
 f32 func_8019B608_ovl7(s32);
 void func_800B33F4(void);
 void func_800AECC0(f32);
@@ -676,7 +676,7 @@ void func_801E2C68_ovl9(GObj *arg0) {
 }
 
 void func_801E2D34_ovl9(struct GObj *arg0) {
-    extern struct Sub800E1B50_Unk98 D_801CBA7C;
+    extern struct EnemyEventTable D_801CBA7C;
     extern void func_800AA018(s32);
 
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -722,7 +722,7 @@ void func_801E2F5C_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBA34;
+extern struct EnemyEventTable D_801CBA34;
 void func_800B33F4(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -814,7 +814,7 @@ extern void func_8019D8A0(u16);
  * parent link, until both halves are gone; finally release the pair
  * slot via func_8019D8A0. */
 void func_801E3578_ovl9(struct GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     u32 id;
     s32 spawnKind;
 
@@ -892,7 +892,7 @@ extern void func_8019D8A0(u16);
  * parent link, until both halves are gone; finally release the pair
  * slot via func_8019D8A0. */
 void func_801E3578_ovl9(struct GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     u32 id;
     s32 spawnKind;
 
@@ -974,7 +974,7 @@ void func_801E34F8_ovl9(struct GObj *);
  * bob-phase params, freezing physics and playing the facing-specific
  * intro animation into state 0. */
 void func_801E38F0_ovl9(struct GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     s32 spawned;
     u32 id;
     s32 anim;
@@ -1051,7 +1051,7 @@ void func_801E34F8_ovl9(struct GObj *);
  * bob-phase params, freezing physics and playing the facing-specific
  * intro animation into state 0. */
 void func_801E38F0_ovl9(struct GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     s32 spawned;
     u32 id;
     s32 anim;
@@ -1136,7 +1136,7 @@ void func_801E3DA8_ovl9(GObj *arg0) {
 }
 
 extern s32 D_801C86AC_ovl7;
-extern struct Sub800E1B50_Unk98 D_801CBAC4;
+extern struct EnemyEventTable D_801CBAC4;
 void func_800B33F4(void);
 void ohSleep(s32);
 void play_sound(s32);
@@ -1562,7 +1562,7 @@ void func_801E4DC8_ovl9(void) {
 f32 func_800F8824(Vector *, f32);
 
 f32 func_801E4F18_ovl9(void) {
-    UnkStruct800E1B50 *p;
+    EnemyRecord *p;
     Vector *v;
     f32 temp;
 
@@ -1794,8 +1794,8 @@ void func_80111ECC(struct Ovl9AnimObj2 *);
 s32 func_80110150(void *);
 
 s32 func_801E55C0_ovl9(s32 arg0, void *arg1) {
-    struct Sub800E1B50_Unk88 *sp0;
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyKindDesc *sp0;
+    struct EnemyRecord *temp;
     struct Ovl9AnimObj2 *temp_v0;
 
     temp = D_800E1B50[omCurrentObj->objId];

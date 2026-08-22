@@ -343,7 +343,7 @@ void func_801E2530_ovl12(void) {
 }
 
 void func_801E26A8_ovl12(GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDA90[omCurrentObj->objId] = 0x25;
     D_800DF150[omCurrentObj->objId] = func_801E28C8_ovl12;

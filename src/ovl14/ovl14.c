@@ -94,7 +94,7 @@ void func_801DB460_ovl14(GObj *arg0) {
 }
 
 void func_801DB684_ovl14(GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     tmp->unk98 = &D_801CB470;

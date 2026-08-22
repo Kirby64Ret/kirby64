@@ -1788,7 +1788,7 @@ struct Ovl15AnimInfo2 {
 
 s32 func_801E19D0_ovl15(s32 arg0, s32 arg1, s32 arg2) {
     struct Ovl15AnimInfo2 sp30;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct Unk80111C88 *obj;
 
     ent = D_800E1B50[omCurrentObj->objId];
@@ -1831,7 +1831,7 @@ s32 func_801E19D0_ovl15(s32 arg0, s32 arg1, s32 arg2) {
 
 s32 func_801E1B98_ovl15(s32 arg0, struct Ovl15AnimInfo *arg1) {
     struct Unk80111C88 *temp_v0;
-    struct UnkStruct800E1B50 *sp18;
+    struct EnemyRecord *sp18;
 
     sp18 = D_800E1B50[omCurrentObj->objId];
     func_80111550(omCurrentObj->objId);

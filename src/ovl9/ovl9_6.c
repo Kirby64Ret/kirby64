@@ -302,8 +302,8 @@ void func_80111ECC(struct Ovl9AnimObj2 *);
 s32 func_80110150(void *);
 
 s32 func_801EBB28_ovl9(s32 arg0, void *arg1) {
-    struct Sub800E1B50_Unk88 *sp0;
-    struct UnkStruct800E1B50 *temp;
+    struct EnemyKindDesc *sp0;
+    struct EnemyRecord *temp;
     struct Ovl9AnimObj2 *temp_v0;
 
     temp = D_800E1B50[omCurrentObj->objId];
@@ -379,7 +379,7 @@ void func_801EBE1C_ovl9(struct GObj *arg0) {
     func_8019F3B0_ovl7();
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBC08;
+extern struct EnemyEventTable D_801CBC08;
 extern s32 func_8019A900_ovl7(s32 *);
 extern f32 func_8019B608_ovl7(s32);
 void func_800AECC0(f32);
@@ -428,7 +428,7 @@ void func_801EBFE8_ovl9(struct GObj *arg0) {
     }
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBC08;
+extern struct EnemyEventTable D_801CBC08;
 /* D_8021D1C4_ovl9: literal, this TU owns its .rodata */
 /* D_8021D1C8_ovl9: literal, this TU owns its .rodata */
 void func_800AECC0(f32);
@@ -465,7 +465,7 @@ void func_801EC0E0_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBC2C;
+extern struct EnemyEventTable D_801CBC2C;
 /* D_8021D1CC_ovl9: literal, this TU owns its .rodata */
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -493,7 +493,7 @@ void func_801EC314_ovl9(struct GObj *arg0) {
 void func_801EC4A0_ovl9(GObj *arg0) {
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBC08;
+extern struct EnemyEventTable D_801CBC08;
 void func_800A9F98(s32, f32);
 void ohSleep(s32);
 
@@ -512,7 +512,7 @@ void func_801EC4A8_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-extern struct Sub800E1B50_Unk98 D_801CBC2C;
+extern struct EnemyEventTable D_801CBC2C;
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800B33F4(void);
@@ -582,7 +582,7 @@ void func_801EF07C_ovl9(struct GObj *);
 
 /* Left live by a lane mid-work, at 7/62 insns. Draft kept. */
 void func_801EC9E0_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     tmp->unk39 = -1;
     D_800DF150[omCurrentObj->objId] = func_801EF07C_ovl9;
@@ -932,9 +932,9 @@ void func_801ED9AC_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801ED9AC_ovl9.s")
 #endif
 
-extern struct Sub800E1B50_Unk88 *D_8021C1E4_ovl9[];
-extern struct Sub800E1B50_Unk88 *D_8021C1F0_ovl9[];
-extern struct Sub800E1B50_Unk88 *D_8021C1FC_ovl9[];
+extern struct EnemyKindDesc *D_8021C1E4_ovl9[];
+extern struct EnemyKindDesc *D_8021C1F0_ovl9[];
+extern struct EnemyKindDesc *D_8021C1FC_ovl9[];
 extern s32 D_8021C208_ovl9[];
 extern s32 D_8021C214_ovl9[];
 extern s32 D_8021C220_ovl9[];
@@ -957,7 +957,7 @@ void func_800B33F4(void);
  * Sibling func_801EEC28_ovl9 shows the same inversion in the opposite
  * direction, so no single ordering knob moves both. */
 void func_801EDBEC_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 idx;
     f32 temp;
 
@@ -1029,16 +1029,16 @@ void func_801EDBEC_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EDBEC_ovl9.s")
 #endif
 
-extern struct Sub800E1B50_Unk88 D_801C399C_ovl7;
-extern struct Sub800E1B50_Unk88 D_801C3A28_ovl7;
-extern struct Sub800E1B50_Unk88 D_801C3A94_ovl7;
+extern struct EnemyKindDesc D_801C399C_ovl7;
+extern struct EnemyKindDesc D_801C3A28_ovl7;
+extern struct EnemyKindDesc D_801C3A94_ovl7;
 void func_800A9760(s32);
 void func_801A2ADC_ovl7(u32);
 void func_801A3E80_ovl7(struct GObj *);
 void func_801ECAD8_ovl9(struct GObj *);
 
 void func_801EE064_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     func_801A0D50_ovl7(func_801ECAD8_ovl9);
     D_800DEF90[omCurrentObj->objId] = func_800B72AC;
@@ -1085,9 +1085,9 @@ void func_801EE064_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-extern struct Sub800E1B50_Unk88 D_801C3958_ovl7;
-extern struct Sub800E1B50_Unk88 D_801C3A04_ovl7;
-extern struct Sub800E1B50_Unk88 D_801C3A70_ovl7;
+extern struct EnemyKindDesc D_801C3958_ovl7;
+extern struct EnemyKindDesc D_801C3A04_ovl7;
+extern struct EnemyKindDesc D_801C3A70_ovl7;
 /* D_8021D65C_ovl9: literal, this TU owns its .rodata */
 extern void func_800A9760(s32);
 extern void func_801A2ADC_ovl7(u32);
@@ -1099,7 +1099,7 @@ void func_801ECAD8_ovl9(struct GObj *);
 void func_800B33F4(void);
 
 void func_801EE2E8_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
 
     ent = D_800E1B50[omCurrentObj->objId];
     ent->unk39 = -1;
@@ -1164,9 +1164,9 @@ void func_801EE2E8_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-extern struct Sub800E1B50_Unk88 *D_8021C1E4_ovl9[];
-extern struct Sub800E1B50_Unk88 *D_8021C1F0_ovl9[];
-extern struct Sub800E1B50_Unk88 *D_8021C1FC_ovl9[];
+extern struct EnemyKindDesc *D_8021C1E4_ovl9[];
+extern struct EnemyKindDesc *D_8021C1F0_ovl9[];
+extern struct EnemyKindDesc *D_8021C1FC_ovl9[];
 extern s32 D_8021C208_ovl9[];
 extern s32 D_8021C214_ovl9[];
 extern s32 D_8021C220_ovl9[];
@@ -1188,7 +1188,7 @@ void func_800B33F4(void);
  * &D_8021C250_ovl9[kind] temp to 0x34), this shape uses seven saved
  * registers and no locals, so every register is one slot over. */
 void func_801EE728_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 kind;
 
     kind = D_800E7880[omCurrentObj->objId] - 0xB;
@@ -1266,9 +1266,9 @@ void func_801EE728_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EE728_ovl9.s")
 #endif
 
-extern struct Sub800E1B50_Unk88 *D_8021C1E4_ovl9[];
-extern struct Sub800E1B50_Unk88 *D_8021C1F0_ovl9[];
-extern struct Sub800E1B50_Unk88 *D_8021C1FC_ovl9[];
+extern struct EnemyKindDesc *D_8021C1E4_ovl9[];
+extern struct EnemyKindDesc *D_8021C1F0_ovl9[];
+extern struct EnemyKindDesc *D_8021C1FC_ovl9[];
 extern s32 D_8021C208_ovl9[];
 extern s32 D_8021C214_ovl9[];
 extern s32 D_8021C220_ovl9[];
@@ -1287,7 +1287,7 @@ void func_800B33F4(void);
 #ifdef NON_MATCHING
 /* Left live by a lane mid-work, at 45/277 insns. Draft kept. */
 void func_801EEC28_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     s32 idx;
     f32 temp;
 
@@ -1362,7 +1362,7 @@ void func_801EF07C_ovl9(GObj *arg0) {
 }
 
 extern s32 D_8021C260_ovl9[];
-extern struct Sub800E1B50_Unk98 D_801CBC50;
+extern struct EnemyEventTable D_801CBC50;
 struct Sub800E1B50_Unk34 *func_800A8234(s32, s32, s32);
 void func_800AECC0(f32);
 void func_800AED20(f32);
@@ -1373,7 +1373,7 @@ void ohSleep(s32);
 
 void func_801EF0C4_ovl9(struct GObj *arg0) {
     s32 kind;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct Sub800E1B50_Unk34 *temp;
 
     kind = D_800E7880[omCurrentObj->objId];
@@ -1432,7 +1432,7 @@ void func_800A1F30(void *);
  * 0x20($sp); every other insn is the same shape one register over. */
 void func_801EF354_ovl9(GObj *arg0) {
     GObj *g;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
 
     g = D_800E9AA0[omCurrentObj->objId].as_ptr;
     ent = D_800E1B50[omCurrentObj->objId];
@@ -1467,7 +1467,7 @@ void func_801EF354_ovl9(GObj *arg0) {
 /* FACTORY: 8/546, frame 0x58 vs the ROM's 0x60 and a different prologue
    order (the ROM loads omCurrentObj before its first register save).  The
    largest function in this bloc; the body itself tracks the ROM. */
-extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
+extern struct EnemyEventTable D_801CB470_ovl7;
 extern u32 D_8021C2BC_ovl9[];
 extern f32 D_8021C2C4_ovl9[];
 extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
@@ -1491,7 +1491,7 @@ void ohSleep(s32);
  * the model root every tick, 18 ticks out, 18 ticks decelerating back,
  * then drifts forever with collision off (thread killed externally). */
 void func_801EF524_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     u8 mode;
     u32 id;
 
@@ -1625,7 +1625,7 @@ void func_801EF524_ovl9(GObj *arg0) {
     }
 }
 #elif defined(PORT)
-extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
+extern struct EnemyEventTable D_801CB470_ovl7;
 extern u32 D_8021C2BC_ovl9[];
 extern f32 D_8021C2C4_ovl9[];
 extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
@@ -1649,7 +1649,7 @@ void ohSleep(s32);
  * the model root every tick, 18 ticks out, 18 ticks decelerating back,
  * then drifts forever with collision off (thread killed externally). */
 void func_801EF524_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
+    EnemyRecord *rec;
     u8 mode;
     u32 id;
 
@@ -1837,7 +1837,7 @@ extern void func_800FD570(s32, s32, f32, f32, f32);
 extern void func_801A3E80_ovl7(struct GObj *);
 
 void func_801EFFCC_ovl9(struct GObj *arg0) {
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     func_800FB914(1);
     play_sound(0x15A);

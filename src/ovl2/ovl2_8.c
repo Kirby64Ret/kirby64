@@ -411,7 +411,12 @@ s32 func_8010EA20(struct UnkEA20 *arg0, struct UnkEA20 *arg1, s32 arg2) {
 }
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 236/242, UNCERTAIN -- fresh derivation, time-boxed. The real
+ * draft (guarded the same way) sits next to the PORT implementation
+ * below, since both need struct UnkF9AC, which this spot in the file
+ * predates. See that site's comment for the residue note. */
+#elif defined(PORT)
 /* The PORT implementation of func_8010EA68 lives below func_8010F9AC's
  * forward declarations: it needs struct UnkF9AC, which this spot in the
  * file predates. */
@@ -518,7 +523,13 @@ s32 func_8010EFA8(struct UnkEE24 *arg0, struct UnkEFA8 *arg1) {
     return 1;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 515/521, UNCERTAIN -- fresh derivation, time-boxed. The
+ * real draft (guarded the same way) sits next to the PORT
+ * implementation below, since both need struct UnkF9AC, which this
+ * spot in the file predates. See that site's comment for the residue
+ * note. */
+#elif defined(PORT)
 /* The PORT implementation of func_8010F140 also lives below the forward
  * declarations, next to func_8010EA68's. */
 #else
@@ -561,7 +572,107 @@ struct UnkF9AC {
 s32 func_8010EA68(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
 s32 func_8010F140(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
 
-#ifdef PORT
+/* Sphere (arg0: center unkC, radius unk18.x) vs capsule (arg1: segment
+ * unkC..unk18, radius unk24), from asm/nonmatchings/ovl2/ovl2_8/
+ * func_8010EA68.s. Per-axis reject against the capsule's expanded
+ * extent, then closest-point-on-segment; a degenerate (zero-length)
+ * segment tail-calls the sphere-sphere test. arg2, when non-NULL,
+ * receives the contact point as three floats at offset 0. arg1->unk24
+ * (the capsule radius) is padding in the N64-side struct UnkF9AC, so
+ * it is read through a raw offset cast rather than a named field, same
+ * as arg2's output floats at struct offsets that are u8 fields under
+ * that struct's N64 view.
+ *
+ * FACTORY: 236/242, UNCERTAIN -- fresh derivation, time-boxed. m2c's
+ * raw shape matches this control flow line for line; renamed its
+ * temp_fN/var_fN soup to real per-axis names. Compiles, word count
+ * matches (242/242), residue extreme (236/242) -- broad register/
+ * frame relabeling from word 0. This file has zero verify.py-visible
+ * matches (GATE GAP), so this residue is measured against the
+ * unguarded compile only; treat it as UNCERTAIN until the sha1 gate.
+ * Worth a fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+s32 func_8010EA68(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
+    f32 r = arg0->unk18.x + *(f32 *) ((u8 *) arg1 + 0x24);
+    f32 ax = arg0->unkC.x;
+    f32 ay = arg0->unkC.y;
+    f32 az = arg0->unkC.z;
+    f32 b1x = arg1->unkC.x;
+    f32 b1y = arg1->unkC.y;
+    f32 b1z = arg1->unkC.z;
+    f32 b2x = arg1->unk18.x;
+    f32 b2y = arg1->unk18.y;
+    f32 b2z = arg1->unk18.z;
+    f32 dx, dy, dz, dd;
+    f32 fx, fy, fz;
+    f32 cx, cy, cz;
+    f32 t;
+
+    if (b1x < b2x) {
+        if ((ax < b1x - r) || (b2x + r < ax)) {
+            return 0;
+        }
+    } else {
+        if ((ax < b2x - r) || (b1x + r < ax)) {
+            return 0;
+        }
+    }
+    if (b1y < b2y) {
+        if ((ay < b1y - r) || (b2y + r < ay)) {
+            return 0;
+        }
+    } else {
+        if ((ay < b2y - r) || (b1y + r < ay)) {
+            return 0;
+        }
+    }
+    if (b1z < b2z) {
+        if ((az < b1z - r) || (b2z + r < az)) {
+            return 0;
+        }
+    } else {
+        if ((az < b2z - r) || (b1z + r < az)) {
+            return 0;
+        }
+    }
+    dx = b2x - b1x;
+    dy = b2y - b1y;
+    dz = b2z - b1z;
+    dd = dx * dx + dy * dy + dz * dz;
+    if (dd == 0.0f) {
+        /* func_8010E8F0's N64 prototype passes its f32 args as raw s32
+         * bit patterns (the o32 bit-passing trick documented at the top
+         * of this file) and its out-pointer as a raw s32 too. */
+        f32 sphereR = arg0->unk18.x;
+        f32 capsuleR = *(f32 *) ((u8 *) arg1 + 0x24);
+
+        return func_8010E8F0(&arg0->unkC, *(s32 *) &sphereR, &arg1->unkC,
+                              *(s32 *) &capsuleR, (s32) (uintptr_t) arg2);
+    }
+    fx = b1x - ax;
+    fy = b1y - ay;
+    fz = b1z - az;
+    t = -(dx * fx + dy * fy + dz * fz) / dd;
+    if (t < 0.0f) {
+        t = 0.0f;
+    } else if (t > 1.0f) {
+        t = 1.0f;
+    }
+    cx = dx * t + fx;
+    cy = dy * t + fy;
+    cz = dz * t + fz;
+    if (cx * cx + cy * cy + cz * cz <= r * r) {
+        if (arg2 != NULL) {
+            f32 *out = (f32 *) arg2;
+            out[0] = cx * 0.5f + ax;
+            out[1] = cy * 0.5f + ay;
+            out[2] = cz * 0.5f + az;
+        }
+        return 1;
+    }
+    return 0;
+}
+#elif defined(PORT)
 /* PORT: sphere (arg0: center unkC, radius unk18.x) vs capsule (arg1:
  * segment unkC..unk18, radius unk24), from
  * asm/nonmatchings/ovl2/ovl2_8/func_8010EA68.s. Per-axis reject against the
@@ -643,15 +754,174 @@ s32 func_8010EA68(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *ar
     }
     return 0;
 }
+#endif
 
-/* PORT: capsule vs capsule (segments unkC..unk18, radii unk24), from
+/* Capsule vs capsule (segments unkC..unk18, radii unk24), from
  * asm/nonmatchings/ovl2/ovl2_8/func_8010F140.s. Per-axis reject on both
  * expanded extents, then the classic closest-point-between-segments solve
  * (a = dA.dA, e = dB.dB, b = dA.dB, denom = a*e - b*b, with the parallel
  * case going through t = dA.r / b exactly as the ROM does, division by an
  * unclamped b included). arg2, when non-NULL, receives the contact point --
  * the midpoint of the closest-approach segment -- as three floats at offset
- * 0 (asm: swc1 to 0x0/0x4/0x8 off $a2). */
+ * 0. Both radii (unk24) are padding in the N64-side struct UnkF9AC, so
+ * they are read through raw offset casts, same as func_8010EA68.
+ *
+ * FACTORY: 515/521, UNCERTAIN -- fresh derivation,
+ * time-boxed. m2c's raw shape matches this control flow line for
+ * line; renamed its temp_fN/var_fN soup to real per-axis names,
+ * mirroring func_8010F140's already-clean PORT-side algebra.
+ * This file has zero verify.py-visible matches (GATE GAP), so this
+ * residue is measured against the unguarded compile only; treat it
+ * as UNCERTAIN until the sha1 gate. Worth a fresh m2c pass before
+ * feeding to the permuter. */
+#ifdef MIPS_TO_C
+s32 func_8010F140(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
+    f32 *out = (f32 *) arg2;
+    f32 r = *(f32 *) ((u8 *) arg0 + 0x24) + *(f32 *) ((u8 *) arg1 + 0x24);
+    f32 a1x = arg0->unkC.x;
+    f32 a1y = arg0->unkC.y;
+    f32 a1z = arg0->unkC.z;
+    f32 a2x = arg0->unk18.x;
+    f32 a2y = arg0->unk18.y;
+    f32 a2z = arg0->unk18.z;
+    f32 b1x = arg1->unkC.x;
+    f32 b1y = arg1->unkC.y;
+    f32 b1z = arg1->unkC.z;
+    f32 b2x = arg1->unk18.x;
+    f32 b2y = arg1->unk18.y;
+    f32 b2z = arg1->unk18.z;
+    f32 minA, maxA, minB, maxB;
+    f32 dAx, dAy, dAz;
+    f32 dBx, dBy, dBz;
+    f32 rx, ry, rz;
+    f32 a, b, c, e, f, denom;
+    f32 s, t;
+    f32 wx, wy, wz;
+    f32 ux, uy, uz;
+    f32 dx, dy, dz;
+
+    if (a1x < a2x) {
+        minA = a1x;
+        maxA = a2x;
+    } else {
+        minA = a2x;
+        maxA = a1x;
+    }
+    if (b1x < b2x) {
+        minB = b1x;
+        maxB = b2x;
+    } else {
+        minB = b2x;
+        maxB = b1x;
+    }
+    if ((maxB < minA - r) || (maxA + r < minB)) {
+        return 0;
+    }
+    if (a1y < a2y) {
+        minA = a1y;
+        maxA = a2y;
+    } else {
+        minA = a2y;
+        maxA = a1y;
+    }
+    if (b1y < b2y) {
+        minB = b1y;
+        maxB = b2y;
+    } else {
+        minB = b2y;
+        maxB = b1y;
+    }
+    if ((maxB < minA - r) || (maxA + r < minB)) {
+        return 0;
+    }
+    if (a1z < a2z) {
+        minA = a1z;
+        maxA = a2z;
+    } else {
+        minA = a2z;
+        maxA = a1z;
+    }
+    if (b1z < b2z) {
+        minB = b1z;
+        maxB = b2z;
+    } else {
+        minB = b2z;
+        maxB = b1z;
+    }
+    if ((maxB < minA - r) || (maxA + r < minB)) {
+        return 0;
+    }
+    dAx = a2x - a1x;
+    dAy = a2y - a1y;
+    dAz = a2z - a1z;
+    dBx = b2x - b1x;
+    dBy = b2y - b1y;
+    dBz = b2z - b1z;
+    b = dAx * dBx + dAy * dBy + dAz * dBz;
+    rx = a1x - b1x;
+    ry = a1y - b1y;
+    rz = a1z - b1z;
+    a = dAx * dAx + dAy * dAy + dAz * dAz;
+    e = dBx * dBx + dBy * dBy + dBz * dBz;
+    denom = a * e - b * b;
+    if (denom == 0.0f) {
+        c = dAx * rx + dAy * ry + dAz * rz;
+        t = c / b;
+        if (t < 0.0f) {
+            s = -c / a;
+        } else if (t > 1.0f) {
+            s = (b - c) / a;
+        } else {
+            s = 0.0f;
+        }
+    } else {
+        f = dBx * rx + dBy * ry + dBz * rz;
+        c = dAx * rx + dAy * ry + dAz * rz;
+        s = (b * f - e * c) / denom;
+        if (s < 0.0f) {
+            s = 0.0f;
+        } else if (s > 1.0f) {
+            s = 1.0f;
+        }
+        t = (b * s + f) / e;
+        if (t < 0.0f) {
+            s = -c / a;
+        } else if (t > 1.0f) {
+            s = (b - c) / a;
+        } else {
+            s = (b * t - c) / a;
+        }
+    }
+    if (s < 0.0f) {
+        s = 0.0f;
+    } else if (s > 1.0f) {
+        s = 1.0f;
+    }
+    wx = dAx * s + rx;
+    wy = dAy * s + ry;
+    wz = dAz * s + rz;
+    if (t < 0.0f) {
+        t = 0.0f;
+    } else if (t > 1.0f) {
+        t = 1.0f;
+    }
+    ux = dBx * t;
+    uy = dBy * t;
+    uz = dBz * t;
+    dx = wx - ux;
+    dy = wy - uy;
+    dz = wz - uz;
+    if (dx * dx + dy * dy + dz * dz <= r * r) {
+        if (out != NULL) {
+            out[0] = dx * 0.5f + ux + b1x;
+            out[1] = dy * 0.5f + uy + b1y;
+            out[2] = dz * 0.5f + uz + b1z;
+        }
+        return 1;
+    }
+    return 0;
+}
+#elif defined(PORT)
 s32 func_8010F140(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
     f32 *out = (f32 *) arg2;
     f32 r = arg0->unk24 + arg1->unk24;

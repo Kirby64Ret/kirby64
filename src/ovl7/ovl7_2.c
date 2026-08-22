@@ -76,7 +76,7 @@ void func_8019F3F0_ovl7(void) {
 }
 
 s32 func_8019F410_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     u32 objId;
     struct Ovl7AnimObj *anim;
     struct Ovl7AnimHdrSub *hdr;
@@ -100,7 +100,7 @@ s32 func_8019F410_ovl7(s32 arg0) {
 }
 
 s32 func_8019F4D0_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     u32 objId;
     struct Ovl7AnimObj *anim;
     struct Ovl7AnimHdrSub *hdr;
@@ -124,7 +124,7 @@ s32 func_8019F4D0_ovl7(s32 arg0) {
 }
 
 s32 func_8019F590_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     u32 objId;
     struct Ovl7AnimObj *anim;
     struct Ovl7AnimHdrSub *hdr;
@@ -179,7 +179,7 @@ s32 func_8019F650_ovl7(void) {
     void func_801A3E80_ovl7(struct GObj *);
     extern s32 D_800E83E0[], D_800E8220[], D_800E0D50[];
     s32 pad;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl7_2_AnimInfoA sp24;
 
     if (func_80110B00(&sp24) != 0) {
@@ -253,7 +253,7 @@ void func_8019F9D0_ovl7(GObj *arg0) {
     s32 pad4;
     s32 pad5;
     s32 pad6;
-    struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     struct Ovl7AnimObj *obj;
     struct Ovl7AnimHdrSub *sub;
 
@@ -291,7 +291,7 @@ s32 func_8019FA68_ovl7(void) {
     void func_801A3E80_ovl7(struct GObj *);
     extern s32 D_800E83E0[], D_800E8220[], D_800E0D50[];
     s32 pad;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl7_2_AnimInfoB {
         u8 unk0;
         u8 unk1;
@@ -397,7 +397,7 @@ s32 func_8019FDE8_ovl7(void) {
         u8 filler10[0xC];
     };
     s32 pad0;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl7_2_AnimInfoC sp2C;
     s32 pad1;
 
@@ -504,7 +504,7 @@ s32 func_8019FDE8_ovl7(void) {
         s32 unkC;
         u8 filler10[0xC];
     };
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct PcAnimInfoC info;
     u32 id;
     s32 partner;
@@ -603,7 +603,7 @@ s32 func_801A0244_ovl7(s32 arg0) {
     s32 func_801BC27C_ovl7(s32, s32);
     extern s32 D_800E0D50[];
     s32 pad;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     s32 *slot;
     s32 theirs = 0;
     s32 mine = 0;
@@ -647,7 +647,7 @@ void func_801A03B4_ovl7(void) {
 }
 
 void func_801A03E4_ovl7(s32 arg0) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct Ovl7AnimObj *anim;
     struct Ovl7AnimHdrSub *hdr;
 
@@ -664,7 +664,7 @@ void func_801A03E4_ovl7(s32 arg0) {
 }
 
 struct Ovl7AnimObj *func_801A0464_ovl7(void) {
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
 
     ent = D_800E1B50[omCurrentObj->objId];
     func_80111550(omCurrentObj->objId);
@@ -704,7 +704,7 @@ s32 func_801A04B8_ovl7(void) {
         s32 unkC;
         u8 filler10[0xC];
     };
-    struct Ovl7_2_Carried { /* UnkStruct800E1B50 with unk3A SIGNED, so the -1
+    struct Ovl7_2_Carried { /* EnemyRecord with unk3A SIGNED, so the -1
                                store keeps the -1 alive for the $a3 colouring */
         u8 filler0[0x3A];
         s8 unk3A;
@@ -798,7 +798,7 @@ void func_801A04B8_ovl7(void) {
         u8 filler10[0xC];
     };
     u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct EnemyRecord *ent = D_800E1B50[id];
     struct PcAnimInfoD info;
     s32 carrier;
 
@@ -871,7 +871,7 @@ void func_801A04B8_ovl7(void) {
 // `s32 id = omCurrentObj->objId` local used at every index (byte-identical
 // output to the inline form, 22/47 either way).
 s32 func_801A07C4_ovl7(void) {
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk90 == 0) {
         return 0;
@@ -909,7 +909,7 @@ s32 func_801A0880_ovl7(void) {
         u8 filler10[0x10];
     };
     s32 pad0;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl7_2_AnimInfoE sp28;
     s32 pad1;
 
@@ -976,7 +976,7 @@ s32 func_801A0B10_ovl7(void) {
     s32 func_80110150(void *);
     s32 func_80111A04(u32, u32);
     extern s32 D_800E83E0[];
-    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl7_2_AnimInfo sp2C;
 
     if (ent->unk8C == 0) {

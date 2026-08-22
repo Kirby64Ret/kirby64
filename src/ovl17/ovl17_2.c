@@ -1146,7 +1146,7 @@ void func_801E073C_ovl17(void) {
     void func_80111ECC(struct Ovl17AnimSlot *);
     s32 func_80110B00(struct Ovl17AnimEvent *);
     void func_800BC11C(f32);
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct Ovl17AnimSlot *slot;
     struct DObj *hand;
     u32 *shape;
@@ -1261,7 +1261,7 @@ void func_801E073C_ovl17(void) {
     s32 func_80110B00(struct PcOvl17AnimInfo *);
     void func_800BC11C(f32);
     struct PcOvl17AnimInfo sp28;
-    struct UnkStruct800E1B50 *ent;
+    struct EnemyRecord *ent;
     struct PcOvl17CollSlot *slot;
     struct DObj *hand;
     u32 *shape;

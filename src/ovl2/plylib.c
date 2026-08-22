@@ -1278,7 +1278,7 @@ void func_8011D0FC(struct DObj *arg0, s32 arg1, f32 arg2) {
  * carry packed integers. */
 void func_8011D0FC(struct DObj *ln, s32 arg1, f32 arg2) {
     struct GenNodeXfm {
-        /* 0x00 */ u32 unk0;
+        /* 0x00 */ u32 flags;
         /* 0x04 */ Vector pos;
     };
     struct GenNode {
@@ -3624,7 +3624,7 @@ s32 func_80120CCC(f32 arg0, f32 arg1) {
 /* FACTORY: 31/143. Structure and every N64 spelling recovered: D_801283E8 is a 0xC-stride row {struct DmgPal *unk0, s32 unk4 count, s32 unk8 flash} and D_801283F0 is just that row's +8 member symbol (same masked lo16, so the row-array spelling is correct); the palette records are 0x10-stride with the hold time at +0xC; and CRUCIALLY damageFlashTimer/damagePaletteTimer are declared u16 in Player.h but the ROM reads them with lh and materialises their -1/-2 constants with addiu, so every read and store must go through *(s16 *)&field -- the plain (s16) cast emits lhu+sll+sra and the plain store emits ori 0xfffe (that one change was worth 14 words). timer must be s32, not s16, or the compare gets a redundant sign-extend. Confirmed the reset tests the PRE-decrement value (sltiu in the bne delay slot), as the PORT arm notes and m2c gets wrong. Residue: the ROM hoists &D_800D7010 into a0 before the D_800E7CE0 test so both arms share it; IDO here re-materialises it per arm, leaving the block 3 words short and rotating the temp registers after it. An explicit held u32 *dst local did not move it */
 void func_80120E74(UNUSED s32 arg0) {
     struct DmgPal {
-        /* 0x00 */ u32 unk0;
+        /* 0x00 */ u32 flags;
         /* 0x04 */ u32 unk4;
         /* 0x08 */ u32 unk8;
         /* 0x0C */ s32 unkC;
@@ -4438,29 +4438,34 @@ s32 func_80122558(void) {
 }
 #else
 s32 func_80122558(void) {
-    struct Unk8012BCA0 {
-        /* 0x00 */ u32 unk0;
+    /* Whole-block view of the collision result D_8012BCA0 (struct
+     * CollisionResult in ovl2_7.c) so the probe below can be run and undone.
+     * `flags >> 19` is that record's hits field; == 7 / == 0x38 means all
+     * three front-wall or all three back-wall contact bits are set, i.e. a
+     * full-height wall in front of / behind Kirby. */
+    struct ColResultSave {
+        /* 0x00 */ u32 flags;
         /* 0x04 */ u8 pad4[0x54];
     };
     s32 func_8010C734(struct PositionState *);
     extern u8 D_8012BCA0[];
     s32 grab;
-    struct Unk8012BCA0 saved;
+    struct ColResultSave saved;
 
     if ((gKirbyState.unk15 == 0) && (gKirbyState.unk4 == 0)) {
         if (!(gKirbyState.isTurning & 5)) {
             grab = 0;
-            saved = *(struct Unk8012BCA0 *) D_8012BCA0;
+            saved = *(struct ColResultSave *) D_8012BCA0;
             if (((D_800E6A10[omCurrentObj->objId] == 1.0f) && (gKirbyState.rightCollisionNext != 0)) ||
             ((D_800E6A10[omCurrentObj->objId] == -1.0f) && (gKirbyState.leftCollisionNext != 0))) {
                 if (func_8010C734(&gPositionState) != 0) {
-                    if ((((((struct Unk8012BCA0 *) D_8012BCA0)->unk0 >> 19) & 7) == 7) ||
-                    (((((struct Unk8012BCA0 *) D_8012BCA0)->unk0 >> 19) & 0x38) == 0x38)) {
+                    if ((((((struct ColResultSave *) D_8012BCA0)->flags >> 19) & 7) == 7) ||
+                    (((((struct ColResultSave *) D_8012BCA0)->flags >> 19) & 0x38) == 0x38)) {
                         grab = 1;
                     }
                 }
             }
-            *(struct Unk8012BCA0 *) D_8012BCA0 = saved;
+            *(struct ColResultSave *) D_8012BCA0 = saved;
             if (grab != 0) {
                 gKirbyState.unk30 = 0;
                 gKirbyState.unk168 = 0.0f;
@@ -4477,8 +4482,13 @@ s32 func_80122558(void) {
 #ifdef MIPS_TO_C
 /* FACTORY: 38/180. Written as a CLONE of func_80122558 in this file (now MATCHED), which is the same wall-probe skeleton -- the 0x58 save/restore of D_8012BCA0 through 'extern u8 D_8012BCA0[]' plus a local struct cast, the same >>19 &7/&0x38 flag test, and the same 'grab = 0 inside the isTurning arm' placement all reproduce exactly. Tail block decoded: the ROM does div.s 1.0f/nodeLength then mul.s by the +/-0.25f step, and the node stride is the plain 0x10 struct index. Residue: the ROM materialises 1.0f THREE separate times (0x80122790, 0x80122868, 0x801228C4) and IDO here CSEs the first two into one register hoisted ABOVE the struct copy, adding 2 words at the top and shifting every branch displacement after it. Lever 7's double-literal fork is not usable on 1.0f -- it would turn the compare/divide into double ops */
 s32 func_801226FC(void) {
-    struct Unk8012BCA0 {
-        /* 0x00 */ u32 unk0;
+    /* Whole-block view of the collision result D_8012BCA0 (struct
+     * CollisionResult in ovl2_7.c) so the probe below can be run and undone.
+     * `flags >> 19` is that record's hits field; == 7 / == 0x38 means all
+     * three front-wall or all three back-wall contact bits are set, i.e. a
+     * full-height wall in front of / behind Kirby. */
+    struct ColResultSave {
+        /* 0x00 */ u32 flags;
         /* 0x04 */ u8 pad4[0x54];
     };
     s32 func_8010CABC(struct PositionState *, u8 *);
@@ -4486,7 +4496,7 @@ s32 func_801226FC(void) {
     void func_801229D0(void);
     extern u8 D_8012BCA0[];
     s32 grab;
-    struct Unk8012BCA0 saved;
+    struct ColResultSave saved;
     s32 objId;
     f32 *prog;
     f32 step;
@@ -4495,17 +4505,17 @@ s32 func_801226FC(void) {
     if ((gKirbyState.unk15 == 0) && (gKirbyState.unk4 == 0)) {
         if (!(gKirbyState.isTurning & 5)) {
             grab = 0;
-            saved = *(struct Unk8012BCA0 *) D_8012BCA0;
+            saved = *(struct ColResultSave *) D_8012BCA0;
             if (((D_800E6A10[omCurrentObj->objId] == 1.0f) && (gKirbyState.rightCollisionNext != 0)) ||
                 ((D_800E6A10[omCurrentObj->objId] == -1.0f) && (gKirbyState.leftCollisionNext != 0))) {
                 if (func_8010CABC(&gPositionState, D_8012BCA0) != 0) {
-                    if (((((struct Unk8012BCA0 *) D_8012BCA0)->unk0 >> 19) & 7) == 7 ||
-                        ((((struct Unk8012BCA0 *) D_8012BCA0)->unk0 >> 19) & 0x38) == 0x38) {
+                    if (((((struct ColResultSave *) D_8012BCA0)->flags >> 19) & 7) == 7 ||
+                        ((((struct ColResultSave *) D_8012BCA0)->flags >> 19) & 0x38) == 0x38) {
                         grab = 1;
                     }
                 }
             }
-            *(struct Unk8012BCA0 *) D_8012BCA0 = saved;
+            *(struct ColResultSave *) D_8012BCA0 = saved;
             if (grab != 0) {
                 objId = omCurrentObj->objId;
                 if (D_800E6A10[objId] == 1.0f) {
@@ -4679,10 +4689,10 @@ void func_80122CE8(void) {
         /* 0x00 */ s32 unk0;
         /* 0x04 */ u8 unk4;
     };
-    struct Unk8012BCA0 {
+    struct ColResultWater {
         /* 0x00 */ u8 pad0[0x40];
-        /* 0x40 */ struct WaterRec *unk40[3];
-        /* 0x4C */ s32 unk4C[3];
+        /* 0x40 */ struct WaterRec *waterRec[3];
+        /* 0x4C */ s32 waterSrc[3];
     };
     extern u8 D_8012BCA0[];
     s32 func_8010DF9C(f32 *);
@@ -4709,7 +4719,7 @@ void func_80122CE8(void) {
         return;
     }
     for (i = 0; i < cnt; i++) {
-        rec = ((struct Unk8012BCA0 *) D_8012BCA0)->unk40[i];
+        rec = ((struct ColResultWater *) D_8012BCA0)->waterRec[i];
         if (rec->unk4 == 1) {
             raised[0] = pos[0];
             raised[2] = pos[2];
@@ -4717,14 +4727,14 @@ void func_80122CE8(void) {
             cnt2 = func_8010DF9C(raised);
             if (cnt2 != 0) {
                 for (j = 0; j < cnt2; j++) {
-                    if (((struct Unk8012BCA0 *) D_8012BCA0)->unk40[j]->unk4 == 1) {
+                    if (((struct ColResultWater *) D_8012BCA0)->waterRec[j]->unk4 == 1) {
                         func_800A7F74(5, 1, 0x1E, pos[0], pos[1], pos[2]);
                         return;
                     }
                 }
                 continue;
             }
-            if (func_8010E048(rec, ((struct Unk8012BCA0 *) D_8012BCA0)->unk4C[i], pos, raised, &n, pt) != 0) {
+            if (func_8010E048(rec, ((struct ColResultWater *) D_8012BCA0)->waterSrc[i], pos, raised, &n, pt) != 0) {
                 dy = pt[1] - pos[1];
                 if (dy < 40.0f) {
                     return;
