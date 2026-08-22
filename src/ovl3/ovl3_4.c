@@ -199,18 +199,30 @@ void func_80169A98_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* NOT MEASURABLE: redeclaration of 'curObjSleepForever'; previous declaration at line 281 in file 'src/ovl3/ovl3_4.c'
- * ovl3_4.c keeps its prototypes (curObjSleepForever, func_800B33F4,
- * func_800B531C, func_800B4924, func_800B4954) in a PORT-only block, so nothing
- * declares them for the N64 build. A draft must supply them in-body, and IDO
- * allows only ONE block-scope copy per TU -- so only one draft in this file can
- * be compiled at a time. Each of these four was measured that way in isolation
- * and then sealed; the note above records what it scored. Un-blocking the whole
- * file is a one-line coordinator change: move those prototypes to real file
- * scope. Do NOT hoist them from a lane -- the equivalent move in ovl10_1.c was
- * measured to move a matched function and grow that TU by 0x40. */
-
+/* FACTORY: 317/333, residue.  Compiles now -- the "NOT MEASURABLE" note this
+ * replaces was a misdiagnosis.  Nothing in ovl3_4.c permits only one
+ * block-scope prototype: curObjSleepForever / ohSleep / func_8016BBD0_ovl3
+ * live in the NON_MATCHING block at the top (lines 103-120), so the N64
+ * build saw NOTHING for them, the bare calls in this draft created implicit
+ * int declarations, and THOSE collided with the file's real unguarded
+ * copies further down -- which is what the compiler was reporting.
+ * Declaring them in-body, spelled exactly as the later copies, fixes it,
+ * and unlimited duplicate copies are fine (measured: three drafts in this
+ * file now carry the same three prototypes at once).
+ *
+ * Remaining residue is one promoted local, not shape: the saved set is
+ * already the ROM's exactly (s0-s5) but the frame is 0x30 against 0x38.
+ * The ROM has two more 4-byte slots above the saves, 0x30 (used) and 0x34
+ * (reserved and never written), and puts `lw $s0, 0x0($v0)` where this
+ * draft keeps the value in $a2 -- so one local that the ROM spills is
+ * still living in a temp here.  Adding dead `s32 pad` locals does NOT
+ * reproduce it; IDO drops unused scalars in this function, so the 0x30
+ * slot has to come from a real value. */
 void func_80169C10_ovl3(GObj *arg0) {
+    void func_8016BBD0_ovl3(void);
+    void func_8016BC00_ovl3(void);
+    void curObjSleepForever(void);
+    void ohSleep(s32);
     extern void func_800B531C(struct GObj *);
     extern void func_800B4954(struct GObj *);
     extern void func_800B4954(GObj *);
@@ -420,18 +432,22 @@ void func_8016A144_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* NOT MEASURABLE: redeclaration of 'func_800B33F4'; previous declaration at line 451 in file 'src/ovl3/ovl3_4.c'
- * ovl3_4.c keeps its prototypes (curObjSleepForever, func_800B33F4,
- * func_800B531C, func_800B4924, func_800B4954) in a PORT-only block, so nothing
- * declares them for the N64 build. A draft must supply them in-body, and IDO
- * allows only ONE block-scope copy per TU -- so only one draft in this file can
- * be compiled at a time. Each of these four was measured that way in isolation
- * and then sealed; the note above records what it scored. Un-blocking the whole
- * file is a one-line coordinator change: move those prototypes to real file
- * scope. Do NOT hoist them from a lane -- the equivalent move in ovl10_1.c was
- * measured to move a matched function and grow that TU by 0x40. */
-
+/* FACTORY: 392/395, residue.  Compiles now; see func_80169C10_ovl3's note
+ * for why the recorded "redeclaration of func_800B33F4" blocker was a
+ * misdiagnosis and what the in-body prototypes below are doing.
+ *
+ * Length is close (395 against the ROM's 395) and the GPR save set is the
+ * ROM's (s0-s7), but this draft saves THREE FP registers ($f20/$f22/$f24)
+ * where the ROM saves two, and the frame is 0x88 against 0x78 -- the extra
+ * sdc1 pair plus its alignment is exactly that 0x10.  One float too many is
+ * being kept live across a call; find it and the frame and the colouring
+ * should follow together. */
 void func_8016A308_ovl3(s32 arg0) {
+    void func_8016BBD0_ovl3(void);
+    void func_8016BC00_ovl3(void);
+    void curObjSleepForever(void);
+    void ohSleep(s32);
+    void func_800B33F4(void);
     extern void func_800B531C(struct GObj *);
     extern void func_800B4954(struct GObj *);
     extern f32 func_800F8824(Vector *, f32);
@@ -685,18 +701,23 @@ void func_8016A934_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* NOT MEASURABLE: redeclaration of 'curObjSleepForever'; previous declaration at line 795 in file 'src/ovl3/ovl3_4.c'
- * ovl3_4.c keeps its prototypes (curObjSleepForever, func_800B33F4,
- * func_800B531C, func_800B4924, func_800B4954) in a PORT-only block, so nothing
- * declares them for the N64 build. A draft must supply them in-body, and IDO
- * allows only ONE block-scope copy per TU -- so only one draft in this file can
- * be compiled at a time. Each of these four was measured that way in isolation
- * and then sealed; the note above records what it scored. Un-blocking the whole
- * file is a one-line coordinator change: move those prototypes to real file
- * scope. Do NOT hoist them from a lane -- the equivalent move in ovl10_1.c was
- * measured to move a matched function and grow that TU by 0x40. */
-
+/* FACTORY: 593/603, residue.  Compiles now; see func_80169C10_ovl3's note
+ * for the declaration story.
+ *
+ * The gap here is register pressure and it is large: the ROM runs this
+ * whole 603-word function on a 0x20 frame saving only s0 and s1, while
+ * this draft needs 0x30 and saves s0-s3.  Two values that the ROM
+ * recomputes or re-reads are being held live across calls instead.  That
+ * is the same defect class as func_801DFABC_ovl17 -- when the ROM's frame
+ * is much smaller than the draft's, the draft's locals are the defect, not
+ * the allocator -- so the move is to inline the two extra long-lived
+ * values back into their uses rather than to chase registers. */
 void func_8016AAA4_ovl3(s32 arg0) {
+    void func_8016BBD0_ovl3(void);
+    void func_8016BC00_ovl3(void);
+    void curObjSleepForever(void);
+    void ohSleep(s32);
+    void func_800B33F4(void);
     extern void func_800B531C(struct GObj *);
     extern void func_800B4924(s32);
     extern void func_800B4954(struct GObj *);
@@ -1198,15 +1219,21 @@ void func_8016BC00_ovl3(void) {
 }
 
 #ifdef MIPS_TO_C
-/* NOT MEASURED: this draft was installed but its score was captured from the wrong
- * line of verify output, so no number here is trustworthy. Same file-wide blocker
- * as its three siblings: ovl3_4.c keeps curObjSleepForever / func_800B33F4 /
- * func_800B531C / func_800B4924 / func_800B4954 in a PORT-only block, so a draft
- * must declare them in-body and IDO permits only one block-scope copy per TU.
- * Re-measure this one alone after the coordinator moves those prototypes to file
- * scope. Do NOT hoist them from a lane -- the same move in ovl10_1.c moved a
- * matched function and grew that TU by 0x40. */
-
+/* FACTORY: ~119/130, residue -- measured by hand, see below.  Compiles now;
+ * see func_80169C10_ovl3's note for why the recorded declaration blocker
+ * was a misdiagnosis.
+ *
+ * THIS ONE IS A PADDING TRAP AND MUST NEVER BE UN-GUARDED.  Its listing
+ * carries six `nop` words AFTER `.size func_8016BD24_ovl3` (listing lines
+ * 142-147): those are the translation unit's alignment padding, C cannot
+ * emit them, and converting this function would silently shorten the TU
+ * and shift everything after it.  verify.py refuses to score it for that
+ * reason and reports it as unverifiable -- which is correct behaviour, not
+ * a tooling gap, so do not "fix" the tool to make a number appear.  The
+ * score above comes from comparing the listing's 130 words up to `.size`
+ * against the draft's own 130-word window with only HI16 masked, so it is
+ * a crude upper bound on the residue.  The draft is 117 words against 130,
+ * so 13 words of shape are still missing before colouring matters. */
 void func_8016BD24_ovl3(s32 arg0) {
     extern void func_800B531C(struct GObj *);
     extern void set_kirby_action_1(s32, s32);

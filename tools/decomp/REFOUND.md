@@ -260,11 +260,30 @@ lane is actively editing -- confirm against build/verify/ before believing it.
 
 - **src/ovl10/ovl10_5b.c keeps the prototypes for func_800A9864 /
   func_800FF144 / func_800FF1CC inside the PORT-only block**, so the N64 build
-  has none in scope. IDO permits exactly one block-scope copy per TU and
-  rejects both a second copy and the implicit int a bare call creates, so only
-  ONE draft in that file can compile at a time (func_801F1554 currently owns
-  it). Moving those three prototypes to real file scope unblocks
-  func_801F1A24, func_801F11A8 and func_801F2098 at once.
+  has none in scope.
+
+  **RESOLVED, and the rule as first written was FALSE.** "IDO permits exactly
+  one block-scope copy per TU" does not hold: tested directly under the
+  project's own IDO invocation with -Xfullwarn, two and three identical
+  prototypes in different function bodies compile clean, no error and no
+  warning. What IDO actually rejects is (a) two declarations in the TU that
+  DISAGREE -- and a block-scope extern is scoped file-wide, so this fires
+  across functions -- and (b) a declaration placed after a statement in a
+  block, which is just C89. A bare call with nothing in scope creates an
+  implicit `int f()` that counts as a declaration for (a), so a MISSING
+  prototype and a WRONG prototype produce the same error.
+
+  The working form is in-body declarations at the top of the block, each
+  spelled exactly as the file's other copies. Measured cost: zero -- the same
+  body compiled with declarations in-body and with them hoisted to file scope
+  produced byte-identical objects. All four ovl10_5b drafts and three ovl3_4
+  drafts now carry overlapping prototype sets simultaneously.
+
+  **The hoist is a different question, and the predicate is: does any
+  N64-compiled call site change its declaration state?** Hoisting was inert
+  in ovl10_5b.c (every N64 call site there already had a matching declaration
+  in scope) and NOT inert in ovl10_1.c. In-body remains the right default
+  precisely because it cannot change any other function's view.
 
   **MEASURED UNSAFE as written.** The ovl10 lane ran exactly this experiment
   on the sibling file ovl10_1.c under the full LEVERS protocol (all 43

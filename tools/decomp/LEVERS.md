@@ -289,3 +289,27 @@ the pool allocator's real stride is 0x78.
     max(target, current), so a draft with SPURIOUS instructions shows a
     flattering "matched/total". If the word count is above the ROM's, fix the
     count before reading the score.
+
+49. **An implicit int from a bare call counts as a declaration.** With nothing
+    in scope, `f(x)` creates `int f()`, which then collides with the real
+    declaration elsewhere in the TU. So a MISSING prototype and a WRONG
+    prototype produce the identical IDO error; read the "previous declaration
+    at line N" it names before assuming which one is wrong.
+
+50. **Order a statement before its neighbour to share a load.** In
+    func_801F11A8_ovl10 the ROM reads objId three times and shares the FIRST
+    read between the D_801F4D60 store and the D_800E1B50 index; moving
+    `ent = D_800E1B50[objId]` ahead of the store was worth 118 words
+    (139 -> 21). Where two statements both index the same global, their order
+    decides which read IDO shares.
+
+51. **A float literal may be a named extern.** 1.3f in func_801F11A8_ovl10 is
+    D_801F4C94_ovl10, worth 3 words -- and verify.py masks LO16, so this class
+    is invisible to it. Check the listing's %lo relocations, not just the
+    constant's value.
+
+52. **Prove a gate bites before trusting it.** In an all-pragma TU
+    `verify.py --all` reports "0 match, 0 diff", which means zero checks, not
+    correctness. The objdump-vs-build/ diff is the gate there -- and the lane
+    that used it first inserted a dummy function to confirm .text moved
+    (13360 -> 13376) and that restoring returned byte-identical.
