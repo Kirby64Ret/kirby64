@@ -565,7 +565,109 @@ void func_800FF200(struct Ovl2Particle *arg0) {
     }
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 50/194 instructions match (144 diffs). Both loops, the eight
+ * interleaved 16-byte template copies through the shared stack temp, the
+ * free-list chaining and every branch reproduce exactly; the residue is a
+ * whole-function integer register permutation ($a0 vs $v0 for the copy
+ * temp, $v0/$v1 vs $v1/$a0 for the two destination cursors, and the
+ * $a1-$t0 source cursors rotated one slot). The frame is 0x68 where the
+ * ROM has 0x60 because the two destination cursors are kept as named Vtx *
+ * locals; folding them onto the free-list cursors saves the 8 bytes and one
+ * diff but makes the copy loop unreadable, so the names stay. Levers that
+ * landed and must be kept: the free-list counter is UNSIGNED (`sltiu`, not
+ * `slti`), and the template copy must go through a named Vtx local --
+ * assigning the source straight to both destinations makes IDO reload the
+ * source instead of reusing the ROM's shared 16-byte stack temp. */
+void func_800FF2C8(void) {
+    /* The three words at D_8012B998 are one record on the N64 side: the
+     * particle track's GObj, the texture bank it draws from, and the
+     * constant downward acceleration func_800FE154 integrates. The ROM
+     * reaches all five fields through a single base register, which is what
+     * this local view reproduces. */
+    struct ParticleSystem {
+        /* 0x00 */ GObj *gobj;
+        /* 0x04 */ void *texBank;
+        /* 0x08 */ Vector gravity;
+    };
+#define PSYS ((struct ParticleSystem *) &D_8012B998)
+    extern u8 D_80129490[];
+    extern u8 D_801295B8[];
+    extern Vtx D_80124640[];
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+    extern struct GObjProcess *gEntityGObjProcessArray2[];
+    extern struct GObjProcess *gEntityGObjProcessArray5[];
+    void *func_800A8BAC(s32 bankId);
+    s32 request_track_general(s32 kind, s32 objLink, s32 objPriority);
+    void omEndProcess(struct GObjProcess *proc);
+    void func_800AF9B8(s32 animId, s32 objLink);
+    GObj *savedCurObj;
+    s32 slot;
+    Vtx quadVtx;
+    u8 *record;
+    u8 *link;
+    u8 *next;
+    Vtx *front;
+    Vtx *back;
+    u32 i;
+    s32 quad;
+
+    savedCurObj = omCurrentObj;
+    PSYS->texBank = func_800A8BAC(0x20004);
+    slot = request_track_general(0x23, 0x3C, 0x50);
+    PSYS->gobj = D_800DE350[slot];
+    omEndProcess(gEntityGObjProcessArray2[slot]);
+    omEndProcess(gEntityGObjProcessArray[slot]);
+    omEndProcess(gEntityGObjProcessArray5[slot]);
+    omCurrentObj = PSYS->gobj;
+    func_800AF9B8(0x29, 0x10);
+    omCurrentObj = savedCurObj;
+
+    /* Chain the 32 0x128-byte particle records into the free list. */
+    record = D_80129490;
+    PSYS->gravity.x = 0.0f;
+    PSYS->gravity.z = 0.0f;
+    PSYS->gravity.y = -1.0f;
+    D_8012B990 = (void **) D_80129490;
+    next = D_801295B8;
+    link = D_80129490;
+    i = 0;
+    do {
+        i++;
+        *(u8 **) link = next;
+        next += 0x128;
+        link += 0x128;
+    } while (i < 0x1FU);
+    *(u8 **) link = NULL;
+
+    /* Every record carries two copies of the same eight-vertex sprite
+     * template, one per double-buffered frame. */
+    i = 0;
+    do {
+        front = (Vtx *) (record + 0x28);
+        back = (Vtx *) (record + 0xA8);
+        for (quad = 0; quad < 2; quad++) {
+            quadVtx = D_80124640[(quad * 4) + 0];
+            back[0] = quadVtx;
+            front[0] = quadVtx;
+            quadVtx = D_80124640[(quad * 4) + 1];
+            back[1] = quadVtx;
+            front[1] = quadVtx;
+            quadVtx = D_80124640[(quad * 4) + 2];
+            back[2] = quadVtx;
+            front[2] = quadVtx;
+            quadVtx = D_80124640[(quad * 4) + 3];
+            back[3] = quadVtx;
+            front[3] = quadVtx;
+            front += 4;
+            back += 4;
+        }
+        i++;
+        record += 0x128;
+    } while (i != 0x20);
+#undef PSYS
+}
+#elif defined(PORT)
 /* PORT: the level's particle-pool init (the "player spawn entry" the scene
  * postInit runs before the track objects start ticking), from
  * asm/nonmatchings/ovl2/ovl2_5/func_800FF2C8.s.

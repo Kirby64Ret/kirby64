@@ -157,3 +157,29 @@ percentage. Ranked accordingly:
    code, and do not emit a house style of your own; m2c output is a DRAFT to
    be rewritten, never a source of truth to be pasted.
 4. **Granular commits.** One logical change per commit.
+
+## OPEN COORDINATOR TASK: the eight void-returning collision helpers
+
+src/ovl2/ovl2_7.c declares and DEFINES these as `void`, but the ROM's callers
+test their return in $v0:
+
+    func_80103AA0  func_80103F58  func_80104010  func_80104184
+    func_801043B0  func_80104520  func_801047F0  func_801048A4
+
+That blocks eight callers from being decompiled at all (func_80104D2C,
+func_801058B8, func_80107074, func_801078A0, func_80108078, func_80108858,
+func_8010C734, func_8010CABC). Proven dead ends: IDO rejects an in-body
+redeclaration, and calling through a cast emits `jalr` where the ROM has
+`jal`.
+
+So the fix is to retype the eight DEFINITIONS to `s32`. That is a real type
+correction and worth doing, but they are already-matched live C, and
+`verify.py` cannot see them (their listings are gone), so the ONLY sound
+gate is the full ROM sha1:
+
+    1. quiet the tree (no lane mid-edit, permuter paused)
+    2. retype the eight definitions, adding the return the asm shows
+    3. bash tools/decomp/mk.sh   -- must print `build/kirby.us.z64: OK`
+    4. if the sha1 breaks, revert all eight; do not bisect in a live tree
+
+Do NOT attempt this while lanes are running.

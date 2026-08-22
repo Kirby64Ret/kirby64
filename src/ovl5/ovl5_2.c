@@ -1103,7 +1103,114 @@ void func_8015E850_ovl5(GObj *arg0) {
     }
 }
 
-#ifdef PORT
+/* FACTORY: 0/186, frame-size floor. Derived fresh from the .s (the old
+ * PORT arm implemented a DIFFERENT algorithm -- a plain selection sort --
+ * which cannot seed a byte-exact draft; this rewrite follows the ROM's
+ * actual shape instead: the same selection sort, but with the inner
+ * scan unrolled two comparisons per pass, matching the listing's
+ * `bc1fl`-paired compares). Every field, branch and constant checks out
+ * against the listing (verified instruction-by-instruction while
+ * writing this). The two arrays' sizes (`slots[40]`, `dist[40]`) were
+ * sized from the ROM's own frame budget: 0x168 total minus 4 saved regs
+ * + arg/scratch spill (0x28) leaves exactly 0x140 = 40*(4+4) bytes.
+ * Residue: this draft's IDO frame comes out far larger (0x1D8, mostly
+ * extra saved registers) despite matching sizes -- a frame/register-
+ * pressure floor, not a further algorithm-shape defect. Worth a fresh
+ * pass hoisting fewer locals live across the sqrtf call before feeding
+ * to the permuter. */
+#ifdef MIPS_TO_C
+s32 func_8015EAB4_ovl5(s32 arg0) {
+    s32 func_8015F300_ovl5(s32, s32);
+    f32 sqrtf(f32);
+    s32 slots[40];
+    f32 dist[40];
+    s32 count;
+    s32 slot;
+    s32 objId;
+    s32 itemObjId;
+    s32 me;
+    s32 j;
+    s32 k;
+    s32 minIdx;
+    f32 dx;
+    f32 dy;
+    f32 tmpDist;
+    s32 tmpSlot;
+
+    /* Collect every falling item's slot index. The ROM stops scanning at
+     * the first unused (0xFF) slot once it has already found one -- the
+     * item table is packed, so a gap means the rest is empty. */
+    count = 0;
+    for (slot = 0; slot < 0x64; slot++) {
+        objId = D_8018E050_ovl5[slot];
+        if ((count != 0) && (objId == 0xFF)) {
+            break;
+        }
+        if ((objId != 0xFF) && (D_800E9FE0[objId].as_u32 == 3)) {
+            slots[count] = slot;
+            count++;
+        }
+    }
+    if (count == 0) {
+        return 0xFF;
+    }
+    if (count == 1) {
+        return slots[0];
+    }
+
+    /* Distance from this racer to each candidate. */
+    for (j = 0; j < count; j++) {
+        itemObjId = D_8018E050_ovl5[slots[j]];
+        me = D_8018E030_ovl5[arg0];
+        dy = gEntitiesNextPosYArray[itemObjId] - gEntitiesNextPosYArray[me];
+        dx = gEntitiesNextPosXArray[itemObjId] - gEntitiesNextPosXArray[me];
+        dist[j] = sqrtf((dy * dy) + (dx * dx));
+    }
+
+    /* Selection sort ascending by distance, unrolled two comparisons per
+     * inner-loop pass (matches the ROM's unrolled scan). minIdx tracks the
+     * slot already settled by the previous pass. */
+    minIdx = 0;
+    for (j = 1; j < count; j++) {
+        k = j;
+        if ((count - j) & 1) {
+            if (dist[j] < dist[minIdx]) {
+                tmpDist = dist[minIdx];
+                tmpSlot = slots[minIdx];
+                dist[minIdx] = dist[j];
+                slots[minIdx] = slots[j];
+                dist[j] = tmpDist;
+                slots[j] = tmpSlot;
+            }
+            k = j + 1;
+        }
+        for (; k != count; k += 2) {
+            if (dist[k] < dist[minIdx]) {
+                tmpDist = dist[minIdx];
+                tmpSlot = slots[minIdx];
+                dist[minIdx] = dist[k];
+                slots[minIdx] = slots[k];
+                dist[k] = tmpDist;
+                slots[k] = tmpSlot;
+            }
+            if (dist[k + 1] < dist[minIdx]) {
+                tmpDist = dist[minIdx];
+                tmpSlot = slots[minIdx];
+                dist[minIdx] = dist[k + 1];
+                slots[minIdx] = slots[k + 1];
+                dist[k + 1] = tmpDist;
+                slots[k + 1] = tmpSlot;
+            }
+        }
+        minIdx = j;
+    }
+
+    if (func_8015F300_ovl5(arg0, slots[1]) < func_8015F300_ovl5(arg0, slots[0])) {
+        return slots[1];
+    }
+    return slots[0];
+}
+#elif defined(PORT)
 /* Target picker for racer arg0: collects the item slots whose entity is in
  * the falling state (D_800E9FE0 == 3, scan stops at the first 0xFF slot once
  * something was found), sorts them by 2D distance to the racer, and lets

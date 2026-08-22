@@ -4441,453 +4441,408 @@ extern void (*D_800D6AD8)();
 void func_800A0558(f32 *, f32 *, struct DObj *);
 #endif /* PORT */
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 1014/1025. The draft is semantically complete and readable
+ * (named locals, documented struct views, no m2c artifacts), but it does not
+ * line up yet: IDO builds a 0x1A0 frame against the ROM's 0x148 and takes a
+ * ninth callee-saved register ($s8, which it uses to hold the constant 4
+ * from the kind 3/4 test), so every save, every spill slot and every
+ * register name is offset from instruction 0. Slot COUNT is already right
+ * (49 vs the ROM's 51); it is the ~22 extra words of spill space that are
+ * wrong, i.e. too many simultaneously live named values in the emission
+ * block. Measured: reading the process GObj's flag word inline instead of
+ * caching arg0 in a local removes one saved register, and inlining the three
+ * world-position expressions into the func_8009BD3C call was worth 22
+ * instructions of frame. Getting the rest almost certainly means expressing
+ * the yaw/pitch basis with fewer live temporaries -- that is a permuter job.
+ * Solved semantics, all read off the listing: the sweep divisor is
+ * (f32)(s32)frame (the ROM's trunc.w.s), not the raw accumulator; every
+ * func_8009BD3C call passes exactly (trackId, flags, textureIndex, bytecode,
+ * particleLifetime, pos xyz, vel xyz, size, gravity, friction, 0, gen) --
+ * the m2c sketch's kind-0/1 calls carry two leftover registers in front of
+ * that; kind 2 passes the yaw/pitch pair in the size/gravity slots and ORs
+ * flag 4; the aim-at-camera bit is byte 0x8 bit 0 and reads the eye at
+ * camera+0x3C; kind 5's per-axis sign flags are the halfword at +0x74; and
+ * a kind-2 vortex whose particle count is still nonzero is PARKED
+ * (lifetime 1, rate 0) rather than recycled. Note that UnkGenerator's
+ * declared names for bytes 0x8..0xB do not match how this function uses
+ * them -- 0x8 is script flag bits, 0xA the track id, 0xB the texture index
+ * -- which is why the draft reads those four bytes through a named view
+ * instead of renaming the shared struct. */
+/* Per-frame generator update: the process registered on the -7 GObj. Walks
+ * the live generator list, advances each node's frame accumulator by its
+ * update rate and, for every whole frame accumulated, emits one particle
+ * shaped by the generator's kind. Dead nodes are recycled onto the free
+ * list, except kind-2 vortex generators that still own particles, which are
+ * parked (lifetime 1, rate 0) the same way func_800A1F30 parks them. */
 void func_800A09AC(void *arg0) {
-    ? *sp140;
-    f32 sp130;
-    f32 sp12C;
-    f32 sp128;
-    f32 sp124;
-    f32 sp110;
-    f32 sp10C;
-    f32 sp104;
-    f32 sp100;
-    f32 spFC;
-    f32 spF8;
-    f32 spF4;
-    f32 spF0;
-    f32 spE4;
-    f32 spD0;
-    f32 spC0;
-    f32 spBC;
-    f32 spA8;
-    f32 spA0;
-    f32 sp9C;
-    f32 sp98;
-    ? *temp_v0_4;
-    ? *var_s0;
-    f32 temp_f0;
-    f32 temp_f0_10;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f0_5;
-    f32 temp_f0_6;
-    f32 temp_f0_7;
-    f32 temp_f0_8;
-    f32 temp_f0_9;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f12_3;
-    f32 temp_f12_4;
-    f32 temp_f14;
-    f32 temp_f20;
-    f32 temp_f20_2;
-    f32 temp_f20_3;
-    f32 temp_f22;
-    f32 temp_f22_2;
-    f32 temp_f22_3;
-    f32 temp_f22_4;
-    f32 temp_f22_5;
-    f32 temp_f22_6;
-    f32 temp_f22_7;
-    f32 temp_f24;
-    f32 temp_f24_2;
-    f32 temp_f24_3;
-    f32 temp_f24_4;
-    f32 temp_f24_5;
-    f32 temp_f24_6;
-    f32 temp_f26;
-    f32 temp_f26_2;
-    f32 temp_f26_3;
-    f32 temp_f28;
-    f32 temp_f2;
-    f32 temp_f2_10;
-    f32 temp_f2_11;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-    f32 temp_f2_4;
-    f32 temp_f2_5;
-    f32 temp_f2_6;
-    f32 temp_f2_7;
-    f32 temp_f2_8;
-    f32 temp_f2_9;
-    f32 temp_f30;
-    f32 temp_f30_2;
-    f32 temp_f30_3;
-    f32 temp_f30_4;
-    f32 temp_f30_5;
-    f32 temp_f4;
-    f32 temp_f4_2;
-    f32 temp_f6;
-    f32 temp_f6_2;
-    f32 temp_f8;
-    f32 temp_f8_2;
-    f32 temp_f8_3;
-    f32 var_f0;
-    f32 var_f0_2;
-    f32 var_f14;
-    f32 var_f16;
-    f32 var_f18;
-    f32 var_f20;
-    f32 var_f20_2;
-    f32 var_f20_3;
-    f32 var_f20_4;
-    f32 var_f22;
-    f32 var_f22_2;
-    f32 var_f24;
-    f32 var_f24_2;
-    f32 var_f24_3;
-    f32 var_f26;
-    f32 var_f28;
-    f32 var_f28_2;
-    f32 var_f28_3;
-    f32 var_f28_4;
-    f32 var_f30;
-    f32 var_f30_2;
-    f32 var_f4;
-    s32 temp_a2;
-    u16 temp_t5;
-    u16 temp_v0_3;
-    u8 temp_t4;
-    u8 temp_t7;
-    u8 temp_v0;
-    u8 temp_v0_2;
-    void *temp_a0;
-    void *temp_a0_2;
+    /* Eye position of the camera D_800D6A10 points at (func_8009BA68 sets
+     * it). Only the eye is read here, so it is viewed rather than pulling
+     * unk_structs/D_800D79D8.h into this TU. */
+    typedef struct GenCamera {
+        /* 0x00 */ u8 pad0[0x3C];
+        /* 0x3C */ f32 eyeX;
+        /* 0x40 */ f32 eyeY;
+        /* 0x44 */ f32 eyeZ;
+    } GenCamera;
+    /* UnkGenerator names bytes 0x8..0xB {bank_id, kind, texture_id}, but the
+     * code treats 0x8 as the script's flag bits, 0xA as the emitter track id
+     * and 0xB as the texture index -- read them through this view rather
+     * than renaming the shared struct. */
+    typedef struct GenIds {
+        /* 0x08 */ u8 scriptFlags;
+        /* 0x09 */ u8 kind;
+        /* 0x0A */ u8 trackId;
+        /* 0x0B */ u8 textureIndex;
+    } GenIds;
+    /* Kinds 5 and 8 carry a longer parameter tail than the `vars` union
+     * describes: a 3x3 box (kind 5) or a cone/ring spec (kind 8) at +0x50,
+     * with kind 5's per-axis sign flags as a halfword at +0x74. */
+    typedef struct GenBox {
+        /* 0x50 */ f32 axis[9];
+        /* 0x74 */ u16 signFlags;
+    } GenBox;
+    extern struct Ovl1ParticleNode *D_800D6AF0;
+    extern void (*D_800D6AD8)(UnkGenerator *, f32 *);
+    void func_800A0558(f32 *outPos, f32 *inOutVel, struct DObj *node);
+    UnkGenerator *gen;
+    UnkGenerator *next;
+    GenIds *ids;
+    GenBox *box;
+    GenCamera *camera;
+    f32 world[3];
+    f32 aim[3];
+    f32 speed;
+    f32 yaw;
+    f32 sinYaw;
+    f32 cosYaw;
+    f32 sinPitch;
+    f32 cosPitch;
+    f32 sweepAngle;
+    f32 sweepStep;
+    f32 ringCos;
+    f32 ringSin;
+    f32 spreadAngle;
+    f32 radius;
+    f32 radiusFrac;
+    f32 axial;
+    f32 dirX;
+    f32 dirY;
+    f32 dirZ;
+    f32 pitch;
+    f32 tangential;
+    f32 axialSpeed;
+    f32 velTangX;
+    f32 velTangZ;
+    f32 velX;
+    f32 velY;
+    f32 velZ;
+    f32 t;
+    f32 lerp;
+    f32 jitter;
+    f32 posX;
+    f32 posY;
+    f32 posZ;
 
-    var_s0 = D_800D6A0C;
+    gen = (UnkGenerator *) D_800D6A0C;
     D_800D6AF0 = NULL;
-    if (var_s0 != NULL) {
-        do {
-            if (arg0->unk44 & (1 << ((var_s0->unkA >> 3) + 0x10))) {
-                D_800D6AF0 = var_s0;
-                goto block_105;
-            }
-            if (var_s0->unk6 & 0x800) {
-                D_800D6AF0 = var_s0;
-                goto block_105;
-            }
-            temp_f0 = var_s0->unk40;
-            if (temp_f0 < 0.0f) {
-                var_f4 = var_s0->unk44 - temp_f0;
-            } else {
-                var_f4 = var_s0->unk44 + (random_f32() * var_s0->unk40);
-            }
-            var_s0->unk44 = var_f4;
-            if (var_s0->unk44 >= 1.0f) {
-                sp124 = var_s0->unk20;
-                sp128 = var_s0->unk24;
-                sp12C = var_s0->unk28;
-                temp_a2 = var_s0->unk48;
-                if (temp_a2 != 0) {
-                    func_800A0558(&sp130, &sp124, temp_a2);
-                    var_s0->unk14 = sp130;
-                    var_s0->unk18 = sp134;
-                    var_s0->unk1C = sp138;
-                }
-                if (var_s0->unk3C < 0.0f) {
-                    temp_t4 = var_s0->unk9;
-                    switch (temp_t4) {              /* switch 1 */
-                        case 0:                     /* switch 1 */
-                        case 3:                     /* switch 1 */
-                        case 4:                     /* switch 1 */
-                            temp_f2 = var_s0->unk50;
-                            temp_f12 = (var_s0->unk54 - temp_f2) / var_s0->unk44;
-                            temp_f8 = random_f32() * temp_f12;
-                            spC0 = temp_f12;
-                            spE4 = temp_f8 + temp_f2;
-                            break;
-                        case 6:                     /* switch 1 */
-                        case 7:                     /* switch 1 */
-                            temp_f2_2 = var_s0->unk50;
-                            temp_f12_2 = (var_s0->unk54 - temp_f2_2) / var_s0->unk44;
-                            temp_f6 = random_f32() * temp_f12_2;
-                            spC0 = temp_f12_2;
-                            spE4 = temp_f6 + temp_f2_2;
-                            break;
-                        default:                    /* switch 1 */
-                            spE4 = random_f32() * 6.2831855f;
-                            spC0 = 6.2831855f / var_s0->unk44;
-                            break;
-                    }
-                }
-            }
-            if (var_s0->unk44 >= 1.0f) {
-                do {
-                    temp_t7 = var_s0->unk9;
-                    switch (temp_t7) {              /* switch 2 */
-                        case 0:                     /* switch 2 */
-                        case 3:                     /* switch 2 */
-                        case 4:                     /* switch 2 */
-                        case 6:                     /* switch 2 */
-                        case 7:                     /* switch 2 */
-                            var_f22 = sp128;
-                            if (var_s0->unk8 & 1) {
-                                var_f24 = D_800D6A10->unk3C - var_s0->unk14;
-                                var_f22 = D_800D6A10->unk40 - var_s0->unk18;
-                                var_f20 = D_800D6A10->unk44 - var_s0->unk1C;
-                                var_f0 = sqrtf((sp124 * sp124) + (sp128 * sp128) + (sp12C * sp12C));
-                            } else {
-                                var_f20 = sp12C;
-                                var_f24 = sp124;
-                                var_f0 = sqrtf((sp124 * sp124) + (var_f22 * var_f22) + (var_f20 * var_f20));
-                            }
-                            sp110 = var_f0;
-                            temp_f0_2 = atan2f(var_f22, var_f20);
-                            sp10C = temp_f0_2;
-                            temp_f26 = sinf(temp_f0_2);
-                            temp_f0_3 = cosf(sp10C);
-                            sp100 = temp_f0_3;
-                            temp_f0_4 = atan2f(var_f24, (var_f22 * temp_f26) + (var_f20 * temp_f0_3));
-                            spFC = sinf(temp_f0_4);
-                            sp104 = temp_f26;
-                            spF8 = cosf(temp_f0_4);
-                            temp_f2_3 = var_s0->unk38;
-                            if (temp_f2_3 < 0.0f) {
-                                var_f28 = 1.0f;
-                                var_f24_2 = -temp_f2_3;
-                                spBC = 1.0f;
-                            } else {
-                                var_f0_2 = random_f32();
-                                spBC = var_f0_2;
-                                temp_v0 = var_s0->unk9;
-                                var_f28 = var_f0_2;
-                                if ((temp_v0 == 3) || (temp_v0 == 4)) {
-                                    var_f0_2 = sqrtf(var_f28);
-                                    spBC = var_f0_2;
-                                    var_f28 = var_f0_2;
-                                }
-                                var_f24_2 = var_s0->unk38 * var_f0_2;
-                            }
-                            switch (var_s0->unk9) { /* switch 3; irregular */
-                                case 6:             /* switch 3 */
-                                    if (var_s0->unk3C < 0.0f) {
-                                        spE4 += spC0;
-                                        var_f28_2 = (1.5707964f - atan2f(var_s0->unk58, var_f24_2)) - var_s0->unk3C;
-                                    } else {
-                                        temp_f2_4 = var_s0->unk50;
-                                        spE4 = (random_f32() * (var_s0->unk54 - temp_f2_4)) + temp_f2_4;
-                                        var_f28_2 = (1.5707964f - atan2f(var_s0->unk58, var_f24_2)) + var_s0->unk3C;
-                                    }
-                                    break;
-                                case 7:             /* switch 3 */
-                                    temp_f0_5 = var_s0->unk3C;
-                                    if (temp_f0_5 < 0.0f) {
-                                        spE4 += spC0;
-                                        var_f28_2 = 1.5707964f - temp_f0_5;
-                                    } else {
-                                        temp_f2_5 = var_s0->unk50;
-                                        spE4 = (random_f32() * (var_s0->unk54 - temp_f2_5)) + temp_f2_5;
-                                        var_f28_2 = var_s0->unk3C + 1.5707964f;
-                                    }
-                                    break;
-                                default:            /* switch 3 */
-                                    temp_f0_6 = var_s0->unk3C;
-                                    if (temp_f0_6 < 0.0f) {
-                                        var_f28_2 = -temp_f0_6;
-                                        spE4 += spC0;
-                                    } else {
-                                        temp_f2_6 = var_s0->unk50;
-                                        spE4 = (random_f32() * (var_s0->unk54 - temp_f2_6)) + temp_f2_6;
-                                        var_f28_2 = var_f28 * var_s0->unk3C;
-                                    }
-                                    break;
-                            }
-                            var_f22_2 = cosf(spE4) * var_f24_2;
-                            temp_v0_2 = var_s0->unk9;
-                            var_f26 = sinf(spE4) * var_f24_2;
-                            if ((temp_v0_2 == 6) || (temp_v0_2 == 7)) {
-                                temp_f0_7 = random_f32();
-                                if (var_s0->unk9 == 6) {
-                                    temp_f2_7 = 1.0f - temp_f0_7;
-                                    var_f22_2 *= temp_f2_7;
-                                    var_f26 *= temp_f2_7;
-                                }
-                                var_f30 = temp_f0_7 * var_s0->unk58;
-                            } else {
-                                var_f30 = 0.0f;
-                            }
-                            temp_f20 = sinf(var_f28_2) * sp110;
-                            temp_f24 = cosf(spE4) * temp_f20;
-                            spF4 = var_f22_2;
-                            spF0 = var_f26;
-                            temp_f22 = sinf(spE4) * temp_f20;
-                            temp_f0_8 = cosf(var_f28_2);
-                            sp9C = spFC;
-                            sp98 = spF8;
-                            spA0 = sp100;
-                            temp_f2_8 = -spF4;
-                            temp_f12_3 = -temp_f24;
-                            temp_f8_2 = sp98;
-                            temp_f2_9 = temp_f0_8 * sp110;
-                            spD0 = ((temp_f2_8 * sp100 * spFC) - (spF0 * sp104)) + (var_f30 * sp100 * spF8) + var_s0->unk1C;
-                            temp_f6_2 = sp9C;
-                            sp9C = sp104;
-                            temp_f28 = (temp_f24 * temp_f8_2) + (temp_f2_9 * temp_f6_2);
-                            temp_f4 = sp9C;
-                            sp9C = temp_f8_2;
-                            temp_f8_3 = spA0;
-                            spA0 = temp_f4;
-                            sp98 = temp_f8_3;
-                            var_f14 = temp_f28;
-                            spA0 = temp_f6_2;
-                            sp9C = temp_f4;
-                            temp_f30 = (temp_f12_3 * temp_f4 * temp_f6_2) + (temp_f22 * temp_f8_3) + (temp_f2_9 * temp_f4 * temp_f8_2);
-                            var_f16 = temp_f30;
-                            temp_f4_2 = ((temp_f12_3 * sp98 * spA0) - (temp_f22 * temp_f4)) + (temp_f2_9 * sp98 * temp_f8_2);
-                            spA8 = temp_f4_2;
-                            var_f18 = temp_f4_2;
-                            if (var_s0->unk9 == 3) {
-                                var_f14 = temp_f28 * spBC;
-                                var_f16 = temp_f30 * spBC;
-                                var_f18 = temp_f4_2 * spBC;
-                            }
-                            func_8009BD3C(temp_f12_3, var_f14, var_s0->unkA, var_s0->unk6, var_s0->unkB, var_s0->unk10, (bitwise f32) var_s0->unkC, (spF4 * spF8) + (var_f30 * spFC) + var_s0->unk14, (temp_f2_8 * sp104 * spFC) + (spF0 * sp100) + (var_f30 * sp104 * spF8) + var_s0->unk18, spD0, var_f14, var_f16, var_f18, var_s0->unk34, var_s0->unk2C, var_s0->unk30, 0, var_s0);
-                            break;
-                        case 1:                     /* switch 2 */
-                            temp_f0_9 = random_f32();
-                            temp_f2_10 = var_s0->unk14;
-                            temp_f12_4 = var_s0->unk18;
-                            temp_f14 = var_s0->unk1C;
-                            func_8009BD3C(temp_f12_4, temp_f14, var_s0->unkA, var_s0->unk6, var_s0->unkB, var_s0->unk10, (bitwise f32) var_s0->unkC, temp_f2_10 + (temp_f0_9 * (var_s0->unk50 - temp_f2_10)), temp_f12_4 + (temp_f0_9 * (var_s0->unk54 - temp_f12_4)), temp_f14 + (temp_f0_9 * (var_s0->unk58 - temp_f14)), sp124, sp128, sp12C, var_s0->unk34, var_s0->unk2C, var_s0->unk30, 0, var_s0);
-                            break;
-                        case 2:                     /* switch 2 */
-                            temp_f0_10 = atan2f(sp128, sp12C);
-                            sp10C = temp_f0_10;
-                            temp_f26_2 = sinf(temp_f0_10);
-                            temp_f30_2 = atan2f(sp124, (sp128 * temp_f26_2) + (sp12C * cosf(sp10C)));
-                            temp_f22_2 = sqrtf((sp124 * sp124) + (sp128 * sp128) + (sp12C * sp12C));
-                            if (var_s0->unk38 < 0.0f) {
-                                var_f28_3 = 1.0f;
-                            } else {
-                                var_f28_3 = random_f32();
-                            }
-                            if (var_s0->unk3C < 0.0f) {
-                                spE4 += spC0;
-                            } else {
-                                spE4 = random_f32() * 6.2831855f;
-                            }
-                            var_s0->unk50 = temp_f22_2;
-                            if (func_8009BD3C((bitwise f32) var_s0->unkA, (bitwise f32) (var_s0->unk6 | 4), var_s0->unkB, (bitwise u16) var_s0->unk10, var_s0->unkC, 0.0f, 0.0f, 0.0f, spE4, var_f28_3, 0.0f, var_s0->unk34, sp10C, temp_f30_2, 0.0f, var_s0) != 0) {
-                                var_s0->unk54 = (bitwise u16) var_s0->unk54 + 1;
-                            }
-                            break;
-                        case 5:                     /* switch 2 */
-                            temp_f24_2 = var_s0->unk14;
-                            temp_f22_3 = var_s0->unk18;
-                            temp_f30_3 = var_s0->unk1C;
-                            if (var_s0->unk74 & 1) {
-                                if (random_f32() > 0.5f) {
-                                    var_f20_2 = 0.5f;
-                                } else {
-                                    var_f20_2 = -0.5f;
-                                }
-                            } else {
-                                var_f20_2 = random_f32() - 0.5f;
-                            }
-                            temp_f24_3 = temp_f24_2 + (var_s0->unk50 * var_f20_2);
-                            temp_f22_4 = temp_f22_3 + (var_s0->unk54 * var_f20_2);
-                            temp_f30_4 = temp_f30_3 + (var_s0->unk58 * var_f20_2);
-                            if (var_s0->unk74 & 2) {
-                                if (random_f32() > 0.5f) {
-                                    var_f20_3 = 0.5f;
-                                } else {
-                                    var_f20_3 = -0.5f;
-                                }
-                            } else {
-                                var_f20_3 = random_f32() - 0.5f;
-                            }
-                            temp_f24_4 = temp_f24_3 + (var_s0->unk5C * var_f20_3);
-                            temp_f22_5 = temp_f22_4 + (var_s0->unk60 * var_f20_3);
-                            temp_f30_5 = temp_f30_4 + (var_s0->unk64 * var_f20_3);
-                            if (var_s0->unk74 & 4) {
-                                if (random_f32() > 0.5f) {
-                                    var_f20_4 = 0.5f;
-                                } else {
-                                    var_f20_4 = -0.5f;
-                                }
-                            } else {
-                                var_f20_4 = random_f32() - 0.5f;
-                            }
-                            func_8009BD3C((bitwise f32) var_s0->unkA, (bitwise f32) var_s0->unk6, var_s0->unkB, (bitwise u16) var_s0->unk10, var_s0->unkC, temp_f24_4 + (var_s0->unk68 * var_f20_4), temp_f22_5 + (var_s0->unk6C * var_f20_4), temp_f30_5 + (var_s0->unk70 * var_f20_4), sp124, sp128, sp12C, var_s0->unk34, var_s0->unk2C, (bitwise f32) var_s0->unk30, 0.0f, var_s0);
-                            break;
-                        case 8:                     /* switch 2 */
-                            temp_f24_5 = sqrtf(random_f32());
-                            temp_f20_2 = random_f32() * 6.2831855f;
-                            if (var_s0->unk60 == 0.0f) {
-                                sp10C = random_f32() * 6.2831855f;
-                            } else {
-                                sp10C = (cosf(temp_f20_2) * temp_f24_5 * var_s0->unk60) + var_s0->unk5C;
-                            }
-                            if (var_s0->unk58 == 0.0f) {
-                                var_f30_2 = (1.0f - sqrtf(random_f32())) * 1.5707964f;
-                                if (random_f32() < 0.5f) {
-                                    var_f30_2 = -var_f30_2;
-                                }
-                            } else {
-                                var_f30_2 = (sinf(temp_f20_2) * temp_f24_5 * var_s0->unk58) + var_s0->unk54;
-                            }
-                            temp_f24_6 = var_s0->unk38;
-                            if (temp_f24_6 < 0.0f) {
-                                var_f24_3 = -temp_f24_6;
-                                var_f28_4 = var_s0->unk50 / var_f24_3;
-                            } else {
-                                var_f28_4 = var_s0->unk50 / temp_f24_6;
-                                var_f24_3 = temp_f24_6 * random_f32();
-                            }
-                            spE4 = temp_f20_2;
-                            temp_f22_6 = cosf(sp10C);
-                            temp_f26_3 = cosf(var_f30_2) * (var_f24_3 * temp_f22_6);
-                            temp_f20_3 = sinf(var_f30_2) * var_f24_3;
-                            temp_f22_7 = sinf(sp10C);
-                            temp_f2_11 = cosf(var_f30_2) * (var_f24_3 * temp_f22_7);
-                            func_8009BD3C((bitwise f32) var_s0->unkA, (bitwise f32) var_s0->unk6, var_s0->unkB, (bitwise u16) var_s0->unk10, var_s0->unkC, var_s0->unk14 + temp_f26_3, var_s0->unk18 + temp_f20_3, var_s0->unk1C + temp_f2_11, temp_f26_3 * var_f28_4, temp_f20_3 * var_f28_4, temp_f2_11 * var_f28_4, var_s0->unk34, var_s0->unk2C, (bitwise f32) var_s0->unk30, 0.0f, var_s0);
-                            break;
-                        default:                    /* switch 2 */
-                            if (D_800D6AD8 != NULL) {
-                                D_800D6AD8(var_s0, &sp124);
-                            }
-                            break;
-                    }
-                    var_s0->unk44 = var_s0->unk44 - 1.0f;
-                } while (var_s0->unk44 >= 1.0f);
-            }
-            temp_v0_3 = var_s0->unkE;
-            temp_t5 = temp_v0_3 - 1;
-            if ((temp_v0_3 != 0) && (var_s0->unkE = temp_t5, ((temp_t5 & 0xFFFF) == 0))) {
-                if ((var_s0->unk9 == 2) && ((bitwise u16) var_s0->unk54 != 0)) {
-                    var_s0->unkE = 1;
-                    var_s0->unk40 = 0.0f;
-                    goto block_104;
-                }
-                if (D_800D6AF0 == NULL) {
-                    D_800D6A0C = var_s0->unk0;
-                } else {
-                    *D_800D6AF0 = var_s0->unk0;
-                }
-                temp_a0 = var_s0->unk4C;
-                temp_v0_4 = var_s0->unk0;
-                if (temp_a0 != NULL) {
-                    temp_a0->unk2A = temp_a0->unk2A - 1;
-                    temp_a0_2 = var_s0->unk4C;
-                    if (temp_a0_2->unk2A == 0) {
-                        sp140 = temp_v0_4;
-                        func_8009B69C(temp_a0_2);
-                    }
-                }
-                var_s0->unk0 = D_800D6A08;
-                D_800D6A08 = var_s0;
-                var_s0 = temp_v0_4;
-                D_800D6AE2 -= 1;
-            } else {
-block_104:
-                D_800D6AF0 = var_s0;
-block_105:
-                var_s0 = var_s0->unk0;
-            }
-        } while (var_s0 != NULL);
+    if (gen == NULL) {
+        return;
     }
+    do {
+        ids = (GenIds *) &gen->bank_id;
+        box = (GenBox *) &gen->vars;
+        /* The process GObj carries the per-bank pause bits in its flag
+         * word, bits 16..31 (the shared declaration types arg0 void *). */
+        if (((GObj *) arg0)->flags & (1 << ((ids->trackId >> 3) + 0x10))) {
+            D_800D6AF0 = (struct Ovl1ParticleNode *) gen;
+            gen = gen->next;
+            continue;
+        }
+        if (gen->flags & 0x800) {
+            D_800D6AF0 = (struct Ovl1ParticleNode *) gen;
+            gen = gen->next;
+            continue;
+        }
+        if (gen->update_rate < 0.0f) {
+            gen->frame -= gen->update_rate;
+        } else {
+            gen->frame += random_f32() * gen->update_rate;
+        }
+        if (gen->frame >= 1.0f) {
+            aim[0] = gen->velX;
+            aim[1] = gen->velY;
+            aim[2] = gen->velZ;
+            if (gen->dobj != NULL) {
+                func_800A0558(world, aim, gen->dobj);
+                gen->posX = world[0];
+                gen->posY = world[1];
+                gen->posZ = world[2];
+            }
+            /* A negative spread sweeps this frame's emissions evenly across
+             * the arc instead of randomizing each one. */
+            if (gen->unk3C < 0.0f) {
+                switch (ids->kind) {
+                case 0:
+                case 3:
+                case 4:
+                    sweepStep = (gen->vars.rotate.target - gen->vars.rotate.base) / (f32) (s32) gen->frame;
+                    sweepAngle = (random_f32() * sweepStep) + gen->vars.rotate.base;
+                    break;
+                case 6:
+                case 7:
+                    sweepStep = (gen->vars.rotate.target - gen->vars.rotate.base) / (f32) (s32) gen->frame;
+                    sweepAngle = (random_f32() * sweepStep) + gen->vars.rotate.base;
+                    break;
+                default:
+                    sweepAngle = random_f32() * 6.2831855f;
+                    sweepStep = 6.2831855f / (f32) (s32) gen->frame;
+                    break;
+                }
+            }
+        }
+        if (gen->frame >= 1.0f) {
+            do {
+                switch (ids->kind) {
+                case 0: /* cone */
+                case 3: /* disk, sqrt-uniform, velocity scaled by radius */
+                case 4: /* disk, sqrt-uniform */
+                case 6: /* cylinder shell */
+                case 7: /* cylinder */
+                    dirY = aim[1];
+                    if (ids->scriptFlags & 1) {
+                        /* Aim at the camera instead of along the velocity. */
+                        camera = (GenCamera *) D_800D6A10;
+                        dirX = camera->eyeX - gen->posX;
+                        dirY = camera->eyeY - gen->posY;
+                        dirZ = camera->eyeZ - gen->posZ;
+                        speed = sqrtf((aim[0] * aim[0]) + (aim[1] * aim[1]) + (aim[2] * aim[2]));
+                    } else {
+                        dirZ = aim[2];
+                        dirX = aim[0];
+                        speed = sqrtf((aim[0] * aim[0]) + (dirY * dirY) + (dirZ * dirZ));
+                    }
+                    yaw = atan2f(dirY, dirZ);
+                    sinYaw = sinf(yaw);
+                    cosYaw = cosf(yaw);
+                    pitch = atan2f(dirX, (dirY * sinYaw) + (dirZ * cosYaw));
+                    sinPitch = sinf(pitch);
+                    cosPitch = cosf(pitch);
+                    if (gen->unk38 < 0.0f) {
+                        radiusFrac = 1.0f;
+                        radius = -gen->unk38;
+                    } else {
+                        radiusFrac = random_f32();
+                        if ((ids->kind == 3) || (ids->kind == 4)) {
+                            radiusFrac = sqrtf(radiusFrac);
+                        }
+                        radius = gen->unk38 * radiusFrac;
+                    }
+                    switch (ids->kind) {
+                    case 6:
+                        if (gen->unk3C < 0.0f) {
+                            sweepAngle += sweepStep;
+                            spreadAngle = (1.5707964f - atan2f(gen->vars.move.z, radius)) - gen->unk3C;
+                        } else {
+                            sweepAngle = (random_f32() * (gen->vars.rotate.target - gen->vars.rotate.base)) +
+                                         gen->vars.rotate.base;
+                            spreadAngle = (1.5707964f - atan2f(gen->vars.move.z, radius)) + gen->unk3C;
+                        }
+                        break;
+                    case 7:
+                        if (gen->unk3C < 0.0f) {
+                            sweepAngle += sweepStep;
+                            spreadAngle = 1.5707964f - gen->unk3C;
+                        } else {
+                            sweepAngle = (random_f32() * (gen->vars.rotate.target - gen->vars.rotate.base)) +
+                                         gen->vars.rotate.base;
+                            spreadAngle = gen->unk3C + 1.5707964f;
+                        }
+                        break;
+                    default:
+                        if (gen->unk3C < 0.0f) {
+                            spreadAngle = -gen->unk3C;
+                            sweepAngle += sweepStep;
+                        } else {
+                            sweepAngle = (random_f32() * (gen->vars.rotate.target - gen->vars.rotate.base)) +
+                                         gen->vars.rotate.base;
+                            spreadAngle = radiusFrac * gen->unk3C;
+                        }
+                        break;
+                    }
+                    ringCos = cosf(sweepAngle) * radius;
+                    ringSin = sinf(sweepAngle) * radius;
+                    if ((ids->kind == 6) || (ids->kind == 7)) {
+                        t = random_f32();
+                        if (ids->kind == 6) {
+                            ringCos *= 1.0f - t;
+                            ringSin *= 1.0f - t;
+                        }
+                        axial = t * gen->vars.move.z;
+                    } else {
+                        axial = 0.0f;
+                    }
+                    tangential = sinf(spreadAngle) * speed;
+                    velTangX = cosf(sweepAngle) * tangential;
+                    velTangZ = sinf(sweepAngle) * tangential;
+                    axialSpeed = cosf(spreadAngle) * speed;
+                    /* Local (a, b, c) -> world through the yaw/pitch basis. */
+                    velX = (velTangX * cosPitch) + (axialSpeed * sinPitch);
+                    velY = (-velTangX * sinYaw * sinPitch) + (velTangZ * cosYaw) +
+                           (axialSpeed * sinYaw * cosPitch);
+                    velZ = ((-velTangX * cosYaw * sinPitch) - (velTangZ * sinYaw)) +
+                           (axialSpeed * cosYaw * cosPitch);
+                    if (ids->kind == 3) {
+                        velX *= radiusFrac;
+                        velY *= radiusFrac;
+                        velZ *= radiusFrac;
+                    }
+                    func_8009BD3C(ids->trackId, gen->flags, ids->textureIndex, gen->bytecode,
+                                  gen->particle_lifetime,
+                                  (ringCos * cosPitch) + (axial * sinPitch) + gen->posX,
+                                  (-ringCos * sinYaw * sinPitch) + (ringSin * cosYaw) +
+                                      (axial * sinYaw * cosPitch) + gen->posY,
+                                  ((-ringCos * cosYaw * sinPitch) - (ringSin * sinYaw)) +
+                                      (axial * cosYaw * cosPitch) + gen->posZ,
+                                  velX, velY, velZ,
+                                  gen->size, gen->gravity, gen->friction, 0, gen);
+                    break;
+                case 1: /* segment: lerp between the node and vars.move */
+                    lerp = random_f32();
+                    posX = gen->posX;
+                    posY = gen->posY;
+                    posZ = gen->posZ;
+                    func_8009BD3C(ids->trackId, gen->flags, ids->textureIndex, gen->bytecode,
+                                  gen->particle_lifetime,
+                                  posX + (lerp * (gen->vars.move.x - posX)),
+                                  posY + (lerp * (gen->vars.move.y - posY)),
+                                  posZ + (lerp * (gen->vars.move.z - posZ)),
+                                  aim[0], aim[1], aim[2], gen->size, gen->gravity, gen->friction, 0, gen);
+                    break;
+                case 2: /* vortex: the particle carries the angles, not a position */
+                    yaw = atan2f(aim[1], aim[2]);
+                    sinYaw = sinf(yaw);
+                    pitch = atan2f(aim[0], (aim[1] * sinYaw) + (aim[2] * cosf(yaw)));
+                    speed = sqrtf((aim[0] * aim[0]) + (aim[1] * aim[1]) + (aim[2] * aim[2]));
+                    if (gen->unk38 < 0.0f) {
+                        radiusFrac = 1.0f;
+                    } else {
+                        radiusFrac = random_f32();
+                    }
+                    if (gen->unk3C < 0.0f) {
+                        sweepAngle += sweepStep;
+                    } else {
+                        sweepAngle = random_f32() * 6.2831855f;
+                    }
+                    gen->vars.vortex.f = speed;
+                    if (func_8009BD3C(ids->trackId, gen->flags | 4, ids->textureIndex, gen->bytecode,
+                                      gen->particle_lifetime, 0.0f, 0.0f, 0.0f, sweepAngle, radiusFrac,
+                                      0.0f, gen->size, yaw, pitch, 0, gen) != 0) {
+                        gen->vars.vortex.lifetime++;
+                    }
+                    break;
+                case 5: /* box: three independent axes, optionally edge-only */
+                    posX = gen->posX;
+                    posY = gen->posY;
+                    posZ = gen->posZ;
+                    if (box->signFlags & 1) {
+                        jitter = (random_f32() > 0.5f) ? 0.5f : -0.5f;
+                    } else {
+                        jitter = random_f32() - 0.5f;
+                    }
+                    posX += box->axis[0] * jitter;
+                    posY += box->axis[1] * jitter;
+                    posZ += box->axis[2] * jitter;
+                    if (box->signFlags & 2) {
+                        jitter = (random_f32() > 0.5f) ? 0.5f : -0.5f;
+                    } else {
+                        jitter = random_f32() - 0.5f;
+                    }
+                    posX += box->axis[3] * jitter;
+                    posY += box->axis[4] * jitter;
+                    posZ += box->axis[5] * jitter;
+                    if (box->signFlags & 4) {
+                        jitter = (random_f32() > 0.5f) ? 0.5f : -0.5f;
+                    } else {
+                        jitter = random_f32() - 0.5f;
+                    }
+                    func_8009BD3C(ids->trackId, gen->flags, ids->textureIndex, gen->bytecode,
+                                  gen->particle_lifetime,
+                                  posX + (box->axis[6] * jitter),
+                                  posY + (box->axis[7] * jitter),
+                                  posZ + (box->axis[8] * jitter),
+                                  aim[0], aim[1], aim[2], gen->size, gen->gravity, gen->friction, 0, gen);
+                    break;
+                case 8: /* sphere sector aimed by the stored yaw/pitch spec */
+                    radiusFrac = sqrtf(random_f32());
+                    t = random_f32() * 6.2831855f;
+                    if (box->axis[4] == 0.0f) {
+                        yaw = random_f32() * 6.2831855f;
+                    } else {
+                        yaw = (cosf(t) * radiusFrac * box->axis[4]) + box->axis[3];
+                    }
+                    if (box->axis[2] == 0.0f) {
+                        pitch = (1.0f - sqrtf(random_f32())) * 1.5707964f;
+                        if (random_f32() < 0.5f) {
+                            pitch = -pitch;
+                        }
+                    } else {
+                        pitch = (sinf(t) * radiusFrac * box->axis[2]) + box->axis[1];
+                    }
+                    if (gen->unk38 < 0.0f) {
+                        radius = -gen->unk38;
+                        speed = box->axis[0] / radius;
+                    } else {
+                        speed = box->axis[0] / gen->unk38;
+                        radius = gen->unk38 * random_f32();
+                    }
+                    sweepAngle = t;
+                    posX = cosf(pitch) * (radius * cosf(yaw));
+                    posY = sinf(pitch) * radius;
+                    posZ = cosf(pitch) * (radius * sinf(yaw));
+                    func_8009BD3C(ids->trackId, gen->flags, ids->textureIndex, gen->bytecode,
+                                  gen->particle_lifetime, gen->posX + posX, gen->posY + posY,
+                                  gen->posZ + posZ, posX * speed, posY * speed, posZ * speed,
+                                  gen->size, gen->gravity, gen->friction, 0, gen);
+                    break;
+                default:
+                    if (D_800D6AD8 != NULL) {
+                        D_800D6AD8(gen, aim);
+                    }
+                    break;
+                }
+                gen->frame -= 1.0f;
+            } while (gen->frame >= 1.0f);
+        }
+        if ((gen->generator_lifetime != 0) && (gen->generator_lifetime-- , gen->generator_lifetime == 0)) {
+            if ((ids->kind == 2) && (gen->vars.vortex.lifetime != 0)) {
+                /* Still owns particles: park it instead of freeing. */
+                gen->generator_lifetime = 1;
+                gen->update_rate = 0.0f;
+                D_800D6AF0 = (struct Ovl1ParticleNode *) gen;
+                gen = gen->next;
+                continue;
+            }
+            if (D_800D6AF0 == NULL) {
+                D_800D6A0C = (struct Ovl1ParticleNode *) gen->next;
+            } else {
+                *(UnkGenerator **) D_800D6AF0 = gen->next;
+            }
+            next = gen->next;
+            if (gen->xf != NULL) {
+                gen->xf->unk2A--;
+                if (gen->xf->unk2A == 0) {
+                    func_8009B69C(gen->xf);
+                }
+            }
+            gen->next = (UnkGenerator *) D_800D6A08;
+            D_800D6A08 = (UnkParticle *) gen;
+            gen = next;
+            D_800D6AE2--;
+        } else {
+            D_800D6AF0 = (struct Ovl1ParticleNode *) gen;
+            gen = gen->next;
+        }
+    } while (gen != NULL);
 }
 #elif defined(PORT)
 /* PORT: still assembly on the matching build; the m2c sketch above garbles

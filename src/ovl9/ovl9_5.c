@@ -606,6 +606,60 @@ void func_801E7320_ovl9(void) {
     }
 }
 
+/* FACTORY: 64/153.  The first 52 instructions are exact.  Residue: the ROM
+   holds the D_800E6A10 base in $a2 where ours uses $a3, and from the first
+   float compare on we run one instruction shorter than the ROM inside the
+   facing branch, so the bc1f displacements differ by one. */
+#ifdef MIPS_TO_C
+extern struct Sub800E1B50_Unk98 D_801CBB9C;
+void func_800FB914(s32);
+void func_800AA018(s32);
+/* Hit-launch state: enter anim state 7 with the hit sound/flash,
+ * zero bone 1's X spin, play the facing-specific tumble animation,
+ * then reverse facing and launch backwards (6.0 for ground modes,
+ * 8.0 for flying modes) with gravity -0.65 and 10.0 terminal speed,
+ * into airborne state 6. */
+void func_801E73C4_ovl9(struct GObj *arg0) {
+    s32 anim;
+    u32 id;
+
+    D_800DDFD0[omCurrentObj->objId] = 7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBB9C;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = 0.0f;
+    func_800FB914(1);
+    play_sound(0x9A);
+    anim = 0x101F2;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        anim = 0x101F3;
+    }
+    func_800AA018(anim);
+    func_800AF27C();
+    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+    id = omCurrentObj->objId;
+    switch (D_800E7880[id]) {
+        case 0:
+        case 1:
+            D_800E64D0[id] = D_800E6A10[id] * 6.0f;
+            break;
+        case 2:
+        case 3:
+            D_800E64D0[id] = D_800E6A10[id] * 8.0f;
+            break;
+    }
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 6;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E73C4_ovl9.s")
+#endif
 #ifdef PORT
 extern struct Sub800E1B50_Unk98 D_801CBB9C;
 void play_sound();
@@ -654,8 +708,6 @@ void func_801E73C4_ovl9(struct GObj *arg0) {
     D_800EA8A0[omCurrentObj->objId] = 0.0f;
     gEntityFuncListIDArray[omCurrentObj->objId] = 6;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E73C4_ovl9.s")
 #endif
 
 extern s32 D_800BE4EC;
@@ -796,7 +848,10 @@ void func_801E7C88_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8021BF64_ovl9);
 }
 
-#ifdef PORT
+/* FACTORY: 71/143, register rotation.  Control flow, frame and schedule are
+   the ROM's; the residue is the saved/temp pair the flag constant and the
+   gEntityFuncListIDArray base land in ($s0/$s1 and $a1/$v0 transposed). */
+#ifdef MIPS_TO_C
 extern s32 D_801C8880_ovl7[];
 extern s32 D_801CBBC0;
 void func_800AA018(s32);
@@ -845,6 +900,54 @@ void func_801E7CD0_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E7CD0_ovl9.s")
+#endif
+#ifdef PORT
+extern s32 D_801C8880_ovl7[];
+extern s32 D_801CBBC0;
+void func_800AA018(s32);
+/* Perch/rest state: enter anim state 0 with the perch hit tables,
+ * pitch the body -70deg times facing, queue the settle animations
+ * (0x10220 then 0x1021F) and clear the shot timer; mode 0 goes
+ * straight to state 1 (or despawn state 4 if the perch surface is
+ * within 200 units of the origin and the timer ran out), mode 1
+ * steps animation frames until the surface closes within 200 units
+ * (state 4) or something else changes the state. */
+void func_801E7CD0_ovl9(struct GObj *arg0) {
+    u32 id;
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8880_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBBC0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    id = omCurrentObj->objId;
+    D_800E4C50[id] = D_800E6A10[id] * -1.2217305f;
+    func_800AA018(0x10220);
+    func_800AA018(0x1021F);
+    D_800E9C60[omCurrentObj->objId] = -1;
+    id = omCurrentObj->objId;
+    switch (D_800E7880[id]) {
+        case 0:
+            gEntityFuncListIDArray[id] = 1;
+            id = omCurrentObj->objId;
+            if ((D_800E9E20[id] <= 0) && (D_800E6F50[id].originOffset < 200.0f)) {
+                gEntityFuncListIDArray[id] = 4;
+            }
+            break;
+        case 1:
+            do {
+                func_800AF27C();
+                id = omCurrentObj->objId;
+                if (D_800E6F50[id].originOffset < 200.0f) {
+                    gEntityFuncListIDArray[id] = 4;
+                    id = omCurrentObj->objId;
+                }
+            } while (gEntityFuncListIDArray[id] == 0);
+            break;
+    }
+}
 #endif
 
 void func_801A0D74_ovl7();

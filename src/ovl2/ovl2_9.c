@@ -454,7 +454,144 @@ void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
 }
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 299/326 instructions match (27 diffs). Frame 0x20, every
+ * stack slot, every branch, both calls into the knockback resolver and
+ * the late_rodata 9999.0f are exact; the residue is a one-slot FP temp
+ * rotation across the knockback block. Levers already spent, keep them:
+ * exactly TWO locals (the ROM reuses one f32 slot for the camera-yaw
+ * sine and the track separation, and recomputes D_800E5F90[id] instead
+ * of caching it -- a third local pushes the frame to 0x28 and costs 21
+ * diffs); the dot product must be written sine-term first (4 diffs);
+ * and the five -1/1 selections must be if/else, not ternaries, or IDO
+ * materialises the two constants in the wrong order (5 diffs). */
+void func_801105E8(struct UnkStruct8011145C_A *attacker, struct UnkStruct8011145C_B *defender, f32 *contact) {
+    extern u16 D_800D6F58[];
+    /* struct GObj is not declared in this TU; objId is its first word. */
+    extern void *omCurrentObj;
+    s32 change_kirby_hp(f32 delta);
+    void func_8011DC5C(void);
+    void func_80120BCC(void);
+    f32 func_8011D9E0(u32 fromTrack, f32 fromParam, s32 toTrack, f32 toParam);
+    void set_kirby_action_2(s32 action, s32 anim);
+    void play_sound(s32 soundId);
+    s32 attackerId;
+    /* One f32 slot, reused the way the ROM does: first for the sine of the
+     * camera yaw, then for the signed track separation. */
+    f32 temp;
+
+    /* The attacker record's damage is the unnamed f32 at +8. */
+#define ATTACK_DAMAGE (*(f32 *) ((u8 *) attacker + 8))
+
+    attackerId = attacker->unk0;
+    if ((attacker->unk10 & 0x40000000) || (gKirbyState.unk24 & 1)) {
+        D_800E83E0[0] = 0;
+        return;
+    }
+    if ((D_800D6F58[0x2C] >> 8) & 1) {
+        D_800E83E0[*(s32 *) omCurrentObj] = 0;
+        return;
+    }
+    if (attackerId != -1) {
+        if (gKirbyState.unk68 == 2) {
+            D_800E83E0[0] = 0;
+            return;
+        }
+        if ((func_801103C4(0) != 0) || (defender->unk10 & 0x80000000)) {
+            if ((D_800E7CE0[attackerId] != 0) || (attacker->unk10 & 0x80000000)) {
+                if ((gKirbyState.action == 0x15) || (gKirbyState.unk28 != 0)) {
+                    D_800E83E0[0] = 0;
+                    return;
+                }
+                gKirbyState.unk24 = 1;
+                set_kirby_action_2(0x15, 0x16);
+                gKirbyState.isTurning &= ~7;
+                func_8011DC5C();
+                goto knockback;
+            }
+            D_800E83E0[0] = 0;
+            return;
+        }
+    }
+    if (ATTACK_DAMAGE == 0.0f) {
+        gKirbyState.unk24 = 1;
+        set_kirby_action_2(0x15, 0x16);
+        gKirbyState.isTurning &= ~7;
+        func_8011DC5C();
+        play_sound(0x1E9);
+        goto knockback;
+    }
+    if (defender->unk10 & 1) {
+        D_800E83E0[0] = 6;
+        return;
+    }
+    func_8011DC5C();
+    if (change_kirby_hp(-ATTACK_DAMAGE) == 0) {
+        if (gKirbyState.action != 0x15) {
+            D_800E83E0[0] = 1;
+            if (gKirbyState.unk28 != 0) {
+                return;
+            }
+            set_kirby_action_2(0x16, 0x17);
+        } else {
+            D_800E83E0[0] = 0;
+        }
+        goto finish;
+    }
+    if (gKirbyState.action == 0x15) {
+        D_800E83E0[0] = 0;
+        return;
+    }
+    gKirbyState.unk24 = 1;
+    D_800E83E0[0] = (attacker->unkC << 0x10) + 2;
+    if (gKirbyState.unk28 != 0) {
+        return;
+    }
+    set_kirby_action_2(0x14, 0x16);
+    gKirbyState.isTurning &= ~7;
+    if (ATTACK_DAMAGE != 0.0f) {
+        func_80120BCC();
+    }
+knockback:
+    if ((attackerId == -1) || (D_800E5F90[attackerId] == -1)) {
+        temp = sinf(D_800E17D0[0]);
+        if (((temp * (contact[6] - gEntitiesNextPosXArray[0]))
+             + ((contact[8] - gEntitiesNextPosZArray[0]) * cosf(D_800E17D0[0]))) >= 0.0f) {
+            D_800E85A0[0] = (D_800E6A10[0] == 1.0f) ? -1 : 1;
+        } else {
+            D_800E85A0[0] = (D_800E6A10[0] == -1.0f) ? -1 : 1;
+        }
+    } else if (gKirbyState.unk170 == (u32) D_800E5F90[attackerId]) {
+        if (D_800E6D90[0] < D_800E6BD0[attackerId]) {
+            D_800E85A0[0] = -1;
+        } else {
+            D_800E85A0[0] = 1;
+        }
+    } else {
+        temp = func_8011D9E0(gKirbyState.unk170, D_800E6D90[0], D_800E5F90[attackerId],
+                             D_800E6BD0[attackerId]);
+        if (temp != 9999.0f) {
+            if (temp > 0.0f) {
+                D_800E85A0[0] = -1;
+            } else {
+                D_800E85A0[0] = 1;
+            }
+        } else {
+            if (D_800E64D0[*(s32 *) omCurrentObj] > 0.0f) {
+                D_800E85A0[0] = -1;
+            } else {
+                D_800E85A0[0] = 1;
+            }
+        }
+    }
+finish:
+    if (gKirbyState.abilityInUse != 0x12) {
+        gKirbyState.abilityInUse = 0;
+    }
+    gKirbyState.isInhalingBlock = 0;
+#undef ATTACK_DAMAGE
+}
+#elif defined(PORT)
 /* Kirby-takes-a-hit resolver (from asm/nonmatchings/ovl2/ovl2_9/
  * func_801105E8.s via m2c): decides the outcome word D_800E83E0 (0 ignore,
  * 1 died, 6 blocked, (class << 16) + 2 hit) and the knockback direction
@@ -561,9 +698,17 @@ knock_dir:
 
             if (((arg2[8] - gEntitiesNextPosZArray[0]) * cosf(D_800E17D0[0])) +
                 (s * (arg2[6] - gEntitiesNextPosXArray[0])) >= 0.0f) {
-                D_800E85A0[0] = (D_800E6A10[0] == 1.0f) ? -1 : 1;
+                if (D_800E6A10[0] == 1.0f) {
+                D_800E85A0[0] = -1;
             } else {
-                D_800E85A0[0] = (D_800E6A10[0] == -1.0f) ? -1 : 1;
+                D_800E85A0[0] = 1;
+            }
+            } else {
+                if (D_800E6A10[0] == -1.0f) {
+                D_800E85A0[0] = -1;
+            } else {
+                D_800E85A0[0] = 1;
+            }
             }
         } else if (gKirbyState.unk170 == (u32) trk) {
             D_800E85A0[0] = (D_800E6D90[0] < D_800E6BD0[id]) ? -1 : 1;

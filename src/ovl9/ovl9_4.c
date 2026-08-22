@@ -1167,7 +1167,16 @@ f32 func_801E4F18_ovl9(void) {
     return -temp;
 }
 
-#ifdef PORT
+/* FACTORY: 7/153, one extra callee-saved register.  The ROM runs on a 0x40
+   frame saving s0, s1, f20 and f22 with &omCurrentObj in $s1; ours needs a
+   third integer save (s2 holds &omCurrentObj) and a 0x48 frame, so every
+   offset and register name below the prologue shifts.  Swept, all negative:
+   hoisting the 280.0f range into its own f32 local (149), caching
+   D_800E1B50[objId] in a `rec` local (152).  The ROM's two saved FP
+   registers say it keeps both the facing value and the distance live across
+   the two wait loops, so the remaining question is which integer value it
+   manages NOT to keep -- a register-allocation nudge, not a rewrite. */
+#ifdef MIPS_TO_C
 extern void func_800B68AC(s32);
 extern s32 D_801C8640_ovl7;
 extern s32 D_801CBAA0;
@@ -1221,6 +1230,59 @@ void func_801E4F88_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E4F88_ovl9.s")
+#endif
+#ifdef PORT
+extern void func_800B68AC(s32);
+extern s32 D_801C8640_ovl7;
+extern s32 D_801CBAA0;
+extern s32 func_8019A900_ovl7(s32 *);
+extern f32 func_8019B608_ovl7(s32);
+extern f32 func_8019DA50_ovl7(void);
+/* Lurker arming state: install the projectile-capable mover and anim
+ * state 3 with the ovl7 hit table pair, play the ready animation
+ * 0x10229 and clear the shot counter, then sleep until Kirby's
+ * approach side (camera heading or explicit path direction) matches
+ * this entity's facing AND Kirby is within 280 units laterally;
+ * finally trigger the attack state 5. */
+void func_801E4F88_ovl9(struct GObj *arg0) {
+    s32 sp38;
+    f32 v;
+
+    D_800DEF90[omCurrentObj->objId] = func_800B68AC;
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8640_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBAA0;
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800A9EA4(0x10229);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    if (func_8019A900_ovl7(&sp38) != 0) {
+        v = sp38;
+    } else {
+        v = func_8019B608_ovl7(0);
+    }
+    while (v != D_800E6A10[omCurrentObj->objId]) {
+        ohSleep(1);
+        if (func_8019A900_ovl7(&sp38) != 0) {
+            v = sp38;
+        } else {
+            v = func_8019B608_ovl7(0);
+        }
+    }
+    v = func_8019DA50_ovl7();
+    if (v < 0.0f) {
+        v = -v;
+    }
+    while (v > 280.0f) {
+        ohSleep(1);
+        v = func_8019DA50_ovl7();
+        if (v < 0.0f) {
+            v = -v;
+        }
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 5;
+}
 #endif
 
 extern s32 func_800B3234(f32, f32, f32);

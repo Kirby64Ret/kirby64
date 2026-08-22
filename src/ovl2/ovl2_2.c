@@ -799,6 +799,7 @@ void func_800F7484(s32 arg0) {
  * func_800F7578 read for the same flag. */
 void func_800F753C(void) {
     extern u8 D_800D6C94[];
+    s32 temp_v0;
 
     temp_v0 = D_800E76C0[omCurrentObj->objId];
     if ((temp_v0 >= 0) && (temp_v0 < 0x40)) {

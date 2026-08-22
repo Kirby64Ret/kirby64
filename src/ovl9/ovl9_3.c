@@ -284,7 +284,7 @@ void func_801DD3CC_ovl9(struct GObj *arg0) {
     func_801DF454_ovl9(arg0);
 }
 
-#ifdef PORT
+#ifndef PORT /* WIP */
 extern struct Sub800E1B50_Unk98 D_801CB740;
 extern f32 D_8021BDB8_ovl9[];
 /* Knockback/launch state: go fully opaque, clear the pause counter,
@@ -325,8 +325,47 @@ void func_801DD598_ovl9(struct GObj *arg0) {
     }
     gEntityFuncListIDArray[id] = 5;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DD598_ovl9.s")
+#elif defined(PORT)
+extern struct Sub800E1B50_Unk98 D_801CB740;
+extern f32 D_8021BDB8_ovl9[];
+/* Knockback/launch state: go fully opaque, clear the pause counter,
+ * enter anim state 4 with physics frozen and the ovl7 hit table, keep
+ * the walk velocity scaled by the per-mode speed table D_8021BDB8 and
+ * the facing sign, reset the speed factor (halved when flag 1), then
+ * fall (gravity -0.65 * factor, terminal speed |10 * factor|) one
+ * tick at a time until ground contact flips D_800E8920 to 1, and hand
+ * off to state 5. */
+void func_801DD598_ovl9(struct GObj *arg0) {
+    u32 id;
+
+    D_800E76C0[omCurrentObj->objId] = 0xFF;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB740;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    id = omCurrentObj->objId;
+    if (D_800EAC20[id] != 0.0f) {
+        D_800E64D0[id] = D_800EAC20[id] * D_8021BDB8_ovl9[D_800E7880[id]] * D_800E6A10[id];
+        id = omCurrentObj->objId;
+    }
+    D_800EAC20[id] = (D_800E8AE0[id] & 1) ? 0.5f : 1.0f;
+    id = omCurrentObj->objId;
+    while (D_800E8920[id] != 1) {
+        D_800E3750[id] = D_800EAC20[id] * -0.65f;
+        id = omCurrentObj->objId;
+        D_800E3C90[id] = D_800EAC20[id] * 10.0f;
+        if (D_800E3C90[id] < 0.0f) {
+            D_800E3C90[id] = -D_800E3C90[id];
+        }
+        ohSleep(1);
+        id = omCurrentObj->objId;
+    }
+    gEntityFuncListIDArray[id] = 5;
+}
 #endif
 
 s32 func_801A0D74_ovl7();
@@ -472,7 +511,7 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
 
-#ifdef PORT
+#ifndef PORT /* WIP */
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern void assign_new_process_entry(struct GObjProcess *, void (*)(GObj *));
 extern s32 D_801CA550;
@@ -554,8 +593,88 @@ void func_801DDF9C_ovl9(GObj *arg0) {
     func_801DDD44_ovl9(arg0);
     func_801DF454_ovl9(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DDF9C_ovl9.s")
+#elif defined(PORT)
+extern struct GObjProcess *gEntityGObjProcessArray[];
+extern void assign_new_process_entry(struct GObjProcess *, void (*)(GObj *));
+extern s32 D_801CA550;
+extern s32 D_801CA598;
+extern u8 D_8012E7C5;
+extern u8 D_8012E90C[];
+s32 func_801DF588_ovl9(s32, void *);
+extern void func_80169430_ovl3(s32, s32, s32, s32);
+void func_801DF29C_ovl9(GObj *);
+void func_801DDD44_ovl9(struct GObj *);
+struct PcOvl9AnimInfo {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0x10];
+};
+/* Stun-state per-frame hook: age the stun timer D_800E9E20, run the
+ * shared mover, and while rising off the ground either shake in place
+ * (func_801DF29C) or -- after 5 ticks, or immediately in mode 3 --
+ * escalate to state 7 and rebind the thread entry.  Ground modes time
+ * out at 166 ticks into state 8 the same way.  When both the entity
+ * and Kirby are grounded and the global inhale byte is clear, select
+ * the directional hit table (D_801CA550/D_801CA598 by run direction),
+ * and if the current animation frame carries an anim event, forward it
+ * to the HUD/star handler func_80169430 (kind 7) and clear the
+ * one-shot flag; otherwise fall back to the plain table and the ovl7
+ * post-move fixup.  Always finishes with the sleep/despawn helpers. */
+void func_801DDF9C_ovl9(GObj *arg0) {
+    struct PcOvl9AnimInfo sp2C;
+    u32 id;
+
+    D_800E9E20[omCurrentObj->objId]++;
+    func_801A0D74_ovl7(arg0);
+    id = omCurrentObj->objId;
+    if (gEntitiesPosYArray[id] < gEntitiesNextPosYArray[id]) {
+        if (D_800E7880[id] == 3) {
+            func_801DF29C_ovl9(arg0);
+        } else if (D_800E9E20[id] >= 5) {
+            gEntityFuncListIDArray[id] = 7;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCA78_ovl9);
+        } else {
+            func_801DF29C_ovl9(arg0);
+        }
+        id = omCurrentObj->objId;
+    }
+    switch (D_800E7880[id]) {
+        case 3:
+            break;
+        case 0:
+        case 1:
+        case 2:
+            if (D_800E9E20[id] >= 0xA6) {
+                gEntityFuncListIDArray[id] = 8;
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCA78_ovl9);
+                id = omCurrentObj->objId;
+            }
+            break;
+    }
+    if ((D_800E8920[id] == 1) && (D_800E8920[0] == 1) && (D_8012E90C[4] == 0)) {
+        if (D_800E64D0[id] > 0.0f) {
+            D_800E1B50[id]->unk8C = &D_801CA550;
+        } else {
+            D_800E1B50[id]->unk8C = &D_801CA598;
+        }
+        if (func_801DF588_ovl9(0, &sp2C) != 0) {
+            func_80169430_ovl3(sp2C.unkC, sp2C.unk0, sp2C.unk1, 7);
+            D_800EBBE0[omCurrentObj->objId] = 0;
+        } else if (D_8012E7C5 != 0x15) {
+            D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
+            func_8019F3F0_ovl7();
+        }
+    } else {
+        D_800E1B50[id]->unk8C = &D_801C8080_ovl7;
+        func_8019F3F0_ovl7();
+    }
+    func_801DDD44_ovl9(arg0);
+    func_801DF454_ovl9(arg0);
+}
 #endif
 
 /* FACTORY: 27/227, callee-saved permutation.  Length, frame, both loops,

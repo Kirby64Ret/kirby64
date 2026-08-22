@@ -927,6 +927,67 @@ void func_8021782C_ovl9(s32 arg0) {
 
 }
 
+/* FACTORY: 3/167, frame 0x60 vs the ROM's 0x68 with an identical saved-register
+   set (s0-s7, fp, ra).  We are 8 bytes short of the ROM's frame and every
+   offset below the prologue shifts with it; an unreferenced 8-byte filler
+   array does NOT move it (IDO drops small dead locals -- LEVERS 22 only holds
+   for large ones).  The body shape, the 0x19 fuse compare and both shot
+   variants are the ROM's.
+   NOTE: declared s32 because line 922 of this TU calls it with no prototype
+   in scope; the implicit int() declaration makes a void definition an error. */
+#ifdef MIPS_TO_C
+extern s32 func_800AF230(void);
+s32 func_80217EF0_ovl9(void);
+/* Volcano/spout idle thread: play the idle animation and tick a
+ * counter; at tick 25 aim by the mouth bone's Z roll and spawn a
+ * kind-2 shot -- variant 1 lobs it along the roll (or straight up
+ * 20 when unrolled), variant 2 drops it straight down, variants 3/4
+ * push it sideways -- stamping the shot's aim factor D_800EC660 with
+ * the roll and playing the spit cue.  Steps one animation frame per
+ * tick until the animation ends. */
+s32 func_80217834_ovl9(void) { /* s32: line 922 calls it with no prototype in scope */
+    s32 shot = 0;
+
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+    func_800AA018(0x10032);
+    do {
+        if (D_800E9FE0[omCurrentObj->objId].as_u32 == 0x19) {
+            switch (func_80217EF0_ovl9()) {
+                case 1: {
+                    u32 id = omCurrentObj->objId;
+                    f32 roll = D_800DE350[id]->data.dobj->firstChild->angle.v.z;
+
+                    if (roll == 0.0f) {
+                        shot = func_801ACCA0_ovl7(2, 0, 0.0f, 20.0f);
+                    } else {
+                        shot = func_801ACCA0_ovl7(2, 0, -sinf(D_800E6A10[id] * roll) * 20.0f,
+                                                  cosf(D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z) * 20.0f);
+                    }
+                    break;
+                }
+                case 2:
+                    shot = func_801ACCA0_ovl7(2, 0, 0.0f, -20.0f);
+                    break;
+                case 3:
+                case 4:
+                    shot = func_801ACCA0_ovl7(2, 0, 20.0f, 0.0f);
+                    break;
+            }
+            if (shot != 0) {
+                D_800EC660[shot] = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z;
+            }
+            play_sound(0xA7);
+        }
+        if (func_800AF230() != 0) {
+            break;
+        }
+        D_800E9FE0[omCurrentObj->objId].as_u32++;
+        ohSleep(1);
+    } while (1);
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217834_ovl9.s")
+#endif
 #ifdef PORT
 extern s32 func_800AF230(void);
 s32 func_80217EF0_ovl9(void);
@@ -977,8 +1038,6 @@ void func_80217834_ovl9(void) {
         ohSleep(1);
     } while (1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217834_ovl9.s")
 #endif
 
 extern s32 D_801CCE74;

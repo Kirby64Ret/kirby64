@@ -906,55 +906,70 @@ void func_80204C98_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifndef PORT /* WIP */
-struct PcO910TrackPos {
-    s32 unk0;
-    f32 unk4;
-};
+/* FACTORY: 59/136, tail scheduling (we run 2 instructions short, so every
+   branch displacement after the first early-exit differs by 2).  Everything
+   through the two give-up exits and the bearing computation is the ROM's.
+   Clone family: this is func_802031D4_ovl9's shape in this same file -- the
+   two-adjacent-words call convention of func_8019A900_ovl7 (facing at +0,
+   rail distance at +4, so the f32 must be declared immediately ABOVE the
+   s32 and the call takes &facing), the two dead pads, the separate railDist
+   copy and ABSF for the speed test all come from there.  Moving the railDist
+   copy below the accel stores is inert -- IDO schedules it into the
+   eneGetPlayerHeight delay slot either way. */
+#ifdef MIPS_TO_C
+extern s32 func_8019A900_ovl7(s32 *);
+extern f32 eneGetPlayerHeight(void);
+extern Vector *lbvector_Rotate(Vector *, s32, f32);
+extern f32 atan2f(f32, f32);
 void func_80204750_ovl9(struct GObj *);
-/* Chaser pursuit hook: give up the chase (state 3 on the normal
- * thread) when Kirby leaves the 480-unit box or is no longer on this
- * entity's facing side; otherwise accelerate 0.4/tick along the
- * bearing to Kirby (rail distance horizontally, player height
- * vertically) and, when Kirby is behind with the entity nearly
- * stopped and no turnaround pending, start the turnaround. */
-void func_80204D5C_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    struct PcO910TrackPos tp;
-    Vector acc;
-    u32 id;
 
-    rec = D_800E1B50[omCurrentObj->objId];
+/* Chaser pursuit hook: give up the chase (state 3 on the normal thread) when
+   Kirby leaves the 480-unit box or is no longer on this entity's facing side;
+   otherwise accelerate 0.4/tick along the bearing to Kirby (rail distance
+   horizontally, player height vertically) and, when Kirby is behind with the
+   entity nearly stopped and no turnaround pending, start the turnaround. */
+void func_80204D5C_ovl9(struct GObj *arg0) {
+    struct UnkStruct800E1B50 *rec = D_800E1B50[omCurrentObj->objId];
+    /* func_8019A900_ovl7 fills two adjacent words through one pointer: the
+       player's facing sign at +0 and the rail distance to him at +4, so
+       playerRailDist must stay declared immediately above playerFacing. */
+    f32 playerRailDist;
+    s32 playerFacing;
+    s32 pad0;
+    s32 pad1;
+    f32 railDist;
+    Vector accel;
+
     if (func_8019A7E8_ovl7(480.0f) == 0) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 3;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80204750_ovl9);
         return;
     }
-    id = omCurrentObj->objId;
-    if (D_800E6A10[id] != D_800E6A10[0]) {
-        gEntityFuncListIDArray[id] = 3;
+    if (D_800E6A10[omCurrentObj->objId] != D_800E6A10[0]) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80204750_ovl9);
         return;
     }
-    ((s32 (*)(struct PcO910TrackPos *)) func_8019A900_ovl7)(&tp);
-    acc.z = 0.0f;
-    acc.y = 0.0f;
-    acc.x = 0.4f;
-    lbvector_Rotate(&acc, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], tp.unk4));
-    D_800E6690[omCurrentObj->objId] = acc.x;
-    D_800E3750[omCurrentObj->objId] = acc.y;
+    func_8019A900_ovl7(&playerFacing);
+    accel.z = 0.0f;
+    accel.y = 0.0f;
+    accel.x = 0.4f;
+    railDist = playerRailDist;
+    lbvector_Rotate(&accel, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], railDist));
+    D_800E6690[omCurrentObj->objId] = accel.x;
+    D_800E3750[omCurrentObj->objId] = accel.y;
     if (rec->unk3C == 0) {
-        id = omCurrentObj->objId;
-        if ((f32) tp.unk0 != D_800E6A10[id]) {
-            f32 spd = D_800E64D0[id];
-
-            if (((spd < 0.0f) ? -spd : spd) < 1.0f) {
+        if ((f32) playerFacing != D_800E6A10[omCurrentObj->objId]) {
+            if (ABSF(D_800E64D0[omCurrentObj->objId]) < 1.0f) {
                 func_80199F1C_ovl7(arg0);
             }
         }
     }
 }
-#elif defined(PORT)
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204D5C_ovl9.s")
+#endif
+#ifdef PORT
 struct PcO910TrackPos {
     s32 unk0;
     f32 unk4;
