@@ -6180,9 +6180,8 @@ s32 arg1;
  * transforms the point at +0x50, kind 5 scales the 3x3 at +0x50 by the
  * matrix columns. All strides are N64 (0x2C nodes, 4-byte words). */
 void func_800A2550(void *arg0) {
-    /* Local views: the 0x2C-stride layout node and the emitter node.
-     * struct Ovl1PNode (above) pads over the fields this function needs, and
-     * widening it is a file-scope change, so the offsets are spelled here. */
+    /* The 0x2C-stride geo layout node. The emitter nodes this places are
+     * plain UnkGenerator records (func_800A19EC hands them out). */
     struct LNode {
         /* 0x00 */ s32 type;
         /* 0x04 */ s32 unk4;
@@ -6190,26 +6189,11 @@ void func_800A2550(void *arg0) {
         /* 0x14 */ Vector rot;
         /* 0x20 */ Vector scale;
     };
-    struct EmNode {
-        /* 0x00 */ u8 pad0[9];
-        /* 0x09 */ u8 kind;
-        /* 0x0A */ u8 padA[0xA];
-        /* 0x14 */ f32 unk14;
-        /* 0x18 */ f32 unk18;
-        /* 0x1C */ f32 unk1C;
-        /* 0x20 */ f32 unk20;
-        /* 0x24 */ f32 unk24;
-        /* 0x28 */ f32 unk28;
-        /* 0x2C */ u8 pad2C[0xC];
-        /* 0x38 */ f32 unk38;
-        /* 0x3C */ u8 pad3C[0x14];
-        /* 0x50 */ f32 v[9];
-    };
     f32 sp64[4][4];
     f32 spA4[4][4];
     struct LNode *node;
     struct LNode *ent;
-    struct EmNode *em;
+    UnkGenerator *em;
     s32 id;
     f32 vx;
     f32 vy;
@@ -6228,19 +6212,19 @@ void func_800A2550(void *arg0) {
                       ((struct LNode *) arg0)->scale);
         do {
             id = ent->type;
-            em = (struct EmNode *) func_800A19EC((id >> 0x10) & 0xF, id & 0xFFFF);
+            em = (UnkGenerator *) func_800A19EC((id >> 0x10) & 0xF, id & 0xFFFF);
             if (em != NULL) {
                 func_8001C2E4(sp64, ent->pos, ent->rot, ent->scale);
                 guMtxCatF(sp64, spA4, sp64);
-                vx = em->unk20;
-                vy = em->unk24;
-                em->unk14 = sp64[3][0];
-                vz = em->unk28;
-                em->unk18 = sp64[3][1];
-                em->unk1C = sp64[3][2];
-                em->unk20 = (sp64[2][0] * vz) + ((sp64[0][0] * vx) + (sp64[1][0] * vy));
-                em->unk24 = (sp64[2][1] * vz) + ((sp64[0][1] * vx) + (sp64[1][1] * vy));
-                em->unk28 = (sp64[2][2] * vz) + ((sp64[0][2] * vx) + (sp64[1][2] * vy));
+                vx = em->velX;
+                vy = em->velY;
+                em->posX = sp64[3][0];
+                vz = em->velZ;
+                em->posY = sp64[3][1];
+                em->posZ = sp64[3][2];
+                em->velX = (sp64[2][0] * vz) + ((sp64[0][0] * vx) + (sp64[1][0] * vy));
+                em->velY = (sp64[2][1] * vz) + ((sp64[0][1] * vx) + (sp64[1][1] * vy));
+                em->velZ = (sp64[2][2] * vz) + ((sp64[0][2] * vx) + (sp64[1][2] * vy));
                 switch (em->kind) {
                 case 0:
                 case 2:
@@ -6249,30 +6233,30 @@ void func_800A2550(void *arg0) {
                 case 6:
                 case 7:
                 case 8:
-                    em->unk38 = em->unk38 * sqrtf((sp64[2][0] * sp64[2][0]) +
+                    em->radius = em->radius * sqrtf((sp64[2][0] * sp64[2][0]) +
                                                   ((sp64[0][0] * sp64[0][0]) + (sp64[1][0] * sp64[1][0])));
                     break;
                 case 1:
-                    vx = em->v[0];
-                    vy = em->v[1];
-                    vz = em->v[2];
-                    em->v[0] = sp64[3][0] + ((sp64[0][0] * vx) + (sp64[1][0] * vy) + (sp64[2][0] * vz));
-                    em->v[1] = sp64[3][1] + ((sp64[0][1] * vx) + (sp64[1][1] * vy) + (sp64[2][1] * vz));
-                    em->v[2] = sp64[3][2] + ((sp64[0][2] * vx) + (sp64[1][2] * vy) + (sp64[2][2] * vz));
+                    vx = em->vars.box.axis[0];
+                    vy = em->vars.box.axis[1];
+                    vz = em->vars.box.axis[2];
+                    em->vars.box.axis[0] = sp64[3][0] + ((sp64[0][0] * vx) + (sp64[1][0] * vy) + (sp64[2][0] * vz));
+                    em->vars.box.axis[1] = sp64[3][1] + ((sp64[0][1] * vx) + (sp64[1][1] * vy) + (sp64[2][1] * vz));
+                    em->vars.box.axis[2] = sp64[3][2] + ((sp64[0][2] * vx) + (sp64[1][2] * vy) + (sp64[2][2] * vz));
                     break;
                 case 5:
-                    vx = em->v[0];
-                    vy = em->v[4];
-                    vz = em->v[8];
-                    em->v[0] = sp64[0][0] * vx;
-                    em->v[1] = sp64[1][0] * vy;
-                    em->v[2] = sp64[2][0] * vz;
-                    em->v[3] = sp64[0][1] * vx;
-                    em->v[4] = sp64[1][1] * vy;
-                    em->v[5] = sp64[2][1] * vz;
-                    em->v[6] = sp64[0][2] * vx;
-                    em->v[7] = sp64[1][2] * vy;
-                    em->v[8] = sp64[2][2] * vz;
+                    vx = em->vars.box.axis[0];
+                    vy = em->vars.box.axis[4];
+                    vz = em->vars.box.axis[8];
+                    em->vars.box.axis[0] = sp64[0][0] * vx;
+                    em->vars.box.axis[1] = sp64[1][0] * vy;
+                    em->vars.box.axis[2] = sp64[2][0] * vz;
+                    em->vars.box.axis[3] = sp64[0][1] * vx;
+                    em->vars.box.axis[4] = sp64[1][1] * vy;
+                    em->vars.box.axis[5] = sp64[2][1] * vz;
+                    em->vars.box.axis[6] = sp64[0][2] * vx;
+                    em->vars.box.axis[7] = sp64[1][2] * vy;
+                    em->vars.box.axis[8] = sp64[2][2] * vz;
                     break;
                 }
             }

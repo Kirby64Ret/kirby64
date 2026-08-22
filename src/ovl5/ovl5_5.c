@@ -1171,7 +1171,6 @@ void func_80171950_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171950_ovl5.s")
 #endif
 
-#ifdef PORT
 /* Per-frame race input for the racer's lane (installed as the racer's
  * draw callback): mirrors the lane camera bias, and while idle either lets
  * the CPU driver (func_8017232C_ovl5) act or maps A to a 1-tile hop and B
@@ -1220,9 +1219,6 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171E6C_ovl5.s")
-#endif
 
 // Draft, 2/61: with THESE three locals every spill slot is exact (0x1C/20/24)
 // and only the frame differs, 0x30 vs 0x28. Re-measured 2026-08-12: dropping a

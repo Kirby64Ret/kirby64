@@ -249,3 +249,12 @@ translation unit, not verify.py:
 `build/verify/` is what verify.py just compiled. Note `build/` lags live
 edits, which is also why check_tu_size can report a stale size for a file a
 lane is actively editing -- confirm against build/verify/ before believing it.
+
+- **src/ovl10/ovl10_5b.c keeps the prototypes for func_800A9864 /
+  func_800FF144 / func_800FF1CC inside the PORT-only block**, so the N64 build
+  has none in scope. IDO permits exactly one block-scope copy per TU and
+  rejects both a second copy and the implicit int a bare call creates, so only
+  ONE draft in that file can compile at a time (func_801F1554 currently owns
+  it). Moving those three prototypes to real file scope unblocks
+  func_801F1A24, func_801F11A8 and func_801F2098 at once. Same class as the
+  void->s32 task; needs a quiet tree and the sha1 gate.
