@@ -1299,7 +1299,306 @@ void func_801133C8(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_801133C8.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 29/667 instructions match (638 diffs), and as with
+ * func_801133C8 above the score is one frame delta doing all the
+ * damage: IDO gives this 0xD0 where the ROM has 0x118, so every $sp
+ * displacement and the register allocation that hangs off it differ.
+ * The body is solved -- the unconditional vertex-seen clear and bounds
+ * init, both record paths, the three unrolled vertex updates each, the
+ * plane retransform, the bounds written into rec->unkA0/unkAC as
+ * 12-byte Vector copies after the record pointer is bumped, and the
+ * self-retarget onto func_801133C8 all read straight off the listing.
+ * Missing frame is 0x48 (18 words) here and 0x70 in func_801133C8; in
+ * both cases the extra stack is NEVER referenced by any instruction,
+ * so it is locals IDO register-allocated and their identity is not
+ * recoverable from the asm. Measured inert on the sibling: adding one
+ * f32 temp per bounds compare (IDO forwards them) and spelling the
+ * vertex/plane strides as byte offsets (vi * 0xC / vi * 6) rather than
+ * element indices. Sealed as permuter fuel: the shape is right and
+ * only the stack shape is open. */
+void func_80113F08(struct GObj *arg0) {
+    void func_8010DD8C(void);
+    void func_801133C8(struct GObj *gobj);
+    Vector mn;
+    Vector mx;
+    struct struct8011BA10_temp *rec;
+    struct vCollisionHeader *mesh;
+    struct CollisionTriangle *tri;
+    struct Normal *dstNormal;
+    struct Normal *srcNormal;
+    struct Normal **plane;
+    u8 *seen;
+    s16 *modelVtx;
+    f32 *worldVtx;
+    f32 *world;
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 posX;
+    f32 posY;
+    f32 posZ;
+    u32 recIndex;
+    u32 triIndex;
+    u32 normalIndex;
+    u32 vtxIndex;
+    u32 planeOffset;
+    u32 vi;
+    s32 slot;
+
+    rec = D_8012D948;
+    recIndex = 0;
+    if (D_8012D940 != 0) {
+        do {
+            mesh = rec->unk4;
+            slot = rec->unk1;
+            seen = (u8 *) rec->unk10;
+            vtxIndex = 0;
+            triIndex = 1;
+            normalIndex = 1;
+            if (mesh->header.Len_Vertices != 0) {
+                do {
+                    *seen = 0;
+                    vtxIndex += 1;
+                    seen += 1;
+                } while (vtxIndex < mesh->header.Len_Vertices);
+            }
+            mn.z = 30000.0f;
+            mn.y = 30000.0f;
+            mn.x = 30000.0f;
+            mx.z = -30000.0f;
+            mx.y = -30000.0f;
+            mx.x = -30000.0f;
+            if (rec->unk2 & 2) {
+                /* The record carries its own matrix: transform every vertex
+                 * and every plane through it. */
+                world = (f32 *) &rec->unk58;
+                func_80113028((f32 (*)[4]) &rec->unk18, (f32 (*)[4]) world);
+                func_80112CD4(slot, (f32 (*)[4]) world);
+                seen = (u8 *) rec->unk10;
+                modelVtx = (s16 *) rec->unkC;
+                if (mesh->header.Len_Triangles >= 2U) {
+                    tri = &mesh->header.Triangles[1];
+                    do {
+                        vi = tri->vertex[0];
+                        if (seen[vi] == 0) {
+                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
+                            seen[tri->vertex[0]] = 1;
+                            if (worldVtx[0] < mn.x) {
+                                mn.x = worldVtx[0];
+                            }
+                            if (worldVtx[1] < mn.y) {
+                                mn.y = worldVtx[1];
+                            }
+                            if (worldVtx[2] < mn.z) {
+                                mn.z = worldVtx[2];
+                            }
+                            if (mx.x < worldVtx[0]) {
+                                mx.x = worldVtx[0];
+                            }
+                            if (mx.y < worldVtx[1]) {
+                                mx.y = worldVtx[1];
+                            }
+                            if (mx.z < worldVtx[2]) {
+                                mx.z = worldVtx[2];
+                            }
+                        }
+                        vi = tri->vertex[1];
+                        if (seen[vi] == 0) {
+                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
+                            seen[tri->vertex[1]] = 1;
+                            if (worldVtx[0] < mn.x) {
+                                mn.x = worldVtx[0];
+                            }
+                            if (worldVtx[1] < mn.y) {
+                                mn.y = worldVtx[1];
+                            }
+                            if (worldVtx[2] < mn.z) {
+                                mn.z = worldVtx[2];
+                            }
+                            if (mx.x < worldVtx[0]) {
+                                mx.x = worldVtx[0];
+                            }
+                            if (mx.y < worldVtx[1]) {
+                                mx.y = worldVtx[1];
+                            }
+                            if (mx.z < worldVtx[2]) {
+                                mx.z = worldVtx[2];
+                            }
+                        }
+                        vi = tri->vertex[2];
+                        if (seen[vi] == 0) {
+                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
+                            seen[tri->vertex[2]] = 1;
+                            if (worldVtx[0] < mn.x) {
+                                mn.x = worldVtx[0];
+                            }
+                            if (worldVtx[1] < mn.y) {
+                                mn.y = worldVtx[1];
+                            }
+                            if (worldVtx[2] < mn.z) {
+                                mn.z = worldVtx[2];
+                            }
+                            if (mx.x < worldVtx[0]) {
+                                mx.x = worldVtx[0];
+                            }
+                            if (mx.y < worldVtx[1]) {
+                                mx.y = worldVtx[1];
+                            }
+                            if (mx.z < worldVtx[2]) {
+                                mx.z = worldVtx[2];
+                            }
+                        }
+                        triIndex += 1;
+                        tri += 1;
+                    } while (triIndex < mesh->header.Len_Triangles);
+                }
+                if (mesh->header.Len_Triangle_Normals >= 2U) {
+                    srcNormal = &((struct Normal *) rec->unk8)[1];
+                    dstNormal = &mesh->header.Triangle_Normals[1];
+                    planeOffset = 4;
+                    do {
+                        nx = srcNormal->x;
+                        ny = srcNormal->y;
+                        nz = srcNormal->z;
+                        normalIndex += 1;
+                        srcNormal += 1;
+                        dstNormal += 1;
+                        dstNormal[-1].x = ((world[0] * nx) + (world[4] * ny)) + (world[8] * nz);
+                        dstNormal[-1].y = ((world[1] * nx) + (world[5] * ny)) + (world[9] * nz);
+                        dstNormal[-1].z = ((world[2] * nx) + (world[6] * ny)) + (world[10] * nz);
+                        plane = (struct Normal **) ((u8 *) rec->unk14 + planeOffset);
+                        planeOffset += 4;
+                        dstNormal[-1].originOffset =
+                            -(((dstNormal[-1].x * plane[0]->x) + (dstNormal[-1].y * plane[0]->y))
+                              + (dstNormal[-1].z * plane[0]->z));
+                    } while (normalIndex < mesh->header.Len_Triangle_Normals);
+                }
+            } else {
+                /* No matrix: the vertices only need the entity's position. */
+                posX = gEntitiesNextPosXArray[slot];
+                posY = gEntitiesNextPosYArray[slot];
+                posZ = gEntitiesNextPosZArray[slot];
+                seen = (u8 *) rec->unk10;
+                modelVtx = (s16 *) rec->unkC;
+                if (mesh->header.Len_Triangles >= 2U) {
+                    tri = &mesh->header.Triangles[1];
+                    do {
+                        vi = tri->vertex[0];
+                        if (seen[vi] == 0) {
+                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx[0] = modelVtx[vi * 3] + posX;
+                            worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
+                            worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
+                            seen[tri->vertex[0]] = 1;
+                            if (worldVtx[0] < mn.x) {
+                                mn.x = worldVtx[0];
+                            }
+                            if (worldVtx[1] < mn.y) {
+                                mn.y = worldVtx[1];
+                            }
+                            if (worldVtx[2] < mn.z) {
+                                mn.z = worldVtx[2];
+                            }
+                            if (mx.x < worldVtx[0]) {
+                                mx.x = worldVtx[0];
+                            }
+                            if (mx.y < worldVtx[1]) {
+                                mx.y = worldVtx[1];
+                            }
+                            if (mx.z < worldVtx[2]) {
+                                mx.z = worldVtx[2];
+                            }
+                        }
+                        vi = tri->vertex[1];
+                        if (seen[vi] == 0) {
+                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx[0] = modelVtx[vi * 3] + posX;
+                            worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
+                            worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
+                            seen[tri->vertex[1]] = 1;
+                            if (worldVtx[0] < mn.x) {
+                                mn.x = worldVtx[0];
+                            }
+                            if (worldVtx[1] < mn.y) {
+                                mn.y = worldVtx[1];
+                            }
+                            if (worldVtx[2] < mn.z) {
+                                mn.z = worldVtx[2];
+                            }
+                            if (mx.x < worldVtx[0]) {
+                                mx.x = worldVtx[0];
+                            }
+                            if (mx.y < worldVtx[1]) {
+                                mx.y = worldVtx[1];
+                            }
+                            if (mx.z < worldVtx[2]) {
+                                mx.z = worldVtx[2];
+                            }
+                        }
+                        vi = tri->vertex[2];
+                        if (seen[vi] == 0) {
+                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx[0] = modelVtx[vi * 3] + posX;
+                            worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
+                            worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
+                            seen[tri->vertex[2]] = 1;
+                            if (worldVtx[0] < mn.x) {
+                                mn.x = worldVtx[0];
+                            }
+                            if (worldVtx[1] < mn.y) {
+                                mn.y = worldVtx[1];
+                            }
+                            if (worldVtx[2] < mn.z) {
+                                mn.z = worldVtx[2];
+                            }
+                            if (mx.x < worldVtx[0]) {
+                                mx.x = worldVtx[0];
+                            }
+                            if (mx.y < worldVtx[1]) {
+                                mx.y = worldVtx[1];
+                            }
+                            if (mx.z < worldVtx[2]) {
+                                mx.z = worldVtx[2];
+                            }
+                        }
+                        triIndex += 1;
+                        tri += 1;
+                    } while (triIndex < mesh->header.Len_Triangles);
+                }
+                planeOffset = 4;
+                if (mesh->header.Len_Triangle_Normals >= 2U) {
+                    dstNormal = &mesh->header.Triangle_Normals[1];
+                    srcNormal = &((struct Normal *) rec->unk8)[1];
+                    do {
+                        normalIndex += 1;
+                        plane = (struct Normal **) ((u8 *) rec->unk14 + planeOffset);
+                        dstNormal->x = srcNormal->x;
+                        planeOffset += 4;
+                        dstNormal += 1;
+                        dstNormal[-1].y = srcNormal->y;
+                        dstNormal[-1].z = srcNormal->z;
+                        srcNormal += 1;
+                        dstNormal[-1].originOffset =
+                            -(((dstNormal[-1].x * plane[0]->x) + (dstNormal[-1].y * plane[0]->y))
+                              + (dstNormal[-1].z * plane[0]->z));
+                    } while (normalIndex < mesh->header.Len_Triangle_Normals);
+                }
+            }
+            rec += 1;
+            *(Vector *) &rec[-1].unkA0 = mn;
+            *(Vector *) &rec[-1].unkAC = mx;
+            recIndex += 1;
+        } while (recIndex < D_8012D940);
+    }
+    func_8010DD8C();
+    omCurrentProc->entryPoint = func_801133C8;
+    omCurrentProc->payload.callback = func_801133C8;
+}
+#elif defined(PORT)
 /* PORT: first-frame refresh of every dynamic-collision record, from
  * asm/nonmatchings/ovl2/ovl2_10/func_80113F08.s. For each D_8012D948
  * record built by func_80114A14 it clears the per-vertex transform flags,

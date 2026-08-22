@@ -293,6 +293,11 @@ void func_80207EAC_ovl9(struct GObj *this) {
 
 void func_80207F0C_ovl9(void);
 extern FUNCLIST D_8021C904_ovl9;
+/* K&R form is load-bearing here: its real signature is
+ * void func_80208758_ovl9(struct GObj *), but this file calls it with both
+ * 0 args (line ~298) and 1 arg (line ~490) -- the ROM relies on whatever
+ * GObj* is already sitting in $a0 at the 0-arg site. An ANSI prototype
+ * breaks compilation with "too few arguments". */
 void func_80208758_ovl9();
 void func_80207F0C_ovl9(void) {
     func_80208758_ovl9();

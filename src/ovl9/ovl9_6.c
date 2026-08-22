@@ -365,6 +365,11 @@ void func_801EBDB8_ovl9(GObj *arg0) {
 }
 
 extern FUNCLIST D_8021C0C4_ovl9;
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (4x): its real signature is s32 func_801A0D74_ovl7(GObj *), but call
+ * sites here and across the tree omit the arg -- the ROM relies on
+ * whatever GObj* is already sitting in $a0. An ANSI prototype breaks
+ * compilation with "too few arguments". */
 void func_801A0D74_ovl7();
 void func_8019F3B0_ovl7(void);
 

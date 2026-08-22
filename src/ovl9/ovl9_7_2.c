@@ -91,6 +91,11 @@ void func_801F2CF0_ovl9(GObj *arg0) {
 
 void func_801F2E04_ovl9(void);
 void func_801F2CF0_ovl9(struct GObj *);
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (4x): its real signature is void func_801A6C10_ovl7(GObj *), but this file
+ * calls it with both 0 args and 1 arg (line ~373) -- the ROM relies on
+ * whatever GObj* is already sitting in $a0 at the 0-arg sites. An ANSI
+ * prototype breaks compilation with "too few arguments". */
 void func_801A6C10_ovl7();
 void func_801A0D50_ovl7(void *);
 
@@ -1150,7 +1155,7 @@ void func_801F5BD0_ovl9(GObj *arg0) {
 }
 
 extern struct Sub800E1B50_Unk98 D_801CBDB8;
-void func_801F5CD4_ovl9();
+void func_801F5CD4_ovl9(void);
 void func_801F5BD0_ovl9(struct GObj *);
 
 void func_801F5C18_ovl9(struct GObj *arg0) {
@@ -1359,7 +1364,7 @@ void func_801F651C_ovl9(struct GObj *arg0) {
     }
 }
 
-void func_801F6794_ovl9();
+void func_801F6794_ovl9(void);
 
 void func_801F66D4_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];

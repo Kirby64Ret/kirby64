@@ -144,7 +144,7 @@ extern struct Sub800E1B50_Unk98 D_801CC940;
 /* D_8021DBE8_ovl9: literal, this TU owns its .rodata */
 /* D_8021DBEC_ovl9: literal, this TU owns its .rodata */
 /* D_8021DBF0_ovl9: literal, this TU owns its .rodata */
-extern void func_800AFBB4();
+extern void func_800AFBB4(s32, GObj *);
 extern struct Sub800E1B50_Unk98 D_801CC8F8;
 extern struct Sub800E1B50_Unk98 D_801CC91C;
 /* D_8021DBC8_ovl9: literal, this TU owns its .rodata */
@@ -1897,6 +1897,11 @@ extern void func_801051AC(void *);
 extern FUNCLIST D_8021CAE4_ovl9;
 void func_8020FC68_ovl9(struct GObj *arg0);
 void func_8020F8A8_ovl9(GObj *);
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (2x): its real signature is s32 func_801A0D74_ovl7(GObj *), but call
+ * sites here and across the tree omit the arg -- the ROM relies on
+ * whatever GObj* is already sitting in $a0. An ANSI prototype breaks
+ * compilation with "too few arguments". */
 s32 func_801A0D74_ovl7();
 void func_8019F3B0_ovl7(void);
 /* Carried-critter per-frame hook: run the shared mover with facing

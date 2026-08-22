@@ -93,6 +93,7 @@ extern u8 D_800D6C90[];                 /* entity active flags (canonical base,
                                          * same one spawn.c/helplib/enelib use) */
 extern s32 D_801290DC;
 extern struct UnkStruct80129418 *D_8012911C;
+
 extern s32 D_80129118;
 extern s32 D_80129124;
 extern s32 D_80129128;
@@ -1003,253 +1004,261 @@ void func_800F7844(void) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 27/484 instructions match (457 diffs). The score is a register
+ * rotation doing damage across the whole body plus an 8-byte frame delta
+ * (0x60 here, 0x68 in the ROM): the blob-relocation walk (including the
+ * x4 unroll IDO generates from the plain `for` written here, remainder
+ * prologue and all), the entity walk, the flag clear, the skybox-record
+ * copy, the light-block copies and both overlay switches all line up
+ * instruction-for-instruction with the listing. IDO allocates every temp one
+ * slot high from the very first index computation ($t6/$t7 where the ROM
+ * takes $t5/$t6), so almost every instruction names a rotated register.
+ * Measured inert: making the track count and its loop index unsigned (the
+ * ROM's `beqz` on the count is already reproduced), and spelling
+ * D_800D6F3C+0xC through a (u32) cast to force the ROM's
+ * `%lo(D_800D6F3C + 0xC)` address materialisation -- that one costs 5 diffs
+ * and was reverted.
+ * NOTE: this draft names struct UnkStruct80129418, which this file declares
+ * BELOW the pragma site; it was iterated with the body temporarily placed
+ * after that declaration. Anyone re-opening it should do the same rather
+ * than moving the declaration up (see the ovl2_8 lesson in REFOUND.md). */
 void func_800F78E4(void) {
-    void *sp54;
-    ? sp44;
-    ? *var_a1;
-    s32 *temp_v1;
-    s32 *var_v0;
-    s32 *var_v1_2;
-    s32 temp_a2;
-    s32 temp_t4_2;
-    s32 temp_v0_4;
-    s32 temp_v1_5;
-    u16 temp_v0_3;
-    u8 *temp_a0_3;
-    u8 *temp_t5;
-    u8 *temp_v1_4;
-    u8 *var_v1;
-    u8 temp_a2_2;
-    u8 temp_t7_2;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_t3;
-    void *temp_t4;
-    void *temp_t7;
-    void *temp_t7_3;
-    void *temp_t8;
-    void *temp_t8_2;
-    void *temp_t9;
-    void *temp_v0;
-    void *temp_v0_2;
-    void *temp_v1_2;
-    void *temp_v1_3;
-    void *var_a0;
-    void *var_v0_2;
+    /* One stage-area row out of the level table; nine words per area. */
+    struct StageArea {
+        /* 0x00 */ u32 geoBlockA;
+        /* 0x04 */ u32 geoBlockB;
+        /* 0x08 */ u16 skyboxId;
+        /* 0x0A */ u16 bgColor;
+        /* 0x0C */ u32 musicId;
+        /* 0x10 */ u32 areaSetup;
+        /* 0x14 */ u16 deathCamera;
+        /* 0x16 */ u16 stageContents;
+        /* 0x18 */ u32 dustSettings;
+        /* 0x1C */ u32 dustImage;
+        /* 0x20 */ u32 areaName;
+    };
+    /* Header of the loaded area blob's track section. */
+    struct TrackSection {
+        /* 0x00 */ u32 count;
+        /* 0x04 */ u32 tracks;
+        /* 0x08 */ u32 routing;
+        /* 0x0C */ u32 lengths;
+    };
+    /* One entry of that section's track array. */
+    struct TrackRecord {
+        /* 0x00 */ u32 kirbyNode;
+        /* 0x04 */ u32 footer;
+        /* 0x08 */ u32 cells;
+        /* 0x0C */ u16 unkC;
+        /* 0x0E */ s16 pointCount;
+    };
+    /* Footer each track record points at. */
+    struct TrackFooter {
+        /* 0x00 */ u32 unk0;
+        /* 0x04 */ u32 unk4;
+        /* 0x08 */ u32 points;
+        /* 0x0C */ u32 unkC;
+        /* 0x10 */ u32 keyframes;
+        /* 0x14 */ u32 connectors;
+    };
+    /* One placed entity; the array ends at a record whose track byte is 0x99. */
+    struct LevelEntity {
+        /* 0x00 */ u8 track;
+        /* 0x01 */ u8 pad1[3];
+        /* 0x04 */ u8 kind;
+        /* 0x05 */ u8 pad5[3];
+        /* 0x08 */ Vector pos;
+        /* 0x14 */ u8 pad14[0x10];
+        /* 0x24 */ f32 trackParam;
+        /* 0x28 */ u32 unk28;
+    };
+    struct SkyboxLayer {
+        u32 word[0xC];
+    };
+    struct LightBlock {
+        u32 word[6];
+    };
+    extern s32 D_800D6F3C;
+    extern s32 D_801290DC;
+    extern struct UnkStruct80129418 *D_8012911C;
+    extern struct StageArea *D_800D1F98[];
+    extern u8 *D_800D4668[];
+    extern struct TrackSection *D_80129114;
+    extern s32 D_80129118;
+    extern struct LevelEntity *D_80129120;
+    extern struct LevelEntity *D_801290E0;
+    extern s32 D_80129124;
+    extern s32 D_80129128;
+    extern u32 D_8012912C;
+    extern u32 D_80129130;
+    extern s32 D_8012B9B0;
+    extern struct SkyboxLayer D_8012B9B8[];
+    extern u8 D_800D6C90[];
+    extern u8 D_800D6C94[];
+    extern u8 D_800D6AB8[];
+    extern u8 D_800D7B80[];
+    extern struct LightBlock D_800BE548;
+    f32 func_800FA1D4(u32 footer, Vector *pos, s16 pointCount, s32 *entityIndex);
+    void func_800A7A70(s32 kind, s32 arg1, s32 arg2);
+    void func_800A7BF4(void *dst, void *src);
+    void utilLoadOverlay(s32 overlay);
+    u16 func_800F8560(void);
+    Vector pos;
+    struct StageArea *area;
+    struct TrackRecord *track;
+    struct TrackFooter *footer;
+    struct LevelEntity *entity;
+    struct SkyboxLayer *layer;
+    u8 *flag;
+    u32 base;
+    s32 blobBase;
+    u32 trackCount;
+    u32 i;
+    u32 kind;
+    u32 skyboxId;
 
-    var_v0 = *(&D_800D1F98 + ((D_800BE500 * 0xC * 4) + (D_800BE504 * 4)));
-    temp_v1 = &D_800D6F3C + 0xC;
-    D_801290D8 = (D_800BE508 * 0x24) + var_v0;
-    *temp_v1 = 0;
-    if (*var_v0 != 0) {
+    area = D_800D1F98[(D_800BE500 * 0xC) + D_800BE504];
+    D_801290D8 = (struct UnkStruct801290D8_2 *) &area[D_800BE508];
+    *(s32 *) ((u8 *) &D_800D6F3C + 0xC) = 0;
+    if (area->geoBlockA != 0) {
         do {
-            var_v0 += 0x24;
-            *temp_v1 += 1;
-        } while (*var_v0 != 0);
+            area += 1;
+            *(s32 *) ((u8 *) &D_800D6F3C + 0xC) += 1;
+        } while (area->geoBlockA != 0);
     }
-    temp_v0 = func_800A9AA8(D_801290D8->unk10, 3, &D_801290D8);
-    D_801290DC = temp_v0;
-    sp54 = temp_v0;
-    temp_v1_2 = temp_v0->unk0 + temp_v0;
-    temp_v0->unk0 = temp_v1_2;
-    D_8012911C = temp_v1_2;
-    temp_v1_3 = temp_v0->unk4 + temp_v0;
-    temp_v0->unk4 = temp_v1_3;
-    D_80129114 = temp_v1_3;
-    temp_v1_4 = temp_v0->unk8 + temp_v0;
-    temp_v0->unk8 = temp_v1_4;
-    D_80129120 = temp_v1_4;
-    D_801290E0 = temp_v1_4;
-    temp_a2 = D_80129114->unk0;
-    var_a1 = NULL;
-    D_80129118 = temp_a2;
-    D_80129114->unk4 = D_80129114->unk4 + temp_v0;
-    var_a0 = D_80129114->unk4;
-    if (temp_a2 != 0) {
-        temp_v1_5 = temp_a2 & 3;
-        if (temp_v1_5 != 0) {
-            do {
-                temp_t4 = var_a0->unk4 + temp_v0;
-                var_a0->unk4 = temp_t4;
-                var_a0->unk8 = var_a0->unk8 + temp_v0;
-                var_a0->unk0 = var_a0->unk0 + temp_v0;
-                temp_t4->unk8 = temp_t4->unk8 + temp_v0;
-                temp_t4->unk10 = temp_t4->unk10 + temp_v0;
-                if (temp_t4->unk14 != NULL) {
-                    temp_t4->unk14 = temp_t4->unk14 + temp_v0;
-                }
-                var_a1 += 1;
-                var_a0 += 0x10;
-            } while (temp_v1_5 != var_a1);
-            if (var_a1 != temp_a2) {
-                goto loop_8;
-            }
-        } else {
-            do {
-loop_8:
-                temp_t3 = var_a0->unk4 + temp_v0;
-                var_a0->unk0 = var_a0->unk0 + temp_v0;
-                var_a0->unk8 = var_a0->unk8 + temp_v0;
-                var_a0->unk4 = temp_t3;
-                temp_t3->unk8 = temp_t3->unk8 + temp_v0;
-                temp_t3->unk10 = temp_t3->unk10 + temp_v0;
-                if (temp_t3->unk14 != NULL) {
-                    temp_t3->unk14 = temp_t3->unk14 + temp_v0;
-                }
-                temp_t8 = var_a0->unk14 + temp_v0;
-                var_a0->unk14 = temp_t8;
-                var_a0->unk18 = var_a0->unk18 + temp_v0;
-                var_a0->unk10 = var_a0->unk10 + temp_v0;
-                temp_t8->unk8 = temp_t8->unk8 + temp_v0;
-                temp_t8->unk10 = temp_t8->unk10 + temp_v0;
-                temp_a0 = var_a0 + 0x10;
-                if (temp_t8->unk14 != NULL) {
-                    temp_t8->unk14 = temp_t8->unk14 + temp_v0;
-                }
-                temp_t9 = temp_a0->unk14 + temp_v0;
-                temp_a0->unk14 = temp_t9;
-                temp_a0->unk18 = temp_a0->unk18 + temp_v0;
-                temp_a0->unk10 = temp_a0->unk10 + temp_v0;
-                temp_t9->unk8 = temp_t9->unk8 + temp_v0;
-                temp_t9->unk10 = temp_t9->unk10 + temp_v0;
-                temp_a0_2 = temp_a0 + 0x10;
-                if (temp_t9->unk14 != NULL) {
-                    temp_t9->unk14 = temp_t9->unk14 + temp_v0;
-                }
-                temp_t7 = temp_a0_2->unk14 + temp_v0;
-                temp_a0_2->unk14 = temp_t7;
-                temp_a0_2->unk18 = temp_a0_2->unk18 + temp_v0;
-                temp_a0_2->unk10 = temp_a0_2->unk10 + temp_v0;
-                temp_t7->unk8 = temp_t7->unk8 + temp_v0;
-                temp_t7->unk10 = temp_t7->unk10 + temp_v0;
-                if (temp_t7->unk14 != NULL) {
-                    temp_t7->unk14 = temp_t7->unk14 + temp_v0;
-                }
-                var_a1 += 4;
-                var_a0 = temp_a0_2 + 0x10 + 0x10;
-            } while (var_a1 != temp_a2);
+
+    /* Load the area blob and turn every offset it stores into a pointer. */
+    base = func_800A9AA8(((struct StageArea *) D_801290D8)->areaSetup, 3);
+    D_801290DC = base;
+    blobBase = base;
+    ((u32 *) base)[0] += base;
+    D_8012911C = (struct UnkStruct80129418 *) ((u32 *) base)[0];
+    ((u32 *) base)[1] += base;
+    D_80129114 = (struct TrackSection *) ((u32 *) base)[1];
+    ((u32 *) base)[2] += base;
+    D_80129120 = (struct LevelEntity *) ((u32 *) base)[2];
+    D_801290E0 = D_80129120;
+
+    trackCount = D_80129114->count;
+    D_80129118 = trackCount;
+    D_80129114->tracks += base;
+    track = (struct TrackRecord *) D_80129114->tracks;
+    for (i = 0; i < trackCount; i++) {
+        track->kirbyNode += base;
+        track->footer += base;
+        track->cells += base;
+        footer = (struct TrackFooter *) track->footer;
+        footer->points += base;
+        footer->keyframes += base;
+        if (footer->connectors != 0) {
+            footer->connectors += base;
         }
+        track += 1;
     }
-    temp_a0_3 = D_801290E0;
+
+    /* Give every entity its track parameter. */
     D_80129128 = 0;
     D_80129124 = 0;
-    if (temp_v0 != temp_a0_3) {
-        var_v1 = D_80129120;
-        var_a1 = &sp44;
-        if (var_v1->unk0 != 0x99) {
+    if (base != (u32) D_801290E0) {
+        entity = D_80129120;
+        if (entity->track != 0x99) {
             do {
-                var_a1->unk0 = var_v1->unk8;
-                var_a1->unk4 = var_v1->unkC;
-                var_a1->unk8 = var_v1->unk10;
-                temp_a2_2 = var_v1->unk4;
-                if ((temp_a2_2 == 0) || (temp_a2_2 == 2)) {
-                    temp_v0_2 = D_80129114->unk4 + (var_v1->unk0 * 0x10);
-                    D_80129120->unk24 = func_800FA1D4(temp_v0_2->unk4, var_a1, temp_v0_2->unkE, &D_80129124);
-                    var_v1 = D_80129120;
-                    var_a1 = &sp44;
+                pos = entity->pos;
+                kind = entity->kind;
+                if ((kind == 0) || (kind == 2)) {
+                    track = &((struct TrackRecord *) D_80129114->tracks)[entity->track];
+                    D_80129120->trackParam =
+                        func_800FA1D4(track->footer, &pos, track->pointCount, &D_80129124);
+                    entity = D_80129120;
                 }
-                temp_t5 = var_v1 + 0x2C;
-                D_80129120 = temp_t5;
+                D_80129120 = entity + 1;
                 D_80129124 += 1;
-                temp_t7_2 = var_v1[0x2C];
-                var_v1 = temp_t5;
-            } while (temp_t7_2 != 0x99);
+                entity += 1;
+            } while (entity->track != 0x99);
         }
-        D_80129120 = temp_a0_3;
+        D_80129120 = D_801290E0;
     }
-    var_v0_2 = &D_800D6C68 + 0x28;
+
+    flag = D_800D6C90;
     do {
-        var_v0_2 += 4;
-        var_v0_2->unk-4 = 0;
-        var_v0_2->unk-3 = 0;
-        var_v0_2->unk-2 = 0;
-        var_v0_2->unk-1 = 0;
-    } while (var_v0_2 != (&D_800D6C68 + 0x68));
-    func_800F7404(D_800BE508, var_a1);
-    D_80129114->unk8 = D_80129114->unk8 + sp54;
-    D_80129114->unkC = D_80129114->unkC + sp54;
-    D_8012912C = D_80129114->unk8;
-    D_80129130 = D_80129114->unkC;
+        flag += 4;
+        flag[-4] = 0;
+        flag[-3] = 0;
+        flag[-2] = 0;
+        flag[-1] = 0;
+    } while (flag != &D_800D6C94[0x3C]);
+    func_800F7404(D_800BE508);
+
+    D_80129114->routing += blobBase;
+    D_80129114->lengths += blobBase;
+    D_8012912C = D_80129114->routing;
+    D_80129130 = D_80129114->lengths;
+
     D_8012B9B0 = 0;
-    temp_v0_3 = D_801290D8->unk8;
-    if (temp_v0_3 != 0) {
-        var_v1_2 = *(&D_800D4668 + (temp_v0_3 * 4));
-        if (*var_v1_2 != 0) {
+    skyboxId = ((struct StageArea *) D_801290D8)->skyboxId;
+    if (skyboxId != 0) {
+        layer = (struct SkyboxLayer *) D_800D4668[skyboxId];
+        if (layer->word[0] != 0) {
             do {
-                M2C_MEMCPY_ALIGNED(&D_8012B9B8 + (D_8012B9B0 * 0x30), var_v1_2, 0x30);
+                D_8012B9B8[D_8012B9B0] = *layer;
                 D_8012B9B0 += 1;
-                temp_t4_2 = var_v1_2->unk30;
-                var_v1_2 += 0x30;
-            } while (temp_t4_2 != 0);
+                layer += 1;
+            } while (layer->word[0] != 0);
         }
     }
-    temp_t8_2 = &D_800D7010 + 0x30;
-    temp_t8_2->unk0 = D_800BE548.unk0;
-    temp_t7_3 = &gKirbyController + 0x10;
-    temp_t8_2->unk4 = D_800BE548.unk4;
-    temp_t8_2->unk8 = D_800BE548.unk8;
-    temp_t8_2->unkC = D_800BE548.unkC;
-    temp_t8_2->unk10 = D_800BE548.unk10;
-    temp_t8_2->unk14 = D_800BE548.unk14;
-    temp_t7_3->unk0 = D_800BE548.unk0;
-    temp_t7_3->unk4 = D_800BE548.unk4;
-    temp_t7_3->unk8 = D_800BE548.unk8;
-    temp_t7_3->unkC = D_800BE548.unkC;
-    temp_t7_3->unk10 = D_800BE548.unk10;
-    temp_t7_3->unk14 = D_800BE548.unk14;
-    func_800A7A70(0, 1, 2, D_80129114);
+
+    *(struct LightBlock *) &D_800D7010[0x30] = D_800BE548;
+    *(struct LightBlock *) ((u8 *) &gKirbyController + 0x10) = D_800BE548;
+    func_800A7A70(0, 1, 2);
     func_800A7A70(5, 1, 2);
     func_800A7A70(1, 0x20001, 0x20002);
     func_800A7A70(2, 0x20001, 0x20002);
-    *(&D_800D6AB8 + 8) = &D_800D7B80 + 0x18;
+    *(u8 **) &D_800D6AB8[8] = &D_800D7B80[0x18];
     func_800A7A70(3, 0x10001, 0x10002);
-    *(&D_800D6AB8 + 0x10) = &D_800D7B80 + 0x20;
-    func_800A7A70(6, D_801290D8->unk18, D_801290D8->unk1C);
-    *(&D_800D6AB8 + 0x1C) = &D_800D7B80 + 0x28;
-    func_800A7BF4(&D_800D7B80 + 0x10, &gKirbyController + 0x10);
-    func_800A7BF4(&D_800D7B80 + 0x28, &D_800D7010 + 0x30);
-    temp_v0_4 = func_800F8560();
-    switch (temp_v0_4) {                            /* switch 1 */
-        case 9:                                     /* switch 1 */
+    *(u8 **) &D_800D6AB8[0x10] = &D_800D7B80[0x20];
+    func_800A7A70(6, ((struct StageArea *) D_801290D8)->dustSettings,
+                  ((struct StageArea *) D_801290D8)->dustImage);
+    *(u8 **) &D_800D6AB8[0x1C] = &D_800D7B80[0x28];
+    func_800A7BF4(&D_800D7B80[0x10], (u8 *) &gKirbyController + 0x10);
+    func_800A7BF4(&D_800D7B80[0x28], &D_800D7010[0x30]);
+    switch (func_800F8560()) {
+        case 9:
             utilLoadOverlay(7);
             utilLoadOverlay(0x10);
             return;
-        case 2:                                     /* switch 1 */
+        case 2:
             utilLoadOverlay(7);
-            switch (D_800BE500) {                   /* switch 2 */
-                case 0:                             /* switch 2 */
+            switch (D_800BE500) {
+                case 0:
                     utilLoadOverlay(0xA);
                     return;
-                case 1:                             /* switch 2 */
+                case 1:
                     utilLoadOverlay(0xB);
                     return;
-                case 2:                             /* switch 2 */
+                case 2:
                     utilLoadOverlay(0xC);
                     return;
-                case 3:                             /* switch 2 */
+                case 3:
                     utilLoadOverlay(0xD);
                     return;
-                case 4:                             /* switch 2 */
+                case 4:
                     utilLoadOverlay(0xE);
                     return;
-                case 5:                             /* switch 2 */
+                case 5:
                     utilLoadOverlay(0xF);
                     return;
-                default:                            /* switch 2 */
-                    return;
             }
-            break;
-        case 1:                                     /* switch 1 */
-        case 3:                                     /* switch 1 */
+            return;
+        case 1:
+        case 3:
             utilLoadOverlay(7);
             utilLoadOverlay(9);
             return;
-        case 10:                                    /* switch 1 */
+        case 10:
             utilLoadOverlay(8);
             utilLoadOverlay(0x12);
             return;
-        default:                                    /* switch 1 */
+        default:
             utilLoadOverlay(8);
             if (D_800D6F3C >= 3) {
                 utilLoadOverlay(0x12);
@@ -1257,6 +1266,7 @@ loop_8:
             break;
     }
 }
+
 #elif defined(PORT)
 /* PORT: the level-config loader, from asm/nonmatchings/ovl2/ovl2_2/
  * func_800F78E4.s and the format doc in include/level_settings_structs.h.

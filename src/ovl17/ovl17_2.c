@@ -558,7 +558,73 @@ void func_801DEA5C_ovl17(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801DEA5C_ovl17.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 3/213, one callee-saved register.  Frame is now the ROM's 0x128
+   with arg0 homed at 0x128; the residue is that our IDO parks the objId in
+   $s0 (adding an s0 save the ROM does not have) where the ROM re-materialises
+   omCurrentObj.  Inlining objId at every use is worse -- it grows the
+   function to 241 instructions and moves the frame to 0x110.
+   Layout read off the listing: the ROM uses THREE Mat4 temporaries, at
+   sp+0x44, sp+0x90 and sp+0xD0, plus four Vectors at 0x20/0x2C/0x38/0x110.
+   The draft originally declared two matrices and sat at a 0xE8 frame; adding
+   the third is what lines the whole body up. */
+/* PORT: pitch impulse on the boss orientation, from asm/nonmatchings/ovl17/
+ * ovl17_2/func_801DF768_ovl17.s (callers pass +/-(D_800D7170*1.8)*3). Halves
+ * all three steering rates, forces the pitch rate to arg0, rotates the
+ * forward row about the right row by that amount, re-orthonormalizes and
+ * writes the Euler angles back (same decomposition as func_801DEA5C). */
+void func_801DF768_ovl17(f32 arg0) {
+    Mat4 m;
+    Mat4 tmp;
+    Mat4 tmp2;
+    Vector a;
+    Vector b;
+    Vector cr;
+    Vector ang;
+    s32 objId;
+
+    guMtxIdentF(m);
+    objId = omCurrentObj->objId;
+    HS64_MkRotationMtxF(tmp, D_800EA6E0[objId], D_800EA8A0[objId], D_800EAA60[objId]);
+    guMtxCatF(m, tmp, m);
+    D_800EAC20[objId] *= 0.5f;
+    D_800EADE0[objId] *= 0.5f;
+    D_800EAFA0[objId] *= 0.5f;
+    a.x = m[2][0]; a.y = m[2][1]; a.z = m[2][2];
+    b.x = m[0][0]; b.y = m[0][1]; b.z = m[0][2];
+    cr.x = cr.y = cr.z = 0.0f;
+    D_800EADE0[objId] = arg0;
+    func_800191F8(&a, &b, D_800EADE0[objId]);
+    m[2][0] = a.x; m[2][1] = a.y; m[2][2] = a.z;
+    b = a;
+    a.x = m[1][0]; a.y = m[1][1]; a.z = m[1][2];
+    vec3_normalized_cross_product(&a, &b, &cr);
+    b = cr;
+    m[0][0] = cr.x; m[0][1] = cr.y; m[0][2] = cr.z;
+    a.x = m[2][0]; a.y = m[2][1]; a.z = m[2][2];
+    vec3_normalized_cross_product(&a, &b, &cr);
+    m[1][0] = cr.x; m[1][1] = cr.y; m[1][2] = cr.z;
+    ang.y = asinf(-m[0][2]);
+    if ((ang.y == 1.5707964f) || (ang.y == -1.5707964f)) {
+        if (ang.y == 1.5707964f) {
+            ang.x = atan2f(m[1][0], m[1][1]);
+        } else {
+            ang.x = atan2f(-m[1][0], m[1][1]);
+        }
+        ang.z = 0.0f;
+    } else {
+        ang.x = atan2f(m[1][2], m[2][2]);
+        ang.z = atan2f(m[0][1], m[0][0]);
+    }
+    utilWrapRotation(&ang);
+    D_800EA6E0[objId] = ang.x;
+    D_800EA8A0[objId] = ang.y;
+    D_800EAA60[objId] = ang.z;
+    gEntitiesAngleXArray[objId] = D_800EA6E0[objId];
+    gEntitiesAngleYArray[objId] = D_800EA8A0[objId];
+    gEntitiesAngleZArray[objId] = D_800EAA60[objId];
+}
+#elif defined(PORT)
 /* PORT: pitch impulse on the boss orientation, from asm/nonmatchings/ovl17/
  * ovl17_2/func_801DF768_ovl17.s (callers pass +/-(D_800D7170*1.8)*3). Halves
  * all three steering rates, forces the pitch rate to arg0, rotates the
@@ -730,7 +796,121 @@ void func_801E0704_ovl17(void) {
     }
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 3/205, one callee-saved register.  The ROM saves only $ra (at 0x14)
+   and spills the record and hand pointers to 0x4C and 0x48; ours keeps one of
+   them in $s0, which adds the save and renames the body.
+   Everything else is now the ROM's, and the layout facts below were read off
+   the listing rather than carried over from the PC arm -- they are the useful
+   part of this draft:
+   - the attach record hangs off the anim slot at 0x24 (`lw $t4,0x24($v0)`),
+     and its two written fields are at 0x8 (the pinned DObj) and 0x18 (reach).
+     The PORT arm's PcOvl17CollSlot is the widened LP64 view -- 56 bytes with
+     the body shapes at 48 -- and does not apply here.
+   - the shape table is word 2 of the anim header (`lw 0x8($t2)`) and the
+     joint it tests is that table's word 1.
+   - the anim-event record is 0x18 bytes with code at +2, param at +3 and the
+     target track at +0xC; that size is load-bearing for the 0x60 frame (0x20
+     gives 0x68, 0x10 gives 0x58). */
+/* N64 view of the two records this walks.  The PC arm's PcOvl17* structs are
+   the widened LP64 layout (CollSlot 56 bytes, body shapes at 48); on the N64
+   the attach record hangs off the slot at 0x24 and its fields are at 0x8/0x18,
+   read straight off the listing. */
+struct Ovl17HandAttach {
+    u8 filler0[8];
+    struct DObj *pinnedTo;      /* 0x08: DObj the hand model is pinned to */
+    u8 fillerC[0xC];
+    f32 reach;                  /* 0x18: extends with the charge level */
+};
+
+struct Ovl17AnimSlot {
+    u8 filler0[0x24];
+    struct Ovl17HandAttach *attach;
+};
+
+struct Ovl17AnimEvent {
+    u8 filler0[2];
+    u8 code;                    /* 0x02 -> D_800E83E0 event code */
+    u8 param;                   /* 0x03 -> ent->unk43 */
+    u8 filler4[8];
+    s32 target;                 /* 0x0C: track to flag in D_800E98E0 */
+    u8 filler10[8];
+};
+
+extern void *D_801E510C_ovl17[];
+extern f32 D_800D6E5C;
+
+/* Boss hand per-frame anim pump: step the shared anim script, flag whatever
+   track the script names, and once the charge level D_800EA1A0 reaches 5 also
+   run the hand's own script -- pinning the attach record to the hand DObj and
+   growing its reach with the charge -- then drain the resulting event into
+   D_800E83E0/unk43.  Event 1 hands the process to func_801DDB8C_ovl17, event 2
+   latches the old contact timer and plays the grab cue. */
+void func_801E073C_ovl17(void) {
+    void func_80111550(s32);
+    struct Ovl17AnimSlot *func_80111C88(void *, s32);
+    void func_80111ECC(struct Ovl17AnimSlot *);
+    s32 func_80110B00(struct Ovl17AnimEvent *);
+    void func_800BC11C(f32);
+    struct UnkStruct800E1B50 *ent;
+    struct Ovl17AnimSlot *slot;
+    struct DObj *hand;
+    u32 *shape;
+    s32 objId;
+    struct Ovl17AnimEvent event;
+
+    objId = omCurrentObj->objId;
+    hand = D_800DFBD0[objId][0x1F];
+    ent = D_800E1B50[objId];
+    if (ent == NULL) {
+        return;
+    }
+    if (ent->unk8C == NULL) {
+        return;
+    }
+    func_80111550(objId);
+    func_80111ECC(func_80111C88(D_801E510C_ovl17, omCurrentObj->objId));
+    if ((func_80110B00(&event) != 0) && (D_800E7B20[objId] <= 0.0f) && (event.target != 0)) {
+        D_800E98E0[event.target] = 1;
+    }
+    if (D_800EA1A0[objId] < 5) {
+        return;
+    }
+    func_80111550(objId);
+    slot = func_80111C88(ent->unk8C, omCurrentObj->objId);
+    /* word 2 of the anim header is the shape table; its word 1 is the joint */
+    shape = ((u32 **) ent->unk8C)[2];
+    if ((shape[1] == 0) && (hand != NULL)) {
+        slot->attach->pinnedTo = hand;
+        slot->attach->reach = ((f32) D_800EA1A0[objId] * 3.0f) + 30.0f;
+    }
+    func_80111ECC(slot);
+    if (func_80110B00(&event) != 0) {
+        D_800E83E0[objId] = event.code;
+        ent->unk43 = event.param;
+    } else {
+        D_800E83E0[objId] = 0;
+        ent->unk43 = 0;
+    }
+    if (D_800D6E5C != 0.0f) {
+        func_800BC11C(D_800E7B20[objId]);
+    }
+    if (D_800E83E0[objId] == 1) {
+        gEntityFuncListIDArray[objId] = 4;
+        assign_new_process_entry(gEntityGObjProcessArray[objId], func_801DDB8C_ovl17);
+        if (event.target != 0) {
+            D_800E98E0[event.target] = 1;
+        }
+    } else if (D_800E83E0[objId] == 2) {
+        D_800EA360[objId] = D_800E7CE0[objId];
+        D_800E7CE0[objId] = 1;
+        play_sound(0x1BF);
+        if (event.target != 0) {
+            D_800E98E0[event.target] = 1;
+        }
+    }
+}
+#elif defined(PORT)
 /* PORT: boss body collision service, from asm/nonmatchings/ovl17/ovl17_2/
  * func_801E073C_ovl17.s. Registers the fixed body CollEntry D_801E510C
  * (a gen_data void*[] table: one native 8-byte cell per N64 word, its

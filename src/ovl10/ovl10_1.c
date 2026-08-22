@@ -175,7 +175,84 @@ void func_801DC4BC_ovl10(s32 arg0) {
     curObjSleepForever();
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 46/290 with the frame and instruction count EXACT -- residue is a single
+ * $v0/$v1 swap that propagates. Strongest seed in this file; permuter first.
+ * Two fixes worth keeping: the host arm's `(void *)(uintptr_t)` cast on D_800EA360 is
+ * an LP64-ism and is gone, and the two nested `s32 t = D_800EA520[parent]` temps must
+ * be INLINED into their comparisons -- as locals they cost a stack slot each and put
+ * the frame at 0x48 against the ROM's 0x40 (53/290 -> 46/290, LEVERS 10). */
+
+/* Split boss segment rejoins its parent track (D_800E0D50): copies the
+ * parent's path segment/offset, position and heading, latches the parent's
+ * D_800DD8D0 top status bits through D_800E9C60, plays the merge anims from
+ * the D_801F42D8/E0/E8 tables (indexed by D_800E98E0 parity), and hands the
+ * hit pipeline back to the parent (D_800E7CE0[parent] = 8). */
+void func_801DC598_ovl10(s32 arg0) {
+    void func_800A9864(s32, s32, s32);
+    extern void func_800B68AC(s32);
+    s32 func_800A8234(s32, s32, s32);
+    extern s32 D_801F39F4_ovl10;
+    extern s32 D_801F3A84_ovl10;
+    extern u32 D_801F42D8_ovl10[];
+    extern u32 D_801F42E0_ovl10[];
+    extern u32 D_801F42E8_ovl10[];
+
+    s32 parent = D_800E0D50[omCurrentObj->objId];
+
+    func_801A3280_ovl7();
+    func_800A9864(D_801F42D8_ovl10[D_800E98E0[omCurrentObj->objId] & 1], 0x23, 0x10);
+    func_800B19F4(0x30, omCurrentObj->objId);
+    D_800DEF90[omCurrentObj->objId] = &func_800B68AC;
+    if (D_800EA360[parent] != 0) {
+        func_800A22D4(D_800EA360[parent]);
+    }
+    if (gEntityFuncListIDArray[parent] == 5) {
+        if ((D_800EA520[parent] >= 0x64) && (D_800EA520[parent] < 0x78)) {
+            play_sound(0x1DF);
+        }
+    }
+    play_sound(0x28);
+    D_800E5F90[omCurrentObj->objId] =
+    D_800E6150[omCurrentObj->objId] = D_800E5F90[parent];
+    D_800E6BD0[omCurrentObj->objId] =
+    D_800E6D90[omCurrentObj->objId] = D_800E6BD0[parent];
+    gEntitiesNextPosXArray[omCurrentObj->objId] =
+    gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[parent];
+    gEntitiesNextPosZArray[omCurrentObj->objId] =
+    gEntitiesPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[parent];
+    gEntitiesNextPosYArray[omCurrentObj->objId] =
+    gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[parent];
+    D_800E9C60[omCurrentObj->objId] = D_800DD8D0[parent];
+    func_800B19F4(0x7F, parent);
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    if (gEntityFuncListIDArray[parent] < 0xA) {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F39F4_ovl10;
+    } else {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A84_ovl10;
+    }
+    D_800E6A10[omCurrentObj->objId] = D_800E6A10[parent];
+    D_800E9020[omCurrentObj->objId] = D_800E9020[parent];
+    D_800E17D0[omCurrentObj->objId] = D_800E17D0[parent];
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AA018(D_801F42E8_ovl10[D_800E98E0[omCurrentObj->objId] & 1]);
+    func_800AA154(D_801F42E0_ovl10[D_800E98E0[omCurrentObj->objId] & 1]);
+    if ((D_800EA360[parent] != 0) && (gEntityFuncListIDArray[parent] == 5)) {
+        D_800EA360[parent] = func_800A8234(6, 2, 2);
+    }
+    if (gEntityFuncListIDArray[parent] == 5) {
+        if ((D_800EA520[parent] >= 0x64) && (D_800EA520[parent] < 0x78)) {
+            play_sound(0x1DD);
+        }
+    }
+    D_800DD8D0[parent] |= D_800E9C60[omCurrentObj->objId] & 0xC0000000;
+    func_800B19F4(0x30, parent);
+    D_800E7CE0[parent] = 8;
+    func_8019D958_ovl7((u16) omCurrentObj->objId);
+}
+#elif defined(PORT)
 void func_800A9864(s32, s32, s32);
 void func_800B19F4(s32, s32);
 extern void func_800B68AC(s32);
@@ -471,7 +548,56 @@ void func_801DD674_ovl10(GObj *arg0) {
     }
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 202/207 with the instruction count EXACT -- register naming only.
+ * Note the prototype this needs: func_800F951C takes FOUR arguments
+ * (f32,f32,f32,f32), not two; ovl2_3.c spells it `f32 func_800F951C(s32, f32, s32,
+ * f32)`. It is declared in-body because this draft is the TU's first use and a
+ * file-scope declaration would be a file-scope change. */
+
+/* Track-edge probe for the walking boss: measures the along-track distance
+ * to the merge target (D_800E9AA0[parent] track when facing +1,
+ * D_800E98E0[parent] track when facing -1).  When the target is unreachable
+ * (9999) or already passed, it snaps to the target's path segment/offset,
+ * cancels the pending X/Z step, and returns the facing sign; else 0. */
+f32 func_801DD760_ovl10(void) {
+    f32 func_800F951C(f32, f32, f32, f32);
+
+    s32 tgt;
+    f32 dist;
+
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        tgt = D_800E9AA0[D_800E0D50[omCurrentObj->objId]].as_s32;
+        dist = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId],
+                             D_800E5F90[tgt], D_800E6BD0[tgt]);
+        if ((dist == 9999.0f) || (dist < 0.0f)) {
+            tgt = D_800E9AA0[D_800E0D50[omCurrentObj->objId]].as_s32;
+            D_800E5F90[omCurrentObj->objId] =
+            D_800E6150[omCurrentObj->objId] = D_800E5F90[tgt];
+            D_800E6BD0[omCurrentObj->objId] =
+            D_800E6D90[omCurrentObj->objId] = D_800E6BD0[tgt];
+            gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesPosXArray[omCurrentObj->objId];
+            gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesPosZArray[omCurrentObj->objId];
+            return 1.0f;
+        }
+    } else {
+        tgt = D_800E98E0[D_800E0D50[omCurrentObj->objId]];
+        dist = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId],
+                             D_800E5F90[tgt], D_800E6BD0[tgt]);
+        if ((dist == 9999.0f) || (dist > 0.0f)) {
+            tgt = D_800E98E0[D_800E0D50[omCurrentObj->objId]];
+            D_800E5F90[omCurrentObj->objId] =
+            D_800E6150[omCurrentObj->objId] = D_800E5F90[tgt];
+            D_800E6BD0[omCurrentObj->objId] =
+            D_800E6D90[omCurrentObj->objId] = D_800E6BD0[tgt];
+            gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesPosXArray[omCurrentObj->objId];
+            gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesPosZArray[omCurrentObj->objId];
+            return -1.0f;
+        }
+    }
+    return 0.0f;
+}
+#elif defined(PORT)
 f32 func_800F951C(s32, f32, s32, f32);
 
 /* Track-edge probe for the walking boss: measures the along-track distance
@@ -664,15 +790,15 @@ void func_801DDEB8_ovl10(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DDEB8_ovl10.s")
 #endif
 
-#ifdef PORT
-f32 func_800F9828(s32, s32);
-void func_800A7F74(u32, u32, u32, f32, f32, f32);
 
 /* State 6 (spit-out) main: waits for the swallowed segment to signal ready
  * (D_800E98E0 of the D_800EC120 helper), turns toward the parent track if
  * needed (the 5-tick half-turn dance shared with func_801E18A8), then spawns
  * the projectile effect and returns to state 2. */
 void func_801DE124_ovl10(s32 arg0) {
+    void func_800A7F74(u32, u32, u32, f32, f32, f32);
+    f32 func_800F9828(s32, s32);
+
     s32 i;
     f32 v;
     f32 d;
@@ -743,9 +869,6 @@ void func_801DE124_ovl10(s32 arg0) {
     func_800AA154(0x102C6);
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DE124_ovl10.s")
-#endif
 
 void func_801DE5CC_ovl10(GObj *arg0) {
     func_801DD760_ovl10();
@@ -848,7 +971,120 @@ void func_801DEA98_ovl10(GObj *arg0) {
     func_801E2BD8_ovl10(D_800DFBD0[omCurrentObj->objId][20], &sp24);
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 377/434 and 10 instructions LONG (the only over-long draft in this bloc --
+ * everything else runs short). Something here is evaluated more than the ROM does;
+ * that is the first thing to chase. */
+
+/* State 8 (triple hop toward Kirby): picks hop direction from the track
+ * probe (func_8019A900_ovl7 fills an 8-byte {dir,dist} record - full struct,
+ * not a lone s32, see enelib's PORT note), clamps the travel to the merge
+ * target track and +/-400, then does three rising hops (D_801F4328 launch
+ * velocities); the last hop carries the forward speed and lands with the
+ * double shockwave attack. */
+void func_801DEB94_ovl10(s32 arg0) {
+    void func_800A7F74(u32, u32, u32, f32, f32, f32);
+    f32 func_800F951C(f32, f32, f32, f32);
+    f32 func_801DF234_ovl10(void);
+    extern u32 D_801F4308_ovl10[];
+    extern u32 D_801F4310_ovl10[];
+    extern u32 D_801F4318_ovl10[];
+    extern u32 D_801F4320_ovl10[];
+    extern f32 D_801F4328_ovl10[];
+
+    struct {
+        s32 dir;
+        f32 dist;
+    } tp;
+    s32 fwd;
+    s32 tgt;
+    f32 range;
+    f32 d;
+
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 8;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A18_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800AA018(0x102D1);
+    func_800AA154(0x102D0);
+    D_800E3C90[omCurrentObj->objId] = 45.0f;
+    if (func_8019A900_ovl7((s32 *) &tp) != 0) {
+        range = tp.dist;
+    } else {
+        range = func_801DF234_ovl10();
+    }
+    fwd = (range < 0.0f) ? 0 : 1;
+    if (fwd != 0) {
+        tgt = D_800E9AA0[D_800E0D50[omCurrentObj->objId]].as_s32;
+        d = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId],
+                          D_800E5F90[tgt], D_800E6BD0[tgt]);
+        if ((d != 9999.0f) && (d < range)) {
+            range = d;
+        }
+        if (range > 400.0f) {
+            range = 400.0f;
+        }
+    } else {
+        tgt = D_800E98E0[D_800E0D50[omCurrentObj->objId]];
+        d = func_800F951C(D_800E5F90[omCurrentObj->objId], D_800E6BD0[omCurrentObj->objId],
+                          D_800E5F90[tgt], D_800E6BD0[tgt]);
+        if ((d != 9999.0f) && (range < d)) {
+            range = d;
+        }
+        if (range < -400.0f) {
+            range = -400.0f;
+        }
+    }
+    func_800AA018(D_801F4310_ovl10[fwd]);
+    func_800AA018(D_801F4308_ovl10[fwd]);
+    play_sound(0x1D7);
+    D_800EA520[omCurrentObj->objId] = 0;
+    while (D_800EA520[omCurrentObj->objId] < 3) {
+        D_800E8920[omCurrentObj->objId] = 0;
+        if (D_800EA520[omCurrentObj->objId] == 2) {
+            D_800E64D0[omCurrentObj->objId] = range * 0.033333335f;
+        }
+        D_800E3210[omCurrentObj->objId] = D_801F4328_ovl10[D_800EA520[omCurrentObj->objId]];
+        D_800E3750[omCurrentObj->objId] = -1.0f;
+        func_800AA018(D_801F4320_ovl10[fwd]);
+        func_800AA018(D_801F4318_ovl10[fwd]);
+        while (D_800E8920[omCurrentObj->objId] == 0) {
+            ohSleep(1);
+        }
+        D_800E3210[omCurrentObj->objId] = 0.0f;
+        D_800E3750[omCurrentObj->objId] = 0.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
+        if (D_800EA520[omCurrentObj->objId] == 2) {
+            func_800AA018(0x102D5);
+            func_800AA018(0x102D4);
+            func_800A7F74(6, 2, 1,
+                          gEntitiesNextPosXArray[omCurrentObj->objId],
+                          gEntitiesNextPosYArray[omCurrentObj->objId],
+                          gEntitiesNextPosZArray[omCurrentObj->objId]);
+            ohSleep(2);
+            func_801ACCA0_ovl7(6, 0, D_800E6A10[omCurrentObj->objId] * -40.0f, 15.0f);
+            func_801ACCA0_ovl7(6, 1, D_800E6A10[omCurrentObj->objId] * 40.0f, 15.0f);
+            func_800FB914(2);
+            play_sound(0x1D6);
+            ohSleep(4);
+            func_800A7F74(6, 2, 1,
+                          gEntitiesNextPosXArray[omCurrentObj->objId],
+                          gEntitiesNextPosYArray[omCurrentObj->objId],
+                          gEntitiesNextPosZArray[omCurrentObj->objId]);
+            func_800AF27C();
+            func_800AA018(0x102D9);
+            func_800AA154(0x102D8);
+        }
+        D_800EA520[omCurrentObj->objId] += 1;
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+}
+#elif defined(PORT)
 f32 func_801DF234_ovl10(void);
 extern u32 D_801F4308_ovl10[];
 extern u32 D_801F4310_ovl10[];
@@ -1802,7 +2038,93 @@ void func_801E28A0_ovl10(void) {
     func_801E28C8_ovl10(0);
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 195/195 and 5 instructions short. Small gap; find the repeated load IDO is
+ * merging, then the rest is register naming. */
+
+/* Per-tick hitbox registration + hit poll for the boss.  Registers the
+ * current frame's collision entry (optionally stamping arg0 as the attack
+ * id into the entry's shape header), then polls the three collision queues
+ * into a 0x1C-byte result record; result byte +2 becomes D_800E83E0 (hit
+ * kind) and byte +3 the entity's unk43.  On a kind-1 hit of the phase-2
+ * body (D_800E7880 == 7) the HP bar is refreshed; on kind 2 a helper track
+ * is spawned (func_801DBF70) and its role picked by the current state.
+ * The registered CollSlot is a HOST slot: its last Shape28* sits at byte 48
+ * (N64 0x24), and the anim id word at +8 inside the shape is native. */
+s32 func_801E28C8_ovl10(s32 arg0) {
+    struct Ovl10AnimObj2;
+    void func_80111550(u32);
+    s32 func_80110150(void *);
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    void func_800BC11C(f32);
+    extern f32 D_800D6E5C;
+
+    struct UnkStruct800E1B50 *ent;
+    struct Ovl10AnimObj2 *slot;
+    struct {
+        u8 unk0;
+        u8 unk1;
+        u8 unk2;
+        u8 unk3;
+        u8 unk4;
+        u8 pad5[3];
+        s32 unk8;
+        s32 unkC;
+        f32 unk10;
+        f32 unk14;
+        f32 unk18;
+    } probe;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    if (ent->unk88 == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    if (slot != NULL) {
+        if (arg0 != 0) {
+            *(s32 *) (*(u8 **) ((u8 *) slot + 48) + 8) = arg0;
+        }
+    }
+    if (func_80110150(&probe) != 0) {
+        D_800E83E0[omCurrentObj->objId] = probe.unk2;
+        ent->unk43 = probe.unk3;
+    } else if (func_80110B00(&probe) != 0) {
+        D_800E83E0[omCurrentObj->objId] = probe.unk2;
+        ent->unk43 = probe.unk3;
+    } else if (func_80110FD4(&probe) != 0) {
+        if (probe.unk2 == 0xA) {
+            D_800E83E0[omCurrentObj->objId] = 0;
+            ent->unk43 = 0;
+        } else {
+            D_800E83E0[omCurrentObj->objId] = probe.unk2;
+            ent->unk43 = probe.unk3;
+        }
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+    }
+    if (D_800E7880[omCurrentObj->objId] == 7) {
+        if ((D_800E83E0[omCurrentObj->objId] == 1) && (D_800D6E5C != 0.0f)) {
+            func_800BC11C(D_800E7B20[omCurrentObj->objId]);
+        }
+        if (D_800E83E0[omCurrentObj->objId] == 2) {
+            D_800EBBE0[omCurrentObj->objId] = func_801DBF70_ovl10(6, 0.0f);
+            if (D_800EBBE0[omCurrentObj->objId] != -1) {
+                if (gEntityFuncListIDArray[omCurrentObj->objId] < 0xA) {
+                    D_800E98E0[D_800EBBE0[omCurrentObj->objId]] = 0;
+                } else {
+                    D_800E98E0[D_800EBBE0[omCurrentObj->objId]] = 1;
+                }
+                if (D_800D6E5C != 0.0f) {
+                    func_800BC11C(D_800E7B20[omCurrentObj->objId]);
+                }
+            }
+        }
+    }
+    return D_800E83E0[omCurrentObj->objId];
+}
+#elif defined(PORT)
 struct Ovl10AnimObj2;
 void func_80111550(u32);
 struct Ovl10AnimObj2 *func_80111C88(s32 *, u32);

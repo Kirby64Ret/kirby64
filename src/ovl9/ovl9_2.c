@@ -86,6 +86,11 @@ void func_801D9060_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (8x): its real signature is s32 func_801A0D74_ovl7(GObj *), but call
+ * sites here and across the tree omit the arg -- the ROM relies on
+ * whatever GObj* is already sitting in $a0. An ANSI prototype breaks
+ * compilation with "too few arguments". */
 void func_801A0D74_ovl7();
 s32 func_8019F3B0_ovl7(void);
 

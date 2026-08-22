@@ -26,6 +26,11 @@ extern GObj *D_800DE350[];
 extern s32 D_801CCE98;
 extern FUNCLIST D_8021CD7C_ovl9;
 
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (7x): its real signature is s32 func_801A0D74_ovl7(GObj *), but every call
+ * site below passes 0 args -- the ROM relies on whatever GObj* is already
+ * sitting in $a0. An ANSI prototype breaks compilation with "too few
+ * arguments". */
 extern s32 func_801A0D74_ovl7();
 extern void eneTurnCommon(s32);
 extern void func_8019F3B0_ovl7(void);
@@ -66,7 +71,7 @@ void func_80214F4C_ovl9(struct GObj *arg0) {
     }
 }
 
-IN_FILE void func_802150A0_ovl9();
+IN_FILE void func_802150A0_ovl9(void);
 void func_80214FD8_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_802150A0_ovl9;
     func_801A0D50_ovl7(func_80214F4C_ovl9);
@@ -142,7 +147,7 @@ void func_802152F4_ovl9(struct GObj *arg0) {
     }
 }
 
-IN_FILE void func_80215464_ovl9();
+IN_FILE void func_80215464_ovl9(void);
 void func_8021539C_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_80215464_ovl9;
     func_801A0D50_ovl7(func_802152F4_ovl9);
@@ -312,8 +317,8 @@ void func_80215B7C_ovl9(struct GObj *arg0) {
     }
 }
 
-IN_FILE void func_80215CD8_ovl9();
-IN_FILE void func_80215B7C_ovl9();
+IN_FILE void func_80215CD8_ovl9(void);
+IN_FILE void func_80215B7C_ovl9(struct GObj *);
 void func_80215BF8_ovl9(struct GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0x32;
     D_800DF150[omCurrentObj->objId] = func_80215CD8_ovl9;
@@ -405,7 +410,7 @@ void func_80216024_ovl9(struct GObj *arg0) {
     }
 }
 
-IN_FILE void func_80216184_ovl9();
+IN_FILE void func_80216184_ovl9(void);
 void func_802160BC_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_80216184_ovl9;
     func_801A0D50_ovl7(func_80216024_ovl9);
@@ -597,7 +602,7 @@ s32 func_8021679C_ovl9(f32 arg0) {
 #endif
 #endif
 
-IN_FILE void func_8021690C_ovl9();
+IN_FILE void func_8021690C_ovl9(void);
 void func_80216844_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_8021690C_ovl9;
     func_801A0D50_ovl7(func_80216700_ovl9);
@@ -831,9 +836,9 @@ void func_80217328_ovl9(s32 arg0) {
 
 extern void func_800B67A8(struct GObj *);
 extern void func_800AED20(f32);
-extern s32 func_8010B480();
-extern s32 func_8010B67C();
-extern s32 func_8010B860();
+extern s32 func_8010B480(void *);
+extern s32 func_8010B67C(void *);
+extern s32 func_8010B860(void *);
 
 /* The block-scope prototypes are required: all three callees are defined LATER
    in this TU. Case bodies are written in target-address order, and the dead
@@ -1179,7 +1184,7 @@ void func_802180D8_ovl9(struct GObj *arg0) {
     }
 }
 
-IN_FILE void func_80218248_ovl9();
+IN_FILE void func_80218248_ovl9(struct GObj *);
 void func_8021817C_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_80218248_ovl9;
     func_801A0D50_ovl7(func_802180D8_ovl9);

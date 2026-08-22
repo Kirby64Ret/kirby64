@@ -113,6 +113,11 @@ void func_801D0FF4_ovl9(struct GObj *arg0, s32 arg1) {
     D_800E9020[omCurrentObj->objId] = 0.0f;
 }
 
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (9x): its real signature is s32 func_801A0D74_ovl7(GObj *), but call sites
+ * here and across the tree omit the arg -- the ROM relies on whatever GObj*
+ * is already sitting in $a0. An ANSI prototype breaks compilation with
+ * "too few arguments". */
 void func_801A0D74_ovl7();
 void func_80199688_ovl7(struct GObj *);
 void func_8019F3B0_ovl7(void);
@@ -501,6 +506,11 @@ void func_801D2648_ovl9(void) {
 /* D_8021CE74_ovl9: literal, this TU owns its .rodata */
 extern s32 D_8021BB08_ovl9[];
 void func_800FB914(s32);
+/* K&R form is load-bearing here: its real signature is
+ * void func_801A3E80_ovl7(GObj *), but this file calls it with both 0 args
+ * (line ~508) and 1 arg (line ~672) -- the ROM relies on whatever GObj* is
+ * already sitting in $a0 at the 0-arg site. An ANSI prototype breaks
+ * compilation with "too few arguments". */
 void func_801A3E80_ovl7();
 
 void func_801D2670_ovl9(struct GObj *arg0) {

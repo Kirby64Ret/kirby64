@@ -220,3 +220,11 @@ Do NOT attempt this while lanes are running.
   stays green. Note that the full ROM sha1 has been passing with these live,
   so this is likely a verify.py standalone-link artifact rather than real ROM
   damage -- confirm with verify_rom.py before anyone "fixes" it.
+
+- **include/Player.h: gKirbyState.unk130/134/138/13C are declared `u32` but
+  are `f32`.** Worth 46 words on func_8011DD5C alone, and it is a shared
+  header, so it is a real type clarification for the whole tree rather than a
+  local matching trick. The plylib lane worked around it with `*(f32*)&`
+  casts rather than touch the header. Fix needs the whole-tree protocol:
+  record every file's match count, change the four fields, rebuild, re-verify
+  every TU that reads them, check_tu_size, then the sha1 gate.

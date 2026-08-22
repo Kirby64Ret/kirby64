@@ -2388,6 +2388,10 @@ s32 func_8019DD78_ovl7(u8 arg0, s32 arg1) {
     return track;
 }
 
+/* K&R form is load-bearing here: an ANSI `u8 arg0` prototype makes IDO
+ * insert a caller-side `andi $a0, $a0, 0xff` mask (2 call sites) where the
+ * ROM leaves a nop -- measured via objdump A/B against the last known-good
+ * build. */
 s32 func_8019DF0C_ovl7(arg0, arg1)
 u8 arg0;
 s32 arg1;

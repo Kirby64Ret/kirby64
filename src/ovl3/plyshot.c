@@ -657,7 +657,8 @@ void func_8015BBE4_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015BBE4_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 5/505, whole-function callee-saved permutation (same floor class documented across this cluster). Replaces the PORT arm's pc_sndpair_release/pc_sndpair_start calls with real N64 calls through two local static helpers (plyshotSndpairRelease/plyshotSndpairStart, wrapping func_800A7870/func_800A77E8), and gives the carry-effect blocks a local BoomerangFx view instead of the guarded struct PcPlyshotFx. Adds an ANSI prototype for func_800A7F74 (declared unguarded elsewhere in this TU) to avoid an implicit-int conflict. Queued for the permuter. */
 /* PORT: the boomerang-shot service routine installed by func_8015BBE4_ovl3
  * above, from asm/nonmatchings/ovl3/plyshot/func_8015C00C_ovl3.s. Bursts
  * when the ability ends (fgm 0x159, particle 2/1/0x10) and pops silently on
@@ -701,6 +702,7 @@ void func_8015C00C_ovl3(s32 arg0) {
     extern s32 func_80155838_ovl3(f32 *, f32, s32);
     extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
     extern f32 func_800F9828(s32, s32);
+    extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
     f32 atan2f(f32, f32);
     float sinf(float);
     float cosf(float);
@@ -806,6 +808,139 @@ void func_8015C00C_ovl3(s32 arg0) {
         fa->unkC = gEntitiesNextPosZArray[id];
         if (D_800EB4E0[id] != 0) {
             struct BoomerangFx *fb = (struct BoomerangFx *) ((GObj *) D_800EB4E0[id])->unk4C;
+
+            fb->unk4 = gEntitiesNextPosXArray[id];
+            fb->unk8 = gEntitiesNextPosYArray[id];
+            fb->unkC = gEntitiesNextPosZArray[id];
+        }
+    }
+}
+#elif defined(PORT)
+/* PORT: the boomerang-shot service routine installed by func_8015BBE4_ovl3
+ * above, from asm/nonmatchings/ovl3/plyshot/func_8015C00C_ovl3.s. Bursts
+ * when the ability ends (fgm 0x159, particle 2/1/0x10) and pops silently on
+ * catch state 1; otherwise runs the hit records, refreshes shot collision,
+ * probes 20 units around the shot (func_80155838_ovl3) to keep the two
+ * water-trail effects and the looping pair 0x22D alive only in water, and
+ * once the shot is past its apex (velocity against facing, or already in
+ * return state D_800E98E0) steers it back toward the parent at 10 (6 in
+ * water). The shared bubble-throttle word (D_80198830_ovl3.unk4) re-arms
+ * from this shot's timer. */
+void func_8015C00C_ovl3(s32 arg0) {
+    extern u8 D_80198834_ovl3[];
+    extern char D_80190BB0_ovl3[];
+    extern s32 D_8019356C_ovl3[];
+    extern s32 func_800A8234(s32, s32, s32);
+    extern void func_800A1F30(s32);
+    extern s32 func_80155664_ovl3(f32 *);
+    extern s32 func_80155838_ovl3(f32 *, f32, s32);
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern f32 func_800F9828(s32, s32);
+    f32 atan2f(f32, f32);
+    float sinf(float);
+    float cosf(float);
+    s32 id = omCurrentObj->objId;
+    u32 *sndpair = (u32 *) (uintptr_t) (u32) D_800EA360[id];
+    f32 probe[3];
+    s32 inWater;
+    f32 spd;
+
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    if (gKirbyState.abilityInUse == 0) {
+        play_sound(0x159);
+        func_800A7F74(2U, 1U, 0x10U, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
+                      gEntitiesNextPosZArray[id]);
+        if (sndpair != NULL && sndpair[0] != 0) {
+            pc_sndpair_release(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A22D4(D_800EA520[id]);
+            func_800A22D4(D_800EB4E0[id]);
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    if (gKirbyState.unk44 == 1) {
+        if (sndpair != NULL && sndpair[0] != 0) {
+            pc_sndpair_release(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A1F30(D_800EA520[id]);
+            func_800A1F30(D_800EB4E0[id]);
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_8019356C_ovl3, 0, id);
+    func_80155664_ovl3(D_80197F60_ovl3[id - 4]);
+    D_800E8920[id] = 0;
+    probe[0] = gEntitiesNextPosXArray[id];
+    probe[1] = gEntitiesNextPosYArray[id];
+    probe[2] = gEntitiesNextPosZArray[id];
+    inWater = func_80155838_ovl3(probe, 20.0f, 6);
+    if (D_800E8AE0[id] & 4) {
+        func_800AECC0(1.0f);
+        func_800AED20(1.0f);
+        spd = 6.0f;
+    } else {
+        func_800AECC0(2.0f);
+        func_800AED20(2.0f);
+        spd = 10.0f;
+    }
+    if (D_800E98E0[id] != 0) {
+        f32 ang = atan2f((gEntitiesNextPosYArray[D_800E0D50[id]] - gEntitiesNextPosYArray[id]) + 20.0f,
+                         func_800F9828(id, D_800E0D50[id]));
+
+        D_800E3210[id] = sinf(ang) * spd;
+        D_800E3750[id] = 0.0f;
+        D_800E3C90[id] = (spd < 0.0f) ? -spd : spd;
+        D_800E64D0[id] = cosf(ang) * spd;
+        D_800E6690[id] = 0.0f;
+        D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+    } else {
+        D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+        if (((D_800E6A10[id] == 1.0f) && (D_800E64D0[id] < 0.0f))
+            || ((D_800E6A10[id] == -1.0f) && (D_800E64D0[id] > 0.0f))) {
+            D_800E98E0[id] = 1;
+        }
+    }
+    /* N64 D_80198830+4; the PC data emission splits that block, and this
+     * build's convention (kirby.c, plylib.c PORT arms) is the splinter
+     * name for each cell. */
+    if (*(s32 *) D_80198834_ovl3 == 0) {
+        D_800E9560[id] -= 1;
+        if (D_800E9560[id] == 0) {
+            *(s32 *) D_80198834_ovl3 = 1;
+        }
+    }
+    func_80111C4C(func_801117BC(D_80190BB0_ovl3, id));
+    if (inWater == 0) {
+        if (sndpair != NULL && sndpair[0] != 0) {
+            pc_sndpair_release(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A1F30(D_800EA520[id]);
+            func_800A1F30(D_800EB4E0[id]);
+            D_800EB4E0[id] = 0;
+            D_800EA520[id] = 0;
+        }
+    } else {
+        if (sndpair != NULL && sndpair[0] == 0) {
+            pc_sndpair_start(0x22D, sndpair);
+        }
+        if (D_800EA520[id] == 0) {
+            D_800EA520[id] = func_800A8234(2, 1, 0x50);
+            D_800EB4E0[id] = func_800A8234(1, 1, 0x51);
+        }
+    }
+    if (D_800EA520[id] != 0) {
+        struct PcPlyshotFx *fa = ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
+
+        fa->unk4 = gEntitiesNextPosXArray[id];
+        fa->unk8 = gEntitiesNextPosYArray[id];
+        fa->unkC = gEntitiesNextPosZArray[id];
+        if (D_800EB4E0[id] != 0) {
+            struct PcPlyshotFx *fb = ((GObj *) (uintptr_t) (u32) D_800EB4E0[id])->unk4C;
 
             fb->unk4 = gEntitiesNextPosXArray[id];
             fb->unk8 = gEntitiesNextPosYArray[id];
@@ -1357,7 +1492,140 @@ void func_8015D7A0_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015D7A0_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 2/533, whole-function callee-saved permutation (same floor class documented across this cluster). Gives the effect blocks a local NeedleFx view instead of the guarded struct PcPlyshotFx. Queued for the permuter. */
+/* PORT: service routine for func_8015D7A0_ovl3's shot above (anim 0x20032,
+ * the needle/spike burst -- kind 1 travels flat, kind 0 drops straight
+ * down), from asm/nonmatchings/ovl3/plyshot/func_8015DBE4_ovl3.s. Kills
+ * everything (both trail effects and the water-splash effect in D_800EB6A0)
+ * when the ability ends; on timeout or wall hit it releases the effects and
+ * shrinks away using D_800EA6E0/D_800EA8A0 as decaying scale factors.
+ * While live it re-probes 40 units around the shot per kind, applies the
+ * kind's velocity profile (halved in water), runs the kind's hit record and
+ * anim script against DObj [1], spawns the 0x4D splash effect when inside
+ * water, and re-seats both (or all three) effect parameter blocks on the
+ * shot's position and orientation. */
+struct NeedleFx { u32 kind; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
+
+void func_8015DBE4_ovl3(s32 arg0) {
+    extern char D_80190CA0_ovl3[];
+    extern char D_80190CE4_ovl3[];
+    extern s32 D_801935A8_ovl3[];
+    extern s32 D_801935E4_ovl3[];
+    extern s32 func_800B3158(void);
+    extern void func_800A1F30(s32);
+    extern s32 func_800A8234(s32, s32, s32);
+    extern s32 func_80155664_ovl3(f32 *);
+    extern s32 func_80155838_ovl3(f32 *, f32, s32);
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern s32 func_80162000_ovl3(char *, s32, f32);
+    extern void func_800B2340(Vector *, s32, s32);
+    extern void func_800B26D8(Vector *, s32, s32);
+    s32 id = omCurrentObj->objId;
+    f32 probe[3];
+    s32 splash = 0;
+    u32 kind;
+
+    if (func_800B3158() == 0) {
+        if (D_800EA520[id] != 0) {
+            func_800A22D4(D_800EA520[id]);
+            func_800A22D4(D_800EB4E0[id]);
+            if (D_800EB6A0[id] != 0) {
+                func_800A22D4(D_800EB6A0[id]);
+            }
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    if ((D_800E9720[id] == 0) || (D_800E6310[id] != 0)) {
+        if (D_800EA520[id] != 0) {
+            func_800A1F30(D_800EA520[id]);
+            func_800A1F30(D_800EB4E0[id]);
+            if (D_800EB6A0[id] != 0) {
+                func_800A1F30(D_800EB6A0[id]);
+            }
+            D_800EB6A0[id] = 0;
+            D_800EB4E0[id] = 0;
+            D_800EA520[id] = 0;
+            D_800E6690[id] = 0.0f;
+            D_800E64D0[id] = 0.0f;
+            D_800E6850[id] = 65535.0f;
+        }
+        D_800EA6E0[id] -= 0.125f;
+        if (D_800EA6E0[id] == 0.0f) {
+            func_800B1900((u16) id);
+        }
+        D_800EA8A0[id] -= 0.07f;
+        gEntitiesScaleXArray[id] = D_800EA6E0[id] * 0.2f;
+        gEntitiesScaleYArray[id] = D_800EA6E0[id] * 0.2f;
+        gEntitiesScaleZArray[id] = D_800EA8A0[id] * 0.2f;
+        return;
+    }
+    D_800E9720[id] -= 1;
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    func_80155664_ovl3(D_80197F60_ovl3[id - 4]);
+    D_800E8920[id] = 0;
+    probe[0] = gEntitiesNextPosXArray[id];
+    probe[1] = gEntitiesNextPosYArray[id];
+    probe[2] = gEntitiesNextPosZArray[id];
+    kind = D_800EC2E0[id].as_u32;
+    if (kind == 1) {
+        splash = func_80155838_ovl3(probe, 40.0f, 5);
+        D_800E64D0[id] = ((D_800E8AE0[id] & 4) ? 5.0f : 10.0f) * D_800E6A10[id];
+        D_800E6690[id] = 0.0f;
+        D_800E6850[id] = 10.0f;
+        func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_801935A8_ovl3, 0, id);
+        func_80162000_ovl3(D_80190CA0_ovl3, (s32) (uintptr_t) D_800DFBD0[id][1], 1.0f);
+    } else if (kind == 0) {
+        splash = func_80155838_ovl3(probe, -40.0f, 3);
+        D_800E3210[id] = (D_800E8AE0[id] & 4) ? -8.5f : -17.0f;
+        D_800E3750[id] = 0.0f;
+        D_800E3C90[id] = 17.0f;
+        func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_801935E4_ovl3, 0, id);
+        func_80162000_ovl3(D_80190CE4_ovl3, (s32) (uintptr_t) D_800DFBD0[id][1], 1.0f);
+    }
+    if ((splash != 0) && (D_800EB6A0[id] == 0)) {
+        D_800EB6A0[id] = func_800A8234(2, 1, 0x4D);
+    }
+    if ((D_800EA520[id] != 0) && (D_800EB4E0[id] != 0)) {
+        struct NeedleFx *fa = (struct NeedleFx *) ((GObj *) D_800EA520[id])->unk4C;
+        struct NeedleFx *fb = (struct NeedleFx *) ((GObj *) D_800EB4E0[id])->unk4C;
+        Vector sp;
+
+        func_800B2340(&sp, (s32) (uintptr_t) D_800DFBD0[id][1], 0xFFFF);
+        fb->unk4 = sp.x;
+        fa->unk4 = fb->unk4;
+        fb->unk8 = sp.y;
+        fa->unk8 = fb->unk8;
+        fb->unkC = sp.z;
+        fa->unkC = fb->unkC;
+        func_800B26D8(&sp, (s32) (uintptr_t) D_800DFBD0[id][1], 0xFFFF);
+        fb->unk10 = sp.x;
+        fa->unk10 = fb->unk10;
+        fb->unk14 = sp.y;
+        fa->unk14 = fb->unk14;
+        fb->unk18 = sp.z;
+        fa->unk18 = fb->unk18;
+        if (D_800EB6A0[id] != 0) {
+            struct NeedleFx *fc = (struct NeedleFx *) ((GObj *) D_800EB6A0[id])->unk4C;
+
+            fc->unk4 = fa->unk4;
+            fc->unk8 = fa->unk8;
+            fc->unkC = fa->unkC;
+            fc->unk10 = fa->unk10;
+            fc->unk14 = fa->unk14;
+            fc->unk18 = fa->unk18;
+        }
+    }
+    if (D_800E8AE0[id] & 4) {
+        func_800AECC0(1.0f);
+        func_800AED20(1.0f);
+    } else {
+        func_800AECC0(2.0f);
+        func_800AED20(2.0f);
+    }
+}
+#elif defined(PORT)
 /* PORT: service routine for func_8015D7A0_ovl3's shot above (anim 0x20032,
  * the needle/spike burst -- kind 1 travels flat, kind 0 drops straight
  * down), from asm/nonmatchings/ovl3/plyshot/func_8015DBE4_ovl3.s. Kills
@@ -1650,7 +1918,8 @@ void func_8015E8E0_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015E8E0_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 6/776, whole-function callee-saved permutation (same floor class documented across this cluster). Inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper, and adds an ANSI prototype for func_800A7F74. Queued for the permuter. */
 /* PORT: the guided-missile service routine installed by func_8015E8E0_ovl3
  * above (anim 0x2003B), from asm/nonmatchings/ovl3/plyshot/
  * func_8015ED2C_ovl3.s. Death phase: 8 frames of burst anim (D_80191A84 /
@@ -1693,6 +1962,254 @@ void func_8015ED2C_ovl3(s32 arg0) {
     extern void func_800BB468(s32, s32);
     s32 func_8016854C_ovl3(s32, s32, f32);
     extern Controller_800D6FE8 gPlayerControllers[];
+    extern void func_800A7870(void **, u16 *);
+    extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
+    f32 atan2f(f32, f32);
+    float sinf(float);
+    float cosf(float);
+    float sqrtf(float);
+    s32 id = omCurrentObj->objId;
+    s32 parent = D_800E0D50[id];
+    s32 hits;
+    f32 dyAbs;
+    f32 hdist;
+    f32 hy;
+
+    if (D_800E9C60[id] != 0) {
+        s32 t = D_800E9560[id];
+
+        D_800E9560[id] = t - 1;
+        if (t != 0) {
+            func_80111C4C(func_801117BC(D_80191A84_ovl3, id));
+            func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_80195270_ovl3, 0, id);
+            return;
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    if (D_800EA6E0[id] != 1.0f) {
+        D_800EA6E0[id] += 0.15f;
+        if (D_800EA6E0[id] >= 1.0f) {
+            D_800EA6E0[id] = 1.0f;
+        }
+        D_800DFBD0[id][2]->scale.v.x = D_800EA6E0[id];
+        D_800DFBD0[id][2]->scale.v.y = D_800EA6E0[id];
+        D_800DFBD0[id][2]->scale.v.z = D_800EA6E0[id];
+    }
+    if (gKirbyState.unk17 != 0) {
+        gKirbyState.abilityInUse = 0;
+    } else if (gKirbyState.unk16 == 0) {
+        if (gPlayerControllers[0].buttonPressed & 0x4000) {
+            gKirbyState.abilityInUse = 0;
+        } else if (D_800E8060[id] != 0) {
+            gKirbyState.abilityInUse = 0;
+        }
+    } else if (gPlayerControllers[0].buttonPressed & 0x4000) {
+        D_800E8060[id] = 1;
+    }
+    if ((gKirbyState.abilityInUse != 0) && (D_800E8760[id] == 0)) {
+        gEntitiesAngleYArray[id] = D_800E17D0[id];
+        hits = func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_801936F0_ovl3, 0, id);
+        gEntitiesAngleYArray[id] = 0.0f;
+        D_800E8920[id] = 0;
+        func_80155498_ovl3(D_80197F60_ovl3[id - 4]);
+        if ((((u32) hits | ((*(u32 *) D_8012BCA0 >> 0x13) & 0x3F)) != 0) || (D_800E6310[id] != 0)) {
+            D_800E9AA0[id].as_u32 = 1;
+            D_800E64D0[id] = -D_800E64D0[id];
+            play_sound(0x11F);
+        }
+        func_80111C4C(func_801117BC(D_80190DD4_ovl3, id));
+        dyAbs = gEntitiesNextPosYArray[id] - gEntitiesNextPosYArray[parent];
+        if (dyAbs < 0.0f) {
+            dyAbs = -dyAbs;
+        }
+        hdist = func_800F9828(id, parent);
+        if (hdist == 9999.0f) {
+            goto detonate;
+        }
+        {
+            f32 hAbs = (hdist < 0.0f) ? -hdist : hdist;
+
+            if (!((hAbs < 600.0f) && (dyAbs < 480.0f))) {
+                goto detonate;
+            }
+        }
+        {
+            struct DObj *dobj = D_800DFBD0[id][1];
+            f32 dx = gEntitiesNextPosXArray[parent] - gEntitiesNextPosXArray[id];
+            f32 dz = gEntitiesNextPosZArray[parent] - gEntitiesNextPosZArray[id];
+            f32 sn;
+            f32 cs;
+            f32 v2;
+            f32 v3;
+            s32 k;
+
+            hy = (gEntitiesNextPosYArray[parent] + 20.0f) - gEntitiesNextPosYArray[id];
+            dobj->angle.v.y = atan2f(dx, dz) + 3.1415927f;
+            dobj->angle.v.x = atan2f(hy, sqrtf((dx * dx) + (dz * dz)));
+            dobj->angle.v.z = 0.0f;
+            dobj->scale.v.z = (sqrtf((dx * dx) + (hy * hy) + (dz * dz)) - 18.0f) / 120.0f;
+            func_8016854C_ovl3((s32) (uintptr_t) D_80191AC8_ovl3, (s32) (uintptr_t) dobj, 1.0f);
+            sn = sinf(dobj->angle.v.x);
+            cs = cosf(dobj->angle.v.x);
+            for (k = 0; k < 4; k++) {
+                D_80198438_ovl3[k] = D_801936FC_ovl3[k] * dobj->scale.v.z;
+            }
+            v2 = D_80198438_ovl3[2];
+            v3 = D_80198438_ovl3[3];
+            D_80198438_ovl3[2] = (v2 * cs) - (v3 * sn);
+            D_80198438_ovl3[3] = (v3 * cs) + (v2 * sn);
+            func_80154578_ovl3(D_8019370C_ovl3, 0, dobj->angle.v.y);
+        }
+        if (D_800E98E0[id] != 0) {
+            Vector va;
+            Vector vb;
+            Vector vc;
+            f32 ang;
+            f32 dir;
+            f32 lim;
+            f32 spd;
+            s32 close;
+
+            if (func_8011D858(D_80192358_ovl3, parent, 1.0f) != 0) {
+                func_800BB468(9, 0x1E);
+                goto detonate;
+            }
+            {
+                f32 hAbs = (hdist < 0.0f) ? -hdist : hdist;
+
+                close = (hAbs < 160.0f) ? 1 : 0;
+            }
+            va.x = D_800E64D0[id];
+            va.y = D_800E3210[id];
+            va.z = 0.0f;
+            vb.x = hdist;
+            vb.y = hy;
+            vb.z = 0.0f;
+            ang = lbvector_Angle(&va, &vb);
+            lim = D_801967C4_ovl3[close];
+            if (ang == 3.1415927f) {
+                if (D_800E64D0[id] > 0.0f) {
+                    dir = (lim * 3.1415927f) / 180.0f;
+                } else {
+                    dir = 3.1415927f - ((lim * 3.1415927f) / 180.0f);
+                }
+            } else {
+                if (ang < ((lim * 3.1415927f) / 180.0f)) {
+                    va = vb;
+                } else {
+                    vec3_normalized_cross_product(&va, &vb, &vc);
+                    func_800191F8(&va, &vc, (lim * 3.1415927f) / 180.0f);
+                }
+                dir = atan2f(va.y, va.x);
+            }
+            spd = (D_800E8AE0[id] & 4) ? 8.0f : 16.0f;
+            D_800E64D0[id] = cosf(dir) * spd;
+            D_800E6690[id] = 0.0f;
+            D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+            D_800E3210[id] = sinf(dir) * spd;
+            D_800E3750[id] = 0.0f;
+            D_800E3C90[id] = (spd < 0.0f) ? -spd : spd;
+            if (D_800E8920[id] != 0) {
+                if (D_800E9E20[id] == 0) {
+                    D_800E9E20[id] = D_800E8920[id];
+                    if (D_800E3210[id] != 0.0f) {
+                        if (D_800E3210[id] < 0.0f) {
+                            D_800E3210[id] = -D_800E3210[id];
+                        } else {
+                            D_800E3210[id] = 0.0f;
+                        }
+                        play_sound(0x11F);
+                        D_800E8920[id] = 0;
+                    }
+                }
+            } else {
+                if ((*(u32 *) D_8012BCA0 >> 0x13) & 0x1C0) {
+                    if (D_800E9FE0[id].as_u32 == 0) {
+                        D_800E9FE0[id].as_u32 = 1;
+                        if (D_800E3210[id] > 0.0f) {
+                            D_800E3210[id] = -D_800E3210[id];
+                        } else {
+                            D_800E3210[id] = 0.0f;
+                        }
+                        play_sound(0x11F);
+                        D_800E9E20[id] = D_800E8920[id];
+                    }
+                } else {
+                    D_800E9FE0[id].as_u32 = 0;
+                    D_800E9E20[id] = D_800E8920[id];
+                }
+            }
+        }
+        return;
+    }
+detonate:
+    D_800E9C60[id] = 1;
+    D_800E9560[id] = 8;
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    gKirbyState.abilityInUse = 0;
+    {
+        u32 *pair = (u32 *) D_800EA360[id];
+
+        if (pair != NULL) {
+            void *handle = (void *) pair[0];
+            u16 sid = *(u16 *) (pair + 1);
+
+            func_800A7870(&handle, &sid);
+            pair[0] = 0;
+            *(u16 *) (pair + 1) = 0;
+        }
+    }
+    D_800DEF90[id] = NULL;
+    func_800AFBB4(0, omCurrentObj);
+    play_sound(0x59);
+    func_800A7F74(2U, 1U, 0x30U, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
+                  gEntitiesNextPosZArray[id]);
+}
+#elif defined(PORT)
+/* PORT: the guided-missile service routine installed by func_8015E8E0_ovl3
+ * above (anim 0x2003B), from asm/nonmatchings/ovl3/plyshot/
+ * func_8015ED2C_ovl3.s. Death phase: 8 frames of burst anim (D_80191A84 /
+ * record D_80195270) then destroy. Live: grows the model on DObj [2] by
+ * +0.15/frame, reads the cancel inputs (B press, or unk17/queued cancel in
+ * D_800E8060), and while the ability holds runs its hit record
+ * (D_801936F0), the shot collision pass and a wall bounce (reversing on
+ * wall-class bits of the live collision flags with fgm 0x11F). It then
+ * draws the guide reticle: aims DObj [1] at the parent, scales the
+ * distance leg into D_80198438 with a pitch rotation of its last two
+ * floats, and runs anim D_80191AC8 plus the reticle record D_8019370C.
+ * With homing armed (D_800E98E0) and line-of-sight clear (func_8011D858;
+ * on block: rumble 9/0x1E and detonate) it steers up to D_801967C4[close]
+ * degrees per frame toward the parent at 16 (8 in water), bouncing off
+ * floors once (D_800E9E20 latch) and ceilings once (D_800E9FE0 latch).
+ * Detonation: mark the death phase, drop the ability, release the looping
+ * pair parked in D_800EA360, clear the draw hook, camera-shake and spawn
+ * particle 2/1/0x30 with fgm 0x59. */
+void func_8015ED2C_ovl3(s32 arg0) {
+    extern u8 D_8012BCA0[];
+    extern char D_80191A84_ovl3[];
+    extern char D_80190DD4_ovl3[];
+    extern char D_80191AC8_ovl3[];
+    extern s32 D_80192358_ovl3[];
+    extern s32 D_801936F0_ovl3[];
+    extern s32 D_8019370C_ovl3[];
+    extern s32 D_80195270_ovl3[];
+    extern f32 D_801936FC_ovl3[];
+    extern f32 D_801967C4_ovl3[];
+    extern f32 D_80198438_ovl3[];
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern s32 func_80155498_ovl3(f32 *);
+    extern void func_80154578_ovl3(void *, s32, f32);
+    extern s32 func_8011D858(void *, s32, f32);
+    extern f32 func_800F9828(s32, s32);
+    extern f32 lbvector_Angle(Vector *, Vector *);
+    extern Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
+    extern Vector *func_800191F8(Vector *, Vector *, f32);
+    extern void func_800AFBB4(s32, struct GObj *);
+    extern void func_800BB468(s32, s32);
+    s32 func_8016854C_ovl3(s32, s32, f32);
+    extern Controller_800D6FE8 gPlayerControllers[];
+    extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
     f32 atan2f(f32, f32);
     float sinf(float);
     float cosf(float);
@@ -2676,7 +3193,165 @@ void func_80161058_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80161058_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 4/513, whole-function callee-saved permutation (same floor class documented across this cluster). Same fixes as its sibling func_8015C00C_ovl3: real N64 sound-pair calls through local helpers instead of pc_sndpair_*, a local SpreadFx view instead of the guarded PcPlyshotFx, and an ANSI prototype for func_800A7F74. Queued for the permuter. */
+/* PORT: service routine for the forward shot installed by func_80161058_ovl3
+ * above, from asm/nonmatchings/ovl3/plyshot/func_801614D8_ovl3.s. Same shape
+ * as the decompiled boomerang service func_8015C00C_ovl3 in this TU: bursts
+ * when the ability ends (fgm 0x159, particle 2/1/0x58) and pops on catch
+ * state gKirbyState.unk44==1 (both via func_800A22D4 here), otherwise runs
+ * the hit record D_80193834 and the shot collision pass, probes 25 units
+ * around the shot to keep the two type-0x11/0x12 water-trail effects and
+ * looping pair 0x34 alive only in water, steers back toward the parent at
+ * 10 (6 in water) once past the apex, re-arms the shared bubble throttle
+ * (D_80198830+4, spelled through the splinter cell D_80198834 per this
+ * build's data-emission convention), chains anim 0x20288 into 0x20289 when
+ * it finishes, and re-seats both effect blocks on the shot's position. */
+struct SpreadFx { u32 kind; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
+
+static void plyshotSndpairRelease2(u32 *pair) {
+    extern void func_800A7870(void **, u16 *);
+    void *handle;
+    u16 sid;
+
+    if (pair == NULL) {
+        return;
+    }
+    handle = (void *) pair[0];
+    sid = *(u16 *) (pair + 1);
+    func_800A7870(&handle, &sid);
+    pair[0] = 0;
+    *(u16 *) (pair + 1) = 0;
+}
+
+static void plyshotSndpairStart2(s32 fgm, u32 *pair) {
+    extern void func_800A77E8(s32, s32 *, s32 *);
+
+    func_800A77E8(fgm, (s32 *) &pair[0], (s32 *) &pair[1]);
+}
+
+void func_801614D8_ovl3(struct GObj *arg0) {
+    extern u8 D_80198834_ovl3[];
+    extern char D_80190EC4_ovl3[];
+    extern s32 D_80193834_ovl3[];
+    extern s32 func_800A8234(s32, s32, s32);
+    extern void func_800A1F30(s32);
+    extern s32 func_800AA934(s32);
+    extern s32 func_80155664_ovl3(f32 *);
+    extern s32 func_80155838_ovl3(f32 *, f32, s32);
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern f32 func_800F9828(s32, s32);
+    extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
+    f32 atan2f(f32, f32);
+    float sinf(float);
+    float cosf(float);
+    s32 id = omCurrentObj->objId;
+    u32 *sndpair = (u32 *) (uintptr_t) (u32) D_800EA360[id];
+    f32 probe[3];
+    s32 inWater;
+    f32 spd;
+
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    if (gKirbyState.abilityInUse == 0) {
+        play_sound(0x159);
+        func_800A7F74(2U, 1U, 0x58U, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
+                      gEntitiesNextPosZArray[id]);
+        if (sndpair != NULL && sndpair[0] != 0) {
+            plyshotSndpairRelease2(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A22D4(D_800EA520[id]);
+            func_800A22D4(D_800EB4E0[id]);
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    if (gKirbyState.unk44 == 1) {
+        if (sndpair != NULL && sndpair[0] != 0) {
+            plyshotSndpairRelease2(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A22D4(D_800EA520[id]);
+            func_800A22D4(D_800EB4E0[id]);
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_80193834_ovl3, 0, id);
+    func_80155664_ovl3(D_80197F60_ovl3[id - 4]);
+    D_800E8920[id] = 0;
+    probe[0] = gEntitiesNextPosXArray[id];
+    probe[1] = gEntitiesNextPosYArray[id];
+    probe[2] = gEntitiesNextPosZArray[id];
+    inWater = func_80155838_ovl3(probe, 25.0f, 6);
+    if (D_800E8AE0[id] & 4) {
+        func_800AECC0(1.0f);
+        func_800AED20(1.0f);
+        spd = 6.0f;
+    } else {
+        func_800AECC0(2.0f);
+        func_800AED20(2.0f);
+        spd = 10.0f;
+    }
+    if (D_800E98E0[id] != 0) {
+        f32 ang = atan2f((gEntitiesNextPosYArray[D_800E0D50[id]] - gEntitiesNextPosYArray[id]) + 20.0f,
+                         func_800F9828(id, D_800E0D50[id]));
+
+        D_800E3210[id] = sinf(ang) * spd;
+        D_800E3750[id] = 0.0f;
+        D_800E3C90[id] = (spd < 0.0f) ? -spd : spd;
+        D_800E64D0[id] = cosf(ang) * spd;
+        D_800E6690[id] = 0.0f;
+        D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+    } else {
+        D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+        if (((D_800E6A10[id] == 1.0f) && (D_800E64D0[id] < 0.0f))
+            || ((D_800E6A10[id] == -1.0f) && (D_800E64D0[id] > 0.0f))) {
+            D_800E98E0[id] = 1;
+        }
+    }
+    if (*(s32 *) D_80198834_ovl3 == 0) {
+        D_800E9560[id] -= 1;
+        if (D_800E9560[id] == 0) {
+            *(s32 *) D_80198834_ovl3 = 1;
+        }
+    }
+    if (func_800AA934(0x20288) != 0) {
+        func_800AA018(0x20289);
+    }
+    if (inWater == 0) {
+        if (sndpair != NULL && sndpair[0] != 0) {
+            plyshotSndpairRelease2(sndpair);
+        }
+        if (D_800EA520[id] != 0) {
+            func_800A1F30(D_800EA520[id]);
+            func_800A1F30(D_800EB4E0[id]);
+            D_800EB4E0[id] = 0;
+            D_800EA520[id] = D_800EB4E0[id];
+        }
+    } else {
+        if (sndpair != NULL && sndpair[0] == 0) {
+            plyshotSndpairStart2(0x34, sndpair);
+        }
+        if (D_800EA520[id] == 0) {
+            D_800EA520[id] = func_800A8234(2, 1, 0x11);
+            D_800EB4E0[id] = func_800A8234(2, 1, 0x12);
+        }
+    }
+    if (D_800EA520[id] != 0) {
+        struct SpreadFx *fa = (struct SpreadFx *) ((GObj *) D_800EA520[id])->unk4C;
+        struct SpreadFx *fb = (struct SpreadFx *) ((GObj *) D_800EB4E0[id])->unk4C;
+
+        fa->unk4 = gEntitiesNextPosXArray[id];
+        fa->unk8 = gEntitiesNextPosYArray[id];
+        fa->unkC = gEntitiesNextPosZArray[id];
+        fb->unk4 = gEntitiesNextPosXArray[id];
+        fb->unk8 = gEntitiesNextPosYArray[id];
+        fb->unkC = gEntitiesNextPosZArray[id];
+    }
+    func_80111C4C(func_801117BC(D_80190EC4_ovl3, id));
+}
+#elif defined(PORT)
 /* PORT: service routine for the forward shot installed by func_80161058_ovl3
  * above, from asm/nonmatchings/ovl3/plyshot/func_801614D8_ovl3.s. Same shape
  * as the decompiled boomerang service func_8015C00C_ovl3 in this TU: bursts
@@ -5303,7 +5978,101 @@ s32 func_8016854C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     return temp;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 2/910, whole-function callee-saved permutation plus a real structural gap: the ROM's frame (-0x168) is far larger than this draft's (-0x20), meaning the ROM inlines the light pre/post setup at each of the 8 switch cases rather than calling shared helpers -- pc_shot_draw_lights_pre/post would need to be inlined by hand at each case for a tighter match. Queued for the permuter. */
+/* PORT: the second shot render dispatcher, from asm/nonmatchings/ovl3/
+ * plyshot/func_8016858C_ovl3.s (jump table jtbl_801971BC_ovl3). Identical in
+ * shape to func_8016264C_ovl3 above -- same render-kind cases 19..30, same
+ * segment-4 setup and dynamic-light block per display list head -- with one
+ * difference: when the object's level slot D_800E5F90 is -1 the dynamic
+ * light color is sampled from the PARENT track (D_800E0D50) instead of the
+ * object itself. */
+static void pc_shot_draw_lights_pre(GObj *g, s32 heads) {
+    s32 id = g->objId;
+
+    gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[id]);
+    if (heads > 1) {
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[id]);
+    }
+    if (D_800E0650[id] != 0) {
+        if (D_800E5F90[id] == -1) {
+            func_800F90C0(D_800E0D50[id], gDynamicBuffer1.top);
+        } else {
+            func_800F90C0(id, gDynamicBuffer1.top);
+        }
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top + 8, 1);
+        gSPLight(gDisplayListHeads[0]++, gDynamicBuffer1.top, 2);
+        if (heads > 1) {
+            gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top + 8, 1);
+            gSPLight(gDisplayListHeads[1]++, gDynamicBuffer1.top, 2);
+        }
+        gDynamicBuffer1.top += 0x18;
+    }
+}
+
+static void pc_shot_draw_lights_post(s32 heads) {
+    gSPNumLights(gDisplayListHeads[0]++, 1);
+    gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+    gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+    if (heads > 1) {
+        gSPNumLights(gDisplayListHeads[1]++, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+    }
+}
+
+void func_8016858C_ovl3(GObj *g) {
+    if (!(D_800DD8D0[g->objId] & 0x40)) {
+        switch (func_800AB0F4(g)) {
+            case 19:
+                pc_shot_draw_lights_pre(g, 1);
+                func_800AB120(g);
+                pc_shot_draw_lights_post(1);
+                break;
+            case 21:
+                pc_shot_draw_lights_pre(g, 1);
+                func_800AB1F0(g);
+                pc_shot_draw_lights_post(1);
+                break;
+            case 23:
+            case 25:
+                pc_shot_draw_lights_pre(g, 1);
+                renderDrawDObjFromGObj(g);
+                pc_shot_draw_lights_post(1);
+                break;
+            case 27:
+            case 29:
+                pc_shot_draw_lights_pre(g, 1);
+                func_8001585C(g);
+                pc_shot_draw_lights_post(1);
+                break;
+            case 20:
+                pc_shot_draw_lights_pre(g, 2);
+                func_800AB174(g);
+                pc_shot_draw_lights_post(2);
+                break;
+            case 22:
+                pc_shot_draw_lights_pre(g, 2);
+                func_800AB244(g);
+                pc_shot_draw_lights_post(2);
+                break;
+            case 24:
+            case 26:
+                pc_shot_draw_lights_pre(g, 2);
+                renderDrawObject_TypeD(g);
+                pc_shot_draw_lights_post(2);
+                break;
+            case 28:
+            case 30:
+                pc_shot_draw_lights_pre(g, 2);
+                func_80015BCC(g);
+                pc_shot_draw_lights_post(2);
+                break;
+        }
+    }
+}
+#elif defined(PORT)
 /* PORT: the second shot render dispatcher, from asm/nonmatchings/ovl3/
  * plyshot/func_8016858C_ovl3.s (jump table jtbl_801971BC_ovl3). Identical in
  * shape to func_8016264C_ovl3 above -- same render-kind cases 19..30, same

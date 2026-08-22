@@ -34,12 +34,7 @@ extern void func_800A22D4(s32);
 void func_80169694_ovl3(s32);
 void func_80177098_ovl3(s32);
 
-void func_80169430_ovl3(arg0, arg1, arg2, arg3)
-s32 arg0;
-s32 arg1;
-u8 arg2;
-s32 arg3;
-{
+void func_80169430_ovl3(s32 arg0, s32 arg1, u8 arg2, s32 arg3) {
     f32 temp;
     f32 scale;
 
@@ -172,8 +167,12 @@ void func_80169718_ovl3(GObj *arg0) {
 extern f32 gKirbyHp;
 extern void play_sound(s32);
 s32 change_kirby_hp(f32);
+/* K&R form is load-bearing here: an ANSI (Vector *, struct DObj *, u32)
+ * prototype shifts register allocation in this TU (measured via objdump
+ * A/B against the last known-good build -- a large run of instructions in
+ * a caller renames $a2 to $v0). */
 void func_800B2340();
-void func_800B26D8();
+void func_800B26D8(Vector *, struct DObj *, u32);
 
 void func_80169A98_ovl3(s32 arg0) {
     struct DObj *dobj;
@@ -208,7 +207,7 @@ void func_80169A98_ovl3(s32 arg0) {
  * decays that push with gravity -|v|/16 until it stops or the state
  * advances, and hands motion back to the normal track callback. The
  * chewed-damage handler installed here is func_8016A144_ovl3. */
-extern void func_800B4954();
+extern void func_800B4954(GObj *);
 extern f32 func_800F9828(s32, s32);
 void func_800B33F4(void);
 void func_8016A144_ovl3(s32);
@@ -862,8 +861,8 @@ extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
 extern u32 func_800FD570(s32, u32, f32, f32, f32);
 extern void func_800B1900(u16);
-extern void func_8016C510_ovl3();
-extern void func_8016C558_ovl3();
+extern void func_8016C510_ovl3(GObj *);
+extern void func_8016C558_ovl3(struct GObj *);
 extern void func_80152348_ovl3(f32);
 
 void func_8016BD24_ovl3(s32 arg0) {

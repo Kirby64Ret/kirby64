@@ -32,6 +32,11 @@ extern s32 func_8019A7E8_ovl7(f32);
 extern void func_8019BB58_ovl7(void);
 extern FUNCLIST D_8021C5C0_ovl9;
 
+/* K&R form is load-bearing here: this function's real signature is
+ * s32 func_801A0D74_ovl7(GObj *), but every call site in this file (and
+ * most of the tree) passes 0 args -- the ROM relies on whatever GObj* is
+ * already sitting in $a0. An ANSI prototype breaks compilation with
+ * "too few arguments". */
 extern s32 func_801A0D74_ovl7();
 extern void func_8019F3B0_ovl7(void);
 extern void eneTurnCommon(s32);
@@ -67,8 +72,8 @@ void func_801F8774_ovl9(GObj *arg0) {
 
 extern s32 D_801CBF20;
 extern FUNCLIST D_8021C504_ovl9;
-IN_FILE void func_801F8774_ovl9();
-IN_FILE void func_801F889C_ovl9();
+IN_FILE void func_801F8774_ovl9(GObj *);
+IN_FILE void func_801F889C_ovl9(struct GObj *);
 void func_801F87BC_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -315,8 +320,8 @@ void func_801F94D0_ovl9(GObj *arg0) {
 
 extern s32 D_801CBF8C;
 extern FUNCLIST D_8021C544_ovl9;
-IN_FILE void func_801F9610_ovl9();
-IN_FILE void func_801F94D0_ovl9();
+IN_FILE void func_801F9610_ovl9(void);
+IN_FILE void func_801F94D0_ovl9(GObj *);
 void func_801F9518_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -515,7 +520,7 @@ void func_801FA094_ovl9(GObj *arg0) {
 }
 
 extern FUNCLIST D_8021C57C_ovl9;
-IN_FILE void func_801FA1A0_ovl9();
+IN_FILE void func_801FA1A0_ovl9(struct GObj *);
 void func_801FA0DC_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_801FA1A0_ovl9;
     if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
@@ -562,7 +567,7 @@ void func_801FA2F8_ovl9(struct GObj *arg0) {
 
 /* D_8021D970_ovl9: literal, this TU owns its .rodata */
 /* D_8021D974_ovl9: literal, this TU owns its .rodata */
-IN_FILE void func_801FA094_ovl9();
+IN_FILE void func_801FA094_ovl9(GObj *);
 void func_801FA398_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -627,8 +632,8 @@ void func_801FA704_ovl9(struct GObj *arg0) {
 }
 
 extern s32 D_801CBFF8;
-IN_FILE void func_801FA80C_ovl9();
-IN_FILE void func_801FA704_ovl9();
+IN_FILE void func_801FA80C_ovl9(void);
+IN_FILE void func_801FA704_ovl9(struct GObj *);
 void func_801FA758_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -940,8 +945,8 @@ void func_801FB2E8_ovl9(struct GObj *arg0) {
 }
 
 extern FUNCLIST D_8021C5C4_ovl9;
-IN_FILE void func_801FB408_ovl9();
-IN_FILE void func_801FB2E8_ovl9();
+IN_FILE void func_801FB408_ovl9(void);
+IN_FILE void func_801FB2E8_ovl9(struct GObj *);
 void func_801FB33C_ovl9(struct GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_801FB408_ovl9;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;

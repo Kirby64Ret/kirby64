@@ -11,6 +11,11 @@ extern FUNCLIST D_8021BED0_ovl9;
 
 extern void func_800B6FD8(s32);
 extern void func_801A0D50_ovl7(void *);
+/* K&R form is load-bearing here: its real signature is
+ * void func_801A6C10_ovl7(GObj *), but this file calls it with both 0 args
+ * (line ~762) and 1 arg (lines ~25, ~554) -- the ROM relies on whatever
+ * GObj* is already sitting in $a0 at the 0-arg site. An ANSI prototype
+ * breaks compilation with "too few arguments". */
 extern void func_801A6C10_ovl7();
 extern FUNCLIST D_8021BE20_ovl9;
 extern FUNCLIST D_8021BE28_ovl9;
@@ -107,6 +112,11 @@ void func_801E0E24_ovl9(struct GObj *arg0) {
 
 extern s32 D_8012E850;
 extern struct GObjProcess *gEntityGObjProcessArray[];
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (2x): its own definition below takes no parameters
+ * (void func_801E2548_ovl9() {...}), but its call site at line ~475 passes
+ * an arg0 anyway -- the ROM leaves it unread. An ANSI (void) prototype
+ * breaks compilation with "too many arguments" at that call site. */
 void func_801E2548_ovl9();
 
 void func_801E1118_ovl9(struct GObj *arg0) {
@@ -498,6 +508,11 @@ void func_801E236C_ovl9(struct GObj *arg0) {
     }
 }
 
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (4x): its real signature is s32 func_801A0D74_ovl7(GObj *), but call
+ * sites here and across the tree omit the arg -- the ROM relies on
+ * whatever GObj* is already sitting in $a0. An ANSI prototype breaks
+ * compilation with "too few arguments". */
 void func_801A0D74_ovl7();
 s32 func_8019F3B0_ovl7(void);
 

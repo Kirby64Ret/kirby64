@@ -340,6 +340,11 @@ void func_801F0548_ovl9(GObj *arg0) {
 #endif
 
 extern u32 D_800BE4EC;
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (5x): its real signature is s32 func_801A0D74_ovl7(GObj *), but call sites
+ * here and across the tree omit the arg -- the ROM relies on whatever GObj*
+ * is already sitting in $a0. An ANSI prototype breaks compilation with
+ * "too few arguments". */
 void func_801A0D74_ovl7();
 void func_800A8100(s32, s32, s32, void *);
 void func_801A03B4_ovl7(void);
@@ -887,7 +892,7 @@ void func_801F172C_ovl9(GObj *arg0) {
 /* FACTORY: 36/313, $s0/$s1 transposition for &omCurrentObj with the rest
    renamed to follow.  Frame and save set are the ROM's. */
 extern s32 D_801C9A4C_ovl7;
-extern void func_800B6E84();
+extern void func_800B6E84(struct GObj *);
 void func_801F1C68_ovl9(void);
 extern f32 func_8019DA50_ovl7(void);
 extern float atan2f(float, float);

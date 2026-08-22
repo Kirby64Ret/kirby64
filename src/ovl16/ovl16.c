@@ -1217,7 +1217,50 @@ void func_801DD9FC_ovl16(s32 arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 218/250 and ~10 instructions long. Register naming dominates, but the
+ * count overshoot says one expression is being evaluated more than the ROM does --
+ * worth a count-first pass before any register work. */
+/* Wall-crusher side panel: face inward per the D_800E98E0 side flag, park
+ * offscreen (y=-1000) while the parent entity is above y=45 during stage 5,
+ * then snap to y=0, play the extend anims, wait for the parent to rise past
+ * y=25 and play the retract anims before despawning. */
+void func_801DDA98_ovl16(s32 arg0) {
+    s32 other = D_800E0D50[omCurrentObj->objId];
+
+    func_8019BB58_ovl7();
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801DDE54_ovl16;
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        D_800E17D0[omCurrentObj->objId] = 0.0f;
+    } else {
+        D_800E17D0[omCurrentObj->objId] = 3.1415927f;
+    }
+    D_800E9020[omCurrentObj->objId] = D_800E9020[other];
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800B33F4();
+    func_800A9864(D_801EF728_ovl16[D_800E98E0[omCurrentObj->objId]], 0x23, 0x10);
+    while ((gEntitiesNextPosYArray[other] > 45.0f) && (D_800D7098.unk4 == 5) && (D_800D7098.unk18 == 0) &&
+           (gEntityFuncListIDArray[other] != 1)) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = -1000.0f;
+        ohSleep(1);
+    }
+    if ((D_800D7098.unk4 == 5) && (D_800D7098.unk18 == 0) && (gEntityFuncListIDArray[other] != 1)) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+        play_sound(0x1C5);
+        func_800AA018(D_801EF738_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        func_800AA154(D_801EF730_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        func_800AA018(D_801EF758_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        func_800AA018(D_801EF750_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        while (gEntitiesNextPosYArray[other] <= 25.0f) {
+            ohSleep(1);
+        }
+        func_800AA018(D_801EF748_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        func_800AA154(D_801EF740_ovl16[D_800E98E0[omCurrentObj->objId]]);
+    }
+    func_8019D958_ovl7(omCurrentObj->objId);
+}
+#elif defined(PORT)
 /* Wall-crusher side panel: face inward per the D_800E98E0 side flag, park
  * offscreen (y=-1000) while the parent entity is above y=45 during stage 5,
  * then snap to y=0, play the extend anims, wait for the parent to rise past
@@ -1258,45 +1301,7 @@ void func_801DDA98_ovl16(s32 arg0) {
     func_8019D958_ovl7(omCurrentObj->objId);
 }
 #else
-/* Wall-crusher side panel: face inward per the D_800E98E0 side flag, park
- * offscreen (y=-1000) while the parent entity is above y=45 during stage 5,
- * then snap to y=0, play the extend anims, wait for the parent to rise past
- * y=25 and play the retract anims before despawning. */
-void func_801DDA98_ovl16(s32 arg0) {
-    s32 other = D_800E0D50[omCurrentObj->objId];
-
-    func_8019BB58_ovl7();
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
-    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801DDE54_ovl16;
-    if (D_800E98E0[omCurrentObj->objId] != 0) {
-        D_800E17D0[omCurrentObj->objId] = 0.0f;
-    } else {
-        D_800E17D0[omCurrentObj->objId] = 3.1415927f;
-    }
-    D_800E9020[omCurrentObj->objId] = D_800E9020[other];
-    D_800E8920[omCurrentObj->objId] = 0;
-    func_800B33F4();
-    func_800A9864(D_801EF728_ovl16[D_800E98E0[omCurrentObj->objId]], 0x23, 0x10);
-    while ((gEntitiesNextPosYArray[other] > 45.0f) && (D_800D7098.unk4 == 5) && (D_800D7098.unk18 == 0) &&
-           (gEntityFuncListIDArray[other] != 1)) {
-        gEntitiesNextPosYArray[omCurrentObj->objId] = -1000.0f;
-        ohSleep(1);
-    }
-    if ((D_800D7098.unk4 == 5) && (D_800D7098.unk18 == 0) && (gEntityFuncListIDArray[other] != 1)) {
-        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
-        play_sound(0x1C5);
-        func_800AA018(D_801EF738_ovl16[D_800E98E0[omCurrentObj->objId]]);
-        func_800AA154(D_801EF730_ovl16[D_800E98E0[omCurrentObj->objId]]);
-        func_800AA018(D_801EF758_ovl16[D_800E98E0[omCurrentObj->objId]]);
-        func_800AA018(D_801EF750_ovl16[D_800E98E0[omCurrentObj->objId]]);
-        while (gEntitiesNextPosYArray[other] <= 25.0f) {
-            ohSleep(1);
-        }
-        func_800AA018(D_801EF748_ovl16[D_800E98E0[omCurrentObj->objId]]);
-        func_800AA154(D_801EF740_ovl16[D_800E98E0[omCurrentObj->objId]]);
-    }
-    func_8019D958_ovl7(omCurrentObj->objId);
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DDA98_ovl16.s")
 #endif
 
 void func_801DDE54_ovl16(s32 arg0) {
@@ -2166,7 +2171,63 @@ void func_801E17E0_ovl16(s32 arg0) {
     }
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 201/216, register naming ($v0 vs $v1 on the held omCurrentObj) plus the
+ * global-address FORM: the ROM materialises `&D_800E3750` with lui+addiu into a held
+ * register and stores at 0(reg), where IDO folds the %lo into the store displacement.
+ * Measured and rejected: hoisting the array base into a local `f32 *` -- IDO folds it
+ * straight back, so the form is a register-allocation state, not a spelling. */
+/* Phase-7 entry: halt all motion, then if a punch is in flight (heading
+ * D_800EA6E0 nonzero) collect a bitmask of the four fist DObjs still extended
+ * past +/-10 units, command the retract (heading = -10), wait for the mask to
+ * be cleared by the per-limb watchers, and play the per-round (D_800D7098.unk8)
+ * recover anims. */
+void func_801E18BC_ovl16(s32 arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 7;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = 0.0f;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
+    D_800E9E20[omCurrentObj->objId] = 0;
+    if (D_800EA6E0[omCurrentObj->objId] != 0.0f) {
+        if (D_800DFBD0[omCurrentObj->objId][5]->pos.v.y > 10.0f) {
+            D_800E9E20[omCurrentObj->objId] |= 1;
+        }
+        if (D_800DFBD0[omCurrentObj->objId][7]->pos.v.x > 10.0f) {
+            D_800E9E20[omCurrentObj->objId] |= 8;
+        }
+        if (D_800DFBD0[omCurrentObj->objId][9]->pos.v.y < -10.0f) {
+            D_800E9E20[omCurrentObj->objId] |= 2;
+        }
+        if (D_800DFBD0[omCurrentObj->objId][3]->pos.v.x < -10.0f) {
+            D_800E9E20[omCurrentObj->objId] |= 4;
+        }
+        D_800EA6E0[omCurrentObj->objId] = -10.0f;
+        play_sound(0x1AA);
+        while (D_800E9E20[omCurrentObj->objId] != 0) {
+            ohSleep(1);
+        }
+        switch (D_800D7098.unk8) {
+        case 0:
+            func_800AA018(0x1047D);
+            func_800AA154(0x1047C);
+            break;
+        case 1:
+            func_800AA018(0x10477);
+            func_800AA154(0x10476);
+            break;
+        case 2:
+            func_800AA018(0x10483);
+            func_800AA154(0x10482);
+            break;
+        }
+        D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 7;
+}
+#elif defined(PORT)
 /* Phase-7 entry: halt all motion, then if a punch is in flight (heading
  * D_800EA6E0 nonzero) collect a bitmask of the four fist DObjs still extended
  * past +/-10 units, command the retract (heading = -10), wait for the mask to
@@ -2218,56 +2279,7 @@ void func_801E18BC_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 7;
 }
 #else
-/* Phase-7 entry: halt all motion, then if a punch is in flight (heading
- * D_800EA6E0 nonzero) collect a bitmask of the four fist DObjs still extended
- * past +/-10 units, command the retract (heading = -10), wait for the mask to
- * be cleared by the per-limb watchers, and play the per-round (D_800D7098.unk8)
- * recover anims. */
-void func_801E18BC_ovl16(s32 arg0) {
-    D_800DDFD0[omCurrentObj->objId] = 7;
-    D_800E3750[omCurrentObj->objId] = 0.0f;
-    D_800E3590[omCurrentObj->objId] = 0.0f;
-    D_800E3210[omCurrentObj->objId] = 0.0f;
-    D_800E3050[omCurrentObj->objId] = 0.0f;
-    D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
-    D_800E9E20[omCurrentObj->objId] = 0;
-    if (D_800EA6E0[omCurrentObj->objId] != 0.0f) {
-        if (D_800DFBD0[omCurrentObj->objId][5]->pos.v.y > 10.0f) {
-            D_800E9E20[omCurrentObj->objId] |= 1;
-        }
-        if (D_800DFBD0[omCurrentObj->objId][7]->pos.v.x > 10.0f) {
-            D_800E9E20[omCurrentObj->objId] |= 8;
-        }
-        if (D_800DFBD0[omCurrentObj->objId][9]->pos.v.y < -10.0f) {
-            D_800E9E20[omCurrentObj->objId] |= 2;
-        }
-        if (D_800DFBD0[omCurrentObj->objId][3]->pos.v.x < -10.0f) {
-            D_800E9E20[omCurrentObj->objId] |= 4;
-        }
-        D_800EA6E0[omCurrentObj->objId] = -10.0f;
-        play_sound(0x1AA);
-        while (D_800E9E20[omCurrentObj->objId] != 0) {
-            ohSleep(1);
-        }
-        switch (D_800D7098.unk8) {
-        case 0:
-            func_800AA018(0x1047D);
-            func_800AA154(0x1047C);
-            break;
-        case 1:
-            func_800AA018(0x10477);
-            func_800AA154(0x10476);
-            break;
-        case 2:
-            func_800AA018(0x10483);
-            func_800AA154(0x10482);
-            break;
-        }
-        D_800EA6E0[omCurrentObj->objId] = 0.0f;
-    }
-    gEntityFuncListIDArray[omCurrentObj->objId] = 7;
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E18BC_ovl16.s")
 #endif
 
 void func_801E1C1C_ovl16(s32 arg0) {
@@ -2663,6 +2675,9 @@ void func_801E3518_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = D_801EF92C_ovl16[D_800D7098.unk8];
 }
 
+/* NOT YET DRAFTED FOR N64: the PORT arm below is host-only (it goes through the
+ * PC_OVL16_SLOT_SHIM macro and the pc slot table), so it cannot be reused as the
+ * N64 draft the way the other arms in this file were. Needs a from-asm draft. */
 #ifdef PORT
 /* PORT: D_801F0200_ovl16 cells hold, on N64, raw DObj addresses that shared
  * code (func_801E4148 above) later pokes through `struct Ovl16AnimCmd::unk20`
@@ -2798,7 +2813,98 @@ void func_801E35D4_ovl16(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E35D4_ovl16.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 211/214 with the instruction COUNT EXACT -- pure register permutation,
+ * the cleanest seed in this file and the one to hand the permuter first. Note for
+ * whoever edits it: the PORT arm routes the limb stretch through the host helper
+ * pc_ovl16_anim_stretch; on N64 that call is plain func_801DC990_ovl16(a, b), which
+ * is what this draft uses. Same substitution applies to func_801E4350. */
+/* Pillar-attack idle tick (phase 0xE): for each of the eight limbs of the
+ * active pattern, squash the limb toward its rest height (scale the limb and
+ * its counterpart from how far it is stretched, feeding the stretch through
+ * the anim system) or, when it is back within range, pin it there and reset
+ * the scales; then do the usual bounds/anim upkeep for the body. */
+void func_801E3CF0_ovl16(s32 arg0) {
+    extern s32 D_801D98B8;
+    struct DObj *a;
+    struct DObj *b;
+    u8 *limb;
+    s32 i;
+    f32 lim;
+    f32 ext;
+    f32 grow;
+    f32 shrink;
+    f32 sc;
+
+    limb = (u8 *) &D_801EF97C_ovl16 + ((s32 *) D_800E9AA0)[omCurrentObj->objId] * 8;
+    for (i = 0; i < 8; i++) {
+        a = D_800DFBD0[omCurrentObj->objId][D_801EF93C_ovl16[limb[i]]];
+        b = D_800DFBD0[omCurrentObj->objId][(&D_801EF95C_ovl16)[limb[i]]];
+        lim = D_801F01B0_ovl16[i];
+        if (lim != -9999.0f) {
+            if (lim < 0.0f) {
+                lim = -lim;
+            }
+            ext = a->pos.v.y;
+            if (ext < 0.0f) {
+                ext = -ext;
+            }
+            ext *= 0.8f;
+            if (ext > 260.0f) {
+                ext = 260.0f;
+            } else if (ext <= lim) {
+                ext = lim;
+            }
+            if (lim < ext) {
+                sc = ext / 260.0f;
+                grow = sc * 0.6f;
+                shrink = sc * 0.8f;
+                if (grow > 0.6f) {
+                    grow = 0.6f;
+                }
+                if (grow < 0.0f) {
+                    grow = 0.0f;
+                }
+                if (shrink > 0.8f) {
+                    shrink = 0.8f;
+                }
+                if (shrink < 0.0f) {
+                    shrink = 0.0f;
+                }
+                a->scale.v.z = 1.0f - shrink;
+                a->scale.v.x = 1.0f - shrink;
+                b->scale.v.x = 1.0f + grow;
+                b->scale.v.z = 1.0f + grow;
+                D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D98B8;
+                func_801DC990_ovl16(a, b);
+            } else {
+                a->pos.v.y = -lim;
+                b->scale.v.x = 1.0f;
+                b->scale.v.z = 1.0f;
+                a->scale.v.x = 1.0f;
+                a->scale.v.z = 1.0f;
+            }
+        } else {
+            b->scale.v.z = 1.0f;
+            b->scale.v.x = 1.0f;
+            a->scale.v.x = 1.0f;
+            a->scale.v.z = 1.0f;
+        }
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801DB400_ovl16();
+    if (D_801F0120_ovl16[3] <= 0) {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9828;
+    } else {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9804;
+    }
+    if ((D_800D7098.unk18 != 0) || (D_801F0120_ovl16[3] <= 0)) {
+        func_801DC314_ovl16(0, 0, 0);
+    } else {
+        func_801DB698_ovl16(0);
+    }
+}
+#elif defined(PORT)
 /* Host re-expression of func_801DC990_ovl16, whose NON_MATCHING draft above
  * reads the N64 byte offsets straight off the raw DObj arguments: unk20 is the
  * N64 DObj's pos.v.y and unk40 its scale.v.x, so use the real field names on
@@ -2963,7 +3069,91 @@ void func_801E4148_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0x13;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 173/210, only 6 instructions short -- the smallest count gap of the
+ * shortfall group, so the cheapest place to identify the repeated load IDO is
+ * merging (see func_801E538C's note). Sibling of func_801E3CF0; the host helper
+ * pc_ovl16_anim_stretch is func_801DC990_ovl16(a, b) on N64. */
+/* Pillar-attack settle tick (after func_801E4148 released the limbs): same
+ * squash-back loop as func_801E3CF0, plus a one-shot creak SFX gated on
+ * D_800EA360, ending in the plain phase anim instead of the choice pair. */
+void func_801E4350_ovl16(s32 arg0) {
+    extern s32 D_801D98B8;
+    struct DObj *a;
+    struct DObj *b;
+    u8 *limb;
+    s32 i;
+    f32 lim;
+    f32 ext;
+    f32 grow;
+    f32 shrink;
+    f32 sc;
+
+    limb = (u8 *) &D_801EF97C_ovl16 + ((s32 *) D_800E9AA0)[omCurrentObj->objId] * 8;
+    for (i = 0; i < 8; i++) {
+        a = D_800DFBD0[omCurrentObj->objId][D_801EF93C_ovl16[limb[i]]];
+        b = D_800DFBD0[omCurrentObj->objId][(&D_801EF95C_ovl16)[limb[i]]];
+        lim = D_801F01B0_ovl16[i];
+        if (lim != -9999.0f) {
+            if (lim < 0.0f) {
+                lim = -lim;
+            }
+            ext = a->pos.v.y;
+            if (ext < 0.0f) {
+                ext = -ext;
+            }
+            ext *= 0.8f;
+            if (ext > 260.0f) {
+                ext = 260.0f;
+            } else if (ext <= lim) {
+                ext = lim;
+            }
+            if (lim < ext) {
+                if (D_800EA360[omCurrentObj->objId] == 0) {
+                    play_sound(0x1AD);
+                    D_800EA360[omCurrentObj->objId] = 1;
+                }
+                sc = ext / 260.0f;
+                grow = sc * 0.6f;
+                shrink = sc * 0.8f;
+                if (grow > 0.6f) {
+                    grow = 0.6f;
+                }
+                if (grow < 0.0f) {
+                    grow = 0.0f;
+                }
+                if (shrink > 0.8f) {
+                    shrink = 0.8f;
+                }
+                if (shrink < 0.0f) {
+                    shrink = 0.0f;
+                }
+                a->scale.v.z = 1.0f - shrink;
+                a->scale.v.x = 1.0f - shrink;
+                b->scale.v.x = 1.0f + grow;
+                b->scale.v.z = 1.0f + grow;
+                D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D98B8;
+                func_801DC990_ovl16(a, b);
+            } else {
+                a->pos.v.y = -lim;
+                b->scale.v.x = 1.0f;
+                b->scale.v.z = 1.0f;
+                a->scale.v.x = 1.0f;
+                a->scale.v.z = 1.0f;
+            }
+        } else {
+            b->scale.v.z = 1.0f;
+            b->scale.v.x = 1.0f;
+            a->scale.v.x = 1.0f;
+            a->scale.v.z = 1.0f;
+        }
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_801DB400_ovl16();
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9828;
+    func_801DC314_ovl16(0, 0, 0);
+}
+#elif defined(PORT)
 /* Pillar-attack settle tick (after func_801E4148 released the limbs): same
  * squash-back loop as func_801E3CF0, plus a one-shot creak SFX gated on
  * D_800EA360, ending in the plain phase anim instead of the choice pair. */
@@ -3057,7 +3247,197 @@ void func_801E4698_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = D_801EF9B4_ovl16[D_800D7098.unk8];
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 707/782, and 23 instructions SHORT. Same bloc-wide pattern as
+ * func_801E538C/func_801E5AE4/func_801E62C0: the draft is structurally faithful and
+ * well named, but IDO CSEs entity-array loads that the ROM re-reads, so the body
+ * comes out short and every later word is displaced. Close the COUNT first (find the
+ * loads the ROM repeats and force them), then the remainder is register naming. */
+/* Phase-0x11 ram attack: rock in place for 60 frames drifting away from the
+ * player, spawn the four 0x34 debris entities, drop to y=35, then perform
+ * three horizontal dashes (out to +/-200, across to the other side, and back
+ * to center), steering via the D_801EF9C0/9C8/9D0 speed/decel/landing tables
+ * keyed by the D_800EA1A0 direction flag. */
+void func_801E4754_ovl16(s32 arg0) {
+    void func_800AF27C(void);
+    s32 func_800FB914(s32);
+    s32 i;
+    s32 t;
+    f32 v;
+    f32 next;
+
+    D_800DDFD0[omCurrentObj->objId] = 0x11;
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 1;
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+    D_800E3AD0[omCurrentObj->objId] = 4.0f;
+    for (i = 0; i < 0x3C; i++) {
+        if (gEntitiesNextPosXArray[0] < gEntitiesNextPosXArray[omCurrentObj->objId]) {
+            D_800E3590[omCurrentObj->objId] = -0.5f;
+        } else {
+            D_800E3590[omCurrentObj->objId] = 0.5f;
+        }
+        ohSleep(1);
+    }
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    play_sound(0x1B3);
+    func_800AA018(0x104C4);
+    for (i = 0; i < 4; i++) {
+        t = func_801ACC34_ovl7(0x34, 0);
+        if (t != 0) {
+            D_800E8E60[t] = 1;
+            D_800E98E0[t] = i;
+        }
+    }
+    func_800AF27C();
+    D_800D7098.unk10 += 1;
+    ohSleep(0x10);
+    for (i = 0; i < 0x1E; i++) {
+        if (gEntitiesNextPosXArray[0] < gEntitiesNextPosXArray[omCurrentObj->objId]) {
+            D_800E3590[omCurrentObj->objId] = -0.5f;
+        } else {
+            D_800E3590[omCurrentObj->objId] = 0.5f;
+        }
+        ohSleep(1);
+    }
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = 65535.0f;
+    func_800AA154(0x104C2);
+    D_800D7098.unk10 += 1;
+    ohSleep(1);
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.65f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    while (gEntitiesNextPosYArray[omCurrentObj->objId] > 35.0f) {
+        ohSleep(1);
+    }
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 35.0f;
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    func_800FB914(2);
+    func_800AA018(0x104C6);
+    ohSleep(0x1E);
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+    /* dash 1: away from center out to +/-200 */
+    play_sound(0x1B4);
+    if (gEntitiesNextPosXArray[omCurrentObj->objId] < 0.0f) {
+        D_800EA1A0[omCurrentObj->objId] = 0;
+    } else {
+        D_800EA1A0[omCurrentObj->objId] = 1;
+    }
+    D_800E3050[omCurrentObj->objId] = ((f32 *) D_801EF9C0_ovl16)[D_800EA1A0[omCurrentObj->objId]];
+    v = gEntitiesNextPosXArray[omCurrentObj->objId];
+    if (v < 0.0f) {
+        v = -v;
+    }
+    D_800EA8A0[omCurrentObj->objId] = (v + 200.0f) / 12.0f;
+    D_800EA8A0[omCurrentObj->objId] *= 2.0f;
+    if (D_800EA8A0[omCurrentObj->objId] == 0.0f) {
+        D_800EA8A0[omCurrentObj->objId] = 0.00001f;
+    }
+    D_800E3590[omCurrentObj->objId] =
+        ((f32 *) D_801EF9C8_ovl16)[D_800EA1A0[omCurrentObj->objId]] / D_800EA8A0[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] -= D_800E3590[omCurrentObj->objId];
+    ohSleep(1);
+    for (i = 1; i < (s32) D_800EA8A0[omCurrentObj->objId]; i++) {
+        v = gEntitiesNextPosXArray[omCurrentObj->objId];
+        if (v < 0.0f) {
+            v = -v;
+        }
+        if (v >= 200.0f) {
+            break;
+        }
+        ohSleep(1);
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = ((f32 *) D_801EF9D0_ovl16)[D_800EA1A0[omCurrentObj->objId]];
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = 65535.0f;
+    /* dash 2: full crossing to the opposite wall */
+    play_sound(0x1B4);
+    if (D_800EA1A0[omCurrentObj->objId] != 0) {
+        D_800EA1A0[omCurrentObj->objId] = 0;
+    } else {
+        D_800EA1A0[omCurrentObj->objId] = 1;
+    }
+    D_800E3050[omCurrentObj->objId] = ((f32 *) D_801EF9C0_ovl16)[D_800EA1A0[omCurrentObj->objId]];
+    D_800EA8A0[omCurrentObj->objId] = 33.333332f;
+    D_800EA8A0[omCurrentObj->objId] *= 2.0f;
+    if (D_800EA8A0[omCurrentObj->objId] == 0.0f) {
+        D_800EA8A0[omCurrentObj->objId] = 0.00001f;
+    }
+    D_800E3590[omCurrentObj->objId] =
+        ((f32 *) D_801EF9C8_ovl16)[D_800EA1A0[omCurrentObj->objId]] / D_800EA8A0[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] -= D_800E3590[omCurrentObj->objId];
+    ohSleep(1);
+    for (i = 1; i < (s32) D_800EA8A0[omCurrentObj->objId]; i++) {
+        v = gEntitiesNextPosXArray[omCurrentObj->objId];
+        if (v < 0.0f) {
+            v = -v;
+        }
+        if (v >= 200.0f) {
+            break;
+        }
+        ohSleep(1);
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = ((f32 *) D_801EF9D0_ovl16)[D_800EA1A0[omCurrentObj->objId]];
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = 65535.0f;
+    /* dash 3: decelerate back to center */
+    play_sound(0x1B4);
+    if (D_800EA1A0[omCurrentObj->objId] != 0) {
+        D_800EA1A0[omCurrentObj->objId] = 0;
+    } else {
+        D_800EA1A0[omCurrentObj->objId] = 1;
+    }
+    D_800E3050[omCurrentObj->objId] = ((f32 *) D_801EF9C0_ovl16)[D_800EA1A0[omCurrentObj->objId]];
+    v = gEntitiesNextPosXArray[omCurrentObj->objId];
+    if (v < 0.0f) {
+        v = -v;
+    }
+    D_800EA8A0[omCurrentObj->objId] = v / 12.0f;
+    D_800EA8A0[omCurrentObj->objId] *= 2.0f;
+    if (D_800EA8A0[omCurrentObj->objId] == 0.0f) {
+        D_800EA8A0[omCurrentObj->objId] = 0.00001f;
+    }
+    D_800E3590[omCurrentObj->objId] =
+        ((f32 *) D_801EF9C8_ovl16)[D_800EA1A0[omCurrentObj->objId]] / D_800EA8A0[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] -= D_800E3590[omCurrentObj->objId];
+    ohSleep(1);
+    for (i = 1; i < (s32) D_800EA8A0[omCurrentObj->objId]; i++) {
+        next = gEntitiesNextPosXArray[omCurrentObj->objId] + D_800E3050[omCurrentObj->objId] +
+               D_800E3590[omCurrentObj->objId];
+        if (next < 0.0f) {
+            next = -next;
+        }
+        v = gEntitiesNextPosXArray[omCurrentObj->objId];
+        if (v < 0.0f) {
+            v = -v;
+        }
+        if (v < next) {
+            break;
+        }
+        ohSleep(1);
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = 65535.0f;
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0x17;
+}
+#elif defined(PORT)
 /* Phase-0x11 ram attack: rock in place for 60 frames drifting away from the
  * player, spawn the four 0x34 debris entities, drop to y=35, then perform
  * three horizontal dashes (out to +/-200, across to the other side, and back
@@ -3432,7 +3812,143 @@ void func_801E5A28_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = D_801EF9D8_ovl16[D_800D7098.unk8];
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 452/503, and 58 instructions SHORT -- the largest shortfall in this file,
+ * so the best specimen for diagnosing the bloc-wide CSE gap described on
+ * func_801E538C. Structure and naming are good; the missing words are repeated
+ * entity-array reads that IDO merges and the ROM does not. */
+/* Phase-0x14 orbit attack script: 14 sequential steps.  Spin-up/spin-down
+ * ramps (steps 0/13) halve the angular speed and squash the orbit radii from
+ * |sin| of the heading; steps 2/4/6/8 re-roll the x-radius from the
+ * D_801EF9E4 table (4/8 also reset the heading to pi); step 10 rounds the
+ * radius; step 11 launches the 0x1C helper and swings the pendulum
+ * (D_800EAA60 = 9999.9 marker); step 12 restores speed. */
+void func_801E5AE4_ovl16(s32 arg0) {
+    s32 state;
+    s32 i;
+    s32 t;
+    f32 v;
+
+    D_800DDFD0[omCurrentObj->objId] = 0x14;
+    func_800AA018(0x104D2);
+    func_800AA018(0x104D6);
+    D_800E9720[omCurrentObj->objId] = 0;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+    D_800EA6E0[omCurrentObj->objId] = 3.1415927f;
+    if (random_soft_s32_range(2) != 0) {
+        D_800EA8A0[omCurrentObj->objId] = 0.06544985f;
+    } else {
+        D_800EA8A0[omCurrentObj->objId] = -0.06544985f;
+    }
+    D_800EAFA0[omCurrentObj->objId] = 160.0f;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    for (state = 0; state != 14; state++) {
+        switch (state) {
+        case 0:
+            func_800A9EA4(0x104D2);
+            v = (D_800EA8A0[omCurrentObj->objId] > 0.0f) ? 0.06544985f : -0.06544985f;
+            D_800EA8A0[omCurrentObj->objId] = v * 0.5f;
+            D_800EAA60[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * -2.0f;
+            for (i = 0; i != 0x30; i++) {
+                v = sinf(D_800EA6E0[omCurrentObj->objId]);
+                if (v < 0.0f) {
+                    v = -v;
+                }
+                D_800EAC20[omCurrentObj->objId] = v;
+                v = sinf(D_800EA6E0[omCurrentObj->objId]);
+                if (v < 0.0f) {
+                    v = -v;
+                }
+                D_800EADE0[omCurrentObj->objId] = v;
+                ohSleep(1);
+            }
+            if (D_800EA8A0[omCurrentObj->objId] > 0.0f) {
+                D_800EA8A0[omCurrentObj->objId] = 0.06544985f;
+            } else {
+                D_800EA8A0[omCurrentObj->objId] = -0.06544985f;
+            }
+            D_800EAA60[omCurrentObj->objId] = 0.0f;
+            D_800EAC20[omCurrentObj->objId] = 1.0f;
+            D_800EADE0[omCurrentObj->objId] = 0.5f;
+            break;
+        case 13:
+            func_800A9EA4(0x104D2);
+            if (D_800EA8A0[omCurrentObj->objId] > 0.0f) {
+                D_800EA8A0[omCurrentObj->objId] = 0.06544985f;
+            } else {
+                D_800EA8A0[omCurrentObj->objId] = -0.06544985f;
+            }
+            D_800EAA60[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * -2.0f;
+            for (i = 0; i != 0x18; i++) {
+                v = sinf(D_800EA6E0[omCurrentObj->objId]);
+                if (v < 0.0f) {
+                    v = -v;
+                }
+                D_800EAC20[omCurrentObj->objId] = v;
+                v = sinf(D_800EA6E0[omCurrentObj->objId]);
+                if (v < 0.0f) {
+                    v = -v;
+                }
+                D_800EADE0[omCurrentObj->objId] = v;
+                ohSleep(1);
+            }
+            D_800EA6E0[omCurrentObj->objId] = 3.1415927f;
+            break;
+        case 4:
+        case 8:
+            D_800EA6E0[omCurrentObj->objId] = 3.1415927f;
+            /* fallthrough */
+        case 2:
+        case 6:
+            do {
+                v = ((f32 *) D_801EF9E4_ovl16)[random_soft_s32_range(5)];
+            } while (D_800EAC20[omCurrentObj->objId] == v);
+            D_800EAC20[omCurrentObj->objId] = v;
+            /* fallthrough */
+        case 1:
+        case 3:
+        case 5:
+        case 7:
+        case 9:
+            ohSleep(0x18);
+            break;
+        case 10:
+            D_800EAC20[omCurrentObj->objId] = 1.0f;
+            ohSleep(0x18);
+            break;
+        case 11:
+            t = func_8019E0A4_ovl7(5, 4);
+            if (t != -1) {
+                if (D_800EA8A0[omCurrentObj->objId] > 0.0f) {
+                    D_800E98E0[t] = 0;
+                } else {
+                    D_800E98E0[t] = 1;
+                }
+            }
+            func_800A9EA4(0x104D3);
+            D_800EADE0[omCurrentObj->objId] = 1.0f;
+            D_800EAA60[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * -2.0f;
+            ohSleep(0xC);
+            D_800EAA60[omCurrentObj->objId] = 9999.9f;
+            v = (D_800EA8A0[omCurrentObj->objId] > 0.0f) ? 0.06544985f : -0.06544985f;
+            D_800EA8A0[omCurrentObj->objId] = v * 0.5f;
+            ohSleep(0x18);
+            break;
+        case 12:
+            ohSleep(0x18);
+            if (D_800EA8A0[omCurrentObj->objId] > 0.0f) {
+                D_800EA8A0[omCurrentObj->objId] = 0.06544985f;
+            } else {
+                D_800EA8A0[omCurrentObj->objId] = -0.06544985f;
+            }
+            D_800EAA60[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * -2.0f;
+            ohSleep(0xC);
+            break;
+        }
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0x1B;
+}
+#elif defined(PORT)
 /* Phase-0x14 orbit attack script: 14 sequential steps.  Spin-up/spin-down
  * ramps (steps 0/13) halve the angular speed and squash the orbit radii from
  * |sin| of the heading; steps 2/4/6/8 re-roll the x-radius from the
@@ -3568,7 +4084,96 @@ void func_801E5AE4_ovl16(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E5AE4_ovl16.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 330/391, and 27 instructions SHORT. Same CSE gap as its siblings in this
+ * file; see func_801E538C's note for the fully localised instance (there the two
+ * D_801F0120_ovl16[4] reads are visible at listing indices 200 and 222). */
+/* Phase-0x15 orbit-attack drive tick: advance the heading, place the body on
+ * the (180*EAC20, 180*EADE0) ellipse around (0,160), clamp to the arena, aim
+ * the body DObj along the motion (or lock it horizontal while the pendulum
+ * marker 9999.9 is up, or add the swing rate), and every 0x1F ticks after a
+ * hit (D_800D7098.unk38) respawn the 0x35 chained satellite. */
+void func_801E62C0_ovl16(s32 arg0) {
+    struct DObj *d;
+    s32 child;
+    s32 t;
+
+    D_800EA6E0[omCurrentObj->objId] += D_800EA8A0[omCurrentObj->objId];
+    while (D_800EA6E0[omCurrentObj->objId] > 6.2831855f) {
+        D_800EA6E0[omCurrentObj->objId] -= 6.2831855f;
+    }
+    while (D_800EA6E0[omCurrentObj->objId] < -6.2831855f) {
+        D_800EA6E0[omCurrentObj->objId] += 6.2831855f;
+    }
+    gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosXArray[omCurrentObj->objId] =
+        D_800EAC20[omCurrentObj->objId] * (sinf(D_800EA6E0[omCurrentObj->objId]) * 180.0f);
+    gEntitiesNextPosYArray[omCurrentObj->objId] =
+        (D_800EADE0[omCurrentObj->objId] * (cosf(D_800EA6E0[omCurrentObj->objId]) * 180.0f)) + 160.0f;
+    D_800E8920[omCurrentObj->objId] = 0;
+    if (gEntitiesNextPosXArray[omCurrentObj->objId] < -260.0f) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = -260.0f;
+    }
+    if (gEntitiesNextPosXArray[omCurrentObj->objId] > 260.0f) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = 260.0f;
+    }
+    if (gEntitiesNextPosYArray[omCurrentObj->objId] < 20.0f) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 20.0f;
+    }
+    if (gEntitiesNextPosYArray[omCurrentObj->objId] > 260.0f) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 260.0f;
+    }
+    d = D_800DFBD0[omCurrentObj->objId][1];
+    if (D_800EAA60[omCurrentObj->objId] == 0.0f) {
+        d->angle.v.z = atan2f(gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesPosXArray[omCurrentObj->objId],
+                              gEntitiesPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[omCurrentObj->objId]);
+    } else if (D_800EAA60[omCurrentObj->objId] == 9999.9f) {
+        if (D_800EA8A0[omCurrentObj->objId] > 0.0f) {
+            d->angle.v.z = -1.5707964f;
+        } else {
+            d->angle.v.z = 1.5707964f;
+        }
+    } else {
+        d->angle.v.z += D_800EAA60[omCurrentObj->objId];
+    }
+    while (d->angle.v.z > 6.2831855f) {
+        d->angle.v.z -= 6.2831855f;
+    }
+    while (d->angle.v.z < -6.2831855f) {
+        d->angle.v.z += 6.2831855f;
+    }
+    if (D_800D7098.unk38 != 0) {
+        ((s32 *) D_800E9AA0)[omCurrentObj->objId] += 1;
+    }
+    child = D_800EC120[omCurrentObj->objId];
+    if (((D_800DD710[child] == -1) || (omCurrentObj->objId != D_800E0D50[child])) &&
+        (((s32 *) D_800E9AA0)[omCurrentObj->objId] >= 0x1F)) {
+        t = func_801ACC34_ovl7(0x35, 0);
+        if (t != 0) {
+            D_800E8E60[t] = 1;
+            D_800E0D50[t] = omCurrentObj->objId;
+            D_800EC120[omCurrentObj->objId] = t;
+            ((s32 *) D_800E9AA0)[t] = 0;
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+            D_800D7098.unk38 = 0;
+        } else {
+            ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0x1F;
+            D_800D7098.unk38 = 1;
+        }
+    }
+    if (D_801F0120_ovl16[5] <= 0) {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9A20;
+    } else {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D99D8;
+    }
+    if ((D_800D7098.unk18 != 0) || (D_801F0120_ovl16[5] <= 0)) {
+        func_801DC314_ovl16(0, 0, 0);
+    } else {
+        func_801DB698_ovl16(0);
+    }
+}
+#elif defined(PORT)
 /* Phase-0x15 orbit-attack drive tick: advance the heading, place the body on
  * the (180*EAC20, 180*EADE0) ellipse around (0,160), clamp to the arena, aim
  * the body DObj along the motion (or lock it horizontal while the pendulum
