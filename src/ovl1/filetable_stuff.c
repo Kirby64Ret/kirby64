@@ -165,7 +165,7 @@ u32 D_800D0144[] = {
     0x000000F0,
 };
 
-u32 *gFileTable[8] = {
+struct BankHeader *gFileTable[8] = {
     &bank_0_filetable,
     &bank_1_filetable,
     &bank_2_filetable,
