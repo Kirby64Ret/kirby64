@@ -380,7 +380,62 @@ void func_801F0DD0_ovl10(struct GObj *arg0) {
     func_800FF200(D_800EA520[omCurrentObj->objId]);
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 127/149. Frame is 8 over the ROM's 0x90 and the local block sits high
+ * (kirby at 0x8C vs the ROM's 0x60), which is the whole residue.
+ * IMPORTANT correctness note kept in the draft: an empty slot's dist[] entry is left
+ * UNINITIALISED here, exactly as the ROM leaves it -- the slot-occupied guards are
+ * what keep it out of the compare chain. The PORT arm seeds those entries with
+ * 65535.0f as host hardening; carrying that into the N64 draft costs 21 diffs
+ * (148/149 -> 127/149 once removed) and is semantically wrong for the ROM.
+ * Measured and rejected: all three declaration orders (scalars first, dist[] first,
+ * both) -- identical score, so LEVERS 12/21/32 do not move this one; the aggregates
+ * are all address-taken. */
+/* Roulette hit poll: distance from Kirby's dive body (D_800DE350[0] node) to
+ * every live wheel item in the D_801F4D68 slot registry (contiguous s32[7]
+ * run); returns the nearest slot when it is within 34 units, else 8.
+ * An empty slot's dist[] entry is deliberately left uninitialised, exactly as the
+ * ROM does -- the slot-occupied guards are what keep it out of the compare chain.
+ * (The PORT arm seeds those entries with 65535; that is a host-side hardening and
+ * must NOT be carried into the N64 draft.) */
+s32 func_801F0EC8_ovl10(GObj *arg0) {
+    Vector kirby;
+    Vector item;
+    f32 dist[7];
+    f32 best;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    s32 i;
+    s32 bestSlot;
+
+    for (i = 0; i < 7; i++) {
+        if (D_801F4D68_ovl10[i] != 0) {
+            func_800B2340(&kirby, D_800DE350[0]->data.dobj, 0);
+            func_800B2340(&item, D_800DE350[D_801F4D68_ovl10[i]]->data.dobj, D_801F4D68_ovl10[i]);
+            dx = item.x - kirby.x;
+            dy = item.y - kirby.y;
+            dz = item.z - kirby.z;
+            dist[i] = sqrtf((dx * dx) + (dy * dy) + (dz * dz));
+        }
+    }
+    bestSlot = 0;
+    if ((D_801F4D68_ovl10[1] != 0) && (dist[1] < dist[0])) {
+        bestSlot = 1;
+    }
+    if ((D_801F4D68_ovl10[2] != 0) && (dist[2] < dist[bestSlot])) {
+        bestSlot = 2;
+    }
+    best = dist[bestSlot];
+    for (i = 3; i < 7; i++) {
+        if ((D_801F4D68_ovl10[i] != 0) && (dist[i] < best)) {
+            bestSlot = i;
+            best = dist[i];
+        }
+    }
+    return (best < 34.0f) ? bestSlot : 8;
+}
+#elif defined(PORT)
 /* Roulette hit poll: distance from Kirby's dive body (D_800DE350[0] node) to
  * every live wheel item in the D_801F4D68 slot registry (contiguous s32[7]
  * run); returns the nearest slot when it is within 34 units, else 8.
@@ -446,7 +501,81 @@ s32 func_801F111C_ovl10(void) {
     return 1;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+
+/* Prize-wheel object main: claims the wheel track id (D_801F4D60), drops
+ * its sparkle, spawns the three walking prizes (states 0..2, mount 1..3 via
+ * D_800E9AA0), moves onto DL bucket 0x14, runs the intro camera spline
+ * D_801F4670 on camera 0x10 and records the spline's end eye position into
+ * D_801F4D88 (f32 x/y/z, 4-byte stride) as the crowd focus point, spawns
+ * the wheel items (states 6..0xC; the file-complete bonus slot 0xC only
+ * when func_801F111C says the save file still has room), then keeps
+ * stepping the camera; once Kirby's controller reaches phase 5
+ * (D_800E9C60[0]) it just idles the camera forever.
+ * 0x42C80000 / 0x40000000 passed to the f32 camera params are float bits:
+ * 100.0f and 2.0f. */
+void func_801F11A8_ovl10(GObj *arg0) {
+    #include "unk_structs/D_800D79D8.h"
+    void func_800AF7A0(s32);
+    void func_800FA414(s32);
+    void omGMoveObjDL(GObj *, u8, s32);
+    void func_800B2F54(s32, void *, f32);
+    void func_800B3070(s32, f32);
+    void func_800A71A0(s32);
+    struct UnkStruct800D79D8 *func_800A6F40(u16);
+    void func_800B4954(GObj *);
+    void func_801F1454_ovl10(struct GObj *);
+    extern u32 D_801F4670_ovl10[];
+
+    struct UnkStruct800E1B50 *ent;
+    s32 i;
+    s32 t;
+
+    D_801F4D60_ovl10 = omCurrentObj->objId;
+    D_800DF150[omCurrentObj->objId] = func_801F1454_ovl10;
+    ent = D_800E1B50[omCurrentObj->objId];
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    func_800FF1CC(ent->unk80);
+    ent->unk80 = NULL;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 1.3f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 1.0f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 1.3f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    func_800AF7A0(0x2C);
+    for (i = 0; i < 3; i++) {
+        t = request_track_general(0x29, 0x1E, 0x50);
+        D_800E98E0[t] = i;
+        D_800E9AA0[t].as_s32 = i + 1;
+    }
+    omGMoveObjDL(arg0, arg0->dl_link, 0x14);
+    func_800FA414(1);
+    func_800B2F54(0x10, D_801F4670_ovl10, 100.0f);
+    func_800A71A0(0x10);
+    D_801F4D88_ovl10[0] = func_800A6F40(0x10)->unk3C;
+    D_801F4D88_ovl10[1] = func_800A6F40(0x10)->unk40;
+    D_801F4D88_ovl10[2] = func_800A6F40(0x10)->unk44;
+    func_800B2F54(0x10, D_801F4670_ovl10, 0.0f);
+    func_800B3070(0x10, 2.0f);
+    func_800A71A0(0x10);
+    ohSleep(1);
+    for (i = 6; i < 0xD; i++) {
+        if ((i != 0xC) || (func_801F111C_ovl10() == 0)) {
+            D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = i;
+        }
+    }
+    for (i = 0; i != 0x23; i++) {
+        func_800A71A0(0x10);
+        ohSleep(1);
+    }
+    while (D_800E9C60[0] != 5) {
+        ohSleep(1);
+    }
+    while (1) {
+        func_800A71A0(0x10);
+        ohSleep(1);
+    }
+}
+#elif defined(PORT)
 #include "unk_structs/D_800D79D8.h"
 void func_800AF7A0(s32);
 void func_800FA414(s32);
@@ -559,7 +688,41 @@ void func_801F1454_ovl10(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1454_ovl10.s")
 #endif
-#ifdef PORT
+#ifdef MIPS_TO_C
+
+/* Snaps this track's position and angles onto mount node 1/2/3 of the
+ * D_801F4D60 wheel object, picked by arg1 (0..2); other values are a no-op.
+ * D_800DFBD0 rows are native DObj** on the PC build. */
+void func_801F1554_ovl10(GObj *arg0, s32 arg1) {
+    extern u32 D_801F4D60_ovl10;
+
+    Vector pos;
+    Vector ang;
+    struct DObj *node;
+
+    switch (arg1) {
+    case 0:
+        node = D_800DFBD0[D_801F4D60_ovl10][1];
+        break;
+    case 1:
+        node = D_800DFBD0[D_801F4D60_ovl10][2];
+        break;
+    case 2:
+        node = D_800DFBD0[D_801F4D60_ovl10][3];
+        break;
+    default:
+        return;
+    }
+    func_800B2340(&sp6C, arg0->data.dobj, 0xFFFF);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = pos.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
+    func_800B26D8(&ang, node, D_801F4D60_ovl10);
+    gEntitiesAngleXArray[omCurrentObj->objId] = ang.x;
+    gEntitiesAngleYArray[omCurrentObj->objId] = ang.y;
+    gEntitiesAngleZArray[omCurrentObj->objId] = ang.z;
+}
+#elif defined(PORT)
 extern u32 D_801F4D60_ovl10;
 
 /* Snaps this track's position and angles onto mount node 1/2/3 of the
@@ -648,7 +811,63 @@ s32 func_801F19DC_ovl10(s32 arg0, s32 arg1) {
     return D_800D6BE0[arg0 * 6 + arg1] & 3;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+
+/* Wheel-item setup for the walking prizes (arg2 = 1 waddle dee, 2 adeleine,
+ * 3 king dedede; other kinds skip the model swap): stops the track's music
+ * cue when the prize kind is locked out (func_801F1934), loads the model +
+ * path table, spawns the escort track (state 3/4/5), plays one of the two
+ * D_801F4818[arg2] anim pairs at random, scales to 0.2, snaps onto wheel
+ * mount arg1, and attaches the sparkle particle. */
+void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
+    extern void func_800B1900(u16);
+    extern s32 random_soft_s32_range(s32);
+    extern u32 D_801F48F4_ovl10[];
+    extern u32 D_801F4818_ovl10[];
+    extern u32 D_801F4884_ovl10[];
+    extern u32 D_801F48BC_ovl10[];
+    extern u32 D_801F48D8_ovl10[];
+
+    s32 r;
+    s32 second;
+    void *particle;
+
+    if (func_801F1934_ovl10(arg2) == 0) {
+        func_800B1900((u16) omCurrentObj->objId);
+    }
+    switch (arg2) {
+    case 1:
+        func_800A9864(D_801F48F4_ovl10[arg2], 0x2C, 0x10);
+        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F4884_ovl10;
+        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 3;
+        break;
+    case 2:
+        func_800A9864(D_801F48F4_ovl10[arg2], 0x2C, 0x10);
+        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F48D8_ovl10;
+        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 4;
+        break;
+    case 3:
+        func_800A9864(D_801F48F4_ovl10[arg2], 0x2C, 0x10);
+        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F48BC_ovl10;
+        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 5;
+        break;
+    }
+    r = random_soft_s32_range(2);
+    func_800AA018(D_801F4818_ovl10[(arg2 * 4) + (r * 2)]);
+    second = D_801F4818_ovl10[(arg2 * 4) + (r * 2) + 1];
+    if (second != 0) {
+        func_800AA018(second);
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_801F1554_ovl10(arg0, arg1);
+    particle = func_800FF144();
+    D_800EA520[omCurrentObj->objId] = (s32) (uintptr_t) particle;
+    func_801F0014_ovl10(particle);
+    curObjSleepForever();
+}
+#elif defined(PORT)
 extern void func_800B1900(u16);
 extern s32 random_soft_s32_range(s32);
 extern u32 D_801F48F4_ovl10[];
@@ -793,7 +1012,93 @@ s32 func_801F2074_ovl10(s32 arg0) {
     return 0;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+
+/* One wheel prize item (arg1 = slot 0..6).  Registers itself in
+ * D_801F4D68[arg1], loads its model (+optional anim) from the
+ * D_801F4768/D_801F4784 tables (slot 5 picks one of four foods at random
+ * from D_801F47A0/D_801F47B0), drops onto a free spot on the wheel, then
+ * idles: D_800E98E0 set by the controller means "swallowed" (teleport into
+ * Kirby's mouth node with the matching gulp anim), D_800E9AA0 means "clean
+ * up" (kill sparkle, shrink to nothing, poof effect, sleep forever).
+ * The ROM staged the four tables through stack copies; the PC build reads
+ * the (identical) rodata directly. */
+void func_801F2098_ovl10(GObj *arg0, s32 arg1) {
+    extern s32 D_801F4D68_ovl10[];
+    extern u32 D_801F4D60_ovl10;
+    extern u32 D_801F4768_ovl10[];
+    extern u32 D_801F4784_ovl10[];
+    extern u32 D_801F47A0_ovl10[];
+    extern u32 D_801F47B0_ovl10[];
+    void func_800A7F74(u32, u32, u32, f32, f32, f32);
+    Vector pos;
+    Vector ang;
+    f32 scale;
+    s32 r;
+    s32 second;
+    void *particle;
+
+    D_801F4D68_ovl10[arg1] = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    if (D_801F47C4_ovl10[0] != 0) {
+        func_800AA018(D_801F47C4_ovl10[0]);
+    void func_800A9864(s32, s32, s32);
+        second = D_801F47B0_ovl10[r];
+    if (D_801F47C4_ovl10[0] != 0) {
+        func_800AA018(D_801F47C4_ovl10[0]);
+        }
+    } else {
+    void func_800A9864(s32, s32, s32);
+        second = D_801F4784_ovl10[arg1];
+    if (D_801F47C4_ovl10[0] != 0) {
+        func_800AA018(D_801F47C4_ovl10[0]);
+        }
+    }
+    void func_800AA018(s32);
+    func_801F1F7C_ovl10(&pos, arg1);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = pos.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
+    particle = func_800FF144();
+    D_800EA520[omCurrentObj->objId] = (s32) (uintptr_t) particle;
+    func_801F0014_ovl10(particle);
+    while (1) {
+        func_800B2340(&sp78, D_800DFBD0[D_801F4D60_ovl10][5], D_801F4D60_ovl10);
+    func_800B2340(&sp6C, arg0->data.dobj, 0xFFFF);
+            gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
+            gEntitiesNextPosYArray[omCurrentObj->objId] = pos.y;
+            gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
+    func_800B26D8(&ang, node, D_801F4D60_ovl10);
+            gEntitiesAngleXArray[omCurrentObj->objId] = ang.x;
+            gEntitiesAngleYArray[omCurrentObj->objId] = ang.y;
+            gEntitiesAngleZArray[omCurrentObj->objId] = ang.z;
+    if (D_801F47C4_ovl10[0] != 0) {
+        func_800AA018(D_801F47C4_ovl10[0]);
+            } else if ((arg1 == 6) && (D_800E9C60[omCurrentObj->objId] == 1)) {
+    void func_800AA018(s32);
+            } else {
+    void func_800AA018(s32);
+            }
+            D_800E98E0[omCurrentObj->objId] = 0;
+        }
+        if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
+            break;
+        }
+    void ohSleep(s32);
+    }
+    void func_800FF1CC(void *);
+    for (scale = 1.0f; scale >= 0.0f; scale -= 0.05f) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = scale;
+        gEntitiesScaleYArray[omCurrentObj->objId] = scale;
+        gEntitiesScaleZArray[omCurrentObj->objId] = scale;
+    void ohSleep(s32);
+    }
+    func_800AFBB4(0, D_800DE350[D_801F4D68_ovl10[t]]);
+    void func_800A7F74(u32, u32, u32, f32, f32, f32);
+    curObjSleepForever();
+}
+#elif defined(PORT)
 extern u32 D_801F4768_ovl10[];
 extern u32 D_801F4784_ovl10[];
 extern u32 D_801F47A0_ovl10[];

@@ -16,24 +16,33 @@ s8 D_800BE3E4 = 0;
 u16 D_800BE3E8 = 0;
 u8 D_800BE3EC = 0x7B;
 
+/* Shared transform node. func_8009B5E8 hands one out (translate 0, rotate 0,
+ * scale 1) and every particle spawned by the owning generator holds a
+ * reference; func_8009B69C runs onRelease and returns it to D_800D6AEC when
+ * the last reference goes. func_8009E8F4 rebuilds the two matrices at most
+ * once per frame (frameStamp vs D_800BE3EC) and projects particles through
+ * them instead of through the camera. */
 typedef struct UnkEmitter {
-    struct UnkEmitter *next;
-    f32 unk4;
-    f32 unk8;
-    f32 unkC;
-    f32 unk10;
-    f32 unk14;
-    f32 unk18;
-    f32 unk1C;
-    f32 unk20;
-    f32 unk24;
-    u8 unk28;
-    u8 unk29;
-    u16 unk2A;
-    u8 pad2C[0x88];
-    void (*unkB4)();
-    u16 unkB8;
-    u8 unkBA;
+    /* 0x00 */ struct UnkEmitter *next;
+    /* 0x04 */ f32 transX;
+    /* 0x08 */ f32 transY;
+    /* 0x0C */ f32 transZ;
+    /* 0x10 */ f32 rotX;
+    /* 0x14 */ f32 rotY;
+    /* 0x18 */ f32 rotZ;
+    /* 0x1C */ f32 scaleX;
+    /* 0x20 */ f32 scaleY;
+    /* 0x24 */ f32 scaleZ;
+    /* 0x28 */ u8 mtxState;     /* != 2 rebuild every frame; 1 = build once, then 2 */
+    /* 0x29 */ u8 frameStamp;   /* last frame rebuilt, against D_800BE3EC */
+    /* 0x2A */ u16 refCount;    /* live particles plus the generator */
+    /* 0x2C */ f32 mtx[4][4];   /* local transform */
+    /* 0x6C */ f32 mtx2[4][4];  /* local * view * projection */
+    /* 0xAC */ f32 normX;       /* column-0 norm of mtx2 */
+    /* 0xB0 */ f32 normY;       /* column-1 norm of mtx2 */
+    /* 0xB4 */ void (*onRelease)();
+    /* 0xB8 */ u16 generatorId;
+    /* 0xBA */ u8 billboard;
 } UnkEmitter;
 
 #ifdef PORT
@@ -92,45 +101,74 @@ typedef struct UnkGenerator {
     } vars;
 } UnkGenerator;
 #else
+/* One live particle generator. func_800A19EC fills it from an UnkScript,
+ * func_800A09AC steps it once per frame and emits particles through
+ * func_8009BD3C, func_800A1F30 / func_800A2080 retire it.
+ *
+ * NAMING NOTE: bytes 0x08..0x0B used to be typed {bank_id, kind, texture_id}
+ * but the code does not use them that way. func_800A09AC reads 0x0A and 0x0B
+ * as separate BYTES and passes them as func_8009BD3C's bank_id and
+ * texture_id, and 0x08 is the script's own flag byte (bit 0 = aim the
+ * emission basis at the camera, bit 1 = this generator owns an UnkEmitter);
+ * func_800A19EC copies it straight out of UnkScript. */
 typedef struct UnkGenerator {
-    struct UnkGenerator *next;
-    u16 generator_id;
-    u16 flags;
-    u8 bank_id;
-    u8 kind;
-    u16 texture_id;
-    u16 particle_lifetime;
-    u16 generator_lifetime;
-    u8 *bytecode;
-    f32 posX;
-    f32 posY;
-    f32 posZ;
-    f32 velX;
-    f32 velY;
-    f32 velZ;
-    f32 gravity;
-    f32 friction;
-    f32 size;
-    f32 unk38;
-    f32 unk3C;
-    f32 update_rate;
-    f32 frame;
-    void *dobj;
-    UnkEmitter *xf;
-    union {
+    /* 0x00 */ struct UnkGenerator *next;
+    /* 0x04 */ u16 generator_id;
+    /* 0x06 */ u16 flags;
+    /* 0x08 */ u8 scriptFlags;   /* 1 = aim at camera, 2 = owns an emitter */
+    /* 0x09 */ u8 kind;          /* emission shape; selects the func_800A09AC arm */
+    /* 0x0A */ u8 trackId;       /* passed as func_8009BD3C's bank_id */
+    /* 0x0B */ u8 textureIndex;  /* passed as its texture_id */
+    /* 0x0C */ u16 particle_lifetime;
+    /* 0x0E */ u16 generator_lifetime;
+    /* 0x10 */ u8 *bytecode;
+    /* 0x14 */ f32 posX;
+    /* 0x18 */ f32 posY;
+    /* 0x1C */ f32 posZ;
+    /* 0x20 */ f32 velX;
+    /* 0x24 */ f32 velY;
+    /* 0x28 */ f32 velZ;
+    /* 0x2C */ f32 gravity;
+    /* 0x30 */ f32 friction;
+    /* 0x34 */ f32 size;
+    /* 0x38 */ f32 radius;       /* < 0: fixed |radius|; > 0: random fraction of it */
+    /* 0x3C */ f32 spread;       /* cone half-angle; < 0 sweeps instead of randomizing */
+    /* 0x40 */ f32 update_rate;  /* < 0: fixed step per frame; > 0: randomized */
+    /* 0x44 */ f32 frame;        /* accumulator; one emission per whole frame */
+    /* 0x48 */ void *dobj;
+    /* 0x4C */ UnkEmitter *xf;
+    /* 0x50 */ union {
+        /* kinds 0/3/4/6/7: the sweep arc, plus the cylinder length in .z */
         struct {
             f32 base;
             f32 target;
         } rotate;
+        /* kind 1: the far end of the emission segment */
         struct {
             f32 x;
             f32 y;
             f32 z;
         } move;
+        /* kind 2: the cached emission speed and the live particle count */
         struct {
             f32 f;
             u16 lifetime;
         } vortex;
+        /* kind 5: three box axis vectors, then one sign flag per axis
+         * (set = emit on the face, clear = anywhere across it). */
+        struct {
+            f32 axis[9];
+            u16 signFlags;
+        } box;
+        /* kind 8: speed, then the pitch and yaw centre/spread of the
+         * sector. A zero spread randomizes that angle over the circle. */
+        struct {
+            f32 speed;
+            f32 pitchCenter;
+            f32 pitchSpread;
+            f32 yawCenter;
+            f32 yawSpread;
+        } cone;
     } vars;
 } UnkGenerator;
 #endif
@@ -140,6 +178,9 @@ typedef struct UnkGenerator {
  * stepped by the bytecode interpreter func_8009C4E0 and drawn by
  * func_8009E8F4. Field names are read off those three functions; see
  * PARTICLE_FLAG_* below for the flag word. */
+#define OFFSETOF(t, f) ((s32) &((t *) 0)->f)
+#define STATIC_ASSERT(cond, name) struct static_assert_##name { int bit : (cond) ? 1 : -1; }
+
 typedef struct UnkParticle {
     /* 0x00 */ struct UnkParticle *next;
     /* 0x04 */ u16 generatorId;      /* owning generator's id, else ++D_800BE3E8 */
@@ -177,27 +218,140 @@ typedef struct UnkParticle {
     /* 0x5C */ UnkGenerator *generator;
     /* 0x60 */ UnkEmitter *emitter;
 } UnkParticle;
+/* Layout locks. IDO is C89 and has no _Static_assert; a negative array size
+ * is only warning 654 there, so these use a negative BITFIELD WIDTH, which
+ * IDO rejects outright ("bit-field width is negative"). N64 layout only:
+ * the PORT build widens the two owner pointers, and pins its own shape with
+ * the PcGenNode / PortXfEmitter checks further down. */
+#ifndef PORT
+STATIC_ASSERT(sizeof(UnkParticle) == 0x64, particle_stride);
+STATIC_ASSERT(OFFSETOF(UnkParticle, bytecode) == 0x18, particle_script_cursor);
+STATIC_ASSERT(OFFSETOF(UnkParticle, posX) == 0x24, particle_position_block);
+STATIC_ASSERT(OFFSETOF(UnkParticle, primColor) == 0x4C, particle_colour_block);
+STATIC_ASSERT(OFFSETOF(UnkParticle, generator) == 0x5C, particle_owner_links);
+STATIC_ASSERT(sizeof(UnkEmitter) == 0xBC, emitter_stride);
+STATIC_ASSERT(OFFSETOF(UnkEmitter, mtx) == 0x2C, emitter_local_matrix);
+STATIC_ASSERT(OFFSETOF(UnkEmitter, mtx2) == 0x6C, emitter_projected_matrix);
+STATIC_ASSERT(OFFSETOF(UnkEmitter, onRelease) == 0xB4, emitter_tail);
+/* 0x78 is the stride func_800A04B8 allocates the free-list nodes at; the
+ * kind-5 box tail is what makes the record that long. */
+STATIC_ASSERT(sizeof(UnkGenerator) == 0x78, generator_stride);
+STATIC_ASSERT(OFFSETOF(UnkGenerator, vars.box.signFlags) == 0x74, generator_box_flags);
+STATIC_ASSERT(OFFSETOF(UnkGenerator, trackId) == 0x0A, generator_id_bytes);
+STATIC_ASSERT(OFFSETOF(UnkGenerator, posX) == 0x14, generator_position_block);
+STATIC_ASSERT(OFFSETOF(UnkGenerator, vars) == 0x50, generator_kind_params);
+#endif
 
+/* UnkParticle.flags. Physics bits are set by the bytecode (PARTICLE_OP_*
+ * below), render bits are consumed by func_8009E8F4. */
+enum ParticleFlag {
+    PARTICLE_FLAG_GRAVITY      = 0x0001, /* velY -= gravity each frame */
+    PARTICLE_FLAG_FRICTION     = 0x0002, /* velocity *= friction each frame */
+    PARTICLE_FLAG_VORTEX_OWNED = 0x0004, /* release drops the kind-2 owner's live count */
+    PARTICLE_FLAG_SECOND_PASS  = 0x0008, /* drawn when func_8009E8F4's arg1 & 1, else & 2 */
+    PARTICLE_FLAG_SHARED_TLUT  = 0x0010, /* CI: use frame 0's palette, not our own */
+    PARTICLE_FLAG_MIRROR_S     = 0x0020, /* G_TX_MIRROR on S, dsdx doubled */
+    PARTICLE_FLAG_MIRROR_T     = 0x0040, /* G_TX_MIRROR on T, dtdy doubled */
+    PARTICLE_FLAG_ENV_COLOR    = 0x0080, /* emit G_SETENVCOLOR + its combiner */
+    PARTICLE_FLAG_COMBINER_ALT = 0x0100, /* alternate combiner when ENV_COLOR is off */
+    PARTICLE_FLAG_BLEND_ALPHA  = 0x0200, /* blend level comes from envColor[3], else 8 */
+    PARTICLE_FLAG_XLU          = 0x0400, /* render mode 3, no blend colour */
+    PARTICLE_FLAG_PAUSED       = 0x0800, /* interpreter and renderer skip this particle */
+    PARTICLE_FLAG_DOBJ_SLOT    = 0x7000, /* 3-bit index into D_800D6A18 */
+    PARTICLE_FLAG_DRIVE_DOBJ   = 0x8000  /* copy our position into that DObj each frame */
+};
+#define PARTICLE_FLAG_DOBJ_SLOT_SHIFT 12
+
+/* Particle bytecode, dispatched by func_8009C4E0 through jtbl_800D5664.
+ *
+ * An opcode byte below 0x80 is a WAIT: bits 0..4 are a frame count, bit 5
+ * extends it with a second byte (13 bits total) and bit 6 means "and set the
+ * texture frame from the next byte".
+ *
+ * From 0x80 up the byte is an opcode. The four groups at 0x80/0x88/0x90/0x98
+ * dispatch on op & 0xF8 and carry a component mask in bits 0..2 (x, y, z);
+ * PARTICLE_OP_PRIM_FADE and PARTICLE_OP_ENV_FADE dispatch on op & 0xF0 and
+ * carry a channel mask in bits 0..3 (r, g, b, a). Everything else is an
+ * exact byte. Unlisted values fall through to the interpreter's default. */
+enum ParticleOp {
+    PARTICLE_OP_SET_POS              = 0x80, /* | xyz mask, f32 each */
+    PARTICLE_OP_ADD_POS              = 0x88, /* | xyz mask */
+    PARTICLE_OP_SET_VEL              = 0x90, /* | xyz mask */
+    PARTICLE_OP_ADD_VEL              = 0x98, /* | xyz mask */
+    PARTICLE_OP_SIZE_RAMP            = 0xA0, /* u16 duration, f32 target */
+    PARTICLE_OP_SET_FLAG_BYTE        = 0xA1, /* OR the next byte into flags */
+    PARTICLE_OP_SET_GRAVITY          = 0xA2, /* f32; sets GRAVITY iff nonzero */
+    PARTICLE_OP_SET_FRICTION         = 0xA3, /* f32; sets FRICTION iff != 1.0 */
+    PARTICLE_OP_SPAWN_CHILD          = 0xA4, /* child inherits position */
+    PARTICLE_OP_SPAWN_GENERATOR      = 0xA5, /* generator at our position */
+    PARTICLE_OP_RANDOM_LIFETIME      = 0xA6, /* lifetime = lo + rand * range */
+    PARTICLE_OP_RANDOM_KILL          = 0xA7, /* percent chance of dying now */
+    PARTICLE_OP_JITTER_POS           = 0xA8, /* +/- range per axis */
+    PARTICLE_OP_SCATTER_VEL          = 0xA9, /* random cone scatter */
+    PARTICLE_OP_SPAWN_CHILD_RANDOM   = 0xAA, /* script id in [lo, lo + range) */
+    PARTICLE_OP_SCALE_VEL            = 0xAB, /* f32 scale, all axes */
+    PARTICLE_OP_SIZE_RAMP_RANDOM     = 0xAC, /* size ramp with random extra target */
+    PARTICLE_OP_ENV_ENABLE           = 0xAD, /* flags |= ENV_COLOR */
+    PARTICLE_OP_MIRROR_NONE          = 0xAE,
+    PARTICLE_OP_MIRROR_S             = 0xAF,
+    PARTICLE_OP_MIRROR_T             = 0xB0,
+    PARTICLE_OP_MIRROR_ST            = 0xB1,
+    PARTICLE_OP_BLEND_ALPHA_ON       = 0xB2, /* flags |= BLEND_ALPHA */
+    PARTICLE_OP_XLU_OFF              = 0xB3,
+    PARTICLE_OP_XLU_ON               = 0xB4,
+    PARTICLE_OP_COMBINER_ALT_ON      = 0xB5,
+    PARTICLE_OP_COMBINER_ALT_OFF     = 0xB6,
+    PARTICLE_OP_HOME_TO_DOBJ         = 0xB7, /* point velocity at a tracked DObj */
+    PARTICLE_OP_ATTRACT_TO_DOBJ      = 0xB8, /* inverse-square pull toward it */
+    PARTICLE_OP_SPAWN_CHILD_WITH_VEL = 0xB9, /* child inherits position and velocity */
+    PARTICLE_OP_PRIM_RANDOM_WALK     = 0xBA, /* signed per-channel deltas */
+    PARTICLE_OP_ENV_RANDOM_WALK      = 0xBB,
+    PARTICLE_OP_SET_TEXTURE_FRAME    = 0xBC, /* frame = byte0 + rand * byte1 */
+    PARTICLE_OP_SET_SPEED            = 0xBD, /* renormalize to base + rand * range */
+    PARTICLE_OP_SCALE_VEL_AXIS       = 0xBE, /* per-axis scale */
+    PARTICLE_OP_TRACK_DOBJ           = 0xBF, /* set DRIVE_DOBJ + the slot index */
+    PARTICLE_OP_PRIM_FADE            = 0xC0, /* | rgba mask: u16 duration, targets */
+    PARTICLE_OP_ENV_FADE             = 0xD0, /* | rgba mask */
+    PARTICLE_OP_COLOR_RANDOM_WALK    = 0xE0, /* walks both colour targets at once */
+    PARTICLE_OP_SECOND_PASS          = 0xE2, /* flags |= SECOND_PASS */
+    PARTICLE_OP_SET_PALETTE          = 0xE3, /* paletteIndex = next byte */
+    PARTICLE_OP_LOOP_BEGIN           = 0xFA, /* count byte, remembers loopStart */
+    PARTICLE_OP_LOOP_END             = 0xFB, /* back to loopStart while --loopCount */
+    PARTICLE_OP_SET_RETURN           = 0xFC,
+    PARTICLE_OP_RETURN               = 0xFD,
+    PARTICLE_OP_END_ALT              = 0xFE, /* same arm as PARTICLE_OP_END */
+    PARTICLE_OP_END                  = 0xFF  /* lifetime = 1: die this frame */
+};
+#define PARTICLE_WAIT_COUNT_MASK  0x1F
+#define PARTICLE_WAIT_EXTENDED    0x20
+#define PARTICLE_WAIT_SET_FRAME   0x40
+#define PARTICLE_OP_XYZ_MASK      0x07
+#define PARTICLE_OP_RGBA_MASK     0x0F
+
+/* A particle/generator template, read straight out of a cartridge bank
+ * (D_800D6A78[bank][id]). func_8009BC4C spawns a bare particle from one and
+ * func_800A19EC builds a generator from one; the field meanings below are
+ * read off those two functions. */
 typedef struct UnkScript {
-    u16 kind;
-    u16 texture_id;
-    u16 generator_lifetime;
-    u16 particle_lifetime;
-    u16 unk8;
-    u16 flags;
-    f32 gravity;
-    f32 friction;
-    f32 velX;
-    f32 velY;
-    f32 velZ;
-    f32 unk20;
-    f32 unk24;
-    f32 unk28;
-    f32 size;
-    f32 unk30;
-    f32 unk34;
-    f32 unk38;
-    u8 bytecode[1];
+    /* 0x00 */ u16 kind;             /* emission shape, -> UnkGenerator.kind */
+    /* 0x02 */ u16 texture_id;
+    /* 0x04 */ u16 generator_lifetime;
+    /* 0x06 */ u16 particle_lifetime;
+    /* 0x08 */ u16 spawnFlags;       /* -> UnkGenerator.scriptFlags */
+    /* 0x0A */ u16 flags;            /* -> UnkParticle.flags / UnkGenerator.flags */
+    /* 0x0C */ f32 gravity;
+    /* 0x10 */ f32 friction;
+    /* 0x14 */ f32 velX;
+    /* 0x18 */ f32 velY;
+    /* 0x1C */ f32 velZ;
+    /* 0x20 */ f32 radius;           /* -> UnkGenerator.radius */
+    /* 0x24 */ f32 spread;           /* -> UnkGenerator.spread */
+    /* 0x28 */ f32 updateRate;       /* -> UnkGenerator.update_rate */
+    /* 0x2C */ f32 size;
+    /* 0x30 */ f32 param0;           /* kind-dependent, see func_800A19EC: */
+    /* 0x34 */ f32 param1;           /*   0/3/4/6/7 sweep arc base + target,  */
+    /* 0x38 */ f32 param2;           /*   1 segment end, 5 box axes, 8 cone   */
+    /* 0x3C */ u8 bytecode[1];
 } UnkScript;
 
 #ifdef PORT
@@ -318,15 +472,15 @@ UnkEmitter *func_8009B5E8(u8 arg0, u16 arg1) {
 
     if (xf != NULL) {
         D_800D6AEC = xf->next;
-        xf->unk2A = 1;
-        xf->unk29 = D_800BE3EC;
-        xf->unk4 = xf->unk8 = xf->unkC = 0.0f;
-        xf->unk10 = xf->unk14 = xf->unk18 = 0.0f;
-        xf->unk1C = xf->unk20 = xf->unk24 = 1.0f;
-        xf->unkB4 = NULL;
-        xf->unk28 = arg0;
-        xf->unkB8 = arg1;
-        xf->unkBA = 0;
+        xf->refCount = 1;
+        xf->frameStamp = D_800BE3EC;
+        xf->transX = xf->transY = xf->transZ = 0.0f;
+        xf->rotX = xf->rotY = xf->rotZ = 0.0f;
+        xf->scaleX = xf->scaleY = xf->scaleZ = 1.0f;
+        xf->onRelease = NULL;
+        xf->mtxState = arg0;
+        xf->generatorId = arg1;
+        xf->billboard = 0;
         D_800D6AE4++;
         if (D_800D6AEA < D_800D6AE4) {
             D_800D6AEA = D_800D6AE4;
@@ -338,7 +492,7 @@ UnkEmitter *func_8009B5E8(u8 arg0, u16 arg1) {
 void func_8009B69C(UnkEmitter *arg0) {
     void (*temp_v0)();
 
-    temp_v0 = arg0->unkB4;
+    temp_v0 = arg0->onRelease;
     if (temp_v0 != NULL) {
         temp_v0();
     }
@@ -432,7 +586,7 @@ void func_8009B768(s32 bank_id, UnkScriptDesc *script_desc, UnkTextureDesc *text
             tex->data[j] = (u32)(uintptr_t)((u8 *)texture_desc + pc_be32(tex->data[j]));
         }
         if (tex->fmt == 2) {
-            if (tex->flags & 1) {
+            if (tex->flags & PARTICLE_FLAG_GRAVITY) {
                 j = tex->count;
                 tex->data[j] = (u32)(uintptr_t)((u8 *)texture_desc + pc_be32(tex->data[j]));
             } else if (tex->palettes_num != 0) {
@@ -470,7 +624,7 @@ void func_8009B768(s32 bank_id, UnkScriptDesc *script_desc, UnkTextureDesc *text
             D_800D6A98[bank_id][i]->data[j] = (void *)((u8 *)texture_desc + (s32)D_800D6A98[bank_id][i]->data[j]);
         }
         if (D_800D6A98[bank_id][i]->fmt == 2) {
-            if (D_800D6A98[bank_id][i]->flags & 1) {
+            if (D_800D6A98[bank_id][i]->flags & PARTICLE_FLAG_GRAVITY) {
                 j = D_800D6A98[bank_id][i]->count;
 
                 D_800D6A98[bank_id][i]->data[j] = (void *)((u8 *)texture_desc + (s32)D_800D6A98[bank_id][i]->data[j]);
@@ -543,7 +697,7 @@ UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 tex
         new_pc->emitter = gn->xf;
 
         if (new_pc->emitter != NULL) {
-            new_pc->emitter->unk2A++;
+            new_pc->emitter->refCount++;
         }
     } else {
         new_pc->emitter = NULL;
@@ -580,7 +734,7 @@ UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 tex
     new_pc->bytecode = bytecode;
 
     if (texture_flags != 0) {
-        new_pc->flags |= 0x10;
+        new_pc->flags |= PARTICLE_FLAG_SHARED_TLUT;
     }
     if (bytecode != NULL) {
         new_pc->waitTimer = 1;
@@ -702,13 +856,13 @@ void func_8009BFD4(UnkParticle *this_pc) {
             }
             gn = this_pc->generator;
 
-            if ((gn != NULL) && (this_pc->flags & 4) && (gn->kind == 2)) {
+            if ((gn != NULL) && (this_pc->flags & PARTICLE_FLAG_VORTEX_OWNED) && (gn->kind == 2)) {
                 gn->vars.vortex.lifetime--;
             }
             if (this_pc->emitter != NULL) {
-                this_pc->emitter->unk2A--;
+                this_pc->emitter->refCount--;
 
-                if (this_pc->emitter->unk2A == 0) {
+                if (this_pc->emitter->refCount == 0) {
                     func_8009B69C(this_pc->emitter);
                 }
             }
@@ -1053,7 +1207,7 @@ void func_8009C44C(UnkParticle *pc, DObj *dobj, f32 magnitude) {
     void *temp_v0_15;
     void *temp_v0_5;
 
-    if (arg0->flags & 0x800) {
+    if (arg0->flags & PARTICLE_FLAG_PAUSED) {
         goto block_217;
     }
     temp_v0 = arg0->waitTimer;
@@ -1671,7 +1825,7 @@ block_154:
         }
         temp_v0_15 = arg0->generator;
         var_s0 = arg0->unk0;
-        if ((temp_v0_15 != NULL) && (arg0->flags & 4) && (temp_v0_15->unk9 == 2)) {
+        if ((temp_v0_15 != NULL) && (arg0->flags & PARTICLE_FLAG_VORTEX_OWNED) && (temp_v0_15->unk9 == 2)) {
             temp_v0_15->unk54 = temp_v0_15->unk54 - 1;
         }
         temp_a0_6 = arg0->emitter;
@@ -1791,7 +1945,7 @@ block_154:
         if (temp_v0_17 & 1) {
             arg0->velY = arg0->velY - arg0->gravity;
         }
-        if (arg0->flags & 2) {
+        if (arg0->flags & PARTICLE_FLAG_FRICTION) {
             temp_f0_5 = arg0->friction;
             arg0->velX = arg0->velX * temp_f0_5;
             arg0->velY = arg0->velY * temp_f0_5;
@@ -1871,7 +2025,7 @@ static f32 pc_c4e0_sin(s32 idx) {
 UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
     f32 tmp;
 
-    if (pc->flags & 0x800) {
+    if (pc->flags & PARTICLE_FLAG_PAUSED) {
         return pc->next;
     }
 
@@ -1889,44 +2043,44 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                 op = *csr++;
                 wait = 0;
 
-                if (op < 0x80) {
+                if (op < PARTICLE_OP_SET_POS) {
                     /* wait opcode: low 5 bits = frame count, 0x20 = extended
                      * 13-bit count, 0x40 = inline texture-frame byte. */
-                    wait = op & 0x1F;
-                    if (op & 0x20) {
+                    wait = op & PARTICLE_WAIT_COUNT_MASK;
+                    if (op & PARTICLE_WAIT_EXTENDED) {
                         wait = (u16) ((wait << 8) + *csr++);
                     }
-                    if ((op & 0xC0) == 0x40) {
+                    if ((op & 0xC0) == PARTICLE_WAIT_SET_FRAME) {
                         pc->textureFrame = *csr++;
                     }
                 } else {
                     sel = op & 0xF8;
                     if (sel >= 0x99) {
                         u32 hi = op & 0xF0;
-                        sel = ((hi == 0xC0) || (hi == 0xD0)) ? hi : op;
+                        sel = ((hi == PARTICLE_OP_PRIM_FADE) || (hi == PARTICLE_OP_ENV_FADE)) ? hi : op;
                     }
                     switch (sel) {
-                    case 0x80: /* set position components */
+                    case PARTICLE_OP_SET_POS: /* set position components */
                         if (op & 1) { csr = pc_c4e0_f32(csr, &pc->posX); }
                         if (op & 2) { csr = pc_c4e0_f32(csr, &pc->posY); }
                         if (op & 4) { csr = pc_c4e0_f32(csr, &pc->posZ); }
                         break;
-                    case 0x88: /* add to position */
+                    case PARTICLE_OP_ADD_POS: /* add to position */
                         if (op & 1) { csr = pc_c4e0_f32(csr, &tmp); pc->posX += tmp; }
                         if (op & 2) { csr = pc_c4e0_f32(csr, &tmp); pc->posY += tmp; }
                         if (op & 4) { csr = pc_c4e0_f32(csr, &tmp); pc->posZ += tmp; }
                         break;
-                    case 0x90: /* set velocity components */
+                    case PARTICLE_OP_SET_VEL: /* set velocity components */
                         if (op & 1) { csr = pc_c4e0_f32(csr, &pc->velX); }
                         if (op & 2) { csr = pc_c4e0_f32(csr, &pc->velY); }
                         if (op & 4) { csr = pc_c4e0_f32(csr, &pc->velZ); }
                         break;
-                    case 0x98: /* add to velocity */
+                    case PARTICLE_OP_ADD_VEL: /* add to velocity */
                         if (op & 1) { csr = pc_c4e0_f32(csr, &tmp); pc->velX += tmp; }
                         if (op & 2) { csr = pc_c4e0_f32(csr, &tmp); pc->velY += tmp; }
                         if (op & 4) { csr = pc_c4e0_f32(csr, &tmp); pc->velZ += tmp; }
                         break;
-                    case 0xA0: /* size ramp: duration + target */
+                    case PARTICLE_OP_SIZE_RAMP: /* size ramp: duration + target */
                         csr = func_8009C18C(csr, &pc->sizeRampTimer);
                         csr = pc_c4e0_f32(csr, &pc->sizeTarget);
                         if (pc->sizeRampTimer == 1) {
@@ -1934,26 +2088,26 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                             pc->size = pc->sizeTarget;
                         }
                         break;
-                    case 0xA1: /* set flags byte */
+                    case PARTICLE_OP_SET_FLAG_BYTE: /* set flags byte */
                         pc->flags = *csr++;
                         break;
-                    case 0xA2: /* set gravity (+flag 1 iff nonzero) */
+                    case PARTICLE_OP_SET_GRAVITY: /* set gravity (+flag 1 iff nonzero) */
                         csr = pc_c4e0_f32(csr, &pc->gravity);
                         if (pc->gravity == 0.0f) {
                             pc->flags &= ~1;
                         } else {
-                            pc->flags |= 1;
+                            pc->flags |= PARTICLE_FLAG_GRAVITY;
                         }
                         break;
-                    case 0xA3: /* set friction (+flag 2 iff != 1.0) */
+                    case PARTICLE_OP_SET_FRICTION: /* set friction (+flag 2 iff != 1.0) */
                         csr = pc_c4e0_f32(csr, &pc->friction);
                         if (pc->friction == 1.0f) {
                             pc->flags &= ~2;
                         } else {
-                            pc->flags |= 2;
+                            pc->flags |= PARTICLE_FLAG_FRICTION;
                         }
                         break;
-                    case 0xA4: /* spawn child particle (inherits position) */
+                    case PARTICLE_OP_SPAWN_CHILD: /* spawn child particle (inherits position) */
                     {
                         UnkParticle *child;
                         s32 id = (csr[0] << 8) + csr[1];
@@ -1968,13 +2122,13 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                             child->generator = pc->generator;
                             child->emitter = pc->emitter;
                             if (child->emitter != NULL) {
-                                child->emitter->unk2A += 1;
+                                child->emitter->refCount += 1;
                             }
                             func_8009C4E0(child, pc, pc->trackId >> 3);
                         }
                         break;
                     }
-                    case 0xA5: /* spawn generator at our position */
+                    case PARTICLE_OP_SPAWN_GENERATOR: /* spawn generator at our position */
                     {
                         UnkGenerator *gen;
                         s32 id = (csr[0] << 8) + csr[1];
@@ -1988,12 +2142,12 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                             gen->generator_id = pc->generatorId;
                             gen->xf = pc->emitter;
                             if (gen->xf != NULL) {
-                                gen->xf->unk2A += 1;
+                                gen->xf->refCount += 1;
                             }
                         }
                         break;
                     }
-                    case 0xA6: /* randomize remaining lifetime: lo + rand*range */
+                    case PARTICLE_OP_RANDOM_LIFETIME: /* randomize remaining lifetime: lo + rand*range */
                     {
                         s32 lo = (csr[0] << 8) + csr[1];
                         s32 range = (csr[2] << 8) + csr[3];
@@ -2002,7 +2156,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         pc->lifetime = (u16) ((s32) (random_f32() * (f32) range) + lo);
                         break;
                     }
-                    case 0xA7: /* percent-chance immediate death */
+                    case PARTICLE_OP_RANDOM_KILL: /* percent-chance immediate death */
                     {
                         u8 chance = *csr++;
 
@@ -2012,7 +2166,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         }
                         break;
                     }
-                    case 0xA8: /* jitter position by +/- range per axis */
+                    case PARTICLE_OP_JITTER_POS: /* jitter position by +/- range per axis */
                         csr = pc_c4e0_f32(csr, &tmp);
                         pc->posX += (2.0f * tmp * random_f32()) - tmp;
                         csr = pc_c4e0_f32(csr, &tmp);
@@ -2020,11 +2174,11 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         csr = pc_c4e0_f32(csr, &tmp);
                         pc->posZ += (2.0f * tmp * random_f32()) - tmp;
                         break;
-                    case 0xA9: /* random cone-scatter of velocity */
+                    case PARTICLE_OP_SCATTER_VEL: /* random cone-scatter of velocity */
                         csr = pc_c4e0_f32(csr, &tmp);
                         func_8009C1C8(pc, tmp);
                         break;
-                    case 0xAA: /* spawn child, random script id in [lo, lo+range) */
+                    case PARTICLE_OP_SPAWN_CHILD_RANDOM: /* spawn child, random script id in [lo, lo+range) */
                     {
                         UnkParticle *child;
                         s32 lo = (csr[0] << 8) + csr[1];
@@ -2040,19 +2194,19 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                             child->generator = pc->generator;
                             child->emitter = pc->emitter;
                             if (child->emitter != NULL) {
-                                child->emitter->unk2A += 1;
+                                child->emitter->refCount += 1;
                             }
                             func_8009C4E0(child, pc, pc->trackId >> 3);
                         }
                         break;
                     }
-                    case 0xAB: /* scale velocity */
+                    case PARTICLE_OP_SCALE_VEL: /* scale velocity */
                         csr = pc_c4e0_f32(csr, &tmp);
                         pc->velX *= tmp;
                         pc->velY *= tmp;
                         pc->velZ *= tmp;
                         break;
-                    case 0xAC: /* size ramp with random extra target */
+                    case PARTICLE_OP_SIZE_RAMP_RANDOM: /* size ramp with random extra target */
                         csr = func_8009C18C(csr, &pc->sizeRampTimer);
                         csr = pc_c4e0_f32(csr, &pc->sizeTarget);
                         csr = pc_c4e0_f32(csr, &tmp);
@@ -2062,44 +2216,44 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                             pc->size = pc->sizeTarget;
                         }
                         break;
-                    case 0xAD:
-                        pc->flags |= 0x80;
+                    case PARTICLE_OP_ENV_ENABLE:
+                        pc->flags |= PARTICLE_FLAG_ENV_COLOR;
                         break;
-                    case 0xAE:
-                        pc->flags &= ~0x60;
+                    case PARTICLE_OP_MIRROR_NONE:
+                        pc->flags &= ~(PARTICLE_FLAG_MIRROR_S | PARTICLE_FLAG_MIRROR_T);
                         break;
-                    case 0xAF:
-                        pc->flags = (pc->flags & ~0x40) | 0x20;
+                    case PARTICLE_OP_MIRROR_S:
+                        pc->flags = (pc->flags & ~PARTICLE_FLAG_MIRROR_T) | PARTICLE_FLAG_MIRROR_S;
                         break;
-                    case 0xB0:
-                        pc->flags = (pc->flags & ~0x20) | 0x40;
+                    case PARTICLE_OP_MIRROR_T:
+                        pc->flags = (pc->flags & ~PARTICLE_FLAG_MIRROR_S) | PARTICLE_FLAG_MIRROR_T;
                         break;
-                    case 0xB1:
-                        pc->flags |= 0x60;
+                    case PARTICLE_OP_MIRROR_ST:
+                        pc->flags |= PARTICLE_FLAG_MIRROR_S | PARTICLE_FLAG_MIRROR_T;
                         break;
-                    case 0xB2:
-                        pc->flags |= 0x200;
+                    case PARTICLE_OP_BLEND_ALPHA_ON:
+                        pc->flags |= PARTICLE_FLAG_BLEND_ALPHA;
                         break;
-                    case 0xB3:
-                        pc->flags &= ~0x400;
+                    case PARTICLE_OP_XLU_OFF:
+                        pc->flags &= ~PARTICLE_FLAG_XLU;
                         break;
-                    case 0xB4:
-                        pc->flags |= 0x400;
+                    case PARTICLE_OP_XLU_ON:
+                        pc->flags |= PARTICLE_FLAG_XLU;
                         break;
-                    case 0xB5:
-                        pc->flags |= 0x100;
+                    case PARTICLE_OP_COMBINER_ALT_ON:
+                        pc->flags |= PARTICLE_FLAG_COMBINER_ALT;
                         break;
-                    case 0xB6:
-                        pc->flags &= ~0x100;
+                    case PARTICLE_OP_COMBINER_ALT_OFF:
+                        pc->flags &= ~PARTICLE_FLAG_COMBINER_ALT;
                         break;
-                    case 0xB7: /* home velocity onto tracked DObj */
+                    case PARTICLE_OP_HOME_TO_DOBJ: /* home velocity onto tracked DObj */
                     {
                         s32 idx = *csr++ + pc->dobjSlotBase;
 
                         func_8009C350(pc, (DObj *) PC_BANKPTR(D_800D6A14[idx]));
                         break;
                     }
-                    case 0xB8: /* accelerate toward tracked DObj */
+                    case PARTICLE_OP_ATTRACT_TO_DOBJ: /* accelerate toward tracked DObj */
                     {
                         s32 idx = csr[0] + pc->dobjSlotBase;
 
@@ -2107,7 +2261,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         func_8009C44C(pc, (DObj *) PC_BANKPTR(D_800D6A14[idx]), tmp);
                         break;
                     }
-                    case 0xB9: /* spawn child (inherits position AND velocity) */
+                    case PARTICLE_OP_SPAWN_CHILD_WITH_VEL: /* spawn child (inherits position AND velocity) */
                     {
                         UnkParticle *child;
                         s32 id = (csr[0] << 8) + csr[1];
@@ -2125,13 +2279,13 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                             child->generator = pc->generator;
                             child->emitter = pc->emitter;
                             if (child->emitter != NULL) {
-                                child->emitter->unk2A += 1;
+                                child->emitter->refCount += 1;
                             }
                             func_8009C4E0(child, pc, pc->trackId >> 3);
                         }
                         break;
                     }
-                    case 0xBA: /* random-walk target colour (signed deltas) */
+                    case PARTICLE_OP_PRIM_RANDOM_WALK: /* random-walk target colour (signed deltas) */
                     {
                         s32 i;
 
@@ -2148,7 +2302,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         }
                         break;
                     }
-                    case 0xBB: /* random-walk target env colour (signed deltas) */
+                    case PARTICLE_OP_ENV_RANDOM_WALK: /* random-walk target env colour (signed deltas) */
                     {
                         s32 i;
 
@@ -2167,14 +2321,14 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         }
                         break;
                     }
-                    case 0xBC: /* texture frame = byte0, + rand*byte1 */
+                    case PARTICLE_OP_SET_TEXTURE_FRAME: /* texture frame = byte0, + rand*byte1 */
                         pc->textureFrame = csr[0];
                         tmp = (f32) csr[1];
                         tmp = tmp * random_f32();
                         pc->textureFrame = (u8) (s32) ((f32) pc->textureFrame + tmp);
                         csr += 2;
                         break;
-                    case 0xBD: /* renormalize speed to base + rand*range */
+                    case PARTICLE_OP_SET_SPEED: /* renormalize speed to base + rand*range */
                     {
                         f32 range;
                         f32 mag;
@@ -2191,7 +2345,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         }
                         break;
                     }
-                    case 0xBE: /* per-axis velocity scale */
+                    case PARTICLE_OP_SCALE_VEL_AXIS: /* per-axis velocity scale */
                         csr = pc_c4e0_f32(csr, &tmp);
                         pc->velX *= tmp;
                         csr = pc_c4e0_f32(csr, &tmp);
@@ -2199,10 +2353,12 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         csr = pc_c4e0_f32(csr, &tmp);
                         pc->velZ *= tmp;
                         break;
-                    case 0xBF: /* drive tracked-DObj slot from our position */
-                        pc->flags = (u16) (pc->flags | 0x8000 | (((*csr++ + pc->dobjSlotBase) - 1) << 0xC));
+                    case PARTICLE_OP_TRACK_DOBJ: /* drive tracked-DObj slot from our position */
+                        pc->flags = (u16) (pc->flags | PARTICLE_FLAG_DRIVE_DOBJ |
+                                       (((*csr++ + pc->dobjSlotBase) - 1)
+                                        << PARTICLE_FLAG_DOBJ_SLOT_SHIFT));
                         break;
-                    case 0xC0: /* colour fade: duration + per-channel targets */
+                    case PARTICLE_OP_PRIM_FADE: /* colour fade: duration + per-channel targets */
                     {
                         u8 *cur = &pc->primColor[0];
                         u8 *tgt = &pc->primTarget[0];
@@ -2225,7 +2381,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         }
                         break;
                     }
-                    case 0xD0: /* env colour fade: duration + per-channel targets */
+                    case PARTICLE_OP_ENV_FADE: /* env colour fade: duration + per-channel targets */
                     {
                         u8 *cur = &pc->envColor[0];
                         u8 *tgt = (u8 *) &pc->envTarget;
@@ -2248,7 +2404,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         }
                         break;
                     }
-                    case 0xE0: /* random-walk BOTH colour targets together */
+                    case PARTICLE_OP_COLOR_RANDOM_WALK: /* random-walk BOTH colour targets together */
                     {
                         s32 i;
 
@@ -2274,30 +2430,30 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         }
                         break;
                     }
-                    case 0xE2:
-                        pc->flags |= 8;
+                    case PARTICLE_OP_SECOND_PASS:
+                        pc->flags |= PARTICLE_FLAG_SECOND_PASS;
                         break;
-                    case 0xE3:
+                    case PARTICLE_OP_SET_PALETTE:
                         pc->paletteIndex = *csr++;
                         break;
-                    case 0xFA: /* loop start, count byte */
+                    case PARTICLE_OP_LOOP_BEGIN: /* loop start, count byte */
                         pc->loopCount = *csr++;
                         pc->loopStart = (u16) (csr - base);
                         break;
-                    case 0xFB: /* loop back while --count != 0 */
+                    case PARTICLE_OP_LOOP_END: /* loop back while --count != 0 */
                         pc->loopCount -= 1;
                         if (pc->loopCount != 0) {
                             csr = base + pc->loopStart;
                         }
                         break;
-                    case 0xFC: /* set return point */
+                    case PARTICLE_OP_SET_RETURN: /* set return point */
                         pc->returnPoint = (u16) (csr - base);
                         break;
-                    case 0xFD: /* jump to return point */
+                    case PARTICLE_OP_RETURN: /* jump to return point */
                         csr = base + pc->returnPoint;
                         break;
-                    case 0xFE:
-                    case 0xFF: /* end: die this frame */
+                    case PARTICLE_OP_END_ALT:
+                    case PARTICLE_OP_END: /* end: die this frame */
                         pc->lifetime = 1;
                         goto halt;
                     default:
@@ -2354,12 +2510,12 @@ halt:
         }
         gn = pc->generator;
         ret = pc->next;
-        if ((gn != NULL) && (pc->flags & 4) && (gn->kind == 2)) {
+        if ((gn != NULL) && (pc->flags & PARTICLE_FLAG_VORTEX_OWNED) && (gn->kind == 2)) {
             gn->vars.vortex.lifetime -= 1;
         }
         if (pc->emitter != NULL) {
-            pc->emitter->unk2A -= 1;
-            if (pc->emitter->unk2A == 0) {
+            pc->emitter->refCount -= 1;
+            if (pc->emitter->refCount == 0) {
                 /* may run the emitter's callback, which can relink the
                  * list head -- re-read it, exactly like the ROM does */
                 func_8009B69C(pc->emitter);
@@ -2374,7 +2530,7 @@ halt:
         return ret;
     }
 
-    if (pc->flags & 4) {
+    if (pc->flags & PARTICLE_FLAG_VORTEX_OWNED) {
         /* vortex mode: cylindrical orbit around the owning generator.
          * unk3C/unk40 are reused as Euler angles, unk30 as the orbit phase,
          * unk34 as the radial scale, unk38 as the height along the axis. */
@@ -2396,11 +2552,11 @@ halt:
 
         pc->velZ += gn->vars.rotate.base;
 
-        r = gn->unk38;
+        r = gn->radius;
         if (r < 0.0f) {
             r = -r;
         }
-        t = gn->unk3C;
+        t = gn->spread;
         if (t < 0.0f) {
             t = -t;
         }
@@ -2424,10 +2580,10 @@ halt:
         pc->posY = (-fx * sinA * sinB) + (fz * cosA) + (h * sinA * cosB) + gn->posY;
         pc->posZ = ((-fx * cosA * sinB) - (fz * sinA)) + (h * cosA * cosB) + gn->posZ;
     } else {
-        if (pc->flags & 1) {
+        if (pc->flags & PARTICLE_FLAG_GRAVITY) {
             pc->velY -= pc->gravity;
         }
-        if (pc->flags & 2) {
+        if (pc->flags & PARTICLE_FLAG_FRICTION) {
             pc->velX *= pc->friction;
             pc->velY *= pc->friction;
             pc->velZ *= pc->friction;
@@ -2438,8 +2594,8 @@ halt:
     }
 
     /* mirror our position into the tracked DObj selected by 0xBF */
-    if (pc->flags & 0x8000) {
-        DObj *dobj = (DObj *) PC_BANKPTR(D_800D6A18[(pc->flags & 0x7000) >> 0xC]);
+    if (pc->flags & PARTICLE_FLAG_DRIVE_DOBJ) {
+        DObj *dobj = (DObj *) PC_BANKPTR(D_800D6A18[(pc->flags & PARTICLE_FLAG_DOBJ_SLOT) >> PARTICLE_FLAG_DOBJ_SLOT_SHIFT]);
 
         if (dobj != NULL) {
             dobj->pos.v.x = pc->posX;
@@ -3566,7 +3722,7 @@ typedef struct PortXfEmitter {
 } PortXfEmitter;
 typedef char port_xf_emitter_size_check[(sizeof(PortXfEmitter) == sizeof(UnkEmitter)) ? 1 : -1];
 typedef char port_xf_emitter_tail_check[
-    (__builtin_offsetof(PortXfEmitter, unkB4) == __builtin_offsetof(UnkEmitter, unkB4)) ? 1 : -1];
+    (__builtin_offsetof(PortXfEmitter, unkB4) == __builtin_offsetof(UnkEmitter, onRelease)) ? 1 : -1];
 
 /* Shape of the D_800D6AB8 entries: three u16 color multipliers (16.16-ish,
  * 0x10000 = 1.0 after the >>16). */
@@ -3732,7 +3888,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
             s32 cmS, maskS, cmT, maskT;
 
             flags = p->flags;
-            if (flags & 8) {
+            if (flags & PARTICLE_FLAG_SECOND_PASS) {
                 if (!(arg1 & 1)) {
                     continue;
                 }
@@ -3860,7 +4016,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
 
                     if (p->paletteIndex != 0xFF) {
                         pal = tex->data[cnt + p->paletteIndex];
-                    } else if (flags & 0x10) {
+                    } else if (flags & PARTICLE_FLAG_SHARED_TLUT) {
                         pal = tex->data[cnt];
                     } else {
                         pal = tex->data[cnt + p->textureFrame];
@@ -3872,14 +4028,14 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
 
                 cmS = 2; /* G_TX_CLAMP */
                 maskS = 0;
-                if (flags & 0x20) {
+                if (flags & PARTICLE_FLAG_MIRROR_S) {
                     dsdx *= 2;
                     cmS = 1; /* G_TX_MIRROR */
                     maskS = port_dim_mask(tw);
                 }
                 cmT = 2;
                 maskT = 0;
-                if (flags & 0x40) {
+                if (flags & PARTICLE_FLAG_MIRROR_T) {
                     dtdy *= 2;
                     cmT = 1;
                     maskT = port_dim_mask(th);
@@ -4009,7 +4165,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
                     }
 
                     /* Env color + combiner. */
-                    if (flags & 0x80) {
+                    if (flags & PARTICLE_FLAG_ENV_COLOR) {
                         if (cm != NULL) {
                             s32 er = (cm->r * p->envColor[0]) >> 16;
                             s32 eg = (cm->g * p->envColor[1]) >> 16;
@@ -4029,7 +4185,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
                             g++;
                         }
                         g->words.w0 = 0xFC30B261; g->words.w1 = 0x5566DB6D; g++;
-                    } else if (flags & 0x100) {
+                    } else if (flags & PARTICLE_FLAG_COMBINER_ALT) {
                         g->words.w0 = 0xFC7096E1; g->words.w1 = 0xFF2FFFFF; g++;
                     } else {
                         g->words.w0 = 0xFC119623; g->words.w1 = 0xFF2FFFFF; g++;
@@ -4040,10 +4196,10 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
                 {
                     s32 mode;
 
-                    if (flags & 0x400) {
+                    if (flags & PARTICLE_FLAG_XLU) {
                         mode = 3;
                     } else {
-                        s32 bl = (flags & 0x200) ? p->envColor[3] : 8;
+                        s32 bl = (flags & PARTICLE_FLAG_BLEND_ALPHA) ? p->envColor[3] : 8;
 
                         mode = 1;
                         if (lastBlendAlpha != bl) {
@@ -4465,7 +4621,7 @@ extern void (*D_800D6AD8)();
 void func_800A0558(f32 *, f32 *, struct DObj *);
 #endif /* PORT */
 #ifdef MIPS_TO_C
-/* FACTORY: DIFF 1014/1025. The draft is semantically complete and readable
+/* FACTORY: DIFF 1010/1022. The draft is semantically complete and readable
  * (named locals, documented struct views, no m2c artifacts), but it does not
  * line up yet: IDO builds a 0x1A0 frame against the ROM's 0x148 and takes a
  * ninth callee-saved register ($s8, which it uses to hold the constant 4
@@ -4487,11 +4643,9 @@ void func_800A0558(f32 *, f32 *, struct DObj *);
  * flag 4; the aim-at-camera bit is byte 0x8 bit 0 and reads the eye at
  * camera+0x3C; kind 5's per-axis sign flags are the halfword at +0x74; and
  * a kind-2 vortex whose particle count is still nonzero is PARKED
- * (lifetime 1, rate 0) rather than recycled. Note that UnkGenerator's
- * declared names for bytes 0x8..0xB do not match how this function uses
- * them -- 0x8 is script flag bits, 0xA the track id, 0xB the texture index
- * -- which is why the draft reads those four bytes through a named view
- * instead of renaming the shared struct. */
+ * (lifetime 1, rate 0) rather than recycled. The 0x8..0xB byte fields this uses
+ * (scriptFlags / trackId / textureIndex) are now named on UnkGenerator
+ * itself, with the evidence recorded at the struct. */
 /* Per-frame generator update: the process registered on the -7 GObj. Walks
  * the live generator list, advances each node's frame accumulator by its
  * update rate and, for every whole frame accumulated, emits one particle
@@ -4508,30 +4662,11 @@ void func_800A09AC(void *arg0) {
         /* 0x40 */ f32 eyeY;
         /* 0x44 */ f32 eyeZ;
     } GenCamera;
-    /* UnkGenerator names bytes 0x8..0xB {bank_id, kind, texture_id}, but the
-     * code treats 0x8 as the script's flag bits, 0xA as the emitter track id
-     * and 0xB as the texture index -- read them through this view rather
-     * than renaming the shared struct. */
-    typedef struct GenIds {
-        /* 0x08 */ u8 scriptFlags;
-        /* 0x09 */ u8 kind;
-        /* 0x0A */ u8 trackId;
-        /* 0x0B */ u8 textureIndex;
-    } GenIds;
-    /* Kinds 5 and 8 carry a longer parameter tail than the `vars` union
-     * describes: a 3x3 box (kind 5) or a cone/ring spec (kind 8) at +0x50,
-     * with kind 5's per-axis sign flags as a halfword at +0x74. */
-    typedef struct GenBox {
-        /* 0x50 */ f32 axis[9];
-        /* 0x74 */ u16 signFlags;
-    } GenBox;
     extern struct Ovl1ParticleNode *D_800D6AF0;
     extern void (*D_800D6AD8)(UnkGenerator *, f32 *);
     void func_800A0558(f32 *outPos, f32 *inOutVel, struct DObj *node);
     UnkGenerator *gen;
     UnkGenerator *next;
-    GenIds *ids;
-    GenBox *box;
     GenCamera *camera;
     f32 world[3];
     f32 aim[3];
@@ -4573,16 +4708,14 @@ void func_800A09AC(void *arg0) {
         return;
     }
     do {
-        ids = (GenIds *) &gen->bank_id;
-        box = (GenBox *) &gen->vars;
         /* The process GObj carries the per-bank pause bits in its flag
          * word, bits 16..31 (the shared declaration types arg0 void *). */
-        if (((GObj *) arg0)->flags & (1 << ((ids->trackId >> 3) + 0x10))) {
+        if (((GObj *) arg0)->flags & (1 << ((gen->trackId >> 3) + 0x10))) {
             D_800D6AF0 = (struct Ovl1ParticleNode *) gen;
             gen = gen->next;
             continue;
         }
-        if (gen->flags & 0x800) {
+        if (gen->flags & PARTICLE_FLAG_PAUSED) {
             D_800D6AF0 = (struct Ovl1ParticleNode *) gen;
             gen = gen->next;
             continue;
@@ -4604,8 +4737,8 @@ void func_800A09AC(void *arg0) {
             }
             /* A negative spread sweeps this frame's emissions evenly across
              * the arc instead of randomizing each one. */
-            if (gen->unk3C < 0.0f) {
-                switch (ids->kind) {
+            if (gen->spread < 0.0f) {
+                switch (gen->kind) {
                 case 0:
                 case 3:
                 case 4:
@@ -4626,14 +4759,14 @@ void func_800A09AC(void *arg0) {
         }
         if (gen->frame >= 1.0f) {
             do {
-                switch (ids->kind) {
+                switch (gen->kind) {
                 case 0: /* cone */
                 case 3: /* disk, sqrt-uniform, velocity scaled by radius */
                 case 4: /* disk, sqrt-uniform */
                 case 6: /* cylinder shell */
                 case 7: /* cylinder */
                     dirY = aim[1];
-                    if (ids->scriptFlags & 1) {
+                    if (gen->scriptFlags & 1) {
                         /* Aim at the camera instead of along the velocity. */
                         camera = (GenCamera *) D_800D6A10;
                         dirX = camera->eyeX - gen->posX;
@@ -4651,53 +4784,53 @@ void func_800A09AC(void *arg0) {
                     pitch = atan2f(dirX, (dirY * sinYaw) + (dirZ * cosYaw));
                     sinPitch = sinf(pitch);
                     cosPitch = cosf(pitch);
-                    if (gen->unk38 < 0.0f) {
+                    if (gen->radius < 0.0f) {
                         radiusFrac = 1.0f;
-                        radius = -gen->unk38;
+                        radius = -gen->radius;
                     } else {
                         radiusFrac = random_f32();
-                        if ((ids->kind == 3) || (ids->kind == 4)) {
+                        if ((gen->kind == 3) || (gen->kind == 4)) {
                             radiusFrac = sqrtf(radiusFrac);
                         }
-                        radius = gen->unk38 * radiusFrac;
+                        radius = gen->radius * radiusFrac;
                     }
-                    switch (ids->kind) {
+                    switch (gen->kind) {
                     case 6:
-                        if (gen->unk3C < 0.0f) {
+                        if (gen->spread < 0.0f) {
                             sweepAngle += sweepStep;
-                            spreadAngle = (1.5707964f - atan2f(gen->vars.move.z, radius)) - gen->unk3C;
+                            spreadAngle = (1.5707964f - atan2f(gen->vars.move.z, radius)) - gen->spread;
                         } else {
                             sweepAngle = (random_f32() * (gen->vars.rotate.target - gen->vars.rotate.base)) +
                                          gen->vars.rotate.base;
-                            spreadAngle = (1.5707964f - atan2f(gen->vars.move.z, radius)) + gen->unk3C;
+                            spreadAngle = (1.5707964f - atan2f(gen->vars.move.z, radius)) + gen->spread;
                         }
                         break;
                     case 7:
-                        if (gen->unk3C < 0.0f) {
+                        if (gen->spread < 0.0f) {
                             sweepAngle += sweepStep;
-                            spreadAngle = 1.5707964f - gen->unk3C;
+                            spreadAngle = 1.5707964f - gen->spread;
                         } else {
                             sweepAngle = (random_f32() * (gen->vars.rotate.target - gen->vars.rotate.base)) +
                                          gen->vars.rotate.base;
-                            spreadAngle = gen->unk3C + 1.5707964f;
+                            spreadAngle = gen->spread + 1.5707964f;
                         }
                         break;
                     default:
-                        if (gen->unk3C < 0.0f) {
-                            spreadAngle = -gen->unk3C;
+                        if (gen->spread < 0.0f) {
+                            spreadAngle = -gen->spread;
                             sweepAngle += sweepStep;
                         } else {
                             sweepAngle = (random_f32() * (gen->vars.rotate.target - gen->vars.rotate.base)) +
                                          gen->vars.rotate.base;
-                            spreadAngle = radiusFrac * gen->unk3C;
+                            spreadAngle = radiusFrac * gen->spread;
                         }
                         break;
                     }
                     ringCos = cosf(sweepAngle) * radius;
                     ringSin = sinf(sweepAngle) * radius;
-                    if ((ids->kind == 6) || (ids->kind == 7)) {
+                    if ((gen->kind == 6) || (gen->kind == 7)) {
                         t = random_f32();
-                        if (ids->kind == 6) {
+                        if (gen->kind == 6) {
                             ringCos *= 1.0f - t;
                             ringSin *= 1.0f - t;
                         }
@@ -4715,12 +4848,12 @@ void func_800A09AC(void *arg0) {
                            (axialSpeed * sinYaw * cosPitch);
                     velZ = ((-velTangX * cosYaw * sinPitch) - (velTangZ * sinYaw)) +
                            (axialSpeed * cosYaw * cosPitch);
-                    if (ids->kind == 3) {
+                    if (gen->kind == 3) {
                         velX *= radiusFrac;
                         velY *= radiusFrac;
                         velZ *= radiusFrac;
                     }
-                    func_8009BD3C(ids->trackId, gen->flags, ids->textureIndex, gen->bytecode,
+                    func_8009BD3C(gen->trackId, gen->flags, gen->textureIndex, gen->bytecode,
                                   gen->particle_lifetime,
                                   (ringCos * cosPitch) + (axial * sinPitch) + gen->posX,
                                   (-ringCos * sinYaw * sinPitch) + (ringSin * cosYaw) +
@@ -4735,7 +4868,7 @@ void func_800A09AC(void *arg0) {
                     posX = gen->posX;
                     posY = gen->posY;
                     posZ = gen->posZ;
-                    func_8009BD3C(ids->trackId, gen->flags, ids->textureIndex, gen->bytecode,
+                    func_8009BD3C(gen->trackId, gen->flags, gen->textureIndex, gen->bytecode,
                                   gen->particle_lifetime,
                                   posX + (lerp * (gen->vars.move.x - posX)),
                                   posY + (lerp * (gen->vars.move.y - posY)),
@@ -4747,18 +4880,18 @@ void func_800A09AC(void *arg0) {
                     sinYaw = sinf(yaw);
                     pitch = atan2f(aim[0], (aim[1] * sinYaw) + (aim[2] * cosf(yaw)));
                     speed = sqrtf((aim[0] * aim[0]) + (aim[1] * aim[1]) + (aim[2] * aim[2]));
-                    if (gen->unk38 < 0.0f) {
+                    if (gen->radius < 0.0f) {
                         radiusFrac = 1.0f;
                     } else {
                         radiusFrac = random_f32();
                     }
-                    if (gen->unk3C < 0.0f) {
+                    if (gen->spread < 0.0f) {
                         sweepAngle += sweepStep;
                     } else {
                         sweepAngle = random_f32() * 6.2831855f;
                     }
                     gen->vars.vortex.f = speed;
-                    if (func_8009BD3C(ids->trackId, gen->flags | 4, ids->textureIndex, gen->bytecode,
+                    if (func_8009BD3C(gen->trackId, gen->flags | 4, gen->textureIndex, gen->bytecode,
                                       gen->particle_lifetime, 0.0f, 0.0f, 0.0f, sweepAngle, radiusFrac,
                                       0.0f, gen->size, yaw, pitch, 0, gen) != 0) {
                         gen->vars.vortex.lifetime++;
@@ -4768,62 +4901,62 @@ void func_800A09AC(void *arg0) {
                     posX = gen->posX;
                     posY = gen->posY;
                     posZ = gen->posZ;
-                    if (box->signFlags & 1) {
+                    if (gen->vars.box.signFlags & 1) {
                         jitter = (random_f32() > 0.5f) ? 0.5f : -0.5f;
                     } else {
                         jitter = random_f32() - 0.5f;
                     }
-                    posX += box->axis[0] * jitter;
-                    posY += box->axis[1] * jitter;
-                    posZ += box->axis[2] * jitter;
-                    if (box->signFlags & 2) {
+                    posX += gen->vars.box.axis[0] * jitter;
+                    posY += gen->vars.box.axis[1] * jitter;
+                    posZ += gen->vars.box.axis[2] * jitter;
+                    if (gen->vars.box.signFlags & 2) {
                         jitter = (random_f32() > 0.5f) ? 0.5f : -0.5f;
                     } else {
                         jitter = random_f32() - 0.5f;
                     }
-                    posX += box->axis[3] * jitter;
-                    posY += box->axis[4] * jitter;
-                    posZ += box->axis[5] * jitter;
-                    if (box->signFlags & 4) {
+                    posX += gen->vars.box.axis[3] * jitter;
+                    posY += gen->vars.box.axis[4] * jitter;
+                    posZ += gen->vars.box.axis[5] * jitter;
+                    if (gen->vars.box.signFlags & 4) {
                         jitter = (random_f32() > 0.5f) ? 0.5f : -0.5f;
                     } else {
                         jitter = random_f32() - 0.5f;
                     }
-                    func_8009BD3C(ids->trackId, gen->flags, ids->textureIndex, gen->bytecode,
+                    func_8009BD3C(gen->trackId, gen->flags, gen->textureIndex, gen->bytecode,
                                   gen->particle_lifetime,
-                                  posX + (box->axis[6] * jitter),
-                                  posY + (box->axis[7] * jitter),
-                                  posZ + (box->axis[8] * jitter),
+                                  posX + (gen->vars.box.axis[6] * jitter),
+                                  posY + (gen->vars.box.axis[7] * jitter),
+                                  posZ + (gen->vars.box.axis[8] * jitter),
                                   aim[0], aim[1], aim[2], gen->size, gen->gravity, gen->friction, 0, gen);
                     break;
                 case 8: /* sphere sector aimed by the stored yaw/pitch spec */
                     radiusFrac = sqrtf(random_f32());
                     t = random_f32() * 6.2831855f;
-                    if (box->axis[4] == 0.0f) {
+                    if (gen->vars.cone.yawSpread == 0.0f) {
                         yaw = random_f32() * 6.2831855f;
                     } else {
-                        yaw = (cosf(t) * radiusFrac * box->axis[4]) + box->axis[3];
+                        yaw = (cosf(t) * radiusFrac * gen->vars.cone.yawSpread) + gen->vars.cone.yawCenter;
                     }
-                    if (box->axis[2] == 0.0f) {
+                    if (gen->vars.cone.pitchSpread == 0.0f) {
                         pitch = (1.0f - sqrtf(random_f32())) * 1.5707964f;
                         if (random_f32() < 0.5f) {
                             pitch = -pitch;
                         }
                     } else {
-                        pitch = (sinf(t) * radiusFrac * box->axis[2]) + box->axis[1];
+                        pitch = (sinf(t) * radiusFrac * gen->vars.cone.pitchSpread) + gen->vars.cone.pitchCenter;
                     }
-                    if (gen->unk38 < 0.0f) {
-                        radius = -gen->unk38;
-                        speed = box->axis[0] / radius;
+                    if (gen->radius < 0.0f) {
+                        radius = -gen->radius;
+                        speed = gen->vars.cone.speed / radius;
                     } else {
-                        speed = box->axis[0] / gen->unk38;
-                        radius = gen->unk38 * random_f32();
+                        speed = gen->vars.cone.speed / gen->radius;
+                        radius = gen->radius * random_f32();
                     }
                     sweepAngle = t;
                     posX = cosf(pitch) * (radius * cosf(yaw));
                     posY = sinf(pitch) * radius;
                     posZ = cosf(pitch) * (radius * sinf(yaw));
-                    func_8009BD3C(ids->trackId, gen->flags, ids->textureIndex, gen->bytecode,
+                    func_8009BD3C(gen->trackId, gen->flags, gen->textureIndex, gen->bytecode,
                                   gen->particle_lifetime, gen->posX + posX, gen->posY + posY,
                                   gen->posZ + posZ, posX * speed, posY * speed, posZ * speed,
                                   gen->size, gen->gravity, gen->friction, 0, gen);
@@ -4838,7 +4971,7 @@ void func_800A09AC(void *arg0) {
             } while (gen->frame >= 1.0f);
         }
         if ((gen->generator_lifetime != 0) && (gen->generator_lifetime-- , gen->generator_lifetime == 0)) {
-            if ((ids->kind == 2) && (gen->vars.vortex.lifetime != 0)) {
+            if ((gen->kind == 2) && (gen->vars.vortex.lifetime != 0)) {
                 /* Still owns particles: park it instead of freeing. */
                 gen->generator_lifetime = 1;
                 gen->update_rate = 0.0f;
@@ -4853,8 +4986,8 @@ void func_800A09AC(void *arg0) {
             }
             next = gen->next;
             if (gen->xf != NULL) {
-                gen->xf->unk2A--;
-                if (gen->xf->unk2A == 0) {
+                gen->xf->refCount--;
+                if (gen->xf->refCount == 0) {
                     func_8009B69C(gen->xf);
                 }
             }
@@ -4945,7 +5078,7 @@ void func_800A09AC(void *arg0) {
                 gn->unk18 = out[1];
                 gn->unk1C = out[2];
             }
-            if (gn->unk3C < 0.0f) {
+            if (gn->spread < 0.0f) {
                 /* Negative spread: sweep this frame's emissions across the
                  * arc instead of randomizing each one. */
                 switch (gn->unk9) {
@@ -4997,42 +5130,42 @@ void func_800A09AC(void *arg0) {
                     pitch = atan2f(dx, dy * sinY + dz * cosY);
                     sinP = sinf(pitch);
                     cosP = cosf(pitch);
-                    if (gn->unk38 < 0.0f) {
+                    if (gn->radius < 0.0f) {
                         amp = 1.0f;
-                        radial = -gn->unk38;
+                        radial = -gn->radius;
                     } else {
                         amp = random_f32();
                         if ((gn->unk9 == 3) || (gn->unk9 == 4)) {
                             amp = sqrtf(amp);
                         }
-                        radial = gn->unk38 * amp;
+                        radial = gn->radius * amp;
                     }
                     switch (gn->unk9) {
                     case 6:
-                        if (gn->unk3C < 0.0f) {
+                        if (gn->spread < 0.0f) {
                             angle += step;
-                            spread = (1.5707964f - atan2f(gn->unk58, radial)) - gn->unk3C;
+                            spread = (1.5707964f - atan2f(gn->unk58, radial)) - gn->spread;
                         } else {
                             angle = random_f32() * (gn->unk54.f - gn->unk50) + gn->unk50;
-                            spread = (1.5707964f - atan2f(gn->unk58, radial)) + gn->unk3C;
+                            spread = (1.5707964f - atan2f(gn->unk58, radial)) + gn->spread;
                         }
                         break;
                     case 7:
-                        if (gn->unk3C < 0.0f) {
+                        if (gn->spread < 0.0f) {
                             angle += step;
-                            spread = 1.5707964f - gn->unk3C;
+                            spread = 1.5707964f - gn->spread;
                         } else {
                             angle = random_f32() * (gn->unk54.f - gn->unk50) + gn->unk50;
-                            spread = gn->unk3C + 1.5707964f;
+                            spread = gn->spread + 1.5707964f;
                         }
                         break;
                     default:
-                        if (gn->unk3C < 0.0f) {
-                            spread = -gn->unk3C;
+                        if (gn->spread < 0.0f) {
+                            spread = -gn->spread;
                             angle += step;
                         } else {
                             angle = random_f32() * (gn->unk54.f - gn->unk50) + gn->unk50;
-                            spread = amp * gn->unk3C;
+                            spread = amp * gn->spread;
                         }
                         break;
                     }
@@ -5092,12 +5225,12 @@ void func_800A09AC(void *arg0) {
                     yaw2 = atan2f(vel[1], vel[2]);
                     pitch2 = atan2f(vel[0], vel[1] * sinf(yaw2) + vel[2] * cosf(yaw2));
                     spd = sqrtf(vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2]);
-                    if (gn->unk38 < 0.0f) {
+                    if (gn->radius < 0.0f) {
                         amt = 1.0f;
                     } else {
                         amt = random_f32();
                     }
-                    if (gn->unk3C < 0.0f) {
+                    if (gn->spread < 0.0f) {
                         angle += step;
                     } else {
                         angle = random_f32() * 6.2831855f;
@@ -5170,7 +5303,7 @@ void func_800A09AC(void *arg0) {
                     } else {
                         el = sinf(theta) * sq * gn->unk58 + gn->unk54.f;
                     }
-                    mag = gn->unk38;
+                    mag = gn->radius;
                     if (mag < 0.0f) {
                         mag = -mag;
                         ratio = gn->unk50 / mag;
@@ -5217,8 +5350,8 @@ void func_800A09AC(void *arg0) {
                         ((struct PcGenNode *) D_800D6AF0)->next = next;
                     }
                     if (gn->unk4C != NULL) {
-                        gn->unk4C->unk2A--;
-                        if (gn->unk4C->unk2A == 0) {
+                        gn->unk4C->refCount--;
+                        if (gn->unk4C->refCount == 0) {
                             func_8009B69C(gn->unk4C);
                         }
                     }
@@ -5271,7 +5404,7 @@ UnkParticle *func_800A194C(void) {
 
 
 #ifdef MIPS_TO_C
-/* FACTORY: DIFF 189/336. The dispatch (9-entry jump table at kind 0..8 plus
+/* FACTORY: DIFF 194/336. The dispatch (9-entry jump table at kind 0..8 plus
  * the D_800D6ADC default), all nine arms, the texture-flag OR and the
  * emitter-ref tail are the ROM's; the residue is an FP register permutation
  * -- the ROM parks the 0.0f constant in $f0 and each loaded script field in
@@ -5290,50 +5423,11 @@ UnkParticle *func_800A194C(void) {
  * kind 8's pitch term is `unk14 * unk20` (position X times velocity X, with
  * unk14 just zeroed) rather than velX*velX -- a ROM quirk, reproduced. */
 void *func_800A19EC(s32 arg0, s32 arg1) {
-    /* Local view of the generator node (the shared struct Ovl1PNode pads
-     * over most of this and widening it is a file-scope change). */
-    struct GNode {
-        /* 0x00 */ struct GNode *next;
-        /* 0x04 */ u16 unk4;
-        /* 0x06 */ u16 unk6;
-        /* 0x08 */ u8 unk8;
-        /* 0x09 */ u8 unk9;
-        /* 0x0A */ u8 unkA;
-        /* 0x0B */ u8 unkB;
-        /* 0x0C */ u16 unkC;
-        /* 0x0E */ u16 unkE;
-        /* 0x10 */ u8 *unk10;
-        /* 0x14 */ f32 unk14;
-        /* 0x18 */ f32 unk18;
-        /* 0x1C */ f32 unk1C;
-        /* 0x20 */ f32 unk20;
-        /* 0x24 */ f32 unk24;
-        /* 0x28 */ f32 unk28;
-        /* 0x2C */ f32 unk2C;
-        /* 0x30 */ f32 unk30;
-        /* 0x34 */ f32 unk34;
-        /* 0x38 */ f32 unk38;
-        /* 0x3C */ f32 unk3C;
-        /* 0x40 */ f32 unk40;
-        /* 0x44 */ f32 unk44;
-        /* 0x48 */ s32 unk48;
-        /* 0x4C */ UnkEmitter *unk4C;
-        /* 0x50 */ f32 unk50;
-        /* 0x54 */ f32 unk54;
-        /* 0x58 */ f32 unk58;
-        /* 0x5C */ f32 unk5C;
-        /* 0x60 */ f32 unk60;
-        /* 0x64 */ f32 unk64;
-        /* 0x68 */ f32 unk68;
-        /* 0x6C */ f32 unk6C;
-        /* 0x70 */ f32 unk70;
-        /* 0x74 */ u16 unk74;
-    };
     UnkParticle *func_800A194C(void);
     UnkEmitter *func_8009B5E8(u8, u16);
     extern void (*D_800D6ADC)();
     f32 atan2f(f32, f32);
-    struct GNode *node;
+    UnkGenerator *node;
     s32 idx;
     f32 a;
     f32 b;
@@ -5346,97 +5440,100 @@ void *func_800A19EC(s32 arg0, s32 arg1) {
     if (arg1 >= D_800D6A38[idx]) {
         return NULL;
     }
-    node = (struct GNode *) func_800A194C();
+    node = (UnkGenerator *) func_800A194C();
     if (node != NULL) {
-        node->unk9 = D_800D6A78[idx][arg1]->kind;
-        node->unkA = arg0;
-        node->unk6 = D_800D6A78[idx][arg1]->flags;
-        node->unk8 = D_800D6A78[idx][arg1]->unk8;
-        node->unkB = D_800D6A78[idx][arg1]->texture_id;
-        node->unkC = D_800D6A78[idx][arg1]->particle_lifetime;
-        node->unkE = D_800D6A78[idx][arg1]->generator_lifetime;
-        node->unk14 = 0.0f;
-        node->unk18 = 0.0f;
-        node->unk1C = 0.0f;
-        node->unk20 = D_800D6A78[idx][arg1]->velX;
-        node->unk24 = D_800D6A78[idx][arg1]->velY;
-        node->unk28 = D_800D6A78[idx][arg1]->velZ;
-        node->unk2C = D_800D6A78[idx][arg1]->gravity;
-        node->unk30 = D_800D6A78[idx][arg1]->friction;
-        node->unk34 = D_800D6A78[idx][arg1]->size;
-        node->unk10 = D_800D6A78[idx][arg1]->bytecode;
-        node->unk38 = D_800D6A78[idx][arg1]->unk20;
-        node->unk3C = D_800D6A78[idx][arg1]->unk24;
-        node->unk40 = D_800D6A78[idx][arg1]->unk28;
-        node->unk44 = 0.0f;
+        node->kind = D_800D6A78[idx][arg1]->kind;
+        node->trackId = arg0;
+        node->flags = D_800D6A78[idx][arg1]->flags;
+        node->scriptFlags = D_800D6A78[idx][arg1]->spawnFlags;
+        node->textureIndex = D_800D6A78[idx][arg1]->texture_id;
+        node->particle_lifetime = D_800D6A78[idx][arg1]->particle_lifetime;
+        node->generator_lifetime = D_800D6A78[idx][arg1]->generator_lifetime;
+        node->posX = 0.0f;
+        node->posY = 0.0f;
+        node->posZ = 0.0f;
+        node->velX = D_800D6A78[idx][arg1]->velX;
+        node->velY = D_800D6A78[idx][arg1]->velY;
+        node->velZ = D_800D6A78[idx][arg1]->velZ;
+        node->gravity = D_800D6A78[idx][arg1]->gravity;
+        node->friction = D_800D6A78[idx][arg1]->friction;
+        node->size = D_800D6A78[idx][arg1]->size;
+        node->bytecode = D_800D6A78[idx][arg1]->bytecode;
+        node->radius = D_800D6A78[idx][arg1]->radius;
+        node->spread = D_800D6A78[idx][arg1]->spread;
+        node->update_rate = D_800D6A78[idx][arg1]->updateRate;
+        node->frame = 0.0f;
         if (D_800D6A98[idx][D_800D6A78[idx][arg1]->texture_id]->flags != 0) {
-            node->unk6 = node->unk6 | 0x10;
+            node->flags = node->flags | 0x10;
         }
-        node->unk48 = 0;
-        switch (node->unk9) {
+        node->dobj = 0;
+        switch (node->kind) {
         case 0:
         case 3:
         case 4:
-            a = D_800D6A78[idx][arg1]->unk30;
-            if ((a == 0.0f) && (D_800D6A78[idx][arg1]->unk34 == 0.0f)) {
-                node->unk50 = 0.0f;
-                node->unk54 = 6.2831855f;
+            a = D_800D6A78[idx][arg1]->param0;
+            if ((a == 0.0f) && (D_800D6A78[idx][arg1]->param1 == 0.0f)) {
+                node->vars.rotate.base = 0.0f;
+                node->vars.rotate.target = 6.2831855f;
             } else {
-                node->unk50 = a;
-                node->unk54 = D_800D6A78[idx][arg1]->unk34;
+                node->vars.rotate.base = a;
+                node->vars.rotate.target = D_800D6A78[idx][arg1]->param1;
             }
             break;
         case 1:
-            node->unk50 = D_800D6A78[idx][arg1]->unk30;
-            node->unk54 = D_800D6A78[idx][arg1]->unk34;
-            node->unk58 = D_800D6A78[idx][arg1]->unk38;
+            node->vars.rotate.base = D_800D6A78[idx][arg1]->param0;
+            node->vars.rotate.target = D_800D6A78[idx][arg1]->param1;
+            node->vars.move.z = D_800D6A78[idx][arg1]->param2;
             break;
         case 2:
-            node->unk74 = 0;
-            *(u16 *) &node->unk54 = 0;
+            node->vars.vortex.lifetime = 0;
             break;
         case 6:
         case 7:
-            a = D_800D6A78[idx][arg1]->unk30;
-            if ((a == 0.0f) && (D_800D6A78[idx][arg1]->unk34 == 0.0f)) {
-                node->unk50 = 0.0f;
-                node->unk54 = 6.2831855f;
+            a = D_800D6A78[idx][arg1]->param0;
+            if ((a == 0.0f) && (D_800D6A78[idx][arg1]->param1 == 0.0f)) {
+                node->vars.rotate.base = 0.0f;
+                node->vars.rotate.target = 6.2831855f;
             } else {
-                node->unk50 = a;
-                node->unk54 = D_800D6A78[idx][arg1]->unk34;
+                node->vars.rotate.base = a;
+                node->vars.rotate.target = D_800D6A78[idx][arg1]->param1;
             }
-            node->unk58 = D_800D6A78[idx][arg1]->unk38;
+            node->vars.move.z = D_800D6A78[idx][arg1]->param2;
             break;
         case 5:
-            node->unk50 = D_800D6A78[idx][arg1]->unk30;
-            node->unk60 = D_800D6A78[idx][arg1]->unk34;
-            node->unk54 = 0.0f;
-            node->unk58 = 0.0f;
-            node->unk5C = 0.0f;
-            node->unk64 = 0.0f;
-            node->unk68 = 0.0f;
-            node->unk6C = 0.0f;
-            node->unk74 = 0;
-            node->unk70 = D_800D6A78[idx][arg1]->unk38;
-            if (D_800D6A78[idx][arg1]->unk30 < 0.0f) {
-                node->unk74 = 1;
+            /* An axis-aligned box: the three script params become the three
+             * orthogonal axis vectors, and a negative param means that axis
+             * emits on its faces only. */
+            node->vars.box.axis[0] = D_800D6A78[idx][arg1]->param0;
+            node->vars.box.axis[4] = D_800D6A78[idx][arg1]->param1;
+            node->vars.box.axis[1] = 0.0f;
+            node->vars.box.axis[2] = 0.0f;
+            node->vars.box.axis[3] = 0.0f;
+            node->vars.box.axis[5] = 0.0f;
+            node->vars.box.axis[6] = 0.0f;
+            node->vars.box.axis[7] = 0.0f;
+            node->vars.box.signFlags = 0;
+            node->vars.box.axis[8] = D_800D6A78[idx][arg1]->param2;
+            if (D_800D6A78[idx][arg1]->param0 < 0.0f) {
+                node->vars.box.signFlags = 1;
             }
-            if (D_800D6A78[idx][arg1]->unk34 < 0.0f) {
-                node->unk74 = node->unk74 | 2;
+            if (D_800D6A78[idx][arg1]->param1 < 0.0f) {
+                node->vars.box.signFlags |= 2;
             }
-            if (D_800D6A78[idx][arg1]->unk38 < 0.0f) {
-                node->unk74 = node->unk74 | 4;
+            if (D_800D6A78[idx][arg1]->param2 < 0.0f) {
+                node->vars.box.signFlags |= 4;
             }
             break;
         case 8:
-            a = node->unk20;
-            b = node->unk24;
-            c = node->unk28;
-            node->unk50 = sqrtf((a * a) + (b * b) + (c * c));
-            node->unk54 = atan2f(node->unk24, sqrtf((node->unk14 * node->unk20) + (node->unk28 * node->unk28)));
-            node->unk5C = atan2f(node->unk28, node->unk20);
-            node->unk58 = D_800D6A78[idx][arg1]->unk30;
-            node->unk60 = D_800D6A78[idx][arg1]->unk34;
+            a = node->velX;
+            b = node->velY;
+            c = node->velZ;
+            node->vars.cone.speed = sqrtf((a * a) + (b * b) + (c * c));
+            node->vars.cone.pitchCenter =
+                atan2f(node->velY, sqrtf((node->posX * node->velX) + (node->velZ * node->velZ)));
+            node->vars.cone.yawCenter = atan2f(node->velZ, node->velX);
+            node->vars.cone.pitchSpread = D_800D6A78[idx][arg1]->param0;
+            node->vars.cone.yawSpread = D_800D6A78[idx][arg1]->param1;
             break;
         default:
             if (D_800D6ADC != NULL) {
@@ -5444,10 +5541,10 @@ void *func_800A19EC(s32 arg0, s32 arg1) {
             }
             break;
         }
-        if (node->unk8 & 2) {
-            node->unk4C = func_8009B5E8(0, node->unk4);
-            if (node->unk4C != NULL) {
-                node->unk4C->unkBA = 1;
+        if (node->scriptFlags & 2) {
+            node->xf = func_8009B5E8(0, node->generator_id);
+            if (node->xf != NULL) {
+                node->xf->billboard = 1;
             }
         }
     }
@@ -5524,8 +5621,8 @@ void *func_800A19EC(s32 arg0, s32 arg1) {
         gn->unk30 = pc19ec_sf32(script, 0x10);       /* friction */
         gn->unk34 = pc19ec_sf32(script, 0x2C);       /* size */
         gn->unk10 = (u32) (uintptr_t) ((const u8 *) script + 0x3C); /* bytecode */
-        gn->unk38 = pc19ec_sf32(script, 0x20);
-        gn->unk3C = pc19ec_sf32(script, 0x24);
+        gn->radius = pc19ec_sf32(script, 0x20);
+        gn->spread = pc19ec_sf32(script, 0x24);
         gn->unk44 = 0.0f;
         gn->unk40 = pc19ec_sf32(script, 0x28);
         if (D_800D6A98[bank][pc19ec_su16(script, 0x02)]->flags != 0) {
@@ -5608,7 +5705,7 @@ void *func_800A19EC(s32 arg0, s32 arg1) {
 
             gn->unk4C = xf;
             if (xf != NULL) {
-                xf->unkBA = 1;
+                xf->billboard = 1;
             }
         }
     }
@@ -5661,8 +5758,8 @@ void func_800A1F30(struct Ovl1PNode *arg0) {
                     prev->next = p->next;
                 }
                 if (arg0->unk4C != NULL) {
-                    arg0->unk4C->unk2A--;
-                    if (arg0->unk4C->unk2A == 0) {
+                    arg0->unk4C->refCount--;
+                    if (arg0->unk4C->refCount == 0) {
                         func_8009B69C(arg0->unk4C);
                     }
                 }
@@ -5751,12 +5848,12 @@ s32 arg1;
                     prev_pc->next = next_pc;
                 }
                 gn = pc->generator;
-                if ((gn != NULL) && (pc->flags & 4) && (gn->kind == 2)) {
+                if ((gn != NULL) && (pc->flags & PARTICLE_FLAG_VORTEX_OWNED) && (gn->kind == 2)) {
                     gn->vars.vortex.lifetime--;
                 }
                 if (pc->emitter != NULL) {
-                    pc->emitter->unk2A--;
-                    if (pc->emitter->unk2A == 0) {
+                    pc->emitter->refCount--;
+                    if (pc->emitter->refCount == 0) {
                         func_8009B69C(pc->emitter);
                     }
                 }
@@ -5786,8 +5883,8 @@ s32 arg1;
                         prev->next = next;
                     }
                     if (node->unk4C != NULL) {
-                        node->unk4C->unk2A--;
-                        if (node->unk4C->unk2A == 0) {
+                        node->unk4C->refCount--;
+                        if (node->unk4C->refCount == 0) {
                             func_8009B69C(node->unk4C);
                         }
                     }
@@ -5838,12 +5935,12 @@ s32 arg1;
             } else {
                 prev_pc->next = next_pc;
             }
-            if ((pc->generator != NULL) && (pc->flags & 4) && (pc->generator->kind == 2)) {
+            if ((pc->generator != NULL) && (pc->flags & PARTICLE_FLAG_VORTEX_OWNED) && (pc->generator->kind == 2)) {
                 pc->generator->vars.vortex.lifetime--;
             }
             if (pc->emitter != NULL) {
-                pc->emitter->unk2A--;
-                if (pc->emitter->unk2A == 0) {
+                pc->emitter->refCount--;
+                if (pc->emitter->refCount == 0) {
                     func_8009B69C(pc->emitter);
                 }
             }
@@ -5872,8 +5969,8 @@ s32 arg1;
                     prev_gn->next = next_gn;
                 }
                 if (gnode->unk4C != NULL) {
-                    gnode->unk4C->unk2A--;
-                    if (gnode->unk4C->unk2A == 0) {
+                    gnode->unk4C->refCount--;
+                    if (gnode->unk4C->refCount == 0) {
                         func_8009B69C(gnode->unk4C);
                     }
                 }
@@ -5986,7 +6083,7 @@ s32 arg1;
     if (p != NULL) {
         do {
             if (p->generatorId == arg0) {
-                p->flags |= 0x800;
+                p->flags |= PARTICLE_FLAG_PAUSED;
             }
             p = p->next;
         } while (p != NULL);
@@ -5995,7 +6092,7 @@ s32 arg1;
     if (p != NULL) {
         do {
             if (p->generatorId == arg0) {
-                p->flags |= 0x800;
+                p->flags |= PARTICLE_FLAG_PAUSED;
             }
             p = p->next;
         } while (p != NULL);
