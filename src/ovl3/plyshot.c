@@ -2430,7 +2430,7 @@ s32 func_80162000_ovl3(char *arg0, s32 arg1, f32 arg2) {
     return (s32) hdr;
 }
 
-#ifdef PORT
+#if 1 /* TESTING */
 /* PORT: the shot water-surface tracker, from asm/nonmatchings/ovl3/plyshot/
  * func_80162150_ovl3.s. On N64 this memcpy's the whole 0x58-byte collision
  * result block D_8012BCA0 into the shot's cell of D_80197BF0_ovl3 each call
@@ -2528,7 +2528,7 @@ void func_80162150_ovl3(void) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80162150_ovl3.s")
+/* TESTING pragma parked */
 #endif
 
 void func_801625B8_ovl3(f32 *arg0) {
@@ -3803,7 +3803,115 @@ void func_80166588_ovl3(s32 arg0) {
     curObjSleepForever();
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 4/275, whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+/* PORT: service routine for func_80166588_ovl3's charge-shot above, from
+ * asm/nonmatchings/ovl3/plyshot/func_80166768_ovl3.s. Idles until the
+ * charge state gKirbyState.unk44 reaches -1 (release); then scans enemy
+ * tracks 14..59 for live kinds 0x17/0x18/0x1A that pass the ovl7 filter
+ * func_8019F234_ovl7, insertion-sorts the three nearest by |horizontal
+ * distance to Kirby| (func_800F9828(0, i); the 9999 sentinel means no
+ * distance), back-fills missing slots with the nearest, and spawns
+ * D_800E98E0[id]+1 (the reached charge stage) type-7 shots, giving each its
+ * slot index, the parent, its target track in D_800E1ED0[t-112] and its
+ * spread angle from D_801968F8 (mirrored against pi when facing left). */
+void func_80166768_ovl3(s32 arg0) {
+    extern s32 func_8019F234_ovl7(s32);
+    extern f32 func_800F9828(s32, s32);
+    extern f32 D_80197198_ovl3;
+    extern f32 D_8019719C_ovl3;
+    extern f32 D_801968F8_ovl3[];
+    s32 id = omCurrentObj->objId;
+    s32 targets[3];
+    s32 i;
+    s32 k;
+
+    if (gKirbyState.abilityInUse == 0) {
+        func_800B1900((u16) id);
+        return;
+    }
+    if (gKirbyState.unk44 != -1) {
+        return;
+    }
+    targets[0] = 0;
+    targets[1] = 0;
+    targets[2] = 0;
+    for (i = 0xE; i != 0x3C; i++) {
+        s32 kindv = D_800DD710[i];
+        f32 b;
+
+        if (kindv == -1) {
+            continue;
+        }
+        if ((kindv != 0x17) && (kindv != 0x1A) && (kindv != 0x18)) {
+            continue;
+        }
+        if (func_8019F234_ovl7(i) != 0) {
+            continue;
+        }
+        if (func_800F9828(0, i) == D_80197198_ovl3) {
+            continue;
+        }
+        if (targets[0] == 0) {
+            targets[0] = i;
+            continue;
+        }
+        b = func_800F9828(0, i);
+        b = (b < 0.0f) ? -b : b;
+        {
+            f32 a = func_800F9828(0, targets[0]);
+
+            a = (a < 0.0f) ? -a : a;
+            if (b < a) {
+                targets[2] = targets[1];
+                targets[1] = targets[0];
+                targets[0] = i;
+            } else if (targets[1] == 0) {
+                targets[1] = i;
+            } else {
+                a = func_800F9828(0, targets[1]);
+                a = (a < 0.0f) ? -a : a;
+                if (b < a) {
+                    targets[2] = targets[1];
+                    targets[1] = i;
+                } else if (targets[2] == 0) {
+                    targets[2] = i;
+                } else {
+                    a = func_800F9828(0, targets[2]);
+                    a = (a < 0.0f) ? -a : a;
+                    if (b < a) {
+                        targets[2] = i;
+                    }
+                }
+            }
+        }
+    }
+    if (((targets[0] == 0) || (targets[1] == 0) || (targets[2] == 0)) && (targets[0] != 0)) {
+        if (targets[1] == 0) {
+            targets[2] = targets[0];
+            targets[1] = targets[0];
+        } else if (targets[2] == 0) {
+            targets[2] = targets[0];
+        }
+    }
+    D_800E98E0[id] += 1;
+    for (k = 0; (k < D_800E98E0[id]) && (k < 3); k++) {
+        s32 t = func_801632B8_ovl3(7);
+
+        if (t != -1) {
+            D_800EC2E0[t].as_u32 = k;
+            D_800E0D50[t] = D_800E0D50[id];
+            D_800E1ED0[t - 112] = targets[k];
+            if (D_800E6A10[id] == 1.0f) {
+                D_800EC660[t] = D_801968F8_ovl3[k];
+            } else {
+                D_800EC660[t] = D_8019719C_ovl3 - D_801968F8_ovl3[k];
+            }
+        }
+    }
+    func_800B1900((u16) id);
+}
+#elif defined(PORT)
 /* PORT: service routine for func_80166588_ovl3's charge-shot above, from
  * asm/nonmatchings/ovl3/plyshot/func_80166768_ovl3.s. Idles until the
  * charge state gKirbyState.unk44 reaches -1 (release); then scans enemy

@@ -981,6 +981,63 @@ s32 func_80168B30_ovl5(s32 arg0) {
     rec[8] = 0xB;
     return 0;
 }
+#elif defined(PORT)
+/* CPU chase step: scans the other living players; when one shares this
+ * CPU's column (func_80168A04) or row (func_80168A44), rolls the pursuit
+ * chance (target gets the row/column byte 1 -- byte 11 on the shrunk field
+ * -- everyone else byte 0) and arms the turn-toward action 7..10; a player
+ * on neither axis can trigger the arrived action 4 with byte 2/12. Returns
+ * 1 when an action was armed, else parks the planner in action 11. */
+s32 func_80168B30_ovl5(s32 arg0) {
+    extern u8 D_8018E3D0_ovl5y[] __asm__("D_8018E3D0_ovl5");
+    u8 *rec = &D_8018E3D0_ovl5y[arg0 * 0x14];
+    s32 mycell = func_80165F1C_ovl5(arg0);
+    s32 lvl = D_8018E3C8_ovl5[arg0];
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        s32 cell = func_80165F1C_ovl5(i);
+        u8 roll;
+
+        if ((i == arg0) || (D_8018E3C0_ovl5[i] == 0) || (cell == 0x29A)) {
+            continue;
+        }
+        if (func_80168A04_ovl5(mycell, cell) != 0) {
+            if (i == rec[0]) {
+                roll = ovl5_4_molepers_(lvl * 0xD + ((D_8018E425_ovl5 == 2) ? 0xB : 1));
+            } else {
+                roll = ovl5_4_molepers_(lvl * 0xD);
+            }
+            if (random_soft_s32_range(0x10) < roll) {
+                rec[8] = (cell < mycell) ? 8 : 7;
+                return 1;
+            }
+            continue;
+        }
+        if (func_80168A44_ovl5(mycell, cell) != 0) {
+            if (i == rec[0]) {
+                roll = ovl5_4_molepers_(lvl * 0xD + ((D_8018E425_ovl5 == 2) ? 0xB : 1));
+            } else {
+                roll = ovl5_4_molepers_(lvl * 0xD);
+            }
+            if (random_soft_s32_range(0x10) < roll) {
+                rec[8] = (mycell < cell) ? 9 : 0xA;
+                return 1;
+            }
+            continue;
+        }
+        roll = ovl5_4_molepers_(lvl * 0xD + ((D_8018E425_ovl5 == 2) ? 0xC : 2));
+        if (random_soft_s32_range(0x10) < roll) {
+            rec[8] = 4;
+            return 1;
+        }
+    }
+    rec[8] = 0xB;
+    return 0;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168B30_ovl5.s")
+#endif
 
 typedef struct Unk2Bytes {
     s8 unk0;
@@ -2515,11 +2572,8 @@ s32 func_8016F3E8_ovl5(s32 arg0) {
     return (arg0 / 30) / 60;
 }
 
-#ifdef PORT
-/* Round-clock HUD thread: redraws min / sec / frame digit sprites from
- * D_8018E264_ovl5 every frame at the offsets in D_80187114..D_80187134,
- * relative to the clock panel descriptor D_801870B4_ovl5 (capped at
- * 9:59.99 once the count passes 0x464E). */
+// DRAFT-ITERATION: pragma text parked (asm-processor text-scans for it
+// regardless of #if nesting); restore the guard structure before handoff.
 void func_8016F40C_ovl5(GObj *arg0) {
     extern f32 D_80187114_ovl5[];
     extern f32 D_8018711C_ovl5[];
@@ -2562,9 +2616,6 @@ void func_8016F40C_ovl5(GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016F40C_ovl5.s")
-#endif
 
 void func_8016F730_ovl5(void) {
     func_800BB3F0();

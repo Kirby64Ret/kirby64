@@ -958,7 +958,7 @@ void func_801E7F0C_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
-#ifdef PORT
+#ifndef PORT /* WIP */
 extern f32 D_8021BF6C_ovl9[];
 extern f32 D_8021BF9C_ovl9[];
 extern s32 func_8019A900_ovl7(s32 *);
@@ -1027,8 +1027,75 @@ void func_801E7F34_ovl9(struct GObj *arg0) {
     D_800E3210[id] = D_8021BF9C_ovl9[D_800E98E0[id]];
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E7F34_ovl9.s")
+#elif defined(PORT)
+extern f32 D_8021BF6C_ovl9[];
+extern f32 D_8021BF9C_ovl9[];
+extern s32 func_8019A900_ovl7(s32 *);
+extern f32 func_8019B608_ovl7(s32);
+extern s32 random_soft_s32_range(s32);
+void ohSleep(s32);
+/* Takeoff state: enter anim state 0 with the perch tables, queue the
+ * launch animations (0x1021A then 0x10219), pick a fresh random hop
+ * pattern 0..11 (rerolling the previous one), fly toward Kirby's
+ * side (rolls 9..11 flip away), and if that means turning around,
+ * ease the -70deg body pitch across 4 ticks (else just wait 4
+ * ticks); then load the pattern's launch speed (D_8021BF6C * facing)
+ * and climb rate (D_8021BF9C) and enter flight state 2. */
+void func_801E7F34_ovl9(struct GObj *arg0) {
+    s32 sp68;
+    f32 dir;
+    s32 roll;
+    u32 id;
+
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8880_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBBC0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800AA018(0x1021A);
+    func_800AA018(0x10219);
+    if (func_8019A900_ovl7(&sp68) != 0) {
+        dir = sp68;
+    } else {
+        dir = func_8019B608_ovl7(0);
+    }
+    roll = random_soft_s32_range(0xC);
+    while (roll == D_800E98E0[omCurrentObj->objId]) {
+        roll = random_soft_s32_range(0xC);
+    }
+    D_800E98E0[omCurrentObj->objId] = roll;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] >= 9) {
+        dir = -dir;
+    }
+    if (dir != D_800E6A10[id]) {
+        D_800E9FE0[id].as_u32 = 1;
+    } else {
+        D_800E9FE0[id].as_u32 = 0;
+    }
+    D_800E6A10[omCurrentObj->objId] = dir;
+    id = omCurrentObj->objId;
+    if (D_800E9FE0[id].as_u32 != 0) {
+        f32 step;
+
+        for (step = 3.0f; step >= 0.0f; step -= 1.0f) {
+            id = omCurrentObj->objId;
+            D_800E4C50[id] = (D_800E6A10[id] * -0.17453294f * step) + (-1.2217305f * D_800E6A10[id]);
+            ohSleep(1);
+        }
+        id = omCurrentObj->objId;
+    } else {
+        ohSleep(4);
+        id = omCurrentObj->objId;
+    }
+    D_800E64D0[id] = D_8021BF6C_ovl9[D_800E98E0[id]] * D_800E6A10[id];
+    id = omCurrentObj->objId;
+    D_800E3210[id] = D_8021BF9C_ovl9[D_800E98E0[id]];
+    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+}
 #endif
 
 extern s32 D_801C8880_ovl7[];
@@ -1767,7 +1834,7 @@ void func_801EA2F8_ovl9(struct GObj *arg0) {
     D_800EA8A0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId];
 }
 
-#ifdef PORT
+#ifndef PORT /* WIP */
 extern void func_800B2AD4(Vector *, s32, u32);
 extern float atan2f(float, float);
 /* Shooter aim tick: take a point 100 units above Kirby's feet (foot
@@ -1836,8 +1903,75 @@ void func_801EA628_ovl9(void) {
     id = omCurrentObj->objId;
     D_800DFBD0[id][2]->angle.v.y = D_800EAC20[id];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA628_ovl9.s")
+#elif defined(PORT)
+extern void func_800B2AD4(Vector *, s32, u32);
+extern float atan2f(float, float);
+/* Shooter aim tick: take a point 100 units above Kirby's feet (foot
+ * +20 +80), transform it into the turret frame via func_800B2AD4,
+ * derive the target pitch/yaw with atan2, and walk the tracked pitch
+ * D_800EA6E0 (clamped [0, 30deg]) and yaw D_800EAC20 (wrap-aware,
+ * renormalized to [0, 2pi)) toward it in pi/80 steps; write both onto
+ * bone 2's X/Y rotation. */
+void func_801EA628_ovl9(void) {
+    f32 sp30;
+    f32 sp34;
+    f32 sp38;
+    f32 pitch;
+    f32 yaw;
+    f32 d;
+    u32 id;
+
+    sp30 = gEntitiesNextPosXArray[0];
+    sp34 = gEntitiesNextPosYArray[0] + 20.0f + 80.0f;
+    sp38 = gEntitiesNextPosZArray[0];
+    func_800B2AD4((Vector *) &sp30, 0, 0xFFFF);
+    pitch = atan2f(sqrtf((sp30 * sp30) + (sp38 * sp38)), sp34);
+    yaw = atan2f(sp30, sp38);
+    while (pitch >= 3.1415927f) {
+        pitch -= 3.1415927f;
+    }
+    while (pitch <= -3.1415927f) {
+        pitch += 3.1415927f;
+    }
+    id = omCurrentObj->objId;
+    if ((pitch + 0.03926991f) < D_800EA6E0[id]) {
+        D_800EA6E0[id] -= 0.03926991f;
+        id = omCurrentObj->objId;
+        if (D_800EA6E0[id] < 0.0f) {
+            D_800EA6E0[id] = 0.0f;
+        }
+    } else if (D_800EA6E0[id] < (pitch - 0.03926991f)) {
+        D_800EA6E0[id] += 0.03926991f;
+        id = omCurrentObj->objId;
+        if (D_800EA6E0[id] > 0.5235988f) {
+            D_800EA6E0[id] = 0.5235988f;
+        }
+    }
+    id = omCurrentObj->objId;
+    d = yaw - D_800EAC20[id];
+    if (((d < 0.0f) ? -d : d) > 3.1415927f) {
+        if (d < 0.0f) {
+            d = (yaw + 6.2831855f) - D_800EAC20[id];
+        } else {
+            d = yaw - (D_800EAC20[id] + 6.2831855f);
+        }
+    }
+    if (((d < 0.0f) ? -d : d) > 0.03926991f) {
+        D_800EAC20[id] += (d > 0.0f) ? 0.03926991f : -0.03926991f;
+        id = omCurrentObj->objId;
+        while (D_800EAC20[id] > 6.2831855f) {
+            D_800EAC20[id] -= 6.2831855f;
+            id = omCurrentObj->objId;
+        }
+        while (D_800EAC20[id] < 0.0f) {
+            D_800EAC20[id] += 6.2831855f;
+            id = omCurrentObj->objId;
+        }
+    }
+    D_800DFBD0[id][2]->angle.v.x = D_800EA6E0[id];
+    id = omCurrentObj->objId;
+    D_800DFBD0[id][2]->angle.v.y = D_800EAC20[id];
+}
 #endif
 
 s32 func_801ACC34_ovl7(s32, s32);

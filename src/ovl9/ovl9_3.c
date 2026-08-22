@@ -121,7 +121,7 @@ void func_801DCE44_ovl9(GObj *arg0) {
     func_801DF454_ovl9(arg0);
 }
 
-#ifdef PORT
+#ifndef PORT /* WIP */
 void func_800AA018(s32);
 void ohSleep(s32);
 extern f32 func_8019DA50_ovl7(void);
@@ -211,8 +211,96 @@ void func_801DCE6C_ovl9(struct GObj *arg0) {
         gEntityFuncListIDArray[id] = 3;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DCE6C_ovl9.s")
+#elif defined(PORT)
+void func_800AA018(s32);
+void ohSleep(s32);
+extern f32 func_8019DA50_ovl7(void);
+extern struct Sub800E1B50_Unk98 D_801CB764;
+/* Ambush spawn state: play the pop-in animation (0x10049) with
+ * physics frozen, gate the reveal on the spawn mode (mode 1: wait
+ * until Kirby's lateral offset func_8019DA50 changes sign, then 15
+ * more ticks; mode 2: wait until Kirby is within 240 units; mode 3 /
+ * others: immediately), run one thawed frame, then set the walk speed
+ * (halved when flag 1 is set), face the player or path direction, play
+ * the reveal cue when grounded and hand off to state 3 (or despawn
+ * state 4 when airborne). */
+void func_801DCE6C_ovl9(struct GObj *arg0) {
+    s32 sp48;
+    u32 id;
+
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
+    func_800B33F4();
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    func_800AA018(0x10049);
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+    id = omCurrentObj->objId;
+    switch (D_800E7880[id]) {
+        case 3:
+            break;
+        case 1:
+            D_800EA520[id] = 0;
+            D_800EB320[omCurrentObj->objId] = func_8019DA50_ovl7();
+            id = omCurrentObj->objId;
+            while (D_800EA520[id] == 0) {
+                if (D_800EB320[id] > 0.0f) {
+                    if (func_8019DA50_ovl7() < 0.0f) {
+                        D_800EA520[omCurrentObj->objId] = 1;
+                    }
+                } else if (func_8019DA50_ovl7() > 0.0f) {
+                    D_800EA520[omCurrentObj->objId] = 1;
+                }
+                ohSleep(1);
+                id = omCurrentObj->objId;
+            }
+            ohSleep(0xF);
+            break;
+        case 2: {
+            f32 dist;
+
+            dist = func_8019DA50_ovl7();
+            if (dist < 0.0f) {
+                dist = -dist;
+            }
+            while (dist > 240.0f) {
+                ohSleep(1);
+                dist = func_8019DA50_ovl7();
+                if (dist < 0.0f) {
+                    dist = -dist;
+                }
+            }
+            break;
+        }
+    }
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800AF27C();
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    id = omCurrentObj->objId;
+    if (D_800E8920[id] == 0) {
+        D_800EAC20[id] = 0.0f;
+    } else {
+        D_800EAC20[id] = (D_800E8AE0[id] & 1) ? 0.5f : 1.0f;
+    }
+    if (func_8019A900_ovl7(&sp48) != 0) {
+        D_800E6A10[omCurrentObj->objId] = sp48;
+    } else {
+        D_800E6A10[omCurrentObj->objId] = func_8019B608_ovl7(0);
+    }
+    id = omCurrentObj->objId;
+    if (D_800E8920[id] == 1) {
+        play_sound(0xA4);
+        id = omCurrentObj->objId;
+    }
+    if (D_800E8920[id] == 0) {
+        gEntityFuncListIDArray[id] = 4;
+    } else {
+        gEntityFuncListIDArray[id] = 3;
+    }
+}
 #endif
 
 void func_8019F3F0_ovl7(void);
@@ -393,7 +481,7 @@ void func_801DD818_ovl9(GObj *arg0) {
     func_801DF454_ovl9(arg0);
 }
 
-#ifdef PORT
+#ifndef PORT /* WIP */
 void func_800FB914(s32);
 f32 func_801DF1B0_ovl9(void);
 extern f32 D_8021BDB8_ovl9[];
@@ -469,8 +557,82 @@ void func_801DD8BC_ovl9(struct GObj *arg0) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 4;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DD8BC_ovl9.s")
+#elif defined(PORT)
+void func_800FB914(s32);
+f32 func_801DF1B0_ovl9(void);
+extern f32 D_8021BDB8_ovl9[];
+/* Hit-react landing: flash (func_800FB914), play the hurt cue 0x268,
+ * freeze physics and mark grounded, then classify which way the blow
+ * came from (normalized heading from func_801DF1B0: 0 straight, +/-1
+ * from either side) into D_800EA520.  Light hits (fewer than 15
+ * accumulated in D_800E98E0) just reverse facing when hit from behind,
+ * reset the speed factor and return to walk state 3; heavy hits hop
+ * (up speed 6 * factor), zero or keep the run speed depending on the
+ * hit side, load a 100-tick stun and go to stun state 4. */
+void func_801DD8BC_ovl9(struct GObj *arg0) {
+    f32 ang;
+    u32 id;
+
+    D_800E76C0[omCurrentObj->objId] = 0xFF;
+    D_800DDFD0[omCurrentObj->objId] = 5;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB764;
+    func_800FB914(1);
+    play_sound(0x268);
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    D_800E8920[omCurrentObj->objId] = 1;
+    func_800B33F4();
+    ang = func_801DF1B0_ovl9();
+    while (ang > 3.1415927f) {
+        ang -= 6.2831855f;
+    }
+    while (ang < -3.1415927f) {
+        ang += 6.2831855f;
+    }
+    if (ang == 0.0f) {
+        D_800EA520[omCurrentObj->objId] = 0;
+    } else if (ang < 0.0f) {
+        D_800EA520[omCurrentObj->objId] = 1;
+    } else {
+        D_800EA520[omCurrentObj->objId] = -1;
+    }
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 1;
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] < 0xF) {
+        func_800B33F4();
+        D_800E9C60[omCurrentObj->objId] = 0;
+        id = omCurrentObj->objId;
+        if (D_800EA520[id] > 0) {
+            D_800E6A10[id] = -D_800E6A10[id];
+            id = omCurrentObj->objId;
+        }
+        D_800EAC20[id] = (D_800E8AE0[id] & 1) ? 0.5f : 1.0f;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+    } else {
+        D_800E3210[id] = D_800EAC20[id] * 6.0f;
+        id = omCurrentObj->objId;
+        switch (D_800EA520[id]) {
+            case 0:
+                D_800E64D0[id] = D_800EAC20[id] * D_8021BDB8_ovl9[D_800E7880[id]] * 0.5f * D_800E6A10[id];
+                D_800EAC20[omCurrentObj->objId] = 0.0f;
+                id = omCurrentObj->objId;
+                break;
+            case 1:
+                D_800E64D0[id] = 0.0f;
+                D_800EAC20[omCurrentObj->objId] = 0.0f;
+                id = omCurrentObj->objId;
+                break;
+            case -1:
+                D_800EAC20[id] = (D_800E8AE0[id] & 1) ? 0.5f : 1.0f;
+                id = omCurrentObj->objId;
+                break;
+        }
+        D_800E9C60[id] = 0x64;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+    }
+}
 #endif
 
 s32 func_801A0D74_ovl7();
@@ -1293,7 +1455,6 @@ extern void func_800AED20(f32);
 extern void func_800B33F4(void);
 extern void func_800AA018(s32);
 extern void ohSleep(s32);
-extern void func_800AF27C(void);
 void func_801E078C_ovl9(GObj *, s32, f32);
 
 void func_801E00E0_ovl9(struct GObj *arg0) {
