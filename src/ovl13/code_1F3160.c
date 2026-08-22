@@ -284,7 +284,6 @@ void func_801DD148_ovl13(void) {
     func_801A0D74_ovl7();
 }
 
-#ifdef NON_MATCHING
 /* 4/137: exact except the objId temp before func_800A9F98 -- ROM uses $v0,
  * IDO picks $a2. Swept: extra local, local declared first, u32 index. */
 extern s32 D_801D9384;
@@ -293,33 +292,36 @@ extern void func_800AECC0(f32);
 extern void func_800A9F98(s32, f32);
 extern void func_800AA018(s32);
 extern void func_800BC1FC(s32);
-void func_801DD184_ovl13(GObj *arg0) {
-    func_800AED20(0.0f);
-    func_800AECC0(gameTicksPerDraw);
-    D_800DDFD0[omCurrentObj->objId] = 0;
-    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9384;
-    D_800E1B50[omCurrentObj->objId]->unk98 = (struct Sub800E1B50_Unk98 *) &D_801DAE1C;
-    func_800B33F4();
-    D_800EA1A0[omCurrentObj->objId] = random_soft_s32_range(3);
-    D_800E64D0[omCurrentObj->objId] = 160.0f;
-    D_800E3210[omCurrentObj->objId] = 80.0f;
-    ohSleep(1);
+void func_801DD184_ovl13(GObj *arg0)
+{
+  func_800AED20(0.0f);
+  func_800AECC0(gameTicksPerDraw);
+  D_800DDFD0[omCurrentObj->objId] = 0;
+  D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9384;
+  D_800E1B50[omCurrentObj->objId]->unk98 = (struct Sub800E1B50_Unk98 *) (&D_801DAE1C);
+  func_800B33F4();
+  D_800EA1A0[omCurrentObj->objId] = random_soft_s32_range(3);
+  D_800E64D0[omCurrentObj->objId] = 160.0f;
+  D_800E3210[omCurrentObj->objId] = 80.0f;
+  ohSleep(1);
+  if (1)
+  {
     D_800E3210[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId];
     func_800A9F98(0x10412, 3.0f);
     func_800AA018(0x10427);
     ohSleep(0x1E);
     func_800BC1FC((s32) D_800E7B20[omCurrentObj->objId]);
-    ohSleep(0x30);
-    while (D_800E98E0[D_800E0D50[omCurrentObj->objId]] == 0) {
-        ohSleep(1);
-    }
-    func_800AF27C();
-    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+  }
+  ohSleep(0x30);
+  while (D_800E98E0[D_800E0D50[omCurrentObj->objId]] == 0)
+  {
+    ohSleep(1);
+  }
+
+  func_800AF27C();
+  gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl13/code_1F3160/func_801DD184_ovl13.s")
-#endif
 
 void func_801DD3A8_ovl13(GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
