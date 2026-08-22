@@ -1364,7 +1364,10 @@ void func_801D50E4_ovl9(struct GObj *arg0) {
     } while (gEntityFuncListIDArray[omCurrentObj->objId] == 0);
 }
 
-#ifdef PORT
+/* FACTORY: 9/247, frame 0x40 vs the ROM's 0x38 -- 8 bytes of locals we
+   reserve and the ROM does not, so arg0 homes at 0x40 instead of 0x38 and the
+   first branch displacement already differs.  Body order matches. */
+#ifdef MIPS_TO_C
 extern u32 D_8012BCA0;
 u32 eneCheckNearPlayer(f32);
 extern f32 func_800F9828(s32, s32);
@@ -1456,6 +1459,96 @@ void func_801D52F0_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D52F0_ovl9.s")
 #endif
+#ifdef PORT
+extern u32 D_8012BCA0;
+u32 eneCheckNearPlayer(f32);
+extern f32 func_800F9828(s32, s32);
+extern f32 func_8019B608_ovl7(s32);
+/* Flier steering watchdog (state-machine slot 1): while the player is
+ * out of range, request despawn (func 4) once the D_800E98E0 cooldown
+ * has drained.  In range, D_800E9AA0 holds the travel axis/direction
+ * (0 up / 1 down / 2-3 horizontal): flip into the turn state (func 2)
+ * when Kirby's foot point (+20 units) crosses to the other side of the
+ * entity -- horizontally judged by the rail direction func_800F9828,
+ * falling back to camera-heading (func_8019B608) times XZ distance when
+ * the rail reports the 9999 sentinel -- then request landing (func 1)
+ * when the collision contact matching the travel direction is present
+ * (floor 0x1C0 / ceiling 0xE00 / right wall 0x38 / left wall 7).
+ * Always drains the cooldown and runs the shared per-frame mover. */
+void func_801D52F0_ovl9(struct GObj *arg0) {
+    u32 id;
+
+    if (eneCheckNearPlayer(25600.0f) != 0) {
+        id = omCurrentObj->objId;
+        if (D_800E98E0[id] <= 0) {
+            gEntityFuncListIDArray[id] = 4;
+        }
+    } else {
+        f32 rel;
+        u32 st;
+
+        id = omCurrentObj->objId;
+        st = D_800E9AA0[id].as_u32;
+        switch (st) {
+            case 0:
+                if ((gEntitiesNextPosYArray[0] + 20.0f) < gEntitiesNextPosYArray[id]) {
+                    gEntityFuncListIDArray[id] = 2;
+                }
+                break;
+            case 1:
+                if (gEntitiesNextPosYArray[id] < (gEntitiesNextPosYArray[0] + 20.0f)) {
+                    gEntityFuncListIDArray[id] = 2;
+                }
+                break;
+            case 2:
+            case 3:
+                if (func_800F9828(id, 0) == 9999.0f) {
+                    f32 dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[id];
+                    f32 dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[id];
+
+                    rel = func_8019B608_ovl7(0) * sqrtf((dx * dx) + (dz * dz));
+                } else {
+                    rel = 0.0f;
+                }
+                if (st == 2) {
+                    if (rel > 0.0f) {
+                        gEntityFuncListIDArray[id] = 2;
+                    }
+                } else if (rel < 0.0f) {
+                    gEntityFuncListIDArray[id] = 2;
+                }
+                break;
+        }
+        switch (st) {
+            case 0:
+                if ((D_8012BCA0 >> 0x13) & 0x1C0) {
+                    gEntityFuncListIDArray[id] = 1;
+                }
+                break;
+            case 1:
+                if ((D_8012BCA0 >> 0x13) & 0xE00) {
+                    gEntityFuncListIDArray[id] = 1;
+                }
+                break;
+            case 2:
+                if ((D_8012BCA0 >> 0x13) & 0x38) {
+                    gEntityFuncListIDArray[id] = 1;
+                }
+                break;
+            case 3:
+                if ((D_8012BCA0 >> 0x13) & 7) {
+                    gEntityFuncListIDArray[id] = 1;
+                }
+                break;
+        }
+    }
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] > 0) {
+        D_800E98E0[id]--;
+    }
+    func_8019F3B0_ovl7();
+}
+#endif
 
 /* D_8021CEAC_ovl9: literal, this TU owns its .rodata */
 extern f32 func_800F9828(s32, s32);
@@ -1488,7 +1581,10 @@ s32 func_801D56D0_ovl9(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D56D0_ovl9.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 7/346, saved-register choice: the ROM keeps &omCurrentObj in $s1
+   with the save block starting at 0x1C, ours picks $fp and a deeper block.
+   Everything below is that rename. */
+#ifdef MIPS_TO_C
 extern s32 random_soft_s32_range(s32);
 extern s32 D_8021BB84_ovl9[];
 extern s32 D_8021BB8C_ovl9[];
@@ -1577,6 +1673,94 @@ void func_801D5850_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D5850_ovl9.s")
+#endif
+#ifdef PORT
+extern s32 random_soft_s32_range(s32);
+extern s32 D_8021BB84_ovl9[];
+extern s32 D_8021BB8C_ovl9[];
+extern f32 D_8021BBA0_ovl9[];
+/* The N64 text indexes one conceptual 4-word animation-ID table that
+ * splat split into three arrays at 8021BB80/BB84/BB8C (including a
+ * negative-offset read back across the split); fold the word index
+ * 0..3 back onto the real PC-side arrays instead of relying on their
+ * layout being contiguous. */
+static s32 pc_o9_1_flap_anim(s32 i) {
+    switch (i) {
+        case 0:  return D_8021BB80_ovl9[0];
+        case 1:  return D_8021BB84_ovl9[0];
+        case 2:  return D_8021BB84_ovl9[1];
+        default: return D_8021BB8C_ovl9[0];
+    }
+}
+/* Turn state (state-machine slot 2) for the flier: pick a random side
+ * (0/1, biased to slots 2/3 for the vertical axes), set the 6.0
+ * accel clamps, then flap back and forth -- drive velocity (X pair
+ * D_800E64D0/D_800E6690 for vertical axes, Y pair D_800E3210/D_800E3750
+ * for horizontal) from the D_8021BB90/D_8021BBA0 tables, playing the
+ * forward animation twice, the mirrored one twice, then negating the
+ * velocity and playing the mirrored/forward pairs again -- until the
+ * state machine leaves state 1; finish by requesting cruise state 2. */
+void func_801D5850_ovl9(struct GObj *arg0) {
+    u32 id = omCurrentObj->objId;
+    s32 idx;
+    s32 animA;
+    s32 animB;
+
+    D_800DDFD0[id] = 1;
+    D_800E9C60[id] = random_soft_s32_range(2);
+    D_800E6850[id] = 6.0f;
+    D_800E3C90[id] = 6.0f;
+    switch (D_800E9AA0[id].as_u32) {
+        case 0:
+        case 1:
+            D_800E9C60[id] += 2;
+            do {
+                id = omCurrentObj->objId;
+                idx = D_800E9C60[id];
+                animA = pc_o9_1_flap_anim(idx);
+                animB = pc_o9_1_flap_anim(idx ^ 1);
+                D_800E64D0[id] = D_8021BB90_ovl9[idx];
+                D_800E6690[id] = D_8021BBA0_ovl9[idx];
+                func_800AA154(animA);
+                func_800AA154(animA);
+                func_800AA154(animB);
+                func_800AA154(animB);
+                id = omCurrentObj->objId;
+                D_800E64D0[id] = -D_8021BB90_ovl9[idx];
+                D_800E6690[id] = -D_8021BBA0_ovl9[idx];
+                func_800AA154(animB);
+                func_800AA154(animB);
+                func_800AA154(animA);
+                func_800AA154(animA);
+                id = omCurrentObj->objId;
+            } while (gEntityFuncListIDArray[id] == 1);
+            break;
+        case 2:
+        case 3:
+            do {
+                id = omCurrentObj->objId;
+                idx = D_800E9C60[id];
+                animA = pc_o9_1_flap_anim(idx);
+                animB = pc_o9_1_flap_anim(idx ^ 1);
+                D_800E3210[id] = D_8021BB90_ovl9[idx];
+                D_800E3750[id] = D_8021BBA0_ovl9[idx];
+                func_800AA154(animA);
+                func_800AA154(animA);
+                func_800AA154(animB);
+                func_800AA154(animB);
+                id = omCurrentObj->objId;
+                D_800E3210[id] = -D_8021BB90_ovl9[idx];
+                D_800E3750[id] = -D_8021BBA0_ovl9[idx];
+                func_800AA154(animB);
+                func_800AA154(animB);
+                func_800AA154(animA);
+                func_800AA154(animA);
+                id = omCurrentObj->objId;
+            } while (gEntityFuncListIDArray[id] == 1);
+            break;
+    }
+    gEntityFuncListIDArray[id] = 2;
+}
 #endif
 
 extern u32 D_8012BCA0;
@@ -1782,7 +1966,10 @@ f32 func_801D650C_ovl9(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D650C_ovl9.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 17/206, frame 0x40 vs the ROM's 0x28.  Sibling of
+   func_801D74EC_ovl9 below -- same 24-byte over-reservation, same two-local
+   body -- so whatever sheds the frame there sheds it here too. */
+#ifdef MIPS_TO_C
 extern FUNCLIST D_8021BBF0_ovl9;
 extern FUNCLIST D_8021BBF4_ovl9;
 extern void func_8019BB58_ovl7(void);
@@ -1843,6 +2030,66 @@ void func_801D66A0_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D66A0_ovl9.s")
+#endif
+#ifdef PORT
+extern FUNCLIST D_8021BBF0_ovl9;
+extern FUNCLIST D_8021BBF4_ovl9;
+extern void func_8019BB58_ovl7(void);
+extern void func_800F8E6C(struct GObj *);
+extern void func_800B33F4(void);
+void func_800B7674(s32);
+void func_801D6A94_ovl9(struct GObj *);
+void func_801D69D8_ovl9(struct GObj *);
+/* Circler main: latch the spawn point (home Y/X/Z into
+ * D_800EA8A0/D_800EAC20/D_800EADE0, path params into D_800E9C60 and
+ * D_800EAA60), init facing and a tiny push, then place the entity 200
+ * units out along its wrapped spawn heading D_800E17D0 (+90 degrees),
+ * install the shared mover/draw hooks and dispatch the spawn-mode
+ * table D_8021BBF0 once before looping the 3-entry state table
+ * D_8021BBF4 forever (handlers block on ohSleep). */
+void func_801D66A0_ovl9(struct GObj *arg0) {
+    u32 id = omCurrentObj->objId;
+    f32 ang;
+
+    D_800EA8A0[id] = gEntitiesNextPosYArray[id];
+    id = omCurrentObj->objId;
+    D_800E9C60[id] = D_800E5F90[id];
+    id = omCurrentObj->objId;
+    D_800EAA60[id] = D_800E6BD0[id];
+    id = omCurrentObj->objId;
+    D_800EAC20[id] = gEntitiesNextPosXArray[id];
+    id = omCurrentObj->objId;
+    D_800EADE0[id] = gEntitiesNextPosZArray[id];
+    func_8019BB58_ovl7();
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800E64D0[omCurrentObj->objId] = 0.001f;
+    func_800F8E6C(arg0);
+    func_800B33F4();
+    id = omCurrentObj->objId;
+    while (D_800E17D0[id] >= 6.2831855f) {
+        D_800E17D0[id] -= 6.2831855f;
+        id = omCurrentObj->objId;
+    }
+    while (D_800E17D0[id] < 0.0f) {
+        D_800E17D0[id] += 6.2831855f;
+        id = omCurrentObj->objId;
+    }
+    ang = D_800E17D0[id] + 1.5707964f;
+    gEntitiesAngleYArray[id] = ang;
+    D_800EA6E0[id] = ang;
+    id = omCurrentObj->objId;
+    gEntitiesNextPosXArray[id] += sinf(D_800EA6E0[id]) * 200.0f;
+    id = omCurrentObj->objId;
+    gEntitiesNextPosZArray[id] += cosf(D_800EA6E0[id]) * 200.0f;
+    D_800DEF90[omCurrentObj->objId] = func_800B7674;
+    D_800E8E60[omCurrentObj->objId] = 1;
+    D_800DF150[omCurrentObj->objId] = func_801D6A94_ovl9;
+    func_801A0D50_ovl7(func_801D69D8_ovl9);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, D_8021BBF0_ovl9);
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_8021BBF4_ovl9);
+    }
+}
 #endif
 
 extern FUNCLIST D_8021BBF4_ovl9;
@@ -2111,7 +2358,11 @@ s32 func_801D7330_ovl9(void) {
     return 0;
 }
 
-#ifdef PORT
+/* FACTORY: 88/211, frame 0x40 vs the ROM's 0x28 plus the $a1/$a2 pair the
+   omCurrentObj load lands in.  The function only has two locals, so the extra
+   24 bytes are IDO reserving argument/spill space the ROM does not; that is
+   the one thing to attack, and it also fixes func_801D66A0_ovl9 above. */
+#ifdef MIPS_TO_C
 extern FUNCLIST D_8021BC08_ovl9;
 extern FUNCLIST D_8021BC0C_ovl9;
 extern void func_801A3280_ovl7(void);
@@ -2168,6 +2419,62 @@ void func_801D74EC_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D74EC_ovl9.s")
+#endif
+#ifdef PORT
+extern FUNCLIST D_8021BC08_ovl9;
+extern FUNCLIST D_8021BC0C_ovl9;
+extern void func_801A3280_ovl7(void);
+void func_801D78F0_ovl9(struct GObj *);
+void func_801D7838_ovl9(struct GObj *);
+/* Second circler variant main: same setup as func_801D66A0 (latch the
+ * spawn point and path params, wrap the spawn heading, face +90
+ * degrees) but with the ovl7 aux init func_801A3280, a 120-unit
+ * offset instead of 200, its own mover/draw hooks and the
+ * D_8021BC08 (spawn) / D_8021BC0C (5-state) dispatch tables. */
+void func_801D74EC_ovl9(struct GObj *arg0) {
+    u32 id = omCurrentObj->objId;
+    f32 ang;
+
+    D_800EA8A0[id] = gEntitiesNextPosYArray[id];
+    id = omCurrentObj->objId;
+    D_800E9C60[id] = D_800E5F90[id];
+    id = omCurrentObj->objId;
+    D_800EAA60[id] = D_800E6BD0[id];
+    id = omCurrentObj->objId;
+    D_800EAC20[id] = gEntitiesNextPosXArray[id];
+    id = omCurrentObj->objId;
+    D_800EADE0[id] = gEntitiesNextPosZArray[id];
+    func_801A3280_ovl7();
+    func_8019BB58_ovl7();
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800E64D0[omCurrentObj->objId] = 0.001f;
+    func_800F8E6C(arg0);
+    func_800B33F4();
+    id = omCurrentObj->objId;
+    while (D_800E17D0[id] >= 6.2831855f) {
+        D_800E17D0[id] -= 6.2831855f;
+        id = omCurrentObj->objId;
+    }
+    while (D_800E17D0[id] < 0.0f) {
+        D_800E17D0[id] += 6.2831855f;
+        id = omCurrentObj->objId;
+    }
+    ang = D_800E17D0[id] + 1.5707964f;
+    gEntitiesAngleYArray[id] = ang;
+    D_800EA6E0[id] = ang;
+    id = omCurrentObj->objId;
+    gEntitiesNextPosXArray[id] += sinf(D_800EA6E0[id]) * 120.0f;
+    id = omCurrentObj->objId;
+    gEntitiesNextPosZArray[id] += cosf(D_800EA6E0[id]) * 120.0f;
+    D_800DEF90[omCurrentObj->objId] = func_800B7674;
+    D_800E8E60[omCurrentObj->objId] = 1;
+    D_800DF150[omCurrentObj->objId] = func_801D78F0_ovl9;
+    func_801A0D50_ovl7(func_801D7838_ovl9);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, D_8021BC08_ovl9);
+    while (1) {
+        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, D_8021BC0C_ovl9);
+    }
+}
 #endif
 
 extern FUNCLIST D_8021BC0C_ovl9;
@@ -2396,7 +2703,10 @@ void func_801D8478_ovl9(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 
-#ifdef PORT
+/* FACTORY: 9/471, frame 0x58 vs the ROM's 0x50 and the entry pointer
+   register ($a3 in the ROM, $t6 here).  The largest function in this file;
+   structure and schedule agree throughout. */
+#ifdef MIPS_TO_C
 extern void func_800B2AD4(Vector *, s32, u32);
 extern float atan2f(float, float);
 /* Turret/launcher retarget tick: measure the distance to Kirby's foot
@@ -2529,6 +2839,138 @@ void func_801D8520_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D8520_ovl9.s")
+#endif
+#ifdef PORT
+extern void func_800B2AD4(Vector *, s32, u32);
+extern float atan2f(float, float);
+/* Turret/launcher retarget tick: measure the distance to Kirby's foot
+ * point to derive a launch-speed scale (dist/24 + 3), copy the player
+ * slot's path params, position and velocity into this entity's slot
+ * (scaling the X velocity), run the slot resolver func_800F8E6C, then
+ * snap the entity back to its parked position (D_800EAFA0/EB160/EB320).
+ * The predicted target point (lead by Kirby's Y motion times half the
+ * scale) is transformed by func_800B2AD4 into the turret's frame and
+ * turned into pitch/yaw targets; D_800EA6E0 (pitch) walks toward the
+ * target in pi/80 steps clamped to [20deg, 90deg] and D_800EAC20 (yaw)
+ * walks likewise with wrap handling, clamped to +/-60deg.  D_800E98E0
+ * flags whether the yaw is inside the firing cone, and bone 2 of the
+ * model gets the pitch/yaw as X/Y rotation. */
+void func_801D8520_ovl9(struct GObj *arg0) {
+    u32 id = omCurrentObj->objId;
+    f32 sp30;
+    f32 sp34;
+    f32 sp38;
+    f32 leadY;
+    f32 scale;
+    f32 pitch;
+    f32 yaw;
+    f32 d;
+    f32 step;
+
+    sp30 = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[id];
+    sp34 = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[id];
+    sp38 = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[id];
+    scale = (sqrtf((sp30 * sp30) + (sp34 * sp34) + (sp38 * sp38)) / 24.0f) + 3.0f;
+    leadY = gEntitiesNextPosYArray[0] - gEntitiesPosYArray[0];
+    id = omCurrentObj->objId;
+    D_800E5F90[id] = D_800E5F90[0];
+    id = omCurrentObj->objId;
+    D_800E6BD0[id] = D_800E6BD0[0];
+    id = omCurrentObj->objId;
+    D_800E6150[id] = D_800E6150[0];
+    id = omCurrentObj->objId;
+    D_800E6D90[id] = D_800E6D90[0];
+    id = omCurrentObj->objId;
+    gEntitiesNextPosXArray[id] = gEntitiesNextPosXArray[0];
+    gEntitiesNextPosYArray[id] = gEntitiesNextPosYArray[0];
+    gEntitiesNextPosZArray[id] = gEntitiesNextPosZArray[0];
+    gEntitiesPosXArray[id] = gEntitiesPosXArray[0];
+    gEntitiesPosYArray[id] = gEntitiesPosYArray[0];
+    gEntitiesPosZArray[id] = gEntitiesPosZArray[0];
+    D_800E64D0[id] = D_800E64D0[0] * scale;
+    func_800F8E6C(arg0);
+    id = omCurrentObj->objId;
+    sp30 = gEntitiesNextPosXArray[id];
+    sp34 = gEntitiesNextPosYArray[id] + (leadY * scale * 0.5f);
+    sp38 = gEntitiesNextPosZArray[id];
+    id = omCurrentObj->objId;
+    gEntitiesPosXArray[id] = D_800EAFA0[id];
+    gEntitiesNextPosXArray[id] = D_800EAFA0[id];
+    id = omCurrentObj->objId;
+    gEntitiesPosYArray[id] = D_800EB160[id];
+    gEntitiesNextPosYArray[id] = D_800EB160[id];
+    id = omCurrentObj->objId;
+    gEntitiesPosZArray[id] = D_800EB320[id];
+    gEntitiesNextPosZArray[id] = D_800EB320[id];
+    func_800B2AD4((Vector *) &sp30, 0, 0xFFFF);
+    pitch = atan2f(sqrtf((sp30 * sp30) + (sp38 * sp38)), sp34);
+    yaw = atan2f(sp30, sp38);
+    while (pitch >= 3.1415927f) {
+        pitch -= 6.2831855f;
+    }
+    while (pitch <= -3.1415927f) {
+        pitch += 6.2831855f;
+    }
+    while (yaw >= 3.1415927f) {
+        yaw -= 6.2831855f;
+    }
+    while (yaw <= -3.1415927f) {
+        yaw += 6.2831855f;
+    }
+    id = omCurrentObj->objId;
+    if ((pitch + 0.03926991f) < D_800EA6E0[id]) {
+        D_800EA6E0[id] -= 0.03926991f;
+        id = omCurrentObj->objId;
+        if (D_800EA6E0[id] < 0.34906587f) {
+            D_800EA6E0[id] = 0.34906587f;
+        }
+    } else if (D_800EA6E0[id] < (pitch - 0.03926991f)) {
+        D_800EA6E0[id] += 0.03926991f;
+        id = omCurrentObj->objId;
+        if (D_800EA6E0[id] > 1.5707964f) {
+            D_800EA6E0[id] = 1.5707964f;
+        }
+    }
+    id = omCurrentObj->objId;
+    d = yaw - D_800EAC20[id];
+    if (((d < 0.0f) ? -d : d) > 3.1415927f) {
+        if (d < 0.0f) {
+            d = (yaw + 6.2831855f) - D_800EAC20[id];
+        } else {
+            d = yaw - (D_800EAC20[id] + 6.2831855f);
+        }
+    }
+    if (((d < 0.0f) ? -d : d) > 0.03926991f) {
+        step = (d > 0.0f) ? 0.03926991f : -0.03926991f;
+        D_800EAC20[id] += step;
+        id = omCurrentObj->objId;
+    }
+    while (D_800EAC20[id] > 3.1415927f) {
+        D_800EAC20[id] -= 3.1415927f;
+        id = omCurrentObj->objId;
+    }
+    while (D_800EAC20[id] < -3.1415927f) {
+        D_800EAC20[id] += 3.1415927f;
+        id = omCurrentObj->objId;
+    }
+    if (D_800EAC20[id] < -1.0471976f) {
+        D_800EAC20[id] = -1.0471976f;
+        id = omCurrentObj->objId;
+    }
+    if (D_800EAC20[id] > 1.0471976f) {
+        D_800EAC20[id] = 1.0471976f;
+        id = omCurrentObj->objId;
+    }
+    if (((D_800EAC20[id] < 0.0f) ? -D_800EAC20[id] : D_800EAC20[id]) < 1.0471976f) {
+        D_800E98E0[id] = 1;
+    } else {
+        D_800E98E0[id] = 0;
+    }
+    id = omCurrentObj->objId;
+    D_800DFBD0[id][2]->angle.v.x = D_800EA6E0[id];
+    id = omCurrentObj->objId;
+    D_800DFBD0[id][2]->angle.v.y = D_800EAC20[id];
+}
 #endif
 
 s32 func_801ACC34_ovl7(s32, s32);

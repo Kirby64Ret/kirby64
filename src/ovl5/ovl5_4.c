@@ -921,16 +921,22 @@ s32 func_80168A44_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
-#ifdef PORT
-/* CPU chase step: scans the other living players; when one shares this
- * CPU's column (func_80168A04) or row (func_80168A44), rolls the pursuit
- * chance (target gets the row/column byte 1 -- byte 11 on the shrunk field
- * -- everyone else byte 0) and arms the turn-toward action 7..10; a player
- * on neither axis can trigger the arrived action 4 with byte 2/12. Returns
- * 1 when an action was armed, else parks the planner in action 11. */
+/* FACTORY: 1/193, UNCERTAIN -- PORT-seeded, time-boxed. Fixed a real
+ * compile bug: the PORT arm's `extern u8 D_8018E3D0_ovl5y[] __asm__(...)`
+ * symbol-alias trick is a GCC extension IDO's cc rejects outright;
+ * rewritten as a local 0x14-byte struct view of the real (typed
+ * elsewhere in this file as Unk14Ent) D_8018E3D0_ovl5 array. Compiles,
+ * word count matches (193/193), residue extreme (192/193) -- broad
+ * register/frame relabeling from word 0. Worth a fresh m2c pass before
+ * feeding to the permuter. */
+#ifdef MIPS_TO_C
 s32 func_80168B30_ovl5(s32 arg0) {
-    extern u8 D_8018E3D0_ovl5y[] __asm__("D_8018E3D0_ovl5");
-    u8 *rec = &D_8018E3D0_ovl5y[arg0 * 0x14];
+    /* D_8018E3D0_ovl5: array of 0x14-byte per-mole planner records (typed
+     * Unk14Ent elsewhere in this file); accessed here as raw bytes since
+     * only byte 0 and byte 8 are read/written. */
+    typedef struct { u8 b[0x14]; } MoleRec;
+    extern MoleRec D_8018E3D0_ovl5[];
+    u8 *rec = D_8018E3D0_ovl5[arg0].b;
     s32 mycell = func_80165F1C_ovl5(arg0);
     s32 lvl = D_8018E3C8_ovl5[arg0];
     s32 i;
@@ -975,9 +981,6 @@ s32 func_80168B30_ovl5(s32 arg0) {
     rec[8] = 0xB;
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168B30_ovl5.s")
-#endif
 
 typedef struct Unk2Bytes {
     s8 unk0;

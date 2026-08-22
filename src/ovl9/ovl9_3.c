@@ -284,7 +284,10 @@ void func_801DD3CC_ovl9(struct GObj *arg0) {
     func_801DF454_ovl9(arg0);
 }
 
-#ifndef PORT /* WIP */
+/* FACTORY: 18/164, saved-register permutation.  The ROM keeps &omCurrentObj
+   in $s0 and starts its save block at 0x30; ours picks $s4 and a deeper
+   block, which renames the rest.  Body order and schedule agree. */
+#ifdef MIPS_TO_C
 extern struct Sub800E1B50_Unk98 D_801CB740;
 extern f32 D_8021BDB8_ovl9[];
 /* Knockback/launch state: go fully opaque, clear the pause counter,
@@ -325,7 +328,10 @@ void func_801DD598_ovl9(struct GObj *arg0) {
     }
     gEntityFuncListIDArray[id] = 5;
 }
-#elif defined(PORT)
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DD598_ovl9.s")
+#endif
+#ifdef PORT
 extern struct Sub800E1B50_Unk98 D_801CB740;
 extern f32 D_8021BDB8_ovl9[];
 /* Knockback/launch state: go fully opaque, clear the pause counter,
@@ -511,9 +517,12 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
 
-#ifndef PORT /* WIP */
+/* FACTORY: 28/184, $a2/$a3 transposition from the first omCurrentObj load on
+   (the ROM materialises the pointer in $a2 and the scaled index in $a3, ours
+   the other way round).  The first 13 instructions and the overall structure
+   are the ROM's. */
+#ifdef MIPS_TO_C
 extern struct GObjProcess *gEntityGObjProcessArray[];
-extern void assign_new_process_entry(struct GObjProcess *, void (*)(GObj *));
 extern s32 D_801CA550;
 extern s32 D_801CA598;
 extern u8 D_8012E7C5;
@@ -593,7 +602,10 @@ void func_801DDF9C_ovl9(GObj *arg0) {
     func_801DDD44_ovl9(arg0);
     func_801DF454_ovl9(arg0);
 }
-#elif defined(PORT)
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DDF9C_ovl9.s")
+#endif
+#ifdef PORT
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern void assign_new_process_entry(struct GObjProcess *, void (*)(GObj *));
 extern s32 D_801CA550;

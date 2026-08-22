@@ -78,6 +78,12 @@ ovl16 19, ovl10 18, ovl2 17, ovl17 16, ovl14 14, ovl19 12.
 
 19. **A switch arm that stores the same value as the default must be folded away.** m2c's natural three-arm `else if` reads correctly and emits four extra instructions; write two arms (149 → 145).
 
+
+20. **An unused SCALAR reserves its stack slot; an unused ARRAY does not.** This is how you fill the dead words a ROM frame contains and m2c never shows you. `f32 sp48;` declared between two used locals and never read still occupies 0x48 — worth 41/123 → 24/123 on func_80109504, where the ROM leaves exactly one dead word mid-block. `u32 pad[42]` in the same position is eliminated entirely, and so is an unused `volatile` array; a dead pad only survives as an array if something in the function makes it addressable (func_80102570 needed a `volatile` POINTER local next to it). Corollary for m2c drafts: its `spNN` "locals" that only ever receive a value are usually IDO's own spill slots for a register temp, not declarations — deleting them is what makes the frame shrink to the ROM's (func_8010C608 went 0x48 → the ROM's 0x38 that way, and func_80106C5C got worse when they were kept).
+
+
+21. **Scalars declared BEFORE a run of structs move the whole block down, not just themselves.** LEVERS 12 says which side to put them on; the measured magnitude is that moving func_8010D8A4's single `s32` from after its three Vectors to before them slid the entire local block from 0x38-0x60 onto the ROM's 0x34-0x5C (52/97 → 37/97). Pads could not do it in either position — they only grew the frame 0x60 → 0x68. Try the declaration-order move BEFORE reaching for a pad.
+
 ## GUARD ON THE SECOND VARIANT — these are floors, no source spelling reaches them
 Whole-function callee-saved permutation; one-slot temp rotation; `mul.s` source operand order (INVARIANT — reconfirmed twice); a CSE'd load landing in the neighbouring register ($v0/$v1, $a2/$a3); IDO folding an address into load offsets where the ROM CSEs it into a spilled register.
 
@@ -116,3 +122,31 @@ Anchor on the **LAST** `.size` in the listing (anchoring on the first matches a 
     verbatim; ABS() vs ABSF() (lever 3) was worth 232 diffs on
     func_801A57A8_ovl7 -- ABSF hoists its 0.0f into callee-saved $f20 and
     adds sdc1/ldc1, where the ROM re-materialises `mtc1 $zero` in the loop.
+
+## MEASURED IN THE RE-FOUNDATION WAVE (ovl1 lane, 2 closures / 19 seeds)
+
+24. **A switch with an explicit empty `case 0:` produces IDO's `beql` chain**
+    where an if/else chain does not. 180 -> 79 on func_800A0558. Same family
+    as lever 21: IDO's jump tables need every arm spelled, including the
+    empty ones (func_800A9648 / func_800A9250 only reproduce their 15-entry
+    table with explicit `case 0x1F:` and `case 0x3E7:`).
+
+25. **Declaration ORDER of two same-sized aggregates decides which gets the
+    lower address** (later locals take lower addresses). Declaring the
+    accumulator matrix before the scratch one: 261 -> 185 on func_800A0558.
+
+26. **Never cache a chained record lookup that the ROM re-reads.** Writing
+    `D_800D6A78[idx][arg1]->field` inline at all ~25 sites: 313 -> 206 on
+    func_800A19EC. Generalises lever 10 from struct fields to chained
+    subscripts.
+
+27. **Assign a pointer local AFTER the store that uses it** to keep it on the
+    stack the way the ROM does: 80 -> 35 on func_800A9864.
+
+28. **Spell a loop bound as an index into the SAME array** (`&D_800F4D70[10]`,
+    not the next symbol `D_800F5770`) or IDO CSEs the two addresses.
+    func_800BE098.
+
+29. **Math functions unprototyped in a TU wreck the return type.** `asinf` /
+    `atan2f` with no prototype return int; local ANSI prototypes inside the
+    function took func_800B26D8 straight to MATCH.

@@ -183,3 +183,23 @@ gate is the full ROM sha1:
     4. if the sha1 breaks, revert all eight; do not bisect in a live tree
 
 Do NOT attempt this while lanes are running.
+
+## OPEN COORDINATOR TASKS (2 more, from the ovl1 lane)
+
+- **func_800B531C (ovl1_8.c), 469/480.** `gKirbyState` is an incomplete
+  `struct Player` in the N64 arm because Player.h is included only inside the
+  PORT arm, so the ROM's held `$a3` base cannot be reproduced. Fix is a
+  file-scope include, which must be A/B'd against every matched function in
+  ovl1_8.c (record match count, add include, re-verify + check_tu_size).
+
+- **func_800A2550 (ovl1.c), 211/220 measured by hand.** Padding-trapped:
+  6 words past `.size`, so verify.py refuses to score it. Converting it
+  requires a `pad` subsegment in kirby64.yaml AND the matching kirby.ld edit
+  in the same commit.
+
+- **func_8009C4E0 (2394 insns) and func_8009E8F4 (1823 insns)** are
+  deliberately NOT drafted. Their in-tree m2c sketches do not compile
+  (`? *` types, 265 `->unkNN` refs). Under the QUALITY BAR they must not be
+  sealed as pasted drafts; the real prerequisite is naming the particle /
+  emitter / texture and opcode records first. That is naming work, not
+  matching work, and it is worth more than either function's score.
