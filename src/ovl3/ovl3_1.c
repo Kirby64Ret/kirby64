@@ -21,8 +21,8 @@ extern void func_80154CFC_ovl3();
 extern void func_801548DC_ovl3();
 extern void func_80155088_ovl3();
 #else
-extern void func_801548DC_ovl3(void);
-extern void func_80155088_ovl3(void);
+extern void func_801548DC_ovl3();
+extern void func_80155088_ovl3();
 #endif
 extern s32 func_801BBE50_ovl7(u8 *, void *, s32);
 extern void func_801529C0_ovl3(void);

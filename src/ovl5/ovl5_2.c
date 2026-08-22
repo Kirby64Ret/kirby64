@@ -3040,12 +3040,8 @@ void func_801649CC_ovl5(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801649CC_ovl5.s")
 #endif
-#ifdef PORT
-/* Pause-menu thread (near-clone of func_8016EF78_ovl5 in ovl5_4 and
- * func_80176170_ovl5 in ovl5_5): draws the pause panel and the four menu
- * entries, moves the cursor sprite along D_801865C4_ovl5 with C-up/C-down,
- * and on A/Start resumes (0), quits to 0x1F (1), the option screen 0x1B (2)
- * or the sound room 0xA (3). */
+// DRAFT-ITERATION: pragma text parked (asm-processor text-scans for it
+// regardless of #if nesting); restore the guard structure before handoff.
 void func_80164A34_ovl5(void) {
     extern struct UnkStruct8015C740 D_801864C4_ovl5;
     extern struct UnkStruct8015C740 D_801864E4_ovl5;
@@ -3140,9 +3136,6 @@ void func_80164A34_ovl5(void) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164A34_ovl5.s")
-#endif
 
 void func_80164DB0_ovl5(void) {
     func_800BB3F0();

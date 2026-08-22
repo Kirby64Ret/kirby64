@@ -1191,38 +1191,45 @@ u32 func_801033A8(struct struct8011BA10_temp *arg0, Vector *arg1, Vector *arg2) 
 }
 
 #ifdef MIPS_TO_C
-
-s32 func_80103528(f32 *arg0, ? *arg1, ? arg2, ? arg3, u32 *arg4) {
+/* FACTORY: 223/258, whole-function callee-saved permutation. Frame and EVERY
+ * stack slot now match the ROM exactly (0xB0 frame; spAC 0xAC, spA8 0xA8,
+ * sp9C/sp90 Vectors, sp88/sp84, sp68/sp5C Vectors, sp54; arg homes 0xB0/0xB4,
+ * arg4 0xC0) via the pad8C/pad58 dead slots and ROM-order declarations.
+ * Residue is purely which callee-saved register each value gets: ROM puts arg2 in
+ * $s7 and arg3 in $fp, the draft $s6/$s7, shifting every name one slot and so
+ * differing in nearly every word. Same register COUNT (9) both sides. */
+s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct CollisionTriangle **arg3, u32 *arg4) {
+    extern struct struct8011BA10_temp D_8012D948[];
+    extern f32 D_800E3050[];
+    extern f32 D_800E3210[];
+    extern f32 D_800E33D0[];
+    void func_80112ED4(void *, Vector *, Vector *);
     f32 spAC;
     f32 spA8;
-    f32 sp9C;
-    ? sp90;
+    Vector sp9C;
+    Vector sp90;
+    s32 pad8C;
     u32 sp88;
     s32 sp84;
-    f32 sp68;
-    f32 sp5C;
+    Vector sp68;
+    Vector sp5C;
+    s32 pad58;
     f32 sp54;
-    Vector *var_s0;
-    Vector *var_s0_2;
-    f32 var_f0;
-    f32 var_f12;
-    f32 var_f2;
-    s32 temp_v0;
-    s32 var_v0;
-    u32 var_s1;
+    struct struct8011BA10_temp *var_s0;
     u32 var_s3;
+    u32 var_s1;
     u32 var_s4;
+    f32 var_f0;
+    f32 var_f2;
+    f32 var_f12;
+    s32 temp_v0;
 
-    if (D_8012BD00.unk40 != D_8012BD00.unk44) {
-        sp9C.unk0 = gCollisionState->currPos.x;
-        sp9C.unk4 = gCollisionState->currPos.y;
-        sp9C.unk8 = gCollisionState->currPos.z;
+    if (BD00.unk40 != BD00.unk44) {
+        sp9C = gCollisionState->currPos;
         spAC = 1.1f;
         gCollisionState->unk30 = D_80129410;
-        if (func_80103004(&spAC, &sp90) != 0) {
-            gCollisionState->nextPos.x = sp90.unk0;
-            gCollisionState->nextPos.y = sp90.unk4;
-            gCollisionState->nextPos.z = sp90.unk8;
+        if (func_80103004(&spAC, &sp90, arg2, arg3) != 0) {
+            gCollisionState->nextPos = sp90;
             sp84 = 1;
         } else {
             sp84 = 0;
@@ -1231,37 +1238,36 @@ s32 func_80103528(f32 *arg0, ? *arg1, ? arg2, ? arg3, u32 *arg4) {
         sp88 = 0x14;
         var_s3 = 0;
         if (D_8012D940 != 0) {
-            var_s0 = &D_8012D948;
+            var_s0 = D_8012D948;
             do {
                 if (!(var_s0->unk2 & 1)) {
                     spA8 = 1.1f;
-                    gCollisionState->unk30 = (bitwise struct vCollisionHeader *) var_s0->y;
+                    gCollisionState->unk30 = var_s0->unk4;
                     if (var_s0->unk2 & 2) {
-                        func_80112ED4(var_s0 + 0x18, &sp68, &sp9C);
-                        func_80112ED4(var_s0 + 0x58, &sp5C, &sp68);
-                        var_f0 = sp5C - sp9C;
-                        var_f2 = sp60 - spA0;
-                        var_f12 = sp64 - spA4;
+                        func_80112ED4(&var_s0->unk18, &sp68, &sp9C);
+                        func_80112ED4(&var_s0->unk58, &sp5C, &sp68);
+                        var_f0 = sp5C.x - sp9C.x;
+                        var_f2 = sp5C.y - sp9C.y;
+                        var_f12 = sp5C.z - sp9C.z;
                     } else {
-                        temp_v0 = var_s0->unk1 * 4;
-                        var_f0 = *(&D_800E3050 + temp_v0);
-                        var_f2 = *(&D_800E3210 + temp_v0);
-                        var_f12 = *(&D_800E33D0 + temp_v0);
+                        temp_v0 = var_s0->unk1;
+                        var_f0 = D_800E3050[temp_v0];
+                        var_f2 = D_800E3210[temp_v0];
+                        var_f12 = D_800E33D0[temp_v0];
                     }
-                    gCollisionState->currPos.x = sp9C + var_f0;
-                    gCollisionState->currPos.y = spA0 + var_f2;
-                    gCollisionState->currPos.z = spA4 + var_f12;
-                    if ((func_801033A8(var_f12, var_s0, &gCollisionState->currPos, &gCollisionState->nextPos) != 0) && (func_80103004(&spA8, &sp90, arg2, arg3) != 0)) {
+                    gCollisionState->currPos.x = sp9C.x + var_f0;
+                    gCollisionState->currPos.y = sp9C.y + var_f2;
+                    gCollisionState->currPos.z = sp9C.z + var_f12;
+                    if ((func_801033A8(var_s0, &gCollisionState->currPos, &gCollisionState->nextPos) != 0) &&
+                        (func_80103004(&spA8, &sp90, arg2, arg3) != 0)) {
                         sp88 = var_s3;
-                        spAC *= spA8;
-                        gCollisionState->nextPos.x = sp90.unk0;
-                        gCollisionState->nextPos.y = sp90.unk4;
-                        gCollisionState->nextPos.z = sp90.unk8;
+                        spAC = spAC * spA8;
+                        gCollisionState->nextPos = sp90;
                         sp84 = 1;
                     }
                 }
                 var_s3 += 1;
-                var_s0 += 0xB8;
+                var_s0 += 1;
             } while (var_s3 < D_8012D940);
         }
         if (sp84 != 0) {
@@ -1269,9 +1275,7 @@ s32 func_80103528(f32 *arg0, ? *arg1, ? arg2, ? arg3, u32 *arg4) {
                 *arg0 = spAC;
             }
             if (arg1 != NULL) {
-                arg1->unk0 = sp90.unk0;
-                arg1->unk4 = sp90.unk4;
-                arg1->unk8 = sp90.unk8;
+                *arg1 = sp90;
             }
             if (arg4 != NULL) {
                 *arg4 = sp88;
@@ -1286,29 +1290,29 @@ s32 func_80103528(f32 *arg0, ? *arg1, ? arg2, ? arg3, u32 *arg4) {
     var_s4 = 0x14;
     var_s1 = 0;
     if (D_8012D940 != 0) {
-        var_s0_2 = &D_8012D948;
+        var_s0 = D_8012D948;
         do {
-            if (!(var_s0_2->unk2 & 1)) {
-                gCollisionState->unk30 = (bitwise struct vCollisionHeader *) var_s0_2->y;
-                if ((func_801033A8((bitwise f32) var_s0_2, &gCollisionState->currPos, &gCollisionState->nextPos) != 0) && (func_80103004(&sp54, arg1, arg2, arg3) != 0)) {
+            if (!(var_s0->unk2 & 1)) {
+                gCollisionState->unk30 = var_s0->unk4;
+                if ((func_801033A8(var_s0, &gCollisionState->currPos, &gCollisionState->nextPos) != 0) &&
+                    (func_80103004(&sp54, arg1, arg2, arg3) != 0)) {
                     var_s4 = var_s1;
                 }
             }
             var_s1 += 1;
-            var_s0_2 += 0xB8;
+            var_s0 += 1;
         } while (var_s1 < D_8012D940);
     }
-    var_v0 = 0;
-    if (sp54 != 1.1f) {
-        if (arg0 != NULL) {
-            *arg0 = sp54;
-        }
-        if (arg4 != NULL) {
-            *arg4 = var_s4;
-        }
-        var_v0 = 1;
+    if (sp54 == 1.1f) {
+        return 0;
     }
-    return var_v0;
+    if (arg0 != NULL) {
+        *arg0 = sp54;
+    }
+    if (arg4 != NULL) {
+        *arg4 = var_s4;
+    }
+    return 1;
 }
 #elif defined(PORT)
 /* Moving-aware raycast core (draft above, completed): like func_80103B58,
@@ -1419,7 +1423,6 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     }
 }
 #else
-void func_80103528(s32, s32, s32, s32, s32);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103528.s")
 #endif
 
@@ -1467,33 +1470,36 @@ void func_80103AA0(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s3
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
 
-#ifdef MIPS_TO_C
-s32 func_80103B58(f32 *arg0, ? arg1, ? arg2, ? arg3, u32 *arg4) {
+/* The collision raycast core: cast against the static level mesh, then against
+ * every active dynamic collider, keeping the nearest t in sp54. Sentinel 0x14
+ * in *arg4 means the static mesh won the cast; otherwise the collider index. */
+s32 func_80103B58(f32 *arg0, Vector *arg1, struct Normal **arg2, struct CollisionTriangle **arg3, u32 *arg4) {
+    extern struct struct8011BA10_temp D_8012D948[];
     f32 sp54;
-    ? *var_s0;
-    s32 var_v0;
+    struct struct8011BA10_temp *var_s0;
     u32 var_fp;
     u32 var_s1;
+    s32 pad;
 
     sp54 = 1.1f;
     gCollisionState->unk30 = D_80129410;
-    func_80103004(&sp54);
+    func_80103004(&sp54, arg1, arg2, arg3);
     var_fp = 0x14;
     var_s1 = 0;
     if (D_8012D940 != 0) {
-        var_s0 = &D_8012D948;
+        var_s0 = D_8012D948;
         do {
             if (!(var_s0->unk2 & 1)) {
                 gCollisionState->unk30 = var_s0->unk4;
-                if ((func_801033A8(var_s0, &gCollisionState->currPos, &gCollisionState->nextPos) != 0) && (func_80103004(&sp54, arg1, arg2, arg3) != 0)) {
+                if ((func_801033A8(var_s0, &gCollisionState->currPos, &gCollisionState->nextPos) != 0) &&
+                    (func_80103004(&sp54, arg1, arg2, arg3) != 0)) {
                     var_fp = var_s1;
                 }
             }
             var_s1 += 1;
-            var_s0 += 0xB8;
+            var_s0 += 1;
         } while (var_s1 < D_8012D940);
     }
-    var_v0 = 0;
     if (sp54 != 1.1f) {
         if (arg0 != NULL) {
             *arg0 = sp54;
@@ -1501,51 +1507,10 @@ s32 func_80103B58(f32 *arg0, ? arg1, ? arg2, ? arg3, u32 *arg4) {
         if (arg4 != NULL) {
             *arg4 = var_fp;
         }
-        var_v0 = 1;
+        return 1;
     }
-    return var_v0;
+    return 0;
 }
-#elif defined(PORT)
-/* The collision raycast core (draft above, completed): cast against the
- * static level mesh, then against every active dynamic collider, keeping
- * the nearest t in sp54. The draft's only gap was dropping the out slots on
- * the first func_80103004 call. Sentinel 0x14 in *arg4 means the static
- * mesh won the cast; otherwise it is the dynamic collider index. */
-s32 func_80103B58(f32 *arg0, Vector *arg1, struct Normal **arg2, struct CollisionTriangle **arg3, u32 *arg4) {
-    extern struct struct8011BA10_temp D_8012D948[];
-    extern u32 D_8012D940;
-    f32 sp54 = 1.1f;
-    u32 var_fp = 0x14;
-    u32 i;
-    s32 ret = 0;
-
-    gCollisionState->unk30 = D_80129410;
-    func_80103004(&sp54, arg1, arg2, arg3);
-    for (i = 0; i < D_8012D940; i++) {
-        struct struct8011BA10_temp *rec = &D_8012D948[i];
-
-        if (!(rec->unk2 & 1)) {
-            gCollisionState->unk30 = rec->unk4;
-            if (func_801033A8(rec, &gCollisionState->currPos, &gCollisionState->nextPos) != 0 &&
-                func_80103004(&sp54, arg1, arg2, arg3) != 0) {
-                var_fp = i;
-            }
-        }
-    }
-    if (sp54 != 1.1f) {
-        if (arg0 != NULL) {
-            *arg0 = sp54;
-        }
-        if (arg4 != NULL) {
-            *arg4 = var_fp;
-        }
-        ret = 1;
-    }
-    return ret;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103B58.s")
-#endif
 
 void func_80103CC8(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
         s32 arg5, s32 arg6, s32 arg7) {
@@ -1907,6 +1872,15 @@ u8 func_80104C24(Vector *cPos, Vector *nPos) {
 }
 
 #ifdef MIPS_TO_C
+/* BLOCKED: needs a FILE-SCOPE prototype change, which the re-foundation rules
+ * forbid. The ROM tests the return value of func_80103AA0, func_801043B0,
+ * func_80104010 and func_80104184 (beqz $v0 after each jal), but all four are
+ * defined `void` earlier in this TU. IDO rejects an in-body
+ * `extern s32 func_80103AA0();` ("redeclaration / Incompatible function return
+ * type"), and a `((s32 (*)()) f)(...)` cast-call compiles to jalr through $t9
+ * instead of the ROM's jal, so neither workaround stays inside one function.
+ * Unblock = retype those four to s32 at file scope, then re-baseline the whole
+ * TU (check_tu_size.py + sha1) because it changes every existing call site. */
 
 s32 func_80104D2C(void *arg0, void *arg1, void *arg4, s32 *arg5, s32 *arg6, s32 *arg7) {
     f32 sp6C;
@@ -2088,35 +2062,46 @@ s32 func_80104D2C(Vector *arg0, Vector *arg1, Vector *arg2, f32 *arg3, Vector *a
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_80104FB8(void *arg0) {
+/* FACTORY: 57/75, frame-size + one-slot rotation. Solved here and kept: the five
+ * low BD00 stores are SEPARATE globals (ROM emits %lo(D_8012BD04)($at) per field,
+ * not a base+offset off &D_8012BD00), and the ROM re-bases through arg0->scale and
+ * indexes PAST its end -- temp_v0[3]/temp_v0[4] are faceAngle[0]/[1]. Both are
+ * reproduced. Residue: ROM frame is 0x28 with 12 dead bytes (0x18, 0x20, 0x24)
+ * that no C spelling reserves -- unused pads and unused volatile pads are both
+ * eliminated by IDO (probed) -- plus $v0-vs-$v1 on the reloaded arg0 and three
+ * lui/mul.s one-slot rotations that follow from it. */
+void func_80104FB8(struct PositionState *arg0) {
+    extern f32 D_8012BD04;
+    extern f32 D_8012BD08;
+    extern f32 D_8012BD0C;
+    extern f32 D_8012BD10;
+    extern f32 D_8012BD14;
     f32 sp1C;
     f32 temp_f0;
-    void *temp_v0;
+    f32 *temp_v0;
 
-    sp1C = cosf(arg0->unk24);
-    temp_f0 = sinf(arg0->unk24);
-    temp_v0 = arg0 + 0x10;
-    D_8012BD04 = arg0->unk1C * temp_f0;
-    D_8012BD08 = temp_v0->unkC * sp1C;
-    D_8012BD08 = temp_v0->unk10 * temp_f0;
-    D_8012BD10 = temp_v0->unk10 * sp1C;
-    if (temp_v0->unkC > 0.0f) {
+    temp_v0 = arg0->scale;
+    sp1C = cosf(arg0->faceAngle[2]);
+    temp_f0 = sinf(arg0->faceAngle[2]);
+    D_8012BD04 = arg0->faceAngle[0] * temp_f0;
+    D_8012BD08 = temp_v0[3] * sp1C;
+    D_8012BD0C = temp_v0[4] * temp_f0;
+    D_8012BD10 = temp_v0[4] * sp1C;
+    if (temp_v0[3] > 0.0f) {
         D_8012BD14 = temp_f0;
-        D_8012BD00.unk18 = sp1C;
+        BD00.unk18 = sp1C;
     } else {
         D_8012BD14 = -temp_f0;
-        D_8012BD00.unk18 = -sp1C;
+        BD00.unk18 = -sp1C;
     }
-    D_8012BD00.unk1C = -D_8012BD00.unk14;
-    D_8012BD00.unk20 = -D_8012BD00.unk18;
-    D_8012BD00.unk24 = (D_8012BD00.unk14 * 0.1f) + D_8012BD00.unk4;
-    D_8012BD00.unk28 = (D_8012BD00.unk18 * 0.1f) + D_8012BD00.unk8;
-    D_8012BD00.unk2C = (D_8012BD00.unk1C * 0.1f) + D_8012BD00.unkC;
-    D_8012BD00.unk30 = (D_8012BD00.unk20 * 0.1f) + D_8012BD00.unk10;
+    BD00.unk1C = -BD00.unk14;
+    BD00.unk20 = -BD00.unk18;
+    BD00.unk24 = (BD00.unk14 * 0.1f) + BD00.unk4;
+    BD00.unk28 = (BD00.unk18 * 0.1f) + BD00.unk8;
+    BD00.unk2C = (BD00.unk1C * 0.1f) + BD00.unkC;
+    BD00.unk30 = (BD00.unk20 * 0.1f) + BD00.unk10;
 }
-#else
-#ifdef PORT
+#elif defined(PORT)
 /* Probe-basis setup from the facing angle: the BD00 direction basis
  * (faceAngle[0..1] x sin/cos of faceAngle[2]), the facing sign pair, its
  * negation, and the four 0.1-scaled probe offsets. Decoded from the asm;
@@ -2145,7 +2130,6 @@ void func_80104FB8(struct PositionState *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80104FB8.s")
-#endif
 #endif
 
 void func_801050E0(struct PositionState *arg0) {
@@ -2204,81 +2188,70 @@ void func_80105238(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 }
 
 #ifdef MIPS_TO_C
-
-s32 func_80105284(void *arg0, void *arg1) {
+/* FACTORY: 6/171, one-slot temp rotation in the final flags write only. Solved and
+ * kept: temp_t0 = arg0->scale held as a real pointer and indexed PAST its end
+ * (temp_t0[0..2] are scale[0..2]) -- giving it three uses is what stops IDO
+ * folding it back into $s0 displacements, and that one change took the score from
+ * 117/171 to 10/171 because ROM $t0 holds it and every &local address then lands
+ * in $t1-$t4. Also: sp50 is the flag local (not a spilled temp), and both BD00
+ * adds are written BD00-first. Residue: the last 6 words rotate t2/t4/t5 -> t3/t5/t6. */
+s32 func_80105284(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    f32 *temp_t0;
     f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
+    Vector sp6C;
+    Vector sp60;
+    Vector sp54;
     s32 sp50;
     f32 sp4C;
-    ? sp40;
-    s32 sp3C;
-    s32 sp38;
+    Vector sp40;
+    struct Normal *sp3C;
+    struct CollisionTriangle *sp38;
     s32 sp34;
-    void *sp30;
-    s32 var_v0;
-    s32 var_v1;
-    s32 var_v1_2;
-    s32 var_v1_3;
-    void *temp_t0;
 
+    temp_t0 = arg0->scale;
     sp78 = 1.1f;
-    sp54 = D_8012BD00.unk14;
-    sp58 = 0.0f;
-    sp5C = D_8012BD00.unk18;
-    sp6C = arg0->unk34;
-    sp70 = arg0->unk2C;
-    sp74 = arg0->unk38;
-    sp60 = arg0->unk4 + D_8012BD00.unk4;
-    sp64 = arg0->unk8 + arg0->unk10;
+    sp54.x = BD00.unk14;
+    sp54.y = 0.0f;
+    sp54.z = BD00.unk18;
+    sp6C.x = arg0->kirbyGroundPath[0];
+    sp6C.y = arg0->kirbyHeadPos[1];
+    sp6C.z = arg0->kirbyGroundPath[1];
+    sp60.x = BD00.unk4 + arg0->kirbyFootPos[0];
+    sp60.y = temp_t0[0] + arg0->kirbyFootPos[1];
+    sp60.z = BD00.unk8 + arg0->kirbyFootPos[2];
     sp50 = 0;
-    sp68 = arg0->unkC + D_8012BD00.unk8;
-    var_v1 = sp50;
-    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, arg1 + 0x24, arg1 + 0x20, arg1 + 0x1C) != 0) {
-        var_v1 = 1;
+    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp78, &D_8012BD34, &arg1->rec[2].norm,
+                      &arg1->rec[2].tri, &arg1->rec[2].type) != 0) {
+        sp50 = 1;
     }
-    temp_t0 = arg0 + 0x10;
-    sp70 = arg0->unk48;
-    sp64 = arg0->unk8 + temp_t0->unk8;
-    sp30 = temp_t0;
-    sp50 = var_v1;
-    var_v1_2 = sp50;
-    if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) && ((var_v1_2 == 0) || ((sp3C != arg1->unk24) && (sp4C < sp78)))) {
-        D_8012BD34.unk0 = sp40.unk0;
-        var_v1_2 = 4;
-        D_8012BD34.unk8 = sp40.unk8;
-        D_8012BD34.unk4 = sp40.unk4;
-        arg1->unk24 = sp3C;
-        arg1->unk20 = sp38;
-        arg1->unk1C = sp34;
-        sp78 = sp4C;
+    sp6C.y = arg0->kirbyHeight[1];
+    sp60.y = temp_t0[2] + arg0->kirbyFootPos[1];
+    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) {
+        if ((sp50 == 0) || ((sp3C != arg1->rec[2].norm) && (sp4C < sp78))) {
+            D_8012BD34 = sp40;
+            sp50 = 4;
+            arg1->rec[2].norm = sp3C;
+            arg1->rec[2].tri = sp38;
+            arg1->rec[2].type = sp34;
+            sp78 = sp4C;
+        }
     }
-    sp70 = arg0->unk44;
-    sp50 = var_v1_2;
-    sp64 = arg0->unk8 + sp30->unk4;
-    var_v1_3 = sp50;
-    if ((func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) && ((var_v1_3 == 0) || ((sp3C != arg1->unk24) && (sp4C < sp78)))) {
-        D_8012BD34.unk0 = sp40.unk0;
-        var_v1_3 = 2;
-        D_8012BD34.unk8 = sp40.unk8;
-        D_8012BD34.unk4 = sp40.unk4;
-        arg1->unk24 = sp3C;
-        arg1->unk20 = sp38;
-        arg1->unk1C = sp34;
+    sp6C.y = arg0->kirbyHeight[0];
+    sp60.y = temp_t0[1] + arg0->kirbyFootPos[1];
+    if (func_80104D2C(&sp6C, &sp60, &sp54, &sp4C, &sp40, &sp3C, &sp38, &sp34) != 0) {
+        if ((sp50 == 0) || ((sp3C != arg1->rec[2].norm) && (sp4C < sp78))) {
+            D_8012BD34 = sp40;
+            sp50 = 2;
+            arg1->rec[2].norm = sp3C;
+            arg1->rec[2].tri = sp38;
+            arg1->rec[2].type = sp34;
+        }
     }
-    var_v0 = 0;
-    if (var_v1_3 != 0) {
-        var_v0 = 1;
-        arg1->unk0 = (((arg1->unk0 >> 0x13) | var_v1_3) * 8) | (arg1->unk0 & 7);
+    if (sp50 != 0) {
+        arg1->flags.f.a = (arg1->flags.w >> 0x13) | sp50;
+        return 1;
     }
-    return var_v0;
+    return 0;
 }
 #elif defined(PORT)
 /* Forward wall probe (draft above, completed): three verified segment casts
@@ -2334,8 +2307,7 @@ s32 func_80105284(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         return 1;
     }
     return 0;
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80105284.s")
 #endif
 
@@ -2421,6 +2393,12 @@ s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3)
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801057C4.s")
 #endif
 #ifdef MIPS_TO_C
+/* BLOCKED (same class as func_80104D2C): the ROM tests func_80104520's return
+ * (beqz $v0 right after the jal) but func_80104520 is defined `void` earlier in
+ * this TU. IDO rejects an in-body redeclaration and a cast-call emits jalr,
+ * not jal, so there is no fix inside one function body. Unblock = retype
+ * func_80104520 to s32 at FILE SCOPE, then re-baseline the TU (check_tu_size.py
+ * + sha1) since it changes every existing call site. */
 
 s32 func_801058B8(void *arg0, void *arg1, void *arg2, f32 arg3, void *arg4, f32 *arg5, void **arg6, s32 *arg7, s32 *arg8) {
     f32 sp14C;
@@ -2831,8 +2809,16 @@ s32 func_801058B8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
    Every add in this function already emits the ROM's operand order, so the add lever has no
    purchase; named f32 temps are blocked because 3 of them cost +16 bytes of frame. */
 #ifdef MIPS_TO_C
-
+/* FACTORY: 51/203, FP temp rotation ($f4 <-> $f10, systematic). Structure, frame
+ * (0xA0), every stack slot, the 3-arm if/else chain on func_801058B8's result and
+ * all four call signatures line up 1:1. Solved and kept: -1.0f is passed in the
+ * INTEGER register $a3 (o32 float-after-pointers), and every BD00 term is written
+ * BD00-first while both dot products are written z-term-first -- restoring that
+ * order took it from 67/203 to 51/203. Remainder is which of $f4/$f10 each load
+ * and sub lands in; mul.s operand order is invariant, so no spelling reaches it. */
 void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    s32 func_801058B8(Vector *, Vector *, struct Normal *, f32, Vector *, f32 *, struct Normal **,
+                      struct CollisionTriangle **, s32 *);
     struct Normal *sp9C;
     struct CollisionTriangle *sp98;
     Vector sp8C;
@@ -2852,7 +2838,7 @@ void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp9C = arg1->rec[2].norm;
     sp98 = arg1->rec[2].tri;
     sp70 = arg1->rec[2].type;
-    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[2].norm, 0xBF800000, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
+    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[2].norm, -1.0f, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
     case 0:
         if ((((sp8C.z - sp80.z) * BD00.unk18) + ((sp8C.x - sp80.x) * BD00.unk14)) < 0.0f) {
             arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
@@ -2946,8 +2932,7 @@ void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     arg0->kirbyFootPos[0] = fin.x - BD00.unk24;
     arg0->kirbyFootPos[1] = fin.y - arg0->scale[0];
     arg0->kirbyFootPos[2] = fin.z - BD00.unk28;
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801060C4.s")
 #endif
 
@@ -3074,8 +3059,16 @@ s32 func_80106834(struct PositionState *arg0, struct UnkBCA0 *arg1) {
    mul.s $f6,$f10,$f4 where IDO gives mul.s $f6,$f4,$f10. Invariant to source operand order
    (flipping both multiplies changed nothing) -- the documented mul.s parity floor. */
 #ifdef MIPS_TO_C
-
+/* FACTORY: 51/203 -- an EXACT CLONE of func_801060C4 (the two listings differ only
+ * in the substitution table: rec[2]->rec[3], BD00 unk4/8/14/18/24/28 -> unkC/10/
+ * 1C/20/2C/30, -1.0f -> 1.0f, mask 0xFFF8|1 -> 0xFFC7|8). Ported from that draft
+ * and it reproduces the identical residue, which confirms the shape is right:
+ * the same systematic $f4 <-> $f10 rotation. Swapping the mul factor order was
+ * measured here and made it WORSE (51 -> 58), reconfirming LEVERS mul.s
+ * invariance. Note this one is s32 at file scope but sets no $v0. */
 s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    s32 func_801058B8(Vector *, Vector *, struct Normal *, f32, Vector *, f32 *, struct Normal **,
+                      struct CollisionTriangle **, s32 *);
     struct Normal *sp9C;
     struct CollisionTriangle *sp98;
     Vector sp8C;
@@ -3095,7 +3088,7 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp9C = arg1->rec[3].norm;
     sp98 = arg1->rec[3].tri;
     sp70 = arg1->rec[3].type;
-    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[3].norm, 0x3F800000, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
+    switch (func_801058B8(&D_8012BD34, &sp8C, arg1->rec[3].norm, 1.0f, &sp80, &sp6C, &sp9C, &sp98, &sp70)) {
     case 0:
         if ((((sp8C.z - sp80.z) * BD00.unk20) + ((sp8C.x - sp80.x) * BD00.unk1C)) < 0.0f) {
             arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
@@ -3186,126 +3179,111 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     arg0->kirbyFootPos[1] = fin.y - arg0->scale[0];
     arg0->kirbyFootPos[2] = fin.z - BD00.unk30;
     return r;
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80106930.s")
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 func_80106C5C(void *arg0, void *arg1) {
-    f32 sp88;
-    f32 sp84;
-    f32 sp80;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp5C;
-    void *sp58;
-    s32 sp54;
+/* FACTORY: 243/273, frame/slot-position residue. Control flow, all three
+ * func_801039E8 calls, both func_80108858 calls (-1.0f in the INTEGER $a3) and
+ * the rec[1] plumbing are all correct; the four Vectors and the scalar set match
+ * the ROM byte count (76B). What differs is placement: ROM lays locals 0x3C-0x88
+ * in a 0x90 frame with a dead word at 0x48 and 0x8C; the draft needs 0x98 and
+ * spills ~16B more, so every sp-relative word differs. Measured and rejected:
+ * modelling m2c's sp4C/sp40 spill shuffles explicitly (frame 0xB0, worse),
+ * dropping them entirely, and block-scoping temp_a2 (no change). This is the
+ * decidable-frame class of LEVERS 9/12/13 but no declaration order tried reaches
+ * base 0x3C -- pads do not help because IDO eliminates unreferenced locals. */
+s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    Vector sp80;
+    Vector sp74;
+    Vector sp68;
+    Vector sp5C;
+    struct Normal *sp58;
+    struct CollisionTriangle *sp54;
     s32 sp50;
     s32 sp4C;
     f32 sp44;
     s32 sp40;
     f32 sp3C;
-    f32 temp_f10;
-    s32 var_s0;
-    s32 var_t0;
-    s32 var_t1;
-    s32 var_t1_2;
-    s32 var_t1_3;
     s32 var_v0;
-    void *temp_a2;
-    void *temp_a2_2;
 
-    sp68 = 0.0f;
-    sp70 = 0.0f;
-    sp6C = 1.0f;
-    sp80 = arg0->unk28;
-    sp84 = arg0->unk44;
-    sp88 = arg0->unk30;
-    sp74 = arg0->unk4;
-    sp78 = arg0->unk8 + arg0->unk14;
+    sp68.x = 0.0f;
+    sp68.z = 0.0f;
+    sp68.y = 1.0f;
+    sp80.x = arg0->kirbyHeadPos[0];
+    sp80.y = arg0->kirbyHeight[0];
+    sp80.z = arg0->kirbyHeadPos[2];
+    sp74.x = arg0->kirbyFootPos[0];
+    sp74.y = arg0->kirbyFootPos[1] + arg0->scale[1];
     sp4C = 0;
-    sp7C = arg0->unkC;
-    var_t1 = sp4C;
-    if (func_801039E8(&sp80, &sp74, &sp68, 0, &D_8012BD34, arg1 + 0x18, arg1 + 0x14, arg1 + 0x10) != 0) {
-        var_t1 = 0x40;
-        sp44 = D_8012BD00.unk38;
+    sp74.z = arg0->kirbyFootPos[2];
+    if (func_801039E8(&sp80, &sp74, &sp68, 0, &D_8012BD34, &arg1->rec[1].norm, &arg1->rec[1].tri,
+                      &arg1->rec[1].type) != 0) {
+        sp4C = 0x40;
+        sp44 = BD00.unk38;
     }
-    sp80 = arg0->unk34;
-    sp88 = arg0->unk38;
-    sp74 = arg0->unk4 + D_8012BD00.unk4;
-    sp4C = var_t1;
-    sp7C = arg0->unkC + D_8012BD00.unk8;
-    var_t1_2 = sp4C;
+    sp80.x = arg0->kirbyGroundPath[0];
+    sp80.z = arg0->kirbyGroundPath[1];
+    sp74.x = arg0->kirbyFootPos[0] + BD00.unk4;
+    sp74.z = arg0->kirbyFootPos[2] + BD00.unk8;
     if (func_801039E8(&sp80, &sp74, &sp68, 0, &sp5C, &sp58, &sp54, &sp50) != 0) {
-        var_t0 = 0;
-        if (var_t1_2 == 0) {
-            var_t0 = 1;
-            sp3C = -((sp58->unk0 * (sp5C - D_8012BD00.unk4)) + (sp58->unk8 * (sp64 - D_8012BD00.unk8)) + sp58->unkC) / sp58->unk4;
+        sp40 = 0;
+        if (sp4C == 0) {
+            sp40 = 1;
+            sp3C = -((sp58->x * (sp5C.x - BD00.unk4)) + (sp58->z * (sp5C.z - BD00.unk8)) +
+                     sp58->originOffset) / sp58->y;
         } else {
-            temp_a2 = arg1->unk18;
+            struct Normal *temp_a2 = arg1->rec[1].norm;
             if (sp58 != temp_a2) {
-                temp_f10 = -((sp58->unk0 * (sp5C - D_8012BD00.unk4)) + (sp58->unk8 * (sp64 - D_8012BD00.unk8)) + sp58->unkC) / sp58->unk4;
-                sp3C = temp_f10;
-                if (temp_f10 < sp44) {
-                    sp40 = 0;
-                    var_t0 = sp40;
-                    var_t1_2 = sp4C;
-                    if (func_80108858(&D_8012BD34, &sp5C, temp_a2, 0xBF800000) != 0) {
-                        var_t0 = 1;
+                sp3C = -((sp58->x * (sp5C.x - BD00.unk4)) + (sp58->z * (sp5C.z - BD00.unk8)) +
+                         sp58->originOffset) / sp58->y;
+                if (sp3C < sp44) {
+                                    if (func_80108858(&D_8012BD34, &sp5C, temp_a2, -1.0f) != 0) {
+                        sp40 = 1;
                     }
                 }
             }
         }
-        if (var_t0 != 0) {
-            D_8012BD34.unk0 = sp5C.unk0;
-            D_8012BD34.unk4 = sp5C.unk4;
-            var_t1_2 = 0x100;
-            D_8012BD34.unk8 = sp5C.unk8;
-            arg1->unk18 = sp58;
-            arg1->unk14 = sp54;
-            arg1->unk10 = sp50;
+        if (sp40 != 0) {
+            D_8012BD34 = sp5C;
+            sp4C = 0x100;
+            arg1->rec[1].norm = sp58;
+            arg1->rec[1].tri = sp54;
+            arg1->rec[1].type = sp50;
             sp44 = sp3C;
         }
     }
-    sp80 = arg0->unk3C;
-    sp88 = arg0->unk40;
-    sp74 = arg0->unk4 + D_8012BD00.unkC;
-    sp4C = var_t1_2;
-    sp7C = arg0->unkC + D_8012BD00.unk10;
-    var_t1_3 = sp4C;
+    sp80.x = arg0->kirbyHeadPath[0];
+    sp80.z = arg0->kirbyHeadPath[1];
+    sp74.x = arg0->kirbyFootPos[0] + BD00.unkC;
+    sp74.z = arg0->kirbyFootPos[2] + BD00.unk10;
     if (func_801039E8(&sp80, &sp74, &sp68, 0, &sp5C, &sp58, &sp54, &sp50) != 0) {
-        var_s0 = 0;
-        if (var_t1_3 == 0) {
-            goto block_18;
-        }
-        temp_a2_2 = arg1->unk18;
-        if ((sp58 != temp_a2_2) && ((-((sp58->unk0 * (sp5C - D_8012BD00.unkC)) + (sp58->unk8 * (sp64 - D_8012BD00.unk10)) + sp58->unkC) / sp58->unk4) < sp44)) {
-            var_t1_3 = sp4C;
-            if (func_80108858(&D_8012BD34, &sp5C, temp_a2_2, 0xBF800000) != 0) {
-block_18:
-                var_s0 = 1;
+        sp40 = 0;
+        if (sp4C == 0) {
+            sp40 = 1;
+        } else {
+            struct Normal *temp_a2 = arg1->rec[1].norm;
+            if ((sp58 != temp_a2) &&
+                ((-((sp58->x * (sp5C.x - BD00.unkC)) + (sp58->z * (sp5C.z - BD00.unk10)) +
+                    sp58->originOffset) / sp58->y) < sp44)) {
+                            if (func_80108858(&D_8012BD34, &sp5C, temp_a2, -1.0f) != 0) {
+                    sp40 = 1;
+                }
             }
         }
-        if (var_s0 != 0) {
-            D_8012BD34.unk0 = sp5C.unk0;
-            D_8012BD34.unk4 = sp5C.unk4;
-            var_t1_3 = 0x80;
-            D_8012BD34.unk8 = sp5C.unk8;
-            arg1->unk18 = sp58;
-            arg1->unk14 = sp54;
-            arg1->unk10 = sp50;
+        if (sp40 != 0) {
+            D_8012BD34 = sp5C;
+            sp4C = 0x80;
+            arg1->rec[1].norm = sp58;
+            arg1->rec[1].tri = sp54;
+            arg1->rec[1].type = sp50;
         }
     }
     var_v0 = 0;
-    if (var_t1_3 != 0) {
+    if (sp4C != 0) {
         var_v0 = 1;
-        arg1->unk0 = (((arg1->unk0 >> 0x13) | var_t1_3) * 8) | (arg1->unk0 & 7);
+        arg1->flags.f.a = (arg1->flags.w >> 0x13) | sp4C;
     }
     return var_v0;
 }
@@ -3410,12 +3388,17 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         return 1;
     }
     return 0;
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80106C5C.s")
 #endif
 
 #ifdef MIPS_TO_C
+/* BLOCKED (same class as func_80104D2C): the ROM tests func_80103F58's return
+ * (beqz $v0 right after the jal) but func_80103F58 is defined `void` earlier in
+ * this TU. IDO rejects an in-body redeclaration and a cast-call emits jalr,
+ * not jal, so there is no fix inside one function body. Unblock = retype
+ * func_80103F58 to s32 at FILE SCOPE, then re-baseline the TU (check_tu_size.py
+ * + sha1) since it changes every existing call site. */
 
 s32 func_80107074(void *arg0, void *arg1) {
     f32 sp78;
@@ -3561,125 +3544,102 @@ s32 func_801072E0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 }
 
 #ifdef MIPS_TO_C
-
-void func_801073C4(void *arg0, void *arg1) {
-    void *spB4;
-    s32 spB0;
-    f32 spAC;
-    f32 spA8;
-    f32 spA4;
-    f32 sp98;
-    f32 sp94;
-    f32 sp90;
-    f32 sp8C;
-    f32 sp84;
-    ? sp80;
+/* FACTORY: 258/264, frame-position residue. The decode is complete and recorded:
+ * sp80 is a COPY of the spA4 start vector whose .y alone is lowered to the plane
+ * height when the 0x40 flag is clear; the switch on func_80108078 has cases 0/1/2
+ * sharing one tail that writes rec[1] back and drops the feet by scale[1]+0.1f;
+ * case 2 re-projects along the BD00.unk34 motion stamp and picks the 0x80/0x100
+ * class by which side of the facing basis the slide lands on. -1.0f goes in the
+ * integer $a3. Residue is placement: ROM saves s0/s1/ra at 0x2C-0x34 with locals
+ * 0x38-0xB4 in a 0xB8 frame; the draft needs 0xC8, keeps only one callee-saved
+ * register and spills into 0x24/0x28. Measured: collapsing the 12 m2c f32 temps
+ * onto the real stack locals took it 264 -> 258 and the frame 0xF0 -> 0xC8. */
+void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    struct Normal *spB4;
+    struct CollisionTriangle *spB0;
+    Vector spA4;
+    Vector sp98;
+    Vector sp8C;
+    Vector sp80;
     s32 sp7C;
     f32 sp78;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
+    Vector sp68;
     f32 sp3C;
     f32 sp38;
+    struct Normal *temp_t4;
     f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f10;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
     f32 temp_f2;
-    struct Normal *n;
-    f32 temp_f2_2;
-    f32 temp_f4;
-    f32 temp_f6;
-    f32 temp_f8;
+    f32 temp_f12;
     f32 var_f12;
     f32 var_f14;
-    s32 temp_v0;
     s32 var_v1;
-    void *temp_t4;
 
-    temp_t4 = arg1->unk18;
+    temp_t4 = arg1->rec[1].norm;
     spB4 = temp_t4;
-    spB0 = arg1->unk14;
-    sp7C = arg1->unk10;
-    spA4 = arg0->unk4;
-    spA8 = arg0->unk8 + arg0->unk14;
-    spAC = arg0->unkC;
-    sp80.unk0 = spA4.unk0;
-    sp80.unk4 = spA4.unk4;
-    sp80.unk8 = spA4.unk8;
-    if (!((arg1->unk0 >> 0x13) & 0x40)) {
-        temp_f0 = -((temp_t4->unk0 * spA4) + (temp_t4->unk8 * spAC) + temp_t4->unkC) / temp_t4->unk4;
-        if (temp_f0 < spA8) {
-            sp84 = temp_f0;
+    spB0 = arg1->rec[1].tri;
+    sp7C = arg1->rec[1].type;
+    spA4.x = arg0->kirbyFootPos[0];
+    spA4.y = arg0->kirbyFootPos[1] + arg0->scale[1];
+    spA4.z = arg0->kirbyFootPos[2];
+    sp80 = spA4;
+    if (!((arg1->flags.w >> 0x13) & 0x40)) {
+        temp_f0 = -((temp_t4->x * spA4.x) + (temp_t4->z * spA4.z) + temp_t4->originOffset) / temp_t4->y;
+        if (temp_f0 < spA4.y) {
+            sp80.y = temp_f0;
         }
     }
-    temp_v0 = func_80108078(&D_8012BD34, &sp80, arg1->unk18, 0xBF800000, &sp98, &sp78, &spB4, &spB0, &sp7C);
-    switch (temp_v0) {                              /* irregular */
-        case 0:
-            if (spA8 < sp9C) {
-                arg1->unk0 = (((arg1->unk0 >> 0x13) & 0xFE3F) * 8) | (arg1->unk0 & 7);
-                return;
-            }
-            sp8C.unk0 = sp98.unk0;
-            sp8C.unk4 = sp98.unk4;
-            sp8C.unk8 = sp98.unk8;
-            arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xFE3F) | 0x40) * 8) | (arg1->unk0 & 7);
-        default:
-block_18:
-            arg1->unk18 = spB4;
-            arg1->unk14 = spB0;
-            arg1->unk10 = sp7C;
-            arg0->unk4 = sp8C;
-            arg0->unk8 = (sp90 - arg0->unk14) - 0.1f;
-            arg0->unkC = sp94;
+    switch (func_80108078(&D_8012BD34, &sp80, arg1->rec[1].norm, -1.0f, &sp98, &sp78, &spB4, &spB0, &sp7C)) {
+    case 0:
+        if (spA4.y < sp98.y) {
+            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFE3F;
             return;
-        case 1:
-            sp8C.unk0 = sp98.unk0;
-            sp8C.unk4 = sp98.unk4;
-            sp8C.unk8 = sp98.unk8;
-            arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xFE3F) | 0x40) * 8) | (arg1->unk0 & 7);
-            goto block_18;
-        case 2:
-            temp_f2 = spA4 - D_8012BD00.unk34;
-            temp_f14 = spA8 - D_8012BD00.unk38;
-            sp68 = temp_f2;
-            temp_f16 = spAC - D_8012BD00.unk3C;
-            sp6C = temp_f14;
-            sp70 = temp_f16;
-            temp_f8 = sp78 / sqrtf((temp_f2 * temp_f2) + (temp_f14 * temp_f14) + (temp_f16 * temp_f16));
-            sp38 = sp98;
-            sp78 = temp_f8;
-            temp_f4 = (temp_f2 * temp_f8) + sp98;
-            temp_f10 = (temp_f14 * temp_f8) + sp9C;
-            sp8C = temp_f4;
-            sp90 = temp_f10;
-            temp_f6 = (temp_f16 * temp_f8) + spA0;
-            sp94 = temp_f6;
-            sp3C = temp_f10;
-            temp_f12 = -((spB4->unk0 * temp_f4) + (spB4->unk8 * temp_f6) + spB4->unkC) / spB4->unk4;
-            if (temp_f12 <= temp_f10) {
-                temp_f2_2 = temp_f6 - spA0;
-                sp90 = temp_f12;
-                var_v1 = 0x100;
-                temp_f0_2 = temp_f4 - sp38;
-                if (((temp_f0_2 * D_8012BD00.unk14) + (temp_f2_2 * D_8012BD00.unk18)) >= 0.0f) {
-                    var_f12 = D_8012BD00.unk2C;
-                    var_f14 = D_8012BD00.unk30;
-                    var_v1 = 0x80;
-                } else {
-                    var_f12 = D_8012BD00.unk24;
-                    var_f14 = D_8012BD00.unk28;
-                }
-                if (((temp_f0_2 * temp_f0_2) + (temp_f2_2 * temp_f2_2)) <= ((var_f12 * var_f12) + (var_f14 * var_f14))) {
-                    arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xFE3F) | var_v1) * 8) | (arg1->unk0 & 7);
-                }
-                goto block_18;
+        }
+        sp8C = sp98;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40;
+        break;
+    case 1:
+        sp8C = sp98;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40;
+        break;
+    case 2:
+        sp68.x = spA4.x - BD00.unk34;
+        sp68.y = spA4.y - BD00.unk38;
+        sp68.z = spA4.z - BD00.unk3C;
+        sp78 = sp78 / sqrtf((sp68.x * sp68.x) + (sp68.y * sp68.y) + (sp68.z * sp68.z));
+        sp38 = sp98.x;
+        sp8C.x = (sp68.x * sp78) + sp98.x;
+        sp8C.y = (sp68.y * sp78) + sp98.y;
+        sp8C.z = (sp68.z * sp78) + sp98.z;
+        sp3C = sp8C.y;
+        temp_f12 = -((spB4->x * sp8C.x) + (spB4->z * sp8C.z) + spB4->originOffset) / spB4->y;
+        if (temp_f12 <= sp3C) {
+            temp_f2 = sp8C.z - sp98.z;
+            sp8C.y = temp_f12;
+            var_v1 = 0x100;
+            temp_f0 = sp8C.x - sp38;
+            if (((temp_f0 * BD00.unk14) + (temp_f2 * BD00.unk18)) >= 0.0f) {
+                var_f12 = BD00.unk2C;
+                var_f14 = BD00.unk30;
+                var_v1 = 0x80;
+            } else {
+                var_f12 = BD00.unk24;
+                var_f14 = BD00.unk28;
             }
-            arg1->unk0 = (((arg1->unk0 >> 0x13) & 0xFE3F) * 8) | (arg1->unk0 & 7);
-            return;
+            if (((temp_f0 * temp_f0) + (temp_f2 * temp_f2)) <=
+                ((var_f12 * var_f12) + (var_f14 * var_f14))) {
+                arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFE3F) | var_v1;
+            }
+            break;
+        }
+        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFE3F;
+        return;
     }
+    arg1->rec[1].norm = spB4;
+    arg1->rec[1].tri = spB0;
+    arg1->rec[1].type = sp7C;
+    arg0->kirbyFootPos[0] = sp8C.x;
+    arg0->kirbyFootPos[1] = (sp8C.y - arg0->scale[1]) - 0.1f;
+    arg0->kirbyFootPos[2] = sp8C.z;
 }
 #elif defined(PORT)
 s32 func_80108078(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vector *arg4,
@@ -3759,8 +3719,7 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     arg0->kirbyFootPos[0] = fin.x;
     arg0->kirbyFootPos[1] = (fin.y - arg0->scale[1]) - 0.1f;
     arg0->kirbyFootPos[2] = fin.z;
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_801073C4.s")
 #endif
 
@@ -3786,6 +3745,12 @@ void func_801077D4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 }
 
 #ifdef MIPS_TO_C
+/* BLOCKED (same class as func_80104D2C): the ROM tests func_80103F58's return
+ * (beqz $v0 right after the jal) but func_80103F58 is defined `void` earlier in
+ * this TU. IDO rejects an in-body redeclaration and a cast-call emits jalr,
+ * not jal, so there is no fix inside one function body. Unblock = retype
+ * func_80103F58 to s32 at FILE SCOPE, then re-baseline the TU (check_tu_size.py
+ * + sha1) since it changes every existing call site. */
 
 s32 func_801078A0(void *arg0, void *arg1) {
     f32 sp98;
@@ -4145,6 +4110,12 @@ s32 func_80107F94(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 }
 
 #ifdef MIPS_TO_C
+/* BLOCKED (same class as func_80104D2C): the ROM tests func_80104520's return
+ * (beqz $v0 right after the jal) but func_80104520 is defined `void` earlier in
+ * this TU. IDO rejects an in-body redeclaration and a cast-call emits jalr,
+ * not jal, so there is no fix inside one function body. Unblock = retype
+ * func_80104520 to s32 at FILE SCOPE, then re-baseline the TU (check_tu_size.py
+ * + sha1) since it changes every existing call site. */
 
 s32 func_80108078(void *arg0, void *arg1, void *arg2, f32 arg3, void *arg4, f32 *arg5, void **arg6, s32 *arg7, s32 *arg8) {
     f32 sp144;
@@ -4533,6 +4504,12 @@ s32 func_80108078(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
 #endif
 
 #ifdef MIPS_TO_C
+/* BLOCKED (same class as func_80104D2C): the ROM tests func_80104520's return
+ * (beqz $v0 right after the jal) but func_80104520 is defined `void` earlier in
+ * this TU. IDO rejects an in-body redeclaration and a cast-call emits jalr,
+ * not jal, so there is no fix inside one function body. Unblock = retype
+ * func_80104520 to s32 at FILE SCOPE, then re-baseline the TU (check_tu_size.py
+ * + sha1) since it changes every existing call site. */
 
 s32 func_80108858(void *arg0, void *arg1, void *arg2, f32 arg3) {
     f32 sp11C;
@@ -4858,127 +4835,110 @@ s32 func_80108858(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3) {
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 func_80108E08(void *arg0, void *arg1) {
-    void *spB4;
-    s32 spB0;
-    f32 spAC;
-    f32 spA8;
-    f32 spA4;
-    f32 sp98;
-    f32 sp94;
-    f32 sp90;
-    f32 sp8C;
-    f32 sp84;
-    ? sp80;
+/* FACTORY: 272/272, same frame class as func_801073C4 -- these two are the
+ * ceiling/floor pair of one routine (rec[0] vs rec[1], scale[2] vs scale[1],
+ * +0.1f vs -0.1f, 1.0f vs -1.0f in the integer $a3, mask 0xF1FF|0x200|0x400|0x800
+ * vs 0xFE3F|0x40|0x80|0x100; this one also returns sp78 and zeroes it when the
+ * slide overshoots the step limit). The decode is complete. The blocker is shared
+ * and positional: ROM holds BOTH parameters in callee-saved regs ($s1=arg0,
+ * $s0=arg1) with locals at 0x38-0xB4 in a 0xB8 frame, while every draft variant
+ * keeps only ONE saved register and needs 0xC8-0xD8. Measured and rejected:
+ * splitting the unaddressed Vectors into m2c-style scalars (270 -> worse frame),
+ * hoisting var_t0 out of the switch arms (no change). Fix both together. */
+s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
+    struct Normal *spB4;
+    struct CollisionTriangle *spB0;
+    Vector spA4;
+    Vector sp98;
+    Vector sp8C;
+    Vector sp80;
     s32 sp7C;
     s32 sp78;
     f32 sp74;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
+    Vector sp64;
     f32 sp3C;
     f32 sp38;
     f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f10;
     f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f2;
-    struct Normal *n;
+    f32 temp_f0_2;
     f32 temp_f2_2;
-    f32 temp_f4;
-    f32 temp_f8;
     f32 var_f12;
     f32 var_f14;
-    s32 temp_v0;
-    s32 var_t0;
     s32 var_v1;
+    s32 var_t0;
 
-    spB4 = arg1->unkC;
-    spB0 = arg1->unk8;
-    sp7C = arg1->unk4;
-    spA4 = arg0->unk4;
-    spA8 = arg0->unk8 + arg0->unk18;
-    spAC = arg0->unkC;
-    sp80.unk0 = spA4.unk0;
-    sp80.unk4 = spA4.unk4;
-    sp80.unk8 = spA4.unk8;
-    if (!((arg1->unk0 >> 0x13) & 0x200)) {
-        temp_f0 = -((spB4->unk0 * spA4) + (spB4->unk8 * spAC) + spB4->unkC) / spB4->unk4;
-        if (spA8 < temp_f0) {
-            sp84 = temp_f0;
+    spB4 = arg1->rec[0].norm;
+    spB0 = arg1->rec[0].tri;
+    sp7C = arg1->rec[0].type;
+    spA4.x = arg0->kirbyFootPos[0];
+    spA4.y = arg0->kirbyFootPos[1] + arg0->scale[2];
+    spA4.z = arg0->kirbyFootPos[2];
+    sp80 = spA4;
+    if (!((arg1->flags.w >> 0x13) & 0x200)) {
+        temp_f0 = -((spB4->x * spA4.x) + (spB4->z * spA4.z) + spB4->originOffset) / spB4->y;
+        if (spA4.y < temp_f0) {
+            sp80.y = temp_f0;
         }
     }
     sp78 = 1;
-    temp_v0 = func_80108078(&D_8012BD34, &sp80, arg1->unkC, 0x3F800000, &sp98, &sp74, &spB4, &spB0, &sp7C);
     var_t0 = sp78;
-    switch (temp_v0) {                              /* irregular */
-        case 0:
-            if (sp9C < spA8) {
-                arg1->unk0 = (((arg1->unk0 >> 0x13) & 0xF1FF) * 8) | (arg1->unk0 & 7);
-                return 0;
-            }
-            sp8C.unk0 = sp98.unk0;
-            sp8C.unk4 = sp98.unk4;
-            sp8C.unk8 = sp98.unk8;
-            arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xF1FF) | 0x200) * 8) | (arg1->unk0 & 7);
-        default:
-block_19:
-            arg1->unkC = spB4;
-            arg1->unk8 = spB0;
-            arg1->unk4 = sp7C;
-            arg0->unk4 = sp8C;
-            arg0->unk8 = (sp90 - arg0->unk18) + 0.1f;
-            arg0->unkC = sp94;
-            return var_t0;
-        case 1:
-            sp8C.unk0 = sp98.unk0;
-            sp8C.unk4 = sp98.unk4;
-            sp8C.unk8 = sp98.unk8;
-            arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xF1FF) | 0x200) * 8) | (arg1->unk0 & 7);
-            goto block_19;
-        case 2:
-            temp_f2 = spA4 - D_8012BD00.unk34;
-            temp_f14 = spA8 - D_8012BD00.unk38;
-            sp64 = temp_f2;
-            temp_f16 = spAC - D_8012BD00.unk3C;
-            sp68 = temp_f14;
-            sp6C = temp_f16;
-            temp_f10 = sp74 / sqrtf((temp_f2 * temp_f2) + (temp_f14 * temp_f14) + (temp_f16 * temp_f16));
-            sp74 = temp_f10;
-            temp_f4 = (temp_f2 * temp_f10) + sp98;
-            temp_f8 = (temp_f14 * temp_f10) + sp9C;
-            sp8C = temp_f4;
-            sp90 = temp_f8;
-            sp94 = (temp_f16 * temp_f10) + spA0;
-            sp38 = sp98;
-            sp3C = temp_f8;
-            temp_f12 = -((spB4->unk0 * temp_f4) + (spB4->unk8 * sp94) + spB4->unkC) / spB4->unk4;
-            if (sp3C <= temp_f12) {
-                temp_f0_2 = temp_f4 - sp38;
-                sp90 = temp_f12;
-                temp_f2_2 = sp94 - spA0;
-                var_v1 = 0x800;
-                if (((temp_f0_2 * D_8012BD00.unk14) + (temp_f2_2 * D_8012BD00.unk18)) >= 0.0f) {
-                    var_f12 = D_8012BD00.unk2C;
-                    var_f14 = D_8012BD00.unk30;
-                    var_v1 = 0x400;
-                } else {
-                    var_f12 = D_8012BD00.unk24;
-                    var_f14 = D_8012BD00.unk28;
-                }
-                if (((var_f12 * var_f12) + (var_f14 * var_f14)) < ((temp_f0_2 * temp_f0_2) + (temp_f2_2 * temp_f2_2))) {
-                    var_t0 = 0;
-                } else {
-                    arg1->unk0 = ((((arg1->unk0 >> 0x13) & 0xF1FF) | var_v1) * 8) | (arg1->unk0 & 7);
-                }
-                goto block_19;
-            }
-            arg1->unk0 = (((arg1->unk0 >> 0x13) & 0xF1FF) * 8) | (arg1->unk0 & 7);
+    switch (func_80108078(&D_8012BD34, &sp80, arg1->rec[0].norm, 1.0f, &sp98, &sp74, &spB4, &spB0, &sp7C)) {
+    case 0:
+        if (sp98.y < spA4.y) {
+            arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xF1FF;
             return 0;
+        }
+        sp8C = sp98;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200;
+        break;
+    case 1:
+        sp8C = sp98;
+        arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200;
+        break;
+    case 2:
+        sp64.x = spA4.x - BD00.unk34;
+        sp64.y = spA4.y - BD00.unk38;
+        sp64.z = spA4.z - BD00.unk3C;
+        sp74 = sp74 / sqrtf((sp64.x * sp64.x) + (sp64.y * sp64.y) + (sp64.z * sp64.z));
+        sp8C.x = (sp64.x * sp74) + sp98.x;
+        sp8C.y = (sp64.y * sp74) + sp98.y;
+        sp8C.z = (sp64.z * sp74) + sp98.z;
+        sp38 = sp98.x;
+        sp3C = sp8C.y;
+        temp_f12 = -((spB4->x * sp8C.x) + (spB4->z * sp8C.z) + spB4->originOffset) / spB4->y;
+        if (sp3C <= temp_f12) {
+            temp_f0_2 = sp8C.x - sp38;
+            sp8C.y = temp_f12;
+            temp_f2_2 = sp8C.z - sp98.z;
+            var_v1 = 0x800;
+            if (((temp_f0_2 * BD00.unk14) + (temp_f2_2 * BD00.unk18)) >= 0.0f) {
+                var_f12 = BD00.unk2C;
+                var_f14 = BD00.unk30;
+                var_v1 = 0x400;
+            } else {
+                var_f12 = BD00.unk24;
+                var_f14 = BD00.unk28;
+            }
+            if (((var_f12 * var_f12) + (var_f14 * var_f14)) <
+                ((temp_f0_2 * temp_f0_2) + (temp_f2_2 * temp_f2_2))) {
+                var_t0 = 0;
+            } else {
+                arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | var_v1;
+            }
+            break;
+        }
+        arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xF1FF;
+        return 0;
+    default:
+        break;
     }
+    arg1->rec[0].norm = spB4;
+    arg1->rec[0].tri = spB0;
+    arg1->rec[0].type = sp7C;
+    arg0->kirbyFootPos[0] = sp8C.x;
+    arg0->kirbyFootPos[1] = (sp8C.y - arg0->scale[2]) + 0.1f;
+    arg0->kirbyFootPos[2] = sp8C.z;
+    return var_t0;
 }
 #elif defined(PORT)
 /* Ceiling snap resolver -- func_801073C4's mirror on rec[0]: upward walk
@@ -5056,8 +5016,7 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     arg0->kirbyFootPos[1] = (fin.y - arg0->scale[2]) + 0.1f;
     arg0->kirbyFootPos[2] = fin.z;
     return ret;
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80108E08.s")
 #endif
 
@@ -5123,13 +5082,17 @@ void func_80109318(struct PositionState *arg0, struct UnkBCA0 *arg1) {
    |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
    compare-block shape not yet tuned to the donor. */
 #ifdef MIPS_TO_C
-
+/* FACTORY: 19/123, $f16 <-> $f18 rotation only. Frame (0x50) and every stack slot
+ * match. Two things solved and kept: (1) the ROM leaves a DEAD word at 0x48 --
+ * declaring an unused `f32 sp48` between sp4C and sp44 reserves it (IDO keeps an
+ * unused SCALAR among used locals, unlike an unused array), worth 41/123 -> 24/123;
+ * (2) the facing dot product must be written z-term FIRST, 24 -> 19. Note the y
+ * solve really does scale only the z term: `x*dx + z*dz*inv + sp38.y`. */
 void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
     Vector sp38;
-    Vector pad;
     Vector sp2C;
     Vector sp20;
 
@@ -5140,14 +5103,16 @@ void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
     sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
-    sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + ((sp4C->z * (sp38.z - sp2C.z)) * sp44) + sp38.y;
+    sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + (sp4C->z * (sp38.z - sp2C.z) * sp44) + sp38.y;
     func_801057C4(arg1->rec[3].norm, &sp2C, &sp38, &sp20);
-    if (((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C))) < 0.0f) {
+    if ((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C)) < 0.0f) {
         arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
     } else {
         arg0->kirbyFootPos[0] = sp20.x - BD00.unk2C;
         arg0->kirbyFootPos[2] = sp20.z - BD00.unk30;
-        arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[1]) - 0.1f;
+        arg0->kirbyFootPos[1] =
+            ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) +
+                sp4C->originOffset) * sp44) - arg0->scale[1]) - 0.1f;
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
     }
 }
@@ -5180,8 +5145,7 @@ void func_80109504(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[1]) - 0.1f;
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
     }
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109504.s")
 #endif
 
@@ -5192,7 +5156,7 @@ void func_801096F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
          * function's args; pass them explicitly. */
         if ((func_80105284(arg0, arg1) != 0) || (func_80105530(arg0, arg1) != 0)) {
 #else
-        if ((func_80105284() != 0) || (func_80105530(arg0, arg1) != 0)) {
+        if ((func_80105284(arg0, arg1) != 0) || (func_80105530(arg0, arg1) != 0)) {
 #endif
             func_80109318(arg0, arg1);
         }
@@ -5207,31 +5171,38 @@ void func_801096F0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
    |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
    compare-block shape not yet tuned to the donor. */
 #ifdef MIPS_TO_C
-
+/* FACTORY: 19/123, $f16 <-> $f18 rotation only -- IDENTICAL residue to func_80109504
+ * and func_80109970, which confirms the shape. This is the mirror of func_80109504:
+ * sp4C is rec[0].norm, the clip plane is rec[2].norm, scale[2] at the end, mask
+ * 0xFFF8|1, and BD00 unk4/8 <-> unkC/10, unk1C/20 -> unk14/18, unk2C/30 -> unk24/28.
+ * NOTE the trap: the two probe vectors trade STACK SLOTS (the scale[0] head probe
+ * moves to 0x2C and the .y-solved one to 0x38) but func_801057C4 is still called
+ * a1=0x2C, a2=0x38 -- so the argument order does NOT swap with them. */
 void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
     Vector sp38;
-    Vector pad;
     Vector sp2C;
     Vector sp20;
 
     sp4C = arg1->rec[0].norm;
-    sp2C.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
     sp2C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
-    sp2C.z = BD00.unk10 + arg0->kirbyFootPos[2];
-    sp38.x = BD00.unk4 + arg0->kirbyFootPos[0];
-    sp38.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
+    sp38.x = BD00.unkC + arg0->kirbyFootPos[0];
+    sp38.z = BD00.unk10 + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
-    sp38.y = (sp4C->x * (sp2C.x - sp38.x)) + ((sp4C->z * (sp2C.z - sp38.z)) * sp44) + sp2C.y;
+    sp38.y = (sp4C->x * (sp2C.x - sp38.x)) + (sp4C->z * (sp2C.z - sp38.z) * sp44) + sp2C.y;
     func_801057C4(arg1->rec[2].norm, &sp2C, &sp38, &sp20);
-    if (((((sp2C.z - sp20.z) * BD00.unk18) + ((sp2C.x - sp20.x) * BD00.unk14))) < 0.0f) {
+    if ((((sp2C.z - sp20.z) * BD00.unk18) + ((sp2C.x - sp20.x) * BD00.unk14)) < 0.0f) {
         arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFF8;
     } else {
         arg0->kirbyFootPos[0] = sp20.x - BD00.unk24;
         arg0->kirbyFootPos[2] = sp20.z - BD00.unk28;
-        arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[2]) + 0.1f;
+        arg0->kirbyFootPos[1] =
+            ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) +
+                sp4C->originOffset) * sp44) - arg0->scale[2]) - 0.1f;
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
     }
 }
@@ -5264,8 +5235,7 @@ void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[2]) + 0.1f;
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
     }
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109784.s")
 #endif
 
@@ -5274,13 +5244,15 @@ void func_80109784(struct PositionState *arg0, struct UnkBCA0 *arg1) {
    |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
    compare-block shape not yet tuned to the donor. */
 #ifdef MIPS_TO_C
-
+/* FACTORY: 19/123, $f16 <-> $f18 rotation only -- IDENTICAL residue to func_80109504.
+ * Cheapest clone of the three: func_80109504 with exactly two substitutions, sp4C
+ * taken from rec[0].norm instead of rec[1].norm and scale[2] instead of scale[1].
+ * Everything else -- stack layout, BD00 fields, mask 0xFFC7|8 -- is unchanged. */
 void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     struct Normal *sp4C;
     f32 sp48;
     f32 sp44;
     Vector sp38;
-    Vector pad;
     Vector sp2C;
     Vector sp20;
 
@@ -5291,14 +5263,16 @@ void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     sp2C.x = BD00.unk4 + arg0->kirbyFootPos[0];
     sp2C.z = BD00.unk8 + arg0->kirbyFootPos[2];
     sp44 = 1.0f / sp4C->y;
-    sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + ((sp4C->z * (sp38.z - sp2C.z)) * sp44) + sp38.y;
+    sp2C.y = (sp4C->x * (sp38.x - sp2C.x)) + (sp4C->z * (sp38.z - sp2C.z) * sp44) + sp38.y;
     func_801057C4(arg1->rec[3].norm, &sp2C, &sp38, &sp20);
-    if (((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C))) < 0.0f) {
+    if ((((sp38.z - sp20.z) * BD00.unk20) + ((sp38.x - sp20.x) * BD00.unk1C)) < 0.0f) {
         arg1->flags.f.a = (arg1->flags.w >> 0x13) & 0xFFC7;
     } else {
         arg0->kirbyFootPos[0] = sp20.x - BD00.unk2C;
         arg0->kirbyFootPos[2] = sp20.z - BD00.unk30;
-        arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[2]) + 0.1f;
+        arg0->kirbyFootPos[1] =
+            ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) +
+                sp4C->originOffset) * sp44) - arg0->scale[2]) - 0.1f;
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
     }
 }
@@ -5331,8 +5305,7 @@ void func_80109970(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg0->kirbyFootPos[1] = ((-((sp4C->x * arg0->kirbyFootPos[0]) + (sp4C->z * arg0->kirbyFootPos[2]) + sp4C->originOffset) * sp44) - arg0->scale[2]) + 0.1f;
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
     }
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109970.s")
 #endif
 
@@ -5342,7 +5315,7 @@ void func_80109B5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         /* N64 register-passthrough call, as above. */
         if ((func_80105284(arg0, arg1) != 0) || (func_80105530(arg0, arg1) != 0)) {
 #else
-        if ((func_80105284() != 0) || (func_80105530(arg0, arg1) != 0)) {
+        if ((func_80105284(arg0, arg1) != 0) || (func_80105530(arg0, arg1) != 0)) {
 #endif
             func_80109784(arg0, arg1);
         }
@@ -6393,53 +6366,48 @@ s32 func_8010B480(struct PositionState *arg0) {
 
 /* FACTORY: 92/120, ROM CSEs $v0 = arg0+0x10 and spills it at 0x30; IDO folds it into lw offsets. Frame/offsets already exact. */
 #ifdef MIPS_TO_C
-
+/* FACTORY: 53/121, register-name residue ($v0 vs $t0 on the scale base) plus the
+ * load scheduling that follows it. Frame (0x60) and every stack slot -- including
+ * the 0x30 spill of the scale base and the two DEAD words at 0x58/0x5C -- match.
+ * Solved and kept: temp_v0 = arg0->scale held as a pointer (temp_v0[0..2] are
+ * scale[0..2]); adding it took 92/120 -> 69, and then declaring it FIRST while
+ * dropping the spurious second dead scalar took 69 -> 53. Measured neutral:
+ * swapping the BD00 add operand order. */
 s32 func_8010B67C(struct PositionState *arg0) {
-    f32 sp5C;
+    f32 *temp_v0;
     f32 sp58;
     Vector sp4C;
     Vector sp40;
     Vector sp34;
 
+    temp_v0 = arg0->scale;
     func_80105218(&D_8012BCA0);
     func_8010C608(arg0);
     sp34.x = BD00.unk14;
     sp34.y = 0.0f;
     sp34.z = BD00.unk18;
     sp4C.x = arg0->kirbyFootPos[0];
-    sp4C.y = arg0->scale[0] + arg0->kirbyFootPos[1];
+    sp4C.y = temp_v0[0] + arg0->kirbyFootPos[1];
     sp40.x = sp4C.x + BD00.unk4;
     sp4C.z = arg0->kirbyFootPos[2];
     sp40.z = sp4C.z + BD00.unk8;
     sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-#ifdef PORT
-        D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 8;
-#else
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 8;
-#endif
         return 1;
     }
     sp4C.x = sp4C.x + BD00.unkC;
     sp4C.z = sp4C.z + BD00.unk10;
-    sp4C.y = arg0->scale[2] + arg0->kirbyFootPos[1];
+    sp4C.y = temp_v0[2] + arg0->kirbyFootPos[1];
     sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-#ifdef PORT
-        D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x20;
-#else
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x20;
-#endif
         return 1;
     }
-    sp40.y = arg0->scale[1] + arg0->kirbyFootPos[1];
+    sp40.y = temp_v0[1] + arg0->kirbyFootPos[1];
     sp4C.y = sp40.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-#ifdef PORT
-        D_8012BCA0.flags.hw = (D_8012BCA0.flags.hw & 7) | 0x10;
-#else
         D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x10;
-#endif
         return 1;
     }
     return 0;
@@ -6502,49 +6470,45 @@ s32 func_8010B67C(struct PositionState *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
-s32 func_8010B860(void *arg0) {
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    Vector *sp30;
+/* FACTORY: 53/121 -- EXACT CLONE of func_8010B67C, identical residue, which confirms
+ * the shape. Substitution table: BD00 unk14/18 -> unk1C/20 (facing basis), unk4/8
+ * <-> unkC/10 (the two probe offsets swap), and the three result bits 8/0x20/0x10
+ * -> 0x40/0x100/0x80. Everything else, including the frame, is unchanged. */
+s32 func_8010B860(struct PositionState *arg0) {
     f32 *temp_v0;
+    f32 sp58;
+    Vector sp4C;
+    Vector sp40;
+    Vector sp34;
 
+    temp_v0 = arg0->scale;
     func_80105218(&D_8012BCA0);
     func_8010C608(arg0);
-    sp34 = D_8012BD00.unk1C;
-    sp38 = 0.0f;
-    sp3C = D_8012BD00.unk20;
-    temp_v0 = arg0 + 0x10;
-    sp4C = arg0->unk4;
-    sp50 = arg0->unk8 + *temp_v0;
-    sp40 = sp4C + D_8012BD00.unkC;
-    sp54 = arg0->unkC;
-    sp30 = temp_v0;
-    sp48 = sp54 + D_8012BD00.unk10;
-    sp44 = sp50;
+    sp34.x = BD00.unk1C;
+    sp34.y = 0.0f;
+    sp34.z = BD00.unk20;
+    sp4C.x = arg0->kirbyFootPos[0];
+    sp4C.y = temp_v0[0] + arg0->kirbyFootPos[1];
+    sp40.x = sp4C.x + BD00.unkC;
+    sp4C.z = arg0->kirbyFootPos[2];
+    sp40.z = sp4C.z + BD00.unk10;
+    sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x40;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x40;
         return 1;
     }
-    sp4C += D_8012BD00.unk4;
-    sp54 += D_8012BD00.unk8;
-    sp50 = arg0->unk8 + sp30->unk8;
-    sp44 = sp50;
+    sp4C.x = sp4C.x + BD00.unk4;
+    sp4C.z = sp4C.z + BD00.unk8;
+    sp4C.y = temp_v0[2] + arg0->kirbyFootPos[1];
+    sp40.y = sp4C.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x100;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x100;
         return 1;
     }
-    sp44 = arg0->unk8 + sp30->unk4;
-    sp50 = sp44;
+    sp40.y = temp_v0[1] + arg0->kirbyFootPos[1];
+    sp4C.y = sp40.y;
     if (func_8010423C(&sp4C, &sp40, &sp34, 0, 0, 0, 0, 0) != 0) {
-        D_8012BCA0 = (D_8012BCA0 & 7) | 0x80;
+        D_8012BCA0.flags.hw = (*(u16 *) &D_8012BCA4[-1] & 7) | 0x80;
         return 1;
     }
     return 0;
@@ -6972,49 +6936,53 @@ s32 func_8010C274(struct PositionState *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_8010C608(void *arg0) {
+/* FACTORY: 66/75, load-CSE residue. Frame is exactly right (0x38) once the m2c
+ * "locals" sp2C/sp24/sp20/sp1C are DELETED -- they are IDO's own spill slots for
+ * var_f16/var_f14/var_v1 across cosf/sinf, and declaring them too cost 16 bytes
+ * and four extra stores. Unlike func_80104FB8, this function stores BD00.unk4-10
+ * through the &D_8012BD00 base, so BD00.unkN is right here and only the unk14
+ * WRITE needs the separate D_8012BD14 extern. Residue: the ROM loads the same
+ * word twice -- 0x1C($a0) for the sign test and 0xC($v1) for the value after
+ * rebasing to arg0->scale -- and IDO CSEs them into one. Measured and rejected:
+ * a distinct struct view over arg0->scale, and assigning var_v1 in both arms;
+ * IDO's CSE is address-based, so no source spelling separates them. */
+void func_8010C608(struct PositionState *arg0) {
+    extern f32 D_8012BD14;
     f32 sp2C;
-    f32 sp24;
-    f32 sp20;
-    void *sp1C;
+    f32 *var_v1;
     f32 temp_f0;
     f32 temp_f0_2;
     f32 var_f14;
     f32 var_f16;
-    void *var_v1;
 
-    var_v1 = arg0 + 0x10;
-    if (arg0->unk1C < 0.0f) {
-        var_v1 = arg0 + 0x10;
-        var_f16 = var_v1->unkC - 0.13f;
+    if (arg0->faceAngle[0] < 0.0f) {
+        var_v1 = arg0->scale;
+        var_f16 = var_v1[3] - 0.13f;
     } else {
-        var_f16 = var_v1->unkC + 0.13f;
+        var_v1 = arg0->scale;
+        var_f16 = var_v1[3] + 0.13f;
     }
-    temp_f0 = var_v1->unk10;
+    temp_f0 = var_v1[4];
     if (temp_f0 < 0.0f) {
         var_f14 = temp_f0 - 0.13f;
     } else {
         var_f14 = temp_f0 + 0.13f;
     }
-    sp24 = var_f16;
-    sp20 = var_f14;
-    sp1C = var_v1;
-    sp2C = cosf(arg0->unk24);
-    temp_f0_2 = sinf(arg0->unk24);
-    D_8012BD00.unk4 = var_f16 * temp_f0_2;
-    D_8012BD00.unk8 = var_f16 * sp2C;
-    D_8012BD00.unkC = var_f14 * temp_f0_2;
-    D_8012BD00.unk10 = var_f14 * sp2C;
-    if (var_v1->unkC > 0.0f) {
+    sp2C = cosf(arg0->faceAngle[2]);
+    temp_f0_2 = sinf(arg0->faceAngle[2]);
+    BD00.unk4 = var_f16 * temp_f0_2;
+    BD00.unk8 = var_f16 * sp2C;
+    BD00.unkC = var_f14 * temp_f0_2;
+    BD00.unk10 = var_f14 * sp2C;
+    if (var_v1[3] > 0.0f) {
         D_8012BD14 = temp_f0_2;
-        D_8012BD00.unk18 = sp2C;
+        BD00.unk18 = sp2C;
     } else {
         D_8012BD14 = -temp_f0_2;
-        D_8012BD00.unk18 = -sp2C;
+        BD00.unk18 = -sp2C;
     }
-    D_8012BD00.unk1C = -D_8012BD00.unk14;
-    D_8012BD00.unk20 = -D_8012BD00.unk18;
+    BD00.unk1C = -BD00.unk14;
+    BD00.unk20 = -BD00.unk18;
 }
 #elif defined(PORT)
 /* Lateral probe basis with the 0.13 widening bias (draft above, named
@@ -7038,12 +7006,17 @@ void func_8010C608(struct PositionState *arg0) {
     }
     BD00.unk1C = -BD00.unk14;
     BD00.unk20 = -BD00.unk18;
-}
-#else
+}#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010C608.s")
 #endif
 
 #ifdef MIPS_TO_C
+/* BLOCKED (same class as func_80104D2C): the ROM tests func_801047F0's return
+ * (beqz $v0 right after the jal) but func_801047F0 is defined `void` earlier in
+ * this TU. IDO rejects an in-body redeclaration and a cast-call emits jalr,
+ * not jal, so there is no fix inside one function body. Unblock = retype
+ * func_801047F0 to s32 at FILE SCOPE, then re-baseline the TU (check_tu_size.py
+ * + sha1) since it changes every existing call site. */
 
 s32 func_8010C734(void *arg0) {
     f32 sp54;
@@ -7161,6 +7134,12 @@ s32 func_8010C734(struct PositionState *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
+/* BLOCKED (same class as func_80104D2C): the ROM tests func_801048A4's return
+ * (beqz $v0 right after the jal) but func_801048A4 is defined `void` earlier in
+ * this TU. IDO rejects an in-body redeclaration and a cast-call emits jalr,
+ * not jal, so there is no fix inside one function body. Unblock = retype
+ * func_801048A4 to s32 at FILE SCOPE, then re-baseline the TU (check_tu_size.py
+ * + sha1) since it changes every existing call site. */
 
 s32 func_8010CABC(void *arg0) {
     f32 sp54;

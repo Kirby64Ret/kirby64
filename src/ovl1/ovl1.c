@@ -5683,89 +5683,102 @@ void func_800A206C(void (*arg0)(), void (*arg1)()) {
 }
 
 #ifdef MIPS_TO_C
+/* FACTORY: DIFF 123/138 -- the two list passes are the MATCHED siblings
+ * func_8009BFD4 (particles) and func_800A1F30 (generators) fused, and they
+ * come out right; the residue is the argument prologue and the saved-register
+ * order it fixes. The ROM masks into $fp on entry (`andi $fp,$a0,0xFFFF`),
+ * homes the raw $a0 at 0x48(sp) -- the K&R promoted-parameter store -- and
+ * then copies $fp into $s5 separately for EACH pass; IDO instead parks the
+ * raw argument in a saved register and masks once, which rotates every
+ * save slot from 0x24 on. Measured: declaring arg0 as `u16` in the K&R
+ * definition does emit a home store but drops the andi and scores worse
+ * (127); hoisting `id = arg0 & 0xFFFF` to the first statement is what took
+ * 127 -> 123. The K&R definition itself is REQUIRED, not cosmetic:
+ * func_800A22A8/func_800A22D4 below call this with THREE arguments, so a
+ * prototyped two-parameter definition does not compile. Solved semantics:
+ * the particle pass frees to D_800D69C0/D_800D6AE0 and drops the vortex
+ * owner's live count only when (unk5C != NULL && (unk6 & 4) && kind == 2);
+ * the generator pass PARKS rather than frees a kind-2 vortex node that still
+ * has unk54 != 0 (unk40 = 0.0f, unkE = 1, and it stays linked), everything
+ * else goes to D_800D6A08/D_800D6AE2; both passes release the emitter ref
+ * through func_8009B69C at zero. The generator id lives at node+4, which
+ * struct Ovl1PNode covers with pad4[5], so it is read through a cast rather
+ * than by widening the shared struct at file scope. */
+void func_800A2080(arg0, arg1)
+s32 arg0;
+s32 arg1;
+{
+    UnkParticle *pc;
+    UnkParticle *prev_pc;
+    UnkParticle *next_pc;
+    UnkGenerator *gn;
+    struct Ovl1PNode *node;
+    struct Ovl1PNode *prev;
+    struct Ovl1PNode *next;
+    u32 id;
 
-void func_800A2080(s32 arg0, s32 arg1) {
-    ? **temp_s6;
-    ? *temp_v0;
-    ? *temp_v0_3;
-    ? *var_s0;
-    ? *var_s0_2;
-    ? *var_s1;
-    ? *var_s1_2;
-    s32 temp_fp;
-    void *temp_a0;
-    void *temp_a0_2;
-    void *temp_a0_3;
-    void *temp_a0_4;
-    void *temp_v0_2;
-
-    temp_s6 = (arg1 * 4) + &D_800D69C8;
-    var_s0 = *temp_s6;
-    temp_fp = arg0 & 0xFFFF;
-    var_s1 = NULL;
-    if (var_s0 != NULL) {
+    id = arg0 & 0xFFFF;
+    pc = D_800D69C8[arg1];
+    prev_pc = NULL;
+    if (pc != NULL) {
         do {
-            temp_v0 = var_s0->unk0;
-            if (temp_fp == var_s0->unk4) {
-                if (var_s1 == NULL) {
-                    *temp_s6 = temp_v0;
+            next_pc = pc->next;
+            if (id == pc->unk4) {
+                if (prev_pc == NULL) {
+                    D_800D69C8[arg1] = next_pc;
                 } else {
-                    *var_s1 = temp_v0;
+                    prev_pc->next = next_pc;
                 }
-                temp_v0_2 = var_s0->unk5C;
-                if ((temp_v0_2 != NULL) && (var_s0->unk6 & 4) && (temp_v0_2->unk9 == 2)) {
-                    temp_v0_2->unk54 = temp_v0_2->unk54 - 1;
+                gn = pc->unk5C;
+                if ((gn != NULL) && (pc->unk6 & 4) && (gn->kind == 2)) {
+                    gn->vars.vortex.lifetime--;
                 }
-                temp_a0 = var_s0->unk60;
-                if (temp_a0 != NULL) {
-                    temp_a0->unk2A = temp_a0->unk2A - 1;
-                    temp_a0_2 = var_s0->unk60;
-                    if (temp_a0_2->unk2A == 0) {
-                        func_8009B69C(temp_a0_2);
+                if (pc->unk60 != NULL) {
+                    pc->unk60->unk2A--;
+                    if (pc->unk60->unk2A == 0) {
+                        func_8009B69C(pc->unk60);
                     }
                 }
-                var_s0->unk0 = D_800D69C0;
-                D_800D69C0 = var_s0;
-                D_800D6AE0 -= 1;
+                pc->next = D_800D69C0;
+                D_800D69C0 = pc;
+                D_800D6AE0--;
             } else {
-                var_s1 = var_s0;
+                prev_pc = pc;
             }
-            var_s0 = temp_v0;
-        } while (temp_v0 != NULL);
+            pc = next_pc;
+        } while (next_pc != NULL);
     }
-    var_s0_2 = D_800D6A0C;
-    var_s1_2 = NULL;
-    if (var_s0_2 != NULL) {
+    node = (struct Ovl1PNode *) D_800D6A0C;
+    prev = NULL;
+    if (node != NULL) {
         do {
-            temp_v0_3 = var_s0_2->unk0;
-            if (temp_fp == var_s0_2->unk4) {
-                if ((var_s0_2->unk9 == 2) && (var_s0_2->unk54 != 0)) {
-                    var_s0_2->unk40 = 0.0f;
-                    var_s0_2->unkE = 1;
-                    goto block_29;
-                }
-                if (var_s1_2 == NULL) {
-                    D_800D6A0C = temp_v0_3;
+            next = node->next;
+            if (id == *(u16 *) ((u8 *) node + 4)) {
+                if ((node->unk9 == 2) && (node->unk54 != 0)) {
+                    node->unk40 = 0.0f;
+                    node->unkE = 1;
+                    prev = node;
                 } else {
-                    *var_s1_2 = temp_v0_3;
-                }
-                temp_a0_3 = var_s0_2->unk4C;
-                if (temp_a0_3 != NULL) {
-                    temp_a0_3->unk2A = temp_a0_3->unk2A - 1;
-                    temp_a0_4 = var_s0_2->unk4C;
-                    if (temp_a0_4->unk2A == 0) {
-                        func_8009B69C(temp_a0_4);
+                    if (prev == NULL) {
+                        D_800D6A0C = (struct Ovl1ParticleNode *) next;
+                    } else {
+                        prev->next = next;
                     }
+                    if (node->unk4C != NULL) {
+                        node->unk4C->unk2A--;
+                        if (node->unk4C->unk2A == 0) {
+                            func_8009B69C(node->unk4C);
+                        }
+                    }
+                    node->next = (struct Ovl1PNode *) D_800D6A08;
+                    D_800D6A08 = (UnkParticle *) node;
+                    D_800D6AE2--;
                 }
-                var_s0_2->unk0 = D_800D6A08;
-                D_800D6A08 = var_s0_2;
-                D_800D6AE2 -= 1;
             } else {
-block_29:
-                var_s1_2 = var_s0_2;
+                prev = node;
             }
-            var_s0_2 = temp_v0_3;
-        } while (temp_v0_3 != NULL);
+            node = next;
+        } while (next != NULL);
     }
 }
 #elif defined(PORT)

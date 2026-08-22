@@ -1362,49 +1362,7 @@ void func_8011D40C(void) {
     }
 }
 
-#ifdef MIPS_TO_C
-
-void *func_8011D4A4(f32 arg0) {
-    void *sp18;
-    s32 var_a0;
-    u8 temp_v0_2;
-    void *temp_v0;
-    void *var_v1;
-
-    temp_v0 = func_80111574(gKirbyState.unk15C, omCurrentObj->objId);
-    var_a0 = 0;
-    var_v1 = temp_v0->unk20;
-    if (temp_v0->unk1C > 0) {
-        do {
-            if (arg0 != 1.0f) {
-                temp_v0_2 = var_v1->unk4;
-                switch (temp_v0_2) {                /* irregular */
-                    case 1:
-                        var_v1->unk18 = var_v1->unk18 * arg0;
-                        break;
-                    case 2:
-                        var_v1->unkC = var_v1->unkC * arg0;
-                        var_v1->unk10 = var_v1->unk10 * arg0;
-                        var_v1->unk14 = var_v1->unk14 * arg0;
-                        var_v1->unk18 = var_v1->unk18 * arg0;
-                        var_v1->unk1C = var_v1->unk1C * arg0;
-                        var_v1->unk20 = var_v1->unk20 * arg0;
-                        var_v1->unk24 = var_v1->unk24 * arg0;
-                        break;
-                }
-            }
-            if ((var_v1->unk8 == NULL) && (gKirbyState.unk154 != 0)) {
-                var_v1->unk8 = D_800DFBD0[omCurrentObj->objId][gKirbyState.unk154];
-            }
-            var_a0 += 1;
-            var_v1 += 0x28;
-        } while (var_a0 < temp_v0->unk1C);
-    }
-    sp18 = temp_v0;
-    func_80111C4C(arg0, temp_v0, temp_v0);
-    return sp18;
-}
-#elif defined(PORT)
+#ifdef PORT
 /* PORT: (re)register Kirby's body shapes -- func_80111574 (ovl2_9.c) copies
  * the PlyEntry blob gKirbyState.unk15C points at into the global Shape28
  * arena and hands back the slot; this walks the slot's shape list, scales
@@ -1491,7 +1449,58 @@ void *func_8011D4A4(f32 arg0) {
     return slot;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011D4A4.s")
+void *func_8011D4A4(f32 arg0) {
+    struct N64Shape28 {
+        /* 0x00 */ u8 unk0;
+        /* 0x01 */ u8 pad1[3];
+        /* 0x04 */ u8 unk4;
+        /* 0x05 */ u8 pad5[3];
+        /* 0x08 */ s32 unk8;
+        /* 0x0C */ f32 unkC;
+        /* 0x10 */ f32 unk10;
+        /* 0x14 */ f32 unk14;
+        /* 0x18 */ f32 unk18;
+        /* 0x1C */ f32 unk1C;
+        /* 0x20 */ f32 unk20;
+        /* 0x24 */ f32 unk24;
+    };
+    struct N64PlySlot {
+        /* 0x00 */ s32 unk0[7];
+        /* 0x1C */ s32 unk1C;
+        /* 0x20 */ struct N64Shape28 *unk20;
+    };
+    struct N64PlySlot *func_80111574(s32, s32);
+    void func_80111C4C(struct N64PlySlot *);
+    s32 pad;
+    struct N64PlySlot *slot;
+    struct N64Shape28 *sh;
+    s32 i;
+
+    slot = func_80111574(gKirbyState.unk15C, omCurrentObj->objId);
+    for (i = 0, sh = slot->unk20; i < slot->unk1C; i++, sh++) {
+        if (arg0 != 1.0f) {
+            switch (sh->unk4) {
+            case 1:
+                sh->unk18 = sh->unk18 * arg0;
+                break;
+            case 2:
+                sh->unkC = sh->unkC * arg0;
+                sh->unk10 = sh->unk10 * arg0;
+                sh->unk14 = sh->unk14 * arg0;
+                sh->unk18 = sh->unk18 * arg0;
+                sh->unk1C = sh->unk1C * arg0;
+                sh->unk20 = sh->unk20 * arg0;
+                sh->unk24 = sh->unk24 * arg0;
+                break;
+            }
+        }
+        if ((sh->unk8 == 0) && (gKirbyState.unk154 != 0)) {
+            sh->unk8 = (s32) D_800DFBD0[omCurrentObj->objId][gKirbyState.unk154];
+        }
+    }
+    func_80111C4C(slot);
+    return slot;
+}
 #endif
 
 void func_8011D614(void) {
@@ -3629,73 +3638,95 @@ s32 func_80120CCC(f32 arg0, f32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80120CCC.s")
 #endif
 #ifdef MIPS_TO_C
+/* FACTORY: 31/143. Structure and every N64 spelling recovered: D_801283E8 is a 0xC-stride row {struct DmgPal *unk0, s32 unk4 count, s32 unk8 flash} and D_801283F0 is just that row's +8 member symbol (same masked lo16, so the row-array spelling is correct); the palette records are 0x10-stride with the hold time at +0xC; and CRUCIALLY damageFlashTimer/damagePaletteTimer are declared u16 in Player.h but the ROM reads them with lh and materialises their -1/-2 constants with addiu, so every read and store must go through *(s16 *)&field -- the plain (s16) cast emits lhu+sll+sra and the plain store emits ori 0xfffe (that one change was worth 14 words). timer must be s32, not s16, or the compare gets a redundant sign-extend. Confirmed the reset tests the PRE-decrement value (sltiu in the bne delay slot), as the PORT arm notes and m2c gets wrong. Residue: the ROM hoists &D_800D7010 into a0 before the D_800E7CE0 test so both arms share it; IDO here re-materialises it per arm, leaving the block 3 words short and rotating the temp registers after it. An explicit held u32 *dst local did not move it */
+void func_80120E74(UNUSED s32 arg0) {
+    struct DmgPal {
+        /* 0x00 */ u32 unk0;
+        /* 0x04 */ u32 unk4;
+        /* 0x08 */ u32 unk8;
+        /* 0x0C */ s32 unkC;
+    };
+    struct DmgRow {
+        /* 0x00 */ struct DmgPal *unk0;
+        /* 0x04 */ s32 unk4;
+        /* 0x08 */ s32 unk8;
+    };
+    void func_800F90C0(s32, u32 *);
+    void func_800A7BF4(u32 *, u32 *);
+    void func_800A5404(u32 *, struct DmgPal *);
+    void func_800A5468(u32 *, u32 *);
+    extern u32 D_800D7B80;
+    extern s32 D_800BE4EC;
+    extern u32 D_80128370;
+    extern struct DmgRow D_801283E8[];
+    struct DmgRow *row;
+    struct DmgPal *pal;
+    s32 count;
+    s32 sel;
+    s32 objId;
+    s32 idx;
+    s32 timer;
+    u32 *dst;
 
-void func_80120E74(s32 arg0) {
-    s32 temp_a0;
-    s32 temp_a2;
-    s32 var_v0;
-    s32 var_v1;
-    u16 temp_t3;
-    u32 temp_v1;
-    void *temp_v1_2;
-
-    func_800F90C0(omCurrentObj->objId, &gKirbyController + 0x70);
-    func_800A7BF4(&D_800D7B80 + 0x18, &gKirbyController + 0x70);
-    if (gKirbyState.damageFlashTimer == -1) {
+    func_800F90C0(omCurrentObj->objId, &D_800D7010 + 0x12);
+    func_800A7BF4(&D_800D7B80 + 6, &D_800D7010 + 0x12);
+    if (*(s16 *) &gKirbyState.damageFlashTimer == -1) {
         if (gKirbyState.damageType != 0) {
-            gKirbyState.damageFlashTimer = -2;
-            goto block_10;
+            *(s16 *) &gKirbyState.damageFlashTimer = -2;
+            goto block10;
         }
-        temp_v1 = omCurrentObj->objId;
-        if (D_800E7CE0[temp_v1] == 0) {
-            if (gKirbyState.unk10 == 0) {
-                func_800F90C0(temp_v1, &D_800D7010);
+        {
+            dst = &D_800D7010;
+            objId = omCurrentObj->objId;
+            if (D_800E7CE0[objId] == 0) {
+                if (gKirbyState.unk10 == 0) {
+                    func_800F90C0(objId, dst);
+                    return;
+                }
+                func_800A5404(dst, (struct DmgPal *) gKirbyState.unk10);
                 return;
             }
-            func_800A5404(&D_800D7010, gKirbyState.unk10);
+            sel = 1;
+            if (D_800BE4EC & 2) {
+                sel = 0;
+            }
+            func_800A5468(dst, (sel * 0xC) + &D_80128370);
             return;
         }
-        var_v0 = 1;
-        if (D_800BE4EC & 2) {
-            var_v0 = 0;
-        }
-        func_800A5468(&D_800D7010, (var_v0 * 0xC) + &D_80128370);
-        return;
     }
-block_10:
-    if (gKirbyState.damageFlashTimer == -2) {
+block10:
+    timer = *(s16 *) &gKirbyState.damageFlashTimer;
+    if (timer == -2) {
         gKirbyState.damagePaletteIndex = 0xFFFF;
         D_800E7CE0[omCurrentObj->objId] = 0;
         gKirbyState.damagePaletteTimer = 1;
-        gKirbyState.damageFlashTimer = *(&D_801283F0 + (gKirbyState.damageType * 0xC));
-        goto block_14;
+        *(s16 *) &gKirbyState.damageFlashTimer = D_801283E8[gKirbyState.damageType].unk8;
+    } else {
+        *(s16 *) &gKirbyState.damageFlashTimer = timer - 1;
+        if (timer == 0) {
+            gKirbyState.damageType = 0;
+            *(s16 *) &gKirbyState.damageFlashTimer = -1;
+            return;
+        }
     }
-    gKirbyState.damageFlashTimer = gKirbyState.damageFlashTimer - 1;
-    if (gKirbyState.damageFlashTimer == 0) {
-        gKirbyState.damageType = 0;
-        gKirbyState.damageFlashTimer = -1;
-        return;
-    }
-block_14:
-    temp_v1_2 = (gKirbyState.damageType * 0xC) + &D_801283E8;
-    temp_a0 = temp_v1_2->unk4;
-    if (temp_a0 == -1) {
+    row = &D_801283E8[gKirbyState.damageType];
+    count = row->unk4;
+    if (count == -1) {
         func_800F90C0(omCurrentObj->objId, &D_800D7010);
         return;
     }
-    temp_a2 = temp_v1_2->unk0;
-    gKirbyState.damagePaletteTimer = gKirbyState.damagePaletteTimer - 1;
-    if (gKirbyState.damagePaletteTimer == 0) {
-        temp_t3 = gKirbyState.damagePaletteIndex + 1;
-        var_v1 = temp_t3 & 0xFFFF;
-        gKirbyState.damagePaletteIndex = temp_t3;
-        if (var_v1 == temp_a0) {
+    pal = row->unk0;
+    gKirbyState.damagePaletteTimer = *(s16 *) &gKirbyState.damagePaletteTimer - 1;
+    if (*(s16 *) &gKirbyState.damagePaletteTimer == 0) {
+        gKirbyState.damagePaletteIndex = gKirbyState.damagePaletteIndex + 1;
+        idx = gKirbyState.damagePaletteIndex & 0xFFFF;
+        if (idx == count) {
             gKirbyState.damagePaletteIndex = 0;
-            var_v1 = 0 & 0xFFFF;
+            idx = 0;
         }
-        gKirbyState.damagePaletteTimer = (temp_a2 + (var_v1 * 0x10))->unkC;
+        gKirbyState.damagePaletteTimer = pal[idx].unkC;
     }
-    func_800A5404(&D_800D7010, (gKirbyState.damagePaletteIndex * 0x10) + temp_a2, temp_a2);
+    func_800A5404(&D_800D7010, &pal[gKirbyState.damagePaletteIndex]);
 }
 #elif defined(PORT)
 /* PORT: Kirby's damage-flash palette driver, from
@@ -3982,34 +4013,25 @@ s32 func_801217B8(void) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
 s32 func_80121828(f32 arg0, f32 arg1, f32 arg2, f32 arg3) {
-    u32 temp_a0;
-    u32 temp_a0_2;
-
-    temp_a0 = omCurrentObj->objId;
-    if (D_800E8920[temp_a0] != 0) {
-        if (D_800E3210[temp_a0] != 0.0f) {
-            D_800E3750[temp_a0] = 0.0f;
-            temp_a0_2 = omCurrentObj->objId;
-            D_800E3210[temp_a0_2] = D_800E3750[temp_a0_2];
+    if (D_800E8920[omCurrentObj->objId] != 0) {
+        if (D_800E3210[omCurrentObj->objId] != 0.0f) {
+            D_800E3750[omCurrentObj->objId] = 0.0;
+            D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
             D_800E3C90[omCurrentObj->objId] = 65535.0f;
             return 1;
         }
-        /* Duplicate return node #12. Try simplifying control flow for better match */
-        return 0;
-    }
-    if (D_800E8AE0[temp_a0] & 6) {
-        if (arg3 != D_800E3C90[temp_a0]) {
-            D_800E3750[temp_a0] = -0.4f;
+    } else if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        if (arg3 != D_800E3C90[omCurrentObj->objId]) {
+            D_800E3750[omCurrentObj->objId] = -0.4f;
             if (arg3 < 0.0f) {
                 D_800E3C90[omCurrentObj->objId] = -arg3;
             } else {
                 D_800E3C90[omCurrentObj->objId] = arg3;
             }
         }
-    } else if (arg1 != D_800E3C90[temp_a0]) {
-        D_800E3750[temp_a0] = -0.980665f;
+    } else if (arg1 != D_800E3C90[omCurrentObj->objId]) {
+        D_800E3750[omCurrentObj->objId] = -0.980665f;
         if (arg1 < 0.0f) {
             D_800E3C90[omCurrentObj->objId] = -arg1;
         } else {
@@ -4018,48 +4040,6 @@ s32 func_80121828(f32 arg0, f32 arg1, f32 arg2, f32 arg3) {
     }
     return 0;
 }
-#elif defined(PORT)
-/* Gravity/terminal-velocity select (draft above, asm-faithful): on
- * landing zero the fall state and open the cap; otherwise pick the
- * water or air gravity and cap by the matching argument. */
-s32 func_80121828(f32 arg0, f32 arg1, f32 arg2, f32 arg3) {
-    u32 temp_a0;
-    u32 temp_a0_2;
-
-    temp_a0 = omCurrentObj->objId;
-    if (D_800E8920[temp_a0] != 0) {
-        if (D_800E3210[temp_a0] != 0.0f) {
-            D_800E3750[temp_a0] = 0.0f;
-            temp_a0_2 = omCurrentObj->objId;
-            D_800E3210[temp_a0_2] = D_800E3750[temp_a0_2];
-            D_800E3C90[omCurrentObj->objId] = 65535.0f;
-            return 1;
-        }
-        /* Duplicate return node #12. Try simplifying control flow for better match */
-        return 0;
-    }
-    if (D_800E8AE0[temp_a0] & 6) {
-        if (arg3 != D_800E3C90[temp_a0]) {
-            D_800E3750[temp_a0] = -0.4f;
-            if (arg3 < 0.0f) {
-                D_800E3C90[omCurrentObj->objId] = -arg3;
-            } else {
-                D_800E3C90[omCurrentObj->objId] = arg3;
-            }
-        }
-    } else if (arg1 != D_800E3C90[temp_a0]) {
-        D_800E3750[temp_a0] = -0.980665f;
-        if (arg1 < 0.0f) {
-            D_800E3C90[omCurrentObj->objId] = -arg1;
-        } else {
-            D_800E3C90[omCurrentObj->objId] = arg1;
-        }
-    }
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80121828.s")
-#endif
 
 void func_801219C8(void) {
     if (func_801215DC() == 2) {
@@ -4424,43 +4404,7 @@ s32 func_80122460(void) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
-
-s32 func_80122558(void) {
-    s32 sp74;
-    ? sp1C;
-    f32 temp_f0;
-    s32 var_a1;
-    u32 temp_v0;
-
-    if ((gKirbyState.unk15 == 0) && (gKirbyState.unk4 == 0)) {
-        var_a1 = 0;
-        if (!(gKirbyState.isTurning & 5)) {
-            M2C_MEMCPY_ALIGNED(&sp1C, &D_8012BCA0, 0x54);
-            *(&sp1C + 0x54) = *(&D_8012BCA0 + 0x54);
-            temp_f0 = D_800E6A10[omCurrentObj->objId];
-            if (((temp_f0 == 1.0f) && (gKirbyState.rightCollisionNext != 0)) || ((temp_f0 == -1.0f) && (gKirbyState.leftCollisionNext != 0))) {
-                sp74 = 0;
-                var_a1 = 0;
-                if ((func_8010C734(&gPositionState, 0, &D_8012BCA0) != 0) && ((temp_v0 = D_8012BCA0 >> 0x13, ((temp_v0 & 7) == 7)) || ((temp_v0 & 0x38) == 0x38))) {
-                    var_a1 = 1;
-                }
-            }
-            M2C_MEMCPY_ALIGNED(&D_8012BCA0, &sp1C, 0x58);
-            if (var_a1 != 0) {
-                gKirbyState.unk30 = 0;
-                gKirbyState.unk168 = 0.0f;
-                gKirbyState.unk164 = gKirbyState.unk168;
-                set_kirby_action_1(0xD, 0xA);
-                return 1;
-            }
-            goto block_13;
-        }
-    }
-block_13:
-    return 0;
-}
-#elif defined(PORT)
+#ifdef PORT
 /* PORT: wall-grab probe (action 0xD), from
  * asm/nonmatchings/ovl2/plylib/func_80122558.s. The ROM saves the whole
  * 0x58-byte collision result block D_8012BCA0 around the probe and
@@ -4508,7 +4452,41 @@ s32 func_80122558(void) {
     return 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_80122558.s")
+s32 func_80122558(void) {
+    struct Unk8012BCA0 {
+        /* 0x00 */ u32 unk0;
+        /* 0x04 */ u8 pad4[0x54];
+    };
+    s32 func_8010C734(struct PositionState *);
+    extern u8 D_8012BCA0[];
+    s32 grab;
+    struct Unk8012BCA0 saved;
+
+    if ((gKirbyState.unk15 == 0) && (gKirbyState.unk4 == 0)) {
+        if (!(gKirbyState.isTurning & 5)) {
+            grab = 0;
+            saved = *(struct Unk8012BCA0 *) D_8012BCA0;
+            if (((D_800E6A10[omCurrentObj->objId] == 1.0f) && (gKirbyState.rightCollisionNext != 0)) ||
+            ((D_800E6A10[omCurrentObj->objId] == -1.0f) && (gKirbyState.leftCollisionNext != 0))) {
+                if (func_8010C734(&gPositionState) != 0) {
+                    if ((((((struct Unk8012BCA0 *) D_8012BCA0)->unk0 >> 19) & 7) == 7) ||
+                    (((((struct Unk8012BCA0 *) D_8012BCA0)->unk0 >> 19) & 0x38) == 0x38)) {
+                        grab = 1;
+                    }
+                }
+            }
+            *(struct Unk8012BCA0 *) D_8012BCA0 = saved;
+            if (grab != 0) {
+                gKirbyState.unk30 = 0;
+                gKirbyState.unk168 = 0.0f;
+                gKirbyState.unk164 = gKirbyState.unk168;
+                set_kirby_action_1(0xD, 0xA);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 #endif
 
 #ifdef MIPS_TO_C
@@ -4709,83 +4687,72 @@ void func_80122CA0(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 7/139 positional, but structurally solved: frame 0x90 exact, and the N64 record view recovered -- D_8012BCA0 is NOT a flat byte block here, it is parallel arrays (record pointers at +0x40, source ids at +0x4C, both stride 4) that IDO walks with ONE induction pointer, which is why both displacements ride the same register. Record flag is a u8 at +4 tested against a hoisted constant 1. Note D_8012BCA0 must be declared 'extern u8 D_8012BCA0[]' and cast at each use: IDO rejects two block-scope externs of one object under block-scope struct types even when the definitions are textually identical (verified), and func_80122558 in this TU also declares it. Residue: the ROM holds &raised in s5 (6 callee-saved regs) where IDO here uses 5 and re-materialises the address, shifting every save slot by one. Tried an explicit held f32 *rp in two declaration positions; both grew the frame instead */
 void func_80122CE8(void) {
-    f32 sp84;
-    f32 sp80;
-    f32 sp7C;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    ? sp5C;
-    ? sp50;
-    ? *var_s2;
-    ? *var_v0;
-    ? var_a2;
-    f32 temp_f0;
-    s32 temp_v0;
-    s32 temp_v0_2;
-    s32 var_s3;
-    s32 var_v1;
-    u32 temp_v1;
-    void *temp_s1;
+    struct WaterRec {
+        /* 0x00 */ s32 unk0;
+        /* 0x04 */ u8 unk4;
+    };
+    struct Unk8012BCA0 {
+        /* 0x00 */ u8 pad0[0x40];
+        /* 0x40 */ struct WaterRec *unk40[3];
+        /* 0x4C */ s32 unk4C[3];
+    };
+    extern u8 D_8012BCA0[];
+    s32 func_8010DF9C(f32 *);
+    s32 func_8010E048(struct WaterRec *, s32, f32 *, f32 *, void **, f32 *);
+    struct WaterRec *rec;
+    u32 id;
+    s32 cnt;
+    s32 cnt2;
+    s32 i;
+    s32 j;
+    u16 kind;
+    f32 dy;
+    f32 pos[3];
+    f32 raised[3];
+    void *n;
+    f32 pt[3];
 
-    temp_v1 = omCurrentObj->objId;
-    sp7C = gEntitiesNextPosXArray[temp_v1];
-    sp80 = *D_800E0490[temp_v1]->unk4 + gEntitiesNextPosYArray[temp_v1];
-    sp84 = gEntitiesNextPosZArray[temp_v1];
-    temp_v0 = func_8010DF9C(&sp7C);
-    if ((temp_v0 != 0) && (var_s3 = 0, (temp_v0 != 0))) {
-        var_s2 = &D_8012BCA0;
-loop_3:
-        temp_s1 = var_s2->unk40;
-        if (temp_s1->unk4 == 1) {
-            sp64 = sp7C;
-            sp6C = sp84;
-            sp68 = sp80 + 120.0f;
-            temp_v0_2 = func_8010DF9C(&sp64);
-            if (temp_v0_2 != 0) {
-                var_v1 = 0;
-                if (temp_v0_2 != 0) {
-                    var_v0 = &D_8012BCA0;
-loop_7:
-                    var_v1 += 1;
-                    if (var_v0->unk40->unk4 == 1) {
-                        func_800A7F74(5, 1, 0x1E, sp7C, sp80, sp84);
+    id = omCurrentObj->objId;
+    pos[0] = gEntitiesNextPosXArray[id];
+    pos[1] = *D_800E0490[id][1] + gEntitiesNextPosYArray[id];
+    pos[2] = gEntitiesNextPosZArray[id];
+    cnt = func_8010DF9C(pos);
+    if (cnt == 0) {
+        return;
+    }
+    for (i = 0; i < cnt; i++) {
+        rec = ((struct Unk8012BCA0 *) D_8012BCA0)->unk40[i];
+        if (rec->unk4 == 1) {
+            raised[0] = pos[0];
+            raised[2] = pos[2];
+            raised[1] = pos[1] + 120.0f;
+            cnt2 = func_8010DF9C(raised);
+            if (cnt2 != 0) {
+                for (j = 0; j < cnt2; j++) {
+                    if (((struct Unk8012BCA0 *) D_8012BCA0)->unk40[j]->unk4 == 1) {
+                        func_800A7F74(5, 1, 0x1E, pos[0], pos[1], pos[2]);
                         return;
                     }
-                    var_v0 += 4;
-                    if (var_v1 == temp_v0_2) {
-                        goto block_18;
-                    }
-                    goto loop_7;
                 }
-                goto block_18;
+                continue;
             }
-            if (func_8010E048(temp_s1, var_s2->unk4C, &sp7C, &sp64, &sp5C, &sp50) != 0) {
-                temp_f0 = sp54 - sp80;
-                if (!(temp_f0 < 40.0f)) {
-                    if (temp_f0 < 80.0f) {
-                        var_a2 = 0x3B;
-                    } else {
-                        var_a2 = 0x3A;
-                    }
-                    goto block_17;
+            if (func_8010E048(rec, ((struct Unk8012BCA0 *) D_8012BCA0)->unk4C[i], pos, raised, &n, pt) != 0) {
+                dy = pt[1] - pos[1];
+                if (dy < 40.0f) {
+                    return;
+                }
+                if (dy < 80.0f) {
+                    kind = 0x3B;
+                } else {
+                    kind = 0x3A;
                 }
             } else {
-                var_a2 = 0x1E;
-block_17:
-                func_800A7F74(5, 1, var_a2, sp7C, sp80, sp84);
+                kind = 0x1E;
             }
-        } else {
-block_18:
-            var_s3 += 1;
-            var_s2 += 4;
-            if (var_s3 == temp_v0) {
-
-            } else {
-                goto loop_3;
-            }
+            func_800A7F74(5, 1, kind, pos[0], pos[1], pos[2]);
+            return;
         }
     }
 }

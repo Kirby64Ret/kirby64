@@ -379,7 +379,90 @@ void func_801C010C_ovl7(GObj *arg0) {
     }
 }
 
-#ifdef PORT
+/* FACTORY: 14/174, whole-function callee-saved permutation.  The ROM saves
+   TWO s-registers -- $s1 = &omCurrentObj, $s0 = ent -- while our IDO saves
+   only $s0 (= &omCurrentObj) and keeps ent in a temp; that one decision
+   renames most of the body and drops the info struct from the ROM's
+   sp+0x38 to sp+0x30.  Re-adding the `u32 id` local restores the ROM's
+   frame size (0x58) but not the register split; trailing pads only grow
+   the frame (0x60).  Structure, control flow and the four-way event
+   dispatch are otherwise the ROM's.
+   N64 spellings: the switch is on (u32) D_800E83E0[omCurrentObj->objId]
+   and objId is re-read INLINE at each use after the first (the PORT arm's
+   cached `id` reload pattern is a PC artefact); the listing returns $v0=0
+   on the no-anim path, so this is an s32 function on N64 while the
+   file-scope declaration says void -- do NOT retype that declaration at
+   file scope (two call sites depend on it); the permuter should retype it
+   only inside its own copy. */
+#ifdef MIPS_TO_C
+void func_801C02D0_ovl7(void) {
+    void func_80111550(u32);
+    void *func_80111C88(void *, u32);
+    void func_80111ECC(void *);
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    s32 func_801A0244_ovl7(s32);
+    struct Ovl7_17_AnimInfoA {
+        u8 unk0;
+        u8 unk1;
+        u8 unk2;
+        u8 unk3;
+        u8 filler4[8];
+        s32 unkC;
+        u8 filler10[0x10];
+    };
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct Ovl7_17_AnimInfoA info;
+
+    if (ent->unk8C == NULL) {
+        return;
+    }
+    func_80111550(id);
+    func_80111ECC(func_80111C88(ent->unk8C, omCurrentObj->objId));
+    if (func_80110B00(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = info.unk3;
+    } else if (func_80110FD4(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = info.unk3;
+    } else {
+        if (func_80110150(&info) != 0) {
+            D_800E83E0[omCurrentObj->objId] = info.unk2;
+        } else {
+            D_800E83E0[omCurrentObj->objId] = 0;
+        }
+        ent->unk43 = 0;
+    }
+    switch ((u32) D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+        if (info.unkC == 0) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801BF598_ovl7);
+            return;
+        }
+        if (func_801A0244_ovl7(info.unkC) != -1) {
+            D_800E83E0[omCurrentObj->objId] = 0x12;
+            play_sound(0xF4);
+            ent->unk94 = NULL;
+            ent->unk40 = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+            return;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(GObj *)) func_801C0610_ovl7);
+        return;
+    case 3:
+        D_800E8220[omCurrentObj->objId] = 0;
+        if (info.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = info.unkC;
+        }
+        gKirbyState.numberInhaling += 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return;
+    }
+}
+#elif defined(PORT)
 /* Boss/miniboss anim-event pump, grabbable phase (ported from m2c): step
  * the anim script and drain the pending event into D_800E83E0/unk43;
  * event 1 with a zero payload re-enters state 1 via func_801BF598_ovl7,
@@ -856,7 +939,74 @@ void func_801C1A90_ovl7(GObj *arg0) {
     }
 }
 
-#ifdef PORT
+/* FACTORY: 4/147 structurally, one register transposition.  Frame (0x50),
+   info struct at 0x30, ent spill at 0x28, all four event arms, the u32
+   switch and both dispatch tails are the ROM's -- `u32 id` must be a real
+   local here (the ROM materialises objId in $v0 and copies `or $a0,$v0`
+   for func_80111550; inlining it loads straight into $a0 and costs the
+   frame 8 bytes).  Residue: the ROM holds id in $v0 and ent in $v1; ours
+   holds id in $a0 and ent in $v0, which renames most of the body.
+   Same family as func_801C02D0_ovl7 above -- note the OPPOSITE lever
+   applies there (inline objId, no `id` local), so do not unify them. */
+#ifdef MIPS_TO_C
+void func_801C1BB8_ovl7(void) {
+    void func_80111550(u32);
+    void *func_80111C88(void *, u32);
+    void func_80111ECC(void *);
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    struct Ovl7_17_AnimInfoB {
+        u8 unk0;
+        u8 unk1;
+        u8 unk2;
+        u8 unk3;
+        u8 filler4[8];
+        s32 unkC;
+        u8 filler10[0x10];
+    };
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
+    struct Ovl7_17_AnimInfoB info;
+
+    if (ent->unk8C == NULL) {
+        return;
+    }
+    func_80111550(id);
+    func_80111ECC(func_80111C88(ent->unk8C, omCurrentObj->objId));
+    if (func_80110B00(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = info.unk3;
+    } else if (func_80110FD4(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = info.unk3;
+    } else if (func_80110150(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = 0;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+    }
+    switch ((u32) D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+        if (info.unkC == 0) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801C08E8_ovl7);
+            return;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(GObj *)) func_801C0610_ovl7);
+        return;
+    case 3:
+        D_800E8220[omCurrentObj->objId] = 0;
+        if (info.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = info.unkC;
+        }
+        gKirbyState.numberInhaling += 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return;
+    }
+}
+#elif defined(PORT)
 /* Second boss anim-event pump (ported from m2c): same drain as
  * func_801C02D0_ovl7 but the 0150 branch keeps the event id, event 1 with
  * zero payload re-enters state 1 via func_801C08E8_ovl7, a nonzero
