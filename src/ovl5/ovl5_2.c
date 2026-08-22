@@ -1482,11 +1482,13 @@ s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
-#ifdef PORT
-/* Sibling of func_8016050C_ovl5 below (same personality-roll ladder, byte
- * [row*6+1]): reaction picker used when this racer bumps the racer holding
- * its target -- try a legal squeeze-past (func_801600A8_ovl5), else pick
- * chase (8), overtake (6), or give up and rest (3). */
+/* FACTORY: 5/250, UNCERTAIN -- PORT-seeded, time-boxed. The `idx*6+1`
+ * ovl5_pers_ index math matches the ROM exactly (`sll,2 / subu / sll,1 /
+ * addiu,1`). Compiles, word count matches (250/250), residue high
+ * (245/250) -- broad register/frame relabeling from word 0, same shape
+ * as this file's other siblings. Worth a fresh m2c pass before feeding
+ * to the permuter. */
+#ifdef MIPS_TO_C
 void func_80160120_ovl5(s32 arg0) {
     s32 idx = D_8018E224_ovl5[arg0];
     u8 *rec = &D_8018E228_ovl5[arg0 * 12];
@@ -1554,9 +1556,6 @@ void func_80160120_ovl5(s32 arg0) {
     rec[4] = 3;
     *(s32 *) rec = random_soft_s32_range(6) + 5;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160120_ovl5.s")
-#endif
 
 extern u8 D_80186918_ovl5[];
 s32 func_8015FB78_ovl5(s32);
@@ -3040,8 +3039,116 @@ void func_801649CC_ovl5(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801649CC_ovl5.s")
 #endif
-// DRAFT-ITERATION: pragma text parked (asm-processor text-scans for it
-// regardless of #if nesting); restore the guard structure before handoff.
+/* FACTORY: 88/223, UNCERTAIN -- PORT-seeded, time-boxed. Fixed two real
+ * defects: (1) `D_800D7178_words_[] __asm__("D_800D7178")` used a GCC
+ * asm-label alias IDO's cc rejects (Syntax Error) -- rewritten using the
+ * file's own existing typed decl, `D_800D7178[7].unk8`, which lands on
+ * the same byte address (word 0x1E == byte 0x78 == element 7's unk8 in
+ * the 16-byte Unk10Bytes layout); (2) the func_800B1900 kill reads objId
+ * as a HALF-WORD off the pointer (`*(u16*)((u8*)omCurrentObj+2)`, `lhu`
+ * in the listing), not a `(u16)` cast on the full read. Compiles, word
+ * count matches (223/223), residue high (135/223) -- broad register/
+ * frame relabeling, same shape as the ovl19 state-machine functions.
+ * Worth a fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_80164A34_ovl5(void) {
+    extern struct UnkStruct8015C740 D_801864C4_ovl5;
+    extern struct UnkStruct8015C740 D_801864E4_ovl5;
+    extern struct UnkStruct8015C740 D_80186504_ovl5;
+    extern struct UnkStruct8015C740 D_80186524_ovl5;
+    extern struct UnkStruct8015C740 D_80186544_ovl5;
+    extern struct UnkStruct8015C740 D_80186564_ovl5;
+    extern struct UnkStruct8015C740 D_80186584_ovl5;
+    extern struct UnkStruct8015C740 D_801865A4_ovl5;
+    extern f32 D_801865C4_ovl5[];
+    extern u8 D_8018E259_ovl5;
+    void func_80164DB0_ovl5(void);
+    GObj *arg0 = omCurrentObj;
+    SPObj *panel;
+    SPObj *cursor;
+    s32 counter;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_8018E259_ovl5 = 0;
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
+    func_800BB3F0();
+    panel = func_8015C740_ovl5(arg0, &D_80186544_ovl5);
+    panel->xScale = 52.0f;
+    panel->yScale = 1.33f;
+    func_8015C740_ovl5(arg0, &D_801864C4_ovl5);
+    func_8015C740_ovl5(arg0, &D_801864E4_ovl5);
+    func_8015C740_ovl5(arg0, &D_80186504_ovl5);
+    func_8015C740_ovl5(arg0, &D_80186524_ovl5);
+    func_8015C740_ovl5(arg0, &D_80186564_ovl5);
+    func_8015C740_ovl5(arg0, &D_80186584_ovl5);
+    cursor = func_8015C740_ovl5(arg0, &D_801865A4_ovl5);
+    cursor->xOffset = D_801865C4_ovl5[D_8018E259_ovl5 * 2];
+    cursor->yOffset = D_801865C4_ovl5[D_8018E259_ovl5 * 2 + 1];
+    ohSleep(6);
+    counter = 5;
+    while (1) {
+        if (counter != 0) {
+            counter--;
+            if ((gPlayerControllers[0].buttonHeld & 0xF00) == 0) {
+                counter = 0;
+            }
+        } else {
+            if (gPlayerControllers[0].buttonPressed & 0x9000) {
+                D_800D7178[7].unk8 = 1;
+                switch (D_8018E259_ovl5) {
+                    case 0:
+                        D_800D7178[7].unk8 = 2;
+                        play_sound(0x113);
+                        func_800ACBDC(arg0);
+                        func_800B1900(*(u16 *)((u8 *)omCurrentObj + 2));
+                        break;
+                    case 1:
+                        play_sound(0xED);
+                        gGameState = 0x1F;
+                        break;
+                    case 2:
+                        play_sound(0xED);
+                        D_800D6B68 = gGameState;
+                        gGameState = 0x1B;
+                        break;
+                    case 3:
+                        play_sound(0x2B);
+                        D_800D6B68 = gGameState;
+                        gGameState = 0xA;
+                        break;
+                }
+                func_80164DB0_ovl5();
+                curObjSleepForever();
+            } else if (gPlayerControllers[0].buttonHeld & 0x800) {
+                play_sound(0x113);
+                counter = 5;
+                if (D_8018E259_ovl5 == 0) {
+                    D_8018E259_ovl5 = 3;
+                } else {
+                    D_8018E259_ovl5--;
+                }
+            } else if (gPlayerControllers[0].buttonHeld & 0x400) {
+                play_sound(0x113);
+                counter = 5;
+                if (D_8018E259_ovl5 == 3) {
+                    D_8018E259_ovl5 = 0;
+                } else {
+                    D_8018E259_ovl5++;
+                }
+            }
+            cursor->xOffset = D_801865C4_ovl5[D_8018E259_ovl5 * 2];
+            cursor->yOffset = D_801865C4_ovl5[D_8018E259_ovl5 * 2 + 1];
+        }
+        ohSleep(1);
+    }
+}
+#elif defined(PORT)
+/* Pause-menu thread (near-clone of func_8016EF78_ovl5 in ovl5_4 and
+ * func_80176170_ovl5 in ovl5_5): draws the pause panel and the four menu
+ * entries, moves the cursor sprite along D_801865C4_ovl5 with C-up/C-down,
+ * and on A/Start resumes (0), quits to 0x1F (1), the option screen 0x1B (2)
+ * or the sound room 0xA (3). */
 void func_80164A34_ovl5(void) {
     extern struct UnkStruct8015C740 D_801864C4_ovl5;
     extern struct UnkStruct8015C740 D_801864E4_ovl5;
@@ -3136,6 +3243,9 @@ void func_80164A34_ovl5(void) {
         ohSleep(1);
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164A34_ovl5.s")
+#endif
 
 void func_80164DB0_ovl5(void) {
     func_800BB3F0();

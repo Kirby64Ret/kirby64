@@ -6046,13 +6046,17 @@ void func_800A2550(void *arg0) {
     f32 vz;
 
     node = (struct LNode *) arg0;
-    if (node->type != 0x12) {
+    if (((struct LNode *) arg0)->type != 0x12) {
         do {
+            id = node[1].type;
             node += 1;
-        } while (node->type != 0x12);
+        } while (id != 0x12);
     }
     ent = node + 1;
-    if (node->unk4 != 0) {
+    if (node->unk4 == 0) {
+        return;
+    }
+    {
         func_8001C2E4(spA4, ((struct LNode *) arg0)->pos, ((struct LNode *) arg0)->rot,
                       ((struct LNode *) arg0)->scale);
         do {

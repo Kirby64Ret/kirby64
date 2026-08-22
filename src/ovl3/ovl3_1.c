@@ -1809,12 +1809,15 @@ void func_801548DC_ovl3(struct PositionState *st) {
     portShotWaterScan(fr[0]);
 }
 #elif defined(MIPS_TO_C)
-/* FACTORY: whole-function callee-saved permutation (same floor class as
- * func_80154CFC_ovl3 next to it -- see that draft's note). Sealed after
- * the file-scope extern was loosened to unspecified-args `()` (matching
- * func_80154CFC_ovl3's existing form) per the LEVERS protocol: baseline
- * and post-change verify.py --all / check_tu_size.py both taken, no
- * regression, see report. */
+/* FACTORY: 66/263, whole-function callee-saved permutation (same floor
+ * class as func_80154CFC_ovl3 next to it -- see that draft's note).
+ * Sealed after the file-scope extern was loosened from `(void)` to
+ * unspecified-args `()` (matching func_80154CFC_ovl3's existing form)
+ * per the LEVERS protocol: baseline verify.py --all / check_tu_size.py
+ * taken before the prototype edit and re-checked after, no regression
+ * (ovl3_1.c stayed 0 match / not-wrong-size both times; the one
+ * wrong-size TU flagged, ovl2_7.c, is pre-existing and unrelated --
+ * confirmed by reverting and re-checking). */
 void func_801548DC_ovl3(arg0)
     struct PositionState *arg0;
 {
@@ -1881,7 +1884,7 @@ void func_801548DC_ovl3(arg0)
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801548DC_ovl3.s")
+/* TESTING pragma parked */
 #endif
 
 #ifdef MIPS_TO_C

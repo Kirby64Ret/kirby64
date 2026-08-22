@@ -95,3 +95,24 @@ Anchor on the **LAST** `.size` in the listing (anchoring on the first matches a 
 - Never edit an already-matched unguarded function. Weird IS the match.
 - A utilPrintf string must come from THAT function's own listing `.asciz`.
 - NEVER run make or mk.sh. NEVER run git. Only verify.py. The manager builds.
+
+## MEASURED IN THE RE-FOUNDATION WAVE (ovl7 lane, 5 closures / 17 seeds)
+
+20. **A difference used in a float comparison must be materialised into a
+    named local**, or IDO folds it into a direct `c.eq.s` of the two loads
+    and never forms the subtraction at all. Worth 51 diffs on
+    func_801A33B8 and 70 on func_801A2558_ovl7.
+
+21. **A jump-table switch needs its EMPTY cases spelled out** (`case 0:`
+    `case 5:` with no body), or IDO biases the table with `addiu -1` and
+    every offset moves. 345 -> 124 on func_801A2558_ovl7.
+
+22. **Unreferenced scalar pads are dropped by IDO; a large unreferenced
+    ARRAY is kept.** That is how a dead 0x160-byte frame region is
+    reproducible (func_801BC978_ovl7).
+
+23. Confirmations: clone families (lever 1) took func_801A5274_ovl7 from
+    165/204 to 33/194 in ONE edit by copying a matched sibling's spelling
+    verbatim; ABS() vs ABSF() (lever 3) was worth 232 diffs on
+    func_801A57A8_ovl7 -- ABSF hoists its 0.0f into callee-saved $f20 and
+    adds sdc1/ldc1, where the ROM re-materialises `mtc1 $zero` in the loop.
