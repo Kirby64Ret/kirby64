@@ -66,7 +66,318 @@ void func_801F0014_ovl10(void *arg0) {
     func_800FF200(arg0);
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* Goal-game roulette controller (Kirby's dive onto the prize wheel).
+ * Runs the whole sequence as one coroutine: glide in until past the wheel
+ * hub (D_800DFBD0[D_801F4D60][5]), swing the aim angle while A is awaited
+ * (D_800E98E0 <- func_801F0DD0), charge the dive power while the second A
+ * is awaited (D_800E9AA0), launch, poll func_801F0EC8 for the prize slot
+ * hit during the fall, land, turn toward D_801F4D88, then award: slots
+ * 4/5 = HP, 0/1/2 = 1/3/5 stars, 3 = 1UP, 6 = the file-dependent bonus.
+ * The N64 selected the result-anim pair by address into the D_801F47F8
+ * run; the PC data keeps those as separate u32[] tables, so the pair is
+ * picked by index instead.  change_kirby_hp's 0x40C00000/0x3F800000
+ * literals are float bits: 6.0f and 1.0f. */
+/* FACTORY: 859/873, residue -- and this is the first COMPILING N64 draft
+ * this function has ever had.  It was parked as "blocked on declaration
+ * scoping"; it was not.  All 30 declarations it needs are carried in-body
+ * below, spelled exactly as the PORT block spells them, and IDO accepts
+ * that without complaint (see func_801F1A24_ovl10's note for the measured
+ * proof that in-body and file-scope forms compile byte-identically).
+ *
+ * Draft is 873 words against the ROM's 864 and the frame is 0x80 against
+ * 0x88, so ~9 words and one 8-byte slot are still unaccounted; the residue
+ * after that is colouring.  Two leads, in order:
+ *   - the ROM opens with TEN instructions of peeled `D_801F4D68[i] = 0`
+ *     stores scheduled BEFORE the `addiu $sp, $sp, -0x88`, reaching the
+ *     first three entries through their own split symbols
+ *     (D_801F4D68/6C/70).  This draft peels too but in a different order,
+ *     which is where the index alignment first slips.
+ *   - the result-anim pair is still the PORT arm's INDEXED form.  The ROM
+ *     selects it BY ADDRESS into the D_801F47F8_ovl10 run (listing word
+ *     804: `lui/addiu $t8, D_801F47F8_ovl10` then walks it), which is a
+ *     different computation, not a different spelling.  Converting that is
+ *     the one genuine N64-vs-PC rewrite left in this function. */
+void func_801F0050_ovl10(GObj *arg0) {
+    void func_8011C8F8(void);
+    void func_800F8E6C(GObj *);
+    void func_800F90C0(s32, u8 *);
+    void func_800A9864(s32, s32, s32);
+    void *func_800FF144(void);
+    void func_800FF1CC(void *);
+    s32 func_800B9FE0(s32);
+    void func_800AA608(void *, s32, f32, s32, f32);
+    s32 func_801F0EC8_ovl10(GObj *);
+    s32 change_kirby_hp(f32);
+    void change_kirby_stars(s32);
+    void change_kirby_lives(s32);
+    void play_sound(s32);
+    s32 request_track_general(s32, s32, s32);
+    void func_800B4924(GObj *);
+    void func_801F0DD0_ovl10(struct GObj *);
+    s32 func_801F2074_ovl10(s32);
+    f32 atan2f(f32, f32);
+    extern f32 sinf(f32);
+    extern f32 cosf(f32);
+    extern u32 D_801F4D60_ovl10;
+    extern f32 D_801F4D88_ovl10[];
+    extern u8 D_801F4D98_ovl10[];
+    extern void *D_801F4858_ovl10[];
+    extern s32 saveCurrentFileNum;
+    extern u32 D_801F47C0_ovl10[], D_801F47C4_ovl10[], D_801F47C8_ovl10[], D_801F47CC_ovl10[];
+    extern u32 D_801F47D0_ovl10[], D_801F47D4_ovl10[], D_801F47D8_ovl10[], D_801F47DC_ovl10[];
+    extern u32 D_801F47E8_ovl10[], D_801F47EC_ovl10[], D_801F47F0_ovl10[], D_801F47F4_ovl10[];
+    extern u32 D_801F47F8_ovl10[], D_801F4800_ovl10[], D_801F4808_ovl10[], D_801F480C_ovl10[];
+    extern u32 D_801F4810_ovl10[];
+    Vector sp78;
+    Vector sp6C;
+    f32 spin;
+    f32 power;
+    f32 charge;
+    f32 step;
+    s32 slot;
+    s32 prize;
+    s32 i;
+    s32 t;
+    f32 target;
+    void *particle;
+    u32 animA;
+    u32 animB;
+
+    for (i = 0; i < 7; i++) {
+        D_801F4D68_ovl10[i] = 0;
+    }
+    slot = 8;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    func_8011C8F8();
+    func_800F8E6C(arg0);
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    D_800DF150[omCurrentObj->objId] = func_801F0DD0_ovl10;
+    func_800F90C0(omCurrentObj->objId, D_801F4D98_ovl10);
+    func_800A9864(0x300B8, 0x2C, 0x10);
+    D_800E0490[omCurrentObj->objId] = (f32 **) D_801F4858_ovl10[0];
+    particle = func_800FF144();
+    D_800EA520[omCurrentObj->objId] = (s32) (uintptr_t) particle;
+    func_801F0014_ovl10(particle);
+    func_800AA018(D_801F47C0_ovl10[0]);
+    if (D_801F47C4_ovl10[0] != 0) {
+        func_800AA018(D_801F47C4_ovl10[0]);
+    }
+    gEntitiesAngleYArray[omCurrentObj->objId] = 1.5707964f;
+    D_800E3050[omCurrentObj->objId] = 5.0f;
+    ohSleep(2);
+    while (1) {
+        func_800B2340(&sp78, D_800DFBD0[D_801F4D60_ovl10][5], D_801F4D60_ovl10);
+        func_800B2340(&sp6C, arg0->data.dobj, 0xFFFF);
+        if (sp78.x < sp6C.x) {
+            break;
+        }
+        ohSleep(1);
+    }
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = 65535.0f;
+    func_800AA608(arg0->data.dobj->firstChild, D_801F47C8_ovl10[0], 0.0f, 0x300B8, 6.0f);
+    func_800AA018(D_801F47C8_ovl10[0]);
+    if (D_801F47CC_ovl10[0] != 0) {
+        func_800AA018(D_801F47CC_ovl10[0]);
+    }
+    D_800E9C60[omCurrentObj->objId] = 1;
+    spin = 0.0f;
+    while (D_800E98E0[omCurrentObj->objId] == 0) {
+        spin += 6.0f;
+        if (spin > 360.0f) {
+            spin -= 360.0f;
+        }
+        gEntitiesAngleYArray[omCurrentObj->objId] =
+            (((sinf((spin * 3.1415927f) / 180.0f) * 45.0f) + 90.0f) * 3.1415927f) / 180.0f;
+        ohSleep(1);
+    }
+    D_800E9C60[omCurrentObj->objId] = 2;
+    power = 0.0f;
+    charge = 0.0f;
+    func_800AA608(arg0->data.dobj->firstChild, D_801F47D0_ovl10[0], 0.0f, 0x300B8, 6.0f);
+    func_800AA018(D_801F47D0_ovl10[0]);
+    if (D_801F47D4_ovl10[0] != 0) {
+        func_800AA018(D_801F47D4_ovl10[0]);
+    }
+    while (D_800E9AA0[omCurrentObj->objId].as_s32 == 0) {
+        charge += 9.0f;
+        if (charge > 360.0f) {
+            charge -= 360.0f;
+        }
+        power = ((sinf(((charge - 90.0f) * 3.1415927f) / 180.0f) + 1.2f) / 2.2f) * 5.6f;
+        ohSleep(1);
+    }
+    D_800E9C60[omCurrentObj->objId] = 3;
+    play_sound(0xF7);
+    D_800E3050[omCurrentObj->objId] = cosf(gEntitiesAngleYArray[omCurrentObj->objId] - 1.5707964f) * power;
+    D_800E3210[omCurrentObj->objId] = 17.0f;
+    D_800E3750[omCurrentObj->objId] = -0.980665f;
+    D_800E3C90[omCurrentObj->objId] = 17.0f;
+    D_800E33D0[omCurrentObj->objId] = -(sinf(gEntitiesAngleYArray[omCurrentObj->objId] - 1.5707964f) * power);
+    func_800AA018(D_801F47D8_ovl10[0]);
+    if (D_801F47DC_ovl10[0] != 0) {
+        func_800AA018(D_801F47DC_ovl10[0]);
+    }
+    while (!(D_800E3750[omCurrentObj->objId] < 0.0f)) {
+        ohSleep(1);
+    }
+    func_800AA608(arg0->data.dobj->firstChild, D_801F47D8_ovl10[0], 0.0f, 0x300B8, 3.0f);
+    func_800AA018(D_801F47D8_ovl10[0]);
+    if (D_801F47DC_ovl10[0] != 0) {
+        func_800AA018(D_801F47DC_ovl10[0]);
+    }
+    func_800AF27C();
+    D_800E9C60[omCurrentObj->objId] = 4;
+    func_800AA018(D_801F47E8_ovl10[0]);
+    if (D_801F47EC_ovl10[0] != 0) {
+        func_800AA018(D_801F47EC_ovl10[0]);
+    }
+    while (1) {
+        if (D_800E9E20[omCurrentObj->objId] == 0) {
+            t = func_801F0EC8_ovl10(arg0);
+            slot = t;
+            if (t != 8) {
+                func_800FF1CC((void *) (uintptr_t) D_800EA520[D_801F4D68_ovl10[t]]);
+                func_800AFBB4(0, D_800DE350[D_801F4D68_ovl10[t]]);
+                play_sound(0xCA);
+                D_800E9E20[omCurrentObj->objId] = 1;
+            }
+        }
+        if (gEntitiesNextPosYArray[omCurrentObj->objId] < 0.0f) {
+            break;
+        }
+        ohSleep(1);
+    }
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E33D0[omCurrentObj->objId] = 0.0f;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    D_800E9C60[omCurrentObj->objId] = 5;
+    func_800AA018(D_801F47F0_ovl10[0]);
+    if (D_801F47F4_ovl10[0] != 0) {
+        func_800AA018(D_801F47F4_ovl10[0]);
+    }
+    func_800AF27C();
+    D_800E9C60[omCurrentObj->objId] = 6;
+    target = atan2f(D_801F4D88_ovl10[0] - gEntitiesNextPosXArray[omCurrentObj->objId],
+                    D_801F4D88_ovl10[2] - gEntitiesNextPosZArray[omCurrentObj->objId]);
+    if (D_800E9E20[omCurrentObj->objId] == 0) {
+        target += 0.69813174f;
+    }
+    step = (target - gEntitiesAngleYArray[omCurrentObj->objId]) / 5.0f;
+    for (i = 0; i != 5; i++) {
+        gEntitiesAngleYArray[omCurrentObj->objId] += step;
+        ohSleep(1);
+    }
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        if (func_801F2074_ovl10(slot) == 1) {
+            prize = 0;
+        } else {
+            prize = 1;
+            if (slot == 6) {
+                if (func_800B9FE0(saveCurrentFileNum) == 0) {
+                    prize = 3;
+                    D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 0xE;
+                }
+            }
+        }
+        switch (prize) {
+        case 0:
+            animA = D_801F47F8_ovl10[0];
+            animB = D_801F47F8_ovl10[1];
+            break;
+        case 1:
+            animA = D_801F4800_ovl10[0];
+            animB = D_801F4800_ovl10[1];
+            break;
+        case 2:
+            animA = D_801F4808_ovl10[0];
+            animB = D_801F480C_ovl10[0];
+            break;
+        default:
+            animA = D_801F4810_ovl10[0];
+            animB = D_801F4810_ovl10[1];
+            break;
+        }
+        func_800AA018(animA);
+        if (animB != 0) {
+            func_800AA018(animB);
+        }
+        t = request_track_general(0x29, 0x1E, 0x50);
+        D_800E98E0[t] = 0xD;
+        D_800E9AA0[t].as_s32 = prize;
+        D_800E98E0[D_801F4D68_ovl10[slot]] = 1;
+        if (slot == 6) {
+            if (prize == 3) {
+                D_800E9C60[D_801F4D68_ovl10[slot]] = 1;
+            } else {
+                D_800E9C60[D_801F4D68_ovl10[slot]] = 0;
+            }
+        }
+        for (i = 0; i != 7; i++) {
+            if ((i != slot) && (D_801F4D68_ovl10[i] != 0)) {
+                D_800E9AA0[D_801F4D68_ovl10[i]].as_s32 = 1;
+            }
+        }
+        ohSleep(0x14);
+        switch (slot) {
+        case 4:
+            change_kirby_hp(6.0f);
+            break;
+        case 5:
+            change_kirby_hp(1.0f);
+            break;
+        case 0:
+            change_kirby_stars(1);
+            break;
+        case 1:
+            change_kirby_stars(3);
+            break;
+        case 2:
+            change_kirby_stars(5);
+            break;
+        case 3:
+            change_kirby_lives(1);
+            play_sound(1);
+            break;
+        case 6:
+            if (prize == 1) {
+                play_sound(0x271);
+            } else {
+                play_sound(0x273);
+            }
+            break;
+        }
+    } else {
+        func_800AA018(D_801F4808_ovl10[0]);
+        if (D_801F480C_ovl10[0] != 0) {
+            func_800AA018(D_801F480C_ovl10[0]);
+        }
+        t = request_track_general(0x29, 0x1E, 0x50);
+        D_800E98E0[t] = 0xD;
+        D_800E9AA0[t].as_s32 = 2;
+        for (i = 0; i != 7; i++) {
+            if (D_801F4D68_ovl10[i] != 0) {
+                D_800E9AA0[D_801F4D68_ovl10[i]].as_s32 = 1;
+            }
+        }
+        ohSleep(0x14);
+    }
+    D_800E98E0[request_track_general(0x28, 0x1E, 0x4F)] = 3;
+    curObjSleepForever();
+}
+#elif defined(PORT)
 void func_8011C8F8(void);
 void func_800F8E6C(GObj *);
 void func_800F90C0(s32, u8 *);
@@ -514,6 +825,26 @@ s32 func_801F111C_ovl10(void) {
  * (D_800E9C60[0]) it just idles the camera forever.
  * 0x42C80000 / 0x40000000 passed to the f32 camera params are float bits:
  * 100.0f and 2.0f. */
+/* FACTORY: 21/171, residue.  Length, frame (0x20), saved registers and the
+ * whole call order are the ROM's.  What is left is a one-instruction
+ * scheduling slip in the scale block: the ROM issues the D_801F4C94 load
+ * before `ent->unk80 = NULL` and hoists func_800AF7A0's 0x2C argument up
+ * into that window, and every word from 30 to 50 is shifted by that one
+ * slot.  Three real fixes over the PORT arm, all read off the listing:
+ *   - `ent = D_800E1B50[objId]` comes FIRST, before the D_801F4D60 store.
+ *     The ROM reads omCurrentObj->objId three times here and shares the
+ *     FIRST read between the D_801F4D60 store and the D_800E1B50 index,
+ *     then re-reads for each later store.  With the PORT arm's order the
+ *     shared read lands on the wrong pair and IDO CSEs one read away:
+ *     that single statement move is worth 118 words (139/171 -> 21/171).
+ *   - 1.3f is not a literal.  This TU does not own its rodata, so the
+ *     constant is the named extern D_801F4C94_ovl10; writing 1.3f makes
+ *     IDO emit a private .rodata word, which verify.py cannot see because
+ *     it masks LO16 -- worth 3 words and invisible to the gate.
+ *   - the declarations this draft needs are in-body and every copy is
+ *     spelled exactly as the PORT block's, which is what IDO requires.
+ * The prototypes are NOT the blocker this file was parked on: measured,
+ * hoisting an identical set to file scope compiles byte-identically. */
 void func_801F11A8_ovl10(GObj *arg0) {
     #include "unk_structs/D_800D79D8.h"
     void func_800AF7A0(s32);
@@ -526,20 +857,25 @@ void func_801F11A8_ovl10(GObj *arg0) {
     void func_800B4954(GObj *);
     void func_801F1454_ovl10(struct GObj *);
     extern u32 D_801F4670_ovl10[];
+    extern f32 D_801F4C94_ovl10;
+    extern u32 D_801F4D60_ovl10;
+    extern f32 D_801F4D88_ovl10[];
+    void func_800FF1CC(void *);
+    s32 request_track_general(s32, s32, s32);
 
     struct EnemyRecord *ent;
     s32 i;
     s32 t;
 
+    ent = D_800E1B50[omCurrentObj->objId];
     D_801F4D60_ovl10 = omCurrentObj->objId;
     D_800DF150[omCurrentObj->objId] = func_801F1454_ovl10;
-    ent = D_800E1B50[omCurrentObj->objId];
     D_800DEF90[omCurrentObj->objId] = func_800B4954;
     func_800FF1CC(ent->unk80);
     ent->unk80 = NULL;
-    gEntitiesScaleXArray[omCurrentObj->objId] = 1.3f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = D_801F4C94_ovl10;
     gEntitiesScaleYArray[omCurrentObj->objId] = 1.0f;
-    gEntitiesScaleZArray[omCurrentObj->objId] = 1.3f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = D_801F4C94_ovl10;
     gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
     func_800AF7A0(0x2C);
     for (i = 0; i < 3; i++) {
@@ -1043,26 +1379,66 @@ s32 func_801F2074_ovl10(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-
 /* One wheel prize item (arg1 = slot 0..6).  Registers itself in
  * D_801F4D68[arg1], loads its model (+optional anim) from the
  * D_801F4768/D_801F4784 tables (slot 5 picks one of four foods at random
  * from D_801F47A0/D_801F47B0), drops onto a free spot on the wheel, then
  * idles: D_800E98E0 set by the controller means "swallowed" (teleport into
  * Kirby's mouth node with the matching gulp anim), D_800E9AA0 means "clean
- * up" (kill sparkle, shrink to nothing, poof effect, sleep forever).
- * The ROM staged the four tables through stack copies; the PC build reads
- * the (identical) rodata directly. */
+ * up" (kill sparkle, shrink to nothing, poof effect, sleep forever). */
+/* FACTORY: 341/345, residue -- but this REPLACES a draft that did not
+ * compile at all: the previous arm had `void func_800A9864(s32, s32, s32);`
+ * spliced in three times at the CALL SITES, i.e. after a statement inside a
+ * block, which is a C89 syntax error in IDO, and it had duplicated the
+ * surrounding `if` in the process.  That is almost certainly the origin of
+ * this file's recorded "IDO permits exactly one block-scope copy per TU"
+ * rule: measured, IDO accepts unlimited duplicate block-scope prototypes
+ * and rejects only (a) two copies in the TU that DISAGREE and (b) a
+ * declaration placed after a statement.
+ *
+ * Length (345) and the shape are the ROM's.  The real structural finding,
+ * which the PORT arm does not have: THE FOUR TABLES ARE STAGED THROUGH
+ * STACK COPIES.  The ROM's 0xF0 frame holds whole-aggregate copies of
+ * D_801F4768 (7 words, sp+0xD4), D_801F4784 (7 words, sp+0xB8),
+ * D_801F47A0 (4 words, sp+0xA8) and D_801F47B0 (4 words, sp+0x98), emitted
+ * as unrolled lw/sw exactly like func_80176A80_ovl5's Unk12Colors locals,
+ * and every table read goes through the copy.  Reading the globals
+ * directly (what the PORT arm does) loses the entire prologue.  Tbl7/Tbl4
+ * are declared in-body so nothing is added at file scope.
+ *
+ * Remaining residue is register pressure, not shape: the ROM saves s0-s7,
+ * fp and f20/f22/f24 where this draft saves s0-s5 and f20, because it
+ * hoists the bases of gEntitiesNextPosXArray ($s7) and
+ * gEntitiesNextPosYArray ($fp) and the constant 1 ($s6) out of the idle
+ * loop, and keeps 0.0f and 0.05f in $f20/$f24 across the ohSleep call.
+ * Frame is 0xC8 against the ROM's 0xF0, and that 0x28 is exactly those
+ * three extra GPR saves plus the two extra sdc1 pairs.  Getting IDO to
+ * hoist those is the next move; writing 0.05f as a literal instead of the
+ * named D_801F4CB4_ovl10 changes nothing (both were measured). */
 void func_801F2098_ovl10(GObj *arg0, s32 arg1) {
+    typedef union Tbl7 {
+        u32 unk0[7];
+    } Tbl7;
+    typedef union Tbl4 {
+        u32 unk0[4];
+    } Tbl4;
+    extern Tbl7 D_801F4768_ovl10;
+    extern Tbl7 D_801F4784_ovl10;
+    extern Tbl4 D_801F47A0_ovl10;
+    extern Tbl4 D_801F47B0_ovl10;
     extern s32 D_801F4D68_ovl10[];
-    extern u32 D_801F4D60_ovl10;
-    extern u32 D_801F4768_ovl10[];
-    extern u32 D_801F4784_ovl10[];
-    extern u32 D_801F47A0_ovl10[];
-    extern u32 D_801F47B0_ovl10[];
+    extern f32 D_801F4CB4_ovl10;
+    void func_800A9864(s32, s32, s32);
+    void *func_800FF144(void);
+    void func_800FF1CC(void *);
     void func_800A7F74(u32, u32, u32, f32, f32, f32);
-    Vector pos;
+    s32 random_soft_s32_range(s32);
+    Tbl7 models = D_801F4768_ovl10;
+    Tbl7 anims = D_801F4784_ovl10;
+    Tbl4 foods = D_801F47A0_ovl10;
+    Tbl4 foodAnims = D_801F47B0_ovl10;
     Vector ang;
+    Vector pos;
     f32 scale;
     s32 r;
     s32 second;
@@ -1071,61 +1447,65 @@ void func_801F2098_ovl10(GObj *arg0, s32 arg1) {
     D_801F4D68_ovl10[arg1] = omCurrentObj->objId;
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
-    if (D_801F47C4_ovl10[0] != 0) {
-        func_800AA018(D_801F47C4_ovl10[0]);
-    void func_800A9864(s32, s32, s32);
-        second = D_801F47B0_ovl10[r];
-    if (D_801F47C4_ovl10[0] != 0) {
-        func_800AA018(D_801F47C4_ovl10[0]);
+    if (arg1 == 5) {
+        r = random_soft_s32_range(4);
+        func_800A9864(foods.unk0[r], 0x1869F, 0x10);
+        second = foodAnims.unk0[r];
+        if (second != 0) {
+            func_800AA018(second);
         }
     } else {
-    void func_800A9864(s32, s32, s32);
-        second = D_801F4784_ovl10[arg1];
-    if (D_801F47C4_ovl10[0] != 0) {
-        func_800AA018(D_801F47C4_ovl10[0]);
+        func_800A9864(models.unk0[arg1], 0x1869F, 0x10);
+        second = anims.unk0[arg1];
+        if (second != 0) {
+            func_800AA018(second);
         }
     }
-    void func_800AA018(s32);
+    func_800AA018(0x105F6);
     func_801F1F7C_ovl10(&pos, arg1);
     gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
     gEntitiesNextPosYArray[omCurrentObj->objId] = pos.y;
     gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
     particle = func_800FF144();
-    D_800EA520[omCurrentObj->objId] = (s32) (uintptr_t) particle;
+    D_800EA520[omCurrentObj->objId] = (s32) particle;
     func_801F0014_ovl10(particle);
     while (1) {
-        func_800B2340(&sp78, D_800DFBD0[D_801F4D60_ovl10][5], D_801F4D60_ovl10);
-    func_800B2340(&sp6C, arg0->data.dobj, 0xFFFF);
+        if (D_800E98E0[omCurrentObj->objId] != 0) {
+            func_800AFBB4(1, arg0);
+            func_800B2340(&pos, D_800DE350[0]->data.dobj, 0);
             gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
             gEntitiesNextPosYArray[omCurrentObj->objId] = pos.y;
             gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
-    func_800B26D8(&ang, node, D_801F4D60_ovl10);
+            func_800B26D8(&ang, D_800DE350[0]->data.dobj, 0);
             gEntitiesAngleXArray[omCurrentObj->objId] = ang.x;
             gEntitiesAngleYArray[omCurrentObj->objId] = ang.y;
             gEntitiesAngleZArray[omCurrentObj->objId] = ang.z;
-    if (D_801F47C4_ovl10[0] != 0) {
-        func_800AA018(D_801F47C4_ovl10[0]);
+            if (func_801F2074_ovl10(arg1) == 1) {
+                func_800AA018(0x30065);
             } else if ((arg1 == 6) && (D_800E9C60[omCurrentObj->objId] == 1)) {
-    void func_800AA018(s32);
+                func_800AA018(0x30066);
             } else {
-    void func_800AA018(s32);
+                func_800AA018(0x30067);
             }
             D_800E98E0[omCurrentObj->objId] = 0;
         }
         if (D_800E9AA0[omCurrentObj->objId].as_s32 != 0) {
             break;
         }
-    void ohSleep(s32);
+        ohSleep(1);
     }
-    void func_800FF1CC(void *);
-    for (scale = 1.0f; scale >= 0.0f; scale -= 0.05f) {
+    func_800FF1CC((void *) D_800EA520[omCurrentObj->objId]);
+    for (scale = 1.0f; scale >= 0.0f; scale -= D_801F4CB4_ovl10) {
         gEntitiesScaleXArray[omCurrentObj->objId] = scale;
         gEntitiesScaleYArray[omCurrentObj->objId] = scale;
         gEntitiesScaleZArray[omCurrentObj->objId] = scale;
-    void ohSleep(s32);
+        ohSleep(1);
     }
-    func_800AFBB4(0, D_800DE350[D_801F4D68_ovl10[t]]);
-    void func_800A7F74(u32, u32, u32, f32, f32, f32);
+    func_800AFBB4(0, omCurrentObj);
+    func_800A7F74(3, 0, 7,
+                  gEntitiesNextPosXArray[omCurrentObj->objId],
+                  gEntitiesNextPosYArray[omCurrentObj->objId],
+                  gEntitiesNextPosZArray[omCurrentObj->objId]);
     curObjSleepForever();
 }
 #elif defined(PORT)

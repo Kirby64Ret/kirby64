@@ -315,7 +315,7 @@ void func_80210570_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_802130F4_ovl9.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80210570_ovl9.s")
 #endif
 
 void func_80210800_ovl9(struct GObj *arg0) {
@@ -674,7 +674,7 @@ void func_802119F8_ovl9(struct GObj *arg0) {
     } else {
         tmp->unk48 = func_8010B480;
         func_8010D42C(u, 25.0f);
-        gEntitiesNextPosYArray[omCurrentObj->objId] = u->unk8;
+        gEntitiesNextPosYArray[omCurrentObj->objId] = u->posY;
         gEntityFuncListIDArray[omCurrentObj->objId] = 3;
     }
     func_80211984_ovl9(arg0);
@@ -693,8 +693,8 @@ void func_80211B1C_ovl9(void) {
     struct EnemyProbe *u = tmp->unk84;
 
     if (gEntityFuncListIDArray[omCurrentObj->objId] != 3) {
-        *(f32 *) &u->unk14 = a->pos.v.y * 0.5f;
-        *(f32 *) &u->unk18 = b->pos.v.y;
+        *(f32 *) &u->headOffsetY = a->pos.v.y * 0.5f;
+        *(f32 *) &u->footOffsetY = b->pos.v.y;
     }
     if (func_801A0D74_ovl7() == 0.0f) {
         utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 6, &D_8021CB88_ovl9);
@@ -1205,7 +1205,7 @@ void func_802130F4_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80210570_ovl9.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_802130F4_ovl9.s")
 #endif
 
 void func_802133BC_ovl9(void) {

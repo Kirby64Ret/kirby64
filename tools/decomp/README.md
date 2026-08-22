@@ -9,6 +9,7 @@ models, IDO behaviours) — read it before decompiling.
 
 Cheapest first; the ROM sha1 is the final authority.
 
+    python3 tools/decomp/check_pragma_order.py   # no build needed; run first
     bash tools/decomp/mk.sh          # serialised build; ends with the sha1 gate
     python3 tools/decomp/check_tu_size.py
     python3 tools/decomp/check_sections.py
@@ -21,6 +22,11 @@ Cheapest first; the ROM sha1 is the final authority.
   function against its `asm/nonmatchings/**` listing. Fast iteration tool;
   it cannot see undefined symbols, short translation units, or segment
   growth, so it is never the last word.
+- `check_pragma_order.py` — every `#pragma GLOBAL_ASM` naming a func_ADDR
+  listing must appear in ascending address order. Catches a TRANSPOSED pragma
+  filename, which pastes another function's assembly at this address; in
+  ovl9_14.c that misplaced 67 of 109 functions while `.text` stayed exactly
+  the right size. Needs no compiler, so run it first.
 - `check_tu_size.py` — each C file's `.text` size vs its yaml subsegment;
   catches a translation unit that came out short (e.g. lost tail padding).
 - `check_sections.py` — emitted `.rodata`/`.data` block sizes vs the yaml,

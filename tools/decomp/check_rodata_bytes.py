@@ -103,6 +103,9 @@ def reloc_offsets(obj, sec):
     return offs
 
 
+skipped = []
+
+
 def main():
     prefix = sys.argv[1] if len(sys.argv) > 1 else 'src/'
     base = open(BASEROM, 'rb').read()
@@ -113,6 +116,7 @@ def main():
             continue
         obj = 'build/' + cfile[:-2] + '.o'
         if not os.path.exists(obj):
+            skipped.append(obj)
             continue
         got = section_bytes(obj, '.rodata')
         if not got:
@@ -144,6 +148,19 @@ def main():
                 print(f'        ... and {len(bad) - 6} more')
 
     print(f'-- {checked} migrated .rodata block(s) checked, {problems} problem(s) --')
+    # A missing object is a SILENT HOLE, not a pass: this tool reported
+    # "101 checked" for months while 35 subsegments had no build/src object
+    # at all, and that is how a transposed pragma in ovl9_14.c hid its
+    # 8-byte rodata drift. Say so.
+    if skipped:
+        print(f'!! {len(skipped)} block(s) NOT checked -- no object at '
+              f'build/src/...; these are holes, not passes:')
+        for o in skipped[:8]:
+            print(f'        {o}')
+        if len(skipped) > 8:
+            print(f'        ... and {len(skipped) - 8} more')
+        print('!! Build them (or point this tool at build/verify/) before '
+              'reading the count above as coverage.')
     return 1 if problems else 0
 
 

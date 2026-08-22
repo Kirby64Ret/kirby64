@@ -641,7 +641,7 @@ void func_801E1CB4_ovl17(struct GObj *arg0) {
     func_801A3E80_ovl7(arg0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E49B8_ovl17.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E1CB4_ovl17.s")
 #endif
 
 void func_801E2170_ovl17(struct GObj *arg0) {
@@ -1693,7 +1693,7 @@ void func_801E49B8_ovl17(struct GObj *arg0) {
     func_801E2320_ovl17();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E1CB4_ovl17.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E49B8_ovl17.s")
 #endif
 
 void func_801E4DD4_ovl17(struct GObj *arg0) {
