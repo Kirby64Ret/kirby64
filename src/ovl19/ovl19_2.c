@@ -76,9 +76,36 @@ extern struct Ovl19_2Struct D_8022F170_ovl19[3], // 1-3
                             D_8022F4D0_ovl19[1], // 37
                             D_8022F4E8_ovl19[1]; // 38
 
-#ifdef NON_MATCHING_
+/* FACTORY: 97/801, UNCERTAIN -- seeded from the PORT arm (time-boxed).
+ * Compiles, word count matches (801/801), but residue is high (704/801).
+ * ROM holds 6 saved slots ($s0-$s5 + $f20) across the -1 init block and
+ * case-6/0; this draft's IDO allocation differs, cascading register
+ * labels through most of the body -- same shape as the sibling
+ * func_802260FC_ovl19 in this file. Worth a fresh m2c pass over the -1
+ * init block before feeding to the permuter. */
+#ifdef MIPS_TO_C
 void func_80223200_ovl19(GObj *arg0) {
-    s32 var_a0;
+    void func_8011CF58(void);
+    void func_8011DC04(u32);
+    void func_800A9760(u32);
+    void func_800FA414(s32);
+    void func_800AF27C(void);
+    void auFunc80020C88(void);
+    void func_800A7EB4(void);
+    void func_80227C88_ovl19(void);
+    s32 play_music(s32, s32);
+    void play_sound(s32);
+    void func_80224858_ovl19(void);
+    /* func_800AA018/func_800AA154 stay implicitly declared -- the compiled
+     * NON_MATCHING arms later in this file call them through (void *)
+     * casts and an explicit prototype here would clash with those. */
+    s32 random_soft_s32_range(s32);
+    void func_80176398_ovl3(void);
+    void func_800BB468(u32, s32);
+    extern s32 D_80129138;
+    extern s32 D_800BE4F8;
+    extern s32 D_8019257C;
+    extern f32 *D_80192FF4;
     struct Ovl19_2Struct *temp_v0;
 
     if (gKirbyState.unk44 == -1) {
@@ -87,7 +114,7 @@ void func_80223200_ovl19(GObj *arg0) {
         assign_new_process_entry(gEntityGObjProcessArray3[omCurrentObj->objId], func_80227A38_ovl19);
         func_8011CF58();
         D_800DDFD0[omCurrentObj->objId] = 0;
-        gKirbyState.unk15C = &D_8019257C;
+        gKirbyState.unk15C = (u32)(uintptr_t)&D_8019257C;
         gKirbyState.unk154 = 7;
         D_800E0490[omCurrentObj->objId] = &D_80192FF4;
         func_80152348_ovl3(20.0f);
@@ -103,7 +130,6 @@ void func_80223200_ovl19(GObj *arg0) {
         gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
         D_800E64D0[omCurrentObj->objId] = 0.0f;
         D_800E6690[omCurrentObj->objId] = 0.0f;
-        var_a0 = 6;
         D_800E6850[omCurrentObj->objId] = 0.0f;
         D_800EC2E0[2].as_u32 = -1;
         D_800EC2E0[1].as_u32 = -1;
@@ -118,7 +144,7 @@ void func_80223200_ovl19(GObj *arg0) {
                 func_8011DC04(0x21D);
             }
             temp_v0 = &D_8022F260_ovl19[0];
-            gKirbyState.data = 0;
+            gKirbyState.unk3C = 0;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -133,34 +159,39 @@ void func_80223200_ovl19(GObj *arg0) {
             gKirbyState.unk30 = 0;
             gKirbyState.unk17 = 0;
             gKirbyState.unk44 = 0;
+            /* fallthrough into the default sleep, as in the ROM */
         default:
             curObjSleepForever();
             break;
         case 0:
-            D_800E9AA0[omCurrentObj->objId] = -1;
+            D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)-1;
             while (1) {
-                s32 rand;
-    loop_9:
-                if (D_800E6850[omCurrentObj->objId] > 4.0f) {
-                    s32 rand = random_soft_s32_range(2);
-                    gKirbyState.data = rand;
-                    if (rand != D_800E9AA0[omCurrentObj->objId]) {
-                        D_800E9AA0[omCurrentObj->objId] = rand;
-                        break;
+                s32 idx;
+
+                /* pick the next idle anim; a repeat of the previous pick
+                 * re-rolls (the ROM re-checks the speed gate each roll) */
+                while (1) {
+                    if (D_800E6850[omCurrentObj->objId] > 4.0f) {
+                        idx = random_soft_s32_range(2);
+                        gKirbyState.unk3C = idx;
+                        if (idx != (s32)(uintptr_t)D_800E9AA0[omCurrentObj->objId]) {
+                            D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)idx;
+                            break;
+                        }
                     } else {
-                        goto loop_9;
+                        gKirbyState.unk3C = 0;
+                        idx = 0;
+                        break;
                     }
-                } else {
-                    gKirbyState.data = 0;
-                    rand = 0;
                 }
-                temp_v0 = &D_8022F170_ovl19[rand];
+                temp_v0 = &D_8022F170_ovl19[idx];
                 D_800EC2E0[1].as_u32 = temp_v0->unk8;
                 D_800EC4A0[1] = temp_v0->unkC;
                 D_800EC2E0[2].as_u32 = temp_v0->unk10;
                 D_800EC4A0[2] = temp_v0->unk14;
-                func_800AA154(temp_v0->unk0);
+                func_800AA154(temp_v0->unk0); /* blocks until the anim ends */
             }
+            break;
         case 1:
             D_800E8920[omCurrentObj->objId] = 0;
             gKirbyState.jumpHeight = 0;
@@ -171,7 +202,7 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800E3750[omCurrentObj->objId] = -0.980665f;
             D_800E3C90[omCurrentObj->objId] = 15.0f;
             temp_v0 = &D_8022F1B8_ovl19[0];
-            gKirbyState.data = 0;
+            gKirbyState.unk3C = 0;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -182,7 +213,7 @@ void func_80223200_ovl19(GObj *arg0) {
             }
             temp_v0 = &D_8022F1B8_ovl19[1];
             gKirbyState.isFullJump += 1;
-            gKirbyState.data = 1;
+            gKirbyState.unk3C = 1;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -195,28 +226,27 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800E3750[omCurrentObj->objId] = -0.980665f;
             D_800E3C90[omCurrentObj->objId] = 18.0f;
             temp_v0 = &D_8022F1E8_ovl19[0];
-            if (!(gEntitiesAngleXArray[omCurrentObj->objId] > 0.0f) || !(gEntitiesAngleXArray[omCurrentObj->objId] >= 0.7853982f)) {
+            if (!(gEntitiesAngleXArray[omCurrentObj->objId] > 0.0f) ||
+                !(gEntitiesAngleXArray[omCurrentObj->objId] >= 0.7853982f)) {
                 D_800EC2E0[1].as_u32 = temp_v0->unk8;
                 D_800EC4A0[1] = temp_v0->unkC;
                 D_800EC2E0[2].as_u32 = temp_v0->unk10;
                 D_800EC4A0[2] = temp_v0->unk14;
                 func_800AA018(temp_v0->unk0);
             }
-            /* Duplicate return node #30. Try simplifying control flow for better match */
             curObjSleepForever();
             break;
         case 3:
             gKirbyState.unk30 = 0;
-            gKirbyState.data = 0;
+            gKirbyState.unk3C = 0;
             play_sound(0x145);
-            temp_v0 = &D_8022F200_ovl19[gKirbyState.data];
+            temp_v0 = &D_8022F200_ovl19[gKirbyState.unk3C];
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
             D_800EC4A0[2] = temp_v0->unk14;
             func_800AA154(temp_v0->unk0);
             gKirbyState.unk30 += 1;
-            /* Duplicate return node #30. Try simplifying control flow for better match */
             curObjSleepForever();
             break;
         case 4:
@@ -226,12 +256,12 @@ void func_80223200_ovl19(GObj *arg0) {
             gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
             func_800BB468(2, 0);
             play_sound(0x144);
-            gKirbyState.data = 1;
+            gKirbyState.unk3C = 1;
             D_800E8920[omCurrentObj->objId] = 0;
             D_800E3210[omCurrentObj->objId] = 18.0f;
             D_800E3750[omCurrentObj->objId] = -0.980665f;
             D_800E3C90[omCurrentObj->objId] = 18.0f;
-            temp_v0 = &D_8022F218_ovl19[gKirbyState.data];
+            temp_v0 = &D_8022F218_ovl19[gKirbyState.unk3C];
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -239,14 +269,13 @@ void func_80223200_ovl19(GObj *arg0) {
             func_800AA154(temp_v0->unk0);
             D_800E8060[omCurrentObj->objId] = 0;
             gKirbyState.unk30 += 1;
-            /* Duplicate return node #30. Try simplifying control flow for better match */
             curObjSleepForever();
             break;
         case 5:
-            func_80020C88();
+            auFunc80020C88();
             func_800A7EB4();
             if (D_800E9FE0[omCurrentObj->objId].as_u32 != 0) {
-                func_800B1900(D_800E9FE0[omCurrentObj->objId].as_u32);
+                func_800B1900(D_800E9FE0[omCurrentObj->objId].as_u32 & 0xFFFF);
             }
             func_80227C88_ovl19();
             play_sound(0x144);
@@ -259,11 +288,11 @@ void func_80223200_ovl19(GObj *arg0) {
             play_music(0, 5);
             func_80176398_ovl3();
             func_80224858_ovl19();
-            D_800D6B54[1] = 0xA0;
+            (&D_800D6B54)[1] = 0xA0;
             D_800D6B54 = 1;
             D_800BE4F8 = 6;
             temp_v0 = &D_8022F248_ovl19[0];
-            gKirbyState.data = 0;
+            gKirbyState.unk3C = 0;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -278,15 +307,14 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800E3750[omCurrentObj->objId] = 0.0f;
             D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
             D_800E3C90[omCurrentObj->objId] = 65535.0f;
-            /* Duplicate return node #30. Try simplifying control flow for better match */
             curObjSleepForever();
             break;
         case 7:
             gKirbyState.unk30 = 0;
-            gKirbyState.data = 0;
+            gKirbyState.unk3C = 0;
             D_800E6690[omCurrentObj->objId] = 0.25f;
             D_800E6850[omCurrentObj->objId] = 18.0f;
-            temp_v0 = &D_8022F278_ovl19[gKirbyState.data];
+            temp_v0 = &D_8022F278_ovl19[gKirbyState.unk3C];
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -309,10 +337,10 @@ void func_80223200_ovl19(GObj *arg0) {
             func_800AEDD0(1.5f, 1);
             func_800AED80(1.5f, 2);
             func_800AEDD0(1.5f, 2);
-            gKirbyState.data = 1;
+            gKirbyState.unk3C = 1;
             D_800E98E0[omCurrentObj->objId] = 1;
             play_sound(0x144);
-            temp_v0 = &D_8022F278_ovl19[gKirbyState.data];
+            temp_v0 = &D_8022F278_ovl19[gKirbyState.unk3C];
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -320,7 +348,6 @@ void func_80223200_ovl19(GObj *arg0) {
             func_800AA018(temp_v0->unk0);
             ohSleep(0x2D);
             gKirbyState.unk30 += 1;
-            /* Duplicate return node #30. Try simplifying control flow for better match */
             curObjSleepForever();
             break;
     }
@@ -610,7 +637,163 @@ void func_80223200_ovl19(GObj *arg0) {
 #endif
 
 
-#ifdef PORT
+/* FACTORY: 23/446, UNCERTAIN -- seeded from the PORT arm (time-boxed, not
+ * independently re-derived line-by-line from the .s). Compiles and is
+ * instruction-count-close (446/446) but the diff is nearly whole-function
+ * (423/446), matching the same pattern as the sibling func_80226AA8_ovl19
+ * in this file. Worth a fresh m2c pass -- likely a real control-flow
+ * divergence (frame size differs, -0x28 target vs -0x38 here), not a
+ * plain register floor -- before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_80223E68_ovl19(GObj *arg0) {
+    s32 func_80153A18_ovl3(void);
+    /* func_800FF200 stays implicitly declared -- compiled code later in
+     * this file calls it without a prototype. */
+    s32 func_80121828(f32, f32, f32, f32);
+    void play_sound(s32);
+    void func_8011DC04(u32);
+    void func_8011DC5C(void);
+    void func_8011EBD4(void);
+    void *func_8011D4A4(f32);
+    void func_8022470C_ovl19(void);
+    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
+    extern s32 D_800BE4FC, D_800BE500, D_800BE504, D_800BE508;
+    extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
+    extern s32 D_800BE4F8;
+    extern f32 D_800D7238;
+    extern s32 D_801925E4;
+    s32 objId;
+    s32 state;
+
+    func_80153A18_ovl3();
+    func_800FF200(D_8012E944);
+    if (func_80121828(-0.980665f, 18.0f, -0.980665f, 18.0f) != 0) {
+        play_sound(0x145);
+    }
+    objId = omCurrentObj->objId;
+    if (D_800E8920[objId] != 0) {
+        f32 slope = -func_800F8824(D_8012BCA8[1], D_800E17D0[objId]);
+
+        if (slope == 0.0f) {
+            gEntitiesAngleXArray[objId] = slope;
+        } else {
+            f32 pitch = gEntitiesAngleXArray[objId];
+
+            if (((pitch >= 0.0f) && (slope >= 0.0f)) || ((pitch <= 0.0f) && (slope <= 0.0f))) {
+                gEntitiesAngleXArray[objId] = slope;
+            } else if ((gKirbyState.unk44 == 2) || (gKirbyState.unk44 == 7)) {
+                gEntitiesAngleXArray[objId] = slope;
+            } else {
+                /* slope sign flipped under him: launch */
+                D_800E8920[objId] = 0;
+                gKirbyState.unk44 = 2;
+                pitch = gEntitiesAngleXArray[objId];
+                if (pitch < 0.0f) {
+                    f32 a = ABSF(pitch) + 0.174532935f;
+
+                    D_800E3210[objId] = sinf(a) * D_800E64D0[objId];
+                    D_800E64D0[objId] *= cosf(a);
+                }
+            }
+        }
+        if (gKirbyState.unk58 == 0) {
+            func_8011DC04(0x143);
+        }
+    } else if (gKirbyState.unk58 != 0) {
+        func_8011DC5C();
+    }
+
+    if ((gKirbyState.unk44 == 7) || (func_80227D4C_ovl19() == 0)) {
+        switch (gKirbyState.unk44) {
+            case 0:
+                if (gKirbyController.buttonPressed & 0x8000) {
+                    gKirbyState.unk44 = 1;
+                } else if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+                    gKirbyState.unk44 = 2;
+                }
+                break;
+            case 1:
+                if (gKirbyState.isFullJump == 0) {
+                    func_8011EBD4();
+                }
+                break;
+            case 2:
+                if (D_800E8920[omCurrentObj->objId] != 0) {
+                    gKirbyState.unk44 = 3;
+                }
+                break;
+            case 3:
+                if (gKirbyState.unk30 != 0) {
+                    gKirbyState.unk44 = 0;
+                } else if (gKirbyController.buttonPressed & 0x8000) {
+                    gKirbyState.unk44 = 1;
+                } else if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+                    gKirbyState.unk44 = 2;
+                }
+                break;
+            case 4:
+                if (gKirbyState.unk30 != 0) {
+                    if (D_800E8920[omCurrentObj->objId] != 0) {
+                        gKirbyState.unk44 = 0;
+                    } else {
+                        gKirbyState.unk44 = 2;
+                    }
+                }
+                break;
+            case 6: {
+                /* rotate the paddle wheel DObjs and bail out */
+                objId = omCurrentObj->objId;
+                D_800D7238 = (D_800E64D0[objId] * 4.0f * 3.1415927f) / 180.0f;
+                D_800DFBD0[objId][8]->angle.v.x += D_800D7238;
+                D_800DFBD0[objId][9]->angle.v.x += D_800D7238;
+                return;
+            }
+            case 7:
+                if (gKirbyState.unk30 != 0) {
+                    D_800BE52C = D_800BE500;
+                    D_800BE530 = D_800BE504;
+                    D_800BE534 = D_800BE508 + 1;
+                    D_800BE538 = 0;
+                    D_800BE4FC = 1;
+                    D_800BE4F8 = 2;
+                    gKirbyState.unk30 = 0;
+                }
+                return;
+            default:
+                break;
+        }
+        /* shared tail for states 0..5 and out-of-range values */
+        objId = omCurrentObj->objId;
+        if ((D_800E7B20[objId] != 0.0f) && (D_800D6B54 == 0) && (gKirbyState.unk44 != 4)) {
+            func_8011D4A4(1.0f);
+            objId = omCurrentObj->objId;
+        }
+        func_8016854C_ovl3(&D_801925E4, D_800DFBD0[objId][1], 1.0f);
+    }
+
+    /* sync unk44 into the track state, re-arming the state coroutine */
+    state = gKirbyState.unk44;
+    objId = omCurrentObj->objId;
+    if (state != D_800E98E0[objId]) {
+        if (state == 4) {
+            if (gKirbyState.unk68 == 3) {
+                gKirbyHp += 1.0f;
+            }
+            if (change_kirby_hp(-1.0f) == 0) {
+                gKirbyState.unk44 = 5;
+            } else {
+                D_800E64D0[omCurrentObj->objId] = 7.5f;
+            }
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80223200_ovl19);
+        state = gKirbyState.unk44;
+        D_800E98E0[omCurrentObj->objId] = state;
+    }
+    if ((state != 6) && (state != 7)) {
+        func_8022470C_ovl19();
+    }
+}
+#elif defined(PORT)
 /* PORT: behavioral port from
  * asm/nonmatchings/ovl19/ovl19_2/func_80223E68_ovl19.s -- the per-frame
  * companion of func_80223200_ovl19 (this level's Kirby movement hook).
@@ -836,7 +1019,303 @@ void func_80224858_ovl19(void) {
     }
 }
 
-#ifdef PORT
+/* FACTORY: 66/861, UNCERTAIN -- seeded from the PORT arm (time-boxed).
+ * Compiles, word count matches (861/861), residue high (795/861) --
+ * same shape as siblings func_80223200_ovl19/func_802260FC_ovl19 in
+ * this file: the ROM holds 6 saved slots across the -1 init block; this
+ * draft's IDO allocation differs, cascading labels through most of the
+ * body. Worth a fresh m2c pass over the -1 init block before feeding to
+ * the permuter. */
+#ifdef MIPS_TO_C
+void func_802248C0_ovl19(GObj *arg0) {
+    void func_8011CF58(void);
+    void func_8011DC04(u32);
+    void func_8011DC5C(void);
+    void func_800A9760(u32);
+    void func_800FA414(s32);
+    void func_800FBE1C(void);
+    void func_800AF27C(void);
+    void auFunc80020C88(void);
+    void func_800A7EB4(void);
+    void func_80227C88_ovl19(void);
+    s32 play_music(s32, s32);
+    void play_sound(s32);
+    s32 random_soft_s32_range(s32);
+    void func_80176398_ovl3(void);
+    void func_800BB468(u32, s32);
+    extern s32 D_80129138;
+    extern s32 D_8012913C;
+    extern s32 D_800BE4F8;
+    extern s32 D_8019257C;
+    extern f32 *D_8019304C;
+    extern u32 D_800D71F8;
+    struct Ovl19_2Struct *temp_v0;
+    s32 idx;
+
+    if (gKirbyState.unk44 == -1) {
+        D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+        D_800DDE10[omCurrentObj->objId] = 1;
+        assign_new_process_entry(gEntityGObjProcessArray3[omCurrentObj->objId], func_80227A38_ovl19);
+        func_8011CF58();
+        D_800DDFD0[omCurrentObj->objId] = 1;
+        gKirbyState.unk15C = (u32)(uintptr_t)&D_8019257C;
+        gKirbyState.unk154 = 5;
+        D_800E0490[omCurrentObj->objId] = &D_8019304C;
+        func_80152348_ovl3(20.0f);
+        func_800A9760(0x20065);
+        gKirbyState.unk154 = 1;
+        request_track_general(0x13, 1, 2);
+        D_800E98E0[1] = 0;
+        gEntityFuncListIDArray[1] = 1;
+        D_800E8220[1] = 1;
+        request_track_general(0x13, 2, 3);
+        gEntityFuncListIDArray[2] = 0;
+        D_800E8220[2] = 1;
+        D_800E64D0[omCurrentObj->objId] = 0.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 0.0f;
+        D_800EC2E0[1].as_u32 = -1;
+        D_800EC2E0[2].as_u32 = -1;
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk44 = 6;
+        D_800E98E0[omCurrentObj->objId] = 6;
+        D_800E8060[omCurrentObj->objId] = 0;
+        gKirbyState.unk48 = 0;
+        gKirbyState.unk4C = func_800A8234(2, 1, 0x61);
+        gKirbyState.unk50 = func_800A8234(2, 1, 0x61);
+    }
+    switch (gKirbyState.unk44) {
+        case 6:
+            idx = request_track_general(0x13, 0x3C, 0x4A);
+            D_800D71F8 = idx;
+            gEntityFuncListIDArray[idx] = 5;
+            play_sound(0x1F3);
+            temp_v0 = &D_8022F398_ovl19[0];
+            gKirbyState.unk3C = 0;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            D_800E64D0[omCurrentObj->objId] = 6.0f;
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E6850[omCurrentObj->objId] = 6.0f;
+            /* wait for the raft to be ready (state 5, blend >= 0.2) */
+            while (!((D_800E5F90[omCurrentObj->objId] == 5) &&
+                     (D_800E6BD0[omCurrentObj->objId] >= 0.2f))) {
+                ohSleep(1);
+            }
+            play_sound(0x214);
+            func_800FBE1C();
+            func_800FA414(3);
+            temp_v0 = &D_8022F398_ovl19[1];
+            gKirbyState.unk3C = 1;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            func_800AF27C();
+            gKirbyState.unk30 = 0;
+            gKirbyState.unk17 = 0;
+            gKirbyState.unk44 = 0;
+            /* fallthrough into the default sleep, as in the ROM */
+        default:
+            curObjSleepForever();
+            break;
+        case 0:
+            D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)-1;
+            while (1) {
+                s32 pick;
+
+                while (1) {
+                    if (D_800E6850[omCurrentObj->objId] > 6.0f) {
+                        pick = random_soft_s32_range(2);
+                        gKirbyState.unk3C = pick;
+                        if (pick != (s32)(uintptr_t)D_800E9AA0[omCurrentObj->objId]) {
+                            D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)pick;
+                            break;
+                        }
+                    } else {
+                        gKirbyState.unk3C = 0;
+                        pick = 0;
+                        break;
+                    }
+                }
+                temp_v0 = &D_8022F2A8_ovl19[pick];
+                D_800EC2E0[1].as_u32 = temp_v0->unk8;
+                D_800EC4A0[1] = temp_v0->unkC;
+                D_800EC2E0[2].as_u32 = temp_v0->unk10;
+                D_800EC4A0[2] = temp_v0->unk14;
+                func_800AA154(temp_v0->unk0); /* blocks until the anim ends */
+            }
+            break;
+        case 1:
+            D_800E8920[omCurrentObj->objId] = 0;
+            gKirbyState.jumpHeight = 0;
+            gKirbyState.isFullJump = 0;
+            play_sound(0xF7);
+            gKirbyState.unkCC = 8.0f;
+            D_800E3210[omCurrentObj->objId] = 15.0f;
+            D_800E3750[omCurrentObj->objId] = -0.980665f;
+            D_800E3C90[omCurrentObj->objId] = 15.0f;
+            temp_v0 = &D_8022F2F0_ovl19[0];
+            gKirbyState.unk3C = 0;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
+                ohSleep(1);
+            }
+            temp_v0 = &D_8022F2F0_ovl19[1];
+            gKirbyState.isFullJump += 1;
+            gKirbyState.unk3C = 1;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA154(temp_v0->unk0);
+            gKirbyState.unk44 = 2;
+            D_800E98E0[omCurrentObj->objId] = 2;
+            /* fallthrough */
+        case 2:
+            D_800E3750[omCurrentObj->objId] = -1.2258313f;
+            D_800E3C90[omCurrentObj->objId] = 18.0f;
+            temp_v0 = &D_8022F320_ovl19[0];
+            if (!(gEntitiesAngleXArray[omCurrentObj->objId] > 0.0f) ||
+                !(gEntitiesAngleXArray[omCurrentObj->objId] >= 0.7853982f)) {
+                D_800EC2E0[1].as_u32 = temp_v0->unk8;
+                D_800EC4A0[1] = temp_v0->unkC;
+                D_800EC2E0[2].as_u32 = temp_v0->unk10;
+                D_800EC4A0[2] = temp_v0->unk14;
+                func_800AA018(temp_v0->unk0);
+            }
+            curObjSleepForever();
+            break;
+        case 3:
+            gKirbyState.unk30 = 0;
+            gKirbyState.unk3C = 0;
+            play_sound(0x148);
+            temp_v0 = &D_8022F338_ovl19[gKirbyState.unk3C];
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA154(temp_v0->unk0);
+            gKirbyState.unk30 += 1;
+            curObjSleepForever();
+            break;
+        case 4:
+            gKirbyState.unk30 = 0;
+            D_800E83E0[omCurrentObj->objId] = 0;
+            D_800E8060[omCurrentObj->objId] = -1;
+            gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
+            func_800BB468(2, 0);
+            play_sound(0x147);
+            gKirbyState.unk3C = 1;
+            D_800E8920[omCurrentObj->objId] = 0;
+            D_800E3210[omCurrentObj->objId] = 18.0f;
+            D_800E3750[omCurrentObj->objId] = -0.980665f;
+            D_800E3C90[omCurrentObj->objId] = 18.0f;
+            temp_v0 = &D_8022F350_ovl19[gKirbyState.unk3C];
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA154(temp_v0->unk0);
+            D_800E8060[omCurrentObj->objId] = 0;
+            gKirbyState.unk30 += 1;
+            curObjSleepForever();
+            break;
+        case 5:
+            auFunc80020C88();
+            func_800A7EB4();
+            if (D_800E9FE0[omCurrentObj->objId].as_u32 != 0) {
+                func_800B1900(D_800E9FE0[omCurrentObj->objId].as_u32 & 0xFFFF);
+            }
+            func_80227C88_ovl19();
+            play_sound(0x147);
+            D_800E8920[omCurrentObj->objId] = 0;
+            D_800E6690[omCurrentObj->objId] = -0.225f;
+            D_800E6850[omCurrentObj->objId] = 0.0f;
+            D_800E3210[omCurrentObj->objId] = 15.0f;
+            D_800E3750[omCurrentObj->objId] = -0.980665f;
+            D_800E3C90[omCurrentObj->objId] = 15.0f;
+            play_music(0, 5);
+            func_80176398_ovl3();
+            func_80224858_ovl19();
+            (&D_800D6B54)[1] = 0xA0;
+            D_800D6B54 = 1;
+            D_800BE4F8 = 6;
+            temp_v0 = &D_8022F380_ovl19[0];
+            gKirbyState.unk3C = 0;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            while (D_800E8920[omCurrentObj->objId] == 0) {
+                ohSleep(1);
+            }
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+            D_800E3C90[omCurrentObj->objId] = 65535.0f;
+            curObjSleepForever();
+            break;
+        case 7:
+            temp_v0 = &D_8022F3C8_ovl19[0];
+            gKirbyState.unk30 = 0;
+            gKirbyState.unk3C = 0;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            while (gKirbyState.rightCollisionNext == 0) {
+                if ((D_800E8920[omCurrentObj->objId] != 0) && (gKirbyState.unk58 == 0)) {
+                    func_8011DC04(0x146);
+                }
+                ohSleep(1);
+            }
+            idx = request_track_general(0x13, 0x3C, 0x4A);
+            gEntityFuncListIDArray[idx] = 6;
+            gEntitiesNextPosYArray[idx] = gEntitiesNextPosYArray[omCurrentObj->objId];
+            func_800FA414(2);
+            D_8012913C = idx;
+            D_80129138 = idx;
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            if (gKirbyState.unk58 != 0) {
+                func_8011DC5C();
+            }
+            func_800BB468(2, 0);
+            func_800AECC0(1.5f);
+            func_800AED20(1.5f);
+            func_800AED80(1.5f, 1);
+            func_800AEDD0(1.5f, 1);
+            func_800AED80(1.5f, 2);
+            func_800AEDD0(1.5f, 2);
+            play_sound(0x147);
+            temp_v0 = &D_8022F3C8_ovl19[1];
+            gKirbyState.unk3C = 1;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            ohSleep(0x28);
+            gKirbyState.unk30 += 1;
+            curObjSleepForever();
+            break;
+    }
+}
+#elif defined(PORT)
 /* PORT: behavioral port from
  * asm/nonmatchings/ovl19/ovl19_2/func_802248C0_ovl19.s -- the raft-level
  * sibling of func_80223200_ovl19 (same unk44-driven Kirby state machine,
@@ -1149,7 +1628,211 @@ void func_802248C0_ovl19(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_802248C0_ovl19.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 21/501, BLOCKED-shape. Seeded from the PORT arm; confirmed by
+ * reading the .s directly that this is NOT a register floor: the ROM
+ * uses `bc1fl`/`bc1tl` LIKELY branches with the `gEntitiesAngleXArray[objId]
+ * = slope` store SHARED in two different branch-delay slots (one store
+ * instruction serving both the sign-match and state-2/7 paths), where
+ * this draft's three textually-separate `gEntitiesAngleXArray[objId] =
+ * slope;` statements (one per branch) compile to three separate stores.
+ * Reproducing IDO's likely-branch merge-point trick needs a source shape
+ * this project hasn't found yet (same floor hit the two siblings,
+ * func_80223E68_ovl19 and func_80226AA8_ovl19). Not a quick permuter
+ * target -- flagging for a source-shape investigation, not just regalloc. */
+#ifdef MIPS_TO_C
+void func_80225620_ovl19(GObj *arg0) {
+    s32 func_80153A18_ovl3(void);
+    s32 func_80121828(f32, f32, f32, f32);
+    void play_sound(s32);
+    void func_8011DC04(u32);
+    void func_8011DC5C(void);
+    void func_8011EBD4(void);
+    void *func_8011D4A4(f32);
+    void func_800B2340(Vector *, struct DObj *, u32);
+    void func_800B26D8(Vector *, struct DObj *, u32);
+    void func_80225FB4_ovl19(void);
+    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
+    extern s32 D_800BE4FC, D_800BE500, D_800BE504, D_800BE508;
+    extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
+    extern s32 D_800BE4F8;
+    extern s32 D_8019264C;
+    struct PcSplashEmitter {        /* UnkEmitter head (src/ovl1/ovl1.c) */
+        void *next;
+        f32 unk4;
+        f32 unk8;
+        f32 unkC;
+        f32 unk10;
+        f32 unk14;
+        f32 unk18;
+    };
+    struct PcGenNodeRef {           /* generator node: N64 +0x48/+0x4C on LP64 */
+        u8 pad[80];
+        struct DObj *unk48;
+        struct PcSplashEmitter *unk4C;
+    };
+    struct PcGenNodeRef *gen;
+    struct PcSplashEmitter *em;
+    Vector v;
+    s32 objId;
+    s32 state;
+    s32 rumbleGate;
+
+    func_80153A18_ovl3();
+    func_800FF200(D_8012E944);
+    if (func_80121828(-0.980665f, 18.0f, -0.980665f, 18.0f) != 0) {
+        play_sound(0x148);
+    }
+    objId = omCurrentObj->objId;
+    if (D_800E8920[objId] != 0) {
+        f32 slope = -func_800F8824(D_8012BCA8[1], D_800E17D0[objId]);
+
+        if (slope == 0.0f) {
+            gEntitiesAngleXArray[objId] = slope;
+            rumbleGate = D_8012E7FC[2];
+        } else {
+            f32 pitch = gEntitiesAngleXArray[objId];
+
+            if (((pitch >= 0.0f) && (slope >= 0.0f)) || ((pitch <= 0.0f) && (slope <= 0.0f))) {
+                gEntitiesAngleXArray[objId] = slope;
+                rumbleGate = D_8012E7FC[2];
+            } else if ((gKirbyState.unk44 == 2) || (gKirbyState.unk44 == 7)) {
+                gEntitiesAngleXArray[objId] = slope;
+                rumbleGate = gKirbyState.unk44;
+            } else {
+                /* slope sign flipped under him: launch */
+                D_800E8920[objId] = 0;
+                gKirbyState.unk44 = 2;
+                pitch = gEntitiesAngleXArray[objId];
+                if (pitch < 0.0f) {
+                    f32 a = ABSF(pitch) + 0.174532935f;
+
+                    D_800E3210[objId] = sinf(a) * D_800E64D0[objId];
+                    D_800E64D0[objId] *= cosf(a);
+                }
+                rumbleGate = gKirbyState.unk44;
+            }
+        }
+        if ((rumbleGate != 7) && (gKirbyState.unk58 == 0)) {
+            func_8011DC04(0x146);
+        }
+    } else if (gKirbyState.unk58 != 0) {
+        func_8011DC5C();
+    }
+
+    if ((gKirbyState.unk44 == 7) || (func_80227D4C_ovl19() == 0)) {
+        switch (gKirbyState.unk44) {
+            case 0:
+                if (gKirbyController.buttonPressed & 0x8000) {
+                    gKirbyState.unk44 = 1;
+                } else if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+                    gKirbyState.unk44 = 2;
+                }
+                break;
+            case 1:
+                if (gKirbyState.isFullJump == 0) {
+                    func_8011EBD4();
+                }
+                break;
+            case 2:
+                if (D_800E8920[omCurrentObj->objId] != 0) {
+                    gKirbyState.unk44 = 3;
+                }
+                break;
+            case 3:
+                if (gKirbyState.unk30 != 0) {
+                    gKirbyState.unk44 = 0;
+                } else if (gKirbyController.buttonPressed & 0x8000) {
+                    gKirbyState.unk44 = 1;
+                } else if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+                    gKirbyState.unk44 = 2;
+                }
+                break;
+            case 4:
+                if (gKirbyState.unk30 != 0) {
+                    if (D_800E8920[omCurrentObj->objId] != 0) {
+                        gKirbyState.unk44 = 0;
+                    } else {
+                        gKirbyState.unk44 = 2;
+                    }
+                }
+                break;
+            case 6:
+                /* no state work; still refresh the splash emitters */
+                goto splash;
+            case 7:
+                if (gKirbyState.unk30 != 0) {
+                    D_800BE52C = D_800BE500;
+                    D_800BE530 = D_800BE504;
+                    D_800BE534 = D_800BE508 + 1;
+                    D_800BE538 = 1;
+                    D_800BE4FC = 2;
+                    D_800BE4F8 = 2;
+                    gKirbyState.unk30 = 0;
+                }
+                return;
+            default:
+                break;
+        }
+        /* shared tail for states 0..5 and out-of-range values */
+        objId = omCurrentObj->objId;
+        if ((D_800E7B20[objId] != 0.0f) && (D_800D6B54 == 0) && (gKirbyState.unk44 != 4)) {
+            func_8011D4A4(1.0f);
+            objId = omCurrentObj->objId;
+        }
+        func_8016854C_ovl3(&D_8019264C, D_800DFBD0[objId][1], 1.0f);
+    }
+
+    /* sync unk44 into the track state, re-arming the state coroutine */
+    state = gKirbyState.unk44;
+    objId = omCurrentObj->objId;
+    if (state != D_800E98E0[objId]) {
+        if (state == 4) {
+            if (gKirbyState.unk68 == 3) {
+                gKirbyHp += 1.0f;
+            }
+            if (change_kirby_hp(-1.0f) == 0) {
+                gKirbyState.unk44 = 5;
+            } else {
+                D_800E64D0[omCurrentObj->objId] = 7.5f;
+            }
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_802248C0_ovl19);
+        state = gKirbyState.unk44;
+        D_800E98E0[omCurrentObj->objId] = state;
+    }
+    if ((state != 6) && (state != 7)) {
+        func_80225FB4_ovl19();
+    }
+
+splash:
+    /* pin the two paddle splash generators to DObjs [3] and [4] (the ROM
+     * only checks the first handle, like here) */
+    if (gKirbyState.unk4C != 0) {
+        gen = (struct PcGenNodeRef *)(uintptr_t)gKirbyState.unk4C;
+        func_800B2340(&v, D_800DFBD0[omCurrentObj->objId][3], 0xFFFF);
+        em = gen->unk4C;
+        em->unk4 = v.x;
+        em->unk8 = v.y;
+        em->unkC = v.z;
+        func_800B26D8(&v, D_800DFBD0[omCurrentObj->objId][3], 0xFFFF);
+        em = gen->unk4C;
+        em->unk10 = v.x;
+        em->unk14 = v.y;
+        em->unk18 = v.z;
+        gen = (struct PcGenNodeRef *)(uintptr_t)gKirbyState.unk50;
+        func_800B2340(&v, D_800DFBD0[omCurrentObj->objId][4], 0xFFFF);
+        em = gen->unk4C;
+        em->unk4 = v.x;
+        em->unk8 = v.y;
+        em->unkC = v.z;
+        func_800B26D8(&v, D_800DFBD0[omCurrentObj->objId][4], 0xFFFF);
+        em = gen->unk4C;
+        em->unk10 = v.x;
+        em->unk14 = v.y;
+        em->unk18 = v.z;
+    }
+}
+#elif defined(PORT)
 /* PORT: behavioral port from
  * asm/nonmatchings/ovl19/ovl19_2/func_80225620_ovl19.s -- the raft
  * level's per-frame Kirby hook (sibling of func_80223E68_ovl19, paired
@@ -1412,7 +2095,217 @@ void func_80225FB4_ovl19(void) {
     }
 }
 
-#ifdef PORT
+/* FACTORY: 84/619, UNCERTAIN -- seeded from the PORT arm (time-boxed).
+ * Compiles and word count is close (619/619) but residue is high
+ * (535/619). The ROM holds 4 saved regs ($s1-$s4) across the whole -1
+ * init block and the case-1 spawn; this draft's IDO allocation differs
+ * in count/role, cascading register labels through most of the body.
+ * Worth a fresh m2c pass over the -1 init block specifically before
+ * feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_802260FC_ovl19(GObj *arg0) {
+    void func_8011CF58(void);
+    void func_800A9760(u32);
+    void func_800A7EB4(void);
+    void func_80227C88_ovl19(void);
+    s32 play_music(s32, s32);
+    void play_sound(s32);
+    s32 random_soft_s32_range(s32);
+    void func_80176398_ovl3(void);
+    void func_800BB468(u32, s32);
+    extern s32 D_800BE4F8;
+    extern s32 D_8019257C;
+    extern f32 *D_801930A4;
+    struct Ovl19_2Struct *temp_v0;
+
+    if (gKirbyState.unk44 == -1) {
+        D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+        D_800DDE10[omCurrentObj->objId] = 2;
+        assign_new_process_entry(gEntityGObjProcessArray3[omCurrentObj->objId], func_80227A38_ovl19);
+        func_8011CF58();
+        D_800DDFD0[omCurrentObj->objId] = 2;
+        gKirbyState.unk15C = (u32)(uintptr_t)&D_8019257C;
+        gKirbyState.unk154 = 5;
+        D_800E0490[omCurrentObj->objId] = &D_801930A4;
+        func_80152348_ovl3(20.0f);
+        func_800AFBB4(1, omCurrentObj);
+        func_800A9760(0x20066);
+        gKirbyState.unk154 = 1;
+        D_800E64D0[omCurrentObj->objId] = 0.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 0.0f;
+        D_800EC2E0[2].as_u32 = -1;
+        D_800EC2E0[1].as_u32 = -1;
+        request_track_general(0x13, 1, 2);
+        D_800E98E0[1] = 0;
+        gEntityFuncListIDArray[1] = 1;
+        D_800E8220[1] = 2;
+        request_track_general(0x13, 2, 3);
+        gEntityFuncListIDArray[2] = 0;
+        D_800E8220[2] = 2;
+        D_800EC2E0[2].as_u32 = -1;
+        D_800EC2E0[1].as_u32 = -1;
+        func_8021EE88_ovl19((GObj *)(uintptr_t)1);
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk17 = 0;
+        D_800E8060[omCurrentObj->objId] = 0;
+        gKirbyState.unk44 = 0;
+        gKirbyState.unk40 = 3.0f;
+        D_800E98E0[omCurrentObj->objId] = 0;
+    }
+    switch (gKirbyState.unk44) {
+        case 0:
+            D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)-1;
+            while (1) {
+                s32 pick;
+
+                do {
+                    pick = random_soft_s32_range(2);
+                    gKirbyState.unk3C = pick;
+                } while (pick == (s32)(uintptr_t)D_800E9AA0[omCurrentObj->objId]);
+                D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)pick;
+                temp_v0 = &D_8022F3F8_ovl19[pick];
+                D_800EC2E0[1].as_u32 = temp_v0->unk8;
+                D_800EC4A0[1] = temp_v0->unkC;
+                D_800EC2E0[2].as_u32 = temp_v0->unk10;
+                D_800EC4A0[2] = temp_v0->unk14;
+                func_800AA154(temp_v0->unk0); /* blocks until the anim ends */
+            }
+            break;
+        case 1:
+            D_800E8920[omCurrentObj->objId] = 0;
+            gKirbyState.jumpHeight = 0;
+            gKirbyState.isFullJump = 0;
+            play_sound(0xF7);
+            gKirbyState.unkCC = 8.0f;
+            D_800E3210[omCurrentObj->objId] = 15.0f;
+            D_800E3750[omCurrentObj->objId] = -0.980665f;
+            D_800E3C90[omCurrentObj->objId] = 15.0f;
+            temp_v0 = &D_8022F440_ovl19[0];
+            gKirbyState.unk3C = 0;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
+                ohSleep(1);
+            }
+            temp_v0 = &D_8022F440_ovl19[1];
+            gKirbyState.isFullJump += 1;
+            gKirbyState.unk3C = 1;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA154(temp_v0->unk0);
+            gKirbyState.unk44 = 2;
+            D_800E98E0[omCurrentObj->objId] = 2;
+            /* fallthrough */
+        case 2:
+            D_800E3750[omCurrentObj->objId] = -0.980665f;
+            D_800E3C90[omCurrentObj->objId] = 18.0f;
+            temp_v0 = &D_8022F470_ovl19[0];
+            if (!(gEntitiesAngleXArray[omCurrentObj->objId] > 0.0f) ||
+                !(gEntitiesAngleXArray[omCurrentObj->objId] >= 0.7853982f)) {
+                D_800EC2E0[1].as_u32 = temp_v0->unk8;
+                D_800EC4A0[1] = temp_v0->unkC;
+                D_800EC2E0[2].as_u32 = temp_v0->unk10;
+                D_800EC4A0[2] = temp_v0->unk14;
+                func_800AA018(temp_v0->unk0);
+            }
+            /* fallthrough into the default sleep, as in the ROM */
+        default:
+            curObjSleepForever();
+            break;
+        case 3:
+            gKirbyState.unk30 = 0;
+            gKirbyState.unk3C = 0;
+            play_sound(0x142);
+            temp_v0 = &D_8022F488_ovl19[gKirbyState.unk3C];
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA154(temp_v0->unk0);
+            gKirbyState.unk30 += 1;
+            curObjSleepForever();
+            break;
+        case 4:
+            gKirbyState.unk30 = 0;
+            D_800E83E0[omCurrentObj->objId] = 0;
+            D_800E8060[omCurrentObj->objId] = -1;
+            gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
+            func_800BB468(2, 0);
+            play_sound(0x141);
+            gKirbyState.unk3C = 1;
+            D_800E8920[omCurrentObj->objId] = 0;
+            D_800E3210[omCurrentObj->objId] = 18.0f;
+            D_800E3750[omCurrentObj->objId] = -0.980665f;
+            D_800E3C90[omCurrentObj->objId] = 18.0f;
+            temp_v0 = &D_8022F4A0_ovl19[gKirbyState.unk3C];
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA154(temp_v0->unk0);
+            D_800E8060[omCurrentObj->objId] = 0;
+            gKirbyState.unk30 += 1;
+            curObjSleepForever();
+            break;
+        case 5:
+            func_800A7EB4();
+            if (D_800E9FE0[omCurrentObj->objId].as_u32 != 0) {
+                func_800B1900(D_800E9FE0[omCurrentObj->objId].as_u32 & 0xFFFF);
+            }
+            func_80227C88_ovl19();
+            play_sound(0x141);
+            D_800E8920[omCurrentObj->objId] = 0;
+            D_800E6690[omCurrentObj->objId] = -0.225f;
+            D_800E6850[omCurrentObj->objId] = 0.0f;
+            D_800E3210[omCurrentObj->objId] = 15.0f;
+            D_800E3750[omCurrentObj->objId] = -0.980665f;
+            D_800E3C90[omCurrentObj->objId] = 15.0f;
+            play_music(0, 5);
+            func_80176398_ovl3();
+            func_80224858_ovl19();
+            (&D_800D6B54)[1] = 0xA0;
+            D_800D6B54 = 1;
+            D_800BE4F8 = 6;
+            temp_v0 = &D_8022F4D0_ovl19[0];
+            gKirbyState.unk3C = 0;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            while (D_800E8920[omCurrentObj->objId] == 0) {
+                ohSleep(1);
+            }
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+            D_800E3C90[omCurrentObj->objId] = 65535.0f;
+            curObjSleepForever();
+            break;
+        case 7:
+            temp_v0 = &D_8022F4E8_ovl19[0];
+            gKirbyState.unk30 = 0;
+            gKirbyState.unk3C = 0;
+            D_800EC2E0[1].as_u32 = temp_v0->unk8;
+            D_800EC4A0[1] = temp_v0->unkC;
+            D_800EC2E0[2].as_u32 = temp_v0->unk10;
+            D_800EC4A0[2] = temp_v0->unk14;
+            func_800AA018(temp_v0->unk0);
+            ohSleep(0x5A);
+            gKirbyState.unk30 += 1;
+            curObjSleepForever();
+            break;
+    }
+}
+#elif defined(PORT)
 /* PORT: behavioral port from
  * asm/nonmatchings/ovl19/ovl19_2/func_802260FC_ovl19.s -- third variant
  * of the unk44-driven Kirby state coroutine (swimming leg, tables
@@ -1633,7 +2526,156 @@ void func_802260FC_ovl19(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_802260FC_ovl19.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 7/340, UNCERTAIN -- seeded from the PORT arm (time-boxed, not
+ * independently re-derived line-by-line from the .s the way the other
+ * drafts in this file were). Compiles and is instruction-count-close
+ * (340/340) but the diff is nearly whole-function (333/340), which reads
+ * as more than a register floor -- worth a fresh m2c pass before feeding
+ * this to the permuter. Flagging the uncertainty rather than claiming a
+ * clean near-miss. */
+#ifdef MIPS_TO_C
+void func_80226AA8_ovl19(GObj *arg0) {
+    s32 func_80153A18_ovl3(void);
+    void play_sound(s32);
+    void func_8011EBD4(void);
+    void *func_8011D4A4(f32);
+    void func_802271A8_ovl19(void);
+    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
+    extern s32 D_800BE4FC;
+    extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
+    extern s32 D_800BE4F8;
+    extern s32 D_801926B4;
+    /* minimal native mirrors of unk_structs/D_80129114.h (LP64 layouts
+     * asserted in ovl2_2.c) */
+    struct PcTrackNodeRef {         /* struct Unk80129114_4, stride 24 */
+        void *unk0;                 /* kirby-node record */
+        void *unk4;
+        u32 unk8;
+        u8 unkC;
+        u8 unkD;
+        s16 unkE;
+    };
+    struct PcTrackHdrRef {          /* struct UnkStruct80129114 */
+        u32 unk0;
+        struct PcTrackNodeRef *unk4;
+    };
+    struct PcKirbyNodeHead {        /* TrackKirbyNode head (ovl2_3.c) */
+        u8 unk0;
+        u8 unk1;
+        u16 unk2;
+        u8 unk4;
+        u8 unk5;
+        u8 unk6;
+        u8 unk7;
+    };
+    extern struct PcTrackHdrRef *D_80129114;
+    struct PcKirbyNodeHead *node;
+    s32 objId;
+    s32 state;
+
+    func_80153A18_ovl3();
+    func_800FF200(D_8012E944);
+    objId = omCurrentObj->objId;
+    if (D_800E8920[objId] != 0) {
+        if (D_800E3210[objId] != 0.0f) {
+            D_800E3750[objId] = 0.0f;
+            D_800E3210[objId] = D_800E3750[objId];
+            D_800E3C90[objId] = 65535.0f;
+            if ((D_800E5F90[objId] != 2) && (D_800E5F90[objId] != 3)) {
+                play_sound(0x142);
+            }
+        }
+        gEntitiesAngleXArray[objId] = -func_800F8824(D_8012BCA8[1], D_800E17D0[objId]);
+    } else {
+        D_800E3750[objId] = -0.980665f;
+        D_800E3C90[objId] = 18.0f;
+    }
+
+    if ((gKirbyState.unk44 != 7) && (func_80227D4C_ovl19() != 0)) {
+        goto sync; /* hit something: skip the poll and the hitbox */
+    }
+    switch (gKirbyState.unk44) {
+        case 0:
+            if (gKirbyController.buttonPressed & 0x8000) {
+                gKirbyState.unk44 = 1;
+            } else if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+                gKirbyState.unk44 = 2;
+            }
+            break;
+        case 1:
+            if (gKirbyState.isFullJump == 0) {
+                func_8011EBD4();
+            }
+            break;
+        case 2:
+            if (D_800E8920[omCurrentObj->objId] != 0) {
+                gKirbyState.unk44 = 3;
+            }
+            break;
+        case 3:
+            if (gKirbyState.unk30 != 0) {
+                gKirbyState.unk44 = 0;
+            } else if (gKirbyController.buttonPressed & 0x8000) {
+                gKirbyState.unk44 = 1;
+            } else if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+                gKirbyState.unk44 = 2;
+            }
+            break;
+        case 4:
+            if (gKirbyState.unk30 != 0) {
+                if (D_800E8920[omCurrentObj->objId] != 0) {
+                    gKirbyState.unk44 = 0;
+                } else {
+                    gKirbyState.unk44 = 2;
+                }
+            }
+            break;
+        case 7:
+            if (gKirbyState.unk30 != 0) {
+                node = (struct PcKirbyNodeHead *) D_80129114->unk4[3].unk0;
+                D_800BE52C = node->unk4;
+                D_800BE530 = node->unk5;
+                D_800BE534 = node->unk6;
+                D_800BE538 = node->unk7;
+                D_800BE4FC = 2;
+                D_800BE4F8 = 2;
+                gKirbyState.unk30 = 0;
+            }
+            return;
+        default:
+            break;
+    }
+
+    /* the hitbox only runs when he was actually hit this frame */
+    objId = omCurrentObj->objId;
+    if ((D_800E7B20[objId] != 0.0f) && (D_800D6B54 == 0) && (gKirbyState.unk44 != 4)) {
+        func_8011D4A4(1.0f);
+        func_8016854C_ovl3(&D_801926B4, D_800DFBD0[omCurrentObj->objId][1], 1.0f);
+    }
+
+sync:
+    state = gKirbyState.unk44;
+    objId = omCurrentObj->objId;
+    if (state != D_800E98E0[objId]) {
+        if (state == 4) {
+            if (gKirbyState.unk68 == 3) {
+                gKirbyHp += 1.0f;
+            }
+            if (change_kirby_hp(-1.0f) == 0) {
+                gKirbyState.unk44 = 5;
+            } else {
+                D_800E64D0[omCurrentObj->objId] = 7.5f;
+            }
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_802260FC_ovl19);
+        state = gKirbyState.unk44;
+        D_800E98E0[omCurrentObj->objId] = state;
+    }
+    if (state != 7) {
+        func_802271A8_ovl19();
+    }
+}
+#elif defined(PORT)
 /* PORT: behavioral port from
  * asm/nonmatchings/ovl19/ovl19_2/func_80226AA8_ovl19.s -- the swimming
  * leg's per-frame Kirby hook (paired with func_802260FC_ovl19). While
@@ -2071,7 +3113,84 @@ void func_80227F38_ovl19(void) {
     D_800E8220[3] = temp_v0->unk4;
 }
 
-#ifdef PORT
+/* FACTORY: 121/262, frame-size floor. Derived from the ASM (not the PORT
+ * arm); the u16-truncated func_800B1900 kills (track1/track2/objId low
+ * 16 bits of a spilled s32, same idiom as the sibling func_8022889C_ovl19)
+ * are the one real fix over the PORT arm's full-word calls. Every field,
+ * constant and branch checks out. Residue: the ROM frame is -0x28 (2
+ * saved regs $s0/$s1); this draft's IDO reaches -0x30 (8 bytes more),
+ * which relabels most temp registers downstream even though total word
+ * count still matches the target (262). Frame-size/register floor
+ * (LEVERS: no source spelling reaches it) -- sibling of
+ * func_8022889C_ovl19, same clone family. */
+#ifdef MIPS_TO_C
+void func_80227F90_ovl19(GObj *arg0) {
+    struct UnkStruct8022FAB0 *func_800FF144(void);
+    void func_802283A8_ovl19(GObj *);
+    extern s8 D_8012E7D7;
+    extern struct Ovl19_2Struct D_8022F560_ovl19[];
+    struct UnkStruct8022FAB0 *cam;
+    struct Ovl19_2Struct *rec;
+    s32 track1;
+    s32 track2;
+
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DF150[omCurrentObj->objId] = func_802283A8_ovl19;
+    cam = func_800FF144();
+    D_8022FAB0_ovl19 = cam;
+    if (cam != NULL) {
+        cam->unk10 = 24.0f;
+        D_8022FAB0_ovl19->unk14 = 20.0f;
+        D_8022FAB0_ovl19->unk18 = -240.0f;
+        D_8022FAB0_ovl19->unk21 = 1;
+    }
+    D_8012E7D7 = 1;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x20064, 0x20, 0x10);
+    track1 = request_track_general(0x13, 0x3C, 0x4A);
+    D_800E98E0[track1] = 0;
+    gEntityFuncListIDArray[track1] = 1;
+    D_800E8220[track1] = 0;
+    track2 = request_track_general(0x13, 0x3C, 0x4A);
+    gEntityFuncListIDArray[track2] = 0;
+    D_800E8220[track2] = 0;
+    D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)track2;
+    D_800E5F90[omCurrentObj->objId] = 0;
+    D_800E6D90[omCurrentObj->objId] = 0.035f;
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    rec = &D_8022F560_ovl19[0];
+    D_800EC2E0[track1].as_u32 = rec->unk8;
+    D_800EC4A0[track1] = rec->unkC;
+    D_800EC2E0[track2].as_u32 = rec->unk10;
+    gKirbyState.unk3C = 0;
+    D_800EC4A0[track2] = rec->unk14;
+    func_800AA018(rec->unk0);
+    while (D_800E98E0[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    ohSleep(1);
+    func_800B1900(*(u16 *)((u8 *)&track1 + 2));
+    func_800B1900(*(u16 *)((u8 *)&track2 + 2));
+    func_800FF1CC(D_8022FAB0_ovl19);
+    func_800B1900(*(u16 *)((u8 *)omCurrentObj + 2));
+}
+#elif defined(PORT)
 /* PORT: behavioral port from
  * asm/nonmatchings/ovl19/ovl19_2/func_80227F90_ovl19.s -- the boss-intro
  * Kirby cutscene coroutine (funclist entry in helplib's table). Sets up
@@ -2248,7 +3367,77 @@ void func_80228874_ovl19(GObj *arg0) {
     func_800FF200(D_8022FAB0_ovl19);
 }
 
-#ifdef PORT
+/* FACTORY: 20/234, saved-register count. Derived from the ASM (not the
+ * PORT arm), fixing one real bug: the two/three func_800B1900 kills read
+ * their argument as a HALF-WORD off the spilled-s32 stack slot (track1 at
+ * +2, track2 at +2, omCurrentObj->objId's low 16 bits at +2) -- not the
+ * full 32-bit values the PORT arm passes. All struct-field reads/writes,
+ * constants (0x13/0x3C/0x4A, 38.1, funclist ids) and the sleep/wait shape
+ * check out. Residue: the ROM uses 3 saved registers ($s0-$s2, frame
+ * 0x38); this draft's IDO allocation reaches for a 4th ($s0-$s3), which
+ * cascades a register/offset relabeling through nearly the whole body
+ * (frame size and total instruction count still both match the target,
+ * 234 words). Tried inlining `rec` (the struct-array cursor) to drop a
+ * live-across-call value -- made it worse (215/234), reverted. Whole-
+ * function saved-register-count floor (LEVERS: no source spelling
+ * reaches it) -- sibling of func_80227F90_ovl19, same family. */
+#ifdef MIPS_TO_C
+void func_8022889C_ovl19(GObj *arg0) {
+    void func_80228C44_ovl19(GObj *);
+    extern struct Ovl19_2Struct D_8022F578_ovl19[];
+    struct Ovl19_2Struct *rec;
+    s32 track1;
+    s32 track2;
+
+    D_800E98E0[omCurrentObj->objId] = 0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DF150[omCurrentObj->objId] = func_80228C44_ovl19;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 38.1f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x20066, 0x20, 0x10);
+    track1 = request_track_general(0x13, 0x3C, 0x4A);
+    D_800E98E0[track1] = 0;
+    gEntityFuncListIDArray[track1] = 1;
+    D_800E8220[track1] = 2;
+    track2 = request_track_general(0x13, 0x3C, 0x4A);
+    gEntityFuncListIDArray[track2] = 0;
+    D_800E8220[track2] = 2;
+    D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)track2;
+    D_800E5F90[omCurrentObj->objId] = 0;
+    D_800E6D90[omCurrentObj->objId] = 0.0f;
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 0.0f;
+    rec = &D_8022F578_ovl19[0];
+    D_800EC2E0[track1].as_u32 = rec->unk8;
+    D_800EC4A0[track1] = rec->unkC;
+    D_800EC2E0[track2].as_u32 = rec->unk10;
+    D_800EC4A0[track2] = rec->unk14;
+    gKirbyState.unk3C = 0;
+    func_800AA018(rec->unk0);
+    while (D_800E98E0[omCurrentObj->objId] != 2) {
+        ohSleep(1);
+    }
+    gKirbyState.unk3C = 1;
+    rec = &D_8022F578_ovl19[1];
+    D_800EC2E0[track1].as_u32 = rec->unk8;
+    D_800EC4A0[track1] = rec->unkC;
+    D_800EC2E0[track2].as_u32 = rec->unk10;
+    D_800EC4A0[track2] = rec->unk14;
+    func_800AA154(rec->unk0); /* blocks until the anim ends */
+    D_8012E7FC[2] = 2;
+    ohSleep(2);
+    func_800B1900(*(u16 *)((u8 *)&track1 + 2));
+    func_800B1900(*(u16 *)((u8 *)&track2 + 2));
+    func_800B1900(*(u16 *)((u8 *)omCurrentObj + 2));
+}
+#elif defined(PORT)
 /* PORT: behavioral port from
  * asm/nonmatchings/ovl19/ovl19_2/func_8022889C_ovl19.s -- the swimming
  * leg's outro cutscene coroutine (sibling of func_80227F90_ovl19).

@@ -232,7 +232,178 @@ s32 func_801BC794_ovl7(s32 arg0) {
     return idx;
 }
 
-#ifdef PORT
+/* FACTORY: 19/754 raw, but the shape is settled and the residue is TWO
+   frame facts, not 735 defects -- every diff after the prologue is the same
+   sp-offset shear repeated.
+   Established here: the gfx pushes are the ordinary GBI macros against
+   gDisplayListHeads (the clone family of the matched func_8019E860_ovl7 in
+   enelib.c) -- gSPSegment(head++, 4, gSegment4StartArray[objId]),
+   gSPNumLights(head++, 1), gSPLight(head++, &pair->l[0], 1),
+   gSPLight(head++, &pair->a, 2) -- NOT the PORT arm's pcYakuPush* helpers,
+   and D_800E0650[objId] is a Lights1 * (the PORT arm's `(u8 *) pair + 8` is
+   &pair->a).  The jump table groups cases 23+25, 24+26, 27+29 and 28+30
+   into shared arms (ungrouped costs 362 extra instructions).
+   Residue: (a) the ROM reserves a 0x160-byte DEAD stack region -- nothing
+   between 0x20 and 0x177 is ever touched, only ra 0x14, the objId*4 spill
+   0x1C, the D_800E0650 spill 0x178 and the arg0 home 0x180 -- reproduced
+   here with `u8 unused[0x160]` (IDO keeps a large array even unreferenced,
+   unlike scalar pads); (b) our IDO parks arg0 in $s0, adding an 8-byte save
+   and pushing the frame to 0x188, where the ROM saves NO s-registers and
+   re-loads arg0 from its 0x180 home before each call.  Closing (b) closes
+   the offsets and most of the count with it. */
+#ifdef MIPS_TO_C
+void func_801BC978_ovl7(GObj *arg0) {
+    s32 func_800AB0F4(GObj *);
+    void func_800AB120(GObj *);
+    void func_800AB174(GObj *);
+    void func_800AB1F0(GObj *);
+    void func_800AB244(GObj *);
+    void func_800AB2C0(GObj *);
+    void func_800AB314(GObj *);
+    void func_800AB3A0(GObj *);
+    void func_800AB3F4(GObj *);
+    extern s32 D_800DD8D0[];
+    extern Lights1 D_800BE550, D_800BE548;
+    extern Gfx *gDisplayListHeads[4];
+    u8 unused[0x160];
+    Lights1 *pair;
+
+    if (D_800DD8D0[arg0->objId] & 0x40) {
+        return;
+    }
+    pair = (Lights1 *) D_800E0650[arg0->objId];
+    switch (func_800AB0F4(arg0)) {
+    case 19:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        if (pair != NULL) {
+            gSPNumLights(gDisplayListHeads[0]++, 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->a, 2);
+        }
+        func_800AB120(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+        return;
+    case 20:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+        if (pair != NULL) {
+            gSPNumLights(gDisplayListHeads[0]++, 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->a, 2);
+            gSPNumLights(gDisplayListHeads[1]++, 1);
+            gSPLight(gDisplayListHeads[1]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[1]++, &pair->a, 2);
+        }
+        func_800AB174(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+        gSPNumLights(gDisplayListHeads[1]++, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+        return;
+    case 21:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        if (pair != NULL) {
+            gSPNumLights(gDisplayListHeads[0]++, 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->a, 2);
+        }
+        func_800AB1F0(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+        return;
+    case 22:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+        if (pair != NULL) {
+            gSPNumLights(gDisplayListHeads[0]++, 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->a, 2);
+            gSPNumLights(gDisplayListHeads[1]++, 1);
+            gSPLight(gDisplayListHeads[1]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[1]++, &pair->a, 2);
+        }
+        func_800AB244(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+        gSPNumLights(gDisplayListHeads[1]++, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+        return;
+    case 23:
+    case 25:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        if (pair != NULL) {
+            gSPNumLights(gDisplayListHeads[0]++, 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->a, 2);
+        }
+        func_800AB2C0(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+        return;
+    case 24:
+    case 26:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+        if (pair != NULL) {
+            gSPNumLights(gDisplayListHeads[0]++, 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->a, 2);
+            gSPNumLights(gDisplayListHeads[1]++, 1);
+            gSPLight(gDisplayListHeads[1]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[1]++, &pair->a, 2);
+        }
+        func_800AB314(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+        gSPNumLights(gDisplayListHeads[1]++, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+        return;
+    case 27:
+    case 29:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        if (pair != NULL) {
+            gSPNumLights(gDisplayListHeads[0]++, 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->a, 2);
+        }
+        func_800AB3A0(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+        return;
+    case 28:
+    case 30:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+        if (pair != NULL) {
+            gSPNumLights(gDisplayListHeads[0]++, 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[0]++, &pair->a, 2);
+            gSPNumLights(gDisplayListHeads[1]++, 1);
+            gSPLight(gDisplayListHeads[1]++, &pair->l[0], 1);
+            gSPLight(gDisplayListHeads[1]++, &pair->a, 2);
+        }
+        func_800AB3F4(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+        gSPNumLights(gDisplayListHeads[1]++, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+        gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+        return;
+    }
+}
+#elif defined(PORT)
 /* onDraw for the yaku (power-star) tracks (ported from m2c; twin of
  * enelib's func_8019E128_ovl7 but with a per-track custom light pair in
  * D_800E0650): unless hidden (D_800DD8D0 bit 6), set segment 0x10 to the

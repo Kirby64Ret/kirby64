@@ -825,24 +825,17 @@ s32 func_800F9438(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 13/202 positional; logic fully derived and believed correct (three SEPARATE 'return 9999.0f' statements confirmed by the three distinct rodata floats D_801287B8/BC/C0; N64 record access is plain recs[i].unk4->unkC since struct Unk80129114_4 is exactly 0x10; D_8012912C/D_80129130 are POINTERS, lw not lui/addiu). Residue is one allocator decision that cascades everywhere: the ROM is a frameless leaf that moves the float params straight into the scratch arg registers (mtc1 a1,f14 / mtc1 a3,f12), while IDO here puts them in callee-saved f20/f22, which forces a 0x18 frame, turns all three early 'jr ra' returns into branches to a shared epilogue, and rotates every FP temp. Tried: if/else abs vs ternary abs, fewer named locals */
 f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
-    f32 temp_f0;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f18_2;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 var_f0;
-    f32 var_f0_2;
-    f32 var_f12;
-    f32 var_f12_2;
-    f32 var_f2;
-    f32 var_f2_2;
-    s32 temp_t1;
-    s32 temp_v0;
-    u8 temp_v1_2;
-    void *temp_v1;
+    struct Unk80129114_4 *recs;
+    f32 len0;
+    f32 len2;
+    f32 fwd;
+    f32 back;
+    s32 base;
+    u8 route;
+    extern u8 *D_8012912C;
+    extern f32 *D_80129130;
 
     if (arg0 < 0) {
         return 9999.0f;
@@ -850,65 +843,45 @@ f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
     if (arg2 < 0) {
         return 9999.0f;
     }
-    temp_v0 = D_80129114->unk4;
-    temp_v1 = temp_v0 + (arg0 * 0x10);
-    temp_f16 = temp_v1->unk4->unkC;
+    recs = D_80129114->unk4;
+    len0 = recs[arg0].unk4->unkC;
     if (arg0 == arg2) {
-        if (temp_v1->unkE != 0) {
-            temp_f18_2 = arg3 - arg1;
+        if (recs[arg0].unkE != 0) {
+            fwd = arg3 - arg1;
             if (arg3 <= arg1) {
-                var_f2_2 = (1.0f - arg1) + arg3;
+                back = (1.0f - arg1) + arg3;
             } else {
-                var_f2_2 = ((1.0f - arg3) + arg1) * -1.0f;
+                back = ((1.0f - arg3) + arg1) * -1.0f;
             }
-            if (temp_f18_2 < 0.0f) {
-                var_f0 = -temp_f18_2;
-            } else {
-                var_f0 = temp_f18_2;
+            if (((fwd < 0.0f) ? -fwd : fwd) < ((back < 0.0f) ? -back : back)) {
+                return fwd * 10.0f * len0;
             }
-            if (var_f2_2 < 0.0f) {
-                var_f12 = -var_f2_2;
-            } else {
-                var_f12 = var_f2_2;
-            }
-            if (var_f0 < var_f12) {
-                return temp_f18_2 * 10.0f * temp_f16;
-            }
-            return var_f2_2 * 10.0f * temp_f16;
+            return back * 10.0f * len0;
         }
-        return (arg3 - arg1) * temp_f16 * 10.0f;
+        return (arg3 - arg1) * len0 * 10.0f;
     }
-    temp_t1 = (arg0 * D_80129118) + arg2;
-    temp_v1_2 = *(temp_t1 + D_8012912C);
-    if (temp_v1_2 == 0) {
+    base = (arg0 * D_80129118) + arg2;
+    route = D_8012912C[base];
+    if (route == 0) {
         return 9999.0f;
     }
-    temp_f0 = (temp_v0 + (arg2 * 0x10))->unk4->unkC;
+    len2 = recs[arg2].unk4->unkC;
     if (*D_80129130 == 0.0f) {
-        temp_f18 = (D_80129130[temp_v1_2 & 0x7F] + ((arg1 * temp_f16) + ((1.0f - arg3) * temp_f0))) * -10.0f;
-        temp_f2 = (D_80129130[*(temp_t1 + (D_80129118 * D_80129118) + D_8012912C) & 0x7F] + (((1.0f - arg1) * temp_f16) + (arg3 * temp_f0))) * 10.0f;
-        if (temp_f18 < 0.0f) {
-            var_f0_2 = -temp_f18;
-        } else {
-            var_f0_2 = temp_f18;
+        fwd = (D_80129130[route & 0x7F] +
+               ((arg1 * len0) + ((1.0f - arg3) * len2))) * -10.0f;
+        back = (D_80129130[D_8012912C[base + (D_80129118 * D_80129118)] & 0x7F] +
+                (((1.0f - arg1) * len0) + (arg3 * len2))) * 10.0f;
+        if (((fwd < 0.0f) ? -fwd : fwd) < ((back < 0.0f) ? -back : back)) {
+            return fwd;
         }
-        if (temp_f2 < 0.0f) {
-            var_f12_2 = -temp_f2;
-        } else {
-            var_f12_2 = temp_f2;
-        }
-        if (var_f0_2 < var_f12_2) {
-            return temp_f18;
-        }
-        return temp_f2;
+        return back;
     }
-    temp_f2_2 = D_80129130[temp_v1_2 & 0x7F];
-    if (temp_v1_2 & 0x80) {
-        var_f2 = (temp_f2_2 + ((arg1 * temp_f16) + ((1.0f - arg3) * temp_f0))) * -10.0f;
-    } else {
-        var_f2 = (temp_f2_2 + (((1.0f - arg1) * temp_f16) + (arg3 * temp_f0))) * 10.0f;
+    if (route & 0x80) {
+        return (D_80129130[route & 0x7F] +
+                ((arg1 * len0) + ((1.0f - arg3) * len2))) * -10.0f;
     }
-    return var_f2;
+    return (D_80129130[route & 0x7F] +
+            (((1.0f - arg1) * len0) + (arg3 * len2))) * 10.0f;
 }
 #elif defined(PORT)
 /* PORT: signed track distance between two (node, progress) seats, from the
@@ -1027,147 +1000,124 @@ s32 func_800F98EC(s32 arg0, f32 arg1) {
 
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 24/192 positional; control flow, both hop loops and every field access decoded from the asm. Key N64 facts recovered (the PORT arm reads them differently): the link COUNT at +0xC is a single s16 (lh), not the BE pair of u8s the PORT arm rebuilds, so the N64 view of the record is struct TrackNodeHeader, not struct Unk80129114_4; the forward-hop loop really does 'i++' while looping on 'i >= 0' (confirmed addiu t1,t1,1 at 800F9BB0 against bgez at 800F9BBC) -- a latent ROM infinite loop the PORT arm 'fixed' to i--; and the forward cursor is &conn[cnt]-1 (sll cnt,2 then -4 disp), not &conn[cnt-1]. Residue: arg2 lands in f12 instead of the ROM's f14, which reorders the prologue (the 0.1f multiply schedules after the node addressing instead of before) and rotates FP temps for the rest of the function. Same allocator floor as func_800F951C in this file */
 s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f12;
-    f32 temp_f16;
-    f32 temp_f2;
-    f32 var_f12;
-    f32 var_f12_2;
-    f32 var_f2;
-    s16 temp_a2_2;
-    s16 temp_a2_4;
-    s32 temp_a2;
-    s32 temp_a2_3;
-    s32 temp_a2_5;
-    s32 temp_a3;
-    s32 temp_t2;
-    s32 temp_v0;
-    s32 var_t1;
-    s32 var_t1_2;
-    u8 temp_v1;
-    u8 temp_v1_2;
-    u8 var_v1_2;
-    void *var_t0;
-    void *var_t0_2;
-    void *var_v1;
+    struct TrackNodeHeader *recs;
+    struct TrackNodeHeader *tp;
+    struct TrackConnection *conn;
+    s32 node;
+    s32 cnt;
+    s32 i;
+    s32 last;
+    u8 next;
+    f32 t;
+    f32 len;
+    f32 want;
+    f32 scaled;
+    f32 rem;
+    f32 frac;
+    extern s32 D_80129118;
+    extern u8 *D_8012912C;
 
-    temp_v0 = *arg0;
-    if (temp_v0 < 0) {
+    node = *arg0;
+    if (node < 0) {
         return 0x270F;
     }
-    temp_f0 = *arg1;
-    if ((temp_f0 < 0.0f) || (temp_f0 > 1.0f)) {
+    t = *arg1;
+    if ((t < 0.0f) || (t > 1.0f)) {
         return 0x270F;
     }
-    temp_a3 = D_80129114->unk4;
-    temp_a2 = temp_v0 * 0x10;
-    temp_f16 = arg2 * 0.1f;
-    var_v1 = temp_a2 + temp_a3;
-    temp_f2 = var_v1->unk4->unkC;
-    temp_f12 = temp_f0 + (temp_f16 / temp_f2);
-    if ((temp_a3 + temp_a2)->unkE != 0) {
-        *arg1 = temp_f12;
-        if (temp_f12 < 0.0f) {
-            *arg1 = 1.0f + temp_f12;
+    recs = (struct TrackNodeHeader *) D_80129114->unk4;
+    scaled = arg2 * 0.1f;
+    tp = &recs[node];
+    len = tp->unk4->unkC;
+    want = t + (scaled / len);
+    if (recs[node].unkE == 0) {
+        goto notLoop;
+    }
+    {
+        *arg1 = want;
+        if (want < 0.0f) {
+            *arg1 = 1.0f + want;
         }
-        if (temp_f12 > 1.0f) {
-            *arg1 = temp_f12 - 1.0f;
+        if (want > 1.0f) {
+            *arg1 = want - 1.0f;
         }
         return 0;
     }
-    if ((temp_f12 >= 0.0f) && (temp_f12 <= 1.0f)) {
-        *arg1 = temp_f12;
+notLoop:
+    if ((want >= 0.0f) && (want <= 1.0f)) {
+        *arg1 = want;
         return 0;
     }
-    if (temp_f12 < 0.0f) {
-        var_f12 = (arg2 * -0.1f) - (temp_f0 * temp_f2);
-loop_16:
-        temp_a2_2 = var_v1->unkC;
-        var_t1 = 0;
-        if (temp_a2_2 == 0) {
-            return 1;
-        }
-        var_t0 = var_v1->unk8;
-        if (temp_a2_2 > 0) {
-loop_19:
-            temp_v1 = var_t0->unk0;
-            if ((temp_v1 != 0) || (var_t0->unk1 & 0xF0)) {
-                var_t1 += 1;
-                if (temp_v1 != 0) {
-                    return 1;
-                }
-                var_t0 += 4;
-                if (var_t1 == temp_a2_2) {
-                    goto block_24;
-                }
-                goto loop_19;
-            }
-            goto block_24;
-        }
-block_24:
-        if (var_t1 == temp_a2_2) {
-            return 1;
-        }
-        var_v1_2 = var_t0->unk2;
-        temp_a2_3 = var_v1_2 * 0x10;
-        temp_f0_2 = (temp_a3 + temp_a2_3)->unk4->unkC;
-        if (var_f12 <= temp_f0_2) {
-            var_f2 = (temp_f0_2 - var_f12) / temp_f0_2;
-            goto block_43;
-        }
-        var_f12 -= temp_f0_2;
-        var_v1 = temp_a3 + temp_a2_3;
-        goto loop_16;
-    }
-    var_f12_2 = temp_f16 - (temp_f2 - (temp_f0 * temp_f2));
-loop_30:
-    temp_a2_4 = var_v1->unkC;
-    if (temp_a2_4 == 0) {
-        return 1;
-    }
-    var_t1_2 = temp_a2_4 - 1;
-    var_t0_2 = (var_v1->unk8 + (temp_a2_4 * 4)) - 4;
-    temp_t2 = var_v1->unk4->unk2 - 1;
-    if (var_t1_2 >= 0) {
-loop_33:
-        temp_v1_2 = var_t0_2->unk0;
-        if ((temp_t2 != temp_v1_2) || (var_t0_2->unk1 & 0xF0)) {
-            var_t1_2 += 1;
-            if (temp_t2 != temp_v1_2) {
+    if (want < 0.0f) {
+        rem = (arg2 * -0.1f) - (t * len);
+        for (;;) {
+            cnt = tp->unkC;
+            i = 0;
+            if (cnt == 0) {
                 return 1;
             }
-            var_t0_2 -= 4;
-            if (var_t1_2 < 0) {
-                goto block_38;
+            conn = tp->unk8;
+            while (i < cnt) {
+                if ((conn->unk0 == 0) && !(conn->unk1 & 0xF0)) {
+                    break;
+                }
+                i++;
+                if (conn->unk0 != 0) {
+                    return 1;
+                }
+                conn++;
             }
-            goto loop_33;
+            if (i == cnt) {
+                return 1;
+            }
+            next = conn->unk2;
+            if (rem <= recs[next].unk4->unkC) {
+                frac = (recs[next].unk4->unkC - rem) / recs[next].unk4->unkC;
+                break;
+            }
+            rem -= recs[next].unk4->unkC;
+            tp = &recs[next];
         }
-        goto block_38;
+    } else {
+        rem = scaled - (len - (t * len));
+        for (;;) {
+            cnt = tp->unkC;
+            if (cnt == 0) {
+                return 1;
+            }
+            i = cnt - 1;
+            conn = &tp->unk8[cnt] - 1;
+            last = tp->unk4->unk2 - 1;
+            while (i >= 0) {
+                if ((conn->unk0 == last) && !(conn->unk1 & 0xF0)) {
+                    break;
+                }
+                i++;
+                if (conn->unk0 != last) {
+                    return 1;
+                }
+                conn--;
+            }
+            if (i < 0) {
+                return 1;
+            }
+            next = conn->unk2;
+            if (rem <= recs[next].unk4->unkC) {
+                frac = rem / recs[next].unk4->unkC;
+                break;
+            }
+            rem -= recs[next].unk4->unkC;
+            tp = &recs[next];
+        }
     }
-block_38:
-    if (var_t1_2 < 0) {
+    if (D_8012912C[(node * D_80129118) + next] == 0) {
         return 1;
     }
-    var_v1_2 = var_t0_2->unk2;
-    temp_a2_5 = var_v1_2 * 0x10;
-    temp_f0_3 = (temp_a3 + temp_a2_5)->unk4->unkC;
-    if (var_f12_2 <= temp_f0_3) {
-        var_f2 = var_f12_2 / temp_f0_3;
-block_43:
-        if (*((temp_v0 * D_80129118) + var_v1_2 + D_8012912C) == 0) {
-            return 1;
-        }
-        *arg0 = var_v1_2;
-        *arg1 = var_f2;
-        return 0;
-    }
-    var_f12_2 -= temp_f0_3;
-    var_v1 = temp_a3 + temp_a2_5;
-    goto loop_30;
+    *arg0 = next;
+    *arg1 = frac;
+    return 0;
 }
 #elif defined(PORT)
 /* Track-position advance (draft above): move fraction *arg1 along node
@@ -1302,104 +1252,82 @@ f32 func_800F9C54(s32 *arg0, f32 arg1, Vector *arg2) {
 }
 
 #ifdef MIPS_TO_C
+/* FACTORY: 28/166 positional. Structure fully solved from the asm and NOT from the PORT arm, which is semantically wrong here: the ROM keeps hi/lo in a cand[2] array and their distances in dist[2], runs two real pointer loops over them, and the second loop updates BOTH arg2 and best (the PORT arm's 'if (dLo < dBest) arg2 = lo;' drops the best update). Also fixed: 2e-05 and the recursion window are DOUBLE comparisons, and arg0/arg1 must be cached into locals so they land in s1/s2 instead of the parameter home slots (that change alone moved 8 prologue words). Residue: frame 0x70 vs 0x60 -- 16 bytes of locals the ROM register-allocates that IDO here keeps slots for -- which then rotates the FP temps one slot (half f16 vs f18) throughout */
+f32 func_800F9C94(void *arg0, Vector *arg1, f32 arg2, f32 arg3, s32 arg4) {
+    f32 cand[2];
+    f32 best;
+    f32 dist[2];
+    f32 half;
+    f32 *cp;
+    f32 *dp;
+    f32 hi;
+    f32 lo;
+    s32 i;
 
-f32 func_800F9C94(s32 arg0, s32 arg1, f32 arg2, f32 arg3, s32 arg4) {
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp48;
-    f32 sp44;
-    u32 sp3C;
-    f32 *var_s0;
-    f32 *var_v0;
-    f32 *var_v0_2;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 var_f14;
-    f32 var_f20;
-    f32 var_f2;
-    s32 var_v1;
-
-    var_f20 = arg2;
     if (arg3 > 2e-05) {
-        temp_f18 = arg3 * 0.5f;
-        var_f14 = temp_f18 + var_f20;
-        temp_f16 = var_f20 - temp_f18;
+        half = arg3 * 0.5f;
+        hi = half + arg2;
+        lo = arg2 - half;
         if (arg4 == 1) {
-            if (var_f20 < 0.0f) {
-                var_f20 += 1.0f;
-            } else if (var_f20 > 1.0f) {
-                var_f20 -= 1.0f;
+            if (arg2 < 0.0f) {
+                arg2 += 1.0f;
+            } else if (arg2 > 1.0f) {
+                arg2 -= 1.0f;
             }
-            if (var_f14 < 0.0f) {
-                var_f14 += 1.0f;
-                goto block_10;
-            }
-            sp54 = var_f14;
-            if (var_f14 > 1.0f) {
-                var_f14 -= 1.0f;
-block_10:
-                sp54 = var_f14;
-            }
-            if (temp_f16 < 0.0f) {
-                sp58 = temp_f16 + 1.0f;
+            if (hi < 0.0f) {
+                cand[0] = hi + 1.0f;
+            } else if (hi > 1.0f) {
+                cand[0] = hi - 1.0f;
             } else {
-                sp58 = temp_f16;
-                if (temp_f16 > 1.0f) {
-                    sp58 = temp_f16 - 1.0f;
-                }
+                cand[0] = hi;
+            }
+            if (lo < 0.0f) {
+                cand[1] = lo + 1.0f;
+            } else if (lo > 1.0f) {
+                cand[1] = lo - 1.0f;
+            } else {
+                cand[1] = lo;
             }
         } else {
-            if (var_f20 < 0.0f) {
-                var_f20 = 0.0f;
-            } else if (var_f20 > 1.0f) {
-                var_f20 = 1.0f;
+            if (arg2 < 0.0f) {
+                arg2 = 0.0f;
+            } else if (arg2 > 1.0f) {
+                arg2 = 1.0f;
             }
-            if (var_f14 < 0.0f) {
-                sp54 = 0.0f;
+            if (hi < 0.0f) {
+                cand[0] = 0.0f;
+            } else if (hi > 1.0f) {
+                cand[0] = 1.0f;
             } else {
-                sp54 = var_f14;
-                if (var_f14 > 1.0f) {
-                    sp54 = 1.0f;
-                }
+                cand[0] = hi;
             }
-            if (temp_f16 < 0.0f) {
-                sp58 = 0.0f;
+            if (lo < 0.0f) {
+                cand[1] = 0.0f;
+            } else if (lo > 1.0f) {
+                cand[1] = 1.0f;
             } else {
-                sp58 = temp_f16;
-                if (temp_f16 > 1.0f) {
-                    sp58 = 1.0f;
-                }
+                cand[1] = lo;
             }
         }
-        sp44 = temp_f18;
-        var_f2 = func_800F9C54(arg3, var_f14, arg0, var_f20, arg1);
-        var_s0 = &sp54;
-        var_v0 = &sp48;
+        best = func_800F9C54(arg0, arg2, arg1);
+        cp = cand;
+        dp = dist;
         do {
-            sp50 = var_f2;
-            sp3C = var_v0;
-            temp_f0 = func_800F9C54((bitwise f32) arg0, *var_s0, arg1);
-            var_v0 += 4;
-            var_s0 += 4;
-            var_v0->unk-4 = temp_f0;
-        } while (var_v0 < &sp50);
-        var_v1 = 0;
-        var_v0_2 = &sp48;
+            *dp++ = func_800F9C54(arg0, *cp++, arg1);
+        } while (dp < &dist[2]);
+        i = 0;
+        dp = dist;
         do {
-            temp_f0_2 = *var_v0_2;
-            var_v0_2 += 4;
-            if (temp_f0_2 < var_f2) {
-                var_f20 = *(&sp54 + var_v1);
-                var_f2 = temp_f0_2;
+            if (*dp < best) {
+                arg2 = *(f32 *) ((s32) cand + i);
+                best = *dp;
             }
-            var_v1 += 4;
-        } while (var_v0_2 != &sp50);
-        var_f20 = func_800F9C94(arg0, arg1, var_f20, sp44, arg4);
+            dp++;
+            i += 4;
+        } while (dp != &dist[2]);
+        arg2 = func_800F9C94(arg0, arg1, arg2, half, arg4);
     }
-    return var_f20;
+    return arg2;
 }
 #elif defined(PORT)
 /* PORT: recursive nearest-point refinement on a track footer, from the m2c
@@ -1498,110 +1426,41 @@ f32 func_800F9F80(Vector *arg0, Vector *arg1, Vector *arg2) {
     return utilVec3Dot(&sp2C, &sp20) / utilVec3Mag(&sp2C);
 }
 
-#ifdef MIPS_TO_C
-
-void func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
-    f32 spAC;
-    f32 spA8;
-    f32 spA0;
-    f32 sp9C;
-    f32 sp90;
-    f32 sp8C;
-    Vector sp7C;
-    Vector sp70;
-    Vector sp64;
-    Vector sp58;
-    Vector sp4C;
-    Vector sp40;
-    f32 *temp_v0;
-    f32 temp_f0;
-    f32 var_f12;
-    f32 var_f20;
-    f32 var_f2;
-    f32 var_f2_2;
-    s16 temp_a0;
-    void *temp_v1;
-
-    temp_v0 = arg0->unk10;
-    temp_v1 = temp_v0 + (arg2 * 4);
-    var_f20 = temp_v1->unk0;
-    if (arg2 == 0) {
-        var_f2 = *temp_v0;
-        var_f20 = var_f2 + 0.002;
-    } else {
-        var_f2 = temp_v1->unk-4;
-    }
-    temp_a0 = arg0->unk2;
-    if (arg2 >= (temp_a0 - 1)) {
-        sp9C = (temp_v0 + (temp_a0 * 4))->unk-4;
-        var_f20 = sp9C - 0.002;
-    } else {
-        sp9C = temp_v1->unk4;
-    }
-    spA0 = var_f2;
-    mtxGetInterpolatedPosition(&sp70, arg0, var_f2);
-    mtxGetInterpolatedPosition(&sp7C, arg0, var_f20);
-    mtxGetInterpolatedPosition(&sp64, arg0, sp9C);
-    spAC = (func_800F9F80(arg1, &sp70, &sp7C) * (var_f20 - spA0)) + spA0;
-    spA8 = (func_800F9F80(arg1, &sp7C, &sp64) * (sp9C - var_f20)) + var_f20;
-    spAC = func_800F9F10(spAC, arg3);
-    spA8 = func_800F9F10(spA8, arg3);
-    mtxGetInterpolatedPosition(&sp4C, arg0, spAC);
-    mtxGetInterpolatedPosition(&sp40, arg0, spA8);
-    mtxGetInterpolatedPosition(&sp58, arg0, var_f20);
-    sp8C = utilVec3Dist(&sp4C, arg1);
-    sp90 = utilVec3Dist(&sp58, arg1);
-    temp_f0 = utilVec3Dist(&sp40, arg1);
-    if (sp8C < temp_f0) {
-        var_f2_2 = spAC;
-        var_f12 = sp8C;
-    } else {
-        var_f2_2 = spA8;
-        var_f12 = temp_f0;
-    }
-    if (sp90 < var_f12) {
-        var_f2_2 = var_f20;
-    }
-    func_800F9C94(var_f12, sp8C, arg0, arg1, var_f2_2, 0x3CA3D70A, arg3);
-}
-#elif defined(PORT)
-/* PORT: nearest track param around keyframe arg2 for world point arg1, from
- * the m2c sketch above. The sketch's tail call drops the return value the
- * asm actually forwards (func_800FA1D4 consumes it as the entity's initial
- * progress), so this spells it out. The footer (arg0) and its keyframe
- * table unk10 are native on this build. */
 f32 func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
-    struct TrackFooter *footer = arg0;
-    f32 *times = footer->unk10;
-    Vector pPrev;
-    Vector pCur;
-    Vector pNext;
-    Vector pA;
-    Vector pB;
-    Vector pC;
-    f32 tPrev;
-    f32 tCur;
-    f32 tNext;
     f32 tA;
     f32 tB;
-    f32 dA;
+    f32 dMin;
+    f32 tPrev;
+    f32 tNext;
+    f32 best;
     f32 dB;
     f32 dC;
-    f32 best;
-    f32 dMin;
+    f32 dA;
+    f32 tCur;
+    Vector pCur;
+    Vector pPrev;
+    Vector pNext;
+    Vector pC;
+    Vector pA;
+    Vector pB;
     s16 n;
+    f32 *times;
+    struct TrackFooter *footer;
+    f32 func_800F9C94(void *, Vector *, f32, f32, s32);
 
+    footer = arg0;
+    times = footer->unk10;
     tCur = times[arg2];
     if (arg2 == 0) {
         tPrev = times[0];
-        tCur = tPrev + 0.002f;
+        tCur = tPrev + 0.002;
     } else {
         tPrev = times[arg2 - 1];
     }
     n = footer->unk2;
     if (arg2 >= (n - 1)) {
         tNext = times[n - 1];
-        tCur = tNext - 0.002f;
+        tCur = tNext - 0.002;
     } else {
         tNext = times[arg2 + 1];
     }
@@ -1630,9 +1489,6 @@ f32 func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
     }
     return func_800F9C94(footer, arg1, best, 0.02f, arg3);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F9FDC.s")
-#endif
 
 f32 func_800FA1D4(struct Unk80129114_4_4 *arg0, Vector *arg1, s32 arg2) {
     f32 lbvector_DiffLen(Vector *, Vector *);
@@ -1890,7 +1746,88 @@ void func_800FA7EC(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
     }
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 207/210, scheduler rotation only: the 360.0f 'lui at' sits one slot BEFORE the post-atan2f v0/a3 reloads in the ROM and one slot after in the draft. Frame 0x70, every stack slot, both flag forms (flagA register / flagB memory) and all 3 spill sites already exact */
+void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
+    DObj *dobj;
+    s32 flagA;
+    s32 flagB;
+    Vector pad1;
+    Vector vec;
+    Vector axis;
+    f32 ang;
+    f32 ang2;
+    Vector *tgt;
+    s32 pad2;
+
+    dobj = D_800D799C->data.dobj;
+    flagB = 0;
+    arg2->unk18 = arg2->unk0;
+    arg2->unk1C = arg2->unk4;
+    arg2->unk20 = arg2->unk8;
+    flagA = 0;
+    if (arg1->unk48 != 9999.0f) {
+        arg2->unk18 = arg1->unk48;
+    }
+    if (arg1->unk4C != 9999.0f) {
+        arg2->unk1C = arg1->unk4C + arg1->unk14;
+    }
+    if (arg1->unk50 != 9999.0f) {
+        arg2->unk20 = arg1->unk50;
+    }
+    if (arg1->unk1D != 0) {
+        tgt = (Vector *) &arg2->unk24;
+        if ((arg2->unk30 | arg2->unk38) != 0) {
+            lbvector_Diff(&vec, (Vector *) arg2, tgt);
+            ang = (atan2f(vec.z, -vec.x) / 3.1415927f) * 180.0f;
+            if (ang < 0.0f) {
+                ang += 360.0f;
+            }
+            if (arg1->unk40 > ang) {
+                ang = arg1->unk40;
+                flagA = 1;
+            }
+            if (arg1->unk44 < ang) {
+                ang = arg1->unk44;
+                flagA |= 2;
+            }
+            if (flagA != 0) {
+                vec.x = -sqrtf((vec.z * vec.z) + (vec.x * vec.x));
+                vec.y = 0.0f;
+                vec.z = 0.0f;
+                func_800191F8(&vec, (Vector *) ((s32) dobj + 0x54),
+                              (ang * 3.1415927f) / 180.0f);
+                lbvector_Add(&vec, tgt);
+                arg2->unk18 = vec.x;
+                arg2->unk20 = vec.z;
+            }
+        }
+    }
+    if (arg1->unk1C != 0) {
+        if (arg2->unk34 != 0) {
+            lbvector_Diff(&vec, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+            ang2 = 180.0f - ((atan2f(sqrtf((vec.z * vec.z) + (vec.x * vec.x)), vec.y)
+                              / 3.1415927f) * 180.0f);
+            if (ang2 < arg1->unk38) {
+                ang2 = arg1->unk38;
+                flagB = 1;
+            }
+            if (arg1->unk3C < ang2) {
+                ang2 = arg1->unk3C;
+                flagB |= 2;
+            }
+            if (flagB != 0) {
+                vec.y = 0.0f;
+                vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &vec, &axis);
+                func_800191F8(&vec, &axis, ((ang2 - 90.0f) * 3.1415927f) / 180.0f);
+                arg2->unk18 = arg2->unk24 + vec.x;
+                arg2->unk1C = arg2->unk28 - vec.y;
+                arg2->unk20 = arg2->unk2C + vec.z;
+            }
+        }
+    }
+}
+#elif defined(PORT)
 /* PORT: camera eye yaw/pitch limiting, from asm/nonmatchings/ovl2/ovl2_3/
  * func_800FA92C.s (the m2c sketch above mangles every vector-helper call).
  * arg2->unk18..20 is the eye, +24..2C the look-at target; unk30/34/38 are
@@ -1972,140 +1909,63 @@ void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
     }
 }
 #else
-void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
-    DObj *dobj;
-    s32 flagB;
-    Vector vec;
-    Vector axis;
-    f32 ang2;
-    f32 ang;
-    Vector *tgt;
-    s32 flagA;
-
-    flagB = 0;
-    dobj = D_800D799C->data.dobj;
-    arg2->unk18 = arg2->unk0;
-    arg2->unk1C = arg2->unk4;
-    arg2->unk20 = arg2->unk8;
-    flagA = 0;
-    if (arg1->unk48 != 9999.0f) {
-        arg2->unk18 = arg1->unk48;
-    }
-    if (arg1->unk4C != 9999.0f) {
-        arg2->unk1C = arg1->unk4C + arg1->unk14;
-    }
-    if (arg1->unk50 != 9999.0f) {
-        arg2->unk20 = arg1->unk50;
-    }
-    if (arg1->unk1D != 0) {
-        tgt = (Vector *) &arg2->unk24;
-        if ((arg2->unk30 | arg2->unk38) != 0) {
-            lbvector_Diff(&vec, (Vector *) arg2, tgt);
-            ang = (atan2f(vec.z, -vec.x) / 3.1415927f) * 180.0f;
-            if (ang < 0.0f) {
-                ang += 360.0f;
-            }
-            if (ang < arg1->unk40) {
-                ang = arg1->unk40;
-                flagA = 1;
-            }
-            if (arg1->unk44 < ang) {
-                ang = arg1->unk44;
-                flagA |= 2;
-            }
-            if (flagA != 0) {
-                vec.x = -sqrtf((vec.z * vec.z) + (vec.x * vec.x));
-                vec.y = 0.0f;
-                vec.z = 0.0f;
-                func_800191F8(&vec, (Vector *) ((s32) dobj + 0x54),
-                              (ang * 3.1415927f) / 180.0f);
-                lbvector_Add(&vec, tgt);
-                arg2->unk18 = vec.x;
-                arg2->unk20 = vec.z;
-            }
-        }
-    }
-    if (arg1->unk1C != 0) {
-        if (arg2->unk34 != 0) {
-            lbvector_Diff(&vec, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
-            ang2 = 180.0f - ((atan2f(sqrtf((vec.z * vec.z) + (vec.x * vec.x)), vec.y)
-                              / 3.1415927f) * 180.0f);
-            if (ang2 < arg1->unk38) {
-                ang2 = arg1->unk38;
-                flagB = 1;
-            }
-            if (arg1->unk3C < ang2) {
-                ang2 = arg1->unk3C;
-                flagB |= 2;
-            }
-            if (flagB != 0) {
-                vec.y = 0.0f;
-                vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &vec, &axis);
-                func_800191F8(&vec, &axis, ((ang2 - 90.0f) * 3.1415927f) / 180.0f);
-                arg2->unk18 = arg2->unk24 + vec.x;
-                arg2->unk1C = arg2->unk28 - vec.y;
-                arg2->unk20 = arg2->unk2C + vec.z;
-            }
-        }
-    }
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA92C.s")
 #endif
 
 #ifdef MIPS_TO_C
+/* FACTORY: 43/317 positional; all control flow, both goto-merge zero-velocity paths, the s32->f32 cvt.s.w compare on D_801292E0, the lhu-at-offset-0 controller read (extern u16 gPlayerControllers, NOT the Controller_800D6FE8[] view -- the ROM reads one halfword and CSEs it for both button tests), the arg1->unk5C re-read in the clamp pair, and frame 0x60 all reproduce. Residue: the ROM parks arg2 in s0 (its only callee-saved register) while IDO here spills it to the a2 home slot and saves nothing, so every later reference is a reload from a different base and the whole body shifts. Tried: explicit src local, with/without, pad sizing to fix the frame first */
+void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
+    DObj *dobj;
+    Vector d;
+    s32 v;
+    f32 step;
+    f32 ang;
+    f32 yaw;
+    f32 lim;
+    s32 pad[7];
+    f32 func_800FB814(f32, f32, f32);
+    extern u16 gPlayerControllers;
+    extern s32 D_801292E0;
+    extern f32 D_801293AC;
+    extern f32 D_801293B4;
+    extern f32 D_801293BC;
+    extern f32 D_801293C4;
+    extern f32 D_801293CC;
+    extern f32 D_801293D4;
+    extern s32 D_801293D8;
 
-void func_800FAC74(void *arg0, void *arg1, void *arg2) {
-    s32 sp5C;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f12_3;
-    f32 var_f0;
-    f32 var_f0_2;
-    f32 var_f2;
-    f32 var_f2_2;
-    f32 var_f2_3;
-    s32 var_v0;
-
-    sp5C = D_800D799C->data;
-    if (D_801292E0 == 9999.0f) {
-        M2C_MEMCPY_ALIGNED(arg0, arg2, 0x3C);
+    dobj = D_800D799C->data.dobj;
+    if ((f32) D_801292E0 == 9999.0f) {
+        *arg0 = *arg2;
     }
-    var_v0 = 0;
-    if (gPlayerControllers->buttonHeld & 0x100) {
-        var_v0 = 1;
+    v = 0;
+    if (gPlayerControllers & 0x100) {
+        v = 1;
     }
-    if (gPlayerControllers->buttonHeld & 0x200) {
-        var_v0 -= 1;
+    if (gPlayerControllers & 0x200) {
+        v -= 1;
     }
     if (D_800BE4F8 == 1) {
-        if ((var_v0 != 0) && (arg1->unk1E != 0)) {
-            var_f2 = D_801293C4;
-            if (var_v0 > 0) {
+        if ((v != 0) && (arg1->unk1E != 0)) {
+            step = D_801293C4;
+            if (v > 0) {
                 if (D_801293BC < 0.0f) {
-                    var_f2 *= D_801293CC;
+                    step *= D_801293CC;
                 }
-                D_801293BC += var_f2;
-                var_f0 = D_801293BC;
-                if (D_801293B4 <= var_f0) {
+                D_801293BC += step;
+                if (D_801293B4 <= D_801293BC) {
                     D_801293BC = D_801293B4;
-                    goto block_18;
                 }
             } else {
                 if (D_801293BC > 0.0f) {
-                    var_f2 *= D_801293CC;
+                    step *= D_801293CC;
                 }
-                D_801293BC -= var_f2;
-                var_f0 = D_801293BC;
-                temp_f12 = -D_801293B4;
-                if (var_f0 <= temp_f12) {
-                    D_801293BC = temp_f12;
-block_18:
-                    var_f0 = D_801293BC;
+                D_801293BC -= step;
+                if (D_801293BC <= -D_801293B4) {
+                    D_801293BC = -D_801293B4;
                 }
             }
-            D_801293AC += var_f0;
+            D_801293AC += D_801293BC;
         } else if (D_801293AC > 0.0f) {
             D_801293BC -= D_801293C4;
             if (D_801293BC <= -1.0f) {
@@ -2114,7 +1974,7 @@ block_18:
             D_801293AC += D_801293BC;
             if (D_801293AC <= 0.0f) {
                 D_801293AC = 0.0f;
-                goto block_31;
+                goto zeroVel;
             }
         } else if (D_801293AC < 0.0f) {
             D_801293BC += D_801293C4;
@@ -2124,45 +1984,43 @@ block_18:
             D_801293AC += D_801293BC;
             if (D_801293AC >= 0.0f) {
                 D_801293AC = 0.0f;
-                goto block_31;
+                goto zeroVel;
             }
         } else {
             D_801293AC = 0.0f;
-block_31:
+        zeroVel:
             D_801293BC = 0.0f;
         }
     }
-    var_f0_2 = arg1->unk5C;
-    if (var_f0_2 <= D_801293AC) {
-        D_801293AC = var_f0_2;
-        var_f0_2 = arg1->unk5C;
+    lim = arg1->unk5C;
+    if (lim <= D_801293AC) {
+        D_801293AC = lim;
+        lim = arg1->unk5C;
     }
-    temp_f12_2 = -var_f0_2;
-    if (D_801293AC <= temp_f12_2) {
-        D_801293AC = temp_f12_2;
+    if (D_801293AC <= -lim) {
+        D_801293AC = -lim;
     }
-    lbvector_Diff(temp_f12_2, &sp38, arg2 + 0x18, arg2 + 0x24, arg0);
-    temp_f12_3 = (atan2f(sp40, -sp38) / 3.1415927f) * 180.0f;
-    var_f2_2 = temp_f12_3;
-    if (temp_f12_3 < 0.0f) {
-        var_f2_2 = temp_f12_3 + 360.0f;
+    lbvector_Diff(&d, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+    ang = (atan2f(d.z, -d.x) / 3.1415927f) * 180.0f;
+    if (ang < 0.0f) {
+        ang += 360.0f;
     }
-    var_f2_3 = var_f2_2 + 90.0f;
-    if (var_f2_3 >= 360.0f) {
-        var_f2_3 -= 360.0f;
+    yaw = ang + 90.0f;
+    if (360.0f <= yaw) {
+        yaw -= 360.0f;
     }
-    sp3C = 0.0f;
-    sp40 = 0.0f;
-    sp38 = -D_801293AC;
-    func_800191F8(temp_f12_3, 3.1415927f, &sp38, sp5C + 0x54, (var_f2_3 * 3.1415927f) / 180.0f, arg0);
+    d.y = 0.0f;
+    d.z = 0.0f;
+    d.x = -D_801293AC;
+    func_800191F8(&d, (Vector *) ((s32) dobj + 0x54), (yaw * 3.1415927f) / 180.0f);
     arg0->unk24 = arg2->unk24;
     arg0->unk2C = arg2->unk2C;
-    arg0->unk18 = arg2->unk18 - sp38;
-    arg0->unk20 = arg2->unk20 - sp40;
+    arg0->unk18 = arg2->unk18 - d.x;
+    arg0->unk20 = arg2->unk20 - d.z;
     if (arg1->unk1F != 0) {
         D_801293D8 = 0;
-        arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293C0, arg0);
-        arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293C0, arg0);
+        arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293C0);
+        arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293C0);
         return;
     }
     if (D_801293D8 != 0) {
@@ -2170,8 +2028,8 @@ block_31:
         arg0->unk1C = arg2->unk1C;
         return;
     }
-    arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293D4, arg0);
-    arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293D4, arg0);
+    arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293D4);
+    arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293D4);
     if (arg2->unk28 == arg0->unk28) {
         D_801293D8 += 1;
     }
@@ -2946,49 +2804,47 @@ void func_800FC53C(void) {
 }
 
 #ifdef MIPS_TO_C
+/* FACTORY: 25/117. Structure/offsets solved: DObj was the wrong payload type -- 0x3C..0x53 are Camera.viewMtx.lookAt.eye/.at (0x48=at, drifted by D_80129408; 0x3C=eye, drifted by D_8012940C) and 0x74 is timeRemaining, and the (s32)&D_800D7B38+0x18 cast is what puts the save block base in a register with %lo(sym+0x18) and 0x0.. offsets. Residue: IDO CSEs the D_800D7B38 copy base into 'addiu v1,a2,24' where the ROM re-materialises lui/addiu %lo(D_800D7B38+0x18) in each arm, which then rotates the copy's temp registers. No source spelling reached it in 5 tries (whole-struct copy, two-Vector copy, per-branch save, u8*/s32/struct-ptr casts); a separate D_800D7B50 symbol would do it but is not in symbol_addrs.txt */
+void func_800FC62C(GObj *arg0) {
+    Camera *cam;
+    struct Ovl2CamPos *save;
+    f32 tf0;
+    f32 tf2;
+    extern s32 D_800D6B54;
 
-void func_800FC62C() {
-    void *sp1C;
-    f32 temp_f0;
-    f32 temp_f2;
-    void *temp_v0;
-    void *temp_v1;
-    void *temp_v1_2;
-
-    temp_v0 = D_800D799C->data;
+    cam = D_800D799C->data.cam;
     D_800D7B38 = D_800D7B20;
     if (D_800D6B54 == 0) {
-        sp1C = temp_v0;
-        animUpdateCameraAnimation(&D_800D7B20);
-        temp_v1 = &D_800D7B38 + 0x18;
-        if (temp_v0->unk74 == -3.4028235e38f) {
-            temp_v0->unk48 = temp_v1->unk0;
-            temp_v0->unk4C = temp_v1->unk4;
-            temp_v0->unk50 = temp_v1->unk8;
-            temp_v0->data = temp_v1->unkC;
-            temp_v0->unk40 = temp_v1->unk10;
-            temp_v0->unk44 = temp_v1->unk14;
+        animUpdateCameraAnimation(arg0);
+        if (cam->timeRemaining == -3.4028235e38f) {
+            save = (struct Ovl2CamPos *) ((s32) &D_800D7B38 + 0x18);
+            cam->viewMtx.lookAt.at.x = save->unk0.x;
+            cam->viewMtx.lookAt.at.y = save->unk0.y;
+            cam->viewMtx.lookAt.at.z = save->unk0.z;
+            cam->viewMtx.lookAt.eye.x = save->unkC.x;
+            cam->viewMtx.lookAt.eye.y = save->unkC.y;
+            cam->viewMtx.lookAt.eye.z = save->unkC.z;
         } else {
-            temp_v1_2 = &D_800D7B38 + 0x18;
-            temp_v1_2->unk0 = temp_v0->unk48;
-            temp_v1_2->unk4 = temp_v0->unk4C;
-            temp_v1_2->unk8 = temp_v0->unk50;
-            temp_v1_2->unkC = temp_v0->data;
-            temp_v1_2->unk10 = temp_v0->unk40;
-            temp_v1_2->unk14 = temp_v0->unk44;
+            save = (struct Ovl2CamPos *) ((s32) &D_800D7B38 + 0x18);
+            save->unk0.x = cam->viewMtx.lookAt.at.x;
+            save->unk0.y = cam->viewMtx.lookAt.at.y;
+            save->unk0.z = cam->viewMtx.lookAt.at.z;
+            save->unkC.x = cam->viewMtx.lookAt.eye.x;
+            save->unkC.y = cam->viewMtx.lookAt.eye.y;
+            save->unkC.z = cam->viewMtx.lookAt.eye.z;
         }
-        temp_f0 = *(s32 *) &D_8012940C * 0.01f;
-        temp_f2 = D_80129408 * 0.01f;
-        temp_v0->unk48 = temp_v0->unk48 + (D_80129400 * temp_f2);
-        D_800D7B20.unk0 = temp_v0->unk48;
-        temp_v0->unk4C = temp_v0->unk4C + (D_80129404 * temp_f2);
-        D_800D7B20.unk4 = temp_v0->unk4C;
-        D_800D7B20.unk8 = temp_v0->unk50;
-        temp_v0->data = temp_v0->data + (D_80129400 * temp_f0);
-        D_800D7B20.unkC = temp_v0->data;
-        temp_v0->unk40 = temp_v0->unk40 + (D_80129404 * temp_f0);
-        D_800D7B20.unk10 = temp_v0->unk40;
-        D_800D7B20.unk14 = temp_v0->unk44;
+        tf0 = *(s32 *) &D_8012940C * 0.01f;
+        tf2 = D_80129408 * 0.01f;
+        cam->viewMtx.lookAt.at.x += D_80129400 * tf2;
+        D_800D7B20.unk0.x = cam->viewMtx.lookAt.at.x;
+        cam->viewMtx.lookAt.at.y += D_80129404 * tf2;
+        D_800D7B20.unk0.y = cam->viewMtx.lookAt.at.y;
+        D_800D7B20.unk0.z = cam->viewMtx.lookAt.at.z;
+        cam->viewMtx.lookAt.eye.x += D_80129400 * tf0;
+        D_800D7B20.unkC.x = cam->viewMtx.lookAt.eye.x;
+        cam->viewMtx.lookAt.eye.y += D_80129404 * tf0;
+        D_800D7B20.unkC.y = cam->viewMtx.lookAt.eye.y;
+        D_800D7B20.unkC.z = cam->viewMtx.lookAt.eye.z;
     }
 }
 #elif defined(PORT)

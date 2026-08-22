@@ -50,7 +50,85 @@ void func_8019BB58_ovl7(void);
 void func_8019D958_ovl7(u16);
 void ohSleep(s32);
 
-#ifdef PORT
+/* FACTORY: 204/213, $v0/$v1 transposition ONLY (the CSE'd-load-in-the-
+   neighbouring-register floor from LEVERS).  Instruction count, schedule,
+   frame (0x30, s0 saved, arg0 homed at 0x30, desc spilled at 0x28), every
+   branch and every other register are the ROM's.  The nine diffs are the
+   ent->unk94 chain: the ROM holds unk94 in $v0 and unk94->unk18 in $v1,
+   ours has them swapped, and the structure around them is already identical
+   (unk94 re-read at each use, single read before the NULL test feeding both
+   type-6 and type-7 checks).
+   Same clone-family lever as func_801A5274_ovl7: the chained clear-block
+   spelling copied from the matched func_801A50B0_ovl7 is what makes the
+   middle of this function land.  Note the in-guard prototype must be
+   `void func_800A22D4(u32)` to agree with the other guarded drafts already
+   in this TU -- declaring it (void *) is a redeclaration error, so the
+   pointer is passed as (u32) ent->unk34 (a no-op in codegen). */
+#ifdef MIPS_TO_C
+void func_801A3E80_ovl7(GObj *arg0) {
+    void func_800A22D4(u32);
+    void func_800A2300(struct GObj *);
+    s32 func_801A66B4_ovl7(void);
+    s32 func_801A66FC_ovl7(void);
+    void func_801A41D4_ovl7(GObj *);
+    void func_801A42D8_ovl7(GObj *);
+    void func_80198880_ovl7(struct Sub800E1B50_Unk88 *);
+    void func_8019B7D8_ovl7(void);
+    void func_8019BB58_ovl7(void);
+    void func_8019D958_ovl7(u16);
+    extern f32 gameTicksPerDraw;
+    extern FUNCLIST D_801C2970_ovl7;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Sub800E1B50_Unk88 *desc = ent->unk88;
+    f32 c;
+
+    func_8019B7D8_ovl7();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    c = 65535.0f;
+    D_800DF150[omCurrentObj->objId] = NULL;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    arg0->onAnimate = NULL;
+    D_800DF310[omCurrentObj->objId] = NULL;
+    if (ent->unk34 != NULL) {
+        func_800A22D4((u32) ent->unk34);
+    }
+    func_800A2300(arg0);
+    ent->unk34 = NULL;
+    if (ent->unk40 != 1) {
+        if (func_801A66B4_ovl7() != 0) {
+            func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
+        } else {
+            gEntityFuncListIDArray[omCurrentObj->objId] = func_801A66FC_ovl7();
+            utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 9, D_801C2970_ovl7);
+            func_80198880_ovl7(desc);
+            D_800E7B20[omCurrentObj->objId] = 0.0f;
+        }
+        if ((ent->unk94->unk1C != 0x80000000) && (ent->unk40 != 1)) {
+            play_sound(ent->unk94->unk1C);
+        }
+        if (ent->unk94 != NULL) {
+            if (ent->unk94->unk18 == 6) {
+                func_801A41D4_ovl7(arg0);
+            }
+            if (ent->unk94->unk18 == 7) {
+                func_801A42D8_ovl7(arg0);
+            }
+        }
+    }
+    D_800DF150[omCurrentObj->objId] = NULL;
+    func_800B19F4(0x7D, omCurrentObj->objId);
+    func_8019BB58_ovl7();
+    ohSleep(0xF);
+    func_8019D958_ovl7((u16) omCurrentObj->objId);
+}
+#elif defined(PORT)
 /* The enemy "return to idle" epilogue every FUNCLIST tail jumps to (ported
  * from m2c): stop the anim driver, clear the velocity/accel banks, drop
  * the attached effect object (func_800A22D4 takes just ent->unk34 -- m2c's
@@ -212,38 +290,34 @@ void func_801A470C_ovl7(void) {
     D_800EC2E0[omCurrentObj->objId].as_s32 = (D_8012BCA0 >> 19) & 0xFFF;
 }
 
-#ifdef PORT
-/* Enemy-card capture intro (ported from m2c): become a 0x24-class track
- * driven per-frame by func_801A4C0C_ovl7, silence physics, play the
- * capture cry, spawn the card holder track (func_801AE7E0_ovl7(7)) and
- * scale to the descriptor's unk10; then wait -- held: until the holder's
- * D_800E9AA0 token appears or its GObj dies; free: run the 0xB4-frame
- * timer down (bailing on D_800EC4A0/D_800E9E20) and on timeout fire the
- * struggle burst func_801A4DFC_ovl7 -- and finish with the 0x6F effect. */
+/* MATCHED (302 insns).  The two-step `cc = ent->unk88->unkC; info = cc->unk0;`
+   split is load-bearing: chained as one expression it is 136/302 (the ROM
+   holds unkC in $a1 across the clear-block and spills unk0 at 0x3C, which
+   also costs the frame 8 bytes).  Clear-block spelling is the matched
+   func_801A50B0_ovl7 clone family, as in func_801A3E80_ovl7/func_801A5274_ovl7.
+   LP64-clean, so the PORT arm is deleted. */
 void func_801A4754_ovl7(GObj *arg0) {
     void func_801A4C0C_ovl7(GObj *);
     s32 func_801AE7E0_ovl7(s32);
     void func_80198880_ovl7(struct Sub800E1B50_Unk88 *);
     void func_801A4DFC_ovl7(GObj *);
     extern struct Sub800E1B50_Unk88 D_801C5360_ovl7;
-    u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
-    struct SubSub800E1B50_Unk88_UnkC_Unk0 *info = ent->unk88->unkC->unk0;
-    f32 c;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct SubSub800E1B50_Unk88_UnkC *cc = ent->unk88->unkC;
+    struct SubSub800E1B50_Unk88_UnkC_Unk0 *info = cc->unk0;
+    f32 c = 65535.0f;
 
-    D_800DF150[id] = func_801A4C0C_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801A4C0C_ovl7;
     D_800DDA90[omCurrentObj->objId] = 0x24;
     ent->unk48 = NULL;
     ent->unk98 = NULL;
     D_800EC2E0[omCurrentObj->objId].as_u32 = 0;
     D_800EC4A0[omCurrentObj->objId] = 0;
-    c = 65535.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = c;
     D_800E3910[omCurrentObj->objId] = 0.0f;
-    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
-        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
     D_800E3E50[omCurrentObj->objId] = c;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
     func_801A6610_ovl7();
@@ -259,16 +333,15 @@ void func_801A4754_ovl7(GObj *arg0) {
     func_80198880_ovl7(&D_801C5360_ovl7);
     D_800E8920[omCurrentObj->objId] = 0;
     play_sound(0xC1);
-    id = omCurrentObj->objId;
-    if (D_800E8E60[id] == 1) {
-        while ((D_800E9AA0[D_800E9C60[omCurrentObj->objId]] == NULL)
-            && (D_800DE350[D_800E9C60[omCurrentObj->objId]] != NULL)) {
+    if (D_800E8E60[omCurrentObj->objId] == 1) {
+        while ((D_800E9AA0[D_800E9C60[omCurrentObj->objId]] == NULL) &&
+               (D_800DE350[D_800E9C60[omCurrentObj->objId]] != NULL)) {
             ohSleep(1);
         }
     } else {
-        while ((D_800EC4A0[omCurrentObj->objId] == 0)
-            && (D_800E9720[omCurrentObj->objId] != 0)
-            && (D_800E9E20[omCurrentObj->objId] == 0)) {
+        while ((D_800EC4A0[omCurrentObj->objId] == 0) &&
+               (D_800E9720[omCurrentObj->objId] != 0) &&
+               (D_800E9E20[omCurrentObj->objId] == 0)) {
             ohSleep(1);
             D_800E9720[omCurrentObj->objId] -= 1;
         }
@@ -277,12 +350,9 @@ void func_801A4754_ovl7(GObj *arg0) {
         }
     }
     D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
-    id = omCurrentObj->objId;
-    func_800A7F74(3, 2, 0x6F, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]);
+    func_800A7F74(3, 2, 0x6F, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A4754_ovl7.s")
-#endif
+
 
 struct Ovl7AnimInfo {
     u8 unk0;
@@ -429,7 +499,67 @@ void func_801A522C_ovl7(GObj *arg0) {
     }
 }
 
-#ifdef PORT
+/* FACTORY: 161/194, one-slot temp rotation only.  Same instruction count,
+   same schedule, same frame (0x30, s0-s4 saved, arg0 homed at 0x30), same
+   branch targets; the residue is $t6/$t7/$t8/$t9 shifted by one slot from
+   index 24 onward, which starts where the ROM shares $v1 between the
+   D_800DF150 subscript and the D_800E1B50 lookup while our IDO shares it
+   with the D_800DDA90 subscript instead.  CLONE-FAMILY LEVER (LEVERS 1) did
+   the work here: the already-matched sibling func_801A50B0_ovl7 six
+   functions up has this exact clear-block, and copying its spelling
+   verbatim -- `f32 c = 65535.0f`, the two CHAINED assignment cascades
+   (D_800E3050 = ... = D_800E3910 and D_800E3AD0 = D_800E3C90 = D_800E3E50),
+   0.0f literals rather than a `zero` local, and the uncast
+   D_800DF150 assignment -- took this from 165/204 to 33/194 in one edit.
+   Separate per-array statements cost 84 diffs, exactly as that sibling's
+   own comment warns.  The wait loop must be written as an if + do/while
+   (the ROM tests the three conditions once before entering). */
+#ifdef MIPS_TO_C
+void func_801A5274_ovl7(GObj *arg0) {
+    void func_801A557C_ovl7(void);
+    void func_801A56C8_ovl7(void);
+    void func_800B83C8(GObj *);
+    void func_800B74B8(GObj *);
+    extern struct Sub800E1B50_Unk98 D_801CD264_ovl7;
+    struct UnkStruct800E1B50 *ent;
+    f32 c = 65535.0f;
+
+    D_800DF150[omCurrentObj->objId] = func_801A557C_ovl7;
+    ent = D_800E1B50[omCurrentObj->objId];
+    D_800DDA90[omCurrentObj->objId] = 0x23;
+    func_801A6610_ovl7();
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = c;
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_800AF408();
+    ent->unk48 = NULL;
+    ent->unk98 = &D_801CD264_ovl7;
+    D_800EC2E0[omCurrentObj->objId].as_u32 = 0;
+    D_800E9720[omCurrentObj->objId] = 0xA;
+    play_sound(0x222);
+    if (D_800E8E60[omCurrentObj->objId] != 1) {
+        D_800E0D50[omCurrentObj->objId] = 0;
+        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B83C8;
+        func_801A56C8_ovl7();
+        if ((D_800EC2E0[omCurrentObj->objId].as_u32 == 0) &&
+            (D_800E9720[omCurrentObj->objId] != 0) &&
+            (gKirbyState.abilityInUse != 0)) {
+            do {
+                ohSleep(1);
+                D_800E9720[omCurrentObj->objId] -= 1;
+            } while ((D_800EC2E0[omCurrentObj->objId].as_u32 == 0) &&
+                     (D_800E9720[omCurrentObj->objId] != 0) &&
+                     (gKirbyState.abilityInUse != 0));
+        }
+    }
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B74B8;
+    func_801A43BC_ovl7(arg0);
+}
+#elif defined(PORT)
 /* Thrown/spat launch state (ported from m2c): per-frame hook becomes the
  * landed-check func_801A557C_ovl7, physics cleared, contact FUNCLIST
  * D_801CD264_ovl7 installed, 10-frame timer; when not held, latch onto
@@ -522,14 +652,17 @@ void func_801A56C8_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A56C8_ovl7.s")
 #endif
-#ifdef PORT
-/* Enemy-card capture, thrown-upward variant (ported from m2c): same
- * setup as func_801A4754_ovl7 but driven by func_801A5DE8_ovl7 with an
- * 8.0 up / -0.5 gravity launch; when free it first rides the arc until
- * |vel.y + D_800EC9E4| falls under |gravity| (or a hit lands), calls
- * func_800B3520 (no args -- m2c's were leftover registers) and flags
- * D_800E9FE0, then runs the same 0xB4 capture timer / struggle-burst
- * tail; held tracks just wait for the holder.  Ends with the 0x6F pop. */
+/* MATCHED (400 insns).  Sibling of func_801A4754_ovl7 and shares its two
+   levers -- the split `cc = ent->unk88->unkC; info = cc->unk0;` and the
+   func_801A50B0_ovl7 chained clear-block -- plus two of its own, both worth
+   the whole function: (1) the arc-wait test must use ABS(), not ABSF():
+   ABSF hoists its 0.0f into the callee-saved $f20 and adds an sdc1/ldc1 to
+   the frame, while the ROM re-materialises `mtc1 $zero,$f14` inside the loop
+   (LEVERS 3), 391/400 -> 159/400; (2) the operands must be written
+   `ABS(D_800E3210[..] + D_800EC9E4) > ABS(D_800E3750[..])` -- the ROM
+   evaluates the sum first into $f12 and compares c.lt.s $f2,$f12, so the
+   `<` spelling with the operands the other way round is evaluation-order
+   backwards, 159/400 -> MATCH.  LP64-clean, so the PORT arm is deleted. */
 void func_801A57A8_ovl7(GObj *arg0) {
     void func_801A5DE8_ovl7(GObj *);
     s32 func_801AE7E0_ovl7(s32);
@@ -537,24 +670,22 @@ void func_801A57A8_ovl7(GObj *arg0) {
     void func_801A4DFC_ovl7(GObj *);
     void func_800B3520(void);
     extern struct Sub800E1B50_Unk88 D_801C5360_ovl7;
-    u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
-    struct SubSub800E1B50_Unk88_UnkC_Unk0 *info = ent->unk88->unkC->unk0;
-    f32 c;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct SubSub800E1B50_Unk88_UnkC *cc = ent->unk88->unkC;
+    struct SubSub800E1B50_Unk88_UnkC_Unk0 *info = cc->unk0;
+    f32 c = 65535.0f;
 
-    D_800DF150[id] = func_801A5DE8_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801A5DE8_ovl7;
     D_800DDA90[omCurrentObj->objId] = 0x24;
     ent->unk48 = NULL;
     ent->unk98 = NULL;
     D_800EC2E0[omCurrentObj->objId].as_u32 = 0;
     D_800EC4A0[omCurrentObj->objId] = 0;
-    c = 65535.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = c;
     D_800E3910[omCurrentObj->objId] = 0.0f;
-    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
-        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
     D_800E3E50[omCurrentObj->objId] = c;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
     func_801A6610_ovl7();
@@ -573,24 +704,23 @@ void func_801A57A8_ovl7(GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;
     D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
     play_sound(0xC1);
-    id = omCurrentObj->objId;
-    if (D_800E8E60[id] == 1) {
-        while ((D_800E9AA0[D_800E9C60[omCurrentObj->objId]] == NULL)
-            && (D_800DE350[D_800E9C60[omCurrentObj->objId]] != NULL)) {
+    if (D_800E8E60[omCurrentObj->objId] == 1) {
+        while ((D_800E9AA0[D_800E9C60[omCurrentObj->objId]] == NULL) &&
+               (D_800DE350[D_800E9C60[omCurrentObj->objId]] != NULL)) {
             ohSleep(1);
         }
     } else {
-        while ((ABSF(D_800E3750[omCurrentObj->objId])
-                < ABSF(D_800E3210[omCurrentObj->objId] + D_800EC9E4))
-            && (D_800E9E20[omCurrentObj->objId] == 0)) {
+        while ((ABS(D_800E3210[omCurrentObj->objId] + D_800EC9E4) >
+                ABS(D_800E3750[omCurrentObj->objId])) &&
+               (D_800E9E20[omCurrentObj->objId] == 0)) {
             ohSleep(1);
         }
         func_800B3520();
         D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
         if (D_800E9E20[omCurrentObj->objId] == 0) {
-            while ((D_800EC4A0[omCurrentObj->objId] == 0)
-                && (D_800E9720[omCurrentObj->objId] != 0)
-                && (D_800E9E20[omCurrentObj->objId] == 0)) {
+            while ((D_800EC4A0[omCurrentObj->objId] == 0) &&
+                   (D_800E9720[omCurrentObj->objId] != 0) &&
+                   (D_800E9E20[omCurrentObj->objId] == 0)) {
                 ohSleep(1);
                 D_800E9720[omCurrentObj->objId] -= 1;
             }
@@ -600,12 +730,9 @@ void func_801A57A8_ovl7(GObj *arg0) {
         }
     }
     D_800EC2E0[omCurrentObj->objId].as_s32 = 1;
-    id = omCurrentObj->objId;
-    func_800A7F74(3, 2, 0x6F, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]);
+    func_800A7F74(3, 2, 0x6F, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A57A8_ovl7.s")
-#endif
+
 
 void func_801A5DE8_ovl7(GObj *arg0) {
     extern s32 D_8012E860;
@@ -732,7 +859,70 @@ void func_801A63BC_ovl7(GObj *arg0) {
     func_801A6434_ovl7();
 }
 
-#ifdef PORT
+/* FACTORY: 24/119, base-register hoisting + prologue scheduling.  The ROM's
+   whole skeleton is reproduced: frame 0x48, the s0-s7/fp/f20 save set (20.0f
+   lives in the callee-saved $f20), the roster walk through a POINTER $s0 into
+   D_800D7118 (a plain `slot` index does not reproduce it), the wrap to
+   &D_800D7118[1] at slot 6, the pre-increment `count` stored into
+   D_800E9C60, the paired p[5] word, and the 4-words-per-iteration unrolled
+   reset loop from D_800D7118 to D_800D7158.  Residues: our IDO hoists the
+   D_800E6A10 base into $a1 where the ROM re-materialises it with lui/%lo at
+   each of its two uses, and it emits the register saves in a different order
+   from the ROM's (which interleaves them with `s3 = D_800D7118[14]`); those
+   two shift the rest.  Note `eneId = *p` as a named local IS correct even
+   though it raises the raw count 87 -> 95: without it IDO reads *p twice
+   where the ROM reads it once into $a0 and feeds both the D_800E98E0 store
+   and the D_801C2E84_ovl7 subscript. */
+#ifdef MIPS_TO_C
+void func_801A6434_ovl7(void) {
+    s32 func_801AE7E0_ovl7(s32);
+    extern s32 D_800D7118[];
+    extern u32 D_801C2E84_ovl7[];
+    s32 *p;
+    s32 slot;
+    s32 count;
+    s32 t;
+    s32 eneId;
+
+    slot = D_800D7118[14];
+    p = &D_800D7118[slot];
+    count = 0;
+    while (*p != -1) {
+        t = func_801AE7E0_ovl7(0x14);
+        if (t != 0) {
+            gEntitiesNextPosXArray[t] = gEntitiesNextPosXArray[0];
+            gEntitiesNextPosYArray[t] = gEntitiesNextPosYArray[0] + 20.0f;
+            gEntitiesNextPosZArray[t] = gEntitiesNextPosZArray[0];
+            eneId = *p;
+            D_800E98E0[t] = eneId;
+            D_800E9AA0[t] = (struct EntityThing800E9AA0 *) D_801C2E84_ovl7[eneId];
+            D_800E9C60[t] = count;
+            D_800E9E20[t] = p[5];
+            D_800E8E60[t] = 0;
+            D_800E5F90[t] = D_800E5F90[0];
+            D_800E6BD0[t] = D_800E6BD0[0];
+            D_800E6A10[t] = D_800E6A10[0];
+        }
+        if (slot + 1 < 6) {
+            slot = slot + 1;
+            p = p + 1;
+        } else {
+            p = &D_800D7118[1];
+            slot = 1;
+        }
+        count += 1;
+        if (count == 5) {
+            break;
+        }
+    }
+    for (p = &D_800D7118[0]; p != &D_800D7118[16]; p += 4) {
+        p[0] = -1;
+        p[1] = -1;
+        p[2] = -1;
+        p[3] = -1;
+    }
+}
+#elif defined(PORT)
 /* Release the stored enemy-card roster around the player (ported from
  * m2c): starting at ring slot D_800D7118[14], walk up to 5 stored ids
  * (slots 1..5 wrap), spawn a card track for each (func_801AE7E0_ovl7(0x14)),

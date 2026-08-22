@@ -408,7 +408,69 @@ void func_801B9D40_ovl7(GObj *arg0) {
 void func_801B9E78_ovl7(GObj *arg0) {
 }
 
-#ifdef PORT
+/* FACTORY: 195/219, $f12/$f14 transposition only.  Structure, schedule,
+   branch shape and every store are the ROM's.  The lever that got it here
+   (97/219 -> 24/219) is the abs: the ROM does NOT test the difference
+   against zero, it compares the two ARRAY ELEMENTS (c.lt.s cur,target) and
+   computes `cur - target` in BOTH arms, negating in the true arm -- so the
+   plain `mag = (diff < 0.0f) ? -diff : diff` spelling is wrong here.
+   Writing the subtraction once before the if is much worse (193/219): it
+   has to stay duplicated inside both arms.
+   Residue: the ROM holds `diff` in $f14 and `mag` in $f12; our IDO uses the
+   opposite pair, and swapping the declaration order does not move it.
+   N64 spelling: each graded step writes D_800EA6E0[objId] directly (the ROM
+   re-stores through $a1 in every arm), not a `cur` local written back once. */
+#ifdef MIPS_TO_C
+void func_801B9E80_ovl7(GObj *arg0) {
+    extern f32 D_800EA6E0[], D_800EB320[];
+    f32 diff;
+    f32 mag;
+
+    if (D_800EA6E0[omCurrentObj->objId] < D_800EB320[omCurrentObj->objId]) {
+        diff = D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId];
+        mag = -diff;
+    } else {
+        diff = D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId];
+        mag = diff;
+    }
+    if (mag < 3.1415927f) {
+        if (diff > 0.13962634f) {
+            D_800EA6E0[omCurrentObj->objId] -= 0.13962634f;
+        } else if (diff > 0.06981317f) {
+            D_800EA6E0[omCurrentObj->objId] -= 0.06981317f;
+        } else if (diff >= 0.017453292f) {
+            D_800EA6E0[omCurrentObj->objId] -= 0.017453292f;
+        } else if (diff < -0.13962634f) {
+            D_800EA6E0[omCurrentObj->objId] += 0.13962634f;
+        } else if (diff < -0.06981317f) {
+            D_800EA6E0[omCurrentObj->objId] += 0.06981317f;
+        } else if (diff <= -0.017453292f) {
+            D_800EA6E0[omCurrentObj->objId] += 0.017453292f;
+        }
+    } else {
+        if (diff > 0.13962634f) {
+            D_800EA6E0[omCurrentObj->objId] += 0.13962634f;
+        } else if (diff > 0.06981317f) {
+            D_800EA6E0[omCurrentObj->objId] += 0.06981317f;
+        } else if (diff >= 0.017453292f) {
+            D_800EA6E0[omCurrentObj->objId] += 0.017453292f;
+        } else if (diff < -0.13962634f) {
+            D_800EA6E0[omCurrentObj->objId] -= 0.13962634f;
+        } else if (diff < -0.06981317f) {
+            D_800EA6E0[omCurrentObj->objId] -= 0.06981317f;
+        } else if (diff <= -0.017453292f) {
+            D_800EA6E0[omCurrentObj->objId] -= 0.017453292f;
+        }
+    }
+    while (D_800EA6E0[omCurrentObj->objId] > 6.2831855f) {
+        D_800EA6E0[omCurrentObj->objId] -= 6.2831855f;
+    }
+    while (D_800EA6E0[omCurrentObj->objId] < 0.0f) {
+        D_800EA6E0[omCurrentObj->objId] += 6.2831855f;
+    }
+    arg0->data.dobj->firstChild->angle.v.x = D_800EA6E0[omCurrentObj->objId] - 1.5707964f;
+}
+#elif defined(PORT)
 /* Aim-angle chaser (ported from m2c): step D_800EA6E0 toward the target
  * angle D_800EB320 with graded steps (8, 4, 1 degrees), going the short
  * way around when |cur - target| < pi and the long way otherwise, wrap

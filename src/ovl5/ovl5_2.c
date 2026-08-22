@@ -178,7 +178,80 @@ void func_8015CD00_ovl5(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015CD00_ovl5.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 7/277, UNCERTAIN -- seeded from the PORT arm (time-boxed).
+ * Compiles, word count close (277/277), residue high (270/277). One
+ * confirmed real defect fixed over the PORT: the ROM reads
+ * D_80185FA0_ovl5[0..3] off ONE shared `hi/lo(D_80185FA0_ovl5)` base
+ * (the local prototype for func_800AD1A0 was also missing, added inside
+ * the function body -- its PORT-only file-scope prototype is invisible
+ * to the N64 build). Beyond that, register/frame allocation diverges
+ * broadly (ROM: 6 saved slots incl. $f20/$f22, frame 0x68; this draft
+ * uses more). Worth a fresh m2c pass over the tbl[] unroll and the
+ * infinite wobble loop before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_8015CE74_ovl5(void) {
+    extern void *D_80185FA0_ovl5[];
+    extern struct UnkStruct8015C740 D_80186220_ovl5;
+    extern struct UnkStruct8015C740 D_801862E4_ovl5;
+    extern u16 D_80186240_ovl5[];
+    void func_800AD1A0(void);
+    GObj *arg0 = omCurrentObj;
+    struct UnkStruct8015C740 *tbl[4];
+    SPObj *sp1 = NULL;
+    SPObj *sp2 = NULL;
+    SPObj *t;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        tbl[i] = D_80185FA0_ovl5[i];
+    }
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0x12, 0x80000000, 0x12);
+    if (D_8018E258_ovl5 == 3) {
+        func_8015C740_ovl5(arg0, tbl[D_8018E258_ovl5]);
+        t = func_8015C740_ovl5(arg0, tbl[D_8018E258_ovl5]);
+        t->unk5A |= 1;
+        t->unkBA |= 1;
+        t->xOffset = 160.0f;
+        t->yOffset = 10.0f;
+        sp1 = func_8015C740_ovl5(arg0, &D_801862E4_ovl5);
+        sp2 = func_8015C740_ovl5(arg0, &D_801862E4_ovl5);
+        sp2->unk5A |= 1;
+        sp2->unkBA |= 1;
+        sp2->xOffset = sp1->xOffset + (f32) sp1->width;
+    } else {
+        func_8015C740_ovl5(arg0, tbl[D_8018E258_ovl5]);
+        t = func_8015C740_ovl5(arg0, tbl[D_8018E258_ovl5]);
+        t->unk5A |= 1;
+        t->unkBA |= 1;
+        t->xOffset = 160.0f;
+        t->yOffset = 60.0f;
+        sp1 = func_8015C740_ovl5(arg0, &D_80186220_ovl5);
+        sp1->primColorRed = D_80186240_ovl5[D_8018E258_ovl5 * 6 + 0];
+        sp1->primColorGreen = D_80186240_ovl5[D_8018E258_ovl5 * 6 + 1];
+        sp1->primColorBlue = D_80186240_ovl5[D_8018E258_ovl5 * 6 + 2];
+        sp1->envColorRed = D_80186240_ovl5[D_8018E258_ovl5 * 6 + 3];
+        sp1->envColorGreen = D_80186240_ovl5[D_8018E258_ovl5 * 6 + 4];
+        sp1->envColorBlue = D_80186240_ovl5[D_8018E258_ovl5 * 6 + 5];
+    }
+    while (1) {
+        if (D_8018E220_ovl5 != 0) {
+            if (D_8018E258_ovl5 == 3) {
+                for (i = 0; i < 1; i++) { sp1->xOffset += 2.0f; sp2->xOffset += 2.0f; ohSleep(1); }
+                for (i = 0; i < 2; i++) { sp1->xOffset -= 2.0f; sp2->xOffset -= 2.0f; ohSleep(1); }
+                for (i = 0; i < 1; i++) { sp1->xOffset += 2.0f; sp2->xOffset += 2.0f; ohSleep(1); }
+            } else {
+                for (i = 0; i < 1; i++) { sp1->xOffset += 1.0f; ohSleep(1); }
+                for (i = 0; i < 2; i++) { sp1->xOffset -= 1.0f; ohSleep(1); }
+                for (i = 0; i < 1; i++) { sp1->xOffset += 1.0f; ohSleep(1); }
+            }
+        } else {
+            ohSleep(1);
+        }
+    }
+}
+#elif defined(PORT)
 /* Round-banner thread: spawns the "round N" banner sprite pair for stage
  * D_8018E258_ovl5 (index 3 gets a two-part banner at y=10, the others a
  * single banner at y=60 recolored from D_80186240_ovl5), then wobbles the
@@ -1050,7 +1123,100 @@ void func_8015F67C_ovl5(s32 arg0)
   }
 }
 
-#ifdef PORT
+/* FACTORY: 13/221, UNCERTAIN -- cross-checked against a fresh m2c pass
+ * (matches the PORT arm's shape closely: same side==0/1/2 arms and
+ * random_soft_s32_range offsets). Compiles, word count matches (221/221),
+ * residue high (208/221). Register/frame allocation diverges broadly
+ * (frame 0x30 target vs 0x40 here). Worth a fresh source-shape pass
+ * before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_8015F804_ovl5(s32 arg0) {
+    s32 func_8015F5DC_ovl5(s32, s32);
+    u8 *rec = &D_8018E228_ovl5[arg0 * 12];
+    f32 range;
+    f32 d;
+    s32 t;
+
+    range = (random_soft_f32() * 100.0f) + 600.0f;
+    d = gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    if (d < 0.0f) {
+        d = -d;
+    }
+    if (d < range) {
+        s32 side = func_8015F5DC_ovl5(arg0, rec[6]);
+
+        if (side == 0) {
+            t = D_8018E050_ovl5[rec[6]];
+            if ((gEntitiesNextPosXArray[t] + range) > 900.0f) {
+                if (gEntitiesNextPosYArray[t] > 500.0f) {
+                    if (rec[7] == 0xFF) {
+                        rec[4] = 1;
+                        return;
+                    }
+                    rec[4] = 8;
+                    rec[5] = 0;
+                    return;
+                }
+                rec[4] = 3;
+                *(s32 *) rec = random_soft_s32_range(6) + 1;
+                return;
+            }
+            if (rec[8] == 0xFF) {
+                rec[4] = 2;
+                return;
+            }
+            rec[4] = 8;
+            rec[5] = 1;
+            return;
+        }
+        if (side == 1) {
+            t = D_8018E050_ovl5[rec[6]];
+            if ((gEntitiesNextPosXArray[t] - range) < -900.0f) {
+                if (gEntitiesNextPosYArray[t] > 500.0f) {
+                    if (rec[7] == 0xFF) {
+                        rec[4] = 2;
+                        return;
+                    }
+                    rec[4] = 8;
+                    rec[5] = 1;
+                    return;
+                }
+                rec[4] = 3;
+                *(s32 *) rec = random_soft_s32_range(6) + 1;
+                return;
+            }
+            if (rec[7] == 0xFF) {
+                rec[4] = 1;
+                return;
+            }
+            rec[4] = 8;
+            rec[5] = 0;
+            return;
+        }
+        if (side == 2) {
+            f32 x = gEntitiesNextPosXArray[omCurrentObj->objId];
+            f32 dl = -900.0f - x;
+            f32 dr = 900.0f - x;
+
+            if (dl < 0.0f) {
+                dl = -dl;
+            }
+            if (dr < 0.0f) {
+                dr = -dr;
+            }
+            if (dl < dr) {
+                rec[4] = 2;
+            } else {
+                rec[4] = 1;
+            }
+            *(s32 *) rec = random_soft_s32_range(6) + 0xA;
+        }
+        return;
+    }
+    rec[4] = 3;
+    *(s32 *) rec = random_soft_s32_range(6) + 1;
+}
+#elif defined(PORT)
 /* Chase planner used when the picked item is already claimed by another
  * racer: if the target is within 600..700 units, ask func_8015F5DC_ovl5
  * which side to attack from and set walk/chase state accordingly (watching
@@ -1205,7 +1371,66 @@ s32 func_8015FB78_ovl5(s32 arg0) {
 #endif
 
 
-#ifdef PORT
+/* FACTORY: 10/166, register-pressure floor. Derived from the ASM (not the
+ * PORT arm): the PORT's `for` loops were wrong shape -- the ROM builds
+ * the flag array with a `do { } while` (a single conditional branch to
+ * a shared "false" fallthrough, not a rolled-loop-of-4 for the second
+ * half) and the tail is fully UNROLLED into four `D_8018E030_ovl5[0..3]`
+ * literal-index checks per branch (matches sibling func_8015FB78_ovl5's
+ * unrolled shape), not `D_8018E030_ovl5[i]` in a loop. Every field and
+ * branch checks out once shaped this way. Residue: the ROM keeps only 2
+ * saved regs ($s0=i, $s1=arg0, frame 0x30) across the func_801612D0_ovl5
+ * call; this draft's IDO reaches for 5 ($s0-$s4, frame 0x48), relabeling
+ * most of the body downstream. Register-pressure floor (LEVERS: no
+ * source spelling reaches it). */
+#ifdef MIPS_TO_C
+s32 func_8015FE00_ovl5(s32 arg0) {
+    s32 t;
+    u8 sp24[4];
+    s32 i;
+    f32 x;
+
+    t = D_8018E050_ovl5[D_8018E228_ovl5[arg0 * 12 + 6]];
+    i = 0;
+    do {
+        if (arg0 != i && func_801612D0_ovl5(arg0, i) != 0) {
+            sp24[i] = 1;
+        } else {
+            sp24[i] = 0;
+        }
+        i++;
+    } while (i < 4);
+    x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    if (gEntitiesNextPosXArray[t] < x) {
+        if (sp24[0] != 0 && gEntitiesNextPosXArray[D_8018E030_ovl5[0]] < x) {
+            return 1;
+        }
+        if (sp24[1] != 0 && gEntitiesNextPosXArray[D_8018E030_ovl5[1]] < x) {
+            return 1;
+        }
+        if (sp24[2] != 0 && gEntitiesNextPosXArray[D_8018E030_ovl5[2]] < x) {
+            return 1;
+        }
+        if (sp24[3] != 0 && gEntitiesNextPosXArray[D_8018E030_ovl5[3]] < x) {
+            return 1;
+        }
+        return 0;
+    }
+    if (sp24[0] != 0 && x < gEntitiesNextPosXArray[D_8018E030_ovl5[0]]) {
+        return 1;
+    }
+    if (sp24[1] != 0 && x < gEntitiesNextPosXArray[D_8018E030_ovl5[1]]) {
+        return 1;
+    }
+    if (sp24[2] != 0 && x < gEntitiesNextPosXArray[D_8018E030_ovl5[2]]) {
+        return 1;
+    }
+    if (sp24[3] != 0 && x < gEntitiesNextPosXArray[D_8018E030_ovl5[3]]) {
+        return 1;
+    }
+    return 0;
+}
+#elif defined(PORT)
 /* Sibling of func_8015FB78_ovl5 above, with the same body shape: returns 1
  * when any touching neighbour racer stands between this racer and its
  * current target item (the ROM reads the target byte through the split

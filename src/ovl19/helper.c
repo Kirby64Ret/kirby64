@@ -485,18 +485,17 @@ void func_8022023C_ovl19(GObj *arg0) {
 
 // Pit of Doom
 // {
-/* 22/119: the first 52 instructions -- both random_soft_s32_range rejection
- * loops, the D_800E0650/D_800DF150 stores and the whole D_800D6E64 guard --
- * are exact, registers included. The residue is a pure temp-register rotation
- * that starts at the first `sll $vN, 2`: after `addiu $t6,$zero,1` the ROM's
- * next temp is $t0 (it skips t7/t8/t9) where IDO takes $t8 (skipping only t7),
- * and the two sequences never re-sync. No instruction, constant or order
- * differs. Swept: one temp local vs three, `*(vs32 *) &D_800D71F8` vs a plain
- * assignment (byte-identical here -- with THREE stores to the symbol IDO
- * materialises the address into $s0 on its own, so the vs32 hack that
- * func_80221108_ovl19 needs is not needed at this use count), and a
- * `for (i = 0; i < 3; i++)` loop for the three groups (NOT unrolled by IDO --
- * 113/118, it emits a real loop with four saved registers). */
+/* FACTORY: 97/119, register rotation. Re-verified 2026-08-22: the first 52
+ * instructions (both random_soft_s32_range rejection loops, D_800E0650/
+ * D_800DF150 stores, D_800D6E64 guard) are exact, registers included. The
+ * residue starts at the first `sll $vN,v0,2` (track-index subscripting into
+ * D_800EC2E0): the ROM's temp sequence is t0,t2,t9,t5,t8,t1,t2,t7,t9,t4 vs
+ * IDO's t8,t9,t2,t3,t4,t5,t7,t6,t8,t9 -- a pure temp-register rotation, no
+ * instruction/constant/order differs. Matches the "one-slot temp rotation"
+ * floor (LEVERS: no source spelling reaches it). Swept previously: one temp
+ * local vs three, `*(vs32 *) &D_800D71F8` vs plain assignment (identical
+ * here), and a `for (i = 0; i < 3; i++)` loop for the three groups (IDO does
+ * NOT unroll -- worse, 113/118). */
 #ifdef MIPS_TO_C
 void func_80220280_ovl19(GObj *arg0) {
     extern s32 D_8022FAB8_ovl19[];

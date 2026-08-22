@@ -813,7 +813,114 @@ void func_8017EA0C_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017EA0C_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 40/248, whole-function callee-saved permutation (same floor
+ * class documented across ovl3_1.c/kirby.c/plyshot.c). Also gives
+ * D_80198830_ovl3 a local-scope view (LocalUnk80198830) since the real
+ * typedef/extern pair lives inside an #ifdef NON_MATCHING block
+ * elsewhere in this file. Queued for the permuter. */
+/* PORT: the wheel-form (action 0x2C) per-tick handler (paired with the
+ * func_8017EA0C_ovl3 gear-shift coroutine above), from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017EDDC_ovl3.s (via m2c). When the
+ * coroutine is done, a scripted grab lands, or Kirby touches ground
+ * (D_800E8920), it releases the anim lock, disarms the ability, restores
+ * the saved run speed D_800E6A10 from the D_800EA6E0 stash and hands off.
+ * Otherwise it burns the D_80198830 gear window: while the gear count
+ * unk8 is up, an expired D_800E9720 shift timer lets a B press (0x4000)
+ * re-trigger the coroutine process (func_8016C510_ovl3), else the timer
+ * counts down; with no gears left the unkA grace counter drains. Held
+ * left/right (0x300) banks the facing cell D_800EA6E0 to +/-1 and drives
+ * +/-0.625 drift with a 5.0 cap (0.3125/2.5 in water); centered stick
+ * back-brakes with -drift * D_800E6A10 and a zero cap.
+ *
+ * Port notes: the positive/negative cap ladder is the ROM's redundant
+ * ABS of the constant 5.0/2.5; m2c's *(array + id*4) byte offsets are
+ * plain [id] indexing; the inner re-check of D_80198830_ovl3.unk8 is the
+ * dead half of a beql pair (unchanged since the outer test) and is
+ * dropped; gEntityGObjProcessArray/assign_new_process_entry/
+ * func_8016C510_ovl3 are declared locally because the file's own externs
+ * for them only appear further down. */
+void func_8017EDDC_ovl3(s32 arg0) {
+    typedef struct LocalUnk80198830 {
+        u8 pad0[8];
+        s16 unk8;
+        s16 unkA;
+    } LocalUnk80198830;
+    extern LocalUnk80198830 D_80198830_ovl3;
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+    void assign_new_process_entry(struct GObjProcess *, void *);
+    void func_8016C510_ovl3(s32);
+    s32 id;
+    f32 drift;
+
+    func_80153984_ovl3();
+    func_8011CF58();
+    func_801217B8();
+    if ((gKirbyState.unk30 != 0) || (gKirbyState.unk17 != 0)
+        || (D_800E8920[omCurrentObj->objId] != 0)) {
+        func_8011E0E8();
+        gKirbyState.abilityInUse = 0;
+        id = omCurrentObj->objId;
+        D_800E6A10[id] = D_800EA6E0[id];
+        func_8011D67C();
+        return;
+    }
+    id = omCurrentObj->objId;
+    if (D_80198830_ovl3.unk8 != 0) {
+        if (D_800E9720[id] == 0) {
+            if (gKirbyController.buttonPressed & 0x4000) {
+                assign_new_process_entry(gEntityGObjProcessArray[id], func_8016C510_ovl3);
+                id = omCurrentObj->objId;
+            }
+        } else {
+            D_800E9720[id]--;
+            id = omCurrentObj->objId;
+        }
+    } else if (D_80198830_ovl3.unkA != 0) {
+        D_80198830_ovl3.unkA--;
+        id = omCurrentObj->objId;
+    }
+    if (gKirbyController.buttonHeld & 0x300) {
+        if (gKirbyController.buttonHeld & 0x100) {
+            D_800EA6E0[id] = 1.0f;
+            id = omCurrentObj->objId;
+            if (!(D_800E8AE0[id] & 6)) {
+                D_800E6690[id] = 0.625f;
+            } else {
+                D_800E6690[id] = 0.3125f;
+            }
+            id = omCurrentObj->objId;
+            if (!(D_800E8AE0[id] & 6)) {
+                D_800E6850[id] = 5.0f;
+            } else {
+                D_800E6850[id] = 2.5f;
+            }
+        } else {
+            D_800EA6E0[id] = -1.0f;
+            id = omCurrentObj->objId;
+            if (!(D_800E8AE0[id] & 6)) {
+                D_800E6690[id] = -0.625f;
+            } else {
+                D_800E6690[id] = -0.3125f;
+            }
+            id = omCurrentObj->objId;
+            if (!(D_800E8AE0[id] & 6)) {
+                D_800E6850[id] = 5.0f;
+            } else {
+                D_800E6850[id] = 2.5f;
+            }
+        }
+    } else {
+        if (!(D_800E8AE0[id] & 6)) {
+            drift = 0.625f;
+        } else {
+            drift = 0.3125f;
+        }
+        D_800E6690[id] = -drift * D_800E6A10[id];
+        D_800E6850[omCurrentObj->objId] = 0.0f;
+    }
+}
+#elif defined(PORT)
 /* PORT: the wheel-form (action 0x2C) per-tick handler (paired with the
  * func_8017EA0C_ovl3 gear-shift coroutine above), from
  * asm/nonmatchings/ovl3/ovl3_6/func_8017EDDC_ovl3.s (via m2c). When the

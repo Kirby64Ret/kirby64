@@ -194,12 +194,13 @@ void func_801B22D0_ovl7(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B22D0_ovl7.s")
 #endif
 
-#ifdef PORT
-/* Idle facing coroutine (ported from m2c): forever, read the desired
- * facing from the track path (func_8019A900_ovl7) or the player-relative
- * fallback func_8019B608_ovl7(0); when it differs from D_800E6A10, lean
- * D_800E9020 by pi/32 a frame for 16 frames, flip the facing and the
- * lean, unwind for 16 frames, and zero the lean. */
+/* MATCHED (147 insns).  Two things decided it: the two lean loops are
+   do/while (the ROM enters both unconditionally and tests at the bottom with
+   bnel), and `i = 0` belongs INSIDE the `want != facing` block after the
+   D_800E9020 clear -- written before the if, IDO sinks a `move s0,zero` into
+   both arms of the want select and the whole body shifts.  `want = tp.unk0`
+   is an int->float conversion (cvt.s.w) off the 8-byte track-pos struct at
+   sp+0x60.  LP64-clean, so the PORT arm is deleted. */
 void func_801B2588_ovl7(GObj *arg0) {
     s32 func_8019A900_ovl7(void *);
     f32 func_8019B608_ovl7(s32);
@@ -207,7 +208,7 @@ void func_801B2588_ovl7(GObj *arg0) {
     extern f32 D_800E9020[];
     extern f32 gameTicksPerDraw;
     extern s32 D_800DDFD0[];
-    struct PcTrackPos9 {
+    struct Ovl7_9_TrackPos {
         s32 unk0;
         f32 unk4;
     } tp;
@@ -227,26 +228,25 @@ void func_801B2588_ovl7(GObj *arg0) {
         }
         if (want != D_800E6A10[omCurrentObj->objId]) {
             D_800E9020[omCurrentObj->objId] = 0.0f;
-            for (i = 0; i != 0x10; i++) {
-                D_800E9020[omCurrentObj->objId] +=
-                    (D_800E6A10[omCurrentObj->objId] == 1.0f) ? -0.09817477f : 0.09817477f;
+            i = 0;
+            do {
+                D_800E9020[omCurrentObj->objId] += (D_800E6A10[omCurrentObj->objId] == 1.0f) ? -0.09817477f : 0.09817477f;
                 ohSleep(1);
-            }
+                i++;
+            } while (i != 0x10);
             D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
             D_800E9020[omCurrentObj->objId] = -D_800E9020[omCurrentObj->objId];
-            for (; i != 0; i--) {
-                D_800E9020[omCurrentObj->objId] +=
-                    (D_800E6A10[omCurrentObj->objId] == 1.0f) ? 0.09817477f : -0.09817477f;
+            do {
+                D_800E9020[omCurrentObj->objId] += (D_800E6A10[omCurrentObj->objId] == 1.0f) ? 0.09817477f : -0.09817477f;
                 ohSleep(1);
-            }
+                i--;
+            } while (i != 0);
             D_800E9020[omCurrentObj->objId] = 0.0f;
         }
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2588_ovl7.s")
-#endif
+
 
 void func_801B27D4_ovl7(GObj *arg0) {
     gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];

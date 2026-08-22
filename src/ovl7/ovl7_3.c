@@ -317,70 +317,72 @@ void func_801A1724_ovl7(struct Sub800E1B50_Unk84 *sub84) {
     sub84->unk24 = D_800E17D0[omCurrentObj->objId];
 }
 
+/* FACTORY: 69/187, frame-size + spill-placement residue.  All control flow is
+   the ROM's: the D_800E8E60 guard, the dx/dz tracker call, the three position
+   stores re-reading omCurrentObj->objId inline, both six-way unk48 hook
+   chains, the D_800E8920 latch and the four func_8010DC24 contact probes in
+   ceiling/left/right/floor order.  Residue: our frame is 0x20 where the ROM's
+   is 0x30 -- the ROM leaves 0x20-0x28 unused and puts the rec spill at 0x2C
+   (ours at 0x18) and the arg0 home at 0x30 (ours 0x20); every later diff is
+   that shift plus the temp-register rotation it drags in ($v1/$v0 for the
+   hook load, $v0/$a1 for the D_8012BCA0 base).  Measured: `u32 id` as a real
+   local is worth 61 diffs (it reproduces the ROM's `sw $t6,0x1C($sp)` /
+   `lw $a0,0x1C($sp)` spill exactly); unused pad locals do NOT move the frame
+   (IDO drops them); flipping the hook compare operand order is inert here
+   (IDO canonicalises a load-vs-constant compare, unlike LEVERS 14's case).
+   N64 spellings carried here: D_8012BCA0 is read as a WORD ARRAY through
+   (&D_8012BCA0)[n] -- [3]/[2] into unk78/unk7C, and [2]/[8]/[11]/[5] as the
+   func_8010DC24 arguments -- with NO file-scope retype of D_8012BCA0, and
+   func_8010DC24 is called through a (u32 (*)(u32)) cast because its
+   file-scope declaration is `void func_8010DC24()` and must not be changed. */
 #ifdef MIPS_TO_C
+void func_801A187C_ovl7(struct Sub800E1B50_Unk84 *arg0) {
+    void func_800F8728(s32, f32, f32);
+    extern u32 D_800E8E60[];
+    u32 id = omCurrentObj->objId;
+    struct UnkStruct800E1B50 *rec = D_800E1B50[id];
+    u32 fl;
 
-void func_801A187C_ovl7(void *arg0) {
-    UnkStruct800E1B50 *sp2C;
-    u32 sp1C;
-    GObj *temp_a1;
-    UnkStruct800E1B50 *var_t0;
-    f32 temp_f0;
-    f32 temp_f2;
-    s32 (*temp_v1)(struct Sub800E1B50_Unk84 *);
-    s32 (*temp_v1_2)(struct Sub800E1B50_Unk84 *);
-    s32 var_v0;
-    u32 temp_t6;
-    u32 var_v1;
+    if (D_800E8E60[id] != 1) {
+        f32 dx = arg0->unk4 - gEntitiesNextPosXArray[id];
+        f32 dz = arg0->unkC - gEntitiesNextPosZArray[id];
 
-    temp_a1 = omCurrentObj;
-    temp_t6 = temp_a1->objId;
-    var_v0 = temp_t6 * 4;
-    var_t0 = D_800E1B50[temp_t6];
-    sp1C = temp_t6;
-    if ((D_800E8E60[temp_t6] != 1) && ((temp_f0 = arg0->unk4 - gEntitiesNextPosXArray[temp_t6], temp_f2 = arg0->unkC - gEntitiesNextPosZArray[temp_t6], (temp_f0 != 0.0f)) || (temp_f2 != 0.0f))) {
-        sp2C = var_t0;
-        func_800F8728(0, sp1C, temp_f0, temp_f2, arg0);
-        var_v0 = omCurrentObj->objId * 4;
-    }
-    *(gEntitiesNextPosXArray + var_v0) = arg0->unk4;
-    gEntitiesNextPosYArray[temp_a1->objId] = arg0->unk8;
-    gEntitiesNextPosZArray[temp_a1->objId] = arg0->unkC;
-    temp_v1 = var_t0->unk48;
-    if ((&func_8010C274 != temp_v1) && (&func_8010C184 != temp_v1) && (func_8010B480 != temp_v1) && (func_8010B284 != temp_v1) && (func_8010B67C != temp_v1) && (func_8010B860 != temp_v1)) {
-        if (D_800E8920[temp_a1->objId] == 1) {
-            var_t0->unk78 = (&D_8012BCA0)[3];
-            var_t0->unk7C = (&D_8012BCA0)[2];
-        } else {
-            var_t0->unk78 = 0;
-            goto block_14;
+        if ((dx != 0.0f) || (dz != 0.0f)) {
+            func_800F8728(id, dx, dz);
         }
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = arg0->unk4;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = arg0->unk8;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = arg0->unkC;
+    if (((void *) rec->unk48 != (void *) func_8010C274) && ((void *) rec->unk48 != (void *) func_8010C184) &&
+        ((void *) rec->unk48 != (void *) func_8010B480) && ((void *) rec->unk48 != (void *) func_8010B284) &&
+        ((void *) rec->unk48 != (void *) func_8010B67C) && ((void *) rec->unk48 != (void *) func_8010B860) &&
+        (D_800E8920[omCurrentObj->objId] == 1)) {
+        rec->unk78 = (&D_8012BCA0)[3];
+        rec->unk7C = (&D_8012BCA0)[2];
     } else {
-        var_t0->unk78 = 0;
-block_14:
-        var_t0->unk7C = 0;
+        rec->unk78 = 0;
+        rec->unk7C = 0;
     }
-    temp_v1_2 = var_t0->unk48;
-    if ((&func_8010C274 != temp_v1_2) && (&func_8010C184 != temp_v1_2) && (func_8010B480 != temp_v1_2) && (func_8010B284 != temp_v1_2) && (func_8010B67C != temp_v1_2) && (func_8010B860 != temp_v1_2)) {
-        var_t0->unk44 = 0;
-        var_v1 = D_8012BCA0 >> 0x13;
-        if (var_v1 & 0xE00) {
-            sp2C = var_t0;
-            var_t0->unk44 = func_8010DC24((&D_8012BCA0)[2], temp_a1);
-            var_v1 = D_8012BCA0 >> 0x13;
+    if (((void *) rec->unk48 != (void *) func_8010C274) && ((void *) rec->unk48 != (void *) func_8010C184) &&
+        ((void *) rec->unk48 != (void *) func_8010B480) && ((void *) rec->unk48 != (void *) func_8010B284) &&
+        ((void *) rec->unk48 != (void *) func_8010B67C) && ((void *) rec->unk48 != (void *) func_8010B860)) {
+        rec->unk44 = 0;
+        fl = D_8012BCA0 >> 0x13;
+        if (fl & 0xE00) {
+            rec->unk44 = ((u32 (*)(u32)) func_8010DC24)((&D_8012BCA0)[2]);
+            fl = D_8012BCA0 >> 0x13;
         }
-        if ((var_v1 & 7) && (var_t0->unk44 == 0)) {
-            sp2C = var_t0;
-            var_t0->unk44 = func_8010DC24((&D_8012BCA0)[8]);
-            var_v1 = D_8012BCA0 >> 0x13;
+        if ((fl & 7) && (rec->unk44 == 0)) {
+            rec->unk44 = ((u32 (*)(u32)) func_8010DC24)((&D_8012BCA0)[8]);
+            fl = D_8012BCA0 >> 0x13;
         }
-        if ((var_v1 & 0x38) && (var_t0->unk44 == 0)) {
-            sp2C = var_t0;
-            var_t0->unk44 = func_8010DC24((&D_8012BCA0)[11]);
-            var_v1 = D_8012BCA0 >> 0x13;
+        if ((fl & 0x38) && (rec->unk44 == 0)) {
+            rec->unk44 = ((u32 (*)(u32)) func_8010DC24)((&D_8012BCA0)[11]);
+            fl = D_8012BCA0 >> 0x13;
         }
-        if ((var_v1 & 0x1C0) && (var_t0->unk44 == 0)) {
-            sp2C = var_t0;
-            var_t0->unk44 = func_8010DC24((&D_8012BCA0)[5]);
+        if ((fl & 0x1C0) && (rec->unk44 == 0)) {
+            rec->unk44 = ((u32 (*)(u32)) func_8010DC24)((&D_8012BCA0)[5]);
         }
     }
 }
@@ -450,144 +452,124 @@ void func_801A187C_ovl7(void *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A187C_ovl7.s")
 #endif
 
+/* FACTORY: 13/318, whole-function index-register permutation.  The shape is
+   settled -- both unk42/unk41 Y-offset switches, the fallthrough
+   3/2/1 water-slot chain with its unk74 latch, the flag0-vs-flag1 edge test
+   driving bits 2 and 0x10, the two func_8010E048 probes (rec->unk74 first,
+   then the pre-call `water` copy) and the unk38 countdown are all the ROM's,
+   and the frame is 0x70 with the ROM's local layout (flags0 0x6C, newp 0x60,
+   oldp 0x54, hit 0x48, water 0x40, norm 0x3C, rec spill 0x38, slot spill
+   0x34) -- reached by declaring TWO trailing pads after the register-only
+   locals; without them the frame is 0x68 and every slot is 8 low.
+   Residue: our IDO puts objId*4 in $v0 where the ROM uses $v1, and
+   rematerialises the D_800E8AE0 base at each subscript where the ROM keeps
+   it in $t1 for the whole body.  That pair colours nearly every remaining
+   instruction, which is why the raw count is high for a function whose
+   structure is right -- it is one permutation, not 305 defects.  Swept:
+   reading flags0 before the unk42 switch (305 -> 314) and hoisting the
+   D_800E8AE0 base into an `s32 *` local (305 -> 315) are both NEGATIVE.
+   N64 spellings carried here: D_8012BCE0 slots are 4-byte pointers, active
+   flag read as ((u8 *) D_8012BCE0[i])[4], latched into unk74 as a plain
+   (u32) cast; unk14/unk18 need *(f32 *) &slot->unkNN; unk38 is compared and
+   decremented through (s8); func_8010DF9C takes ONE argument. */
 #ifdef MIPS_TO_C
-
 void func_801A1B6C_ovl7(void) {
-    s32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    Vector sp48;
-    u32 sp40;
-    f32 sp3C;
-    UnkStruct800E1B50 *sp38;
-    struct Sub800E1B50_Unk84 *sp34;
-    UnkStruct800E1B50 *temp_t0;
-    s32 *temp_v0_3;
-    s32 *temp_v0_4;
-    s32 *temp_v0_5;
-    s32 *temp_v0_6;
-    s32 *temp_v0_7;
-    s32 *temp_v0_8;
-    s32 *var_v0;
-    s32 temp_a0;
-    s32 temp_v0_2;
-    s32 var_v1;
-    s8 temp_v0_10;
-    struct Sub800E1B50_Unk84 *temp_a2;
-    u32 temp_a0_2;
-    u32 temp_v1;
-    u32 temp_v1_4;
-    u8 temp_v0;
-    u8 temp_v0_9;
-    void *temp_v1_2;
-    void *temp_v1_3;
+    s32 func_8010DF9C(void *);
+    s32 func_8010E048(u32, s32, Vector *, Vector *, Vector *, Vector *);
+    void func_801AE73C_ovl7(s32, f32, f32, f32);
+    void func_801A239C_ovl7(void);
+    extern s32 D_800E8AE0[];
+    s32 flags0;
+    Vector newp;
+    Vector oldp;
+    Vector hit;
+    u32 water;
+    f32 norm;
+    struct UnkStruct800E1B50 *rec;
+    struct Sub800E1B50_Unk84 *slot;
+    s32 pad0;
+    s32 pad1;
 
-    temp_v1 = omCurrentObj->objId;
-    temp_t0 = D_800E1B50[temp_v1];
-    temp_a2 = temp_t0->unk84;
-    sp60 = gEntitiesNextPosXArray[temp_v1];
-    temp_v0 = temp_t0->unk42;
-    switch (temp_v0) {                              /* irregular */
+    rec = D_800E1B50[omCurrentObj->objId];
+    slot = rec->unk84;
+    newp.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    switch (rec->unk42) {
+    case 0:
+        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk14;
+        break;
+    case 2:
+        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
+        break;
+    default:
+        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        break;
+    }
+    newp.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    flags0 = D_800E8AE0[omCurrentObj->objId];
+    water = rec->unk74;
+    switch (func_8010DF9C(&newp)) {
+    case 3:
+        if (((u8 *) D_8012BCE0[2])[4] != 0) {
+            rec->unk74 = (u32) D_8012BCE0[2];
+            D_800E8AE0[omCurrentObj->objId] |= 1;
+        }
+        /* fallthrough */
+    case 2:
+        if (((u8 *) D_8012BCE0[1])[4] != 0) {
+            rec->unk74 = (u32) D_8012BCE0[1];
+            D_800E8AE0[omCurrentObj->objId] |= 1;
+        }
+        /* fallthrough */
+    case 1:
+        if (((u8 *) D_8012BCE0[0])[4] != 0) {
+            rec->unk74 = (u32) D_8012BCE0[0];
+            D_800E8AE0[omCurrentObj->objId] |= 1;
+        }
+        break;
+    default:
+        D_800E8AE0[omCurrentObj->objId] &= ~1;
+        rec->unk74 = 0;
+        break;
+    }
+    if (((flags0 & 1) == 0) ? ((D_800E8AE0[omCurrentObj->objId] & 1) != 0)
+                            : ((D_800E8AE0[omCurrentObj->objId] & 1) == 0)) {
+        D_800E8AE0[omCurrentObj->objId] |= 2;
+        D_800E8AE0[omCurrentObj->objId] |= 0x10;
+    } else {
+        D_800E8AE0[omCurrentObj->objId] &= ~2;
+        D_800E8AE0[omCurrentObj->objId] &= ~0x10;
+    }
+    if (((s8) rec->unk38 != -1) && (D_800E8AE0[omCurrentObj->objId] & 0x10)) {
+        switch (rec->unk41) {
         case 0:
-            sp64 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &temp_a2->unk14;
+            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk14;
+            oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk14;
             break;
         case 2:
-            sp64 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &temp_a2->unk18;
+            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
+            oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
             break;
         default:
-        case 1:
-            sp64 = gEntitiesNextPosYArray[omCurrentObj->objId];
+            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            oldp.y = gEntitiesPosYArray[omCurrentObj->objId];
             break;
-    }
-    sp68 = gEntitiesNextPosZArray[omCurrentObj->objId];
-    sp6C = D_800E8AE0[temp_v1];
-    sp38 = temp_t0;
-    sp34 = temp_a2;
-    sp40 = temp_t0->unk74;
-    temp_v0_2 = func_8010DF9C(&sp60, omCurrentObj, temp_a2, gEntitiesNextPosYArray);
-    if (temp_v0_2 != 0) {
-        if (temp_v0_2 != 1) {
-            if (temp_v0_2 != 2) {
-                if (temp_v0_2 == 3) {
-                    temp_v1_2 = D_8012BCE0[2];
-                    if (temp_v1_2->unk4 != 0) {
-                        sp38->unk74 = temp_v1_2;
-                        temp_v0_3 = &D_800E8AE0[omCurrentObj->objId];
-                        *temp_v0_3 |= 1;
-                    }
-                    goto block_13;
-                }
-                goto block_18;
-            }
-block_13:
-            temp_v1_3 = D_8012BCE0[1];
-            if (temp_v1_3->unk4 != 0) {
-                sp38->unk74 = temp_v1_3;
-                temp_v0_4 = &D_800E8AE0[omCurrentObj->objId];
-                *temp_v0_4 |= 1;
-            }
-            goto block_15;
         }
-block_15:
-        if (D_8012BCE0[0]->unk4 != 0) {
-            sp38->unk74 = D_8012BCE0[0];
-            temp_v0_5 = &D_800E8AE0[omCurrentObj->objId];
-            *temp_v0_5 |= 1;
-        }
-    } else {
-block_18:
-        temp_v0_6 = &D_800E8AE0[omCurrentObj->objId];
-        *temp_v0_6 &= ~1;
-        sp38->unk74 = 0;
-    }
-    temp_a0 = sp6C & 1;
-    if (((temp_a0 == 0) && (var_v0 = &D_800E8AE0[omCurrentObj->objId], var_v1 = *var_v0, ((var_v1 & 1) != 0))) || ((var_v0 = &D_800E8AE0[omCurrentObj->objId], var_v1 = *var_v0, (temp_a0 != 0)) && !(var_v1 & 1))) {
-        *var_v0 = var_v1 | 2;
-        temp_v0_7 = &D_800E8AE0[omCurrentObj->objId];
-        *temp_v0_7 |= 0x10;
-    } else {
-        *var_v0 = var_v1 & ~2;
-        temp_v0_8 = &D_800E8AE0[omCurrentObj->objId];
-        *temp_v0_8 &= ~0x10;
-    }
-    if (sp38->unk38 != -1) {
-        temp_v1_4 = omCurrentObj->objId;
-        if (D_800E8AE0[temp_v1_4] & 0x10) {
-            temp_v0_9 = sp38->unk41;
-            switch (temp_v0_9) {                    /* switch 1; irregular */
-                case 0:                             /* switch 1 */
-                    sp64 = gEntitiesNextPosYArray[temp_v1_4] + *(f32 *) &sp34->unk14;
-                    sp58 = gEntitiesPosYArray[omCurrentObj->objId] + *(f32 *) &sp34->unk14;
-                    break;
-                case 2:                             /* switch 1 */
-                    sp64 = gEntitiesNextPosYArray[temp_v1_4] + *(f32 *) &sp34->unk18;
-                    sp58 = gEntitiesPosYArray[omCurrentObj->objId] + *(f32 *) &sp34->unk18;
-                    break;
-                default:                            /* switch 1 */
-                case 1:                             /* switch 1 */
-                    sp64 = gEntitiesNextPosYArray[temp_v1_4];
-                    sp58 = gEntitiesPosYArray[omCurrentObj->objId];
-                    break;
+        oldp.x = gEntitiesPosXArray[omCurrentObj->objId];
+        oldp.z = gEntitiesPosZArray[omCurrentObj->objId];
+        if (rec->unk74 != 0) {
+            if ((func_8010E048(rec->unk74, 0x14, &oldp, &newp, (Vector *) &norm, &hit) != 0) &&
+                ((s8) rec->unk38 == 0)) {
+                func_801AE73C_ovl7(1, hit.x, hit.y, hit.z);
             }
-            sp54 = gEntitiesPosXArray[omCurrentObj->objId];
-            sp5C = gEntitiesPosZArray[omCurrentObj->objId];
-            temp_a0_2 = sp38->unk74;
-            if (temp_a0_2 != 0) {
-                if ((func_8010E048(temp_a0_2, 0x14, &sp54, &sp60, &sp3C, &sp48) != 0) && (sp38->unk38 == 0)) {
-                    func_801AE73C_ovl7(1, sp48.x, sp48.y, sp48.z);
-                }
-            } else if ((sp40 != 0) && (func_8010E048(sp40, 0x14, &sp54, &sp60, &sp3C, &sp48) != 0) && (sp38->unk38 == 0)) {
-                func_801AE73C_ovl7(1, sp48.x, sp48.y, sp48.z);
+        } else if (water != 0) {
+            if ((func_8010E048(water, 0x14, &oldp, &newp, (Vector *) &norm, &hit) != 0) &&
+                ((s8) rec->unk38 == 0)) {
+                func_801AE73C_ovl7(1, hit.x, hit.y, hit.z);
             }
         }
     }
-    temp_v0_10 = sp38->unk38;
-    if ((temp_v0_10 != -1) && (temp_v0_10 > 0)) {
-        sp38->unk38 = temp_v0_10 - 1;
+    if (((s8) rec->unk38 != -1) && ((s8) rec->unk38 > 0)) {
+        rec->unk38 = (s8) rec->unk38 - 1;
     }
     if (D_800E8AE0[omCurrentObj->objId] & 1) {
         func_801A239C_ovl7();
@@ -692,86 +674,83 @@ void func_801A1B6C_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A1B6C_ovl7.s")
 #endif
 
+/* FACTORY: 60/204, stack-base +4 anomaly plus the temp-register rotation it
+   drags along.  Control flow, the three probe-point arms, the sinf/cosf
+   schedule, the fallthrough switch and the four-way flag store are all the
+   ROM's.  Residues: (a) our locals block sits 4 bytes high -- p at 0x30 and
+   the slot spill at 0x2C where the ROM has 0x2C and 0x24, frame 0x40 on both
+   sides, so the ROM leaves a 4-byte hole ABOVE its locals that no arrangement
+   here reproduces (leading pad -> frame 0x48, trailing pad -> frame 0x48,
+   both measured); (b) $t6/$t7 and $a0/$a1 are transposed from the entry
+   block onward because the ROM reads D_800E8AE0[objId] before the
+   D_800E1B50 lookup -- forcing that order with a comma-expression is
+   NEGATIVE (144 -> 179).
+   N64 spellings confirmed against the listing and carried here: D_8012BCE0
+   slots are 4-byte pointers read `lw` then `lbu 0x4`, spelled
+   ((u8 *) D_8012BCE0[i])[4] with NO change to the file-scope
+   struct Ovl7ColRec; unk14/unk18 are read with lwc1 so they need
+   *(f32 *) &slot->unkNN; func_8010DF9C takes ONE argument (m2c's second
+   was the live $a1 slot pointer); the probe point must be a single Vector
+   local, not three f32s (three separate floats cost 54 diffs). */
 #ifdef MIPS_TO_C
-
 void func_801A2068_ovl7(void) {
-    s32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    struct Sub800E1B50_Unk84 *sp24;
-    s32 *temp_v0_2;
-    s32 temp_v0;
-    s32 temp_v1_3;
-    s32 var_a1;
-    struct Sub800E1B50_Unk84 *temp_a1;
-    u32 temp_v1;
-    u32 temp_v1_2;
+    s32 func_8010DF9C(void *);
+    extern s32 D_800E8AE0[];
+    s32 probeHit;
+    Vector p;
+    struct Sub800E1B50_Unk84 *slot = D_800E1B50[omCurrentObj->objId]->unk84;
+    s32 *flags;
 
-    temp_v1 = omCurrentObj->objId;
-    temp_a1 = D_800E1B50[temp_v1]->unk84;
-    if (D_800E8AE0[temp_v1] & 1) {
-        sp2C = gEntitiesNextPosXArray[temp_v1];
-        sp30 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &temp_a1->unk14;
-        sp34 = gEntitiesNextPosZArray[omCurrentObj->objId];
-    } else if (D_800E8920[temp_v1] == 0) {
-        sp2C = gEntitiesNextPosXArray[temp_v1];
-        sp30 = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &temp_a1->unk18;
-        sp34 = gEntitiesNextPosZArray[omCurrentObj->objId];
+    if (D_800E8AE0[omCurrentObj->objId] & 1) {
+        p.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk14;
+        p.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    } else if (D_800E8920[omCurrentObj->objId] == 0) {
+        p.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
+        p.z = gEntitiesNextPosZArray[omCurrentObj->objId];
     } else {
-        sp30 = gEntitiesNextPosYArray[temp_v1] + *(f32 *) &temp_a1->unk18;
-        temp_v1_2 = omCurrentObj->objId;
-        if (D_800E6A10[temp_v1_2] == 1.0f) {
-            sp24 = temp_a1;
-            sp2C = (sinf(D_800E17D0[temp_v1_2]) * temp_a1->unk1C) + gEntitiesNextPosXArray[omCurrentObj->objId];
-            sp34 = (cosf(D_800E17D0[omCurrentObj->objId]) * temp_a1->unk1C) + gEntitiesNextPosZArray[omCurrentObj->objId];
+        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
+        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+            p.x = (sinf(D_800E17D0[omCurrentObj->objId]) * slot->unk1C) + gEntitiesNextPosXArray[omCurrentObj->objId];
+            p.z = (cosf(D_800E17D0[omCurrentObj->objId]) * slot->unk1C) + gEntitiesNextPosZArray[omCurrentObj->objId];
         } else {
-            sp24 = temp_a1;
-            sp2C = (sinf(D_800E17D0[temp_v1_2]) * temp_a1->unk20) + gEntitiesNextPosXArray[omCurrentObj->objId];
-            sp34 = (cosf(D_800E17D0[omCurrentObj->objId]) * temp_a1->unk20) + gEntitiesNextPosZArray[omCurrentObj->objId];
+            p.x = (sinf(D_800E17D0[omCurrentObj->objId]) * slot->unk20) + gEntitiesNextPosXArray[omCurrentObj->objId];
+            p.z = (cosf(D_800E17D0[omCurrentObj->objId]) * slot->unk20) + gEntitiesNextPosZArray[omCurrentObj->objId];
         }
     }
-    sp38 = 0;
-    temp_v0 = func_8010DF9C(&sp2C, temp_a1);
-    var_a1 = sp38;
-    if (temp_v0 != 0) {
-        if (temp_v0 != 1) {
-            if (temp_v0 != 2) {
-                if (temp_v0 == 3) {
-                    if (D_8012BCE0[2]->unk4 != 0) {
-                        var_a1 = 1;
-                    }
-                    goto block_13;
-                }
-            } else {
-block_13:
-                if (D_8012BCE0[1]->unk4 != 0) {
-                    var_a1 |= 1;
-                }
-                goto block_15;
-            }
+    probeHit = 0;
+    switch (func_8010DF9C(&p)) {
+    case 3:
+        if (((u8 *) D_8012BCE0[2])[4] != 0) {
+            probeHit = 1;
+        }
+        /* fallthrough */
+    case 2:
+        if (((u8 *) D_8012BCE0[1])[4] != 0) {
+            probeHit |= 1;
+        }
+        /* fallthrough */
+    case 1:
+        if (((u8 *) D_8012BCE0[0])[4] != 0) {
+            probeHit |= 1;
+        }
+        break;
+    }
+    flags = &D_800E8AE0[omCurrentObj->objId];
+    if (*flags & 1) {
+        if (probeHit != 0) {
+            *flags = *flags & ~4;
         } else {
-block_15:
-            if (D_8012BCE0[0]->unk4 != 0) {
-                var_a1 |= 1;
-            }
+            *flags = *flags | 4;
+        }
+    } else {
+        if (probeHit != 0) {
+            *flags = *flags | 4;
+        } else {
+            *flags = *flags & ~4;
         }
     }
-    temp_v0_2 = &D_800E8AE0[omCurrentObj->objId];
-    temp_v1_3 = *temp_v0_2;
-    if (temp_v1_3 & 1) {
-        if (var_a1 != 0) {
-            *temp_v0_2 = temp_v1_3 & ~4;
-            return;
-        }
-        *temp_v0_2 = temp_v1_3 | 4;
-        return;
-    }
-    if (var_a1 != 0) {
-        *temp_v0_2 = temp_v1_3 | 4;
-        return;
-    }
-    *temp_v0_2 = temp_v1_3 & ~4;
 }
 #elif defined(PORT)
 /* Secondary water probe feeding bit 2 of D_800E8AE0 (draft above,
@@ -860,164 +839,141 @@ void func_801A248C_ovl7(struct Sub800E1B50_Unk84 *arg0, f32 arg1) {
     }
 }
 
-#ifdef MIPS_TO_C
-
+/* MATCHED (353 insns).  N64 arm only -- the PORT arm below stays because this
+   spelling is not LP64-clean: it reads the terrain-kind byte as
+   ((u8 *) rec->unk88)[0x1C] (the ROM uses lbu there while the shared header
+   declares unk1C as u32, which must not be retyped at file scope) and it
+   names the slot position through Sub800E1B50_Unk84 unk4/unk8/unkC, which the
+   PC build lays out differently.  Three edits carried it from 345/353 to
+   MATCH: (1) the D_800E7730 switch needs explicit `case 0:` and `case 5:` so
+   the jump table is unbiased (IDO otherwise emits addiu -1 / sltiu 6);
+   (2) dx/dz must be named locals or IDO compares the two loads directly
+   instead of forming the difference; (3) the water chain is a nested-if
+   ladder with a forward `goto clear`, not a fallthrough switch -- the ROM
+   tests zero FIRST and shares one clear-store tail. */
+#ifndef PORT
 void func_801A2558_ovl7(s32 arg0) {
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    UnkStruct800E1B50 *sp34;
-    struct Sub800E1B50_Unk84 *sp30;
-    GObj *var_v1;
-    UnkStruct800E1B50 *temp_t7;
-    f32 *temp_v0_3;
-    f32 *var_at;
-    f32 temp_f0;
-    f32 temp_f2;
-    f32 var_f0;
-    f32 var_f0_2;
-    s32 (*temp_v0_2)(struct Sub800E1B50_Unk84 *);
-    s32 temp_v0_4;
-    s32 var_v0;
-    struct Sub800E1B50_Unk84 *temp_a1;
-    struct Sub800E1B50_Unk84 *temp_v0;
-    u32 temp_a3;
-    u32 temp_a3_2;
-    u8 temp_t0;
+    struct Sub800E1B50_Unk84 *func_8010DCAC(void);
+    void func_801A2ADC_ovl7(s32);
+    void func_801051DC(struct Sub800E1B50_Unk84 *);
+    s32 func_80109DD8(struct Sub800E1B50_Unk84 *);
+    void func_8010CE44(struct Sub800E1B50_Unk84 *, f32);
+    void func_8010D42C(struct Sub800E1B50_Unk84 *, f32);
+    void func_8010D138(struct Sub800E1B50_Unk84 *, f32);
+    s32 func_8010DF9C(void *);
+    void func_800F8728(s32, f32, f32);
+    extern s32 D_800E8AE0[];
+    extern u8 D_800E7730[];
+    f32 reach;
+    Vector p;
+    struct UnkStruct800E1B50 *rec;
+    struct Sub800E1B50_Unk84 *slot;
+    f32 dx;
+    f32 dz;
+    s32 w;
 
-    temp_a3 = omCurrentObj->objId;
-    temp_t7 = D_800E1B50[temp_a3];
-    sp34 = temp_t7;
-    temp_a1 = temp_t7->unk84;
-    if (arg0 != 0) {
-        temp_t0 = D_800E7730[temp_a3];
-        switch (temp_t0) {
-            case 1:
-                var_f0 = 25.0f;
-                break;
-            case 2:
-                var_f0 = 25.0f;
-                break;
-            case 4:
-                var_f0 = 0.0f;
-                break;
-            case 3:
-                var_f0 = 25.0f;
-                break;
-            case 6:
-                var_f0 = 0.0f;
-                break;
-            default:
-                if (D_800E0D50[temp_a3] != 0) {
-                    var_f0 = 25.0f;
-                } else {
-                    var_f0 = 0.0f;
-                }
-                break;
-        }
-        if (temp_a1 != NULL) {
-            sp30 = temp_a1;
-            sp44 = var_f0;
-            func_80105180(temp_a1, temp_a1, temp_a3);
+    rec = D_800E1B50[omCurrentObj->objId];
+    slot = rec->unk84;
+    if (arg0 == 0) {
+        return;
+    }
+    switch (D_800E7730[omCurrentObj->objId]) {
+    case 1:
+        reach = 25.0f;
+        break;
+    case 2:
+        reach = 25.0f;
+        break;
+    case 4:
+        reach = 0.0f;
+        break;
+    case 3:
+        reach = 25.0f;
+        break;
+    case 6:
+        reach = 0.0f;
+        break;
+    case 0:
+    case 5:
+    default:
+        if (D_800E0D50[omCurrentObj->objId] != 0) {
+            reach = 25.0f;
         } else {
-            sp44 = var_f0;
-            temp_v0 = func_8010DCAC(temp_a1, temp_a1, temp_a3);
-            sp30 = temp_v0;
-            sp34->unk84 = temp_v0;
+            reach = 0.0f;
         }
-        sp44 = var_f0;
-        func_801A2ADC_ovl7(arg0);
-        if ((sp34->unk88->unk1C != 0) && (D_800E8E60[omCurrentObj->objId] == 0)) {
-            sp44 = var_f0;
-            func_801051DC(sp30);
-            temp_v0_2 = sp34->unk48;
-            if (temp_v0_2 != NULL) {
-                sp44 = var_f0;
-                var_v1 = omCurrentObj;
-                D_800E8920[var_v1->objId] = temp_v0_2(sp30);
-            } else {
-                sp44 = var_f0;
-                var_v1 = omCurrentObj;
-                D_800E8920[var_v1->objId] = func_80109DD8(sp30);
-            }
-            if (D_800E8920[var_v1->objId] == 0) {
-                var_v1 = omCurrentObj;
-                D_800E8920[var_v1->objId] = func_8010D668(sp30, var_f0, D_800E8920);
-                if (sp34->unk88->unk1C == 2) {
-                    temp_v0_3 = &gEntitiesAngleZArray[var_v1->objId];
-                    var_f0_2 = *temp_v0_3;
-                    if (var_f0_2 >= 6.2831855f) {
-                        *temp_v0_3 = var_f0_2 - 6.2831855f;
-                        var_at = &gEntitiesAngleZArray[var_v1->objId];
-                        goto block_25;
-                    }
-                    if (var_f0_2 < 0.0f) {
-                        *temp_v0_3 = var_f0_2 + 6.2831855f;
-                        var_at = &gEntitiesAngleZArray[var_v1->objId];
-block_25:
-                        var_f0_2 = *var_at;
-                    }
-                    if ((var_f0_2 > 1.553343f) && (var_f0_2 < 1.5882497f)) {
-                        func_8010CE44(sp30, 0x41C80000, D_800E8920);
-                        goto block_35;
-                    }
-                    if ((var_f0_2 > 3.1241393f) && (var_f0_2 < 3.1590462f)) {
-                        func_8010D42C(sp30, 0x41C80000, D_800E8920);
-                        goto block_35;
-                    }
-                    if ((var_f0_2 > 4.694936f) && (var_f0_2 < 4.7298427f)) {
-                        func_8010D138(sp30, 0x41C80000, D_800E8920);
-block_35:
-                        var_v1 = omCurrentObj;
-                    }
+        break;
+    }
+    if (slot != NULL) {
+        func_80105180(slot);
+    } else {
+        slot = func_8010DCAC();
+        rec->unk84 = slot;
+    }
+    func_801A2ADC_ovl7(arg0);
+    if ((((u8 *) rec->unk88)[0x1C] != 0) && (D_800E8E60[omCurrentObj->objId] == 0)) {
+        func_801051DC(slot);
+        if (rec->unk48 != NULL) {
+            D_800E8920[omCurrentObj->objId] = rec->unk48(slot);
+        } else {
+            D_800E8920[omCurrentObj->objId] = func_80109DD8(slot);
+        }
+        if (D_800E8920[omCurrentObj->objId] == 0) {
+            D_800E8920[omCurrentObj->objId] = func_8010D668(slot, reach);
+            if (((u8 *) rec->unk88)[0x1C] == 2) {
+                if (gEntitiesAngleZArray[omCurrentObj->objId] >= 6.2831855f) {
+                    gEntitiesAngleZArray[omCurrentObj->objId] -= 6.2831855f;
+                } else if (gEntitiesAngleZArray[omCurrentObj->objId] < 0.0f) {
+                    gEntitiesAngleZArray[omCurrentObj->objId] += 6.2831855f;
+                }
+                if ((gEntitiesAngleZArray[omCurrentObj->objId] > 1.553343f) &&
+                    (gEntitiesAngleZArray[omCurrentObj->objId] < 1.5882497f)) {
+                    func_8010CE44(slot, 25.0f);
+                } else if ((gEntitiesAngleZArray[omCurrentObj->objId] > 3.1241393f) &&
+                           (gEntitiesAngleZArray[omCurrentObj->objId] < 3.1590462f)) {
+                    func_8010D42C(slot, 25.0f);
+                } else if ((gEntitiesAngleZArray[omCurrentObj->objId] > 4.694936f) &&
+                           (gEntitiesAngleZArray[omCurrentObj->objId] < 4.7298427f)) {
+                    func_8010D138(slot, 25.0f);
                 }
             }
-            temp_a3_2 = var_v1->objId;
-            var_v0 = temp_a3_2 * 4;
-            temp_f0 = sp30->unk4 - gEntitiesNextPosXArray[temp_a3_2];
-            temp_f2 = sp30->unkC - gEntitiesNextPosZArray[temp_a3_2];
-            if ((temp_f0 != 0.0f) || (temp_f2 != 0.0f)) {
-                func_800F8728(0, temp_a3_2, temp_f0, temp_f2, temp_a3_2);
-                gEntitiesNextPosXArray[omCurrentObj->objId] = sp30->unk4;
-                gEntitiesNextPosZArray[omCurrentObj->objId] = sp30->unkC;
-                var_v0 = omCurrentObj->objId * 4;
-            }
-            *(gEntitiesNextPosYArray + var_v0) = sp30->unk8;
         }
-        func_801051AC(sp30);
-        sp38 = gEntitiesNextPosXArray[omCurrentObj->objId];
-        sp3C = gEntitiesNextPosYArray[omCurrentObj->objId];
-        sp40 = gEntitiesNextPosZArray[omCurrentObj->objId];
-        temp_v0_4 = func_8010DF9C(&sp38);
-        if (temp_v0_4 != 0) {
-            if (temp_v0_4 != 1) {
-                if (temp_v0_4 != 2) {
-                    if (temp_v0_4 == 3) {
-                        if (D_8012BCE0[2]->unk4 != 0) {
-                            D_800E8AE0[omCurrentObj->objId] = 1;
-                        }
-                        goto block_46;
-                    }
-                    goto block_50;
+        dx = slot->unk4 - gEntitiesNextPosXArray[omCurrentObj->objId];
+        dz = slot->unkC - gEntitiesNextPosZArray[omCurrentObj->objId];
+        if ((dx != 0.0f) || (dz != 0.0f)) {
+            func_800F8728(omCurrentObj->objId, dx, dz);
+            gEntitiesNextPosXArray[omCurrentObj->objId] = slot->unk4;
+            gEntitiesNextPosZArray[omCurrentObj->objId] = slot->unkC;
+        }
+        gEntitiesNextPosYArray[omCurrentObj->objId] = slot->unk8;
+    }
+    func_801051AC(slot);
+    p.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    p.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    p.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    w = func_8010DF9C(&p);
+    if (w != 0) {
+        if (w != 1) {
+            if (w != 2) {
+                if (w != 3) {
+                    goto clear;
                 }
-block_46:
-                if (D_8012BCE0[1]->unk4 != 0) {
+                if (((u8 *) D_8012BCE0[2])[4] != 0) {
                     D_800E8AE0[omCurrentObj->objId] = 1;
                 }
-                goto block_48;
             }
-block_48:
-            if (D_8012BCE0[0]->unk4 != 0) {
+            if (((u8 *) D_8012BCE0[1])[4] != 0) {
                 D_800E8AE0[omCurrentObj->objId] = 1;
             }
-        } else {
-block_50:
-            D_800E8AE0[omCurrentObj->objId] = 0;
         }
+        if (((u8 *) D_8012BCE0[0])[4] != 0) {
+            D_800E8AE0[omCurrentObj->objId] = 1;
+        }
+        return;
     }
+clear:
+    D_800E8AE0[omCurrentObj->objId] = 0;
 }
-#elif defined(PORT)
+#else
 /* Per-frame enemy collision driver (draft above, completed): ensure the
  * entity has a collision slot, pick the fall probe depth by movement kind
  * (25.0 for walkers, 0 for flyers/fixed), run the mover, then when the
@@ -1122,8 +1078,6 @@ void func_801A2558_ovl7(s32 arg0) {
         D_800E8AE0[omCurrentObj->objId] = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2558_ovl7.s")
 #endif
 
 #ifdef NON_MATCHING
@@ -1174,6 +1128,7 @@ s32 func_801A2C78_ovl7(f32 arg0) {
     u32 water;
     f32 dx;
     f32 dz;
+    s32 w;
 
     rec = D_800E1B50[omCurrentObj->objId];
     newp.x = gEntitiesNextPosXArray[omCurrentObj->objId];
@@ -1385,54 +1340,43 @@ void func_801A32EC(struct Ovl7TrackParams *arg0) {
     func_801051AC(&D_801CE6D0_ovl7);
 }
 
-#ifdef MIPS_TO_C
-
-void func_801A33B8(void *arg0) {
-    f32 temp_f0;
-    f32 temp_f2;
-    s32 *var_at;
-    s32 var_v0;
-    s32 var_v0_2;
-    u32 temp_a0;
+#ifndef PORT /* WIP iterating, re-guard at exit */
+void func_801A33B8(struct Ovl7TrackParams *arg0) {
+    s32 func_80109F60(struct Sub800E1B50_Unk84 *);
+    s32 func_8010B238(struct Sub800E1B50_Unk84 *);
+    void func_80105238(struct Sub800E1B50_Unk84 *, void *);
+    void func_800F8728(s32, f32, f32);
+    f32 dx;
+    f32 dz;
 
     D_801CE6D0_ovl7.unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
     D_801CE6D0_ovl7.unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
     D_801CE6D0_ovl7.unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
-    D_801CE6E0_ovl7.unk0 = arg0->unk0;
-    D_801CE6E0_ovl7.unk4 = arg0->unk4;
-    D_801CE6E0_ovl7.unk8 = arg0->unk8;
-    D_801CE6E0_ovl7.unkC = arg0->unkC;
-    D_801CE6E0_ovl7.unk10 = arg0->unk10;
+    D_801CE6E0_ovl7 = *arg0;
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        D_801CE6D0_ovl7.unk1C = arg0->unkC;
+        D_801CE6D0_ovl7.unk1C = *(f32 *) &arg0->unkC;
     } else {
-        D_801CE6D0_ovl7.unk1C = arg0->unk10;
+        D_801CE6D0_ovl7.unk1C = *(f32 *) &arg0->unk10;
     }
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        D_801CE6D0_ovl7.unk20 = arg0->unk10;
+        D_801CE6D0_ovl7.unk20 = *(f32 *) &arg0->unk10;
     } else {
-        D_801CE6D0_ovl7.unk20 = arg0->unkC;
+        D_801CE6D0_ovl7.unk20 = *(f32 *) &arg0->unkC;
     }
     D_801CE6D0_ovl7.unk24 = D_800E17D0[omCurrentObj->objId];
     if (D_800E8920[omCurrentObj->objId] == 0) {
-        var_v0 = func_80109F60(&D_801CE6D0_ovl7);
-        var_at = &D_800E8920[omCurrentObj->objId];
+        D_800E8920[omCurrentObj->objId] = func_80109F60(&D_801CE6D0_ovl7);
     } else {
-        var_v0 = func_8010B238(&D_801CE6D0_ovl7);
-        var_at = &D_800E8920[omCurrentObj->objId];
+        D_800E8920[omCurrentObj->objId] = func_8010B238(&D_801CE6D0_ovl7);
     }
-    *var_at = var_v0;
-    temp_a0 = omCurrentObj->objId;
-    var_v0_2 = temp_a0 * 4;
-    temp_f0 = D_801CE6D0_ovl7.unk4 - gEntitiesNextPosXArray[temp_a0];
-    temp_f2 = D_801CE6D0_ovl7.unkC - gEntitiesNextPosZArray[temp_a0];
-    if ((temp_f0 != 0.0f) || (temp_f2 != 0.0f)) {
-        func_800F8728(0, temp_a0, temp_f0, temp_f2);
+    dx = D_801CE6D0_ovl7.unk4 - gEntitiesNextPosXArray[omCurrentObj->objId];
+    dz = D_801CE6D0_ovl7.unkC - gEntitiesNextPosZArray[omCurrentObj->objId];
+    if ((dx != 0.0f) || (dz != 0.0f)) {
+        func_800F8728(omCurrentObj->objId, dx, dz);
         gEntitiesNextPosXArray[omCurrentObj->objId] = D_801CE6D0_ovl7.unk4;
         gEntitiesNextPosZArray[omCurrentObj->objId] = D_801CE6D0_ovl7.unkC;
-        var_v0_2 = omCurrentObj->objId * 4;
     }
-    *(gEntitiesNextPosYArray + var_v0_2) = D_801CE6D0_ovl7.unk8;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_801CE6D0_ovl7.unk8;
     func_80105238(&D_801CE6D0_ovl7, &D_8012BCA0);
 }
 #elif defined(PORT)

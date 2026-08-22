@@ -837,75 +837,85 @@ void func_800A8EC0(u32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 76/114. Frame (0x38), prologue order, all three MRU blocks,
+ * both descending loops and the whole call tail match; the residue is which
+ * register receives the first `lui` -- the ROM builds the scan pointer in
+ * $v0 and zeroes the counter into $v1, IDO does the reverse -- and the
+ * cascade of temp names that follows. Measured, and worth recording: the ROM
+ * materializes &D_800D6E78 TWICE (once for the scan loop, once for the two
+ * shift blocks). Writing the scan pointer as `&D_800D6E78` lets IDO CSE the
+ * two into one hoisted base ABOVE the frame setup and costs 35 diffs;
+ * spelling it `&D_800D6E7C - 1` (the same address, different symbol) keeps
+ * them apart -- 111 -> 92 -- and dropping the shared `ids` local for direct
+ * `(&D_800D6E78)[...]` subscripts took it to 76 and fixed the frame.
+ * Solved semantics: 3-entry MRU over D_800D6E78; on a hit the entries above
+ * the hit shift down, on a miss the oldest is released with
+ * func_800A8D64(ids[2], 3) and the list shifts up; the bank then loads
+ * through the D_800D00C4 cache into gSegment4StartArray, and the sound bank
+ * id is the HALFWORD at data+0xA (lhu), not a widened word. */
 void func_800A9088(u32 arg0) {
-    u32 **sp20;
-    u32 *sp1C;
-    GObj *temp_v1;
-    s32 *var_v0_3;
-    s32 temp_t2;
-    s32 var_a1;
-    s32 var_v0_2;
-    s32 var_v1;
-    s32 var_v1_2;
-    u32 **temp_a2;
-    u32 *temp_a0;
-    u32 *temp_t1;
-    u32 *temp_v0;
-    u32 *var_v0;
+    u32 *func_800A9250(u32, s32);
+    void func_800A9D64(s32);
+    void func_800A99E4(s32);
+    void func_800A9A2C(s32);
+    void *func_800A9648(u32 *);
+    u32 **slot;
+    u32 *data;
+    s32 k;
+    s32 i;
+    u32 *p;
+    u32 tmp;
+    s32 dst;
+    GObj *obj;
 
-    var_a1 = -1;
-    var_v0 = &D_800D6E78;
-    var_v1 = 0;
+    k = -1;
+    p = &D_800D6E7C - 1;
+    i = 0;
     do {
-        if (arg0 == *var_v0) {
-            var_a1 = var_v1;
+        if (arg0 == *p) {
+            k = i;
         }
-        var_v1 += 1;
-        var_v0 += 4;
-    } while (var_v1 < 3);
-    if (var_a1 != -1) {
-        var_v0_2 = 2;
-        var_v1_2 = 2;
+        i += 1;
+        p += 1;
+    } while (i < 3);
+    if (k != -1) {
+        dst = 2;
+        i = 2;
         do {
-            if (var_a1 != var_v1_2) {
-                temp_t1 = &(&D_800D6E78)[var_v0_2];
-                var_v0_2 -= 1;
-                *temp_t1 = (&D_800D6E78)[var_v1_2];
+            if (k != i) {
+                (&D_800D6E78)[dst] = (&D_800D6E78)[i];
+                dst -= 1;
             }
-            var_v1_2 -= 1;
-        } while (var_v1_2 >= 0);
+            i -= 1;
+        } while (i >= 0);
     } else {
-        if (D_800D6E78.unk8 != 0) {
-            func_800A8D64(D_800D6E78.unk8, 3, &D_800D6E78, arg0);
+        if ((&D_800D6E78)[2] != 0) {
+            func_800A8D64((&D_800D6E78)[2], 3);
         }
-        var_v0_3 = &D_800D6E7C;
+        p = &D_800D6E7C;
         do {
-            temp_t2 = *var_v0_3;
-            var_v0_3 -= 4;
-            var_v0_3->unk8 = temp_t2;
-        } while (var_v0_3 >= &D_800D6E78);
+            tmp = *p;
+            p -= 1;
+            p[2] = tmp;
+        } while (p >= &D_800D6E78);
     }
-    D_800D6E78.unk0 = arg0;
-    temp_v1 = omCurrentObj;
-    D_800E02D0[temp_v1->objId] = arg0;
-    temp_a2 = *(&D_800D00C4 + ((arg0 >> 0x10) * 4)) + ((arg0 & 0xFFFF) * 4);
-    temp_a0 = *temp_a2;
-    if (temp_a0 != NULL) {
-        sp1C = temp_a0;
-        gSegment4StartArray[temp_v1->objId] = temp_a0;
+    (&D_800D6E78)[0] = arg0;
+    obj = omCurrentObj;
+    D_800E02D0[obj->objId] = arg0;
+    slot = D_800D00C4[arg0 >> 0x10] + (arg0 & 0xFFFF);
+    if (*slot != NULL) {
+        data = *slot;
+        gSegment4StartArray[obj->objId] = data;
     } else {
-        sp20 = temp_a2;
-        temp_v0 = func_800A9250(arg0, 3, temp_a2, arg0);
-        *temp_a2 = temp_v0;
-        sp1C = temp_v0;
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0;
+        data = func_800A9250(arg0, 3);
+        *slot = data;
+        gSegment4StartArray[omCurrentObj->objId] = data;
     }
-    func_800A9D64(temp_v1->objId);
-    func_800AF9B8(sp1C->unkA, 0x10);
+    func_800A9D64(obj->objId);
+    func_800AF9B8(*(u16 *) ((u8 *) data + 0xA), 0x10);
     func_800A99E4(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
-    func_800A9648(sp1C);
+    func_800A9648(data);
 }
 #elif defined(PORT)
 /* Bind animation bank arg0 with a 3-slot MRU (draft above, asm-verified):
@@ -970,161 +980,164 @@ void func_800A9088(u32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
+/* FACTORY: DIFF 132/169, all of it downstream of ONE extra callee-saved
+ * register. The ROM runs on s0-s5 (frame 0x30); IDO needs s0-s6 (frame 0x38)
+ * for the same values, so every save, every restore and every temp name
+ * lands one register off even though the four nested relocation loops, the
+ * two func_800A8BAC fix-ups, the 0x99999999 terminator tests, the tail
+ * switch and the return path are instruction-for-instruction the ROM's.
+ * Measured on the way down: sinking the 0xFFFFFF / 0x99999999 constants to
+ * their first use was worth 23 (155 -> 132); splitting the entry index as
+ * `idx = (arg0 & 0xFFFF) * 2; table + idx` reproduces the ROM's
+ * `sll 1` + `sll 2` pair instead of a single `sll 3`; reusing the dead
+ * `size` local to hold the terminator and dropping the `layout` local did
+ * not free the seventh register. Solved semantics, all N64: geoBlockTable
+ * entries are PAIRS (stride 8 bytes = idx*2 words), every relocated field is
+ * `(word & 0xFFFFFF) + blk` IN PLACE -- offsets +0x0 (layout), +0x4 (the
+ * three-level texScroll walk), +0xC (imgRefs), +0x18 (guarded by +0x14) --
+ * the image references are re-resolved through func_800A8BAC, the inner
+ * lists terminate on 0x99999999, and the layoutMode switch at +0x8 walks the
+ * 0x2C-byte layout records (q[11], stride 0x2C) fixing q[1] for modes 0x18
+ * and 0x1A-0x1E only, with the same empty 0x1F / 0x3E7 arms the sibling
+ * func_800A9648 needs to reproduce the 15-entry jump table. */
+u32 *func_800A9250(u32 arg0, s32 arg1) {
+    s32 idx;
+    u32 *entry;
+    s32 size;
+    u8 *blk;
+    s32 mask;
+    s32 *p;
+    s32 *q;
+    s32 *r;
+    s32 *t;
+    s32 *layout;
+    s32 v;
+    s32 w;
+    s32 x;
 
-void *func_800A9250(u32 arg0, s32 arg1) {
-    s32 *temp_a0;
-    s32 *temp_s2_2;
-    s32 *var_s0_3;
-    s32 *var_s0_4;
-    s32 *var_s2;
-    s32 *var_s5;
-    s32 *var_s5_2;
-    s32 *var_v0_4;
-    s32 temp_a2;
-    s32 temp_s0_2;
-    s32 temp_s0_3;
-    s32 temp_s1;
-    s32 temp_s5;
-    s32 temp_s5_2;
-    s32 temp_t1;
-    s32 temp_t4;
-    s32 temp_t9_2;
-    s32 temp_v0_2;
-    s32 var_a0;
-    s32 var_a0_2;
-    s32 var_a0_3;
-    s32 var_s0;
-    s32 var_s0_2;
-    s32 var_v0;
-    s32 var_v0_2;
-    s32 var_v0_3;
-    s32 var_v1;
-    u32 temp_v0_3;
-    void *temp_s0;
-    void *temp_s2;
-    void *temp_t9;
-    void *temp_v0;
-    void *temp_v1;
-
-    temp_a2 = (arg0 & 0xFFFF) * 2;
-    temp_s0 = **(&D_800D0184 + ((arg0 >> 0x10) * 4)) + (temp_a2 * 4);
-    temp_s1 = (temp_s0->unk4 - temp_s0->unk0) | arg1;
-    temp_v0 = func_800A8358(temp_s1, temp_a2);
-    dma_read(temp_s0->unk0, temp_v0, temp_s1 & 0xFFFFFC);
-    temp_s5 = temp_v0->unkC & 0xFFFFFF;
-    var_s5 = temp_s5 + temp_v0;
-    if (temp_s5 != 0) {
-        temp_v0->unkC = var_s5;
-        var_s0 = *var_s5;
-        if (var_s0 != 0) {
+    idx = (arg0 & 0xFFFF) * 2;
+    entry = D_800D0184[arg0 >> 0x10]->geoBlockTable + idx;
+    size = (entry[1] - entry[0]) | arg1;
+    blk = (u8 *) func_800A8358(size);
+    dma_read(entry[0], blk, size & 0xFFFFFC);
+    mask = 0xFFFFFF;
+    v = *(s32 *) (blk + 0xC) & mask;
+    p = (s32 *) (v + (s32) blk);
+    if (v != 0) {
+        *(s32 *) (blk + 0xC) = (s32) p;
+        v = *p;
+        if (v != 0) {
             do {
-                temp_s2 = (var_s0 & 0xFFFFFF) + temp_v0;
-                temp_s2_2 = temp_s2 + 4;
-                var_s5->unk0 = temp_s2->unk4;
-                *temp_s2_2 = func_800A8BAC(*temp_s2_2);
-                var_s0 = var_s5->unk4;
-                var_s5 += 4;
-            } while (var_s0 != 0);
+                q = (s32 *) ((v & mask) + (s32) blk);
+                *p = q[1];
+                q += 1;
+                *q = (s32) func_800A8BAC(*q);
+                v = p[1];
+                p += 1;
+            } while (v != 0);
         }
     }
-    temp_s5_2 = temp_v0->unk4 & 0xFFFFFF;
-    var_s5_2 = temp_s5_2 + temp_v0;
-    if (temp_s5_2 != 0) {
-        temp_v0->unk4 = var_s5_2;
-        var_s0_2 = *var_s5_2;
-        var_a0 = var_s0_2;
-        if (var_s0_2 != 0x99999999) {
+    v = *(s32 *) (blk + 4) & mask;
+    p = (s32 *) (v + (s32) blk);
+    if (v != 0) {
+        *(s32 *) (blk + 4) = (s32) p;
+        v = *p;
+        size = 0x99999999;
+        if (v != size) {
             do {
-                if (var_s0_2 != 0) {
-                    var_s2 = (var_a0 & 0xFFFFFF) + temp_v0;
-                    var_s5_2->unk0 = var_s2;
-                    var_v1 = *var_s2;
-                    var_v0 = var_v1;
-                    if (var_v1 != 0x99999999) {
+                if (v != 0) {
+                    q = (s32 *) ((v & mask) + (s32) blk);
+                    *p = (s32) q;
+                    w = *q;
+                    if (w != size) {
                         do {
-                            if (var_v1 != 0) {
-                                temp_t9 = (var_v0 & 0xFFFFFF) + temp_v0;
-                                var_s2->unk0 = temp_t9;
-                                temp_s0_2 = temp_t9->unk4 & 0xFFFFFF;
-                                var_s0_3 = temp_s0_2 + temp_v0;
-                                if (temp_s0_2 != 0) {
-                                    temp_t9->unk4 = var_s0_3;
-                                    var_v0_2 = *var_s0_3;
-                                    var_a0_2 = var_v0_2;
-                                    if (var_v0_2 != 0x99999999) {
+                            if (w != 0) {
+                                r = (s32 *) ((w & mask) + (s32) blk);
+                                *q = (s32) r;
+                                x = r[1] & mask;
+                                t = (s32 *) (x + (s32) blk);
+                                if (x != 0) {
+                                    r[1] = (s32) t;
+                                    x = *t;
+                                    if (x != size) {
                                         do {
-                                            if (var_v0_2 != 0) {
-                                                var_s0_3->unk0 = func_800A8BAC(var_a0_2);
+                                            if (x != 0) {
+                                                *t = (s32) func_800A8BAC(x);
                                             }
-                                            var_v0_2 = var_s0_3->unk4;
-                                            var_s0_3 += 4;
-                                            var_a0_2 = var_v0_2;
-                                        } while (var_v0_2 != 0x99999999);
+                                            x = t[1];
+                                            t += 1;
+                                        } while (x != size);
                                     }
                                 }
-                                temp_v1 = var_s2->unk0;
-                                temp_s0_3 = temp_v1->unk2C & 0xFFFFFF;
-                                var_s0_4 = temp_s0_3 + temp_v0;
-                                if (temp_s0_3 != 0) {
-                                    temp_v1->unk2C = var_s0_4;
-                                    var_v0_3 = *var_s0_4;
-                                    var_a0_3 = var_v0_3;
-                                    if (var_v0_3 != 0x99999999) {
+                                r = (s32 *) *q;
+                                x = r[11] & mask;
+                                t = (s32 *) (x + (s32) blk);
+                                if (x != 0) {
+                                    r[11] = (s32) t;
+                                    x = *t;
+                                    if (x != size) {
                                         do {
-                                            if (var_v0_3 != 0) {
-                                                var_s0_4->unk0 = func_800A8BAC(var_a0_3);
+                                            if (x != 0) {
+                                                *t = (s32) func_800A8BAC(x);
                                             }
-                                            var_v0_3 = var_s0_4->unk4;
-                                            var_s0_4 += 4;
-                                            var_a0_3 = var_v0_3;
-                                        } while (var_v0_3 != 0x99999999);
+                                            x = t[1];
+                                            t += 1;
+                                        } while (x != size);
                                     }
                                 }
                             }
-                            var_v1 = var_s2->unk4;
-                            var_s2 += 4;
-                            var_v0 = var_v1;
-                        } while (var_v1 != 0x99999999);
+                            w = q[1];
+                            q += 1;
+                        } while (w != size);
                     }
                 }
-                var_s0_2 = var_s5_2->unk4;
-                var_s5_2 += 4;
-                var_a0 = var_s0_2;
-            } while (var_s0_2 != 0x99999999);
+                v = p[1];
+                p += 1;
+            } while (v != size);
         }
     }
-    temp_a0 = temp_v0 + (temp_v0->unk0 & 0xFFFFFF);
-    temp_v0->unk0 = temp_a0;
-    if (temp_v0->unk14 != 0) {
-        temp_v0_2 = temp_v0->unk18;
-        if (temp_v0_2 != 0) {
-            temp_v0->unk18 = temp_v0 + (temp_v0_2 & 0xFFFFFF);
+    q = (s32 *) ((s32) blk + (*(s32 *) blk & mask));
+    *(s32 *) blk = (s32) q;
+    if (*(s32 *) (blk + 0x14) != 0) {
+        v = *(s32 *) (blk + 0x18);
+        if (v != 0) {
+            *(s32 *) (blk + 0x18) = (s32) blk + (v & mask);
         }
     }
-    temp_v0_3 = temp_v0->unk8;
-    switch (temp_v0_3) {                            /* irregular */
-        case 0x18:
-        case 0x1A:
-        case 0x1B:
-        case 0x1C:
-        case 0x1D:
-        case 0x1E:
-            var_v0_4 = temp_a0;
-            if (*temp_a0 != 0x12) {
-                do {
-                    temp_t9_2 = var_v0_4->unk4;
-                    temp_t1 = temp_t9_2 & 0xFFFFFF;
-                    if (temp_t9_2 != 0) {
-                        var_v0_4->unk4 = temp_t1;
-                        var_v0_4->unk4 = temp_t1 + temp_v0;
-                    }
-                    temp_t4 = var_v0_4->unk2C;
-                    var_v0_4 += 0x2C;
-                } while (temp_t4 != 0x12);
-            }
-            break;
+    switch (*(u32 *) (blk + 8)) {
+    case 0x18:
+    case 0x1A:
+    case 0x1B:
+    case 0x1C:
+    case 0x1D:
+    case 0x1E:
+        layout = q;
+        if (*layout != 0x12) {
+            do {
+                v = layout[1];
+                if (v != 0) {
+                    layout[1] = v & mask;
+                    layout[1] = (v & mask) + (s32) blk;
+                }
+                w = layout[11];
+                layout += 11;
+            } while (w != 0x12);
+        }
+        break;
+    case 0x11:
+    case 0x12:
+    case 0x13:
+    case 0x14:
+    case 0x15:
+    case 0x16:
+    case 0x17:
+    case 0x19:
+    case 0x1F:
+        break;
+    case 0x3E7:
+        break;
     }
-    return temp_v0;
+    return (u32 *) blk;
 }
 #elif defined(PORT)
 /* PORT: the geo/model bank entry loader + relocator, rewritten for the host
@@ -2256,79 +2269,49 @@ u32 *func_800A9250(u32 arg0, s32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 54/85. Instruction-for-instruction the same function --
+ * including IDO's automatic unroll-by-4 of the relocation loop with its
+ * `-(n & 3)` remainder pre-loop, which the plain `while (n != 0)` written
+ * here reproduces exactly. The residue is entirely (a) compiler-temp SLOT
+ * placement: the ROM spills base/entry/size/buf to 0x18/0x1C/0x2C/0x24 with
+ * gaps at 0x20 and 0x28 (frame 0x30), IDO packs them at 0x20/0x18/0x24/0x1C
+ * (frame 0x28), and (b) the one-off scratch-register numbering that follows.
+ * Pad locals do not move it (unused locals are dropped before slot
+ * assignment); reordering the declaration list moved it 57 -> 54. Modelled
+ * on the MATCHED clone func_800A8CE0 above, which needed two pads for the
+ * same 0x30 frame -- the difference here is that this function's four spills
+ * are compiler temps, not user locals. Solved semantics: bank entry is
+ * D_800D0184[arg0 >> 16]->animBlockTable[arg0 & 0xFFFF] with N64 stride 4
+ * (NOT the PORT arm's widened 8), the DMA source is entry[0] + animROMOffset,
+ * size is (entry[1] - entry[0]) | 2 masked with 0xFFFFFC for the transfer,
+ * and the relocation is IN PLACE: buf[0] += buf, then for each of buf[2]
+ * entries starting at buf+0xC, *p += buf and **p += buf. */
 void *func_800A94F4(s32 arg0) {
-    s32 sp2C;
-    void *sp24;
-    void *sp1C;
-    s32 sp18;
-    s32 *var_v0;
-    s32 temp_a0;
-    s32 temp_a1;
-    s32 temp_a1_2;
-    s32 temp_t0;
-    s32 temp_t6;
-    s32 temp_v1_2;
-    s32 var_a0;
-    void **temp_t1;
-    void **temp_t3;
-    void **temp_t5;
-    void **temp_t7;
-    void **temp_t9;
-    void *temp_v0;
-    void *temp_v0_2;
-    void *temp_v1;
+    s32 size;
+    void *buf;
+    u32 *entry;
+    s32 base;
+    s32 *p;
+    s32 n;
+    s32 *q;
 
-    temp_v0 = *(&D_800D0184 + ((arg0 >> 0x10) * 4));
-    temp_a1 = arg0 & 0xFFFF;
-    temp_v1 = temp_v0->unk10 + (temp_a1 * 4);
-    sp18 = temp_v0->unk14;
-    sp1C = temp_v1;
-    temp_a0 = (temp_v1->unk4 - temp_v1->unk0) | 2;
-    sp2C = temp_a0;
-    temp_v0_2 = func_800A8358(temp_a0, temp_a1);
-    sp24 = temp_v0_2;
-    dma_read(temp_v1->unk0 + sp18, temp_v0_2, sp2C & 0xFFFFFC);
-    var_a0 = sp24->unk8;
-    var_v0 = sp24 + 0xC;
-    sp24->unk0 = sp24->unk0 + sp24;
-    if (var_a0 != 0) {
-        temp_v1_2 = -(var_a0 & 3);
-        temp_a1_2 = temp_v1_2 + var_a0;
-        if (temp_v1_2 != 0) {
-            do {
-                temp_t6 = *var_v0;
-                var_a0 -= 1;
-                var_v0 += 4;
-                temp_t7 = temp_t6 + sp24;
-                var_v0->unk-4 = temp_t7;
-                *temp_t7 += sp24;
-            } while (temp_a1_2 != var_a0);
-            if (var_a0 != 0) {
-                goto loop_4;
-            }
-        } else {
-            do {
-loop_4:
-                temp_t0 = *var_v0;
-                var_a0 -= 4;
-                var_v0 += 0x10;
-                temp_t1 = temp_t0 + sp24;
-                var_v0->unk-10 = temp_t1;
-                *temp_t1 += sp24;
-                temp_t5 = var_v0->unk-C + sp24;
-                var_v0->unk-C = temp_t5;
-                *temp_t5 += sp24;
-                temp_t9 = var_v0->unk-8 + sp24;
-                var_v0->unk-8 = temp_t9;
-                *temp_t9 += sp24;
-                temp_t3 = var_v0->unk-4 + sp24;
-                var_v0->unk-4 = temp_t3;
-                *temp_t3 += sp24;
-            } while (var_a0 != 0);
-        }
+    entry = D_800D0184[arg0 >> 16]->animBlockTable;
+    base = (s32) D_800D0184[arg0 >> 16]->animROMOffset;
+    entry += arg0 & 0xFFFF;
+    size = (entry[1] - entry[0]) | 2;
+    buf = (void *) func_800A8358(size);
+    dma_read(entry[0] + base, buf, size & 0xFFFFFC);
+    n = ((s32 *) buf)[2];
+    p = (s32 *) buf + 3;
+    ((s32 *) buf)[0] = ((s32 *) buf)[0] + (s32) buf;
+    while (n != 0) {
+        q = (s32 *) (*p + (s32) buf);
+        *p = (s32) q;
+        *q = *q + (s32) buf;
+        p++;
+        n--;
     }
-    return sp24;
+    return buf;
 }
 #elif defined(PORT)
 /* PORT: the ANIM BLOCK loader/relocator, written from
@@ -2453,44 +2436,60 @@ u32 *func_800A94F4(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
+/* FACTORY: DIFF 69/70, but the switch itself is EXACT and that was the whole
+ * puzzle: the ROM's dispatch is `sltiu 0x20` / `beq 0x3E7` in front of a
+ * 15-entry jump table at 0x11, which only appears if the switch also carries
+ * an EMPTY `case 0x1F` and an EMPTY `case 0x3E7` -- without those two arms
+ * IDO emits a 14-entry table and no 0x3E7 test (that was 67/70 -> the right
+ * shape). Remaining residue: the ROM parks arg0 in $s0 across the call
+ * (frame 0x20, `sw s0`/`or s0,a0`), IDO instead moves it to $a3 and spills
+ * that around the jal (frame 0x18), which shifts every later instruction one
+ * slot. Unmoved by a local pointer copy, by early returns from each arm, or
+ * by using the copy in the switch expression. Solved semantics: layout is
+ * arg0[0] -> D_800DFA10[objId], texScroll is arg0[1] -> D_800DFD90[objId],
+ * both handed with D_800DFBD0[objId] to func_800AF618 (modes 0x11-0x16) or
+ * func_800AF4BC (0x17-0x1E), and the function returns arg0. */
+void *func_800A9648(u32 *arg0) {
+    void func_800AF4BC(u32, u32, void *);
+    void func_800AF618(u32, u32, void *);
+    u32 *p;
+    u32 layout;
+    u32 texScroll;
 
-void *func_800A9648(void *arg0) {
-    s32 temp_a0;
-    s32 temp_a1_2;
-    s32 temp_a3;
-    s32 temp_a3_2;
-    u32 temp_a1;
-
-    temp_a1 = arg0->unk8;
-    switch (temp_a1) {                              /* irregular */
-        case 0x11:
-        case 0x12:
-        case 0x13:
-        case 0x14:
-        case 0x15:
-        case 0x16:
-            temp_a0 = arg0->unk0;
-            *(&D_800DFA10 + (omCurrentObj->objId * 4)) = temp_a0;
-            temp_a3 = arg0->unk4;
-            *(&D_800DFD90 + (omCurrentObj->objId * 4)) = temp_a3;
-            func_800AF618(temp_a0, temp_a3, D_800DFBD0[omCurrentObj->objId], temp_a3);
-            break;
-        case 0x17:
-        case 0x18:
-        case 0x19:
-        case 0x1A:
-        case 0x1B:
-        case 0x1C:
-        case 0x1D:
-        case 0x1E:
-            temp_a3_2 = arg0->unk0;
-            *(&D_800DFA10 + (omCurrentObj->objId * 4)) = temp_a3_2;
-            temp_a1_2 = arg0->unk4;
-            *(&D_800DFD90 + (omCurrentObj->objId * 4)) = temp_a1_2;
-            func_800AF4BC(temp_a3_2, temp_a1_2, D_800DFBD0[omCurrentObj->objId], temp_a3_2);
-            break;
+    p = arg0;
+    switch (p[2]) {
+    case 0x11:
+    case 0x12:
+    case 0x13:
+    case 0x14:
+    case 0x15:
+    case 0x16:
+        layout = p[0];
+        D_800DFA10[omCurrentObj->objId] = layout;
+        texScroll = p[1];
+        D_800DFD90[omCurrentObj->objId] = (u32 *) texScroll;
+        func_800AF618(layout, texScroll, D_800DFBD0[omCurrentObj->objId]);
+        break;
+    case 0x17:
+    case 0x18:
+    case 0x19:
+    case 0x1A:
+    case 0x1B:
+    case 0x1C:
+    case 0x1D:
+    case 0x1E:
+        layout = p[0];
+        D_800DFA10[omCurrentObj->objId] = layout;
+        texScroll = p[1];
+        D_800DFD90[omCurrentObj->objId] = (u32 *) texScroll;
+        func_800AF4BC(layout, texScroll, D_800DFBD0[omCurrentObj->objId]);
+        break;
+    case 0x1F:
+        break;
+    case 0x3E7:
+        break;
     }
-    return arg0;
+    return p;
 }
 #elif defined(PORT)
 /* PORT: still assembly on the matching build; the m2c sketch above is not
@@ -2550,49 +2549,54 @@ void func_800A9760(u32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-
-void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
-    u32 *sp1C;
-    u32 **sp18;
-    f32 var_f16;
-    f32 var_f6;
-    u32 **temp_a3;
-    u32 *temp_t0;
-    u32 *temp_v0;
+/* FACTORY: DIFF 35/96, register naming only. The frame (0x20, no saved
+ * registers), both parameter homes at 0x24/0x28, the ptr/slot spills at
+ * 0x1C/0x18 and the whole sentinel sequence match; what is left is that the
+ * ROM keeps the slot pointer in $a3 and the cached value in $t0 while IDO
+ * swaps the two, plus the one-slot scheduling that follows. Measured, and
+ * the big lever here: writing the hit arm as `ptr = *slot;` BEFORE the
+ * gSegment4StartArray store puts ptr in a callee-saved register (frame 0x28,
+ * 80/96); storing to gSegment4StartArray first and assigning ptr second
+ * reproduces the ROM's stack home -- 80 -> 35. Introducing a named local for
+ * the tested value costs 18 (53/96); the ROM's test value and the call's
+ * operand are two separate loads of *slot. Solved semantics: arg1/arg2 are
+ * u32 and the 99999 sentinel is compared AS A FLOAT (`arg1 == 99999.0f`,
+ * which is what emits the mtc1/cvt.s.w/bgez unsigned-conversion sequence
+ * against the D_800D5DD8 literal), the arg1 default is ptr[2] and arg2's is
+ * 0x10, and func_800AF9B8 takes (u16, u8) -- hence the lhu 0x26/lbu 0x2B
+ * reads out of the parameter homes. */
+void func_800A9864(u32 arg0, u32 arg1, u32 arg2) {
+    u32 *func_800A9250(u32, s32);
+    void func_800A99E4(s32);
+    void func_800A9A2C(s32);
+    void func_800A9D64(s32);
+    void *func_800A9648(u32 *);
+    void func_800AF9B8(u16, u8);
+    u32 *ptr;
+    u32 **slot;
 
     D_800E02D0[omCurrentObj->objId] = arg0;
-    temp_a3 = *(&D_800D00C4 + ((arg0 >> 0x10) * 4)) + ((arg0 & 0xFFFF) * 4);
-    temp_t0 = *temp_a3;
-    if (temp_t0 != NULL) {
-        sp1C = temp_t0;
-        gSegment4StartArray[omCurrentObj->objId] = temp_t0;
-        func_800A8564(*temp_a3, 1, temp_a3);
+    slot = D_800D00C4[arg0 >> 0x10] + (arg0 & 0xFFFF);
+    if (*slot != NULL) {
+        gSegment4StartArray[omCurrentObj->objId] = *slot;
+        ptr = *slot;
+        func_800A8564((struct CacheLine *) *slot, 1);
     } else {
-        sp18 = temp_a3;
-        temp_v0 = func_800A9250(3, temp_a3);
-        *temp_a3 = temp_v0;
-        sp1C = temp_v0;
-        gSegment4StartArray[omCurrentObj->objId] = temp_v0;
+        ptr = func_800A9250(arg0, 3);
+        *slot = ptr;
+        gSegment4StartArray[omCurrentObj->objId] = ptr;
     }
     func_800A9D64(omCurrentObj->objId);
-    var_f6 = arg1;
-    if (arg1 < 0) {
-        var_f6 += 4294967296.0f;
+    if (arg1 == 99999.0f) {
+        arg1 = ptr[2];
     }
-    if (var_f6 == 99999.0f) {
-        arg1 = sp1C->unk8;
-    }
-    var_f16 = arg2;
-    if (arg2 < 0) {
-        var_f16 += 4294967296.0f;
-    }
-    if (var_f16 == 99999.0f) {
+    if (arg2 == 99999.0f) {
         arg2 = 0x10;
     }
     func_800AF9B8(arg1, arg2);
     func_800A99E4(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
-    func_800A9648(sp1C);
+    func_800A9648(ptr);
 }
 #elif defined(PORT)
 /* PORT: behavioral port from the asm listing, modeled on the matched sibling
@@ -2899,30 +2903,38 @@ void func_800AA3F0(DObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-
-void func_800AA49C(s32 arg0, s32 arg1, s32 arg2, u32 arg3, f32 arg4) {
-    s32 *sp24;
-    s32 *temp_v1;
-    s32 temp_a2;
-    s32 temp_v0;
-    u32 temp_v1_2;
+/* FACTORY: DIFF 24/74, pure one-slot temp-register rotation. From the
+ * D_800D00C4 lookup onward IDO numbers every scratch register one higher
+ * than the ROM (t4/t0/t1/t5/t2 vs t5/t1/t2/t6/t3); the instruction stream,
+ * scheduling, branch shape, frame (0x28) and argument homes are identical.
+ * Measured: removing the `cached` temp, inlining the *slot test and splitting
+ * the slot computation into two statements all leave it at 24; moving the
+ * slot computation between the two stores is what took it from 26 to 24.
+ * Solved semantics: the cache slot is &D_800D00C4[id >> 16][id & 0xFFFF],
+ * func_800A8564 takes 2 args and RE-READS *slot for its first (the ROM
+ * loads 0(v1) twice), func_800A9250 takes 2 args, and the tail passes
+ * *D_800DF690[objId] and *(u32 *)D_800DFA10[objId] -- both dereferenced
+ * once, not the array cells themselves. */
+void func_800AA49C(DObj *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
+    u32 *func_800A9250(u32, s32);
+    u32 *slot;
+    u32 loaded;
+    u32 id;
 
     D_800E02D0[omCurrentObj->objId] = arg3;
-    *(&D_800DFD90 + (omCurrentObj->objId * 4)) = arg0;
-    temp_v1 = *(&D_800D00C4 + ((arg3 >> 0x10) * 4)) + ((arg3 & 0xFFFF) * 4);
-    temp_a2 = *temp_v1;
-    if (temp_a2 != 0) {
-        *(&D_800DFA10 + (omCurrentObj->objId * 4)) = temp_a2;
-        func_800A8564(*temp_v1, 1, temp_a2);
+    slot = (u32 *) (D_800D00C4[arg3 >> 0x10] + (arg3 & 0xFFFF));
+    D_800DFD90[omCurrentObj->objId] = (u32 *) arg0;
+    if (*slot != 0) {
+        D_800DFA10[omCurrentObj->objId] = *slot;
+        func_800A8564((struct CacheLine *) *slot, 1);
     } else {
-        sp24 = temp_v1;
-        temp_v0 = func_800A9250(arg3, 3, temp_a2);
-        *temp_v1 = temp_v0;
-        *(&D_800DFA10 + (omCurrentObj->objId * 4)) = temp_v0;
+        loaded = (u32) func_800A9250(arg3, 3);
+        *slot = loaded;
+        D_800DFA10[omCurrentObj->objId] = loaded;
     }
     func_800A9B48(arg1);
-    temp_v1_2 = omCurrentObj->objId;
-    func_800B1FD0(arg0, *D_800DF690[temp_v1_2], arg2, **(&D_800DFA10 + (temp_v1_2 * 4)), arg4);
+    id = omCurrentObj->objId;
+    func_800B1FD0(arg0, *D_800DF690[id].as_u32p, arg2, *(u32 *) D_800DFA10[id], arg4);
 }
 #elif defined(PORT)
 /* Bind animation bank arg3 to the current object (draft above, completed):
@@ -3051,40 +3063,51 @@ s32 func_800AA934(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-
-void func_800AA96C(s32 *arg0, u32 arg1, ? arg2, ? arg3, f32 arg4) {
-    s32 *temp_s0;
-    s32 *var_s1;
-    s32 temp_s2;
-    s32 temp_s3;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_s0;
-    u32 temp_v1_2;
+/* FACTORY: DIFF 13/116 -- one saved-register naming choice and the two
+ * instructions it drags. The ROM parks arg2 in $s2 and the &D_800DFA10 base
+ * in $s1 (then re-uses $s1 for the list walker once the base dies); IDO here
+ * picks $s1 for arg2 and $s6 for the base, so those three lui/addiu/addu and
+ * the two `or` copies read one register off. Everything else -- frame 0x68,
+ * all eight saved registers, the f20/f22/f24 assignment, the multu by 0x2C,
+ * the nine-argument call and the bnel loop tail -- is identical. Saved
+ * register permutation, the LEVERS floor. Solved semantics: stride 4 for the
+ * script table (idx * 4 + *D_800DF690[objId]) and 0x2C for the parameter
+ * records, DObj comes from D_800DFBD0[objId][idx] with objId RE-READ inside
+ * the loop, and the list is walked `idx = list[1]; list += 1;`. */
+void func_800AA96C(s32 *arg0, u32 arg1, s32 arg2, f32 arg3, f32 arg4) {
+    u32 *func_800A9250(u32, s32);
+    f32 func_8000EC98(DObj *, s32, f32, s32, s32, f32, f32, f32, f32);
+    s32 *list;
+    s32 idx;
+    s32 scripts;
+    s32 params;
+    u32 *slot;
+    u32 loaded;
+    u32 id;
 
     D_800E02D0[omCurrentObj->objId] = arg1;
-    temp_s0 = *(&D_800D00C4 + ((arg1 >> 0x10) * 4)) + ((arg1 & 0xFFFF) * 4);
-    temp_v1 = *temp_s0;
-    if (temp_v1 != 0) {
-        *(&D_800DFA10 + (omCurrentObj->objId * 4)) = temp_v1;
-        func_800A8564(*temp_s0, 1, arg1);
+    slot = (u32 *) (D_800D00C4[arg1 >> 0x10] + (arg1 & 0xFFFF));
+    if (*slot != 0) {
+        D_800DFA10[omCurrentObj->objId] = *slot;
+        func_800A8564((struct CacheLine *) *slot, 1);
     } else {
-        temp_v0 = func_800A9250(arg1, 3, arg1);
-        *temp_s0 = temp_v0;
-        *(&D_800DFA10 + (omCurrentObj->objId * 4)) = temp_v0;
+        loaded = (u32) func_800A9250(arg1, 3);
+        *slot = loaded;
+        D_800DFA10[omCurrentObj->objId] = loaded;
     }
     func_800A9B48(arg2);
-    var_s0 = *arg0;
-    temp_v1_2 = omCurrentObj->objId;
-    var_s1 = arg0;
-    temp_s2 = *D_800DF690[temp_v1_2];
-    temp_s3 = **(&D_800DFA10 + (temp_v1_2 * 4));
-    if (var_s0 != -1) {
+    id = omCurrentObj->objId;
+    list = arg0;
+    idx = *arg0;
+    scripts = *D_800DF690[id].as_u32p;
+    params = *(s32 *) D_800DFA10[id];
+    if (idx != -1) {
         do {
-            func_8000EC98(D_800DFBD0[omCurrentObj->objId][var_s0], (var_s0 * 4) + temp_s2, arg3, (var_s0 * 0x2C) + temp_s3, 0, arg4, 0.0f, 0.0f, 0.0f);
-            var_s0 = var_s1->unk4;
-            var_s1 += 4;
-        } while (var_s0 != -1);
+            func_8000EC98(D_800DFBD0[omCurrentObj->objId][idx], (idx * 4) + scripts, arg3,
+                          (idx * 0x2C) + params, 0, arg4, 0.0f, 0.0f, 0.0f);
+            idx = list[1];
+            list += 1;
+        } while (idx != -1);
     }
 }
 #elif defined(PORT)
@@ -3192,85 +3215,87 @@ void func_800AABD4(s32 *arg0, f32 arg1, f32 arg2)
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 83/143. The control flow, both loops, the branch-likely
+ * shapes and all nine saved registers match; the residue is a saved-register
+ * PERMUTATION plus one spill. The ROM caches arg2/arg0/arg1 in s0/s1/s3 and
+ * the tree cursor in s2, and hoists two loop-invariant array bases into held
+ * registers ($s7 = &D_800DFBD0, $fp = &D_800DF310), which is what lets it
+ * run with zero stack locals (frame 0x50). IDO here gives the cursor s0 and
+ * pushes the argument caches up one, does not hoist the two bases, and
+ * therefore spills one scratch register at 0x50 (frame 0x70). Measured: no
+ * effect from trimming the `off`/`cmd` temporaries (that WAS worth 116->83),
+ * from natural array indexing vs pointer arithmetic, or from reordering the
+ * declaration list. Solved semantics: texTable is *(s32 **)D_800DF850[objId]
+ * (NULL when arg2 == -1), the per-node script cell is ((s32 *)scripts)[idx]
+ * with N64 stride 4, the texture cell list walks stride 4 in lockstep with
+ * dobj->mobjList (MObj.next is at offset 0), `first` (the animCBReceiver
+ * flag) is 1 only for the first node that actually gets an animation, and
+ * the empty-anim arm writes timeRemaining = -3.4028235e38f, which the ROM
+ * loads from the rodata literal D_800D5DF0 hoisted into $f22. */
 void func_800AACC8(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
-    ? *var_s0_2;
-    s32 **var_s0;
-    s32 **var_s4;
-    s32 *temp_v0_2;
-    s32 *temp_v1;
-    s32 *var_s1;
-    s32 *var_s3;
-    s32 temp_a1;
-    s32 temp_a1_2;
-    s32 temp_s6;
-    s32 var_v0;
-    s32 var_v1;
-    s8 var_s5;
-    struct UnkStruct8004A7C4_3C *temp_v0;
-    struct UnkStruct8004A7C4_3C *var_s2;
-    void *temp_s2;
+    s32 *texTable;
+    s32 *list;
+    DObj *node;
+    DObj *dobj;
+    struct MObj *mobj;
+    s32 *cell;
+    s32 *p;
+    s32 scripts;
+    s32 anim;
+    s32 idx;
+    s8 first;
 
-    var_s2 = omCurrentObj->unk3C;
-    var_s5 = 1;
-    if (var_s2 != NULL) {
+    node = omCurrentObj->data.dobj;
+    first = 1;
+    if (node != NULL) {
         do {
-            var_s2->unk55 = 0;
-            temp_v0 = animModelTreeNextNode(var_s2);
-            var_s2 = temp_v0;
-        } while (temp_v0 != NULL);
+            node->animCBReceiver = 0;
+            node = animModelTreeNextNode(node);
+        } while (node != NULL);
     }
-    var_s4 = NULL;
+    texTable = NULL;
     if (arg2 != -1) {
         func_800A9B48(arg2);
-        var_s4 = *D_800DF850[omCurrentObj->objId];
+        texTable = *(s32 **) D_800DF850[omCurrentObj->objId];
     }
     func_800A9B48(arg1);
-    var_v1 = *arg0;
-    var_s3 = arg0;
-    temp_s6 = *D_800DF690[omCurrentObj->objId];
-    if (var_v1 != -1) {
+    idx = *arg0;
+    list = arg0;
+    scripts = *D_800DF690[omCurrentObj->objId].as_u32p;
+    if (idx != -1) {
         do {
-            var_v0 = var_v1 * 4;
-            var_s0 = var_v0 + var_s4;
-            if (var_s4 == NULL) {
-                var_s0 = var_s4;
-                var_v0 = var_v1 * 4;
-            }
-            temp_a1 = *(var_v0 + temp_s6);
-            temp_s2 = *(D_800DFBD0[omCurrentObj->objId] + var_v0);
-            if (temp_a1 != 0) {
-                animSetModelAnimation(temp_s2, temp_a1, arg3);
-                temp_s2->unk55 = var_s5;
-                temp_s2->unk4->unk40 = arg3;
+            cell = (texTable != NULL) ? &texTable[idx] : NULL;
+            anim = ((s32 *) scripts)[idx];
+            dobj = D_800DFBD0[omCurrentObj->objId][idx];
+            if (anim != 0) {
+                animSetModelAnimation(dobj, (void *) anim, arg3);
+                dobj->animCBReceiver = first;
+                dobj->gobj->animTimer = arg3;
                 D_800DF310[omCurrentObj->objId] = NULL;
-                var_s5 = 0;
-                temp_v1 = &D_800DD8D0[omCurrentObj->objId];
-                *temp_v1 &= 0x3FFFFFFF;
+                first = 0;
+                D_800DD8D0[omCurrentObj->objId] &= 0x3FFFFFFF;
             } else {
-                temp_s2->unk74 = -3.4028235e38f;
-                temp_s2->unk55 = 0;
+                dobj->timeRemaining = -3.4028235e38f;
+                dobj->animCBReceiver = 0;
             }
-            if (var_s0 != NULL) {
-                temp_v0_2 = *var_s0;
-                if (temp_v0_2 != NULL) {
-                    var_s0_2 = temp_s2->unk80;
-                    var_s1 = temp_v0_2;
-                    if (var_s0_2 != NULL) {
+            if (cell != NULL) {
+                p = (s32 *) *cell;
+                if (p != NULL) {
+                    mobj = dobj->mobjList;
+                    if (mobj != NULL) {
                         do {
-                            temp_a1_2 = *var_s1;
-                            if (temp_a1_2 != 0) {
-                                animSetTextureAnimation(var_s0_2, temp_a1_2, arg3);
+                            if (*p != 0) {
+                                animSetTextureAnimation(mobj, *p, arg3);
                             }
-                            var_s0_2 = *var_s0_2;
-                            var_s1 += 4;
-                        } while (var_s0_2 != NULL);
+                            mobj = mobj->next;
+                            p += 1;
+                        } while (mobj != NULL);
                     }
                 }
             }
-            var_v1 = var_s3->unk4;
-            var_s3 += 4;
-        } while (var_v1 != -1);
+            idx = list[1];
+            list += 1;
+        } while (idx != -1);
     }
 }
 #elif defined(PORT)

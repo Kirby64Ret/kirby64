@@ -605,30 +605,17 @@ end:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F72B0.s")
 #endif
 
-#ifdef PORT
-/* PORT: unpack the save-file's 64 "permanently collected" bits for this area
- * into one byte per entity. The matching body walks from &D_800D6C94[0x3C]
- * to the ABSOLUTE N64 address 0x800D6D10 (== D_800D6C94 + 0x7C there); on
- * the host that literal never terminates the loop, so the bound is spelled
- * as the two 32-bit words it really is. D_800D6C94[0x3C..0x7B] is the
- * canonical byte range for these flags -- the same one the matching
- * func_800F7484 packs from and func_800F753C (PORT arm above) sets. */
-extern u8 D_800D6C94[];
-
-void func_800F7404(s32 arg0) {
-    s32 w;
-    s32 i;
-
-    for (w = 0; w < 2; w++) {
-        u32 val = D_800D6D10[arg0][w];
-        for (i = 0; i < 0x20; i++) {
-            D_800D6C94[0x3C + w * 0x20 + i] = val & 1;
-            val >>= 1;
-        }
-    }
-}
-#else
-#ifdef NON_MATCHING
+#ifdef MIPS_TO_C
+/* FACTORY: 19/32 instructions match (13 diffs). Body, instruction count
+ * and loop structure are exact; the residue is the whole $t file
+ * allocated one slot low (ROM $t8/$t7 then $t9/$t1/$t2/$t3, IDO $t7/$t6
+ * then $t8/$t9/$t1/$t2) -- one $t temp is consumed before the pair in
+ * the ROM. Levers already spent (keep them): priming the locals before
+ * the loop in the ROM's first-assignment order (val, src, i, dst, p)
+ * fixes $v0/$v1/$a0-$a3 at no instruction cost (22 -> 13); the ROM
+ * materialises D_800D6D10 TWICE, so the loop bound must be spelled
+ * (u8 *) 0x800D6D10 to stop IDO CSEing the one base -- measured
+ * alternatives: (u8 *) D_800D6D10 = 28 diffs, &D_800D6C94[0x7C] = 17. */
 // 13/32 diffs; the residue is ONLY the whole $t file allocated one slot low
 // (ROM t8/t7 then t9/t1/t2/t3, IDO t7/t6 then t8/t9/t1/t2 -- the bound is $t0
 // in both, and the relative order idx<sym is right; the whole pair just starts
@@ -668,35 +655,44 @@ void func_800F7404(s32 arg0) {
         src++;
     } while (dst != (u8 *) 0x800D6D10);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7404.s")
-#endif
-#endif /* PORT */
+#elif defined(PORT)
+/* PORT: unpack the save-file's 64 "permanently collected" bits for this area
+ * into one byte per entity. The matching body walks from &D_800D6C94[0x3C]
+ * to the ABSOLUTE N64 address 0x800D6D10 (== D_800D6C94 + 0x7C there); on
+ * the host that literal never terminates the loop, so the bound is spelled
+ * as the two 32-bit words it really is. D_800D6C94[0x3C..0x7B] is the
+ * canonical byte range for these flags -- the same one the matching
+ * func_800F7484 packs from and func_800F753C (PORT arm above) sets. */
+extern u8 D_800D6C94[];
 
-#ifdef PORT
-/* PORT: inverse of func_800F7404 above -- pack the 64 per-entity flag bytes
- * back into the two save words. Same absolute-bound problem, same canonical
- * D_800D6C94[0x3C..0x7B] range. Reached from compiled code TODAY:
- * func_800F6AD4 (scene create) calls this before the matching build's
- * initializer has ever populated the byte range, exactly as on console. */
-void func_800F7484(s32 arg0) {
+void func_800F7404(s32 arg0) {
     s32 w;
     s32 i;
-    extern u8 D_800D6C94[];
 
     for (w = 0; w < 2; w++) {
-        u32 val = 0;
+        u32 val = D_800D6D10[arg0][w];
         for (i = 0; i < 0x20; i++) {
+            D_800D6C94[0x3C + w * 0x20 + i] = val & 1;
             val >>= 1;
-            if (D_800D6C94[0x3C + w * 0x20 + i] & 1) {
-                val |= 0x80000000;
-            }
         }
-        D_800D6D10[arg0][w] = val;
     }
 }
 #else
-#ifdef NON_MATCHING
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7404.s")
+#endif
+
+#ifdef MIPS_TO_C
+/* FACTORY: 24/46 instructions match (22 diffs). Body and instruction
+ * count are exact; the residue is the whole $t file allocated one slot
+ * low (ROM $t7/$t8/$t9 where IDO takes $t6/$t7/$t8), the prologue
+ * schedule that follows from it, and one `ori` where the ROM has
+ * `addiu` for the loop bound. Levers already spent (keep them):
+ * priming `val = 0; i = 0;` before the outer loop puts val/i in $v0/$v1
+ * and src/dst in $a1/$a2 (42 -> 27); declaration order is inert;
+ * `dst++; dst[-1] = val;` reproduces the ROM's `addiu $a2,4` plus
+ * `sw -0x4($a2)` in the delay slot, where `*dst++ = val;` does not;
+ * dead primes that would consume a $t temp are eliminated before
+ * register allocation and do not move the one-slot offset. */
 // 22/46 diffs. Body and instruction count are exact; the residue is the whole
 // $t register file allocated one slot low (ROM t7/t8/t9 where IDO takes
 // t6/t7/t8), the resulting prologue schedule, and one `ori` where the ROM has
@@ -740,10 +736,31 @@ void func_800F7484(s32 arg0) {
         dst[-1] = val;
     } while (src != (u8 *) 0x800D6D10);
 }
+#elif defined(PORT)
+/* PORT: inverse of func_800F7404 above -- pack the 64 per-entity flag bytes
+ * back into the two save words. Same absolute-bound problem, same canonical
+ * D_800D6C94[0x3C..0x7B] range. Reached from compiled code TODAY:
+ * func_800F6AD4 (scene create) calls this before the matching build's
+ * initializer has ever populated the byte range, exactly as on console. */
+void func_800F7484(s32 arg0) {
+    s32 w;
+    s32 i;
+    extern u8 D_800D6C94[];
+
+    for (w = 0; w < 2; w++) {
+        u32 val = 0;
+        for (i = 0; i < 0x20; i++) {
+            val >>= 1;
+            if (D_800D6C94[0x3C + w * 0x20 + i] & 1) {
+                val |= 0x80000000;
+            }
+        }
+        D_800D6D10[arg0][w] = val;
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F7484.s")
 #endif
-#endif /* PORT */
 
 #ifdef PORT
 /* PORT: D_800D6C68 + 0x68 is the N64 address 0x800D6CD0 -- a byte INSIDE
@@ -1490,15 +1507,26 @@ void func_800F78E4(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 59/75 instructions match (16 diffs); exact instruction count,
+ * frameless leaf, both switch chains, every branch and every offset.
+ * Residue: the two global address registers are swapped ($a1 holds
+ * &D_800BE514 and $a2 &D_800BE510, the ROM has them the other way
+ * round) plus the constant-materialisation schedule that follows.
+ * Statement order is inert here -- reordering the two zero stores, and
+ * hoisting the 0.0f store above the node read, both left it at 16.
+ * Lever that DID land: the inner switch value must be u32, not the u8
+ * the lbu suggests -- as u8 IDO stops sharing the constants 1 and 2
+ * with the outer switch and emits two extra `li $at` (62 -> 16). */
 void func_800F8078(void) {
-    u8 temp_a0;
-    void *temp_v0;
+    extern void *D_80129114;
+    extern u32 D_800BE514;
+    u8 *temp_v0;
+    u32 temp_a0;
 
-    temp_v0 = *(D_80129114->unk4 + (D_800BE50C * 0x10));
+    temp_v0 = *(u8 **) (*(u8 **) ((u8 *) D_80129114 + 4) + D_800BE50C * 0x10);
     D_800BE514 = 0;
     D_800BE510 = 0.0f;
-    switch (D_800BE4FC) {                           /* irregular */
+    switch (D_800BE4FC) {
         case 0:
             D_800BE4FC = 0;
             break;
@@ -1506,25 +1534,25 @@ void func_800F8078(void) {
             D_800BE4FC = 1;
             break;
         case 2:
-            temp_a0 = temp_v0->unk3;
-            switch (temp_a0) {                      /* switch 1; irregular */
-                case 0:                             /* switch 1 */
+            temp_a0 = temp_v0[3];
+            switch (temp_a0) {
+                case 0:
                     break;
-                case 1:                             /* switch 1 */
+                case 1:
                     D_800BE514 = 0x80000000;
                     D_800BE510 = 1.0f;
                     break;
-                case 2:                             /* switch 1 */
+                case 2:
                     D_800BE514 = 0x80000000;
                     break;
-                case 3:                             /* switch 1 */
+                case 3:
                     D_800BE510 = 1.0f;
                     break;
             }
-            D_800BE514 |= temp_v0->unk2;
+            D_800BE514 |= temp_v0[2];
             break;
     }
-    if (!(temp_v0->unkE & 4)) {
+    if (!(*(s16 *) (temp_v0 + 0xE) & 4)) {
         D_800BE518 = D_800BE4FC;
         D_800BE51C = D_800BE508;
         D_800BE520 = D_800BE50C;
@@ -2057,40 +2085,144 @@ void func_800F8570(s32 arg0) {
     *pT = f + newFooter->keyframes[c[3]];
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8570.s")
+void func_800F8570(s32 arg0) {
+    extern void *D_80129114;
+    extern s32 D_800E5F90[];
+    extern f32 D_800E6BD0[];
+    f32 *temp_v1;
+    f32 temp_f0;
+    f32 temp_f12;
+    f32 var_f0;
+    f32 var_f2;
+    s16 temp_t0;
+    s32 *temp_a1;
+    s32 temp_t1;
+    s32 var_a0;
+    s32 var_t1;
+    s32 var_t2;
+    u8 temp_a0_2;
+    u8 temp_a0_3;
+    u8 temp_t5;
+    u8 *temp_a0;
+    u8 *temp_a3;
+    u8 *temp_a3_2;
+    u8 *var_v0;
+
+    temp_v1 = &D_800E6BD0[arg0];
+    temp_f0 = *temp_v1;
+    temp_a1 = &D_800E5F90[arg0];
+    if (!(0.0f <= temp_f0) || !(temp_f0 <= 1.0f)) {
+        temp_a0 = (u8 *) (*temp_a1 * 0x10 + (u8 *) *(void **) ((u8 *) D_80129114 + 4));
+        temp_a3 = *(u8 **) (temp_a0 + 4);
+        temp_t0 = *(s16 *) (temp_a0 + 0xC);
+        if (temp_f0 < 0.0f) {
+            var_t1 = 0;
+            if (temp_t0 == 0) {
+                *temp_v1 = 0.0001f;
+                return;
+            }
+            var_v0 = *(u8 **) (temp_a0 + 8);
+            if (temp_t0 != 0) {
+loop_6:
+                temp_a0_2 = var_v0[0];
+                var_t1 += 1;
+                if ((temp_a0_2 != 0) || (var_v0[1] & 0xF0)) {
+                    if (temp_a0_2 != 0) {
+                        *temp_v1 = 0.0001f;
+                        return;
+                    }
+                    var_v0 += 4;
+                    if (var_t1 == temp_t0) {
+                        goto block_11;
+                    }
+                    goto loop_6;
+                }
+                goto block_11;
+            }
+block_11:
+            var_f2 = -temp_f0;
+            var_a0 = 0;
+            goto block_21;
+        }
+        if (temp_t0 == 0) {
+            *temp_v1 = 0.9999f;
+            return;
+        }
+        var_t2 = temp_t0 - 1;
+        var_v0 = (*(u8 **) (temp_a0 + 8) + temp_t0 * 4) - 4;
+        temp_t1 = *(s16 *) (temp_a3 + 2) - 1;
+        if (var_t2 >= 0) {
+loop_15:
+            temp_a0_3 = var_v0[0];
+            var_t2 -= 1;
+            if ((temp_t1 != temp_a0_3) || (var_v0[1] & 0xF0)) {
+                if (temp_t1 != temp_a0_3) {
+                    *temp_v1 = 0.9999f;
+                    return;
+                }
+                var_v0 -= 4;
+                if (var_t2 < 0) {
+                    goto block_20;
+                }
+                goto loop_15;
+            }
+            goto block_20;
+        }
+block_20:
+        var_a0 = 1;
+        var_f2 = temp_f0 - 1.0f;
+block_21:
+        temp_t5 = var_v0[2];
+        *temp_a1 = temp_t5;
+        temp_a3_2 = *(u8 **) ((u8 *) *(void **) ((u8 *) D_80129114 + 4)
+                              + temp_t5 * 0x10 + 4);
+        temp_f12 = (*(f32 *) (temp_a3 + 0xC) * var_f2) / *(f32 *) (temp_a3_2 + 0xC);
+        if (var_a0 != 0) {
+            var_f0 = temp_f12;
+        } else {
+            var_f0 = -temp_f12;
+        }
+        *temp_v1 = var_f0 + *(f32 *) (*(u8 **) (temp_a3_2 + 0x10) + var_v0[3] * 4);
+    }
+}
 #endif
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 61/63 instructions match (2 diffs). Everything is exact --
+ * frame 0x38, argument homes, both calls, the late_rodata 0.1f, every
+ * branch -- except the slot of the one f32 local `sp20`, which IDO
+ * puts at 0x24 where the ROM has 0x20 (the ROM leaves the 4-byte hole
+ * at 0x24 instead). Every way of reaching 28 bytes of declared locals
+ * was measured and all of them push the frame to 0x40 instead of
+ * moving the hole: a 4-byte pad between the Vector and sp20, an
+ * f32[2] in sp20's place, and widening the Vector to f32[4] with the
+ * call taking &v[1]. Two levers DID land and must be kept: the two
+ * symbol reads in the sp34 expression have to be written in the
+ * REVERSE of the ROM's evaluation order (D_800E5F90 first in source
+ * so D_80129114 is evaluated first and takes $t6) -- worth 7 diffs --
+ * and the final accumulate must be spelled `(...) + *sp1C`, not
+ * `*sp1C + (...)`, to get `add.s $f18,$f8,$f10`. */
 f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
+    extern void *D_80129114;
+    extern s32 D_800E5F90[];
+    extern f32 D_800E6BD0[];
+    void func_8001E344(Vector *, void *, f32);
+    void func_800F8570(s32);
     void *sp34;
-    f32 sp30;
-    f32 sp28;
+    Vector sp28;
     f32 sp20;
     f32 *sp1C;
-    f32 *temp_v1;
-    f32 temp_f12;
-    f32 temp_f16;
-    f32 temp_f2;
-    f32 temp_f4;
-    s32 temp_v0;
-    void *temp_a1;
 
-    temp_v0 = arg0 * 4;
-    temp_a1 = (D_80129114->unk4 + (*(&D_800E5F90 + temp_v0) * 0x10))->unk4;
-    temp_v1 = temp_v0 + &D_800E6BD0;
-    sp1C = temp_v1;
-    sp34 = temp_a1;
-    func_8001E344(&sp28, temp_a1, *temp_v1);
-    temp_f2 = 1.0f / sqrtf((sp28 * sp28) + (sp30 * sp30));
-    temp_f16 = sp28 * temp_f2;
-    temp_f4 = sp30 * temp_f2;
-    sp28 = temp_f16;
-    sp30 = temp_f4;
-    temp_f12 = (temp_f16 * arg1) + (temp_f4 * arg2);
-    sp20 = temp_f12;
-    *sp1C += (temp_f12 / sp34->unkC) * 0.1f;
-    func_800F8570(temp_f12, arg0);
+    sp34 = *(void **) (D_800E5F90[arg0] * 0x10
+                       + (u8 *) *(void **) ((u8 *) D_80129114 + 4) + 4);
+    sp1C = &D_800E6BD0[arg0];
+    func_8001E344(&sp28, sp34, *sp1C);
+    sp20 = 1.0f / sqrtf((sp28.x * sp28.x) + (sp28.z * sp28.z));
+    sp28.x = sp28.x * sp20;
+    sp28.z = sp28.z * sp20;
+    sp20 = (sp28.x * arg1) + (sp28.z * arg2);
+    *sp1C = ((sp20 / *(f32 *) ((u8 *) sp34 + 0xC)) * 0.1f) + *sp1C;
+    func_800F8570(arg0);
     return sp20;
 }
 #elif defined(PORT)

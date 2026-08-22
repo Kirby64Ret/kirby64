@@ -570,187 +570,208 @@ block_5:
 #endif
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 469/480 -- ONE decision, whole-body shift. The ROM holds
+ * &gKirbyState in $a3 across the entire function (lui/addiu once, then
+ * 0x18($a3), 0x164($a3) ...); IDO here folds the address into every access
+ * as its own %hi/%lo pair, which re-rolls the register assignment and the
+ * frame from the first instruction on. That decision is driven by the object
+ * being a COMPLETE struct accessed by member, and this TU cannot see one:
+ * gKirbyState is declared `extern struct Player` (incomplete) by ovl2_8.h and
+ * Player.h is included only inside the PORT arm. A local struct view reached
+ * through a pointer (used here, `ks`) does not reproduce it -- measured
+ * unchanged under `register`, and under moving the base assignment after the
+ * first call. NEXT STEP for whoever holds the whole-TU gate: include
+ * Player.h at FILE SCOPE for the N64 build and access gKirbyState.<field>
+ * directly; that is a file-scope change (it also prototypes functions this TU
+ * currently calls implicitly) so it must be A/B'd against every already
+ * matched function in ovl1_8.c, which is outside this lane's remit.
+ * Everything else is solved and matches the listing: func_8011D40C and
+ * func_8011E244 take NO arguments (m2c's extra args are leftover registers),
+ * func_800F8728 is 3-arg with the &gKirbyState 4th register left over,
+ * D_800DE350[objId] is a GObj* load re-read for each of the two calls, the
+ * platform slot 0x14 sentinel logic writes plat through the 0x48(sp) home in
+ * both arms, and the death floor is -10000.0f with D_800E3C90 set to
+ * 65535.0f. Local frame layout to reproduce: spd 0x64, fwd 0x58, push 0x54,
+ * pushY 0x50, plat 0x48, platIn 0x3C, platOut 0x30. */
 void func_800B531C(s32 arg0) {
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    s32 sp48;
-    ? sp3C;
-    f32 sp30;
-    GObj *temp_a2;
-    f32 *temp_a0;
-    f32 *temp_a0_2;
-    f32 *temp_a1;
-    f32 *temp_a1_2;
-    f32 *temp_v0_3;
-    f32 *temp_v1;
-    f32 *temp_v1_2;
-    f32 *temp_v1_3;
-    f32 *temp_v1_4;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 var_f2;
-    f32 var_f2_2;
-    f32 var_f2_3;
-    s32 var_v0;
-    u16 var_v0_2;
-    u32 temp_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
-    u32 temp_v0_6;
-    u32 temp_v0_7;
-    u32 temp_v0_8;
+    /* Local view of gKirbyState (0x8012E7C0). Player.h is not included by
+     * this TU on the N64 side and must not be added at file scope, so the
+     * fields this function touches are spelled at their real offsets here. */
+    struct KState {
+        /* 0x000 */ u32 actionChange;
+        /* 0x004 */ u8 unk4;
+        /* 0x005 */ u8 action;
+        /* 0x006 */ u8 pad6[0x12];
+        /* 0x018 */ u8 unk18;
+        /* 0x019 */ u8 pad19[0xE4 - 0x19];
+        /* 0x0E4 */ u32 ceilingCollisionNext;
+        /* 0x0E8 */ u8 padE8[0xFC - 0xE8];
+        /* 0x0FC */ u32 horizontalCollision;
+        /* 0x100 */ u16 ceilingType;
+        /* 0x102 */ u16 floorType;
+        /* 0x104 */ u16 unk104;
+        /* 0x106 */ u16 unk106;
+        /* 0x108 */ u8 pad108[0x160 - 0x108];
+        /* 0x160 */ u16 unk160;
+        /* 0x162 */ u16 unk162;
+        /* 0x164 */ f32 unk164;
+        /* 0x168 */ f32 unk168;
+        /* 0x16C */ u32 unk16C;
+        /* 0x170 */ u32 unk170;
+        /* 0x174 */ f32 forwardVel;
+        /* 0x178 */ f32 vel[3];
+    };
+    extern f32 D_800E5510[];
+    extern f32 D_800E5C10[];
+    extern s32 D_800D6B54;
+    extern f32 gKirbyHp;
+    extern void func_8011DD5C(f32 *, f32 *);
+    extern void func_8011D40C(void);
+    extern s32 func_8011E244(void);
+    extern void func_8011E31C(Vector *);
+    extern void func_80112A40(s32, Vector *, Vector *);
+    extern f32 func_800F8728(s32, f32, f32);
+    Vector spd;
+    f32 fwd;
+    f32 push;
+    f32 pushY;
+    s32 plat;
+    Vector platIn;
+    Vector platOut;
+    GObj *obj;
+    u32 id;
+    f32 damp;
+    f32 knock;
+    f32 savedVelY;
+    struct KState *ks;
 
+    ks = (struct KState *) &gKirbyState;
     func_800B35F0();
-    if (gKirbyState.unk18 == 0) {
-        gKirbyState.forwardVel = D_800E64D0[omCurrentObj->objId];
-        gKirbyState.vel[0] = D_800E3050[omCurrentObj->objId];
-        gKirbyState.vel[1] = D_800E3210[omCurrentObj->objId];
-        gKirbyState.vel[2] = D_800E33D0[omCurrentObj->objId];
-        sp64 = D_800E64D0[omCurrentObj->objId];
-        sp68 = D_800E6690[omCurrentObj->objId];
-        sp6C = D_800E6850[omCurrentObj->objId];
-        func_800B50C4(&sp64);
-        sp58 = sp64 + sp68;
+    if (ks->unk18 == 0) {
+        ks->forwardVel = D_800E64D0[omCurrentObj->objId];
+        ks->vel[0] = D_800E3050[omCurrentObj->objId];
+        ks->vel[1] = D_800E3210[omCurrentObj->objId];
+        ks->vel[2] = D_800E33D0[omCurrentObj->objId];
+        spd.x = D_800E64D0[omCurrentObj->objId];
+        spd.y = D_800E6690[omCurrentObj->objId];
+        spd.z = D_800E6850[omCurrentObj->objId];
+        func_800B50C4(&spd);
+        fwd = spd.x + spd.y;
     }
-    func_8011DD5C(&sp54, &sp50);
-    if (gKirbyState.unk18 != 0) {
+    func_8011DD5C(&push, &pushY);
+    if (ks->unk18 != 0) {
         D_800E6850[omCurrentObj->objId] = 0.0f;
-        temp_v0 = omCurrentObj->objId;
-        temp_f0 = D_800E6850[temp_v0];
-        D_800E6690[temp_v0] = temp_f0;
-        sp58 = 0.0f;
-        D_800E64D0[omCurrentObj->objId] = temp_f0;
+        id = omCurrentObj->objId;
+        D_800E6690[id] = D_800E6850[id];
+        fwd = 0.0f;
+        D_800E64D0[omCurrentObj->objId] = D_800E6850[id];
     } else if (D_800D6B54 == 0) {
-        temp_v0_2 = omCurrentObj->objId;
-        D_800E64D0[temp_v0_2] = D_800E5510[temp_v0_2] + sp58 + sp54;
-        if (gKirbyState.unk160 == 0) {
-            if (gKirbyState.unk164 != 0.0f) {
+        id = omCurrentObj->objId;
+        D_800E64D0[id] = D_800E5510[id] + fwd + push;
+        if (ks->unk160 == 0) {
+            if (ks->unk164 != 0.0f) {
                 if (D_800E8920[omCurrentObj->objId] != 0) {
-                    gKirbyState.unk164 = 0.0f;
-                } else if ((gKirbyState.horizontalCollision != 0) && (gKirbyState.unk104 != 2) && (gKirbyState.unk106 != 2)) {
-                    gKirbyState.unk164 = 0.0f;
+                    ks->unk164 = 0.0f;
+                } else if ((ks->horizontalCollision != 0) && (ks->unk104 != 2) && (ks->unk106 != 2)) {
+                    ks->unk164 = 0.0f;
                 } else {
-                    if (gKirbyState.action == 9) {
-                        var_f2 = 0.5f;
+                    if (ks->action == 9) {
+                        damp = 0.5f;
                     } else {
-                        var_f2 = 0.1f;
+                        damp = 0.1f;
                     }
-                    if (gKirbyState.unk164 > 0.0f) {
-                        gKirbyState.unk164 -= var_f2;
-                        if (gKirbyState.unk164 < 0.0f) {
-                            gKirbyState.unk164 = 0.0f;
+                    if (ks->unk164 > 0.0f) {
+                        ks->unk164 -= damp;
+                        if (ks->unk164 < 0.0f) {
+                            ks->unk164 = 0.0f;
                         }
                     } else {
-                        gKirbyState.unk164 += var_f2;
-                        if (gKirbyState.unk164 > 0.0f) {
-                            gKirbyState.unk164 = 0.0f;
+                        ks->unk164 += damp;
+                        if (ks->unk164 > 0.0f) {
+                            ks->unk164 = 0.0f;
                         }
                     }
-                    temp_v0_3 = &D_800E64D0[omCurrentObj->objId];
-                    *temp_v0_3 += gKirbyState.unk164;
+                    D_800E64D0[omCurrentObj->objId] += ks->unk164;
                 }
             }
-            if (gKirbyState.unk168 != 0.0f) {
-                if (gKirbyState.ceilingCollisionNext != 0) {
-                    gKirbyState.unk168 = 0.0f;
+            if (ks->unk168 != 0.0f) {
+                if (ks->ceilingCollisionNext != 0) {
+                    ks->unk168 = 0.0f;
                 } else {
-                    if (gKirbyState.action == 9) {
-                        var_f2_2 = 1.28f;
+                    if (ks->action == 9) {
+                        damp = 1.28f;
                     } else {
-                        var_f2_2 = 1.14f;
+                        damp = 1.14f;
                     }
-                    if (gKirbyState.unk168 > 0.0f) {
-                        gKirbyState.unk168 -= var_f2_2;
-                        if (gKirbyState.unk168 < 0.0f) {
-                            gKirbyState.unk168 = 0.0f;
+                    if (ks->unk168 > 0.0f) {
+                        ks->unk168 -= damp;
+                        if (ks->unk168 < 0.0f) {
+                            ks->unk168 = 0.0f;
                         }
                     } else {
-                        gKirbyState.unk168 += var_f2_2;
-                        if (gKirbyState.unk168 > 0.0f) {
-                            gKirbyState.unk168 = 0.0f;
+                        ks->unk168 += damp;
+                        if (ks->unk168 > 0.0f) {
+                            ks->unk168 = 0.0f;
                         }
                     }
-                    temp_v1 = &gEntitiesNextPosYArray[omCurrentObj->objId];
-                    *temp_v1 += gKirbyState.unk168;
+                    gEntitiesNextPosYArray[omCurrentObj->objId] += ks->unk168;
                 }
             }
         }
     }
-    gKirbyState.unk170 = D_800E5F90[omCurrentObj->objId];
-    func_800F8E6C(*(&D_800DE350 + (omCurrentObj->objId * 4)));
-    func_800F8C70(*(&D_800DE350 + (omCurrentObj->objId * 4)));
-    D_800E64D0[omCurrentObj->objId] = sp58;
+    ks->unk170 = D_800E5F90[omCurrentObj->objId];
+    func_800F8E6C(D_800DE350[omCurrentObj->objId]);
+    func_800F8C70(D_800DE350[omCurrentObj->objId]);
+    D_800E64D0[omCurrentObj->objId] = fwd;
     func_800B46F8();
-    temp_a2 = omCurrentObj;
-    temp_v0_4 = temp_a2->objId;
-    var_v0 = temp_v0_4 * 4;
-    temp_v1_2 = &D_800E3210[temp_v0_4];
-    temp_f0_2 = *temp_v1_2;
+    obj = omCurrentObj;
+    id = obj->objId;
+    savedVelY = D_800E3210[id];
     if (D_800D6B54 == 0) {
-        *temp_v1_2 = temp_f0_2 + (D_800E5C10[temp_v0_4] + sp50);
-        var_v0 = temp_a2->objId * 4;
+        D_800E3210[id] = savedVelY + (D_800E5C10[id] + pushY);
     }
-    temp_a0 = var_v0 + gEntitiesNextPosXArray;
-    *temp_a0 += *(D_800E3050 + var_v0);
-    temp_v0_5 = temp_a2->objId;
-    temp_v1_3 = &gEntitiesNextPosYArray[temp_v0_5];
-    *temp_v1_3 += D_800E3210[temp_v0_5];
-    temp_v0_6 = temp_a2->objId;
-    temp_a1 = &gEntitiesNextPosZArray[temp_v0_6];
-    *temp_a1 += D_800E33D0[temp_v0_6];
-    D_800E3210[temp_a2->objId] = temp_f0_2;
-    temp_v0_7 = temp_a2->objId;
-    if (gEntitiesNextPosYArray[temp_v0_7] < -10000.0f) {
-        D_800E3750[temp_v0_7] = 0.0f;
-        temp_v0_8 = temp_a2->objId;
-        D_800E3210[temp_v0_8] = D_800E3750[temp_v0_8];
-        D_800E3C90[temp_a2->objId] = 65535.0f;
-        func_8011D40C(0, temp_a0, temp_a1, temp_a2, &gKirbyState);
-        gEntitiesNextPosYArray[omCurrentObj->objId] = -10000.0f;
+    gEntitiesNextPosXArray[obj->objId] += D_800E3050[obj->objId];
+    gEntitiesNextPosYArray[obj->objId] += D_800E3210[obj->objId];
+    gEntitiesNextPosZArray[obj->objId] += D_800E33D0[obj->objId];
+    D_800E3210[obj->objId] = savedVelY;
+    if (gEntitiesNextPosYArray[obj->objId] < -10000.0f) {
+        D_800E3750[obj->objId] = 0.0f;
+        D_800E3210[obj->objId] = D_800E3750[obj->objId];
+        D_800E3C90[obj->objId] = 65535.0f;
+        func_8011D40C();
+        gEntitiesNextPosYArray[obj->objId] = -10000.0f;
     }
     if (gKirbyHp != 0.0f) {
-        var_v0_2 = gKirbyState.unk162;
-        sp48 = 0x14;
-        if (var_v0_2 == 0x14) {
-            if (D_800E8920[temp_a2->objId] != 0) {
-                var_v0_2 = func_8011E244(0.0f);
-                goto block_46;
+        plat = 0x14;
+        if (ks->unk162 == 0x14) {
+            if (D_800E8920[obj->objId] != 0) {
+                plat = func_8011E244();
             }
         } else {
-block_46:
-            sp48 = var_v0_2;
+            plat = ks->unk162;
         }
-        if (sp48 != 0x14) {
-            func_8011E31C(&sp3C);
-            func_80112A40(sp48, &sp3C, &sp30);
-            if ((sp30 != 0.0f) || (sp38 != 0.0f)) {
-                var_f2_3 = func_800F8728(omCurrentObj->objId, sp30, sp38, &gKirbyState);
+        if (plat != 0x14) {
+            func_8011E31C(&platIn);
+            func_80112A40(plat, &platIn, &platOut);
+            if ((platOut.x != 0.0f) || (platOut.z != 0.0f)) {
+                knock = func_800F8728(omCurrentObj->objId, platOut.x, platOut.z);
             } else {
-                var_f2_3 = 0.0f;
+                knock = 0.0f;
             }
-            temp_a0_2 = &gEntitiesNextPosXArray[omCurrentObj->objId];
-            *temp_a0_2 += sp30;
-            temp_v1_4 = &gEntitiesNextPosYArray[omCurrentObj->objId];
-            *temp_v1_4 += sp34;
-            gKirbyState.unk160 = 1;
-            gKirbyState.unk164 = var_f2_3;
-            temp_a1_2 = &gEntitiesNextPosZArray[omCurrentObj->objId];
-            gKirbyState.unk168 = sp34;
-            *temp_a1_2 += sp38;
+            gEntitiesNextPosXArray[omCurrentObj->objId] += platOut.x;
+            gEntitiesNextPosYArray[omCurrentObj->objId] += platOut.y;
+            ks->unk160 = 1;
+            ks->unk164 = knock;
+            ks->unk168 = platOut.y;
+            gEntitiesNextPosZArray[omCurrentObj->objId] += platOut.z;
             return;
         }
-        gKirbyState.unk160 = 0;
+        ks->unk160 = 0;
         return;
     }
-    gKirbyState.unk168 = 0.0f;
-    gKirbyState.unk160 = 0;
-    gKirbyState.unk164 = gKirbyState.unk168;
+    ks->unk168 = 0.0f;
+    ks->unk160 = 0;
+    ks->unk164 = ks->unk168;
 }
 #elif defined(PORT)
 /* PORT: Kirby's per-frame movement tick (registered by plyInit as the
@@ -999,39 +1020,45 @@ void func_800B6064(GObj *gobj) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 38/90. Body, branch shape and call sequence are right; the
+ * residue is the local-block base and the caller-saved register names that
+ * follow it. The ROM lays slot at 0x3C ABOVE both Vectors (pos 0x30, delta
+ * 0x24) in a frame of 0x48; IDO segregates aggregates high and scalars low,
+ * so ours puts the Vectors at the top and slot at 0x1C, frame 0x50. Measured
+ * alternatives: writing the two Vectors as six loose f32 scalars DOES put
+ * slot above them and gives the exact 0x48 frame, but shifts the whole block
+ * +8 and rerolls every register (84/89); dropping the slot scalar fixes the
+ * frame the other way and costs register names (56/90). Stack-offset class.
+ * Solved semantics: func_80112A40 is a 3-arg call (the ROM's $a3 is the
+ * leftover objId*4 index, not an argument), the slot byte 0x14 is the
+ * "not riding anything" sentinel, and the lateral report to func_800F8728
+ * is guarded by (delta.x != 0 || delta.z != 0). */
 void func_800B6144(s32 arg0) {
-    s32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    f32 sp30;
-    f32 sp24;
-    f32 *temp_a0_2;
-    f32 *temp_a1;
-    f32 *temp_v1;
-    struct Sub800E1B50_Unk84 *temp_a0;
-    u32 temp_a3;
-    u8 temp_t7;
+    void func_80112A40(s32, Vector *, Vector *);
+    f32 func_800F8728(s32, f32, f32);
+    s32 slot;
+    Vector pos;
+    Vector delta;
+    u32 objId;
+    struct Sub800E1B50_Unk84 *rec;
+    u8 kind;
 
-    temp_a3 = omCurrentObj->objId;
-    temp_a0 = D_800E1B50[temp_a3]->unk84;
-    if ((D_800E8920[temp_a3] != 0) && (temp_a0 != NULL)) {
-        temp_t7 = temp_a0->unk50;
-        sp3C = temp_t7;
-        if (temp_t7 != 0x14) {
-            sp30 = gEntitiesNextPosXArray[temp_a3];
-            sp34 = gEntitiesNextPosYArray[omCurrentObj->objId];
-            sp38 = gEntitiesNextPosZArray[omCurrentObj->objId];
-            func_80112A40(temp_t7, &sp30, &sp24, temp_a3 * 4);
-            if ((sp24 != 0.0f) || (sp2C != 0.0f)) {
-                func_800F8728(omCurrentObj->objId, sp24, sp2C);
+    objId = omCurrentObj->objId;
+    rec = D_800E1B50[objId]->unk84;
+    if ((D_800E8920[objId] != 0) && (rec != NULL)) {
+        kind = rec->unk50;
+        slot = kind;
+        if (kind != 0x14) {
+            pos.x = gEntitiesNextPosXArray[objId];
+            pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+            pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+            func_80112A40(kind, &pos, &delta);
+            if ((delta.x != 0.0f) || (delta.z != 0.0f)) {
+                func_800F8728(omCurrentObj->objId, delta.x, delta.z);
             }
-            temp_v1 = &gEntitiesNextPosXArray[omCurrentObj->objId];
-            *temp_v1 += sp24;
-            temp_a0_2 = &gEntitiesNextPosYArray[omCurrentObj->objId];
-            *temp_a0_2 += sp28;
-            temp_a1 = &gEntitiesNextPosZArray[omCurrentObj->objId];
-            *temp_a1 += sp2C;
+            gEntitiesNextPosXArray[omCurrentObj->objId] += delta.x;
+            gEntitiesNextPosYArray[omCurrentObj->objId] += delta.y;
+            gEntitiesNextPosZArray[omCurrentObj->objId] += delta.z;
         }
     }
 }

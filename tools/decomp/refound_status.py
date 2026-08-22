@@ -49,9 +49,41 @@ def view(path, define):
     return out.stdout if out.returncode in (0, 1) else ''
 
 
+def draft_sites(path, text):
+    """Set of asm listings whose pragma sits in a conditional group that also
+    holds a decomp draft (an `#ifdef MIPS_TO_C` / `#ifdef NON_MATCHING` arm,
+    normally carrying a `FACTORY:` residue note).
+
+    A draft is NOT a solved decomp -- the ROM still assembles the listing --
+    but it is banked work with a measured residue, and it is the permuter
+    factory's input. It is counted apart from functions where nothing has
+    been attempted at all."""
+    lines = text.split('\n')
+    stack, groups = [], []          # groups: (start, end)
+    for i, l in enumerate(lines):
+        ls = l.lstrip()
+        if ls.startswith('#if'):
+            stack.append(i)
+        elif ls.startswith('#endif') and stack:
+            groups.append((stack.pop(), i))
+    seeded = set()
+    for a in PRAGMA.findall(text):
+        # line of this pragma
+        ln = next((i for i, l in enumerate(lines) if a in l and 'GLOBAL_ASM' in l), None)
+        if ln is None:
+            continue
+        inner = [g for g in groups if g[0] < ln < g[1]]
+        if not inner:
+            continue
+        st, en = min(inner, key=lambda g: g[1] - g[0])
+        block = '\n'.join(lines[st:en + 1])
+        if ('MIPS_TO_C' in block or 'NON_MATCHING' in block) and 'FACTORY:' in block:
+            seeded.add(a)
+    return seeded
+
+
 def scan():
-    violations = {}   # file -> [asm listing, ...]
-    drafted = 0
+    bare, seeded = {}, {}
     for path in sorted(glob.glob('src/**/*.c', recursive=True)):
         if path.startswith('src/pc/'):
             continue
@@ -60,29 +92,41 @@ def scan():
             continue
         n64 = set(PRAGMA.findall(view(path, None)))       # -UPORT: the N64 build
         pc = set(PRAGMA.findall(view(path, 'PORT')))      # -DPORT: the PC build
-        bad = sorted(n64 - pc)
-        if bad:
-            violations[path] = bad
-        drafted += len(re.findall(r'FACTORY:', text))
-    return violations, drafted
+        violating = n64 - pc
+        if not violating:
+            continue
+        has_draft = draft_sites(path, text)
+        b = sorted(violating - has_draft)
+        s_ = sorted(violating & has_draft)
+        if b:
+            bare[path] = b
+        if s_:
+            seeded[path] = s_
+    return bare, seeded
 
 
 def main():
-    violations, drafted = scan()
-    total = sum(len(v) for v in violations.values())
+    bare, seeded = scan()
+    nb = sum(len(v) for v in bare.values())
+    ns = sum(len(v) for v in seeded.values())
 
     if '--list' in sys.argv:
-        for path in sorted(violations):
-            for a in violations[path]:
-                print(f'{path}\t{os.path.basename(a)[:-2]}')
+        for path in sorted(set(bare) | set(seeded)):
+            for a in bare.get(path, []):
+                print(f'BARE\t{path}\t{os.path.basename(a)[:-2]}')
+            for a in seeded.get(path, []):
+                print(f'SEEDED\t{path}\t{os.path.basename(a)[:-2]}')
     elif '--files' in sys.argv:
-        for path, v in sorted(violations.items(), key=lambda kv: -len(kv[1])):
-            print(f'{len(v):5d}  {path}')
+        allf = {p: len(bare.get(p, [])) + len(seeded.get(p, []))
+                for p in set(bare) | set(seeded)}
+        for path, n in sorted(allf.items(), key=lambda kv: -kv[1]):
+            print(f'{n:5d}  ({len(bare.get(path, [])):3d} bare, '
+                  f'{len(seeded.get(path, [])):3d} seeded)  {path}')
 
-    print(f'-- rule violations (ported, not decompiled): {total} '
-          f'in {len(violations)} file(s)')
-    print(f'-- decomp drafts seeded for the factory:     {drafted}')
-    return 1 if total else 0
+    print(f'-- ported, decomp NOT STARTED : {nb}')
+    print(f'-- ported, decomp DRAFTED     : {ns}  (near-miss, factory queue)')
+    print(f'-- rule outstanding (total)   : {nb + ns}')
+    return 1 if (nb + ns) else 0
 
 
 if __name__ == '__main__':

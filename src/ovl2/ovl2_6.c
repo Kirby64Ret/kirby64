@@ -341,7 +341,108 @@ void func_80100790(struct GObj *gobj) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_6/func_80100790.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 53/205 instructions match (152 diffs), callee-saved
+ * permutation. IDO hoists the constant 1 into $s6 where the ROM
+ * hoists &D_800D478C into $fp, rotating $s0-$fp by one and shifting the
+ * whole body by a single instruction. Body shape, scheduling and the
+ * entire loop are otherwise identical. */
+void *func_80100AC8(void *arg0) {
+    extern u8 D_800D478C[];
+    extern u8 D_8012BB98[];
+    extern void *D_800D79D8[];
+    void func_80100790(void *);
+    s32 func_800A8C40(u32);
+    SPObj *func_800AC954(void *, s32, s32);
+    void omLinkGObjDL(void *, void *, u8, s32, s32);
+    s32 objId;
+    u32 code;
+    s16 *vp;
+    u8 *rect;
+    f32 cx;
+    f32 cy;
+    f32 hw;
+    f32 hh;
+    u32 i;
+    u16 out;
+
+    objId = *(s32 *) arg0;
+    code = D_80124740[objId];
+    omLinkGObjDL(arg0, func_80100790, (u8) code, 0x80000000, code);
+    vp = (s16 *) D_800D79D8[(code - 0xA) >> 1];
+    rect = &D_8012BB98[objId * 0x18];
+    cx = (f32) vp[8] * 0.25f;
+    cy = (f32) vp[9] * 0.25f;
+    *(f32 *) (rect + 0) = (f32) vp[4] * 0.5f;
+    vp += 4;
+    *(f32 *) (rect + 4) = (f32) vp[1] * 0.5f;
+    hw = *(f32 *) (rect + 0) * 0.5f;
+    hh = *(f32 *) (rect + 4) * 0.5f;
+    *(f32 *) (rect + 8) = cx - hw;
+    *(f32 *) (rect + 0xC) = cy - hh;
+    *(f32 *) (rect + 0x10) = cx + hw;
+    *(f32 *) (rect + 0x14) = cy + hh;
+    for (i = 0; i < D_8012B9B0; i++) {
+        struct UNK_D_8012B9B8 *rec = &D_8012B9B8[i];
+        struct UNK_D_8012BBF8 *slot;
+        SPObj *sprite;
+        s16 *pos;
+        u8 *col;
+        u16 flags;
+
+        out = 0;
+        if (code == rec->unk4) {
+            slot = &D_8012BBF8[i];
+            sprite = func_800AC954(arg0, 1, func_800A8C40(rec->unk0));
+            pos = (s16 *) &rec->unkC;
+            flags = rec->unk8;
+            sprite->xOffset = (f32) pos[0] + *(f32 *) (rect + 8);
+            sprite->yOffset = (f32) pos[1] + *(f32 *) (rect + 0xC);
+            sprite->unk28 = *(f32 *) &rec->unk10;
+            sprite->unk2C = *(f32 *) &rec->unk14;
+            if (flags & 0x20) {
+                sprite->renderFlags |= 2;
+            }
+            if (flags & 0xC0) {
+                col = D_800D478C + rec->unkA * 12;
+                sprite->primColorRed = col[0];
+                sprite->primColorGreen = col[1];
+                sprite->primColorBlue = col[2];
+                sprite->primColorAlpha = 0xFF;
+                col += 2;
+                if (flags & 0x40) {
+                    out = 1;
+                    sprite->envColorRed = col[1];
+                    sprite->envColorGreen = col[2];
+                    col += 3;
+                    sprite->envColorBlue = col[0];
+                    sprite->envColorAlpha = 0xFF;
+                } else if (flags & 0x80) {
+                    out = 2;
+                }
+            }
+            if ((flags & 0x105) || (*(f32 *) &rec->unk18 != 0.0f)) {
+                out |= 4;
+                if (flags & 0x400) {
+                    out |= 0x10;
+                    sprite->unkBA = 1;
+                    sprite->unk5A = 1;
+                }
+            }
+            if ((flags & 0x200) || (*(f32 *) &rec->unk1C != 0.0f)) {
+                out |= 8;
+            }
+            slot->unk0 = (struct UNK_D_8012BBF8_unk0 *) sprite;
+            *(s16 *) &slot->unkC = (s16) objId;
+            *((s16 *) &slot->unkC + 1) = out;
+            *(f32 *) &slot->unk8 = 0.0f;
+            slot->unk4 = sprite->yOffset;
+            sprite->unk3C = (u32) slot;
+        }
+    }
+    *(s32 *) ((u8 *) arg0 + 0x14) = 0;
+}
+#elif defined(PORT)
 /* PORT: skybox-layer GObj init, from asm/nonmatchings/ovl2/ovl2_6/
  * func_80100AC8.s. One GObj per skybox camera link (D_80124740[objId] in
  * {0xA,0xE,0x12,0x16}); it computes the camera's screen rect into
@@ -497,7 +598,134 @@ u32 func_80100E7C(f32 arg0) {
     return 2;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 204/278 instructions match (74 diffs), FP temp rotation.
+ * Exact instruction count, frame (0x48) and stack-slot layout; every
+ * branch and every load/store
+ * offset matches. The residue is one $f4/$f6 rotation seeded by the
+ * `fovy * 3.141592741f` multiply: IDO emits `mul.s $f8,$f6,$f4` for
+ * either source spelling (writing the operands swapped only swaps the
+ * two lwc1 destinations), i.e. the documented invariant mul.s source
+ * operand order, and it cascades as a one-slot rename through the rest
+ * of the FP temps. */
+f32 func_80100EE4(s32 arg0) {
+    extern f32 D_800D7B20[];
+    extern f32 D_800D7B38[];
+    extern void *D_800D799C;
+    extern u8 D_8012BB98[];
+    f32 atan2f(f32, f32);
+    f32 sqrtf(f32);
+    void *cam;
+    f32 dEyeX;
+    f32 oldEyeY;
+    f32 yawFrac;
+    f32 pitchFrac;
+    f32 oldYaw;
+    f32 curYaw;
+    f32 dx;
+    f32 dz;
+    s32 pad;
+    u32 quadOld;
+    u32 quadCur;
+    struct UNK_D_8012BBF8 *slot;
+    struct UNK_D_8012B9B8 *rec;
+    SPObj *sprite;
+    f32 spanY;
+    f32 posY;
+    f32 overY;
+    f32 spanX;
+    f32 posX;
+    f32 overX;
+    u32 w;
+    u16 flags;
+    u16 idx;
+    u32 i;
+    s32 n;
+
+    dEyeX = D_800D7B38[3] - D_800D7B20[3];
+    oldEyeY = D_800D7B38[4];
+    dx = D_800D7B20[0] - D_800D7B20[3];
+    dz = D_800D7B20[2] - D_800D7B20[5];
+    oldYaw = atan2f(D_800D7B38[2] - D_800D7B38[5], D_800D7B38[0] - D_800D7B38[3]);
+    curYaw = atan2f(dz, dx);
+    quadOld = func_80100E7C(oldYaw);
+    quadCur = func_80100E7C(curYaw);
+    if ((quadOld == 1) && (quadCur == 2)) {
+        curYaw += 6.283185482f;
+    } else if ((quadOld == 2) && (quadCur == 1)) {
+        curYaw -= 6.283185482f;
+    }
+    cam = *(void **) ((u8 *) D_800D799C + 0x3C);
+    yawFrac = (oldYaw - curYaw)
+              / (((*(f32 *) ((u8 *) cam + 0x20) * 3.141592741f) / 180.0f)
+                 * *(f32 *) ((u8 *) cam + 0x24));
+    pitchFrac = atan2f(D_800D7B20[1] - D_800D7B20[4], sqrtf((dx * dx) + (dz * dz)))
+                / ((*(f32 *) ((u8 *) *(void **) ((u8 *) D_800D799C + 0x3C) + 0x20)
+                    * 3.141592741f) / 180.0f);
+    for (i = 0; i < D_8012B9B0; i++) {
+        slot = &D_8012BBF8[i];
+        sprite = (SPObj *) slot->unk0;
+        if (sprite != NULL) {
+            idx = *(u16 *) &slot->unkC;
+            rec = &D_8012B9B8[i];
+            flags = rec->unk8;
+            if ((flags & 0xA) || (*(f32 *) &rec->unk1C != 0.0f)) {
+                posY = slot->unk4;
+                spanY = (f32) (sprite->height - 1) * sprite->unk2C;
+                if (*(f32 *) &rec->unk1C != 0.0f) {
+                    *(f32 *) &slot->unk8 = *(f32 *) &rec->unk1C + *(f32 *) &slot->unk8;
+                    *(f32 *) &slot->unk8 = *(f32 *) &slot->unk8
+                        - ((f32) (s32) (*(f32 *) &slot->unk8 / spanY) * spanY);
+                    posY += *(f32 *) &slot->unk8;
+                }
+                if (flags & 8) {
+                    posY += *(f32 *) &D_8012BB98[idx * 0x18 + 4] * pitchFrac
+                            * *(f32 *) &rec->unk2C;
+                }
+                if (flags & 2) {
+                    posY += oldEyeY * *(f32 *) &rec->unk24;
+                }
+                if (*(u16 *) ((u8 *) &slot->unkC + 2) & 8) {
+                    overY = posY - *(f32 *) &D_8012BB98[idx * 0x18 + 0xC];
+                    if (0.0f < overY) {
+                        n = 1;
+                    } else {
+                        n = 0;
+                    }
+                    posY -= (f32) ((s32) (overY / spanY) + n) * spanY;
+                }
+                sprite->yOffset = posY;
+            }
+            if ((flags & 5) || (*(f32 *) &rec->unk18 != 0.0f)) {
+                posX = sprite->xOffset;
+                w = sprite->width;
+                spanX = (f32) w * sprite->unk28;
+                posX += *(f32 *) &rec->unk18;
+                if (flags & 1) {
+                    posX += dEyeX * *(f32 *) &rec->unk20;
+                }
+                if (flags & 4) {
+                    posX += *(f32 *) &D_8012BB98[idx * 0x18] * yawFrac
+                            * *(f32 *) &rec->unk28;
+                }
+                if (*(u16 *) ((u8 *) &slot->unkC + 2) & 4) {
+                    overX = posX - *(f32 *) &D_8012BB98[idx * 0x18 + 8];
+                    if (0.0f < overX) {
+                        n = (s32) (overX / spanX) + 1;
+                    } else {
+                        n = (s32) (overX / spanX);
+                    }
+                    if ((*(u16 *) ((u8 *) &slot->unkC + 2) & 4) && (n & 1)) {
+                        n += 1;
+                    }
+                    posX -= (f32) n * spanX;
+                }
+                sprite->xOffset = posX;
+            }
+        }
+    }
+}
+#elif defined(PORT)
 /* PORT: per-frame skybox-layer scroll, from asm/nonmatchings/ovl2/ovl2_6/
  * func_80100EE4.s. Derives this frame's camera yaw/pitch deltas from the
  * D_800D7B20/D_800D7B38 at/eye snapshots (six floats each, ovl2_3.c keeps

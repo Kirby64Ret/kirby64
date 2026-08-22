@@ -278,18 +278,43 @@ void draw_pause_bg(GObj *gobj) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 236/293, whole-body one-slot shift. The function allocates
+ * FIVE callee-saved registers where the ROM uses four (frame 0x50 vs 0x40),
+ * so every instruction after the prologue lands one slot off; the bodies
+ * agree. The extra register is the loop bound 5, which IDO hoists into $s0
+ * while the ROM re-materializes it as `addiu $at, $zero, 5` inside the loop,
+ * plus the &gPlayerControllers[1] address, which the ROM re-materializes at
+ * each of its three reads. Both are the address/constant-hoisting floor in
+ * LEVERS ("IDO folding an address ... where the ROM CSEs it"), and neither
+ * moved under u32/s32 counters or an explicitly recomputed byte-offset read.
+ * Solved semantics, all measured: D_800D55BC[kind]() indirect dispatch,
+ * request_track_3 is 3-arg (the ROM's $a3 is the spilled loop counter, not a
+ * fourth argument), the child track's mode is `D_800E9E20[cur] * 3` and must
+ * be SPELLED as (x * 4) - x -- written `* 3` IDO hoists the constant into a
+ * saved register and emits multu, costing 57 extra diffs -- and the tail call
+ * is func_800B1900((u16) omCurrentObj->objId), the low half of objId. */
 void func_800BCA5C(void) {
-    u32 sp3C;
-    s32 temp_v0_2;
-    u16 var_v0;
-    u32 temp_v0;
-    u32 temp_v0_3;
-    u32 var_a3;
+    extern void (*D_800D55BC[])(void);
+    extern u16 gPlayerControllers[];
+    extern f32 gameTicksPerDrawInv;
+    extern s32 D_800D6B6C;
+    extern s32 D_800BE4F8;
+    extern s32 D_800BE544;
+    extern s32 func_800F8560(void);
+    extern void func_800AF9B8(s32, s32);
+    extern void func_80023884(void);
+    extern void func_80023794(void);
+    extern void auSetBGMVolumeSmooth(s32, s32, s32);
+    extern void auStopSong(s32);
+    u32 kind;
+    s32 track;
+    s32 i;
+    u16 buttons;
+    s32 objId;
 
-    temp_v0 = D_800EC2E0[omCurrentObj->objId].as_u32;
-    if (temp_v0 != 0) {
-        *(&D_800D55BC + (temp_v0 * 4))();
+    kind = D_800EC2E0[omCurrentObj->objId].as_u32;
+    if (kind != 0) {
+        D_800D55BC[kind]();
     }
     if (gGameState == 0x21) {
         D_800E9E20[omCurrentObj->objId] = 2;
@@ -298,14 +323,13 @@ void func_800BCA5C(void) {
     } else {
         D_800E9E20[omCurrentObj->objId] = 0;
     }
-    var_a3 = 1;
+    i = 1;
     do {
-        sp3C = var_a3;
-        temp_v0_2 = request_track_3(0x27, 0x3C, 0x50, var_a3);
-        D_800EC2E0[temp_v0_2].as_u32 = var_a3;
-        var_a3 += 1;
-        D_800E9E20[temp_v0_2] = D_800E9E20[omCurrentObj->objId] * 3;
-    } while (var_a3 != 5);
+        track = request_track_3(0x27, 0x3C, 0x50);
+        D_800EC2E0[track].as_u32 = i;
+        i += 1;
+        D_800E9E20[track] = (D_800E9E20[omCurrentObj->objId] * 4) - D_800E9E20[omCurrentObj->objId];
+    } while (i != 5);
     func_800AF9B8(0x28, 0xE);
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E9C60[omCurrentObj->objId] = 0;
@@ -315,37 +339,33 @@ void func_800BCA5C(void) {
     auSetBGMVolumeSmooth(0, 0x5000, 0x10);
     func_80023884();
     play_sound(0xED);
-    if (D_800D6B24 != 0) {
-        do {
-            ohSleep(1);
-        } while (D_800D6B24 != 0);
+    while (D_800D6B24 != 0) {
+        ohSleep(1);
     }
-    D_800E9AA0[omCurrentObj->objId] = 1;
+    D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *) 1;
     utilSpawnRect(0xFF, -0x10, 0);
-    if (D_800D6B24 != 0) {
-        do {
-            ohSleep(1);
-        } while (D_800D6B24 != 0);
+    while (D_800D6B24 != 0) {
+        ohSleep(1);
     }
     ohSleep(3.0f * gameTicksPerDrawInv);
-loop_14:
-    var_v0 = *(&gPlayerControllers + 2);
-    if (!(var_v0 & 0x9000)) {
-        if (var_v0 & 0x800) {
+loop14:
+    buttons = gPlayerControllers[1];
+    if (!(buttons & 0x9000)) {
+        if (buttons & 0x800) {
             play_sound(0x113);
             D_800E98E0[omCurrentObj->objId] = 0;
-            var_v0 = *(&gPlayerControllers + 2);
+            buttons = gPlayerControllers[1];
         }
-        if (var_v0 & 0x400) {
+        if (buttons & 0x400) {
             play_sound(0x113);
             D_800E98E0[omCurrentObj->objId] = 1;
         }
         ohSleep(1);
-        goto loop_14;
+        goto loop14;
     }
     play_sound(0xED);
-    temp_v0_3 = omCurrentObj->objId;
-    if ((D_800E98E0[temp_v0_3] == 1) && (D_800E9E20[temp_v0_3] != 1)) {
+    objId = omCurrentObj->objId;
+    if ((D_800E98E0[objId] == 1) && (D_800E9E20[objId] != 1)) {
         if (gGameState == 0x21) {
             D_800D6B6C = 1;
         }
@@ -353,32 +373,26 @@ loop_14:
         utilSetRectColorFullScreen(0, 0, 0);
         utilSpawnRect(0, 0x20, 2);
         auSetBGMVolumeSmooth(0, 0, 8);
-        if (D_800D6B24 != 0) {
-            do {
-                ohSleep(1);
-            } while (D_800D6B24 != 0);
+        while (D_800D6B24 != 0) {
+            ohSleep(1);
         }
         auStopSong(0);
     } else {
         utilSpawnRect(0, 0x10, 0);
-        if (D_800D6B24 != 0) {
-            do {
-                ohSleep(1);
-            } while (D_800D6B24 != 0);
+        while (D_800D6B24 != 0) {
+            ohSleep(1);
         }
         D_800E9AA0[omCurrentObj->objId] = NULL;
         D_800E9C60[omCurrentObj->objId] = 1;
         auSetBGMVolumeSmooth(0, 0x7800, 0x10);
         func_80023794();
         utilSpawnRect(0xFF, -0x10, 0);
-        if (D_800D6B24 != 0) {
-            do {
-                ohSleep(1);
-            } while (D_800D6B24 != 0);
+        while (D_800D6B24 != 0) {
+            ohSleep(1);
         }
         D_800BE544 = 0x8000;
     }
-    func_800B1900(omCurrentObj->unk2);
+    func_800B1900((u16) omCurrentObj->objId);
 }
 #elif defined(PORT)
 /* The PAUSE screen process (draft above). Runs any pending per-track
@@ -979,78 +993,100 @@ void func_800BE028(s32 *arg0, s32 arg1, u32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 127/161, but structurally complete -- the residue is one
+ * register-naming permutation that shifts nearly every line. Real defects,
+ * all allocator-shaped: (a) the ROM keeps NO callee-saved register and homes
+ * the request_track_3 result at 0x18(sp) (frame 0x28); we allocate it to a
+ * saved register (frame 0x20); (b) the unrolled clear loop's `addiu a1,a1,4`
+ * sits in slot 0 of the body in the ROM and slot 6 for us -- the same
+ * counter-slot residue already documented for the matched sibling
+ * func_800BDF2C above; (c) the saveHUDTheme*10 expansion emits its
+ * `addu at,a1,zero` one slot later. Solved semantics: the loop end is
+ * &D_800F4D70[10] (NOT the D_800F5770 symbol -- spelling it as D_800F5770
+ * makes IDO CSE the two addresses into one lui and costs 29 diffs), the
+ * hand-unrolled 4-word body with goto form, and the in-place +D_800ED510
+ * relocation of the D_800ED500 header's +8/+0xC words. */
 s32 func_800BE098(void) {
+    extern s32 D_800F4D18;
+    extern s32 D_800F4D20[];
+    extern s32 D_800F4D48[];
+    extern s32 D_800F6170[];
+    extern s32 D_800D6EC4;
+    extern s32 D_800F6198;
+    extern s32 D_800D6F3C;
+    extern s32 func_800F8560(void);
+    extern s32 func_800AEA64(s32, s32, s32, void *);
+    extern void scSetPostProcessFunc(void *);
     s32 sp18;
-    ? *var_a3;
-    ? *var_t3;
-    ? *var_v0;
-    ? *var_v1;
-    s32 *var_t0;
-    s32 *var_t1;
-    s32 *var_t2;
-    s32 temp_v0;
-    s32 var_a1;
+    u32 *v0;
+    u32 *v1;
+    s32 a1;
+    u32 *t3;
+    u32 *a3;
+    s32 *t0;
+    s32 *t1;
+    s32 *t2;
+    u32 *end;
 
     D_800F4D18 = 2;
-    var_a3 = &D_800F4D70;
-    var_t3 = &D_800F5770;
-    var_t2 = &D_800F4D20;
-    var_t1 = &D_800F4D48;
-    var_t0 = &D_800F6170;
+    end = (u32 *) D_800F4D70[10];
+    a3 = (u32 *) D_800F4D70;
+    t3 = (u32 *) D_800F5770;
+    t2 = D_800F4D20;
+    t1 = D_800F4D48;
+    t0 = D_800F6170;
     do {
-        *var_t0 = 0;
-        *var_t1 = 0;
-        *var_t2 = 0;
-        var_a1 = 0;
-        var_v0 = var_t3;
-        var_v1 = var_a3;
-loop_2:
-        var_a1 += 4;
-        var_v0->unk0 = 0xFFFE7961;
-        var_v1->unk0 = 0;
-        var_v0->unk4 = 0xFFFE7961;
-        var_v1->unk4 = 0;
-        var_v0->unk8 = 0xFFFE7961;
-        var_v1->unk8 = 0;
-        var_v0->unkC = 0xFFFE7961;
-        var_v1->unkC = 0;
-        var_v0 += 0x10;
-        var_v1 += 0x10;
-        if (var_a1 != 0x40) {
-            goto loop_2;
+        *t0 = 0;
+        *t1 = 0;
+        *t2 = 0;
+        a1 = 0;
+        v0 = t3;
+        v1 = a3;
+    loop2:
+        a1 += 4;
+        v0[0] = 0xFFFE7961;
+        v1[0] = 0;
+        v0[1] = 0xFFFE7961;
+        v1[1] = 0;
+        v0[2] = 0xFFFE7961;
+        v1[2] = 0;
+        v0[3] = 0xFFFE7961;
+        v1[3] = 0;
+        v0 += 4;
+        v1 += 4;
+        if (a1 != 0x40) {
+            goto loop2;
         }
-        var_a3 += 0x100;
-        var_t0 += 4;
-        var_t1 += 4;
-        var_t2 += 4;
-        var_t3 += 0x100;
-    } while (var_a3 != &D_800F5770);
-    sp18 = request_track_3(0x26, 0x4A, 0x50, var_a3);
+        a3 += 0x40;
+        t0 += 1;
+        t1 += 1;
+        t2 += 1;
+        t3 += 0x40;
+    } while (a3 != end);
+    sp18 = request_track_3(0x26, 0x4A, 0x50);
     if (func_800F8560() != 9) {
-        func_800BDFB8(&D_800D5310, saveHUDTheme * 0xA, 8);
+        func_800BDFB8(D_800D5310, saveHUDTheme * 0xA, 8);
     } else {
         D_800D6E54 = 0;
         D_800D6E90 = 0;
-        func_800BDFB8(&D_800D5310, saveHUDTheme * 0xA, 0xA);
+        func_800BDFB8(D_800D5310, saveHUDTheme * 0xA, 0xA);
     }
-    func_800BDFB8(&D_800D53DC, saveHUDTheme * 2, 2);
-    func_800BDFB8(&D_800D5408, saveHUDTheme * 2, 2);
-    func_800BDFB8(&D_800D5434, saveHUDTheme * 2, 2);
-    func_800BDFB8(&D_800D5460, saveHUDTheme * 10, 10);
+    func_800BDFB8(D_800D53DC, saveHUDTheme * 2, 2);
+    func_800BDFB8(D_800D5408, saveHUDTheme * 2, 2);
+    func_800BDFB8(D_800D5434, saveHUDTheme * 2, 2);
+    func_800BDFB8(D_800D5460, saveHUDTheme * 0xA, 0xA);
     func_800A8934(0x50001, 0, 0x10, &D_800ED500);
-    D_800ED500.unk8 = D_800ED500.unk8 + &D_800ED510;
-    D_800ED500.unkC = D_800ED500.unkC + &D_800ED510;
+    D_800ED500[2] = D_800ED500[2] + (u32) D_800ED510;
+    D_800ED500[3] = D_800ED500[3] + (u32) D_800ED510;
     D_800F6198 = 0;
     D_800D6EC4 = 0;
     if ((D_800D6F3C == 4) || (D_800D6F3C == 3)) {
         D_800F6198 = 1;
-        temp_v0 = func_800AEA64(0x2D, 0x4A, 0x50, &D_800ED500);
-        sp18 = temp_v0;
-        D_800E98E0[temp_v0] = 0;
+        sp18 = func_800AEA64(0x2D, 0x4A, 0x50, &D_800ED500);
+        D_800E98E0[sp18] = 0;
     }
     func_800BDF2C();
-    func_800BDE0C(NULL);
+    func_800BDE0C(0);
     scSetPostProcessFunc(func_800BDE0C);
     return sp18;
 }

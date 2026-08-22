@@ -1215,36 +1215,53 @@ void func_8022CD00_ovl19(GObj *g) {
     }
 }
 
+/* FACTORY: 191/201, near-miss. Derived from the ASM (not the PORT arm);
+ * everything up to the D_800D6B54 pair matches exactly, including using
+ * `0.0` (not `0.0f`) for the gEntitiesAngleXArray store to fork IDO's
+ * shared $f8 constant off the $f0 one reused for D_800E3750/D_800E6690
+ * (lever 7). Residue: the ROM computes TWO separate %hi/%lo relocations
+ * for `D_800D6B54+0x4` and `D_800D6B54` (as if two distinct externs);
+ * IDO -O2 always folds them into one base register + two offsets no
+ * matter the C spelling -- tried array index, byte-offset cast, and
+ * volatile byte-offset cast, all three compile identically. 10 raw insn
+ * diffs, all in that one four-store cluster. */
 #ifdef MIPS_TO_C
+void func_8022CE18_ovl19(GObj *arg0) {
+    void func_800B1870(GObj *);
+    void func_800B20E0(void *, void ***);
+    void auFunc80020C88(void);
+    void func_800A7EB4(void);
+    void func_8011DA34(void);
+    void func_800BB498(void);
+    void func_80176398_ovl3(void);
+    s32 play_music(s32, s32);
+    extern s32 D_8012E90C;
+    extern u32 *D_800DFD90[];
+    extern f32 gKirbyHp;
+    void func_8022D13C_ovl19(GObj *);
 
-void func_8022CE18_ovl19(s32 arg0) {
-    u32 temp_v0;
-    u32 temp_v0_2;
-
-    *(&D_8012E7E8 + 8) = 1;
+    D_8012E7E8[2] = 1;
     D_800DF150[omCurrentObj->objId] = func_8022D13C_ovl19;
-    setProcessMain(gEntityGObjProcessArray4[omCurrentObj->objId], &func_800B1870, omCurrentObj);
+    setProcessMain(gEntityGObjProcessArray4[omCurrentObj->objId], func_800B1870);
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
-    *(&D_8012E90C + 0x10) = 0;
-    func_800AFA54(*(&D_800DFA10 + (omCurrentObj->objId * 4)));
-    func_800B20E0(omCurrentObj, *(&D_800DFD90 + (omCurrentObj->objId * 4)), omCurrentObj);
-    D_800DFBD0[omCurrentObj->objId]->unk5C->flags = 2;
+    *(s32 *)((u8 *)&D_8012E90C + 0x10) = 0;
+    func_800AFA54(D_800DFA10[omCurrentObj->objId]);
+    func_800B20E0(omCurrentObj, (void ***) D_800DFD90[omCurrentObj->objId]);
+    D_800DFBD0[omCurrentObj->objId][23]->flags = 2;
     gKirbyState.unk7 = 0;
     D_800E8060[omCurrentObj->objId] = -1;
     if ((gKirbyState.floorCollisionNext != 0) && (gKirbyState.ceilingCollisionNext != 0)) {
         gKirbyState.unk30 = 0;
     }
     D_800E6690[omCurrentObj->objId] = 0.0f;
-    temp_v0 = omCurrentObj->objId;
-    D_800E64D0[temp_v0] = D_800E6690[temp_v0];
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    temp_v0_2 = omCurrentObj->objId;
-    D_800E3210[temp_v0_2] = D_800E3750[temp_v0_2];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
-    auFunc80020C88(D_800E3750, &omCurrentObj, omCurrentObj);
+    gEntitiesAngleXArray[omCurrentObj->objId] = 0.0;
+    auFunc80020C88();
     func_800A7EB4();
     if ((gKirbyHp == 0.0f) && (D_800E7B20[omCurrentObj->objId] != 0.0f)) {
         play_sound(0xDC);
@@ -1256,7 +1273,7 @@ void func_8022CE18_ovl19(s32 arg0) {
     func_80176398_ovl3();
     func_800BB498();
     func_800BB468(2, 0);
-    *(&D_800D6B54 + 4) = 0xA0;
+    (&D_800D6B54)[1] = 0xA0;
     D_800D6B54 = 1;
     D_800BE4F8 = 6;
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
@@ -1433,29 +1450,38 @@ void func_8022D5F0_ovl19(s32 arg0) {
 
 }
 
+/* FACTORY: 109/221, register permutation. Derived from the ASM (not the
+ * PORT arm) with two real fixes over the old sketch: func_800A9864 takes
+ * 3 args (m2c's 4th was a leftover register) and the tail func_800B1900
+ * call reads objId as a HALF-WORD at +2 (big-endian low 16 bits of the u32
+ * objId field), `*(u16 *)((u8 *)omCurrentObj + 2)`, not the full 32-bit
+ * field -- that is a real `lhu` in the listing. Every field/constant/
+ * branch and the switch's case values (3/3/0, blends .055/.27/.295) are
+ * exact. The residue is that the ROM caches the gEntitiesNextPosYArray
+ * base in $t0 and D_8022FAB0_ovl19's base in $a3 across the whole
+ * function (both survive the switch); IDO here holds them in the SAME
+ * PAIR of registers but SWAPPED ($a3 for the array, $t0 for the struct
+ * ptr). No source spelling changes which one gets which -- whole-function
+ * temp-register permutation (LEVERS: no source spelling reaches it). The
+ * one-word branch-offset drifts in the tail are downstream of that same
+ * swap, not separate defects. */
 #ifdef MIPS_TO_C
-
-void func_8022D5F8_ovl19(s32 arg0) {
-    f32 *temp_a0;
-    f32 *temp_a0_2;
-    f32 *temp_a0_3;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-    void *temp_v0;
+void func_8022D5F8_ovl19(GObj *arg0) {
+    void func_8022D96C_ovl19(GObj *);
+    struct UnkStruct8022FAB0 *cam;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_8022D96C_ovl19;
-    gEntitiesNextPosYArray[omCurrentObj->objId] = *gEntitiesNextPosYArray;
-    D_800E17D0[omCurrentObj->objId] = *gEntitiesAngleYArray;
-    gEntitiesAngleYArray[omCurrentObj->objId] = *gEntitiesAngleYArray;
-    temp_v0 = func_800FF144();
-    D_8022FAB0_ovl19 = temp_v0;
-    if (temp_v0 != NULL) {
-        temp_v0->unk10 = 18.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];
+    D_800E17D0[omCurrentObj->objId] = gEntitiesAngleYArray[0];
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[0];
+    cam = func_800FF144();
+    D_8022FAB0_ovl19 = cam;
+    if (cam != NULL) {
+        cam->unk10 = 18.0f;
         D_8022FAB0_ovl19->unk14 = 20.0f;
         D_8022FAB0_ovl19->unk18 = -240.0f;
         D_8022FAB0_ovl19->unk21 = 1;
@@ -1463,38 +1489,32 @@ void func_8022D5F8_ovl19(s32 arg0) {
     gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
-    func_800A9864(0x20007, 0x20, 0x10, &D_8022FAB0_ovl19);
-    switch (D_800BE500) {                           /* irregular */
+    func_800A9864(0x20007, 0x20, 0x10);
+    switch (D_800BE500) {
         case 1:
-            temp_a0 = &gEntitiesNextPosYArray[omCurrentObj->objId];
-            *temp_a0 = *temp_a0;
+            gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
             D_800E5F90[omCurrentObj->objId] = 3;
             D_800E6D90[omCurrentObj->objId] = 0.055f;
-            temp_v1 = omCurrentObj->objId;
-            D_800E6BD0[temp_v1] = D_800E6D90[temp_v1];
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
             break;
         case 3:
-            temp_a0_2 = &gEntitiesNextPosYArray[omCurrentObj->objId];
-            *temp_a0_2 += 2.0f;
+            gEntitiesNextPosYArray[omCurrentObj->objId] += 2.0f;
             D_800E5F90[omCurrentObj->objId] = 3;
             D_800E6D90[omCurrentObj->objId] = 0.27f;
-            temp_v1_2 = omCurrentObj->objId;
-            D_800E6BD0[temp_v1_2] = D_800E6D90[temp_v1_2];
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
             break;
         case 4:
-            temp_a0_3 = &gEntitiesNextPosYArray[omCurrentObj->objId];
-            *temp_a0_3 += 2.0f;
+            gEntitiesNextPosYArray[omCurrentObj->objId] += 2.0f;
             D_800E5F90[omCurrentObj->objId] = 0;
             D_800E6D90[omCurrentObj->objId] = 0.295f;
-            temp_v1_3 = omCurrentObj->objId;
-            D_800E6BD0[temp_v1_3] = D_800E6D90[temp_v1_3];
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
             break;
     }
     func_801230E8(0x20061, 0x20062, 1);
     gKirbyState.unk30 += 1;
     ohSleep(1);
     func_800FF1CC(D_8022FAB0_ovl19);
-    func_800B1900(omCurrentObj->unk2);
+    func_800B1900(*(u16 *)((u8 *)omCurrentObj + 2));
 }
 #elif defined(PORT)
 /* PORT: behavioral port of the MIPS_TO_C sketch above, verified against
@@ -1571,56 +1591,59 @@ void func_8022D96C_ovl19(GObj *g) {
     D_8022FAB0_ovl19->unkC = sp1C.z;
 }
 
+/* FACTORY: 77/491, whole-function register pressure. Derived from the ASM
+ * (not the PORT arm), which has a real bug: it names the second camera
+ * slot as a fictional standalone extern `D_8022FAB4_ovl19` (an LP64-only
+ * 8-byte cell that has no N64 symbol_addrs.txt entry). On the ROM it is
+ * `(&D_8022FAB0_ovl19)[1]` -- the SAME single-pointer global, index 1 --
+ * confirmed by the `sw $v0,0x4($v1) <D_8022FAB0_ovl19>` relocation.
+ * Structure kept from the old MIPS_TO_C sketch: the goto/`block_9` shared
+ * tail is real (case 1 falls through, cases 3/4 jump in) -- the PORT
+ * arm's flattened per-case duplicate is a divergence, not a match target.
+ * Every offset/constant this drafts checks out once the [1] fix lands.
+ * Residue: the ROM caches &omCurrentObj in $s2 across every call in the
+ * function (plus $s0/$s1 for other bases); this draft does not get IDO to
+ * hold as many callee-saved regs, so nearly the whole body free-floats to
+ * different temp registers downstream. Whole-function register-pressure
+ * floor (LEVERS: no source spelling reaches it) -- prime permuter fuel
+ * given its size. */
 #ifdef MIPS_TO_C
-
-void func_8022D9F8_ovl19(s32 arg0) {
+void func_8022D9F8_ovl19(GObj *arg0) {
+    void func_8022E198_ovl19(GObj *);
+    extern s32 D_800D6E14;
+    struct UnkStruct8022FAB0 *cam;
     f32 *var_at;
     f32 var_f16;
-    u32 temp_v1;
-    u32 temp_v1_10;
-    u32 temp_v1_11;
-    u32 temp_v1_12;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-    u32 temp_v1_4;
-    u32 temp_v1_5;
-    u32 temp_v1_6;
-    u32 temp_v1_7;
-    u32 temp_v1_8;
-    u32 temp_v1_9;
-    void *temp_v0;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
     func_8011CF58();
     D_800DF150[omCurrentObj->objId] = func_8022E198_ovl19;
-    gEntitiesNextPosYArray[omCurrentObj->objId] = *gEntitiesNextPosYArray;
-    D_800E17D0[omCurrentObj->objId] = *gEntitiesAngleYArray;
-    gEntitiesAngleYArray[omCurrentObj->objId] = *gEntitiesAngleYArray;
-    temp_v0 = func_800FF144(gEntitiesAngleYArray);
-    D_8022FAB0_ovl19.unk4 = temp_v0;
-    if (temp_v0 != NULL) {
-        temp_v0->unk10 = 24.0f;
-        D_8022FAB0_ovl19.unk4->unk14 = 20.0f;
-        D_8022FAB0_ovl19.unk4->unk18 = -240.0f;
-        D_8022FAB0_ovl19.unk4->unk21 = 1;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];
+    D_800E17D0[omCurrentObj->objId] = gEntitiesAngleYArray[0];
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[0];
+    cam = func_800FF144();
+    (&D_8022FAB0_ovl19)[1] = cam;
+    if (cam != NULL) {
+        cam->unk10 = 24.0f;
+        (&D_8022FAB0_ovl19)[1]->unk14 = 20.0f;
+        (&D_8022FAB0_ovl19)[1]->unk18 = -240.0f;
+        (&D_8022FAB0_ovl19)[1]->unk21 = 1;
     }
     gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x2006B, 0x20, 0x10);
-    D_800DFBD0[omCurrentObj->objId]->unk30->flags = 2;
-    switch (D_800BE500) {                           /* irregular */
+    D_800DFBD0[omCurrentObj->objId][12]->flags = 2;
+    switch (D_800BE500) {
         case 1:
             D_800E5F90[omCurrentObj->objId] = 1;
             D_800E6D90[omCurrentObj->objId] = 0.15f;
-            temp_v1 = omCurrentObj->objId;
-            D_800E6BD0[temp_v1] = D_800E6D90[temp_v1];
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
             D_800E6690[omCurrentObj->objId] = 0.0f;
-            temp_v1_2 = omCurrentObj->objId;
-            D_800E64D0[temp_v1_2] = D_800E6690[temp_v1_2];
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
             D_800E6850[omCurrentObj->objId] = 65535.0f;
-            play_sound(0x1DB, 1);
+            play_sound(0x1DB);
             func_801230E8(0x203BA, 0x203BB, 0);
             ohSleep(0x10);
             D_800E64D0[omCurrentObj->objId] = 12.0f;
@@ -1630,27 +1653,23 @@ void func_8022D9F8_ovl19(s32 arg0) {
             D_800E6690[omCurrentObj->objId] = -0.7f;
             ohSleep(0x12);
             D_800E6690[omCurrentObj->objId] = 0.0f;
-            temp_v1_3 = omCurrentObj->objId;
-            D_800E64D0[temp_v1_3] = D_800E6690[temp_v1_3];
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
             D_800E6850[omCurrentObj->objId] = 65535.0f;
             D_800E5F90[omCurrentObj->objId] = 3;
             D_800E6D90[omCurrentObj->objId] = 0.055f;
-            temp_v1_4 = omCurrentObj->objId;
-            var_f16 = D_800E6D90[temp_v1_4];
-            var_at = &D_800E6BD0[temp_v1_4];
+            var_f16 = D_800E6D90[omCurrentObj->objId];
+            var_at = &D_800E6BD0[omCurrentObj->objId];
 block_9:
             *var_at = var_f16;
             break;
         case 3:
             D_800E5F90[omCurrentObj->objId] = 1;
             D_800E6D90[omCurrentObj->objId] = 0.0f;
-            temp_v1_5 = omCurrentObj->objId;
-            D_800E6BD0[temp_v1_5] = D_800E6D90[temp_v1_5];
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
             D_800E6690[omCurrentObj->objId] = 0.0f;
-            temp_v1_6 = omCurrentObj->objId;
-            D_800E64D0[temp_v1_6] = D_800E6690[temp_v1_6];
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
             D_800E6850[omCurrentObj->objId] = 65535.0f;
-            play_sound(0x1DB, 1);
+            play_sound(0x1DB);
             func_801230E8(0x203BA, 0x203BB, 0);
             ohSleep(5);
             D_800E64D0[omCurrentObj->objId] = 12.0f;
@@ -1660,25 +1679,21 @@ block_9:
             D_800E6690[omCurrentObj->objId] = -0.595f;
             ohSleep(0x14);
             D_800E6690[omCurrentObj->objId] = 0.0f;
-            temp_v1_7 = omCurrentObj->objId;
-            D_800E64D0[temp_v1_7] = D_800E6690[temp_v1_7];
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
             D_800E6850[omCurrentObj->objId] = 65535.0f;
             D_800E5F90[omCurrentObj->objId] = 3;
             D_800E6D90[omCurrentObj->objId] = 0.27f;
-            temp_v1_8 = omCurrentObj->objId;
-            var_f16 = D_800E6D90[temp_v1_8];
-            var_at = &D_800E6BD0[temp_v1_8];
+            var_f16 = D_800E6D90[omCurrentObj->objId];
+            var_at = &D_800E6BD0[omCurrentObj->objId];
             goto block_9;
         case 4:
             D_800E5F90[omCurrentObj->objId] = 1;
             D_800E6D90[omCurrentObj->objId] = 0.0f;
-            temp_v1_9 = omCurrentObj->objId;
-            D_800E6BD0[temp_v1_9] = D_800E6D90[temp_v1_9];
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
             D_800E6690[omCurrentObj->objId] = 0.0f;
-            temp_v1_10 = omCurrentObj->objId;
-            D_800E64D0[temp_v1_10] = D_800E6690[temp_v1_10];
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
             D_800E6850[omCurrentObj->objId] = 65535.0f;
-            play_sound(0x1DB, 1);
+            play_sound(0x1DB);
             func_801230E8(0x203BA, 0x203BB, 0);
             D_800E64D0[omCurrentObj->objId] = 12.0f;
             D_800E6690[omCurrentObj->objId] = 0.0f;
@@ -1687,21 +1702,19 @@ block_9:
             D_800E6690[omCurrentObj->objId] = -0.615f;
             ohSleep(0x14);
             D_800E6690[omCurrentObj->objId] = 0.0f;
-            temp_v1_11 = omCurrentObj->objId;
-            D_800E64D0[temp_v1_11] = D_800E6690[temp_v1_11];
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
             D_800E6850[omCurrentObj->objId] = 65535.0f;
             D_800E5F90[omCurrentObj->objId] = 0;
             D_800E6D90[omCurrentObj->objId] = 0.295f;
-            temp_v1_12 = omCurrentObj->objId;
-            var_f16 = D_800E6D90[temp_v1_12];
-            var_at = &D_800E6BD0[temp_v1_12];
+            var_f16 = D_800E6D90[omCurrentObj->objId];
+            var_at = &D_800E6BD0[omCurrentObj->objId];
             goto block_9;
     }
     D_800D6E14 = 1;
     func_800AF27C();
     ohSleep(1);
-    func_800FF1CC(D_8022FAB4_ovl19);
-    func_800B1900(omCurrentObj->unk2);
+    func_800FF1CC((&D_8022FAB0_ovl19)[1]);
+    func_800B1900(*(u16 *)((u8 *)omCurrentObj + 2));
 }
 #elif defined(PORT)
 /* PORT: behavioral port of the MIPS_TO_C sketch above, verified against

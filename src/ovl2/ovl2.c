@@ -218,27 +218,42 @@ void func_800F62A4(UNUSED s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 201/224 instructions match (23 diffs); exact instruction
+ * count, frame (0x28), every branch, call, offset and stack slot.
+ * Residue is three register-name swaps with no source spelling behind
+ * them: the D_800D6B18+8 address temp lands in $t7 where the ROM uses
+ * $v1, and that rotates $v0/$v1 (D_800BE500 vs the constant 3) and
+ * $a0/$a1 (D_800D799C base vs the loop index) for the rest of the
+ * body. */
 void func_800F64B0(void) {
-    s32 sp20;
-    GObj *temp_v0;
+    extern u16 D_800D6B30;
+    extern u8 D_800D6B18[];
+    extern s32 D_800BE500;
+    extern s32 D_800BE504;
+    extern s32 D_800BE508;
+    extern s32 D_800BE534;
+    extern s32 D_800BE4FC;
+    extern u8 D_800D6E20[];
+    extern s32 D_800D6B48;
+    extern s32 D_800D6B6C;
+    extern void *D_801290D8;
+    u8 *var_v0;
     s32 var_a0;
-    s32 music;
-    u8 var_v1;
-    void *var_v0;
 
     D_800D6B30 = 0;
-    temp_v0 = ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF);
-    *(&D_800D6B18 + 8) = temp_v0;
-    func_80007C00(&temp_v0->data.dobj->next, 10.0f, 10.0f, 310.0f, 182.0f);
+    var_v0 = (u8 *) ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF);
+    *(u8 **) (u32) (D_800D6B18 + 8) = var_v0;
+    func_80007C00((Vp *) (*(u8 **) (var_v0 + 0x3C) + 8), 10.0f, 10.0f, 310.0f, 182.0f);
     HS64_omMakeGObj(0, func_800F62A4, 0x1A, 0x80000000);
     func_800AE048(0x40);
     func_800AE0F0();
     func_800A6E64();
     func_800A78D0(0);
-    if (((D_800BE500 == 6) && (D_800BE504 == 0) && (D_800BE534 == 2)) || ((D_800BE500 == 5) && (D_800BE504 == 3))) {
+    if (((D_800BE500 == 6) && (D_800BE504 == 0) && (D_800BE534 == 2))
+        || ((D_800BE500 == 5) && (D_800BE504 == 3))) {
         func_800A8724(2);
-    } else if ((D_800BE500 == 4) && (D_800BE504 == 3) && (D_800BE534 == 3) && (D_800BE508 != 0)) {
+    } else if ((D_800BE500 == 4) && (D_800BE504 == 3) && (D_800BE534 == 3)
+               && (D_800BE508 != 0)) {
         func_800A8724(3);
     } else {
         func_800A8724(0);
@@ -254,49 +269,47 @@ void func_800F64B0(void) {
     func_800A6BC0(5);
     var_a0 = 0;
     do {
-        var_v0 = (D_800D799C->data.dobj + var_a0)->unk64;
-        var_v1 = var_v0->unk4;
-        if (var_v1 == 6) {
-            var_v0->unk4 = 0xC;
-            var_v0 = (D_800D799C->data.dobj + var_a0)->unk64;
-            var_v1 = var_v0->unk4;
+        var_v0 = *(u8 **) ((u8 *) D_800D799C->data.ptr + var_a0 + 0x64);
+        if (var_v0[4] == 6) {
+            var_v0[4] = 0xC;
+            var_v0 = *(u8 **) ((u8 *) D_800D799C->data.ptr + var_a0 + 0x64);
         }
         var_a0 += 4;
-        if (var_v1 == 7) {
-            var_v0->unk4 = 0xD;
+        if (var_v0[4] == 7) {
+            var_v0[4] = 0xD;
         }
     } while (var_a0 != 8);
-    music = D_801290D8->unkC;
-    switch (music) {                               /* irregular */
-        case 39:
-            if (func_800B9DF8(2, music, 0xC, 7) != 0) {
-                music = 0xD;
+    var_a0 = *(s32 *) ((u8 *) D_801290D8 + 0xC);
+    switch (var_a0) {
+        case 0x27:
+            if (func_800B9DF8(2) != 0) {
+                var_a0 = 0xD;
             }
             break;
-        case 40:
-            if (func_800B9DF8(2, music, 0xC, 7) != 0) {
-                music = 0x12;
+        case 0x28:
+            if (func_800B9DF8(2) != 0) {
+                var_a0 = 0x12;
             }
             break;
-        case 41:
-            if (func_800B9DF8(2, music, 0xC, 7) != 0) {
-                music = 8;
+        case 0x29:
+            if (func_800B9DF8(2) != 0) {
+                var_a0 = 8;
             }
             break;
-        case 34:
-            if (*(&D_800D6E20 + D_800BE508) != 0) {
-                music = D_800D6B48;
+        case 0x22:
+            if (D_800D6E20[D_800BE508] != 0) {
+                var_a0 = D_800D6B48;
             }
             break;
     }
-    D_800D6B48 = music;
-    if (*(&D_800D6B6C + 4) == 1) {
-        music = D_801290D8->unkC;
+    D_800D6B48 = var_a0;
+    if (*(s32 *) ((u8 *) &D_800D6B6C + 4) == 1) {
+        var_a0 = *(s32 *) ((u8 *) D_801290D8 + 0xC);
     }
     if ((D_800D6F3C >= 3) && (D_800D6F3C != 4)) {
-        music = 0;
+        var_a0 = 0;
     }
-    play_music(0, music);
+    play_music(0, var_a0);
     if (func_800F8560() == 2) {
         func_800BB98C(2, 0);
         return;
@@ -408,37 +421,67 @@ void func_800F64B0(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 98/160 instructions match (62 diffs); exact instruction
+ * count, frame (0x80), stack-slot layout, every branch and every
+ * call. Residue is an integer temp-register rotation (the
+ * &D_800BE544 address lands in $a3 where the ROM uses $v1, rotating
+ * $v0/$v1 and the $t-pool through the rest of the body) plus the
+ * scheduling of the three-byte colour OR chain, whose source
+ * association already matches the ROM.
+ * NOTE for the factory: the three u16 stores at D_800D6F3C+4/+6/+8
+ * must each come from a DIFFERENT base symbol or IDO CSEs the
+ * address into one register (9 diffs); D_800D6F38+8, D_800D6F42 and
+ * D_800D6F3C+8 are the three spellings that reproduce the ROM's
+ * three independent $at pairs. The real source almost certainly had
+ * three named symbols there. */
 void func_800F6830(void) {
-    DObj *sp3C;
-    ? sp3A;
-    DObj *temp_v0;
-    s32 temp_v0_2;
-    void *temp_v1;
+    extern u16 gPlayerControllers[];
+    extern u8 D_800D478C[];
+    extern u8 D_800D6B18[];
+    extern s32 D_800BE4EC;
+    extern f32 gKirbyHp;
+    extern f32 D_800D6ED0[4][4];
+    extern u32 D_800EC2E0[];
+    extern void *D_801290D8;
+    void guLookAtF(f32 [4][4], f32, f32, f32, f32, f32, f32, f32, f32, f32);
+    void guMtxCatF(f32 [4][4], f32 [4][4], f32 [4][4]);
+    void HS64_PerspectiveF(f32 [4][4], u16 *, f32, f32, f32, f32, f32);
+    void utilPauseAllGObjs(void);
+    void utilResumeAllGObjs(void);
+    s32 func_800AEA64(s32, s32, s32);
+    f32 sp40[4][4];
+    u8 *sp3C;
+    u16 sp3A;
+    u8 *temp_v1;
 
-    *(&D_800D6F3C + 4) = gPlayerControllers.unk0;
-    *(&D_800D6F3C + 6) = gPlayerControllers.unk2;
-    *(&D_800D6F3C + 8) = gPlayerControllers.unk4;
+    *(u16 *) ((u8 *) &D_800D6F38 + 8) = gPlayerControllers[0];
+    D_800D6F42 = gPlayerControllers[1];
+    *(u16 *) ((u8 *) &D_800D6F3C + 8) = gPlayerControllers[2];
     if (D_800D7B68 != 0) {
-        temp_v0 = D_800D799C->data.dobj;
-        sp3C = temp_v0;
-        guLookAtF(&sp40[0], (bitwise f32) temp_v0->scale.mtx, temp_v0->scale.v.x, temp_v0->scale.v.y, temp_v0->scale.v.z, (bitwise f32) temp_v0->unk4C, (bitwise f32) temp_v0->unk50, temp_v0->unk54, (bitwise f32) temp_v0->unk58, (bitwise f32) temp_v0->unk5C);
-        HS64_PerspectiveF(D_800D6ED0, &sp3A, sp3C->pos.v.y, sp3C->pos.v.z, sp3C->angle.mtx, sp3C->angle.a, sp3C->angle.v.x);
-        guMtxCatF(&sp40[0], D_800D6ED0, D_800D6ED0);
+        sp3C = (u8 *) D_800D799C->data.ptr;
+        guLookAtF(sp40,
+                  *(f32 *) (sp3C + 0x3C), *(f32 *) (sp3C + 0x40), *(f32 *) (sp3C + 0x44),
+                  *(f32 *) (sp3C + 0x48), *(f32 *) (sp3C + 0x4C), *(f32 *) (sp3C + 0x50),
+                  *(f32 *) (sp3C + 0x54), *(f32 *) (sp3C + 0x58), *(f32 *) (sp3C + 0x5C));
+        HS64_PerspectiveF(D_800D6ED0, &sp3A,
+                          *(f32 *) (sp3C + 0x20), *(f32 *) (sp3C + 0x24),
+                          *(f32 *) (sp3C + 0x28), *(f32 *) (sp3C + 0x2C),
+                          *(f32 *) (sp3C + 0x30));
+        guMtxCatF(sp40, D_800D6ED0, D_800D6ED0);
     }
-    temp_v1 = (D_801290D8->unkA * 0xC) + &D_800D478C;
-    (*(&D_800D6B18 + 8))->unk3C->unk84 = (temp_v1->unk2 << 8) | (temp_v1->unk0 << 0x18) | (temp_v1->unk1 << 0x10) | 0xFF;
+    temp_v1 = &D_800D478C[*(u16 *) ((u8 *) D_801290D8 + 0xA) * 12];
+    *(u32 *) ((u8 *) (*(GObj **) (D_800D6B18 + 8))->data.ptr + 0x84) =
+        (temp_v1[2] << 8) | (temp_v1[0] << 24) | (temp_v1[1] << 16) | 0xFF;
     D_800BE4EC += 1;
     func_800BBF60(&D_800BE4EC);
     if ((D_800BE544 >= 0) && (D_800BE4F8 == 1) && (gKirbyHp != 0.0f)) {
         if (func_800F8560() != 3) {
             if (D_800BE544 == 0) {
-                if (*(&gPlayerControllers + 2) & 0x1000) {
+                if (gPlayerControllers[1] & 0x1000) {
                     func_800BB3F0();
                     utilPauseAllGObjs();
-                    temp_v0_2 = func_800AEA64(0x27, 0x4A, 0x70);
-                    D_800BE544 = temp_v0_2;
-                    *(&D_800EC2E0 + (temp_v0_2 * 4)) = 0;
+                    D_800BE544 = func_800AEA64(0x27, 0x4A, 0x70);
+                    D_800EC2E0[D_800BE544] = 0;
                 }
             } else if (D_800BE544 & 0x8000) {
                 D_800BE544 = 0;

@@ -702,7 +702,73 @@ void func_8015CC84_ovl3(s32 arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 5/267, whole-function callee-saved permutation (same floor
+ * class as the rest of this cluster). The N64 draft calls func_800A77E8 /
+ * func_800A7870 inline, which is what the asm's jal targets show; the PORT
+ * arm's pc_sndpair_start/pc_sndpair_release are static helpers defined at
+ * the top of THIS file that wrap those same two calls (an earlier report
+ * that they were unresolved stubs was wrong -- they are real and linked).
+ * Queued for the permuter. */
+/* PORT: the lobbed-throw init coroutine, from asm/nonmatchings/ovl3/plyshot/
+ * func_8015CF9C_ovl3.s. Spawns at the carry target, launches along the
+ * throw angle in D_800EC660 with speed 1.5x the parent's charge clamped to
+ * [8,18] under gravity -0.55, then sleeps until the service routine
+ * func_8015D3C8_ovl3 signals impact through D_800E98E0; on wake it detaches
+ * from the parent, plays the burst (anim 0x20047 / voice 0xB7 / fgm 0x202A0)
+ * and destroys the track. */
+void func_8015CF9C_ovl3(s32 arg0) {
+    extern f32 **D_80192CA4_ovl3;
+    extern void func_800B4954(s32);
+    extern void func_8015D3C8_ovl3(struct GObj *);
+    extern s32 func_800A8234(s32, s32, s32);
+    extern void func_800A9760(s32);
+    extern void func_800A77E8(s32, s32 *, s32 *);
+    extern void func_800A7870(void **, u16 *);
+    float sinf(float);
+    float cosf(float);
+    s32 id = omCurrentObj->objId;
+    s32 pairHandle;
+    s32 pairSid;
+    f32 spd;
+
+    D_800EA520[id] = 0;
+    D_800E98E0[id] = 0;
+    func_80161CE0_ovl3(arg0);
+    func_80161EC0_ovl3(D_800E1ED0[id - 112], 40.0f - (sinf(D_800EC660[id]) * 63.6396f),
+                       sinf(D_800EC660[id]) * -65.0f);
+    D_800DEF90[id] = func_800B4954;
+    D_800DF150[id] = func_8015D3C8_ovl3;
+    D_800E0490[id] = &D_80192CA4_ovl3;
+    func_80154648_ovl3(D_800E0D50[id], D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]);
+    D_800EA520[id] = func_800A8234(1, 1, 0x2A);
+    spd = (f32) D_800E9720[D_800E0D50[id]] * 1.5f;
+    if (spd < 8.0f) {
+        spd = 8.0f;
+    } else if (spd > 18.0f) {
+        spd = 18.0f;
+    }
+    D_800E64D0[id] = cosf(D_800EC660[id]) * spd * D_800E6A10[id];
+    D_800E6690[id] = 0.0f;
+    D_800E6850[id] = 18.0f;
+    D_800E3210[id] = sinf(D_800EC660[id]) * spd;
+    D_800E3750[id] = -0.55f;
+    D_800E3C90[id] = 24.0f;
+    gEntitiesScaleXArray[id] = 0.2f;
+    gEntitiesScaleYArray[id] = 0.2f;
+    gEntitiesScaleZArray[id] = 0.2f;
+    func_800A9864(0x20030, 0x21, 0x10);
+    while (D_800E98E0[id] == 0) {
+        ohSleep(1);
+    }
+    D_800E0D50[id] = -1;
+    func_800A9760(0x20047);
+    func_800A77E8(0xB7, &pairHandle, &pairSid);
+    func_800AA154(0x202A0);
+    func_800A7870((void **) &pairHandle, (u16 *) &pairSid);
+    func_800B1900((u16) id);
+}
+#elif defined(PORT)
 /* PORT: the lobbed-throw init coroutine, from asm/nonmatchings/ovl3/plyshot/
  * func_8015CF9C_ovl3.s. Spawns at the carry target, launches along the
  * throw angle in D_800EC660 with speed 1.5x the parent's charge clamped to
@@ -762,7 +828,86 @@ void func_8015CF9C_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015CF9C_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 3/245, whole-function callee-saved permutation (same floor
+ * class as the rest of this cluster -- correct instruction count and
+ * control flow, near-total register/frame mismatch). Also gives the
+ * PcPlyshotFx view a local-scope equivalent (LocalPlyshotFx) since the
+ * real struct is declared inside an #ifdef PORT block elsewhere in this
+ * file and can't be reached from here without a file-scope move. Queued
+ * for the permuter. */
+/* PORT: service routine for the lobbed throw installed by func_8015CF9C_ovl3
+ * above, from asm/nonmatchings/ovl3/plyshot/func_8015D3C8_ovl3.s. Before
+ * impact (D_800E98E0==0) it pops off-screen, faces the walk direction,
+ * pitches the model along its velocity (-atan2(vy,|vx|)), and while nothing
+ * has been hit re-seats the trail effect block from position+angles and
+ * steps the flight track; any contact (ground, hit record, shot collision
+ * or off-parent flag) freezes the motion and raises D_800E98E0=1, waking
+ * the sleeping init coroutine to run the burst. After impact it drives the
+ * burst: scales anim D_801915B4 and ring row D_801943A8 by trail DObj [1]'s
+ * scale.x and runs the impact hit record D_80194458. */
+void func_8015D3C8_ovl3(struct GObj *arg0) {
+    extern char D_80190C38_ovl3[];
+    extern s32 D_801915B4_ovl3[];
+    extern f32 D_801943A8_ovl3[][4];
+    extern f32 D_80198438_ovl3[];
+    extern s32 D_80194458_ovl3[];
+    extern s32 func_800B3158(void);
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern void func_80162150_ovl3();
+    s32 func_8016854C_ovl3(s32, s32, f32);
+    s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
+    f32 atan2f(f32, f32);
+    s32 id = omCurrentObj->objId;
+
+    if (D_800E98E0[id] != 0) {
+        f32 s = D_800DFBD0[id][1]->scale.v.x;
+
+        func_8016854C_ovl3((s32) (uintptr_t) D_801915B4_ovl3, 0, s);
+        func_80152070_ovl3(D_801943A8_ovl3, (f32 (*)[4]) D_80198438_ovl3, 0xB, s);
+        func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_80194458_ovl3, 0, id);
+        return;
+    }
+    if (func_800B3158() == 0) {
+        func_800A22D4(D_800EA520[id]);
+        func_800B1900((u16) id);
+        return;
+    }
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    {
+        f32 h = D_800E64D0[id];
+
+        if (h < 0.0f) {
+            h = -h;
+        }
+        gEntitiesAngleXArray[id] = -atan2f(D_800E3210[id], h);
+    }
+    if ((D_800E6310[id] == 0) && (D_800E83E0[id] == 0)
+        && (func_8015550C_ovl3(D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]) == 0)
+        && (D_800E8920[id] == 0)) {
+        struct LocalPlyshotFx { u32 unk0; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
+        struct LocalPlyshotFx *fx = ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
+
+        fx->unk4 = gEntitiesNextPosXArray[id];
+        fx->unk8 = gEntitiesNextPosYArray[id];
+        fx->unkC = gEntitiesNextPosZArray[id];
+        fx->unk10 = gEntitiesAngleXArray[id];
+        fx->unk14 = gEntitiesAngleYArray[id];
+        fx->unk18 = gEntitiesAngleZArray[id];
+        func_80162150_ovl3();
+        func_80111C4C(func_801117BC(D_80190C38_ovl3, id));
+        return;
+    }
+    D_800E6690[id] = 0.0f;
+    D_800E64D0[id] = D_800E6690[id];
+    D_800E6850[id] = 65535.0f;
+    D_800E3750[id] = 0.0f;
+    D_800E3210[id] = D_800E3750[id];
+    D_800E3C90[id] = 65535.0f;
+    D_800E98E0[id] = 1;
+    func_800A22D4(D_800EA520[id]);
+}
+#elif defined(PORT)
 /* PORT: service routine for the lobbed throw installed by func_8015CF9C_ovl3
  * above, from asm/nonmatchings/ovl3/plyshot/func_8015D3C8_ovl3.s. Before
  * impact (D_800E98E0==0) it pops off-screen, faces the walk direction,
@@ -1727,7 +1872,74 @@ void func_80160378_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80160378_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 2/235, whole-function callee-saved permutation (same floor
+ * class documented in ovl3_1.c -- correct instruction count and control
+ * flow, near-total register-naming/frame mismatch, -0x38 vs -0x48
+ * frame). Queued for the permuter. */
+/* PORT: service routine for func_80160378_ovl3's dropped bomb above (anim
+ * 0x2003E), from asm/nonmatchings/ovl3/plyshot/func_801606A0_ovl3.s. On
+ * ability end it releases the looping sound (handle parked in D_800E98E0
+ * with its id in D_800E9AA0) and both attached effects and dies; on wall
+ * hit or timeout it does the same release then shrinks away on the
+ * D_800EA6E0/D_800EA8A0 scale decay; while live it counts the fuse down,
+ * runs the contact sweep, freezes the fuse on a floor hit, and otherwise
+ * plays anim script D_80190E3C_ovl3 on DObj [1]. */
+void func_801606A0_ovl3(struct GObj *arg0) {
+    extern char D_80190E3C_ovl3[];
+    extern s32 func_800B3158(void);
+    extern void func_800A1F30(s32);
+    extern void func_800A7870(void **, u16 *);
+    extern s32 func_801555B0_ovl3(f32 *, f32 *);
+    extern s32 func_80162000_ovl3(char *, s32, f32);
+    s32 id = omCurrentObj->objId;
+    void *h;
+    u16 sid;
+
+    if (func_800B3158() == 0) {
+        h = (void *) (uintptr_t) (u32) D_800E98E0[id];
+        sid = (u16) D_800E9AA0[id].as_u32;
+        func_800A7870(&h, &sid);
+        func_800A1F30(D_800EA520[id]);
+        func_800A1F30(D_800EB4E0[id]);
+        func_800B1900((u16) id);
+        return;
+    }
+    if ((D_800E6310[id] != 0) || (D_800E9720[id] == 0)) {
+        if (D_800EA520[id] != 0) {
+            h = (void *) (uintptr_t) (u32) D_800E98E0[id];
+            sid = (u16) D_800E9AA0[id].as_u32;
+            func_800A7870(&h, &sid);
+            func_800A1F30(D_800EA520[id]);
+            func_800A1F30(D_800EB4E0[id]);
+            D_800EB4E0[id] = 0;
+            D_800EA520[id] = D_800EB4E0[id];
+            D_800E6690[id] = 0.0f;
+            D_800E64D0[id] = D_800E6690[id];
+            D_800E6850[id] = 65535.0f;
+        }
+        D_800EA6E0[id] -= 0.125f;
+        if (D_800EA6E0[id] == 0.0f) {
+            func_800B1900((u16) id);
+        }
+        D_800EA8A0[id] -= 0.07f;
+        gEntitiesScaleYArray[id] = D_800EA6E0[id] * 0.2f;
+        gEntitiesScaleZArray[id] = D_800EA8A0[id] * 0.2f;
+        gEntitiesScaleXArray[id] = gEntitiesScaleZArray[id];
+        return;
+    }
+    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    if (D_800E9720[id] != 0) {
+        D_800E9720[id] -= 1;
+    }
+    func_801555B0_ovl3(D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]);
+    if (D_800E8920[id] != 0) {
+        D_800E9720[id] = 0;
+        return;
+    }
+    func_80162000_ovl3(D_80190E3C_ovl3, (s32) (uintptr_t) D_800DFBD0[id][1], 1.0f);
+}
+#elif defined(PORT)
 /* PORT: service routine for func_80160378_ovl3's dropped bomb above (anim
  * 0x2003E), from asm/nonmatchings/ovl3/plyshot/func_801606A0_ovl3.s. On
  * ability end it releases the looping sound (handle parked in D_800E98E0
@@ -2570,7 +2782,153 @@ void func_801634D4_ovl3(s32 arg0) {
     curObjSleepForever();
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 4/262, whole-function callee-saved permutation (same floor
+ * class as the rest of this cluster). Replaces the PORT arm's unresolved
+ * pc_sndpair_start/pc_sndpair_release wrappers with inline equivalents
+ * (myPcSndpairRelease/myPcSndpairStart, mirroring the PORT-guarded
+ * static helpers earlier in this file) calling the real func_800A77E8/
+ * func_800A7870; also gives PcPlyshotFx a local-scope view for the same
+ * reason as func_8015D3C8_ovl3. Known residual defect: the ROM calls
+ * func_800A7870 directly inline at each site (jal func_800A7870) rather
+ * than through a helper -- IDO did not inline this draft's static
+ * wrapper, which is a real (not just register-shaped) source of the
+ * diff and a good next lever for whoever picks this back up: inline the
+ * pair-unwrap by hand at each of the three call sites. Queued for the
+ * permuter. */
+/* PORT: per-frame service for the spit-spray cloud created by
+ * func_801634D4_ovl3 (anim 0x20041), from asm/nonmatchings/ovl3/plyshot/
+ * func_801636A4_ovl3.s. Ends the effect once Kirby leaves the spit action
+ * (gKirbyState.unk4 == 1 or action != 0x18); otherwise it sinks 5 units a
+ * frame, ramps the growth counter D_800E9720 toward 30, and on a
+ * water<->air transition of the parent swaps the looping sound pair
+ * (tables D_8019684C/D_80196858, stage picked from the growth counter) and
+ * the attached particle effect. The effect GObj's parameter block is
+ * re-seated over the parent each frame, the spray hit record is run against
+ * enemies with func_80155E58_ovl3 as the break callback -- one-shot gated
+ * by the byte at D_8012E860+0x11 -- and anim script D_80191044_ovl3 runs on
+ * the parent. The sound pair lives at the coroutine-stack address the init
+ * parked in D_800E9FE0 (as_ptr, so no truncation), accessed through the
+ * pc_sndpair_* helpers. */
+static void myPcSndpairRelease(void *base) {
+    extern void func_800A7870(void **, u16 *);
+    u32 *p = base;
+    void *h;
+    u16 sid;
+
+    if (p == NULL) {
+        return;
+    }
+    h = (void *) (uintptr_t) p[0];
+    sid = *(u16 *) (p + 1);
+    func_800A7870(&h, &sid);
+    p[0] = 0;
+    *(u16 *) (p + 1) = 0;
+}
+
+static void myPcSndpairStart(s32 fgm, void *base) {
+    extern void func_800A77E8(s32, s32 *, s32 *);
+    u32 *p = base;
+    void *h = NULL;
+    u16 sid = 0;
+
+    func_800A77E8(fgm, (s32 *) &h, (s32 *) &sid);
+    if (p != NULL) {
+        p[0] = (u32) (uintptr_t) h;
+        *(u16 *) (p + 1) = sid;
+    }
+}
+
+void func_801636A4_ovl3(s32 arg0) {
+    extern s32 D_8019684C_ovl3[];
+    extern s32 D_80196858_ovl3[];
+    extern s32 D_80193920_ovl3[];
+    extern char D_80191044_ovl3[];
+    extern s32 func_80111A04(char *, s32);
+    extern s32 func_80155E58_ovl3(void);
+    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+    extern f32 D_80198540_ovl3[][8];
+    extern void func_800B26D8(Vector *, s32, s32);
+    extern s32 func_800A8234(s32, s32, s32);
+    s32 id = omCurrentObj->objId;
+    s32 parent = D_800E0D50[id];
+    void *pair = D_800E9FE0[id].as_ptr;
+    struct LocalPlyshotFx2 { u32 unk0; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
+    struct LocalPlyshotFx2 *fx;
+    Vector sp44;
+
+    if ((gKirbyState.unk4 == 1) || (gKirbyState.action != 0x18)) {
+        myPcSndpairRelease(pair);
+        /* Guarded on PC: the init reads its effect id through N64 struct
+         * adjacency (D_80196848_ovl3+4) that the split data emission turns
+         * into padding, so D_800EA520 can legitimately be 0 here. */
+        if (D_800EA520[id] != 0) {
+            func_800A22D4(D_800EA520[id]);
+        }
+        func_800B1900((u16) id);
+        return;
+    }
+    gEntitiesNextPosYArray[id] -= 5.0f;
+    if (D_800E9720[id] < 30) {
+        D_800E9720[id]++;
+    }
+    {
+        s32 parentWet = (D_800E8AE0[parent] & 6) ? 1 : 0;
+        s32 selfWet = (D_800E8AE0[id] & 6) ? 1 : 0;
+
+        D_800E8AE0[id] = D_800E8AE0[parent];
+        if (parentWet != selfWet) {
+            s32 wet = (D_800E8AE0[id] & 6) ? 1 : 0;
+            s32 stage = 5;
+
+            myPcSndpairRelease(pair);
+            if (D_800EA520[id] != 0) {
+                func_800A22D4(D_800EA520[id]);
+            }
+            D_800EA520[id] = func_800A8234(1, 1, D_8019684C_ovl3[wet * 2]);
+            if (D_800E98E0[id] == 0) {
+                s32 t = D_800E9720[id];
+
+                if (t < 3) {
+                    stage = 0;
+                } else if (t < 6) {
+                    stage = 1;
+                } else if (t < 12) {
+                    stage = 2;
+                } else if (t < 18) {
+                    stage = 3;
+                } else {
+                    stage = 4;
+                }
+                D_800E98E0[id] = 1;
+            } else {
+                D_800E98E0[id] = 0;
+            }
+            myPcSndpairStart(D_80196858_ovl3[stage * 2 + wet], pair);
+        }
+    }
+    fx = NULL;
+    if (D_800EA520[id] != 0) {
+        fx = (struct LocalPlyshotFx2 *) ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
+    }
+    if (fx != NULL) {
+        fx->unk4 = gEntitiesNextPosXArray[parent];
+        fx->unk8 = gEntitiesNextPosYArray[parent] + 25.0f;
+        fx->unkC = gEntitiesNextPosZArray[parent];
+        func_800B26D8(&sp44, (s32) (uintptr_t) D_800DFBD0[parent][8], parent);
+        fx->unk10 = sp44.x;
+        fx->unk14 = sp44.y;
+        fx->unk18 = sp44.z;
+    }
+    if (((u8 *) &D_8012E860)[0x11] == 0) {
+        if (func_80155D50_ovl3(D_80198540_ovl3[id - 60], (s32) (uintptr_t) D_80193920_ovl3,
+                               (s32) (uintptr_t) func_80155E58_ovl3, parent) != 0) {
+            ((u8 *) &D_8012E860)[0x11] += 1;
+        }
+    }
+    func_80111C4C(func_80111A04(D_80191044_ovl3, D_800E0D50[id]));
+}
+#elif defined(PORT)
 /* PORT: per-frame service for the spit-spray cloud created by
  * func_801634D4_ovl3 (anim 0x20041), from asm/nonmatchings/ovl3/plyshot/
  * func_801636A4_ovl3.s. Ends the effect once Kirby leaves the spit action

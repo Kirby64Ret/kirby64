@@ -86,7 +86,77 @@ s32 func_80110150(void *);
 
 
 
-#ifdef PORT
+/* FACTORY: 145/249, D_800E6A10 base-hoist colouring.  The first 114
+   instructions are exact (the hook/timer stores, the D_801CD530_ovl7
+   12-byte-stride lookups, both func_800AA018 guards).  Two levers landed
+   here: the scale triple must be CHAINED
+   (gEntitiesScaleXArray[..] = gEntitiesScaleYArray[..] = gEntitiesScaleZArray[..])
+   -- separate statements re-read the Z element twice where the ROM loads it
+   once (128 -> 117) -- and the D_800E6A10 element address must be taken into
+   a pointer local BEFORE the D_800E8AE0 test, because the ROM computes
+   `addu $t4,$a1,$v0` in the branch delay slot for the else arm (117 -> 104).
+   Residue: with the pointer local our IDO then CSEs it into the TAKEN arm as
+   well ($a1 reused, plus a `move a2,a1`), while the ROM re-materialises the
+   base with a fresh lui/addiu inside that arm; from there the temp names are
+   shifted one slot.
+   N64 spelling: D_800E9AA0[objId] is a pointer slot used directly as the
+   D_801CD530_ovl7 subscript -- a plain (s32) cast, re-read INLINE at each of
+   its four uses (the ROM never caches it), and NOT the PORT arm's
+   (uintptr_t) + cached `kind`. */
+#ifdef MIPS_TO_C
+void func_801AEA20_ovl7(GObj *arg0) {
+    void func_800B8630(GObj *);
+    void func_801AEE04_ovl7(GObj *);
+    extern struct Sub800E1B50_Unk98 D_801CD33C_ovl7;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    f32 *fac;
+
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B8630;
+    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801AEE04_ovl7;
+    D_800DDA90[omCurrentObj->objId] = 0x23;
+    ent->unk98 = &D_801CD33C_ovl7;
+    D_800E93A0[omCurrentObj->objId] = (s32) D_800E9AA0[omCurrentObj->objId];
+    D_800E9560[omCurrentObj->objId] = 0xA;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    func_800A9864(D_801CD530_ovl7[(s32) D_800E9AA0[omCurrentObj->objId]].unk0, 0x23, 0x10);
+    if (D_801CD530_ovl7[(s32) D_800E9AA0[omCurrentObj->objId]].unk4 != 0) {
+        func_800AA018(D_801CD530_ovl7[(s32) D_800E9AA0[omCurrentObj->objId]].unk4);
+    }
+    if (D_801CD530_ovl7[(s32) D_800E9AA0[omCurrentObj->objId]].unk8 != 0) {
+        func_800AA018(D_801CD530_ovl7[(s32) D_800E9AA0[omCurrentObj->objId]].unk8);
+    }
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleYArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId];
+    fac = &D_800E6A10[omCurrentObj->objId];
+    if (D_800E8AE0[omCurrentObj->objId] & 1) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 3.8999999f;
+        D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.0f;
+        D_800E6850[omCurrentObj->objId] = 3.8999999f;
+        if (D_800E98E0[omCurrentObj->objId] == 2) {
+            D_800E3210[omCurrentObj->objId] = 6.5f;
+        } else if (D_800E98E0[omCurrentObj->objId] == 1) {
+            D_800E3210[omCurrentObj->objId] = 4.5499997f;
+        } else {
+            D_800E3210[omCurrentObj->objId] = 2.6f;
+        }
+        D_800E3750[omCurrentObj->objId] = -0.2925f;
+    } else {
+        D_800E64D0[omCurrentObj->objId] = *fac * 6.0f;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6850[omCurrentObj->objId] = 6.0f;
+        if (D_800E98E0[omCurrentObj->objId] == 2) {
+            D_800E3210[omCurrentObj->objId] = 10.0f;
+        } else if (D_800E98E0[omCurrentObj->objId] == 1) {
+            D_800E3210[omCurrentObj->objId] = 7.0f;
+        } else {
+            D_800E3210[omCurrentObj->objId] = 4.0f;
+        }
+        D_800E3750[omCurrentObj->objId] = -0.45f;
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    curObjSleepForever();
+}
+#elif defined(PORT)
 /* Popped-star / dropped-pickup launch (ported from m2c): install the
  * bounce driver func_801AEE04_ovl7 and knockback func_800B8630, stash
  * the pickup kind (D_800E9AA0 carries a small integer here, not a
@@ -262,7 +332,126 @@ void func_801AF314_ovl7(GObj *arg0) {
     }
 }
 
-#ifdef PORT
+/* FACTORY: 203/286, one missing instruction in the respawn arm plus the
+   colouring it drags.  Everything up to index 196 is exact -- the
+   func_800B3234 despawn path, both func_800A7870 handle pairs, the
+   func_801A0D74_ovl7 / eneTurnCommon / tick-rate fork, the funclist jump,
+   the D_800EA6E0 fade and the two emitter Vector copies.  Levers that
+   landed: the local order handle/handleIdx/moved/v then ent/gen reproduces
+   the ROM stack exactly (handle 0x4C, idx 0x4A, moved 0x44, v 0x38, ent
+   0x34, gen 0x30) -- 105 -> 84; func_8019B7D8_ovl7 TAKES arg0 (the ROM
+   passes sp+0x50 in its delay slot), and func_8019D8A0 takes the (u16)
+   halfword of objId (lhu obj+2) -- 84 -> 83.
+   Residue: in the `D_800E83E0[objId] == 1` respawn arm the ROM keeps the
+   element ADDRESS in $a1 (an extra `or $a1,$v0,$zero`) and shares the
+   literal 1 in $a3 between that compare and the gEntityFuncListIDArray
+   store; our IDO recomputes both.  Hoisting the address into an `s32 *`
+   local does emit the copy but costs 8 bytes of frame (0x58 vs 0x50), so
+   it trades one defect for another -- the permuter should try it as a
+   register-allocation hint rather than a source change.
+   N64 spellings: the emitter pointer inside the D_800E98E0 block is at
+   0x4C (the PORT struct's 0x58 is the widened PC layout), its two Vectors
+   at 0x4 and 0x10 are written COMPONENT BY COMPONENT (the ROM reloads the
+   pointer before each of the six stores), and D_800E98E0/D_800E9AA0 are
+   plain word slots -- no (uintptr_t). */
+#ifdef MIPS_TO_C
+void func_801AF398_ovl7(GObj *arg0) {
+    void eneTurnCommon(s32);
+    struct Ovl7_7_AnimObj *func_801117BC(void *, u32);
+    void func_80111C4C(struct Ovl7_7_AnimObj *);
+    void func_8019B7D8_ovl7(GObj *);
+    void func_8019D8A0(s32);
+    s32 func_801A0D74_ovl7(GObj *);
+    void func_801AFFFC_ovl7(void);
+    void func_801B00BC_ovl7(GObj *);
+    void func_801ACF84_ovl7(GObj *);
+    s32 func_800B3234(f32, f32, f32);
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+    void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
+    extern FUNCLIST D_801CD5A4_ovl7;
+    extern f32 gameTicksPerDraw;
+    extern s32 D_800E8760[], D_800E83E0[], D_800E8AE0[];
+    /* N64 view of the emitter block D_800E98E0 points at: the xf pointer
+     * sits at 0x4C (the PC struct's 0x58 is the widened LP64 layout). */
+    struct Ovl7_7_Emitter {
+        u8 pad0[4];
+        Vector unk4;
+        Vector unk10;
+    };
+    struct Ovl7_7_Generator {
+        u8 pad0[0x4C];
+        struct Ovl7_7_Emitter *xf;
+    };
+    void *handle;
+    u16 handleIdx;
+    s32 moved;
+    Vector v;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl7_7_Generator *gen = (struct Ovl7_7_Generator *) D_800E98E0[omCurrentObj->objId];
+
+    if (func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]) != 0) {
+        handle = D_800E9AA0[omCurrentObj->objId];
+        handleIdx = D_800E9C60[omCurrentObj->objId];
+        func_800A7870(&handle, &handleIdx);
+        D_8012E860 = 0;
+        arg0->onAnimate = NULL;
+        func_800A22D4((void *) D_800E98E0[omCurrentObj->objId]);
+        func_8019B7D8_ovl7(arg0);
+        func_8019D8A0((u16) omCurrentObj->objId);
+        return;
+    }
+    moved = func_801A0D74_ovl7(arg0);
+    eneTurnCommon(1);
+    if (D_800E8AE0[omCurrentObj->objId] & 1) {
+        func_800AECC0(1.0f);
+        func_800AED20(1.0f);
+    } else {
+        func_800AECC0(gameTicksPerDraw);
+        func_800AED20(gameTicksPerDraw);
+    }
+    if (moved == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, D_801CD5A4_ovl7);
+    }
+    D_800DFBD0[omCurrentObj->objId][2]->scale.v.y = D_800EA6E0[omCurrentObj->objId];
+    if (D_800E83E0[omCurrentObj->objId] != 0) {
+        D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    }
+    D_800EA6E0[omCurrentObj->objId] -= 0.0055555557f;
+    if (D_800EA6E0[omCurrentObj->objId] <= 0.0f) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801B00BC_ovl7);
+        return;
+    }
+    func_800B2340(&v, D_800DFBD0[omCurrentObj->objId][3], 0xFFFF);
+    gen->xf->unk4.x = v.x;
+    gen->xf->unk4.y = v.y;
+    gen->xf->unk4.z = v.z;
+    func_800B26D8(&v, D_800DFBD0[omCurrentObj->objId][3], 0xFFFF);
+    gen->xf->unk10.x = v.x;
+    gen->xf->unk10.y = v.y;
+    gen->xf->unk10.z = v.z;
+    if (D_800E9720[omCurrentObj->objId] == 0) {
+        func_801AFFFC_ovl7();
+        if (D_800E83E0[omCurrentObj->objId] == 1) {
+            D_800E83E0[omCurrentObj->objId] = 0;
+            D_800E7B20[omCurrentObj->objId] = 1.0f;
+            gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801AF314_ovl7);
+            return;
+        }
+        func_80111C4C(func_801117BC(ent->unk90, omCurrentObj->objId));
+    } else {
+        D_800E9720[omCurrentObj->objId] -= 1;
+    }
+    if (D_800E8760[0] == 1) {
+        handle = D_800E9AA0[omCurrentObj->objId];
+        handleIdx = D_800E9C60[omCurrentObj->objId];
+        func_800A7870(&handle, &handleIdx);
+        D_8012E860 = 0;
+        func_800A22D4((void *) D_800E98E0[omCurrentObj->objId]);
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
+    }
+}
+#elif defined(PORT)
 /* Per-frame driver for the carried pickup/item star (ported from m2c).
  * Off-screen: hand the sound handle back (func_800A7870), clear the
  * handoff latch, free the sparkle generator and the track.  Otherwise run

@@ -1221,49 +1221,7 @@ struct DObj *func_800B1F70(struct DObj *node, struct DObj *stopnode) {
     return node;
 }
 
-#ifdef MIPS_TO_C
-
-void func_800B1FD0(GObj *arg0, s32 arg1, ? arg2, s32 arg3, f32 arg4) {
-    s32 var_s1;
-    s32 var_s2;
-    s32 var_s3;
-    s32 var_s4;
-    struct UnkStruct8004A7C4_3C *temp_v0;
-    struct UnkStruct8004A7C4_3C *var_s0;
-    struct UnkStruct8004A7C4_3C *var_s5;
-
-    var_s5 = omCurrentObj->unk3C;
-    var_s3 = arg1;
-    var_s4 = arg3;
-    if (arg0 != var_s5) {
-        do {
-            if (var_s3 != 0) {
-                var_s3 += 4;
-            }
-            if (var_s4 != 0) {
-                var_s4 += 0x2C;
-            }
-            temp_v0 = animModelTreeNextNode(var_s5);
-            var_s5 = temp_v0;
-        } while (arg0 != temp_v0);
-    }
-    var_s0 = var_s5;
-    var_s1 = var_s4;
-    var_s2 = var_s3;
-    if (var_s5 != NULL) {
-        do {
-            func_8000EC98(var_s0, var_s2, arg2, var_s1, 0, arg4, 0.0f, 0.0f, 0.0f);
-            var_s0 = func_800B1F70(var_s0, var_s5);
-            if (var_s2 != 0) {
-                var_s2 += 4;
-            }
-            if (var_s1 != 0) {
-                var_s1 += 0x2C;
-            }
-        } while (var_s0 != NULL);
-    }
-}
-#elif defined(PORT)
+#ifdef PORT
 /* Subtree anim-set walker (draft above): walks the DObj tree from arg0,
  * handing each node its slot of the anim-script table (N64 stride 4) and of
  * the 0x2C-byte parameter records. On PC the script table is a widened
@@ -1303,7 +1261,45 @@ void func_800B1FD0(GObj *arg0, u32 arg1, f32 arg2, u32 arg3, f32 arg4) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1FD0.s")
+void func_800B1FD0(GObj *arg0, s32 arg1, f32 arg2, s32 arg3, f32 arg4) {
+    f32 func_8000EC98(DObj *, s32, f32, s32, s32, f32, f32, f32, f32);
+    DObj *node;
+    DObj *root;
+    s32 params;
+    s32 script;
+    s32 s3;
+    s32 s4;
+
+    root = omCurrentObj->data.dobj;
+    s3 = arg1;
+    s4 = arg3;
+    if ((DObj *) arg0 != root) {
+        do {
+            if (s3 != 0) {
+                s3 += 4;
+            }
+            if (s4 != 0) {
+                s4 += 0x2C;
+            }
+            root = animModelTreeNextNode(root);
+        } while ((DObj *) arg0 != root);
+    }
+    node = root;
+    params = s4;
+    script = s3;
+    if (root != NULL) {
+        do {
+            func_8000EC98(node, script, arg2, params, 0, arg4, 0.0f, 0.0f, 0.0f);
+            node = func_800B1F70(node, root);
+            if (script != 0) {
+                script += 4;
+            }
+            if (params != 0) {
+                params += 0x2C;
+            }
+        } while (node != NULL);
+    }
+}
 #endif
 
 #ifdef MIPS_TO_C
@@ -1443,60 +1439,7 @@ void func_800B2340(Vector *vec, struct DObj *node, u32 track) {
     vec->z = finalMtx[3][2];
 }
 
-#ifdef MIPS_TO_C
-
-void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f12;
-    f32 temp_f2;
-    struct DObj *var_s0;
-    u32 var_s5;
-
-    var_s0 = node;
-    var_s5 = track;
-    if (track == 0xFFFF) {
-        var_s5 = omCurrentObj->objId;
-    }
-    if (var_s0 == NULL) {
-        var_s0 = omCurrentObj->unk3C;
-    }
-    guMtxIdentF(&sp90[0]);
-    do {
-        if (var_s0->child != 1) {
-            temp_f0 = var_s0->angle.v.x;
-            if ((temp_f0 != 0.0f) || (var_s0->angle.v.y != 0.0f) || (var_s0->angle.v.z != 0.0f)) {
-                HS64_MkRotationMtxF(&sp50[0], temp_f0, var_s0->angle.v.y, var_s0->angle.v.z);
-                guMtxCatF(&sp90[0], &sp50[0], &sp90[0]);
-            }
-        } else {
-            temp_f0_2 = gEntitiesAngleXArray[var_s5];
-            temp_f2 = gEntitiesAngleYArray[var_s5];
-            temp_f12 = gEntitiesAngleZArray[var_s5];
-            if ((temp_f0_2 != 0.0f) || (temp_f2 != 0.0f) || (temp_f12 != 0.0f)) {
-                HS64_MkRotationMtxF(&sp50[0], temp_f0_2, temp_f2, temp_f12);
-                guMtxCatF(&sp90[0], &sp50[0], &sp90[0]);
-            }
-        }
-        var_s0 = var_s0->child;
-    } while (var_s0->child != 1);
-    temp_f0_3 = asinf(-sp90[2]);
-    vec->y = temp_f0_3;
-    if ((temp_f0_3 == 1.5707964f) || (vec->y == -1.5707964f)) {
-        if (vec->y == 1.5707964f) {
-            vec->x = atan2f(spA0, spA4);
-        } else {
-            vec->x = atan2f(-spA0, spA4);
-        }
-        vec->z = 0.0f;
-    } else {
-        vec->x = atan2f(spA8, spB8);
-        vec->z = atan2f(sp90[1], sp90[0]);
-    }
-    utilWrapRotation(vec);
-}
-#elif defined(PORT)
+#ifdef PORT
 /* Functional port; the weak stub aborted the world map's travel state the
  * first time the port ever reached it. The asm walks the PARENT chain
  * (lw 0x14 = DObj.parent; the sketch above calls that field `child`, an m2c
@@ -1544,7 +1487,52 @@ void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
     utilWrapRotation(vec);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B26D8.s")
+void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
+    f32 asinf(f32);
+    f32 atan2f(f32, f32);
+    Mat4 finalMtx;
+    Mat4 tmpMtx;
+    f32 y;
+
+    track = track;
+    if (track == 0xFFFF) {
+        track = omCurrentObj->objId;
+    }
+    node = node;
+    if (node == 0) {
+        node = omCurrentObj->data.dobj;
+    }
+    guMtxIdentF(finalMtx);
+    do {
+        if ((u32) node->parent != 1) {
+            if ((node->angle.v.x != 0.0f) || (node->angle.v.y != 0.0f) || (node->angle.v.z != 0.0f)) {
+                HS64_MkRotationMtxF(tmpMtx, node->angle.v.x, node->angle.v.y, node->angle.v.z);
+                guMtxCatF(finalMtx, tmpMtx, finalMtx);
+            }
+        } else {
+            if ((gEntitiesAngleXArray[track] != 0.0f) || (gEntitiesAngleYArray[track] != 0.0f) || (gEntitiesAngleZArray[track] != 0.0f)) {
+                HS64_MkRotationMtxF(tmpMtx, gEntitiesAngleXArray[track], gEntitiesAngleYArray[track], gEntitiesAngleZArray[track]);
+                guMtxCatF(finalMtx, tmpMtx, finalMtx);
+            }
+        }
+        node = node->parent;
+    } while ((u32) node != 1);
+
+    y = asinf(-finalMtx[0][2]);
+    vec->y = y;
+    if ((y == 1.5707964f) || (vec->y == -1.5707964f)) {
+        if (vec->y == 1.5707964f) {
+            vec->x = atan2f(finalMtx[1][0], finalMtx[1][1]);
+        } else {
+            vec->x = atan2f(-finalMtx[1][0], finalMtx[1][1]);
+        }
+        vec->z = 0.0f;
+    } else {
+        vec->x = atan2f(finalMtx[1][2], finalMtx[2][2]);
+        vec->z = atan2f(finalMtx[0][1], finalMtx[0][0]);
+    }
+    utilWrapRotation(vec);
+}
 #endif
 
 void func_800B2928(Vector *vec, struct DObj *node, u32 track) {
