@@ -423,6 +423,13 @@ void func_801DD17C_ovl17(void) {
     D_800D7B2C = cam->viewMtx.lookAt.eye;
 }
 
+#ifdef MIPS_TO_C
+/* FACTORY: MATCH, but PADDING-TRAPPED -- un-guarding this shortens
+ * ovl17.c by 16 bytes and breaks the ROM. Its listing carries three
+ * trailing nops past the .size, and it is the last function in its
+ * subsegment, so converting it needs a `pad` subsegment in
+ * kirby64.yaml plus the matching kirby.ld edit in the SAME commit.
+ * The draft below is byte-exact; only the padding blocks it. */
 /* Camera seat used while D_800D6B54 == 1 (the boss intro hold).  The eye
    snaps to the cached func_801DC98C eye, the look-at point eases 15% per
    frame toward Kirby's next position (entity slot 0), and the up vector
@@ -447,6 +454,9 @@ void func_801DD2B0_ovl17(void) {
     D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
     D_800D7B2C = cam->viewMtx.lookAt.eye;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DD2B0_ovl17.s")
+#endif
 
 void func_801DD440_ovl17(struct GObj *arg0) {
     func_800A9864(0x100EC, 0x23, 0x10);
