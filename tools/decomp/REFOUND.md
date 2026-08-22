@@ -325,6 +325,12 @@ ovl7_13.c, ovl9_6.c, ovl9_13.c, ovl10_1.c and ovl10_3b.c.
 
 So after renaming any field of a shared struct:
 
+    # Makefile.pc has NO header-dependency tracking (no -MMD/.d files), so a
+    # bare `make` silently skips every .o that is already newer than the
+    # header you just edited, and the grep comes back FALSE-CLEAN. Measured:
+    # a rename reported 0 errors, and forcing the rebuild surfaced 19.
+    for f in $(grep -rl "<the-header>.h" src --include=*.c); do \
+        rm -f "build/pc/${f%.c}.o"; done
     make -f Makefile.pc -k -j4 2>&1 | grep -E "^src.*error"
 
 must be empty, tree-wide, before you hand back. The N64 side will NOT catch
