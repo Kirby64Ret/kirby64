@@ -833,41 +833,52 @@ void func_800BDD98(void) {
     D_800D6EB4 = D_800D6EB8 = D_800D6EBC = D_800F4D10 = D_800D6EC0 = 0;
 }
 
-#ifdef MIPS_TO_C
-
+#if 1 /* verify-iteration draft: func_800BDE0C */
 void func_800BDE0C(s32 arg0) {
-    ? *var_a2;
-    ? *var_a3;
-    s32 var_v1;
-    void *var_v0;
+    extern s32 D_800F4D14;
+    extern s32 D_800F6198;
+    extern s32 D_800D6F50;
+    extern u16 D_800EDA10[];
+    extern u16 D_800EDA24[];
+    extern u16 D_800EDA60[];
+    extern u16 D_800F4324[];
+    extern u16 *D_800D6F58;
+    extern u32 D_800D52FC[];
+    void func_800A8934(u32, s32, s32, void *);
+    u8 *q;
+    u8 *ra;
+    u8 *rb;
+    s32 n;
+    u16 fill;
 
-    D_800D6F58 = &D_800ED510;
+    D_800D6F58 = D_800ED510;
     if (D_800F4D14 != 0) {
         if (D_800F6198 != 0) {
-            func_800A8934(0x50002, 0x10, 0, &D_800ED510);
-            var_a2 = &D_800EDA24;
-            var_a3 = &D_800EDA10;
+            func_800A8934(0x50002, 0x10, 0, D_800ED510);
+            fill = D_800EDA60[0];
+            rb = (u8 *) D_800EDA10;
+            ra = (u8 *) D_800EDA24;
             do {
-                var_a2->unk0 = D_800EDA60;
-                var_a2->unk2 = D_800EDA60;
-                var_v1 = 0xC;
-                var_v0 = var_a3 + 0x18;
-loop_4:
-                var_v1 += 4;
-                var_v0->unk2 = D_800EDA60;
-                var_v0->unk4 = D_800EDA60;
-                var_v0->unk6 = D_800EDA60;
-                var_v0 += 8;
-                var_v0->unk-8 = D_800EDA60;
-                if (var_v1 != 0xD8) {
-                    goto loop_4;
+                *(u16 *) ra = fill;
+                *(u16 *) (ra + 2) = fill;
+                n = 0xC;
+                q = rb + 0x18;
+            loop4:
+                n += 4;
+                *(u16 *) (q + 2) = fill;
+                *(u16 *) (q + 4) = fill;
+                *(u16 *) (q + 6) = fill;
+                q += 8;
+                *(u16 *) (q - 8) = fill;
+                if (n != 0xD8) {
+                    goto loop4;
                 }
-                var_a2 += 0x280;
-                var_a3 += 0x280;
-            } while (var_a2 != &D_800F4324);
+                ra += 0x280;
+                rb += 0x280;
+            } while (ra != (u8 *) D_800F4324);
         } else {
             D_800D6F50 = 0;
-            func_800A8934(*(&D_800D52FC + (saveHUDTheme * 4)), 0x10, 0, &D_800ED510);
+            func_800A8934(D_800D52FC[saveHUDTheme], 0x10, 0, D_800ED510);
             func_800BDB18();
         }
         D_800F4D14 = 0;
@@ -922,7 +933,7 @@ void func_800BDE0C(s32 arg0) {
     func_800BDD08();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDE0C.s")
+/* pragma disabled for verify: asm/nonmatchings/ovl1/ovl1_13/func_800BDE0C */
 #endif
 
 // Draft, 4/35: `or $a1,$zero,$zero` (counter init) scheduled 3 slots early.

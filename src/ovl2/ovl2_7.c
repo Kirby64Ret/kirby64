@@ -150,187 +150,164 @@ extern f32 D_80128A70;
 extern struct vCollisionHeader *D_80129410;
 
 #ifdef MIPS_TO_C
-void func_80101400(u16 arg0) {
-    u16 spB0[];
-    s32 spAC;
-    f32 spA0;
-    f32 sp94;
-    struct vCollisionHeader *sp90;
-    struct bgmaprecord *sp8C;
-    struct Normal *sp88;
-    f32 sp78;
-    s32 sp70;
-    s32 sp6C;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f20;
-    f32 temp_f2;
-    struct Normal *n;
-    f32 temp_f2_2;
-    f32 var_f0;
-    f32 var_f2;
-    f32 var_f2_2;
-    s32 var_a1_2;
-    s32 var_a3_2;
+/* FACTORY: ~11/328, whole-function callee-saved allocation residue: draft hoists
+ * -1.0f into $f26 and 0.0f into $f24 where ROM keeps only $f20 (d1) / $f22 (0.0)
+ * and spills d0; integer side then avoids $s0. Structure and instruction count
+ * align (328 insns both sides); probes show IDO always hoists -1.0f here, so the
+ * fix is an allocation-pressure permutation, not a spelling. */
+void func_80101400(u32 arg0) {
+    u16 spB0[40];
     s32 var_t0;
-    s32 var_v0;
-    s32 var_v1_2;
-    struct ColStateUnk4 *temp_v0_4;
-    struct CollisionState *var_a2;
+    Vector spA0;
+    Vector sp94;
+    struct vCollisionHeader *var_t1;
+    struct bgmaprecord *temp_t2;
     struct Normal *temp_a0;
     struct Normal *temp_v0_2;
-    struct Normal *var_a3;
-    struct Normal *var_v1;
-    struct bgmaprecord *temp_t2;
-    struct bgmaprecord *var_a1;
-    struct vCollisionHeader *var_t1;
+    struct ColStateUnk4 *temp_v0_4;
+    u32 var_s0;
     u16 temp_a0_2;
     u16 temp_v0;
     u16 var_a0;
-    u16 var_s0;
     u16 var_v0_2;
-    u8 temp_v0_3;
+    s32 var_a1_2;
+    s32 var_a3_2;
+    s32 var_v1_2;
+    s32 var_v0;
+    f32 temp_f2_2;
+    f32 temp_f12;
+    f32 temp_f14;
+    f32 temp_f16;
+    f32 temp_f20;
+    f32 temp_f18;
+    f32 temp_f0_3;
+    f32 var_f2;
+    f32 var_f0;
+    f32 var_f2_2;
 
-    var_a2 = gCollisionState;
-    spA0.unk0 = var_a2->currPos.x;
+    spA0 = gCollisionState->currPos;
     var_s0 = arg0;
-    spA0.unk4 = var_a2->currPos.y;
+    sp94 = gCollisionState->nextPos;
     var_t0 = 0;
-    spA0.unk8 = var_a2->currPos.z;
-    sp94.unk0 = var_a2->nextPos.x;
-    sp94.unk4 = var_a2->nextPos.y;
-    sp94.unk8 = var_a2->nextPos.z;
-    var_t1 = var_a2->unk30;
-    var_v1 = var_a2->unk34;
-    var_a1 = var_t1->header.Triangle_Norm_Cells;
-    var_a3 = var_t1->header.Triangle_Normals;
-loop_1:
-    temp_t2 = &var_a1[var_s0];
-    temp_a0 = &var_a3[temp_t2->index];
-    if ((var_v1 == temp_a0) || ((var_v1 != NULL) && (((temp_f2 = temp_a0->x, temp_f0 = var_v1->x, (temp_f2 == temp_f0)) && (temp_a0->y == var_v1->y) && (temp_a0->z == var_v1->z) && (temp_a0->originOffset == var_v1->originOffset)) || ((-temp_a0->originOffset == var_v1->originOffset) && (((temp_f0 * temp_f2) + (var_v1->y * temp_a0->y) + (var_v1->z * temp_a0->z)) == -1.0f))))) {
-        temp_a0_2 = temp_t2->part1;
-        temp_v0 = temp_t2->part2;
-        if (temp_a0_2 != 0) {
-            if (temp_v0 != 0) {
-                (*spB0)[var_t0] = temp_v0;
-                var_v1 = var_a2->unk34;
-                var_a3 = var_t1->header.Triangle_Normals;
-                var_a1 = var_t1->header.Triangle_Norm_Cells;
-                var_t0 += 1;
+    var_t1 = gCollisionState->unk30;
+    for (;;) {
+        temp_t2 = &var_t1->header.Triangle_Norm_Cells[var_s0];
+        temp_a0 = &var_t1->header.Triangle_Normals[temp_t2->index];
+        if ((gCollisionState->unk34 == temp_a0) ||
+            ((gCollisionState->unk34 != NULL) &&
+             (((gCollisionState->unk34->x == temp_a0->x) && (gCollisionState->unk34->y == temp_a0->y) &&
+               (gCollisionState->unk34->z == temp_a0->z) &&
+               (gCollisionState->unk34->originOffset == temp_a0->originOffset)) ||
+              ((gCollisionState->unk34->originOffset == -temp_a0->originOffset) &&
+               (((gCollisionState->unk34->x * temp_a0->x) + (gCollisionState->unk34->y * temp_a0->y) +
+                 (gCollisionState->unk34->z * temp_a0->z)) == -1.0f))))) {
+            temp_a0_2 = temp_t2->part1;
+            temp_v0 = temp_t2->part2;
+            if (temp_a0_2 != 0) {
+                if (temp_v0 != 0) {
+                    spB0[var_t0] = temp_v0;
+                    var_t0 += 1;
+                }
+                var_s0 = temp_a0_2;
+                continue;
             }
-            var_s0 = temp_a0_2;
-            goto loop_1;
-        }
-        if (temp_v0 != 0) {
-            var_s0 = temp_v0;
-            goto loop_1;
-        }
-    } else {
-        temp_f2_2 = temp_a0->x;
-        temp_f12 = temp_a0->y;
-        temp_f14 = temp_a0->z;
-        temp_f16 = temp_a0->originOffset;
-        var_a1_2 = 0;
-        var_a3_2 = 0;
-        var_v1_2 = 0;
-        var_v0 = 0;
-        temp_f18 = (temp_f2_2 * spA0) + (temp_f12 * spA4) + (temp_f14 * spA8) + temp_f16;
-        temp_f20 = (temp_f2_2 * sp94) + (temp_f12 * sp98) + (temp_f14 * sp9C) + temp_f16;
-        if (temp_f18 > 0.0f) {
-            var_a1_2 = 1;
-        }
-        if (temp_f20 > 0.0f) {
-            var_a3_2 = 1;
-        }
-        if (temp_f18 != 0.0f) {
-            var_v1_2 = 1;
-        }
-        if (temp_f20 != 0.0f) {
-            var_v0 = 1;
-        }
-        if ((var_a1_2 != var_a3_2) || (var_v1_2 != var_v0)) {
-            temp_v0_2 = var_a2->unk38;
-            if ((temp_v0_2 != temp_a0) && ((temp_v0_2 == NULL) || (((temp_f0_2 = temp_v0_2->x, (temp_f2_2 != temp_f0_2)) || (temp_f12 != temp_v0_2->y) || (temp_f14 != temp_v0_2->z) || (temp_f16 != temp_v0_2->originOffset)) && ((-temp_f16 != temp_v0_2->originOffset) || (((temp_f0_2 * temp_f2_2) + (temp_v0_2->y * temp_f12) + (temp_v0_2->z * temp_f14)) != -1.0f))))) {
-                sp88 = temp_a0;
-                sp70 = var_a1_2;
-                sp6C = var_a3_2;
-                spAC = var_t0;
-                sp90 = var_t1;
-                sp8C = temp_t2;
-                sp78 = temp_f18;
-                temp_v0_3 = var_a2->unk44(temp_a0, var_a1_2);
-                if (temp_v0_3 != 0) {
-                    temp_v0_4 = &gCollisionState->unk4[gCollisionState->numCells];
-                    temp_f0_3 = (temp_a0->x * gCollisionState->deltaPos.x) + (temp_a0->y * gCollisionState->deltaPos.y) + (temp_a0->z * gCollisionState->deltaPos.z);
-                    if (temp_f0_3 < 0.0f) {
-                        var_f2 = -temp_f0_3;
-                    } else {
-                        var_f2 = temp_f0_3;
+            if (temp_v0 != 0) {
+                var_s0 = temp_v0;
+                continue;
+            }
+        } else {
+            temp_f2_2 = temp_a0->x;
+            temp_f12 = temp_a0->y;
+            temp_f14 = temp_a0->z;
+            temp_f16 = temp_a0->originOffset;
+            var_a1_2 = 0;
+            var_a3_2 = 0;
+            var_v1_2 = 0;
+            var_v0 = 0;
+            temp_f18 = (temp_f2_2 * spA0.x) + (temp_f12 * spA0.y) + (temp_f14 * spA0.z) + temp_f16;
+            temp_f20 = (temp_f2_2 * sp94.x) + (temp_f12 * sp94.y) + (temp_f14 * sp94.z) + temp_f16;
+            if (temp_f18 > 0.0f) {
+                var_a1_2 = 1;
+            }
+            if (temp_f20 > 0.0f) {
+                var_a3_2 = 1;
+            }
+            if (temp_f18 != 0.0f) {
+                var_v1_2 = 1;
+            }
+            if (temp_f20 != 0.0f) {
+                var_v0 = 1;
+            }
+            if ((var_a1_2 != var_a3_2) || (var_v1_2 != var_v0)) {
+                temp_v0_2 = gCollisionState->unk38;
+                if ((temp_v0_2 != temp_a0) &&
+                    ((temp_v0_2 == NULL) ||
+                     (((temp_v0_2->x != temp_f2_2) || (temp_v0_2->y != temp_f12) || (temp_v0_2->z != temp_f14) ||
+                       (temp_v0_2->originOffset != temp_f16)) &&
+                      ((temp_v0_2->originOffset != -temp_f16) ||
+                       (((temp_v0_2->x * temp_f2_2) + (temp_v0_2->y * temp_f12) + (temp_v0_2->z * temp_f14)) != -1.0f))))) {
+                    if (gCollisionState->unk44(temp_a0, var_a1_2) != 0) {
+                        temp_v0_4 = &gCollisionState->unk4[gCollisionState->numCells];
+                        temp_f0_3 = (temp_a0->x * gCollisionState->deltaPos.x) + (temp_a0->y * gCollisionState->deltaPos.y) +
+                                    (temp_a0->z * gCollisionState->deltaPos.z);
+                        if (temp_f0_3 < 0.0f) {
+                            var_f2 = -temp_f0_3;
+                        } else {
+                            var_f2 = temp_f0_3;
+                        }
+                        if (var_f2 < 0.00001f) {
+                            if (temp_f18 < 0.0f) {
+                                var_f0 = -temp_f18;
+                            } else {
+                                var_f0 = temp_f18;
+                            }
+                            if (temp_f20 < 0.0f) {
+                                var_f2_2 = -temp_f20;
+                            } else {
+                                var_f2_2 = temp_f20;
+                            }
+                            if (var_f0 < var_f2_2) {
+                                temp_v0_4->projection = 0.0f;
+                            } else {
+                                temp_v0_4->projection = 1.0f;
+                            }
+                        } else {
+                            temp_v0_4->projection = -(temp_f18 / temp_f0_3);
+                        }
+                        temp_v0_4->cell = var_s0;
+                        gCollisionState->numCells += 1;
                     }
-                    if (var_f2 < 0.00001f) {
-                        if (temp_f18 < 0.0f) {
-                            var_f0 = -temp_f18;
-                        } else {
-                            var_f0 = temp_f18;
-                        }
-                        if (temp_f20 < 0.0f) {
-                            var_f2_2 = -temp_f20;
-                        } else {
-                            var_f2_2 = temp_f20;
-                        }
-                        if (var_f0 < var_f2_2) {
-                            temp_v0_4->projection = 0.0f;
-                        } else {
-                            temp_v0_4->projection = 1.0f;
-                        }
-                    } else {
-                        temp_v0_4->projection = -(temp_f18 / temp_f0_3);
-                    }
-                    temp_v0_4->cell = var_s0;
-                    gCollisionState->numCells += 1;
                 }
             }
-        }
-        if ((var_a1_2 != 0) || (var_a0 = 0, (var_a3_2 != 0))) {
-            var_a0 = temp_t2->part1;
-        }
-        var_s0 = var_a0;
-        if ((var_a1_2 == 0) || (var_v0_2 = 0, (var_a3_2 == 0))) {
-            var_v0_2 = temp_t2->part2;
-        }
-        if (var_a0 != 0) {
-            var_a2 = gCollisionState;
-            if (var_v0_2 != 0) {
-                (*spB0)[var_t0] = var_v0_2;
-                var_t0 += 1;
+            if ((var_a1_2 != 0) || (var_a3_2 != 0)) {
+                var_a0 = temp_t2->part1;
+            } else {
+                var_a0 = 0;
             }
-            var_a1 = var_t1->header.Triangle_Norm_Cells;
-            var_a3 = var_t1->header.Triangle_Normals;
-            var_v1 = var_a2->unk34;
-            goto loop_1;
+            var_s0 = var_a0;
+            if ((var_a1_2 == 0) || (var_a3_2 == 0)) {
+                var_v0_2 = temp_t2->part2;
+            } else {
+                var_v0_2 = 0;
+            }
+            if (var_a0 != 0) {
+                if (var_v0_2 != 0) {
+                    spB0[var_t0] = var_v0_2;
+                    var_t0 += 1;
+                }
+                continue;
+            }
+            var_s0 = var_v0_2;
+            if (var_v0_2 != 0) {
+                continue;
+            }
         }
-        var_s0 = var_v0_2;
-        if (var_v0_2 != 0) {
-            var_a2 = gCollisionState;
-            var_a1 = var_t1->header.Triangle_Norm_Cells;
-            var_a3 = var_t1->header.Triangle_Normals;
-            var_v1 = var_a2->unk34;
-            goto loop_1;
+        if (var_t0 != 0) {
+            var_s0 = spB0[var_t0 - 1];
+            var_t0 -= 1;
+            continue;
         }
-    }
-    if (var_t0 != 0) {
-        var_a2 = gCollisionState;
-        var_s0 = (*spB0)[var_t0].unk-2;
-        var_t0 -= 1;
-        var_a1 = var_t1->header.Triangle_Norm_Cells;
-        var_a3 = var_t1->header.Triangle_Normals;
-        var_v1 = var_a2->unk34;
-        goto loop_1;
+        break;
     }
 }
 #elif defined(PORT)
@@ -777,328 +754,226 @@ ret0:
     return 0;
 }
 
-#ifdef MIPS_TO_C
-s32 func_80102570(void *arg0, s32 *arg1, void *arg2, s32 arg3, struct CollisionTriangle **arg4) {
-    struct CollisionTriangle *sp64;
+#ifndef PORT
+s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, struct CollisionTriangle *arg3, struct CollisionTriangle **arg4) {
+    u32 pad[42];
+    struct CollisionTriangle *volatile sp64;
+    struct vCollisionHeader *temp_s3;
+    struct CollisionTriangle *temp_t6;
+    struct CollisionTriangle *temp_s5;
+    u16 *var_s2;
+    u16 temp_t5;
+    s32 var_s7;
     f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f0_5;
-    f32 temp_f0_6;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f12_3;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f14_3;
-    f32 temp_f16;
-    f32 temp_f16_2;
-    f32 temp_f16_3;
-    f32 temp_f18;
-    f32 temp_f18_2;
-    f32 temp_f18_3;
-    f32 temp_f20;
-    f32 temp_f20_2;
-    f32 temp_f22;
-    f32 temp_f22_2;
-    f32 temp_f28;
-    f32 temp_f28_2;
-    f32 temp_f28_3;
-    f32 temp_f28_4;
-    f32 temp_f28_5;
-    f32 temp_f28_6;
-    f32 temp_f2;
-    struct Normal *n;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-    f32 temp_f30;
-    f32 temp_f30_2;
-    f32 temp_f30_3;
-    f32 var_f10;
-    f32 var_f10_2;
+    f32 var_f2;
     f32 var_f12;
     f32 var_f14;
-    f32 var_f20;
-    f32 var_f20_2;
-    f32 var_f22;
-    f32 var_f22_2;
-    f32 var_f2;
-    f32 var_f8;
-    f32 var_f8_2;
-    s16 *temp_v0;
-    s16 *temp_v0_2;
-    s16 *temp_v0_3;
-    s16 temp_a0_2;
-    s16 temp_a0_4;
-    s16 temp_a0_6;
-    s16 temp_a1_2;
-    s16 temp_a1_4;
-    s16 temp_a1_6;
-    s16 temp_t1;
-    s16 temp_t1_2;
-    s16 temp_t1_3;
-    s16 temp_t2;
-    s16 temp_t2_2;
-    s16 temp_t2_3;
-    s16 temp_t3;
-    s16 temp_t3_2;
-    s16 temp_t3_3;
-    s16 temp_t4;
-    s16 temp_t4_2;
-    s16 temp_t4_3;
-    s32 var_s4;
-    s32 var_s4_2;
-    s32 var_s4_3;
-    s32 var_s7;
-    struct CollisionTriangle *temp_s5;
-    struct CollisionTriangle *temp_t6;
-    struct CollisionTriangle *temp_t6_2;
-    struct vCollisionHeader *temp_s3;
-    u16 *var_s2;
-    u16 *var_s2_2;
-    u16 *var_s2_3;
-    u16 temp_t5;
-    u16 temp_t5_2;
-    u16 temp_t5_3;
-    void *temp_a0;
-    void *temp_a0_3;
-    void *temp_a0_5;
-    void *temp_a1;
-    void *temp_a1_3;
-    void *temp_a1_5;
-    void *temp_a2;
-    void *temp_a2_2;
-    void *temp_a2_3;
-    void *temp_a2_4;
-    void *temp_a2_5;
-    void *temp_a2_6;
-    void *temp_a3;
-    void *temp_a3_2;
-    void *temp_a3_3;
-    void *temp_t0;
-    void *temp_t0_2;
-    void *temp_t0_3;
+    f32 e0;
+    f32 e1;
+    f32 e2;
+    f32 pu;
+    f32 pv;
 
-    temp_f0 = arg0->unk0;
+    temp_f0 = arg0->x;
     var_s7 = *arg1;
     if (temp_f0 < 0.0f) {
         var_f2 = -temp_f0;
     } else {
         var_f2 = temp_f0;
     }
-    temp_f0_2 = arg0->unk4;
-    if (temp_f0_2 < 0.0f) {
-        var_f12 = -temp_f0_2;
+    temp_f0 = arg0->y;
+    if (temp_f0 < 0.0f) {
+        var_f12 = -temp_f0;
     } else {
-        var_f12 = temp_f0_2;
+        var_f12 = temp_f0;
     }
-    temp_f0_3 = arg0->unk8;
-    if (temp_f0_3 < 0.0f) {
-        var_f14 = -temp_f0_3;
+    temp_f0 = arg0->z;
+    if (temp_f0 < 0.0f) {
+        var_f14 = -temp_f0;
     } else {
-        var_f14 = temp_f0_3;
+        var_f14 = temp_f0;
     }
     temp_s3 = gCollisionState->unk30;
     if (var_f12 < var_f2) {
-        var_s4 = var_s7 * 2;
         if (var_f14 < var_f2) {
             var_s2 = &temp_s3->header.Triangle_Cells[var_s7];
-loop_12:
-            temp_t5 = *var_s2;
-            var_s2 += 2;
-            temp_t6 = &temp_s3->header.Triangles[temp_t5 & 0x7FFF];
-            sp64 = temp_t6;
-            if (temp_t6 != arg3) {
-                temp_v0 = temp_s3->header.vertices.Vertices;
-                temp_f2 = arg2->unk8;
-                temp_f0_4 = arg2->unk4;
-                if (temp_s3->usingFloatVertices != 0) {
-                    temp_a0 = temp_v0 + (temp_t6->vertex[0] * 0xC);
-                    temp_f12 = temp_a0->unk4;
-                    temp_f14 = temp_a0->unk8;
-                    temp_a1 = temp_v0 + (temp_t6->vertex[1] * 0xC);
-                    temp_f28 = temp_a1->unk4;
-                    temp_f30 = temp_a1->unk8;
-                    temp_a2 = temp_v0 + (temp_t6->vertex[2] * 0xC);
-                    temp_f16 = temp_a2->unk4;
-                    temp_f18 = temp_a2->unk8;
-                    var_f20 = ((temp_f28 - temp_f12) * (temp_f2 - temp_f14)) - ((temp_f0_4 - temp_f12) * (temp_f30 - temp_f14));
-                    var_f22 = ((temp_f16 - temp_f28) * (temp_f2 - temp_f30)) - ((temp_f0_4 - temp_f28) * (temp_f18 - temp_f30));
-                    var_f8 = (temp_f12 - temp_f16) * (temp_f2 - temp_f18);
-                    var_f10 = (temp_f0_4 - temp_f16) * (temp_f14 - temp_f18);
-                } else {
-                    temp_a2_2 = temp_v0 + (temp_t6->vertex[0] * 6);
-                    temp_t2 = temp_a2_2->unk4;
-                    temp_t1 = temp_a2_2->unk2;
-                    temp_a3 = temp_v0 + (temp_t6->vertex[1] * 6);
-                    temp_a0_2 = temp_a3->unk2;
-                    temp_a1_2 = temp_a3->unk4;
-                    temp_t0 = temp_v0 + (temp_t6->vertex[2] * 6);
-                    temp_t3 = temp_t0->unk2;
-                    temp_t4 = temp_t0->unk4;
-                    var_f20 = ((temp_a0_2 - temp_t1) * (temp_f2 - temp_t2)) - ((temp_f0_4 - temp_t1) * (temp_a1_2 - temp_t2));
-                    var_f22 = ((temp_t3 - temp_a0_2) * (temp_f2 - temp_a1_2)) - ((temp_f0_4 - temp_a0_2) * (temp_t4 - temp_a1_2));
-                    var_f8 = (temp_t1 - temp_t3) * (temp_f2 - temp_t4);
-                    var_f10 = (temp_f0_4 - temp_t3) * (temp_t2 - temp_t4);
-                }
-                temp_f28_2 = var_f8 - var_f10;
-                if (((var_f20 <= 0.5f) && (var_f22 <= 0.5f) && (temp_f28_2 <= 0.5f)) || ((var_f20 >= -0.5f) && (var_f22 >= -0.5f) && (temp_f28_2 >= -0.5f))) {
-                    *arg4 = sp64;
-                    if (*(temp_s3->header.Triangle_Cells + var_s4) & 0x8000) {
-                        return 0;
+            for (;;) {
+                temp_t5 = *var_s2;
+                var_s2 += 1;
+                temp_t6 = &temp_s3->header.Triangles[temp_t5 & 0x7FFF];
+                sp64 = temp_t6;
+                if (temp_t6 != arg3) {
+                    pv = arg2->z;
+                    pu = arg2->y;
+                    if (temp_s3->usingFloatVertices != 0) {
+                        f32 *va = &temp_s3->header.vertices.VerticesF[temp_t6->vertex[0] * 3];
+                        f32 u0 = va[1];
+                        f32 v0 = va[2];
+                        f32 *vb = &temp_s3->header.vertices.VerticesF[temp_t6->vertex[1] * 3];
+                        f32 u1 = vb[1];
+                        f32 v1 = vb[2];
+                        f32 *vc = &temp_s3->header.vertices.VerticesF[temp_t6->vertex[2] * 3];
+                        f32 u2 = vc[1];
+                        f32 v2 = vc[2];
+                        e0 = ((u1 - u0) * (pv - v0)) - ((pu - u0) * (v1 - v0));
+                        e1 = ((u2 - u1) * (pv - v1)) - ((pu - u1) * (v2 - v1));
+                        e2 = ((u0 - u2) * (pv - v2)) - ((pu - u2) * (v0 - v2));
+                    } else {
+                        s16 *va = &temp_s3->header.vertices.Vertices[temp_t6->vertex[0] * 3];
+                        s16 v0 = va[2];
+                        s16 u0 = va[1];
+                        s16 *vb = &temp_s3->header.vertices.Vertices[temp_t6->vertex[1] * 3];
+                        s16 u1 = vb[1];
+                        s16 v1 = vb[2];
+                        s16 *vc = &temp_s3->header.vertices.Vertices[temp_t6->vertex[2] * 3];
+                        s16 u2 = vc[1];
+                        s16 v2 = vc[2];
+                        e0 = ((u1 - u0) * (pv - v0)) - ((pu - u0) * (v1 - v0));
+                        e1 = ((u2 - u1) * (pv - v1)) - ((pu - u1) * (v2 - v1));
+                        e2 = ((u0 - u2) * (pv - v2)) - ((pu - u2) * (v0 - v2));
                     }
-                    *arg1 = var_s7;
-                    return 1;
+                    if (((e0 <= 0.5f) && (e1 <= 0.5f) && (e2 <= 0.5f)) ||
+                        ((e0 >= -0.5f) && (e1 >= -0.5f) && (e2 >= -0.5f))) {
+                        *arg4 = sp64;
+                        if (temp_s3->header.Triangle_Cells[var_s7] & 0x8000) {
+                            return 0;
+                        }
+                        *arg1 = var_s7;
+                        return 1;
+                    }
                 }
-                goto block_25;
+                var_s7 += 1;
+                if (temp_t5 & 0x8000) {
+                    *arg4 = NULL;
+                    return 0;
+                }
             }
-block_25:
+        }
+    }
+    if (var_f14 < var_f12) {
+        var_s2 = &temp_s3->header.Triangle_Cells[var_s7];
+        for (;;) {
+            temp_t5 = *var_s2;
+            var_s2 += 1;
+            temp_s5 = &temp_s3->header.Triangles[temp_t5 & 0x7FFF];
+            if (temp_s5 != arg3) {
+                pv = arg2->z;
+                pu = arg2->x;
+                if (temp_s3->usingFloatVertices != 0) {
+                    f32 *va = &temp_s3->header.vertices.VerticesF[temp_s5->vertex[0] * 3];
+                    f32 u0 = va[0];
+                    f32 v0 = va[2];
+                    f32 *vb = &temp_s3->header.vertices.VerticesF[temp_s5->vertex[1] * 3];
+                    f32 u1 = vb[0];
+                    f32 v1 = vb[2];
+                    f32 *vc = &temp_s3->header.vertices.VerticesF[temp_s5->vertex[2] * 3];
+                    f32 u2 = vc[0];
+                    f32 v2 = vc[2];
+                    e0 = ((u1 - u0) * (pv - v0)) - ((pu - u0) * (v1 - v0));
+                    e1 = ((u2 - u1) * (pv - v1)) - ((pu - u1) * (v2 - v1));
+                    e2 = ((u0 - u2) * (pv - v2)) - ((pu - u2) * (v0 - v2));
+                    if (((e0 <= 0.5f) && (e1 <= 0.5f) && (e2 <= 0.5f)) ||
+                        ((e0 >= -0.5f) && (e1 >= -0.5f) && (e2 >= -0.5f))) {
+                        *arg4 = temp_s5;
+                        if (temp_s3->header.Triangle_Cells[var_s7] & 0x8000) {
+                            return 0;
+                        }
+                        *arg1 = var_s7;
+                        return 1;
+                    }
+                } else {
+                    s16 *va = &temp_s3->header.vertices.Vertices[temp_s5->vertex[0] * 3];
+                    s16 v0 = va[2];
+                    s16 u0 = va[0];
+                    s16 *vb = &temp_s3->header.vertices.Vertices[temp_s5->vertex[1] * 3];
+                    s16 u1 = vb[0];
+                    s16 v1 = vb[2];
+                    s16 *vc = &temp_s3->header.vertices.Vertices[temp_s5->vertex[2] * 3];
+                    s16 u2 = vc[0];
+                    s16 v2 = vc[2];
+                    e0 = ((u1 - u0) * (pv - v0)) - ((pu - u0) * (v1 - v0));
+                    e1 = ((u2 - u1) * (pv - v1)) - ((pu - u1) * (v2 - v1));
+                    if ((e0 <= 0.5f) && (e1 <= 0.5f)) {
+                        if ((((u0 - u2) * (pv - v2)) - ((pu - u2) * (v0 - v2))) <= 0.5f) {
+                            *arg4 = temp_s5;
+                            if (temp_s3->header.Triangle_Cells[var_s7] & 0x8000) {
+                                return 0;
+                            }
+                            *arg1 = var_s7;
+                            return 1;
+                        }
+                    } else if ((e0 >= -0.5f) && (e1 >= -0.5f) &&
+                               ((((u0 - u2) * (pv - v2)) - ((pu - u2) * (v0 - v2))) >= -0.5f)) {
+                        *arg4 = temp_s5;
+                        if (temp_s3->header.Triangle_Cells[var_s7] & 0x8000) {
+                            return 0;
+                        }
+                        *arg1 = var_s7;
+                        return 1;
+                    }
+                }
+            }
             var_s7 += 1;
             if (temp_t5 & 0x8000) {
                 *arg4 = NULL;
                 return 0;
             }
-            var_s4 += 2;
-            goto loop_12;
         }
     }
-    var_s4_2 = var_s7 * 2;
-    if (var_f14 < var_f12) {
-        var_s4_3 = var_s7 * 2;
-        var_s2_2 = &temp_s3->header.Triangle_Cells[var_s7];
-loop_30:
-        temp_t5_2 = *var_s2_2;
-        var_s2_2 += 2;
-        temp_s5 = &temp_s3->header.Triangles[temp_t5_2 & 0x7FFF];
-        if (temp_s5 != arg3) {
-            temp_v0_2 = temp_s3->header.vertices.Vertices;
-            temp_f2_2 = arg2->unk8;
-            temp_f12_2 = arg2->unk0;
+    var_s2 = &temp_s3->header.Triangle_Cells[var_s7];
+    for (;;) {
+        temp_t5 = *var_s2;
+        var_s2 += 1;
+        temp_t6 = &temp_s3->header.Triangles[temp_t5 & 0x7FFF];
+        sp64 = temp_t6;
+        if (temp_t6 != arg3) {
+            pv = arg2->y;
+            pu = arg2->x;
             if (temp_s3->usingFloatVertices != 0) {
-                temp_a0_3 = temp_v0_2 + (temp_s5->vertex[0] * 0xC);
-                temp_f0_5 = temp_a0_3->unk0;
-                temp_f14_2 = temp_a0_3->unk8;
-                temp_a1_3 = temp_v0_2 + (temp_s5->vertex[1] * 0xC);
-                temp_f28_3 = temp_a1_3->unk0;
-                temp_f30_2 = temp_a1_3->unk8;
-                temp_a2_3 = temp_v0_2 + (temp_s5->vertex[2] * 0xC);
-                temp_f16_2 = temp_a2_3->unk0;
-                temp_f18_2 = temp_a2_3->unk8;
-                temp_f20 = ((temp_f28_3 - temp_f0_5) * (temp_f2_2 - temp_f14_2)) - ((temp_f12_2 - temp_f0_5) * (temp_f30_2 - temp_f14_2));
-                temp_f22 = ((temp_f16_2 - temp_f28_3) * (temp_f2_2 - temp_f30_2)) - ((temp_f12_2 - temp_f28_3) * (temp_f18_2 - temp_f30_2));
-                temp_f28_4 = ((temp_f0_5 - temp_f16_2) * (temp_f2_2 - temp_f18_2)) - ((temp_f12_2 - temp_f16_2) * (temp_f14_2 - temp_f18_2));
-                if (((temp_f20 <= 0.5f) && (temp_f22 <= 0.5f) && (temp_f28_4 <= 0.5f)) || ((temp_f20 >= -0.5f) && (temp_f22 >= -0.5f) && (temp_f28_4 >= -0.5f))) {
-                    *arg4 = temp_s5;
-                    if (*(temp_s3->header.Triangle_Cells + var_s4_3) & 0x8000) {
-                        return 0;
-                    }
-                    *arg1 = var_s7;
-                    return 1;
-                }
-                goto block_53;
+                f32 *va = &temp_s3->header.vertices.VerticesF[temp_t6->vertex[0] * 3];
+                f32 u0 = va[0];
+                f32 v0 = va[1];
+                f32 *vb = &temp_s3->header.vertices.VerticesF[temp_t6->vertex[1] * 3];
+                f32 u1 = vb[0];
+                f32 v1 = vb[1];
+                f32 *vc = &temp_s3->header.vertices.VerticesF[temp_t6->vertex[2] * 3];
+                f32 u2 = vc[0];
+                f32 v2 = vc[1];
+                e0 = ((u1 - u0) * (pv - v0)) - ((pu - u0) * (v1 - v0));
+                e1 = ((u2 - u1) * (pv - v1)) - ((pu - u1) * (v2 - v1));
+                e2 = ((u0 - u2) * (pv - v2)) - ((pu - u2) * (v0 - v2));
+            } else {
+                s16 *va = &temp_s3->header.vertices.Vertices[temp_t6->vertex[0] * 3];
+                s16 v0 = va[1];
+                s16 u0 = va[0];
+                s16 *vb = &temp_s3->header.vertices.Vertices[temp_t6->vertex[1] * 3];
+                s16 u1 = vb[0];
+                s16 v1 = vb[1];
+                s16 *vc = &temp_s3->header.vertices.Vertices[temp_t6->vertex[2] * 3];
+                s16 u2 = vc[0];
+                s16 v2 = vc[1];
+                e0 = ((u1 - u0) * (pv - v0)) - ((pu - u0) * (v1 - v0));
+                e1 = ((u2 - u1) * (pv - v1)) - ((pu - u1) * (v2 - v1));
+                e2 = ((u0 - u2) * (pv - v2)) - ((pu - u2) * (v0 - v2));
             }
-            temp_a2_4 = temp_v0_2 + (temp_s5->vertex[0] * 6);
-            temp_t4_2 = temp_a2_4->unk4;
-            temp_t3_2 = temp_a2_4->unk0;
-            temp_a3_2 = temp_v0_2 + (temp_s5->vertex[1] * 6);
-            temp_a0_4 = temp_a3_2->unk0;
-            temp_a1_4 = temp_a3_2->unk4;
-            temp_t0_2 = temp_v0_2 + (temp_s5->vertex[2] * 6);
-            temp_t1_2 = temp_t0_2->unk0;
-            temp_t2_2 = temp_t0_2->unk4;
-            temp_f20_2 = ((temp_a0_4 - temp_t3_2) * (temp_f2_2 - temp_t4_2)) - ((temp_f12_2 - temp_t3_2) * (temp_a1_4 - temp_t4_2));
-            temp_f22_2 = ((temp_t1_2 - temp_a0_4) * (temp_f2_2 - temp_a1_4)) - ((temp_f12_2 - temp_a0_4) * (temp_t2_2 - temp_a1_4));
-            if ((temp_f20_2 <= 0.5f) && (temp_f22_2 <= 0.5f)) {
-                if ((((temp_t3_2 - temp_t1_2) * (temp_f2_2 - temp_t2_2)) - ((temp_f12_2 - temp_t1_2) * (temp_t4_2 - temp_t2_2))) <= 0.5f) {
-                    *arg4 = temp_s5;
-                    if (*(temp_s3->header.Triangle_Cells + var_s4_3) & 0x8000) {
-                        return 0;
-                    }
-                    *arg1 = var_s7;
-                    return 1;
-                }
-                goto block_53;
-            }
-            if ((temp_f20_2 >= -0.5f) && (temp_f22_2 >= -0.5f) && ((((temp_t3_2 - temp_t1_2) * (temp_f2_2 - temp_t2_2)) - ((temp_f12_2 - temp_t1_2) * (temp_t4_2 - temp_t2_2))) >= -0.5f)) {
-                *arg4 = temp_s5;
-                if (*(temp_s3->header.Triangle_Cells + var_s4_3) & 0x8000) {
+            if (((e0 <= 0.5f) && (e1 <= 0.5f) && (e2 <= 0.5f)) ||
+                ((e0 >= -0.5f) && (e1 >= -0.5f) && (e2 >= -0.5f))) {
+                *arg4 = sp64;
+                if (temp_s3->header.Triangle_Cells[var_s7] & 0x8000) {
                     return 0;
                 }
                 *arg1 = var_s7;
                 return 1;
             }
-            goto block_53;
         }
-block_53:
         var_s7 += 1;
-        if (temp_t5_2 & 0x8000) {
+        if (temp_t5 & 0x8000) {
             *arg4 = NULL;
             return 0;
         }
-        var_s4_3 += 2;
-        goto loop_30;
     }
-    var_s2_3 = &temp_s3->header.Triangle_Cells[var_s7];
-loop_57:
-    temp_t5_3 = *var_s2_3;
-    var_s2_3 += 2;
-    temp_t6_2 = &temp_s3->header.Triangles[temp_t5_3 & 0x7FFF];
-    sp64 = temp_t6_2;
-    if (temp_t6_2 != arg3) {
-        temp_v0_3 = temp_s3->header.vertices.Vertices;
-        temp_f0_6 = arg2->unk4;
-        temp_f12_3 = arg2->unk0;
-        if (temp_s3->usingFloatVertices != 0) {
-            temp_a0_5 = temp_v0_3 + (temp_t6_2->vertex[0] * 0xC);
-            temp_f2_3 = temp_a0_5->unk0;
-            temp_f14_3 = temp_a0_5->unk4;
-            temp_a1_5 = temp_v0_3 + (temp_t6_2->vertex[1] * 0xC);
-            temp_f28_5 = temp_a1_5->unk0;
-            temp_f30_3 = temp_a1_5->unk4;
-            temp_a2_5 = temp_v0_3 + (temp_t6_2->vertex[2] * 0xC);
-            temp_f16_3 = temp_a2_5->unk0;
-            temp_f18_3 = temp_a2_5->unk4;
-            var_f20_2 = ((temp_f28_5 - temp_f2_3) * (temp_f0_6 - temp_f14_3)) - ((temp_f12_3 - temp_f2_3) * (temp_f30_3 - temp_f14_3));
-            var_f22_2 = ((temp_f16_3 - temp_f28_5) * (temp_f0_6 - temp_f30_3)) - ((temp_f12_3 - temp_f28_5) * (temp_f18_3 - temp_f30_3));
-            var_f8_2 = (temp_f2_3 - temp_f16_3) * (temp_f0_6 - temp_f18_3);
-            var_f10_2 = (temp_f12_3 - temp_f16_3) * (temp_f14_3 - temp_f18_3);
-        } else {
-            temp_a2_6 = temp_v0_3 + (temp_t6_2->vertex[0] * 6);
-            temp_t2_3 = temp_a2_6->unk2;
-            temp_t1_3 = temp_a2_6->unk0;
-            temp_a3_3 = temp_v0_3 + (temp_t6_2->vertex[1] * 6);
-            temp_a0_6 = temp_a3_3->unk0;
-            temp_a1_6 = temp_a3_3->unk2;
-            temp_t0_3 = temp_v0_3 + (temp_t6_2->vertex[2] * 6);
-            temp_t3_3 = temp_t0_3->unk0;
-            temp_t4_3 = temp_t0_3->unk2;
-            var_f20_2 = ((temp_a0_6 - temp_t1_3) * (temp_f0_6 - temp_t2_3)) - ((temp_f12_3 - temp_t1_3) * (temp_a1_6 - temp_t2_3));
-            var_f22_2 = ((temp_t3_3 - temp_a0_6) * (temp_f0_6 - temp_a1_6)) - ((temp_f12_3 - temp_a0_6) * (temp_t4_3 - temp_a1_6));
-            var_f8_2 = (temp_t1_3 - temp_t3_3) * (temp_f0_6 - temp_t4_3);
-            var_f10_2 = (temp_f12_3 - temp_t3_3) * (temp_t2_3 - temp_t4_3);
-        }
-        temp_f28_6 = var_f8_2 - var_f10_2;
-        if (((var_f20_2 <= 0.5f) && (var_f22_2 <= 0.5f) && (temp_f28_6 <= 0.5f)) || ((var_f20_2 >= -0.5f) && (var_f22_2 >= -0.5f) && (temp_f28_6 >= -0.5f))) {
-            *arg4 = sp64;
-            if (*(temp_s3->header.Triangle_Cells + var_s4_2) & 0x8000) {
-                return 0;
-            }
-            *arg1 = var_s7;
-            return 1;
-        }
-        goto block_70;
-    }
-block_70:
-    var_s7 += 1;
-    if (temp_t5_3 & 0x8000) {
-        *arg4 = NULL;
-        return 0;
-    }
-    var_s4_2 += 2;
-    goto loop_57;
 }
-#elif defined(PORT)
+#else
 /* Point-in-triangle scan over a cell's u16 triangle list (draft above,
  * completed). The plane normal's dominant axis picks the 2D projection;
  * each candidate triangle is tested with three edge cross-products against
@@ -1191,15 +1066,6 @@ s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, u32 (*arg3)(void
         }
     }
 }
-#else
-extern s32 func_80102570(
-    struct Normal *,
-    s32 *,
-    Vector *,
-    u32 (*)(void),
-    struct CollisionTriangle **
-);
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80102570.s")
 #endif
 
 u32 func_80103004(f32 *MAXLRP, Vector *arg1, struct Normal **arg2, struct CollisionTriangle **arg3) {

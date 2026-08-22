@@ -496,70 +496,56 @@ void func_800F8C70(s32 *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F8C70.s")
 #endif
 #ifdef MIPS_TO_C
+/* FACTORY: 73/109, regalloc (temp rotation v0<->a3, FP load-copy ownership +
+ * add.s operand orientation, spill-slot/locals base offsets) */
+void func_800F8E6C(GObj *arg0) {
+    s32 objId;
+    s32 nodeOfs;
+    s32 *nodeP;
+    f32 *progressP;
+    f32 *angleP;
+    struct TrackFooter *footer;
+    f32 old;
+    f32 cur;
+    f32 ang;
+    Vector pos;
+    Vector tang;
+    Vector ref;
+    void func_8001E344(Vector *, struct TrackFooter *, f32);
 
-void func_800F8E6C(s32 *arg0) {
-    s32 sp78;
-    s32 sp74;
-    f32 sp64;
-    f32 sp5C;
-    ? sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    s32 *sp34;
-    f32 *sp2C;
-    f32 *temp_v0;
-    f32 *temp_v0_2;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 var_f0;
-    s32 *temp_t0;
-    s32 temp_a1_2;
-    s32 temp_a2;
-    s32 temp_t1;
-    s32 var_a3;
-    void *temp_a1;
-    void *temp_v1;
-
-    temp_a2 = *arg0;
-    temp_t0 = &D_800E5F90[temp_a2];
-    temp_t1 = *temp_t0;
-    if (temp_t1 != -1) {
-        temp_v1 = D_80129114;
-        var_a3 = temp_t1 * 0x10;
-        temp_a1 = (temp_v1->unk4 + var_a3)->unk4;
-        temp_v0 = &D_800E6BD0[temp_a2];
-        temp_f0 = *temp_v0;
-        *temp_v0 = temp_f0 + ((D_800E64D0[temp_a2] * 0.1f) / temp_a1->unkC);
-        var_f0 = *temp_v0;
-        if (temp_f0 != var_f0) {
-            D_800E6D90[temp_a2] = temp_f0;
-            sp2C = temp_v0;
-            sp74 = temp_a2;
-            sp34 = temp_t0;
-            func_800F8B1C(temp_a2, temp_a1, temp_a2, var_a3);
-            func_800F8A24(sp74);
-            var_f0 = *temp_v0;
-            var_a3 = *temp_t0 * 0x10;
+    objId = arg0->objId;
+    nodeP = &D_800E5F90[objId];
+    if (*nodeP != -1) {
+        nodeOfs = *nodeP * 0x10;
+        footer = ((struct TrackNodeHeader *) ((s32) D_80129114->unk4 + nodeOfs))->unk4;
+        progressP = &D_800E6BD0[objId];
+        cur = *progressP;
+        old = cur;
+        *progressP = ((D_800E64D0[objId] * 0.1f) / footer->unkC) + cur;
+        cur = *progressP;
+        if (old != cur) {
+            D_800E6D90[objId] = old;
+            func_800F8B1C(objId);
+            func_800F8A24(objId);
+            nodeOfs = *nodeP * 0x10;
+            cur = *progressP;
         } else {
-            D_800E6D90[temp_a2] = var_f0;
+            D_800E6D90[objId] = cur;
         }
-        temp_a1_2 = (temp_v1->unk4 + var_a3)->unk4;
-        sp2C = temp_v0;
-        sp78 = temp_a1_2;
-        mtxGetInterpolatedPosition(&sp64, temp_a1_2, var_f0, var_a3);
-        gEntitiesNextPosXArray[temp_a2] = sp64;
-        gEntitiesNextPosZArray[temp_a2] = sp6C;
-        sp4C = 0.0f;
-        sp50 = 0.0f;
-        sp54 = D_800E6A10[temp_a2];
-        func_8001E344(&sp58, sp78, *sp2C);
-        sp5C = 0.0f;
-        temp_f0_2 = vec3_abs_angle_diff(&sp4C, &sp58);
-        temp_v0_2 = &D_800E17D0[temp_a2];
-        *temp_v0_2 = temp_f0_2;
-        if (temp_f0_2 < 0.0f) {
-            *temp_v0_2 += 6.2831855f;
+        footer = ((struct TrackNodeHeader *) ((s32) D_80129114->unk4 + nodeOfs))->unk4;
+        mtxGetInterpolatedPosition(&pos, footer, cur);
+        gEntitiesNextPosXArray[objId] = pos.x;
+        gEntitiesNextPosZArray[objId] = pos.z;
+        ref.x = 0.0f;
+        ref.y = 0.0f;
+        ref.z = D_800E6A10[objId];
+        func_8001E344(&tang, footer, *progressP);
+        tang.y = 0.0f;
+        ang = vec3_abs_angle_diff(&ref, &tang);
+        angleP = &D_800E17D0[objId];
+        *angleP = ang;
+        if (ang < 0.0f) {
+            *angleP += 6.2831855f;
         }
     }
 }
@@ -631,110 +617,85 @@ s32 func_800F9020(Vector *v, s32 arg1, f32 param) {
 }
 
 #ifdef MIPS_TO_C
+/* FACTORY: 20/202 positional; residue is regalloc naming cascade (idx vars t1/t2 vs ROM a2/a3 + 2-3 live-range-split moves) and temp-area layout (frame 0x78 vs 0x68, buf 0x28 vs 0x34); control flow, shifts-not-multu *0xC, loop bodies and float conversions all align */
+void func_800F90C0(s32 arg0, u8 *arg1) {
+    struct TrackKirbyNode *node;
+    u8 *pa;
+    u8 *pb;
+    u8 *ca;
+    u8 *cb;
+    s8 *sa;
+    s8 *sb;
+    u8 *dst;
+    u8 idxA;
+    u8 idxB;
+    u32 a;
+    s32 d;
+    s32 a2;
+    s32 b2;
+    f32 fa;
+    f32 t;
+    f32 p;
+    s16 y;
+    u8 buf[12];
+    extern u8 D_800D478C[];
+    void func_800A5404(u8 *, u8 *);
 
-void func_800F90C0(s32 arg0, f32 arg1) {
-    s8 sp3F;
-    s8 sp3E;
-    s8 sp3D;
-    ? sp3A;
-    ? sp34;
-    ? *var_v0;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f16;
-    f32 temp_f2;
-    f32 var_f2;
-    f32 var_f4;
-    s16 temp_a1;
-    s16 temp_v1;
-    s32 temp_f6;
-    s32 var_a1;
-    s32 var_f18;
-    s8 *var_a0_2;
-    s8 *var_v1_2;
-    u8 *temp_t0;
-    u8 *temp_t1;
-    u8 *var_a0;
-    u8 *var_v1;
-    u8 temp_a1_2;
-    u8 temp_t8;
-    u8 var_a2;
-    u8 var_a2_2;
-    u8 var_a3;
-    void *temp_v0;
-    void *var_v0_2;
-
-    temp_v0 = *(D_80129114->unk4 + (D_800E5F90[arg0] * 0x10));
-    if (temp_v0->unkE & 0x10) {
-        var_a2 = temp_v0->unk9;
-        temp_a1 = temp_v0->unk10;
-        temp_f6 = gEntitiesNextPosYArray[arg0];
-        var_a3 = temp_v0->unkA;
-        if (temp_f6 >= temp_a1) {
-            func_800A5404(arg1, (var_a2 * 0xC) + &D_800D478C, var_a2, var_a3);
+    node = (struct TrackKirbyNode *) D_80129114->unk4[D_800E5F90[arg0]].unk0;
+    if (node->unkE & 0x10) {
+        y = gEntitiesNextPosYArray[arg0];
+        idxA = node->unk9;
+        idxB = node->unkA;
+        if (y >= node->unk10) {
+            func_800A5404(arg1, (u8 *) ((idxA * 4 - idxA) * 4 + (s32) D_800D478C));
             return;
         }
-        temp_v1 = temp_v0->unk12;
-        if (temp_v1 >= temp_f6) {
-            func_800A5404(arg1, (var_a3 * 0xC) + &D_800D478C, var_a2, var_a3);
+        if (node->unk12 >= y) {
+            func_800A5404(arg1, (u8 *) ((idxB * 4 - idxB) * 4 + (s32) D_800D478C));
             return;
         }
-        var_f2 = (temp_a1 - temp_f6) / (temp_a1 - temp_v1);
-        goto block_9;
-    }
-    temp_f2 = D_800E6BD0[arg0];
-    if (temp_f2 <= 0.5f) {
-        var_a2 = temp_v0->unk9;
-        var_a3 = temp_v0->unkA;
-        var_f2 = 2.0f * temp_f2;
+        t = (f32) (node->unk10 - y) / (f32) (node->unk10 - node->unk12);
     } else {
-        var_a2 = temp_v0->unkA;
-        var_a3 = temp_v0->unkB;
-        var_f2 = (temp_f2 - 0.5f) * 2.0f;
-    }
-block_9:
-    temp_t1 = (var_a2 * 0xC) + &D_800D478C;
-    temp_t0 = (var_a3 * 0xC) + &D_800D478C;
-    var_v1 = temp_t0;
-    var_a0 = temp_t1;
-    var_v0 = &sp34;
-    do {
-        temp_a1_2 = *var_a0;
-        temp_t8 = *var_v1;
-        var_v1 += 1;
-        var_f4 = temp_a1_2;
-        if (temp_a1_2 < 0) {
-            var_f4 += 4294967296.0f;
+        p = D_800E6BD0[arg0];
+        if (p <= 0.5f) {
+            idxA = node->unk9;
+            idxB = node->unkA;
+            t = p + p;
+        } else {
+            idxA = node->unkA;
+            idxB = node->unkB;
+            t = (p - 0.5f) * 2.0f;
         }
-        var_a0 += 1;
-        var_v0 += 1;
-        var_v0->unk-1 = ((temp_t8 - temp_a1_2) * var_f2) + var_f4;
-    } while (var_v0 < &sp3A);
-    var_v1_2 = temp_t0 + 6;
-    var_a0_2 = temp_t1 + 6;
-    var_v0_2 = &sp3A + 1;
-    var_a1 = *var_a0_2 + 0x64;
-    var_a2_2 = *var_v1_2 + 0x64;
-    var_f18 = var_a2_2 - var_a1;
-    if (var_v0_2 != &sp3D) {
-        do {
-            var_v0_2 += 1;
-            temp_f14 = var_a1;
-            temp_f16 = var_f18 * var_f2;
-            var_a1 = var_a0_2->unk1 + 0x64;
-            var_a2_2 = var_v1_2->unk1 + 0x64;
-            var_f18 = var_a2_2 - var_a1;
-            var_v1_2 += 1;
-            var_a0_2 += 1;
-            var_v0_2->unk-2 = (temp_f14 + temp_f16) - 100.0f;
-        } while (var_v0_2 != &sp3D);
     }
-    temp_f14_2 = var_a1;
-    var_v0_2->unk-1 = (temp_f14_2 + (var_f18 * var_f2)) - 100.0f;
-    sp3E = 0;
-    sp3D = 0;
-    sp3F = 0;
-    func_800A5404(temp_f14_2, (bitwise void *) arg1, &sp34, var_a2_2, &sp3D);
+    pa = (u8 *) ((idxA * 4 - idxA) * 4 + (s32) D_800D478C);
+    pb = (u8 *) ((idxB * 4 - idxB) * 4 + (s32) D_800D478C);
+    ca = pa;
+    cb = pb;
+    dst = buf;
+    do {
+        a = *ca;
+        fa = a;
+        d = *cb - a;
+        cb++;
+        ca++;
+        dst++;
+        dst[-1] = (u32) ((d * t) + fa);
+    } while (dst < &buf[6]);
+    sa = (s8 *) (pa + 6);
+    sb = (s8 *) (pb + 6);
+    dst = &buf[6];
+    do {
+        a2 = *sa + 100;
+        b2 = *sb + 100;
+        sa++;
+        sb++;
+        dst++;
+        dst[-1] = (s32) (((f32) a2 + ((f32) (b2 - a2) * t)) - 100.0f);
+    } while (dst != &buf[9]);
+    buf[9] = 0;
+    buf[10] = 0;
+    buf[11] = 0;
+    func_800A5404(arg1, buf);
 }
 #elif defined(PORT)
 /* PORT: blend two 12-byte D_800D478C color records and hand the result to
@@ -1802,42 +1763,7 @@ void func_800FA5C0(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
     arg2->unk4 = arg2->unk4 + arg1->unk14;
 }
 
-#ifdef MIPS_TO_C
-
-void func_800FA608(s32 arg0, void *arg1, void *arg2) {
-    s32 sp54;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    ? sp38;
-    f32 sp2C;
-    s16 temp_v0;
-
-    sp54 = D_800D799C->data;
-    temp_v0 = arg1->unk0;
-    switch (temp_v0) {                              /* irregular */
-        case 0:
-            sp44 = cosf((arg1->unk8 * 3.1415927f) / 180.0f);
-            sp4C = -sinf((arg1->unk8 * 3.1415927f) / 180.0f);
-            sp48 = 0.0f;
-            break;
-        case 1:
-            func_8001E344(&sp44, (D_80129114->unk4 + (D_800E5F90[arg0] * 0x10))->unk4, D_800E6BD0[arg0], arg0);
-            sp48 = 0.0f;
-            lbvector_Normalize(&sp44);
-            lbvector_Rotate(&sp44, 2, (arg1->unk8 * 3.1415927f) / 180.0f);
-            break;
-    }
-    lbvector_Scale(&sp44, -arg1->unkC);
-    lbvector_Add(&sp44, arg2);
-    lbvector_Diff(&sp2C, arg2, &sp44);
-    vec3_normalized_cross_product(sp54 + 0x54, &sp2C, &sp38);
-    func_800191F8(&sp2C, &sp38, ((arg1->unk4 - 90.0f) * 3.1415927f) / 180.0f);
-    arg2->unkC = arg2->unk0 - sp2C;
-    arg2->unk10 = arg2->unk4 - sp30;
-    arg2->unk14 = arg2->unk8 - sp34;
-}
-#elif defined(PORT)
+#ifdef PORT
 /* PORT: camera eye placement behind the target, from asm/nonmatchings/ovl2/
  * ovl2_3/func_800FA608.s. The N64 byte pokes become their host accesses:
  * the camera up vector is Camera.viewMtx.lookAt.up (N64 +0x54) and the
@@ -1877,7 +1803,36 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
     arg2->unk14 = arg2->unk8 - diff.z;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA608.s")
+void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
+    DObj *dobj;
+    Vector dir;
+    Vector axis;
+    Vector diff;
+    void func_8001E344(Vector *, struct Unk80129114_4_4 *, f32);
+
+    dobj = D_800D799C->data.dobj;
+    switch (arg1->unk0) {
+    case 0:
+        dir.x = cosf((arg1->unk8 * 3.1415927f) / 180.0f);
+        dir.z = -sinf((arg1->unk8 * 3.1415927f) / 180.0f);
+        dir.y = 0.0f;
+        break;
+    case 1:
+        func_8001E344(&dir, D_80129114->unk4[D_800E5F90[arg0]].unk4, D_800E6BD0[arg0]);
+        dir.y = 0.0f;
+        lbvector_Normalize(&dir);
+        lbvector_Rotate(&dir, 2, (arg1->unk8 * 3.1415927f) / 180.0f);
+        break;
+    }
+    lbvector_Scale(&dir, -arg1->unkC);
+    lbvector_Add(&dir, (Vector *) arg2);
+    lbvector_Diff(&diff, (Vector *) arg2, &dir);
+    vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &diff, &axis);
+    func_800191F8(&diff, &axis, ((arg1->unk4 - 90.0f) * 3.1415927f) / 180.0f);
+    arg2->unkC = arg2->unk0 - diff.x;
+    arg2->unk10 = arg2->unk4 - diff.y;
+    arg2->unk14 = arg2->unk8 - diff.z;
+}
 #endif
 
 void func_800FA7EC(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
@@ -2640,31 +2595,28 @@ s32 func_800FB914(s32 arg0) {
    swap at the 9999 arm. Dropping the counter local (D_801293FC += 2 inline) is what took this
    from 21 to 5 -- it is what frees $a0 for var_a0; do not reintroduce a named temp. */
 #ifdef MIPS_TO_C
-
+/* FACTORY: 48/49, single commutative addu operand orientation (base+idx with store-forwarded zero index; both source orders canonicalize to idx-first, ROM has base-first) */
 void func_800FB9B4(void) {
-    f32 *var_a0;
-    f32 var_f0;
-    f32 *temp_v1;
+    f32 *vec;
+    f32 *ptr;
+    s32 idx;
 
     if (D_801293F8 != 0) {
-        temp_v1 = D_801242B4[D_801293F8];
+        vec = D_801242B4[D_801293F8];
         D_801293FC += 2;
-        var_a0 = &temp_v1[D_801293FC];
-        var_f0 = *var_a0;
-        if (var_f0 == 8888.0f) {
+        ptr = (f32 *) ((s32) vec + D_801293FC * 4);
+        if (*ptr == 8888.0f) {
             D_801293F8 = 0;
             D_801293FC = -2;
             D_80129404 = 0.0f;
             D_80129400 = D_80129404;
             return;
         }
-        if (var_f0 == 9999.0f) {
-            D_801293FC = 0;
-            var_a0 = &temp_v1[D_801293FC];
-            var_f0 = *var_a0;
+        if (*ptr == 9999.0f) {
+            ptr = (f32 *) ((D_801293FC = 0) * 4 + (s32) vec);
         }
-        D_80129400 = var_f0;
-        D_80129404 = var_a0[1];
+        D_80129400 = *ptr;
+        D_80129404 = ptr[1];
     }
 }
 #elif defined(PORT)

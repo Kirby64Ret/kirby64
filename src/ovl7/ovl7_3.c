@@ -1149,51 +1149,45 @@ void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2ADC_ovl7.s")
 #endif
-#ifdef MIPS_TO_C
-
+#ifndef PORT /* WIP iterating, re-guard at exit */
 s32 func_801A2C78_ovl7(f32 arg0) {
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    Vector sp44;
-    f32 sp38;
-    u32 sp28;
-    GObj *temp_v1;
-    f32 temp_f0;
-    f32 temp_f2;
-    s32 var_a0;
-    u32 temp_a0;
-    u32 temp_a3;
-    u32 temp_t6;
+    s32 func_8010E048(void *, s32, Vector *, Vector *, Vector *, Vector *);
+    void func_800F8728(s32, f32, f32);
+    Vector newp;
+    Vector oldp;
+    Vector hit;
+    Vector norm;
+    struct UnkStruct800E1B50 *rec;
+    s32 pad0;
+    s32 pad1;
+    u32 water;
+    f32 dx;
+    f32 dz;
 
-    temp_a0 = omCurrentObj->objId;
-    sp5C = gEntitiesNextPosXArray[temp_a0];
-    sp60 = gEntitiesNextPosYArray[omCurrentObj->objId] + arg0;
-    sp64 = gEntitiesNextPosZArray[omCurrentObj->objId];
-    sp50 = gEntitiesPosXArray[omCurrentObj->objId];
-    sp54 = gEntitiesPosYArray[omCurrentObj->objId] + arg0;
-    sp58 = gEntitiesPosZArray[omCurrentObj->objId];
-    temp_t6 = D_800E1B50[temp_a0]->unk74;
-    sp28 = temp_t6;
-    if (temp_t6 == 0) {
+    rec = D_800E1B50[omCurrentObj->objId];
+    newp.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + arg0;
+    newp.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    oldp.x = gEntitiesPosXArray[omCurrentObj->objId];
+    oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + arg0;
+    oldp.z = gEntitiesPosZArray[omCurrentObj->objId];
+    water = rec->unk74;
+    if (water == 0) {
         return 0;
     }
-    if (func_8010E048(sp28, 0x14, &sp50, &sp5C, &sp38, &sp44) == 0) {
+    if (func_8010E048((void *) water, 0x14, &oldp, &newp, &norm, &hit) == 0) {
         return 0;
     }
-    temp_v1 = omCurrentObj;
-    temp_a3 = temp_v1->objId;
-    var_a0 = temp_a3 * 4;
-    if ((D_800E8E60[temp_a3] != 1) && ((temp_f0 = sp44.x - gEntitiesNextPosXArray[temp_a3], temp_f2 = sp44.z - gEntitiesNextPosZArray[temp_a3], (temp_f0 != 0.0f)) || (temp_f2 != 0.0f))) {
-        func_800F8728(arg0, 0, temp_a3, temp_f0, temp_f2, temp_a3);
-        var_a0 = omCurrentObj->objId * 4;
+    if (D_800E8E60[omCurrentObj->objId] != 1) {
+        dx = hit.x - gEntitiesNextPosXArray[omCurrentObj->objId];
+        dz = hit.z - gEntitiesNextPosZArray[omCurrentObj->objId];
+        if ((dx != 0.0f) || (dz != 0.0f)) {
+            func_800F8728(omCurrentObj->objId, dx, dz);
+        }
     }
-    *(gEntitiesNextPosXArray + var_a0) = sp44.x;
-    gEntitiesNextPosYArray[temp_v1->objId] = sp44.y - arg0;
-    gEntitiesNextPosZArray[temp_v1->objId] = sp44.z;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = hit.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = hit.y - arg0;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = hit.z;
     return 1;
 }
 #elif defined(PORT)
@@ -1239,8 +1233,6 @@ s32 func_801A2C78_ovl7(f32 arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] = hit.z;
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2C78_ovl7.s")
 #endif
 
 /* FACTORY: 50/103, whole-function temp-register rotation, and it is a TWIN of

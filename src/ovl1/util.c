@@ -771,64 +771,73 @@ void func_800A5D24(f32 (*arg0)[3], f32 (*arg1)[3]) {
 }
 
 #ifdef MIPS_TO_C
+/* FACTORY: DIFF 61/132 (mostly one-slot alignment shifts from one sunk addiu).
+ * Real residue: IDO sinks `addiu v0,v1,0x40` (scl) past the first compare and
+ * folds the compare load to 64(v1) where the ROM materializes v0 early and
+ * loads 0(v0); plus c.eq.s operand order (f18,f16 vs f16,f18) and the bc1t
+ * offsets that follow from the sink. Address-fold/schedule-shaped -- the
+ * LEVERS floor class. Frame, saves, spill slots, home-reload of arg0 (via
+ * pp=&arg0), row order and scale-block reload pattern all match. */
+void func_800A5D88(DObj *arg0, f32 *m) {
+    UNUSED f32 pad2[4];
+    f32 sy;
+    f32 sz;
+    UNUSED f32 unused;
+    f32 cy;
+    f32 sx;
+    f32 cx;
+    f32 cz;
+    f32 t;
+    f32 t2;
+    f32 fx;
+    f32 fy;
+    f32 fz;
+    Vector *ang;
+    Vector *scl;
+    Vector *pos;
+    DObj *o2;
+    DObj **pp;
 
-void func_800A5D88(void *arg0, void *arg1) {
-    f32 sp3C;
-    f32 sp38;
-    f32 sp30;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f16;
-    f32 temp_f20;
-    f32 temp_f22;
-    void *temp_s1;
-    void *temp_v0;
-    void *temp_v0_2;
-
-    temp_f20 = func_800A5B64(arg0->unk30);
-    temp_s1 = arg0 + 0x30;
-    temp_f22 = func_800A5BDC(temp_s1->unk0);
-    sp3C = func_800A5B64(temp_s1->unk4);
-    sp30 = func_800A5BDC(temp_s1->unk4);
-    sp38 = func_800A5B64(temp_s1->unk8);
-    temp_f0 = func_800A5BDC(temp_s1->unk8);
-    arg1->unk0 = sp30 * temp_f0;
-    arg1->unk4 = sp30 * sp38;
-    arg1->unk8 = -sp3C;
-    temp_f12 = temp_f20 * sp3C;
-    arg1->unkC = (temp_f12 * temp_f0) - (temp_f22 * sp38);
-    arg1->unk14 = temp_f20 * sp30;
-    arg1->unk10 = (temp_f12 * sp38) + (temp_f22 * temp_f0);
-    temp_f12_2 = temp_f22 * sp3C;
-    temp_v0 = arg0 + 0x40;
-    arg1->unk18 = (temp_f12_2 * temp_f0) + (temp_f20 * sp38);
-    arg1->unk20 = temp_f22 * sp30;
-    arg1->unk1C = (temp_f12_2 * sp38) - (temp_f20 * temp_f0);
-    temp_f16 = temp_v0->unk0;
-    if (temp_f16 != 1.0f) {
-        arg1->unk0 = arg1->unk0 * temp_f16;
-        arg1->unk4 = arg1->unk4 * temp_v0->unk0;
-        arg1->unk8 = arg1->unk8 * temp_v0->unk0;
+    pp = &arg0;
+    sx = func_800A5B64(arg0->angle.v.x);
+    ang = &(*pp)->angle.v;
+    cx = func_800A5BDC(ang->x);
+    sy = func_800A5B64(ang->y);
+    cy = func_800A5BDC(ang->y);
+    sz = func_800A5B64(ang->z);
+    cz = func_800A5BDC(ang->z);
+    m[0] = cy * cz;
+    m[1] = cy * sz;
+    m[2] = -sy;
+    t = sx * sy;
+    m[3] = (t * cz) - (cx * sz);
+    m[4] = (t * sz) + (cx * cz);
+    m[5] = sx * cy;
+    t2 = cx * sy;
+    o2 = *pp;
+    scl = &o2->scale.v;
+    m[6] = (t2 * cz) + (sx * sz);
+    m[7] = (t2 * sz) - (sx * cz);
+    m[8] = cx * cy;
+    if ((fx = scl->x) != 1.0f) {
+        m[0] = m[0] * fx;
+        m[1] = m[1] * scl->x;
+        m[2] = m[2] * scl->x;
     }
-    temp_f0_2 = temp_v0->unk4;
-    if (temp_f0_2 != 1.0f) {
-        arg1->unkC = arg1->unkC * temp_f0_2;
-        arg1->unk10 = arg1->unk10 * temp_v0->unk4;
-        arg1->unk14 = arg1->unk14 * temp_v0->unk4;
+    if ((fy = scl->y) != 1.0f) {
+        m[3] = m[3] * fy;
+        m[4] = m[4] * scl->y;
+        m[5] = m[5] * scl->y;
     }
-    temp_f0_3 = temp_v0->unk8;
-    if (temp_f0_3 != 1.0f) {
-        arg1->unk18 = arg1->unk18 * temp_f0_3;
-        arg1->unk1C = arg1->unk1C * temp_v0->unk8;
-        arg1->unk20 = arg1->unk20 * temp_v0->unk8;
+    if ((fz = scl->z) != 1.0f) {
+        m[6] = m[6] * fz;
+        m[7] = m[7] * scl->z;
+        m[8] = m[8] * scl->z;
     }
-    temp_v0_2 = arg0 + 0x1C;
-    arg1->unk24 = temp_v0_2->unk0;
-    arg1->unk28 = temp_v0_2->unk4;
-    arg1->unk2C = temp_v0_2->unk8;
+    pos = &o2->pos.v;
+    m[9] = pos->x;
+    m[10] = pos->y;
+    m[11] = pos->z;
 }
 #elif defined(PORT)
 /* DObj -> 3x4 row-major RST matrix (draft above with LP64 field names:
@@ -878,64 +887,56 @@ void func_800A5D88(DObj *arg0, f32 *m) {
 #endif
 
 #ifdef MIPS_TO_C
+/* FACTORY: DIFF 28/157. Residue: one phantom 4-byte temp slot (frame 0x58 vs
+ * 0x50 -- all three fp spill offsets uniformly +8; the sw/lw compiler temp at
+ * 0x30 and the save layout match), plus the scale-block first-multiply
+ * operand order (mul.s f16,f4 vs f4,f16 -- the LEVERS mul.s floor) and the
+ * one-slot load rotations that follow from it. Compare polarity/order and
+ * the angle-pointer spill pattern match. Allocator-shaped. */
+void func_800A5F94(s32 arg0, f32 *m) {
+    f32 cx;
+    f32 sy;
+    f32 sz;
+    f32 sx;
+    f32 cy;
+    f32 cz;
+    f32 t;
 
-void func_800A5F94(s32 arg0, void *arg1) {
-    f32 sp48;
-    f32 sp44;
-    f32 sp3C;
-    f32 *sp30;
-    f32 *temp_v0;
-    f32 *temp_v0_2;
-    f32 *temp_v0_3;
-    f32 *temp_v0_4;
-    f32 *temp_v0_5;
-    f32 *temp_v0_6;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f16;
-    f32 temp_f20;
-    f32 temp_f22;
-
-    temp_f20 = func_800A5B64(gEntitiesAngleXArray[arg0]);
-    temp_f22 = func_800A5BDC(gEntitiesAngleXArray[arg0]);
-    sp48 = func_800A5B64(gEntitiesAngleYArray[arg0]);
-    temp_f0 = func_800A5BDC(gEntitiesAngleYArray[arg0]);
-    sp3C = temp_f0;
-    sp44 = func_800A5B64(gEntitiesAngleZArray[arg0]);
-    temp_f0_2 = func_800A5BDC(gEntitiesAngleZArray[arg0]);
-    arg1->unk0 = sp3C * temp_f0_2;
-    arg1->unk4 = sp3C * sp44;
-    arg1->unk8 = -sp48;
-    temp_f12 = temp_f20 * sp48;
-    arg1->unkC = (temp_f12 * temp_f0_2) - (temp_f22 * sp44);
-    arg1->unk14 = temp_f20 * sp3C;
-    arg1->unk10 = (temp_f12 * sp44) + (temp_f22 * temp_f0_2);
-    temp_f12_2 = temp_f22 * sp48;
-    arg1->unk18 = (temp_f12_2 * temp_f0_2) + (temp_f20 * sp44);
-    arg1->unk20 = temp_f22 * sp3C;
-    arg1->unk1C = (temp_f12_2 * sp44) - (temp_f20 * temp_f0_2);
+    sx = func_800A5B64(gEntitiesAngleXArray[arg0]);
+    cx = func_800A5BDC(gEntitiesAngleXArray[arg0]);
+    sy = func_800A5B64(gEntitiesAngleYArray[arg0]);
+    cy = func_800A5BDC(gEntitiesAngleYArray[arg0]);
+    sz = func_800A5B64(gEntitiesAngleZArray[arg0]);
+    cz = func_800A5BDC(gEntitiesAngleZArray[arg0]);
+    m[0] = cy * cz;
+    m[1] = cy * sz;
+    m[2] = -sy;
+    t = sx * sy;
+    m[3] = (t * cz) - (cx * sz);
+    m[4] = (t * sz) + (cx * cz);
+    m[5] = sx * cy;
+    t = cx * sy;
+    m[6] = (t * cz) + (sx * sz);
+    m[7] = (t * sz) - (sx * cz);
+    m[8] = cx * cy;
     if (gEntitiesScaleXArray[arg0] != 1.0f) {
-        arg1->unk0 *= gEntitiesScaleXArray[arg0];
-        arg1->unk4 *= gEntitiesScaleXArray[arg0];
-        arg1->unk8 *= gEntitiesScaleXArray[arg0];
+        m[0] = m[0] * gEntitiesScaleXArray[arg0];
+        m[1] = m[1] * gEntitiesScaleXArray[arg0];
+        m[2] = m[2] * gEntitiesScaleXArray[arg0];
     }
     if (gEntitiesScaleYArray[arg0] != 1.0f) {
-        arg1->unkC  *= gEntitiesScaleYArray[arg0];
-        arg1->unk10 *= gEntitiesScaleYArray[arg0];
-        arg1->unk14 *= gEntitiesScaleYArray[arg0];
+        m[3] = m[3] * gEntitiesScaleYArray[arg0];
+        m[4] = m[4] * gEntitiesScaleYArray[arg0];
+        m[5] = m[5] * gEntitiesScaleYArray[arg0];
     }
     if (gEntitiesScaleZArray[arg0] != 1.0f) {
-        arg1->unk18 *= gEntitiesScaleZArray[arg0];
-        arg1->unk1C *= gEntitiesScaleZArray[arg0];
-        arg1->unk20 *= gEntitiesScaleZArray[arg0];
+        m[6] = m[6] * gEntitiesScaleZArray[arg0];
+        m[7] = m[7] * gEntitiesScaleZArray[arg0];
+        m[8] = m[8] * gEntitiesScaleZArray[arg0];
     }
-    arg1->unk24 = gEntitiesNextPosXArray[arg0];
-    arg1->unk28 = gEntitiesNextPosYArray[arg0];
-    arg1->unk2C = gEntitiesNextPosZArray[arg0];
+    m[9] = gEntitiesNextPosXArray[arg0];
+    m[10] = gEntitiesNextPosYArray[arg0];
+    m[11] = gEntitiesNextPosZArray[arg0];
 }
 #elif defined(PORT)
 /* Entity-array variant of func_800A5D88 (draft above): same RST build from

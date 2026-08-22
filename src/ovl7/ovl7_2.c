@@ -56,7 +56,11 @@ s32 func_8019F650_ovl7(void);
 s32 func_8019FA68_ovl7(void);
 s32 func_8019FDE8_ovl7(void);
 struct Ovl7AnimObj *func_801A0464_ovl7(void);
+#ifdef PORT
 void func_801A04B8_ovl7(void);
+#else
+s32 func_801A04B8_ovl7(void); /* N64: the listing sets $v0 on every path */
+#endif
 s32 func_801A0C70_ovl7(void);
 
 void func_8019F3B0_ovl7(void) {
@@ -362,7 +366,113 @@ s32 func_8019FA68_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019FA68_ovl7.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 277/278, one-instruction entry shear -- the ROM materialises
+   &omCurrentObj (lui+addiu into $a2, then lw 0($a2)) before the frame setup,
+   IDO folds it to lui+lw %lo.  IDENTICAL single residue to the
+   func_8019F650_ovl7/func_8019FA68_ovl7 twins above (their guard lists the
+   four sweeps already paid: volatile read, (&omCurrentObj)[0], GObj** local,
+   hoisted obj -- all inert).  Every other instruction, register and stack
+   slot is exact: frame 0x50, struct at 0x2C, ent spill 0x48, a1/a2/a3
+   colouring, both dead pad slots.  Whatever closes the twins closes this. */
+#ifdef MIPS_TO_C
+s32 func_8019FDE8_ovl7(void) {
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    s32 func_801A0244_ovl7(s32);
+    void func_8019EBCC_ovl7(struct GObj *);
+    void func_801A3BA4_ovl7(void);
+    void func_801A7000_ovl7(struct GObj *);
+    void func_801A3E80_ovl7(struct GObj *);
+    void func_800FD570(s32, s32, f32, f32, f32);
+    extern s32 D_800E83E0[], D_800E8220[], D_800E0D50[];
+    extern s32 D_800E7CE0[], D_800E8760[];
+    struct Ovl7_2_AnimInfoC {
+        u8 unk0;
+        u8 unk1;
+        u8 unk2;
+        u8 unk3;
+        u8 filler4[8];
+        s32 unkC;
+        u8 filler10[0xC];
+    };
+    s32 pad0;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl7_2_AnimInfoC sp2C;
+    s32 pad1;
+
+    if (func_80110B00(&sp2C) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
+        ent->unk43 = sp2C.unk3;
+        ent->unk3E = sp2C.unk0;
+        ent->unk3F = sp2C.unk1;
+        ent->unk3A = sp2C.unkC;
+    } else if (func_80110FD4(&sp2C) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
+        ent->unk43 = sp2C.unk3;
+        ent->unk3E = sp2C.unk0;
+        ent->unk3F = sp2C.unk1;
+        ent->unk3A = sp2C.unkC;
+    } else if (func_80110150(&sp2C) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
+        ent->unk43 = sp2C.unk3;
+        ent->unk3E = sp2C.unk0;
+        ent->unk3F = sp2C.unk1;
+        ent->unk3A = sp2C.unkC;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+        ent->unk3A = -1;
+    }
+    switch (D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+        if (func_801A0244_ovl7(sp2C.unkC) != -1) {
+            D_800E83E0[omCurrentObj->objId] = 0x12;
+            play_sound(0xF4);
+            ent->unk94 = 0;
+            ent->unk40 = 1;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        return 1;
+    case 2:
+        func_8019EBCC_ovl7(D_800DE350[omCurrentObj->objId]);
+        func_801A3BA4_ovl7();
+        return 1;
+    case 3:
+        D_800E8220[omCurrentObj->objId] = 0;
+        if (sp2C.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = sp2C.unkC;
+        }
+        gKirbyState.numberInhaling += 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return 1;
+    case 4:
+        if (gKirbyState.unk4 != 0) {
+            return 0;
+        }
+        D_800E8220[omCurrentObj->objId] = 1;
+        gKirbyState.unk4 = 2;
+        if (sp2C.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = sp2C.unkC;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return 1;
+    case 7:
+    case 8:
+    case 9:
+        if (D_800DE350[(s8) ent->unk3A] != NULL) {
+            D_800E7CE0[omCurrentObj->objId] = 0x14;
+            func_800FD570(0, 9,
+                          (gEntitiesNextPosXArray[(s8) ent->unk3A] - gEntitiesNextPosXArray[omCurrentObj->objId]) * 0.6f,
+                          (gEntitiesNextPosYArray[(s8) ent->unk3A] - gEntitiesNextPosYArray[omCurrentObj->objId]) * 0.6f,
+                          (gEntitiesNextPosZArray[(s8) ent->unk3A] - gEntitiesNextPosZArray[omCurrentObj->objId]) * 0.6f);
+            D_800E8760[(s8) ent->unk3A] = 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+#elif defined(PORT)
 /* Third sibling of the func_8019F650_ovl7 / func_8019FA68_ovl7 twins
  * (ported from m2c): drain the pending anim-script event into
  * D_800E83E0/unk43/unk3E/unk3F/unk3A and dispatch -- 1 grab (power steal
@@ -561,7 +671,105 @@ struct Ovl7AnimObj *func_801A0464_ovl7(void) {
     return func_80111C88(ent->unk8C, omCurrentObj->objId);
 }
 
-#ifdef PORT
+/* FACTORY: 159/194, integer-constant fork residue.  Everything structural is
+   exact (frame 0x48, struct 0x24, ent spill 0x40, carrier in $v0, $a3=-1
+   colouring via the signed-unk3A shadow struct, case-4 polarity, u32 switch).
+   ONE defect remains: our IDO colours the constant 2 into $a0 and shares it
+   between the `case 2` compare and `gKirbyState.unk4 = 2` (ROM: separate
+   addiu $at,2 / addiu $t8,2), costing 1 instruction and shifting every
+   branch offset.  Measured: with an s32 switch the shared constant is 1
+   (compare-1 with `D_800E8220[..] = 1`); `1U` on the s32 array store forks
+   the 1 under the u32 switch, but `2U` cannot fork the 2 because unk4 is u8
+   and the front end canonicalises the constant.  Needs a spelling that forks
+   an int constant feeding a u8 store from a switch-compare constant.
+   NOTE: N64 decl is s32 (listing sets $v0 on every path); PORT keeps void. */
+#ifdef MIPS_TO_C
+s32 func_801A04B8_ovl7(void) {
+    s32 func_80110B00(void *);
+    s32 func_80110FD4(void *);
+    s32 func_80110150(void *);
+    s32 func_801A07C4_ovl7(void);
+    void func_801A7000_ovl7(struct GObj *);
+    extern s32 D_800E83E0[], D_800E8220[], D_800E0D50[];
+    struct Ovl7_2_AnimInfoD {
+        u8 unk0;
+        u8 unk1;
+        u8 unk2;
+        u8 unk3;
+        u8 filler4[8];
+        s32 unkC;
+        u8 filler10[0xC];
+    };
+    struct Ovl7_2_Carried { /* UnkStruct800E1B50 with unk3A SIGNED, so the -1
+                               store keeps the -1 alive for the $a3 colouring */
+        u8 filler0[0x3A];
+        s8 unk3A;
+        u8 filler3B[8];
+        u8 unk43;
+        u8 filler44[0x48];
+        s32 *unk8C;
+    };
+    s32 carrier;
+    struct Ovl7_2_Carried *ent = (struct Ovl7_2_Carried *) D_800E1B50[omCurrentObj->objId];
+    struct Ovl7_2_AnimInfoD sp24;
+
+    if (ent->unk8C == NULL) {
+        return 0;
+    }
+    carrier = D_800E0D50[omCurrentObj->objId];
+    if (carrier != 0) {
+        if ((D_800E0D50[carrier] == 0) && (D_800E8220[carrier] == 1)) {
+            return func_801A07C4_ovl7();
+        }
+    }
+    if (carrier == 0) {
+        return func_801A07C4_ovl7();
+    }
+    if (func_80110B00(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        ent->unk43 = sp24.unk3;
+        ent->unk3A = sp24.unkC;
+    } else if (func_80110FD4(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        ent->unk43 = sp24.unk3;
+        ent->unk3A = sp24.unkC;
+    } else if (func_80110150(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        ent->unk43 = sp24.unk3;
+        ent->unk3A = sp24.unkC;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+        ent->unk3A = -1;
+    }
+    switch ((u32) D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+    case 2:
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
+        return 1;
+    case 3:
+        D_800E8220[omCurrentObj->objId] = 0;
+        if (sp24.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = sp24.unkC;
+        }
+        gKirbyState.numberInhaling += 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+        return 1;
+    case 4:
+        if (gKirbyState.unk4 == 0) {
+            D_800E8220[omCurrentObj->objId] = 1U;
+            gKirbyState.unk4 = 2U;
+            if (sp24.unkC != -1) {
+                D_800E0D50[omCurrentObj->objId] = sp24.unkC;
+            }
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+            return 1;
+        }
+        return 0;
+    }
+    return 0;
+}
+#elif defined(PORT)
 /* Anim-event pump for a CARRIED entity (ported from m2c): while riding a
  * carrier track (D_800E0D50), defer to the plain pump func_801A07C4_ovl7
  * when there is no carrier or the carrier is being exclusive-inhaled;
@@ -680,14 +888,6 @@ s32 func_801A07C4_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A07C4_ovl7.s")
 #endif
-#ifdef PORT
-/* Anim-event pump for held/projectile entities (ported from m2c): step
- * the anim script (func_80111550/func_80111C88/func_80111ECC), then scan
- * with func_80110150 FIRST (forcing event 1) before func_80110FD4, and
- * dispatch -- 1 hand off to the thrown-entity handler func_801BD510_ovl7
- * (with the D_800E0D50 partner latch and a func_800F753C velocity
- * repack), 3 inhale, 4 exclusive inhale.  func_800F753C takes no args
- * (m2c's index-scaled a0 was a leftover register). */
 s32 func_801A0880_ovl7(void) {
     s32 func_80110FD4(void *);
     s32 func_80110150(void *);
@@ -695,7 +895,7 @@ s32 func_801A0880_ovl7(void) {
     void func_801A7000_ovl7(struct GObj *);
     void func_801BD510_ovl7(struct GObj *);
     extern s32 D_800E83E0[], D_800E8220[], D_800E0D50[];
-    struct PcAnimInfoE {
+    struct Ovl7_2_AnimInfoE {
         u8 unk0;
         u8 unk1;
         u8 unk2;
@@ -704,61 +904,57 @@ s32 func_801A0880_ovl7(void) {
         s32 unkC;
         u8 filler10[0x10];
     };
-    u32 id = omCurrentObj->objId;
-    struct UnkStruct800E1B50 *ent = D_800E1B50[id];
-    struct PcAnimInfoE info;
+    s32 pad0;
+    struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    struct Ovl7_2_AnimInfoE sp28;
+    s32 pad1;
 
     if (ent->unk8C == NULL) {
         return 0;
     }
     func_80111550(omCurrentObj->objId);
     func_80111ECC(func_80111C88(ent->unk8C, omCurrentObj->objId));
-    if (func_80110150(&info) != 0) {
+    if (func_80110150(&sp28) != 0) {
         D_800E83E0[omCurrentObj->objId] = 1;
         ent->unk43 = 0;
-    } else if (func_80110FD4(&info) != 0) {
-        D_800E83E0[omCurrentObj->objId] = info.unk2;
-        ent->unk43 = info.unk3;
+    } else if (func_80110FD4(&sp28) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp28.unk2;
+        ent->unk43 = sp28.unk3;
     } else {
         D_800E83E0[omCurrentObj->objId] = 0;
         ent->unk43 = 0;
     }
-    id = omCurrentObj->objId;
-    switch (D_800E83E0[id]) {
+    switch ((u32) D_800E83E0[omCurrentObj->objId]) {
     case 1:
-        if (info.unkC != -1) {
-            D_800E0D50[id] = info.unkC;
+        if (sp28.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = sp28.unkC;
         }
         func_800F753C();
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801BD510_ovl7);
         return 1;
     case 3:
-        D_800E8220[id] = 0;
-        if (info.unkC != -1) {
-            D_800E0D50[omCurrentObj->objId] = info.unkC;
+        D_800E8220[omCurrentObj->objId] = 0;
+        if (sp28.unkC != -1) {
+            D_800E0D50[omCurrentObj->objId] = sp28.unkC;
         }
         gKirbyState.numberInhaling += 1;
         func_800F753C();
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
         return 1;
     case 4:
-        if (gKirbyState.unk4 != 0) {
-            return 0;
+        if (gKirbyState.unk4 == 0) {
+            D_800E8220[omCurrentObj->objId] = 1U;
+            gKirbyState.unk4 = 2;
+            if (sp28.unkC != -1) {
+                D_800E0D50[omCurrentObj->objId] = sp28.unkC;
+            }
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
+            return 1;
         }
-        D_800E8220[id] = 1;
-        gKirbyState.unk4 = 2;
-        if (info.unkC != -1) {
-            D_800E0D50[omCurrentObj->objId] = info.unkC;
-        }
-        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
-        return 1;
-    default:
         return 0;
     }
+    return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A0880_ovl7.s")
-#endif
 
 struct Ovl7_2_AnimInfo {
     u8 unk0;
