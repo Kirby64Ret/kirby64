@@ -1149,7 +1149,18 @@ void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2ADC_ovl7.s")
 #endif
-#ifndef PORT /* WIP iterating, re-guard at exit */
+/* FACTORY: 96/123, whole-frame +0x10 base residue.  Every instruction,
+   register and RELATIVE stack slot matches the ROM except: (a) our IDO
+   places the locals block 0x10 higher (frame 0x78 vs 0x68; every sp offset
+   is ROM+0x10; relative layout newp/oldp/hit/norm/rec/pads/water/dx/dz is
+   exact), and (b) objId colours to $v0 where the ROM uses $a3 after the
+   func_8010E048 call.  Swept: pad counts 0/1/2 between rec and water
+   (base wobbles 0x34-0x38, never 0x28), dx/dz inner vs outer (identical),
+   scalar-side split per LEVERS entry 12 not applicable (Vectors sit on top
+   in the ROM).  In-guard prototypes for func_8010E048/func_800F8728 are
+   REQUIRED (the file-scope ones are PORT-guarded; without them K&R double
+   promotion appears). */
+#ifdef MIPS_TO_C
 s32 func_801A2C78_ovl7(f32 arg0) {
     s32 func_8010E048(void *, s32, Vector *, Vector *, Vector *, Vector *);
     void func_800F8728(s32, f32, f32);
@@ -1233,6 +1244,8 @@ s32 func_801A2C78_ovl7(f32 arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] = hit.z;
     return 1;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2C78_ovl7.s")
 #endif
 
 /* FACTORY: 50/103, whole-function temp-register rotation, and it is a TWIN of

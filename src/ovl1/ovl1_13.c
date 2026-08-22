@@ -833,7 +833,13 @@ void func_800BDD98(void) {
     D_800D6EB4 = D_800D6EB8 = D_800D6EBC = D_800F4D10 = D_800D6EC0 = 0;
 }
 
-#if 1 /* verify-iteration draft: func_800BDE0C */
+#ifdef MIPS_TO_C
+/* FACTORY: DIFF 13/72. Residue: a single caller-saved register swap (ROM
+ * holds the fill halfword in $a0 and the inner counter in $v1; we get the
+ * same code with $v1/$a0 exchanged) plus the two addiu scheduling lines that
+ * follow from it. Loop structure (goto-formed inner loop -- this is what
+ * stops the -O2 unroller here), spills, calls, and branch shape all match.
+ * One-slot register rotation -- permuter fuel. */
 void func_800BDE0C(s32 arg0) {
     extern s32 D_800F4D14;
     extern s32 D_800F6198;
@@ -845,11 +851,11 @@ void func_800BDE0C(s32 arg0) {
     extern u16 *D_800D6F58;
     extern u32 D_800D52FC[];
     void func_800A8934(u32, s32, s32, void *);
+    u16 fill;
     u8 *q;
     u8 *ra;
     u8 *rb;
     s32 n;
-    u16 fill;
 
     D_800D6F58 = D_800ED510;
     if (D_800F4D14 != 0) {
@@ -933,7 +939,7 @@ void func_800BDE0C(s32 arg0) {
     func_800BDD08();
 }
 #else
-/* pragma disabled for verify: asm/nonmatchings/ovl1/ovl1_13/func_800BDE0C */
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BDE0C.s")
 #endif
 
 // Draft, 4/35: `or $a1,$zero,$zero` (counter init) scheduled 3 slots early.

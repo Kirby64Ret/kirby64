@@ -29,7 +29,7 @@ struct UnkEA20 {
     /* 0x18 */ s32 unk18;
 };
 
-s32 func_8010E8F0(Vector *, f32, Vector *, f32, Vector *);
+s32 func_8010E8F0(Vector *, s32, Vector *, s32, s32);
 #endif
 
 struct Unk8010E5B0Node {
@@ -309,36 +309,36 @@ void func_8010E740(struct Unk8010E740 *arg0, s32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 25/76, exact structure incl. mtc1 prologue (true ANSI f32
- * signature recovered); residue is a two-slot FP temp rotation
- * (f0/f18 swap). */
+/* 25/76 diffs. Structure is instruction-for-instruction exact; the whole
+ * residue is one FP register swap: IDO puts arg2->x in $f0 and -r in $f18,
+ * the ROM puts arg2->x in $f18 and -r in $f0. The register SET is identical.
+ * Swept: (r,dx) decl/assign order, (dx,r), (x,r,dx) [best, this one],
+ * (r,x,dx), and reloading arg2->x at the tail instead of reusing x.
+ * Requires the file-scope prototype and UnkEA20.unk18 to become f32/Vector*,
+ * which was A/B'd and leaves func_8010EA20 matching. */
 s32 func_8010E8F0(Vector *arg0, f32 arg1, Vector *arg2, f32 arg3, Vector *arg4) {
-    f32 temp_f0;
-    f32 temp_f2;
-    f32 temp_f16;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f18;
+    f32 x = arg2->x;
+    f32 r = arg1 + arg3;
+    f32 dx = arg0->x - x;
+    f32 dy;
+    f32 dz;
 
-    temp_f18 = arg2->x;
-    temp_f2 = arg1 + arg3;
-    temp_f16 = arg0->x - temp_f18;
-    if ((temp_f2 < temp_f16) || (temp_f16 < (temp_f0 = -temp_f2))) {
+    if ((r < dx) || (dx < -r)) {
         return 0;
     }
-    temp_f12 = arg0->y - arg2->y;
-    if ((temp_f2 < temp_f12) || (temp_f12 < temp_f0)) {
+    dy = arg0->y - arg2->y;
+    if ((r < dy) || (dy < -r)) {
         return 0;
     }
-    temp_f14 = arg0->z - arg2->z;
-    if ((temp_f2 < temp_f14) || (temp_f14 < temp_f0)) {
+    dz = arg0->z - arg2->z;
+    if ((r < dz) || (dz < -r)) {
         return 0;
     }
-    if (((temp_f16 * temp_f16) + (temp_f12 * temp_f12) + (temp_f14 * temp_f14)) <= (temp_f2 * temp_f2)) {
+    if (dx * dx + dy * dy + dz * dz <= r * r) {
         if (arg4 != NULL) {
-            arg4->x = (temp_f16 * 0.5f) + temp_f18;
-            arg4->y = (temp_f12 * 0.5f) + arg2->y;
-            arg4->z = (temp_f14 * 0.5f) + arg2->z;
+            arg4->x = dx * 0.5f + x;
+            arg4->y = dy * 0.5f + arg2->y;
+            arg4->z = dz * 0.5f + arg2->z;
         }
         return 1;
     }
@@ -395,141 +395,6 @@ s32 func_8010EA20(struct UnkEA20 *arg0, struct UnkEA20 *arg1, s32 arg2) {
 #endif
 
 #ifdef PORT
-/* Full-width view of the 40-byte arena entry: unk4 is the whole N64 head
- * word (type = unk4 >> 24, see the file-top note), unk8 the joint word, and
- * unk24 the capsule radius the N64 struct left as padding. Offsets and size
- * are unchanged. */
-struct UnkF9AC {
-    /* 0x00 */ u8 unk0;
-    /* 0x01 */ char pad1[0x3];
-    /* 0x04 */ u32 unk4;
-    /* 0x08 */ s32 unk8;
-    /* 0x0C */ Vector unkC;
-    /* 0x18 */ Vector unk18;
-    /* 0x24 */ f32 unk24;
-};
-_Static_assert(sizeof(struct UnkF9AC) == 0x28, "arena entry stride");
-#else
-struct UnkF9AC {
-    /* 0x00 */ u8 unk0;
-    /* 0x01 */ char pad1[0x3];
-    /* 0x04 */ u8 unk4;
-    /* 0x05 */ char pad5[0x7];
-    /* 0x0C */ Vector unkC;
-    /* 0x18 */ Vector unk18;
-    /* 0x24 */ f32 unk24;
-};
-#endif
-
-s32 func_8010EA68(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
-s32 func_8010F140(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
-
-#ifdef MIPS_TO_C
-/* FACTORY: 249/252, exact insn count and spill semantics; residue is a
- * uniform +0x20 frame shift (spill slots land 0x44 high) plus the FP temp
- * rename cascade that follows. */
-s32 func_8010EA68(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
-    f32 sp8C;
-    f32 sp88;
-    f32 sp84;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp24;
-    f32 temp_f0;
-    f32 temp_f16;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 var_f18;
-    f32 var_f2;
-    f32 var_f14;
-    f32 temp_f2_2;
-    f32 temp_f12_2;
-    f32 temp_f16_4;
-    s32 var_v0;
-
-    sp50 = arg0->unk18.x;
-    sp4C = arg1->unk24;
-    sp48 = arg1->unkC.x;
-    temp_f0 = sp50 + sp4C;
-    sp44 = arg1->unk18.x;
-    if (sp48 < sp44) {
-        sp40 = arg0->unkC.x;
-        if ((sp40 < (sp48 - temp_f0)) || ((sp44 + temp_f0) < sp40)) {
-            return 0;
-        }
-    } else {
-        f32 temp_f2 = arg0->unkC.x;
-
-        if ((temp_f2 < (sp44 - temp_f0)) || ((sp40 = temp_f2, (sp48 + temp_f0) < temp_f2))) {
-            return 0;
-        }
-    }
-    temp_f16 = arg1->unkC.y;
-    sp38 = arg1->unk18.y;
-    if (temp_f16 < sp38) {
-        var_f18 = arg0->unkC.y;
-        if ((var_f18 < (temp_f16 - temp_f0)) || ((sp38 + temp_f0) < var_f18)) {
-            return 0;
-        }
-    } else {
-        var_f18 = arg0->unkC.y;
-        if ((var_f18 < (sp38 - temp_f0)) || ((temp_f16 + temp_f0) < var_f18)) {
-            return 0;
-        }
-    }
-    temp_f12 = arg1->unkC.z;
-    temp_f14 = arg1->unk18.z;
-    if (temp_f12 < temp_f14) {
-        var_f2 = arg0->unkC.z;
-        if ((var_f2 < (temp_f12 - temp_f0)) || ((temp_f14 + temp_f0) < var_f2)) {
-            return 0;
-        }
-        sp3C = temp_f16;
-    } else {
-        var_f2 = arg0->unkC.z;
-        if ((var_f2 < (temp_f14 - temp_f0)) || ((sp3C = temp_f16, (temp_f12 + temp_f0) < var_f2))) {
-            return 0;
-        }
-    }
-    sp8C = sp44 - sp48;
-    sp88 = sp38 - sp3C;
-    sp84 = temp_f14 - temp_f12;
-    sp24 = (sp8C * sp8C) + (sp88 * sp88) + (sp84 * sp84);
-    if (sp24 == 0.0f) {
-        return func_8010E8F0(&arg0->unkC, sp50, &arg1->unkC, sp4C, (Vector *) arg2);
-    }
-    sp78 = sp48 - sp40;
-    var_v0 = 0;
-    sp74 = sp3C - var_f18;
-    sp70 = temp_f12 - var_f2;
-    var_f14 = -((sp8C * sp78) + (sp88 * sp74) + (sp84 * sp70)) / sp24;
-    if (var_f14 < 0.0f) {
-        var_f14 = 0.0f;
-    } else if (var_f14 > 1.0f) {
-        var_f14 = 1.0f;
-    }
-    temp_f2_2 = (sp8C * var_f14) + sp78;
-    temp_f12_2 = (sp88 * var_f14) + sp74;
-    temp_f16_4 = (sp84 * var_f14) + sp70;
-    if (((temp_f2_2 * temp_f2_2) + (temp_f12_2 * temp_f12_2) + (temp_f16_4 * temp_f16_4)) <= (temp_f0 * temp_f0)) {
-        if (arg2 != NULL) {
-            ((f32 *) arg2)[0] = (temp_f2_2 * 0.5f) + sp40;
-            ((f32 *) arg2)[1] = (temp_f12_2 * 0.5f) + arg0->unkC.y;
-            ((f32 *) arg2)[2] = (temp_f16_4 * 0.5f) + arg0->unkC.z;
-        }
-        var_v0 = 1;
-    }
-    return var_v0;
-}
-#elif defined(PORT)
 /* The PORT implementation of func_8010EA68 lives below func_8010F9AC's
  * forward declarations: it needs struct UnkF9AC, which this spot in the
  * file predates. */
@@ -636,268 +501,7 @@ s32 func_8010EFA8(struct UnkEE24 *arg0, struct UnkEFA8 *arg1) {
     return 1;
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 527/535, capsule-capsule closest-segment test; semantics fully
- * transcribed from the asm incl. the ROM's spill-slot reuse, but the temp
- * population doubles the frame (0x148 vs 0xA0) and drags an f20 save in.
- * Needs temp merging -- permuter or a second pass. */
-s32 func_8010F140(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
-    f32 sp9C;
-    f32 sp98;
-    f32 sp94;
-    f32 sp8C;
-    f32 sp88;
-    f32 sp84;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp34;
-    f32 sp30;
-    f32 sp2C;
-    f32 sp28;
-    f32 sp24;
-    f32 sp20;
-    f32 sp1C;
-    f32 sp14;
-    f32 sp10;
-    f32 spC;
-    f32 sp8;
-    f32 sp4;
-    f32 sp0;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f0_5;
-    f32 temp_f0_6;
-    f32 temp_f10;
-    f32 temp_f10_2;
-    f32 temp_f10_3;
-    f32 temp_f10_4;
-    f32 temp_f10_5;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f12_3;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f14_3;
-    f32 temp_f14_4;
-    f32 temp_f16;
-    f32 temp_f16_2;
-    f32 temp_f16_3;
-    f32 temp_f18;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-    f32 temp_f2_4;
-    f32 temp_f2_5;
-    f32 temp_f2_6;
-    f32 temp_f4;
-    f32 temp_f4_2;
-    f32 temp_f4_3;
-    f32 temp_f4_4;
-    f32 temp_f6;
-    f32 temp_f6_2;
-    f32 temp_f6_3;
-    f32 temp_f6_4;
-    f32 temp_f8;
-    f32 temp_f8_2;
-    f32 var_f0;
-    f32 var_f0_2;
-    f32 var_f16;
-    s32 var_v0;
-
-    sp34 = arg0->unkC.x;
-    temp_f18 = arg0->unk24 + arg1->unk24;
-    sp30 = arg0->unk18.x;
-    if (sp34 < sp30) {
-        temp_f8 = arg1->unkC.x;
-        sp2C = temp_f8;
-        temp_f4 = arg1->unk18.x;
-        sp28 = temp_f4;
-        if (temp_f8 < temp_f4) {
-            if ((temp_f4 < (sp34 - temp_f18)) || ((sp30 + temp_f18) < temp_f8)) {
-                return 0;
-            }
-            goto block_16;
-        }
-        if ((sp2C < (sp34 - temp_f18)) || ((sp30 + temp_f18) < sp28)) {
-            return 0;
-        }
-        goto block_16;
-    }
-    temp_f2 = arg1->unkC.x;
-    temp_f0 = arg1->unk18.x;
-    if (temp_f2 < temp_f0) {
-        if ((temp_f0 < (sp30 - temp_f18)) || ((sp34 + temp_f18) < temp_f2)) {
-            return 0;
-        }
-        sp28 = temp_f0;
-        sp2C = temp_f2;
-        goto block_16;
-    }
-    if ((temp_f2 < (sp30 - temp_f18)) || (sp28 = temp_f0, sp2C = temp_f2, ((sp34 + temp_f18) < temp_f0))) {
-        return 0;
-    }
-block_16:
-    sp24 = arg0->unkC.y;
-    sp20 = arg0->unk18.y;
-    if (sp24 < sp20) {
-        sp1C = arg1->unkC.y;
-        temp_f16 = arg1->unk18.y;
-        if (sp1C < temp_f16) {
-            if ((temp_f16 < (sp24 - temp_f18)) || ((sp20 + temp_f18) < sp1C)) {
-                return 0;
-            }
-            goto block_32;
-        }
-        if ((sp1C < (sp24 - temp_f18)) || ((sp20 + temp_f18) < temp_f16)) {
-            return 0;
-        }
-        goto block_32;
-    }
-    temp_f0_2 = arg1->unkC.y;
-    temp_f16_2 = arg1->unk18.y;
-    if (temp_f0_2 < temp_f16_2) {
-        if ((temp_f16_2 < (sp20 - temp_f18)) || ((sp24 + temp_f18) < temp_f0_2)) {
-            return 0;
-        }
-        sp1C = temp_f0_2;
-        goto block_32;
-    }
-    if ((temp_f0_2 < (sp20 - temp_f18)) || (sp1C = temp_f0_2, ((sp24 + temp_f18) < temp_f16_2))) {
-        return 0;
-    }
-block_32:
-    temp_f14 = arg0->unkC.z;
-    temp_f12 = arg0->unk18.z;
-    if (temp_f14 < temp_f12) {
-        temp_f0_3 = arg1->unkC.z;
-        temp_f2_2 = arg1->unk18.z;
-        if (temp_f0_3 < temp_f2_2) {
-            if ((temp_f2_2 < (temp_f14 - temp_f18)) || ((temp_f12 + temp_f18) < temp_f0_3)) {
-                return 0;
-            }
-            goto block_47;
-        }
-        if ((temp_f0_3 < (temp_f14 - temp_f18)) || ((temp_f12 + temp_f18) < temp_f2_2)) {
-            return 0;
-        }
-        goto block_47;
-    }
-    temp_f0_4 = arg1->unkC.z;
-    temp_f2_3 = arg1->unk18.z;
-    if (temp_f0_4 < temp_f2_3) {
-        if ((temp_f2_3 < (temp_f12 - temp_f18)) || ((temp_f14 + temp_f18) < temp_f0_4)) {
-            return 0;
-        }
-        goto block_47;
-    }
-    if ((temp_f0_4 < (temp_f12 - temp_f18)) || ((temp_f14 + temp_f18) < temp_f2_3)) {
-        return 0;
-    }
-block_47:
-    var_v0 = 0;
-    temp_f8_2 = sp30 - sp34;
-    sp0 = sp34;
-    temp_f6 = temp_f12 - temp_f14;
-    sp8 = sp24;
-    sp9C = temp_f8_2;
-    temp_f10 = sp20 - sp24;
-    sp94 = temp_f6;
-    sp4 = temp_f8_2;
-    sp98 = temp_f10;
-    spC = temp_f10;
-    temp_f10_2 = arg1->unk18.y - sp1C;
-    sp10 = sp1C;
-    sp88 = temp_f10_2;
-    temp_f10_3 = arg1->unk18.z - arg1->unkC.z;
-    temp_f4_2 = spC;
-    temp_f6_2 = sp28 - sp2C;
-    sp84 = temp_f10_3;
-    temp_f10_4 = sp4;
-    sp4 = sp2C;
-    sp8C = temp_f6_2;
-    spC = temp_f10_4;
-    sp14 = temp_f6_2;
-    temp_f12_2 = (temp_f10_4 * temp_f6_2) + (temp_f4_2 * temp_f10_2) + (sp94 * sp84);
-    sp7C = temp_f12_2;
-    sp78 = sp34 - sp2C;
-    sp74 = sp8 - sp10;
-    sp70 = temp_f14 - arg1->unkC.z;
-    temp_f2_4 = (spC * spC) + (temp_f4_2 * temp_f4_2) + (sp94 * temp_f6);
-    sp30 = temp_f2_4;
-    temp_f10_5 = (temp_f6_2 * temp_f6_2) + (temp_f10_2 * sp88) + (sp84 * temp_f10_3);
-    sp28 = temp_f10_5;
-    temp_f16_3 = (temp_f2_4 * temp_f10_5) - (temp_f12_2 * temp_f12_2);
-    if (temp_f16_3 == 0.0f) {
-        temp_f14_2 = (sp9C * sp78) + (temp_f4_2 * sp74) + (sp94 * sp70);
-        temp_f0_5 = temp_f14_2 / temp_f12_2;
-        var_f16 = temp_f0_5;
-        if (temp_f0_5 < 0.0f) {
-            var_f0 = -temp_f14_2 / sp30;
-        } else if (temp_f0_5 > 1.0f) {
-            var_f0 = (temp_f12_2 - temp_f14_2) / sp30;
-        } else {
-            var_f0 = 0.0f;
-        }
-    } else {
-        sp14 = sp78;
-        sp10 = sp74;
-        temp_f4_3 = sp14;
-        sp14 = sp70;
-        temp_f6_3 = (sp8C * sp78) + (sp88 * sp74) + (sp84 * sp70);
-        sp24 = temp_f6_3;
-        temp_f14_3 = (sp9C * temp_f4_3) + (sp98 * sp10) + (sp94 * sp14);
-        var_f0_2 = ((sp7C * temp_f6_3) - (sp28 * temp_f14_3)) / temp_f16_3;
-        if (var_f0_2 < 0.0f) {
-            var_f0_2 = 0.0f;
-        } else if (var_f0_2 > 1.0f) {
-            var_f0_2 = 1.0f;
-        }
-        temp_f2_5 = ((temp_f12_2 * var_f0_2) + sp24) / sp28;
-        var_f16 = temp_f2_5;
-        if (temp_f2_5 < 0.0f) {
-            var_f0 = -temp_f14_3 / sp30;
-        } else if (temp_f2_5 > 1.0f) {
-            var_f0 = (temp_f12_2 - temp_f14_3) / sp30;
-        } else {
-            var_f0 = ((temp_f12_2 * var_f16) - temp_f14_3) / sp30;
-        }
-    }
-    if (var_f0 < 0.0f) {
-        var_f0 = 0.0f;
-    } else if (var_f0 > 1.0f) {
-        var_f0 = 1.0f;
-    }
-    sp34 = (sp9C * var_f0) + sp78;
-    sp30 = (sp98 * var_f0) + sp74;
-    sp28 = (sp94 * var_f0) + sp70;
-    if (var_f16 < 0.0f) {
-        var_f16 = 0.0f;
-    } else if (var_f16 > 1.0f) {
-        var_f16 = 1.0f;
-    }
-    temp_f0_6 = sp8C * var_f16;
-    temp_f6_4 = sp88 * var_f16;
-    temp_f2_6 = sp34 - temp_f0_6;
-    sp20 = temp_f6_4;
-    temp_f12_3 = sp30 - temp_f6_4;
-    temp_f4_4 = sp84 * var_f16;
-    sp1C = temp_f4_4;
-    temp_f14_4 = sp28 - temp_f4_4;
-    if (((temp_f2_6 * temp_f2_6) + (temp_f12_3 * temp_f12_3) + (temp_f14_4 * temp_f14_4)) <= (temp_f18 * temp_f18)) {
-        if (arg2 != NULL) {
-            ((f32 *) arg2)[0] = ((temp_f2_6 * 0.5f) + temp_f0_6 + sp2C);
-            ((f32 *) arg2)[1] = ((temp_f12_3 * 0.5f) + sp20 + arg1->unkC.y);
-            ((f32 *) arg2)[2] = (temp_f14_4 * 0.5f) + sp1C + arg1->unkC.z;
-        }
-        var_v0 = 1;
-    }
-    return var_v0;
-}
-#elif defined(PORT)
+#ifdef PORT
 /* The PORT implementation of func_8010F140 also lives below the forward
  * declarations, next to func_8010EA68's. */
 #else
@@ -910,6 +514,35 @@ void func_8010F964(f32 *arg0, f32 *arg1) {
     arg0[2] = (arg1[8] + arg1[5]) * 0.5f;
 }
 
+#ifdef PORT
+/* Full-width view of the 40-byte arena entry: unk4 is the whole N64 head
+ * word (type = unk4 >> 24, see the file-top note), unk8 the joint word, and
+ * unk24 the capsule radius the N64 struct left as padding. Offsets and size
+ * are unchanged. */
+struct UnkF9AC {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ char pad1[0x3];
+    /* 0x04 */ u32 unk4;
+    /* 0x08 */ s32 unk8;
+    /* 0x0C */ Vector unkC;
+    /* 0x18 */ Vector unk18;
+    /* 0x24 */ f32 unk24;
+};
+_Static_assert(sizeof(struct UnkF9AC) == 0x28, "arena entry stride");
+#else
+struct UnkF9AC {
+    /* 0x00 */ u8 unk0;
+    /* 0x01 */ char pad1[0x3];
+    /* 0x04 */ u8 unk4;
+    /* 0x05 */ char pad5[0x7];
+    /* 0x0C */ Vector unkC;
+    /* 0x18 */ Vector unk18;
+    /* 0x24 */ char pad24[0x4];
+};
+#endif
+
+s32 func_8010EA68(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
+s32 func_8010F140(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
 
 #ifdef PORT
 /* PORT: sphere (arg0: center unkC, radius unk18.x) vs capsule (arg1:

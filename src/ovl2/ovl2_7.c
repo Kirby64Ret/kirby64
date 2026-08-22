@@ -754,7 +754,14 @@ ret0:
     return 0;
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: ~56/706, positional cascade from prologue homing: draft keeps arg3 in
+ * a register where ROM homes it to 0x11C(sp) and reloads per iteration; frame is
+ * 0x110 in ROM (0xA8 dead local space above the volatile sp64 slot at 0x64) vs
+ * draft 0x200 (u32 pad[42] + volatile sp64 reproduce the class but not the size).
+ * All three loops FP math and control flow align 1:1 modulo the f0/f2 pu/pv swap
+ * and e0/e1 result-register naming. volatile-param and volatile-copy variants
+ * demote uopt globally (measured worse); the residue is homing/allocation. */
 s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, struct CollisionTriangle *arg3, struct CollisionTriangle **arg4) {
     u32 pad[42];
     struct CollisionTriangle *volatile sp64;
@@ -973,7 +980,7 @@ s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, struct Collision
         }
     }
 }
-#else
+#elif defined(PORT)
 /* Point-in-triangle scan over a cell's u16 triangle list (draft above,
  * completed). The plane normal's dominant axis picks the 2D projection;
  * each candidate triangle is tested with three edge cross-products against
@@ -1066,6 +1073,15 @@ s32 func_80102570(struct Normal *arg0, s32 *arg1, Vector *arg2, u32 (*arg3)(void
         }
     }
 }
+#else
+extern s32 func_80102570(
+    struct Normal *,
+    s32 *,
+    Vector *,
+    u32 (*)(void),
+    struct CollisionTriangle **
+);
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80102570.s")
 #endif
 
 u32 func_80103004(f32 *MAXLRP, Vector *arg1, struct Normal **arg2, struct CollisionTriangle **arg3) {

@@ -1805,9 +1805,11 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
 #else
 void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
     DObj *dobj;
+    s32 pad;
     Vector dir;
     Vector axis;
     Vector diff;
+    struct Unk80129114_4_4 *footer;
     void func_8001E344(Vector *, struct Unk80129114_4_4 *, f32);
 
     dobj = D_800D799C->data.dobj;
@@ -1818,7 +1820,8 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
         dir.y = 0.0f;
         break;
     case 1:
-        func_8001E344(&dir, D_80129114->unk4[D_800E5F90[arg0]].unk4, D_800E6BD0[arg0]);
+        footer = D_80129114->unk4[D_800E5F90[arg0]].unk4;
+        func_8001E344(&dir, footer, D_800E6BD0[arg0]);
         dir.y = 0.0f;
         lbvector_Normalize(&dir);
         lbvector_Rotate(&dir, 2, (arg1->unk8 * 3.1415927f) / 180.0f);

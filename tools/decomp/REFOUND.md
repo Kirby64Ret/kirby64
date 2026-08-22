@@ -92,3 +92,33 @@ build status per file.
 - verify.py needs the pragma line ABSENT while iterating (it classifies any
   function whose pragma appears anywhere in the file text as unverifiable).
   Park it as a comment, restore it when sealing.
+
+## HARD-LEARNED: structural edits outside the function body break the ROM
+
+Measured on src/ovl2/ovl2_8.c: moving a `struct` + two forward declarations
+EARLIER in the file (so a guarded draft could see the type) grew the TU by
+32 bytes and broke the ROM sha1 — the moved forward declarations turned
+previously IMPLICIT calls into prototyped ones for every function in
+between. `verify.py` stayed green the whole time; only
+`check_tu_size.py` / the sha1 saw it.
+
+Rules that follow, in addition to LEVERS':
+- NEVER move, add, or retype a file-scope declaration to suit a draft. If a
+  draft needs a type that is declared later in the file, put the DRAFT after
+  that declaration (its pragma stays at the original site), or keep the
+  draft's own local view inside the function body.
+- Changing a file-scope prototype's parameter types (e.g. s32 -> f32)
+  re-types every CALL SITE in the TU. Same trap.
+- After any edit that is not purely inside one function body, run
+  `python3 tools/decomp/check_tu_size.py` before believing verify.py.
+- The manager runs `tools/decomp/mk.sh` (sha1 gate) before every commit that
+  touches N64-visible text.
+
+## Note for func_8010E8F0 (ovl2_8.c)
+
+Its ROM prologue is `mtc1 $a1,$f12 / mtc1 $a3,$f14`: the floats ARRIVE in
+integer registers. So the definition is NOT an ANSI `f32` prototype (that
+would receive them in $f12/$f14 directly and needs a declaration change that
+breaks the TU, see above). Next pass should try a K&R definition with float
+parameters while LEAVING the file-scope declaration as
+`s32 func_8010E8F0(Vector *, s32, Vector *, s32, s32);` (LEVERS lever 15).
