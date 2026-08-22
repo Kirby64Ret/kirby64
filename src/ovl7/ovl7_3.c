@@ -475,7 +475,7 @@ void func_801A187C_ovl7(void *arg0) {
 #ifdef MIPS_TO_C
 void func_801A1B6C_ovl7(void) {
     s32 func_8010DF9C(void *);
-    s32 func_8010E048(u32, s32, Vector *, Vector *, Vector *, Vector *);
+    s32 func_8010E048(struct WaterData *, s32, Vector *, Vector *, Vector *, Vector *);
     void func_801AE73C_ovl7(s32, f32, f32, f32);
     void func_801A239C_ovl7(void);
     extern s32 D_800E8AE0[];
@@ -483,7 +483,7 @@ void func_801A1B6C_ovl7(void) {
     Vector newp;
     Vector oldp;
     Vector hit;
-    u32 water;
+    struct WaterData *water;
     f32 norm;
     struct EnemyRecord *rec;
     struct EnemyProbe *slot;
@@ -495,10 +495,10 @@ void func_801A1B6C_ovl7(void) {
     newp.x = gEntitiesNextPosXArray[omCurrentObj->objId];
     switch (rec->unk42) {
     case 0:
-        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk14;
+        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->headOffsetY;
         break;
     case 2:
-        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
+        newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->footOffsetY;
         break;
     default:
         newp.y = gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -510,25 +510,25 @@ void func_801A1B6C_ovl7(void) {
     switch (func_8010DF9C(&newp)) {
     case 3:
         if (((u8 *) D_8012BCE0[2])[4] != 0) {
-            rec->unk74 = (u32) D_8012BCE0[2];
+            rec->unk74 = (struct WaterData *) D_8012BCE0[2];
             D_800E8AE0[omCurrentObj->objId] |= 1;
         }
         /* fallthrough */
     case 2:
         if (((u8 *) D_8012BCE0[1])[4] != 0) {
-            rec->unk74 = (u32) D_8012BCE0[1];
+            rec->unk74 = (struct WaterData *) D_8012BCE0[1];
             D_800E8AE0[omCurrentObj->objId] |= 1;
         }
         /* fallthrough */
     case 1:
         if (((u8 *) D_8012BCE0[0])[4] != 0) {
-            rec->unk74 = (u32) D_8012BCE0[0];
+            rec->unk74 = (struct WaterData *) D_8012BCE0[0];
             D_800E8AE0[omCurrentObj->objId] |= 1;
         }
         break;
     default:
         D_800E8AE0[omCurrentObj->objId] &= ~1;
-        rec->unk74 = 0;
+        rec->unk74 = NULL;
         break;
     }
     if (((flags0 & 1) == 0) ? ((D_800E8AE0[omCurrentObj->objId] & 1) != 0)
@@ -542,12 +542,12 @@ void func_801A1B6C_ovl7(void) {
     if (((s8) rec->unk38 != -1) && (D_800E8AE0[omCurrentObj->objId] & 0x10)) {
         switch (rec->unk41) {
         case 0:
-            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk14;
-            oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk14;
+            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->headOffsetY;
+            oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + slot->headOffsetY;
             break;
         case 2:
-            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
-            oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
+            newp.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->footOffsetY;
+            oldp.y = gEntitiesPosYArray[omCurrentObj->objId] + slot->footOffsetY;
             break;
         default:
             newp.y = gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -556,12 +556,12 @@ void func_801A1B6C_ovl7(void) {
         }
         oldp.x = gEntitiesPosXArray[omCurrentObj->objId];
         oldp.z = gEntitiesPosZArray[omCurrentObj->objId];
-        if (rec->unk74 != 0) {
+        if (rec->unk74 != NULL) {
             if ((func_8010E048(rec->unk74, 0x14, &oldp, &newp, (Vector *) &norm, &hit) != 0) &&
                 ((s8) rec->unk38 == 0)) {
                 func_801AE73C_ovl7(1, hit.x, hit.y, hit.z);
             }
-        } else if (water != 0) {
+        } else if (water != NULL) {
             if ((func_8010E048(water, 0x14, &oldp, &newp, (Vector *) &norm, &hit) != 0) &&
                 ((s8) rec->unk38 == 0)) {
                 func_801AE73C_ovl7(1, hit.x, hit.y, hit.z);
@@ -590,7 +590,7 @@ void func_801A1B6C_ovl7(void) {
     EnemyRecord *rec = D_800E1B50[id];
     struct PositionState *slot = (struct PositionState *) rec->unk84;
     s32 prev = D_800E8AE0[id];
-    void *savedWater = (void *) (uintptr_t) rec->unk74;
+    void *savedWater = (void *) rec->unk74;
     Vector newp;
     Vector oldp;
     Vector hit;
@@ -613,20 +613,20 @@ void func_801A1B6C_ovl7(void) {
     w = func_8010DF9C(&newp);
     if (w == 1 || w == 2 || w == 3) {
         if (w == 3 && PC_WATER_ACTIVE(D_8012BCE0[2])) {
-            rec->unk74 = (u32) (uintptr_t) D_8012BCE0[2];
+            rec->unk74 = (struct WaterData *) D_8012BCE0[2];
             D_800E8AE0[omCurrentObj->objId] |= 1;
         }
         if (w >= 2 && PC_WATER_ACTIVE(D_8012BCE0[1])) {
-            rec->unk74 = (u32) (uintptr_t) D_8012BCE0[1];
+            rec->unk74 = (struct WaterData *) D_8012BCE0[1];
             D_800E8AE0[omCurrentObj->objId] |= 1;
         }
         if (PC_WATER_ACTIVE(D_8012BCE0[0])) {
-            rec->unk74 = (u32) (uintptr_t) D_8012BCE0[0];
+            rec->unk74 = (struct WaterData *) D_8012BCE0[0];
             D_800E8AE0[omCurrentObj->objId] |= 1;
         }
     } else {
         D_800E8AE0[omCurrentObj->objId] &= ~1;
-        rec->unk74 = 0;
+        rec->unk74 = NULL;
     }
     if ((prev & 1) != (D_800E8AE0[omCurrentObj->objId] & 1)) {
         D_800E8AE0[omCurrentObj->objId] |= 2;
@@ -703,20 +703,20 @@ void func_801A2068_ovl7(void) {
 
     if (D_800E8AE0[omCurrentObj->objId] & 1) {
         p.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk14;
+        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->headOffsetY;
         p.z = gEntitiesNextPosZArray[omCurrentObj->objId];
     } else if (D_800E8920[omCurrentObj->objId] == 0) {
         p.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
+        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->footOffsetY;
         p.z = gEntitiesNextPosZArray[omCurrentObj->objId];
     } else {
-        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + *(f32 *) &slot->unk18;
+        p.y = gEntitiesNextPosYArray[omCurrentObj->objId] + slot->footOffsetY;
         if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-            p.x = (sinf(D_800E17D0[omCurrentObj->objId]) * slot->unk1C) + gEntitiesNextPosXArray[omCurrentObj->objId];
-            p.z = (cosf(D_800E17D0[omCurrentObj->objId]) * slot->unk1C) + gEntitiesNextPosZArray[omCurrentObj->objId];
+            p.x = (sinf(D_800E17D0[omCurrentObj->objId]) * slot->forwardReachPos) + gEntitiesNextPosXArray[omCurrentObj->objId];
+            p.z = (cosf(D_800E17D0[omCurrentObj->objId]) * slot->forwardReachPos) + gEntitiesNextPosZArray[omCurrentObj->objId];
         } else {
-            p.x = (sinf(D_800E17D0[omCurrentObj->objId]) * slot->unk20) + gEntitiesNextPosXArray[omCurrentObj->objId];
-            p.z = (cosf(D_800E17D0[omCurrentObj->objId]) * slot->unk20) + gEntitiesNextPosZArray[omCurrentObj->objId];
+            p.x = (sinf(D_800E17D0[omCurrentObj->objId]) * slot->forwardReachNeg) + gEntitiesNextPosXArray[omCurrentObj->objId];
+            p.z = (cosf(D_800E17D0[omCurrentObj->objId]) * slot->forwardReachNeg) + gEntitiesNextPosZArray[omCurrentObj->objId];
         }
     }
     probeHit = 0;
@@ -827,9 +827,9 @@ void func_801A239C_ovl7(void) {
 void func_801A248C_ovl7(struct EnemyProbe *arg0, f32 arg1) {
     if (arg0 != NULL) {
         if (func_8010D668(arg0, arg1) != 0) {
-            gEntitiesNextPosXArray[omCurrentObj->objId] = arg0->unk4;
-            gEntitiesNextPosYArray[omCurrentObj->objId] = arg0->unk8;
-            gEntitiesNextPosZArray[omCurrentObj->objId] = arg0->unkC;
+            gEntitiesNextPosXArray[omCurrentObj->objId] = arg0->posX;
+            gEntitiesNextPosYArray[omCurrentObj->objId] = arg0->posY;
+            gEntitiesNextPosZArray[omCurrentObj->objId] = arg0->posZ;
             D_800E8920[omCurrentObj->objId] = 1;
         } else {
             D_800E8920[omCurrentObj->objId] = 0;
@@ -1086,18 +1086,18 @@ void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
     struct EnemyProbe *sub84 = D_800E1B50[idx]->unk84;
 
     if (sub84 != NULL) {
-        sub84->unk4 = gEntitiesNextPosXArray[idx];
-        sub84->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
-        sub84->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+        sub84->posX = gEntitiesNextPosXArray[idx];
+        sub84->posY = gEntitiesNextPosYArray[omCurrentObj->objId];
+        sub84->posZ = gEntitiesNextPosZArray[omCurrentObj->objId];
         *(struct Ovl7TrackParams *) &sub84->unk10 = *arg0;
         if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-            sub84->unk1C = ABSF(sub84->unk1C);
-            sub84->unk20 = (sub84->unk20) < 0.0f ? -(-(sub84->unk20)) : -(sub84->unk20);
+            sub84->forwardReachPos = ABSF(sub84->forwardReachPos);
+            sub84->forwardReachNeg = (sub84->forwardReachNeg) < 0.0f ? -(-(sub84->forwardReachNeg)) : -(sub84->forwardReachNeg);
         } else {
-            sub84->unk1C = (sub84->unk1C) < 0.0f ? -(-(sub84->unk1C)) : -(sub84->unk1C);
-            sub84->unk20 = ABSF(sub84->unk20);
+            sub84->forwardReachPos = (sub84->forwardReachPos) < 0.0f ? -(-(sub84->forwardReachPos)) : -(sub84->forwardReachPos);
+            sub84->forwardReachNeg = ABSF(sub84->forwardReachNeg);
         }
-        sub84->unk24 = D_800E17D0[omCurrentObj->objId];
+        sub84->facingAngle = D_800E17D0[omCurrentObj->objId];
     }
 }
 #else

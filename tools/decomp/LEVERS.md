@@ -243,3 +243,25 @@ the pool allocator's real stride is 0x78.
     loads. Restoring the real macros against `gDisplayListHeads[n]++` took
     func_801F2964_ovl10 to 32/674 with an exact instruction count on the
     first compile.
+
+42. **Read the SIBLING function before trusting the PORT arm.** Both wins in
+    the ovl5_5 re-derivation came from the listing plus a neighbouring
+    function in the same TU. A PORT arm whose draft scores ~100% residue with
+    "no source bugs found" is usually describing a DIFFERENT function shape,
+    not a register problem: func_80176F04_ovl5 is a direct clone of
+    func_80176A80_ovl5 120 lines above it, and reading that took it from
+    136/137 to 5/138.
+
+43. **Dead locals and reserved holes are load-bearing.** This ROM's authors
+    leave unused locals; IDO reserves their slots and every stack offset
+    depends on them. Where a draft's frame size is right but every
+    `addiu $xN, $sp` is off by a constant, add a pad to the declaration list
+    and find its position by walking the ROM's `addiu $reg, $sp, ...`
+    immediates in order. func_80176F04_ovl5 needed both a 4-byte hole at
+    sp+0x70 that IDO reserves and never writes, and a 16-byte copy the
+    function never reads.
+
+44. **A rolled loop over two banks can be the whole residue.** The ROM writes
+    both blocks out; rolling them into `for (bank = 0; bank < 2; bank++)`
+    forced s0-s8 and a bigger frame, where written-out needs only s0/s1/s2 --
+    exactly the ROM's save set (func_801765EC_ovl5).

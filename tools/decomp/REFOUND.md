@@ -299,3 +299,18 @@ collide with a scalar declaration of the same symbol elsewhere in the TU.
 Several of these aliases were gratuitous in the PORT arm too (the symbol was
 already declared and used directly a few functions away), so they are worth
 removing on the port side when touching that code for other reasons.
+
+## ASSIGN WORK BY FILE, NEVER BY POSITION IN A LIST
+
+Splitting a bloc between two lanes as "you take the top, you take the bottom"
+is unsafe: a bloc's remaining work is often concentrated in ONE file, so both
+lanes end up editing the same TU. Measured -- an ovl5 file was observed
+shrinking 126394 -> 126364 -> 126348 bytes in ~32 seconds while two lanes
+alternately compiled it.
+
+Partition by FILE. If two lanes must share a bloc, name the files each owns.
+A lane that needs to measure against a file it does not own should splice the
+candidate into a scratch copy of the TU outside src/ and score that --
+verify.py works fine on a copy (only load_secbase cares about the path, and it
+degrades silently for non-migrated-rodata TUs) -- and should guard any live
+edit with an mtime check that aborts if the file moved underneath it.
