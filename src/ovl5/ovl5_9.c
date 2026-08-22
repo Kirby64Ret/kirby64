@@ -12,6 +12,11 @@
 
 extern Gfx D_801895A8_ovl5[];
 void func_8017EE4C_ovl5(GObj *);
+/* K&R form is load-bearing on all three declarations below: each has a real
+ * 1-arg (GObj *) signature (see their definitions further down), but every
+ * call site in func_8017ED60_ovl5 just below passes 0 args -- the ROM
+ * relies on whatever GObj* is already sitting in $a0. An ANSI prototype
+ * breaks compilation with "too few arguments". */
 void func_8017EDE0_ovl5();
 void func_8017F008_ovl5();
 void func_8017F110_ovl5();

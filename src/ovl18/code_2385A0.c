@@ -58,9 +58,9 @@ extern s32 D_8022AD20_ovl18;
 extern s32 D_801CB4DC_ovl7;
 extern u32 D_800E0D50[];
 
-void func_800A9864();
-void func_800A9EA4();
-void func_800AA018();
+void func_800A9864(u32, u32, u32);
+void func_800A9EA4(s32);
+void func_800AA018(s32);
 void func_800AA154(s32);
 void func_800AF27C(void);
 void func_80111550(s32);

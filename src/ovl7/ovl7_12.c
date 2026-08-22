@@ -26,6 +26,14 @@ void func_801B7E80_ovl7(GObj *);
 extern s32 D_800E8AE0[];
 void func_800AECC0(f32);
 void func_800AED20(f32);
+/* K&R form is load-bearing here: an ANSI `s32` prototype shifts register
+ * allocation in this TU (measured via objdump A/B against the last
+ * known-good build -- $a0/$v0 renaming and an extra `move $a0,$v0` where
+ * the ROM has a nop, in an unrelated caller). The same edit also broke
+ * src/ovl7/ovl7_17.c the same way, even though `void func_800AA018(s32);`
+ * already exists safely at file scope in dozens of other TUs -- so this is
+ * NOT a general property of the prototype, just this file's (and
+ * ovl7_17.c's) particular register pressure at the call site. */
 void func_800AA018();
 void ohSleep(s32);
 

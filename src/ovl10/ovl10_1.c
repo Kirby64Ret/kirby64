@@ -1252,6 +1252,14 @@ void func_801DF4CC_ovl10(void) {
     func_801E28C8_ovl10(0);
 }
 
+/* NOT MEASURABLE YET -- same blocker as func_801E0460_ovl10 (see its note): the
+ * descent tables and func_800F9828 are declared only inside this file's PORT
+ * block, and hoisting them to file scope was measured to move func_801E2C78_ovl10
+ * and grow .text 0x7130 -> 0x7170, so it was reverted. Coordinator-sized.
+ * Decode that is ready to use once unblocked: the descent loop is INLINE in this
+ * caller (the host build factors it into pc_ovl10_descend), and it goes through
+ * ABSF(), which expands its argument THREE times -- so each abs of a
+ * func_800F9828 call really is three calls, matching the three in the listing. */
 #ifdef PORT
 void func_801DFE64_ovl10(void);
 s32 func_801DFCC0_ovl10(void);
@@ -2061,6 +2069,14 @@ void func_801E1FD8_ovl10(void) {
     }
 }
 
+/* NOT MEASURABLE YET -- same blocker as func_801E0460_ovl10 (see its note): the
+ * descent tables and func_800F9828 are declared only inside this file's PORT
+ * block, and hoisting them to file scope was measured to move func_801E2C78_ovl10
+ * and grow .text 0x7130 -> 0x7170, so it was reverted. Coordinator-sized.
+ * Decode that is ready to use once unblocked: the descent loop is INLINE in this
+ * caller (the host build factors it into pc_ovl10_descend), and it goes through
+ * ABSF(), which expands its argument THREE times -- so each abs of a
+ * func_800F9828 call really is three calls, matching the three in the listing. */
 #ifdef PORT
 extern s32 D_801F3ACC_ovl10;
 u32 func_800FD570(s32, u32, f32, f32, f32);

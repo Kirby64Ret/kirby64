@@ -2678,7 +2678,143 @@ void func_801E3518_ovl16(s32 arg0) {
 /* NOT YET DRAFTED FOR N64: the PORT arm below is host-only (it goes through the
  * PC_OVL16_SLOT_SHIM macro and the pc slot table), so it cannot be reused as the
  * N64 draft the way the other arms in this file were. Needs a from-asm draft. */
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 452/455 and 79 instructions SHORT -- was previously NOT DRAFTED because its host arm
+ * went through the PC_OVL16_SLOT_SHIM macro; this is now a real N64 draft with no
+ * reference to it. The shim exists only because the host DObj puts pos.v.y at a
+ * different byte offset: on N64 a D_801F0200_ovl16 cell holds the RAW DObj pointer
+ * and the Ovl16AnimCmd view's unk20 IS pos.v.y (byte 0x20), so the shim collapses to
+ * a plain cast, and the rest height is read back through the cell (as the ROM does at
+ * `lw $a1,0($s6)` / `lwc1 $f4,0x20($a1)`) rather than through the slots[] array.
+ * Close the COUNT before touching registers: 79 missing words is far more than the
+ * repeated-load CSE seen elsewhere in this file, so the host arm is still
+ * factoring out or omitting a block the ROM emits inline. */
+/* Phase-0xE opener of the pillar attack: advance the arena pattern state
+ * (D_800D7098.unk24), spawn the eight per-limb watcher entities, snapshot each
+ * limb DObj and its rest height, derive per-limb travel distance/step from the
+ * limb transform vs. the watcher position, then run the 16-step extend/retract
+ * choreography from the D_801EF98C/D_801EF9A0 schedules.
+ * N64 spelling note: D_801F0200_ovl16 cells hold the RAW DObj pointer and the
+ * Ovl16AnimCmd view's unk20 is exactly the N64 DObj's pos.v.y (byte 0x20), so the
+ * host build's PC_OVL16_SLOT_SHIM pointer fixup collapses to a plain cast here,
+ * and the rest height is read back through the cell the way the ROM does. */
+void func_801E35D4_ovl16(s32 arg0) {
+    void utilGetTransformSRT(Vector *, struct DObj *);
+    struct DObj *slots[8];
+    Vector srt;
+    u8 *limb;
+    s32 pat;
+    s32 i;
+    s32 k;
+    s32 n;
+    s32 t;
+    f32 dx;
+    f32 dy;
+    f32 dist;
+    f32 step;
+
+    D_800DDFD0[omCurrentObj->objId] = 0xE;
+    switch (D_800D7098.unk24) {
+    case 0:
+        D_800D7098.unk24 = (random_soft_s32_range(2) != 0) ? 2 : 1;
+        break;
+    case 1:
+        D_800D7098.unk24 = 2;
+        break;
+    case 2:
+        D_800D7098.unk24 = (random_soft_s32_range(2) != 0) ? 0 : 3;
+        break;
+    case 3:
+        D_800D7098.unk24 = 0;
+        break;
+    }
+    pat = ((u8 *) &D_801EF938_ovl16)[D_800D7098.unk24];
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = pat;
+    limb = (u8 *) &D_801EF97C_ovl16 + pat * 8;
+    for (i = 0; i < 8; i++) {
+        t = func_8019E0A4_ovl7(5, 6);
+        if (t != -1) {
+            D_800E0D50[t] = omCurrentObj->objId;
+            D_800E98E0[t] = limb[i];
+            D_800E9FE0[t].as_u32 = 0;
+            (&D_801F0160_ovl16)[i] = t;
+        }
+        D_801F01B0_ovl16[i] = -9999.0f;
+        slots[i] = D_800DFBD0[omCurrentObj->objId][D_801EF93C_ovl16[limb[i]]];
+        D_801F0200_ovl16[i] = (struct Ovl16AnimCmd *) slots[i];
+    }
+    func_800AA154(0x104F2);
+    func_800AA018(0x104F4);
+    for (i = 0; i < 8; i++) {
+        D_801F01B0_ovl16[i] = D_801F0200_ovl16[i]->unk20;
+        utilGetTransformSRT(&srt, slots[i]);
+        t = (&D_801F0160_ovl16)[i];
+        dx = gEntitiesNextPosXArray[t];
+        if (dx < 0.0f) {
+            dx = -dx;
+        }
+        dx -= (srt.x < 0.0f) ? -srt.x : srt.x;
+        if (dx < 0.0f) {
+            dx = -dx;
+        }
+        dy = gEntitiesNextPosYArray[t];
+        if (dy < 0.0f) {
+            dy = -dy;
+        }
+        dy -= (srt.y < 0.0f) ? -srt.y : srt.y;
+        if (dy < 0.0f) {
+            dy = -dy;
+        }
+        dist = sqrtf((dx * dx) + (dy * dy)) * 1.25f;
+        ((f32 *) &D_801F0188_ovl16)[i] = dist;
+        step = dist * 0.125f;
+        if (step < 0.0f) {
+            step = -step;
+        }
+        D_801F01D8_ovl16[i] = step;
+    }
+    D_800E9C60[omCurrentObj->objId] = 0;
+    for (k = 0; k < 16; k++) {
+        s32 out = ((u8 *) &D_801EF98C_ovl16)[k];
+        s32 in = ((u8 *) &D_801EF9A0_ovl16)[k];
+
+        if (out < 8) {
+            play_sound(0x1AF);
+        }
+        if (in < 8) {
+            play_sound(0x1AD);
+        }
+        if ((out >= 8) && (in >= 8)) {
+            break;
+        }
+        if (in < 8) {
+            D_800E9FE0[(&D_801F0160_ovl16)[in]].as_u32 = 2;
+        }
+        ohSleep(1);
+        for (n = 0; (f32) n < 8.0f; n++) {
+            if (out < 8) {
+                slots[out]->pos.v.y -= D_801F01D8_ovl16[out];
+            }
+            if (in < 8) {
+                slots[in]->pos.v.y += D_801F01D8_ovl16[in];
+            }
+            ohSleep(1);
+        }
+        if (out < 8) {
+            D_800E9FE0[(&D_801F0160_ovl16)[out]].as_u32 = 1;
+            slots[out]->pos.v.y = (1.25f * D_801F01B0_ovl16[out]) - ((f32 *) &D_801F0188_ovl16)[out];
+        }
+        if (in < 8) {
+            slots[in]->pos.v.y = D_801F01B0_ovl16[in];
+        }
+        ohSleep(0xA);
+    }
+    func_800AA154(0x104EE);
+    func_800AA154(0x104FA);
+    ohSleep(0x1E);
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0x13;
+}
+#elif defined(PORT)
 /* PORT: D_801F0200_ovl16 cells hold, on N64, raw DObj addresses that shared
  * code (func_801E4148 above) later pokes through `struct Ovl16AnimCmd::unk20`
  * -- which on the N64 DObj is pos.v.y (byte 0x20). The host DObj has pos.v.y
