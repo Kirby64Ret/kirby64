@@ -1258,6 +1258,13 @@ s32 func_801DFCC0_ovl10(void);
 extern void func_800A9760(s32);
 void func_80198880_ovl7(void *);
 extern void *D_801F344C_ovl10[];
+/* Declared for BOTH builds: the descent tables and func_800F9828 were only
+ * visible inside this file's PORT block, so no N64 draft below could name them. */
+extern f32 D_801F4338_ovl10[];
+extern f32 D_801F4364_ovl10[];
+extern f32 D_801F4390_ovl10[];
+f32 func_800F9828(s32, s32);
+
 extern f32 D_801F4338_ovl10[];
 extern f32 D_801F4364_ovl10[];
 extern f32 D_801F4390_ovl10[];
@@ -1530,7 +1537,7 @@ void func_801E03CC_ovl10(void) {
     }
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
 /* State 0xC (phase-2 reposition): zeroes all vertical motion, picks the next
  * waypoint slot for D_800E9C60 -- usually a neighbour from the D_801F43BC /
  * D_801F43D4 tables, 1-in-3 a fresh random slot different from the current one --
@@ -1612,7 +1619,7 @@ void func_801E0460_ovl10(s32 arg0) {
     D_800E9020[omCurrentObj->objId] = 0.0f;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
 }
-#else
+#elif defined(PORT)
 extern u32 D_801F43BC_ovl10[];
 extern u32 D_801F43D4_ovl10[];
 
@@ -1662,6 +1669,8 @@ void func_801E0460_ovl10(s32 arg0) {
     D_800E9020[omCurrentObj->objId] = 0.0f;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E0460_ovl10.s")
 #endif
 
 s32 func_8019A900_ovl7(s32 *);
