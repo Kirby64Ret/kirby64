@@ -4167,107 +4167,116 @@ GObj *func_800A04B8(s32 arg0) {
 
 
 #ifdef MIPS_TO_C
+/* FACTORY: DIFF 59/277 -- one saved-register permutation. The ROM holds the
+ * accumulator matrix pointer in $s5 and the scratch matrix in $s4; IDO picks
+ * them the other way round, and the `or $s3,$a2` copy lands one slot later
+ * than the ROM's. Everything else -- frame 0xF8, both matrices at 0xB8/0x78,
+ * all eight saved registers, f20/f22, the three DObj SRT blocks, the
+ * dynamic-store record walk and the whole normalize/transform tail -- is the
+ * ROM's, instruction for instruction. Measured levers, in order of value:
+ * declaring the ACCUMULATOR matrix before the scratch one (later locals take
+ * the lower addresses, so the declaration order is inverted from the frame
+ * order) 261 -> 185; writing the kinds dispatch as a SWITCH with an explicit
+ * empty `case 0` rather than an if/else-if chain 180 -> 79 (the switch is
+ * what produces the ROM's `beql` chain; an if-chain emits bne + nop); and
+ * dropping the `kind` temporary to switch on *kinds directly 79 -> 59, which
+ * also fixed the frame (0x100 -> 0xF8). Solved semantics: the walk is up the
+ * DObj parent chain to the sentinel parent == 1; per node scale (vs 1.0f),
+ * rotation and translation (vs 0.0f) are folded in, then the optional
+ * DObjDynamicStore at +0x4C contributes up to three records read in kinds[]
+ * order from data at +4 with N64 record sizes 0x10 / 0x14 / 0x10 (kind 1
+ * translate, 2 rotate, 3 scale) and applied in the REVERSE order
+ * scale-rotate-translate; finally arg0 gets the accumulated translation row
+ * and arg1 is rotated by the column-normalized basis. */
+void func_800A0558(f32 *arg0, f32 *arg1, struct DObj *arg2) {
+    void guMtxIdentF(f32 m[4][4]);
+    void guMtxCatF(f32 m[4][4], f32 n[4][4], f32 r[4][4]);
+    void HS64_MkScaleMtxF(f32 m[4][4], f32 x, f32 y, f32 z);
+    void HS64_MkRotationMtxF(f32 m[4][4], f32 x, f32 y, f32 z);
+    void HS64_MkTranslateMtxF(f32 m[4][4], f32 x, f32 y, f32 z);
+    void guNormalize(f32 *x, f32 *y, f32 *z);
+    f32 spB8[4][4];
+    f32 sp78[4][4];
+    struct DObj *node;
+    OMMtxFloat3 *translate;
+    OMMtxFloat4 *rotate;
+    OMMtxFloat3 *scale;
+    u8 *csr;
+    u8 *kinds;
+    s32 i;
+    f32 vx;
+    f32 vy;
+    f32 vz;
 
-void func_800A0558(void *arg0, void *arg1, void *arg2) {
-    f32 spE0;
-    f32 spDC;
-    f32 spD8;
-    f32 spD0;
-    f32 spCC;
-    f32 spC8;
-    f32 sp6C;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f0_5;
-    f32 temp_f0_6;
-    f32 temp_f20;
-    f32 temp_f22;
-    s32 var_a0;
-    u8 *temp_v0;
-    u8 *var_a1;
-    u8 temp_v0_2;
-    void *var_s0;
-    void *var_s1;
-    void *var_s3;
-    void *var_t0;
-    void *var_v1;
-
-    var_s3 = arg2;
-    guMtxIdentF(&spB8[0]);
+    node = arg2;
+    guMtxIdentF(spB8);
     do {
-        temp_f0 = var_s3->unk40;
-        if ((temp_f0 != 1.0f) || (var_s3->unk44 != 1.0f) || (var_s3->unk48 != 1.0f)) {
-            HS64_MkScaleMtxF(&sp78[0], temp_f0, var_s3->unk44, var_s3->unk48);
-            guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+        if ((node->scale.v.x != 1.0f) || (node->scale.v.y != 1.0f) || (node->scale.v.z != 1.0f)) {
+            HS64_MkScaleMtxF(sp78, node->scale.v.x, node->scale.v.y, node->scale.v.z);
+            guMtxCatF(spB8, sp78, spB8);
         }
-        temp_f0_2 = var_s3->unk30;
-        if ((temp_f0_2 != 0.0f) || (var_s3->unk34 != 0.0f) || (var_s3->unk38 != 0.0f)) {
-            HS64_MkRotationMtxF(&sp78[0], temp_f0_2, var_s3->unk34, var_s3->unk38);
-            guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+        if ((node->angle.v.x != 0.0f) || (node->angle.v.y != 0.0f) || (node->angle.v.z != 0.0f)) {
+            HS64_MkRotationMtxF(sp78, node->angle.v.x, node->angle.v.y, node->angle.v.z);
+            guMtxCatF(spB8, sp78, spB8);
         }
-        temp_f0_3 = var_s3->unk1C;
-        if ((temp_f0_3 != 0.0f) || (var_s3->unk20 != 0.0f) || (var_s3->unk24 != 0.0f)) {
-            HS64_MkTranslateMtxF(&sp78[0], temp_f0_3, var_s3->unk20, var_s3->unk24);
-            guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+        if ((node->pos.v.x != 0.0f) || (node->pos.v.y != 0.0f) || (node->pos.v.z != 0.0f)) {
+            HS64_MkTranslateMtxF(sp78, node->pos.v.x, node->pos.v.y, node->pos.v.z);
+            guMtxCatF(spB8, sp78, spB8);
         }
-        temp_v0 = var_s3->unk4C;
-        var_s1 = NULL;
-        var_s0 = NULL;
-        var_t0 = NULL;
-        if (temp_v0 != NULL) {
-            var_v1 = temp_v0 + 4;
-            var_a0 = 0;
-            var_a1 = temp_v0;
+        if (node->unk4C != NULL) {
+            translate = NULL;
+            scale = NULL;
+            rotate = NULL;
+            csr = (u8 *) node->unk4C + 4;
+            i = 0;
+            kinds = (u8 *) node->unk4C;
             do {
-                temp_v0_2 = *var_a1;
-                var_a0 += 1;
-                switch (temp_v0_2) {                /* irregular */
-                    case 0:
-                        break;
-                    case 1:
-                        var_s1 = var_v1;
-block_23:
-                        var_v1 += 0x10;
-                        break;
-                    case 2:
-                        var_s0 = var_v1;
-                        var_v1 += 0x14;
-                        break;
-                    case 3:
-                        var_t0 = var_v1;
-                        goto block_23;
+                i += 1;
+                switch (*kinds) {
+                case 0:
+                    break;
+                case 1:
+                    translate = (OMMtxFloat3 *) csr;
+                    csr += 0x10;
+                    break;
+                case 2:
+                    rotate = (OMMtxFloat4 *) csr;
+                    csr += 0x14;
+                    break;
+                case 3:
+                    scale = (OMMtxFloat3 *) csr;
+                    csr += 0x10;
+                    break;
                 }
-                var_a1 += 1;
-            } while (var_a0 != 3);
-            if ((var_t0 != NULL) && ((temp_f0_4 = var_t0->unk4, (temp_f0_4 != 1.0f)) || (var_t0->unk8 != 1.0f) || (var_t0->unkC != 1.0f))) {
-                HS64_MkScaleMtxF(&sp78[0], temp_f0_4, var_t0->unk8, var_t0->unkC);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+                kinds += 1;
+            } while (i != 3);
+            if ((scale != NULL) && ((scale->v.x != 1.0f) || (scale->v.y != 1.0f) || (scale->v.z != 1.0f))) {
+                HS64_MkScaleMtxF(sp78, scale->v.x, scale->v.y, scale->v.z);
+                guMtxCatF(spB8, sp78, spB8);
             }
-            if ((var_s0 != NULL) && ((temp_f0_5 = var_s0->unk8, (temp_f0_5 != 0.0f)) || (var_s0->unkC != 0.0f) || (var_s0->unk10 != 0.0f))) {
-                HS64_MkRotationMtxF(&sp78[0], temp_f0_5, var_s0->unkC, var_s0->unk10);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            if ((rotate != NULL) && ((rotate->v.x != 0.0f) || (rotate->v.y != 0.0f) || (rotate->v.z != 0.0f))) {
+                HS64_MkRotationMtxF(sp78, rotate->v.x, rotate->v.y, rotate->v.z);
+                guMtxCatF(spB8, sp78, spB8);
             }
-            if ((var_s1 != NULL) && ((temp_f0_6 = var_s1->unk4, (temp_f0_6 != 0.0f)) || (var_s1->unk8 != 0.0f) || (var_s1->unkC != 0.0f))) {
-                HS64_MkTranslateMtxF(&sp78[0], temp_f0_6, var_s1->unk8, var_s1->unkC);
-                guMtxCatF(&spB8[0], &sp78[0], &spB8[0]);
+            if ((translate != NULL) && ((translate->v.x != 0.0f) || (translate->v.y != 0.0f) || (translate->v.z != 0.0f))) {
+                HS64_MkTranslateMtxF(sp78, translate->v.x, translate->v.y, translate->v.z);
+                guMtxCatF(spB8, sp78, spB8);
             }
         }
-        var_s3 = var_s3->unk14;
-    } while (var_s3 != 1);
-    arg0->unk0 = spE8;
-    arg0->unk4 = spEC;
-    arg0->unk8 = spF0;
-    temp_f22 = arg1->unk4;
-    temp_f20 = arg1->unk0;
-    sp6C = arg1->unk8;
-    guNormalize(&spB8[0], &spC8, &spD8);
-    guNormalize(&spB8[1], &spCC, &spDC);
-    guNormalize(&spB8[2], &spD0, &spE0);
-    arg1->unk0 = (spD8 * sp6C) + ((spB8[0] * temp_f20) + (spC8 * temp_f22));
-    arg1->unk4 = (spDC * sp6C) + ((spB8[1] * temp_f20) + (spCC * temp_f22));
-    arg1->unk8 = (spE0 * sp6C) + ((spB8[2] * temp_f20) + (spD0 * temp_f22));
+        node = node->parent;
+    } while (node != (struct DObj *) 1);
+    arg0[0] = spB8[3][0];
+    arg0[1] = spB8[3][1];
+    arg0[2] = spB8[3][2];
+    vy = arg1[1];
+    vx = arg1[0];
+    vz = arg1[2];
+    guNormalize(&spB8[0][0], &spB8[1][0], &spB8[2][0]);
+    guNormalize(&spB8[0][1], &spB8[1][1], &spB8[2][1]);
+    guNormalize(&spB8[0][2], &spB8[1][2], &spB8[2][2]);
+    arg1[0] = (spB8[2][0] * vz) + ((spB8[0][0] * vx) + (spB8[1][0] * vy));
+    arg1[1] = (spB8[2][1] * vz) + ((spB8[0][1] * vx) + (spB8[1][1] * vy));
+    arg1[2] = (spB8[2][2] * vz) + ((spB8[0][2] * vx) + (spB8[1][2] * vy));
 }
 #elif defined(PORT)
 /* Accumulate the local transform of arg2's DObj chain (chain roots carry
@@ -5283,154 +5292,187 @@ UnkParticle *func_800A194C(void) {
 
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: DIFF 189/336. The dispatch (9-entry jump table at kind 0..8 plus
+ * the D_800D6ADC default), all nine arms, the texture-flag OR and the
+ * emitter-ref tail are the ROM's; the residue is an FP register permutation
+ * -- the ROM parks the 0.0f constant in $f0 and each loaded script field in
+ * $f2, IDO does it the other way round, so every c.eq.s/swc1 pair in the
+ * kind arms reads swapped -- plus three off-by-one branch displacements that
+ * follow. Measured levers, all worth keeping: the script record must NOT be
+ * cached in a local -- writing `D_800D6A78[idx][arg1]->field` inline at every
+ * one of the ~25 field copies reproduces the ROM's re-load of the table slot
+ * through the held $a0 and is worth 107 diffs (313 -> 206); assigning unk9
+ * before unkA another 7; and moving the unk14/18/1C zero stores after unkE,
+ * and unk44's after unk40, another 12 (206 -> 189). Solved semantics:
+ * func_800A194C takes NO arguments and the D_800D6ADC callback gets ONLY the
+ * node in $a0 (m2c's extra arguments are leftover registers); the bank index
+ * is arg0 & 7 with an early NULL for arg1 >= D_800D6A38[bank]; kind 2 stores
+ * a HALFWORD zero at +0x54 and kind 5's sign flags are a halfword at +0x74;
+ * kind 8's pitch term is `unk14 * unk20` (position X times velocity X, with
+ * unk14 just zeroed) rather than velX*velX -- a ROM quirk, reproduced. */
 void *func_800A19EC(s32 arg0, s32 arg1) {
-    s32 sp2C;
-    s32 sp28;
-    s32 *sp24;
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 temp_f14_2;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-    s32 *temp_a0;
-    s32 temp_a1;
-    s32 temp_v0_2;
-    s32 temp_v1;
-    u8 temp_t5;
-    void *temp_a1_2;
-    void *temp_a1_3;
-    void *temp_v0;
-    void *temp_v0_3;
-    void *var_a1;
+    /* Local view of the generator node (the shared struct Ovl1PNode pads
+     * over most of this and widening it is a file-scope change). */
+    struct GNode {
+        /* 0x00 */ struct GNode *next;
+        /* 0x04 */ u16 unk4;
+        /* 0x06 */ u16 unk6;
+        /* 0x08 */ u8 unk8;
+        /* 0x09 */ u8 unk9;
+        /* 0x0A */ u8 unkA;
+        /* 0x0B */ u8 unkB;
+        /* 0x0C */ u16 unkC;
+        /* 0x0E */ u16 unkE;
+        /* 0x10 */ u8 *unk10;
+        /* 0x14 */ f32 unk14;
+        /* 0x18 */ f32 unk18;
+        /* 0x1C */ f32 unk1C;
+        /* 0x20 */ f32 unk20;
+        /* 0x24 */ f32 unk24;
+        /* 0x28 */ f32 unk28;
+        /* 0x2C */ f32 unk2C;
+        /* 0x30 */ f32 unk30;
+        /* 0x34 */ f32 unk34;
+        /* 0x38 */ f32 unk38;
+        /* 0x3C */ f32 unk3C;
+        /* 0x40 */ f32 unk40;
+        /* 0x44 */ f32 unk44;
+        /* 0x48 */ s32 unk48;
+        /* 0x4C */ UnkEmitter *unk4C;
+        /* 0x50 */ f32 unk50;
+        /* 0x54 */ f32 unk54;
+        /* 0x58 */ f32 unk58;
+        /* 0x5C */ f32 unk5C;
+        /* 0x60 */ f32 unk60;
+        /* 0x64 */ f32 unk64;
+        /* 0x68 */ f32 unk68;
+        /* 0x6C */ f32 unk6C;
+        /* 0x70 */ f32 unk70;
+        /* 0x74 */ u16 unk74;
+    };
+    UnkParticle *func_800A194C(void);
+    UnkEmitter *func_8009B5E8(u8, u16);
+    extern void (*D_800D6ADC)();
+    f32 atan2f(f32, f32);
+    struct GNode *node;
+    s32 idx;
+    f32 a;
+    f32 b;
+    f32 c;
 
-    temp_v0_2 = arg0 & 7;
-    if (temp_v0_2 >= 8) {
+    idx = arg0 & 7;
+    if (idx >= 8) {
         return NULL;
     }
-    temp_a1 = temp_v0_2 * 4;
-    if (arg1 >= *(&D_800D6A38 + temp_a1)) {
+    if (arg1 >= D_800D6A38[idx]) {
         return NULL;
     }
-    sp28 = temp_a1;
-    temp_v0 = func_800A194C(temp_a1, arg0, arg1);
-    if (temp_v0 != NULL) {
-        temp_a0 = temp_a1 + &D_800D6A78;
-        temp_v1 = arg1 * 4;
-        temp_v0->unkA = arg0;
-        temp_v0->unk9 = **(*temp_a0 + temp_v1);
-        temp_v0->unk6 = (*(*temp_a0 + temp_v1))->unkA;
-        temp_v0->unk8 = (*(*temp_a0 + temp_v1))->unk8;
-        temp_v0->unkB = (*(*temp_a0 + temp_v1))->unk2;
-        temp_v0->unkC = (*(*temp_a0 + temp_v1))->unk6;
-        temp_v0->unk14 = 0.0f;
-        temp_v0->unk18 = 0.0f;
-        temp_v0->unk1C = 0.0f;
-        temp_v0->unkE = (*(*temp_a0 + temp_v1))->unk4;
-        temp_v0->unk20 = (*(*temp_a0 + temp_v1))->unk14;
-        temp_v0->unk24 = (*(*temp_a0 + temp_v1))->unk18;
-        temp_v0->unk28 = (*(*temp_a0 + temp_v1))->unk1C;
-        temp_v0->unk2C = (*(*temp_a0 + temp_v1))->unkC;
-        temp_v0->unk30 = (*(*temp_a0 + temp_v1))->unk10;
-        temp_v0->unk34 = (*(*temp_a0 + temp_v1))->unk2C;
-        temp_v0->unk10 = *(*temp_a0 + temp_v1) + 0x3C;
-        temp_v0->unk38 = (*(*temp_a0 + temp_v1))->unk20;
-        temp_v0->unk3C = (*(*temp_a0 + temp_v1))->unk24;
-        temp_v0->unk44 = 0.0f;
-        temp_v0->unk40 = (*(*temp_a0 + temp_v1))->unk28;
-        if ((*(*(&D_800D6A98 + temp_a1) + ((*(*temp_a0 + temp_v1))->unk2 * 4)))->unk16 != 0) {
-            temp_v0->unk6 = temp_v0->unk6 | 0x10;
+    node = (struct GNode *) func_800A194C();
+    if (node != NULL) {
+        node->unk9 = D_800D6A78[idx][arg1]->kind;
+        node->unkA = arg0;
+        node->unk6 = D_800D6A78[idx][arg1]->flags;
+        node->unk8 = D_800D6A78[idx][arg1]->unk8;
+        node->unkB = D_800D6A78[idx][arg1]->texture_id;
+        node->unkC = D_800D6A78[idx][arg1]->particle_lifetime;
+        node->unkE = D_800D6A78[idx][arg1]->generator_lifetime;
+        node->unk14 = 0.0f;
+        node->unk18 = 0.0f;
+        node->unk1C = 0.0f;
+        node->unk20 = D_800D6A78[idx][arg1]->velX;
+        node->unk24 = D_800D6A78[idx][arg1]->velY;
+        node->unk28 = D_800D6A78[idx][arg1]->velZ;
+        node->unk2C = D_800D6A78[idx][arg1]->gravity;
+        node->unk30 = D_800D6A78[idx][arg1]->friction;
+        node->unk34 = D_800D6A78[idx][arg1]->size;
+        node->unk10 = D_800D6A78[idx][arg1]->bytecode;
+        node->unk38 = D_800D6A78[idx][arg1]->unk20;
+        node->unk3C = D_800D6A78[idx][arg1]->unk24;
+        node->unk40 = D_800D6A78[idx][arg1]->unk28;
+        node->unk44 = 0.0f;
+        if (D_800D6A98[idx][D_800D6A78[idx][arg1]->texture_id]->flags != 0) {
+            node->unk6 = node->unk6 | 0x10;
         }
-        temp_t5 = temp_v0->unk9;
-        temp_v0->unk48 = 0;
-        switch (temp_t5) {
-            case 0:
-            case 3:
-            case 4:
-                temp_a1_2 = *(*temp_a0 + temp_v1);
-                temp_f2 = temp_a1_2->unk30;
-                if ((temp_f2 == 0.0f) && (temp_a1_2->unk34 == 0.0f)) {
-                    temp_v0->unk50 = 0.0f;
-                    temp_v0->unk54 = 6.2831855f;
-                } else {
-                    temp_v0->unk50 = temp_f2;
-                    temp_v0->unk54 = (*(*temp_a0 + temp_v1))->unk34;
-                }
-                break;
-            case 1:
-                temp_v0->unk50 = (*(*temp_a0 + temp_v1))->unk30;
-                temp_v0->unk54 = (*(*temp_a0 + temp_v1))->unk34;
-                temp_v0->unk58 = (*(*temp_a0 + temp_v1))->unk38;
-                break;
-            case 2:
-                temp_v0->unk54 = 0;
-                break;
-            case 6:
-            case 7:
-                temp_a1_3 = *(*temp_a0 + temp_v1);
-                temp_f2_2 = temp_a1_3->unk30;
-                if ((temp_f2_2 == 0.0f) && (temp_a1_3->unk34 == 0.0f)) {
-                    temp_v0->unk50 = 0.0f;
-                    temp_v0->unk54 = 6.2831855f;
-                } else {
-                    temp_v0->unk50 = temp_f2_2;
-                    temp_v0->unk54 = (*(*temp_a0 + temp_v1))->unk34;
-                }
-                temp_v0->unk58 = (*(*temp_a0 + temp_v1))->unk38;
-                break;
-            case 5:
-                temp_v0->unk50 = (*(*temp_a0 + temp_v1))->unk30;
-                temp_v0->unk60 = (*(*temp_a0 + temp_v1))->unk34;
-                temp_v0->unk54 = 0.0f;
-                temp_v0->unk58 = 0.0f;
-                temp_v0->unk5C = 0.0f;
-                temp_v0->unk64 = 0.0f;
-                temp_v0->unk68 = 0.0f;
-                temp_v0->unk6C = 0.0f;
-                temp_v0->unk74 = 0;
-                temp_v0->unk70 = (*(*temp_a0 + temp_v1))->unk38;
-                var_a1 = *(*temp_a0 + temp_v1);
-                if (var_a1->unk30 < 0.0f) {
-                    temp_v0->unk74 = 1;
-                    var_a1 = *(*temp_a0 + temp_v1);
-                }
-                if (var_a1->unk34 < 0.0f) {
-                    temp_v0->unk74 = temp_v0->unk74 | 2;
-                    var_a1 = *(*temp_a0 + temp_v1);
-                }
-                if (var_a1->unk38 < 0.0f) {
-                    temp_v0->unk74 = temp_v0->unk74 | 4;
-                }
-                break;
-            case 8:
-                temp_f0 = temp_v0->unk20;
-                temp_f2_3 = temp_v0->unk24;
-                temp_f14 = temp_v0->unk28;
-                sp24 = temp_a0;
-                sp2C = temp_v1;
-                temp_f14_2 = temp_v0->unk28;
-                temp_v0->unk50 = sqrtf((temp_f0 * temp_f0) + (temp_f2_3 * temp_f2_3) + (temp_f14 * temp_f14));
-                temp_v0->unk54 = atan2f(temp_v0->unk24, sqrtf((temp_v0->unk14 * temp_v0->unk20) + (temp_f14_2 * temp_f14_2)));
-                temp_v0->unk5C = atan2f(temp_v0->unk28, temp_v0->unk20);
-                temp_v0->unk58 = (*(*temp_a0 + temp_v1))->unk30;
-                temp_v0->unk60 = (*(*temp_a0 + temp_v1))->unk34;
-                break;
-            default:
-                if (D_800D6ADC != NULL) {
-                    D_800D6ADC(temp_v0, temp_a1, arg0, arg1);
-                }
-                break;
+        node->unk48 = 0;
+        switch (node->unk9) {
+        case 0:
+        case 3:
+        case 4:
+            a = D_800D6A78[idx][arg1]->unk30;
+            if ((a == 0.0f) && (D_800D6A78[idx][arg1]->unk34 == 0.0f)) {
+                node->unk50 = 0.0f;
+                node->unk54 = 6.2831855f;
+            } else {
+                node->unk50 = a;
+                node->unk54 = D_800D6A78[idx][arg1]->unk34;
+            }
+            break;
+        case 1:
+            node->unk50 = D_800D6A78[idx][arg1]->unk30;
+            node->unk54 = D_800D6A78[idx][arg1]->unk34;
+            node->unk58 = D_800D6A78[idx][arg1]->unk38;
+            break;
+        case 2:
+            node->unk74 = 0;
+            *(u16 *) &node->unk54 = 0;
+            break;
+        case 6:
+        case 7:
+            a = D_800D6A78[idx][arg1]->unk30;
+            if ((a == 0.0f) && (D_800D6A78[idx][arg1]->unk34 == 0.0f)) {
+                node->unk50 = 0.0f;
+                node->unk54 = 6.2831855f;
+            } else {
+                node->unk50 = a;
+                node->unk54 = D_800D6A78[idx][arg1]->unk34;
+            }
+            node->unk58 = D_800D6A78[idx][arg1]->unk38;
+            break;
+        case 5:
+            node->unk50 = D_800D6A78[idx][arg1]->unk30;
+            node->unk60 = D_800D6A78[idx][arg1]->unk34;
+            node->unk54 = 0.0f;
+            node->unk58 = 0.0f;
+            node->unk5C = 0.0f;
+            node->unk64 = 0.0f;
+            node->unk68 = 0.0f;
+            node->unk6C = 0.0f;
+            node->unk74 = 0;
+            node->unk70 = D_800D6A78[idx][arg1]->unk38;
+            if (D_800D6A78[idx][arg1]->unk30 < 0.0f) {
+                node->unk74 = 1;
+            }
+            if (D_800D6A78[idx][arg1]->unk34 < 0.0f) {
+                node->unk74 = node->unk74 | 2;
+            }
+            if (D_800D6A78[idx][arg1]->unk38 < 0.0f) {
+                node->unk74 = node->unk74 | 4;
+            }
+            break;
+        case 8:
+            a = node->unk20;
+            b = node->unk24;
+            c = node->unk28;
+            node->unk50 = sqrtf((a * a) + (b * b) + (c * c));
+            node->unk54 = atan2f(node->unk24, sqrtf((node->unk14 * node->unk20) + (node->unk28 * node->unk28)));
+            node->unk5C = atan2f(node->unk28, node->unk20);
+            node->unk58 = D_800D6A78[idx][arg1]->unk30;
+            node->unk60 = D_800D6A78[idx][arg1]->unk34;
+            break;
+        default:
+            if (D_800D6ADC != NULL) {
+                D_800D6ADC(node);
+            }
+            break;
         }
-        if (temp_v0->unk8 & 2) {
-            temp_v0_3 = func_8009B5E8(0, temp_v0->unk4);
-            temp_v0->unk4C = temp_v0_3;
-            if (temp_v0_3 != NULL) {
-                temp_v0_3->unkBA = 1;
+        if (node->unk8 & 2) {
+            node->unk4C = func_8009B5E8(0, node->unk4);
+            if (node->unk4C != NULL) {
+                node->unk4C->unkBA = 1;
             }
         }
     }
-    return temp_v0;
+    return node;
 }
 #elif defined(PORT)
 /* PORT: the generator/emitter spawner, from asm/nonmatchings/ovl1/ovl1/
@@ -6008,7 +6050,32 @@ s32 arg1;
     }
 }
 
-#if 1 /* verify-iteration draft: func_800A2550 */
+#ifdef MIPS_TO_C
+/* PADDING-TRAPPED + FACTORY: DIFF 211/220 (measured by hand -- verify.py
+ * REFUSES to score this one: padtrap.classify reports 'trap', 6 words after
+ * the function's own .size, so even a byte-exact MATCH must NOT be
+ * un-guarded here; converting it would shorten the TU by 24 bytes under
+ * kirby.ld's SUBALIGN(16). Fixing that needs a `pad` subsegment in
+ * kirby64.yaml plus the matching `. += ` in kirby.ld, in the same edit as
+ * the conversion -- a layout change outside this lane.)
+ * Residue is a whole-function register assignment: the ROM walks the layout
+ * with the node pointer in $s1 (callee-saved, then reused as the entry
+ * cursor `s1 += 0x2C`) and holds the 0x12 terminator constant in $v0, while
+ * IDO puts the walker in $v1/$v0 and the constant in $a1, so nothing lines
+ * up from instruction 8 on; our body is also 6 instructions longer. Tried:
+ * m2c's node[1].type walk shape, and the `if (unk4 == 0) return;` early-exit
+ * that would explain the ROM's `sltiu $v0,$v0,1` + `bnel`.
+ * Solved semantics (this is the useful part): arg0 is the 0x2C-stride layout
+ * array; walk to the type == 0x12 terminator; if the terminator's word +4 is
+ * nonzero a SECOND 0x2C-stride array follows it, each entry
+ * { s32 id; s32 pad; Vector pos, rot, scale } and the last flagged by bit 31
+ * of id (still processed). Each id spawns func_800A19EC((id >> 16) & 0xF,
+ * id & 0xFFFF); the entry SRT (func_8001C2E4, which takes the three Vectors
+ * BY VALUE) is concatenated with the terminator-node SRT and applied:
+ * position from row 3, velocity rotated by the 3x3, then per kind --
+ * kinds 0/2/3/4/6/7/8 scale unk38 by the length of column 0, kind 1
+ * transforms the point at +0x50, kind 5 scales the 3x3 at +0x50 by the
+ * matrix columns. All strides are N64 (0x2C nodes, 4-byte words). */
 void func_800A2550(void *arg0) {
     /* Local views: the 0x2C-stride layout node and the emitter node.
      * struct Ovl1PNode (above) pads over the fields this function needs, and
@@ -6053,10 +6120,7 @@ void func_800A2550(void *arg0) {
         } while (id != 0x12);
     }
     ent = node + 1;
-    if (node->unk4 == 0) {
-        return;
-    }
-    {
+    if (node->unk4 != 0) {
         func_8001C2E4(spA4, ((struct LNode *) arg0)->pos, ((struct LNode *) arg0)->rot,
                       ((struct LNode *) arg0)->scale);
         do {
@@ -6275,6 +6339,6 @@ void func_800A2550(void *arg0) {
     } while (!(id & 0x80000000));
 }
 #else
-/* pragma disabled for verify: asm/nonmatchings/ovl1/ovl1/func_800A2550 */
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2550.s")
 #endif
 

@@ -1848,6 +1848,30 @@ void func_8020165C_ovl9(s32 arg0, s32 arg1, f32 arg2) {
    NOTE: this draft also requires the file-scope prototype at the top of this
    file to become `extern s32 func_801ACCA0_ovl7(s32, s32, f32, f32);`. */
 #ifdef MIPS_TO_C
+/* FACTORY: 28/82 with the call form fixed, 1/83 without.  BLOCKED ON A
+   FILE-SCOPE DECISION, not on a source spelling: this TU declares
+   `extern void func_801ACCA0_ovl7(s32, s32, f32, f32);` at line 65, but the
+   ROM uses its return value as the spawned track id.  Written with a
+   function-pointer cast (as below, so the draft compiles without touching
+   file scope) IDO emits lui/addiu/jalr where the ROM has a plain `jal`, and
+   that single extra instruction shifts the whole body: 82/83.  Retyping the
+   declaration's RETURN type to s32 -- parameters unchanged, and ovl9_15.c
+   already declares this symbol that way -- gives the direct jal and drops it
+   to 54/82; I measured that and REVERTED it, because retyping at file scope
+   is forbidden to this lane.  check_tu_size.py showed ovl9_9.c unchanged
+   under the retype (the other two call sites at lines 1169 and 1934 discard
+   the result, so their jal is identical), so the change looks safe, but it
+   needs the sha1 gate to confirm.
+   Residue after that, from the earlier measured note kept below:
+   (a) the two 0.0f arguments and the two 0.0f stores must be materialised
+       AFTER the call -- IDO CSEs them and derives the arguments with mfc1,
+       offsetting the function by one instruction.  Swept without effect:
+       0.0f / 0.0 / (f32)0 / integer 0 in every combination of argument and
+       store position, a chained store, a volatile store, and hoisting the
+       stores above the call.
+   (b) the wrap needs `r = r + 1; r = (r < 3) ? r : 0;` written so the
+       `addiu $v1, $v0, 1` stays INSIDE the fallthrough block; both the
+       folded `(r + 1 < 3) ? r + 1 : 0` and the split form move it. */
 extern s32 random_soft_s32_range(s32);
 extern f32 D_8021C7A4_ovl9[];
 
@@ -1857,7 +1881,7 @@ void func_802016A8_ovl9(void) {
     s32 r;
     s32 id;
 
-    id = func_801ACCA0_ovl7(0x15, 0, 0.0f, 0.0f);
+    id = ((s32 (*)(s32, s32, f32, f32)) func_801ACCA0_ovl7)(0x15, 0, 0.0f, 0.0f);
     if (id != 0) {
         sp34.z = 0.0;
         sp34.y = 0.0;
@@ -1873,7 +1897,10 @@ void func_802016A8_ovl9(void) {
         D_800E3750[id] = sp34.y * -1.5f;
     }
 }
-#elif defined(PORT)
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_802016A8_ovl9.s")
+#endif
+#ifdef PORT
 extern s32 random_soft_s32_range(s32);
 extern f32 D_8021C7A4_ovl9[];
 /* Spitter shot burst (draft above, completed): spawn a 0x15 shot;
@@ -1903,8 +1930,6 @@ void func_802016A8_ovl9(void) {
         D_800E3750[id] = sp34.y * -1.5f;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_802016A8_ovl9.s")
 #endif
 
 IN_FILE void func_8020165C_ovl9(s32, s32, f32);

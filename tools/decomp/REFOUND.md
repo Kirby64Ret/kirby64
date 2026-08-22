@@ -122,3 +122,38 @@ would receive them in $f12/$f14 directly and needs a declaration change that
 breaks the TU, see above). Next pass should try a K&R definition with float
 parameters while LEAVING the file-scope declaration as
 `s32 func_8010E8F0(Vector *, s32, Vector *, s32, s32);` (LEVERS lever 15).
+
+## THE METRIC IS progress2.py, NOT A FUNCTION COUNT
+
+Upstream measures BYTES of decompilable code:
+
+    python3 tools/progress2.py     ->  56.8%  (Kirby64 approach)
+
+Earlier notes in this file quoted ~86%, which came from factory.py's
+function-count ratio. That number flatters the work (a 12-instruction leaf
+counts the same as an 800-instruction boss) and does not match what the
+project and its community report. Use progress2.py for any status claim.
+
+## QUALITY BAR (from upstream maintainer feedback)
+
+The goal of the decomp is a source tree people can MOD and read, not a
+percentage. Ranked accordingly:
+
+1. **ANSI prototypes, not K&R.** `void func_x();` (unspecified arguments)
+   is a matching crutch; most such functions still match with a real
+   prototype. Converting them is a type clarification, which is the kind of
+   change the project actually wants. 368 of these exist in src today.
+   Protocol for each (the ovl2_8 lesson -- a declaration change re-types
+   every call site in the TU):
+     a. `verify.py <file> --all`, record the match count.
+     b. Convert the declaration to real parameter types read off the asm.
+     c. Re-run `verify.py <file> --all` AND `check_tu_size.py`.
+     d. Keep only if the match count did not drop and the TU size is exact;
+        otherwise revert and leave a note saying K&R was load-bearing here.
+2. **Names and types over percentage.** A function whose arguments and
+   struct fields are named from evidence is worth more than three more
+   matched-but-opaque functions.
+3. **Match the surrounding file's formatting.** Do not reformat neighbouring
+   code, and do not emit a house style of your own; m2c output is a DRAFT to
+   be rewritten, never a source of truth to be pasted.
+4. **Granular commits.** One logical change per commit.

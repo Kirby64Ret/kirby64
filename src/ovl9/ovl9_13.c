@@ -1882,7 +1882,17 @@ void func_8020F008_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef PORT
+/* FACTORY: 26/115, frame + argument-passing shape.  The ROM homes $a0 at
+   0x20($sp) and runs on a 0x20 frame; this draft is declared void (line 138
+   of this TU declares `void func_8020F078_ovl9(void);` and the D_800DF150
+   install at line 1860 casts through it), derives arg0 from omCurrentObj and
+   lands on a 0x28 frame, so every sp offset and most temps shift.
+   Measured, then reverted: giving the draft a real `GObj *arg0` parameter AND
+   retyping that file-scope declaration is NOT the fix either -- it is worse
+   (89 -> 96), so the home store comes from something else in the ROM's
+   prologue, not simply from having a parameter.  Worth a permuter pass on the
+   frame shape before spending more source effort here. */
+#ifdef MIPS_TO_C
 extern void func_801051AC(void *);
 extern FUNCLIST D_8021CAE4_ovl9;
 void func_8020FC68_ovl9(struct GObj *arg0);
@@ -1934,6 +1944,57 @@ void func_8020F078_ovl9(void) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020F078_ovl9.s")
+#endif
+#ifdef PORT
+extern void func_801051AC(void *);
+extern FUNCLIST D_8021CAE4_ovl9;
+void func_8020FC68_ovl9(struct GObj *arg0);
+void func_8020F8A8_ovl9(GObj *);
+s32 func_801A0D74_ovl7();
+void func_8019F3B0_ovl7(void);
+/* Carried-critter per-frame hook: run the shared mover with facing
+ * temporarily made positive (matching the run direction), except
+ * while the grab counter D_800E9FE0 is live -- then drain it and
+ * instead pin the hitbox to the carrier's position through the
+ * carried-collision resolver func_801051AC.  Restore facing, run the
+ * squash/turn helper, dispatch the 5-entry anim-state table when the
+ * mover reported idle (the N64 reads an uninitialized flag on the
+ * carried path; the port skips the dispatch there), then the shared
+ * draw/epilogue pair. */
+void func_8020F078_ovl9(void) {
+    GObj *arg0 = omCurrentObj;
+    struct Sub800E1B50_Unk84 *hit;
+    f32 savedFacing;
+    s32 moved;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    hit = D_800E1B50[id]->unk84;
+    savedFacing = D_800E6A10[id];
+    if (D_800E64D0[id] < 0.0f) {
+        D_800E6A10[id] = savedFacing * -1.0f;
+        id = omCurrentObj->objId;
+    }
+    moved = 1;
+    if (D_800E9FE0[id].as_s32 > 0) {
+        D_800E9FE0[id].as_s32--;
+        if (hit != NULL) {
+            hit->unk4 = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
+            hit->unk8 = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+            hit->unkC = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
+            func_801051AC(hit);
+        }
+    } else {
+        moved = func_801A0D74_ovl7(arg0);
+    }
+    D_800E6A10[omCurrentObj->objId] = savedFacing;
+    func_8020FC68_ovl9(arg0);
+    if (moved == 0) {
+        utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 5, &D_8021CAE4_ovl9);
+    }
+    func_8020F8A8_ovl9(arg0);
+    func_8019F3B0_ovl7();
+}
 #endif
 
 void func_8020F244_ovl9(struct GObj *arg0) {

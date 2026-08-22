@@ -906,7 +906,7 @@ void func_80204C98_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef PORT
+#ifndef PORT /* WIP */
 struct PcO910TrackPos {
     s32 unk0;
     f32 unk4;
@@ -954,8 +954,54 @@ void func_80204D5C_ovl9(GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204D5C_ovl9.s")
+#elif defined(PORT)
+struct PcO910TrackPos {
+    s32 unk0;
+    f32 unk4;
+};
+void func_80204750_ovl9(struct GObj *);
+/* Chaser pursuit hook: give up the chase (state 3 on the normal
+ * thread) when Kirby leaves the 480-unit box or is no longer on this
+ * entity's facing side; otherwise accelerate 0.4/tick along the
+ * bearing to Kirby (rail distance horizontally, player height
+ * vertically) and, when Kirby is behind with the entity nearly
+ * stopped and no turnaround pending, start the turnaround. */
+void func_80204D5C_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    struct PcO910TrackPos tp;
+    Vector acc;
+    u32 id;
+
+    rec = D_800E1B50[omCurrentObj->objId];
+    if (func_8019A7E8_ovl7(480.0f) == 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80204750_ovl9);
+        return;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E6A10[id] != D_800E6A10[0]) {
+        gEntityFuncListIDArray[id] = 3;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80204750_ovl9);
+        return;
+    }
+    ((s32 (*)(struct PcO910TrackPos *)) func_8019A900_ovl7)(&tp);
+    acc.z = 0.0f;
+    acc.y = 0.0f;
+    acc.x = 0.4f;
+    lbvector_Rotate(&acc, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], tp.unk4));
+    D_800E6690[omCurrentObj->objId] = acc.x;
+    D_800E3750[omCurrentObj->objId] = acc.y;
+    if (rec->unk3C == 0) {
+        id = omCurrentObj->objId;
+        if ((f32) tp.unk0 != D_800E6A10[id]) {
+            f32 spd = D_800E64D0[id];
+
+            if (((spd < 0.0f) ? -spd : spd) < 1.0f) {
+                func_80199F1C_ovl7(arg0);
+            }
+        }
+    }
+}
 #endif
 
 void func_80204F80_ovl9(struct GObj *arg0) {
@@ -1596,6 +1642,43 @@ struct GObj *arg0;
     }
 }
 
+/* FACTORY: 55/67, v0/v1/a0 rotation plus one delay-slot hoist.  All three
+   depth arms, the default's utilPrintf and the shared tail are the ROM's.
+   Residues: the ROM keeps objId in $v0 and the D_800EA520 variant in $v1
+   where ours uses $v1 and $a0 (hoisting the variant into its own local does
+   not move it), and the ROM materialises %hi(D_8021DA20_ovl9) in the third
+   compare's delay slot while ours leaves a nop and materialises it later.
+   NOTE: the draft must be declared s32, not void -- line 1380 of this TU
+   calls func_802071AC_ovl9() with no prototype in scope, so the implicit
+   int() declaration makes a void definition a hard error.  Do not "fix"
+   that by adding a file-scope prototype. */
+#ifdef MIPS_TO_C
+s32 func_802071AC_ovl9(void) {
+    u32 id;
+    s32 var;
+
+    id = omCurrentObj->objId;
+    var = D_800EA520[id];
+    switch (var) {
+        case 1:
+            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 100.0f;
+            break;
+        case 2:
+            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 140.0f;
+            break;
+        case 3:
+            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 180.0f;
+            break;
+        default:
+            utilPrintf("=== No!! MINO_Var Over!! ===\n");
+            id = omCurrentObj->objId;
+            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 180.0f;
+            break;
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802071AC_ovl9.s")
+#endif
 #ifdef PORT
 /* Mino depth selector: latch the burrow floor D_800EA8A0 at 100/140/
  * 180 units below the current height for variants 1/2/3; any other
@@ -1621,7 +1704,5 @@ void func_802071AC_ovl9(void) {
             break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802071AC_ovl9.s")
 #endif
 

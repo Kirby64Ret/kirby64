@@ -1079,7 +1079,11 @@ void func_801E8A38_ovl9(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 3, &D_8021C008_ovl9);
 }
 
-#ifdef PORT
+/* FACTORY: 103/127, one register rotation.  Control flow, schedule, frame and
+   every stack slot are the ROM's; the residue is that the ROM holds the
+   gEntitiesAngleZArray / D_800E98E0 bases in $v1 and the objId in $a0 where
+   ours uses $a1 and $v1, which renames the instructions that touch them. */
+#ifdef MIPS_TO_C
 extern void func_800B6E84();
 extern f32 D_8021C014_ovl9[];
 /* Wall-mounted shooter init: install the static mover, face right,
@@ -1124,6 +1128,50 @@ void func_801E8A80_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8A80_ovl9.s")
+#endif
+#ifdef PORT
+extern void func_800B6E84();
+extern f32 D_8021C014_ovl9[];
+/* Wall-mounted shooter init: install the static mover, face right,
+ * bank the spawn Z angle into D_800EAA60 and zero the visual angles;
+ * flat placements (spawn roll 0) count as grounded.  Aim the barrel
+ * bone (bone 2) to the per-mode pitch from D_8021C014, remember the
+ * combined rest angle in D_800EA8A0, zero the bone's Y/Z rotation
+ * and enter state 0. */
+void func_801E8A80_ovl9(struct GObj *arg0) {
+    u32 id;
+    f32 pitch;
+
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6E84;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    id = omCurrentObj->objId;
+    D_800EAA60[id] = gEntitiesAngleZArray[id];
+    gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;
+    id = omCurrentObj->objId;
+    gEntitiesAngleYArray[id] = gEntitiesAngleZArray[id];
+    gEntitiesAngleXArray[omCurrentObj->objId] = gEntitiesAngleYArray[id];
+    id = omCurrentObj->objId;
+    if (D_800EAA60[id] == 0.0f) {
+        D_800E98E0[id] = 1;
+    } else {
+        D_800E98E0[id] = 0;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] != 0) {
+        D_800E8920[id] = 1;
+    } else {
+        D_800E8920[id] = 0;
+    }
+    id = omCurrentObj->objId;
+    pitch = D_8021C014_ovl9[D_800E7880[id]];
+    D_800EA6E0[id] = pitch;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = pitch;
+    id = omCurrentObj->objId;
+    D_800EA8A0[id] = D_800EAA60[id] + pitch;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.z = 0.0f;
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = D_800DFBD0[omCurrentObj->objId][2]->angle.v.z;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
+}
 #endif
 
 extern void func_800B7514(struct GObj *);

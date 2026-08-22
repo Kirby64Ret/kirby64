@@ -345,8 +345,34 @@ void func_800F6E0C(void *arg0, UNUSED void *_1, UNUSED void *_2) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 205/207 instructions match (2 diffs). Frame, save set,
+ * every call, every branch and the whole loop are exact. The residue
+ * is one adjacent-instruction schedule swap in the loop preheader:
+ * the ROM emits `addiu $fp, %lo(D_800BE504)` then `or $s4,$zero,$zero`
+ * and IDO emits them the other way round. Moving `var_s4 = 0` next to
+ * `var_s3 = 0` is inert. Lever that DID land: the three-way dispatch
+ * must be a `switch`, not an if/else chain -- as if/else IDO emits
+ * sequential tests instead of the ROM's beqz/beq $s5/beq $s7 dispatch
+ * and loses the hoisted constants (137 diffs -> 2). */
 void func_800F6E30(s32 arg0) {
+    void func_800F7258(s32);
+    void func_800AF980(s32);
+    void func_800B3070(s32, f32);
+    void func_800A9864(u32, s32, s32);
+    void func_800A2550(u32);
+    u32 *func_800A94F4(s32);
+    void func_800AEE20(u32, f32, u32 *);
+    void func_800AEEB4(u32, f32, u32 *);
+    void func_800FA414(s32);
+    void func_800AAF34(s32, s32, f32);
+    void func_801129AC(void);
+    void func_801129DC(void);
+    extern f32 gameTicksPerDraw;
+    extern u32 D_800DFA10[];
+    extern s32 D_801290D0;
+    extern s32 D_800D6E44;
+    extern u32 *D_8012E7B0;
+    extern u32 *D_8012E7B4;
     s32 temp_a0;
     s32 temp_s0;
     s32 temp_v1;
@@ -355,75 +381,76 @@ void func_800F6E30(s32 arg0) {
     s32 var_s4;
     s32 var_v1;
     u32 var_s3;
-    void *temp_v0;
-    void *var_v0;
+    u32 *temp_v0;
+    u32 *var_v0;
 
-    setProcessMain(*(&gEntityGObjProcessArray5 + (*omCurrentObj * 4)), &procMainStub);
-    *(&D_800DEF90 + (*omCurrentObj * 4)) = &func_800F6E04;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800F6E04;
     func_800AF980(0x18);
-    *(&D_800DF150 + (*omCurrentObj * 4)) = &func_800F7258;
-    func_800A9864(*D_801290D8, 0x26, 0x10);
-    func_800A2550(*(&D_800DFA10 + (D_801290D0 * 4)));
+    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_800F7258;
+    func_800A9864(*(u32 *) D_801290D8, 0x26, 0x10);
+    func_800A2550(D_800DFA10[D_801290D0]);
     func_800B3070(0x10, gameTicksPerDraw);
     var_s1 = 0;
     var_s2 = 0;
-    var_v1 = *omCurrentObj * 4;
-    var_v0 = *(&gSegment4StartArray + var_v1);
-    temp_a0 = var_v0->unk14;
+    var_v1 = omCurrentObj->objId * 4;
+    var_v0 = *(u32 **) ((u8 *) gSegment4StartArray + var_v1);
+    temp_a0 = var_v0[5];
     if (temp_a0 != 0) {
         var_s3 = 0;
         if (temp_a0 != 0) {
             var_s4 = 0;
             do {
-                temp_s0 = *(var_v0->unk18 + var_s4);
+                temp_s0 = *(s32 *) ((u8 *) var_v0[6] + var_s4);
                 temp_v0 = func_800A94F4(temp_s0);
-                temp_v1 = temp_v0->unk4;
-                switch (temp_v1) {                  /* irregular */
-                    case 0:
-                        if (var_s2 == 0) {
-                            *(&D_800DF690 + (*omCurrentObj * 4)) = temp_v0;
-                            *(&D_800DFF50 + (*omCurrentObj * 4)) = temp_s0;
-                            func_800AEE20(**(&D_800DF690 + (*omCurrentObj * 4)), 0, temp_v0);
-                            D_8012E7B0 = NULL;
-                            var_s2 += 1;
-                        } else {
-                            D_8012E7B0 = temp_v0;
-                            var_s2 += 1;
-                        }
-                        break;
-                    case 1:
-                        if (var_s1 == 0) {
-                            *(&D_800DF850 + (*omCurrentObj * 4)) = temp_v0;
-                            *(&D_800E0110 + (*omCurrentObj * 4)) = temp_s0;
-                            func_800AEEB4(**(&D_800DF850 + (*omCurrentObj * 4)), 0, temp_v0);
-                            D_8012E7B4 = NULL;
-                            var_s1 += 1;
-                        } else {
-                            D_8012E7B4 = temp_v0;
-                            var_s1 += 1;
-                        }
-                        break;
-                    case 2:
-                        func_800FA414(0x8000000D);
-                        func_800AAF34(0x10, temp_s0, 0);
-                        func_801129AC();
-                        func_801129DC();
-                        if ((D_800BE500 == 1) && (D_800BE504 == 0)) {
-                            D_800D6E44 = 1;
-                        }
-                        if ((D_800BE500 == 3) && (D_800BE504 == 0)) {
-                            D_800D6E44 = 2;
-                        }
-                        break;
+                temp_v1 = temp_v0[1];
+                switch (temp_v1) {
+                case 0:
+                    if (var_s2 == 0) {
+                        D_800DF690[omCurrentObj->objId] = (u32) temp_v0;
+                        D_800DFF50[omCurrentObj->objId] = temp_s0;
+                        func_800AEE20(*(u32 *) D_800DF690[omCurrentObj->objId], 0.0f, temp_v0);
+                        D_8012E7B0 = NULL;
+                        var_s2 += 1;
+                    } else {
+                        D_8012E7B0 = temp_v0;
+                        var_s2 += 1;
+                    }
+                    break;
+                case 1:
+                    if (var_s1 == 0) {
+                        D_800DF850[omCurrentObj->objId] = (u32) temp_v0;
+                        D_800E0110[omCurrentObj->objId] = temp_s0;
+                        func_800AEEB4(*(u32 *) D_800DF850[omCurrentObj->objId], 0.0f, temp_v0);
+                        D_8012E7B4 = NULL;
+                        var_s1 += 1;
+                    } else {
+                        D_8012E7B4 = temp_v0;
+                        var_s1 += 1;
+                    }
+                    break;
+                case 2:
+                    func_800FA414(0x8000000D);
+                    func_800AAF34(0x10, temp_s0, 0.0f);
+                    func_801129AC();
+                    func_801129DC();
+                    if ((D_800BE500 == 1) && (D_800BE504 == 0)) {
+                        D_800D6E44 = 1;
+                    }
+                    if ((D_800BE500 == 3) && (D_800BE504 == 0)) {
+                        D_800D6E44 = 2;
+                    }
+                    break;
                 }
                 var_s3 += 1;
                 var_s4 += 4;
-                var_v1 = *omCurrentObj * 4;
-                var_v0 = *(&gSegment4StartArray + var_v1);
-            } while (var_s3 < var_v0->unk14);
+                var_v1 = omCurrentObj->objId * 4;
+                var_v0 = *(u32 **) ((u8 *) gSegment4StartArray + var_v1);
+            } while (var_s3 < var_v0[5]);
         }
     }
-    *(&D_800DF310 + var_v1) = &func_800F6E0C;
+    *(void (**)(s32, s32, f32)) ((u8 *) D_800DF310 + var_v1) =
+        (void (*)(s32, s32, f32)) func_800F6E0C;
     curObjSleepForever();
 }
 #elif defined(PORT)
@@ -790,8 +817,27 @@ void func_800F753C(void) {
 #endif
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 93/179 instructions match (86 diffs). Frame 0x68, the whole
+ * save set including $f20-$f30, all four late_rodata literals, the
+ * loop and every branch target are right; the residue is an FP temp
+ * rotation through the four matrix-projection expressions plus the
+ * $s4/$s5 pair being swapped (the ROM holds &D_800D6C94[0x3C] in $s4
+ * and &D_800D6C90 in $s5). Levers already spent, keep them: the three
+ * projected coordinates must be THREE separate locals, not one reused
+ * (101 -> 92); &D_800D6C94[0x3C] must be spelled
+ * `(u32) &D_800D6C94[0x3C] + i` so IDO folds the +0x3C into the hoisted
+ * base the way the ROM does -- a plain `D_800D6C94[0x3C + i]` leaves it
+ * as a load displacement, and a real local pointer spills and grows the
+ * frame to 0xA0; and the two outer adds of each dot product must be
+ * written REVERSED (`(C*z) + (A*x + B*y)`, then `(...) + m[3][col]`)
+ * because IDO inverts the last-evaluated add (92 -> 86). */
 void func_800F7578(void) {
+    extern s32 D_80129124;
+    extern u8 *D_801290E0;
+    extern u8 D_800D6C90[];
+    extern u8 D_800D6C94[];
+    extern f32 D_800D6ED0[4][4];
+    s32 spawn_entity(s32, void *);
     f32 temp_f0;
     f32 temp_f12;
     f32 temp_f14;
@@ -804,7 +850,7 @@ void func_800F7578(void) {
     u8 *temp_s2;
     u8 temp_v0;
     u8 temp_v1;
-    void *var_s1;
+    u8 *var_s1;
 
     if (D_80129124 != 0) {
         var_s3 = 0;
@@ -812,24 +858,36 @@ void func_800F7578(void) {
             var_s1 = D_801290E0;
             if (D_80129124 > 0) {
                 do {
-                    temp_v0 = var_s1->unk5;
-                    temp_s2 = &D_800D6C68 + 0x28 + var_s3;
+                    temp_v0 = var_s1[5];
+                    temp_s2 = &D_800D6C90[var_s3];
                     if (!(temp_v0 & 8)) {
                         temp_v1 = *temp_s2;
                         var_a0 = 0;
-                        if (!((*(&D_800D6C68 + 0x68 + var_s3) | temp_v1) & 1)) {
-                            temp_f0 = var_s1->unk8;
-                            temp_f2 = var_s1->unkC;
-                            temp_f12 = var_s1->unk10;
-                            temp_f16 = 1.0f / (D_800D6ED0.unk3C + ((D_800D6ED0.unkC * temp_f0) + (D_800D6ED0.unk1C * temp_f2) + (D_800D6ED0.unk2C * temp_f12)));
-                            temp_f14 = (D_800D6ED0.unk30 + ((D_800D6ED0.unk0 * temp_f0) + (D_800D6ED0.unk10 * temp_f2) + (D_800D6ED0.unk20 * temp_f12))) * temp_f16;
+                        if (!((*(u8 *) ((u32) &D_800D6C94[0x3C] + var_s3) | temp_v1) & 1)) {
+                            temp_f0 = *(f32 *) (var_s1 + 8);
+                            temp_f2 = *(f32 *) (var_s1 + 0xC);
+                            temp_f12 = *(f32 *) (var_s1 + 0x10);
+                            temp_f16 = 1.0f / (((D_800D6ED0[2][3] * temp_f12)
+                                 + ((D_800D6ED0[0][3] * temp_f0)
+                                    + (D_800D6ED0[1][3] * temp_f2)))
+                                + D_800D6ED0[3][3]);
+                            temp_f14 = (((D_800D6ED0[2][0] * temp_f12)
+                                 + ((D_800D6ED0[0][0] * temp_f0)
+                                    + (D_800D6ED0[1][0] * temp_f2)))
+                                + D_800D6ED0[3][0]) * temp_f16;
                             if (!(temp_f14 > 1.4f) && !(temp_f14 < -1.4f)) {
-                                temp_f14_2 = (D_800D6ED0.unk34 + ((D_800D6ED0.unk4 * temp_f0) + (D_800D6ED0.unk14 * temp_f2) + (D_800D6ED0.unk24 * temp_f12))) * temp_f16;
+                                temp_f14_2 = (((D_800D6ED0[2][1] * temp_f12)
+                                 + ((D_800D6ED0[0][1] * temp_f0)
+                                    + (D_800D6ED0[1][1] * temp_f2)))
+                                + D_800D6ED0[3][1]) * temp_f16;
                                 if (!(temp_f14_2 > 2.0f) && !(temp_f14_2 < -2.0f)) {
                                     if (temp_v0 & 0x20) {
                                         goto block_14;
                                     }
-                                    temp_f14_3 = (D_800D6ED0.unk38 + ((D_800D6ED0.unk8 * temp_f0) + (D_800D6ED0.unk18 * temp_f2) + (D_800D6ED0.unk28 * temp_f12))) * temp_f16;
+                                    temp_f14_3 = (((D_800D6ED0[2][2] * temp_f12)
+                                 + ((D_800D6ED0[0][2] * temp_f0)
+                                    + (D_800D6ED0[1][2] * temp_f2)))
+                                + D_800D6ED0[3][2]) * temp_f16;
                                     if (!(temp_f14_3 > 0.9f) && !(temp_f14_3 < -0.9f)) {
 block_14:
                                         var_a0 = 1;
