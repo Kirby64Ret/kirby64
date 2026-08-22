@@ -77,13 +77,30 @@ extern struct Ovl19_2Struct D_8022F170_ovl19[3], // 1-3
                             D_8022F4E8_ovl19[1]; // 38
 
 #ifdef MIPS_TO_C
-/* FACTORY: 97/801, UNCERTAIN -- seeded from the PORT arm (time-boxed).
- * Compiles, word count matches (801/801), but residue is high (704/801).
- * ROM holds 6 saved slots ($s0-$s5 + $f20) across the -1 init block and
- * case-6/0; this draft's IDO allocation differs, cascading register
- * labels through most of the body -- same shape as the sibling
- * func_802260FC_ovl19 in this file. Worth a fresh m2c pass over the -1
- * init block before feeding to the permuter. */
+/* FACTORY: 96/794 instructions match (698 diffs), and -- the important part
+ * -- the WORD COUNT NOW MATCHES EXACTLY (794). The previous note claimed
+ * "801/801"; that was verify.py's max(target, current) denominator hiding
+ * SEVEN spurious instructions. The ROM is 794 words.
+ * REAL CONTROL-FLOW BUG FIXED (this was not a register floor): the PORT-
+ * seeded draft ended six of the switch's cases with their own
+ * `curObjSleepForever();`. The ROM calls it ONCE, at .L80223E38 just past
+ * the switch, and every case reaches it with `b .L80223E38` -- five plain
+ * branches plus a fallthrough (see diff indices 186/388/415/499/639, where
+ * the ROM has `b` and the draft had `jal curObjSleepForever`). So the
+ * source is `switch (...) { ... break; ... } curObjSleepForever();`. That
+ * alone took the count from 800 to the exact 794.
+ * Also applied, both measured: `.as_u32 = -1` -> `.as_s32 = -1` on the two
+ * D_800EC2E0[1]/[2] sentinel stores (704 -> 683 before the hoist), and the
+ * pointer-typed D_800E9AA0 sentinel written as the raw s32 store the ROM
+ * performs (705 -> 698 after it). Both are the constant-CSE-by-TYPE lever
+ * documented at length on func_802260FC_ovl19: the ROM parks -1 in a saved
+ * register across the `unk44 == -1` branch and IDO will only hoist it if
+ * every use has the same integer type.
+ * Residue is now a saved-register ROLE assignment: the ROM keeps -1 in $s4
+ * and loads gKirbyState.unk44 into $a0; this draft uses $s0 and $v1, and
+ * derefs omCurrentObj through $a2 where the ROM uses $v1. Same frame, same
+ * six saved slots ($s0-$s5 + $f20), same jump table, same word count --
+ * this is now a clean permuter target rather than an uncertain draft. */
 void func_80223200_ovl19(GObj *arg0) {
     void func_8011CF58(void);
     void func_8011DC04(u32);
@@ -131,8 +148,8 @@ void func_80223200_ovl19(GObj *arg0) {
         D_800E64D0[omCurrentObj->objId] = 0.0f;
         D_800E6690[omCurrentObj->objId] = 0.0f;
         D_800E6850[omCurrentObj->objId] = 0.0f;
-        D_800EC2E0[2].as_u32 = -1;
-        D_800EC2E0[1].as_u32 = -1;
+        D_800EC2E0[2].as_s32 = -1;
+        D_800EC2E0[1].as_s32 = -1;
         gKirbyState.unk30 = 0;
         gKirbyState.unk44 = 6;
         D_800E98E0[omCurrentObj->objId] = 6;
@@ -161,10 +178,9 @@ void func_80223200_ovl19(GObj *arg0) {
             gKirbyState.unk44 = 0;
             /* fallthrough into the default sleep, as in the ROM */
         default:
-            curObjSleepForever();
             break;
         case 0:
-            D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)-1;
+            *(s32 *) &D_800E9AA0[omCurrentObj->objId] = -1;
             while (1) {
                 s32 idx;
 
@@ -234,7 +250,6 @@ void func_80223200_ovl19(GObj *arg0) {
                 D_800EC4A0[2] = temp_v0->unk14;
                 func_800AA018(temp_v0->unk0);
             }
-            curObjSleepForever();
             break;
         case 3:
             gKirbyState.unk30 = 0;
@@ -247,7 +262,6 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800EC4A0[2] = temp_v0->unk14;
             func_800AA154(temp_v0->unk0);
             gKirbyState.unk30 += 1;
-            curObjSleepForever();
             break;
         case 4:
             gKirbyState.unk30 = 0;
@@ -269,7 +283,6 @@ void func_80223200_ovl19(GObj *arg0) {
             func_800AA154(temp_v0->unk0);
             D_800E8060[omCurrentObj->objId] = 0;
             gKirbyState.unk30 += 1;
-            curObjSleepForever();
             break;
         case 5:
             auFunc80020C88();
@@ -307,7 +320,6 @@ void func_80223200_ovl19(GObj *arg0) {
             D_800E3750[omCurrentObj->objId] = 0.0f;
             D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
             D_800E3C90[omCurrentObj->objId] = 65535.0f;
-            curObjSleepForever();
             break;
         case 7:
             gKirbyState.unk30 = 0;
@@ -348,9 +360,9 @@ void func_80223200_ovl19(GObj *arg0) {
             func_800AA018(temp_v0->unk0);
             ohSleep(0x2D);
             gKirbyState.unk30 += 1;
-            curObjSleepForever();
             break;
     }
+    curObjSleepForever();
 }
 #elif defined(PORT)
 /* PORT: behavioral port of the NON_MATCHING_ sketch above, re-verified
@@ -638,13 +650,28 @@ void func_80223200_ovl19(GObj *arg0) {
 
 
 #ifdef MIPS_TO_C
-/* FACTORY: 23/446, UNCERTAIN -- seeded from the PORT arm (time-boxed, not
- * independently re-derived line-by-line from the .s). Compiles and is
- * instruction-count-close (446/446) but the diff is nearly whole-function
- * (423/446), matching the same pattern as the sibling func_80226AA8_ovl19
- * in this file. Worth a fresh m2c pass -- likely a real control-flow
- * divergence (frame size differs, -0x28 target vs -0x38 here), not a
- * plain register floor -- before feeding to the permuter. */
+/* FACTORY: 23/446 instructions match (423 diffs) -- unchanged, but the
+ * search space is now much smaller. Word count is exactly right (446).
+ * MEASURED, so the next lane does not repeat them:
+ *  - The ROM frame is -0x28 with ZERO saved registers: only `sw $ra,
+ *    0x14($sp)`, one f32 spill at 0x18($sp) and the arg home at 0x28.
+ *    This draft also uses zero saved registers, so the whole +0x10 is
+ *    local/temp area, not a saved-register-count difference.
+ *  - Deleting the `state` local (inlining gKirbyState.unk44 at its four
+ *    uses): NEUTRAL, still 423, frame still -0x38.
+ *  - Deleting the `pitch` local (inlining gEntitiesAngleXArray[objId] at
+ *    its four uses): NEUTRAL, still 423, frame still -0x38. So the
+ *    declared-local COUNT is not what sizes this frame -- unlike
+ *    func_80227F90_ovl19, where two pointer locals were worth 8 bytes.
+ *  - Inlining `objId` at all 35 uses is WRONG: 423/446 -> 429/455, nine
+ *    words too many. The ROM does cache it -- it CSEs &omCurrentObj into
+ *    $t0 (lui/addiu, then `lw $t6, 0($t0)`) and holds objId in $v1 across
+ *    the func_800F8824 call -- so the `s32 objId` local stays.
+ * What is left to try is the three-way shared `gEntitiesAngleXArray[objId]
+ * = slope` store: the sibling func_80225620_ovl19's note documents the ROM
+ * merging exactly that store into likely-branch delay slots, and this
+ * function has the identical three-branch shape. Solve it there and it
+ * transfers here. */
 void func_80223E68_ovl19(GObj *arg0) {
     s32 func_80153A18_ovl3(void);
     /* func_800FF200 stays implicitly declared -- compiled code later in
@@ -1020,13 +1047,34 @@ void func_80224858_ovl19(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 66/861, UNCERTAIN -- seeded from the PORT arm (time-boxed).
- * Compiles, word count matches (861/861), residue high (795/861) --
- * same shape as siblings func_80223200_ovl19/func_802260FC_ovl19 in
- * this file: the ROM holds 6 saved slots across the -1 init block; this
- * draft's IDO allocation differs, cascading labels through most of the
- * body. Worth a fresh m2c pass over the -1 init block before feeding to
- * the permuter. */
+/* FACTORY: 94/856 instructions match (762 diffs), was 66/861. The ROM is
+ * 856 words -- the previous note's "861/861 word count matches" was
+ * verify.py's max(target, current) denominator, so the draft was actually
+ * FIVE words too long; it is now seven too short (849). Three levers from
+ * the clone family applied, each measured on this function:
+ *   1. curObjSleepForever() hoisted out of the switch. The PORT-seeded
+ *      draft ended six cases with their own call; the ROM has exactly one
+ *      `jal curObjSleepForever` and every case branches to it, i.e.
+ *      `switch (...) { ... break; ... } curObjSleepForever();`. Worth
+ *      795 -> 789 and -12 words. Identical bug and fix in
+ *      func_80223200_ovl19, where it landed the word count exactly.
+ *   2. `.as_u32 = -1` -> `.as_s32 = -1` on the two D_800EC2E0[1]/[2]
+ *      sentinels (789 -> 769): the ROM parks -1 in $s4 across the
+ *      `unk44 == -1` branch and IDO only hoists it when every use has the
+ *      same integer type. See func_802260FC_ovl19 for the full write-up.
+ *   3. The D_800E9AA0 sentinel written as the raw s32 store the ROM does
+ *      rather than a pointer cast (769 -> 762). Confirmed correct by
+ *      counting -1 materialisations: the ROM has exactly TWO, the hoisted
+ *      $s4 and a separate $t8 at 0x80225058 -- and that second one is
+ *      right, because it feeds `D_800E8060[objId] = -1` and D_800E8060 is
+ *      declared u32, so its constant legitimately does not unify with the
+ *      s32 group. Do NOT "fix" that one.
+ * NEXT ACTION for this function is not the permuter: the draft is still 7
+ * words SHORT of 856, so a statement or two is missing from the PORT-arm
+ * seed. Find those before tuning registers -- the call histogram against
+ * the .s already matches exactly, so the gap is non-call code (a field
+ * store or a compare), most likely in one of the cases that previously
+ * hid behind the spurious curObjSleepForever() calls. */
 void func_802248C0_ovl19(GObj *arg0) {
     void func_8011CF58(void);
     void func_8011DC04(u32);
@@ -1074,8 +1122,8 @@ void func_802248C0_ovl19(GObj *arg0) {
         D_800E64D0[omCurrentObj->objId] = 0.0f;
         D_800E6690[omCurrentObj->objId] = 0.0f;
         D_800E6850[omCurrentObj->objId] = 0.0f;
-        D_800EC2E0[1].as_u32 = -1;
-        D_800EC2E0[2].as_u32 = -1;
+        D_800EC2E0[1].as_s32 = -1;
+        D_800EC2E0[2].as_s32 = -1;
         gKirbyState.unk30 = 0;
         gKirbyState.unk44 = 6;
         D_800E98E0[omCurrentObj->objId] = 6;
@@ -1121,10 +1169,9 @@ void func_802248C0_ovl19(GObj *arg0) {
             gKirbyState.unk44 = 0;
             /* fallthrough into the default sleep, as in the ROM */
         default:
-            curObjSleepForever();
             break;
         case 0:
-            D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)-1;
+            *(s32 *) &D_800E9AA0[omCurrentObj->objId] = -1;
             while (1) {
                 s32 pick;
 
@@ -1192,7 +1239,6 @@ void func_802248C0_ovl19(GObj *arg0) {
                 D_800EC4A0[2] = temp_v0->unk14;
                 func_800AA018(temp_v0->unk0);
             }
-            curObjSleepForever();
             break;
         case 3:
             gKirbyState.unk30 = 0;
@@ -1205,7 +1251,6 @@ void func_802248C0_ovl19(GObj *arg0) {
             D_800EC4A0[2] = temp_v0->unk14;
             func_800AA154(temp_v0->unk0);
             gKirbyState.unk30 += 1;
-            curObjSleepForever();
             break;
         case 4:
             gKirbyState.unk30 = 0;
@@ -1227,7 +1272,6 @@ void func_802248C0_ovl19(GObj *arg0) {
             func_800AA154(temp_v0->unk0);
             D_800E8060[omCurrentObj->objId] = 0;
             gKirbyState.unk30 += 1;
-            curObjSleepForever();
             break;
         case 5:
             auFunc80020C88();
@@ -1265,7 +1309,6 @@ void func_802248C0_ovl19(GObj *arg0) {
             D_800E3750[omCurrentObj->objId] = 0.0f;
             D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
             D_800E3C90[omCurrentObj->objId] = 65535.0f;
-            curObjSleepForever();
             break;
         case 7:
             temp_v0 = &D_8022F3C8_ovl19[0];
@@ -1311,9 +1354,9 @@ void func_802248C0_ovl19(GObj *arg0) {
             func_800AA018(temp_v0->unk0);
             ohSleep(0x28);
             gKirbyState.unk30 += 1;
-            curObjSleepForever();
             break;
     }
+    curObjSleepForever();
 }
 #elif defined(PORT)
 /* PORT: behavioral port from
@@ -2096,13 +2139,36 @@ void func_80225FB4_ovl19(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 84/619, UNCERTAIN -- seeded from the PORT arm (time-boxed).
- * Compiles and word count is close (619/619) but residue is high
- * (535/619). The ROM holds 4 saved regs ($s1-$s4) across the whole -1
- * init block and the case-1 spawn; this draft's IDO allocation differs
- * in count/role, cascading register labels through most of the body.
- * Worth a fresh m2c pass over the -1 init block specifically before
- * feeding to the permuter. */
+/* FACTORY: 151/619 instructions match (468 diffs), was 84/619. Word count
+ * matches exactly (619) and the jump table, the case split and every
+ * constant/field check out against the .s.
+ * TWO CONSTANT-TYPE LEVERS, worth 535 -> 468 diffs together (measured
+ * separately: either one alone only reaches 523):
+ *   1. `.as_u32 = -1` -> `.as_s32 = -1` on the four D_800EC2E0[1]/[2]
+ *      sentinel stores. The ROM materialises -1 ONCE, into the saved
+ *      register $s3, before the `unk44 == -1` branch, and reuses it for
+ *      every sentinel store and for the case-0 store after the join. IDO
+ *      keys its constant CSE on the constant's TYPE: the u32 member made
+ *      the store's -1 a different node from the s32 compare's -1, so IDO
+ *      materialised it three times ($at for the compare, $s0 inside the
+ *      init block, $t6 in case 0) instead of hoisting one copy.
+ *   2. Same reason, the case-0 sentinel: the pointer-typed
+ *      `D_800E9AA0[objId] = (struct EntityThing800E9AA0 *)(uintptr_t)-1`
+ *      also fails to unify, so it is written as the raw s32 store the ROM
+ *      performs. GENERAL LEVER: when the ROM parks a small constant in a
+ *      SAVED register across a branch, every source use of it must have
+ *      the same integer type or IDO will not hoist it.
+ * Also applied (neutral here at 468, but proven on func_8022889C_ovl19):
+ * the D_8022F440_ovl19 cursor is indexed by a variable `phase` shared with
+ * the gKirbyState.unk3C store, because the ROM emits the idx*4-idx<<3
+ * multiply (sizeof == 24) with the index in a register rather than folding
+ * a constant.
+ * Residue is now one register-ROLE swap plus its cascade: the ROM puts
+ * &gKirbyState in $s1 and &omCurrentObj in $s2, this draft the other way
+ * round; both use $s0-$s4 + $ra and the same frame. Flipping the compare
+ * operand order does not move it (IDO canonicalises). Prime permuter
+ * target -- sibling of func_80223200_ovl19 and func_802248C0_ovl19, which
+ * have the same -1 init block and should get lever 1 as well. */
 void func_802260FC_ovl19(GObj *arg0) {
     void func_8011CF58(void);
     void func_800A9760(u32);
@@ -2117,6 +2183,7 @@ void func_802260FC_ovl19(GObj *arg0) {
     extern s32 D_8019257C;
     extern f32 *D_801930A4;
     struct Ovl19_2Struct *temp_v0;
+    s32 phase;
 
     if (gKirbyState.unk44 == -1) {
         D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
@@ -2134,8 +2201,8 @@ void func_802260FC_ovl19(GObj *arg0) {
         D_800E64D0[omCurrentObj->objId] = 0.0f;
         D_800E6690[omCurrentObj->objId] = 0.0f;
         D_800E6850[omCurrentObj->objId] = 0.0f;
-        D_800EC2E0[2].as_u32 = -1;
-        D_800EC2E0[1].as_u32 = -1;
+        D_800EC2E0[2].as_s32 = -1;
+        D_800EC2E0[1].as_s32 = -1;
         request_track_general(0x13, 1, 2);
         D_800E98E0[1] = 0;
         gEntityFuncListIDArray[1] = 1;
@@ -2143,8 +2210,8 @@ void func_802260FC_ovl19(GObj *arg0) {
         request_track_general(0x13, 2, 3);
         gEntityFuncListIDArray[2] = 0;
         D_800E8220[2] = 2;
-        D_800EC2E0[2].as_u32 = -1;
-        D_800EC2E0[1].as_u32 = -1;
+        D_800EC2E0[2].as_s32 = -1;
+        D_800EC2E0[1].as_s32 = -1;
         func_8021EE88_ovl19((GObj *)(uintptr_t)1);
         gKirbyState.unk30 = 0;
         gKirbyState.unk17 = 0;
@@ -2155,7 +2222,7 @@ void func_802260FC_ovl19(GObj *arg0) {
     }
     switch (gKirbyState.unk44) {
         case 0:
-            D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)-1;
+            *(s32 *) &D_800E9AA0[omCurrentObj->objId] = -1;
             while (1) {
                 s32 pick;
 
@@ -2181,8 +2248,9 @@ void func_802260FC_ovl19(GObj *arg0) {
             D_800E3210[omCurrentObj->objId] = 15.0f;
             D_800E3750[omCurrentObj->objId] = -0.980665f;
             D_800E3C90[omCurrentObj->objId] = 15.0f;
-            temp_v0 = &D_8022F440_ovl19[0];
-            gKirbyState.unk3C = 0;
+            phase = 0;
+            temp_v0 = &D_8022F440_ovl19[phase];
+            gKirbyState.unk3C = phase;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -2191,9 +2259,10 @@ void func_802260FC_ovl19(GObj *arg0) {
             while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
                 ohSleep(1);
             }
-            temp_v0 = &D_8022F440_ovl19[1];
+            phase = 1;
+            temp_v0 = &D_8022F440_ovl19[phase];
             gKirbyState.isFullJump += 1;
-            gKirbyState.unk3C = 1;
+            gKirbyState.unk3C = phase;
             D_800EC2E0[1].as_u32 = temp_v0->unk8;
             D_800EC4A0[1] = temp_v0->unkC;
             D_800EC2E0[2].as_u32 = temp_v0->unk10;
@@ -2527,13 +2596,27 @@ void func_802260FC_ovl19(GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 7/340, UNCERTAIN -- seeded from the PORT arm (time-boxed, not
- * independently re-derived line-by-line from the .s the way the other
- * drafts in this file were). Compiles and is instruction-count-close
- * (340/340) but the diff is nearly whole-function (333/340), which reads
- * as more than a register floor -- worth a fresh m2c pass before feeding
- * this to the permuter. Flagging the uncertainty rather than claiming a
- * clean near-miss. */
+/* FACTORY: 7/340 instructions match (333 diffs). The "UNCERTAIN, worth a
+ * fresh m2c pass" caveat is now DISCHARGED: the m2c pass was run
+ * (--target mips-ido-c against this file's ctx) and its control flow and
+ * statement order agree with this draft, so the SHAPE is confirmed and the
+ * draft is no longer PORT-arm-provenance-only. Word count matches (340).
+ * What the residue actually is, measured:
+ *  - It is NOT a plain register floor. Only 38 of the 333 differing words
+ *    carry the same mnemonic on both sides (opcode similarity 0.71), so
+ *    most of the body is genuinely differently shaped, not just renamed.
+ *  - The ROM emits `beqzl` (branch-LIKELY) in at least four places where
+ *    IDO gives this draft a plain `beqz` + `nop`. This is the same
+ *    likely-branch problem that blocks the sibling func_80225620_ovl19
+ *    (bc1fl/bc1tl there); no source spelling in this project reaches it
+ *    yet, and it is the single highest-value unknown in the ovl19 bloc.
+ *  - The ROM frame is -0x18 with ZERO locals; this draft reaches -0x28
+ *    because IDO spills the objId*4 byte offset to 0x18($sp). Tried and
+ *    all NEUTRAL at 333: deleting the locals, threading the byte offset
+ *    through a named local (LEVERS 11), and holding &gKirbyState in a
+ *    pointer local (LEVERS 4).
+ * Do not spend permuter time here until the likely-branch shape is known;
+ * fix it on func_80225620_ovl19 first, then re-run both. */
 void func_80226AA8_ovl19(GObj *arg0) {
     s32 func_80153A18_ovl3(void);
     void play_sound(s32);
@@ -3114,23 +3197,28 @@ void func_80227F38_ovl19(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 121/262, frame-size floor. Derived from the ASM (not the PORT
- * arm); the u16-truncated func_800B1900 kills (track1/track2/objId low
- * 16 bits of a spilled s32, same idiom as the sibling func_8022889C_ovl19)
- * are the one real fix over the PORT arm's full-word calls. Every field,
- * constant and branch checks out. Residue: the ROM frame is -0x28 (2
- * saved regs $s0/$s1); this draft's IDO reaches -0x30 (8 bytes more),
- * which relabels most temp registers downstream even though total word
- * count still matches the target (262). Frame-size/register floor
- * (LEVERS: no source spelling reaches it) -- sibling of
- * func_8022889C_ovl19, same clone family. */
+/* FACTORY: 130/262 instructions match (132 diffs). Derived from the ASM (not
+ * the PORT arm); the u16-truncated func_800B1900 kills (track1/track2/objId
+ * low 16 bits of a spilled s32, same idiom as the sibling
+ * func_8022889C_ovl19) are the one real fix over the PORT arm's full-word
+ * calls. Every field, constant and branch checks out.
+ * FRAME FLOOR DISPROVEN (was recorded as -0x30 vs the ROM's -0x28 with "no
+ * source spelling reaches it"): the extra 8 bytes were two pure register
+ * temps, `struct UnkStruct8022FAB0 *cam` and `struct Ovl19_2Struct *rec`.
+ * Deleting both and inlining their uses (D_8022FAB0_ovl19 directly, and
+ * D_8022F560_ovl19[0].unkN in place of rec->unkN) drops IDO to -0x28,
+ * matching the ROM, and takes 141 diffs -> 132. Stack slots already agreed
+ * exactly (s0 0x14, s1 0x18, ra 0x1C, track1 0x20 / track2 0x24 with the
+ * lhu at +2); only the total size differed. GENERAL LEVER: a pointer local
+ * that IDO cannot keep in a callee-saved register costs a frame slot and
+ * relabels every temp downstream -- delete the local before believing a
+ * frame-size floor. Remaining residue is register allocation in the long
+ * omCurrentObj->objId store run. Prime permuter target. */
 void func_80227F90_ovl19(GObj *arg0) {
     struct UnkStruct8022FAB0 *func_800FF144(void);
     void func_802283A8_ovl19(GObj *);
     extern s8 D_8012E7D7;
     extern struct Ovl19_2Struct D_8022F560_ovl19[];
-    struct UnkStruct8022FAB0 *cam;
-    struct Ovl19_2Struct *rec;
     s32 track1;
     s32 track2;
 
@@ -3140,10 +3228,9 @@ void func_80227F90_ovl19(GObj *arg0) {
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_802283A8_ovl19;
-    cam = func_800FF144();
-    D_8022FAB0_ovl19 = cam;
-    if (cam != NULL) {
-        cam->unk10 = 24.0f;
+    D_8022FAB0_ovl19 = func_800FF144();
+    if (D_8022FAB0_ovl19 != NULL) {
+        D_8022FAB0_ovl19->unk10 = 24.0f;
         D_8022FAB0_ovl19->unk14 = 20.0f;
         D_8022FAB0_ovl19->unk18 = -240.0f;
         D_8022FAB0_ovl19->unk21 = 1;
@@ -3174,13 +3261,12 @@ void func_80227F90_ovl19(GObj *arg0) {
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E6850[omCurrentObj->objId] = 0.0f;
     gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
-    rec = &D_8022F560_ovl19[0];
-    D_800EC2E0[track1].as_u32 = rec->unk8;
-    D_800EC4A0[track1] = rec->unkC;
-    D_800EC2E0[track2].as_u32 = rec->unk10;
+    D_800EC2E0[track1].as_u32 = D_8022F560_ovl19[0].unk8;
+    D_800EC4A0[track1] = D_8022F560_ovl19[0].unkC;
+    D_800EC2E0[track2].as_u32 = D_8022F560_ovl19[0].unk10;
     gKirbyState.unk3C = 0;
-    D_800EC4A0[track2] = rec->unk14;
-    func_800AA018(rec->unk0);
+    D_800EC4A0[track2] = D_8022F560_ovl19[0].unk14;
+    func_800AA018(D_8022F560_ovl19[0].unk0);
     while (D_800E98E0[omCurrentObj->objId] == 0) {
         ohSleep(1);
     }
@@ -3368,24 +3454,42 @@ void func_80228874_ovl19(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 20/234, saved-register count. Derived from the ASM (not the
- * PORT arm), fixing one real bug: the two/three func_800B1900 kills read
- * their argument as a HALF-WORD off the spilled-s32 stack slot (track1 at
- * +2, track2 at +2, omCurrentObj->objId's low 16 bits at +2) -- not the
- * full 32-bit values the PORT arm passes. All struct-field reads/writes,
- * constants (0x13/0x3C/0x4A, 38.1, funclist ids) and the sleep/wait shape
- * check out. Residue: the ROM uses 3 saved registers ($s0-$s2, frame
- * 0x38); this draft's IDO allocation reaches for a 4th ($s0-$s3), which
- * cascades a register/offset relabeling through nearly the whole body
- * (frame size and total instruction count still both match the target,
- * 234 words). Tried inlining `rec` (the struct-array cursor) to drop a
- * live-across-call value -- made it worse (215/234), reverted. Whole-
- * function saved-register-count floor (LEVERS: no source spelling
- * reaches it) -- sibling of func_80227F90_ovl19, same family. */
+/* FACTORY: 53/234 instructions match (181 diffs), was 20/234. Derived from
+ * the ASM (not the PORT arm), fixing one real bug: the two/three
+ * func_800B1900 kills read their argument as a HALF-WORD off the spilled-s32
+ * stack slot (track1 at +2, track2 at +2, omCurrentObj->objId's low 16 bits
+ * at +2) -- not the full 32-bit values the PORT arm passes. All struct-field
+ * reads/writes, constants (0x13/0x3C/0x4A, 38.1, funclist ids) and the
+ * sleep/wait shape check out.
+ * SAVED-REGISTER FLOOR DISPROVEN (was recorded as "4 saved regs vs the ROM's
+ * 3, no source spelling reaches it"). The 4th saved register was IDO hoisting
+ * %hi/%lo of D_8022F578_ovl19 -- the base of the two-element cursor array --
+ * because the draft indexed it with the CONSTANTS 0 and 1. Two changes fix
+ * it, worth 214 -> 181 diffs and an exactly matching prologue/epilogue:
+ *   1. The ROM does NOT fold a constant index: it emits idx*4 - idx << 3
+ *      (sizeof == 24) with the index in a REGISTER, and that register is the
+ *      same value stored to gKirbyState.unk3C right beside it. So the index
+ *      is a variable -- `phase` here -- shared with the unk3C store, and the
+ *      two blocks are phase = 0 and phase = 1.
+ *   2. Even with a variable index IDO still CSE'd the base into $s2. The
+ *      ovl2.c lever kills it: `(T *) (u32) &sym[i]` forces a local lui/addiu
+ *      pair instead of a hoisted base, exactly as the ROM has it (a fresh
+ *      lui/addiu $t6 in each of the two blocks).
+ * Residue is temp-register labelling from index 24 on, plus one layout
+ * difference: the ROM spills &D_800EC2E0[track1] and &D_800EC4A0[track1] to
+ * 0x28/0x2C across the wait loop and puts track1/track2 at 0x34/0x30, while
+ * this draft recomputes those addresses and puts track1/track2 at 0x30/0x2C
+ * (frame 0x38 and total word count 234 match either way). Reordering the
+ * local declarations moves it the wrong way (183) and deleting `rec`
+ * entirely changes nothing (181) -- neither local takes a stack slot. Prime
+ * permuter target; sibling of func_80227F90_ovl19, same family, and the
+ * same variable-index + (u32)& pair is worth trying on any ovl19 function
+ * that walks a small const-indexed struct table. */
 void func_8022889C_ovl19(GObj *arg0) {
     void func_80228C44_ovl19(GObj *);
     extern struct Ovl19_2Struct D_8022F578_ovl19[];
     struct Ovl19_2Struct *rec;
+    s32 phase;
     s32 track1;
     s32 track2;
 
@@ -3414,18 +3518,20 @@ void func_8022889C_ovl19(GObj *arg0) {
     D_800E64D0[omCurrentObj->objId] = 0.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E6850[omCurrentObj->objId] = 0.0f;
-    rec = &D_8022F578_ovl19[0];
+    phase = 0;
+    rec = (struct Ovl19_2Struct *) (u32) &D_8022F578_ovl19[phase];
     D_800EC2E0[track1].as_u32 = rec->unk8;
     D_800EC4A0[track1] = rec->unkC;
     D_800EC2E0[track2].as_u32 = rec->unk10;
     D_800EC4A0[track2] = rec->unk14;
-    gKirbyState.unk3C = 0;
+    gKirbyState.unk3C = phase;
     func_800AA018(rec->unk0);
     while (D_800E98E0[omCurrentObj->objId] != 2) {
         ohSleep(1);
     }
-    gKirbyState.unk3C = 1;
-    rec = &D_8022F578_ovl19[1];
+    phase = 1;
+    gKirbyState.unk3C = phase;
+    rec = (struct Ovl19_2Struct *) (u32) &D_8022F578_ovl19[phase];
     D_800EC2E0[track1].as_u32 = rec->unk8;
     D_800EC4A0[track1] = rec->unkC;
     D_800EC2E0[track2].as_u32 = rec->unk10;
