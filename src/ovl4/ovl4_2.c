@@ -246,7 +246,107 @@ s32 func_801524E4_ovl4(void) {
     return 0x29A;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 126/280 pure register-rename cascade (exact insn count/sequence;
+ * CSE d objId lands one register early -- the a1/a2 neighbour floor). */
+void func_801525E8_ovl4(struct GObj *arg0) {
+    extern s32 D_800D6B80;
+    extern s32 D_800D6B78;
+    extern s32 D_800D6B9C;
+    extern s32 D_8015C690_ovl4;
+    extern s32 D_8015C694_ovl4;
+    extern s32 D_8015C698_ovl4;
+    extern s32 D_8015C6A0_ovl4;
+    extern Controller_800D6FE8 gPlayerControllers[];
+    s32 func_801522D0_ovl4(f32);
+    s32 func_80152318_ovl4(f32);
+    s32 func_801524E4_ovl4(void);
+    f32 sp18;
+    f32 temp_f12;
+    u16 var_v0;
+    u32 temp_v0_2;
+
+    if (D_800D6B80 == 0) {
+        u32 temp_v0 = omCurrentObj->objId;
+        s32 *temp_v1 = (s32 *) &D_800E9AA0[temp_v0];
+        s32 temp_a0 = *temp_v1;
+
+        if (temp_a0 != 0) {
+            *temp_v1 = temp_a0 - 1;
+            return;
+        }
+        if ((D_800E9C60[temp_v0] != 0) || (((s32 *) D_800E9AA0)[D_8015C694_ovl4] != 0)) {
+            D_800E98E0[D_8015C698_ovl4] = 0;
+            return;
+        }
+        if (gPlayerControllers[0].buttonPressed & 0x9000) {
+            u32 temp_a0_2 = D_800E9FE0[temp_v0].as_u32;
+
+            if (temp_a0_2 == 0) {
+                D_8015C690_ovl4 = 4;
+                play_sound(0x276);
+                D_800D6B78 = 1;
+                return;
+            }
+            if (temp_a0_2 != 0x29A) {
+                D_8015C690_ovl4 = 3;
+                D_800D6B9C = D_800E9FE0[D_8015C698_ovl4].as_u32 - 1;
+                D_800E9C60[omCurrentObj->objId] = 1;
+                play_sound(0x275);
+                return;
+            }
+        }
+        if (gPlayerControllers[0].buttonPressed & 0x4000) {
+            D_8015C690_ovl4 = 4;
+            play_sound(0x276);
+            D_800D6B78 = 1;
+            return;
+        }
+        var_v0 = gPlayerControllers[0].buttonHeld;
+        if (var_v0 & 0x100) {
+            temp_f12 = D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.x + 6.0f;
+            sp18 = temp_f12;
+            if (func_801522D0_ovl4(temp_f12) != 0) {
+                D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.x = temp_f12;
+            } else {
+                D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.x = 110.0f;
+            }
+            var_v0 = gPlayerControllers[0].buttonHeld;
+        } else if (var_v0 & 0x200) {
+            temp_f12 = D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.x - 6.0f;
+            sp18 = temp_f12;
+            if (func_801522D0_ovl4(temp_f12) != 0) {
+                D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.x = temp_f12;
+            } else {
+                D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.x = -110.0f;
+            }
+            var_v0 = gPlayerControllers[0].buttonHeld;
+        }
+        if (var_v0 & 0x800) {
+            temp_f12 = D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.z - 6.0f;
+            sp18 = temp_f12;
+            if (func_80152318_ovl4(temp_f12) != 0) {
+                D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.z = temp_f12;
+            } else {
+                D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.z = -70.0f;
+            }
+        } else if (var_v0 & 0x400) {
+            temp_f12 = D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.z + 6.0f;
+            sp18 = temp_f12;
+            if (func_80152318_ovl4(temp_f12) != 0) {
+                D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.z = temp_f12;
+            } else {
+                D_800DE350[D_8015C6A0_ovl4]->data.dobj->firstChild->pos.v.z = 90.0f;
+            }
+        }
+        temp_v0_2 = func_801524E4_ovl4();
+        D_800E9FE0[omCurrentObj->objId].as_u32 = temp_v0_2;
+        if ((temp_v0_2 != 0x29A) && (temp_v0_2 != 0)) {
+            D_800D6B9C = temp_v0_2 - 1;
+        }
+    }
+}
+#elif defined(PORT)
 #include "main/contpad.h"
 /* Functional port of the planet-map cursor proc; there was no sketch and the
  * weak stub exited the process on the first A press at the world map. Shape
@@ -508,7 +608,127 @@ s32 func_80153324_ovl4(s32 arg0) {
     return 0;
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 303/450 -- first 143 insns (table copies + early dispatch) match
+ * exactly; struct bases at ROM offsets; residue is a t-reg rename cascade
+ * plus one CSE spill of arg0+1 the ROM recomputes. */
+void func_801533A8_ovl4(s32 arg0) {
+    struct MapDotTbl { u32 w[6][6][2]; };
+    extern u32 D_8015A4F0_ovl4[];
+    extern u32 D_8015A610_ovl4[];
+    extern s32 D_8015C6AC_ovl4[];
+    extern s32 D_800D6B80;
+    extern s32 D_800D6B9C;
+    void func_80153AB0_ovl4(struct GObj *);
+    void func_800A9864(void *, s32, s32);
+    void func_800AA018(s32);
+    void func_800AECC0(f32);
+    void func_800AED20(f32);
+    void func_8000BBE0(struct GObj *);
+    void func_800A9760(s32);
+    void func_800A9F98(s32, f32);
+    s32 func_800AA888(s32);
+    void func_800B1900(u16);
+    void func_800AFBB4(s32, struct GObj *);
+    f32 temp_f20;
+    s32 var_s0;
+    struct MapDotTbl sp170;
+    struct MapDotTbl sp50;
+    s32 var_s0_3;
+
+    sp170 = *(struct MapDotTbl *) D_8015A4F0_ovl4;
+    sp50 = *(struct MapDotTbl *) D_8015A610_ovl4;
+    if (func_80152220_ovl4(D_800D6B98, arg0) == 0) {
+        func_800B1900(omCurrentObj->objId);
+    }
+    D_8015C6AC_ovl4[arg0] = omCurrentObj->objId;
+    D_800DF150[omCurrentObj->objId] = func_80153AB0_ovl4;
+    if (func_80152220_ovl4(D_800D6B98, arg0) == 2) {
+        if ((D_800D6B80 != 0) && ((arg0 + 1) == D_800D6B9C)) {
+            func_800A9864((void *) sp170.w[D_800D6B98][arg0][0], 0x1869F, 0x10);
+            func_800AA018(sp50.w[D_800D6B98][arg0][0]);
+        } else {
+            func_800A9864((void *) sp170.w[D_800D6B98][arg0][1], 0x1869F, 0x10);
+            func_800AA018(sp50.w[D_800D6B98][arg0][1]);
+        }
+    } else {
+        func_800A9864((void *) sp170.w[D_800D6B98][arg0][0], 0x1869F, 0x10);
+        func_800AA018(sp50.w[D_800D6B98][arg0][0]);
+    }
+    if ((arg0 + 1) == D_800E9FE0[D_8015C698_ovl4].as_u32) {
+        func_800AECC0(2.0f);
+        func_800AED20(2.0f);
+    } else {
+        func_800AECC0(0.0f);
+        func_800AED20(0.0f);
+    }
+    if (D_800D6B80 != 0) {
+        if (arg0 == D_800D6B9C) {
+            func_800AFBB4(0, omCurrentObj);
+        }
+        var_s0 = 0;
+        play_sound(0xF2);
+        while (D_800D6B80 != 0) {
+            if ((arg0 + 1) == D_800D6B9C) {
+                func_8000BBE0(D_800DE350[omCurrentObj->objId]);
+                if (((var_s0 / 2) % 2) != 0) {
+                    func_800A9760(sp170.w[D_800D6B98][arg0][0]);
+                } else {
+                    func_800A9760(sp170.w[D_800D6B98][arg0][1]);
+                }
+            }
+            var_s0 += 1;
+            ohSleep(1);
+        }
+        if ((arg0 + 1) == D_800D6B9C) {
+            func_8000BBE0(D_800DE350[omCurrentObj->objId]);
+            func_800A9760(sp170.w[D_800D6B98][arg0][1]);
+            func_800A9F98(sp50.w[D_800D6B98][arg0][1], D_800DE350[omCurrentObj->objId]->animTimer);
+        }
+        play_sound(0xF3);
+        if (arg0 == D_800D6B9C) {
+            var_s0 = 0;
+            ohSleep(0xA);
+            do {
+                if (((var_s0 / 2) % 2) != 0) {
+                    func_800AFBB4(0, omCurrentObj);
+                } else {
+                    func_800AFBB4(1, omCurrentObj);
+                }
+                ohSleep(1);
+                var_s0 += 1;
+            } while ((f32) var_s0 < 15.0f);
+        }
+        func_800AFBB4(1, omCurrentObj);
+    }
+    var_s0_3 = 0;
+    while (1) {
+        if ((arg0 + 1) == D_800E9FE0[D_8015C698_ovl4].as_u32) {
+            func_800AECC0(2.0f);
+            func_800AED20(2.0f);
+        } else {
+            func_800AECC0(0.0f);
+            func_800AED20(0.0f);
+        }
+        if (func_80153324_ovl4(arg0) != 0) {
+            temp_f20 = D_800DE350[omCurrentObj->objId]->animTimer;
+            if (((var_s0_3 / 2) % 2) != 0) {
+                if (func_800AA888(sp170.w[D_800D6B98][arg0][0]) == 0) {
+                    func_8000BBE0(D_800DE350[omCurrentObj->objId]);
+                    func_800A9760(sp170.w[D_800D6B98][arg0][0]);
+                    func_800A9F98(sp50.w[D_800D6B98][arg0][0], temp_f20);
+                }
+            } else if (func_800AA888(sp170.w[D_800D6B98][arg0][1]) == 0) {
+                func_8000BBE0(D_800DE350[omCurrentObj->objId]);
+                func_800A9760(sp170.w[D_800D6B98][arg0][1]);
+                func_800A9F98(sp50.w[D_800D6B98][arg0][1], temp_f20);
+            }
+            var_s0_3 += 1;
+        }
+        ohSleep(1);
+    }
+}
+#elif defined(PORT)
 /* Functional port of the per-level map-dot proc (dispatch states 2..7, one
  * per level slot of the current planet; this was the crash site on entering
  * Pop Star). No sketch existed; ported from the asm. The ROM copies two
