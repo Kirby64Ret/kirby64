@@ -29,9 +29,14 @@ struct SubSub800E1B50_Unk88_UnkC_Unk0_Unk1C {
     f32 unk8;
 };
 
+/* scale (unk10): read by ovl7_4.c's MATCHED func_801A4754_ovl7 to seed
+ * gEntitiesScaleXArray/Y/Z at spawn (`cc = ent->unk88->unkC; info =
+ * cc->unk0; gEntitiesScaleXArray[id] = info->unk10;` -- the two-step
+ * split is itself load-bearing for that match, noted at the call site).
+ * unk14/unk18/unk1C: no scalar evidence found in this pass; left unkNN. */
 struct SubSub800E1B50_Unk88_UnkC_Unk0 {
     u8 filler0[0x10];
-    f32 unk10;
+    f32 scale;
     s32 unk14;
     s32 unk18;
     struct SubSub800E1B50_Unk88_UnkC_Unk0_Unk1C *unk1C;

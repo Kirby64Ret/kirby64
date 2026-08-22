@@ -332,9 +332,9 @@ void func_801A4754_ovl7(GObj *arg0) {
     D_800E83E0[omCurrentObj->objId] = 0;
     D_800E9E20[omCurrentObj->objId] = 0;
     D_800E9C60[omCurrentObj->objId] = func_801AE7E0_ovl7(7);
-    gEntitiesScaleXArray[omCurrentObj->objId] = info->unk10;
-    gEntitiesScaleYArray[omCurrentObj->objId] = info->unk10;
-    gEntitiesScaleZArray[omCurrentObj->objId] = info->unk10;
+    gEntitiesScaleXArray[omCurrentObj->objId] = info->scale;
+    gEntitiesScaleYArray[omCurrentObj->objId] = info->scale;
+    gEntitiesScaleZArray[omCurrentObj->objId] = info->scale;
     func_80198880_ovl7(&D_801C5360_ovl7);
     D_800E8920[omCurrentObj->objId] = 0;
     play_sound(0xC1);
@@ -699,9 +699,9 @@ void func_801A57A8_ovl7(GObj *arg0) {
     D_800EA520[omCurrentObj->objId] = 0;
     D_800E83E0[omCurrentObj->objId] = 0;
     D_800E9C60[omCurrentObj->objId] = func_801AE7E0_ovl7(7);
-    gEntitiesScaleXArray[omCurrentObj->objId] = info->unk10;
-    gEntitiesScaleYArray[omCurrentObj->objId] = info->unk10;
-    gEntitiesScaleZArray[omCurrentObj->objId] = info->unk10;
+    gEntitiesScaleXArray[omCurrentObj->objId] = info->scale;
+    gEntitiesScaleYArray[omCurrentObj->objId] = info->scale;
+    gEntitiesScaleZArray[omCurrentObj->objId] = info->scale;
     func_80198880_ovl7(&D_801C5360_ovl7);
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E3210[omCurrentObj->objId] = 8.0f;

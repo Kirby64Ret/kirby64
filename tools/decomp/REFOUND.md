@@ -366,3 +366,21 @@ wants, and it is coordinator-sized:
   4. rename the guard;
   5. gate: every TU size exact, tree-wide PC build clean, then the sha1.
 Do not attempt it piecemeal in a live tree.
+
+## check_tu_size RACES A LANE THAT IS MID-ITERATION
+
+check_tu_size.py reads `build/src/<file>.o`, which only a real build writes --
+verify.py deliberately writes to `build/verify/` instead. So if any build runs
+while a lane has a draft UNGUARDED in place of its pragma (the prescribed
+iterate-unguarded step), the object captured is short and the file reads as
+defective. Measured: one ovl19 file drifted -16 -> -32 -> -64 across three
+readings of what was at times the same source, and measured exact (0x5EF0)
+from build/verify/ the whole time.
+
+Consequences:
+- A TU-size reading is only meaningful when no lane is mid-iteration in that
+  file. Holding such a file out of commits is still correct -- an unguarded
+  non-matching function must not be committed -- but do NOT report it as a
+  defect, and re-measure after the lane seals.
+- To check your own file while iterating, read build/verify/ (or objdump the
+  object verify.py just produced), never build/src/.

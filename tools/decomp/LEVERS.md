@@ -265,3 +265,27 @@ the pool allocator's real stride is 0x78.
     both blocks out; rolling them into `for (bank = 0; bank < 2; bank++)`
     forced s0-s8 and a bigger frame, where written-out needs only s0/s1/s2 --
     exactly the ROM's save set (func_801765EC_ovl5).
+
+## MEASURED IN THE RE-FOUNDATION WAVE (ovl19 lane)
+
+45. **Constant CSE is keyed on TYPE.** When the ROM parks a small constant in
+    a SAVED register across a branch, every source use must have the same
+    integer type or IDO refuses to hoist it. `D_800EC2E0[n].as_u32 = -1` vs
+    `.as_s32 = -1` was worth 535 -> 468 on func_802260FC_ovl19 (verified both
+    directions; either half alone only reaches 523). Corollary, also
+    verified: `D_800E8060[objId] = -1` legitimately gets its OWN
+    materialisation because D_800E8060 is declared u32 -- do not "fix" it.
+
+46. **PORT-seeded switches duplicate the shared tail.** Six cases each calling
+    `curObjSleepForever()` where the ROM has ONE call past the switch that
+    every case branches to: hoisting it took func_80223200_ovl19's word count
+    from 800 to the exact 794. Same bug and fix in func_802248C0_ovl19.
+
+47. **A frame-size "floor" is usually a deletable local.** Two pointer temps
+    were the entire 8-byte excess on func_80227F90_ovl19, whose note had
+    previously said "no source spelling reaches it".
+
+48. **Beware verify.py's denominator.** It scores against
+    max(target, current), so a draft with SPURIOUS instructions shows a
+    flattering "matched/total". If the word count is above the ROM's, fix the
+    count before reading the score.

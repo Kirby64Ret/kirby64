@@ -817,15 +817,87 @@ s32 func_801F19DC_ovl10(s32 arg0, s32 arg1) {
     return D_800D6BE0[arg0 * 6 + arg1] & 3;
 }
 
-/* NOT MEASURABLE YET -- blocked on this TU's declaration scoping, not on codegen.
- * ovl10_5b.c keeps func_800A9864 / func_800FF144 / func_800FF1CC and friends inside
- * the PORT-only prototype block at the top of the file, so the N64 build has NO
- * declaration in scope. Exactly one draft can supply them at block scope: IDO
- * rejects a second block-scope copy in another function AND rejects the implicit
- * int a bare call creates there. func_801F1554_ovl10 currently owns the
- * declaration, so this one cannot compile alongside it. Un-blocking is a one-line
- * coordinator change: move those prototypes to real file scope. */
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* Wheel-item setup for the walking prizes (arg2 = 1 waddle dee, 2 adeleine,
+ * 3 king dedede; other kinds skip the model swap): stops the track's music
+ * cue when the prize kind is locked out (func_801F1934), loads the model +
+ * path table, spawns the escort track (state 3/4/5), plays one of the two
+ * D_801F4818[arg2] anim pairs at random, scales to 0.2, snaps onto wheel
+ * mount arg1, and attaches the sparkle particle.
+ *
+ * FACTORY: 157/160, residue.  Length, frame (0x38), the compare-chain
+ * switch and the whole call order are the ROM's; the residue is one
+ * register-class decision.  The ROM promotes arg2 into $s0 for the whole
+ * function (`or $s0, $a2, $zero` in the prologue, `sll $t7/$t4/$t1, $s0, 2`
+ * recomputed into a fresh temp in each compare's delay slot); this draft
+ * gets the same four slls but IDO assigns the index a callee-saved register
+ * too, so it saves one register more than the ROM and everything downstream
+ * is relabelled.  Writing arg2 straight through instead of via `kind` loses
+ * the promotion entirely and costs a word (156/161) -- worse as a seed.
+ * Two real fixes over the PORT arm: `second` is not a local (the ROM
+ * re-reads D_801F4818[...+1] for the test and the call, lever 10), and
+ * D_800EA520 takes the pointer without the PORT arm's (uintptr_t) hop.
+ *
+ * THE PROTOTYPES BELOW ARE IN-BODY ON PURPOSE, and that is not a
+ * workaround: measured, an identical body with these same declarations
+ * hoisted to file scope compiles to BYTE-IDENTICAL code (both 156/161 on
+ * the pre-`kind` draft).  IDO accepts unlimited duplicate block-scope
+ * prototypes; what it rejects is two copies in the TU that DISAGREE, and
+ * an omitted one, because the implicit int a bare call creates then
+ * collides with this file's later file-scope copy.  Keep every copy
+ * spelled exactly as the file-scope ones. */
+void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
+    void func_800B1900(u16);
+    void func_800A9864(s32, s32, s32);
+    void *func_800FF144(void);
+    s32 random_soft_s32_range(s32);
+    s32 request_track_general(s32, s32, s32);
+    void func_801F1554_ovl10(GObj *, s32);
+    extern u32 D_801F48F4_ovl10[];
+    extern u32 D_801F4818_ovl10[];
+    extern u32 D_801F4884_ovl10[];
+    extern u32 D_801F48BC_ovl10[];
+    extern u32 D_801F48D8_ovl10[];
+    s32 kind;
+    s32 r;
+    void *particle;
+
+    kind = arg2;
+    if (func_801F1934_ovl10(kind) == 0) {
+        func_800B1900(omCurrentObj->objId);
+    }
+    switch (kind) {
+    case 1:
+        func_800A9864(D_801F48F4_ovl10[kind], 0x2C, 0x10);
+        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F4884_ovl10;
+        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 3;
+        break;
+    case 2:
+        func_800A9864(D_801F48F4_ovl10[kind], 0x2C, 0x10);
+        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F48D8_ovl10;
+        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 4;
+        break;
+    case 3:
+        func_800A9864(D_801F48F4_ovl10[kind], 0x2C, 0x10);
+        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F48BC_ovl10;
+        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 5;
+        break;
+    }
+    r = random_soft_s32_range(2);
+    func_800AA018(D_801F4818_ovl10[(kind * 4) + (r * 2)]);
+    if (D_801F4818_ovl10[(kind * 4) + (r * 2) + 1] != 0) {
+        func_800AA018(D_801F4818_ovl10[(kind * 4) + (r * 2) + 1]);
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_801F1554_ovl10(arg0, arg1);
+    particle = func_800FF144();
+    D_800EA520[omCurrentObj->objId] = (s32) particle;
+    func_801F0014_ovl10(particle);
+    curObjSleepForever();
+}
+#elif defined(PORT)
 extern void func_800B1900(u16);
 extern s32 random_soft_s32_range(s32);
 extern u32 D_801F48F4_ovl10[];

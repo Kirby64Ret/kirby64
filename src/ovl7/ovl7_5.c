@@ -241,7 +241,7 @@ void func_801A7104_ovl7(s32 arg0) {
     D_800EB6A0[omCurrentObj->objId] = 0x2D;
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E9E20[omCurrentObj->objId] = 0;
-    D_800EA6E0[omCurrentObj->objId] = temp_a3->unk10;
+    D_800EA6E0[omCurrentObj->objId] = temp_a3->scale;
     D_800EA8A0[omCurrentObj->objId] = 0.0f;
     temp_f2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
     sp20 = gEntitiesNextPosZArray[omCurrentObj->objId] - temp_f18;
@@ -951,7 +951,7 @@ void func_801A8CDC_ovl7(s32 arg0) {
     D_800E4E10[omCurrentObj->objId] = 0.0f;
     temp_v0_3 = omCurrentObj->objId;
     D_800E4C50[temp_v0_3] = D_800E4E10[temp_v0_3];
-    D_800EA6E0[omCurrentObj->objId] = sp24->unk10;
+    D_800EA6E0[omCurrentObj->objId] = sp24->scale;
     temp_v0_4 = omCurrentObj->objId;
     temp_f2 = D_800EA6E0[temp_v0_4];
     gEntitiesScaleZArray[temp_v0_4] = temp_f2;
@@ -1032,7 +1032,7 @@ void func_801A8FFC_ovl7(GObj *arg0) {
             var_a0 = 3;
             break;
         default:
-            temp_f0 = temp_a1->unk10;
+            temp_f0 = temp_a1->scale;
             D_800EA6E0[omCurrentObj->objId] = temp_f0;
             var_a0 = 0;
             gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
@@ -1124,9 +1124,9 @@ void func_801A9268_ovl7(void) {
     if (gKirbyState.numberInhaling != gKirbyState.numberInhaled) {
         D_80198820_ovl3 = 0.0f;
     }
-    gEntitiesScaleXArray[omCurrentObj->objId] = temp_a2->unk10;
-    gEntitiesScaleYArray[omCurrentObj->objId] = temp_a2->unk10;
-    gEntitiesScaleZArray[omCurrentObj->objId] = temp_a2->unk10;
+    gEntitiesScaleXArray[omCurrentObj->objId] = temp_a2->scale;
+    gEntitiesScaleYArray[omCurrentObj->objId] = temp_a2->scale;
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp_a2->scale;
     var_a0_2 = &D_800E76C0[omCurrentObj->objId];
     temp_a1_2 = *var_a0_2;
     if (temp_a1_2 < 0x40) {
@@ -1346,7 +1346,7 @@ block_17:
                 temp_v1_2 = &gEntitiesScaleXArray[temp_v0_6];
                 temp_f2 = *temp_v1_2;
                 if ((D_800EA6E0[temp_v0_6] - 0.001f) < temp_f2) {
-                    *temp_v1_2 = temp_f2 - ((temp_t1->unk10 - temp_t2->unk10) / 5.0f);
+                    *temp_v1_2 = temp_f2 - ((temp_t1->unk10 - temp_t2->scale) / 5.0f);
                 }
             }
             temp_v0_7 = temp_t0->objId;
@@ -1354,7 +1354,7 @@ block_17:
             temp_v1_3 = &gEntitiesScaleXArray[temp_v0_7];
             var_f2 = *temp_v1_3;
             if ((temp_a0 == 1) && (var_f2 < (D_800EA6E0[temp_v0_7] + 0.001f))) {
-                *temp_v1_3 = var_f2 + ((temp_t1->unk10 - temp_t2->unk10) / 5.0f);
+                *temp_v1_3 = var_f2 + ((temp_t1->unk10 - temp_t2->scale) / 5.0f);
                 temp_v0_8 = temp_t0->objId;
                 var_v0 = temp_v0_8 * 4;
                 var_f2 = gEntitiesScaleXArray[temp_v0_8];
@@ -1399,7 +1399,7 @@ block_17:
             return;
         case 3:
             if (temp_t1->unk10 == gEntitiesScaleXArray[temp_v0]) {
-                D_800EA6E0[temp_v0] = temp_t2->unk10;
+                D_800EA6E0[temp_v0] = temp_t2->scale;
             }
             goto block_17;
         case -1:
@@ -1419,7 +1419,7 @@ block_17:
             assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AC448_ovl7);
             return;
         case 1:
-            if (temp_t2->unk10 == gEntitiesScaleXArray[temp_v0]) {
+            if (temp_t2->scale == gEntitiesScaleXArray[temp_v0]) {
                 D_800EA6E0[temp_v0] = temp_t1->unk10;
             }
             goto block_17;
@@ -1707,9 +1707,9 @@ void func_801AA914_ovl7(GObj *arg0) {
         play_sound(0xE1, omCurrentObj, &omCurrentObj);
     }
     func_801AC6D0_ovl7(temp_s0);
-    gEntitiesScaleXArray[omCurrentObj->objId] = temp_s0->unk10;
-    gEntitiesScaleYArray[omCurrentObj->objId] = temp_s0->unk10;
-    gEntitiesScaleZArray[omCurrentObj->objId] = temp_s0->unk10;
+    gEntitiesScaleXArray[omCurrentObj->objId] = temp_s0->scale;
+    gEntitiesScaleYArray[omCurrentObj->objId] = temp_s0->scale;
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp_s0->scale;
     func_800AFBB4(1, omCurrentObj);
     func_801AAE60_ovl7();
     func_801AC11C_ovl7(arg0);
