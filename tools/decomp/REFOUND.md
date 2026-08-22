@@ -266,3 +266,21 @@ lane is actively editing -- confirm against build/verify/ before believing it.
   it). Moving those three prototypes to real file scope unblocks
   func_801F1A24, func_801F11A8 and func_801F2098 at once. Same class as the
   void->s32 task; needs a quiet tree and the sha1 gate.
+
+## THE `__asm__("symbol")` ALIAS TRAP IN PORT ARMS
+
+PORT arms across ovl5 (at least 8 occurrences in ovl5_2/4/5) declare locals
+with GCC's rename extension:
+
+    extern f32 D_80186C88 __asm__("D_80186C88_ovl5");
+
+That is GCC-only; IDO's cc cannot compile it at all, so a draft that inherits
+it from the PORT arm will not even build. In every case found so far the file
+ALREADY declares the real symbol with a real type somewhere else, and the fix
+is to use that declaration and the file's existing indexing convention. Note
+IDO also ties a local extern's type file-wide, so an array-typed alias will
+collide with a scalar declaration of the same symbol elsewhere in the TU.
+
+Several of these aliases were gratuitous in the PORT arm too (the symbol was
+already declared and used directly a few functions away), so they are worth
+removing on the port side when touching that code for other reasons.

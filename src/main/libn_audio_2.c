@@ -265,6 +265,13 @@ s32 func_8002B214(N_CSPTime *seqp, s32 arg1) {
     return ret;
 }
 
+/* K&R form is load-bearing here: N_CSPVol is a typedef completed later in
+ * THIS file, and `void *` is a different (incompatible) type from it for
+ * redeclaration purposes -- either form conflicts with the real
+ * `s16 func_8002C9B0(N_CSPVol *seqp)` definition further down
+ * ('Incompatible type for the function parameter'). Same reasoning
+ * applies to func_8002D0D0's KCSPlayer* (typedef local to
+ * src/main/libn_audio_2f.c, not visible here at all). */
 s16 func_8002C9B0();
 s32 func_8002D0D0();
 

@@ -3323,7 +3323,64 @@ void func_80176EC8_ovl5(u8 *arg0, u16 *arg1) {
 void func_80176EFC_ovl5(void) {
 }
 
-#ifdef PORT
+/* Finish-flash for lane arg1: plays the win (1st place) or lose jingle,
+ * spawns the "GOAL" sprite at D_801877D8_ovl5[arg1] and steps its prim/env
+ * colors through the five ramps at D_80187410_ovl5 (u16 triples emitted as
+ * big-endian words; unpack word-wise before handing to func_80176EC8).
+ *
+ * FACTORY: 136/137, UNCERTAIN -- PORT-seeded, time-boxed. No source
+ * bugs found; compiles as-is. Word count matches (137/137), residue
+ * extreme (136/137) -- broad register/frame relabeling from word 0.
+ * Worth a fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_80176F04_ovl5(GObj *arg0, s32 arg1) {
+    extern u32 D_80187410_ovl5[];
+    extern u32 D_8018741C_ovl5[];
+    extern u32 D_80187428_ovl5[];
+    extern u32 D_80187434_ovl5[];
+    extern u32 D_80187440_ovl5[];
+    extern struct UnkStruct8015C740 D_801877B8_ovl5;
+    extern f32 D_801877D8_ovl5[];
+    u16 ramp[5][6];
+    u32 *srcs[5];
+    SPObj *sp;
+    s32 i;
+    s32 j;
+
+    srcs[0] = D_80187410_ovl5;
+    srcs[1] = D_8018741C_ovl5;
+    srcs[2] = D_80187428_ovl5;
+    srcs[3] = D_80187434_ovl5;
+    srcs[4] = D_80187440_ovl5;
+    for (i = 0; i < 5; i++) {
+        for (j = 0; j < 3; j++) {
+            ramp[i][j * 2] = (u16) (srcs[i][j] >> 16);
+            ramp[i][j * 2 + 1] = (u16) srcs[i][j];
+        }
+    }
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
+    if (func_80171768_ovl5(arg1) == 0) {
+        play_sound(0x231);
+    } else {
+        play_sound(0x233);
+    }
+    sp = func_8015C740_ovl5(arg0, &D_801877B8_ovl5);
+    sp->xOffset = D_801877D8_ovl5[arg1 * 2];
+    sp->yOffset = D_801877D8_ovl5[arg1 * 2 + 1];
+    func_80176EC8_ovl5((u8 *) sp, ramp[0]);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) sp, ramp[1]);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) sp, ramp[2]);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) sp, ramp[3]);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) sp, ramp[4]);
+    curObjSleepForever();
+}
+#elif defined(PORT)
 /* Finish-flash for lane arg1: plays the win (1st place) or lose jingle,
  * spawns the "GOAL" sprite at D_801877D8_ovl5[arg1] and steps its prim/env
  * colors through the five ramps at D_80187410_ovl5 (u16 triples emitted as

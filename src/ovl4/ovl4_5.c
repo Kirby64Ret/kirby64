@@ -38,6 +38,11 @@ extern void func_800A71A0(s32);
 extern void func_800AAF34(s32, s32, f32);
 extern void play_music(s32, s32);
 
+/* K&R form is load-bearing on both declarations below: each has a real
+ * 1-arg (GObj *) signature (see their definitions further down), but their
+ * call sites just below pass 0 args -- the ROM relies on whatever GObj* is
+ * already sitting in $a0. An ANSI prototype breaks compilation with "too
+ * few arguments". */
 void func_80159B68_ovl4();
 void func_80159C40_ovl4(GObj *);
 void func_80159CB8_ovl4();

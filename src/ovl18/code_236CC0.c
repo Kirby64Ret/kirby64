@@ -7,8 +7,12 @@
 extern s32 D_801CB4DC_ovl7;
 extern u32 D_800E0D50[];
 
+/* K&R form is load-bearing here: its real signature is
+ * void func_800A9864(u32, u32, u32), but its call site below passes 4
+ * args -- the ROM ignores the extra value. An ANSI prototype breaks
+ * compilation with "too many arguments". */
 void func_800A9864();
-void func_800AA018();
+void func_800AA018(s32);
 void curObjSleepForever(void);
 void func_801ACF5C_ovl7(void);
 void func_801ACF84_ovl7(void);

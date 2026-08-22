@@ -16,6 +16,11 @@ extern s32 D_800BE560[];
 extern u8 D_800D6BE0[];
 extern s32 D_8015C69C_ovl4;
 
+/* K&R form is load-bearing on both declarations below: each has a real
+ * 1-arg (GObj *) K&R definition further down in this file, but their call
+ * sites just below pass 0 args -- the ROM relies on whatever GObj* is
+ * already sitting in $a0. An ANSI prototype breaks compilation with "too
+ * few arguments". */
 extern void func_80151E20_ovl4();
 extern void func_80154DDC_ovl4();
 
