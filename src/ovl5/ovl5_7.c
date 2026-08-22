@@ -531,7 +531,6 @@ block_13:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017AD54_ovl5.s")
 #endif
 
-#ifdef NON_MATCHING
 /* 2/76: fully decoded, same length, same registers -- the residue is one
    scheduling swap of two independent address materialisations in the same
    block (`addu $t7,$t7,$v0` vs `addiu $a0,%lo(D_80189224_ovl5)`); the ROM
@@ -539,45 +538,38 @@ block_13:
    the first compare false, control falls into the block that RELOADS
    (&D_80189224_ovl5)[D_8018ED18_ovl5[arg0]]. Swept: reversed compare operands
    (2), an index temp (14). */
-s32 func_8017AEE8_ovl5(s32 arg0, s32 arg1, f32 arg2, s32 arg3) {
-    f32 delta;
-    f32 target;
-    f32 limit;
+s32 func_8017AEE8_ovl5(s32 arg0, s32 arg1, f32 arg2, s32 arg3)
+{
+  f32 delta;
+  f32 target;
+  f32 limit;
+ do { if (arg1 == 1) { delta = -arg2; } else { delta = arg2; } D_8018ED40_ovl5[arg0] += delta; if (arg1 == 1) { target = (&D_80189224_ovl5)[D_8018ED18_ovl5[arg0]]; if ((&D_80189224_ovl5)[arg3] < target) { limit = target - 360.0f; goto done; } } target = (&D_80189224_ovl5)[D_8018ED18_ovl5[arg0]]; } while (0);
+  if ((arg1 == 2) && (target < (&D_80189224_ovl5)[arg3]))
+  {
+    limit = target + 360.0f;
+  }
+  else
+  {
+    limit = target;
+  }
+  done:
+  if (arg1 == 1)
+  {
+    if (D_8018ED40_ovl5[arg0] <= limit)
+    {
+      D_8018ED40_ovl5[arg0] = target;
+      return 1;
+    }
+  }
+  else
+    if (limit <= D_8018ED40_ovl5[arg0])
+  {
+    D_8018ED40_ovl5[arg0] = target;
+    return 1;
+  }
 
-    if (arg1 == 1) {
-        delta = -arg2;
-    } else {
-        delta = arg2;
-    }
-    D_8018ED40_ovl5[arg0] += delta;
-    if (arg1 == 1) {
-        target = (&D_80189224_ovl5)[D_8018ED18_ovl5[arg0]];
-        if ((&D_80189224_ovl5)[arg3] < target) {
-            limit = target - 360.0f;
-            goto done;
-        }
-    }
-    target = (&D_80189224_ovl5)[D_8018ED18_ovl5[arg0]];
-    if (arg1 == 2 && target < (&D_80189224_ovl5)[arg3]) {
-        limit = target + 360.0f;
-    } else {
-        limit = target;
-    }
-done:
-    if (arg1 == 1) {
-        if (D_8018ED40_ovl5[arg0] <= limit) {
-            D_8018ED40_ovl5[arg0] = target;
-            return 1;
-        }
-    } else if (limit <= D_8018ED40_ovl5[arg0]) {
-        D_8018ED40_ovl5[arg0] = target;
-        return 1;
-    }
-    return 0;
+  return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017AEE8_ovl5.s")
-#endif
 
 #ifdef NON_MATCHING
 /* 10/134: same length, same frame, same saved-register set, and the four
