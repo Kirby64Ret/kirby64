@@ -3053,73 +3053,101 @@ void func_80176530_ovl5(GObj *arg0) {
 }
 
 /* Course builder: clears the two course-strip flags, then fills the two
- * 4-entry tile-pattern banks of the shared course row (base D_8018E9A8,
- * bytes 1..0x28 and 0x29..0x50, each entry 10 bytes) with four distinct
- * random picks from the six patterns of stage D_8018ECD8_ovl5 --
- * D_80187EB4_ovl5 rows of 12 pointers, bank two using pointers 6..11.
- * The pattern blobs were emitted as big-endian words, so bytes are pulled
- * word-wise; the row bytes go through the split symbols the readers use
- * (D_8018E9A8 / D_8018E9A9 / D_8018E9AA).
+ * 4-entry tile-pattern banks of the shared course row with four distinct
+ * random picks from the six patterns of the current stage.
  *
- * FACTORY: 166/167, UNCERTAIN -- PORT-seeded, time-boxed. Real fix
- * over the PORT: FOUR file-scope symbols (D_8018E9A8_ovl5,
- * D_8018E9A9_ovl5, D_8018E9AA_ovl5, D_8018ECD8_ovl5) were reached
- * through pointless GCC-only `__asm__("...")` symbol-alias views --
- * this file already declares and uses the real symbols directly
- * elsewhere (two scalar u8, one u8[] array, one scalar u8) -- rewritten
- * to use those real declarations and drop the alias indexing. Compiles,
- * word count matches (167/167), residue extreme (166/167) -- broad
- * register/frame relabeling from word 0. Worth a fresh m2c pass before
- * feeding to the permuter. */
+ * FACTORY: 107/157, residue.  Frame (0x90) and every stack offset are the
+ * ROM's, and the first 22 words plus most of the two pick loops are exact;
+ * what is left is register colouring in those loops and the two copy
+ * blocks.  This is a from-scratch derivation off the listing -- do NOT
+ * diff it against the PORT arm, which is a PC adaptation of a different
+ * shape that IDO cannot even parse (it reaches the row through three
+ * split symbols behind a ROWB5_ macro and GCC's __asm__ symbol renaming).
+ * What the listing actually says:
+ *   - THE BANK LOOP DOES NOT EXIST.  The ROM has two separate pick arrays,
+ *     sp+0x74 and sp+0x64, filled by two written-out blocks that share one
+ *     used[6] at sp+0x4C (cleared twice, sp+0x4C..0x64 both times), and
+ *     then two written-out copy blocks reading sp+0x74 and sp+0x64 in
+ *     turn.  Rolling this into `for (bank = 0; bank < 2; bank++)` is what
+ *     made the previous draft need s0-s8 and a 0x98 frame; written out, it
+ *     needs only s0 (the used base), s1 (the walking pick pointer) and s2
+ *     (the constant 1), which is exactly what the ROM saves.
+ *   - there is no `t` temporary.  The ROM stores the random result into
+ *     pick[i] and then re-reads it to index used[] (lever 10): store,
+ *     `beql` on used[pick[i]], retry, then `used[pick[i]] = 1` off a fresh
+ *     `lw 0x0($s1)`.  Hoisting it into a local costs 27 words.
+ *   - the row is ONE byte array based at D_8018E9A8_ovl5, and
+ *     D_8018E9D0_ovl5 is its END SENTINEL (base + 0x28), not a second bank
+ *     base: the copy blocks walk `dst` by 0xA and bound it with
+ *     `sltu $at, $t0, $t4`.  Writing that sentinel loop faithfully is the
+ *     obvious next step but it needs `row`/`p` locals, and the two extra
+ *     stack slots move the whole frame -- every attempt so far scored
+ *     worse (125/160, 122/170) than this index form, so the sentinel is
+ *     recorded here rather than forced.
+ *   - pattern bytes are read with plain lbu, ten per entry, with IDO
+ *     unrolling the inner copy 4x after a 2-byte prologue.  The PORT arm's
+ *     big-endian word-wise unpacking is a PC data-layout artifact with no
+ *     counterpart here.
+ *   - the stage row is 12 pointers, indexed stage * 48; the listing
+ *     computes that as ((s << 2) - s) << 4 off a value it loads once.
+ * pad0/pad1/pad2 are not cosmetic: they are the three dead 4-byte slots
+ * the ROM reserves (two below used[], one above pickA), and dropping any
+ * of them moves every local and costs ~17 words. */
 #ifdef MIPS_TO_C
 void func_801765EC_ovl5(void) {
-    extern void *D_80187EB4_ovl5[];
+    /* declared as a scalar later in this file; take its address rather
+       than moving that declaration up */
     extern u8 D_8018E9A8_ovl5;
-    extern u8 D_8018E9A9_ovl5;
-    extern u8 D_8018E9AA_ovl5[];
-    extern u8 D_8018ECD8_ovl5;
+    extern u8 *D_80187EB4_ovl5[];
+    u8 *dst;
+    u8 *src;
+    s32 pad2;
+    s32 pickA[4];
+    s32 pickB[4];
     s32 used[6];
-    s32 pick[4];
+    s32 pad0;
+    s32 pad1;
     s32 i;
     s32 j;
-    s32 bank;
 
-#define ROWB5_(k, v) \
-    do { \
-        s32 k_ = (k); \
-        if (k_ == 0) { \
-            D_8018E9A8_ovl5 = (v); \
-        } else if (k_ == 1) { \
-            D_8018E9A9_ovl5 = (v); \
-        } else { \
-            D_8018E9AA_ovl5[k_ - 2] = (v); \
-        } \
-    } while (0)
-    ROWB5_(0, 0);
-    ROWB5_(0x51, 1);
-    for (bank = 0; bank < 2; bank++) {
-        for (i = 0; i < 6; i++) {
-            used[i] = 0;
-        }
-        for (i = 0; i < 4; i++) {
-            s32 t = random_soft_s32_range(6);
-
-            while (used[t] != 0) {
-                t = random_soft_s32_range(6);
-            }
-            used[t] = 1;
-            pick[i] = t;
-        }
-        for (i = 0; i < 4; i++) {
-            u32 *src = D_80187EB4_ovl5[(D_8018ECD8_ovl5 * 12) + (bank * 6) + pick[i]];
-            s32 base = ((bank == 0) ? 1 : 0x29) + (i * 0xA);
-
-            for (j = 0; j < 0xA; j++) {
-                ROWB5_(base + j, (u8) (src[j >> 2] >> ((3 - (j & 3)) * 8)));
-            }
-        }
+    (&D_8018E9A8_ovl5)[0] = 0;
+    (&D_8018E9A8_ovl5)[0x51] = 1;
+    for (i = 0; i < 6; i++) {
+        used[i] = 0;
     }
-#undef ROWB5_
+    for (i = 0; i < 4; i++) {
+        pickA[i] = random_soft_s32_range(6);
+        while (used[pickA[i]] != 0) {
+            pickA[i] = random_soft_s32_range(6);
+        }
+        used[pickA[i]] = 1;
+    }
+    for (i = 0; i < 6; i++) {
+        used[i] = 0;
+    }
+    for (i = 0; i < 4; i++) {
+        pickB[i] = random_soft_s32_range(6);
+        while (used[pickB[i]] != 0) {
+            pickB[i] = random_soft_s32_range(6);
+        }
+        used[pickB[i]] = 1;
+    }
+    dst = &(&D_8018E9A8_ovl5)[1];
+    for (i = 0; i < 4; i++) {
+        src = D_80187EB4_ovl5[(D_8018ECD8_ovl5 * 12) + pickA[i]];
+        for (j = 0; j < 0xA; j++) {
+            dst[j] = src[j];
+        }
+        dst += 0xA;
+    }
+    dst = &(&D_8018E9A8_ovl5)[0x29];
+    for (i = 0; i < 4; i++) {
+        src = D_80187EB4_ovl5[(D_8018ECD8_ovl5 * 12) + 6 + pickB[i]];
+        for (j = 0; j < 0xA; j++) {
+            dst[j] = src[j];
+        }
+        dst += 0xA;
+    }
 }
 #elif defined(PORT)
 /* Course builder: clears the two course-strip flags, then fills the two

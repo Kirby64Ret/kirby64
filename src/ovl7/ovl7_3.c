@@ -344,22 +344,22 @@ void func_801A187C_ovl7(struct EnemyProbe *arg0) {
     u32 fl;
 
     if (D_800E8E60[id] != 1) {
-        f32 dx = arg0->unk4 - gEntitiesNextPosXArray[id];
-        f32 dz = arg0->unkC - gEntitiesNextPosZArray[id];
+        f32 dx = arg0->posX - gEntitiesNextPosXArray[id];
+        f32 dz = arg0->posZ - gEntitiesNextPosZArray[id];
 
         if ((dx != 0.0f) || (dz != 0.0f)) {
             func_800F8728(id, dx, dz);
         }
     }
-    gEntitiesNextPosXArray[omCurrentObj->objId] = arg0->unk4;
-    gEntitiesNextPosYArray[omCurrentObj->objId] = arg0->unk8;
-    gEntitiesNextPosZArray[omCurrentObj->objId] = arg0->unkC;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = arg0->posX;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = arg0->posY;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = arg0->posZ;
     if (((void *) rec->unk48 != (void *) func_8010C274) && ((void *) rec->unk48 != (void *) func_8010C184) &&
         ((void *) rec->unk48 != (void *) func_8010B480) && ((void *) rec->unk48 != (void *) func_8010B284) &&
         ((void *) rec->unk48 != (void *) func_8010B67C) && ((void *) rec->unk48 != (void *) func_8010B860) &&
         (D_800E8920[omCurrentObj->objId] == 1)) {
-        rec->unk78 = (&D_8012BCA0)[3];
-        rec->unk7C = (&D_8012BCA0)[2];
+        rec->unk78 = (void *) (uintptr_t) (&D_8012BCA0)[3];
+        rec->unk7C = (struct CollisionTriangle *) (uintptr_t) (&D_8012BCA0)[2];
     } else {
         rec->unk78 = 0;
         rec->unk7C = 0;
@@ -420,8 +420,8 @@ void func_801A187C_ovl7(void *arg0) {
      && hook != (void *) func_8010B480 && hook != (void *) func_8010B284
      && hook != (void *) func_8010B67C && hook != (void *) func_8010B860
      && D_800E8920[obj->objId] == 1) {
-        rec->unk78 = (u32) (uintptr_t) PC_COL->rec[0].norm;
-        rec->unk7C = (u32) (uintptr_t) PC_COL->rec[0].tri;
+        rec->unk78 = PC_COL->rec[0].norm;
+        rec->unk7C = PC_COL->rec[0].tri;
     } else {
         rec->unk78 = 0;
         rec->unk7C = 0;
