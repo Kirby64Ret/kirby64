@@ -56,11 +56,7 @@ s32 func_8019F650_ovl7(void);
 s32 func_8019FA68_ovl7(void);
 s32 func_8019FDE8_ovl7(void);
 struct Ovl7AnimObj *func_801A0464_ovl7(void);
-#ifdef PORT
 void func_801A04B8_ovl7(void);
-#else
-s32 func_801A04B8_ovl7(void); /* N64: the listing sets $v0 on every path */
-#endif
 s32 func_801A0C70_ovl7(void);
 
 void func_8019F3B0_ovl7(void) {
@@ -682,7 +678,11 @@ struct Ovl7AnimObj *func_801A0464_ovl7(void) {
    the 1 under the u32 switch, but `2U` cannot fork the 2 because unk4 is u8
    and the front end canonicalises the constant.  Needs a spelling that forks
    an int constant feeding a u8 store from a switch-compare constant.
-   NOTE: N64 decl is s32 (listing sets $v0 on every path); PORT keeps void. */
+   NOTE for the factory: this draft returns s32 (the listing sets $v0 on every
+   path) while the file-scope forward declaration above says void.  That
+   declaration must NOT be retyped at file scope -- doing so prototypes the two
+   call sites in func_801A03B4_ovl7/func_801A03E4_ovl7 and can move the TU.
+   Retype it only inside the permuter's own copy while measuring. */
 #ifdef MIPS_TO_C
 s32 func_801A04B8_ovl7(void) {
     s32 func_80110B00(void *);

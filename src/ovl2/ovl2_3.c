@@ -1890,108 +1890,7 @@ void func_800FA7EC(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
     }
 }
 
-#ifdef MIPS_TO_C
-
-void func_800FA92C(s32 arg0, void *arg1, void *arg2) {
-    s32 sp6C;
-    s32 sp68;
-    s32 sp64;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    ? sp40;
-    f32 sp3C;
-    f32 sp38;
-    void *sp28;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f0_4;
-    f32 temp_f0_5;
-    f32 temp_f0_6;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 var_f12;
-    f32 var_f2;
-    s32 var_v0;
-    void *temp_a2;
-
-    sp64 = 0;
-    sp6C = D_800D799C->data;
-    arg2->unk18 = arg2->unk0;
-    arg2->unk1C = arg2->unk4;
-    arg2->unk20 = arg2->unk8;
-    temp_f0 = arg1->unk48;
-    if (temp_f0 != 9999.0f) {
-        arg2->unk18 = temp_f0;
-    }
-    temp_f0_2 = arg1->unk4C;
-    if (temp_f0_2 != 9999.0f) {
-        arg2->unk1C = temp_f0_2 + arg1->unk14;
-    }
-    temp_f0_3 = arg1->unk50;
-    if (temp_f0_3 != 9999.0f) {
-        arg2->unk20 = temp_f0_3;
-    }
-    if (arg1->unk1D != 0) {
-        temp_a2 = arg2 + 0x24;
-        if ((arg2->unk30 | arg2->unk38) != 0) {
-            sp68 = 0;
-            sp28 = temp_a2;
-            lbvector_Diff(&sp4C, arg2, temp_a2, arg1);
-            var_v0 = sp68;
-            temp_f12 = (atan2f(sp54, -sp4C) / 3.1415927f) * 180.0f;
-            var_f2 = temp_f12;
-            if (temp_f12 < 0.0f) {
-                var_f2 = temp_f12 + 360.0f;
-            }
-            temp_f0_4 = arg1->unk40;
-            if (var_f2 < temp_f0_4) {
-                var_f2 = temp_f0_4;
-                var_v0 = 1;
-            }
-            temp_f0_5 = arg1->unk44;
-            if (temp_f0_5 < var_f2) {
-                var_f2 = temp_f0_5;
-                var_v0 |= 2;
-            }
-            if (var_v0 != 0) {
-                sp3C = var_f2;
-                sp4C = -sqrtf((sp54 * sp54) + (sp4C * sp4C));
-                sp50 = 0.0f;
-                sp54 = 0.0f;
-                func_800191F8(0.0f, &sp4C, sp6C + 0x54, (var_f2 * 3.1415927f) / 180.0f);
-                lbvector_Add(&sp4C, sp28);
-                arg2->unk18 = sp4C;
-                arg2->unk20 = sp54;
-            }
-        }
-    }
-    if ((arg1->unk1C != 0) && (arg2->unk34 != 0)) {
-        lbvector_Diff(&sp4C, arg2 + 0x18, arg2 + 0x24, arg1);
-        temp_f14 = arg1->unk38;
-        var_f12 = 180.0f - ((atan2f(sqrtf((sp54 * sp54) + (sp4C * sp4C)), sp50) / 3.1415927f) * 180.0f);
-        if (var_f12 < temp_f14) {
-            var_f12 = temp_f14;
-            sp64 = 1;
-        }
-        temp_f0_6 = arg1->data;
-        if (temp_f0_6 < var_f12) {
-            var_f12 = temp_f0_6;
-            sp64 |= 2;
-        }
-        if (sp64 != 0) {
-            sp38 = var_f12;
-            sp50 = 0.0f;
-            vec3_normalized_cross_product(var_f12, temp_f14, sp6C + 0x54, &sp4C, &sp40, arg1);
-            func_800191F8(sp38, &sp4C, &sp40, ((sp38 - 90.0f) * 3.1415927f) / 180.0f);
-            arg2->unk18 = arg2->unk24 + sp4C;
-            arg2->unk1C = arg2->unk28 - sp50;
-            arg2->unk20 = arg2->unk2C + sp54;
-        }
-    }
-}
-#elif defined(PORT)
+#ifdef PORT
 /* PORT: camera eye yaw/pitch limiting, from asm/nonmatchings/ovl2/ovl2_3/
  * func_800FA92C.s (the m2c sketch above mangles every vector-helper call).
  * arg2->unk18..20 is the eye, +24..2C the look-at target; unk30/34/38 are
@@ -2073,7 +1972,83 @@ void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA92C.s")
+void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
+    DObj *dobj;
+    s32 flagB;
+    Vector vec;
+    Vector axis;
+    f32 ang2;
+    f32 ang;
+    Vector *tgt;
+    s32 flagA;
+
+    flagB = 0;
+    dobj = D_800D799C->data.dobj;
+    arg2->unk18 = arg2->unk0;
+    arg2->unk1C = arg2->unk4;
+    arg2->unk20 = arg2->unk8;
+    flagA = 0;
+    if (arg1->unk48 != 9999.0f) {
+        arg2->unk18 = arg1->unk48;
+    }
+    if (arg1->unk4C != 9999.0f) {
+        arg2->unk1C = arg1->unk4C + arg1->unk14;
+    }
+    if (arg1->unk50 != 9999.0f) {
+        arg2->unk20 = arg1->unk50;
+    }
+    if (arg1->unk1D != 0) {
+        tgt = (Vector *) &arg2->unk24;
+        if ((arg2->unk30 | arg2->unk38) != 0) {
+            lbvector_Diff(&vec, (Vector *) arg2, tgt);
+            ang = (atan2f(vec.z, -vec.x) / 3.1415927f) * 180.0f;
+            if (ang < 0.0f) {
+                ang += 360.0f;
+            }
+            if (ang < arg1->unk40) {
+                ang = arg1->unk40;
+                flagA = 1;
+            }
+            if (arg1->unk44 < ang) {
+                ang = arg1->unk44;
+                flagA |= 2;
+            }
+            if (flagA != 0) {
+                vec.x = -sqrtf((vec.z * vec.z) + (vec.x * vec.x));
+                vec.y = 0.0f;
+                vec.z = 0.0f;
+                func_800191F8(&vec, (Vector *) ((s32) dobj + 0x54),
+                              (ang * 3.1415927f) / 180.0f);
+                lbvector_Add(&vec, tgt);
+                arg2->unk18 = vec.x;
+                arg2->unk20 = vec.z;
+            }
+        }
+    }
+    if (arg1->unk1C != 0) {
+        if (arg2->unk34 != 0) {
+            lbvector_Diff(&vec, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+            ang2 = 180.0f - ((atan2f(sqrtf((vec.z * vec.z) + (vec.x * vec.x)), vec.y)
+                              / 3.1415927f) * 180.0f);
+            if (ang2 < arg1->unk38) {
+                ang2 = arg1->unk38;
+                flagB = 1;
+            }
+            if (arg1->unk3C < ang2) {
+                ang2 = arg1->unk3C;
+                flagB |= 2;
+            }
+            if (flagB != 0) {
+                vec.y = 0.0f;
+                vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &vec, &axis);
+                func_800191F8(&vec, &axis, ((ang2 - 90.0f) * 3.1415927f) / 180.0f);
+                arg2->unk18 = arg2->unk24 + vec.x;
+                arg2->unk1C = arg2->unk28 - vec.y;
+                arg2->unk20 = arg2->unk2C + vec.z;
+            }
+        }
+    }
+}
 #endif
 
 #ifdef MIPS_TO_C
@@ -2679,32 +2654,31 @@ void func_800FBA98() {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 134/140, one-slot FP temp rotation in the D_80129330 x/y/z seed (ROM f6/f8/f4/f10, draft f4/f6/f10/f8 -- load AND store order already match, f16 already agrees); everything else including both 0xC-stride struct copies is exact */
 void func_800FBBB8(void) {
-    s32 sp4C;
-    f32 sp48;
-    f32 sp44;
-    f32 sp40;
-    ? sp34;
-    f32 sp28;
+    DObj *dobj;
+    Vector dir;
+    Vector axis;
+    Vector diff;
+    extern struct Ovl2CamOut D_80129330;
 
-    sp4C = D_800D799C->data;
-    M2C_MEMCPY_ALIGNED(&D_80129150, &D_80129210, 0x60);
-    M2C_MEMCPY_ALIGNED(&D_80129270, &D_801292B0, 0x3C);
+    dobj = D_800D799C->data.dobj;
+    D_80129150 = D_80129210;
+    D_80129270 = D_801292B0;
+    D_80129330.unk4 = D_801292B0.unk4 + D_80129210.unk14;
     D_80129330.unk0 = D_801292B0.unk0;
     D_80129330.unk8 = D_801292B0.unk8;
-    D_80129330.unk4 = D_801292B0.unk4 + D_80129210.unk14;
-    sp40 = cosf((D_80129210.unk8 * 3.1415927f) / 180.0f);
-    sp48 = -sinf((D_80129210.unk8 * 3.1415927f) / 180.0f);
-    sp44 = 0.0f;
-    lbvector_Scale(&sp40, -D_80129210.unkC);
-    lbvector_Add(&sp40, &D_80129330);
-    lbvector_Diff(&sp28, &D_80129330, &sp40);
-    vec3_normalized_cross_product(sp4C + 0x54, &sp28, &sp34);
-    func_800191F8(&sp28, &sp34, ((D_80129210.unk4 - 90.0f) * 3.1415927f) / 180.0f);
-    D_80129330.unkC = D_80129330.unk0 - sp28;
-    D_80129330.unk10 = D_80129330.unk4 - sp2C;
-    D_80129330.unk14 = D_80129330.unk8 - sp30;
+    dir.x = cosf((D_80129210.unk8 * 3.1415927f) / 180.0f);
+    dir.z = -sinf((D_80129210.unk8 * 3.1415927f) / 180.0f);
+    dir.y = 0.0f;
+    lbvector_Scale(&dir, -D_80129210.unkC);
+    lbvector_Add(&dir, (Vector *) &D_80129330);
+    lbvector_Diff(&diff, (Vector *) &D_80129330, &dir);
+    vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &diff, &axis);
+    func_800191F8(&diff, &axis, ((D_80129210.unk4 - 90.0f) * 3.1415927f) / 180.0f);
+    D_80129330.unkC = D_80129330.unk0 - diff.x;
+    D_80129330.unk10 = D_80129330.unk4 - diff.y;
+    D_80129330.unk14 = D_80129330.unk8 - diff.z;
     func_800FA7EC(0, &D_80129210, &D_80129330);
     func_800FA92C(0, &D_80129210, &D_80129330);
     D_801292B0.unk18 = D_80129330.unk18;
