@@ -173,7 +173,95 @@ void func_800FF71C(struct UnkStruct800AC954 *arg0, u8 arg1, u8 arg2) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_6/func_800FF9B4.s")
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 203/206, exact insn count and full save set; residue is a +0x28
+ * frame delta (temp locals over-slotted) with its offset cascade. */
+void func_80100790(void *arg0) {
+    void func_800FF9B4(Gfx **, void *, f32 *, void *, f32, f32);
+    void func_800FF71C(SPObj *, u8, u8);
+    s32 func_800ACE1C(u8, void *);
+    extern u8 D_8012BB98[];
+    f32 sp74;
+    f32 sp78;
+    f32 sp7C;
+    f32 sp80;
+    SPObj *var_s0;
+    u8 *temp_s3;
+    s32 var_s6;
+
+    var_s0 = *(SPObj **) ((u8 *) arg0 + 0x4C);
+    temp_s3 = &D_8012BB98[*(s32 *) arg0 * 0x18];
+    if (var_s0 != NULL) {
+        do {
+            void *temp_v1 = var_s0->unk3C;
+            u16 temp_v0;
+
+            sp74 = var_s0->xOffset;
+            if (!(*(f32 *) (temp_s3 + 0x10) < sp74)) {
+                sp78 = var_s0->yOffset;
+                if (!(*(f32 *) (temp_s3 + 0x14) < sp78)) {
+                    temp_v0 = *(u16 *) ((u8 *) temp_v1 + 0xE);
+                    if (temp_v0 & 4) {
+                        sp7C = *(f32 *) (temp_s3 + 0x10);
+                    } else {
+                        sp7C = ((f32) var_s0->width * var_s0->unk28) + sp74;
+                    }
+                    if (!(sp7C < *(f32 *) (temp_s3 + 8))) {
+                        f32 temp_f20 = (f32) var_s0->height * var_s0->unk2C;
+
+                        if (temp_v0 & 8) {
+                            u8 temp_t4 = var_s0->unk12 ^ 1;
+                            u8 *temp_s1;
+                            f32 temp_f8;
+
+                            var_s0->unk12 = temp_t4;
+                            temp_s1 = (u8 *) var_s0 + (temp_t4 * 0x60) + 0x40;
+                            func_800FF71C(var_s0, temp_s1[0x16], *((u8 *) temp_v1 + 0xF));
+                            var_s6 = func_800ACE1C(temp_s1[0x16], (u8 *) var_s0 + (var_s0->unk12 * 0x60) + 0x68);
+                            temp_f8 = sp78 + 1.0f;
+                            sp80 = temp_f8;
+                            if (temp_f8 != *(f32 *) (temp_s3 + 0x14)) {
+                                do {
+                                    f32 temp_f18 = sp80 - 1.0f;
+                                    f32 temp_f6 = temp_f18 + temp_f20;
+
+                                    sp78 = temp_f18;
+                                    sp80 = temp_f6;
+                                    if (*(f32 *) (temp_s3 + 0x14) < temp_f6) {
+                                        sp80 = *(f32 *) (temp_s3 + 0x14);
+                                    }
+                                    func_800FF9B4(gDisplayListHeads, temp_s1, &sp74, temp_s3 + 8, var_s0->unk28, var_s0->unk2C);
+                                } while (sp80 != *(f32 *) (temp_s3 + 0x14));
+                            }
+                            goto block_20;
+                        }
+                        sp80 = temp_f20 + sp78;
+                        if (!(sp80 < *(f32 *) (temp_s3 + 0xC))) {
+                            u8 temp_t0 = var_s0->unk12 ^ 1;
+                            u8 *temp_s1_2;
+
+                            var_s0->unk12 = temp_t0;
+                            temp_s1_2 = (u8 *) var_s0 + (temp_t0 * 0x60) + 0x40;
+                            func_800FF71C(var_s0, temp_s1_2[0x16], *((u8 *) temp_v1 + 0xF));
+                            var_s6 = func_800ACE1C(temp_s1_2[0x16], (u8 *) var_s0 + (var_s0->unk12 * 0x60) + 0x68);
+                            func_800FF9B4(gDisplayListHeads, temp_s1_2, &sp74, temp_s3 + 8, var_s0->unk28, var_s0->unk2C);
+block_20:
+                            if (var_s6 != 0) {
+                                Gfx *temp_v1_2 = *gDisplayListHeads;
+
+                                *gDisplayListHeads = temp_v1_2 + 1;
+                                temp_v1_2->words.w1 = 0;
+                                temp_v1_2->words.w0 = 0xE3001001;
+                            }
+                        }
+                    }
+                }
+            }
+            var_s0 = (SPObj *) var_s0->unk8;
+        } while (var_s0 != NULL);
+    }
+}
+#elif defined(PORT)
 /* PORT: skybox-layer draw callback (behavioral). The ROM walks the GObj's
  * SPObj chain, culls each layer against the D_8012BB98 screen rect, and
  * emits it as rows of RDP tile rectangles (asm func_800FF9B4, a 900-insn
