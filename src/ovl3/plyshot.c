@@ -716,7 +716,7 @@ void func_8015C00C_ovl3(s32 arg0) {
         func_800A7F74(2U, 1U, 0x10U, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
                       gEntitiesNextPosZArray[id]);
         if (sndpair != NULL && sndpair[0] != 0) {
-            pc_sndpair_release(sndpair);
+            plyshotSndpairRelease(sndpair);
         }
         if (D_800EA520[id] != 0) {
             func_800A22D4(D_800EA520[id]);
@@ -727,7 +727,7 @@ void func_8015C00C_ovl3(s32 arg0) {
     }
     if (gKirbyState.unk44 == 1) {
         if (sndpair != NULL && sndpair[0] != 0) {
-            pc_sndpair_release(sndpair);
+            plyshotSndpairRelease(sndpair);
         }
         if (D_800EA520[id] != 0) {
             func_800A1F30(D_800EA520[id]);
@@ -781,7 +781,7 @@ void func_8015C00C_ovl3(s32 arg0) {
     func_80111C4C(func_801117BC(D_80190BB0_ovl3, id));
     if (inWater == 0) {
         if (sndpair != NULL && sndpair[0] != 0) {
-            pc_sndpair_release(sndpair);
+            plyshotSndpairRelease(sndpair);
         }
         if (D_800EA520[id] != 0) {
             func_800A1F30(D_800EA520[id]);
@@ -791,7 +791,7 @@ void func_8015C00C_ovl3(s32 arg0) {
         }
     } else {
         if (sndpair != NULL && sndpair[0] == 0) {
-            pc_sndpair_start(0x22D, sndpair);
+            plyshotSndpairStart(0x22D, sndpair);
         }
         if (D_800EA520[id] == 0) {
             D_800EA520[id] = func_800A8234(2, 1, 0x50);
@@ -799,13 +799,13 @@ void func_8015C00C_ovl3(s32 arg0) {
         }
     }
     if (D_800EA520[id] != 0) {
-        struct PcPlyshotFx *fa = ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
+        struct BoomerangFx *fa = (struct BoomerangFx *) ((GObj *) D_800EA520[id])->unk4C;
 
         fa->unk4 = gEntitiesNextPosXArray[id];
         fa->unk8 = gEntitiesNextPosYArray[id];
         fa->unkC = gEntitiesNextPosZArray[id];
         if (D_800EB4E0[id] != 0) {
-            struct PcPlyshotFx *fb = ((GObj *) (uintptr_t) (u32) D_800EB4E0[id])->unk4C;
+            struct BoomerangFx *fb = (struct BoomerangFx *) ((GObj *) D_800EB4E0[id])->unk4C;
 
             fb->unk4 = gEntitiesNextPosXArray[id];
             fb->unk8 = gEntitiesNextPosYArray[id];
