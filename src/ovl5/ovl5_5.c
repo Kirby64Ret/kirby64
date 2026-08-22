@@ -802,12 +802,17 @@ void func_80170884_ovl5(s32 arg0, s32 arg1, s32 arg2) {
  * on, sinks the racer, rewinds the camera to the last consumed tile over 15
  * frames and reseats the racer on it.
  *
- * FACTORY: 55/258, UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
- * found; compiles as-is. Word count matches (258/258), residue extreme
- * (203/258) -- broad register/frame relabeling from word 0. Worth a
+ * FACTORY: 84/256, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * the PORT: the call to `func_80170098_ovl5` (real ANSI prototype
+ * `void func_80170098_ovl5(s32, f32)`, only visible inside the shared
+ * PORT-prototype block) had no prototype in scope, silently promoting
+ * its f32 argument to double; fixed with a local ANSI prototype.
+ * Compiles, word count close (256/258), residue still extreme
+ * (172/256) -- broad register/frame relabeling from word 0. Worth a
  * fresh m2c pass before feeding to the permuter. */
 #ifdef MIPS_TO_C
 void func_8017113C_ovl5(s32 arg0, s32 arg1, s32 arg2) {
+    void func_80170098_ovl5(s32, f32);
     extern u32 D_80187BF4_ovl5[];
     u8 kind = func_80172B10_ovl5(arg0, D_8018E998_ovl5[arg0]);
     s32 i;
@@ -984,13 +989,108 @@ s32 func_80171868_ovl5(void) {
     return 1;
 }
 
-#ifdef PORT
 /* Racer thread for hop-race lane arg1: registers the objId, spawns the
  * character at its lane column, optionally fast-forwards a CPU's start
  * (D_801875F0 handicap window), then runs the race loop -- per tick
  * func_80172B10 samples the tile, a knock triggers the backward-hop
  * (func_80170884), a hole drop triggers func_8017113C -- until tile 0x51
- * is passed, then awards the finish fanfare and parks. */
+ * is passed, then awards the finish fanfare and parks.
+ *
+ * FACTORY: 12/327, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * the PORT: `D_8018ECA0_ovl5`'s access used the GCC-only
+ * `__asm__("D_8018ECA0_ovl5")` symbol-alias extension on a distinct
+ * u8[] view, which IDO's cc rejects outright; the real symbol is
+ * declared elsewhere in this file as a scalar `extern s32
+ * D_8018ECA0_ovl5` (IDO ties a local extern's type across the whole
+ * TU, so a second, differently-typed local extern for the same name
+ * fails to compile) -- rewritten as `*(u8 *) &D_8018ECA0_ovl5`,
+ * reading the same first byte the alias reached. Also added local
+ * ANSI prototypes for func_800A9864, func_801773C4_ovl5 and
+ * func_80171E6C_ovl5 (K&R implicit-int traps otherwise). Compiles,
+ * word count close (327/327), residue extreme (315/327) -- broad
+ * register/frame relabeling from word 0. Worth a fresh m2c pass before
+ * feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_80171950_ovl5(GObj *arg0, s32 arg1) {
+    void func_800A9864(s32, s32, s32);
+    void func_801773C4_ovl5(struct GObj *);
+    u16 func_80171E6C_ovl5(GObj *);
+    extern u32 D_80187BD4_ovl5[];
+    extern u32 D_80187BE4_ovl5[];
+    extern u32 D_80187BF4_ovl5[];
+    extern u32 D_80187C74_ovl5[];
+    extern s32 D_8018ECA0_ovl5;
+    Vector2 kf;
+    s32 kind;
+    s32 frame;
+    s32 t;
+
+    D_8018E458_ovl5[arg1] = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 5;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = arg1;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+    D_800EA520[omCurrentObj->objId] = 0;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    func_8016FF60_ovl5(&kf, arg1);
+    kind = *(s32 *) &kf.x;
+    frame = *(s32 *) &kf.y;
+    func_800A9864(D_80187BD4_ovl5[kind], 0x1869F, 0x10);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
+    func_800A9F98(D_80187BE4_ovl5[kind], (f32) frame);
+    if (frame == 0) {
+        animUpdateModelTreeAnimation(arg0);
+    }
+    animResetTextureAnimation(arg0);
+    func_800AECC0(2.0f);
+    func_800AED20(2.0f);
+    if (kind == 1) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 0.85f;
+        gEntitiesScaleYArray[omCurrentObj->objId] = 0.85f;
+        gEntitiesScaleZArray[omCurrentObj->objId] = 0.85f;
+    }
+    omGMoveObjDL(arg0, arg0->dl_link, 0xA);
+    func_800AA018(D_80187BF4_ovl5[kind * 2]);
+    func_800AA018(D_80187BF4_ovl5[kind * 2 + 1]);
+    if (D_8018ECA8_ovl5[arg1] != 0) {
+        D_800E98E0[omCurrentObj->objId] =
+            (s32) ((f32) (random_soft_s32_range(D_801875F0_ovl5[D_8018ECA8_ovl5[arg1]].unk4) +
+                          D_801875F0_ovl5[D_8018ECA8_ovl5[arg1]].unk0) *
+                   0.5f);
+    }
+    while (*(u8 *) &D_8018ECA0_ovl5 != 0) {
+        ohSleep(1);
+    }
+    D_800DF150[omCurrentObj->objId] = func_80171E6C_ovl5;
+    while ((D_8018E998_ovl5[arg1] < 0x51) || (D_800E9C60[omCurrentObj->objId] != 0)) {
+        func_80172B10_ovl5(arg1, D_8018E998_ovl5[arg1]);
+        if (D_800E9C60[omCurrentObj->objId] != 0) {
+            func_80170884_ovl5(arg1, kind, frame);
+        }
+        if (func_80170584_ovl5(arg1, D_8018E998_ovl5[arg1]) == 0) {
+            D_800E9C60[omCurrentObj->objId] = 1;
+            func_8017113C_ovl5(arg1, kind, frame);
+            D_800E9E20[omCurrentObj->objId] = 0;
+            D_800E9C60[omCurrentObj->objId] = 0;
+        }
+        ohSleep(1);
+    }
+    if (D_8018ECA8_ovl5[arg1] == 0) {
+        func_800BB4E4(arg1, 6, 0x10);
+    }
+    t = request_track_3(8, 0, 0x70);
+    D_800E98E0[t] = 0x12;
+    D_800E9AA0[t].as_u32 = arg1;
+    if (func_80171768_ovl5(arg1) == 0) {
+        func_800AA018(D_80187C74_ovl5[kind * 2]);
+        func_800AA018(D_80187C74_ovl5[kind * 2 + 1]);
+    }
+    curObjSleepForever();
+}
+#elif defined(PORT)
 void func_80171950_ovl5(GObj *arg0, s32 arg1) {
     extern u32 D_80187BD4_ovl5[];
     extern u32 D_80187BE4_ovl5[];

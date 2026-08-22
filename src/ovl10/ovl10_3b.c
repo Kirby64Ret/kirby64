@@ -46,11 +46,17 @@ extern FUNCLIST D_801F4570_ovl10;
 extern FUNCLIST D_801F4588_ovl10;
 extern FUNCLIST D_801F45B8_ovl10;
 
+/* K&R form is load-bearing here: both declarations below have real
+ * 1-arg signatures (s32 func_801A0D74_ovl7(GObj *) and
+ * void func_8019B424_ovl7(s32)), but this file calls each with both 0
+ * and 1 args -- the ROM relies on whatever is already sitting in $a0 at
+ * the 0-arg sites. An ANSI prototype breaks compilation with "too few
+ * arguments". */
 s32 func_801A0D74_ovl7();
 void func_8019B424_ovl7();
 void eneTurnCommon(s32);
 void func_8019D4D0_ovl7(f32, s32);
-void func_80199F1C_ovl7();
+void func_80199F1C_ovl7(s32);
 void func_800AECC0(f32);
 s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
 void play_sound(s32);
@@ -116,6 +122,13 @@ void func_8019D958_ovl7(u16);
 /* D_801F4A80_ovl10 = "reqAdoPathLimTrk  Request Error!![mbss2.cc]\n" : now emitted by this TU */
 
 void func_800A7F74(u32, u32, u16, f32, f32, f32);
+/* K&R form is load-bearing here: a second, pre-existing declaration at
+ * line ~716 in this same file already reads `void func_800B79F4(s32);`,
+ * inconsistent with this function's real (GObj *) signature -- giving
+ * THIS declaration a real prototype conflicts with that one
+ * ("redeclaration ... Incompatible type for the function parameter").
+ * Fixing the s32 one is a separate, pre-existing bug outside the scope
+ * of this declaration-only pass. */
 void func_800B79F4();
 void func_800B3520(void);
 void func_800FB914(s32);
@@ -260,7 +273,7 @@ void func_801EA4C0_ovl10(void);
 void func_801E91B0_ovl10(struct GObj *);
 
 extern s32 D_801F35CC_ovl10;
-void func_801EA900_ovl10();
+void func_801EA900_ovl10(GObj *);
 
 #ifdef MIPS_TO_C
 // 8 diffs, same floor as its twin func_801E7760_ovl10: `temp` lands in $a0

@@ -485,6 +485,7 @@ void func_8022023C_ovl19(GObj *arg0) {
 
 // Pit of Doom
 // {
+#ifdef MIPS_TO_C
 /* FACTORY: 97/119, register rotation. Re-verified 2026-08-22: the first 52
  * instructions (both random_soft_s32_range rejection loops, D_800E0650/
  * D_800DF150 stores, D_800D6E64 guard) are exact, registers included. The
@@ -496,7 +497,6 @@ void func_8022023C_ovl19(GObj *arg0) {
  * local vs three, `*(vs32 *) &D_800D71F8` vs plain assignment (identical
  * here), and a `for (i = 0; i < 3; i++)` loop for the three groups (IDO does
  * NOT unroll -- worse, 113/118). */
-#ifdef MIPS_TO_C
 void func_80220280_ovl19(GObj *arg0) {
     extern s32 D_8022FAB8_ovl19[];
     extern s32 D_800D6F18;

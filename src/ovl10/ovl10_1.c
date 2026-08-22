@@ -791,6 +791,14 @@ void func_801DDEB8_ovl10(GObj *arg0) {
 #endif
 
 
+#ifdef PORT
+/* Restored here for the host build only: these two prototypes used to live at
+ * file scope inside func_801DE124_ovl10's PORT arm, which was deleted when that
+ * function was un-guarded. Later host-only code below still needs them. The N64
+ * build declares them inside the function body instead. */
+f32 func_800F9828(s32, s32);
+void func_800A7F74(u32, u32, u32, f32, f32, f32);
+#endif
 /* State 6 (spit-out) main: waits for the swallowed segment to signal ready
  * (D_800E98E0 of the D_800EC120 helper), turns toward the parent track if
  * needed (the 5-tick half-turn dance shared with func_801E18A8), then spawns

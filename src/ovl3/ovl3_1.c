@@ -12,6 +12,11 @@ extern void func_8011BF4C(f32 *, s32);
 
 extern void func_8015439C_ovl3(f32 *);
 extern s32 func_80154428_ovl3(f32 *);
+/* K&R form is load-bearing here: its real signature is
+ * void func_80154CFC_ovl3(struct PositionState *), but this file calls it
+ * with both 0 args (line ~2089) and 1 arg elsewhere -- the ROM relies on
+ * whatever PositionState* is already sitting in $a0 at the 0-arg site. An
+ * ANSI prototype breaks compilation with "too few arguments". */
 extern void func_80154CFC_ovl3();
 #ifdef PORT
 /* On N64 the three shot collision passes below receive the shot's state

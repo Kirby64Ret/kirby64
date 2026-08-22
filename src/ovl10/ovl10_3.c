@@ -34,10 +34,20 @@ extern FUNCLIST D_801F4570_ovl10;
 extern FUNCLIST D_801F4588_ovl10;
 extern FUNCLIST D_801F45B8_ovl10;
 
+/* K&R form is load-bearing here: its real signature is
+ * s32 func_801A0D74_ovl7(GObj *), but this file calls it with both 0 args
+ * (line ~2475) and 1 arg elsewhere -- the ROM relies on whatever GObj* is
+ * already sitting in $a0 at the 0-arg site. An ANSI prototype breaks
+ * compilation with "too few arguments". */
 s32 func_801A0D74_ovl7();
-void func_8019B424_ovl7();
+void func_8019B424_ovl7(s32);
 void eneTurnCommon(s32);
 void func_8019D4D0_ovl7(f32, s32);
+/* K&R form is load-bearing here: its real signature is
+ * void func_80199F1C_ovl7(s32), but this file calls it with both 0 args
+ * (lines ~1105, ~1711) and 1 arg (line ~2342) -- the ROM relies on
+ * whatever is already sitting in $a0 at the 0-arg sites. An ANSI
+ * prototype breaks compilation with "too few arguments". */
 void func_80199F1C_ovl7();
 void func_800AECC0(f32);
 s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
@@ -187,7 +197,7 @@ void func_801E3BE4_ovl10(GObj *arg0) {
 }
 
 void func_800A7F74(u32, u32, u16, f32, f32, f32);
-void func_800B79F4();
+void func_800B79F4(GObj *);
 void func_800B3520(void);
 void func_800FB914(s32);
 void func_801EF15C_ovl10(s32);
@@ -2112,7 +2122,7 @@ void func_801EA784_ovl10(GObj *arg0) {
 }
 
 extern s32 D_801F35CC_ovl10;
-void func_801EA900_ovl10();
+void func_801EA900_ovl10(GObj *);
 
 void func_801EA7CC_ovl10(GObj *arg0) {
     struct UnkStruct800E1B50 *sp1C = D_800E1B50[omCurrentObj->objId];

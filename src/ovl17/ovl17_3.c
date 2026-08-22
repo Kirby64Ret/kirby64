@@ -694,7 +694,137 @@ void func_801E2320_ovl17(void) {
     func_8019D958_ovl7((u16) omCurrentObj->objId);
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 24/403, frame 0x130 vs the ROM's 0x120 -- 16 bytes of locals we
+   reserve and it does not, which slides all three matrices 0x20 up and
+   renames the body with them.
+   Layout read off the listing: three Mat4 at sp+0x50/0x90/0xD0 and five
+   Vectors at 0x20/0x2C/0x38/0x44/0x110, which is the same count this draft
+   declares -- so the extra 16 bytes are the two scalars (`angle`, `objId`)
+   that the ROM keeps in registers, not an extra temporary.  Moving them
+   ahead of the matrices (LEVERS 12) does not help; they have to stop
+   occupying stack at all. */
+/* PORT: missile launch aim pass, from asm/nonmatchings/ovl17/ovl17_3/
+ * func_801E23E0_ovl17.s. Builds the target basis (Kirby's rotation, entity
+ * slot 0, flipped pi about Y) and the missile track's current basis,
+ * pitches the forward row 90 degrees about the right row, then takes two
+ * steering steps toward the target forward -- each clamped to 20 degrees
+ * (0.34906587) with a 0.5-degree dead zone -- first about the rebuilt up
+ * row (row2 x row0), then about the rebuilt right row (row1 x row2).
+ * Finally re-orthonormalizes and decomposes back to the D_800EA6E0/8A0/
+ * AA60 Euler angles and entity angle arrays, exactly like ovl17_2's
+ * func_801DEA5C. No arguments; operates on omCurrentObj's track. */
+void func_801E23E0_ovl17(void) {
+    f32 asinf(f32);
+    f32 atan2f(f32, f32);
+    Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
+    Mat4 cur;
+    Mat4 tmp;
+    Mat4 tgt;
+    Vector a;
+    Vector b;
+    Vector axis;
+    Vector cr;
+    Vector ang;
+    f32 angle;
+    s32 objId;
+
+    guMtxIdentF(cur);
+    HS64_MkRotationMtxF(tmp, 0.0f, 3.1415927f, 0.0f);
+    guMtxCatF(cur, tmp, cur);
+    HS64_MkRotationMtxF(tmp, D_800EA6E0[0], D_800EA8A0[0], D_800EAA60[0]);
+    guMtxCatF(cur, tmp, tgt);
+    guMtxIdentF(cur);
+    objId = omCurrentObj->objId;
+    HS64_MkRotationMtxF(tmp, D_800EA6E0[objId], D_800EA8A0[objId], D_800EAA60[objId]);
+    guMtxCatF(cur, tmp, cur);
+
+    /* pitch the forward row (row2) 90 degrees about the right row (row0) */
+    a.x = cur[2][0]; a.y = cur[2][1]; a.z = cur[2][2];
+    b.x = cur[0][0]; b.y = cur[0][1]; b.z = cur[0][2];
+    func_800191F8(&a, &b, 1.5707964f);
+    cur[2][0] = a.x; cur[2][1] = a.y; cur[2][2] = a.z;
+
+    /* rebuild the up row: row1 = row2 x row0; steer row2 toward the
+     * target forward about it, at most 20 degrees */
+    vec3_normalized_cross_product(&a, &b, &cr);
+    axis = cr;
+    cur[1][0] = cr.x; cur[1][1] = cr.y; cur[1][2] = cr.z;
+    a.x = cur[2][0]; a.y = cur[2][1]; a.z = cur[2][2];
+    b.x = tgt[2][0]; b.y = tgt[2][1]; b.z = tgt[2][2];
+    cr.x = cr.y = cr.z = 0.0f;
+    angle = lbvector_Angle(&a, &b);
+    if (angle > 0.34906587f) {
+        angle = 0.34906587f;
+    }
+    if (angle > 0.008726646f) {
+        vec3_normalized_cross_product(&a, &b, &cr);
+        if ((cr.x != 0.0f) || (cr.y != 0.0f) || (cr.z != 0.0f)) {
+            if (lbvector_Angle(&axis, &cr) > 1.5707964f) {
+                angle *= -1.0f;
+            }
+            func_800191F8(&a, &axis, angle);
+            cur[2][0] = a.x; cur[2][1] = a.y; cur[2][2] = a.z;
+        }
+    }
+
+    /* rebuild the right row: row0 = row1 x row2; second steering step
+     * about it */
+    a.x = cur[1][0]; a.y = cur[1][1]; a.z = cur[1][2];
+    b.x = cur[2][0]; b.y = cur[2][1]; b.z = cur[2][2];
+    vec3_normalized_cross_product(&a, &b, &cr);
+    axis = cr;
+    cur[0][0] = cr.x; cur[0][1] = cr.y; cur[0][2] = cr.z;
+    a.x = cur[2][0]; a.y = cur[2][1]; a.z = cur[2][2];
+    b.x = tgt[2][0]; b.y = tgt[2][1]; b.z = tgt[2][2];
+    cr.x = cr.y = cr.z = 0.0f;
+    angle = lbvector_Angle(&a, &b);
+    if (angle > 0.34906587f) {
+        angle = 0.34906587f;
+    }
+    if (angle > 0.008726646f) {
+        vec3_normalized_cross_product(&a, &b, &cr);
+        if ((cr.x != 0.0f) || (cr.y != 0.0f) || (cr.z != 0.0f)) {
+            if (lbvector_Angle(&axis, &cr) > 1.5707964f) {
+                angle *= -1.0f;
+            }
+            func_800191F8(&a, &axis, angle);
+            cur[2][0] = a.x; cur[2][1] = a.y; cur[2][2] = a.z;
+        }
+    }
+
+    /* re-orthonormalize: row0 = row1 x row2, then row1 = row2 x row0 */
+    a.x = cur[1][0]; a.y = cur[1][1]; a.z = cur[1][2];
+    b.x = cur[2][0]; b.y = cur[2][1]; b.z = cur[2][2];
+    vec3_normalized_cross_product(&a, &b, &cr);
+    b = cr;
+    cur[0][0] = cr.x; cur[0][1] = cr.y; cur[0][2] = cr.z;
+    a.x = cur[2][0]; a.y = cur[2][1]; a.z = cur[2][2];
+    vec3_normalized_cross_product(&a, &b, &cr);
+    cur[1][0] = cr.x; cur[1][1] = cr.y; cur[1][2] = cr.z;
+
+    /* Euler decomposition, gimbal-lock special-cased */
+    ang.y = asinf(-cur[0][2]);
+    if ((ang.y == 1.5707964f) || (ang.y == -1.5707964f)) {
+        if (ang.y == 1.5707964f) {
+            ang.x = atan2f(cur[1][0], cur[1][1]);
+        } else {
+            ang.x = atan2f(-cur[1][0], cur[1][1]);
+        }
+        ang.z = 0.0f;
+    } else {
+        ang.x = atan2f(cur[1][2], cur[2][2]);
+        ang.z = atan2f(cur[0][1], cur[0][0]);
+    }
+    utilWrapRotation(&ang);
+    D_800EA6E0[objId] = ang.x;
+    D_800EA8A0[objId] = ang.y;
+    D_800EAA60[objId] = ang.z;
+    gEntitiesAngleXArray[objId] = D_800EA6E0[objId];
+    gEntitiesAngleYArray[objId] = D_800EA8A0[objId];
+    gEntitiesAngleZArray[objId] = D_800EAA60[objId];
+}
+#elif defined(PORT)
 /* PORT: missile launch aim pass, from asm/nonmatchings/ovl17/ovl17_3/
  * func_801E23E0_ovl17.s. Builds the target basis (Kirby's rotation, entity
  * slot 0, flipped pi about Y) and the missile track's current basis,

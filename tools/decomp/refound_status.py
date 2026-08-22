@@ -77,8 +77,25 @@ def draft_sites(path, text):
             continue
         st, en = min(inner, key=lambda g: g[1] - g[0])
         block = '\n'.join(lines[st:en + 1])
-        if ('MIPS_TO_C' in block or 'NON_MATCHING' in block) and 'FACTORY:' in block:
+        if not ('MIPS_TO_C' in block or 'NON_MATCHING' in block):
+            continue
+        # The residue note is normally inside the guard, but the established
+        # house style in ovl5/ovl7/ovl19 puts it in the block comment directly
+        # ABOVE the `#ifdef`, where it reads as documentation for the whole
+        # site. Both spellings mean the same thing: banked work with a
+        # measured residue. Only looking inside re-advertised 80 already
+        # drafted functions tree-wide (24 of them in ovl7 alone) as
+        # never-attempted, which is exactly the "guarded drafts are not
+        # yours" trap RULE ZERO in LEVERS.md exists to prevent -- a lane
+        # picking them up re-derives work the permuter already owns.
+        if 'FACTORY:' in block:
             seeded.add(a)
+            continue
+        head = '\n'.join(lines[max(0, st - 80):st]).rstrip()
+        if head.endswith('*/'):
+            k = head.rfind('/*')
+            if k != -1 and 'FACTORY:' in head[k:]:
+                seeded.add(a)
     return seeded
 
 

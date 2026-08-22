@@ -1215,6 +1215,7 @@ void func_8022CD00_ovl19(GObj *g) {
     }
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 191/201, near-miss. Derived from the ASM (not the PORT arm);
  * everything up to the D_800D6B54 pair matches exactly, including using
  * `0.0` (not `0.0f`) for the gEntitiesAngleXArray store to fork IDO's
@@ -1225,7 +1226,6 @@ void func_8022CD00_ovl19(GObj *g) {
  * matter the C spelling -- tried array index, byte-offset cast, and
  * volatile byte-offset cast, all three compile identically. 10 raw insn
  * diffs, all in that one four-store cluster. */
-#ifdef MIPS_TO_C
 void func_8022CE18_ovl19(GObj *arg0) {
     void func_800B1870(GObj *);
     void func_800B20E0(void *, void ***);
@@ -1450,6 +1450,7 @@ void func_8022D5F0_ovl19(s32 arg0) {
 
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 109/221, register permutation. Derived from the ASM (not the
  * PORT arm) with two real fixes over the old sketch: func_800A9864 takes
  * 3 args (m2c's 4th was a leftover register) and the tail func_800B1900
@@ -1465,7 +1466,6 @@ void func_8022D5F0_ovl19(s32 arg0) {
  * temp-register permutation (LEVERS: no source spelling reaches it). The
  * one-word branch-offset drifts in the tail are downstream of that same
  * swap, not separate defects. */
-#ifdef MIPS_TO_C
 void func_8022D5F8_ovl19(GObj *arg0) {
     void func_8022D96C_ovl19(GObj *);
     struct UnkStruct8022FAB0 *cam;
@@ -1591,6 +1591,7 @@ void func_8022D96C_ovl19(GObj *g) {
     D_8022FAB0_ovl19->unkC = sp1C.z;
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 77/491, whole-function register pressure. Derived from the ASM
  * (not the PORT arm), which has a real bug: it names the second camera
  * slot as a fictional standalone extern `D_8022FAB4_ovl19` (an LP64-only
@@ -1607,7 +1608,6 @@ void func_8022D96C_ovl19(GObj *g) {
  * different temp registers downstream. Whole-function register-pressure
  * floor (LEVERS: no source spelling reaches it) -- prime permuter fuel
  * given its size. */
-#ifdef MIPS_TO_C
 void func_8022D9F8_ovl19(GObj *arg0) {
     void func_8022E198_ovl19(GObj *);
     extern s32 D_800D6E14;

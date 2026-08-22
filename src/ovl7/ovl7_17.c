@@ -77,7 +77,11 @@ void func_801ABBA0_ovl7(void);
 void func_801AAE60_ovl7(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
-void func_800AA018(s32);
+/* K&R form is load-bearing here: an ANSI `s32` prototype shifts register
+ * allocation in this TU (measured via objdump A/B against the last
+ * known-good build -- 60 lines of diff: $a0/$v0 renaming and an extra
+ * `move $a0,$v0` where the ROM has a nop, across 3 unrelated callers). */
+void func_800AA018();
 void func_801C2264_ovl7(GObj *);
 void func_801C2478_ovl7(GObj *);
 void func_801C26BC_ovl7(GObj *);

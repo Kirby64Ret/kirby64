@@ -688,7 +688,12 @@ void func_801F1454_ovl10(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1454_ovl10.s")
 #endif
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 198/199. This draft also OWNS the N64-side prototype for func_800A9864:
+ * ovl10_5b.c keeps that prototype in the PORT-only block at the top of the file, so
+ * nothing declares it in the N64 build, and IDO allows exactly one block-scope copy
+ * per TU. If a later draft in this file needs it too (func_801F1A24 does), the fix is
+ * to move those prototypes to real file scope rather than duplicating them. */
 
 /* Snaps this track's position and angles onto mount node 1/2/3 of the
  * D_801F4D60 wheel object, picked by arg1 (0..2); other values are a no-op.
@@ -723,7 +728,7 @@ void func_801F1554_ovl10(GObj *arg0, s32 arg1) {
     gEntitiesAngleYArray[omCurrentObj->objId] = ang.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = ang.z;
 }
-#else
+#elif defined(PORT)
 extern u32 D_801F4D60_ovl10;
 
 /* Snaps this track's position and angles onto mount node 1/2/3 of the
@@ -756,6 +761,8 @@ void func_801F1554_ovl10(GObj *arg0, s32 arg1) {
     gEntitiesAngleYArray[omCurrentObj->objId] = ang.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = ang.z;
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1554_ovl10.s")
 #endif
 
 extern s32 D_800D6B98;
@@ -810,63 +817,15 @@ s32 func_801F19DC_ovl10(s32 arg0, s32 arg1) {
     return D_800D6BE0[arg0 * 6 + arg1] & 3;
 }
 
-#ifndef PORT
-
-/* Wheel-item setup for the walking prizes (arg2 = 1 waddle dee, 2 adeleine,
- * 3 king dedede; other kinds skip the model swap): stops the track's music
- * cue when the prize kind is locked out (func_801F1934), loads the model +
- * path table, spawns the escort track (state 3/4/5), plays one of the two
- * D_801F4818[arg2] anim pairs at random, scales to 0.2, snaps onto wheel
- * mount arg1, and attaches the sparkle particle. */
-void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
-    extern void func_800B1900(u16);
-    extern s32 random_soft_s32_range(s32);
-    extern u32 D_801F48F4_ovl10[];
-    extern u32 D_801F4818_ovl10[];
-    extern u32 D_801F4884_ovl10[];
-    extern u32 D_801F48BC_ovl10[];
-    extern u32 D_801F48D8_ovl10[];
-
-    s32 r;
-    s32 second;
-    void *particle;
-
-    if (func_801F1934_ovl10(arg2) == 0) {
-        func_800B1900((u16) omCurrentObj->objId);
-    }
-    switch (arg2) {
-    case 1:
-        func_800A9864(D_801F48F4_ovl10[arg2], 0x2C, 0x10);
-        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F4884_ovl10;
-        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 3;
-        break;
-    case 2:
-        func_800A9864(D_801F48F4_ovl10[arg2], 0x2C, 0x10);
-        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F48D8_ovl10;
-        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 4;
-        break;
-    case 3:
-        func_800A9864(D_801F48F4_ovl10[arg2], 0x2C, 0x10);
-        D_800E0490[omCurrentObj->objId] = (f32 **) D_801F48BC_ovl10;
-        D_800E98E0[request_track_general(0x29, 0x1E, 0x50)] = 5;
-        break;
-    }
-    r = random_soft_s32_range(2);
-    func_800AA018(D_801F4818_ovl10[(arg2 * 4) + (r * 2)]);
-    second = D_801F4818_ovl10[(arg2 * 4) + (r * 2) + 1];
-    if (second != 0) {
-        func_800AA018(second);
-    }
-    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
-    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
-    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
-    func_801F1554_ovl10(arg0, arg1);
-    particle = func_800FF144();
-    D_800EA520[omCurrentObj->objId] = (s32) (uintptr_t) particle;
-    func_801F0014_ovl10(particle);
-    curObjSleepForever();
-}
-#else
+/* NOT MEASURABLE YET -- blocked on this TU's declaration scoping, not on codegen.
+ * ovl10_5b.c keeps func_800A9864 / func_800FF144 / func_800FF1CC and friends inside
+ * the PORT-only prototype block at the top of the file, so the N64 build has NO
+ * declaration in scope. Exactly one draft can supply them at block scope: IDO
+ * rejects a second block-scope copy in another function AND rejects the implicit
+ * int a bare call creates there. func_801F1554_ovl10 currently owns the
+ * declaration, so this one cannot compile alongside it. Un-blocking is a one-line
+ * coordinator change: move those prototypes to real file scope. */
+#ifdef PORT
 extern void func_800B1900(u16);
 extern s32 random_soft_s32_range(s32);
 extern u32 D_801F48F4_ovl10[];
@@ -921,6 +880,8 @@ void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
     func_801F0014_ovl10(particle);
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1A24_ovl10.s")
 #endif
 
 /* D_801F4CA8_ovl10 = 0.2f : now emitted by this TU */

@@ -76,6 +76,7 @@ extern struct Ovl19_2Struct D_8022F170_ovl19[3], // 1-3
                             D_8022F4D0_ovl19[1], // 37
                             D_8022F4E8_ovl19[1]; // 38
 
+#ifdef MIPS_TO_C
 /* FACTORY: 97/801, UNCERTAIN -- seeded from the PORT arm (time-boxed).
  * Compiles, word count matches (801/801), but residue is high (704/801).
  * ROM holds 6 saved slots ($s0-$s5 + $f20) across the -1 init block and
@@ -83,7 +84,6 @@ extern struct Ovl19_2Struct D_8022F170_ovl19[3], // 1-3
  * labels through most of the body -- same shape as the sibling
  * func_802260FC_ovl19 in this file. Worth a fresh m2c pass over the -1
  * init block before feeding to the permuter. */
-#ifdef MIPS_TO_C
 void func_80223200_ovl19(GObj *arg0) {
     void func_8011CF58(void);
     void func_8011DC04(u32);
@@ -637,6 +637,7 @@ void func_80223200_ovl19(GObj *arg0) {
 #endif
 
 
+#ifdef MIPS_TO_C
 /* FACTORY: 23/446, UNCERTAIN -- seeded from the PORT arm (time-boxed, not
  * independently re-derived line-by-line from the .s). Compiles and is
  * instruction-count-close (446/446) but the diff is nearly whole-function
@@ -644,7 +645,6 @@ void func_80223200_ovl19(GObj *arg0) {
  * in this file. Worth a fresh m2c pass -- likely a real control-flow
  * divergence (frame size differs, -0x28 target vs -0x38 here), not a
  * plain register floor -- before feeding to the permuter. */
-#ifdef MIPS_TO_C
 void func_80223E68_ovl19(GObj *arg0) {
     s32 func_80153A18_ovl3(void);
     /* func_800FF200 stays implicitly declared -- compiled code later in
@@ -1019,6 +1019,7 @@ void func_80224858_ovl19(void) {
     }
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 66/861, UNCERTAIN -- seeded from the PORT arm (time-boxed).
  * Compiles, word count matches (861/861), residue high (795/861) --
  * same shape as siblings func_80223200_ovl19/func_802260FC_ovl19 in
@@ -1026,7 +1027,6 @@ void func_80224858_ovl19(void) {
  * draft's IDO allocation differs, cascading labels through most of the
  * body. Worth a fresh m2c pass over the -1 init block before feeding to
  * the permuter. */
-#ifdef MIPS_TO_C
 void func_802248C0_ovl19(GObj *arg0) {
     void func_8011CF58(void);
     void func_8011DC04(u32);
@@ -1628,6 +1628,7 @@ void func_802248C0_ovl19(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_802248C0_ovl19.s")
 #endif
 
+#ifdef MIPS_TO_C
 /* FACTORY: 21/501, BLOCKED-shape. Seeded from the PORT arm; confirmed by
  * reading the .s directly that this is NOT a register floor: the ROM
  * uses `bc1fl`/`bc1tl` LIKELY branches with the `gEntitiesAngleXArray[objId]
@@ -1639,7 +1640,6 @@ void func_802248C0_ovl19(GObj *arg0) {
  * this project hasn't found yet (same floor hit the two siblings,
  * func_80223E68_ovl19 and func_80226AA8_ovl19). Not a quick permuter
  * target -- flagging for a source-shape investigation, not just regalloc. */
-#ifdef MIPS_TO_C
 void func_80225620_ovl19(GObj *arg0) {
     s32 func_80153A18_ovl3(void);
     s32 func_80121828(f32, f32, f32, f32);
@@ -2095,6 +2095,7 @@ void func_80225FB4_ovl19(void) {
     }
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 84/619, UNCERTAIN -- seeded from the PORT arm (time-boxed).
  * Compiles and word count is close (619/619) but residue is high
  * (535/619). The ROM holds 4 saved regs ($s1-$s4) across the whole -1
@@ -2102,7 +2103,6 @@ void func_80225FB4_ovl19(void) {
  * in count/role, cascading register labels through most of the body.
  * Worth a fresh m2c pass over the -1 init block specifically before
  * feeding to the permuter. */
-#ifdef MIPS_TO_C
 void func_802260FC_ovl19(GObj *arg0) {
     void func_8011CF58(void);
     void func_800A9760(u32);
@@ -2526,6 +2526,7 @@ void func_802260FC_ovl19(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_802260FC_ovl19.s")
 #endif
 
+#ifdef MIPS_TO_C
 /* FACTORY: 7/340, UNCERTAIN -- seeded from the PORT arm (time-boxed, not
  * independently re-derived line-by-line from the .s the way the other
  * drafts in this file were). Compiles and is instruction-count-close
@@ -2533,7 +2534,6 @@ void func_802260FC_ovl19(GObj *arg0) {
  * as more than a register floor -- worth a fresh m2c pass before feeding
  * this to the permuter. Flagging the uncertainty rather than claiming a
  * clean near-miss. */
-#ifdef MIPS_TO_C
 void func_80226AA8_ovl19(GObj *arg0) {
     s32 func_80153A18_ovl3(void);
     void play_sound(s32);
@@ -3113,6 +3113,7 @@ void func_80227F38_ovl19(void) {
     D_800E8220[3] = temp_v0->unk4;
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 121/262, frame-size floor. Derived from the ASM (not the PORT
  * arm); the u16-truncated func_800B1900 kills (track1/track2/objId low
  * 16 bits of a spilled s32, same idiom as the sibling func_8022889C_ovl19)
@@ -3123,7 +3124,6 @@ void func_80227F38_ovl19(void) {
  * count still matches the target (262). Frame-size/register floor
  * (LEVERS: no source spelling reaches it) -- sibling of
  * func_8022889C_ovl19, same clone family. */
-#ifdef MIPS_TO_C
 void func_80227F90_ovl19(GObj *arg0) {
     struct UnkStruct8022FAB0 *func_800FF144(void);
     void func_802283A8_ovl19(GObj *);
@@ -3367,6 +3367,7 @@ void func_80228874_ovl19(GObj *arg0) {
     func_800FF200(D_8022FAB0_ovl19);
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 20/234, saved-register count. Derived from the ASM (not the
  * PORT arm), fixing one real bug: the two/three func_800B1900 kills read
  * their argument as a HALF-WORD off the spilled-s32 stack slot (track1 at
@@ -3381,7 +3382,6 @@ void func_80228874_ovl19(GObj *arg0) {
  * live-across-call value -- made it worse (215/234), reverted. Whole-
  * function saved-register-count floor (LEVERS: no source spelling
  * reaches it) -- sibling of func_80227F90_ovl19, same family. */
-#ifdef MIPS_TO_C
 void func_8022889C_ovl19(GObj *arg0) {
     void func_80228C44_ovl19(GObj *);
     extern struct Ovl19_2Struct D_8022F578_ovl19[];
