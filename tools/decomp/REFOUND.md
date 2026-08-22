@@ -150,6 +150,14 @@ percentage. Ranked accordingly:
      c. Re-run `verify.py <file> --all` AND `check_tu_size.py`.
      d. Keep only if the match count did not drop and the TU size is exact;
         otherwise revert and leave a note saying K&R was load-bearing here.
+     e. **Then build the PC object**
+        (`make -f Makefile.pc build/pc/src/<ovl>/<file>.o`). Steps a-d are all
+        N64-side and will happily pass a change that breaks the port: a
+        converted declaration whose PORT arm is still `(void)`, or whose
+        caller passes no argument, compiles fine for N64 and fails for PC.
+        Measured on func_801E15A4_ovl17. If it breaks, fix the PC side
+        (usually the caller passing the register the ROM already leaves in
+        $a0) rather than reverting the type fix.
 2. **Names and types over percentage.** A function whose arguments and
    struct fields are named from evidence is worth more than three more
    matched-but-opaque functions.

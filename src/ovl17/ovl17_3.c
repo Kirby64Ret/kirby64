@@ -88,7 +88,7 @@ void func_801E0D00_ovl17(struct GObj *arg0) {
     f32 temp_f0;
 
     if (D_800E7880[omCurrentObj->objId] == 1) {
-        func_801E15A4_ovl17();
+        func_801E15A4_ovl17(arg0);
     }
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800DF150[omCurrentObj->objId] = func_801E109C_ovl17;
@@ -255,7 +255,12 @@ s32 func_801E14B0_ovl17(void) {
      the listing homes $a0 at 0x78($sp) on entry and reloads it for the
      func_801A3E80_ovl7 tail call, so this takes `struct GObj *`.  Converted
      under the QUALITY BAR a-d protocol: match count unchanged, TU size exact,
-     worth 6 diffs.
+     worth 6 diffs.  NOTE the protocol needs a fourth check the bar does not
+     list: the PC build.  This conversion broke it (the caller passed no
+     argument and the PORT arm was still `(void)`), so the caller now passes
+     its own arg0 -- which is exactly the register the ROM leaves in $a0, its
+     jal having a bare nop in the delay slot.  That caller is still a pragma
+     on N64, so the call-site edit is PC-only.
    - `u8 unused[8]` restores the ROM's 0x78 frame (we were 8 short).  Note this
      contradicts the ovl9_15 result where a dead array was dropped: IDO keeps
      the filler here, where the function already has an array local (skip[3]),
@@ -327,7 +332,7 @@ void func_801E15A4_ovl17(struct GObj *arg0) {
  * tail-calling func_801A3E80_ovl7. On N64 that tail call reuses the
  * caller's leftover $a0 -- always omCurrentObj here (every caller is a
  * process main), which is what the PC arm passes explicitly. */
-void func_801E15A4_ovl17(void) {
+void func_801E15A4_ovl17(struct GObj *arg0) {
     s32 func_801ACD48_ovl7(s32, s32);
     void func_801E328C_ovl17(Vector *);
     void func_801E1890_ovl17(struct GObj *);
@@ -372,7 +377,7 @@ void func_801E15A4_ovl17(void) {
         D_800E9560[omCurrentObj->objId] += 1;
     }
     ent->unk40 = 1;
-    func_801A3E80_ovl7(omCurrentObj);
+    func_801A3E80_ovl7(arg0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E15A4_ovl17.s")

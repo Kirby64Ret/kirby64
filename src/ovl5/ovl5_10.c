@@ -22,6 +22,11 @@ typedef union Unk48Ptrs {
 
 extern Unk48Ptrs D_80189820_ovl5;
 extern struct UnkStruct8015C740 D_80189BC0_ovl5;
+/* K&R form is load-bearing on all four declarations below: each has a real
+ * 1-arg (GObj *) signature (see their definitions further down), but every
+ * call site in func_8017F660_ovl5 just below passes 0 args -- the ROM
+ * relies on whatever GObj* is already sitting in $a0. An ANSI prototype
+ * breaks compilation with "too few arguments". */
 void func_8017F6F8_ovl5();
 void func_8017FA7C_ovl5();
 void func_8017FD84_ovl5();

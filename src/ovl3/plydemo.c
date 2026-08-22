@@ -58,9 +58,14 @@ extern void func_800FA414(s32);
 extern void func_801708A0_ovl3(s32, s32, f32);
 extern void func_8022E58C_ovl19(void);
 
-void func_80157C5C_ovl3();
+void func_80157C5C_ovl3(s32);
 void func_80157F18_ovl3(struct GObj *);
 void func_8015814C_ovl3(s32, void (*)(), f32);
+/* K&R form is load-bearing here: its own definition below (also K&R) takes
+ * GObj *arg0, which it dereferences -- but all 4 call sites in this file
+ * pass 0 args. The ROM relies on whatever GObj* is already sitting in $a0.
+ * An ANSI prototype breaks compilation with "too few arguments", and the
+ * K&R definition itself is equally load-bearing for the same reason. */
 void func_80158294_ovl3();
 void func_801583BC_ovl3(void);
 void func_80158410_ovl3(s32);
@@ -240,7 +245,7 @@ err:
  * 0x8012E7C0), spelled as such so PC readers see the same storage. */
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
-extern void func_800F8E6C();
+extern void func_800F8E6C(GObj *);
 extern s32 func_80153FC8_ovl3(void);
 
 void func_801567B8_ovl3(s32 arg0) {
@@ -961,7 +966,7 @@ void func_80158EEC_ovl3(s32 arg0) {
  * DObj, re-derives track progress from the x delta to the ride, and walks
  * off at 14 with the walk animation. The widened D_800DFBD0 cell for N64
  * +0xC is index 3. */
-extern void func_800B4954();
+extern void func_800B4954(GObj *);
 extern void func_800B5064(s32);
 extern void func_80122B40(void);
 extern void func_800BB468(s32, s32);

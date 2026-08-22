@@ -1530,7 +1530,89 @@ void func_801E03CC_ovl10(void) {
     }
 }
 
-#ifdef PORT
+#ifndef PORT
+/* State 0xC (phase-2 reposition): zeroes all vertical motion, picks the next
+ * waypoint slot for D_800E9C60 -- usually a neighbour from the D_801F43BC /
+ * D_801F43D4 tables, 1-in-3 a fresh random slot different from the current one --
+ * then flies to that D_801F4D48/D_801F4D30 waypoint and returns to state 0xB.
+ * The descent loop is INLINE here: the host build factors it into
+ * pc_ovl10_descend(), but the ROM emits it in full inside each of the three
+ * callers, and it uses ABSF() -- whose argument is expanded THREE times, so each
+ * abs of a call really does make three func_800F9828 calls. */
+void func_801E0460_ovl10(s32 arg0) {
+    extern u32 D_801F43BC_ovl10[];
+    extern u32 D_801F43D4_ovl10[];
+    s32 next;
+
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DDFD0[omCurrentObj->objId] = 0xC;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3AA8_ovl10;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801F4094_ovl10;
+    func_800AA018(0x10307);
+    func_800AA018(0x10306);
+    D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3590[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E33D0[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3210[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = 65535.0f;
+    D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    if (random_soft_s32_range(3) != 0) {
+        if (random_soft_s32_range(2) != 0) {
+            next = D_801F43BC_ovl10[D_800E9C60[omCurrentObj->objId]];
+        } else {
+            next = D_801F43D4_ovl10[D_800E9C60[omCurrentObj->objId]];
+        }
+    } else {
+        next = random_soft_s32_range(6);
+        while (next == D_800E9C60[omCurrentObj->objId]) {
+            next = random_soft_s32_range(6);
+        }
+    }
+    D_800E9C60[omCurrentObj->objId] = next;
+    D_800EA1A0[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800EA520[omCurrentObj->objId] = 0;
+    while (D_800EA520[omCurrentObj->objId] < 0xA) {
+        D_800E6850[omCurrentObj->objId] = ABSF(D_801F4338_ovl10[D_800EA520[omCurrentObj->objId]]);
+        D_800E3C90[omCurrentObj->objId] = ABSF(D_801F4338_ovl10[D_800EA520[omCurrentObj->objId]]);
+        D_800EA8A0[omCurrentObj->objId] = 100.0f;
+        D_800EA6E0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+        while ((D_800EA520[omCurrentObj->objId] < 0xB) &&
+               ((D_801F4390_ovl10[D_800EA520[omCurrentObj->objId]] < D_800EA6E0[omCurrentObj->objId]) ||
+                (D_801F4390_ovl10[D_800EA520[omCurrentObj->objId]] <
+                 D_800EA8A0[omCurrentObj->objId]))) {
+            D_800EA6E0[omCurrentObj->objId] = ABSF(func_800F9828(omCurrentObj->objId, D_801F4D48_ovl10[D_800E9C60[omCurrentObj->objId]]));
+            if (0.0f < func_800F9828(omCurrentObj->objId, D_801F4D48_ovl10[D_800E9C60[omCurrentObj->objId]])) {
+                D_800E6690[omCurrentObj->objId] =
+                    -D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            } else {
+                D_800E6690[omCurrentObj->objId] =
+                    D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            }
+            D_800EA8A0[omCurrentObj->objId] =
+                ABSF(gEntitiesNextPosYArray[omCurrentObj->objId] - D_801F4D30_ovl10[D_800E9C60[omCurrentObj->objId]]);
+            if (gEntitiesNextPosYArray[omCurrentObj->objId] < D_801F4D30_ovl10[D_800E9C60[omCurrentObj->objId]]) {
+                D_800E3750[omCurrentObj->objId] =
+                    -D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            } else {
+                D_800E3750[omCurrentObj->objId] =
+                    D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            }
+            ohSleep(1);
+        }
+        func_800AF27C();
+        D_800EA520[omCurrentObj->objId] += 1;
+    }
+    D_800E9020[omCurrentObj->objId] = 0.0f;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
+}
+#else
 extern u32 D_801F43BC_ovl10[];
 extern u32 D_801F43D4_ovl10[];
 
@@ -1580,8 +1662,6 @@ void func_801E0460_ovl10(s32 arg0) {
     D_800E9020[omCurrentObj->objId] = 0.0f;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E0460_ovl10.s")
 #endif
 
 s32 func_8019A900_ovl7(s32 *);

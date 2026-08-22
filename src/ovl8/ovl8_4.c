@@ -240,6 +240,11 @@ void func_801D560C_ovl8(struct GObj *arg0) {
     func_801696F0_ovl3(arg0);
 }
 
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (4x): its real signature is void func_801D57E0_ovl8(struct GObj *) (see
+ * its definition below), but every call site above passes 0 args -- the
+ * ROM relies on whatever GObj* is already sitting in $a0. An ANSI prototype
+ * breaks compilation with "too few arguments". */
 void func_801D57E0_ovl8();
 
 void func_801D56E0_ovl8(void) {

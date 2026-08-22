@@ -1229,6 +1229,53 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
     }
     return 0;
 }
+#elif defined(PORT)
+u16 func_80171E6C_ovl5(GObj *arg0) {
+    u16 func_8017232C_ovl5(u32, s32, s32 *, u32);
+    u32 lane = D_800E9AA0[omCurrentObj->objId].as_u32;
+    s32 step;
+
+    D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[lane];
+    step = D_8018E998_ovl5[lane];
+    if ((step == 0x51) && (D_800E9C60[omCurrentObj->objId] == 0)) {
+        return 0;
+    }
+    D_8018E468_ovl5[lane] += 1;
+    D_800E9E20[omCurrentObj->objId] += 1;
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        return 0;
+    }
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        D_800E98E0[omCurrentObj->objId] -= 1;
+        return 0;
+    }
+    if (D_8018ECA8_ovl5[lane] != 0) {
+        return func_8017232C_ovl5(lane, lane * 4, &D_8018E998_ovl5[lane], lane);
+    }
+    if (gPlayerControllers[lane].buttonPressed & 0x4000) {
+        play_sound(0xBA);
+        D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+        D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_u32;
+        D_8018E998_ovl5[lane] += 1;
+        return 0;
+    }
+    if (gPlayerControllers[lane].buttonPressed & 0x8000) {
+        play_sound(0xBA);
+        if (step == 0x50) {
+            D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+            D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_u32;
+            D_8018E998_ovl5[lane] += 1;
+        } else {
+            D_800E9FE0[omCurrentObj->objId].as_u32 = 2;
+            D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_u32;
+            D_8018E998_ovl5[lane] += 2;
+        }
+    }
+    return 0;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171E6C_ovl5.s")
+#endif
 
 // Draft, 2/61: with THESE three locals every spill slot is exact (0x1C/20/24)
 // and only the frame differs, 0x30 vs 0x28. Re-measured 2026-08-12: dropping a
@@ -1312,13 +1359,202 @@ s32 func_80172C50_ovl5(s32 arg0) {
     return 0;
 }
 
-#ifdef PORT
 /* Course-tile entity for lane arg1, step arg2, parked at z arg3: registers
  * itself in the lane grid, spawns the model for its tile kind (rock, log,
  * rapids, whirlpool, cloud 0x18...), then services pokes through
  * D_800E98E0[objId]: bonk-away (kinds 4/5), sink (10/19), raft-pair
  * promote (13/14), melt (20), crack (21); despawns once the racer is 7
- * (obstacles) or 11 (rafts) tiles past it. */
+ * (obstacles) or 11 (rafts) tiles past it.
+ *
+ * FACTORY: 11/571, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * the PORT: `D_8018ECA0_ovl5`'s access used the GCC-only
+ * `__asm__("D_8018ECA0_ovl5")` symbol-alias extension on a distinct
+ * u8[] view (same bug as func_80171950_ovl5) -- rewritten as
+ * `*(u8 *) &D_8018ECA0_ovl5` off the real scalar `extern s32
+ * D_8018ECA0_ovl5` declared elsewhere in this file. Also added local
+ * ANSI prototypes for func_800A9864, func_801773C4_ovl5 and
+ * func_80173564_ovl5 (K&R implicit-int traps otherwise). Compiles,
+ * word count matches (571/571), residue extreme (560/571) -- broad
+ * register/frame relabeling from word 0. Worth a fresh m2c pass
+ * before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_80172C7C_ovl5(GObj *arg0, s32 arg1, s32 arg2, f32 arg3) {
+    void func_800A9864(s32, s32, s32);
+    void func_801773C4_ovl5(struct GObj *);
+    void func_80173564_ovl5(GObj *);
+    extern u32 D_80187D24_ovl5[];
+    extern u32 D_80187D34_ovl5[];
+    extern u32 D_80187D44_ovl5[];
+    extern u32 D_80187D54_ovl5[];
+    extern u32 D_80187D64_ovl5[];
+    extern u32 D_80187D74_ovl5[];
+    extern u32 D_80187D84_ovl5[];
+    extern u32 D_80187DE0_ovl5[];
+    extern u32 D_80187DE8_ovl5[];
+    extern u32 D_80187EA0_ovl5[];
+    extern u32 D_80187EA4_ovl5[];
+    extern u32 D_80187EB0_ovl5[];
+    extern s32 D_8018ECA0_ovl5;
+    u8 kind;
+
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+    D_800E9C60[omCurrentObj->objId] = arg1;
+    D_8018E478_ovl5[arg1][arg2] = omCurrentObj->objId;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    kind = func_80172B10_ovl5(arg1, arg2);
+    if (!((kind == 0xD) || (kind == 0xE) || (func_8016FF88_ovl5(kind) != 0))) {
+        D_800EA520[omCurrentObj->objId] = 0x29A;
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = arg3;
+    switch (kind) {
+        case 0:
+            if (D_8018ECD8_ovl5 == 3) {
+                func_800A9864(D_80187D24_ovl5[arg1], 0x1869F, 0x10);
+            } else {
+                func_800A9864(D_80187D34_ovl5[arg1], 0x1869F, 0x10);
+            }
+            break;
+        case 1:
+            if (D_8018ECD8_ovl5 == 3) {
+                func_800A9864(D_80187D44_ovl5[arg1], 0x1869F, 0x10);
+            } else {
+                func_800A9864(D_80187D54_ovl5[arg1], 0x1869F, 0x10);
+            }
+            break;
+        case 24:
+            if (D_8018ECD8_ovl5 == 3) {
+                setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+                D_800DEF90[omCurrentObj->objId] = NULL;
+            } else {
+                func_800A9864(D_80187DE0_ovl5[0], 0x1869F, 0x10);
+                if (D_80187EA0_ovl5[0] != 0) {
+                    func_800AA018(D_80187EA0_ovl5[0]);
+                }
+                if (D_80187EA4_ovl5[0] != 0) {
+                    func_800AA018(D_80187EA4_ovl5[0]);
+                }
+            }
+            break;
+        case 2:
+        case 13:
+        case 15:
+            func_800A9864(D_80187D64_ovl5[D_8018ECD8_ovl5], 0x1869F, 0x10);
+            break;
+        case 3:
+        case 14:
+        case 16:
+            func_800A9864(D_80187D74_ovl5[D_8018ECD8_ovl5], 0x1869F, 0x10);
+            break;
+        default:
+            func_800A9864(D_80187D84_ovl5[kind], 0x1869F, 0x10);
+            if (D_80187DE8_ovl5[kind * 2] != 0) {
+                func_800AA018(D_80187DE8_ovl5[kind * 2]);
+            }
+            if (D_80187DE8_ovl5[kind * 2 + 1] != 0) {
+                func_800AA018(D_80187DE8_ovl5[kind * 2 + 1]);
+            }
+            break;
+    }
+    if ((kind != 0x18) && (D_8018ECD8_ovl5 == 3)) {
+        if (D_8018ECD8_ovl5 == 3) {
+            func_800AF7A0(0x2D);
+        } else {
+            func_800AF7A0(0x1869F);
+        }
+        omGMoveObjDL(arg0, arg0->dl_link, 0x10);
+    }
+    while (*(u8 *) &D_8018ECA0_ovl5 != 0) {
+        ohSleep(1);
+    }
+    D_800DF150[omCurrentObj->objId] = func_80173564_ovl5;
+    while (1) {
+        if (D_800E98E0[omCurrentObj->objId] != 0) {
+            switch (kind) {
+                case 4:
+                case 5:
+                    play_sound(0xA);
+                    kind = (kind == 4) ? 6 : 7;
+                    func_800A9760(D_80187D84_ovl5[kind]);
+                    if (D_8018ECD8_ovl5 == 3) {
+                        func_800AF7A0(0x2D);
+                    } else {
+                        func_800AF7A0(0x1869F);
+                    }
+                    if (D_80187DE8_ovl5[kind * 2] != 0) {
+                        func_800AA018(D_80187DE8_ovl5[kind * 2]);
+                    }
+                    if (D_80187DE8_ovl5[kind * 2 + 1] != 0) {
+                        func_800AA018(D_80187DE8_ovl5[kind * 2 + 1]);
+                    }
+                    func_800AF27C();
+                    func_800AFBB4(0, omCurrentObj);
+                    break;
+                case 10:
+                case 19:
+                    func_800AA018(D_80187EB0_ovl5[0]);
+                    func_800AF27C();
+                    func_800AA018(D_80187DE8_ovl5[kind * 2]);
+                    D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 0x18;
+                    kind = 0x18;
+                    func_800AFBB4(0, omCurrentObj);
+                    break;
+                case 13:
+                case 14:
+                    D_800E9C60[D_800EA520[omCurrentObj->objId]] = 1;
+                    if (kind == 0xD) {
+                        D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 2;
+                        kind = 2;
+                    } else {
+                        D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 3;
+                        kind = 3;
+                    }
+                    break;
+                case 20:
+                    ohSleep(6);
+                    func_800AFBB4(0, omCurrentObj);
+                    D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 2;
+                    kind = 2;
+                    break;
+                case 21:
+                    ohSleep(2);
+                    kind = 0x16;
+                    D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 0x16;
+                    func_800A9760(D_80187D84_ovl5[kind]);
+                    if (D_8018ECD8_ovl5 == 3) {
+                        func_800AF7A0(0x2D);
+                    } else {
+                        func_800AF7A0(0x1869F);
+                    }
+                    break;
+            }
+            D_800E98E0[omCurrentObj->objId] = 0;
+        }
+        if (((kind == 0xC) || (kind == 8) || (kind == 9)) && (D_800E9AA0[omCurrentObj->objId].as_u32 != 0)) {
+            func_800AECC0(0.0f);
+            func_800AED20(0.0f);
+            while (func_801707B0_ovl5(arg1) != 0) {
+                ohSleep(1);
+            }
+            func_800AECC0(2.0f);
+            func_800AED20(2.0f);
+            D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+        }
+        if (func_8016FF88_ovl5(kind) != 0) {
+            if ((D_8018E998_ovl5[arg1] - arg2) >= 0xB) {
+                D_8018E478_ovl5[arg1][arg2] = 0;
+                func_800B1900((u16) omCurrentObj->objId);
+            }
+        } else if ((D_8018E998_ovl5[arg1] - arg2) >= 7) {
+            D_8018E478_ovl5[arg1][arg2] = 0;
+            func_800B1900((u16) omCurrentObj->objId);
+        }
+        ohSleep(1);
+    }
+}
+#elif defined(PORT)
 void func_80172C7C_ovl5(GObj *arg0, s32 arg1, s32 arg2, f32 arg3) {
     extern u32 D_80187D24_ovl5[];
     extern u32 D_80187D34_ovl5[];
@@ -1556,7 +1792,62 @@ s32 func_80173778_ovl5(s32 arg0) {
     }
 }
 
-#ifdef PORT
+/* Raft-chain extender: when fewer than 12 tiles remain ahead of the last
+ * live tile of lane arg0, spawns arg1 new tile tracks behind it (450 units
+ * apart), attaching raft-pair (13/14), rapids and whirlpool companion
+ * tracks as the sampled tile kind demands.
+ *
+ * FACTORY: 7/144, UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
+ * found; compiles as-is. Word count matches (144/144), residue extreme
+ * (137/144) -- broad register/frame relabeling from word 0. Worth a
+ * fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_80173804_ovl5(s32 arg0, s32 arg1) {
+    Vector v;
+    s32 last;
+    s32 i;
+    s32 pos;
+    s32 t;
+    s32 t2;
+    u8 kind;
+
+    last = func_80173778_ovl5(arg0);
+    if ((last - D_8018E998_ovl5[arg0]) < 0xC) {
+        if (arg1 > 0) {
+            pos = last + 1;
+            for (i = 0; (i != arg1) && (pos < 0x52); i++, pos++) {
+                v = func_80172B98_ovl5(arg0, last);
+                t = request_track_general(8, 0, 0x70);
+                D_800E98E0[t] = 2;
+                D_800E9AA0[t].as_u32 = arg0;
+                D_800E9C60[t] = pos;
+                D_800EA6E0[t] = v.z + 450.0f + (450.0f * (f32) i);
+                kind = func_80172B10_ovl5(arg0, pos);
+                if ((kind == 0xD) || (kind == 0xE)) {
+                    t2 = request_track_general(8, 0, 0x70);
+                    D_800E98E0[t2] = 0xB;
+                    D_800E9AA0[t2].as_u32 = arg0;
+                    D_800E9C60[t2] = pos;
+                    D_800EA520[t] = t2;
+                }
+                if (func_8016FF88_ovl5(kind) != 0) {
+                    t2 = request_track_general(8, 0, 0x70);
+                    D_800E98E0[t2] = 0xC;
+                    D_800E9AA0[t2].as_u32 = arg0;
+                    D_800E9C60[t2] = pos;
+                    D_800EA520[t] = t2;
+                }
+                if (func_80172C50_ovl5(pos) != 0) {
+                    t2 = request_track_general(8, 0, 0x70);
+                    D_800E98E0[t2] = 0x10;
+                    D_800E9AA0[t2].as_u32 = arg0;
+                    D_800E9C60[t2] = pos;
+                }
+            }
+        }
+    }
+}
+#elif defined(PORT)
 /* Raft-chain extender: when fewer than 12 tiles remain ahead of the last
  * live tile of lane arg0, spawns arg1 new tile tracks behind it (450 units
  * apart), attaching raft-pair (13/14), rapids and whirlpool companion

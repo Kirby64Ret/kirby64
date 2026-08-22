@@ -503,7 +503,7 @@ void func_8015B75C_ovl3(struct GObj *arg0) {
     extern void func_800B26D8(Vector *, s32, s32);
     extern s32 func_801693C4_ovl3(s32);
     extern void func_80162150_ovl3(void);
-    s32 func_80155424_ovl3(struct PositionState *);
+    s32 func_80155424_ovl3();
     static const f32 pc_rock_spd[3] = { 6.0f, 8.0f, 10.0f };
     s32 id = omCurrentObj->objId;
     struct PcPlyshotFx *fx;
@@ -3023,7 +3023,7 @@ void func_80160A50_ovl3(s32 arg0) {
 extern char D_80190E80_ovl3[];
 extern f32 D_800EC9E4;
 extern s32 func_801693C4_ovl3(s32);
-s32 func_80155424_ovl3();
+s32 func_80155424_ovl3(struct PositionState *);
 
 void func_80160D84_ovl3(s32 arg0) {
     s32 id;

@@ -29,6 +29,12 @@ extern FUNCLIST D_801CD718_ovl7;
 void func_8019B424_ovl7(struct GObj *);
 void eneTurnCommon(s32);
 void func_8019F3B0_ovl7(void);
+/* K&R form is load-bearing on every repeat of this declaration in this file
+ * (3x): its real signature is s32 func_801A0D74_ovl7(GObj *), but this file
+ * calls it with both 1 arg (line ~154) and 0 args (lines ~297, ~505, ~644,
+ * ~841) -- the ROM relies on whatever GObj* is already sitting in $a0 at the
+ * 0-arg sites. An ANSI prototype breaks compilation with "too few
+ * arguments". */
 s32 func_801A0D74_ovl7();
 void func_801A3280_ovl7(void);
 void func_801B76CC_ovl7(GObj *);
@@ -59,7 +65,7 @@ void curObjSleepForever(void);
 void func_801ACF84_ovl7(GObj *);
 void func_801A03B4_ovl7(void);
 extern s32 D_800E98E0[];
-void func_801B6588_ovl7();
+void func_801B6588_ovl7(void);
 void func_801B63E4_ovl7(GObj *);
 extern s32 D_800EA360[];
 extern f32 D_800E64D0[], D_800E6690[], D_800E6850[], D_800E6A10[];

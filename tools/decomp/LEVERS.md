@@ -214,3 +214,17 @@ Anchor on the **LAST** `.size` in the listing (anchoring on the first matches a 
 
 39. **Ternary vs if/else changes the order `-1`/`1` are materialised in**
     (func_801105E8, 5 diffs).
+
+## STATIC ASSERTS UNDER IDO
+
+IDO has no `_Static_assert`, and it treats a negative ARRAY size as warning
+654 only -- so the usual `typedef char x[cond ? 1 : -1]` trick silently
+passes. A negative BITFIELD WIDTH is rejected outright, so that is the form
+that actually locks a layout:
+
+    struct { int _assert : (sizeof(T) == 0x78) ? 1 : -1; };
+
+Verified by flipping one and watching the build fail. Put these behind
+`#ifndef PORT` -- the PORT build widens pointers and pins its own shape.
+An assert of exactly this kind caught `sizeof(UnkGenerator)` being 0x5C when
+the pool allocator's real stride is 0x78.
