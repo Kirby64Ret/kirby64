@@ -198,7 +198,17 @@ void func_80169A98_ovl3(s32 arg0) {
     func_801696F0_ovl3(arg0);
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* NOT MEASURABLE: redeclaration of 'curObjSleepForever'; previous declaration at line 281 in file 'src/ovl3/ovl3_4.c'
+ * ovl3_4.c keeps its prototypes (curObjSleepForever, func_800B33F4,
+ * func_800B531C, func_800B4924, func_800B4954) in a PORT-only block, so nothing
+ * declares them for the N64 build. A draft must supply them in-body, and IDO
+ * allows only ONE block-scope copy per TU -- so only one draft in this file can
+ * be compiled at a time. Each of these four was measured that way in isolation
+ * and then sealed; the note above records what it scored. Un-blocking the whole
+ * file is a one-line coordinator change: move those prototypes to real file
+ * scope. Do NOT hoist them from a lane -- the equivalent move in ovl10_1.c was
+ * measured to move a matched function and grow that TU by 0x40. */
 
 void func_80169C10_ovl3(GObj *arg0) {
     extern void func_800B531C(struct GObj *);
@@ -280,7 +290,7 @@ void func_80169C10_ovl3(GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = 3;
     curObjSleepForever();
 }
-#else
+#elif defined(PORT)
 /* PORT: swallowed-by-enemy coroutine (via m2c). Drifts the player toward
  * the swallower (quarter of the track gap per tick, aiming 20 units above
  * the PLAYER entity 0's height -- the [0] index is the ROM's), then rides
@@ -367,6 +377,8 @@ void func_80169C10_ovl3(GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = 3;
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_80169C10_ovl3.s")
 #endif
 
 extern u32 D_8012BCA0;
@@ -407,7 +419,17 @@ void func_8016A144_ovl3(s32 arg0) {
     func_801696F0_ovl3(arg0);
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* NOT MEASURABLE: redeclaration of 'func_800B33F4'; previous declaration at line 451 in file 'src/ovl3/ovl3_4.c'
+ * ovl3_4.c keeps its prototypes (curObjSleepForever, func_800B33F4,
+ * func_800B531C, func_800B4924, func_800B4954) in a PORT-only block, so nothing
+ * declares them for the N64 build. A draft must supply them in-body, and IDO
+ * allows only ONE block-scope copy per TU -- so only one draft in this file can
+ * be compiled at a time. Each of these four was measured that way in isolation
+ * and then sealed; the note above records what it scored. Un-blocking the whole
+ * file is a one-line coordinator change: move those prototypes to real file
+ * scope. Do NOT hoist them from a lane -- the equivalent move in ovl10_1.c was
+ * measured to move a matched function and grow that TU by 0x40. */
 
 void func_8016A308_ovl3(s32 arg0) {
     extern void func_800B531C(struct GObj *);
@@ -515,7 +537,7 @@ void func_8016A308_ovl3(s32 arg0) {
     D_800E98E0[omCurrentObj->objId] = 4;
     curObjSleepForever();
 }
-#else
+#elif defined(PORT)
 /* PORT: crushed/flattened coroutine (via m2c). Picks an animation speed
  * tier from the crusher's |speed| (tables D_80196954/D_8019696C, tier
  * clamped to 5), snapshots the entity's pitch and Y scale, snaps to the
@@ -630,6 +652,8 @@ void func_8016A308_ovl3(s32 arg0) {
     D_800E98E0[omCurrentObj->objId] = 4;
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_8016A308_ovl3.s")
 #endif
 
 void func_8016A934_ovl3(s32 arg0) {
@@ -660,7 +684,17 @@ void func_8016A934_ovl3(s32 arg0) {
     func_801696F0_ovl3(arg0);
 }
 
-#ifndef PORT
+#ifdef MIPS_TO_C
+/* NOT MEASURABLE: redeclaration of 'curObjSleepForever'; previous declaration at line 795 in file 'src/ovl3/ovl3_4.c'
+ * ovl3_4.c keeps its prototypes (curObjSleepForever, func_800B33F4,
+ * func_800B531C, func_800B4924, func_800B4954) in a PORT-only block, so nothing
+ * declares them for the N64 build. A draft must supply them in-body, and IDO
+ * allows only ONE block-scope copy per TU -- so only one draft in this file can
+ * be compiled at a time. Each of these four was measured that way in isolation
+ * and then sealed; the note above records what it scored. Un-blocking the whole
+ * file is a one-line coordinator change: move those prototypes to real file
+ * scope. Do NOT hoist them from a lane -- the equivalent move in ovl10_1.c was
+ * measured to move a matched function and grow that TU by 0x40. */
 
 void func_8016AAA4_ovl3(s32 arg0) {
     extern void func_800B531C(struct GObj *);
@@ -792,7 +826,7 @@ void func_8016AAA4_ovl3(s32 arg0) {
     D_800BE4F8 = 2;
     curObjSleepForever();
 }
-#else
+#elif defined(PORT)
 /* PORT: inhaled-by-enemy coroutine (via m2c). Glides the player into the
  * inhaler's mouth over 5 frames (fifth of the gap per tick, mouth 25 below
  * its origin), freezes all track motion, waits for the inhaler's action
@@ -930,6 +964,8 @@ void func_8016AAA4_ovl3(s32 arg0) {
     D_800BE4F8 = 2;
     curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_8016AAA4_ovl3.s")
 #endif
 
 #ifdef NON_MATCHING
@@ -1162,10 +1198,14 @@ void func_8016BC00_ovl3(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 0 match, 0 diff, 1 unverifiable ==; 0 instructions short.
- * Needs in-body prototypes for func_800B531C / func_800B4924 / func_800B4954 --
- * ovl3_4.c keeps those in its PORT-only block, so nothing declares them for the
- * N64 build. Close the count before touching registers. */
+/* NOT MEASURED: this draft was installed but its score was captured from the wrong
+ * line of verify output, so no number here is trustworthy. Same file-wide blocker
+ * as its three siblings: ovl3_4.c keeps curObjSleepForever / func_800B33F4 /
+ * func_800B531C / func_800B4924 / func_800B4954 in a PORT-only block, so a draft
+ * must declare them in-body and IDO permits only one block-scope copy per TU.
+ * Re-measure this one alone after the coordinator moves those prototypes to file
+ * scope. Do NOT hoist them from a lane -- the same move in ovl10_1.c moved a
+ * matched function and grew that TU by 0x40. */
 
 void func_8016BD24_ovl3(s32 arg0) {
     extern void func_800B531C(struct GObj *);

@@ -307,38 +307,64 @@ struct KirbyNode
 // Entity List
 // The entity list is an array of structs which spawn objects as kirby gets in range. It is terminated by an 0x99999999 marker. See Entity IDs for more info. This section is optional and if a not pointed to in the main header will not be used.
 
+// NOTE: this file is documentation only -- no translation unit includes it.
+// The COMPILED definitions of ColStateUnk4 / CollisionState live in
+// src/ovl2/ovl2_6.h, which carries the per-field evidence and the static
+// assert that locks the N64 layout. The copies below are kept in sync by hand.
+
+// One accepted plane crossing along the query segment. The BSP walk in
+// func_80101B18 appends these; the triangle pass then visits them in order.
 struct ColStateUnk4 {
-    u16 cell;
-    f32 projection; // how far kirby is from the plane
-    // u16 unk6;
+/*0x0*/    u16 cell;        // index into CollisionHeader.Triangle_Norm_Cells
+/*0x4*/    f32 projection;  // fraction along currPos->nextPos of the crossing
 };
 
 
 
+// The active collision query. Exactly one is live at a time: every entry point
+// in ovl2_7.c builds one on its own stack, points gCollisionState at it, and
+// calls the shared core (func_80103528 / func_80103B58).
 struct CollisionState {
-    s32 numCells;
+/*0x00*/   s32 numCells;                     // accepted crossings in unk4
 
-    struct ColStateUnk4 *unk4; // valid hits for normal cells
+/*0x04*/   struct ColStateUnk4 *unk4;        // the accepted crossings
 
-    /* 0x08 */ Vector currPos;
+/*0x08*/   Vector currPos;                   // segment start
+/*0x14*/   Vector nextPos;                   // segment end
+/*0x20*/   Vector deltaPos;                  // nextPos - currPos
 
-    /* 0x14 */ Vector nextPos;
+           // Reference plane for the side tests in the acceptPlane callbacks.
+/*0x2C*/   struct Normal *someNormal;
 
-    /* 0x20 */ Vector deltaPos;
+/*0x30*/   struct vCollisionHeader *unk30;   // the level's collision data
 
-    /* 0x2C */ struct Normal *someNormal;
+           // A plane the query already sits on: when a BSP node's plane is
+           // geometrically this one, the walk descends into both children
+           // rather than testing the segment against it.
+/*0x34*/   struct Normal *passThruPlane;
 
-    struct vCollisionHeader *unk30;
+           // A plane whose crossings are dropped from the result.
+/*0x38*/   struct Normal *ignorePlane;
 
-    struct Normal *unk34;
-    struct Normal *unk38;
-    u32 (*data)(void);
-    u8 (*unk40)(struct CollisionTriangle *a0, struct Normal *a1, struct Normal *a2, struct Normal *a3);
-    u8 (*unk44)(struct Normal *a0, s32 arg1);
-    u16 unk48;
-    u16 unk4A;
-    u16 unk4C;
-    u16 unk4E;
+           // A single triangle to skip in the per-triangle pass. (Formerly
+           // declared `u32 (*data)(void)`; it has always been a triangle.)
+/*0x3C*/   struct CollisionTriangle *ignoreTri;
+
+           // Accept this triangle hit? (triangle, its plane, motion delta, ref)
+/*0x40*/   u8 (*acceptTri)(struct CollisionTriangle *tri, struct Normal *plane, struct Normal *delta, struct Normal *ref);
+
+           // Accept this plane crossing? (plane, which side the start is on)
+/*0x44*/   u8 (*acceptPlane)(struct Normal *plane, s32 startsInFront);
+
+           // Classification filters applied by the acceptTri callbacks.
+/*0x48*/   u16 wantHaltMovement;
+/*0x4A*/   u16 wantColType;
+
+           // Caller's break capability, matched against a breakable triangle's
+           // collisionParameter by func_8011BED0.
+/*0x4C*/   u16 breakKey;
+
+/*0x4E*/   u16 unk4E;
 };
 
 

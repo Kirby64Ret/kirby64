@@ -264,8 +264,23 @@ lane is actively editing -- confirm against build/verify/ before believing it.
   rejects both a second copy and the implicit int a bare call creates, so only
   ONE draft in that file can compile at a time (func_801F1554 currently owns
   it). Moving those three prototypes to real file scope unblocks
-  func_801F1A24, func_801F11A8 and func_801F2098 at once. Same class as the
-  void->s32 task; needs a quiet tree and the sha1 gate.
+  func_801F1A24, func_801F11A8 and func_801F2098 at once.
+
+  **MEASURED UNSAFE as written.** The ovl10 lane ran exactly this experiment
+  on the sibling file ovl10_1.c under the full LEVERS protocol (all 43
+  non-pragma functions' instruction words recorded first): hoisting four
+  PORT-only declarations to file scope MOVED func_801E2C78_ovl10 and grew
+  .text 0x7130 -> 0x7170. Reverted, byte-identical again. So this task is not
+  "hoist and gate" -- whoever takes it must find a form that does not change
+  what the N64 build sees at file scope (e.g. a header included only by the
+  N64 arm, or per-function in-body declarations paired with sealing one draft
+  at a time), and the sha1 is the acceptance test either way.
+
+  **A vacuous version of this test is easy to run by accident**: if the
+  declarations are placed INSIDE the PORT block, the N64 build never sees
+  them and "nothing moved" means nothing. The lane's first attempt did this.
+  When a lane reports a declaration change as inert, ask where the
+  declaration landed.
 
 ## THE `__asm__("symbol")` ALIAS TRAP IN PORT ARMS
 

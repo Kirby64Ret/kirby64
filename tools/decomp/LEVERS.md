@@ -228,3 +228,18 @@ Verified by flipping one and watching the build fail. Put these behind
 `#ifndef PORT` -- the PORT build widens pointers and pins its own shape.
 An assert of exactly this kind caught `sizeof(UnkGenerator)` being 0x5C when
 the pool allocator's real stride is 0x78.
+
+## MEASURED IN THE RE-FOUNDATION WAVE (ovl10/ovl3 lane)
+
+40. **`ABSF()` expands its argument THREE times.** So `ABSF(f(x))` really is
+    the three `jal f` you see in the listing, and any host helper that
+    collapses them to one call plus fabs can never match. This is why
+    ovl10's `pc_ovl10_descend` shim cannot seed a draft for
+    func_801DF50C / func_801E0460 / func_801E206C_ovl10.
+
+41. **A PC display-list "shim" is usually just GBI macros written out.**
+    `0xDB060010` is `gSPSegment(.., 4, ..)`, `0xDB020000` + `0x18` is
+    `gSPNumLights(1)`, `0xDC08060A` / `0xDC08090A` are the two `gSPLight`
+    loads. Restoring the real macros against `gDisplayListHeads[n]++` took
+    func_801F2964_ovl10 to 32/674 with an exact instruction count on the
+    first compile.

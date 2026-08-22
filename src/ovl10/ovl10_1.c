@@ -1323,13 +1323,24 @@ static void pc_ovl10_descend(f32 hold, s32 waypoint, s32 restEachStep) {
         D_800EA520[omCurrentObj->objId] += 1;
     }
 }
+#endif
 
 /* State 0xA (phase-2 intro): plays the transformation anim set, unwinds any
  * pending turn, swaps to the phase-2 enemy descriptor D_801F344C (new anim
  * bank + HP refill from its unk0), floats down to the parent's height with
  * the shared descent loop, then rerolls the attack pattern seeds. */
 void func_801DF50C_ovl10(s32 arg0) {
+    void func_801DFE64_ovl10(void);
+    s32 func_801DFCC0_ovl10(void);
+    f32 func_800F9828(s32, s32);
+    extern void *D_801F344C_ovl10[];
+    extern f32 D_801F4338_ovl10[];
+    extern f32 D_801F4364_ovl10[];
+    extern f32 D_801F4390_ovl10[];
     struct UnkStruct800E1B50 *ent = D_800E1B50[omCurrentObj->objId];
+    s32 track;
+    f32 ty;
+    f32 v;
 
     func_801DFE64_ovl10();
     func_800AECC0(gameTicksPerDraw);
@@ -1361,7 +1372,43 @@ void func_801DF50C_ovl10(s32 arg0) {
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A84_ovl10;
     D_800E9E20[omCurrentObj->objId] = 0;
     D_800EA520[omCurrentObj->objId] = 0;
-    pc_ovl10_descend(200.0f, 0, 0);
+    /* shared phase-2 descent loop, inlined (waypoint=0, hold=200.0f,
+     * restEachStep=0 -- see pc_ovl10_descend's PORT-side note above,
+     * and func_801E0460_ovl10's FACTORY note for the ABSF-triple-call
+     * shape this mirrors) */
+    while (D_800EA520[omCurrentObj->objId] < 0xA) {
+        D_800E6850[omCurrentObj->objId] = ABSF(D_801F4338_ovl10[D_800EA520[omCurrentObj->objId]]);
+        D_800E3C90[omCurrentObj->objId] = ABSF(D_801F4338_ovl10[D_800EA520[omCurrentObj->objId]]);
+        D_800EA8A0[omCurrentObj->objId] = 200.0f;
+        D_800EA6E0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+        while ((D_800EA520[omCurrentObj->objId] < 0xB) &&
+               ((D_801F4390_ovl10[D_800EA520[omCurrentObj->objId]] < D_800EA6E0[omCurrentObj->objId]) ||
+                (D_801F4390_ovl10[D_800EA520[omCurrentObj->objId]] <
+                 D_800EA8A0[omCurrentObj->objId]))) {
+            track = D_800E0D50[omCurrentObj->objId];
+            ty = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
+            D_800EA6E0[omCurrentObj->objId] = ABSF(func_800F9828(omCurrentObj->objId, track));
+            v = func_800F9828(omCurrentObj->objId, track);
+            if (0.0f < v) {
+                D_800E6690[omCurrentObj->objId] =
+                    -D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            } else {
+                D_800E6690[omCurrentObj->objId] =
+                    D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            }
+            D_800EA8A0[omCurrentObj->objId] =
+                ABSF(gEntitiesNextPosYArray[omCurrentObj->objId] - ty);
+            if (gEntitiesNextPosYArray[omCurrentObj->objId] < ty) {
+                D_800E3750[omCurrentObj->objId] =
+                    -D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            } else {
+                D_800E3750[omCurrentObj->objId] =
+                    D_801F4364_ovl10[D_800EA520[omCurrentObj->objId]];
+            }
+            ohSleep(1);
+        }
+        D_800EA520[omCurrentObj->objId] += 1;
+    }
     func_800AF27C();
     D_800E7B20[omCurrentObj->objId] = ent->unk88->unk0;
     func_800BC1FC((s32) D_800E7B20[omCurrentObj->objId]);
@@ -1372,9 +1419,6 @@ void func_801DF50C_ovl10(s32 arg0) {
     D_800E9C60[omCurrentObj->objId] = random_soft_s32_range(6);
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DF50C_ovl10.s")
-#endif
 
 void func_801DFBFC_ovl10(GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId]++ >= 0x79) {
@@ -1538,22 +1582,6 @@ void func_801E03CC_ovl10(void) {
     }
 }
 
-#ifdef MIPS_TO_C
-/* NOT MEASURABLE YET -- blocked on declaration scoping, and the obvious fix is
- * PROVEN UNSAFE for this TU. The descent tables D_801F4338 / D_801F4364 /
- * D_801F4390 and the prototype for func_800F9828 are visible only inside this
- * file's PORT block, so an N64 draft here cannot name them. Hoisting those four
- * declarations to real file scope was tried under the LEVERS protocol (record every
- * non-pragma function's instruction words, change, re-compare): it MOVED
- * func_801E2C78_ovl10 and grew .text from 0x7130 to 0x7170, so it was reverted.
- * That is the ovl2_8 failure mode exactly, and it means this needs a coordinator
- * pass on a quiet tree, not a lane edit.
- * The DECODE is done and is the valuable part -- see the draft kept below in the
- * sibling note on func_801DF50C: the descent loop is inline in each of the three
- * callers, and it uses ABSF(), whose argument is expanded THREE times, so each
- * abs-of-a-call really is three func_800F9828 calls (the host helper
- * pc_ovl10_descend collapses them to one call plus fabs, which is why its shape
- * can never match). */
 /* State 0xC (phase-2 reposition): zeroes all vertical motion, picks the next
  * waypoint slot for D_800E9C60 -- usually a neighbour from the D_801F43BC /
  * D_801F43D4 tables, 1-in-3 a fresh random slot different from the current one --
@@ -1561,10 +1589,30 @@ void func_801E03CC_ovl10(void) {
  * The descent loop is INLINE here: the host build factors it into
  * pc_ovl10_descend(), but the ROM emits it in full inside each of the three
  * callers, and it uses ABSF() -- whose argument is expanded THREE times, so each
- * abs of a call really does make three func_800F9828 calls. */
+ * abs of a call really does make three func_800F9828 calls.
+ *
+ * FACTORY: 475/479, UNCERTAIN -- fresh derivation, time-boxed. The
+ * earlier note here called this blocked on declaration scoping,
+ * pointing at a PROVEN-UNSAFE fix (hoisting the descent tables and
+ * func_800F9828's prototype to real FILE scope moved
+ * func_801E2C78_ovl10 and grew .text). That hazard is specific to
+ * FILE-scope hoisting; declaring the same four names LOCALLY inside
+ * this function's own body -- the standard REFOUND technique, already
+ * used successfully for func_800F9828 in func_801DE124_ovl10 earlier
+ * in this same file -- compiles cleanly with no such risk, since it
+ * changes nothing outside this function. Word count matches
+ * (479/479), residue extreme (475/479) -- broad register/frame
+ * relabeling from word 0. Worth a fresh m2c pass before feeding to
+ * the permuter. Unblocks the same fix for the sibling functions
+ * func_801DF50C_ovl10 and func_801E206C_ovl10. */
+#ifdef MIPS_TO_C
 void func_801E0460_ovl10(s32 arg0) {
+    f32 func_800F9828(s32, s32);
     extern u32 D_801F43BC_ovl10[];
     extern u32 D_801F43D4_ovl10[];
+    extern f32 D_801F4338_ovl10[];
+    extern f32 D_801F4364_ovl10[];
+    extern f32 D_801F4390_ovl10[];
     s32 next;
 
     func_800AECC0(gameTicksPerDraw);

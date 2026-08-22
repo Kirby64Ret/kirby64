@@ -1224,7 +1224,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     f32 var_f12;
     s32 temp_v0;
 
-    if (BD00.acceptTri != BD00.acceptPlane) {
+    if (BD00.unk40 != BD00.unk44) {
         sp9C = gCollisionState->currPos;
         spAC = 1.1f;
         gCollisionState->unk30 = D_80129410;
@@ -1316,7 +1316,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
 }
 #elif defined(PORT)
 /* Moving-aware raycast core (draft above, completed): like func_80103B58,
- * but when the world-motion stamps differ (BD00.acceptTri != unk44) each active
+ * but when the world-motion stamps differ (BD00.unk40 != unk44) each active
  * dynamic collider gets per-cast motion compensation -- the segment origin
  * is shifted by the collider's frame delta (its matrix pair for rotating
  * colliders, the per-slot translation deltas otherwise) and the segment
@@ -1329,7 +1329,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     void func_80112ED4(f32 mtx[4][4], Vector *out, Vector *in);
     u32 i;
 
-    if (BD00.acceptTri != BD00.acceptPlane) {
+    if (BD00.unk40 != BD00.unk44) {
         Vector cur = gCollisionState->currPos;
         Vector hit;
         f32 tAcc = 1.1f;
@@ -2853,9 +2853,9 @@ void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFF8) | 1;
         break;
     case 2:
-        sp60 = sp8C.x - BD00.passThruPlane;
-        sp64 = sp8C.y - BD00.ignorePlane;
-        sp68 = sp8C.z - BD00.ignoreTri;
+        sp60 = sp8C.x - BD00.unk34;
+        sp64 = sp8C.y - BD00.unk38;
+        sp68 = sp8C.z - BD00.unk3C;
         sp6C = sp6C / sqrtf((sp60 * sp60) + (sp64 * sp64) + (sp68 * sp68));
         sp74.x = (sp60 * sp6C) + sp80.x;
         sp74.y = (sp64 * sp6C) + sp80.y;
@@ -2884,7 +2884,7 @@ s32 func_801058B8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
 /* Forward wall snap resolver (draft above, completed): re-anchor rec[2]
  * through func_801058B8's wall march (-1.0 side). r=0 keeps the walked
  * point only when it lies ahead of the facing; r=2 extrapolates along the
- * BD00.passThruPlane motion stamp and lets func_801057C4 clip the point back to
+ * BD00.unk34 motion stamp and lets func_801057C4 clip the point back to
  * the wall plane. Kirby's feet are pulled to the resolved point minus the
  * forward bias. */
 void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
@@ -2909,9 +2909,9 @@ void func_801060C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     } else if (r == 1) {
         arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFF8) | 1) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = probe.x - BD00.passThruPlane;
-        f32 dy = probe.y - BD00.ignorePlane;
-        f32 dz = probe.z - BD00.ignoreTri;
+        f32 dx = probe.x - BD00.unk34;
+        f32 dy = probe.y - BD00.unk38;
+        f32 dz = probe.z - BD00.unk3C;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         Vector far, clip;
 
@@ -3104,9 +3104,9 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFFC7) | 8;
         break;
     case 2:
-        sp60 = sp8C.x - BD00.passThruPlane;
-        sp64 = sp8C.y - BD00.ignorePlane;
-        sp68 = sp8C.z - BD00.ignoreTri;
+        sp60 = sp8C.x - BD00.unk34;
+        sp64 = sp8C.y - BD00.unk38;
+        sp68 = sp8C.z - BD00.unk3C;
         sp6C = sp6C / sqrtf((sp60 * sp60) + (sp64 * sp64) + (sp68 * sp68));
         sp74.x = (sp60 * sp6C) + sp80.x;
         sp74.y = (sp64 * sp6C) + sp80.y;
@@ -3155,9 +3155,9 @@ s32 func_80106930(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     } else if (r == 1) {
         arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFFC7) | 8) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = probe.x - BD00.passThruPlane;
-        f32 dy = probe.y - BD00.ignorePlane;
-        f32 dz = probe.z - BD00.ignoreTri;
+        f32 dx = probe.x - BD00.unk34;
+        f32 dy = probe.y - BD00.unk38;
+        f32 dz = probe.z - BD00.unk3C;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         Vector far, clip;
 
@@ -3224,7 +3224,7 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     if (func_801039E8(&sp80, &sp74, &sp68, 0, &D_8012BD34, &arg1->rec[1].norm, &arg1->rec[1].tri,
                       &arg1->rec[1].type) != 0) {
         sp4C = 0x40;
-        sp44 = BD00.ignorePlane;
+        sp44 = BD00.unk38;
     }
     sp80.x = arg0->kirbyGroundPath[0];
     sp80.z = arg0->kirbyGroundPath[1];
@@ -3338,7 +3338,7 @@ s32 func_80106C5C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     if (pc_probe_39e8(&start, &end, &dir, NULL, &D_8012BD34, &arg1->rec[1].norm,
                       &arg1->rec[1].tri, (u32 *) &arg1->rec[1].type) != 0) {
         cls = 0x40;
-        bestY = BD00.ignorePlane;
+        bestY = BD00.unk38;
     }
     start.x = arg0->kirbyGroundPath[0];
     start.z = arg0->kirbyGroundPath[1];
@@ -3552,7 +3552,7 @@ s32 func_801072E0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
  * sp80 is a COPY of the spA4 start vector whose .y alone is lowered to the plane
  * height when the 0x40 flag is clear; the switch on func_80108078 has cases 0/1/2
  * sharing one tail that writes rec[1] back and drops the feet by scale[1]+0.1f;
- * case 2 re-projects along the BD00.passThruPlane motion stamp and picks the 0x80/0x100
+ * case 2 re-projects along the BD00.unk34 motion stamp and picks the 0x80/0x100
  * class by which side of the facing basis the slide lands on. -1.0f goes in the
  * integer $a3. Residue is placement: ROM saves s0/s1/ra at 0x2C-0x34 with locals
  * 0x38-0xB4 in a 0xB8 frame; the draft needs 0xC8, keeps only one callee-saved
@@ -3606,9 +3606,9 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40;
         break;
     case 2:
-        sp68.x = spA4.x - BD00.passThruPlane;
-        sp68.y = spA4.y - BD00.ignorePlane;
-        sp68.z = spA4.z - BD00.ignoreTri;
+        sp68.x = spA4.x - BD00.unk34;
+        sp68.y = spA4.y - BD00.unk38;
+        sp68.z = spA4.z - BD00.unk3C;
         sp78 = sp78 / sqrtf((sp68.x * sp68.x) + (sp68.y * sp68.y) + (sp68.z * sp68.z));
         sp38 = sp98.x;
         sp8C.x = (sp68.x * sp78) + sp98.x;
@@ -3652,7 +3652,7 @@ s32 func_80108078(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 arg3, Vec
 /* Floor snap resolver (draft above, completed): re-anchor the recorded
  * floor (rec[1]) through func_80108078's downward walk from D_8012BD34.
  * r=0/1 keep or adopt the walked point (class 0x40); r=2 extrapolates
- * along the motion since the BD00.passThruPlane stamp, re-plants on the plane and
+ * along the motion since the BD00.unk34 stamp, re-plants on the plane and
  * classes the step 0x100/0x80 by facing when within the lateral bias;
  * otherwise the floor classes are cleared and Kirby's feet are left alone. */
 void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
@@ -3684,9 +3684,9 @@ void func_801073C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     } else if (r == 1) {
         arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xFE3F) | 0x40) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = arg0->kirbyFootPos[0] - BD00.passThruPlane;
-        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[1]) - BD00.ignorePlane;
-        f32 dz = arg0->kirbyFootPos[2] - BD00.ignoreTri;
+        f32 dx = arg0->kirbyFootPos[0] - BD00.unk34;
+        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[1]) - BD00.unk38;
+        f32 dz = arg0->kirbyFootPos[2] - BD00.unk3C;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         f32 py;
 
@@ -3735,9 +3735,9 @@ void func_801077D4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
     temp_v0 = arg1->flags.w >> 0x13;
     if (temp_v0 & 0x40) {
-        arg0->kirbyFootPos[0] = BD00.passThruPlane;
-        arg0->kirbyFootPos[1] = (BD00.ignorePlane - arg0->scale[1]) - 0.1f;
-        arg0->kirbyFootPos[2] = BD00.ignoreTri;
+        arg0->kirbyFootPos[0] = BD00.unk34;
+        arg0->kirbyFootPos[1] = (BD00.unk38 - arg0->scale[1]) - 0.1f;
+        arg0->kirbyFootPos[2] = BD00.unk3C;
         return;
     }
     temp_v1 = arg1->rec[1].norm;
@@ -3994,7 +3994,7 @@ s32 func_801078A0(struct PositionState *arg0, struct UnkBCA0 *arg1) {
                       &arg1->rec[0].tri, (u32 *) &arg1->rec[0].type) != 0) {
         cls = 0x200;
         centerHit = 1;
-        best = BD00.ignorePlane;
+        best = BD00.unk38;
     } else {
         centerHit = 0;
     }
@@ -4901,9 +4901,9 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
         arg1->flags.f.a = ((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200;
         break;
     case 2:
-        sp64.x = spA4.x - BD00.passThruPlane;
-        sp64.y = spA4.y - BD00.ignorePlane;
-        sp64.z = spA4.z - BD00.ignoreTri;
+        sp64.x = spA4.x - BD00.unk34;
+        sp64.y = spA4.y - BD00.unk38;
+        sp64.z = spA4.z - BD00.unk3C;
         sp74 = sp74 / sqrtf((sp64.x * sp64.x) + (sp64.y * sp64.y) + (sp64.z * sp64.z));
         sp8C.x = (sp64.x * sp74) + sp98.x;
         sp8C.y = (sp64.y * sp74) + sp98.y;
@@ -4979,9 +4979,9 @@ s32 func_80108E08(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     } else if (r == 1) {
         arg1->flags.hw = ((((arg1->flags.w >> 0x13) & 0xF1FF) | 0x200) * 8) | (arg1->flags.hw & 7);
     } else if (r == 2) {
-        f32 dx = arg0->kirbyFootPos[0] - BD00.passThruPlane;
-        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[2]) - BD00.ignorePlane;
-        f32 dz = arg0->kirbyFootPos[2] - BD00.ignoreTri;
+        f32 dx = arg0->kirbyFootPos[0] - BD00.unk34;
+        f32 dy = (arg0->kirbyFootPos[1] + arg0->scale[2]) - BD00.unk38;
+        f32 dz = arg0->kirbyFootPos[2] - BD00.unk3C;
         f32 s = dist / sqrtf((dx * dx) + (dy * dy) + (dz * dz));
         f32 py;
 
@@ -5036,9 +5036,9 @@ void func_8010924C(struct PositionState *arg0, struct UnkBCA0 *arg1) {
 
     temp_v0 = arg1->flags.w >> 0x13;
     if (temp_v0 & 0x200) {
-        arg0->kirbyFootPos[0] = BD00.passThruPlane;
-        arg0->kirbyFootPos[1] = (BD00.ignorePlane - arg0->scale[2]) + 0.1f;
-        arg0->kirbyFootPos[2] = BD00.ignoreTri;
+        arg0->kirbyFootPos[0] = BD00.unk34;
+        arg0->kirbyFootPos[1] = (BD00.unk38 - arg0->scale[2]) + 0.1f;
+        arg0->kirbyFootPos[2] = BD00.unk3C;
         return;
     }
     temp_v1 = arg1->rec[0].norm;
@@ -5445,9 +5445,9 @@ void func_80109FAC(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 dbz;
 
     if ((arg1->flags.w >> 0x13) & 1) {
-        arg0->kirbyFootPos[0] = BD00.passThruPlane - BD00.unk24;
-        arg0->kirbyFootPos[1] = BD00.ignorePlane - arg0->scale[0];
-        arg0->kirbyFootPos[2] = BD00.ignoreTri - BD00.unk28;
+        arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk24;
+        arg0->kirbyFootPos[1] = BD00.unk38 - arg0->scale[0];
+        arg0->kirbyFootPos[2] = BD00.unk3C - BD00.unk28;
         return;
     }
     n = arg1->rec[2].norm;
@@ -5487,9 +5487,9 @@ void func_8010A138(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     f32 dbz;
 
     if ((arg1->flags.w >> 0x13) & 8) {
-        arg0->kirbyFootPos[0] = BD00.passThruPlane - BD00.unk2C;
-        arg0->kirbyFootPos[1] = BD00.ignorePlane - arg0->scale[0];
-        arg0->kirbyFootPos[2] = BD00.ignoreTri - BD00.unk30;
+        arg0->kirbyFootPos[0] = BD00.unk34 - BD00.unk2C;
+        arg0->kirbyFootPos[1] = BD00.unk38 - arg0->scale[0];
+        arg0->kirbyFootPos[2] = BD00.unk3C - BD00.unk30;
         return;
     }
     sp4C.x = arg0->kirbyHeadPath[0];
@@ -5756,7 +5756,7 @@ s32 func_8010A2C4(struct PositionState *arg0, struct UnkBCA0 *arg1) {
     if (pc_probe_39e8(&start, &end, &dir, NULL, &D_8012BD34, &arg1->rec[0].norm,
                       &arg1->rec[0].tri, (u32 *) &arg1->rec[0].type) != 0) {
         cls = 0x200;
-        best = BD00.ignorePlane;
+        best = BD00.unk38;
     }
     start.x = arg0->kirbyGroundPath[0];
     start.z = arg0->kirbyGroundPath[1];
@@ -6608,7 +6608,7 @@ s32 func_8010BBD4(struct PositionState *arg0) {
     u32 var_v1;
 
     BD00.unk0_80 = 1;
-    BD00.acceptPlane = arg0->VI_Timer;
+    BD00.unk44 = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
     if (func_80106C5C(arg0, &D_8012BCA0) != 0) {
@@ -6626,7 +6626,7 @@ s32 func_8010BBD4(struct PositionState *arg0) {
         D_8012BCA0.flags.f.a = (D_8012BCA4[-1] >> 0x13) & 0xFE3F;
     }
     BD00.unk0_80 = 0;
-    arg0->VI_Timer = BD00.acceptTri;
+    arg0->VI_Timer = BD00.unk40;
     return 0;
 }
 #else
@@ -6710,7 +6710,7 @@ s32 func_8010BFAC(struct PositionState *arg0) {
     u32 temp_v1;
 
     BD00.unk0_80 = 1;
-    BD00.acceptPlane = arg0->VI_Timer;
+    BD00.unk44 = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
     func_80104FB8(arg0);
     if (func_80105284(arg0, &D_8012BCA0) != 0) {
@@ -6743,7 +6743,7 @@ s32 func_8010BFAC(struct PositionState *arg0) {
         D_8012BCA0.flags.f.a = (D_8012BCA0.flags.w >> 0x13) & 0xFFC7;
     }
     BD00.unk0_80 = 0;
-    arg0->VI_Timer = BD00.acceptTri;
+    arg0->VI_Timer = BD00.unk40;
     return 0;
 }
 #else
@@ -6877,7 +6877,7 @@ s32 func_8010C274(struct PositionState *arg0) {
     f32 bestT = 1.1f;
     f32 t;
 
-    BD00.acceptPlane = arg0->VI_Timer;
+    BD00.unk44 = arg0->VI_Timer;
     func_80105218(&D_8012BCA0);
     D_8012BCA0.rec[0].tri = NULL;
     D_8012BCA0.rec[1].tri = NULL;
@@ -6932,7 +6932,7 @@ s32 func_8010C274(struct PositionState *arg0) {
         arg0->kirbyFootPos[1] = best.y;
         arg0->kirbyFootPos[2] = best.z;
     }
-    arg0->VI_Timer = BD00.acceptTri;
+    arg0->VI_Timer = BD00.unk40;
     return 0;
 }
 #else
@@ -7786,7 +7786,7 @@ struct PositionState *func_8010DCAC(void) {
 void func_8010DCDC(void) {
     s32 i;
 
-    BD00.acceptTri = 0;
+    BD00.unk40 = 0;
     BD00.unk0_80 = 0;
     D_8012BD4C = D_8012BD50;
     for (i = 0; i < 31; i++) {
@@ -7796,7 +7796,7 @@ void func_8010DCDC(void) {
 }
 
 void func_8010DD8C(void) {
-    BD00.acceptTri++;
+    BD00.unk40++;
 }
 
 #ifdef MIPS_TO_C
