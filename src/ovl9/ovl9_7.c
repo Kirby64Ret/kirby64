@@ -277,6 +277,70 @@ void func_801F0ABC_ovl9(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F0ABC_ovl9.s")
 #endif
 
+/* FACTORY: 6/147, frame +8 from one extra saved register.  Instruction count
+   is exact (147) and the body order is the ROM's, but our IDO keeps `rec` in
+   $s1 (frame 0x38, s0+s1 saved) where the ROM saves only $s0 = &omCurrentObj
+   and re-materialises the D_800E1B50 base in a temp, so every sp offset and
+   most register names shift.  Measured: inlining D_800E1B50[objId] at each
+   use (LEVERS 10) is NOT the fix -- it grows the function to 168 instructions
+   (165 diffs); dropping the `id` local instead keeps 147 but does not free
+   $s1.  N64 spelling already applied: the spark generator's emitter pointer
+   is at offset 0x4C, not the PORT struct's 0x58. */
+#ifdef MIPS_TO_C
+struct PcOvl1Emitter {
+    struct PcOvl1Emitter *next;
+    Vector unk4;
+    Vector unk10;
+};
+struct PcOvl1Generator {
+    u8 pad0[0x4C];
+    struct PcOvl1Emitter *xf;
+};
+void func_801A3E80_ovl7(struct GObj *);
+void func_801A03B4_ovl7(void);
+extern s32 D_800E83E0[];
+/* Bomb draw hook: while the fuse-spark generator lives, pin its
+ * emitter to the bomb's position/rotation; then run the anim-event
+ * pump and, when it reports a pending event (the N64 reads the
+ * pump's leftover $v0, which is func_801A07C4's "event pending"
+ * result -- the port tests D_800E83E0 directly) or the bomb touched
+ * ground, detonate: release the spark, pop the explosion puff with
+ * the annex cue, hand the thread to the ovl7 kill path and set the
+ * parent's 1-tick reload flag.
+ * PORT: the generator handle lives in rec->unk34; D_800E98E0 keeps
+ * only the nonzero flag (see func_801F0ABC). */
+void func_801F0DFC_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec = D_800E1B50[omCurrentObj->objId];
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        struct PcOvl1Generator *gen = (struct PcOvl1Generator *) rec->unk34;
+
+        gen->xf->unk4.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        gen->xf->unk4.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        gen->xf->unk4.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        gen->xf->unk10.x = gEntitiesAngleXArray[omCurrentObj->objId];
+        gen->xf->unk10.y = gEntitiesAngleYArray[omCurrentObj->objId];
+        gen->xf->unk10.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    }
+    func_801A03B4_ovl7();
+    if ((D_800E83E0[omCurrentObj->objId] != 0) || (D_800E8920[omCurrentObj->objId] != 0)) {
+        if (D_800E98E0[omCurrentObj->objId] != 0) {
+            func_800A22D4(rec->unk34);
+            rec->unk34 = NULL;
+            D_800E98E0[omCurrentObj->objId] = 0;
+            }
+        func_800A7F74(3, 2, 0xF2, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId],
+                      gEntitiesNextPosZArray[omCurrentObj->objId]);
+        if (rec->unk94->unk1C != 0x80000000) {
+            play_sound(rec->unk94->unk1C);
+        }
+        rec->unk40 = 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 1;
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F0DFC_ovl9.s")
+#endif
 #ifdef PORT
 struct PcOvl1Emitter {
     struct PcOvl1Emitter *next;
@@ -336,8 +400,6 @@ void func_801F0DFC_ovl9(GObj *arg0) {
         D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F0DFC_ovl9.s")
 #endif
 
 #ifdef PORT
