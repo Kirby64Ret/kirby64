@@ -547,7 +547,6 @@ void func_8017E1EC_ovl3(s32 arg0) {
     }
 }
 
-#ifdef NON_MATCHING
 /* 3/178: exact except that the ROM's scheduler sinks the `lim` load past the
    two loop-invariant base addiu's (gEntitiesAngleXArray, gKirbyController)
    and IDO emits it first. Swept: declaration order, one-line form, blank
@@ -556,68 +555,72 @@ extern u8 D_801905E8_ovl3[];
 extern f32 D_801976A0_ovl3;
 extern f32 D_801976A4_ovl3;
 
-void func_8017E284_ovl3(s32 arg0) {
-    f32 step;
-    f32 lim;
-    s32 idx;
-
-    gKirbyState.unk30 = 0;
-    gKirbyState.unk7 = 0;
-    gKirbyState.unk4C = 0;
-    gKirbyState.jumpHeight = gKirbyState.isFullJump = 0;
-    gKirbyState.unk40 = 0.0f;
-    D_800E98E0[omCurrentObj->objId] = 1;
-    func_8011CF58();
-    D_800DDFD0[omCurrentObj->objId] = 0x2B;
-    gKirbyState.unk44 = 0;
-    func_80120A28();
-    gKirbyState.unk15C = (u32) D_801905E8_ovl3;
-    func_801230E8(0x201B4, 0x201B5, 1);
-    gKirbyState.abilityInUse = gKirbyState.ability;
-    func_80122F08(0x20012);
-    gKirbyState.unk154 = 5;
-    gKirbyState.unk4C = func_800A8100(1, 1, 0x2A, D_800DFBD0[omCurrentObj->objId][4]);
-    D_800E9720[omCurrentObj->objId] = 0;
-    func_800AA018(0x201B2);
-    step = D_801976A0_ovl3;
-    lim = D_801976A4_ovl3;
-    while (1) {
-        if (gKirbyState.unk17 != 0) {
-            break;
-        }
-        if (lim != gKirbyState.unk40) {
-            gEntitiesAngleXArray[omCurrentObj->objId] = -gKirbyState.unk40;
-            gKirbyState.unk40 = gKirbyState.unk40 + step;
-            if (lim <= gKirbyState.unk40) {
-                gKirbyState.unk40 = lim;
-            }
-            D_800E9720[omCurrentObj->objId]++;
-        }
-        if (gKirbyController.buttonHeld & 0x4000) {
-            ohSleep(1);
-        } else {
-            idx = func_801632B8_ovl3(4);
-            D_800E1B50[idx + 0x70] =
-                (struct UnkStruct800E1B50 *) D_800DFBD0[omCurrentObj->objId][4];
-            D_800EC660[idx] = gKirbyState.unk40;
-            play_sound(0xB5);
-            play_sound(0xB6);
-            D_800E98E0[omCurrentObj->objId] = 0;
-            func_800AA154(0x201B3);
-            break;
-        }
+void func_8017E284_ovl3(s32 arg0)
+{
+  int new_var;
+  f32 step;
+  f32 lim;
+  s32 idx;
+  gKirbyState.unk30 = 0;
+  gKirbyState.unk7 = 0;
+  gKirbyState.unk4C = 0;
+  gKirbyState.jumpHeight = (gKirbyState.isFullJump = 0);
+  gKirbyState.unk40 = 0.0f;
+  D_800E98E0[omCurrentObj->objId] = 1;
+  func_8011CF58();
+  D_800DDFD0[omCurrentObj->objId] = 0x2B;
+  gKirbyState.unk44 = 0;
+  func_80120A28();
+  gKirbyState.unk15C = (u32) D_801905E8_ovl3;
+  func_801230E8(0x201B4, 0x201B5, 1);
+  gKirbyState.abilityInUse = gKirbyState.ability;
+  func_80122F08(0x20012);
+  gKirbyState.unk154 = 5;
+  gKirbyState.unk4C = func_800A8100(1, 1, 0x2A, D_800DFBD0[omCurrentObj->objId][4]);
+  D_800E9720[omCurrentObj->objId] = 0;
+  func_800AA018(0x201B2);
+  step = D_801976A0_ovl3;
+ lim = D_801976A4_ovl3; while (1) {
+    if (gKirbyState.unk17 != 0)
+    {
+      break;
     }
-    func_8011E0E8();
-    gKirbyState.abilityInUse = 0;
-    func_80122F08(0x20007);
-    gKirbyState.unk154 = 2;
-    func_801230E8(0x201B6, 0x201B7, 1);
-    gKirbyState.unk30 += 1;
-    curObjSleepForever();
+    if (lim != gKirbyState.unk40)
+    {
+      gEntitiesAngleXArray[omCurrentObj->objId] = -gKirbyState.unk40;
+      gKirbyState.unk40 = gKirbyState.unk40 + step;
+      if (lim <= gKirbyState.unk40)
+      {
+        gKirbyState.unk40 = lim;
+      }
+      D_800E9720[omCurrentObj->objId]++;
+    }
+    if (gKirbyController.buttonHeld & 0x4000)
+    {
+      ohSleep(1);
+    }
+    else
+    {
+      idx = func_801632B8_ovl3(4);
+      new_var = 0x70;
+      D_800E1B50[idx + new_var] = (struct UnkStruct800E1B50 *) D_800DFBD0[omCurrentObj->objId][4];
+      D_800EC660[idx] = gKirbyState.unk40;
+      play_sound(0xB5);
+      play_sound(0xB6);
+      D_800E98E0[omCurrentObj->objId] = 0;
+      func_800AA154(0x201B3);
+      break;
+    }
+  }
+
+  func_8011E0E8();
+  gKirbyState.abilityInUse = 0;
+  func_80122F08(0x20007);
+  gKirbyState.unk154 = 2;
+  func_801230E8(0x201B6, 0x201B7, 1);
+  gKirbyState.unk30 += 1;
+  curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017E284_ovl3.s")
-#endif
 #ifdef PORT
 /* PORT: the ability ride/jump per-tick handler (paired with the 0x2B
  * coroutine above), from asm/nonmatchings/ovl3/ovl3_6/func_8017E54C_ovl3.s
