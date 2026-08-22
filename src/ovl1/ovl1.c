@@ -6008,89 +6008,106 @@ s32 arg1;
     }
 }
 
-#ifdef MIPS_TO_C
-
+#if 1 /* verify-iteration draft: func_800A2550 */
 void func_800A2550(void *arg0) {
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f12;
-    f32 temp_f12_2;
-    f32 temp_f12_3;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f2_3;
-    s32 temp_t7;
-    s32 temp_t9;
-    s32 temp_v0;
-    u8 temp_t8;
-    void *temp_v0_2;
-    void *var_s1;
-    void *var_s1_2;
+    /* Local views: the 0x2C-stride layout node and the emitter node.
+     * struct Ovl1PNode (above) pads over the fields this function needs, and
+     * widening it is a file-scope change, so the offsets are spelled here. */
+    struct LNode {
+        /* 0x00 */ s32 type;
+        /* 0x04 */ s32 unk4;
+        /* 0x08 */ Vector pos;
+        /* 0x14 */ Vector rot;
+        /* 0x20 */ Vector scale;
+    };
+    struct EmNode {
+        /* 0x00 */ u8 pad0[9];
+        /* 0x09 */ u8 kind;
+        /* 0x0A */ u8 padA[0xA];
+        /* 0x14 */ f32 unk14;
+        /* 0x18 */ f32 unk18;
+        /* 0x1C */ f32 unk1C;
+        /* 0x20 */ f32 unk20;
+        /* 0x24 */ f32 unk24;
+        /* 0x28 */ f32 unk28;
+        /* 0x2C */ u8 pad2C[0xC];
+        /* 0x38 */ f32 unk38;
+        /* 0x3C */ u8 pad3C[0x14];
+        /* 0x50 */ f32 v[9];
+    };
+    f32 sp64[4][4];
+    f32 spA4[4][4];
+    struct LNode *node;
+    struct LNode *ent;
+    struct EmNode *em;
+    s32 id;
+    f32 vx;
+    f32 vy;
+    f32 vz;
 
-    var_s1 = arg0;
-    if (arg0->unk0 != 0x12) {
+    node = (struct LNode *) arg0;
+    if (node->type != 0x12) {
         do {
-            temp_t7 = var_s1->unk2C;
-            var_s1 += 0x2C;
-        } while (temp_t7 != 0x12);
+            node += 1;
+        } while (node->type != 0x12);
     }
-    var_s1_2 = var_s1 + 0x2C;
-    if (var_s1->unk4 != 0) {
-        func_8001C2E4(&spA4[0], arg0->unk8, arg0->unkC, arg0->unk10, arg0->unk14, arg0->unk18, arg0->unk1C, arg0->unk20, arg0->unk24, arg0->unk28);
+    ent = node + 1;
+    if (node->unk4 != 0) {
+        func_8001C2E4(spA4, ((struct LNode *) arg0)->pos, ((struct LNode *) arg0)->rot,
+                      ((struct LNode *) arg0)->scale);
         do {
-            temp_v0 = var_s1_2->unk0;
-            temp_v0_2 = func_800A19EC((temp_v0 >> 0x10) & 0xF, temp_v0 & 0xFFFF);
-            if (temp_v0_2 != NULL) {
-                func_8001C2E4(&sp64[0], var_s1_2->unk8, var_s1_2->unkC, var_s1_2->unk10, var_s1_2->unk14, var_s1_2->unk18, var_s1_2->unk1C, var_s1_2->unk20, var_s1_2->unk24, var_s1_2->unk28);
-                guMtxCatF(&sp64[0], &spA4[0], &sp64[0]);
-                temp_f0 = temp_v0_2->unk20;
-                temp_f2 = temp_v0_2->unk24;
-                temp_v0_2->unk14 = sp94;
-                temp_f12 = temp_v0_2->unk28;
-                temp_t8 = temp_v0_2->unk9;
-                temp_v0_2->unk18 = sp98;
-                temp_v0_2->unk1C = sp9C;
-                temp_v0_2->unk20 = (sp84 * temp_f12) + ((sp64[0] * temp_f0) + (sp74 * temp_f2));
-                temp_v0_2->unk24 = (sp88 * temp_f12) + ((sp64[1] * temp_f0) + (sp78 * temp_f2));
-                temp_v0_2->unk28 = (sp8C * temp_f12) + ((sp64[2] * temp_f0) + (sp7C * temp_f2));
-                switch (temp_t8) {
-                    case 0:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 6:
-                    case 7:
-                    case 8:
-                        temp_v0_2->unk38 = temp_v0_2->unk38 * sqrtf((sp84 * sp84) + ((sp64[0] * sp64[0]) + (sp74 * sp74)));
-                        break;
-                    case 1:
-                        temp_f0_2 = temp_v0_2->unk50;
-                        temp_f2_2 = temp_v0_2->unk54;
-                        temp_f12_2 = temp_v0_2->unk58;
-                        temp_v0_2->unk50 = sp94 + ((sp64[0] * temp_f0_2) + (sp74 * temp_f2_2) + (sp84 * temp_f12_2));
-                        temp_v0_2->unk54 = sp98 + ((sp64[1] * temp_f0_2) + (sp78 * temp_f2_2) + (sp88 * temp_f12_2));
-                        temp_v0_2->unk58 = sp9C + ((sp64[2] * temp_f0_2) + (sp7C * temp_f2_2) + (sp8C * temp_f12_2));
-                        break;
-                    case 5:
-                        temp_f0_3 = temp_v0_2->unk50;
-                        temp_f2_3 = temp_v0_2->unk60;
-                        temp_f12_3 = temp_v0_2->unk70;
-                        temp_v0_2->unk50 = sp64[0] * temp_f0_3;
-                        temp_v0_2->unk54 = sp74 * temp_f2_3;
-                        temp_v0_2->unk58 = sp84 * temp_f12_3;
-                        temp_v0_2->unk5C = sp64[1] * temp_f0_3;
-                        temp_v0_2->unk60 = sp78 * temp_f2_3;
-                        temp_v0_2->unk64 = sp88 * temp_f12_3;
-                        temp_v0_2->unk68 = sp64[2] * temp_f0_3;
-                        temp_v0_2->unk6C = sp7C * temp_f2_3;
-                        temp_v0_2->unk70 = sp8C * temp_f12_3;
-                        break;
+            id = ent->type;
+            em = (struct EmNode *) func_800A19EC((id >> 0x10) & 0xF, id & 0xFFFF);
+            if (em != NULL) {
+                func_8001C2E4(sp64, ent->pos, ent->rot, ent->scale);
+                guMtxCatF(sp64, spA4, sp64);
+                vx = em->unk20;
+                vy = em->unk24;
+                em->unk14 = sp64[3][0];
+                vz = em->unk28;
+                em->unk18 = sp64[3][1];
+                em->unk1C = sp64[3][2];
+                em->unk20 = (sp64[2][0] * vz) + ((sp64[0][0] * vx) + (sp64[1][0] * vy));
+                em->unk24 = (sp64[2][1] * vz) + ((sp64[0][1] * vx) + (sp64[1][1] * vy));
+                em->unk28 = (sp64[2][2] * vz) + ((sp64[0][2] * vx) + (sp64[1][2] * vy));
+                switch (em->kind) {
+                case 0:
+                case 2:
+                case 3:
+                case 4:
+                case 6:
+                case 7:
+                case 8:
+                    em->unk38 = em->unk38 * sqrtf((sp64[2][0] * sp64[2][0]) +
+                                                  ((sp64[0][0] * sp64[0][0]) + (sp64[1][0] * sp64[1][0])));
+                    break;
+                case 1:
+                    vx = em->v[0];
+                    vy = em->v[1];
+                    vz = em->v[2];
+                    em->v[0] = sp64[3][0] + ((sp64[0][0] * vx) + (sp64[1][0] * vy) + (sp64[2][0] * vz));
+                    em->v[1] = sp64[3][1] + ((sp64[0][1] * vx) + (sp64[1][1] * vy) + (sp64[2][1] * vz));
+                    em->v[2] = sp64[3][2] + ((sp64[0][2] * vx) + (sp64[1][2] * vy) + (sp64[2][2] * vz));
+                    break;
+                case 5:
+                    vx = em->v[0];
+                    vy = em->v[4];
+                    vz = em->v[8];
+                    em->v[0] = sp64[0][0] * vx;
+                    em->v[1] = sp64[1][0] * vy;
+                    em->v[2] = sp64[2][0] * vz;
+                    em->v[3] = sp64[0][1] * vx;
+                    em->v[4] = sp64[1][1] * vy;
+                    em->v[5] = sp64[2][1] * vz;
+                    em->v[6] = sp64[0][2] * vx;
+                    em->v[7] = sp64[1][2] * vy;
+                    em->v[8] = sp64[2][2] * vz;
+                    break;
                 }
             }
-            temp_t9 = var_s1_2->unk0;
-            var_s1_2 += 0x2C;
-        } while (!(temp_t9 & 0x80000000));
+            id = ent->type;
+            ent += 1;
+        } while (!(id & 0x80000000));
     }
 }
 #elif defined(PORT)
@@ -6254,6 +6271,6 @@ void func_800A2550(void *arg0) {
     } while (!(id & 0x80000000));
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A2550.s")
+/* pragma disabled for verify: asm/nonmatchings/ovl1/ovl1/func_800A2550 */
 #endif
 

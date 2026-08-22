@@ -771,7 +771,6 @@ void func_800F7484(s32 arg0) {
  * compiled func_800F7404/func_800F7484 (PORT arms below) and the spawner
  * func_800F7578 read for the same flag. */
 void func_800F753C(void) {
-    s32 temp_v0;
     extern u8 D_800D6C94[];
 
     temp_v0 = D_800E76C0[omCurrentObj->objId];
@@ -1900,8 +1899,24 @@ u16 func_800F8560(void) {
 }
 
 #ifdef MIPS_TO_C
-
+/* FACTORY: 49/110 instructions match (61 diffs); exact instruction
+ * count, frameless leaf, all four late_rodata literals, both scan
+ * loops and every branch target. Residue is a whole-function register
+ * permutation: $v0/$v1 are swapped (the ROM keeps the D_800E6BD0
+ * cursor in $v1 and reuses $v0 for arg0*4 then the connector cursor;
+ * IDO does the reverse) and the $a file is shifted one slot
+ * ($a1/$a0/$a2 vs $a0/$a1/$a2 -- the ROM still has arg0 occupying $a0
+ * when it allocates &D_800E5F90[arg0]). Measured inert: an explicit
+ * `temp_v0 = arg0 * 4` versus two &sym[arg0] index expressions, and
+ * swapping which of the two arrays is indexed first. Two levers DID
+ * land and must be kept: D_80129114 has to be read into a LOCAL once
+ * (IDO otherwise CSEs its ADDRESS and reloads the pointer, +1
+ * instruction, 76 -> 63) and the node address must be spelled
+ * base + idx*0x10, not idx*0x10 + base (63 -> 61). */
 void func_800F8570(s32 arg0) {
+    extern void *D_80129114;
+    extern s32 D_800E5F90[];
+    extern f32 D_800E6BD0[];
     f32 *temp_v1;
     f32 temp_f0;
     f32 temp_f12;
@@ -1917,31 +1932,32 @@ void func_800F8570(s32 arg0) {
     u8 temp_a0_2;
     u8 temp_a0_3;
     u8 temp_t5;
-    void *temp_a0;
-    void *temp_a3;
-    void *temp_a3_2;
-    void *var_v0;
+    u8 *temp_a0;
+    u8 *temp_a2;
+    u8 *temp_a3;
+    u8 *temp_a3_2;
+    u8 *var_v0;
 
-    temp_v0 = arg0 * 4;
-    temp_v1 = temp_v0 + &D_800E6BD0;
+    temp_v1 = &D_800E6BD0[arg0];
+    temp_a1 = &D_800E5F90[arg0];
     temp_f0 = *temp_v1;
-    temp_a1 = temp_v0 + &D_800E5F90;
-    if (!(temp_f0 >= 0.0f) || !(temp_f0 <= 1.0f)) {
-        temp_a0 = (*temp_a1 * 0x10) + D_80129114->unk4;
-        temp_a3 = temp_a0->unk4;
-        temp_t0 = temp_a0->unkC;
+    if (!(0.0f <= temp_f0) || !(temp_f0 <= 1.0f)) {
+        temp_a2 = (u8 *) D_80129114;
+        temp_a0 = *(u8 **) (temp_a2 + 4) + *temp_a1 * 0x10;
+        temp_a3 = *(u8 **) (temp_a0 + 4);
+        temp_t0 = *(s16 *) (temp_a0 + 0xC);
         if (temp_f0 < 0.0f) {
             var_t1 = 0;
             if (temp_t0 == 0) {
                 *temp_v1 = 0.0001f;
                 return;
             }
-            var_v0 = temp_a0->unk8;
+            var_v0 = *(u8 **) (temp_a0 + 8);
             if (temp_t0 != 0) {
 loop_6:
-                temp_a0_2 = var_v0->unk0;
+                temp_a0_2 = var_v0[0];
                 var_t1 += 1;
-                if ((temp_a0_2 != 0) || (var_v0->unk1 & 0xF0)) {
+                if ((temp_a0_2 != 0) || (var_v0[1] & 0xF0)) {
                     if (temp_a0_2 != 0) {
                         *temp_v1 = 0.0001f;
                         return;
@@ -1964,13 +1980,13 @@ block_11:
             return;
         }
         var_t2 = temp_t0 - 1;
-        var_v0 = (temp_a0->unk8 + (temp_t0 * 4)) - 4;
-        temp_t1 = temp_a3->unk2 - 1;
+        var_v0 = (*(u8 **) (temp_a0 + 8) + temp_t0 * 4) - 4;
+        temp_t1 = *(s16 *) (temp_a3 + 2) - 1;
         if (var_t2 >= 0) {
 loop_15:
-            temp_a0_3 = var_v0->unk0;
+            temp_a0_3 = var_v0[0];
             var_t2 -= 1;
-            if ((temp_t1 != temp_a0_3) || (var_v0->unk1 & 0xF0)) {
+            if ((temp_t1 != temp_a0_3) || (var_v0[1] & 0xF0)) {
                 if (temp_t1 != temp_a0_3) {
                     *temp_v1 = 0.9999f;
                     return;
@@ -1987,16 +2003,16 @@ block_20:
         var_a0 = 1;
         var_f2 = temp_f0 - 1.0f;
 block_21:
-        temp_t5 = var_v0->unk2;
+        temp_t5 = var_v0[2];
         *temp_a1 = temp_t5;
-        temp_a3_2 = (D_80129114->unk4 + (temp_t5 * 0x10))->unk4;
-        temp_f12 = (temp_a3->unkC * var_f2) / temp_a3_2->unkC;
+        temp_a3_2 = *(u8 **) (*(u8 **) (temp_a2 + 4) + temp_t5 * 0x10 + 4);
+        temp_f12 = (*(f32 *) (temp_a3 + 0xC) * var_f2) / *(f32 *) (temp_a3_2 + 0xC);
         if (var_a0 != 0) {
             var_f0 = temp_f12;
         } else {
             var_f0 = -temp_f12;
         }
-        *temp_v1 = var_f0 + *(temp_a3_2->unk10 + (var_v0->unk3 * 4));
+        *temp_v1 = var_f0 + *(f32 *) (*(u8 **) (temp_a3_2 + 0x10) + var_v0[3] * 4);
     }
 }
 #elif defined(PORT)
@@ -2085,106 +2101,7 @@ void func_800F8570(s32 arg0) {
     *pT = f + newFooter->keyframes[c[3]];
 }
 #else
-void func_800F8570(s32 arg0) {
-    extern void *D_80129114;
-    extern s32 D_800E5F90[];
-    extern f32 D_800E6BD0[];
-    f32 *temp_v1;
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 var_f0;
-    f32 var_f2;
-    s16 temp_t0;
-    s32 *temp_a1;
-    s32 temp_t1;
-    s32 var_a0;
-    s32 var_t1;
-    s32 var_t2;
-    u8 temp_a0_2;
-    u8 temp_a0_3;
-    u8 temp_t5;
-    u8 *temp_a0;
-    u8 *temp_a3;
-    u8 *temp_a3_2;
-    u8 *var_v0;
-
-    temp_v1 = &D_800E6BD0[arg0];
-    temp_f0 = *temp_v1;
-    temp_a1 = &D_800E5F90[arg0];
-    if (!(0.0f <= temp_f0) || !(temp_f0 <= 1.0f)) {
-        temp_a0 = (u8 *) (*temp_a1 * 0x10 + (u8 *) *(void **) ((u8 *) D_80129114 + 4));
-        temp_a3 = *(u8 **) (temp_a0 + 4);
-        temp_t0 = *(s16 *) (temp_a0 + 0xC);
-        if (temp_f0 < 0.0f) {
-            var_t1 = 0;
-            if (temp_t0 == 0) {
-                *temp_v1 = 0.0001f;
-                return;
-            }
-            var_v0 = *(u8 **) (temp_a0 + 8);
-            if (temp_t0 != 0) {
-loop_6:
-                temp_a0_2 = var_v0[0];
-                var_t1 += 1;
-                if ((temp_a0_2 != 0) || (var_v0[1] & 0xF0)) {
-                    if (temp_a0_2 != 0) {
-                        *temp_v1 = 0.0001f;
-                        return;
-                    }
-                    var_v0 += 4;
-                    if (var_t1 == temp_t0) {
-                        goto block_11;
-                    }
-                    goto loop_6;
-                }
-                goto block_11;
-            }
-block_11:
-            var_f2 = -temp_f0;
-            var_a0 = 0;
-            goto block_21;
-        }
-        if (temp_t0 == 0) {
-            *temp_v1 = 0.9999f;
-            return;
-        }
-        var_t2 = temp_t0 - 1;
-        var_v0 = (*(u8 **) (temp_a0 + 8) + temp_t0 * 4) - 4;
-        temp_t1 = *(s16 *) (temp_a3 + 2) - 1;
-        if (var_t2 >= 0) {
-loop_15:
-            temp_a0_3 = var_v0[0];
-            var_t2 -= 1;
-            if ((temp_t1 != temp_a0_3) || (var_v0[1] & 0xF0)) {
-                if (temp_t1 != temp_a0_3) {
-                    *temp_v1 = 0.9999f;
-                    return;
-                }
-                var_v0 -= 4;
-                if (var_t2 < 0) {
-                    goto block_20;
-                }
-                goto loop_15;
-            }
-            goto block_20;
-        }
-block_20:
-        var_a0 = 1;
-        var_f2 = temp_f0 - 1.0f;
-block_21:
-        temp_t5 = var_v0[2];
-        *temp_a1 = temp_t5;
-        temp_a3_2 = *(u8 **) ((u8 *) *(void **) ((u8 *) D_80129114 + 4)
-                              + temp_t5 * 0x10 + 4);
-        temp_f12 = (*(f32 *) (temp_a3 + 0xC) * var_f2) / *(f32 *) (temp_a3_2 + 0xC);
-        if (var_a0 != 0) {
-            var_f0 = temp_f12;
-        } else {
-            var_f0 = -temp_f12;
-        }
-        *temp_v1 = var_f0 + *(f32 *) (*(u8 **) (temp_a3_2 + 0x10) + var_v0[3] * 4);
-    }
-}
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8570.s")
 #endif
 
 #ifdef MIPS_TO_C

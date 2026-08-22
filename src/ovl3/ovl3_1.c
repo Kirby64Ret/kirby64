@@ -1808,6 +1808,78 @@ void func_801548DC_ovl3(struct PositionState *st) {
     gEntitiesNextPosYArray[id] = st->kirbyFootPos[1];
     portShotWaterScan(fr[0]);
 }
+#elif defined(MIPS_TO_C)
+/* FACTORY: whole-function callee-saved permutation (same floor class as
+ * func_80154CFC_ovl3 next to it -- see that draft's note). Sealed after
+ * the file-scope extern was loosened to unspecified-args `()` (matching
+ * func_80154CFC_ovl3's existing form) per the LEVERS protocol: baseline
+ * and post-change verify.py --all / check_tu_size.py both taken, no
+ * regression, see report. */
+void func_801548DC_ovl3(arg0)
+    struct PositionState *arg0;
+{
+    extern u8 D_8012BCA0[];
+    extern s32 D_800E8920[];
+    s32 func_80109E44(f32 *);
+    s32 func_8010B11C(f32 *);
+    void func_80105238(f32 *, u8 *);
+    void func_800F8728(s32, f32, f32);
+    f32 *fr = D_800E0490[omCurrentObj->objId][1];
+    s32 res;
+    f32 dx;
+    f32 dz;
+
+    arg0->kirbyFootPos[0] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    arg0->kirbyFootPos[1] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    arg0->kirbyFootPos[2] = gEntitiesNextPosZArray[omCurrentObj->objId];
+    arg0->scale[0] = fr[0];
+    arg0->scale[1] = fr[1] + fr[0];
+    arg0->scale[2] = fr[2] + fr[0];
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        arg0->faceAngle[0] = fr[3];
+        arg0->faceAngle[1] = fr[4];
+    } else {
+        arg0->faceAngle[0] = fr[4];
+        arg0->faceAngle[1] = fr[3];
+    }
+    arg0->faceAngle[2] = D_800E17D0[omCurrentObj->objId];
+    if (D_800E8920[omCurrentObj->objId] == 0) {
+        res = func_80109E44((f32 *) arg0);
+    } else {
+        res = func_8010B11C((f32 *) arg0);
+    }
+    func_80105238((f32 *) arg0, D_8012BCA0);
+    D_800E8920[omCurrentObj->objId] = res;
+    dx = arg0->kirbyFootPos[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    dz = arg0->kirbyFootPos[2] - gEntitiesNextPosZArray[omCurrentObj->objId];
+    if ((dx != 0.0f) || (dz != 0.0f)) {
+        func_800F8728(omCurrentObj->objId, dx, dz);
+        gEntitiesNextPosXArray[omCurrentObj->objId] = arg0->kirbyFootPos[0];
+        gEntitiesNextPosZArray[omCurrentObj->objId] = arg0->kirbyFootPos[2];
+    }
+    gEntitiesNextPosYArray[omCurrentObj->objId] = arg0->kirbyFootPos[1];
+    {
+        extern s32 D_800E8AE0[];
+        s32 func_8010DF9C(f32 *);
+        f32 sp3C[3];
+        s32 hits;
+        s32 wi;
+        u8 **arr;
+
+        sp3C[0] = gEntitiesNextPosXArray[omCurrentObj->objId];
+        sp3C[1] = gEntitiesNextPosYArray[omCurrentObj->objId] + fr[0];
+        sp3C[2] = gEntitiesNextPosZArray[omCurrentObj->objId];
+        hits = func_8010DF9C(sp3C);
+        D_800E8AE0[omCurrentObj->objId] = (u32) D_800E8AE0[omCurrentObj->objId] >> 1;
+        arr = (u8 **) (D_8012BCA0 + 0x40);
+        for (wi = 0; wi < hits; wi++) {
+            u8 *w = arr[wi];
+            if (w[4] == 1) {
+                D_800E8AE0[omCurrentObj->objId] |= 4;
+            }
+        }
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_1/func_801548DC_ovl3.s")
 #endif
