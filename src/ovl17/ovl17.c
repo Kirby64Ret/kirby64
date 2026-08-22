@@ -54,7 +54,199 @@ extern f32 D_801E56F4_ovl17;
 extern f32 D_801E56F8_ovl17;
 void func_800A71A0(s32);
 
+#ifdef PORT
+/* PORT: the ovl17 boss's main entity coroutine, from asm/nonmatchings/
+ * ovl17/ovl17/func_801DB1E0_ovl17.s (the shared level-entity slot
+ * pc_ovl_dispatch.c resolves by name; siblings func_801DB1E0_ovl10..16
+ * are this seat for the other levels). Sets up the fight camera params
+ * (D_800D7158..D_800D7170), spawns the joint tracks, and on a fresh fight
+ * (D_800D6E48 == 0) plays the intro cutscene (camera mode 2, anim
+ * 0x10691, 209 frames) before the reset. Then it initializes the boss
+ * track -- Kirby state flags, hit slots, joint track ids to -1, scale
+ * 0.2, angles (pi, 0, pi), the func_801DCB44 camera lag state, camera
+ * history, Kirby's render yaw to pi, model 0x100F0 and the root DObj at
+ * (0, 0, D_800D716C) -- and enters the per-phase forever loop: when
+ * Kirby is swallowed (gKirbyState.unk24) it plays the chew anim pair and
+ * flags D_800E98E0 until the mouth is free; when hit (D_800E98E0) it
+ * plays the flinch pair, spawns a spit-back joint track (kind 0x3B)
+ * aimed away from the boss and parks it in the first free EBBE0/EBDA0/
+ * EBF60/EC120 slot, rumbles (0x12), and waits; otherwise it idles
+ * (0x1068B + 0x1068A, rate-8 blended when coming out of the flinch
+ * anim 0x10682) until something happens. Waits poll func_800AF230 and
+ * gKirbyState.unk24 exactly as the asm does. */
+#include "Player.h"
+
+void func_801DB1E0_ovl17(struct GObj *arg0) {
+    void func_801E0A74_ovl17(void);
+    s32 func_801E0B38_ovl17(s32, s32);
+    s32 func_800AF230(void);
+    void func_800AAF34(s32, s32, f32);
+    void func_800B3070(s32, f32);
+    void func_800AA5C4(s32, u32, f32);
+    void func_800A9F98(s32, f32);
+    void func_801AE7E0_ovl7(s32);
+    void func_800BC0F0(s32);
+    extern s32 D_800D6E48;
+    extern f32 D_800D7170;
+    s32 objId;
+    s32 track;
+
+    objId = omCurrentObj->objId;
+    D_800DEDD0[objId] = func_801DC91C_ovl17;
+    func_80111534(objId);
+    D_800D7158[0] = 30.0f;
+    D_800D715C = 100.0f;
+    D_800D7160 = 12800.0f;
+    D_800D7164 = 90.0f;
+    D_800D7168 = 1200.0f;
+    D_800D716C = 800.0f;
+    D_800D7170 = 0.013962635f;
+    gEntitiesNextPosYArray[0] = 0.0f;
+    gEntitiesNextPosXArray[0] = gEntitiesNextPosYArray[0];
+    gEntitiesNextPosZArray[0] = D_800D716C;
+    func_801E0A74_ovl17();
+    if (D_800D6E48 == 0) {
+        /* intro cutscene */
+        D_800D7098.unk0 = 2;
+        D_800DEF90[objId] = NULL;
+        func_800AFBB4(0, omCurrentObj);
+        D_800DF150[objId] = NULL;
+        D_800D7B20.unk0.x = 0.0f;
+        D_800D7B20.unk0.y = 0.0f;
+        D_800D7B20.unk0.z = 0.0f;
+        D_800D7B20.unkC = 0;
+        D_800D7B20.unk10 = 0x44960000; /* 1200.0f bits, as on N64 */
+        D_800D7B20.unk14 = 0;
+        D_800D7B38 = D_800D7B20;
+        func_800AAF34(0x10, 0x10691, 0.0f);
+        func_800B3070(0x10, 2.0f);
+        func_801AE7E0_ovl7(0x13);
+        ohSleep(0xD1);
+    } else {
+        func_800BC0F0(2);
+    }
+    D_800D7098.unk0 = 0;
+    D_800DEF90[objId] = func_800B4924;
+    D_800DF150[objId] = func_801DBA8C_ovl17;
+    func_800AFBB4(1, omCurrentObj);
+    gKirbyState.unk24 = 0;
+    gKirbyState.unk68 = 0;
+    D_800E7CE0[objId] = 0;
+    D_800E98E0[objId] = 0;
+    D_800E9AA0[objId] = NULL;
+    D_800EC120[objId] = -1;
+    D_800EBF60[objId] = D_800EC120[objId];
+    D_800EBDA0[objId] = D_800EC120[objId];
+    D_800EBBE0[objId] = D_800EC120[objId];
+    gEntitiesScaleXArray[objId] = 0.2f;
+    gEntitiesScaleYArray[objId] = 0.2f;
+    gEntitiesScaleZArray[objId] = 0.2f;
+    D_800EA6E0[objId] = 3.1415927f;
+    gEntitiesAngleXArray[objId] = D_800EA6E0[objId];
+    D_800EA8A0[objId] = 0.0f;
+    gEntitiesAngleYArray[objId] = D_800EA8A0[objId];
+    D_800EAA60[objId] = 3.1415927f;
+    gEntitiesAngleZArray[objId] = D_800EAA60[objId];
+    D_800EAFA0[objId] = 0.0f;
+    D_800EADE0[objId] = D_800EAFA0[objId];
+    D_800EAC20[objId] = D_800EAFA0[objId];
+    D_801E56D0_ovl17 = 0.0f;
+    D_801E56D4_ovl17 = D_800D7164;
+    D_801E56D8_ovl17 = 0.0f;
+    D_801E56DC_ovl17 = D_800D7164;
+    D_801E56E0_ovl17 = 0.0f;
+    D_801E56E4_ovl17 = 0.0f;
+    D_801E56E8_ovl17 = 0.0f;
+    D_801E56EC_ovl17 = 0.0f;
+    D_800D7B20.unk0.x = 0.0f;
+    D_800D7B20.unk0.y = 0.0f;
+    D_800D7B20.unk0.z = 0.0f;
+    D_800D7B20.unkC = 0;
+    D_800D7B20.unk10 = 0;
+    *(f32 *) &D_800D7B20.unk14 = D_800D7168;
+    D_800D7B38 = D_800D7B20;
+    gEntitiesAngleYArray[0] = 3.1415927f; /* face Kirby toward the boss */
+    func_800A9864(0x100F0, 0x20, 0x10);
+    arg0->data.dobj->pos.v.x = 0.0f;
+    arg0->data.dobj->pos.v.y = 0.0f;
+    arg0->data.dobj->pos.v.z = D_800D716C;
+    while (1) {
+        if (gKirbyState.unk24 != 0) {
+            /* Kirby is in the mouth: chew until the mouth frees up */
+            func_800AA018(0x10688);
+            func_800AA018(0x10689);
+            if (func_800AF230() == 0) {
+                do {
+                    D_800E98E0[objId] = 1;
+                    ohSleep(1);
+                } while (func_800AF230() == 0);
+            }
+        }
+        if (D_800E98E0[objId] != 0) {
+            /* flinch: got hit (or just spat Kirby out) */
+            func_800AA018(0x10682);
+            func_800AA018(0x10683);
+            track = func_801E0B38_ovl17(0x3B, 0);
+            if (track != 0) {
+                D_800EA6E0[track] = -gEntitiesNextPosXArray[objId];
+                D_800EA8A0[track] = -gEntitiesNextPosYArray[objId];
+                D_800EAA60[track] = -gEntitiesNextPosZArray[objId];
+                if (D_800EBBE0[objId] == -1) {
+                    D_800EBBE0[objId] = track;
+                } else if (D_800EBDA0[objId] == -1) {
+                    D_800EBDA0[objId] = track;
+                } else if (D_800EBF60[objId] == -1) {
+                    D_800EBF60[objId] = track;
+                } else if (D_800EC120[objId] == -1) {
+                    D_800EC120[objId] = track;
+                }
+            }
+            func_801AE7E0_ovl7(0x12);
+            if (func_800AF230() == 0) {
+                while (gKirbyState.unk24 == 0) {
+                    ohSleep(1);
+                    if (D_800E98E0[objId] != 0) {
+                        break;
+                    }
+                    if (func_800AF230() != 0) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            /* idle */
+            func_800AA018(0x1068B);
+            if (D_800DFF50[objId] == 0x10682) {
+                func_800AA5C4(0x1068A, 0x100F0, 8.0f);
+                D_800E9560[objId] = 0;
+                while (D_800E9560[objId] < 4) {
+                    if (gKirbyState.unk24 != 0) {
+                        break;
+                    }
+                    if (D_800E98E0[objId] != 0) {
+                        break;
+                    }
+                    ohSleep(1);
+                    D_800E9560[objId] += 1;
+                }
+                func_800A9F98(0x1068A, 8.0f);
+            } else {
+                func_800AA018(0x1068A);
+            }
+            if (func_800AF230() == 0) {
+                while ((gKirbyState.unk24 == 0) && (D_800E98E0[objId] == 0)) {
+                    ohSleep(1);
+                    if (func_800AF230() != 0) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DB1E0_ovl17.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DBA8C_ovl17.s")
 

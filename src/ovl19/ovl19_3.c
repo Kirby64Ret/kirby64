@@ -1266,6 +1266,76 @@ void func_8022CE18_ovl19(s32 arg0) {
     }
     curObjSleepForever();
 }
+#elif defined(PORT)
+/* PORT: behavioral port of the MIPS_TO_C sketch above, re-verified
+ * against asm/nonmatchings/ovl19/ovl19_3/func_8022CE18_ovl19.s -- the
+ * helper's "level complete" coroutine (funclist 22 in D_8022F5B0).
+ * Flags D_8012E7E8[2], swaps the per-frame hook to func_8022D13C_ovl19
+ * and re-arms rendering (func_800B1870 process, func_800AFA54 +
+ * func_800B20E0 texture scroll re-bind -- two args, m2c's third is a
+ * leftover register), shows DObj [23] (flags = 2, a byte store),
+ * freezes physics, plays the win (0x46) or last-hit KO (0xDC) jingle,
+ * stops the voice, victory dance music cue and the score fanfare
+ * name-call pair picked by facing. D_8012E90C+0x10 is cleared via the
+ * byte-offset idiom ovl3_6.c already uses for that block. */
+void func_8022CE18_ovl19(GObj *arg0) {
+    void func_800B1870(GObj *);
+    void func_800B20E0(void *, void ***);
+    void auFunc80020C88(void);
+    void func_800A7EB4(void);
+    void func_8011DA34(void);
+    void func_800BB498(void);
+    void func_800BB468(u32, s32);
+    void func_80176398_ovl3(void);
+    s32 play_music(s32, s32);
+    extern s32 D_8012E90C;
+    extern u32 *D_800DFD90[];
+    extern f32 gKirbyHp;
+    void func_8022D13C_ovl19(GObj *);
+
+    D_8012E7E8[2] = 1;
+    D_800DF150[omCurrentObj->objId] = func_8022D13C_ovl19;
+    setProcessMain(gEntityGObjProcessArray4[omCurrentObj->objId], func_800B1870);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    *(s32 *)((u8 *)&D_8012E90C + 0x10) = 0;
+    func_800AFA54(D_800DFA10[omCurrentObj->objId]);
+    func_800B20E0(omCurrentObj, (void ***) D_800DFD90[omCurrentObj->objId]);
+    D_800DFBD0[omCurrentObj->objId][23]->flags = 2;
+    gKirbyState.unk7 = 0;
+    D_800E8060[omCurrentObj->objId] = -1;
+    if ((gKirbyState.floorCollisionNext != 0) && (gKirbyState.ceilingCollisionNext != 0)) {
+        gKirbyState.unk30 = 0;
+    }
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
+    auFunc80020C88();
+    func_800A7EB4();
+    if ((gKirbyHp == 0.0f) && (D_800E7B20[omCurrentObj->objId] != 0.0f)) {
+        play_sound(0xDC);
+    } else {
+        play_sound(0x46);
+    }
+    func_8011DA34();
+    play_music(0, 5);
+    func_80176398_ovl3();
+    func_800BB498();
+    func_800BB468(2, 0);
+    (&D_800D6B54)[1] = 0xA0;
+    D_800D6B54 = 1;
+    D_800BE4F8 = 6;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        func_801230E8(0x20378, 0x20379, 1);
+    } else {
+        func_801230E8(0x20376, 0x20377, 1);
+    }
+    curObjSleepForever();
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022CE18_ovl19.s")
 #endif
@@ -1426,6 +1496,68 @@ void func_8022D5F8_ovl19(s32 arg0) {
     func_800FF1CC(D_8022FAB0_ovl19);
     func_800B1900(omCurrentObj->unk2);
 }
+#elif defined(PORT)
+/* PORT: behavioral port of the MIPS_TO_C sketch above, verified against
+ * asm/nonmatchings/ovl19/ovl19_3/func_8022D5F8_ovl19.s -- the helper's
+ * boss-door name-call cutscene coroutine: places the double at Kirby's
+ * Y/heading, grabs the shared cutscene camera blob (viewpoint
+ * 18/20/-240), loads the helper geo 0x20007 at scale 0.2, then parks it
+ * on the per-world raft/track node (world 1: node 3 blend 0.055; world
+ * 3: node 3 blend 0.27, y+2; world 4: node 0 blend 0.295, y+2 -- other
+ * worlds skip), plays the 0x20061/0x20062 name-call pair, bumps unk30,
+ * releases the camera and kills its own track. m2c's extra call
+ * arguments are leftover registers; the final kill reads objId as u16
+ * (the u16 parameter truncates). */
+void func_8022D5F8_ovl19(GObj *arg0) {
+    void func_8022D96C_ovl19(GObj *);
+    struct UnkStruct8022FAB0 *cam;
+
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DF150[omCurrentObj->objId] = func_8022D96C_ovl19;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];
+    D_800E17D0[omCurrentObj->objId] = gEntitiesAngleYArray[0];
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[0];
+    cam = func_800FF144();
+    D_8022FAB0_ovl19 = cam;
+    if (cam != NULL) {
+        cam->unk10 = 18.0f;
+        D_8022FAB0_ovl19->unk14 = 20.0f;
+        D_8022FAB0_ovl19->unk18 = -240.0f;
+        D_8022FAB0_ovl19->unk21 = 1;
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x20007, 0x20, 0x10);
+    switch (D_800BE500) {
+        case 1:
+            gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+            D_800E5F90[omCurrentObj->objId] = 3;
+            D_800E6D90[omCurrentObj->objId] = 0.055f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            break;
+        case 3:
+            gEntitiesNextPosYArray[omCurrentObj->objId] += 2.0f;
+            D_800E5F90[omCurrentObj->objId] = 3;
+            D_800E6D90[omCurrentObj->objId] = 0.27f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            break;
+        case 4:
+            gEntitiesNextPosYArray[omCurrentObj->objId] += 2.0f;
+            D_800E5F90[omCurrentObj->objId] = 0;
+            D_800E6D90[omCurrentObj->objId] = 0.295f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            break;
+    }
+    func_801230E8(0x20061, 0x20062, 1);
+    gKirbyState.unk30 += 1;
+    ohSleep(1);
+    func_800FF1CC(D_8022FAB0_ovl19);
+    func_800B1900(omCurrentObj->objId);
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022D5F8_ovl19.s")
 #endif
@@ -1570,6 +1702,124 @@ block_9:
     ohSleep(1);
     func_800FF1CC(D_8022FAB4_ovl19);
     func_800B1900(omCurrentObj->unk2);
+}
+#elif defined(PORT)
+/* PORT: behavioral port of the MIPS_TO_C sketch above, verified against
+ * asm/nonmatchings/ovl19/ovl19_3/func_8022D9F8_ovl19.s -- the boss-door
+ * entrance cutscene coroutine for the helper's ride (geo 0x2006B).
+ * Places the double at Kirby's Y/heading, grabs the SECOND shared
+ * camera slot D_8022FAB4_ovl19 (its own 8-byte cell on PC; the sibling
+ * func_8022E198_ovl19 reads it as (&D_8022FAB0_ovl19)[1]), viewpoint
+ * 24/20/-240, shows DObj [12] (flags = 2, byte store), then runs the
+ * per-world scripted ride-in: node 1 with a whistle 0x1DB and voice
+ * pair 0x203BA/0x203BB, accelerate to 12, timed decelerations, and
+ * finally parks on the destination node (world 1: node 3/0.055; world
+ * 3: node 3/0.27; world 4: node 0/0.295). Ends by flagging D_800D6E14,
+ * waiting out the anim (func_800AF27C), releasing the camera slot and
+ * killing its own track. m2c's second play_sound argument is a
+ * leftover register. */
+void func_8022D9F8_ovl19(GObj *arg0) {
+    void func_8022E198_ovl19(GObj *);
+    void func_800AF27C(void);
+    extern struct UnkStruct8022FAB0 *D_8022FAB4_ovl19;
+    extern s32 D_800D6E14;
+    struct UnkStruct8022FAB0 *cam;
+
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    func_8011CF58();
+    D_800DF150[omCurrentObj->objId] = func_8022E198_ovl19;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];
+    D_800E17D0[omCurrentObj->objId] = gEntitiesAngleYArray[0];
+    gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[0];
+    cam = func_800FF144();
+    D_8022FAB4_ovl19 = cam;
+    if (cam != NULL) {
+        cam->unk10 = 24.0f;
+        D_8022FAB4_ovl19->unk14 = 20.0f;
+        D_8022FAB4_ovl19->unk18 = -240.0f;
+        D_8022FAB4_ovl19->unk21 = 1;
+    }
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x2006B, 0x20, 0x10);
+    D_800DFBD0[omCurrentObj->objId][12]->flags = 2;
+    switch (D_800BE500) {
+        case 1:
+            D_800E5F90[omCurrentObj->objId] = 1;
+            D_800E6D90[omCurrentObj->objId] = 0.15f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            play_sound(0x1DB);
+            func_801230E8(0x203BA, 0x203BB, 0);
+            ohSleep(0x10);
+            D_800E64D0[omCurrentObj->objId] = 12.0f;
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E6850[omCurrentObj->objId] = 12.0f;
+            ohSleep(0x14);
+            D_800E6690[omCurrentObj->objId] = -0.7f;
+            ohSleep(0x12);
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            D_800E5F90[omCurrentObj->objId] = 3;
+            D_800E6D90[omCurrentObj->objId] = 0.055f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            break;
+        case 3:
+            D_800E5F90[omCurrentObj->objId] = 1;
+            D_800E6D90[omCurrentObj->objId] = 0.0f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            play_sound(0x1DB);
+            func_801230E8(0x203BA, 0x203BB, 0);
+            ohSleep(5);
+            D_800E64D0[omCurrentObj->objId] = 12.0f;
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E6850[omCurrentObj->objId] = 12.0f;
+            ohSleep(0x1C);
+            D_800E6690[omCurrentObj->objId] = -0.595f;
+            ohSleep(0x14);
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            D_800E5F90[omCurrentObj->objId] = 3;
+            D_800E6D90[omCurrentObj->objId] = 0.27f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            break;
+        case 4:
+            D_800E5F90[omCurrentObj->objId] = 1;
+            D_800E6D90[omCurrentObj->objId] = 0.0f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            play_sound(0x1DB);
+            func_801230E8(0x203BA, 0x203BB, 0);
+            D_800E64D0[omCurrentObj->objId] = 12.0f;
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E6850[omCurrentObj->objId] = 12.0f;
+            ohSleep(0x22);
+            D_800E6690[omCurrentObj->objId] = -0.615f;
+            ohSleep(0x14);
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            D_800E5F90[omCurrentObj->objId] = 0;
+            D_800E6D90[omCurrentObj->objId] = 0.295f;
+            D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+            break;
+    }
+    D_800D6E14 = 1;
+    func_800AF27C();
+    ohSleep(1);
+    func_800FF1CC(D_8022FAB4_ovl19);
+    func_800B1900(omCurrentObj->objId);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022D9F8_ovl19.s")

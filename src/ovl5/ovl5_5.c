@@ -204,7 +204,124 @@ void func_8016FFE8_ovl5(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
+#ifdef PORT
+/* PORT-only prototypes shared by the arms below. (contpad.h is included
+ * again further down for the N64-ordered text; it is guarded.) */
+#include "main/contpad.h"
+s32 request_track_general(s32, s32, s32);
+s32 request_track_3(s32, s32, s32);
+void func_800A9864(s32, s32, s32);
+s32 func_800AA934(s32);
+s32 func_800BB4E4(s32, s32, s32);
+void animUpdateModelTreeAnimation(GObj *);
+void animResetTextureAnimation(GObj *);
+void func_800AF7A0(s32);
+void func_800AF408(void);
+void func_800A9760(s32);
+void omGMoveObjDL(GObj *, u8, s32);
+void func_80170098_ovl5(s32, f32);
+void func_80170884_ovl5(s32, s32, s32);
+void func_8017113C_ovl5(s32, s32, s32);
+u16 func_80171E6C_ovl5(GObj *);
+void func_80173804_ovl5(s32, s32);
+void func_8016FFE8_ovl5(s32, s32, f32);
+Vector func_80172B98_ovl5(s32, s32);
+u8 func_80172B10_ovl5(s32, s32);
+s32 func_8016FFC4_ovl5(s32);
+s32 func_8016FF88_ovl5(s32);
+s32 func_80170584_ovl5(s32, s32);
+s32 func_8017068C_ovl5(s32, s32);
+s32 func_80170820_ovl5(s32);
+s32 func_801707B0_ovl5(s32);
+s32 func_80171768_ovl5(s32);
+s32 func_80172C50_ovl5(s32);
+void func_80173564_ovl5(GObj *);
+void func_80174328_ovl5(GObj *);
+void func_80174900_ovl5(s32, s32);
+void func_80175518_ovl5(GObj *);
+void func_801773C4_ovl5(struct GObj *);
+void func_801764F0_ovl5(void);
+void func_80176EC8_ovl5(u8 *, u16 *);
+void func_800ACBDC(GObj *);
+
+/* Camera / field scroller for lane arg0: scrolls the lane camera bias in
+ * gEntitiesNextPosZArray[objId] by arg1 and pushes every live tile of the
+ * lane (via func_8016FFE8_ovl5) once the bias saturates, clamping against
+ * the last tile (row entry 0x51) so the far end never scrolls past 1350. */
+void func_80170098_ovl5(s32 arg0, f32 arg1) {
+    f32 z;
+    f32 end;
+    f32 over;
+    s32 last;
+    s32 i;
+
+    if (arg1 < 0.0f) {
+        last = D_8018E478_ovl5[arg0][0x51];
+        if (last != 0) {
+            end = D_8018EB48_ovl5[arg0] + gEntitiesNextPosZArray[last];
+            if ((end + arg1) <= 1350.0f) {
+                if ((end == 1350.0f) || ((end - arg1) == 1350.0f)) {
+                    gEntitiesNextPosZArray[omCurrentObj->objId] -= arg1;
+                    return;
+                }
+                over = (end + arg1) - 1350.0f;
+                gEntitiesNextPosZArray[omCurrentObj->objId] -= over;
+                for (i = 0; i < 0x52; i++) {
+                    if (D_8018E478_ovl5[arg0][i] != 0) {
+                        func_8016FFE8_ovl5(arg0, i, arg1 - over);
+                    }
+                }
+                return;
+            }
+        }
+        for (i = 0; i < 0x52; i++) {
+            if (D_8018E478_ovl5[arg0][i] != 0) {
+                func_8016FFE8_ovl5(arg0, i, arg1);
+            }
+        }
+        return;
+    }
+    z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    if (z > 0.0f) {
+        if (arg1 <= z) {
+            gEntitiesNextPosZArray[omCurrentObj->objId] = z - arg1;
+            return;
+        }
+        gEntitiesNextPosZArray[omCurrentObj->objId] = z + z;
+        for (i = 0; i < 0x52; i++) {
+            if (D_8018E478_ovl5[arg0][i] != 0) {
+                func_8016FFE8_ovl5(arg0, i, arg1 - z);
+            }
+        }
+        return;
+    }
+    last = D_8018E478_ovl5[arg0][0x51];
+    if (last != 0) {
+        end = D_8018EB48_ovl5[arg0] + gEntitiesNextPosZArray[last];
+        if ((end + arg1) <= 1350.0f) {
+            if ((end == 1350.0f) || ((end - arg1) == 1350.0f)) {
+                gEntitiesNextPosZArray[omCurrentObj->objId] = z - arg1;
+                return;
+            }
+            over = (end + arg1) - 1350.0f;
+            gEntitiesNextPosZArray[omCurrentObj->objId] = z - over;
+            for (i = 0; i < 0x52; i++) {
+                if (D_8018E478_ovl5[arg0][i] != 0) {
+                    func_8016FFE8_ovl5(arg0, i, arg1 - over);
+                }
+            }
+            return;
+        }
+    }
+    for (i = 0; i < 0x52; i++) {
+        if (D_8018E478_ovl5[arg0][i] != 0) {
+            func_8016FFE8_ovl5(arg0, i, arg1);
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170098_ovl5.s")
+#endif
 
 s32 func_80170464_ovl5(s32 arg0, s32 arg1) {
     s32 id = D_8018E478_ovl5[arg0][arg1];
@@ -310,9 +427,204 @@ s32 func_80170820_ovl5(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170884_ovl5.s")
+#ifdef PORT
+/* Backward-hop recovery for lane arg0 (kind arg1): plays the trip anim
+ * pair, rewinds the camera by E9C60 tiles over 15 frames while riding the
+ * hop arc, resolves what the racer lands on (rapids push a raft chain via
+ * func_80173804_ovl5, holes cost a stock), and restores the idle anims. */
+void func_80170884_ovl5(s32 arg0, s32 arg1, s32 arg2) {
+    extern u32 D_80187BF4_ovl5[];
+    extern u32 D_80187C14_ovl5[];
+    extern u32 D_80187C54_ovl5[];
+    u8 kind = func_80172B10_ovl5(arg0, D_8018E998_ovl5[arg0]);
+    s32 fell = 0;
+    s32 pushed = 0;
+    s32 i;
+    s32 t;
 
+    func_800AA018(D_80187C14_ovl5[arg1 * 2]);
+    func_800AA018(D_80187C14_ovl5[arg1 * 2 + 1]);
+    for (i = 0; i < 0xF; i++) {
+        func_80170098_ovl5(arg0, -(((f32) D_800E9C60[omCurrentObj->objId] * 450.0f) / 15.0f));
+        if ((func_8016FFC4_ovl5(func_80172B10_ovl5(arg0, D_8018E998_ovl5[arg0] - D_800E9C60[omCurrentObj->objId])) != 0) &&
+            ((f32) i < 4.0f)) {
+            gEntitiesNextPosYArray[omCurrentObj->objId] += 18.75f;
+        }
+        if ((func_8016FFC4_ovl5(kind) != 0) && ((f32) i >= 11.0f)) {
+            gEntitiesNextPosYArray[omCurrentObj->objId] += -18.75f;
+        }
+        if ((func_80170584_ovl5(arg0, D_8018E998_ovl5[arg0]) != 0) && (i == 0xB)) {
+            if ((kind == 0x14) || (kind == 0xD) || (kind == 0xE)) {
+                D_800E98E0[D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]]] = 1;
+                fell = 1;
+                pushed = 0;
+                D_8018EB58_ovl5[(arg0 * 0x52) + D_8018E998_ovl5[arg0]] = 1;
+            } else {
+                t = func_8017068C_ovl5(arg0, D_8018E998_ovl5[arg0]);
+                pushed = 1;
+                if (t != 0x29A) {
+                    D_800E9C60[t] = 1;
+                    if (D_800E9FE0[t].as_u32 != 0) {
+                        pushed = 0;
+                        fell = 1;
+                    } else {
+                        pushed = 1;
+                        D_8018EB58_ovl5[(arg0 * 0x52) + D_8018E998_ovl5[arg0]] = 1;
+                    }
+                } else {
+                    D_8018EB58_ovl5[(arg0 * 0x52) + D_8018E998_ovl5[arg0]] = 1;
+                }
+            }
+        }
+        if ((i == 0xC) && (fell == 0)) {
+            pushed = func_80170584_ovl5(arg0, D_8018E998_ovl5[arg0]);
+            if (pushed == 0) {
+                if ((kind == 0xA) || (kind == 0x15) || (kind == 0x16)) {
+                    if (kind != 0xA) {
+                        play_sound(0x262);
+                    }
+                    D_800E98E0[D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]]] = 1;
+                    t = func_8017068C_ovl5(arg0, D_8018E998_ovl5[arg0]);
+                    if (t != 0x29A) {
+                        D_800E9C60[t] = 1;
+                    }
+                } else if (kind == 0xC) {
+                    t = D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]];
+                    if (D_800DE350[t]->animTimer >= 112.0f) {
+                        D_800E9AA0[t].as_u32 = 1;
+                    }
+                }
+                func_800AA018(D_80187C34_ovl5[arg1][0]);
+                func_800AA018(D_80187C34_ovl5[arg1][1]);
+                if (D_8018ECD8_ovl5 != 3) {
+                    if ((kind == 0x15) || (kind == 0x16)) {
+                        t = request_track_general(8, 0, 0x70);
+                        D_800E98E0[t] = 0xA;
+                    } else {
+                        t = request_track_general(8, 0, 0x70);
+                        D_800E98E0[t] = 9;
+                    }
+                    D_800E9AA0[t].as_u32 = arg0;
+                }
+            }
+        }
+        ohSleep(1);
+    }
+    if (func_8016FFC4_ovl5(kind) != 0) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    } else {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+    }
+    if (pushed != 0) {
+        func_80173804_ovl5(arg0, D_800E9C60[omCurrentObj->objId]);
+        ohSleep(0);
+        D_800E9E20[omCurrentObj->objId] = 0;
+    } else if (fell != 0) {
+        if (D_8018ECA8_ovl5[arg0] == 0) {
+            func_800BB4E4(arg0, 6, 0x10);
+        }
+        play_sound(0xF1);
+        func_80173804_ovl5(arg0, D_800E9C60[omCurrentObj->objId]);
+        func_800AA018(D_80187C54_ovl5[arg1 * 2]);
+        func_800AA018(D_80187C54_ovl5[arg1 * 2 + 1]);
+        func_800AF27C();
+        ohSleep(0x14);
+        func_800AFBB4(0, omCurrentObj);
+        ohSleep(3);
+        func_800AFBB4(1, omCurrentObj);
+    } else {
+        if (D_8018ECA8_ovl5[arg0] == 0) {
+            func_800BB4E4(arg0, 9, 0x1E);
+        }
+        if (D_8018ECD8_ovl5 == 3) {
+            t = request_track_general(8, 0, 0x70);
+            D_800E98E0[t] = 9;
+            D_800E9AA0[t].as_u32 = arg0;
+            D_800E3210[omCurrentObj->objId] = -10.0f;
+        }
+        ohSleep(0xF);
+        if (D_8018ECD8_ovl5 == 3) {
+            D_800E3210[omCurrentObj->objId] = 0.0f;
+        }
+        func_800AFBB4(0, omCurrentObj);
+        D_8018E998_ovl5[arg0] -= D_800E9C60[omCurrentObj->objId];
+        for (i = 0; i < 0xF; i++) {
+            func_80170098_ovl5(arg0, ((f32) D_800E9C60[omCurrentObj->objId] * 450.0f) / 15.0f);
+            ohSleep(1);
+        }
+        gEntitiesNextPosZArray[omCurrentObj->objId] =
+            gEntitiesNextPosZArray[D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]]];
+        if (func_8016FFC4_ovl5(func_80172B10_ovl5(arg0, D_8018E998_ovl5[arg0])) != 0) {
+            gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+        } else {
+            gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+        }
+        func_800AFBB4(1, omCurrentObj);
+        D_800E9E20[omCurrentObj->objId] = 0;
+    }
+    func_800AA018(D_80187BF4_ovl5[arg1 * 2]);
+    func_800AA018(D_80187BF4_ovl5[arg1 * 2 + 1]);
+    D_800E9C60[omCurrentObj->objId] = 0;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170884_ovl5.s")
+#endif
+
+#ifdef PORT
+/* Fall-in-a-hole recovery for lane arg0 (kind arg1): marks the tile fallen
+ * on, sinks the racer, rewinds the camera to the last consumed tile over 15
+ * frames and reseats the racer on it. */
+void func_8017113C_ovl5(s32 arg0, s32 arg1, s32 arg2) {
+    extern u32 D_80187BF4_ovl5[];
+    u8 kind = func_80172B10_ovl5(arg0, D_8018E998_ovl5[arg0]);
+    s32 i;
+    s32 t;
+
+    if (D_8018ECA8_ovl5[arg0] == 0) {
+        func_800BB4E4(arg0, 9, 0x1E);
+    }
+    if (func_8016FFC4_ovl5(kind) != 0) {
+        D_800E98E0[D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]]] = 1;
+    } else if (kind == 0xC) {
+        t = D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]];
+        if (D_800DE350[t]->animTimer >= 112.0f) {
+            D_800E9AA0[t].as_u32 = 1;
+        }
+    } else if ((kind == 8) || (kind == 9)) {
+        t = D_8018E478_ovl5[arg0][D_8018E998_ovl5[arg0]];
+        if (D_800DE350[t]->animTimer >= 80.0f) {
+            D_800E9AA0[t].as_u32 = 1;
+        }
+    }
+    func_800AA018(D_80187C34_ovl5[arg1][0]);
+    func_800AA018(D_80187C34_ovl5[arg1][1]);
+    t = request_track_general(8, 0, 0x70);
+    D_800E98E0[t] = 9;
+    D_800E9AA0[t].as_u32 = arg0;
+    D_800E3210[omCurrentObj->objId] = -10.0f;
+    ohSleep(0x14);
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    func_800AFBB4(0, omCurrentObj);
+    for (i = 0; i < 0xF; i++) {
+        func_80170098_ovl5(arg0, ((f32) (D_8018E998_ovl5[arg0] - func_80170820_ovl5(arg0)) * 450.0f) / 15.0f);
+        ohSleep(1);
+    }
+    D_8018EB58_ovl5[(arg0 * 0x52) + D_8018E998_ovl5[arg0]] = 0;
+    t = func_80170820_ovl5(arg0);
+    D_8018E998_ovl5[arg0] = t;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E478_ovl5[arg0][t]];
+    if (func_8016FFC4_ovl5(func_80172B10_ovl5(arg0, t)) != 0) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    } else {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+    }
+    func_800AA018(D_80187BF4_ovl5[arg1 * 2]);
+    func_800AA018(D_80187BF4_ovl5[arg1 * 2 + 1]);
+    func_800AFBB4(1, omCurrentObj);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017113C_ovl5.s")
+#endif
 
 #ifdef NON_MATCHING
 /* Faithful, not byte-exact (105/106). The ROM parks all sixteen compare
@@ -390,9 +702,145 @@ s32 func_80171868_ovl5(void) {
     return 1;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171950_ovl5.s")
+#ifdef PORT
+/* Racer thread for hop-race lane arg1: registers the objId, spawns the
+ * character at its lane column, optionally fast-forwards a CPU's start
+ * (D_801875F0 handicap window), then runs the race loop -- per tick
+ * func_80172B10 samples the tile, a knock triggers the backward-hop
+ * (func_80170884), a hole drop triggers func_8017113C -- until tile 0x51
+ * is passed, then awards the finish fanfare and parks. */
+void func_80171950_ovl5(GObj *arg0, s32 arg1) {
+    extern u32 D_80187BD4_ovl5[];
+    extern u32 D_80187BE4_ovl5[];
+    extern u32 D_80187BF4_ovl5[];
+    extern u32 D_80187C74_ovl5[];
+    extern u8 D_8018ECA0x_ovl5[] __asm__("D_8018ECA0_ovl5");
+    Vector2 kf;
+    s32 kind;
+    s32 frame;
+    s32 t;
 
+    D_8018E458_ovl5[arg1] = omCurrentObj->objId;
+    D_800E98E0[omCurrentObj->objId] = 5;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = arg1;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+    D_800EA520[omCurrentObj->objId] = 0;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    func_8016FF60_ovl5(&kf, arg1);
+    kind = *(s32 *) &kf.x;
+    frame = *(s32 *) &kf.y;
+    func_800A9864(D_80187BD4_ovl5[kind], 0x1869F, 0x10);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = 0.0f;
+    func_800A9F98(D_80187BE4_ovl5[kind], (f32) frame);
+    if (frame == 0) {
+        animUpdateModelTreeAnimation(arg0);
+    }
+    animResetTextureAnimation(arg0);
+    func_800AECC0(2.0f);
+    func_800AED20(2.0f);
+    if (kind == 1) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 0.85f;
+        gEntitiesScaleYArray[omCurrentObj->objId] = 0.85f;
+        gEntitiesScaleZArray[omCurrentObj->objId] = 0.85f;
+    }
+    omGMoveObjDL(arg0, arg0->dl_link, 0xA);
+    func_800AA018(D_80187BF4_ovl5[kind * 2]);
+    func_800AA018(D_80187BF4_ovl5[kind * 2 + 1]);
+    if (D_8018ECA8_ovl5[arg1] != 0) {
+        D_800E98E0[omCurrentObj->objId] =
+            (s32) ((f32) (random_soft_s32_range(D_801875F0_ovl5[D_8018ECA8_ovl5[arg1]].unk4) +
+                          D_801875F0_ovl5[D_8018ECA8_ovl5[arg1]].unk0) *
+                   0.5f);
+    }
+    while (D_8018ECA0x_ovl5[0] != 0) {
+        ohSleep(1);
+    }
+    D_800DF150[omCurrentObj->objId] = func_80171E6C_ovl5;
+    while ((D_8018E998_ovl5[arg1] < 0x51) || (D_800E9C60[omCurrentObj->objId] != 0)) {
+        func_80172B10_ovl5(arg1, D_8018E998_ovl5[arg1]);
+        if (D_800E9C60[omCurrentObj->objId] != 0) {
+            func_80170884_ovl5(arg1, kind, frame);
+        }
+        if (func_80170584_ovl5(arg1, D_8018E998_ovl5[arg1]) == 0) {
+            D_800E9C60[omCurrentObj->objId] = 1;
+            func_8017113C_ovl5(arg1, kind, frame);
+            D_800E9E20[omCurrentObj->objId] = 0;
+            D_800E9C60[omCurrentObj->objId] = 0;
+        }
+        ohSleep(1);
+    }
+    if (D_8018ECA8_ovl5[arg1] == 0) {
+        func_800BB4E4(arg1, 6, 0x10);
+    }
+    t = request_track_3(8, 0, 0x70);
+    D_800E98E0[t] = 0x12;
+    D_800E9AA0[t].as_u32 = arg1;
+    if (func_80171768_ovl5(arg1) == 0) {
+        func_800AA018(D_80187C74_ovl5[kind * 2]);
+        func_800AA018(D_80187C74_ovl5[kind * 2 + 1]);
+    }
+    curObjSleepForever();
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171950_ovl5.s")
+#endif
+
+#ifdef PORT
+/* Per-frame race input for the racer's lane (installed as the racer's
+ * draw callback): mirrors the lane camera bias, and while idle either lets
+ * the CPU driver (func_8017232C_ovl5) act or maps A to a 1-tile hop and B
+ * to a 2-tile hop (1 tile on the final step), bumping the consumed-tile
+ * counter D_8018E998_ovl5. */
+u16 func_80171E6C_ovl5(GObj *arg0) {
+    u16 func_8017232C_ovl5(u32, s32, s32 *, u32);
+    u32 lane = D_800E9AA0[omCurrentObj->objId].as_u32;
+    s32 step;
+
+    D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[lane];
+    step = D_8018E998_ovl5[lane];
+    if ((step == 0x51) && (D_800E9C60[omCurrentObj->objId] == 0)) {
+        return 0;
+    }
+    D_8018E468_ovl5[lane] += 1;
+    D_800E9E20[omCurrentObj->objId] += 1;
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        return 0;
+    }
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        D_800E98E0[omCurrentObj->objId] -= 1;
+        return 0;
+    }
+    if (D_8018ECA8_ovl5[lane] != 0) {
+        return func_8017232C_ovl5(lane, lane * 4, &D_8018E998_ovl5[lane], lane);
+    }
+    if (gPlayerControllers[lane].buttonPressed & 0x4000) {
+        play_sound(0xBA);
+        D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+        D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_u32;
+        D_8018E998_ovl5[lane] += 1;
+        return 0;
+    }
+    if (gPlayerControllers[lane].buttonPressed & 0x8000) {
+        play_sound(0xBA);
+        if (step == 0x50) {
+            D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+            D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_u32;
+            D_8018E998_ovl5[lane] += 1;
+        } else {
+            D_800E9FE0[omCurrentObj->objId].as_u32 = 2;
+            D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_u32;
+            D_8018E998_ovl5[lane] += 2;
+        }
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171E6C_ovl5.s")
+#endif
 
 // Draft, 2/61: with THESE three locals every spill slot is exact (0x1C/20/24)
 // and only the frame differs, 0x30 vs 0x28. Re-measured 2026-08-12: dropping a
@@ -476,7 +924,189 @@ s32 func_80172C50_ovl5(s32 arg0) {
     return 0;
 }
 
+#ifdef PORT
+/* Course-tile entity for lane arg1, step arg2, parked at z arg3: registers
+ * itself in the lane grid, spawns the model for its tile kind (rock, log,
+ * rapids, whirlpool, cloud 0x18...), then services pokes through
+ * D_800E98E0[objId]: bonk-away (kinds 4/5), sink (10/19), raft-pair
+ * promote (13/14), melt (20), crack (21); despawns once the racer is 7
+ * (obstacles) or 11 (rafts) tiles past it. */
+void func_80172C7C_ovl5(GObj *arg0, s32 arg1, s32 arg2, f32 arg3) {
+    extern u32 D_80187D24_ovl5[];
+    extern u32 D_80187D34_ovl5[];
+    extern u32 D_80187D44_ovl5[];
+    extern u32 D_80187D54_ovl5[];
+    extern u32 D_80187D64_ovl5[];
+    extern u32 D_80187D74_ovl5[];
+    extern u32 D_80187D84_ovl5[];
+    extern u32 D_80187DE0_ovl5[];
+    extern u32 D_80187DE8_ovl5[];
+    extern u32 D_80187EA0_ovl5[];
+    extern u32 D_80187EA4_ovl5[];
+    extern u32 D_80187EB0_ovl5[];
+    extern u8 D_8018ECA0x_ovl5[] __asm__("D_8018ECA0_ovl5");
+    u8 kind;
+
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+    D_800E9C60[omCurrentObj->objId] = arg1;
+    D_8018E478_ovl5[arg1][arg2] = omCurrentObj->objId;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    kind = func_80172B10_ovl5(arg1, arg2);
+    if (!((kind == 0xD) || (kind == 0xE) || (func_8016FF88_ovl5(kind) != 0))) {
+        D_800EA520[omCurrentObj->objId] = 0x29A;
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = arg3;
+    switch (kind) {
+        case 0:
+            if (D_8018ECD8_ovl5 == 3) {
+                func_800A9864(D_80187D24_ovl5[arg1], 0x1869F, 0x10);
+            } else {
+                func_800A9864(D_80187D34_ovl5[arg1], 0x1869F, 0x10);
+            }
+            break;
+        case 1:
+            if (D_8018ECD8_ovl5 == 3) {
+                func_800A9864(D_80187D44_ovl5[arg1], 0x1869F, 0x10);
+            } else {
+                func_800A9864(D_80187D54_ovl5[arg1], 0x1869F, 0x10);
+            }
+            break;
+        case 24:
+            if (D_8018ECD8_ovl5 == 3) {
+                setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+                D_800DEF90[omCurrentObj->objId] = NULL;
+            } else {
+                func_800A9864(D_80187DE0_ovl5[0], 0x1869F, 0x10);
+                if (D_80187EA0_ovl5[0] != 0) {
+                    func_800AA018(D_80187EA0_ovl5[0]);
+                }
+                if (D_80187EA4_ovl5[0] != 0) {
+                    func_800AA018(D_80187EA4_ovl5[0]);
+                }
+            }
+            break;
+        case 2:
+        case 13:
+        case 15:
+            func_800A9864(D_80187D64_ovl5[D_8018ECD8_ovl5], 0x1869F, 0x10);
+            break;
+        case 3:
+        case 14:
+        case 16:
+            func_800A9864(D_80187D74_ovl5[D_8018ECD8_ovl5], 0x1869F, 0x10);
+            break;
+        default:
+            func_800A9864(D_80187D84_ovl5[kind], 0x1869F, 0x10);
+            if (D_80187DE8_ovl5[kind * 2] != 0) {
+                func_800AA018(D_80187DE8_ovl5[kind * 2]);
+            }
+            if (D_80187DE8_ovl5[kind * 2 + 1] != 0) {
+                func_800AA018(D_80187DE8_ovl5[kind * 2 + 1]);
+            }
+            break;
+    }
+    if ((kind != 0x18) && (D_8018ECD8_ovl5 == 3)) {
+        if (D_8018ECD8_ovl5 == 3) {
+            func_800AF7A0(0x2D);
+        } else {
+            func_800AF7A0(0x1869F);
+        }
+        omGMoveObjDL(arg0, arg0->dl_link, 0x10);
+    }
+    while (D_8018ECA0x_ovl5[0] != 0) {
+        ohSleep(1);
+    }
+    D_800DF150[omCurrentObj->objId] = func_80173564_ovl5;
+    while (1) {
+        if (D_800E98E0[omCurrentObj->objId] != 0) {
+            switch (kind) {
+                case 4:
+                case 5:
+                    play_sound(0xA);
+                    kind = (kind == 4) ? 6 : 7;
+                    func_800A9760(D_80187D84_ovl5[kind]);
+                    if (D_8018ECD8_ovl5 == 3) {
+                        func_800AF7A0(0x2D);
+                    } else {
+                        func_800AF7A0(0x1869F);
+                    }
+                    if (D_80187DE8_ovl5[kind * 2] != 0) {
+                        func_800AA018(D_80187DE8_ovl5[kind * 2]);
+                    }
+                    if (D_80187DE8_ovl5[kind * 2 + 1] != 0) {
+                        func_800AA018(D_80187DE8_ovl5[kind * 2 + 1]);
+                    }
+                    func_800AF27C();
+                    func_800AFBB4(0, omCurrentObj);
+                    break;
+                case 10:
+                case 19:
+                    func_800AA018(D_80187EB0_ovl5[0]);
+                    func_800AF27C();
+                    func_800AA018(D_80187DE8_ovl5[kind * 2]);
+                    D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 0x18;
+                    kind = 0x18;
+                    func_800AFBB4(0, omCurrentObj);
+                    break;
+                case 13:
+                case 14:
+                    D_800E9C60[D_800EA520[omCurrentObj->objId]] = 1;
+                    if (kind == 0xD) {
+                        D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 2;
+                        kind = 2;
+                    } else {
+                        D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 3;
+                        kind = 3;
+                    }
+                    break;
+                case 20:
+                    ohSleep(6);
+                    func_800AFBB4(0, omCurrentObj);
+                    D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 2;
+                    kind = 2;
+                    break;
+                case 21:
+                    ohSleep(2);
+                    kind = 0x16;
+                    D_8018EA00_ovl5[(arg1 * 0x52) + arg2] = 0x16;
+                    func_800A9760(D_80187D84_ovl5[kind]);
+                    if (D_8018ECD8_ovl5 == 3) {
+                        func_800AF7A0(0x2D);
+                    } else {
+                        func_800AF7A0(0x1869F);
+                    }
+                    break;
+            }
+            D_800E98E0[omCurrentObj->objId] = 0;
+        }
+        if (((kind == 0xC) || (kind == 8) || (kind == 9)) && (D_800E9AA0[omCurrentObj->objId].as_u32 != 0)) {
+            func_800AECC0(0.0f);
+            func_800AED20(0.0f);
+            while (func_801707B0_ovl5(arg1) != 0) {
+                ohSleep(1);
+            }
+            func_800AECC0(2.0f);
+            func_800AED20(2.0f);
+            D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+        }
+        if (func_8016FF88_ovl5(kind) != 0) {
+            if ((D_8018E998_ovl5[arg1] - arg2) >= 0xB) {
+                D_8018E478_ovl5[arg1][arg2] = 0;
+                func_800B1900((u16) omCurrentObj->objId);
+            }
+        } else if ((D_8018E998_ovl5[arg1] - arg2) >= 7) {
+            D_8018E478_ovl5[arg1][arg2] = 0;
+            func_800B1900((u16) omCurrentObj->objId);
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80172C7C_ovl5.s")
+#endif
 
 void func_80173564_ovl5(GObj *arg0) {
     D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[D_800E9C60[omCurrentObj->objId]];
@@ -538,7 +1168,59 @@ s32 func_80173778_ovl5(s32 arg0) {
     }
 }
 
+#ifdef PORT
+/* Raft-chain extender: when fewer than 12 tiles remain ahead of the last
+ * live tile of lane arg0, spawns arg1 new tile tracks behind it (450 units
+ * apart), attaching raft-pair (13/14), rapids and whirlpool companion
+ * tracks as the sampled tile kind demands. */
+void func_80173804_ovl5(s32 arg0, s32 arg1) {
+    Vector v;
+    s32 last;
+    s32 i;
+    s32 pos;
+    s32 t;
+    s32 t2;
+    u8 kind;
+
+    last = func_80173778_ovl5(arg0);
+    if ((last - D_8018E998_ovl5[arg0]) < 0xC) {
+        if (arg1 > 0) {
+            pos = last + 1;
+            for (i = 0; (i != arg1) && (pos < 0x52); i++, pos++) {
+                v = func_80172B98_ovl5(arg0, last);
+                t = request_track_general(8, 0, 0x70);
+                D_800E98E0[t] = 2;
+                D_800E9AA0[t].as_u32 = arg0;
+                D_800E9C60[t] = pos;
+                D_800EA6E0[t] = v.z + 450.0f + (450.0f * (f32) i);
+                kind = func_80172B10_ovl5(arg0, pos);
+                if ((kind == 0xD) || (kind == 0xE)) {
+                    t2 = request_track_general(8, 0, 0x70);
+                    D_800E98E0[t2] = 0xB;
+                    D_800E9AA0[t2].as_u32 = arg0;
+                    D_800E9C60[t2] = pos;
+                    D_800EA520[t] = t2;
+                }
+                if (func_8016FF88_ovl5(kind) != 0) {
+                    t2 = request_track_general(8, 0, 0x70);
+                    D_800E98E0[t2] = 0xC;
+                    D_800E9AA0[t2].as_u32 = arg0;
+                    D_800E9C60[t2] = pos;
+                    D_800EA520[t] = t2;
+                }
+                if (func_80172C50_ovl5(pos) != 0) {
+                    t2 = request_track_general(8, 0, 0x70);
+                    D_800E98E0[t2] = 0x10;
+                    D_800E9AA0[t2].as_u32 = arg0;
+                    D_800E9C60[t2] = pos;
+                }
+            }
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80173804_ovl5.s")
+#endif
 
 void func_80173EBC_ovl5(GObj *);
 void func_801773C4_ovl5(struct GObj *);
@@ -701,7 +1383,52 @@ void func_80174328_ovl5(GObj *arg0) {
     D_800E2410[omCurrentObj->objId] = D_8018EB48_ovl5[D_800E98E0[omCurrentObj->objId]];
 }
 
+#ifdef PORT
+/* Splash/dust effect at the racer of lane arg1: plays the effect model and
+ * a one-shot animation at the racer's z (water level on stage 3, y=75
+ * otherwise), doubles its scale for character kind 1, waits the animation
+ * out and frees its own track. */
+void func_80174368_ovl5(GObj *arg0, s32 arg1) {
+    extern u32 D_80187CE8_ovl5[];
+    extern u32 D_80187CEC_ovl5[];
+    extern u32 D_80187CF0_ovl5[];
+    Vector2 kf;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800DF150[omCurrentObj->objId] = func_80174328_ovl5;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    func_800A9864(D_80187CE8_ovl5[0], 0x1869F, 0x10);
+    func_800AA018(D_80187CEC_ovl5[0]);
+    if (D_80187CF0_ovl5[0] != 0) {
+        func_800AA018(D_80187CF0_ovl5[0]);
+    }
+    if (D_8018ECD8_ovl5 == 3) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E458_ovl5[arg1]];
+    } else {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
+        gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E458_ovl5[arg1]];
+    }
+    func_8016FF60_ovl5(&kf, arg1);
+    if (*(s32 *) &kf.x == 1) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 1.5f;
+        gEntitiesScaleYArray[omCurrentObj->objId] = 1.5f;
+        gEntitiesScaleZArray[omCurrentObj->objId] = 1.5f;
+    }
+    func_8016FF60_ovl5(&kf, arg1);
+    if (*(s32 *) &kf.x == 1) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 1.5f;
+        gEntitiesScaleYArray[omCurrentObj->objId] = 1.5f;
+        gEntitiesScaleZArray[omCurrentObj->objId] = 1.5f;
+    }
+    func_800AF27C();
+    func_800B1900((u16) omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80174368_ovl5.s")
+#endif
 
 #ifdef NON_MATCHING
 /* FACTORY: 4/140, residue. Two one-slot scheduling rotations, both in the
@@ -790,7 +1517,151 @@ void func_80174900_ovl5(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80174900_ovl5.s")
 #endif
 
+#ifdef PORT
+/* Hopper critter riding lane arg1 from tile arg2: scrolls in from the far
+ * side, then alternates hop waits and hops (random 30..44 frame pauses),
+ * pausing while the racer stands two-or-fewer tiles short of it, croaking
+ * forward one tile per hop; a knock mid-hop bounces it back, and hopping
+ * onto a hole/crumbled tile (0x18/0x16) drowns it. */
+void func_80174AE0_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    extern u32 D_80187CB4_ovl5[];
+    extern u32 D_80187CB8_ovl5[];
+    extern u32 D_80187CBC_ovl5[];
+    extern u32 D_80187CC0_ovl5[];
+    extern u32 D_80187CC4_ovl5[];
+    extern u8 D_8018ECA0x_ovl5[] __asm__("D_8018ECA0_ovl5");
+    u8 kind;
+    s32 t;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = arg2;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800EA1A0[omCurrentObj->objId] = 0;
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    func_800A9864(D_80187CB4_ovl5[0], 0x1869F, 0x10);
+    omGMoveObjDL(arg0, arg0->dl_link, 0xA);
+    kind = func_80172B10_ovl5(arg1, arg2);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = (func_8016FFC4_ovl5(kind) != 0) ? 0.0f : 75.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]];
+    while (D_8018ECA0x_ovl5[0] != 0) {
+        ohSleep(1);
+    }
+    D_800DF150[omCurrentObj->objId] = func_80175518_ovl5;
+    while (gEntitiesNextPosZArray[omCurrentObj->objId] > 2250.0f) {
+        if (D_800EA1A0[omCurrentObj->objId] != 0) {
+            D_800EA520[D_8018E478_ovl5[arg1][arg2]] = 0x29A;
+            ohSleep(1);
+            func_800B1900((u16) omCurrentObj->objId);
+        }
+        ohSleep(1);
+    }
+    if (D_800EA1A0[omCurrentObj->objId] != 0) {
+        D_800EA520[D_8018E478_ovl5[arg1][arg2]] = 0x29A;
+        ohSleep(1);
+        func_800B1900((u16) omCurrentObj->objId);
+    } else {
+        func_80174900_ovl5(arg1, arg2);
+    }
+    D_800E9FE0[omCurrentObj->objId].as_u32 = (u32) (s32) ((f32) random_soft_s32_range(0xF) + 30.0f);
+    while (1) {
+        if (D_800E9FE0[omCurrentObj->objId].as_u32 != 0) {
+            s32 rel;
+
+            if (D_800E9C60[omCurrentObj->objId] != 0) {
+                func_80174900_ovl5(arg1, arg2);
+                func_800AA018(D_80187CC0_ovl5[0]);
+                if (D_80187CC4_ovl5[0] != 0) {
+                    func_800AA018(D_80187CC4_ovl5[0]);
+                }
+                func_800AF27C();
+                D_800EA520[D_8018E478_ovl5[arg1][arg2]] = 0x29A;
+                ohSleep(1);
+                func_800B1900((u16) omCurrentObj->objId);
+            }
+            rel = D_800E9E20[omCurrentObj->objId];
+            if (((rel + arg2) < D_8018E998_ovl5[arg1]) &&
+                (D_8018EB58_ovl5[(arg1 * 0x52) + rel + arg2 + 1] != 0)) {
+                func_80174900_ovl5(arg1, arg2);
+                curObjSleepForever();
+            }
+            D_800E9FE0[omCurrentObj->objId].as_u32 -= 1;
+            if (D_800E9FE0[omCurrentObj->objId].as_u32 == 0) {
+                s32 pos = D_800E9E20[omCurrentObj->objId] + arg2;
+
+                if ((D_800E9C60[D_8018E458_ovl5[arg1]] != 0) &&
+                    ((D_8018E998_ovl5[arg1] == pos) || (D_8018E998_ovl5[arg1] == (pos + 1)))) {
+                    D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+                } else {
+                    func_800AA018(D_80187CB8_ovl5[0]);
+                    if (D_80187CBC_ovl5[0] != 0) {
+                        func_800AA018(D_80187CBC_ovl5[0]);
+                    }
+                    D_800E9E20[omCurrentObj->objId] += 1;
+                }
+            }
+        } else if (func_800AF230() != 0) {
+            kind = func_80172B10_ovl5(arg1, D_800E9E20[omCurrentObj->objId] + arg2);
+            gEntitiesNextPosYArray[omCurrentObj->objId] = (func_8016FFC4_ovl5(kind) != 0) ? 0.0f : 75.0f;
+            gEntitiesNextPosZArray[omCurrentObj->objId] =
+                gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][D_800E9E20[omCurrentObj->objId] + arg2]];
+            D_800E9FE0[omCurrentObj->objId].as_u32 = (u32) (s32) ((f32) random_soft_s32_range(0xF) + 30.0f);
+            if ((kind == 0x18) || (kind == 0x16)) {
+                func_80174900_ovl5(arg1, arg2);
+                if (kind == 0x18) {
+                    t = request_track_general(8, 0, 0x70);
+                    D_800E98E0[t] = 0xD;
+                    D_800E9AA0[t].as_u32 = arg1;
+                    D_800E9C60[t] = D_800E9E20[omCurrentObj->objId] + arg2;
+                }
+                D_800E3210[omCurrentObj->objId] = -40.0f;
+                while (gEntitiesNextPosYArray[omCurrentObj->objId] >= -70.0f) {
+                    ohSleep(1);
+                }
+                D_800EA520[D_8018E478_ovl5[arg1][arg2]] = 0x29A;
+                ohSleep(1);
+                func_800B1900((u16) omCurrentObj->objId);
+            }
+        } else {
+            if (D_800E9C60[omCurrentObj->objId] != 0) {
+                D_800E9E20[omCurrentObj->objId] -= 1;
+                gEntitiesNextPosXArray[omCurrentObj->objId] =
+                    gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][D_800E9E20[omCurrentObj->objId] + arg2]];
+                gEntitiesNextPosYArray[omCurrentObj->objId] = (func_8016FFC4_ovl5(kind) != 0) ? 0.0f : 75.0f;
+                gEntitiesNextPosZArray[omCurrentObj->objId] =
+                    gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][D_800E9E20[omCurrentObj->objId] + arg2]];
+                D_800EA6E0[omCurrentObj->objId] = 0.0f;
+                D_800E9FE0[omCurrentObj->objId].as_u32 = (u32) (s32) ((f32) random_soft_s32_range(0xF) + 30.0f);
+                D_800E9C60[omCurrentObj->objId] = 0;
+                func_800AA018(D_80187CB8_ovl5[0]);
+                if (D_80187CBC_ovl5[0] != 0) {
+                    func_800AA018(D_80187CBC_ovl5[0]);
+                }
+                animUpdateModelTreeAnimation(arg0);
+                func_800AF408();
+            } else {
+                s32 arc;
+
+                gEntitiesNextPosZArray[omCurrentObj->objId] += 45.0f;
+                arc = (s32) (arg0->animTimer * 0.5f);
+                if ((func_8016FFC4_ovl5(func_80172B10_ovl5(arg1, (D_800E9E20[omCurrentObj->objId] + arg2) - 1)) != 0) &&
+                    ((f32) arc < 4.0f)) {
+                    gEntitiesNextPosYArray[omCurrentObj->objId] += 18.75f;
+                }
+                if ((func_8016FFC4_ovl5(func_80172B10_ovl5(arg1, D_800E9E20[omCurrentObj->objId] + arg2)) != 0) &&
+                    ((f32) arc >= 6.0f)) {
+                    gEntitiesNextPosYArray[omCurrentObj->objId] += -18.75f;
+                }
+            }
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80174AE0_ovl5.s")
+#endif
 
 void func_80175518_ovl5(GObj *arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] += D_800EA6E0[omCurrentObj->objId];
@@ -1047,7 +1918,105 @@ void func_80176108_ovl5(void)
 
 }
 
+#ifdef PORT
+/* Pause-menu thread (near-clone of func_8016EF78_ovl5 in ovl5_4 and
+ * func_80164A34_ovl5 in ovl5_2, quitting to game state 0x1D here). */
+void func_80176170_ovl5(GObj *arg0) {
+    extern struct UnkStruct8015C740 D_80187A6C_ovl5;
+    extern struct UnkStruct8015C740 D_80187A8C_ovl5;
+    extern struct UnkStruct8015C740 D_80187AAC_ovl5;
+    extern struct UnkStruct8015C740 D_80187ACC_ovl5;
+    extern struct UnkStruct8015C740 D_80187AEC_ovl5;
+    extern struct UnkStruct8015C740 D_80187B0C_ovl5;
+    extern struct UnkStruct8015C740 D_80187B2C_ovl5;
+    extern struct UnkStruct8015C740 D_80187B4C_ovl5;
+    extern f32 D_80187B6C_ovl5[];
+    extern u8 D_8018ECD9_ovl5;
+    extern u32 D_800D7178_words2_[] __asm__("D_800D7178");
+    extern u32 D_800D6B68;
+    extern u32 gGameState;
+    SPObj *panel;
+    SPObj *cursor;
+    s32 counter;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_8018ECD9_ovl5 = 0;
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
+    func_800BB3F0();
+    panel = func_8015C740_ovl5(arg0, &D_80187AEC_ovl5);
+    panel->xScale = 52.0f;
+    panel->yScale = 1.33f;
+    func_8015C740_ovl5(arg0, &D_80187A6C_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187A8C_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187AAC_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187ACC_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187B0C_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187B2C_ovl5);
+    cursor = func_8015C740_ovl5(arg0, &D_80187B4C_ovl5);
+    cursor->xOffset = D_80187B6C_ovl5[D_8018ECD9_ovl5 * 2];
+    cursor->yOffset = D_80187B6C_ovl5[D_8018ECD9_ovl5 * 2 + 1];
+    ohSleep(6);
+    counter = 5;
+    while (1) {
+        if (counter != 0) {
+            counter--;
+            if ((gPlayerControllers[0].buttonHeld & 0xF00) == 0) {
+                counter = 0;
+            }
+        } else {
+            if (gPlayerControllers[0].buttonPressed & 0x9000) {
+                D_800D7178_words2_[0x1E] = 1;
+                switch (D_8018ECD9_ovl5) {
+                    case 0:
+                        D_800D7178_words2_[0x1E] = 2;
+                        play_sound(0x113);
+                        func_800ACBDC(arg0);
+                        func_800B1900((u16) omCurrentObj->objId);
+                        break;
+                    case 1:
+                        play_sound(0xED);
+                        gGameState = 0x1D;
+                        break;
+                    case 2:
+                        play_sound(0xED);
+                        D_800D6B68 = gGameState;
+                        gGameState = 0x1B;
+                        break;
+                    case 3:
+                        play_sound(0x2B);
+                        D_800D6B68 = gGameState;
+                        gGameState = 0xA;
+                        break;
+                }
+                func_801764F0_ovl5();
+                curObjSleepForever();
+            } else if (gPlayerControllers[0].buttonHeld & 0x800) {
+                play_sound(0x113);
+                counter = 5;
+                if (D_8018ECD9_ovl5 == 0) {
+                    D_8018ECD9_ovl5 = 3;
+                } else {
+                    D_8018ECD9_ovl5--;
+                }
+            } else if (gPlayerControllers[0].buttonHeld & 0x400) {
+                play_sound(0x113);
+                counter = 5;
+                if (D_8018ECD9_ovl5 == 3) {
+                    D_8018ECD9_ovl5 = 0;
+                } else {
+                    D_8018ECD9_ovl5++;
+                }
+            }
+            cursor->xOffset = D_80187B6C_ovl5[D_8018ECD9_ovl5 * 2];
+            cursor->yOffset = D_80187B6C_ovl5[D_8018ECD9_ovl5 * 2 + 1];
+        }
+        ohSleep(1);
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176170_ovl5.s")
+#endif
 
 void func_801764F0_ovl5(void) {
     func_800BB3F0();
@@ -1087,7 +2056,67 @@ void func_80176530_ovl5(GObj *arg0) {
     }
 }
 
+#ifdef PORT
+/* Course builder: clears the two course-strip flags, then fills the two
+ * 4-entry tile-pattern banks of the shared course row (base D_8018E9A8,
+ * bytes 1..0x28 and 0x29..0x50, each entry 10 bytes) with four distinct
+ * random picks from the six patterns of stage D_8018ECD8_ovl5 --
+ * D_80187EB4_ovl5 rows of 12 pointers, bank two using pointers 6..11.
+ * The pattern blobs were emitted as big-endian words, so bytes are pulled
+ * word-wise; the row bytes go through the split symbols the readers use
+ * (D_8018E9A8 / D_8018E9A9 / D_8018E9AA). */
+void func_801765EC_ovl5(void) {
+    extern void *D_80187EB4_ovl5[];
+    extern u8 D_8018E9A8x_ovl5[] __asm__("D_8018E9A8_ovl5");
+    extern u8 D_8018E9A9x_ovl5[] __asm__("D_8018E9A9_ovl5");
+    extern u8 D_8018E9AAx_ovl5[] __asm__("D_8018E9AA_ovl5");
+    extern u8 D_8018ECD8x_ovl5[] __asm__("D_8018ECD8_ovl5");
+    s32 used[6];
+    s32 pick[4];
+    s32 i;
+    s32 j;
+    s32 bank;
+
+#define ROWB5_(k, v) \
+    do { \
+        s32 k_ = (k); \
+        if (k_ == 0) { \
+            D_8018E9A8x_ovl5[0] = (v); \
+        } else if (k_ == 1) { \
+            D_8018E9A9x_ovl5[0] = (v); \
+        } else { \
+            D_8018E9AAx_ovl5[k_ - 2] = (v); \
+        } \
+    } while (0)
+    ROWB5_(0, 0);
+    ROWB5_(0x51, 1);
+    for (bank = 0; bank < 2; bank++) {
+        for (i = 0; i < 6; i++) {
+            used[i] = 0;
+        }
+        for (i = 0; i < 4; i++) {
+            s32 t = random_soft_s32_range(6);
+
+            while (used[t] != 0) {
+                t = random_soft_s32_range(6);
+            }
+            used[t] = 1;
+            pick[i] = t;
+        }
+        for (i = 0; i < 4; i++) {
+            u32 *src = D_80187EB4_ovl5[(D_8018ECD8x_ovl5[0] * 12) + (bank * 6) + pick[i]];
+            s32 base = ((bank == 0) ? 1 : 0x29) + (i * 0xA);
+
+            for (j = 0; j < 0xA; j++) {
+                ROWB5_(base + j, (u8) (src[j >> 2] >> ((3 - (j & 3)) * 8)));
+            }
+        }
+    }
+#undef ROWB5_
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801765EC_ovl5.s")
+#endif
 
 void func_8017685C_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
     s32 sp34;
@@ -1229,7 +2258,61 @@ void func_80176EC8_ovl5(u8 *arg0, u16 *arg1) {
 void func_80176EFC_ovl5(void) {
 }
 
+#ifdef PORT
+/* Finish-flash for lane arg1: plays the win (1st place) or lose jingle,
+ * spawns the "GOAL" sprite at D_801877D8_ovl5[arg1] and steps its prim/env
+ * colors through the five ramps at D_80187410_ovl5 (u16 triples emitted as
+ * big-endian words; unpack word-wise before handing to func_80176EC8). */
+void func_80176F04_ovl5(GObj *arg0, s32 arg1) {
+    extern u32 D_80187410_ovl5[];
+    extern u32 D_8018741C_ovl5[];
+    extern u32 D_80187428_ovl5[];
+    extern u32 D_80187434_ovl5[];
+    extern u32 D_80187440_ovl5[];
+    extern struct UnkStruct8015C740 D_801877B8_ovl5;
+    extern f32 D_801877D8_ovl5[];
+    u16 ramp[5][6];
+    u32 *srcs[5];
+    SPObj *sp;
+    s32 i;
+    s32 j;
+
+    srcs[0] = D_80187410_ovl5;
+    srcs[1] = D_8018741C_ovl5;
+    srcs[2] = D_80187428_ovl5;
+    srcs[3] = D_80187434_ovl5;
+    srcs[4] = D_80187440_ovl5;
+    for (i = 0; i < 5; i++) {
+        for (j = 0; j < 3; j++) {
+            ramp[i][j * 2] = (u16) (srcs[i][j] >> 16);
+            ramp[i][j * 2 + 1] = (u16) srcs[i][j];
+        }
+    }
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
+    if (func_80171768_ovl5(arg1) == 0) {
+        play_sound(0x231);
+    } else {
+        play_sound(0x233);
+    }
+    sp = func_8015C740_ovl5(arg0, &D_801877B8_ovl5);
+    sp->xOffset = D_801877D8_ovl5[arg1 * 2];
+    sp->yOffset = D_801877D8_ovl5[arg1 * 2 + 1];
+    func_80176EC8_ovl5((u8 *) sp, ramp[0]);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) sp, ramp[1]);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) sp, ramp[2]);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) sp, ramp[3]);
+    ohSleep(2);
+    func_80176EC8_ovl5((u8 *) sp, ramp[4]);
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176F04_ovl5.s")
+#endif
 
 /* Faithful, not byte-exact (25/166). The first 124 instructions -- both
    struct-copy prologues, the clear loop and its 0x52-iteration inner loop --

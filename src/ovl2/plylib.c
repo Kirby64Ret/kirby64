@@ -2272,6 +2272,63 @@ void func_8011E978(f32 arg0, f32 arg1) {
         }
     }
 }
+#elif defined(PORT)
+/* Generic turn-around easing service (draft above; same family as
+ * func_8011E548's arm — the `*(&D_800D6F58 + 0x54)` word is D_800D6FAC).
+ * While the turn flag is set: latch a queued B re-press, on the first tick
+ * flip the facing and aim heading+pi, then walk the visual yaw by arg0 per
+ * tick (direction picked by arg1==1.0) until the remaining angle after one
+ * step is smaller than the step, which snaps heading/yaw and clears the
+ * turn flag. Callers pass per-ability turn rates (ovl3_6's ride handlers). */
+void func_8011E978(f32 arg0, f32 arg1) {
+    extern s32 D_800D6FAC;
+    u32 objId = omCurrentObj->objId;
+    f32 remaining;
+
+    if (!(gKirbyState.isTurning & 1)) {
+        return;
+    }
+    if (D_800D6FAC == 0 && gKirbyState.abilityInUse == 0 &&
+        (gKirbyController.buttonPressed & 0x4000)) {
+        gKirbyState.unkA = 1;
+    }
+    if (gKirbyState.turnDirection == 0) {
+        D_800E6A10[objId] = -D_800E6A10[objId];
+        gKirbyState.turnDirection = D_800E6A10[objId];
+        gKirbyState.unk7C = D_800E17D0[objId] + 3.1415927f;
+        if (gKirbyState.unk7C >= 6.2831855f) {
+            gKirbyState.unk7C -= 6.2831855f;
+        }
+    } else {
+        gKirbyState.unk7C = D_800E17D0[objId];
+    }
+    gKirbyState.unk80 = gEntitiesAngleYArray[objId];
+    if (gKirbyState.unk80 < gKirbyState.unk7C) {
+        remaining = (gKirbyState.unk80 + 6.2831855f) - gKirbyState.unk7C;
+    } else {
+        remaining = gKirbyState.unk80 - gKirbyState.unk7C;
+    }
+    if ((remaining - arg0) < arg0) {
+        gKirbyState.unk80 = gKirbyState.unk7C;
+        gKirbyState.turnDirection = 0;
+        D_800E17D0[objId] = gKirbyState.unk7C;
+        gEntitiesAngleYArray[objId] = D_800E17D0[objId];
+        gKirbyState.isTurning &= ~1;
+    } else {
+        if (arg1 == 1.0f) {
+            gKirbyState.unk80 -= arg0;
+            if (gKirbyState.unk80 < 0.0f) {
+                gKirbyState.unk80 += 6.2831855f;
+            }
+        } else {
+            gKirbyState.unk80 += arg0;
+            if (gKirbyState.unk80 >= 6.2831855f) {
+                gKirbyState.unk80 -= 6.2831855f;
+            }
+        }
+        gEntitiesAngleYArray[objId] = gKirbyState.unk80;
+    }
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/plylib/func_8011E978.s")
 #endif

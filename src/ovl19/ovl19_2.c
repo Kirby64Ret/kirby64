@@ -2071,7 +2071,90 @@ void func_80227F38_ovl19(void) {
     D_800E8220[3] = temp_v0->unk4;
 }
 
+#ifdef PORT
+/* PORT: behavioral port from
+ * asm/nonmatchings/ovl19/ovl19_2/func_80227F90_ovl19.s -- the boss-intro
+ * Kirby cutscene coroutine (funclist entry in helplib's table). Sets up
+ * the display double (state hook func_802283A8_ovl19, physics hook
+ * func_800B4954), anim speed = gameTicksPerDraw, grabs the shared
+ * cutscene camera blob via func_800FF144 (viewpoint 24/20/-240), flags
+ * D_8012E7D7, freezes physics, loads Kirby geo 0x20064 at scale 0.2,
+ * spawns TWO helper tracks (funclists 1 and 0; the second one's id is
+ * remembered in D_800E9AA0[objId]), plays intro anim record
+ * D_8022F560_ovl19[0] routed at those two track slots, waits for
+ * D_800E98E0[objId] to flip, then kills both helper tracks, releases
+ * the camera blob and kills itself. m2c's extra call arguments are
+ * leftover registers; the three func_800B1900 kills read the saved
+ * track ids (and objId) as u16, which the u16 parameter already does. */
+void func_80227F90_ovl19(GObj *arg0) {
+    struct UnkStruct8022FAB0 *func_800FF144(void);
+    void func_802283A8_ovl19(GObj *);
+    extern s8 D_8012E7D7;
+    extern struct Ovl19_2Struct D_8022F560_ovl19[];
+    struct UnkStruct8022FAB0 *cam;
+    struct Ovl19_2Struct *rec;
+    s32 track1;
+    s32 track2;
+
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DF150[omCurrentObj->objId] = func_802283A8_ovl19;
+    cam = func_800FF144();
+    D_8022FAB0_ovl19 = cam;
+    if (cam != NULL) {
+        cam->unk10 = 24.0f;
+        D_8022FAB0_ovl19->unk14 = 20.0f;
+        D_8022FAB0_ovl19->unk18 = -240.0f;
+        D_8022FAB0_ovl19->unk21 = 1;
+    }
+    D_8012E7D7 = 1;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x20064, 0x20, 0x10);
+    track1 = request_track_general(0x13, 0x3C, 0x4A);
+    D_800E98E0[track1] = 0;
+    gEntityFuncListIDArray[track1] = 1;
+    D_800E8220[track1] = 0;
+    track2 = request_track_general(0x13, 0x3C, 0x4A);
+    gEntityFuncListIDArray[track2] = 0;
+    D_800E8220[track2] = 0;
+    D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)track2;
+    D_800E5F90[omCurrentObj->objId] = 0;
+    D_800E6D90[omCurrentObj->objId] = 0.035f;
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 0.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+    rec = &D_8022F560_ovl19[0];
+    D_800EC2E0[track1].as_u32 = rec->unk8;
+    D_800EC4A0[track1] = rec->unkC;
+    D_800EC2E0[track2].as_u32 = rec->unk10;
+    gKirbyState.unk3C = 0;
+    D_800EC4A0[track2] = rec->unk14;
+    func_800AA018(rec->unk0);
+    while (D_800E98E0[omCurrentObj->objId] == 0) {
+        ohSleep(1);
+    }
+    ohSleep(1);
+    func_800B1900(track1);
+    func_800B1900(track2);
+    func_800FF1CC(D_8022FAB0_ovl19);
+    func_800B1900(omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_80227F90_ovl19.s")
+#endif
 
 void func_802283A8_ovl19(GObj *this) {
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
@@ -2165,7 +2248,74 @@ void func_80228874_ovl19(GObj *arg0) {
     func_800FF200(D_8022FAB0_ovl19);
 }
 
+#ifdef PORT
+/* PORT: behavioral port from
+ * asm/nonmatchings/ovl19/ovl19_2/func_8022889C_ovl19.s -- the swimming
+ * leg's outro cutscene coroutine (sibling of func_80227F90_ovl19).
+ * Kirby double at y=38.1, geo 0x20066, hooks func_80228C44_ovl19 /
+ * func_800B4954, spawns two helper tracks (funclists 1 and 0, stage
+ * id 2), plays D_8022F578_ovl19[0], waits for D_800E98E0[objId] == 2,
+ * then plays record [1] to completion (func_800AA154 blocks), flips
+ * D_8012E7FC[2] = 2, sleeps 2 and kills the two helpers and itself.
+ * m2c's extra call arguments are leftover registers. */
+void func_8022889C_ovl19(GObj *arg0) {
+    void func_80228C44_ovl19(GObj *);
+    extern struct Ovl19_2Struct D_8022F578_ovl19[];
+    struct Ovl19_2Struct *rec;
+    s32 track1;
+    s32 track2;
+
+    D_800E98E0[omCurrentObj->objId] = 0;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    D_800DF150[omCurrentObj->objId] = func_80228C44_ovl19;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = 38.1f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    func_800A9864(0x20066, 0x20, 0x10);
+    track1 = request_track_general(0x13, 0x3C, 0x4A);
+    D_800E98E0[track1] = 0;
+    gEntityFuncListIDArray[track1] = 1;
+    D_800E8220[track1] = 2;
+    track2 = request_track_general(0x13, 0x3C, 0x4A);
+    gEntityFuncListIDArray[track2] = 0;
+    D_800E8220[track2] = 2;
+    D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)(uintptr_t)track2;
+    D_800E5F90[omCurrentObj->objId] = 0;
+    D_800E6D90[omCurrentObj->objId] = 0.0f;
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
+    D_800E64D0[omCurrentObj->objId] = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 0.0f;
+    rec = &D_8022F578_ovl19[0];
+    D_800EC2E0[track1].as_u32 = rec->unk8;
+    D_800EC4A0[track1] = rec->unkC;
+    D_800EC2E0[track2].as_u32 = rec->unk10;
+    D_800EC4A0[track2] = rec->unk14;
+    gKirbyState.unk3C = 0;
+    func_800AA018(rec->unk0);
+    while (D_800E98E0[omCurrentObj->objId] != 2) {
+        ohSleep(1);
+    }
+    gKirbyState.unk3C = 1;
+    rec = &D_8022F578_ovl19[1];
+    D_800EC2E0[track1].as_u32 = rec->unk8;
+    D_800EC4A0[track1] = rec->unkC;
+    D_800EC2E0[track2].as_u32 = rec->unk10;
+    D_800EC4A0[track2] = rec->unk14;
+    func_800AA154(rec->unk0); /* blocks until the anim ends */
+    D_8012E7FC[2] = 2;
+    ohSleep(2);
+    func_800B1900(track1);
+    func_800B1900(track2);
+    func_800B1900(omCurrentObj->objId);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_8022889C_ovl19.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_80228C44_ovl19.s")
 

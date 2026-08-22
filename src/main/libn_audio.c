@@ -2405,3 +2405,1240 @@ void n_alSynAddPlayer(ALPlayer *client) {
 
     osSetIntMask(mask);
 }
+
+#ifdef PORT
+/* ==========================================================================
+ * PORT ARMS for the functions above that are still #pragma GLOBAL_ASM.
+ *
+ * On the PC build a GLOBAL_ASM pragma expands to nothing, so each function
+ * defined here simply supplies the symbol the pragma leaves undefined; the
+ * N64 build never sees any of this.  Sources, per function:
+ *
+ *   - the n_* library functions are the upstream libreultra/src/libnaudio
+ *     C (N_MICRO configuration), which the ROM matches instruction-for-
+ *     instruction per the notes in this file;
+ *   - the Kirby-specific engine (func_80023xxx/24750/285F8/2901C) is
+ *     transcribed from m2c output of the ROM listing, cross-checked against
+ *     the upstream n_csplayer.c it was derived from.
+ *
+ * LAYOUT WARNING: the compact-sequence-player helpers that already compile
+ * in libn_audio_2*.c read the player object through N64-offset partial
+ * views that contradict each other at LP64 (see the PORT-ONLY VIEW comment
+ * near the top of this file).  The one view every EXTERNALLY-CALLED poster
+ * agrees on is N_CSPlayer: the event queue at LP64 offset 80.  The player
+ * object created here (KCSeqpPC) therefore pins evtq at offset 80 and the
+ * handler below re-implements every helper whose partial view disagrees
+ * (func_8002B2E8/B40C/B4B4/B638/B6A8/B70C/B214/B238/B5E8/B158/C68C/C790/
+ * C9B0/D0D0, func_80026460, func_800263F0) against this one layout.
+ * ========================================================================== */
+
+#include <string.h>
+
+/* ------------------------------------------------------------------ CSP -- */
+
+typedef struct {
+    ALSound *inst;          /* really ALInstrument* (program) */
+    s16  bendRange;         /* cents*10 per full bend */
+    u8   unk06;
+    u8   pan;
+    u8   priority;
+    u8   vol;
+    u8   fxmix;
+    u8   sustain;
+    f32  pitchBend;
+    u8   pressure;          /* channel pressure -> vibrato depth scale */
+    u8   instVol;
+    u8   fxDry;             /* unk12: dry select for start params */
+    u8   fxWet;             /* unk13: wet select for start params */
+    u8   bankSel;           /* unk14: which of the 3 banks 0xC0 uses */
+} KChanStPC;
+
+typedef struct KCSeqpPC_s {
+    ALPlayer      node;         /*   0 */
+    N_ALSynth    *drvr;         /*  32 */
+    ALCSeq       *target;       /*  40 */
+    void         *bank;         /*  48 */
+    void         *bank2;        /*  56 */
+    void         *bank3;        /*  64 */
+    s32           curTime;      /*  72 */
+    s32           uspt;         /*  76 */
+    ALEventQueue  evtq;         /*  80  == N_CSPlayer.evtq, LOAD-BEARING */
+    s32           nextDelta;
+    s32           state;
+    u16           chanMask;
+    s16           vol;
+    u8            maxChannels;
+    u8            debugFlags;
+    s32           frameTime;
+    s32           unk78;
+    N_ALEvent     nextEvent;
+    KChanStPC    *chanState;
+    N_ALVoiceState *vAllocHead;
+    N_ALVoiceState *vAllocTail;
+    N_ALVoiceState *vFreeList;
+    ALOscInit     initOsc;
+    ALOscUpdate   updateOsc;
+    ALOscStop     stopOsc;
+    /* PORT-private: free-list stash so func_80020BB8's fixed-offset read of
+     * "player state" (which lands on evtq.freeList.next at LP64) reads zero
+     * exactly while the player is stopped.  See pc_cspStash below. */
+    ALLink        stash;
+    s32           stashed;
+} KCSeqpPC;
+
+typedef struct {
+    /* KStartParam of libn_audio_2.c at its LP64 offsets (func_8002AD90 and
+     * func_8002AE74 build these). */
+    void *next;             /*  0 */
+    s32   delta;            /*  8 */
+    s16   type;             /* 12 */
+    s16   unity;            /* 14 */
+    f32   pitch;            /* 16 */
+    s16   volume;           /* 20 */
+    u8    pan;              /* 22 */
+    u8    fxMix;            /* 23 */
+    s32   samples;          /* 24 */
+    void *wave;             /* 32 */
+    u8    unk1C;            /* 40 */
+    u8    unk1D;            /* 41 */
+} PcStartParam;
+
+typedef struct {
+    /* KFreeParam of libn_audio_2f.c */
+    void *next;
+    s32   delta;
+    s16   type;
+    N_PVoice *pvoice;       /* 16 */
+} PcFreeParam;
+
+typedef struct {
+    /* generic ALParam/KParam at its LP64 offsets */
+    void *next;             /*  0 */
+    s32   delta;            /*  8 */
+    s16   type;             /* 12 */
+    s16   unity;            /* 14 */
+    union { f32 f; s32 i; } data;      /* 16 */
+    union { f32 f; s32 i; } moredata;  /* 20 */
+} PcParam;
+
+#define PC_CSP(p) ((KCSeqpPC *)(p))
+
+static s32 pc_round184(s32 samples) {
+    return ((samples + 0x5C) / 184) * 0xB8;
+}
+
+static void pc_cspSetUsptFromTempo(KCSeqpPC *seqp, f32 tempo) {
+    if (seqp->target) {
+        seqp->uspt = (s32)(tempo * seqp->target->qnpt);
+    } else {
+        seqp->uspt = 488;
+    }
+}
+
+/* __n_CSPPostNextSeqEvent (replaces the KCSeqp-view func_800263F0) */
+static void pc_cspPostNextSeqEvent(KCSeqpPC *seqp) {
+    N_ALEvent evt;
+    s32 deltaTicks;
+
+    if (seqp->state == AL_PLAYING && seqp->target != NULL) {
+        if (__alCSeqNextDelta(seqp->target, &deltaTicks)) {
+            evt.type = AL_SEQ_REF_EVT;
+            n_alEvtqPostEvent(&seqp->evtq, &evt, seqp->uspt * deltaTicks);
+        }
+    }
+}
+
+static s16 pc_cspVol(KCSeqpPC *seqp) {
+    return seqp->vol;
+}
+
+static u8 pc_cspChanVol(KCSeqpPC *seqp, u8 chan) {
+    /* func_8002D0D0 */
+    return (seqp->chanState[chan].vol * seqp->chanState[chan].instVol) / 0x7F;
+}
+
+static s16 pc_vsVol(N_ALVoiceState *vs, KCSeqpPC *seqp) {
+    /* func_8002B238 */
+    s32 vol = (vs->tremelo * vs->velocity * vs->envGain) >> 6;
+    s32 t = (pc_cspChanVol(seqp, vs->channel) * vs->sound->sampleVolume *
+             pc_cspVol(seqp)) >> 14;
+
+    return (u32)(vol * t) >> 15;
+}
+
+static u8 pc_vsPan(N_ALVoiceState *vs, KCSeqpPC *seqp) {
+    /* func_8002B5E8 */
+    s32 pan = seqp->chanState[vs->channel].pan + vs->sound->samplePan - 0x40;
+
+    if (pan <= 0) pan = 0;
+    if (pan >= 0x7F) pan = 0x7F;
+    return (u8)pan;
+}
+
+static s32 pc_vsDelta(N_ALVoiceState *vs, s32 curTime) {
+    /* func_8002B214 */
+    s32 delta = vs->envEndTime - curTime;
+
+    return (delta >= 0) ? delta : 1000;
+}
+
+static void pc_cspResetChan(KCSeqpPC *seqp, s32 chan) {
+    /* func_8002B0A8 */
+    KChanStPC *cs = &seqp->chanState[chan];
+
+    cs->unk06 = 0;
+    cs->fxmix = 0;
+    cs->pan = 0x40;
+    cs->vol = 0x7F;
+    cs->priority = 5;
+    cs->sustain = 0;
+    cs->bendRange = 0xC8;
+    cs->pitchBend = 1.0f;
+    cs->fxDry = 0;
+    cs->fxWet = 0x5F;
+    cs->bankSel = 0;
+}
+
+static void pc_cspSetChanInst(KCSeqpPC *seqp, ALInstrument *inst, s32 chan) {
+    /* func_8002B03C */
+    KChanStPC *cs = &seqp->chanState[chan];
+
+    cs->inst = (ALSound *)inst;
+    cs->pan = inst->pan;
+    cs->vol = 0x7F;
+    cs->priority = inst->priority;
+    cs->bendRange = inst->bendRange;
+    cs->instVol = inst->volume;
+}
+
+static void pc_cspProgChange(KCSeqpPC *seqp, ALInstrument *inst, s32 chan) {
+    /* func_8002B59C */
+    KChanStPC *cs = &seqp->chanState[chan];
+
+    cs->inst = (ALSound *)inst;
+    cs->priority = inst->priority;
+    cs->bendRange = inst->bendRange;
+    cs->instVol = inst->volume;
+}
+
+static void pc_cspInitFromBank(KCSeqpPC *seqp, ALBank *bank) {
+    /* func_8002B158 */
+    ALInstrument *inst;
+    s32 i;
+
+    i = 0;
+    do {
+        inst = bank->instArray[i];
+        i++;
+    } while (inst == NULL);
+    for (i = 0; i < seqp->maxChannels; i++) {
+        pc_cspResetChan(seqp, i);
+        pc_cspSetChanInst(seqp, inst, i);
+    }
+    if (bank->percussion != NULL) {
+        pc_cspResetChan(seqp, 9);
+        pc_cspSetChanInst(seqp, bank->percussion, 9);
+    }
+}
+
+static void pc_cspResetAllChans(KCSeqpPC *seqp) {
+    /* func_8002C790 */
+    s32 i;
+
+    for (i = 0; i < seqp->maxChannels; i++) {
+        seqp->chanState[i].inst = NULL;
+        seqp->chanState[i].pressure = 0;
+        pc_cspResetChan(seqp, i);
+    }
+}
+
+static N_ALVoiceState *pc_cspLookupVoice(KCSeqpPC *seqp, u8 key, u8 chan) {
+    /* func_8002B638 */
+    N_ALVoiceState *vs;
+
+    for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+        if (vs->key == key && vs->channel == chan &&
+            vs->phase != AL_PHASE_RELEASE && vs->phase != AL_PHASE_SUSTREL) {
+            return vs;
+        }
+    }
+    return NULL;
+}
+
+static N_ALVoiceState *pc_cspMapVoice(KCSeqpPC *seqp, u8 key, u8 vel, u8 chan) {
+    /* func_8002B6A8 */
+    N_ALVoiceState *vs = seqp->vFreeList;
+
+    if (vs != NULL) {
+        seqp->vFreeList = vs->next;
+        vs->next = NULL;
+        if (seqp->vAllocHead == NULL) {
+            seqp->vAllocHead = vs;
+        } else {
+            seqp->vAllocTail->next = vs;
+        }
+        seqp->vAllocTail = vs;
+        vs->channel = chan;
+        vs->key = key;
+        vs->velocity = vel;
+        vs->voice.clientPrivate = vs;
+    }
+    return vs;
+}
+
+static void pc_cspUnmapVoice(KCSeqpPC *seqp, N_ALVoice *voice) {
+    /* func_8002B4B4, keyed on the voice's clientPrivate instead of the N64
+     * "voice - 4" pointer arithmetic that no LP64 layout can satisfy. */
+    N_ALVoiceState *target = (N_ALVoiceState *)voice->clientPrivate;
+    N_ALVoiceState *prev = NULL;
+    N_ALVoiceState *cur = seqp->vAllocHead;
+
+    while (cur != NULL) {
+        if (cur == target) {
+            if (prev != NULL) {
+                prev->next = cur->next;
+            } else {
+                seqp->vAllocHead = cur->next;
+            }
+            if (cur == seqp->vAllocTail) {
+                seqp->vAllocTail = prev;
+            }
+            cur->next = seqp->vFreeList;
+            seqp->vFreeList = cur;
+            return;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+}
+
+static ALSound *pc_cspLookupSound(KCSeqpPC *seqp, u8 key, u8 vel, u8 chan) {
+    /* func_8002B70C / __lookupSoundQuick */
+    ALInstrument *inst = (ALInstrument *)seqp->chanState[chan].inst;
+    s32 l = 1;
+    s32 r;
+    s32 i;
+    ALKeyMap *keymap;
+
+    if (inst == NULL) {
+        return NULL;
+    }
+    r = inst->soundCount;
+    while (r >= l) {
+        i = (l + r) / 2;
+        keymap = inst->soundArray[i - 1]->keyMap;
+        if (key >= keymap->keyMin && key <= keymap->keyMax &&
+            vel >= keymap->velocityMin && vel <= keymap->velocityMax) {
+            return inst->soundArray[i - 1];
+        } else if (key < keymap->keyMin ||
+                   (vel < keymap->velocityMin && key <= keymap->keyMax)) {
+            r = i - 1;
+        } else {
+            l = i + 1;
+        }
+    }
+    return NULL;
+}
+
+static void pc_cspStopOscEvents(KCSeqpPC *seqp, N_ALVoiceState *vs) {
+    /* func_8002C68C */
+    N_ALEventListItem *item = (N_ALEventListItem *)seqp->evtq.allocList.next;
+    N_ALEventListItem *next;
+    s16 t;
+
+    while (item != NULL) {
+        next = (N_ALEventListItem *)item->node.next;
+        t = item->evt.type;
+        if ((t == AL_TREM_OSC_EVT || t == AL_VIB_OSC_EVT) &&
+            item->evt.msg.osc.vs == (struct N_ALVoiceState_s *)vs) {
+            (*seqp->stopOsc)(item->evt.msg.osc.oscState);
+            alUnlink((ALLink *)item);
+            if (next) {
+                next->delta += item->delta;
+            }
+            alLink((ALLink *)item, &seqp->evtq.freeList);
+            if (t == AL_TREM_OSC_EVT) {
+                vs->flags &= 0xFE;
+            } else {
+                vs->flags &= 0xFD;
+            }
+            if (!vs->flags) {
+                return;
+            }
+        }
+        item = next;
+    }
+}
+
+static void pc_cspReleaseVoice(KCSeqpPC *seqp, N_ALVoice *voice,
+                               ALMicroTime deltaTime) {
+    /* func_8002B2E8 */
+    N_ALEvent evt;
+    N_ALVoiceState *vs = (N_ALVoiceState *)voice->clientPrivate;
+    void func_8002C990(N_ALVoice *, s16);
+
+    if (vs->envPhase == AL_PHASE_ATTACK) {
+        ALLink *node = seqp->evtq.allocList.next;
+        ALLink *next;
+        N_ALEventListItem *item, *nextItem;
+
+        while (node != NULL) {
+            next = node->next;
+            item = (N_ALEventListItem *)node;
+            nextItem = (N_ALEventListItem *)next;
+            if (item->evt.type == AL_SEQP_ENV_EVT &&
+                item->evt.msg.vol.voice == (struct N_ALVoice_s *)voice) {
+                if (nextItem) {
+                    nextItem->delta += item->delta;
+                }
+                alUnlink(node);
+                alLink(node, &seqp->evtq.freeList);
+            }
+            node = next;
+        }
+    }
+    vs->velocity = 0;
+    vs->envPhase = AL_PHASE_RELEASE;
+    vs->envGain = 0;
+    vs->envEndTime = seqp->curTime + deltaTime;
+    func_8002C990(voice, 0);
+    n_alSynSetVol(voice, 0, deltaTime);
+    evt.type = AL_NOTE_END_EVT;
+    evt.msg.note.voice = (struct N_ALVoice_s *)voice;
+    n_alEvtqPostEvent(&seqp->evtq, &evt, deltaTime);
+}
+
+static u8 pc_cspVoiceNeedsNoteKill(KCSeqpPC *seqp, N_ALVoice *voice,
+                                   ALMicroTime killTime) {
+    /* func_8002B40C */
+    ALLink *node = seqp->evtq.allocList.next;
+    ALLink *next;
+    N_ALEventListItem *item;
+    ALMicroTime itemTime = 0;
+    u8 needsKill = TRUE;
+
+    while (node != NULL) {
+        next = node->next;
+        item = (N_ALEventListItem *)node;
+        itemTime += item->delta;
+        if (item->evt.type == AL_NOTE_END_EVT &&
+            item->evt.msg.note.voice == (struct N_ALVoice_s *)voice) {
+            if (itemTime > killTime) {
+                if (next) {
+                    ((N_ALEventListItem *)next)->delta += item->delta;
+                }
+                alUnlink(node);
+                alLink(node, &seqp->evtq.freeList);
+            } else {
+                needsKill = FALSE;
+            }
+            break;
+        }
+        node = next;
+    }
+    return needsKill;
+}
+
+/* Free-list stash: func_80020BB8 ("is this player busy?") reads the u32 at
+ * LP64 offset 80 of the player, which is the low half of
+ * evtq.freeList.next.  While the player is STOPPED the free list is parked
+ * on a private stash so that word reads zero and the game's wait-for-BGM
+ * spin (func_800A74D8) terminates; every event posted at a stopped player
+ * is then swallowed by n_alEvtqPostEvent's empty-free-list guard, which is
+ * the correct "stopped" behaviour anyway.  The audio thread restocks the
+ * free list (pc_cspUnstash) before posting SEQ/PLAY events. */
+static void pc_cspStash(KCSeqpPC *seqp) {
+    ALLink *n;
+
+    while ((n = seqp->evtq.freeList.next) != NULL) {
+        alUnlink(n);
+        alLink(n, &seqp->stash);
+        seqp->stashed++;
+    }
+}
+
+void pc_cspUnstash(void *p) {
+    KCSeqpPC *seqp = PC_CSP(p);
+    ALLink *n;
+
+    while ((n = seqp->stash.next) != NULL) {
+        alUnlink(n);
+        alLink(n, &seqp->evtq.freeList);
+        seqp->stashed--;
+    }
+}
+
+/* Replacements for the two libreultra na_n_csp*.o posters, so every event
+ * poster in the binary uses one and the same evtq offset.  Defining them
+ * here makes tools/pc/link.sh drop the superseded libreultra objects. */
+void n_alCSPSetChlFXMix(void *seqp, u8 chan, u8 fxmix) {
+    N_ALEvent evt;
+
+    evt.type = AL_SEQP_MIDI_EVT;
+    evt.msg.midi.ticks = 0;
+    evt.msg.midi.status = AL_MIDI_ControlChange | chan;
+    evt.msg.midi.byte1 = AL_MIDI_FX1_CTRL;
+    evt.msg.midi.byte2 = fxmix;
+    n_alEvtqPostEvent(&PC_CSP(seqp)->evtq, &evt, 0);
+}
+
+void n_alCSPSetChlPriority(void *seqp, u8 chan, u8 priority) {
+    N_ALEvent evt;
+
+    evt.type = AL_SEQP_PRIORITY_EVT;
+    evt.msg.sppriority.chan = chan;
+    evt.msg.sppriority.priority = priority;
+    n_alEvtqPostEvent(&PC_CSP(seqp)->evtq, &evt, 0);
+}
+
+/* pc_cspNew: replaces func_800296C0 (whose KCSeqpNew view initialises the
+ * event queue at an LP64 offset none of the compiled posters use).  Called
+ * from the PORT arm of auCreatePlayers. */
+void pc_cspNew(void *p, ALSeqpConfig *c) {
+    KCSeqpPC *seqp = PC_CSP(p);
+    N_ALEventListItem *items;
+    N_ALVoiceState *voices;
+    ALHeap *hp = c->heap;
+    s32 i;
+
+    memset(seqp, 0, sizeof(*seqp));
+    seqp->bank = NULL;
+    seqp->bank2 = NULL;
+    seqp->bank3 = NULL;
+    seqp->target = NULL;
+    seqp->drvr = n_syn;
+    seqp->chanMask = 0xFF;
+    seqp->uspt = 488;
+    seqp->nextDelta = 0;
+    seqp->state = AL_STOPPED;
+    seqp->vol = 0x7FFF;
+    seqp->debugFlags = c->debugFlags;
+    seqp->frameTime = AL_USEC_PER_FRAME;
+    seqp->curTime = 0;
+    seqp->initOsc = c->initOsc;
+    seqp->updateOsc = c->updateOsc;
+    seqp->stopOsc = c->stopOsc;
+    seqp->nextEvent.type = AL_SEQP_API_EVT;
+    seqp->maxChannels = c->maxChannels;
+    seqp->chanState = alHeapDBAlloc(0, 0, hp, c->maxChannels, sizeof(KChanStPC));
+    pc_cspResetAllChans(seqp);
+
+    voices = alHeapDBAlloc(0, 0, hp, c->maxVoices, sizeof(N_ALVoiceState));
+    seqp->vFreeList = NULL;
+    for (i = 0; i < c->maxVoices; i++) {
+        voices[i].next = seqp->vFreeList;
+        seqp->vFreeList = &voices[i];
+    }
+    seqp->vAllocHead = NULL;
+    seqp->vAllocTail = NULL;
+
+    items = alHeapDBAlloc(0, 0, hp, c->maxEvents, sizeof(N_ALEventListItem));
+    func_80026260(&seqp->evtq, items, c->maxEvents);
+
+    seqp->stash.next = NULL;
+    seqp->stash.prev = NULL;
+    seqp->stashed = 0;
+
+    seqp->node.next = NULL;
+    seqp->node.handler = (ALVoiceHandler)func_8002901C;
+    seqp->node.clientData = seqp;
+    n_alSynAddSeqPlayer(&seqp->node);
+}
+
+/* ---------------------------------------------------- compact sequences -- */
+
+static u32 pc_cseqBE32(const u8 *p) {
+    return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | p[3];
+}
+
+void alCSeqNew(ALCSeq *seq, u8 *ptr) {
+    u32 i, tmpOff;
+
+    /* The sequence image is raw ROM bytes: the 16 track offsets and the
+     * division word are big-endian and are read as such here.  Everything
+     * past the header is a byte stream. */
+    seq->base = (ALCMidiHdr *)ptr;
+    seq->validTracks = 0;
+    seq->lastDeltaTicks = 0;
+    seq->lastTicks = 0;
+    seq->deltaFlag = 1;
+
+    for (i = 0; i < 16; i++) {
+        seq->lastStatus[i] = 0;
+        seq->curBUPtr[i] = 0;
+        seq->curBULen[i] = 0;
+        tmpOff = pc_cseqBE32(ptr + 4 * i);
+        if (tmpOff) {
+            seq->validTracks |= 1 << i;
+            seq->curLoc[i] = ptr + tmpOff;
+            seq->evtDeltaTicks[i] = func_8002581C(seq, i);
+        } else {
+            seq->curLoc[i] = 0;
+        }
+    }
+    seq->qnpt = 1.0f / (f32)pc_cseqBE32(ptr + 4 * 16);
+}
+
+/* __alCSeqGetTrackEvent, inlined into alCSeqNextEvent by the ROM. */
+static void pc_cseqGetTrackEvent(ALCSeq *seq, u32 track, ALEvent *event) {
+    u32 offset;
+    u8 status, type, loopCt, curLpCt, *tmpPtr;
+
+    status = func_80025758(seq, track);
+    if (status == AL_MIDI_Meta) {
+        type = func_80025758(seq, track);
+        if (type == AL_MIDI_META_TEMPO) {
+            event->type = AL_TEMPO_EVT;
+            event->msg.tempo.status = status;
+            event->msg.tempo.type = type;
+            event->msg.tempo.byte1 = func_80025758(seq, track);
+            event->msg.tempo.byte2 = func_80025758(seq, track);
+            event->msg.tempo.byte3 = func_80025758(seq, track);
+            seq->lastStatus[track] = 0;
+        } else if (type == AL_MIDI_META_EOT) {
+            seq->validTracks ^= 1 << track;
+            if (seq->validTracks) {
+                event->type = AL_TRACK_END;
+            } else {
+                event->type = AL_SEQ_END_EVT;
+            }
+        } else if (type == AL_CMIDI_LOOPSTART_CODE) {
+            func_80025758(seq, track);
+            func_80025758(seq, track);
+            seq->lastStatus[track] = 0;
+            event->type = AL_CSP_LOOPSTART;
+        } else if (type == AL_CMIDI_LOOPEND_CODE) {
+            tmpPtr = seq->curLoc[track];
+            loopCt = *tmpPtr++;
+            curLpCt = *tmpPtr;
+            if (curLpCt == 0) {
+                *tmpPtr = loopCt;
+                seq->curLoc[track] = tmpPtr + 5;
+            } else {
+                if (curLpCt != 0xFF) {
+                    *tmpPtr = curLpCt - 1;
+                }
+                tmpPtr++;
+                offset = (u32)(*tmpPtr++) << 24;
+                offset += (u32)(*tmpPtr++) << 16;
+                offset += (u32)(*tmpPtr++) << 8;
+                offset += *tmpPtr++;
+                seq->curLoc[track] = tmpPtr - offset;
+            }
+            seq->lastStatus[track] = 0;
+            event->type = AL_CSP_LOOPEND;
+        }
+    } else {
+        event->type = AL_SEQ_MIDI_EVT;
+        if (status & 0x80) {
+            event->msg.midi.status = status;
+            event->msg.midi.byte1 = func_80025758(seq, track);
+            seq->lastStatus[track] = status;
+        } else {
+            event->msg.midi.status = seq->lastStatus[track];
+            event->msg.midi.byte1 = status;
+        }
+        if ((event->msg.midi.status & 0xF0) != AL_MIDI_ProgramChange &&
+            (event->msg.midi.status & 0xF0) != AL_MIDI_ChannelPressure) {
+            event->msg.midi.byte2 = func_80025758(seq, track);
+            if ((event->msg.midi.status & 0xF0) == AL_MIDI_NoteOn) {
+                event->msg.midi.duration = func_8002581C(seq, track);
+            }
+        } else {
+            event->msg.midi.byte2 = 0;
+        }
+    }
+}
+
+void alCSeqNextEvent(ALCSeq *seq, ALEvent *evt) {
+    u32 i;
+    u32 firstTime = 0xFFFFFFFF;
+    u32 firstTrack = 0;
+    u32 lastTicks = seq->lastDeltaTicks;
+
+    for (i = 0; i < 16; i++) {
+        if ((seq->validTracks >> i) & 1) {
+            if (seq->deltaFlag) {
+                seq->evtDeltaTicks[i] -= lastTicks;
+            }
+            if (seq->evtDeltaTicks[i] < firstTime) {
+                firstTime = seq->evtDeltaTicks[i];
+                firstTrack = i;
+            }
+        }
+    }
+
+    pc_cseqGetTrackEvent(seq, firstTrack, evt);
+    evt->msg.midi.ticks = firstTime;
+    seq->lastTicks += firstTime;
+    seq->lastDeltaTicks = firstTime;
+    if (evt->type != AL_TRACK_END) {
+        seq->evtDeltaTicks[firstTrack] += func_8002581C(seq, firstTrack);
+    }
+    seq->deltaFlag = 1;
+}
+
+/* __alSeqNextDelta for the uncompressed-sequence path in libn_audio_2.c
+ * (Kirby's runtime uses compact sequences only); upstream
+ * libreultra/src/audio/seq.c, with readVarLen written out. */
+char __alSeqNextDelta(ALSeq *seq, s32 *pDeltaTicks) {
+    u8 *savedPtr;
+    u32 value;
+    u8 c;
+
+    if (seq->curPtr >= seq->base + seq->len) {
+        return FALSE;
+    }
+    savedPtr = seq->curPtr;
+    value = *seq->curPtr++;
+    if (value & 0x80) {
+        value &= 0x7F;
+        do {
+            c = *seq->curPtr++;
+            value = (value << 7) + (c & 0x7F);
+        } while (c & 0x80);
+    }
+    *pDeltaTicks = value;
+    seq->curPtr = savedPtr;
+    return TRUE;
+}
+
+/* --------------------------------------------------- CSP event handlers -- */
+
+/* __n_CSPHandleMIDIMsg (ROM func_800285F8), against KCSeqpPC. */
+void func_800285F8(void *p, N_ALEvent *event) {
+    KCSeqpPC *seqp = PC_CSP(p);
+    N_ALVoiceState *vs;
+    N_ALVoice *voice;
+    N_ALEvent evt;
+    ALMicroTime deltaTime;
+    s32 status = event->msg.midi.status & AL_MIDI_StatusMask;
+    u8 chan = event->msg.midi.status & AL_MIDI_ChannelMask;
+    u8 key = event->msg.midi.byte1;
+    u8 vel = event->msg.midi.byte2;
+    KChanStPC *cs = &seqp->chanState[chan];
+
+    switch (status) {
+    case AL_MIDI_NoteOn:
+        if (vel != 0) {
+            ALVoiceConfig config;
+            ALSound *sound;
+            ALInstrument *inst;
+            f32 oscValue;
+            void *oscState;
+            u8 fxmix, pan;
+            s16 vol;
+            s32 pitchCents;
+
+            if (seqp->state != AL_PLAYING) {
+                break;
+            }
+            if (!(D_8003FB1C & (1 << chan))) {
+                break;
+            }
+            sound = pc_cspLookupSound(seqp, key, vel, chan);
+            if (sound == NULL) {
+                break;
+            }
+            config.priority = cs->priority;
+            config.fxBus = 0;
+            config.unityPitch = 0;
+            vs = pc_cspMapVoice(seqp, key, vel, chan);
+            if (vs == NULL) {
+                break;
+            }
+            voice = &vs->voice;
+            n_alSynAllocVoice(voice, &config);
+
+            vs->envPhase = AL_PHASE_ATTACK;
+            vs->sound = sound;
+            if (cs->sustain >= 0x40) {
+                vs->phase = AL_PHASE_SUSTAIN;
+            } else {
+                vs->phase = AL_PHASE_NOTEON;
+            }
+            pitchCents = (s16)((key - sound->keyMap->keyBase) * 100 +
+                               sound->keyMap->detune);
+            vs->pitch = alCents2Ratio(pitchCents);
+            vs->envGain = sound->envelope->attackVolume;
+            vs->flags = 0;
+            vs->envEndTime = seqp->curTime + sound->envelope->attackTime;
+
+            inst = (ALInstrument *)cs->inst;
+            oscValue = 127.0f;
+            if (inst->tremType && seqp->initOsc) {
+                deltaTime = (*seqp->initOsc)(&oscState, &oscValue,
+                                             inst->tremType, inst->tremRate,
+                                             inst->tremDepth, inst->tremDelay);
+                if (deltaTime) {
+                    evt.type = AL_TREM_OSC_EVT;
+                    evt.msg.osc.vs = (struct N_ALVoiceState_s *)vs;
+                    evt.msg.osc.oscState = oscState;
+                    n_alEvtqPostEvent(&seqp->evtq, &evt, deltaTime);
+                    vs->flags |= 1;
+                }
+            }
+            vs->tremelo = (u8)oscValue;
+
+            oscValue = 1.0f;
+            if (inst->vibType && seqp->initOsc) {
+                deltaTime = (*seqp->initOsc)(&oscState, &oscValue,
+                                             inst->vibType, inst->vibRate,
+                                             inst->vibDepth, inst->vibDelay);
+                if (deltaTime) {
+                    evt.type = AL_VIB_OSC_EVT;
+                    evt.msg.osc.vs = (struct N_ALVoiceState_s *)vs;
+                    evt.msg.osc.oscState = oscState;
+                    evt.msg.osc.chan = chan;
+                    n_alEvtqPostEvent(&seqp->evtq, &evt, deltaTime);
+                    vs->flags |= 2;
+                }
+            }
+            vs->vibrato = oscValue;
+
+            fxmix = cs->fxmix;
+            pan = pc_vsPan(vs, seqp);
+            vol = pc_vsVol(vs, seqp);
+            deltaTime = sound->envelope->attackTime;
+            func_8002AD90(voice, sound->wavetable,
+                          cs->pitchBend * vs->pitch * vs->vibrato, vol, pan,
+                          fxmix, deltaTime, cs->fxDry, cs->fxWet);
+
+            evt.type = AL_SEQP_ENV_EVT;
+            evt.msg.vol.voice = (struct N_ALVoice_s *)voice;
+            evt.msg.vol.delta = sound->envelope->decayTime;
+            evt.msg.vol.vol = sound->envelope->decayVolume;
+            n_alEvtqPostEvent(&seqp->evtq, &evt, deltaTime);
+
+            if (event->msg.midi.duration) {
+                evt.type = AL_CSP_NOTEOFF_EVT;
+                evt.msg.midi.status = chan | AL_MIDI_NoteOff;
+                evt.msg.midi.byte1 = key;
+                evt.msg.midi.byte2 = 0;
+                n_alEvtqPostEvent(&seqp->evtq, &evt,
+                                  seqp->uspt * event->msg.midi.duration);
+            }
+            break;
+        }
+        /* fall through: note on with zero velocity is a note off */
+    case AL_MIDI_NoteOff:
+        vs = pc_cspLookupVoice(seqp, key, chan);
+        if (vs != NULL) {
+            if (vs->phase == AL_PHASE_SUSTAIN) {
+                vs->phase = AL_PHASE_SUSTREL;
+            } else {
+                vs->phase = AL_PHASE_RELEASE;
+                pc_cspReleaseVoice(seqp, &vs->voice,
+                                   vs->sound->envelope->releaseTime);
+            }
+        }
+        break;
+
+    case AL_MIDI_PolyKeyPressure:
+        vs = pc_cspLookupVoice(seqp, key, chan);
+        if (vs != NULL) {
+            vs->velocity = vel;
+            n_alSynSetVol(&vs->voice, pc_vsVol(vs, seqp),
+                          pc_vsDelta(vs, seqp->curTime));
+        }
+        break;
+
+    case AL_MIDI_ChannelPressure:
+        /* Kirby repurposes channel pressure as the per-channel vibrato
+         * depth scale used by the pitch-bend/vibrato recalculation. */
+        cs->pressure = key;
+        break;
+
+    case AL_MIDI_ControlChange:
+        switch (key) {
+        case 0x0A: /* pan */
+            cs->pan = vel;
+            for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+                if (vs->channel == chan) {
+                    n_alSynSetPan(&vs->voice, pc_vsPan(vs, seqp));
+                }
+            }
+            break;
+        case 0x07: /* volume */
+            cs->vol = vel;
+            for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+                if (vs->channel == chan && vs->envPhase != AL_PHASE_RELEASE) {
+                    n_alSynSetVol(&vs->voice, pc_vsVol(vs, seqp),
+                                  pc_vsDelta(vs, seqp->curTime));
+                }
+            }
+            break;
+        case 0x10:
+        case 0x19:
+            cs->priority = vel;
+            break;
+        case 0x40: /* sustain */
+            cs->sustain = vel;
+            for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+                if (vs->channel != chan || vs->phase == AL_PHASE_RELEASE) {
+                    continue;
+                }
+                if (vel >= 0x40) {
+                    if (vs->phase == AL_PHASE_NOTEON) {
+                        vs->phase = AL_PHASE_SUSTAIN;
+                    }
+                } else if (vs->phase == AL_PHASE_SUSTAIN) {
+                    vs->phase = AL_PHASE_NOTEON;
+                } else if (vs->phase == AL_PHASE_SUSTREL) {
+                    vs->phase = AL_PHASE_RELEASE;
+                    pc_cspReleaseVoice(seqp, &vs->voice,
+                                       vs->sound->envelope->releaseTime);
+                }
+            }
+            break;
+        case AL_MIDI_FX1_CTRL: /* 0x5B: effect send */
+            cs->fxmix = vel;
+            for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+                if (vs->channel == chan) {
+                    n_alSynSetPan(&vs->voice, pc_vsPan(vs, seqp));
+                }
+            }
+            break;
+        case 0x14: /* bend range, tenths of a semitone; >= 0x79 = 12 semis */
+            if (vel >= 0x79) {
+                cs->bendRange = 0x4B0;
+            } else {
+                cs->bendRange = vel * 10;
+            }
+            break;
+        case 0x15:
+            seqp->unk78 = vel;
+            break;
+        case 0x16: /* dry select */
+            cs->fxDry = vel;
+            for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+                if (vs->channel == chan) {
+                    func_8002CF40(&vs->voice, vel, cs->fxWet);
+                }
+            }
+            break;
+        case 0x17: /* wet select */
+            cs->fxWet = vel;
+            for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+                if (vs->channel == chan) {
+                    func_8002CF40(&vs->voice, cs->fxDry, vel);
+                }
+            }
+            break;
+        case 0x18: /* bank select (0..2, only if that bank is loaded) */
+            if (vel < 3 && (&seqp->bank)[vel] != NULL) {
+                cs->bankSel = vel;
+            }
+            break;
+        }
+        break;
+
+    case AL_MIDI_ProgramChange: {
+        ALBank *bank = (ALBank *)(&seqp->bank)[cs->bankSel];
+
+        if (bank != NULL && key < bank->instCount) {
+            pc_cspProgChange(seqp, bank->instArray[key], chan);
+        }
+        break;
+    }
+
+    case AL_MIDI_PitchBendChange: {
+        s32 bendVal = ((vel << 7) + key) - 0x2000;
+        f32 ratio = alCents2Ratio((cs->bendRange * bendVal) / 8192);
+
+        cs->pitchBend = ratio;
+        for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+            if (vs->channel == chan) {
+                n_alSynSetPitch(&vs->voice,
+                                ((cs->pressure * (vs->vibrato - 1.0f)) / 127.0f +
+                                 1.0f) * (vs->pitch * ratio));
+            }
+        }
+        break;
+    }
+    }
+}
+
+/* __n_CSPHandleMetaMsg (ROM func_8002649C): tempo change, plus Kirby's
+ * rescale of the already-queued note-off events to the new tempo. */
+void func_8002649C(void *p, N_ALEvent *event) {
+    KCSeqpPC *seqp = PC_CSP(p);
+    N_ALEventListItem *item, *next;
+    N_ALEventListItem *collected = NULL;
+    s32 oldUspt;
+    s32 acc;
+    s32 tempo;
+    OSIntMask mask;
+
+    if (event->msg.tempo.status != AL_MIDI_Meta ||
+        event->msg.tempo.type != AL_MIDI_META_TEMPO) {
+        return;
+    }
+    oldUspt = seqp->uspt;
+    tempo = (event->msg.tempo.byte1 << 16) | (event->msg.tempo.byte2 << 8) |
+            event->msg.tempo.byte3;
+    pc_cspSetUsptFromTempo(seqp, (f32)tempo);
+
+    /* pull every queued note-off out, remembering its ABSOLUTE time */
+    acc = 0;
+    item = (N_ALEventListItem *)seqp->evtq.allocList.next;
+    while (item != NULL) {
+        next = (N_ALEventListItem *)item->node.next;
+        acc += item->delta;
+        if (item->evt.type == AL_CSP_NOTEOFF_EVT) {
+            s32 absTime = acc;
+
+            alUnlink((ALLink *)item);
+            if (next != NULL) {
+                next->delta += item->delta;
+            }
+            acc -= item->delta;
+            item->delta = absTime;
+            item->node.next = (ALLink *)collected;
+            item->node.prev = NULL;
+            collected = item;
+        }
+        item = next;
+    }
+
+    /* re-post them scaled to the new tempo */
+    item = collected;
+    while (item != NULL) {
+        ALLink *node;
+
+        next = (N_ALEventListItem *)item->node.next;
+        item->delta = seqp->uspt * (item->delta / oldUspt);
+        mask = osSetIntMask(OS_IM_NONE);
+        for (node = &seqp->evtq.allocList; node != NULL; node = node->next) {
+            if (node->next == NULL) {
+                ((ALLink *)item)->next = NULL;
+                ((ALLink *)item)->prev = node;
+                node->next = (ALLink *)item;
+                break;
+            } else {
+                N_ALEventListItem *ni = (N_ALEventListItem *)node->next;
+
+                if (item->delta < ni->delta) {
+                    ni->delta -= item->delta;
+                    ((ALLink *)item)->next = node->next;
+                    ((ALLink *)item)->prev = node;
+                    node->next->prev = (ALLink *)item;
+                    node->next = (ALLink *)item;
+                    break;
+                }
+                item->delta -= ni->delta;
+            }
+        }
+        osSetIntMask(mask);
+        item = next;
+    }
+}
+
+/* __n_CSPVoiceHandler (ROM func_8002901C).  Called from alAudioFrame once
+ * per audio frame; drives the whole compact-sequence player. */
+ALMicroTime func_8002901C(void *node) {
+    KCSeqpPC *seqp = PC_CSP(node);
+    N_ALEvent evt;
+    N_ALVoice *voice;
+    N_ALVoiceState *vs;
+    ALMicroTime delta;
+    void *oscState;
+    f32 oscValue;
+    u8 chan;
+    s32 guard = 0;
+
+    pc_cspUnstash(seqp);
+
+    do {
+        switch (seqp->nextEvent.type) {
+        case AL_SEQ_REF_EVT:
+            if (seqp->target != NULL) {
+                alCSeqNextEvent(seqp->target, (ALEvent *)&evt);
+                switch (evt.type) {
+                case AL_SEQ_MIDI_EVT:
+                    func_800285F8(seqp, &evt);
+                    pc_cspPostNextSeqEvent(seqp);
+                    break;
+                case AL_TEMPO_EVT:
+                    func_8002649C(seqp, &evt);
+                    pc_cspPostNextSeqEvent(seqp);
+                    break;
+                case AL_SEQ_END_EVT:
+                    seqp->state = AL_STOPPING;
+                    evt.type = AL_SEQP_STOP_EVT;
+                    n_alEvtqPostEvent(&seqp->evtq, &evt, AL_EVTQ_END);
+                    break;
+                case AL_TRACK_END:
+                case AL_CSP_LOOPSTART:
+                case AL_CSP_LOOPEND:
+                    pc_cspPostNextSeqEvent(seqp);
+                    break;
+                }
+            }
+            break;
+
+        case AL_SEQP_API_EVT:
+        default:
+            evt.type = AL_SEQP_API_EVT;
+            n_alEvtqPostEvent(&seqp->evtq, &evt, seqp->frameTime);
+            break;
+
+        case AL_NOTE_END_EVT:
+            voice = (N_ALVoice *)seqp->nextEvent.msg.note.voice;
+            n_alSynStopVoice(voice);
+            func_8002D1B0(voice);
+            vs = (N_ALVoiceState *)voice->clientPrivate;
+            if (vs->flags) {
+                pc_cspStopOscEvents(seqp, vs);
+            }
+            pc_cspUnmapVoice(seqp, voice);
+            break;
+
+        case AL_SEQP_ENV_EVT:
+            voice = (N_ALVoice *)seqp->nextEvent.msg.vol.voice;
+            vs = (N_ALVoiceState *)voice->clientPrivate;
+            if (vs->envPhase == AL_PHASE_ATTACK) {
+                vs->envPhase = AL_PHASE_DECAY;
+            }
+            delta = seqp->nextEvent.msg.vol.delta;
+            vs->envEndTime = seqp->curTime + delta;
+            vs->envGain = seqp->nextEvent.msg.vol.vol;
+            n_alSynSetVol(voice, pc_vsVol(vs, seqp), delta);
+            break;
+
+        case AL_TREM_OSC_EVT:
+            vs = (N_ALVoiceState *)seqp->nextEvent.msg.osc.vs;
+            oscState = seqp->nextEvent.msg.osc.oscState;
+            delta = (*seqp->updateOsc)(oscState, &oscValue);
+            vs->tremelo = (u8)oscValue;
+            n_alSynSetVol(&vs->voice, pc_vsVol(vs, seqp),
+                          pc_vsDelta(vs, seqp->curTime));
+            evt.type = AL_TREM_OSC_EVT;
+            evt.msg.osc.vs = (struct N_ALVoiceState_s *)vs;
+            evt.msg.osc.oscState = oscState;
+            n_alEvtqPostEvent(&seqp->evtq, &evt, delta);
+            break;
+
+        case AL_VIB_OSC_EVT:
+            vs = (N_ALVoiceState *)seqp->nextEvent.msg.osc.vs;
+            oscState = seqp->nextEvent.msg.osc.oscState;
+            chan = seqp->nextEvent.msg.osc.chan;
+            delta = (*seqp->updateOsc)(oscState, &oscValue);
+            vs->vibrato = oscValue;
+            n_alSynSetPitch(&vs->voice,
+                            seqp->chanState[chan].pitchBend *
+                            (vs->pitch *
+                             (((vs->vibrato - 1.0f) *
+                               (f32)seqp->chanState[chan].pressure) / 127.0f +
+                              1.0f)));
+            evt.type = AL_VIB_OSC_EVT;
+            evt.msg.osc.vs = (struct N_ALVoiceState_s *)vs;
+            evt.msg.osc.oscState = oscState;
+            evt.msg.osc.chan = chan;
+            n_alEvtqPostEvent(&seqp->evtq, &evt, delta);
+            break;
+
+        case AL_SEQP_MIDI_EVT:
+        case AL_CSP_NOTEOFF_EVT:
+            func_800285F8(seqp, &seqp->nextEvent);
+            break;
+
+        case AL_SEQP_META_EVT:
+            func_8002649C(seqp, &seqp->nextEvent);
+            break;
+
+        case AL_SEQP_VOL_EVT:
+            seqp->vol = seqp->nextEvent.msg.spvol.vol;
+            for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+                n_alSynSetVol(&vs->voice, pc_vsVol(vs, seqp),
+                              pc_vsDelta(vs, seqp->curTime));
+            }
+            break;
+
+        case AL_SEQP_PLAY_EVT:
+            seqp->unk78 = 100;
+            if (seqp->state != AL_PLAYING) {
+                seqp->state = AL_PLAYING;
+                pc_cspPostNextSeqEvent(seqp);
+            }
+            break;
+
+        case AL_SEQP_STOP_EVT:
+            if (seqp->state == AL_STOPPING) {
+                while ((vs = seqp->vAllocHead) != NULL) {
+                    n_alSynStopVoice(&vs->voice);
+                    func_8002D1B0(&vs->voice);
+                    if (vs->flags) {
+                        pc_cspStopOscEvents(seqp, vs);
+                    }
+                    pc_cspUnmapVoice(seqp, &vs->voice);
+                }
+                pc_cspResetAllChans(seqp);
+                seqp->state = AL_STOPPED;
+            }
+            break;
+
+        case AL_SEQP_STOPPING_EVT:
+            if (seqp->state == AL_PLAYING) {
+                n_alEvtqFlushType(&seqp->evtq, AL_SEQ_REF_EVT);
+                n_alEvtqFlushType(&seqp->evtq, AL_CSP_NOTEOFF_EVT);
+                n_alEvtqFlushType(&seqp->evtq, AL_SEQP_MIDI_EVT);
+                for (vs = seqp->vAllocHead; vs != NULL; vs = vs->next) {
+                    if (pc_cspVoiceNeedsNoteKill(seqp, &vs->voice, 50000)) {
+                        pc_cspReleaseVoice(seqp, &vs->voice, 50000);
+                    }
+                }
+                seqp->state = AL_STOPPING;
+                evt.type = AL_SEQP_STOP_EVT;
+                n_alEvtqPostEvent(&seqp->evtq, &evt, AL_EVTQ_END);
+            }
+            break;
+
+        case AL_SEQP_PRIORITY_EVT:
+            chan = seqp->nextEvent.msg.sppriority.chan;
+            seqp->chanState[chan].priority =
+                seqp->nextEvent.msg.sppriority.priority;
+            break;
+
+        case AL_SEQP_SEQ_EVT:
+            seqp->target = seqp->nextEvent.msg.spseq.seq;
+            pc_cspSetUsptFromTempo(seqp, 500000.0f);
+            if (seqp->bank != NULL) {
+                pc_cspInitFromBank(seqp, seqp->bank);
+            }
+            break;
+
+        case AL_SEQP_BANK_EVT:
+            seqp->bank = seqp->nextEvent.msg.spbank.bank;
+            pc_cspInitFromBank(seqp, seqp->bank);
+            break;
+
+        case 24: /* Kirby extra: secondary bank */
+            seqp->bank2 = seqp->nextEvent.msg.spbank.bank;
+            pc_cspInitFromBank(seqp, seqp->bank2);
+            break;
+
+        case 25: /* Kirby extra: tertiary bank */
+            seqp->bank3 = seqp->nextEvent.msg.spbank.bank;
+            pc_cspInitFromBank(seqp, seqp->bank3);
+            break;
+        }
+
+        seqp->nextDelta = func_800261B0(&seqp->evtq, &seqp->nextEvent);
+        if (++guard > 10000) {
+            /* queue wedged; resynchronise rather than spin forever */
+            seqp->nextEvent.type = AL_SEQP_API_EVT;
+            seqp->nextDelta = seqp->frameTime;
+            break;
+        }
+    } while (seqp->nextDelta == 0);
+
+    seqp->curTime += seqp->nextDelta;
+
+    if (seqp->state == AL_STOPPED) {
+        pc_cspStash(seqp);
+    }
+
+    /* Kirby scales the callback delta by the global tempo multiplier. */
+    return (s32)((f32)seqp->nextDelta / D_8003FB18);
+}

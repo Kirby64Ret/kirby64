@@ -204,6 +204,49 @@ void func_80020F40(s32 arg0, s32 arg1, s32 arg2, ? arg3) {
         *gDisplayListHeads = var_v0;
     }
 }
+#elif defined(PORT)
+/* Crash-screen seven-segment glyph blitter (draft above): glyph arg2
+ * (0..0xF digits, 0x10 minus) selects an 8-word on/off mask row in
+ * D_8003F440; each lit segment emits one G_FILLRECT (0xF6) scaled from the
+ * 320x240 layout to the live screen. Segment 0's rect lives in the four
+ * scalars D_8003F3C0..CC (accessed by name -- they are separate objects on
+ * PC), segments 1..6 in the D_8003F3D0 rect table. arg3 is stored and never
+ * read by the ROM (dead decimal-point flag). D_80096520 keeps the ROM's
+ * end-of-table bookkeeping store. */
+void func_80020F40(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    extern u32 D_80096520;
+    extern s32 gCurrScreenHeight;
+    u32 *mask;
+    u32 *rect;
+    Gfx *g;
+    s32 i;
+
+    if (arg2 < 0 || arg2 >= 0x11) {
+        return;
+    }
+    (void) arg3;
+    mask = D_8003F440[arg2];
+    g = gDisplayListHeads[0];
+    if (mask[0] != 0) {
+        g->words.w0 = (((((D_8003F3C8 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | 0xF6000000 |
+                      (((((arg1 + D_8003F3CC) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+        g->words.w1 = (((((D_8003F3C0 + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) |
+                      (((((arg1 + D_8003F3C4) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+        g++;
+    }
+    rect = D_8003F3D0[0];
+    for (i = 1; i < 7; i++, rect += 4) {
+        if (mask[i] != 0) {
+            g->words.w0 = (((((rect[2] + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) | 0xF6000000 |
+                          (((((arg1 + rect[3]) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+            g->words.w1 = (((((rect[0] + arg0) * gCurrScreenWidth) / 320) & 0x3FF) << 0xE) |
+                          (((((arg1 + rect[1]) * gCurrScreenHeight) / 240) & 0x3FF) * 4);
+            g++;
+        }
+    }
+    D_80096520 = (u32) (uintptr_t) rect;
+    gDisplayListHeads[0] = g;
+}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/fault/func_80020F40.s")
 #endif
@@ -252,6 +295,49 @@ loop_7:
                 func_80020F40(var_s4, arg1, 0x10, 0);
             }
         }
+    }
+}
+#elif defined(PORT)
+/* Crash-screen number printer (draft above): render `value` right-aligned
+ * in a field of `digits` glyph cells starting at x, 7px per glyph. dotPos
+ * counts digits until the (dead) decimal-point flag fires; trim!=0 stops
+ * once the value is exhausted and the fraction digits are out. A negative
+ * value reserves the leading cell for the minus glyph (0x10). */
+void func_80021444(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+    s32 value = arg2;
+    s32 digits = arg3;
+    s32 dot = arg4;
+    s32 neg = 0;
+    s32 col;
+
+    if (digits <= 0) {
+        return;
+    }
+    if (digits >= (gCurrScreenWidth - arg0) / 7) {
+        return;
+    }
+    col = (arg0 + digits * 7) - 7;
+    if (value < 0) {
+        value = -value;
+        neg = 1;
+    }
+    if (dot <= 0) {
+        dot = -1;
+    }
+    while (neg < digits) {
+        s32 atDot = (dot == 0);
+
+        dot--;
+        func_80020F40(col, arg1, (value % 10) & 0xF, atDot);
+        value /= 10;
+        digits--;
+        col -= 7;
+        if (arg5 != 0 && value == 0 && dot < 0) {
+            break;
+        }
+    }
+    if (neg != 0) {
+        func_80020F40(col, arg1, 0x10, 0);
     }
 }
 #else
