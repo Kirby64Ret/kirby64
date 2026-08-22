@@ -418,6 +418,11 @@ typedef struct UnkTextureDesc {
     UnkTexture *textures[1];
 } UnkTextureDesc;
 #endif
+#ifndef PORT
+STATIC_ASSERT(OFFSETOF(UnkScript, bytecode[0]) == 0x3C, script_bytecode_base);
+STATIC_ASSERT(OFFSETOF(UnkScript, radius) == 0x20, script_shape_params);
+STATIC_ASSERT(OFFSETOF(UnkTexture, data[0]) == 0x18, texture_frame_table);
+#endif
 
 void *gtlMalloc(u32 size, u32 alignment);
 void func_8009E834(GObj *arg0);

@@ -164,7 +164,159 @@ done:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017CF60_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 122/301, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming) so it seals verbatim. Queued for the permuter. */
+/* PORT: the dash-attack per-frame render/service routine (paired with the
+ * 0x28 coroutine above), from asm/nonmatchings/ovl3/ovl3_6/
+ * func_8017D430_ovl3.s (via m2c). On a level-transition tick (D_8012E7E8
+ * word +8) it just services the base tracks and bails. While the whirl
+ * state word (D_8012E7FC word +8) is >= 0 it enters the D_8019139C
+ * particle-shape set on the body DObj scaled by the ramp cell D_800EA6E0
+ * (rescaling each shape's first three body floats by the ramp), draws the
+ * D_80193D70 matrix overlay via func_801521F0_ovl3/func_8015449C_ovl3,
+ * and ramps D_800EA6E0 up by 0.04 toward 1.0. Every tick it applies the
+ * base motion, subtracts the global sink D_800EC9E4 from the Y track,
+ * re-asserts the 0.5 drift/10-or-5 speed cap while the ability is armed,
+ * zeroes X velocity on a wall hit, and falls back to the plain model when
+ * 0x20007 is resident. In debug mode (D_8012E860, state 0) it emits the
+ * frame-indexed afterimage: pair table D_80191424 (two floats per entry,
+ * 65535.0f = none) positions a D_80191404 one-shot shape anchored on the
+ * body DObj, and D_80194348[frame] picks an extra overlay for
+ * func_8015449C_ovl3; indexes past 0x18 utilPrintf the "data over"
+ * message.
+ *
+ * Port notes: the shape header/record layout is plyshot.c's Unk80168408
+ * pair (N64 offsets kept: count at header +0x1C, record array pointer at
+ * +0x20, 0x28-stride records); func_80168408_ovl3 keeps this file's
+ * (f32 *, void *, f32) spelling and its s32 result comes back through
+ * (uintptr_t) (static data sits below 4GB on this build, same deal as the
+ * plyshot arms' (s32)(uintptr_t) handles); D_80191424 is pair-indexed
+ * (N64 stride 8 = two f32s); D_80194348 is a native pointer array on PC;
+ * D_80197674/D_80197678 are 0.04f/65535.0f inlined; func_800AA888 takes
+ * one s32 (m2c's &gKirbyState is a leftover register). */
+typedef struct PcO36Shape {
+    u8 pad0[4];
+    u8 unk4;
+    u8 pad5[3];
+    s32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    f32 unk1C;
+    f32 unk20;
+    f32 unk24;
+} PcO36Shape;
+
+typedef struct PcO36ShapeHdr {
+    u8 pad0[0x1C];
+    s32 unk1C;
+    PcO36Shape *unk20;
+} PcO36ShapeHdr;
+
+void func_8017D430_ovl3(void *arg0) {
+    extern s32 D_8012E7E8;
+    extern s32 D_8012E860;
+    extern f32 D_800EC9E4;
+    extern f32 D_8019139C_ovl3[];
+    extern f32 D_80191404_ovl3[];
+    extern f32 D_80191424_ovl3[];
+    extern f32 D_80193D70_ovl3[][4];
+    extern u8 D_80193DC0_ovl3[];
+    extern void *D_80194348_ovl3[];
+    extern char D_80197570_ovl3[];
+    extern s32 func_80168408_ovl3(f32 *, void *, f32);
+    extern s32 func_801521F0_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
+    s32 func_800AA888(s32);
+    void utilPrintf(char *, ...);
+    PcO36ShapeHdr *hdr;
+    PcO36Shape *rec;
+    s32 i;
+    s32 id;
+    s32 frame;
+    f32 *pair;
+    u8 *ovl;
+
+    if (*(s32 *) ((u8 *) &D_8012E7E8 + 8) != 0) {
+        func_80153984_ovl3();
+        func_801217B8();
+        func_8011D67C();
+        return;
+    }
+    if (*(s32 *) ((u8 *) &D_8012E7FC + 8) >= 0) {
+        id = omCurrentObj->objId;
+        hdr = (PcO36ShapeHdr *) (uintptr_t) func_80168408_ovl3(
+            D_8019139C_ovl3, D_800DFBD0[id][2], D_800EA6E0[id]);
+        if (hdr != NULL) {
+            rec = hdr->unk20;
+            for (i = 0; i < hdr->unk1C; i++, rec++) {
+                rec->unkC *= D_800EA6E0[omCurrentObj->objId];
+                rec->unk10 *= D_800EA6E0[omCurrentObj->objId];
+                rec->unk14 *= D_800EA6E0[omCurrentObj->objId];
+            }
+            func_80111C4C((s32) (uintptr_t) hdr);
+        }
+        func_801521F0_ovl3(D_80193D70_ovl3, (f32 (*)[4]) ((u8 *) &D_8012E9B8 + 0x10),
+                           D_80193DC0_ovl3[0], D_800EA6E0[omCurrentObj->objId]);
+        func_8015449C_ovl3(D_80193DC0_ovl3, 0);
+        if (D_800EA6E0[omCurrentObj->objId] != 1.0f) {
+            D_800EA6E0[omCurrentObj->objId] += 0.04f;
+            if (D_800EA6E0[omCurrentObj->objId] > 1.0f) {
+                D_800EA6E0[omCurrentObj->objId] = 1.0f;
+            }
+        }
+    }
+    func_80153984_ovl3();
+    gEntitiesNextPosYArray[omCurrentObj->objId] -= D_800EC9E4;
+    func_8011CF58();
+    if (gKirbyState.abilityInUse != 0) {
+        f32 spd;
+
+        id = omCurrentObj->objId;
+        D_800E6690[id] = D_800E6A10[id] * 0.5f;
+        id = omCurrentObj->objId;
+        if (!(D_800E8AE0[id] & 6)) {
+            spd = 10.0f;
+        } else {
+            spd = 5.0f;
+        }
+        D_800E6850[id] = spd;
+    }
+    if (gKirbyState.horizontalCollision != 0) {
+        D_800E64D0[omCurrentObj->objId] = 0.0f;
+    }
+    if (func_800AA888(0x20007) == 0) {
+        D_800E8920[omCurrentObj->objId] = 0;
+    } else {
+        func_801217B8();
+    }
+    if ((D_8012E860 != 0) && (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 0)) {
+        /* m2c's arg0->unk40 is the GObj's animTimer (the raw +0x40 only
+         * holds on the N64 layout -- LP64 moves it). */
+        frame = (s32) (((GObj *) arg0)->animTimer * 0.5f);
+        if (frame >= 0x18) {
+            utilPrintf(D_80197570_ovl3, frame);
+        } else {
+            pair = &D_80191424_ovl3[frame * 2];
+            if (pair[0] != 65535.0f) {
+                hdr = (PcO36ShapeHdr *) (uintptr_t) func_80168408_ovl3(
+                    D_80191404_ovl3, NULL, D_800EA6E0[omCurrentObj->objId]);
+                hdr->unk20->unkC = 0.0f;
+                hdr->unk20->unk10 = 0.0f;
+                hdr->unk20->unk14 = pair[0];
+                hdr->unk20->unk18 = pair[1];
+                hdr->unk20->unk8 =
+                    (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][2];
+                func_80111C4C((s32) (uintptr_t) hdr);
+            }
+        }
+        ovl = D_80194348_ovl3[frame];
+        if (ovl != NULL) {
+            func_8015449C_ovl3(ovl, 0);
+        }
+    }
+}
+#elif defined(PORT)
 /* PORT: the dash-attack per-frame render/service routine (paired with the
  * 0x28 coroutine above), from asm/nonmatchings/ovl3/ovl3_6/
  * func_8017D430_ovl3.s (via m2c). On a level-transition tick (D_8012E7E8
@@ -1604,7 +1756,138 @@ void func_80180818_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80180818_ovl3.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 29/302, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming) so it seals verbatim. Queued for the permuter. */
+/* PORT: the needle-spray (action 0x2E) per-tick handler (paired with the
+ * func_80180818_ovl3 coroutine above), from asm/nonmatchings/ovl3/ovl3_6/
+ * func_80180B58_ovl3.s (via m2c). Runs the alternate tick prologue
+ * func_80153AD4_ovl3 and the global Y sink; in the airborne variant
+ * (unk44 == 1) with the ability armed and no wall hit it pushes a 0.8 *
+ * facing drift with a 6.0 cap (3.0 in water) and services input, else it
+ * freezes vertical motion; the grounded variant just services input.
+ * When the coroutine is done it releases the anim/sound locks and the
+ * 0x4000 turn latch and hands off. While armed it refreshes the 0x4000
+ * latch (wall contact when airborne, ground contact otherwise), attaches
+ * the D_801916E8 emitter set to DObj [9], draws the D_80194904 overlay
+ * through the variant matrix (D_801948A4 grounded / D_801948D4 airborne,
+ * layer 3), then probes around DObj [9]'s world position: airborne, a
+ * wall hit or the 28.5/type-2 or 70.0/type-5 probes keep the 0x49 spray
+ * effect alive on DObj [0x12]; grounded, the -65.0/type-3 probe keeps
+ * the 0x4A effect; with nothing hit the anim lock is released.
+ *
+ * Port notes: the 6-or-3 cap ladder is the ROM's redundant ABS of the
+ * positive constant; D_80197710/D_80197714 are 0.8f/65535.0f inlined;
+ * m2c's D_800DFBD0[...]->unk24/unk48 are DObj list entries [9]/[0x12]
+ * (N64 4-byte cells); func_80155838_ovl3's raw bit ranges are 28.5f /
+ * 70.0f / -65.0f; func_8016854C_ovl3 keeps its (s32, s32, f32) file
+ * spelling with (s32)(uintptr_t) handles like the kirby.c arms (game
+ * objects sit below 4GB on this build); func_800B2340's DObj handle goes
+ * through the same cast. */
+void func_80180B58_ovl3(s32 arg0) {
+    s32 func_80153AD4_ovl3(void);
+    void func_80121658(void);
+    void func_800B2340(Vector *, s32, s32);
+    s32 func_80155838_ovl3(Vector *, f32, s32);
+    s32 func_8016854C_ovl3(s32, s32, f32);
+    s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
+    extern f32 D_800EC9E4;
+    extern u8 D_801916E8_ovl3[];
+    extern f32 D_801948A4_ovl3[][4];
+    extern f32 D_801948D4_ovl3[][4];
+    extern u8 D_80194904_ovl3[];
+    Vector pos;
+    s32 hit;
+    s32 id;
+
+    func_80153AD4_ovl3();
+    gEntitiesNextPosYArray[omCurrentObj->objId] -= D_800EC9E4;
+    if (gKirbyState.unk44 == 1) {
+        if ((gKirbyState.horizontalCollision == 0) && (gKirbyState.abilityInUse != 0)) {
+            id = omCurrentObj->objId;
+            D_800E6690[id] = D_800E6A10[id] * 0.8f;
+            id = omCurrentObj->objId;
+            if (!(D_800E8AE0[id] & 6)) {
+                D_800E6850[id] = 6.0f;
+            } else {
+                D_800E6850[id] = 3.0f;
+            }
+            func_80121658();
+        } else {
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            id = omCurrentObj->objId;
+            D_800E3210[id] = D_800E3750[id];
+            D_800E3C90[omCurrentObj->objId] = 65535.0f;
+        }
+    } else {
+        func_80121658();
+    }
+    if (gKirbyState.unk30 != 0) {
+        func_8011E0E8();
+        func_8011DC5C();
+        func_8011D67C();
+        gKirbyState.isTurning &= ~0x4000;
+        return;
+    }
+    if (gKirbyState.abilityInUse != 0) {
+        hit = 0;
+        func_8011CF58();
+        if (gKirbyState.unk44 == 1) {
+            if (gKirbyState.horizontalCollision != 0) {
+                gKirbyState.isTurning |= 0x4000;
+            } else {
+                gKirbyState.isTurning &= ~0x4000;
+            }
+        } else if (D_800E8920[omCurrentObj->objId] != 0) {
+            gKirbyState.isTurning |= 0x4000;
+        } else {
+            gKirbyState.isTurning &= ~0x4000;
+        }
+        func_8016854C_ovl3((s32) (uintptr_t) D_801916E8_ovl3,
+                           (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][9], 1.0f);
+        if (gKirbyState.unk44 == 0) {
+            func_80152070_ovl3(D_801948A4_ovl3, (f32 (*)[4]) ((u8 *) &D_8012E9B8 + 0x10),
+                               3, 1.0f);
+        } else {
+            func_80152070_ovl3(D_801948D4_ovl3, (f32 (*)[4]) ((u8 *) &D_8012E9B8 + 0x10),
+                               3, 1.0f);
+        }
+        func_8015449C_ovl3(D_80194904_ovl3, 0);
+        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][9], 0xFFFF);
+        if (gKirbyState.unk44 == 1) {
+            if (gKirbyState.horizontalCollision != 0) {
+                hit = 1;
+            } else {
+                if (func_80155838_ovl3(&pos, 28.5f, 2) != 0) {
+                    hit = 1;
+                }
+                if (func_80155838_ovl3(&pos, 70.0f, 5) != 0) {
+                    hit += 1;
+                }
+            }
+            if (hit != 0) {
+                if (gKirbyState.unk4C == 0) {
+                    gKirbyState.unk4C =
+                        func_800A8100(2, 1, 0x49, D_800DFBD0[omCurrentObj->objId][0x12]);
+                }
+            } else {
+                func_8011E0E8();
+            }
+        } else {
+            if (func_80155838_ovl3(&pos, -65.0f, 3) != 0) {
+                hit = 1;
+            }
+            if (hit != 0) {
+                if (gKirbyState.unk4C == 0) {
+                    gKirbyState.unk4C =
+                        func_800A8100(2, 1, 0x4A, D_800DFBD0[omCurrentObj->objId][0x12]);
+                }
+            } else {
+                func_8011E0E8();
+            }
+        }
+    }
+}
+#elif defined(PORT)
 /* PORT: the needle-spray (action 0x2E) per-tick handler (paired with the
  * func_80180818_ovl3 coroutine above), from asm/nonmatchings/ovl3/ovl3_6/
  * func_80180B58_ovl3.s (via m2c). Runs the alternate tick prologue

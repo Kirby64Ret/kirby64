@@ -243,11 +243,91 @@ void func_801773C4_ovl5(struct GObj *);
 void func_801764F0_ovl5(void);
 void func_80176EC8_ovl5(u8 *, u16 *);
 void func_800ACBDC(GObj *);
+#endif
 
 /* Camera / field scroller for lane arg0: scrolls the lane camera bias in
  * gEntitiesNextPosZArray[objId] by arg1 and pushes every live tile of the
  * lane (via func_8016FFE8_ovl5) once the bias saturates, clamping against
- * the last tile (row entry 0x51) so the far end never scrolls past 1350. */
+ * the last tile (row entry 0x51) so the far end never scrolls past 1350.
+ *
+ * FACTORY: 10/246, UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
+ * found; compiles as-is once split out of the shared PORT-prototype
+ * block above. Word count matches (246/246), residue extreme
+ * (236/246) -- broad register/frame relabeling from word 0. Worth a
+ * fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_80170098_ovl5(s32 arg0, f32 arg1) {
+    f32 z;
+    f32 end;
+    f32 over;
+    s32 last;
+    s32 i;
+
+    if (arg1 < 0.0f) {
+        last = D_8018E478_ovl5[arg0][0x51];
+        if (last != 0) {
+            end = D_8018EB48_ovl5[arg0] + gEntitiesNextPosZArray[last];
+            if ((end + arg1) <= 1350.0f) {
+                if ((end == 1350.0f) || ((end - arg1) == 1350.0f)) {
+                    gEntitiesNextPosZArray[omCurrentObj->objId] -= arg1;
+                    return;
+                }
+                over = (end + arg1) - 1350.0f;
+                gEntitiesNextPosZArray[omCurrentObj->objId] -= over;
+                for (i = 0; i < 0x52; i++) {
+                    if (D_8018E478_ovl5[arg0][i] != 0) {
+                        func_8016FFE8_ovl5(arg0, i, arg1 - over);
+                    }
+                }
+                return;
+            }
+        }
+        for (i = 0; i < 0x52; i++) {
+            if (D_8018E478_ovl5[arg0][i] != 0) {
+                func_8016FFE8_ovl5(arg0, i, arg1);
+            }
+        }
+        return;
+    }
+    z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    if (z > 0.0f) {
+        if (arg1 <= z) {
+            gEntitiesNextPosZArray[omCurrentObj->objId] = z - arg1;
+            return;
+        }
+        gEntitiesNextPosZArray[omCurrentObj->objId] = z + z;
+        for (i = 0; i < 0x52; i++) {
+            if (D_8018E478_ovl5[arg0][i] != 0) {
+                func_8016FFE8_ovl5(arg0, i, arg1 - z);
+            }
+        }
+        return;
+    }
+    last = D_8018E478_ovl5[arg0][0x51];
+    if (last != 0) {
+        end = D_8018EB48_ovl5[arg0] + gEntitiesNextPosZArray[last];
+        if ((end + arg1) <= 1350.0f) {
+            if ((end == 1350.0f) || ((end - arg1) == 1350.0f)) {
+                gEntitiesNextPosZArray[omCurrentObj->objId] = z - arg1;
+                return;
+            }
+            over = (end + arg1) - 1350.0f;
+            gEntitiesNextPosZArray[omCurrentObj->objId] = z - over;
+            for (i = 0; i < 0x52; i++) {
+                if (D_8018E478_ovl5[arg0][i] != 0) {
+                    func_8016FFE8_ovl5(arg0, i, arg1 - over);
+                }
+            }
+            return;
+        }
+    }
+    for (i = 0; i < 0x52; i++) {
+        if (D_8018E478_ovl5[arg0][i] != 0) {
+            func_8016FFE8_ovl5(arg0, i, arg1);
+        }
+    }
+}
+#elif defined(PORT)
 void func_80170098_ovl5(s32 arg0, f32 arg1) {
     f32 z;
     f32 end;
@@ -427,12 +507,25 @@ s32 func_80170820_ovl5(s32 arg0) {
     }
 }
 
-#ifdef PORT
 /* Backward-hop recovery for lane arg0 (kind arg1): plays the trip anim
  * pair, rewinds the camera by E9C60 tiles over 15 frames while riding the
  * hop arc, resolves what the racer lands on (rapids push a raft chain via
- * func_80173804_ovl5, holes cost a stock), and restores the idle anims. */
+ * func_80173804_ovl5, holes cost a stock), and restores the idle anims.
+ *
+ * FACTORY: 63/558, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * the PORT: the call to `func_80170098_ovl5` (whose real ANSI
+ * prototype -- `void func_80170098_ovl5(s32, f32)` -- lives in the
+ * shared PORT-prototype block, invisible outside a PORT/MIPS_TO_C
+ * build) had no prototype in scope, so IDO silently promoted the f32
+ * argument to double (visible in the diff as an inserted `cvt.d.s`);
+ * fixed with a local ANSI prototype. Compiles, word count close
+ * (558/561 after the fix, was 561/561 before with the extra promotion
+ * instructions padding it out), residue still extreme (498/558) --
+ * broad register/frame relabeling from word 0. Worth a fresh m2c pass
+ * before feeding to the permuter. */
+#ifdef MIPS_TO_C
 void func_80170884_ovl5(s32 arg0, s32 arg1, s32 arg2) {
+    void func_80170098_ovl5(s32, f32);
     extern u32 D_80187BF4_ovl5[];
     extern u32 D_80187C14_ovl5[];
     extern u32 D_80187C54_ovl5[];
@@ -566,9 +659,6 @@ void func_80170884_ovl5(s32 arg0, s32 arg1, s32 arg2) {
     func_800AA018(D_80187BF4_ovl5[arg1 * 2 + 1]);
     D_800E9C60[omCurrentObj->objId] = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170884_ovl5.s")
-#endif
 
 #ifdef PORT
 /* Fall-in-a-hole recovery for lane arg0 (kind arg1): marks the tile fallen
