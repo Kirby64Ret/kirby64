@@ -15,6 +15,13 @@ extern s32 D_8022ACAC_ovl18[];
 extern s32 D_8022ACB0_ovl18[];
 extern s32 D_8022A4E4_ovl18;
 
+/* K&R form is load-bearing on all three declarations below: each has a real
+ * fixed-arity signature (func_800AA018(s32), func_800AA864(s32, u32),
+ * func_800AFBB4(s32, GObj *)), but this file calls each with one extra
+ * argument at some sites (e.g. line ~173 passes func_800AA018 2 args,
+ * line ~90 passes func_800AA864 3, line ~365 passes func_800AFBB4 3) --
+ * the ROM ignores the extra value. An ANSI prototype breaks compilation
+ * with "too many arguments" wherever the extra arg is passed. */
 void func_800AA018();
 void func_800AA864();
 void func_800AF27C(void);

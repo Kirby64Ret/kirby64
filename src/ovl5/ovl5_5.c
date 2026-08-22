@@ -2801,7 +2801,24 @@ void func_80176108_ovl5(void)
 }
 
 /* Pause-menu thread (near-clone of func_8016EF78_ovl5 in ovl5_4 and
- * func_80164A34_ovl5 in ovl5_2, quitting to game state 0x1D here). */
+ * func_80164A34_ovl5 in ovl5_2, quitting to game state 0x1D here).
+ *
+ * FACTORY: 85/224, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * the PORT: `D_800D7178`'s access used the GCC-only
+ * `__asm__("D_800D7178")` symbol-alias extension on a distinct u32[]
+ * view -- this file already declares and word-indexes the real symbol
+ * elsewhere as `extern s32 D_800D7178[]`, so the alias was pointless;
+ * rewritten to reuse that same declaration and indexing (word 0x1E,
+ * matching the existing in-file convention). Also added missing local
+ * declarations for `gPlayerControllers` (real one only reached through
+ * the shared PORT-prototype include) and `func_801764F0_ovl5` (a
+ * forward call with no prototype installs an implicit int-returning
+ * declaration that then conflicts with the real `void` definition
+ * later in the file). Compiles, word count close (224/224 after
+ * fixes), residue extreme (139/224) -- broad register/frame
+ * relabeling from word 0. Worth a fresh m2c pass before feeding to
+ * the permuter. */
+#ifdef MIPS_TO_C
 void func_80176170_ovl5(GObj *arg0) {
     extern struct UnkStruct8015C740 D_80187A6C_ovl5;
     extern struct UnkStruct8015C740 D_80187A8C_ovl5;
@@ -2816,6 +2833,8 @@ void func_80176170_ovl5(GObj *arg0) {
     extern s32 D_800D7178[];
     extern u32 D_800D6B68;
     extern u32 gGameState;
+    extern Controller_800D6FE8 gPlayerControllers[4];
+    void func_801764F0_ovl5(void);
     SPObj *panel;
     SPObj *cursor;
     s32 counter;
@@ -2895,6 +2914,105 @@ void func_80176170_ovl5(GObj *arg0) {
         ohSleep(1);
     }
 }
+#elif defined(PORT)
+/* Pause-menu thread (near-clone of func_8016EF78_ovl5 in ovl5_4 and
+ * func_80164A34_ovl5 in ovl5_2, quitting to game state 0x1D here). */
+void func_80176170_ovl5(GObj *arg0) {
+    extern struct UnkStruct8015C740 D_80187A6C_ovl5;
+    extern struct UnkStruct8015C740 D_80187A8C_ovl5;
+    extern struct UnkStruct8015C740 D_80187AAC_ovl5;
+    extern struct UnkStruct8015C740 D_80187ACC_ovl5;
+    extern struct UnkStruct8015C740 D_80187AEC_ovl5;
+    extern struct UnkStruct8015C740 D_80187B0C_ovl5;
+    extern struct UnkStruct8015C740 D_80187B2C_ovl5;
+    extern struct UnkStruct8015C740 D_80187B4C_ovl5;
+    extern f32 D_80187B6C_ovl5[];
+    extern u8 D_8018ECD9_ovl5;
+    extern u32 D_800D7178_words2_[] __asm__("D_800D7178");
+    extern u32 D_800D6B68;
+    extern u32 gGameState;
+    SPObj *panel;
+    SPObj *cursor;
+    s32 counter;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_8018ECD9_ovl5 = 0;
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
+    func_800BB3F0();
+    panel = func_8015C740_ovl5(arg0, &D_80187AEC_ovl5);
+    panel->xScale = 52.0f;
+    panel->yScale = 1.33f;
+    func_8015C740_ovl5(arg0, &D_80187A6C_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187A8C_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187AAC_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187ACC_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187B0C_ovl5);
+    func_8015C740_ovl5(arg0, &D_80187B2C_ovl5);
+    cursor = func_8015C740_ovl5(arg0, &D_80187B4C_ovl5);
+    cursor->xOffset = D_80187B6C_ovl5[D_8018ECD9_ovl5 * 2];
+    cursor->yOffset = D_80187B6C_ovl5[D_8018ECD9_ovl5 * 2 + 1];
+    ohSleep(6);
+    counter = 5;
+    while (1) {
+        if (counter != 0) {
+            counter--;
+            if ((gPlayerControllers[0].buttonHeld & 0xF00) == 0) {
+                counter = 0;
+            }
+        } else {
+            if (gPlayerControllers[0].buttonPressed & 0x9000) {
+                D_800D7178_words2_[0x1E] = 1;
+                switch (D_8018ECD9_ovl5) {
+                    case 0:
+                        D_800D7178_words2_[0x1E] = 2;
+                        play_sound(0x113);
+                        func_800ACBDC(arg0);
+                        func_800B1900((u16) omCurrentObj->objId);
+                        break;
+                    case 1:
+                        play_sound(0xED);
+                        gGameState = 0x1D;
+                        break;
+                    case 2:
+                        play_sound(0xED);
+                        D_800D6B68 = gGameState;
+                        gGameState = 0x1B;
+                        break;
+                    case 3:
+                        play_sound(0x2B);
+                        D_800D6B68 = gGameState;
+                        gGameState = 0xA;
+                        break;
+                }
+                func_801764F0_ovl5();
+                curObjSleepForever();
+            } else if (gPlayerControllers[0].buttonHeld & 0x800) {
+                play_sound(0x113);
+                counter = 5;
+                if (D_8018ECD9_ovl5 == 0) {
+                    D_8018ECD9_ovl5 = 3;
+                } else {
+                    D_8018ECD9_ovl5--;
+                }
+            } else if (gPlayerControllers[0].buttonHeld & 0x400) {
+                play_sound(0x113);
+                counter = 5;
+                if (D_8018ECD9_ovl5 == 3) {
+                    D_8018ECD9_ovl5 = 0;
+                } else {
+                    D_8018ECD9_ovl5++;
+                }
+            }
+            cursor->xOffset = D_80187B6C_ovl5[D_8018ECD9_ovl5 * 2];
+            cursor->yOffset = D_80187B6C_ovl5[D_8018ECD9_ovl5 * 2 + 1];
+        }
+        ohSleep(1);
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176170_ovl5.s")
+#endif
 
 void func_801764F0_ovl5(void) {
     func_800BB3F0();
@@ -2934,7 +3052,6 @@ void func_80176530_ovl5(GObj *arg0) {
     }
 }
 
-#ifdef PORT
 /* Course builder: clears the two course-strip flags, then fills the two
  * 4-entry tile-pattern banks of the shared course row (base D_8018E9A8,
  * bytes 1..0x28 and 0x29..0x50, each entry 10 bytes) with four distinct
@@ -2942,13 +3059,25 @@ void func_80176530_ovl5(GObj *arg0) {
  * D_80187EB4_ovl5 rows of 12 pointers, bank two using pointers 6..11.
  * The pattern blobs were emitted as big-endian words, so bytes are pulled
  * word-wise; the row bytes go through the split symbols the readers use
- * (D_8018E9A8 / D_8018E9A9 / D_8018E9AA). */
+ * (D_8018E9A8 / D_8018E9A9 / D_8018E9AA).
+ *
+ * FACTORY: 166/167, UNCERTAIN -- PORT-seeded, time-boxed. Real fix
+ * over the PORT: FOUR file-scope symbols (D_8018E9A8_ovl5,
+ * D_8018E9A9_ovl5, D_8018E9AA_ovl5, D_8018ECD8_ovl5) were reached
+ * through pointless GCC-only `__asm__("...")` symbol-alias views --
+ * this file already declares and uses the real symbols directly
+ * elsewhere (two scalar u8, one u8[] array, one scalar u8) -- rewritten
+ * to use those real declarations and drop the alias indexing. Compiles,
+ * word count matches (167/167), residue extreme (166/167) -- broad
+ * register/frame relabeling from word 0. Worth a fresh m2c pass before
+ * feeding to the permuter. */
+#ifdef MIPS_TO_C
 void func_801765EC_ovl5(void) {
     extern void *D_80187EB4_ovl5[];
-    extern u8 D_8018E9A8x_ovl5[] __asm__("D_8018E9A8_ovl5");
-    extern u8 D_8018E9A9x_ovl5[] __asm__("D_8018E9A9_ovl5");
-    extern u8 D_8018E9AAx_ovl5[] __asm__("D_8018E9AA_ovl5");
-    extern u8 D_8018ECD8x_ovl5[] __asm__("D_8018ECD8_ovl5");
+    extern u8 D_8018E9A8_ovl5;
+    extern u8 D_8018E9A9_ovl5;
+    extern u8 D_8018E9AA_ovl5[];
+    extern u8 D_8018ECD8_ovl5;
     s32 used[6];
     s32 pick[4];
     s32 i;
@@ -2959,11 +3088,11 @@ void func_801765EC_ovl5(void) {
     do { \
         s32 k_ = (k); \
         if (k_ == 0) { \
-            D_8018E9A8x_ovl5[0] = (v); \
+            D_8018E9A8_ovl5 = (v); \
         } else if (k_ == 1) { \
-            D_8018E9A9x_ovl5[0] = (v); \
+            D_8018E9A9_ovl5 = (v); \
         } else { \
-            D_8018E9AAx_ovl5[k_ - 2] = (v); \
+            D_8018E9AA_ovl5[k_ - 2] = (v); \
         } \
     } while (0)
     ROWB5_(0, 0);
@@ -2982,7 +3111,65 @@ void func_801765EC_ovl5(void) {
             pick[i] = t;
         }
         for (i = 0; i < 4; i++) {
-            u32 *src = D_80187EB4_ovl5[(D_8018ECD8x_ovl5[0] * 12) + (bank * 6) + pick[i]];
+            u32 *src = D_80187EB4_ovl5[(D_8018ECD8_ovl5 * 12) + (bank * 6) + pick[i]];
+            s32 base = ((bank == 0) ? 1 : 0x29) + (i * 0xA);
+
+            for (j = 0; j < 0xA; j++) {
+                ROWB5_(base + j, (u8) (src[j >> 2] >> ((3 - (j & 3)) * 8)));
+            }
+        }
+    }
+#undef ROWB5_
+}
+#elif defined(PORT)
+/* Course builder: clears the two course-strip flags, then fills the two
+ * 4-entry tile-pattern banks of the shared course row (base D_8018E9A8,
+ * bytes 1..0x28 and 0x29..0x50, each entry 10 bytes) with four distinct
+ * random picks from the six patterns of stage D_8018ECD8_ovl5 --
+ * D_80187EB4_ovl5 rows of 12 pointers, bank two using pointers 6..11.
+ * The pattern blobs were emitted as big-endian words, so bytes are pulled
+ * word-wise; the row bytes go through the split symbols the readers use
+ * (D_8018E9A8 / D_8018E9A9 / D_8018E9AA). */
+void func_801765EC_ovl5(void) {
+    extern void *D_80187EB4_ovl5[];
+    extern u8 D_8018E9A8_ovl5;
+    extern u8 D_8018E9A9_ovl5;
+    extern u8 D_8018E9AA_ovl5[];
+    extern u8 D_8018ECD8_ovl5;
+    s32 used[6];
+    s32 pick[4];
+    s32 i;
+    s32 j;
+    s32 bank;
+
+#define ROWB5_(k, v) \
+    do { \
+        s32 k_ = (k); \
+        if (k_ == 0) { \
+            D_8018E9A8_ovl5 = (v); \
+        } else if (k_ == 1) { \
+            D_8018E9A9_ovl5 = (v); \
+        } else { \
+            D_8018E9AA_ovl5[k_ - 2] = (v); \
+        } \
+    } while (0)
+    ROWB5_(0, 0);
+    ROWB5_(0x51, 1);
+    for (bank = 0; bank < 2; bank++) {
+        for (i = 0; i < 6; i++) {
+            used[i] = 0;
+        }
+        for (i = 0; i < 4; i++) {
+            s32 t = random_soft_s32_range(6);
+
+            while (used[t] != 0) {
+                t = random_soft_s32_range(6);
+            }
+            used[t] = 1;
+            pick[i] = t;
+        }
+        for (i = 0; i < 4; i++) {
+            u32 *src = D_80187EB4_ovl5[(D_8018ECD8_ovl5 * 12) + (bank * 6) + pick[i]];
             s32 base = ((bank == 0) ? 1 : 0x29) + (i * 0xA);
 
             for (j = 0; j < 0xA; j++) {
