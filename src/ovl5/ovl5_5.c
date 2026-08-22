@@ -2244,7 +2244,162 @@ void func_80174900_ovl5(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80174900_ovl5.s")
 #endif
 
-#ifdef PORT
+/* Hopper critter riding lane arg1 from tile arg2: scrolls in from the far
+ * side, then alternates hop waits and hops (random 30..44 frame pauses),
+ * pausing while the racer stands two-or-fewer tiles short of it, croaking
+ * forward one tile per hop; a knock mid-hop bounces it back, and hopping
+ * onto a hole/crumbled tile (0x18/0x16) drowns it.
+ *
+ * FACTORY: 26/662, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * the PORT: `D_8018ECA0_ovl5`'s access used the GCC-only
+ * `__asm__("D_8018ECA0_ovl5")` symbol-alias extension (same bug as
+ * func_80171950_ovl5 and func_80172C7C_ovl5) -- rewritten as
+ * `*(u8 *) &D_8018ECA0_ovl5` off the real scalar extern. Also added a
+ * missing local ANSI prototype for func_80175518_ovl5 (its call site
+ * assigns it to a function-pointer field, and without a visible
+ * prototype IDO refuses the assignment outright rather than just
+ * warning). Compiles, word count matches (662/662), residue extreme
+ * (636/662) -- broad register/frame relabeling from word 0. Worth a
+ * fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+void func_80174AE0_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    void func_80175518_ovl5(GObj *);
+    extern u32 D_80187CB4_ovl5[];
+    extern u32 D_80187CB8_ovl5[];
+    extern u32 D_80187CBC_ovl5[];
+    extern u32 D_80187CC0_ovl5[];
+    extern u32 D_80187CC4_ovl5[];
+    extern s32 D_8018ECA0_ovl5;
+    u8 kind;
+    s32 t;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = arg2;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800EA1A0[omCurrentObj->objId] = 0;
+    D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
+    func_800A9864(D_80187CB4_ovl5[0], 0x1869F, 0x10);
+    omGMoveObjDL(arg0, arg0->dl_link, 0xA);
+    kind = func_80172B10_ovl5(arg1, arg2);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = (func_8016FFC4_ovl5(kind) != 0) ? 0.0f : 75.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][arg2]];
+    while (*(u8 *) &D_8018ECA0_ovl5 != 0) {
+        ohSleep(1);
+    }
+    D_800DF150[omCurrentObj->objId] = func_80175518_ovl5;
+    while (gEntitiesNextPosZArray[omCurrentObj->objId] > 2250.0f) {
+        if (D_800EA1A0[omCurrentObj->objId] != 0) {
+            D_800EA520[D_8018E478_ovl5[arg1][arg2]] = 0x29A;
+            ohSleep(1);
+            func_800B1900((u16) omCurrentObj->objId);
+        }
+        ohSleep(1);
+    }
+    if (D_800EA1A0[omCurrentObj->objId] != 0) {
+        D_800EA520[D_8018E478_ovl5[arg1][arg2]] = 0x29A;
+        ohSleep(1);
+        func_800B1900((u16) omCurrentObj->objId);
+    } else {
+        func_80174900_ovl5(arg1, arg2);
+    }
+    D_800E9FE0[omCurrentObj->objId].as_u32 = (u32) (s32) ((f32) random_soft_s32_range(0xF) + 30.0f);
+    while (1) {
+        if (D_800E9FE0[omCurrentObj->objId].as_u32 != 0) {
+            s32 rel;
+
+            if (D_800E9C60[omCurrentObj->objId] != 0) {
+                func_80174900_ovl5(arg1, arg2);
+                func_800AA018(D_80187CC0_ovl5[0]);
+                if (D_80187CC4_ovl5[0] != 0) {
+                    func_800AA018(D_80187CC4_ovl5[0]);
+                }
+                func_800AF27C();
+                D_800EA520[D_8018E478_ovl5[arg1][arg2]] = 0x29A;
+                ohSleep(1);
+                func_800B1900((u16) omCurrentObj->objId);
+            }
+            rel = D_800E9E20[omCurrentObj->objId];
+            if (((rel + arg2) < D_8018E998_ovl5[arg1]) &&
+                (D_8018EB58_ovl5[(arg1 * 0x52) + rel + arg2 + 1] != 0)) {
+                func_80174900_ovl5(arg1, arg2);
+                curObjSleepForever();
+            }
+            D_800E9FE0[omCurrentObj->objId].as_u32 -= 1;
+            if (D_800E9FE0[omCurrentObj->objId].as_u32 == 0) {
+                s32 pos = D_800E9E20[omCurrentObj->objId] + arg2;
+
+                if ((D_800E9C60[D_8018E458_ovl5[arg1]] != 0) &&
+                    ((D_8018E998_ovl5[arg1] == pos) || (D_8018E998_ovl5[arg1] == (pos + 1)))) {
+                    D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+                } else {
+                    func_800AA018(D_80187CB8_ovl5[0]);
+                    if (D_80187CBC_ovl5[0] != 0) {
+                        func_800AA018(D_80187CBC_ovl5[0]);
+                    }
+                    D_800E9E20[omCurrentObj->objId] += 1;
+                }
+            }
+        } else if (func_800AF230() != 0) {
+            kind = func_80172B10_ovl5(arg1, D_800E9E20[omCurrentObj->objId] + arg2);
+            gEntitiesNextPosYArray[omCurrentObj->objId] = (func_8016FFC4_ovl5(kind) != 0) ? 0.0f : 75.0f;
+            gEntitiesNextPosZArray[omCurrentObj->objId] =
+                gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][D_800E9E20[omCurrentObj->objId] + arg2]];
+            D_800E9FE0[omCurrentObj->objId].as_u32 = (u32) (s32) ((f32) random_soft_s32_range(0xF) + 30.0f);
+            if ((kind == 0x18) || (kind == 0x16)) {
+                func_80174900_ovl5(arg1, arg2);
+                if (kind == 0x18) {
+                    t = request_track_general(8, 0, 0x70);
+                    D_800E98E0[t] = 0xD;
+                    D_800E9AA0[t].as_u32 = arg1;
+                    D_800E9C60[t] = D_800E9E20[omCurrentObj->objId] + arg2;
+                }
+                D_800E3210[omCurrentObj->objId] = -40.0f;
+                while (gEntitiesNextPosYArray[omCurrentObj->objId] >= -70.0f) {
+                    ohSleep(1);
+                }
+                D_800EA520[D_8018E478_ovl5[arg1][arg2]] = 0x29A;
+                ohSleep(1);
+                func_800B1900((u16) omCurrentObj->objId);
+            }
+        } else {
+            if (D_800E9C60[omCurrentObj->objId] != 0) {
+                D_800E9E20[omCurrentObj->objId] -= 1;
+                gEntitiesNextPosXArray[omCurrentObj->objId] =
+                    gEntitiesNextPosXArray[D_8018E478_ovl5[arg1][D_800E9E20[omCurrentObj->objId] + arg2]];
+                gEntitiesNextPosYArray[omCurrentObj->objId] = (func_8016FFC4_ovl5(kind) != 0) ? 0.0f : 75.0f;
+                gEntitiesNextPosZArray[omCurrentObj->objId] =
+                    gEntitiesNextPosZArray[D_8018E478_ovl5[arg1][D_800E9E20[omCurrentObj->objId] + arg2]];
+                D_800EA6E0[omCurrentObj->objId] = 0.0f;
+                D_800E9FE0[omCurrentObj->objId].as_u32 = (u32) (s32) ((f32) random_soft_s32_range(0xF) + 30.0f);
+                D_800E9C60[omCurrentObj->objId] = 0;
+                func_800AA018(D_80187CB8_ovl5[0]);
+                if (D_80187CBC_ovl5[0] != 0) {
+                    func_800AA018(D_80187CBC_ovl5[0]);
+                }
+                animUpdateModelTreeAnimation(arg0);
+                func_800AF408();
+            } else {
+                s32 arc;
+
+                gEntitiesNextPosZArray[omCurrentObj->objId] += 45.0f;
+                arc = (s32) (arg0->animTimer * 0.5f);
+                if ((func_8016FFC4_ovl5(func_80172B10_ovl5(arg1, (D_800E9E20[omCurrentObj->objId] + arg2) - 1)) != 0) &&
+                    ((f32) arc < 4.0f)) {
+                    gEntitiesNextPosYArray[omCurrentObj->objId] += 18.75f;
+                }
+                if ((func_8016FFC4_ovl5(func_80172B10_ovl5(arg1, D_800E9E20[omCurrentObj->objId] + arg2)) != 0) &&
+                    ((f32) arc >= 6.0f)) {
+                    gEntitiesNextPosYArray[omCurrentObj->objId] += -18.75f;
+                }
+            }
+        }
+        ohSleep(1);
+    }
+}
+#elif defined(PORT)
 /* Hopper critter riding lane arg1 from tile arg2: scrolls in from the far
  * side, then alternates hop waits and hops (random 30..44 frame pauses),
  * pausing while the racer stands two-or-fewer tiles short of it, croaking
@@ -2645,7 +2800,6 @@ void func_80176108_ovl5(void)
 
 }
 
-#ifdef PORT
 /* Pause-menu thread (near-clone of func_8016EF78_ovl5 in ovl5_4 and
  * func_80164A34_ovl5 in ovl5_2, quitting to game state 0x1D here). */
 void func_80176170_ovl5(GObj *arg0) {
@@ -2659,7 +2813,7 @@ void func_80176170_ovl5(GObj *arg0) {
     extern struct UnkStruct8015C740 D_80187B4C_ovl5;
     extern f32 D_80187B6C_ovl5[];
     extern u8 D_8018ECD9_ovl5;
-    extern u32 D_800D7178_words2_[] __asm__("D_800D7178");
+    extern s32 D_800D7178[];
     extern u32 D_800D6B68;
     extern u32 gGameState;
     SPObj *panel;
@@ -2693,10 +2847,10 @@ void func_80176170_ovl5(GObj *arg0) {
             }
         } else {
             if (gPlayerControllers[0].buttonPressed & 0x9000) {
-                D_800D7178_words2_[0x1E] = 1;
+                D_800D7178[0x1E] = 1;
                 switch (D_8018ECD9_ovl5) {
                     case 0:
-                        D_800D7178_words2_[0x1E] = 2;
+                        D_800D7178[0x1E] = 2;
                         play_sound(0x113);
                         func_800ACBDC(arg0);
                         func_800B1900((u16) omCurrentObj->objId);
@@ -2741,9 +2895,6 @@ void func_80176170_ovl5(GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176170_ovl5.s")
-#endif
 
 void func_801764F0_ovl5(void) {
     func_800BB3F0();

@@ -804,8 +804,8 @@ void func_800A7F74(u32, u32, u32, f32, f32, f32);
  * needed (the 5-tick half-turn dance shared with func_801E18A8), then spawns
  * the projectile effect and returns to state 2. */
 void func_801DE124_ovl10(s32 arg0) {
-    void func_800A7F74(u32, u32, u32, f32, f32, f32);
     f32 func_800F9828(s32, s32);
+    void func_800A7F74(u32, u32, u32, f32, f32, f32);
 
     s32 i;
     f32 v;
@@ -1258,13 +1258,6 @@ s32 func_801DFCC0_ovl10(void);
 extern void func_800A9760(s32);
 void func_80198880_ovl7(void *);
 extern void *D_801F344C_ovl10[];
-/* Declared for BOTH builds: the descent tables and func_800F9828 were only
- * visible inside this file's PORT block, so no N64 draft below could name them. */
-extern f32 D_801F4338_ovl10[];
-extern f32 D_801F4364_ovl10[];
-extern f32 D_801F4390_ovl10[];
-f32 func_800F9828(s32, s32);
-
 extern f32 D_801F4338_ovl10[];
 extern f32 D_801F4364_ovl10[];
 extern f32 D_801F4390_ovl10[];
@@ -1538,6 +1531,21 @@ void func_801E03CC_ovl10(void) {
 }
 
 #ifdef MIPS_TO_C
+/* NOT MEASURABLE YET -- blocked on declaration scoping, and the obvious fix is
+ * PROVEN UNSAFE for this TU. The descent tables D_801F4338 / D_801F4364 /
+ * D_801F4390 and the prototype for func_800F9828 are visible only inside this
+ * file's PORT block, so an N64 draft here cannot name them. Hoisting those four
+ * declarations to real file scope was tried under the LEVERS protocol (record every
+ * non-pragma function's instruction words, change, re-compare): it MOVED
+ * func_801E2C78_ovl10 and grew .text from 0x7130 to 0x7170, so it was reverted.
+ * That is the ovl2_8 failure mode exactly, and it means this needs a coordinator
+ * pass on a quiet tree, not a lane edit.
+ * The DECODE is done and is the valuable part -- see the draft kept below in the
+ * sibling note on func_801DF50C: the descent loop is inline in each of the three
+ * callers, and it uses ABSF(), whose argument is expanded THREE times, so each
+ * abs-of-a-call really is three func_800F9828 calls (the host helper
+ * pc_ovl10_descend collapses them to one call plus fabs, which is why its shape
+ * can never match). */
 /* State 0xC (phase-2 reposition): zeroes all vertical motion, picks the next
  * waypoint slot for D_800E9C60 -- usually a neighbour from the D_801F43BC /
  * D_801F43D4 tables, 1-in-3 a fresh random slot different from the current one --

@@ -30,7 +30,7 @@ void func_800AA018();
 void ohSleep(s32);
 
 /* D_801CE378_ovl7 = 65535.0f : now emitted by this TU */
-void func_800B6FD8();
+void func_800B6FD8(GObj *);
 
 extern s32 D_801D0A98_ovl7;
 extern s32 D_801D0A9C_ovl7;

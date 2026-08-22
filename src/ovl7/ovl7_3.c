@@ -14,8 +14,8 @@ struct Ovl7ColRec {
     /* 0x4 */ s32 unk4;
 };
 extern struct Ovl7ColRec *D_8012BCE0[];
-void func_8010C274();
-void func_8010C184();
+void func_8010C274(struct PositionState *);
+void func_8010C184(struct PositionState *);
 void func_8010DC24();
 
 extern void func_8010B480(struct Sub800E1B50_Unk84 *);
