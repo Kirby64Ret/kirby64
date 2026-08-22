@@ -653,11 +653,69 @@ void func_801FA80C_ovl9(void) {
     func_8019F410_ovl7(temp);
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 32/124, whole-function temp rotation.  Structure, schedule and the
    0x18 spill slot are the ROM's; every diff is the same one-slot shift of the
    argument/temp pairs ($a1/$a2 for objId, $a2/$a3 for the unk84 pointer,
    $t0/$t1 for the scaled index). */
-#ifdef MIPS_TO_C
+extern s32 D_801CABC4_ovl7;
+extern struct Sub800E1B50_Unk98 D_801CC01C;
+extern s32 D_801CBFF8;
+extern void func_801A2ADC_ovl7(void *);
+extern void func_800A9760(s32);
+extern s32 func_8010B480(struct Sub800E1B50_Unk84 *);
+extern s32 func_8010BA44(struct Sub800E1B50_Unk84 *);
+/* Ceiling/floor dweller settle: reset timers into idle anim state 0
+ * with the shared hitbox; when flagged as a ceiling variant
+ * (D_800E9AA0), flip the model upside down, install the ceiling
+ * contact mover func_8010B480 with the ceiling annex, and rotate the
+ * hitbox offset a quarter turn (|y|,|z| -> (|z|, -|y|)); otherwise use
+ * the floor mover func_8010BA44 and annex.  Then rest: grounded, no
+ * vertical motion, uncapped fall speed, idle animation, sleep
+ * forever. */
+void func_801FA884_ovl9(struct GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    struct Sub800E1B50_Unk84 *hit;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    rec = D_800E1B50[id];
+    hit = rec->unk84;
+    D_800E9C60[id] = 1;
+    D_800E9E20[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 0;
+    func_801A2ADC_ovl7(&D_801CABC4_ovl7);
+    func_800A9760(0x10023);
+    if (D_800E9AA0[omCurrentObj->objId].as_u32 != 0) {
+        f32 ay;
+        f32 az;
+
+        rec->unk48 = func_8010B480;
+        rec->unk98 = &D_801CC01C;
+        D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 3.1415927f;
+        ay = *(f32 *) &hit->unk14;
+        if (ay < 0.0f) {
+            ay = -ay;
+        }
+        az = *(f32 *) &hit->unk18;
+        if (az < 0.0f) {
+            az = -az;
+        }
+        *(f32 *) &hit->unk14 = az;
+        *(f32 *) &hit->unk18 = -ay;
+    } else {
+        rec->unk48 = func_8010BA44;
+        rec->unk98 = (struct Sub800E1B50_Unk98 *) &D_801CBFF8;
+    }
+    D_800E8920[omCurrentObj->objId] = 1;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    id = omCurrentObj->objId;
+    D_800E3210[id] = D_800E3750[id];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    func_800AA018(0x100B6);
+    curObjSleepForever();
+}
+#elif defined(PORT)
 extern s32 D_801CABC4_ovl7;
 extern struct Sub800E1B50_Unk98 D_801CC01C;
 extern s32 D_801CBFF8;
@@ -717,65 +775,6 @@ void func_801FA884_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FA884_ovl9.s")
-#endif
-#ifdef PORT
-extern s32 D_801CABC4_ovl7;
-extern struct Sub800E1B50_Unk98 D_801CC01C;
-extern s32 D_801CBFF8;
-extern void func_801A2ADC_ovl7(void *);
-extern void func_800A9760(s32);
-extern s32 func_8010B480(struct Sub800E1B50_Unk84 *);
-extern s32 func_8010BA44(struct Sub800E1B50_Unk84 *);
-/* Ceiling/floor dweller settle: reset timers into idle anim state 0
- * with the shared hitbox; when flagged as a ceiling variant
- * (D_800E9AA0), flip the model upside down, install the ceiling
- * contact mover func_8010B480 with the ceiling annex, and rotate the
- * hitbox offset a quarter turn (|y|,|z| -> (|z|, -|y|)); otherwise use
- * the floor mover func_8010BA44 and annex.  Then rest: grounded, no
- * vertical motion, uncapped fall speed, idle animation, sleep
- * forever. */
-void func_801FA884_ovl9(struct GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    struct Sub800E1B50_Unk84 *hit;
-    u32 id;
-
-    id = omCurrentObj->objId;
-    rec = D_800E1B50[id];
-    hit = rec->unk84;
-    D_800E9C60[id] = 1;
-    D_800E9E20[omCurrentObj->objId] = 0;
-    D_800DDFD0[omCurrentObj->objId] = 0;
-    func_801A2ADC_ovl7(&D_801CABC4_ovl7);
-    func_800A9760(0x10023);
-    if (D_800E9AA0[omCurrentObj->objId].as_u32 != 0) {
-        f32 ay;
-        f32 az;
-
-        rec->unk48 = func_8010B480;
-        rec->unk98 = &D_801CC01C;
-        D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 3.1415927f;
-        ay = *(f32 *) &hit->unk14;
-        if (ay < 0.0f) {
-            ay = -ay;
-        }
-        az = *(f32 *) &hit->unk18;
-        if (az < 0.0f) {
-            az = -az;
-        }
-        *(f32 *) &hit->unk14 = az;
-        *(f32 *) &hit->unk18 = -ay;
-    } else {
-        rec->unk48 = func_8010BA44;
-        rec->unk98 = (struct Sub800E1B50_Unk98 *) &D_801CBFF8;
-    }
-    D_800E8920[omCurrentObj->objId] = 1;
-    D_800E3750[omCurrentObj->objId] = 0.0f;
-    id = omCurrentObj->objId;
-    D_800E3210[id] = D_800E3750[id];
-    D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    func_800AA018(0x100B6);
-    curObjSleepForever();
-}
 #endif
 
 void func_801FAA78_ovl9(struct GObj *arg0) {

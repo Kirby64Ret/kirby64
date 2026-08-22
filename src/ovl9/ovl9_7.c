@@ -7,10 +7,95 @@
 #include "buffers.h"
 #include "ovl1/ovl1_7.h"
 
+#ifdef MIPS_TO_C
 /* FACTORY: 24/315, frame 0x68 vs the ROM's 0x70 (8 bytes short, arg0 homed
    at 0x68 instead of 0x70) plus the $v0/$v1 pair the objId lands in.  The
    save set, body order and schedule are the ROM's. */
-#ifdef MIPS_TO_C
+extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
+void func_801ACF5C_ovl7(GObj *);
+extern void func_800A9864(s32, s32, s32);
+extern void func_8019D958_ovl7(u16);
+extern void func_8019BAC8_ovl7(void);
+extern void func_800FD570(s32, s32, f32, f32, f32);
+void func_801ACF84_ovl7(GObj *);
+void func_800B7514(s32);
+void ohSleep(s32);
+/* Turret shot projectile main: bind the projectile draw hook and hit
+ * annex, start the muzzle sprite (0x10086), and detach from the
+ * parent turret when it died or replaced its shot slot.  Mode 0
+ * (arc shot): burst out at 30 units/tick along the parent's stored
+ * aim angle for one tick, splash (func_800FD570 kind 5), then cruise
+ * at 6.  Mode 1 (homing dart): aim at the parent's bone-5 world
+ * position, normalized by manhattan length, 40 units/tick for one
+ * tick, splash, then cruise at 8.  Both variants live 60 ticks and
+ * finish through the shared ovl7 projectile epilogue. */
+void func_801F0060_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    s32 parent;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    D_800DF150[id] = func_801ACF5C_ovl7;
+    rec = D_800E1B50[id];
+    parent = D_800E0D50[id];
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A9864(0x10086, 0x23, 0x10);
+    if ((D_800DD710[parent] == -1) || (omCurrentObj->objId != D_800EBBE0[parent])) {
+        func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
+    }
+    id = omCurrentObj->objId;
+    switch (D_800E7880[id]) {
+        case 0:
+            func_8019BAC8_ovl7();
+            rec->unk80->unk10 = 8.0f;
+            D_800EA8A0[omCurrentObj->objId] = D_800EA8A0[parent];
+            id = omCurrentObj->objId;
+            D_800E64D0[id] = sinf(D_800EA8A0[omCurrentObj->objId]) * 30.0f * D_800E6A10[id];
+            D_800E3210[omCurrentObj->objId] = cosf(D_800EA8A0[omCurrentObj->objId]) * 30.0f;
+            ohSleep(1);
+            func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
+            id = omCurrentObj->objId;
+            D_800E64D0[id] = sinf(D_800EA8A0[omCurrentObj->objId]) * 6.0f * D_800E6A10[id];
+            D_800E3210[omCurrentObj->objId] = cosf(D_800EA8A0[omCurrentObj->objId]) * 6.0f;
+            break;
+        case 1: {
+            Vector sp4C;
+            f32 dx;
+            f32 dy;
+            f32 dz;
+            f32 len;
+
+            func_8019BAC8_ovl7();
+            rec->unk80->unk10 = 8.0f;
+            D_800DEF90[omCurrentObj->objId] = func_800B7514;
+            utilGetTransformSRT(&sp4C, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][5]);
+            id = omCurrentObj->objId;
+            dx = sp4C.x - gEntitiesNextPosXArray[id];
+            dy = sp4C.y - gEntitiesNextPosYArray[id];
+            dz = sp4C.z - gEntitiesNextPosZArray[id];
+            len = ((dx < 0.0f) ? -dx : dx) + ((dy < 0.0f) ? -dy : dy) + ((dz < 0.0f) ? -dz : dz);
+            if (len == 0.0f) {
+                len = 0.00001f;
+            }
+            dx /= len;
+            dy /= len;
+            dz /= len;
+            D_800E3050[id] = dx * 40.0f;
+            D_800E3210[omCurrentObj->objId] = dy * 40.0f;
+            D_800E33D0[omCurrentObj->objId] = dz * 40.0f;
+            ohSleep(1);
+            func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
+            D_800E3050[omCurrentObj->objId] = dx * 8.0f;
+            D_800E3210[omCurrentObj->objId] = dy * 8.0f;
+            D_800E33D0[omCurrentObj->objId] = dz * 8.0f;
+            break;
+        }
+    }
+    ohSleep(0x3C);
+    func_801ACF84_ovl7(arg0);
+}
+#elif defined(PORT)
 extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
 void func_801ACF5C_ovl7(GObj *);
 extern void func_800A9864(s32, s32, s32);
@@ -98,97 +183,85 @@ void func_801F0060_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F0060_ovl9.s")
 #endif
-#ifdef PORT
-extern struct Sub800E1B50_Unk98 D_801CB4DC_ovl7;
-void func_801ACF5C_ovl7(GObj *);
-extern void func_800A9864(s32, s32, s32);
-extern void func_8019D958_ovl7(u16);
-extern void func_8019BAC8_ovl7(void);
-extern void func_800FD570(s32, s32, f32, f32, f32);
-void func_801ACF84_ovl7(GObj *);
-void func_800B7514(s32);
-void ohSleep(s32);
-/* Turret shot projectile main: bind the projectile draw hook and hit
- * annex, start the muzzle sprite (0x10086), and detach from the
- * parent turret when it died or replaced its shot slot.  Mode 0
- * (arc shot): burst out at 30 units/tick along the parent's stored
- * aim angle for one tick, splash (func_800FD570 kind 5), then cruise
- * at 6.  Mode 1 (homing dart): aim at the parent's bone-5 world
- * position, normalized by manhattan length, 40 units/tick for one
- * tick, splash, then cruise at 8.  Both variants live 60 ticks and
- * finish through the shared ovl7 projectile epilogue. */
-void func_801F0060_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    s32 parent;
-    u32 id;
 
-    id = omCurrentObj->objId;
-    D_800DF150[id] = func_801ACF5C_ovl7;
-    rec = D_800E1B50[id];
-    parent = D_800E0D50[id];
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
-    D_800E8920[omCurrentObj->objId] = 0;
-    func_800A9864(0x10086, 0x23, 0x10);
-    if ((D_800DD710[parent] == -1) || (omCurrentObj->objId != D_800EBBE0[parent])) {
-        func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
-    }
-    id = omCurrentObj->objId;
-    switch (D_800E7880[id]) {
-        case 0:
-            func_8019BAC8_ovl7();
-            rec->unk80->unk10 = 8.0f;
-            D_800EA8A0[omCurrentObj->objId] = D_800EA8A0[parent];
-            id = omCurrentObj->objId;
-            D_800E64D0[id] = sinf(D_800EA8A0[omCurrentObj->objId]) * 30.0f * D_800E6A10[id];
-            D_800E3210[omCurrentObj->objId] = cosf(D_800EA8A0[omCurrentObj->objId]) * 30.0f;
-            ohSleep(1);
-            func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
-            id = omCurrentObj->objId;
-            D_800E64D0[id] = sinf(D_800EA8A0[omCurrentObj->objId]) * 6.0f * D_800E6A10[id];
-            D_800E3210[omCurrentObj->objId] = cosf(D_800EA8A0[omCurrentObj->objId]) * 6.0f;
-            break;
-        case 1: {
-            Vector sp4C;
-            f32 dx;
-            f32 dy;
-            f32 dz;
-            f32 len;
-
-            func_8019BAC8_ovl7();
-            rec->unk80->unk10 = 8.0f;
-            D_800DEF90[omCurrentObj->objId] = func_800B7514;
-            utilGetTransformSRT(&sp4C, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][5]);
-            id = omCurrentObj->objId;
-            dx = sp4C.x - gEntitiesNextPosXArray[id];
-            dy = sp4C.y - gEntitiesNextPosYArray[id];
-            dz = sp4C.z - gEntitiesNextPosZArray[id];
-            len = ((dx < 0.0f) ? -dx : dx) + ((dy < 0.0f) ? -dy : dy) + ((dz < 0.0f) ? -dz : dz);
-            if (len == 0.0f) {
-                len = 0.00001f;
-            }
-            dx /= len;
-            dy /= len;
-            dz /= len;
-            D_800E3050[id] = dx * 40.0f;
-            D_800E3210[omCurrentObj->objId] = dy * 40.0f;
-            D_800E33D0[omCurrentObj->objId] = dz * 40.0f;
-            ohSleep(1);
-            func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
-            D_800E3050[omCurrentObj->objId] = dx * 8.0f;
-            D_800E3210[omCurrentObj->objId] = dy * 8.0f;
-            D_800E33D0[omCurrentObj->objId] = dz * 8.0f;
-            break;
-        }
-    }
-    ohSleep(0x3C);
-    func_801ACF84_ovl7(arg0);
-}
-#endif
-
+#ifdef MIPS_TO_C
 /* FACTORY: 30/295, spill slot 0x44 vs the ROM's 0x3C and the temp pair that
    follows it ($t3/$t4 for the reloaded record pointer).  Everything above the
    first spill matches. */
-#ifdef MIPS_TO_C
+extern f32 D_8021C300_ovl9[];
+extern f32 D_8021C308_ovl9[];
+void func_801F09E4_ovl9(GObj *);
+extern void func_800AA018(s32);
+extern void func_800B33F4(void);
+/* Lobbed spit projectile main: attach the projectile hit annex with
+ * an 8-unit radius, inherit launch parameters from the shooter --
+ * mode 0 takes facing and stored pitch straight from the parent
+ * turret (releasing the shot slot if the turret is gone), other
+ * modes ride at the parent's height with the grandparent's facing
+ * times the per-track aim factor D_800EC660 -- copy the source's
+ * rail binding, then fire: one tick at the heavy launch speed from
+ * D_8021C300 (mode 1 lofts with -10 on the vertical), settle to the
+ * cruise speed from D_8021C308 (modes with index 1 get 3 extra ticks
+ * of it), arm the hit flag and expire after 60 ticks through the
+ * shared epilogue. */
+void func_801F0548_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    s32 src;
+    s32 idx;
+    u32 id;
+    u8 mode;
+
+    rec = D_800E1B50[omCurrentObj->objId];
+    func_8019BAC8_ovl7();
+    rec->unk80->unk10 = 8.0f;
+    D_800DF150[omCurrentObj->objId] = func_801F09E4_ovl9;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    id = omCurrentObj->objId;
+    if (D_800E7880[id] != 0) {
+        s32 parent = D_800E0D50[id];
+
+        src = D_800E0D50[parent];
+        gEntitiesNextPosYArray[id] = gEntitiesNextPosYArray[parent];
+        D_800E6A10[omCurrentObj->objId] = D_800E6A10[src];
+        id = omCurrentObj->objId;
+        D_800EA6E0[id] = D_800E6A10[id] * D_800EC660[id];
+    } else {
+        src = D_800E0D50[id];
+        if ((D_800DD710[src] == -1) || (id != D_800EBBE0[src])) {
+            func_8019D958_ovl7(id & 0xFFFF);
+            id = omCurrentObj->objId;
+        }
+        D_800E6A10[id] = D_800E6A10[src];
+        D_800EA6E0[omCurrentObj->objId] = D_800EADE0[src];
+    }
+    D_800E5F90[omCurrentObj->objId] = D_800E5F90[src];
+    D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[src];
+    func_800B33F4();
+    func_800A9864(0x10089, 0x23, 0x10);
+    func_800AA018(0x1051C);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    id = omCurrentObj->objId;
+    mode = D_800E7880[id];
+    idx = mode & 1;
+    if (mode == 0) {
+        D_800E64D0[omCurrentObj->objId] = D_8021C300_ovl9[idx] * sinf(D_800EA6E0[id]);
+        D_800E3210[omCurrentObj->objId] = D_8021C300_ovl9[idx] * cosf(D_800EA6E0[omCurrentObj->objId]);
+    } else if (mode == 1) {
+        D_800E64D0[omCurrentObj->objId] = D_8021C300_ovl9[idx] * sinf(D_800EA6E0[id]);
+        D_800E3210[omCurrentObj->objId] = (D_8021C300_ovl9[idx] - 10.0f) * cosf(D_800EA6E0[omCurrentObj->objId]);
+    }
+    ohSleep(1);
+    D_800E64D0[omCurrentObj->objId] = D_8021C308_ovl9[idx] * sinf(D_800EA6E0[omCurrentObj->objId]);
+    D_800E3210[omCurrentObj->objId] = D_8021C308_ovl9[idx] * cosf(D_800EA6E0[omCurrentObj->objId]);
+    if (idx != 0) {
+        ohSleep(3);
+    }
+    D_800E98E0[omCurrentObj->objId] = 1;
+    ohSleep(0x3C);
+    func_801ACF84_ovl7(arg0);
+}
+#elif defined(PORT)
 extern f32 D_8021C300_ovl9[];
 extern f32 D_8021C308_ovl9[];
 void func_801F09E4_ovl9(GObj *);
@@ -265,81 +338,6 @@ void func_801F0548_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F0548_ovl9.s")
 #endif
-#ifdef PORT
-extern f32 D_8021C300_ovl9[];
-extern f32 D_8021C308_ovl9[];
-void func_801F09E4_ovl9(GObj *);
-extern void func_800AA018(s32);
-extern void func_800B33F4(void);
-/* Lobbed spit projectile main: attach the projectile hit annex with
- * an 8-unit radius, inherit launch parameters from the shooter --
- * mode 0 takes facing and stored pitch straight from the parent
- * turret (releasing the shot slot if the turret is gone), other
- * modes ride at the parent's height with the grandparent's facing
- * times the per-track aim factor D_800EC660 -- copy the source's
- * rail binding, then fire: one tick at the heavy launch speed from
- * D_8021C300 (mode 1 lofts with -10 on the vertical), settle to the
- * cruise speed from D_8021C308 (modes with index 1 get 3 extra ticks
- * of it), arm the hit flag and expire after 60 ticks through the
- * shared epilogue. */
-void func_801F0548_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    s32 src;
-    s32 idx;
-    u32 id;
-    u8 mode;
-
-    rec = D_800E1B50[omCurrentObj->objId];
-    func_8019BAC8_ovl7();
-    rec->unk80->unk10 = 8.0f;
-    D_800DF150[omCurrentObj->objId] = func_801F09E4_ovl9;
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
-    D_800E8920[omCurrentObj->objId] = 0;
-    id = omCurrentObj->objId;
-    if (D_800E7880[id] != 0) {
-        s32 parent = D_800E0D50[id];
-
-        src = D_800E0D50[parent];
-        gEntitiesNextPosYArray[id] = gEntitiesNextPosYArray[parent];
-        D_800E6A10[omCurrentObj->objId] = D_800E6A10[src];
-        id = omCurrentObj->objId;
-        D_800EA6E0[id] = D_800E6A10[id] * D_800EC660[id];
-    } else {
-        src = D_800E0D50[id];
-        if ((D_800DD710[src] == -1) || (id != D_800EBBE0[src])) {
-            func_8019D958_ovl7(id & 0xFFFF);
-            id = omCurrentObj->objId;
-        }
-        D_800E6A10[id] = D_800E6A10[src];
-        D_800EA6E0[omCurrentObj->objId] = D_800EADE0[src];
-    }
-    D_800E5F90[omCurrentObj->objId] = D_800E5F90[src];
-    D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[src];
-    func_800B33F4();
-    func_800A9864(0x10089, 0x23, 0x10);
-    func_800AA018(0x1051C);
-    D_800E98E0[omCurrentObj->objId] = 0;
-    id = omCurrentObj->objId;
-    mode = D_800E7880[id];
-    idx = mode & 1;
-    if (mode == 0) {
-        D_800E64D0[omCurrentObj->objId] = D_8021C300_ovl9[idx] * sinf(D_800EA6E0[id]);
-        D_800E3210[omCurrentObj->objId] = D_8021C300_ovl9[idx] * cosf(D_800EA6E0[omCurrentObj->objId]);
-    } else if (mode == 1) {
-        D_800E64D0[omCurrentObj->objId] = D_8021C300_ovl9[idx] * sinf(D_800EA6E0[id]);
-        D_800E3210[omCurrentObj->objId] = (D_8021C300_ovl9[idx] - 10.0f) * cosf(D_800EA6E0[omCurrentObj->objId]);
-    }
-    ohSleep(1);
-    D_800E64D0[omCurrentObj->objId] = D_8021C308_ovl9[idx] * sinf(D_800EA6E0[omCurrentObj->objId]);
-    D_800E3210[omCurrentObj->objId] = D_8021C308_ovl9[idx] * cosf(D_800EA6E0[omCurrentObj->objId]);
-    if (idx != 0) {
-        ohSleep(3);
-    }
-    D_800E98E0[omCurrentObj->objId] = 1;
-    ohSleep(0x3C);
-    func_801ACF84_ovl7(arg0);
-}
-#endif
 
 extern u32 D_800BE4EC;
 void func_801A0D74_ovl7();
@@ -364,11 +362,87 @@ void func_801F09E4_ovl9(GObj *arg0) {
     }
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 24/213, frame 0x80 vs the ROM's 0x68 -- we reserve 24 bytes the
    ROM does not, and the saved-register block starts at 0x30 where the ROM
    starts at 0x1C.  That is the whole residue; worth checking for a local the
    ROM keeps in a register before spending permuter time. */
-#ifdef MIPS_TO_C
+extern void func_801A3280_ovl7(void);
+extern void func_800A22D4(void *);
+extern void *func_800A8234(s32, s32, s32);
+void func_800B4924(s32);
+void func_801F0DFC_ovl9(GObj *);
+struct PcEneCurve {
+    Vector unk0;
+    Vector unkC;
+    Vector unk18;
+    f32 unk24;
+    f32 unk28;
+    s32 unk2C;
+};
+extern void func_8019ED58_ovl7(struct PcEneCurve *);
+extern void func_801A3E80_ovl7(GObj *);
+/* Tossed-bomb projectile: inherit heading/rotation from the thrower,
+ * attach the fuse-spark generator (3/2/0xF1), arc along the ovl7
+ * lob curve (gravity -0.4 over 32 ticks), wobble vertically twice
+ * (8 ticks down, 8 up), then release the spark, pop the explosion
+ * puff (3/2/0xF2) with the annex's explosion cue, reset the parent's
+ * 10-tick reload timer and die through the ovl7 kill path.
+ * PORT: the generator handle lives in rec->unk34 (a real pointer);
+ * D_800E98E0 keeps only the N64's nonzero flag for the draw hook. */
+void func_801F0ABC_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    struct PcEneCurve curve;
+    void *gen;
+    u32 id;
+
+    rec = D_800E1B50[omCurrentObj->objId];
+    func_801A3280_ovl7();
+    func_8019BAC8_ovl7();
+    rec->unk80->unk10 = 8.0f;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    id = omCurrentObj->objId;
+    gEntitiesAngleYArray[id] = gEntitiesAngleYArray[D_800E0D50[id]];
+    id = omCurrentObj->objId;
+    D_800E17D0[id] = D_800E17D0[D_800E0D50[id]];
+    id = omCurrentObj->objId;
+    D_800E9020[id] = D_800E9020[D_800E0D50[id]];
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    D_800DF150[omCurrentObj->objId] = func_801F0DFC_ovl9;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    gen = func_800A8234(3, 2, 0xF1);
+    rec->unk34 = gen;
+    D_800E98E0[omCurrentObj->objId] = (gen != NULL);
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800B33F4();
+    curve.unk2C = 0x20;
+    curve.unk24 = -0.4f;
+    func_8019ED58_ovl7(&curve);
+    ohSleep(curve.unk2C);
+    func_800B33F4();
+    D_800E3210[omCurrentObj->objId] = -4.0f;
+    D_800E3750[omCurrentObj->objId] = 1.0f;
+    ohSleep(8);
+    D_800E3210[omCurrentObj->objId] = 4.0f;
+    D_800E3750[omCurrentObj->objId] = -1.0f;
+    ohSleep(8);
+    id = omCurrentObj->objId;
+    if (D_800E98E0[id] != 0) {
+        func_800A22D4(rec->unk34);
+        rec->unk34 = NULL;
+        D_800E98E0[omCurrentObj->objId] = 0;
+        id = omCurrentObj->objId;
+    }
+    func_800A7F74(3, 2, 0xF2, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
+                  gEntitiesNextPosZArray[id]);
+    if (rec->unk94->unk1C != 0x80000000) {
+        play_sound(rec->unk94->unk1C);
+    }
+    D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 0xA;
+    rec->unk40 = 1;
+    func_801A3E80_ovl7(arg0);
+}
+#elif defined(PORT)
 extern void func_801A3280_ovl7(void);
 extern void func_800A22D4(void *);
 extern void *func_800A8234(s32, s32, s32);
@@ -447,84 +521,8 @@ void func_801F0ABC_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F0ABC_ovl9.s")
 #endif
-#ifdef PORT
-extern void func_801A3280_ovl7(void);
-extern void func_800A22D4(void *);
-extern void *func_800A8234(s32, s32, s32);
-void func_800B4924(s32);
-void func_801F0DFC_ovl9(GObj *);
-struct PcEneCurve {
-    Vector unk0;
-    Vector unkC;
-    Vector unk18;
-    f32 unk24;
-    f32 unk28;
-    s32 unk2C;
-};
-extern void func_8019ED58_ovl7(struct PcEneCurve *);
-extern void func_801A3E80_ovl7(GObj *);
-/* Tossed-bomb projectile: inherit heading/rotation from the thrower,
- * attach the fuse-spark generator (3/2/0xF1), arc along the ovl7
- * lob curve (gravity -0.4 over 32 ticks), wobble vertically twice
- * (8 ticks down, 8 up), then release the spark, pop the explosion
- * puff (3/2/0xF2) with the annex's explosion cue, reset the parent's
- * 10-tick reload timer and die through the ovl7 kill path.
- * PORT: the generator handle lives in rec->unk34 (a real pointer);
- * D_800E98E0 keeps only the N64's nonzero flag for the draw hook. */
-void func_801F0ABC_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    struct PcEneCurve curve;
-    void *gen;
-    u32 id;
 
-    rec = D_800E1B50[omCurrentObj->objId];
-    func_801A3280_ovl7();
-    func_8019BAC8_ovl7();
-    rec->unk80->unk10 = 8.0f;
-    D_800E6A10[omCurrentObj->objId] = 1.0f;
-    id = omCurrentObj->objId;
-    gEntitiesAngleYArray[id] = gEntitiesAngleYArray[D_800E0D50[id]];
-    id = omCurrentObj->objId;
-    D_800E17D0[id] = D_800E17D0[D_800E0D50[id]];
-    id = omCurrentObj->objId;
-    D_800E9020[id] = D_800E9020[D_800E0D50[id]];
-    D_800DEF90[omCurrentObj->objId] = func_800B4924;
-    D_800DF150[omCurrentObj->objId] = func_801F0DFC_ovl9;
-    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    gen = func_800A8234(3, 2, 0xF1);
-    rec->unk34 = gen;
-    D_800E98E0[omCurrentObj->objId] = (gen != NULL);
-    D_800E8920[omCurrentObj->objId] = 0;
-    func_800B33F4();
-    curve.unk2C = 0x20;
-    curve.unk24 = -0.4f;
-    func_8019ED58_ovl7(&curve);
-    ohSleep(curve.unk2C);
-    func_800B33F4();
-    D_800E3210[omCurrentObj->objId] = -4.0f;
-    D_800E3750[omCurrentObj->objId] = 1.0f;
-    ohSleep(8);
-    D_800E3210[omCurrentObj->objId] = 4.0f;
-    D_800E3750[omCurrentObj->objId] = -1.0f;
-    ohSleep(8);
-    id = omCurrentObj->objId;
-    if (D_800E98E0[id] != 0) {
-        func_800A22D4(rec->unk34);
-        rec->unk34 = NULL;
-        D_800E98E0[omCurrentObj->objId] = 0;
-        id = omCurrentObj->objId;
-    }
-    func_800A7F74(3, 2, 0xF2, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
-                  gEntitiesNextPosZArray[id]);
-    if (rec->unk94->unk1C != 0x80000000) {
-        play_sound(rec->unk94->unk1C);
-    }
-    D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 0xA;
-    rec->unk40 = 1;
-    func_801A3E80_ovl7(arg0);
-}
-#endif
-
+#ifdef MIPS_TO_C
 /* FACTORY: 6/147, frame +8 from one extra saved register.  Instruction count
    is exact (147) and the body order is the ROM's, but our IDO keeps `rec` in
    $s1 (frame 0x38, s0+s1 saved) where the ROM saves only $s0 = &omCurrentObj
@@ -534,7 +532,6 @@ void func_801F0ABC_ovl9(GObj *arg0) {
    (165 diffs); dropping the `id` local instead keeps 147 but does not free
    $s1.  N64 spelling already applied: the spark generator's emitter pointer
    is at offset 0x4C, not the PORT struct's 0x58. */
-#ifdef MIPS_TO_C
 struct PcOvl1Emitter {
     struct PcOvl1Emitter *next;
     Vector unk4;
@@ -586,10 +583,7 @@ void func_801F0DFC_ovl9(GObj *arg0) {
         D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F0DFC_ovl9.s")
-#endif
-#ifdef PORT
+#elif defined(PORT)
 struct PcOvl1Emitter {
     struct PcOvl1Emitter *next;
     Vector unk4;
@@ -648,11 +642,74 @@ void func_801F0DFC_ovl9(GObj *arg0) {
         D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 1;
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F0DFC_ovl9.s")
 #endif
 
+#ifdef MIPS_TO_C
 /* FACTORY: 188/220, the closest of the ovl9_7 group.  Residue is register
    naming only; no structural or scheduling difference. */
-#ifdef MIPS_TO_C
+extern struct Sub800E1B50_Unk98 D_801CD048;
+extern f32 D_8021C320_ovl9[];
+extern f32 D_8021C330_ovl9[];
+extern f32 D_8021C340_ovl9[];
+extern f32 D_8021C350_ovl9[];
+extern void func_8019B9B0_ovl7(void);
+void func_800B6A2C(s32);
+void func_801F13B4_ovl9(void);
+/* Two-hop bouncer projectile: pop out of the shooter 16 units up
+ * with the per-mode first-hop velocity (D_8021C320/D_8021C330),
+ * growing from half scale to full at 0.1 per tick until it lands,
+ * then rebound with the second-hop velocity pair
+ * (D_8021C340/D_8021C350) the same way, and expire through the
+ * shared ovl7 projectile epilogue. */
+void func_801F1044_ovl9(GObj *arg0) {
+    u8 mode;
+    u32 id;
+
+    mode = D_800E7880[omCurrentObj->objId];
+    func_8019B9B0_ovl7();
+    D_800DEF90[omCurrentObj->objId] = func_800B6A2C;
+    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801F13B4_ovl9;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CD048;
+    D_800E6A10[omCurrentObj->objId] = 1.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] += 16.0f;
+    D_800EA6E0[omCurrentObj->objId] = 0.5f;
+    func_800A9864(0x100A2, 0x23, 0x10);
+    D_800E64D0[omCurrentObj->objId] = D_8021C320_ovl9[mode];
+    D_800E3210[omCurrentObj->objId] = D_8021C330_ovl9[mode];
+    D_800E3750[omCurrentObj->objId] = -0.65f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    func_800AA018(0x10560);
+    D_800E8920[omCurrentObj->objId] = 0;
+    id = omCurrentObj->objId;
+    while (D_800E8920[id] == 0) {
+        ohSleep(1);
+        D_800EA6E0[omCurrentObj->objId] += 0.1f;
+        id = omCurrentObj->objId;
+        if (D_800EA6E0[id] > 1.0f) {
+            D_800EA6E0[id] = 1.0f;
+            id = omCurrentObj->objId;
+        }
+    }
+    D_800E64D0[id] = D_8021C340_ovl9[mode];
+    D_800E3210[omCurrentObj->objId] = D_8021C350_ovl9[mode];
+    D_800E3750[omCurrentObj->objId] = -0.65f;
+    D_800E3C90[omCurrentObj->objId] = 10.0f;
+    D_800E8920[omCurrentObj->objId] = 0;
+    id = omCurrentObj->objId;
+    while (D_800E8920[id] == 0) {
+        ohSleep(1);
+        D_800EA6E0[omCurrentObj->objId] += 0.1f;
+        id = omCurrentObj->objId;
+        if (D_800EA6E0[id] > 1.0f) {
+            D_800EA6E0[id] = 1.0f;
+            id = omCurrentObj->objId;
+        }
+    }
+    func_801ACF84_ovl7(arg0);
+}
+#elif defined(PORT)
 extern struct Sub800E1B50_Unk98 D_801CD048;
 extern f32 D_8021C320_ovl9[];
 extern f32 D_8021C330_ovl9[];
@@ -715,68 +772,6 @@ void func_801F1044_ovl9(GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F1044_ovl9.s")
-#endif
-#ifdef PORT
-extern struct Sub800E1B50_Unk98 D_801CD048;
-extern f32 D_8021C320_ovl9[];
-extern f32 D_8021C330_ovl9[];
-extern f32 D_8021C340_ovl9[];
-extern f32 D_8021C350_ovl9[];
-extern void func_8019B9B0_ovl7(void);
-void func_800B6A2C(s32);
-void func_801F13B4_ovl9(void);
-/* Two-hop bouncer projectile: pop out of the shooter 16 units up
- * with the per-mode first-hop velocity (D_8021C320/D_8021C330),
- * growing from half scale to full at 0.1 per tick until it lands,
- * then rebound with the second-hop velocity pair
- * (D_8021C340/D_8021C350) the same way, and expire through the
- * shared ovl7 projectile epilogue. */
-void func_801F1044_ovl9(GObj *arg0) {
-    u8 mode;
-    u32 id;
-
-    mode = D_800E7880[omCurrentObj->objId];
-    func_8019B9B0_ovl7();
-    D_800DEF90[omCurrentObj->objId] = func_800B6A2C;
-    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801F13B4_ovl9;
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CD048;
-    D_800E6A10[omCurrentObj->objId] = 1.0f;
-    gEntitiesNextPosYArray[omCurrentObj->objId] += 16.0f;
-    D_800EA6E0[omCurrentObj->objId] = 0.5f;
-    func_800A9864(0x100A2, 0x23, 0x10);
-    D_800E64D0[omCurrentObj->objId] = D_8021C320_ovl9[mode];
-    D_800E3210[omCurrentObj->objId] = D_8021C330_ovl9[mode];
-    D_800E3750[omCurrentObj->objId] = -0.65f;
-    D_800E3C90[omCurrentObj->objId] = 10.0f;
-    func_800AA018(0x10560);
-    D_800E8920[omCurrentObj->objId] = 0;
-    id = omCurrentObj->objId;
-    while (D_800E8920[id] == 0) {
-        ohSleep(1);
-        D_800EA6E0[omCurrentObj->objId] += 0.1f;
-        id = omCurrentObj->objId;
-        if (D_800EA6E0[id] > 1.0f) {
-            D_800EA6E0[id] = 1.0f;
-            id = omCurrentObj->objId;
-        }
-    }
-    D_800E64D0[id] = D_8021C340_ovl9[mode];
-    D_800E3210[omCurrentObj->objId] = D_8021C350_ovl9[mode];
-    D_800E3750[omCurrentObj->objId] = -0.65f;
-    D_800E3C90[omCurrentObj->objId] = 10.0f;
-    D_800E8920[omCurrentObj->objId] = 0;
-    id = omCurrentObj->objId;
-    while (D_800E8920[id] == 0) {
-        ohSleep(1);
-        D_800EA6E0[omCurrentObj->objId] += 0.1f;
-        id = omCurrentObj->objId;
-        if (D_800EA6E0[id] > 1.0f) {
-            D_800EA6E0[id] = 1.0f;
-            id = omCurrentObj->objId;
-        }
-    }
-    func_801ACF84_ovl7(arg0);
-}
 #endif
 
 void func_801A0D74_ovl7();
@@ -888,9 +883,84 @@ void func_801F172C_ovl9(GObj *arg0) {
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 8.0f;
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 36/313, $s0/$s1 transposition for &omCurrentObj with the rest
    renamed to follow.  Frame and save set are the ROM's. */
-#ifdef MIPS_TO_C
+extern s32 D_801C9A4C_ovl7;
+extern void func_800B6E84();
+void func_801F1C68_ovl9(void);
+extern f32 func_8019DA50_ovl7(void);
+extern float atan2f(float, float);
+extern void func_800AECC0(f32);
+extern void func_800AED20(f32);
+extern void func_801A3E80_ovl7(GObj *);
+/* Burst dart projectile: attach the dart hit tables and annex, sink 5
+ * units, inherit the shooter's facing, and aim by the absolute bearing
+ * to Kirby's foot point clamped between 60 and 120 degrees; blast out
+ * at 25 units for one tick, then cruise at 10 with one-unit drag for 8
+ * ticks, coast 24 ticks frozen, thaw for 5, then disarm, play the
+ * annex despawn cue and die through the ovl7 kill path. */
+void func_801F1784_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    f32 ang;
+    u32 id;
+
+    rec = D_800E1B50[omCurrentObj->objId];
+    func_8019BAC8_ovl7();
+    rec->unk80->unk10 = 8.0f;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6E84;
+    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801F1C68_ovl9;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C9A4C_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A9864(0x100A5, 0x23, 0x10);
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 2;
+    D_800E9C60[omCurrentObj->objId] = 0;
+    id = omCurrentObj->objId;
+    D_800E6A10[id] = D_800E6A10[D_800E0D50[id]];
+    gEntitiesNextPosYArray[omCurrentObj->objId] -= 5.0f;
+    id = omCurrentObj->objId;
+    gEntitiesPosYArray[id] = gEntitiesNextPosYArray[id];
+    ang = atan2f(func_8019DA50_ovl7(),
+                 (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]);
+    if (ang < 0.0f) {
+        ang = -ang;
+    }
+    if (ang < 1.0471976f) {
+        ang = 1.0471976f;
+    }
+    if (ang > 2.0943952f) {
+        ang = 2.0943952f;
+    }
+    id = omCurrentObj->objId;
+    D_800E64D0[id] = sinf(ang) * 25.0f * D_800E6A10[id];
+    D_800E3210[omCurrentObj->objId] = cosf(ang) * 25.0f;
+    ohSleep(1);
+    id = omCurrentObj->objId;
+    D_800E64D0[id] = sinf(ang) * 10.0f * D_800E6A10[id];
+    D_800E3210[omCurrentObj->objId] = cosf(ang) * 10.0f;
+    id = omCurrentObj->objId;
+    D_800E6690[id] = sinf(ang) * -1.0f * D_800E6A10[id];
+    D_800E3750[omCurrentObj->objId] = cosf(ang) * -1.0f;
+    ohSleep(8);
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    id = omCurrentObj->objId;
+    D_800E6690[id] = D_800E3750[id];
+    ohSleep(0x18);
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    ohSleep(5);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    if (rec->unk94->unk1C != 0x80000000) {
+        play_sound(rec->unk94->unk1C);
+    }
+    rec->unk40 = 1;
+    func_801A3E80_ovl7(arg0);
+}
+#elif defined(PORT)
 extern s32 D_801C9A4C_ovl7;
 extern void func_800B6E84();
 void func_801F1C68_ovl9(void);
@@ -968,82 +1038,6 @@ void func_801F1784_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F1784_ovl9.s")
 #endif
-#ifdef PORT
-extern s32 D_801C9A4C_ovl7;
-extern void func_800B6E84();
-void func_801F1C68_ovl9(void);
-extern f32 func_8019DA50_ovl7(void);
-extern float atan2f(float, float);
-extern void func_800AECC0(f32);
-extern void func_800AED20(f32);
-extern void func_801A3E80_ovl7(GObj *);
-/* Burst dart projectile: attach the dart hit tables and annex, sink 5
- * units, inherit the shooter's facing, and aim by the absolute bearing
- * to Kirby's foot point clamped between 60 and 120 degrees; blast out
- * at 25 units for one tick, then cruise at 10 with one-unit drag for 8
- * ticks, coast 24 ticks frozen, thaw for 5, then disarm, play the
- * annex despawn cue and die through the ovl7 kill path. */
-void func_801F1784_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    f32 ang;
-    u32 id;
-
-    rec = D_800E1B50[omCurrentObj->objId];
-    func_8019BAC8_ovl7();
-    rec->unk80->unk10 = 8.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6E84;
-    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801F1C68_ovl9;
-    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C9A4C_ovl7;
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
-    D_800E8920[omCurrentObj->objId] = 0;
-    func_800A9864(0x100A5, 0x23, 0x10);
-    func_800AECC0(0.0f);
-    func_800AED20(0.0f);
-    D_800E98E0[omCurrentObj->objId] = 1;
-    D_800E9AA0[omCurrentObj->objId].as_u32 = 2;
-    D_800E9C60[omCurrentObj->objId] = 0;
-    id = omCurrentObj->objId;
-    D_800E6A10[id] = D_800E6A10[D_800E0D50[id]];
-    gEntitiesNextPosYArray[omCurrentObj->objId] -= 5.0f;
-    id = omCurrentObj->objId;
-    gEntitiesPosYArray[id] = gEntitiesNextPosYArray[id];
-    ang = atan2f(func_8019DA50_ovl7(),
-                 (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]);
-    if (ang < 0.0f) {
-        ang = -ang;
-    }
-    if (ang < 1.0471976f) {
-        ang = 1.0471976f;
-    }
-    if (ang > 2.0943952f) {
-        ang = 2.0943952f;
-    }
-    id = omCurrentObj->objId;
-    D_800E64D0[id] = sinf(ang) * 25.0f * D_800E6A10[id];
-    D_800E3210[omCurrentObj->objId] = cosf(ang) * 25.0f;
-    ohSleep(1);
-    id = omCurrentObj->objId;
-    D_800E64D0[id] = sinf(ang) * 10.0f * D_800E6A10[id];
-    D_800E3210[omCurrentObj->objId] = cosf(ang) * 10.0f;
-    id = omCurrentObj->objId;
-    D_800E6690[id] = sinf(ang) * -1.0f * D_800E6A10[id];
-    D_800E3750[omCurrentObj->objId] = cosf(ang) * -1.0f;
-    ohSleep(8);
-    D_800E3750[omCurrentObj->objId] = 0.0f;
-    id = omCurrentObj->objId;
-    D_800E6690[id] = D_800E3750[id];
-    ohSleep(0x18);
-    func_800AECC0(gameTicksPerDraw);
-    func_800AED20(gameTicksPerDraw);
-    ohSleep(5);
-    D_800E98E0[omCurrentObj->objId] = 0;
-    if (rec->unk94->unk1C != 0x80000000) {
-        play_sound(rec->unk94->unk1C);
-    }
-    rec->unk40 = 1;
-    func_801A3E80_ovl7(arg0);
-}
-#endif
 
 void func_801A0D74_ovl7();
 void func_801A03B4_ovl7(void);
@@ -1053,10 +1047,91 @@ void func_801F1C68_ovl9(void) {
     func_801A03B4_ovl7();
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 16/366, frame 0x68 vs the ROM's 0x70 plus the objId register
    ($v0 in the ROM, $a3 here).  Sibling of func_801F0060_ovl9 in this file and
    carries the same two defects -- fixing them once should fix both. */
-#ifdef MIPS_TO_C
+extern void func_800A4DB8(Vector *, DObj *);
+/* Heavy turret shell: same two-variant launcher as func_801F0060 but
+ * with the shell sprite 0x100A6 and cue 0x10565 -- mode 0 bursts at
+ * 30 along the parent's aim angle (also written to bone 1's X
+ * rotation), splashes and cruises at 9; mode 1 copies the parent's
+ * bone-2 rotation onto bone 1, aims at the parent's bone-4 world
+ * position (manhattan-normalized), bursts at 36 and cruises at 11.5.
+ * Lives 60 ticks, shared epilogue. */
+void func_801F1C90_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    s32 parent;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    D_800DF150[id] = func_801ACF5C_ovl7;
+    rec = D_800E1B50[id];
+    parent = D_800E0D50[id];
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A9864(0x100A6, 0x23, 0x10);
+    func_800AA018(0x10565);
+    if ((D_800DD710[parent] == -1) || (omCurrentObj->objId != D_800EBBE0[parent])) {
+        func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
+    }
+    id = omCurrentObj->objId;
+    switch (D_800E7880[id]) {
+        case 0:
+            func_8019BAC8_ovl7();
+            rec->unk80->unk10 = 8.0f;
+            D_800EA8A0[omCurrentObj->objId] = D_800EA8A0[parent];
+            D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800EA8A0[omCurrentObj->objId];
+            id = omCurrentObj->objId;
+            D_800E64D0[id] = sinf(D_800EA8A0[omCurrentObj->objId]) * 30.0f * D_800E6A10[id];
+            D_800E3210[omCurrentObj->objId] = cosf(D_800EA8A0[omCurrentObj->objId]) * 30.0f;
+            ohSleep(1);
+            func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
+            id = omCurrentObj->objId;
+            D_800E64D0[id] = sinf(D_800EA8A0[omCurrentObj->objId]) * 9.0f * D_800E6A10[id];
+            D_800E3210[omCurrentObj->objId] = cosf(D_800EA8A0[omCurrentObj->objId]) * 9.0f;
+            break;
+        case 1: {
+            Vector sp4C;
+            f32 dx;
+            f32 dy;
+            f32 dz;
+            f32 len;
+
+            func_800A4DB8(&sp4C, D_800DFBD0[D_800E0D50[id]][2]);
+            D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = sp4C.x;
+            D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = sp4C.y;
+            D_800DFBD0[omCurrentObj->objId][1]->angle.v.z = sp4C.z;
+            func_8019BAC8_ovl7();
+            rec->unk80->unk10 = 8.0f;
+            D_800DEF90[omCurrentObj->objId] = func_800B7514;
+            utilGetTransformSRT(&sp4C, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][4]);
+            id = omCurrentObj->objId;
+            dx = sp4C.x - gEntitiesNextPosXArray[id];
+            dy = sp4C.y - gEntitiesNextPosYArray[id];
+            dz = sp4C.z - gEntitiesNextPosZArray[id];
+            len = ((dx < 0.0f) ? -dx : dx) + ((dy < 0.0f) ? -dy : dy) + ((dz < 0.0f) ? -dz : dz);
+            if (len == 0.0f) {
+                len = 0.00001f;
+            }
+            dx /= len;
+            dy /= len;
+            dz /= len;
+            D_800E3050[id] = dx * 36.0f;
+            D_800E3210[omCurrentObj->objId] = dy * 36.0f;
+            D_800E33D0[omCurrentObj->objId] = dz * 36.0f;
+            ohSleep(1);
+            func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
+            D_800E3050[omCurrentObj->objId] = dx * 11.5f;
+            D_800E3210[omCurrentObj->objId] = dy * 11.5f;
+            D_800E33D0[omCurrentObj->objId] = dz * 11.5f;
+            break;
+        }
+    }
+    ohSleep(0x3C);
+    func_801ACF84_ovl7(arg0);
+}
+#elif defined(PORT)
 extern void func_800A4DB8(Vector *, DObj *);
 /* Heavy turret shell: same two-variant launcher as func_801F0060 but
  * with the shell sprite 0x100A6 and cue 0x10565 -- mode 0 bursts at
@@ -1140,88 +1215,6 @@ void func_801F1C90_ovl9(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F1C90_ovl9.s")
 #endif
-#ifdef PORT
-extern void func_800A4DB8(Vector *, DObj *);
-/* Heavy turret shell: same two-variant launcher as func_801F0060 but
- * with the shell sprite 0x100A6 and cue 0x10565 -- mode 0 bursts at
- * 30 along the parent's aim angle (also written to bone 1's X
- * rotation), splashes and cruises at 9; mode 1 copies the parent's
- * bone-2 rotation onto bone 1, aims at the parent's bone-4 world
- * position (manhattan-normalized), bursts at 36 and cruises at 11.5.
- * Lives 60 ticks, shared epilogue. */
-void func_801F1C90_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    s32 parent;
-    u32 id;
-
-    id = omCurrentObj->objId;
-    D_800DF150[id] = func_801ACF5C_ovl7;
-    rec = D_800E1B50[id];
-    parent = D_800E0D50[id];
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
-    D_800E8920[omCurrentObj->objId] = 0;
-    func_800A9864(0x100A6, 0x23, 0x10);
-    func_800AA018(0x10565);
-    if ((D_800DD710[parent] == -1) || (omCurrentObj->objId != D_800EBBE0[parent])) {
-        func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
-    }
-    id = omCurrentObj->objId;
-    switch (D_800E7880[id]) {
-        case 0:
-            func_8019BAC8_ovl7();
-            rec->unk80->unk10 = 8.0f;
-            D_800EA8A0[omCurrentObj->objId] = D_800EA8A0[parent];
-            D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800EA8A0[omCurrentObj->objId];
-            id = omCurrentObj->objId;
-            D_800E64D0[id] = sinf(D_800EA8A0[omCurrentObj->objId]) * 30.0f * D_800E6A10[id];
-            D_800E3210[omCurrentObj->objId] = cosf(D_800EA8A0[omCurrentObj->objId]) * 30.0f;
-            ohSleep(1);
-            func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
-            id = omCurrentObj->objId;
-            D_800E64D0[id] = sinf(D_800EA8A0[omCurrentObj->objId]) * 9.0f * D_800E6A10[id];
-            D_800E3210[omCurrentObj->objId] = cosf(D_800EA8A0[omCurrentObj->objId]) * 9.0f;
-            break;
-        case 1: {
-            Vector sp4C;
-            f32 dx;
-            f32 dy;
-            f32 dz;
-            f32 len;
-
-            func_800A4DB8(&sp4C, D_800DFBD0[D_800E0D50[id]][2]);
-            D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = sp4C.x;
-            D_800DFBD0[omCurrentObj->objId][1]->angle.v.y = sp4C.y;
-            D_800DFBD0[omCurrentObj->objId][1]->angle.v.z = sp4C.z;
-            func_8019BAC8_ovl7();
-            rec->unk80->unk10 = 8.0f;
-            D_800DEF90[omCurrentObj->objId] = func_800B7514;
-            utilGetTransformSRT(&sp4C, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][4]);
-            id = omCurrentObj->objId;
-            dx = sp4C.x - gEntitiesNextPosXArray[id];
-            dy = sp4C.y - gEntitiesNextPosYArray[id];
-            dz = sp4C.z - gEntitiesNextPosZArray[id];
-            len = ((dx < 0.0f) ? -dx : dx) + ((dy < 0.0f) ? -dy : dy) + ((dz < 0.0f) ? -dz : dz);
-            if (len == 0.0f) {
-                len = 0.00001f;
-            }
-            dx /= len;
-            dy /= len;
-            dz /= len;
-            D_800E3050[id] = dx * 36.0f;
-            D_800E3210[omCurrentObj->objId] = dy * 36.0f;
-            D_800E33D0[omCurrentObj->objId] = dz * 36.0f;
-            ohSleep(1);
-            func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
-            D_800E3050[omCurrentObj->objId] = dx * 11.5f;
-            D_800E3210[omCurrentObj->objId] = dy * 11.5f;
-            D_800E33D0[omCurrentObj->objId] = dz * 11.5f;
-            break;
-        }
-    }
-    ohSleep(0x3C);
-    func_801ACF84_ovl7(arg0);
-}
-#endif
 
 extern void func_800B6E84(struct GObj *);
 void func_801F23E4_ovl9(void);
@@ -1298,9 +1291,66 @@ void func_801F253C_ovl9(GObj *arg0) {
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F2428_ovl9);
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 45/226, $t0/$t1 transposition for the &omCurrentObj pointer.
    Body, frame and schedule agree. */
-#ifdef MIPS_TO_C
+void func_801F2910_ovl9(void);
+/* Giant homing shot: double-scale variant of the mode-1 dart --
+ * 16-unit hit radius, aims at the parent's bone-5 world position
+ * (manhattan-normalized), bursts at 80 units for one tick, splashes,
+ * then cruises at 24 for 40 ticks before the shared epilogue.
+ * Releases the parent's shot slot first when the parent is gone. */
+void func_801F2584_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    Vector sp44;
+    s32 parent;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 len;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    D_800DF150[id] = (void (*)(GObj *)) func_801F2910_ovl9;
+    rec = D_800E1B50[id];
+    parent = D_800E0D50[id];
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800A9864(0x10086, 0x23, 0x10);
+    gEntitiesScaleZArray[omCurrentObj->objId] = 2.0f;
+    id = omCurrentObj->objId;
+    gEntitiesScaleYArray[id] = gEntitiesScaleZArray[id];
+    gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleYArray[id];
+    if ((D_800DD710[parent] == -1) || (omCurrentObj->objId != D_800EBBE0[parent])) {
+        func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
+    }
+    func_8019BAC8_ovl7();
+    rec->unk80->unk10 = 16.0f;
+    D_800DEF90[omCurrentObj->objId] = func_800B7514;
+    utilGetTransformSRT(&sp44, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][5]);
+    id = omCurrentObj->objId;
+    dx = sp44.x - gEntitiesNextPosXArray[id];
+    dy = sp44.y - gEntitiesNextPosYArray[id];
+    dz = sp44.z - gEntitiesNextPosZArray[id];
+    len = ((dx < 0.0f) ? -dx : dx) + ((dy < 0.0f) ? -dy : dy) + ((dz < 0.0f) ? -dz : dz);
+    if (len == 0.0f) {
+        len = 0.00001f;
+    }
+    dx /= len;
+    dy /= len;
+    dz /= len;
+    D_800E3050[id] = dx * 80.0f;
+    D_800E3210[omCurrentObj->objId] = dy * 80.0f;
+    D_800E33D0[omCurrentObj->objId] = dz * 80.0f;
+    ohSleep(1);
+    func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
+    D_800E3050[omCurrentObj->objId] = dx * 24.0f;
+    D_800E3210[omCurrentObj->objId] = dy * 24.0f;
+    D_800E33D0[omCurrentObj->objId] = dz * 24.0f;
+    ohSleep(0x28);
+    func_801ACF84_ovl7(arg0);
+}
+#elif defined(PORT)
 void func_801F2910_ovl9(void);
 /* Giant homing shot: double-scale variant of the mode-1 dart --
  * 16-unit hit radius, aims at the parent's bone-5 world position
@@ -1359,64 +1409,6 @@ void func_801F2584_ovl9(GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7/func_801F2584_ovl9.s")
-#endif
-#ifdef PORT
-void func_801F2910_ovl9(void);
-/* Giant homing shot: double-scale variant of the mode-1 dart --
- * 16-unit hit radius, aims at the parent's bone-5 world position
- * (manhattan-normalized), bursts at 80 units for one tick, splashes,
- * then cruises at 24 for 40 ticks before the shared epilogue.
- * Releases the parent's shot slot first when the parent is gone. */
-void func_801F2584_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    Vector sp44;
-    s32 parent;
-    f32 dx;
-    f32 dy;
-    f32 dz;
-    f32 len;
-    u32 id;
-
-    id = omCurrentObj->objId;
-    D_800DF150[id] = (void (*)(GObj *)) func_801F2910_ovl9;
-    rec = D_800E1B50[id];
-    parent = D_800E0D50[id];
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
-    D_800E8920[omCurrentObj->objId] = 0;
-    func_800A9864(0x10086, 0x23, 0x10);
-    gEntitiesScaleZArray[omCurrentObj->objId] = 2.0f;
-    id = omCurrentObj->objId;
-    gEntitiesScaleYArray[id] = gEntitiesScaleZArray[id];
-    gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleYArray[id];
-    if ((D_800DD710[parent] == -1) || (omCurrentObj->objId != D_800EBBE0[parent])) {
-        func_8019D958_ovl7(((u16 *) omCurrentObj)[1]);
-    }
-    func_8019BAC8_ovl7();
-    rec->unk80->unk10 = 16.0f;
-    D_800DEF90[omCurrentObj->objId] = func_800B7514;
-    utilGetTransformSRT(&sp44, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][5]);
-    id = omCurrentObj->objId;
-    dx = sp44.x - gEntitiesNextPosXArray[id];
-    dy = sp44.y - gEntitiesNextPosYArray[id];
-    dz = sp44.z - gEntitiesNextPosZArray[id];
-    len = ((dx < 0.0f) ? -dx : dx) + ((dy < 0.0f) ? -dy : dy) + ((dz < 0.0f) ? -dz : dz);
-    if (len == 0.0f) {
-        len = 0.00001f;
-    }
-    dx /= len;
-    dy /= len;
-    dz /= len;
-    D_800E3050[id] = dx * 80.0f;
-    D_800E3210[omCurrentObj->objId] = dy * 80.0f;
-    D_800E33D0[omCurrentObj->objId] = dz * 80.0f;
-    ohSleep(1);
-    func_800FD570(0, 5, 0.0f, 0.0f, 0.0f);
-    D_800E3050[omCurrentObj->objId] = dx * 24.0f;
-    D_800E3210[omCurrentObj->objId] = dy * 24.0f;
-    D_800E33D0[omCurrentObj->objId] = dz * 24.0f;
-    ohSleep(0x28);
-    func_801ACF84_ovl7(arg0);
-}
 #endif
 
 void func_801A0D74_ovl7();

@@ -135,51 +135,47 @@ typedef struct UnkGenerator {
 } UnkGenerator;
 #endif
 
+/* One live particle. Allocated from the D_800D69C0 free list by
+ * func_8009BA74, linked into the per-track list D_800D69C8[trackId >> 3],
+ * stepped by the bytecode interpreter func_8009C4E0 and drawn by
+ * func_8009E8F4. Field names are read off those three functions; see
+ * PARTICLE_FLAG_* below for the flag word. */
 typedef struct UnkParticle {
-    struct UnkParticle *next;
-    u16 unk4;
-    u16 unk6;
-    u8 unk8;
-    u8 unk9;
-    u8 unkA;
-    u8 unkB;
-    u8 unkC;
-    u8 unkD;
-    u16 unkE;
-    u16 unk10;
-    u16 unk12;
-    u16 unk14;
-    u16 unk16;
-    u8 *unk18;
-    u16 unk1C;
-    u16 unk1E;
-    u16 unk20;
-    u16 unk22;
-    f32 unk24;
-    f32 unk28;
-    f32 unk2C;
-    f32 unk30;
-    f32 unk34;
-    f32 unk38;
-    f32 unk3C;
-    f32 unk40;
-    f32 unk44;
-    f32 unk48;
-    u8 unk4C;
-    u8 unk4D;
-    u8 unk4E;
-    u8 unk4F;
-    u8 unk50;
-    u8 unk51;
-    u8 unk52;
-    u8 unk53;
-    u8 unk54;
-    u8 unk55;
-    u8 unk56;
-    u8 unk57;
-    u32 unk58;
-    UnkGenerator *unk5C;
-    UnkEmitter *unk60;
+    /* 0x00 */ struct UnkParticle *next;
+    /* 0x04 */ u16 generatorId;      /* owning generator's id, else ++D_800BE3E8 */
+    /* 0x06 */ u16 flags;            /* PARTICLE_FLAG_* */
+    /* 0x08 */ u8 trackId;           /* >> 3 selects the D_800D69C8 list */
+    /* 0x09 */ u8 loopCount;         /* PARTICLE_OP_LOOP_BEGIN counter */
+    /* 0x0A */ u8 textureId;         /* index into D_800D6A98[bank] */
+    /* 0x0B */ u8 textureFrame;      /* index into UnkTexture.data[] */
+    /* 0x0C */ u8 paletteIndex;      /* 0xFF = follow the frame */
+    /* 0x0D */ u8 dobjSlotBase;      /* base index into the D_800D6A14 track table */
+    /* 0x0E */ u16 unkE;             /* no reads or writes in ovl1 */
+    /* 0x10 */ u16 waitTimer;        /* frames until the next opcode batch runs */
+    /* 0x12 */ u16 sizeRampTimer;    /* PARTICLE_OP_SIZE_RAMP countdown */
+    /* 0x14 */ u16 primFadeTimer;    /* PARTICLE_OP_PRIM_FADE countdown */
+    /* 0x16 */ u16 envFadeTimer;     /* PARTICLE_OP_ENV_FADE countdown */
+    /* 0x18 */ u8 *bytecode;         /* script base; big-endian cartridge bytes */
+    /* 0x1C */ u16 scriptOffset;     /* interpreter cursor, relative to bytecode */
+    /* 0x1E */ u16 returnPoint;      /* PARTICLE_OP_SET_RETURN / _RETURN */
+    /* 0x20 */ u16 loopStart;        /* PARTICLE_OP_LOOP_BEGIN / _LOOP_END */
+    /* 0x22 */ u16 lifetime;         /* frames remaining; 1 means die this frame */
+    /* 0x24 */ f32 posX;
+    /* 0x28 */ f32 posY;
+    /* 0x2C */ f32 posZ;
+    /* 0x30 */ f32 velX;
+    /* 0x34 */ f32 velY;
+    /* 0x38 */ f32 velZ;
+    /* 0x3C */ f32 gravity;
+    /* 0x40 */ f32 friction;
+    /* 0x44 */ f32 size;
+    /* 0x48 */ f32 sizeTarget;       /* size ramps toward this over sizeRampTimer */
+    /* 0x4C */ u8 primColor[4];      /* RGBA, emitted as G_SETPRIMCOLOR */
+    /* 0x50 */ u8 primTarget[4];     /* primColor fades toward this */
+    /* 0x54 */ u8 envColor[4];       /* RGBA, emitted as G_SETENVCOLOR */
+    /* 0x58 */ u8 envTarget[4];      /* envColor fades toward this */
+    /* 0x5C */ UnkGenerator *generator;
+    /* 0x60 */ UnkEmitter *emitter;
 } UnkParticle;
 
 typedef struct UnkScript {
@@ -352,7 +348,7 @@ void func_8009B69C(UnkEmitter *arg0) {
 }
 
 void func_8009B6F0(UnkParticle *arg0, u8 arg1) {
-    arg0->unk60 = func_8009B5E8(arg1, arg0->unk4);
+    arg0->emitter = func_8009B5E8(arg1, arg0->generatorId);
 }
 
 void func_8009B72C(void *arg0, u8 arg1) {
@@ -539,18 +535,18 @@ UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 tex
         D_800D6AE6 = D_800D6AE0;
     }
     if (gn != NULL) {
-        new_pc->unk4 = gn->generator_id;
+        new_pc->generatorId = gn->generator_id;
     } else {
-        new_pc->unk4 = ++D_800BE3E8;
+        new_pc->generatorId = ++D_800BE3E8;
     }
     if (gn != NULL) {
-        new_pc->unk60 = gn->xf;
+        new_pc->emitter = gn->xf;
 
-        if (new_pc->unk60 != NULL) {
-            new_pc->unk60->unk2A++;
+        if (new_pc->emitter != NULL) {
+            new_pc->emitter->unk2A++;
         }
     } else {
-        new_pc->unk60 = NULL;
+        new_pc->emitter = NULL;
     }
     D_800D69C0 = new_pc->next;
 
@@ -561,48 +557,48 @@ UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 tex
         new_pc->next = this_pc->next;
         this_pc->next = new_pc;
     }
-    new_pc->unk8 = bank_id;
-    new_pc->unk6 = flags;
-    new_pc->unkA = texture_id;
+    new_pc->trackId = bank_id;
+    new_pc->flags = flags;
+    new_pc->textureId = texture_id;
 
-    new_pc->unk24 = pos_x;
-    new_pc->unk28 = pos_y;
-    new_pc->unk2C = pos_z;
+    new_pc->posX = pos_x;
+    new_pc->posY = pos_y;
+    new_pc->posZ = pos_z;
 
-    new_pc->unk30 = vel_x;
-    new_pc->unk34 = vel_y;
-    new_pc->unk38 = vel_z;
+    new_pc->velX = vel_x;
+    new_pc->velY = vel_y;
+    new_pc->velZ = vel_z;
 
-    new_pc->unk44 = size;
-    new_pc->unk3C = gravity;
-    new_pc->unk40 = friction;
+    new_pc->size = size;
+    new_pc->gravity = gravity;
+    new_pc->friction = friction;
 
-    new_pc->unk22 = lifetime + 1;
-    new_pc->unk1C = 0;
-    new_pc->unk1E = 0;
+    new_pc->lifetime = lifetime + 1;
+    new_pc->scriptOffset = 0;
+    new_pc->returnPoint = 0;
 
-    new_pc->unk18 = bytecode;
+    new_pc->bytecode = bytecode;
 
     if (texture_flags != 0) {
-        new_pc->unk6 |= 0x10;
+        new_pc->flags |= 0x10;
     }
     if (bytecode != NULL) {
-        new_pc->unk10 = 1;
+        new_pc->waitTimer = 1;
         val = 0;
     } else {
-        new_pc->unk10 = 0;
+        new_pc->waitTimer = 0;
         val = 0;
     }
 
-    new_pc->unk4C = new_pc->unk4D = new_pc->unk4E = new_pc->unk4F = new_pc->unkC = 0xFF;
-    new_pc->unk54 = new_pc->unk55 = new_pc->unk56 = val;
+    new_pc->primColor[0] = new_pc->primColor[1] = new_pc->primColor[2] = new_pc->primColor[3] = new_pc->paletteIndex = 0xFF;
+    new_pc->envColor[0] = new_pc->envColor[1] = new_pc->envColor[2] = val;
 
-    new_pc->unkB = 0;
-    new_pc->unk57 = 0;
+    new_pc->textureFrame = 0;
+    new_pc->envColor[3] = 0;
 
-    new_pc->unk12 = new_pc->unk14 = new_pc->unk16 = 0;
+    new_pc->sizeRampTimer = new_pc->primFadeTimer = new_pc->envFadeTimer = 0;
 
-    new_pc->unk5C = gn;
+    new_pc->generator = gn;
 
     return new_pc;
 }
@@ -683,7 +679,7 @@ UnkParticle *func_8009BF7C(s32 bank_id, s32 script_id) {
 
 void func_8009BFA8(UnkParticle *pc) {
     if (pc != NULL) {
-        func_8009C4E0(pc, NULL, pc->unk8 >> 3);
+        func_8009C4E0(pc, NULL, pc->trackId >> 3);
     }
 }
 
@@ -693,7 +689,7 @@ void func_8009BFD4(UnkParticle *this_pc) {
     UnkGenerator *gn;
     s32 bank_id;
 
-    bank_id = this_pc->unk8 >> 3;
+    bank_id = this_pc->trackId >> 3;
     current_pc = D_800D69C8[bank_id];
     prev_pc = NULL;
 
@@ -704,16 +700,16 @@ void func_8009BFD4(UnkParticle *this_pc) {
             } else {
                 prev_pc->next = current_pc->next;
             }
-            gn = this_pc->unk5C;
+            gn = this_pc->generator;
 
-            if ((gn != NULL) && (this_pc->unk6 & 4) && (gn->kind == 2)) {
+            if ((gn != NULL) && (this_pc->flags & 4) && (gn->kind == 2)) {
                 gn->vars.vortex.lifetime--;
             }
-            if (this_pc->unk60 != NULL) {
-                this_pc->unk60->unk2A--;
+            if (this_pc->emitter != NULL) {
+                this_pc->emitter->unk2A--;
 
-                if (this_pc->unk60->unk2A == 0) {
-                    func_8009B69C(this_pc->unk60);
+                if (this_pc->emitter->unk2A == 0) {
+                    func_8009B69C(this_pc->emitter);
                 }
             }
             current_pc->next = D_800D69C0;
@@ -781,9 +777,9 @@ void func_8009C1C8(UnkParticle *pc, f32 angle) {
     f32 cos_yaw;
     f32 cos_angle;
 
-    vel.x = pc->unk30;
-    vel.y = pc->unk34;
-    vel.z = pc->unk38;
+    vel.x = pc->velX;
+    vel.y = pc->velY;
+    vel.z = pc->velZ;
 
     pitch = atan2f(vel.y, vel.z);
     sin_pitch = sinf(pitch);
@@ -805,9 +801,9 @@ void func_8009C1C8(UnkParticle *pc, f32 angle) {
 
     cos_angle = cosf(angle) * magnitude;
 
-    pc->unk30 = (vel.x * cos_yaw) + (cos_angle * sin_yaw);
-    pc->unk34 = (((-vel.x * sin_pitch) * sin_yaw) + (vel.y * cos_pitch)) + ((cos_angle * sin_pitch) * cos_yaw);
-    pc->unk38 = (((-vel.x * cos_pitch) * vel.z) - (vel.y * sin_pitch)) + ((cos_angle * cos_pitch) * cos_yaw);
+    pc->velX = (vel.x * cos_yaw) + (cos_angle * sin_yaw);
+    pc->velY = (((-vel.x * sin_pitch) * sin_yaw) + (vel.y * cos_pitch)) + ((cos_angle * sin_pitch) * cos_yaw);
+    pc->velZ = (((-vel.x * cos_pitch) * vel.z) - (vel.y * sin_pitch)) + ((cos_angle * cos_pitch) * cos_yaw);
 }
 
 void func_8009C350(UnkParticle *pc, DObj *dobj) {
@@ -819,18 +815,18 @@ void func_8009C350(UnkParticle *pc, DObj *dobj) {
     if (dobj == NULL) {
         return;
     }
-    dx = dobj->pos.v.x - pc->unk24;
-    dy = dobj->pos.v.y - pc->unk28;
-    dz = dobj->pos.v.z - pc->unk2C;
+    dx = dobj->pos.v.x - pc->posX;
+    dy = dobj->pos.v.y - pc->posY;
+    dz = dobj->pos.v.z - pc->posZ;
 
-    dist = sqrtf((pc->unk30 * pc->unk30) + (pc->unk34 * pc->unk34) + (pc->unk38 * pc->unk38));
+    dist = sqrtf((pc->velX * pc->velX) + (pc->velY * pc->velY) + (pc->velZ * pc->velZ));
 
     if (((dx * dx) + (dy * dy) + (dz * dz)) != 0.0f) {
         dist /= sqrtf((dx * dx) + (dy * dy) + (dz * dz));
 
-        pc->unk30 = dx * dist;
-        pc->unk34 = dy * dist;
-        pc->unk38 = dz * dist;
+        pc->velX = dx * dist;
+        pc->velY = dy * dist;
+        pc->velZ = dz * dist;
     }
 }
 
@@ -843,18 +839,18 @@ void func_8009C44C(UnkParticle *pc, DObj *dobj, f32 magnitude) {
     if (dobj == NULL) {
         return;
     }
-    dx = dobj->pos.v.x - pc->unk24;
-    dy = dobj->pos.v.y - pc->unk28;
-    dz = dobj->pos.v.z - pc->unk2C;
+    dx = dobj->pos.v.x - pc->posX;
+    dy = dobj->pos.v.y - pc->posY;
+    dz = dobj->pos.v.z - pc->posZ;
 
     dist = (dx * dx) + (dy * dy) + (dz * dz);
 
     if (dist != 0.0f) {
         dist = magnitude / dist;
 
-        pc->unk30 += dist * dx;
-        pc->unk34 += dist * dy;
-        pc->unk38 += dist * dz;
+        pc->velX += dist * dx;
+        pc->velY += dist * dy;
+        pc->velZ += dist * dz;
     }
 }
 
@@ -1057,15 +1053,15 @@ void func_8009C44C(UnkParticle *pc, DObj *dobj, f32 magnitude) {
     void *temp_v0_15;
     void *temp_v0_5;
 
-    if (arg0->unk6 & 0x800) {
+    if (arg0->flags & 0x800) {
         goto block_217;
     }
-    temp_v0 = arg0->unk10;
+    temp_v0 = arg0->waitTimer;
     if (temp_v0 != 0) {
         temp_t8 = temp_v0 - 1;
-        arg0->unk10 = temp_t8;
+        arg0->waitTimer = temp_t8;
         if (!(temp_t8 & 0xFFFF)) {
-            var_s1 = arg0->unk18 + arg0->unk1C;
+            var_s1 = arg0->bytecode + arg0->scriptOffset;
 loop_5:
             temp_a0 = *var_s1;
             var_s1 += 1;
@@ -1096,15 +1092,15 @@ loop_5:
                     case 0x88:
                         if (temp_a0 & 1) {
                             var_s1 = func_8009C154(var_s1, &sp80);
-                            arg0->unk24 = arg0->unk24 + sp80;
+                            arg0->posX = arg0->posX + sp80;
                         }
                         if (temp_a0 & 2) {
                             var_s1 = func_8009C154(var_s1, &sp80);
-                            arg0->unk28 = arg0->unk28 + sp80;
+                            arg0->posY = arg0->posY + sp80;
                         }
                         if (temp_a0 & 4) {
                             var_s1 = func_8009C154(var_s1, &sp80);
-                            arg0->unk2C = arg0->unk2C + sp80;
+                            arg0->posZ = arg0->posZ + sp80;
                         }
                         goto block_154;
                     case 0x90:
@@ -1121,75 +1117,75 @@ loop_5:
                     case 0x98:
                         if (temp_a0 & 1) {
                             var_s1 = func_8009C154(var_s1, &sp80);
-                            arg0->unk30 = arg0->unk30 + sp80;
+                            arg0->velX = arg0->velX + sp80;
                         }
                         if (temp_a0 & 2) {
                             var_s1 = func_8009C154(var_s1, &sp80);
-                            arg0->unk34 = arg0->unk34 + sp80;
+                            arg0->velY = arg0->velY + sp80;
                         }
                         if (temp_a0 & 4) {
                             var_s1 = func_8009C154(var_s1, &sp80);
-                            arg0->unk38 = arg0->unk38 + sp80;
+                            arg0->velZ = arg0->velZ + sp80;
                         }
                         goto block_154;
                     case 0xA0:
                         var_s1 = func_8009C154(func_8009C18C(var_s1, arg0 + 0x12), arg0 + 0x48);
-                        if (arg0->unk12 == 1) {
-                            arg0->unk12 = 0;
-                            arg0->unk44 = arg0->unk48;
+                        if (arg0->sizeRampTimer == 1) {
+                            arg0->sizeRampTimer = 0;
+                            arg0->size = arg0->sizeTarget;
                         }
                         goto block_154;
                     case 0xA1:
                         temp_t7 = var_s1->unk0;
                         var_s1 += 1;
-                        arg0->unk6 = temp_t7;
+                        arg0->flags = temp_t7;
                         goto block_154;
                     case 0xA2:
                         var_s1 = func_8009C154(var_s1, arg0 + 0x3C);
-                        if (arg0->unk3C == 0.0f) {
-                            arg0->unk6 = arg0->unk6 & ~1;
+                        if (arg0->gravity == 0.0f) {
+                            arg0->flags = arg0->flags & ~1;
                         } else {
-                            arg0->unk6 = arg0->unk6 | 1;
+                            arg0->flags = arg0->flags | 1;
                         }
                         goto block_154;
                     case 0xA3:
                         var_s1 = func_8009C154(var_s1, arg0 + 0x40);
-                        if (arg0->unk40 == 1.0f) {
-                            arg0->unk6 = arg0->unk6 & 0xFFFD;
+                        if (arg0->friction == 1.0f) {
+                            arg0->flags = arg0->flags & 0xFFFD;
                         } else {
-                            arg0->unk6 = arg0->unk6 | 2;
+                            arg0->flags = arg0->flags | 2;
                         }
                         goto block_154;
                     case 0xA4:
                         temp_s0 = var_s1->unk0;
                         temp_t6 = var_s1->unk1;
                         var_s1 += 2;
-                        temp_v0_4 = func_8009BC4C(arg0, arg0->unk8, (temp_s0 << 8) + temp_t6);
+                        temp_v0_4 = func_8009BC4C(arg0, arg0->trackId, (temp_s0 << 8) + temp_t6);
                         if (temp_v0_4 != NULL) {
-                            temp_v0_4->unk24 = arg0->unk24;
-                            temp_v0_4->unk28 = arg0->unk28;
-                            temp_v0_4->unk2C = arg0->unk2C;
-                            temp_v0_4->unk4 = arg0->unk4;
-                            temp_v0_4->unk5C = arg0->unk5C;
-                            temp_t9 = arg0->unk60;
+                            temp_v0_4->unk24 = arg0->posX;
+                            temp_v0_4->unk28 = arg0->posY;
+                            temp_v0_4->unk2C = arg0->posZ;
+                            temp_v0_4->unk4 = arg0->generatorId;
+                            temp_v0_4->unk5C = arg0->generator;
+                            temp_t9 = arg0->emitter;
                             temp_v0_4->unk60 = temp_t9;
                             if (temp_t9 != NULL) {
                                 temp_t9->unk2A = temp_t9->unk2A + 1;
                             }
-                            func_8009C4E0(temp_v0_4, arg0, arg0->unk8 >> 3);
+                            func_8009C4E0(temp_v0_4, arg0, arg0->trackId >> 3);
                         }
                         goto block_154;
                     case 0xA5:
                         temp_s0_2 = var_s1->unk0;
                         temp_t2 = var_s1->unk1;
                         var_s1 += 2;
-                        temp_v0_5 = func_800A19EC(arg0->unk8, (temp_s0_2 << 8) + temp_t2);
+                        temp_v0_5 = func_800A19EC(arg0->trackId, (temp_s0_2 << 8) + temp_t2);
                         if (temp_v0_5 != NULL) {
-                            temp_v0_5->unk14 = arg0->unk24;
-                            temp_v0_5->unk18 = arg0->unk28;
-                            temp_v0_5->unk1C = arg0->unk2C;
-                            temp_v0_5->unk4 = arg0->unk4;
-                            temp_t4 = arg0->unk60;
+                            temp_v0_5->unk14 = arg0->posX;
+                            temp_v0_5->unk18 = arg0->posY;
+                            temp_v0_5->unk1C = arg0->posZ;
+                            temp_v0_5->unk4 = arg0->generatorId;
+                            temp_t4 = arg0->emitter;
                             temp_v0_5->unk4C = temp_t4;
                             if (temp_t4 != NULL) {
                                 temp_t4->unk2A = temp_t4->unk2A + 1;
@@ -1202,25 +1198,25 @@ loop_5:
                         temp_v0_6 = (var_s1->unk2 << 8) + var_s1->unk3;
                         var_s1 += 4;
                         sp88 = temp_v0_6;
-                        arg0->unk22 = (random_f32(temp_a0) * temp_v0_6) + (temp_s0_3 + temp_t7_2);
+                        arg0->lifetime = (random_f32(temp_a0) * temp_v0_6) + (temp_s0_3 + temp_t7_2);
                         goto block_154;
                     case 0xA7:
                         temp_s0_4 = var_s1->unk0;
                         var_s1 += 1;
                         if (temp_s0_4 >= (random_f32(temp_a0) * 100.0f)) {
-                            arg0->unk22 = 1;
-                            var_v0 = var_s1 - arg0->unk18;
+                            arg0->lifetime = 1;
+                            var_v0 = var_s1 - arg0->bytecode;
                         } else {
                             goto block_154;
                         }
                         break;
                     case 0xA8:
                         temp_s1 = func_8009C154(var_s1, &sp80);
-                        arg0->unk24 = arg0->unk24 + ((2.0f * sp80 * random_f32()) - sp80);
+                        arg0->posX = arg0->posX + ((2.0f * sp80 * random_f32()) - sp80);
                         temp_s1_2 = func_8009C154(temp_s1, &sp80);
-                        arg0->unk28 = arg0->unk28 + ((2.0f * sp80 * random_f32()) - sp80);
+                        arg0->posY = arg0->posY + ((2.0f * sp80 * random_f32()) - sp80);
                         var_s1 = func_8009C154(temp_s1_2, &sp80);
-                        arg0->unk2C = arg0->unk2C + ((2.0f * sp80 * random_f32()) - sp80);
+                        arg0->posZ = arg0->posZ + ((2.0f * sp80 * random_f32()) - sp80);
                         goto block_154;
                     case 0xA9:
                         var_s1 = func_8009C154(var_s1, &sp80);
@@ -1232,76 +1228,76 @@ loop_5:
                         temp_v0_7 = (var_s1->unk2 << 8) + var_s1->unk3;
                         var_s1 += 4;
                         sp88 = temp_v0_7;
-                        temp_v0_8 = func_8009BC4C(arg0, arg0->unk8, temp_s0_5 + temp_t6_2 + (temp_v0_7 * random_f32(temp_a0)));
+                        temp_v0_8 = func_8009BC4C(arg0, arg0->trackId, temp_s0_5 + temp_t6_2 + (temp_v0_7 * random_f32(temp_a0)));
                         if (temp_v0_8 != NULL) {
-                            temp_v0_8->unk24 = arg0->unk24;
-                            temp_v0_8->unk28 = arg0->unk28;
-                            temp_v0_8->unk2C = arg0->unk2C;
-                            temp_v0_8->unk4 = arg0->unk4;
-                            temp_v0_8->unk5C = arg0->unk5C;
-                            temp_t2_2 = arg0->unk60;
+                            temp_v0_8->unk24 = arg0->posX;
+                            temp_v0_8->unk28 = arg0->posY;
+                            temp_v0_8->unk2C = arg0->posZ;
+                            temp_v0_8->unk4 = arg0->generatorId;
+                            temp_v0_8->unk5C = arg0->generator;
+                            temp_t2_2 = arg0->emitter;
                             temp_v0_8->unk60 = temp_t2_2;
                             if (temp_t2_2 != NULL) {
                                 temp_t2_2->unk2A = temp_t2_2->unk2A + 1;
                             }
-                            func_8009C4E0(temp_v0_8, arg0, arg0->unk8 >> 3);
+                            func_8009C4E0(temp_v0_8, arg0, arg0->trackId >> 3);
                         }
                         goto block_154;
                     case 0xAB:
                         var_s1 = func_8009C154(var_s1, &sp80);
-                        arg0->unk30 = arg0->unk30 * sp80;
-                        arg0->unk34 = arg0->unk34 * sp80;
-                        arg0->unk38 = arg0->unk38 * sp80;
+                        arg0->velX = arg0->velX * sp80;
+                        arg0->velY = arg0->velY * sp80;
+                        arg0->velZ = arg0->velZ * sp80;
                         goto block_154;
                     case 0xAC:
                         var_s1 = func_8009C154(func_8009C154(func_8009C18C(var_s1, arg0 + 0x12), arg0 + 0x48), &sp80);
-                        arg0->unk48 = arg0->unk48 + (sp80 * random_f32());
-                        if (arg0->unk12 == 1) {
-                            arg0->unk12 = 0;
-                            arg0->unk44 = arg0->unk48;
+                        arg0->sizeTarget = arg0->sizeTarget + (sp80 * random_f32());
+                        if (arg0->sizeRampTimer == 1) {
+                            arg0->sizeRampTimer = 0;
+                            arg0->size = arg0->sizeTarget;
                         }
                         goto block_154;
                     case 0xAD:
-                        arg0->unk6 = arg0->unk6 | 0x80;
+                        arg0->flags = arg0->flags | 0x80;
                         goto block_154;
                     case 0xAE:
-                        arg0->unk6 = arg0->unk6 & ~0x60;
+                        arg0->flags = arg0->flags & ~0x60;
                         goto block_154;
                     case 0xAF:
-                        temp_t1 = arg0->unk6 & ~0x40;
-                        arg0->unk6 = temp_t1;
-                        arg0->unk6 = (temp_t1 & 0xFFFF) | 0x20;
+                        temp_t1 = arg0->flags & ~0x40;
+                        arg0->flags = temp_t1;
+                        arg0->flags = (temp_t1 & 0xFFFF) | 0x20;
                         goto block_154;
                     case 0xB0:
-                        temp_t5 = arg0->unk6 & 0xFFDF;
-                        arg0->unk6 = temp_t5;
-                        arg0->unk6 = (temp_t5 & 0xFFFF) | 0x40;
+                        temp_t5 = arg0->flags & 0xFFDF;
+                        arg0->flags = temp_t5;
+                        arg0->flags = (temp_t5 & 0xFFFF) | 0x40;
                         goto block_154;
                     case 0xB1:
-                        arg0->unk6 = arg0->unk6 | 0x60;
+                        arg0->flags = arg0->flags | 0x60;
                         goto block_154;
                     case 0xB2:
-                        arg0->unk6 = arg0->unk6 | 0x200;
+                        arg0->flags = arg0->flags | 0x200;
                         goto block_154;
                     case 0xB3:
-                        arg0->unk6 = arg0->unk6 & 0xFBFF;
+                        arg0->flags = arg0->flags & 0xFBFF;
                         goto block_154;
                     case 0xB4:
-                        arg0->unk6 = arg0->unk6 | 0x400;
+                        arg0->flags = arg0->flags | 0x400;
                         goto block_154;
                     case 0xB5:
-                        arg0->unk6 = arg0->unk6 | 0x100;
+                        arg0->flags = arg0->flags | 0x100;
                         goto block_154;
                     case 0xB6:
-                        arg0->unk6 = arg0->unk6 & ~0x100;
+                        arg0->flags = arg0->flags & ~0x100;
                         goto block_154;
                     case 0xB7:
                         temp_s0_6 = var_s1->unk0;
                         var_s1 += 1;
-                        func_8009C350(arg0, D_800D6A14[temp_s0_6 + arg0->unkD]);
+                        func_8009C350(arg0, D_800D6A14[temp_s0_6 + arg0->dobjSlotBase]);
                         goto block_154;
                     case 0xB8:
-                        temp_s0_7 = var_s1->unk0 + arg0->unkD;
+                        temp_s0_7 = var_s1->unk0 + arg0->dobjSlotBase;
                         var_s1 = func_8009C154(var_s1 + 1, &sp80);
                         func_8009C44C(arg0, D_800D6A14[temp_s0_7], sp80);
                         goto block_154;
@@ -1309,78 +1305,78 @@ loop_5:
                         temp_s0_8 = var_s1->unk0;
                         temp_t4_2 = var_s1->unk1;
                         var_s1 += 2;
-                        temp_v0_9 = func_8009BC4C(arg0, arg0->unk8, (temp_s0_8 << 8) + temp_t4_2);
+                        temp_v0_9 = func_8009BC4C(arg0, arg0->trackId, (temp_s0_8 << 8) + temp_t4_2);
                         if (temp_v0_9 != NULL) {
-                            temp_v0_9->unk24 = arg0->unk24;
-                            temp_v0_9->unk28 = arg0->unk28;
-                            temp_v0_9->unk2C = arg0->unk2C;
-                            temp_v0_9->unk30 = arg0->unk30;
-                            temp_v0_9->unk34 = arg0->unk34;
-                            temp_v0_9->unk38 = arg0->unk38;
-                            temp_v0_9->unk4 = arg0->unk4;
-                            temp_v0_9->unk5C = arg0->unk5C;
-                            temp_t7_3 = arg0->unk60;
+                            temp_v0_9->unk24 = arg0->posX;
+                            temp_v0_9->unk28 = arg0->posY;
+                            temp_v0_9->unk2C = arg0->posZ;
+                            temp_v0_9->unk30 = arg0->velX;
+                            temp_v0_9->unk34 = arg0->velY;
+                            temp_v0_9->unk38 = arg0->velZ;
+                            temp_v0_9->unk4 = arg0->generatorId;
+                            temp_v0_9->unk5C = arg0->generator;
+                            temp_t7_3 = arg0->emitter;
                             temp_v0_9->unk60 = temp_t7_3;
                             if (temp_t7_3 != NULL) {
                                 temp_t7_3->unk2A = temp_t7_3->unk2A + 1;
                             }
-                            func_8009C4E0(temp_v0_9, arg0, arg0->unk8 >> 3);
+                            func_8009C4E0(temp_v0_9, arg0, arg0->trackId >> 3);
                         }
                         goto block_154;
                     case 0xBA:
                         temp_f6 = var_s1->unk0 * 2;
                         sp80 = temp_f6;
-                        temp_t2_3 = arg0->unk50;
+                        temp_t2_3 = arg0->primTarget[0];
                         var_f10 = temp_t2_3;
                         temp_f4 = temp_f6 * random_f32(temp_a0);
                         if (temp_t2_3 < 0) {
                             var_f10 += 4294967296.0f;
                         }
-                        arg0->unk50 = var_f10 + temp_f4;
+                        arg0->primTarget[0] = var_f10 + temp_f4;
                         temp_s1_3 = &var_s1[1].unk1;
                         temp_f4_2 = var_s1[1] * 2;
                         sp80 = temp_f4_2;
-                        temp_t7_4 = arg0->unk51;
+                        temp_t7_4 = arg0->primTarget[1];
                         var_f6 = temp_t7_4;
                         temp_f8 = temp_f4_2 * random_f32();
                         if (temp_t7_4 < 0) {
                             var_f6 += 4294967296.0f;
                         }
-                        arg0->unk51 = var_f6 + temp_f8;
+                        arg0->primTarget[1] = var_f6 + temp_f8;
                         temp_s1_4 = temp_s1_3 + 1;
                         temp_f8_2 = temp_s1_3->unk0 * 2;
                         sp80 = temp_f8_2;
-                        temp_t2_4 = arg0->unk52;
+                        temp_t2_4 = arg0->primTarget[2];
                         var_f4 = temp_t2_4;
                         temp_f10 = temp_f8_2 * random_f32();
                         if (temp_t2_4 < 0) {
                             var_f4 += 4294967296.0f;
                         }
-                        arg0->unk52 = var_f4 + temp_f10;
+                        arg0->primTarget[2] = var_f4 + temp_f10;
                         var_s1 = temp_s1_4 + 1;
                         temp_f10_2 = *temp_s1_4 * 2;
                         sp80 = temp_f10_2;
-                        temp_t7_5 = arg0->unk53;
+                        temp_t7_5 = arg0->primTarget[3];
                         var_f8 = temp_t7_5;
                         temp_f6_2 = temp_f10_2 * random_f32();
                         if (temp_t7_5 < 0) {
                             var_f8 += 4294967296.0f;
                         }
-                        arg0->unk53 = var_f8 + temp_f6_2;
-                        if (arg0->unk14 == 0) {
-                            arg0->unk4C = (unaligned s32) arg0->unk50;
+                        arg0->primTarget[3] = var_f8 + temp_f6_2;
+                        if (arg0->primFadeTimer == 0) {
+                            arg0->primColor[0] = (unaligned s32) arg0->primTarget[0];
                         }
                         goto block_154;
                     case 0xBB:
                         temp_f6_3 = var_s1->unk0 * 2;
                         sp80 = temp_f6_3;
-                        temp_t5_2 = arg0->unk58;
+                        temp_t5_2 = arg0->envTarget;
                         var_f10_2 = temp_t5_2;
                         temp_f4_3 = temp_f6_3 * random_f32(temp_a0);
                         if (temp_t5_2 < 0) {
                             var_f10_2 += 4294967296.0f;
                         }
-                        arg0->unk58 = var_f10_2 + temp_f4_3;
+                        arg0->envTarget = var_f10_2 + temp_f4_3;
                         temp_s1_5 = &var_s1[1].unk1;
                         temp_f4_4 = var_s1[1] * 2;
                         sp80 = temp_f4_4;
@@ -1411,56 +1407,56 @@ loop_5:
                             var_f8_2 += 4294967296.0f;
                         }
                         arg0->unk5B = var_f8_2 + temp_f6_4;
-                        if (arg0->unk16 == 0) {
-                            arg0->unk54 = (unaligned s32) arg0->unk58;
+                        if (arg0->envFadeTimer == 0) {
+                            arg0->envColor[0] = (unaligned s32) arg0->envTarget;
                         }
                         goto block_154;
                     case 0xBC:
                         temp_t6_3 = var_s1->unk0;
                         var_s1 = &var_s1[1].unk1;
-                        arg0->unkB = temp_t6_3;
+                        arg0->textureFrame = temp_t6_3;
                         temp_t7_6 = var_s1->unk-1;
                         var_f6_3 = temp_t7_6;
                         if (temp_t7_6 < 0) {
                             var_f6_3 += 4294967296.0f;
                         }
                         sp80 = var_f6_3;
-                        temp_t8_2 = arg0->unkB;
+                        temp_t8_2 = arg0->textureFrame;
                         var_f8_3 = temp_t8_2;
                         temp_f10_5 = var_f6_3 * random_f32(temp_a0);
                         if (temp_t8_2 < 0) {
                             var_f8_3 += 4294967296.0f;
                         }
-                        arg0->unkB = var_f8_3 + temp_f10_5;
+                        arg0->textureFrame = var_f8_3 + temp_f10_5;
                         goto block_154;
                     case 0xBD:
                         var_s1 = func_8009C154(func_8009C154(var_s1, &sp80), &sp7C);
                         sp80 += sp7C * random_f32();
-                        temp_f2 = arg0->unk30;
-                        temp_f14 = arg0->unk34;
-                        temp_f16 = arg0->unk38;
+                        temp_f2 = arg0->velX;
+                        temp_f14 = arg0->velY;
+                        temp_f16 = arg0->velZ;
                         temp_f0 = sqrtf((temp_f2 * temp_f2) + (temp_f14 * temp_f14) + (temp_f16 * temp_f16));
                         sp7C = temp_f0;
                         if (temp_f0 > 0.00001f) {
                             temp_f4_5 = sp80 / temp_f0;
                             sp80 = temp_f4_5;
-                            arg0->unk30 = arg0->unk30 * temp_f4_5;
-                            arg0->unk34 = arg0->unk34 * sp80;
-                            arg0->unk38 = arg0->unk38 * sp80;
+                            arg0->velX = arg0->velX * temp_f4_5;
+                            arg0->velY = arg0->velY * sp80;
+                            arg0->velZ = arg0->velZ * sp80;
                         }
                         goto block_154;
                     case 0xBE:
                         temp_a0_2 = func_8009C154(var_s1, &sp80);
-                        arg0->unk30 = arg0->unk30 * sp80;
+                        arg0->velX = arg0->velX * sp80;
                         temp_a0_3 = func_8009C154(temp_a0_2, &sp80);
-                        arg0->unk34 = arg0->unk34 * sp80;
+                        arg0->velY = arg0->velY * sp80;
                         var_s1 = func_8009C154(temp_a0_3, &sp80);
-                        arg0->unk38 = arg0->unk38 * sp80;
+                        arg0->velZ = arg0->velZ * sp80;
                         goto block_154;
                     case 0xBF:
                         temp_s0_9 = var_s1->unk0;
                         var_s1 += 1;
-                        arg0->unk6 = arg0->unk6 | 0x8000 | (((temp_s0_9 + arg0->unkD) - 1) << 0xC);
+                        arg0->flags = arg0->flags | 0x8000 | (((temp_s0_9 + arg0->dobjSlotBase) - 1) << 0xC);
                         goto block_154;
                     case 0xC0:
                         temp_v1 = arg0 + 0x4C;
@@ -1474,26 +1470,26 @@ loop_5:
                         *temp_a2_2 = (unaligned s32) *temp_v1_2;
                         if (temp_a0 & 1) {
                             var_s1 = temp_v0_10 + 1;
-                            arg0->unk50 = *temp_v0_10;
+                            arg0->primTarget[0] = *temp_v0_10;
                         }
                         if (temp_a0 & 2) {
                             temp_t1_2 = *var_s1;
                             var_s1 += 1;
-                            arg0->unk51 = temp_t1_2;
+                            arg0->primTarget[1] = temp_t1_2;
                         }
                         if (temp_a0 & 4) {
                             temp_t3 = *var_s1;
                             var_s1 += 1;
-                            arg0->unk52 = temp_t3;
+                            arg0->primTarget[2] = temp_t3;
                         }
                         if (temp_a0 & 8) {
                             temp_t5_4 = *var_s1;
                             var_s1 += 1;
-                            arg0->unk53 = temp_t5_4;
+                            arg0->primTarget[3] = temp_t5_4;
                         }
-                        if (arg0->unk14 == 1) {
+                        if (arg0->primFadeTimer == 1) {
                             *temp_v1_2 = (unaligned s32) *temp_a2_2;
-                            arg0->unk14 = 0;
+                            arg0->primFadeTimer = 0;
                         }
                         goto block_154;
                     case 0xD0:
@@ -1506,7 +1502,7 @@ loop_5:
                         *temp_a2_3 = (unaligned s32) *temp_v1_3;
                         if (temp_a0 & 1) {
                             var_s1 = temp_v0_11 + 1;
-                            arg0->unk58 = *temp_v0_11;
+                            arg0->envTarget = *temp_v0_11;
                         }
                         if (temp_a0 & 2) {
                             temp_t4_3 = *var_s1;
@@ -1523,89 +1519,89 @@ loop_5:
                             var_s1 += 1;
                             arg0->unk5B = temp_t8_3;
                         }
-                        if (arg0->unk16 == 1) {
+                        if (arg0->envFadeTimer == 1) {
                             *temp_v1_3 = (unaligned s32) *temp_a2_3;
-                            arg0->unk16 = 0;
+                            arg0->envFadeTimer = 0;
                         }
                         goto block_154;
                     case 0xE0:
                         temp_f6_5 = random_f32(temp_a0) * (var_s1->unk0 * 2);
                         sp80 = temp_f6_5;
-                        temp_t4_4 = arg0->unk50;
+                        temp_t4_4 = arg0->primTarget[0];
                         var_f10_3 = temp_t4_4;
                         if (temp_t4_4 < 0) {
                             var_f10_3 += 4294967296.0f;
                         }
-                        arg0->unk50 = var_f10_3 + temp_f6_5;
-                        arg0->unk58 = arg0->unk58 + sp80;
+                        arg0->primTarget[0] = var_f10_3 + temp_f6_5;
+                        arg0->envTarget = arg0->envTarget + sp80;
                         temp_s1_7 = &var_s1[1].unk1;
                         temp_f10_6 = random_f32() * (var_s1[1] * 2);
                         sp80 = temp_f10_6;
-                        temp_t2_5 = arg0->unk51;
+                        temp_t2_5 = arg0->primTarget[1];
                         var_f6_4 = temp_t2_5;
                         if (temp_t2_5 < 0) {
                             var_f6_4 += 4294967296.0f;
                         }
-                        arg0->unk51 = var_f6_4 + temp_f10_6;
+                        arg0->primTarget[1] = var_f6_4 + temp_f10_6;
                         arg0->unk59 = arg0->unk59 + sp80;
                         temp_s1_8 = temp_s1_7 + 1;
                         temp_f6_6 = random_f32() * (temp_s1_7->unk0 * 2);
                         sp80 = temp_f6_6;
-                        temp_t0_3 = arg0->unk52;
+                        temp_t0_3 = arg0->primTarget[2];
                         var_f10_4 = temp_t0_3;
                         if (temp_t0_3 < 0) {
                             var_f10_4 += 4294967296.0f;
                         }
-                        arg0->unk52 = var_f10_4 + temp_f6_6;
+                        arg0->primTarget[2] = var_f10_4 + temp_f6_6;
                         arg0->unk5A = arg0->unk5A + sp80;
                         var_s1 = temp_s1_8 + 1;
                         temp_f10_7 = random_f32() * (*temp_s1_8 * 2);
                         sp80 = temp_f10_7;
-                        temp_t8_4 = arg0->unk53;
+                        temp_t8_4 = arg0->primTarget[3];
                         var_f6_5 = temp_t8_4;
                         if (temp_t8_4 < 0) {
                             var_f6_5 += 4294967296.0f;
                         }
-                        arg0->unk53 = var_f6_5 + temp_f10_7;
+                        arg0->primTarget[3] = var_f6_5 + temp_f10_7;
                         arg0->unk5B = arg0->unk5B + sp80;
-                        if (arg0->unk14 == 0) {
-                            arg0->unk4C = (unaligned s32) arg0->unk50;
+                        if (arg0->primFadeTimer == 0) {
+                            arg0->primColor[0] = (unaligned s32) arg0->primTarget[0];
                         }
-                        if (arg0->unk16 == 0) {
-                            arg0->unk54 = (unaligned s32) arg0->unk58;
+                        if (arg0->envFadeTimer == 0) {
+                            arg0->envColor[0] = (unaligned s32) arg0->envTarget;
                         }
                         goto block_154;
                     case 0xE2:
-                        arg0->unk6 = arg0->unk6 | 8;
+                        arg0->flags = arg0->flags | 8;
                         goto block_154;
                     case 0xE3:
                         temp_t2_6 = var_s1->unk0;
                         var_s1 += 1;
-                        arg0->unkC = temp_t2_6;
+                        arg0->paletteIndex = temp_t2_6;
                         goto block_154;
                     case 0xFA:
                         temp_t3_2 = var_s1->unk0;
                         var_s1 += 1;
-                        arg0->unk20 = var_s1 - arg0->unk18;
-                        arg0->unk9 = temp_t3_2;
+                        arg0->loopStart = var_s1 - arg0->bytecode;
+                        arg0->loopCount = temp_t3_2;
                         goto block_154;
                     case 0xFB:
-                        temp_t7_7 = arg0->unk9 - 1;
-                        arg0->unk9 = temp_t7_7;
+                        temp_t7_7 = arg0->loopCount - 1;
+                        arg0->loopCount = temp_t7_7;
                         if (temp_t7_7 & 0xFF) {
-                            var_s1 = arg0->unk18 + arg0->unk20;
+                            var_s1 = arg0->bytecode + arg0->loopStart;
                         }
                         goto block_154;
                     case 0xFC:
-                        arg0->unk1E = var_s1 - arg0->unk18;
+                        arg0->returnPoint = var_s1 - arg0->bytecode;
                         goto block_154;
                     case 0xFD:
-                        var_s1 = arg0->unk18 + arg0->unk1E;
+                        var_s1 = arg0->bytecode + arg0->returnPoint;
                         goto block_154;
                     case 0xFE:
                     case 0xFF:
-                        arg0->unk22 = 1;
-                        var_v0 = var_s1 - arg0->unk18;
+                        arg0->lifetime = 1;
+                        var_v0 = var_s1 - arg0->bytecode;
                         break;
                 }
             } else {
@@ -1619,69 +1615,69 @@ loop_5:
                 if ((temp_v0_13 != 0) && (temp_v0_13 == 0x40)) {
                     temp_t2_7 = *var_s1;
                     var_s1 += 1;
-                    arg0->unkB = temp_t2_7;
+                    arg0->textureFrame = temp_t2_7;
                 }
             default:
 block_154:
                 if (sp94 != 0) {
-                    var_v0 = var_s1 - arg0->unk18;
+                    var_v0 = var_s1 - arg0->bytecode;
                 } else {
                     goto loop_5;
                 }
             }
-            arg0->unk1C = var_v0;
-            arg0->unk10 = sp94;
+            arg0->scriptOffset = var_v0;
+            arg0->waitTimer = sp94;
         }
     }
-    temp_v0_14 = arg0->unk12;
+    temp_v0_14 = arg0->sizeRampTimer;
     if (temp_v0_14 != 0) {
-        temp_f0_2 = arg0->unk44;
-        arg0->unk12 = temp_v0_14 - 1;
-        arg0->unk44 = temp_f0_2 + ((arg0->unk48 - temp_f0_2) / temp_v0_14);
+        temp_f0_2 = arg0->size;
+        arg0->sizeRampTimer = temp_v0_14 - 1;
+        arg0->size = temp_f0_2 + ((arg0->sizeTarget - temp_f0_2) / temp_v0_14);
     }
-    temp_a3 = arg0->unk14;
+    temp_a3 = arg0->primFadeTimer;
     if (temp_a3 != 0) {
         temp_lo = 0x10000 / temp_a3;
-        temp_v1_4 = arg0->unk4C;
-        temp_a0_4 = arg0->unk4D;
-        temp_a1_2 = arg0->unk4E;
-        temp_a2_4 = arg0->unk4F;
-        arg0->unk4C = ((temp_v1_4 << 0x10) + ((arg0->unk50 - temp_v1_4) * temp_lo)) >> 0x10;
-        arg0->unk4D = ((temp_a0_4 << 0x10) + ((arg0->unk51 - temp_a0_4) * temp_lo)) >> 0x10;
-        arg0->unk4E = ((temp_a1_2 << 0x10) + ((arg0->unk52 - temp_a1_2) * temp_lo)) >> 0x10;
-        arg0->unk14 = temp_a3 - 1;
-        arg0->unk4F = ((temp_a2_4 << 0x10) + ((arg0->unk53 - temp_a2_4) * temp_lo)) >> 0x10;
+        temp_v1_4 = arg0->primColor[0];
+        temp_a0_4 = arg0->primColor[1];
+        temp_a1_2 = arg0->primColor[2];
+        temp_a2_4 = arg0->primColor[3];
+        arg0->primColor[0] = ((temp_v1_4 << 0x10) + ((arg0->primTarget[0] - temp_v1_4) * temp_lo)) >> 0x10;
+        arg0->primColor[1] = ((temp_a0_4 << 0x10) + ((arg0->primTarget[1] - temp_a0_4) * temp_lo)) >> 0x10;
+        arg0->primColor[2] = ((temp_a1_2 << 0x10) + ((arg0->primTarget[2] - temp_a1_2) * temp_lo)) >> 0x10;
+        arg0->primFadeTimer = temp_a3 - 1;
+        arg0->primColor[3] = ((temp_a2_4 << 0x10) + ((arg0->primTarget[3] - temp_a2_4) * temp_lo)) >> 0x10;
     }
-    temp_a3_2 = arg0->unk16;
+    temp_a3_2 = arg0->envFadeTimer;
     if (temp_a3_2 != 0) {
         temp_lo_2 = 0x10000 / temp_a3_2;
-        temp_v1_5 = arg0->unk54;
-        temp_a0_5 = arg0->unk55;
-        temp_a1_3 = arg0->unk56;
-        temp_a2_5 = arg0->unk57;
-        arg0->unk54 = ((temp_v1_5 << 0x10) + ((arg0->unk58 - temp_v1_5) * temp_lo_2)) >> 0x10;
-        arg0->unk55 = ((temp_a0_5 << 0x10) + ((arg0->unk59 - temp_a0_5) * temp_lo_2)) >> 0x10;
-        arg0->unk56 = ((temp_a1_3 << 0x10) + ((arg0->unk5A - temp_a1_3) * temp_lo_2)) >> 0x10;
-        arg0->unk16 = temp_a3_2 - 1;
-        arg0->unk57 = ((temp_a2_5 << 0x10) + ((arg0->unk5B - temp_a2_5) * temp_lo_2)) >> 0x10;
+        temp_v1_5 = arg0->envColor[0];
+        temp_a0_5 = arg0->envColor[1];
+        temp_a1_3 = arg0->envColor[2];
+        temp_a2_5 = arg0->envColor[3];
+        arg0->envColor[0] = ((temp_v1_5 << 0x10) + ((arg0->envTarget - temp_v1_5) * temp_lo_2)) >> 0x10;
+        arg0->envColor[1] = ((temp_a0_5 << 0x10) + ((arg0->unk59 - temp_a0_5) * temp_lo_2)) >> 0x10;
+        arg0->envColor[2] = ((temp_a1_3 << 0x10) + ((arg0->unk5A - temp_a1_3) * temp_lo_2)) >> 0x10;
+        arg0->envFadeTimer = temp_a3_2 - 1;
+        arg0->envColor[3] = ((temp_a2_5 << 0x10) + ((arg0->unk5B - temp_a2_5) * temp_lo_2)) >> 0x10;
     }
-    temp_t2_8 = arg0->unk22 - 1;
-    arg0->unk22 = temp_t2_8;
+    temp_t2_8 = arg0->lifetime - 1;
+    arg0->lifetime = temp_t2_8;
     if (!(temp_t2_8 & 0xFFFF)) {
         if (arg1 == NULL) {
             *(&D_800D69C8 + (arg2 * 4)) = arg0->unk0;
         } else {
             *arg1 = arg0->unk0;
         }
-        temp_v0_15 = arg0->unk5C;
+        temp_v0_15 = arg0->generator;
         var_s0 = arg0->unk0;
-        if ((temp_v0_15 != NULL) && (arg0->unk6 & 4) && (temp_v0_15->unk9 == 2)) {
+        if ((temp_v0_15 != NULL) && (arg0->flags & 4) && (temp_v0_15->unk9 == 2)) {
             temp_v0_15->unk54 = temp_v0_15->unk54 - 1;
         }
-        temp_a0_6 = arg0->unk60;
+        temp_a0_6 = arg0->emitter;
         if (temp_a0_6 != NULL) {
             temp_a0_6->unk2A = temp_a0_6->unk2A - 1;
-            temp_a0_7 = arg0->unk60;
+            temp_a0_7 = arg0->emitter;
             if (temp_a0_7->unk2A == 0) {
                 func_8009B69C(temp_a0_7);
                 if (arg1 == NULL) {
@@ -1697,10 +1693,10 @@ block_154:
         D_800D6AE0 -= 1;
         return var_s0;
     }
-    temp_v0_17 = arg0->unk6;
+    temp_v0_17 = arg0->flags;
     if (temp_v0_17 & 4) {
-        temp_a2_6 = arg0->unk5C;
-        temp_v0_18 = (arg0->unk3C * 651.8986f) & 0xFFF & 0xFFFF;
+        temp_a2_6 = arg0->generator;
+        temp_v0_18 = (arg0->gravity * 651.8986f) & 0xFFF & 0xFFFF;
         temp_v0_19 = (temp_v0_18 + 0x400) & 0xFFFF;
         sp5C = *(&lbreflect_Int16SinTable + ((temp_v0_18 & 0x7FF) * 2));
         if (temp_v0_18 & 0x800) {
@@ -1710,7 +1706,7 @@ block_154:
         if (temp_v0_19 & 0x800) {
             var_f16 = -var_f16;
         }
-        temp_v0_20 = (arg0->unk40 * 651.8986f) & 0xFFF & 0xFFFF;
+        temp_v0_20 = (arg0->friction * 651.8986f) & 0xFFF & 0xFFFF;
         temp_v0_21 = (temp_v0_20 + 0x400) & 0xFFFF;
         sp58 = *(&lbreflect_Int16SinTable + ((temp_v0_20 & 0x7FF) * 2));
         if (temp_v0_20 & 0x800) {
@@ -1724,7 +1720,7 @@ block_154:
         sp5C *= 0.000030517578f;
         temp_f12 = var_f12 * 0.000030517578f;
         sp58 *= 0.000030517578f;
-        arg0->unk38 = arg0->unk38 + temp_a2_6->unk50;
+        arg0->velZ = arg0->velZ + temp_a2_6->unk50;
         temp_f0_3 = temp_a2_6->unk38;
         if (temp_f0_3 < 0.0f) {
             sp70 = -temp_f0_3;
@@ -1757,12 +1753,12 @@ block_154:
             var_f0 = -var_f0;
             sp54 = temp_f16_2;
         }
-        temp_f16_3 = arg0->unk38;
+        temp_f16_3 = arg0->velZ;
         temp_f6_7 = sp70 + (temp_f16_3 * (var_f18 / var_f0));
         sp70 = temp_f6_7;
-        sp70 = temp_f6_7 * arg0->unk34;
-        arg0->unk30 = arg0->unk30 + temp_a2_6->unk2C;
-        temp_v0_23 = (arg0->unk30 * 651.8986f) & 0xFFF & 0xFFFF;
+        sp70 = temp_f6_7 * arg0->velY;
+        arg0->velX = arg0->velX + temp_a2_6->unk2C;
+        temp_v0_23 = (arg0->velX * 651.8986f) & 0xFFF & 0xFFFF;
         temp_t2_9 = *(&lbreflect_Int16SinTable + ((temp_v0_23 & 0x7FF) * 2));
         temp_v0_24 = (temp_v0_23 + 0x400) & 0xFFFF;
         var_f18_2 = temp_t2_9;
@@ -1787,32 +1783,32 @@ block_154:
         temp_f2_2 = temp_f6_8 * sp44;
         sp70 = temp_f6_8;
         temp_f14_2 = -temp_f2_2;
-        arg0->unk24 = (temp_f2_2 * sp50) + (temp_f16_3 * sp58) + temp_a2_6->unk14;
+        arg0->posX = (temp_f2_2 * sp50) + (temp_f16_3 * sp58) + temp_a2_6->unk14;
         temp_f12_2 = sp70 * var_f18_2;
-        arg0->unk28 = (temp_f14_2 * sp5C * sp58) + (temp_f12_2 * sp54) + (temp_f16_3 * sp5C * sp50) + temp_a2_6->unk18;
-        arg0->unk2C = ((temp_f14_2 * sp54 * sp58) - (temp_f12_2 * sp5C)) + (temp_f16_3 * sp54 * sp50) + temp_a2_6->unk1C;
+        arg0->posY = (temp_f14_2 * sp5C * sp58) + (temp_f12_2 * sp54) + (temp_f16_3 * sp5C * sp50) + temp_a2_6->unk18;
+        arg0->posZ = ((temp_f14_2 * sp54 * sp58) - (temp_f12_2 * sp5C)) + (temp_f16_3 * sp54 * sp50) + temp_a2_6->unk1C;
     } else {
         if (temp_v0_17 & 1) {
-            arg0->unk34 = arg0->unk34 - arg0->unk3C;
+            arg0->velY = arg0->velY - arg0->gravity;
         }
-        if (arg0->unk6 & 2) {
-            temp_f0_5 = arg0->unk40;
-            arg0->unk30 = arg0->unk30 * temp_f0_5;
-            arg0->unk34 = arg0->unk34 * temp_f0_5;
-            arg0->unk38 = arg0->unk38 * temp_f0_5;
+        if (arg0->flags & 2) {
+            temp_f0_5 = arg0->friction;
+            arg0->velX = arg0->velX * temp_f0_5;
+            arg0->velY = arg0->velY * temp_f0_5;
+            arg0->velZ = arg0->velZ * temp_f0_5;
         }
-        arg0->unk24 = arg0->unk24 + arg0->unk30;
-        arg0->unk28 = arg0->unk28 + arg0->unk34;
-        arg0->unk2C = arg0->unk2C + arg0->unk38;
+        arg0->posX = arg0->posX + arg0->velX;
+        arg0->posY = arg0->posY + arg0->velY;
+        arg0->posZ = arg0->posZ + arg0->velZ;
     }
-    temp_v0_25 = arg0->unk6;
+    temp_v0_25 = arg0->flags;
     if (temp_v0_25 & 0x8000) {
         temp_v1_7 = (((temp_v0_25 & 0x7000) >> 0xC) * 4) + &D_800D6A18;
         temp_a0_8 = *temp_v1_7;
         if (temp_a0_8 != NULL) {
-            temp_a0_8->unk1C = arg0->unk24;
-            (*temp_v1_7)->unk20 = arg0->unk28;
-            (*temp_v1_7)->unk24 = arg0->unk2C;
+            temp_a0_8->unk1C = arg0->posX;
+            (*temp_v1_7)->unk20 = arg0->posY;
+            (*temp_v1_7)->unk24 = arg0->posZ;
         }
     }
 block_217:
@@ -1834,7 +1830,7 @@ block_217:
  *  - the old draft's 3-arg func_8009C18C calls in 0xC0/0xD0 were phantom
  *    arguments; the asm passes exactly (cursor, &duration).
  *
- * BYTE ORDER: pc->unk18 points at RAW BIG-ENDIAN ROM bytecode. Provenance
+ * BYTE ORDER: pc->bytecode points at RAW BIG-ENDIAN ROM bytecode. Provenance
  * verified: func_8009BC4C/func_8009BE54 pass UnkScript.bytecode out of the
  * bank tables that the PORT func_8009B768 rebuilds (its header comment
  * pins that UnkScript interiors keep cartridge byte order), and the
@@ -1875,15 +1871,15 @@ static f32 pc_c4e0_sin(s32 idx) {
 UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
     f32 tmp;
 
-    if (pc->unk6 & 0x800) {
+    if (pc->flags & 0x800) {
         return pc->next;
     }
 
-    if (pc->unk10 != 0) {
-        pc->unk10 -= 1;
-        if (pc->unk10 == 0) {
-            u8 *base = pc->unk18;
-            u8 *csr = base + pc->unk1C;
+    if (pc->waitTimer != 0) {
+        pc->waitTimer -= 1;
+        if (pc->waitTimer == 0) {
+            u8 *base = pc->bytecode;
+            u8 *csr = base + pc->scriptOffset;
             u16 wait;
 
             for (;;) {
@@ -1901,7 +1897,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         wait = (u16) ((wait << 8) + *csr++);
                     }
                     if ((op & 0xC0) == 0x40) {
-                        pc->unkB = *csr++;
+                        pc->textureFrame = *csr++;
                     }
                 } else {
                     sel = op & 0xF8;
@@ -1911,50 +1907,50 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                     }
                     switch (sel) {
                     case 0x80: /* set position components */
-                        if (op & 1) { csr = pc_c4e0_f32(csr, &pc->unk24); }
-                        if (op & 2) { csr = pc_c4e0_f32(csr, &pc->unk28); }
-                        if (op & 4) { csr = pc_c4e0_f32(csr, &pc->unk2C); }
+                        if (op & 1) { csr = pc_c4e0_f32(csr, &pc->posX); }
+                        if (op & 2) { csr = pc_c4e0_f32(csr, &pc->posY); }
+                        if (op & 4) { csr = pc_c4e0_f32(csr, &pc->posZ); }
                         break;
                     case 0x88: /* add to position */
-                        if (op & 1) { csr = pc_c4e0_f32(csr, &tmp); pc->unk24 += tmp; }
-                        if (op & 2) { csr = pc_c4e0_f32(csr, &tmp); pc->unk28 += tmp; }
-                        if (op & 4) { csr = pc_c4e0_f32(csr, &tmp); pc->unk2C += tmp; }
+                        if (op & 1) { csr = pc_c4e0_f32(csr, &tmp); pc->posX += tmp; }
+                        if (op & 2) { csr = pc_c4e0_f32(csr, &tmp); pc->posY += tmp; }
+                        if (op & 4) { csr = pc_c4e0_f32(csr, &tmp); pc->posZ += tmp; }
                         break;
                     case 0x90: /* set velocity components */
-                        if (op & 1) { csr = pc_c4e0_f32(csr, &pc->unk30); }
-                        if (op & 2) { csr = pc_c4e0_f32(csr, &pc->unk34); }
-                        if (op & 4) { csr = pc_c4e0_f32(csr, &pc->unk38); }
+                        if (op & 1) { csr = pc_c4e0_f32(csr, &pc->velX); }
+                        if (op & 2) { csr = pc_c4e0_f32(csr, &pc->velY); }
+                        if (op & 4) { csr = pc_c4e0_f32(csr, &pc->velZ); }
                         break;
                     case 0x98: /* add to velocity */
-                        if (op & 1) { csr = pc_c4e0_f32(csr, &tmp); pc->unk30 += tmp; }
-                        if (op & 2) { csr = pc_c4e0_f32(csr, &tmp); pc->unk34 += tmp; }
-                        if (op & 4) { csr = pc_c4e0_f32(csr, &tmp); pc->unk38 += tmp; }
+                        if (op & 1) { csr = pc_c4e0_f32(csr, &tmp); pc->velX += tmp; }
+                        if (op & 2) { csr = pc_c4e0_f32(csr, &tmp); pc->velY += tmp; }
+                        if (op & 4) { csr = pc_c4e0_f32(csr, &tmp); pc->velZ += tmp; }
                         break;
                     case 0xA0: /* size ramp: duration + target */
-                        csr = func_8009C18C(csr, &pc->unk12);
-                        csr = pc_c4e0_f32(csr, &pc->unk48);
-                        if (pc->unk12 == 1) {
-                            pc->unk12 = 0;
-                            pc->unk44 = pc->unk48;
+                        csr = func_8009C18C(csr, &pc->sizeRampTimer);
+                        csr = pc_c4e0_f32(csr, &pc->sizeTarget);
+                        if (pc->sizeRampTimer == 1) {
+                            pc->sizeRampTimer = 0;
+                            pc->size = pc->sizeTarget;
                         }
                         break;
                     case 0xA1: /* set flags byte */
-                        pc->unk6 = *csr++;
+                        pc->flags = *csr++;
                         break;
                     case 0xA2: /* set gravity (+flag 1 iff nonzero) */
-                        csr = pc_c4e0_f32(csr, &pc->unk3C);
-                        if (pc->unk3C == 0.0f) {
-                            pc->unk6 &= ~1;
+                        csr = pc_c4e0_f32(csr, &pc->gravity);
+                        if (pc->gravity == 0.0f) {
+                            pc->flags &= ~1;
                         } else {
-                            pc->unk6 |= 1;
+                            pc->flags |= 1;
                         }
                         break;
                     case 0xA3: /* set friction (+flag 2 iff != 1.0) */
-                        csr = pc_c4e0_f32(csr, &pc->unk40);
-                        if (pc->unk40 == 1.0f) {
-                            pc->unk6 &= ~2;
+                        csr = pc_c4e0_f32(csr, &pc->friction);
+                        if (pc->friction == 1.0f) {
+                            pc->flags &= ~2;
                         } else {
-                            pc->unk6 |= 2;
+                            pc->flags |= 2;
                         }
                         break;
                     case 0xA4: /* spawn child particle (inherits position) */
@@ -1963,18 +1959,18 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         s32 id = (csr[0] << 8) + csr[1];
 
                         csr += 2;
-                        child = func_8009BC4C(pc, pc->unk8, id);
+                        child = func_8009BC4C(pc, pc->trackId, id);
                         if (child != NULL) {
-                            child->unk24 = pc->unk24;
-                            child->unk28 = pc->unk28;
-                            child->unk2C = pc->unk2C;
-                            child->unk4 = pc->unk4;
-                            child->unk5C = pc->unk5C;
-                            child->unk60 = pc->unk60;
-                            if (child->unk60 != NULL) {
-                                child->unk60->unk2A += 1;
+                            child->posX = pc->posX;
+                            child->posY = pc->posY;
+                            child->posZ = pc->posZ;
+                            child->generatorId = pc->generatorId;
+                            child->generator = pc->generator;
+                            child->emitter = pc->emitter;
+                            if (child->emitter != NULL) {
+                                child->emitter->unk2A += 1;
                             }
-                            func_8009C4E0(child, pc, pc->unk8 >> 3);
+                            func_8009C4E0(child, pc, pc->trackId >> 3);
                         }
                         break;
                     }
@@ -1984,13 +1980,13 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         s32 id = (csr[0] << 8) + csr[1];
 
                         csr += 2;
-                        gen = (UnkGenerator *) func_800A19EC(pc->unk8, id);
+                        gen = (UnkGenerator *) func_800A19EC(pc->trackId, id);
                         if (gen != NULL) {
-                            gen->posX = pc->unk24;
-                            gen->posY = pc->unk28;
-                            gen->posZ = pc->unk2C;
-                            gen->generator_id = pc->unk4;
-                            gen->xf = pc->unk60;
+                            gen->posX = pc->posX;
+                            gen->posY = pc->posY;
+                            gen->posZ = pc->posZ;
+                            gen->generator_id = pc->generatorId;
+                            gen->xf = pc->emitter;
                             if (gen->xf != NULL) {
                                 gen->xf->unk2A += 1;
                             }
@@ -2003,7 +1999,7 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         s32 range = (csr[2] << 8) + csr[3];
 
                         csr += 4;
-                        pc->unk22 = (u16) ((s32) (random_f32() * (f32) range) + lo);
+                        pc->lifetime = (u16) ((s32) (random_f32() * (f32) range) + lo);
                         break;
                     }
                     case 0xA7: /* percent-chance immediate death */
@@ -2011,18 +2007,18 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         u8 chance = *csr++;
 
                         if ((s32) chance >= (s32) (random_f32() * 100.0f)) {
-                            pc->unk22 = 1;
+                            pc->lifetime = 1;
                             goto halt;
                         }
                         break;
                     }
                     case 0xA8: /* jitter position by +/- range per axis */
                         csr = pc_c4e0_f32(csr, &tmp);
-                        pc->unk24 += (2.0f * tmp * random_f32()) - tmp;
+                        pc->posX += (2.0f * tmp * random_f32()) - tmp;
                         csr = pc_c4e0_f32(csr, &tmp);
-                        pc->unk28 += (2.0f * tmp * random_f32()) - tmp;
+                        pc->posY += (2.0f * tmp * random_f32()) - tmp;
                         csr = pc_c4e0_f32(csr, &tmp);
-                        pc->unk2C += (2.0f * tmp * random_f32()) - tmp;
+                        pc->posZ += (2.0f * tmp * random_f32()) - tmp;
                         break;
                     case 0xA9: /* random cone-scatter of velocity */
                         csr = pc_c4e0_f32(csr, &tmp);
@@ -2035,77 +2031,77 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         s32 range = (csr[2] << 8) + csr[3];
 
                         csr += 4;
-                        child = func_8009BC4C(pc, pc->unk8, lo + (s32) ((f32) range * random_f32()));
+                        child = func_8009BC4C(pc, pc->trackId, lo + (s32) ((f32) range * random_f32()));
                         if (child != NULL) {
-                            child->unk24 = pc->unk24;
-                            child->unk28 = pc->unk28;
-                            child->unk2C = pc->unk2C;
-                            child->unk4 = pc->unk4;
-                            child->unk5C = pc->unk5C;
-                            child->unk60 = pc->unk60;
-                            if (child->unk60 != NULL) {
-                                child->unk60->unk2A += 1;
+                            child->posX = pc->posX;
+                            child->posY = pc->posY;
+                            child->posZ = pc->posZ;
+                            child->generatorId = pc->generatorId;
+                            child->generator = pc->generator;
+                            child->emitter = pc->emitter;
+                            if (child->emitter != NULL) {
+                                child->emitter->unk2A += 1;
                             }
-                            func_8009C4E0(child, pc, pc->unk8 >> 3);
+                            func_8009C4E0(child, pc, pc->trackId >> 3);
                         }
                         break;
                     }
                     case 0xAB: /* scale velocity */
                         csr = pc_c4e0_f32(csr, &tmp);
-                        pc->unk30 *= tmp;
-                        pc->unk34 *= tmp;
-                        pc->unk38 *= tmp;
+                        pc->velX *= tmp;
+                        pc->velY *= tmp;
+                        pc->velZ *= tmp;
                         break;
                     case 0xAC: /* size ramp with random extra target */
-                        csr = func_8009C18C(csr, &pc->unk12);
-                        csr = pc_c4e0_f32(csr, &pc->unk48);
+                        csr = func_8009C18C(csr, &pc->sizeRampTimer);
+                        csr = pc_c4e0_f32(csr, &pc->sizeTarget);
                         csr = pc_c4e0_f32(csr, &tmp);
-                        pc->unk48 += tmp * random_f32();
-                        if (pc->unk12 == 1) {
-                            pc->unk12 = 0;
-                            pc->unk44 = pc->unk48;
+                        pc->sizeTarget += tmp * random_f32();
+                        if (pc->sizeRampTimer == 1) {
+                            pc->sizeRampTimer = 0;
+                            pc->size = pc->sizeTarget;
                         }
                         break;
                     case 0xAD:
-                        pc->unk6 |= 0x80;
+                        pc->flags |= 0x80;
                         break;
                     case 0xAE:
-                        pc->unk6 &= ~0x60;
+                        pc->flags &= ~0x60;
                         break;
                     case 0xAF:
-                        pc->unk6 = (pc->unk6 & ~0x40) | 0x20;
+                        pc->flags = (pc->flags & ~0x40) | 0x20;
                         break;
                     case 0xB0:
-                        pc->unk6 = (pc->unk6 & ~0x20) | 0x40;
+                        pc->flags = (pc->flags & ~0x20) | 0x40;
                         break;
                     case 0xB1:
-                        pc->unk6 |= 0x60;
+                        pc->flags |= 0x60;
                         break;
                     case 0xB2:
-                        pc->unk6 |= 0x200;
+                        pc->flags |= 0x200;
                         break;
                     case 0xB3:
-                        pc->unk6 &= ~0x400;
+                        pc->flags &= ~0x400;
                         break;
                     case 0xB4:
-                        pc->unk6 |= 0x400;
+                        pc->flags |= 0x400;
                         break;
                     case 0xB5:
-                        pc->unk6 |= 0x100;
+                        pc->flags |= 0x100;
                         break;
                     case 0xB6:
-                        pc->unk6 &= ~0x100;
+                        pc->flags &= ~0x100;
                         break;
                     case 0xB7: /* home velocity onto tracked DObj */
                     {
-                        s32 idx = *csr++ + pc->unkD;
+                        s32 idx = *csr++ + pc->dobjSlotBase;
 
                         func_8009C350(pc, (DObj *) PC_BANKPTR(D_800D6A14[idx]));
                         break;
                     }
                     case 0xB8: /* accelerate toward tracked DObj */
                     {
-                        s32 idx = csr[0] + pc->unkD;
+                        s32 idx = csr[0] + pc->dobjSlotBase;
 
                         csr = pc_c4e0_f32(csr + 1, &tmp);
                         func_8009C44C(pc, (DObj *) PC_BANKPTR(D_800D6A14[idx]), tmp);
@@ -2117,21 +2113,21 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         s32 id = (csr[0] << 8) + csr[1];
 
                         csr += 2;
-                        child = func_8009BC4C(pc, pc->unk8, id);
+                        child = func_8009BC4C(pc, pc->trackId, id);
                         if (child != NULL) {
-                            child->unk24 = pc->unk24;
-                            child->unk28 = pc->unk28;
-                            child->unk2C = pc->unk2C;
-                            child->unk30 = pc->unk30;
-                            child->unk34 = pc->unk34;
-                            child->unk38 = pc->unk38;
-                            child->unk4 = pc->unk4;
-                            child->unk5C = pc->unk5C;
-                            child->unk60 = pc->unk60;
-                            if (child->unk60 != NULL) {
-                                child->unk60->unk2A += 1;
+                            child->posX = pc->posX;
+                            child->posY = pc->posY;
+                            child->posZ = pc->posZ;
+                            child->velX = pc->velX;
+                            child->velY = pc->velY;
+                            child->velZ = pc->velZ;
+                            child->generatorId = pc->generatorId;
+                            child->generator = pc->generator;
+                            child->emitter = pc->emitter;
+                            if (child->emitter != NULL) {
+                                child->emitter->unk2A += 1;
                             }
-                            func_8009C4E0(child, pc, pc->unk8 >> 3);
+                            func_8009C4E0(child, pc, pc->trackId >> 3);
                         }
                         break;
                     }
@@ -2141,14 +2137,14 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
 
                         for (i = 0; i < 4; i++) {
                             f32 d = (f32) ((s8) csr[i] * 2) * random_f32();
-                            (&pc->unk50)[i] = (u8) (s32) ((f32) (&pc->unk50)[i] + d);
+                            (&pc->primTarget[0])[i] = (u8) (s32) ((f32) (&pc->primTarget[0])[i] + d);
                         }
                         csr += 4;
-                        if (pc->unk14 == 0) {
-                            pc->unk4C = pc->unk50;
-                            pc->unk4D = pc->unk51;
-                            pc->unk4E = pc->unk52;
-                            pc->unk4F = pc->unk53;
+                        if (pc->primFadeTimer == 0) {
+                            pc->primColor[0] = pc->primTarget[0];
+                            pc->primColor[1] = pc->primTarget[1];
+                            pc->primColor[2] = pc->primTarget[2];
+                            pc->primColor[3] = pc->primTarget[3];
                         }
                         break;
                     }
@@ -2156,26 +2152,26 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                     {
                         s32 i;
 
-                        u8 *env = (u8 *) &pc->unk58;
+                        u8 *env = (u8 *) &pc->envTarget;
 
                         for (i = 0; i < 4; i++) {
                             f32 d = (f32) ((s8) csr[i] * 2) * random_f32();
                             env[i] = (u8) (s32) ((f32) env[i] + d);
                         }
                         csr += 4;
-                        if (pc->unk16 == 0) {
-                            pc->unk54 = env[0];
-                            pc->unk55 = env[1];
-                            pc->unk56 = env[2];
-                            pc->unk57 = env[3];
+                        if (pc->envFadeTimer == 0) {
+                            pc->envColor[0] = env[0];
+                            pc->envColor[1] = env[1];
+                            pc->envColor[2] = env[2];
+                            pc->envColor[3] = env[3];
                         }
                         break;
                     }
                     case 0xBC: /* texture frame = byte0, + rand*byte1 */
-                        pc->unkB = csr[0];
+                        pc->textureFrame = csr[0];
                         tmp = (f32) csr[1];
                         tmp = tmp * random_f32();
-                        pc->unkB = (u8) (s32) ((f32) pc->unkB + tmp);
+                        pc->textureFrame = (u8) (s32) ((f32) pc->textureFrame + tmp);
                         csr += 2;
                         break;
                     case 0xBD: /* renormalize speed to base + rand*range */
@@ -2186,55 +2182,55 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         csr = pc_c4e0_f32(csr, &tmp);
                         csr = pc_c4e0_f32(csr, &range);
                         tmp += range * random_f32();
-                        mag = sqrtf((pc->unk30 * pc->unk30) + (pc->unk34 * pc->unk34) + (pc->unk38 * pc->unk38));
+                        mag = sqrtf((pc->velX * pc->velX) + (pc->velY * pc->velY) + (pc->velZ * pc->velZ));
                         if (mag > 0.00001f) {
                             tmp /= mag;
-                            pc->unk30 *= tmp;
-                            pc->unk34 *= tmp;
-                            pc->unk38 *= tmp;
+                            pc->velX *= tmp;
+                            pc->velY *= tmp;
+                            pc->velZ *= tmp;
                         }
                         break;
                     }
                     case 0xBE: /* per-axis velocity scale */
                         csr = pc_c4e0_f32(csr, &tmp);
-                        pc->unk30 *= tmp;
+                        pc->velX *= tmp;
                         csr = pc_c4e0_f32(csr, &tmp);
-                        pc->unk34 *= tmp;
+                        pc->velY *= tmp;
                         csr = pc_c4e0_f32(csr, &tmp);
-                        pc->unk38 *= tmp;
+                        pc->velZ *= tmp;
                         break;
                     case 0xBF: /* drive tracked-DObj slot from our position */
-                        pc->unk6 = (u16) (pc->unk6 | 0x8000 | (((*csr++ + pc->unkD) - 1) << 0xC));
+                        pc->flags = (u16) (pc->flags | 0x8000 | (((*csr++ + pc->dobjSlotBase) - 1) << 0xC));
                         break;
                     case 0xC0: /* colour fade: duration + per-channel targets */
                     {
-                        u8 *cur = &pc->unk4C;
-                        u8 *tgt = &pc->unk50;
+                        u8 *cur = &pc->primColor[0];
+                        u8 *tgt = &pc->primTarget[0];
 
-                        csr = func_8009C18C(csr, &pc->unk14);
+                        csr = func_8009C18C(csr, &pc->primFadeTimer);
                         tgt[0] = cur[0];
                         tgt[1] = cur[1];
                         tgt[2] = cur[2];
                         tgt[3] = cur[3];
-                        if (op & 1) { pc->unk50 = *csr++; }
-                        if (op & 2) { pc->unk51 = *csr++; }
-                        if (op & 4) { pc->unk52 = *csr++; }
-                        if (op & 8) { pc->unk53 = *csr++; }
-                        if (pc->unk14 == 1) {
+                        if (op & 1) { pc->primTarget[0] = *csr++; }
+                        if (op & 2) { pc->primTarget[1] = *csr++; }
+                        if (op & 4) { pc->primTarget[2] = *csr++; }
+                        if (op & 8) { pc->primTarget[3] = *csr++; }
+                        if (pc->primFadeTimer == 1) {
                             cur[0] = tgt[0];
                             cur[1] = tgt[1];
                             cur[2] = tgt[2];
                             cur[3] = tgt[3];
-                            pc->unk14 = 0;
+                            pc->primFadeTimer = 0;
                         }
                         break;
                     }
                     case 0xD0: /* env colour fade: duration + per-channel targets */
                     {
-                        u8 *cur = &pc->unk54;
-                        u8 *tgt = (u8 *) &pc->unk58;
+                        u8 *cur = &pc->envColor[0];
+                        u8 *tgt = (u8 *) &pc->envTarget;
 
-                        csr = func_8009C18C(csr, &pc->unk16);
+                        csr = func_8009C18C(csr, &pc->envFadeTimer);
                         tgt[0] = cur[0];
                         tgt[1] = cur[1];
                         tgt[2] = cur[2];
@@ -2243,12 +2239,12 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                         if (op & 2) { tgt[1] = *csr++; }
                         if (op & 4) { tgt[2] = *csr++; }
                         if (op & 8) { tgt[3] = *csr++; }
-                        if (pc->unk16 == 1) {
+                        if (pc->envFadeTimer == 1) {
                             cur[0] = tgt[0];
                             cur[1] = tgt[1];
                             cur[2] = tgt[2];
                             cur[3] = tgt[3];
-                            pc->unk16 = 0;
+                            pc->envFadeTimer = 0;
                         }
                         break;
                     }
@@ -2256,53 +2252,53 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                     {
                         s32 i;
 
-                        u8 *env = (u8 *) &pc->unk58;
+                        u8 *env = (u8 *) &pc->envTarget;
 
                         for (i = 0; i < 4; i++) {
                             f32 d = random_f32() * (f32) ((s8) csr[i] * 2);
-                            (&pc->unk50)[i] = (u8) (s32) ((f32) (&pc->unk50)[i] + d);
+                            (&pc->primTarget[0])[i] = (u8) (s32) ((f32) (&pc->primTarget[0])[i] + d);
                             env[i] = (u8) (s32) ((f32) env[i] + d);
                         }
                         csr += 4;
-                        if (pc->unk14 == 0) {
-                            pc->unk4C = pc->unk50;
-                            pc->unk4D = pc->unk51;
-                            pc->unk4E = pc->unk52;
-                            pc->unk4F = pc->unk53;
+                        if (pc->primFadeTimer == 0) {
+                            pc->primColor[0] = pc->primTarget[0];
+                            pc->primColor[1] = pc->primTarget[1];
+                            pc->primColor[2] = pc->primTarget[2];
+                            pc->primColor[3] = pc->primTarget[3];
                         }
-                        if (pc->unk16 == 0) {
-                            pc->unk54 = env[0];
-                            pc->unk55 = env[1];
-                            pc->unk56 = env[2];
-                            pc->unk57 = env[3];
+                        if (pc->envFadeTimer == 0) {
+                            pc->envColor[0] = env[0];
+                            pc->envColor[1] = env[1];
+                            pc->envColor[2] = env[2];
+                            pc->envColor[3] = env[3];
                         }
                         break;
                     }
                     case 0xE2:
-                        pc->unk6 |= 8;
+                        pc->flags |= 8;
                         break;
                     case 0xE3:
-                        pc->unkC = *csr++;
+                        pc->paletteIndex = *csr++;
                         break;
                     case 0xFA: /* loop start, count byte */
-                        pc->unk9 = *csr++;
-                        pc->unk20 = (u16) (csr - base);
+                        pc->loopCount = *csr++;
+                        pc->loopStart = (u16) (csr - base);
                         break;
                     case 0xFB: /* loop back while --count != 0 */
-                        pc->unk9 -= 1;
-                        if (pc->unk9 != 0) {
-                            csr = base + pc->unk20;
+                        pc->loopCount -= 1;
+                        if (pc->loopCount != 0) {
+                            csr = base + pc->loopStart;
                         }
                         break;
                     case 0xFC: /* set return point */
-                        pc->unk1E = (u16) (csr - base);
+                        pc->returnPoint = (u16) (csr - base);
                         break;
                     case 0xFD: /* jump to return point */
-                        csr = base + pc->unk1E;
+                        csr = base + pc->returnPoint;
                         break;
                     case 0xFE:
                     case 0xFF: /* end: die this frame */
-                        pc->unk22 = 1;
+                        pc->lifetime = 1;
                         goto halt;
                     default:
                         break;
@@ -2314,40 +2310,40 @@ UnkParticle *func_8009C4E0(UnkParticle *pc, UnkParticle *prev, s32 bank) {
                 }
             }
 halt:
-            pc->unk1C = (u16) (csr - base);
-            pc->unk10 = wait;
+            pc->scriptOffset = (u16) (csr - base);
+            pc->waitTimer = wait;
         }
     }
 
     /* size interpolation toward unk48 over unk12 frames */
-    if (pc->unk12 != 0) {
-        pc->unk44 = pc->unk44 + ((pc->unk48 - pc->unk44) / (f32) pc->unk12);
-        pc->unk12 -= 1;
+    if (pc->sizeRampTimer != 0) {
+        pc->size = pc->size + ((pc->sizeTarget - pc->size) / (f32) pc->sizeRampTimer);
+        pc->sizeRampTimer -= 1;
     }
     /* fixed-point colour fades (16.16 steps of 0x10000/frames) */
-    if (pc->unk14 != 0) {
-        s32 step = 0x10000 / pc->unk14;
+    if (pc->primFadeTimer != 0) {
+        s32 step = 0x10000 / pc->primFadeTimer;
 
-        pc->unk4C = (u8) (((pc->unk4C << 0x10) + ((pc->unk50 - pc->unk4C) * step)) >> 0x10);
-        pc->unk4D = (u8) (((pc->unk4D << 0x10) + ((pc->unk51 - pc->unk4D) * step)) >> 0x10);
-        pc->unk4E = (u8) (((pc->unk4E << 0x10) + ((pc->unk52 - pc->unk4E) * step)) >> 0x10);
-        pc->unk4F = (u8) (((pc->unk4F << 0x10) + ((pc->unk53 - pc->unk4F) * step)) >> 0x10);
-        pc->unk14 -= 1;
+        pc->primColor[0] = (u8) (((pc->primColor[0] << 0x10) + ((pc->primTarget[0] - pc->primColor[0]) * step)) >> 0x10);
+        pc->primColor[1] = (u8) (((pc->primColor[1] << 0x10) + ((pc->primTarget[1] - pc->primColor[1]) * step)) >> 0x10);
+        pc->primColor[2] = (u8) (((pc->primColor[2] << 0x10) + ((pc->primTarget[2] - pc->primColor[2]) * step)) >> 0x10);
+        pc->primColor[3] = (u8) (((pc->primColor[3] << 0x10) + ((pc->primTarget[3] - pc->primColor[3]) * step)) >> 0x10);
+        pc->primFadeTimer -= 1;
     }
-    if (pc->unk16 != 0) {
-        s32 step = 0x10000 / pc->unk16;
-        u8 *env = (u8 *) &pc->unk58;
+    if (pc->envFadeTimer != 0) {
+        s32 step = 0x10000 / pc->envFadeTimer;
+        u8 *env = (u8 *) &pc->envTarget;
 
-        pc->unk54 = (u8) (((pc->unk54 << 0x10) + ((env[0] - pc->unk54) * step)) >> 0x10);
-        pc->unk55 = (u8) (((pc->unk55 << 0x10) + ((env[1] - pc->unk55) * step)) >> 0x10);
-        pc->unk56 = (u8) (((pc->unk56 << 0x10) + ((env[2] - pc->unk56) * step)) >> 0x10);
-        pc->unk57 = (u8) (((pc->unk57 << 0x10) + ((env[3] - pc->unk57) * step)) >> 0x10);
-        pc->unk16 -= 1;
+        pc->envColor[0] = (u8) (((pc->envColor[0] << 0x10) + ((env[0] - pc->envColor[0]) * step)) >> 0x10);
+        pc->envColor[1] = (u8) (((pc->envColor[1] << 0x10) + ((env[1] - pc->envColor[1]) * step)) >> 0x10);
+        pc->envColor[2] = (u8) (((pc->envColor[2] << 0x10) + ((env[2] - pc->envColor[2]) * step)) >> 0x10);
+        pc->envColor[3] = (u8) (((pc->envColor[3] << 0x10) + ((env[3] - pc->envColor[3]) * step)) >> 0x10);
+        pc->envFadeTimer -= 1;
     }
 
     /* lifetime countdown; on expiry unlink, drop refs and free */
-    pc->unk22 -= 1;
-    if (pc->unk22 == 0) {
+    pc->lifetime -= 1;
+    if (pc->lifetime == 0) {
         UnkParticle *ret;
         UnkGenerator *gn;
 
@@ -2356,17 +2352,17 @@ halt:
         } else {
             prev->next = pc->next;
         }
-        gn = pc->unk5C;
+        gn = pc->generator;
         ret = pc->next;
-        if ((gn != NULL) && (pc->unk6 & 4) && (gn->kind == 2)) {
+        if ((gn != NULL) && (pc->flags & 4) && (gn->kind == 2)) {
             gn->vars.vortex.lifetime -= 1;
         }
-        if (pc->unk60 != NULL) {
-            pc->unk60->unk2A -= 1;
-            if (pc->unk60->unk2A == 0) {
+        if (pc->emitter != NULL) {
+            pc->emitter->unk2A -= 1;
+            if (pc->emitter->unk2A == 0) {
                 /* may run the emitter's callback, which can relink the
                  * list head -- re-read it, exactly like the ROM does */
-                func_8009B69C(pc->unk60);
+                func_8009B69C(pc->emitter);
                 if (prev == NULL) {
                     ret = D_800D69C8[bank];
                 }
@@ -2378,19 +2374,19 @@ halt:
         return ret;
     }
 
-    if (pc->unk6 & 4) {
+    if (pc->flags & 4) {
         /* vortex mode: cylindrical orbit around the owning generator.
          * unk3C/unk40 are reused as Euler angles, unk30 as the orbit phase,
          * unk34 as the radial scale, unk38 as the height along the axis. */
-        UnkGenerator *gn = pc->unk5C;
+        UnkGenerator *gn = pc->generator;
         f32 sinA, cosA, sinB, cosB, sinT, cosT, sinP, cosP;
         f32 r, t, h, fx, fz;
         s32 idx;
 
-        idx = (s32) (pc->unk3C * 651.8986f) & 0xFFF;
+        idx = (s32) (pc->gravity * 651.8986f) & 0xFFF;
         sinA = pc_c4e0_sin(idx);
         cosA = pc_c4e0_sin(idx + 0x400);
-        idx = (s32) (pc->unk40 * 651.8986f) & 0xFFF;
+        idx = (s32) (pc->friction * 651.8986f) & 0xFFF;
         sinB = pc_c4e0_sin(idx);
         cosB = pc_c4e0_sin(idx + 0x400);
         cosA *= 0.000030517578f;
@@ -2398,7 +2394,7 @@ halt:
         cosB *= 0.000030517578f;
         sinB *= 0.000030517578f;
 
-        pc->unk38 += gn->vars.rotate.base;
+        pc->velZ += gn->vars.rotate.base;
 
         r = gn->unk38;
         if (r < 0.0f) {
@@ -2412,43 +2408,43 @@ halt:
         sinT = pc_c4e0_sin(idx);
         cosT = pc_c4e0_sin(idx + 0x400);
 
-        h = pc->unk38;
+        h = pc->velZ;
         r = r + (h * (sinT / cosT));
-        r = r * pc->unk34;
+        r = r * pc->velY;
 
-        pc->unk30 += gn->gravity;
-        idx = (s32) (pc->unk30 * 651.8986f) & 0xFFF;
+        pc->velX += gn->gravity;
+        idx = (s32) (pc->velX * 651.8986f) & 0xFFF;
         sinP = pc_c4e0_sin(idx);
         cosP = pc_c4e0_sin(idx + 0x400);
 
         r = r * 0.000030517578f;
         fx = r * cosP;
         fz = r * sinP;
-        pc->unk24 = (fx * cosB) + (h * sinB) + gn->posX;
-        pc->unk28 = (-fx * sinA * sinB) + (fz * cosA) + (h * sinA * cosB) + gn->posY;
-        pc->unk2C = ((-fx * cosA * sinB) - (fz * sinA)) + (h * cosA * cosB) + gn->posZ;
+        pc->posX = (fx * cosB) + (h * sinB) + gn->posX;
+        pc->posY = (-fx * sinA * sinB) + (fz * cosA) + (h * sinA * cosB) + gn->posY;
+        pc->posZ = ((-fx * cosA * sinB) - (fz * sinA)) + (h * cosA * cosB) + gn->posZ;
     } else {
-        if (pc->unk6 & 1) {
-            pc->unk34 -= pc->unk3C;
+        if (pc->flags & 1) {
+            pc->velY -= pc->gravity;
         }
-        if (pc->unk6 & 2) {
-            pc->unk30 *= pc->unk40;
-            pc->unk34 *= pc->unk40;
-            pc->unk38 *= pc->unk40;
+        if (pc->flags & 2) {
+            pc->velX *= pc->friction;
+            pc->velY *= pc->friction;
+            pc->velZ *= pc->friction;
         }
-        pc->unk24 += pc->unk30;
-        pc->unk28 += pc->unk34;
-        pc->unk2C += pc->unk38;
+        pc->posX += pc->velX;
+        pc->posY += pc->velY;
+        pc->posZ += pc->velZ;
     }
 
     /* mirror our position into the tracked DObj selected by 0xBF */
-    if (pc->unk6 & 0x8000) {
-        DObj *dobj = (DObj *) PC_BANKPTR(D_800D6A18[(pc->unk6 & 0x7000) >> 0xC]);
+    if (pc->flags & 0x8000) {
+        DObj *dobj = (DObj *) PC_BANKPTR(D_800D6A18[(pc->flags & 0x7000) >> 0xC]);
 
         if (dobj != NULL) {
-            dobj->pos.v.x = pc->unk24;
-            dobj->pos.v.y = pc->unk28;
-            dobj->pos.v.z = pc->unk2C;
+            dobj->pos.v.x = pc->posX;
+            dobj->pos.v.y = pc->posY;
+            dobj->pos.v.z = pc->posZ;
         }
     }
     return pc->next;
@@ -2841,7 +2837,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
     D_800BE3EC += 1;
     sp20C = 0;
     do {
-        if (arg0->unk30 & (1 << sp20C)) {
+        if (arg0->velX & (1 << sp20C)) {
             var_s2 = *(&D_800D69C8 + (sp20C * 4));
             if (var_s2 != NULL) {
                 do {
@@ -3735,7 +3731,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
             s32 dsdx, dtdy;
             s32 cmS, maskS, cmT, maskT;
 
-            flags = p->unk6;
+            flags = p->flags;
             if (flags & 8) {
                 if (!(arg1 & 1)) {
                     continue;
@@ -3743,14 +3739,14 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
             } else if (!(arg1 & 2)) {
                 continue;
             }
-            if (p->unk44 == 0.0f) {
+            if (p->size == 0.0f) {
                 continue;
             }
 
-            px = p->unk24;
-            py = p->unk28;
-            pz = p->unk2C;
-            em = (PortXfEmitter *) p->unk60;
+            px = p->posX;
+            py = p->posY;
+            pz = p->posZ;
+            em = (PortXfEmitter *) p->emitter;
 
             if (em != NULL) {
                 if (D_800BE3EC != em->frameStamp) {
@@ -3824,7 +3820,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
                 continue;
             }
 
-            sprScale = invW * p->unk44;
+            sprScale = invW * p->size;
 
             /* Screen-space extents: center, center+half-extent, mirror. */
             scX = cx * vsX + vtX;
@@ -3850,24 +3846,24 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
             /* Texture bank lookup (tables normalised by PORT func_8009B768:
              * header native, data[] slots are u32 host addresses). */
             {
-                s32 bank = p->unk8 & 7;
+                s32 bank = p->trackId & 7;
 
-                tex = D_800D6A98[bank][p->unkA];
+                tex = D_800D6A98[bank][p->textureId];
                 fmt = tex->fmt;
                 siz = tex->siz;
                 tw = tex->width;
                 th = tex->height;
-                img = tex->data[p->unkB];
+                img = tex->data[p->textureFrame];
                 pal = 0;
                 if (fmt == 2) {
                     u32 cnt = tex->count;
 
-                    if (p->unkC != 0xFF) {
-                        pal = tex->data[cnt + p->unkC];
+                    if (p->paletteIndex != 0xFF) {
+                        pal = tex->data[cnt + p->paletteIndex];
                     } else if (flags & 0x10) {
                         pal = tex->data[cnt];
                     } else {
-                        pal = tex->data[cnt + p->unkB];
+                        pal = tex->data[cnt + p->textureFrame];
                     }
                 }
 
@@ -3994,42 +3990,42 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
                     PortColorMod *cm = (PortColorMod *) D_800D6AB8[bank];
 
                     if (cm != NULL) {
-                        s32 cr = (cm->r * p->unk4C) >> 16;
-                        s32 cg = (cm->g * p->unk4D) >> 16;
-                        s32 cb = (cm->b * p->unk4E) >> 16;
+                        s32 cr = (cm->r * p->primColor[0]) >> 16;
+                        s32 cg = (cm->g * p->primColor[1]) >> 16;
+                        s32 cb = (cm->b * p->primColor[2]) >> 16;
 
                         if (cr >= 0x100) cr = 0xFF;
                         if (cg >= 0x100) cg = 0xFF;
                         if (cb >= 0x100) cb = 0xFF;
                         g->words.w0 = 0xFA000000;
                         g->words.w1 = ((u32) cr << 24) | ((u32) (cg & 0xFF) << 16) |
-                                      ((u32) (cb & 0xFF) << 8) | p->unk4F;
+                                      ((u32) (cb & 0xFF) << 8) | p->primColor[3];
                         g++;
                     } else {
                         g->words.w0 = 0xFA000000;
-                        g->words.w1 = ((u32) p->unk4C << 24) | ((u32) p->unk4D << 16) |
-                                      ((u32) p->unk4E << 8) | p->unk4F;
+                        g->words.w1 = ((u32) p->primColor[0] << 24) | ((u32) p->primColor[1] << 16) |
+                                      ((u32) p->primColor[2] << 8) | p->primColor[3];
                         g++;
                     }
 
                     /* Env color + combiner. */
                     if (flags & 0x80) {
                         if (cm != NULL) {
-                            s32 er = (cm->r * p->unk54) >> 16;
-                            s32 eg = (cm->g * p->unk55) >> 16;
-                            s32 eb = (cm->b * p->unk56) >> 16;
+                            s32 er = (cm->r * p->envColor[0]) >> 16;
+                            s32 eg = (cm->g * p->envColor[1]) >> 16;
+                            s32 eb = (cm->b * p->envColor[2]) >> 16;
 
                             if (er >= 0x100) er = 0xFF;
                             if (eg >= 0x100) eg = 0xFF;
                             if (eb >= 0x100) eb = 0xFF;
                             g->words.w0 = 0xFB000000;
                             g->words.w1 = ((u32) er << 24) | ((u32) (eg & 0xFF) << 16) |
-                                          ((u32) (eb & 0xFF) << 8) | p->unk57;
+                                          ((u32) (eb & 0xFF) << 8) | p->envColor[3];
                             g++;
                         } else {
                             g->words.w0 = 0xFB000000;
-                            g->words.w1 = ((u32) p->unk54 << 24) | ((u32) p->unk55 << 16) |
-                                          ((u32) p->unk56 << 8) | p->unk57;
+                            g->words.w1 = ((u32) p->envColor[0] << 24) | ((u32) p->envColor[1] << 16) |
+                                          ((u32) p->envColor[2] << 8) | p->envColor[3];
                             g++;
                         }
                         g->words.w0 = 0xFC30B261; g->words.w1 = 0x5566DB6D; g++;
@@ -4047,7 +4043,7 @@ void func_8009E8F4(void *arg0, s32 arg1, void **arg2) {
                     if (flags & 0x400) {
                         mode = 3;
                     } else {
-                        s32 bl = (flags & 0x200) ? p->unk57 : 8;
+                        s32 bl = (flags & 0x200) ? p->envColor[3] : 8;
 
                         mode = 1;
                         if (lastBlendAlpha != bl) {
@@ -5265,8 +5261,8 @@ UnkParticle *func_800A194C(void) {
         D_800D6AF0 = (struct Ovl1ParticleNode *) p;
     }
     D_800BE3E8 = D_800BE3E8 + 1;
-    p->unk4 = D_800BE3E8;
-    *(s32 *) &p->unk4C = 0;
+    p->generatorId = D_800BE3E8;
+    *(s32 *) &p->primColor[0] = 0;
     return p;
 }
 
@@ -5748,20 +5744,20 @@ s32 arg1;
     if (pc != NULL) {
         do {
             next_pc = pc->next;
-            if (id == pc->unk4) {
+            if (id == pc->generatorId) {
                 if (prev_pc == NULL) {
                     D_800D69C8[arg1] = next_pc;
                 } else {
                     prev_pc->next = next_pc;
                 }
-                gn = pc->unk5C;
-                if ((gn != NULL) && (pc->unk6 & 4) && (gn->kind == 2)) {
+                gn = pc->generator;
+                if ((gn != NULL) && (pc->flags & 4) && (gn->kind == 2)) {
                     gn->vars.vortex.lifetime--;
                 }
-                if (pc->unk60 != NULL) {
-                    pc->unk60->unk2A--;
-                    if (pc->unk60->unk2A == 0) {
-                        func_8009B69C(pc->unk60);
+                if (pc->emitter != NULL) {
+                    pc->emitter->unk2A--;
+                    if (pc->emitter->unk2A == 0) {
+                        func_8009B69C(pc->emitter);
                     }
                 }
                 pc->next = D_800D69C0;
@@ -5836,19 +5832,19 @@ s32 arg1;
     prev_pc = NULL;
     while (pc != NULL) {
         next_pc = pc->next;
-        if (id == pc->unk4) {
+        if (id == pc->generatorId) {
             if (prev_pc == NULL) {
                 D_800D69C8[arg1] = next_pc;
             } else {
                 prev_pc->next = next_pc;
             }
-            if ((pc->unk5C != NULL) && (pc->unk6 & 4) && (pc->unk5C->kind == 2)) {
-                pc->unk5C->vars.vortex.lifetime--;
+            if ((pc->generator != NULL) && (pc->flags & 4) && (pc->generator->kind == 2)) {
+                pc->generator->vars.vortex.lifetime--;
             }
-            if (pc->unk60 != NULL) {
-                pc->unk60->unk2A--;
-                if (pc->unk60->unk2A == 0) {
-                    func_8009B69C(pc->unk60);
+            if (pc->emitter != NULL) {
+                pc->emitter->unk2A--;
+                if (pc->emitter->unk2A == 0) {
+                    func_8009B69C(pc->emitter);
                 }
             }
             pc->next = D_800D69C0;
@@ -5956,9 +5952,9 @@ void func_800A238C(f32 arg0, f32 arg1, f32 arg2) {
         q++;
         if (p != NULL) {
             do {
-                p->unk24 += arg0;
-                p->unk28 += arg1;
-                p->unk2C += arg2;
+                p->posX += arg0;
+                p->posY += arg1;
+                p->posZ += arg2;
                 p = p->next;
             } while (p != NULL);
         }
@@ -5989,8 +5985,8 @@ s32 arg1;
     p = D_800D69C8[arg1];
     if (p != NULL) {
         do {
-            if (p->unk4 == arg0) {
-                p->unk6 |= 0x800;
+            if (p->generatorId == arg0) {
+                p->flags |= 0x800;
             }
             p = p->next;
         } while (p != NULL);
@@ -5998,8 +5994,8 @@ s32 arg1;
     p = (UnkParticle *) D_800D6A0C;
     if (p != NULL) {
         do {
-            if (p->unk4 == arg0) {
-                p->unk6 |= 0x800;
+            if (p->generatorId == arg0) {
+                p->flags |= 0x800;
             }
             p = p->next;
         } while (p != NULL);
@@ -6016,8 +6012,8 @@ s32 arg1;
     p = D_800D69C8[arg1];
     if (p != NULL) {
         do {
-            if (p->unk4 == arg0) {
-                p->unk6 &= ~0x800;
+            if (p->generatorId == arg0) {
+                p->flags &= ~0x800;
             }
             p = p->next;
         } while (p != NULL);
@@ -6025,8 +6021,8 @@ s32 arg1;
     p = (UnkParticle *) D_800D6A0C;
     if (p != NULL) {
         do {
-            if (p->unk4 == arg0) {
-                p->unk6 &= ~0x800;
+            if (p->generatorId == arg0) {
+                p->flags &= ~0x800;
             }
             p = p->next;
         } while (p != NULL);

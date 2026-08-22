@@ -7,6 +7,10 @@
 #include "ovl1/ovl1_7.h"
 #include "unk_structs/D_800E1B50.h"
 
+/* K&R form is load-bearing here: all 3 call sites below pass 0 args
+ * against a real 1-arg (s32) signature -- the ROM relies on whatever is
+ * already sitting in $a0. An ANSI prototype breaks compilation with
+ * "too few arguments". */
 extern void func_8019B424_ovl7();
 extern FUNCLIST D_8021C864_ovl9;
 void func_80202CB4_ovl9(void);
@@ -23,6 +27,10 @@ extern FUNCLIST D_8021C840_ovl9;
 
 extern s32 eneCheckAboveBelowPlayer(void);
 extern s32 func_8019A9AC_ovl7(f32, f32);
+/* K&R form is load-bearing here: its one call site below passes 0 args
+ * against this function's own real 1-arg (struct GObj *) signature --
+ * the ROM relies on whatever is already sitting in $a0. An ANSI
+ * prototype breaks compilation with "too few arguments". */
 void func_8020705C_ovl9();
 
 /* D_8021DA64_ovl9: literal, this TU owns its .rodata */
@@ -94,8 +102,8 @@ void func_80201E40_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, &D_8021C7B4_ovl9);
 }
 
-IN_FILE void func_80201F94_ovl9();
-IN_FILE void func_80201E40_ovl9();
+IN_FILE void func_80201F94_ovl9(void);
+IN_FILE void func_80201E40_ovl9(GObj *);
 void func_80201E88_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -224,8 +232,8 @@ void func_80202518_ovl9(GObj *arg0) {
 }
 
 extern s32 D_801CC3C4;
-IN_FILE void func_80202654_ovl9();
-IN_FILE void func_80202518_ovl9();
+IN_FILE void func_80202654_ovl9(void);
+IN_FILE void func_80202518_ovl9(GObj *);
 void func_80202560_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -307,8 +315,8 @@ void func_80202AD8_ovl9(GObj *arg0) {
 }
 
 extern s32 D_801CC3E8;
-IN_FILE void func_80202C28_ovl9();
-IN_FILE void func_80202AD8_ovl9();
+IN_FILE void func_80202C28_ovl9(void);
+IN_FILE void func_80202AD8_ovl9(GObj *);
 void func_80202B20_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -462,8 +470,8 @@ void func_802033B0_ovl9(GObj *arg0) {
 }
 
 extern s32 D_801CC40C;
-IN_FILE void func_80203500_ovl9();
-IN_FILE void func_802033B0_ovl9();
+IN_FILE void func_80203500_ovl9(void);
+IN_FILE void func_802033B0_ovl9(GObj *);
 void func_802033F8_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -813,8 +821,8 @@ void func_80204750_ovl9(GObj *arg0) {
 
 extern s32 D_801CC478;
 extern FUNCLIST D_8021C844_ovl9;
-IN_FILE void func_8020488C_ovl9();
-IN_FILE void func_80204750_ovl9();
+IN_FILE void func_8020488C_ovl9(void);
+IN_FILE void func_80204750_ovl9(GObj *);
 void func_80204798_ovl9(struct GObj *arg0) {
     struct UnkStruct800E1B50 *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -906,6 +914,7 @@ void func_80204C98_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 59/136, tail scheduling (we run 2 instructions short, so every
    branch displacement after the first early-exit differs by 2).  Everything
    through the two give-up exits and the bearing computation is the ROM's.
@@ -916,7 +925,6 @@ void func_80204C98_ovl9(struct GObj *arg0) {
    copy and ABSF for the speed test all come from there.  Moving the railDist
    copy below the accel stores is inert -- IDO schedules it into the
    eneGetPlayerHeight delay slot either way. */
-#ifdef MIPS_TO_C
 extern s32 func_8019A900_ovl7(s32 *);
 extern f32 eneGetPlayerHeight(void);
 extern Vector *lbvector_Rotate(Vector *, s32, f32);
@@ -966,10 +974,7 @@ void func_80204D5C_ovl9(struct GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204D5C_ovl9.s")
-#endif
-#ifdef PORT
+#elif defined(PORT)
 struct PcO910TrackPos {
     s32 unk0;
     f32 unk4;
@@ -1017,6 +1022,8 @@ void func_80204D5C_ovl9(GObj *arg0) {
         }
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204D5C_ovl9.s")
 #endif
 
 void func_80204F80_ovl9(struct GObj *arg0) {
@@ -1657,6 +1664,7 @@ struct GObj *arg0;
     }
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 55/67, v0/v1/a0 rotation plus one delay-slot hoist.  All three
    depth arms, the default's utilPrintf and the shared tail are the ROM's.
    Residues: the ROM keeps objId in $v0 and the D_800EA520 variant in $v1
@@ -1667,7 +1675,6 @@ struct GObj *arg0;
    calls func_802071AC_ovl9() with no prototype in scope, so the implicit
    int() declaration makes a void definition a hard error.  Do not "fix"
    that by adding a file-scope prototype. */
-#ifdef MIPS_TO_C
 s32 func_802071AC_ovl9(void) {
     u32 id;
     s32 var;
@@ -1691,10 +1698,7 @@ s32 func_802071AC_ovl9(void) {
             break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802071AC_ovl9.s")
-#endif
-#ifdef PORT
+#elif defined(PORT)
 /* Mino depth selector: latch the burrow floor D_800EA8A0 at 100/140/
  * 180 units below the current height for variants 1/2/3; any other
  * variant logs the "MINO_Var Over" complaint and uses the 180 depth. */
@@ -1719,5 +1723,7 @@ void func_802071AC_ovl9(void) {
             break;
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802071AC_ovl9.s")
 #endif
 

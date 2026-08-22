@@ -1217,7 +1217,7 @@ void func_801DD9FC_ovl16(s32 arg0) {
     gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
 }
 
-#ifdef PORT
+#ifndef PORT
 /* Wall-crusher side panel: face inward per the D_800E98E0 side flag, park
  * offscreen (y=-1000) while the parent entity is above y=45 during stage 5,
  * then snap to y=0, play the extend anims, wait for the parent to rise past
@@ -1258,7 +1258,45 @@ void func_801DDA98_ovl16(s32 arg0) {
     func_8019D958_ovl7(omCurrentObj->objId);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DDA98_ovl16.s")
+/* Wall-crusher side panel: face inward per the D_800E98E0 side flag, park
+ * offscreen (y=-1000) while the parent entity is above y=45 during stage 5,
+ * then snap to y=0, play the extend anims, wait for the parent to rise past
+ * y=25 and play the retract anims before despawning. */
+void func_801DDA98_ovl16(s32 arg0) {
+    s32 other = D_800E0D50[omCurrentObj->objId];
+
+    func_8019BB58_ovl7();
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801DDE54_ovl16;
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        D_800E17D0[omCurrentObj->objId] = 0.0f;
+    } else {
+        D_800E17D0[omCurrentObj->objId] = 3.1415927f;
+    }
+    D_800E9020[omCurrentObj->objId] = D_800E9020[other];
+    D_800E8920[omCurrentObj->objId] = 0;
+    func_800B33F4();
+    func_800A9864(D_801EF728_ovl16[D_800E98E0[omCurrentObj->objId]], 0x23, 0x10);
+    while ((gEntitiesNextPosYArray[other] > 45.0f) && (D_800D7098.unk4 == 5) && (D_800D7098.unk18 == 0) &&
+           (gEntityFuncListIDArray[other] != 1)) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = -1000.0f;
+        ohSleep(1);
+    }
+    if ((D_800D7098.unk4 == 5) && (D_800D7098.unk18 == 0) && (gEntityFuncListIDArray[other] != 1)) {
+        gEntitiesNextPosYArray[omCurrentObj->objId] = 0.0f;
+        play_sound(0x1C5);
+        func_800AA018(D_801EF738_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        func_800AA154(D_801EF730_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        func_800AA018(D_801EF758_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        func_800AA018(D_801EF750_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        while (gEntitiesNextPosYArray[other] <= 25.0f) {
+            ohSleep(1);
+        }
+        func_800AA018(D_801EF748_ovl16[D_800E98E0[omCurrentObj->objId]]);
+        func_800AA154(D_801EF740_ovl16[D_800E98E0[omCurrentObj->objId]]);
+    }
+    func_8019D958_ovl7(omCurrentObj->objId);
+}
 #endif
 
 void func_801DDE54_ovl16(s32 arg0) {
@@ -2128,7 +2166,7 @@ void func_801E17E0_ovl16(s32 arg0) {
     }
 }
 
-#ifdef PORT
+#ifndef PORT
 /* Phase-7 entry: halt all motion, then if a punch is in flight (heading
  * D_800EA6E0 nonzero) collect a bitmask of the four fist DObjs still extended
  * past +/-10 units, command the retract (heading = -10), wait for the mask to
@@ -2180,7 +2218,56 @@ void func_801E18BC_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 7;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E18BC_ovl16.s")
+/* Phase-7 entry: halt all motion, then if a punch is in flight (heading
+ * D_800EA6E0 nonzero) collect a bitmask of the four fist DObjs still extended
+ * past +/-10 units, command the retract (heading = -10), wait for the mask to
+ * be cleared by the per-limb watchers, and play the per-round (D_800D7098.unk8)
+ * recover anims. */
+void func_801E18BC_ovl16(s32 arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 7;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3050[omCurrentObj->objId] = 0.0f;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
+    D_800E9E20[omCurrentObj->objId] = 0;
+    if (D_800EA6E0[omCurrentObj->objId] != 0.0f) {
+        if (D_800DFBD0[omCurrentObj->objId][5]->pos.v.y > 10.0f) {
+            D_800E9E20[omCurrentObj->objId] |= 1;
+        }
+        if (D_800DFBD0[omCurrentObj->objId][7]->pos.v.x > 10.0f) {
+            D_800E9E20[omCurrentObj->objId] |= 8;
+        }
+        if (D_800DFBD0[omCurrentObj->objId][9]->pos.v.y < -10.0f) {
+            D_800E9E20[omCurrentObj->objId] |= 2;
+        }
+        if (D_800DFBD0[omCurrentObj->objId][3]->pos.v.x < -10.0f) {
+            D_800E9E20[omCurrentObj->objId] |= 4;
+        }
+        D_800EA6E0[omCurrentObj->objId] = -10.0f;
+        play_sound(0x1AA);
+        while (D_800E9E20[omCurrentObj->objId] != 0) {
+            ohSleep(1);
+        }
+        switch (D_800D7098.unk8) {
+        case 0:
+            func_800AA018(0x1047D);
+            func_800AA154(0x1047C);
+            break;
+        case 1:
+            func_800AA018(0x10477);
+            func_800AA154(0x10476);
+            break;
+        case 2:
+            func_800AA018(0x10483);
+            func_800AA154(0x10482);
+            break;
+        }
+        D_800EA6E0[omCurrentObj->objId] = 0.0f;
+    }
+    gEntityFuncListIDArray[omCurrentObj->objId] = 7;
+}
 #endif
 
 void func_801E1C1C_ovl16(s32 arg0) {
@@ -3159,7 +3246,77 @@ void func_801E4754_ovl16(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E4754_ovl16.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 225/233, and 12 instructions SHORT -- this one has a real structural
+ * lead, not just register noise. The ROM evaluates D_801F0120_ovl16[4] TWICE: once
+ * at listing index 200 (`lw $t8, 0x10($v0)` / `bgtz`) to pick the unk8C anim list,
+ * and again at index 222 (`bgtz $t5`) for the dispatch test, with no call in
+ * between. IDO CSEs the two into one load here, which is exactly the missing 12
+ * words; LEVERS 10's read-inline does not help because both uses ARE already
+ * written inline. Whoever picks this up next: find the spelling that forces the
+ * second load (that is the whole gap), then the rest is register naming.
+ * Also solved and kept: the else-arm store must be the DOUBLE literal `0.0`, not
+ * `0.0f` -- that stops IDO sharing the store's zero with the `!= 0.0f` compare and
+ * reproduces the ROM's `beql` + duplicated `mtc1 $zero, $f14` (230 -> 225, LEVERS 7).
+ * Measured and rejected: caching omCurrentObj in a local (grows the frame past the
+ * ROM's 0x18, which has NO stack locals at all), and reversing the float compare. */
+/* Phase-0x12 ram-attack drive tick: lean the body ([1].angle.z) with the
+ * horizontal speed while charging (D_800E9FE0 set), clamp x to the +/-200
+ * lane, and while ramming (D_800E9E20) clamp the leading edge instead of the
+ * shared bounds helper; then the usual phase-4 anim/step dispatch. */
+void func_801E538C_ovl16(s32 arg0) {
+    struct DObj *d;
+
+    if ((D_800E9FE0[omCurrentObj->objId].as_u32 != 0) && (D_800E3050[omCurrentObj->objId] != 0.0f)) {
+        D_800EA6E0[omCurrentObj->objId] = -0.028571427f;
+    } else {
+        D_800EA6E0[omCurrentObj->objId] = 0.0;
+    }
+    d = D_800DFBD0[omCurrentObj->objId][1];
+    d->angle.v.z += D_800E3050[omCurrentObj->objId] * D_800EA6E0[omCurrentObj->objId];
+    while (d->angle.v.z > 6.2831855f) {
+        d->angle.v.z -= 6.2831855f;
+    }
+    while (d->angle.v.z < -6.2831855f) {
+        d->angle.v.z += 6.2831855f;
+    }
+    if (gEntitiesNextPosXArray[omCurrentObj->objId] < -200.0f) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = -200.0f;
+    }
+    if (gEntitiesNextPosXArray[omCurrentObj->objId] > 200.0f) {
+        gEntitiesNextPosXArray[omCurrentObj->objId] = 200.0f;
+    }
+    D_800E8920[omCurrentObj->objId] = 0;
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        if (D_800E3050[omCurrentObj->objId] < 0.0f) {
+            if (gEntitiesNextPosXArray[omCurrentObj->objId] < -200.0f) {
+                gEntitiesNextPosXArray[omCurrentObj->objId] = -200.0f;
+            }
+        } else if (gEntitiesNextPosXArray[omCurrentObj->objId] > 200.0f) {
+            gEntitiesNextPosXArray[omCurrentObj->objId] = 200.0f;
+        }
+        if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+            if (gEntitiesNextPosYArray[omCurrentObj->objId] < 20.0f) {
+                gEntitiesNextPosYArray[omCurrentObj->objId] = 20.0f;
+            }
+        } else if (gEntitiesNextPosYArray[omCurrentObj->objId] > 260.0f) {
+            gEntitiesNextPosYArray[omCurrentObj->objId] = 260.0f;
+        }
+    } else {
+        func_801DB400_ovl16();
+    }
+    if (D_801F0120_ovl16[4] <= 0) {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9948;
+    } else {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9900;
+    }
+    if ((D_800D7098.unk18 != 0) || (D_801F0120_ovl16[4] <= 0)) {
+        func_801DC314_ovl16(0, 0, 0);
+    } else {
+        func_801DB698_ovl16(0);
+    }
+}
+#elif defined(PORT)
 /* Phase-0x12 ram-attack drive tick: lean the body ([1].angle.z) with the
  * horizontal speed while charging (D_800E9FE0 set), clamp x to the +/-200
  * lane, and while ramming (D_800E9E20) clamp the leading edge instead of the

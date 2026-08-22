@@ -38,28 +38,41 @@ extern u8 D_801CB4DC_ovl7, D_801CB590_ovl7, D_801CD240_ovl7;
 struct Sub800E1B50_Unk98;
 extern struct Sub800E1B50_Unk98 D_801CB500_ovl7;
 extern u8 D_801D0A38_ovl7, D_801D0A58_ovl7;
-void func_800B4954();
-void func_800B4D70();
-void func_800B4EBC();
-void func_800B799C();
-void func_801A8FFC_ovl7();
+void func_800B4954(GObj *);
+void func_800B4D70(GObj *);
+void func_800B4EBC(GObj *);
+void func_800B799C(GObj *);
+void func_801A8FFC_ovl7(GObj *);
 extern s32 D_800D7090;
+/* K&R form is load-bearing here: func_801AB174_ovl7 (unguarded, already matched)
+ * calls this with 0 args against a real 1-arg (GObj *) signature -- the ROM
+ * relies on whatever is already sitting in $a0. An ANSI prototype breaks that
+ * compile with "too few arguments". */
 void func_801ABBA0_ovl7();
-void func_801A9268_ovl7();
-void func_801A9FC4_ovl7();
-void func_801AA344_ovl7();
+void func_801A9268_ovl7(void);
+void func_801A9FC4_ovl7(s32);
+void func_801AA344_ovl7(s32);
+/* K&R form is load-bearing here: struct AnimReq/AnimReqSet aren't defined
+ * until further down this file. A `struct AnimReq *` parameter here would
+ * only get IDO's function-prototype-scope tag (a distinct, incomplete type
+ * that dies at the closing paren), so it clashes with the real struct at
+ * these functions' definitions below ("Incompatible type for the function
+ * parameter"); `void *` clashes the same way, since it's a different type
+ * from `struct AnimReq *` for prototype-matching purposes. Fixing this needs
+ * a new standalone `struct AnimReq;` forward declaration ahead of the struct
+ * definition, which is out of scope for a declaration-only edit. */
 void func_801AA600_ovl7();
 void func_801AA690_ovl7();
 void func_801AA78C_ovl7();
 void func_801AA850_ovl7();
-void func_801AAE60_ovl7();
-void func_801A9930_ovl7();
-void func_801A8CDC_ovl7();
-void func_801AA1D4_ovl7();
-void func_801AAAF8_ovl7();
-void func_801AB884_ovl7();
-void func_801AC33C_ovl7();
-void func_801AC448_ovl7();
+void func_801AAE60_ovl7(void);
+void func_801A9930_ovl7(s32);
+void func_801A8CDC_ovl7(s32);
+void func_801AA1D4_ovl7(GObj *);
+void func_801AAAF8_ovl7(s32);
+void func_801AB884_ovl7(s32);
+void func_801AC33C_ovl7(GObj *);
+void func_801AC448_ovl7(GObj *);
 
 
 // ovl1_8

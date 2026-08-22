@@ -185,11 +185,57 @@ void func_801FBE90_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 67/145, register rotation from the entry block onward.  The ROM
    holds &omCurrentObj in $a3 and the objId in $v1; ours uses $t0 and $a2, and
    the D_800E1B50 base follows into the neighbouring register.  Structure,
    schedule and stack are otherwise the ROM's. */
-#ifdef MIPS_TO_C
+extern s32 func_8019A9AC_ovl7(f32, f32);
+/* Sleeper wake watcher: with the doze counter expired (D_800E9AA0 at
+ * zero), any on-screen presence (top bits of D_800DD8D0) snaps the
+ * entity awake into halt state 2 -- facing reset, speed zeroed,
+ * accel clamp lifted.  While still dozing, count down; if Kirby
+ * closes within the 120-unit box it wakes into alert state 3, and
+ * an armed proximity flag (D_800E9FE0, with no turnaround pending)
+ * fires chase state 5 instead.  All transitions rebind the thread to
+ * the shared dispatcher func_801FBB00. */
+void func_801FBF50_ovl9(struct GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    rec = D_800E1B50[id];
+    if (D_800E9AA0[id].as_u32 == 0) {
+        if (((u32) D_800DD8D0[id] >> 0x1E) != 0) {
+            D_800E9FE0[id].as_u32 = 0;
+            D_800EA1A0[omCurrentObj->objId] = -1;
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            id = omCurrentObj->objId;
+            D_800E64D0[id] = D_800E6690[id];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
+            gEntityFuncListIDArray[omCurrentObj->objId] = 2;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FBB00_ovl9);
+        }
+    } else {
+        D_800E9AA0[id].as_u32--;
+        if (func_8019A9AC_ovl7(-1.0f, 120.0f) == 3) {
+            id = omCurrentObj->objId;
+            if (((u32) D_800DD8D0[id] >> 0x1E) != 0) {
+                D_800E9FE0[id].as_u32 = 0;
+                D_800EA1A0[omCurrentObj->objId] = -1;
+                gEntityFuncListIDArray[omCurrentObj->objId] = 3;
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FBB00_ovl9);
+            }
+        } else {
+            id = omCurrentObj->objId;
+            if ((D_800E9FE0[id].as_u32 != 0) && (rec->unk3C == 0) && (((u32) D_800DD8D0[id] >> 0x1E) != 0)) {
+                gEntityFuncListIDArray[id] = 5;
+                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FBB00_ovl9);
+            }
+        }
+    }
+}
+#elif defined(PORT)
 extern s32 func_8019A9AC_ovl7(f32, f32);
 /* Sleeper wake watcher: with the doze counter expired (D_800E9AA0 at
  * zero), any on-screen presence (top bits of D_800DD8D0) snaps the
@@ -237,53 +283,6 @@ void func_801FBF50_ovl9(struct GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_801FBF50_ovl9.s")
-#endif
-#ifdef PORT
-extern s32 func_8019A9AC_ovl7(f32, f32);
-/* Sleeper wake watcher: with the doze counter expired (D_800E9AA0 at
- * zero), any on-screen presence (top bits of D_800DD8D0) snaps the
- * entity awake into halt state 2 -- facing reset, speed zeroed,
- * accel clamp lifted.  While still dozing, count down; if Kirby
- * closes within the 120-unit box it wakes into alert state 3, and
- * an armed proximity flag (D_800E9FE0, with no turnaround pending)
- * fires chase state 5 instead.  All transitions rebind the thread to
- * the shared dispatcher func_801FBB00. */
-void func_801FBF50_ovl9(struct GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    u32 id;
-
-    id = omCurrentObj->objId;
-    rec = D_800E1B50[id];
-    if (D_800E9AA0[id].as_u32 == 0) {
-        if (((u32) D_800DD8D0[id] >> 0x1E) != 0) {
-            D_800E9FE0[id].as_u32 = 0;
-            D_800EA1A0[omCurrentObj->objId] = -1;
-            D_800E6690[omCurrentObj->objId] = 0.0f;
-            id = omCurrentObj->objId;
-            D_800E64D0[id] = D_800E6690[id];
-            D_800E6850[omCurrentObj->objId] = 65535.0f;
-            gEntityFuncListIDArray[omCurrentObj->objId] = 2;
-            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FBB00_ovl9);
-        }
-    } else {
-        D_800E9AA0[id].as_u32--;
-        if (func_8019A9AC_ovl7(-1.0f, 120.0f) == 3) {
-            id = omCurrentObj->objId;
-            if (((u32) D_800DD8D0[id] >> 0x1E) != 0) {
-                D_800E9FE0[id].as_u32 = 0;
-                D_800EA1A0[omCurrentObj->objId] = -1;
-                gEntityFuncListIDArray[omCurrentObj->objId] = 3;
-                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FBB00_ovl9);
-            }
-        } else {
-            id = omCurrentObj->objId;
-            if ((D_800E9FE0[id].as_u32 != 0) && (rec->unk3C == 0) && (((u32) D_800DD8D0[id] >> 0x1E) != 0)) {
-                gEntityFuncListIDArray[id] = 5;
-                assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801FBB00_ovl9);
-            }
-        }
-    }
-}
 #endif
 
 void func_801FC194_ovl9(struct GObj *arg0) {
@@ -1784,7 +1783,58 @@ void func_80201008_ovl9(struct GObj *arg0) {
     func_8019F3B0_ovl7();
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 14/166, $v0/$v1 for the omCurrentObj pointer plus a branch that
+   sits 35 instructions earlier in ours -- we emit a shorter form of the first
+   float test, so the bc1t displacement differs.  That gap is the one thing
+   worth attacking here. */
+/* Floater altitude governor: inert while Kirby is rising fast (his
+ * vertical speed >= 3).  Measures height above Kirby's foot point --
+ * from the latched hover base D_800EA6E0 once bobbing, else from the
+ * live position -- and: dives at -3 when more than 140 above, climbs
+ * at +3 when below 120 over walkable ground (floor normal y < 1
+ * keeps it climbing), and otherwise settles into the bob (1.3 up,
+ * -0.02 gravity, 1.4 cap, latching the current height as the bob
+ * base). */
+void func_80201168_ovl9(void) {
+    u32 id;
+    s32 bobbing;
+    f32 h;
+
+    if (!(D_800E3210[0] >= 3.0f)) {
+        id = omCurrentObj->objId;
+        bobbing = D_800E9C60[id];
+        if (bobbing != 0) {
+            h = D_800EA6E0[id] - (gEntitiesNextPosYArray[0] + 20.0f);
+        } else {
+            h = gEntitiesNextPosYArray[id] - (gEntitiesNextPosYArray[0] + 20.0f);
+        }
+        if (h > 140.0f) {
+            D_800E9C60[id] = 0;
+            D_800E3210[omCurrentObj->objId] = -3.0f;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3C90[omCurrentObj->objId] = 3.0f;
+            return;
+        }
+        if ((h < 120.0f) && (D_800E6F50[id].y < 1.0f)) {
+            D_800E9C60[id] = 0;
+            D_800E3210[omCurrentObj->objId] = 3.0f;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3C90[omCurrentObj->objId] = 3.0f;
+            return;
+        }
+        if (bobbing == 0) {
+            D_800E3210[id] = 1.3f;
+            D_800E3750[omCurrentObj->objId] = -0.02f;
+            D_800E3C90[omCurrentObj->objId] = 1.4f;
+            id = omCurrentObj->objId;
+            D_800EA6E0[id] = gEntitiesNextPosYArray[id];
+            id = omCurrentObj->objId;
+        }
+        D_800E9C60[id] = 1;
+    }
+}
+#elif defined(PORT)
 /* Floater altitude governor: inert while Kirby is rising fast (his
  * vertical speed >= 3).  Measures height above Kirby's foot point --
  * from the latched hover base D_800EA6E0 once bobbing, else from the
@@ -1948,10 +1998,7 @@ void func_802016A8_ovl9(void) {
         D_800E3750[id] = sp34.y * -1.5f;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_802016A8_ovl9.s")
-#endif
-#ifdef PORT
+#elif defined(PORT)
 extern s32 random_soft_s32_range(s32);
 extern f32 D_8021C7A4_ovl9[];
 /* Spitter shot burst (draft above, completed): spawn a 0x15 shot;
@@ -1981,6 +2028,8 @@ void func_802016A8_ovl9(void) {
         D_800E3750[id] = sp34.y * -1.5f;
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_802016A8_ovl9.s")
 #endif
 
 IN_FILE void func_8020165C_ovl9(s32, s32, f32);

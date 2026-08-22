@@ -68,7 +68,45 @@ void func_801EF9B0_ovl10(GObj *arg0) {
     }
 }
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 122/140, whole-function register permutation. The instruction COUNT is
+ * exact (139 + the trailing nop) and the sequence tracks the ROM; only the register
+ * names differ ($a2/$v0/$v1 vs $a3/$v1/$a2/$a1), so nearly every word reads as a diff.
+ * Solved and kept: the ROM shares ONE `objId << 2` between the D_800DEF90 and
+ * D_800E1B50 stores and re-reads objId for every later table, so `id` is hoisted for
+ * exactly those two and left inline everywhere else -- that is what makes the count
+ * come out at 140 instead of 142 (LEVERS 11 and the objId pair in lever 4). Sharing
+ * it for only one of the two, or for neither, measured 130-133/141-142. */
+/* Intro drop variant of func_801EF790: same setup (damage callback, shared ovl7
+ * anim list, facing taken from the raw D_800E0D50 parent index), but with a
+ * 10.8 up / -0.3 gravity arc, X drift back toward the track origin over 60
+ * ticks, and func_801EFC58 as the per-frame hit poll. */
+void func_801EFA38_ovl10(s32 arg0) {
+    void func_801EFC58_ovl10(GObj *);
+    s32 id = omCurrentObj->objId;
+
+    D_800DEF90[id] = func_800B7790;
+    D_800E8E60[omCurrentObj->objId] = 1;
+    D_800E6A10[omCurrentObj->objId] = D_800E0D50[omCurrentObj->objId];
+    D_800E1B50[id]->unk8C = D_801CA04C_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801EFC58_ovl10;
+    func_800AA018(0x105F9);
+    func_800AA018(0x105FA);
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = 10.8f;
+    D_800E3750[omCurrentObj->objId] = -0.3f;
+    D_800E3050[omCurrentObj->objId] = -(gEntitiesNextPosXArray[omCurrentObj->objId] / 60.0f);
+    ohSleep(0x3C);
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
+    curObjSleepForever();
+}
+#elif defined(PORT)
 void func_801EFC58_ovl10(GObj *);
 
 /* Intro drop variant of func_801EF790: same setup (damage callback, shared

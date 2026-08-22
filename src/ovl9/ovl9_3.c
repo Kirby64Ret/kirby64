@@ -121,7 +121,9 @@ void func_801DCE44_ovl9(GObj *arg0) {
     func_801DF454_ovl9(arg0);
 }
 
-#ifndef PORT /* WIP */
+#ifdef MIPS_TO_C
+/* FACTORY: 29/260, saved-register choice ($s2 in the ROM, $s1 here, and the
+   save block 4 bytes shallower).  Body order and schedule agree. */
 void func_800AA018(s32);
 void ohSleep(s32);
 extern f32 func_8019DA50_ovl7(void);
@@ -301,6 +303,8 @@ void func_801DCE6C_ovl9(struct GObj *arg0) {
         gEntityFuncListIDArray[id] = 3;
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DCE6C_ovl9.s")
 #endif
 
 void func_8019F3F0_ovl7(void);
@@ -372,10 +376,51 @@ void func_801DD3CC_ovl9(struct GObj *arg0) {
     func_801DF454_ovl9(arg0);
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 18/164, saved-register permutation.  The ROM keeps &omCurrentObj
    in $s0 and starts its save block at 0x30; ours picks $s4 and a deeper
    block, which renames the rest.  Body order and schedule agree. */
-#ifdef MIPS_TO_C
+extern struct Sub800E1B50_Unk98 D_801CB740;
+extern f32 D_8021BDB8_ovl9[];
+/* Knockback/launch state: go fully opaque, clear the pause counter,
+ * enter anim state 4 with physics frozen and the ovl7 hit table, keep
+ * the walk velocity scaled by the per-mode speed table D_8021BDB8 and
+ * the facing sign, reset the speed factor (halved when flag 1), then
+ * fall (gravity -0.65 * factor, terminal speed |10 * factor|) one
+ * tick at a time until ground contact flips D_800E8920 to 1, and hand
+ * off to state 5. */
+void func_801DD598_ovl9(struct GObj *arg0) {
+    u32 id;
+
+    D_800E76C0[omCurrentObj->objId] = 0xFF;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB740;
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800EB160[omCurrentObj->objId] = 0.0f;
+    id = omCurrentObj->objId;
+    if (D_800EAC20[id] != 0.0f) {
+        D_800E64D0[id] = D_800EAC20[id] * D_8021BDB8_ovl9[D_800E7880[id]] * D_800E6A10[id];
+        id = omCurrentObj->objId;
+    }
+    D_800EAC20[id] = (D_800E8AE0[id] & 1) ? 0.5f : 1.0f;
+    id = omCurrentObj->objId;
+    while (D_800E8920[id] != 1) {
+        D_800E3750[id] = D_800EAC20[id] * -0.65f;
+        id = omCurrentObj->objId;
+        D_800E3C90[id] = D_800EAC20[id] * 10.0f;
+        if (D_800E3C90[id] < 0.0f) {
+            D_800E3C90[id] = -D_800E3C90[id];
+        }
+        ohSleep(1);
+        id = omCurrentObj->objId;
+    }
+    gEntityFuncListIDArray[id] = 5;
+}
+#elif defined(PORT)
 extern struct Sub800E1B50_Unk98 D_801CB740;
 extern f32 D_8021BDB8_ovl9[];
 /* Knockback/launch state: go fully opaque, clear the pause counter,
@@ -419,48 +464,6 @@ void func_801DD598_ovl9(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DD598_ovl9.s")
 #endif
-#ifdef PORT
-extern struct Sub800E1B50_Unk98 D_801CB740;
-extern f32 D_8021BDB8_ovl9[];
-/* Knockback/launch state: go fully opaque, clear the pause counter,
- * enter anim state 4 with physics frozen and the ovl7 hit table, keep
- * the walk velocity scaled by the per-mode speed table D_8021BDB8 and
- * the facing sign, reset the speed factor (halved when flag 1), then
- * fall (gravity -0.65 * factor, terminal speed |10 * factor|) one
- * tick at a time until ground contact flips D_800E8920 to 1, and hand
- * off to state 5. */
-void func_801DD598_ovl9(struct GObj *arg0) {
-    u32 id;
-
-    D_800E76C0[omCurrentObj->objId] = 0xFF;
-    D_800E98E0[omCurrentObj->objId] = 0;
-    D_800DDFD0[omCurrentObj->objId] = 4;
-    D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB740;
-    func_800AECC0(0.0f);
-    func_800AED20(0.0f);
-    D_800E8920[omCurrentObj->objId] = 0;
-    D_800EB160[omCurrentObj->objId] = 0.0f;
-    id = omCurrentObj->objId;
-    if (D_800EAC20[id] != 0.0f) {
-        D_800E64D0[id] = D_800EAC20[id] * D_8021BDB8_ovl9[D_800E7880[id]] * D_800E6A10[id];
-        id = omCurrentObj->objId;
-    }
-    D_800EAC20[id] = (D_800E8AE0[id] & 1) ? 0.5f : 1.0f;
-    id = omCurrentObj->objId;
-    while (D_800E8920[id] != 1) {
-        D_800E3750[id] = D_800EAC20[id] * -0.65f;
-        id = omCurrentObj->objId;
-        D_800E3C90[id] = D_800EAC20[id] * 10.0f;
-        if (D_800E3C90[id] < 0.0f) {
-            D_800E3C90[id] = -D_800E3C90[id];
-        }
-        ohSleep(1);
-        id = omCurrentObj->objId;
-    }
-    gEntityFuncListIDArray[id] = 5;
-}
-#endif
 
 s32 func_801A0D74_ovl7();
 void func_8019F3F0_ovl7(void);
@@ -481,7 +484,9 @@ void func_801DD818_ovl9(GObj *arg0) {
     func_801DF454_ovl9(arg0);
 }
 
-#ifndef PORT /* WIP */
+#ifdef MIPS_TO_C
+/* FACTORY: 71/278, $v1/$a1 transposition for the record pointer loaded at
+   entry; everything below inherits the rename. */
 void func_800FB914(s32);
 f32 func_801DF1B0_ovl9(void);
 extern f32 D_8021BDB8_ovl9[];
@@ -633,6 +638,8 @@ void func_801DD8BC_ovl9(struct GObj *arg0) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 4;
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DD8BC_ovl9.s")
 #endif
 
 s32 func_801A0D74_ovl7();
@@ -679,11 +686,11 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 28/184, $a2/$a3 transposition from the first omCurrentObj load on
    (the ROM materialises the pointer in $a2 and the scaled index in $a3, ours
    the other way round).  The first 13 instructions and the overall structure
    are the ROM's. */
-#ifdef MIPS_TO_C
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern s32 D_801CA550;
 extern s32 D_801CA598;
@@ -764,10 +771,7 @@ void func_801DDF9C_ovl9(GObj *arg0) {
     func_801DDD44_ovl9(arg0);
     func_801DF454_ovl9(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DDF9C_ovl9.s")
-#endif
-#ifdef PORT
+#elif defined(PORT)
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern void assign_new_process_entry(struct GObjProcess *, void (*)(GObj *));
 extern s32 D_801CA550;
@@ -849,6 +853,8 @@ void func_801DDF9C_ovl9(GObj *arg0) {
     func_801DDD44_ovl9(arg0);
     func_801DF454_ovl9(arg0);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DDF9C_ovl9.s")
 #endif
 
 /* FACTORY: 27/227, callee-saved permutation.  Length, frame, both loops,

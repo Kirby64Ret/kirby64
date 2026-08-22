@@ -927,6 +927,7 @@ void func_8021782C_ovl9(s32 arg0) {
 
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 3/167, frame 0x60 vs the ROM's 0x68 with an identical saved-register
    set (s0-s7, fp, ra).  We are 8 bytes short of the ROM's frame and every
    offset below the prologue shifts with it; an unreferenced 8-byte filler
@@ -935,7 +936,6 @@ void func_8021782C_ovl9(s32 arg0) {
    variants are the ROM's.
    NOTE: declared s32 because line 922 of this TU calls it with no prototype
    in scope; the implicit int() declaration makes a void definition an error. */
-#ifdef MIPS_TO_C
 extern s32 func_800AF230(void);
 s32 func_80217EF0_ovl9(void);
 /* Volcano/spout idle thread: play the idle animation and tick a
@@ -985,10 +985,7 @@ s32 func_80217834_ovl9(void) { /* s32: line 922 calls it with no prototype in sc
         ohSleep(1);
     } while (1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217834_ovl9.s")
-#endif
-#ifdef PORT
+#elif defined(PORT)
 extern s32 func_800AF230(void);
 s32 func_80217EF0_ovl9(void);
 /* Volcano/spout idle thread: play the idle animation and tick a
@@ -1038,6 +1035,8 @@ void func_80217834_ovl9(void) {
         ohSleep(1);
     } while (1);
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_80217834_ovl9.s")
 #endif
 
 extern s32 D_801CCE74;

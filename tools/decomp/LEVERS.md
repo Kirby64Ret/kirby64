@@ -79,10 +79,6 @@ ovl16 19, ovl10 18, ovl2 17, ovl17 16, ovl14 14, ovl19 12.
 19. **A switch arm that stores the same value as the default must be folded away.** m2c's natural three-arm `else if` reads correctly and emits four extra instructions; write two arms (149 → 145).
 
 
-20. **An unused SCALAR reserves its stack slot; an unused ARRAY does not.** This is how you fill the dead words a ROM frame contains and m2c never shows you. `f32 sp48;` declared between two used locals and never read still occupies 0x48 — worth 41/123 → 24/123 on func_80109504, where the ROM leaves exactly one dead word mid-block. `u32 pad[42]` in the same position is eliminated entirely, and so is an unused `volatile` array; a dead pad only survives as an array if something in the function makes it addressable (func_80102570 needed a `volatile` POINTER local next to it). Corollary for m2c drafts: its `spNN` "locals" that only ever receive a value are usually IDO's own spill slots for a register temp, not declarations — deleting them is what makes the frame shrink to the ROM's (func_8010C608 went 0x48 → the ROM's 0x38 that way, and func_80106C5C got worse when they were kept).
-
-
-21. **Scalars declared BEFORE a run of structs move the whole block down, not just themselves.** LEVERS 12 says which side to put them on; the measured magnitude is that moving func_8010D8A4's single `s32` from after its three Vectors to before them slid the entire local block from 0x38-0x60 onto the ROM's 0x34-0x5C (52/97 → 37/97). Pads could not do it in either position — they only grew the frame 0x60 → 0x68. Try the declaration-order move BEFORE reaching for a pad.
 
 ## GUARD ON THE SECOND VARIANT — these are floors, no source spelling reaches them
 Whole-function callee-saved permutation; one-slot temp rotation; `mul.s` source operand order (INVARIANT — reconfirmed twice); a CSE'd load landing in the neighbouring register ($v0/$v1, $a2/$a3); IDO folding an address into load offsets where the ROM CSEs it into a spilled register.
@@ -150,3 +146,47 @@ Anchor on the **LAST** `.size` in the listing (anchoring on the first matches a 
 29. **Math functions unprototyped in a TU wreck the return type.** `asinf` /
     `atan2f` with no prototype return int; local ANSI prototypes inside the
     function took func_800B26D8 straight to MATCH.
+
+## MEASURED IN THE RE-FOUNDATION WAVE (ovl2_7 lane, 1 closure / 24 seeds)
+
+30. **RECONCILES LEVER 22 — whether an unreferenced local reserves its slot
+    depends on whether the function already needs a frame, not on scalar vs
+    array.** Lever 22 (ovl7) measured "scalar pads dropped, large array kept";
+    this lane measured the apparent opposite, and both are right:
+      - Leaf-ish function, nothing else on the stack: EVERYTHING unreferenced
+        is dropped -- `u32 pad[42]` alone produced no frame at all, and an
+        unreferenced `volatile` array did the same.
+      - Function that already has real stack locals: an unreferenced SCALAR
+        between two used locals DOES reserve its word. That is how you fill
+        the dead words a ROM frame has and m2c never shows you -- an unused
+        `f32 sp48` between sp4C and sp44 was worth 41/123 -> 24/123 on
+        func_80109504.
+      - A LARGE unreferenced array is kept once the frame exists (lever 22's
+        0x160 region; this lane's `u32 pad[42]` only survived in
+        func_80102570 after a neighbouring `volatile` local forced a frame).
+    So: reach for a scalar to fill one dead word, an array to fill a large
+    dead region, and expect neither to work in a function with no other
+    locals.
+
+31. **Corollary for m2c drafts: its `spNN` "locals" that only ever RECEIVE a
+    value are usually IDO's own spill slots, not declarations.** Deleting them
+    is what shrinks the frame onto the ROM's -- func_8010C608 went 0x48 -> the
+    ROM's 0x38 that way, and func_80106C5C got measurably worse when they were
+    kept (frame 0xB0 vs the ROM's 0x90).
+
+32. **Scalars declared BEFORE a run of structs move the WHOLE block down, not
+    just themselves.** Lever 12 says which side to put them on; the magnitude
+    is that moving func_8010D8A4's single `s32` from after its three Vectors
+    to before them slid the entire local block from 0x38-0x60 onto the ROM's
+    0x34-0x5C (52/97 -> 37/97). Pads could not do it from either position --
+    they only grew the frame 0x60 -> 0x68. Try the declaration-order move
+    BEFORE reaching for a pad.
+
+33. **A held base pointer needs THREE uses before IDO stops folding it.**
+    The ROM often keeps `arg0 + 0x10` (a struct's inner array) in a register
+    and indexes PAST the array's end -- `temp_v0[3]`/`temp_v0[4]` are the
+    fields after it. With two uses IDO folds the pointer back into `$s0`
+    displacements; with three it holds it. Giving `temp_v0 = arg0->scale` its
+    third use took func_80105284 from 117/171 to 10/171 in one edit, and the
+    same shape was worth 92/120 -> 69 on func_8010B67C. func_8010D8A4 has only
+    two such reads and did NOT hold, which is the negative control.

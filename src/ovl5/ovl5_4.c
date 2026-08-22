@@ -1144,7 +1144,75 @@ void func_80168E84_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168E84_ovl5.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 0/309, UNCERTAIN -- PORT-seeded, time-boxed. Fixed the
+ * `__asm__("...")` alias (same as this file's other mole-brain
+ * functions). Compiles, word count matches (309/309), residue total
+ * (309/309): the ROM appears to read d1 via a small dispatch on
+ * rec[0x10]'s VALUE (individual `beq` against 0/1/2/3 storing the
+ * matching constant) rather than using the byte directly as this draft
+ * does, so this is likely a real source-shape gap, not only a register
+ * floor. Worth a fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+s32 func_801690F4_ovl5(s32 arg0) {
+    typedef struct { u8 b[0x14]; } MoleRec;
+    extern MoleRec D_8018E3D0_ovl5[];
+    u8 *rec = D_8018E3D0_ovl5[arg0].b;
+    s32 cell = func_80165F1C_ovl5(arg0);
+    s32 lvl = D_8018E3C8_ovl5[arg0];
+    s32 d1 = rec[0x10];
+    s32 d2 = rec[0x11];
+    s32 c1;
+    s32 c2;
+    s32 i;
+    s32 t;
+
+    c1 = func_8016A61C_ovl5(cell, d1);
+    if ((c1 != 0x29A) && (func_80165948_ovl5(c1) == 0) &&
+        (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+        rec[8] = d1;
+        return d1;
+    }
+    c2 = func_8016A61C_ovl5(cell, d2);
+    if ((c2 != 0x29A) && (func_80165948_ovl5(c2) == 0) &&
+        (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+        rec[8] = d2;
+        return d2;
+    }
+    for (i = 0; i < 3; i++) {
+        if ((i != d1) && (i != d2)) {
+            t = func_8016A61C_ovl5(cell, i);
+            if ((t != 0x29A) && (func_80165948_ovl5(t) == 0) &&
+                (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+                rec[8] = i;
+                return i;
+            }
+        }
+    }
+    if ((c1 != 0x29A) && (func_80165948_ovl5(c1) == 1) &&
+        (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+        rec[8] = d1;
+        return d1;
+    }
+    if ((c2 != 0x29A) && (func_80165948_ovl5(c2) == 1) &&
+        (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+        rec[8] = d2;
+        return d2;
+    }
+    for (i = 0; i < 3; i++) {
+        if ((i != d1) && (i != d2)) {
+            t = func_8016A61C_ovl5(cell, i);
+            if ((t != 0x29A) && (func_80165948_ovl5(t) == 1) &&
+                (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 4))) {
+                rec[8] = i;
+                return i;
+            }
+        }
+    }
+    t = random_soft_s32_range(4);
+    rec[8] = t;
+    return t;
+}
+#elif defined(PORT)
 /* CPU route step chooser: prefers the two planned directions (record bytes
  * +0x10/+0x11 from func_80168E84_ovl5), then any other direction, first
  * toward cells whose mole is down, then up-mole cells, each gated on the
@@ -1224,7 +1292,40 @@ s32 func_801695C8_ovl5(void) {
     return count;
 }
 
-#ifdef PORT
+/* FACTORY: 5/460, UNCERTAIN -- PORT-seeded, time-boxed. Compiles, word
+ * count matches (460/460), residue extreme (455/460) -- broad register/
+ * frame relabeling from word 0 (ROM frame 0x98, this draft 0x60). Worth
+ * a fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+u8 func_8016965C_ovl5(s32 arg0) {
+    s32 cand[4];
+    s32 hum[4];
+    s32 n = 0;
+    s32 m = 0;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        if ((D_8018E3C0_ovl5[i] != 0) && (i != arg0)) {
+            cand[n] = i;
+            n += 1;
+        }
+    }
+    if ((random_soft_s32_range(0x10) < ovl5_4_molepers_(D_8018E3C8_ovl5[arg0] * 0xD + 10)) &&
+        (func_801695C8_ovl5() != 0)) {
+        for (i = 0; i < n; i++) {
+            if (D_8018E3C8_ovl5[cand[i]] == 0) {
+                hum[m] = cand[i];
+                m += 1;
+            }
+        }
+        if (m == 0) {
+            return cand[0];
+        }
+        return hum[random_soft_s32_range(m)];
+    }
+    return cand[random_soft_s32_range(n)];
+}
+#elif defined(PORT)
 /* CPU target picker: lists the other living players and either returns a
  * uniformly random one, or -- on a difficulty roll (row byte 10), when a
  * human is still alive -- a random human player. (The ROM's nearest/most-
@@ -1262,7 +1363,79 @@ u8 func_8016965C_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016965C_ovl5.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 0/330, UNCERTAIN -- PORT-seeded, time-boxed. Fixed the
+ * `__asm__("...")` alias (same as this file's other mole-brain
+ * functions). Compiles, word count matches (330/330), residue total
+ * (330/330). Worth a fresh m2c pass before feeding to the permuter. */
+#ifdef MIPS_TO_C
+s32 func_80169D90_ovl5(s32 arg0, s32 arg1) {
+    typedef struct { u8 b[0x14]; } MoleRec;
+    extern MoleRec D_8018E3D0_ovl5[];
+    f32 sqrtf(f32);
+    Vector me;
+    Vector cp;
+    s32 cells[4];
+    s32 states[4];
+    s32 list[4];
+    f32 dist[4];
+    s32 n;
+    s32 best;
+    s32 dir;
+    f32 goal;
+    s32 i;
+
+    func_801659DC_ovl5(&me, arg0);
+    for (i = 0; i < 4; i++) {
+        cells[i] = func_8016A61C_ovl5(arg1, i);
+        if (cells[i] != 0x29A) {
+            states[i] = func_80165948_ovl5(cells[i]);
+        } else {
+            states[i] = 2;
+        }
+    }
+    n = 0;
+    for (i = 0; i < 4; i++) {
+        if (states[i] == 0) {
+            list[n] = i;
+            n += 1;
+        }
+    }
+    if (n == 0) {
+        for (i = 0; i < 4; i++) {
+            if (states[i] == 1) {
+                list[n] = i;
+                n += 1;
+            }
+        }
+        if (n == 0) {
+            return 0;
+        }
+    }
+    for (i = 0; i < n; i++) {
+        f32 dx;
+        f32 dz;
+
+        func_8016596C_ovl5(&cp, cells[list[i]]);
+        dx = cp.x - me.x;
+        dz = cp.z - me.z;
+        dist[i] = sqrtf((dx * dx) + (dz * dz));
+    }
+    best = 0;
+    for (i = 1; i < n; i++) {
+        if (dist[i] < dist[best]) {
+            best = i;
+        }
+    }
+    dir = list[best];
+    goal = func_80168804_ovl5((GObj *) omCurrentObj, arg1, dir);
+    if (goal == 99999.0f) {
+        return 0;
+    }
+    D_8018E3D0_ovl5[arg0].b[8] = dir;
+    *(f32 *) &D_8018E3D0_ovl5[arg0].b[0xC] = goal;
+    return 1;
+}
+#elif defined(PORT)
 /* Whack-a-neighbour reaction (rolled each odd frame the CPU stands on an
  * up-mole): scans the four adjacent cells for a mole that is down (state 0)
  * -- or, failing that, up (state 1) -- picks the nearest, computes the goal
@@ -1337,7 +1510,130 @@ s32 func_80169D90_ovl5(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80169D90_ovl5.s")
 #endif
 
-#ifdef PORT
+/* FACTORY: 4/232, UNCERTAIN -- PORT-seeded, time-boxed. Fixed the same
+ * two real bugs as func_8016A2B8_ovl5's siblings in this file: the
+ * `__asm__("...")` symbol-alias GCC extension (IDO's cc rejects it) and
+ * a missing local `extern s32 D_8018E264_ovl5;`. Compiles, word count
+ * matches (232/232), residue extreme (228/232) -- broad register/frame
+ * relabeling from word 0. Worth a fresh m2c pass before feeding to the
+ * permuter. */
+#ifdef MIPS_TO_C
+void func_8016A2B8_ovl5(s32 arg0) {
+    typedef struct { u8 b[0x14]; } MoleRec;
+    extern MoleRec D_8018E3D0_ovl5[];
+    extern s32 D_8018E264_ovl5;
+    u8 *rec = D_8018E3D0_ovl5[arg0].b;
+    s32 cell;
+    s32 lvl = D_8018E3C8_ovl5[arg0];
+    s32 dir;
+    s32 t;
+
+    cell = func_80165F1C_ovl5(arg0);
+    if (*(s32 *) (rec + 4) != 0) {
+        *(s32 *) (rec + 4) -= 1;
+    } else {
+        rec[0] = func_8016965C_ovl5(arg0);
+        if (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 9)) {
+            rec[8] = 5;
+            *(s32 *) (rec + 4) = random_soft_s32_range(0xA);
+        } else {
+            rec[8] = 6;
+        }
+    }
+    if (((D_8018E264_ovl5 % 2) != 0) && (func_80165948_ovl5(cell) == 1)) {
+        if (random_soft_s32_range(0x10) < ovl5_4_molepers_(lvl * 0xD + 5)) {
+            func_80169D90_ovl5(arg0, cell);
+        }
+    }
+    while (1) {
+        switch (rec[8]) {
+            case 0:
+            case 1:
+            case 2:
+            case 3: {
+                s32 objId;
+                f32 ox;
+                f32 oz;
+                s32 blocked;
+
+                dir = rec[8];
+                objId = D_8018E268_ovl5[arg0];
+                ox = gEntitiesNextPosXArray[objId];
+                oz = gEntitiesNextPosZArray[objId];
+                func_80167374_ovl5(arg0, dir);
+                blocked = (gEntitiesNextPosXArray[objId] == ox) && (gEntitiesNextPosZArray[objId] == oz);
+                if (blocked) {
+                    if (func_80168928_ovl5(arg0, dir, *(f32 *) (rec + 0xC)) != 0) {
+                        *(s32 *) (rec + 4) = 0;
+                        return;
+                    }
+                    *(s32 *) (rec + 4) = 1;
+                    return;
+                }
+                *(s32 *) (rec + 4) = 0;
+                return;
+            }
+            case 4:
+                D_800E9C60[omCurrentObj->objId] = 1;
+                rec[8] = 0xB;
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 6:
+                func_80168B30_ovl5(arg0);
+                *(s32 *) (rec + 4) = 1;
+                continue;
+            case 7:
+                if (func_80165AD0_ovl5(arg0) == 0) {
+                    rec[8] = 4;
+                } else {
+                    func_80167374_ovl5(arg0, 0);
+                }
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 8:
+                if (func_80165AD0_ovl5(arg0) == 1) {
+                    rec[8] = 4;
+                } else {
+                    func_80167374_ovl5(arg0, 1);
+                }
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 9:
+                if (func_80165AD0_ovl5(arg0) == 2) {
+                    rec[8] = 4;
+                } else {
+                    func_80167374_ovl5(arg0, 2);
+                }
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 10:
+                if (func_80165AD0_ovl5(arg0) == 3) {
+                    rec[8] = 4;
+                } else {
+                    func_80167374_ovl5(arg0, 3);
+                }
+                *(s32 *) (rec + 4) = 1;
+                return;
+            case 11:
+                func_80168E84_ovl5(arg0);
+                rec[8] = 0xC;
+                *(s32 *) (rec + 4) = 1;
+                /* fallthrough into the 0xC dispatch */
+            case 12:
+                t = func_801690F4_ovl5(arg0);
+                *(f32 *) (rec + 0xC) = func_80168804_ovl5((GObj *) omCurrentObj, cell, t);
+                if (*(f32 *) (rec + 0xC) == 99999.0f) {
+                    *(s32 *) (rec + 4) = 0;
+                    return;
+                }
+                *(s32 *) (rec + 4) = 1;
+                continue;
+            default:
+                return;
+        }
+    }
+}
+#elif defined(PORT)
 /* Per-tick CPU brain for mole player arg0 (record D_8018E3D0_ovl5[arg0],
  * 0x14 bytes: +0 target, +4 wait timer, +8 action, +0xC goal coord, +0x10/11
  * planned dirs): ticks the wait timer, rolls the whack chance from the
@@ -1634,13 +1930,8 @@ void func_8016A774_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016A774_ovl5.s")
 #endif
 
-#ifdef PORT
-/* Rolling shockwave spawned when a mole is bonked hard: hops to the next
- * grid cell in direction arg2 (0/1 along z, 2/3 along x) from cell arg1,
- * skips off the board edge, then rides the grid retiming every mole it
- * passes to the "popped" animation (state 1 + anim frame for difficulty
- * arg3); each racer collision speeds it up and can bounce it back the way
- * it came, and when it leaves the grid it parks and expires. */
+// DRAFT-ITERATION: pragma text parked (asm-processor text-scans for it
+// regardless of #if nesting); restore the guard structure before handoff.
 void func_8016B754_ovl5(GObj *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Vector v;
     s32 dir = arg2;
@@ -1789,9 +2080,6 @@ void func_8016B754_ovl5(GObj *arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
     func_800B1900((u16) omCurrentObj->objId);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016B754_ovl5.s")
-#endif
 
 void func_800B1900(u16);
 
@@ -1906,7 +2194,83 @@ void func_8016C410_ovl5(GObj *arg0) {
         gEntitiesAngleYArray[D_8018E268_ovl5[D_800E98E0[omCurrentObj->objId]]];
 }
 
-#ifdef PORT
+/* FACTORY: 81/238, UNCERTAIN -- PORT-seeded, time-boxed. Two real fixes:
+ * (1) `func_800A9F98`'s file-scope prototype is PORT-only, so its (f32)
+ * arg was defaulting to double-promotion (`cvt.d.s`, two arg regs) --
+ * added a local ANSI prototype; (2) `func_800B1900` kills read objId as
+ * a HALF-WORD off the pointer, not a `(u16)` cast; (3) missing local
+ * `extern s32 D_8018E420_ovl5;`. Residue (157/238) includes what looks
+ * like a real shape gap, not just registers: the ROM computes `i / 5`
+ * ONCE via `div` and reuses the quotient for both the `%2` and `%4`
+ * blink-phase checks via bit tests on the quotient; this draft's
+ * `(i/5)%2` / `(i/5)%4` as separate expressions may not CSE the same
+ * way. Worth a fresh m2c pass hoisting `i/5` into a local before feeding
+ * to the permuter. */
+#ifdef MIPS_TO_C
+void func_8016C508_ovl5(GObj *arg0, s32 arg1) {
+    extern u32 D_8018737C_ovl5[];
+    extern u32 D_80187380_ovl5[];
+    extern s32 D_8018E420_ovl5;
+    void func_8016C8C0_ovl5(GObj *);
+    void func_800A9F98(s32, f32);
+    s32 i;
+    s32 n;
+
+    D_800E98E0[omCurrentObj->objId] = arg1;
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+    D_800DF150[omCurrentObj->objId] = func_8016C8C0_ovl5;
+    func_800A9864((void *) (uintptr_t) D_8018737C_ovl5[0], 0x1869F, 0x10);
+    func_800A9F98((s32) D_80187380_ovl5[0], (f32) arg1);
+    func_800AECC0(0.0f);
+    func_800AED20(0.0f);
+    if (D_8018E420_ovl5 != 0) {
+        i = 0;
+        while (D_8018E420_ovl5 != 0) {
+            i += 1;
+            if ((i % 5) != 0) {
+                if (((i / 5) % 2) != 0) {
+                    func_800AFBB4(0, omCurrentObj);
+                } else {
+                    func_800AFBB4(1, omCurrentObj);
+                    if (D_8018E3C8_ovl5[arg1] != 0) {
+                        if (((i / 5) % 4) != 0) {
+                            func_800A9F98((s32) D_80187380_ovl5[0], (f32) arg1);
+                        } else {
+                            func_800A9F98((s32) D_80187380_ovl5[0], 4.0f);
+                        }
+                    }
+                }
+            }
+            ohSleep(1);
+        }
+        func_800B1900(*(u16 *)((u8 *)omCurrentObj + 2));
+    }
+    i = 0;
+    n = 0x3B;
+    if (D_800E9C60[D_8018E268_ovl5[arg1]] != 2) {
+        do {
+            i += 1;
+            if ((i % 5) != 0) {
+                if (((i / 5) % 2) != 0) {
+                    func_800AFBB4(0, omCurrentObj);
+                } else {
+                    func_800AFBB4(1, omCurrentObj);
+                    if (D_8018E3C8_ovl5[arg1] != 0) {
+                        if (((i / 5) % 4) != 0) {
+                            func_800A9F98((s32) D_80187380_ovl5[0], (f32) arg1);
+                        } else {
+                            func_800A9F98((s32) D_80187380_ovl5[0], 4.0f);
+                        }
+                    }
+                }
+            }
+            ohSleep(1);
+            n -= 1;
+        } while ((n != 0) && (D_800E9C60[D_8018E268_ovl5[arg1]] != 2));
+    }
+    func_800B1900(*(u16 *)((u8 *)omCurrentObj + 2));
+}
+#elif defined(PORT)
 /* Popped-mole timer companion for player arg1: shows the mole-with-flag
  * model at animation frame arg1, blink-counts while the round intro flag
  * D_8018E420_ovl5 is up, then blinks for up to 59 frames or until the
@@ -2572,8 +2936,61 @@ s32 func_8016F3E8_ovl5(s32 arg0) {
     return (arg0 / 30) / 60;
 }
 
-// DRAFT-ITERATION: pragma text parked (asm-processor text-scans for it
-// regardless of #if nesting); restore the guard structure before handoff.
+/* FACTORY: 189/201, near-miss. PORT-seeded; added the missing local
+ * `extern s32 D_8018E264_ovl5;` (PORT-only at file scope). Residue is a
+ * $v0/$v1 register-name floor on three of the five digit-position base
+ * pointers (D_8018711C_ovl5, D_80187124_ovl5, D_80187114_ovl5) -- same
+ * instructions, same offsets, just the opposite temp register each
+ * time. */
+#ifdef MIPS_TO_C
+void func_8016F40C_ovl5(GObj *arg0) {
+    extern s32 D_8018E264_ovl5;
+    extern f32 D_80187114_ovl5[];
+    extern f32 D_8018711C_ovl5[];
+    extern f32 D_80187124_ovl5[];
+    extern f32 D_8018712C_ovl5[];
+    extern f32 D_80187134_ovl5[];
+    s32 frames;
+    s32 secs;
+    s32 mins;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    omLinkGObjDL(arg0, (void (*)(GObj *)) func_800AD1A0, 0xA, 0x80000000, 0xA);
+    while (1) {
+        func_800ACBDC(arg0);
+        if (D_8018E264_ovl5 >= 0x464F) {
+            frames = 0x63;
+            secs = 0x3B;
+            mins = 9;
+        } else {
+            frames = func_8016F3A8_ovl5(D_8018E264_ovl5);
+            secs = func_8016F3C4_ovl5(D_8018E264_ovl5);
+            mins = func_8016F3E8_ovl5(D_8018E264_ovl5);
+        }
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, frames % 10,
+                           (s32) (D_8018712C_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_8018712C_ovl5[1] + D_801870B4_ovl5.yOffset));
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, frames / 10,
+                           (s32) (D_80187134_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_80187134_ovl5[1] + D_801870B4_ovl5.yOffset));
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, secs % 10,
+                           (s32) (D_8018711C_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_8018711C_ovl5[1] + D_801870B4_ovl5.yOffset));
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, secs / 10,
+                           (s32) (D_80187124_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_80187124_ovl5[1] + D_801870B4_ovl5.yOffset));
+        func_8016E650_ovl5((s32) (uintptr_t) arg0, mins,
+                           (s32) (D_80187114_ovl5[0] + D_801870B4_ovl5.xOffset),
+                           (s32) (D_80187114_ovl5[1] + D_801870B4_ovl5.yOffset));
+        ohSleep(1);
+    }
+}
+#elif defined(PORT)
+/* Round-clock HUD thread: redraws min / sec / frame digit sprites from
+ * D_8018E264_ovl5 every frame at the offsets in D_80187114..D_80187134,
+ * relative to the clock panel descriptor D_801870B4_ovl5 (capped at
+ * 9:59.99 once the count passes 0x464E). */
 void func_8016F40C_ovl5(GObj *arg0) {
     extern f32 D_80187114_ovl5[];
     extern f32 D_8018711C_ovl5[];
@@ -2616,6 +3033,9 @@ void func_8016F40C_ovl5(GObj *arg0) {
         ohSleep(1);
     }
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016F40C_ovl5.s")
+#endif
 
 void func_8016F730_ovl5(void) {
     func_800BB3F0();

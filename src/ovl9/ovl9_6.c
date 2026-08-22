@@ -1458,7 +1458,168 @@ void func_801EF354_ovl9(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_6/func_801EF354_ovl9.s")
 #endif
 
-#ifdef PORT
+#ifdef MIPS_TO_C
+/* FACTORY: 8/546, frame 0x58 vs the ROM's 0x60 and a different prologue
+   order (the ROM loads omCurrentObj before its first register save).  The
+   largest function in this bloc; the body itself tracks the ROM. */
+extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
+extern u32 D_8021C2BC_ovl9[];
+extern f32 D_8021C2C4_ovl9[];
+extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
+extern void func_800A1F30(void *);
+extern void func_800FB914(s32);
+extern void func_800BB468(s32, s32);
+extern void func_800FD570(s32, s32, f32, f32, f32);
+extern void func_801A3E80_ovl7(GObj *);
+extern s32 random_soft_s32_range(s32);
+void func_801EE064_ovl9(GObj *);
+void ohSleep(s32);
+/* Fish/critter death dispatcher (state 2): freeze into the death anim
+ * set, release any grabbed-star payload, pop the death puff (particle
+ * 3/2/0xBF) at the per-mode height from D_8021C2C4, and for the
+ * stunned modes flash + play the KO cue.  Mode 5 (carrier) spawns the
+ * two escaping halves (kind by species word: 0x5E/0x65/0x69, params 8
+ * and 9, rails offset +/-20) and kills itself; modes 7/8/9/11/12 play
+ * the splash cue, kick the water ripple via func_800FD570 and die;
+ * mode 6 rerolls itself into mode 8 or 9 and restarts; mode 13 just
+ * dies; mode 10 tumbles away -- ballistic hop with the spin applied to
+ * the model root every tick, 18 ticks out, 18 ticks decelerating back,
+ * then drifts forever with collision off (thread killed externally). */
+void func_801EF524_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    u8 mode;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    D_800DDFD0[id] = 2;
+    rec = D_800E1B50[id];
+    mode = D_800E7880[id];
+    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB470_ovl7;
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    func_800B33F4();
+    D_800E8920[omCurrentObj->objId] = 1;
+    if (D_800E9AA0[omCurrentObj->objId].as_u32 != 0) {
+        func_800A1F30(D_800E9AA0[omCurrentObj->objId].as_ptr);
+        rec->unk34 = NULL;
+        D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
+    }
+    if (mode != 0xD) {
+        id = omCurrentObj->objId;
+        func_800A7F74(3, 2, 0xBF, gEntitiesNextPosXArray[id],
+                      D_8021C2C4_ovl9[mode] + gEntitiesNextPosYArray[id],
+                      gEntitiesNextPosZArray[id]);
+    }
+    if ((mode == 5) || (mode == 6) || (mode == 0xA) || (mode == 0xB)) {
+        func_800FB914(1);
+        play_sound(0x98);
+        func_800BB468(0, 0);
+    }
+    switch (mode) {
+        case 5: {
+            s32 kind = 0;
+            s32 t;
+
+            switch (D_800E77A0[omCurrentObj->objId]) {
+                case 0x42:
+                case 0x5D:
+                case 0x5E:
+                case 0x5F:
+                    kind = 0x5E;
+                    break;
+                case 0x4B:
+                case 0x64:
+                case 0x65:
+                case 0x66:
+                    kind = 0x65;
+                    break;
+                case 0x4C:
+                case 0x68:
+                case 0x69:
+                case 0x6A:
+                    kind = 0x69;
+                    break;
+            }
+            if (kind != 0) {
+                t = func_8019DD78_ovl7(kind, 8);
+                if (t != -1) {
+                    func_800F9974(&D_800E5F90[t], &D_800E6BD0[t], 20.0f);
+                }
+                t = func_8019DD78_ovl7(kind, 9);
+                if (t != -1) {
+                    func_800F9974(&D_800E5F90[t], &D_800E6BD0[t], -20.0f);
+                }
+            }
+            rec->unk40 = 1;
+            func_801A3E80_ovl7(arg0);
+            return;
+        }
+        case 7:
+        case 8:
+        case 9:
+        case 11:
+        case 12:
+            play_sound(0x15A);
+            func_800FD570(0, rec->unk94->unk18, 0.0f, 0.0f, 0.0f);
+            rec->unk40 = 1;
+            func_801A3E80_ovl7(arg0);
+            return;
+        case 6:
+            D_800E7880[omCurrentObj->objId] = D_8021C2BC_ovl9[random_soft_s32_range(2)];
+            func_801EE064_ovl9(arg0);
+            return;
+        case 13:
+            rec->unk40 = 1;
+            func_801A3E80_ovl7(arg0);
+            return;
+        case 10: {
+            s32 flip;
+            f32 spin;
+            s32 i;
+            s32 n;
+
+            D_800DEF90[omCurrentObj->objId] = func_800B7514;
+            D_800E8E60[omCurrentObj->objId] = 1;
+            D_800E8920[omCurrentObj->objId] = 0;
+            D_800E3210[omCurrentObj->objId] = 6.0f;
+            D_800E3750[omCurrentObj->objId] = -0.325f;
+            D_800E3C90[omCurrentObj->objId] = 6.0f;
+            flip = random_soft_s32_range(2);
+            spin = (flip != 0) ? -0.05235988f : 0.05235988f;
+            id = omCurrentObj->objId;
+            D_800E3050[id] = ((flip != 0) ? 4.0f : -4.0f) * D_800EAC20[id];
+            id = omCurrentObj->objId;
+            D_800E33D0[id] = ((flip != 0) ? 4.0f : -4.0f) * D_800EADE0[id];
+            n = (s32) 18.461538f;
+            for (i = 0; i < n; i++) {
+                D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x += spin;
+                ohSleep(1);
+            }
+            id = omCurrentObj->objId;
+            D_800E3590[id] = D_800E3050[id] * -(1.0f / 18.461538f);
+            id = omCurrentObj->objId;
+            D_800E3910[id] = D_800E33D0[id] * -(1.0f / 18.461538f);
+            for (i = 0; i < n; i++) {
+                D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x += spin;
+                ohSleep(1);
+            }
+            id = omCurrentObj->objId;
+            D_800E3910[id] = 0.0f;
+            D_800E3590[id] = D_800E3910[id];
+            D_800E33D0[id] = D_800E3910[id];
+            D_800E3050[id] = D_800E3910[id];
+            D_800E3E50[id] = 65535.0f;
+            D_800E3AD0[id] = D_800E3E50[id];
+            D_800E9FE0[id].as_u32 = 0;
+            func_8019BB58_ovl7();
+            while (1) {
+                D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x += spin;
+                ohSleep(1);
+            }
+        }
+    }
+}
+#elif defined(PORT)
 extern struct Sub800E1B50_Unk98 D_801CB470_ovl7;
 extern u32 D_8021C2BC_ovl9[];
 extern f32 D_8021C2C4_ovl9[];

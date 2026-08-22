@@ -203,3 +203,20 @@ Do NOT attempt this while lanes are running.
   sealed as pasted drafts; the real prerequisite is naming the particle /
   emitter / texture and opcode records first. That is naming work, not
   matching work, and it is worth more than either function's score.
+
+- **func_802016A8_ovl9**, blocked on `extern void func_801ACCA0_ovl7(s32, s32,
+  f32, f32);` in ovl9_9.c. The ROM uses its return as a spawned track id, and
+  ovl9_15.c already declares the same symbol `s32`, so the `void` here is
+  simply wrong. Measured: cast workaround gives 82/83 (IDO emits lui/addiu/
+  jalr against the ROM's jal); the return-type fix gives 54/82 with
+  check_tu_size unchanged for ovl9_9.c (the other two call sites discard the
+  result). One-line change, ready, needs the sha1 gate.
+
+- **src/ovl9/ovl9_14.c** carries PRE-EXISTING breakage, not from this wave:
+  func_802110C0_ovl9 (5/141) and func_8021134C_ovl9 (8/102) are unguarded and
+  every diff is a rodata reloc target exactly 8 bytes low
+  (`RELOC TARGET 8021DD00 != 8021DD08`), i.e. this TU's float pool is 8 bytes
+  short upstream of them. `.text` size is exact, which is why the TU-size gate
+  stays green. Note that the full ROM sha1 has been passing with these live,
+  so this is likely a verify.py standalone-link artifact rather than real ROM
+  damage -- confirm with verify_rom.py before anyone "fixes" it.

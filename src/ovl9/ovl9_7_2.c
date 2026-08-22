@@ -449,10 +449,74 @@ void func_801F3D2C_ovl9(GObj *arg0) {
     curObjSleepForever();
 }
 
+#ifdef MIPS_TO_C
 /* FACTORY: 14/153, frame 0x48 vs the ROM's 0x50 plus the objId register
    ($v0 in the ROM, $v1 here).  Everything else -- the arg0 home store, the
    two table lookups and the tail -- lines up once those two are set. */
-#ifdef MIPS_TO_C
+extern Vector *lbvector_Rotate(Vector *, s32, f32);
+extern f32 eneGetPlayerHeight(void);
+extern void func_80199F1C_ovl7(GObj *);
+extern float atan2f(float, float);
+struct PcTrackPosition {
+    s32 unk0;
+    f32 unk4;
+};
+extern s32 func_8019A900_ovl7(struct PcTrackPosition *);
+void func_801F399C_ovl9(struct GObj *);
+/* Chaser drift hook: while active (D_800E9E20 set), drain the chase
+ * timer; when it empties and no turnaround is pending, turn to face
+ * Kirby if needed (flipping the sprite row D_800EA1A0) and drop back
+ * to state 2 on the normal thread.  Otherwise accelerate 0.4/tick
+ * along the bearing to Kirby (rail distance horizontally, player
+ * height vertically), and start a turnaround when Kirby is behind
+ * and the entity has nearly stopped. */
+void func_801F3E60_ovl9(GObj *arg0) {
+    UnkStruct800E1B50 *rec;
+    struct PcTrackPosition tp;
+    u32 id;
+
+    id = omCurrentObj->objId;
+    rec = D_800E1B50[id];
+    if (D_800E9E20[id] != 0) {
+        D_800E98E0[id]--;
+        func_8019A900_ovl7(&tp);
+        id = omCurrentObj->objId;
+        if ((D_800E98E0[id] <= 0) && (rec->unk3C == 0)) {
+            if ((f32) tp.unk0 == D_800E6A10[id]) {
+                func_80199F1C_ovl7(arg0);
+                id = omCurrentObj->objId;
+                D_800EA1A0[id] = (s32) -D_800E6A10[id];
+                id = omCurrentObj->objId;
+            }
+            gEntityFuncListIDArray[id] = 2;
+            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F399C_ovl9);
+            return;
+        }
+        {
+            Vector acc;
+            f32 ang;
+
+            ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], tp.unk4);
+            acc.x = 0.4f;
+            acc.y = 0.0f;
+            acc.z = 0.0f;
+            lbvector_Rotate(&acc, 4, ang);
+            D_800E6690[omCurrentObj->objId] = acc.x;
+            D_800E3750[omCurrentObj->objId] = acc.y;
+        }
+        if (rec->unk3C == 0) {
+            id = omCurrentObj->objId;
+            if ((f32) tp.unk0 != D_800E6A10[id]) {
+                f32 spd = D_800E64D0[id];
+
+                if (((spd < 0.0f) ? -spd : spd) < 1.0f) {
+                    func_80199F1C_ovl7(arg0);
+                }
+            }
+        }
+    }
+}
+#elif defined(PORT)
 extern Vector *lbvector_Rotate(Vector *, s32, f32);
 extern f32 eneGetPlayerHeight(void);
 extern void func_80199F1C_ovl7(GObj *);
@@ -518,71 +582,6 @@ void func_801F3E60_ovl9(GObj *arg0) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F3E60_ovl9.s")
-#endif
-#ifdef PORT
-extern Vector *lbvector_Rotate(Vector *, s32, f32);
-extern f32 eneGetPlayerHeight(void);
-extern void func_80199F1C_ovl7(GObj *);
-extern float atan2f(float, float);
-struct PcTrackPosition {
-    s32 unk0;
-    f32 unk4;
-};
-extern s32 func_8019A900_ovl7(struct PcTrackPosition *);
-void func_801F399C_ovl9(struct GObj *);
-/* Chaser drift hook: while active (D_800E9E20 set), drain the chase
- * timer; when it empties and no turnaround is pending, turn to face
- * Kirby if needed (flipping the sprite row D_800EA1A0) and drop back
- * to state 2 on the normal thread.  Otherwise accelerate 0.4/tick
- * along the bearing to Kirby (rail distance horizontally, player
- * height vertically), and start a turnaround when Kirby is behind
- * and the entity has nearly stopped. */
-void func_801F3E60_ovl9(GObj *arg0) {
-    UnkStruct800E1B50 *rec;
-    struct PcTrackPosition tp;
-    u32 id;
-
-    id = omCurrentObj->objId;
-    rec = D_800E1B50[id];
-    if (D_800E9E20[id] != 0) {
-        D_800E98E0[id]--;
-        func_8019A900_ovl7(&tp);
-        id = omCurrentObj->objId;
-        if ((D_800E98E0[id] <= 0) && (rec->unk3C == 0)) {
-            if ((f32) tp.unk0 == D_800E6A10[id]) {
-                func_80199F1C_ovl7(arg0);
-                id = omCurrentObj->objId;
-                D_800EA1A0[id] = (s32) -D_800E6A10[id];
-                id = omCurrentObj->objId;
-            }
-            gEntityFuncListIDArray[id] = 2;
-            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F399C_ovl9);
-            return;
-        }
-        {
-            Vector acc;
-            f32 ang;
-
-            ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], tp.unk4);
-            acc.x = 0.4f;
-            acc.y = 0.0f;
-            acc.z = 0.0f;
-            lbvector_Rotate(&acc, 4, ang);
-            D_800E6690[omCurrentObj->objId] = acc.x;
-            D_800E3750[omCurrentObj->objId] = acc.y;
-        }
-        if (rec->unk3C == 0) {
-            id = omCurrentObj->objId;
-            if ((f32) tp.unk0 != D_800E6A10[id]) {
-                f32 spd = D_800E64D0[id];
-
-                if (((spd < 0.0f) ? -spd : spd) < 1.0f) {
-                    func_80199F1C_ovl7(arg0);
-                }
-            }
-        }
-    }
-}
 #endif
 
 void func_800A9EA4(s32);
