@@ -38,6 +38,11 @@ Cheapest first; the ROM sha1 is the final authority.
   word to a segment/function instead of eyeballing hexdumps.
 - `gate_dirty.py` — verifies every C file that is dirty in git; the guard
   against committing an unverified draft.
+- `refound_status.py` — rule compliance: counts functions that carry a PORT
+  implementation while their decomp is still a pragma ("ported, never
+  decompiled"), plus the decomp drafts seeded for the factory. `--files` /
+  `--list` break it down. See `REFOUND.md` for the pipeline that retires
+  them.
 - `padtrap.py` — shared library (used by `verify.py` and `check_layout.py`)
   that classifies a listing's post-`.size` tail; see "PADDING TRAPS" in
   LEVERS.md.
