@@ -1672,17 +1672,37 @@ void func_802248C0_ovl19(GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 21/501, BLOCKED-shape. Seeded from the PORT arm; confirmed by
- * reading the .s directly that this is NOT a register floor: the ROM
- * uses `bc1fl`/`bc1tl` LIKELY branches with the `gEntitiesAngleXArray[objId]
- * = slope` store SHARED in two different branch-delay slots (one store
- * instruction serving both the sign-match and state-2/7 paths), where
- * this draft's three textually-separate `gEntitiesAngleXArray[objId] =
- * slope;` statements (one per branch) compile to three separate stores.
- * Reproducing IDO's likely-branch merge-point trick needs a source shape
- * this project hasn't found yet (same floor hit the two siblings,
- * func_80223E68_ovl19 and func_80226AA8_ovl19). Not a quick permuter
- * target -- flagging for a source-shape investigation, not just regalloc. */
+/* FACTORY: 21/501 instructions match (480 diffs). Word count is exact (501).
+ * THE "BLOCKED-shape" DIAGNOSIS IN THE PREVIOUS NOTE WAS WRONG and cost the
+ * bloc a false blocker -- this draft's source shape is already correct.
+ * Decoding 0x802256D0-0x8022572C instruction by instruction:
+ *     c.le.s $f14,$f0            ; 0.0f <= pitch
+ *     bc1fl  .L708 ; delay: c.le.s $f0,$f14
+ *     c.le.s $f14,$f2            ; 0.0f <= slope
+ *     bc1tl  .L72C ; delay: swc1 $f2,0($a1)      <-- the store
+ *     c.le.s $f0,$f14
+ *   .L708:
+ *     bc1fl  .L744 ; delay: lw $v0,0x44($a3)     ; -> the unk44==2||7 arm
+ *     c.le.s $f2,$f14
+ *     bc1fl  .L744 ; delay: lw $v0,0x44($a3)
+ *     swc1   $f2,0($a1)                          <-- the SAME store
+ *   .L72C: rumbleGate = D_8012E7FC[2]; b .L864
+ * That is ONE source statement, `gEntitiesAngleXArray[objId] = slope;`,
+ * inside the single `((pitch >= 0) && (slope >= 0)) || ((pitch <= 0) &&
+ * (slope <= 0))` arm -- exactly what this draft writes. IDO emitted it
+ * twice on its own, once in the bc1tl delay slot and once inline, because
+ * the short-circuit || gives it two entry paths into the same arm. It is
+ * ordinary IDO delay-slot filling, NOT a merge-point trick, and no new
+ * source shape is needed. The store in the unk44==2||7 arm (at
+ * .L8022582C) is the one genuinely separate second store.
+ * The real residue is register pressure. The ROM frame is -0x48; this
+ * draft reaches -0x60, 24 bytes more, because IDO spills two values the
+ * ROM keeps in registers: objId*4 (ROM $v1) and &D_800E8920[objId] (ROM
+ * $a1) go to 0x28/0x2C($sp) here. The ROM also materialises &omCurrentObj
+ * once into $t0 and reuses it, where this draft reloads through $t6.
+ * Attack the frame first; the branch shapes will follow. Sibling
+ * func_80223E68_ovl19 has the identical three-arm block and the same
+ * -0x10 frame excess. */
 void func_80225620_ovl19(GObj *arg0) {
     s32 func_80153A18_ovl3(void);
     s32 func_80121828(f32, f32, f32, f32);

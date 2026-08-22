@@ -336,3 +336,33 @@ a blanket rename of `->unk4` to `->posX` in ovl7_5.c hit AnimReq, AnimTrack,
 AnimReqSet, EneAnimSetup and EneInfo. Drive the repair off the compiler's own
 `file:line: 'struct X' has no member named 'Y'` output and edit only that
 line, iterating until the error count reaches zero.
+
+## OPEN COORDINATOR TASK: include/track_arrays.h and src/ovl1/ovl1_6.h
+## share the include guard OVL1_6_H
+
+Both headers open with `#ifndef OVL1_6_H / #define OVL1_6_H`, so whichever is
+included SECOND is skipped in its entirety. 37 files include both. A
+declaration added to one of them to fix a build is therefore silently
+invisible in most of those TUs -- the same vacuous-change class as declaring
+something inside a PORT block.
+
+Renaming the guard is a one-line change and it does NOT move any code (I
+tried it: every TU size stayed exact). But it does not build, and the reason
+is the actual finding:
+
+**the two headers declare the same symbols with DIFFERENT types**, and the
+guard collision has been hiding it. Conflicts: D_800DD710, D_800DF690,
+D_800E7CE0, D_800E9AA0, D_800E9FE0, D_800EC2E0 -- e.g. D_800E9AA0 is
+`struct EntityThing800E9AA0 *[]` in one and a scalar array in the other, so
+ovl10_1.c and ovl10_3.c index it as a value in ~20 places.
+
+This is a genuine type-clarification job of exactly the kind the project
+wants, and it is coordinator-sized:
+  1. decide the correct type for each of the six symbols from the asm
+     (D_800E9AA0's users disagree, so at least one overlay is wrong today);
+  2. make the two headers agree, ideally by having track_arrays.h be the one
+     definition and ovl1_6.h include it;
+  3. fix the call sites the corrected type exposes;
+  4. rename the guard;
+  5. gate: every TU size exact, tree-wide PC build clean, then the sha1.
+Do not attempt it piecemeal in a live tree.

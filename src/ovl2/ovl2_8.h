@@ -8,13 +8,32 @@ struct PositionState {
 /*0x1c*/ f32 	faceAngle[3]; //Constat with mag, last member seems to be total H dist or something
 /*0X28*/ f32 	kirbyHeadPos[3]; //Position of kirby at head/face
 /*0x34*/ f32 	kirbyGroundPath[2]; //the X/Z pos of kirby feet
-/*0x40*/ f32 	kirbyHeadPath[2]; //the X/Z pos of kirby head
+/*0x3c*/ f32 	kirbyHeadPath[2]; //the X/Z pos of kirby head
 /*0x44*/ f32 	kirbyHeight[2]; //Y pos of head/feet respectively (assumption)
 /*0x4c*/ u32    collisionFlags; //0x10000000 when grounded, 0 when not
 /*0x50*/ u8     byteArray[5]; //0x1414141414 constant
 /*0x57*/ u8     unkPad2[3]; //0x000000 constant
 /*0x58*/ u32    VI_Timer; //the VI
 };
+/* Layout lock, same convention as src/ovl1/ovl1.c: IDO only warns (654) on
+ * a negative array size, so a negative BITFIELD width is used instead --
+ * IDO rejects that outright. kirbyHeadPath/kirbyHeight were previously
+ * commented 0x40/0x44, which doesn't follow from a contiguous f32 layout
+ * (kirbyGroundPath[2] ends at 0x3C) and disagreed with ovl2_7.c's own
+ * func_801050E0, which indexes kirbyHeadPos as a flat f32* through index
+ * 6 -- landing on 0x3C, not 0x40. The compiled struct was already right
+ * (no explicit padding was ever declared); only the comment was wrong,
+ * fixed above. Caught while naming src/ovl7/'s EnemyProbe, which shares
+ * this record's allocator/shape for offsets 0x0-0x28. */
+#ifndef PORT
+#define OVL2_8_OFFSETOF(t, f) ((s32) &((t *) 0)->f)
+#define OVL2_8_STATIC_ASSERT(cond, name) \
+    struct ovl2_8_assert_##name { int bit : (cond) ? 1 : -1; }
+OVL2_8_STATIC_ASSERT(sizeof(struct PositionState) == 0x5C, position_state_stride);
+OVL2_8_STATIC_ASSERT(OVL2_8_OFFSETOF(struct PositionState, kirbyHeadPath) == 0x3C, position_state_head_path);
+OVL2_8_STATIC_ASSERT(OVL2_8_OFFSETOF(struct PositionState, kirbyHeight) == 0x44, position_state_height);
+OVL2_8_STATIC_ASSERT(OVL2_8_OFFSETOF(struct PositionState, collisionFlags) == 0x4C, position_state_flags);
+#endif
 
 // same size as a OMMtx...
 struct ModelNode{
