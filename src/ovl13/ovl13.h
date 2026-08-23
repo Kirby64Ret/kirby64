@@ -125,7 +125,7 @@ extern s32 D_800D7154;
 extern void func_800B17B8(GObj *);
 extern s32 D_801DAE18;
 extern s32 D_801DAE1C;
-extern void procMainStub(s32 arg0);
+extern void procMainStub(GObj *arg0);
 extern void func_800B7138(s32 arg0);
 
 // data (asm/data/ovl13/ovl13.data.s)

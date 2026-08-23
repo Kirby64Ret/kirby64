@@ -38,15 +38,25 @@ extern s32 D_800D7090;
 extern f32 eneGetPlayerHeight(void);
 s32 request_track_general(s32, s32, s32);
 
-void utilGetTransformSRT(Vector *, s32);
-void func_800A4DB8(Vector *, s32);
+void utilGetTransformSRT(Vector *, struct DObj *);
+void func_800A4DB8(Vector *, struct DObj *);
+
+s32 func_800AB0F4(GObj *);
+void func_800AB120(GObj *);
+void func_800AB174(GObj *);
+void func_800AB1F0(GObj *);
+void func_800AB244(GObj *);
+void func_800AB2C0(GObj *);
+void func_800AB314(GObj *);
+void func_800AB3A0(GObj *);
+void func_800AB3F4(GObj *);
 
 // this file
 void func_801BC1AC_ovl7(s32 arg0);
 void func_801BC44C_ovl7(s32 arg0);
 void func_801BC72C_ovl7(s32 arg0);
 
-s32 func_801BBE50_ovl7(s32 arg0, s32 arg1, u32 arg2) {
+s32 func_801BBE50_ovl7(struct DObj *arg0, s32 arg1, u32 arg2) {
     s32 idx;
     Vector posVec;
     Vector angleVec;
@@ -253,15 +263,6 @@ s32 func_801BC794_ovl7(s32 arg0) {
    the offsets and most of the count with it. */
 #ifdef MIPS_TO_C
 void func_801BC978_ovl7(GObj *arg0) {
-    s32 func_800AB0F4(GObj *);
-    void func_800AB120(GObj *);
-    void func_800AB174(GObj *);
-    void func_800AB1F0(GObj *);
-    void func_800AB244(GObj *);
-    void func_800AB2C0(GObj *);
-    void func_800AB314(GObj *);
-    void func_800AB3A0(GObj *);
-    void func_800AB3F4(GObj *);
     extern s32 D_800DD8D0[];
     extern Lights1 D_800BE550, D_800BE548;
     extern Gfx *gDisplayListHeads[4];
@@ -436,15 +437,6 @@ static void pcYakuPushLights(s32 head, void *light, void *ambient) {
 }
 
 void func_801BC978_ovl7(GObj *arg0) {
-    s32 func_800AB0F4(GObj *);
-    void func_800AB120(GObj *);
-    void func_800AB174(GObj *);
-    void func_800AB1F0(GObj *);
-    void func_800AB244(GObj *);
-    void func_800AB2C0(GObj *);
-    void func_800AB314(GObj *);
-    void func_800AB3A0(GObj *);
-    void func_800AB3F4(GObj *);
     extern s32 D_800DD8D0[];
     extern s32 *D_800E0650[];
     extern u32 *gSegment4StartArray[];

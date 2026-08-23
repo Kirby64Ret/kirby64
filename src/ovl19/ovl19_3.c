@@ -11,7 +11,7 @@
 #include "unk_structs/D_8012E944.h"
 #include "unk_structs/D_8022FAB0.h"
 #include "buffers.h"
-#include "ovl19_3.h"
+#include "ovl19/ovl19_3.h"
 
 // within this file
 extern f32 *D_80192F64;

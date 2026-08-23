@@ -2014,8 +2014,7 @@ void func_801EDE50_ovl16(s32 arg0) {
     s32 cd;
     s32 t;
     Vector sp58;
-    Vector sp3C;
-    Vector sp30;
+    s32 pad;
 
     ent = D_800E1B50[omCurrentObj->objId];
     if ((gEntitiesNextPosYArray[omCurrentObj->objId] > 240.0f) || (gEntitiesNextPosYArray[omCurrentObj->objId] < 40.0f) ||
@@ -2024,7 +2023,7 @@ void func_801EDE50_ovl16(s32 arg0) {
     } else {
         D_800EA1A0[omCurrentObj->objId] = 1;
     }
-    mid = (D_800DFBD0[omCurrentObj->objId][3]->scale.v.y + D_800DFBD0[omCurrentObj->objId][3]->scale.v.x) * 0.5f;
+    mid = (D_800DFBD0[omCurrentObj->objId][3]->scale.v.x + D_800DFBD0[omCurrentObj->objId][3]->scale.v.y) * 0.5f;
     ent->unk80->unk10 = mid;
     if (D_800D7098.unk10 != 0) {
         if (D_800D7098.unk10 == 1) {
@@ -2051,6 +2050,9 @@ void func_801EDE50_ovl16(s32 arg0) {
                 dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800D7098.unk34];
                 dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[D_800D7098.unk34];
                 if (sqrtf(dx * dx + dy * dy) < 72.0f) {
+                    Vector sp3C;
+                    Vector sp30;
+
                     if (((s32 *) D_800E9AA0)[D_800D7098.unk34] == 0) {
                         t = func_801ACC34_ovl7(0x36, 3);
                         if (t != 0) {

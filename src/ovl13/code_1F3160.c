@@ -44,7 +44,6 @@ extern void func_800AA038(s32, f32, s32);
 extern void func_800B19F4(s32, s32);
 extern void func_800AFBB4(s32, struct GObj *);
 extern void func_8019BB58_ovl7(void);
-extern void procMainStub(s32);
 
 void func_801DB3A0_ovl13(GObj *arg0) {
     f32 temp_f0;
@@ -541,7 +540,6 @@ extern void func_800B19F4(s32, s32);
 extern void func_800AFBB4(s32, struct GObj *);
 extern void func_801A3280_ovl7(void);
 extern void func_8019BB58_ovl7(void);
-extern void procMainStub(s32);
 void func_801DCB28_ovl13(GObj *arg0) {
     s32 sp;
 
@@ -2453,14 +2451,14 @@ extern f32 *D_801DAB04;
 extern s32 D_800D6B54;
 extern void func_8019F1EC_ovl7(void);
 extern s32 func_801BC794_ovl7(s32, f32 *);
-extern void func_800FD570(s32, s32, s32, f32, f32);
+extern u32 func_800FD570(s32, u32, f32, f32, f32);
 extern void func_800BB468(s32, s32);
 /* struct Ovl13Unk800D7118 / D_800D7118 come from func_801E0A90_ovl13's block
    above -- IDO and gcc both reject a second definition in the same TU. */
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 315/371 words DIFFER (measured, draft spliced alone into a scratch
+/* FACTORY: 214/371 words DIFFER (measured, draft spliced alone into a scratch
    copy of the TU). Word count is 368 against the ROM's 371 and the block
    structure is right; two things are left. (1) A three-word gap in the last
    if-body: the ROM recomputes `D_800E6BD0[D_800E0D50[objId]]` from scratch for
@@ -2471,8 +2469,15 @@ extern void func_800BB468(s32, s32);
    pushes it to $a2 and renames every $t register downstream.
    Levers that paid: deleting m2c's `temp_v1 = omCurrentObj` local (it took a
    fourth saved register and turned the ROM's stack-homed `arg0` into an $s2
-   copy) fixed the whole prologue, and inlining m2c's eight
-   `temp_v0N = omCurrentObj->objId` caches (LEVERS 4) went 341 -> 315. */
+   copy) fixed the whole prologue; inlining m2c's eight
+   `temp_v0N = omCurrentObj->objId` caches (LEVERS 4) went 341 -> 315; and
+   spelling func_800FD570's prototype the way its DEFINITION in ovl2 does --
+   `u32 (s32, u32, f32, f32, f32)`, not m2c's `(s32, s32, s32, f32, f32)` --
+   went 315 -> 214. That third parameter is an f32, and because arg0 is
+   integral the o32 ABI hands it over in an INTEGER register, so the ROM has
+   `mfc1 $a2, $f22`; declared `s32` the same literal 0 came out as
+   `move $a2, $zero` and shifted a hundred words behind it. A wrong prototype
+   is worth a hundred words here -- check the definition, not m2c. */
 void func_801E3028_ovl13(GObj *arg0) {
     struct EnemyRecord *temp_s1;
     f32 temp_f0;
