@@ -1997,10 +1997,11 @@ extern s32 D_801F3AA8_ovl10;
 extern s32 D_801F3E98_ovl10;
 
 void func_801E1550_ovl10(GObj *arg0) {
-    struct Ovl10AnimInfo0 sp2C;
+    s32 pad;
     s32 sp50;
     f32 diff;
     f32 v;
+    struct Ovl10AnimInfo0 sp2C;
     s32 ok;
 
     D_800E8920[omCurrentObj->objId] = 0;

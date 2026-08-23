@@ -1134,6 +1134,21 @@ void func_8017E54C_ovl3(s32 arg0) {
 #endif
 
 #ifdef NON_MATCHING
+/* FACTORY: 12/244, multi-cluster register/scheduling floor -- measured
+   2026-08-23. Four independent clusters, all register-shaped: (1) the two
+   `D_80196D98_ovl3[D_80198830_ovl3.unk8]` index computations in the if/else
+   branches use $t5/$t9 swapped between the two branches; (2) the mtc1
+   $zero,$f8 / lui $at,%hi(D_80196D98_ovl3) pair for the ABSF is scheduled
+   in the OPPOSITE order; (3) the `D_80198830_ovl3.unk8 -= 1;
+   D_80198830_ovl3.unkA = 0xF;` pair uses $t5/$t6 swapped from the ROM's
+   $t6/$t5; (4) `gKirbyState.unk30 = gKirbyState.unk30 + 1;` -- the SAME
+   idiom that already matches verbatim in func_80180818_ovl3 and
+   func_8018E164_ovl3 above in this file -- here keeps the address in one
+   register ($t9, reused for both address and value) where the ROM holds it
+   in $v0 separately, meaning this residue is downstream register pressure
+   from clusters 1-3, not a defect in the idiom itself. Swept: ABS() vs
+   ABSF() (lever 3) on the D_800E3C90 store -- no change, identical 12/244.
+   Good permuter seed. */
 typedef struct Unk80198830 {
     u8 pad0[8];
     s16 unk8;

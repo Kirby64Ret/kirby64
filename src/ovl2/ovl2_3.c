@@ -147,56 +147,70 @@ struct TrackHit {
 
 s32 func_801046A0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, struct TrackHit **arg5);
 
+/* Field names established from every consumer in this file: func_800FA608
+ * places the eye, func_800FA7EC clamps it, func_800FA92C limits eye yaw/pitch
+ * relative to the look-at point and applies fixed at-point overrides,
+ * func_800FAC74/func_800FB164 apply the manual L/R orbit and final smoothing,
+ * and func_800FA2D4/func_800FC164 (matched, ground truth) write
+ * eyeX/Y/Z + drift -> cam->viewMtx.lookAt.eye and atX/Y/Z + drift ->
+ * cam->viewMtx.lookAt.at. */
 struct Ovl2CamState {
-    /* 0x00 */ s16 unk0;
-    /* 0x02 */ s16 unk2;
-    /* 0x04 */ f32 unk4;
-    /* 0x08 */ f32 unk8;
-    /* 0x0C */ f32 unkC;
-    /* 0x10 */ f32 unk10;
-    /* 0x14 */ f32 unk14;
-    /* 0x18 */ u8 unk18;
-    /* 0x19 */ u8 unk19;
-    /* 0x1A */ u8 unk1A;
-    /* 0x1B */ u8 unk1B;
-    /* 0x1C */ u8 unk1C;
-    /* 0x1D */ u8 unk1D;
-    /* 0x1E */ u8 unk1E;
-    /* 0x1F */ u8 unk1F;
-    /* 0x20 */ f32 unk20;
-    /* 0x24 */ f32 unk24;
-    /* 0x28 */ f32 unk28;
-    /* 0x2C */ f32 unk2C;
-    /* 0x30 */ f32 unk30;
-    /* 0x34 */ f32 unk34;
-    /* 0x38 */ f32 unk38;
-    /* 0x3C */ f32 unk3C;
-    /* 0x40 */ f32 unk40;
-    /* 0x44 */ f32 unk44;
-    /* 0x48 */ f32 unk48;
-    /* 0x4C */ f32 unk4C;
-    /* 0x50 */ f32 unk50;
-    /* 0x54 */ f32 unk54;
-    /* 0x58 */ f32 unk58;
-    /* 0x5C */ f32 unk5C;
+    /* 0x00 */ s16 mode;          /* func_800FA608: 0 = fixed yaw, 1 = track-tangent yaw */
+    /* 0x02 */ s16 unk2;          /* from track node's unk1; no other reader found in this file */
+    /* 0x04 */ f32 pitch;         /* degrees; func_800FA608/func_800FA92C: (pitch - 90) * pi/180 rotation */
+    /* 0x08 */ f32 yaw;           /* degrees; func_800FA608 mode 0 direction / mode 1 extra rotation */
+    /* 0x0C */ f32 eyeDistance;   /* func_800FA608: dir scaled by -eyeDistance from the focus point */
+    /* 0x10 */ f32 fovy;          /* func_800FA2D4/func_800FC164 (matched): cam->perspMtx.persp.fovy */
+    /* 0x14 */ f32 heightOffset;  /* Y offset added to the tracked focus point and to atYOverride */
+    /* 0x18 */ u8 eyeXClampEnable;  /* func_800FA7EC: enables eyeXMin/eyeXMax clamp */
+    /* 0x19 */ u8 eyeYClampEnable;  /* func_800FA7EC: enables eyeYMin/eyeYMax clamp */
+    /* 0x1A */ u8 eyeZClampEnable;  /* func_800FA7EC: enables eyeZMin/eyeZMax clamp */
+    /* 0x1B */ u8 unk1B;          /* never written by func_800FA438's per-tick reload; no reader found */
+    /* 0x1C */ u8 pitchLimitEnable;  /* func_800FA92C: enables the pitchMin/pitchMax limit block */
+    /* 0x1D */ u8 yawLimitEnable;    /* func_800FA92C: enables the yawMin/yawMax limit block */
+    /* 0x1E */ u8 manualOrbitEnable; /* func_800FAC74/func_800FB164: gates the L/R (and shoulder) orbit input */
+    /* 0x1F */ u8 unk1F;          /* func_800FAC74: nonzero resets the settle counter and forces the
+                                    * D_801293C0-smoothed path every tick (skips the snap-once-settled
+                                    * D_801293D8 path); exact meaning unconfirmed */
+    /* 0x20 */ f32 eyeXMin;
+    /* 0x24 */ f32 eyeXMax;
+    /* 0x28 */ f32 eyeYMin;
+    /* 0x2C */ f32 eyeYMax;
+    /* 0x30 */ f32 eyeZMin;
+    /* 0x34 */ f32 eyeZMax;
+    /* 0x38 */ f32 pitchMin;      /* degrees */
+    /* 0x3C */ f32 pitchMax;
+    /* 0x40 */ f32 yawMin;        /* degrees */
+    /* 0x44 */ f32 yawMax;
+    /* 0x48 */ f32 atXOverride;   /* 9999.0f sentinel = no override, use the dynamic at point */
+    /* 0x4C */ f32 atYOverride;   /* + heightOffset when applied */
+    /* 0x50 */ f32 atZOverride;
+    /* 0x54 */ f32 near;
+    /* 0x58 */ f32 far;
+    /* 0x5C */ f32 orbitYawLimit; /* func_800FAC74/func_800FB164: clamps the manual orbit angle magnitude */
 };
 
+/* Field names established the same way as Ovl2CamState above. focus is the
+ * tracked entity's position (func_800FA5C0); rawEye is the pre-clamp eye
+ * candidate func_800FA608 derives from focus; at/eye are the published pair
+ * that func_800FA2D4/func_800FC164 (matched) feed to cam->viewMtx.lookAt --
+ * see the struct comment above. */
 struct Ovl2CamOut {
-    /* 0x00 */ f32 unk0;
-    /* 0x04 */ f32 unk4;
-    /* 0x08 */ f32 unk8;
-    /* 0x0C */ f32 unkC;
-    /* 0x10 */ f32 unk10;
-    /* 0x14 */ f32 unk14;
-    /* 0x18 */ f32 unk18;
-    /* 0x1C */ f32 unk1C;
-    /* 0x20 */ f32 unk20;
-    /* 0x24 */ f32 unk24;
-    /* 0x28 */ f32 unk28;
-    /* 0x2C */ f32 unk2C;
-    /* 0x30 */ u32 unk30;
-    /* 0x34 */ u32 unk34;
-    /* 0x38 */ u32 unk38;
+    /* 0x00 */ f32 focusX;
+    /* 0x04 */ f32 focusY;
+    /* 0x08 */ f32 focusZ;
+    /* 0x0C */ f32 rawEyeX;
+    /* 0x10 */ f32 rawEyeY;
+    /* 0x14 */ f32 rawEyeZ;
+    /* 0x18 */ f32 atX;
+    /* 0x1C */ f32 atY;
+    /* 0x20 */ f32 atZ;
+    /* 0x24 */ f32 eyeX;
+    /* 0x28 */ f32 eyeY;
+    /* 0x2C */ f32 eyeZ;
+    /* 0x30 */ u32 eyeXClampFlags; /* func_800FA7EC: bit0 = min-clamped, bit1 = max-clamped */
+    /* 0x34 */ u32 eyeYClampFlags;
+    /* 0x38 */ u32 eyeZClampFlags;
 };
 
 extern struct Ovl2CamState D_80129150;
@@ -1538,17 +1552,17 @@ void func_800FA2D4(struct Ovl2CamState *arg0, struct Ovl2CamOut *arg1) {
     temp_f0 = *(s32 *) &D_8012940C * 0.01f;
     temp_f2 = D_80129408 * 0.01f;
     D_800D7B38 = D_800D7B20;
-    cam->viewMtx.lookAt.eye.x = arg1->unk24 + (D_80129400 * temp_f0);
-    cam->viewMtx.lookAt.eye.y = arg1->unk28 + (D_80129404 * temp_f0);
-    cam->viewMtx.lookAt.eye.z = arg1->unk2C;
-    cam->viewMtx.lookAt.at.x = arg1->unk18 + (D_80129400 * temp_f2);
-    cam->viewMtx.lookAt.at.y = arg1->unk1C + (D_80129404 * temp_f2);
-    cam->viewMtx.lookAt.at.z = arg1->unk20;
+    cam->viewMtx.lookAt.eye.x = arg1->eyeX + (D_80129400 * temp_f0);
+    cam->viewMtx.lookAt.eye.y = arg1->eyeY + (D_80129404 * temp_f0);
+    cam->viewMtx.lookAt.eye.z = arg1->eyeZ;
+    cam->viewMtx.lookAt.at.x = arg1->atX + (D_80129400 * temp_f2);
+    cam->viewMtx.lookAt.at.y = arg1->atY + (D_80129404 * temp_f2);
+    cam->viewMtx.lookAt.at.z = arg1->atZ;
     D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
     D_800D7B2C = cam->viewMtx.lookAt.eye;
-    cam->perspMtx.persp.fovy = arg0->unk10;
-    cam->perspMtx.persp.near = arg0->unk54;
-    cam->perspMtx.persp.far = arg0->unk58;
+    cam->perspMtx.persp.fovy = arg0->fovy;
+    cam->perspMtx.persp.near = arg0->near;
+    cam->perspMtx.persp.far = arg0->far;
 }
 
 void func_800FA414(s32 arg0) {
@@ -1580,43 +1594,43 @@ void func_800FA438(s32 arg0, struct Ovl2CamState *arg1) {
 #else
     cam = &((struct TrackNodeHeader *) D_80129114->unk4)[D_800E5F90[arg0]].unk0->unk20;
 #endif
-    arg1->unk0 = cam->unk0;
+    arg1->mode = cam->unk0;
     arg1->unk2 = cam->unk1;
-    arg1->unk4 = ((cam->unk24 - cam->unk20) * t) + cam->unk20;
-    arg1->unk8 = ((cam->unk2C - cam->unk28) * t) + cam->unk28;
-    arg1->unkC = ((cam->unk34 - cam->unk30) * t) + cam->unk30;
-    arg1->unk10 = ((cam->unk3C - cam->unk38) * t) + cam->unk38;
-    arg1->unk14 = ((cam->unk44 - cam->unk40) * t) + cam->unk40;
-    arg1->unk18 = cam->unk2;
-    arg1->unk19 = cam->unk3;
-    arg1->unk1A = cam->unk4;
-    arg1->unk1C = cam->unk6;
-    arg1->unk1D = cam->unk7;
-    arg1->unk1E = cam->unk8;
+    arg1->pitch = ((cam->unk24 - cam->unk20) * t) + cam->unk20;
+    arg1->yaw = ((cam->unk2C - cam->unk28) * t) + cam->unk28;
+    arg1->eyeDistance = ((cam->unk34 - cam->unk30) * t) + cam->unk30;
+    arg1->fovy = ((cam->unk3C - cam->unk38) * t) + cam->unk38;
+    arg1->heightOffset = ((cam->unk44 - cam->unk40) * t) + cam->unk40;
+    arg1->eyeXClampEnable = cam->unk2;
+    arg1->eyeYClampEnable = cam->unk3;
+    arg1->eyeZClampEnable = cam->unk4;
+    arg1->pitchLimitEnable = cam->unk6;
+    arg1->yawLimitEnable = cam->unk7;
+    arg1->manualOrbitEnable = cam->unk8;
     arg1->unk1F = cam->unk9;
-    arg1->unk20 = cam->unk48;
-    arg1->unk24 = cam->unk4C;
-    arg1->unk28 = cam->unk50;
-    arg1->unk2C = cam->unk54;
-    arg1->unk30 = cam->unk58;
-    arg1->unk34 = cam->unk5C;
-    arg1->unk38 = cam->unk60;
-    arg1->unk3C = cam->unk64;
-    arg1->unk40 = cam->unk68;
-    arg1->unk44 = cam->unk6C;
-    arg1->unk48 = cam->unkC;
-    arg1->unk4C = cam->unk10;
-    arg1->unk50 = cam->unk14;
-    arg1->unk54 = cam->unk18;
-    arg1->unk58 = cam->unk1C;
-    arg1->unk5C = cam->unkA;
+    arg1->eyeXMin = cam->unk48;
+    arg1->eyeXMax = cam->unk4C;
+    arg1->eyeYMin = cam->unk50;
+    arg1->eyeYMax = cam->unk54;
+    arg1->eyeZMin = cam->unk58;
+    arg1->eyeZMax = cam->unk5C;
+    arg1->pitchMin = cam->unk60;
+    arg1->pitchMax = cam->unk64;
+    arg1->yawMin = cam->unk68;
+    arg1->yawMax = cam->unk6C;
+    arg1->atXOverride = cam->unkC;
+    arg1->atYOverride = cam->unk10;
+    arg1->atZOverride = cam->unk14;
+    arg1->near = cam->unk18;
+    arg1->far = cam->unk1C;
+    arg1->orbitYawLimit = cam->unkA;
 }
 
 void func_800FA5C0(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
-    arg2->unk0 = gEntitiesNextPosXArray[arg0];
-    arg2->unk4 = gEntitiesNextPosYArray[arg0];
-    arg2->unk8 = gEntitiesNextPosZArray[arg0];
-    arg2->unk4 = arg2->unk4 + arg1->unk14;
+    arg2->focusX = gEntitiesNextPosXArray[arg0];
+    arg2->focusY = gEntitiesNextPosYArray[arg0];
+    arg2->focusZ = gEntitiesNextPosZArray[arg0];
+    arg2->focusY = arg2->focusY + arg1->heightOffset;
 }
 
 #ifdef PORT

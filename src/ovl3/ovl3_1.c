@@ -1650,7 +1650,8 @@ void func_8015439C_ovl3(f32 *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 17/28 (was 19/29). Two residues, both measured in wave 8 after ovl3's rodata
+/* FACTORY: 17/28 (was 19/29), re-confirmed 2026-08-23, identical 17/28.
+   Two residues, both measured in wave 8 after ovl3's rodata
    migration:
      1. IDO folds the single store through the constant address into
         `lui $at; sw ..., %lo(sym+0x1C)($at)`; the ROM materialises the base
@@ -1660,9 +1661,12 @@ void func_8015439C_ovl3(f32 *arg0) {
      2. the ROM hoists ONE `or $v0, $zero, $zero` above both early exits and
         emits a duplicated `lw $ra` epilogue (29 insns); every `||`-merged
         form comes out 28. The separate-if form (variant a) reaches the right
-        LENGTH at 19/29 -- if you attack this again, start from that one, not
-        from this body. Swept: `s32 ret = 0` at declaration and as a statement,
-        goto into a shared return block, trailing `return 0` vs falling off. */
+        LENGTH at 19/29 but is WORSE register-wise when actually tried
+        (23/29, confirmed 2026-08-23) -- if you attack this again, that
+        variant needs further register work, not just the length fix. Swept:
+        `s32 ret = 0` at declaration and as a statement, goto into a shared
+        return block, trailing `return 0` vs falling off, and the literal
+        separate-if split (worse, 23/29). Good permuter seed. */
 s32 func_80154428_ovl3(f32 *arg0) {
     extern f32 D_8012E948[];
     f32 *dst = D_8012E948;
@@ -2221,12 +2225,17 @@ s32 func_80155664_ovl3(void) {
 #endif
 
 #ifdef NON_MATCHING
-/* 22/88. Frame, stack layout, control flow and the FP block are all exact.
-   Residue is one register-allocation cluster: the ROM puts the D_800E0490
-   element in $a1 and its ->[1] deref in $a0, which frees $t8 and leaves every
-   later objId temp one slot lower (t8/t9/t0/t1 vs t9/t0/t1/t2). Swept: p as a
-   named local (in and out of the 4-scalar block), obj hoisted vs omCurrentObj
-   inline, ternary vs if/else vs pre-initialised temp, all four tail shapes. */
+/* FACTORY: 22/88, register-allocation-cluster floor -- re-confirmed
+   2026-08-23, identical 22/88. Frame, stack layout, control flow and the
+   FP block are all exact. Residue is one register-allocation cluster: the
+   ROM puts the D_800E0490 element in $a1 and its ->[1] deref in $a0, which
+   frees $t8 and leaves every later objId temp one slot lower (t8/t9/t0/t1
+   vs t9/t0/t1/t2), plus a tail scheduling difference (the ROM hoists
+   `or $v1, zero, zero` above the branch and reorders the $ra reload
+   against the sp6C/D_800EA... check). Swept: p as a named local (in and
+   out of the 4-scalar block), obj hoisted vs omCurrentObj inline, ternary
+   vs if/else vs pre-initialised temp, all four tail shapes. Good permuter
+   seed. */
 s32 func_801556D8_ovl3(f32 arg0) {
     s32 sp6C;
     GObj *obj;

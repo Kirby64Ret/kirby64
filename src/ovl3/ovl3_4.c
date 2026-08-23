@@ -994,14 +994,16 @@ void func_8016AAA4_ovl3(s32 arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* 11/207. Everything matches except ONE delay-slot fill: the ROM puts
-   `lui $a2, %hi(D_8012BCA0)` (from the branch TARGET) in the delay slot of
-   `beqz $v0` and starts the fall-through block with `lui $t5, %hi(omCurrentObj)`;
-   IDO fills the slot from the fall-through instead, so everything after is
-   shifted by one. Swept: else-if vs early-break vs inverted polarity, one-line
-   then-block, `!= 0` vs bare call, an empty do-while, and a struct pointer over
-   D_8012BCA0 (113 diffs -- much worse). The float operand swap in case 0 is
-   load-bearing: it took this from 17 to 11. */
+/* FACTORY: 11/207, delay-slot-fill SCHEDULING floor -- re-confirmed
+   2026-08-23, identical 11/207. Everything matches except ONE delay-slot
+   fill: the ROM puts `lui $a2, %hi(D_8012BCA0)` (from the branch TARGET)
+   in the delay slot of `beqz $v0` and starts the fall-through block with
+   `lui $t5, %hi(omCurrentObj)`; IDO fills the slot from the fall-through
+   instead, so everything after is shifted by one. Swept: else-if vs
+   early-break vs inverted polarity, one-line then-block, `!= 0` vs bare
+   call, an empty do-while, and a struct pointer over D_8012BCA0 (113
+   diffs -- much worse). The float operand swap in case 0 is load-bearing:
+   it took this from 17 to 11. Good permuter seed. */
 extern s32 D_800BE500;
 extern s32 D_800BE504;
 extern s32 D_800BE508;

@@ -51,6 +51,21 @@
  *               proximity / immediate), ovl14 writes 1/2/4, and
  *               ovl1_6.c:122 and plylib.c:1084 write 0xFF as "none".  Any
  *               enum for it has to be per-species, not shared.
+ *   D_800E77A0  (u16) a KIND ID shared by items and enemies, indexing
+ *               per-kind tables/callbacks -- not a per-species scratch word.
+ *               PROOF, ovl2 (copy-ability items): ovl2_10.c:1774
+ *               `D_801249C0[D_800E77A0[objId]](arg0);` and ovl2_10.c:1952-2064
+ *               index `struct Unk80124E14 D_80124E14[]` the same way,
+ *               including installing a per-kind think callback at
+ *               ovl2_10.c:2040 `D_800DEF90[id] = D_80124E14[D_800E77A0[id]].unk10;`.
+ *               PROOF, ovl9 (enemies): ovl9_6.c's func_801ECB58_ovl9 /
+ *               func_801ED9AC_ovl9 switch on it directly (0x42/0x5D/0x5E/0x5F,
+ *               0x4B/0x64/0x65/0x66, 0x4C/0x68/0x69/0x6A) to index the
+ *               per-species pointer tables D_8021C1E4_ovl9/D_8021C1F0_ovl9/
+ *               D_8021C1FC_ovl9 and offset tables D_8021C208_ovl9/
+ *               D_8021C214_ovl9/D_8021C220_ovl9 -- so within one call the raw
+ *               kind value both selects a species GROUP (the switch arm) and
+ *               indexes a per-instance slot within it.
  *
  * MEDIUM / CONTACT FLAGS:
  *   D_800E8AE0  (s32) per-entity medium+contact flag word.
@@ -95,6 +110,17 @@
  *   D_800E7B20  (f32) per-entity HP//presence cell: plylib.c:792 stores
  *               gKirbyHp here for Kirby, and enemies get
  *               EnemyKindDesc.rangeGate copied in at spawn.
+ *   D_800E9C60  (s32) the busiest per-species scratch cell in ovl9 (9 of the
+ *               10 files this pass touched use it) with NO single meaning --
+ *               confirmed per-species, not a shared flag: a countdown in
+ *               ovl9_1.c (loaded with 100/0xC8/0x64, decremented, floored at
+ *               0), a table index in ovl9_3.c:663-668
+ *               (`D_800EB160[id] = D_8021BDC8_ovl9[D_800E9C60[id]]; D_800E9C60[id]++;`),
+ *               a running accumulator in ovl9_7_2.c:25-43
+ *               (`sum = D_800E9C60[id] + v;`), a 2-frame "bobbing" toggle
+ *               counter in ovl9_9.c:1806-1881, and a plain 0/1 latch
+ *               everywhere else (ovl9_6, ovl9_8, ovl9_9, ovl9_10, ovl9_13,
+ *               ovl9_18).  Same family as D_800E9AA0/D_800EA520 above.
  *
  * STATE INDEX:
  *   gEntityFuncListIDArray is the behaviour-thread selector that the ovl9
@@ -103,6 +129,42 @@
  *   walk/despawn, ovl9_5's 0/1/2/4/6/7 are perch/…/flight/despawn/airborne/
  *   hit-launch, ovl9_14's 0/1/5 are idle/leap/KO -- so there is no single
  *   shared state enum to declare for it either.
+ *   D_800DDFD0  (s32) a SECOND, independent behaviour-thread selector, driven
+ *               through its own `utilFuncTableJump(D_800DDFD0[id], N, table)`
+ *               call and its own per-species FUNCLIST (every ovl9 species
+ *               that uses it declares a distinct `D_8021xxxx_ovl9` table for
+ *               it, separate from the one gEntityFuncListIDArray drives).
+ *               Reset to 0 at the top of nearly every top-level spawn/entry
+ *               function.  Numbering is per-species like
+ *               gEntityFuncListIDArray, not shared.
+ *
+ * PER-TICK CALLBACKS (function-pointer SoA, installed at spawn):
+ *   All three are driven from src/ovl1/ovl1_7.c, which is the entity-update
+ *   driver every overlay's spawn code plugs into -- PROOF below is cited
+ *   there since that is the only place any of the three is ever CALLED;
+ *   ovl9 (and every other overlay) only ever ASSIGNS them.
+ *   D_800DEF90  `void (*)(s32)` per-entity "think" callback, called once per
+ *               tick with the GObj cast to s32.  PROOF: ovl1_7.c:734-741
+ *               (func_800B0D90) -- gated on `!(D_800DD8D0[id] & 4)`, called
+ *               right after `animUpdateModelTreeAnimation(arg0)` updates the
+ *               model's animation tree for the tick.  This is the callback
+ *               ovl9 spawn code installs with `D_800DEF90[id] = func_...;`
+ *               to run its behaviour-thread's `ohSleep`-driven coroutine.
+ *   D_800DF150  `void (*)(struct GObj *)` a second per-tick callback, called
+ *               with the raw GObj* (not cast) right AFTER D_800DEF90 in the
+ *               same function, gated on the separate bit
+ *               `!(D_800DD8D0[id] & 8)`.  PROOF: ovl1_7.c:748-750.
+ *   D_800DF310  `void (*)(s32, s32, f32)` per-entity handler for animation
+ *               SCRIPT COMMANDS embedded in a DObj's anim track that the
+ *               generic dispatcher doesn't special-case.  PROOF:
+ *               ovl1_7.c:754-807 (func_800B0F28) switches on its `arg1`
+ *               command opcode -- 9 (play a sound effect via
+ *               func_800BB468), 12 (play_sound), 13 (attach a follower
+ *               object's position), -1/-2 (set flag bits in D_800DD8D0) are
+ *               handled inline; every other opcode falls to
+ *               `D_800DF310[id]((s32) arg0, arg1, arg2)` at line 803-804,
+ *               matching D_800DF310's declared 3-argument signature exactly
+ *               (DObj* as s32, opcode, f32 payload).
  * ========================================================================== */
 
 extern s32 D_800DD710[];
