@@ -468,3 +468,52 @@ TO FINISH THIS JOB (needs a quiet tree, one dedicated pass):
   - re-apply the TRACK_ARRAYS_H guard;
   - gate with mk.sh sha1 AND a setup_permuter smoke test on a TU that
     includes both headers -- the sha1 alone does not catch step 2.
+
+UPDATE, the two signedness disagreements are MEASURED and are NOT spelling
+errors. Both were tried and both break the ROM in opposite directions:
+
+  D_800DD710  track_arrays.h s32 / ovl1_6.h u32.
+              Both s32  -> ten ovl1 functions move (request_job, request_track,
+                           func_800AEA64, request_track_general/_2/_3,
+                           func_800AECC0/ED20/ED80/EDD0).
+              Both u32  -> six ovl2_9.c functions move (func_80110FD4,
+                           func_80111184, func_8011145C, func_801114E0,
+                           func_80111534, func_80111550).
+  D_800E7CE0  track_arrays.h u32 / ovl1_6.h s32. Same shape, reversed.
+
+The semantics say s32 in both cases -- D_800DD710 is tested against -1 as a
+"no entry" sentinel in six files, and D_800E7CE0's countdown clamp
+`if (x != 0) { if (x-- <= 0) x = 0; }` is dead code under u32 because the
+outer test already excluded 0. But the other side of each pair was MATCHED
+against the opposite spelling and its comparisons carry the signedness into
+the generated code. So unifying either one means fixing those call sites in
+the same change, with casts where the ROM wants the unsigned compare. Each
+declaration now names the functions that flipping it would break.
+
+Method note, reusable: when the tree is busy and a full `make` cannot link
+(some other lane is mid-edit), a header change can still be proven inert by
+extracting .text from the affected objects before and after --
+
+    mips-linux-gnu-objcopy -O binary --only-section=.text foo.o foo.bin
+
+Comparing whole objects is useless here: IDO writes line-number records, so
+inserting a comment changes the .o without changing a single instruction.
+
+QUEUED COORDINATOR TASK -- ovl12's entry symbol is not a function.
+func_801DB1E0_ovl12 is eight zero words at 0x1EB520; real code resumes at
+0x1EB540 with func_801DB200_ovl12, and the PORT arm falls straight through
+because $a0 is untouched. It is alignment fill that splat named, so it can
+never be decompiled: an empty body scores 2/2 (IDO emits `jr $ra` plus one
+word and never a nop in word 0), and padtrap.classify calls it ('trap', 7).
+The pragma carries 0x20 of the TU's leading .text, so deleting it without
+replacing the space leaves code_1EB520.o 28 bytes short under kirby.ld's
+SUBALIGN(16). The fix is a splat change, not a source change:
+
+    - [0x1EB520, pad]
+    - [0x1EB540, c, ovl12/code_1EB520]
+
+in kirby64.yaml, which regenerates build/kirby.ld with the reservation --
+the same shape as the existing `pad` entries at 0x49B0, 0x1EF90 and 0x21b20.
+Then drop the guard block from src/ovl12/code_1EB520.c. Do it in ONE
+sha1-gated commit and only when the tree is quiet: a re-split rewrites
+build/kirby.ld and the ovl12 listings underneath every running lane.
