@@ -46,6 +46,17 @@ extern f32 D_801EFFBC_ovl16;
 extern f32 D_801F0044_ovl16;
 extern f32 D_801F0064_ovl16;
 
+void func_801E8D58_ovl16(s32);
+s32 func_801EB29C_ovl16(void);
+s32 func_801EB78C_ovl16(void);
+s32 func_801EBD8C_ovl16(s32);
+void func_801ED07C_ovl16(struct GObj *);
+void func_801EF32C_ovl16(s32);
+f32 lbvector_Normalize(Vector *);
+Vector *func_800195D8(Vector *, Vector *);
+s32 func_800B2340(Vector *, struct DObj *, s32);
+void func_800B7790(struct GObj *);
+
 struct Ovl16AnimInfo {
     u8 unk0;
     u8 unk1;
@@ -629,8 +640,6 @@ void func_801E8EA4_ovl16(s32 arg0) {
 }
 
 void func_801E9178_ovl16(struct GObj *arg0) {
-    void func_801EF32C_ovl16(s32);
-    void func_801E8D58_ovl16(s32);
     extern s32 D_801DA31C;
 
     if (D_800E98E0[omCurrentObj->objId] > 0) {
@@ -680,8 +689,6 @@ void func_801E93E8_ovl16(s32 arg0) {
 }
 
 void func_801E9590_ovl16(struct GObj *arg0) {
-    void func_801EF32C_ovl16(s32);
-    void func_801E8D58_ovl16(s32);
     extern s32 D_801DA31C;
 
     D_800EAC20[omCurrentObj->objId] -= D_801EFCC0_ovl16[D_800EA1A0[omCurrentObj->objId]][D_800E9E20[omCurrentObj->objId]];
@@ -774,9 +781,6 @@ void func_801E9858_ovl16(struct GObj *arg0) {
 #endif
 
 void func_801E9C10_ovl16(struct GObj *arg0) {
-    s32 func_801EB29C_ovl16(void);
-    void func_801EF32C_ovl16(s32);
-    void func_801E8D58_ovl16(s32);
     extern s32 D_801DA31C;
 
     D_800EAA60[omCurrentObj->objId] += D_800EA8A0[omCurrentObj->objId];
@@ -821,10 +825,6 @@ void func_801E9EF8_ovl16(s32 arg0) {
 }
 
 void func_801EA070_ovl16(struct GObj *arg0) {
-    s32 func_801EB29C_ovl16(void);
-    s32 func_801EB78C_ovl16(void);
-    void func_801EF32C_ovl16(s32);
-    void func_801E8D58_ovl16(s32);
     extern s32 D_801DA31C;
 
     if (D_800E98E0[omCurrentObj->objId] > 0) {
@@ -1125,9 +1125,6 @@ void func_801EACF4_ovl16(s32 arg0) {
 }
 
 void func_801EAF00_ovl16(struct GObj *arg0) {
-    s32 func_801EB29C_ovl16(void);
-    void func_801EF32C_ovl16(s32);
-    void func_801E8D58_ovl16(s32);
     extern s32 D_801DA31C;
 
     D_800EAA60[omCurrentObj->objId] += D_800EA8A0[omCurrentObj->objId];
@@ -1177,7 +1174,6 @@ void func_801EB230_ovl16(s32 arg0) {
 }
 
 s32 func_801EB29C_ovl16(void) {
-    s32 func_801EBD8C_ovl16(s32);
     f32 temp;
 
     if ((gEntitiesNextPosYArray[omCurrentObj->objId] > 280.0f) || (gEntitiesNextPosYArray[omCurrentObj->objId] < 0.0f) ||
@@ -1245,9 +1241,6 @@ s32 func_801EB51C_ovl16(void) {
 }
 
 s32 func_801EB78C_ovl16(void) {
-    s32 func_801EBD8C_ovl16(s32);
-    f32 lbvector_Normalize(Vector *);
-    Vector *func_800195D8(Vector *, Vector *);
     f32 dx;
     f32 dy;
     Vector sp44;
@@ -1287,8 +1280,6 @@ s32 func_801EB78C_ovl16(void) {
 }
 
 s32 func_801EBA98_ovl16(void) {
-    f32 lbvector_Normalize(Vector *);
-    Vector *func_800195D8(Vector *, Vector *);
     f32 dx;
     f32 dy;
     Vector sp44;
@@ -1535,7 +1526,6 @@ void func_801EC4B4_ovl16(s32 arg0) {
 
 void func_801EC7E4_ovl16(s32 arg0) {
     extern s32 D_801DA3AC;
-    s32 func_800B2340(Vector *, struct DObj *, s32);
     struct EnemyRecord *sp3C;
     Vector sp30;
 
@@ -1645,8 +1635,6 @@ void func_801ECDF8_ovl16(s32 arg0) {
 }
 
 void func_801ECE64_ovl16(struct GObj *arg0) {
-    void func_800B7790(struct GObj *);
-    void func_801ED07C_ovl16(struct GObj *);
     struct EnemyRecord *sp24;
     s32 other;
 
@@ -1681,7 +1669,6 @@ void func_801ECE64_ovl16(struct GObj *arg0) {
 
 void func_801ED07C_ovl16(struct GObj *arg0) {
     extern s32 D_801DA43C;
-    s32 func_800B2340(Vector *, struct DObj *, s32);
     struct EnemyRecord *sp;
     Vector sp30;
     s32 t;

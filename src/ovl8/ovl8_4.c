@@ -13,19 +13,55 @@
 #include "unk_structs/D_800E1B50.h"
 #include "track_arrays.h"
 
+// ovl1 extern
+s32 change_kirby_hp(f32);
+struct Sub800E1B50_Unk34 *func_800A8100(s32, s32, s32, struct DObj *);
+void func_800A9760(u32);
+void func_800B33F4(void);
+void func_800B4924(struct GObj *);
+void func_800B4954(struct GObj *);
+/* ovl1_8.c's definition spells the parameter `s32`, but every call site in
+ * this file (and the ten others in the tree) hands it the GObj *; the s32 is
+ * m2c residue in a still-unmatched draft, so the pointer spelling stays. */
+void func_800B531C(struct GObj *);
+void func_800BB468(s32, s32);
+
+// ovl2 extern
+f32 func_800F9828(s32, s32);
+s32 func_800F98EC(s32, f32);
+void func_800FA414(s32);
+s32 func_800FB914(s32);
+void func_800FBE1C(void);
+
+// ovl3 extern
+/* Same as func_800B531C: ovl3_4.c defines it `(s32)` but ignores the
+ * argument, and all six declarations in the tree pass a GObj *. */
+void func_801696F0_ovl3(struct GObj *);
+void func_8016BBD0_ovl3(void);
+void func_8016BC00_ovl3(void);
+void func_8016BD24_ovl3(s32);
+
+// ovl7 extern
+/* ovl7_3.c takes struct Ovl7TrackParams *, which no header exports; this TU
+ * hands them &D_801CA980, so void * is the spelling that needs no cast. */
+void func_801A32EC(void *);
+void func_801A33B8(void *);
+
+// within this file
+void func_801D4778_ovl8(struct GObj *);
+void func_801D4C1C_ovl8(struct GObj *);
+void func_801D59F0_ovl8(struct GObj *);
+void func_801D5E90_ovl8(struct GObj *);
+void func_801D6534_ovl8(struct GObj *);
+void func_801D6B20_ovl8(struct GObj *);
+void func_801D6F1C_ovl8(struct GObj *);
+void func_801D75A8_ovl8(struct GObj *);
+
 /* The FP slot rotation this used to sit at (13/114) closes on three source
  * shapes, all load-bearing: the sum gets its OWN named local, the call is
  * INLINE as the second operand of that sum with the multiply first, and the
  * first bracket is `Y[0] + 20.0f` while the second stays `30.0f + Y[...]`. */
 void func_801D45B0_ovl8(struct GObj *arg0) {
-    extern void func_800A9760(s32);
-    extern void func_800B4954(struct GObj *);
-    extern void func_800BB468(s32, s32);
-    extern void func_8016BBD0_ovl3(void);
-    extern void func_800B33F4(void);
-    extern f32 func_800F9828(s32, s32);
-    extern void func_801D4C1C_ovl8(struct GObj *);
-    extern void func_801D4778_ovl8(struct GObj *);
     f32 sum;
 
     if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
@@ -49,14 +85,6 @@ void func_801D45B0_ovl8(struct GObj *arg0) {
     func_801D4778_ovl8(arg0);
 }
 void func_801D4778_ovl8(struct GObj *arg0) {
-    extern void func_800B33F4(void);
-    extern void func_800FBE1C(void);
-    extern void func_800FA414(s32);
-    extern void func_800BB468(s32, s32);
-    extern void func_8016BC00_ovl3(void);
-    extern void func_801A32EC(void *);
-    extern void func_800B531C(struct GObj *);
-    extern void play_sound(s32);
     extern s32 D_801CA980;
 
     D_800E98E0[omCurrentObj->objId] = 1;
@@ -118,11 +146,6 @@ void func_801D4C1C_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
     extern u32 D_8012BCA0;
     extern s32 D_801CA980;
-    extern void func_801A33B8(void *);
-    extern s32 change_kirby_hp(f32);
-    extern void play_sound(s32);
-    extern void func_8016BD24_ovl3(s32);
-    extern void func_801696F0_ovl3(struct GObj *);
 
     D_800E8920[omCurrentObj->objId] = 0;
     switch (D_800E98E0[omCurrentObj->objId]) {
@@ -162,14 +185,6 @@ void func_801D4C1C_ovl8(struct GObj *arg0) {
 
 
 void func_801D4D88_ovl8(struct GObj *arg0) {
-    extern void func_800A9760(s32);
-    extern void func_800B4954(struct GObj *);
-    extern void func_800BB468(s32, s32);
-    extern void func_8016BBD0_ovl3(void);
-    extern void func_800B33F4(void);
-    extern f32 func_800F9828(s32, s32);
-    extern void func_801D4C1C_ovl8(struct GObj *);
-    extern void func_801D4778_ovl8(struct GObj *);
     f32 sum;
 
     if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
@@ -204,7 +219,6 @@ void func_801D4FA4_ovl8(void) {
     func_801D5024_ovl8();
 }
 
-void func_801D5024_ovl8(void);
 
 void func_801D4FE4_ovl8(void) {
     D_800EAA60[omCurrentObj->objId] = -1.0f;
@@ -215,10 +229,6 @@ void func_801D4FE4_ovl8(void) {
 
 void func_801D560C_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
-    extern s32 change_kirby_hp(f32);
-    extern void play_sound(s32);
-    extern void func_8016BD24_ovl3(s32);
-    extern void func_801696F0_ovl3(struct GObj *);
 
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
     D_800E8920[omCurrentObj->objId] = 0;
@@ -252,21 +262,18 @@ void func_801D56E0_ovl8(void) {
     func_801D57E0_ovl8();
 }
 
-void func_801D57E0_ovl8();
 
 void func_801D5720_ovl8(void) {
     D_800EADE0[omCurrentObj->objId] = -12.0f;
     func_801D57E0_ovl8();
 }
 
-void func_801D57E0_ovl8();
 
 void func_801D5760_ovl8(void) {
     D_800EADE0[omCurrentObj->objId] = -16.0f;
     func_801D57E0_ovl8();
 }
 
-void func_801D57E0_ovl8();
 
 void func_801D57A0_ovl8(void) {
     D_800EADE0[omCurrentObj->objId] = -10.0f;
@@ -274,13 +281,6 @@ void func_801D57A0_ovl8(void) {
 }
 
 void func_801D57E0_ovl8(struct GObj *arg0) {
-    extern void func_800A9760(s32);
-    extern void func_800B4954(struct GObj *);
-    extern void func_8016BBD0_ovl3(void);
-    extern void func_8016BC00_ovl3(void);
-    extern void func_800B33F4(void);
-    extern void func_800B531C(struct GObj *);
-    void func_801D59F0_ovl8(struct GObj *);
 
     play_sound(0x1E9);
     if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
@@ -315,11 +315,6 @@ void func_801D59F0_ovl8(struct GObj *arg0) {
     extern s32 D_800D7098;
     extern u32 D_8012BCA0;
     extern s32 D_801CA980;
-    extern void func_801A33B8(void *);
-    extern s32 change_kirby_hp(f32);
-    extern void play_sound(s32);
-    extern void func_8016BD24_ovl3(s32);
-    extern void func_801696F0_ovl3(struct GObj *);
 
     D_800E8920[omCurrentObj->objId] = 0;
     switch (D_800E98E0[omCurrentObj->objId]) {
@@ -350,15 +345,6 @@ void func_801D59F0_ovl8(struct GObj *arg0) {
 
 void func_801D5B20_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
-    extern void func_800A9760(s32);
-    extern void func_800B4954(struct GObj *);
-    extern void func_800B531C(struct GObj *);
-    extern void func_8016BBD0_ovl3(void);
-    extern void func_800B33F4(void);
-    extern void func_800BB468(s32, s32);
-    extern s32 change_kirby_hp(f32);
-    extern void play_sound(s32);
-    void func_801D5E90_ovl8(struct GObj *);
 
     if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
         func_800A9760(0x20007);
@@ -402,8 +388,6 @@ void func_801D5B20_ovl8(struct GObj *arg0) {
 
 void func_801D5E90_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
-    extern void func_8016BD24_ovl3(s32);
-    extern void func_801696F0_ovl3(struct GObj *);
 
     if (gEntityFuncListIDArray[D_800E0D50[omCurrentObj->objId]] == 0xE) {
         if (D_800E8920[omCurrentObj->objId] == 0) {
@@ -431,17 +415,7 @@ void func_801D5E90_ovl8(struct GObj *arg0) {
 }
 
 void func_801D5F88_ovl8(struct GObj *arg0) {
-    extern void func_800A9760(s32);
-    extern void func_800B4924(struct GObj *);
-    extern void func_800B4954(struct GObj *);
-    extern void func_8016BBD0_ovl3(void);
-    extern void func_8016BC00_ovl3(void);
-    extern void func_800FBE1C(void);
-    extern void func_800FA414(s32);
-    extern void func_800F98EC(s32, f32);
-    extern void func_801A32EC(void *);
     extern s32 D_801CA980;
-void func_801D6534_ovl8(struct GObj *);
     f32 temp;
 
     if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
@@ -523,13 +497,6 @@ void func_801D6534_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
     extern u32 D_8012BCA0;
     extern s32 D_801CA980;
-    extern void func_801A33B8(void *);
-    extern s32 change_kirby_hp(f32);
-    extern void play_sound(s32);
-    extern void func_800FB914(s32);
-    extern void func_800BB468(s32, s32);
-    extern void func_8016BD24_ovl3(s32);
-    extern void func_801696F0_ovl3(struct GObj *);
     struct DObj *d;
     Vector sp38;
     Vector sp2C;
@@ -600,15 +567,6 @@ void func_801D6534_ovl8(struct GObj *arg0) {
 void func_801D68E0_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
     extern s32 D_801CA980;
-    extern void func_800A9760(s32);
-    extern void func_800B4954(struct GObj *);
-    extern void func_800B531C(struct GObj *);
-    extern void func_8016BBD0_ovl3(void);
-    extern void func_800BB468(s32, s32);
-    extern void func_801A32EC(void *);
-    extern s32 change_kirby_hp(f32);
-    extern void play_sound(s32);
-    void func_801D6B20_ovl8(struct GObj *);
 
     if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
         func_800A9760(0x20007);
@@ -644,10 +602,6 @@ void func_801D6B20_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
     extern u32 D_8012BCA0;
     extern s32 D_801CA980;
-    extern void func_801A33B8(void *);
-    extern void play_sound(s32);
-    extern void func_8016BD24_ovl3(s32);
-    extern void func_801696F0_ovl3(struct GObj *);
     extern s32 D_800E6150[], D_800E5F90[];
     extern f32 D_800E6D90[], D_800E6BD0[], gEntitiesPosYArray[];
 
@@ -682,16 +636,6 @@ void func_801D6B20_ovl8(struct GObj *arg0) {
 void func_801D6C8C_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
     extern s32 D_801CA980;
-    extern void func_800A9760(s32);
-    extern void func_800A8100(s32, s32, s32, struct DObj *);
-    extern void func_800B4954(struct GObj *);
-    extern void func_800B531C(struct GObj *);
-    extern void func_8016BBD0_ovl3(void);
-    extern void func_800BB468(s32, s32);
-    extern void func_801A32EC(void *);
-    extern s32 change_kirby_hp(f32);
-    extern void play_sound(s32);
-    void func_801D6F1C_ovl8(struct GObj *);
     struct DObj *sp1C;
 
     if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
@@ -744,15 +688,7 @@ struct Ovl8TrackPosition {
 
 void func_801D7240_ovl8(struct GObj *arg0) {
     extern s32 D_801CA980;
-    extern void func_800A9760(s32);
-    extern void func_800A8100(s32, s32, s32, struct DObj *);
     extern s32 func_800F9888(struct Ovl8TrackPosition *, f32);
-    extern void func_800B4954(struct GObj *);
-    extern void func_800B531C(struct GObj *);
-    extern void func_8016BBD0_ovl3(void);
-    extern void func_801A32EC(void *);
-    extern void play_sound(s32);
-    void func_801D75A8_ovl8(struct GObj *);
     struct Ovl8TrackPosition sp3C;
     Vector sp30;
     struct DObj *sp2C;

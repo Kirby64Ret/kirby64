@@ -20,10 +20,36 @@ void func_801A0880_ovl7(void);
 void func_801D4440_ovl8(struct GObj *);
 extern struct GObjProcess *gEntityGObjProcessArray[];
 
+// ovl1 extern
+s32 play_music(s32, s32);
+void auSetBGMVolume(s32, u32);
+struct Sub800E1B50_Unk34 *func_800A8100(s32, s32, s32, struct DObj *);
+void func_800A9760(u32);
+void func_800B33F4(void);
+void func_800B3520(void);
+void func_800B72AC(struct GObj *);
+void func_800B7560(struct GObj *);
+void func_800B7790(struct GObj *);
+void func_800B8020(struct GObj *);
+void func_800B8208(struct GObj *);
+
+// ovl2 extern
+f32 vec3_abs_angle_diff(Vector *, Vector *);
+void func_800F6C40(s32, s32);
+
+// ovl7 extern
+void func_8019BB58_ovl7(void);
+
+// within this file
+void func_801D307C_ovl8(struct GObj *);
+void func_801D34C0_ovl8(struct GObj *);
+void func_801D3B14_ovl8(struct GObj *);
+void func_801D3DB4_ovl8(struct GObj *);
+void func_801D4038_ovl8(struct GObj *);
+void func_801D43B8_ovl8(struct GObj *);
+void func_801D447C_ovl8();
+
 void func_801D2B90_ovl8(void) {
-    extern void play_music(s32, s32);
-    extern void auSetBGMVolume(s32, s32);
-    extern void play_sound(s32);
     extern s32 D_800D6B54;
 
     extern s32 D_800BE500;
@@ -32,9 +58,6 @@ void func_801D2B90_ovl8(void) {
     extern FUNCLIST D_801DB020_ovl8;
     extern s32 D_801C9F2C;
     extern s32 D_801CA100;
-    void func_801D447C_ovl8();
-    struct Sub800E1B50_Unk34 *func_800A8100(s32, s32, s32, struct DObj *);
-    void func_800A9760(s32);
     struct EnemyRecord *sp1C;
     struct DObj *sp18;
 
@@ -78,9 +101,6 @@ void func_801D2B90_ovl8(void) {
 }
 
 void func_801D2DE0_ovl8(GObj *arg0) {
-    extern void func_800B8208(GObj *);
-    extern f32 vec3_abs_angle_diff(Vector *, Vector *);
-    void func_801D307C_ovl8(GObj *);
     s32 pad0;
     s32 pad1;
     s32 pad2;
@@ -151,9 +171,6 @@ void func_801D307C_ovl8(GObj *arg0) {
 }
 
 void func_801D329C_ovl8(GObj *arg0) {
-    extern void func_800B8020(struct GObj *);
-    void func_801D34C0_ovl8(GObj *);
-
     D_800DF150[omCurrentObj->objId] = func_801D34C0_ovl8;
     D_800DEF90[omCurrentObj->objId] = func_800B8020;
     D_800E5F90[omCurrentObj->objId] = D_800E5F90[0];
@@ -204,14 +221,10 @@ void func_801D34C0_ovl8(GObj *arg0) {
 }
 
 void func_801D3644_ovl8(GObj *arg0) {
-    extern void func_800B7790(struct GObj *);
-    extern void func_800B72AC(struct GObj *);
-    extern void func_800B33F4(void);
     extern s32 D_800E8AE0[];
     extern f32 D_800EA6E0[];
     extern f32 D_800D70D8[];
     extern s32 D_800EA520[];
-    void func_801D3B14_ovl8(struct GObj *);
     f32 sp34;
     f32 sp30;
 
@@ -277,9 +290,7 @@ void func_801D3B14_ovl8(GObj *arg0) {
 }
 
 void func_801D3BA8_ovl8(GObj *arg0) {
-    void func_801D3DB4_ovl8(struct GObj *);
     extern s32 D_800EC120[];
-    extern void func_800B3520(void);
 
     D_800DF150[omCurrentObj->objId] = func_801D3DB4_ovl8;
     switch (D_800EA520[omCurrentObj->objId]) {
@@ -319,10 +330,6 @@ void func_801D3DB4_ovl8(struct GObj *arg0) {
 }
 
 void func_801D3E3C_ovl8(GObj *arg0) {
-    extern void func_800B7560(struct GObj *);
-    extern void func_800B33F4(void);
-    void func_801D4038_ovl8(GObj *);
-
     D_800DEF90[omCurrentObj->objId] = func_800B7560;
     *(s32 *) &D_800E8E60[omCurrentObj->objId] = 1;
     D_800DF150[omCurrentObj->objId] = func_801D4038_ovl8;
@@ -363,10 +370,7 @@ void func_801D4038_ovl8(GObj *arg0) {
 }
 
 void func_801D40E8_ovl8(GObj *arg0) {
-    extern void func_800B7560(struct GObj *);
-    extern void func_800B33F4(void);
     extern s32 D_800EA520[];
-    void func_801D43B8_ovl8(struct GObj *);
     f32 s;
 
     D_800DEF90[omCurrentObj->objId] = func_800B7560;
@@ -423,17 +427,10 @@ void func_801D4440_ovl8(struct GObj *arg0) {
 void func_801D447C_ovl8(arg0)
 struct GObj *arg0;
 {
-    extern void func_8019BB58_ovl7(void);
-    extern void func_800AFBB4(s32, struct GObj *);
-    extern void play_music(s32, s32);
-    extern void auSetBGMVolume(s32, s32);
-    extern void func_800F6C40(s32, s32);
     extern s32 D_800D6B54;
     extern s32 D_800BE4F8;
     extern s32 D_800BE508;
     extern struct GObjProcess *gEntityGObjProcessArray5[];
-    void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
-    void procMainStub(struct GObj *);
 
     func_8019BB58_ovl7();
     D_800DEDD0[omCurrentObj->objId] = NULL;

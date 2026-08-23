@@ -42,6 +42,34 @@ extern s32 func_80155C68_ovl3(s32, f32 *);
 
 extern s32 func_8010DA28(void *);
 
+/* Shot collision sweep + result unpack (ovl2_7 / ovl2_10). Only
+ * func_80152828_ovl3 calls these in the N64 arm, so file scope here is
+ * equivalent to the block-scope copies m2c emitted inside it. */
+extern s32 func_80109E44(f32 *);
+extern s32 func_8010B11C(f32 *);
+extern void func_80105238(f32 *, u8 *);
+
+/* The rest of the ovl2_7 / ovl2_10 collision entry points this file uses.
+ * m2c emitted these inside the function bodies that call them; a block-scope
+ * function declaration has file-scope linkage, so they were never local. */
+struct PositionState;
+extern void func_80105180(struct PositionState *);
+extern void func_801051AC(struct PositionState *);
+extern void func_801051DC(struct PositionState *);
+extern s32 func_80109DD8(struct PositionState *);
+extern s32 func_8010BBD4(struct PositionState *);
+extern s32 func_8010BFAC(struct PositionState *);
+extern s32 func_8010C274(struct PositionState *);
+extern s32 func_8010D668(struct PositionState *);
+extern s32 func_801128A4(struct PositionState *);
+extern s32 func_8010DF9C(f32 *);
+extern s32 func_8010E048(u8 *, u32, f32 *, f32 *, f32 *, f32 *);
+extern u16 func_8010DC24(struct CollisionTriangle *);
+extern void func_8011D40C(void);
+extern f32 func_800F8728(s32, f32, f32);
+extern s32 func_80103EA0(Vector *, Vector *, void *, void *, s32, s32, s32, s32);
+extern void func_801530BC_ovl3(f32 *);
+
 
 s32 func_80152070_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
     u8 i;
@@ -133,13 +161,6 @@ s32 func_8015229C_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
  * None of (1)-(4) were fixed here; this needs a full rewrite, not a
  * word-level nudge. Leaving guarded. */
 void func_80152348_ovl3(f32 arg0) {
-    void func_80105180(struct PositionState *);
-    void func_801051DC(struct PositionState *);
-    void func_801051AC(struct PositionState *);
-    s32 func_80109DD8(struct PositionState *);
-    s32 func_8010D668(struct PositionState *);
-    s32 func_8010DF9C(f32 *);
-    f32 func_800F8728(s32, f32, f32);
     extern struct PositionState gPositionState;
     extern f32 D_800E6A10[];
     extern f32 D_800E17D0[];
@@ -249,13 +270,6 @@ void func_80152348_ovl3(f32 arg0) {
  * the collision result blocks to flag water surfaces into D_800E8AE0
  * (value 7); that scan's block layout is draft-only so far, so the flag
  * stays 0 here -- spawn-into-water reactions are the one deferred piece. */
-void func_80105180(struct PositionState *);
-void func_801051DC(struct PositionState *);
-void func_801051AC(struct PositionState *);
-s32 func_80109DD8(struct PositionState *);
-s32 func_8010D668(struct PositionState *);
-s32 func_8010DF9C(f32 *);
-f32 func_800F8728(s32, f32, f32);
 
 void func_80152348_ovl3(f32 arg0) {
     extern struct PositionState gPositionState;
@@ -358,9 +372,6 @@ void func_80152348_ovl3(f32 arg0) {
 s32 func_80152828_ovl3(f32 *arg0, f32 *arg1) {
     s32 ret;
     extern u8 D_8012BCA0[];
-    s32 func_80109E44(f32 *);
-    s32 func_8010B11C(f32 *);
-    void func_80105238(f32 *, u8 *);
 
     arg1[1] = gEntitiesNextPosXArray[omCurrentObj->objId];
     arg1[2] = gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -839,7 +850,6 @@ done:
 void func_801530BC_ovl3(f32 *h) {
     extern u8 D_8012BCA0[];
     extern s32 D_800E8AE0[];
-    s32 func_8010E048(u8 *, u32, f32 *, f32 *, f32 *, f32 *);
     s32 id = omCurrentObj->objId;
     f32 probe[3];
     f32 prev3[3];
@@ -1093,7 +1103,6 @@ void func_80153668_ovl3(void) {
     register u16 count;
     register u16 i;
     extern u8 *D_8012BCA0_p[];
-    s32 func_8010DF9C(f32 *);
 
     if (gKirbyState.unk140 != 0) {
         return;
@@ -1227,13 +1236,6 @@ s32 func_80153B98_ovl3(void) {
     u32 floorM;
     struct CollisionTriangle *tri;
     u16 r;
-    s32 func_8010BBD4(struct PositionState *);
-    void func_80105238(f32 *, u8 *);
-    s32 func_801128A4(struct PositionState *);
-    void func_800F8728(s32, f32, f32);
-    void func_8011D40C(void);
-    u16 func_8010DC24(struct CollisionTriangle *);
-    void func_801530BC_ovl3(f32 *);
 
     st->kirbyFootPos[0] = gEntitiesNextPosXArray[obj->objId];
     st->kirbyFootPos[1] = gEntitiesNextPosYArray[obj->objId];
@@ -1322,9 +1324,6 @@ s32 func_80153B98_ovl3(void) {
  * commits the resolved position, unpacks only the vertical face state into
  * gKirbyState (floor contact also grounds D_800E8920), scans ceiling then
  * floor for hazardous triangle classes, and runs the swim watcher. */
-s32 func_8010BBD4(struct PositionState *);
-s32 func_8010BFAC(struct PositionState *);
-void func_80105238(f32 *, u8 *);
 
 s32 func_80153B98_ovl3(void) {
     extern u8 D_8012BCA0[];
@@ -1454,12 +1453,6 @@ s32 func_80153FC8_ovl3(void) {
     u16 *hm = (u16 *) &gKirbyState.unk10C;
     struct CollisionTriangle *tri;
     u16 r;
-    void func_8010BFAC(struct PositionState *);
-    void func_80105238(f32 *, u8 *);
-    s32 func_801128A4(struct PositionState *);
-    void func_800F8728(s32, f32, f32);
-    void func_8011D40C(void);
-    u16 func_8010DC24(struct CollisionTriangle *);
 
     st->kirbyFootPos[0] = gEntitiesNextPosXArray[obj->objId];
     st->kirbyFootPos[1] = gEntitiesNextPosYArray[obj->objId];
@@ -1767,9 +1760,7 @@ void func_8015488C_ovl3(s32 arg0, f32 *arg1) {
  * shared water probe: shift the shot's water flag right once, then re-set
  * bit 2 for every active water volume at foot height (annex spelling as in
  * func_80152348_ovl3's arm). */
-s32 func_80109E44(f32 *);   /* match func_80152828_ovl3's block-scope spelling */
-s32 func_8010B11C(f32 *);
-s32 func_8010C274(struct PositionState *);
+/* func_80109E44 / func_8010B11C are declared at the top of the file. */
 
 static void portShotWaterScan(f32 h0) {
     extern u8 D_8012BCA0[];
@@ -1856,10 +1847,6 @@ void func_801548DC_ovl3(arg0)
 {
     extern u8 D_8012BCA0[];
     extern s32 D_800E8920[];
-    s32 func_80109E44(f32 *);
-    s32 func_8010B11C(f32 *);
-    void func_80105238(f32 *, u8 *);
-    void func_800F8728(s32, f32, f32);
     f32 *fr = D_800E0490[omCurrentObj->objId][1];
     s32 res;
     f32 dx;
@@ -1896,7 +1883,6 @@ void func_801548DC_ovl3(arg0)
     gEntitiesNextPosYArray[omCurrentObj->objId] = arg0->kirbyFootPos[1];
     {
         extern s32 D_800E8AE0[];
-        s32 func_8010DF9C(f32 *);
         f32 sp3C[3];
         s32 hits;
         s32 wi;
@@ -1935,9 +1921,6 @@ void func_80154CFC_ovl3(arg0)
     extern s32 D_800E8AE0[];
     extern f32 D_800E6A10[];
     extern f32 D_800E17D0[];
-    s32 func_8010C274(struct PositionState *);
-    void func_80105238(f32 *, u8 *);
-    s32 func_8010DF9C(f32 *);
     f32 *fr = D_800E0490[omCurrentObj->objId][1];
     f32 sp3C[3];
     s32 hits;
@@ -2047,9 +2030,6 @@ void func_80155088_ovl3(arg0)
     extern u8 D_8012BCA0[];
     extern s32 D_800E8920[];
     extern s32 D_800E8AE0[];
-    s32 func_8010C274(struct PositionState *);
-    void func_80105238(f32 *, u8 *);
-    s32 func_8010DF9C(f32 *);
     f32 *fr = D_800E0490[omCurrentObj->objId][1];
     f32 sp3C[3];
     s32 hits;
@@ -2247,7 +2227,6 @@ s32 func_801556D8_ovl3(f32 arg0) {
     s32 d0;
     s32 d1;
     s32 d2;
-    s32 func_80103EA0();
 
     obj = omCurrentObj;
     temp = (D_800E0490[obj->objId] != NULL) ? D_800E0490[obj->objId][1][0] : 0.0f;
@@ -2536,7 +2515,10 @@ extern s32 D_8012E7FC;
 extern u8 *func_8011BD30();
 extern void func_800A4DB8(Vector *, void *);
 extern void func_800A802C(s32, s32, s32, Vector *, Vector *);
-extern void func_800A7F74(s32, s32, u32, f32, f32, f32);
+/* Definition (src/ovl1/ovl1_2_2.c:321) is
+ * `Ovl1Generator *func_800A7F74(s32, s32, s32, f32, f32, f32)`; Ovl1Generator
+ * is private to that TU, so the tree declares it void here. */
+extern void func_800A7F74(s32, s32, s32, f32, f32, f32);
 extern void func_800BB468(s32, s32);
 
 s32 func_80155F0C_ovl3(struct CollisionTriangle *tri) {

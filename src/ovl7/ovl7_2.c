@@ -63,6 +63,14 @@ struct Ovl7AnimObj *func_801A0464_ovl7(void);
 void func_801A04B8_ovl7(void);
 s32 func_801A0C70_ovl7(void);
 
+s32 func_80110150(void *);
+s32 func_80110B00(void *);
+s32 func_80110FD4(void *);
+s32 func_80111A04(u32, u32);
+void func_800F753C(void);
+void func_801A7000_ovl7(struct GObj *);
+void func_801BD510_ovl7(struct GObj *);
+
 void func_8019F3B0_ovl7(void) {
     func_8019F410_ovl7(0);
 }
@@ -903,11 +911,6 @@ s32 func_801A07C4_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_801A07C4_ovl7.s")
 #endif
 s32 func_801A0880_ovl7(void) {
-    s32 func_80110FD4(void *);
-    s32 func_80110150(void *);
-    void func_800F753C(void);
-    void func_801A7000_ovl7(struct GObj *);
-    void func_801BD510_ovl7(struct GObj *);
     extern s32 D_800E83E0[], D_800E8220[], D_800E0D50[];
     struct Ovl7_2_AnimInfoE {
         u8 unk0;
@@ -981,10 +984,6 @@ struct Ovl7_2_AnimInfo {
 };
 
 s32 func_801A0B10_ovl7(void) {
-    s32 func_80110B00(void *);
-    s32 func_80110FD4(void *);
-    s32 func_80110150(void *);
-    s32 func_80111A04(u32, u32);
     extern s32 D_800E83E0[];
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl7_2_AnimInfo sp2C;
@@ -1020,9 +1019,6 @@ struct Ovl7_2_AnimInfoB {
 };
 
 s32 func_801A0C70_ovl7(void) {
-    s32 func_80110B00(void *);
-    s32 func_80110FD4(void *);
-    s32 func_80110150(void *);
     extern f32 D_800E7B20[];
     s32 ret = 0;
     f32 saved = D_800E7B20[omCurrentObj->objId];

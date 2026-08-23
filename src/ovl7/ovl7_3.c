@@ -1351,6 +1351,26 @@ void func_801A32EC(struct Ovl7TrackParams *arg0) {
     func_801051AC(&D_801CE6D0_ovl7);
 }
 
+/* FACTORY: 3/152 words differ, and all three are one register choice in the
+ * tail block. The ROM loads omCurrentObj->objId straight into a0 and leaves
+ * the jal's delay slot empty; IDO here loads it into a3, indexes with a3, and
+ * spends the delay slot on `move a0,a3`. Everything else is byte-exact.
+ *
+ * Structure is confirmed correct, not assumed: caching the index in a local
+ * (`s32 id = omCurrentObj->objId;` over the tail block) costs 90 words, so
+ * the ROM really does re-load it at each use, as written below. Swapping the
+ * two f32 declarations and moving the block-scope prototypes around are both
+ * neutral; reversing the `||` operands costs 50 (it is a short-circuit, and
+ * the ROM tests dx first). The callee prototype cannot be varied from here --
+ * func_800F8728 is already declared at file scope.
+ *
+ * This is a register-allocation floor, not a structural one. Handed to the
+ * permuter rather than ground on by hand.
+ *
+ * NOTE: this draft was previously left un-guarded as `#ifndef PORT`, so the
+ * ROM build took it INSTEAD of the pragma below and shipped those three wrong
+ * words in the linked image. tools/decomp/check_live_pragmas.py now fails the
+ * build for that. */
 #ifdef MIPS_TO_C
 void func_801A33B8(struct Ovl7TrackParams *arg0) {
     s32 func_80109F60(struct EnemyProbe *);

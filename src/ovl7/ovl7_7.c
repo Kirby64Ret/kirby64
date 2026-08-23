@@ -18,6 +18,21 @@
  * emits nothing. */
 struct Ovl7_7_AnimObj;
 
+struct Ovl7_7_AnimObj *func_80111A04(void *, s32);
+void func_80111C4C(struct Ovl7_7_AnimObj *);
+void func_8019B164_ovl7(void);
+/* s32, NOT the `void` of the definition in src/ovl7/ovl7_3.c. MEASURED: with
+ * `void` here, IDO frees $v0 across the discarded call in func_801B0258_ovl7
+ * below and reuses it as the D_801D0AB0_ovl7 loop base, giving v0 where the
+ * ROM has v1 (3 instructions, objdump A/B against the known-good build). The
+ * definition's own tail call func_8011BF4C() does leave a value in $v0, so
+ * the ROM's callers are right and the `void` on the definition is what needs
+ * revisiting -- that file belongs to another lane. */
+s32 func_801A36CC(void *);
+void func_801B03FC_ovl7(void);
+s32 func_80110B00(void *);
+s32 func_80110FD4(void *);
+
 /* D_801CE274_ovl7 = 0.3f : now emitted by this TU */
 void func_800B6474(GObj *);
 extern FUNCLIST D_801CD590_ovl7;
@@ -609,7 +624,6 @@ void func_801AF9F8_ovl7(GObj *arg0) {
 }
 
 void func_801AFAB0_ovl7(GObj *arg0) {
-    void func_8019B164_ovl7(void);
 /* D_801CE258_ovl7 = -0.65f : now emitted by this TU */
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -744,10 +758,6 @@ struct Ovl7_7_AnimObj {
 };
 
 void func_801B0258_ovl7(GObj *arg0) {
-    void func_801B03FC_ovl7(void);
-    s32 func_801A36CC(void *);
-    struct Ovl7_7_AnimObj *func_80111A04(void *, s32);
-    void func_80111C4C(struct Ovl7_7_AnimObj *);
     extern u8 D_8012E7C5;
     extern f32 D_801CB208_ovl7[][4], D_801D0AB0_ovl7[][4];
 /* D_801CE278_ovl7 = 0.1f : now emitted by this TU */
@@ -784,8 +794,6 @@ struct Ovl7_7_AnimObj2 {
 };
 
 void func_801B03FC_ovl7(void) {
-    s32 func_80110B00(void *);
-    s32 func_80110FD4(void *);
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct Ovl7_7_AnimObj2 *p;
     struct Ovl7AnimInfo sp28;

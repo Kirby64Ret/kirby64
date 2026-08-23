@@ -42,6 +42,7 @@ extern s32 D_800E8760[];
 extern s32 D_801D0A38_ovl7[];
 void func_801A3938(void *);
 void func_801A36CC(void *);
+void func_800A9EA4(s32);
 void func_801A3864_ovl7(GObj *);
 s32 func_801A0D74_ovl7(GObj *);
 s32 func_801117BC(void *, u32);
@@ -217,7 +218,6 @@ void func_801BF770_ovl7(GObj *arg0) {
     extern f32 D_800E3210[], D_800E3750[], D_800E3C90[];
 /* D_801CE5EC_ovl7 = 0.8f : now emitted by this TU */
     extern void *D_801CD090_ovl7[];
-    void func_800A9EA4(s32);
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -666,7 +666,6 @@ void func_801C0AB0_ovl7(GObj *arg0) {
     extern f32 D_800E3210[], D_800E3750[], D_800E3C90[];
 /* D_801CE658_ovl7 = 0.8f : now emitted by this TU */
     extern void *D_801CD144_ovl7[];
-    void func_800A9EA4(s32);
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -773,6 +772,11 @@ void func_801C1148_ovl7(GObj *arg0) {
 }
 
 void func_801C1288_ovl7(GObj *arg0) {
+    /* NOT hoistable: this K&R redeclaration must stay in this block. It
+     * shadows the (void) DEFINITION of func_801C0610_ovl7 above, which is
+     * what lets the call at the end of this function pass arg0. Removing it
+     * fails the build with "Type GObj * of this argument is incompatible
+     * with type void of function prototype description". */
     extern void func_801C0610_ovl7();
     extern void *D_801CD168_ovl7[];
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
@@ -910,7 +914,6 @@ void func_801C1830_ovl7(GObj *arg0) {
     extern f32 D_800E3210[], D_800E3750[], D_800E3C90[];
 /* D_801CE6C8_ovl7 = 0.8f : now emitted by this TU */
     extern void *D_801CD1F8_ovl7[];
-    void func_800A9EA4(s32);
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800DDFD0[omCurrentObj->objId] = 0;
