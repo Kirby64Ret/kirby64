@@ -72,6 +72,41 @@ extern f32 func_800F8728(s32, f32, f32);
 extern s32 func_801AE73C_ovl7(s32, f32, f32, f32);
 #endif
 
+/* Declared once, at file scope, with the types their DEFINITIONS use:
+ *   f32 func_800F8728(s32, f32, f32)                  src/ovl2/ovl2_2.c:2194
+ *   s32 func_8010E048(struct WaterData *, s32,
+ *                     Vector *, Vector *, Vector *, Vector *)
+ *                                                     src/ovl2/ovl2_7.c:8122
+ *   s32 func_801AE73C_ovl7(s32, f32, f32, f32)        src/ovl7/ovl7_6.c:375
+ * Each of these used to be re-declared inside individual function bodies,
+ * two of them wrongly: func_800F8728 as returning void (it returns the
+ * knock-back magnitude, which ovl1_8.c does use) and func_801AE73C_ovl7 the
+ * same. A block-scope function declaration has file-scope LINKAGE, so those
+ * spellings typed the symbols for the whole translation unit while looking
+ * local. The PORT-only copies above stay as they are; these are the ones the
+ * N64 build sees. */
+struct WaterData;
+f32 func_800F8728(s32, f32, f32);
+s32 func_801AE73C_ovl7(s32, f32, f32, f32);
+
+/* Hoisted out of individual function bodies. All of these are defined in
+ * ovl2 (the shared enemy/probe helpers) and were re-declared identically in
+ * up to three functions apiece; a block-scope function declaration has
+ * file-scope linkage anyway, so the duplication bought nothing and only made
+ * a disagreement possible. */
+struct EnemyProbe;
+s32 func_8010DF9C(void *);
+void func_801A239C_ovl7(void);
+struct EnemyProbe *func_8010DCAC(void);
+void func_801051DC(struct EnemyProbe *);
+s32 func_80109DD8(struct EnemyProbe *);
+void func_8010CE44(struct EnemyProbe *, f32);
+void func_8010D42C(struct EnemyProbe *, f32);
+void func_8010D138(struct EnemyProbe *, f32);
+s32 func_80109F60(struct EnemyProbe *);
+s32 func_8010B238(struct EnemyProbe *);
+void func_80105238(struct EnemyProbe *, void *);
+
 /* Track-following movement parameters, overlaid onto EnemyProbe.unk10
  * (5-word block, see func_801A2ADC_ovl7/func_801A32EC below) and consumed
  * directly by func_801A33B8. unkC/unk10 are read only through
@@ -349,7 +384,6 @@ void func_801A1724_ovl7(struct EnemyProbe *sub84) {
    file-scope declaration is `void func_8010DC24()` and must not be changed. */
 #ifdef MIPS_TO_C
 void func_801A187C_ovl7(struct EnemyProbe *arg0) {
-    void func_800F8728(s32, f32, f32);
     extern u32 D_800E8E60[];
     u32 id = omCurrentObj->objId;
     struct EnemyRecord *rec = D_800E1B50[id];
@@ -486,10 +520,6 @@ void func_801A187C_ovl7(void *arg0) {
    decremented through (s8); func_8010DF9C takes ONE argument. */
 #ifdef MIPS_TO_C
 void func_801A1B6C_ovl7(void) {
-    s32 func_8010DF9C(void *);
-    s32 func_8010E048(struct WaterData *, s32, Vector *, Vector *, Vector *, Vector *);
-    void func_801AE73C_ovl7(s32, f32, f32, f32);
-    void func_801A239C_ovl7(void);
     extern s32 D_800E8AE0[];
     s32 flags0;
     Vector newp;
@@ -706,7 +736,6 @@ void func_801A1B6C_ovl7(void) {
    local, not three f32s (three separate floats cost 54 diffs). */
 #ifdef MIPS_TO_C
 void func_801A2068_ovl7(void) {
-    s32 func_8010DF9C(void *);
     extern s32 D_800E8AE0[];
     s32 probeHit;
     Vector p;
@@ -865,14 +894,6 @@ void func_801A248C_ovl7(struct EnemyProbe *arg0, f32 arg1) {
    tests zero FIRST and shares one clear-store tail. */
 #ifndef PORT
 void func_801A2558_ovl7(s32 arg0) {
-    struct EnemyProbe *func_8010DCAC(void);
-    void func_801051DC(struct EnemyProbe *);
-    s32 func_80109DD8(struct EnemyProbe *);
-    void func_8010CE44(struct EnemyProbe *, f32);
-    void func_8010D42C(struct EnemyProbe *, f32);
-    void func_8010D138(struct EnemyProbe *, f32);
-    s32 func_8010DF9C(void *);
-    void func_800F8728(s32, f32, f32);
     extern s32 D_800E8AE0[];
     extern u8 D_800E7730[];
     f32 reach;
@@ -1127,8 +1148,6 @@ void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
    promotion appears). */
 #ifdef MIPS_TO_C
 s32 func_801A2C78_ovl7(f32 arg0) {
-    s32 func_8010E048(void *, s32, Vector *, Vector *, Vector *, Vector *);
-    void func_800F8728(s32, f32, f32);
     Vector newp;
     Vector oldp;
     Vector hit;
@@ -1373,10 +1392,6 @@ void func_801A32EC(struct Ovl7TrackParams *arg0) {
  * build for that. */
 #ifdef MIPS_TO_C
 void func_801A33B8(struct Ovl7TrackParams *arg0) {
-    s32 func_80109F60(struct EnemyProbe *);
-    s32 func_8010B238(struct EnemyProbe *);
-    void func_80105238(struct EnemyProbe *, void *);
-    void func_800F8728(s32, f32, f32);
     f32 dx;
     f32 dz;
 
