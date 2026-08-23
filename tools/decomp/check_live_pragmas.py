@@ -51,26 +51,35 @@ PRAGMA = re.compile(r'#pragma\s+GLOBAL_ASM\("([^"]+)"\)')
 IDENT = re.compile(r'[A-Za-z_]\w*')
 
 
-def taken(cond, kind):
-    """Is this arm taken with OFF undefined? None = cannot decide."""
+def taken(cond, kind, defined=frozenset()):
+    """Is this arm taken? None = cannot decide.
+
+    `defined` is the set of OFF names that ARE defined in the configuration
+    being evaluated; everything else in OFF is undefined. The ROM build
+    defines none of them, which is the default and the only case this file
+    itself uses -- check_local_protos.py passes the other three
+    configurations (see CONFIGS there) through the same evaluator so there is
+    one implementation of this and not two.
+    """
     # A trailing comment is part of the line, not of the condition -- and the
     # very guard this check was written for carried one
     # (`#ifndef PORT /* WIP iterating, re-guard at exit */`).
     c = re.sub(r'/\*.*?\*/', ' ', cond)
     c = c.split('//')[0].strip()
     if kind == 'ifdef':
-        return False if c in OFF else None
+        return (c in defined) if c in OFF else None
     if kind == 'ifndef':
-        return True if c in OFF else None
+        return (c not in defined) if c in OFF else None
     # #if / #elif: only handle defined(X) / !defined(X) over OFF names
     names = set(IDENT.findall(c)) - {'defined'}
     if not names or not names <= set(OFF):
         return None
     expr = c
     for n in OFF:
-        expr = re.sub(r'defined\s*\(\s*%s\s*\)' % n, '0', expr)
-        expr = re.sub(r'defined\s+%s\b' % n, '0', expr)
-        expr = re.sub(r'\b%s\b' % n, '0', expr)
+        v = '1' if n in defined else '0'
+        expr = re.sub(r'defined\s*\(\s*%s\s*\)' % n, v, expr)
+        expr = re.sub(r'defined\s+%s\b' % n, v, expr)
+        expr = re.sub(r'\b%s\b' % n, v, expr)
     expr = expr.replace('&&', ' and ').replace('||', ' or ').replace('!', ' not ')
     try:
         return bool(eval(expr, {'__builtins__': {}}, {}))
@@ -78,8 +87,15 @@ def taken(cond, kind):
         return None
 
 
-def check(path):
-    """Return [(line, listing, reason)] for every pragma dead in the ROM build."""
+def arm_states(path, defined=frozenset()):
+    """Yield (lineno, text, live) for every line of `path`.
+
+    `live` is False only when some enclosing conditional arm is PROVABLY not
+    taken under `defined`; an undecidable condition leaves the line live, so
+    no caller ever invents a failure it cannot prove. Preprocessor directive
+    lines themselves are yielded with the state of their ENCLOSING arms, not
+    of the arm they open.
+    """
     # One entry per open conditional: [live, won, murky].
     #   live   this arm's state; None when the condition is not decidable here
     #   won    some EARLIER arm of the same group was provably taken
@@ -87,18 +103,19 @@ def check(path):
     # Tracking only the immediately preceding arm gets a three-arm guard
     # backwards: in `#ifndef PORT / #elif defined(PORT) / #else`, the #elif is
     # provably false, but the #else is still dead because the FIRST arm won.
-    stack, dead = [], []
+    stack = []
     for i, line in enumerate(open(path, errors='replace'), 1):
         s = line.lstrip()
         m = re.match(r'#\s*(ifdef|ifndef|if|elif|else|endif)\b(.*)', s)
         if m:
             kw, rest = m.group(1), m.group(2)
+            outer = not any(a[0] is False for a in stack)
             if kw in ('ifdef', 'ifndef', 'if'):
-                t = taken(rest, kw)
+                t = taken(rest, kw, defined)
                 stack.append([t, t is True, t is None])
             elif kw == 'elif' and stack:
                 live, won, murky = stack[-1]
-                t = taken(rest, 'if')
+                t = taken(rest, 'if', defined)
                 stack[-1] = [False if won else (None if murky else t),
                              won or t is True,
                              murky or t is None]
@@ -107,9 +124,19 @@ def check(path):
                 stack[-1] = [None if murky else (not won), True, murky]
             elif kw == 'endif' and stack:
                 stack.pop()
+            yield i, line, outer
+            continue
+        yield i, line, not any(a[0] is False for a in stack)
+
+
+def check(path):
+    """Return [(line, listing)] for every pragma dead in the ROM build."""
+    dead = []
+    for i, line, live in arm_states(path):
+        if live:
             continue
         p = PRAGMA.search(line)
-        if p and any(a[0] is False for a in stack):
+        if p:
             dead.append((i, p.group(1).rsplit('/', 1)[-1]))
     return dead
 
