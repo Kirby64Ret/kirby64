@@ -55,14 +55,14 @@ extern FUNCLIST D_8021C750_ovl9;
 extern s32 func_801AE7E0_ovl7(s32);
 
 extern void func_800FB914(s32);
-extern void func_801AE940_ovl7(s32, f32, f32);
+extern s32 func_801AE940_ovl7(s32, f32, f32);
 extern FUNCLIST D_8021C770_ovl9;
 extern s32 func_801A0D74_ovl7(void);
 extern void func_8019F3B0_ovl7(void);
 
 void func_802016A8_ovl9(void);
 extern void play_sound(s32);
-extern void func_801ACCA0_ovl7(s32, s32, f32, f32);
+extern s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
 
 extern void func_800A2300(struct GObj *);
 
@@ -1951,7 +1951,7 @@ void func_8020165C_ovl9(s32 arg0, s32 arg1, f32 arg2) {
 #ifdef MIPS_TO_C
 /* FACTORY: 28/82 with the call form fixed, 1/83 without.  BLOCKED ON A
    FILE-SCOPE DECISION, not on a source spelling: this TU declares
-   `extern void func_801ACCA0_ovl7(s32, s32, f32, f32);` at line 65, but the
+   `extern s32 func_801ACCA0_ovl7(s32, s32, f32, f32);` at line 65, but the
    ROM uses its return value as the spawned track id.  Written with a
    function-pointer cast (as below, so the draft compiles without touching
    file scope) IDO emits lui/addiu/jalr where the ROM has a plain `jal`, and

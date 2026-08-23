@@ -66,8 +66,10 @@ extern u32 D_800BE508;
 extern s32 D_800D6E18;
 void func_800B4924(struct GObj *);
 void func_800A9F98(s32, f32);
-void func_800FD754(s32, f32, f32, f32);
+s32 func_800FD754(s32, f32, f32, f32);
 void func_80114E80(struct DObj *, s32, f32);
+void func_80112ED4(f32 arg0[4][4], Vector *arg1, Vector *arg2);
+void func_800AF27C(void);
 f32 func_8011E2A0(void);
 void curObjSleepForever(void);
 void func_80112B4C(struct GObj *arg0);
@@ -438,7 +440,6 @@ void func_80112A0C(void) {
 }
 
 void func_80112A40(s32 arg0, Vector *arg1, Vector *arg2) {
-    void func_80112ED4(f32 arg0[4][4], Vector *arg1, Vector *arg2);
     struct struct8011BA10_temp *temp;
     Vector sp30;
     Vector sp24;
@@ -2419,7 +2420,6 @@ void func_80116260(s32 arg0) {
 
 void func_801162F4(struct GObj *arg0) {
     extern f32 D_80129210[];
-    extern void func_800AF27C(void);
     struct Unk80124E14 *p = &D_80124E14[D_800E77A0[arg0->objId]];
 
     D_800D7098[0] = arg0->objId;

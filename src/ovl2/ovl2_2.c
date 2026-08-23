@@ -110,13 +110,6 @@ extern void *D_800D6AB8[];              /* native pointer array on PC (ovl1.c) *
 extern f32 D_800D6ED0[4][4];            /* view*proj, built by func_800F6830 */
 
 void *func_800A8358(s32);
-s32 func_800A9AA8(s32, s32); /* same prototype as the one further down */
-u16 func_800F8560(void);
-void func_800A7A70(s32, s32, s32);
-void func_800A7BF4(s16 *, u8 *);
-void utilLoadOverlay(u32);
-f32 func_800FA1D4(struct Unk80129114_4_4 *, Vector *, s32);
-u32 spawn_entity(u32, struct Entity *);
 void pc_levelload_debug(unsigned int id, unsigned int bytes, unsigned int nodes,
                         unsigned int ents, const void *base);
 
@@ -308,6 +301,29 @@ static void pc_lvl_swap_kirby_node(u8 *p) {
 }
 #endif /* PORT */
 
+/* the definition (src/ovl1/ovl1_3.c) returns void *, not s32 */
+void *func_800A9AA8(u32, s32);
+u16 func_800F8560(void);
+void func_800A7A70(s32, s32, s32);
+void func_800A7BF4(s16 *, u8 *);
+void utilLoadOverlay(u32);
+f32 func_800FA1D4(struct Unk80129114_4_4 *, Vector *, s32);
+u32 spawn_entity(u32, struct Entity *);
+
+void func_800F7258(s32);
+void func_800AF980(s32);
+void func_800B3070(s32, f32);
+void func_800A9864(u32, u32, u32);
+u32 *func_800A94F4(s32);
+void func_800FA414(s32);
+void func_800AAF34(s32, s32, f32);
+void func_801129AC(void);
+void func_801129DC(void);
+void func_8010137C(void);
+void func_800FBF18(s32);
+void func_8001E344(Vector *, void *, f32);
+void func_800F8570(s32);
+
 void func_800F6C40(s32 arg0, UNUSED s32 arg1) {
     D_800BE4F8 = 2;
     D_800BE4FC = 1;
@@ -358,18 +374,15 @@ void func_800F6E0C(void *arg0, UNUSED void *_1, UNUSED void *_2) {
  * sequential tests instead of the ROM's beqz/beq $s5/beq $s7 dispatch
  * and loses the hoisted constants (137 diffs -> 2). */
 void func_800F6E30(s32 arg0) {
-    void func_800F7258(s32);
-    void func_800AF980(s32);
-    void func_800B3070(s32, f32);
-    void func_800A9864(u32, s32, s32);
+    /* These three stay in-body because this draft's calls do not yet agree
+     * with the tree's definitions: func_800A2550 is `void (void *)` in
+     * ovl1.c and func_800AEE20/func_800AEEB4 are `void (GObj *, f32)` in
+     * ovl1_7.c, but m2c gave them an extra leftover register argument.
+     * Resolve the arity from the listing before sealing this draft; a
+     * file-scope prototype would make the TU disagree with itself. */
     void func_800A2550(u32);
-    u32 *func_800A94F4(s32);
     void func_800AEE20(u32, f32, u32 *);
     void func_800AEEB4(u32, f32, u32 *);
-    void func_800FA414(s32);
-    void func_800AAF34(s32, s32, f32);
-    void func_801129AC(void);
-    void func_801129DC(void);
     extern f32 gameTicksPerDraw;
     extern u32 D_800DFA10[];
     extern s32 D_801290D0;
@@ -477,18 +490,10 @@ void func_800F6E30(s32 arg0) {
  * DestructAnimBank reads; on this build they are separate 8-byte-capable
  * bss slots, written as full host pointers. */
 
-void func_800F7258(s32);
-void func_800AF980(s32);
-void func_800B3070(s32, f32);
-void func_800A9864(u32, s32, s32);
+/* func_800A2550 is `void (void *)` in ovl1.c; the second argument here is the
+ * IDO argument-register device described above func_800F72B0, kept PORT-local
+ * so it cannot retype the rest of the TU. */
 void func_800A2550(void *, void *);
-u32 *func_800A94F4(s32);
-void func_800AEE20(struct GObj *, f32);
-void func_800AEEB4(struct GObj *, f32);
-void func_800FA414(s32);
-void func_800AAF34(s32, s32, f32);
-void func_801129AC(void);
-void func_801129DC(void);
 extern f32 gameTicksPerDraw;
 extern u32 D_800DFA10[];
 extern s32 D_801290D0;
@@ -841,7 +846,6 @@ void func_800F7578(void) {
     extern u8 D_800D6C90[];
     extern u8 D_800D6C94[];
     extern f32 D_800D6ED0[4][4];
-    s32 spawn_entity(s32, void *);
     f32 temp_f0;
     f32 temp_f12;
     f32 temp_f14;
@@ -1100,11 +1104,10 @@ void func_800F78E4(void) {
     extern u8 D_800D6AB8[];
     extern u8 D_800D7B80[];
     extern struct LightBlock D_800BE548;
+    /* in-body: this draft still calls func_800FA1D4 with m2c's leftover
+     * fourth register; the definition in ovl2_3.c takes three arguments and
+     * is what the file-scope prototype above spells. */
     f32 func_800FA1D4(u32 footer, Vector *pos, s16 pointCount, s32 *entityIndex);
-    void func_800A7A70(s32 kind, s32 arg1, s32 arg2);
-    void func_800A7BF4(void *dst, void *src);
-    void utilLoadOverlay(s32 overlay);
-    u16 func_800F8560(void);
     Vector pos;
     struct StageArea *area;
     struct TrackRecord *track;
@@ -1130,7 +1133,7 @@ void func_800F78E4(void) {
     }
 
     /* Load the area blob and turn every offset it stores into a pointer. */
-    base = func_800A9AA8(((struct StageArea *) D_801290D8)->areaSetup, 3);
+    base = (s32) func_800A9AA8(((struct StageArea *) D_801290D8)->areaSetup, 3);
     D_801290DC = base;
     blobBase = base;
     ((u32 *) base)[0] += base;
@@ -1339,7 +1342,7 @@ void func_800F78E4(void) {
     bank = D_800D0184[id >> 16];
     entry = bank->miscBlockTable + (id & 0xFFFF);
     nbytes = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
-    base = (u8 *)(uintptr_t)(u32)func_800A9AA8((s32)id, 3);
+    base = (u8 *) func_800A9AA8(id, 3);
     D_801290DC = (s32)(uintptr_t)base;
 
     pc_lvl_reset(nbytes);
@@ -1691,10 +1694,6 @@ void func_800F8078(void) {
 void func_800F81A4(void) {
     extern s32 D_801290D0, D_801290D4, D_8012B9B0;
     extern s32 D_8012913C, D_80129138, D_80129140, D_80129144, D_801292E0;
-    extern void func_8010137C(void);
-    extern void func_800FA414(s32);
-    extern void func_800FBF18(s32);
-    extern u16 func_800F8560(void);
 
     D_801290D0 = request_track_general(0x24, 0x4A, 0x50);
     if (((s32 *) D_801290D8)[1] != 0) {
@@ -1727,7 +1726,7 @@ extern f32 D_801293D0;
 extern f32 D_801293D4;
 extern s32 D_801293D8;
 extern s32 D_80129408;
-void func_800FB914(s32);
+s32 func_800FB914(s32);
 void func_800F78E4(void);
 void func_800F8378(void);
 void func_800F8078(void);
@@ -1865,8 +1864,6 @@ void func_800F8378(void) {
 }
 #endif /* PORT */
 
-s32 func_800A9AA8(s32, s32);
-
 #ifdef PORT
 /* PORT: loader for a standalone OBJECT-collision blob (destructible level
  * pieces; ovl2_10's func_80114DBC allocates the 0x48-byte destination and
@@ -1889,7 +1886,7 @@ void func_800F8464(s32 arg0, struct UnkStruct80129418 *dst) {
     bank = D_800D0184[(u32)arg0 >> 16];
     entry = bank->miscBlockTable + ((u32)arg0 & 0xFFFF);
     nbytes = ((entry[1] - entry[0]) + 3) & 0xFFFFFC;
-    base = (u8 *)(uintptr_t)(u32)func_800A9AA8(arg0, 3);
+    base = (u8 *) func_800A9AA8(arg0, 3);
     ibase = (s32)(uintptr_t)base;
 
     hdrOff = pc_rd32(base);
@@ -1922,7 +1919,7 @@ void func_800F8464(s32 arg0, struct UnkStruct80129418 *dst) {
 }
 #else
 void func_800F8464(s32 arg0, struct UnkStruct80129418 *dst) {
-    s32 base = func_800A9AA8(arg0, 3);
+    s32 base = (s32) func_800A9AA8(arg0, 3);
     struct UnkStruct80129418 *src = (struct UnkStruct80129418 *) (*(s32 *) base + base);
     s32 temp;
 
@@ -2195,8 +2192,6 @@ f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
     extern void *D_80129114;
     extern s32 D_800E5F90[];
     extern f32 D_800E6BD0[];
-    void func_8001E344(Vector *, void *, f32);
-    void func_800F8570(s32);
     void *sp34;
     Vector sp28;
     f32 sp20;
@@ -2223,8 +2218,6 @@ f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
  * the knockback carry-over). func_800F8570 (grouped-follower update) is
  * still asm-only; its weak stub logs once under KIRBY_PC_TRACE. */
 f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
-    void func_800F8570(s32);
-    void func_8001E344(Vector *, void *, f32);
     struct Unk80129114_4_4 *footer;
     Vector tang;
     f32 inv;

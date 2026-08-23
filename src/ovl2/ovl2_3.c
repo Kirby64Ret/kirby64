@@ -589,6 +589,13 @@ void func_800F8E6C(GObj *arg0) {
  * This is the per-frame seat: progress += (speed * 0.1) / node length, hop
  * across the node boundary if it wrapped, then world X/Z from the footer
  * interpolation and the heading angle from the track tangent. */
+/* check_local_protos reports three spellings of func_8001E344's second
+ * parameter across this file. They are NOT a conflict: no compiled
+ * configuration ever sees two of them. This one is PORT-only, the MIPS_TO_C
+ * draft above uses `struct TrackFooter *` and the N64 arm of func_800F8E6C
+ * below uses `struct Unk80129114_4_4 *` -- and those two tags are the same
+ * object, the native mirror and the shared view, as the TrackFooter comment
+ * near the top of this file records. */
 void func_8001E344(Vector *, void *, f32);
 
 void func_800F8E6C(GObj *arg0) {

@@ -25,7 +25,7 @@ extern YakuLibStruct D_801D0A58_ovl7;
 extern YakuLibStruct D_801CA6F4_ovl7;
 extern YakuLibStruct D_801CA738_ovl7;
 
-extern void utilPrintf(const char *fmt, ...);
+extern void utilPrintf(char *fmt, ...);
 
 extern s32 D_800D7090;
 /* D_801CE578_ovl7 = 1.5707964f : now emitted by this TU */

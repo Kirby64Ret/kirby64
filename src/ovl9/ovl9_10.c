@@ -599,13 +599,13 @@ void func_80203A90_ovl9(struct GObj *arg0) {
    `lwc1 0x48($sp)` hoisted above the branch; everything after is shifted one.
    Also tried: hoisting the atan2f result into an f32 local (118). */
 #ifdef NON_MATCHING
+extern s32 func_8019A900_ovl7(s32 *);
+extern f32 eneGetPlayerHeight(void);
+extern void func_801A6DF0_ovl7(struct GObj *);
+extern Vector *lbvector_Rotate(Vector *, s32, f32);
+extern f32 atan2f(f32, f32);
 /* D_8021DA60_ovl9: literal, this TU owns its .rodata */
 void func_80203BA8_ovl9(struct GObj *arg0) {
-    extern s32 func_8019A900_ovl7(s32 *);
-    extern f32 eneGetPlayerHeight(void);
-    extern void func_801A6DF0_ovl7(struct GObj *);
-    extern Vector *lbvector_Rotate(Vector *, s32, f32);
-    extern f32 atan2f(f32, f32);
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     f32 sp48;
     s32 sp44;

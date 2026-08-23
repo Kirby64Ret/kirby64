@@ -2317,7 +2317,7 @@ s32 func_801D7064_ovl9(void *arg0) {
 
 extern s32 D_801C333C;
 void func_800FD570(struct DObj *, u32, f32, f32, f32);
-void func_800B2340(Vector *, struct DObj *, s32);
+void func_800B2340(Vector *, struct DObj *, u32);
 void func_801A2ADC_ovl7(u32);
 void func_800A9760(s32);
 

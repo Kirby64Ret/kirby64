@@ -765,6 +765,7 @@ void func_801DB6DC_ovl9(GObj *arg0) {
 extern s32 D_801CB7F4;
 extern void func_800AA0C4(s32, f32);
 extern void func_800AA154(s32);
+void func_800B33F4(void);
 
 void func_801DB7A8_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -798,7 +799,7 @@ extern f32 D_8021BCD8_ovl9[];
 extern f32 D_8021BCF0_ovl9[];
 extern f32 D_8021BD08_ovl9[];
 extern f32 D_8021BD20_ovl9[];
-s32 func_800B33F4(void);
+void func_800B33F4(void);
 void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800AA018(s32);

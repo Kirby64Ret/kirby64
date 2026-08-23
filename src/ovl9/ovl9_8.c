@@ -888,7 +888,7 @@ void func_801FAF68_ovl9(struct GObj *arg0) {
 extern struct EnemyEventTable D_801CC040;
 extern s32 D_801CABC4_ovl7;
 /* 3.1415927f / 65535.0f: literals, this TU owns its .rodata */
-int func_8010BA44(struct EnemyProbe *);
+s32 func_8010BA44(struct EnemyProbe *);
 void func_800A9760(s32);
 void func_800AECC0(f32);
 void func_801A2ADC_ovl7(void *);

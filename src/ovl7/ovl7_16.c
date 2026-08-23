@@ -63,9 +63,13 @@ void func_800B19F4(s32, s32);
 void ohSleep(s32);
 void func_8019D958_ovl7(u16);
 void func_800AFA14(void);
+/* `void (void)` is load-bearing here: the definition in ovl7_4.c takes
+ * GObj *, but the call in func_801BDBFC_ovl7 below passes 0 args -- the ROM
+ * relies on whatever GObj * is already in $a0, same as func_801BE490_ovl7
+ * above. An ANSI prototype breaks compilation with "too few arguments". */
 void func_801A3E80_ovl7(void);
 void func_800AFBB4(s32, struct GObj *);
-s32 func_80104C24(Vector *, Vector *);
+u8 func_80104C24(Vector *, Vector *);
 u32 func_800B9DF8(s32);
 void func_801BDEB0_ovl7(GObj *);
 extern FUNCLIST D_801CD8C0_ovl7;

@@ -455,7 +455,7 @@ void func_80110438(struct UnkStruct8011145C_A *arg0, struct UnkStruct8011145C_B 
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 299/326 instructions match (27 diffs). Frame 0x20, every
+/* FACTORY: 27/326 (27 words differ; measure_seeds convention). Frame 0x20, every
  * stack slot, every branch, both calls into the knockback resolver and
  * the late_rodata 9999.0f are exact; the residue is a one-slot FP temp
  * rotation across the knockback block. Levers already spent, keep them:
@@ -471,9 +471,14 @@ void func_801105E8(struct UnkStruct8011145C_A *attacker, struct UnkStruct8011145
     extern void *omCurrentObj;
     s32 change_kirby_hp(f32 delta);
     void func_8011DC5C(void);
-    void func_80120BCC(void);
+    s32 func_80120BCC(void);
+    /* fromTrack is u32 where the definition (src/ovl2/plylib.c:1610) says s32.
+     * MEASURED, do not "correct" it: s32 here takes this draft from 27 diffs
+     * to 198. The sibling corrections on the same block -- func_80120BCC's
+     * return void->s32 and set_kirby_action_2's second parameter s32->u32,
+     * both of which DO match their definitions -- were free at 27. */
     f32 func_8011D9E0(u32 fromTrack, f32 fromParam, s32 toTrack, f32 toParam);
-    void set_kirby_action_2(s32 action, s32 anim);
+    void set_kirby_action_2(s32 action, u32 anim);
     void play_sound(s32 soundId);
     s32 attackerId;
     /* One f32 slot, reused the way the ROM does: first for the sine of the

@@ -179,7 +179,7 @@ void func_800FF71C(struct UnkStruct800AC954 *arg0, u8 arg1, u8 arg2) {
 void func_80100790(void *arg0) {
     void func_800FF9B4(Gfx **, void *, f32 *, void *, f32, f32);
     void func_800FF71C(SPObj *, u8, u8);
-    s32 func_800ACE1C(u8, void *);
+    s32 func_800ACE1C(u8, u16 *);
     extern u8 D_8012BB98[];
     f32 sp74;
     f32 sp78;
@@ -342,7 +342,7 @@ void func_80100790(struct GObj *gobj) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 53/205 instructions match (152 diffs), callee-saved
+/* FACTORY: 152/205 (152 words differ; measure_seeds convention), callee-saved
  * permutation. IDO hoists the constant 1 into $s6 where the ROM
  * hoists &D_800D478C into $fp, rotating $s0-$fp by one and shifting the
  * whole body by a single instruction. Body shape, scheduling and the
@@ -460,6 +460,13 @@ extern f32 D_800D7B20[];
 extern f32 D_800D7B38[];
 extern void *D_800D79D8[];
 extern f32 D_8012BB98[];
+/* These three are PORT-only, and the MIPS_TO_C drafts above declare the same
+ * symbols with placeholder types (`s32` for the BGHeader return, `void *`/
+ * `s32` for func_800AC954's GObj and C954Arg2 pointers). check_local_protos
+ * lists both sets, but the two configurations are disjoint, so nothing is
+ * ever compiled with a wrong type. The drafts keep the placeholders because
+ * struct BGHeader and struct C954Arg2 are not declared in this TU and naming
+ * them inside a prototype would declare fresh incomplete tags. */
 struct BGHeader *func_800A8C40(u32);
 SPObj *func_800AC954(struct GObj *, u32, void *);
 void func_80100790(struct GObj *);
@@ -599,7 +606,7 @@ u32 func_80100E7C(f32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 204/278 instructions match (74 diffs), FP temp rotation.
+/* FACTORY: 78/278 (78 words differ; measure_seeds convention), FP temp rotation.
  * Exact instruction count, frame (0x48) and stack-slot layout; every
  * branch and every load/store
  * offset matches. The residue is one $f4/$f6 rotation seeded by the
