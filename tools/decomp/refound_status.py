@@ -96,6 +96,28 @@ def draft_sites(path, text):
             k = head.rfind('/*')
             if k != -1 and 'FACTORY:' in head[k:]:
                 seeded.add(a)
+
+    # A draft does not have to share a guard group with its pragma. ovl11.c
+    # keeps func_801DD270_ovl11's pragma above a LATER function -- the file
+    # notes it explicitly -- while the draft sits in its own `#ifdef
+    # MIPS_TO_C` further down. Requiring the two to be co-located reported
+    # that function as never-attempted when the lane had in fact banked a
+    # measured 32/136 draft with a documented lever sweep. Match on the
+    # function NAME as well, which is what actually decides whether the work
+    # exists.
+    for a in PRAGMA.findall(text):
+        if a in seeded:
+            continue
+        func = os.path.basename(a)
+        if func.endswith('.s'):
+            func = func[:-2]
+        defn = re.compile(r'^\w[\w \t*]*\b%s\s*\(' % re.escape(func), re.M)
+        for st, en in groups:
+            block = '\n'.join(lines[st:en + 1])
+            if ('MIPS_TO_C' in block or 'NON_MATCHING' in block) \
+                    and 'FACTORY:' in block and defn.search(block):
+                seeded.add(a)
+                break
     return seeded
 
 
