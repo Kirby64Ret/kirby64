@@ -547,7 +547,7 @@ def report_blocks(decls, defns, tags, cfg, detail):
             filescope[(path, name)].append((ln, sig, cfgs))
     for path, ln, name, sig, cfgs in defns:
         if cfg in cfgs:
-            defline[(path, name)].append(ln)
+            defline[(path, name)].append((ln, sig))
 
     rows = defaultdict(list)
     total = 0
@@ -577,7 +577,8 @@ def report_blocks(decls, defns, tags, cfg, detail):
         # file-scope `()` at 24, definition `(void)` at 576, redeclaration at
         # 780 -- failed the build with "Type GObj * of this argument is
         # incompatible with type void of function prototype description".
-        shadowed = [l for l in defline.get((path, name), ()) if l < ln]
+        shadowed = [(l, s2) for l, s2 in defline.get((path, name), ())
+                    if l < ln]
         if not same and below:
             rows[path].append((ln, 'ORDER', name, sig,
                                f'the only file-scope copy is BELOW this, at '
@@ -614,11 +615,11 @@ def report_blocks(decls, defns, tags, cfg, detail):
             else:
                 rows[path].append((ln, 'HOIST', name, sig,
                                    f'no file-scope copy in {cfg}'))
-        elif shadowed:
+        elif shadowed and any(s2 != sig for _, s2 in shadowed):
             rows[path].append((ln, 'SHADOW', name, sig,
-                               f'a definition at line {shadowed[-1]} sits '
-                               f'above this; the redeclaration may be '
-                               f're-opening a looser prototype'))
+                               f'a definition at line {shadowed[-1][0]} sits '
+                               f'above this and disagrees; the redeclaration '
+                               f'is probably re-opening a looser prototype'))
         elif any(s == sig for _, s in same):
             l = next(l for l, s in same if s == sig)
             rows[path].append((ln, 'DELETE', name, sig,

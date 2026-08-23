@@ -21,6 +21,8 @@ void func_8021ED10_ovl18();
 /* Unspecified arguments: the definition is K&R and homes the GObj slot the
    ROM leaves in $a0, but func_8021F400_ovl18 calls it with none. */
 void func_8021ED3C_ovl18();
+void ohSleep(s32);
+s32 func_8021E050_ovl18(s32, s32, s32);
 void func_800B1900(s32);
 void func_800B1BF0(s32, s32);
 void dma_read(u32, void *, u32);
@@ -250,8 +252,6 @@ void func_8021E528_ovl18(s32 arg0, s32 arg1, s32 arg2) {
     extern u8 D_8022BCF8_ovl18[][4];
     extern u8 D_8022BD18_ovl18[][4];
     extern u8 D_800E7650[];
-    void ohSleep(s32);
-    s32 func_8021E050_ovl18(s32, s32, s32);
     s32 n;
     s32 i;
     s32 ret;
@@ -289,8 +289,6 @@ void func_8021E6E0_ovl18(s32 arg0, s32 arg1, s32 arg2) {
     extern u8 D_8022BCF8_ovl18[][4];
     extern u8 D_8022BD18_ovl18[][4];
     extern u8 D_800E7650[];
-    void ohSleep(s32);
-    s32 func_8021E050_ovl18(s32, s32, s32);
     s32 n;
     s32 i;
     s32 ret;

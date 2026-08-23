@@ -997,27 +997,7 @@ void func_801FB528_ovl9(void) {
 /* Whole-function register shift: the ROM materialises &omCurrentObj and
    &D_800E9AA0 only AFTER the random_soft_s32_range call, IDO hoists both above
    it, so every instruction is offset. */
-#ifdef NON_MATCHING
-extern s32 random_soft_s32_range(s32);
-
-void func_801FB528_ovl9(struct GObj *arg0) {
-    s32 sp1C = D_800E9AA0[omCurrentObj->objId].as_s32;
-    s32 r;
-
-    r = random_soft_s32_range(2);
-    if (r == 0) {
-        r = -1;
-    }
-    r = r + sp1C;
-    if (r >= 8) {
-        D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
-    } else {
-        D_800E9AA0[omCurrentObj->objId].as_s32 = (r < 0) ? 7 : r;
-    }
-}
-#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB528_ovl9.s")
-#endif
 #endif
 
 void func_801FB5D4_ovl9(void) {

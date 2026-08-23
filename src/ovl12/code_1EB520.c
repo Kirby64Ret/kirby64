@@ -194,48 +194,7 @@ void func_801DB72C_ovl12(void) {
 }
 #else
 void func_801DB72C_ovl12(void);
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-s32 func_801ACC34_ovl7(?, ?);                       /* extern */
-
-void func_801DB72C_ovl12(void) {
-    f32 *temp_a0;
-    s32 temp_a1;
-    s32 temp_v0;
-    s32 var_s0;
-    s32 var_v0;
-
-    if (D_800D7098.unk18 != -1) {
-        var_s0 = 0;
-        do {
-            temp_v0 = func_801ACC34_ovl7(0x29, 0);
-            if (temp_v0 != 0) {
-                temp_a0 = &gEntitiesNextPosYArray[temp_v0];
-                D_800EA520[temp_v0] = var_s0 + 1;
-                *temp_a0 = gEntitiesNextPosYArray[D_800D7098.unk0] - 10.0f;
-                temp_a1 = var_s0 * 2;
-                var_v0 = temp_a1 + 3;
-                D_800EA6E0[temp_v0] = *temp_a0 + 80.0f;
-                D_800E5F90[temp_v0] = 0;
-                D_800E6BD0[temp_v0] = 0.0f;
-                if (D_800EC2E0[omCurrentObj->objId].as_u32 == 2) {
-                    var_v0 = temp_a1;
-                }
-                if (var_v0 >= 6) {
-                    var_v0 -= 6;
-                }
-                func_800F98EC(temp_v0, (((f32) var_v0 * 7.854f) + 3.927f) * 40.0f);
-                play_sound(0x180);
-            }
-            var_s0 += 1;
-        } while (var_s0 != 3);
-    }
-}
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DB72C_ovl12.s")
-#endif
 #endif
 
 void func_801DB910_ovl12(GObj *arg0) {

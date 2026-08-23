@@ -20,6 +20,10 @@ extern FUNCLIST D_8021CCC8_ovl9;
 extern FUNCLIST D_8021CCE8_ovl9;
 extern FUNCLIST D_8021CD08_ovl9;
 
+void func_802175C4_ovl9(void);
+void func_80217634_ovl9(struct GObj *);
+s32 func_80217EF0_ovl9(void);
+
 extern void func_800A9760(s32);
 extern GObj *D_800DE350[];
 
@@ -830,13 +834,9 @@ extern s32 func_8010B480(void *);
 extern s32 func_8010B67C(void *);
 extern s32 func_8010B860(void *);
 
-/* The block-scope prototypes are required: all three callees are defined LATER
-   in this TU. Case bodies are written in target-address order, and the dead
-   `case 0` keeps the jump table dense. */
+/* Case bodies are written in target-address order, and the dead `case 0`
+   keeps the jump table dense. */
 void func_80217330_ovl9(struct GObj *arg0) {
-    void func_802175C4_ovl9(void);
-    void func_80217634_ovl9(struct GObj *);
-    s32 func_80217EF0_ovl9(void);
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B67A8;

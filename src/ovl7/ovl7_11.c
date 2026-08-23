@@ -43,6 +43,13 @@ void func_800AA018(s32);
 void func_801B57A0_ovl7(GObj *);
 void func_801B4DB0_ovl7(GObj *);
 void func_801B5A84_ovl7(GObj *, s32, f32);
+void func_800A9864(s32, s32, s32);
+void func_800B78AC(s32);
+void func_801A3E80_ovl7(struct GObj *);
+void func_801B6B88_ovl7(GObj *);
+void func_801B6E28_ovl7(void);
+void func_801B793C_ovl7(void);
+void lbvector_Rotate(Vector *, s32, f32);
 
 void play_sound(s32);
 void func_800A7F74(s32, s32, s32, f32, f32, f32);
@@ -148,7 +155,6 @@ void func_801B4DF8_ovl7(struct GObj *arg0) {
 void func_801B4F60_ovl7(struct GObj *arg0) {
     extern u32 D_8012BCA0;
     extern FUNCLIST D_801CD638_ovl7;
-    void func_801A3E80_ovl7(struct GObj *);
     struct EnemyRecord *ent;
     s32 r;
     f32 temp;
@@ -386,7 +392,6 @@ void func_801B5C7C_ovl7(GObj *arg0) {
 }
 
 void func_801B5DEC_ovl7(GObj *arg0) {
-    void func_801B57A0_ovl7(GObj *);
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if ((D_800E8AE0[omCurrentObj->objId] & 2) != 0) {
@@ -613,10 +618,6 @@ void func_801B6B88_ovl7(GObj *arg0) {
 }
 
 void func_801B6BDC_ovl7(GObj *arg0) {
-    void func_800B78AC(s32);
-    void func_801B6E28_ovl7(void);
-    void func_801B6B88_ovl7(GObj *);
-    void lbvector_Rotate(Vector *, s32, f32);
     f32 t1;
     Vector sp20;
 
@@ -809,8 +810,6 @@ void func_801B7778_ovl7(GObj *arg0) {
 }
 
 void func_801B7780_ovl7(GObj *arg0) {
-    void func_800A9864(s32, s32, s32);
-    void func_801B793C_ovl7(void);
     extern struct EnemyEventTable D_801CB4DC_ovl7;
     struct EnemyRecord *ent;
 

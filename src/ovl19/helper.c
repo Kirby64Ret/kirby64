@@ -172,51 +172,7 @@ loop:
 }
 #else
 void func_8021F174_ovl19(GObj *arg0);
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-void func_8021F174_ovl19(GObj *arg0) {
-    s32 var_v0;
-    u32 temp_v0;
-    u32 temp_v0_2;
-
-    func_8021DFD0_ovl19();
-    D_800DF150[omCurrentObj->objId] = NULL;
-    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
-    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
-    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
-    func_800A9864(0x2006B, 0x1869F, 0x10);
-    D_800DFBD0[omCurrentObj->objId]->unk30->unk54 = 2;
-    func_801230E8(0x203BC, 0x203BD, 0);
-    if (D_800E8060[D_800E0D50[omCurrentObj->objId]] == 0) {
-        do {
-            ohSleep(1);
-        } while (D_800E8060[D_800E0D50[omCurrentObj->objId]] == 0);
-    }
-loop_3:
-    if (*D_800E8920 == 0) {
-        ohSleep(1);
-        goto loop_3;
-    }
-    func_801230E8(0x203B0, 0x203B1, 1);
-    func_801230E8(0x203BE, 0x203BF, 0);
-    temp_v0 = omCurrentObj->objId;
-    var_v0 = temp_v0 * 4;
-    if (D_800E8060[D_800E0D50[temp_v0]] == 1) {
-        do {
-            ohSleep(1);
-            temp_v0_2 = omCurrentObj->objId;
-            var_v0 = temp_v0_2 * 4;
-        } while (D_800E8060[D_800E0D50[temp_v0_2]] == 1);
-    }
-    (*(D_800DFBD0 + var_v0))->unk30->unk54 = 1;
-    func_801230E8(0x203A6, 0x203A7, 0);
-    curObjSleepForever();
-}
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl19/helper/func_8021F174_ovl19.s")
-#endif
 #endif
 
 void func_8021F3B4_ovl19(GObj *arg0) {

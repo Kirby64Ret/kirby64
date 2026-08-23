@@ -103,6 +103,8 @@ extern f32 *D_801CAA48_ovl7;
 void func_801A2ADC_ovl7(f32 **);
 void func_800B3520(void);
 void func_800A9EA4(s32);
+s32 func_8019A900_ovl7(void *);
+f32 func_8019B608_ovl7(s32);
 
 void func_801B2104_ovl7(s32 arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -202,9 +204,6 @@ void func_801B22D0_ovl7(s32 arg0) {
    is an int->float conversion (cvt.s.w) off the 8-byte track-pos struct at
    sp+0x60.  LP64-clean, so the PORT arm is deleted. */
 void func_801B2588_ovl7(GObj *arg0) {
-    s32 func_8019A900_ovl7(void *);
-    f32 func_8019B608_ovl7(s32);
-    void func_800A9EA4(s32);
     extern f32 D_800E9020[];
     extern f32 gameTicksPerDraw;
     extern s32 D_800DDFD0[];

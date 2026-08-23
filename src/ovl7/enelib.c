@@ -1153,24 +1153,6 @@ void func_8019B164_ovl7(void) {
     }
 }
 #else
-#ifdef PORT
-/* func_8019A900_ovl7 writes a full 8-byte TrackPosition through its arg; the
- * draft below hands it a lone s32 and banks on the neighbouring stack slot,
- * which the host's stack protector rightly calls a smash (first enemy spawn
- * in level 1-1 aborted here). Give it the real struct. */
-void func_8019B164_ovl7(void) {
-    struct TrackPosition sp;
-
-    if (func_8019A900_ovl7(&sp) != 0) {
-        D_800E6A10[omCurrentObj->objId] = sp.unk0;
-    }
-    else if (random_soft_s32_range(2) != 0) {
-        D_800E6A10[omCurrentObj->objId] = 1.0f;
-    } else {
-        D_800E6A10[omCurrentObj->objId] = -1.0f;
-    }
-}
-#else
 void func_8019B164_ovl7(void) {
     // TODO: struct
     f32 sp1C;
@@ -1185,7 +1167,6 @@ void func_8019B164_ovl7(void) {
         D_800E6A10[omCurrentObj->objId] = -1.0f;
     }
 }
-#endif
 #endif
 
 s32 eneCheckAboveBelowPlayer(void) {

@@ -42,6 +42,11 @@ extern u16 D_803FC100[];
 extern u16 gFrameBuffer[][320];
 extern void *D_8018EE60;
 
+void func_80158224_ovl4(GObj *);
+void func_801588F4_ovl4(GObj *, s32);
+void func_80159160_ovl4(GObj *);
+void func_801593A4_ovl4(GObj *);
+
 extern void func_800A6BC0(s32);
 extern void func_800A6E64(void);
 extern void func_800A71A0(s32);
@@ -111,10 +116,6 @@ void func_80158188_ovl4(void) {
 }
 
 void func_80158190_ovl4(GObj *arg0) {
-    void func_801593A4_ovl4(GObj *);
-    void func_80158224_ovl4(GObj *);
-    void func_80159160_ovl4(GObj *);
-    void func_801588F4_ovl4(GObj *, s32);
 
     switch (D_800E98E0[omCurrentObj->objId]) {
         case 0:

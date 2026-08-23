@@ -17,6 +17,7 @@ s32 func_801117BC(void *, u32);
 void func_80111C4C(s32);
 void func_801AC33C_ovl7(GObj *);
 void func_801AC11C_ovl7(GObj *);
+s32 func_801ACC34_ovl7(s32, s32);
 extern s32 D_801CB0BC_ovl7[];
 extern s32 D_801CA738_ovl7[];
 extern s32 D_801CA77C_ovl7[];
@@ -79,7 +80,6 @@ void func_800B6FD8(GObj *);
 void func_800B6FD8(GObj *);
 
 void func_801B0550_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
-    s32 func_801ACC34_ovl7(s32, s32);
 /* D_801CE288_ovl7 = 1.9198622f : now emitted by this TU */
 
     if (arg1 == 0) {
@@ -388,7 +388,6 @@ void func_801B184C_ovl7(GObj *arg0, s32 arg1, f32 arg2) {
 }
 
 void func_801B187C_ovl7(GObj *arg0) {
-    s32 func_801ACC34_ovl7(s32, s32);
     struct EnemyRecord *sp5C;
     struct DObj *sp58;
     struct DObj *sp54;

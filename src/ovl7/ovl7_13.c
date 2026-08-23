@@ -25,6 +25,10 @@ void func_8019AF00_ovl7(f32);
 extern s32 D_800E9C60[], D_800E8AE0[];
 extern s32 random_soft_s32_range(s32);
 void func_800A7F74(s32, s32, s32, f32, f32, f32);
+s32 func_801ACC34_ovl7(s32, s32);
+void play_sound(s32);
+void func_801A2558_ovl7(void *);
+void func_801B9498_ovl7(struct GObj *);
 
 void func_8019B424_ovl7(void);
 void eneTurnCommon(s32);
@@ -204,8 +208,6 @@ void func_801B9150_ovl7(struct GObj *arg0) {
     }
 }
 void func_801B929C_ovl7(GObj *arg0) {
-    void func_801B9498_ovl7(struct GObj *);
-    void func_801A2558_ovl7(void *);
     extern s32 D_801CACF0_ovl7, D_801CAD04_ovl7;
 /* D_801CE3C4_ovl7 = 4.7298427f : now emitted by this TU */
     f32 temp;
@@ -640,8 +642,6 @@ void func_801BA870_ovl7(void) {
 }
 
 void func_801BA8A0_ovl7(GObj *arg0) {
-    s32 func_801ACC34_ovl7(s32, s32);
-    void play_sound(s32);
 /* D_801CE454_ovl7 = 65535.0f : now emitted by this TU */
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 

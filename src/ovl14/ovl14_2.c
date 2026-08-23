@@ -91,8 +91,10 @@ void func_801E0058_ovl14(GObj *arg0) {
     }
 }
 
+extern void func_801A3E80_ovl7(GObj *);
+extern void func_801AE7E0_ovl7(s32);
+extern void func_800AA018(s32);
 void func_801E025C_ovl14(GObj *arg0) {
-    extern void func_801A3E80_ovl7(GObj *);
 /* D_801E30C0_ovl14 = 65535.0f : now emitted by this TU */
     struct EnemyRecord *sp24 = D_800E1B50[omCurrentObj->objId];
 
@@ -116,8 +118,6 @@ void func_801E03E0_ovl14(GObj *arg0) {
 }
 
 void func_801E03E8_ovl14(GObj *arg0) {
-    extern void func_801AE7E0_ovl7(s32);
-    extern void func_800AA018(s32);
     f32 c;
     f32 z;
 
@@ -159,8 +159,6 @@ void func_801E0610_ovl14(GObj *arg0) {
 /* D_801E30D4_ovl14 = 65535.0f : now emitted by this TU */
 /* D_801E30D8_ovl14 = -8.666667f : now emitted by this TU */
 void func_801E0618_ovl14(GObj *arg0) {
-    extern void func_801A3E80_ovl7(GObj *);
-    extern void func_800AA018(s32);
     struct EnemyRecord *sp1C;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
@@ -242,8 +240,6 @@ void func_801E09D8_ovl14(GObj *arg0) {
 /* D_801E30DC_ovl14 = 65535.0f : now emitted by this TU */
 /* D_801E30E0_ovl14 = 1.6f : now emitted by this TU */
 extern s32 D_801DA9B8;
-extern void func_801AE7E0_ovl7(s32);
-extern void func_800AA018(s32);
 void func_801E0BDC_ovl14(GObj *arg0) {
     struct EnemyRecord *sp1C;
 
@@ -273,8 +269,6 @@ void func_801E0D70_ovl14(GObj *arg0) {
 /* D_801E30E8_ovl14 = 65535.0f : now emitted by this TU */
 /* D_801E30EC_ovl14 = -3.5555556f : now emitted by this TU */
 void func_801E0D78_ovl14(GObj *arg0) {
-    extern void func_801A3E80_ovl7(GObj *);
-    extern void func_800AA018(s32);
     struct EnemyRecord *sp1C;
 
     sp1C = D_800E1B50[omCurrentObj->objId];
@@ -359,8 +353,6 @@ void func_801E1198_ovl14(GObj *arg0) {
 // The `- 40` integer literal IS load-bearing: it forks the second 40.0f the
 // ROM materialises separately from the two divisions' shared one.
 void func_801E13C0_ovl14(GObj *arg0) {
-    extern void func_801AE7E0_ovl7(s32);
-    extern void func_800AA018(s32);
     f32 c;
     f32 z;
 
@@ -406,7 +398,6 @@ extern void func_800A9760(s32);
 extern void func_800A9EA4(s32);
 extern void func_800BB468(s32, s32);
 extern void func_800FB914(s32);
-extern void func_801A3E80_ovl7(GObj *);
 extern s32 D_801DAA48;
 /* FACTORY: 268/366 measured; the ROM is 370 words, so this draft is FOUR
    words short and the residue is register allocation on top of that.
@@ -669,9 +660,10 @@ void func_801E2028_ovl14(void) {
     func_800FB914(1);
 }
 
+extern void func_801ACF84_ovl7(GObj *);
+extern void func_8019B9B0_ovl7(void);
+extern void func_800B78AC(GObj *);
 void func_801E208C_ovl14(GObj *arg0) {
-    extern void func_801ACF84_ovl7(GObj *);
-    extern void func_800AA018(s32);
     extern struct EnemyEventTable D_801CB4DC_ovl7;
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -712,7 +704,6 @@ void func_801E208C_ovl14(GObj *arg0) {
 }
 
 extern void func_801ACF5C_ovl7(GObj *);
-extern void func_801A3E80_ovl7(GObj *);
 void func_801E2378_ovl14(GObj *arg0) {
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
@@ -725,10 +716,6 @@ void func_801E2378_ovl14(GObj *arg0) {
 }
 
 void func_801E2410_ovl14(GObj *arg0) {
-    extern void func_801ACF84_ovl7(GObj *);
-    extern void func_800AA018(s32);
-    extern void func_8019B9B0_ovl7(void);
-    extern void func_800B78AC(GObj *);
     extern struct EnemyEventTable D_801CB4DC_ovl7;
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 

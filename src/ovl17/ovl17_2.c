@@ -42,6 +42,11 @@ void func_800A9F98(s32, f32);
 void func_801DE9A8_ovl17(struct GObj *);
 void func_800FD570(s32, s32, f32, f32, f32);
 void func_801AE7E0_ovl7(s32);
+void func_800AF27C(void);
+void func_800B4924(s32);
+void func_800BC1FC(s32);
+void func_801ACD48_ovl7(s32, s32);
+s32 func_801E0B38_ovl17(s32, s32);
 void func_800BB468(s32, s32);
 void func_8019F1EC_ovl7(void);
 void func_800F6C88(void);
@@ -55,7 +60,6 @@ void func_801DD920_ovl17(struct GObj *arg0) {
 }
 
 void func_801DD964_ovl17(struct GObj *arg0) {
-    void func_800B4924(s32);
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800E8E60[omCurrentObj->objId] = 1;
     D_800EA6E0[omCurrentObj->objId] = 0.0f;
@@ -104,10 +108,6 @@ void func_801DDC40_ovl17(struct GObj *arg0) {
 }
 
 void func_801DDD38_ovl17(struct GObj *arg0) {
-    s32 func_801E0B38_ovl17(s32, s32);
-    void func_801ACD48_ovl7(s32, s32);
-    void func_800BC1FC(s32);
-    void func_800AF27C(void);
     extern s32 D_800D6E48;
 
     D_800DDFD0[omCurrentObj->objId] = 0;
