@@ -1679,7 +1679,7 @@ void func_8011DD18(u32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 59/229. The decisive finding is a TYPE one: gKirbyState.unk130/134/138/13C are declared u32 in include/Player.h but the ROM reads and writes all four as f32 (swc1/lwc1 throughout, and one shared f32 zero register feeds every reset), and the second out-parameter is an f32 * as well, not the u32 * m2c infers -- accessing them through *(f32 *)& took this from 7/229 to 53/229. Retyping the four Player.h fields is the real fix but that header is shared with every other TU, so it is left for a lane that can run the whole-tree protocol. Also corrected against m2c: func_800BB468 takes TWO arguments here (a0=0xB, a1=0x3C); the 5-argument float-first form m2c prints is register noise, and it contradicts the same function's call in func_8011D0FC in this file. Residue: frame 0x28 vs 0x20 and the draft runs 3 words long in the early-out chain */
+/* FACTORY: 59/229. The decisive finding is a TYPE one: gKirbyState.unk130/134/138/13C were declared u32 in include/Player.h but the ROM reads and writes all four as f32 (swc1/lwc1 throughout, and one shared f32 zero register feeds every reset), and the second out-parameter is an f32 * as well, not the u32 * m2c infers. RETYPED 2026-08-23 (Player.h now declares all four f32, tree-wide protocol run, see the type note on each field there) -- the *(f32 *)& casts below are gone, direct field access is now correct. Also corrected against m2c: func_800BB468 takes TWO arguments here (a0=0xB, a1=0x3C); the 5-argument float-first form m2c prints is register noise, and it contradicts the same function's call in func_8011D0FC in this file. Residue: frame 0x28 vs 0x20 and the draft runs 3 words long in the early-out chain */
 /* Conveyor / moving-floor drive. Produces the two components of the surface
  * velocity Kirby is carried by this frame: magnitude gKirbyState.unk134
  * scaled by 0.1 and split by the surface angle gKirbyState.unk130. Every
@@ -1696,14 +1696,14 @@ void func_8011DD5C(f32 *outSin, f32 *outCos) {
     if (gKirbyState.unkB != 0) {
         *outCos = 0.0f;
         *outSin = 0.0f;
-        *(f32 *) &gKirbyState.unk13C = 0.0f;
-        *(f32 *) &gKirbyState.unk138 = *(f32 *) &gKirbyState.unk13C;
+        gKirbyState.unk13C = 0.0f;
+        gKirbyState.unk138 = gKirbyState.unk13C;
         return;
     }
     if (gKirbyState.unk152 == 0) {
-        *(f32 *) &gKirbyState.unk13C = 0.0f;
+        gKirbyState.unk13C = 0.0f;
         gKirbyState.unk153 = 0;
-        *(f32 *) &gKirbyState.unk138 = *(f32 *) &gKirbyState.unk13C;
+        gKirbyState.unk138 = gKirbyState.unk13C;
         if (gKirbyState.abilityInUse == 0x1B) {
             *outCos = 0.0f;
             *outSin = 0.0f;
@@ -1727,35 +1727,35 @@ void func_8011DD5C(f32 *outSin, f32 *outCos) {
         (gKirbyState.abilityInUse == 0x14) || (gKirbyState.abilityInUse == 0x1B)) {
         *outCos = 0.0f;
         *outSin = 0.0f;
-        *(f32 *) &gKirbyState.unk13C = 0.0f;
-        *(f32 *) &gKirbyState.unk138 = *(f32 *) &gKirbyState.unk13C;
+        gKirbyState.unk13C = 0.0f;
+        gKirbyState.unk138 = gKirbyState.unk13C;
         return;
     }
     if ((gKirbyState.isTurning & 0x4000) || (gKirbyState.action == 0xA) ||
         (gKirbyState.action == 0xB)) {
         *outCos = 0.0f;
         *outSin = 0.0f;
-        *(f32 *) &gKirbyState.unk13C = 0.0f;
-        *(f32 *) &gKirbyState.unk138 = *(f32 *) &gKirbyState.unk13C;
+        gKirbyState.unk13C = 0.0f;
+        gKirbyState.unk138 = gKirbyState.unk13C;
         return;
     }
     inWater = 0;
     if (D_800E8AE0[omCurrentObj->objId] & 6) {
         inWater = 1;
     }
-    sinComp = sinf(*(f32 *) &gKirbyState.unk130);
+    sinComp = sinf(gKirbyState.unk130);
     if (((sinComp < 0.0f) ? -sinComp : sinComp) < 0.00001f) {
         sinComp = 0.0f;
     }
-    cosComp = cosf(*(f32 *) &gKirbyState.unk130);
+    cosComp = cosf(gKirbyState.unk130);
     if (((cosComp < 0.0f) ? -cosComp : cosComp) < 0.00001f) {
         cosComp = 0.0f;
     }
-    magnitude = *(f32 *) &gKirbyState.unk134 * 0.1f;
-    *(f32 *) &gKirbyState.unk138 = magnitude * sinComp;
-    *(f32 *) &gKirbyState.unk13C = magnitude * cosComp;
-    *outSin = *(f32 *) &gKirbyState.unk138;
-    *outCos = *(f32 *) &gKirbyState.unk13C;
+    magnitude = gKirbyState.unk134 * 0.1f;
+    gKirbyState.unk138 = magnitude * sinComp;
+    gKirbyState.unk13C = magnitude * cosComp;
+    *outSin = gKirbyState.unk138;
+    *outCos = gKirbyState.unk13C;
     if (D_800E5C10[omCurrentObj->objId] > 0.0f) {
         D_800E8920[omCurrentObj->objId] = 0;
     } else if (((cosComp < 0.0f) ? -cosComp : cosComp) >= 0.85f) {
@@ -1771,15 +1771,13 @@ void func_8011DD5C(f32 *outSin, f32 *outCos) {
  * asm/nonmatchings/ovl2/plylib/func_8011DD5C.s (the m2c sketch above
  * garbles the func_800BB468 call and drops the f32 nature of the second
  * out-param, which ovl1_8's func_800B531C adds straight into the Y
- * velocity). unk130/unk134/unk138/unk13C hold float bits in u32 fields, so
- * they go through bit-punning locals. */
+ * velocity). unk130/unk134/unk138/unk13C are now correctly f32 in
+ * Player.h (see the type note there), so the old bit-punning union this
+ * arm used to work around the header's u32 declaration is gone -- direct
+ * field access is correct and simpler. */
 void func_800BB468(u32, s32);
 
 void func_8011DD5C(f32 *arg0, f32 *arg1) {
-    union {
-        u32 w;
-        f32 f;
-    } bits;
     f32 sinv;
     f32 cosv;
     f32 rate;
@@ -1790,12 +1788,12 @@ void func_8011DD5C(f32 *arg0, f32 *arg1) {
     if (gKirbyState.unkB != 0) {
         *arg1 = 0.0f;
         *arg0 = 0.0f;
-        gKirbyState.unk13C = 0;
+        gKirbyState.unk13C = 0.0f;
         gKirbyState.unk138 = gKirbyState.unk13C;
         return;
     }
     if (gKirbyState.unk152 == 0) {
-        gKirbyState.unk13C = 0;
+        gKirbyState.unk13C = 0.0f;
         gKirbyState.unk153 = 0;
         gKirbyState.unk138 = gKirbyState.unk13C;
         if (gKirbyState.abilityInUse == 0x1B) {
@@ -1821,7 +1819,7 @@ void func_8011DD5C(f32 *arg0, f32 *arg1) {
         (gKirbyState.abilityInUse == 0x14) || (gKirbyState.abilityInUse == 0x1B)) {
         *arg1 = 0.0f;
         *arg0 = 0.0f;
-        gKirbyState.unk13C = 0;
+        gKirbyState.unk13C = 0.0f;
         gKirbyState.unk138 = gKirbyState.unk13C;
         return;
     }
@@ -1829,7 +1827,7 @@ void func_8011DD5C(f32 *arg0, f32 *arg1) {
         (gKirbyState.action == 0xB)) {
         *arg1 = 0.0f;
         *arg0 = 0.0f;
-        gKirbyState.unk13C = 0;
+        gKirbyState.unk13C = 0.0f;
         gKirbyState.unk138 = gKirbyState.unk13C;
         return;
     }
@@ -1837,28 +1835,21 @@ void func_8011DD5C(f32 *arg0, f32 *arg1) {
     if (D_800E8AE0[omCurrentObj->objId] & 6) {
         pushed = 1;
     }
-    bits.w = gKirbyState.unk130;
-    sinv = sinf(bits.f);
+    sinv = sinf(gKirbyState.unk130);
     a = (sinv < 0.0f) ? -sinv : sinv;
     if (a < 0.00001f) {
         sinv = 0.0f;
     }
-    bits.w = gKirbyState.unk130;
-    cosv = cosf(bits.f);
+    cosv = cosf(gKirbyState.unk130);
     a = (cosv < 0.0f) ? -cosv : cosv;
     if (a < 0.00001f) {
         cosv = 0.0f;
     }
-    bits.w = gKirbyState.unk134;
-    rate = bits.f * 0.1f;
-    bits.f = rate * sinv;
-    gKirbyState.unk138 = bits.w;
-    bits.f = rate * cosv;
-    gKirbyState.unk13C = bits.w;
-    bits.w = gKirbyState.unk138;
-    *arg0 = bits.f;
-    bits.w = gKirbyState.unk13C;
-    *arg1 = bits.f;
+    rate = gKirbyState.unk134 * 0.1f;
+    gKirbyState.unk138 = rate * sinv;
+    gKirbyState.unk13C = rate * cosv;
+    *arg0 = gKirbyState.unk138;
+    *arg1 = gKirbyState.unk13C;
     objId = omCurrentObj->objId;
     a = (cosv < 0.0f) ? -cosv : cosv;
     if ((D_800E5C10[objId] > 0.0f) || (a >= 0.85f)) {
