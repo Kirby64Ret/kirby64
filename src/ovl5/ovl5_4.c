@@ -1167,14 +1167,14 @@ s32 func_80168A44_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
-/* FACTORY: 1/193, UNCERTAIN -- PORT-seeded, time-boxed. Fixed a real
- * compile bug: the PORT arm's `extern u8 D_8018E3D0_ovl5y[] __asm__(...)`
- * symbol-alias trick is a GCC extension IDO's cc rejects outright;
- * rewritten as a local 0x14-byte struct view of the real (typed
- * elsewhere in this file as Unk14Ent) D_8018E3D0_ovl5 array. Compiles,
- * word count matches (193/193), residue extreme (192/193) -- broad
- * register/frame relabeling from word 0. Worth a fresh m2c pass before
- * feeding to the permuter. */
+/* FACTORY: 192/193, STRUCTURAL -- measured 2026-08-23, correcting a stale
+ * note (previously read "1/193", which does not match this draft: the
+ * PORT-seeded body compiles but diverges from word 0 -- different frame
+ * size (0x48 vs ROM's 0x40), different register set (t6/t8/s1-s5 vs the
+ * ROM's fp/s6/s7/s1/s2/s4/s5 with a callee-saved $fp), and what looks
+ * like a materially different addressing/loop shape, not a residue fixable
+ * by any single LEVERS substitution. Needs a fresh m2c pass off the
+ * listing rather than further tweaks to this PORT-derived body. */
 #ifdef MIPS_TO_C
 s32 func_80168B30_ovl5(s32 arg0) {
     /* D_8018E3D0_ovl5: array of 0x14-byte per-mole planner records (typed

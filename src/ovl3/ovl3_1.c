@@ -2003,11 +2003,16 @@ void func_80155088_ovl3(struct PositionState *st) {
     portShotWaterScan(fr[0]);
 }
 #elif defined(MIPS_TO_C)
-/* FACTORY: 0/230, whole-function callee-saved permutation (same floor
- * class as func_80154CFC_ovl3/func_801548DC_ovl3 -- see those drafts'
- * notes). Sealed after the file-scope extern was loosened from `(void)`
- * to unspecified-args `()` per the LEVERS protocol (see
- * func_801548DC_ovl3's note for the baseline/re-check detail). */
+/* FACTORY: 230/230, RE-MEASURED -- the prior "0/230" note was stale/wrong;
+ * verify.py shows total mismatch from insn [0], not a near-match. Frame is
+ * -0x48 (ROM) vs this draft producing -0x50, and critically the ROM NEVER
+ * caches the `omCurrentObj` pointer or `objId` in a held register across
+ * this function -- it re-does `lui/addiu %hi/%lo(omCurrentObj); lw; lw
+ * 0($t); sll 2` at EVERY single field access (at least 8 separate re-derivations
+ * visible in the listing), unlike this draft's single `s32 id =
+ * omCurrentObj->objId` hoist. A rewrite needs every omCurrentObj->objId use
+ * spelled out inline with no local caching the id or the pointer -- not
+ * attempted here; leaving guarded, not a D<=8 target as labeled. */
 void func_80155088_ovl3(arg0)
     struct PositionState *arg0;
 {
