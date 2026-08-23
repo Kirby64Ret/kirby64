@@ -1488,6 +1488,10 @@ void func_801E8F74_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8F74_ovl9.s")
 #endif
 
+extern f32 sqrtf(f32);
+extern f32 atan2f(f32, f32);
+extern void func_800B2AD4(Vector *, s32, u32);
+
 /* Empty parens, not (void): the definition below takes an s32 parameter
    because the ROM homes an unused $a0, and a (void) prototype forbids
    that. */
@@ -1504,9 +1508,6 @@ void func_801E9298_ovl9(void) {
    0x30 with the atan2f spill at 0x44; the old note's "all before" shape
    (11/219) put the Vector 4 bytes high across its whole span. */
 void func_801E92DC_ovl9(s32 arg0) {
-    extern f32 sqrtf(f32);
-    extern f32 atan2f(f32, f32);
-    extern void func_800B2AD4(Vector *, s32, u32);
     f32 pitch;
     f32 yaw;
     f32 diff;
@@ -1812,8 +1813,6 @@ void func_801EA190_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA190_ovl9.s")
 #endif
 void func_801EA2F8_ovl9(struct GObj *arg0) {
-    extern f32 sqrtf(f32);
-    extern f32 atan2f(f32, f32);
     f32 pad0;
     f32 pad1;
     f32 dy;
