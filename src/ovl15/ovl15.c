@@ -1171,8 +1171,8 @@ void func_801DDD74_ovl15(struct GObj *arg0) {
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below.
-   The six M2C_ERROR("read from unset register $v0") holes that used to sit in
-   the spawn loop at the tail were func_801ACCA0_ovl7's return value -- m2c had
+   The seven M2C_ERROR("read from unset register $v0") holes that used to sit
+   in the spawn loop at the tail were func_801ACCA0_ovl7's return value -- m2c had
    inferred that callee as `void` and then saw $v0 being read. The listing is
    unambiguous: `jal func_801ACCA0_ovl7 / beqz $v0 / sll $v1, $v0, 2` and every
    one of the six arrays below is indexed by that same $v1 ($s7 = D_800E8E60,
@@ -1916,7 +1916,13 @@ void func_801E0F44_ovl15(struct GObj *arg0) {
 
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+   claimed to be: the N64 build takes the pragma below.
+   The seven M2C_ERROR("read from unset register $v0") holes in the tail block
+   were func_801BC794_ovl7's return value: the listing reads
+   `jal func_801BC794_ovl7 / addiu $at, $zero, -1 / beq $v0, $at, .L801E1578 /
+   sll $a0, $v0, 2`, and $a0 is what indexes all six arrays written there. It
+   is the id of the entity that call produced, captured in `temp_v0_2` here.
+   Same defect and same fix as the note in src/ovl5/ovl5_7.c. */
 void func_801E1230_ovl15(s32 arg0) {
     GObj *temp_v1;
     f32 temp_f10;
@@ -1924,6 +1930,7 @@ void func_801E1230_ovl15(s32 arg0) {
     f32 var_f20;
     u32 temp_a1;
     u32 temp_v0;
+    s32 temp_v0_2;
 
     D_800D7098.unk14 = 0;
     D_800DDFD0[omCurrentObj->objId] = 0xB;
@@ -1965,15 +1972,15 @@ void func_801E1230_ovl15(s32 arg0) {
         } while (var_f20 > 0.0f);
     }
     D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = 0.0f;
-    func_801BC794_ovl7(4);
-    if (M2C_ERROR(/* Read from unset register $v0 */) != -1) {
+    temp_v0_2 = func_801BC794_ovl7(4);
+    if (temp_v0_2 != -1) {
         temp_a1 = D_800D7098.unk34;
-        D_800E5F90[M2C_ERROR(/* Read from unset register $v0 */)] = D_800E5F90[temp_a1];
-        D_800E6BD0[M2C_ERROR(/* Read from unset register $v0 */)] = D_800E6BD0[temp_a1];
-        gEntitiesNextPosXArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosXArray[omCurrentObj->objId];
-        gEntitiesNextPosYArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosYArray[omCurrentObj->objId] + 200.0f;
-        gEntitiesNextPosZArray[M2C_ERROR(/* Read from unset register $v0 */)] = gEntitiesNextPosZArray[omCurrentObj->objId];
-        D_800E8E60[M2C_ERROR(/* Read from unset register $v0 */)] = 1;
+        D_800E5F90[temp_v0_2] = D_800E5F90[temp_a1];
+        D_800E6BD0[temp_v0_2] = D_800E6BD0[temp_a1];
+        gEntitiesNextPosXArray[temp_v0_2] = gEntitiesNextPosXArray[omCurrentObj->objId];
+        gEntitiesNextPosYArray[temp_v0_2] = gEntitiesNextPosYArray[omCurrentObj->objId] + 200.0f;
+        gEntitiesNextPosZArray[temp_v0_2] = gEntitiesNextPosZArray[omCurrentObj->objId];
+        D_800E8E60[temp_v0_2] = 1;
     }
     curObjSleepForever();
 }
@@ -2160,13 +2167,21 @@ void func_801E1E88_ovl15(struct GObj *arg0) {
 
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+   claimed to be: the N64 build takes the pragma below.
+   The six M2C_ERROR("read from unset register $v0") holes were
+   func_800AF230's return value. Every one of them sits directly under a
+   `jal func_800AF230 / nop / beql $v0, $s0, ...` in the listing, and $s0 is
+   the literal 1 loaded once at 801E21A8 -- which is where m2c's `!= 1`
+   came from. The value is consumed by the test it feeds and never lives
+   across another call, so one local serves all six sites.
+   Same defect and same fix as the note in src/ovl5/ovl5_7.c. */
 void func_801E1F34_ovl15(void) {
     GObj *temp_a1;
     f32 *var_v0;
     f32 temp_f2;
     f32 var_f0;
     s32 temp_v0;
+    s32 temp_v0_2;
     s32 var_v1;
     s32 var_v1_2;
     s32 var_v1_3;
@@ -2276,16 +2291,16 @@ loop_5:
             do {
                 *(D_800E9E20 + var_v1_2) = 0;
                 func_800AA018(D_801E6670_ovl15[D_800EA1A0[temp_a1->objId]]);
-                func_800AF230();
-                if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                temp_v0_2 = func_800AF230();
+                if (temp_v0_2 != 1) {
                     temp_v1_16 = omCurrentObj->objId;
                     var_v1_3 = temp_v1_16 * 4;
                     if (D_800EA360[temp_v1_16] == 0) {
 loop_12:
                         if (*(D_800DFF50 + var_v1_3) == D_801E6670_ovl15[*(D_800EA1A0 + var_v1_3)]) {
                             ohSleep(1);
-                            func_800AF230();
-                            if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                            temp_v0_2 = func_800AF230();
+                            if (temp_v0_2 != 1) {
                                 temp_v1_17 = omCurrentObj->objId;
                                 var_v1_3 = temp_v1_17 * 4;
                                 if (D_800EA360[temp_v1_17] == 0) {
@@ -2317,16 +2332,16 @@ loop_12:
             do {
                 *(D_800E9E20 + var_v1_2) = 0;
                 func_800AA018(D_801E6680_ovl15[D_800EA1A0[temp_a1->objId]]);
-                func_800AF230();
-                if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                temp_v0_2 = func_800AF230();
+                if (temp_v0_2 != 1) {
                     temp_v1_22 = omCurrentObj->objId;
                     var_v1_4 = temp_v1_22 * 4;
                     if (D_800EA360[temp_v1_22] == 1) {
 loop_20:
                         if (*(D_800DFF50 + var_v1_4) == D_801E6680_ovl15[*(D_800EA1A0 + var_v1_4)]) {
                             ohSleep(1);
-                            func_800AF230();
-                            if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                            temp_v0_2 = func_800AF230();
+                            if (temp_v0_2 != 1) {
                                 temp_v1_23 = omCurrentObj->objId;
                                 var_v1_4 = temp_v1_23 * 4;
                                 if (D_800EA360[temp_v1_23] == 1) {
@@ -2362,16 +2377,16 @@ loop_20:
     do {
         *(D_800E9E20 + var_v1_2) = 0;
         func_800AA018(D_801E6690_ovl15[D_800EA1A0[temp_a1->objId]]);
-        func_800AF230();
-        if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+        temp_v0_2 = func_800AF230();
+        if (temp_v0_2 != 1) {
             temp_v1_28 = omCurrentObj->objId;
             var_v1_5 = temp_v1_28 * 4;
             if (D_800EA360[temp_v1_28] == 2) {
 loop_28:
                 if (*(D_800DFF50 + var_v1_5) == D_801E6690_ovl15[*(D_800EA1A0 + var_v1_5)]) {
                     ohSleep(1);
-                    func_800AF230();
-                    if (M2C_ERROR(/* Read from unset register $v0 */) != 1) {
+                    temp_v0_2 = func_800AF230();
+                    if (temp_v0_2 != 1) {
                         temp_v1_29 = omCurrentObj->objId;
                         var_v1_5 = temp_v1_29 * 4;
                         if (D_800EA360[temp_v1_29] == 2) {
