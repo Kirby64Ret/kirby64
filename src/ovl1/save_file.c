@@ -8,6 +8,12 @@ void func_800B92B4(void);
 void func_800B8C08(void);
 void func_800B8BDC(void);
 void func_800B9008(void);
+/* Hoisted out of func_800B87E0. saveVerify also has a file-scope
+ * declaration at the bottom of this file, but that one is BELOW every call
+ * to it, so it was never the declaration in scope. */
+s32 saveCalcFileChecksum(u32);
+void saveVerify(s32);
+void func_800B8E00(s32);
 
 typedef struct SaveBlock {
     u32 data[0x6E];
@@ -51,7 +57,6 @@ void func_800B8700(void) {
      * uses. Erasing is idempotent for genuinely empty (all-0x99) files --
      * they are out of range by definition and get re-stamped clean. */
     {
-        void func_800B8E00(s32);
         for (i = 0; i < 3; i++) {
             if (gSaveBuffer1.files[i].world - 1 >= 8 || gSaveBuffer1.files[i].level - 1 >= 9) {
                 func_800B8E00(i);
@@ -73,9 +78,6 @@ void func_800B8700(void) {
 extern u8 D_800D5150[];
 
 void func_800B87E0(void) {
-    s32 saveCalcFileChecksum(u32);
-    void saveVerify(s32);
-    void func_800B8E00(s32);
     s32 i;
 
     for (i = 0; i != 3; i++) {
@@ -199,7 +201,6 @@ void func_800B8C08(void) {
 // stores, one for the loops); IDO CSEs it to one.
 #ifdef NON_MATCHING
 void init_save_file_maybe(s32 fileNum) {
-    void saveVerify(s32);
     s32 i;
 
     gSaveBuffer1.files[fileNum].world = 1;
@@ -400,7 +401,6 @@ void func_800B92B4(void) {
     D_800ECBAC = func_800B922C();
 }
 
-void saveVerify(s32 fileNum);
 #ifdef NON_MATCHING
 /* Fully decoded and behaviourally complete; kept under NON_MATCHING so the PC
    port has a real implementation while the ROM keeps the pragma.

@@ -37,6 +37,14 @@ void func_8000F448(DObj *dobj);
 void func_8000F980(GObj *obj, UnkE4E4Arg *arg1, DObj **arg2, u8 arg3, u8 arg4, u8 arg5);
 void func_8000FB10(GObj *gobj, UnkE4E4Arg *arg1, TextureScroll ***arg2, DObj **arg3, u8 arg4, u8 arg5, u8 arg6);
 
+/* Hoisted out of function bodies. asinf and atan2f matter more than the
+ * others: both return f32, and a block-scope declaration that goes missing
+ * leaves the call implicitly int. That exact pair, deleted rather than
+ * hoisted in ovl9_5.c, moved 3214 lines of that object. */
+f32 func_8000EC98(DObj *, s32, f32, s32, s32, f32, f32, f32, f32);
+f32 asinf(f32);
+f32 atan2f(f32, f32);
+
 void func_800AECC0(f32 arg0) {
     if (arg0 != D_800E09D0[omCurrentObj->objId]) {
         D_800E09D0[omCurrentObj->objId] = arg0;
@@ -1262,7 +1270,6 @@ void func_800B1FD0(GObj *arg0, u32 arg1, f32 arg2, u32 arg3, f32 arg4) {
 }
 #else
 void func_800B1FD0(GObj *arg0, s32 arg1, f32 arg2, s32 arg3, f32 arg4) {
-    f32 func_8000EC98(DObj *, s32, f32, s32, s32, f32, f32, f32, f32);
     DObj *node;
     DObj *root;
     s32 params;
@@ -1541,8 +1548,6 @@ void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
 }
 #else
 void func_800B26D8(Vector *vec, struct DObj *node, u32 track) {
-    f32 asinf(f32);
-    f32 atan2f(f32, f32);
     Mat4 finalMtx;
     Mat4 tmpMtx;
     f32 y;

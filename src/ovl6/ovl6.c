@@ -13,6 +13,10 @@
 #include "ovl1/track.h"
 #include "track_arrays.h"
 
+/* Hoisted out of func_80152EA8_ovl6. Returns a pointer, so an implicit
+ * int declaration would truncate it on the PC build. */
+void *func_800A9250(u32, s32);
+
 typedef struct {
     u16 unk0;
     u8 unk2;
@@ -657,7 +661,6 @@ void func_80152DB8_ovl6(void) {
 }
 
 void func_80152EA8_ovl6(void) {
-    void *func_800A9250(u32, s32);
     extern GObj *D_800DE350[];
     GObj *saved;
     u32 spec;
