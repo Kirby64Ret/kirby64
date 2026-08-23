@@ -16,7 +16,10 @@ Usage: check_tu_size.py            report every mismatched TU
 """
 import re, os, sys, glob, subprocess
 
-REPO = '/home/user/kirby64_decomp'
+# Repo root, derived from this file's own location. Never hardcode an
+# absolute path here: it leaks whoever's machine it was written on into
+# the repository, and it makes the tool fail for everyone else.
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(REPO)
 
 def subsegments():

@@ -20,7 +20,10 @@ Usage: find_rodata_targets.py [seg ...]
 """
 import os, re, struct, subprocess, sys, glob
 
-REPO = '/home/user/kirby64_decomp'
+# Repo root, derived from this file's own location. Never hardcode an
+# absolute path here: it leaks whoever's machine it was written on into
+# the repository, and it makes the tool fail for everyone else.
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(REPO)
 
 

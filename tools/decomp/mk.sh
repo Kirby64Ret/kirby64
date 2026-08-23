@@ -8,7 +8,10 @@
 # failing, so a queued build just takes longer.
 #
 # Usage: tools/decomp/mk.sh [make args]     default: -j8
-cd /home/user/kirby64_decomp || exit 1
+# Repo root, derived from this script's own location. Never hardcode an
+# absolute path here: it leaks whoever's machine it was written on into the
+# repository, and it makes the script fail for everyone else.
+cd "$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)" || exit 1
 
 # RE-SPLIT WHEN THE YAML IS NEWER THAN THE LINKER SCRIPT.
 #

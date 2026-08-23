@@ -21,7 +21,10 @@ Usage: find_clones.py [--min-insns N]   (default 12; below that too noisy)
 import re, os, sys, glob
 from collections import defaultdict
 
-REPO = '/home/user/kirby64_decomp'
+# Repo root, derived from this file's own location. Never hardcode an
+# absolute path here: it leaks whoever's machine it was written on into
+# the repository, and it makes the tool fail for everyone else.
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(REPO)
 
 WORD = re.compile(r'/\* [0-9A-F]{5,8} [0-9A-F]{8} ([0-9A-F]{8}) \*/')

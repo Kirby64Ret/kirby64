@@ -22,7 +22,11 @@ $sp, $ra, $gp, $zero.  Anything else (a saved or temp register read before it is
 written, or $f12 alongside $a0) means the caller passed a value in a register
 o32 has no way to place there."""
 import re, sys, glob, os
-os.chdir('/home/user/kirby64_decomp')
+# Repo root, derived from this file's own location. Never hardcode an
+# absolute path here: it leaks whoever's machine it was written on into
+# the repository, and it makes the tool fail for everyone else.
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.chdir(REPO)
 
 DEF = re.compile(r'^\s*/\*[^*]*\*/\s+(\S+)\s+(.*)$')
 # instructions whose FIRST operand is a destination

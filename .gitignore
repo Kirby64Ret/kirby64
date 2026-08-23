@@ -100,3 +100,8 @@ docs/PC_PORT_*.md
 kirby64.cfg.json
 halberd.cfg.json
 logs/
+
+# asm-processor scratch files. One got committed and carried an absolute
+# build path into the repository.
+.jbx_tmp_*
+*.asmproc.d

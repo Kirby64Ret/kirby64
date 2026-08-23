@@ -1,6 +1,7 @@
 # Re-foundation recipe: decomp-first, port-second
 
-Repo: /home/user/kirby64_decomp. The N64 matching build is byte-exact and the
+Repo: the root of this checkout (every tool derives it from its own
+location; none of them hardcode a path). The N64 matching build is byte-exact and the
 authority. Rule: a function may only carry a PORT implementation if the decomp
 is solved first — MATCHED (preferred) or a verified near-miss draft flagged
 for the permuter factory.

@@ -14,7 +14,10 @@ A file's rodata GROWING relative to a green build is the reliable signal
 """
 import re, os, sys, glob, json, subprocess
 
-REPO = '/home/user/kirby64_decomp'
+# Repo root, derived from this file's own location. Never hardcode an
+# absolute path here: it leaks whoever's machine it was written on into
+# the repository, and it makes the tool fail for everyone else.
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 S = os.path.dirname(os.path.abspath(__file__))
 BASE = f'{S}/rodata_baseline.json'
 os.chdir(REPO)
