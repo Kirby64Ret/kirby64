@@ -118,9 +118,36 @@
  *               (`D_800EB160[id] = D_8021BDC8_ovl9[D_800E9C60[id]]; D_800E9C60[id]++;`),
  *               a running accumulator in ovl9_7_2.c:25-43
  *               (`sum = D_800E9C60[id] + v;`), a 2-frame "bobbing" toggle
- *               counter in ovl9_9.c:1806-1881, and a plain 0/1 latch
- *               everywhere else (ovl9_6, ovl9_8, ovl9_9, ovl9_10, ovl9_13,
- *               ovl9_18).  Same family as D_800E9AA0/D_800EA520 above.
+ *               counter in ovl9_9.c:1806-1881, an OBJECT-ID REFERENCE in
+ *               ovl9_12.c:26-64 (`D_800E9C60[id] = D_800E0D50[id];` then used
+ *               to index a DIFFERENT entity's own D_800DE350/D_800E9FE0 --
+ *               see D_800E0D50 below), and a plain 0/1 latch everywhere else
+ *               (ovl9_6, ovl9_8, ovl9_9, ovl9_10, ovl9_13, ovl9_18).  Same
+ *               family as D_800E9AA0/D_800EA520 above.
+ *   D_800E9E20  (s32) another overloaded per-species scratch cell, same
+ *               family: a countdown in ovl9_6.c's func_801EF354_ovl9
+ *               (`if (D_800E9E20>0) D_800E9E20--; if(D_800E9E20<=0) ...`), a
+ *               plain "setup done" 0/1 latch in ovl9_9/ovl9_11/ovl9_18 (set 0
+ *               at the top of a spawn/entry coroutine, 1 at its end, tested
+ *               by the successor before it acts), and a CARDINAL-DIRECTION
+ *               QUADRANT index (0-4) in ovl9_17.c:124-146 -- populated from
+ *               func_80219CE8_ovl9's return (an angle-band classifier on
+ *               D_800EC660) and then switched on to pick which velocity axis
+ *               to drive.
+ *   D_800E0D50  (s32) a LINKED-OBJECT-ID reference (an objId into this same
+ *               track array set, or -1 for none), not a scalar/flag.  PROOF:
+ *               ovl9_12.c:26-29 `D_800E9C60[id] = D_800E0D50[id]; ...
+ *               D_800E0D50[id] = -1;` -- captures the reference into
+ *               D_800E9C60 (consuming it) and clears the slot to the -1
+ *               sentinel.  Corroborated by ovl9_17.c:70
+ *               `D_800DD710[D_800E0D50[id]] == -1`, which uses it to index
+ *               ANOTHER entity's D_800DD710 slot the same way.
+ *   D_800EA1A0  (s32) a per-species tick/frame counter driving a slow angle
+ *               oscillation.  PROOF: ovl9_16.c:63-81 (func_802187C0_ovl9)
+ *               increments it once per call and adds/subtracts
+ *               `PI / arg0` from D_800E9020 while it is below two thresholds
+ *               derived from the caller's `arg0`, then resets both to 0 once
+ *               past them.
  *
  * STATE INDEX:
  *   gEntityFuncListIDArray is the behaviour-thread selector that the ovl9

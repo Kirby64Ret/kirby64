@@ -242,6 +242,32 @@ void func_8021ACA4_ovl9(struct GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, D_8021CE30_ovl9);
 }
 
+/* STATE LEGEND, phase A (this species' first act -- gEntityFuncListIDArray
+ * driven through func_8021ABB4_ovl9's `utilFuncTableJump(..., 4,
+ * D_8021CE20_ovl9)`; inner D_800DDFD0 through func_8021ACA4_ovl9's
+ * `utilFuncTableJump(..., 4, D_8021CE30_ovl9)`). Evidence only, no species
+ * name is claimed. func_8021B424_ovl9 derives D_800EA6E0/D_800EA8A0 (a 2D
+ * heading) and D_800E6A10 (left/right facing) from gEntitiesAngleYArray, so
+ * this looks like a creature that turns to face/lunge at a heading -- but
+ * that reading is not cited to anything stronger than the geometry itself.
+ *
+ * D_800DDFD0:
+ *   0 func_8021ACEC_ovl9  idle: plays two anim events, caches the current
+ *                         heading (D_800EA6E0/D_800EA8A0) into
+ *                         D_800E3050/D_800E33D0, sleeps forever.
+ *   1 func_8021B028_ovl9  turn burst #1: plays a 4-anim-event sequence
+ *                         bracketing the turn, sets D_800E9E20=1 when done.
+ *   2 func_8021B1D0_ovl9  turn burst #2, same shape with different anim ids.
+ *   3 func_8021B310_ovl9  turn burst #3, same shape again.
+ *
+ * gEntityFuncListIDArray:
+ *   0 spawn default (func_8021ABFC_ovl9).
+ *   1/2 set by func_8021AD88_ovl9 -- either an external trigger
+ *       (func_8019CE28_ovl7() nonzero) or, after a D_800E9720 tick delay,
+ *       the player leaving 120 units (func_8019A7E8_ovl7).
+ *   3 set by func_8021B27C_ovl9 once D_800E9E20 is set AND the player is
+ *     back within 120 units.
+ */
 void func_8021ACEC_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
     func_800A9EA4(0x105E1);
@@ -388,6 +414,28 @@ void func_8021B680_ovl9(void) {
     }
 }
 
+/* STATE LEGEND, phase B (this species' second act, entered from phase A via
+ * func_8021B5D4_ovl9 replacing the outer table with func_8021B58C_ovl9's
+ * `utilFuncTableJump(..., 2, D_8021CE44_ovl9)`; inner D_800DDFD0 through
+ * func_8021B680_ovl9's `utilFuncTableJump(..., 2, D_8021CE4C_ovl9)`).
+ *
+ * D_800DDFD0:
+ *   0 func_8021B6D0_ovl9  idle: one anim event, sleeps forever.
+ *   1 func_8021B788_ovl9  8-WAY RANDOM WANDER, confirmed by
+ *                         func_8021B8B0_ovl9 (called once D_800E9E20 is set
+ *                         and the D_800E9720 tick timer expires): picks a
+ *                         `dir` 0-7 with `lbvector_Rotate(&v, 4, dir *
+ *                         0.7853981853f)` (0.785.. = PI/4, so 8 headings 45
+ *                         degrees apart), biased to step +/-1 from the
+ *                         PREVIOUS direction (D_800E93A0, -1 sentinel means
+ *                         "no previous direction, pick fully at random"),
+ *                         and holds the new heading for 0x14 (20) ticks
+ *                         before picking again.
+ *
+ * gEntityFuncListIDArray: 0 spawn default (func_8021B5D4_ovl9); 1 set by
+ * func_8021B71C_ovl9 once the player is within 160 units
+ * (func_8019A7E8_ovl7), starting the wander.
+ */
 void func_8021B6D0_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
     func_800A9EA4(0x105E5);

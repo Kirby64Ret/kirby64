@@ -89,6 +89,39 @@ void func_80218930_ovl9(struct GObj *arg0) {
     }
 }
 
+/* STATE LEGEND for this species (evidence only, no name is claimed for the
+ * species itself -- nothing in this TU identifies it).
+ *
+ * D_800DDFD0 (inner coroutine driven by func_80218A58_ovl9's
+ * `utilFuncTableJump(D_800DDFD0[id], 8, &D_8021CDE0_ovl9)`):
+ *   0 func_80218B9C_ovl9  grounded rest: D_800E8920=1, zero velocity, sleeps
+ *                         forever (advanced only by an external trigger).
+ *   1 func_80218C28_ovl9  turn-wait: watches func_8019A900_ovl7's facing
+ *                         reading against D_800E6A10 and bumps tmp->unk3C on
+ *                         a mismatch; sets D_800EA520=1 once tmp->unk3C
+ *                         clears again (func_80218DFC_ovl9 promotes on it).
+ *   2 func_80218EC4_ovl9  brief settle: zero velocity, sleeps forever.
+ *   3 func_80218FA0_ovl9  dash burst: arms D_800EA360=4 and a non-zero
+ *                         velocity/accel pair that func_802190D8_ovl9 (D_800DDFD0
+ *                         is NOT reset here, so this state is driven by the
+ *                         gEntityFuncListIDArray side instead) decrements
+ *                         once per tick until it reaches 0.
+ *   4 func_80219454_ovl9  turn-wait #2, same shape as state 1.
+ *   5 func_80219654_ovl9  settle #2: zero velocity, sets D_800EA520=1
+ *                         immediately (no wait).
+ *   6 func_80219388_ovl9  final settle: zero velocity, sleeps forever.
+ *   7 func_80219824_ovl9  glide-out: D_800E8920=0 (airborne), non-zero
+ *                         velocity/turn accel, sleeps forever.
+ *
+ * gEntityFuncListIDArray (outer coroutine, `utilFuncTableJump(..., 8,
+ * &D_8021CDC0_ovl9)` in func_80218B00_ovl9):
+ *   1 set by func_8021898C_ovl9 at spawn when D_800E8920==1 (grounded).
+ *   2 set by func_8021898C_ovl9 at spawn otherwise (airborne).
+ *   3 set by func_80219590_ovl9 once D_800EA520 is nonzero.
+ *   4 set by func_80218DFC_ovl9 once tmp->unk3C clears with D_800EA520 set.
+ *   5 set by func_802190D8_ovl9 once the state-3 dash timer (D_800EA360)
+ *     reaches 0.
+ */
 void func_8021898C_ovl9(struct GObj *arg0) {
     func_800AECC0(2.0f);
     func_800AED20(2.0f);

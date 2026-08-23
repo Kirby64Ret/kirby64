@@ -2096,7 +2096,7 @@ void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ov
         v -= 1;
     }
     if (D_800BE4F8 == 1) {
-        if ((v != 0) && (arg1->unk1E != 0)) {
+        if ((v != 0) && (arg1->manualOrbitEnable != 0)) {
             step = D_801293C4;
             if (v > 0) {
                 if (D_801293BC < 0.0f) {
@@ -2141,13 +2141,13 @@ void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ov
             D_801293BC = 0.0f;
         }
     }
-    if (arg1->unk5C <= D_801293AC) {
-        D_801293AC = arg1->unk5C;
+    if (arg1->orbitYawLimit <= D_801293AC) {
+        D_801293AC = arg1->orbitYawLimit;
     }
-    if (D_801293AC <= -arg1->unk5C) {
-        D_801293AC = -arg1->unk5C;
+    if (D_801293AC <= -arg1->orbitYawLimit) {
+        D_801293AC = -arg1->orbitYawLimit;
     }
-    lbvector_Diff(&d, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+    lbvector_Diff(&d, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
     ang = (atan2f(d.z, -d.x) / 3.1415927f) * 180.0f;
     if (ang < 0.0f) {
         ang += 360.0f;
@@ -2160,24 +2160,24 @@ void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ov
     d.y = 0.0f;
     d.z = 0.0f;
     func_800191F8(&d, &cam->viewMtx.lookAt.up, (yaw * 3.1415927f) / 180.0f);
-    arg0->unk24 = arg2->unk24;
-    arg0->unk2C = arg2->unk2C;
-    arg0->unk18 = arg2->unk18 - d.x;
-    arg0->unk20 = arg2->unk20 - d.z;
+    arg0->eyeX = arg2->eyeX;
+    arg0->eyeZ = arg2->eyeZ;
+    arg0->atX = arg2->atX - d.x;
+    arg0->atZ = arg2->atZ - d.z;
     if (arg1->unk1F != 0) {
         D_801293D8 = 0;
-        arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293C0);
-        arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293C0);
+        arg0->eyeY = func_800FB814(arg0->eyeY, arg2->eyeY, D_801293C0);
+        arg0->atY = func_800FB814(arg0->atY, arg2->atY, D_801293C0);
         return;
     }
     if (D_801293D8 != 0) {
-        arg0->unk28 = arg2->unk28;
-        arg0->unk1C = arg2->unk1C;
+        arg0->eyeY = arg2->eyeY;
+        arg0->atY = arg2->atY;
         return;
     }
-    arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293D4);
-    arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293D4);
-    if (arg2->unk28 == arg0->unk28) {
+    arg0->eyeY = func_800FB814(arg0->eyeY, arg2->eyeY, D_801293D4);
+    arg0->atY = func_800FB814(arg0->atY, arg2->atY, D_801293D4);
+    if (arg2->eyeY == arg0->eyeY) {
         D_801293D8 += 1;
     }
 }
@@ -2553,28 +2553,28 @@ void func_800FBBB8(void) {
 
     D_80129150 = D_80129210;
     D_80129270 = D_801292B0;
-    D_80129330.unk0 = D_801292B0.unk0;
-    D_80129330.unk8 = D_801292B0.unk8;
-    D_80129330.unk4 = D_801292B0.unk4 + D_80129210.unk14;
-    dir.x = cosf((D_80129210.unk8 * 3.1415927f) / 180.0f);
-    dir.z = -sinf((D_80129210.unk8 * 3.1415927f) / 180.0f);
+    D_80129330.focusX = D_801292B0.focusX;
+    D_80129330.focusZ = D_801292B0.focusZ;
+    D_80129330.focusY = D_801292B0.focusY + D_80129210.heightOffset;
+    dir.x = cosf((D_80129210.yaw * 3.1415927f) / 180.0f);
+    dir.z = -sinf((D_80129210.yaw * 3.1415927f) / 180.0f);
     dir.y = 0.0f;
-    lbvector_Scale(&dir, -D_80129210.unkC);
-    lbvector_Add(&dir, (Vector *) &D_80129330.unk0);
-    lbvector_Diff(&diff, (Vector *) &D_80129330.unk0, &dir);
+    lbvector_Scale(&dir, -D_80129210.eyeDistance);
+    lbvector_Add(&dir, (Vector *) &D_80129330.focusX);
+    lbvector_Diff(&diff, (Vector *) &D_80129330.focusX, &dir);
     vec3_normalized_cross_product(&cam->viewMtx.lookAt.up, &diff, &axis);
-    func_800191F8(&diff, &axis, ((D_80129210.unk4 - 90.0f) * 3.1415927f) / 180.0f);
-    D_80129330.unkC = D_80129330.unk0 - diff.x;
-    D_80129330.unk10 = D_80129330.unk4 - diff.y;
-    D_80129330.unk14 = D_80129330.unk8 - diff.z;
+    func_800191F8(&diff, &axis, ((D_80129210.pitch - 90.0f) * 3.1415927f) / 180.0f);
+    D_80129330.rawEyeX = D_80129330.focusX - diff.x;
+    D_80129330.rawEyeY = D_80129330.focusY - diff.y;
+    D_80129330.rawEyeZ = D_80129330.focusZ - diff.z;
     func_800FA7EC(0, &D_80129210, &D_80129330);
     func_800FA92C(0, &D_80129210, &D_80129330);
-    D_801292B0.unk18 = D_80129330.unk18;
-    D_801292B0.unk1C = D_80129330.unk1C;
-    D_801292B0.unk20 = D_80129330.unk20;
-    D_801292B0.unk24 = D_80129330.unk24;
-    D_801292B0.unk28 = D_80129330.unk28;
-    D_801292B0.unk2C = D_80129330.unk2C;
+    D_801292B0.atX = D_80129330.atX;
+    D_801292B0.atY = D_80129330.atY;
+    D_801292B0.atZ = D_80129330.atZ;
+    D_801292B0.eyeX = D_80129330.eyeX;
+    D_801292B0.eyeY = D_80129330.eyeY;
+    D_801292B0.eyeZ = D_80129330.eyeZ;
 }
 #else
 void func_800FBBB8(void) {
@@ -2587,28 +2587,28 @@ void func_800FBBB8(void) {
     dobj = D_800D799C->data.dobj;
     D_80129150 = D_80129210;
     D_80129270 = D_801292B0;
-    D_80129330.unk0 = D_801292B0.unk0;
-    D_80129330.unk4 = D_801292B0.unk4 + D_80129210.unk14;
-    D_80129330.unk8 = D_801292B0.unk8;
-    dir.x = cosf((D_80129210.unk8 * 3.1415927f) / 180.0f);
-    dir.z = -sinf((D_80129210.unk8 * 3.1415927f) / 180.0f);
+    D_80129330.focusX = D_801292B0.focusX;
+    D_80129330.focusY = D_801292B0.focusY + D_80129210.heightOffset;
+    D_80129330.focusZ = D_801292B0.focusZ;
+    dir.x = cosf((D_80129210.yaw * 3.1415927f) / 180.0f);
+    dir.z = -sinf((D_80129210.yaw * 3.1415927f) / 180.0f);
     dir.y = 0.0f;
-    lbvector_Scale(&dir, -D_80129210.unkC);
+    lbvector_Scale(&dir, -D_80129210.eyeDistance);
     lbvector_Add(&dir, (Vector *) &D_80129330);
     lbvector_Diff(&diff, (Vector *) &D_80129330, &dir);
     vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &diff, &axis);
-    func_800191F8(&diff, &axis, ((D_80129210.unk4 - 90.0f) * 3.1415927f) / 180.0f);
-    D_80129330.unkC = D_80129330.unk0 - diff.x;
-    D_80129330.unk10 = D_80129330.unk4 - diff.y;
-    D_80129330.unk14 = D_80129330.unk8 - diff.z;
+    func_800191F8(&diff, &axis, ((D_80129210.pitch - 90.0f) * 3.1415927f) / 180.0f);
+    D_80129330.rawEyeX = D_80129330.focusX - diff.x;
+    D_80129330.rawEyeY = D_80129330.focusY - diff.y;
+    D_80129330.rawEyeZ = D_80129330.focusZ - diff.z;
     func_800FA7EC(0, &D_80129210, &D_80129330);
     func_800FA92C(0, &D_80129210, &D_80129330);
-    D_801292B0.unk18 = D_80129330.unk18;
-    D_801292B0.unk1C = D_80129330.unk1C;
-    D_801292B0.unk20 = D_80129330.unk20;
-    D_801292B0.unk24 = D_80129330.unk24;
-    D_801292B0.unk28 = D_80129330.unk28;
-    D_801292B0.unk2C = D_80129330.unk2C;
+    D_801292B0.atX = D_80129330.atX;
+    D_801292B0.atY = D_80129330.atY;
+    D_801292B0.atZ = D_80129330.atZ;
+    D_801292B0.eyeX = D_80129330.eyeX;
+    D_801292B0.eyeY = D_80129330.eyeY;
+    D_801292B0.eyeZ = D_80129330.eyeZ;
 }
 #endif
 
@@ -2652,36 +2652,36 @@ void func_800FBF18(s32 arg0) {
 #else
     cam = &((struct TrackNodeHeader *) D_80129114->unk4)[arg0].unk0->unk20;
 #endif
-    D_80129210.unk0 = cam->unk0;
+    D_80129210.mode = cam->unk0;
     D_80129210.unk2 = cam->unk1;
-    D_80129210.unk4 = cam->unk20;
-    D_80129210.unk8 = cam->unk28;
-    D_80129210.unkC = cam->unk30;
-    D_80129210.unk10 = cam->unk38;
-    D_80129210.unk14 = cam->unk40;
-    D_80129210.unk18 = cam->unk2;
-    D_80129210.unk19 = cam->unk3;
-    D_80129210.unk1A = cam->unk4;
-    D_80129210.unk1C = cam->unk6;
-    D_80129210.unk1D = cam->unk7;
-    D_80129210.unk1E = cam->unk8;
+    D_80129210.pitch = cam->unk20;
+    D_80129210.yaw = cam->unk28;
+    D_80129210.eyeDistance = cam->unk30;
+    D_80129210.fovy = cam->unk38;
+    D_80129210.heightOffset = cam->unk40;
+    D_80129210.eyeXClampEnable = cam->unk2;
+    D_80129210.eyeYClampEnable = cam->unk3;
+    D_80129210.eyeZClampEnable = cam->unk4;
+    D_80129210.pitchLimitEnable = cam->unk6;
+    D_80129210.yawLimitEnable = cam->unk7;
+    D_80129210.manualOrbitEnable = cam->unk8;
     D_80129210.unk1F = cam->unk9;
-    D_80129210.unk20 = cam->unk48;
-    D_80129210.unk24 = cam->unk4C;
-    D_80129210.unk28 = cam->unk50;
-    D_80129210.unk2C = cam->unk54;
-    D_80129210.unk30 = cam->unk58;
-    D_80129210.unk34 = cam->unk5C;
-    D_80129210.unk38 = cam->unk60;
-    D_80129210.unk3C = cam->unk64;
-    D_80129210.unk40 = cam->unk68;
-    D_80129210.unk44 = cam->unk6C;
-    D_80129210.unk48 = cam->unkC;
-    D_80129210.unk4C = cam->unk10;
-    D_80129210.unk50 = cam->unk14;
-    D_80129210.unk54 = cam->unk18;
-    D_80129210.unk58 = cam->unk1C;
-    D_80129210.unk5C = cam->unkA;
+    D_80129210.eyeXMin = cam->unk48;
+    D_80129210.eyeXMax = cam->unk4C;
+    D_80129210.eyeYMin = cam->unk50;
+    D_80129210.eyeYMax = cam->unk54;
+    D_80129210.eyeZMin = cam->unk58;
+    D_80129210.eyeZMax = cam->unk5C;
+    D_80129210.pitchMin = cam->unk60;
+    D_80129210.pitchMax = cam->unk64;
+    D_80129210.yawMin = cam->unk68;
+    D_80129210.yawMax = cam->unk6C;
+    D_80129210.atXOverride = cam->unkC;
+    D_80129210.atYOverride = cam->unk10;
+    D_80129210.atZOverride = cam->unk14;
+    D_80129210.near = cam->unk18;
+    D_80129210.far = cam->unk1C;
+    D_80129210.orbitYawLimit = cam->unkA;
 }
 
 /* FACTORY: 20/74, length and control flow exact. Residue is one cyclic FP rotation seeded at the
@@ -2776,9 +2776,9 @@ s32 func_800FC164(struct Ovl2CamState *arg0) {
     D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
     ret = 0;
     D_800D7B2C = cam->viewMtx.lookAt.eye;
-    cam->perspMtx.persp.fovy = arg0->unk10;
-    cam->perspMtx.persp.near = arg0->unk54;
-    cam->perspMtx.persp.far = arg0->unk58;
+    cam->perspMtx.persp.fovy = arg0->fovy;
+    cam->perspMtx.persp.near = arg0->near;
+    cam->perspMtx.persp.far = arg0->far;
     if (count == 6) {
         ret = 1;
     }
@@ -2823,9 +2823,9 @@ void func_800FC53C(void) {
     cam->viewMtx.lookAt.at.y += D_80129404 * temp_f2;
     cam->viewMtx.lookAt.eye.x += D_80129400 * temp_f0;
     cam->viewMtx.lookAt.eye.y += D_80129404 * temp_f0;
-    cam->perspMtx.persp.fovy = D_801291B0.unk10;
-    cam->perspMtx.persp.near = D_801291B0.unk54;
-    cam->perspMtx.persp.far = D_801291B0.unk58;
+    cam->perspMtx.persp.fovy = D_801291B0.fovy;
+    cam->perspMtx.persp.near = D_801291B0.near;
+    cam->perspMtx.persp.far = D_801291B0.far;
 }
 
 #ifdef MIPS_TO_C

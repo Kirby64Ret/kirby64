@@ -23,7 +23,7 @@ void func_8016253C_ovl5(struct GObj *);
  * throughout this file as arg0/arg1/i) -> that racer's live GObj objId.
  * Evidence: every reader wraps a slot in this before using it as an index
  * into the objId-keyed entity arrays (gEntitiesNextPosXArray[..], etc), e.g.
- * `gEntitiesNextPosYArray[D_8018E050_ovl5[rec[6]]]` right after `rec[6]` is
+ * `gEntitiesNextPosYArray[D_8018E050_ovl5[rec->target]]` right after `rec->target` is
  * documented below as a target SLOT. */
 extern s32 D_8018E050_ovl5[];
 
@@ -81,12 +81,20 @@ extern u32 D_800D6B68;
 extern s32 D_8018E020_ovl5;
 #include "main/contpad.h"
 #include "ovl1/game.h"
-typedef struct Unk8Bytes {
-    s32 unk0;
-    s32 unk4;
-} Unk8Bytes;
+/* Per-racer setup record, filled once in func_80164EA8_ovl5 from pointer
+ * tables read out of the save/controller-setup data (D_80186068/78/88_ovl5,
+ * dereferenced per-racer). Evidence: every reader names its copy "kind" or
+ * "frame" locally (func_8015DA24_ovl5/func_8015DFC8_ovl5 and others). */
+typedef struct RacerSetup {
+    s32 kind;   /* character/colour select, 0-3: indexes the per-kind anim
+                 * id-pair tables (D_8018664C_ovl5 etc) and size table
+                 * D_80186950_ovl5 used for race-order comparisons */
+    s32 frame;  /* per-racer value read alongside `kind`; only consumed as
+                 * an animation frame argument so far (func_8015DA24_ovl5/
+                 * func_8015DFC8_ovl5 local var name "frame") */
+} RacerSetup;
 
-extern Unk8Bytes D_8018E1E8_ovl5[];
+extern RacerSetup D_8018E1E8_ovl5[];
 
 typedef union Unk16Bytes {
     s32 unk0[4];
@@ -123,6 +131,12 @@ s32 func_8015EAB4_ovl5(s32 arg0);
 void func_8015F804_ovl5(s32 arg0);
 void func_80164174_ovl5(GObj *arg0);
 void func_80162A44_ovl5(GObj *arg0);
+/* D_8018E224_ovl5[slot]: per-racer CONTROL/PERSONALITY index (0-4-ish),
+ * set once in func_80164EA8_ovl5 from the difficulty-keyed personality
+ * ROW table: value 4 means "human, read gPlayerControllers[slot]
+ * directly" (see func_8015DA24_ovl5/func_8015DFC8_ovl5 branching on
+ * `D_8018E224_ovl5[arg1] == 4`); values 0-3 are a CPU personality row and
+ * index the 6-byte-per-row table below via ovl5_pers_(idx*6 + N). */
 extern u8 D_8018E224_ovl5[];
 void func_800AD1A0(void);
 void func_800A9F98(void *, f32);
@@ -141,6 +155,26 @@ static u32 ovl5_idpair_(u32 *first, u32 *rest, s32 i) {
     return (i == 0) ? first[0] : rest[i - 1];
 }
 
+/* AI-personality roll ladder: `ovl5_pers_(idx*6 + N)` reads row `idx`
+ * (D_8018E224_ovl5[slot], a 0-3 CPU personality picked from the
+ * difficulty table) of a 6-byte-per-row table; every reader compares it
+ * against `random_soft_s32_range(0x10)` (a 0-15 roll) as a probability
+ * out of 16. Evidence per offset, from every decompiled/matched call site:
+ *   N=0  func_8015ED9C_ovl5: roll<row[0] -> give up and REST (action 3)
+ *        instead of picking a target this cycle.
+ *   N=1  func_80160120_ovl5 / func_8016050C_ovl5 (3 sequential rolls,
+ *        same offset each time): roll<row[1] -> react to the racer ahead
+ *        (squeeze past / overtake / chase); all 3 rolls failing -> REST.
+ *   N=2  func_8015F67C_ovl5 (already matched; reads the table directly,
+ *        not through this helper): roll<row[2] -> jump/attack (action 4).
+ *   N=3  func_8015ED9C_ovl5, action 8 (chase): roll<row[3] -> actually
+ *        attack the neighbour once adjacent, else just stop chasing.
+ *   N=4  not read by any decompiled code found so far.
+ *   N=5  func_8015DA24_ovl5 / func_8015DFC8_ovl5: NOTE this call passes
+ *        `D_8018E258_ovl5` (the current STAGE/round index, 0-3), not a
+ *        racer's personality slot -- roll>=row[5] keeps a lingering CPU
+ *        racer near an item pickup one more tick. Confirmed by reading
+ *        both call sites; not a transcription error. */
 static u8 ovl5_pers_(s32 i) {
     extern u8 D_80186918_ovl5[];
     extern u8 D_8018691A_ovl5[];
@@ -365,24 +399,24 @@ extern void *D_801866EC_ovl5[][2];
 void func_80161610_ovl5(s32);
 
 void func_8015D2A8_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
-    Unk8Bytes sp30 = D_8018E1E8_ovl5[arg1];
+    RacerSetup sp30 = D_8018E1E8_ovl5[arg1];
     s32 i;
 
     if (arg2 != 0) {
         if (D_800EAA60[omCurrentObj->objId] < 0.0f) {
-            func_800AA018(D_8018668C_ovl5[sp30.unk0][0]);
-            func_800AA018(D_8018668C_ovl5[sp30.unk0][1]);
+            func_800AA018(D_8018668C_ovl5[sp30.kind][0]);
+            func_800AA018(D_8018668C_ovl5[sp30.kind][1]);
         } else {
-            func_800AA018(D_8018666C_ovl5[sp30.unk0][0]);
-            func_800AA018(D_8018666C_ovl5[sp30.unk0][1]);
+            func_800AA018(D_8018666C_ovl5[sp30.kind][0]);
+            func_800AA018(D_8018666C_ovl5[sp30.kind][1]);
         }
     } else {
         if (D_800EAA60[omCurrentObj->objId] < 0.0f) {
-            func_800AA018(D_801866EC_ovl5[sp30.unk0][0]);
-            func_800AA018(D_801866EC_ovl5[sp30.unk0][1]);
+            func_800AA018(D_801866EC_ovl5[sp30.kind][0]);
+            func_800AA018(D_801866EC_ovl5[sp30.kind][1]);
         } else {
-            func_800AA018(D_801866CC_ovl5[sp30.unk0][0]);
-            func_800AA018(D_801866CC_ovl5[sp30.unk0][1]);
+            func_800AA018(D_801866CC_ovl5[sp30.kind][0]);
+            func_800AA018(D_801866CC_ovl5[sp30.kind][1]);
         }
     }
     for (i = 0; i != 10; i++) {
@@ -394,7 +428,7 @@ void func_8015D2A8_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
 extern s32 func_800AF230(void);
 
 void func_8015D458_ovl5(GObj *arg0, s32 arg1) {
-    Unk8Bytes sp78 = D_8018E1E8_ovl5[arg1];
+    RacerSetup sp78 = D_8018E1E8_ovl5[arg1];
     f32 x = D_800EAA60[omCurrentObj->objId];
     s32 pad0;
     s32 pad1;
@@ -420,15 +454,15 @@ void func_8015D458_ovl5(GObj *arg0, s32 arg1) {
 }
 
 void func_8015D62C_ovl5(GObj *arg0, s32 arg1) {
-    Unk8Bytes sp68 = D_8018E1E8_ovl5[arg1];
+    RacerSetup sp68 = D_8018E1E8_ovl5[arg1];
     f32 x = D_800EAA60[omCurrentObj->objId];
 
     if (x < 0.0f) {
-        func_800AA018(D_801866EC_ovl5[sp68.unk0][0]);
-        func_800AA018(D_801866EC_ovl5[sp68.unk0][1]);
+        func_800AA018(D_801866EC_ovl5[sp68.kind][0]);
+        func_800AA018(D_801866EC_ovl5[sp68.kind][1]);
     } else {
-        func_800AA018(D_801866CC_ovl5[sp68.unk0][0]);
-        func_800AA018(D_801866CC_ovl5[sp68.unk0][1]);
+        func_800AA018(D_801866CC_ovl5[sp68.kind][0]);
+        func_800AA018(D_801866CC_ovl5[sp68.kind][1]);
     }
     while (func_800AF230() == 0) {
         if (7 != D_800EA520[omCurrentObj->objId]) {
@@ -457,7 +491,7 @@ void func_800AA608(void *, void *, f32, void *, f32);
 void func_8015E850_ovl5(GObj *);
 
 void func_8015D864_ovl5(GObj *arg0, s32 arg1) {
-    Unk8Bytes sp30 = D_8018E1E8_ovl5[arg1];
+    RacerSetup sp30 = D_8018E1E8_ovl5[arg1];
     s32 pad0;
     s32 pad1;
 
@@ -469,14 +503,14 @@ void func_8015D864_ovl5(GObj *arg0, s32 arg1) {
         ((s32 *) D_800E9AA0)[t] = arg1;
     }
     D_8018E1E0_ovl5[arg1] = 0;
-    func_800AA018(D_801867AC_ovl5[sp30.unk0][0]);
-    func_800AA018(D_801867AC_ovl5[sp30.unk0][1]);
+    func_800AA018(D_801867AC_ovl5[sp30.kind][0]);
+    func_800AA018(D_801867AC_ovl5[sp30.kind][1]);
     func_800AF27C();
-    func_800AA608(D_800DE350[omCurrentObj->objId]->data.dobj->firstChild, D_8018664C_ovl5[sp30.unk0][0],
-                  0.0f, D_8018662C_ovl5[sp30.unk0], 6.0f);
-    func_800AA018(D_8018664C_ovl5[sp30.unk0][0]);
-    if (D_8018664C_ovl5[sp30.unk0][1] != NULL) {
-        func_800AA018(D_8018664C_ovl5[sp30.unk0][1]);
+    func_800AA608(D_800DE350[omCurrentObj->objId]->data.dobj->firstChild, D_8018664C_ovl5[sp30.kind][0],
+                  0.0f, D_8018662C_ovl5[sp30.kind], 6.0f);
+    func_800AA018(D_8018664C_ovl5[sp30.kind][0]);
+    if (D_8018664C_ovl5[sp30.kind][1] != NULL) {
+        func_800AA018(D_8018664C_ovl5[sp30.kind][1]);
     }
     D_800EA520[omCurrentObj->objId] = 0;
     D_800DF150[omCurrentObj->objId] = func_8015E850_ovl5;
@@ -495,7 +529,7 @@ void func_8015DA24_ovl5(GObj *arg0, u32 arg1) {
     extern u32 D_801867EC_ovl5[];
     extern u32 D_80186650_ovl5[];
     extern u8 D_8018E224_ovl5[];
-    s32 kind = D_8018E1E8_ovl5[arg1].unk0;
+    s32 kind = D_8018E1E8_ovl5[arg1].kind;
     s32 i;
 
     D_800DF150[omCurrentObj->objId] = NULL;
@@ -525,21 +559,21 @@ void func_8015DA24_ovl5(GObj *arg0, u32 arg1) {
             }
         }
     } else {
-        u8 *rec = &D_8018E228_ovl5[arg1 * 12];
+        RacerAI *rec = &D_8018E228_ovl5[arg1];
         f32 d;
 
-        d = gEntitiesNextPosXArray[omCurrentObj->objId] - func_801619E0_ovl5(rec[6]);
+        d = gEntitiesNextPosXArray[omCurrentObj->objId] - func_801619E0_ovl5(rec->target);
         if (d < 0.0f) {
             d = -d;
         }
-        if ((d < 100.0f) && (gEntitiesNextPosYArray[D_8018E050_ovl5[rec[6]]] > 350.0f)) {
+        if ((d < 100.0f) && (gEntitiesNextPosYArray[D_8018E050_ovl5[rec->target]] > 350.0f)) {
             while (random_soft_s32_range(0x10) >= ovl5_pers_(D_8018E258_ovl5 * 6 + 5)) {
                 ohSleep(1);
-                d = gEntitiesNextPosXArray[omCurrentObj->objId] - func_801619E0_ovl5(rec[6]);
+                d = gEntitiesNextPosXArray[omCurrentObj->objId] - func_801619E0_ovl5(rec->target);
                 if (d < 0.0f) {
                     d = -d;
                 }
-                if (!((d < 100.0f) && (gEntitiesNextPosYArray[D_8018E050_ovl5[rec[6]]] > 350.0f))) {
+                if (!((d < 100.0f) && (gEntitiesNextPosYArray[D_8018E050_ovl5[rec->target]] > 350.0f))) {
                     break;
                 }
             }
@@ -594,7 +628,7 @@ void func_8015DA24_ovl5(GObj *arg0, u32 arg1) {
     extern u32 D_801867CC_ovl5[];
     extern u32 D_801867EC_ovl5[];
     extern u32 D_80186650_ovl5[];
-    s32 kind = D_8018E1E8_ovl5[arg1].unk0;
+    s32 kind = D_8018E1E8_ovl5[arg1].kind;
     s32 i;
 
     D_800DF150[omCurrentObj->objId] = NULL;
@@ -624,21 +658,21 @@ void func_8015DA24_ovl5(GObj *arg0, u32 arg1) {
             }
         }
     } else {
-        u8 *rec = &D_8018E228_ovl5[arg1 * 12];
+        RacerAI *rec = &D_8018E228_ovl5[arg1];
         f32 d;
 
-        d = gEntitiesNextPosXArray[omCurrentObj->objId] - func_801619E0_ovl5(rec[6]);
+        d = gEntitiesNextPosXArray[omCurrentObj->objId] - func_801619E0_ovl5(rec->target);
         if (d < 0.0f) {
             d = -d;
         }
-        if ((d < 100.0f) && (gEntitiesNextPosYArray[D_8018E050_ovl5[rec[6]]] > 350.0f)) {
+        if ((d < 100.0f) && (gEntitiesNextPosYArray[D_8018E050_ovl5[rec->target]] > 350.0f)) {
             while (random_soft_s32_range(0x10) >= ovl5_pers_(D_8018E258_ovl5 * 6 + 5)) {
                 ohSleep(1);
-                d = gEntitiesNextPosXArray[omCurrentObj->objId] - func_801619E0_ovl5(rec[6]);
+                d = gEntitiesNextPosXArray[omCurrentObj->objId] - func_801619E0_ovl5(rec->target);
                 if (d < 0.0f) {
                     d = -d;
                 }
-                if (!((d < 100.0f) && (gEntitiesNextPosYArray[D_8018E050_ovl5[rec[6]]] > 350.0f))) {
+                if (!((d < 100.0f) && (gEntitiesNextPosYArray[D_8018E050_ovl5[rec->target]] > 350.0f))) {
                     break;
                 }
             }
@@ -723,11 +757,11 @@ void func_8015DFC8_ovl5(u32 arg1) {
     D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
     D_800EA520[omCurrentObj->objId] = 0;
     if (D_8018E224_ovl5[arg1] != 4) {
-        *(s32 *) &D_8018E228_ovl5[arg1 * 12] = 5;
-        D_8018E228_ovl5[arg1 * 12 + 4] = 0;
+        D_8018E228_ovl5[arg1].timer = 5;
+        D_8018E228_ovl5[arg1].action = 0;
     }
-    kind = D_8018E1E8_ovl5[arg1].unk0;
-    frame = D_8018E1E8_ovl5[arg1].unk4;
+    kind = D_8018E1E8_ovl5[arg1].kind;
+    frame = D_8018E1E8_ovl5[arg1].frame;
     D_800DF150[omCurrentObj->objId] = cb;
     func_800A9864((void *) (uintptr_t) ((u32 *) D_8018662C_ovl5)[kind], 0x1869F, 0x10);
     if (kind == 1) {
@@ -920,11 +954,11 @@ void func_8015DFC8_ovl5(u32 arg1) {
     D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
     D_800EA520[omCurrentObj->objId] = 0;
     if (D_8018E224_ovl5[arg1] != 4) {
-        *(s32 *) &D_8018E228_ovl5[arg1 * 12] = 5;
-        D_8018E228_ovl5[arg1 * 12 + 4] = 0;
+        D_8018E228_ovl5[arg1].timer = 5;
+        D_8018E228_ovl5[arg1].action = 0;
     }
-    kind = D_8018E1E8_ovl5[arg1].unk0;
-    frame = D_8018E1E8_ovl5[arg1].unk4;
+    kind = D_8018E1E8_ovl5[arg1].kind;
+    frame = D_8018E1E8_ovl5[arg1].frame;
     D_800DF150[omCurrentObj->objId] = cb;
     func_800A9864((void *) (uintptr_t) ((u32 *) D_8018662C_ovl5)[kind], 0x1869F, 0x10);
     if (kind == 1) {
@@ -1324,28 +1358,28 @@ s32 func_8015EAB4_ovl5(s32 arg0) {
 #ifdef MIPS_TO_C
 void func_8015ED9C_ovl5(s32 arg0) {
     void func_8015F67C_ovl5(s32);
-    u8 *rec = &D_8018E228_ovl5[arg0 * 12];
+    RacerAI *rec = &D_8018E228_ovl5[arg0];
     s32 idx = D_8018E224_ovl5[arg0];
     f32 speed;
     s32 i;
     s32 t;
 
-    t = *(s32 *) rec;
+    t = rec->timer;
     if (t != 0) {
         t -= 1;
-        *(s32 *) rec = t;
+        rec->timer = t;
         if (t == 0) {
-            rec[4] = 0;
+            rec->action = 0;
         }
     }
-    rec[7] = 0xFF;
-    rec[8] = 0xFF;
+    rec->left = 0xFF;
+    rec->right = 0xFF;
     for (i = 0; i < 4; i++) {
         if ((i != arg0) && (func_801612D0_ovl5(arg0, i) != 0)) {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] < gEntitiesNextPosXArray[D_8018E030_ovl5[i]]) {
-                rec[8] = i;
+                rec->right = i;
             } else {
-                rec[7] = i;
+                rec->left = i;
             }
         }
     }
@@ -1356,16 +1390,16 @@ void func_8015ED9C_ovl5(s32 arg0) {
     } else {
         speed = 40.0f;
     }
-    if (rec[4] == 0) {
-        *(s32 *) rec = random_soft_s32_range(5) + 1;
+    if (rec->action == 0) {
+        rec->timer = random_soft_s32_range(5) + 1;
         if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6)) {
-            rec[4] = 3;
-            *(s32 *) rec = random_soft_s32_range(6) + 5;
+            rec->action = 3;
+            rec->timer = random_soft_s32_range(6) + 5;
             return;
         }
         t = func_8015EAB4_ovl5(arg0);
         if (t != 0xFF) {
-            rec[6] = t;
+            rec->target = t;
             if (D_800E9C60[D_8018E050_ovl5[t]] == 0) {
                 func_8015F67C_ovl5(arg0);
             } else {
@@ -1373,14 +1407,14 @@ void func_8015ED9C_ovl5(s32 arg0) {
             }
         } else {
             if (random_soft_s32_range(2) != 0) {
-                rec[4] = 2;
+                rec->action = 2;
             } else {
-                rec[4] = 1;
+                rec->action = 1;
             }
-            *(s32 *) rec = random_soft_s32_range(6) + 5;
+            rec->timer = random_soft_s32_range(6) + 5;
         }
     }
-    switch (rec[4]) {
+    switch (rec->action) {
         case 2:
             D_800EA6E0[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId] + speed;
             if (D_800EA6E0[omCurrentObj->objId] > 900.0f) {
@@ -1402,42 +1436,42 @@ void func_8015ED9C_ovl5(s32 arg0) {
             } else {
                 D_800E9C60[omCurrentObj->objId] = 1;
             }
-            rec[4] = 0;
+            rec->action = 0;
             return;
         case 7:
-            if (rec[5] == 1) {
-                rec[4] = 2;
+            if (rec->side == 1) {
+                rec->action = 2;
             } else {
-                rec[4] = 1;
+                rec->action = 1;
             }
-            *(s32 *) rec = random_soft_s32_range(0xA) + 6;
+            rec->timer = random_soft_s32_range(0xA) + 6;
             return;
         case 6:
-            if (((rec[5] == 1) && (func_801608BC_ovl5(rec[8]) != 0)) ||
-                ((rec[5] == 0) && (func_801608BC_ovl5(rec[7]) != 0))) {
-                rec[4] = 0;
+            if (((rec->side == 1) && (func_801608BC_ovl5(rec->right) != 0)) ||
+                ((rec->side == 0) && (func_801608BC_ovl5(rec->left) != 0))) {
+                rec->action = 0;
                 return;
             }
-            if (rec[5] == 1) {
-                rec[4] = 2;
+            if (rec->side == 1) {
+                rec->action = 2;
             } else {
-                rec[4] = 1;
+                rec->action = 1;
             }
-            *(s32 *) rec = random_soft_s32_range(0xA) + 6;
+            rec->timer = random_soft_s32_range(0xA) + 6;
             return;
         case 8:
             if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 3)) {
-                if (((rec[5] == 1) && (func_801608BC_ovl5(rec[8]) != 0)) ||
-                    ((rec[5] == 0) && (func_801608BC_ovl5(rec[7]) != 0))) {
+                if (((rec->side == 1) && (func_801608BC_ovl5(rec->right) != 0)) ||
+                    ((rec->side == 0) && (func_801608BC_ovl5(rec->left) != 0))) {
                     D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
-                    if (rec[5] == 1) {
+                    if (rec->side == 1) {
                         D_800E9C60[omCurrentObj->objId] = 2;
                     } else {
                         D_800E9C60[omCurrentObj->objId] = 1;
                     }
                 }
             }
-            rec[4] = 0;
+            rec->action = 0;
             return;
         default:
             return;
@@ -1449,28 +1483,28 @@ void func_8015ED9C_ovl5(s32 arg0) {
  * personality row (rest, walk toward the item picked by func_8015EAB4_ovl5,
  * or wander); then applies the current action to D_800EA6E0/D_800E9C60. */
 void func_8015ED9C_ovl5(s32 arg0) {
-    u8 *rec = &D_8018E228_ovl5[arg0 * 12];
+    RacerAI *rec = &D_8018E228_ovl5[arg0];
     s32 idx = D_8018E224_ovl5[arg0];
     f32 speed;
     s32 i;
     s32 t;
 
-    t = *(s32 *) rec;
+    t = rec->timer;
     if (t != 0) {
         t -= 1;
-        *(s32 *) rec = t;
+        rec->timer = t;
         if (t == 0) {
-            rec[4] = 0;
+            rec->action = 0;
         }
     }
-    rec[7] = 0xFF;
-    rec[8] = 0xFF;
+    rec->left = 0xFF;
+    rec->right = 0xFF;
     for (i = 0; i < 4; i++) {
         if ((i != arg0) && (func_801612D0_ovl5(arg0, i) != 0)) {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] < gEntitiesNextPosXArray[D_8018E030_ovl5[i]]) {
-                rec[8] = i;
+                rec->right = i;
             } else {
-                rec[7] = i;
+                rec->left = i;
             }
         }
     }
@@ -1481,16 +1515,16 @@ void func_8015ED9C_ovl5(s32 arg0) {
     } else {
         speed = 40.0f;
     }
-    if (rec[4] == 0) {
-        *(s32 *) rec = random_soft_s32_range(5) + 1;
+    if (rec->action == 0) {
+        rec->timer = random_soft_s32_range(5) + 1;
         if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6)) {
-            rec[4] = 3;
-            *(s32 *) rec = random_soft_s32_range(6) + 5;
+            rec->action = 3;
+            rec->timer = random_soft_s32_range(6) + 5;
             return;
         }
         t = func_8015EAB4_ovl5(arg0);
         if (t != 0xFF) {
-            rec[6] = t;
+            rec->target = t;
             if (D_800E9C60[D_8018E050_ovl5[t]] == 0) {
                 func_8015F67C_ovl5(arg0);
             } else {
@@ -1498,14 +1532,14 @@ void func_8015ED9C_ovl5(s32 arg0) {
             }
         } else {
             if (random_soft_s32_range(2) != 0) {
-                rec[4] = 2;
+                rec->action = 2;
             } else {
-                rec[4] = 1;
+                rec->action = 1;
             }
-            *(s32 *) rec = random_soft_s32_range(6) + 5;
+            rec->timer = random_soft_s32_range(6) + 5;
         }
     }
-    switch (rec[4]) {
+    switch (rec->action) {
         case 2:
             D_800EA6E0[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId] + speed;
             if (D_800EA6E0[omCurrentObj->objId] > 900.0f) {
@@ -1527,42 +1561,42 @@ void func_8015ED9C_ovl5(s32 arg0) {
             } else {
                 D_800E9C60[omCurrentObj->objId] = 1;
             }
-            rec[4] = 0;
+            rec->action = 0;
             return;
         case 7:
-            if (rec[5] == 1) {
-                rec[4] = 2;
+            if (rec->side == 1) {
+                rec->action = 2;
             } else {
-                rec[4] = 1;
+                rec->action = 1;
             }
-            *(s32 *) rec = random_soft_s32_range(0xA) + 6;
+            rec->timer = random_soft_s32_range(0xA) + 6;
             return;
         case 6:
-            if (((rec[5] == 1) && (func_801608BC_ovl5(rec[8]) != 0)) ||
-                ((rec[5] == 0) && (func_801608BC_ovl5(rec[7]) != 0))) {
-                rec[4] = 0;
+            if (((rec->side == 1) && (func_801608BC_ovl5(rec->right) != 0)) ||
+                ((rec->side == 0) && (func_801608BC_ovl5(rec->left) != 0))) {
+                rec->action = 0;
                 return;
             }
-            if (rec[5] == 1) {
-                rec[4] = 2;
+            if (rec->side == 1) {
+                rec->action = 2;
             } else {
-                rec[4] = 1;
+                rec->action = 1;
             }
-            *(s32 *) rec = random_soft_s32_range(0xA) + 6;
+            rec->timer = random_soft_s32_range(0xA) + 6;
             return;
         case 8:
             if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 3)) {
-                if (((rec[5] == 1) && (func_801608BC_ovl5(rec[8]) != 0)) ||
-                    ((rec[5] == 0) && (func_801608BC_ovl5(rec[7]) != 0))) {
+                if (((rec->side == 1) && (func_801608BC_ovl5(rec->right) != 0)) ||
+                    ((rec->side == 0) && (func_801608BC_ovl5(rec->left) != 0))) {
                     D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
-                    if (rec[5] == 1) {
+                    if (rec->side == 1) {
                         D_800E9C60[omCurrentObj->objId] = 2;
                     } else {
                         D_800E9C60[omCurrentObj->objId] = 1;
                     }
                 }
             }
-            rec[4] = 0;
+            rec->action = 0;
             return;
         default:
             return;
@@ -1652,9 +1686,9 @@ void func_8016050C_ovl5(s32);
 void func_8015F67C_ovl5(s32 arg0)
 {
   s32 sp2C = D_8018E224_ovl5[arg0];
-  u8 *p = &D_8018E228_ovl5[arg0 * 12];
+  RacerAI *p = &D_8018E228_ovl5[arg0];
   s32 v0;
-  v0 = func_8015F4C4_ovl5(arg0, p[6]);
+  v0 = func_8015F4C4_ovl5(arg0, p->target);
   if ((D_800EA520[omCurrentObj->objId] == 2) || (D_800EA520[omCurrentObj->objId] == 3))
   {
     if (v0 == 2)
@@ -1662,7 +1696,7 @@ void func_8015F67C_ovl5(s32 arg0)
       func_80160088_ovl5(arg0);
     }
     else
-      if (((v0 == 0) && ((&D_8018E228_ovl5[arg0 * 12])[7] != 0xFF)) || ((v0 == 1) && ((&D_8018E228_ovl5[arg0 * 12])[8] != 0xFF)))
+      if (((v0 == 0) && (D_8018E228_ovl5[arg0].left != 0xFF)) || ((v0 == 1) && (D_8018E228_ovl5[arg0].right != 0xFF)))
     {
       func_80160120_ovl5(arg0);
     }
@@ -1674,22 +1708,22 @@ void func_8015F67C_ovl5(s32 arg0)
   else
     if (random_soft_s32_range(0x10) < D_8018691A_ovl5[sp2C * 6])
   {
-    (&D_8018E228_ovl5[arg0 * 12])[4] = 4;
+    D_8018E228_ovl5[arg0].action = 4;
   }
   else
     if (v0 == 0)
   {
-    (&D_8018E228_ovl5[arg0 * 12])[4] = 1;
+    D_8018E228_ovl5[arg0].action = 1;
   }
   else
     if (v0 == 1)
   {
-    (&D_8018E228_ovl5[arg0 * 12])[4] = 2;
+    D_8018E228_ovl5[arg0].action = 2;
   }
   else
   {
-    p[4] = 3;
-    *((s32 *) p) = random_soft_s32_range(0xA) + 5;
+    p->action = 3;
+    p->timer = random_soft_s32_range(0xA) + 5;
   }
 }
 
@@ -1702,65 +1736,65 @@ void func_8015F67C_ovl5(s32 arg0)
 #ifdef MIPS_TO_C
 void func_8015F804_ovl5(s32 arg0) {
     s32 func_8015F5DC_ovl5(s32, s32);
-    u8 *rec = &D_8018E228_ovl5[arg0 * 12];
+    RacerAI *rec = &D_8018E228_ovl5[arg0];
     f32 range;
     f32 d;
     s32 t;
 
     range = (random_soft_f32() * 100.0f) + 600.0f;
-    d = gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    d = gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]] - gEntitiesNextPosXArray[omCurrentObj->objId];
     if (d < 0.0f) {
         d = -d;
     }
     if (d < range) {
-        s32 side = func_8015F5DC_ovl5(arg0, rec[6]);
+        s32 side = func_8015F5DC_ovl5(arg0, rec->target);
 
         if (side == 0) {
-            t = D_8018E050_ovl5[rec[6]];
+            t = D_8018E050_ovl5[rec->target];
             if ((gEntitiesNextPosXArray[t] + range) > 900.0f) {
                 if (gEntitiesNextPosYArray[t] > 500.0f) {
-                    if (rec[7] == 0xFF) {
-                        rec[4] = 1;
+                    if (rec->left == 0xFF) {
+                        rec->action = 1;
                         return;
                     }
-                    rec[4] = 8;
-                    rec[5] = 0;
+                    rec->action = 8;
+                    rec->side = 0;
                     return;
                 }
-                rec[4] = 3;
-                *(s32 *) rec = random_soft_s32_range(6) + 1;
+                rec->action = 3;
+                rec->timer = random_soft_s32_range(6) + 1;
                 return;
             }
-            if (rec[8] == 0xFF) {
-                rec[4] = 2;
+            if (rec->right == 0xFF) {
+                rec->action = 2;
                 return;
             }
-            rec[4] = 8;
-            rec[5] = 1;
+            rec->action = 8;
+            rec->side = 1;
             return;
         }
         if (side == 1) {
-            t = D_8018E050_ovl5[rec[6]];
+            t = D_8018E050_ovl5[rec->target];
             if ((gEntitiesNextPosXArray[t] - range) < -900.0f) {
                 if (gEntitiesNextPosYArray[t] > 500.0f) {
-                    if (rec[7] == 0xFF) {
-                        rec[4] = 2;
+                    if (rec->left == 0xFF) {
+                        rec->action = 2;
                         return;
                     }
-                    rec[4] = 8;
-                    rec[5] = 1;
+                    rec->action = 8;
+                    rec->side = 1;
                     return;
                 }
-                rec[4] = 3;
-                *(s32 *) rec = random_soft_s32_range(6) + 1;
+                rec->action = 3;
+                rec->timer = random_soft_s32_range(6) + 1;
                 return;
             }
-            if (rec[7] == 0xFF) {
-                rec[4] = 1;
+            if (rec->left == 0xFF) {
+                rec->action = 1;
                 return;
             }
-            rec[4] = 8;
-            rec[5] = 0;
+            rec->action = 8;
+            rec->side = 0;
             return;
         }
         if (side == 2) {
@@ -1775,16 +1809,16 @@ void func_8015F804_ovl5(s32 arg0) {
                 dr = -dr;
             }
             if (dl < dr) {
-                rec[4] = 2;
+                rec->action = 2;
             } else {
-                rec[4] = 1;
+                rec->action = 1;
             }
-            *(s32 *) rec = random_soft_s32_range(6) + 0xA;
+            rec->timer = random_soft_s32_range(6) + 0xA;
         }
         return;
     }
-    rec[4] = 3;
-    *(s32 *) rec = random_soft_s32_range(6) + 1;
+    rec->action = 3;
+    rec->timer = random_soft_s32_range(6) + 1;
 }
 #elif defined(PORT)
 /* Chase planner used when the picked item is already claimed by another
@@ -1793,65 +1827,65 @@ void func_8015F804_ovl5(s32 arg0) {
  * the +-900 walls and the 500 height); otherwise rest for a while. */
 void func_8015F804_ovl5(s32 arg0) {
     s32 func_8015F5DC_ovl5(s32, s32);
-    u8 *rec = &D_8018E228_ovl5[arg0 * 12];
+    RacerAI *rec = &D_8018E228_ovl5[arg0];
     f32 range;
     f32 d;
     s32 t;
 
     range = (random_soft_f32() * 100.0f) + 600.0f;
-    d = gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    d = gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]] - gEntitiesNextPosXArray[omCurrentObj->objId];
     if (d < 0.0f) {
         d = -d;
     }
     if (d < range) {
-        s32 side = func_8015F5DC_ovl5(arg0, rec[6]);
+        s32 side = func_8015F5DC_ovl5(arg0, rec->target);
 
         if (side == 0) {
-            t = D_8018E050_ovl5[rec[6]];
+            t = D_8018E050_ovl5[rec->target];
             if ((gEntitiesNextPosXArray[t] + range) > 900.0f) {
                 if (gEntitiesNextPosYArray[t] > 500.0f) {
-                    if (rec[7] == 0xFF) {
-                        rec[4] = 1;
+                    if (rec->left == 0xFF) {
+                        rec->action = 1;
                         return;
                     }
-                    rec[4] = 8;
-                    rec[5] = 0;
+                    rec->action = 8;
+                    rec->side = 0;
                     return;
                 }
-                rec[4] = 3;
-                *(s32 *) rec = random_soft_s32_range(6) + 1;
+                rec->action = 3;
+                rec->timer = random_soft_s32_range(6) + 1;
                 return;
             }
-            if (rec[8] == 0xFF) {
-                rec[4] = 2;
+            if (rec->right == 0xFF) {
+                rec->action = 2;
                 return;
             }
-            rec[4] = 8;
-            rec[5] = 1;
+            rec->action = 8;
+            rec->side = 1;
             return;
         }
         if (side == 1) {
-            t = D_8018E050_ovl5[rec[6]];
+            t = D_8018E050_ovl5[rec->target];
             if ((gEntitiesNextPosXArray[t] - range) < -900.0f) {
                 if (gEntitiesNextPosYArray[t] > 500.0f) {
-                    if (rec[7] == 0xFF) {
-                        rec[4] = 2;
+                    if (rec->left == 0xFF) {
+                        rec->action = 2;
                         return;
                     }
-                    rec[4] = 8;
-                    rec[5] = 1;
+                    rec->action = 8;
+                    rec->side = 1;
                     return;
                 }
-                rec[4] = 3;
-                *(s32 *) rec = random_soft_s32_range(6) + 1;
+                rec->action = 3;
+                rec->timer = random_soft_s32_range(6) + 1;
                 return;
             }
-            if (rec[7] == 0xFF) {
-                rec[4] = 1;
+            if (rec->left == 0xFF) {
+                rec->action = 1;
                 return;
             }
-            rec[4] = 8;
-            rec[5] = 0;
+            rec->action = 8;
+            rec->side = 0;
             return;
         }
         if (side == 2) {
@@ -1866,16 +1900,16 @@ void func_8015F804_ovl5(s32 arg0) {
                 dr = -dr;
             }
             if (dl < dr) {
-                rec[4] = 2;
+                rec->action = 2;
             } else {
-                rec[4] = 1;
+                rec->action = 1;
             }
-            *(s32 *) rec = random_soft_s32_range(6) + 0xA;
+            rec->timer = random_soft_s32_range(6) + 0xA;
         }
         return;
     }
-    rec[4] = 3;
-    *(s32 *) rec = random_soft_s32_range(6) + 1;
+    rec->action = 3;
+    rec->timer = random_soft_s32_range(6) + 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015F804_ovl5.s")
@@ -1960,7 +1994,7 @@ s32 func_8015FE00_ovl5(s32 arg0) {
     s32 i;
     f32 x;
 
-    t = D_8018E050_ovl5[D_8018E228_ovl5[arg0 * 12 + 6]];
+    t = D_8018E050_ovl5[D_8018E228_ovl5[arg0].target];
     i = 0;
     do {
         if (arg0 != i && func_801612D0_ovl5(arg0, i) != 0) {
@@ -2012,7 +2046,7 @@ s32 func_8015FE00_ovl5(s32 arg0) {
     s32 i;
     f32 x;
 
-    t = D_8018E050_ovl5[D_8018E228_ovl5[arg0 * 12 + 6]];
+    t = D_8018E050_ovl5[D_8018E228_ovl5[arg0].target];
     for (i = 0; i < 4; i++) {
         if (arg0 != i && func_801612D0_ovl5(arg0, i) != 0) {
             sp24[i] = 1;
@@ -2045,8 +2079,8 @@ void func_80160088_ovl5(s32 arg0) {
 }
 
 s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
-    if (func_8015F4C4_ovl5((arg1 == 1) ? D_8018E228_ovl5[arg0 * 12 + 8] : D_8018E228_ovl5[arg0 * 12 + 7],
-                           D_8018E228_ovl5[arg0 * 12 + 6]) == 2) {
+    if (func_8015F4C4_ovl5((arg1 == 1) ? D_8018E228_ovl5[arg0].right : D_8018E228_ovl5[arg0].left,
+                           D_8018E228_ovl5[arg0].target) == 2) {
         return 1;
     }
     return 0;
@@ -2063,70 +2097,70 @@ s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
 #ifdef MIPS_TO_C
 void func_80160120_ovl5(s32 arg0) {
     s32 idx = D_8018E224_ovl5[arg0];
-    u8 *rec = &D_8018E228_ovl5[arg0 * 12];
+    RacerAI *rec = &D_8018E228_ovl5[arg0];
 
     if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
         s32 dir = 0;
 
         if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-            gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
+            gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
             dir = 1;
         }
         if (func_801600A8_ovl5(arg0, dir) != 0) {
-            if (gEntitiesNextPosYArray[D_8018E050_ovl5[rec[6]]] < 400.0f) {
-                rec[4] = 8;
+            if (gEntitiesNextPosYArray[D_8018E050_ovl5[rec->target]] < 400.0f) {
+                rec->action = 8;
                 if (func_8015FE00_ovl5(arg0) != 0) {
                     if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-                        rec[5] = 1;
+                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+                        rec->side = 1;
                     } else {
-                        rec[5] = 0;
+                        rec->side = 0;
                     }
                 } else {
                     if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-                        rec[5] = 0;
+                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+                        rec->side = 0;
                     } else {
-                        rec[5] = 1;
+                        rec->side = 1;
                     }
                 }
                 return;
             }
-            rec[4] = 3;
+            rec->action = 3;
             return;
         }
     }
     if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
-        rec[4] = 8;
+        rec->action = 8;
         if (func_8015FE00_ovl5(arg0) != 0) {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-                rec[5] = 1;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+                rec->side = 1;
             } else {
-                rec[5] = 0;
+                rec->side = 0;
             }
         } else {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-                rec[5] = 0;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+                rec->side = 0;
             } else {
-                rec[5] = 1;
+                rec->side = 1;
             }
         }
         return;
     }
     if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
-        rec[4] = 6;
+        rec->action = 6;
         if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-            gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-            rec[5] = 1;
+            gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+            rec->side = 1;
         } else {
-            rec[5] = 0;
+            rec->side = 0;
         }
         return;
     }
-    rec[4] = 3;
-    *(s32 *) rec = random_soft_s32_range(6) + 5;
+    rec->action = 3;
+    rec->timer = random_soft_s32_range(6) + 5;
 }
 #elif defined(PORT)
 /* Sibling of func_8016050C_ovl5 below (same personality-roll ladder, byte
@@ -2135,70 +2169,70 @@ void func_80160120_ovl5(s32 arg0) {
  * chase (8), overtake (6), or give up and rest (3). */
 void func_80160120_ovl5(s32 arg0) {
     s32 idx = D_8018E224_ovl5[arg0];
-    u8 *rec = &D_8018E228_ovl5[arg0 * 12];
+    RacerAI *rec = &D_8018E228_ovl5[arg0];
 
     if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
         s32 dir = 0;
 
         if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-            gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
+            gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
             dir = 1;
         }
         if (func_801600A8_ovl5(arg0, dir) != 0) {
-            if (gEntitiesNextPosYArray[D_8018E050_ovl5[rec[6]]] < 400.0f) {
-                rec[4] = 8;
+            if (gEntitiesNextPosYArray[D_8018E050_ovl5[rec->target]] < 400.0f) {
+                rec->action = 8;
                 if (func_8015FE00_ovl5(arg0) != 0) {
                     if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-                        rec[5] = 1;
+                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+                        rec->side = 1;
                     } else {
-                        rec[5] = 0;
+                        rec->side = 0;
                     }
                 } else {
                     if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-                        rec[5] = 0;
+                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+                        rec->side = 0;
                     } else {
-                        rec[5] = 1;
+                        rec->side = 1;
                     }
                 }
                 return;
             }
-            rec[4] = 3;
+            rec->action = 3;
             return;
         }
     }
     if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
-        rec[4] = 8;
+        rec->action = 8;
         if (func_8015FE00_ovl5(arg0) != 0) {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-                rec[5] = 1;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+                rec->side = 1;
             } else {
-                rec[5] = 0;
+                rec->side = 0;
             }
         } else {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-                rec[5] = 0;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+                rec->side = 0;
             } else {
-                rec[5] = 1;
+                rec->side = 1;
             }
         }
         return;
     }
     if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
-        rec[4] = 6;
+        rec->action = 6;
         if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-            gEntitiesNextPosXArray[D_8018E050_ovl5[rec[6]]]) {
-            rec[5] = 1;
+            gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+            rec->side = 1;
         } else {
-            rec[5] = 0;
+            rec->side = 0;
         }
         return;
     }
-    rec[4] = 3;
-    *(s32 *) rec = random_soft_s32_range(6) + 5;
+    rec->action = 3;
+    rec->timer = random_soft_s32_range(6) + 5;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160120_ovl5.s")
@@ -2213,47 +2247,47 @@ void func_8016050C_ovl5(s32 arg0) {
 
     if (random_soft_s32_range(0x10) < D_80186918_ovl5[idx * 6 + 1]) {
         if (func_8015FB78_ovl5(arg0) == 0) {
-            D_8018E228_ovl5[arg0 * 12 + 4] = 7;
+            D_8018E228_ovl5[arg0].action = 7;
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0 * 12 + 6]]]) {
-                D_8018E228_ovl5[arg0 * 12 + 5] = 0;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+                D_8018E228_ovl5[arg0].side = 0;
             } else {
-                D_8018E228_ovl5[arg0 * 12 + 5] = 1;
+                D_8018E228_ovl5[arg0].side = 1;
             }
             return;
         }
     }
     if (random_soft_s32_range(0x10) < D_80186918_ovl5[idx * 6 + 1]) {
-        D_8018E228_ovl5[arg0 * 12 + 4] = 6;
+        D_8018E228_ovl5[arg0].action = 6;
         if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-            gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0 * 12 + 6]]]) {
-            D_8018E228_ovl5[arg0 * 12 + 5] = 1;
+            gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+            D_8018E228_ovl5[arg0].side = 1;
         } else {
-            D_8018E228_ovl5[arg0 * 12 + 5] = 0;
+            D_8018E228_ovl5[arg0].side = 0;
         }
         return;
     }
     if (random_soft_s32_range(0x10) < D_80186918_ovl5[idx * 6 + 1]) {
-        D_8018E228_ovl5[arg0 * 12 + 4] = 8;
+        D_8018E228_ovl5[arg0].action = 8;
         if (func_8015FE00_ovl5(arg0) != 0) {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0 * 12 + 6]]]) {
-                D_8018E228_ovl5[arg0 * 12 + 5] = 1;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+                D_8018E228_ovl5[arg0].side = 1;
             } else {
-                D_8018E228_ovl5[arg0 * 12 + 5] = 0;
+                D_8018E228_ovl5[arg0].side = 0;
             }
         } else {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0 * 12 + 6]]]) {
-                D_8018E228_ovl5[arg0 * 12 + 5] = 0;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+                D_8018E228_ovl5[arg0].side = 0;
             } else {
-                D_8018E228_ovl5[arg0 * 12 + 5] = 1;
+                D_8018E228_ovl5[arg0].side = 1;
             }
         }
         return;
     }
-    D_8018E228_ovl5[arg0 * 12 + 4] = 3;
-    *(s32 *) &D_8018E228_ovl5[arg0 * 12] = random_soft_s32_range(6) + 5;
+    D_8018E228_ovl5[arg0].action = 3;
+    D_8018E228_ovl5[arg0].timer = random_soft_s32_range(6) + 5;
 }
 
 s32 func_80160810_ovl5(s32 arg0) {
@@ -2360,7 +2394,7 @@ s32 func_80160A78_ovl5(s32 arg0) {
     s32 pad;
     s32 idx;
 
-    idx = D_8018E1E8_ovl5[arg0].unk0;
+    idx = D_8018E1E8_ovl5[arg0].kind;
     return D_800DFBD0[D_8018E030_ovl5[arg0]][sp8.unk0[idx]];
 }
 
@@ -2560,15 +2594,15 @@ extern f32 D_800EA6E0[];
    worse in both positions) instead of closing the 4-byte gap in
    place. Floor. */
 s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
-    Unk8Bytes sp2C;
-    Unk8Bytes sp24;
+    RacerSetup sp2C;
+    RacerSetup sp24;
     f32 r;
     f32 a;
     f32 b;
 
     sp2C = D_8018E1E8_ovl5[arg0];
     sp24 = D_8018E1E8_ovl5[arg1];
-    r = func_80161298_ovl5(sp2C.unk0, sp24.unk0);
+    r = func_80161298_ovl5(sp2C.kind, sp24.kind);
     a = D_800EA6E0[D_8018E030_ovl5[arg0]];
     b = D_800EA6E0[D_8018E030_ovl5[arg1]];
     if ((a < b ? -(a - b) : (a - b)) <= r) {
@@ -2604,14 +2638,14 @@ void func_80161470_ovl5(s32 arg0, s32 arg1) {
     D_800EA520[D_8018E030_ovl5[arg1]] = 5;
     if (gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]] < gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) {
         D_800EA6E0[D_8018E030_ovl5[arg0]] =
-            gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] - D_80186950_ovl5[D_8018E1E8_ovl5[arg1].unk0];
+            gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] - D_80186950_ovl5[D_8018E1E8_ovl5[arg1].kind];
         D_800EA6E0[D_8018E030_ovl5[arg1]] =
-            gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]] + D_80186950_ovl5[D_8018E1E8_ovl5[arg0].unk0];
+            gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]] + D_80186950_ovl5[D_8018E1E8_ovl5[arg0].kind];
     } else {
         D_800EA6E0[D_8018E030_ovl5[arg0]] =
-            gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] + D_80186950_ovl5[D_8018E1E8_ovl5[arg1].unk0];
+            gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]] + D_80186950_ovl5[D_8018E1E8_ovl5[arg1].kind];
         D_800EA6E0[D_8018E030_ovl5[arg1]] =
-            gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]] - D_80186950_ovl5[D_8018E1E8_ovl5[arg0].unk0];
+            gEntitiesNextPosXArray[D_8018E030_ovl5[arg1]] - D_80186950_ovl5[D_8018E1E8_ovl5[arg0].kind];
     }
     D_800EAA60[D_8018E030_ovl5[arg0]] =
         (D_800EA6E0[D_8018E030_ovl5[arg0]] - gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) / 10.0f;
@@ -3320,7 +3354,7 @@ void func_80162E30_ovl5(GObj *arg0) {
     s32 j;
 
 #define OBJ5_(k) D_8018E030_ovl5[ord[(k)]]
-#define KIND5_(k) D_8018E1E8_ovl5[ord[(k)]].unk0
+#define KIND5_(k) D_8018E1E8_ovl5[ord[(k)]].kind
     for (i = 0; i < 4; i++) {
         ord[i] = i;
     }
@@ -3580,7 +3614,7 @@ void func_80162E30_ovl5(GObj *arg0) {
     s32 j;
 
 #define OBJ5_(k) D_8018E030_ovl5[ord[(k)]]
-#define KIND5_(k) D_8018E1E8_ovl5[ord[(k)]].unk0
+#define KIND5_(k) D_8018E1E8_ovl5[ord[(k)]].kind
     for (i = 0; i < 4; i++) {
         ord[i] = i;
     }
@@ -4535,8 +4569,8 @@ void func_80164EA8_ovl5(void) {
     }
     for (j = 0; j != 4; j++) {
         D_8018E1E0_ovl5[j] = 0;
-        D_8018E1E8_ovl5[j].unk0 = *sp50.unk0[j];
-        D_8018E1E8_ovl5[j].unk4 = *sp40.unk0[j];
+        D_8018E1E8_ovl5[j].kind = *sp50.unk0[j];
+        D_8018E1E8_ovl5[j].frame = *sp40.unk0[j];
         if (1 == *sp30.unk0[j]) {
             D_8018E224_ovl5[j] = sp20.unk0[temp];
         } else {
