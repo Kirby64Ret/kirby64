@@ -313,3 +313,14 @@ the pool allocator's real stride is 0x78.
     correctness. The objdump-vs-build/ diff is the gate there -- and the lane
     that used it first inserted a dummy function to confirm .text moved
     (13360 -> 13376) and that restoring returned byte-identical.
+
+53. **A fourth padding-trap class: SHARED LATE-RODATA CONTENT.** verify.py can
+    report MATCH, .text can be exactly the right size, and un-guarding can
+    still corrupt the ROM -- because the function's own late_rodata pool
+    shifts the CONTENT of the TU's shared rodata section by 4 bytes from that
+    function onward. Total section size is unchanged, so check_tu_size and
+    check_sections both pass. Caught on func_801D650C_ovl9 by
+    `objdump -s -j .rodata` on the object before and after un-guarding.
+    Screen any un-guard in a TU with migrated late_rodata that way, and note
+    that check_rodata_bytes.py only sees it if build/src/<file>.o exists --
+    it silently skipped 35 of 136 subsegments until that was fixed.
