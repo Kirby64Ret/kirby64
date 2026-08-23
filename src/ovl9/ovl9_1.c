@@ -1103,7 +1103,14 @@ void func_8019F3F0_ovl7(void);
 void func_801D4C50_ovl9(void);
 
 #ifdef NON_MATCHING
-/* 21/144 */
+/* 21/144: a pervasive whole-function $a0/$a1 register-naming swap -- the
+ * ROM holds omCurrentObj in $a1 and D_800E9AA0's base in $a0 throughout;
+ * this draft gets the same shape with the pair swapped. All 21 diffs are
+ * that one swap (lw/addu/lwc1/swc1 pairs), nothing else moves. Re-measured
+ * this session: swapping the two leading statement's order (D_800E9AA0
+ * clear before/after D_800E8920 clear) is inert, still 21. Reads as the
+ * LEVERS "second variant" floor (whole-function register permutation),
+ * not a source-spelling residue. */
 void func_801D4594_ovl9(void) {
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
@@ -1564,7 +1571,21 @@ extern f32 func_800F9828(s32, s32);
 extern f32 func_8019B608_ovl7(s32);
 
 #ifdef NON_MATCHING
-/* 23/96 */
+/* 21/96: a float-register cascade ($f0/$f2/$f12/$f14 pairs swapped
+ * throughout the ABSF/compare tail), not a source-spelling residue.
+ * Re-measured this session: the original draft assigned var_f12 in its
+ * own statement before the `if`, which cost 23/96; folding it into the
+ * condition as `if ((var_f12 = func_800F9828(...)) == 9999.0f)` -- the
+ * exact spelling this file's matched sibling func_801D650C_ovl9 uses for
+ * the same dy/var_f12/dx/dz/dist preamble (LEVERS lever 1, clone family)
+ * -- took it to 21/96 and fixed the leading dy/dx/dz load order to match
+ * exactly. From there: declaration order (moving var_f12 up to sit next
+ * to dx/dz like the sibling) made it WORSE (25/96, reverted); ABSF()
+ * macro vs the equivalent hand-written ternary is inert (same expansion);
+ * reversing the `== 9999.0f` compare operand order is inert. All 21
+ * remaining diffs are register renames in the ABSF(var_f12)/ABSF(dy) and
+ * final `(b<=a) ? .. : ..` compare chain -- reads as a float-register
+ * permutation floor (LEVERS "second variant" class). */
 s32 func_801D56D0_ovl9(void) {
     f32 dx;
     f32 dz;
@@ -1575,15 +1596,14 @@ s32 func_801D56D0_ovl9(void) {
     f32 dist;
 
     dy = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
-    var_f12 = func_800F9828(omCurrentObj->objId, 0);
-    if (var_f12 == 9999.0f) {
+    if ((var_f12 = func_800F9828(omCurrentObj->objId, 0)) == 9999.0f) {
         dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
         dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
         dist = sqrtf((dx * dx) + (dz * dz));
         var_f12 = dist * func_8019B608_ovl7(0);
     }
-    a = (var_f12 < 0.0f) ? -var_f12 : var_f12;
-    b = (dy < 0.0f) ? -dy : dy;
+    a = ABSF(var_f12);
+    b = ABSF(dy);
     return (b <= a) ? ((0 <= var_f12) ? 3 : 2) : ((0 <= dy) ? 0 : 1);
 }
 #else
@@ -1940,9 +1960,21 @@ void func_801D64EC_ovl9(GObj *arg0) {
 extern f32 D_8021BBB0_ovl9[];
 
 #ifdef NON_MATCHING
-/* Instruction-exact (101/101), but the ROM carries a trailing dead .float 0 at
- * 0x1CAF1C that IDO does not re-emit from this source, so converting shortens
- * the TU's .rodata by one word. Guarded until that word is accounted for. */
+/* Instruction-exact (101/101 .text), but the ROM carries a trailing dead
+ * .float 0 at 0x1CAF1C right after D_8021CEC8_ovl9 (0.7853981853) that IDO
+ * does not re-emit from this source. verify.py's per-function check only
+ * diffs .text and reports MATCH here -- it is blind to this. Confirmed by
+ * objdump -s -j .rodata on build/verify/ vs build/src/: both come out the
+ * SAME total section size (0xd0), but the CONTENTS diverge starting right
+ * at this function's own late-rodata block (offset 0x6c) -- the dead-zero
+ * word is missing here, so every later literal in the TU's shared .rodata
+ * (from whichever function's pool comes next) is packed 4 bytes early, and
+ * an equal amount of zero padding silently reappears at the very end of
+ * the section instead. Same total size, wrong content from 0x6c onward:
+ * this would ship every later rodata reference in the TU 4 bytes off.
+ * Re-measured this session; still guarded until that word is accounted
+ * for -- converting requires reproducing IDO's late-rodata pool padding,
+ * not a source-level fix found so far. */
 f32 func_801D650C_ovl9(s32 arg0) {
     f32 dx;
     f32 dz;

@@ -1087,7 +1087,12 @@ void func_800A9EA4(s32);
 #ifdef NON_MATCHING
 /* 7/70: pure $a2/$a3 swap. The ROM parks the shared u32 `1` in $a3 and the
    hoisted D_800E6690 base in $a2; IDO assigns them the other way round. Every
-   other instruction matches. This is the named argument-register rotation. */
+   other instruction matches. This is the named argument-register rotation.
+   Re-measured this session, still exactly 7. Tried dropping the u32 cast on
+   the D_800E9C60 store to type-split the shared constant 1 (lever 45): badly
+   regressed (broke the jal relocations entirely, many more diffs) --
+   reverted. Reads as the LEVERS "CSE'd load landing in the neighbouring
+   register ($a2/$a3)" floor verbatim, not a source-spelling residue. */
 void func_801F58A0_ovl9(struct GObj *arg0) {
     *(u32 *) &D_800E9C60[omCurrentObj->objId] = 1;
     D_800E9E20[omCurrentObj->objId] = 0;

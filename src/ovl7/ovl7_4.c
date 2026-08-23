@@ -55,8 +55,10 @@ void func_8019BB58_ovl7(void);
 void func_8019D958_ovl7(u16);
 void ohSleep(s32);
 
-/* FACTORY: 204/213, $v0/$v1 transposition ONLY (the CSE'd-load-in-the-
-   neighbouring-register floor from LEVERS).  Instruction count, schedule,
+#ifdef MIPS_TO_C
+/* FACTORY: 9/213, $v0/$v1 transposition ONLY (the CSE'd-load-in-the-
+   neighbouring-register floor from LEVERS). Re-confirmed 2026-08-23,
+   identical 9/213.  Instruction count, schedule,
    frame (0x30, s0 saved, arg0 homed at 0x30, desc spilled at 0x28), every
    branch and every other register are the ROM's.  The nine diffs are the
    ent->unk94 chain: the ROM holds unk94 in $v0 and unk94->unk18 in $v1,
@@ -68,8 +70,8 @@ void ohSleep(s32);
    middle of this function land.  Note the in-guard prototype must be
    `void func_800A22D4(u32)` to agree with the other guarded drafts already
    in this TU -- declaring it (void *) is a redeclaration error, so the
-   pointer is passed as (u32) ent->unk34 (a no-op in codegen). */
-#ifdef MIPS_TO_C
+   pointer is passed as (u32) ent->unk34 (a no-op in codegen). Good permuter
+   seed. */
 void func_801A3E80_ovl7(GObj *arg0) {
     void func_800A22D4(u32);
     void func_800A2300(struct GObj *);

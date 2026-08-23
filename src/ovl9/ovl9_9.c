@@ -1604,17 +1604,15 @@ void func_80200810_ovl9(struct GObj *arg0) {
     }
 }
 
-/* FACTORY: 16/96.  Two things are needed and BOTH are already in this draft:
-   the definition must be K&R (`func(arg0) s32 arg0; {`) -- a prototyped
-   `(s32 arg0)` makes IDO reject the existing no-arg call at func_80200B84_ovl9,
-   and `(void)` loses the ROM's `sw $a0, 0x0($sp)` parameter home (92/96).
-   To build this draft, line 37 must also become `s32 func_80200908_ovl9();`.
-   Residue: all 8 branches to the shared exit are branch-LIKELY in IDO with
-   `move $v0,$a0` copied into each delay slot, where the ROM has plain
-   bc1f/bne + nop and does the `or $v0,$a0,$zero` once, in the `jr $ra` delay
-   slot.  Pure delay-slot scheduling.  Tried: using the parameter itself as the
-   accumulator instead of a local (92/96 -- it drops the home store). */
-#ifdef NON_MATCHING
+/* MATCHED. Two things are required: the definition must be K&R
+   (`func(arg0) s32 arg0; {`) -- a prototyped `(s32 arg0)` makes IDO reject
+   the existing no-arg call at func_80200B84_ovl9, and `(void)` loses the
+   ROM's `sw $a0, 0x0($sp)` parameter home. The old note's "16/96, pure
+   delay-slot scheduling" residue was a multi-`return 1` shape (each one its
+   own bc1fl copying `move $v0,$a0` into its delay slot); rewriting every
+   `return 1;` as `ret = 1; goto exit;` sharing one `or $v0,$a0,$zero` at a
+   single exit label matches it exactly (LEVERS lever 6, flag-variable/goto
+   form). */
 s32 func_80200908_ovl9(arg0)
 s32 arg0;
 {
@@ -1624,32 +1622,34 @@ s32 arg0;
 
     if (D_800EB160[omCurrentObj->objId] < 0.7853982f) {
         if (gEntitiesNextPosYArray[omCurrentObj->objId] <= tmp->unk4) {
-            return 1;
+            ret = 1;
+            goto exit;
         }
     } else if (D_800EB160[omCurrentObj->objId] < 2.3561945f) {
         if (tmp->unk2C == D_800E5F90[omCurrentObj->objId]) {
             if (tmp->unk28 <= D_800E6BD0[omCurrentObj->objId]) {
-                return 1;
+                ret = 1;
+                goto exit;
             }
         }
     } else if (D_800EB160[omCurrentObj->objId] < 3.926991f) {
         if (tmp->unk4 <= gEntitiesNextPosYArray[omCurrentObj->objId]) {
-            return 1;
+            ret = 1;
+            goto exit;
         }
     } else if (D_800EB160[omCurrentObj->objId] < 5.4977875f) {
         if (tmp->unk2C == D_800E5F90[omCurrentObj->objId]) {
             if (D_800E6BD0[omCurrentObj->objId] <= tmp->unk28) {
-                return 1;
+                ret = 1;
+                goto exit;
             }
         }
     } else if (gEntitiesNextPosYArray[omCurrentObj->objId] <= tmp->unk4) {
         ret = 1;
     }
+exit:
     return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_9/func_80200908_ovl9.s")
-#endif
 
 void func_80200A88_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 2;

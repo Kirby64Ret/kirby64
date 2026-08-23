@@ -1847,14 +1847,12 @@ void func_8015E754_ovl3(s32 arg0) {
 
 #ifdef NON_MATCHING
 /* FACTORY: 1/275, mul.s source-operand SLOT (invariant per LEVERS.md entry
- * 84, reconfirmed here a third time: `D_800E6A10[objId] * v` and `v *
+ * 84, reconfirmed here a fourth time: `D_800E6A10[objId] * v` and `v *
  * D_800E6A10[objId]` both compile to the identical `mul.s $f16,$f10,$f0`
  * -- no source spelling reaches the ROM's $f16,$f0,$f10 slot order).
- * The other 2/3 original diffs (stack displacements sp+0x48/0x4C vs the
- * ROM's sp+0x4C/0x50) are FIXED: reordering the local declarations to
- * `i, sp50, sp4C, v, pad[3]` (moving `v` from before sp50/sp4C to after)
- * shifted both without changing the frame size, closing that residue in
- * one edit. Good permuter seed for the remaining mul.s slot. */
+ * Everything else matches. Good permuter seed for the remaining mul.s
+ * slot. Re-measured 2026-08-23 via direct verify.py: DIFF 1/275, single
+ * mul.s insn only. */
 void func_8015E8E0_ovl3(s32 arg0) {
     extern f32 **D_80192EB8_ovl3;
     extern u8 D_8012E7C5[];
@@ -4449,14 +4447,25 @@ void func_80164058_ovl3(s32 arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 3/124: everything matches except the scratch register IDO picks for the
-   D_800E98E0 base -- the ROM materialises it in $t0 and loads the value into
-   $a1, IDO uses $a1 for both.  Levers already applied to get here: `s32 kind`
-   for the switch value (8 -> 3), the chained `p[2] = ...` inside the call
-   argument (10 -> 8) and `f32 temp` declared FIRST (frame 0x30 -> 0x28).
-   Swept with no effect: a local for the loaded value, for the divide and for
-   objId, *(p+2), ((s32 *) D_800E98E0)[i], and s32/void return types on
-   func_80111C4C / func_80152070_ovl3 / func_80155D50_ovl3. */
+/* FACTORY: 3/124, register-shaped floor -- confirmed 2026-08-23. Everything
+   matches except the scratch register IDO picks for the D_800E98E0 base: the
+   ROM materialises the address in $t0 then loads the value into $a1 (the
+   call-argument register); IDO always computes straight into $a1 since that
+   is where the value is destined for the call. Levers already applied to get
+   here: `s32 kind` for the switch value (8 -> 3), the chained `p[2] = ...`
+   inside the call argument (10 -> 8) and `f32 temp` declared FIRST (frame
+   0x30 -> 0x28).
+   Swept with no effect (all reproduce the identical 3/124, same insn count):
+   a local for the loaded value, for the divide and for objId, *(p+2),
+   ((s32 *) D_800E98E0)[i], s32/void return types on func_80111C4C /
+   func_80152070_ovl3 / func_80155D50_ovl3, splitting `p[2] = D_800E98E0[...]`
+   into its own statement ahead of the call (makes it WORSE: 10/124, extra
+   scratch regs t6/t9/t1 appear), and a named `s32 val` local read once and
+   reused for both the p[2] store and the call argument (still exactly
+   3/124, byte-identical diff). This is the "CSE'd load landing in the
+   neighbouring register" floor class from LEVERS.md's guard-on-the-second-
+   variant list -- no source spelling reaches the ROM's $t0/$a1 split.
+   Good permuter seed. */
 extern char D_80191268_ovl3[];
 extern char D_80191288_ovl3[];
 extern char D_801912A8_ovl3[];

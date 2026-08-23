@@ -988,6 +988,7 @@ void func_801F11A8_ovl10(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F11A8_ovl10.s")
 #endif
 
+#ifdef NON_MATCHING
 /* 1/64.  Was 11/64 with the three constants as `extern f32`; this TU's rodata
    is MIGRATED, and writing them as literals fixed the load scheduling that the
    earlier sweep (a `lim` local at four positions, both operand orders of the
@@ -996,15 +997,15 @@ void func_801F11A8_ovl10(GObj *arg0) {
    `add.s $f10, $f0, $f8` ($f0 = v, $f8 = the array load) and IDO emits the two
    the other way round.  Swept since: both source orders (identical output --
    IDO canonicalises this add), a cast on either side, extra parens, a named
-   local for the array element, `v +=`, `v = v +`, and the ternary form. */
-#ifdef NON_MATCHING
-/* 1/64 in place (scan.py's preprocessed copy scores it 4 -- believe the
-   in-file number). The single defect is the operand order of one add: the ROM
-   has `add.s $f10, $f0, $f8` ($f0 = v, $f8 = the D_800E17D0 load), IDO emits
-   the two the other way round. Swept, all identical or worse: both source
-   orders (IDO canonicalises this add), the ternary written inline, a named
-   local for the array element loaded before the if (36) and after it (18),
-   and `v = v + ...; store v;` (10). */
+   local for the array element, `v +=`, `v = v +`, and the ternary form.
+   Re-confirmed 2026-08-23 via direct verify.py: DIFF 1/64, this add.s only.
+   `D_800E17D0[objId] + v` (source order swapped again) reproduces the
+   identical 1/64 -- confirms LEVERS.md lever 2's falsification note
+   verbatim ("var + arrayload -- if one operand is a plain local, expect
+   nothing"): IDO canonicalises this specific add.s slot order and no source
+   spelling reaches the ROM's $f0,$f8 order. Same invariant-floor class as
+   the mul.s slot order (lever 84 in the guard-on-the-second-variant list).
+   Good permuter seed. */
 void func_801F1454_ovl10(struct GObj *arg0) {
     f32 v;
 

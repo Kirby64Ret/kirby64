@@ -231,7 +231,18 @@ void func_801AEA20_ovl7(GObj *arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* 5/111 insns */
+/* FACTORY: 5/111, call-argument EVALUATION-ORDER floor -- re-confirmed
+   2026-08-23. Only the first `assign_new_process_entry(gEntityGObjProcess
+   Array[objId], func_801ACF84_ovl7)` call site: the ROM evaluates the
+   second argument (the func_801ACF84_ovl7 function-symbol address, into
+   $a1) BEFORE the first (the gEntityGObjProcessArray[objId] load, into
+   $a0); IDO here evaluates left-to-right, matching source order. Swept:
+   hoisting the function pointer into a named `void (*fn)(struct GObj *)`
+   local assigned before the call reproduces the identical 5/111 -- the
+   call site still computes $a0 first regardless. The other two textually
+   identical calls in this function (D_800E9720 branch, D_800E8760 branch)
+   already match, so this is scheduling context at THIS call site, not the
+   expression itself. Good permuter seed. */
 void func_801AEE04_ovl7(void) {
     s32 func_801A0880_ovl7(void);
     struct Ovl7_7_AnimObj *func_801117BC(void *, u32);

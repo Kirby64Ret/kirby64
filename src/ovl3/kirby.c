@@ -1414,10 +1414,18 @@ extern void func_80122A80(void);
 extern void func_8012307C(s32, s32, f32, s32);
 
 #ifdef NON_MATCHING
-/* 1/190: only `addiu $a2, $zero, 1` vs `move $a2, $s2` for the third argument
-   of the tail func_801230E8; the ROM does not reuse its hoisted constant-1
-   register there. Swept: (u32)1, 1L, and an unprototyped local declaration of
-   func_801230E8 -- none forks the constant node. */
+/* FACTORY: 1/190, constant-materialisation SCHEDULING floor -- re-confirmed
+   2026-08-23. Only `addiu $a2, $zero, 1` vs `move $a2, $s2` for the third
+   argument of the tail func_801230E8(0x200FF, 0x20100, 1); the ROM
+   re-materialises the literal 1 as a fresh addiu scheduled early
+   (unconditionally, right after the D_800E6850 = 65535.0f store, well
+   before the switch even branches), while IDO here instead moves it out of
+   the callee-saved $s2 that already holds constant 1 (used for the case-1/
+   case-2 compares, the ohSleep(1) call, and the unk44=1 store). Swept, all
+   reproduce the identical 1/190 diff: (u32)1, 1L, (s16)1, and an
+   unprototyped local declaration of func_801230E8 -- none forks the
+   constant node or blocks the $s2 reuse. This is a pure IDO scheduling
+   choice, not a source spelling; good permuter seed. */
 void func_8016DA14_ovl3(GObj *arg0) {
     f32 temp;
     f32 temp2;
@@ -2663,12 +2671,20 @@ void func_80170794_ovl3(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 3/97: instruction-for-instruction exact; the shared 0.0f constant lands in
-   $f14 where the ROM uses $f0 (the three c.eq.s/c.lt.s operands). Swept: `||`
-   vs two early returns, nesting instead of returns, a named `zero` local,
-   swapping the two guards, integer/double zero spellings, and dropping the
+/* FACTORY: 3/97, shared FP-constant REGISTER floor -- re-confirmed
+   2026-08-23. Instruction-for-instruction exact; the shared 0.0f constant
+   lands in $f14 where the ROM uses $f0 for both the `arg2 == 0.0f` and
+   `temp != 0.0f` compares (which the ROM also spells in OPPOSITE
+   c.eq.s operand order between the two uses: $f12,$f0 then $f0,$f12).
+   Swept, all reproduce the identical 3/97 or worse: `||` vs two early
+   returns, nesting instead of returns, a named `zero` local, swapping the
+   two guards, `0.0f != temp` (no change, still 3/97), `arg2 == 0` int
+   (worse, 7/97 -- forces an int/float conversion path), `arg2 == 0.0`
+   double (much worse, 94/99 -- forks a whole cvt.d.s/c.eq.d compare chain),
+   `temp != 0.0` double (much worse, 89/99, same class), and dropping the
    change_kirby_hp prototype (77 diffs). The integer `0` in `temp < 0` IS
-   load-bearing -- it forks the second zero the ROM materialises separately. */
+   load-bearing -- it forks the second zero the ROM materialises
+   separately. Good permuter seed for the $f0/$f14 register floor. */
 extern f32 gKirbyHp;
 
 void func_801708A0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
@@ -3386,15 +3402,20 @@ void func_801717F0_ovl3(s32 arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* 6/269: every instruction is present and the whole prologue, switch and the
-   other five arms are exact. In the case 0/1 arm the ROM schedules `li $t3,1`
-   and `lui $at,%hi(D_800E9AA0)` into the block BEFORE the `bnez`, filling the
-   delay slot with `ori $a0`; this C leaves both inside the taken block and the
-   delay slot takes `lui $at`. Swept: as_s32 vs as_u32, `== 0` vs an inverted
-   `!= 0`/empty-then, and the body collapsed onto one line -- all 6/269. The
-   integer `0` (not `0.0f`) in the two arm stores and in the angle.v.y store IS
-   load-bearing: it forks the zero the ROM materialises per store, and `0.0f`
-   there CSEs into one register and costs 210 diffs. */
+/* FACTORY: 6/269, instruction-SCHEDULING floor -- re-confirmed 2026-08-23,
+   identical 6/269. Every instruction is present and the whole prologue,
+   switch and the other five arms are exact. In the case 0/1 arm the ROM
+   schedules `li $t3,1` and `lui $at,%hi(D_800E9AA0)` into the block BEFORE
+   the `bnez`, filling the delay slot with `ori $a0`; this C leaves both
+   inside the taken block and the delay slot takes `lui $at`. Swept: as_s32
+   vs as_u32, `== 0` vs an inverted `!= 0`/empty-then, and the body
+   collapsed onto one line -- all 6/269. The integer `0` (not `0.0f`) in
+   the two arm stores and in the angle.v.y store IS load-bearing: it forks
+   the zero the ROM materialises per store, and `0.0f` there CSEs into one
+   register and costs 210 diffs. Both instructions being hoisted (li $t3,1
+   and lui $at) have no side effects, so this is pure IDO delay-slot/
+   scheduling choice, not reachable by restructuring the guarded store
+   (which would change semantics on the false path). Good permuter seed. */
 void func_80171E00_ovl3(GObj *arg0) {
     s32 func_800AA934(s32);
     void func_8011E234(void);
@@ -8321,6 +8342,21 @@ void func_8017B78C_ovl3(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
+/* FACTORY: 9/285, constant-materialisation SCHEDULING floor -- measured
+   2026-08-23. Every diff traces to ONE constant: the ROM schedules
+   `addiu $t6, zero, 1` (the literal for `gKirbyState.unk3C = 1;`) mid-block,
+   right after the D_800E6690[objId]=0.0f swc1 store and an objId reload,
+   well BEFORE its actual use several instructions later; IDO here
+   schedules the equivalent `li $t4, 1` at the very TOP of the block,
+   before even the sll/addu/swc1 sequence for D_800E6690. That one-slot
+   shift then cascades into a register-name rotation in the isTurning |=
+   0x4000 store (t4/t5/t6 -> t5/t6/t7-shaped). Swept: moving the
+   `gKirbyState.unk3C = 1;` statement earlier in the block, right after the
+   D_800E6690 pair (much worse -- 33/285, forks completely different
+   scheduling for every remaining store) and mid-block between D_800E3210
+   and D_800E3C90 (also worse -- 16/285). Same class as the constant-
+   scheduling floor on func_8016DA14_ovl3 above in this file -- pure IDO
+   scheduling choice, not a source spelling. Good permuter seed. */
 extern char D_80191224_ovl3[];
 extern f32 D_801975F0_ovl3;
 extern f32 D_801975F4_ovl3;

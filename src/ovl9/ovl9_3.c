@@ -916,14 +916,22 @@ void func_801DE280_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DE280_ovl9.s")
 #endif
 
-/* 4/130: the ROM materialises %hi(D_800E8AE0) before %hi(D_800EAC20); IDO emits
-   them the other way round. Swept: ternary, declaration order, `& 1` vs `!= 0`,
-   and collapsing the inner if/else onto one physical line (all inert, still 4).
-   Measured datum for whoever picks this up: flipping the outer test to
-   `!= 0` DOES fix the %hi order, but costs 15/130 because the ROM's `bnez`
-   requires the `== 0` polarity. So the two constraints are in tension and the
-   answer is not a polarity change. */
 #ifdef NON_MATCHING
+/* FACTORY: 126/130, %hi-materialisation-order floor. The ROM materialises
+   %hi(D_800E8AE0) before %hi(D_800EAC20) at the shared preamble ahead of
+   the if/else that uses each in a different arm; IDO emits them the other
+   way round. Re-measured this session, still exactly 4/130 (2 lui + 2
+   addu swapped, nothing else moves): ternary, declaration order, `& 1` vs
+   `!= 0`, collapsing the inner if/else onto one physical line, and
+   merging the D_800E8AE0 ternary onto the D_800EAC20 store in one
+   statement (the spelling that IS the matched idiom in this file's own
+   func_801DCBAC_ovl9 -- `D_800EAC20[id] = (D_800E8AE0[id] & 1) ? 0.5f :
+   1.0f;`) are all inert here, still 4. Measured datum for whoever picks
+   this up: flipping the outer test to `!= 0` DOES fix the %hi order, but
+   costs 15/130 because the ROM's `bnez` requires the `== 0` polarity. So
+   the two constraints are in tension and the answer is not a polarity
+   change -- this reads as a register-allocation/hoist-order floor
+   (LEVERS "second variant" class), not a source-spelling residue. */
 s32 func_801A0D74_ovl7();
 f32 func_800F8824(Vector *, f32);
 void func_8019F3F0_ovl7(void);

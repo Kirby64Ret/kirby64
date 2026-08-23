@@ -750,7 +750,11 @@ void func_80169430_ovl3(s32, u8, u8, s32);
 s32 func_801E2C78_ovl10(s32, void *);
 
 #ifdef NON_MATCHING
-/* 10/155: pure $v0/$v1 swap on `temp` (ROM $v1). */
+/* FACTORY: 10/155, pure $v0/$v1 swap on `temp` (ROM $v1) -- the CSE'd-load-
+   in-the-neighbouring-register floor from LEVERS.md's guard-on-the-second-
+   variant list. Re-confirmed 2026-08-23, identical 10/155: every diff is
+   the same register substitution ($v0 for $v1) on the D_800EA360[objId]
+   load and its five re-reads of ->unk4C. Good permuter seed. */
 void func_801DDEB8_ovl10(GObj *arg0) {
     s32 timer;
     struct Ovl10AnimInfo0 sp30;
@@ -1992,9 +1996,6 @@ f32 func_801E13A0_ovl10(GObj *arg0) {
 extern s32 D_801F3AA8_ovl10;
 extern s32 D_801F3E98_ovl10;
 
-#ifdef NON_MATCHING
-/* 10/204: every instruction is the ROM's; only the two stack locals sit at the
-   wrong offsets (ROM sp2C at 0x2C, sp50 at 0x50, frame 0x58). */
 void func_801E1550_ovl10(GObj *arg0) {
     struct Ovl10AnimInfo0 sp2C;
     s32 sp50;
@@ -2048,9 +2049,6 @@ void func_801E1550_ovl10(GObj *arg0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DBD38_ovl10);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E1550_ovl10.s")
-#endif
 
 void func_801E1880_ovl10(GObj *arg0) {
     D_800EA520[omCurrentObj->objId] = 0x3E8;

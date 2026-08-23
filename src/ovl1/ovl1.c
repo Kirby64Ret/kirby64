@@ -692,6 +692,21 @@ void func_8009BA68(s32 arg0) {
     D_800D6A10 = arg0;
 }
 
+/* FACTORY: DIFF 18/117 -- two independent register floors, both re-measured
+ * 2026-08-23. (a) A one-slot temp rotation ($t5/$t6 vs ROM's $t6/$t7) around
+ * the `flags |= PARTICLE_FLAG_SHARED_TLUT` / `waitTimer=1` prep -- pure
+ * naming. (b) In the envColor[0..2]=val chain (source line
+ * `new_pc->envColor[0]=new_pc->envColor[1]=new_pc->envColor[2]=val;`, val=0
+ * in both `if(bytecode)` arms), the ROM materialises `val` into $v0 with a
+ * fresh `or $v0,$zero,$zero` and reuses that register for the three
+ * envColor stores, then falls back to $zero for the later unrelated
+ * literal-0 stores (textureFrame, envColor[3], the timer trio); our build
+ * substitutes $zero directly for all of them (constant-propagates `val`
+ * through the always-0 branches). Tried: splitting the chain into three
+ * separate `envColor[N] = val;` statements (identical, still 18/117);
+ * hoisting the redundant `val = 0;` out of both if/else arms to a single
+ * post-merge statement (WORSE, 35/117 -- rotates $v0/$a0 through most of
+ * the function). Not source-reachable within the swept forms. */
 #ifdef NON_MATCHING
 UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode, s32 lifetime, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z, f32 size, f32 gravity, f32 friction, u32 texture_flags, UnkGenerator *gn) {
     UnkParticle *new_pc;
@@ -6063,7 +6078,8 @@ void func_800A2300(GObj *arg0) {
    D_800D69C8 array cursor in $v1, IDO reverses them, and the two `addiu %lo`
    materialisations swap with it. This is the SAME floor already recorded on
    func_800A8EC0 in ovl1_3.c ("the ROM puts the walking pointer in $v0 and the
-   counter in $v1"). Swept: both declaration orders of p/q. Permuter fuel. */
+   counter in $v1"). Swept: both declaration orders of p/q; `p = *q++;`
+   combined post-increment (identical). Permuter fuel. */
 #ifdef NON_MATCHING
 void func_800A238C(f32 arg0, f32 arg1, f32 arg2) {
     UnkParticle *p;

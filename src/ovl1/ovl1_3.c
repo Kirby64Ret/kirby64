@@ -288,6 +288,10 @@ struct CacheLine *func_800A840C(u32 arg0, s32 arg1) {
 #ifdef NON_MATCHING
 // 4/10, one-slot temp rotation (t7/t8/t9 vs t6/t7/t8). Swept: 24 source forms
 // (temps, decl order/count, K&R, 2 params, void ret, ptr local, mask spelling).
+// Re-confirmed 2026-08-23: diff is purely register naming across the whole
+// addiu/and/addu/sw chain (t6/t7/t8 vs ROM's t7/t8/t9), a whole-body temp
+// rotation -- LEVERS.md "GUARD ON THE SECOND VARIANT" floor class. Left
+// guarded.
 u32 func_800A84F0(s32 arg0) {
     u32 temp_v0;
     u32 size;
@@ -699,6 +703,9 @@ struct BGHeader *func_800A8C40(u32 arg0) {
 // block table into $v0 and writes the element pointer to $v1, where IDO reuses
 // $v1 for both (`lw $v1` / `addu $v1,$v1,$t9`). An explicit `base` local for
 // the table makes it worse (3), as does any pad count other than two.
+// Re-confirmed 2026-08-23 (measure_seeds.py + verify.py): residue is exactly
+// this $v0/$v1 CSE floor (LEVERS.md "GUARD ON THE SECOND VARIANT" class), not
+// source-reachable. Left guarded.
 void *func_800A8CE0(u32 arg0, s32 arg1) {
     s32 size;
     s32 pad0;
@@ -2914,7 +2921,10 @@ void func_800AA3F0(DObj *arg0) {
  * func_800A8564 takes 2 args and RE-READS *slot for its first (the ROM
  * loads 0(v1) twice), func_800A9250 takes 2 args, and the tail passes
  * *D_800DF690[objId] and *(u32 *)D_800DFA10[objId] -- both dereferenced
- * once, not the array cells themselves. */
+ * once, not the array cells themselves.
+ * Re-confirmed 2026-08-23 via verify.py in-place: still exactly 24/74, the
+ * same whole-body one-slot temp rotation (t4/t0/t1/t5/t2/... vs ROM's
+ * t5/t1/t2/t6/t3/...). Genuine temp-rotation floor. */
 void func_800AA49C(DObj *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
     u32 *func_800A9250(u32, s32);
     u32 *slot;
@@ -3073,7 +3083,11 @@ s32 func_800AA934(s32 arg0) {
  * register permutation, the LEVERS floor. Solved semantics: stride 4 for the
  * script table (idx * 4 + *D_800DF690[objId]) and 0x2C for the parameter
  * records, DObj comes from D_800DFBD0[objId][idx] with objId RE-READ inside
- * the loop, and the list is walked `idx = list[1]; list += 1;`. */
+ * the loop, and the list is walked `idx = list[1]; list += 1;`.
+ * Re-confirmed 2026-08-23 via verify.py in-place: still exactly 13/116, all
+ * 13 words are the $s1/$s2/$s6 saved-register permutation described above
+ * (LEVERS.md "Whole-function callee-saved permutation" floor, first entry
+ * in the unclosable list). Left guarded. */
 void func_800AA96C(s32 *arg0, u32 arg1, s32 arg2, f32 arg3, f32 arg4) {
     u32 *func_800A9250(u32, s32);
     f32 func_8000EC98(DObj *, s32, f32, s32, s32, f32, f32, f32, f32);

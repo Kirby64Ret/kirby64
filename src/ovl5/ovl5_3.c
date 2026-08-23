@@ -40,8 +40,13 @@ void func_8016F2F0_ovl5(GObj *);
 void func_8016F40C_ovl5(GObj *);
 
 #ifdef NON_MATCHING
-/* 1/116: only the jump-table reference; this TU's rodata is not migrated, so
-   converting would emit a duplicate jtbl. */
+/* FACTORY: 115/116, verify.py-confirmed. The lone residue is
+   `lw $t7, %lo(jtbl_8018D658_ovl5)($at)` vs verify.py's own
+   `lw $t7, 0($at) <.rodata>` -- this TU's rodata is not migrated to a
+   named symbol for the jump table, so verify.py's standalone link
+   cannot resolve it even though the source spelling (switch dispatch
+   over `kind`) is correct. Not a source bug; nothing to fix here
+   without rodata migration for this TU. */
 void func_80165440_ovl5(GObj *arg0) {
     s32 kind = D_800E98E0[omCurrentObj->objId];
 
@@ -112,14 +117,6 @@ void func_80165610_ovl5(void) {
     play_music(0, 0x19);
 }
 
-/* Faithful, not byte-exact (8/164). Frame, locals, both struct-copy
-   prologues, the 2x-unrolled init loop and the whole tail are exact; the
-   only residue is that IDO hoists the `lui %hi(D_800D7178 + 0x40)` to the
-   head of the address-materialisation block where the ROM emits it last,
-   next to its own `lw`. Swept: statement order, declaration order and
-   count, chained stores, one-line collapse, volatile, and five spellings
-   of the D_800D7178 access. */
-#ifdef NON_MATCHING
 typedef struct Unk4Ptrs5_3 {
     s32 *unk0[4];
 } Unk4Ptrs5_3;
@@ -148,6 +145,16 @@ extern s32 D_8018E428_ovl5[];
 extern u8 D_8018E438_ovl5;
 extern u8 D_8018E441_ovl5;
 
+/* Faithful, not byte-exact (156/164). Frame, locals, both struct-copy
+   prologues, the 2x-unrolled init loop and the whole tail are exact; the
+   only residue is that IDO hoists the `lui %hi(D_800D7178 + 0x40)` to the
+   head of the address-materialisation block where the ROM emits it last,
+   next to its own `lw`. Swept: statement order, declaration order and
+   count, chained stores, one-line collapse, volatile, five spellings of
+   the D_800D7178 access, and (re-measured this pass) hoisting the `temp =
+   D_800D7178[0x10]` read above the two zero-stores -- 10/164, worse (the
+   lui/sw pair at D_8018E264_ovl5 gets rescheduled too). Floor. */
+#ifdef NON_MATCHING
 void func_80165634_ovl5(void) {
     extern s32 D_800D7178[];
     extern u8 D_8018E425_ovl5;
@@ -427,21 +434,30 @@ s32 func_80166054_ovl5(Vector v) {
     return 0x29A;
 }
 
-/* FACTORY: 389/396, near-miss. PORT-seeded but with two real fixes over
- * it, both found by cross-checking against the already-attempted
- * permuter base (tools/decomp/perm/func_8016626C_ovl5/base.c), which
- * named the three shared float constants the PORT arm had inlined as
- * raw literals: D_8018D6AC_ovl5 (1050.0f, arena half-width, both X/Z
- * placements) and D_8018D6B8_ovl5 (65535.0f, the post-bonk gravity-cap
- * reset) -- using the real symbols instead of literals drops the
- * "references own section" mismatches verify.py flags for both.
+/* FACTORY: 389/396, near-miss, verify.py-confirmed at 7/396 this pass.
+ * PORT-seeded but with two real fixes over it, both found by
+ * cross-checking against the already-attempted permuter base
+ * (tools/decomp/perm/func_8016626C_ovl5/base.c), which named the three
+ * shared float constants the PORT arm had inlined as raw literals:
+ * D_8018D6AC_ovl5 (1050.0f, arena half-width, both X/Z placements) and
+ * D_8018D6B8_ovl5 (65535.0f, the post-bonk gravity-cap reset) -- using
+ * the real symbols instead of literals drops the "references own
+ * section" mismatches verify.py flags for both.
  * Residue: (1) a one-slot $f0/$f2 register swap cascading from the
- * D_8018D6AC_ovl5 read (5 insns); (2) the THIRD constant,
+ * D_8018D6AC_ovl5 read (6 insns) -- re-measured this pass: swapping
+ * the X/Z assignment statement order does NOT fix it and instead
+ * wrecks ~30 unrelated instructions downstream (the D_8018E420_ovl5
+ * wait loop and beyond get rescheduled), so statement order is not
+ * the knob here; this is a CSE'd-load-into-neighbouring-register floor
+ * (LEVERS "guard on the second variant"); (2) the THIRD constant,
  * D_8018D6B0_ovl5 (0.1, the bonk shrink-out step used inside the `for`
  * loop), still can't be referenced by symbol -- swapping the literal
  * for the extern, tried both inline and hoisted above the loop as its
- * own local, blows the frame from 0x58 to 0x70+ and cascades ~340 diffs;
- * kept as a literal with a comment naming the real symbol. */
+ * own local, blows the frame from 0x58 to 0x70+ and cascades ~340
+ * diffs; kept as a literal with a comment naming the real symbol.
+ * Same class as the jtbl rodata-migration gap in func_80165440_ovl5
+ * above -- "references own section" means the TU's rodata isn't
+ * migrated. */
 #ifdef MIPS_TO_C
 void func_8016626C_ovl5(GObj *arg0, s32 arg1) {
     extern u32 D_8018733C_ovl5[];

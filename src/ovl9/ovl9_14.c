@@ -684,8 +684,9 @@ extern FUNCLIST D_8021CB88_ovl9;
 s32 func_8021217C_ovl9(void);
 
 #ifdef NON_MATCHING
-// 13 diffs: structurally exact; every pointer local sits one register slot
-// earlier than the ROM's.
+// 13/53 diffs: structurally exact; every pointer local sits one register slot
+// earlier than the ROM's (same $a0/$a1/$a2 CSE-neighbour family as
+// ovl9_10.c's func_802050E4_ovl9). Re-measured this session, still 13.
 void func_80211B1C_ovl9(void) {
     struct DObj *a = D_800DFBD0[omCurrentObj->objId][3];
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][2];

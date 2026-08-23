@@ -224,7 +224,12 @@ void func_800F62A4(UNUSED s32 arg0) {
  * them: the D_800D6B18+8 address temp lands in $t7 where the ROM uses
  * $v1, and that rotates $v0/$v1 (D_800BE500 vs the constant 3) and
  * $a0/$a1 (D_800D799C base vs the loop index) for the rest of the
- * body. */
+ * body.
+ * Re-confirmed 2026-08-23 via verify.py in-place: still exactly 23/224.
+ * Tried hoisting the `*(u8**)(u32)(D_800D6B18+8) = var_v0;` write (lever 35
+ * form, already applied and responsible for the earlier 187-diff win) into
+ * a separate named `slot` local -- identical, zero change. The $t7/$v1
+ * seed is not source-reachable. */
 void func_800F64B0(void) {
     extern u16 D_800D6B30;
     extern u8 D_800D6B18[];

@@ -1052,7 +1052,13 @@ void func_8020C2EC_ovl9(struct GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-// 24 diffs.
+// 22/55 diffs: structurally exact, a pervasive whole-function
+// $a0/$a1/$a2/$a3 register-naming cascade starting from the very first
+// instruction (omCurrentObj held in $a1 by the ROM, $a0 here). Re-measured
+// this session (old note said 24, corrected to 22). Swapping declaration
+// order of `tmp`/`sp1C` made it WORSE (24, reverted). Same shape as this
+// overlay's func_801D4594_ovl9 -- LEVERS "second variant" whole-function
+// register permutation floor, not a source-spelling residue.
 void func_8020C378_ovl9(void) {
     f32 sp1C;
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];

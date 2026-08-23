@@ -2409,6 +2409,18 @@ phase_check:
 #endif
 
 #ifdef NON_MATCHING
+/* FACTORY: 6/208, neighbouring FP-register floor -- measured 2026-08-23.
+   Everything matches except two shared FP constants ($f0 = the 0.0f used
+   for D_800E6690/D_800E3750, $f2 = the D_8019770C_ovl3 extern read into
+   `temp`, used for D_800E6850/D_800E3C90) landing in the OPPOSITE of the
+   two neighbouring registers: the ROM has 0.0f in $f0 and temp in $f2, the
+   draft has them swapped. Swept: moving `temp = D_8019770C_ovl3;` after
+   the first pair of 0.0f stores (worse -- 19/208, forks a whole extra
+   load/address-computation chain) and inlining D_8019770C_ovl3 directly at
+   both use sites instead of through `temp` (same, worse -- 19/208,
+   identical failure shape to the reorder). Same class as the guard-on-the-
+   second-variant "CSE'd load landing in the neighbouring register"
+   floor ($v0/$v1, $a2/$a3), extended here to $f0/$f2. Good permuter seed. */
 extern f32 *D_801926E8_ovl3[];
 extern u8 D_801906D8_ovl3[];
 extern f32 D_8019770C_ovl3;
@@ -11920,14 +11932,17 @@ void func_8018DFB4_ovl3(s32 arg0) {
     func_80154578_ovl3(D_801963E4_ovl3, 0, gEntitiesAngleYArray[omCurrentObj->objId] - D_80197B64_ovl3);
 }
 
-/* 6/130: instruction-for-instruction exact; only $f0 and $f2 are swapped.
-   IDO gives $f0 to the float value whose definition lands EARLIEST in the
-   scheduled stream (temp's lwc1 in the prologue); the ROM gives it to the
-   later-defined shared 0.0f. Swept in wave 8 on top of the earlier sweep:
-   dropping the local entirely (51 diffs -- the lwc1 sinks out of the
-   prologue), an explicit `f32 zero` local, and both declaration orders of
-   `zero`/`temp`; the register choice tracks the schedule, not the source. */
 #ifdef NON_MATCHING
+/* FACTORY: 6/130: instruction-for-instruction exact; only $f0 and $f2 are
+   swapped. IDO gives $f0 to the float value whose definition lands
+   EARLIEST in the scheduled stream (temp's lwc1 in the prologue); the ROM
+   gives it to the later-defined shared 0.0f. Swept in wave 8 on top of the
+   earlier sweep: dropping the local entirely (51 diffs -- the lwc1 sinks
+   out of the prologue), an explicit `f32 zero` local, and both declaration
+   orders of `zero`/`temp`; the register choice tracks the schedule, not
+   the source. Re-confirmed 2026-08-23, identical 6/130 -- same
+   neighbouring-register floor class as func_80180818_ovl3 above in this
+   file. Good permuter seed. */
 extern f32 D_80197B68_ovl3;
 extern f32 D_80198848_ovl3[];
 extern f32 D_80198858_ovl3[];

@@ -101,12 +101,16 @@ void func_801696F0_ovl3(s32 arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 3/224.  Was 12/224 with the two constants as `extern f32`; ovl3's rodata is
-   MIGRATED now, and the literal form fixed nine of the twelve FP-register
-   diffs on its own.  The residue is the D_800E6BD0/D_800E6D90 chained store:
-   the ROM keeps it in $f0, IDO uses $f2.  Swept since: splitting the chain in
-   either direction (126/61), reversing it (9), one physical line (3), dropping
-   `temp`, assigning it late, and a second temp local -- all 3. */
+/* FACTORY: 3/224, FP-register floor -- re-confirmed 2026-08-23. Was 12/224
+   with the two constants as `extern f32`; ovl3's rodata is MIGRATED now, and
+   the literal form fixed nine of the twelve FP-register diffs on its own.
+   The residue is the D_800E6BD0/D_800E6D90 chained store: the ROM keeps it
+   in $f0, IDO uses $f2. Swept since: splitting the chain in either
+   direction (126/61), reversing it (9), one physical line (3), dropping
+   `temp`, assigning it late, a second temp local (all 3), and swapping the
+   order of this chained store against the preceding D_800E5F90/D_800E6150
+   chained store (much worse -- 8/224, forks the address-reloc pairing on
+   both chains). Good permuter seed for the $f0/$f2 register floor. */
 extern void func_800A9760(s32);
 extern void func_8016BBD0_ovl3(void);
 extern void func_800FF0A8(s32);

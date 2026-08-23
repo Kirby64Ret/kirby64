@@ -825,7 +825,10 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
 }
 
 #ifdef NON_MATCHING
-/* 7/43: every instruction correct, frame 0x48 vs 0x40. The ROM declares only
+/* FACTORY: 7/43, decidable +8 frame anomaly -- re-confirmed 2026-08-23
+   (identical 7/43, all 7 diffs are the sp offset shift 0x40/0x48 dragging
+   the three spilled loads/stores along). Every instruction correct, frame
+   0x48 vs 0x40. The ROM declares only
  * sp20 and sp1C (sp1C spilled at 0x1C, BELOW the struct); the anim-object
  * pointer never gets a stack word here. Swept all six declaration orders, a
  * nested block for temp_v0 and a re-call; L is 0x28 (mod 8 == 0) so the frame
@@ -838,7 +841,8 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
  * load above `jal func_80111550`, so the entry HAS to be a source variable).
  * align8(0x1C + L) = 0x40 needs L in {0x20, 0x24}: with sizeof sp20 == 0x20
  * that is the struct plus AT MOST one 4-byte local, and the function needs the
- * entry, the anim pointer and the struct all live at once. */
+ * entry, the anim pointer and the struct all live at once. Good permuter
+ * seed. */
 s32 func_801DC8E4_ovl16(s32 arg0) {
     struct EnemyRecord *sp1C;
     struct Ovl16AnimObj *temp_v0;
@@ -864,7 +868,11 @@ s32 func_801DC8E4_ovl16(s32 arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* 6/61: frame and every instruction correct; ROM keeps sp1C in $a0 and
+/* FACTORY: 6/61, argument-register rotation floor -- re-confirmed
+   2026-08-23 (identical 6/61: the ROM keeps sp1C in $a0 through the
+   func_80111ECC call and reloads arg1 into $a1 for the two lwc1s, the
+   draft has $a0/$a1 swapped throughout that tail). Frame and every
+   instruction correct; ROM keeps sp1C in $a0 and
  * reloads arg1 into $a1, IDO does the reverse. Swept nested ifs, reversed
  * condition order, s32 vs pointer parameters, an explicit cast at the
  * func_80111ECC call, and the return-type/prototype-presence lever on all
@@ -877,7 +885,8 @@ s32 func_801DC8E4_ovl16(s32 arg0) {
  * of the two types, `register`, an inner block, a third prototyped parameter
  * and a third K&R parameter all fail: IDO gives every named local a word here
  * (sp20's address is taken) and homes every parameter of a 3-parameter
- * definition. The two halves of the fix are mutually exclusive. */
+ * definition. The two halves of the fix are mutually exclusive. Good
+ * permuter seed. */
 s32 func_801DC990_ovl16(struct Ovl16AnimCmd *arg0, struct Ovl16AnimCmd *arg1) {
     struct Ovl16AnimInfo sp20;
     void *sp1C;

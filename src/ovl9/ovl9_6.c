@@ -884,7 +884,14 @@ s32 random_soft_s32_range(s32);
  * and D_800E77A0 (ROM $s5); every other register and all scheduling match.
  * Swept: if/continue polarity, inner do-while around the ohSleep wait, and a
  * local for the switch operand (the last two are strictly worse, 11+ diffs).
- * Sibling func_801ECB58_ovl9 with the same shape matched first compile. */
+ * Re-measured this session, still exactly 7 (task tracker says 8 for this
+ * file's true residue; direct verify.py on the real file gives 7 -- trusting
+ * the direct measurement per protocol). Sibling func_801ECB58_ovl9 has the
+ * same D_800E9C60/D_800E77A0 skeleton but an extra setProcessMain() call and
+ * a richer switch body, so it is not a byte-for-byte clone to copy from; its
+ * matching first-compile does not by itself explain this draft's register
+ * choice. Whole-function $s5/$s6 saved-register permutation -- LEVERS
+ * "second variant" floor, not a source-spelling residue. */
 void func_801ED9AC_ovl9(struct GObj *arg0) {
     if (func_801ED018_ovl9(4)) {
         func_8019D958_ovl7((u16) omCurrentObj->objId);

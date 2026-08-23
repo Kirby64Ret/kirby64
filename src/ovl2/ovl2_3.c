@@ -1747,7 +1747,18 @@ void func_800FA7EC(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 207/210, scheduler rotation only: the 360.0f 'lui at' sits one slot BEFORE the post-atan2f v0/a3 reloads in the ROM and one slot after in the draft. Frame 0x70, every stack slot, both flag forms (flagA register / flagB memory) and all 3 spill sites already exact */
+/* FACTORY: 207/210, scheduler rotation only: the 360.0f 'lui at' sits one
+ * slot BEFORE the post-atan2f v0/a3 reloads in the ROM and one slot after
+ * in the draft. Frame 0x70, every stack slot, both flag forms (flagA
+ * register / flagB memory) and all 3 spill sites already exact.
+ * Re-confirmed 2026-08-23 via verify.py in-place (3/210 diff, all three
+ * words at this one site): tried ternary for the ang<0 clamp (worse,
+ * 26/210), reordering the compare operand (0.0f > ang), and an equivalent
+ * `ang = ang + 360.0f` rephrasing -- none move the scheduler. v0 holds
+ * flagA and a3 holds arg1, both spilled across the lbvector_Diff/atan2f
+ * calls and reloaded for the next `if`; the ROM's list-scheduler places the
+ * unconditional 360.0f lui ahead of those two reloads where IDO here places
+ * it after. Not reachable from source spelling. */
 void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
     DObj *dobj;
     s32 flagA;
@@ -2511,49 +2522,13 @@ void func_800FBA98() {
     func_800FA2D4(&D_801291B0, &D_801292B0);
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 134/140, one-slot FP temp rotation in the D_80129330 x/y/z seed (ROM f6/f8/f4/f10, draft f4/f6/f10/f8 -- load AND store order already match, f16 already agrees); everything else including both 0xC-stride struct copies is exact */
-void func_800FBBB8(void) {
-    DObj *dobj;
-    Vector dir;
-    Vector axis;
-    Vector diff;
-    extern struct Ovl2CamOut D_80129330;
-
-    dobj = D_800D799C->data.dobj;
-    D_80129150 = D_80129210;
-    D_80129270 = D_801292B0;
-    D_80129330.unk4 = D_801292B0.unk4 + D_80129210.unk14;
-    D_80129330.unk0 = D_801292B0.unk0;
-    D_80129330.unk8 = D_801292B0.unk8;
-    dir.x = cosf((D_80129210.unk8 * 3.1415927f) / 180.0f);
-    dir.z = -sinf((D_80129210.unk8 * 3.1415927f) / 180.0f);
-    dir.y = 0.0f;
-    lbvector_Scale(&dir, -D_80129210.unkC);
-    lbvector_Add(&dir, (Vector *) &D_80129330);
-    lbvector_Diff(&diff, (Vector *) &D_80129330, &dir);
-    vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &diff, &axis);
-    func_800191F8(&diff, &axis, ((D_80129210.unk4 - 90.0f) * 3.1415927f) / 180.0f);
-    D_80129330.unkC = D_80129330.unk0 - diff.x;
-    D_80129330.unk10 = D_80129330.unk4 - diff.y;
-    D_80129330.unk14 = D_80129330.unk8 - diff.z;
-    func_800FA7EC(0, &D_80129210, &D_80129330);
-    func_800FA92C(0, &D_80129210, &D_80129330);
-    D_801292B0.unk18 = D_80129330.unk18;
-    D_801292B0.unk1C = D_80129330.unk1C;
-    D_801292B0.unk20 = D_80129330.unk20;
-    D_801292B0.unk24 = D_80129330.unk24;
-    D_801292B0.unk28 = D_80129330.unk28;
-    D_801292B0.unk2C = D_80129330.unk2C;
-}
-#elif defined(PORT)
-/* Free-look camera step (draft above): snapshot the live cam state and
- * output block (D_80129150/D_80129270 saves; D_801292B0 is now a whole
- * 0x3C-byte object, see src/pc/pc_bss_whole.c), aim a scratch output
- * D_80129330 at the config's target raised by unk14, place the eye with
- * the same yaw/pitch math as func_800FA608's PORT arm, then run the
- * standard smoothing/publish pair and write the resolved eye/at fields
- * back into the config. */
+#ifdef PORT
+/* Free-look camera step: snapshot the live cam state and output block
+ * (D_80129150/D_80129270 saves; D_801292B0 is now a whole 0x3C-byte object,
+ * see src/pc/pc_bss_whole.c), aim a scratch output D_80129330 at the
+ * config's target raised by unk14, place the eye with the same yaw/pitch
+ * math as func_800FA608's PORT arm, then run the standard smoothing/publish
+ * pair and write the resolved eye/at fields back into the config. */
 void func_800FBBB8(void) {
     extern struct Ovl2CamOut D_80129330;
     Camera *cam = D_800D799C->data.cam;
@@ -2587,7 +2562,39 @@ void func_800FBBB8(void) {
     D_801292B0.unk2C = D_80129330.unk2C;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FBBB8.s")
+void func_800FBBB8(void) {
+    DObj *dobj;
+    Vector dir;
+    Vector axis;
+    Vector diff;
+    extern struct Ovl2CamOut D_80129330;
+
+    dobj = D_800D799C->data.dobj;
+    D_80129150 = D_80129210;
+    D_80129270 = D_801292B0;
+    D_80129330.unk0 = D_801292B0.unk0;
+    D_80129330.unk4 = D_801292B0.unk4 + D_80129210.unk14;
+    D_80129330.unk8 = D_801292B0.unk8;
+    dir.x = cosf((D_80129210.unk8 * 3.1415927f) / 180.0f);
+    dir.z = -sinf((D_80129210.unk8 * 3.1415927f) / 180.0f);
+    dir.y = 0.0f;
+    lbvector_Scale(&dir, -D_80129210.unkC);
+    lbvector_Add(&dir, (Vector *) &D_80129330);
+    lbvector_Diff(&diff, (Vector *) &D_80129330, &dir);
+    vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &diff, &axis);
+    func_800191F8(&diff, &axis, ((D_80129210.unk4 - 90.0f) * 3.1415927f) / 180.0f);
+    D_80129330.unkC = D_80129330.unk0 - diff.x;
+    D_80129330.unk10 = D_80129330.unk4 - diff.y;
+    D_80129330.unk14 = D_80129330.unk8 - diff.z;
+    func_800FA7EC(0, &D_80129210, &D_80129330);
+    func_800FA92C(0, &D_80129210, &D_80129330);
+    D_801292B0.unk18 = D_80129330.unk18;
+    D_801292B0.unk1C = D_80129330.unk1C;
+    D_801292B0.unk20 = D_80129330.unk20;
+    D_801292B0.unk24 = D_80129330.unk24;
+    D_801292B0.unk28 = D_80129330.unk28;
+    D_801292B0.unk2C = D_80129330.unk2C;
+}
 #endif
 
 
@@ -2667,7 +2674,10 @@ void func_800FBF18(s32 arg0) {
    three c.eq.s operand orders. Retested literal-first spelling on all three compares: zero
    change, so c.eq.s operand order is invariant like mul.s and addu. Hoisting
    temp_f12 = *arg0 + 20000.0f ABOVE the *arg2 store is what took this from 51 to 20 (the store
-   may alias, so IDO cannot sink the load past it) -- keep that order. */
+   may alias, so IDO cannot sink the load past it) -- keep that order.
+   Re-confirmed 2026-08-23 via verify.py in-place: still exactly 20/74, the
+   same cyclic FP register rotation ($f2/$f12/$f0/$f14 permuted throughout).
+   Genuine temp-rotation floor. */
 #ifdef NON_MATCHING
 s32 func_800FC03C(f32 *arg0, f32 *arg1, f32 *arg2) {
     f32 temp_f0;

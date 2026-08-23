@@ -474,7 +474,12 @@ void func_80112A40(s32 arg0, Vector *arg1, Vector *arg2) {
    pos reused for both angle and scale 51, parameter-reuse for scl 23.
    The declaration order pz,py,px WITH the chain written *px = *py = *pz is
    load-bearing -- it is what puts D_800E3050 in $t8 and reverses the base
-   materialisation order; the other three combinations give 12-16. */
+   materialisation order; the other three combinations give 12-16.
+   Re-confirmed 2026-08-23: a trailing `s32 pad` (lever 13 position) does NOT
+   close the gap -- it makes it worse (14/98) without even changing the total
+   frame size, so the two top slots are a fixed IDO overhead unreachable by
+   a local-count sweep, not the ordinary +8 align8 anomaly (lever 9). Left
+   guarded. */
 void func_80112B4C(struct GObj *arg0) {
     Vector *pos = &arg0->data.dobj->pos.v;
     s32 id = arg0->objId;
@@ -2088,6 +2093,9 @@ void func_80115578(struct GObj *arg0) {
 //     unk4C pointer in $v0 (28 -> 22); the inline form swaps them.
 //   * `temp_a0 = g->unk8;` before the test loads straight into $a0 the way the
 //     ROM does; the inline `if (g->unk8)` costs a $v0 + `move` (22 -> 19).
+// Re-confirmed 2026-08-23 via verify.py in-place: still exactly 19/69, same
+// D_800DE350/D_80126CD0 lui-scheduling floor as the sibling func_8011572C
+// above. Genuine scheduler floor, not source-reachable.
 void func_80115618(struct GObj *arg0) {
     struct Unk80124E14 *sp1C = &D_80124E14[D_800E77A0[arg0->objId]];
     struct Unk80126CD0 *g;
@@ -2127,7 +2135,10 @@ void func_80115618(struct GObj *arg0) {
  * `u8 *p` local vs the inline `((struct Unk4C *) arg0->unk4C)->unk3` cast (22 vs
  * 17 -- the inline form is what puts idx in $v1), a chained
  * `omCurrentObj = obj = ...`, dropping `obj` entirely (22), and all seven
- * declaration orders (completely inert). */
+ * declaration orders (completely inert).
+ * Re-confirmed 2026-08-23 via verify.py in-place: still exactly 17/87, same
+ * three-word pattern (D_800DE350/D_80126CD0 lui scheduling + $v0-vs-$t1 for
+ * `obj`). Genuine scheduler/regalloc floor, not source-reachable. */
 #ifdef NON_MATCHING
 void func_8011572C(struct GObj *arg0, u32 arg1) {
     struct Unk80124E14 *sp1C = &D_80124E14[D_800E77A0[arg0->objId]];
@@ -2877,7 +2888,10 @@ void func_801171F0(struct GObj *arg0) {
    early-return form, an empty `else`, `do {} while (0)` before the inner if,
    a type-split store for 0xA, and leading/trailing pad locals (27 each).
    The file-scope declaration of this function was widened from (s32) to
-   (struct GObj *) for the draft; --all stayed at 0 diff. */
+   (struct GObj *) for the draft; --all stayed at 0 diff.
+   Re-confirmed 2026-08-23 via verify.py in-place: still exactly 22/70, same
+   bc1fl-vs-bc1f+nop delay-slot-fill difference dragging ~15 words of address
+   materialisation order with it. Genuine scheduler floor. */
 void func_80117210(struct GObj *arg0) {
     extern f32 D_80128D2C;
     void func_80117570(struct GObj *);
@@ -2938,6 +2952,11 @@ void func_80117328(struct GObj *arg0) {
    (struct GObj *) spelling. */
 extern f32 D_80126CF4[];
 
+// Re-confirmed 2026-08-23 (verify.py, still 10/95): a leading `s32 pad`
+// shaved 2 diffs (10->8) by luck but did NOT shrink the frame (stayed
+// 0x30); two leading pads grew the frame instead (0x38). Pads move
+// register allocation here, not the +8 anomaly itself -- reverted, no net
+// gain over the documented 10/95. Left guarded.
 #ifdef NON_MATCHING
 /* FACTORY: 10/95, left un-guarded when its lane was terminated. */
 void func_801173F4(s32 arg0) {
@@ -3347,7 +3366,12 @@ void func_80118618(struct GObj *arg0) {
  *     would shift the segment even though verify.py reports only 17 diffs.
  * Also swept: `v & 0xFF` vs `v` at the second func_8010E288 call (the ROM has
  * `andi $a1, $s2, 0xFF`, we get `move`), f32 sp40[5], a combined
- * {Vector; s32; s32} struct local, and all declaration orders of sp54/sp40. */
+ * {Vector; s32; s32} struct local, and all declaration orders of sp54/sp40.
+ * Re-confirmed 2026-08-23 via verify.py in-place: 17/78 (frame base 0x48
+ * vs ROM's 0x40, `v & 0xFF` re-tried and made it WORSE at 19/78, and the
+ * draft is still 4 instructions (16 bytes) longer than the ROM in the dead
+ * epilogue after `while(1)` -- word-count mismatch, not source-reachable
+ * per lever 48). Left guarded. */
 void func_80118638(struct GObj *arg0) {
     extern s32 D_8012BCE0;
     extern s32 func_8010DF9C(Vector *);

@@ -547,11 +547,38 @@ void func_80216700_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
+#ifdef MIPS_TO_C
+/* FACTORY: 39/42, pure lwc1 scheduling floor. Everything except a 3-word
+ * rotation of the Y[objId]/Z[objId]/Z[0] loads matches byte-exact (regs,
+ * subs, muls, adds, epilogue all identical); the ROM schedules the
+ * Y[objId] load ahead of the two Z loads, IDO groups them Z[objId],
+ * Z[0], Y[objId]. Re-measured this session: swept statement order
+ * dx/dy/dz in all rotations tried here (dz,dx,dy = 3, dx,dy,dz = 22) and
+ * explicit hoisting of a named y0 local to force the Y[objId] read first
+ * (24, worse) -- on top of the file's existing note documenting all 6
+ * declaration orders and named-local sqrtf-arg sweeps, none beating 3.
+ * This is a register/load-scheduling floor (LEVERS "second variant"
+ * class), not a source-spelling residue -- queued for the permuter. */
 s32 func_8021679C_ovl9(f32 arg0) {
+    f32 dz;
     f32 dx;
     f32 dy;
+
+    dz = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0];
+    dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0];
+    dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[0];
+    if (sqrtf((dz * dz) + ((dx * dx) + (dy * dy))) <= arg0) {
+        return 1;
+    }
+    return 0;
+}
+#elif defined(PORT)
+extern f32 sqrtf(f32);
+
+s32 func_8021679C_ovl9(f32 arg0) {
     f32 dz;
+    f32 dx;
+    f32 dy;
 
     dz = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0];
     dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0];
@@ -562,44 +589,7 @@ s32 func_8021679C_ovl9(f32 arg0) {
     return 0;
 }
 #else
-extern f32 sqrtf(f32);
-
-#ifdef NON_MATCHING
-s32 func_8021679C_ovl9(f32 arg0) {
-    f32 x = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0];
-    f32 z = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0];
-    f32 y = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[0];
-
-    if (sqrtf(z * z + (x * x + y * y)) <= arg0) {
-        return 1;
-    }
-    return 0;
-}
-#else
-extern f32 sqrtf(f32);
-
-#ifdef NON_MATCHING
-// 3/42: exact except that the ROM schedules the Y[objId] load ahead of the two
-// Z loads (ROM Y[obj],Z[obj],Z[0]; IDO Z[obj],Z[0],Y[obj]). Registers, subs,
-// muls, adds and the epilogue are all identical -- it is purely the order of
-// three lwc1. Swept all 6 declaration orders, several expression groupings, a
-// named local for the sqrtf argument (still 3), and statement order dx,dz,dy
-// (22/42 -- confirms the ROM's source order really is dz,dx,dy, since that is
-// what reproduces the %hi/%lo and addu order exactly).
-s32 func_8021679C_ovl9(f32 arg0) {
-    f32 dz = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0];
-    f32 dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0];
-    f32 dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[0];
-
-    if (sqrtf((dz * dz) + ((dx * dx) + (dy * dy))) <= arg0) {
-        return 1;
-    }
-    return 0;
-}
-#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_8021679C_ovl9.s")
-#endif
-#endif
 #endif
 
 IN_FILE void func_8021690C_ovl9(void);

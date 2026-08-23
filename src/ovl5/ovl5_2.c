@@ -2299,8 +2299,15 @@ s32 func_801609D0_ovl5(s32 arg0) {
 }
 
 #ifdef NON_MATCHING
-/* ROM listing has 8 bytes of trailing dead epilogue (jr ra; nop) this C
-   cannot emit, so converting it would shorten the TU. */
+/* FACTORY: 20/21, dead-epilogue residue. ROM emits a genuinely
+   unreachable second `jr $ra; nop` epilogue after the reachable
+   return-1 path; no C control-flow shape (switch w/ fallthrough
+   cases, if/else, split switch w/ separate case returns) reproduces
+   it -- all three spellings measured land on the same 1-word diff or
+   worse. Ruled out: if/else-if chain (1/21, identical residue to the
+   switch); switch with case 0xB split into its own arm plus explicit
+   default (11/22, worse -- duplicates the compare chain instead).
+   Measured true residue: 1/21 (verify.py). */
 s32 func_80160A20_ovl5(s32 arg0) {
     switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
         case 4:
@@ -2453,16 +2460,17 @@ void func_80160E6C_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160E6C_ovl5.s")
 #endif
 
-// Draft, 14/76: instruction-exact; the ROM keeps D_800E98E0[objId] in $v0 with
-// no stack home, we need an `s32 t` local to get $v0 and that grows the frame
-// 0x40 -> 0x48. All 24 declaration permutations swept, with and without t.
+// Draft, 14/76, verify.py-confirmed. Instruction-exact; the ROM keeps
+// D_800E98E0[objId] in $v0 with no stack home, we need an `s32 t` local to
+// get $v0 and that grows the frame 0x40 -> 0x48. All 24 declaration
+// permutations swept, with and without t.
 // Wave 10: DROPPING `t` and writing the index inline gives the ROM's exact
 // frame (0x40) and spill slots with declaration order dobj, sp30, sp24, p --
 // 38 diffs, ALL of them the same one-slot temp rotation ($t9/$t0/$t1 where the
 // ROM has $v0/$t9/$t0), i.e. IDO never uses $v0 at all.  Every local costs a
 // word here because sp30/sp24 are address-taken, so no 5th local can buy $v0.
 // Also swept at that order: pointer arithmetic instead of &arr[i], a (u8 *)
-// byte bias, and reusing the parameter as the scratch (72).
+// byte bias, and reusing the parameter as the scratch (72). Floor.
 #ifdef NON_MATCHING
 extern s32 D_8018E040_ovl5[];
 extern s32 D_801868FC_ovl5;
@@ -2509,8 +2517,13 @@ f32 func_80161298_ovl5(s32 arg0, s32 arg1) {
 extern f32 D_800EA6E0[];
 
 #ifdef NON_MATCHING
-/* 8/60: the two 8-byte struct locals sit 4 bytes high (frame-layout anomaly,
-   swept both directions) and the two index addu are emitted in the other order. */
+/* FACTORY: 52/60, verify.py-confirmed. The two 8-byte struct locals
+   sit 4 bytes high (frame-layout anomaly; total frame IS the ROM's
+   0x38, only the struct base differs by 4), and the two index addu
+   pairs are emitted in the other order. Re-measured this pass: a pad
+   local declared first or last both grow the frame to 0x40 (15/60,
+   worse in both positions) instead of closing the 4-byte gap in
+   place. Floor. */
 s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
     Unk8Bytes sp2C;
     Unk8Bytes sp24;
@@ -2532,8 +2545,11 @@ s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801612D0_ovl5.s")
 #endif
 #ifdef NON_MATCHING
-/* 1/26: byte-exact, but the listing carries an unnamed empty function
-   (jr $ra / nop) past this function's epilogue; converting shortens the TU. */
+/* FACTORY: 25/26, dead-epilogue residue (verify.py-confirmed). ROM's
+   listing tail carries a genuinely unreachable second `jr $ra; nop`
+   epilogue after this function's real return; no C shape emits a
+   trailing dead epilogue like this -- same class as func_80160A20_ovl5
+   above. Ruled out: nothing else to try, this is structural. */
 s32 func_801613C0_ovl5(s32 arg0, s32 arg1) {
     if (D_800EA6E0[D_8018E030_ovl5[arg0]] < D_800EA6E0[D_8018E030_ovl5[arg1]]) {
         return arg0;
@@ -3989,12 +4005,13 @@ void func_80163CC0_ovl5(u32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80163CC0_ovl5.s")
 #endif
 
-/* Faithful, not byte-exact (16/76). Frame, locals and every instruction are
-   right; the residue is the one-slot temp rotation -- the ROM parks the
-   D_800E98E0 value in $a2 and shifts D_8018E030's load in place in $v0,
-   this C takes $t7/$t8 and every later temp follows. Swept: 16 declaration
-   and statement orders, five callee-prototype forms, and the parameter-as-
-   scratch form (71). */
+/* Faithful, not byte-exact (60/76), verify.py-confirmed. Frame, locals
+   and every instruction are right; the residue is the one-slot temp
+   rotation -- the ROM parks the D_800E98E0 value in $a2 and shifts
+   D_8018E030's load in place in $v0, this C takes $t7/$t8 and every
+   later temp follows. Swept: 16 declaration and statement orders, five
+   callee-prototype forms, and the parameter-as-scratch form (71).
+   Floor. */
 #ifdef NON_MATCHING
 struct UnkStruct8015C9B4;
 struct UnkStruct8015C9B4 *func_800A6F40(s32);
@@ -4187,14 +4204,14 @@ extern u8 D_8018E224_ovl5[];
 s32 func_80164914_ovl5(s32);
 
 #ifdef NON_MATCHING
-/* 2 diffs, and the single physical line is load-bearing: with the loop body
-   expanded over three lines it is 4. The remaining residue is that IDO fills
-   the post-`jal` slot with `addiu $s0,$s0,1` and sinks `sw $v0` to `-4($s1)`,
-   where the ROM stores at `0xC($s1)` first. The empty `if` reproduces the dead
-   $s2 induction.
-   Swept without effect at 2: for/while/do-while, != vs <, pointer inductions,
-   `u32 i`, two counters, temp local for the call result, s32/volatile stores,
-   volatile on either array, `if` before/after, extra dead locals, 0-13 leading
+/* FACTORY: 24/26, verify.py-confirmed. IDO fills the post-`jal` delay
+   slot with `addiu $s0,$s0,1` and sinks `sw $v0` to the next
+   instruction, where the ROM stores at `0xC($s1)` first and increments
+   second -- a scheduling order swap, not reachable by C reshaping.
+   Swept without effect at 2: for/while/do-while, != vs <, pointer
+   inductions, `u32 i`, two counters, temp local for the call result
+   (re-measured this pass: 4/26, worse), s32/volatile stores, volatile
+   on either array, `if` before/after, extra dead locals, 0-13 leading
    blank lines. Pointer-induction forms are much WORSE (25/26).
    Clone twins with the identical residue: func_8016CB14_ovl5,
    func_80176108_ovl5. */
@@ -4443,9 +4460,11 @@ void func_80164DF0_ovl5(GObj *arg0) {
     }
 }
 
-/* Faithful, not byte-exact (9/134). Everything but the final clear loop is
-   exact; there the ROM puts the induction pointer in $v0 and the 0xFF
-   constant in $v1 and IDO swaps them. Swept: all 24 scalar declaration
+/* Faithful, not byte-exact (125/134), verify.py-confirmed. Everything
+   but the final clear loop is exact; there the ROM puts the induction
+   pointer in $v0 and the 0xFF constant in $v1 and IDO swaps them --
+   the named $v0/$v1 CSE-into-neighbouring-register floor (LEVERS
+   "guard on the second variant"). Swept: all 24 scalar declaration
    orders, all 6 loop-variable assignments, index vs pointer walk, do/while,
    reverse iteration, (u32) and byte-bias forms -- all inert at 9 or worse. */
 #ifdef NON_MATCHING

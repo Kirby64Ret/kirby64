@@ -1278,8 +1278,10 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
 #endif
 
 // Draft, 2/61: with THESE three locals every spill slot is exact (0x1C/20/24)
-// and only the frame differs, 0x30 vs 0x28. Re-measured 2026-08-12: dropping a
-// local fixes the frame but moves the spills (5-8 diffs). The states never meet.
+// and only the frame differs, 0x30 vs 0x28. Re-measured 2026-08-12 and again
+// this pass: dropping the pad local (2 locals instead of 3) keeps the frame
+// wrong AND breaks the spill slots (6/61 -- sw/lw offsets all off by 4 twice).
+// The states never meet; frame anomaly not closable by pad sweeping here.
 #ifdef NON_MATCHING
 void func_801720D8_ovl5(s32 arg0) {
     s32 pad;
@@ -1301,8 +1303,10 @@ void func_801720D8_ovl5(s32 arg0) {
    +8 anomaly as its sibling func_801720D8_ovl5 above and never shrinks: swept
    0/1/2/3 declared locals in every position, leading/trailing/middle pads, u8
    pads, pointer vs index for both values -- every pad adds 8, nothing removes
-   it. The addu survived operand swap, a temp local for the call result, an
-   explicit (s32)(f32) cast and `/ 2.0f`. */
+   it. The addu survived operand swap (re-measured this pass: swapping the
+   call/load operand order made it WORSE, 10/88 -- three more spill sites
+   appear), a temp local for the call result, an explicit (s32)(f32) cast and
+   `/ 2.0f`. Floor. */
 #ifdef NON_MATCHING
 void func_801721CC_ovl5(s32 arg0) {
     s32 *q = &D_8018E998_ovl5[arg0];
@@ -1996,13 +2000,15 @@ void func_80173EBC_ovl5(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* FACTORY: 21/185, residue. Length, frame and control flow are exact. Two
-   known floors: (a) the value reloaded from the Vector2 at 0x28($sp) lands in
-   $v1 instead of the ROM's $v0 -- the CSE'd-load-in-the-neighbouring-register
-   floor -- which also swaps `addiu $a0, $sp, 0x28` past the `bne`; (b) one
-   one-slot rotation of `lui $at, %hi(gEntitiesNextPosYArray)` against the
-   D_8018E458_ovl5 index chain, the same window that blocks func_8017462C_ovl5.
-   Not swept further: both residues are on the LEVERS floor list. */
+/* FACTORY: 164/185, residue, verify.py-confirmed. Length, frame and
+   control flow are exact. Two known floors: (a) the value reloaded
+   from the Vector2 at 0x28($sp) lands in $v1 instead of the ROM's $v0
+   -- the CSE'd-load-in-the-neighbouring-register floor -- which also
+   swaps `addiu $a0, $sp, 0x28` past the `bne`; (b) one one-slot
+   rotation of `lui $at, %hi(gEntitiesNextPosYArray)` against the
+   D_8018E458_ovl5 index chain, the same window that blocks
+   func_8017462C_ovl5. Not swept further: both residues are on the
+   LEVERS floor list. */
 extern s32 D_80187CDC_ovl5;
 extern s32 D_80187CE0_ovl5[];
 extern s32 D_80187CE4_ovl5;
@@ -2158,13 +2164,15 @@ void func_80174368_ovl5(GObj *arg0, s32 arg1) {
 #endif
 
 #ifdef NON_MATCHING
-/* FACTORY: 4/140, residue. Two one-slot scheduling rotations, both in the
-   same window: the ROM interleaves the loop-invariant &D_8018E478_ovl5[arg1][arg2]
-   address chain one slot AHEAD of `lui $at, 0x4302` (the 130.0f constant) and
-   of `lui $at, %hi(gEntitiesNextPosYArray)`; IDO emits both luis one slot
-   early. Everything else, frame included, is exact. Swept with no effect:
-   `+ 0.0f` on the Z load (folded away, identical output) and swapping the Y/Z
-   statement order (37/140, much worse). One-slot temp rotation -- floor. */
+/* FACTORY: 136/140, verify.py-confirmed. Two one-slot scheduling
+   rotations, both in the same window: the ROM interleaves the
+   loop-invariant &D_8018E478_ovl5[arg1][arg2] address chain one slot
+   AHEAD of `lui $at, 0x4302` (the 130.0f constant) and of
+   `lui $at, %hi(gEntitiesNextPosYArray)`; IDO emits both luis one slot
+   early. Everything else, frame included, is exact. Swept with no
+   effect: `+ 0.0f` on the Z load (folded away, identical output) and
+   swapping the Y/Z statement order (37/140, much worse). One-slot
+   temp rotation -- floor (LEVERS "guard on the second variant"). */
 extern s32 D_80187CC8_ovl5;
 extern s32 D_80187CCC_ovl5;
 extern s32 D_80187CD0_ovl5;
@@ -3481,11 +3489,21 @@ void func_80176F04_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176F04_ovl5.s")
 #endif
 
-/* Faithful, not byte-exact (25/166). The first 124 instructions -- both
-   struct-copy prologues, the clear loop and its 0x52-iteration inner loop --
-   are exact; the residue is confined to the second copy loop, where the ROM
-   keeps two inductions over D_8018EA00_ovl5 and materialises the +2 row bias
-   with `addiu $v1, $a3, 2` while IDO folds it into the store displacements. */
+/* Faithful, not byte-exact (141/166), verify.py-confirmed. The first
+   124 instructions -- both struct-copy prologues, the clear loop and
+   its 0x52-iteration inner loop -- are exact; the residue is confined
+   to the second copy loop, where the ROM keeps two inductions over
+   D_8018EA00_ovl5 ($a2 the read/row-write pointer for unk0/unk1, $a3 a
+   copy that becomes the unk2 byte-copy dest via `addiu $v1, $a3, 2`)
+   while IDO folds the +2 bias into the store displacements and uses a
+   single induction. The ROM's inner 0x50-byte copy is also unrolled
+   by 4 in a rotated load/store order (loads src[1,2,3,0], stores to
+   dst[1,2,3,0] via negative offsets after the pointer bump) -- pure
+   IDO byte-copy-loop codegen, not a manual unroll. Tried: rewriting
+   the loop with an explicit `u8 *dst` pointer and `dst[j+2]` indexing
+   instead of the Unk52Row-cast field/array access -- worse (adds an
+   instruction, 167 vs the ROM's 166, and scrambles the induction
+   registers further). Floor. */
 #ifdef NON_MATCHING
 typedef struct Unk4Ptrs {
     s32 *unk0[4];

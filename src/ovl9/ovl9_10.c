@@ -1062,8 +1062,9 @@ struct Ovl9_10AnimInfo {
 };
 
 #ifdef NON_MATCHING
-// 13 diffs: structurally exact; the ROM's pointer locals sit one register slot
-// later than IDO places them (see func_802052E8_ovl9).
+// 13/60 diffs: structurally exact; the ROM's pointer locals sit one register
+// slot later than IDO places them (see func_802052E8_ovl9 -- same family of
+// $v0/$v1/$a1 CSE-neighbour renames). Re-measured this session, still 13.
 void func_802050E4_ovl9(struct Ovl9_10AnimInfo *arg0) {
     struct DObj *a = D_800DFBD0[omCurrentObj->objId][1];
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][2];
@@ -1147,7 +1148,8 @@ void func_802051D4_ovl9(void) {
 // indices (23) or plus two locals (14), swapped declaration order (13),
 // inlining both element expressions (30), and assignment statements instead
 // of initializers (11). No call in the function, so the callee-return-type
-// lever does not apply.
+// lever does not apply. Re-measured this session, still exactly 11 -- a
+// $v0/$v1 CSE-neighbour floor (LEVERS "second variant" class verbatim).
 void func_802052E8_ovl9(void) {
     struct DObj *a = D_800DFBD0[omCurrentObj->objId][3];
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][4];
@@ -1159,8 +1161,11 @@ void func_802052E8_ovl9(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802052E8_ovl9.s")
 #endif
 #ifdef NON_MATCHING
-// 20 diffs: structurally exact; the ROM keeps objId<<2 in $v0 and `a` in $v1
-// while IDO swaps them (same residue as func_802052E8_ovl9).
+// 20/86 diffs: structurally exact; the ROM keeps objId<<2 in $v0 and the
+// pointer-derived value in $v1 while IDO swaps them (same residue family as
+// func_802052E8_ovl9 / func_802050E4_ovl9). Re-measured this session, still
+// exactly 20 -- the same $v0/$v1 CSE-neighbour floor, four times over in this
+// larger function.
 void func_80205360_ovl9(void) {
     struct DObj *a = D_800DFBD0[omCurrentObj->objId][1];
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][2];
@@ -1665,12 +1670,19 @@ struct GObj *arg0;
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 55/67, v0/v1/a0 rotation plus one delay-slot hoist.  All three
+/* FACTORY: 55/67, v0/v1/a0 rotation plus one delay-slot hoist. Re-measured
+   this session against the real listing: true residue is 12/67, not 55 (the
+   old note's number was wrong -- see the file header warning). All three
    depth arms, the default's utilPrintf and the shared tail are the ROM's.
-   Residues: the ROM keeps objId in $v0 and the D_800EA520 variant in $v1
-   where ours uses $v1 and $a0 (hoisting the variant into its own local does
-   not move it), and the ROM materialises %hi(D_8021DA20_ovl9) in the third
-   compare's delay slot while ours leaves a nop and materialises it later.
+   Residues: the ROM keeps objId<<2 in $v0 and the D_800EA520 read in $v1
+   where this draft uses $v0/$a0 (dropping the `var` local and switching on
+   D_800EA520[id] directly is inert, still 12), and the ROM materialises
+   %hi(D_8021DA20_ovl9) -- the utilPrintf string -- in the third case's beq
+   delay slot, speculatively, since the default arm needs it; this draft
+   leaves that slot a nop and computes the address later. Same $v0/v1/a0
+   CSE-neighbour floor as this file's func_802052E8_ovl9 family; the
+   delay-slot placement is downstream of that same register choice, not an
+   independent residue.
    NOTE: the draft must be declared s32, not void -- line 1380 of this TU
    calls func_802071AC_ovl9() with no prototype in scope, so the implicit
    int() declaration makes a void definition a hard error.  Do not "fix"
