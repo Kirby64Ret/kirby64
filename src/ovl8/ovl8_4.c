@@ -230,7 +230,205 @@ void func_801D4FE4_ovl8(void) {
     func_801D5024_ovl8();
 }
 
+/* The grabbed-Kirby cutscene body: this is the coroutine the two one-line
+ * entry points above (func_801D4FA4_ovl8 / func_801D4FE4_ovl8) jump into
+ * after setting D_800EAA60 to +1 or -1, which is the side the boss grabs
+ * from -- read back here as `dir` and used to index the two 2-entry tables
+ * D_801DB050_ovl8 (which DObj slot to track) and D_801DB058_ovl8 (the X
+ * offset to hold at).
+ *
+ * Phase 1: drag Kirby sideways to the boss until the grab animation clock
+ *          D_800EAC20 of the parent track passes 124.
+ * Phase 2: bite (sound 0x1A3), inherit the grandparent track's slot and
+ *          offset, then lift him over four ticks in equal steps to 20 units
+ *          under the boss's mouth DObj (slot 11).
+ * Phase 3: hold there until the parent's D_800E9FE0 state reaches 2, then
+ *          hand him back to func_800B531C with a 12.0 / -0.5 toss. */
+#ifdef MIPS_TO_C
+/* FACTORY: 257/380 words DIFFER -- 123 already match. The shape is solved:
+ * all three loops, the four-step lift with its precomputed delta/step pair,
+ * both grandparent-chained copies and the whole tail land in the right order
+ * and the right instructions. What is left is a WHOLE-FUNCTION CALLEE-SAVED
+ * PERMUTATION -- the first entry in LEVERS.md's unclosable list. The ROM
+ * holds the objId scratch in $v1 where IDO holds it in $s0, the D_800EAC20
+ * base in $s5 where IDO uses $s4, `dir` in $s0 where IDO uses $a1, and
+ * gEntitiesNextPosXArray/D_800DFBD0 in $s0/$s7 where IDO uses $s7/$s6; each
+ * of those renames every instruction that touches them. There is also one
+ * extra instruction before .L801D5230 that shifts the loop-guard branch by
+ * one. This is permuter fuel, not a source problem.
+ *
+ * One open reading: the ROM sets up func_800B2340's THIRD argument in $a2
+ * only as a side effect of computing D_800E0D50[objId] for the array index,
+ * so the original may well have called it with two arguments and no
+ * prototype in scope, leaving $a2 as a leftover. Passing the parent id
+ * explicitly (as here) produces the same register contents and keeps the
+ * call type-checked against ovl1_7.c's three-parameter definition. */
+void func_801D5024_ovl8(arg0)
+struct GObj *arg0;
+{
+    extern f32 D_800EAA60[];
+    extern f32 D_800EAC20[];
+    extern s32 D_801DB050_ovl8[];
+    extern f32 D_801DB058_ovl8[];
+    void func_800B2340(Vector *, struct DObj *, u32);
+    void func_801D560C_ovl8(struct GObj *);
+    s32 dir;
+    s32 i;
+    f32 delta;
+    f32 step;
+    Vector sp70;
+
+    if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
+        func_800A9760(0x20007);
+    }
+    D_800DF150[omCurrentObj->objId] = func_801D560C_ovl8;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    func_8016BBD0_ovl3();
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    if (D_800EAA60[omCurrentObj->objId] == 1.0f) {
+        dir = 1;
+    } else {
+        dir = 0;
+    }
+    while (D_800EAC20[D_800E0D50[omCurrentObj->objId]] < 124.0f) {
+        func_800B2340(&sp70, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][D_801DB050_ovl8[dir]],
+                      D_800E0D50[omCurrentObj->objId]);
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_801DB058_ovl8[dir] + sp70.x;
+        ohSleep(1);
+    }
+    play_sound(0x1A3);
+    func_800BB468(0, 0);
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800E5F90[omCurrentObj->objId] =
+        D_800E5F90[D_800E0D50[D_800E0D50[omCurrentObj->objId]]];
+    D_800E6BD0[omCurrentObj->objId] =
+        D_800E6BD0[D_800E0D50[D_800E0D50[omCurrentObj->objId]]];
+    func_800FBE1C();
+    func_800FA414(5);
+    func_800B2340(&sp70, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][11],
+                  D_800E0D50[omCurrentObj->objId]);
+    delta = (gEntitiesNextPosYArray[omCurrentObj->objId] + 20.0f) - sp70.y;
+    step = delta * 0.25f;
+    for (i = 0; i != 4; i++) {
+        func_800B2340(&sp70, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][11],
+                      D_800E0D50[omCurrentObj->objId]);
+        gEntitiesNextPosYArray[omCurrentObj->objId] = (sp70.y - 20.0f) + delta;
+        ohSleep(1);
+        delta -= step;
+    }
+    while (D_800E9FE0[D_800E0D50[omCurrentObj->objId]].as_s32 < 2) {
+        func_800B2340(&sp70, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][11],
+                      D_800E0D50[omCurrentObj->objId]);
+        gEntitiesNextPosYArray[omCurrentObj->objId] = sp70.y - 20.0f;
+        ohSleep(1);
+    }
+    D_800E98E0[omCurrentObj->objId] = 2;
+    func_800FA414(3);
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E5F90[omCurrentObj->objId] = D_800E6150[omCurrentObj->objId] =
+        D_800E5F90[D_800E0D50[D_800E0D50[omCurrentObj->objId]]];
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId] =
+        D_800E6BD0[D_800E0D50[D_800E0D50[omCurrentObj->objId]]];
+    func_800B33F4();
+    D_800E3210[omCurrentObj->objId] = 12.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    ohSleep(0x14);
+    D_800E98E0[omCurrentObj->objId] = 3;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800DEF90[omCurrentObj->objId] = func_800B531C;
+    func_800B33F4();
+    curObjSleepForever();
+}
+#elif defined(PORT)
+void func_801D5024_ovl8(arg0)
+struct GObj *arg0;
+{
+    extern f32 D_800EAA60[];
+    extern f32 D_800EAC20[];
+    extern s32 D_801DB050_ovl8[];
+    extern f32 D_801DB058_ovl8[];
+    void func_800B2340(Vector *, struct DObj *, u32);
+    void func_801D560C_ovl8(struct GObj *);
+    s32 dir;
+    s32 i;
+    f32 delta;
+    f32 step;
+    Vector sp70;
+
+    if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
+        func_800A9760(0x20007);
+    }
+    D_800DF150[omCurrentObj->objId] = func_801D560C_ovl8;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E98E0[omCurrentObj->objId] = 0;
+    func_8016BBD0_ovl3();
+    func_800B33F4();
+    func_800AECC0(gameTicksPerDraw);
+    func_800AED20(gameTicksPerDraw);
+    if (D_800EAA60[omCurrentObj->objId] == 1.0f) {
+        dir = 1;
+    } else {
+        dir = 0;
+    }
+    while (D_800EAC20[D_800E0D50[omCurrentObj->objId]] < 124.0f) {
+        func_800B2340(&sp70, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][D_801DB050_ovl8[dir]],
+                      D_800E0D50[omCurrentObj->objId]);
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_801DB058_ovl8[dir] + sp70.x;
+        ohSleep(1);
+    }
+    play_sound(0x1A3);
+    func_800BB468(0, 0);
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800E98E0[omCurrentObj->objId] = 1;
+    D_800E5F90[omCurrentObj->objId] =
+        D_800E5F90[D_800E0D50[D_800E0D50[omCurrentObj->objId]]];
+    D_800E6BD0[omCurrentObj->objId] =
+        D_800E6BD0[D_800E0D50[D_800E0D50[omCurrentObj->objId]]];
+    func_800FBE1C();
+    func_800FA414(5);
+    func_800B2340(&sp70, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][11],
+                  D_800E0D50[omCurrentObj->objId]);
+    delta = (gEntitiesNextPosYArray[omCurrentObj->objId] + 20.0f) - sp70.y;
+    step = delta * 0.25f;
+    for (i = 0; i != 4; i++) {
+        func_800B2340(&sp70, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][11],
+                      D_800E0D50[omCurrentObj->objId]);
+        gEntitiesNextPosYArray[omCurrentObj->objId] = (sp70.y - 20.0f) + delta;
+        ohSleep(1);
+        delta -= step;
+    }
+    while (D_800E9FE0[D_800E0D50[omCurrentObj->objId]].as_s32 < 2) {
+        func_800B2340(&sp70, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][11],
+                      D_800E0D50[omCurrentObj->objId]);
+        gEntitiesNextPosYArray[omCurrentObj->objId] = sp70.y - 20.0f;
+        ohSleep(1);
+    }
+    D_800E98E0[omCurrentObj->objId] = 2;
+    func_800FA414(3);
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800E5F90[omCurrentObj->objId] = D_800E6150[omCurrentObj->objId] =
+        D_800E5F90[D_800E0D50[D_800E0D50[omCurrentObj->objId]]];
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId] =
+        D_800E6BD0[D_800E0D50[D_800E0D50[omCurrentObj->objId]]];
+    func_800B33F4();
+    D_800E3210[omCurrentObj->objId] = 12.0f;
+    D_800E3750[omCurrentObj->objId] = -0.5f;
+    ohSleep(0x14);
+    D_800E98E0[omCurrentObj->objId] = 3;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800DEF90[omCurrentObj->objId] = func_800B531C;
+    func_800B33F4();
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8_4/func_801D5024_ovl8.s")
+#endif
 
 void func_801D560C_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;

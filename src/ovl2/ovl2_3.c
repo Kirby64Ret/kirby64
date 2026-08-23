@@ -44,6 +44,8 @@ f32 utilVec3Dist(Vector *v1, Vector *v2);
 f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3);
 s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2);
 void func_801DC98C_ovl17(void);
+f32 func_800F9C94(void *, Vector *, f32, f32, s32);
+f32 lbvector_DiffLen(Vector *, Vector *);
 
 struct TrackCameraNode {
     /* 0x00 */ u8 unk0;
@@ -1476,7 +1478,6 @@ f32 func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
     s16 n;
     f32 *times;
     struct TrackFooter *footer;
-    f32 func_800F9C94(void *, Vector *, f32, f32, s32);
 
     footer = arg0;
     times = footer->keyframes;
@@ -1521,8 +1522,6 @@ f32 func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
 }
 
 f32 func_800FA1D4(struct Unk80129114_4_4 *arg0, Vector *arg1, s32 arg2) {
-    f32 lbvector_DiffLen(Vector *, Vector *);
-    f32 func_800F9FDC(void *, Vector *, s32, s32);
     f32 best;
     f32 d;
     s32 idx;

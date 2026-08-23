@@ -425,7 +425,6 @@ void func_80155C00_ovl4(GObj *arg0) {
 }
 
 void func_80155E6C_ovl4(GObj *arg0) {
-
     if (D_800E9E20[omCurrentObj->objId] != 0) {
         D_800E9E20[omCurrentObj->objId]--;
         return;

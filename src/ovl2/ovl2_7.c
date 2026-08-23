@@ -235,6 +235,8 @@ void func_8010DDA4(void *arg0, s32 arg1);
 s32 func_80109BF0(struct PositionState *arg0, struct CollisionResult *arg1, s32 arg2);
 s32 func_8010AEF0(struct PositionState *arg0, struct CollisionResult *arg1, s32 arg2);
 void func_80104FB8(struct PositionState *arg0);
+/* spelled as the definition in src/ovl2/ovl2_10.c does */
+void func_80112ED4(f32 mtx[4][4], Vector *out, Vector *in);
 s32 func_80104D2C(Vector *arg0, Vector *arg1, Vector *arg2, f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, s32 *arg7);
 s32 func_801057C4(struct Normal *arg0, Vector *arg1, Vector *arg2, Vector *arg3);
 s32 func_80105530(struct PositionState *arg0, struct CollisionResult *arg1);
@@ -1327,7 +1329,6 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     extern f32 D_800E3050[];
     extern f32 D_800E3210[];
     extern f32 D_800E33D0[];
-    void func_80112ED4(void *, Vector *, Vector *);
     f32 spAC;
     f32 spA8;
     Vector sp9C;
@@ -1368,8 +1369,8 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
                     spA8 = 1.1f;
                     gCollisionState->unk30 = var_s0->unk4;
                     if (var_s0->unk2 & 2) {
-                        func_80112ED4(&var_s0->unk18, &sp68, &sp9C);
-                        func_80112ED4(&var_s0->unk58, &sp5C, &sp68);
+                        func_80112ED4((f32 (*)[4]) &var_s0->unk18, &sp68, &sp9C);
+                        func_80112ED4((f32 (*)[4]) &var_s0->unk58, &sp5C, &sp68);
                         var_f0 = sp5C.x - sp9C.x;
                         var_f2 = sp5C.y - sp9C.y;
                         var_f12 = sp5C.z - sp9C.z;
@@ -1450,7 +1451,6 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     extern struct struct8011BA10_temp D_8012D948[];
     extern u32 D_8012D940;
     extern f32 D_800E3050[], D_800E3210[], D_800E33D0[];
-    void func_80112ED4(f32 mtx[4][4], Vector *out, Vector *in);
     u32 i;
 
     if (BD00.tick != BD00.callerTick) {
