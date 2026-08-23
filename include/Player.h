@@ -84,7 +84,13 @@ struct Player {
     f32 unk78;
     f32 unk7C;
     f32 unk80;
-    u32 unk84;
+    f32 unk84;                  // TYPE: read/written exclusively via *(f32*)&
+                                 // in src/ovl3/kirby.c (func_801708A0_ovl3),
+                                 // src/ovl7/ovl7_5.c (func_801A94D8_ovl7) --
+                                 // matched, byte-exact -- and documented in
+                                 // src/ovl3/kirby.c as "float bits of the
+                                 // just-cleared D_80198820_ovl3". No integer
+                                 // use found tree-wide.
     u16 unk88;
     u16 unk8A;
     u32 unk8C;
@@ -143,10 +149,20 @@ struct Player {
     u32 unk124;
     u32 unk128;
     u32 unk12C;
-    u32 unk130;
-    u32 unk134;
-    u32 unk138;
-    u32 unk13C;
+    f32 unk130;                 // TYPE: surface angle (radians) fed to
+                                 // sinf/cosf in src/ovl2/plylib.c
+                                 // func_8011DD5C -- every read/write goes
+                                 // through *(f32*)& (or the PORT arm's u32/f32
+                                 // union) prior to this fix.
+    f32 unk134;                 // TYPE: conveyor speed magnitude, scaled by
+                                 // 0.1f in func_8011DD5C; same evidence class.
+    f32 unk138;                 // TYPE: output sin component of the conveyor
+                                 // push, same evidence class as unk130/unk134.
+    f32 unk13C;                 // TYPE: output cos component, same evidence
+                                 // class. All four flagged together in
+                                 // src/ovl3/ovl3_1.c func_80152348_ovl3's
+                                 // FACTORY note (independent confirmation)
+                                 // and REFOUND.md.
     u32 unk140;
 
     f32 unk144;
