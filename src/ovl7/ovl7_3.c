@@ -1481,7 +1481,14 @@ void func_801A3618_ovl7(struct UnkOvl7Track *arg0) {
     arg0->unk14 = gEntitiesPosZArray[omCurrentObj->objId];
 }
 
-void func_801A36CC(void *arg0) {
+/* Returns s32, not void. The tail call is to func_8011BF4C, which plylib.c
+ * defines s32, so the sweep result reaches this function's callers in $v0 --
+ * and ovl7_7.c was matched against an s32 declaration, which is how the
+ * disagreement was found: correcting ovl7_7.c's spelling to void instead
+ * moves the ROM, because void lets IDO free $v0 across the discarded call
+ * and reuse it as a loop base. The callers were right; this definition was
+ * the wrong half of the pair. */
+s32 func_801A36CC(void *arg0) {
     struct UnkOvl7Track *track = &D_801D0450_ovl7[omCurrentObj->objId - 14];
 
     if (omCurrentObj->objId == 0) {
@@ -1489,7 +1496,7 @@ void func_801A36CC(void *arg0) {
     }
     func_801A3618_ovl7(track);
     track->unk18 = D_800E17D0[omCurrentObj->objId];
-    func_8011BF4C(track, arg0);
+    return func_8011BF4C(track, arg0);
 }
 
 void func_801A374C_ovl7(void *arg0) {
