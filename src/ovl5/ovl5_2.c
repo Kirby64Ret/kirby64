@@ -19,8 +19,43 @@ extern f32 D_80186940_ovl5[];
 void func_800A7F74(s32, s32, s32, f32, f32, f32);
 extern u8 D_8018E220_ovl5;
 void func_8016253C_ovl5(struct GObj *);
+/* D_8018E050_ovl5[slot]: racer SLOT (0-3, the controller/setup index used
+ * throughout this file as arg0/arg1/i) -> that racer's live GObj objId.
+ * Evidence: every reader wraps a slot in this before using it as an index
+ * into the objId-keyed entity arrays (gEntitiesNextPosXArray[..], etc), e.g.
+ * `gEntitiesNextPosYArray[D_8018E050_ovl5[rec[6]]]` right after `rec[6]` is
+ * documented below as a target SLOT. */
 extern s32 D_8018E050_ovl5[];
-extern u8 D_8018E228_ovl5[];
+
+/* Per-racer AI/action record, 12 bytes/racer, indexed by racer SLOT
+ * (0-3). D_8018E22C_ovl5 below is a linker splinter of this same array at
+ * +4 (the `action` byte) used directly by func_80160088_ovl5 with the same
+ * *12 stride -- same memory, different compiled symbol name (see the
+ * "Data note" / splat comment above about split symbols).
+ * Field evidence is func_8015ED9C_ovl5 / func_80160120_ovl5 /
+ * func_8016050C_ovl5 (matching MIPS_TO_C and PORT arms) plus the bare,
+ * already-matched func_8015F67C_ovl5 and func_8016050C_ovl5. */
+typedef struct RacerAI {
+    s32 timer;   /* countdown in ticks; hitting 0 resets `action` to 0
+                  * (idle / time to roll a new action) */
+    u8 action;   /* 0 idle/reroll picks a new action below; 1 walk toward
+                  * -X; 2 walk toward +X; 3 rest; 4 jump/attack (sets
+                  * D_800E9FE0[objId].as_u32=1, i.e. "attacking"); 6
+                  * overtake-adjust; 7 squeeze-past; 8 chase, re-rolling
+                  * whether to actually attack once close (personality
+                  * roll idx*6+3) */
+    u8 side;     /* 0/1: which of `left`/`right` below is this action's
+                  * target neighbour */
+    u8 target;   /* racer SLOT (0-3) being chased or reacted to; index
+                  * D_8018E050_ovl5[] with it to get that racer's objId */
+    u8 left;     /* nearest racer slot with lower X (0xFF = none this
+                  * tick); refreshed every func_8015ED9C_ovl5 call */
+    u8 right;    /* nearest racer slot with higher X (0xFF = none this
+                  * tick); refreshed every func_8015ED9C_ovl5 call */
+    u8 unk9[3];  /* unreferenced by any decompiled code so far */
+} RacerAI;
+
+extern RacerAI D_8018E228_ovl5[];
 extern u8 D_8018E208_ovl5[];
 s32 func_8015F4C4_ovl5(s32, s32);
 f32 func_801619E0_ovl5(s32);

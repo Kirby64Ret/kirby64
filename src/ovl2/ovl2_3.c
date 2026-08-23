@@ -1787,33 +1787,33 @@ void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
 
     dobj = D_800D799C->data.dobj;
     flagB = 0;
-    arg2->unk18 = arg2->unk0;
-    arg2->unk1C = arg2->unk4;
-    arg2->unk20 = arg2->unk8;
+    arg2->atX = arg2->focusX;
+    arg2->atY = arg2->focusY;
+    arg2->atZ = arg2->focusZ;
     flagA = 0;
-    if (arg1->unk48 != 9999.0f) {
-        arg2->unk18 = arg1->unk48;
+    if (arg1->atXOverride != 9999.0f) {
+        arg2->atX = arg1->atXOverride;
     }
-    if (arg1->unk4C != 9999.0f) {
-        arg2->unk1C = arg1->unk4C + arg1->unk14;
+    if (arg1->atYOverride != 9999.0f) {
+        arg2->atY = arg1->atYOverride + arg1->heightOffset;
     }
-    if (arg1->unk50 != 9999.0f) {
-        arg2->unk20 = arg1->unk50;
+    if (arg1->atZOverride != 9999.0f) {
+        arg2->atZ = arg1->atZOverride;
     }
-    if (arg1->unk1D != 0) {
-        tgt = (Vector *) &arg2->unk24;
-        if ((arg2->unk30 | arg2->unk38) != 0) {
+    if (arg1->yawLimitEnable != 0) {
+        tgt = (Vector *) &arg2->eyeX;
+        if ((arg2->eyeXClampFlags | arg2->eyeZClampFlags) != 0) {
             lbvector_Diff(&vec, (Vector *) arg2, tgt);
             ang = (atan2f(vec.z, -vec.x) / 3.1415927f) * 180.0f;
             if (ang < 0.0f) {
                 ang += 360.0f;
             }
-            if (arg1->unk40 > ang) {
-                ang = arg1->unk40;
+            if (arg1->yawMin > ang) {
+                ang = arg1->yawMin;
                 flagA = 1;
             }
-            if (arg1->unk44 < ang) {
-                ang = arg1->unk44;
+            if (arg1->yawMax < ang) {
+                ang = arg1->yawMax;
                 flagA |= 2;
             }
             if (flagA != 0) {
@@ -1823,31 +1823,31 @@ void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
                 func_800191F8(&vec, (Vector *) ((s32) dobj + 0x54),
                               (ang * 3.1415927f) / 180.0f);
                 lbvector_Add(&vec, tgt);
-                arg2->unk18 = vec.x;
-                arg2->unk20 = vec.z;
+                arg2->atX = vec.x;
+                arg2->atZ = vec.z;
             }
         }
     }
-    if (arg1->unk1C != 0) {
-        if (arg2->unk34 != 0) {
-            lbvector_Diff(&vec, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+    if (arg1->pitchLimitEnable != 0) {
+        if (arg2->eyeYClampFlags != 0) {
+            lbvector_Diff(&vec, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
             ang2 = 180.0f - ((atan2f(sqrtf((vec.z * vec.z) + (vec.x * vec.x)), vec.y)
                               / 3.1415927f) * 180.0f);
-            if (ang2 < arg1->unk38) {
-                ang2 = arg1->unk38;
+            if (ang2 < arg1->pitchMin) {
+                ang2 = arg1->pitchMin;
                 flagB = 1;
             }
-            if (arg1->unk3C < ang2) {
-                ang2 = arg1->unk3C;
+            if (arg1->pitchMax < ang2) {
+                ang2 = arg1->pitchMax;
                 flagB |= 2;
             }
             if (flagB != 0) {
                 vec.y = 0.0f;
                 vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &vec, &axis);
                 func_800191F8(&vec, &axis, ((ang2 - 90.0f) * 3.1415927f) / 180.0f);
-                arg2->unk18 = arg2->unk24 + vec.x;
-                arg2->unk1C = arg2->unk28 - vec.y;
-                arg2->unk20 = arg2->unk2C + vec.z;
+                arg2->atX = arg2->eyeX + vec.x;
+                arg2->atY = arg2->eyeY - vec.y;
+                arg2->atZ = arg2->eyeZ + vec.z;
             }
         }
     }
@@ -1855,11 +1855,12 @@ void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
 #elif defined(PORT)
 /* PORT: camera eye yaw/pitch limiting, from asm/nonmatchings/ovl2/ovl2_3/
  * func_800FA92C.s (the m2c sketch above mangles every vector-helper call).
- * arg2->unk18..20 is the eye, +24..2C the look-at target; unk30/34/38 are
- * the clamp flags func_800FA7EC set this tick. Yaw outside
- * [unk40, unk44] and pitch outside [unk38, unk3C] are pulled back onto the
- * limit by rotating the eye offset around the camera up vector (host
- * Camera.viewMtx.lookAt.up, N64 +0x54). */
+ * arg2->atX..atZ is the published look-at point, eyeX..eyeZ the clamped eye
+ * (see the Ovl2CamOut struct comment); eyeXClampFlags/eyeYClampFlags/
+ * eyeZClampFlags are the clamp flags func_800FA7EC set this tick. Yaw
+ * outside [yawMin, yawMax] and pitch outside [pitchMin, pitchMax] are
+ * pulled back onto the limit by rotating the at-eye offset around the
+ * camera up vector (host Camera.viewMtx.lookAt.up, N64 +0x54). */
 void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
     Camera *cam = D_800D799C->data.cam;
     Vector d;
@@ -1868,32 +1869,32 @@ void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
     f32 ang;
     f32 mag;
 
-    arg2->unk18 = arg2->unk0;
-    arg2->unk1C = arg2->unk4;
-    arg2->unk20 = arg2->unk8;
-    if (arg1->unk48 != 9999.0f) {
-        arg2->unk18 = arg1->unk48;
+    arg2->atX = arg2->focusX;
+    arg2->atY = arg2->focusY;
+    arg2->atZ = arg2->focusZ;
+    if (arg1->atXOverride != 9999.0f) {
+        arg2->atX = arg1->atXOverride;
     }
-    if (arg1->unk4C != 9999.0f) {
-        arg2->unk1C = arg1->unk4C + arg1->unk14;
+    if (arg1->atYOverride != 9999.0f) {
+        arg2->atY = arg1->atYOverride + arg1->heightOffset;
     }
-    if (arg1->unk50 != 9999.0f) {
-        arg2->unk20 = arg1->unk50;
+    if (arg1->atZOverride != 9999.0f) {
+        arg2->atZ = arg1->atZOverride;
     }
-    if (arg1->unk1D != 0) {
-        if ((arg2->unk30 | arg2->unk38) != 0) {
+    if (arg1->yawLimitEnable != 0) {
+        if ((arg2->eyeXClampFlags | arg2->eyeZClampFlags) != 0) {
             flags = 0;
-            lbvector_Diff(&d, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+            lbvector_Diff(&d, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
             ang = (atan2f(d.z, -d.x) / 3.1415927f) * 180.0f;
             if (ang < 0.0f) {
                 ang += 360.0f;
             }
-            if (ang < arg1->unk40) {
-                ang = arg1->unk40;
+            if (ang < arg1->yawMin) {
+                ang = arg1->yawMin;
                 flags = 1;
             }
-            if (arg1->unk44 < ang) {
-                ang = arg1->unk44;
+            if (arg1->yawMax < ang) {
+                ang = arg1->yawMax;
                 flags |= 2;
             }
             if (flags != 0) {
@@ -1903,33 +1904,33 @@ void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
                 d.z = 0.0f;
                 func_800191F8(&d, &cam->viewMtx.lookAt.up,
                               (ang * 3.1415927f) / 180.0f);
-                lbvector_Add(&d, (Vector *) &arg2->unk24);
-                arg2->unk18 = d.x;
-                arg2->unk20 = d.z;
+                lbvector_Add(&d, (Vector *) &arg2->eyeX);
+                arg2->atX = d.x;
+                arg2->atZ = d.z;
             }
         }
     }
-    if ((arg1->unk1C != 0) && (arg2->unk34 != 0)) {
+    if ((arg1->pitchLimitEnable != 0) && (arg2->eyeYClampFlags != 0)) {
         flags = 0;
-        lbvector_Diff(&d, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+        lbvector_Diff(&d, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
         ang = 180.0f -
               ((atan2f(sqrtf((d.z * d.z) + (d.x * d.x)), d.y) / 3.1415927f) *
                180.0f);
-        if (ang < arg1->unk38) {
-            ang = arg1->unk38;
+        if (ang < arg1->pitchMin) {
+            ang = arg1->pitchMin;
             flags = 1;
         }
-        if (arg1->unk3C < ang) {
-            ang = arg1->unk3C;
+        if (arg1->pitchMax < ang) {
+            ang = arg1->pitchMax;
             flags |= 2;
         }
         if (flags != 0) {
             d.y = 0.0f;
             vec3_normalized_cross_product(&cam->viewMtx.lookAt.up, &d, &axis);
             func_800191F8(&d, &axis, ((ang - 90.0f) * 3.1415927f) / 180.0f);
-            arg2->unk18 = arg2->unk24 + d.x;
-            arg2->unk1C = arg2->unk28 - d.y;
-            arg2->unk20 = arg2->unk2C + d.z;
+            arg2->atX = arg2->eyeX + d.x;
+            arg2->atY = arg2->eyeY - d.y;
+            arg2->atZ = arg2->eyeZ + d.z;
         }
     }
 }
@@ -1971,7 +1972,7 @@ void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ov
         v -= 1;
     }
     if (D_800BE4F8 == 1) {
-        if ((v != 0) && (arg1->unk1E != 0)) {
+        if ((v != 0) && (arg1->manualOrbitEnable != 0)) {
             step = D_801293C4;
             if (v > 0) {
                 if (D_801293BC < 0.0f) {
@@ -2017,15 +2018,15 @@ void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ov
             D_801293BC = 0.0f;
         }
     }
-    lim = arg1->unk5C;
+    lim = arg1->orbitYawLimit;
     if (lim <= D_801293AC) {
         D_801293AC = lim;
-        lim = arg1->unk5C;
+        lim = arg1->orbitYawLimit;
     }
     if (D_801293AC <= -lim) {
         D_801293AC = -lim;
     }
-    lbvector_Diff(&d, (Vector *) &arg2->unk18, (Vector *) &arg2->unk24);
+    lbvector_Diff(&d, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
     ang = (atan2f(d.z, -d.x) / 3.1415927f) * 180.0f;
     if (ang < 0.0f) {
         ang += 360.0f;
@@ -2038,24 +2039,24 @@ void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ov
     d.z = 0.0f;
     d.x = -D_801293AC;
     func_800191F8(&d, (Vector *) ((s32) dobj + 0x54), (yaw * 3.1415927f) / 180.0f);
-    arg0->unk24 = arg2->unk24;
-    arg0->unk2C = arg2->unk2C;
-    arg0->unk18 = arg2->unk18 - d.x;
-    arg0->unk20 = arg2->unk20 - d.z;
+    arg0->eyeX = arg2->eyeX;
+    arg0->eyeZ = arg2->eyeZ;
+    arg0->atX = arg2->atX - d.x;
+    arg0->atZ = arg2->atZ - d.z;
     if (arg1->unk1F != 0) {
         D_801293D8 = 0;
-        arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293C0);
-        arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293C0);
+        arg0->eyeY = func_800FB814(arg0->eyeY, arg2->eyeY, D_801293C0);
+        arg0->atY = func_800FB814(arg0->atY, arg2->atY, D_801293C0);
         return;
     }
     if (D_801293D8 != 0) {
-        arg0->unk28 = arg2->unk28;
-        arg0->unk1C = arg2->unk1C;
+        arg0->eyeY = arg2->eyeY;
+        arg0->atY = arg2->atY;
         return;
     }
-    arg0->unk28 = func_800FB814(arg0->unk28, arg2->unk28, D_801293D4);
-    arg0->unk1C = func_800FB814(arg0->unk1C, arg2->unk1C, D_801293D4);
-    if (arg2->unk28 == arg0->unk28) {
+    arg0->eyeY = func_800FB814(arg0->eyeY, arg2->eyeY, D_801293D4);
+    arg0->atY = func_800FB814(arg0->atY, arg2->atY, D_801293D4);
+    if (arg2->eyeY == arg0->eyeY) {
         D_801293D8 += 1;
     }
 }
