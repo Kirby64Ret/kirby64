@@ -212,7 +212,12 @@ void func_801D4D88_ovl8(struct GObj *arg0) {
     func_801D4778_ovl8(arg0);
 }
 
-void func_801D5024_ovl8(void);
+/* K&R, for the same reason as func_801D57E0_ovl8 below: the definition
+ * takes the struct GObj * the ROM leaves in $a0 (it homes it at 0x88(sp)),
+ * but both call sites just above pass 0 arguments. An ANSI (void) here
+ * makes the definition a redeclaration; an ANSI (GObj *) breaks the two
+ * calls with "too few arguments". */
+void func_801D5024_ovl8();
 
 void func_801D4FA4_ovl8(void) {
     D_800EAA60[omCurrentObj->objId] = 1.0f;

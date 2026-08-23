@@ -78,19 +78,27 @@ void func_800AD1A0(GObj *);
 void procMainStub(struct GObj *);
 s32 func_8015C740_ovl5(GObj *, struct UnkStruct8015C740 *);
 
-void func_801553C0_ovl4(GObj *arg0) {
-    void func_801555F4_ovl4(GObj *);
-    void func_80156160_ovl4(GObj *);
-    void func_801567BC_ovl4(GObj *, s32);
-    void func_80156C4C_ovl4(GObj *, s32);
-    void func_801569F0_ovl4(GObj *, s32);
-    void func_80157028_ovl4(GObj *, s32);
-    void func_801572E4_ovl4(GObj *, s32);
-    void func_80157610_ovl4(GObj *, s32);
-    void func_80157840_ovl4(GObj *, s32);
-    void func_80156560_ovl4(GObj *);
-    void func_8015665C_ovl4(GObj *);
+void func_801555F4_ovl4(GObj *);
+void func_80156160_ovl4(GObj *);
+void func_801567BC_ovl4(GObj *, s32);
+void func_80156C4C_ovl4(GObj *, s32);
+void func_801569F0_ovl4(GObj *, s32);
+void func_80157028_ovl4(GObj *, s32);
+void func_801572E4_ovl4(GObj *, s32);
+void func_80157610_ovl4(GObj *, s32);
+void func_80157840_ovl4(GObj *, s32);
+void func_80156560_ovl4(GObj *);
+void func_8015665C_ovl4(GObj *);
+void func_80156054_ovl4(GObj *);
+void init_save_file_maybe(s32);
+void play_sound(s32);
+void gameSetUpdateRate(f32);
+s32 func_800AEA64(s32, s32, s32);
+#ifdef PORT
+extern void pc_fsel_debug(const char *, int, int, int);
+#endif
 
+void func_801553C0_ovl4(GObj *arg0) {
     switch (D_800E9AA0[omCurrentObj->objId].as_s32) {
         case 0:
             func_801555F4_ovl4(arg0);
@@ -187,7 +195,6 @@ void func_80155C00_ovl4(GObj *);
 void func_801555F4_ovl4(GObj *arg0) {
 #ifdef PORT
     {
-        extern void pc_fsel_debug(const char *, int, int, int);
         pc_fsel_debug("cursor-init", omCurrentObj->objId, saveCurrentFileNum, D_8015C6DC_ovl4);
     }
 #endif
@@ -235,8 +242,6 @@ void func_80155890_ovl4(GObj *arg0) {
     extern u32 gGameState;
     extern s32 D_800D6B68;
     extern u32 D_800D6B60;
-    void init_save_file_maybe(s32);
-    void play_sound(s32);
     s32 v;
 
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -245,7 +250,6 @@ void func_80155890_ovl4(GObj *arg0) {
     }
 #ifdef PORT
     if (gPlayerControllers[0].buttonPressed != 0) {
-        extern void pc_fsel_debug(const char *, int, int, int);
         pc_fsel_debug("confirm-press", gPlayerControllers[0].buttonPressed,
                       saveCurrentFileNum, func_801555AC_ovl4(saveCurrentFileNum));
     }
@@ -348,7 +352,6 @@ void func_80155C00_ovl4(GObj *arg0) {
     extern s32 D_800D71C4;
     extern s32 D_800D71C8;
     extern s32 D_800D71CC;
-    void play_sound(s32);
     s32 v;
 
     if (D_800E9E20[omCurrentObj->objId] != 0) {
@@ -421,10 +424,7 @@ void func_80155C00_ovl4(GObj *arg0) {
     }
 }
 
-void play_sound(s32);
-
 void func_80155E6C_ovl4(GObj *arg0) {
-    void func_80156054_ovl4(GObj *);
 
     if (D_800E9E20[omCurrentObj->objId] != 0) {
         D_800E9E20[omCurrentObj->objId]--;
@@ -743,7 +743,7 @@ typedef struct {
 extern Unk2Fs D_8015AB90_ovl4[];
 extern struct UnkStruct8015C740 D_8015AB70_ovl4;
 extern s32 D_8015C6F0_ovl4;
-u32 func_800A9AA8(s32, s32);
+void *func_800A9AA8(u32, s32);
 
 void func_801569F0_ovl4(GObj *arg0, s32 arg1) {
 #ifdef PORT
@@ -769,14 +769,14 @@ void func_801569F0_ovl4(GObj *arg0, s32 arg1) {
     omLinkGObjDL(arg0, func_800AD1A0, 0x16, 0x80000000, 0x16);
 #ifdef PORT
     sp = (SPObj *) func_8015C740_ovl5(arg0, &D_8015AB70_ovl4);
-    b = func_800A9AA8(0x30001, 3);
+    b = (u32) (uintptr_t) func_800A9AA8(0x30001, 3);
     a = (u32) (uintptr_t) sp->gfx[0].b.tlut.tlut.image;
-    c = func_800A9AA8(0x30002, 3);
+    c = (u32) (uintptr_t) func_800A9AA8(0x30002, 3);
 #else
     sp = (UnkSpObj8015AB70 *) func_8015C740_ovl5(arg0, &D_8015AB70_ovl4);
-    b = func_800A9AA8(0x30001, 3);
+    b = (u32) (uintptr_t) func_800A9AA8(0x30001, 3);
     a = sp->unk6C;
-    c = func_800A9AA8(0x30002, 3);
+    c = (u32) (uintptr_t) func_800A9AA8(0x30002, 3);
 #endif
     sp->xOffset = D_8015AB90_ovl4[arg1].unk0;
     sp->yOffset = D_8015AB90_ovl4[arg1].unk4;
@@ -1318,9 +1318,7 @@ void func_80157CF0_ovl4(void) {
 }
 
 void func_80157E04_ovl4(void) {
-    void gameSetUpdateRate(f32);
     extern s32 D_800D6B68;
-    extern s32 func_800AEA64(s32, s32, s32);
     s32 i;
 
     gameSetUpdateRate(2.0f);

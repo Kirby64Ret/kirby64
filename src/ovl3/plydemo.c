@@ -96,7 +96,6 @@ void func_8011E234(void);
  * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 
 void func_80156050_ovl3(s32 arg0) {
-
     extern u8 D_800D6E20[];
     s32 id = omCurrentObj->objId;
 
@@ -355,7 +354,6 @@ err:
  * block, so nothing declares it for the N64 build. Close the count first. */
 
 void func_801567B8_ovl3(s32 arg0) {
-
     s32 id = omCurrentObj->objId;
     f32 spd;
     f32 tick;
@@ -1292,7 +1290,6 @@ void func_80158EEC_ovl3(s32 arg0) {
  * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 
 void func_80159164_ovl3(s32 arg0) {
-
     s32 id = omCurrentObj->objId;
     f32 probe[3];
 
@@ -1448,10 +1445,6 @@ void func_80159164_ovl3(s32 arg0) {
  * DObj, re-derives track progress from the x delta to the ride, and walks
  * off at 14 with the walk animation. The widened D_800DFBD0 cell for N64
  * +0xC is index 3. */
-extern void func_800B4954(GObj *);
-extern void func_80122B40(void);
-extern void func_800BB468(s32, s32);
-extern void func_800F98EC(s32, f32);
 void func_80159164_ovl3(s32 arg0) {
     s32 id = omCurrentObj->objId;
     f32 probe[3];
@@ -1782,7 +1775,6 @@ void func_8015A31C_ovl3(s32 arg0) {
  * object pointer) plus a count gap; close the count first. */
 
 void func_8015A44C_ovl3(s32 arg0) {
-
     s32 id;
 
     gKirbyState.unk30 = 0;
