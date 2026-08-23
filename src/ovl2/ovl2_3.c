@@ -1649,10 +1649,10 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
     Vector axis;
 
     dir.x = dir.y = dir.z = 0.0f;
-    switch (arg1->unk0) {
+    switch (arg1->mode) {
         case 0:
-            dir.x = cosf((arg1->unk8 * 3.1415927f) / 180.0f);
-            dir.z = -sinf((arg1->unk8 * 3.1415927f) / 180.0f);
+            dir.x = cosf((arg1->yaw * 3.1415927f) / 180.0f);
+            dir.z = -sinf((arg1->yaw * 3.1415927f) / 180.0f);
             dir.y = 0.0f;
             break;
         case 1:
@@ -1660,17 +1660,17 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
                           D_800E6BD0[arg0]);
             dir.y = 0.0f;
             lbvector_Normalize(&dir);
-            lbvector_Rotate(&dir, 2, (arg1->unk8 * 3.1415927f) / 180.0f);
+            lbvector_Rotate(&dir, 2, (arg1->yaw * 3.1415927f) / 180.0f);
             break;
     }
-    lbvector_Scale(&dir, -arg1->unkC);
-    lbvector_Add(&dir, (Vector *) &arg2->unk0);
-    lbvector_Diff(&diff, (Vector *) &arg2->unk0, &dir);
+    lbvector_Scale(&dir, -arg1->eyeDistance);
+    lbvector_Add(&dir, (Vector *) &arg2->focusX);
+    lbvector_Diff(&diff, (Vector *) &arg2->focusX, &dir);
     vec3_normalized_cross_product(&cam->viewMtx.lookAt.up, &diff, &axis);
-    func_800191F8(&diff, &axis, ((arg1->unk4 - 90.0f) * 3.1415927f) / 180.0f);
-    arg2->unkC = arg2->unk0 - diff.x;
-    arg2->unk10 = arg2->unk4 - diff.y;
-    arg2->unk14 = arg2->unk8 - diff.z;
+    func_800191F8(&diff, &axis, ((arg1->pitch - 90.0f) * 3.1415927f) / 180.0f);
+    arg2->rawEyeX = arg2->focusX - diff.x;
+    arg2->rawEyeY = arg2->focusY - diff.y;
+    arg2->rawEyeZ = arg2->focusZ - diff.z;
 }
 #else
 void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
@@ -1683,10 +1683,10 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
     void func_8001E344(Vector *, struct Unk80129114_4_4 *, f32);
 
     dobj = D_800D799C->data.dobj;
-    switch (arg1->unk0) {
+    switch (arg1->mode) {
     case 0:
-        dir.x = cosf((arg1->unk8 * 3.1415927f) / 180.0f);
-        dir.z = -sinf((arg1->unk8 * 3.1415927f) / 180.0f);
+        dir.x = cosf((arg1->yaw * 3.1415927f) / 180.0f);
+        dir.z = -sinf((arg1->yaw * 3.1415927f) / 180.0f);
         dir.y = 0.0f;
         break;
     case 1:
@@ -1694,17 +1694,17 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
         func_8001E344(&dir, footer, D_800E6BD0[arg0]);
         dir.y = 0.0f;
         lbvector_Normalize(&dir);
-        lbvector_Rotate(&dir, 2, (arg1->unk8 * 3.1415927f) / 180.0f);
+        lbvector_Rotate(&dir, 2, (arg1->yaw * 3.1415927f) / 180.0f);
         break;
     }
-    lbvector_Scale(&dir, -arg1->unkC);
+    lbvector_Scale(&dir, -arg1->eyeDistance);
     lbvector_Add(&dir, (Vector *) arg2);
     lbvector_Diff(&diff, (Vector *) arg2, &dir);
     vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &diff, &axis);
-    func_800191F8(&diff, &axis, ((arg1->unk4 - 90.0f) * 3.1415927f) / 180.0f);
-    arg2->unkC = arg2->unk0 - diff.x;
-    arg2->unk10 = arg2->unk4 - diff.y;
-    arg2->unk14 = arg2->unk8 - diff.z;
+    func_800191F8(&diff, &axis, ((arg1->pitch - 90.0f) * 3.1415927f) / 180.0f);
+    arg2->rawEyeX = arg2->focusX - diff.x;
+    arg2->rawEyeY = arg2->focusY - diff.y;
+    arg2->rawEyeZ = arg2->focusZ - diff.z;
 }
 #endif
 
@@ -1716,46 +1716,46 @@ void func_800FA7EC(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
     f32 temp_f0_5;
     f32 temp_f0_6;
 
-    arg2->unk30 = 0;
-    arg2->unk34 = 0;
-    arg2->unk38 = 0;
-    arg2->unk24 = arg2->unkC;
-    arg2->unk28 = arg2->unk10;
-    arg2->unk2C = arg2->unk14;
-    if (arg1->unk18 != 0) {
-        temp_f0 = arg1->unk20;
-        if (arg2->unk24 <= temp_f0) {
-            arg2->unk24 = temp_f0;
-            arg2->unk30 |= 1;
+    arg2->eyeXClampFlags = 0;
+    arg2->eyeYClampFlags = 0;
+    arg2->eyeZClampFlags = 0;
+    arg2->eyeX = arg2->rawEyeX;
+    arg2->eyeY = arg2->rawEyeY;
+    arg2->eyeZ = arg2->rawEyeZ;
+    if (arg1->eyeXClampEnable != 0) {
+        temp_f0 = arg1->eyeXMin;
+        if (arg2->eyeX <= temp_f0) {
+            arg2->eyeX = temp_f0;
+            arg2->eyeXClampFlags |= 1;
         }
-        temp_f0_2 = arg1->unk24;
-        if (temp_f0_2 <= arg2->unk24) {
-            arg2->unk24 = temp_f0_2;
-            arg2->unk30 |= 2;
-        }
-    }
-    if (arg1->unk19 != 0) {
-        temp_f0_3 = arg1->unk28;
-        if (arg2->unk28 <= temp_f0_3) {
-            arg2->unk28 = temp_f0_3;
-            arg2->unk34 |= 1;
-        }
-        temp_f0_4 = arg1->unk2C;
-        if (temp_f0_4 <= arg2->unk28) {
-            arg2->unk28 = temp_f0_4;
-            arg2->unk34 |= 2;
+        temp_f0_2 = arg1->eyeXMax;
+        if (temp_f0_2 <= arg2->eyeX) {
+            arg2->eyeX = temp_f0_2;
+            arg2->eyeXClampFlags |= 2;
         }
     }
-    if (arg1->unk1A != 0) {
-        temp_f0_5 = arg1->unk30;
-        if (arg2->unk2C <= temp_f0_5) {
-            arg2->unk2C = temp_f0_5;
-            arg2->unk38 |= 1;
+    if (arg1->eyeYClampEnable != 0) {
+        temp_f0_3 = arg1->eyeYMin;
+        if (arg2->eyeY <= temp_f0_3) {
+            arg2->eyeY = temp_f0_3;
+            arg2->eyeYClampFlags |= 1;
         }
-        temp_f0_6 = arg1->unk34;
-        if (temp_f0_6 <= arg2->unk2C) {
-            arg2->unk2C = temp_f0_6;
-            arg2->unk38 |= 2;
+        temp_f0_4 = arg1->eyeYMax;
+        if (temp_f0_4 <= arg2->eyeY) {
+            arg2->eyeY = temp_f0_4;
+            arg2->eyeYClampFlags |= 2;
+        }
+    }
+    if (arg1->eyeZClampEnable != 0) {
+        temp_f0_5 = arg1->eyeZMin;
+        if (arg2->eyeZ <= temp_f0_5) {
+            arg2->eyeZ = temp_f0_5;
+            arg2->eyeZClampFlags |= 1;
+        }
+        temp_f0_6 = arg1->eyeZMax;
+        if (temp_f0_6 <= arg2->eyeZ) {
+            arg2->eyeZ = temp_f0_6;
+            arg2->eyeZClampFlags |= 2;
         }
     }
 }

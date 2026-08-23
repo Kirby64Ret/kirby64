@@ -812,8 +812,6 @@ s32 func_801F111C_ovl10(void) {
     return 1;
 }
 
-#ifdef MIPS_TO_C
-
 /* Prize-wheel object main: claims the wheel track id (D_801F4D60), drops
  * its sparkle, spawns the three walking prizes (states 0..2, mount 1..3 via
  * D_800E9AA0), moves onto DL bucket 0x14, runs the intro camera spline
@@ -825,7 +823,9 @@ s32 func_801F111C_ovl10(void) {
  * (D_800E9C60[0]) it just idles the camera forever.
  * 0x42C80000 / 0x40000000 passed to the f32 camera params are float bits:
  * 100.0f and 2.0f. */
-/* FACTORY: 21/171, residue.  Length, frame (0x20), saved registers and the
+#ifdef MIPS_TO_C
+/* FACTORY: 21/171, residue -- re-confirmed 2026-08-23, identical 21/171.
+ * Length, frame (0x20), saved registers and the
  * whole call order are the ROM's.  What is left is a one-instruction
  * scheduling slip in the scale block: the ROM issues the D_801F4C94 load
  * before `ent->unk80 = NULL` and hoists func_800AF7A0's 0x2C argument up
@@ -844,7 +844,12 @@ s32 func_801F111C_ovl10(void) {
  *   - the declarations this draft needs are in-body and every copy is
  *     spelled exactly as the PORT block's, which is what IDO requires.
  * The prototypes are NOT the blocker this file was parked on: measured,
- * hoisting an identical set to file scope compiles byte-identically. */
+ * hoisting an identical set to file scope compiles byte-identically.
+ * Re-swept 2026-08-23: moving `gEntitiesScaleXArray[objId] =
+ * D_801F4C94_ovl10;` to before `ent->unk80 = NULL;` (matching the ROM's
+ * apparent load-before-store order literally) is much WORSE (125/171) --
+ * this is IDO's own scheduler decision, not a source-order lever. Good
+ * permuter seed. */
 void func_801F11A8_ovl10(GObj *arg0) {
     #include "unk_structs/D_800D79D8.h"
     void func_800AF7A0(s32);
