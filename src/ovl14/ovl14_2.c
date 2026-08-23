@@ -402,13 +402,262 @@ void func_801E1720_ovl14(GObj *arg0) {
 
 }
 
+extern void func_800A9760(s32);
+extern void func_800A9EA4(s32);
+extern void func_800BB468(s32, s32);
+extern void func_800FB914(s32);
+extern void func_801A3E80_ovl7(GObj *);
+extern s32 D_801DAA48;
+/* FACTORY: 268/366 measured; the ROM is 370 words, so this draft is FOUR
+   words short and the residue is register allocation on top of that.
+   What is solid: every statement, both `c`/`z` hoisted-literal locals (the
+   file's own idiom, see the matched func_801E13C0_ovl14 above), the three
+   chained position assignments, and func_800A9EA4's ARGUMENT -- the ROM
+   materialises 0x10463 into $a0 for it, so it is `func_800A9EA4(0x10463)`,
+   not the `(void)` call m2c-style drafts assume (worth 38 words: 307 -> 269).
+   What is missing: the ROM re-reads `omCurrentObj->objId` for BOTH halves of
+   the `gEntitiesPosYArray[i] += ...` / `gEntitiesNextPosYArray[i] = ...` pair
+   (lw+sll twice = the four words) where IDO reuses the $s0 it already holds
+   from the gEntitiesPosXArray statement above; and the ROM's frame is 0x50
+   against IDO's 0x48 because the ROM hoists three array bases (&D_800E3910,
+   &D_800E3590, &D_800E3E50) into $s2/$s3/$s4 and IDO picks a different set.
+   Swept and rejected: `z = 0.0f` hoisted next to `c` (no change), two
+   unreferenced scalar pads and an unreferenced `s32 pad[2]` (neither reserves
+   a slot -- lever 30's leaf case), and `a[i] = a[i] + x` vs `a[i] += x`
+   (one word, kept the `+=`). */
+#if defined(MIPS_TO_C) || defined(PORT)
+/* The PORT arm is this same body: nothing here is N64-only -- every array is
+   indexed through its declared type, the only pointer written is
+   EnemyRecord.unk8C (a real `s32 *`), and D_800D7098 is read through its
+   struct.  One arm rather than two duplicated copies. */
+void func_801E1728_ovl14(GObj *arg0) {
+    struct EnemyRecord *rec;
+    f32 c;
+    f32 z;
+    s32 other;
+
+    rec = D_800E1B50[omCurrentObj->objId];
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    func_800A9760(0x1006F);
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesPosYArray[omCurrentObj->objId] =
+        gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]] - 420.0f;
+    rec->unk8C = &D_801DAA48;
+    D_800E98E0[omCurrentObj->objId] = 3;
+    D_800E9AA0[omCurrentObj->objId] = 1;
+    func_800A9EA4(0x10463);
+    c = 65535.0f;
+    gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesPosXArray[omCurrentObj->objId] =
+        D_800EA6E0[omCurrentObj->objId];
+    other = (&D_800D7098.unk0)[D_800EC2E0[omCurrentObj->objId].as_s32];
+    z = 0.0f;
+    gEntitiesPosYArray[omCurrentObj->objId] += 20.0f + (gEntitiesNextPosYArray[other] - D_800EA6E0[other]);
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesPosYArray[omCurrentObj->objId];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesPosZArray[omCurrentObj->objId] =
+        D_800EA8A0[omCurrentObj->objId];
+    D_800E3910[omCurrentObj->objId] = z;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    func_801E2028_ovl14();
+    ohSleep(1);
+    D_800E3590[omCurrentObj->objId] = z;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = c;
+    D_800E3210[omCurrentObj->objId] = 2.133333445f * 16.0f;
+    D_800E3750[omCurrentObj->objId] = -2.133333445f;
+    D_800E33D0[omCurrentObj->objId] = z;
+    D_800E3910[omCurrentObj->objId] = z;
+    D_800E3E50[omCurrentObj->objId] = c;
+    play_sound(0x192);
+    func_800BB468(0, 0);
+    D_800E9C60[omCurrentObj->objId] = 0x10636;
+    ohSleep(0xF);
+    D_800E3910[omCurrentObj->objId] = z;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
+        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
+    ohSleep(1);
+    D_800E3590[omCurrentObj->objId] = z;
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
+    D_800E3AD0[omCurrentObj->objId] = c;
+    D_800E3210[omCurrentObj->objId] = z;
+    D_800E3750[omCurrentObj->objId] = -0.991735518f;
+    D_800E33D0[omCurrentObj->objId] = z;
+    D_800E3910[omCurrentObj->objId] = z;
+    D_800E3E50[omCurrentObj->objId] = c;
+    D_800E9C60[omCurrentObj->objId] = 0x1063B;
+    ohSleep(0x16);
+    func_800FB914(1);
+    ohSleep(3);
+    rec->unk40 = 1;
+    func_801A3E80_ovl7(arg0);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E1728_ovl14.s")
+#endif
 
 void func_801E1CE0_ovl14(GObj *arg0) {
 
 }
 
+struct Ovl14CollShape {
+    u8 unk0;
+    u8 pad1[3];
+    s32 unk4;
+    s32 unk8;
+    u8 padC[0x1C];
+};
+
+struct Ovl14CollSlot {
+    void *unk0;
+    s32 unk4[6];
+    struct Ovl14CollShape *unk1C;
+    s32 unk20;
+    struct Ovl14CollShape *unk24;
+};
+
+struct Ovl14AnimInfo {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[8];
+    s32 unkC;
+    u8 filler10[0x10];
+};
+
+void func_80111550(s32);
+struct Ovl14CollSlot *func_80111C88(void *, u32);
+void func_80111ECC(void *);
+s32 func_80110B00(struct Ovl14AnimInfo *);
+s32 func_80110FD4(struct Ovl14AnimInfo *);
+s32 func_80110150(struct Ovl14AnimInfo *);
+
+#ifdef MIPS_TO_C
+/* FACTORY: 207/207 measured, but INSTRUCTION COUNT and FRAME (0x50) are both
+   EXACT and the statement order lines up 1:1 -- the entire residue is one
+   register-allocation strategy.  The ROM uses NO callee-saved register at all:
+   it re-materialises &omCurrentObj with lui/addiu after every call and keeps
+   `rec` in the stack slot at 0x44, reloading it at each of its six uses.  IDO
+   instead parks &omCurrentObj in $s0 and `rec` in $s1, which renames every
+   word.  Swept: all three declaration orders of {rec, sp24, slot} -- identical
+   output each time.  This is the whole-function callee-saved permutation floor
+   in LEVERS' "guard on the second variant" list; the permuter is the right
+   tool.
+   Struct evidence (kept, it is the real point of this derivation): the
+   func_80111C88 result is ovl2_9.c's `struct CollSlot`, and its +0x24 field is
+   an ARRAY of 0x28-byte `Shape28` records -- the ROM's 0x30/0x58/0x80/0xA8/
+   0xD0/0xF8/0x120/0x148 stores are elements 1..8 of that array at field +0x8,
+   not eight unrelated offsets.  Spelling it as an array is what makes the two
+   cases read as "copy N DObj slots into consecutive collision shapes". */
+s32 func_801E1CE8_ovl14(void) {
+    struct EnemyRecord *rec;
+    struct Ovl14AnimInfo sp24;
+    struct Ovl14CollSlot *slot;
+
+    rec = D_800E1B50[omCurrentObj->objId];
+    if (rec->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    slot = func_80111C88(rec->unk8C, omCurrentObj->objId);
+    switch (D_800E98E0[omCurrentObj->objId]) {
+    case 1:
+        slot->unk24[1].unk8 = D_800DFBD0[omCurrentObj->objId][3];
+        slot->unk24[2].unk8 = D_800DFBD0[omCurrentObj->objId][4];
+        slot->unk24[3].unk8 = D_800DFBD0[omCurrentObj->objId][5];
+        slot->unk24[4].unk8 = D_800DFBD0[omCurrentObj->objId][6];
+        slot->unk24[5].unk8 = D_800DFBD0[omCurrentObj->objId][7];
+        slot->unk24[6].unk8 = D_800DFBD0[omCurrentObj->objId][8];
+        slot->unk24[7].unk8 = D_800DFBD0[omCurrentObj->objId][9];
+        slot->unk24[8].unk8 = D_800DFBD0[omCurrentObj->objId][10];
+        break;
+    case 2:
+        slot->unk24[1].unk8 = D_800DFBD0[omCurrentObj->objId][2];
+        slot->unk24[2].unk8 = D_800DFBD0[omCurrentObj->objId][3];
+        slot->unk24[3].unk8 = D_800DFBD0[omCurrentObj->objId][4];
+        break;
+    case 3:
+        break;
+    }
+    func_80111ECC(slot);
+    if (func_80110B00(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        rec->unk43 = sp24.unk3;
+    } else if (func_80110FD4(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        rec->unk43 = sp24.unk3;
+    } else if (func_80110150(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        rec->unk43 = sp24.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        rec->unk43 = 0;
+    }
+    if ((D_800E83E0[omCurrentObj->objId] == 1) || (D_800E83E0[omCurrentObj->objId] == 2)) {
+        return 1;
+    }
+    return 0;
+}
+#elif defined(PORT)
+/* PORT: identical logic.  The only divergence is the store of a host
+   `struct DObj *` into Shape28's 4-byte s32 field, which needs the tree's
+   explicit truncated sub-4GiB pointer cast (all game-visible memory is below
+   4 GiB -- see pc_mmio.c). */
+s32 func_801E1CE8_ovl14(void) {
+    struct EnemyRecord *rec;
+    struct Ovl14AnimInfo sp24;
+    struct Ovl14CollSlot *slot;
+
+    rec = D_800E1B50[omCurrentObj->objId];
+    if (rec->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    slot = func_80111C88(rec->unk8C, omCurrentObj->objId);
+    switch (D_800E98E0[omCurrentObj->objId]) {
+    case 1:
+        slot->unk24[1].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][3];
+        slot->unk24[2].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][4];
+        slot->unk24[3].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][5];
+        slot->unk24[4].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][6];
+        slot->unk24[5].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][7];
+        slot->unk24[6].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][8];
+        slot->unk24[7].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][9];
+        slot->unk24[8].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][10];
+        break;
+    case 2:
+        slot->unk24[1].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][2];
+        slot->unk24[2].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][3];
+        slot->unk24[3].unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][4];
+        break;
+    case 3:
+        break;
+    }
+    func_80111ECC(slot);
+    if (func_80110B00(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        rec->unk43 = sp24.unk3;
+    } else if (func_80110FD4(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        rec->unk43 = sp24.unk3;
+    } else if (func_80110150(&sp24) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp24.unk2;
+        rec->unk43 = sp24.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        rec->unk43 = 0;
+    }
+    if ((D_800E83E0[omCurrentObj->objId] == 1) || (D_800E83E0[omCurrentObj->objId] == 2)) {
+        return 1;
+    }
+    return 0;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E1CE8_ovl14.s")
+#endif
 
 void func_801E2028_ovl14(void) {
     s32 temp;

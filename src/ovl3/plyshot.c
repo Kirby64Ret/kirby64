@@ -5,6 +5,10 @@
 
 extern s32 D_8012E860;
 
+/* NOT reconciled to the src/ovl1/ovl1_7.c:1040 definition's u16: the
+ * prototype's implicit truncation reschedules func_80164914_ovl3's tail
+ * (the ROM's `andi a0,v0,0xffff` sits in the jal delay slot) and grows
+ * this TU's .text by 0x10. Measured, objdump A/B. */
 extern void func_800B1900(s32);
 extern void func_80111C4C(s32);
 extern s32 func_80168408_ovl3(s32, s32, f32);
@@ -25,6 +29,10 @@ extern void func_800AED20(f32);
 extern void func_80164130_ovl3(struct GObj *);
 extern void func_800B4B9C(s32);
 extern void func_800AA154(s32);
+/* NOT reconciled to the src/ovl1/ovl1_3.c:2614 arm's (u32, s32, s32):
+ * spelling arg0 u32 here moves a caller's register allocation and grows
+ * this TU's .text by 0x10 (measured, objdump A/B). The ROM's own
+ * declaration state is what the s32 reproduces. */
 extern void func_800A9864(s32, s32, s32);
 extern void func_801230E8(s32, s32, s32);
 extern void func_801654CC_ovl3(s32);
@@ -36,6 +44,95 @@ typedef struct Unk80197BF0 {
 
 extern Unk80197BF0 D_80197BF0_ovl3[];
 extern FUNCLIST D_801966F0_ovl3;
+
+/* Everything the shot handlers below call. m2c emitted a private copy of
+ * each of these inside every function body that used it (func_80155D50_ovl3
+ * eighteen times over); a block-scope function declaration has file-scope
+ * linkage in C, so none of them was ever local. One prototype apiece. */
+struct PositionState;
+float sinf(float);                          /* as spelled in include/libc/math.h */
+float cosf(float);
+float sqrtf(float);
+f32 atan2f(f32, f32);
+void curObjSleepForever(void);
+extern s32 random_soft_s32_range(s32);
+extern f32 lbvector_Angle(Vector *, Vector *);
+extern Vector *lbvector_Rotate(Vector *, s32, f32);
+extern Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
+extern Vector *func_800191F8(Vector *, Vector *, f32);
+extern void func_800A1F30(s32);
+extern void func_800A77E8(s32, s32 *, s32 *);
+extern void func_800A7870(void **, u16 *);
+/* Definition: src/ovl1/ovl1_2_2.c:321,
+ * Ovl1Generator *func_800A7F74(s32, s32, s32, f32, f32, f32) -- Ovl1Generator
+ * is private to that TU, so the tree spells the return void. */
+extern void func_800A7F74(s32, s32, s32, f32, f32, f32);
+extern s32 func_800A8234(s32, s32, s32);
+extern void func_800A9760(s32);
+extern s32 func_800AA934(s32);
+extern void func_800AF27C(void);
+extern void func_800AF314(void);
+extern void func_800AFBB4(s32, struct GObj *);
+/* src/ovl1/ovl1_7.c:1396/1450 define these as
+ * void func_800B2340(Vector *, struct DObj *, u32). This file keeps the s32
+ * spelling because every call site here passes the DObj through an explicit
+ * (s32)(uintptr_t) cast off D_800DFBD0[][]; kirby.c uses the real types.
+ * Reconciling means retyping D_800DFBD0, not the prototype. */
+extern void func_800B2340(Vector *, s32, s32);
+extern void func_800B26D8(Vector *, s32, s32);
+extern s32 func_800B3158(void);
+/* src/ovl1/ovl1_8.c:389 defines void func_800B4954(GObj *). Here it is only
+ * ever stored into D_800DEF90[], whose element type is void (*)(s32), so the
+ * s32 spelling is what makes that assignment cast-free. */
+extern void func_800B4954(s32);
+extern void func_800B5064(GObj *);
+extern void func_800BB468(s32, s32);
+extern f32 func_800F9828(s32, s32);
+extern s32 func_8010DF9C(f32 *);
+extern s32 func_8010E048(void *, s32, f32 *, f32 *, void *, f32 *);   /* asm: $a0 halfword-indexed record, $a1 an index */
+/* char * rather than the void * ovl3_6.c uses: func_80164914_ovl3's
+ * codegen depends on it (void * grows this TU's .text, measured). */
+extern s32 func_80111A04(char *, s32);
+extern s32 func_8011D858(void *, s32, f32);
+extern void func_80154578_ovl3(void *, s32, f32);
+/* The shot collision entry points. Their N64 definitions in ovl3_1.c take
+ * FEWER (or differently typed) parameters than these prototypes: the ROM
+ * threads the shot's state buffer through $a0 untouched, so ovl3_1.c spells
+ * func_80155424_ovl3/func_80155498_ovl3/func_80155664_ovl3 `(void)` and
+ * relies on whatever the caller left in $a0. These caller-side prototypes
+ * are what the call sites below require and what the ROM's argument setup
+ * shows; do not "reconcile" them to the definitions without redoing that
+ * whole family (see also ovl3_1.c's note on func_80154CFC_ovl3).
+ * func_80155D50_ovl3 is the reverse case: ovl3_1.c:2473 defines it void,
+ * but seven call sites below read its $v0 -- same class as the eight
+ * void-returning ovl2_7 helpers in tools/decomp/REFOUND.md. */
+extern s32 func_80155424_ovl3(struct PositionState *);
+extern s32 func_80155498_ovl3(f32 *);
+extern s32 func_801555B0_ovl3(f32 *, f32 *);
+extern s32 func_80155664_ovl3(f32 *);
+extern s32 func_80155838_ovl3(f32 *, f32, s32);
+extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
+extern s32 func_80155E58_ovl3(void);
+extern void func_8015B75C_ovl3(GObj *);
+extern void func_8015C00C_ovl3(s32);
+void func_8015CC84_ovl3(s32);
+extern void func_8015D3C8_ovl3(GObj *);
+extern void func_8015DBE4_ovl3(s32);
+extern void func_8015ED2C_ovl3(s32);
+extern void func_8015FD58_ovl3(s32);
+extern void func_80160D84_ovl3(s32);
+extern void func_801614D8_ovl3(GObj *);
+extern s32 func_80162000_ovl3(char *, s32, f32);
+extern void func_80162150_ovl3(void);
+extern void func_801625B8_ovl3(f32 *);
+void func_801644EC_ovl3(s32);
+void func_80164890_ovl3(s32, s32, f32);
+void func_80164914_ovl3(s32);
+void func_80164EA8_ovl3(s32);
+void func_80167578_ovl3(s32);
+s32 func_8016854C_ovl3(s32, s32, f32);
+extern s32 func_801693C4_ovl3(s32);
+extern s32 func_8019F234_ovl7(s32);
 
 void func_8015AC90_ovl3(s32 arg0) {
     Unk80197BF0 *p;
@@ -95,6 +192,9 @@ void func_8015ADF8_ovl3(s32 arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
+/* ovl3_1.c:2138 defines this (s32, s32); both arguments are really the
+ * pointers spelled here (it forwards them to func_80154CFC_ovl3 and
+ * func_80155C68_ovl3, which carry the same s32-for-pointer crutch). */
 extern s32 func_8015550C_ovl3(f32 *, f32 *);
 extern void func_800FD754(s32, f32, f32, f32);
 extern s32 func_801117BC(char *, s32);
@@ -132,7 +232,6 @@ void func_8015B060_ovl3(s32 arg0) {
  * the low word and a local, and store back in a {low word, id} shape that
  * round-trips. */
 static void pc_sndpair_release(void *base) {
-    extern void func_800A7870(void **, u16 *);
     u32 *p = base;
     void *h;
     u16 sid;
@@ -148,7 +247,6 @@ static void pc_sndpair_release(void *base) {
 }
 
 static void pc_sndpair_start(s32 fgm, void *base) {
-    extern void func_800A77E8(s32, s32 *, s32 *);
     u32 *p = base;
     void *h = NULL;
     u16 sid = 0;
@@ -192,15 +290,6 @@ void func_8015B190_ovl3(s32 arg0) {
     };
     extern f32 **D_80192B78_ovl3;
     extern f32 D_8012E7FC[];
-    extern void func_800B4954(s32);
-    extern void func_800B5064(struct GObj *);
-    extern void func_8015B75C_ovl3(struct GObj *);
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800AF314(void);
-    extern void func_800A9760(s32);
-    extern s32 func_80155424_ovl3(struct PositionState *);
-    extern void func_800A77E8(s32, s32 *, s32 *);
-    void curObjSleepForever(void);
     s32 id = omCurrentObj->objId;
     u32 sndpair[2];
     const f32 *row;
@@ -289,14 +378,6 @@ void func_8015B190_ovl3(s32 arg0) {
     };
     extern f32 **D_80192B78_ovl3;
     extern f32 D_8012E7FC[];
-    extern void func_800B4954(s32);
-    extern void func_800B5064(struct GObj *);
-    extern void func_8015B75C_ovl3(struct GObj *);
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800AF314(void);
-    extern void func_800A9760(s32);
-    extern s32 func_80155424_ovl3(struct PositionState *);
-    void curObjSleepForever(void);
     s32 id = omCurrentObj->objId;
     u32 sndpair[2];
     const f32 *row;
@@ -389,13 +470,6 @@ void func_8015B190_ovl3(s32 arg0) {
 void func_8015B75C_ovl3(struct GObj *arg0) {
     struct RockFx { u32 kind; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
     extern char D_80190B6C_ovl3[];
-    extern s32 func_800B3158(void);
-    extern void func_800B2340(Vector *, s32, s32);
-    extern void func_800B26D8(Vector *, s32, s32);
-    extern s32 func_801693C4_ovl3(s32);
-    extern void func_80162150_ovl3(void);
-    extern s32 func_80155424_ovl3(struct PositionState *);
-    extern void func_800A7870(void **, u16 *);
     static const f32 pc_rock_spd[3] = { 6.0f, 8.0f, 10.0f };
     s32 id = omCurrentObj->objId;
     struct RockFx *fx;
@@ -498,12 +572,6 @@ seat:
  * garbled data emission), spelled here as literals. */
 void func_8015B75C_ovl3(struct GObj *arg0) {
     extern char D_80190B6C_ovl3[];
-    extern s32 func_800B3158(void);
-    extern void func_800B2340(Vector *, s32, s32);
-    extern void func_800B26D8(Vector *, s32, s32);
-    extern s32 func_801693C4_ovl3(s32);
-    extern void func_80162150_ovl3(void);
-    s32 func_80155424_ovl3();
     static const f32 pc_rock_spd[3] = { 6.0f, 8.0f, 10.0f };
     s32 id = omCurrentObj->objId;
     struct PcPlyshotFx *fx;
@@ -599,11 +667,6 @@ seat:
    written as literals. */
 void func_8015BBE4_ovl3(s32 arg0) {
     extern f32 **D_80192B94_ovl3;
-    extern void func_800B4954(s32);
-    extern void func_8015C00C_ovl3(s32);
-    extern void func_800A77E8(s32, s32 *, s32 *);
-    extern s32 func_800A8234(s32, s32, s32);
-    void curObjSleepForever(void);
     s32 sp34;
     s32 sp30;
 
@@ -672,7 +735,6 @@ void func_8015BBE4_ovl3(s32 arg0) {
 struct BoomerangFx { u32 kind; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
 
 static void plyshotSndpairRelease(u32 *pair) {
-    extern void func_800A7870(void **, u16 *);
     void *handle;
     u16 sid;
 
@@ -687,7 +749,6 @@ static void plyshotSndpairRelease(u32 *pair) {
 }
 
 static void plyshotSndpairStart(s32 fgm, u32 *pair) {
-    extern void func_800A77E8(s32, s32 *, s32 *);
 
     func_800A77E8(fgm, (s32 *) &pair[0], (s32 *) &pair[1]);
 }
@@ -696,16 +757,6 @@ void func_8015C00C_ovl3(s32 arg0) {
     extern u8 D_80198834_ovl3[];
     extern char D_80190BB0_ovl3[];
     extern s32 D_8019356C_ovl3[];
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800A1F30(s32);
-    extern s32 func_80155664_ovl3(f32 *);
-    extern s32 func_80155838_ovl3(f32 *, f32, s32);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern f32 func_800F9828(s32, s32);
-    extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
-    f32 atan2f(f32, f32);
-    float sinf(float);
-    float cosf(float);
     s32 id = omCurrentObj->objId;
     u32 *sndpair = (u32 *) (uintptr_t) (u32) D_800EA360[id];
     f32 probe[3];
@@ -830,15 +881,6 @@ void func_8015C00C_ovl3(s32 arg0) {
     extern u8 D_80198834_ovl3[];
     extern char D_80190BB0_ovl3[];
     extern s32 D_8019356C_ovl3[];
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800A1F30(s32);
-    extern s32 func_80155664_ovl3(f32 *);
-    extern s32 func_80155838_ovl3(f32 *, f32, s32);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern f32 func_800F9828(s32, s32);
-    f32 atan2f(f32, f32);
-    float sinf(float);
-    float cosf(float);
     s32 id = omCurrentObj->objId;
     u32 *sndpair = (u32 *) (uintptr_t) (u32) D_800EA360[id];
     f32 probe[3];
@@ -966,11 +1008,6 @@ void func_8015C7F4_ovl3(s32 arg0) {
     extern f32 **D_80192C3C_ovl3;
     extern f32 D_80196750_ovl3[];
     extern f32 D_8012E7FC[];
-    extern void func_800B4954(s32);
-    extern s32 random_soft_s32_range(s32);
-    extern Vector *lbvector_Rotate(Vector *, s32, f32);
-    void func_8015CC84_ovl3(s32);
-    void curObjSleepForever(void);
     s32 id = omCurrentObj->objId;
     s32 kind = D_800EC2E0[id].as_u32;
     Vector v;
@@ -1034,11 +1071,6 @@ void func_8015C7F4_ovl3(s32 arg0) {
     extern f32 **D_80192C3C_ovl3;
     extern f32 D_80196750_ovl3[];
     extern f32 D_8012E7FC[];
-    extern void func_800B4954(s32);
-    extern s32 random_soft_s32_range(s32);
-    extern Vector *lbvector_Rotate(Vector *, s32, f32);
-    void func_8015CC84_ovl3(s32);
-    void curObjSleepForever(void);
     s32 id = omCurrentObj->objId;
     s32 kind = D_800EC2E0[id].as_u32;
     Vector v;
@@ -1094,8 +1126,6 @@ void func_8015C7F4_ovl3(s32 arg0) {
 #endif
 
 extern char D_80190BF4_ovl3[];
-extern void func_80162150_ovl3(void);
-extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
 
 void func_8015CC84_ovl3(s32 arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
@@ -1155,14 +1185,6 @@ void func_8015CC84_ovl3(s32 arg0) {
  * and destroys the track. */
 void func_8015CF9C_ovl3(s32 arg0) {
     extern f32 **D_80192CA4_ovl3;
-    extern void func_800B4954(s32);
-    extern void func_8015D3C8_ovl3(struct GObj *);
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800A9760(s32);
-    extern void func_800A77E8(s32, s32 *, s32 *);
-    extern void func_800A7870(void **, u16 *);
-    float sinf(float);
-    float cosf(float);
     s32 id = omCurrentObj->objId;
     s32 pairHandle;
     s32 pairSid;
@@ -1214,12 +1236,6 @@ void func_8015CF9C_ovl3(s32 arg0) {
  * and destroys the track. */
 void func_8015CF9C_ovl3(s32 arg0) {
     extern f32 **D_80192CA4_ovl3;
-    extern void func_800B4954(s32);
-    extern void func_8015D3C8_ovl3(struct GObj *);
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800A9760(s32);
-    float sinf(float);
-    float cosf(float);
     s32 id = omCurrentObj->objId;
     u32 sndpair[2];
     f32 spd;
@@ -1288,12 +1304,7 @@ void func_8015D3C8_ovl3(struct GObj *arg0) {
     extern f32 D_801943A8_ovl3[][4];
     extern f32 D_80198438_ovl3[];
     extern s32 D_80194458_ovl3[];
-    extern s32 func_800B3158(void);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern void func_80162150_ovl3(void);
-    s32 func_8016854C_ovl3(s32, s32, f32);
     s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
-    f32 atan2f(f32, f32);
     s32 id = omCurrentObj->objId;
 
     if (D_800E98E0[id] != 0) {
@@ -1360,12 +1371,7 @@ void func_8015D3C8_ovl3(struct GObj *arg0) {
     extern f32 D_801943A8_ovl3[][4];
     extern f32 D_80198438_ovl3[];
     extern s32 D_80194458_ovl3[];
-    extern s32 func_800B3158(void);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern void func_80162150_ovl3(void);
-    s32 func_8016854C_ovl3(s32, s32, f32);
     s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
-    f32 atan2f(f32, f32);
     s32 id = omCurrentObj->objId;
 
     if (D_800E98E0[id] != 0) {
@@ -1429,10 +1435,6 @@ void func_8015D7A0_ovl3(s32 arg0) {
     extern f32 D_800D7238;
     extern f32 D_800D723C;
     extern f32 **D_80192E9C_ovl3;
-    extern void func_8015DBE4_ovl3(s32);
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800B4954(s32);
-    void curObjSleepForever(void);
     f32 temp;
     f32 v;
 
@@ -1512,15 +1514,6 @@ void func_8015DBE4_ovl3(s32 arg0) {
     extern char D_80190CE4_ovl3[];
     extern s32 D_801935A8_ovl3[];
     extern s32 D_801935E4_ovl3[];
-    extern s32 func_800B3158(void);
-    extern void func_800A1F30(s32);
-    extern s32 func_800A8234(s32, s32, s32);
-    extern s32 func_80155664_ovl3(f32 *);
-    extern s32 func_80155838_ovl3(f32 *, f32, s32);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern s32 func_80162000_ovl3(char *, s32, f32);
-    extern void func_800B2340(Vector *, s32, s32);
-    extern void func_800B26D8(Vector *, s32, s32);
     s32 id = omCurrentObj->objId;
     f32 probe[3];
     s32 splash = 0;
@@ -1642,15 +1635,6 @@ void func_8015DBE4_ovl3(s32 arg0) {
     extern char D_80190CE4_ovl3[];
     extern s32 D_801935A8_ovl3[];
     extern s32 D_801935E4_ovl3[];
-    extern s32 func_800B3158(void);
-    extern void func_800A1F30(s32);
-    extern s32 func_800A8234(s32, s32, s32);
-    extern s32 func_80155664_ovl3(f32 *);
-    extern s32 func_80155838_ovl3(f32 *, f32, s32);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern s32 func_80162000_ovl3(char *, s32, f32);
-    extern void func_800B2340(Vector *, s32, s32);
-    extern void func_800B26D8(Vector *, s32, s32);
     s32 id = omCurrentObj->objId;
     f32 probe[3];
     s32 splash = 0;
@@ -1761,14 +1745,10 @@ void func_8015DBE4_ovl3(s32 arg0) {
 
 extern f32 D_80196764_ovl3[][2];
 extern f32 **D_801967A4_ovl3[];
-extern void func_800B4954(s32);
 void func_8015E754_ovl3(s32);
-void curObjSleepForever(void);
 #ifdef NON_MATCHING
 /* 65/197. */
 void func_8015E43C_ovl3(s32 arg0) {
-    float sinf(float);
-    float cosf(float);
     f32 s;
     f32 *p;
     u32 idx;
@@ -1817,9 +1797,6 @@ void func_8015E43C_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015E43C_ovl3.s")
 #endif
 
-extern void func_80162150_ovl3(void);
-extern s32 func_80162000_ovl3(char *, s32, f32);
-extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
 extern char D_80190D4C_ovl3[];
 
 void func_8015E754_ovl3(s32 arg0) {
@@ -1856,10 +1833,6 @@ void func_8015E754_ovl3(s32 arg0) {
 void func_8015E8E0_ovl3(s32 arg0) {
     extern f32 **D_80192EB8_ovl3;
     extern u8 D_8012E7C5[];
-    extern void func_800B4954(s32);
-    extern void func_8015ED2C_ovl3(s32);
-    extern void func_800A77E8(s32, s32 *, s32 *);
-    void curObjSleepForever(void);
     s32 i;
     s32 sp50;
     s32 sp4C;
@@ -1951,24 +1924,7 @@ void func_8015ED2C_ovl3(s32 arg0) {
     extern f32 D_801936FC_ovl3[];
     extern f32 D_801967C4_ovl3[];
     extern f32 D_80198438_ovl3[];
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern s32 func_80155498_ovl3(f32 *);
-    extern void func_80154578_ovl3(void *, s32, f32);
-    extern s32 func_8011D858(void *, s32, f32);
-    extern f32 func_800F9828(s32, s32);
-    extern f32 lbvector_Angle(Vector *, Vector *);
-    extern Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
-    extern Vector *func_800191F8(Vector *, Vector *, f32);
-    extern void func_800AFBB4(s32, struct GObj *);
-    extern void func_800BB468(s32, s32);
-    s32 func_8016854C_ovl3(s32, s32, f32);
     extern Controller_800D6FE8 gPlayerControllers[];
-    extern void func_800A7870(void **, u16 *);
-    extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
-    f32 atan2f(f32, f32);
-    float sinf(float);
-    float cosf(float);
-    float sqrtf(float);
     s32 id = omCurrentObj->objId;
     s32 parent = D_800E0D50[id];
     s32 hits;
@@ -2198,23 +2154,7 @@ void func_8015ED2C_ovl3(s32 arg0) {
     extern f32 D_801936FC_ovl3[];
     extern f32 D_801967C4_ovl3[];
     extern f32 D_80198438_ovl3[];
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern s32 func_80155498_ovl3(f32 *);
-    extern void func_80154578_ovl3(void *, s32, f32);
-    extern s32 func_8011D858(void *, s32, f32);
-    extern f32 func_800F9828(s32, s32);
-    extern f32 lbvector_Angle(Vector *, Vector *);
-    extern Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
-    extern Vector *func_800191F8(Vector *, Vector *, f32);
-    extern void func_800AFBB4(s32, struct GObj *);
-    extern void func_800BB468(s32, s32);
-    s32 func_8016854C_ovl3(s32, s32, f32);
     extern Controller_800D6FE8 gPlayerControllers[];
-    extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
-    f32 atan2f(f32, f32);
-    float sinf(float);
-    float cosf(float);
-    float sqrtf(float);
     s32 id = omCurrentObj->objId;
     s32 parent = D_800E0D50[id];
     s32 hits;
@@ -2431,10 +2371,6 @@ void func_8015F950_ovl3(s32 arg0) {
     extern Unk80198830 D_80198830_ovl3;
     extern f32 **D_80192E80_ovl3;
     extern f32 D_800D7238;
-    extern void func_800B4954(s32);
-    extern void func_8015FD58_ovl3(s32);
-    extern void func_800A77E8(s32, s32 *, s32 *);
-    void curObjSleepForever(void);
     Unk80198538 sp30;
     f32 temp;
 
@@ -2506,17 +2442,7 @@ void func_8015F950_ovl3(s32 arg0) {
 void func_8015FD58_ovl3(s32 arg0) {
     extern char D_80190D90_ovl3[];
     extern s32 D_80193728_ovl3[];
-    extern s32 func_800B3158(void);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern s32 func_801555B0_ovl3(f32 *, f32 *);
-    extern f32 func_800F9828(s32, s32);
-    extern f32 lbvector_Angle(Vector *, Vector *);
-    extern Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
-    extern Vector *func_800191F8(Vector *, Vector *, f32);
     extern Unk80198830 D_80198830_ovl3;
-    f32 atan2f(f32, f32);
-    float sinf(float);
-    float cosf(float);
     struct PcShotAnimCmd {
         u8 pad0[4];
         u8 unk4;
@@ -2649,17 +2575,7 @@ void func_8015FD58_ovl3(s32 arg0) {
 void func_8015FD58_ovl3(s32 arg0) {
     extern char D_80190D90_ovl3[];
     extern s32 D_80193728_ovl3[];
-    extern s32 func_800B3158(void);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern s32 func_801555B0_ovl3(f32 *, f32 *);
-    extern f32 func_800F9828(s32, s32);
-    extern f32 lbvector_Angle(Vector *, Vector *);
-    extern Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
-    extern Vector *func_800191F8(Vector *, Vector *, f32);
     extern Unk80198830 D_80198830_ovl3;
-    f32 atan2f(f32, f32);
-    float sinf(float);
-    float cosf(float);
     struct PcShotAnimCmd {
         u8 pad0[4];
         u8 unk4;
@@ -2861,11 +2777,6 @@ void func_80160378_ovl3(s32 arg0) {
  * plays anim script D_80190E3C_ovl3 on DObj [1]. */
 void func_801606A0_ovl3(struct GObj *arg0) {
     extern char D_80190E3C_ovl3[];
-    extern s32 func_800B3158(void);
-    extern void func_800A1F30(s32);
-    extern void func_800A7870(void **, u16 *);
-    extern s32 func_801555B0_ovl3(f32 *, f32 *);
-    extern s32 func_80162000_ovl3(char *, s32, f32);
     s32 id = omCurrentObj->objId;
     void *h;
     u16 sid;
@@ -2924,11 +2835,6 @@ void func_801606A0_ovl3(struct GObj *arg0) {
  * plays anim script D_80190E3C_ovl3 on DObj [1]. */
 void func_801606A0_ovl3(struct GObj *arg0) {
     extern char D_80190E3C_ovl3[];
-    extern s32 func_800B3158(void);
-    extern void func_800A1F30(s32);
-    extern void func_800A7870(void **, u16 *);
-    extern s32 func_801555B0_ovl3(f32 *, f32 *);
-    extern s32 func_80162000_ovl3(char *, s32, f32);
     s32 id = omCurrentObj->objId;
     void *h;
     u16 sid;
@@ -2982,8 +2888,6 @@ void func_801606A0_ovl3(struct GObj *arg0) {
 
 void func_80160A50_ovl3(s32 arg0) {
     extern f32 **D_80192F2C_ovl3;
-    extern void func_800AFBB4(s32, struct GObj *);
-    extern void func_80160D84_ovl3(s32);
     f32 temp;
 
     D_800E98E0[omCurrentObj->objId] = 0;
@@ -3034,8 +2938,6 @@ void func_80160A50_ovl3(s32 arg0) {
 
 extern char D_80190E80_ovl3[];
 extern f32 D_800EC9E4;
-extern s32 func_801693C4_ovl3(s32);
-s32 func_80155424_ovl3(struct PositionState *);
 
 void func_80160D84_ovl3(s32 arg0) {
     s32 id;
@@ -3096,11 +2998,6 @@ void func_80160D84_ovl3(s32 arg0) {
  * hands off to func_801614D8_ovl3 with a slow upward drift. */
 void func_80161058_ovl3(s32 arg0) {
     extern f32 **D_80192F48_ovl3;
-    extern void func_800B4954(s32);
-    extern void func_801614D8_ovl3(struct GObj *);
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800A77E8(s32 fgm, s32 *handleOut, s32 *sidOut);
-    void curObjSleepForever(void);
     s32 id = omCurrentObj->objId;
     u32 sndpair[2];
     f32 spd;
@@ -3158,10 +3055,6 @@ void func_80161058_ovl3(s32 arg0) {
  * hands off to func_801614D8_ovl3 with a slow upward drift. */
 void func_80161058_ovl3(s32 arg0) {
     extern f32 **D_80192F48_ovl3;
-    extern void func_800B4954(s32);
-    extern void func_801614D8_ovl3(struct GObj *);
-    extern s32 func_800A8234(s32, s32, s32);
-    void curObjSleepForever(void);
     s32 id = omCurrentObj->objId;
     u32 sndpair[2];
     f32 spd;
@@ -3230,7 +3123,6 @@ void func_80161058_ovl3(s32 arg0) {
 struct SpreadFx { u32 kind; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
 
 static void plyshotSndpairRelease2(u32 *pair) {
-    extern void func_800A7870(void **, u16 *);
     void *handle;
     u16 sid;
 
@@ -3245,7 +3137,6 @@ static void plyshotSndpairRelease2(u32 *pair) {
 }
 
 static void plyshotSndpairStart2(s32 fgm, u32 *pair) {
-    extern void func_800A77E8(s32, s32 *, s32 *);
 
     func_800A77E8(fgm, (s32 *) &pair[0], (s32 *) &pair[1]);
 }
@@ -3254,17 +3145,6 @@ void func_801614D8_ovl3(struct GObj *arg0) {
     extern u8 D_80198834_ovl3[];
     extern char D_80190EC4_ovl3[];
     extern s32 D_80193834_ovl3[];
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800A1F30(s32);
-    extern s32 func_800AA934(s32);
-    extern s32 func_80155664_ovl3(f32 *);
-    extern s32 func_80155838_ovl3(f32 *, f32, s32);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern f32 func_800F9828(s32, s32);
-    extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
-    f32 atan2f(f32, f32);
-    float sinf(float);
-    float cosf(float);
     s32 id = omCurrentObj->objId;
     u32 *sndpair = (u32 *) (uintptr_t) (u32) D_800EA360[id];
     f32 probe[3];
@@ -3388,16 +3268,6 @@ void func_801614D8_ovl3(struct GObj *arg0) {
     extern u8 D_80198834_ovl3[];
     extern char D_80190EC4_ovl3[];
     extern s32 D_80193834_ovl3[];
-    extern s32 func_800A8234(s32, s32, s32);
-    extern void func_800A1F30(s32);
-    extern s32 func_800AA934(s32);
-    extern s32 func_80155664_ovl3(f32 *);
-    extern s32 func_80155838_ovl3(f32 *, f32, s32);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-    extern f32 func_800F9828(s32, s32);
-    f32 atan2f(f32, f32);
-    float sinf(float);
-    float cosf(float);
     s32 id = omCurrentObj->objId;
     u32 *sndpair = (u32 *) (uintptr_t) (u32) D_800EA360[id];
     f32 probe[3];
@@ -3550,7 +3420,6 @@ void func_80161D94_ovl3(void) {
     }
 }
 
-void func_800B2340(Vector *, s32, s32);
 void func_800F98EC(s32, f32);
 void func_800F8E6C(GObj *);
 
@@ -3659,9 +3528,6 @@ struct PcShotColSnap {
 
 void func_80162150_ovl3(void) {
     extern u8 D_8012BCA0[];
-    extern s32 func_8010DF9C(f32 *);
-    extern s32 func_8010E048(void *, s32, f32 *, f32 *, void *, f32 *);
-    extern void func_801625B8_ovl3(f32 *);
     s32 id = omCurrentObj->objId;
     struct PcShotColSnap *snap = (struct PcShotColSnap *) &D_80197BF0_ovl3[id - 4];
     s32 k;
@@ -3757,9 +3623,6 @@ struct PcShotColSnap {
 
 void func_80162150_ovl3(void) {
     extern u8 D_8012BCA0[];
-    extern s32 func_8010DF9C(f32 *);
-    extern s32 func_8010E048(void *, s32, f32 *, f32 *, void *, f32 *);
-    extern void func_801625B8_ovl3(f32 *);
     s32 id = omCurrentObj->objId;
     struct PcShotColSnap *snap = (struct PcShotColSnap *) &D_80197BF0_ovl3[id - 4];
     s32 k;
@@ -4050,10 +3913,7 @@ typedef struct Unk80196848 {
 
 extern Unk80196848 D_80196848_ovl3[];
 extern f32 D_8019714C_ovl3;
-extern void func_800A77E8(s32, s32 *, s32 *);
-extern s32 func_800A8234(s32, s32, s32);
 void func_800B5094(GObj *);
-void curObjSleepForever(void);
 void func_801636A4_ovl3(s32);
 
 void func_801634D4_ovl3(s32 arg0) {
@@ -4114,7 +3974,6 @@ void func_801634D4_ovl3(s32 arg0) {
  * parked in D_800E9FE0 (as_ptr, so no truncation), accessed through the
  * pc_sndpair_* helpers. */
 static void myPcSndpairRelease(void *base) {
-    extern void func_800A7870(void **, u16 *);
     u32 *p = base;
     void *h;
     u16 sid;
@@ -4130,7 +3989,6 @@ static void myPcSndpairRelease(void *base) {
 }
 
 static void myPcSndpairStart(s32 fgm, void *base) {
-    extern void func_800A77E8(s32, s32 *, s32 *);
     u32 *p = base;
     void *h = NULL;
     u16 sid = 0;
@@ -4147,12 +4005,7 @@ void func_801636A4_ovl3(s32 arg0) {
     extern s32 D_80196858_ovl3[];
     extern s32 D_80193920_ovl3[];
     extern char D_80191044_ovl3[];
-    extern s32 func_80111A04(char *, s32);
-    extern s32 func_80155E58_ovl3(void);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
     extern f32 D_80198540_ovl3[][8];
-    extern void func_800B26D8(Vector *, s32, s32);
-    extern s32 func_800A8234(s32, s32, s32);
     s32 id = omCurrentObj->objId;
     s32 parent = D_800E0D50[id];
     void *pair = D_800E9FE0[id].as_ptr;
@@ -4251,12 +4104,7 @@ void func_801636A4_ovl3(s32 arg0) {
     extern s32 D_80196858_ovl3[];
     extern s32 D_80193920_ovl3[];
     extern char D_80191044_ovl3[];
-    extern s32 func_80111A04(char *, s32);
-    extern s32 func_80155E58_ovl3(void);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
     extern f32 D_80198540_ovl3[][8];
-    extern void func_800B26D8(Vector *, s32, s32);
-    extern s32 func_800A8234(s32, s32, s32);
     s32 id = omCurrentObj->objId;
     s32 parent = D_800E0D50[id];
     void *pair = D_800E9FE0[id].as_ptr;
@@ -4476,9 +4324,7 @@ extern f32 D_80193B40_ovl3[][4];
 
 void func_80164130_ovl3(struct GObj *arg0) {
     extern f32 D_80198540_ovl3[][8];
-    s32 func_80111A04(char *, s32);
     s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
-    s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
     f32 temp;
     s32 *p;
     f32 **h;
@@ -4527,8 +4373,6 @@ void func_80164130_ovl3(struct GObj *arg0) {
 extern Controller_800D6FE8 gPlayerControllers[];
 
 void func_80164320_ovl3(s32 arg0) {
-    void func_800A9760(s32);
-    void func_801644EC_ovl3(s32);
     s32 v;
 
     D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
@@ -4584,7 +4428,6 @@ extern f32 D_80193C64_ovl3[][4];
 extern f32 D_80198700_ovl3[][4];
 extern s32 D_80193D64_ovl3[];
 extern s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
-extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
 
 void func_801644EC_ovl3(s32 arg0) {
     f32 **h;
@@ -4613,9 +4456,6 @@ void func_801644EC_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801644EC_ovl3.s")
 #endif
 void func_801646A4_ovl3(s32 arg0) {
-    void func_80164914_ovl3(s32);
-    void func_800AF27C(void);
-    void func_80164890_ovl3(s32, s32, f32);
 
     D_800EA520[omCurrentObj->objId] = 0;
     D_800DEF90[omCurrentObj->objId] = func_800B4B9C;
@@ -4675,9 +4515,6 @@ void func_80164980_ovl3(s32 arg0) {
     extern s32 D_8019688C_ovl3[];
     extern s32 D_80196890_ovl3[];
     extern f32 D_80197160_ovl3;
-    extern void func_800B4954(s32);
-    void func_80164EA8_ovl3(s32);
-    void curObjSleepForever(void);
     s32 id = omCurrentObj->objId;
     s32 parent = D_800E0D50[id];
     s32 kind;
@@ -4735,9 +4572,6 @@ void func_80164980_ovl3(s32 arg0) {
     extern s32 D_8019688C_ovl3[];
     extern s32 D_80196890_ovl3[];
     extern f32 D_80197160_ovl3;
-    extern void func_800B4954(s32);
-    void func_80164EA8_ovl3(s32);
-    void curObjSleepForever(void);
     s32 id = omCurrentObj->objId;
     s32 parent = D_800E0D50[id];
     s32 kind;
@@ -4800,9 +4634,7 @@ void func_80164EA8_ovl3(s32 arg0) {
     f32 **h;
     s32 *p;
     f32 step;
-    s32 func_80111A04(char *, s32);
     s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
-    s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
 
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         func_800B1900((u16) omCurrentObj->objId);
@@ -4902,9 +4734,7 @@ void func_801654CC_ovl3(s32 arg0) {
 }
 
 extern f32 D_80197178_ovl3;
-void func_800B5064(GObj *);
 void func_801657BC_ovl3(s32);
-void func_800A9760(s32);
 
 #ifdef NON_MATCHING
 void func_80165504_ovl3(s32 arg0) {
@@ -4949,8 +4779,6 @@ extern f32 D_801953F4_ovl3[][4];
 extern f32 D_80198700_ovl3[][4];
 extern s32 D_80197DDC_ovl3[][8];
 extern f32 D_80198540_ovl3[][8];
-extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
-s32 func_8016854C_ovl3(s32, s32, f32);
 s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
 
 void func_801657BC_ovl3(s32 arg0) {
@@ -5030,7 +4858,6 @@ extern s32 func_80152124_ovl3(f32 (*)[4], f32 (*)[4], u8, f32, f32, f32);
 
 void func_80165CD8_ovl3(struct GObj *arg0) {
     f32 **h;
-    s32 func_80111A04(char *, s32);
 
     if (D_800EC2E0[omCurrentObj->objId].as_s32 == 0) {
         if (D_8012E860 == 0) {
@@ -5079,7 +4906,6 @@ void func_80165CD8_ovl3(struct GObj *arg0) {
 extern f32 D_8012E7FC[];
 extern f32 D_80197188_ovl3;
 extern void func_80166210_ovl3(struct GObj *);
-void curObjSleepForever(void);
 
 void func_801660F4_ovl3(s32 arg0) {
     D_800E0650[omCurrentObj->objId] = 1;
@@ -5103,7 +4929,6 @@ void func_80166210_ovl3(struct GObj *arg0) {
     s32 parent;
     f32 **h;
     struct DObj *d;
-    s32 func_80111A04(char *, s32);
 
     if (gKirbyState.abilityInUse == 0) {
         func_800B1900((u16) omCurrentObj->objId);
@@ -5146,7 +4971,6 @@ extern f32 D_80197194_ovl3;
 extern s32 D_801968EC_ovl3[];
 void func_800B5094(GObj *);
 void func_80166768_ovl3(s32);
-void curObjSleepForever(void);
 
 void func_80166588_ovl3(s32 arg0) {
     s32 val;
@@ -5191,8 +5015,6 @@ void func_80166588_ovl3(s32 arg0) {
  * slot index, the parent, its target track in D_800E1ED0[t-112] and its
  * spread angle from D_801968F8 (mirrored against pi when facing left). */
 void func_80166768_ovl3(s32 arg0) {
-    extern s32 func_8019F234_ovl7(s32);
-    extern f32 func_800F9828(s32, s32);
     extern f32 D_80197198_ovl3;
     extern f32 D_8019719C_ovl3;
     extern f32 D_801968F8_ovl3[];
@@ -5298,8 +5120,6 @@ void func_80166768_ovl3(s32 arg0) {
  * slot index, the parent, its target track in D_800E1ED0[t-112] and its
  * spread angle from D_801968F8 (mirrored against pi when facing left). */
 void func_80166768_ovl3(s32 arg0) {
-    extern s32 func_8019F234_ovl7(s32);
-    extern f32 func_800F9828(s32, s32);
     extern f32 D_80197198_ovl3;
     extern f32 D_8019719C_ovl3;
     extern f32 D_801968F8_ovl3[];
@@ -5437,12 +5257,10 @@ void func_80166BB4_ovl3(s32 arg0) {
 
 extern char D_801919D8_ovl3[];
 extern s32 D_80195164_ovl3[];
-void func_800B26D8(Vector *, s32, s32);
 
 void func_80166E2C_ovl3(s32 arg0) {
     Vector sp34;
     Vector sp28;
-    s32 func_80111A04(char *, s32);
 
     func_800B2340(&sp34, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][D_800E0F10[omCurrentObj->objId]],
                   D_800E0D50[omCurrentObj->objId]);
@@ -5526,8 +5344,6 @@ void func_80167290_ovl3(s32 arg0) {
 }
 
 void func_80167330_ovl3(s32 arg0) {
-    void func_800A7870(void **, u16 *);
-    void func_80167578_ovl3(s32);
     s32 sp2C;
     s32 sp28;
 
@@ -5564,9 +5380,6 @@ typedef struct Unk800E9FE0 {
 extern char D_80192170_ovl3[];
 extern s32 D_80196154_ovl3[];
 extern f32 D_80198540_ovl3[][8];
-extern s32 func_80111A04(char *, s32);
-extern void func_800A7870(void **, u16 *);
-extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
 
 void func_80167578_ovl3(s32 arg0) {
     Unk800E9FE0 *sound;
@@ -5586,8 +5399,6 @@ void func_80167578_ovl3(s32 arg0) {
 }
 
 extern f32 D_801971A8_ovl3;
-void func_800B5064(GObj *);
-s32 func_800A8234(s32, s32, s32);
 void func_80167800_ovl3(s32);
 
 void func_8016769C_ovl3(s32 arg0) {
@@ -5635,7 +5446,6 @@ void func_80167800_ovl3(s32 arg0) {
 }
 
 extern f32 D_801971AC_ovl3;
-extern void func_800AF27C(void);
 void func_80167B48_ovl3(s32);
 
 void func_80167974_ovl3(s32 arg0) {
@@ -5700,7 +5510,6 @@ void func_80167CCC_ovl3(s32 arg0) {
 extern f32 D_801971B4_ovl3;
 extern f32 D_801971B8_ovl3;
 extern f32 D_800D7238;
-extern void func_800BB468(s32, s32);
 void func_80167F54_ovl3(s32);
 
 void func_80167D04_ovl3(s32 arg0) {
@@ -5761,13 +5570,8 @@ void func_80167F54_ovl3(s32 arg0) {
     extern f32 D_80195500_ovl3[][4];
     extern s32 D_80196904_ovl3[];
     extern s32 D_80196908_ovl3[];
-    extern s32 func_80111A04(char *, s32);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
     extern f32 D_80198540_ovl3[][8];
     extern f32 D_80198700_ovl3[][4];
-    extern void func_800A7870(void **, u16 *);
-    f32 atan2f(f32, f32);
-    float sqrtf(float);
     s32 id = omCurrentObj->objId;
     u32 *pair = (u32 *) D_800E9FE0[id].as_ptr;
 
@@ -5865,12 +5669,8 @@ void func_80167F54_ovl3(s32 arg0) {
     extern f32 D_80195500_ovl3[][4];
     extern s32 D_80196904_ovl3[];
     extern s32 D_80196908_ovl3[];
-    extern s32 func_80111A04(char *, s32);
-    extern s32 func_80155D50_ovl3(f32 *, s32, s32, s32);
     extern f32 D_80198540_ovl3[][8];
     extern f32 D_80198700_ovl3[][4];
-    f32 atan2f(f32, f32);
-    float sqrtf(float);
     s32 id = omCurrentObj->objId;
     void *pair = D_800E9FE0[id].as_ptr;
 

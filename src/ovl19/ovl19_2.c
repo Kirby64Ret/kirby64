@@ -45,6 +45,52 @@ extern struct Ovl19F548 D_8022F548_ovl19[];
 
 void omGMoveObjDL(GObj *, u8, s32);
 void func_80120E74(void);
+
+// ovl1 extern
+void auFunc80020C88(void);
+void func_800A7EB4(void);
+void func_800A7F74(u32, u32, u32, f32, f32, f32);
+void func_800A9760(u32);
+void func_800AF27C(void);
+void func_800B2340(Vector *, struct DObj *, u32);
+void func_800B26D8(Vector *, struct DObj *, u32);
+void func_800BB468(s32, s32);
+s32 play_music(s32, s32);
+void play_sound(s32);
+s32 random_soft_s32_range(s32);
+
+// ovl2 extern
+void func_800FA414(s32);
+void func_800FBE1C(void);
+/* ovl2_5.c returns Ovl2Particle *, which no header exports; this TU reads
+ * the result through its own D_8022FAB0.h view. src/ovl10/ovl10_5b.c spells
+ * the same function `void *` -- one shared header would settle both. */
+struct UnkStruct8022FAB0 *func_800FF144(void);
+void func_8011CF58(void);
+void *func_8011D4A4(f32);
+void func_8011DC04(u32);
+void func_8011DC5C(void);
+void func_8011EBD4(void);
+s32 func_80121828(f32, f32, f32, f32);
+
+// ovl3 extern
+s32 func_80153A18_ovl3(void);
+/* ovl3/plyshot.c defines this `s32 func_8016854C_ovl3(s32, s32, f32)`; this
+ * TU passes a DObj * second argument, so the pointer spelling is what its
+ * call sites need. Reconciling the two needs the plyshot side looked at. */
+extern void func_8016854C_ovl3(void *, struct DObj *, f32);
+void func_80176398_ovl3(void);
+
+// within this file
+void func_8022470C_ovl19(void);
+void func_80224858_ovl19(void);
+void func_80225FB4_ovl19(void);
+void func_802271A8_ovl19(void);
+void func_8022759C_ovl19(GObj *);
+void func_80227C88_ovl19(void);
+void func_802283A8_ovl19(GObj *);
+void func_80228874_ovl19(GObj *);
+void func_80228C44_ovl19(GObj *);
 extern s32 D_8012E7FC[];
 extern s32 D_8012E80C[];
 extern s32 D_800D6B54;
@@ -102,23 +148,9 @@ extern struct Ovl19_2Struct D_8022F170_ovl19[3], // 1-3
  * six saved slots ($s0-$s5 + $f20), same jump table, same word count --
  * this is now a clean permuter target rather than an uncertain draft. */
 void func_80223200_ovl19(GObj *arg0) {
-    void func_8011CF58(void);
-    void func_8011DC04(u32);
-    void func_800A9760(u32);
-    void func_800FA414(s32);
-    void func_800AF27C(void);
-    void auFunc80020C88(void);
-    void func_800A7EB4(void);
-    void func_80227C88_ovl19(void);
-    s32 play_music(s32, s32);
-    void play_sound(s32);
-    void func_80224858_ovl19(void);
     /* func_800AA018/func_800AA154 stay implicitly declared -- the compiled
      * NON_MATCHING arms later in this file call them through (void *)
      * casts and an explicit prototype here would clash with those. */
-    s32 random_soft_s32_range(s32);
-    void func_80176398_ovl3(void);
-    void func_800BB468(u32, s32);
     extern s32 D_80129138;
     extern s32 D_800BE4F8;
     extern s32 D_8019257C;
@@ -378,22 +410,9 @@ void func_80223200_ovl19(GObj *arg0) {
  * emitted natively by gen_data on PC (no pointers). Case 6 falls into the
  * default sleep; case 1 falls through to case 2 as in the ROM. */
 void func_80223200_ovl19(GObj *arg0) {
-    void func_8011CF58(void);
-    void func_8011DC04(u32);
-    void func_800A9760(u32);
-    void func_800FA414(s32);
-    void func_800AF27C(void);
-    void auFunc80020C88(void);
-    void func_800A7EB4(void);
-    void func_80227C88_ovl19(void);
-    s32 play_music(s32, s32);
-    void play_sound(s32);
     /* func_800AA018/func_800AA154 stay implicitly declared -- the compiled
      * NON_MATCHING arms later in this file call them through (void *)
      * casts and an explicit prototype here would clash with those. */
-    s32 random_soft_s32_range(s32);
-    void func_80176398_ovl3(void);
-    void func_800BB468(u32, s32);
     extern s32 D_80129138;
     extern s32 D_800BE4F8;
     extern s32 D_8019257C;
@@ -673,17 +692,8 @@ void func_80223200_ovl19(GObj *arg0) {
  * function has the identical three-branch shape. Solve it there and it
  * transfers here. */
 void func_80223E68_ovl19(GObj *arg0) {
-    s32 func_80153A18_ovl3(void);
     /* func_800FF200 stays implicitly declared -- compiled code later in
      * this file calls it without a prototype. */
-    s32 func_80121828(f32, f32, f32, f32);
-    void play_sound(s32);
-    void func_8011DC04(u32);
-    void func_8011DC5C(void);
-    void func_8011EBD4(void);
-    void *func_8011D4A4(f32);
-    void func_8022470C_ovl19(void);
-    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
     extern s32 D_800BE4FC, D_800BE500, D_800BE504, D_800BE508;
     extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
     extern s32 D_800BE4F8;
@@ -842,16 +852,8 @@ void func_80223E68_ovl19(GObj *arg0) {
  * func_80227D4C_ovl19 reports a collision (and unk44 != 7) the switch is
  * skipped and only the sync runs. */
 void func_80223E68_ovl19(GObj *arg0) {
-    s32 func_80153A18_ovl3(void);
     /* func_800FF200 stays implicitly declared -- compiled code later in
      * this file calls it without a prototype. */
-    s32 func_80121828(f32, f32, f32, f32);
-    void play_sound(s32);
-    void func_8011DC04(u32);
-    void func_8011DC5C(void);
-    void func_8011EBD4(void);
-    void *func_8011D4A4(f32);
-    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
     extern s32 D_800BE4FC, D_800BE500, D_800BE504, D_800BE508;
     extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
     extern s32 D_800BE4F8;
@@ -1076,21 +1078,6 @@ void func_80224858_ovl19(void) {
  * store or a compare), most likely in one of the cases that previously
  * hid behind the spurious curObjSleepForever() calls. */
 void func_802248C0_ovl19(GObj *arg0) {
-    void func_8011CF58(void);
-    void func_8011DC04(u32);
-    void func_8011DC5C(void);
-    void func_800A9760(u32);
-    void func_800FA414(s32);
-    void func_800FBE1C(void);
-    void func_800AF27C(void);
-    void auFunc80020C88(void);
-    void func_800A7EB4(void);
-    void func_80227C88_ovl19(void);
-    s32 play_music(s32, s32);
-    void play_sound(s32);
-    s32 random_soft_s32_range(s32);
-    void func_80176398_ovl3(void);
-    void func_800BB468(u32, s32);
     extern s32 D_80129138;
     extern s32 D_8012913C;
     extern s32 D_800BE4F8;
@@ -1380,21 +1367,6 @@ void func_802248C0_ovl19(GObj *arg0) {
  * func_800FA414/func_8011DC5C are leftover registers -- all single-arg
  * (func_8011DC5C is void). */
 void func_802248C0_ovl19(GObj *arg0) {
-    void func_8011CF58(void);
-    void func_8011DC04(u32);
-    void func_8011DC5C(void);
-    void func_800A9760(u32);
-    void func_800FA414(s32);
-    void func_800FBE1C(void);
-    void func_800AF27C(void);
-    void auFunc80020C88(void);
-    void func_800A7EB4(void);
-    void func_80227C88_ovl19(void);
-    s32 play_music(s32, s32);
-    void play_sound(s32);
-    s32 random_soft_s32_range(s32);
-    void func_80176398_ovl3(void);
-    void func_800BB468(u32, s32);
     extern s32 D_80129138;
     extern s32 D_8012913C;
     extern s32 D_800BE4F8;
@@ -1704,17 +1676,6 @@ void func_802248C0_ovl19(GObj *arg0) {
  * func_80223E68_ovl19 has the identical three-arm block and the same
  * -0x10 frame excess. */
 void func_80225620_ovl19(GObj *arg0) {
-    s32 func_80153A18_ovl3(void);
-    s32 func_80121828(f32, f32, f32, f32);
-    void play_sound(s32);
-    void func_8011DC04(u32);
-    void func_8011DC5C(void);
-    void func_8011EBD4(void);
-    void *func_8011D4A4(f32);
-    void func_800B2340(Vector *, struct DObj *, u32);
-    void func_800B26D8(Vector *, struct DObj *, u32);
-    void func_80225FB4_ovl19(void);
-    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
     extern s32 D_800BE4FC, D_800BE500, D_800BE504, D_800BE508;
     extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
     extern s32 D_800BE4F8;
@@ -1914,16 +1875,6 @@ splash:
  * func_800B2340/func_800B26D8. Generator-node mirror follows plylib.c's
  * func_8011D0FC PORT arm: LP64 emitter pointer at +0x58 (N64 +0x4C). */
 void func_80225620_ovl19(GObj *arg0) {
-    s32 func_80153A18_ovl3(void);
-    s32 func_80121828(f32, f32, f32, f32);
-    void play_sound(s32);
-    void func_8011DC04(u32);
-    void func_8011DC5C(void);
-    void func_8011EBD4(void);
-    void *func_8011D4A4(f32);
-    void func_800B2340(Vector *, struct DObj *, u32);
-    void func_800B26D8(Vector *, struct DObj *, u32);
-    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
     extern s32 D_800BE4FC, D_800BE500, D_800BE504, D_800BE508;
     extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
     extern s32 D_800BE4F8;
@@ -2190,15 +2141,6 @@ void func_80225FB4_ovl19(void) {
  * target -- sibling of func_80223200_ovl19 and func_802248C0_ovl19, which
  * have the same -1 init block and should get lever 1 as well. */
 void func_802260FC_ovl19(GObj *arg0) {
-    void func_8011CF58(void);
-    void func_800A9760(u32);
-    void func_800A7EB4(void);
-    void func_80227C88_ovl19(void);
-    s32 play_music(s32, s32);
-    void play_sound(s32);
-    s32 random_soft_s32_range(s32);
-    void func_80176398_ovl3(void);
-    void func_800BB468(u32, s32);
     extern s32 D_800BE4F8;
     extern s32 D_8019257C;
     extern f32 *D_801930A4;
@@ -2410,15 +2352,6 @@ void func_802260FC_ovl19(GObj *arg0) {
  * leftover register). Case 7 just plays the finish anim and sleeps 0x5A.
  * Case 6 does not exist (default sleeps). */
 void func_802260FC_ovl19(GObj *arg0) {
-    void func_8011CF58(void);
-    void func_800A9760(u32);
-    void func_800A7EB4(void);
-    void func_80227C88_ovl19(void);
-    s32 play_music(s32, s32);
-    void play_sound(s32);
-    s32 random_soft_s32_range(s32);
-    void func_80176398_ovl3(void);
-    void func_800BB468(u32, s32);
     extern s32 D_800BE4F8;
     extern s32 D_8019257C;
     extern f32 *D_801930A4;
@@ -2638,12 +2571,6 @@ void func_802260FC_ovl19(GObj *arg0) {
  * Do not spend permuter time here until the likely-branch shape is known;
  * fix it on func_80225620_ovl19 first, then re-run both. */
 void func_80226AA8_ovl19(GObj *arg0) {
-    s32 func_80153A18_ovl3(void);
-    void play_sound(s32);
-    void func_8011EBD4(void);
-    void *func_8011D4A4(f32);
-    void func_802271A8_ovl19(void);
-    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
     extern s32 D_800BE4FC;
     extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
     extern s32 D_800BE4F8;
@@ -2796,12 +2723,6 @@ sync:
  * func_802271A8_ovl19 unless state 7. The track node array is native on
  * PC (LP64 stride 24, ovl2_2.c's loader). */
 void func_80226AA8_ovl19(GObj *arg0) {
-    s32 func_80153A18_ovl3(void);
-    void play_sound(s32);
-    void func_8011EBD4(void);
-    void *func_8011D4A4(f32);
-    void func_802271A8_ovl19(void);
-    extern void func_8016854C_ovl3(void *, struct DObj *, f32);
     extern s32 D_800BE4FC;
     extern s32 D_800BE52C, D_800BE530, D_800BE534, D_800BE538;
     extern s32 D_800BE4F8;
@@ -3006,7 +2927,6 @@ void func_802271A8_ovl19(void) {
 void func_802273A0_ovl19(GObj *arg0) {
     extern f32 *D_80192F9C[];
     extern s32 D_8022F500_ovl19[];
-    void func_8022759C_ovl19(GObj *);
 
     D_800DEF90[omCurrentObj->objId] = func_800B5094;
     D_800DF150[omCurrentObj->objId] = func_8022759C_ovl19;
@@ -3235,8 +3155,6 @@ void func_80227F38_ovl19(void) {
  * frame-size floor. Remaining residue is register allocation in the long
  * omCurrentObj->objId store run. Prime permuter target. */
 void func_80227F90_ovl19(GObj *arg0) {
-    struct UnkStruct8022FAB0 *func_800FF144(void);
-    void func_802283A8_ovl19(GObj *);
     extern s8 D_8012E7D7;
     extern struct Ovl19_2Struct D_8022F560_ovl19[];
     s32 track1;
@@ -3312,8 +3230,6 @@ void func_80227F90_ovl19(GObj *arg0) {
  * leftover registers; the three func_800B1900 kills read the saved
  * track ids (and objId) as u16, which the u16 parameter already does. */
 void func_80227F90_ovl19(GObj *arg0) {
-    struct UnkStruct8022FAB0 *func_800FF144(void);
-    void func_802283A8_ovl19(GObj *);
     extern s8 D_8012E7D7;
     extern struct Ovl19_2Struct D_8022F560_ovl19[];
     struct UnkStruct8022FAB0 *cam;
@@ -3426,9 +3342,6 @@ void func_802284EC_ovl19(GObj *arg0) {
        read-back and does not help.
    Still to try: forcing the $s0/$s1 order (guide's one-slot rotation entry). */
 void func_8022858C_ovl19(GObj *arg0) {
-    void func_80228874_ovl19(GObj *);
-    struct UnkStruct8022FAB0 *func_800FF144(void);
-    void func_800A7F74(u32, u32, u16, f32, f32, f32);
     struct UnkStruct8022FAB0 *tmp;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
@@ -3506,7 +3419,6 @@ void func_80228874_ovl19(GObj *arg0) {
  * same variable-index + (u32)& pair is worth trying on any ovl19 function
  * that walks a small const-indexed struct table. */
 void func_8022889C_ovl19(GObj *arg0) {
-    void func_80228C44_ovl19(GObj *);
     extern struct Ovl19_2Struct D_8022F578_ovl19[];
     struct Ovl19_2Struct *rec;
     s32 phase;
@@ -3574,7 +3486,6 @@ void func_8022889C_ovl19(GObj *arg0) {
  * D_8012E7FC[2] = 2, sleeps 2 and kills the two helpers and itself.
  * m2c's extra call arguments are leftover registers. */
 void func_8022889C_ovl19(GObj *arg0) {
-    void func_80228C44_ovl19(GObj *);
     extern struct Ovl19_2Struct D_8022F578_ovl19[];
     struct Ovl19_2Struct *rec;
     s32 track1;

@@ -1186,7 +1186,11 @@ void func_80171950_ovl5(GObj *arg0, s32 arg1) {
  * m2c pass before feeding to the permuter. */
 #ifdef MIPS_TO_C
 u16 func_80171E6C_ovl5(GObj *arg0) {
-    u16 func_8017232C_ovl5(u32, s32, s32 *, u32);
+    /* m2c invented this arity and return: the ROM's call site is
+       `jal func_8017232C_ovl5 / or $a0, $a3, $zero` -- ONE argument -- and
+       neither function writes $v0 on that path, so the value this used to
+       propagate was undefined. */
+    void func_8017232C_ovl5(s32);
     extern Controller_800D6FE8 gPlayerControllers[4];
     u32 lane = D_800E9AA0[omCurrentObj->objId].as_u32;
     s32 step;
@@ -1206,7 +1210,8 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
         return 0;
     }
     if (D_8018ECA8_ovl5[lane] != 0) {
-        return func_8017232C_ovl5(lane, lane * 4, &D_8018E998_ovl5[lane], lane);
+        func_8017232C_ovl5(lane);
+        return 0;
     }
     if (gPlayerControllers[lane].buttonPressed & 0x4000) {
         play_sound(0xBA);
@@ -1231,7 +1236,11 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
 }
 #elif defined(PORT)
 u16 func_80171E6C_ovl5(GObj *arg0) {
-    u16 func_8017232C_ovl5(u32, s32, s32 *, u32);
+    /* m2c invented this arity and return: the ROM's call site is
+       `jal func_8017232C_ovl5 / or $a0, $a3, $zero` -- ONE argument -- and
+       neither function writes $v0 on that path, so the value this used to
+       propagate was undefined. */
+    void func_8017232C_ovl5(s32);
     u32 lane = D_800E9AA0[omCurrentObj->objId].as_u32;
     s32 step;
 
@@ -1250,7 +1259,8 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
         return 0;
     }
     if (D_8018ECA8_ovl5[lane] != 0) {
-        return func_8017232C_ovl5(lane, lane * 4, &D_8018E998_ovl5[lane], lane);
+        func_8017232C_ovl5(lane);
+        return 0;
     }
     if (gPlayerControllers[lane].buttonPressed & 0x4000) {
         play_sound(0xBA);
@@ -1328,7 +1338,288 @@ void func_801721CC_ovl5(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801721CC_ovl5.s")
 #endif
+#if defined(MIPS_TO_C) || defined(PORT)
+/* The CPU racer's move chooser, run once per turn for racer `arg0`. It reads
+ * the two board squares ahead of D_8018E998_ovl5[arg0] (clamped to 0x51),
+ * classifies each with func_80172B10_ovl5 into "plain" (4/5/10/13/14/19-22/24),
+ * "item" (8/9/12) or "blocked" (everything else), and then rolls
+ * random_soft_s32_range(0x10) against this species' thresholds in
+ * D_80187578_ovl5 to pick between hopping two squares (func_801721CC_ovl5),
+ * hopping one (func_801720D8_ovl5) and waiting. D_800EA520 is the little state
+ * machine that carries the decision across turns: 0 = choose, 1/2 = committed
+ * to a one/two square hop, 3 = blocked-retry, 4/5 = waiting on an item square.
+ * A racer with D_800E9C60 set (already moving) does nothing.
+ *
+ * FACTORY: 332/508 words differ and the draft is 3 words long (ROM 505). All
+ * five jump tables reproduce with the right bias and bounds, and every case
+ * body lands in the ROM's order. The residue is dominated by ONE fact: the
+ * frame comes out 0x48 against the ROM's 0x40, so every `NN($sp)` and every
+ * branch displacement differs.
+ * What paid, in order: laying the tile switch with the "plain" arm BEFORE the
+ * item arm (443 -> 438, the jump table's body order is the source order);
+ * flipping both classification tests to `!= 0x29A` so the EQUAL case is the
+ * branch target the way the ROM lays it (438 -> 431, LEVERS lever 5); and
+ * making the three-way dispatch on the classification a `switch` written
+ * 2/1/0 rather than an if/else chain (431 -> 332, LEVERS lever 34 -- the ROM
+ * emits the compares sorted by value but the bodies in source order, which is
+ * how the source order is readable off the listing at all).
+ * Swept and rejected: reusing one `ahead`/`pick` pair for both probes in the
+ * choose state (446), and three declaration orders aimed at the ROM's spill
+ * slots (343/334/337).
+ *
+ * PORT: shared rather than duplicated -- everything here is s32 through named
+ * types and there is no pointer punning. */
+/* Per-species AI tuning record, indexed by D_8018ECA8_ovl5[racer]. Each field
+   is a 0..15 threshold rolled against random_soft_s32_range(0x10). */
+struct Ovl5AiOdds {
+    /* 0x00 */ s32 hopTwo;
+    /* 0x04 */ s32 waitTwo;
+    /* 0x08 */ s32 hopOne;
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+}; /* 0x18 */
+
+extern struct Ovl5AiOdds D_80187578_ovl5[];
+
+void func_8017232C_ovl5(s32 arg0) {
+    s32 kind;
+    s32 *pos;
+    s32 aheadTwo;
+    s32 aheadOne;
+    s32 tileTwo;
+    s32 tileOne;
+    s32 pick;
+    s32 pickOne;
+
+    kind = D_8018ECA8_ovl5[arg0];
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        return;
+    }
+    switch (D_800EA520[omCurrentObj->objId]) {
+        case 0:
+            pos = &D_8018E998_ovl5[arg0];
+            aheadTwo = *pos + 2;
+            if (aheadTwo >= 0x52) {
+                aheadTwo = 0x51;
+            }
+            switch (func_80172B10_ovl5(arg0, aheadTwo)) {
+                case 4:
+                case 5:
+                case 10:
+                case 13:
+                case 14:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                case 24:
+                    pick = 0;
+                    break;
+                case 8:
+                case 9:
+                case 12:
+                    if (func_8017068C_ovl5(arg0, aheadTwo) != 0x29A) {
+                        pick = 0;
+                    } else {
+                        pick = 1;
+                    }
+                    break;
+                default:
+                    pick = (func_8017068C_ovl5(arg0, aheadTwo) != 0x29A) ? 0 : 2;
+                    break;
+            }
+            switch (pick) {
+                case 2:
+                    if (random_soft_s32_range(0x10) < D_80187578_ovl5[kind].hopTwo) {
+                        func_801721CC_ovl5(arg0);
+                        return;
+                    }
+                    break;
+                case 1:
+                    if (random_soft_s32_range(0x10) < D_80187578_ovl5[kind].waitTwo) {
+                        D_800EA520[omCurrentObj->objId] = 2;
+                        return;
+                    }
+                    break;
+                case 0:
+                    if (random_soft_s32_range(0x10) < D_80187578_ovl5[kind].hopOne) {
+                        func_801721CC_ovl5(arg0);
+                        D_800EA520[omCurrentObj->objId] = 3;
+                        return;
+                    }
+                    break;
+            }
+            aheadOne = *pos + 1;
+            if (aheadOne >= 0x52) {
+                aheadOne = 0x51;
+            }
+            switch (func_80172B10_ovl5(arg0, aheadOne)) {
+                case 4:
+                case 5:
+                case 10:
+                case 13:
+                case 14:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                case 24:
+                    pickOne = 0;
+                    break;
+                case 8:
+                case 9:
+                case 12:
+                    if (func_8017068C_ovl5(arg0, aheadOne) != 0x29A) {
+                        pickOne = 0;
+                    } else {
+                        pickOne = 1;
+                    }
+                    break;
+                default:
+                    pickOne = (func_8017068C_ovl5(arg0, aheadOne) != 0x29A) ? 0 : 2;
+                    break;
+            }
+            if (pickOne == 1) {
+                D_800EA520[omCurrentObj->objId] = 1;
+                return;
+            }
+            func_801720D8_ovl5(arg0);
+            if (pickOne != 0) {
+                return;
+            }
+            D_800EA520[omCurrentObj->objId] = 3;
+            return;
+        case 1:
+        case 2:
+            if (D_800EA520[omCurrentObj->objId] == 1) {
+                aheadOne = D_8018E998_ovl5[arg0] + 1;
+            } else {
+                aheadOne = D_8018E998_ovl5[arg0] + 2;
+            }
+            if (func_80170584_ovl5(arg0, aheadOne) == 0) {
+                if (random_soft_s32_range(0x10) < D_80187578_ovl5[kind].unk14) {
+                    if (D_800EA520[omCurrentObj->objId] == 1) {
+                        func_801720D8_ovl5(arg0);
+                    } else {
+                        func_801721CC_ovl5(arg0);
+                    }
+                    D_800EA520[omCurrentObj->objId] = 3;
+                }
+                return;
+            }
+            if (func_80170464_ovl5(arg0, aheadOne) == 0) {
+                if (random_soft_s32_range(0x10) < D_80187578_ovl5[kind].unkC) {
+                    if (D_800EA520[omCurrentObj->objId] == 1) {
+                        func_801720D8_ovl5(arg0);
+                    } else {
+                        func_801721CC_ovl5(arg0);
+                    }
+                    D_800EA520[omCurrentObj->objId] = 3;
+                }
+                return;
+            }
+            if (random_soft_s32_range(0x10) < D_80187578_ovl5[kind].unkC) {
+                return;
+            }
+            if (D_800EA520[omCurrentObj->objId] == 1) {
+                func_801720D8_ovl5(arg0);
+            } else {
+                func_801721CC_ovl5(arg0);
+            }
+            D_800EA520[omCurrentObj->objId] = 0;
+            return;
+        case 3:
+            pos = &D_8018E998_ovl5[arg0];
+            aheadTwo = *pos + 2;
+            if (aheadTwo >= 0x52) {
+                aheadTwo = 0x51;
+            }
+            tileTwo = func_80172B10_ovl5(arg0, aheadTwo);
+            aheadOne = *pos + 1;
+            if (aheadOne >= 0x52) {
+                aheadOne = 0x51;
+            }
+            tileOne = func_80172B10_ovl5(arg0, aheadOne);
+            switch (tileTwo) {
+                case 4:
+                case 5:
+                case 8:
+                case 9:
+                case 10:
+                case 12:
+                case 13:
+                case 14:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                case 24:
+                    break;
+                default:
+                    if (func_8017068C_ovl5(arg0, aheadTwo) == 0x29A) {
+                        func_801721CC_ovl5(arg0);
+                        D_800EA520[omCurrentObj->objId] = 0;
+                        return;
+                    }
+                    break;
+            }
+            switch (tileOne) {
+                case 4:
+                case 5:
+                case 8:
+                case 9:
+                case 10:
+                case 12:
+                case 13:
+                case 14:
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                case 24:
+                    break;
+                default:
+                    if (func_8017068C_ovl5(arg0, aheadOne) == 0x29A) {
+                        func_801720D8_ovl5(arg0);
+                        D_800EA520[omCurrentObj->objId] = 0;
+                        return;
+                    }
+                    break;
+            }
+            if ((tileTwo == 8) || (tileTwo == 9) || (tileTwo == 12)) {
+                D_800EA520[omCurrentObj->objId] = 5;
+                return;
+            }
+            if ((tileOne == 8) || (tileOne == 9) || (tileOne == 12)) {
+                D_800EA520[omCurrentObj->objId] = 4;
+            }
+            return;
+        case 4:
+        case 5:
+            if (D_800EA520[omCurrentObj->objId] == 4) {
+                aheadOne = D_8018E998_ovl5[arg0] + 1;
+            } else {
+                aheadOne = D_8018E998_ovl5[arg0] + 2;
+            }
+            if (func_80170584_ovl5(arg0, aheadOne) == 0) {
+                return;
+            }
+            if (func_80170464_ovl5(arg0, aheadOne) == 0) {
+                return;
+            }
+            if (D_800EA520[omCurrentObj->objId] == 4) {
+                func_801720D8_ovl5(arg0);
+            } else {
+                func_801721CC_ovl5(arg0);
+            }
+            D_800EA520[omCurrentObj->objId] = 0;
+            return;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_8017232C_ovl5.s")
+#endif
 
 u8 func_80172B10_ovl5(s32 arg0, s32 arg1) {
     return D_8018EA00_ovl5[arg0 * 82 + arg1];

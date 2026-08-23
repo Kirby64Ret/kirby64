@@ -63,7 +63,7 @@ extern s32 func_8010C274(struct PositionState *);
 extern s32 func_8010D668(struct PositionState *);
 extern s32 func_801128A4(struct PositionState *);
 extern s32 func_8010DF9C(f32 *);
-extern s32 func_8010E048(u8 *, u32, f32 *, f32 *, f32 *, f32 *);
+extern s32 func_8010E048(void *, s32, f32 *, f32 *, void *, f32 *);
 extern u16 func_8010DC24(struct CollisionTriangle *);
 extern void func_8011D40C(void);
 extern f32 func_800F8728(s32, f32, f32);
@@ -2099,6 +2099,12 @@ s32 func_80155498_ovl3(struct PositionState *arg0) {
     return D_800E8920[omCurrentObj->objId];
 }
 #else
+/* The N64 arms of func_80155424_ovl3 / func_80155498_ovl3 / func_80155664_ovl3
+ * take NO parameter: the shot's state buffer arrives in $a0 and is threaded
+ * untouched into the K&R-declared collision passes above. Their callers in
+ * plyshot.c therefore prototype them with one argument, and that mismatch is
+ * deliberate -- see the note on func_80154CFC_ovl3 at the top of this file.
+ * Do not "reconcile" either side in isolation. */
 s32 func_80155424_ovl3(void) {
     if (D_800E0490[omCurrentObj->objId] == NULL) {
         D_800E8920[omCurrentObj->objId] = 0;

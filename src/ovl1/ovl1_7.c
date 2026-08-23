@@ -1303,43 +1303,96 @@ void func_800B1FD0(GObj *arg0, s32 arg1, f32 arg2, s32 arg3, f32 arg4) {
 #endif
 
 #ifdef MIPS_TO_C
-void func_800B20E0(void *arg0, void ***arg1) {
-    UserData8000BE90 *temp_v0;
-    UserData8000BE90 *var_s0;
-    void ***var_s1;
-    void **temp_a0;
-    void *temp_v0_2;
+/* FACTORY: 3/71 words DIFFER (measured with tools/decomp/measure_seeds.py).
+ * Semantics are solved: arg1 is the geo blob's texScroll section -- a list of
+ * lists -- and each model-tree DObj consumes one outer slot, copying that
+ * slot's FIRST TextureScroll node into its MObj's texture block and clearing
+ * texIndex1. Swept: entry/src declaration order, block-scoping either local,
+ * `*list++`, and mutating arg1 in place -- all 3/71. Residue is purely which
+ * scratch register holds `entry` ($a0 in the ROM, $v1 from IDO here); the
+ * three diffs are that one register name on the load, the branch and the
+ * dependent load. Reading fmt1/siz1 through a u8 lvalue (the ROM's lbu, not
+ * the header's signed s8 lb) was worth 2 of the original 5. */
+void func_800B20E0(GObj *gobj, TextureScroll ***arg1) {
+    DObj *dobj;
+    TextureScroll ***list;
+    TextureScroll *src;
+    TextureScroll **entry;
 
-    var_s0 = arg0->unk3C;
-    var_s1 = arg1;
-    if (var_s0 != NULL) {
+    dobj = gobj->data.dobj;
+    list = arg1;
+    if (dobj != NULL) {
         do {
-            if (var_s1 != NULL) {
-                temp_a0 = *var_s1;
-                var_s1 += 4;
-                if (temp_a0 != NULL) {
-                    temp_v0_2 = *temp_a0;
-                    var_s0->unk80->unk8 = temp_v0_2->unk0;
-                    var_s0->unk80->unkA = temp_v0_2->unk2;
-                    var_s0->unk80->unkB = temp_v0_2->unk3;
-                    var_s0->unk80->unkC = temp_v0_2->unk4;
-                    var_s0->unk80->unk10 = temp_v0_2->unk8;
-                    var_s0->unk80->unk12 = temp_v0_2->unkA;
-                    var_s0->unk80->unk14 = temp_v0_2->unkC;
-                    var_s0->unk80->unk16 = temp_v0_2->unkE;
-                    var_s0->unk80->unk18 = temp_v0_2->unk10;
-                    var_s0->unk80->unk1C = temp_v0_2->unk14;
-                    var_s0->unk80->unk20 = temp_v0_2->unk18;
-                    var_s0->unk80->unk24 = temp_v0_2->unk1C;
-                    var_s0->unk80->unk28 = temp_v0_2->unk20;
-                    var_s0->unk80->unk2C = temp_v0_2->unk14;
-                    var_s0->unk80->unk30 = temp_v0_2->unk1C;
-                    var_s0->unk80->unk80 = 0;
+            if (list != NULL) {
+                entry = *list;
+                list++;
+                if (entry != NULL) {
+                    src = *entry;
+                    dobj->mobjList->texture.h_8 = src->h_8;
+                    dobj->mobjList->texture.fmt1 = *(u8 *) &src->fmt1;
+                    dobj->mobjList->texture.siz1 = *(u8 *) &src->siz1;
+                    dobj->mobjList->texture.textures = src->textures;
+                    dobj->mobjList->texture.stretch = src->stretch;
+                    dobj->mobjList->texture.sharedOffset = src->sharedOffset;
+                    dobj->mobjList->texture.t0w = src->t0w;
+                    dobj->mobjList->texture.t0h = src->t0h;
+                    dobj->mobjList->texture.halve = src->halve;
+                    dobj->mobjList->texture.xFrac0 = src->xFrac0;
+                    dobj->mobjList->texture.yFrac0 = src->yFrac0;
+                    dobj->mobjList->texture.xScale = src->xScale;
+                    dobj->mobjList->texture.yScale = src->yScale;
+                    dobj->mobjList->texture.field_0x2c = src->xFrac0;
+                    dobj->mobjList->texture.field_0x30 = src->xScale;
+                    dobj->mobjList->texIndex1 = 0;
                 }
             }
-            temp_v0 = animModelTreeNextNode(var_s0);
-            var_s0 = temp_v0;
-        } while (temp_v0 != NULL);
+            dobj = animModelTreeNextNode(dobj);
+        } while (dobj != NULL);
+    }
+}
+#elif defined(PORT)
+/* PORT: same walk, but the texScroll section is blob data with 4-byte slots.
+ * func_800A9250's PORT relocator writes native host pointers into those
+ * slots (everything the game can see is below 4 GiB, see src/pc/pc_mmio.c),
+ * so the two levels of indirection are u32 loads widened through uintptr_t
+ * rather than pointer-to-pointer walks, which on LP64 would step by 8. */
+void func_800B20E0(GObj *gobj, u32 *arg1) {
+    DObj *dobj;
+    u32 *list;
+    u32 *entry;
+    TextureScroll *src;
+    MObj *mobj;
+
+    dobj = gobj->data.dobj;
+    list = arg1;
+    if (dobj != NULL) {
+        do {
+            if (list != NULL) {
+                entry = (u32 *) (uintptr_t) *list;
+                list++;
+                if (entry != NULL) {
+                    src = (TextureScroll *) (uintptr_t) *entry;
+                    mobj = dobj->mobjList;
+                    mobj->texture.h_8 = src->h_8;
+                    mobj->texture.fmt1 = src->fmt1;
+                    mobj->texture.siz1 = src->siz1;
+                    mobj->texture.textures = src->textures;
+                    mobj->texture.stretch = src->stretch;
+                    mobj->texture.sharedOffset = src->sharedOffset;
+                    mobj->texture.t0w = src->t0w;
+                    mobj->texture.t0h = src->t0h;
+                    mobj->texture.halve = src->halve;
+                    mobj->texture.xFrac0 = src->xFrac0;
+                    mobj->texture.yFrac0 = src->yFrac0;
+                    mobj->texture.xScale = src->xScale;
+                    mobj->texture.yScale = src->yScale;
+                    mobj->texture.field_0x2c = src->xFrac0;
+                    mobj->texture.field_0x30 = src->xScale;
+                    mobj->texIndex1 = 0;
+                }
+            }
+            dobj = animModelTreeNextNode(dobj);
+        } while (dobj != NULL);
     }
 }
 #else

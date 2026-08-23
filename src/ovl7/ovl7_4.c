@@ -55,6 +55,31 @@ void func_8019BB58_ovl7(void);
 void func_8019D958_ovl7(u16);
 void ohSleep(s32);
 
+void func_800A22D4(u32);
+void func_800A2300(struct GObj *);
+void func_800B3520(void);
+void func_800B6474(GObj *);
+void func_800BB468(s32, s32);
+void func_80111550(u32);
+s32 *func_80111C88(void *, u32);
+void func_80111C4C(s32);
+void func_80111ECC(s32 *);
+s32 func_801117BC(void *, u32);
+void func_80198880_ovl7(struct EnemyKindDesc *);
+void func_8019B7D8_ovl7(void);
+/* u32, though the definition in src/ovl7/ovl7_3.c says (s32). MEASURED: the
+ * (s32) spelling changes 5 instructions in this TU ($a1/$a2 swap and a branch
+ * target shift), so the u32 the ROM was built against stays. */
+void func_801A2558_ovl7(u32);
+void func_801A3D6C_ovl7(void);
+void func_801A470C_ovl7(void);
+void func_801A4C0C_ovl7(GObj *);
+void func_801A4DFC_ovl7(GObj *);
+void func_801A4F70_ovl7(void);
+void func_801A5DE8_ovl7(GObj *);
+void func_801A6DD0_ovl7(void);
+s32 func_801AE7E0_ovl7(s32);
+
 #ifdef MIPS_TO_C
 /* FACTORY: 9/213, $v0/$v1 transposition ONLY (the CSE'd-load-in-the-
    neighbouring-register floor from LEVERS). Re-confirmed 2026-08-23,
@@ -268,10 +293,6 @@ void func_801A447C_ovl7(GObj *arg0) {
 }
 
 void func_801A44E4_ovl7(GObj *arg0) {
-    void func_801A3D6C_ovl7(void);
-    void func_801A470C_ovl7(void);
-    void func_800BB468(s32, s32);
-    void func_800B3520();
     struct EnemyRecord *ent;
 
     ent = D_800E1B50[omCurrentObj->objId];
@@ -304,10 +325,6 @@ void func_801A470C_ovl7(void) {
    func_801A50B0_ovl7 clone family, as in func_801A3E80_ovl7/func_801A5274_ovl7.
    LP64-clean, so the PORT arm is deleted. */
 void func_801A4754_ovl7(GObj *arg0) {
-    void func_801A4C0C_ovl7(GObj *);
-    s32 func_801AE7E0_ovl7(s32);
-    void func_80198880_ovl7(struct EnemyKindDesc *);
-    void func_801A4DFC_ovl7(GObj *);
     extern struct EnemyKindDesc D_801C5360_ovl7;
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *cc = ent->unk88->unkC;
@@ -371,16 +388,14 @@ struct Ovl7AnimInfo {
     u8 filler10[0x10];
 };
 
+s32 func_80110B00(struct Ovl7AnimInfo *);
+s32 func_80110FD4(struct Ovl7AnimInfo *);
+s32 func_80110150(struct Ovl7AnimInfo *);
+
 /* 8/124 insns */
 void func_801A4C0C_ovl7(GObj *arg0)
 {
   extern s32 D_8012E860;
-  void func_80111550(u32);
-  s32 *func_80111C88(void *, u32);
-  void func_80111ECC(s32 *);
-  s32 func_80110B00(struct Ovl7AnimInfo *);
-  s32 func_80110FD4(struct Ovl7AnimInfo *);
-  void func_80110150(struct Ovl7AnimInfo *);
   extern s32 D_800D7118[];
   struct EnemyRecord *ent;
   struct Ovl7AnimInfo sp2C;
@@ -433,9 +448,9 @@ struct TrackPosition7 {
     f32 unk4;
 };
 
+s32 func_8019A900_ovl7(struct TrackPosition7 *);
+
 void func_801A4DFC_ovl7(GObj *arg0) {
-    s32 func_8019A900_ovl7(struct TrackPosition7 *);
-    void func_801A4F70_ovl7(void);
     s32 pad;
     struct TrackPosition7 sp34;
 
@@ -462,8 +477,6 @@ struct UnkStruct800D7118_7 {
 void func_801A4F70_ovl7(void) {
     extern s32 D_800D7118[];
     extern void *D_801CA884_ovl7[];
-    s32 func_801117BC(void *, u32);
-    void func_80111C4C(s32);
 
     if (D_800EC9E4 != 0.0f) {
         D_800E3210[omCurrentObj->objId] = -D_800EC9E4;
@@ -671,11 +684,6 @@ void func_801A56C8_ovl7(void) {
    `<` spelling with the operands the other way round is evaluation-order
    backwards, 159/400 -> MATCH.  LP64-clean, so the PORT arm is deleted. */
 void func_801A57A8_ovl7(GObj *arg0) {
-    void func_801A5DE8_ovl7(GObj *);
-    s32 func_801AE7E0_ovl7(s32);
-    void func_80198880_ovl7(struct EnemyKindDesc *);
-    void func_801A4DFC_ovl7(GObj *);
-    void func_800B3520(void);
     extern struct EnemyKindDesc D_801C5360_ovl7;
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     struct SubSub800E1B50_Unk88_UnkC *cc = ent->unk88->unkC;
@@ -744,13 +752,6 @@ void func_801A57A8_ovl7(GObj *arg0) {
 void func_801A5DE8_ovl7(GObj *arg0) {
     extern s32 D_8012E860;
     extern s32 D_800D7118[];
-    void func_80111550(u32);
-    s32 *func_80111C88(void *, u32);
-    void func_80111ECC(s32 *);
-    s32 func_80110B00(struct Ovl7AnimInfo *);
-    s32 func_80110FD4(struct Ovl7AnimInfo *);
-    void func_80110150(struct Ovl7AnimInfo *);
-    void func_800B3520();
     struct EnemyRecord *ent;
     struct Ovl7AnimInfo sp34;
 
@@ -1006,7 +1007,6 @@ s32 func_801A66B4_ovl7(void) {
 }
 
 s32 func_801A66FC_ovl7(void) {
-    void func_801A2558_ovl7(u32);
     extern u8 D_800E7730[];
     extern u32 D_801CA9F8_ovl7[];
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
@@ -1093,9 +1093,6 @@ void func_801A6958_ovl7(GObj *arg0) {
 }
 
 void func_801A69B0_ovl7(GObj *arg0) {
-    void func_800A22D4(u32);
-    void func_800A2300(struct GObj *);
-    void func_800B6474(s32);
     extern f32 gameTicksPerDraw;
     extern FUNCLIST D_801C2994_ovl7;
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
@@ -1137,10 +1134,6 @@ void func_801A69B0_ovl7(GObj *arg0) {
 }
 
 void func_801A6C10_ovl7(GObj *arg0) {
-    void func_801A6DD0_ovl7();
-    void func_800A22D4(u32);
-    void func_800A2300(struct GObj *);
-    void func_801A3D6C_ovl7(void);
     extern struct EnemyEventTable D_801CB470_ovl7;
 /* D_801CE010_ovl7 = 0.2f : now emitted by this TU */
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
@@ -1181,9 +1174,6 @@ void func_801A6DD0_ovl7(void) {
    in kirby64.yaml declares them (splat renders it `. += 0x10;`), so this is
    plain C. */
 void func_801A6DF0_ovl7(GObj *arg0) {
-    void func_8019B7D8_ovl7(void);
-    void func_800A22D4(u32);
-    void func_800A2300(struct GObj *);
     extern f32 gameTicksPerDraw;
 
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];

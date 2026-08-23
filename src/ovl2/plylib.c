@@ -61,6 +61,12 @@ struct UnkStruct8011D858 {
 };
 s32 func_801BBFE4_ovl7(s32);
 s32 func_801BC27C_ovl7(s32, s32);
+/* The definition (src/ovl1/ovl1_2_2.c) is
+ * Ovl1Generator *func_800A7F74(s32, s32, s32, f32, f32, f32), and this TU's
+ * (u32, u32, u16) spelling disagrees with it. MEASURED: widening arg2 to s32
+ * costs 8 instructions in func_80122A80 -- the ROM loads that argument with a
+ * `lhu` straight into $a2, which only the u16 prototype reproduces. Left as
+ * the ROM was built. */
 void func_800A7F74(u32 arg0, u32 arg1, u16 arg2, f32 arg3, f32 arg4, f32 arg5);
 s32 func_800A8100(s32, s32, s32, struct DObj *);
 extern s32 D_8012E80C;
@@ -130,7 +136,11 @@ struct DestructAnimBank {
 extern struct DestructAnimBank D_8012E7B0;
 
 f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3);
-void func_800FD754(s32 *arg0, f32 arg1, f32 arg2, f32 arg3);
+/* Return type reconciled with the definition (s32, src/ovl2/ovl2_4.c:101).
+ * arg0 keeps its `s32 *` spelling: the definition says s32, but this TU's one
+ * call site passes NULL and IDO rejects NULL for an arithmetic parameter
+ * ("Constants must have arithmetic type"). */
+s32 func_800FD754(s32 *arg0, f32 arg1, f32 arg2, f32 arg3);
 void animSetModelAnimation(struct DObj *dobj, union AnimCmd *animList, f32 time);
 void animSetTextureAnimation(struct MObj *mobj, union AnimCmd *animList, f32 time);
 void func_8012307C(s32 arg0, s32 arg1, f32 arg2, s32 arg3);
@@ -4482,6 +4492,15 @@ s32 func_801226FC(void) {
         /* 0x00 */ u32 flags;
         /* 0x04 */ u8 pad4[0x54];
     };
+    /* These two spellings of func_8010CABC / func_800F8570 disagree with the
+     * ones in the MIPS_TO_C draft at ~3074 (2-arg vs 4-arg func_800F8570,
+     * GObj ** vs u8 * second parameter). That is not a live conflict: both
+     * are permuter fuel, setup_permuter un-guards exactly one draft at a
+     * time, and no compiled configuration ever sees both. Each arity is the
+     * one m2c read off that function's own listing (the ROM sets up the extra
+     * argument registers before the jal even though func_800F8570's own draft
+     * in ovl2_2.c only reads $a0), so neither can be "corrected" to the other
+     * without dropping instructions the draft needs. */
     s32 func_8010CABC(struct PositionState *, u8 *);
     void func_800F8570(s32, f32 *);
     void func_801229D0(void);

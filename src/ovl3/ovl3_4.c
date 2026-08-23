@@ -4,6 +4,9 @@
 
 extern s32 D_8012E944;
 
+/* src/ovl2/ovl2_5.c:840 defines void func_800FF200(struct Ovl2Particle *);
+ * Ovl2Particle is private to that TU, and D_8012E944 is the handle spelled
+ * s32 here, so the pointer type cannot be named at this call site. */
 extern void func_800FF200(s32);
 extern void func_800AA018(s32);
 #include "GObj.h"
@@ -32,7 +35,37 @@ extern void func_8011DC5C(void);
 extern void func_8011E0E8(void);
 extern void func_800A22D4(s32);
 void func_80169694_ovl3(s32);
-void func_80177098_ovl3(s32);
+/* Defined in src/ovl3/kirby.c:6171 as void func_80177098_ovl3(GObj *); it is
+ * only ever handed to assign_new_process_entry, which wants that type. */
+void func_80177098_ovl3(GObj *);
+
+/* Helpers this file's handlers call. m2c emitted a copy of each inside every
+ * function body that used it; a block-scope function declaration has
+ * file-scope linkage in C, so those copies were never local. */
+void curObjSleepForever(void);
+void ohSleep(s32);
+void func_800B33F4(void);
+void func_800B4924(s32);
+extern void func_800B531C(struct GObj *);
+extern void func_800B4954(GObj *);
+extern void func_800AECC0(f32);
+extern void func_800AED20(f32);
+extern void func_800B1900(u16);
+extern void func_800FBF18(s32);
+extern u32 func_800FD570(s32, u32, f32, f32, f32);
+extern f32 func_800F8824(Vector *, f32);
+extern f32 func_800F9828(s32, s32);
+extern void set_kirby_action_1(s32, s32);
+extern float sqrtf(float);
+extern void func_80152348_ovl3(f32);
+extern s32 func_80153A18_ovl3(void);
+void func_8016A144_ovl3(s32);
+void func_8016A934_ovl3(s32);
+void func_8016B410_ovl3(s32);
+void func_8016BBD0_ovl3(void);
+void func_8016BC00_ovl3(void);
+extern void func_8016C510_ovl3(GObj *);
+extern void func_8016C558_ovl3(struct GObj *);
 
 void func_80169430_ovl3(s32 arg0, s32 arg1, u8 arg2, s32 arg3) {
     f32 temp;
@@ -112,16 +145,11 @@ void func_801696F0_ovl3(s32 arg0) {
    chained store (much worse -- 8/224, forks the address-reloc pairing on
    both chains). Good permuter seed for the $f0/$f2 register floor. */
 extern void func_800A9760(s32);
-extern void func_8016BBD0_ovl3(void);
 extern void func_800FF0A8(s32);
 extern void func_800FF0C4(s32);
 extern void func_800FBE1C(void);
 extern void func_800FA414(s32);
 extern void func_800BB468(s32, s32);
-void func_800B4924(s32);
-extern void func_800B531C(struct GObj *);
-void curObjSleepForever(void);
-void ohSleep(s32);
 void func_80169A98_ovl3(s32);
 
 void func_80169718_ovl3(GObj *arg0) {
@@ -223,16 +251,6 @@ void func_80169A98_ovl3(s32 arg0) {
  * reproduce it; IDO drops unused scalars in this function, so the 0x30
  * slot has to come from a real value. */
 void func_80169C10_ovl3(GObj *arg0) {
-    void func_8016BBD0_ovl3(void);
-    void func_8016BC00_ovl3(void);
-    void curObjSleepForever(void);
-    void ohSleep(s32);
-    extern void func_800B531C(struct GObj *);
-    extern void func_800B4954(struct GObj *);
-    extern void func_800B4954(GObj *);
-    extern f32 func_800F9828(s32, s32);
-    void func_800B33F4(void);
-    void func_8016A144_ovl3(s32);
 
     s32 id = omCurrentObj->objId;
     s32 i;
@@ -315,10 +333,6 @@ void func_80169C10_ovl3(GObj *arg0) {
  * decays that push with gravity -|v|/16 until it stops or the state
  * advances, and hands motion back to the normal track callback. The
  * chewed-damage handler installed here is func_8016A144_ovl3. */
-extern void func_800B4954(GObj *);
-extern f32 func_800F9828(s32, s32);
-void func_800B33F4(void);
-void func_8016A144_ovl3(s32);
 
 void func_80169C10_ovl3(GObj *arg0) {
     s32 id = omCurrentObj->objId;
@@ -447,16 +461,6 @@ void func_8016A144_ovl3(s32 arg0) {
  * being kept live across a call; find it and the frame and the colouring
  * should follow together. */
 void func_8016A308_ovl3(s32 arg0) {
-    void func_8016BBD0_ovl3(void);
-    void func_8016BC00_ovl3(void);
-    void curObjSleepForever(void);
-    void ohSleep(s32);
-    void func_800B33F4(void);
-    extern void func_800B531C(struct GObj *);
-    extern void func_800B4954(struct GObj *);
-    extern f32 func_800F8824(Vector *, f32);
-    extern s32 func_80153A18_ovl3(void);
-    void func_8016A934_ovl3(s32);
     extern f32 D_80196954_ovl3[];
     extern u32 D_8019696C_ovl3[];
     struct Port34ColRec { s32 type; struct CollisionTriangle *tri; void *norm; };
@@ -568,9 +572,6 @@ void func_8016A308_ovl3(s32 arg0) {
  * overshoot multiplier, then restores the snapshot. D_800E98E0 tracks the
  * phase (1 squashing, 2 flat, 3 recovering, 4 done) for the per-frame
  * handler func_8016A934_ovl3. */
-extern f32 func_800F8824(Vector *, f32);
-extern s32 func_80153A18_ovl3(void);
-void func_8016A934_ovl3(s32);
 extern f32 D_80196954_ovl3[];
 extern u32 D_8019696C_ovl3[];
 struct Port34ColRec { s32 type; struct CollisionTriangle *tri; void *norm; };
@@ -717,21 +718,10 @@ void func_8016A934_ovl3(s32 arg0) {
  * the allocator -- so the move is to inline the two extra long-lived
  * values back into their uses rather than to chase registers. */
 void func_8016AAA4_ovl3(s32 arg0) {
-    void func_8016BBD0_ovl3(void);
-    void func_8016BC00_ovl3(void);
-    void curObjSleepForever(void);
-    void ohSleep(s32);
-    void func_800B33F4(void);
-    extern void func_800B531C(struct GObj *);
-    extern void func_800B4924(s32);
-    extern void func_800B4954(struct GObj *);
-    extern void func_800FBF18(s32);
     extern s32 D_800BE500;
     extern s32 D_800BE504;
     extern s32 D_800BE508;
     extern s32 D_800BE4F8;
-    extern f32 sqrtf(f32);
-    void func_8016B410_ovl3(s32);
 
     s32 id = omCurrentObj->objId;
     f32 diag;
@@ -862,13 +852,10 @@ void func_8016AAA4_ovl3(s32 arg0) {
  * (diagonals at 15/sqrt(2), facing folded into D_800E6A10), picks the spin
  * animation via func_8016BC00_ovl3, and waits out phase 4 -- ending in a
  * normal release (phase 5) or, from phase 6, the level-exit fadeout. */
-extern void func_800FBF18(s32);
 extern s32 D_800BE500;
 extern s32 D_800BE504;
 extern s32 D_800BE508;
 extern s32 D_800BE4F8;
-extern f32 sqrtf(f32);
-void func_8016B410_ovl3(s32);
 
 void func_8016AAA4_ovl3(s32 arg0) {
     s32 id = omCurrentObj->objId;
@@ -1014,6 +1001,9 @@ extern void func_801A36CC(void *);
 extern void func_801A38BC_ovl7(void);
 extern s32 func_8016B74C_ovl3(void);
 void func_8016B9D4_ovl3(s32);
+/* src/ovl2/ovl2_9.c:1529 defines struct PlySlot *func_80111574(struct
+ * PlyEntry *, void *); neither struct is visible outside that TU, and the
+ * result feeds func_80111C4C(s32) directly here. */
 extern s32 func_80111574(u8 *, s32);
 extern void func_80111C4C(s32);
 
@@ -1138,11 +1128,7 @@ s32 func_8016B74C_ovl3(void) {
 #endif
 /* D_80197274_ovl3 now emitted by this TU */
 void func_8016BB40_ovl3(s32);
-void func_800B4924(s32);
-void func_800B33F4(void);
 void func_800AF27C(void);
-void curObjSleepForever(void);
-void ohSleep(s32);
 
 void func_8016B9D4_ovl3(s32 arg0) {
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_8016BB40_ovl3;
@@ -1184,8 +1170,6 @@ void func_8016BBD0_ovl3(void) {
 }
 
 void func_8016BC00_ovl3(void) {
-    void func_800AECC0(f32);
-    void func_800AED20(f32);
 
     switch (gEntityFuncListIDArray[omCurrentObj->objId]) {
         case 1:
@@ -1241,15 +1225,6 @@ void func_8016BC00_ovl3(void) {
  * a crude upper bound on the residue.  The draft is 117 words against 130,
  * so 13 words of shape are still missing before colouring matters. */
 void func_8016BD24_ovl3(s32 arg0) {
-    extern void func_800B531C(struct GObj *);
-    extern void set_kirby_action_1(s32, s32);
-    extern void func_800AECC0(f32);
-    extern void func_800AED20(f32);
-    extern u32 func_800FD570(s32, u32, f32, f32, f32);
-    extern void func_800B1900(u16);
-    extern void func_8016C510_ovl3(GObj *);
-    extern void func_8016C558_ovl3(struct GObj *);
-    extern void func_80152348_ovl3(f32);
 
     s32 id = omCurrentObj->objId;
 
@@ -1292,14 +1267,6 @@ void func_8016BD24_ovl3(s32 arg0) {
  * gKirbyState.action (base 0x8012E7C0). A scripted grab instead replays
  * the object's own track (func_800FD570 reset + func_800B1900 on the low
  * half of objId). */
-extern void set_kirby_action_1(s32, s32);
-extern void func_800AECC0(f32);
-extern void func_800AED20(f32);
-extern u32 func_800FD570(s32, u32, f32, f32, f32);
-extern void func_800B1900(u16);
-extern void func_8016C510_ovl3(GObj *);
-extern void func_8016C558_ovl3(struct GObj *);
-extern void func_80152348_ovl3(f32);
 
 void func_8016BD24_ovl3(s32 arg0) {
     s32 id = omCurrentObj->objId;

@@ -386,6 +386,12 @@ s32 func_80183C2C_ovl5(s32 arg0) {
     return 1;
 }
 
+/* The C for this one is below, next to the D_8018C30C_ovl5 declaration it
+   needs (search Ovl5MinigameRow). It cannot be written here: the record
+   type is only declared ~100 lines further down, hoisting that declaration
+   would re-type every call site in between, and moving the DEFINITION down
+   would move the function in .text. So the pragma keeps the address and the
+   draft sits where it compiles. */
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80183C54_ovl5.s")
 
 void func_80183FA0_ovl5(void) {
@@ -488,6 +494,116 @@ typedef struct Unk8018C30C {
 } Unk8018C30C;
 
 extern Unk8018C30C D_8018C30C_ovl5[];
+
+#if defined(MIPS_TO_C) || defined(PORT)
+/* func_80183C54_ovl5 -- the minigame ROSTER ROW seat. Its #pragma is ~100
+ * lines above, at the function's real address; see the note there for why the
+ * C lives down here instead.
+ *
+ * FACTORY: 13/211 words DIFFER (measured by splicing this draft in place of
+ * that pragma in a scratch copy and running verify.py). Instruction count is
+ * exact and every branch matches. The residue is two register-allocation
+ * facts: the frame comes out 0x58 where the ROM has 0x50 (7 of the 13 diffs
+ * are the arg2 home and the prologue/epilogue that follow from it), and IDO
+ * materialises &D_8018C008_ovl5 in $a3 where the ROM uses $a2 (4 diffs).
+ * Swept and rejected: all 720 declaration orders of the six locals (the best
+ * is the one written here -- putting blinkOn last is worth 2), inlining
+ * `entry` (24/211) and inlining `n` (19/211).
+ * What paid: writing every `pos + constant` add with the POSITION first
+ * (LEVERS lever 2 -- the evaluation order of an add between two memory loads
+ * is the reverse of source order) took it from 29 to 15.
+ *
+ * PORT: shared rather than duplicated -- the arithmetic is all f32/s32 and
+ * the record is indexed through a named struct. Two known port defects,
+ * BOTH inherited from the matched sibling func_801853E0_ovl5 below rather
+ * than introduced here: the 0x6C/0x78/0xCC/0xD8 stores are raw byte offsets
+ * into the SPObj's two RSP command blocks, which the LP64 SPObj in
+ * include/SPObj.h relocates, and Ovl5MinigameRow pins the 0x10 byte at the
+ * N64 offset. Both need the same fix and should be done together. */
+typedef struct Ovl5MinigameRow {
+    /* 0x00 */ u8 filler0[0x10];
+    /* 0x10 */ u8 unk10;
+    /* 0x11 */ u8 filler11[3];
+    /* 0x14 */ struct UnkStruct8015C740 *unk14;
+    /* 0x18 */ u8 filler18[0x1C];
+} Ovl5MinigameRow; /* 0x34, the same record as Unk8018C30C above with
+                      the 0x10 byte and the 0x14 sprite spec named */
+
+extern struct UnkStruct8015C740 D_8018A6D0_ovl5;
+extern struct UnkStruct8015C740 D_8018A6F0_ovl5;
+extern Vector2 D_8018A71C_ovl5[];
+extern struct UnkStruct8015C740 *D_8018A844_ovl5[];
+extern f32 D_8018A864_ovl5[];
+extern f32 D_8018C008_ovl5[];
+extern f32 D_8018C150_ovl5[];
+extern f32 D_8018C158_ovl5[];
+extern struct UnkStruct8015C740 *D_8018C160_ovl5[];
+
+void func_80183C54_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    Ovl5MinigameRow *entry;
+    SPObj *sp;
+    SPObj *sp2;
+    s32 blinkOff;
+    s32 n;
+    s32 blinkOn;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_8018EE20_ovl5[arg1] = omCurrentObj->objId;
+    omLinkGObjDL(arg0, &func_800AD1A0, 0x12, 0x80000000, 0x12);
+    if (func_80183C2C_ovl5(arg2) == 0) {
+        sp = func_8015C740_ovl5(arg0, &D_8018A6F0_ovl5);
+        sp->xOffset = D_8018A71C_ovl5[arg1].x;
+        sp->yOffset = D_8018A71C_ovl5[arg1].y;
+        curObjSleepForever();
+    }
+    sp = func_8015C740_ovl5(arg0, &D_8018A6D0_ovl5);
+    blinkOff = D_8018EE50_ovl5;
+    if (func_80183C00_ovl5(arg2) != 0) {
+        blinkOn = D_8018EE54_ovl5;
+    }
+    *((s32 *) (((u8 *) sp) + 0x6C)) = blinkOff;
+    *((s32 *) (((u8 *) sp) + 0x78)) = blinkOff;
+    *((s32 *) (((u8 *) sp) + 0xCC)) = blinkOff;
+    *((s32 *) (((u8 *) sp) + 0xD8)) = blinkOff;
+    sp->xOffset = D_8018A71C_ovl5[arg1].x;
+    sp->yOffset = D_8018A71C_ovl5[arg1].y;
+    entry = &((Ovl5MinigameRow *) D_8018C30C_ovl5)[arg2];
+    sp2 = func_8015C740_ovl5(arg0, entry->unk14);
+    sp2->xOffset = D_8018A71C_ovl5[arg1].x + D_8018C008_ovl5[0];
+    sp2->yOffset = D_8018A71C_ovl5[arg1].y + D_8018C008_ovl5[1];
+    n = arg2 + 1;
+    sp2 = func_8015C740_ovl5(arg0, D_8018C160_ovl5[n % 10]);
+    sp2->xOffset = D_8018A71C_ovl5[arg1].x + D_8018C150_ovl5[0];
+    sp2->yOffset = D_8018A71C_ovl5[arg1].y + D_8018C150_ovl5[1];
+    if (n >= 10) {
+        sp2 = func_8015C740_ovl5(arg0, D_8018C160_ovl5[n / 10]);
+        sp2->xOffset = D_8018A71C_ovl5[arg1].x + D_8018C158_ovl5[0];
+        sp2->yOffset = D_8018A71C_ovl5[arg1].y + D_8018C158_ovl5[1];
+    }
+    if (entry->unk10 != 0) {
+        sp2 = func_8015C740_ovl5(arg0, D_8018A844_ovl5[entry->unk10]);
+        sp2->xOffset = D_8018A71C_ovl5[arg1].x + D_8018A864_ovl5[0];
+        sp2->yOffset = D_8018A71C_ovl5[arg1].y + D_8018A864_ovl5[1];
+    }
+    while (1) {
+        if (D_800D6C10[arg2] == 1) {
+            ohSleep(6);
+            *((s32 *) (((u8 *) sp) + 0x6C)) = blinkOn;
+            *((s32 *) (((u8 *) sp) + 0x78)) = blinkOn;
+            *((s32 *) (((u8 *) sp) + 0xCC)) = blinkOn;
+            *((s32 *) (((u8 *) sp) + 0xD8)) = blinkOn;
+            ohSleep(6);
+            *((s32 *) (((u8 *) sp) + 0x6C)) = blinkOff;
+            *((s32 *) (((u8 *) sp) + 0x78)) = blinkOff;
+            *((s32 *) (((u8 *) sp) + 0xCC)) = blinkOff;
+            *((s32 *) (((u8 *) sp) + 0xD8)) = blinkOff;
+        } else {
+            ohSleep(1);
+        }
+    }
+}
+#endif
 extern Vector D_8018C300_ovl5;
 void func_800A9088(s32);
 void func_800A9F98(s32, f32);

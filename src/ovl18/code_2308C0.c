@@ -13,9 +13,14 @@ extern Gfx *gDisplayListHeads[4];
 
 void HS64_Translate(Mtx *, f32, f32, f32);
 
-void func_8021E978_ovl18(void);
+/* Unspecified arguments, like func_8021ED10_ovl18 below: the definition is
+   K&R and takes the GObj slot the ROM reads out of $a0, but func_8021F400_ovl18
+   calls it with none. */
+void func_8021E978_ovl18();
 void func_8021ED10_ovl18();
-void func_8021ED3C_ovl18(void);
+/* Unspecified arguments: the definition is K&R and homes the GObj slot the
+   ROM leaves in $a0, but func_8021F400_ovl18 calls it with none. */
+void func_8021ED3C_ovl18();
 void func_800B1900(s32);
 void func_800B1BF0(s32, s32);
 void dma_read(u32, void *, u32);
@@ -74,6 +79,11 @@ void func_8021DF20_ovl18(struct GObj *arg0) {
     }
 }
 
+/* The C for this one is below, next to the cue-record declarations it needs
+   (search func_8021E050_ovl18). It cannot be written here -- struct Ovl18Cue
+   and D_8022959C_ovl18 are declared further down, hoisting them would re-type
+   every call site in between, and moving the DEFINITION down would move the
+   function in .text. So the pragma keeps the address. */
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E050_ovl18.s")
 
 extern u8 D_8022BCD8_ovl18[][4];
@@ -101,13 +111,24 @@ s32 func_8021E4CC_ovl18(s32 arg0) {
 
 struct Ovl18Cue {
     /* 0x00 */ u8 unk0;
-    /* 0x01 */ u8 pad1[7];
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ u8 unk2;
+    /* 0x03 */ u8 unk3;
+    /* 0x04 */ u8 unk4;
+    /* 0x05 */ u8 pad5;
+    /* 0x06 */ s16 unk6;
     /* 0x08 */ u16 unk8;
-    /* 0x0A */ u8 pad2[0x1A];
+    /* 0x0A */ u8 padA[2];
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ u8 pad14[4];
+    /* 0x18 */ f32 unk18;
+    /* 0x1C */ f32 unk1C;
+    /* 0x20 */ f32 unk20;
 }; /* 0x24 */
 
 struct Ovl18Row {
-    /* 0x00 */ u8 pad0[4];
+    /* 0x00 */ s32 unk0;
     /* 0x04 */ struct Ovl18Cue *unk4;
     /* 0x08 */ u8 pad8[0x10];
 }; /* 0x18 */
@@ -120,6 +141,110 @@ struct Ovl18Tbl {
 extern struct Ovl18Tbl D_8022959C_ovl18[];
 extern s32 D_8022BC90_ovl18;
 extern u8 D_8022BCD0_ovl18[];
+
+#if defined(MIPS_TO_C) || defined(PORT)
+/* func_8021E050_ovl18 -- the cue SPAWNER. Its #pragma is ~50 lines above, at
+ * the function's real address: the C cannot be written there because the cue
+ * record types and D_8022959C_ovl18 are only declared here.
+ *
+ * Placement modes are the top nibble-and-a-half of the cue's first byte:
+ *   0x00  spawn on the lane's path node (D_800E5F90/D_800E6BD0), offset along
+ *         the path by unkC and in Y by unk10;
+ *   0x10  same, but both offsets are randomised and snapped DOWN to a
+ *         multiple of 5 (`random_soft_s32_range(n) / 5 * 5`, which is what the
+ *         div/multu/mflo pair in the listing computes -- not a remainder);
+ *   0x20  spawn at Kirby's position plus (unkC, unk10);
+ *   0x30  spawn at Kirby's position plus a random (unkC, unk10) box.
+ * Modes 0x20/0x30 only fill `pos` and fall out returning an uninitialised
+ * `ret`, which is the ROM's behaviour, not a transcription slip -- the listing
+ * has no store to 0x7C on those paths. Low nibble 7 suppresses the spawn
+ * fanfare (play_sound 0x112 + func_800A7F74 + an 18-frame pause).
+ *
+ * FACTORY: 261/287 words DIFFER, but that is ONE fact, not 261: the
+ * instruction count is exact, every branch matches, and the whole local block
+ * sits 4 bytes LOW -- yScale/scale/angle/pos/ret/node land at
+ * 0x4C/0x50/0x5C/0x68/0x78/0x7C where the ROM has 0x50/0x54/0x60/0x6C/0x7C/
+ * 0x80. Every stack-referencing instruction therefore differs. The frame size
+ * itself (0x88) is already right, as is the relative order of the six locals
+ * and the 4-byte hole the ROM leaves between `pos` and `ret`.
+ * Swept and rejected: every 1-, 2- and 3-pad placement across all eight
+ * declaration slots (best 261, plain 264) and four spellings of the top pad
+ * (plain s32, s32[1], volatile s32, u8[4], f32) -- IDO drops an unreferenced
+ * scalar at the TOP of the block, which is exactly where the ROM's spare word
+ * (0x84) is, so a pad cannot buy that word. This is the decidable
+ * stack-block-base class of LEVERS levers 12/43 and wants the permuter.
+ *
+ * PORT: shared rather than duplicated. Every local is a named Vector/s32/f32
+ * and every callee takes real types, so nothing here is N64-only. */
+s32 func_800F9974(s32 *, f32 *, f32);
+s32 func_800F9020(Vector *, s32, f32);
+s32 func_800FCD14(u32, u8, f32, u8, u8, u8, u8, u8, s16, Vector *, Vector *, Vector *);
+void func_800A7F74(s32, s32, s32, f32, f32, f32);
+s32 random_soft_s32_range(s32);
+void ohSleep(s32);
+extern s32 D_800E5F90[];
+extern f32 D_800E6BD0[];
+
+s32 func_8021E050_ovl18(s32 arg0, s32 arg1, s32 arg2) {
+    s32 pad0;
+    struct Ovl18Cue *cue;
+    s32 node;
+    s32 ret;
+    Vector pos;
+    Vector angle;
+    s32 pad1;
+    Vector scale;
+    f32 yScale;
+
+    cue = &D_8022959C_ovl18[D_8022BC90_ovl18].unk0[arg1].unk4[arg2];
+    angle.x = cue->unk18;
+    angle.y = cue->unk1C;
+    angle.z = cue->unk20;
+    scale.x = 1.0f;
+    scale.y = 1.0f;
+    scale.z = 1.0f;
+    switch (cue->unk0 & 0x70) {
+        case 0:
+            node = D_800E5F90[omCurrentObj->objId];
+            yScale = D_800E6BD0[omCurrentObj->objId];
+            func_800F9974(&node, &yScale, cue->unkC);
+            func_800F9020(&pos, node, yScale);
+            pos.y = gEntitiesNextPosYArray[omCurrentObj->objId] + cue->unk10;
+            if ((cue->unk0 & 0xF) != 7) {
+                play_sound(0x112);
+                func_800A7F74(3, 0, 0xCE, pos.x, pos.y, pos.z);
+                ohSleep(0x12);
+            }
+            ret = func_800FCD14(0xFF, (u8) node, yScale, cue->unk1, cue->unk2, cue->unk3, cue->unk4, 0,
+                                cue->unk6, &pos, &angle, &scale);
+            break;
+        case 0x10:
+            node = D_800E5F90[omCurrentObj->objId];
+            yScale = D_800E6BD0[omCurrentObj->objId];
+            func_800F9974(&node, &yScale, (f32) (random_soft_s32_range((s32) cue->unkC) / 5 * 5));
+            func_800F9020(&pos, node, yScale);
+            pos.y = gEntitiesNextPosYArray[omCurrentObj->objId] +
+                    (f32) (random_soft_s32_range((s32) cue->unk10) / 5 * 5);
+            if ((cue->unk0 & 0xF) != 7) {
+                play_sound(0x112);
+                func_800A7F74(3, 0, 0xCE, pos.x, pos.y, pos.z);
+                ohSleep(0x12);
+            }
+            ret = func_800FCD14(0xFF, (u8) node, yScale, cue->unk1, cue->unk2, cue->unk3, cue->unk4, 0,
+                                cue->unk6, &pos, &angle, &scale);
+            break;
+        case 0x20:
+            pos.x = gEntitiesNextPosXArray[omCurrentObj->objId] + cue->unkC;
+            pos.y = gEntitiesNextPosYArray[omCurrentObj->objId] + cue->unk10;
+            break;
+        case 0x30:
+            pos.x = (f32) random_soft_s32_range((s32) cue->unkC) + gEntitiesNextPosXArray[omCurrentObj->objId];
+            pos.y = (f32) random_soft_s32_range((s32) cue->unk10) + gEntitiesNextPosYArray[omCurrentObj->objId];
+            break;
+    }
+    return ret;
+}
+#endif
 
 void func_8021E528_ovl18(s32 arg0, s32 arg1, s32 arg2) {
     extern u8 D_8022BCF8_ovl18[][4];
@@ -215,7 +340,121 @@ void func_8021E858_ovl18(UNUSED s32 arg0) {
     }
 }
 
+#if defined(MIPS_TO_C) || defined(PORT)
+/* The per-lane CUE-SCRIPT interpreter. Row `row` of the current table's lane
+ * list is a program; D_800E9AA0[objId] is its program counter and the low
+ * nibble of each 0x24-byte cue's first byte is the opcode: 0/7 spawn-and-wait
+ * (func_8021E528_ovl18), 1 spawn-and-continue (func_8021E6E0_ovl18), 2 rewind
+ * the pc to 0, 4 bump every lane's state byte, 5 bump the global D_800D6E1C
+ * counter, 6 park this lane in state 2, 0xF drain the lane (wait for all four
+ * slots to clear) and then retire, 3 retire immediately. Opcodes 8..0xE are
+ * the jump table's default and just re-read the pc.
+ *
+ * FACTORY: 13/230 words DIFFER (12 real -- [122] is only verify.py's
+ * anonymous-.rodata artifact for the jump table when scoring a scratch copy).
+ * Instruction count is exact and every branch target matches. The residue is
+ * two scheduling facts: at both `pc`/`row` reload sites IDO emits the two
+ * `addu`s in the opposite order to the ROM (4 diffs; the ROM computes the
+ * D_800E98E0 address first but issues the D_800E9AA0 LOAD first, and no source
+ * order produces both -- putting `row` first swaps the loads instead), and
+ * IDO's 4x unroll of the opcode-4 loop rotates its four lbu/addiu pairs by one
+ * (8 diffs).
+ * Swept and rejected: `i != 8` (13), `x = x + 1` instead of `x++` (13), an
+ * explicit objId local (17).
+ * What paid, in order: writing the opcode-4 loop as an INDEXED loop over 8 --
+ * IDO then knows the trip count and unrolls to the ROM's 4-at-a-time walk
+ * with no zero-trip guard and no remainder loop, where a pointer walk gets
+ * both (238 -> 230 words); naming the masked opcode in a local, which is what
+ * makes IDO keep the `sltiu 0x10` range check the ROM has; the two pads that
+ * put the frame at the ROM's 0x50; and reading `pc` before `row`. The last
+ * 34 diffs went when case 0xF was made to FALL THROUGH into case 5 -- the ROM
+ * has no branch after its curObjSleepForever(), and neither does case 3.
+ *
+ * PORT: shared rather than duplicated. Everything here is s32/u8 through named
+ * types; the `(s32 *)` view of D_800E9AA0 is the 4-byte-slot vram layout the
+ * host uses (tools/pc/vram_syms.txt), and the two function-pointer casts are
+ * the ROM's own stores of a GObj callback into an s32 callback slot. The K&R
+ * definition is what makes IDO read the GObj out of $a0 while
+ * func_8021F400_ovl18 calls it with no argument, exactly as for
+ * func_8021ED10_ovl18 below. The declarations live inside this guard so the
+ * N64 build's file-scope view is unchanged. */
+void ohSleep(s32);
+void curObjSleepForever(void);
+void setProcessMain(struct GObjProcess *proc, void (*cb)(struct GObj *));
+void procMainStub(struct GObj *g);
+void func_800AF9B8(u16, u8);
+void func_800B491C(struct GObj *);
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+extern s32 D_800D6E1C;
+
+void func_8021E978_ovl18(arg0)
+s32 arg0;
+{
+    s32 row;
+    s32 pad0;
+    s32 pc;
+    s32 pad1;
+    s32 i;
+    s32 op;
+
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B491C;
+    func_800AF9B8(0x24, 0x10);
+    D_800DD8D0[omCurrentObj->objId] |= 0x40;
+    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_8021E858_ovl18;
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+    ohSleep(D_8022959C_ovl18[D_8022BC90_ovl18].unk0[D_800E98E0[omCurrentObj->objId]].unk0);
+    pc = ((s32 *) D_800E9AA0)[omCurrentObj->objId];
+    row = D_800E98E0[omCurrentObj->objId];
+    while (1) {
+        if (D_8022BCD0_ovl18[row] == 1) {
+            curObjSleepForever();
+        }
+        op = D_8022959C_ovl18[D_8022BC90_ovl18].unk0[row].unk4[pc].unk0 & 0xF;
+        switch (op) {
+            case 0:
+            case 7:
+                func_8021E528_ovl18(arg0, row, pc);
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] += 1;
+                break;
+            case 1:
+                func_8021E6E0_ovl18(arg0, row, pc);
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] += 1;
+                break;
+            case 4:
+                for (i = 0; i < 8; i++) {
+                    D_8022BCD0_ovl18[i]++;
+                }
+                break;
+            case 2:
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
+                break;
+            case 3:
+                curObjSleepForever();
+                /* fallthrough */
+            case 0xF:
+                while (func_8021E4CC_ovl18(row) != 4) {
+                    ohSleep(1);
+                }
+                D_8022BCD0_ovl18[row]++;
+                curObjSleepForever();
+                /* fallthrough */
+            case 5:
+                D_800D6E1C += 1;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] += 1;
+                break;
+            case 6:
+                D_8022BCD0_ovl18[row] = 2;
+                ((s32 *) D_800E9AA0)[omCurrentObj->objId] += 1;
+                break;
+        }
+        pc = ((s32 *) D_800E9AA0)[omCurrentObj->objId];
+        row = D_800E98E0[omCurrentObj->objId];
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E978_ovl18.s")
+#endif
 
 /* K&R definition is load-bearing: the parameter home slot (sw $a0) is only
  * emitted with a declared parameter, and a prototyped one would reject the
@@ -226,7 +465,195 @@ s32 arg0;
     func_800B1900(((u16 *)omCurrentObj)[1]);
 }
 
+#if defined(MIPS_TO_C) || defined(PORT)
+/* The stage OPENER for an ovl18 minigame round. Latches the level id from
+ * D_800E77A0 into D_8022BC90_ovl18, its lane count into D_8022BC94_ovl18 and
+ * the entity slot into D_8022BC98_ovl18, copies that entity record out of
+ * D_801290E0 into D_8022BCA0_ovl18, clears all eight lanes' state and slot
+ * arrays, then -- unless this is a replay (D_800D6E20[D_800BE508]), which
+ * short-circuits straight to the result words -- spawns one seat track per
+ * lane at its offset along Kirby's path node and waits for every lane to
+ * check in. It finishes by publishing the round's three result words
+ * (D_800D6E14/18/1C) and, when the level names a prize entity and both
+ * anti-tamper probes pass, spawning that prize.
+ *
+ * FACTORY: 343/374 words differ, and the draft is 4 words LONG (the ROM is
+ * 370). Semantics are solved -- every call, constant and branch is accounted
+ * for -- but two register-allocation facts make almost every word differ:
+ * the frame comes out 0xB8 against the ROM 0xC0, and IDO hoists FIVE array
+ * bases into saved registers around the seat loop (it lifts
+ * gEntitiesNextPosYArray as well) where the ROM hoists four and
+ * re-materialises that one inside the loop, which permutes s0-s8 for the rest
+ * of the function. Swept: two dead scalars in each of two placements
+ * (345 -> 343). This wants the permuter, not more source spellings.
+ *
+ * Types recovered here and worth keeping regardless of the score:
+ * D_80229594_ovl18 is the SAME 0x1C-stride table as D_8022959C_ovl18 above,
+ * eight bytes earlier -- Ovl18Tbl.unk0 is this record's `rows` field -- and
+ * the per-lane seat records it points at are 0x18 bytes with a path offset at
+ * +8 and an (x,y,z) offset at +0xC/+0x10/+0x14.
+ *
+ * PORT: shared rather than duplicated; everything is named types and the one
+ * struct copy is a plain `struct Entity` assignment. */
+/* D_80229594_ovl18 is the same 0x1C-stride table as D_8022959C_ovl18 above,
+   eight bytes earlier: this record's unk8 IS Ovl18Tbl.unk0. */
+struct Ovl18Level {
+    /* 0x00 */ u8 laneCount;
+    /* 0x01 */ u8 unk1;
+    /* 0x02 */ u8 unk2;
+    /* 0x03 */ u8 unk3;
+    /* 0x04 */ u8 unk4;
+    /* 0x05 */ u8 pad5[3];
+    /* 0x08 */ struct Ovl18Row *rows;
+    /* 0x0C */ u8 unkC;
+    /* 0x0D */ u8 padD[3];
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+    /* 0x18 */ u8 pad18[4];
+}; /* 0x1C */
+
+struct Ovl18Seat {
+    /* 0x00 */ u8 pad0[8];
+    /* 0x08 */ f32 unk8;
+    /* 0x0C */ f32 unkC;
+    /* 0x10 */ f32 unk10;
+    /* 0x14 */ f32 unk14;
+}; /* 0x18 */
+
+extern struct Ovl18Level D_80229594_ovl18[];
+extern s32 D_8022BC94_ovl18;
+extern s32 D_8022BC98_ovl18;
+extern struct Entity D_8022BCA0_ovl18;
+extern struct Entity *D_801290E0;
+extern u8 D_800E76C0[];
+extern s32 D_800D6E14;
+extern s32 D_800D6E18;
+extern s32 D_800D6E1C;
+extern s32 D_800D6E98;
+extern u8 D_800D6E20[];
+extern u32 D_800BE508;
+extern u8 D_800E7880[];
+extern s32 D_800E5F90[];
+extern f32 D_800E6BD0[];
+s32 func_800AEA64(s32, s32, s32);
+void func_800BC1FC(s32);
+s32 func_800FD754(s32, f32, f32, f32);
+s32 func_800F9974(s32 *, f32 *, f32);
+s32 func_800F9020(Vector *, s32, f32);
+s32 func_800FCD14(u32, u8, f32, u8, u8, u8, u8, u8, s16, Vector *, Vector *, Vector *);
+u8 func_8021F304_ovl18(void);
+s32 func_8021F35C_ovl18(void);
+void ohSleep(s32);
+void curObjSleepForever(void);
+void setProcessMain(struct GObjProcess *proc, void (*cb)(struct GObj *));
+void procMainStub(struct GObj *g);
+void func_800AF9B8(u16, u8);
+void func_800B491C(struct GObj *);
+extern struct GObjProcess *gEntityGObjProcessArray5[];
+
+void func_8021ED3C_ovl18(arg0)
+s32 arg0;
+{
+    struct Ovl18Level *lvl;
+    struct Ovl18Seat *seat;
+    s32 i;
+    s32 seated;
+    s32 lanes;
+    s32 track;
+    s32 pad0;
+    s32 pad1;
+    s32 node;
+    f32 yScale;
+    Vector pos;
+    Vector angle;
+    Vector scale;
+
+    D_8022BC90_ovl18 = D_800E77A0[omCurrentObj->objId];
+    D_8022BC94_ovl18 = D_80229594_ovl18[D_8022BC90_ovl18].laneCount;
+    D_8022BC98_ovl18 = D_800E76C0[omCurrentObj->objId];
+    D_8022BCA0_ovl18 = D_801290E0[D_8022BC98_ovl18];
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B491C;
+    func_800AF9B8(0x24, 0x10);
+    D_800DD8D0[omCurrentObj->objId] |= 0x40;
+    for (i = 0; i < 8; i++) {
+        D_8022BCD0_ovl18[i] = 0;
+        D_8022BCF8_ovl18[i][0] = 0;
+        D_8022BCD8_ovl18[i][0] = 0;
+        D_8022BCF8_ovl18[i][1] = 0;
+        D_8022BCD8_ovl18[i][1] = 0;
+        D_8022BCF8_ovl18[i][2] = 0;
+        D_8022BCD8_ovl18[i][2] = 0;
+        D_8022BCF8_ovl18[i][3] = 0;
+        D_8022BCD8_ovl18[i][3] = 0;
+    }
+    if (D_800D6E20[D_800BE508] != 0) {
+        ohSleep(0x2D);
+        D_800D6E14 = D_80229594_ovl18[D_8022BC90_ovl18].unk2;
+        D_800D6E18 = D_80229594_ovl18[D_8022BC90_ovl18].unk3;
+        D_800D6E1C = D_80229594_ovl18[D_8022BC90_ovl18].unk4;
+        curObjSleepForever();
+    }
+    seat = D_80229594_ovl18[D_8022BC90_ovl18].rows;
+    i = 0;
+    if (D_8022BC94_ovl18 != 0) {
+        do {
+            track = func_800AEA64(0x21, 0x3C, 0x49);
+            D_800E7880[track] = 1;
+            D_800E98E0[track] = i;
+            D_800E5F90[track] = D_800E5F90[omCurrentObj->objId];
+            D_800E6BD0[track] = D_800E6BD0[omCurrentObj->objId];
+            func_800F9974(&D_800E5F90[track], &D_800E6BD0[track], seat->unk8);
+            gEntitiesNextPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId] + seat->unkC;
+            i++;
+            seat++;
+            gEntitiesNextPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId] + seat[-1].unk10;
+            gEntitiesNextPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId] + seat[-1].unk14;
+        } while (i < D_8022BC94_ovl18);
+    }
+    func_800BC1FC(D_80229594_ovl18[D_8022BC90_ovl18].unk1);
+    seated = 0;
+    while (1) {
+        lanes = D_8022BC94_ovl18;
+        for (; i < lanes; i++) {
+            if (D_8022BCD0_ovl18[i] != 0) {
+                seated++;
+            }
+        }
+        if (seated == lanes) {
+            break;
+        }
+        i = 0;
+        seated = 0;
+        ohSleep(1);
+    }
+    lvl = &D_80229594_ovl18[D_8022BC90_ovl18];
+    D_800D6E14 = lvl->unk2;
+    D_800D6E18 = lvl->unk3;
+    D_800D6E1C = lvl->unk4;
+    if ((lvl->unkC != 0) && (func_8021F304_ovl18() != 0) && (func_8021F35C_ovl18() != 0)) {
+        node = D_800E5F90[omCurrentObj->objId];
+        yScale = D_800E6BD0[omCurrentObj->objId];
+        func_800F9974(&node, &yScale, lvl->unk10);
+        func_800F9020(&pos, node, yScale);
+        pos.y = gEntitiesNextPosYArray[omCurrentObj->objId] + lvl->unk14;
+        func_800FD754(0, pos.x, pos.y, pos.z);
+        ohSleep(0xA);
+        scale.z = 1.0f;
+        scale.y = 1.0f;
+        scale.x = 1.0f;
+        angle.z = 0.0f;
+        angle.y = 0.0f;
+        angle.x = 0.0f;
+        func_800FCD14(0xFF, (u8) node, yScale, 3, 7, 2, 0, 0, lvl->unkC, &pos, &angle, &scale);
+        play_sound(0x226);
+    }
+    D_800D6E98 = 0;
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021ED3C_ovl18.s")
+#endif
 
 // checks bytes in the PIF as a tamper check
 u8 func_8021F304_ovl18(void) {

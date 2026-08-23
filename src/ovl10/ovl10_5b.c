@@ -24,11 +24,11 @@
 
 extern u32 D_800BE560[];
 extern u8 D_800D6BE0[];
-void func_801BE79C_ovl7(void);
+void func_801BE79C_ovl7(GObj *);
 extern s32 D_800BE500;
 s32 func_800F8560(void);
 #include "buffers.h"
-void func_801A0880_ovl7(void);
+s32 func_801A0880_ovl7(void);
 void func_801EFF98_ovl10(void);
 void func_800FF200(void *);
 s32 func_801F1870_ovl10(void);
@@ -36,10 +36,52 @@ extern s32 D_801F4D68_ovl10[];
 f32 sqrtf(f32);
 extern f32 D_801F4C40_ovl10, D_801F4C44_ovl10, D_801F4C48_ovl10;
 extern s32 D_801CA04C_ovl7[];
-void func_800B7790(s32);
+void func_800B7790(GObj *);
 void func_801EF9B0_ovl10(GObj *);
 void func_800AA018(s32);
 void ohSleep(s32);
+
+// ovl1 extern
+struct UnkStruct800D79D8 *func_800A6F40(u16);
+void func_800A71A0(u32);
+void func_800A7F74(u32, u32, u32, f32, f32, f32);
+void func_800A9864(u32, s32, s32);
+void func_800AA608(struct DObj *, s32, f32, u32, f32);
+void func_800AF7A0(u32);
+/* ovl1_7.c's definition spells the second parameter `AnimCmd *`; this TU
+ * has no AnimCmd in scope and hands it a table entry, so void * stays. */
+void func_800B2F54(s32, void *, f32);
+void func_800B3070(s32, f32);
+void func_800B4924(GObj *);
+void func_800B4954(GObj *);
+s32 func_800B9FE0(s32);
+void omGMoveObjDL(GObj *, u8, s32);
+f32 atan2f(f32, f32);
+s32 change_kirby_hp(f32);
+void change_kirby_lives(s32);
+void change_kirby_stars(s32);
+void play_sound(s32);
+s32 random_soft_s32_range(s32);
+s32 request_track_general(s32, s32, s32);
+
+// ovl2 extern
+void func_800F8E6C(GObj *);
+void func_800F90C0(s32, u8 *);
+void func_800FA414(s32);
+/* ovl2_5.c returns Ovl2Particle *, which no header exports; the result is
+ * only ever handed straight back to func_800FF1CC/func_800FF200 here.
+ * src/ovl19/ovl19_2.c spells the same pair with its own local view
+ * (UnkStruct8022FAB0 *) -- one shared header would settle both. */
+void *func_800FF144(void);
+void func_800FF1CC(void *);
+void func_8011C8F8(void);
+
+// within this file
+void func_801F0DD0_ovl10(struct GObj *);
+s32 func_801F0EC8_ovl10(GObj *);
+void func_801F1454_ovl10(struct GObj *);
+void func_801F1554_ovl10(GObj *, s32);
+s32 func_801F2074_ovl10(s32);
 
 // 98/140 diffs: structure is right, but $v0/$v1 are swapped between the
 // omCurrentObj pointer and the objId value throughout. Swept with ZERO effect:
@@ -99,26 +141,6 @@ void func_801F0014_ovl10(void *arg0) {
  *     different computation, not a different spelling.  Converting that is
  *     the one genuine N64-vs-PC rewrite left in this function. */
 void func_801F0050_ovl10(GObj *arg0) {
-    void func_8011C8F8(void);
-    void func_800F8E6C(GObj *);
-    void func_800F90C0(s32, u8 *);
-    void func_800A9864(s32, s32, s32);
-    void *func_800FF144(void);
-    void func_800FF1CC(void *);
-    s32 func_800B9FE0(s32);
-    void func_800AA608(void *, s32, f32, s32, f32);
-    s32 func_801F0EC8_ovl10(GObj *);
-    s32 change_kirby_hp(f32);
-    void change_kirby_stars(s32);
-    void change_kirby_lives(s32);
-    void play_sound(s32);
-    s32 request_track_general(s32, s32, s32);
-    void func_800B4924(GObj *);
-    void func_801F0DD0_ovl10(struct GObj *);
-    s32 func_801F2074_ovl10(s32);
-    f32 atan2f(f32, f32);
-    extern f32 sinf(f32);
-    extern f32 cosf(f32);
     extern u32 D_801F4D60_ovl10;
     extern f32 D_801F4D88_ovl10[];
     extern u8 D_801F4D98_ovl10[];
@@ -378,26 +400,6 @@ void func_801F0050_ovl10(GObj *arg0) {
     curObjSleepForever();
 }
 #elif defined(PORT)
-void func_8011C8F8(void);
-void func_800F8E6C(GObj *);
-void func_800F90C0(s32, u8 *);
-void func_800A9864(s32, s32, s32);
-void *func_800FF144(void);
-void func_800FF1CC(void *);
-s32 func_800B9FE0(s32);
-void func_800AA608(void *, s32, f32, s32, f32);
-s32 func_801F0EC8_ovl10(GObj *);
-s32 change_kirby_hp(f32);
-void change_kirby_stars(s32);
-void change_kirby_lives(s32);
-void play_sound(s32);
-s32 request_track_general(s32, s32, s32);
-void func_800B4924(GObj *);
-void func_801F0DD0_ovl10(struct GObj *);
-s32 func_801F2074_ovl10(s32);
-f32 atan2f(f32, f32);
-extern f32 sinf(f32);
-extern f32 cosf(f32);
 extern u32 D_801F4D60_ovl10;
 extern f32 D_801F4D88_ovl10[];
 extern u8 D_801F4D98_ovl10[];
@@ -852,21 +854,10 @@ s32 func_801F111C_ovl10(void) {
  * permuter seed. */
 void func_801F11A8_ovl10(GObj *arg0) {
     #include "unk_structs/D_800D79D8.h"
-    void func_800AF7A0(s32);
-    void func_800FA414(s32);
-    void omGMoveObjDL(GObj *, u8, s32);
-    void func_800B2F54(s32, void *, f32);
-    void func_800B3070(s32, f32);
-    void func_800A71A0(s32);
-    struct UnkStruct800D79D8 *func_800A6F40(u16);
-    void func_800B4954(GObj *);
-    void func_801F1454_ovl10(struct GObj *);
     extern u32 D_801F4670_ovl10[];
     extern f32 D_801F4C94_ovl10;
     extern u32 D_801F4D60_ovl10;
     extern f32 D_801F4D88_ovl10[];
-    void func_800FF1CC(void *);
-    s32 request_track_general(s32, s32, s32);
 
     struct EnemyRecord *ent;
     s32 i;
@@ -918,15 +909,6 @@ void func_801F11A8_ovl10(GObj *arg0) {
 }
 #elif defined(PORT)
 #include "unk_structs/D_800D79D8.h"
-void func_800AF7A0(s32);
-void func_800FA414(s32);
-void omGMoveObjDL(GObj *, u8, s32);
-void func_800B2F54(s32, void *, f32);
-void func_800B3070(s32, f32);
-void func_800A71A0(s32);
-struct UnkStruct800D79D8 *func_800A6F40(u16);
-void func_800B4954(GObj *);
-void func_801F1454_ovl10(struct GObj *);
 extern u32 D_801F4670_ovl10[];
 
 /* Prize-wheel object main: claims the wheel track id (D_801F4D60), drops
@@ -1041,7 +1023,6 @@ void func_801F1454_ovl10(struct GObj *arg0) {
  * D_801F4D60 wheel object, picked by arg1 (0..2); other values are a no-op.
  * D_800DFBD0 rows are native DObj** on the PC build. */
 void func_801F1554_ovl10(GObj *arg0, s32 arg1) {
-    void func_800A9864(s32, s32, s32);
     extern u32 D_801F4D60_ovl10;
 
     Vector pos;
@@ -1189,12 +1170,6 @@ s32 func_801F19DC_ovl10(s32 arg0, s32 arg1) {
  * collides with this file's later file-scope copy.  Keep every copy
  * spelled exactly as the file-scope ones. */
 void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
-    void func_800B1900(u16);
-    void func_800A9864(s32, s32, s32);
-    void *func_800FF144(void);
-    s32 random_soft_s32_range(s32);
-    s32 request_track_general(s32, s32, s32);
-    void func_801F1554_ovl10(GObj *, s32);
     extern u32 D_801F48F4_ovl10[];
     extern u32 D_801F4818_ovl10[];
     extern u32 D_801F4884_ovl10[];
@@ -1240,8 +1215,6 @@ void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
     curObjSleepForever();
 }
 #elif defined(PORT)
-extern void func_800B1900(u16);
-extern s32 random_soft_s32_range(s32);
 extern u32 D_801F48F4_ovl10[];
 extern u32 D_801F4818_ovl10[];
 extern u32 D_801F4884_ovl10[];
@@ -1301,8 +1274,6 @@ void func_801F1A24_ovl10(GObj *arg0, s32 arg1, s32 arg2) {
 /* D_801F4CA8_ovl10 = 0.2f : now emitted by this TU */
 extern s32 D_801F4908_ovl10[];
 extern s32 D_801F4914_ovl10[];
-void func_800A9864(s32, s32, s32);
-void func_801F1554_ovl10(GObj *, s32);
 
 void func_801F1CA0_ovl10(GObj *arg0, s32 arg1) {
     s32 idx = arg1 + 1;
@@ -1332,9 +1303,6 @@ s32 func_801F1D60_ovl10(Vector vec, s32 count, f32 dist) {
 extern u32 D_801F4D60_ovl10;
 /* D_801F4CAC_ovl10 = 3.1415927f : now emitted by this TU */
 /* D_801F4CB0_ovl10 = 3.1415927f : now emitted by this TU */
-extern s32 random_soft_s32_range(s32);
-extern f32 cosf(f32);
-extern f32 sinf(f32);
 
 Vector *func_801F1E48_ovl10(Vector *arg0) {
     Vector sp34;
@@ -1434,11 +1402,6 @@ void func_801F2098_ovl10(GObj *arg0, s32 arg1) {
     extern Tbl4 D_801F47B0_ovl10;
     extern s32 D_801F4D68_ovl10[];
     extern f32 D_801F4CB4_ovl10;
-    void func_800A9864(s32, s32, s32);
-    void *func_800FF144(void);
-    void func_800FF1CC(void *);
-    void func_800A7F74(u32, u32, u32, f32, f32, f32);
-    s32 random_soft_s32_range(s32);
     Tbl7 models = D_801F4768_ovl10;
     Tbl7 anims = D_801F4784_ovl10;
     Tbl4 foods = D_801F47A0_ovl10;
@@ -1519,7 +1482,6 @@ extern u32 D_801F4768_ovl10[];
 extern u32 D_801F4784_ovl10[];
 extern u32 D_801F47A0_ovl10[];
 extern u32 D_801F47B0_ovl10[];
-void func_800A7F74(u32, u32, u32, f32, f32, f32);
 
 /* One wheel prize item (arg1 = slot 0..6).  Registers itself in
  * D_801F4D68[arg1], loads its model (+optional anim) from the
@@ -1614,7 +1576,7 @@ struct Ovl10Pair5b {
 extern s32 D_801F4938_ovl10[];
 extern struct Ovl10Pair5b D_801F4948_ovl10[];
 void func_800A7A70(s32, s32, s32);
-void func_800AA2C8(s32, s32, s32);
+void func_800AA2C8(u32, s32, s32);
 
 void func_801F25FC_ovl10(GObj *arg0, s32 arg1) {
     Vector sp2C;
@@ -1642,7 +1604,6 @@ void func_801F25FC_ovl10(GObj *arg0, s32 arg1) {
 extern s32 D_801F4968_ovl10;
 extern s32 D_801F496C_ovl10;
 extern s32 D_801F4970_ovl10;
-void func_800A9864(s32, s32, s32);
 
 void func_801F2770_ovl10(struct GObj *arg0) {
     Vector sp2C;

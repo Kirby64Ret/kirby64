@@ -33,8 +33,58 @@ extern GObj *D_800DE350[];
 
 s32 func_80152220_ovl4(s32 arg0, s32 arg1);
 void ohSleep(s32);
-void curObjSleepForever(void);
 s32 func_801532CC_ovl4(s32 arg0, s32 arg1);
+
+// main / ovl1 extern
+void animUpdateModelTreeAnimation(struct GObj *);
+f32 atan2f(f32, f32);
+void func_8000BBE0(struct GObj *);
+void func_800A70C4(u16, f32, f32, f32, f32);
+void func_800A9760(u32);
+/* ovl1_3.c defines arg0 as a packed u32 bank/slot id (it reads `arg0 >> 16`
+ * and `arg0 & 0xFFFF`), not a pointer, so the (void *) this file used to
+ * spell at every call site is now (u32). */
+void func_800A9864(u32, s32, s32);
+/* ovl1_3.c defines this as `void *func_800A9AA8(u32, s32)`. This TU reads
+ * the result as an s32 and feeds it D_8015A888_ovl4, which it declares
+ * `void *[]` although the ROM stores packed ids there; correcting the
+ * spelling means retyping that table and the local, so it is left alone. */
+s32 func_800A9AA8(void *, s32);
+void func_800A9F98(s32, f32);
+s32 func_800AA888(u32);
+void func_800AD1A0(struct GObj *);
+void func_800AF408(void);
+void gameSetUpdateRate(f32);
+
+// ovl5 extern
+/* ovl5_1.c returns SPObj *, which no header exports; this TU reaches into
+ * the result with byte offsets, hence u8 *. */
+u8 *func_8015C740_ovl5(struct GObj *, void *);
+
+// within this file
+s32 func_80152124_ovl4(void);
+s32 func_80152268_ovl4(s32);
+s32 func_801522D0_ovl4(f32);
+s32 func_80152318_ovl4(f32);
+s32 func_801524E4_ovl4(void);
+void func_801525E8_ovl4(struct GObj *);
+void func_80152A48_ovl4(void);
+void func_80152B50_ovl4(struct GObj *, s32);
+void func_80152E38_ovl4(s32);
+void func_8015306C_ovl4(void);
+s32 func_80153294_ovl4(s32, s32, s32);
+s32 func_801532FC_ovl4(s32);
+void func_801533A8_ovl4(s32);
+void func_80153AB0_ovl4(struct GObj *);
+void func_80153AEC_ovl4(void);
+void func_80153C3C_ovl4(struct GObj *);
+void func_80153C78_ovl4(void);
+void func_8015427C_ovl4(struct GObj *);
+f32 func_801542B8_ovl4(s32, s32);
+void func_801543C8_ovl4(void);
+void func_80154880_ovl4(struct GObj *);
+void func_801548BC_ovl4(void);
+void func_80154DA0_ovl4(struct GObj *);
 
 #include "main/vi.h"
 #include "main/gtl.h"
@@ -56,14 +106,6 @@ void func_80151E00_ovl4(void) {
 void func_80151E20_ovl4(arg0)
 GObj *arg0;
 {
-    s32 func_80152124_ovl4(void);
-    s32 func_80152268_ovl4(s32);
-    void func_80152A48_ovl4(void);
-    void func_801525E8_ovl4(struct GObj *);
-    void omLinkGObjDL(GObj *, void (*)(GObj *), u8, s32, s32);
-    void func_800AD1A0(struct GObj *);
-    u8 *func_8015C740_ovl5(struct GObj *, void *);
-    s32 func_800A9AA8(void *, s32);
     extern u8 D_8015A868_ovl4[];
     extern s32 D_8015C698_ovl4;
     extern void *D_8015A888_ovl4[];
@@ -212,9 +254,12 @@ typedef struct {
 
 extern Unk8015A8F8 D_8015A8F8_ovl4[];
 
-extern void func_800A71A0(s32);
+extern void func_800A71A0(u32);
 extern void func_800AA018(s32);
-extern s32 func_800AF230(void);
+extern u32 func_800AF230(void);
+/* ovl1_7.c's definition spells the second parameter `AnimCmd *`; this TU
+ * keeps s32 because it hands it D_8015A954_ovl4, which it declares s32[].
+ * Correcting it means retyping that table -- left for the coordinator. */
 extern void func_800B2F54(s32, s32, f32);
 extern void func_800B3070(s32, f32);
 
@@ -263,9 +308,6 @@ void func_801525E8_ovl4(struct GObj *arg0) {
     extern s32 D_8015C698_ovl4;
     extern s32 D_8015C6A0_ovl4;
     extern Controller_800D6FE8 gPlayerControllers[];
-    s32 func_801522D0_ovl4(f32);
-    s32 func_80152318_ovl4(f32);
-    s32 func_801524E4_ovl4(void);
     f32 sp18;
     f32 temp_f12;
     u16 var_v0;
@@ -519,9 +561,6 @@ struct DObj *func_80152C34_ovl4(s32 arg0, s32 arg1) {
 }
 
 void func_80152E38_ovl4(s32 arg0) {
-    void func_800B1900(u16);
-    void func_800A9864(void *, s32, s32);
-    void func_80152B50_ovl4(GObj *, s32);
     extern s32 D_8015A8E8_ovl4[];
     s32 unused;
     Vector sp50;
@@ -544,7 +583,7 @@ void func_80152E38_ovl4(s32 arg0) {
     gEntitiesAngleXArray[omCurrentObj->objId] = sp44.x;
     gEntitiesAngleYArray[omCurrentObj->objId] = sp44.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = sp44.z;
-    func_800A9864((void *) D_8015A8E8_ovl4[arg0], 0x1869F, 0x10);
+    func_800A9864((u32) D_8015A8E8_ovl4[arg0], 0x1869F, 0x10);
     while (1) {
         if ((D_800D6B78 != 1) && (D_800E9E20[D_8015C698_ovl4] != 0)) {
             ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
@@ -555,7 +594,6 @@ void func_80152E38_ovl4(s32 arg0) {
 }
 
 void func_8015306C_ovl4(void) {
-    void func_800A9864(void *, s32, s32);
     extern s32 D_8015A918_ovl4;
     extern s32 D_8015A91C_ovl4[];
     extern s32 D_8015A924_ovl4[];
@@ -570,7 +608,7 @@ void func_8015306C_ovl4(void) {
     gEntitiesAngleXArray[omCurrentObj->objId] = sp30.x;
     gEntitiesAngleYArray[omCurrentObj->objId] = sp30.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = sp30.z;
-    func_800A9864((void *) D_8015A918_ovl4, 0x1869F, 0x10);
+    func_800A9864((u32) D_8015A918_ovl4, 0x1869F, 0x10);
     while ((D_800D6B78 == 1) || (D_800E9E20[D_8015C698_ovl4] == 0)) {
         ohSleep(1);
     }
@@ -624,17 +662,6 @@ void func_801533A8_ovl4(s32 arg0) {
     extern s32 D_8015C6AC_ovl4[];
     extern s32 D_800D6B80;
     extern s32 D_800D6B9C;
-    void func_80153AB0_ovl4(struct GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800AA018(s32);
-    void func_800AECC0(f32);
-    void func_800AED20(f32);
-    void func_8000BBE0(struct GObj *);
-    void func_800A9760(s32);
-    void func_800A9F98(s32, f32);
-    s32 func_800AA888(s32);
-    void func_800B1900(u16);
-    void func_800AFBB4(s32, struct GObj *);
     f32 temp_f20;
     s32 var_s0;
     struct MapDotTbl sp170;
@@ -650,14 +677,14 @@ void func_801533A8_ovl4(s32 arg0) {
     D_800DF150[omCurrentObj->objId] = func_80153AB0_ovl4;
     if (func_80152220_ovl4(D_800D6B98, arg0) == 2) {
         if ((D_800D6B80 != 0) && ((arg0 + 1) == D_800D6B9C)) {
-            func_800A9864((void *) sp170.w[D_800D6B98][arg0][0], 0x1869F, 0x10);
+            func_800A9864((u32) sp170.w[D_800D6B98][arg0][0], 0x1869F, 0x10);
             func_800AA018(sp50.w[D_800D6B98][arg0][0]);
         } else {
-            func_800A9864((void *) sp170.w[D_800D6B98][arg0][1], 0x1869F, 0x10);
+            func_800A9864((u32) sp170.w[D_800D6B98][arg0][1], 0x1869F, 0x10);
             func_800AA018(sp50.w[D_800D6B98][arg0][1]);
         }
     } else {
-        func_800A9864((void *) sp170.w[D_800D6B98][arg0][0], 0x1869F, 0x10);
+        func_800A9864((u32) sp170.w[D_800D6B98][arg0][0], 0x1869F, 0x10);
         func_800AA018(sp50.w[D_800D6B98][arg0][0]);
     }
     if ((arg0 + 1) == D_800E9FE0[D_8015C698_ovl4].as_u32) {
@@ -748,15 +775,6 @@ void func_801533A8_ovl4(s32 arg0) {
  * 0xF2/0xF3, and the level-100% special (func_80153324_ovl4) makes the last
  * Ripple Star dot flicker between its two art sets forever. */
 void func_801533A8_ovl4(s32 arg0) {
-    void func_80153AB0_ovl4(struct GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800AA018(s32);
-    void func_800AECC0(f32);
-    void func_800AED20(f32);
-    void func_8000BBE0(GObj *);
-    void func_800A9760(u32);
-    void func_800A9F98(s32, f32);
-    s32 func_800AA888(u32);
     extern u32 D_8015A4F0_ovl4[]; /* [6 planets][6 levels][2] */
     extern u32 D_8015A610_ovl4[]; /* [6 planets][6 levels][2] */
     extern s32 D_8015C6AC_ovl4[];
@@ -775,14 +793,14 @@ void func_801533A8_ovl4(s32 arg0) {
     D_800DF150[omCurrentObj->objId] = func_80153AB0_ovl4;
     if (func_80152220_ovl4(D_800D6B98, arg0) == 2) {
         if ((D_800D6B80 != 0) && ((arg0 + 1) == D_800D6B9C)) {
-            func_800A9864((void *) (uintptr_t) DOT_ART(0), 0x1869F, 0x10);
+            func_800A9864((u32) DOT_ART(0), 0x1869F, 0x10);
             func_800AA018(DOT_IMG(0));
         } else {
-            func_800A9864((void *) (uintptr_t) DOT_ART(1), 0x1869F, 0x10);
+            func_800A9864((u32) DOT_ART(1), 0x1869F, 0x10);
             func_800AA018(DOT_IMG(1));
         }
     } else {
-        func_800A9864((void *) (uintptr_t) DOT_ART(0), 0x1869F, 0x10);
+        func_800A9864((u32) DOT_ART(0), 0x1869F, 0x10);
         func_800AA018(DOT_IMG(0));
     }
     if ((arg0 + 1) == D_800E9FE0[D_8015C698_ovl4].as_s32) {
@@ -883,17 +901,12 @@ typedef struct {
 } Ovl4Pair6;
 
 void func_80153AEC_ovl4(void) {
-    void func_80153C3C_ovl4(GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800AA018(s32);
-    void func_800AECC0(f32);
-    void func_800AED20(f32);
     extern Ovl4Pair6 D_8015A730_ovl4;
     Ovl4Pair6 sp30 = D_8015A730_ovl4;
 
     D_8015C6A8_ovl4[0] = omCurrentObj->objId;
     D_800DF150[omCurrentObj->objId] = func_80153C3C_ovl4;
-    func_800A9864((void *) sp30.p[D_800D6B98].unk0, 0x1869F, 0x10);
+    func_800A9864((u32) sp30.p[D_800D6B98].unk0, 0x1869F, 0x10);
     func_800AA018(sp30.p[D_800D6B98].unk4);
     while (1) {
         if (D_800E9FE0[D_8015C698_ovl4].as_s32 == 0) {
@@ -920,12 +933,6 @@ void func_80153C3C_ovl4(struct GObj *arg0) {
 void func_80153C78_ovl4(void) {
     struct MapCurTbl { u32 w[6][2]; };
     extern u32 D_8015A760_ovl4[];
-    void func_8015427C_ovl4(struct GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800A9F98(s32, f32);
-    void func_800AF408(void);
-    void animUpdateModelTreeAnimation(struct GObj *);
-    f32 atan2f(f32, f32);
     struct MapCurTbl sp98;
     Vector sp8C;
     Vector sp80;
@@ -940,7 +947,7 @@ void func_80153C78_ovl4(void) {
     D_8015C6A0_ovl4 = omCurrentObj->objId;
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800DF150[omCurrentObj->objId] = func_8015427C_ovl4;
-    func_800A9864((void *) sp98.w[D_800D6B98][0], 0x1869F, 0x10);
+    func_800A9864((u32) sp98.w[D_800D6B98][0], 0x1869F, 0x10);
     func_800A9F98(sp98.w[D_800D6B98][1], (f32) D_800E9FE0[D_8015C698_ovl4].as_u32);
     if (D_800E9FE0[D_8015C698_ovl4].as_u32 == 0) {
         animUpdateModelTreeAnimation(D_800DE350[omCurrentObj->objId]);
@@ -1049,11 +1056,6 @@ block_33:
  * axis on overshoot; D_800E9AA0[D_8015C698_ovl4] = 1 keeps the planet-map
  * input proc's cooldown armed while the glide runs. */
 void func_80153C78_ovl4(void) {
-    void func_8015427C_ovl4(struct GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800A9F98(s32, f32);
-    void func_800AF408(void);
-    void animUpdateModelTreeAnimation(GObj *);
     extern u32 D_8015A760_ovl4[]; /* [6 planets][2] */
     struct DObj *child;
     Vector saved;
@@ -1067,7 +1069,7 @@ void func_80153C78_ovl4(void) {
     D_8015C6A0_ovl4 = omCurrentObj->objId;
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800DF150[omCurrentObj->objId] = func_8015427C_ovl4;
-    func_800A9864((void *) (uintptr_t) D_8015A760_ovl4[D_800D6B98 * 2], 0x1869F, 0x10);
+    func_800A9864((u32) D_8015A760_ovl4[D_800D6B98 * 2], 0x1869F, 0x10);
     func_800A9F98(D_8015A760_ovl4[(D_800D6B98 * 2) + 1], (f32) D_800E9FE0[D_8015C698_ovl4].as_s32);
     if (D_800E9FE0[D_8015C698_ovl4].as_s32 == 0) {
         animUpdateModelTreeAnimation(D_800DE350[omCurrentObj->objId]);
@@ -1136,8 +1138,6 @@ void func_8015427C_ovl4(struct GObj *arg0) {
 }
 
 f32 func_801542B8_ovl4(s32 arg0, s32 arg1) {
-    s32 func_801532FC_ovl4(s32);
-    s32 func_80153294_ovl4(s32, s32, s32);
     s32 i;
     u8 sp38[3];
     f32 t;
@@ -1174,10 +1174,6 @@ f32 func_801542B8_ovl4(s32 arg0, s32 arg1) {
 void func_801543C8_ovl4(void) {
     extern s32 D_8015A93C_ovl4;
     extern u32 D_8015A940_ovl4[];
-    void func_80154880_ovl4(struct GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800A9F98(s32, f32);
-    f32 func_801542B8_ovl4(s32, s32);
     Vector sp7C;
     GObj *temp_a1;
     u32 vid;
@@ -1190,7 +1186,7 @@ void func_801543C8_ovl4(void) {
     D_800DF150[omCurrentObj->objId] = func_80154880_ovl4;
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
-    func_800A9864((void *) D_8015A93C_ovl4, 0x1869F, 0x10);
+    func_800A9864((u32) D_8015A93C_ovl4, 0x1869F, 0x10);
     temp_a1 = omCurrentObj;
     var_v0 = D_800E9FE0[D_8015C698_ovl4].as_u32;
     D_800E98E0[temp_a1->objId] = var_v0 + 1;
@@ -1282,11 +1278,6 @@ void func_801543C8_ovl4(void) {
  * dot via func_80152444_ovl4, then regrows it to scale 1.0; selection 0
  * (planet exit) or 0x29A (nothing hovered) just shrinks it away. */
 void func_801543C8_ovl4(void) {
-    void func_80154880_ovl4(struct GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800A9F98(s32, f32);
-    void func_800AECC0(f32);
-    void func_800AED20(f32);
     extern u32 D_8015A93C_ovl4[];
     extern u32 D_8015A940_ovl4[];
     Vector pos;
@@ -1298,7 +1289,7 @@ void func_801543C8_ovl4(void) {
     D_800DF150[omCurrentObj->objId] = func_80154880_ovl4;
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
-    func_800A9864((void *) (uintptr_t) D_8015A93C_ovl4[0], 0x1869F, 0x10);
+    func_800A9864((u32) D_8015A93C_ovl4[0], 0x1869F, 0x10);
     sel = D_800E9FE0[D_8015C698_ovl4].as_s32;
     D_800E98E0[omCurrentObj->objId] = sel + 1;
     while (1) {
@@ -1375,9 +1366,6 @@ void func_80154880_ovl4(struct GObj *arg0) {
 void func_801548BC_ovl4(void) {
     extern s32 D_8015A948_ovl4;
     extern u32 D_8015A94C_ovl4[];
-    void func_80154DA0_ovl4(struct GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800A9F98(s32, f32);
     Vector sp7C;
     GObj *temp_a1;
     u32 vid;
@@ -1390,7 +1378,7 @@ void func_801548BC_ovl4(void) {
     D_800DF150[omCurrentObj->objId] = func_80154DA0_ovl4;
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
-    func_800A9864((void *) D_8015A948_ovl4, 0x1869F, 0x10);
+    func_800A9864((u32) D_8015A948_ovl4, 0x1869F, 0x10);
     temp_a1 = omCurrentObj;
     var_a2 = D_800E9FE0[D_8015C698_ovl4].as_u32;
     D_800E98E0[temp_a1->objId] = var_a2 + 1;
@@ -1482,11 +1470,6 @@ void func_801548BC_ovl4(void) {
  * the numeral sprite frame is the raw selection index, or frame 0 when the
  * hovered dot is the planet's final (boss) level per func_801532CC_ovl4. */
 void func_801548BC_ovl4(void) {
-    void func_80154DA0_ovl4(struct GObj *);
-    void func_800A9864(void *, s32, s32);
-    void func_800A9F98(s32, f32);
-    void func_800AECC0(f32);
-    void func_800AED20(f32);
     extern u32 D_8015A948_ovl4[];
     extern u32 D_8015A94C_ovl4[];
     Vector pos;
@@ -1498,7 +1481,7 @@ void func_801548BC_ovl4(void) {
     D_800DF150[omCurrentObj->objId] = func_80154DA0_ovl4;
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
-    func_800A9864((void *) (uintptr_t) D_8015A948_ovl4[0], 0x1869F, 0x10);
+    func_800A9864((u32) D_8015A948_ovl4[0], 0x1869F, 0x10);
     sel = D_800E9FE0[D_8015C698_ovl4].as_s32;
     D_800E98E0[omCurrentObj->objId] = sel + 1;
     while (1) {
@@ -1575,14 +1558,6 @@ void func_80154DA0_ovl4(struct GObj *arg0) {
 void func_80154DDC_ovl4(arg0)
 GObj *arg0;
 {
-    void func_80153AEC_ovl4(void);
-    void func_801533A8_ovl4(s32);
-    void func_80152E38_ovl4(s32);
-    void func_8015306C_ovl4(void);
-    void func_80153C78_ovl4(void);
-    void func_801543C8_ovl4(void);
-    void func_801548BC_ovl4(void);
-    void func_800A9864(void *, s32, s32);
     extern void *D_8015A8A0_ovl4[];
     extern Unk8015A8F8 D_8015A8B8_ovl4[];
     extern s32 D_800D6B80;
@@ -1632,7 +1607,7 @@ GObj *arg0;
     D_8015C694_ovl4 = omCurrentObj->objId;
     D_800E98E0[omCurrentObj->objId] = D_800D6B9C;
     ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
-    func_800A9864(D_8015A8A0_ovl4[D_800D6B98], 0x1869F, 0x10);
+    func_800A9864((u32) (uintptr_t) D_8015A8A0_ovl4[D_800D6B98], 0x1869F, 0x10);
     if (D_8015A8B8_ovl4[D_800D6B98].unk0 != 0) {
         func_800AA018(D_8015A8B8_ovl4[D_800D6B98].unk0);
     }
@@ -1669,8 +1644,6 @@ void func_801550EC_ovl4(GObj *arg0) {
 }
 
 void func_80155168_ovl4(void) {
-    void gameSetUpdateRate(f32);
-    void func_800A70C4(s32, f32, f32, f32, f32);
     extern s32 D_8015A970_ovl4[];
     s32 i;
 

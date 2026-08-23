@@ -16,7 +16,7 @@ extern u8 D_8012E7C5[];
 
 void func_8011E438(void);
 void func_801BE79C_ovl7(struct GObj *);
-void func_801A0880_ovl7(void);
+s32 func_801A0880_ovl7(void);
 void func_801D4440_ovl8(struct GObj *);
 extern struct GObjProcess *gEntityGObjProcessArray[];
 

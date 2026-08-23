@@ -69,14 +69,29 @@ extern void func_80229100_ovl19(GObj *);
 extern void func_802294C4_ovl19(GObj *);
 void func_8022C140_ovl19(s32, s32, f32);
 void func_8022D528_ovl19(s32, s32, f32);
+void func_8022D96C_ovl19(GObj *);
+void func_8022E198_ovl19(GObj *);
 void func_8022E47C_ovl19(GObj *);
 
 // ovl1-2 extern
+/* ovl1_8.c defines func_800B4954 as (GObj *), but it is stored into
+ * D_800DEF90, which track_arrays.h/ovl1_6.h declare `void (*[])(s32)`;
+ * the (s32) spelling is what keeps that assignment type-clean. Correcting
+ * it belongs with the shared header. */
 extern void func_800B4954(s32);
 extern struct UnkStruct8022FAB0 *func_800FF144(void);
+extern void auFunc80020C88(void);
+extern void func_800A7EB4(void);
+extern void func_800AF27C(void);
+extern void func_800B1870(GObj *);
+extern void func_800B20E0(void *, void ***);
+extern void func_800BB468(s32, s32);
+extern void func_800BB498(void);
+extern s32 play_music(s32, s32);
 
 // ovl2 extern
-extern void func_8011D4A4(f32);
+extern void *func_8011D4A4(f32);
+extern void func_8011DA34(void);
 extern s32 func_80121828(f32, f32, f32, f32);
 extern void func_80153984_ovl3(void);
 extern void func_8011ED68(void);
@@ -88,6 +103,7 @@ extern s32 func_8015449C_ovl3(void *, s32);
 extern void func_8016854C_ovl3(void *, struct DObj *, f32);
 extern void func_80155DF0_ovl3(void *, s32, Vector *, void *, s32);
 extern s32 func_80155F0C_ovl3(struct CollisionTriangle *);
+extern void func_80176398_ovl3(void);
 
 // ovl3 data
 extern u8 D_80196524;
@@ -1227,18 +1243,9 @@ void func_8022CD00_ovl19(GObj *g) {
  * volatile byte-offset cast, all three compile identically. 10 raw insn
  * diffs, all in that one four-store cluster. */
 void func_8022CE18_ovl19(GObj *arg0) {
-    void func_800B1870(GObj *);
-    void func_800B20E0(void *, void ***);
-    void auFunc80020C88(void);
-    void func_800A7EB4(void);
-    void func_8011DA34(void);
-    void func_800BB498(void);
-    void func_80176398_ovl3(void);
-    s32 play_music(s32, s32);
     extern s32 D_8012E90C;
     extern u32 *D_800DFD90[];
     extern f32 gKirbyHp;
-    void func_8022D13C_ovl19(GObj *);
 
     D_8012E7E8[2] = 1;
     D_800DF150[omCurrentObj->objId] = func_8022D13C_ovl19;
@@ -1296,19 +1303,9 @@ void func_8022CE18_ovl19(GObj *arg0) {
  * name-call pair picked by facing. D_8012E90C+0x10 is cleared via the
  * byte-offset idiom ovl3_6.c already uses for that block. */
 void func_8022CE18_ovl19(GObj *arg0) {
-    void func_800B1870(GObj *);
-    void func_800B20E0(void *, void ***);
-    void auFunc80020C88(void);
-    void func_800A7EB4(void);
-    void func_8011DA34(void);
-    void func_800BB498(void);
-    void func_800BB468(u32, s32);
-    void func_80176398_ovl3(void);
-    s32 play_music(s32, s32);
     extern s32 D_8012E90C;
     extern u32 *D_800DFD90[];
     extern f32 gKirbyHp;
-    void func_8022D13C_ovl19(GObj *);
 
     D_8012E7E8[2] = 1;
     D_800DF150[omCurrentObj->objId] = func_8022D13C_ovl19;
@@ -1467,7 +1464,6 @@ void func_8022D5F0_ovl19(s32 arg0) {
  * one-word branch-offset drifts in the tail are downstream of that same
  * swap, not separate defects. */
 void func_8022D5F8_ovl19(GObj *arg0) {
-    void func_8022D96C_ovl19(GObj *);
     struct UnkStruct8022FAB0 *cam;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
@@ -1529,7 +1525,6 @@ void func_8022D5F8_ovl19(GObj *arg0) {
  * arguments are leftover registers; the final kill reads objId as u16
  * (the u16 parameter truncates). */
 void func_8022D5F8_ovl19(GObj *arg0) {
-    void func_8022D96C_ovl19(GObj *);
     struct UnkStruct8022FAB0 *cam;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
@@ -1609,7 +1604,6 @@ void func_8022D96C_ovl19(GObj *g) {
  * floor (LEVERS: no source spelling reaches it) -- prime permuter fuel
  * given its size. */
 void func_8022D9F8_ovl19(GObj *arg0) {
-    void func_8022E198_ovl19(GObj *);
     extern s32 D_800D6E14;
     struct UnkStruct8022FAB0 *cam;
     f32 *var_at;
@@ -1732,8 +1726,6 @@ block_9:
  * killing its own track. m2c's second play_sound argument is a
  * leftover register. */
 void func_8022D9F8_ovl19(GObj *arg0) {
-    void func_8022E198_ovl19(GObj *);
-    void func_800AF27C(void);
     extern struct UnkStruct8022FAB0 *D_8022FAB4_ovl19;
     extern s32 D_800D6E14;
     struct UnkStruct8022FAB0 *cam;

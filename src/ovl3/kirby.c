@@ -69,6 +69,8 @@ extern f32 *D_801926E8_ovl3[];
 extern f32 *D_80192704_ovl3[];
 extern u8 D_80190358_ovl3[];
 extern s32 D_800DFA10[];
+/* src/ovl1/ovl1_7.c:407 defines void func_800AFA54(GObj *); the s32 here
+ * follows D_800DFA10[], which this file declares s32[]. */
 extern void func_800AFA54(s32);
 extern void func_801708A0_ovl3(s32, s32, f32);
 extern void func_8017492C_ovl3(s32, s32, f32);
@@ -79,7 +81,7 @@ extern s32 D_8012E860;
 extern void func_8011D614(void);
 /* D_80197528_ovl3 now emitted by this TU */
 /* D_801973A8_ovl3 now emitted by this TU */
-extern void func_800AA78C(s32, s32, f32);
+extern void func_800AA78C(s32, u32, f32);   /* src/ovl1/ovl1_3.c:3028 */
 extern void func_80122CA0(s32, s32, f32);
 extern s32 D_800E9560[];
 extern s32 func_80153FC8_ovl3(void);
@@ -101,8 +103,58 @@ extern void func_8017404C_ovl3(s32, s32, f32);
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern void func_8012310C(s32);
 extern void func_80174680_ovl3(s32, s32, f32);
+/* src/ovl1/ovl1_2_2.c:367 defines Ovl1Generator *func_800A8100(s32, s32,
+ * s32, struct DObj *). This file deliberately declares arg3 s32 and casts the
+ * function pointer at the sites that want the DObj width (see the notes
+ * around func_8017AA34_ovl3); ovl3_6.c/plyshot.c declare the DObj form. */
 extern s32 func_800A8100(s32, s32, s32, s32);
 extern s32 func_801632B8_ovl3(s32);
+
+/* Player-state helpers (ovl1_3 / ovl1_7 / plylib) and this overlay's own
+ * entry points. m2c emitted a copy of each of these inside every function
+ * body that called it -- func_800BB468 eleven times over. A block-scope
+ * function declaration has file-scope linkage in C, so none of those copies
+ * was ever local; one prototype apiece belongs here. */
+extern s32 change_kirby_hp(f32);            /* src/ovl1/ovl1_13.c:69 */
+extern void change_kirby_lives(s32);
+extern void func_800AA018(s32);
+extern void func_800AA5C4(s32, u32, f32);
+extern s32 func_800AA368(struct DObj *);
+extern s32 func_800AA934(s32);
+extern void func_800AECC0(f32);
+extern void func_800AED20(f32);
+extern s32 func_800AF230(void);
+extern void func_800B26D8(Vector *, struct DObj *, u32);
+extern void func_800BB468(s32, s32);
+extern f32 func_800F8824(Vector *, f32);
+extern s32 func_8011D858(void *, s32, f32);
+extern void func_8011DC5C(void);
+extern void func_8011E0E8(void);
+extern void func_8011E190(void);
+extern s32 func_8011E1E8(s32, s32);
+extern void func_8011E234(void);
+extern f32 func_8011E374(void);
+extern void func_8011EBD4(void);
+extern s32 func_8011F690(void);
+extern s32 func_8011FEF8(void);
+extern s32 func_801210B4(void);
+extern u32 func_801210FC(void);             /* src/ovl2/plylib.c:3846 */
+extern s32 func_80121828(f32, f32, f32, f32);
+extern void func_801219C8(void);
+extern s32 func_80121C90(void);
+extern void func_80121F14(void);
+extern s32 func_80122460(void);
+extern void func_80122A10(s32);
+extern f32 func_80123144(f32);
+extern s32 func_801231D8(void);
+extern s32 func_80123240(void);
+extern s32 func_80153B98_ovl3(void);        /* src/ovl3/ovl3_1.c:1158 */
+extern void func_8015449C_ovl3(void *, s32);
+extern void func_80154578_ovl3(void *, s32, f32);
+extern s32 func_8016854C_ovl3(s32, s32, f32);
+extern s32 func_80179130_ovl3(void);
+extern void func_8017A2C0_ovl3(s32, s32, f32);
+extern s32 func_801BC580_ovl7(s32);
 
 #ifdef MIPS_TO_C
 /* FACTORY: 10/363, whole-function callee-saved permutation (same floor class documented across this cluster). Renames the shadow-particle record to struct Ovl2Particle (matching the real N64 type in src/ovl2/ovl2_5.c, a plain 4-byte-pointer struct on this 32-bit target) instead of the PORT arm's host-only PcOvl2Particle mirror, dropping the now-unneeded uintptr_t round-trip. Queued for the permuter. */
@@ -151,6 +203,10 @@ void func_8011C8F8(void);
 void func_800A9864(u32 animId, s32 arg1, s32 arg2);
 void func_80227F38_ovl19(void);
 void func_800F8E6C(GObj *arg0);
+/* Ovl2Particle vs the PORT arm's PcOvl2Particle mirror below: the two
+ * spellings are a deliberate N64/host divergence, not a disagreement -- the
+ * N64 record is a plain 4-byte-pointer struct (src/ovl2/ovl2_5.c) and the
+ * PORT arm's mirror is its LP64 widening. Each arm is guarded. */
 struct Ovl2Particle *func_800FF144(void);
 s32 func_8011CCB8(void);
 void func_80177000_ovl3(s32);
@@ -535,7 +591,6 @@ extern f32 gKirbyHp;
 
 void func_8011E548(void);
 void func_8011DAF8(void);
-void func_8015449C_ovl3(void *arg0, s32 arg1);
 s32 func_8012209C(void);
 void func_8015A9F8_ovl3(void);
 void func_80121BCC(s32 arg0);
@@ -693,7 +748,6 @@ extern f32 gKirbyHp;
 
 void func_8011E548(void);
 void func_8011DAF8(void);
-void func_8015449C_ovl3(void *, s32);
 s32 func_8012209C(void);
 void func_8015A9F8_ovl3(void);
 void func_80121BCC(s32);
@@ -841,7 +895,6 @@ extern s32 D_800D6B54;
 s32 func_800AA888(s32);
 void func_80122F08(s32);
 void func_80123004(void *, f32, s32);
-s32 func_800AF230(void);
 
 void func_8016CA8C_ovl3(GObj *arg0) {
     s32 objId;
@@ -1037,7 +1090,6 @@ extern s32 D_800D6B54;
 s32 func_800AA888(s32);
 void func_80122F08(s32);
 void func_80123004(void *, f32, s32);
-s32 func_800AF230(void);
 
 void func_8016CA8C_ovl3(GObj *arg0) {
     s32 objId;
@@ -1369,10 +1421,6 @@ extern Unk80196C54 D_80196C54_ovl3;
 
 void func_8016D81C_ovl3(GObj *arg0) {
     Unk80196C54 sp20 = D_80196C54_ovl3;
-    void func_800AECC0(f32);
-    void func_800AED20(f32);
-    s32 func_801210FC(void);
-    void func_801219C8(void);
 
     func_80153984_ovl3();
     if (D_800E8AE0[omCurrentObj->objId] & 6) {
@@ -1503,7 +1551,6 @@ void func_8016DD0C_ovl3(s32 arg0) {
     }
 }
 
-extern f32 func_80123144(f32);
 extern u8 D_801903E0_ovl3[];
 
 #ifdef NON_MATCHING
@@ -1589,12 +1636,6 @@ void func_8016E15C_ovl3(GObj *arg0) {
     extern f32 D_800E6690[], D_800E64D0[], D_800E6850[];
     extern f32 D_800E3750[], D_800E3210[], D_800E3C90[];
     extern u8 D_8019395C_ovl3[];
-    s32 func_80122460(void);
-    s32 func_80179130_ovl3(void);
-    void func_8011EBD4(void);
-    void func_800BB468(s32, s32);
-    s32 func_8016854C_ovl3(s32, s32, f32);
-    extern s32 func_8015449C_ovl3(void *, s32);
     u8 list[8] = { 1, 5, 9, 8, 7, 6, 0xF, 0 };
     s32 id;
 
@@ -1692,11 +1733,6 @@ void func_8016E15C_ovl3(GObj *arg0) {
     extern f32 D_800E6690[], D_800E64D0[], D_800E6850[];
     extern f32 D_800E3750[], D_800E3210[], D_800E3C90[];
     extern u8 D_8019395C_ovl3[];
-    s32 func_80122460(void);
-    s32 func_80179130_ovl3(void);
-    void func_8011EBD4(void);
-    void func_800BB468(s32, s32);
-    s32 func_8016854C_ovl3(s32, s32, f32);
     u8 list[8] = { 1, 5, 9, 8, 7, 6, 0xF, 0 };
     s32 id;
 
@@ -2090,8 +2126,6 @@ void func_8016F7C8_ovl3(s32 arg0) {
    local, and an s32 return on func_8011CF58 (which regressed two matched
    functions). */
 void func_8016F80C_ovl3(GObj *arg0) {
-    s32 func_800AF230(void);
-    void func_800BB468(s32, s32);
 
     D_800E83E0[omCurrentObj->objId] = 0;
     func_8011CF58();
@@ -2155,7 +2189,6 @@ extern u8 D_80190F94_ovl3[];
 
 void func_8016FB58_ovl3(GObj *arg0) {
     Unk80196C7C sp20 = D_80196C7C_ovl3;
-    s32 func_8016854C_ovl3(s32, s32, f32);
 
     func_80153984_ovl3();
     if (func_80151E94_ovl3(&sp20) == 0) {
@@ -2261,7 +2294,6 @@ extern struct UnkD6F58 D_800D6F58;
 
 void func_8016FFF8_ovl3(GObj *arg0) {
     Unk80196C84 sp24 = D_80196C84_ovl3;
-    s32 func_80122460(void);
     extern s32 D_800D6F10;
 
     func_80153984_ovl3();
@@ -2347,7 +2379,6 @@ void func_8016FFF8_ovl3(GObj *arg0) {
  * instead ({1,5,9,8,7,6,0xF}, the big-endian bytes of 0x01050908
  * 0x07060F00), matching the u8-array callers in ovl19_3.c. */
 void func_8016F240_ovl3(GObj *arg0) {
-    s32 func_80179130_ovl3(void);
     extern s32 D_800D6B54;
     u8 cmd[7];
     s32 objId;
@@ -2468,7 +2499,6 @@ void func_8016F240_ovl3(GObj *arg0) {
  * instead ({1,5,9,8,7,6,0xF}, the big-endian bytes of 0x01050908
  * 0x07060F00), matching the u8-array callers in ovl19_3.c. */
 void func_8016F240_ovl3(GObj *arg0) {
-    s32 func_80179130_ovl3(void);
     u8 cmd[7];
     s32 objId;
     u8 held;
@@ -2690,11 +2720,6 @@ extern f32 gKirbyHp;
 void func_801708A0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     f32 temp;
     s32 flags;
-    void change_kirby_hp(f32);
-    void change_kirby_lives(s32);
-    void func_80121F14(void);
-    void func_8011E190(void);
-    void func_800BB468(s32, s32);
 
     if (arg1 != 0) {
         return;
@@ -2834,8 +2859,6 @@ void func_80170AC4_ovl3(s32 arg0) {
  * keeps its 64-bit width past this file's (s32,s32,s32,s32) declaration. */
 void func_80170D88_ovl3(s32 arg0) {
     extern s32 D_800D6B54;
-    s32 func_80122460(void);
-    void func_8011E0E8(void);
     u8 list[2] = { 1, 0xF };
     s32 id;
 
@@ -2952,7 +2975,6 @@ void func_80170D88_ovl3(s32 arg0) {
  * keeps its 64-bit width past this file's (s32,s32,s32,s32) declaration. */
 void func_80170D88_ovl3(s32 arg0) {
     extern s32 D_800D6B54;
-    s32 func_80122460(void);
     /* func_8011E0E8 stays implicitly declared (void(void) in plylib):
      * later PC-visible functions in this TU call it without a prototype,
      * and a local prototype here would clash with those int() folds. */
@@ -3066,7 +3088,6 @@ void func_80170D88_ovl3(s32 arg0) {
    one statement later (88), two later (94), before D_800DDFD0 (101), and an
    integer 0 for D_800E6690 (266 -- the two 0.0f stores must share one mtc1). */
 void func_801712F8_ovl3(GObj *arg0) {
-    s32 func_800AA934(s32);
     extern s16 D_80198838_ovl3;
     extern u32 D_8012E7DC;
     extern s32 D_8012E80C;
@@ -3173,11 +3194,6 @@ void func_801712F8_ovl3(GObj *arg0) {
  * ladder is a plain |speed|. func_8011E0E8 stays implicitly declared like
  * the file's other PC-visible callers. */
 void func_801717F0_ovl3(s32 arg0) {
-    void func_80153B98_ovl3(void);
-    void func_8011DC5C(void);
-    void func_8011E234(void);
-    void func_8011E0E8(void);
-    s32 func_8011F690(void);
     extern u8 D_8012E7C5;
     extern s32 D_800BE4F8;
     u8 list2[4] = { 2, 9, 0xF, 0 };
@@ -3299,10 +3315,6 @@ void func_801717F0_ovl3(s32 arg0) {
  * ladder is a plain |speed|. func_8011E0E8 stays implicitly declared like
  * the file's other PC-visible callers. */
 void func_801717F0_ovl3(s32 arg0) {
-    void func_80153B98_ovl3(void);
-    void func_8011DC5C(void);
-    void func_8011E234(void);
-    s32 func_8011F690(void);
     extern u8 D_8012E7C5;
     extern s32 D_800BE4F8;
     u8 list2[4] = { 2, 9, 0xF, 0 };
@@ -3417,8 +3429,6 @@ void func_801717F0_ovl3(s32 arg0) {
    scheduling choice, not reachable by restructuring the guarded store
    (which would change semantics on the false path). Good permuter seed. */
 void func_80171E00_ovl3(GObj *arg0) {
-    s32 func_800AA934(s32);
-    void func_8011E234(void);
     extern s16 D_80198838_ovl3;
 
     if (gKirbyState.unk30 == 0) {
@@ -3512,11 +3522,6 @@ void func_80171E00_ovl3(GObj *arg0) {
  * the string; the unk2C countdown tests the PRE-decrement value like the
  * sibling, and the double-ABSF ladder is |speed|. */
 void func_80172234_ovl3(s32 arg0) {
-    void func_80153B98_ovl3(void);
-    void func_8011DC5C(void);
-    void func_8011E234(void);
-    void func_8011E0E8(void);
-    s32 func_8011FEF8(void);
     extern s32 D_800BE4F8;
     u8 list[4] = { 9, 2, 0xF, 0 };
     s32 id;
@@ -3636,10 +3641,6 @@ void func_80172234_ovl3(s32 arg0) {
  * the string; the unk2C countdown tests the PRE-decrement value like the
  * sibling, and the double-ABSF ladder is |speed|. */
 void func_80172234_ovl3(s32 arg0) {
-    void func_80153B98_ovl3(void);
-    void func_8011DC5C(void);
-    void func_8011E234(void);
-    s32 func_8011FEF8(void);
     extern s32 D_800BE4F8;
     u8 list[4] = { 9, 2, 0xF, 0 };
     s32 id;
@@ -3823,10 +3824,6 @@ void func_80172A3C_ovl3(s32 arg0) {
 void func_80172AE4_ovl3(GObj *arg0) {
     extern f32 *D_8019273C_ovl3[];
     extern f32 D_80198820_ovl3;
-    void func_800AA5C4(s32, u32, f32);
-    s32 func_800AA368(struct DObj *);
-    s32 func_8011E1E8(s32, s32);
-    s32 func_801BC580_ovl7(s32);
     /* ohSleep stays implicitly declared: later PC-visible functions in this
      * TU call it without a prototype, and gnu90 folds those to int(). */
     s32 objId;
@@ -4021,10 +4018,6 @@ done:
 void func_80172AE4_ovl3(GObj *arg0) {
     extern f32 *D_8019273C_ovl3[];
     extern f32 D_80198820_ovl3;
-    void func_800AA5C4(s32, u32, f32);
-    s32 func_800AA368(struct DObj *);
-    s32 func_8011E1E8(s32, s32);
-    s32 func_801BC580_ovl7(s32);
     /* ohSleep stays implicitly declared: later PC-visible functions in this
      * TU call it without a prototype, and gnu90 folds those to int(). */
     s32 objId;
@@ -4547,8 +4540,6 @@ extern u8 D_801910AC_ovl3[];
 
 void func_80173AF4_ovl3(s32 arg0) {
     Unk80196C9C sp1C = D_80196C9C_ovl3;
-    s32 func_8016854C_ovl3(s32, s32, f32);
-    void func_8011E0E8(void);
 
     if ((*(s32 *) ((u8 *) &D_8012E7E8 + 8) == 0) && (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 0) &&
         (D_800E8920[omCurrentObj->objId] != 0)) {
@@ -4706,7 +4697,6 @@ void func_801741DC_ovl3(s32 arg0) {
 }
 
 void func_80174284_ovl3(GObj *arg0) {
-    s32 func_80122460(void);
 
     func_80153984_ovl3();
     func_8011CF58();
@@ -4949,11 +4939,6 @@ void func_80174B7C_ovl3(s32 arg0) {
  * unk15C anim-bank stores take the (u32)(uintptr_t) spelling of the
  * compiled siblings. */
 void func_80174C10_ovl3(s32 arg0) {
-    void func_8011DC5C(void);
-    void func_8011E0E8(void);
-    void func_8011E234(void);
-    void func_800BB468(s32, s32);
-    void func_80122A10(s32);
     extern s16 D_80198838_ovl3;
     extern s32 D_800E85A0[];
     extern s32 D_800D6F10;
@@ -5203,11 +5188,6 @@ void func_80174C10_ovl3(s32 arg0) {
  * unk15C anim-bank stores take the (u32)(uintptr_t) spelling of the
  * compiled siblings. */
 void func_80174C10_ovl3(s32 arg0) {
-    void func_8011DC5C(void);
-    void func_8011E0E8(void);
-    void func_8011E234(void);
-    void func_800BB468(s32, s32);
-    void func_80122A10(s32);
     extern s16 D_80198838_ovl3;
     extern s32 D_800E85A0[];
     extern s32 D_800D6F10;
@@ -5434,7 +5414,6 @@ void func_80174C10_ovl3(s32 arg0) {
 #endif
 
 void func_80175754_ovl3(GObj *arg0) {
-    s32 func_80179130_ovl3(void);
 
     func_80153984_ovl3();
     func_801217B8();
@@ -5505,10 +5484,6 @@ void func_80175754_ovl3(GObj *arg0) {
  * facing word through cvt.s.w; |speed| for the ladder; (u32)(uintptr_t)
  * for the unk15C anim-bank stores. */
 void func_8017599C_ovl3(s32 arg0) {
-    void func_8011DC5C(void);
-    void func_8011E0E8(void);
-    void func_8011E234(void);
-    void func_800BB468(s32, s32);
     extern s16 D_80198838_ovl3;
     extern s32 D_800E85A0[];
     extern s32 D_800D6F10;
@@ -5677,10 +5652,6 @@ void func_8017599C_ovl3(s32 arg0) {
  * facing word through cvt.s.w; |speed| for the ladder; (u32)(uintptr_t)
  * for the unk15C anim-bank stores. */
 void func_8017599C_ovl3(s32 arg0) {
-    void func_8011DC5C(void);
-    void func_8011E0E8(void);
-    void func_8011E234(void);
-    void func_800BB468(s32, s32);
     extern s16 D_80198838_ovl3;
     extern s32 D_800E85A0[];
     extern s32 D_800D6F10;
@@ -5836,7 +5807,6 @@ void func_8017599C_ovl3(s32 arg0) {
 #endif
 
 void func_801760FC_ovl3(GObj *arg0) {
-    s32 func_80179130_ovl3(void);
 
     func_80153984_ovl3();
     func_801217B8();
@@ -5942,9 +5912,6 @@ void func_80176814_ovl3(s32);
    register from the -1 onward is one slot lower. Swept: integer 0 vs 0.0f
    for the two shared zero stores. */
 void func_80176490_ovl3(GObj *arg0) {
-    void func_800AECC0(f32);
-    void func_800AED20(f32);
-    void func_800BB468(s32, s32);
     extern s32 D_800D6F10;
 
     gKirbyState.unk30 = 1;
@@ -6447,7 +6414,6 @@ extern Unk80196D64 D_80196D6C_ovl3;
 
 void func_80177FB4_ovl3(GObj *arg0) {
     Unk80196D64 sp24 = D_80196D6C_ovl3;
-    s32 func_801210FC(void);
     extern s32 D_800D6B54;
 
     func_80153984_ovl3();
@@ -6875,7 +6841,6 @@ void func_80179370_ovl3(s32 arg0) {
     extern u32 D_80196D80_ovl3[];
     extern s16 D_80198832_ovl3;
     extern u8 D_80198830_ovl3[];
-    void func_8011E0E8(void);
     f32 spd;
     s32 id;
     s32 pre;
@@ -6983,7 +6948,6 @@ void func_80179370_ovl3(s32 arg0) {
     extern u32 D_80196D80_ovl3[];
     extern s16 D_80198832_ovl3;
     extern u8 D_80198830_ovl3[];
-    void func_8011E0E8(void);
     f32 spd;
     s32 id;
     s32 pre;
@@ -7150,11 +7114,6 @@ void func_8017982C_ovl3(s32 arg0) {
  * func_8017A2C0_ovl3 is forward-declared -- it is defined later in this
  * TU with exactly the D_800DF310 slot signature. */
 void func_80179C28_ovl3(GObj *arg0) {
-    void func_8017A2C0_ovl3(s32, s32, f32);
-    void func_800AA018(s32);
-    void func_800AA5C4(s32, u32, f32);
-    s32 func_800AA368(struct DObj *);
-    f32 func_800F8824(Vector *, f32);
     extern u8 D_80190518_ovl3[];
     s32 id;
     f32 vel;
@@ -7310,11 +7269,6 @@ void func_80179C28_ovl3(GObj *arg0) {
  * func_8017A2C0_ovl3 is forward-declared -- it is defined later in this
  * TU with exactly the D_800DF310 slot signature. */
 void func_80179C28_ovl3(GObj *arg0) {
-    void func_8017A2C0_ovl3(s32, s32, f32);
-    void func_800AA018(s32);
-    void func_800AA5C4(s32, u32, f32);
-    s32 func_800AA368(struct DObj *);
-    f32 func_800F8824(Vector *, f32);
     extern u8 D_80190518_ovl3[];
     s32 id;
     f32 vel;
@@ -7504,15 +7458,12 @@ void func_8017A2C0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
  * `&D_800D71E8 + 0x50` is the f32 scratch D_800D7238;
  * `D_800DFBD0[...]->unk4->unk30` is DObj list entry [1]'s angle.v.x. */
 void func_8017A390_ovl3(s32 arg0) {
-    s32 func_80121828(f32, f32, f32, f32);
+    /* NOT hoisted to file scope: the NON_MATCHING draft of
+     * func_80175FA0_ovl3 calls func_80120AF8 with two arguments, and the
+     * tree's gcc lint pass builds that arm (-DNON_MATCHING). It only
+     * compiles while no prototype is in scope there, so this one stays
+     * where m2c put it. Definition: src/ovl2/plylib.c:51, one Vector *. */
     void func_80120AF8(Vector *);
-    f32 func_8011E374(void);
-    void func_801219C8(void);
-    s32 func_80121C90(void);
-    s32 func_801231D8(void);
-    s32 func_80123240(void);
-    void func_800BB468(s32, s32);
-    f32 func_800F8824(Vector *, f32);
     extern Vector *D_8012BCA8[];
     extern u32 D_800BE4EC;
     extern f32 D_800D7238;
@@ -7784,15 +7735,12 @@ phase_check:
  * `&D_800D71E8 + 0x50` is the f32 scratch D_800D7238;
  * `D_800DFBD0[...]->unk4->unk30` is DObj list entry [1]'s angle.v.x. */
 void func_8017A390_ovl3(s32 arg0) {
-    s32 func_80121828(f32, f32, f32, f32);
+    /* NOT hoisted to file scope: the NON_MATCHING draft of
+     * func_80175FA0_ovl3 calls func_80120AF8 with two arguments, and the
+     * tree's gcc lint pass builds that arm (-DNON_MATCHING). It only
+     * compiles while no prototype is in scope there, so this one stays
+     * where m2c put it. Definition: src/ovl2/plylib.c:51, one Vector *. */
     void func_80120AF8(Vector *);
-    f32 func_8011E374(void);
-    void func_801219C8(void);
-    s32 func_80121C90(void);
-    s32 func_801231D8(void);
-    s32 func_80123240(void);
-    void func_800BB468(s32, s32);
-    f32 func_800F8824(Vector *, f32);
     extern Vector *D_8012BCA8[];
     extern u32 D_800BE4EC;
     extern f32 D_800D7238;
@@ -8031,10 +7979,7 @@ phase_check:
 #endif
 
 extern s32 func_800A8234(s32, s32, s32);
-extern void func_800AA018(s32);
 extern s32 func_801693C4_ovl3(s32);
-extern s32 func_801210B4(void);
-extern void func_8011DC5C(void);
 extern f32 D_801975C8_ovl3;
 extern f32 D_801975CC_ovl3;
 extern f32 D_801975D0_ovl3;
@@ -8048,7 +7993,6 @@ extern f32 D_801975D4_ovl3;
    `while (1) { if (unk17 != 0) break; }`. */
 void func_8017B068_ovl3(GObj *arg0) {
     f32 temp;
-    void func_8011E0E8(void);
 
     gKirbyState.unk44 = 0;
     gKirbyState.unk30 = 0;
@@ -8146,9 +8090,6 @@ void func_8017B3C4_ovl3(s32 arg0) {
         /* 0x00 */ u8 pad0[0x58];
         /* 0x58 */ PcNeedleEmitter *xf;
     } PcNeedleGen;
-    s32 func_8016854C_ovl3(s32, s32, f32);
-    void func_80154578_ovl3(void *, s32, f32);
-    void func_800B26D8(Vector *, struct DObj *, u32);
     extern f32 D_800D7238;
     extern s32 D_8012E80C;
     extern u8 D_801911E0_ovl3[];
@@ -8244,9 +8185,6 @@ void func_8017B3C4_ovl3(s32 arg0) {
         /* 0x00 */ u8 pad0[0x58];
         /* 0x58 */ PcNeedleEmitter *xf;
     } PcNeedleGen;
-    s32 func_8016854C_ovl3(s32, s32, f32);
-    void func_80154578_ovl3(void *, s32, f32);
-    void func_800B26D8(Vector *, struct DObj *, u32);
     extern f32 D_800D7238;
     extern s32 D_8012E80C;
     extern u8 D_801911E0_ovl3[];
@@ -8448,7 +8386,6 @@ void func_8017B8F4_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017B8F4_ovl3.s")
 #endif
 
-extern s32 func_800AF230(void);
 extern s32 D_800E9720[];
 
 void func_8017BD68_ovl3(GObj *arg0) {
@@ -8555,7 +8492,7 @@ void func_8017BF34_ovl3(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8017BF34_ovl3.s")
 #endif
 
-extern void func_80120CCC(f32, f32);
+extern s32 func_80120CCC(f32, f32);         /* src/ovl2/plylib.c:3569 */
 extern f32 D_80197608_ovl3;
 extern f32 D_8019760C_ovl3;
 
@@ -8638,9 +8575,6 @@ void func_8017C1FC_ovl3(s32 arg0) {
  * like the ROM (the case labels that follow are the jump table's layout,
  * never reached by fallthrough). */
 void func_8017C418_ovl3(s32 arg0) {
-    s32 func_801210B4(void);
-    f32 func_80123144(f32);
-    void func_800AA018(s32);
     extern s32 D_80198834_ovl3;
     s32 id;
     u8 mode;
@@ -8812,9 +8746,6 @@ void func_8017C418_ovl3(s32 arg0) {
  * like the ROM (the case labels that follow are the jump table's layout,
  * never reached by fallthrough). */
 void func_8017C418_ovl3(s32 arg0) {
-    s32 func_801210B4(void);
-    f32 func_80123144(f32);
-    void func_800AA018(s32);
     extern s32 D_80198834_ovl3;
     s32 id;
     u8 mode;
@@ -8991,11 +8922,6 @@ void func_8017C418_ovl3(s32 arg0) {
  * 6U is a leftover register); func_8011D858 takes three arguments (the
  * trailing &gKirbyState is leftover $a3) and 0x3F800000 is 1.0f. */
 void func_8017CAF8_ovl3(s32 arg0) {
-    s32 func_8011D858(void *, s32, f32);
-    void func_8011EBD4(void);
-    void func_801219C8(void);
-    s32 func_80121C90(void);
-    s32 func_800AF230(void);
     extern s32 D_80198834_ovl3;
     extern u32 D_80192330_ovl3[];
     s32 next;
@@ -9117,11 +9043,6 @@ void func_8017CAF8_ovl3(s32 arg0) {
  * 6U is a leftover register); func_8011D858 takes three arguments (the
  * trailing &gKirbyState is leftover $a3) and 0x3F800000 is 1.0f. */
 void func_8017CAF8_ovl3(s32 arg0) {
-    s32 func_8011D858(void *, s32, f32);
-    void func_8011EBD4(void);
-    void func_801219C8(void);
-    s32 func_80121C90(void);
-    s32 func_800AF230(void);
     extern s32 D_80198834_ovl3;
     extern u32 D_80192330_ovl3[];
     s32 next;

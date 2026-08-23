@@ -39,6 +39,32 @@ extern s32 D_800D6B6C[];
 void func_8019D958_ovl7(u16);
 void func_801DBDB8_ovl10(GObj *);
 
+// ovl1 extern
+void func_800A9760(u32);
+void func_800A9864(u32, s32, s32);
+/* ovl1_2_2.c returns Ovl1Generator *, a typedef that TU keeps private; every
+ * call here discards the result. */
+s32 func_800A8234(s32, s32, s32);
+/* ovl1_8.c defines func_800B4954/func_800B68AC as (GObj *), but both are
+ * stored into D_800DEF90, which track_arrays.h/ovl1_6.h declare as
+ * `void (*[])(s32)`; the (s32) spelling is what keeps that assignment
+ * type-clean. Correcting it belongs with the shared header. */
+void func_800B68AC(s32);
+
+// ovl2 extern
+f32 func_800F951C(s32, f32, s32, f32);
+u32 func_800FD570(s32, u32, f32, f32, f32);
+s32 func_800BC11C(f32);
+void func_80111550(u32);
+s32 func_80110150(void *);
+s32 func_80110B00(void *);
+s32 func_80110FD4(void *);
+
+// within this file
+f32 func_801DF234_ovl10(void);
+void func_801DFE64_ovl10(void);
+s32 func_801DFCC0_ovl10(void);
+
 extern void func_8019BB58_ovl7();
 void func_801DBC00_ovl10(s32 arg0) {
     if (func_800B9DF8(2) && D_800D6B6C[1] == 0) {
@@ -189,9 +215,6 @@ void func_801DC4BC_ovl10(s32 arg0) {
  * the D_801F42D8/E0/E8 tables (indexed by D_800E98E0 parity), and hands the
  * hit pipeline back to the parent (D_800E7CE0[parent] = 8). */
 void func_801DC598_ovl10(s32 arg0) {
-    void func_800A9864(s32, s32, s32);
-    extern void func_800B68AC(s32);
-    s32 func_800A8234(s32, s32, s32);
     extern s32 D_801F39F4_ovl10;
     extern s32 D_801F3A84_ovl10;
     extern u32 D_801F42D8_ovl10[];
@@ -253,10 +276,7 @@ void func_801DC598_ovl10(s32 arg0) {
     func_8019D958_ovl7((u16) omCurrentObj->objId);
 }
 #elif defined(PORT)
-void func_800A9864(s32, s32, s32);
 void func_800B19F4(s32, s32);
-extern void func_800B68AC(s32);
-s32 func_800A8234(s32, s32, s32);
 extern s32 D_801F39F4_ovl10;
 extern s32 D_801F3A84_ovl10;
 extern u32 D_801F42D8_ovl10[];
@@ -335,8 +355,7 @@ void func_801DCA20_ovl10(GObj *arg0) {
     func_801E28C8_ovl10(0);
 }
 
-void func_800F98EC(s32, f32);
-void func_800A9864(s32, s32, s32);
+s32 func_800F98EC(s32, f32);
 void func_800AA018(s32);
 void func_800AA154(s32);
 
@@ -369,8 +388,6 @@ void func_801DCA44_ovl10(s32 arg0) {
     func_8019D958_ovl7((u16) omCurrentObj->objId);
 }
 
-extern void func_800B68AC(s32);
-void func_800A9864(s32, s32, s32);
 
 void func_801DCCB8_ovl10(s32 arg0) {
     struct EnemyRecord *temp = D_800E1B50[omCurrentObj->objId];
@@ -561,7 +578,6 @@ void func_801DD674_ovl10(GObj *arg0) {
  * (9999) or already passed, it snaps to the target's path segment/offset,
  * cancels the pending X/Z step, and returns the facing sign; else 0. */
 f32 func_801DD760_ovl10(void) {
-    f32 func_800F951C(f32, f32, f32, f32);
 
     s32 tgt;
     f32 dist;
@@ -598,7 +614,6 @@ f32 func_801DD760_ovl10(void) {
     return 0.0f;
 }
 #elif defined(PORT)
-f32 func_800F951C(s32, f32, s32, f32);
 
 /* Track-edge probe for the walking boss: measures the along-track distance
  * to the merge target (D_800E9AA0[parent] track when facing +1,
@@ -667,7 +682,6 @@ void func_801DDAC8_ovl10(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801DDAC8_ovl10.s")
 #endif
 void func_800A1F30(void *);
-s32 func_800A8234(s32, s32, s32);
 
 /* 49/204, all of them the same one-slot temp rotation: the ROM uses $a0 as a
    scratch where this uses $a1. */
@@ -795,22 +809,13 @@ void func_801DDEB8_ovl10(GObj *arg0) {
 #endif
 
 
-#ifdef PORT
-/* Restored here for the host build only: these two prototypes used to live at
- * file scope inside func_801DE124_ovl10's PORT arm, which was deleted when that
- * function was un-guarded. Later host-only code below still needs them. The N64
- * build declares them inside the function body instead. */
 f32 func_800F9828(s32, s32);
 void func_800A7F74(u32, u32, u32, f32, f32, f32);
-#endif
 /* State 6 (spit-out) main: waits for the swallowed segment to signal ready
  * (D_800E98E0 of the D_800EC120 helper), turns toward the parent track if
  * needed (the 5-tick half-turn dance shared with func_801E18A8), then spawns
  * the projectile effect and returns to state 2. */
 void func_801DE124_ovl10(s32 arg0) {
-    f32 func_800F9828(s32, s32);
-    void func_800A7F74(u32, u32, u32, f32, f32, f32);
-
     s32 i;
     f32 v;
     f32 d;
@@ -892,7 +897,7 @@ void func_801DE5CC_ovl10(GObj *arg0) {
     }
 }
 
-void func_800FB914(s32);
+s32 func_800FB914(s32);
 s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
 
 #ifdef NON_MATCHING
@@ -995,9 +1000,6 @@ void func_801DEA98_ovl10(GObj *arg0) {
  * velocities); the last hop carries the forward speed and lands with the
  * double shockwave attack. */
 void func_801DEB94_ovl10(s32 arg0) {
-    void func_800A7F74(u32, u32, u32, f32, f32, f32);
-    f32 func_800F951C(f32, f32, f32, f32);
-    f32 func_801DF234_ovl10(void);
     extern u32 D_801F4308_ovl10[];
     extern u32 D_801F4310_ovl10[];
     extern u32 D_801F4318_ovl10[];
@@ -1097,7 +1099,6 @@ void func_801DEB94_ovl10(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 #elif defined(PORT)
-f32 func_801DF234_ovl10(void);
 extern u32 D_801F4308_ovl10[];
 extern u32 D_801F4310_ovl10[];
 extern u32 D_801F4318_ovl10[];
@@ -1265,9 +1266,6 @@ void func_801DF4CC_ovl10(void) {
  * ABSF(), which expands its argument THREE times -- so each abs of a
  * func_800F9828 call really is three calls, matching the three in the listing. */
 #ifdef PORT
-void func_801DFE64_ovl10(void);
-s32 func_801DFCC0_ovl10(void);
-extern void func_800A9760(s32);
 void func_80198880_ovl7(void *);
 extern void *D_801F344C_ovl10[];
 extern f32 D_801F4338_ovl10[];
@@ -1349,9 +1347,6 @@ static void pc_ovl10_descend(f32 hold, s32 waypoint, s32 restEachStep) {
  * fresh m2c pass before feeding to the permuter. */
 #ifdef MIPS_TO_C
 void func_801DF50C_ovl10(s32 arg0) {
-    void func_801DFE64_ovl10(void);
-    s32 func_801DFCC0_ovl10(void);
-    f32 func_800F9828(s32, s32);
     extern void *D_801F344C_ovl10[];
     extern f32 D_801F4338_ovl10[];
     extern f32 D_801F4364_ovl10[];
@@ -1499,7 +1494,7 @@ void func_801DFBFC_ovl10(GObj *arg0) {
     func_801E28C8_ovl10(0);
 }
 
-s32 func_800AF230(void);
+u32 func_800AF230(void);
 
 #ifdef NON_MATCHING
 /* 74/105: s1/s2 swapped and `hit` in $a1 where the ROM uses $v0. */
@@ -1675,7 +1670,6 @@ void func_801E03CC_ovl10(void) {
  * func_801DF50C_ovl10 and func_801E206C_ovl10. */
 #ifdef MIPS_TO_C
 void func_801E0460_ovl10(s32 arg0) {
-    f32 func_800F9828(s32, s32);
     extern u32 D_801F43BC_ovl10[];
     extern u32 D_801F43D4_ovl10[];
     extern f32 D_801F4338_ovl10[];
@@ -2056,8 +2050,6 @@ void func_801E1880_ovl10(GObj *arg0) {
 }
 
 extern s32 D_801F3A84_ovl10;
-f32 func_800F9828(s32, s32);
-void func_800A7F74(u32, u32, u32, f32, f32, f32);
 
 void func_801E18A8_ovl10(GObj *arg0) {
     f32 v;
@@ -2198,9 +2190,6 @@ void func_801E1FD8_ovl10(void) {
 #ifdef MIPS_TO_C
 void func_801E206C_ovl10(s32 arg0) {
     extern s32 D_801F3ACC_ovl10;
-    u32 func_800FD570(s32, u32, f32, f32, f32);
-    s32 func_801DFCC0_ovl10(void);
-    f32 func_800F9828(s32, s32);
     extern f32 D_801F4338_ovl10[];
     extern f32 D_801F4364_ovl10[];
     extern f32 D_801F4390_ovl10[];
@@ -2281,7 +2270,6 @@ void func_801E206C_ovl10(s32 arg0) {
 }
 #elif defined(PORT)
 extern s32 D_801F3ACC_ovl10;
-u32 func_800FD570(s32, u32, f32, f32, f32);
 
 /* State 0x10 (phase-2 defeat): boss-clear fanfare and HP-bar refill from the
  * descriptor's max-HP word (unk10 holds a pointer to the f32), unwinds any
@@ -2376,11 +2364,6 @@ void func_801E28A0_ovl10(void) {
  * (N64 0x24), and the anim id word at +8 inside the shape is native. */
 s32 func_801E28C8_ovl10(s32 arg0) {
     struct Ovl10AnimObj2;
-    void func_80111550(u32);
-    s32 func_80110150(void *);
-    s32 func_80110B00(void *);
-    s32 func_80110FD4(void *);
-    void func_800BC11C(f32);
     extern f32 D_800D6E5C;
 
     struct EnemyRecord *ent;
@@ -2449,13 +2432,8 @@ s32 func_801E28C8_ovl10(s32 arg0) {
 }
 #elif defined(PORT)
 struct Ovl10AnimObj2;
-void func_80111550(u32);
 struct Ovl10AnimObj2 *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl10AnimObj2 *);
-s32 func_80110150(void *);
-s32 func_80110B00(void *);
-s32 func_80110FD4(void *);
-void func_800BC11C(f32);
 extern f32 D_800D6E5C;
 
 /* Per-tick hitbox registration + hit poll for the boss.  Registers the
@@ -2550,10 +2528,8 @@ struct Ovl10AnimObj2 {
     struct Ovl10AnimCmd2 *unk24;
 };
 
-void func_80111550(u32);
 struct Ovl10AnimObj2 *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl10AnimObj2 *);
-s32 func_80110150(void *);
 
 s32 func_801E2BD8_ovl10(s32 arg0, void *arg1) {
     struct EnemyKindDesc *sp0;

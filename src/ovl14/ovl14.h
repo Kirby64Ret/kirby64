@@ -46,7 +46,7 @@ void func_801DD018_ovl14(GObj *arg0);
 void func_801DD4C8_ovl14(GObj *arg0);
 void func_801DD4D0_ovl14(GObj *arg0);
 void func_801DD588_ovl14(GObj *arg0);
-void func_801DD590_ovl14(void *arg0);
+void func_801DD590_ovl14(GObj *arg0);
 void func_801DDBD0_ovl14(GObj *arg0);
 void func_801DDBD8_ovl14(GObj *arg0);
 void func_801DDE58_ovl14(GObj *arg0);

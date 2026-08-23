@@ -437,8 +437,12 @@ block_18:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017A71C_ovl5.s")
 #endif
 
-void func_8017AB80_ovl5(void) {
-    func_8015CCA8_ovl5(D_800D7178.unk44);
+/* Returns the value in $v0 that the ROM's callers in func_8017AD54_ovl5 test
+   and store -- it is func_8015CCA8_ovl5's result, tail-computed. It was typed
+   `void` here, which is what left m2c printing M2C_ERROR at those three call
+   sites and left the native link with an undefined M2C_ERROR symbol. */
+s32 func_8017AB80_ovl5(void) {
+    return func_8015CCA8_ovl5(D_800D7178.unk44);
 }
 
 s32 func_8017ABA4_ovl5(void) {
@@ -479,7 +483,11 @@ void func_8017ABC8_ovl5(void) {
 
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+   claimed to be: the N64 build takes the pragma below.
+   The three M2C_ERROR("read from unset register $v0") holes that used to sit
+   here were func_8017AB80_ovl5's return value -- m2c could not see it because
+   that function was typed `void`. It is typed s32 above now, so this draft
+   compiles and the native link no longer has an undefined M2C_ERROR. */
 void func_8017AD54_ovl5(void) {
     s32 *var_at;
     s32 temp_t8;
@@ -500,15 +508,13 @@ void func_8017AD54_ovl5(void) {
         D_800E98E0[omCurrentObj->objId] = 4;
         return;
     }
-    func_8017AB80_ovl5();
-    if (M2C_ERROR(/* Read from unset register $v0 */) != 0) {
+    if (func_8017AB80_ovl5() != 0) {
         if (gPlayerControllers->buttonHeld & 0x200) {
             play_sound(0x113);
             temp_t8 = D_8018ED10_ovl5 - 1;
             D_8018ED10_ovl5 = temp_t8;
             if (temp_t8 < 0) {
-                func_8017AB80_ovl5();
-                D_8018ED10_ovl5 = M2C_ERROR(/* Read from unset register $v0 */);
+                D_8018ED10_ovl5 = func_8017AB80_ovl5();
             }
             D_800E98E0[omCurrentObj->objId] = 4;
             return;
@@ -516,8 +522,7 @@ void func_8017AD54_ovl5(void) {
         if (gPlayerControllers->buttonHeld & 0x100) {
             play_sound(0x113);
             D_8018ED10_ovl5 += 1;
-            func_8017AB80_ovl5();
-            if (M2C_ERROR(/* Read from unset register $v0 */) < D_8018ED10_ovl5) {
+            if (func_8017AB80_ovl5() < D_8018ED10_ovl5) {
                 D_8018ED10_ovl5 = 0;
             }
             var_at = &D_800E98E0[omCurrentObj->objId];
@@ -796,7 +801,118 @@ struct DObj *func_8017B9F4_ovl5(s32 arg0, s32 arg1) {
     return D_800DFBD0[D_8018ED3C_ovl5][D_801891E4_ovl5[arg0][arg1]];
 }
 
+#if defined(MIPS_TO_C) || defined(PORT)
+/* One racer's body thread. Registers itself in D_8018ED50_ovl5[lane][racer],
+ * loads that racer's model, and then every frame copies the position, rotation
+ * and scale of its rail DObj (func_8017B9F4_ovl5) into the entity arrays for as
+ * long as the race is running (D_8018ED04_ovl5 == 1). The one-shot arm fires
+ * when the lane's leader flag D_800EA1A0 goes up: the racer who IS the lane
+ * leader plays its win effect, everyone else shrinks to nothing over five
+ * frames and is unlinked. D_800E98E0 doubles as a mailbox -- a non-zero value
+ * n selects animation n-1 on this racer and is consumed.
+ *
+ * FACTORY: 89/297 words differ, instruction count exact, every branch and
+ * every call matches. Two facts: the frame comes out 0xA8 against the ROM's
+ * 0xA0, and from the leader test onward IDO rotates the caller-saved temps by
+ * one ($t8 -> $t0, $t4 -> $t5, ...), which is what the remaining ~87 are.
+ * What paid: reversing the declaration order of the three Vectors (later
+ * declarations take the LOWER addresses, so `pos` must be declared FIRST to
+ * land at 0x90) and reserving the ROM's 16-byte dead hole between `scale` and
+ * `fired` with an unreferenced array -- 107 -> 89. Swept: pad sizes 1/2/3
+ * (105/98/96), a leading pad (110), and splitting the pad in two (89, no
+ * change). The +8 frame survives all of them.
+ *
+ * PORT: shared rather than duplicated. D_801891B0_ovl5 is a table of pointer
+ * PAIRS indexed by racer, which is why it is indexed [arg2 * 2] rather than
+ * given a struct -- the same convention as the UnkPtrPair tables in
+ * src/ovl5/ovl5_6.c, and it holds on the host as well. */
+extern u32 D_80189190_ovl5[];
+extern s32 D_801891A0_ovl5[];
+extern void *D_801891B0_ovl5[];
+void func_800A9864(u32, s32, s32);
+void func_800A9F98(s32, f32);
+void func_800AA018(void *);
+void func_800AF7A0(s32);
+void func_800AFBB4(s32, GObj *);
+void func_800B2340(Vector *, struct DObj *, u32);
+void func_800B26D8(Vector *, struct DObj *, u32);
+void func_800B2928(Vector *, struct DObj *, u32);
+
+void func_8017BA34_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    struct DObj *dobj;
+    s32 i;
+    f32 step;
+    Vector pos;
+    Vector angle;
+    Vector scale;
+    s32 pad[4];
+    s32 fired;
+
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_8018ED50_ovl5[arg1][arg2] = omCurrentObj->objId;
+    fired = 0;
+    func_800A9864(D_80189190_ovl5[arg2], 0x1869F, 0x10);
+    dobj = func_8017B9F4_ovl5(arg1, arg2);
+    func_800B2340(&pos, dobj, D_8018ED3C_ovl5);
+    func_800B26D8(&angle, dobj, D_8018ED3C_ovl5);
+    func_800B2928(&scale, dobj, D_8018ED3C_ovl5);
+    gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = pos.y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
+    gEntitiesAngleXArray[omCurrentObj->objId] = angle.x;
+    gEntitiesAngleYArray[omCurrentObj->objId] = angle.y;
+    gEntitiesAngleZArray[omCurrentObj->objId] = angle.z;
+    gEntitiesScaleXArray[omCurrentObj->objId] = scale.x;
+    gEntitiesScaleYArray[omCurrentObj->objId] = scale.y;
+    gEntitiesScaleZArray[omCurrentObj->objId] = scale.z;
+    if (D_8018ED04_ovl5 == 1) {
+        do {
+            if (fired == 0) {
+                if (D_800EA1A0[D_8018ED90_ovl5[arg1]] != 0) {
+                    fired = 1;
+                    if (arg2 == D_8018ED18_ovl5[arg1]) {
+                        func_800AA018(D_801891B0_ovl5[arg2 * 2]);
+                    } else {
+                        step = gEntitiesScaleXArray[omCurrentObj->objId] / 4;
+                        for (i = 4; i >= 0; i--) {
+                            gEntitiesScaleXArray[omCurrentObj->objId] = (f32) i * step;
+                            gEntitiesScaleYArray[omCurrentObj->objId] = (f32) i * step;
+                            gEntitiesScaleZArray[omCurrentObj->objId] = (f32) i * step;
+                            ohSleep(1);
+                        }
+                        func_800AFBB4(0, omCurrentObj);
+                    }
+                }
+            }
+            if (arg2 == D_8018ED18_ovl5[arg1]) {
+                func_800AF7A0(0x2E);
+            } else {
+                func_800AF7A0(0x2F);
+            }
+            if (D_800E98E0[omCurrentObj->objId] != 0) {
+                func_800A9F98(D_801891A0_ovl5[arg2], (f32) (D_800E98E0[omCurrentObj->objId] - 1));
+                if (D_800E98E0[omCurrentObj->objId] == 1) {
+                    animUpdateModelTreeAnimation(arg0);
+                }
+                animResetTextureAnimation(arg0);
+                D_800E98E0[omCurrentObj->objId] = 0;
+            }
+            func_800B2340(&pos, dobj, D_8018ED3C_ovl5);
+            func_800B26D8(&angle, dobj, D_8018ED3C_ovl5);
+            gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
+            gEntitiesNextPosYArray[omCurrentObj->objId] = pos.y;
+            gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
+            gEntitiesAngleXArray[omCurrentObj->objId] = angle.x;
+            gEntitiesAngleYArray[omCurrentObj->objId] = angle.y;
+            gEntitiesAngleZArray[omCurrentObj->objId] = angle.z;
+            ohSleep(1);
+        } while (D_8018ED04_ovl5 == 1);
+    }
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017BA34_ovl5.s")
+#endif
 
 /* Faithful, not byte-exact (69/109). Frame, saved-register set and the whole
    prologue are exact; the residue is that the ROM gives $f20 to the hoisted
@@ -1134,7 +1250,265 @@ void func_8017CC3C_ovl5(void) {
     gtlCreateScene(&D_801889A4_ovl5);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017CCE0_ovl5.s")
+extern Light D_800BE548;
+extern Light D_800BE550;
+s32 func_800AB0F4(GObj *);
+void func_800AB120(GObj *);
+void func_800AB174(GObj *);
+void func_800AB1F0(GObj *);
+void func_800AB244(GObj *);
+void renderDrawDObjFromGObj(GObj *);
+void renderDrawObject_TypeD(GObj *);
+void func_8001585C(GObj *);
+void func_80015BCC(GObj *);
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017D6F8_ovl5.s")
+
+/* Per-mode draw hook for the ovl5 race scene: the same eight-way dispatch on
+   func_800AB0F4 as func_80177524_ovl5 in ovl5_5.c, but this one also pushes
+   the scene's Lights1 block (ambient at D_800BE548, the directional light at
+   D_800BE550) into each display list both BEFORE and AFTER the draw, so the
+   next object on the list starts from the scene lighting again. Odd modes
+   render only into list 0; even modes render into lists 0 and 1. */
+void func_8017CCE0_ovl5(GObj *arg0) {
+    switch (func_800AB0F4(arg0)) {
+        case 19:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            func_800AB120(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            break;
+        case 21:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            func_800AB1F0(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            break;
+        case 23:
+        case 25:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            renderDrawDObjFromGObj(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            break;
+        case 27:
+        case 29:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            func_8001585C(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            break;
+        case 20:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            func_800AB174(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            break;
+        case 22:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            func_800AB244(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            break;
+        case 24:
+        case 26:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            renderDrawObject_TypeD(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            break;
+        case 28:
+        case 30:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            func_80015BCC(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            break;
+    }
+}
+
+extern Light D_80189238_ovl5;
+extern Light D_80189240_ovl5;
+
+
+/* The same eight-way draw dispatch as func_8017CCE0_ovl5 above, but this hook
+   lights the object with the OVERLAY's own Lights1 block (ambient
+   D_80189238_ovl5, directional D_80189240_ovl5) and then puts the scene block
+   (D_800BE548/D_800BE550) back on the list so whatever draws next is lit
+   normally again. */
+void func_8017D6F8_ovl5(GObj *arg0) {
+    switch (func_800AB0F4(arg0)) {
+        case 19:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189238_ovl5, 2);
+            func_800AB120(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            break;
+        case 21:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189238_ovl5, 2);
+            func_800AB1F0(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            break;
+        case 23:
+        case 25:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189238_ovl5, 2);
+            renderDrawDObjFromGObj(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            break;
+        case 27:
+        case 29:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189238_ovl5, 2);
+            func_8001585C(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            break;
+        case 20:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189238_ovl5, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_80189238_ovl5, 2);
+            func_800AB174(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            break;
+        case 22:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189238_ovl5, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_80189238_ovl5, 2);
+            func_800AB244(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            break;
+        case 24:
+        case 26:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189238_ovl5, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_80189238_ovl5, 2);
+            renderDrawObject_TypeD(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            break;
+        case 28:
+        case 30:
+            gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_80189238_ovl5, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_80189240_ovl5, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_80189238_ovl5, 2);
+            func_80015BCC(arg0);
+            gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[0]++, &D_800BE548, 2);
+            gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE550, 1);
+            gSPLight(gDisplayListHeads[1]++, &D_800BE548, 2);
+            break;
+    }
+}
 

@@ -117,7 +117,7 @@ void func_801DC83C_ovl11(void);
 void func_801DCA48_ovl11(struct GObj *);
 void func_801DCE04_ovl11(s32, s32, f32);
 void func_801DD1CC_ovl11(struct GObj *);
-void func_801DDBA4_ovl11(void);
+s32 func_801DDBA4_ovl11(void);
 void func_801DDD80_ovl11(void);
 void func_801DDE08_ovl11(void);
 void func_801DE038_ovl11(void);
@@ -133,7 +133,7 @@ void func_801E0168_ovl11(void);
 void func_801E0610_ovl11(void);
 void func_801E0820_ovl11(void);
 void func_801DE9C8_ovl11(s32, s32, f32);
-void func_801DEC08_ovl11(s32);
+s32 func_801DEC08_ovl11(s32);
 void func_801DEED0_ovl11(void);
 void func_801DF0B4_ovl11(struct GObj *);
 void func_801DF198_ovl11(s32, s32, f32);
@@ -828,7 +828,14 @@ void func_801DD1CC_ovl11(struct GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DD1CC_ovl11.s")
 #endif
+/* func_801DD270_ovl11's parameter is a `struct Ovl11Tbl *`, and this file does
+   not define that struct until below func_801DD490_ovl11. Moving the struct up
+   would be a file-scope edit (REFOUND forbids it), so the pragma stays here and
+   the C arms sit directly after the struct -- search for the next mention of
+   func_801DD270_ovl11. */
+#if !defined(MIPS_TO_C) && !defined(PORT)
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DD270_ovl11.s")
+#endif
 
 void func_801DD490_ovl11(struct GObj *arg0) {
     D_800E9C60[omCurrentObj->objId] = 1;
@@ -853,6 +860,128 @@ struct Ovl11Tbl {
 
 extern struct Ovl11Tbl D_801E0C60_ovl11;
 void func_801DD270_ovl11(struct Ovl11Tbl *);
+
+#if defined(MIPS_TO_C) || defined(PORT)
+/* func_801DD270_ovl11 -- the pragma for it is above func_801DD490_ovl11.
+   It deals the eight (kind, slot, height) triples of D_801E0C60_ovl11:
+   eight rising heights with a random gap between each, then eight draws
+   without replacement from the index bag D_801E0B94_ovl11 = {0..7}. */
+struct Ovl11Idx8 {
+    u8 b[8];
+};
+extern struct Ovl11Idx8 D_801E0B94_ovl11; /* the {0,1,2,...,7} bag, in .data */
+extern f32 D_801E0C28_ovl11;              /* height step   */
+extern f32 D_801E0C2C_ovl11;              /* random spread */
+f32 random_soft_f32(void);
+#endif
+
+#ifdef MIPS_TO_C
+/* FACTORY: 32/136 words DIFFER (measured with this draft spliced alone into a
+   scratch copy of the TU). Instruction count is exact. What is left:
+     - frame 0xA0 against the ROM's 0x98 (2 words). The local block is already
+       on the ROM's addresses -- sp68 at 0x68, sp88 at 0x88 -- and stays there
+       across every declaration order I tried; the excess is above the locals
+       and no pad reaches it. Sweeping pads only moved it the wrong way
+       (+4 bytes of local -> frame 0xA8), and moving the scalars across the two
+       arrays only trades bytes between the region below sp68 and the region
+       above sp88, never the 0x48 total (the ROM's is 0x40).
+     - the two preheader `lwc1`s swapped (2 words): the ROM loads D_801E0C28
+       into $f24 first and D_801E0C2C into $f22 second; IDO gives $f22 to
+       whichever local is ASSIGNED first, so the register pairing and the load
+       order cannot both be had from a source order.
+     - three adjacent-instruction schedule swaps and a $t-register renaming
+       cascade through the deal loop (the rest).
+   Levers that DID pay, in order: hoisting the two rodata floats into locals so
+   they land in $f22/$f24 (they cannot be hoisted out of the loop as globals --
+   random_soft_f32() is a call and may write them) took 101 -> 85; spelling the
+   first loop as an explicit preheader + do/while, so the two loads sit after
+   the entry guard where the ROM has them, took 85 -> 37; assigning spread
+   before step took 37 -> 35; declaring acc/spread/step/i BEFORE the two arrays
+   (LEVERS 32) put the whole local block on the ROM's offsets, 35 -> 32; and
+   LEVERS 14 on `sp88.b[r] != sp88.b[k]` fixed the beql operand order. */
+void func_801DD270_ovl11(struct Ovl11Tbl *arg0) {
+    f32 acc;
+    f32 spread;
+    f32 step;
+    u8 i;
+    struct Ovl11Idx8 sp88;
+    f32 sp68[8];
+    u8 j;
+    u8 k;
+    u8 r;
+    u8 n;
+
+    acc = 0.0f;
+    sp88 = D_801E0B94_ovl11;
+    n = 8;
+    i = acc;
+    if (i < 8) {
+        spread = D_801E0C2C_ovl11;
+        step = D_801E0C28_ovl11;
+        do {
+            acc = acc + random_soft_f32() * spread + step;
+            sp68[i] = acc;
+            i++;
+        } while (i < 8);
+    }
+    for (i = 0; i < 8; i++) {
+        j = 0;
+        k = 0;
+        arg0->unk0[i] = random_soft_s32_range(4) + 4;
+        r = random_soft_s32_range(n);
+        arg0->unk8[i] = sp88.b[r];
+        arg0->unk10[i] = sp68[sp88.b[r]];
+        n--;
+        while (j < n) {
+            if (sp88.b[r] != sp88.b[k]) {
+                sp88.b[j] = sp88.b[k];
+                j++;
+            }
+            k++;
+        }
+    }
+}
+#elif defined(PORT)
+void func_801DD270_ovl11(struct Ovl11Tbl *arg0) {
+    struct Ovl11Idx8 bag;
+    f32 heights[8];
+    f32 acc;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 pick;
+    s32 left;
+
+    /* eight rising heights, each a random step above the last */
+    acc = 0.0f;
+    for (i = 0; i < 8; i++) {
+        acc = acc + random_soft_f32() * D_801E0C2C_ovl11 + D_801E0C28_ovl11;
+        heights[i] = acc;
+    }
+
+    /* the ROM starts this loop at `i = acc`, i.e. a float-to-u8 conversion of a
+       value that is 0.0f here; it is 0 either way. */
+    bag = D_801E0B94_ovl11;
+    left = 8;
+    for (i = 0; i < 8; i++) {
+        arg0->unk0[i] = random_soft_s32_range(4) + 4;
+        pick = random_soft_s32_range(left) & 0xFF;
+        arg0->unk8[i] = bag.b[pick];
+        arg0->unk10[i] = heights[bag.b[pick]];
+        /* drop the drawn index and close the bag up */
+        left--;
+        j = 0;
+        k = 0;
+        while (j < left) {
+            if (bag.b[pick] != bag.b[k]) {
+                bag.b[j] = bag.b[k];
+                j++;
+            }
+            k++;
+        }
+    }
+}
+#endif
 
 void func_801DD588_ovl11(struct GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] == 1) {
@@ -964,7 +1093,136 @@ void func_801DDB9C_ovl11(struct GObj *arg0) {
 
 }
 
+/* The 0x20-byte animation-event record func_80110B00 / func_80110FD4 /
+   func_80110150 fill in; only the two bytes at 2 and 3 are read here. Same
+   record and the same three probes as src/ovl12/code_1EB520.c's
+   func_801DF758_ovl12, which is func_801DDBA4_ovl11's clone. Shared with
+   func_801DEC08_ovl11 below; these declarations are file-scope because that
+   one is matched and un-guarded, and IDO ties a symbol's declaration
+   file-wide, so the two sites cannot each carry their own spelling. */
+struct Ovl11AnimInfo {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u8 filler4[0x1C];
+};
+
+/* what func_80111C88 hands back: an animation object whose unk24 control block
+   is what a caller overrides before func_80111ECC commits it. */
+struct Ovl11AnimCtl {
+    u8 filler0[8];
+    s32 unk8;
+};
+
+struct Ovl11AnimObj {
+    u8 filler0[0x24];
+    struct Ovl11AnimCtl *unk24;
+};
+
+s32 func_80110B00(struct Ovl11AnimInfo *);
+s32 func_80110FD4(struct Ovl11AnimInfo *);
+s32 func_80110150(struct Ovl11AnimInfo *);
+struct Ovl11AnimObj *func_80111C88(s32 *, s32);
+void func_80111ECC(struct Ovl11AnimObj *);
+void func_80111550(s32);
+
+#ifdef MIPS_TO_C
+/* FACTORY: 101/119 words DIFFER (measured, draft spliced alone into a scratch
+   copy of the TU). Instruction count is exact and every basic block is in the
+   right place; the entire residue is a ONE-INSTRUCTION shift at the top:
+   IDO hoists `&omCurrentObj` into $s1 (lui/addiu at entry, `lw $x, 0($s1)` per
+   use) where the ROM re-materialises lui/lw at each of its seven sites.
+   Measured threshold, here and in a standalone repro: IDO holds a global's
+   address in a callee-saved register at SEVEN live materialisations and
+   re-materialises at six. This listing has seven and does NOT hoist -- so one
+   of its seven re-reads of omCurrentObj is spelled some other way in the ROM
+   source. The same unexplained gap sits on the clone func_801DF758_ovl12.
+   Swept: routing the `else` arm's index through the entry temp does buy the
+   six-materialisation form and the prologue then matches exactly, but IDO
+   spills the shifted objId across the calls AND turns the entry `bnez/nop`
+   into a `bnezl`, measuring 102/118 -- worse, so it is not the draft below.
+   Note this draft returns s32; the file-scope prototype was `void` and has
+   been corrected to s32 (the ROM sets $v0 on every path). That retype was
+   A/B'd: build/src/ovl11/ovl11.o came out byte-identical. */
+s32 func_801DDBA4_ovl11(void) {
+    struct Ovl11AnimInfo sp38;
+    struct EnemyRecord *temp_s0;
+    u32 temp_v0;
+
+    temp_v0 = omCurrentObj->objId;
+    temp_s0 = D_800E1B50[temp_v0];
+    D_800EB320[temp_v0] = D_800E7B20[temp_v0];
+    if (temp_s0->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    func_80111ECC(func_80111C88(temp_s0->unk8C, omCurrentObj->objId));
+    if (func_80110B00(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else if (func_80110FD4(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else if (func_80110150(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        temp_s0->unk43 = 0;
+    }
+    switch (D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DEB78_ovl11);
+        return 1;
+    case 2:
+        D_800D70D8 -= 1.0f;
+        func_801DDD80_ovl11();
+        return 1;
+    default:
+        return 0;
+    }
+}
+#elif defined(PORT)
+s32 func_801DDBA4_ovl11(void) {
+    struct Ovl11AnimInfo evt;
+    struct EnemyRecord *rec;
+
+    rec = D_800E1B50[omCurrentObj->objId];
+    D_800EB320[omCurrentObj->objId] = D_800E7B20[omCurrentObj->objId];
+    if (rec->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    func_80111ECC(func_80111C88(rec->unk8C, omCurrentObj->objId));
+    if (func_80110B00(&evt) != 0) {
+        D_800E83E0[omCurrentObj->objId] = evt.unk2;
+        rec->unk43 = evt.unk3;
+    } else if (func_80110FD4(&evt) != 0) {
+        D_800E83E0[omCurrentObj->objId] = evt.unk2;
+        rec->unk43 = evt.unk3;
+    } else if (func_80110150(&evt) != 0) {
+        D_800E83E0[omCurrentObj->objId] = evt.unk2;
+        rec->unk43 = evt.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        rec->unk43 = 0;
+    }
+    switch (D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DEB78_ovl11);
+        return 1;
+    case 2:
+        D_800D70D8 -= 1.0f;
+        func_801DDD80_ovl11();
+        return 1;
+    default:
+        return 0;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DDBA4_ovl11.s")
+#endif
 
 void func_801DDD80_ovl11(void) {
     struct EnemyRecord *temp_v0;
@@ -1234,7 +1492,56 @@ void func_801DEB78_ovl11(struct GObj *arg0) {
     func_801A3E80_ovl7(arg0);
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DEC08_ovl11.s")
+void func_801DEE50_ovl11(void);
+void func_801DF5B8_ovl11(struct GObj *);
+
+/* `temp_v1` is load-bearing: without a named local for unk8C[2] IDO swaps the
+ * two link registers. Same shape as src/ovl15/ovl15b.c's func_801E5D54_ovl15. */
+s32 func_801DEC08_ovl11(s32 arg0) {
+    struct Ovl11AnimInfo sp38;
+    struct EnemyRecord *temp_s0;
+    struct Ovl11AnimObj *temp_v0;
+    s32 *temp_v1;
+
+    temp_s0 = D_800E1B50[omCurrentObj->objId];
+    D_800EB320[omCurrentObj->objId] = D_800E7B20[omCurrentObj->objId];
+    if (temp_s0->unk8C == NULL) {
+        return 0;
+    }
+    func_80111550(omCurrentObj->objId);
+    temp_v0 = func_80111C88(temp_s0->unk8C, omCurrentObj->objId);
+    temp_v1 = (s32 *) temp_s0->unk8C[2];
+    if ((temp_v1[1] == 0) && (arg0 != 0)) {
+        temp_v0->unk24->unk8 = arg0;
+    }
+    func_80111ECC(temp_v0);
+    if (func_80110B00(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else if (func_80110FD4(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else if (func_80110150(&sp38) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp38.unk2;
+        temp_s0->unk43 = sp38.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        temp_s0->unk43 = 0;
+    }
+    switch (D_800E83E0[omCurrentObj->objId]) {
+    case 1:
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DF5B8_ovl11);
+        return 1;
+    case 2:
+        D_800D70D8 -= 1.0f;
+        D_800E98E0[D_800EA520[omCurrentObj->objId]] = 1;
+        func_801DEE50_ovl11();
+        D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
+        return 1;
+    default:
+        return 0;
+    }
+}
 
 void func_801DEE50_ovl11(void) {
     struct EnemyRecord *temp_v0;

@@ -22,7 +22,7 @@ typedef union Unk16Bytes {
 
 extern Unk16Bytes D_801881DC_ovl5;
 extern s32 D_8018ECE8_ovl5[];
-void func_80178E98_ovl5(s32, s32, s32, s32);
+void func_80178E98_ovl5(GObj *, s32, s32, s32);
 typedef union Unk28Words {
     s32 unk0[10];
 } Unk28Words;
@@ -313,9 +313,132 @@ void func_801783B8_ovl5(GObj *arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178450_ovl5.s")
+/* Level-select intro: walk the four world slots from D_800D7178 in DESCENDING
+   `unkC` order (3 -> 0) and, for each slot whose unkC matches the current
+   step, spawn the three tracks that make up its badge -- kinds 5, 4 and 6, all
+   tagged with the slot index in D_800E9AA0 and the slot's unk4 in D_800E9C60,
+   with kind 4 additionally carrying unk8 in D_800E9E20. A step that spawned
+   anything is followed by an 8-frame pause; after the last step the whole
+   group holds for 53 frames, the player's own track is put into state 1 and
+   this thread retires. */
+void func_80178450_ovl5(GObj *arg0) {
+    s32 i;
+    s32 kind;
+    s32 j;
+    s32 found;
+    s32 track;
 
+    ohSleep(1);
+    for (kind = 3; kind >= 0; kind--) {
+        found = 0;
+        for (j = 0; j < 4; j++) {
+            if (kind == D_800D7178[j].unkC) {
+                found = 1;
+                track = request_track_general(0x10, 0, 0x70);
+                D_800E98E0[track] = 5;
+                ((s32 *) D_800E9AA0)[track] = j;
+                D_800E9C60[track] = D_800D7178[j].unk4;
+                track = request_track_general(0x10, 0, 0x70);
+                D_800E98E0[track] = 4;
+                ((s32 *) D_800E9AA0)[track] = j;
+                D_800E9C60[track] = D_800D7178[j].unk4;
+                D_800E9E20[track] = D_800D7178[j].unk8;
+                track = request_track_general(0x10, 0, 0x70);
+                D_800E98E0[track] = 6;
+                ((s32 *) D_800E9AA0)[track] = j;
+                D_800E9C60[track] = D_800D7178[j].unk4;
+            }
+        }
+        if (found != 0) {
+            for (i = 0; (f32) i < 8.0f; i++) {
+                ohSleep(1);
+            }
+        }
+    }
+    for (i = 0; (f32) i < 53.0f; i++) {
+        ohSleep(1);
+    }
+    ((s32 *) D_800E9AA0)[D_8018ECE4_ovl5] = 1;
+    func_800B1900(((u16 *) omCurrentObj)[1]);
+}
+
+#if defined(MIPS_TO_C) || defined(PORT)
+/* FACTORY: 8/159 words DIFFER (plus one apparent diff on the 0.85f load that
+ * is only verify.py's anonymous-.rodata artifact when scoring a scratch copy).
+ * The eight are a single $v0/$v1 rotation: the ROM puts `arg1 * 4` in $v0 and
+ * `arg2 * 4` in $v1, IDO picks them the other way round, and the two spill
+ * SLOTS (0x2C/0x30) are already the ROM's. That is the neighbouring-register
+ * floor in tools/decomp/LEVERS.md. Swept and rejected: swapping the leading
+ * store and call (38/159), naming the index in a local (25/159), naming the
+ * geo pointer in a local (27/159), naming objId in a local (50/159).
+ * What DID pay: spelling the D_800D7178 probe the way the rest of this file
+ * spells it -- `((s32 *) D_800D7178)[arg1 * 4 + 3]`, which shares the ROM's
+ * CSE of `arg1 * 4` (95 -> 81) -- and typing the two dlist tables as pairs
+ * the way the matched clone func_8017890C_ovl5 below does (81 -> 9).
+ *
+ * This is behaviourally exact and LP64-clean, so it doubles as the PORT arm
+ * rather than being duplicated: D_800D7178 is 4 u32s on both targets,
+ * D_800E9AA0 is a flat 4-byte-slot vram region on the host (tools/pc/
+ * vram_syms.txt) which is exactly what the `(s32 *)` cast this file already
+ * uses walks, and the dlist pairs are native pointer pairs on the host just
+ * as they are for func_8017890C_ovl5. The declarations live inside the guard
+ * so the N64 build's view of the file is unchanged. */
+extern void *D_801887A0_ovl5[];
+extern s32 D_801887B0_ovl5[];
+void func_800A9F98(s32, f32);
+
+/* World-badge seat, entered with (slot, style, startFrame). Loads the style's
+ * geo, seeks its animation to startFrame -- a fresh start (0) instead plays
+ * the model tree's animation from the top -- parks the badge at the slot's
+ * fixed position, and shows the style's one or two dlists. A slot whose
+ * D_800D7178 unkC is still 0 (world not yet cleared) waits out the 66-frame
+ * flourish and spawns the kind-7 track before its second dlist pair. */
+void func_80178690_ovl5(GObj *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    struct Ovl5DlPair {
+        void *unk0;
+        void *unk4;
+    };
+    extern struct Ovl5DlPair D_801887F0_ovl5[];
+    extern struct Ovl5DlPair D_80188810_ovl5[];
+    s32 track;
+
+    D_8018ECE8_ovl5[arg1] = omCurrentObj->objId;
+    func_800A9864(D_801887A0_ovl5[arg2], 0x1869F, 0x10);
+    func_800A9F98(D_801887B0_ovl5[arg2], (f32) arg3);
+    if (arg3 == 0) {
+        animUpdateModelTreeAnimation(arg0);
+    }
+    animResetTextureAnimation(arg0);
+    if (arg2 == 1) {
+        gEntitiesScaleXArray[omCurrentObj->objId] = 0.85f;
+        gEntitiesScaleYArray[omCurrentObj->objId] = 0.85f;
+        gEntitiesScaleZArray[omCurrentObj->objId] = 0.85f;
+    }
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_801887C0_ovl5[arg1].x;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_801887C0_ovl5[arg1].y;
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_801887C0_ovl5[arg1].z;
+    func_800AA018(D_801887F0_ovl5[arg2].unk0);
+    if (D_801887F0_ovl5[arg2].unk4 != NULL) {
+        func_800AA018(D_801887F0_ovl5[arg2].unk4);
+    }
+    if (((s32 *) D_800D7178)[arg1 * 4 + 3] == 0) {
+        while (arg0->animTimer < 66.0f) {
+            ohSleep(1);
+        }
+        track = request_track_general(0x10, 0, 0x70);
+        D_800E98E0[track] = 7;
+        ((s32 *) D_800E9AA0)[track] = arg1;
+    }
+    func_800AF27C();
+    func_800AA018(D_80188810_ovl5[arg2].unk0);
+    if (D_80188810_ovl5[arg2].unk4 != NULL) {
+        func_800AA018(D_80188810_ovl5[arg2].unk4);
+    }
+    curObjSleepForever();
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80178690_ovl5.s")
+#endif
 
 typedef struct UnkPtrPair {
     void *unk0;
@@ -408,7 +531,7 @@ void func_80178DB0_ovl5(GObj *arg0) {
     }
 }
 
-void func_80178E98_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_80178E98_ovl5(GObj *arg0, s32 arg1, s32 arg2, s32 arg3) {
 #ifdef PORT
     /* D_801881EC is ten N64 pointer words; the PC data generator emits the
        region as a native void*[] (8-byte slots), so the word-struct copy
@@ -440,7 +563,7 @@ s32 func_80178F78_ovl5(s32 arg0) {
     return (arg0 / 30) / 60;
 }
 
-void func_80178F9C_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
+void func_80178F9C_ovl5(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
     s32 sp34;
     s32 sp30;
     s32 sp2C;
@@ -461,7 +584,11 @@ void func_80178F9C_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
     func_80178E98_ovl5(arg0, sp34, (s32) arg2, (s32) arg3);
 }
 
-void func_80179118_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
+/* arg4 is genuinely passed by both of func_80179264_ovl5's call sites (0.0f
+   and 2.0f, stored to 0x10($sp)) and genuinely ignored by this body. Naming it
+   is what lets those call sites be written in C at all; it is free for this
+   function -- the incoming argument lives in the caller's frame. */
+void func_80179118_ovl5(GObj *arg0, s32 arg1, f32 arg2, f32 arg3, f32 arg4) {
     s32 pad;
 
     if (arg1 >= 100) {
@@ -482,7 +609,88 @@ u16 func_801791BC_ovl5(s32 arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_6/func_80179264_ovl5.s")
+extern struct UnkStruct8015C740 D_80188330_ovl5;
+extern struct UnkStruct8015C740 D_80188350_ovl5;
+extern struct UnkStruct8015C740 D_80188370_ovl5;
+extern struct UnkStruct8015C740 D_80188448_ovl5;
+extern struct UnkStruct8015C740 D_80188468_ovl5;
+extern struct UnkStruct8015C740 D_80188488_ovl5;
+extern struct UnkStruct8015C740 D_801884A8_ovl5;
+extern struct UnkStruct8015C740 D_801884C8_ovl5;
+extern struct UnkStruct8015C740 D_801884E8_ovl5;
+extern struct UnkStruct8015C740 D_80188508_ovl5;
+extern struct UnkStruct8015C740 D_80188528_ovl5;
+extern Vector2 D_801886B0_ovl5;
+extern Vector2 D_801886B8_ovl5;
+extern Vector2 D_80188688_ovl5;
+extern Vector2 D_80188690_ovl5[];
+extern Vector2 D_801886C0_ovl5[];
+extern u8 D_8018ECF9_ovl5;
+
+
+/* Minigame results board. Two backdrop sprites always, then the per-game
+   layout selected by D_800D6B68: 0x1D (100-Yard Hop) and 0x1E
+   (Checkerboard Chase) print mm:ss.f times through func_80178F9C_ovl5,
+   0x1F (Bumper Crop Bump) prints two-digit scores through
+   func_80179118_ovl5; each layout ends by printing the saved record for
+   that game (func_801791BC_ovl5). The four per-player values live in
+   D_800D7178 words 22..25. The second backdrop sprite is the one whose
+   renderFlags bit 3 is raised here, and -- when func_801796D8_ovl5 set
+   D_8018ECF9_ovl5, i.e. a record was beaten -- blinked forever on a
+   3-frame cadence once the player track wakes up. */
+void func_80179264_ovl5(GObj *arg0) {
+    SPObj *sp;
+    s32 i;
+
+    D_800DEF90[omCurrentObj->objId] = NULL;
+    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
+    omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
+    func_8015C740_ovl5(arg0, &D_80188330_ovl5);
+    sp = func_8015C740_ovl5(arg0, &D_80188350_ovl5);
+    switch (D_800D6B68) {
+        case 0x1D:
+            func_8015C740_ovl5(arg0, &D_801884C8_ovl5);
+            for (i = 0; i < 4; i++) {
+                func_80178F9C_ovl5(arg0, ((s32 *) D_800D7178)[22 + i], D_80188690_ovl5[i].x,
+                                   D_80188690_ovl5[i].y);
+            }
+            func_8015C740_ovl5(arg0, &D_80188370_ovl5);
+            func_80178F9C_ovl5(arg0, func_801791BC_ovl5(0x1D), D_80188688_ovl5.x, D_80188688_ovl5.y);
+            break;
+        case 0x1F:
+            func_8015C740_ovl5(arg0, &D_80188448_ovl5);
+            func_8015C740_ovl5(arg0, &D_80188468_ovl5);
+            func_8015C740_ovl5(arg0, &D_80188488_ovl5);
+            func_8015C740_ovl5(arg0, &D_801884A8_ovl5);
+            for (i = 0; i < 4; i++) {
+                func_80179118_ovl5(arg0, ((s32 *) D_800D7178)[22 + i], D_801886C0_ovl5[i].x,
+                                   D_801886C0_ovl5[i].y, 0.0f);
+            }
+            func_80179118_ovl5(arg0, func_801791BC_ovl5(0x1F), D_801886B8_ovl5.x, D_801886B8_ovl5.y, 2.0f);
+            break;
+        case 0x1E:
+            func_8015C740_ovl5(arg0, &D_80188508_ovl5);
+            func_8015C740_ovl5(arg0, &D_80188528_ovl5);
+            func_80178F9C_ovl5(arg0, ((s32 *) D_800D7178)[22], D_801886B0_ovl5.x, D_801886B0_ovl5.y);
+            func_8015C740_ovl5(arg0, &D_801884E8_ovl5);
+            func_8015C740_ovl5(arg0, &D_80188370_ovl5);
+            func_80178F9C_ovl5(arg0, func_801791BC_ovl5(0x1E), D_80188688_ovl5.x, D_80188688_ovl5.y);
+            break;
+    }
+    sp->renderFlags |= 8;
+    while (((s32 *) D_800E9AA0)[D_8018ECE4_ovl5] == 0) {
+        ohSleep(1);
+    }
+    if (D_8018ECF9_ovl5 != 0) {
+        while (1) {
+            sp->renderFlags &= ~8;
+            ohSleep(3);
+            sp->renderFlags |= 8;
+            ohSleep(3);
+        }
+    }
+    curObjSleepForever();
+}
 
 s32 func_801795BC_ovl5(void) {
     s32 i;

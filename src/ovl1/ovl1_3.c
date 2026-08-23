@@ -22,6 +22,13 @@ void func_800AACC8(s32 *, s32, s32, f32);
 void func_800AA96C(s32 *, u32, s32, f32, f32);
 void func_800AAF34(s32, s32, f32);
 void func_800AA608(DObj *, s32, f32, u32, f32);
+struct CacheLine *func_800A840C(u32, s32);
+void func_800A8D64(u32, s32);
+u32 *func_800A9250(u32, s32);
+void *func_800A9648(u32 *);
+void func_800A99E4(s32);
+void func_800A9A2C(s32);
+void func_800A9D64(s32);
 
 // ovl1_7
 void func_800AEE20(struct GObj *, f32);
@@ -31,6 +38,7 @@ void func_800AEFA4(struct GObj *, f32, struct GObj *);
 void func_800AEFFC(u16);
 void func_800AF09C(u16);
 void func_800AF27C(void);
+void func_800AF9B8(u16, u8);
 void func_800B21FC(AnimCmd ***, f32);
 void func_800B2288(AnimCmd ***, f32);
 void ohSleep(s32);
@@ -478,7 +486,6 @@ s32 func_800A8724(s32 arg0) {
      * func_800A8DE4; the ROM writes a single word here, so this function
      * needs the scalar view. Block scope keeps it off every other user. */
     extern u32 D_800D6E68;
-    struct CacheLine *func_800A840C(u32, s32);
     s32 count;
     s32 i;
     s32 j;
@@ -786,12 +793,6 @@ void func_800A8E54(u32 arg0, s32 arg1) {
 // are worse (111).
 #ifdef NON_MATCHING
 void func_800A8EC0(u32 arg0) {
-    void func_800A8D64(u32, s32);
-    u32 *func_800A9250(u32, s32);
-    void func_800A99E4(s32);
-    void func_800A9A2C(s32);
-    void func_800A9D64(s32);
-    void *func_800A9648(u32 *);
     u32 **slot;
     u32 *ptr;
     u32 *r;
@@ -861,11 +862,6 @@ void func_800A8EC0(u32 arg0) {
  * through the D_800D00C4 cache into gSegment4StartArray, and the sound bank
  * id is the HALFWORD at data+0xA (lhu), not a widened word. */
 void func_800A9088(u32 arg0) {
-    u32 *func_800A9250(u32, s32);
-    void func_800A9D64(s32);
-    void func_800A99E4(s32);
-    void func_800A9A2C(s32);
-    void *func_800A9648(u32 *);
     u32 **slot;
     u32 *data;
     s32 k;
@@ -932,11 +928,6 @@ void func_800A9088(u32 arg0) {
  * header's halfword (low half of native word +8, N64 lhu +0xA) loads and
  * the track anim starts. */
 void func_800A9088(u32 arg0) {
-    u32 *func_800A9250(u32, s32);
-    void func_800A9D64(s32);
-    void func_800A99E4(s32);
-    void func_800A9A2C(s32);
-    void *func_800A9648(u32 *);
     u32 *ids = (u32 *) &D_800D6E78;
     u32 **slot;
     u32 *data;
@@ -2457,6 +2448,13 @@ u32 *func_800A94F4(s32 arg0) {
  * both handed with D_800DFBD0[objId] to func_800AF618 (modes 0x11-0x16) or
  * func_800AF4BC (0x17-0x1E), and the function returns arg0. */
 void *func_800A9648(u32 *arg0) {
+    /* Kept in-body, and deliberately NOT the same spelling as the PORT arm
+     * below: this draft carries the layout/texScroll pair as u32 words (the
+     * shape the listing has), the PORT arm carries them as host pointers.
+     * The two arms are mutually exclusive and neither is compiled by the N64
+     * build. ovl1_7.c's real signature is
+     * (UnkE4E4Arg *, TextureScroll ***, DObj **); reconciling all three needs
+     * those types exported from a header, which is a coordinator job. */
     void func_800AF4BC(u32, u32, void *);
     void func_800AF618(u32, u32, void *);
     u32 *p;
@@ -2531,11 +2529,6 @@ void *func_800A9648(u32 *arg0) {
 #endif
 
 void func_800A9760(u32 arg0) {
-    u32 *func_800A9250(u32, s32);
-    void func_800A99E4(s32);
-    void func_800A9A2C(s32);
-    void func_800A9D64(s32);
-    void *func_800A9648(u32 *);
     u32 **slot;
     u32 *ptr;
 
@@ -2573,12 +2566,6 @@ void func_800A9760(u32 arg0) {
  * 0x10, and func_800AF9B8 takes (u16, u8) -- hence the lhu 0x26/lbu 0x2B
  * reads out of the parameter homes. */
 void func_800A9864(u32 arg0, u32 arg1, u32 arg2) {
-    u32 *func_800A9250(u32, s32);
-    void func_800A99E4(s32);
-    void func_800A9A2C(s32);
-    void func_800A9D64(s32);
-    void *func_800A9648(u32 *);
-    void func_800AF9B8(u16, u8);
     u32 *ptr;
     u32 **slot;
 
@@ -2612,12 +2599,6 @@ void func_800A9864(u32 arg0, u32 arg1, u32 arg2) {
  * default": arg1 falls back to the entry's word at +8 (layoutMode, made
  * native in place by func_800A9250's PORT relocator), arg2 to 0x10. */
 void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
-    u32 *func_800A9250(u32, s32);
-    void func_800A99E4(s32);
-    void func_800A9A2C(s32);
-    void func_800A9D64(s32);
-    void *func_800A9648(u32 *);
-    void func_800AF9B8(u16, u8);
     u32 **slot;
     u32 *ptr;
 
@@ -2926,7 +2907,6 @@ void func_800AA3F0(DObj *arg0) {
  * same whole-body one-slot temp rotation (t4/t0/t1/t5/t2/... vs ROM's
  * t5/t1/t2/t6/t3/...). Genuine temp-rotation floor. */
 void func_800AA49C(DObj *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
-    u32 *func_800A9250(u32, s32);
     u32 *slot;
     u32 loaded;
     u32 id;
@@ -2987,8 +2967,6 @@ void func_800AA608(DObj *dobj, s32 arg1, f32 arg2, u32 model, f32 arg4) {
      * line ~607 and FOUR at ~680, which no single prototype accepts. The
      * file-scope declaration lives inside func_800A8DE4, so it is invisible
      * here. */
-    extern u32 *func_800A9250();
-    u32 *func_800A9250(u32, s32);
     u32 *tmpPtr;
     u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
 
@@ -3089,7 +3067,11 @@ s32 func_800AA934(s32 arg0) {
  * (LEVERS.md "Whole-function callee-saved permutation" floor, first entry
  * in the unclosable list). Left guarded. */
 void func_800AA96C(s32 *arg0, u32 arg1, s32 arg2, f32 arg3, f32 arg4) {
-    u32 *func_800A9250(u32, s32);
+    /* Kept in-body: the PORT arm of this same function below spells
+     * func_8000EC98 with host pointer/variadic arguments, and the two arms
+     * are mutually exclusive (neither is compiled by the N64 build). The
+     * spelling here is the one the rest of the tree uses and the one the
+     * listing's nine-argument call needs. */
     f32 func_8000EC98(DObj *, s32, f32, s32, s32, f32, f32, f32, f32);
     s32 *list;
     s32 idx;
