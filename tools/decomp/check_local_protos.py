@@ -178,6 +178,18 @@ def main():
             defined[name] = (path, ln, sig)
             sigs[name].add(sig)
 
+    print('!! THIS TOOL IS NOT GUARD-AWARE. It does not know which arm of an')
+    print('!! #ifdef a declaration lives in, so:')
+    print('!!   - "a file-scope copy already exists" may be pointing at a copy')
+    print('!!     inside #ifdef NON_MATCHING, invisible to the ROM build.')
+    print('!!     DELETING a block-scope declaration on that basis left sqrtf')
+    print('!!     and atan2f implicitly int in ovl9_5.c and moved 3214 lines.')
+    print('!!     HOIST, never delete, unless you have checked the guard.')
+    print('!!   - a MIPS_TO_C spelling and a PORT spelling are reported as a')
+    print('!!     conflict although no compiled configuration contains both.')
+    print('!!     Only ~40 of the conflicts below are visible to the N64 build.')
+    print('!! Verify against the guards before acting. See REFOUND.md.')
+    print()
     conflicts = sorted(n for n in sigs if len(sigs[n]) > 1 and where[n])
     print('== CONFLICT: declared with more than one spelling ==')
     for n in conflicts:
