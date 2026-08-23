@@ -119,23 +119,38 @@ struct TrackPathPoint {
     /* 0x08 */ f32 unk8;
 };
 
+/* Native (N64-layout) mirror of the shared struct Unk80129114_4_4
+ * (include/unk_structs/D_80129114.h -- see that struct's comment for the
+ * cross-file evidence: interpolation.c's InterpDesc, ovl2_2.c's
+ * PcTrackFooter loader, and this file's matched func_800FA1D4/func_800F9974
+ * consumers) plus the two trailing fields (keyframes/quartics) those
+ * matched consumers also read past the shared struct's declared 0x10-byte
+ * extent. */
 struct TrackFooter {
-    /* 0x00 */ u8 unk0;
+    /* 0x00 */ u8 kind;       /* interpolation kind, see enum InterpKind (interpolation.c) */
     /* 0x01 */ u8 unk1;
-    /* 0x02 */ s16 unk2;
-    /* 0x04 */ u32 unk4;
-    /* 0x08 */ struct TrackPathPoint *unk8;
-    /* 0x0C */ f32 unkC;
-    /* 0x10 */ f32 *unk10;
-    /* 0x14 */ f32 (*unk14)[5];
+    /* 0x02 */ s16 pointCount;
+    /* 0x04 */ f32 tension;   /* was u32; see struct Unk80129114_4_4's comment */
+    /* 0x08 */ struct TrackPathPoint *points;
+    /* 0x0C */ f32 length;    /* segment length */
+    /* 0x10 */ f32 *keyframes;
+    /* 0x14 */ f32 (*quartics)[5];
 };
 
+/* Native (N64-layout) mirror of the shared struct Unk80129114_4
+ * (include/unk_structs/D_80129114.h), used by every matched consumer in this
+ * file that walks the track node array directly instead of through the
+ * shared header's u32-holding-a-truncated-pointer PORT layout. `linkCount`
+ * combines the shared struct's linkCountHi/linkCountLo (offsets 0xC/0xD)
+ * into the single native s16 the ROM actually reads there -- see
+ * func_800F8B1C, which reads exactly this field, and struct Unk80129114_4's
+ * comment for why the shared header keeps the two bytes separate instead. */
 struct TrackNodeHeader {
     /* 0x00 */ struct TrackKirbyNode *unk0;
-    /* 0x04 */ struct TrackFooter *unk4;
-    /* 0x08 */ struct TrackConnection *unk8;
-    /* 0x0C */ s16 unkC;
-    /* 0x0E */ s16 unkE;
+    /* 0x04 */ struct TrackFooter *footer;
+    /* 0x08 */ struct TrackConnection *links;
+    /* 0x0C */ s16 linkCount;
+    /* 0x0E */ s16 loop;
 };
 
 struct TrackHit {
@@ -258,7 +273,7 @@ void func_800F88C8(GObj *g, s32 arg1, f32 arg2) {
 #else
     sub4 = (struct Unk80129114_4 *) ((arg1 * 0x10) + (s32) D_80129114->unk4);
 #endif
-    sub4_4 = sub4->unk4;
+    sub4_4 = sub4->footer;
     if (arg2 <= 0.0f) {
         arg2 = 0.001f;
     }
@@ -266,13 +281,13 @@ void func_800F88C8(GObj *g, s32 arg1, f32 arg2) {
         arg2 = 0.999f;
     }
     var_v0 = 0;
-    if (sub4_4->unk0 != 0) {
+    if (sub4_4->kind != 0) {
         var_v0 = 1;
     }
     if (arg2 > 0.5f) {
-        var_v0 += sub4_4->unk2 - 1;
+        var_v0 += sub4_4->pointCount - 1;
     }
-    gEntitiesNextPosYArray[objId] = sub4_4->unk8[var_v0].unk4 + sub4->unk0->unkC;
+    gEntitiesNextPosYArray[objId] = sub4_4->points[var_v0].y + sub4->unk0->unkC;
     D_800E6D90[objId] = arg2;
     D_800E6BD0[objId] = arg2;
 }
@@ -335,7 +350,7 @@ s32 func_800F8B1C(s32 arg0) {
     nodePtr = &D_800E5F90[arg0];
     cur = *nodePtr;
     node = &D_80129114->unk4[cur];
-    n = (s16)((node->unkC << 8) | node->unkD);
+    n = (s16)((node->linkCountHi << 8) | node->linkCountLo);
     if (n == 0) {
         return 0;
     }
@@ -352,7 +367,7 @@ s32 func_800F8B1C(s32 arg0) {
     if (dir == 0) {
         return 0;
     }
-    conn = (struct TrackConnection *)(uintptr_t)node->unk8;
+    conn = (struct TrackConnection *)(uintptr_t)node->links;
     if (dir > 0) {
         if ((n != 0) && (conn[n - 1].unk0 != 0)) {
             idx = n - 1;
@@ -363,7 +378,7 @@ s32 func_800F8B1C(s32 arg0) {
     if (idx == -1) {
         return 0;
     }
-    len = ((struct TrackFooter *)node->unk4)->unkC;
+    len = ((struct TrackFooter *)node->footer)->length;
     if (dir > 0) {
         dist = (progress * len) - len;
     } else {
@@ -371,7 +386,7 @@ s32 func_800F8B1C(s32 arg0) {
     }
     n = conn[idx].unk2;
     node = &D_80129114->unk4[n];
-    nextLen = ((struct TrackFooter *)node->unk4)->unkC;
+    nextLen = ((struct TrackFooter *)node->footer)->length;
     if (dir > 0) {
         newProgress = dist / nextLen;
     } else {
@@ -402,7 +417,7 @@ s32 func_800F8B1C(s32 arg0) {
     nodePtr = &D_800E5F90[arg0];
     cur = *nodePtr;
     node = (struct TrackNodeHeader *) ((cur * 0x10) + (s32) D_80129114->unk4);
-    n = node->unkC;
+    n = node->linkCount;
     if (n == 0) {
         return 0;
     }
@@ -419,7 +434,7 @@ s32 func_800F8B1C(s32 arg0) {
     if (dir == 0) {
         return 0;
     }
-    conn = node->unk8;
+    conn = node->links;
     if (dir > 0) {
         if ((n != 0) && (conn[n - 1].unk0 != 0)) {
             idx = n - 1;
@@ -430,7 +445,7 @@ s32 func_800F8B1C(s32 arg0) {
     if (idx == -1) {
         return 0;
     }
-    len = node->unk4->unkC;
+    len = node->footer->length;
     if (dir > 0) {
         dist = (progress * len) - len;
     } else {
@@ -438,7 +453,7 @@ s32 func_800F8B1C(s32 arg0) {
     }
     n = conn[idx].unk2;
     node = &((struct TrackNodeHeader *) D_80129114->unk4)[n];
-    nextLen = node->unk4->unkC;
+    nextLen = node->footer->length;
     if (dir > 0) {
         newProgress = dist / nextLen;
     } else {
@@ -485,24 +500,24 @@ void func_800F8C70(s32 *arg0) {
     }
 #ifdef PORT
     /* native records: index with the real stride (see func_800F8B1C) */
-    footer = (struct TrackFooter *) D_80129114->unk4[newNode].unk4;
+    footer = (struct TrackFooter *) D_80129114->unk4[newNode].footer;
 #else
-    footer = ((struct TrackNodeHeader *) D_80129114->unk4)[newNode].unk4;
+    footer = ((struct TrackNodeHeader *) D_80129114->unk4)[newNode].footer;
 #endif
     cell = hit->unk12;
     idx = cell;
-    if (footer->unk0 != 0) {
+    if (footer->kind != 0) {
         idx = cell + 1;
     }
-    dx = spB.x - footer->unk8[idx].unk0;
-    dz = spB.z - footer->unk8[idx].unk8;
+    dx = spB.x - footer->points[idx].unk0;
+    dz = spB.z - footer->points[idx].unk8;
     dist = sqrtf((dx * dx) + (dz * dz));
     *nodePtr = newNode;
-    D_800E6BD0[objId] = footer->unk10[cell];
+    D_800E6BD0[objId] = footer->keyframes[cell];
     if (D_800E6A10[objId] >= 0.0f) {
-        delta = (dist / footer->unkC) * 0.1f;
+        delta = (dist / footer->length) * 0.1f;
     } else {
-        delta = (dist / footer->unkC) * -0.1f;
+        delta = (dist / footer->length) * -0.1f;
     }
     D_800E6BD0[objId] += delta;
 }
@@ -531,11 +546,11 @@ void func_800F8E6C(GObj *arg0) {
     nodeP = &D_800E5F90[objId];
     if (*nodeP != -1) {
         nodeOfs = *nodeP * 0x10;
-        footer = ((struct TrackNodeHeader *) ((s32) D_80129114->unk4 + nodeOfs))->unk4;
+        footer = ((struct TrackNodeHeader *) ((s32) D_80129114->unk4 + nodeOfs))->footer;
         progressP = &D_800E6BD0[objId];
         cur = *progressP;
         old = cur;
-        *progressP = ((D_800E64D0[objId] * 0.1f) / footer->unkC) + cur;
+        *progressP = ((D_800E64D0[objId] * 0.1f) / footer->length) + cur;
         cur = *progressP;
         if (old != cur) {
             D_800E6D90[objId] = old;
@@ -546,7 +561,7 @@ void func_800F8E6C(GObj *arg0) {
         } else {
             D_800E6D90[objId] = cur;
         }
-        footer = ((struct TrackNodeHeader *) ((s32) D_80129114->unk4 + nodeOfs))->unk4;
+        footer = ((struct TrackNodeHeader *) ((s32) D_80129114->unk4 + nodeOfs))->footer;
         mtxGetInterpolatedPosition(&pos, footer, cur);
         gEntitiesNextPosXArray[objId] = pos.x;
         gEntitiesNextPosZArray[objId] = pos.z;
@@ -588,9 +603,9 @@ void func_800F8E6C(GObj *arg0) {
     if (node == -1) {
         return;
     }
-    footer = (struct TrackFooter *) D_80129114->unk4[node].unk4;
+    footer = (struct TrackFooter *) D_80129114->unk4[node].footer;
     old = D_800E6BD0[objId];
-    D_800E6BD0[objId] = old + ((D_800E64D0[objId] * 0.1f) / footer->unkC);
+    D_800E6BD0[objId] = old + ((D_800E64D0[objId] * 0.1f) / footer->length);
     cur = D_800E6BD0[objId];
     if (old != cur) {
         D_800E6D90[objId] = old;
@@ -601,7 +616,7 @@ void func_800F8E6C(GObj *arg0) {
     } else {
         D_800E6D90[objId] = cur;
     }
-    footer = (struct TrackFooter *) D_80129114->unk4[node].unk4;
+    footer = (struct TrackFooter *) D_80129114->unk4[node].footer;
     mtxGetInterpolatedPosition(&pos, footer, cur);
     gEntitiesNextPosXArray[objId] = pos.x;
     gEntitiesNextPosZArray[objId] = pos.z;
@@ -625,7 +640,7 @@ s32 func_800F9020(Vector *v, s32 arg1, f32 param) {
         v->x = v->y = v->z = 0.0f;
         return 1;
     } else {
-        mtxGetInterpolatedPosition(v, D_80129114->unk4[arg1].unk4, param);
+        mtxGetInterpolatedPosition(v, D_80129114->unk4[arg1].footer, param);
         return 0;
     }
 }
@@ -839,7 +854,7 @@ s32 func_800F9438(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 13/202 positional; logic fully derived and believed correct (three SEPARATE 'return 9999.0f' statements confirmed by the three distinct rodata floats D_801287B8/BC/C0; N64 record access is plain recs[i].unk4->unkC since struct Unk80129114_4 is exactly 0x10; D_8012912C/D_80129130 are POINTERS, lw not lui/addiu). Residue is one allocator decision that cascades everywhere: the ROM is a frameless leaf that moves the float params straight into the scratch arg registers (mtc1 a1,f14 / mtc1 a3,f12), while IDO here puts them in callee-saved f20/f22, which forces a 0x18 frame, turns all three early 'jr ra' returns into branches to a shared epilogue, and rotates every FP temp. Tried: if/else abs vs ternary abs, fewer named locals */
+/* FACTORY: 13/202 positional; logic fully derived and believed correct (three SEPARATE 'return 9999.0f' statements confirmed by the three distinct rodata floats D_801287B8/BC/C0; N64 record access is plain recs[i].footer->length since struct Unk80129114_4 is exactly 0x10; D_8012912C/D_80129130 are POINTERS, lw not lui/addiu). Residue is one allocator decision that cascades everywhere: the ROM is a frameless leaf that moves the float params straight into the scratch arg registers (mtc1 a1,f14 / mtc1 a3,f12), while IDO here puts them in callee-saved f20/f22, which forces a 0x18 frame, turns all three early 'jr ra' returns into branches to a shared epilogue, and rotates every FP temp. Tried: if/else abs vs ternary abs, fewer named locals */
 f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
     struct Unk80129114_4 *recs;
     f32 len0;
@@ -858,9 +873,9 @@ f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
         return 9999.0f;
     }
     recs = D_80129114->unk4;
-    len0 = recs[arg0].unk4->unkC;
+    len0 = recs[arg0].footer->length;
     if (arg0 == arg2) {
-        if (recs[arg0].unkE != 0) {
+        if (recs[arg0].loop != 0) {
             fwd = arg3 - arg1;
             if (arg3 <= arg1) {
                 back = (1.0f - arg1) + arg3;
@@ -879,7 +894,7 @@ f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
     if (route == 0) {
         return 9999.0f;
     }
-    len2 = recs[arg2].unk4->unkC;
+    len2 = recs[arg2].footer->length;
     if (*D_80129130 == 0.0f) {
         fwd = (D_80129130[route & 0x7F] +
                ((arg1 * len0) + ((1.0f - arg3) * len2))) * -10.0f;
@@ -924,9 +939,9 @@ f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
         return 9999.0f;
     }
     recs = D_80129114->unk4;
-    len0 = ((struct TrackFooter *) recs[arg0].unk4)->unkC;
+    len0 = ((struct TrackFooter *) recs[arg0].footer)->length;
     if (arg0 == arg2) {
-        if (recs[arg0].unkE != 0) {
+        if (recs[arg0].loop != 0) {
             fwd = arg3 - arg1;
             if (arg3 <= arg1) {
                 back = (1.0f - arg1) + arg3;
@@ -946,7 +961,7 @@ f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
     if (route == 0) {
         return 9999.0f;
     }
-    len2 = ((struct TrackFooter *) recs[arg2].unk4)->unkC;
+    len2 = ((struct TrackFooter *) recs[arg2].footer)->length;
     if (*D_80129130 == 0.0f) {
         u8 route2 = D_8012912C[(arg0 * D_80129118) + arg2 +
                                (D_80129118 * D_80129118)];

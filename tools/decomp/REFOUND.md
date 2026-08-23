@@ -420,7 +420,8 @@ as a raw scalar: they include only ovl1_6.h, which declares it
 `struct EntityThing800E9AA0 *[]`, while track_arrays.h declares the same
 array `MultiType[]`.
 
-track_arrays.h now uses TRACK_ARRAYS_H. Measured after the change:
+STATUS: the guard fix is REVERTED for now -- see the end of this section.
+Measured while it was applied:
   - N64 build: 0 errors
   - ROM sha1: IDENTICAL (6cea2d46b929...)
   - check_tu_size: 0 wrong-size TUs
@@ -434,3 +435,35 @@ now both visible to every TU that includes both:
     D_800E7CE0   track_arrays.h u32[]   ovl1_6.h s32[]
 Neither errors and neither moves the ROM, but one of the two spellings is
 wrong in each case. Resolving them needs the usage evidence, not a coin flip.
+
+### Why the guard fix is reverted, and what it costs
+
+Applying it is ROM-safe (sha1 identical, 0 build errors, 0 wrong-size TUs)
+but it BREAKS tools/decomp/setup_permuter.py, and therefore the free-closure
+engine, for every TU that includes both headers. Chain:
+
+1. `MultiType` is a MACRO expanding to an anonymous union, and the two
+   headers defined it DIFFERENTLY -- track_arrays.h's has `f32 as_f32`,
+   ovl1_6.h's did not. The shared guard meant no TU ever saw both.
+   (Now unified: ovl1_6.h carries track_arrays.h's superset spelling, and
+   its duplicate D_800E9FE0/D_800EC2E0 declarations are removed. That part
+   is KEPT -- sha1 verified identical.)
+2. With both headers visible, setup_permuter's preprocessed single-blob
+   base.c contains two declarations of the same array spelled as two
+   distinct anonymous unions, which IDO rejects as a redeclaration. The N64
+   build does not hit this because it never compiles that blob shape.
+3. The last blocker is a REAL type conflict, not a spelling one:
+       ovl1_6.h        extern struct EntityThing800E9AA0 *D_800E9AA0[];
+       track_arrays.h  extern MultiType D_800E9AA0[];
+   Files that include only ovl1_6.h (ovl9_11.c, ovl9_18.c) use it as a raw
+   scalar; others use the union. One canonical type has to win, and every
+   call site must be checked against it.
+
+TO FINISH THIS JOB (needs a quiet tree, one dedicated pass):
+  - decide D_800E9AA0's canonical type from its call sites, tree-wide;
+  - make ovl1_6.h include track_arrays.h and delete every duplicate
+    declaration rather than restating it;
+  - resolve the two signedness disagreements (D_800DD710, D_800E7CE0);
+  - re-apply the TRACK_ARRAYS_H guard;
+  - gate with mk.sh sha1 AND a setup_permuter smoke test on a TU that
+    includes both headers -- the sha1 alone does not catch step 2.

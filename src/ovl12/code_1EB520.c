@@ -886,7 +886,7 @@ void func_801DDFB4_ovl12(void) {
     f32 temp_f2;
 
     D_800EA520[omCurrentObj->objId] = 0x1E;
-    temp_f2 = (D_80129114->unk4 + (D_800E5F90[omCurrentObj->objId] * 0x10))->unk4->unkC;
+    temp_f2 = (D_80129114->unk4 + (D_800E5F90[omCurrentObj->objId] * 0x10))->footer->length;
     D_800E6A10[omCurrentObj->objId] = D_800E6A10[D_800D7098.unk1C];
     D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * ((((16.64f / temp_f2) / (1.0f / temp_f2)) * 10.0f) / D_800EA520[omCurrentObj->objId]);
     D_800E64D0[omCurrentObj->objId] += D_800E64D0[D_800D7098.unk1C];
@@ -1444,9 +1444,9 @@ void func_801DFC64_ovl12(void) {
         vec.z = gEntitiesNextPosZArray[omCurrentObj->objId] * 5.0f;
         vec.y = 0.0f;
         D_800E6BD0[omCurrentObj->objId] = func_800FA1D4(
-            D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].unk4,
+            D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].footer,
             &vec,
-            D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].unkE
+            D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].loop
         );
     } else {
         D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[D_800D7098.unk1C];

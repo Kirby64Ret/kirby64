@@ -3525,7 +3525,7 @@ void func_80161D94_ovl3(void) {
     f32 v;
 
     D_800E6310[obj->objId] = 0;
-    if (D_80129114->unk4[D_800E5F90[obj->objId]].unkE != 0) {
+    if (D_80129114->unk4[D_800E5F90[obj->objId]].loop != 0) {
         p = &D_800E6BD0[obj->objId];
         v = *p;
         if (1.0f < v) {

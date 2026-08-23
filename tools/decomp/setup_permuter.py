@@ -56,10 +56,28 @@ def unguard(text, func):
     if o is None:
         return text, False
     body = lines[o + 1:e]
+    # THREE-ARM SHAPE. The re-foundation drafts are
+    #     #ifdef MIPS_TO_C / draft / #elif defined(PORT) / port arm / #else /
+    #     #pragma / #endif
+    # so the region between the opening guard and the `#else` holds the draft
+    # AND the `#elif` AND the PORT arm. Emitting all of it yields a dangling
+    # `#elif` and permuter.py reports "does not contain any function!". Cut at
+    # the first top-level `#elif`: everything before it is the N64 draft, which
+    # is the only arm the permuter should ever see.
+    depth = 0
+    for i, s in enumerate(body):
+        t = s.strip()
+        if t.startswith(('#ifdef ', '#ifndef ', '#if ')):
+            depth += 1
+        elif t.startswith('#endif'):
+            depth -= 1
+        elif t.startswith('#elif') and depth == 0:
+            body = body[:i]
+            break
     if not any(s.strip() for s in body):
         return text, False
-    # Refuse if the region we are about to remove contains another guard or
-    # pragma: that means the nesting is not the simple shape assumed here.
+    # Refuse if what is left still contains another guard or pragma: that
+    # means the nesting is not a shape this function understands.
     for s in body:
         t = s.strip()
         if t.startswith(('#ifdef ', '#ifndef ', '#else', '#endif')) \

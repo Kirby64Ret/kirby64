@@ -5,8 +5,12 @@
 #include "ovl19/ovl19_5.h"
 
 
-#define MultiType union {u32 as_u32; u32 *as_u32p; s32 as_s32; s32 *as_s32p; void *as_ptr;}
-#define _MultiType(CustomType) union {u32 as_u32; s32 as_s32; void *as_ptr; CustomType *consume;}
+/* Must stay token-identical to include/track_arrays.h's definition: both
+ * headers are visible in 37 TUs, and they used to disagree (this one
+ * lacked as_f32) only because they shared an include guard, so the second
+ * header was skipped entirely. */
+#define MultiType union {u32 as_u32; u32 *as_u32p; s32 as_s32; s32 *as_s32p; f32 as_f32; void *as_ptr;}
+#define _MultiType(CustomType) union {u32 as_u32; s32 as_s32; f32 as_f32; void *as_ptr; CustomType *consume;}
 
 extern u32 D_800DD710[]; // "JN number"
 extern s32 D_800DE190[];
@@ -113,8 +117,7 @@ extern s32 D_800EA360[];
 extern s32 D_800EA1A0[];
 
 // this is a union or void*
-extern MultiType D_800E9FE0[];
-
+/* D_800E9FE0: declared in include/track_arrays.h (canonical). */
 extern s32 D_800E9E20[];
 extern s32 D_800E9C60[];
 
@@ -140,8 +143,7 @@ extern s32 D_800EBBE0[];
 extern s32 D_800EC4A0[];
 
 // this is also a union or void*
-extern MultiType D_800EC2E0[];
-
+/* D_800EC2E0: declared in include/track_arrays.h (canonical). */
 extern f32 D_800EC820[];
 extern f32 D_800EC660[];
 extern s32 D_800E6150[];
