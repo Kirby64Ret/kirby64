@@ -409,3 +409,28 @@ Consequences:
   defect, and re-measure after the lane seals.
 - To check your own file while iterating, read build/verify/ (or objdump the
   object verify.py just produced), never build/src/.
+
+## FIXED: include/track_arrays.h and src/ovl1/ovl1_6.h shared an include guard
+
+Both headers opened with `#ifndef OVL1_6_H`, so in the 37 translation units
+that include BOTH, the second one was skipped entirely and the file silently
+saw only the first header's view of 118 shared symbols. That is how
+src/ovl9/ovl9_11.c and src/ovl9/ovl9_18.c came to read `D_800E9AA0[objId]`
+as a raw scalar: they include only ovl1_6.h, which declares it
+`struct EntityThing800E9AA0 *[]`, while track_arrays.h declares the same
+array `MultiType[]`.
+
+track_arrays.h now uses TRACK_ARRAYS_H. Measured after the change:
+  - N64 build: 0 errors
+  - ROM sha1: IDENTICAL (6cea2d46b929...)
+  - check_tu_size: 0 wrong-size TUs
+  - PC build: 0 errors
+So both headers' declarations were compatible all along; the guard was
+hiding the second one, not protecting anything.
+
+Two genuine signedness disagreements remain between the two headers and are
+now both visible to every TU that includes both:
+    D_800DD710   track_arrays.h s32[]   ovl1_6.h u32[]
+    D_800E7CE0   track_arrays.h u32[]   ovl1_6.h s32[]
+Neither errors and neither moves the ROM, but one of the two spellings is
+wrong in each case. Resolving them needs the usage evidence, not a coin flip.
