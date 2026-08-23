@@ -1382,7 +1382,7 @@ void func_80159164_ovl3(s32 arg0) {
     D_800E3750[id] = 0.0f;
     D_800E3210[id] = 0.0f;
     D_800E3C90[id] = 65535.0f;
-    D_800DEF90[id] = (void (*)(s32)) func_800B5064;
+    D_800DEF90[id] = func_800B5064;
     D_800E0F10[id] = 3;
     switch (gKirbyState.unk4) {
         case 0:
@@ -1405,7 +1405,7 @@ void func_80159164_ovl3(s32 arg0) {
     D_800E6BD0[id] = D_800E6BD0[D_800E0D50[id]];
     func_800B2340(probe, D_800DFBD0[D_800E0D50[id]][3], 0xFFFF);
     gEntitiesNextPosYArray[omCurrentObj->objId] = probe[1];
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     id = omCurrentObj->objId;
     func_800F98EC(id, gEntitiesNextPosXArray[id] - gEntitiesNextPosXArray[D_800E0D50[id]]);
     func_800FBE1C();
@@ -1538,7 +1538,7 @@ void func_80159164_ovl3(s32 arg0) {
     D_800E3750[id] = 0.0f;
     D_800E3210[id] = 0.0f;
     D_800E3C90[id] = 65535.0f;
-    D_800DEF90[id] = (void (*)(s32)) func_800B5064;
+    D_800DEF90[id] = func_800B5064;
     D_800E0F10[id] = 3;
     switch (gKirbyState.unk4) {
         case 0:
@@ -1561,7 +1561,7 @@ void func_80159164_ovl3(s32 arg0) {
     D_800E6BD0[id] = D_800E6BD0[D_800E0D50[id]];
     func_800B2340(probe, D_800DFBD0[D_800E0D50[id]][3], 0xFFFF);
     gEntitiesNextPosYArray[omCurrentObj->objId] = probe[1];
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     id = omCurrentObj->objId;
     func_800F98EC(id, gEntitiesNextPosXArray[id] - gEntitiesNextPosXArray[D_800E0D50[id]]);
     func_800FBE1C();
@@ -1613,7 +1613,7 @@ void func_80159ADC_ovl3(s32 arg0) {
 extern s32 D_8012E7E8[];
 extern void func_80120A28(void);
 extern void func_800AF27C(void);
-extern void func_800B531C(s32);
+extern void func_800B531C(struct GObj *);
 void func_80159EA0_ovl3(s32, s32, f32);
 
 void func_80159BA0_ovl3(s32 arg0) {
@@ -1654,7 +1654,7 @@ void func_80159BA0_ovl3(s32 arg0) {
     while (D_800E8060[D_800E0D50[omCurrentObj->objId]] == 0) {
         ohSleep(1);
     }
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B5064;
+    D_800DEF90[omCurrentObj->objId] = func_800B5064;
     D_800E0F10[omCurrentObj->objId] = 2;
     func_801230E8(0x2005F, 0x20060, 1);
     D_800DEF90[omCurrentObj->objId] = func_800B531C;

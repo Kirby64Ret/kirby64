@@ -398,7 +398,7 @@ s32 arg0;
     s32 op;
 
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B491C;
+    D_800DEF90[omCurrentObj->objId] = func_800B491C;
     func_800AF9B8(0x24, 0x10);
     D_800DD8D0[omCurrentObj->objId] |= 0x40;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_8021E858_ovl18;
@@ -573,7 +573,7 @@ s32 arg0;
     D_8022BC98_ovl18 = D_800E76C0[omCurrentObj->objId];
     D_8022BCA0_ovl18 = D_801290E0[D_8022BC98_ovl18];
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B491C;
+    D_800DEF90[omCurrentObj->objId] = func_800B491C;
     func_800AF9B8(0x24, 0x10);
     D_800DD8D0[omCurrentObj->objId] |= 0x40;
     for (i = 0; i < 8; i++) {

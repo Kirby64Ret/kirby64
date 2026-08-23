@@ -913,7 +913,7 @@ void func_801F1784_ovl9(GObj *arg0) {
     rec = D_800E1B50[omCurrentObj->objId];
     func_8019BAC8_ovl7();
     rec->unk80->unk10 = 8.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6E84;
+    D_800DEF90[omCurrentObj->objId] = func_800B6E84;
     D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801F1C68_ovl9;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C9A4C_ovl7;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;
@@ -988,7 +988,7 @@ void func_801F1784_ovl9(GObj *arg0) {
     rec = D_800E1B50[omCurrentObj->objId];
     func_8019BAC8_ovl7();
     rec->unk80->unk10 = 8.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6E84;
+    D_800DEF90[omCurrentObj->objId] = func_800B6E84;
     D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801F1C68_ovl9;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C9A4C_ovl7;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CB4DC_ovl7;

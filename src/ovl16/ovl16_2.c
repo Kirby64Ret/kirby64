@@ -1352,7 +1352,7 @@ void func_801EBFA8_ovl16(struct GObj *arg0) {
     D_800E17D0[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];
     D_800E9020[omCurrentObj->objId] = D_800E9020[D_800E0D50[omCurrentObj->objId]];
     D_800E98E0[omCurrentObj->objId] = 0;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801EC1D8_ovl16;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801DA364;
     D_800E8920[omCurrentObj->objId] = 0;
@@ -1441,7 +1441,7 @@ void func_801EC4B4_ovl16(s32 arg0) {
     D_800E17D0[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];
     D_800E9020[omCurrentObj->objId] = D_800E9020[D_800E0D50[omCurrentObj->objId]];
     ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801EC7E4_ovl16;
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B33F4();
@@ -1487,7 +1487,7 @@ void func_801EC4B4_ovl16(s32 arg0) {
     D_800E17D0[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];
     D_800E9020[omCurrentObj->objId] = D_800E9020[D_800E0D50[omCurrentObj->objId]];
     ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801EC7E4_ovl16;
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B33F4();
@@ -1753,7 +1753,7 @@ void func_801ED444_ovl16(s32 arg0) {
     func_8019BB58_ovl7();
     func_800B19F4(0x79, omCurrentObj->objId);
     func_800AFBB4(0, omCurrentObj);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     D_800DF150[omCurrentObj->objId] = NULL;
     p = &((s32 *) D_800E9AA0)[idx];
@@ -1803,7 +1803,7 @@ void func_801ED634_ovl16(struct GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;
     D_800E9FE0[omCurrentObj->objId].as_u32 = 0xA;
     D_800EA1A0[omCurrentObj->objId] = 0;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801EDE50_ovl16;
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B33F4();
@@ -1912,7 +1912,7 @@ void func_801ED634_ovl16(struct GObj *arg0) {
     D_800E9E20[omCurrentObj->objId] = 0;
     D_800E9FE0[omCurrentObj->objId].as_u32 = 0xA;
     D_800EA1A0[omCurrentObj->objId] = 0;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801EDE50_ovl16;
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B33F4();
@@ -2268,7 +2268,7 @@ void func_801EE558_ovl16(GObj *arg0) {
     D_800E9AA0[omCurrentObj->objId] = (struct EntityThing800E9AA0 *)1;
     D_800E9E20[omCurrentObj->objId] = 1;
     D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
     D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801EE970_ovl16;
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B33F4();

@@ -937,7 +937,7 @@ void func_801DCA84_ovl16(s32 arg0) {
     func_8019BB58_ovl7();
     func_800B19F4(0x79, omCurrentObj->objId);
     func_800AFBB4(0, omCurrentObj);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     D_800DF150[omCurrentObj->objId] = NULL;
     func_800B33F4();
@@ -1250,7 +1250,7 @@ void func_801DDA98_ovl16(s32 arg0) {
     s32 other = D_800E0D50[omCurrentObj->objId];
 
     func_8019BB58_ovl7();
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801DDE54_ovl16;
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         D_800E17D0[omCurrentObj->objId] = 0.0f;
@@ -1290,7 +1290,7 @@ void func_801DDA98_ovl16(s32 arg0) {
     s32 other = D_800E0D50[omCurrentObj->objId];
 
     func_8019BB58_ovl7();
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B7560;
+    D_800DEF90[omCurrentObj->objId] = func_800B7560;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_801DDE54_ovl16;
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         D_800E17D0[omCurrentObj->objId] = 0.0f;
@@ -1337,7 +1337,7 @@ void func_801DDE54_ovl16(s32 arg0) {
 void func_801DDEB0_ovl16(struct GObj *arg0) {
     func_8019BB58_ovl7();
     func_800AFBB4(0, omCurrentObj);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     D_800DF150[omCurrentObj->objId] = NULL;
     func_800B33F4();
@@ -4686,7 +4686,7 @@ void func_801E7BD0_ovl16(struct GObj *arg0) {
     Vector sp44;
     Vector sp38;
 
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800DF150[omCurrentObj->objId] = NULL;
     func_800B33F4();
     gEntitiesAngleZArray[omCurrentObj->objId] = 0.0f;

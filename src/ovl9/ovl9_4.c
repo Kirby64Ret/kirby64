@@ -979,7 +979,7 @@ void func_801E38F0_ovl9(struct GObj *arg0) {
 
     rec = D_800E1B50[omCurrentObj->objId];
     func_80198880_ovl7(&D_801C36F4);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6B8C;
+    D_800DEF90[omCurrentObj->objId] = func_800B6B8C;
     D_800DF150[omCurrentObj->objId] = func_801E3DA8_ovl9;
     func_800A9760(0x10011);
     func_801A0D50_ovl7(func_801E34F8_ovl9);
@@ -1056,7 +1056,7 @@ void func_801E38F0_ovl9(struct GObj *arg0) {
 
     rec = D_800E1B50[omCurrentObj->objId];
     func_80198880_ovl7(&D_801C36F4);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6B8C;
+    D_800DEF90[omCurrentObj->objId] = func_800B6B8C;
     D_800DF150[omCurrentObj->objId] = func_801E3DA8_ovl9;
     func_800A9760(0x10011);
     func_801A0D50_ovl7(func_801E34F8_ovl9);

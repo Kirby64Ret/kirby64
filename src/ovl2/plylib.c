@@ -778,7 +778,7 @@ void func_8011C8D0(void) {
  * handlers, reset scale and physics arrays, clear the action, ability, damage
  * and inhale state, and seed the facing/heading. */
 void func_8011C8F8(void) {
-    void func_800B531C(s32 arg0);
+    void func_800B531C(struct GObj *);
     void func_800F88C8(GObj *obj, s32 arg1, s32 arg2);
     void func_80112A0C(void);
     void func_8011CFF4(GObj *gobj);
@@ -912,7 +912,7 @@ extern u8 D_80198838_ovl3[];
 extern u8 D_80198840_ovl3[];
 void func_80112A0C(void);
 void func_800F88C8(GObj *, s32, f32);
-void func_800B531C(s32);
+void func_800B531C(struct GObj *);
 void func_8011CFF4(GObj *);
 
 void func_8011C8F8(void) {

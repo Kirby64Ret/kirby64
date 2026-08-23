@@ -2231,7 +2231,7 @@ void func_80115ACC(struct GObj *arg0) {
     if ((D_800DD8D0[arg0->objId] * 2) < 0) {
         func_800AA018(0x202E9);
         func_800AA018(0x202EA);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+        D_800DEF90[omCurrentObj->objId] = func_800B4924;
         func_80121284(0);
         return;
     }
@@ -2264,7 +2264,7 @@ void func_80115C4C(struct GObj *arg0) {
 
     if (func_8011E244() == *sp18) {
         func_800AA018(0x60003);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80115B64;
+        D_800DEF90[omCurrentObj->objId] = func_80115B64;
         omCurrentObj = D_800DE350[sp18[3]];
         func_800AA018(0x60004);
         omCurrentObj = D_800DE350[D_800E98E0[sp1C]];
@@ -2293,7 +2293,7 @@ void func_80115D38(struct GObj *arg0) {
     gEntitiesScaleXArray[track] = 0.2f;
     func_800AA018(0x202E5);
     func_800AA018(0x202E6);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80115ACC;
+    D_800DEF90[omCurrentObj->objId] = func_80115ACC;
     D_800E98E0[old] = track;
     omCurrentObj = arg0;
     func_801153B8(arg0);
@@ -2359,7 +2359,7 @@ void func_80115F04(s32 arg0) {
     D_800EA6E0[id] = acc;
     ((struct GObj *) arg0)->data.dobj->angle.v.x = ang;
     if (func_8011E244() != *sp6C) {
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80116118;
+        D_800DEF90[omCurrentObj->objId] = func_80116118;
     }
     func_80112B4C((struct GObj *) arg0);
 }
@@ -2716,7 +2716,7 @@ struct GObj *arg0;
     }
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+    D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     omEndProcess(0);
 }
 
@@ -2818,7 +2818,7 @@ void func_80116F80(struct GObj *arg0) {
     if (func_8011E244() == *sp1C) {
         func_800AECC0(gameTicksPerDraw);
         func_800AED20(gameTicksPerDraw);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
         func_8011E4E4(0x49);
     }
 }
@@ -2830,7 +2830,7 @@ void func_80116FF8(struct GObj *arg0) {
     }
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80116F80;
+    D_800DEF90[omCurrentObj->objId] = func_80116F80;
 }
 
 void func_80117078(struct GObj *arg0) {
@@ -2871,7 +2871,7 @@ void func_80117178(struct GObj *arg0) {
     if (func_8011E244() == *sp1C) {
         func_800AA018(0x6009B);
         func_800AA018(0x6009C);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
         func_8011E4E4(0x4A);
     }
 }
@@ -2903,7 +2903,7 @@ void func_80117210(struct GObj *arg0) {
         gEntitiesNextPosYArray[sp20] = D_800EA6E0[sp20];
         D_800E3210[sp20] = D_800EA6E0[sp20] - gEntitiesPosYArray[sp20];
         D_800E98E0[sp20] = 0xA;
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80117570;
+        D_800DEF90[omCurrentObj->objId] = func_80117570;
         if (func_8011E244() == *sp24) {
             D_800E3750[sp20] = -0.5f;
             D_800E3C90[sp20] = D_80128D2C;
@@ -2968,7 +2968,7 @@ void func_801173F4(s32 arg0) {
         gEntitiesNextPosYArray[sp20] = D_800EA6E0[sp20] + sp1C;
         D_800E3210[sp20] = gEntitiesNextPosYArray[sp20] - gEntitiesPosYArray[sp20];
         D_800E98E0[sp20] = 0xA;
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80117328;
+        D_800DEF90[omCurrentObj->objId] = func_80117328;
     } else {
         if (D_800EA6E0[sp20] < gEntitiesNextPosYArray[sp20]) {
             gEntitiesNextPosYArray[sp20] = D_800EA6E0[sp20];
@@ -2977,7 +2977,7 @@ void func_801173F4(s32 arg0) {
         if (func_8011E244() != *sp24) {
             D_800E3750[sp20] = 0.5f;
             D_800E3C90[sp20] = 4.4f;
-            D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80117210;
+            D_800DEF90[omCurrentObj->objId] = func_80117210;
         }
     }
 }
@@ -3215,7 +3215,7 @@ void func_801180B8(struct GObj *arg0) {
 void func_80118130(struct GObj *arg0) {
     func_80112B4C(arg0);
     if ((D_800DD8D0[arg0->objId] * 2) < 0) {
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
         func_800FB914(1);
         func_800BB468(0, 0);
     }
@@ -3301,7 +3301,7 @@ void func_80118420(struct GObj *arg0) {
     if ((D_800DD8D0[arg0->objId] * 2) < 0) {
         func_8011E524();
         func_801129F4();
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     }
 }
 
@@ -3325,7 +3325,7 @@ void func_801184B8(struct GObj *arg0) {
     if (var_f2 < 280.0f) {
         temp_v0 = &D_80124E14[D_800E77A0[temp_v1]];
         func_800AA018(temp_v0->unk8);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     }
 }
 
@@ -3697,7 +3697,7 @@ void func_80119320(struct GObj *arg0) {
         temp = &D_80124E14[D_800E77A0[arg0->objId]];
         sp18 = arg0->unk4C;
         func_800AA018(temp->unk8);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+        D_800DEF90[omCurrentObj->objId] = func_800B4924;
         sp18->unk2 |= 1;
     }
 }
@@ -3835,7 +3835,7 @@ void func_8011978C(struct GObj *arg0) {
     }
     if (var_f2 < 160.0f) {
         func_800AA018(0x600BB);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     }
 }
 
@@ -4264,7 +4264,7 @@ void func_8011A678(GObj *arg0)
     {
       func_800AECC0(gameTicksPerDraw);
       func_800AED20(gameTicksPerDraw);
-      D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+      D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     }
   }
   func_80112B4C(arg0);
@@ -4345,7 +4345,7 @@ void func_8011A9EC(struct GObj *arg0) {
         func_800AECC0(0.0f);
         func_800AED20(0.0f);
         func_800A9D64(omCurrentObj->objId);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     }
 }
 
@@ -4362,13 +4362,13 @@ void func_8011AA7C(struct GObj *arg0) {
     if (gEntitiesNextPosYArray[arg0->objId] <= gEntitiesNextPosYArray[0]) {
         k = D_800E77A0[arg0->objId];
         if (k >= 0xF5) {
-            D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+            D_800DEF90[omCurrentObj->objId] = func_80112B4C;
             k = k - 0xF1;
             p = &D_80126DCC[k];
             func_800AA018(p->unk4);
             func_800AA018(p->unk0);
         } else {
-            D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011A9EC;
+            D_800DEF90[omCurrentObj->objId] = func_8011A9EC;
             k = k - 0xD6;
             p = &D_80126DCC[k];
             func_800AA018(p->unk4);
@@ -4461,7 +4461,7 @@ void func_8011ADFC(struct GObj *arg0) {
     func_80112B4C(arg0);
     if ((D_800DD8D0[arg0->objId] * 2) < 0) {
         func_8011E504();
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     }
 }
 
@@ -4471,7 +4471,7 @@ void func_8011AE6C(struct GObj *arg0) {
     if (kirby_in_inactionable_state() == 1) {
         temp = &D_80124E14[D_800E77A0[arg0->objId]];
         func_800AA018(temp->unk8);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011ADFC;
+        D_800DEF90[omCurrentObj->objId] = func_8011ADFC;
     }
 }
 
@@ -4480,7 +4480,7 @@ void func_8011AEF0(struct GObj *arg0) {
 
     if (func_8011E244() == *temp) {
         func_8011E4E4(0x52);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011AE6C;
+        D_800DEF90[omCurrentObj->objId] = func_8011AE6C;
     }
 }
 
@@ -4489,7 +4489,7 @@ void func_8011AF50(struct GObj *arg0) {
 
     if (func_8011E244() == *temp) {
         func_8011E4E4(0x53);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011AE6C;
+        D_800DEF90[omCurrentObj->objId] = func_8011AE6C;
     }
 }
 
@@ -4518,7 +4518,7 @@ void func_8011B050(struct GObj *arg0) {
 
     D_800E3050[id] = 0.0f;
     func_800B4924(arg0);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
 }
 
 void func_8011B0A4(GObj *arg0)
@@ -4541,7 +4541,7 @@ void func_8011B0A4(GObj *arg0)
   if ((temp_f14 + var_f2) > 6450.0f)
   {
     var_f2 = 6450.0f - temp_f14;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011B050;
+    D_800DEF90[omCurrentObj->objId] = func_8011B050;
   }
   D_800E3050[temp_v0] = var_f2;
   func_800B4924(arg0);
@@ -4560,7 +4560,7 @@ void func_8011B188(struct GObj *arg0) {
     D_800E9AA0[objId].as_s32--;
     if (D_800E9AA0[objId].as_s32 <= 0) {
         func_8011E504();
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_8011B0A4;
+        D_800DEF90[omCurrentObj->objId] = func_8011B0A4;
     }
 }
 
@@ -4591,7 +4591,7 @@ void func_8011B348(struct GObj *arg0) {
     func_80112B4C(arg0);
     if ((D_800DD8D0[arg0->objId] * 2) < 0) {
         func_800FB914(0);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     }
 }
 
@@ -4604,7 +4604,7 @@ void func_8011B3B8(struct GObj *arg0) {
 void func_8011B3F4(struct GObj *arg0) {
     func_80112B4C(arg0);
     if ((D_800DD8D0[arg0->objId] * 2) < 0) {
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
         func_800FB914(1);
     }
 }
@@ -4695,7 +4695,7 @@ void func_8011B6D8(struct GObj *arg0) {
     if (((temp_f0 * temp_f0) + (temp_f2 * temp_f2)) < 6400.0f) {
         func_800AECC0(gameTicksPerDraw);
         func_800AED20(gameTicksPerDraw);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
     }
     func_80112B4C(arg0);
 }
@@ -4712,7 +4712,7 @@ void func_8011B7CC(struct GObj *arg0) {
 
     if (func_8011E244() == *temp) {
         func_800AA018(0x6013B);
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_80112B4C;
+        D_800DEF90[omCurrentObj->objId] = func_80112B4C;
         func_8011E4E4(0x55);
     }
 }

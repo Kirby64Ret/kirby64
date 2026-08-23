@@ -126,7 +126,7 @@ void func_801AEA20_ovl7(GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     f32 *fac;
 
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B8630;
+    D_800DEF90[omCurrentObj->objId] = func_800B8630;
     D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801AEE04_ovl7;
     D_800DDA90[omCurrentObj->objId] = 0x23;
     ent->unk98 = &D_801CD33C_ovl7;
@@ -192,7 +192,7 @@ void func_801AEA20_ovl7(GObj *arg0) {
     s32 kind;
     s32 tone;
 
-    D_800DEF90[id] = (void (*)(s32)) func_800B8630;
+    D_800DEF90[id] = func_800B8630;
     D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801AEE04_ovl7;
     D_800DDA90[omCurrentObj->objId] = 0x23;
     ent->unk98 = &D_801CD33C_ovl7;

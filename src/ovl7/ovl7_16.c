@@ -390,7 +390,7 @@ void func_801BE79C_ovl7(GObj *arg0) {
     Vector srt;
     u16 kind;
 
-    D_800DEF90[id] = (void (*)(s32)) func_800B7138;
+    D_800DEF90[id] = func_800B7138;
     D_800DF150[omCurrentObj->objId] = func_801BEE54_ovl7;
     gEntitiesScaleXArray[omCurrentObj->objId] = 1.0f;
     gEntitiesScaleYArray[omCurrentObj->objId] = 1.0f;
@@ -545,7 +545,7 @@ void func_801BE79C_ovl7(GObj *arg0) {
     Vector srt;
     u16 kind;
 
-    D_800DEF90[id] = (void (*)(s32)) func_800B7138;
+    D_800DEF90[id] = func_800B7138;
     D_800DF150[omCurrentObj->objId] = func_801BEE54_ovl7;
     gEntitiesScaleXArray[omCurrentObj->objId] = 1.0f;
     gEntitiesScaleYArray[omCurrentObj->objId] = 1.0f;

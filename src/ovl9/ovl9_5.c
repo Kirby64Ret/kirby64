@@ -764,7 +764,7 @@ void func_801E76EC_ovl9(s32 arg0) {
     *temp_v1 = -*temp_v1;
     func_800B19F4(0x30, omCurrentObj->objId);
     func_800AFBB4(1, omCurrentObj);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6A2C;
+    D_800DEF90[omCurrentObj->objId] = func_800B6A2C;
     D_800DF150[omCurrentObj->objId] = func_801E5A74_ovl9;
     D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8838_ovl7;
     func_801A0D50_ovl7(func_801E5858_ovl9);
@@ -1282,7 +1282,7 @@ void func_801E8A80_ovl9(struct GObj *arg0) {
     u32 id;
     f32 pitch;
 
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6E84;
+    D_800DEF90[omCurrentObj->objId] = func_800B6E84;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     id = omCurrentObj->objId;
     D_800EAA60[id] = gEntitiesAngleZArray[id];
@@ -1325,7 +1325,7 @@ void func_801E8A80_ovl9(struct GObj *arg0) {
     u32 id;
     f32 pitch;
 
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B6E84;
+    D_800DEF90[omCurrentObj->objId] = func_800B6E84;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     id = omCurrentObj->objId;
     D_800EAA60[id] = gEntitiesAngleZArray[id];

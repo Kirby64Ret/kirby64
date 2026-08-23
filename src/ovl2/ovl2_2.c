@@ -401,7 +401,7 @@ void func_800F6E30(s32 arg0) {
     u32 *var_v0;
 
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800F6E04;
+    D_800DEF90[omCurrentObj->objId] = func_800F6E04;
     func_800AF980(0x18);
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_800F7258;
     func_800A9864(*(u32 *) D_801290D8, 0x26, 0x10);
@@ -508,7 +508,7 @@ void func_800F6E30(UNUSED s32 arg0) {
     s32 gotTexture = 0;
 
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32))func_800F6E04;
+    D_800DEF90[omCurrentObj->objId] = func_800F6E04;
     func_800AF980(0x18);
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *))func_800F7258;
     func_800A9864(((u32 *)D_801290D8)[0], 0x26, 0x10);

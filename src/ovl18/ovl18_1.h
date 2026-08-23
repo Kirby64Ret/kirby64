@@ -2,7 +2,7 @@
 #define OVL_18_1_H
 
 #include "unk_structs/D_800E1B50.h"
-extern void (*D_800DEF90[])(s32);
+extern void (*D_800DEF90[])(struct GObj *);
 
 struct GObj;
 extern void (*D_800DF150[])(struct GObj *);

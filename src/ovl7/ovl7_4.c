@@ -563,7 +563,7 @@ void func_801A5274_ovl7(GObj *arg0) {
     play_sound(0x222);
     if (D_800E8E60[omCurrentObj->objId] != 1) {
         D_800E0D50[omCurrentObj->objId] = 0;
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B83C8;
+        D_800DEF90[omCurrentObj->objId] = func_800B83C8;
         func_801A56C8_ovl7();
         if ((D_800EC2E0[omCurrentObj->objId].as_u32 == 0) &&
             (D_800E9720[omCurrentObj->objId] != 0) &&
@@ -576,7 +576,7 @@ void func_801A5274_ovl7(GObj *arg0) {
                      (gKirbyState.abilityInUse != 0));
         }
     }
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B74B8;
+    D_800DEF90[omCurrentObj->objId] = func_800B74B8;
     func_801A43BC_ovl7(arg0);
 }
 #elif defined(PORT)
@@ -618,7 +618,7 @@ void func_801A5274_ovl7(GObj *arg0) {
     id = omCurrentObj->objId;
     if (D_800E8E60[id] != 1) {
         D_800E0D50[id] = 0;
-        D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B83C8;
+        D_800DEF90[omCurrentObj->objId] = func_800B83C8;
         func_801A56C8_ovl7();
         while ((D_800EC2E0[omCurrentObj->objId].as_u32 == 0)
             && (D_800E9720[omCurrentObj->objId] != 0)
@@ -627,7 +627,7 @@ void func_801A5274_ovl7(GObj *arg0) {
             D_800E9720[omCurrentObj->objId] -= 1;
         }
     }
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B74B8;
+    D_800DEF90[omCurrentObj->objId] = func_800B74B8;
     func_801A43BC_ovl7(arg0);
 }
 #else

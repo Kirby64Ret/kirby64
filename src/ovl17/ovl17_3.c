@@ -286,7 +286,7 @@ void func_801E15A4_ovl17(struct GObj *arg0) {
     s32 track;
     u8 unused[8]; /* the ROM reserves 8 bytes here that it never touches */
 
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
     ent = D_800E1B50[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = func_801E1890_ovl17;
     D_800E8920[omCurrentObj->objId] = 0;
@@ -343,7 +343,7 @@ void func_801E15A4_ovl17(struct GObj *arg0) {
     s32 i;
     s32 track;
 
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
     ent = D_800E1B50[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = func_801E1890_ovl17;
     D_800E8920[omCurrentObj->objId] = 0;
@@ -510,7 +510,7 @@ void func_801E1CB4_ovl17(struct GObj *arg0) {
     f32 t;
 
     objId = omCurrentObj->objId;
-    D_800DEF90[objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[objId] = func_800B4924;
     ent = D_800E1B50[objId];
     D_800DF150[objId] = func_801E2170_ovl17;
     D_800E8920[objId] = 0;
@@ -594,7 +594,7 @@ void func_801E1CB4_ovl17(struct GObj *arg0) {
     f32 t;
 
     objId = omCurrentObj->objId;
-    D_800DEF90[objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[objId] = func_800B4924;
     ent = D_800E1B50[objId];
     D_800DF150[objId] = func_801E2170_ovl17;
     D_800E8920[objId] = 0;
@@ -1602,7 +1602,7 @@ void func_801E49B8_ovl17(struct GObj *arg0) {
     f32 t;
 
     objId = omCurrentObj->objId;
-    D_800DEF90[objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[objId] = func_800B4924;
     parent = D_800E0D50[objId];
     anchor = D_800DFBD0[parent][0x19];
     D_800DF150[objId] = func_801E4DD4_ovl17;
@@ -1655,7 +1655,7 @@ void func_801E49B8_ovl17(struct GObj *arg0) {
     f32 t;
 
     objId = omCurrentObj->objId;
-    D_800DEF90[objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[objId] = func_800B4924;
     parent = D_800E0D50[objId];
     anchor = D_800DFBD0[parent][0x19];
     D_800DF150[objId] = func_801E4DD4_ovl17;

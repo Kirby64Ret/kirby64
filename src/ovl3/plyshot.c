@@ -298,7 +298,7 @@ void func_8015B190_ovl3(s32 arg0) {
     f32 cap;
     s32 charge;
 
-    D_800DEF90[id] = (void (*)(s32)) func_800B5064;
+    D_800DEF90[id] = func_800B5064;
     D_800DF150[id] = func_8015B75C_ovl3;
     D_800E0F10[id] = 0xE;
     gEntitiesScaleXArray[id] = 0.2f;
@@ -386,7 +386,7 @@ void func_8015B190_ovl3(s32 arg0) {
     f32 cap;
     s32 charge;
 
-    D_800DEF90[id] = (void (*)(s32)) func_800B5064;
+    D_800DEF90[id] = func_800B5064;
     D_800DF150[id] = func_8015B75C_ovl3;
     D_800E0F10[id] = 0xE;
     gEntitiesScaleXArray[id] = 0.2f;

@@ -3162,7 +3162,7 @@ void func_80227F90_ovl19(GObj *arg0) {
 
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_802283A8_ovl19;
@@ -3239,7 +3239,7 @@ void func_80227F90_ovl19(GObj *arg0) {
 
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_802283A8_ovl19;
@@ -3430,7 +3430,7 @@ void func_8022889C_ovl19(GObj *arg0) {
     func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_80228C44_ovl19;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     gEntitiesNextPosYArray[omCurrentObj->objId] = 38.1f;
     gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
@@ -3496,7 +3496,7 @@ void func_8022889C_ovl19(GObj *arg0) {
     func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_80228C44_ovl19;
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     gEntitiesNextPosYArray[omCurrentObj->objId] = 38.1f;
     gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
     gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;

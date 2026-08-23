@@ -1467,7 +1467,7 @@ void func_8022D5F8_ovl19(GObj *arg0) {
     struct UnkStruct8022FAB0 *cam;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_8022D96C_ovl19;
@@ -1528,7 +1528,7 @@ void func_8022D5F8_ovl19(GObj *arg0) {
     struct UnkStruct8022FAB0 *cam;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     D_800DF150[omCurrentObj->objId] = func_8022D96C_ovl19;
@@ -1610,7 +1610,7 @@ void func_8022D9F8_ovl19(GObj *arg0) {
     f32 var_f16;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     func_8011CF58();
     D_800DF150[omCurrentObj->objId] = func_8022E198_ovl19;
     gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];
@@ -1731,7 +1731,7 @@ void func_8022D9F8_ovl19(GObj *arg0) {
     struct UnkStruct8022FAB0 *cam;
 
     D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
     func_8011CF58();
     D_800DF150[omCurrentObj->objId] = func_8022E198_ovl19;
     gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];

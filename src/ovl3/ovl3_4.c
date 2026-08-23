@@ -261,7 +261,7 @@ void func_80169C10_ovl3(GObj *arg0) {
     }
     id = omCurrentObj->objId;
     D_800DF150[id] = (void (*)(struct GObj *)) func_8016A144_ovl3;
-    D_800DEF90[id] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[id] = func_800B4954;
     D_800E8920[id] = 0;
     D_800EA1A0[id] = 0;
     D_800E98E0[id] = 0;
@@ -319,7 +319,7 @@ void func_80169C10_ovl3(GObj *arg0) {
     }
     id = omCurrentObj->objId;
     D_800E8920[id] = 0;
-    D_800DEF90[id] = (void (*)(s32)) func_800B531C;
+    D_800DEF90[id] = func_800B531C;
     func_800B33F4();
     D_800E98E0[omCurrentObj->objId] = 3;
     curObjSleepForever();
@@ -344,7 +344,7 @@ void func_80169C10_ovl3(GObj *arg0) {
     }
     id = omCurrentObj->objId;
     D_800DF150[id] = (void (*)(struct GObj *)) func_8016A144_ovl3;
-    D_800DEF90[id] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[id] = func_800B4954;
     D_800E8920[id] = 0;
     D_800EA1A0[id] = 0;
     D_800E98E0[id] = 0;
@@ -402,7 +402,7 @@ void func_80169C10_ovl3(GObj *arg0) {
     }
     id = omCurrentObj->objId;
     D_800E8920[id] = 0;
-    D_800DEF90[id] = (void (*)(s32)) func_800B531C;
+    D_800DEF90[id] = func_800B531C;
     func_800B33F4();
     D_800E98E0[omCurrentObj->objId] = 3;
     curObjSleepForever();
@@ -480,7 +480,7 @@ void func_8016A308_ovl3(s32 arg0) {
     }
     id = omCurrentObj->objId;
     D_800DF150[id] = (void (*)(struct GObj *)) func_8016A934_ovl3;
-    D_800DEF90[id] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[id] = func_800B4954;
     D_800E8920[id] = 1;
     func_801A32EC(&D_801CA980);
     id = omCurrentObj->objId;
@@ -552,7 +552,7 @@ void func_8016A308_ovl3(s32 arg0) {
         ohSleep(1);
     }
     id = omCurrentObj->objId;
-    D_800DEF90[id] = (void (*)(s32)) func_800B531C;
+    D_800DEF90[id] = func_800B531C;
     func_800B33F4();
     id = omCurrentObj->objId;
     gEntitiesAngleXArray[id] = D_800EA6E0[id];
@@ -592,7 +592,7 @@ void func_8016A308_ovl3(s32 arg0) {
     }
     id = omCurrentObj->objId;
     D_800DF150[id] = (void (*)(struct GObj *)) func_8016A934_ovl3;
-    D_800DEF90[id] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[id] = func_800B4954;
     D_800E8920[id] = 1;
     func_801A32EC(&D_801CA980);
     id = omCurrentObj->objId;
@@ -664,7 +664,7 @@ void func_8016A308_ovl3(s32 arg0) {
         ohSleep(1);
     }
     id = omCurrentObj->objId;
-    D_800DEF90[id] = (void (*)(s32)) func_800B531C;
+    D_800DEF90[id] = func_800B531C;
     func_800B33F4();
     id = omCurrentObj->objId;
     gEntitiesAngleXArray[id] = D_800EA6E0[id];
@@ -779,7 +779,7 @@ void func_8016AAA4_ovl3(s32 arg0) {
     id = omCurrentObj->objId;
     D_800E98E0[id] = 4;
     D_800DDA90[id] = 0x23;
-    D_800DEF90[id] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[id] = func_800B4954;
     D_800E8920[id] = 0;
     func_801A32EC(&D_801CA980);
     id = omCurrentObj->objId;
@@ -833,7 +833,7 @@ void func_8016AAA4_ovl3(s32 arg0) {
     phase = D_800E98E0[id];
     if (phase != 6) {
         D_800E98E0[id] = 5;
-        D_800DEF90[id] = (void (*)(s32)) func_800B531C;
+        D_800DEF90[id] = func_800B531C;
         D_800E8920[id] = 0;
         curObjSleepForever();
         return;
@@ -914,7 +914,7 @@ void func_8016AAA4_ovl3(s32 arg0) {
     id = omCurrentObj->objId;
     D_800E98E0[id] = 4;
     D_800DDA90[id] = 0x23;
-    D_800DEF90[id] = (void (*)(s32)) func_800B4954;
+    D_800DEF90[id] = func_800B4954;
     D_800E8920[id] = 0;
     func_801A32EC(&D_801CA980);
     id = omCurrentObj->objId;
@@ -968,7 +968,7 @@ void func_8016AAA4_ovl3(s32 arg0) {
     phase = D_800E98E0[id];
     if (phase != 6) {
         D_800E98E0[id] = 5;
-        D_800DEF90[id] = (void (*)(s32)) func_800B531C;
+        D_800DEF90[id] = func_800B531C;
         D_800E8920[id] = 0;
         curObjSleepForever();
         return;
@@ -1241,7 +1241,7 @@ void func_8016BD24_ovl3(s32 arg0) {
         id = omCurrentObj->objId;
         assign_new_process_entry(gEntityGObjProcessArray[id], (void (*)(struct GObj *)) func_8016C510_ovl3);
         id = omCurrentObj->objId;
-        D_800DEF90[id] = (void (*)(s32)) func_800B531C;
+        D_800DEF90[id] = func_800B531C;
         D_800DF150[id] = (void (*)(struct GObj *)) func_8016C558_ovl3;
         D_800DDA90[id] = 0x23;
         func_800AECC0(gameTicksPerDraw);
@@ -1284,7 +1284,7 @@ void func_8016BD24_ovl3(s32 arg0) {
         id = omCurrentObj->objId;
         assign_new_process_entry(gEntityGObjProcessArray[id], (void (*)(struct GObj *)) func_8016C510_ovl3);
         id = omCurrentObj->objId;
-        D_800DEF90[id] = (void (*)(s32)) func_800B531C;
+        D_800DEF90[id] = func_800B531C;
         D_800DF150[id] = (void (*)(struct GObj *)) func_8016C558_ovl3;
         D_800DDA90[id] = 0x23;
         func_800AECC0(gameTicksPerDraw);

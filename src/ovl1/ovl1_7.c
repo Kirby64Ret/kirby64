@@ -737,7 +737,7 @@ void func_800B0D90(GObj *arg0) {
         }
         if (!(D_800DD8D0[omCurrentObj->objId] & 4)) {
             if (D_800DEF90[omCurrentObj->objId] != NULL) {
-                D_800DEF90[omCurrentObj->objId]((s32) arg0);
+                D_800DEF90[omCurrentObj->objId](arg0);
             }
         }
         D_800E56D0[omCurrentObj->objId] = 0.0f;

@@ -179,7 +179,7 @@ void func_801DB1E0_ovl17(struct GObj *arg0) {
         func_800BC0F0(2);
     }
     D_800D7098.unk0 = 0;
-    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B4924;
+    D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800DF150[omCurrentObj->objId] = func_801DBA8C_ovl17;
     func_800AFBB4(1, omCurrentObj);
     gKirbyState.unk24 = 0;

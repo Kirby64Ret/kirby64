@@ -600,7 +600,7 @@ block_5:
  * both arms, and the death floor is -10000.0f with D_800E3C90 set to
  * 65535.0f. Local frame layout to reproduce: spd 0x64, fwd 0x58, push 0x54,
  * pushY 0x50, plat 0x48, platIn 0x3C, platOut 0x30. */
-void func_800B531C(s32 arg0) {
+void func_800B531C(struct GObj *arg0) {
     /* Local view of gKirbyState (0x8012E7C0). Player.h is not included by
      * this TU on the N64 side and must not be added at file scope, so the
      * fields this function touches are spelled at their real offsets here. */
@@ -785,7 +785,7 @@ void func_800B531C(s32 arg0) {
  * then apply the moving-platform delta (func_80112A40 / func_800F8728). */
 #include "Player.h"
 
-void func_800B531C(s32 arg0) {
+void func_800B531C(struct GObj *arg0) {
     extern f32 D_800E5510[];
     extern f32 D_800E5C10[];
     extern s32 D_800D6B54;
