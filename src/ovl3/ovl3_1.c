@@ -108,15 +108,30 @@ s32 func_8015229C_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 1/312, whole-function callee-saved permutation. Correct
- * instruction count, correct set of zeroed gKirbyState fields and calls,
- * but IDO schedules the zero-stores and the func_80105180 call in a
- * different order than the ROM and allocates a much larger frame (-0x78
- * vs -0x58) with different saved registers throughout -- a clean floor
- * case per LEVERS.md, not reachable by source-level rewording. Also
- * corrects the PORT arm's water-annex scan (real shape: flat pointer
- * array at D_8012BCA0+0x40, stride 4, no cap at 3 -- see
- * func_80154CFC_ovl3). Queued for the permuter. */
+/* FACTORY: 311/312, RE-MEASURED -- the prior "1/312" note was stale/wrong;
+ * verify.py shows total mismatch from insn [0], not a 1-word residue.
+ * Real findings from the listing, for whoever attempts a rewrite:
+ *   (1) gKirbyState.unk134/unk138/unk13C are written with swc1 (float
+ *       store, mtc1 $zero then a reload chain: store 0x13C, reload it into
+ *       f6, store to 0x138, reload into f8, store to 0x134 delayed into
+ *       func_80105180's jal delay slot) -- these three fields are f32, not
+ *       the header's u32 (same bug flagged in REFOUND.md for this struct).
+ *   (2) gKirbyState.unk10C is written as TWO sh (0x10E then 0x10C), so it
+ *       is really two u16 fields (unk10C/unk10E), not the header's one u32
+ *       -- header change is a whole-tree job, not attempted here.
+ *   (3) The zero-store order for the 7 collision words is DESCENDING by
+ *       offset (0xFC,0xF8,...,0xE4 -- horizontalCollision first,
+ *       ceilingCollisionNext last), the REVERSE of this draft's ascending
+ *       source order; same for both sh groups (0x106..0x100, then
+ *       0x10E..0x108).
+ *   (4) omCurrentObj->objId is never cached in a local across the function
+ *       -- the ROM holds &omCurrentObj in a3/other regs and re-derives the
+ *       index (lw+sll) at nearly every use, unlike this draft's `s32 id =
+ *       omCurrentObj->objId` hoist that bakes `id` into one register for
+ *       the whole function. Frame is -0x58 with only s0 saved (ROM) vs this
+ *       draft's -0x78..-0x50 with a wider saved set.
+ * None of (1)-(4) were fixed here; this needs a full rewrite, not a
+ * word-level nudge. Leaving guarded. */
 void func_80152348_ovl3(f32 arg0) {
     void func_80105180(struct PositionState *);
     void func_801051DC(struct PositionState *);
@@ -807,13 +822,20 @@ done:
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 2/362, whole-function callee-saved permutation. Correct
- * instruction count and control flow; the ROM keeps &omCurrentObj in a
- * caller-saved reg it re-derives once per call-free region while this
- * draft spreads the same objId lookups across a different register set
- * (and a larger frame, -0x120 vs -0x128... see raw diff), cascading into
- * a near-total register-naming mismatch. Floor case per LEVERS.md.
- * Queued for the permuter. */
+/* FACTORY: 360/362, RE-MEASURED -- the prior "2/362" note was stale/wrong;
+ * verify.py shows total mismatch from insn [0]. Frame is -0x128 (ROM) vs
+ * this draft's -0xF0, and the ROM's prologue re-derives &omCurrentObj via
+ * `lui/lw %hi/%lo(omCurrentObj)` directly into $v0 (not cached across the
+ * whole function the way this draft's `s32 id = omCurrentObj->objId`
+ * hoist does), then re-reads *omCurrentObj/->objId at nearly every access.
+ * Also: `$ra, -1, -1, -1` are materialised and spilled to the stack (sw at
+ * 0x70/0x78/0x7C) very early, before any of the three probe blocks --
+ * likely the idx0/idx1/idxIn/idx2/chosen initialisers hoisted as a group,
+ * not interleaved with each probe the way this draft declares them. A
+ * rewrite needs the no-id-caching pattern (see func_80152348_ovl3 and
+ * func_80161058_ovl3's notes for the same finding) plus matching that
+ * up-front spill group; not attempted here given the scope. Leaving
+ * guarded. */
 void func_801530BC_ovl3(f32 *h) {
     extern u8 D_8012BCA0[];
     extern s32 D_800E8AE0[];
@@ -1177,12 +1199,14 @@ s32 func_80153AD4_ovl3(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 2/277, whole-function callee-saved permutation (clone of
- * func_80153FC8_ovl3's draft residue). The ROM caches &D_8012BCA0 in a
- * saved reg ($s0, -0x40 frame) across the func_8010BBD4/func_80105238
- * calls; this draft computes it lazily (-0x30 frame, no s0 save), which
- * cascades into a near-total register-naming diff despite matching
- * instruction count and control flow. Queued for the permuter. */
+/* FACTORY: 275/277, RE-MEASURED -- the prior "2/277" note was stale/wrong;
+ * verify.py shows total mismatch from insn [0]. Frame is -0x40 with s0
+ * saved (ROM, s0 = &omCurrentObj held across the whole function) vs this
+ * draft's -0x30 with no saved regs -- same no-id-caching finding as
+ * func_80152348_ovl3/func_801530BC_ovl3 in this TU: the ROM never hoists
+ * `omCurrentObj->objId` into a local, it holds the omCurrentObj POINTER
+ * in s0 and re-derives `lw v1,0(s0); lw a0,0(v1)` (objId) at each use.
+ * Not attempted here. Leaving guarded. */
 s32 func_80153B98_ovl3(void) {
     struct PCRec { s32 type; struct CollisionTriangle *tri; void *norm; };
     struct PCBlk {

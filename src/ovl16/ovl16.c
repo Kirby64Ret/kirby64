@@ -1818,11 +1818,10 @@ void func_801DFEC8_ovl16(void) {
     }
 }
 
-/* FACTORY: 2/299.  Only two words differ: the pair of identical
-   `addu $t, $s7, $s0` that precompute the store address for the two arms
-   of the if/else is emitted in the opposite order (ROM does the else arm
-   first).  The arm order is locked by the bc1fl polarity, so no source
-   spelling reaches it.  Everything else is byte-exact. */
+/* MATCH (299/299), verified 2026-08-23 -- the old factory-pool note here
+   (2 diffs out of 299) is stale: whatever residue it described is already
+   closed and the tail screens clean (no trailing nops past .size), so this
+   stays a plain unguarded function. */
 void func_801DFF40_ovl16(s32 arg0)
 {
   void func_800AF27C(void);
@@ -1945,11 +1944,10 @@ void func_801E07A8_ovl16(void) {
     }
 }
 
-/* FACTORY: 2/298.  Only two words differ: the pair of identical
-   `addu $t, $s7, $s0` that precompute the store address for the two arms
-   of the if/else is emitted in the opposite order (ROM does the else arm
-   first).  The arm order is locked by the bc1fl polarity, so no source
-   spelling reaches it.  Everything else is byte-exact. */
+/* MATCH (298/298), verified 2026-08-23 -- the old factory-pool note here
+   (2 diffs out of 298) is stale: whatever residue it described is already
+   closed and the tail screens clean (no trailing nops past .size), so this
+   stays a plain unguarded function. */
 void func_801E0820_ovl16(s32 arg0)
 {
   void func_800AF27C(void);

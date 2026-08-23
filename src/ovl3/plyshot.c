@@ -1846,12 +1846,15 @@ void func_8015E754_ovl3(s32 arg0) {
 }
 
 #ifdef NON_MATCHING
-/* FACTORY: 3/275, two stack-local displacements (sp+0x48/0x4C vs the ROM's
-   sp+0x4C/0x50) and the mul.s operand slot at insn 210. Structure, schedule,
-   frame size, every branch polarity and all register names are exact. The
-   local-offset residue is the decidable +8 frame anomaly: the offsets need a
-   locals total of 32 bytes but the frame only matches at 28, so no pad
-   spelling reaches both. Good permuter seed. */
+/* FACTORY: 1/275, mul.s source-operand SLOT (invariant per LEVERS.md entry
+ * 84, reconfirmed here a third time: `D_800E6A10[objId] * v` and `v *
+ * D_800E6A10[objId]` both compile to the identical `mul.s $f16,$f10,$f0`
+ * -- no source spelling reaches the ROM's $f16,$f0,$f10 slot order).
+ * The other 2/3 original diffs (stack displacements sp+0x48/0x4C vs the
+ * ROM's sp+0x4C/0x50) are FIXED: reordering the local declarations to
+ * `i, sp50, sp4C, v, pad[3]` (moving `v` from before sp50/sp4C to after)
+ * shifted both without changing the frame size, closing that residue in
+ * one edit. Good permuter seed for the remaining mul.s slot. */
 void func_8015E8E0_ovl3(s32 arg0) {
     extern f32 **D_80192EB8_ovl3;
     extern u8 D_8012E7C5[];
@@ -1859,10 +1862,10 @@ void func_8015E8E0_ovl3(s32 arg0) {
     extern void func_8015ED2C_ovl3(s32);
     extern void func_800A77E8(s32, s32 *, s32 *);
     void curObjSleepForever(void);
-    f32 v;
     s32 i;
     s32 sp50;
     s32 sp4C;
+    f32 v;
     s32 pad[3];
 
     D_800EA6E0[omCurrentObj->objId] = 0.0f;
@@ -2835,10 +2838,21 @@ void func_80160378_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 2/235, whole-function callee-saved permutation (same floor
- * class documented in ovl3_1.c -- correct instruction count and control
- * flow, near-total register-naming/frame mismatch, -0x38 vs -0x48
- * frame). Queued for the permuter. */
+/* FACTORY: 233/235, RE-MEASURED -- the prior "2/235" note was stale/wrong;
+ * verify.py shows total mismatch from insn [0]. Same id-caching floor
+ * confirmed across this whole cluster (func_80152348_ovl3/
+ * func_801530BC_ovl3/func_80153B98_ovl3 in ovl3_1.c, func_80161058_ovl3/
+ * func_80162150_ovl3 above in this file): the ROM holds `&omCurrentObj`
+ * itself (not the pointer, not objId) in a saved reg ($s0) across long
+ * call-free stretches and re-derives `lw v0,0(s0); lw t,0(v0); sll 2` at
+ * every field access, then REPURPOSES s0 mid-function to a different base
+ * (&D_800EA6E0) once the objId-indexed section ends, falling back to a
+ * fresh `lui/lw omCurrentObj` for the tail. This draft's `s32 id =
+ * omCurrentObj->objId` hoist bakes id into one register for the whole
+ * function instead. Frame -0x48 (ROM, s0 saved) vs -0x38 (draft, no saved
+ * regs). Not attempted here -- reproducing IDO's specific choice of what
+ * to hold in s0 and when to drop it is a floor per LEVERS.md, not a
+ * source-level nudge. Leaving guarded. */
 /* PORT: service routine for func_80160378_ovl3's dropped bomb above (anim
  * 0x2003E), from asm/nonmatchings/ovl3/plyshot/func_801606A0_ovl3.s. On
  * ability end it releases the looping sound (handle parked in D_800E98E0
@@ -3066,7 +3080,15 @@ void func_80160D84_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 0/288, whole-function callee-saved permutation (same floor class documented across this cluster). Replaces the PORT arm's pc_sndpair_start(0x34, sndpair) call with the real N64 call it wraps, func_800A77E8 (pc_sndpair_start is a genuine PC-side helper -- defined and linked -- but it doesn't exist on the ROM, so the N64 draft calls the underlying primitive directly, same pattern as func_8015CF9C_ovl3/func_801636A4_ovl3 in ovl3_1.c/plyshot.c). Queued for the permuter. */
+/* FACTORY: 288/288, RE-MEASURED -- the prior "0/288" note was stale/wrong;
+ * verify.py shows total mismatch from insn [0]. The ROM's prologue is
+ * -0x38 with s0/s1/s2 saved (s2 = &omCurrentObj, held and re-dereferenced
+ * via `lw $v1,0($s2)` at every field access -- never caches ->objId in a
+ * register the way this draft's `s32 id = omCurrentObj->objId` local does),
+ * where this draft produces -0x50 with a different callee-saved set and an
+ * `id` local baked into every displacement instead. A rewrite needs the
+ * struct-pointer-in-s2, id-recomputed-from-*s2-each-time shape; not
+ * attempted here. Leaving guarded. */
 /* PORT: forward-shot init coroutine (anim 0x20040), from asm/nonmatchings/
  * ovl3/plyshot/func_80161058_ovl3.s -- same family as the decompiled
  * func_8015BBE4_ovl3 above. Seats the shot 20 units above the parent,

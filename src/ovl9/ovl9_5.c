@@ -1406,11 +1406,27 @@ void func_801E8EC8_ovl9(GObj *arg0) {
     func_8019F3F0_ovl7();
 }
 
-/* FACTORY: 1/201 -- first 101 instructions byte-exact, frame 0x40 and all
-   three stack slots (0x20/0x2C/0x34) exact via the five pad locals.  Residue
-   is ONE extra late_rodata constant: IDO emits 1.5707964f twice in the
-   ABSF(ang) compare where the ROM emits it once, shifting everything from
-   [102] on by one.  Everything after the shift re-syncs. */
+/* FACTORY: 65/201 -- measured 2026-08-23, correcting the prior note's D
+   count (word count was right, "1/201" undercounted the cascade). First
+   101 instructions byte-exact, frame 0x40 and all three stack slots
+   (0x20/0x2C/0x34) exact via the five pad locals. Root cause is ONE extra
+   late_rodata constant: right after the second atan2f call, IDO emits a
+   spurious lwc1 of 1.5707964f into $f14 (byte value 3FC90FDB, same bits
+   as the ABSF-compare constant and the upper-clamp constant used 20 lines
+   later) that the ROM does not have at all -- the ROM's next instruction
+   after "lw $a1, omCurrentObj" is straight into loading D_8021D0A8_ovl9
+   (6.2831855f) for the second while-loop-pair. Ruled out: materializing
+   ABSF(ang) into a named local before the compare (byte-identical output,
+   zero effect -- the extra load is not tied to the ABSF expansion). Ruled
+   out: m2c can't re-derive this function fresh from the current ctx.c
+   (fails on an unrelated PositionState field before reaching this one).
+   Everything past [102] is the same shift-by-one cascade re-syncing once
+   this one spurious load is found and removed -- looks like IDO global
+   instruction scheduling speculatively hoisting an independent pure float
+   load across the two while-loops from its real (much later) use point in
+   the hysteresis clamp; a fix likely needs the clamp block restructured
+   (e.g. caching D_800EA6E0[objId] in a named local per lever 10) rather
+   than anything local to this while-loop preamble. */
 #ifdef NON_MATCHING
 extern f32 sqrtf(f32);
 extern f32 atan2f(f32, f32);

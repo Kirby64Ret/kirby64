@@ -1538,10 +1538,14 @@ s32 func_801695C8_ovl5(void) {
     return count;
 }
 
-/* FACTORY: 5/460, UNCERTAIN -- PORT-seeded, time-boxed. Compiles, word
- * count matches (460/460), residue extreme (455/460) -- broad register/
- * frame relabeling from word 0 (ROM frame 0x98, this draft 0x60). Worth
- * a fresh m2c pass before feeding to the permuter. */
+/* FACTORY: 455/460, STRUCTURAL -- measured 2026-08-23, correcting a
+ * stale note (previously read "5/460"; the note's own body already said
+ * "residue extreme (455/460)", this just fixes the header to match).
+ * Diverges from word 0: ROM frame -0x98 with arg0 held in $a2 and the
+ * loop cursor rebuilt from a pointer into the stack copy at sp+0x74;
+ * this draft's frame is -0x60 with a completely different register set
+ * and no such stack-copy cursor. Needs a fresh m2c derivation off the
+ * listing, not a register sweep. */
 #ifdef MIPS_TO_C
 u8 func_8016965C_ovl5(s32 arg0) {
     s32 cand[4];
@@ -1756,13 +1760,17 @@ s32 func_80169D90_ovl5(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80169D90_ovl5.s")
 #endif
 
-/* FACTORY: 4/232, UNCERTAIN -- PORT-seeded, time-boxed. Fixed the same
- * two real bugs as func_8016A2B8_ovl5's siblings in this file: the
- * `__asm__("...")` symbol-alias GCC extension (IDO's cc rejects it) and
- * a missing local `extern s32 D_8018E264_ovl5;`. Compiles, word count
- * matches (232/232), residue extreme (228/232) -- broad register/frame
- * relabeling from word 0. Worth a fresh m2c pass before feeding to the
- * permuter. */
+/* FACTORY: 228/232, STRUCTURAL -- measured 2026-08-23, correcting a stale
+ * note (previously read "4/232"; the note's own body already said
+ * "residue extreme (228/232)", this just fixes the header to match).
+ * Diverges from word 0: ROM frame -0x58 with $s0-$s2/$s1 held live
+ * across the whole state machine (rec base kept in $s0, arg0 in $s1);
+ * this draft's frame is -0x60 with a different register set and spills
+ * arg0/mycell to the stack instead. Real fixes already folded in: the
+ * `__asm__("...")` symbol-alias GCC extension rewritten as a local
+ * 0x14-byte struct view of D_8018E3D0_ovl5, and a missing local
+ * `extern s32 D_8018E264_ovl5;`. Needs a fresh m2c derivation off the
+ * listing, not a register sweep. */
 #ifdef MIPS_TO_C
 void func_8016A2B8_ovl5(s32 arg0) {
     typedef struct { u8 b[0x14]; } MoleRec;
@@ -2113,13 +2121,19 @@ static void ovl5_4_sweep_leg_(s32 cell, s32 axis, f32 vel) {
  * that ring (state 2), buries CPU corpses, and marks the new field size in
  * D_8018E424/D_8018E425 before killing its own track.
  *
- * FACTORY: 3/1016, UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
- * found; added the local ANSI-typed declarations the PORT arm's
- * file-scope prototypes had left invisible here (D_8018E264_ovl5,
- * D_8018E288_ovl5, gEntityGObjProcessArray, func_801668E0_ovl5).
- * Compiles, word count matches (1016/1016), residue extreme
- * (1013/1016) -- broad register/frame relabeling from word 0. Worth a
- * fresh m2c pass before feeding to the permuter. */
+ * FACTORY: 1013/1016, STRUCTURAL -- measured 2026-08-23, correcting a
+ * stale note (previously read "3/1016"; the note's own body already said
+ * "residue extreme (1013/1016)", this just fixes the header to match).
+ * Diverges from word 0: ROM frame -0x88 with $fp/$s0-$s7 saved and the
+ * two file-scope timer globals kept in callee-saved registers across the
+ * whole function; this draft's frame is also -0x88 but with a totally
+ * different register set (a0/a1 params spilled to the frame instead of
+ * kept in $s-regs) and a different instruction order from the first
+ * `setProcessMain` call on. No source bugs found in an earlier pass
+ * (fixed the missing local ANSI-typed declarations the PORT arm's
+ * file-scope prototypes had left invisible: D_8018E264_ovl5,
+ * D_8018E288_ovl5, gEntityGObjProcessArray, func_801668E0_ovl5). Needs a
+ * fresh m2c derivation off the listing, not a register sweep. */
 #ifdef MIPS_TO_C
 void func_8016A774_ovl5(GObj *arg0, s32 arg1) {
     extern s32 D_8018E43C_ovl5;

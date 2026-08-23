@@ -178,16 +178,18 @@ void func_8015CD00_ovl5(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015CD00_ovl5.s")
 #endif
 
-/* FACTORY: 7/277, UNCERTAIN -- seeded from the PORT arm (time-boxed).
- * Compiles, word count close (277/277), residue high (270/277). One
- * confirmed real defect fixed over the PORT: the ROM reads
- * D_80185FA0_ovl5[0..3] off ONE shared `hi/lo(D_80185FA0_ovl5)` base
- * (the local prototype for func_800AD1A0 was also missing, added inside
- * the function body -- its PORT-only file-scope prototype is invisible
- * to the N64 build). Beyond that, register/frame allocation diverges
- * broadly (ROM: 6 saved slots incl. $f20/$f22, frame 0x68; this draft
- * uses more). Worth a fresh m2c pass over the tbl[] unroll and the
- * infinite wobble loop before feeding to the permuter. */
+/* FACTORY: 270/277, STRUCTURAL -- measured 2026-08-23, correcting a
+ * stale note (previously read "7/277"; the note's own body already said
+ * "residue high (270/277)", this just fixes the header to match).
+ * Diverges from word 0: ROM frame -0x68 with the tbl[] copy loop
+ * unrolled off ONE shared `hi/lo(D_80185FA0_ovl5)` base and 6 saved
+ * slots incl. $f20/$f22; this draft's frame is -0x70 with three
+ * separate lui bases for the same array and a different register set.
+ * One confirmed real defect already fixed over the PORT arm: the missing
+ * local prototype for func_800AD1A0 (its PORT-only file-scope prototype
+ * is invisible to the N64 build). Needs a fresh m2c derivation off the
+ * listing (the tbl[] unroll and the infinite wobble loop especially),
+ * not a register sweep. */
 #ifdef MIPS_TO_C
 void func_8015CE74_ovl5(void) {
     extern void *D_80185FA0_ovl5[];
@@ -446,11 +448,12 @@ void func_8015D864_ovl5(GObj *arg0, s32 arg1) {
 }
 
 
-/* FACTORY: 2/366, UNCERTAIN -- PORT-seeded, time-boxed. Added the
- * missing local `extern u8 D_8018E224_ovl5[];` (its file-scope decl is
- * PORT-only). Compiles, word count close (366/366), residue extreme
- * (364/366) -- broad register/frame relabeling from word 0. Worth a
- * fresh m2c pass before feeding to the permuter. */
+/* FACTORY: 364/366, STRUCTURAL -- measured 2026-08-23, correcting a stale
+ * note (previously read "2/366", which does not match this draft: it
+ * diverges from the ROM from word 0 -- different frame size (-0x88 vs
+ * the ROM's -0x60), different register set and prologue shape, and a
+ * wholesale reordering of the green-thread state-machine body. Not a
+ * LEVERS-fixable residue; needs a fresh m2c derivation off the listing. */
 #ifdef MIPS_TO_C
 void func_8015DA24_ovl5(GObj *arg0, u32 arg1) {
     extern u32 D_801867CC_ovl5[];
@@ -2014,12 +2017,14 @@ s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
-/* FACTORY: 5/250, UNCERTAIN -- PORT-seeded, time-boxed. The `idx*6+1`
- * ovl5_pers_ index math matches the ROM exactly (`sll,2 / subu / sll,1 /
- * addiu,1`). Compiles, word count matches (250/250), residue high
- * (245/250) -- broad register/frame relabeling from word 0, same shape
- * as this file's other siblings. Worth a fresh m2c pass before feeding
- * to the permuter. */
+/* FACTORY: 245/250, STRUCTURAL -- measured 2026-08-23, correcting a
+ * stale note (previously read "5/250"; the note's own body already said
+ * "residue high (245/250)", this just fixes the header to match). The
+ * `idx*6+1` ovl5_pers_ index math matches the ROM exactly (sll,2 / subu
+ * / sll,1 / addiu,1), but everything else diverges from word 0: ROM
+ * frame -0x30, no saved regs at all beyond $ra; this draft's frame is
+ * -0x38 with $s0 held and a different instruction order. Needs a fresh
+ * m2c derivation off the listing, not a register sweep. */
 #ifdef MIPS_TO_C
 void func_80160120_ovl5(s32 arg0) {
     s32 idx = D_8018E224_ovl5[arg0];
@@ -3774,21 +3779,21 @@ void func_80162E30_ovl5(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80162E30_ovl5.s")
 #endif
 
-/* FACTORY: 2/301, UNCERTAIN -- PORT-seeded, time-boxed. Real fixes over
- * the PORT arm: (1) the LP64 `gfx[i].b.tlut.tlut.image/flag` union
- * fields don't exist in the N64 SPObj (see SPObj.h's PORT-only comment
- * block); rewritten as raw offsets into the block pointed to by
- * unk40/unkA0 (block+0x2C = tlut.image, block+0x38 = tlut.flag, per the
- * gs2dex.h uObjTxtrTLUT_t layout and the block+0x28 tlut-union-start
- * noted in SPObj.h); (2) three missing local prototypes
- * (func_80164174_ovl5, func_800AD1A0, func_800ACB7C) that are PORT-only
- * at file scope, needed to avoid an implicit-int/void mismatch against
- * their real later definitions. Compiles, but the residue (299/301) is a
- * real STRUCTURAL mismatch, not just registers: the ROM copies the
- * 4-/10-element image-pointer tables via an unrolled pointer walk
- * (`sw -0xC/-8/-4/0($t9)` against a moving cursor); this draft's `for`
- * loop compiles to an indexed bounds-checked loop instead. Needs a
- * pointer-walk rewrite of the two setup loops, not a register sweep. */
+/* FACTORY: 299/301, STRUCTURAL -- measured 2026-08-23, correcting a stale
+ * note (previously read "2/301"; the note's own body already said
+ * 299/301, this just fixes the header to match). Diverges from word 0:
+ * ROM frame is -0xC0 with $fp held as a base pointer into the stack copy
+ * of the badges[]/digits[] tables (sw $t6,0($fp) etc, an UNROLLED
+ * pointer-walk copy using a moving cursor and sw -0xC/-8/-4/0($t9)); this
+ * draft's frame is -0xC8, no $fp use, and the two setup `for` loops
+ * compile to indexed bounds-checked loops instead of the pointer walk.
+ * Real fixes already folded in over the PORT arm: (1) the LP64
+ * `gfx[i].b.tlut.tlut.image/flag` union fields rewritten as raw
+ * unk40/unkA0+0x2C/+0x38 offsets (SPObj.h has no such union on N64); (2)
+ * three missing local prototypes (func_80164174_ovl5, func_800AD1A0,
+ * func_800ACB7C) added to avoid an implicit-int/void mismatch. Needs a
+ * pointer-walk rewrite of the two setup loops using $fp as a stack base,
+ * not a register sweep -- out of scope for a LEVERS substitution pass. */
 #ifdef MIPS_TO_C
 void func_80163CC0_ovl5(u32 arg1) {
     extern void *D_80185FC0_ovl5[];

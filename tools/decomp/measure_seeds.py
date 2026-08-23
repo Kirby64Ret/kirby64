@@ -125,10 +125,13 @@ def measure_file(path):
 
 
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    argv = sys.argv[1:]
     jsonout = None
-    if '--json' in sys.argv:
-        jsonout = sys.argv[sys.argv.index('--json') + 1]
+    if '--json' in argv:
+        i = argv.index('--json')
+        jsonout = argv[i + 1]
+        del argv[i:i + 2]          # its value is NOT a source file
+    args = [a for a in argv if not a.startswith('--')]
     files = args or sorted(glob.glob('src/**/*.c', recursive=True))
     all_r = []
     for f in files:
