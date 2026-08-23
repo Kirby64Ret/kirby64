@@ -732,7 +732,6 @@ void func_801E97AC_ovl16(s32 arg0) {
 // the sll in $s3 instead: 194/238), embedded-assignment index, u32 cast on either
 // site's index, u32 other, decl order, stmt2 via `other` (218). The variant below
 // is the best (188) with `other`+`i` separate.
-#ifdef NON_MATCHING
 void func_801E9858_ovl16(struct GObj *arg0) {
     void func_801E9C10_ovl16(struct GObj *);
     s32 other;
@@ -770,9 +769,6 @@ void func_801E9858_ovl16(struct GObj *arg0) {
     }
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801E9858_ovl16.s")
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801E9858_ovl16.s")
 #endif

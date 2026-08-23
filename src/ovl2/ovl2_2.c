@@ -141,8 +141,10 @@ typedef char pc_stage_cfg_check[(sizeof(struct PcStageCfg) == 0x24) ? 1 : -1];
 static struct UnkStruct80129114 pc_track_hdr;
 
 /* Native footer: must be layout-identical to the three views compiled code
- * reads it through -- struct Unk80129114_4_4 (unk2/unk8/unkC), ovl2_3.c's
- * TrackFooter (adds unk10/unk14) and interpolation.c's InterpDesc/InterpData
+ * reads it through -- struct Unk80129114_4_4 (pointCount/tension/points/
+ * length, named+typed from this exact evidence -- see that struct's
+ * comment in include/unk_structs/D_80129114.h), ovl2_3.c's TrackFooter
+ * (adds keyframes/quartics) and interpolation.c's InterpDesc/InterpData
  * (mtxGetInterpolatedPosition / func_8001E344). */
 struct PcTrackFooter {
     u8 kind;        /* 0x00: interpolation kind */
@@ -156,17 +158,17 @@ struct PcTrackFooter {
 };
 typedef char pc_footer_check[
     (sizeof(struct PcTrackFooter) == 40 &&
-     __builtin_offsetof(struct PcTrackFooter, n) == __builtin_offsetof(struct Unk80129114_4_4, unk2) &&
-     __builtin_offsetof(struct PcTrackFooter, unk04) == __builtin_offsetof(struct Unk80129114_4_4, unk4) &&
-     __builtin_offsetof(struct PcTrackFooter, points) == __builtin_offsetof(struct Unk80129114_4_4, unk8) &&
-     __builtin_offsetof(struct PcTrackFooter, length) == __builtin_offsetof(struct Unk80129114_4_4, unkC) &&
+     __builtin_offsetof(struct PcTrackFooter, n) == __builtin_offsetof(struct Unk80129114_4_4, pointCount) &&
+     __builtin_offsetof(struct PcTrackFooter, unk04) == __builtin_offsetof(struct Unk80129114_4_4, tension) &&
+     __builtin_offsetof(struct PcTrackFooter, points) == __builtin_offsetof(struct Unk80129114_4_4, points) &&
+     __builtin_offsetof(struct PcTrackFooter, length) == __builtin_offsetof(struct Unk80129114_4_4, length) &&
      __builtin_offsetof(struct PcTrackFooter, keyframes) == 24 &&
      __builtin_offsetof(struct PcTrackFooter, quartics) == 32) ? 1 : -1];
 typedef char pc_noderec_check[
     (sizeof(struct Unk80129114_4) == 24 &&
-     __builtin_offsetof(struct Unk80129114_4, unk4) == 8 &&
-     __builtin_offsetof(struct Unk80129114_4, unk8) == 16 &&
-     __builtin_offsetof(struct Unk80129114_4, unkE) == 22) ? 1 : -1];
+     __builtin_offsetof(struct Unk80129114_4, footer) == 8 &&
+     __builtin_offsetof(struct Unk80129114_4, links) == 16 &&
+     __builtin_offsetof(struct Unk80129114_4, loop) == 22) ? 1 : -1];
 
 static inline u32 pc_be32(u32 v) { return __builtin_bswap32(v); }
 static inline u16 pc_be16(u16 v) { return __builtin_bswap16(v); }
@@ -1420,11 +1422,11 @@ void func_800F78E4(void) {
             pc_lvl_region(qOff, 4);
 
             recs[i].unk0 = (struct Unk80129114_4_0 *)(base + kOff);
-            recs[i].unk4 = (struct Unk80129114_4_4 *)&foots[i];
-            recs[i].unk8 = (u32)(uintptr_t)(base + cOff);
-            recs[i].unkC = nr[0xC];
-            recs[i].unkD = nr[0xD];
-            recs[i].unkE = (s16)pc_rd16(nr + 0xE);
+            recs[i].footer = (struct Unk80129114_4_4 *)&foots[i];
+            recs[i].links = (u32)(uintptr_t)(base + cOff);
+            recs[i].linkCountHi = nr[0xC];
+            recs[i].linkCountLo = nr[0xD];
+            recs[i].loop = (s16)pc_rd16(nr + 0xE);
         }
         pc_track_hdr.unk0 = count;
         pc_track_hdr.unk4 = recs;
@@ -1455,8 +1457,8 @@ void func_800F78E4(void) {
                 pos.x = e->pos[0];
                 pos.y = e->pos[1];
                 pos.z = e->pos[2];
-                e->scale[1] = func_800FA1D4(recs[e->nodeNum].unk4, &pos,
-                                            recs[e->nodeNum].unkE);
+                e->scale[1] = func_800FA1D4(recs[e->nodeNum].footer, &pos,
+                                            recs[e->nodeNum].loop);
             }
             D_80129124++;
             e++;
@@ -2095,9 +2097,10 @@ block_21:
  * node switches to the connector's target and the leftover distance is
  * rescaled by the two track lengths around the target's keyframe value.
  * Node record fields follow the func_800F8B1C precedent (ovl2_3.c): the
- * connector count is the big-endian s16 kept as raw bytes (unkC<<8|unkD),
- * connectors are untouched byte records behind the u32 unk8 slot, and the
- * footer is this file's native PcTrackFooter. The ROM's exhausted scans
+ * connector count is the big-endian s16 kept as raw bytes
+ * (linkCountHi<<8|linkCountLo), connectors are untouched byte records
+ * behind the u32 links slot, and the footer is this file's native
+ * PcTrackFooter. The ROM's exhausted scans
  * fall out with the cursor one record past the run (forward) or one before
  * it (backward) and still consume that record's bytes 2/3 -- replicated
  * as-is, the reads stay inside the level blob. */
@@ -2120,14 +2123,14 @@ void func_800F8570(s32 arg0) {
         return;
     }
     node = &D_80129114->unk4[*pNode];
-    footer = (struct PcTrackFooter *) node->unk4;
-    n = (s16) ((node->unkC << 8) | node->unkD);
+    footer = (struct PcTrackFooter *) node->footer;
+    n = (s16) ((node->linkCountHi << 8) | node->linkCountLo);
     if (t < 0.0f) {
         if (n == 0) {
             *pT = 0.0001f;
             return;
         }
-        c = conn = (u8 *) (uintptr_t) node->unk8;
+        c = conn = (u8 *) (uintptr_t) node->links;
         for (i = 0; i < n; i++, c += 4) {
             if (c[0] != 0) {
                 *pT = 0.0001f;
@@ -2146,7 +2149,7 @@ void func_800F8570(s32 arg0) {
             *pT = 0.9999f;
             return;
         }
-        conn = (u8 *) (uintptr_t) node->unk8;
+        conn = (u8 *) (uintptr_t) node->links;
         last = footer->n - 1;
         c = conn + (n - 1) * 4;
         for (i = n - 1; i >= 0; i--, c -= 4) {
@@ -2162,7 +2165,7 @@ void func_800F8570(s32 arg0) {
         frac = t - 1.0f;
     }
     *pNode = c[2];
-    newFooter = (struct PcTrackFooter *) D_80129114->unk4[c[2]].unk4;
+    newFooter = (struct PcTrackFooter *) D_80129114->unk4[c[2]].footer;
     f = (footer->length * frac) / newFooter->length;
     if (dir == 0) {
         f = -f;
@@ -2227,13 +2230,13 @@ f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
     f32 inv;
     f32 dist;
 
-    footer = D_80129114->unk4[D_800E5F90[arg0]].unk4;
+    footer = D_80129114->unk4[D_800E5F90[arg0]].footer;
     func_8001E344(&tang, footer, D_800E6BD0[arg0]);
     inv = 1.0f / sqrtf((tang.x * tang.x) + (tang.z * tang.z));
     tang.x *= inv;
     tang.z *= inv;
     dist = (tang.x * arg1) + (tang.z * arg2);
-    D_800E6BD0[arg0] += (dist / footer->unkC) * 0.1f;
+    D_800E6BD0[arg0] += (dist / footer->length) * 0.1f;
     func_800F8570(arg0);
     return dist;
 }

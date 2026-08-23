@@ -50,7 +50,7 @@ struct Unk80129114_4 {
     struct Unk80129114_4_4 *footer;
     u32 links;       /* struct TrackConnection[]; see struct comment above for
                        * why this stays u32 rather than a real pointer */
-    u8 linkCountHi;  /* was unkC; combined by ovl2_3.c/ovl2_10.c's PORT arms as
+    u8 linkCountHi;  /* was unkC; combined by ovl2_3.c's PORT arms as
                        * `(s16)((linkCountHi << 8) | linkCountLo)`, but the
                        * matched N64 func_800F8B1C reads the two bytes as one
                        * native s16 through TrackNodeHeader -- they are one

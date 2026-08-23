@@ -117,7 +117,12 @@ extern s32 D_800EA360[];
 extern s32 D_800EA1A0[];
 
 // this is a union or void*
-/* D_800E9FE0: declared in include/track_arrays.h (canonical). */
+/* Type kept token-identical to include/track_arrays.h's declaration. That
+ * header shares this one's OVL1_6_H guard, so whichever of the two a TU
+ * includes first is the only one it ever sees -- ovl16.c and ovl7_4.c reach
+ * these symbols through this header alone. The duplication is load-bearing
+ * until the guards are split and the two headers are merged. */
+extern MultiType D_800E9FE0[];
 extern s32 D_800E9E20[];
 extern s32 D_800E9C60[];
 
@@ -143,7 +148,8 @@ extern s32 D_800EBBE0[];
 extern s32 D_800EC4A0[];
 
 // this is also a union or void*
-/* D_800EC2E0: declared in include/track_arrays.h (canonical). */
+/* Token-identical to include/track_arrays.h; see the note at D_800E9FE0. */
+extern MultiType D_800EC2E0[];
 extern f32 D_800EC820[];
 extern f32 D_800EC660[];
 extern s32 D_800E6150[];

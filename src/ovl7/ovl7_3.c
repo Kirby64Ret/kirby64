@@ -129,6 +129,11 @@ extern struct Ovl7TrackParams D_801CE6E0_ovl7;
 extern struct UnkOvl7Track D_801CE730_ovl7;
 extern struct UnkOvl7Track D_801D0450_ovl7[];
 
+/* Defined at the bottom of this file. func_801A2558_ovl7 used to carry its
+ * own block-scope `(s32)` declaration, which disagreed with the definition's
+ * parameter type. */
+void func_801A2ADC_ovl7(struct Ovl7TrackParams *);
+
 void func_8019F3B0_ovl7(void);
 void func_801A32A8_ovl7(s32 arg0);
 void func_801A3618_ovl7(struct UnkOvl7Track *arg0);
@@ -861,7 +866,6 @@ void func_801A248C_ovl7(struct EnemyProbe *arg0, f32 arg1) {
 #ifndef PORT
 void func_801A2558_ovl7(s32 arg0) {
     struct EnemyProbe *func_8010DCAC(void);
-    void func_801A2ADC_ovl7(s32);
     void func_801051DC(struct EnemyProbe *);
     s32 func_80109DD8(struct EnemyProbe *);
     void func_8010CE44(struct EnemyProbe *, f32);
@@ -1347,7 +1351,7 @@ void func_801A32EC(struct Ovl7TrackParams *arg0) {
     func_801051AC(&D_801CE6D0_ovl7);
 }
 
-#ifndef PORT /* WIP iterating, re-guard at exit */
+#ifdef MIPS_TO_C
 void func_801A33B8(struct Ovl7TrackParams *arg0) {
     s32 func_80109F60(struct EnemyProbe *);
     s32 func_8010B238(struct EnemyProbe *);

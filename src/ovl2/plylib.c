@@ -33,6 +33,10 @@ struct UnkPos4C {
 
 GObj *func_800A8234(s32, s32, s32);
 void func_800A22D4(u32);
+/* defined in ovl1_10.c; was re-declared four times in this file as
+ * (u32, s32), which disagrees with the definition and left the call in
+ * func_8011ECC8 implicitly declared. */
+void func_800BB468(s32, s32);
 extern u32 D_800D6B44;
 
 u32 func_800F8560(void);
@@ -1176,7 +1180,6 @@ void func_8011CFF4(GObj *gobj) {
  * +4/+8/+C position floats, which is what the node's unk4C really is. */
 void func_8011D0FC(struct DObj *arg0, s32 arg1, f32 arg2) {
     void *func_800A19EC(s32, s32);
-    void func_800BB468(u32, s32);
     struct PcOMMtxFloat3 {
         void *mtx;
         Vector v;
@@ -1287,7 +1290,6 @@ void func_8011D0FC(struct DObj *ln, s32 arg1, f32 arg2) {
         /* 0x4C */ struct GenNodeXfm *xfm;
     };
     struct GenNode *func_800A19EC(s32 group, s32 id);
-    void func_800BB468(u32 arg0, s32 arg1);
     f32 soundPayload;
     s32 soundId;
     struct GenNode *gen;
@@ -1687,7 +1689,6 @@ void func_8011DD18(u32 arg0) {
  * action that ignores it) zeroes both outputs. Floor types 0x12/0x13 are the
  * fixed-rate belts, which drive straight from the surface record's rate. */
 void func_8011DD5C(f32 *outSin, f32 *outCos) {
-    void func_800BB468(u32 arg0, s32 arg1);
     f32 sinComp;
     f32 cosComp;
     f32 magnitude;
@@ -1775,7 +1776,6 @@ void func_8011DD5C(f32 *outSin, f32 *outCos) {
  * Player.h (see the type note there), so the old bit-punning union this
  * arm used to work around the header's u32 declaration is gone -- direct
  * field access is correct and simpler. */
-void func_800BB468(u32, s32);
 
 void func_8011DD5C(f32 *arg0, f32 *arg1) {
     f32 sinv;
@@ -1960,7 +1960,7 @@ f32 func_8011E374(void) {
     Vector sp2C;
     Vector sp20;
 
-    p = D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].unk4;
+    p = D_80129114->unk4[D_800E5F90[omCurrentObj->objId]].footer;
     sp2C.y = 0.0f;
     sp20.x = 0.0f;
     sp20.y = 0.0f;
@@ -2052,7 +2052,7 @@ void func_8011E548(void) {
             *facing = -*facing;
             gKirbyState.turnDirection = (s32) D_800E6A10[obj->objId];
             func_8001E344(&tangent,
-                          D_80129114->unk4[D_800E5F90[obj->objId]].unk4,
+                          D_80129114->unk4[D_800E5F90[obj->objId]].footer,
                           D_800E6BD0[obj->objId]);
             tangent.y = 0.0f;
             ref.y = 0.0f;
@@ -2148,7 +2148,7 @@ void func_8011E548(void) {
     } else if ((func_80121194() != 0) && (D_800D6FAC == 0)) {
         D_800E6A10[objId] = -D_800E6A10[objId];
         gKirbyState.turnDirection = (s32) D_800E6A10[objId];
-        func_8001E344(&tang, D_80129114->unk4[D_800E5F90[objId]].unk4, D_800E6BD0[objId]);
+        func_8001E344(&tang, D_80129114->unk4[D_800E5F90[objId]].footer, D_800E6BD0[objId]);
         tang.y = 0.0f;
         ref.x = 0.0f;
         ref.y = 0.0f;
@@ -3304,11 +3304,11 @@ spinStep:
                     speed = 4.12f;
                 }
             }
-            footer = D_80129114->unk4[D_800E5F90[objId]].unk4;
-            D_800E6BD0[objId] += (1.0f / footer->unkC) * speed;
+            footer = D_80129114->unk4[D_800E5F90[objId]].footer;
+            D_800E6BD0[objId] += (1.0f / footer->length) * speed;
             func_800F8570(omCurrentObj->objId, footer, omCurrentObj, D_800E17D0);
             objId = omCurrentObj->objId;
-            mtxGetInterpolatedPosition(&pos, D_80129114->unk4[D_800E5F90[objId]].unk4,
+            mtxGetInterpolatedPosition(&pos, D_80129114->unk4[D_800E5F90[objId]].footer,
                                        D_800E6BD0[objId]);
             gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
             gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
@@ -3493,10 +3493,10 @@ s32 func_8011FEF8(void) {
             } else {
                 push = (D_800E6A10[oid] == 1.0f) ? -4.12f : 4.12f;
             }
-            tp = D_80129114->unk4[D_800E5F90[oid]].unk4;
-            D_800E6BD0[oid] += (1.0f / tp->unkC) * push;
+            tp = D_80129114->unk4[D_800E5F90[oid]].footer;
+            D_800E6BD0[oid] += (1.0f / tp->length) * push;
             func_800F8570(oid);
-            mtxGetInterpolatedPosition(&p, (s32 *) D_80129114->unk4[D_800E5F90[oid]].unk4,
+            mtxGetInterpolatedPosition(&p, (s32 *) D_80129114->unk4[D_800E5F90[oid]].footer,
                                        D_800E6BD0[oid]);
             gEntitiesNextPosXArray[oid] = p.x;
             gEntitiesNextPosZArray[oid] = p.z;
@@ -4515,10 +4515,10 @@ s32 func_801226FC(void) {
                     step = 0.25f;
                 }
                 prog = &D_800E6BD0[objId];
-                *prog += (1.0f / D_80129114->unk4[D_800E5F90[objId]].unk4->unkC) * step;
+                *prog += (1.0f / D_80129114->unk4[D_800E5F90[objId]].footer->length) * step;
                 func_800F8570(omCurrentObj->objId, prog);
                 objId = omCurrentObj->objId;
-                mtxGetInterpolatedPosition(&pos, D_80129114->unk4[D_800E5F90[objId]].unk4, D_800E6BD0[objId]);
+                mtxGetInterpolatedPosition(&pos, D_80129114->unk4[D_800E5F90[objId]].footer, D_800E6BD0[objId]);
                 gEntitiesNextPosXArray[omCurrentObj->objId] = pos.x;
                 gEntitiesNextPosZArray[omCurrentObj->objId] = pos.z;
                 gKirbyState.unk168 = 0.0f;
@@ -4581,11 +4581,11 @@ s32 func_801226FC(void) {
     if (climb) {
         objId = omCurrentObj->objId;
         delta = (D_800E6A10[objId] == 1.0f) ? -0.25f : 0.25f;
-        footer = D_80129114->unk4[D_800E5F90[objId]].unk4;
-        D_800E6BD0[objId] += (1.0f / footer->unkC) * delta;
+        footer = D_80129114->unk4[D_800E5F90[objId]].footer;
+        D_800E6BD0[objId] += (1.0f / footer->length) * delta;
         func_800F8570(objId);
         objId = omCurrentObj->objId;
-        footer = D_80129114->unk4[D_800E5F90[objId]].unk4;
+        footer = D_80129114->unk4[D_800E5F90[objId]].footer;
         mtxGetInterpolatedPosition(&pos, (s32 *) footer, D_800E6BD0[objId]);
         gEntitiesNextPosXArray[objId] = pos.x;
         gEntitiesNextPosZArray[objId] = pos.z;

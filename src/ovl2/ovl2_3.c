@@ -304,7 +304,7 @@ f32 vec3_abs_angle_diff(Vector *v1, Vector *v2) {
 
 void func_800F8A24(s32 arg0) {
     D_800E6310[arg0] = 0;
-    if (D_80129114->unk4[D_800E5F90[arg0]].unkE != 0) {
+    if (D_80129114->unk4[D_800E5F90[arg0]].loop != 0) {
         if (D_800E6BD0[arg0] > 1.0f) {
             D_800E6BD0[arg0] -= 1.0f;
         }
@@ -1059,9 +1059,9 @@ s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
     recs = (struct TrackNodeHeader *) D_80129114->unk4;
     scaled = arg2 * 0.1f;
     tp = &recs[node];
-    len = tp->unk4->unkC;
+    len = tp->footer->length;
     want = t + (scaled / len);
-    if (recs[node].unkE == 0) {
+    if (recs[node].loop == 0) {
         goto notLoop;
     }
     {
@@ -1082,12 +1082,12 @@ notLoop:
     if (want < 0.0f) {
         rem = (arg2 * -0.1f) - (t * len);
         for (;;) {
-            cnt = tp->unkC;
+            cnt = tp->linkCount;
             i = 0;
             if (cnt == 0) {
                 return 1;
             }
-            conn = tp->unk8;
+            conn = tp->links;
             while (i < cnt) {
                 if ((conn->unk0 == 0) && !(conn->unk1 & 0xF0)) {
                     break;
@@ -1102,23 +1102,23 @@ notLoop:
                 return 1;
             }
             next = conn->unk2;
-            if (rem <= recs[next].unk4->unkC) {
-                frac = (recs[next].unk4->unkC - rem) / recs[next].unk4->unkC;
+            if (rem <= recs[next].footer->length) {
+                frac = (recs[next].footer->length - rem) / recs[next].footer->length;
                 break;
             }
-            rem -= recs[next].unk4->unkC;
+            rem -= recs[next].footer->length;
             tp = &recs[next];
         }
     } else {
         rem = scaled - (len - (t * len));
         for (;;) {
-            cnt = tp->unkC;
+            cnt = tp->linkCount;
             if (cnt == 0) {
                 return 1;
             }
             i = cnt - 1;
-            conn = &tp->unk8[cnt] - 1;
-            last = tp->unk4->unk2 - 1;
+            conn = &tp->links[cnt] - 1;
+            last = tp->footer->pointCount - 1;
             while (i >= 0) {
                 if ((conn->unk0 == last) && !(conn->unk1 & 0xF0)) {
                     break;
@@ -1133,11 +1133,11 @@ notLoop:
                 return 1;
             }
             next = conn->unk2;
-            if (rem <= recs[next].unk4->unkC) {
-                frac = rem / recs[next].unk4->unkC;
+            if (rem <= recs[next].footer->length) {
+                frac = rem / recs[next].footer->length;
                 break;
             }
-            rem -= recs[next].unk4->unkC;
+            rem -= recs[next].footer->length;
             tp = &recs[next];
         }
     }
@@ -1153,13 +1153,14 @@ notLoop:
  * *arg0's segment by arg2*0.1 world units normalized by segment length,
  * hopping across node links when the fraction leaves [0,1]. Native record
  * facts (ovl2_2.c's loader): D_80129114->unk4 is a native
- * struct Unk80129114_4 array; unk8 holds the raw 4-byte link records
- * {role, flags, nextIndex, pad} as blob bytes; the N64 read the link
- * count as the BE halfword covering unkC/unkD; unk4->unkC is the segment
- * length, unk4->unk2 the point count. Backward hops take the first
- * unflagged role-0 link (any other role blocks); forward hops scan the
- * link list tail-first for an unflagged link whose role equals the last
- * point index. The D_8012912C routing matrix gets the final say. */
+ * struct Unk80129114_4 array; links holds the raw 4-byte link records
+ * {role, flags, nextIndex, pad} as blob bytes; the N64 reads the link
+ * count as the BE halfword covering linkCountHi/linkCountLo; footer->length
+ * is the segment length, footer->pointCount the point count. Backward hops
+ * take the first unflagged role-0 link (any other role blocks); forward
+ * hops scan the link list tail-first for an unflagged link whose role
+ * equals the last point index. The D_8012912C routing matrix gets the
+ * final say. */
 s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
     extern s32 D_80129118;
     extern u8 *D_8012912C;
@@ -1180,9 +1181,9 @@ s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
         return 0x270F;
     }
     tp = &recs[node];
-    len = tp->unk4->unkC;
+    len = tp->footer->length;
     want = t + (arg2 * 0.1f) / len;
-    if (tp->unkE != 0) { /* looping segment: wrap in place */
+    if (tp->loop != 0) { /* looping segment: wrap in place */
         *arg1 = want;
         if (want < 0.0f) {
             *arg1 = 1.0f + want;
@@ -1200,7 +1201,7 @@ s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
         f32 rem = (arg2 * -0.1f) - (t * len);
 
         for (;;) {
-            s32 cnt = (s16) ((tp->unkC << 8) | tp->unkD);
+            s32 cnt = (s16) ((tp->linkCountHi << 8) | tp->linkCountLo);
             u8 *lnk;
             s32 i = 0;
             f32 len2;
@@ -1208,7 +1209,7 @@ s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
             if (cnt <= 0) {
                 return 1;
             }
-            lnk = (u8 *) (uintptr_t) tp->unk8;
+            lnk = (u8 *) (uintptr_t) tp->links;
             while (i < cnt && (lnk[0] != 0 || (lnk[1] & 0xF0))) {
                 if (lnk[0] != 0) {
                     return 1;
@@ -1220,7 +1221,7 @@ s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
                 return 1;
             }
             next = lnk[2];
-            len2 = recs[next].unk4->unkC;
+            len2 = recs[next].footer->length;
             if (rem <= len2) {
                 frac = (len2 - rem) / len2;
                 break;
@@ -1232,7 +1233,7 @@ s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
         f32 rem = (arg2 * 0.1f) - (len - t * len);
 
         for (;;) {
-            s32 cnt = (s16) ((tp->unkC << 8) | tp->unkD);
+            s32 cnt = (s16) ((tp->linkCountHi << 8) | tp->linkCountLo);
             u8 *lnk;
             s32 last;
             f32 len2;
@@ -1240,8 +1241,8 @@ s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
             if (cnt <= 0) {
                 return 1;
             }
-            lnk = (u8 *) (uintptr_t) tp->unk8 + (cnt - 1) * 4;
-            last = tp->unk4->unk2 - 1;
+            lnk = (u8 *) (uintptr_t) tp->links + (cnt - 1) * 4;
+            last = tp->footer->pointCount - 1;
             for (;;) {
                 if (last != lnk[0]) {
                     return 1;
@@ -1252,7 +1253,7 @@ s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
                 lnk -= 4;
             }
             next = lnk[2];
-            len2 = recs[next].unk4->unkC;
+            len2 = recs[next].footer->length;
             if (rem <= len2) {
                 frac = rem / len2;
                 break;
@@ -1478,7 +1479,7 @@ f32 func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
     f32 func_800F9C94(void *, Vector *, f32, f32, s32);
 
     footer = arg0;
-    times = footer->unk10;
+    times = footer->keyframes;
     tCur = times[arg2];
     if (arg2 == 0) {
         tPrev = times[0];
@@ -1486,7 +1487,7 @@ f32 func_800F9FDC(void *arg0, Vector *arg1, s32 arg2, s32 arg3) {
     } else {
         tPrev = times[arg2 - 1];
     }
-    n = footer->unk2;
+    n = footer->pointCount;
     if (arg2 >= (n - 1)) {
         tNext = times[n - 1];
         tCur = tNext - 0.002;
@@ -1529,13 +1530,13 @@ f32 func_800FA1D4(struct Unk80129114_4_4 *arg0, Vector *arg1, s32 arg2) {
     s32 pad;
     s16 n;
 
-    n = arg0->unk2;
+    n = arg0->pointCount;
     best = 1000000.0f;
     idx = -1;
     for (i = 0; i < n; i++) {
         Vector sp44;
 
-        sp44 = *(Vector *) ((u8 *) arg0->unk8 + (i * 0xC));
+        sp44 = *(Vector *) ((u8 *) arg0->points + (i * 0xC));
         d = lbvector_DiffLen(arg1, &sp44);
         if (d < best) {
             best = d;
@@ -1671,7 +1672,7 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
             dir.y = 0.0f;
             break;
         case 1:
-            func_8001E344(&dir, D_80129114->unk4[D_800E5F90[arg0]].unk4,
+            func_8001E344(&dir, D_80129114->unk4[D_800E5F90[arg0]].footer,
                           D_800E6BD0[arg0]);
             dir.y = 0.0f;
             lbvector_Normalize(&dir);
@@ -1705,7 +1706,7 @@ void func_800FA608(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
         dir.y = 0.0f;
         break;
     case 1:
-        footer = D_80129114->unk4[D_800E5F90[arg0]].unk4;
+        footer = D_80129114->unk4[D_800E5F90[arg0]].footer;
         func_8001E344(&dir, footer, D_800E6BD0[arg0]);
         dir.y = 0.0f;
         lbvector_Normalize(&dir);
