@@ -134,14 +134,19 @@ extern s32 D_801D9948;
 extern s32 D_801D9A20;
 extern s32 D_801D9AB0;
 
-s32 func_800A9864(s32, s32, s32);
+void func_800A9864(u32, u32, u32);
 void func_801DF62C_ovl16(void);
 void func_800AA018(s32);
 void func_800AA154(s32);
 void func_800AECC0(f32);
 void func_800AED20(f32);
+// `u32` on func_800AFBB4's first parameter is load-bearing here (the tree's
+// definition in ovl1_7.c takes s32): with the s32 prototype IDO re-materialises
+// the constant (`li $a0, 1`) in func_801DE030_ovl16 instead of reusing the $s3
+// the surrounding loop already parked it in. A/B of the object shows that one
+// instruction as the only difference.
 void func_800AFBB4(u32, struct GObj *);
-void func_800B19F4(s32, u32);
+void func_800B19F4(s32, s32);
 void func_800B33F4(void);
 void func_800B4924(struct GObj *);
 void func_800B7560(struct GObj *);
@@ -162,6 +167,19 @@ void func_801EA568_ovl16(struct GObj *);
 void func_801E9178_ovl16(struct GObj *);
 void func_801EA070_ovl16(struct GObj *);
 void func_801EAF00_ovl16(struct GObj *);
+
+void func_8019B9B0_ovl7(void);
+void func_800AF27C(void);
+s32 func_801BC794_ovl7(s32);
+void func_800AA0C4(s32, f32);
+void func_800AEDD0(f32, s32);
+void func_800AA038(s32, f32, s32);
+void func_800BC1FC(s32);
+void func_800A9760(s32);
+void utilGetTransformSRT(Vector *, struct DObj *);
+s32 func_800FB914(s32);
+f32 lbvector_Normalize(Vector *);
+Vector *func_800195D8(Vector *, Vector *);
 
 struct UnkStruct800D7118 {
     u8 pad0[0x3C];
@@ -991,10 +1009,6 @@ void func_801DCBF8_ovl16(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DCBF8_ovl16.s")
 #endif
 void func_801DCDC8_ovl16(s32 arg0) {
-    void func_8019B9B0_ovl7(void);
-    void func_800AF27C(void);
-    s32 func_801BC794_ovl7(s32);
-    void func_800AA0C4(s32, f32);
     struct EnemyRecord *sp5C;
     s32 temp;
 
@@ -1119,8 +1133,6 @@ void func_801DD4F8_ovl16(struct Ovl16MObj *arg0, struct Ovl16Color *arg1) {
 }
 
 void func_801DD50C_ovl16(s32 arg0) {
-    void func_800AEDD0(f32, s32);
-    void func_800AA038(s32, f32, s32);
     extern struct Ovl16Color D_801EF6D0_ovl16;
     extern struct Ovl16Color D_801EF6D4_ovl16;
     extern struct Ovl16Color D_801EF6D8_ovl16;
@@ -1465,8 +1477,6 @@ void func_801DE840_ovl16(s32 arg0) {
 }
 
 void func_801DE8DC_ovl16(s32 arg0) {
-    void func_800BC1FC(s32);
-
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801D9438;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801DAEF4;
@@ -1536,7 +1546,6 @@ void func_801DECF4_ovl16(s32 arg0) {
  * compare operands.  Dense case labels ARE required: with only the four live
  * cases IDO emits a compare chain and no jump table (333 -> 319). */
 void func_801DED40_ovl16(s32 arg0) {
-    void func_800A9760(s32);
     struct EnemyRecord *temp;
     s32 t;
     s32 i;
@@ -1833,7 +1842,6 @@ void func_801DFEC8_ovl16(void) {
    stays a plain unguarded function. */
 void func_801DFF40_ovl16(s32 arg0)
 {
-  void func_800AF27C(void);
   s32 i;
   s32 r;
   s32 t;
@@ -1959,7 +1967,6 @@ void func_801E07A8_ovl16(void) {
    stays a plain unguarded function. */
 void func_801E0820_ovl16(s32 arg0)
 {
-  void func_800AF27C(void);
   s32 i;
   s32 r;
   s32 t;
@@ -2046,7 +2053,6 @@ void func_801E0CC8_ovl16(s32 arg0) {
 }
 
 void func_801E0F04_ovl16(s32 arg0) {
-    void func_800AF27C(void);
     s32 r;
     s32 t;
 
@@ -2706,7 +2712,6 @@ void func_801E3518_ovl16(s32 arg0) {
  * host build's PC_OVL16_SLOT_SHIM pointer fixup collapses to a plain cast here,
  * and the rest height is read back through the cell the way the ROM does. */
 void func_801E35D4_ovl16(s32 arg0) {
-    void utilGetTransformSRT(Vector *, struct DObj *);
     struct DObj *slots[8];
     Vector srt;
     u8 *limb;
@@ -2837,7 +2842,6 @@ void func_801E35D4_ovl16(s32 arg0) {
  * limb's transform vs. the watcher position, then run the 16-step extend /
  * retract choreography from the D_801EF98C/D_801EF9A0 schedules. */
 void func_801E35D4_ovl16(s32 arg0) {
-    void utilGetTransformSRT(Vector *, struct DObj *);
     struct DObj *slots[8];
     Vector srt;
     u8 *limb;
@@ -3402,8 +3406,6 @@ void func_801E4698_ovl16(s32 arg0) {
  * to center), steering via the D_801EF9C0/9C8/9D0 speed/decel/landing tables
  * keyed by the D_800EA1A0 direction flag. */
 void func_801E4754_ovl16(s32 arg0) {
-    void func_800AF27C(void);
-    s32 func_800FB914(s32);
     s32 i;
     s32 t;
     f32 v;
@@ -3587,8 +3589,6 @@ void func_801E4754_ovl16(s32 arg0) {
  * to center), steering via the D_801EF9C0/9C8/9D0 speed/decel/landing tables
  * keyed by the D_800EA1A0 direction flag. */
 void func_801E4754_ovl16(s32 arg0) {
-    void func_800AF27C(void);
-    s32 func_800FB914(s32);
     s32 i;
     s32 t;
     f32 v;
@@ -4681,8 +4681,6 @@ void func_801E7A38_ovl16(s32 arg0) {
  * while the ROM assembles the listing below. */
 #ifdef NON_MATCHING
 void func_801E7BD0_ovl16(struct GObj *arg0) {
-    f32 lbvector_Normalize(Vector *);
-    Vector *func_800195D8(Vector *, Vector *);
     f32 dx;
     f32 dy;
     Vector sp44;

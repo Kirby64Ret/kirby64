@@ -71,6 +71,13 @@ void func_801583BC_ovl3(void);
 void func_80158410_ovl3(s32);
 void func_80157E38_ovl3(s32);
 
+void utilPrintf(char *, ...);
+s32 func_80122460(void);
+void func_80152348_ovl3(f32);
+s32 func_800B2340(f32 *, struct DObj *, s32);
+/* the tree's definition (src/ovl1/ovl1_8.c) takes GObj *, not s32 */
+void func_800B5064(GObj *);
+
 #ifdef MIPS_TO_C
 /* FACTORY: DIFF 320/336 insns; short=33 long=0.
  * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
@@ -294,8 +301,6 @@ void func_80156050_ovl3(s32 arg0) {
 #endif
 
 void func_80156594_ovl3(s32 arg0) {
-    void utilPrintf(char *, ...);
-
     switch (gKirbyState.unkB) {
         case 1:
         case 2:
@@ -802,7 +807,6 @@ void func_801567B8_ovl3(s32 arg0) {
 
 void func_80157738_ovl3(s32 arg0) {
     s32 flag = 0;
-    s32 func_80122460(void);
 
     switch (gKirbyState.unkB) {
         case 1:
@@ -1293,11 +1297,9 @@ void func_80158EEC_ovl3(s32 arg0) {
 
 void func_80159164_ovl3(s32 arg0) {
     extern void func_800B4954(GObj *);
-    extern void func_800B5064(s32);
     extern void func_80122B40(void);
     extern void func_800BB468(s32, s32);
     extern void func_800F98EC(s32, f32);
-    extern s32 func_800B2340(f32 *, struct DObj *, s32);
 
     s32 id = omCurrentObj->objId;
     f32 probe[3];
@@ -1391,7 +1393,7 @@ void func_80159164_ovl3(s32 arg0) {
     D_800E3750[id] = 0.0f;
     D_800E3210[id] = 0.0f;
     D_800E3C90[id] = 65535.0f;
-    D_800DEF90[id] = func_800B5064;
+    D_800DEF90[id] = (void (*)(s32)) func_800B5064;
     D_800E0F10[id] = 3;
     switch (gKirbyState.unk4) {
         case 0:
@@ -1455,12 +1457,9 @@ void func_80159164_ovl3(s32 arg0) {
  * off at 14 with the walk animation. The widened D_800DFBD0 cell for N64
  * +0xC is index 3. */
 extern void func_800B4954(GObj *);
-extern void func_800B5064(s32);
 extern void func_80122B40(void);
 extern void func_800BB468(s32, s32);
 extern void func_800F98EC(s32, f32);
-extern s32 func_800B2340(f32 *, struct DObj *, s32);
-
 void func_80159164_ovl3(s32 arg0) {
     s32 id = omCurrentObj->objId;
     f32 probe[3];
@@ -1554,7 +1553,7 @@ void func_80159164_ovl3(s32 arg0) {
     D_800E3750[id] = 0.0f;
     D_800E3210[id] = 0.0f;
     D_800E3C90[id] = 65535.0f;
-    D_800DEF90[id] = func_800B5064;
+    D_800DEF90[id] = (void (*)(s32)) func_800B5064;
     D_800E0F10[id] = 3;
     switch (gKirbyState.unk4) {
         case 0:
@@ -1629,7 +1628,6 @@ void func_80159ADC_ovl3(s32 arg0) {
 extern s32 D_8012E7E8[];
 extern void func_80120A28(void);
 extern void func_800AF27C(void);
-extern void func_800B5064(s32);
 extern void func_800B531C(s32);
 void func_80159EA0_ovl3(s32, s32, f32);
 
@@ -1671,7 +1669,7 @@ void func_80159BA0_ovl3(s32 arg0) {
     while (D_800E8060[D_800E0D50[omCurrentObj->objId]] == 0) {
         ohSleep(1);
     }
-    D_800DEF90[omCurrentObj->objId] = func_800B5064;
+    D_800DEF90[omCurrentObj->objId] = (void (*)(s32)) func_800B5064;
     D_800E0F10[omCurrentObj->objId] = 2;
     func_801230E8(0x2005F, 0x20060, 1);
     D_800DEF90[omCurrentObj->objId] = func_800B531C;
@@ -1696,8 +1694,6 @@ void func_80159EA0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 
 void func_80159EF0_ovl3(s32 arg0) {
     f32 sp24[3];
-    void func_80152348_ovl3(f32);
-    s32 func_800B2340(f32 *, struct DObj *, s32);
 
     if (D_800E8060[D_800E0D50[omCurrentObj->objId]] == 0) {
         func_80153984_ovl3();

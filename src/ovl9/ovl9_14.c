@@ -119,18 +119,19 @@ void func_8020FF80_ovl9(struct GObj *arg0) {
     utilFuncTableJump(D_800E7880[omCurrentObj->objId], 6, &D_8021CB00_ovl9);
 }
 
+void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
+void procMainStub(struct GObj *);
+void func_800B74B8(s32);
+void func_800AFBB4(s32, struct GObj *);
+void func_801A3280_ovl7(void);
+s32 func_800B30BC(f32, f32, f32);
+void func_8021161C_ovl9(s32);
+void ohSleep(s32);
+
 /* The three constants must be LITERALS -- see the twin func_8020ED74_ovl9. */
 void func_80210154_ovl9(struct GObj *arg0) {
     extern s32 D_800D6B54;
     extern struct GObjProcess *gEntityGObjProcessArray5[];
-    void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
-    void procMainStub(struct GObj *);
-    void func_800B74B8(s32);
-    void func_800AFBB4(s32, struct GObj *);
-    void func_801A3280_ovl7(void);
-    s32 func_800B30BC(f32, f32, f32);
-    void func_8021161C_ovl9(s32);
-    void ohSleep(s32);
     f32 a;
     f32 b;
     f32 c;
@@ -499,7 +500,6 @@ void func_802114E4_ovl9(struct GObj *);
 void func_802110C0_ovl9(struct GObj *arg0) {
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     f32 a;
-    void ohSleep(s32);
 
     D_800DDFD0[omCurrentObj->objId] = 1;
     tmp->unk98 = &D_801CCA3C;
@@ -842,9 +842,9 @@ struct Ovl9_14AnimObj {
     struct Ovl9_14AnimCmd *unk24;
 };
 
-extern void func_80111550(void *);
+extern void func_80111550(s32);
 extern void *func_80111C88(s32 *, void *);
-extern void func_80111ECC(void *);
+extern void func_80111ECC(s32 *);
 s32 func_8019F650_ovl7(void);
 
 s32 func_8021217C_ovl9(void) {
@@ -859,7 +859,7 @@ s32 func_8021217C_ovl9(void) {
     if (ent->unk8C == NULL) {
         return 0;
     }
-    func_80111550((void *) omCurrentObj->objId);
+    func_80111550(omCurrentObj->objId);
     anim = func_80111C88(ent->unk8C, (void *) omCurrentObj->objId);
     anim->unk24->unk10 = (sp1C->pos.v.y * 0.5f) - 10.0f;
     anim->unk24->unk1C = sp18->pos.v.y + 10.0f;
@@ -1449,13 +1449,13 @@ void func_80213F9C_ovl9(struct GObj *arg0) {
 
 extern s32 D_801CA5E0;
 extern f32 gKirbyHp;
-extern s32 func_80169430_ovl3(s32, s32, s32, s32);
-extern void func_80111550(void *);
+extern void func_80169430_ovl3(s32, s32, u8, s32);
+extern void func_80111550(s32);
 extern void *func_80111C88(s32 *, void *);
-extern void func_80111ECC(void *);
+extern void func_80111ECC(s32 *);
 
 s32 func_80213FDC_ovl9(struct GObj *arg0) {
-    func_80111550((void *) omCurrentObj->objId);
+    func_80111550(omCurrentObj->objId);
     func_80111ECC(func_80111C88(&D_801CA5E0, omCurrentObj->objId));
     if (D_800E6F50[omCurrentObj->objId].originOffset < 40.0f) {
         if (gKirbyHp != 0.0f) {
@@ -1625,7 +1625,7 @@ extern s32 D_801C9718;
 extern s32 D_801C9784;
 void func_80214888_ovl9(struct GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {
-        func_80111550((void *) omCurrentObj->objId);
+        func_80111550(omCurrentObj->objId);
         if (D_800E98E0[omCurrentObj->objId] == 1) {
             func_80111ECC(func_80111C88(&D_801C9784, (void *) omCurrentObj->objId));
         } else {

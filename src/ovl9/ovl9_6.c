@@ -177,7 +177,7 @@ extern s32 D_801CA454[];
 extern s32 D_801C87A8[];
 extern u8 D_8012E7C5;
 extern struct GObjProcess *gEntityGObjProcessArray[];
-extern void func_80169430_ovl3(s32, u8, u8, s32);
+extern void func_80169430_ovl3(s32, s32, u8, s32);
 s32 func_801EBB28_ovl9(s32, void *);
 void func_8019F410_ovl7(struct DObj *);
 void func_801EACB8_ovl9(struct GObj *);
@@ -216,9 +216,6 @@ void func_800A8100(s32, s32, s32, void *);
 void func_800AF27C(void);
 
 void func_801EB6BC_ovl9(GObj *arg0) {
-    void ohSleep(s32);
-    void play_sound(s32);
-
     D_800DDFD0[omCurrentObj->objId] = 2;
     D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8784_ovl7;
     func_800B33F4();
@@ -296,7 +293,7 @@ struct Ovl9AnimObj2 {
     struct Ovl9AnimCmd2 *unk24;
 };
 
-void func_80111550(u32);
+void func_80111550(s32);
 struct Ovl9AnimObj2 *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl9AnimObj2 *);
 s32 func_80110150(void *);
@@ -609,6 +606,11 @@ extern s32 D_8021C184_ovl9[];
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 s32 func_801ED018_ovl9(s32);
 void func_8019D958_ovl7(u16);
+/* NOT a typo: func_8019DD78_ovl7 is DEFINED `s32 (u8, s32)` in ovl7, and
+ * src/ovl9/ovl9_4.c declares it that way, but this TU was compiled against
+ * an `s32` first parameter and the ROM proves it -- spelling it u8 here
+ * narrows the three argument loads at func_801ED3E4_ovl9 from `lw a0,0(a0)`
+ * to `lbu a0,3(a0)` and breaks the sha1. Load-bearing; leave it. */
 s32 func_8019DD78_ovl7(s32, s32);
 void func_800B4924(s32);
 void func_800AFBB4(s32, struct GObj *);
@@ -949,7 +951,7 @@ extern f32 D_8021C22C_ovl9[];
 extern s32 D_8021C238_ovl9[];
 extern f32 D_8021C244_ovl9[];
 extern void func_800A9760(s32);
-extern void func_801A2ADC_ovl7(u32);
+extern void func_801A2ADC_ovl7(void *);
 extern void func_8019D958_ovl7(u16);
 extern void func_801A3E80_ovl7(struct GObj *);
 extern s32 func_800F9974(s32 *, f32 *, f32);
@@ -1000,7 +1002,7 @@ void func_801EDBEC_ovl9(struct GObj *arg0) {
     ent->unk8C = ent->unk88->animTable;
     ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
-    func_801A2ADC_ovl7(ent->unk88->unk10);
+    func_801A2ADC_ovl7((void *) ent->unk88->unk10);
     D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     ent->unk80->unk10 = D_8021C244_ovl9[idx];
     ent->unk80->unk18 = -800.0f;
@@ -1040,7 +1042,7 @@ extern struct EnemyKindDesc D_801C399C_ovl7;
 extern struct EnemyKindDesc D_801C3A28_ovl7;
 extern struct EnemyKindDesc D_801C3A94_ovl7;
 void func_800A9760(s32);
-void func_801A2ADC_ovl7(u32);
+void func_801A2ADC_ovl7(void *);
 void func_801A3E80_ovl7(struct GObj *);
 void func_801ECAD8_ovl9(struct GObj *);
 
@@ -1077,7 +1079,7 @@ void func_801EE064_ovl9(struct GObj *arg0) {
     ent->unk8C = ent->unk88->animTable;
     ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
-    func_801A2ADC_ovl7(ent->unk88->unk10);
+    func_801A2ADC_ovl7((void *) ent->unk88->unk10);
     ent->unk80->unk10 = 19.0f;
     ent->unk80->unk18 = -800.0f;
     if ((D_800E7880[omCurrentObj->objId] == 8) &&
@@ -1097,7 +1099,7 @@ extern struct EnemyKindDesc D_801C3A04_ovl7;
 extern struct EnemyKindDesc D_801C3A70_ovl7;
 /* D_8021D65C_ovl9: literal, this TU owns its .rodata */
 extern void func_800A9760(s32);
-extern void func_801A2ADC_ovl7(u32);
+extern void func_801A2ADC_ovl7(void *);
 extern void func_801A3E80_ovl7(struct GObj *);
 extern void func_800F8E6C(struct GObj *);
 extern s32 func_800F9974(s32 *, f32 *, f32);
@@ -1140,7 +1142,7 @@ void func_801EE2E8_ovl9(struct GObj *arg0) {
     ent->unk8C = ent->unk88->animTable;
     ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
-    func_801A2ADC_ovl7(ent->unk88->unk10);
+    func_801A2ADC_ovl7((void *) ent->unk88->unk10);
     D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     ent->unk80->unk10 = 38.0f;
     ent->unk80->unk18 = -320.0f;
@@ -1181,7 +1183,7 @@ extern f32 D_8021C244_ovl9[];
 extern f32 D_8021C250_ovl9[];
 /* D_8021D704_ovl9: literal, this TU owns its .rodata */
 extern void func_800A9760(s32);
-extern void func_801A2ADC_ovl7(u32);
+extern void func_801A2ADC_ovl7(void *);
 extern void func_800F8E6C(struct GObj *);
 extern s32 func_800F9974(s32 *, f32 *, f32);
 extern s32 func_8019B918_ovl7(void);
@@ -1230,7 +1232,7 @@ void func_801EE728_ovl9(struct GObj *arg0) {
     ent->unk8C = ent->unk88->animTable;
     ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
-    func_801A2ADC_ovl7(ent->unk88->unk10);
+    func_801A2ADC_ovl7((void *) ent->unk88->unk10);
     D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     ent->unk80->unk10 = D_8021C244_ovl9[kind];
     ent->unk80->unk18 = -640.0f;
@@ -1282,7 +1284,7 @@ extern s32 D_8021C220_ovl9[];
 extern f32 D_8021C22C_ovl9[];
 extern f32 D_8021C244_ovl9[];
 extern void func_800A9760(s32);
-extern void func_801A2ADC_ovl7(u32);
+extern void func_801A2ADC_ovl7(void *);
 extern void func_8019D958_ovl7(u16);
 extern s32 func_800F9974(s32 *, f32 *, f32);
 extern s32 func_8019B918_ovl7(void);
@@ -1330,7 +1332,7 @@ void func_801EEC28_ovl9(struct GObj *arg0) {
     ent->unk8C = ent->unk88->animTable;
     ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
-    func_801A2ADC_ovl7(ent->unk88->unk10);
+    func_801A2ADC_ovl7((void *) ent->unk88->unk10);
     D_800E7B20[omCurrentObj->objId] = ent->unk88->rangeGate;
     ent->unk80->unk10 = D_8021C244_ovl9[idx];
     ent->unk80->unk18 = -800.0f;
@@ -1481,7 +1483,7 @@ extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
 extern void func_800A1F30(void *);
 extern void func_800FB914(s32);
 extern void func_800BB468(s32, s32);
-extern void func_800FD570(s32, s32, f32, f32, f32);
+extern u32 func_800FD570(s32, u32, f32, f32, f32);
 extern void func_801A3E80_ovl7(GObj *);
 extern s32 random_soft_s32_range(s32);
 void func_801EE064_ovl9(GObj *);
@@ -1639,7 +1641,7 @@ extern void func_800A7F74(u32, u32, u16, f32, f32, f32);
 extern void func_800A1F30(void *);
 extern void func_800FB914(s32);
 extern void func_800BB468(s32, s32);
-extern void func_800FD570(s32, s32, f32, f32, f32);
+extern u32 func_800FD570(s32, u32, f32, f32, f32);
 extern void func_801A3E80_ovl7(GObj *);
 extern s32 random_soft_s32_range(s32);
 void func_801EE064_ovl9(GObj *);
@@ -1840,7 +1842,7 @@ void func_801EFF24_ovl9(GObj *arg0) {
 
 extern void func_800FB914(s32);
 extern void func_800BB468(s32, s32);
-extern void func_800FD570(s32, s32, f32, f32, f32);
+extern u32 func_800FD570(s32, u32, f32, f32, f32);
 extern void func_801A3E80_ovl7(struct GObj *);
 
 void func_801EFFCC_ovl9(struct GObj *arg0) {

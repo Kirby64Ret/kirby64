@@ -7,6 +7,13 @@
 
 extern struct GObj *D_800DE350[];
 s32 func_800B3234(f32 inputX, f32 inputY, f32 inputZ);
+
+void func_8011DD5C(f32 *, f32 *);
+void func_8011D40C(void);
+u8 func_8011E244(void);
+void func_8011E31C(Vector *);
+void func_80112A40(s32, Vector *, Vector *);
+f32 func_800F8728(s32, f32, f32);
 #define M_TAU (2 * M_PIF)
 
 void func_800B35F0(void) {
@@ -625,12 +632,6 @@ void func_800B531C(s32 arg0) {
     extern f32 D_800E5C10[];
     extern s32 D_800D6B54;
     extern f32 gKirbyHp;
-    extern void func_8011DD5C(f32 *, f32 *);
-    extern void func_8011D40C(void);
-    extern s32 func_8011E244(void);
-    extern void func_8011E31C(Vector *);
-    extern void func_80112A40(s32, Vector *, Vector *);
-    extern f32 func_800F8728(s32, f32, f32);
     Vector spd;
     f32 fwd;
     f32 push;
@@ -785,12 +786,6 @@ void func_800B531C(s32 arg0) {
 #include "Player.h"
 
 void func_800B531C(s32 arg0) {
-    void func_8011DD5C(f32 *, f32 *);
-    void func_8011D40C(void);
-    u8 func_8011E244(void);
-    void func_8011E31C(Vector *);
-    void func_80112A40(s32, Vector *, Vector *);
-    f32 func_800F8728(s32, f32, f32);
     extern f32 D_800E5510[];
     extern f32 D_800E5C10[];
     extern s32 D_800D6B54;
@@ -1034,8 +1029,6 @@ void func_800B6064(GObj *gobj) {
  * "not riding anything" sentinel, and the lateral report to func_800F8728
  * is guarded by (delta.x != 0 || delta.z != 0). */
 void func_800B6144(s32 arg0) {
-    void func_80112A40(s32, Vector *, Vector *);
-    f32 func_800F8728(s32, f32, f32);
     s32 slot;
     Vector pos;
     Vector delta;
@@ -1068,8 +1061,6 @@ void func_800B6144(s32 arg0) {
  * delta (func_80112A40) and carry the entity's next position with it,
  * reporting the lateral part to func_800F8728 first. */
 void func_800B6144(s32 arg0) {
-    void func_80112A40(s32, Vector *, Vector *);
-    f32 func_800F8728(s32, f32, f32);
     u32 objId = omCurrentObj->objId;
     struct EnemyProbe *rec = D_800E1B50[objId]->unk84;
 

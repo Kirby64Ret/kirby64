@@ -9,7 +9,7 @@ extern FUNCLIST D_8021BE4C_ovl9;
 extern FUNCLIST D_8021BEA0_ovl9;
 extern FUNCLIST D_8021BED0_ovl9;
 
-extern void func_800B6FD8(s32);
+extern void func_800B6FD8(struct GObj *);
 extern void func_801A0D50_ovl7(void *);
 /* K&R form is load-bearing here: its real signature is
  * void func_801A6C10_ovl7(GObj *), but this file calls it with both 0 args
@@ -78,10 +78,13 @@ void func_801E0D0C_ovl9(struct GObj *arg0) {
 extern f32 **D_801CAAAC;
 extern struct EnemyEventTable D_801CB9C8;
 
+void func_800A9EA4(s32);
+void func_801A2ADC_ovl7(void *);
+void ohSleep(s32);
+void func_800AA018(s32);
+void play_sound(s32);
+
 void func_801E0E24_ovl9(struct GObj *arg0) {
-    void func_800A9EA4(s32);
-    void ohSleep(s32);
-    void func_801A2ADC_ovl7(void *);
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E0490[omCurrentObj->objId] = &D_801CAAAC;
@@ -136,8 +139,6 @@ extern f32 **D_801CA9F8_ovl7;
 extern s32 D_801CBA10;
 
 void func_801E1214_ovl9(struct GObj *arg0) {
-    void ohSleep(s32);
-    void func_801A2ADC_ovl7(void *);
     s32 i;
 
     D_800E9C60[omCurrentObj->objId] = 0x40;
@@ -190,9 +191,6 @@ extern f32 **D_801CAAC0;
 extern struct EnemyEventTable D_801CB9EC;
 
 void func_801E16A8_ovl9(struct GObj *arg0) {
-    void func_800A9EA4(s32);
-    void ohSleep(s32);
-    void func_801A2ADC_ovl7(void *);
 
     D_800DDFD0[omCurrentObj->objId] = 1;
     D_800E0490[omCurrentObj->objId] = &D_801CAAC0;
@@ -233,8 +231,6 @@ void func_801E1994_ovl9(struct GObj *arg0) {
 }
 
 void func_801E1AB0_ovl9(struct GObj *arg0) {
-    void ohSleep(s32);
-    void func_801A2ADC_ovl7(void *);
     s32 i;
 
     D_800E9C60[omCurrentObj->objId] = 0x40;
@@ -514,6 +510,10 @@ void func_801E236C_ovl9(struct GObj *arg0) {
  * whatever GObj* is already sitting in $a0. An ANSI prototype breaks
  * compilation with "too few arguments". */
 void func_801A0D74_ovl7();
+/* func_8019F3B0_ovl7 is DEFINED `void (void)` in ovl7 and ovl9_14.c declares
+ * it that way, but this TU was compiled against an `s32` return and the ROM
+ * proves it: spelling it `void` reserves no $v0 across the call and shifts
+ * 50 words of register allocation in func_801E24C0_ovl9. Load-bearing. */
 s32 func_8019F3B0_ovl7(void);
 
 void func_801E2548_ovl9() {
@@ -677,7 +677,6 @@ void func_801E2C68_ovl9(GObj *arg0) {
 
 void func_801E2D34_ovl9(struct GObj *arg0) {
     extern struct EnemyEventTable D_801CBA7C;
-    extern void func_800AA018(s32);
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBA7C;
@@ -740,7 +739,6 @@ void func_801E309C_ovl9(GObj *arg0) {
 
 void func_801E3134_ovl9(struct GObj *arg0) {
     extern f32 gameTicksPerDraw;
-    extern void play_sound(s32);
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBA58;
@@ -1210,7 +1208,7 @@ extern u8 D_8012E7C5;
 f32 func_801E4F18_ovl9(void);
 void func_801E4DC8_ovl9(void);
 s32 func_801E55C0_ovl9(s32, void *);
-extern void func_80169430_ovl3(s32, s32, s32, s32);
+extern void func_80169430_ovl3(s32, s32, u8, s32);
 struct PcOvl9_4AnimInfo {
     u8 unk0;
     u8 unk1;
@@ -1346,7 +1344,7 @@ extern u8 D_8012E7C5;
 f32 func_801E4F18_ovl9(void);
 void func_801E4DC8_ovl9(void);
 s32 func_801E55C0_ovl9(s32, void *);
-extern void func_80169430_ovl3(s32, s32, s32, s32);
+extern void func_80169430_ovl3(s32, s32, u8, s32);
 struct PcOvl9_4AnimInfo {
     u8 unk0;
     u8 unk1;
@@ -1788,7 +1786,7 @@ struct Ovl9AnimObj2 {
     struct Ovl9AnimCmd2 *unk24;
 };
 
-void func_80111550(u32);
+void func_80111550(s32);
 struct Ovl9AnimObj2 *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl9AnimObj2 *);
 s32 func_80110150(void *);

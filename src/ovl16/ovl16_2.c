@@ -2001,20 +2001,159 @@ void func_801ED634_ovl16(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801ED634_ovl16.s")
 #endif
 
+/* Homing-bomb flight main, installed by func_801ED634_ovl16 above.
+ *
+ * Every frame: flag the bomb in-bounds (D_800EA1A0) while its next position is
+ * inside x/y [-240,240] x [40,240]; feed the parent turret's mean horizontal
+ * scale into the bomb's own record (unk80->unk10) so the trail scales with it.
+ * Then dispatch on the fight phase D_800D7098.unk10:
+ *   0     -- the fight is over: burst into the three 0x17/0x18/0x19 effects at
+ *            the current position (once, guarded by D_800E9E20), mark the
+ *            record dead (unk40) and hand the object back to the generic
+ *            enemy driver func_801A3E80_ovl7.
+ *   1     -- still mounted: re-read the mount point off the parent's nozzle
+ *            DObj (D_801EFDA0_ovl16 picks the slot) and follow it.
+ *   >= 2  -- free flight: run the flight anim, pick the held/loose event table
+ *            (D_801DA4A8 / D_801DA484) and pulse the trail; once the re-aim
+ *            cooldown D_800E9FE0 expires and the bomb is not held, and Kirby
+ *            (D_800D7098.unk34) is within 72 units, tag him (spawning a 0x36
+ *            marker entity if he has none), re-aim along the bomb's own travel
+ *            direction crossed with the direction to Kirby, wrap that angle
+ *            into +/-2pi and re-launch at 6 units/frame, then set the cooldown
+ *            back to 10 frames. Otherwise just tick the cooldown down.
+ */
 #ifdef MIPS_TO_C
-/* FACTORY: unmeasured first draft */
+/* FACTORY: 189/450, register-naming cascade ONLY.
+ *
+ * Instruction count, schedule, every branch and every branch-likely, the whole
+ * frame (0x68) and EVERY stack slot are the ROM's: sp30/sp3C at 0x30/0x3C,
+ * the `mid` spill at 0x50, sp58 at 0x58, `ent` at 0x64. Verified by walking
+ * the ROM's `addiu $reg,$sp` immediates (LEVERS 43). Two of the 189 are not
+ * real: they are the D_801F0100/D_801F0104 own-.rodata references that
+ * verify.py miscounts when it scores a scratch COPY of a migrated TU, so the
+ * true residue is 187 and all of it is $tN/$vN naming -- the ROM holds
+ * &omCurrentObj in $t1 and objId*4 in $t0 where IDO gives us $t0 and $v0, and
+ * that one rotation propagates. Exactly the permuter's job.
+ *
+ * The local list is load-bearing and was derived, not guessed: IDO gives the
+ * LAST declaration the LOWEST address, so this order is what puts the three
+ * Vectors and the two spills on the ROM's offsets. The ROM's frame has room
+ * for exactly THREE 4-byte scalars besides `mid` (0x48/0x4C/0x54), which is
+ * why the two position deltas feeding sqrtf are written inline instead of
+ * being named locals -- a fourth scalar grows the frame to 0x70. `pad54` is
+ * one of the dead words the ROM reserves and never writes (LEVERS 43).
+ */
 void func_801EDE50_ovl16(s32 arg0) {
     void func_801EF2E8_ovl16(f32);
     extern s32 D_801DA484;
     extern s32 D_801DA4A8;
     struct EnemyRecord *ent;
+    Vector sp58;
+    s32 pad54;
+    f32 mid;
+    s32 cd;
+    s32 t;
+    Vector sp3C;
+    Vector sp30;
+
+    ent = D_800E1B50[omCurrentObj->objId];
+    if ((gEntitiesNextPosYArray[omCurrentObj->objId] > 240.0f) || (gEntitiesNextPosYArray[omCurrentObj->objId] < 40.0f) ||
+        (gEntitiesNextPosXArray[omCurrentObj->objId] < -240.0f) || (gEntitiesNextPosXArray[omCurrentObj->objId] > 240.0f)) {
+        D_800EA1A0[omCurrentObj->objId] = 0;
+    } else {
+        D_800EA1A0[omCurrentObj->objId] = 1;
+    }
+    mid = (D_800DFBD0[omCurrentObj->objId][3]->scale.v.x + D_800DFBD0[omCurrentObj->objId][3]->scale.v.y) * 0.5f;
+    ent->unk80->unk10 = mid;
+    if (D_800D7098.unk10 != 0) {
+        if (D_800D7098.unk10 == 1) {
+            func_800B2340(&sp58,
+                          D_800DFBD0[D_800E0D50[omCurrentObj->objId]]
+                                    [D_801EFDA0_ovl16[D_800E98E0[omCurrentObj->objId]]],
+                          D_800E0D50[omCurrentObj->objId]);
+            gEntitiesNextPosXArray[omCurrentObj->objId] = sp58.x;
+            gEntitiesNextPosYArray[omCurrentObj->objId] = sp58.y;
+            gEntitiesNextPosZArray[omCurrentObj->objId] = sp58.z;
+        }
+        func_801EF1A4_ovl16(0x1E);
+        if (D_800E9E20[omCurrentObj->objId] == 0) {
+            if (((s32 *) D_800E9AA0)[omCurrentObj->objId] == 1) {
+                D_800E1B50[omCurrentObj->objId]->unk8C = &D_801DA4A8;
+            } else {
+                D_800E1B50[omCurrentObj->objId]->unk8C = &D_801DA484;
+            }
+            func_801EF2E8_ovl16(mid * 35.0f);
+        }
+        if ((s32) D_800D7098.unk10 >= 2) {
+            cd = D_800E9FE0[omCurrentObj->objId].as_s32;
+            if ((cd == 0) && (((s32 *) D_800E9AA0)[omCurrentObj->objId] == 0)) {
+                if (sqrtf(((gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800D7098.unk34]) *
+                           (gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800D7098.unk34])) +
+                          ((gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[D_800D7098.unk34]) *
+                           (gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[D_800D7098.unk34]))) < 72.0f) {
+                    if (((s32 *) D_800E9AA0)[D_800D7098.unk34] == 0) {
+                        t = func_801ACC34_ovl7(0x36, 3);
+                        if (t != 0) {
+                            D_800E8E60[t] = 1;
+                            D_800E0D50[t] = D_800D7098.unk34;
+                            ((s32 *) D_800E9AA0)[D_800D7098.unk34] = 1;
+                            D_800E9C60[D_800D7098.unk34] = t;
+                        }
+                    }
+                    sp3C.x = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800D7098.unk34];
+                    sp3C.y = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[D_800D7098.unk34];
+                    sp3C.z = 0.0f;
+                    lbvector_Normalize(&sp3C);
+                    sp30.x = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesPosXArray[omCurrentObj->objId];
+                    sp30.y = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesPosYArray[omCurrentObj->objId];
+                    sp30.z = 0.0f;
+                    lbvector_Normalize(&sp30);
+                    func_800195D8(&sp30, &sp3C);
+                    D_800EA6E0[omCurrentObj->objId] = atan2f(-sp30.x, sp30.y);
+                    while (D_800EA6E0[omCurrentObj->objId] > 6.2831855f) {
+                        D_800EA6E0[omCurrentObj->objId] -= 6.2831855f;
+                    }
+                    while (D_800EA6E0[omCurrentObj->objId] < -6.2831855f) {
+                        D_800EA6E0[omCurrentObj->objId] += 6.2831855f;
+                    }
+                    D_800E3050[omCurrentObj->objId] = sinf(D_800EA6E0[omCurrentObj->objId]) * -6.0f;
+                    D_800E3210[omCurrentObj->objId] = cosf(D_800EA6E0[omCurrentObj->objId]) * 6.0f;
+                    D_800E9FE0[omCurrentObj->objId].as_u32 = 0xA;
+                }
+            } else if (cd > 0) {
+                D_800E9FE0[omCurrentObj->objId].as_s32 = cd - 1;
+            }
+        }
+    } else {
+        if (D_800E9E20[omCurrentObj->objId] == 0) {
+            func_800A7F74(6, 2, 0x17, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId],
+                          gEntitiesNextPosZArray[omCurrentObj->objId]);
+            func_800A7F74(6, 2, 0x18, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId],
+                          gEntitiesNextPosZArray[omCurrentObj->objId]);
+            func_800A7F74(6, 2, 0x19, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId],
+                          gEntitiesNextPosZArray[omCurrentObj->objId]);
+        }
+        ent->unk40 = 1;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A3E80_ovl7);
+    }
+}
+#elif defined(PORT)
+/* Same body as the N64 draft above, minus the stack-shape scaffolding: the
+ * `pad54` dead word and the inlined sqrtf operands exist only to reproduce the
+ * ROM's frame, so the port names the two deltas and drops the pad. */
+void func_801EDE50_ovl16(s32 arg0) {
+    void func_801EF2E8_ovl16(f32);
+    extern s32 D_801DA484;
+    extern s32 D_801DA4A8;
+    struct EnemyRecord *ent;
+    Vector sp58;
+    Vector sp3C;
+    Vector sp30;
     f32 mid;
     f32 dx;
     f32 dy;
     s32 cd;
     s32 t;
-    Vector sp58;
-    s32 pad;
 
     ent = D_800E1B50[omCurrentObj->objId];
     if ((gEntitiesNextPosYArray[omCurrentObj->objId] > 240.0f) || (gEntitiesNextPosYArray[omCurrentObj->objId] < 40.0f) ||
@@ -2050,9 +2189,6 @@ void func_801EDE50_ovl16(s32 arg0) {
                 dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800D7098.unk34];
                 dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[D_800D7098.unk34];
                 if (sqrtf(dx * dx + dy * dy) < 72.0f) {
-                    Vector sp3C;
-                    Vector sp30;
-
                     if (((s32 *) D_800E9AA0)[D_800D7098.unk34] == 0) {
                         t = func_801ACC34_ovl7(0x36, 3);
                         if (t != 0) {

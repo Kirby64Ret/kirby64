@@ -21,6 +21,7 @@ void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
 extern struct GObjProcess *gEntityGObjProcessArray[];
 void func_801BE79C_ovl7(GObj *);
 void func_801BDABC_ovl7(GObj *);
+void func_801BEE54_ovl7(GObj *);
 
 void func_800AA018(s32);
 void curObjSleepForever(void);
@@ -72,6 +73,16 @@ extern FUNCLIST D_801CD8C0_ovl7;
 void func_800B67A8(GObj *);
 void func_800B6684(GObj *);
 void func_800B6474(GObj *);
+
+void func_800B7138(GObj *);
+void func_800BB468(s32, s32);
+void func_800B3520(void);
+void func_800AF27C(void);
+void func_8019B164_ovl7(void);
+s32 func_801AE7E0_ovl7(s32);
+void func_800F6C40(s32, s32);
+void func_800B9CB4(s32, s32);
+s32 saveCollectedAllShards(void);
 
 void func_801BD510_ovl7(void *arg0) {
     struct EnemyRecord *temp_t8;
@@ -364,17 +375,6 @@ void func_801BE740_ovl7(void) {
    idiom the ROM uses -- and D_800E77A0 is read as a HALFWORD (lhu). */
 #ifdef MIPS_TO_C
 void func_801BE79C_ovl7(GObj *arg0) {
-    void func_801BEE54_ovl7(GObj *);
-    void func_800B7138(GObj *);
-    void func_800BB468(s32, s32);
-    void func_800B3520(void);
-    void func_800AF27C(void);
-    void func_8019B164_ovl7(void);
-    s32 func_801AE7E0_ovl7(s32);
-    void func_800F6C40(s32, s32);
-    void func_800B9CB4(s32, s32);
-    s32 saveCollectedAllShards(void);
-    void utilGetTransformSRT(Vector *, struct DObj *);
     extern s32 saveCurrentFileNum;
     extern u8 D_800D6BC0[];
     extern s32 D_800BE500;
@@ -530,17 +530,6 @@ void func_801BE79C_ovl7(GObj *arg0) {
  * D_800E98E0 to hit 2, close out, and for clear kinds 6/7/8 advance the
  * level-select state (func_800F6C40, 2 args) and save 2/5/8. */
 void func_801BE79C_ovl7(GObj *arg0) {
-    void func_801BEE54_ovl7(GObj *);
-    void func_800B7138(GObj *);
-    void func_800BB468(s32, s32);
-    void func_800B3520(void);
-    void func_800AF27C(void);
-    void func_8019B164_ovl7(void);
-    s32 func_801AE7E0_ovl7(s32);
-    void func_800F6C40(s32, s32);
-    void func_800B9CB4(s32, s32);
-    s32 saveCollectedAllShards(void);
-    void utilGetTransformSRT(Vector *, struct DObj *);
     extern s32 saveCurrentFileNum;
     extern u8 D_800D6BC0[];
     extern s32 D_800BE500;
