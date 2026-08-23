@@ -74,10 +74,18 @@ def guard_blocks(lines):
     return out
 
 
-def score(path, func):
+def score(path, func, orig):
     """Run verify.py on `path` for `func`; return ('MATCH'|diff_count|None, total)."""
+    # The scratch copy lives in a temp directory, so a quoted sibling include
+    # (`#include "ovl19_2.h"`) cannot resolve from it -- asm-processor's
+    # automatic `-I <dir of the .c>` points at the copy. Hand verify.py the
+    # ORIGINAL directory as well. Without this every draft in a file with a
+    # sibling include reported "did not compile alone" and was silently left
+    # unmeasured.
+    env = dict(os.environ, VERIFY_EXTRA_INC=os.path.dirname(
+        os.path.abspath(orig)) or '.')
     r = subprocess.run([sys.executable, VERIFY, path, func],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, env=env)
     txt = r.stdout + r.stderr
     m = DIFFLINE.search(txt)
     if m:
@@ -116,7 +124,7 @@ def measure_file(path):
         try:
             sp = os.path.join(d, os.path.basename(path))
             open(sp, 'w').write('\n'.join(scratch_lines))
-            got, tot = score(sp, func)
+            got, tot = score(sp, func, path)
         finally:
             shutil.rmtree(d, ignore_errors=True)
         results.append({'file': path, 'func': func, 'note': note,

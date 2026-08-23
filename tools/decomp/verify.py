@@ -23,6 +23,23 @@ CFLAGS = ('-c -Wab,-r4300_mul -non_shared -G0 -Xcpluscomm -Xfullwarn -signed '
           '-D_LANGUAGE_C -D_FINALROM {opt} -nostdinc -Iinclude/libc -DTARGET_N64 '
           '-DF3DEX_GBI_2 -Iinclude -Ilibreultra/include/2.0I -Ibuild -Ibuild/include '
           '-Ibuild/assets -Isrc -I. -mips2 -32 -woff 624,568')
+
+# asm-processor adds `-I <directory of the .c file>` so that a quoted sibling
+# include like `#include "ovl19_2.h"` resolves. That breaks when the file
+# being scored is a SCRATCH COPY living somewhere else: the copy's directory
+# has no siblings, the include fails, and the whole TU is reported as
+# "did not compile" rather than as a measurement.
+#
+# It hid real numbers. Every draft in ovl19_2.c came back unscorable for that
+# reason alone, and once they could be scored, 8 of that file's FACTORY notes
+# turned out to be wrong -- one claiming 7/340 when 333 words differ. A tool
+# that silently declines to measure is worse than one that measures badly,
+# because nobody re-checks a blank.
+#
+# VERIFY_EXTRA_INC lets a caller scoring a copy name the ORIGINAL directory.
+_extra = os.environ.get('VERIFY_EXTRA_INC')
+if _extra:
+    CFLAGS += ' -I' + _extra
 ASFLAGS = '-mtune=vr4300 -march=vr4300 --no-pad-sections -mabi=32 -mips3 -Ibuild -Iinclude'
 def _makefile_overrides():
     """Per-file compiler settings, READ FROM THE MAKEFILE rather than copied.
