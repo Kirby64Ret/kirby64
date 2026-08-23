@@ -383,7 +383,8 @@ typedef struct {
 
 #define kMgr (*(KAudioMgrX *)&D_800978E0)
 
-extern u16 D_8003FA10[];        /* n_eqpower[0..126]; [127] is D_8003FB0E */
+extern s16 D_8003FA10[];        /* n_eqpower[0..126]; [127] is D_8003FB0E.
+                                 * s16, not u16: every ROM reference is an `lh`. */
 extern u16 lbreflect_Int16SinTable[];
 extern u16 D_8003FB1C;          /* BGM channel enable mask */
 extern f32 D_8003FB18;          /* global tempo scale */
@@ -420,7 +421,7 @@ Acmd *func_8002714C(N_PVoice *e, s16 *inp, s32 outCount, Acmd *p);
 void func_8002649C(void *seqp, N_ALEvent *evt);
 void func_800285F8(void *seqp, N_ALEvent *evt);
 ALMicroTime func_80026698(void *client);
-void func_8002A508(void *fx, ALSynConfig *c, ALHeap *hp);
+void func_8002A508(ALFx **r, ALSynConfig *c, ALHeap *hp);
 Acmd *func_80028318(s32 sampleOffset, Acmd *p);
 void func_8002AE74(N_ALVoice *v, void *w, f32 pitch, s16 vol, u8 pan, u8 fxmix,
                    ALMicroTime t);
@@ -775,7 +776,140 @@ void func_80023AE4(void *arg0) {
     osSetIntMask(mask);
 }
 
+/* The SFX tone allocator: pops the free-tone list and initialises the record.
+ *
+ * IPA-BLOCKED, and this one is decidable rather than suspected: the ROM reads
+ * the tone-bytecode pointer out of $s1 and returns the record in $s0, yet its
+ * frame is 0x18 and saves only $ra -- both callee-saved registers are clobbered
+ * without ever being written.  That is IDO's -O3 `ujoin` custom convention, and
+ * tools/decomp/cc_o3.py cannot reproduce it because ujoin is not shipped with
+ * tools/ido-7.1recomp.  An o32 definition must home the parameter (`sw $a0,
+ * 0x20($sp)`) and spill the record across the second osSetIntMask, which is the
+ * whole 3-word count excess and rotates every register after it.
+ *
+ * FACTORY: 67 of 68 words DIFFER (ROM 69 words), whole-function register
+ * rotation on top of the two ujoin spills.  Swept: a held `KMgrToneView *` base
+ * local vs an inline cast at each use (76 -> 72 words), the duration copy as a
+ * `for` loop vs written out (72 -> 68 -- the ROM peels two iterations and bases
+ * the other four off `mgr + 4`, which the loop form does not reproduce either
+ * way), and `id` as u16 vs s32 (no change; the u16 spelling is the field's own
+ * type and is kept). */
+#ifdef MIPS_TO_C
+typedef struct KToneFull {
+    /* 0x00 */ struct KToneFull *next;
+    /* 0x04 */ struct KToneFull *owner;
+    /* 0x08 */ u8  *pc;
+    /* 0x0C */ u8  *loopPc;
+    /* 0x10 */ s16 wait;
+    /* 0x12 */ u16 dur[6];
+    /* 0x1E */ u8  unk1E;
+    /* 0x1F */ u8  priority;
+    /* 0x20 */ u8  unk20;
+    /* 0x21 */ u8  unk21;
+    /* 0x22 */ u8  volume;
+    /* 0x23 */ u8  pan;
+    /* 0x24 */ u16 program;
+    /* 0x26 */ u16 id;
+    /* 0x28 */ void *note;
+    /* 0x2C */ u8  reverb;
+    /* 0x2D */ u8  groupSel;
+    /* 0x2E */ u8  chanVol;
+    /* 0x2F */ u8  panOverride;
+    /* 0x30 */ u8  revOverride;
+} KToneFull;
+
+/* The fields of D_800978E0 this function touches; the file-scope KAudioMgr is a
+ * partial view that stops at pad44 and cannot spell 0x4A/0x4C/0x4E. */
+typedef struct KMgrToneView {
+    /* 0x00 */ u8  pad00[0x38];
+    /* 0x38 */ struct KToneFull *freeTones;
+    /* 0x3C */ u8  pad3C[0xE];
+    /* 0x4A */ u16 toneIdSeq;
+    /* 0x4C */ u8  defPriority;
+    /* 0x4D */ u8  pad4D[1];
+    /* 0x4E */ u16 durDefaults[6];
+} KMgrToneView;
+
+KToneFull *func_80023B34(u8 *pc) {
+    KToneFull *tone;
+    OSIntMask mask;
+    u16 id;
+
+    mask = osSetIntMask(OS_IM_NONE);
+    tone = (*(KMgrToneView *) &D_800978E0).freeTones;
+    if (tone != NULL) {
+        (*(KMgrToneView *) &D_800978E0).freeTones = tone->next;
+        tone->wait = 1;
+        tone->pc = pc;
+        tone->loopPc = pc;
+        tone->unk1E = 0x30;
+        tone->priority = (*(KMgrToneView *) &D_800978E0).defPriority;
+        tone->dur[0] = (*(KMgrToneView *) &D_800978E0).durDefaults[0];
+        tone->dur[1] = (*(KMgrToneView *) &D_800978E0).durDefaults[1];
+        tone->dur[2] = (*(KMgrToneView *) &D_800978E0).durDefaults[2];
+        tone->dur[3] = (*(KMgrToneView *) &D_800978E0).durDefaults[3];
+        tone->dur[4] = (*(KMgrToneView *) &D_800978E0).durDefaults[4];
+        tone->dur[5] = (*(KMgrToneView *) &D_800978E0).durDefaults[5];
+        tone->unk20 = 0;
+        tone->unk21 = 0;
+        tone->note = NULL;
+        tone->owner = NULL;
+        tone->volume = 0xFF;
+        tone->pan = 0x40;
+        tone->reverb = 0x40;
+        tone->chanVol = 0x7F;
+        tone->panOverride = 0x80;
+        tone->revOverride = 0x80;
+        id = ++(*(KMgrToneView *) &D_800978E0).toneIdSeq;
+        if (id == 0) {
+            id = ++(*(KMgrToneView *) &D_800978E0).toneIdSeq;
+        }
+        tone->id = id;
+        tone->groupSel = 0;
+    }
+    osSetIntMask(mask);
+    return tone;
+}
+#elif defined(PORT)
+KToneX *func_80023B34(u8 *pc) {
+    OSIntMask mask = osSetIntMask(OS_IM_NONE);
+    KToneX *tone = kMgr.freeTones;
+    u16 id;
+    s32 i;
+
+    if (tone != NULL) {
+        kMgr.freeTones = tone->next;
+        tone->wait = 1;
+        tone->pc = pc;
+        tone->loopPc = pc;
+        tone->unk1E = 0x30;
+        tone->priority = kMgr.defPriority;
+        for (i = 0; i < 6; i++) {
+            tone->dur[i] = kMgr.durDefaults[i];
+        }
+        tone->tieMode = 0;
+        tone->pendingOff = 0;
+        tone->note = NULL;
+        tone->owner = NULL;
+        tone->volume = 0xFF;
+        tone->pan = 0x40;
+        tone->reverb = 0x40;
+        tone->chanVol = 0x7F;
+        tone->panOverride = 0x80;
+        tone->revOverride = 0x80;
+        id = ++kMgr.toneIdSeq;
+        if (id == 0) {
+            id = ++kMgr.toneIdSeq;
+        }
+        tone->id = id;
+        tone->groupSel = 0;
+    }
+    osSetIntMask(mask);
+    return tone;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023B34.s")
+#endif
 
 #ifdef NON_MATCHING
 #ifndef PORT
@@ -855,17 +989,26 @@ KToneX *func_80023D00(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D00.s")
 #endif
 
-/* 31/53 at -O3, and the instruction SEQUENCE is exact: every opcode, operand
- * shape and displacement matches and only the register numbers differ, rotated
- * one slot up ($a1/$a2/$a3 -> $a3/$t0/$t1).  The cause is one extra
- * `move $v0, $aN` at the join of the id retry: the ROM produces both arms of
- * `id = ++D_800978E0.unk48;` directly in $v0, IDO produces them in $a1 and
- * copies.  Swept without effect: all six declaration orders, id as
- * u16/s16/s32/u32 and as no variable at all, goto-into-label vs if/else vs
- * ternary vs a retry loop, leading/trailing pad locals, K&R definition, four
- * return types, and typing the KAudioMgr free-list fields.  The unk2B store
- * POSITION is load-bearing and was found by sweeping all 14 slots
- * (36/34/34/34/33/26/26/25/22/25/26/35/35/36) -- slot 8 is the one below. */
+/* The SFX note allocator: pops the free-note list, pushes onto the live list
+ * and initialises the record.  Unlike its tone twin func_80023B34 this one is
+ * plain o32 -- it homes $a0 and spills the record across the second
+ * osSetIntMask -- so it is genuinely closable.
+ *
+ * FACTORY: 12 of 53 words DIFFER, and the instruction SEQUENCE is now EXACT:
+ * same count, same opcodes, same operand shapes and displacements in the same
+ * order, with only register NAMES differing -- one slot of rotation
+ * ($a1/$a2/$v0 in the ROM where IDO picks $a2/$v0/$a1).  Ideal permuter fuel.
+ *
+ * The earlier note here claimed 31/53 and said the draft below scored it; it
+ * did not, because the draft referenced KAudioMgr fields (unk34/unk3C/unk48/
+ * unk4C) the file-scope partial view does not declare, so it never compiled.
+ * With a local KMgrNoteView it measures 31, and the whole 19-word difference
+ * between 31 and 12 was ONE spelling: writing the id-wrap retry as
+ * `id = ++seq;` a second time makes IDO re-derive the value through an extra
+ * `move`, where the ROM's `addiu $t5, $v0, 1 / sh / andi $v0, $t5, 0xFFFF` is
+ * the masked increment written out.  Also swept, all worse or equal: all six
+ * declaration orders (12/12/14/15/14/15), `id` as u16/s32/u32, `mask` as u32,
+ * and returning KNoteFull * instead of s32. */
 #ifdef MIPS_TO_C
 typedef struct KNoteFull {
     /* 0x00 */ struct KNoteFull *next;
@@ -894,19 +1037,32 @@ typedef struct KNoteFull {
     /* 0x48 */ s16 unk48;
 } KNoteFull;
 
-/* KAudioMgr also needs `void *unk34` at 0x34, `void *unk3C` at 0x3C,
- * `u16 unk48` at 0x48 and `u8 unk4C` at 0x4C. */
+/* The fields of D_800978E0 this function touches; the file-scope KAudioMgr is a
+ * partial view whose pad2C/pad44 cover 0x34, 0x48 and 0x4C. */
+typedef struct KMgrNoteView {
+    /* 0x00 */ u8  pad00[0x34];
+    /* 0x34 */ struct KNoteFull *freeNotes;
+    /* 0x38 */ u8  pad38[4];
+    /* 0x3C */ struct KNoteFull *liveNotes;
+    /* 0x40 */ u8  pad40[8];
+    /* 0x48 */ u16 noteIdSeq;
+    /* 0x4A */ u8  pad4A[2];
+    /* 0x4C */ u8  defPriority;
+} KMgrNoteView;
+
+#define kmgrN (*(KMgrNoteView *) &D_800978E0)
+
 s32 func_80023D5C(void *arg0) {
     KNoteFull *note;
     OSIntMask mask;
-    u16 id;
+    s32 id;
 
     mask = osSetIntMask(OS_IM_NONE);
-    note = D_800978E0.unk34;
+    note = kmgrN.freeNotes;
     if (note != NULL) {
-        D_800978E0.unk34 = note->next;
-        note->next = D_800978E0.unk3C;
-        D_800978E0.unk3C = note;
+        kmgrN.freeNotes = note->next;
+        note->next = kmgrN.liveNotes;
+        kmgrN.liveNotes = note;
 
         note->unk28 = 1;
         note->unk20 = arg0;
@@ -916,21 +1072,57 @@ s32 func_80023D5C(void *arg0) {
         note->unk34 = 0x40;
         note->unk36 = 0;
         note->unk2C = 0;
-        note->unk2B = D_800978E0.unk4C;
+        note->unk2B = kmgrN.defPriority;
         note->unk44 = 0;
         note->unk30 = 0;
         note->unk38 = 0xFF;
         note->unk3A = 0x40;
         note->unk3C = 0;
 
-        id = ++D_800978E0.unk48;
+        id = ++kmgrN.noteIdSeq;
         if (id == 0) {
-            id = ++D_800978E0.unk48;
+            kmgrN.noteIdSeq = id + 1;
+            id = (u16) (id + 1);
         }
         note->unk48 = id;
     }
     osSetIntMask(mask);
     return (s32) note;
+}
+#elif defined(PORT)
+KNoteX *func_80023D5C(u8 *pc) {
+    OSIntMask mask = osSetIntMask(OS_IM_NONE);
+    KNoteX *note = kMgr.freeNotes;
+    s32 id;
+
+    if (note != NULL) {
+        kMgr.freeNotes = note->next;
+        note->next = kMgr.liveNotes;
+        kMgr.liveNotes = note;
+
+        note->wait = 1;
+        note->pc = pc;
+        note->loopPc = pc;
+        note->state = 3;
+        note->vol = 0x7F;
+        note->pan = 0x40;
+        note->fx = 0;
+        note->cents = 0;
+        note->priority = kMgr.defPriority;
+        note->oscList = NULL;
+        note->baseCents = 0;
+        note->chanVol = 0xFF;
+        note->chanPan = 0x40;
+        note->chanFx = 0;
+
+        id = ++kMgr.noteIdSeq;
+        if (id == 0) {
+            id = ++kMgr.noteIdSeq;
+        }
+        note->id = id;
+    }
+    osSetIntMask(mask);
+    return note;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D5C.s")
@@ -1030,29 +1222,32 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80025758.s")
 #endif
-#ifdef NON_MATCHING
-#ifndef PORT
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-u8 func_8002581C(void) {
-    u8 temp_v0;
-    u8 temp_v0_2;
-    u8 var_t1;
+/* __readVarLen (upstream libreultra/src/audio/cseq.c).
+ *
+ * The three m2c holes that used to stand here -- `$t1`, `$t2` and `$t3` read
+ * unset -- are all recovered from the listing, which is unambiguous about each:
+ *   $t2  the ALCSeq*.  Its only use is `or $a0, $t2, $zero` in front of both
+ *        `jal func_80025758` sites, i.e. it IS that callee's first argument.
+ *   $t3  the track index, likewise `or $a1, $t3, $zero` at both call sites.
+ *   $t1  the running accumulator `value`: seeded by `or $t1, $v0, $zero` /
+ *        `andi $t1, $v0, 0x7F`, advanced by `sll $t7, $t1, 7` +
+ *        `addu $t1, $t7, $t8`, and returned by `or $v0, $t1, $zero`.
+ * $t2 and $t3 are never written here and survive both calls, which is what
+ * makes them a ujoin custom convention rather than ordinary parameters.
+ *
+ * FACTORY: 27 of 27 words DIFFER against a 24-word listing (22 of those 24 are
+ * the function; the last `jr $ra; nop` pair is a separate unnamed function
+ * inside the same `.size`, so this site is also padding-trapped and could not
+ * be un-guarded even on a MATCH).  The residue is entirely the convention: the
+ * arithmetic core -- `andi 0x80`, `andi 0x7F`, `sll 7`, `andi 0x7F`,
+ * `andi 0x80`, `bnez`, `addu` -- comes out instruction for instruction, and
+ * the 3-word excess is o32 saving $s0/$s1/$s2 (6 words) less the four
+ * `or $aN, $tN` argument moves the ROM needs and an o32 build does not.
+ *
+ * The body is plain ANSI C, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+u8 func_80025758(ALCSeq *seq, u32 track);
 
-    temp_v0 = func_80025758(M2C_ERROR(/* Read from unset register $t2 */), M2C_ERROR(/* Read from unset register $t3 */));
-    var_t1 = temp_v0;
-    if (temp_v0 & 0x80) {
-        do {
-            temp_v0_2 = func_80025758(M2C_ERROR(/* Read from unset register $t2 */), M2C_ERROR(/* Read from unset register $t3 */));
-            var_t1 = (M2C_ERROR(/* Read from unset register $t1 */) << 7) + (temp_v0_2 & 0x7F);
-        } while (temp_v0_2 & 0x80);
-    }
-    return var_t1;
-}
-#else
-/* __readVarLen (upstream libreultra/src/audio/cseq.c): the ROM takes seq and
- * track in $t2/$t3 (ujoin custom convention), which the m2c draft could not
- * see; this is the same function with a callable signature. */
 u32 func_8002581C(ALCSeq *seq, u32 track) {
     u32 value;
     u32 c;
@@ -1067,14 +1262,186 @@ u32 func_8002581C(ALCSeq *seq, u32 track) {
     }
     return value;
 }
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002581C.s")
 #endif
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNextEvent.s")
+/* Upstream libreultra/src/audio/cseq.c alCSeqNextEvent, re-derived from the
+ * listing rather than pasted: the event-type constants (3 AL_TEMPO_EVT, 0x12
+ * AL_TRACK_END, 4 AL_SEQ_END_EVT, 0x13 AL_CSP_LOOPSTART, 0x14 AL_CSP_LOOPEND,
+ * 1 AL_SEQ_MIDI_EVT), the ALEvent/ALMIDIEvent/ALTempoEvent displacements
+ * (type 0x0, ticks 0x4, status 0x8, byte1 0x9, byte2 0xA, duration 0xC; tempo
+ * byte1/2/3 at 0xB/0xC/0xD with `len` at 0xA deliberately left unwritten) and
+ * the six-byte AL_CMIDI_LOOPEND_CODE record (count at loc[1], reset value at
+ * loc[0], a big-endian 32-bit backwards delta at loc[2..5]) all come from the
+ * `.s`.  The uninitialised `track` is real: the ROM reads its stack home at
+ * 0x24($sp) before the scan loop has written it.
+ *
+ * FACTORY: 209 of 210 words DIFFER against a 190-word ROM.  The 20-word excess
+ * is one cause, ten times over: `minDelta` and `track` live in $t1/$t3 in the
+ * ROM and stay there ACROSS all ten `jal`s -- the -O3 ujoin custom convention,
+ * which also hands func_8002581C its arguments in $t2/$t3 (see its own
+ * listing).  Without ujoin (tools/decomp/cc_o3.py has none) an o32 build must
+ * spill and reload both around every call.  Swept: hoisting
+ * `seq->lastDeltaTicks` into a local before the scan loop, which is what the
+ * ROM's `lw $a2, 0x10($a0)` looks like -- no change at all (209/210), so the
+ * hoist is IDO's and the upstream spelling below is kept.
+ *
+ * The body is plain ANSI C over the public ALCSeq/ALEvent, so the port takes
+ * it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+u8 func_80025758(ALCSeq *seq, u32 track);
+u32 func_8002581C(ALCSeq *seq, u32 track);
 
+void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
+    u32 deltaTicks;
+    u32 minDelta = 0xFFFFFFFF;
+    s32 i;
+    s32 track;
+    u8 status;
+    u8 type;
+
+    for (i = 0; i < 16; i++) {
+        if ((seq->validTracks >> i) & 1) {
+            if (seq->deltaFlag) {
+                seq->evtDeltaTicks[i] -= seq->lastDeltaTicks;
+            }
+            deltaTicks = seq->evtDeltaTicks[i];
+            if (deltaTicks < minDelta) {
+                minDelta = deltaTicks;
+                track = i;
+            }
+        }
+    }
+
+    status = func_80025758(seq, track);
+
+    if (status == AL_MIDI_Meta) {
+        type = func_80025758(seq, track);
+        if (type == AL_MIDI_META_TEMPO) {
+            event->type = AL_TEMPO_EVT;
+            event->msg.tempo.status = status;
+            event->msg.tempo.type = type;
+            event->msg.tempo.byte1 = func_80025758(seq, track);
+            event->msg.tempo.byte2 = func_80025758(seq, track);
+            event->msg.tempo.byte3 = func_80025758(seq, track);
+            seq->lastStatus[track] = 0;
+        } else if (type == AL_MIDI_META_EOT) {
+            seq->validTracks ^= 1 << track;
+            if (seq->validTracks != 0) {
+                event->type = AL_TRACK_END;
+            } else {
+                event->type = AL_SEQ_END_EVT;
+            }
+        } else if (type == AL_CMIDI_LOOPSTART_CODE) {
+            func_80025758(seq, track);
+            func_80025758(seq, track);
+            seq->lastStatus[track] = 0;
+            event->type = AL_CSP_LOOPSTART;
+        } else if (type == AL_CMIDI_LOOPEND_CODE) {
+            u8 *loc = seq->curLoc[track];
+            u32 loopDelta;
+
+            if (loc[1] == 0) {
+                loc[1] = loc[0];
+                seq->curLoc[track] = loc + 6;
+            } else {
+                if (loc[1] != 0xFF) {
+                    loc[1] = loc[1] - 1;
+                }
+                loopDelta = (loc[2] << 24) + (loc[3] << 16) + (loc[4] << 8) + loc[5];
+                seq->curLoc[track] = (loc + 6) - loopDelta;
+            }
+            seq->lastStatus[track] = 0;
+            event->type = AL_CSP_LOOPEND;
+        }
+    } else {
+        event->type = AL_SEQ_MIDI_EVT;
+        if (status & 0x80) {
+            event->msg.midi.status = status;
+            event->msg.midi.byte1 = func_80025758(seq, track);
+            seq->lastStatus[track] = status;
+        } else {
+            event->msg.midi.status = seq->lastStatus[track];
+            event->msg.midi.byte1 = status;
+        }
+
+        if (((event->msg.midi.status & 0xF0) != AL_MIDI_ProgramChange) &&
+            ((event->msg.midi.status & 0xF0) != AL_MIDI_ChannelPressure)) {
+            event->msg.midi.byte2 = func_80025758(seq, track);
+            if ((event->msg.midi.status & 0xF0) == AL_MIDI_NoteOn) {
+                event->msg.midi.duration = func_8002581C(seq, track);
+            }
+        } else {
+            event->msg.midi.byte2 = 0;
+        }
+    }
+
+    event->msg.midi.ticks = minDelta;
+    seq->lastDeltaTicks = minDelta;
+    seq->lastTicks += minDelta;
+
+    if (event->type != AL_TRACK_END) {
+        seq->evtDeltaTicks[track] += func_8002581C(seq, track);
+    }
+    seq->deltaFlag = 1;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNextEvent.s")
+#endif
+
+/* Upstream libreultra/src/audio/cseq.c alCSeqNew, cross-checked field by field
+ * against the listing (base 0x0, validTracks 0x4, qnpt 0x8, lastTicks 0xC,
+ * lastDeltaTicks 0x10, deltaFlag 0x14, curLoc 0x18, curBUPtr 0x58, curBULen
+ * 0x98, lastStatus 0xA8, evtDeltaTicks 0xB8, and ALCMidiHdr.division at 0x40).
+ *
+ * FACTORY: 70 of 70 words DIFFER against a 66-word ROM, but the residue is one
+ * decidable thing repeated: the ROM runs this loop with SEVEN live values and
+ * parks two of them -- the index `i` and the word-indexed base `seq + 4*i` --
+ * in CALLER-saved $t5/$t4 ACROSS the `jal func_8002581C`, which also takes its
+ * own arguments in $t2/$t3.  That is IDO's -O3 ujoin custom convention (see
+ * func_8002581C's own listing), and tools/decomp/cc_o3.py has no ujoin, so an
+ * o32 build must spend $s5/$s6 on those two and pay 2 extra sw + 2 extra lw --
+ * exactly the 4-word excess -- which then renames every register after it.
+ * Swept: `((ALCMidiHdr *) ptr)->trackOffset[i]` for `seq->base->trackOffset[i]`
+ * (68 words, but REJECTED -- it drops the `lw $t7, 0x0($s0)` the ROM performs
+ * every iteration, so it is a smaller diff against a wrong shape, LEVERS 48),
+ * `|=` written out as `x = x | y`, and `i` as s32 (both unchanged at 70).
+ *
+ * The body is plain ANSI C over the public ALCSeq, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+u32 func_8002581C(ALCSeq *seq, u32 track);
+
+void alCSeqNew(ALCSeq *seq, u8 *ptr) {
+    u32 i;
+    u32 tmpOff;
+
+    seq->base = (ALCMidiHdr *) ptr;
+    seq->validTracks = 0;
+    seq->lastDeltaTicks = 0;
+    seq->lastTicks = 0;
+    seq->deltaFlag = 1;
+
+    for (i = 0; i < 16; i++) {
+        seq->lastStatus[i] = 0;
+        seq->curBUPtr[i] = 0;
+        seq->curBULen[i] = 0;
+
+        tmpOff = seq->base->trackOffset[i];
+        if (tmpOff != 0) {
+            seq->validTracks |= 1 << i;
+            seq->curLoc[i] = ptr + tmpOff;
+            seq->evtDeltaTicks[i] = func_8002581C(seq, i);
+        } else {
+            seq->curLoc[i] = 0;
+        }
+    }
+
+    seq->qnpt = 1.0f / (f32) seq->base->division;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNew.s")
+#endif
 
 void alCSeqNewMarker(ALCSeq *seq, ALCSeqMarker *m, u32 ticks)
 {
@@ -1349,13 +1716,280 @@ void func_80026460(KCSeqp *seqp, f32 tempo) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026460.s")
 #endif
 
+/* n_alCSPHandleMetaMsg (upstream libnaudio/n_cspplayer.c): applies a MIDI
+ * set-tempo meta event and RE-TIMES everything already queued.  The listing
+ * gives the whole shape: the guard is `msg.tempo.status == 0xFF` (AL_MIDI_Meta)
+ * and `msg.tempo.type == 0x51` (AL_MIDI_META_TEMPO), the new tempo is the
+ * three-byte big-endian value at msg.tempo.byte1/2/3 (the ROM bases those on
+ * `&event->msg`, hence the 0x7/0x8/0x9 displacements off `$a1 + 4`), and the
+ * two loops are "unlink every queued AL_SEQP_STOPPING_EVT onto a private list,
+ * accumulating absolute ticks" followed by "rescale each one by
+ * `newUspt * (delta / oldUspt)` and re-insert it into the delta-sorted queue",
+ * the insertion being n_alEvtqPostEvent's own walk written out.
+ *
+ * FACTORY: 141 of 141 words DIFFER against a 127-word ROM, and the 14-word
+ * excess is exactly seven `sw`/`lw` pairs: the ROM uses $s0..$s7 and saves
+ * NONE of them -- its whole prologue is `sw $ra` in a 0x18 frame -- because
+ * `seqp` arrives in $s6 under ujoin and the callee owns the saved bank.  The
+ * opcode sequence otherwise lines up at 0.85 with the only structural
+ * insertions being those restores.  tools/decomp/cc_o3.py has no ujoin.
+ *
+ * The body is plain ANSI C, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+void func_80026460(KCSeqp *seqp, f32 tempo);
+
+/* Mirrors the file-scope KCSeqpNew (declared further down, and REFOUND.md
+ * forbids moving it up) so the two fields this touches sit at the same LP64
+ * offsets as the record func_800296C0 actually allocates. */
+typedef struct KCSeqpTempo {
+    /* 0x00 */ ALPlayer      node;
+    /* 0x14 */ N_ALSynth    *drvr;
+    /* 0x18 */ void         *target;
+    /* 0x1C */ ALMicroTime   curTime;
+    /* 0x20 */ void         *bank;
+    /* 0x24 */ void         *unk24;
+    /* 0x28 */ void         *unk28;
+    /* 0x2C */ s32           uspt;
+    /* 0x30 */ s32           nextDelta;
+    /* 0x34 */ s32           state;
+    /* 0x38 */ u16           chanMask;
+    /* 0x3A */ s16           vol;
+    /* 0x3C */ u8            maxChannels;
+    /* 0x3D */ u8            debugFlags;
+    /* 0x3E */ u8            pad3E[2];
+    /* 0x40 */ N_ALEvent     nextEvent;
+    /* 0x50 */ ALEventQueue  evtq;
+} KCSeqpTempo;
+
+void func_8002649C(void *seqpArg, N_ALEvent *event) {
+    KCSeqpTempo        *seqp = (KCSeqpTempo *) seqpArg;
+    N_ALEventListItem  *item;
+    N_ALEventListItem  *next;
+    N_ALEventListItem  *nextItem;
+    N_ALEventListItem  *sorted = NULL;
+    ALMicroTime         ticks = 0;
+    ALMicroTime         saveTicks;
+    ALMicroTime         oldUspt;
+    ALLink             *node;
+    OSIntMask           mask;
+
+    if (event->msg.tempo.status != AL_MIDI_Meta) {
+        return;
+    }
+    if (event->msg.tempo.type != AL_MIDI_META_TEMPO) {
+        return;
+    }
+
+    oldUspt = seqp->uspt;
+    func_80026460((KCSeqp *) seqp, (f32) ((event->msg.tempo.byte1 << 16) |
+                               (event->msg.tempo.byte2 << 8) |
+                               event->msg.tempo.byte3));
+
+    /* Pull every pending sequence-reference event off the queue, keeping the
+     * running tick total so each one can be re-posted at the new tempo. */
+    item = (N_ALEventListItem *) seqp->evtq.allocList.next;
+    while (item != NULL) {
+        next = (N_ALEventListItem *) ((ALLink *) item)->next;
+        ticks += item->delta;
+        if (item->evt.type == AL_SEQP_STOPPING_EVT) {
+            alUnlink((ALLink *) item);
+            if (sorted != NULL) {
+                ((ALLink *) item)->prev = (ALLink *) sorted;
+                ((ALLink *) item)->next = ((ALLink *) sorted)->next;
+                if (((ALLink *) sorted)->next) {
+                    ((ALLink *) sorted)->next->prev = (ALLink *) item;
+                }
+                ((ALLink *) sorted)->next = (ALLink *) item;
+            } else {
+                ((ALLink *) item)->next = NULL;
+                ((ALLink *) item)->prev = NULL;
+                sorted = item;
+            }
+            saveTicks = ticks;
+            if (next != NULL) {
+                ticks -= item->delta;
+                next->delta += item->delta;
+            }
+            item->delta = saveTicks;
+        }
+        item = next;
+    }
+
+    item = sorted;
+    while (item != NULL) {
+        next = (N_ALEventListItem *) ((ALLink *) item)->next;
+        item->delta = seqp->uspt * (item->delta / oldUspt);
+
+        mask = osSetIntMask(OS_IM_NONE);
+
+        for (node = &seqp->evtq.allocList; node != 0; node = node->next) {
+            if (!node->next) {
+                ((ALLink *) item)->next = node->next;
+                ((ALLink *) item)->prev = node;
+                if (node->next) {
+                    node->next->prev = (ALLink *) item;
+                }
+                node->next = (ALLink *) item;
+                break;
+            } else {
+                nextItem = (N_ALEventListItem *) node->next;
+
+                if (item->delta < nextItem->delta) {
+                    nextItem->delta -= item->delta;
+                    ((ALLink *) item)->next = node->next;
+                    ((ALLink *) item)->prev = node;
+                    if (node->next) {
+                        node->next->prev = (ALLink *) item;
+                    }
+                    node->next = (ALLink *) item;
+                    break;
+                }
+
+                item->delta -= nextItem->delta;
+            }
+        }
+
+        osSetIntMask(mask);
+        item = next;
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002649C.s")
+#endif
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026698.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026898.s")
+/* __n_getRate (upstream libnaudio/n_env.c): splits an envelope ramp into the
+ * 16.16 rate pair the envmixer microcode wants.  D_800414C4 is the `.float
+ * 65535` this reconstructs as a literal.
+ *
+ * FACTORY: 57 of 93 words DIFFER against a 94-word ROM, and the shape is
+ * exact -- same count to within the one word IDO saves, same opcodes, same
+ * order.  The residue is the calling convention: the ROM takes `count` in $a0
+ * and `ratel` in $a1 while the two floats arrive in $f12/$f14, which no o32
+ * prototype produces (a float in argument slot 0 or 1 uses the FPR *and*
+ * burns the matching integer slot, so an o32 (f32, f32, s32, u16 *) puts
+ * count/ratel in $a2/$a3 -- exactly what this compiles to).  That is IDO's
+ * -O3 ujoin custom convention for a `static` callee, and ujoin is missing from
+ * tools/ido-7.1recomp, so no source spelling reaches it.  Every remaining diff
+ * is the $a2/$a3-for-$a0/$a1 substitution and the register renaming it drags
+ * behind it.
+ *
+ * The body is plain ANSI C, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+s16 func_80026898(f32 tgt, f32 vol, s32 count, u16 *ratel) {
+    f32 invt;
+    f32 ratio;
+    f32 w;
+    s16 ratem;
+    s16 talign;
 
+    if (count == 0) {
+        if (vol <= tgt) {
+            *ratel = 0xFFFF;
+            return 0x7FFF;
+        }
+        *ratel = 0;
+        return 0;
+    }
+
+    invt = 1.0f / (f32) count;
+    if (tgt < 1.0f) {
+        tgt = 1.0f;
+    }
+    if (vol <= 0.0f) {
+        vol = 1.0f;
+    }
+
+    ratio = (tgt - vol) * invt * 8.0f;
+    talign = (s16) ratio;
+    w = (ratio - (f32) talign) + 1.0f;
+    ratem = (s16) w;
+    *ratel = (u16) (65535.0f * (w - (f32) ratem));
+
+    return talign - 1 + ratem;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026898.s")
+#endif
+
+/* _decodeChunk (upstream libreultra/src/libnaudio/n_load.c): DMAs one chunk of
+ * compressed ADPCM into DMEM and emits the decode command for it.
+ *
+ * The ujoin convention hides the parameter list, but the listing names every
+ * register itself.  $s1 is the dma length (it is `blez`-tested and then handed
+ * to `f->dc_dma` as its second argument), $s2 is the N_PVoice (0x28 dc_dma,
+ * 0x2C dc_dmaState, 0x3C dc_memin, 0x10 dc_lstate, 0xC dc_state, 0x38
+ * dc_first), $s3 is `flags` (tested against A_LOOP and shifted into bits
+ * 28..31), $s5 is `tsam` (`sll 1` gives the output byte count), $s0 is the
+ * Acmd cursor.  $s4 and $s6 are the two s16s, and which is which is DECIDED by
+ * the first two instructions: with a 0x18 frame, `sw $s4, 0x2C($sp)` and
+ * `sw $s6, 0x28($sp)` write the CALLER's frame at +0x14 and +0x10 -- the o32
+ * home slots for stack arguments 5 and 4 -- so $s6 is argument 4 (`outp`) and
+ * $s4 is argument 5 (`inp`).  That also matches the hardware: A_LOADBUFF's
+ * DMEM destination is the compressed-data buffer, and A_ADPCM's low 12 bits
+ * are where the decoded PCM lands.
+ *
+ * FACTORY: 75 of 77 words DIFFER against a 71-word ROM.  The arithmetic core
+ * -- the `andi 7` / `subu` / `+8` / `andi 0xFFF` / `sll 12` chain and both
+ * command word packings -- comes out instruction for instruction; the 6-word
+ * excess is o32 homing ptr, f and nbytes across the indirect `jal` plus the
+ * unfilled `jalr` delay slot, because the ROM holds all of them in $s0..$s6
+ * under ujoin.  Swept: `outp`/`inp` as s16 (the sign extension the ROM's four
+ * leading `sll`/`sra` perform) and as s32 -- 75/77 either way, so the s32
+ * spelling is kept, which is also what the port's existing prototype and
+ * func_80026B2C's K&R call site need.
+ *
+ * The body is plain ANSI C, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+#ifndef K0_TO_PHYS
+#define K0_TO_PHYS(x) ((u32)(x) & 0x1FFFFFFF)
+#endif
+
+#define n_aSetLoop(pkt, a)                                              \
+{                                                                       \
+    Acmd *_a = (Acmd *)pkt;                                             \
+                                                                        \
+    _a->words.w0 = _SHIFTL(A_SETLOOP, 24, 8);                           \
+    _a->words.w1 = (unsigned int)(a);                                   \
+}
+
+#define n_aADPCMdec(pkt, s, f, c, x, d)                                 \
+{                                                                       \
+    Acmd *_a = (Acmd *)pkt;                                             \
+                                                                        \
+    _a->words.w0 = (_SHIFTL(A_ADPCM, 24, 8) | _SHIFTL(s, 0, 24));       \
+    _a->words.w1 = (_SHIFTL(f, 28, 4) | _SHIFTL(c, 16, 12) |            \
+                    _SHIFTL(x, 12, 4) | _SHIFTL(d, 0, 12));             \
+}
+
+Acmd *func_80026A10(Acmd *ptr, N_PVoice *f, s32 tsam, s32 nbytes, s32 outp,
+                    s32 inp, u32 flags) {
+    Acmd *p = ptr;
+    s32 addr;
+    s32 rem;
+
+    if (nbytes > 0) {
+        addr = (s32) f->dc_dma(f->dc_memin, nbytes, f->dc_dmaState);
+        rem = addr & 7;
+        nbytes += rem;
+        n_aLoadBuffer(p++, (nbytes - (nbytes & 7)) + 8, inp, addr - rem);
+    } else {
+        rem = 0;
+    }
+
+    if (flags & A_LOOP) {
+        n_aSetLoop(p++, K0_TO_PHYS(f->dc_lstate));
+    }
+
+    n_aADPCMdec(p++, K0_TO_PHYS(f->dc_state), flags, tsam << 1, rem, outp);
+
+    f->dc_first = 0;
+    return p;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80026A10.s")
+#endif
 
 /* IPA-BLOCKED.  Verbatim upstream libreultra/src/libnaudio/n_load.c
  * n_alAdpcmPull; the instruction stream lines up but the frame is 0xA0 against
@@ -1539,7 +2173,83 @@ Acmd *func_80026FA8(N_PVoice *e, s16 *outp, Acmd *p) {
     return ptr;
 }
 
+/* _pullSubFrame (upstream libnaudio/n_env.c): emits one 184-sample envmixer
+ * sub-frame.  The four command words are read off the listing --
+ * `0x09000000 | ltgt` / `lratm:lratl`, `0x09060000 | cvolL` /
+ * `dryamt:wetamt`, `0x09040000 | rtgt` / `rratm:rratl`, and
+ * `0x03010000 | cvolR` / phys(em_state) -- which is A_SETVOL three times and
+ * then A_ENVMIXER with the right channel volume packed into w0's low half,
+ * the naudio ABI's own shape.  The non-first path is the bare
+ * `0x03000000` envmixer.  `*outp += 0x170` and `em_delta += 0xB8` are the
+ * sub-frame advance.
+ *
+ * FACTORY: 133 of 134 words DIFFER against a 125-word ROM.  The opcode
+ * sequence lines up at 0.85 and every inserted word is an o32 spill: the ROM
+ * receives the N_PVoice in $s0 and `outp` in $s3 and never saves either, so it
+ * needs no prologue beyond `sw $ra` -- ujoin again, the same blocker as its
+ * callee func_80026898 and its caller n_alEnvmixerPull.  An o32 definition has
+ * to save $s0/$s1, home $a1, and reload both around the two calls, which is
+ * the whole 9-word excess.
+ *
+ * The body is plain ANSI C, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+#define n_aSetVolume(pkt, f, v, t, r)                                   \
+{                                                                       \
+    Acmd *_a = (Acmd *)pkt;                                             \
+                                                                        \
+    _a->words.w0 = (_SHIFTL(A_SETVOL, 24, 8) | _SHIFTL(f, 16, 8) |      \
+                    _SHIFTL(v, 0, 16));                                 \
+    _a->words.w1 = _SHIFTL(t, 16, 16) | _SHIFTL(r, 0, 16);              \
+}
+
+#define n_aEnvMixer(pkt, f, v, s)                                       \
+{                                                                       \
+    Acmd *_a = (Acmd *)pkt;                                             \
+                                                                        \
+    _a->words.w0 = (_SHIFTL(A_ENVMIXER, 24, 8) | _SHIFTL(f, 16, 8) |    \
+                    _SHIFTL(v, 0, 16));                                 \
+    _a->words.w1 = (unsigned int)(s);                                   \
+}
+
+extern s16 D_8003FA10[];        /* n_eqpower[0..127] */
+
+s16 func_80026898(f32 tgt, f32 vol, s32 count, u16 *ratel);
+Acmd *func_80026FA8(N_PVoice *e, s16 *outp, Acmd *p);
+
+Acmd *func_8002714C(N_PVoice *e, s16 *outp, s32 outCount, Acmd *p) {
+    Acmd *ptr = p;
+
+    if ((e->em_motion != 1) || (outCount == 0)) {
+        return ptr;
+    }
+
+    ptr = func_80026FA8(e, outp, ptr);
+
+    if (e->em_first != 0) {
+        e->em_first = 0;
+        e->em_ltgt = (D_8003FA10[e->em_pan] * e->em_volume) >> 15;
+        e->em_lratm = func_80026898((f32) e->em_ltgt, (f32) e->em_cvolL, e->em_segEnd,
+                                    &e->em_lratl);
+        e->em_rtgt = (D_8003FA10[127 - e->em_pan] * e->em_volume) >> 15;
+        e->em_rratm = func_80026898((f32) e->em_rtgt, (f32) e->em_cvolR, e->em_segEnd,
+                                    &e->em_rratl);
+
+        n_aSetVolume(ptr++, 0, e->em_ltgt, e->em_lratm, e->em_lratl);
+        n_aSetVolume(ptr++, A_VOL | A_LEFT, e->em_cvolL, e->em_dryamt, e->em_wetamt);
+        n_aSetVolume(ptr++, A_VOL, e->em_rtgt, e->em_rratm, e->em_rratl);
+        n_aEnvMixer(ptr++, A_INIT, e->em_cvolR, osVirtualToPhysical(e->em_state));
+    } else {
+        n_aEnvMixer(ptr++, 0, 0, osVirtualToPhysical(e->em_state));
+    }
+
+    *outp += 0x170;
+    e->em_delta += 0xB8;
+
+    return ptr;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002714C.s")
+#endif
 
 void func_80027340(ALParam *param) {
     param->next = n_syn->paramList;
@@ -1679,7 +2389,219 @@ s16 func_80027610(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80027610.s")
 #endif
 
+/* n_alEnvmixerPull (upstream libnaudio/n_env.c): drains the voice's parameter
+ * list, emitting one 184-sample sub-frame per event gap.
+ *
+ * jtbl_800414CC is `param->type` 0..0x11 against synthInternals.h's filter
+ * message ids, and it is what identifies the two start-voice arms: index 13
+ * (AL_FILTER_START_VOICE_ALT) reads `wave` at 0x18 and is the full
+ * ALStartParamAlt path, index 14 (AL_FILTER_START_VOICE) reads it at 0xC and
+ * is the short ALStartParam one.  Kirby's ALStartParamAlt carries two extra
+ * bytes past `wave` -- an explicit wet index at 0x1C and a dry index at 0x1D
+ * with 0x5F meaning "derive both from fxMix" -- which is the KStartParam view
+ * below.  Both `n_alLoadParam` calls pass 5 (AL_FILTER_SET_WAVETABLE), and
+ * AL_FILTER_STOP_VOICE passes 4 (AL_FILTER_RESET), read off the listing.
+ *
+ * The equal-power pan table is D_8003FA10 indexed `[127 - x]` everywhere
+ * except the type-17 dry amount, which the ROM reads at `[128 - x]`
+ * (`lh 0x0($t8)` where the other sites use `lh -0x2($t8)` off the same held
+ * base).  That asymmetry is reproduced literally rather than tidied.
+ *
+ * FACTORY: 391 of 401 words DIFFER.  The opcode sequence is right instruction
+ * for instruction -- including the signed-division break checks around
+ * `/ N_FIXED_SAMPLE` -- and the 10-word shortfall plus every register name is
+ * ujoin: the ROM calls func_8002714C with the N_PVoice in $s0 and `&outp` in
+ * $s3 (and homes `&inp` in the argument slot the callee never reads), holds
+ * `&D_8003FA10[128]` in $fp, and spills `f` and `lastDelta` to 0xA0/0x94($sp).
+ * tools/decomp/cc_o3.py has no ujoin, so an o32 build passes those in $a0/$a1
+ * and rebalances the whole frame.  Same blocker as func_8002714C and
+ * func_80026898 below it.
+ *
+ * The body is plain ANSI C, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+typedef struct KStartParam {
+    /* 0x00 */ struct ALParam_s *next;
+    /* 0x04 */ s32   delta;
+    /* 0x08 */ s16   type;
+    /* 0x0A */ s16   unity;
+    /* 0x0C */ f32   pitch;
+    /* 0x10 */ s16   volume;
+    /* 0x12 */ u8    pan;
+    /* 0x13 */ u8    fxMix;
+    /* 0x14 */ s32   samples;
+    /* 0x18 */ void *wave;
+    /* 0x1C */ u8    wetIndex;
+    /* 0x1D */ u8    dryIndex;
+} KStartParam;
+
+extern s16 D_8003FA10[];        /* n_eqpower[0..127] */
+
+Acmd *func_8002714C(N_PVoice *e, s16 *outp, s32 outCount, Acmd *p);
+s16 func_80027610(s32 delta, s32 cvol, s32 ratl, s32 ratm);
+
+Acmd *n_alEnvmixerPull(N_PVoice *f, s32 sampleOffset, Acmd *p) {
+    ALParam     *param;
+    KStartParam *sp;
+    Acmd        *ptr = p;
+    s32          count;
+    s32          delta;
+    s32          lastDelta = sampleOffset;
+    s32          nSamples = N_FIXED_SAMPLE;
+    s16          inp = 0;
+    s16          outp = 0;
+    s32          pan;
+    s32          volume;
+
+    while (f->em_ctrlList != NULL) {
+        param = f->em_ctrlList;
+        delta = ((param->delta + 0x5C) / N_FIXED_SAMPLE) * N_FIXED_SAMPLE;
+        count = delta - lastDelta;
+        lastDelta = delta;
+        if (nSamples < count) {
+            break;
+        }
+
+        switch (param->type) {
+            case AL_FILTER_START_VOICE_ALT:
+                sp = (KStartParam *) param;
+                if (sp->unity != 0) {
+                    f->rs_upitch = 1;
+                }
+                n_alLoadParam(f, AL_FILTER_SET_WAVETABLE, sp->wave);
+                f->em_motion = 1;
+                f->em_first = 1;
+                f->em_delta = 0;
+                f->em_segEnd = ((sp->samples + 0x5C) / N_FIXED_SAMPLE) * N_FIXED_SAMPLE;
+                f->em_volume = (sp->volume * sp->volume) >> 15;
+                f->em_pan = sp->pan;
+                if ((sp->wetIndex != 0) || (sp->dryIndex != 0x5F)) {
+                    f->em_wetamt = D_8003FA10[127 - sp->wetIndex];
+                    f->em_dryamt = D_8003FA10[127 - sp->dryIndex];
+                } else {
+                    f->em_dryamt = D_8003FA10[sp->fxMix];
+                    f->em_wetamt = D_8003FA10[127 - sp->fxMix];
+                }
+                if (sp->samples != 0) {
+                    f->em_cvolL = 1;
+                    f->em_cvolR = 1;
+                } else {
+                    volume = f->em_volume;
+                    pan = f->em_pan;
+                    f->em_cvolL = (D_8003FA10[pan] * volume) >> 15;
+                    f->em_cvolR = (D_8003FA10[127 - pan] * volume) >> 15;
+                }
+                f->rs_ratio = sp->pitch;
+                break;
+
+            case AL_FILTER_SET_VOLUME:
+            case AL_FILTER_SET_PAN:
+            case AL_FILTER_SET_FXAMT:
+            case 17:
+                delta = f->em_delta;
+                if (delta >= f->em_segEnd) {
+                    volume = f->em_volume;
+                    pan = f->em_pan;
+                    f->em_ltgt = (D_8003FA10[pan] * volume) >> 15;
+                    f->em_delta = f->em_segEnd;
+                    f->em_cvolL = f->em_ltgt;
+                    f->em_rtgt = (D_8003FA10[127 - pan] * volume) >> 15;
+                    f->em_cvolR = f->em_rtgt;
+                } else {
+                    f->em_cvolL = func_80027610(delta, f->em_cvolL, f->em_lratl, f->em_lratm);
+                    f->em_cvolR = func_80027610(f->em_delta, f->em_cvolR, f->em_rratl,
+                                                f->em_rratm);
+                }
+                if (f->em_cvolL == 0) {
+                    f->em_cvolL = 1;
+                }
+                if (f->em_cvolR == 0) {
+                    f->em_cvolR = 1;
+                }
+                param = f->em_ctrlList;
+                if (param->type == AL_FILTER_SET_PAN) {
+                    f->em_pan = param->data.i;
+                }
+                if (param->type == AL_FILTER_SET_VOLUME) {
+                    f->em_delta = 0;
+                    f->em_volume = (param->data.i * param->data.i) >> 15;
+                    f->em_segEnd = ((param->moredata.i + 0x5C) / N_FIXED_SAMPLE) *
+                                   N_FIXED_SAMPLE;
+                }
+                if (param->type == AL_FILTER_SET_FXAMT) {
+                    f->em_dryamt = D_8003FA10[param->data.i];
+                    f->em_wetamt = D_8003FA10[127 - param->data.i];
+                }
+                if (param->type == 17) {
+                    f->em_dryamt = D_8003FA10[128 - param->moredata.i];
+                    f->em_wetamt = D_8003FA10[127 - param->data.i];
+                }
+                f->em_first = 1;
+                break;
+
+            case AL_FILTER_START_VOICE:
+                if (((KStartParam *) param)->unity != 0) {
+                    f->rs_upitch = 1;
+                }
+                n_alLoadParam(f, AL_FILTER_SET_WAVETABLE, (void *) param->data.i);
+                f->em_motion = 1;
+                break;
+
+            case AL_FILTER_STOP_VOICE:
+                ptr = func_8002714C(f, &outp, count, ptr);
+                n_alEnvmixerParam(f, AL_FILTER_RESET, NULL);
+                break;
+
+            case AL_FILTER_FREE_VOICE:
+                ((N_PVoice *) param->data.i)->offset = 0;
+                alUnlink((ALLink *) param->data.i);
+                alLink((ALLink *) param->data.i, &n_syn->pLameList);
+                break;
+
+            case AL_FILTER_SET_PITCH:
+                ptr = func_8002714C(f, &outp, count, ptr);
+                f->rs_ratio = f->em_ctrlList->data.f;
+                break;
+
+            case AL_FILTER_SET_UNITY_PITCH:
+                ptr = func_8002714C(f, &outp, count, ptr);
+                f->rs_upitch = 1;
+                break;
+
+            case AL_FILTER_SET_WAVETABLE:
+                ptr = func_8002714C(f, &outp, count, ptr);
+                n_alLoadParam(f, AL_FILTER_SET_WAVETABLE, (void *) f->em_ctrlList->data.i);
+                break;
+
+            default:
+                ptr = func_8002714C(f, &outp, count, ptr);
+                n_alEnvmixerParam(f, f->em_ctrlList->type,
+                                  (void *) f->em_ctrlList->data.i);
+                break;
+        }
+
+        inp += count * 2;
+        nSamples -= count;
+
+        param = f->em_ctrlList;
+        f->em_ctrlList = param->next;
+        if (f->em_ctrlList == NULL) {
+            f->em_ctrlTail = NULL;
+        }
+        param->next = n_syn->paramList;
+        n_syn->paramList = param;
+    }
+
+    ptr = func_8002714C(f, &outp, nSamples, ptr);
+
+    if (f->em_segEnd < f->em_delta) {
+        f->em_delta = f->em_segEnd;
+    }
+
+    return ptr;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/n_alEnvmixerPull.s")
+#endif
 
 Acmd *n_alAuxBusPull(s32 sampleOffset, Acmd *p) {
     Acmd *ptr = p;
@@ -1896,9 +2818,724 @@ Acmd *func_80028318(s32 sampleOffset, Acmd *p) {
     return ptr;
 }
 
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800285F8.s")
+/* n_alCSPHandleMIDIMsg (upstream libnaudio/n_cspplayer.c): the whole MIDI
+ * dispatcher for the compressed-sequence player.
+ *
+ * Both jump tables are decoded from the listing.  jtbl_80041514 is indexed
+ * `(status & 0xF0) - 0x80` over 97 entries and only six of them are live --
+ * 0x80 note off, 0x90 note on, 0xA0 poly pressure, 0xB0 control change, 0xC0
+ * program change, 0xD0 channel pressure, 0xE0 pitch bend.  jtbl_80041698 is
+ * `controller - 7` over 19 entries; controllers 0x40 (sustain) and 0x5B (fx1)
+ * are handled by the two explicit compares IDO put in front of it, which is
+ * why the source is one flat `switch (byte1)`.
+ *
+ * The record layouts all come out of the listing: the channel state is the
+ * SDK's ALChanState with five Kirby bytes after `pitchBend` (0x10 channel
+ * pressure, 0x12/0x13 a pair the CC 22/23 handlers feed to func_8002CF40, and
+ * 0x14 a bank selector that CC 24 range-checks against the THREE bank slots at
+ * seqp+0x20/0x24/0x28 -- the same three func_8002901C's cases 14/24/25 set).
+ * The voice record keeps its ALSound at 0x20 (`vs->sound->envelope->
+ * releaseTime` is what the note-off hands func_8002B2E8), its channel at 0x31,
+ * and a 0..4 state at 0x35 whose 2/4 pair is the sustain-pedal latch.
+ *
+ * FACTORY: 674 of 678 words DIFFER against a 649-word ROM.  The 29-word excess
+ * is ujoin: `seqp` arrives in $s2 and the event pointer in $t0 (the ROM homes
+ * $t0 itself at 0xC4($sp), above its own 0xC0 frame -- the caller's slot), and
+ * the ROM saves NONE of $s0..$s7/$fp.  An o32 definition must save and restore
+ * all nine and home both parameters.  Swept, and worth 31 words: `chanNum` as
+ * s32 rather than u8 (709 -> 678; the ROM keeps `status & 0xF` in $s7 as an
+ * int and compares it to each voice's channel byte directly, where a u8 local
+ * gets re-masked at every one of the eight comparison sites), plus `pan` and
+ * the 0x12 copy as s32 (678 -> 674 diffs).  Rejected: `status` as s32 (no
+ * change) and `byte1`/`byte2` as s32 (693, worse -- the ROM's `andi $aN, 0xFF`
+ * at each call site is the u8 promotion).
+ *
+ * PORT CAVEAT, and it is a real one: KMidiVoice needs an ALSound POINTER at
+ * N64 0x20, so at LP64 it cannot fit inside the file-scope KVoiceSt
+ * (`{ next; u8 pad04[0x34]; }`, 64 bytes) that func_800296C0 allocates with
+ * `sizeof`.  The view below and func_8002901C's KCVoiceState are spelled to
+ * agree with EACH OTHER at LP64 (both put the post-voice fields at offset 40),
+ * but the allocation in func_800296C0 has to grow before the port's sequence
+ * player can actually run.  That is a port-lane job, not a decomp one.
+ *
+ * The body is otherwise plain ANSI C, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+/* Kirby's per-channel MIDI state, 0x18 bytes: the SDK's ALChanState (0x10)
+ * with five bytes of Kirby extension after `pitchBend`. */
+typedef struct KMidiChan {
+    /* 0x00 */ ALInstrument *instrument;
+    /* 0x04 */ s16  bendRange;
+    /* 0x06 */ u8   fxId;
+    /* 0x07 */ u8   pan;
+    /* 0x08 */ u8   priority;
+    /* 0x09 */ u8   vol;
+    /* 0x0A */ u8   fxmix;
+    /* 0x0B */ u8   sustain;
+    /* 0x0C */ f32  pitchBend;
+    /* 0x10 */ u8   pressure;
+    /* 0x11 */ u8   pad11[1];
+    /* 0x12 */ u8   unk12;
+    /* 0x13 */ u8   unk13;
+    /* 0x14 */ u8   bank;
+    /* 0x15 */ u8   pad15[3];
+} KMidiChan;
 
+typedef struct KMidiVoice {
+    /* 0x00 */ struct KMidiVoice *next;
+    /* 0x04 */ u8            voice[0x1C];  /* N_ALVoice; clientPrivate points back here */
+    /* 0x20 */ ALSound      *sound;
+    /* 0x24 */ ALMicroTime   envEndTime;
+    /* 0x28 */ f32           pitch;
+    /* 0x2C */ f32           vibrato;
+    /* 0x30 */ u8            envGain;
+    /* 0x31 */ u8            channel;
+    /* 0x32 */ u8            key;
+    /* 0x33 */ u8            pressure;
+    /* 0x34 */ u8            envPhase;
+    /* 0x35 */ u8            state;
+    /* 0x36 */ u8            tremelo;
+    /* 0x37 */ u8            flags;
+} KMidiVoice;
+
+typedef struct KMidiSeqp {
+    /* 0x00 */ ALPlayer      node;
+    /* 0x14 */ N_ALSynth    *drvr;
+    /* 0x18 */ void         *target;
+    /* 0x1C */ ALMicroTime   curTime;
+    /* 0x20 */ ALBank       *bank[3];
+    /* 0x2C */ s32           uspt;
+    /* 0x30 */ s32           nextDelta;
+    /* 0x34 */ s32           state;
+    /* 0x38 */ u16           chanMask;
+    /* 0x3A */ s16           vol;
+    /* 0x3C */ u8            maxChannels;
+    /* 0x3D */ u8            debugFlags;
+    /* 0x3E */ u8            pad3E[2];
+    /* 0x40 */ N_ALEvent     nextEvent;
+    /* 0x50 */ ALEventQueue  evtq;
+    /* 0x64 */ ALMicroTime   frameTime;
+    /* 0x68 */ KMidiChan    *chanState;
+    /* 0x6C */ KMidiVoice   *vAllocHead;
+    /* 0x70 */ KMidiVoice   *vAllocTail;
+    /* 0x74 */ KMidiVoice   *vFreeList;
+    /* 0x78 */ u8            unk78;
+    /* 0x79 */ u8            pad79[3];
+    /* 0x7C */ ALOscInit     initOsc;
+    /* 0x80 */ ALOscUpdate   updateOsc;
+    /* 0x84 */ ALOscStop     stopOsc;
+} KMidiSeqp;
+
+extern u16 D_8003FB1C;          /* BGM channel enable mask */
+
+void func_8002AD90(N_ALVoice *voice, ALWaveTable *w, f32 pitch, s16 vol, u8 pan,
+                   u8 fxmix, ALMicroTime t, u8 unk12, u8 unk13);
+s32  func_8002B214(void *vs, ALMicroTime t);
+s16  func_8002B238(void *vs, void *seqp);
+void func_8002B2E8(void *seqp, N_ALVoice *voice, ALMicroTime t);
+void func_8002B59C(KMidiSeqp *seqp, ALInstrument *inst, u8 chan);
+s32  func_8002B5E8(KMidiVoice *vs, KMidiSeqp *seqp);
+KMidiVoice *func_8002B638(KMidiSeqp *seqp, u8 key, u8 chan);
+KMidiVoice *func_8002B6A8(KMidiSeqp *seqp, u8 key, u8 vel, u8 chan);
+ALSound    *func_8002B70C(KMidiSeqp *seqp, u8 key, u8 vel, u8 chan);
+void func_8002CF40(N_ALVoice *voice, u8 unk12, u8 unk13);
+void func_8002CFE4(N_ALVoice *voice, u8 fxmix);
+
+void func_800285F8(void *seqpArg, N_ALEvent *event) {
+    KMidiSeqp     *seqp = (KMidiSeqp *) seqpArg;
+    KMidiChan     *chan;
+    KMidiVoice    *vs;
+    ALInstrument  *inst;
+    ALSound       *sound;
+    ALEnvelope    *env;
+    ALVoiceConfig  vc;
+    N_ALEvent      evt;
+    void          *oscState;
+    f32            oscValue;
+    f32            pitch;
+    ALMicroTime    t;
+    u8             status;
+    u8             byte1;
+    u8             byte2;
+    s32            chanNum;
+    s32            pan;
+    s32            unk12;
+    u8             unk13;
+
+    status = event->msg.midi.status;
+    byte1 = event->msg.midi.byte1;
+    byte2 = event->msg.midi.byte2;
+    chanNum = status & 0xF;
+
+    switch (status & 0xF0) {
+        case AL_MIDI_NoteOn:
+            if (byte2 != 0) {
+                if (seqp->state != AL_PLAYING) {
+                    return;
+                }
+                if (!(D_8003FB1C & (1 << chanNum))) {
+                    return;
+                }
+                sound = func_8002B70C(seqp, byte1, byte2, chanNum);
+                if (sound == NULL) {
+                    return;
+                }
+                chan = &seqp->chanState[chanNum];
+                vc.fxBus = 0;
+                vc.unityPitch = 0;
+                vc.priority = chan->priority;
+                vs = func_8002B6A8(seqp, byte1, byte2, chanNum);
+                if (vs == NULL) {
+                    return;
+                }
+                n_alSynAllocVoice((N_ALVoice *) vs->voice, &vc);
+                vs->envPhase = 0;
+                vs->sound = sound;
+                if (seqp->chanState[chanNum].sustain >= 0x40) {
+                    vs->state = 2;
+                } else {
+                    vs->state = 0;
+                }
+                vs->pitch = alCents2Ratio((s16) (((byte1 - sound->keyMap->keyBase) * 100) +
+                                                 sound->keyMap->detune));
+                vs->envGain = sound->envelope->attackVolume;
+                vs->flags = 0;
+                vs->envEndTime = seqp->curTime + sound->envelope->attackTime;
+
+                inst = seqp->chanState[chanNum].instrument;
+
+                oscValue = 127.0f;
+                if (inst->tremType != 0 && seqp->initOsc != NULL) {
+                    t = seqp->initOsc(&oscState, &oscValue, inst->tremType, inst->tremRate,
+                                      inst->tremDepth, inst->tremDelay);
+                    if (t != 0) {
+                        evt.type = AL_TREM_OSC_EVT;
+                        evt.msg.osc.vs = (struct N_ALVoiceState_s *) vs;
+                        evt.msg.osc.oscState = oscState;
+                        n_alEvtqPostEvent(&seqp->evtq, &evt, t);
+                        vs->flags |= 1;
+                    }
+                }
+                vs->tremelo = (u8) (u32) oscValue;
+
+                oscValue = 1.0f;
+                if (inst->vibType != 0 && seqp->initOsc != NULL) {
+                    t = seqp->initOsc(&oscState, &oscValue, inst->vibType, inst->vibRate,
+                                      inst->vibDepth, inst->vibDelay);
+                    if (t != 0) {
+                        evt.type = AL_VIB_OSC_EVT;
+                        evt.msg.osc.vs = (struct N_ALVoiceState_s *) vs;
+                        evt.msg.osc.chan = chanNum;
+                        evt.msg.osc.oscState = oscState;
+                        n_alEvtqPostEvent(&seqp->evtq, &evt, t);
+                        vs->flags |= 2;
+                    }
+                }
+                vs->vibrato = oscValue;
+
+                chan = &seqp->chanState[chanNum];
+                unk13 = chan->unk13;
+                pan = chan->fxmix;
+                unk12 = chan->unk12;
+                pitch = chan->pitchBend * vs->pitch * vs->vibrato;
+
+                env = sound->envelope;
+                func_8002AD90((N_ALVoice *) vs->voice, sound->wavetable, pitch,
+                              func_8002B238(vs, seqp), func_8002B5E8(vs, seqp) & 0xFF, pan,
+                              env->attackTime, unk12, unk13);
+
+                evt.type = AL_SEQP_ENV_EVT;
+                evt.msg.vol.voice = (N_ALVoice *) vs->voice;
+                evt.msg.vol.vol = sound->envelope->decayVolume;
+                evt.msg.vol.delta = sound->envelope->decayTime;
+                n_alEvtqPostEvent(&seqp->evtq, &evt, env->attackTime);
+
+                if (event->msg.midi.duration != 0) {
+                    evt.type = AL_CSP_NOTEOFF_EVT;
+                    evt.msg.midi.status = chanNum | 0x80;
+                    evt.msg.midi.byte1 = byte1;
+                    evt.msg.midi.byte2 = 0;
+                    n_alEvtqPostEvent(&seqp->evtq, &evt,
+                                      seqp->uspt * event->msg.midi.duration);
+                }
+                return;
+            }
+            /* fallthrough */
+        case AL_MIDI_NoteOff:
+            vs = func_8002B638(seqp, byte1, chanNum);
+            if (vs != NULL) {
+                if (vs->state == 2) {
+                    vs->state = 4;
+                    return;
+                }
+                vs->state = 3;
+                func_8002B2E8(seqp, (N_ALVoice *) vs->voice, vs->sound->envelope->releaseTime);
+            }
+            return;
+
+        case AL_MIDI_PolyKeyPressure:
+            vs = func_8002B638(seqp, byte1, chanNum);
+            if (vs != NULL) {
+                vs->pressure = byte2;
+                n_alSynSetVol((N_ALVoice *) vs->voice, func_8002B238(vs, seqp),
+                              func_8002B214(vs, seqp->curTime));
+            }
+            return;
+
+        case AL_MIDI_ChannelPressure:
+            seqp->chanState[chanNum].pressure = byte1;
+            return;
+
+        case AL_MIDI_ControlChange:
+            switch (byte1) {
+                case AL_MIDI_VOLUME_CTRL:
+                    seqp->chanState[chanNum].vol = byte2;
+                    vs = seqp->vAllocHead;
+                    while (vs != NULL) {
+                        if (chanNum == vs->channel && vs->envPhase != 3) {
+                            n_alSynSetVol((N_ALVoice *) vs->voice, func_8002B238(vs, seqp),
+                                          func_8002B214(vs, seqp->curTime));
+                        }
+                        vs = vs->next;
+                    }
+                    return;
+
+                case AL_MIDI_PAN_CTRL:
+                    seqp->chanState[chanNum].pan = byte2;
+                    vs = seqp->vAllocHead;
+                    while (vs != NULL) {
+                        if (chanNum == vs->channel) {
+                            n_alSynSetPan((N_ALVoice *) vs->voice, func_8002B5E8(vs, seqp) & 0xFF);
+                        }
+                        vs = vs->next;
+                    }
+                    return;
+
+                case AL_MIDI_PRIORITY_CTRL:
+                    seqp->chanState[chanNum].priority = byte2;
+                    return;
+
+                case AL_MIDI_SUSTAIN_CTRL:
+                    seqp->chanState[chanNum].sustain = byte2;
+                    vs = seqp->vAllocHead;
+                    while (vs != NULL) {
+                        if (chanNum == vs->channel) {
+                            if (vs->state != 3) {
+                                if (byte2 >= 0x40) {
+                                    if (vs->state == 0) {
+                                        vs->state = 2;
+                                    }
+                                } else if (vs->state == 2) {
+                                    vs->state = 0;
+                                } else if (vs->state == 4) {
+                                    vs->state = 3;
+                                    func_8002B2E8(seqp, (N_ALVoice *) vs->voice,
+                                                  vs->sound->envelope->releaseTime);
+                                }
+                            }
+                        }
+                        vs = vs->next;
+                    }
+                    return;
+
+                case AL_MIDI_FX1_CTRL:
+                    seqp->chanState[chanNum].fxmix = byte2;
+                    vs = seqp->vAllocHead;
+                    while (vs != NULL) {
+                        if (chanNum == vs->channel) {
+                            func_8002CFE4((N_ALVoice *) vs->voice, byte2);
+                        }
+                        vs = vs->next;
+                    }
+                    return;
+
+                case 20:
+                    if (byte2 >= 0x79) {
+                        seqp->chanState[chanNum].bendRange = 1200;
+                    } else {
+                        seqp->chanState[chanNum].bendRange = byte2 * 10;
+                    }
+                    return;
+
+                case 21:
+                    seqp->unk78 = byte2;
+                    return;
+
+                case 22:
+                    chan = &seqp->chanState[chanNum];
+                    chan->unk12 = byte2;
+                    vs = seqp->vAllocHead;
+                    while (vs != NULL) {
+                        if (chanNum == vs->channel) {
+                            func_8002CF40((N_ALVoice *) vs->voice, byte2,
+                                          seqp->chanState[chanNum].unk13);
+                        }
+                        vs = vs->next;
+                    }
+                    return;
+
+                case 23:
+                    chan = &seqp->chanState[chanNum];
+                    chan->unk13 = byte2;
+                    vs = seqp->vAllocHead;
+                    while (vs != NULL) {
+                        if (chanNum == vs->channel) {
+                            func_8002CF40((N_ALVoice *) vs->voice,
+                                          seqp->chanState[chanNum].unk12, byte2);
+                        }
+                        vs = vs->next;
+                    }
+                    return;
+
+                case 24:
+                    if (byte2 < 3 && seqp->bank[byte2] != NULL) {
+                        seqp->chanState[chanNum].bank = byte2;
+                    }
+                    return;
+
+                case 25:
+                    seqp->chanState[chanNum].priority = byte2;
+                    return;
+            }
+            return;
+
+        case AL_MIDI_ProgramChange:
+            if (byte1 < seqp->bank[seqp->chanState[chanNum].bank]->instCount) {
+                func_8002B59C(seqp,
+                              seqp->bank[seqp->chanState[chanNum].bank]->instArray[byte1],
+                              chanNum);
+            }
+            return;
+
+        case AL_MIDI_PitchBendChange:
+            chan = &seqp->chanState[chanNum];
+            pitch = alCents2Ratio((chan->bendRange * (((byte2 << 7) + byte1) - 0x2000)) /
+                                  8192);
+            chan->pitchBend = pitch;
+            vs = seqp->vAllocHead;
+            while (vs != NULL) {
+                if (chanNum == vs->channel) {
+                    n_alSynSetPitch((N_ALVoice *) vs->voice,
+                                    ((((f32) (u32) seqp->chanState[chanNum].pressure *
+                                       (vs->vibrato - 1.0f)) / 127.0f) + 1.0f) *
+                                        (vs->pitch * pitch));
+                }
+                vs = vs->next;
+            }
+            return;
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_800285F8.s")
+#endif
+
+/* n_alCSPVoiceHandler (upstream libnaudio/n_cspplayer.c): the compressed-
+ * sequence player's event pump.  Both jump tables are decoded from the listing
+ * -- jtbl_800416E4 is `seqp->nextEvent.type` 0..0x19 (0 AL_SEQ_REF_EVT, 5
+ * AL_NOTE_END_EVT, 6 AL_SEQP_ENV_EVT, 7 AL_SEQP_META_EVT, 9 AL_SEQP_API_EVT,
+ * 10 AL_SEQP_VOL_EVT, 12 AL_SEQP_PRIORITY_EVT, 13 AL_SEQP_SEQ_EVT, 14
+ * AL_SEQP_BANK_EVT, 15/16/17 PLAY/STOP/STOPPING, 2 and 21 sharing the MIDI
+ * arm, 22/23 the two oscillator events, 24/25 two Kirby-only bank slots), and
+ * jtbl_8004174C is the inner `evt.type - 1` for the events alCSeqNextEvent
+ * returns.  The N_ALOscEvent field split (vs at 0x44, oscState at 0x48, chan
+ * at 0x4C) is what makes the `jalr $t9` an `updateOsc(oscState, &value)`.
+ *
+ * The m2c hole `func_80026460(seqp, <unset $a1>)` in the AL_SEQP_SEQ_EVT arm is
+ * recovered: the ROM does not set $a1 at all, it sets `$f12` from
+ * `%lo(D_8004179C)`, and that word is `.float 500000` -- the MIDI default tempo
+ * of 500000 us per quarter note.  (func_80026460's own note explains why the
+ * float arrives in $f12 rather than $a1.)
+ *
+ * FACTORY: 422 of 424 words DIFFER against a 425-word ROM -- the count is one
+ * short and the case layout order comes out exactly right, so this is a
+ * complete shape with a register-allocation residue on top.  The residue is
+ * ujoin again, and visibly so: the ROM hands func_800285F8 its seqp in $s2 and
+ * func_8002649C its seqp in $s6, keeps `&seqp->nextEvent` spilled at
+ * 0x60($sp), and saves $fp into 0xB0($sp) -- ABOVE its own 0xB0 frame, i.e.
+ * into the CALLER's frame -- across those two calls.  tools/decomp/cc_o3.py
+ * has no ujoin, so an o32 build parks seqp and &seqp->evtq in $s2/$s5 instead
+ * and every register after that is renamed.
+ *
+ * The body is plain ANSI C and its three record views are laid out to match
+ * the file-scope KChanSt / KVoiceSt / KCSeqpNew at LP64 as well as on N64, so
+ * the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+/* The three records this handler walks, spelled so that EVERY field lands at
+ * the same LP64 offset as the file-scope KChanSt / KVoiceSt / KCSeqpNew views
+ * that func_800296C0 allocates -- same member order, same widths, pads only
+ * where those views have pads.  (KCSeqpNew itself is declared just BELOW this
+ * site and REFOUND.md forbids moving a file-scope declaration to suit a
+ * draft, so it is mirrored rather than reused.) */
+typedef struct KCChanSt {
+    /* 0x00 */ u8  pad00[8];
+    /* 0x08 */ u8  priority;
+    /* 0x09 */ u8  pad09[3];
+    /* 0x0C */ f32 pitchBend;
+    /* 0x10 */ u8  bendRange;
+    /* 0x11 */ u8  pad11[7];
+} KCChanSt;
+
+typedef struct KCVoiceState {
+    /* 0x00 */ struct KCVoiceState *next;
+    /* 0x04 */ u8  voice[0x1C];     /* N_ALVoice at +0x04; clientPrivate points back here */
+    /* 0x20 */ ALSound *sound;      /* unused here; declared so this view and
+                                     * func_800285F8's KMidiVoice agree at LP64 */
+    /* 0x24 */ s32 envEndTime;
+    /* 0x28 */ f32 pitch;
+    /* 0x2C */ f32 vibrato;
+    /* 0x30 */ u8  envGain;
+    /* 0x31 */ u8  pad31[3];
+    /* 0x34 */ u8  envPhase;
+    /* 0x35 */ u8  pad35[1];
+    /* 0x36 */ u8  tremelo;
+    /* 0x37 */ u8  flags;
+} KCVoiceState;
+
+typedef struct KCSeqpFull {
+    /* 0x00 */ ALPlayer      node;
+    /* 0x14 */ N_ALSynth    *drvr;
+    /* 0x18 */ void         *target;
+    /* 0x1C */ ALMicroTime   curTime;
+    /* 0x20 */ void         *bank;
+    /* 0x24 */ void         *unk24;
+    /* 0x28 */ void         *unk28;
+    /* 0x2C */ s32           uspt;
+    /* 0x30 */ s32           nextDelta;
+    /* 0x34 */ s32           state;
+    /* 0x38 */ u16           chanMask;
+    /* 0x3A */ s16           vol;
+    /* 0x3C */ u8            maxChannels;
+    /* 0x3D */ u8            debugFlags;
+    /* 0x3E */ u8            pad3E[2];
+    /* 0x40 */ N_ALEvent     nextEvent;
+    /* 0x50 */ ALEventQueue  evtq;
+    /* 0x64 */ ALMicroTime   frameTime;
+    /* 0x68 */ KCChanSt     *chanState;
+    /* 0x6C */ KCVoiceState *vAllocHead;
+    /* 0x70 */ KCVoiceState *vAllocTail;
+    /* 0x74 */ KCVoiceState *vFreeList;
+    /* 0x78 */ u8            unk78;
+    /* 0x79 */ u8            pad79[3];
+    /* 0x7C */ ALOscInit     initOsc;
+    /* 0x80 */ ALOscUpdate   updateOsc;
+    /* 0x84 */ ALOscStop     stopOsc;
+} KCSeqpFull;
+
+void func_800263F0(KCSeqp *seqp);
+void func_80026460(KCSeqp *seqp, f32 tempo);
+void func_8002649C(void *seqp, N_ALEvent *evt);
+void func_800285F8(void *seqp, N_ALEvent *evt);
+void func_8002B158(KCSeqpFull *seqp, void *bank);
+s32 func_8002B214(void *vs, ALMicroTime t);
+s16 func_8002B238(void *vs, void *seqp);
+void func_8002B2E8(void *seqp, N_ALVoice *voice, ALMicroTime t);
+s32 func_8002B40C(KCSeqpFull *seqp, N_ALVoice *voice, s32 t);
+void func_8002B4B4(KCSeqpFull *seqp, N_ALVoice *voice);
+void func_8002C68C(KCSeqpFull *seqp, KCVoiceState *vs);
+void func_8002D1B0(N_ALVoice *voice);
+void func_8002C790(void *);
+
+s32 func_8002901C(void *node) {
+    KCSeqpFull   *seqp = (KCSeqpFull *) node;
+    ALEvent       evt;
+    N_ALEvent     nextEvt;
+    N_ALVoice    *voice;
+    KCVoiceState *vs;
+    KCChanSt     *ch;
+    ALMicroTime   delta;
+    void         *oscState;
+    f32           oscValue;
+    s32           deltaTime;
+    u8            chan;
+
+    while (1) {
+        switch (seqp->nextEvent.type) {
+            case AL_SEQ_REF_EVT:
+                if (seqp->target != NULL) {
+                    alCSeqNextEvent((ALCSeq *) seqp->target, &evt);
+                    switch (evt.type) {
+                        case AL_SEQ_MIDI_EVT:
+                            func_800285F8(seqp, (N_ALEvent *) &evt);
+                            func_800263F0((KCSeqp *) seqp);
+                            break;
+                        case AL_TEMPO_EVT:
+                            func_8002649C(seqp, (N_ALEvent *) &evt);
+                            func_800263F0((KCSeqp *) seqp);
+                            break;
+                        case AL_SEQ_END_EVT:
+                            seqp->state = AL_STOPPING;
+                            evt.type = AL_SEQP_STOP_EVT;
+                            n_alEvtqPostEvent(&seqp->evtq, (N_ALEvent *) &evt, 0x7FFFFFFF);
+                            break;
+                        case AL_TRACK_END:
+                        case AL_CSP_LOOPSTART:
+                        case AL_CSP_LOOPEND:
+                            func_800263F0((KCSeqp *) seqp);
+                            break;
+                    }
+                }
+                break;
+
+            case AL_SEQP_API_EVT:
+                nextEvt.type = AL_SEQP_API_EVT;
+                n_alEvtqPostEvent(&seqp->evtq, &nextEvt, seqp->frameTime);
+                break;
+
+            case AL_NOTE_END_EVT:
+                voice = seqp->nextEvent.msg.note.voice;
+                n_alSynStopVoice(voice);
+                func_8002D1B0(voice);
+                vs = voice->clientPrivate;
+                if (vs->flags != 0) {
+                    func_8002C68C(seqp, vs);
+                }
+                func_8002B4B4(seqp, voice);
+                break;
+
+            case AL_SEQP_ENV_EVT:
+                voice = seqp->nextEvent.msg.note.voice;
+                vs = voice->clientPrivate;
+                if (vs->envPhase == 0) {
+                    vs->envPhase = 1;
+                }
+                delta = seqp->nextEvent.msg.vol.delta;
+                vs->envEndTime = seqp->curTime + delta;
+                vs->envGain = seqp->nextEvent.msg.vol.vol;
+                n_alSynSetVol(voice, func_8002B238(vs, seqp), delta);
+                break;
+
+            case AL_TREM_OSC_EVT:
+                oscState = seqp->nextEvent.msg.osc.oscState;
+                vs = (KCVoiceState *) seqp->nextEvent.msg.osc.vs;
+                deltaTime = seqp->updateOsc(oscState, &oscValue);
+                vs->tremelo = (u8) (u32) oscValue;
+                n_alSynSetVol((N_ALVoice *) vs->voice, func_8002B238(vs, seqp),
+                              func_8002B214(vs, seqp->curTime));
+                nextEvt.type = AL_TREM_OSC_EVT;
+                nextEvt.msg.osc.vs = (struct N_ALVoiceState_s *) vs;
+                nextEvt.msg.osc.oscState = oscState;
+                n_alEvtqPostEvent(&seqp->evtq, &nextEvt, deltaTime);
+                break;
+
+            case AL_VIB_OSC_EVT:
+                oscState = seqp->nextEvent.msg.osc.oscState;
+                vs = (KCVoiceState *) seqp->nextEvent.msg.osc.vs;
+                chan = seqp->nextEvent.msg.osc.chan;
+                deltaTime = seqp->updateOsc(oscState, &oscValue);
+                vs->vibrato = oscValue;
+                ch = &seqp->chanState[chan];
+                n_alSynSetPitch((N_ALVoice *) vs->voice,
+                                ch->pitchBend * (vs->pitch *
+                                    ((((vs->vibrato - 1.0f) * (f32) (u32) ch->bendRange) / 127.0f) + 1.0f)));
+                nextEvt.type = AL_VIB_OSC_EVT;
+                nextEvt.msg.osc.vs = (struct N_ALVoiceState_s *) vs;
+                nextEvt.msg.osc.oscState = oscState;
+                nextEvt.msg.osc.chan = chan;
+                n_alEvtqPostEvent(&seqp->evtq, &nextEvt, deltaTime);
+                break;
+
+            case AL_SEQP_MIDI_EVT:
+            case AL_CSP_NOTEOFF_EVT:
+                func_800285F8(seqp, &seqp->nextEvent);
+                break;
+
+            case AL_SEQP_META_EVT:
+                func_8002649C(seqp, &seqp->nextEvent);
+                break;
+
+            case AL_SEQP_VOL_EVT:
+                vs = seqp->vAllocHead;
+                seqp->vol = seqp->nextEvent.msg.spvol.vol;
+                while (vs != NULL) {
+                    n_alSynSetVol((N_ALVoice *) vs->voice, func_8002B238(vs, seqp),
+                                  func_8002B214(vs, seqp->curTime));
+                    vs = vs->next;
+                }
+                break;
+
+            case AL_SEQP_PLAY_EVT:
+                seqp->unk78 = 100;
+                if (seqp->state != AL_PLAYING) {
+                    seqp->state = AL_PLAYING;
+                    func_800263F0((KCSeqp *) seqp);
+                }
+                break;
+
+            case AL_SEQP_STOP_EVT:
+                if (seqp->state == AL_STOPPING) {
+                    while ((vs = seqp->vAllocHead) != NULL) {
+                        voice = (N_ALVoice *) vs->voice;
+                        n_alSynStopVoice(voice);
+                        func_8002D1B0(voice);
+                        if (vs->flags != 0) {
+                            func_8002C68C(seqp, vs);
+                        }
+                        func_8002B4B4(seqp, voice);
+                    }
+                    func_8002C790(seqp);
+                    seqp->state = AL_STOPPED;
+                }
+                break;
+
+            case AL_SEQP_STOPPING_EVT:
+                if (seqp->state == AL_PLAYING) {
+                    func_80025FA4(&seqp->evtq, AL_SEQ_REF_EVT);
+                    func_80025FA4(&seqp->evtq, AL_CSP_NOTEOFF_EVT);
+                    func_80025FA4(&seqp->evtq, AL_SEQP_MIDI_EVT);
+                    vs = seqp->vAllocHead;
+                    while (vs != NULL) {
+                        voice = (N_ALVoice *) vs->voice;
+                        if (func_8002B40C(seqp, voice, 0xC350) != 0) {
+                            func_8002B2E8(seqp, voice, 0xC350);
+                        }
+                        vs = vs->next;
+                    }
+                    seqp->state = AL_STOPPING;
+                    nextEvt.type = AL_SEQP_STOP_EVT;
+                    n_alEvtqPostEvent(&seqp->evtq, &nextEvt, 0x7FFFFFFF);
+                }
+                break;
+
+            case AL_SEQP_PRIORITY_EVT:
+                seqp->chanState[seqp->nextEvent.msg.sppriority.chan].priority =
+                    seqp->nextEvent.msg.sppriority.priority;
+                break;
+
+            case AL_SEQP_SEQ_EVT:
+                seqp->target = seqp->nextEvent.msg.spseq.seq;
+                func_80026460((KCSeqp *) seqp, 500000.0f);
+                if (seqp->bank != NULL) {
+                    func_8002B158(seqp, seqp->bank);
+                }
+                break;
+
+            case AL_SEQP_BANK_EVT:
+                seqp->bank = seqp->nextEvent.msg.spbank.bank;
+                func_8002B158(seqp, seqp->bank);
+                break;
+
+            case 24:
+                seqp->unk24 = seqp->nextEvent.msg.spbank.bank;
+                func_8002B158(seqp, seqp->unk24);
+                break;
+
+            case 25:
+                seqp->unk28 = seqp->nextEvent.msg.spbank.bank;
+                func_8002B158(seqp, seqp->unk28);
+                break;
+        }
+
+        seqp->nextDelta = func_800261B0(&seqp->evtq, &seqp->nextEvent);
+        if (seqp->nextDelta != 0) {
+            break;
+        }
+    }
+
+    seqp->curTime += seqp->nextDelta;
+    return (s32) ((f32) seqp->nextDelta / D_8003FB18);
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002901C.s")
+#endif
 
 typedef struct KVoiceSt {
     /* 0x00 */ struct KVoiceSt *next;
@@ -2357,7 +3994,113 @@ s32 func_8002A4E4(N_PVoice *filter, s32 paramID, void *param) {
     return 0;
 }
 
+/* n_alFxNew (upstream libreultra/src/libnaudio/n_reverb.c): builds the reverb
+ * filter and its delay sections from a parameter table.  The table layout is
+ * read straight off the listing -- word 0 section_count, word 1 length, then
+ * eight words per section: input, output, fbcoef, ffcoef, gain, rsinc source,
+ * rsgain source, lowpass fc -- which the three table sizes confirm
+ * (D_8003F880 0x68 = 2 + 3*8, D_8003F8E8 0x88 = 2 + 4*8, and the 0x28 tables
+ * are 2 + 1*8).  The six jump-table arms are the ALFxId values 1..6 and the
+ * fall-through is D_8003F9E8.
+ *
+ * FACTORY: MATCH (256 insns, byte-exact) -- but PADDING-TRAPPED, so it stays
+ * guarded.  func_8002A508's `.s` carries two trailing nops INSIDE its listing
+ * and the function is INTERIOR to this TU (n_alSynAddSeqPlayer follows it), so
+ * those nops are an ex-libn_audio.a object boundary, not something alignment
+ * puts back: un-guarding was measured and shrinks .text from 0x7710 to 0x7700,
+ * 16 bytes.  Per tools/decomp/padtrap.py's "interior + benign" case the fix is
+ * to SPLIT the `c` subsegment at 0x2B510 (vram 0x8002A910) into a second C
+ * file, exactly as libn_audio_2b..2f were split; that is a kirby64.yaml +
+ * kirby.ld change and belongs to the coordinator.  .rodata is byte-identical
+ * either way (0x630 both ways), so LEVERS 53 is clear -- the jump table and
+ * the 173123.4 pool come out in the same place.
+ *
+ * Two spellings were load-bearing and are worth keeping if this is ever
+ * re-derived: `i`/`j` must be u16 (the ROM wraps them with `andi 0xFFFF`, not
+ * `sll`/`sra`), the delay-line clear loop needs its OWN counter (sharing `i`
+ * with the section loop forces it into a callee-saved register where the ROM
+ * uses $v1 -- worth 160 words), and `d->rsgain` must be assigned BEFORE
+ * `d->rsval`/`d->rsdelta` even though the ROM stores them in field order: that
+ * is what puts 1.0f and 173123.4 in the ROM's $f24/$f22 rather than swapped,
+ * and it was worth 24 -> 2.  `2.0f * x` (not `2 * x`) gives the ROM's `add.s`.
+ *
+ * The body is plain ANSI C over synthInternals.h's public types, so the port
+ * takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+extern s32 D_8003F880[];
+extern s32 D_8003F8E8[];
+extern s32 D_8003F970[];
+extern s32 D_8003F998[];
+extern s32 D_8003F9C0[];
+extern s32 D_8003F9E8[];
+
+void func_8002A508(ALFx **r, ALSynConfig *c, ALHeap *hp) {
+    ALFx    *f;
+    ALDelay *d;
+    s32     *fxParamHdl;
+    u16     i;
+    u16     j;
+    u16     k;
+
+    *r = f = alHeapDBAlloc(0, 0, hp, 1, sizeof(ALFx));
+
+    switch (c->fxType) {
+        case AL_FX_SMALLROOM: fxParamHdl = D_8003F880; break;
+        case AL_FX_BIGROOM:   fxParamHdl = D_8003F8E8; break;
+        case AL_FX_ECHO:      fxParamHdl = D_8003F970; break;
+        case AL_FX_CHORUS:    fxParamHdl = D_8003F998; break;
+        case AL_FX_FLANGE:    fxParamHdl = D_8003F9C0; break;
+        case AL_FX_CUSTOM:    fxParamHdl = c->params; break;
+        default:              fxParamHdl = D_8003F9E8; break;
+    }
+
+    j = 2;
+    f->section_count = fxParamHdl[0];
+    f->length = fxParamHdl[1];
+    f->delay = alHeapDBAlloc(0, 0, hp, f->section_count, sizeof(ALDelay));
+    f->base = alHeapDBAlloc(0, 0, hp, f->length, sizeof(s16));
+    f->input = f->base;
+
+    for (k = 0; k < f->length; k++) {
+        f->base[k] = 0;
+    }
+
+    for (i = 0; i < f->section_count; i++) {
+        d = &f->delay[i];
+        d->input = fxParamHdl[j++];
+        d->output = fxParamHdl[j++];
+        d->fbcoef = fxParamHdl[j++];
+        d->ffcoef = fxParamHdl[j++];
+        d->gain = fxParamHdl[j++];
+
+        if (fxParamHdl[j] != 0) {
+            d->rsinc = (2.0f * ((f32) fxParamHdl[j++] / 1000)) / c->outputRate;
+            d->rsgain = ((f32) fxParamHdl[j++] / 173123.404906676f) * (d->output - d->input);
+            d->rsval = 1.0f;
+            d->rsdelta = 0;
+            d->rs = alHeapDBAlloc(0, 0, hp, 1, sizeof(ALResampler));
+            d->rs->state = alHeapDBAlloc(0, 0, hp, 1, sizeof(RESAMPLE_STATE));
+            d->rs->delta = 0.0f;
+            d->rs->first = 1;
+        } else {
+            d->rs = NULL;
+            j += 2;
+        }
+
+        if (fxParamHdl[j] != 0) {
+            d->lp = alHeapDBAlloc(0, 0, hp, 1, sizeof(ALLowPass));
+            d->lp->fstate = alHeapDBAlloc(0, 0, hp, 1, sizeof(POLEF_STATE));
+            d->lp->fc = fxParamHdl[j++];
+            func_8002A1C4(d->lp);
+        } else {
+            d->lp = NULL;
+            j++;
+        }
+    }
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002A508.s")
+#endif
 
 void n_alSynAddSeqPlayer(ALPlayer *client) {
     OSIntMask mask = osSetIntMask(OS_IM_NONE);

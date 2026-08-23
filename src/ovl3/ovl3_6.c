@@ -7467,13 +7467,83 @@ void func_80188184_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
+/* Re-derived against asm/nonmatchings/ovl3/ovl3_6/func_80188238_ovl3.s. The
+ * arm below used to be an uncompilable copy of the PORT arm -- it named
+ * PcO36Slot / PcO36Shape, which this file only defines inside its #elif
+ * defined(PORT) block -- so neither measure_seeds.py nor refound_status.py
+ * could score it and the site counted BARE. Five findings from the listing,
+ * each measured (1462 words differing -> 1208):
+ *
+ *   - The D_8012BCA0 flag mask is a HALFWORD op on N64: `lhu / andi 7 / sh`.
+ *     The PORT arm's `*(u32 *) &= 0x7FFFF` is the host layout and costs two
+ *     words at each of the two sites (1407 -> 1370).
+ *   - The phase-1 hover timer shares the objId index the D_800E8920 test just
+ *     computed. Spelling it `D_800E9720[omCurrentObj->objId]` instead of
+ *     caching `id` lets IDO reuse the `sll`; the cached form recomputes it and
+ *     desyncs the rest of the function by one word (1370 -> 1235).
+ *   - The seven hitbox-record stores re-evaluate the WHOLE subscript chain
+ *     (omCurrentObj, objId, D_800E98E0[objId], the record base) each time --
+ *     11 words apiece, 77 in a row. Caching `src`/`slot->unk20` cost 49 words
+ *     (LEVERS 26). Inlined: 1235 -> 1228.
+ *   - D_80191CCC_ovl3 is a 0x1C-stride 2D table. `[idx][k]` gives the ROM's
+ *     `multu $t6, $a1` against a held 0x1C; `[idx * 7 + k]` on a flat f32[]
+ *     strength-reduces to shifts and costs one word per store (1228 -> 1208).
+ *   - There are TWO Vector locals, not one: sp+0x70 for the phase-0 grow
+ *     block and sp+0x48 for the shared tail. Declaring both, with a 24-byte
+ *     hole below the second (LEVERS 43), puts the tail's Vector on the ROM's
+ *     sp+0x48 exactly.
+ *
+ * Residue: 1208/1462 words, count 1450 vs the ROM's 1463. Register allocation
+ * throughout; the shape, the branch structure and the 64-call skeleton all
+ * line up (a per-call gap analysis leaves only +-2 anywhere except the four
+ * aura-row arms, where the ROM duplicates the `fade` re-read into each arm's
+ * branch delay slot and no source spelling reproduces it -- writing the read
+ * into each case costs 14 words). Frame is 0x88 against the ROM's 0x80.
+ *
+ * One real type defect is visible here and needs a coordinator pass: the ROM
+ * `jal`s func_8015449C_ovl3 and reads its $v0 for the bounce probe, but
+ * ovl3_1.c:1679 defines it `void`, so this arm has to call it through a
+ * function-pointer cast and IDO emits `jalr` where the ROM has `jal`. Same
+ * class as the eight void-returning ovl2_7 helpers in tools/decomp/REFOUND.md.
+ *
+ * Queued for the permuter. */
+/* FACTORY: 1208/1462 words differ. */
 #ifdef MIPS_TO_C
-/* NOT DRAFTED FOR N64 YET. The host arm this would come from is written against
- * PcO36Slot / PcO36Shape -- PC-only struct views this file defines for its PORT
- * arms -- and against `(s32)(uintptr_t)` casts, so it does not compile in the N64
- * build. Needs a from-asm draft that names the real record type behind
- * func_80111A04 instead of the host view. Everything else in this file is
- * seeded; this is the one left. */
+/* The PlyEntry slot func_80111A04 returns, and the hitbox record hanging off
+ * it, spelled for the N64 build. Same layout as this file's PORT-only
+ * LocalRideSlot / PcO36Shape views; named apart so both can coexist, exactly as
+ * func_80183A1C_ovl3's draft above does with LocalO36Slot / LocalO36Shape. */
+typedef struct LocalRideShape {
+    u8 pad0[4];
+    u8 unk4;
+    u8 pad5[3];
+    s32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    f32 unk1C;
+    f32 unk20;
+    f32 unk24;
+} LocalRideShape;
+
+typedef struct LocalRideSlot {
+    u8 pad0[40];
+    s32 unk1C;
+    LocalRideShape *unk20;
+} LocalRideSlot;
+
+/* The pad-idle window at D_800D6F58 +0x50/+0x54/+0x58. Spelled as struct
+ * members, not offsets off a u8 base: the ROM folds each field's offset into
+ * its own %lo (three lui/lw pairs), which indexing one base register does
+ * not reproduce. Widths are the listing's: lw, lw, lhu. */
+typedef struct LocalPadIdle {
+    u8 pad0[0x50];
+    s32 unk50;
+    s32 unk54;
+    u16 unk58;
+} LocalPadIdle;
+
 /* PORT: the animal-friend ride (action 0x3D) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_80188238_ovl3.s (via m2c). Mirrors
  * the surface bits into D_800E9FE0 and the hover flag unk150 into
@@ -7509,7 +7579,7 @@ void func_80188184_ovl3(s32 arg0, s32 arg1, f32 arg2) {
  * +0x50/+0x54/+0x58); the `D_8012BCA0 &= 7` halfword lands on the TOP
  * u16 of the native flags word on PC (see ovl2_7.c's UnkBCA0), spelled
  * `*(u32 *) &= 0x7FFFF`; the D_80191D68 slot from func_80111A04 uses
- * the LP64 host PlySlot view (PcO36Slot/PcO36Shape); D_80191CCC is a
+ * the LP64 host PlySlot view (LocalRideSlot/PcO36Shape); D_80191CCC is a
  * native-word f32 table with 0x1C-stride (7-float) records; the
  * D_8012E9B8+0x10 aura row is four native f32s; the bounce probe reads
  * void-declared func_8015449C_ovl3's tail result through the
@@ -7521,18 +7591,18 @@ void func_80188184_ovl3(s32 arg0, s32 arg1, f32 arg2) {
  * full-word read masked 0xFFFF (endian-safe). */
 void func_80188238_ovl3(GObj *arg0) {
     extern struct GObjProcess *gEntityGObjProcessArray[];
-    extern u8 D_800D6F58[];
+    extern LocalPadIdle D_800D6F58;
     extern u8 D_8012BCA0[];
     extern u8 D_80190F2C_ovl3[];
-    extern f32 D_80191CCC_ovl3[];
+    extern f32 D_80191CCC_ovl3[][7];   /* 0x1C-stride records */
     extern u8 D_80191D68_ovl3[];
     extern u8 D_80191DD0_ovl3[];
     extern u8 D_80191E38_ovl3[];
     extern u8 D_8019395C_ovl3[];
     extern f32 D_80195718_ovl3[];
     extern u8 D_801957B8_ovl3[];
-    PcO36Slot *slot;
-    Vector pos;
+    LocalRideSlot *slot;
+    Vector pos0;
     f32 *row;
     f32 *src;
     f32 f;
@@ -7543,6 +7613,8 @@ void func_80188238_ovl3(GObj *arg0) {
     s32 cnt;
     s32 held;
     s32 id;
+    Vector pos;
+    u8 pad[24];
 
     id = omCurrentObj->objId;
     D_800E9FE0[id].as_u32 = (u32) D_800E8AE0[id];
@@ -7564,7 +7636,7 @@ void func_80188238_ovl3(GObj *arg0) {
         || ((gKirbyState.floorCollisionNext != 0)
             && (gKirbyController.buttonHeld & 0x400) && (cnt != 0))) {
         func_8011D614();
-        *(u32 *) D_8012BCA0 &= 0x7FFFF;
+        *(u16 *) D_8012BCA0 &= 7;
         gKirbyState.abilityInUse = 0;
         func_8011E0E8();
         func_8011DC5C();
@@ -7574,7 +7646,7 @@ void func_80188238_ovl3(GObj *arg0) {
     if ((gKirbyState.horizontalCollision != 0)
         && ((func_80122558() != 0) || (func_801226FC() != 0))) {
         func_8011D614();
-        *(u32 *) D_8012BCA0 &= 0x7FFFF;
+        *(u16 *) D_8012BCA0 &= 7;
         func_8011E0E8();
         func_8011DC5C();
         gKirbyState.abilityInUse = 0;
@@ -7595,10 +7667,9 @@ void func_80188238_ovl3(GObj *arg0) {
                 break;
             }
             if (gKirbyState.unk150 != 0) {
-                id = omCurrentObj->objId;
-                cnt = D_800E9720[id];
+                cnt = D_800E9720[omCurrentObj->objId];
                 if (cnt != 0) {
-                    D_800E9720[id] = cnt - 1;
+                    D_800E9720[omCurrentObj->objId] = cnt - 1;
                     if (D_800E9720[omCurrentObj->objId] == 0) {
                         play_sound(0xEB);
                     }
@@ -7610,8 +7681,8 @@ void func_80188238_ovl3(GObj *arg0) {
                                          func_8016C510_ovl3);
                 break;
             }
-            if (((*(s32 *) (D_800D6F58 + 0x50) | *(s32 *) (D_800D6F58 + 0x54)
-                  | *(u16 *) (D_800D6F58 + 0x58)) == 0)
+            if (((D_800D6F58.unk50 | D_800D6F58.unk54
+                  | D_800D6F58.unk58) == 0)
                 && (gKirbyController.buttonPressed & 0x3F)) {
                 gKirbyState.unk7 = 0;
                 gKirbyState.abilityInUse = 0;
@@ -7836,8 +7907,8 @@ void func_80188238_ovl3(GObj *arg0) {
             id = omCurrentObj->objId;
             scale = D_800DFBD0[id][0x10]->scale.v.x;
             if (scale < 1.0f) {
-                slot = (PcO36Slot *) (uintptr_t) func_80111A04(D_80191D68_ovl3, id);
-                src = &D_80191CCC_ovl3[2 * 7];
+                slot = (LocalRideSlot *) (uintptr_t) func_80111A04(D_80191D68_ovl3, id);
+                src = D_80191CCC_ovl3[2];
                 slot->unk20->unkC = src[0];
                 slot->unk20->unk10 = src[1];
                 slot->unk20->unk14 = src[2] * scale;
@@ -7847,10 +7918,10 @@ void func_80188238_ovl3(GObj *arg0) {
                 slot->unk20->unk24 = src[6];
                 slot->unk20->unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1];
                 func_80111C4C((s32) (uintptr_t) slot);
-                func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xE],
+                func_800B2340(&pos0, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xE],
                               0xFFFF);
                 row = (f32 *) ((u8 *) &D_8012E9B8 + 0x10);
-                f = pos.y - gEntitiesNextPosYArray[omCurrentObj->objId];
+                f = pos0.y - gEntitiesNextPosYArray[omCurrentObj->objId];
                 row[2] = f;
                 row[0] = f;
                 row[1] = -10.0f;
@@ -7871,15 +7942,14 @@ void func_80188238_ovl3(GObj *arg0) {
             func_8016854C_ovl3((s32) (uintptr_t) D_80191E38_ovl3,
                                (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xF], 1.0f);
         } else {
-            slot = (PcO36Slot *) (uintptr_t) func_80111A04(D_80191D68_ovl3, omCurrentObj->objId);
-            src = &D_80191CCC_ovl3[D_800E98E0[omCurrentObj->objId] * 7];
-            slot->unk20->unkC = src[0];
-            slot->unk20->unk10 = src[1];
-            slot->unk20->unk14 = src[2];
-            slot->unk20->unk18 = src[3];
-            slot->unk20->unk1C = src[4];
-            slot->unk20->unk20 = src[5];
-            slot->unk20->unk24 = src[6];
+            slot = (LocalRideSlot *) (uintptr_t) func_80111A04(D_80191D68_ovl3, omCurrentObj->objId);
+            slot->unk20->unkC = D_80191CCC_ovl3[D_800E98E0[omCurrentObj->objId]][0];
+            slot->unk20->unk10 = D_80191CCC_ovl3[D_800E98E0[omCurrentObj->objId]][1];
+            slot->unk20->unk14 = D_80191CCC_ovl3[D_800E98E0[omCurrentObj->objId]][2];
+            slot->unk20->unk18 = D_80191CCC_ovl3[D_800E98E0[omCurrentObj->objId]][3];
+            slot->unk20->unk1C = D_80191CCC_ovl3[D_800E98E0[omCurrentObj->objId]][4];
+            slot->unk20->unk20 = D_80191CCC_ovl3[D_800E98E0[omCurrentObj->objId]][5];
+            slot->unk20->unk24 = D_80191CCC_ovl3[D_800E98E0[omCurrentObj->objId]][6];
             slot->unk20->unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1];
             func_80111C4C((s32) (uintptr_t) slot);
         }

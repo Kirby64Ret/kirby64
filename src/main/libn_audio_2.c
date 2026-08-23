@@ -713,10 +713,38 @@ void alSeqNewMarker(ALSeq *seq, ALSeqMarker *m, u32 ticks) {
     }
 }
 
-/* Needs IDO's interprocedural register allocation (-O3/ujoin): the ROM keeps
- * seq/pDeltaTicks/savedPtr in $a2/$t0/$a3 across the call to func_8002C9FC.
- * Its listing also carries two unnamed empty functions (8002CD44/8002CD4C). */
+/* Upstream libreultra/src/audio/seq.c __alSeqNextDelta: peek at the next event's
+ * delta without consuming it.  The listing pins every field -- base 0x0,
+ * curPtr 0x8, len 0x10 -- and func_8002C9FC is __readVarLen.
+ *
+ * FACTORY: 20 of 25 words DIFFER against a 22-word function.  Needs IDO's
+ * interprocedural register allocation (-O3/ujoin): the ROM keeps seq,
+ * pDeltaTicks and savePtr in $a2/$t0/$a3 -- all caller-saved -- ACROSS the call
+ * to func_8002C9FC, so an o32 build has to home all three on the stack, which
+ * is the whole 3-word excess and renames the rest.  tools/decomp/cc_o3.py has
+ * no ujoin, so no source spelling reaches this.  Its listing also carries two
+ * unnamed empty functions (8002CD44/8002CD4C) inside its own `.size`, so the
+ * site is padding-trapped as well and could not be un-guarded even on a MATCH.
+ * Swept: the upstream `if (curPtr < base + len) { ...; return TRUE; }
+ * return FALSE;` polarity measures 21; the negated early-return below measures
+ * 20 and is kept (LEVERS 5).
+ *
+ * The body is plain ANSI C over the public ALSeq, so the port takes it too. */
+#if defined(MIPS_TO_C) || defined(PORT)
+char __alSeqNextDelta(ALSeq *seq, s32 *pDeltaTicks) {
+    u8 *savePtr;
+
+    if (seq->curPtr >= seq->base + seq->len) {
+        return 0;
+    }
+    savePtr = seq->curPtr;
+    *pDeltaTicks = func_8002C9FC(seq);
+    seq->curPtr = savePtr;
+    return 1;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/__alSeqNextDelta.s")
+#endif
 
 /* This file ends here because the n_audio functions that follow were each their
  * own object in libn_audio.a and so are 16-byte aligned; they now live in

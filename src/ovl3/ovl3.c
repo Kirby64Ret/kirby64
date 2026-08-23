@@ -90,20 +90,75 @@ s32 func_80151288_ovl3(void) {
     return 0;
 }
 
-#ifdef PORT
-/* Action-9 input predicate (inhale / spit / use-ability trigger), via m2c
- * with full context. D_800D6F58 is an undeclared 0x5A-byte global block
- * (HUD/pause state); the +0x50/+0x54/+0x58 gates are read at their N64
- * offsets -- nothing on PC writes them yet, so they read 0 (gates open). */
+/* FACTORY: 166/236 words differ, and the draft is 6 words SHORT. Recovered
+ * from the listing; the PORT arm below was written from m2c with no listing
+ * work behind it and was wrong about the function's shape in three ways:
+ *
+ *   - It cached all three D_800D6F58 gates into locals at the top. The ROM
+ *     reads +0x54 LAZILY at 0x80151468, inside the first condition (the lui
+ *     is the bnez's delay slot, so the lw is skipped when isTurning&1), and
+ *     does not touch +0x50 until 0x80151518. Only +0x54 has a real lifetime:
+ *     $v0 still holds it at .L80151510's `bnez $v0`, live across the
+ *     D_800D6FB2 comparison and again at 0x801515BC's `or $t5, $t4, $v0`.
+ *     Writing it as three hoisted locals is an m2c habit and costs nothing
+ *     here only because IDO re-CSEs it; writing all three as fields of one
+ *     struct object costs 48 words (see below).
+ *   - +0x58 is a HALFWORD. 0x801515B4 is `lhu`, not `lw`, so the PORT arm's
+ *     `u32 gate58 = D_800D6F58.unk58` reads the wrong 32 bits and would
+ *     mis-gate whenever only the 0x5A halfword is set. That is a real
+ *     behavioural bug on the port, not a codegen detail.
+ *   - `isTurning` checks out: 0x80151450 is `lw $t6, 0x34($v1)`, a 32-bit
+ *     read of gKirbyState+0x34, which is what Player.h declares.
+ *
+ * The three gates must be spelled as THREE SEPARATE SYMBOLS (D_800D6FA8 /
+ * D_800D6FAC / D_800D6FB0, all defined for the N64 link by datatodo.txt and
+ * for the port by build/pc/defsyms.txt). Written as `D_800D6F58.unk50/54/58`
+ * off this file's struct, IDO hoists `&D_800D6F58` into a held register and
+ * emits lui/addiu/lw where the ROM folds the addend into each %lo -- worth
+ * 48 words (224 -> 176). That is lever 36 (three near-by global accesses need
+ * three different base symbols) read in the load direction.
+ *
+ * Other measured findings, in the order they paid:
+ *   - `btn` must be u32, not u16: 176 -> 166. The ROM keeps buttonPressed in
+ *     one register and ANDs it directly; a u16 local makes IDO round-trip it
+ *     through a copy before each mask.
+ *   - The ability arm must be `if (ability != 0) {...} else {...}`, not
+ *     `if (ability == 0) {...}` first. The ROM branches TO the ability==0
+ *     block (`beql $a0, $zero, .L8015173C` with `sw $zero, 0x30($v1)` in the
+ *     delay slot), i.e. that block is the out-of-line else.
+ *
+ * Swept and rejected, all no better than 166: `switch (gKirbyState.unk4)`
+ * for the three unk4 dispatches (197 -- IDO builds a jump table where the ROM
+ * uses a compare chain); a named `s32`/`u8` local for unk4 (166/173); a named
+ * local for the +0x54 gate, assigned inside the condition to keep the load
+ * lazy (166); `else { if (...) }` spelled out instead of `else if` (166);
+ * dropping the empty `unk4 == 2` arm's `else` (166); reversed compare-operand
+ * order on every unk4 test (166); `A == 0 && B == 0 && C == 0` instead of the
+ * ROM's `(A | B | C) == 0` (172).
+ *
+ * The six missing words are all one phenomenon each and all register-shaped:
+ * two `or $v0, $a1, $zero` copies of unk4 into $v0 (0x801515E0, 0x801516B0)
+ * that IDO does not need because it compares $a1 directly; the second
+ * `lw $t6, 0xA4($v1)` the ROM tail-duplicates into the `b .L80151624` delay
+ * slot at 0x80151610; the `addiu $t0, $zero, 1` it re-materialises at
+ * .L80151624; the dead `sb $zero, 0x7($v1)` at 0x80151650 left behind by the
+ * beql that feeds .L80151654; and one of the eight `andi $t8, $a0, 0x4000`
+ * copies (this draft emits seven). Underneath that the residue is a whole-
+ * function register cascade: the ROM parks the +0x54 gate in $v0 and
+ * buttonPressed in $a0, where IDO here picks $a0 and $a2, which renames
+ * nearly every instruction from 0x80151588 onward.
+ *
+ * This function had a PORT arm and no decompilation attempt at all, which the
+ * decomp-first rule forbids. tools/decomp/refound_status.py counted it BARE.
+ * FACTORY: 166/236 (measured by tools/decomp/measure_seeds.py). */
+#ifdef MIPS_TO_C
 s32 func_80151448_ovl3(void) {
-    extern s32 D_800E8920[];
-    s32 func_801772CC_ovl3(s32);
-    u32 gate50 = D_800D6F58.unk50;
-    u32 gate54 = D_800D6F58.unk54;
-    u32 gate58 = D_800D6F58.unk58;
-    u16 btn;
+    extern u32 D_800D6FA8;
+    extern u32 D_800D6FAC;
+    extern u16 D_800D6FB0;
+    u32 btn;
 
-    if ((gKirbyState.isTurning & 1) || gate54 != 0) {
+    if ((gKirbyState.isTurning & 1) || (D_800D6FAC != 0)) {
         gKirbyState.unkA4 = 0;
         if (gKirbyController.buttonPressed & 0x4000) {
             gKirbyState.unkA = 1;
@@ -114,7 +169,7 @@ s32 func_80151448_ovl3(void) {
         return 0;
     }
     if (D_800D6FB2 == 2) {
-        if ((gKirbyController.buttonPressed & 0x4000) || gKirbyState.unkA == 1) {
+        if ((gKirbyController.buttonPressed & 0x4000) || (gKirbyState.unkA == 1)) {
             gKirbyState.unkA = 0;
             gKirbyState.unk7 = 0;
             gKirbyState.unk30 = 0;
@@ -123,13 +178,12 @@ s32 func_80151448_ovl3(void) {
         }
         return 0;
     }
-    if (gate54 == 0 && gate50 == 0 && gKirbyState.unk4 == 2) {
-        btn = gKirbyController.buttonPressed;
-        if (btn & 0x4000) {
+    if ((D_800D6FAC == 0) && (D_800D6FA8 == 0) && (gKirbyState.unk4 == 2)) {
+        if (gKirbyController.buttonPressed & 0x4000) {
             set_kirby_action_1(0x1B, 0x19);
             return 9;
         }
-        if ((btn & 0x3F) || gKirbyState.unkA == 3) {
+        if ((gKirbyController.buttonPressed & 0x3F) || (gKirbyState.unkA == 3)) {
             gKirbyState.unkA = 0;
             set_kirby_action_1(0x13, 0x13);
             return 9;
@@ -137,8 +191,8 @@ s32 func_80151448_ovl3(void) {
     }
     gKirbyState.unkA4 = 0;
     btn = gKirbyController.buttonPressed;
-    if (gKirbyState.abilityInUse == 0 && gKirbyState.unk8 == 0
-        && (gate50 | gate54 | gate58) == 0) {
+    if ((gKirbyState.abilityInUse == 0) && (gKirbyState.unk8 == 0)
+     && ((D_800D6FA8 | D_800D6FAC | D_800D6FB0) == 0)) {
         if (D_800E8920[omCurrentObj->objId] != 0) {
             if (!(btn & 0x400) && (btn & 0x3F)) {
                 gKirbyState.unkA4 = 1;
@@ -148,26 +202,26 @@ s32 func_80151448_ovl3(void) {
         }
         if (gKirbyState.unkA4 != 0) {
             gKirbyState.unkA4 = 0;
-            if (gKirbyState.unk4 == 1) {
-                gKirbyState.unk7 = 0;
-                set_kirby_action_1(0x11, 0x11);
-                return 9;
-            }
-            if (gKirbyState.unk4 == 0 && gKirbyState.ability != 0
-                && gKirbyState.action != 0xA && gKirbyState.action != 0xB) {
+            if (gKirbyState.unk4 != 0) {
+                if (gKirbyState.unk4 == 1) {
+                    gKirbyState.unk7 = 0;
+                    set_kirby_action_1(0x11, 0x11);
+                    return 9;
+                } else if (gKirbyState.unk4 == 2) {
+                }
+            } else if ((gKirbyState.ability != 0) && (gKirbyState.action != 0xA) && (gKirbyState.action != 0xB)) {
                 gKirbyState.unk7 = 0;
                 set_kirby_action_1(0x11, 0x11);
                 return 9;
             }
         }
     }
-    if ((btn & 0x4000) || gKirbyState.unkA == 1) {
+    if ((btn & 0x4000) || (gKirbyState.unkA == 1)) {
         gKirbyState.unkA = 0;
         if (gKirbyState.unk4 == 0) {
             if (gKirbyState.ability != 0) {
-                if (gKirbyState.abilityInUse == 0
-                    && (gKirbyState.ability != 0xC || D_80198838_ovl3 != 0)) {
-                    s32 act = func_801772CC_ovl3((s32) gKirbyState.ability);
+                if ((gKirbyState.abilityInUse == 0) && ((gKirbyState.ability != 0xC) || (D_80198838_ovl3 != 0))) {
+                    s32 act = func_801772CC_ovl3(gKirbyState.ability);
 
                     if (act != 0xFFFF) {
                         gKirbyState.unk30 = 0;
@@ -176,12 +230,13 @@ s32 func_80151448_ovl3(void) {
                         return 9;
                     }
                 }
-                return 0;
+            } else {
+                gKirbyState.unk30 = 0;
+                gKirbyState.unk7 = 0;
+                set_kirby_action_1(0x18, 0x18);
+                return 9;
             }
-            gKirbyState.unk30 = 0;
-            gKirbyState.unk7 = 0;
-            set_kirby_action_1(0x18, 0x18);
-            return 9;
+            return 0;
         }
         if (gKirbyState.unk4 == 1) {
             set_kirby_action_1(0x1A, 0x19);
@@ -190,7 +245,7 @@ s32 func_80151448_ovl3(void) {
         return 0;
     }
     if (gKirbyState.unk4 == 1) {
-        if (D_800E8920[omCurrentObj->objId] != 0 && (btn & 0x400)) {
+        if ((D_800E8920[omCurrentObj->objId] != 0) && (btn & 0x400)) {
             gKirbyState.unk30 = 0;
             gKirbyState.unk7 = 0;
             set_kirby_action_1(0xB, 0x10);
@@ -198,7 +253,119 @@ s32 func_80151448_ovl3(void) {
         }
         return 0;
     }
-    if (gKirbyState.unk4 == 2 && (btn & 0x400)) {
+    if ((gKirbyState.unk4 == 2) && (btn & 0x400)) {
+        gKirbyState.unk7 = 0;
+        set_kirby_action_1(0x12, 0x12);
+        return 9;
+    }
+    return 0;
+}
+#elif defined(PORT)
+/* Action-9 input predicate (inhale / spit / use-ability trigger). D_800D6F58
+ * is a 0x5A-byte global block (HUD/pause state); the +0x50 word, the +0x54
+ * word and the +0x58 HALFWORD are three independent gates, read at their N64
+ * offsets -- nothing on PC writes them yet, so they read 0 (gates open). Only
+ * the +0x54 gate is cached; the ROM reads the other two at the point of use. */
+s32 func_80151448_ovl3(void) {
+    u32 gate54 = D_800D6F58.unk54;
+    u32 btn;
+
+    if ((gKirbyState.isTurning & 1) || (gate54 != 0)) {
+        gKirbyState.unkA4 = 0;
+        if (gKirbyController.buttonPressed & 0x4000) {
+            gKirbyState.unkA = 1;
+        }
+        return 0;
+    }
+    if (gKirbyState.unk17 != 0) {
+        return 0;
+    }
+    if (D_800D6FB2 == 2) {
+        if ((gKirbyController.buttonPressed & 0x4000) || (gKirbyState.unkA == 1)) {
+            gKirbyState.unkA = 0;
+            gKirbyState.unk7 = 0;
+            gKirbyState.unk30 = 0;
+            set_kirby_action_1(0x17, 0x1A);
+            return 9;
+        }
+        return 0;
+    }
+    if ((gate54 == 0) && (D_800D6F58.unk50 == 0) && (gKirbyState.unk4 == 2)) {
+        btn = gKirbyController.buttonPressed;
+        if (btn & 0x4000) {
+            set_kirby_action_1(0x1B, 0x19);
+            return 9;
+        }
+        if ((btn & 0x3F) || (gKirbyState.unkA == 3)) {
+            gKirbyState.unkA = 0;
+            set_kirby_action_1(0x13, 0x13);
+            return 9;
+        }
+    }
+    gKirbyState.unkA4 = 0;
+    btn = gKirbyController.buttonPressed;
+    if ((gKirbyState.abilityInUse == 0) && (gKirbyState.unk8 == 0)
+     && ((D_800D6F58.unk50 | gate54 | *(u16 *) &D_800D6F58.unk58) == 0)) {
+        if (D_800E8920[omCurrentObj->objId] != 0) {
+            if (!(btn & 0x400) && (btn & 0x3F)) {
+                gKirbyState.unkA4 = 1;
+            }
+        } else if (btn & 0x3F) {
+            gKirbyState.unkA4 = 1;
+        }
+        if (gKirbyState.unkA4 != 0) {
+            gKirbyState.unkA4 = 0;
+            if (gKirbyState.unk4 == 0) {
+                if ((gKirbyState.ability != 0) && (gKirbyState.action != 0xA) && (gKirbyState.action != 0xB)) {
+                    gKirbyState.unk7 = 0;
+                    set_kirby_action_1(0x11, 0x11);
+                    return 9;
+                }
+            } else if (gKirbyState.unk4 == 1) {
+                gKirbyState.unk7 = 0;
+                set_kirby_action_1(0x11, 0x11);
+                return 9;
+            }
+        }
+    }
+    if ((btn & 0x4000) || (gKirbyState.unkA == 1)) {
+        gKirbyState.unkA = 0;
+        if (gKirbyState.unk4 == 0) {
+            if (gKirbyState.ability != 0) {
+                if ((gKirbyState.abilityInUse == 0) && ((gKirbyState.ability != 0xC) || (D_80198838_ovl3 != 0))) {
+                    s32 act = func_801772CC_ovl3(gKirbyState.ability);
+
+                    if (act != 0xFFFF) {
+                        gKirbyState.unk30 = 0;
+                        gKirbyState.unk16 = 0;
+                        set_kirby_action_1(act, 0x1A);
+                        return 9;
+                    }
+                }
+            } else {
+                gKirbyState.unk30 = 0;
+                gKirbyState.unk7 = 0;
+                set_kirby_action_1(0x18, 0x18);
+                return 9;
+            }
+            return 0;
+        }
+        if (gKirbyState.unk4 == 1) {
+            set_kirby_action_1(0x1A, 0x19);
+            return 9;
+        }
+        return 0;
+    }
+    if (gKirbyState.unk4 == 1) {
+        if ((D_800E8920[omCurrentObj->objId] != 0) && (btn & 0x400)) {
+            gKirbyState.unk30 = 0;
+            gKirbyState.unk7 = 0;
+            set_kirby_action_1(0xB, 0x10);
+            return 9;
+        }
+        return 0;
+    }
+    if ((gKirbyState.unk4 == 2) && (btn & 0x400)) {
         gKirbyState.unk7 = 0;
         set_kirby_action_1(0x12, 0x12);
         return 9;

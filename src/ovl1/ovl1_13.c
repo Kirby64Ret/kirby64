@@ -1170,44 +1170,36 @@ s32 func_800BE098(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BE098.s")
 #endif
 
-// handwritten after here???????
-
-#ifdef MIPS_TO_C
-s32 func_800BE320(void *arg0) {
-    arg0->unkC = saved_reg_ra;
-    arg0->unk68 = M2C_ERROR(/* cfc1 */);
-    arg0->unk8 = sp;
-    arg0->unk34 = saved_reg_fp;
-    arg0->unk14 = saved_reg_s0;
-    arg0->unk18 = saved_reg_s1;
-    arg0->unk1C = saved_reg_s2;
-    arg0->unk20 = saved_reg_s3;
-    arg0->unk24 = saved_reg_s4;
-    arg0->unk28 = saved_reg_s5;
-    arg0->unk2C = saved_reg_s6;
-    arg0->unk30 = saved_reg_s7;
-    arg0->unk38 = saved_reg_f20;
-    arg0->unk40 = saved_reg_f22;
-    arg0->unk48 = saved_reg_f24;
-    arg0->unk50 = saved_reg_f26;
-    arg0->unk58 = saved_reg_f28;
-    arg0->unk60 = saved_reg_f30;
-    return 0;
-}
-#else
+/* HAND-WRITTEN ASSEMBLY FROM HERE: func_800BE320 and func_800BE374 are the
+ * game's setjmp and longjmp, and they are NOT a decompilation target.  A
+ * function that saves and restores its CALLER's callee-saved registers and
+ * stack pointer cannot be expressed in C at all -- the two `#ifdef MIPS_TO_C`
+ * sketches that used to stand here were m2c's `saved_reg_s0` / `sp` /
+ * "M2C_ERROR cfc1" pseudo-code, which neither compiled nor described
+ * the second function correctly (its "draft" dropped the whole restore and
+ * just returned the argument).  They are replaced by this record of what the
+ * two listings actually do; `#pragma GLOBAL_ASM` is the right and final answer
+ * for the matching build, and src/pc/pc_setjmp.c supplies the port's own
+ * x86-64 versions of both symbols.
+ *
+ * The m2c hole is resolved: `cfc1 $v0, $31` reads FCR31, the MIPS floating
+ * point CONTROL/STATUS register (rounding mode, enabled/sticky exception bits
+ * and the compare condition bit) -- register 31 of coprocessor 1, not an FPR.
+ * func_800BE320 stores it in the jump buffer at +0x68 and func_800BE374 puts
+ * it back with the matching `ctc1 $v0, $31`, so a longjmp restores the FPU
+ * rounding/exception mode that was in force at the setjmp.
+ *
+ *   func_800BE320(jmp_buf *b)              -- setjmp
+ *       +0x08 $sp   +0x0C $ra   +0x14..0x30 $s0..$s7   +0x34 $fp
+ *       +0x38,0x40,0x48,0x50,0x58,0x60 $f20,$f22,$f24,$f26,$f28,$f30 (sdc1)
+ *       +0x68 FCR31 (cfc1 $31);  returns 0
+ *
+ *   func_800BE374(jmp_buf *b, s32 val)     -- longjmp
+ *       the exact inverse, FCR31 first (ctc1 $31), then returns
+ *       `val ? val : 1` -- and because $ra and $sp have already been
+ *       reloaded from the buffer, the `jr $ra` lands back in the setjmp
+ *       caller rather than in this function's own caller.
+ */
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BE320.s")
-#endif
 
-#ifdef MIPS_TO_C
-s32 func_800BE374(void *arg0, s32 arg1) {
-    s32 var_v0;
-
-    var_v0 = arg1;
-    if (var_v0 == 0) {
-        var_v0 = 1;
-    }
-    return var_v0;
-}
-#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_13/func_800BE374.s")
-#endif

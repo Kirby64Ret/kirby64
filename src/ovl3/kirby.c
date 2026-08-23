@@ -1672,7 +1672,13 @@ void func_8016E15C_ovl3(GObj *arg0) {
         }
         id = omCurrentObj->objId;
         if (!(D_800E8AE0[id] & 6) && gKirbyState.unk68 == 0
-            && func_8015449C_ovl3(D_8019395C_ovl3, 0) != 0
+            /* Through the function-pointer cast, as the PORT arm below does:
+             * ovl3_1.c:1679 defines func_8015449C_ovl3 void, but the ROM reads
+             * its $v0 here. This arm used to rely on the symbol having no
+             * declaration in scope at all (an implicit `int f()`), which stopped
+             * being true when this file's prototypes were collected at the top.
+             * Costs the direct jal -- IDO emits jalr for the cast. */
+            && ((s32 (*)(void *, s32)) func_8015449C_ovl3)(D_8019395C_ovl3, 0) != 0
             && gKirbyState.unkD == 2) {
             gKirbyState.unk4 = 0;
             gKirbyState.unkD = -3;
@@ -2088,7 +2094,269 @@ void func_8016EF5C_ovl3(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifndef PORT
+struct UnkD6F58 {
+    u8 pad0[0x50];
+    u32 unk50;
+    u32 unk54;
+    u32 unk58;
+};
+
+extern struct UnkD6F58 D_800D6F58;
+
+/* FACTORY: 264/295 words differ (N = words DIFFERING; this file's other
+ * notes use the opposite convention and measure_seeds.py disagrees with all
+ * of them). Re-derived from asm/nonmatchings/ovl3/kirby/func_8016F240_ovl3.s,
+ * not from the PORT arm. The previous draft sat apart from its pragma, so
+ * neither measure_seeds.py nor refound_status.py could see it and it scored
+ * as BARE; measured un-guarded in place it was 275/294, i.e. its `12/294`
+ * note was the opposite of the truth.
+ *
+ * Three findings from the listing, each measured:
+ *   - The 7-byte predicate list is an AGGREGATE COPY, not seven byte stores.
+ *     The ROM's `lw/sw` + `lwr/swr` at offset 6 is IDO copying a 7-byte
+ *     object: word 0..3, then bytes 4..6 (LWR at A loads from the word start
+ *     through A, right-justified). `Unk80196C74 sp30 = D_80196C6C_ovl3;` --
+ *     the same idiom the matched func_8016DD0C_ovl3 above uses -- reproduces
+ *     the first 15 words exactly.
+ *   - Branch polarity: the ROM tests `func_80151E94_ovl3(&sp30) == 0` and
+ *     puts `gKirbyState.unk7 = 0` in the else, which is `bnez $v0` with the
+ *     else block laid at the end. The `!= 0` spelling emits `beqz` (1 word).
+ *   - objId is re-read, not cached, inside the grounded arm. The ROM's
+ *     `D_800E3210[objId] = D_800E3750[objId]` re-loads objId between the two
+ *     statements, so IDO cannot forward the 0.0f it just stored; with a
+ *     cached local it does, and the `lwc1` disappears. Writing
+ *     `omCurrentObj->objId` inline at those three statements was worth 10
+ *     words and aligned words 66..160 exactly.
+ *
+ * Residue, in two parts:
+ *   - Word count is 300 vs the ROM's 295. All five are the same shape: IDO
+ *     fills each `b .L8016F64C` delay slot from the target block, copying
+ *     `lui $a3, %hi(gKirbyState)` into five predecessors where the ROM
+ *     materialises &gKirbyState once at the join. No source spelling found
+ *     that stops it (tried the tail as if/else vs an early return).
+ *   - One-word desync from word 20: the ROM hoists
+ *     `lui $t9, %hi(D_800E8920)` above the `beqz $a2` that starts the body,
+ *     scheduling it into the load-use gap after `lbu $a2, 0x17($a3)`.
+ *
+ * Both are scheduling/register-allocation shaped. Queued for the permuter. */
+/* FACTORY: 264/295 words differ. */
+#ifdef MIPS_TO_C
+void func_8016F240_ovl3(GObj *arg0) {
+    extern Unk80196C74 D_80196C6C_ovl3;
+    extern s32 D_800D6B54;
+    Unk80196C74 sp30 = D_80196C6C_ovl3;
+    s32 objId;
+    u8 held;
+
+    func_80153984_ovl3();
+    func_8011CF58();
+    if (func_80151E94_ovl3(&sp30) == 0) {
+        held = gKirbyState.unk17;
+        if ((held == 0) || (gKirbyState.unkB != 2)) {
+            if ((held == 0) && (gKirbyController.buttonPressed & 0x8000)) {
+                D_800E9560[omCurrentObj->objId] = 2;
+            } else {
+                objId = omCurrentObj->objId;
+                if (D_800E9560[objId] != 0) {
+                    D_800E9560[objId] = D_800E9560[objId] - 1;
+                }
+            }
+            objId = omCurrentObj->objId;
+            if (D_800E8920[objId] != 0) {
+                D_800E3750[objId] = 0.0f;
+                D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+                D_800E3C90[omCurrentObj->objId] = 65535.0f;
+                if (D_800D6B54 == 0) {
+                    play_sound(0x149);
+                    held = gKirbyState.unk17;
+                }
+                if (held != 0) {
+                    D_800E9560[omCurrentObj->objId] = 0;
+                }
+                objId = omCurrentObj->objId;
+                if (D_800E9560[objId] != 0) {
+                    func_80122B40();
+                    set_kirby_action_1(3, 5);
+                } else if (D_800E64D0[objId] == 0.0f) {
+                    gKirbyState.unk7 = 0;
+                    if ((held == 0) && (D_800D6F58.unk54 == 0) &&
+                        (gKirbyController.buttonHeld & 0x400) && (gKirbyState.unk4 == 1)) {
+                        set_kirby_action_1(0xB, 0x10);
+                    } else {
+                        set_kirby_action_1(7, 7);
+                    }
+                } else {
+                    gKirbyState.unk44 = 0;
+                    if (gKirbyState.unk7 == 0) {
+                        func_80122B40();
+                        set_kirby_action_1(1, 3);
+                    } else {
+                        gKirbyState.unk38 = 0.0f;
+                        set_kirby_action_1(2, 4);
+                    }
+                    func_80122FB0(1);
+                }
+            } else if ((D_800E83E0[objId] & 0xFFFF) == 2) {
+                D_800EC2E0[0].as_u32 = 0x80000000;
+                gKirbyState.unk7 = 0;
+                objId = omCurrentObj->objId;
+                if (!(D_800E8AE0[objId] & 6)) {
+                    D_800E3210[objId] = 8.0f;
+                } else {
+                    D_800E3210[objId] = 4.0f;
+                }
+                D_800E3750[omCurrentObj->objId] = 0.0f;
+                D_800E3C90[omCurrentObj->objId] = 0.0f;
+                set_kirby_action_1(5, 5);
+            } else if (func_80179130_ovl3() != 0) {
+                gKirbyState.unk7 = 0;
+            } else {
+                objId = omCurrentObj->objId;
+                if (D_800E8AE0[objId] & 6) {
+                    D_800E3750[objId] = -0.4f;
+                    D_800E3C90[omCurrentObj->objId] = 1.0f;
+                } else if (gKirbyState.unk4 == 0) {
+                    s32 t = D_800E9720[objId];
+
+                    D_800E9720[objId] = t - 1;
+                    if (t == 0) {
+                        set_kirby_action_1(8, 8);
+                    }
+                }
+            }
+        }
+    } else {
+        gKirbyState.unk7 = 0;
+    }
+    if (gKirbyState.horizontalCollision == 0) {
+        func_8011ED68();
+        return;
+    }
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    objId = omCurrentObj->objId;
+    D_800E64D0[objId] = D_800E6690[objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+}
+#elif defined(PORT)
+/* PORT: the ground/landing action handler (D_80196990_ovl3's slot for
+ * action 1), from asm/nonmatchings/ovl3/kirby/func_8016F240_ovl3.s. Runs
+ * the transition-predicate list, services the double-tap run counter at
+ * D_800E9560, and picks the landing outcome: grounded -> stop/run/crouchjump
+ * (with the landing thud sound), water surface -> the swim bob, otherwise the
+ * coyote-time countdown at D_800E9720 into the fall action. The tail seeds
+ * the walk-speed track cells whenever a horizontal collision is standing.
+ *
+ * struct UnkD6F58 is declared just above this site (it used to sit further
+ * down the file, which is why this arm used to live apart from its pragma).
+ * The ROM's 7-byte
+ * predicate list D_80196C6C_ovl3 is emitted on PC as two native u32 words
+ * (build/pc/data/ovl3_ovl3.data.c), so a struct copy would hand
+ * func_80151E94_ovl3 byte-swapped ids; the list is spelled literally
+ * instead ({1,5,9,8,7,6,0xF}, the big-endian bytes of 0x01050908
+ * 0x07060F00), matching the u8-array callers in ovl19_3.c. */
+void func_8016F240_ovl3(GObj *arg0) {
+    u8 cmd[7];
+    s32 objId;
+    u8 held;
+
+    (void) arg0;
+    cmd[0] = 1;
+    cmd[1] = 5;
+    cmd[2] = 9;
+    cmd[3] = 8;
+    cmd[4] = 7;
+    cmd[5] = 6;
+    cmd[6] = 0xF;
+    func_80153984_ovl3();
+    func_8011CF58();
+    if (func_80151E94_ovl3(cmd) != 0) {
+        gKirbyState.unk7 = 0;
+    } else {
+        held = gKirbyState.unk17;
+        if ((held == 0) || (gKirbyState.unkB != 2)) {
+            if ((held == 0) && (gKirbyController.buttonPressed & 0x8000)) {
+                D_800E9560[omCurrentObj->objId] = 2;
+            } else {
+                objId = omCurrentObj->objId;
+                if (D_800E9560[objId] != 0) {
+                    D_800E9560[objId] = D_800E9560[objId] - 1;
+                }
+            }
+            objId = omCurrentObj->objId;
+            if (D_800E8920[objId] != 0) {
+                D_800E3750[objId] = 0.0f;
+                D_800E3210[objId] = D_800E3750[objId];
+                D_800E3C90[objId] = 65535.0f;
+                if (D_800D6B54 == 0) {
+                    play_sound(0x149);
+                    held = gKirbyState.unk17;
+                }
+                if (held != 0) {
+                    D_800E9560[omCurrentObj->objId] = 0;
+                }
+                objId = omCurrentObj->objId;
+                if (D_800E9560[objId] != 0) {
+                    func_80122B40();
+                    set_kirby_action_1(3, 5);
+                } else if (D_800E64D0[objId] == 0.0f) {
+                    gKirbyState.unk7 = 0;
+                    if ((held == 0) && (D_800D6F58.unk54 == 0) &&
+                        (gKirbyController.buttonHeld & 0x400) && (gKirbyState.unk4 == 1)) {
+                        set_kirby_action_1(0xB, 0x10);
+                    } else {
+                        set_kirby_action_1(7, 7);
+                    }
+                } else {
+                    gKirbyState.unk44 = 0;
+                    if (gKirbyState.unk7 == 0) {
+                        func_80122B40();
+                        set_kirby_action_1(1, 3);
+                    } else {
+                        gKirbyState.unk38 = 0.0f;
+                        set_kirby_action_1(2, 4);
+                    }
+                    func_80122FB0(1);
+                }
+            } else if ((D_800E83E0[objId] & 0xFFFF) == 2) {
+                D_800EC2E0[0].as_u32 = 0x80000000;
+                gKirbyState.unk7 = 0;
+                objId = omCurrentObj->objId;
+                if (!(D_800E8AE0[objId] & 6)) {
+                    D_800E3210[objId] = 8.0f;
+                } else {
+                    D_800E3210[objId] = 4.0f;
+                }
+                D_800E3750[omCurrentObj->objId] = 0.0f;
+                D_800E3C90[omCurrentObj->objId] = 0.0f;
+                set_kirby_action_1(5, 5);
+            } else if (func_80179130_ovl3() != 0) {
+                gKirbyState.unk7 = 0;
+            } else {
+                objId = omCurrentObj->objId;
+                if (D_800E8AE0[objId] & 6) {
+                    D_800E3750[objId] = -0.4f;
+                    D_800E3C90[omCurrentObj->objId] = 1.0f;
+                } else if (gKirbyState.unk4 == 0) {
+                    s32 t = D_800E9720[objId];
+
+                    D_800E9720[objId] = t - 1;
+                    if (t == 0) {
+                        set_kirby_action_1(8, 8);
+                    }
+                }
+            }
+        }
+    }
+    if (gKirbyState.horizontalCollision == 0) {
+        func_8011ED68();
+        return;
+    }
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    objId = omCurrentObj->objId;
+    D_800E64D0[objId] = D_800E6690[objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+}
+#else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016F240_ovl3.s")
 #endif
 
@@ -2283,15 +2551,6 @@ typedef struct Unk80196C84 {
 
 extern Unk80196C84 D_80196C84_ovl3;
 
-struct UnkD6F58 {
-    u8 pad0[0x50];
-    u32 unk50;
-    u32 unk54;
-    u32 unk58;
-};
-
-extern struct UnkD6F58 D_800D6F58;
-
 void func_8016FFF8_ovl3(GObj *arg0) {
     Unk80196C84 sp24 = D_80196C84_ovl3;
     extern s32 D_800D6F10;
@@ -2353,254 +2612,6 @@ void func_8016FFF8_ovl3(GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 12/294, whole-function callee-saved permutation (same floor
- * class documented across this cluster). Also gives D_800D6B54 a local
- * extern (its file-scope declaration sits inside an #ifdef PORT block
- * earlier in the file). Known residual defect for whoever picks this
- * back up: the ROM reads the 7-byte predicate list D_80196C6C_ovl3
- * directly via an unaligned lw/lwr pair, not the byte-literal cmd[]
- * array the PORT arm builds -- try memcpy(cmd, D_80196C6C_ovl3, 7) or
- * an aligned struct copy instead. Queued for the permuter. */
-/* PORT: the ground/landing action handler (D_80196990_ovl3's slot for
- * action 1), from asm/nonmatchings/ovl3/kirby/func_8016F240_ovl3.s. Runs
- * the transition-predicate list, services the double-tap run counter at
- * D_800E9560, and picks the landing outcome: grounded -> stop/run/crouchjump
- * (with the landing thud sound), water surface -> the swim bob, otherwise the
- * coyote-time countdown at D_800E9720 into the fall action. The tail seeds
- * the walk-speed track cells whenever a horizontal collision is standing.
- *
- * The function body lives here, below the pragma site, because it reads
- * D_800D6F58.unk54 and struct UnkD6F58 is only defined (unguarded, shared
- * with the N64 build) between the pragma and this point. The ROM's 7-byte
- * predicate list D_80196C6C_ovl3 is emitted on PC as two native u32 words
- * (build/pc/data/ovl3_ovl3.data.c), so a struct copy would hand
- * func_80151E94_ovl3 byte-swapped ids; the list is spelled literally
- * instead ({1,5,9,8,7,6,0xF}, the big-endian bytes of 0x01050908
- * 0x07060F00), matching the u8-array callers in ovl19_3.c. */
-void func_8016F240_ovl3(GObj *arg0) {
-    extern s32 D_800D6B54;
-    u8 cmd[7];
-    s32 objId;
-    u8 held;
-
-    (void) arg0;
-    cmd[0] = 1;
-    cmd[1] = 5;
-    cmd[2] = 9;
-    cmd[3] = 8;
-    cmd[4] = 7;
-    cmd[5] = 6;
-    cmd[6] = 0xF;
-    func_80153984_ovl3();
-    func_8011CF58();
-    if (func_80151E94_ovl3(cmd) != 0) {
-        gKirbyState.unk7 = 0;
-    } else {
-        held = gKirbyState.unk17;
-        if ((held == 0) || (gKirbyState.unkB != 2)) {
-            if ((held == 0) && (gKirbyController.buttonPressed & 0x8000)) {
-                D_800E9560[omCurrentObj->objId] = 2;
-            } else {
-                objId = omCurrentObj->objId;
-                if (D_800E9560[objId] != 0) {
-                    D_800E9560[objId] = D_800E9560[objId] - 1;
-                }
-            }
-            objId = omCurrentObj->objId;
-            if (D_800E8920[objId] != 0) {
-                D_800E3750[objId] = 0.0f;
-                D_800E3210[objId] = D_800E3750[objId];
-                D_800E3C90[objId] = 65535.0f;
-                if (D_800D6B54 == 0) {
-                    play_sound(0x149);
-                    held = gKirbyState.unk17;
-                }
-                if (held != 0) {
-                    D_800E9560[omCurrentObj->objId] = 0;
-                }
-                objId = omCurrentObj->objId;
-                if (D_800E9560[objId] != 0) {
-                    func_80122B40();
-                    set_kirby_action_1(3, 5);
-                } else if (D_800E64D0[objId] == 0.0f) {
-                    gKirbyState.unk7 = 0;
-                    if ((held == 0) && (D_800D6F58.unk54 == 0) &&
-                        (gKirbyController.buttonHeld & 0x400) && (gKirbyState.unk4 == 1)) {
-                        set_kirby_action_1(0xB, 0x10);
-                    } else {
-                        set_kirby_action_1(7, 7);
-                    }
-                } else {
-                    gKirbyState.unk44 = 0;
-                    if (gKirbyState.unk7 == 0) {
-                        func_80122B40();
-                        set_kirby_action_1(1, 3);
-                    } else {
-                        gKirbyState.unk38 = 0.0f;
-                        set_kirby_action_1(2, 4);
-                    }
-                    func_80122FB0(1);
-                }
-            } else if ((D_800E83E0[objId] & 0xFFFF) == 2) {
-                D_800EC2E0[0].as_u32 = 0x80000000;
-                gKirbyState.unk7 = 0;
-                objId = omCurrentObj->objId;
-                if (!(D_800E8AE0[objId] & 6)) {
-                    D_800E3210[objId] = 8.0f;
-                } else {
-                    D_800E3210[objId] = 4.0f;
-                }
-                D_800E3750[omCurrentObj->objId] = 0.0f;
-                D_800E3C90[omCurrentObj->objId] = 0.0f;
-                set_kirby_action_1(5, 5);
-            } else if (func_80179130_ovl3() != 0) {
-                gKirbyState.unk7 = 0;
-            } else {
-                objId = omCurrentObj->objId;
-                if (D_800E8AE0[objId] & 6) {
-                    D_800E3750[objId] = -0.4f;
-                    D_800E3C90[omCurrentObj->objId] = 1.0f;
-                } else if (gKirbyState.unk4 == 0) {
-                    s32 t = D_800E9720[objId];
-
-                    D_800E9720[objId] = t - 1;
-                    if (t == 0) {
-                        set_kirby_action_1(8, 8);
-                    }
-                }
-            }
-        }
-    }
-    if (gKirbyState.horizontalCollision == 0) {
-        func_8011ED68();
-        return;
-    }
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    objId = omCurrentObj->objId;
-    D_800E64D0[objId] = D_800E6690[objId];
-    D_800E6850[omCurrentObj->objId] = 65535.0f;
-}
-#elif defined(PORT)
-/* PORT: the ground/landing action handler (D_80196990_ovl3's slot for
- * action 1), from asm/nonmatchings/ovl3/kirby/func_8016F240_ovl3.s. Runs
- * the transition-predicate list, services the double-tap run counter at
- * D_800E9560, and picks the landing outcome: grounded -> stop/run/crouchjump
- * (with the landing thud sound), water surface -> the swim bob, otherwise the
- * coyote-time countdown at D_800E9720 into the fall action. The tail seeds
- * the walk-speed track cells whenever a horizontal collision is standing.
- *
- * The function body lives here, below the pragma site, because it reads
- * D_800D6F58.unk54 and struct UnkD6F58 is only defined (unguarded, shared
- * with the N64 build) between the pragma and this point. The ROM's 7-byte
- * predicate list D_80196C6C_ovl3 is emitted on PC as two native u32 words
- * (build/pc/data/ovl3_ovl3.data.c), so a struct copy would hand
- * func_80151E94_ovl3 byte-swapped ids; the list is spelled literally
- * instead ({1,5,9,8,7,6,0xF}, the big-endian bytes of 0x01050908
- * 0x07060F00), matching the u8-array callers in ovl19_3.c. */
-void func_8016F240_ovl3(GObj *arg0) {
-    u8 cmd[7];
-    s32 objId;
-    u8 held;
-
-    (void) arg0;
-    cmd[0] = 1;
-    cmd[1] = 5;
-    cmd[2] = 9;
-    cmd[3] = 8;
-    cmd[4] = 7;
-    cmd[5] = 6;
-    cmd[6] = 0xF;
-    func_80153984_ovl3();
-    func_8011CF58();
-    if (func_80151E94_ovl3(cmd) != 0) {
-        gKirbyState.unk7 = 0;
-    } else {
-        held = gKirbyState.unk17;
-        if ((held == 0) || (gKirbyState.unkB != 2)) {
-            if ((held == 0) && (gKirbyController.buttonPressed & 0x8000)) {
-                D_800E9560[omCurrentObj->objId] = 2;
-            } else {
-                objId = omCurrentObj->objId;
-                if (D_800E9560[objId] != 0) {
-                    D_800E9560[objId] = D_800E9560[objId] - 1;
-                }
-            }
-            objId = omCurrentObj->objId;
-            if (D_800E8920[objId] != 0) {
-                D_800E3750[objId] = 0.0f;
-                D_800E3210[objId] = D_800E3750[objId];
-                D_800E3C90[objId] = 65535.0f;
-                if (D_800D6B54 == 0) {
-                    play_sound(0x149);
-                    held = gKirbyState.unk17;
-                }
-                if (held != 0) {
-                    D_800E9560[omCurrentObj->objId] = 0;
-                }
-                objId = omCurrentObj->objId;
-                if (D_800E9560[objId] != 0) {
-                    func_80122B40();
-                    set_kirby_action_1(3, 5);
-                } else if (D_800E64D0[objId] == 0.0f) {
-                    gKirbyState.unk7 = 0;
-                    if ((held == 0) && (D_800D6F58.unk54 == 0) &&
-                        (gKirbyController.buttonHeld & 0x400) && (gKirbyState.unk4 == 1)) {
-                        set_kirby_action_1(0xB, 0x10);
-                    } else {
-                        set_kirby_action_1(7, 7);
-                    }
-                } else {
-                    gKirbyState.unk44 = 0;
-                    if (gKirbyState.unk7 == 0) {
-                        func_80122B40();
-                        set_kirby_action_1(1, 3);
-                    } else {
-                        gKirbyState.unk38 = 0.0f;
-                        set_kirby_action_1(2, 4);
-                    }
-                    func_80122FB0(1);
-                }
-            } else if ((D_800E83E0[objId] & 0xFFFF) == 2) {
-                D_800EC2E0[0].as_u32 = 0x80000000;
-                gKirbyState.unk7 = 0;
-                objId = omCurrentObj->objId;
-                if (!(D_800E8AE0[objId] & 6)) {
-                    D_800E3210[objId] = 8.0f;
-                } else {
-                    D_800E3210[objId] = 4.0f;
-                }
-                D_800E3750[omCurrentObj->objId] = 0.0f;
-                D_800E3C90[omCurrentObj->objId] = 0.0f;
-                set_kirby_action_1(5, 5);
-            } else if (func_80179130_ovl3() != 0) {
-                gKirbyState.unk7 = 0;
-            } else {
-                objId = omCurrentObj->objId;
-                if (D_800E8AE0[objId] & 6) {
-                    D_800E3750[objId] = -0.4f;
-                    D_800E3C90[omCurrentObj->objId] = 1.0f;
-                } else if (gKirbyState.unk4 == 0) {
-                    s32 t = D_800E9720[objId];
-
-                    D_800E9720[objId] = t - 1;
-                    if (t == 0) {
-                        set_kirby_action_1(8, 8);
-                    }
-                }
-            }
-        }
-    }
-    if (gKirbyState.horizontalCollision == 0) {
-        func_8011ED68();
-        return;
-    }
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    objId = omCurrentObj->objId;
-    D_800E64D0[objId] = D_800E6690[objId];
-    D_800E6850[omCurrentObj->objId] = 65535.0f;
-}
-#endif
 void func_801702F0_ovl3(GObj *arg0) {
     gKirbyState.unk30 = 0;
     gKirbyState.unk7 = 0;
