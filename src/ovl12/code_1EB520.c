@@ -35,12 +35,45 @@ extern u32 *D_801E2C78_ovl12[9];
 extern void (*D_801E2C9C_ovl12[0xA])(struct GObj *);
 extern void (*D_801E2CC4_ovl12[10])(struct GObj *);
 
-#ifdef PORT
-/* DECOMP: not expressible in C, and not a matching problem. The listing is a
-   single `nop` with no `jr $ra`, followed by seven more nops that run out
-   exactly at func_801DB200_ovl12 (0x801DB200): overlay 12's entry point falls
-   straight THROUGH into it. IDO cannot emit a function without an epilogue, so
-   the pragma is permanent; the port reproduces the fall-through with a call. */
+#ifdef MIPS_TO_C
+/* FACTORY: 2/2 words DIFFER, and 2/2 is the FLOOR -- no C source reaches this
+   listing. Do NOT queue this one to the permuter; it needs a kirby64.yaml
+   edit, not a better spelling. Measured, all three against
+   asm/nonmatchings/ovl12/code_1EB520/func_801DB1E0_ovl12.s (ovl12's own
+   listing -- ovl17 has a different, real 560-instruction function at the same
+   VRAM, and src/pc/pc_ovl_dispatch.c dispatches between them):
+
+     empty body      2 words   jr $ra / sw $a0, 0x0($sp)      2/2
+     while (1) {}   10 words   sw / b . / 6*nop / jr $ra/nop  10/10
+     call-through    8 words   addiu sp / sw ra / jal / ...   8/8
+
+   The target is ONE word, `00000000`, and it has no `jr $ra` at all. Every
+   IDO-compiled C function emits at least two words and never a nop in word 0,
+   so the residue cannot go below 2 and word 0 can never match. verify.py will
+   not even score it: tools/decomp/padtrap.py classifies the listing
+   ('trap', 7) -- seven more nops sit after the function's own `.size`, so the
+   pragma is carrying 0x20 of the TU's leading .text and converting it would
+   leave code_1EB520.o 28 bytes short under kirby.ld's SUBALIGN(16).
+
+   What the ROM says this actually is: 0x1EB520..0x1EB53C is eight zero words
+   and real code resumes at 0x1EB540 with `lui $v1, %hi(omCurrentObj)`, which
+   is func_801DB200_ovl12. Overlay 12's entry point is not a function -- it is
+   alignment fill that falls straight THROUGH into func_801DB200_ovl12, and
+   splat named the first word of it. Compare func_801DB1E0_ovl13, which is a
+   real function at the same address in its own overlay.
+
+   REMEDY (coordinator-sized, same shape as func_800A2550 in ovl1.c): drop the
+   symbol and give ovl12 a `pad` subsegment in kirby64.yaml with the matching
+   `. += 0x20;` in kirby.ld, in ONE commit, gated on the ROM sha1. Until then
+   the pragma stays and the PORT arm below reproduces the fall-through. */
+void func_801DB1E0_ovl12(GObj *arg0) {
+}
+#elif defined(PORT)
+/* The ROM's overlay-12 entry point is eight nops that run out exactly at
+   func_801DB200_ovl12, so entering at 0x801DB1E0 falls through into it. A call
+   reproduces that: $a0 carries through untouched and the callee returns to our
+   caller's continuation. See the MIPS_TO_C arm for why this cannot be shared
+   with the N64 build. */
 void func_801DB200_ovl12(GObj *obj);
 
 void func_801DB1E0_ovl12(GObj *arg0) {

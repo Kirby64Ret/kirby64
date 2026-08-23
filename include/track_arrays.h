@@ -194,6 +194,24 @@
  *               (DObj* as s32, opcode, f32 payload).
  * ========================================================================== */
 
+/* DELIBERATELY s32 here while src/ovl1/ovl1_6.h declares the same array u32.
+ * MEASURED, not assumed: flipping this line to u32 changes the .text of
+ * src/ovl2/ovl2_9.o -- the only translation unit that reaches the array
+ * through this header -- and moves func_80110FD4, func_80111184,
+ * func_8011145C, func_801114E0, func_80111534 and func_80111550 off the ROM.
+ * Flipping ovl1_6.h's copy to s32 instead is worse: it moves ten ovl1
+ * functions, request_job and request_track among them.
+ *
+ * Six files test this against -1 as a "no entry" sentinel (ovl2.c:113,
+ * ovl2_4.c:25, ovl2_9.c:1146/1194, plylib.c:1594/1634), which reads naturally
+ * signed, so s32 is very likely the true type -- but the ovl1 side was
+ * matched against u32 and its comparisons carry the signedness into the
+ * generated code. Unifying means fixing those call sites in the same change,
+ * not editing one of these two lines.
+ *
+ * The disagreement survives only because the two headers share the OVL1_6_H
+ * include guard, so no TU has ever seen both. That is a real defect and it is
+ * what makes this pair of types unverifiable by inspection. */
 extern s32 D_800DD710[];
 extern s32 D_800DE190[];
 extern s32 D_800DDFD0[];
@@ -281,6 +299,23 @@ extern u16 D_800E77A0[];
 extern u8 D_800E7880[];
 extern u8 D_800E78F0[];
 extern f32 D_800E7B20[];
+/* DELIBERATELY u32 here while src/ovl1/ovl1_6.h declares the same array s32.
+ * That looks like a bug and is not safe to "fix" as a header edit: the two
+ * headers share the OVL1_6_H include guard, so no TU has ever seen both, and
+ * the TUs that reach this array through THIS header were matched against a
+ * u32 declaration. Retyping it to s32 to agree with ovl1_6.h moves six ovl2
+ * functions off the ROM (func_80110FD4, func_80111184, func_8011145C,
+ * func_801114E0, func_80111534, func_80111550), because the signedness
+ * reaches the generated code through the comparisons there.
+ *
+ * The semantics say signed -- ovl1_7.c's func_800B18B4 reads
+ *     if (D_800E7CE0[id] != 0) { if (D_800E7CE0[id]-- <= 0) D_800E7CE0[id] = 0; }
+ * and under u32 that inner test degenerates to `== 0`, which the outer test
+ * has already excluded, making the underflow clamp dead code. So the eventual
+ * canonical type is s32, but getting there means fixing the ovl2 call sites
+ * (with casts where the ROM wants unsigned compares) in the same change, not
+ * flipping this line. Until then the disagreement is load-bearing and is
+ * recorded here rather than left to be rediscovered. */
 extern u32 D_800E7CE0[];
 extern s32 D_800EA520[];
 extern s32 D_800EA360[];

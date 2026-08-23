@@ -12,7 +12,10 @@
 #define MultiType union {u32 as_u32; u32 *as_u32p; s32 as_s32; s32 *as_s32p; f32 as_f32; void *as_ptr;}
 #define _MultiType(CustomType) union {u32 as_u32; s32 as_s32; f32 as_f32; void *as_ptr; CustomType *consume;}
 
-extern u32 D_800DD710[]; // "JN number"
+/* DELIBERATELY u32 here while include/track_arrays.h declares it s32; see the
+ * measured note there. Flipping this line to s32 moves ten ovl1 functions off
+ * the ROM, request_job and request_track among them. */
+extern u32 D_800DD710[];
 extern s32 D_800DE190[];
 extern s32 D_800DDFD0[];
 extern s32 D_800DDE10[];
@@ -111,6 +114,12 @@ extern u16 D_800E77A0[];
 extern u8 D_800E7880[];
 extern u8 D_800E78F0[];
 extern f32 D_800E7B20[];
+/* DELIBERATELY s32 here while include/track_arrays.h declares it u32; see the
+ * measured note there. The semantics agree with this side: ovl1_7.c's
+ * func_800B18B4 reads
+ *     if (D_800E7CE0[id] != 0) { if (D_800E7CE0[id]-- <= 0) D_800E7CE0[id] = 0; }
+ * and under u32 that inner test degenerates to `== 0`, which the outer test
+ * has already excluded, making the underflow clamp dead code. */
 extern s32 D_800E7CE0[];
 extern s32 D_800EA520[];
 extern s32 D_800EA360[];
