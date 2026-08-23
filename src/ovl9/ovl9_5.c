@@ -1262,10 +1262,14 @@ void func_801E8A38_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 103/127, one register rotation.  Control flow, schedule, frame and
+/* FACTORY: 103/127 -- WRONG, corrected this session by direct verify.py: true
+   residue is 24/127. One register rotation. Control flow, schedule, frame and
    every stack slot are the ROM's; the residue is that the ROM holds the
-   gEntitiesAngleZArray / D_800E98E0 bases in $v1 and the objId in $a0 where
-   ours uses $a1 and $v1, which renames the instructions that touch them. */
+   gEntitiesAngleZArray / D_800E98E0 bases in $v1 and the objId-derived index
+   in $a0 where this draft uses $a1 and $v1 -- the same CSE-neighbour
+   register-rename floor seen elsewhere in this overlay, four times over
+   (once per D_800DFBD0/array-base pair touched). Not a source-spelling
+   residue. */
 extern void func_800B6E84(struct GObj *);
 extern f32 D_8021C014_ovl9[];
 /* Wall-mounted shooter init: install the static mover, face right,
@@ -1484,10 +1488,9 @@ void func_801E8F74_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8F74_ovl9.s")
 #endif
 
-/* Empty parens, not (void): the guarded draft below defines this with an s32
-   parameter because the ROM homes an unused $a0, and a (void) prototype
-   forbids that. CC_CHECK compiles guarded drafts with -DNON_MATCHING, so the
-   two must agree even while the draft is inactive. */
+/* Empty parens, not (void): the definition below takes an s32 parameter
+   because the ROM homes an unused $a0, and a (void) prototype forbids
+   that. */
 void func_801E92DC_ovl9();
 
 void func_801E9298_ovl9(void) {
@@ -1496,23 +1499,18 @@ void func_801E9298_ovl9(void) {
     }
 }
 
-/* FACTORY: 11/219, frame-slot placement.  Body byte-exact; frame size 0x48 is
-   right but IDO puts the Vector at 0x3C with the atan2f spill below it at 0x38,
-   where the ROM has the Vector at 0x30 and the spill at 0x44.  The dead base
-   region below the locals is 0x20 here and 0x18 in the ROM; adding pads,
-   declaring the spill (f32 sp44), and f32 sp30[5] all grow the frame instead of
-   moving the base.  To un-guard, the file-scope prototype above must become
-   `void func_801E92DC_ovl9();` -- the ROM homes an unused $a0, so the
-   definition needs a parameter the `(void)` prototype forbids. */
-#ifdef NON_MATCHING
+/* MATCHED. Declaration order is load-bearing (LEVERS lever 12/13): three
+   scalars before the Vector and one (`t`) after it lands sp30 at the ROM's
+   0x30 with the atan2f spill at 0x44; the old note's "all before" shape
+   (11/219) put the Vector 4 bytes high across its whole span. */
 void func_801E92DC_ovl9(s32 arg0) {
     extern f32 sqrtf(f32);
     extern f32 atan2f(f32, f32);
     extern void func_800B2AD4(Vector *, s32, u32);
-    Vector sp30;
     f32 pitch;
     f32 yaw;
     f32 diff;
+    Vector sp30;
     f32 t;
 
     sp30.x = gEntitiesNextPosXArray[0];
@@ -1565,9 +1563,6 @@ void func_801E92DC_ovl9(s32 arg0) {
     D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_800EA6E0[omCurrentObj->objId];
     D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = D_800EAC20[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E92DC_ovl9.s")
-#endif
 
 extern s32 D_801C7FF0_ovl7;
 extern s32 D_801CB6D4;
@@ -1779,10 +1774,17 @@ void func_801EA048_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 
-/* 22 diffs: the ROM sinks the `sw $a0` home-slot store into the delay slot of
-   the func_801EA2F8_ovl9 call and keeps arg0 in $a0; IDO spills it in the
-   prologue and reloads it in that delay slot instead. */
 #ifdef NON_MATCHING
+/* 22/90: the ROM defers the `sw $a0` parameter-home store into the delay
+ * slot of the func_801EA2F8_ovl9 call (arg0's first and only use) and keeps
+ * arg0 in $a0 the whole time; this draft's IDO output stores the home slot
+ * immediately in the prologue (before the unrelated angle.v.x store that
+ * doesn't touch $a0) and then reloads it again right before the call --
+ * doing the same store twice instead of once, deferred. Re-measured this
+ * session, still exactly 22. The angle.v.x statement cannot be reordered
+ * around the call (source order already matches the ROM's instruction
+ * order); this reads as a prologue-vs-delay-slot store-scheduling floor,
+ * not a source-spelling residue. */
 void func_801EA2F8_ovl9(struct GObj *);
 void func_801EA628_ovl9(void);
 void func_801A0D74_ovl7();
