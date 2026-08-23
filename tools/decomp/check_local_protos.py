@@ -58,8 +58,14 @@ DECL = re.compile(r'^[ \t]*(?:extern\s+)?' + _RET +
 DEFN = re.compile(r'^' + _RET +
                   r'(?P<name>\w+)\s*\((?P<args>[^;{]*)\)\s*\{')
 KEYWORDS = {'if', 'while', 'for', 'switch', 'return', 'sizeof', 'do', 'else'}
-# `extern void (*fp)(GObj *);` declares an OBJECT, not a function.
-FNPTR = re.compile(r'\(\s*\*')
+# `extern void (*fp)(GObj *);` declares an OBJECT, not a function -- but
+# `void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));` is a
+# real function declaration that merely TAKES one. Matching `(*` anywhere on
+# the line conflated the two and silently skipped every declaration with a
+# function-pointer parameter, so the tree-wide count was an undercount.
+# Anchor on the declarator instead: the `(*` must directly follow the return
+# type, before any identifier.
+FNPTR = re.compile(r'^\s*(?:extern\s+)?[A-Za-z_]\w*[\s*]+\(\s*\*')
 
 
 def struct_typedefs():
@@ -95,7 +101,14 @@ def canon(tok):
 def norm_args(a):
     """Drop parameter names, keep types as written."""
     a = ' '.join(a.split())
-    if a in ('', 'void'):
+    # An empty parameter list is NOT `(void)`. In this tree it is usually
+    # deliberate: several call sites omit an argument and rely on the GObj*
+    # already sitting in $a0, which an ANSI prototype refuses to compile.
+    # Folding the two together reported those as conflicts with the real
+    # `(void)` declarations elsewhere.
+    if a == '':
+        return 'unspecified'
+    if a == 'void':
         return 'void'
     out = []
     for p in a.split(','):
@@ -122,7 +135,12 @@ def scan(path):
     for i, line in enumerate(open(path, errors='replace'), 1):
         code = line.split('//')[0]
         m = DECL.match(code.rstrip())
-        if m and m.group('name') not in KEYWORDS and not FNPTR.search(code):
+        if (m and m.group('name') not in KEYWORDS
+                # `return func_x(a);` parses as return type `return` naming a
+                # function `func_x`. The keyword can appear on either side, so
+                # both have to be rejected.
+                and m.group('ret').split()[0] not in KEYWORDS
+                and not FNPTR.search(code)):
             sig = f"{norm_ret(m.group('ret'))} ({norm_args(m.group('args'))})"
             decls.append((i, m.group('name'), sig, depth > 0))
         elif depth == 0:
