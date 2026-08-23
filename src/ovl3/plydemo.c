@@ -77,15 +77,25 @@ void func_80152348_ovl3(f32);
 s32 func_800B2340(f32 *, struct DObj *, s32);
 /* the tree's definition (src/ovl1/ovl1_8.c) takes GObj *, not s32 */
 void func_800B5064(GObj *);
+/* the tree's definition (src/ovl2/ovl2_2.c) returns u16, not s32 */
+u16 func_800F8560(void);
+s32 func_800AA934(s32);
+void func_80122CA0(s32, s32, f32);
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800F8E6C(GObj *);
+s32 func_80153FC8_ovl3(void);
+void func_800B4954(GObj *);
+void func_80122B40(void);
+void func_800BB468(s32, s32);
+void func_800F98EC(s32, f32);
+void func_8011E234(void);
 
 #ifdef MIPS_TO_C
 /* FACTORY: DIFF 320/336 insns; short=33 long=0.
  * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 
 void func_80156050_ovl3(s32 arg0) {
-    s32 func_800F8560(void);
-    s32 func_800AA934(s32);
-    void func_80122CA0(s32, s32, f32);
 
     extern u8 D_800D6E20[];
     s32 id = omCurrentObj->objId;
@@ -193,10 +203,6 @@ void func_80156050_ovl3(s32 arg0) {
  * character's demo model bank, and pick the walk/swim-in animation --
  * water doors also hook the stroke callback func_80122CA0. Sleeps forever;
  * the per-frame handler drives the rest. */
-s32 func_800F8560(void);
-s32 func_800AA934(s32);
-void func_80122CA0(s32, s32, f32);
-
 void func_80156050_ovl3(s32 arg0) {
     extern u8 D_800D6E20[];
     s32 id = omCurrentObj->objId;
@@ -349,11 +355,6 @@ err:
  * block, so nothing declares it for the N64 build. Close the count first. */
 
 void func_801567B8_ovl3(s32 arg0) {
-    void func_80122CA0(s32, s32, f32);
-    extern void func_800AECC0(f32);
-    extern void func_800AED20(f32);
-    extern void func_800F8E6C(GObj *);
-    extern s32 func_80153FC8_ovl3(void);
 
     s32 id = omCurrentObj->objId;
     f32 spd;
@@ -581,11 +582,6 @@ void func_801567B8_ovl3(s32 arg0) {
  * the unk3C direction key). Default: plain walk/swim away from the door.
  * D_8012E7FC-style aliases in the asm are gKirbyState fields (base
  * 0x8012E7C0), spelled as such so PC readers see the same storage. */
-extern void func_800AECC0(f32);
-extern void func_800AED20(f32);
-extern void func_800F8E6C(GObj *);
-extern s32 func_80153FC8_ovl3(void);
-
 void func_801567B8_ovl3(s32 arg0) {
     s32 id = omCurrentObj->objId;
     f32 spd;
@@ -1296,10 +1292,6 @@ void func_80158EEC_ovl3(s32 arg0) {
  * Draft derived from the host arm with its shims/LP64-isms removed; close the instruction COUNT before touching registers. */
 
 void func_80159164_ovl3(s32 arg0) {
-    extern void func_800B4954(GObj *);
-    extern void func_80122B40(void);
-    extern void func_800BB468(s32, s32);
-    extern void func_800F98EC(s32, f32);
 
     s32 id = omCurrentObj->objId;
     f32 probe[3];
@@ -1790,7 +1782,6 @@ void func_8015A31C_ovl3(s32 arg0) {
  * object pointer) plus a count gap; close the count first. */
 
 void func_8015A44C_ovl3(s32 arg0) {
-    extern void func_8011E234(void);
 
     s32 id;
 
@@ -1872,8 +1863,6 @@ void func_8015A44C_ovl3(s32 arg0) {
  * land, tilt 22.5deg, fall at terminal 16 until the ground pass grounds
  * the entity, then play the landing pair. Arms the 30-frame door lockout
  * (D_800E9720) and signals the per-frame handler through unk30. */
-extern void func_8011E234(void);
-
 void func_8015A44C_ovl3(s32 arg0) {
     s32 id;
 
@@ -1969,7 +1958,6 @@ void func_8015A92C_ovl3(s32 arg0) {
 /* 101/172. */
 s32 func_8015A9F8_ovl3(void) {
     s32 ret;
-    s32 func_800F8560(void);
 
     if ((gKirbyState.action == 0x1D) || (gKirbyState.action == 0x1E) || (gKirbyState.action == 0x1C)) {
         return 0;
